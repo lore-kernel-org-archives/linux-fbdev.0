@@ -1,69 +1,57 @@
-From: Jun Nie <niej0001@gmail.com>
-Subject: Re: [PATCH 3/6] pxa: fix pxa168 lcd controller vsync/hsync timing 
-	error
-Date: Thu, 5 Nov 2009 10:15:32 +0800
-Message-ID: <7c34ac520911041815k6555e209r4039ae9f97c9ebca@mail.gmail.com>
-References: <7c34ac520911022245x7f002a7at846a835dfded550c@mail.gmail.com>
-	<f17812d70911032320k379dc7laab1979a3b452969@mail.gmail.com>
+From: Avi Kivity <avi@redhat.com>
+Subject: Re: [Qemu-devel] Re: [PATCH] Add VirtIO Frame Buffer Support
+Date: Thu, 05 Nov 2009 11:04:57 +0200
+Message-ID: <4AF29539.6070905@redhat.com>
+References: <1257199759-2941-1-git-send-email-agraf@suse.de> <4AEFCBED.50804@redhat.com> <DB868FAB-60AA-4D3A-82AE-A3DAF1AF83B2@suse.de> <4AEFCCBA.9050408@redhat.com> <8BA1853F-11C9-44B1-9FDB-1DFDAED40E1B@suse.de> <4AEFCEDA.4030308@redhat.com> <87F51670-CB3F-431C-87B4-A8746F996C6F@suse.de> <20091103112543.GA24834@snarc.org> <4AEFFA0A.4040105@redhat.com> <20091104160931.GA3647@snarc.org> <4AF1AD5E.5040205@codemonkey.ws>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <f17812d70911032320k379dc7laab1979a3b452969@mail.gmail.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
-	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
-	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org
+Content-Transfer-Encoding: 7bit
+Return-path: <kvm-owner@vger.kernel.org>
+In-Reply-To: <4AF1AD5E.5040205@codemonkey.ws>
+Sender: kvm-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: Vincent Hanquez <tab@snarc.org>, linux-fbdev-devel@lists.sourceforge.net, Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org, qemu-devel@nongnu.org
 
-2009/11/4 Eric Miao <eric.y.miao@gmail.com>:
-> On Tue, Nov 3, 2009 at 2:45 PM, Jun Nie <niej0001@gmail.com> wrote:
->> pxa: fix pxa168 lcd controller vsync/hsync timing error
+On 11/04/2009 06:35 PM, Anthony Liguori wrote:
+> Vincent Hanquez wrote:
+>> On Tue, Nov 03, 2009 at 11:38:18AM +0200, Avi Kivity wrote:
+>>> On 11/03/2009 01:25 PM, Vincent Hanquez wrote:
+>>>> not sure if i'm missing the point here, but couldn't it be 
+>>>> hypothetically
+>>>> extended to stuff 3d (or video&  more 2d accel ?) commands too ? I 
+>>>> can't
+>>>> imagine the cirrus or stdvga driver be able to do that ever ;)
+>>> cirrus has pretty good 2d acceleration.  3D is a mega-project though.
 >>
->> Signed-off-by: Jun Nie <njun@marvell.com>
->> ---
->> =A0drivers/video/pxa168fb.c | =A0 =A04 ++--
->> =A0include/video/pxa168fb.h | =A0 =A02 --
->> =A02 files changed, 2 insertions(+), 4 deletions(-)
+>> absolutely huge indeed, but still alexander's code is pretty much the
+>> only way, to start such a project. with maybe added benefits on more
+>> and easier 2d acceleration.
 >>
->> diff --git a/drivers/video/pxa168fb.c b/drivers/video/pxa168fb.c
->> index 2ba1444..bdd524c 100644
->> --- a/drivers/video/pxa168fb.c
->> +++ b/drivers/video/pxa168fb.c
->> @@ -459,8 +459,8 @@ static void set_dumb_panel_control(struct fb_info *i=
-nfo)
->> =A0 =A0 =A0 =A0x |=3D mi->invert_composite_blank ? 0x00000040 : 0;
->> =A0 =A0 =A0 =A0x |=3D (info->var.sync & FB_SYNC_COMP_HIGH_ACT) ? 0x00000=
-020 : 0;
->> =A0 =A0 =A0 =A0x |=3D mi->invert_pix_val_ena ? 0x00000010 : 0;
->> - =A0 =A0 =A0 x |=3D (info->var.sync & FB_SYNC_VERT_HIGH_ACT) ? 0 : 0x00=
-000008;
->> - =A0 =A0 =A0 x |=3D (info->var.sync & FB_SYNC_HOR_HIGH_ACT) ? 0 : 0x000=
-00004;
->> + =A0 =A0 =A0 x |=3D (info->var.sync & FB_SYNC_VERT_HIGH_ACT) ? 0x000000=
-08 : 0;
->> + =A0 =A0 =A0 x |=3D (info->var.sync & FB_SYNC_HOR_HIGH_ACT) ? 0x0000000=
-4 : 0;
+>> or otherwise wait for SR-IOV graphics cards (or similar tech)...
 >
-> Hi Jun,
+> I think the real question is do we paravirtualize a VGA device or a 
+> framebuffer.
 >
-> Could you please help double check this? My understanding is
-> FB_SYNC_VERT_HIGH_ACT means it's a positive pulse covering all the
-> valid HSYNCs, and a rising edge of VSYNC means a start of the frame.
+> Obviously, the advantage of doing a framebuffer is that it works for 
+> s390.
 >
-> However, CFG_INV_VSYNC is '1' means the opposite.
+> A VGA device has better backwards compatibility on PCs although it's 
+> obviously more complex.  In an ideal world, we could expose the virtio 
+> framebuffer device as part of PCI device that was also VGA capable 
+> (virtio-pci-vga transport?).
+>
+> But then there's QXL on the horizon which complicates matters further.
 >
 
-My understanding is that high active means high level trigger new
-frame/line. Below page support my point if it is not wrong.
+qxl is vga compatible.
 
-http://www.arcadecollecting.com/info/Sync_fixing.txt
+> I'd say that virtio-fb should just focus on the s390 use case for 
+> now.  Let things evolve as needed.
+>
 
-Jun
+Sure.
+
+-- 
+error compiling committee.c: too many arguments to function
+

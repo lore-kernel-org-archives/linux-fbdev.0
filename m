@@ -1,66 +1,38 @@
-From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Subject: [PATCH v3] OMAP: DMA: Fix omapfb/lcdc on OMAP1510 broken when PM set
-Date: Thu, 5 Nov 2009 19:51:28 +0100
-Message-ID: <200911051951.32020.jkrzyszt@tis.icnet.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [patch] added brightness feature to lcd class.
+Date: Thu, 5 Nov 2009 20:27:25 +0100
+Message-ID: <20091105192725.GE1392@ucw.cz>
+References: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-omap-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758688AbZKET1a@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-omap-owner@vger.kernel.org
+In-Reply-To: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-omap@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+To: InKi Dae <daeinki@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Kyungmin Park <kmpark@infradead.org>
 
-With CONFIG_PM=y, the omapfb/lcdc device on Amstrad Delta, after initially
-starting correctly, breaks with the following error messages:
-
-omapfb omapfb: resetting (status 0xffffff96,reset count 1)
-...
-omapfb omapfb: resetting (status 0xffffff96,reset count 100)
-omapfb omapfb: too many reset attempts, giving up.
-
-Looking closer at this I have found that it had been broken almost 2 years ago
-with commit 2418996e3b100114edb2ae110d5d4acb928909d2, PM fixes for OMAP1.
-
-The definite reason for broken omapfb/lcdc behavoiur in PM mode
-appeared to be ARM_IDLECT1:IDLIF_ARM (bit 6) put into idle regardless of LCD
-DMA possibly running. The bit were set based on return value of the
-omap_dma_running() function that did not check for dedicated LCD DMA
-channel status. The patch below fixes this.
-
-Created against linux-2.6.32-rc6
-
-Tested on Amstrad Delta
-
-Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-
----
-Tuesday 03 November 2009 21:10:48 Tony Lindgren wrote:
-> * Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> [091103 12:05]:
-> > Sorry, I've not checked for new mail before posting this one and missed
-> > your acceptance for my idea of fixing all omap1510, not only ams_delta.
-> > If there are no more comments, I'll submit v3 with cpu_is_omap1510()
-> > replacing machine_is_ams_delta().
+On Mon 2009-11-02 17:50:02, InKi Dae wrote:
+> This patch adds brightness feature to lcd class.
+> (kernel/driver/video/backlight/lcd.c)
+> 
+> In the past, most of the lcd panels for embedded system was TFT-LCD
+> Panel needing backlight device.
+> But now AMOLED LCD Panel appeared so we should consider brightness
+> control for AMOLED Panel.
+> 
+> For the time being, I used backlight fake driver for brightness
+> control of AMOLED LCD Panel.
+> But this way is not good, so I propose to add brightness feature to lcd class.
 >
-> Sounds good to me.
->
-> Tony
 
---- linux-2.6.32-rc6/arch/arm/plat-omap/dma.c.orig	2009-11-03 20:37:49.000000000 +0100
-+++ linux-2.6.32-rc6/arch/arm/plat-omap/dma.c	2009-11-05 19:30:39.000000000 +0100
-@@ -1108,6 +1108,14 @@ int omap_dma_running(void)
- {
- 	int lch;
- 
-+	/*
-+	 * On OMAP1510, internal LCD controller will start the transfer
-+	 * when it gets enabled, so assume DMA running if LCD enabled.
-+	 */
-+	if (cpu_is_omap1510())
-+		if (omap_readw(0xfffec000 + 0x00) & (1 << 0))
-+			return 1;
-+
- 	/* Check if LCD DMA is running */
- 	if (cpu_is_omap16xx())
- 		if (omap_readw(OMAP1610_DMA_LCD_CCR) & OMAP_DMA_CCR_EN)
+Why is it 'not good'? Using backlight driver seems like way to go to
+me.
+
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html

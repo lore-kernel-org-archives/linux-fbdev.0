@@ -1,38 +1,43 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch] added brightness feature to lcd class.
-Date: Thu, 5 Nov 2009 20:27:25 +0100
-Message-ID: <20091105192725.GE1392@ucw.cz>
-References: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com>
+From: Jamie Lokier <jamie@shareable.org>
+Subject: Re: [Qemu-devel] Re: [PATCH] Add VirtIO Frame Buffer Support
+Date: Fri, 6 Nov 2009 02:39:15 +0000
+Message-ID: <20091106023915.GO21630@shareable.org>
+References: <1257199759-2941-1-git-send-email-agraf@suse.de> <4AEFCBED.50804@redhat.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1758688AbZKET1a@vger.kernel.org>
+Return-path: <kvm-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <4AEFCBED.50804@redhat.com>
+Sender: kvm-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: InKi Dae <daeinki@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Kyungmin Park <kmpark@infradead.org>
+To: Avi Kivity <avi@redhat.com>
+Cc: Alexander Graf <agraf@suse.de>, linux-fbdev-devel@lists.sourceforge.net, qemu-devel@nongnu.org, kvm@vger.kernel.org
 
-On Mon 2009-11-02 17:50:02, InKi Dae wrote:
-> This patch adds brightness feature to lcd class.
-> (kernel/driver/video/backlight/lcd.c)
+Avi Kivity wrote:
+> On 11/03/2009 12:09 AM, Alexander Graf wrote:
+> >When we want to create a full VirtIO based machine, we're still missing
+> >graphics output. Fortunately, Linux provides us with most of the frameworks
+> >to render text and everything, we only need to implement a transport.
+> >
+> >So this is a frame buffer backend written for VirtIO. Using this and my
+> >patch to qemu, you can use paravirtualized graphics.
 > 
-> In the past, most of the lcd panels for embedded system was TFT-LCD
-> Panel needing backlight device.
-> But now AMOLED LCD Panel appeared so we should consider brightness
-> control for AMOLED Panel.
-> 
-> For the time being, I used backlight fake driver for brightness
-> control of AMOLED LCD Panel.
-> But this way is not good, so I propose to add brightness feature to lcd class.
->
+> What does this do that cirrus and/or vmware-vga don't?
 
-Why is it 'not good'? Using backlight driver seems like way to go to
-me.
+*This* virtio-fb doesn't, but one feature I think a lot of users
+(including me) would like is:
 
-									Pavel
+   Option to resize the guest desktop when the host desktop / host
+   window / VNC client resizes.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+   Tell the guest to provide multiple desktops when the host has
+   multiple desktops, so things like twin monitors work nicely with
+   guests.
+
+   Relay EDID/Xrandr information and updates from host to guest, and
+   generally handle hotplugging host monitors nicely.
+
+Are there any real hardware standards worth emulating which do that?
+
+-- Jamie

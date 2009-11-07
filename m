@@ -1,54 +1,70 @@
-From: Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [Qemu-devel] Re: [PATCH] Add VirtIO Frame Buffer Support
-Date: Thu, 05 Nov 2009 21:05:11 -0600
-Message-ID: <4AF39267.9060104@codemonkey.ws>
-References: <1257199759-2941-1-git-send-email-agraf@suse.de> <4AEFCBED.50804@redhat.com> <20091106023915.GO21630@shareable.org>
+From: InKi Dae <daeinki@gmail.com>
+Subject: Re: [patch] added brightness feature to lcd class.
+Date: Sat, 7 Nov 2009 21:43:50 +0900
+Message-ID: <90b950fc0911070443s57d2ec5ehcb5c9cf9edcf8d8c@mail.gmail.com>
+References: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com>
+	 <20091105192725.GE1392@ucw.cz>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <kvm-owner@vger.kernel.org>
-In-Reply-To: <20091106023915.GO21630@shareable.org>
-Sender: kvm-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751887AbZKGMnt@vger.kernel.org>
+In-Reply-To: <20091105192725.GE1392@ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Avi Kivity <avi@redhat.com>, Alexander Graf <agraf@suse.de>, linux-fbdev-devel@lists.sourceforge.net, qemu-devel@nongnu.org, kvm@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Kyungmin Park <kmpark@infradead.org>
 
-Jamie Lokier wrote:
-> Avi Kivity wrote:
->   
->> On 11/03/2009 12:09 AM, Alexander Graf wrote:
->>     
->>> When we want to create a full VirtIO based machine, we're still missing
->>> graphics output. Fortunately, Linux provides us with most of the frameworks
->>> to render text and everything, we only need to implement a transport.
->>>
->>> So this is a frame buffer backend written for VirtIO. Using this and my
->>> patch to qemu, you can use paravirtualized graphics.
->>>       
->> What does this do that cirrus and/or vmware-vga don't?
->>     
->
-> *This* virtio-fb doesn't, but one feature I think a lot of users
-> (including me) would like is:
->
->    Option to resize the guest desktop when the host desktop / host
->    window / VNC client resizes.
->
->    Tell the guest to provide multiple desktops when the host has
->    multiple desktops, so things like twin monitors work nicely with
->    guests.
->
->    Relay EDID/Xrandr information and updates from host to guest, and
->    generally handle hotplugging host monitors nicely.
->
-> Are there any real hardware standards worth emulating which do that?
->   
+Thank you for your comments.
 
-vmware-vga.
+using backlight is good way in case of TFT-LCD Panel.
+because TFT-LCD Panel needs backlight device to light up.
 
-If you have a little tool in a guest that uses the X extension that 
-vmware vga implements, it actually works in qemu too.
+but AMOLED LCD Panel doesn't need backlight device because lighting up =
+itself.
+if you try to control brightness of AMOLED LCD Panel and using backligh=
+t class
+then you should write fake backlight driver that it has no real device
+for controlling
+and would control brightness through that driver.
 
-Regards,
+with this reason, I think that it's better to control brightness
+through lcd class in case of AMOLED LCD panel.
+If lcd class has birghtness feature then AMOLED LCD Panel driver would
+become more simple and effective.
 
-Anthony Liguoru
+I think it is more generic way that only real device should have
+device driver so I proposed this.
+
+Thank you.
+
+Best Regards,
+InKi Dae.
+
+2009/11/6 Pavel Machek <pavel@ucw.cz>:
+> On Mon 2009-11-02 17:50:02, InKi Dae wrote:
+>> This patch adds brightness feature to lcd class.
+>> (kernel/driver/video/backlight/lcd.c)
+>>
+>> In the past, most of the lcd panels for embedded system was TFT-LCD
+>> Panel needing backlight device.
+>> But now AMOLED LCD Panel appeared so we should consider brightness
+>> control for AMOLED Panel.
+>>
+>> For the time being, I used backlight fake driver for brightness
+>> control of AMOLED LCD Panel.
+>> But this way is not good, so I propose to add brightness feature to =
+lcd class.
+>>
+>
+> Why is it 'not good'? Using backlight driver seems like way to go to
+> me.
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+Pavel
+>
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/hors=
+es/blog.html
+>

@@ -1,70 +1,45 @@
-From: InKi Dae <daeinki@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [patch] added brightness feature to lcd class.
-Date: Sat, 7 Nov 2009 21:43:50 +0900
-Message-ID: <90b950fc0911070443s57d2ec5ehcb5c9cf9edcf8d8c@mail.gmail.com>
-References: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com>
-	 <20091105192725.GE1392@ucw.cz>
+Date: Sat, 7 Nov 2009 17:48:30 +0100
+Message-ID: <20091107164830.GA1586@ucw.cz>
+References: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com> <20091105192725.GE1392@ucw.cz> <90b950fc0911070443s57d2ec5ehcb5c9cf9edcf8d8c@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751887AbZKGMnt@vger.kernel.org>
-In-Reply-To: <20091105192725.GE1392@ucw.cz>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752554AbZKGQsk@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <90b950fc0911070443s57d2ec5ehcb5c9cf9edcf8d8c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: InKi Dae <daeinki@gmail.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Kyungmin Park <kmpark@infradead.org>
 
-Thank you for your comments.
+On Sat 2009-11-07 21:43:50, InKi Dae wrote:
+> Thank you for your comments.
+> 
+> using backlight is good way in case of TFT-LCD Panel.
+> because TFT-LCD Panel needs backlight device to light up.
+> 
+> but AMOLED LCD Panel doesn't need backlight device because lighting up itself.
 
-using backlight is good way in case of TFT-LCD Panel.
-because TFT-LCD Panel needs backlight device to light up.
+I know. So what?
 
-but AMOLED LCD Panel doesn't need backlight device because lighting up =
-itself.
-if you try to control brightness of AMOLED LCD Panel and using backligh=
-t class
-then you should write fake backlight driver that it has no real device
-for controlling
-and would control brightness through that driver.
+User wants to set brightness. Why should userspace know/care if it is
+TFT or AMOLED?
 
-with this reason, I think that it's better to control brightness
-through lcd class in case of AMOLED LCD panel.
-If lcd class has birghtness feature then AMOLED LCD Panel driver would
-become more simple and effective.
+I have this script:
 
-I think it is more generic way that only real device should have
-device driver so I proposed this.
+#!/bin/bash
+echo $1 > /sys/class/backlight/*/brightness 
 
-Thank you.
+why should I have to rewrite it just because you decided amoled is
+special?
 
-Best Regards,
-InKi Dae.
+Kernel is expected to provide hw abstraction...
 
-2009/11/6 Pavel Machek <pavel@ucw.cz>:
-> On Mon 2009-11-02 17:50:02, InKi Dae wrote:
->> This patch adds brightness feature to lcd class.
->> (kernel/driver/video/backlight/lcd.c)
->>
->> In the past, most of the lcd panels for embedded system was TFT-LCD
->> Panel needing backlight device.
->> But now AMOLED LCD Panel appeared so we should consider brightness
->> control for AMOLED Panel.
->>
->> For the time being, I used backlight fake driver for brightness
->> control of AMOLED LCD Panel.
->> But this way is not good, so I propose to add brightness feature to =
-lcd class.
->>
->
-> Why is it 'not good'? Using backlight driver seems like way to go to
-> me.
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
-Pavel
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/hors=
-es/blog.html
->
+									Pavel
+
+									
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html

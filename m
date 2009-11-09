@@ -1,77 +1,36 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH v3] OMAP: DMA: Fix omapfb/lcdc on OMAP1510 broken when
- PM set
-Date: Mon, 9 Nov 2009 13:14:24 -0800
-Message-ID: <20091109211424.GF23952@atomide.com>
-References: <200911051951.32020.jkrzyszt@tis.icnet.pl>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] added brightness feature to lcd class.
+Date: Mon, 9 Nov 2009 15:18:36 -0800
+Message-ID: <20091109151836.4a6b294d.akpm@linux-foundation.org>
+References: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <200911051951.32020.jkrzyszt@tis.icnet.pl>
-Sender: linux-omap-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755159AbZKIXTq@vger.kernel.org>
+In-Reply-To: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Cc: linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: InKi Dae <daeinki@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Kyungmin Park <kmpark@infradead.org>, Richard Purdie <rpurdie@rpsys.net>
 
-* Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> [091105 10:52]:
-> With CONFIG_PM=y, the omapfb/lcdc device on Amstrad Delta, after initially
-> starting correctly, breaks with the following error messages:
-> 
-> omapfb omapfb: resetting (status 0xffffff96,reset count 1)
-> ...
-> omapfb omapfb: resetting (status 0xffffff96,reset count 100)
-> omapfb omapfb: too many reset attempts, giving up.
-> 
-> Looking closer at this I have found that it had been broken almost 2 years ago
-> with commit 2418996e3b100114edb2ae110d5d4acb928909d2, PM fixes for OMAP1.
-> 
-> The definite reason for broken omapfb/lcdc behavoiur in PM mode
-> appeared to be ARM_IDLECT1:IDLIF_ARM (bit 6) put into idle regardless of LCD
-> DMA possibly running. The bit were set based on return value of the
-> omap_dma_running() function that did not check for dedicated LCD DMA
-> channel status. The patch below fixes this.
-> 
-> Created against linux-2.6.32-rc6
-> 
-> Tested on Amstrad Delta
-> 
-> Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-> 
-> ---
-> Tuesday 03 November 2009 21:10:48 Tony Lindgren wrote:
-> > * Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> [091103 12:05]:
-> > > Sorry, I've not checked for new mail before posting this one and missed
-> > > your acceptance for my idea of fixing all omap1510, not only ams_delta.
-> > > If there are no more comments, I'll submit v3 with cpu_is_omap1510()
-> > > replacing machine_is_ams_delta().
-> >
-> > Sounds good to me.
-> >
-> > Tony
-> 
-> --- linux-2.6.32-rc6/arch/arm/plat-omap/dma.c.orig	2009-11-03 20:37:49.000000000 +0100
-> +++ linux-2.6.32-rc6/arch/arm/plat-omap/dma.c	2009-11-05 19:30:39.000000000 +0100
-> @@ -1108,6 +1108,14 @@ int omap_dma_running(void)
->  {
->  	int lch;
->  
-> +	/*
-> +	 * On OMAP1510, internal LCD controller will start the transfer
-> +	 * when it gets enabled, so assume DMA running if LCD enabled.
-> +	 */
-> +	if (cpu_is_omap1510())
-> +		if (omap_readw(0xfffec000 + 0x00) & (1 << 0))
-> +			return 1;
-> +
->  	/* Check if LCD DMA is running */
->  	if (cpu_is_omap16xx())
->  		if (omap_readw(OMAP1610_DMA_LCD_CCR) & OMAP_DMA_CCR_EN)
+On Mon, 2 Nov 2009 17:50:02 +0900
+InKi Dae <daeinki@gmail.com> wrote:
 
-Can you please use some define rather than the 0xfffec000 register
-above?
+> This patch adds brightness feature to lcd class.
+> (kernel/driver/video/backlight/lcd.c)
+> 
+> In the past, most of the lcd panels for embedded system was TFT-LCD
+> Panel needing backlight device.
+> But now AMOLED LCD Panel appeared so we should consider brightness
+> control for AMOLED Panel.
+> 
+> For the time being, I used backlight fake driver for brightness
+> control of AMOLED LCD Panel.
+> But this way is not good, so I propose to add brightness feature to lcd class.
+> 
+> For this, I attached patch file and if my proposal is approved
+> Then I will send s6e63m0 and tl2796 AMOLED lcd panel driver based on
+> lcd class modified soon.
 
-Regards,
-
-Tony
+Please send the s6e63m0 and tl2796 patches anyway.  That way we have
+some examples of how this new capability is used by drivers.

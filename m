@@ -1,29 +1,32 @@
-From: Eric Miao <eric.y.miao@gmail.com>
-Subject: Re: [PATCH 3/6] pxa: fix pxa168 lcd controller
-	vsync/hsync timing error
-Date: Mon, 9 Nov 2009 11:39:30 +0800
-Message-ID: <f17812d70911081939nf30b893vc8a9b3cf821fc78@mail.gmail.com>
-References: <7c34ac520911022245x7f002a7at846a835dfded550c@mail.gmail.com> 
-	<f17812d70911032320k379dc7laab1979a3b452969@mail.gmail.com> 
-	<7c34ac520911041815k6555e209r4039ae9f97c9ebca@mail.gmail.com>
+From: Anatolij Gustschin <agust@denx.de>
+Subject: [PATCH] mx3fb: Fix display brightness
+	initialization
+Date: Mon,  9 Nov 2009 12:10:07 +0100
+Message-ID: <1257765007-32040-1-git-send-email-agust@denx.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
 	helo=mx.sourceforge.net)
 	by h25xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <eric.y.miao@gmail.com>) id 1N7L6n-0006Dr-1g
+	(envelope-from <agust@denx.de>) id 1N7S8c-0000vW-Qe
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Nov 2009 03:40:01 +0000
-Received: from qw-out-1920.google.com ([74.125.92.145])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1N7L6h-0002eN-QM for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Nov 2009 03:40:00 +0000
-Received: by qw-out-1920.google.com with SMTP id 5so484225qwc.4
+	Mon, 09 Nov 2009 11:10:22 +0000
+Received: from mail-out.m-online.net ([212.18.0.10])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1N7S8U-0007eG-GW for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 09 Nov 2009 11:10:22 +0000
+Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id AA9691C00049
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 08 Nov 2009 19:39:50 -0800 (PST)
-In-Reply-To: <7c34ac520911041815k6555e209r4039ae9f97c9ebca@mail.gmail.com>
+	Mon,  9 Nov 2009 12:10:07 +0100 (CET)
+Received: from localhost (p57931F06.dip.t-dialin.net [87.147.31.6])
+	(using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+	(No client certificate requested)
+	by mail.mnet-online.de (Postfix) with ESMTP id 49B5890258
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon,  9 Nov 2009 12:10:07 +0100 (CET)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,26 +36,44 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Jun Nie <niej0001@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org
+To: linux-fbdev-devel@lists.sourceforge.net
 
->> Could you please help double check this? My understanding is
->> FB_SYNC_VERT_HIGH_ACT means it's a positive pulse covering all the
->> valid HSYNCs, and a rising edge of VSYNC means a start of the frame.
->>
->> However, CFG_INV_VSYNC is '1' means the opposite.
->>
->
-> My understanding is that high active means high level trigger new
-> frame/line. Below page support my point if it is not wrong.
->
-> http://www.arcadecollecting.com/info/Sync_fixing.txt
->
+__blank() uses mx3fb->backlight_level to set the
+display brightness. __blank() is also called from
+init_fb_chan() before mx3fb->backlight_level was
+initialized. This causes setting the display brightness
+to zero at probe time.
 
-Tried to find the specific diagram in the spec on what CFG_INV_* means
-but failed, can you help verified this with an oscilloscope and let know
-the result? This is a fix then, and I'd like it to get into .32, sorry for late
-reply.
+This patch moves the initialization of mx3fb->backlight_level
+before init_fb_chan() call.
+
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+---
+ drivers/video/mx3fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+index 054ef29..86312dd 100644
+--- a/drivers/video/mx3fb.c
++++ b/drivers/video/mx3fb.c
+@@ -1486,12 +1486,12 @@ static int mx3fb_probe(struct platform_device *pdev)
+ 		goto ersdc0;
+ 	}
+ 
++	mx3fb->backlight_level = 255;
++
+ 	ret = init_fb_chan(mx3fb, to_idmac_chan(chan));
+ 	if (ret < 0)
+ 		goto eisdc0;
+ 
+-	mx3fb->backlight_level = 255;
+-
+ 	return 0;
+ 
+ eisdc0:
+-- 
+1.5.6.3
+
 
 ------------------------------------------------------------------------------
 Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 

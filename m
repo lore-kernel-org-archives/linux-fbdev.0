@@ -1,231 +1,180 @@
-From: Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH] mx3fb: adds LCD backlight driver
-Date: Mon,  9 Nov 2009 12:13:16 +0100
-Message-ID: <1257765196-32124-1-git-send-email-agust@denx.de>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Subject: [PATCH 00/19] OMAP: DSS2 v5 intro
+Date: Mon,  9 Nov 2009 13:45:07 +0200
+Message-ID: <1257767126-12059-1-git-send-email-tomi.valkeinen@nokia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <agust@denx.de>) id 1N7SBf-0003Rb-PZ
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Nov 2009 11:13:31 +0000
-Received: from mail-out.m-online.net ([212.18.0.9])
-	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1N7SBY-0002qX-3e for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 09 Nov 2009 11:13:31 +0000
-Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id 1C76A1C15524
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon,  9 Nov 2009 12:13:17 +0100 (CET)
-Received: from localhost (p57931F06.dip.t-dialin.net [87.147.31.6])
-	(using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
-	(No client certificate requested)
-	by mail.mnet-online.de (Postfix) with ESMTP id B2D8B90275
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon,  9 Nov 2009 12:13:16 +0100 (CET)
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754769AbZKILp5@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="utf-8"
+To: linux-kernel@vger.kernel.org
+Cc: linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-To activate this driver select CONFIG_BACKLIGHT_LCD_SUPPORT
-in the kernel configuration. Backlight control interface
-will be available under /sys/class/backlight/mx3fb/.
+This patch set implement new display subsystem driver (DSS2) and omapfb=
+ driver
+for OMAP2/3. The patches have been reviewed on linux-omap and linux-fbd=
+ev-devel
+mailing lists. The patches can also be found from master branch in
+http://gitorious.org/linux-omap-dss2/linux. The branch is based on the
+linux-next tree.
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
+The patches include DSS documentation patch that includes more instruct=
+ions for
+module parameters, sysfs files etc.
+
+The patches enable DSS2 for OMAP3430 SDP board and support for other bo=
+ards can
+be sent after the DSS2 has been merged. DSS2 is used in various boards,=
+ for
+example Nokia N900, Beagle Board and Overo.
+
+I don't currently have any OMAP2 board to test DSS2, but it has worked =
+on OMAP2
+and the possible fixes needed should be minimal.
+
+OMAP1 is not supported, and so the old DSS needs to be used on OMAP1 bo=
+ards. My
+longer term plan is to move all OMAP2 stuff from the old DSS to the new=
+ one,
+and then shrink the old DSS to support OMAP1 only.
+
+DSS2 is partly based on the old omapfb driver by Imre Deak, and Imre ha=
+s also
+contributed to DSS2 quite a bit. Ville Syrj=C3=A4l=C3=A4 has been contr=
+ibuting to scaling
+and tv-out work, and Topi Pohjolainen to VRFB. Also some contributions =
+have
+been made by Hardik Shah, Vaibhav Hiremath, and perhaps some others tha=
+t I have
+forgotten =3D).
+
 ---
- drivers/video/mx3fb.c |  100 ++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 99 insertions(+), 1 deletions(-)
+Changes in v5
+- Improvements in the DSI code
+- Improvements and fixes in the VRFB code
+- Many other minor fixes
 
-diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-index 86312dd..f8f9338 100644
---- a/drivers/video/mx3fb.c
-+++ b/drivers/video/mx3fb.c
-@@ -30,6 +30,7 @@
- #include <mach/hardware.h>
- #include <mach/ipu.h>
- #include <mach/mx3fb.h>
-+#include <linux/backlight.h>
- 
- #include <asm/io.h>
- #include <asm/uaccess.h>
-@@ -60,6 +61,12 @@
- #define SDC_COM_BG_EN		0x00000200UL
- #define SDC_COM_SHARP		0x00001000UL
- 
-+#define SDC_PWM_SRC_HSYNC_CLK	0x00000000UL
-+#define SDC_PWM_SRC_PXL_CLK	0x02000000UL
-+#define SDC_PWM_SRC_HSP_CLK	0x04000000UL
-+#define SDC_PWM_CC_EN		0x01000000UL
-+#define SDC_PWM_PWM_MSK		0x00FF0000UL
-+
- #define SDC_V_SYNC_WIDTH_L	0x00000001UL
- 
- /* Display Interface registers */
-@@ -238,6 +245,7 @@ static const struct fb_videomode mx3fb_modedb[] = {
- struct mx3fb_data {
- 	struct fb_info		*fbi;
- 	int			backlight_level;
-+	int			pwm_clk_src;	/* clock source for PWM */
- 	void __iomem		*reg_base;
- 	spinlock_t		lock;
- 	struct device		*dev;
-@@ -268,6 +276,7 @@ struct mx3fb_info {
- 	struct scatterlist		sg[2];
- 
- 	u32				sync;	/* preserve var->sync flags */
-+	struct backlight_device		*backlight;
- };
- 
- static void mx3fb_dma_done(void *);
-@@ -647,7 +656,9 @@ static int sdc_set_global_alpha(struct mx3fb_data *mx3fb, bool enable, uint8_t a
- static void sdc_set_brightness(struct mx3fb_data *mx3fb, uint8_t value)
- {
- 	/* This might be board-specific */
--	mx3fb_write_reg(mx3fb, 0x03000000UL | value << 16, SDC_PWM_CTRL);
-+	u32 reg = mx3fb->pwm_clk_src | SDC_PWM_CC_EN | value << 16;
-+
-+	mx3fb_write_reg(mx3fb, reg, SDC_PWM_CTRL);
- 	return;
- }
- 
-@@ -1207,6 +1218,88 @@ static int mx3fb_resume(struct platform_device *pdev)
- #define mx3fb_resume    NULL
- #endif
- 
-+#ifdef CONFIG_BACKLIGHT_LCD_SUPPORT
-+/*
-+ * Backlight device
-+ */
-+static int mx3fb_bl_update_status(struct backlight_device *bl)
-+{
-+	struct mx3fb_info *fbi = bl_get_data(bl);
-+	struct mx3fb_data *mx3fb = fbi->mx3fb;
-+	int brightness;
-+
-+	if (bl->props.power != FB_BLANK_UNBLANK ||
-+	    bl->props.fb_blank != FB_BLANK_UNBLANK)
-+		brightness = 0;
-+	else
-+		brightness = bl->props.brightness;
-+
-+	mx3fb->backlight_level = brightness;
-+	sdc_set_brightness(mx3fb, mx3fb->backlight_level);
-+	return 0;
-+}
-+
-+static int mx3fb_bl_get_brightness(struct backlight_device *bl)
-+{
-+	struct mx3fb_info *fbi = bl_get_data(bl);
-+	struct mx3fb_data *mx3fb = fbi->mx3fb;
-+	uint32_t reg;
-+
-+	reg = mx3fb_read_reg(mx3fb, SDC_PWM_CTRL);
-+
-+	return (reg & SDC_PWM_PWM_MSK) >> 16;
-+}
-+
-+static struct backlight_ops mx3fb_bl_ops = {
-+	.update_status = mx3fb_bl_update_status,
-+	.get_brightness = mx3fb_bl_get_brightness,
-+};
-+
-+static void mx3fb_init_backlight(struct mx3fb_info *fbi)
-+{
-+	struct backlight_device	*bl;
-+	struct mx3fb_data *mx3fb = fbi->mx3fb;
-+
-+	/*
-+	 * COM57H5M10XRC supports max. 300Hz for PDM, so
-+	 * we use HSYNC as clock source.
-+	 */
-+	if (fb_mode && !strncmp(fb_mode, "COM57H5M10XRC", 13))
-+		mx3fb->pwm_clk_src = SDC_PWM_SRC_HSYNC_CLK;
-+
-+	if (fbi->backlight)
-+		return;
-+
-+	bl = backlight_device_register("mx3fb", mx3fb->dev,
-+				       fbi, &mx3fb_bl_ops);
-+	if (IS_ERR(bl)) {
-+		dev_err(mx3fb->dev, "register backlight failed: %ld\n",
-+			PTR_ERR(bl));
-+		return;
-+	}
-+	fbi->backlight = bl;
-+
-+	bl->props.power = FB_BLANK_UNBLANK;
-+	bl->props.fb_blank = FB_BLANK_UNBLANK;
-+	bl->props.max_brightness = 0xff;
-+	bl->props.brightness = 0xff;
-+}
-+
-+static void mx3fb_exit_backlight(struct mx3fb_info *fbi)
-+{
-+	if (fbi->backlight)
-+		backlight_device_unregister(fbi->backlight);
-+}
-+#else
-+static inline void mx3fb_init_backlight(struct mx3fb_info *fbi)
-+{
-+}
-+
-+static inline void mx3fb_exit_backlight(struct mx3fb_info *fbi)
-+{
-+}
-+#endif
-+
- /*
-  * Main framebuffer functions
-  */
-@@ -1390,6 +1483,8 @@ static int init_fb_chan(struct mx3fb_data *mx3fb, struct idmac_channel *ichan)
- 	if (ret < 0)
- 		goto esetpar;
- 
-+	mx3fb_init_backlight(mx3fbi);
-+
- 	__blank(FB_BLANK_UNBLANK, fbi);
- 
- 	dev_info(dev, "registered, using mode %s\n", fb_mode);
-@@ -1401,6 +1496,7 @@ static int init_fb_chan(struct mx3fb_data *mx3fb, struct idmac_channel *ichan)
- 	return 0;
- 
- erfb:
-+	mx3fb_exit_backlight(mx3fbi);
- esetpar:
- emode:
- 	fb_dealloc_cmap(&fbi->cmap);
-@@ -1487,6 +1583,7 @@ static int mx3fb_probe(struct platform_device *pdev)
- 	}
- 
- 	mx3fb->backlight_level = 255;
-+	mx3fb->pwm_clk_src = SDC_PWM_SRC_PXL_CLK;
- 
- 	ret = init_fb_chan(mx3fb, to_idmac_chan(chan));
- 	if (ret < 0)
-@@ -1513,6 +1610,7 @@ static int mx3fb_remove(struct platform_device *dev)
- 	struct dma_chan *chan;
- 
- 	chan = &mx3_fbi->idmac_channel->dma_chan;
-+	mx3fb_exit_backlight(mx3_fbi);
- 	release_fbi(fbi);
- 
- 	dma_release_channel(chan);
--- 
-1.5.6.3
+Changes in v4:
+- Rebased on latest linux tree
+- Add maintainers
 
+Changes in v3:
+- Rebased on mainstream linux
+- Remove Beagle and Overo board changes
 
-------------------------------------------------------------------------------
-Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
-trial. Simplify your report design, integration and deployment - and focus on 
-what you do best, core application coding. Discover what's new with
-Crystal Reports now.  http://p.sf.net/sfu/bobj-july
+Changes in v2:
+
+- Split the commits more to make them smaller
+- Print error if fclk is too low for scaling
+- Indent SDP, Beagle, Overo board files
+- DSI: return -EIO instead of -1
+- VRFB: Move to drivers/video/omap2/
+- VRAM: Move to drivers/video/omap2/
+- VRFB: use omap2_sms_write_*() functions instead of omap_writel
+- SDI: Remove custom pinmuxing. Will be added later properly.
+- VENC: indentation changes
+- Add Taal DSI panel driver
+
+---
+
+[PATCH 01/19] OMAP2: Add funcs for writing SMS_ROT_* registers
+[PATCH 02/19] OMAP: OMAPFB: split omapfb.h
+[PATCH 03/19] OMAP: OMAPFB: add omapdss device
+[PATCH 04/19] OMAP: Add VRAM manager
+[PATCH 05/19] OMAP: Add support for VRFB rotation engine
+[PATCH 06/19] OMAP: DSS2: Documentation for DSS2
+[PATCH 07/19] OMAP: DSS2: Display Subsystem Driver core
+[PATCH 08/19] OMAP: DSS2: Add more core files
+[PATCH 09/19] OMAP: DSS2: DISPC
+[PATCH 10/19] OMAP: DSS2: DPI driver
+[PATCH 11/19] OMAP: DSS2: Video encoder driver
+[PATCH 12/19] OMAP: DSS2: RFBI driver
+[PATCH 13/19] OMAP: DSS2: SDI driver
+[PATCH 14/19] OMAP: DSS2: DSI driver
+[PATCH 15/19] OMAP: DSS2: omapfb driver
+[PATCH 16/19] OMAP: DSS2: Add DPI panel drivers
+[PATCH 17/19] OMAP: DSS2: Taal DSI command mode panel driver
+[PATCH 18/19] OMAP: SDP: Enable DSS2 for OMAP3 SDP board
+[PATCH 19/19] MAINTAINERS: Add OMAP2/3 DSS and OMAPFB maintainer
+
+---
+
+ Documentation/arm/OMAP/DSS                         |  317 ++
+ MAINTAINERS                                        |   17 +
+ arch/arm/configs/omap_3430sdp_defconfig            |   32 +-
+ arch/arm/mach-omap1/board-nokia770.c               |    1 +
+ arch/arm/mach-omap2/board-3430sdp.c                |  167 +-
+ arch/arm/mach-omap2/clock24xx.c                    |    8 +-
+ arch/arm/mach-omap2/clock34xx.c                    |   14 +-
+ arch/arm/mach-omap2/io.c                           |    4 +-
+ arch/arm/mach-omap2/sdrc.c                         |   16 +
+ arch/arm/plat-omap/fb.c                            |   41 +-
+ arch/arm/plat-omap/include/plat/display.h          |  575 +++
+ arch/arm/plat-omap/include/plat/omapfb.h           |  398 ---
+ arch/arm/plat-omap/include/plat/sdrc.h             |    9 +-
+ arch/arm/plat-omap/include/plat/vram.h             |   62 +
+ arch/arm/plat-omap/include/plat/vrfb.h             |   50 +
+ arch/arm/plat-omap/sram.c                          |    8 +
+ drivers/video/Kconfig                              |    1 +
+ drivers/video/Makefile                             |    1 +
+ drivers/video/omap/Kconfig                         |    5 +-
+ drivers/video/omap/blizzard.c                      |    2 +-
+ drivers/video/omap/dispc.c                         |   21 +-
+ drivers/video/omap/hwa742.c                        |    2 +-
+ drivers/video/omap/lcd_2430sdp.c                   |    3 +-
+ drivers/video/omap/lcd_ams_delta.c                 |    3 +-
+ drivers/video/omap/lcd_apollon.c                   |    3 +-
+ drivers/video/omap/lcd_h3.c                        |    2 +-
+ drivers/video/omap/lcd_h4.c                        |    2 +-
+ drivers/video/omap/lcd_inn1510.c                   |    2 +-
+ drivers/video/omap/lcd_inn1610.c                   |    2 +-
+ drivers/video/omap/lcd_ldp.c                       |    3 +-
+ drivers/video/omap/lcd_mipid.c                     |    3 +-
+ drivers/video/omap/lcd_omap2evm.c                  |    3 +-
+ drivers/video/omap/lcd_omap3beagle.c               |    4 +-
+ drivers/video/omap/lcd_omap3evm.c                  |    3 +-
+ drivers/video/omap/lcd_osk.c                       |    2 +-
+ drivers/video/omap/lcd_overo.c                     |    3 +-
+ drivers/video/omap/lcd_palmte.c                    |    2 +-
+ drivers/video/omap/lcd_palmtt.c                    |    2 +-
+ drivers/video/omap/lcd_palmz71.c                   |    2 +-
+ drivers/video/omap/lcdc.c                          |    3 +-
+ drivers/video/omap/omapfb.h                        |  227 ++
+ drivers/video/omap/omapfb_main.c                   |    2 +-
+ drivers/video/omap/rfbi.c                          |    3 +-
+ drivers/video/omap/sossi.c                         |    2 +-
+ drivers/video/omap2/Kconfig                        |    9 +
+ drivers/video/omap2/Makefile                       |    6 +
+ drivers/video/omap2/displays/Kconfig               |   28 +
+ drivers/video/omap2/displays/Makefile              |    5 +
+ drivers/video/omap2/displays/panel-generic.c       |  104 +
+ .../omap2/displays/panel-samsung-lte430wq-f0c.c    |  113 +
+ .../video/omap2/displays/panel-sharp-ls037v7dw01.c |  153 +
+ drivers/video/omap2/displays/panel-taal.c          | 1003 ++++++
+ drivers/video/omap2/dss/Kconfig                    |   89 +
+ drivers/video/omap2/dss/Makefile                   |    6 +
+ drivers/video/omap2/dss/core.c                     |  919 +++++
+ drivers/video/omap2/dss/dispc.c                    | 3087 ++++++++++++=
+++++
+ drivers/video/omap2/dss/display.c                  |  671 ++++
+ drivers/video/omap2/dss/dpi.c                      |  399 +++
+ drivers/video/omap2/dss/dsi.c                      | 3708 ++++++++++++=
+++++++++
+ drivers/video/omap2/dss/dss.c                      |  596 ++++
+ drivers/video/omap2/dss/dss.h                      |  370 ++
+ drivers/video/omap2/dss/manager.c                  | 1487 ++++++++
+ drivers/video/omap2/dss/overlay.c                  |  680 ++++
+ drivers/video/omap2/dss/rfbi.c                     | 1309 +++++++
+ drivers/video/omap2/dss/sdi.c                      |  277 ++
+ drivers/video/omap2/dss/venc.c                     |  797 +++++
+ drivers/video/omap2/omapfb/Kconfig                 |   37 +
+ drivers/video/omap2/omapfb/Makefile                |    2 +
+ drivers/video/omap2/omapfb/omapfb-ioctl.c          |  755 ++++
+ drivers/video/omap2/omapfb/omapfb-main.c           | 2261 ++++++++++++
+ drivers/video/omap2/omapfb/omapfb-sysfs.c          |  507 +++
+ drivers/video/omap2/omapfb/omapfb.h                |  146 +
+ drivers/video/omap2/vram.c                         |  655 ++++
+ drivers/video/omap2/vrfb.c                         |  315 ++
+ include/linux/omapfb.h                             |  251 ++
+ 75 files changed, 22314 insertions(+), 463 deletions(-)

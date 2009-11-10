@@ -1,61 +1,369 @@
 From: Jun Nie <niej0001@gmail.com>
-Date: Mon, 16 Nov 2009 09:34:32 +0000
-Subject: [PATCH 3/8] pxa: fix offset setting at initialization
-Message-Id: <7c34ac520911160134t3e378b28q45c2a662fabfb8d0@mail.gmail.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="0016e64af4a8985758047879b718"
+Date: Tue, 10 Nov 2009 08:12:36 +0000
+Subject: [PATCH 7/8] pxa: add frame buffer on pxa168 aspenite platform
+Message-Id: <7c34ac520911100012r6ae16be7ua999f8d287659e0e@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <7c34ac520911100012w3b441c50w9dffaa1100bcd5b7@mail.gmail.com>
-In-Reply-To: <7c34ac520911100012w3b441c50w9dffaa1100bcd5b7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
---0016e64af4a8985758047879b718
-Content-Type: text/plain; charset=ISO-8859-1
-
+From 371f70316d6766c781a50818733bb39491a90200 Mon Sep 17 00:00:00 2001
 From: Jun Nie <njun@marvell.com>
-Date: Tue, 10 Nov 2009 09:33:49 +0800
-Subject: [PATCH] pxa: fix offset setting at initialization
+Date: Tue, 10 Nov 2009 15:58:28 +0800
+Subject: [PATCH] pxa: add frame buffer on pxa168 aspenite platform
 
 Signed-off-by: Jun Nie <njun@marvell.com>
 ---
- drivers/video/pxa168fb.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ arch/arm/configs/pxa168_defconfig       |   86 ++++++++++++++++++++-
+ arch/arm/mach-mmp/aspenite.c            |  131 +++++++++++++++++++++++++++++++
+ arch/arm/mach-mmp/include/mach/pxa168.h |    8 ++
+ arch/arm/mach-mmp/pxa168.c              |    3 +
+ 4 files changed, 226 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/pxa168fb.c b/drivers/video/pxa168fb.c
-index e728be3..6283c16 100644
---- a/drivers/video/pxa168fb.c
-+++ b/drivers/video/pxa168fb.c
-@@ -765,6 +765,7 @@ static int __init pxa168fb_probe(struct
-platform_device *pdev)
- 	}
+diff --git a/arch/arm/configs/pxa168_defconfig
+b/arch/arm/configs/pxa168_defconfig
+index db5faea..b736517 100644
+--- a/arch/arm/configs/pxa168_defconfig
++++ b/arch/arm/configs/pxa168_defconfig
+@@ -509,7 +509,49 @@ CONFIG_UNIX98_PTYS=y
+ # CONFIG_R3964 is not set
+ # CONFIG_RAW_DRIVER is not set
+ # CONFIG_TCG_TPM is not set
+-# CONFIG_I2C is not set
++CONFIG_I2C=y
++CONFIG_I2C_BOARDINFO=y
++# CONFIG_I2C_CHARDEV is not set
++CONFIG_I2C_HELPER_AUTO=y
++CONFIG_I2C_ALGOBIT=y
++
++#
++# I2C Hardware Bus support
++#
++
++#
++# I2C system bus drivers (mostly embedded / system-on-chip)
++#
++# CONFIG_I2C_DESIGNWARE is not set
++CONFIG_I2C_GPIO=y
++# CONFIG_I2C_OCORES is not set
++CONFIG_I2C_PXA=y
++# CONFIG_I2C_PXA_SLAVE is not set
++# CONFIG_I2C_SIMTEC is not set
++
++#
++# External I2C/SMBus adapter drivers
++#
++# CONFIG_I2C_PARPORT_LIGHT is not set
++# CONFIG_I2C_TAOS_EVM is not set
++
++#
++# Other I2C/SMBus bus drivers
++#
++# CONFIG_I2C_PCA_PLATFORM is not set
++# CONFIG_I2C_STUB is not set
++
++#
++# Miscellaneous I2C Chip support
++#
++# CONFIG_DS1682 is not set
++# CONFIG_SENSORS_PCF8574 is not set
++# CONFIG_PCF8575 is not set
++# CONFIG_SENSORS_TSL2550 is not set
++# CONFIG_I2C_DEBUG_CORE is not set
++# CONFIG_I2C_DEBUG_ALGO is not set
++# CONFIG_I2C_DEBUG_BUS is not set
++# CONFIG_I2C_DEBUG_CHIP is not set
+ # CONFIG_SPI is not set
+ CONFIG_ARCH_REQUIRE_GPIOLIB=y
+ CONFIG_GPIOLIB=y
+@@ -523,6 +565,9 @@ CONFIG_GPIOLIB=y
+ #
+ # I2C GPIO expanders:
+ #
++# CONFIG_GPIO_MAX732X is not set
++CONFIG_GPIO_PCA953X=y
++# CONFIG_GPIO_PCF857X is not set
 
- 	info->fix.smem_start = (unsigned long)fbi->fb_start_dma;
-+	set_graphics_start(info, 0, 0);
+ #
+ # PCI GPIO expanders:
+@@ -578,7 +623,34 @@ CONFIG_SSB_POSSIBLE=y
+ #
+ # CONFIG_VGASTATE is not set
+ # CONFIG_VIDEO_OUTPUT_CONTROL is not set
+-# CONFIG_FB is not set
++CONFIG_FB=y
++# CONFIG_FIRMWARE_EDID is not set
++# CONFIG_FB_DDC is not set
++# CONFIG_FB_BOOT_VESA_SUPPORT is not set
++# CONFIG_FB_CFB_FILLRECT is not set
++# CONFIG_FB_CFB_COPYAREA is not set
++# CONFIG_FB_CFB_IMAGEBLIT is not set
++# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
++# CONFIG_FB_SYS_FILLRECT is not set
++# CONFIG_FB_SYS_COPYAREA is not set
++# CONFIG_FB_SYS_IMAGEBLIT is not set
++# CONFIG_FB_FOREIGN_ENDIAN is not set
++# CONFIG_FB_SYS_FOPS is not set
++# CONFIG_FB_SVGALIB is not set
++# CONFIG_FB_MACMODES is not set
++# CONFIG_FB_BACKLIGHT is not set
++# CONFIG_FB_MODE_HELPERS is not set
++# CONFIG_FB_TILEBLITTING is not set
++
++#
++# Frame buffer hardware drivers
++#
++# CONFIG_FB_S1D13XXX is not set
++CONFIG_FB_PXA168=y
++# CONFIG_FB_VIRTUAL is not set
++# CONFIG_FB_METRONOME is not set
++# CONFIG_FB_MB862XX is not set
++# CONFIG_FB_BROADSHEET is not set
+ # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
 
- 	/*
- 	 * Set video mode according to platform data.
+ #
+@@ -591,6 +663,16 @@ CONFIG_SSB_POSSIBLE=y
+ #
+ # CONFIG_VGA_CONSOLE is not set
+ CONFIG_DUMMY_CONSOLE=y
++CONFIG_FRAMEBUFFER_CONSOLE=y
++CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y
++# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
++# CONFIG_FONTS is not set
++CONFIG_FONT_8x8=y
++CONFIG_FONT_8x16=y
++CONFIG_LOGO=y
++# CONFIG_LOGO_LINUX_MONO is not set
++CONFIG_LOGO_LINUX_VGA16=y
++CONFIG_LOGO_LINUX_CLUT224=y
+ # CONFIG_SOUND is not set
+ # CONFIG_HID_SUPPORT is not set
+ # CONFIG_USB_SUPPORT is not set
+diff --git a/arch/arm/mach-mmp/aspenite.c b/arch/arm/mach-mmp/aspenite.c
+index b422bb5..d0a1e37 100644
+--- a/arch/arm/mach-mmp/aspenite.c
++++ b/arch/arm/mach-mmp/aspenite.c
+@@ -17,6 +17,7 @@
+ #include <linux/mtd/partitions.h>
+ #include <linux/mtd/nand.h>
+ #include <linux/i2c/pca953x.h>
++#include <linux/delay.h>
+
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+@@ -66,6 +67,39 @@ static unsigned long common_pin_config[] __initdata = {
+ 	/* UART1 */
+ 	GPIO107_UART1_RXD,
+ 	GPIO108_UART1_TXD,
++
++#ifdef CONFIG_FB_PXA168
++	/* LCD */
++	GPIO56_LCD_FCLK_RD,
++	GPIO57_LCD_LCLK_A0,
++	GPIO58_LCD_PCLK_WR,
++	GPIO59_LCD_DENA_BIAS,
++	GPIO60_LCD_DD0,
++	GPIO61_LCD_DD1,
++	GPIO62_LCD_DD2,
++	GPIO63_LCD_DD3,
++	GPIO64_LCD_DD4,
++	GPIO65_LCD_DD5,
++	GPIO66_LCD_DD6,
++	GPIO67_LCD_DD7,
++	GPIO68_LCD_DD8,
++	GPIO69_LCD_DD9,
++	GPIO70_LCD_DD10,
++	GPIO71_LCD_DD11,
++	GPIO72_LCD_DD12,
++	GPIO73_LCD_DD13,
++	GPIO74_LCD_DD14,
++	GPIO75_LCD_DD15,
++
++	GPIO76_LCD_DD16,
++	GPIO77_LCD_DD17,
++	GPIO78_LCD_DD18,
++	GPIO79_LCD_DD19,
++	GPIO80_LCD_DD20,
++	GPIO81_LCD_DD21,
++	GPIO82_LCD_DD22,
++	GPIO83_LCD_DD23,
++#endif
+ };
+
+ static struct smc91x_platdata smc91x_info = {
+@@ -95,6 +129,100 @@ static struct platform_device smc91x_device = {
+ 	.resource	= smc91x_resources,
+ };
+
++#ifdef CONFIG_FB_PXA168
++static u16 tpo_spi_cmdon[] = {
++	0x080F,
++	0x0C5F,
++	0x1017,
++	0x1420,
++	0x1808,
++	0x1c20,
++	0x2020,
++	0x2420,
++	0x2820,
++	0x2c20,
++	0x3020,
++	0x3420,
++	0x3810,
++	0x3c10,
++	0x4010,
++	0x4415,
++	0x48aa,
++	0x4cff,
++	0x5086,
++	0x548d,
++	0x58d4,
++	0x5cfb,
++	0x602e,
++	0x645a,
++	0x6889,
++	0x6cfe,
++	0x705a,
++	0x749b,
++	0x78c5,
++	0x7cff,
++	0x80f0,
++	0x84f0,
++	0x8808,
++};
++
++static u16 tpo_spi_cmdoff[] = {
++	0x0c5e,		//standby
++};
++
++static int tpo_lcd_power(struct pxa168fb_info *fbi, unsigned int
+spi_gpio_cs, unsigned int spi_gpio_reset, int on)
++{
++	int err = 0;
++	if (on) {
++		if (spi_gpio_reset != -1) {
++			err = gpio_request(spi_gpio_reset, "TPO_LCD_SPI_RESET");
++			if (err) {
++				printk("failed to request GPIO for TPO LCD RESET\n");
++				return err;
++			}
++			gpio_direction_output(spi_gpio_reset, 0);
++			msleep(100);
++			gpio_set_value(spi_gpio_reset, 1);
++			msleep(100);
++			gpio_free(spi_gpio_reset);
++		}
++		return pxa168fb_spi_send(fbi, tpo_spi_cmdon,
+ARRAY_SIZE(tpo_spi_cmdon), spi_gpio_cs, 0, 1);
++	} else
++		return pxa168fb_spi_send(fbi, tpo_spi_cmdoff,
+ARRAY_SIZE(tpo_spi_cmdoff), spi_gpio_cs, 0, 1);
++}
++
++static struct fb_videomode video_modes_aspen[] = {
++	[0] = {
++		.pixclock       = 30120,
++		.refresh        = 60,
++		.xres           = 800,
++		.yres           = 480,
++		.hsync_len      = 1,
++		.left_margin    = 215,
++		.right_margin   = 40,
++		.vsync_len      = 1,
++		.upper_margin   = 34,
++		.lower_margin   = 10,
++		.sync           = FB_SYNC_VERT_HIGH_ACT | FB_SYNC_HOR_HIGH_ACT,
++	},
++};
++
++struct pxa168fb_mach_info aspenite_lcd_info __initdata = {
++	.id                     = "Base-aspen",
++	.modes                  = video_modes_aspen,
++	.num_modes              = ARRAY_SIZE(video_modes_aspen),
++	.pix_fmt                = PIX_FMT_RGB565,
++	.io_pin_allocation_mode = PIN_MODE_DUMB_24,
++	.dumb_mode              = DUMB_MODE_RGB888,
++	.active                 = 1,
++	.spi_ctrl		= CFG_SCLKCNT(2) | CFG_TXBITS(16) | CFG_SPI_SEL(1) |
+CFG_SPI_3W4WB(1) | CFG_SPI_ENA(1),
++	.spi_gpio_cs		= GPIO_EXT1(14),
++	.spi_gpio_reset         = -1,
++	.pxa168fb_lcd_power     = tpo_lcd_power,
++};
++
++#endif
++
+ #if defined(CONFIG_MTD_NAND) || defined(CONFIG_MTD_NAND_MODULE)
+ static struct mtd_partition apn_nand_partitions[] = {
+ 	{
+@@ -184,6 +312,9 @@ static void __init common_init(void)
+
+ 	/* on-chip devices */
+ 	pxa168_add_uart(1);
++#ifdef CONFIG_FB_PXA168
++	pxa168_add_fb(&aspenite_lcd_info);
++#endif
+
+ 	apn_init_nand();
+ 	pxa168_add_twsi(0, &pwri2c_info, ARRAY_AND_SIZE(aspenite_i2c_board_info));
+diff --git a/arch/arm/mach-mmp/include/mach/pxa168.h
+b/arch/arm/mach-mmp/include/mach/pxa168.h
+index d117ceb..d43fb13 100644
+--- a/arch/arm/mach-mmp/include/mach/pxa168.h
++++ b/arch/arm/mach-mmp/include/mach/pxa168.h
+@@ -4,6 +4,7 @@
+ #include <linux/i2c.h>
+ #include <mach/devices.h>
+ #include <plat/i2c.h>
++#include <video/pxa168fb.h>
+
+ extern struct pxa_device_desc pxa168_device_uart1;
+ extern struct pxa_device_desc pxa168_device_uart2;
+@@ -14,6 +15,7 @@ extern struct pxa_device_desc pxa168_device_pwm2;
+ extern struct pxa_device_desc pxa168_device_pwm3;
+ extern struct pxa_device_desc pxa168_device_pwm4;
+ extern struct pxa_device_desc pxa168_device_nand;
++extern struct pxa_device_desc pxa168_device_fb;
+
+ static inline int pxa168_add_uart(int id)
+ {
+@@ -65,4 +67,10 @@ static inline int pxa168_add_pwm(int id)
+
+ 	return pxa_register_device(d, NULL, 0);
+ }
++
++static inline int pxa168_add_fb(struct pxa168fb_mach_info *mi)
++{
++	return pxa_register_device(&pxa168_device_fb, mi, sizeof(*mi));
++}
++
+ #endif /* __ASM_MACH_PXA168_H */
+diff --git a/arch/arm/mach-mmp/pxa168.c b/arch/arm/mach-mmp/pxa168.c
+index 59b393e..8be1e46 100644
+--- a/arch/arm/mach-mmp/pxa168.c
++++ b/arch/arm/mach-mmp/pxa168.c
+@@ -74,6 +74,7 @@ static APBC_CLK(pwm3, PXA168_PWM3, 1, 13000000);
+ static APBC_CLK(pwm4, PXA168_PWM4, 1, 13000000);
+
+ static APMU_CLK(nand, NAND, 0x1db, 208000000);
++static APMU_CLK(lcd, LCD, 0x003f, 312000000);
+
+ /* device and clock bindings */
+ static struct clk_lookup pxa168_clkregs[] = {
+@@ -86,6 +87,7 @@ static struct clk_lookup pxa168_clkregs[] = {
+ 	INIT_CLKREG(&clk_pwm2, "pxa168-pwm.1", NULL),
+ 	INIT_CLKREG(&clk_pwm3, "pxa168-pwm.2", NULL),
+ 	INIT_CLKREG(&clk_pwm4, "pxa168-pwm.3", NULL),
++	INIT_CLKREG(&clk_lcd, "pxa168-fb", "LCDCLK"),
+ };
+
+ static int __init pxa168_init(void)
+@@ -132,3 +134,4 @@ PXA168_DEVICE(pwm2, "pxa168-pwm", 1, NONE,
+0xd401a400, 0x10);
+ PXA168_DEVICE(pwm3, "pxa168-pwm", 2, NONE, 0xd401a800, 0x10);
+ PXA168_DEVICE(pwm4, "pxa168-pwm", 3, NONE, 0xd401ac00, 0x10);
+ PXA168_DEVICE(nand, "pxa3xx-nand", -1, NAND, 0xd4283000, 0x200, 97, 99);
++PXA168_DEVICE(fb, "pxa168-fb", -1, LCD, 0xd420b000, 0x1c8);
 -- 
 1.5.4.3
-
---0016e64af4a8985758047879b718
-Content-Type: text/x-diff; charset=US-ASCII; 
-	name="0003-pxa-fix-offset-setting-at-initialization.patch"
-Content-Disposition: attachment; 
-	filename="0003-pxa-fix-offset-setting-at-initialization.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g23198vw0
-
-RnJvbSBjYmZmMTdkZmViMjc1ODQxMTBiMjBlZmVkOTAwYWRkOTg5MWNjMmZjIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBKdW4gTmllIDxuanVuQG1hcnZlbGwuY29tPgpEYXRlOiBUdWUs
-IDEwIE5vdiAyMDA5IDA5OjMzOjQ5ICswODAwClN1YmplY3Q6IFtQQVRDSF0gcHhhOiBmaXggb2Zm
-c2V0IHNldHRpbmcgYXQgaW5pdGlhbGl6YXRpb24KClNpZ25lZC1vZmYtYnk6IEp1biBOaWUgPG5q
-dW5AbWFydmVsbC5jb20+Ci0tLQogZHJpdmVycy92aWRlby9weGExNjhmYi5jIHwgICAgMSArCiAx
-IGZpbGVzIGNoYW5nZWQsIDEgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKCmRpZmYgLS1n
-aXQgYS9kcml2ZXJzL3ZpZGVvL3B4YTE2OGZiLmMgYi9kcml2ZXJzL3ZpZGVvL3B4YTE2OGZiLmMK
-aW5kZXggZTcyOGJlMy4uNjI4M2MxNiAxMDA2NDQKLS0tIGEvZHJpdmVycy92aWRlby9weGExNjhm
-Yi5jCisrKyBiL2RyaXZlcnMvdmlkZW8vcHhhMTY4ZmIuYwpAQCAtNzY1LDYgKzc2NSw3IEBAIHN0
-YXRpYyBpbnQgX19pbml0IHB4YTE2OGZiX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBk
-ZXYpCiAJfQogCiAJaW5mby0+Zml4LnNtZW1fc3RhcnQgPSAodW5zaWduZWQgbG9uZylmYmktPmZi
-X3N0YXJ0X2RtYTsKKwlzZXRfZ3JhcGhpY3Nfc3RhcnQoaW5mbywgMCwgMCk7CiAKIAkvKgogCSAq
-IFNldCB2aWRlbyBtb2RlIGFjY29yZGluZyB0byBwbGF0Zm9ybSBkYXRhLgotLSAKMS41LjQuMwoK
---0016e64af4a8985758047879b718--

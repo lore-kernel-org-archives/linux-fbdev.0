@@ -1,87 +1,84 @@
-From: InKi Dae <daeinki@gmail.com>
-Subject: Re: [patch] added brightness feature to lcd class.
-Date: Tue, 10 Nov 2009 12:26:32 +0900
-Message-ID: <90b950fc0911091926v32dc1c44n1018322390282bc0@mail.gmail.com>
-References: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com>
-	 <1257809705.29038.82.camel@dax.rpnet.com>
+From: Jun Nie <niej0001@gmail.com>
+Subject: Re: [PATCH 3/6] pxa: fix pxa168 lcd controller
+	vsync/hsync timing error
+Date: Tue, 10 Nov 2009 13:18:42 +0800
+Message-ID: <7c34ac520911092118y3f125b93j9b8b8d70f76432f7@mail.gmail.com>
+References: <7c34ac520911022245x7f002a7at846a835dfded550c@mail.gmail.com>
+	<f17812d70911032320k379dc7laab1979a3b452969@mail.gmail.com>
+	<7c34ac520911041815k6555e209r4039ae9f97c9ebca@mail.gmail.com>
+	<f17812d70911081939nf30b893vc8a9b3cf821fc78@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1755877AbZKJD0a@vger.kernel.org>
-In-Reply-To: <1257809705.29038.82.camel@dax.rpnet.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@linux.intel.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Kyungmin Park <kmpark@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-1.v28.ch3.sourceforge.com ([172.29.28.121]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <niej0001@gmail.com>) id 1N7j82-0000h1-M8
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 10 Nov 2009 05:18:54 +0000
+Received: from mail-pw0-f43.google.com ([209.85.160.43])
+	by 29vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1N7j7w-0003Hp-7q for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 10 Nov 2009 05:18:54 +0000
+Received: by pwi12 with SMTP id 12so413128pwi.2
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 09 Nov 2009 21:18:42 -0800 (PST)
+In-Reply-To: <f17812d70911081939nf30b893vc8a9b3cf821fc78@mail.gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org
 
-Thank you for your comments.
-
-it is a good idea that lcd driver registers interfaces to lcd class
-and backlight class.
-but I think for AMOLED LCD Panel, backlight couldn't be real device so
-power on/off
-for backlight device doesn't make sense.
-
-I had tried lcd driver registers interfaces to lcd class and backlight
-class as you said.
-and also backlight fake driver as Pavel said.
-
-but I thought to use my patch is more simple and effective.
-of course, this patch has a problem that it has different path from
-backlight class
-for controlling brightness.
-
-how about creating symbolic link file for competiability?
-
-Best Regards,
-InKi Dae.
-
-2009/11/10 Richard Purdie <rpurdie@linux.intel.com>:
-> On Mon, 2009-11-02 at 17:50 +0900, InKi Dae wrote:
->> This patch adds brightness feature to lcd class.
->> (kernel/driver/video/backlight/lcd.c)
+2009/11/9 Eric Miao <eric.y.miao@gmail.com>:
+>>> Could you please help double check this? My understanding is
+>>> FB_SYNC_VERT_HIGH_ACT means it's a positive pulse covering all the
+>>> valid HSYNCs, and a rising edge of VSYNC means a start of the frame.
+>>>
+>>> However, CFG_INV_VSYNC is '1' means the opposite.
+>>>
 >>
->> In the past, most of the lcd panels for embedded system was TFT-LCD
->> Panel needing backlight device.
->> But now AMOLED LCD Panel appeared so we should consider brightness
->> control for AMOLED Panel.
+>> My understanding is that high active means high level trigger new
+>> frame/line. Below page support my point if it is not wrong.
 >>
->> For the time being, I used backlight fake driver for brightness
->> control of AMOLED LCD Panel.
->> But this way is not good, so I propose to add brightness feature to lcd class.
+>> http://www.arcadecollecting.com/info/Sync_fixing.txt
 >>
->> For this, I attached patch file and if my proposal is approved
->> Then I will send s6e63m0 and tl2796 AMOLED lcd panel driver based on
->> lcd class modified soon.
 >
-> Pavel has a good point but let me try and explain it differently.
+> Tried to find the specific diagram in the spec on what CFG_INV_* means
+> but failed, can you help verified this with an oscilloscope and let know
+> the result? This is a fix then, and I'd like it to get into .32, sorry for late
+> reply.
 >
-> The point of the backlight class is to expose a backlight brightness
-> control to userspace in a consistent well defined way. Anyone wishing to
-> write a piece of software to control the brightness of a backlight then
-> only needs to support *one* interface.
->
-> It is entirely accepted and normal that multiple "class" devices may
-> appear in userspace for one piece of physical hardware.
->
-> Your patch duplicates a userspace API and means any backlight
-> application would have to look for *two* different interfaces. This is
-> unacceptable.
->
-> Why can't your driver just register a backlight interface and an LCD
-> interface? I'd imagine your backlight and LCD can be powered on/off
-> separately too.
->
-> Please also cc: the backlight/lcd maintainer (me) on backlight/lcd
-> patches in future.
->
-> Andrew: Can you drop that patch from -mm please as I'm not convinced we
-> need two backlight brightness interfaces around...
->
-> Cheers,
->
-> Richard
->
->
->
->
+
+Hi, Eric
+If do not set CFG_INV_VSYNC and CFG_INV_HSYNC bits, controller output
+is as below in oscilloscope.
+
+                  ||               ||                ||
+.._________||_________||_________||____... HSYNC (active high)
+
+                                                    _____
+                                                     |     |
+.._____________________________|     |_... VSYNC (active high)
+
+So I should mark HSYNC_HIGH and VSYNC_HIGH in platform code and keep
+driver code as  below original code.
+       x |= (info->var.sync & FB_SYNC_VERT_HIGH_ACT) ? 0 : 0x00000008;
+       x |= (info->var.sync & FB_SYNC_HOR_HIGH_ACT) ? 0 : 0x00000004;
+
+Thanks!
+
+Jun
+
+------------------------------------------------------------------------------
+Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
+trial. Simplify your report design, integration and deployment - and focus on 
+what you do best, core application coding. Discover what's new with
+Crystal Reports now.  http://p.sf.net/sfu/bobj-july

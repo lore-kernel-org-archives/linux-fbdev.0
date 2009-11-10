@@ -1,49 +1,34 @@
-From: Richard Purdie <rpurdie@linux.intel.com>
-Subject: Re: [patch] added brightness feature to lcd class.
-Date: Tue, 10 Nov 2009 08:43:17 +0000
-Message-ID: <1257842597.29038.162.camel@dax.rpnet.com>
-References: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com>
-	 <1257809705.29038.82.camel@dax.rpnet.com>
-	 <90b950fc0911091926v32dc1c44n1018322390282bc0@mail.gmail.com>
+From: Paul Walmsley <paul@pwsan.com>
+Subject: Re: [PATCH] OMAP1: PM: Fix omapfb/lcd on Amstrad Delta broken when
+ PM set
+Date: Tue, 10 Nov 2009 03:50:52 -0700 (MST)
+Message-ID: <alpine.DEB.2.00.0911100347320.20233@utopia.booyaka.com>
+References: <200910292339.48610.jkrzyszt@tis.icnet.pl> <200910301542.27206.jkrzyszt@tis.icnet.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1752950AbZKJIqg@vger.kernel.org>
-In-Reply-To: <90b950fc0911091926v32dc1c44n1018322390282bc0@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <200910301542.27206.jkrzyszt@tis.icnet.pl>
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-To: InKi Dae <daeinki@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Kyungmin Park <kmpark@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Cc: Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@deeprootsystems.com>, Jonathan McDowell <noodles@earth.li>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Imre Deak <imre.deak@nokia.com>, linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 2009-11-10 at 12:26 +0900, InKi Dae wrote:
-> Thank you for your comments.
-> 
-> it is a good idea that lcd driver registers interfaces to lcd class
-> and backlight class.
-> but I think for AMOLED LCD Panel, backlight couldn't be real device so
-> power on/off
-> for backlight device doesn't make sense.
+Hello Janusz et al,
 
-The backlight power control can just turn the backlight level down to
-its lowest setting (off)?
+On Fri, 30 Oct 2009, Janusz Krzysztofik wrote:
 
-> I had tried lcd driver registers interfaces to lcd class and backlight
-> class as you said.
-> and also backlight fake driver as Pavel said.
+> More looking at it, I found that might be omap_dma_running() from 
+> arch/arm/plat-omap/dma.c that needs correction. It already checks for LCD dma 
+> running for OMAP1610, but does nothing similiar for 1510. I have revisited 
+> http://focus.ti.com/lit/ug/spru674/spru674.pdf, but found no hint how to do 
+> that in a 1610 similiar way.
 
-So you've tried this, what was the problem? Perhaps post this driver
-code to illustrate your problem?
+Speaking of this code, here's a project suggestion if someone has some 
+spare time.  All of the LCD DMA code in plat-omap/dma.c appears to be 
+OMAP1-only (and apparently only is available on a subset of OMAP1 chips).  
+It would be great if this code could be moved to mach-omap1/lcd_dma.c or 
+a similar place.
 
-> but I thought to use my patch is more simple and effective.
-> of course, this patch has a problem that it has different path from
-> backlight class
-> for controlling brightness.
-> 
-> how about creating symbolic link file for competiability?
 
-Creating two ways to do something (with or without symlinks) is not
-simple and effective for anything other than your driver.
-
-Cheers,
-
-Richard
+- Paul

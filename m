@@ -1,34 +1,86 @@
-From: Paul Walmsley <paul@pwsan.com>
-Subject: Re: [PATCH] OMAP1: PM: Fix omapfb/lcd on Amstrad Delta broken when
- PM set
-Date: Tue, 10 Nov 2009 03:50:52 -0700 (MST)
-Message-ID: <alpine.DEB.2.00.0911100347320.20233@utopia.booyaka.com>
-References: <200910292339.48610.jkrzyszt@tis.icnet.pl> <200910301542.27206.jkrzyszt@tis.icnet.pl>
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Subject: Re: [PATCH 00/19] OMAP: DSS2 v5 intro
+Date: Tue, 10 Nov 2009 14:40:48 +0200
+Message-ID: <1257856848.21596.753.camel@localhost>
+References: <1257767126-12059-1-git-send-email-tomi.valkeinen@nokia.com>
+Reply-To: dedekind1@gmail.com
 Mime-Version: 1.0
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <200910301542.27206.jkrzyszt@tis.icnet.pl>
+In-Reply-To: <1257767126-12059-1-git-send-email-tomi.valkeinen@nokia.com>
 Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Cc: Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@deeprootsystems.com>, Jonathan McDowell <noodles@earth.li>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Imre Deak <imre.deak@nokia.com>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="utf-8"
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Stephen Rothwell <sfr@canb.auug.org.au>
 
-Hello Janusz et al,
+Tomi,
 
-On Fri, 30 Oct 2009, Janusz Krzysztofik wrote:
+could you please kindly ask Stephen (CCed) to include the DSS2 tree int=
+o
+linux-next, because you are going to merge it the next merge window, an=
+d
+there does not seem to be any blocker for this.
 
-> More looking at it, I found that might be omap_dma_running() from 
-> arch/arm/plat-omap/dma.c that needs correction. It already checks for LCD dma 
-> running for OMAP1610, but does nothing similiar for 1510. I have revisited 
-> http://focus.ti.com/lit/ug/spru674/spru674.pdf, but found no hint how to do 
-> that in a 1610 similiar way.
+Being in linux-next for a while is really important.
 
-Speaking of this code, here's a project suggestion if someone has some 
-spare time.  All of the LCD DMA code in plat-omap/dma.c appears to be 
-OMAP1-only (and apparently only is available on a subset of OMAP1 chips).  
-It would be great if this code could be moved to mach-omap1/lcd_dma.c or 
-a similar place.
+On Mon, 2009-11-09 at 13:45 +0200, Tomi Valkeinen wrote:
+> This patch set implement new display subsystem driver (DSS2) and omap=
+fb driver
+> for OMAP2/3. The patches have been reviewed on linux-omap and linux-f=
+bdev-devel
+> mailing lists. The patches can also be found from master branch in
+> http://gitorious.org/linux-omap-dss2/linux. The branch is based on th=
+e
+> linux-next tree.
+>=20
+> The patches include DSS documentation patch that includes more instru=
+ctions for
+> module parameters, sysfs files etc.
+>=20
+> The patches enable DSS2 for OMAP3430 SDP board and support for other =
+boards can
+> be sent after the DSS2 has been merged. DSS2 is used in various board=
+s, for
+> example Nokia N900, Beagle Board and Overo.
+>=20
+> I don't currently have any OMAP2 board to test DSS2, but it has worke=
+d on OMAP2
+> and the possible fixes needed should be minimal.
+>=20
+> OMAP1 is not supported, and so the old DSS needs to be used on OMAP1 =
+boards. My
+> longer term plan is to move all OMAP2 stuff from the old DSS to the n=
+ew one,
+> and then shrink the old DSS to support OMAP1 only.
+>=20
+> DSS2 is partly based on the old omapfb driver by Imre Deak, and Imre =
+has also
+> contributed to DSS2 quite a bit. Ville Syrj=C3=A4l=C3=A4 has been con=
+tributing to scaling
+> and tv-out work, and Topi Pohjolainen to VRFB. Also some contribution=
+s have
+> been made by Hardik Shah, Vaibhav Hiremath, and perhaps some others t=
+hat I have
+> forgotten =3D).
 
+Tomi,
 
-- Paul
+could you please kindly ask Stephen (CCed) to include the DSS2 tree int=
+o
+linux-next, because you are going to merge it the next merge window, an=
+d
+there does not seem to be any blocker for this.
+
+Being in linux-next for a while is really important.
+
+--=20
+Best Regards,
+Artem Bityutskiy (=D0=90=D1=80=D1=82=D1=91=D0=BC =D0=91=D0=B8=D1=82=D1=8E=
+=D1=86=D0=BA=D0=B8=D0=B9)
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html

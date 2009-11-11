@@ -1,50 +1,40 @@
-From: Richard Purdie <rpurdie@linux.intel.com>
-Subject: Re: [patch] added brightness feature to lcd class.
-Date: Wed, 11 Nov 2009 09:28:37 +0000
-Message-ID: <1257931717.29038.298.camel@dax.rpnet.com>
-References: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com>
-	 <1257809705.29038.82.camel@dax.rpnet.com>
-	 <90b950fc0911091926v32dc1c44n1018322390282bc0@mail.gmail.com>
-	 <1257842597.29038.162.camel@dax.rpnet.com>
-	 <90b950fc0911102217o41aea871u3a5d9e44c947fe3c@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Subject: Re: [PATCH 00/19] OMAP: DSS2 v5 intro
+Date: Wed, 11 Nov 2009 11:44:01 +0200
+Message-ID: <1257932641.20378.77.camel@tubuntu.research.nokia.com>
+References: <1257767126-12059-1-git-send-email-tomi.valkeinen@nokia.com>
+	 <1257856848.21596.753.camel@localhost>
+	 <1257929140.20378.51.camel@tubuntu.research.nokia.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1753171AbZKKJby@vger.kernel.org>
-In-Reply-To: <90b950fc0911102217o41aea871u3a5d9e44c947fe3c@mail.gmail.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756244AbZKKJoY@vger.kernel.org>
+In-Reply-To: <1257929140.20378.51.camel@tubuntu.research.nokia.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: InKi Dae <daeinki@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Kyungmin Park <kmpark@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, ext Tony Lindgren <tony@atomide.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "dedekind1@gmail.com" <dedekind1@gmail.com>
 
-On Wed, 2009-11-11 at 15:17 +0900, InKi Dae wrote:
-> 2009/11/10 Richard Purdie <rpurdie@linux.intel.com>:
-> > So you've tried this, what was the problem? Perhaps post this driver
-> > code to illustrate your problem?
+On Wed, 2009-11-11 at 09:45 +0100, Valkeinen Tomi (Nokia-D/Helsinki)
+wrote:
+> On Tue, 2009-11-10 at 13:40 +0100, Artem Bityutskiy wrote:
+> > Tomi,
+> > 
+> > could you please kindly ask Stephen (CCed) to include the DSS2 tree into
+> > linux-next, because you are going to merge it the next merge window, and
+> > there does not seem to be any blocker for this.
+> > 
+> > Being in linux-next for a while is really important.
 > 
-> all the cases worked fine.
-> it's not whether lcd driver has a problem or not.
-> I mean it's design issue of lcd class. AMOLED LCD Panel DOESN'T NEED
-> backlight device.
-> and I should have added brightness control feature to AMOLED LCD Panel
-> driver not using backlight class
-> because they have no BACKLIGHT DEVICE.
+> Stephen, would this be possible? DSS2 driver is rather big piece of
+> code, even if it's quite isolated, so it would be nice to have it in
+> linux-next.
 > 
-> in point of view AMOLED LCD Panel, brightness control is perfomed by
-> gamma setting, not backlight power controlling.
+> What does it require from me? A git tree, obviously, but what should it
+> be based on?
 
-The question is whether this gamma control does the same thing as what
-we've traditionally used the backlight brightness control for. As I
-understand it, the answer is yes and to userspace making it appear as a
-backlight brightness control makes sense. 
+Ah, I just realized that DSS2 patches depend on patches from Tony's
+tree. I guess I should base my tree on top of some Tony's tree that is
+going to linux-next?
 
-The userspace view of the world is key and the fact there is not a
-traditional physical backlight in the hardware isn't really an issue.
-
-Why would we want to create two userspace interfaces doing the same
-thing which would mean we just have to complicate userspace drivers? 
-Symlinking just makes things confusing.
-
-Cheers,
-
-Richard
+ Tomi

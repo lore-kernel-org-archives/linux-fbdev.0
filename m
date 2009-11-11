@@ -1,55 +1,51 @@
-From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Subject: Re: [PATCH] OMAP1: PM: Fix omapfb/lcd on Amstrad Delta broken when PM set
-Date: Wed, 11 Nov 2009 01:02:11 +0100
-Message-ID: <200911110102.16009.jkrzyszt@tis.icnet.pl>
-References: <200910292339.48610.jkrzyszt@tis.icnet.pl> <200910301542.27206.jkrzyszt@tis.icnet.pl> <alpine.DEB.2.00.0911100347320.20233@utopia.booyaka.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH/RFC] fb: put framebuffer drivers back under the
+ "frame buffer devices" menu
+Date: Tue, 10 Nov 2009 16:51:14 -0800
+Message-ID: <20091110165114.4972b8b4.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0911082339090.24656@axis700.grange>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.00.0911100347320.20233@utopia.booyaka.com>
-Content-Disposition: inline
-Sender: linux-omap-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kbuild-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0911082339090.24656@axis700.grange>
+Sender: linux-kbuild-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="windows-1252"
-To: Paul Walmsley <paul@pwsan.com>
-Cc: Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@deeprootsystems.com>, Jonathan McDowell <noodles@earth.li>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Imre Deak <imre.deak@nokia.com>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kbuild@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>
 
-Tuesday 10 November 2009 11:50:52 Paul Walmsley napisa=C5=82(a):
-> Hello Janusz et al,
->
-> On Fri, 30 Oct 2009, Janusz Krzysztofik wrote:
-> > More looking at it, I found that might be omap_dma_running() from
-> > arch/arm/plat-omap/dma.c that needs correction. It already checks f=
-or LCD
-> > dma running for OMAP1610, but does nothing similiar for 1510. I hav=
-e
-> > revisited http://focus.ti.com/lit/ug/spru674/spru674.pdf, but found=
- no
-> > hint how to do that in a 1610 similiar way.
->
-> Speaking of this code, here's a project suggestion if someone has som=
-e
-> spare time.  All of the LCD DMA code in plat-omap/dma.c appears to be
-> OMAP1-only (and apparently only is available on a subset of OMAP1 chi=
-ps).
-> It would be great if this code could be moved to mach-omap1/lcd_dma.c=
- or
-> a similar place.
+On Sun, 8 Nov 2009 23:46:24 +0100 (CET)
+Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
 
-Paul,
+> The config FB_PRE_INIT_FB entry in drivers/video/Kconfig pushes all entries
+> below it out of the menuconfig selection. Fix this.
+> 
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> ---
+> 
+> This is _most_ _probably_ not a right fix, but rather an observation, that 
+> the patch below fixes the problem, whereby all entires below 
+> FB_PRE_INIT_FB get displaced from the "frame buffer devices" menu. A bug 
+> in kconfig? The additional dependency on FB in this patch is certainly 
+> redundant.
+> 
+>  drivers/video/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index 9bbb285..188e1ba 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -2121,7 +2121,7 @@ config FB_EP93XX
+>  
+>  config FB_PRE_INIT_FB
+>  	bool "Don't reinitialize, use bootloader's GDC/Display configuration"
+> -	depends on FB_MB862XX_LIME
+> +	depends on FB && FB_MB862XX_LIME
+>  	---help---
+>  	  Select this option if display contents should be inherited as set by
+>  	  the bootloader.
 
-Thank you for putting me into right direction (I hope :-)). If there ar=
-e no=20
-more comments, I'll try to take care of what you suggest after the situ=
-ation=20
-with my pending patches AND Tomi Valkeinen's DSS2 patch series, that bo=
-th=20
-more or less fiddle with LCD DMA related files, gets clear.
+hmm, well, lots of surrounding records also have `depends on FB', and
+it fixes the bug, so I see no problem with using the patch as-is.
 
-Thanks,
-Janusz
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html

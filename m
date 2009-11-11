@@ -1,21 +1,55 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [patch] added brightness feature to lcd class.
-Date: Tue, 10 Nov 2009 15:27:54 +0000
-Message-ID: <20091110152754.GA21601@srcf.ucam.org>
-References: <90b950fc0911020050q3bc3fae8j954ec6ed73d79b5@mail.gmail.com> <1257809705.29038.82.camel@dax.rpnet.com> <90b950fc0911091926v32dc1c44n1018322390282bc0@mail.gmail.com> <1257842597.29038.162.camel@dax.rpnet.com>
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Subject: Re: [PATCH] OMAP1: PM: Fix omapfb/lcd on Amstrad Delta broken when PM set
+Date: Wed, 11 Nov 2009 01:02:11 +0100
+Message-ID: <200911110102.16009.jkrzyszt@tis.icnet.pl>
+References: <200910292339.48610.jkrzyszt@tis.icnet.pl> <200910301542.27206.jkrzyszt@tis.icnet.pl> <alpine.DEB.2.00.0911100347320.20233@utopia.booyaka.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1756670AbZKJP2H@vger.kernel.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.00.0911100347320.20233@utopia.booyaka.com>
 Content-Disposition: inline
-In-Reply-To: <1257842597.29038.162.camel@dax.rpnet.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@linux.intel.com>
-Cc: InKi Dae <daeinki@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Kyungmin Park <kmpark@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset="windows-1252"
+To: Paul Walmsley <paul@pwsan.com>
+Cc: Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@deeprootsystems.com>, Jonathan McDowell <noodles@earth.li>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Imre Deak <imre.deak@nokia.com>, linux-fbdev-devel@lists.sourceforge.net
 
-Is the confusion here just that LED displays aren't backlit in the 
-traditional sense of the term?
+Tuesday 10 November 2009 11:50:52 Paul Walmsley napisa=C5=82(a):
+> Hello Janusz et al,
+>
+> On Fri, 30 Oct 2009, Janusz Krzysztofik wrote:
+> > More looking at it, I found that might be omap_dma_running() from
+> > arch/arm/plat-omap/dma.c that needs correction. It already checks f=
+or LCD
+> > dma running for OMAP1610, but does nothing similiar for 1510. I hav=
+e
+> > revisited http://focus.ti.com/lit/ug/spru674/spru674.pdf, but found=
+ no
+> > hint how to do that in a 1610 similiar way.
+>
+> Speaking of this code, here's a project suggestion if someone has som=
+e
+> spare time.  All of the LCD DMA code in plat-omap/dma.c appears to be
+> OMAP1-only (and apparently only is available on a subset of OMAP1 chi=
+ps).
+> It would be great if this code could be moved to mach-omap1/lcd_dma.c=
+ or
+> a similar place.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Paul,
+
+Thank you for putting me into right direction (I hope :-)). If there ar=
+e no=20
+more comments, I'll try to take care of what you suggest after the situ=
+ation=20
+with my pending patches AND Tomi Valkeinen's DSS2 patch series, that bo=
+th=20
+more or less fiddle with LCD DMA related files, gets clear.
+
+Thanks,
+Janusz
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html

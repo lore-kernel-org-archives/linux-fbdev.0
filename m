@@ -1,64 +1,35 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH/RFC] fb: put framebuffer drivers back under the "frame
- buffer devices" menu
-Date: Wed, 11 Nov 2009 08:35:32 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.0911110834010.4072@axis700.grange>
-References: <Pine.LNX.4.64.0911082339090.24656@axis700.grange>
- <20091110165114.4972b8b4.akpm@linux-foundation.org>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Subject: Re: [PATCH 00/19] OMAP: DSS2 v5 intro
+Date: Wed, 11 Nov 2009 10:45:40 +0200
+Message-ID: <1257929140.20378.51.camel@tubuntu.research.nokia.com>
+References: <1257767126-12059-1-git-send-email-tomi.valkeinen@nokia.com>
+	 <1257856848.21596.753.camel@localhost>
 Mime-Version: 1.0
-Return-path: <linux-kbuild-owner@vger.kernel.org>
-In-Reply-To: <20091110165114.4972b8b4.akpm@linux-foundation.org>
-Sender: linux-kbuild-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kbuild@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <1257856848.21596.753.camel@localhost>
+Sender: linux-omap-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "dedekind1@gmail.com" <dedekind1@gmail.com>
 
-On Tue, 10 Nov 2009, Andrew Morton wrote:
-
-> On Sun, 8 Nov 2009 23:46:24 +0100 (CET)
-> Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+On Tue, 2009-11-10 at 13:40 +0100, Artem Bityutskiy wrote:
+> Tomi,
 > 
-> > The config FB_PRE_INIT_FB entry in drivers/video/Kconfig pushes all entries
-> > below it out of the menuconfig selection. Fix this.
-> > 
-> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> > ---
-> > 
-> > This is _most_ _probably_ not a right fix, but rather an observation, that 
-> > the patch below fixes the problem, whereby all entires below 
-> > FB_PRE_INIT_FB get displaced from the "frame buffer devices" menu. A bug 
-> > in kconfig? The additional dependency on FB in this patch is certainly 
-> > redundant.
-> > 
-> >  drivers/video/Kconfig |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> > index 9bbb285..188e1ba 100644
-> > --- a/drivers/video/Kconfig
-> > +++ b/drivers/video/Kconfig
-> > @@ -2121,7 +2121,7 @@ config FB_EP93XX
-> >  
-> >  config FB_PRE_INIT_FB
-> >  	bool "Don't reinitialize, use bootloader's GDC/Display configuration"
-> > -	depends on FB_MB862XX_LIME
-> > +	depends on FB && FB_MB862XX_LIME
-> >  	---help---
-> >  	  Select this option if display contents should be inherited as set by
-> >  	  the bootloader.
+> could you please kindly ask Stephen (CCed) to include the DSS2 tree into
+> linux-next, because you are going to merge it the next merge window, and
+> there does not seem to be any blocker for this.
 > 
-> hmm, well, lots of surrounding records also have `depends on FB', and
-> it fixes the bug, so I see no problem with using the patch as-is.
+> Being in linux-next for a while is really important.
 
-Well, not that much of a problem with applying this patch, but this seems 
-like a bug in kernel kconfig system, and by applying this patch we paper 
-over it without having found, understood and fixed it.
+Stephen, would this be possible? DSS2 driver is rather big piece of
+code, even if it's quite isolated, so it would be nice to have it in
+linux-next.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+What does it require from me? A git tree, obviously, but what should it
+be based on?
+
+ Tomi
+
+

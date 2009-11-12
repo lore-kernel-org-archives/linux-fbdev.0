@@ -1,65 +1,43 @@
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Thu, 12 Nov 2009 01:05:48 +0000
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 12 Nov 2009 07:47:49 +0000
 Subject: Re: [PATCH 0/8] enable pxa168 LCD on two platform
-Message-Id: <f17812d70911111705v57317d32s3805654d9a7ff75@mail.gmail.com>
+Message-Id: <10f740e80911112347o45ddc2ck1515220914b4c38f@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <7c34ac520911100011x60a354b0mf2e27e1c5fd0422@mail.gmail.com>
 	<20091111155058.4f8d355e.akpm@linux-foundation.org>
-In-Reply-To: <20091111155058.4f8d355e.akpm@linux-foundation.org>
+	<4AFB4EA4.3060608@xenotime.net>
+In-Reply-To: <4AFB4EA4.3060608@xenotime.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-arm-kernel@lists.infradead.org
 
-On Thu, Nov 12, 2009 at 7:50 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Tue, 10 Nov 2009 16:11:56 +0800
-> Jun Nie <niej0001@gmail.com> wrote:
->
->> To: linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org
->
-> I don't think linux-fbdev@vger.kernel.org exists?  You wanted
-> linux-fbdev-devel@lists.sourceforge.net ?
->
->> Subject: [PATCH 0/8] enable pxa168 LCD on two platform
->> Date:         Tue, 10 Nov 2009 16:11:56 +0800
->> Sender: linux-fbdev-owner@vger.kernel.org
+On Thu, Nov 12, 2009 at 00:54, Randy Dunlap <rdunlap@xenotime.net> wrote:
+> Andrew Morton wrote:
+>> On Tue, 10 Nov 2009 16:11:56 +0800
+>> Jun Nie <niej0001@gmail.com> wrote:
 >>
->> This serial patches add LCD controller SPI support and enable frame
->> buffer on two platform. Several small fix are included.
->> comments from Eric and Russell are addressed.
+>>> To: linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org
 >>
->>
->>  arch/arm/configs/pxa168_defconfig       |   86 +++++++++++++++-
->>  arch/arm/configs/pxa910_defconfig       |   39 +++++++-
->>  arch/arm/mach-mmp/aspenite.c            |  176 +++++++++++++++++++++++++++++++
->>  arch/arm/mach-mmp/include/mach/pxa168.h |    8 ++
->>  arch/arm/mach-mmp/include/mach/pxa910.h |    8 ++
->>  arch/arm/mach-mmp/pxa168.c              |    3 +
->>  arch/arm/mach-mmp/pxa910.c              |    4 +
->>  arch/arm/mach-mmp/ttc_dkb.c             |  140 ++++++++++++++++++++++++
->>  drivers/gpio/pca953x.c                  |    1 +
->>  drivers/video/pxa168fb.c                |  102 ++++++++++++++++++
->>  drivers/video/pxa168fb.h                |   24 +----
->>  include/video/pxa168fb.h                |   49 ++++++++-
->>  12 files changed, 612 insertions(+), 28 deletions(-)
+>> I don't think linux-fbdev@vger.kernel.org exists? =C2=A0You wanted
+>> linux-fbdev-devel@lists.sourceforge.net ?
 >
-> hm.  So who should review and merge these patches??
+> actually it does exist, but it's not used AFAIK.
+> http://vger.kernel.org/vger-lists.html#linux-fbdev
 >
+> The sourceforge list is the one listed in the MAINTAINERS file.
 
-Hi Andrew,
+Sending a patch to change that is on my (long) TODO list...
 
-I'm looking into this - actually this is the 2nd round, and I'd like
-this to go through my tree since these are really pretty close to
-the pxa168/910 stuff if you feel OK.
+Gr{oetje,eeting}s,
 
-> The patches were wordwrapped by your email client.  I had that all
-> fixed up but the final patch gets a large number of rejects, perhaps
-> against the ARM changes in linux-next so I gave up.
->
+						Geert
 
-Jun,
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
 
-Could you please reply each of your mail with an attachment of
-the patch you formatted with 'git-format-patch'. My guess is you
-are using Gmail web interface so there might be wrapping issues.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+							    -- Linus Torvalds

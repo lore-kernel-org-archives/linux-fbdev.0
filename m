@@ -1,77 +1,67 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 00/19] OMAP: DSS2 v5 intro
-Date: Thu, 12 Nov 2009 16:10:28 +1100
-Message-ID: <20091112161028.427787d9.sfr@canb.auug.org.au>
-References: <1257767126-12059-1-git-send-email-tomi.valkeinen@nokia.com>
-	<1257856848.21596.753.camel@localhost>
-	<1257929140.20378.51.camel@tubuntu.research.nokia.com>
-	<1257932641.20378.77.camel@tubuntu.research.nokia.com>
-	<20091111184208.GC24837@atomide.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: drivers/video/msm: update to new kernel
+Date: Thu, 12 Nov 2009 11:19:02 +0100
+Message-ID: <20091112101902.GA11980@elf.ucw.cz>
+References: <20091022085639.GA30548@elf.ucw.cz>
+	<20091103161733.970b885f.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__12_Nov_2009_16_10_28_+1100_0NjpICVRdDwIVqAx"
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <20091111184208.GC24837@atomide.com>
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-To: Tony Lindgren <tony@atomide.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "dedekind1@gmail.com" <dedekind1@gmail.com>
-
---Signature=_Thu__12_Nov_2009_16_10_28_+1100_0NjpICVRdDwIVqAx
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <pavel@ucw.cz>) id 1N8cXr-0002mk-PQ
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 12 Nov 2009 16:29:15 +0000
+Received: from artax.karlin.mff.cuni.cz ([195.113.26.195])
+	by 72vjzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1N8cXe-0002g8-Gg for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 12 Nov 2009 16:29:10 +0000
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20091103161733.970b885f.akpm@linux-foundation.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Brian Swetland <swetland@google.com>, Arve Hj?nnev?g <arve@android.com>, linux-fbdev-devel@lists.sourceforge.net, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 
-Hi Tony,
+On Tue 2009-11-03 16:17:33, Andrew Morton wrote:
+> On Thu, 22 Oct 2009 10:56:39 +0200
+> Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > TASK_INTERRUPTIBLE and friends are now only available after including
+> > <linux/sched.h>, so include it when needed.
+> > 
+> > bus_id is no longer available/neccessary, so remove that.
+> > 
+> > Android pmem driver is not available in mainline, so remove its hooks
+> > from drivers/video.
+> > 
+> 
+> What is the impact of these changes?
+> 
+> #2 looks like it's a build fix.  #3 looks like it isn't a build fix. 
+> #1 is a mystery.
 
-On Wed, 11 Nov 2009 10:42:09 -0800 Tony Lindgren <tony@atomide.com> wrote:
->
-> * Tomi Valkeinen <tomi.valkeinen@nokia.com> [091111 01:43]:
-> > On Wed, 2009-11-11 at 09:45 +0100, Valkeinen Tomi (Nokia-D/Helsinki)
-> > wrote:
-> > > On Tue, 2009-11-10 at 13:40 +0100, Artem Bityutskiy wrote:
-> > > >=20
-> > > > could you please kindly ask Stephen (CCed) to include the DSS2 tree=
- into
-> > > > linux-next, because you are going to merge it the next merge window=
-, and
-> > > > there does not seem to be any blocker for this.
-> > > >=20
-> > > > Being in linux-next for a while is really important.
-> > >=20
-> > > Stephen, would this be possible? DSS2 driver is rather big piece of
-> > > code, even if it's quite isolated, so it would be nice to have it in
-> > > linux-next.
-> > >=20
-> > > What does it require from me? A git tree, obviously, but what should =
-it
-> > > be based on?
-> >=20
-> > Ah, I just realized that DSS2 patches depend on patches from Tony's
-> > tree. I guess I should base my tree on top of some Tony's tree that is
-> > going to linux-next?
->=20
-> Or I can merge them into my for-next if that's OK with everybody. This
-> merge cycle is a pain for omap as we've moved all the common headers from
-> include/mach to include/plat.
+Well, it now compiles. #1... I guess something changed in arm headers
+and explicit include of <linux/sched.h> became neccessary. #3 not all
+usages of pmem were protected with #ifdef ...PMEM, breaking
+compilation. And as PMEM is not in mainline, it seemed right to just
+remove it.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
-If the DSS2 patches really are dependent on other stuff in the omap tree,
-then this is probably the best plan.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__12_Nov_2009_16_10_28_+1100_0NjpICVRdDwIVqAx
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkr7mMQACgkQjjKRsyhoI8x7uACgquvbx/NRweGQEzP8KhWpFrmS
-lcAAnippiSX2Zuy7xvJVZtN5HK74i3k+
-=11qk
------END PGP SIGNATURE-----
-
---Signature=_Thu__12_Nov_2009_16_10_28_+1100_0NjpICVRdDwIVqAx--
+------------------------------------------------------------------------------
+Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
+trial. Simplify your report design, integration and deployment - and focus on 
+what you do best, core application coding. Discover what's new with
+Crystal Reports now.  http://p.sf.net/sfu/bobj-july

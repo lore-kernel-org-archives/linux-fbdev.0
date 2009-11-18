@@ -1,94 +1,72 @@
-From: Sudhakar Rajashekhara <sudhakar.raj-l0cyMroinI0@public.gmane.org>
-Subject: [PATCH] davinci: fb: Fix frame buffer driver issues
-Date: Wed, 18 Nov 2009 15:44:50 +0530
-Message-ID: <1258539290-3913-1-git-send-email-sudhakar.raj@ti.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] add palette register check
+Date: Wed, 18 Nov 2009 23:20:00 +0100
+Message-ID: <10f740e80911181420k4e405e69s992cf0da682a086f@mail.gmail.com>
+References: <20091024171823.27896031.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+	helo=mx.sourceforge.net)
+	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <geert.uytterhoeven@gmail.com>) id 1NAssp-0007cV-Ba
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 18 Nov 2009 22:20:15 +0000
+Received: from mail-fx0-f222.google.com ([209.85.220.222])
+	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1NAssh-0002JH-Hp for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 18 Nov 2009 22:20:15 +0000
+Received: by fxm22 with SMTP id 22so1942974fxm.2
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 18 Nov 2009 14:20:01 -0800 (PST)
+In-Reply-To: <20091024171823.27896031.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://linux.davincidsp.com/mailman/options/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://linux.davincidsp.com/pipermail/davinci-linux-open-source>
-List-Post: <mailto:davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-List-Help: <mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=help>
-List-Subscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=subscribe>
-Sender: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-Errors-To: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-To: linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-Cc: akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org, krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Following issues have been addressed on DA8XX/OMAP-L1XX:
+On Sat, Oct 24, 2009 at 16:18, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+>
+> Add check if palette register number is in correct range
+> for few drivers which miss it. The regno value comes
+> indirectly from user space.
+>
+> Two drivers has converted check from BUG_ON() macro
+> to just return an error (non-zero value).
+>
+> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+>
+> ---
+>
+> diff --git a/drivers/video/atafb.c b/drivers/video/atafb.c
+> index 8cd279b..2682938 100644
+> --- a/drivers/video/atafb.c
+> +++ b/drivers/video/atafb.c
 
-a. Screen misalignment during booting when frame buffer
-   console is enabled.
-b. Driver was configured always in PSEUDOCOLOR mode.
-   This patch dynamically configures the driver either
-   in PSEUDOCOLOUR or TRUECOLOR mode depending on bpp.
-c. The RED and BLUE offsets were interchanged resulting
-   in wrong bootup logo colour.
+Thanks, I'll take the atafb part through the m68k tree.
 
-This patch has been tested on DA830/OMAP-L137 and
-DA850/OMAP-L138 EVMs.
+Gr{oetje,eeting}s,
 
-Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj-l0cyMroinI0@public.gmane.org>
----
- drivers/video/da8xx-fb.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+						Geert
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index d065894..95f4e73 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -554,11 +554,11 @@ static int fb_check_var(struct fb_var_screeninfo *var,
- 		var->transp.length = 0;
- 		break;
- 	case 16:		/* RGB 565 */
--		var->red.offset = 0;
-+		var->red.offset = 11;
- 		var->red.length = 5;
- 		var->green.offset = 5;
- 		var->green.length = 6;
--		var->blue.offset = 11;
-+		var->blue.offset = 0;
- 		var->blue.length = 5;
- 		var->transp.offset = 0;
- 		var->transp.length = 0;
-@@ -591,7 +591,7 @@ static int __devexit fb_remove(struct platform_device *dev)
- 		unregister_framebuffer(info);
- 		fb_dealloc_cmap(&info->cmap);
- 		dma_free_coherent(NULL, par->databuf_sz + PAGE_SIZE,
--					info->screen_base,
-+					info->screen_base - PAGE_SIZE,
- 					info->fix.smem_start);
- 		free_irq(par->irq, par);
- 		clk_disable(par->lcdc_clk);
-@@ -749,6 +749,7 @@ static int __init fb_probe(struct platform_device *device)
- 				(PAGE_SIZE - par->palette_sz);
- 
- 	/* the rest of the frame buffer is pixel data */
-+	da8xx_fb_info->screen_base = par->v_palette_base + par->palette_sz;
- 	da8xx_fb_fix.smem_start = par->p_palette_base + par->palette_sz;
- 	da8xx_fb_fix.smem_len = par->databuf_sz - par->palette_sz;
- 	da8xx_fb_fix.line_length = (lcdc_info->width * lcd_cfg->bpp) / 8;
-@@ -787,6 +788,8 @@ static int __init fb_probe(struct platform_device *device)
- 	da8xx_fb_info->var = da8xx_fb_var;
- 	da8xx_fb_info->fbops = &da8xx_fb_ops;
- 	da8xx_fb_info->pseudo_palette = par->pseudo_palette;
-+	da8xx_fb_info->fix.visual = (da8xx_fb_info->var.bits_per_pixel <= 8) ?
-+				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
- 
- 	ret = fb_alloc_cmap(&da8xx_fb_info->cmap, PALETTE_SIZE, 0);
- 	if (ret)
-@@ -825,7 +828,7 @@ err_free_irq:
- 
- err_release_fb_mem:
- 	dma_free_coherent(NULL, par->databuf_sz + PAGE_SIZE,
--				da8xx_fb_info->screen_base,
-+				da8xx_fb_info->screen_base - PAGE_SIZE,
- 				da8xx_fb_info->fix.smem_start);
- 
- err_release_fb:
--- 
-1.5.6
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
+------------------------------------------------------------------------------
+Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
+trial. Simplify your report design, integration and deployment - and focus on 
+what you do best, core application coding. Discover what's new with
+Crystal Reports now.  http://p.sf.net/sfu/bobj-july

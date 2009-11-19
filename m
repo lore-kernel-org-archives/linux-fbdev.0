@@ -1,26 +1,22 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] add palette register check
-Date: Wed, 18 Nov 2009 23:20:00 +0100
-Message-ID: <10f740e80911181420k4e405e69s992cf0da682a086f@mail.gmail.com>
-References: <20091024171823.27896031.krzysztof.h1@poczta.fm>
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: i810fb: fix wrong pixclock for discrete mode
+	selection
+Date: Thu, 19 Nov 2009 18:58:01 +0100
+Message-ID: <20091119185801.467fbaf8.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by 235xhf1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <geert.uytterhoeven@gmail.com>) id 1NAssp-0007cV-Ba
+	by 3yr0jf1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <krzysztof.h1@poczta.fm>) id 1NBBFY-0000ru-R4
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 18 Nov 2009 22:20:15 +0000
-Received: from mail-fx0-f222.google.com ([209.85.220.222])
-	by 1b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1NAssh-0002JH-Hp for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 18 Nov 2009 22:20:15 +0000
-Received: by fxm22 with SMTP id 22so1942974fxm.2
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 18 Nov 2009 14:20:01 -0800 (PST)
-In-Reply-To: <20091024171823.27896031.krzysztof.h1@poczta.fm>
+	Thu, 19 Nov 2009 17:56:56 +0000
+Received: from smtp240.poczta.interia.pl ([217.74.64.240])
+	by 3b2kzd1.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1NBBFR-0000as-Ff for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 19 Nov 2009 17:56:56 +0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,40 +26,40 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 
-On Sat, Oct 24, 2009 at 16:18, Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
->
-> Add check if palette register number is in correct range
-> for few drivers which miss it. The regno value comes
-> indirectly from user space.
->
-> Two drivers has converted check from BUG_ON() macro
-> to just return an error (non-zero value).
->
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
->
-> ---
->
-> diff --git a/drivers/video/atafb.c b/drivers/video/atafb.c
-> index 8cd279b..2682938 100644
-> --- a/drivers/video/atafb.c
-> +++ b/drivers/video/atafb.c
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Thanks, I'll take the atafb part through the m68k tree.
+If the i810fb driver is configured for use only predefined discrete video modes
+the wrong pixclock value is used. The par->regs.pixclock value is a value from
+the previous mode when a video mode is switched. It results in unreadable screen
+if the old video mode has higher resolution and the new mode with the old (high)
+pixclock is outside attached monitor's specs.
 
-Gr{oetje,eeting}s,
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+I have noticed this testing the patch named "i810fb: Fix stack exploding".
 
-						Geert
+This patch requires my patch send to Alan Cox and Andrew Morton 
+named "i810fb: Fix stack exploding".
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+--- drivers/video/i810/i810_dvt.c~	2009-11-17 19:38:11.002864450 +0100
++++ drivers/video/i810/i810_dvt.c	2009-11-19 18:48:52.518846238 +0100
+@@ -233,7 +233,7 @@ static int i810fb_find_best_mode(u32 xre
+ void i810fb_encode_registers(const struct fb_var_screeninfo *var,
+ 			     struct i810fb_par *par, u32 xres, u32 yres)
+ {
+-	u32 i_best = i810fb_find_best_mode(xres, yres, par->regs.pixclock);
++	u32 i_best = i810fb_find_best_mode(xres, yres, var->pixclock);
+ 
+ 	par->regs = std_modes[i_best];
+ 
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+----------------------------------------------------------------------
+Najlepsze oferty Sylwestrowe!
+Sprawdz >>> http://link.interia.pl/f2426
+
 
 ------------------------------------------------------------------------------
 Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 

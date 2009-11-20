@@ -1,38 +1,30 @@
-From: Paulius Zaleckas <paulius.zaleckas@gmail.com>
-Date: Fri, 20 Nov 2009 13:16:28 +0000
-Subject: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video mode
-Message-Id: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
+From: Clemens Ladisch <clemens@ladisch.de>
+Date: Fri, 20 Nov 2009 15:55:05 +0000
+Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video
+Message-Id: <4B06BBD9.4040407@ladisch.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
+In-Reply-To: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi,
+Paulius Zaleckas wrote:
+> On drivers using drm_fb_helper's in fb_ops it is not possible to change
+> video mode, because of different var->pixclock evaluation: ...
 
-On drivers using drm_fb_helper's in fb_ops it is not possible to change
-video mode, because of different var->pixclock evaluation:
+patch:
+http://www.mail-archive.com/dri-devel@lists.sourceforge.net/msg44369.html
 
-int drm_fb_helper_check_var(struct fb_var_screeninfo *var,
-			    struct fb_info *info)
-{
-[...]
-	if (var->pixclock = -1 || !var->pixclock)
-		return -EINVAL;
-[...]
+> P.S. check CLCOK spelling :)
 
-int drm_fb_helper_set_par(struct fb_info *info)
-{
-[...]
-	if (var->pixclock != -1) {
-		DRM_ERROR("PIXEL CLCOK SET\n");
-		return -EINVAL;
-	}
-[...]
+This patch got lost during fb helper reorganization:
+http://git.kernel.org/linus/1bcbf3948876e31a8ece28597dec447611ad9c8b
 
-One of these evaluations will fail regardless of pixclock value.
 
-P.S. check CLCOK spelling :)
+Regards,
+Clemens
 
 ------------------------------------------------------------------------------
 Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 

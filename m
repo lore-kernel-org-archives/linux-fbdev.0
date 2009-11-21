@@ -1,7 +1,7 @@
 From: Dave Airlie <airlied@gmail.com>
-Date: Sat, 21 Nov 2009 04:25:27 +0000
+Date: Sat, 21 Nov 2009 04:27:18 +0000
 Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video
-Message-Id: <21d7e9970911202025g57f72ecexbe29d6ac150153bb@mail.gmail.com>
+Message-Id: <21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
 In-Reply-To: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
@@ -10,75 +10,54 @@ Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-On Sat, Nov 21, 2009 at 6:48 AM, James Simmons <jsimmons@infradead.org> wro=
-te:
+On Fri, Nov 20, 2009 at 11:16 PM, Paulius Zaleckas
+<paulius.zaleckas@gmail.com> wrote:
+> Hi,
 >
+> On drivers using drm_fb_helper's in fb_ops it is not possible to change
+> video mode, because of different var->pixclock evaluation:
 >
-> On Fri, 20 Nov 2009, Paulius Zaleckas wrote:
+> int drm_fb_helper_check_var(struct fb_var_screeninfo *var,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct fb_info *in=
+fo)
+> {
+> [...]
+> =A0 =A0 =A0 =A0if (var->pixclock =3D -1 || !var->pixclock)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -EINVAL;
+> [...]
 >
->> On 11/20/2009 10:01 PM, James Simmons wrote:
->> >
->> > > > > > Paulius Zaleckas wrote:
->> > > > > > > On drivers using drm_fb_helper's in fb_ops it is not possibl=
-e to
->> > > > > > > change
->> > > > > > > video mode, because of different var->pixclock evaluation: .=
-..
->> > > > > >
->> > > > > > patch:
->> > > > > > http://www.mail-archive.com/dri-devel@lists.sourceforge.net/ms=
-g44369.html
->> > > > >
->> > > > > Those patches will enable fbdev apps to run properly. More patch=
-es are
->> > > > > needed if you want to support mode switching using the fbdev emu=
-lation
->> > > > > layer. I noticed my patches and yours where lost. Who do you send
->> > > > > patches
->> > > > > too that can merge them ?
->> > > >
->> > > > y:/usr/src/git26> =A0 perl scripts/get_maintainer.pl -f
->> > > > drivers/gpu/drm/drm_fb_helper.c
->> > > > David Airlie<airlied@linux.ie>
->> > > > Dave Airlie<airlied@redhat.com>
->> > > > Jesse Barnes<jbarnes@virtuousgeek.org>
->> > > > Mikael Pettersson<mikpe@it.uu.se>
->> > > > dri-devel@lists.sourceforge.net
->> > > > linux-kernel@vger.kernel.org
->> > > >
->> > > > That's accurate enough.
->> > > >
->> > > > Generally, if nothing has happened in a week, the chances that it's
->> > > > lost are very high. =A0Resend. =A0If you like, cc me and I'll main=
-tain the
->> > > > patches
->> > > > and resend them for you.
->> > >
->> > > You can add Tested-by: Paulius Zaleckas<paulius.zaleckas@gmail.com>
->> > > for
->> > > http://www.mail-archive.com/dri-devel@lists.sourceforge.net/msg44369=
-.html
->> > > as this was preventing DirectFB from running on my Asus Eee PC 701.
->> >
->> > I tested it as well with the both my 3Dfx driver that I wrote with KMS=
- and
->> > the nouveau driver. We just need to make sure that the patches end up =
-in
->> > the drm-next tree or these patches will be lost when drm-next gets mer=
-ged
->> > to linus tree.
->>
->> IMHO this patch should end up in current (2.6.32) kernel and we should
->> send it to stable ML.
+> int drm_fb_helper_set_par(struct fb_info *info)
+> {
+> [...]
+> =A0 =A0 =A0 =A0if (var->pixclock !=3D -1) {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0DRM_ERROR("PIXEL CLCOK SET\n");
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -EINVAL;
+> =A0 =A0 =A0 =A0}
+> [...]
 >
-> Honestly I like to see it there as well.
+> One of these evaluations will fail regardless of pixclock value.
 >
 
-I have them queued for drm-next already at least locally, I wasn't aware
-they were suitable for final, I didn't get a chance to really test them unt=
-il
-last week and make sure they didn't hide any side effects. I can
-ask for them to go to stable when the merge window opens, I think
-its too late for final.
+At the moment the problem with fbset is what to do with it in the
+dual head case. Currently we create an fb console that is lowest
+common size of the two heads and set native modes on both,
+
+Now if a user runs fbset, I'm not sure what the right answer is,
+a) pick a head in advance via sysfs maybe and set it on that.
+b) try and set the mode on both heads cloned (what to do if
+there is no common mode is another issue).
 
 Dave.
+
+---------------------------------------------------------------------------=
+---
+Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day=
+=20
+trial. Simplify your report design, integration and deployment - and focus =
+on=20
+what you do best, core application coding. Discover what's new with
+Crystal Reports now.  http://p.sf.net/sfu/bobj-july
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel

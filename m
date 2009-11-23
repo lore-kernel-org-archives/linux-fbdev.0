@@ -1,147 +1,43 @@
-From: "Chaithrika U S" <chaithrika-l0cyMroinI0@public.gmane.org>
-Subject: RE: [PATCH] davinci: fb: Calculate the clock divider from pixel clock
-	info
-Date: Mon, 23 Nov 2009 09:04:05 +0530
-Message-ID: <000001ca6bed$ced531a0$6c7f94e0$@com>
-References: <1256033887-1582-1-git-send-email-chaithrika@ti.com>
+From: Finn Thain <fthain@telegraphics.com.au>
+Subject: [PATCH] macfb: trivial comment fixes
+Date: Mon, 23 Nov 2009 15:37:05 +1100 (EST)
+Message-ID: <alpine.OSX.2.00.0911231533320.533@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-m68k-owner@vger.kernel.org>
+Sender: linux-m68k-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-In-Reply-To: 
-Content-Language: en-us
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://linux.davincidsp.com/mailman/options/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://linux.davincidsp.com/pipermail/davinci-linux-open-source>
-List-Post: <mailto:davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-List-Help: <mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=help>
-List-Subscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=subscribe>
-Sender: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-Errors-To: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-To: 'Chaithrika U S' <chaithrika-l0cyMroinI0@public.gmane.org>, linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-Cc: davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-m68k@vger.kernel.org
 
-Andrew,
 
-Can you please push this patch to mmotm tree. The patch
-'davinci: fb: add cpufreq support'(which is already present
-in mmotm tree) is dependent on this patch.
+Some corrections to the comments which escaped my previous macfb patch.
 
-Regards, 
-Chaithrika
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
-On Fri, Oct 23, 2009 at 10:41:08, Chaithrika U S wrote:
-> All,
-> 
-> Any comments/suggestions on this patch?
-> 
-> Regards,
-> Chaithrika
-> 
-> On Tue, Oct 20, 2009 at 15:48:07, Chaithrika U S wrote:
-> > The clock divider value can be calculated from the pixel clock value 
-> > for the panel. This gives more flexiblity to the driver to change the 
-> > divider value on the fly as in the case of cpufreq
-> > feature- support for which will be added shortly.
-> > 
-> > Signed-off-by: Chaithrika U S <chaithrika-l0cyMroinI0@public.gmane.org>
-> > ---
-> > This patch applies on Linus' kernel tree.
-> > Resending this patch as missed out marking fbdev list previously.
-> > 
-> >  drivers/video/da8xx-fb.c |   28 ++++++++++++++++++++--------
-> >  1 files changed, 20 insertions(+), 8 deletions(-)
-> > 
-> > diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c index 
-> > d065894..d9ab839 100644
-> > --- a/drivers/video/da8xx-fb.c
-> > +++ b/drivers/video/da8xx-fb.c
-> > @@ -113,6 +113,7 @@ struct da8xx_fb_par {
-> >  	unsigned short pseudo_palette[16];
-> >  	unsigned int databuf_sz;
-> >  	unsigned int palette_sz;
-> > +	unsigned int pxl_clk;
-> >  };
-> >  
-> >  /* Variable Screen Information */
-> > @@ -155,7 +156,7 @@ struct da8xx_panel {
-> >  	int		vfp;		/* Vertical front porch */
-> >  	int		vbp;		/* Vertical back porch */
-> >  	int		vsw;		/* Vertical Sync Pulse Width */
-> > -	int		pxl_clk;	/* Pixel clock */
-> > +	unsigned int	pxl_clk;	/* Pixel clock */
-> >  	unsigned char	invert_pxl_clk;	/* Invert Pixel clock */
-> >  };
-> >  
-> > @@ -171,7 +172,7 @@ static struct da8xx_panel known_lcd_panels[] = {
-> >  		.vfp = 2,
-> >  		.vbp = 2,
-> >  		.vsw = 0,
-> > -		.pxl_clk = 0x10,
-> > +		.pxl_clk = 4608000,
-> >  		.invert_pxl_clk = 1,
-> >  	},
-> >  	/* Sharp LK043T1DG01 */
-> > @@ -185,7 +186,7 @@ static struct da8xx_panel known_lcd_panels[] = {
-> >  		.vfp = 2,
-> >  		.vbp = 2,
-> >  		.vsw = 10,
-> > -		.pxl_clk = 0x12,
-> > +		.pxl_clk = 7833600,
-> >  		.invert_pxl_clk = 0,
-> >  	},
-> >  };
-> > @@ -451,6 +452,18 @@ static void lcd_reset(struct da8xx_fb_par *par)
-> >  	lcdc_write(0, LCD_RASTER_CTRL_REG);
-> >  }
-> >  
-> > +static void lcd_calc_clk_divider(struct da8xx_fb_par *par) {
-> > +	unsigned int lcd_clk, div;
-> > +
-> > +	lcd_clk = clk_get_rate(par->lcdc_clk);
-> > +	div = lcd_clk / par->pxl_clk;
-> > +
-> > +	/* Configure the LCD clock divisor. */
-> > +	lcdc_write(LCD_CLK_DIVISOR(div) |
-> > +			(LCD_RASTER_MODE & 0x1), LCD_CTRL_REG); }
-> > +
-> >  static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
-> >  		struct da8xx_panel *panel)
-> >  {
-> > @@ -459,9 +472,8 @@ static int lcd_init(struct da8xx_fb_par *par, 
-> > const struct lcd_ctrl_config *cfg,
-> >  
-> >  	lcd_reset(par);
-> >  
-> > -	/* Configure the LCD clock divisor. */
-> > -	lcdc_write(LCD_CLK_DIVISOR(panel->pxl_clk) |
-> > -			(LCD_RASTER_MODE & 0x1), LCD_CTRL_REG);
-> > +	/* Calculate the divider */
-> > +	lcd_calc_clk_divider(par);
-> >  
-> >  	if (panel->invert_pxl_clk)
-> >  		lcdc_write((lcdc_read(LCD_RASTER_TIMING_2_REG) | @@ -721,6 +733,8 
-> > @@ static int __init fb_probe(struct platform_device *device)
-> >  	}
-> >  
-> >  	par = da8xx_fb_info->par;
-> > +	par->lcdc_clk = fb_clk;
-> > +	par->pxl_clk = lcdc_info->pxl_clk;
-> >  
-> >  	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
-> >  		dev_err(&device->dev, "lcd_init failed\n"); @@ -753,8 +767,6 @@ 
-> > static int __init fb_probe(struct platform_device *device)
-> >  	da8xx_fb_fix.smem_len = par->databuf_sz - par->palette_sz;
-> >  	da8xx_fb_fix.line_length = (lcdc_info->width * lcd_cfg->bpp) / 8;
-> >  
-> > -	par->lcdc_clk = fb_clk;
-> > -
-> >  	par->irq = platform_get_irq(device, 0);
-> >  	if (par->irq < 0) {
-> >  		ret = -ENOENT;
-> > --
-> > 1.5.6
-> > 
-> 
+---
+ drivers/video/macfb.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+Index: linux-2.6.31/drivers/video/macfb.c
+===================================================================
+--- linux-2.6.31.orig/drivers/video/macfb.c	2009-11-21 19:42:44.000000000 +1100
++++ linux-2.6.31/drivers/video/macfb.c	2009-11-23 15:28:39.000000000 +1100
+@@ -228,6 +228,7 @@ static int v8_brazil_setpalette(unsigned
+ 	return 0;
+ }
+ 
++/* RAM-Based Video */
+ static int rbv_setpalette(unsigned int regno, unsigned int red,
+                           unsigned int green, unsigned int blue,
+                           struct fb_info *info)
+@@ -345,8 +346,6 @@ static int jet_setpalette(unsigned int r
+  * input and viewing the screen at the same time!  The 840AV
+  * Can add another 1MB RAM to give the two framebuffers
+  * 1MB RAM apiece.
+- *
+- * FIXME: this doesn't seem to work anymore.
+  */
+ static int civic_setpalette(unsigned int regno, unsigned int red,
+                             unsigned int green, unsigned int blue,

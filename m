@@ -1,43 +1,64 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH] macfb: trivial comment fixes
-Date: Mon, 23 Nov 2009 15:37:05 +1100 (EST)
-Message-ID: <alpine.OSX.2.00.0911231533320.533@localhost>
+From: Ben Dooks <ben@simtec.co.uk>
+Subject: [PATCH 3/4] SM501: Fix use of old <asm/io.h>
+	instead of <linux/io.h>
+Date: Mon, 23 Nov 2009 16:01:27 +0000
+Message-ID: <20091123160145.113400548@fluff.org.uk>
+References: <20091123160124.403392586@fluff.org.uk>
 Mime-Version: 1.0
-Return-path: <linux-m68k-owner@vger.kernel.org>
-Sender: linux-m68k-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-m68k@vger.kernel.org
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by sfs-ml-2.v29.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <ben@fluff.org.uk>) id 1NCbMn-0003JX-Dg
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 23 Nov 2009 16:02:17 +0000
+Received: from aeryn.fluff.org.uk ([87.194.8.8] helo=kira.home.fluff.org)
+	by 72vjzd1.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1NCbMh-0003zP-0g
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 23 Nov 2009 16:02:17 +0000
+Content-Disposition: inline; filename=simtec/ready/sm501-fix-io-include.patch
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: krzysztof.h1@wp.p, akpm@linux-foundation.org
+Cc: lethal@linux-sh.org, dilinger@debian.org, linux-fbdev-devel@lists.sourceforge.net, Simtec Linux Team <linux@simtec.co.uk>
 
+Fix the old style use of <asm/io.h> by replacing it with <linux/io.h>.
 
-Some corrections to the comments which escaped my previous macfb patch.
-
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Signed-off-by: Ben Dooks <ben@simtec.co.uk>
+Signed-off-by: Simtec Linux Team <linux@simtec.co.uk>
 
 ---
- drivers/video/macfb.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/sm501fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6.31/drivers/video/macfb.c
+Index: b/drivers/video/sm501fb.c
 ===================================================================
---- linux-2.6.31.orig/drivers/video/macfb.c	2009-11-21 19:42:44.000000000 +1100
-+++ linux-2.6.31/drivers/video/macfb.c	2009-11-23 15:28:39.000000000 +1100
-@@ -228,6 +228,7 @@ static int v8_brazil_setpalette(unsigned
- 	return 0;
- }
+--- a/drivers/video/sm501fb.c	2009-11-10 19:33:55.000000000 +0000
++++ b/drivers/video/sm501fb.c	2009-11-10 19:34:04.000000000 +0000
+@@ -29,8 +29,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+ #include <linux/console.h>
++#include <linux/io.h>
  
-+/* RAM-Based Video */
- static int rbv_setpalette(unsigned int regno, unsigned int red,
-                           unsigned int green, unsigned int blue,
-                           struct fb_info *info)
-@@ -345,8 +346,6 @@ static int jet_setpalette(unsigned int r
-  * input and viewing the screen at the same time!  The 840AV
-  * Can add another 1MB RAM to give the two framebuffers
-  * 1MB RAM apiece.
-- *
-- * FIXME: this doesn't seem to work anymore.
-  */
- static int civic_setpalette(unsigned int regno, unsigned int red,
-                             unsigned int green, unsigned int blue,
+-#include <asm/io.h>
+ #include <asm/uaccess.h>
+ #include <asm/div64.h>
+ 
+
+
+------------------------------------------------------------------------------
+Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
+trial. Simplify your report design, integration and deployment - and focus on 
+what you do best, core application coding. Discover what's new with
+Crystal Reports now.  http://p.sf.net/sfu/bobj-july

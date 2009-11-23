@@ -1,28 +1,37 @@
-From: Alexander Shishkin <virtuoso@slind.org>
-Date: Thu, 05 Nov 2009 08:04:53 +0000
-Subject: Re: [PATCH] mb862xxfb: add acceleration support for Coral-P/Coral-PA.
-Message-Id: <71a0d6ff0911050004q76874f3cj88ee0908e172bee2@mail.gmail.com>
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Date: Mon, 23 Nov 2009 18:11:22 +0000
+Subject: [PATCH 2/2] OMAP: ams_delta_defconfig: enable LCD class device support
+Message-Id: <200911231911.27418.jkrzyszt@tis.icnet.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1256041745-21128-1-git-send-email-valentin.sitdikov@siemens.com>
-In-Reply-To: <1256041745-21128-1-git-send-email-valentin.sitdikov@siemens.com>
+References: <200911231857.55566.jkrzyszt@tis.icnet.pl>
+In-Reply-To: <200911231857.55566.jkrzyszt@tis.icnet.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Valentin Sitdikov <valentin.sitdikov@siemens.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org, virtuoso@slind.org
+To: linux-omap@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Imre Deak <imre.deak@nokia.com>, Tony Lindgren <tony@atomide.com>
 
-2009/10/20 Valentin Sitdikov <valentin.sitdikov@siemens.com>:
+The patch enables LCD class device support in ams_delta_defconfig in order to
+get optional contrast control functional.
 
-[snip]
-> + * (C) 2007 Alexandr Shishkin <alexandr.shishkin@siemens.com>
-Please change my email address to virtuoso@slind.org, the one
-mentioned here is no longer valid. And the name is "Alexander".
+Created and tested against linux-omap for-next,
+commit 155a75d9725e66e5ec8a383822957dee52427057.
 
-> + * (C) 2009 Valentin Sitdikov <valentin.sitdikovt@siemens.com>
-And you also seem to have an extra "t" in your email.
+Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
 
-Signed-off-by: Alexander Shishkin <virtuoso@slind.org>
+---
+--- a/arch/arm/configs/ams_delta_defconfig	2009-11-14 23:48:40.000000000 +0100
++++ b/arch/arm/configs/ams_delta_defconfig	2009-11-16 01:06:12.000000000 +0100
+@@ -836,7 +836,8 @@
+ #
+ # Graphics support
+ #
+-# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++CONFIG_BACKLIGHT_LCD_SUPPORT=y
++CONFIG_LCD_CLASS_DEVICE=y
+ 
+ #
+ # Display device support
 
-Regards,
---
-Alex
+
+

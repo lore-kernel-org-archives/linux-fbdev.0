@@ -1,150 +1,56 @@
-From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Date: Mon, 23 Nov 2009 18:09:07 +0000
-Subject: [PATCH 1/2] omapfb: lcd_ams_delta: add support for contrast control
-Message-Id: <200911231909.11600.jkrzyszt@tis.icnet.pl>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 23 Nov 2009 18:38:48 +0000
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/4] FRAMEBUFFER: Fix cfbfillrect for
+Message-Id: <10f740e80911231038o6b18103fxd0206db41ed89b4e@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <200911231857.55566.jkrzyszt@tis.icnet.pl>
-In-Reply-To: <200911231857.55566.jkrzyszt@tis.icnet.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-omap@vger.kernel.org, Imre Deak <imre.deak@nokia.com>, Tony Lindgren <tony@atomide.com>
 
-The patch extends the Amstrad Delta LCD panel driver with optional support for
-changing contrast using standard LCD class device API instead of setting it
-silently to a default value at panel enable. It also allows for lowering power
-consumption by turning off OMAP_PWL_CLK_ENABLE via lcd_ops.set_power callback.
+On Mon, Nov 23, 2009 at 17:01, Ben Dooks <ben@simtec.co.uk> wrote:
+> From: Vincent Sanders <vince@simtec.co.uk>
+>
+> The cfbfillrect routine was incorrectly using the palette to lookup true and
+> direct colours, but using indexed colours directly. This was simply the
+> inversion of the sense of an 'if' statement. This patch fixes that so that
+> colours other than black work properly for cfbfillrect.
+>
+> Signed-off-by: Vincent Sanders <vince@simtec.co.uk>
+> Signed-off-by: Simtec Linux Team <linux@simtec.co.uk>
+>
+> ---
+> drivers/video/cfbfillrect.c |    4 ++--
+> 1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> Index: b/drivers/video/cfbfillrect.c
+> =================================> --- a/drivers/video/cfbfillrect.c	2009-05-10 14:11:19.000000000 +0100
+> +++ b/drivers/video/cfbfillrect.c	2009-05-10 14:16:33.000000000 +0100
+> @@ -289,9 +289,9 @@ void cfb_fillrect(struct fb_info *p, con
+>
+>  	if (p->fix.visual = FB_VISUAL_TRUECOLOR ||
+>  	    p->fix.visual = FB_VISUAL_DIRECTCOLOR )
+> -		fg = ((u32 *) (p->pseudo_palette))[rect->color];
+> -	else
+>  		fg = rect->color;
+> +	else
+> +		fg = ((u32 *) (p->pseudo_palette))[rect->color];
 
-Created and tested against linux-omap for-next,
-commit 155a75d9725e66e5ec8a383822957dee52427057.
+This is not correct. The pseudo palette must be used in truecolor and
+directcolor mode,
+as rect->color is a console palette index, not a pixel value.
 
-Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Perhaps you forgot to initialize pseudo_palette in your fbdev driver?
 
----
---- a/drivers/video/omap/lcd_ams_delta.c	2009-11-14 23:49:16.000000000 +0100
-+++ b/drivers/video/omap/lcd_ams_delta.c	2009-11-16 01:32:19.000000000 +0100
-@@ -24,6 +24,7 @@
- #include <linux/platform_device.h>
- #include <linux/io.h>
- #include <linux/delay.h>
-+#include <linux/lcd.h>
- 
- #include <plat/board-ams-delta.h>
- #include <mach/hardware.h>
-@@ -31,6 +32,71 @@
- 
- #define AMS_DELTA_DEFAULT_CONTRAST	112
- 
-+#define AMS_DELTA_MAX_CONTRAST		0x00FF
-+#define AMS_DELTA_LCD_POWER		0x0100
-+
-+
-+/* LCD class device section */
-+
-+static int ams_delta_lcd;
-+
-+static int ams_delta_lcd_set_power(struct lcd_device *dev, int power)
-+{
-+	if (power = FB_BLANK_UNBLANK) {
-+		if (!(ams_delta_lcd & AMS_DELTA_LCD_POWER)) {
-+			omap_writeb(ams_delta_lcd & AMS_DELTA_MAX_CONTRAST,
-+					OMAP_PWL_ENABLE);
-+			omap_writeb(1, OMAP_PWL_CLK_ENABLE);
-+			ams_delta_lcd |= AMS_DELTA_LCD_POWER;
-+		}
-+	} else {
-+		if (ams_delta_lcd & AMS_DELTA_LCD_POWER) {
-+			omap_writeb(0, OMAP_PWL_ENABLE);
-+			omap_writeb(0, OMAP_PWL_CLK_ENABLE);
-+			ams_delta_lcd &= ~AMS_DELTA_LCD_POWER;
-+		}
-+	}
-+	return 0;
-+}
-+
-+static int ams_delta_lcd_set_contrast(struct lcd_device *dev, int value)
-+{
-+	if ((value >= 0) && (value <= AMS_DELTA_MAX_CONTRAST)) {
-+		omap_writeb(value, OMAP_PWL_ENABLE);
-+		ams_delta_lcd &= ~AMS_DELTA_MAX_CONTRAST;
-+		ams_delta_lcd |= value;
-+	}
-+	return 0;
-+}
-+
-+#ifdef CONFIG_LCD_CLASS_DEVICE
-+static int ams_delta_lcd_get_power(struct lcd_device *dev)
-+{
-+	if (ams_delta_lcd & AMS_DELTA_LCD_POWER)
-+		return FB_BLANK_UNBLANK;
-+	else
-+		return FB_BLANK_POWERDOWN;
-+}
-+
-+static int ams_delta_lcd_get_contrast(struct lcd_device *dev)
-+{
-+	if (!(ams_delta_lcd & AMS_DELTA_LCD_POWER))
-+		return 0;
-+
-+	return ams_delta_lcd & AMS_DELTA_MAX_CONTRAST;
-+}
-+
-+static struct lcd_ops ams_delta_lcd_ops = {
-+	.get_power = ams_delta_lcd_get_power,
-+	.set_power = ams_delta_lcd_set_power,
-+	.get_contrast = ams_delta_lcd_get_contrast,
-+	.set_contrast = ams_delta_lcd_set_contrast,
-+};
-+#endif
-+
-+
-+/* omapfb panel section */
-+
- static int ams_delta_panel_init(struct lcd_panel *panel,
- 		struct omapfb_device *fbdev)
- {
-@@ -47,10 +113,6 @@ static int ams_delta_panel_enable(struct
- 			AMS_DELTA_LATCH2_LCD_NDISP);
- 	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_VBLEN,
- 			AMS_DELTA_LATCH2_LCD_VBLEN);
--
--	omap_writeb(1, OMAP_PWL_CLK_ENABLE);
--	omap_writeb(AMS_DELTA_DEFAULT_CONTRAST, OMAP_PWL_ENABLE);
--
- 	return 0;
- }
- 
-@@ -90,8 +152,31 @@ static struct lcd_panel ams_delta_panel 
- 	.get_caps	= ams_delta_panel_get_caps,
- };
- 
-+
-+/* platform driver section */
-+
- static int ams_delta_panel_probe(struct platform_device *pdev)
- {
-+	struct lcd_device *lcd_device = NULL;
-+#ifdef CONFIG_LCD_CLASS_DEVICE
-+	int ret;
-+
-+	lcd_device = lcd_device_register("omapfb", &pdev->dev, NULL,
-+						&ams_delta_lcd_ops);
-+
-+	if (IS_ERR(lcd_device)) {
-+		ret = PTR_ERR(lcd_device);
-+		dev_err(&pdev->dev, "failed to register device\n");
-+		return ret;
-+	}
-+
-+	platform_set_drvdata(pdev, lcd_device);
-+	lcd_device->props.max_contrast = AMS_DELTA_MAX_CONTRAST;
-+#endif
-+
-+	ams_delta_lcd_set_contrast(lcd_device, AMS_DELTA_DEFAULT_CONTRAST);
-+	ams_delta_lcd_set_power(lcd_device, FB_BLANK_UNBLANK);
-+
- 	omapfb_register_panel(&ams_delta_panel);
- 	return 0;
- }
+P.S. Please send patches inline, so it's easier for us to comment on them.
 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds

@@ -1,26 +1,52 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/4] SM501: Implement acceleration
- features
-Date: Mon, 23 Nov 2009 12:40:59 -0800
-Message-ID: <20091123124059.c576c1b0.akpm@linux-foundation.org>
-References: <20091123160124.403392586@fluff.org.uk>
-	<20091123160145.255937606@fluff.org.uk>
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 30/38] move mipid_spi_remove to
+	.devexit.text
+Date: Tue, 24 Nov 2009 22:07:25 +0100
+Message-ID: <1259096853-18909-30-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1259096853-18909-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-2-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-3-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-4-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-5-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-6-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-7-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-8-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-9-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-10-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-11-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-12-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-13-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-14-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-15-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-16-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-17-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-18-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-19-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-20-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-21-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-22-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-23-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-24-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-25-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-26-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-27-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-28-git-send-email-u.kleine-koenig@pengutronix.de>
+	<1259096853-18909-29-git-send-email-u.kleine-koenig@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by sfs-ml-3.v29.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <akpm@linux-foundation.org>) id 1NCfiu-0005ru-Us
+	by sfs-ml-1.v29.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <ukl@pengutronix.de>) id 1ND2cz-0008PB-J5
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 23 Nov 2009 20:41:24 +0000
-Received: from smtp1.linux-foundation.org ([140.211.169.13])
-	by sfi-mx-2.v28.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.69) id 1NCfio-0000xx-Bg
+	Tue, 24 Nov 2009 21:08:49 +0000
+Received: from metis.ext.pengutronix.de ([92.198.50.35])
+	by sfi-mx-3.v28.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1ND2ct-0002vH-0J
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 23 Nov 2009 20:41:24 +0000
-In-Reply-To: <20091123160145.255937606@fluff.org.uk>
+	Tue, 24 Nov 2009 21:08:49 +0000
+In-Reply-To: <1259096853-18909-29-git-send-email-u.kleine-koenig@pengutronix.de>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,30 +56,36 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Ben Dooks <ben@simtec.co.uk>
-Cc: linux-fbdev-devel@lists.sourceforge.net, krzysztof.h1@wp.p, Vincent Sanders <vince@simtec.co.uk>, lethal@linux-sh.org, dilinger@debian.org, Simtec Linux Team <linux@simtec.co.uk>
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+Cc: Imre Deak <imre.deak@solidboot.com>, linux-fbdev-devel@lists.sourceforge.net, Hiroshi DOYU <Hiroshi.DOYU@nokia.com>, Mike Wege <ext-mike.wege@nokia.com>, akpm@linux-foundation.org, linux-omap@vger.kernel.org, Arnaud Patard <arnaud.patard@rtp-net.org>
 
-On Mon, 23 Nov 2009 16:01:28 +0000
-Ben Dooks <ben@simtec.co.uk> wrote:
-
-> From: Vincent Sanders <vince@simtec.co.uk>
-> 
-> This patch provides the acceleration entry points for the SM501
-> framebuffer driver.
-> 
-> This patch provides the sync, copyarea and fillrect entry points,
-> using the SM501's 2D acceleration engine to perform the operations
-> in-chip rather than across the bus.
-> 
-> Signed-off-by: Simtec Linux Team <linux@simtec.co.uk>
-> Signed-off-by: Vincent Sanders <vince@simtec.co.uk>
-
-I merged patches 2, 3 and 4, thanks.
-
-This patch was missing your Signed-off-by:. I added it.
-
-------------------------------------------------------------------------------
-Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
-trial. Simplify your report design, integration and deployment - and focus on 
-what you do best, core application coding. Discover what's new with
-Crystal Reports now.  http://p.sf.net/sfu/bobj-july
+VGhlIGZ1bmN0aW9uIG1pcGlkX3NwaV9yZW1vdmUgaXMgdXNlZCBvbmx5IHdyYXBwZWQgYnkgX19k
+ZXZleGl0X3Agc28KZGVmaW5lIGl0IHVzaW5nIF9fZGV2ZXhpdC4KClNpZ25lZC1vZmYtYnk6IFV3
+ZSBLbGVpbmUtS8O2bmlnIDx1LmtsZWluZS1rb2VuaWdAcGVuZ3V0cm9uaXguZGU+CkNjOiBBcm5h
+dWQgUGF0YXJkIDxhcm5hdWQucGF0YXJkQHJ0cC1uZXQub3JnPgpDYzogQW5kcmV3IE1vcnRvbiA8
+YWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZz4KQ2M6IE1pa2UgV2VnZSA8ZXh0LW1pa2Uud2VnZUBu
+b2tpYS5jb20+CkNjOiBJbXJlIERlYWsgPGltcmUuZGVha0Bzb2xpZGJvb3QuY29tPgpDYzogSGly
+b3NoaSBET1lVIDxIaXJvc2hpLkRPWVVAbm9raWEuY29tPgpDYzogbGludXgta2VybmVsQHZnZXIu
+a2VybmVsLm9yZwpDYzogSW1yZSBEZWFrIDxpbXJlLmRlYWtAbm9raWEuY29tPgpDYzogbGludXgt
+ZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0CkNjOiBsaW51eC1vbWFwQHZnZXIua2Vy
+bmVsLm9yZwotLS0KIGRyaXZlcnMvdmlkZW8vb21hcC9sY2RfbWlwaWQuYyB8ICAgIDIgKy0KIDEg
+ZmlsZXMgY2hhbmdlZCwgMSBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdp
+dCBhL2RyaXZlcnMvdmlkZW8vb21hcC9sY2RfbWlwaWQuYyBiL2RyaXZlcnMvdmlkZW8vb21hcC9s
+Y2RfbWlwaWQuYwppbmRleCA5MThlZTg5Li4yNDg4OWNhIDEwMDY0NAotLS0gYS9kcml2ZXJzL3Zp
+ZGVvL29tYXAvbGNkX21pcGlkLmMKKysrIGIvZHJpdmVycy92aWRlby9vbWFwL2xjZF9taXBpZC5j
+CkBAIC01ODcsNyArNTg3LDcgQEAgc3RhdGljIGludCBtaXBpZF9zcGlfcHJvYmUoc3RydWN0IHNw
+aV9kZXZpY2UgKnNwaSkKIAlyZXR1cm4gMDsKIH0KIAotc3RhdGljIGludCBtaXBpZF9zcGlfcmVt
+b3ZlKHN0cnVjdCBzcGlfZGV2aWNlICpzcGkpCitzdGF0aWMgaW50IF9fZGV2ZXhpdCBtaXBpZF9z
+cGlfcmVtb3ZlKHN0cnVjdCBzcGlfZGV2aWNlICpzcGkpCiB7CiAJc3RydWN0IG1pcGlkX2Rldmlj
+ZSAqbWQgPSBkZXZfZ2V0X2RydmRhdGEoJnNwaS0+ZGV2KTsKIAotLSAKMS42LjUuMgoKCi0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLQpMZXQgQ3J5c3RhbCBSZXBvcnRzIGhhbmRsZSB0aGUgcmVwb3J0aW5n
+IC0gRnJlZSBDcnlzdGFsIFJlcG9ydHMgMjAwOCAzMC1EYXkgCnRyaWFsLiBTaW1wbGlmeSB5b3Vy
+IHJlcG9ydCBkZXNpZ24sIGludGVncmF0aW9uIGFuZCBkZXBsb3ltZW50IC0gYW5kIGZvY3VzIG9u
+IAp3aGF0IHlvdSBkbyBiZXN0LCBjb3JlIGFwcGxpY2F0aW9uIGNvZGluZy4gRGlzY292ZXIgd2hh
+dCdzIG5ldyB3aXRoCkNyeXN0YWwgUmVwb3J0cyBub3cuICBodHRwOi8vcC5zZi5uZXQvc2Z1L2Jv
+YmotanVseQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpM
+aW51eC1mYmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291
+cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZv
+L2xpbnV4LWZiZGV2LWRldmVsCg==

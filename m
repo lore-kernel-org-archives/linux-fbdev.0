@@ -1,12 +1,11 @@
 From: Chaithrika U S <chaithrika-l0cyMroinI0@public.gmane.org>
-Subject: [PATCH 3/4] davinci: fb : Add suspend/resume suuport for
-	DA8xx/OMAP-L1xx fb driver
-Date: Fri, 27 Nov 2009 12:13:37 +0530
-Message-ID: <1259304217-19388-1-git-send-email-chaithrika@ti.com>
+Subject: [PATCH 2/4] da850/omap-l138: Add callback to control LCD panel power
+Date: Fri, 27 Nov 2009 12:14:09 +0530
+Message-ID: <1259304249-19439-1-git-send-email-chaithrika@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
+Return-path: <davinci-linux-open-source-bounces+gld-davinci-linux-open-source=gmane.org-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://linux.davincidsp.com/mailman/options/davinci-linux-open-source>,
 	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=unsubscribe>
@@ -15,72 +14,71 @@ List-Post: <mailto:davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@pu
 List-Help: <mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=help>
 List-Subscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
 	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=subscribe>
-Sender: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-Errors-To: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-To: linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-Cc: akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org, davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
+Sender: davinci-linux-open-source-bounces+gld-davinci-linux-open-source=gmane.org-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
+Errors-To: davinci-linux-open-source-bounces+gld-davinci-linux-open-source=gmane.org-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
+To: davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
+Cc: akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org
 
-Suspend/resume support DA8xx/OMAP-L1xx frame buffer driver.
-This feature has been tested on DA850/OMAP-L138 EVM. For the purpose
-of testing, the patch series[1] which adds suspend support for
-DA850/OMAP-L138 SoC was applied.
-
-[1] http://patchwork.kernel.org/patch/60260/
+Add the platform specific callback to control LCD panel and
+backlight power.
 
 Signed-off-by: Chaithrika U S <chaithrika-l0cyMroinI0@public.gmane.org>
 ---
- drivers/video/da8xx-fb.c |   29 +++++++++++++++++++++++++++--
- 1 files changed, 27 insertions(+), 2 deletions(-)
+This patch applies to DaVinci GIT tree at
+http://git.kernel.org/?p=linux/kernel/git/khilman/linux-davinci.git;a=summary
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index b3c22e1..fcaa344 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -29,6 +29,7 @@
- #include <linux/interrupt.h>
- #include <linux/clk.h>
- #include <linux/cpufreq.h>
-+#include <linux/console.h>
- #include <video/da8xx-fb.h>
+ arch/arm/mach-davinci/board-da850-evm.c |   24 ++++++++++++++----------
+ 1 files changed, 14 insertions(+), 10 deletions(-)
+
+diff --git a/arch/arm/mach-davinci/board-da850-evm.c b/arch/arm/mach-davinci/board-da850-evm.c
+index 8e0722f..63a6301 100644
+--- a/arch/arm/mach-davinci/board-da850-evm.c
++++ b/arch/arm/mach-davinci/board-da850-evm.c
+@@ -351,6 +351,15 @@ static struct davinci_mmc_config da850_mmc_config = {
+ 	.version	= MMC_CTLR_VERSION_2,
+ };
  
- #define DRIVER_NAME "da8xx_lcdc"
-@@ -930,11 +931,35 @@ err_request_mem:
- #ifdef CONFIG_PM
- static int fb_suspend(struct platform_device *dev, pm_message_t state)
++static void da850_panel_power_ctrl(int val)
++{
++	/* lcd backlight */
++	gpio_set_value(DA850_LCD_BL_PIN, val);
++
++	/* lcd power */
++	gpio_set_value(DA850_LCD_PWR_PIN, val);
++}
++
+ static int da850_lcd_hw_init(void)
  {
--	 return -EBUSY;
-+	struct fb_info *info = platform_get_drvdata(dev);
-+	struct da8xx_fb_par *par = info->par;
-+
-+	acquire_console_sem();
-+	if (par->panel_power_ctrl)
-+		par->panel_power_ctrl(0);
-+
-+	fb_set_suspend(info, 1);
-+	lcd_disable_raster();
-+	clk_disable(par->lcdc_clk);
-+	release_console_sem();
-+
-+	return 0;
+ 	int status;
+@@ -368,17 +377,11 @@ static int da850_lcd_hw_init(void)
+ 	gpio_direction_output(DA850_LCD_BL_PIN, 0);
+ 	gpio_direction_output(DA850_LCD_PWR_PIN, 0);
+ 
+-	/* disable lcd backlight */
+-	gpio_set_value(DA850_LCD_BL_PIN, 0);
+-
+-	/* disable lcd power */
+-	gpio_set_value(DA850_LCD_PWR_PIN, 0);
+-
+-	/* enable lcd power */
+-	gpio_set_value(DA850_LCD_PWR_PIN, 1);
++	/* Switch off panel power and backlight */
++	da850_panel_power_ctrl(0);
+ 
+-	/* enable lcd backlight */
+-	gpio_set_value(DA850_LCD_BL_PIN, 1);
++	/* Switch on panel power and backlight */
++	da850_panel_power_ctrl(1);
+ 
+ 	return 0;
  }
- static int fb_resume(struct platform_device *dev)
- {
--	 return -EBUSY;
-+	struct fb_info *info = platform_get_drvdata(dev);
-+	struct da8xx_fb_par *par = info->par;
-+
-+	acquire_console_sem();
-+	if (par->panel_power_ctrl)
-+		par->panel_power_ctrl(1);
-+
-+	clk_enable(par->lcdc_clk);
-+	lcd_enable_raster();
-+	fb_set_suspend(info, 0);
-+	release_console_sem();
-+
-+	return 0;
- }
- #else
- #define fb_suspend NULL
+@@ -686,6 +689,7 @@ static __init void da850_evm_init(void)
+ 		pr_warning("da850_evm_init: lcd initialization failed: %d\n",
+ 				ret);
+ 
++	sharp_lk043t1dg01_pdata.panel_power_ctrl = da850_panel_power_ctrl,
+ 	ret = da8xx_register_lcdc(&sharp_lk043t1dg01_pdata);
+ 	if (ret)
+ 		pr_warning("da850_evm_init: lcdc registration failed: %d\n",
 -- 
 1.5.6

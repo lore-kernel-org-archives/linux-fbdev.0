@@ -1,25 +1,47 @@
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-Date: Thu, 17 Dec 2009 22:00:16 +0000
-Subject: Re: [PATCH] Revert "fbdev: atafb - add palette register check"
-Message-Id: <20091217230016.86c305f8.krzysztof.h1@wp.pl>
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Date: Tue, 01 Dec 2009 00:17:47 +0000
+Subject: Re: [PATCH 0/2] [RESEND] Amstrad Delta: add support for LCD contrast
+Message-Id: <200912010117.51113.jkrzyszt@tis.icnet.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.DEB.2.00.0912171413560.17197@ayla.of.borg>
-In-Reply-To: <alpine.DEB.2.00.0912171413560.17197@ayla.of.borg>
+References: <200911231857.55566.jkrzyszt@tis.icnet.pl>
+In-Reply-To: <200911231857.55566.jkrzyszt@tis.icnet.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-omap@vger.kernel.org, Imre Deak <imre.deak@nokia.com>, Tony Lindgren <tony@atomide.com>
 
-On Thu, 17 Dec 2009 14:15:09 +0100 (CET)
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+Monday 23 November 2009 18:57:51 Janusz Krzysztofik wrote:
+> Initialy submitted on 2009-11-16
+> (http://www.spinics.net/lists/linux-omap/msg20629.html).
+> Resendig due to fbdev mailing list address changed.
 
-> This reverts commit 8546e3ce6e37c359979b69862442f94e0ef0e03b, as it's a
-> partial duplicate of commit 2f390380ca69e1617cdddb12d8da94f0a9f4319d ("fbdev:
-> add palette register check to several drivers").
-> The former went in first through the m68k tree, the latter through Andrew
-> Morton.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
+Hi,
 
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+2 weeks have passed now since my initial submisison, and I still got no single 
+answer. I can assume that Tony is just waiting with OMAP part for someone 
+from fbdev to answer first, but I have no idea why I can't hear from Imre, 
+who is still pointed out in MAINTAINERS as a right person to talk to about 
+drivers/video/omap/*, nor anybody else involved in framebuffer development.
+
+Could someone please give me an advice what I should do now?
+
+Thanks,
+Janusz
+
+> The series consists of 2 patches:
+>
+>  [PATCH 1/2] omapfb: lcd_ams_delta: add support for contrast control
+
+http://marc.info/?l=linux-fbdev&m5899977102760
+
+>  [PATCH 2/2] OMAP: ams_delta_defconfig: enable LCD class device support
+
+http://marc.info/?l=linux-fbdev&m5899990003070
+
+> It is intended for 2.6.33, if it's not too late.
+>
+> Thanks,
+> Janusz
+
+

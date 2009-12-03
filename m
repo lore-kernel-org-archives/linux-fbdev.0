@@ -1,52 +1,60 @@
-From: peterhuewe@gmx.de
-Date: Tue, 22 Dec 2009 08:34:49 +0000
-Subject: [PATCH 08/10] video/omap: add __init/__exit macros to drivers/video/omap/lcd_htcherald.c
-Message-Id: <1261470890-24031-1-git-send-email-peterhuewe@gmx.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 03 Dec 2009 19:01:05 +0000
+Subject: Re: [IMPORTANT] linux-fbdev is moving to kernel.org
+Message-Id: <10f740e80912031101i58cf9495tb5e9e6f2a43f3b3d@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <10f740e80909060807g11a29730wc809c08efbe4f216@mail.gmail.com>
+In-Reply-To: <10f740e80909060807g11a29730wc809c08efbe4f216@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jiri Kosina <trivial@kernel.org>
-Cc: kernel-janitors@vger.kernel.org, Peter Huewe <peterhuewe@gmx.de>, Imre Deak <imre.deak@nokia.com>, Tony Lindgren <tony@atomide.com>, Cory Maccarrone <darkstar6262@gmail.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-fbdev-devel@lists.sourceforge.net, linux-fbdev-users@lists.sourceforge.net, linux-fbdev-announce@lists.sourceforge.net
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Peter Huewe <peterhuewe@gmx.de>
+On Sun, Sep 6, 2009 at 16:07, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> The linux-fbdev mailing lists (linux-fbdev-devel and
+> linux-fbdev-users) are being
 
-Trivial patch which adds the __init/__exit macros to the module_init/
-module_exit functions of
+and linux-fbdev-announce.
 
-drivers/video/omap/lcd_htcherald.c
+> migrated from SourceForge.net to a single mailing list at kernel.org
+> (Thanks David!).
+>
+> Your subscriptions to the old mailing lists are not automatically
+> transfered to the new mailing list.To subscribe to the new linux-fbdev
+> mailing list, please send an email to majordomo@vger.kernel.org with
+> the following command in the body of your email message:
+>
+>    subscribe linux-fbdev
+>
+> In about a week from now, I'll setup auto-responders on the old
+> mailing lists, to redirect people to the new mailing list.
 
-Please have a look at the small patch and either pull it through
-your tree, or please ack' it so Jiri can pull it through the trivial
-tree.
+Done.
 
-Patch against linux-next-tree, 22. Dez 08:38:18 CET 2009
-but also present in linus tree.
+> Sorry for any inconvenience this may cause.
+>
+> I haven't arranged archives of the new mailing list yet. I also
 
-Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
----
- drivers/video/omap/lcd_htcherald.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Done (at MARC, cfr. http://vger.kernel.org/vger-lists.html#linux-fbdev).
 
-diff --git a/drivers/video/omap/lcd_htcherald.c b/drivers/video/omap/lcd_htcherald.c
-index a9007c5..4802419 100644
---- a/drivers/video/omap/lcd_htcherald.c
-+++ b/drivers/video/omap/lcd_htcherald.c
-@@ -115,12 +115,12 @@ struct platform_driver htcherald_panel_driver = {
- 	},
- };
- 
--static int htcherald_panel_drv_init(void)
-+static int __init htcherald_panel_drv_init(void)
- {
- 	return platform_driver_register(&htcherald_panel_driver);
- }
- 
--static void htcherald_panel_drv_cleanup(void)
-+static void __exit htcherald_panel_drv_cleanup(void)
- {
- 	platform_driver_unregister(&htcherald_panel_driver);
- }
--- 
-1.6.4.4
+Still have to collect and send the mails that were sent before MARC
+started archiving.
 
+> haven't send a patch to Linus to update MAINTAINERS. I will do that in
+> the coming days.
+
+Done, in 2.6.32.
+
+Let's hope I can start living in a spam-free moderation-less world...
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds

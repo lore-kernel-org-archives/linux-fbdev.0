@@ -1,25 +1,26 @@
-From: Henry Nestler <henry.nestler@gmail.com>
-Subject: [PATCH 4/4] fbcon: Replace vc_cursor_type mask
-	0x10 with CUR_USE_SW
-Date: Wed, 2 Dec 2009 03:59:43 +0100
-Message-ID: <5b77f61c0912011859h83dad7bvb96fba5249c678dc@mail.gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/4] da850/omap-l138: Add callback
+ to control LCD panel power
+Date: Tue, 8 Dec 2009 12:25:51 -0800
+Message-ID: <20091208122551.f632c665.akpm@linux-foundation.org>
+References: <1259304249-19439-1-git-send-email-chaithrika@ti.com>
+	<871vj52vyt.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-4.v28.ch3.sourceforge.com ([172.29.28.124]
+Received: from sfi-mx-3.v28.ch3.sourceforge.com ([172.29.28.123]
 	helo=mx.sourceforge.net)
-	by sfs-ml-4.v29.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <henry.nestler@gmail.com>) id 1NFfRc-00051O-B2
+	by sfs-ml-3.v29.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <akpm@linux-foundation.org>) id 1NI6dR-0004Dg-W6
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 Dec 2009 02:59:56 +0000
-Received: from mail-ew0-f211.google.com ([209.85.219.211])
-	by sfi-mx-4.v28.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1NFfRW-0008S8-J4 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 02 Dec 2009 02:59:56 +0000
-Received: by ewy3 with SMTP id 3so9901350ewy.2
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 01 Dec 2009 18:59:44 -0800 (PST)
+	Tue, 08 Dec 2009 20:26:13 +0000
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by sfi-mx-3.v28.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1NI6dI-0002Ia-HN
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 08 Dec 2009 20:26:13 +0000
+In-Reply-To: <871vj52vyt.fsf@deeprootsystems.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,40 +30,40 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: geert@linux-m68k.org
-Cc: trivial@kernel.org, linux-fbdev-devel@lists.sourceforge.net
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: davinci-linux-open-source@linux.davincidsp.com, linux-fbdev-devel@lists.sourceforge.net
 
-from: Henry Nestler <henry.nestler@gmail.com>
+On Tue, 08 Dec 2009 09:53:46 -0800
+Kevin Hilman <khilman@deeprootsystems.com> wrote:
 
-Replace hard coded vc_cursor_type mask 0x10 with macro CUR_USE_SW.
+> Chaithrika U S <chaithrika@ti.com> writes:
+> 
+> > Add the platform specific callback to control LCD panel and
+> > backlight power.
+> >
+> > Signed-off-by: Chaithrika U S <chaithrika@ti.com>
+> > ---
+> > This patch applies to DaVinci GIT tree at
+> > http://git.kernel.org/?p=linux/kernel/git/khilman/linux-davinci.git;a=summary
+> 
+> Andrew,
+> 
+> I see you have pulled this series into -mm.  Thanks.  The
+> drivers/video/* changes in patches 1,3 and 4 should go upstream
+> through you, but I'd like to request that you drop this patch (PATCH
+> 2/4) from your queue, and I will queue it in davinci-next.
 
-Signed-off-by: Henry Nestler <henry.nestler@gmail.com>
----
+I autodrop patches when they turn up in linux-next.  So if you want to
+merge something then please just merge away, then I'll drop my copy.
 
-This patch depends on [patch 3/4], because it used new macro CUR_USE_SW 0x10.
+This way patches don't get lost, and I get to check whether the patch
+which was in linux-next matches the version I had, and whether the patch
+which was merged into linux-next is missing any followup patches which
+I had accumulated against the original.
 
-Kernel version 2.6.32-rc8
-
- drivers/video/console/tileblit.c        |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/console/tileblit.c b/drivers/video/console/tileblit.c
---- a/drivers/video/console/tileblit.c
-+++ b/drivers/video/console/tileblit.c
-@@ -83,7 +83,7 @@ static void tile_cursor(struct vc_data *vc, struct
-fb_info *info, int mode,
- 			int softback_lines, int fg, int bg)
- {
- 	struct fb_tilecursor cursor;
--	int use_sw = (vc->vc_cursor_type & 0x10);
-+	int use_sw = (vc->vc_cursor_type & CUR_USE_SW);
-
- 	cursor.sx = vc->vc_x;
- 	cursor.sy = vc->vc_y;
-===
 
 ------------------------------------------------------------------------------
-Join us December 9, 2009 for the Red Hat Virtual Experience,
-a free event focused on virtualization and cloud computing. 
-Attend in-depth sessions from your desk. Your couch. Anywhere.
-http://p.sf.net/sfu/redhat-sfdev2dev
+Return on Information:
+Google Enterprise Search pays you back
+Get the facts.
+http://p.sf.net/sfu/google-dev2dev

@@ -1,125 +1,49 @@
-From: "Hiremath, Vaibhav" <hvaibhav@ti.com>
-Date: Wed, 23 Dec 2009 15:24:20 +0000
-Subject: RE: [PATCH 5/5] OMAP3EVM: Kconfig option added for selection
-Message-Id: <19F8576C6E063C45BE387C64729E7394044A277575@dbde02.ent.ti.com>
+From: Bernie Thompson <bernie@plugable.com>
+Date: Wed, 09 Dec 2009 21:52:46 +0000
+Subject: conflicts between fbcon and user-mode fbdev clients
+Message-Id: <480988180912091352v77fa9a12s5077b3211c13586b@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <hvaibhav@ti.com>
-	 <1261063176-20101-1-git-send-email-hvaibhav@ti.com>
- <1261483738.2108.96.camel@tubuntu.research.nokia.com>
-In-Reply-To: <1261483738.2108.96.camel@tubuntu.research.nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
+Hi fbdevs,
 
-> -----Original Message-----
-> From: Tomi Valkeinen [mailto:tomi.valkeinen@nokia.com]
-> Sent: Tuesday, December 22, 2009 5:39 PM
-> To: Hiremath, Vaibhav
-> Cc: linux-omap@vger.kernel.org; linux-fbdev@vger.kernel.org
-> Subject: Re: [PATCH 5/5] OMAP3EVM: Kconfig option added for
-> selection between SVIDEO and CVBS
-> 
-> Hi,
-> 
-> On Thu, 2009-12-17 at 16:19 +0100, ext hvaibhav@ti.com wrote:
-> > From: Vaibhav Hiremath <hvaibhav@ti.com>
-> >
-> > Config option added to arch/arm/plat-omap/Kconfig for selection
-> > of S-Video and Composite output interfaces. The default
-> configuration would
-> > be S-Video.
-> 
-> I don't think this is correct. You've made a board spesific Kconfig
-> option, but it's under normal DSS options.
-> 
-[Hiremath, Vaibhav] Frankly, I wanted to initiate the discussion on this, so that I will have some inputs here -
+This is probably a FAQ, but I haven't found the answer.
 
-Actually we should not have Kconfig options at all for such things but should be configurable from bootargs like other configuration along with SYSFS interface. 
+What (if anything) should a driver be doing to prevent fbcon and other
+clients (e.g. X, etc.) from simultaneously opening and rendering to
+the framebuffer?
 
-SYSFS - 
-/sys/devices/platform/omapdss/display1/output
+Running a USB graphics device using the udlfb framebuffer driver
+(in the staging tree of 2.6.32), a common problem is fbcon
+automatically opens the first available framebuffer device (/dev/fb0).
+ Then when the user loads an X server, both the X server and fbcon
+continue to merrily render to the device, overwriting each other.
 
-Bootargs -
-Omapdss_def_disp=tv:<output>
+So, typically, the udlfb driver will see this sequence at boot (with
+the xf-video-displaylink X server):
+fb_open(user = 0)  fbcon opening the framebuffer
+fb_open(user = 1)  X opening the framebuffer
+fb_open(user = 1)  Another instance of X opening framebuffer
+* X and fbcon both render to the framebuffer, causing a mess *
+And then any calls to release() later.
 
-Where,
-	Output = cvbs or svideo
+This will happen only for the 1st usb device on the system.  For the
+2nd or later (/dev/fb1 ...), fbcon doesn't try to grab the device.
 
+It's possible to disable fbcon as a module, or fail open() when
+user=0.  But that's obviously not right.  And fbset by the user could
+be a solution - but there's a desire to have this work out of the box.
 
-> Normally the type of the analog tv-out is a board hardware feature.
-> And
-> so I don't see need for a generic kernel option to set the type, as
-> it
-> should be just defined in the board file.
-> 
-> Are there many boards with both outputs? If there's just one or two
-> development boards that have both outputs, I think it's better to
-> handle
-> it with board spesific code.
-> 
-[Hiremath, Vaibhav] OMAP3EVM supports both the outputs and that's where we required some configurable option to choose between.
+Looking at the various fbdev drivers, I don't see other drivers
+special casing this in general.  So I assume there's a known
+recommended behavior here, but don't know what it is.
 
-Thanks,
-Vaibhav
+What is the expected behavior, for a fbdev driver and its clients, to
+arbitrate among multiple clients?
 
->  Tomi
-> 
-> 
-> >
-> > Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
-> > ---
-> >  arch/arm/mach-omap2/board-omap3evm.c |    4 ++++
-> >  drivers/video/omap2/dss/Kconfig      |   15 +++++++++++++++
-> >  2 files changed, 19 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/arch/arm/mach-omap2/board-omap3evm.c b/arch/arm/mach-
-> omap2/board-omap3evm.c
-> > index e615254..549e58e 100644
-> > --- a/arch/arm/mach-omap2/board-omap3evm.c
-> > +++ b/arch/arm/mach-omap2/board-omap3evm.c
-> > @@ -275,7 +275,11 @@ static struct omap_dss_device
-> omap3_evm_tv_device = {
-> >  	.name			= "tv",
-> >  	.driver_name		= "venc",
-> >  	.type			= OMAP_DISPLAY_TYPE_VENC,
-> > +#if defined(CONFIG_OMAP2_VENC_OUT_TYPE_SVIDEO)
-> >  	.phy.venc.type		= OMAP_DSS_VENC_TYPE_SVIDEO,
-> > +#elif defined(CONFIG_OMAP2_VENC_OUT_TYPE_COMPOSITE)
-> > +	.u.venc.type		= OMAP_DSS_VENC_TYPE_COMPOSITE,
-> > +#endif
-> >  	.platform_enable	= omap3_evm_enable_tv,
-> >  	.platform_disable	= omap3_evm_disable_tv,
-> >  };
-> > diff --git a/drivers/video/omap2/dss/Kconfig
-> b/drivers/video/omap2/dss/Kconfig
-> > index 71d8dec..5b7a8bc 100644
-> > --- a/drivers/video/omap2/dss/Kconfig
-> > +++ b/drivers/video/omap2/dss/Kconfig
-> > @@ -36,6 +36,21 @@ config OMAP2_DSS_VENC
-> >          default y
-> >  	help
-> >  	  OMAP Video Encoder support.
-> > +choice
-> > +	prompt OMAP2_VENC_OUT_TYPE
-> > +	depends on OMAP2_DSS_VENC
-> > +	default OMAP2_VENC_OUT_TYPE_SVIDEO
-> > +
-> > +config OMAP2_VENC_OUT_TYPE_SVIDEO
-> > +	bool "Use S-Video output interface"
-> > +	help
-> > +	  Select this option if you want to choose TV out over S-Video
-> > +
-> > +config OMAP2_VENC_OUT_TYPE_COMPOSITE
-> > +	bool "Use Composite output interface"
-> > +	help
-> > +	  Select this option if you want to choose TV out over
-> Composite
-> > +endchoice
-> >
-> >  config OMAP2_DSS_SDI
-> >  	bool "SDI support"
-> 
-
+Thanks for any answers here!
+Bernie Thompson
+http://plugable.com/

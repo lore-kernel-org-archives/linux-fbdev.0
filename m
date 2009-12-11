@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Tue, 08 Dec 2009 09:21:36 +0000
+Date: Fri, 11 Dec 2009 09:53:43 +0000
 Subject: Re: [PATCH 0/2] [RESEND] Amstrad Delta: add support for LCD
-Message-Id: <1260264096.2342.104.camel@tubuntu.research.nokia.com>
+Message-Id: <1260525223.9700.86.camel@tubuntu.research.nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <200911231857.55566.jkrzyszt@tis.icnet.pl>
 	 <200912051454.52966.jkrzyszt@tis.icnet.pl>
@@ -10,8 +10,8 @@ In-Reply-To: <20091207213250.GI24013@atomide.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
-To: ext Tony Lindgren <tony@atomide.com>, "Deak Imre (Nokia-D/Helsinki)" <imre.deak@nokia.com>
-Cc: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: ext Tony Lindgren <tony@atomide.com>
+Cc: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>, "Deak Imre (Nokia-D/Helsinki)" <imre.deak@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
 On Mon, 2009-12-07 at 22:32 +0100, ext Tony Lindgren wrote:
 > * Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> [091205 05:54]:
@@ -56,13 +56,9 @@ none=20
 > than merge it via linux-omap tree. Ideally with an ack from
 > Imre where possible.
 
-And I, on the other hand, would like to keep away from the old omapfb
-driver =3D).
-
-Imre, do you still want to be the maintainer of the old omapfb, or how
-should we handle it? I didn't have any plans to maintain it, but then
-again, perhaps it wouldn't be too much of a burden to have the
-(hopefully) few patches for old omapfb in the DSS2 tree.
+I talked with Imre, and he's not too keen on maintaining the old omapfb,
+so I'll take over it. And perhaps it's easier to have all omap display
+related patches in one place.
 
  Tomi
 

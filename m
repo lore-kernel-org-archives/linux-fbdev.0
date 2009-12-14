@@ -1,64 +1,62 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sat, 05 Dec 2009 23:24:47 +0000
-Subject: [PATCH 1/2] viafb: Documentation update
-Message-Id: <1260055488-10833-1-git-send-email-FlorianSchandinat@gmx.de>
+From: Heikki Orsila <heikki.orsila@iki.fi>
+Date: Mon, 14 Dec 2009 03:18:16 +0000
+Subject: [RFC PATCH] OMAP: DSS2: RFBI driver: Cleanup "kfifo is full" test
+Message-Id: <20091214031816.GA1829@zakalwe.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Harald Welte <laforge@gnumonks.org>, Harald Welte <HaraldWelte@viatech.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-From: Harald Welte <laforge@gnumonks.org>
+RFBI_CMD_FIFO_LEN_BYTES might not be a power-of-two,
+but kfifo() allocates the size up to the next power of two,
+which makes (RFBI_CMD_FIFO_LEN_BYTES - kfifo_len())
+look very dubious (possibly a negative value!).
 
-viafb: Documentation update
+Notes:
 
-We now support the VX855, and the VX800 is no longer unaccellerated.
-viafb_video_dev was removed as it was useless.
+[1] Not tested nor compiled here
 
-Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+[2] The removed code compares int with a size_t.
+It looks buggy, because if the full allocated
+size of the fifo is used, the integer comparison
+leads to "always empty space in the fifo".
+Fortunately, the code can never go there, because
+available = 0 will come before negative integer
+values.
+
+[3] Do we want to use the whole allocated space?
+In that case the change should be:
+
+-               available = RFBI_CMD_FIFO_LEN_BYTES -
+-                       __kfifo_len(rfbi.cmd_fifo);
++               available = rfbi.cmd_fifo->size - __kfifo_len(rfbi.cmd_fifo);
+
+Signed-off-by: Heikki Orsila <heikki.orsila@iki.fi>
 ---
- Documentation/fb/viafb.txt |   12 +-----------
- 1 files changed, 1 insertions(+), 11 deletions(-)
+ drivers/video/omap2/dss/rfbi.c |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/fb/viafb.txt b/Documentation/fb/viafb.txt
-index 67dbf44..f3e046a 100644
---- a/Documentation/fb/viafb.txt
-+++ b/Documentation/fb/viafb.txt
-@@ -7,7 +7,7 @@
-     VIA UniChrome Family(CLE266, PM800 / CN400 / CN300,
-                         P4M800CE / P4M800Pro / CN700 / VN800,
-                         CX700 / VX700, K8M890, P4M890,
--                        CN896 / P4M900, VX800)
-+                        CN896 / P4M900, VX800, VX855)
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index d0b3006..1dbe993 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -1050,14 +1050,11 @@ static void rfbi_push_cmd(struct update_param *p)
  
- [Driver features]
- ------------------------
-@@ -154,13 +154,6 @@
-         0 : No Dual Edge Panel (default)
-         1 : Dual Edge Panel
+ 	while (1) {
+ 		unsigned long flags;
+-		int available;
  
--    viafb_video_dev:
--        This option is used to specify video output devices(CRT, DVI, LCD) for
--        duoview case.
--        For example:
--        To output video on DVI, we should use:
--            modprobe viafb viafb_video_dev=DVI...
--
-     viafb_lcd_port:
-         This option is used to specify LCD output port,
-         available values are "DVP0" "DVP1" "DFP_HIGHLOW" "DFP_HIGH" "DFP_LOW".
-@@ -181,9 +174,6 @@ Notes:
-        and bpp, need to call VIAFB specified ioctl interface VIAFB_SET_DEVICE
-        instead of calling common ioctl function FBIOPUT_VSCREENINFO since
-        viafb doesn't support multi-head well, or it will cause screen crush.
--    4. VX800 2D accelerator hasn't been supported in this driver yet. When
--       using driver on VX800, the driver will disable the acceleration
--       function as default.
+ 		spin_lock_irqsave(rfbi.cmd_fifo->lock, flags);
+-		available = RFBI_CMD_FIFO_LEN_BYTES -
+-			__kfifo_len(rfbi.cmd_fifo);
  
- 
- [Configure viafb with "fbset" tool]
+ /*		DSSDBG("%d bytes left in fifo\n", available); */
+-		if (available < sizeof(struct update_param)) {
++		if (__kfifo_len(rfbi.cmd_fifo) >= RFBI_CMD_FIFO_LEN_BYTES) {
+ 			DSSDBG("Going to wait because FIFO FULL..\n");
+ 			spin_unlock_irqrestore(rfbi.cmd_fifo->lock, flags);
+ 			atomic_inc(&rfbi.cmd_fifo_full);
 -- 
-1.6.3.2
-
+1.6.4.4

@@ -1,60 +1,57 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 03 Dec 2009 19:01:05 +0000
-Subject: Re: [IMPORTANT] linux-fbdev is moving to kernel.org
-Message-Id: <10f740e80912031101i58cf9495tb5e9e6f2a43f3b3d@mail.gmail.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 20 Dec 2009 17:16:46 +0000
+Subject: [PATCH 2/5] viafb: remove dead code
+Message-Id: <1261329409-3518-2-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <10f740e80909060807g11a29730wc809c08efbe4f216@mail.gmail.com>
-In-Reply-To: <10f740e80909060807g11a29730wc809c08efbe4f216@mail.gmail.com>
+References: <1261329409-3518-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1261329409-3518-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev-devel@lists.sourceforge.net, linux-fbdev-users@lists.sourceforge.net, linux-fbdev-announce@lists.sourceforge.net
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-On Sun, Sep 6, 2009 at 16:07, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> The linux-fbdev mailing lists (linux-fbdev-devel and
-> linux-fbdev-users) are being
+viafb: remove dead code
 
-and linux-fbdev-announce.
+Remove a completly unused function.
 
-> migrated from SourceForge.net to a single mailing list at kernel.org
-> (Thanks David!).
->
-> Your subscriptions to the old mailing lists are not automatically
-> transfered to the new mailing list.To subscribe to the new linux-fbdev
-> mailing list, please send an email to majordomo@vger.kernel.org with
-> the following command in the body of your email message:
->
->    subscribe linux-fbdev
->
-> In about a week from now, I'll setup auto-responders on the old
-> mailing lists, to redirect people to the new mailing list.
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+---
+ drivers/video/via/via_utility.c |   12 ------------
+ drivers/video/via/via_utility.h |    1 -
+ 2 files changed, 0 insertions(+), 13 deletions(-)
 
-Done.
+diff --git a/drivers/video/via/via_utility.c b/drivers/video/via/via_utility.c
+index d53c3d5..aefdeee 100644
+--- a/drivers/video/via/via_utility.c
++++ b/drivers/video/via/via_utility.c
+@@ -239,15 +239,3 @@ void viafb_get_gamma_support_state(int bpp, unsigned int *support_state)
+ 	else
+ 		*support_state = CRT_Device | DVI_Device | LCD_Device;
+ }
+-
+-int viafb_input_parameter_converter(int parameter_value)
+-{
+-	int result;
+-
+-	if (parameter_value >= 1 && parameter_value <= 9)
+-		result = 1 << (parameter_value - 1);
+-	else
+-		result = 1;
+-
+-	return result;
+-}
+diff --git a/drivers/video/via/via_utility.h b/drivers/video/via/via_utility.h
+index 2fd4552..1670ba8 100644
+--- a/drivers/video/via/via_utility.h
++++ b/drivers/video/via/via_utility.h
+@@ -30,6 +30,5 @@ bool viafb_lcd_get_support_expand_state(u32 xres, u32 yres);
+ void viafb_set_gamma_table(int bpp, unsigned int *gamma_table);
+ void viafb_get_gamma_table(unsigned int *gamma_table);
+ void viafb_get_gamma_support_state(int bpp, unsigned int *support_state);
+-int viafb_input_parameter_converter(int parameter_value);
+ 
+ #endif /* __VIAUTILITY_H__ */
+-- 
+1.6.3.2
 
-> Sorry for any inconvenience this may cause.
->
-> I haven't arranged archives of the new mailing list yet. I also
-
-Done (at MARC, cfr. http://vger.kernel.org/vger-lists.html#linux-fbdev).
-
-Still have to collect and send the mails that were sent before MARC
-started archiving.
-
-> haven't send a patch to Linus to update MAINTAINERS. I will do that in
-> the coming days.
-
-Done, in 2.6.32.
-
-Let's hope I can start living in a spam-free moderation-less world...
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds

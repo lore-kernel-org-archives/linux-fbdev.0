@@ -1,62 +1,151 @@
-From: Kevin Hilman <khilman-1D3HCaltpLuhEniVeURVKkEOCMrvLtNR@public.gmane.org>
-Subject: Re: [PATCH 2/4] da850/omap-l138: Add callback to control LCD panel
-	power
-Date: Tue, 08 Dec 2009 14:45:28 -0800
-Message-ID: <87bpi913w7.fsf@deeprootsystems.com>
-References: <1259304249-19439-1-git-send-email-chaithrika@ti.com>
-	<871vj52vyt.fsf@deeprootsystems.com>
-	<20091208122551.f632c665.akpm@linux-foundation.org>
-Mime-Version: 1.0
+From: Mike Frysinger <vapier@gentoo.org>
+Subject: [PATCH] fbdev: bf54x-lq043fb/bfin-t350mcqb-fb: drop custom mmap() handler
+Date: Mon, 21 Dec 2009 09:25:42 -0500
+Message-ID: <1261405542-7079-1-git-send-email-vapier@gentoo.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1754141AbZLUOYo@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-In-Reply-To: <20091208122551.f632c665.akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org> (Andrew
-	Morton's message of "Tue\, 8 Dec 2009 12\:25\:51 -0800")
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://linux.davincidsp.com/mailman/options/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://linux.davincidsp.com/pipermail/davinci-linux-open-source>
-List-Post: <mailto:davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-List-Help: <mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=help>
-List-Subscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=subscribe>
-Sender: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-Errors-To: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-To: Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
-Cc: davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org, linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, krzysztof.h1-IjDXvh/HVVUAvxtiuMwx3w@public.gmane.org
+To: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org, Michael Hennerich <michael.hennerich@analog.com>
 
-Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org> writes:
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-> On Tue, 08 Dec 2009 09:53:46 -0800
-> Kevin Hilman <khilman-1D3HCaltpLuhEniVeURVKkEOCMrvLtNR@public.gmane.org> wrote:
->
->> Chaithrika U S <chaithrika-l0cyMroinI0@public.gmane.org> writes:
->> 
->> > Add the platform specific callback to control LCD panel and
->> > backlight power.
->> >
->> > Signed-off-by: Chaithrika U S <chaithrika-l0cyMroinI0@public.gmane.org>
->> > ---
->> > This patch applies to DaVinci GIT tree at
->> > http://git.kernel.org/?p=linux/kernel/git/khilman/linux-davinci.git;a=summary
->> 
->> Andrew,
->> 
->> I see you have pulled this series into -mm.  Thanks.  The
->> drivers/video/* changes in patches 1,3 and 4 should go upstream
->> through you, but I'd like to request that you drop this patch (PATCH
->> 2/4) from your queue, and I will queue it in davinci-next.
->
-> I autodrop patches when they turn up in linux-next.  So if you want to
-> merge something then please just merge away, then I'll drop my copy.
+The common Blackfin code implements the get_fb_unmapped_area() function,
+so we no longer need to have our own mmap() handler.  The common fb code
+will take care of everything for us now.
 
-OK.
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ drivers/video/bf54x-lq043fb.c    |   30 ------------------------------
+ drivers/video/bfin-t350mcqb-fb.c |   29 -----------------------------
+ 2 files changed, 0 insertions(+), 59 deletions(-)
 
-> This way patches don't get lost, and I get to check whether the patch
-> which was in linux-next matches the version I had, and whether the patch
-> which was merged into linux-next is missing any followup patches which
-> I had accumulated against the original.
-
-Sounds good.  Thanks for the explanation.
-
-Kevin
+diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
+index e49ae5e..814312a 100644
+--- a/drivers/video/bf54x-lq043fb.c
++++ b/drivers/video/bf54x-lq043fb.c
+@@ -82,7 +82,6 @@ struct bfin_bf54xfb_info {
+ 	unsigned char *fb_buffer;	/* RGB Buffer */
+ 
+ 	dma_addr_t dma_handle;
+-	int lq043_mmap;
+ 	int lq043_open_cnt;
+ 	int irq;
+ 	spinlock_t lock;	/* lock */
+@@ -316,7 +315,6 @@ static int bfin_bf54x_fb_release(struct fb_info *info, int user)
+ 	spin_lock(&fbi->lock);
+ 
+ 	fbi->lq043_open_cnt--;
+-	fbi->lq043_mmap = 0;
+ 
+ 	if (fbi->lq043_open_cnt <= 0) {
+ 
+@@ -374,33 +372,6 @@ static int bfin_bf54x_fb_check_var(struct fb_var_screeninfo *var,
+ 	return 0;
+ }
+ 
+-static int bfin_bf54x_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+-{
+-
+-	struct bfin_bf54xfb_info *fbi = info->par;
+-
+-	if (fbi->lq043_mmap)
+-		return -1;
+-
+-	spin_lock(&fbi->lock);
+-	fbi->lq043_mmap = 1;
+-	spin_unlock(&fbi->lock);
+-
+-	vma->vm_start = (unsigned long)(fbi->fb_buffer);
+-
+-	vma->vm_end = vma->vm_start + info->fix.smem_len;
+-	/* For those who don't understand how mmap works, go read
+-	 *   Documentation/nommu-mmap.txt.
+-	 * For those that do, you will know that the VM_MAYSHARE flag
+-	 * must be set in the vma->vm_flags structure on noMMU
+-	 *   Other flags can be set, and are documented in
+-	 *   include/linux/mm.h
+-	 */
+-	vma->vm_flags |=  VM_MAYSHARE | VM_SHARED;
+-
+-	return 0;
+-}
+-
+ int bfin_bf54x_fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ {
+ 	if (nocursor)
+@@ -452,7 +423,6 @@ static struct fb_ops bfin_bf54x_fb_ops = {
+ 	.fb_fillrect = cfb_fillrect,
+ 	.fb_copyarea = cfb_copyarea,
+ 	.fb_imageblit = cfb_imageblit,
+-	.fb_mmap = bfin_bf54x_fb_mmap,
+ 	.fb_cursor = bfin_bf54x_fb_cursor,
+ 	.fb_setcolreg = bfin_bf54x_fb_setcolreg,
+ };
+diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
+index 2549c53..5653d08 100644
+--- a/drivers/video/bfin-t350mcqb-fb.c
++++ b/drivers/video/bfin-t350mcqb-fb.c
+@@ -87,7 +87,6 @@ struct bfin_t350mcqbfb_info {
+ 	struct device *dev;
+ 	unsigned char *fb_buffer;	/* RGB Buffer */
+ 	dma_addr_t dma_handle;
+-	int lq043_mmap;
+ 	int lq043_open_cnt;
+ 	int irq;
+ 	spinlock_t lock;	/* lock */
+@@ -235,7 +234,6 @@ static int bfin_t350mcqb_fb_release(struct fb_info *info, int user)
+ 	spin_lock(&fbi->lock);
+ 
+ 	fbi->lq043_open_cnt--;
+-	fbi->lq043_mmap = 0;
+ 
+ 	if (fbi->lq043_open_cnt <= 0) {
+ 		bfin_t350mcqb_disable_ppi();
+@@ -293,32 +291,6 @@ static int bfin_t350mcqb_fb_check_var(struct fb_var_screeninfo *var,
+ 	return 0;
+ }
+ 
+-static int bfin_t350mcqb_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+-{
+-	struct bfin_t350mcqbfb_info *fbi = info->par;
+-
+-	if (fbi->lq043_mmap)
+-		return -1;
+-
+-	spin_lock(&fbi->lock);
+-	fbi->lq043_mmap = 1;
+-	spin_unlock(&fbi->lock);
+-
+-	vma->vm_start = (unsigned long)(fbi->fb_buffer + ACTIVE_VIDEO_MEM_OFFSET);
+-
+-	vma->vm_end = vma->vm_start + info->fix.smem_len;
+-	/* For those who don't understand how mmap works, go read
+-	 *   Documentation/nommu-mmap.txt.
+-	 * For those that do, you will know that the VM_MAYSHARE flag
+-	 * must be set in the vma->vm_flags structure on noMMU
+-	 *   Other flags can be set, and are documented in
+-	 *   include/linux/mm.h
+-	 */
+-	vma->vm_flags |= VM_MAYSHARE | VM_SHARED;
+-
+-	return 0;
+-}
+-
+ int bfin_t350mcqb_fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ {
+ 	if (nocursor)
+@@ -370,7 +342,6 @@ static struct fb_ops bfin_t350mcqb_fb_ops = {
+ 	.fb_fillrect = cfb_fillrect,
+ 	.fb_copyarea = cfb_copyarea,
+ 	.fb_imageblit = cfb_imageblit,
+-	.fb_mmap = bfin_t350mcqb_fb_mmap,
+ 	.fb_cursor = bfin_t350mcqb_fb_cursor,
+ 	.fb_setcolreg = bfin_t350mcqb_fb_setcolreg,
+ };
+-- 
+1.6.5.4

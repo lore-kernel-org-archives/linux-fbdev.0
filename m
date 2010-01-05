@@ -1,54 +1,59 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Fri, 08 Jan 2010 13:22:41 +0000
-Subject: [PATCH 07/15] OMAP: OMAPFB: add dummy release function for omapdss
-Message-Id: <1262956969-1664-8-git-send-email-tomi.valkeinen@nokia.com>
+From: Jiri Kosina <jkosina@suse.cz>
+Date: Tue, 05 Jan 2010 10:27:07 +0000
+Subject: Re: [PATCH 08/10] video/omap: add __init/__exit macros to
+Message-Id: <alpine.LNX.2.00.1001051126360.2277@pobox.suse.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1262956969-1664-1-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-2-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-3-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-4-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-5-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-6-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-7-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1262956969-1664-7-git-send-email-tomi.valkeinen@nokia.com>
+References: <1261470890-24031-1-git-send-email-peterhuewe@gmx.de>
+In-Reply-To: <1261470890-24031-1-git-send-email-peterhuewe@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: Peter Huewe <peterhuewe@gmx.de>
+Cc: kernel-janitors@vger.kernel.org, Imre Deak <imre.deak@nokia.com>, Tony Lindgren <tony@atomide.com>, Cory Maccarrone <darkstar6262@gmail.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This should fix:
-WARNING: at drivers/base/core.c:131 device_release+0x68/0x7c()
-Device 'omapdss' does not have a release() function, it is broken and
-must be fixed.
+On Tue, 22 Dec 2009, peterhuewe@gmx.de wrote:
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
----
- drivers/video/omap/omapfb_main.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+> From: Peter Huewe <peterhuewe@gmx.de>
+> 
+> Trivial patch which adds the __init/__exit macros to the module_init/
+> module_exit functions of
+> 
+> drivers/video/omap/lcd_htcherald.c
+> 
+> Please have a look at the small patch and either pull it through
+> your tree, or please ack' it so Jiri can pull it through the trivial
+> tree.
+> 
+> Patch against linux-next-tree, 22. Dez 08:38:18 CET 2009
+> but also present in linus tree.
+> 
+> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+> ---
+>  drivers/video/omap/lcd_htcherald.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/omap/lcd_htcherald.c b/drivers/video/omap/lcd_htcherald.c
+> index a9007c5..4802419 100644
+> --- a/drivers/video/omap/lcd_htcherald.c
+> +++ b/drivers/video/omap/lcd_htcherald.c
+> @@ -115,12 +115,12 @@ struct platform_driver htcherald_panel_driver = {
+>  	},
+>  };
+>  
+> -static int htcherald_panel_drv_init(void)
+> +static int __init htcherald_panel_drv_init(void)
+>  {
+>  	return platform_driver_register(&htcherald_panel_driver);
+>  }
+>  
+> -static void htcherald_panel_drv_cleanup(void)
+> +static void __exit htcherald_panel_drv_cleanup(void)
+>  {
+>  	platform_driver_unregister(&htcherald_panel_driver);
+>  }
 
-diff --git a/drivers/video/omap/omapfb_main.c b/drivers/video/omap/omapfb_main.c
-index f74aec9..2c4f470 100644
---- a/drivers/video/omap/omapfb_main.c
-+++ b/drivers/video/omap/omapfb_main.c
-@@ -83,10 +83,17 @@ static struct caps_table_struct color_caps[] = {
- 	{ 1 << OMAPFB_COLOR_YUY422,	"YUY422", },
- };
- 
-+static void omapdss_release(struct device *dev)
-+{
-+}
-+
- /* dummy device for clocks */
- static struct platform_device omapdss_device = {
- 	.name		= "omapdss",
- 	.id		= -1,
-+	.dev            = {
-+		.release = omapdss_release,
-+	},
- };
- 
- /*
+Doesn't seem to be in linux-next as of today. Applied myself, thanks.
+
 -- 
-1.6.5
-
+Jiri Kosina
+SUSE Labs, Novell Inc.

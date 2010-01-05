@@ -1,122 +1,56 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Fri, 08 Jan 2010 13:22:47 +0000
-Subject: [PATCH 13/15] OMAP: DSS2: Make check-delay-loops consistent
-Message-Id: <1262956969-1664-14-git-send-email-tomi.valkeinen@nokia.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Tue, 05 Jan 2010 22:59:59 +0000
+Subject: [PATCH 4/4] viafb: fix acceleration for some chips
+Message-Id: <1262732399-3416-4-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1262956969-1664-1-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-2-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-3-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-4-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-5-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-6-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-7-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-8-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-9-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-10-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-11-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-12-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-13-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1262956969-1664-13-git-send-email-tomi.valkeinen@nokia.com>
+References: <1262732399-3416-1-git-send-email-FlorianSchandinat@gmx.de>
+ <1262732399-3416-2-git-send-email-FlorianSchandinat@gmx.de>
+ <1262732399-3416-3-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1262732399-3416-3-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Erik-Jan Post <ej.lfs@xs4all.nl>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Loops checking for certain condition were rather inconsistent.
+From: Erik-Jan Post <ej.lfs@xs4all.nl>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Reported-by: Juha Leppanen <juha_motorsportcom@luukku.com>
+viafb: fix acceleration for some chips
+
+This patch fixes a regression in hardware acceleration which made the
+accelerated framebuffer unusable on some chips. These need extra
+initialization and an extra flag which is no longer needed/available
+on current chips.
+
+Signed-off-by: Erik-Jan Post <ej.lfs@xs4all.nl>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/omap2/dss/dsi.c |   14 +++++++-------
- drivers/video/omap2/dss/dss.c |    6 +++---
- 2 files changed, 10 insertions(+), 10 deletions(-)
+ drivers/video/via/accel.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 2881d93..d964869 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -828,12 +828,12 @@ static int dsi_pll_power(enum dsi_pll_power_state state)
- 
- 	/* PLL_PWR_STATUS */
- 	while (FLD_GET(dsi_read_reg(DSI_CLK_CTRL), 29, 28) != state) {
--		udelay(1);
--		if (t++ > 1000) {
-+		if (++t > 1000) {
- 			DSSERR("Failed to set DSI PLL power mode to %d\n",
- 					state);
- 			return -ENODEV;
- 		}
-+		udelay(1);
+diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
+index 9d4f3a4..d5077df 100644
+--- a/drivers/video/via/accel.c
++++ b/drivers/video/via/accel.c
+@@ -137,7 +137,7 @@ static int hw_bitblt_1(void __iomem *engine, u8 op, u32 width, u32 height,
+ 			tmp, dst_pitch);
+ 		return -EINVAL;
  	}
+-	tmp = (tmp >> 3) | (dst_pitch << (16 - 3));
++	tmp = VIA_PITCH_ENABLE | (tmp >> 3) | (dst_pitch << (16 - 3));
+ 	writel(tmp, engine + 0x38);
  
- 	return 0;
-@@ -1441,12 +1441,12 @@ static int dsi_complexio_power(enum dsi_complexio_power_state state)
+ 	if (op = VIA_BITBLT_FILL)
+@@ -352,6 +352,9 @@ int viafb_init_engine(struct fb_info *info)
+ 	viapar->shared->vq_vram_addr = viapar->fbmem_free;
+ 	viapar->fbmem_used += VQ_SIZE;
  
- 	/* PWR_STATUS */
- 	while (FLD_GET(dsi_read_reg(DSI_COMPLEXIO_CFG1), 26, 25) != state) {
--		udelay(1);
--		if (t++ > 1000) {
-+		if (++t > 1000) {
- 			DSSERR("failed to set complexio power state to "
- 					"%d\n", state);
- 			return -ENODEV;
- 		}
-+		udelay(1);
- 	}
- 
- 	return 0;
-@@ -1646,10 +1646,10 @@ static void dsi_complexio_uninit(void)
- 
- static int _dsi_wait_reset(void)
- {
--	int i = 0;
-+	int t = 0;
- 
- 	while (REG_GET(DSI_SYSSTATUS, 0, 0) = 0) {
--		if (i++ > 5) {
-+		if (++t > 5) {
- 			DSSERR("soft reset failed\n");
- 			return -ENODEV;
- 		}
-@@ -2707,7 +2707,6 @@ static int dsi_update_screen_l4(struct omap_dss_device *dssdev,
- 		/* using fifo not empty */
- 		/* TX_FIFO_NOT_EMPTY */
- 		while (FLD_GET(dsi_read_reg(DSI_VC_CTRL(0)), 5, 5)) {
--			udelay(1);
- 			fifo_stalls++;
- 			if (fifo_stalls > 0xfffff) {
- 				DSSERR("fifo stalls overflow, pixels left %d\n",
-@@ -2715,6 +2714,7 @@ static int dsi_update_screen_l4(struct omap_dss_device *dssdev,
- 				dsi_if_enable(0);
- 				return -EIO;
- 			}
-+			udelay(1);
- 		}
- #elif 1
- 		/* using fifo emptiness */
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 9b05ee6..0a26b7d 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -467,14 +467,14 @@ static irqreturn_t dss_irq_handler_omap3(int irq, void *arg)
- 
- static int _omap_dss_wait_reset(void)
- {
--	unsigned timeout = 1000;
-+	int t = 0;
- 
- 	while (REG_GET(DSS_SYSSTATUS, 0, 0) = 0) {
--		udelay(1);
--		if (!--timeout) {
-+		if (++t > 1000) {
- 			DSSERR("soft reset failed\n");
- 			return -ENODEV;
- 		}
-+		udelay(1);
- 	}
- 
- 	return 0;
++	/* Init 2D engine reg to reset 2D engine */
++	writel(0x0, engine + VIA_REG_KEYCONTROL);
++
+ 	/* Init AGP and VQ regs */
+ 	switch (chip_name) {
+ 	case UNICHROME_K8M890:
 -- 
-1.6.5
+1.6.3.2
 

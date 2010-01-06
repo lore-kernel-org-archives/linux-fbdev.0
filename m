@@ -1,19 +1,41 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Date: Wed, 06 Jan 2010 18:07:43 +0000
+From: Miles Lane <miles.lane@gmail.com>
+Date: Wed, 06 Jan 2010 18:08:47 +0000
 Subject: Re: 2.6.33-rc3 -- Intel 945GME (inteldrmfb) -- Two Tux images
-Message-Id: <1262801263.4049.53.camel@laptop>
+Message-Id: <a44ae5cd1001061008l4c4dbfb8j9197d1809c621053@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <a44ae5cd1001060916s4db1d94fsb7e012ab80ce6add@mail.gmail.com>
-In-Reply-To: <a44ae5cd1001060916s4db1d94fsb7e012ab80ce6add@mail.gmail.com>
+	 <alpine.LFD.2.00.1001061736080.5372@casper.infradead.org>
+	 <a44ae5cd1001060942p7672768yec3b1f5ea2426682@mail.gmail.com>
+	 <alpine.LFD.2.00.1001061747250.5372@casper.infradead.org>
+In-Reply-To: <alpine.LFD.2.00.1001061747250.5372@casper.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Miles Lane <miles.lane@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: James Simmons <jsimmons@infradead.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, David Airlie <airlied@linux.ie>, Sylvain Meyer <sylvain.meyer@worldonline.fr>, linux-fbdev@vger.kernel.org
 
-On Wed, 2010-01-06 at 12:16 -0500, Miles Lane wrote:
-> For a long time I have gotten two pictures of Tux showing up when I
-> include the Tux display option in my custom kernel builds. 
+On Wed, Jan 6, 2010 at 12:48 PM, James Simmons <jsimmons@infradead.org> wro=
+te:
+>
+>> On Wed, Jan 6, 2010 at 12:37 PM, James Simmons <jsimmons@infradead.org> =
+wrote:
+>> >
+>> >> For a long time I have gotten two pictures of Tux showing up when I
+>> >> include the Tux display option in my custom kernel builds. =A0I don't
+>> >> know how many kernel revisions ago it was when I started noticing
+>> >> this. =A0It seems like it might have been early in the 2.6 series
+>> >> kernels.
+>> >>
+>> [...]
+>> >> # Frame buffer hardware drivers
+>> >> #
+>> >> CONFIG_FB_VESA=3Dy
+>> >> CONFIG_FB_EFI=3Dy
+>> >
+>> > Try disabling these two above options.
 
-Doesn't it show one for each cpu in the system?
+Okay.  I disabled those two options and still get the two Tuxes.  I
+gues Bruno's message is correct, and I get two Tuxes because I have an
+Atom processor with two cores.
 
+               Miles

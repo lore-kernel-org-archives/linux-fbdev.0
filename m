@@ -1,72 +1,54 @@
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Thu, 28 Jan 2010 09:24:44 +0000
-Subject: Re: [RFC] [PATCH] omapfb: Fix 12-bit display (RGB444 color mode)
-Message-Id: <1264670684.2701.216.camel@tubuntu.research.nokia.com>
+Date: Fri, 08 Jan 2010 13:22:41 +0000
+Subject: [PATCH 07/15] OMAP: OMAPFB: add dummy release function for omapdss
+Message-Id: <1262956969-1664-8-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201001142125.45468.jkrzyszt@tis.icnet.pl>
-In-Reply-To: <201001142125.45468.jkrzyszt@tis.icnet.pl>
+References: <1262956969-1664-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-4-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-5-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-6-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-7-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1262956969-1664-7-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: ext Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-On Thu, 2010-01-14 at 21:25 +0100, ext Janusz Krzysztofik wrote:
-> Support for RGB444 (12-bit) pixel format has been introduced into omapfb/lcdc 
-> by Mark Underwood on 2006-05-26 (commit 
-> f74edb6668aad9fc8e81585861b18f996c78a574) in preparation for Amstrad Delta 
-> (E3) videophone LCD display support.
+This should fix:
+WARNING: at drivers/base/core.c:131 device_release+0x68/0x7c()
+Device 'omapdss' does not have a release() function, it is broken and
+must be fixed.
 
-I haven't seen any comments on this. Shall I apply it to my tree?
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ drivers/video/omap/omapfb_main.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
- Tomi
-
-
-> 
-> Before the Amstrad Delta LCD patch by Jonathan McDowell was applied (on 
-> 2006-08-04, commit 8d22fb2ea004cdb6379b54c1a8fd1546cfe40ed7), omapfb and lcdc 
-> code was changed substantially (commit 
-> e563dc81aa01bd8bbb01bc53975a15c398715f62 dated 2006-06-26) in a way that broke 
-> Mark's 12-bit display support. Than, a patch by Jonathan, that supposed to 
-> correct the problem, was introduced immediatelly (on 2006-08-04, commit 
-> e10a75b49e7a57ae17c28b705153c70eba15a8ef).
-> 
-> As a result, the Amstrad Delta display was working correctly at boot time, 
-> with fbset reporting:
-> 
-> 	geometry 480 320 480 320 16
-> 	...
-> 	rgba 4/8,4/4,4/0,0/0
-> 
-> However, after first framebuffer reinitialization, colors were no longer being 
-> displayed correctly and fbset was reporting:
-> 
->         rgba 5/11,6/5,5/0,0/0
-> 
-> The patch tries to correct the issue by setting plane->color_mode depending on 
-> panel->bpp, not var->bits_per_pixel.
-> 
-> Created and tested on Amstrad Delta against linux-2.6.33-rc3.
-> 
-> Signed-off-by: Janusz Krzysztofik <jkrzysz@tis.icnet.pl>
-> 
-> ---
-> --- git/drivers/video/omap/omapfb_main.c.orig	2010-01-14 19:30:23.000000000 +0100
-> +++ git/drivers/video/omap/omapfb_main.c	2010-01-14 20:31:18.000000000 +0100
-> @@ -473,10 +473,11 @@ static int set_color_mode(struct omapfb_
->  		return 0;
->  	case 12:
->  		var->bits_per_pixel = 16;
-> -		plane->color_mode = OMAPFB_COLOR_RGB444;
-> -		return 0;
->  	case 16:
-> -		plane->color_mode = OMAPFB_COLOR_RGB565;
-> +		if (plane->fbdev->panel->bpp = 12)
-> +			plane->color_mode = OMAPFB_COLOR_RGB444;
-> +		else
-> +			plane->color_mode = OMAPFB_COLOR_RGB565;
->  		return 0;
->  	default:
->  		return -EINVAL;
-
+diff --git a/drivers/video/omap/omapfb_main.c b/drivers/video/omap/omapfb_main.c
+index f74aec9..2c4f470 100644
+--- a/drivers/video/omap/omapfb_main.c
++++ b/drivers/video/omap/omapfb_main.c
+@@ -83,10 +83,17 @@ static struct caps_table_struct color_caps[] = {
+ 	{ 1 << OMAPFB_COLOR_YUY422,	"YUY422", },
+ };
+ 
++static void omapdss_release(struct device *dev)
++{
++}
++
+ /* dummy device for clocks */
+ static struct platform_device omapdss_device = {
+ 	.name		= "omapdss",
+ 	.id		= -1,
++	.dev            = {
++		.release = omapdss_release,
++	},
+ };
+ 
+ /*
+-- 
+1.6.5
 

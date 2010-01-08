@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Fri, 08 Jan 2010 13:22:46 +0000
-Subject: [PATCH 12/15] OMAP: DSS2: OMAPFB: fix omapfb_free_fbmem()
-Message-Id: <1262956969-1664-13-git-send-email-tomi.valkeinen@nokia.com>
+Date: Fri, 08 Jan 2010 13:22:45 +0000
+Subject: [PATCH 11/15] video/omap: add __init/__exit macros to drivers/video/omap/lcd_htcherald.c
+Message-Id: <1262956969-1664-12-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1262956969-1664-1-git-send-email-tomi.valkeinen@nokia.com>
  <1262956969-1664-2-git-send-email-tomi.valkeinen@nokia.com>
@@ -14,34 +14,52 @@ References: <1262956969-1664-1-git-send-email-tomi.valkeinen@nokia.com>
  <1262956969-1664-9-git-send-email-tomi.valkeinen@nokia.com>
  <1262956969-1664-10-git-send-email-tomi.valkeinen@nokia.com>
  <1262956969-1664-11-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-12-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1262956969-1664-12-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1262956969-1664-11-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: Peter Huewe <peterhuewe@gmx.de>
 
-Fixes bug causing VRFB memory area to be released twice.
+From: Peter Huewe <peterhuewe@gmx.de>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Reported-by: Eino-Ville Talvala <talvala@stanford.edu>
+Trivial patch which adds the __init/__exit macros to the module_init/
+module_exit functions of
+
+drivers/video/omap/lcd_htcherald.c
+
+Please have a look at the small patch and either pull it through
+your tree, or please ack' it so Jiri can pull it through the trivial
+tree.
+
+Patch against linux-next-tree, 22. Dez 08:38:18 CET 2009
+but also present in linus tree.
+
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+Acked-by: Tony Lindgren <tony@atomide.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/video/omap/lcd_htcherald.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index ef29983..e61a75c 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -1311,6 +1311,7 @@ static void omapfb_free_fbmem(struct fb_info *fbi)
- 		if (rg->vrfb.vaddr[0]) {
- 			iounmap(rg->vrfb.vaddr[0]);
- 			omap_vrfb_release_ctx(&rg->vrfb);
-+			rg->vrfb.vaddr[0] = NULL;
- 		}
- 	}
+diff --git a/drivers/video/omap/lcd_htcherald.c b/drivers/video/omap/lcd_htcherald.c
+index a9007c5..4802419 100644
+--- a/drivers/video/omap/lcd_htcherald.c
++++ b/drivers/video/omap/lcd_htcherald.c
+@@ -115,12 +115,12 @@ struct platform_driver htcherald_panel_driver = {
+ 	},
+ };
  
+-static int htcherald_panel_drv_init(void)
++static int __init htcherald_panel_drv_init(void)
+ {
+ 	return platform_driver_register(&htcherald_panel_driver);
+ }
+ 
+-static void htcherald_panel_drv_cleanup(void)
++static void __exit htcherald_panel_drv_cleanup(void)
+ {
+ 	platform_driver_unregister(&htcherald_panel_driver);
+ }
 -- 
 1.6.5
 

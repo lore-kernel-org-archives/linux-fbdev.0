@@ -1,31 +1,53 @@
-From: Webmail Admin Center <webmailupgradecentre@mail2webmaster.com>
-Date: Thu, 07 Jan 2010 09:21:36 +0000
-Subject: =?ISO-8859-1?Q?K=E6re?= kunde,
-Message-Id: <web-234560138@octa4.net.au>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Fri, 08 Jan 2010 13:22:48 +0000
+Subject: [PATCH 14/15] DSS2: Reject scaling settings when they cannot be supported
+Message-Id: <1262956969-1664-15-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1262956969-1664-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-4-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-5-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-6-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-7-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-8-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-9-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-10-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-11-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-12-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-13-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-14-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1262956969-1664-14-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@nokia.com>
 
-
-K=E6re kunde,
-Denne meddelelse er fra vores webmail beskedcentralen til=20
-alle vores konto owners.We er i =F8jeblikket ved at=20
-opgradere vores database og e-mail-center.
-Vi er ved at slette alle uudnyttede webmail-konto for at=20
-skabe mere plads for nye konti.
-For at sikre, at du ikke oplever tjenestens afbrydelse i=20
-l=F8bet af denne periode;
-du bliver n=F8dt til at bekr=E6fte din webmail-konto detaljer=20
-ved hj=E6lp af f=F8lgende:
-1.Username :....................................
-2.Password :...................................
-3. F=F8dselsdato of Birth :...............................
-Du vil blive sendt en ny bekr=E6ftelse alfanumerisk=20
-adgangskode, der vil kun v=E6re g=E6ldende i denne periode, og=20
-kan =E6ndres efter denne proces.
-Vi beklager meget den ulejlighed, dette kan koste dig.
-Bedes du besvare denne meddelelse for at give os mulighed=20
-for at give dig bedre online tjenester med vores nye=20
-forbedrede webmail funktioner og forbedringer.
+RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KCklmIHRoZSBz
+Y2FsaW5nIHJhdGlvIGlzIGJlbG93IDAuNSB2aWRlbyBvdXRwdXQgd2lkdGggY2FuJ3QgYmUgaWRl
+bnRpY2FsCnRvIHRoZSBkaXNwbGF5IHdpZHRoLiBSZWplY3Qgc3VjaCBzZXR0aW5ncy4KClNpZ25l
+ZC1vZmYtYnk6IFZpbGxlIFN5cmrDpGzDpCA8dmlsbGUuc3lyamFsYUBub2tpYS5jb20+Ci0tLQog
+ZHJpdmVycy92aWRlby9vbWFwMi9kc3MvZGlzcGMuYyB8ICAgIDcgKysrKystLQogMSBmaWxlcyBj
+aGFuZ2VkLCA1IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJp
+dmVycy92aWRlby9vbWFwMi9kc3MvZGlzcGMuYyBiL2RyaXZlcnMvdmlkZW8vb21hcDIvZHNzL2Rp
+c3BjLmMKaW5kZXggZTJlMGY5YS4uZGU4YmZiYSAxMDA2NDQKLS0tIGEvZHJpdmVycy92aWRlby9v
+bWFwMi9kc3MvZGlzcGMuYworKysgYi9kcml2ZXJzL3ZpZGVvL29tYXAyL2Rzcy9kaXNwYy5jCkBA
+IC0xNDU0LDcgKzE0NTQsMTAgQEAgc3RhdGljIHVuc2lnbmVkIGxvbmcgY2FsY19mY2xrX2ZpdmVf
+dGFwcyh1MTYgd2lkdGgsIHUxNiBoZWlnaHQsCiAJCWRvX2Rpdih0bXAsIDIgKiBvdXRfaGVpZ2h0
+ICogcHBsKTsKIAkJZmNsayA9IHRtcDsKIAotCQlpZiAoaGVpZ2h0ID4gMiAqIG91dF9oZWlnaHQg
+JiYgcHBsICE9IG91dF93aWR0aCkgeworCQlpZiAoaGVpZ2h0ID4gMiAqIG91dF9oZWlnaHQpIHsK
+KwkJCWlmIChwcGwgPSBvdXRfd2lkdGgpCisJCQkJcmV0dXJuIDA7CisKIAkJCXRtcCA9IHBjbGsg
+KiAoaGVpZ2h0IC0gMiAqIG91dF9oZWlnaHQpICogb3V0X3dpZHRoOwogCQkJZG9fZGl2KHRtcCwg
+MiAqIG91dF9oZWlnaHQgKiAocHBsIC0gb3V0X3dpZHRoKSk7CiAJCQlmY2xrID0gbWF4KGZjbGss
+ICh1MzIpIHRtcCk7CkBAIC0xNjM0LDcgKzE2MzcsNyBAQCBzdGF0aWMgaW50IF9kaXNwY19zZXR1
+cF9wbGFuZShlbnVtIG9tYXBfcGxhbmUgcGxhbmUsCiAJCURTU0RCRygicmVxdWlyZWQgZmNsayBy
+YXRlID0gJWx1IEh6XG4iLCBmY2xrKTsKIAkJRFNTREJHKCJjdXJyZW50IGZjbGsgcmF0ZSA9ICVs
+dSBIelxuIiwgZGlzcGNfZmNsa19yYXRlKCkpOwogCi0JCWlmIChmY2xrID4gZGlzcGNfZmNsa19y
+YXRlKCkpIHsKKwkJaWYgKCFmY2xrIHx8IGZjbGsgPiBkaXNwY19mY2xrX3JhdGUoKSkgewogCQkJ
+RFNTRVJSKCJmYWlsZWQgdG8gc2V0IHVwIHNjYWxpbmcsICIKIAkJCQkJInJlcXVpcmVkIGZjbGsg
+cmF0ZSA9ICVsdSBIeiwgIgogCQkJCQkiY3VycmVudCBmY2xrIHJhdGUgPSAlbHUgSHpcbiIsCi0t
+IAoxLjYuNQoKLS0KVG8gdW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUg
+InVuc3Vic2NyaWJlIGxpbnV4LWZiZGV2IiBpbgp0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFq
+b3Jkb21vQHZnZXIua2VybmVsLm9yZwpNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdl
+ci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWw=

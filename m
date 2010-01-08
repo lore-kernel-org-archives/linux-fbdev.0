@@ -1,53 +1,35 @@
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Fri, 08 Jan 2010 13:22:48 +0000
-Subject: [PATCH 14/15] DSS2: Reject scaling settings when they cannot be supported
-Message-Id: <1262956969-1664-15-git-send-email-tomi.valkeinen@nokia.com>
+Date: Fri, 08 Jan 2010 13:22:36 +0000
+Subject: [PATCH 02/15] OMAP: DSS2: DSI: print debug DCS cmd in hex
+Message-Id: <1262956969-1664-3-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1262956969-1664-1-git-send-email-tomi.valkeinen@nokia.com>
  <1262956969-1664-2-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-3-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-4-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-5-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-6-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-7-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-8-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-9-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-10-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-11-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-12-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-13-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-14-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1262956969-1664-14-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1262956969-1664-2-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@nokia.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KCklmIHRoZSBz
-Y2FsaW5nIHJhdGlvIGlzIGJlbG93IDAuNSB2aWRlbyBvdXRwdXQgd2lkdGggY2FuJ3QgYmUgaWRl
-bnRpY2FsCnRvIHRoZSBkaXNwbGF5IHdpZHRoLiBSZWplY3Qgc3VjaCBzZXR0aW5ncy4KClNpZ25l
-ZC1vZmYtYnk6IFZpbGxlIFN5cmrDpGzDpCA8dmlsbGUuc3lyamFsYUBub2tpYS5jb20+Ci0tLQog
-ZHJpdmVycy92aWRlby9vbWFwMi9kc3MvZGlzcGMuYyB8ICAgIDcgKysrKystLQogMSBmaWxlcyBj
-aGFuZ2VkLCA1IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJp
-dmVycy92aWRlby9vbWFwMi9kc3MvZGlzcGMuYyBiL2RyaXZlcnMvdmlkZW8vb21hcDIvZHNzL2Rp
-c3BjLmMKaW5kZXggZTJlMGY5YS4uZGU4YmZiYSAxMDA2NDQKLS0tIGEvZHJpdmVycy92aWRlby9v
-bWFwMi9kc3MvZGlzcGMuYworKysgYi9kcml2ZXJzL3ZpZGVvL29tYXAyL2Rzcy9kaXNwYy5jCkBA
-IC0xNDU0LDcgKzE0NTQsMTAgQEAgc3RhdGljIHVuc2lnbmVkIGxvbmcgY2FsY19mY2xrX2ZpdmVf
-dGFwcyh1MTYgd2lkdGgsIHUxNiBoZWlnaHQsCiAJCWRvX2Rpdih0bXAsIDIgKiBvdXRfaGVpZ2h0
-ICogcHBsKTsKIAkJZmNsayA9IHRtcDsKIAotCQlpZiAoaGVpZ2h0ID4gMiAqIG91dF9oZWlnaHQg
-JiYgcHBsICE9IG91dF93aWR0aCkgeworCQlpZiAoaGVpZ2h0ID4gMiAqIG91dF9oZWlnaHQpIHsK
-KwkJCWlmIChwcGwgPSBvdXRfd2lkdGgpCisJCQkJcmV0dXJuIDA7CisKIAkJCXRtcCA9IHBjbGsg
-KiAoaGVpZ2h0IC0gMiAqIG91dF9oZWlnaHQpICogb3V0X3dpZHRoOwogCQkJZG9fZGl2KHRtcCwg
-MiAqIG91dF9oZWlnaHQgKiAocHBsIC0gb3V0X3dpZHRoKSk7CiAJCQlmY2xrID0gbWF4KGZjbGss
-ICh1MzIpIHRtcCk7CkBAIC0xNjM0LDcgKzE2MzcsNyBAQCBzdGF0aWMgaW50IF9kaXNwY19zZXR1
-cF9wbGFuZShlbnVtIG9tYXBfcGxhbmUgcGxhbmUsCiAJCURTU0RCRygicmVxdWlyZWQgZmNsayBy
-YXRlID0gJWx1IEh6XG4iLCBmY2xrKTsKIAkJRFNTREJHKCJjdXJyZW50IGZjbGsgcmF0ZSA9ICVs
-dSBIelxuIiwgZGlzcGNfZmNsa19yYXRlKCkpOwogCi0JCWlmIChmY2xrID4gZGlzcGNfZmNsa19y
-YXRlKCkpIHsKKwkJaWYgKCFmY2xrIHx8IGZjbGsgPiBkaXNwY19mY2xrX3JhdGUoKSkgewogCQkJ
-RFNTRVJSKCJmYWlsZWQgdG8gc2V0IHVwIHNjYWxpbmcsICIKIAkJCQkJInJlcXVpcmVkIGZjbGsg
-cmF0ZSA9ICVsdSBIeiwgIgogCQkJCQkiY3VycmVudCBmY2xrIHJhdGUgPSAlbHUgSHpcbiIsCi0t
-IAoxLjYuNQoKLS0KVG8gdW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUg
-InVuc3Vic2NyaWJlIGxpbnV4LWZiZGV2IiBpbgp0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFq
-b3Jkb21vQHZnZXIua2VybmVsLm9yZwpNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdl
-ci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWw=
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ drivers/video/omap2/dss/dsi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index c37bc5b..dda7b3f 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -2059,7 +2059,7 @@ int dsi_vc_dcs_read(int channel, u8 dcs_cmd, u8 *buf, int buflen)
+ 	int r;
+ 
+ 	if (dsi.debug_read)
+-		DSSDBG("dsi_vc_dcs_read(ch%d, dcs_cmd %u)\n", channel, dcs_cmd);
++		DSSDBG("dsi_vc_dcs_read(ch%d, dcs_cmd %x)\n", channel, dcs_cmd);
+ 
+ 	r = dsi_vc_send_short(channel, DSI_DT_DCS_READ, dcs_cmd, 0);
+ 	if (r)
+-- 
+1.6.5
+

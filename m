@@ -1,59 +1,56 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Date: Tue, 05 Jan 2010 10:27:07 +0000
-Subject: Re: [PATCH 08/10] video/omap: add __init/__exit macros to
-Message-Id: <alpine.LNX.2.00.1001051126360.2277@pobox.suse.cz>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Fri, 08 Jan 2010 13:22:34 +0000
+Subject: [PATCH 00/15] OMAP DSS fixes
+Message-Id: <1262956969-1664-1-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1261470890-24031-1-git-send-email-peterhuewe@gmx.de>
-In-Reply-To: <1261470890-24031-1-git-send-email-peterhuewe@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Peter Huewe <peterhuewe@gmx.de>
-Cc: kernel-janitors@vger.kernel.org, Imre Deak <imre.deak@nokia.com>, Tony Lindgren <tony@atomide.com>, Cory Maccarrone <darkstar6262@gmail.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-On Tue, 22 Dec 2009, peterhuewe@gmx.de wrote:
+Bunch of small fixes to OMAP DSS for review.
 
-> From: Peter Huewe <peterhuewe@gmx.de>
-> 
-> Trivial patch which adds the __init/__exit macros to the module_init/
-> module_exit functions of
-> 
-> drivers/video/omap/lcd_htcherald.c
-> 
-> Please have a look at the small patch and either pull it through
-> your tree, or please ack' it so Jiri can pull it through the trivial
-> tree.
-> 
-> Patch against linux-next-tree, 22. Dez 08:38:18 CET 2009
-> but also present in linus tree.
-> 
-> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
-> ---
->  drivers/video/omap/lcd_htcherald.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/omap/lcd_htcherald.c b/drivers/video/omap/lcd_htcherald.c
-> index a9007c5..4802419 100644
-> --- a/drivers/video/omap/lcd_htcherald.c
-> +++ b/drivers/video/omap/lcd_htcherald.c
-> @@ -115,12 +115,12 @@ struct platform_driver htcherald_panel_driver = {
->  	},
->  };
->  
-> -static int htcherald_panel_drv_init(void)
-> +static int __init htcherald_panel_drv_init(void)
->  {
->  	return platform_driver_register(&htcherald_panel_driver);
->  }
->  
-> -static void htcherald_panel_drv_cleanup(void)
-> +static void __exit htcherald_panel_drv_cleanup(void)
->  {
->  	platform_driver_unregister(&htcherald_panel_driver);
->  }
+ Tomi
 
-Doesn't seem to be in linux-next as of today. Applied myself, thanks.
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Peter Huewe (1):
+  video/omap: add __init/__exit macros to
+    drivers/video/omap/lcd_htcherald.c
+
+Tomi Valkeinen (12):
+  OMAP: DSS2: DSI: fix VC channels in send_short and send_null
+  OMAP: DSS2: DSI: print debug DCS cmd in hex
+  OMAP: DSS2: Collect interrupt statistics
+  OMAP: DSS2: Fix crash when panel doesn't define enable_te()
+  OMAP: DSS2: RFBI: convert to new kfifo API
+  OMAP: OMAPFB: fix clk_get for RFBI
+  OMAP: OMAPFB: add dummy release function for omapdss
+  MAINTAINERS: change omapfb maintainer
+  MAINTAINERS: Combine DSS2 and OMAPFB2 into one entry
+  OMAP: DSS2: OMAPFB: fix omapfb_free_fbmem()
+  OMAP: DSS2: Make check-delay-loops consistent
+  OMAP: DSS2: OMAPFB: fix crash when panel driver was not loaded
+
+Vaibhav Hiremath (1):
+  OMAP: DSS2: Fix compile warning
+
+Ville Syrjälä (1):
+  DSS2: Reject scaling settings when they cannot be supported
+
+ MAINTAINERS                              |   15 +---
+ drivers/video/omap/dispc.c               |   18 +---
+ drivers/video/omap/lcd_htcherald.c       |    4 +-
+ drivers/video/omap/omapfb.h              |    2 +
+ drivers/video/omap/omapfb_main.c         |   25 +++++
+ drivers/video/omap/rfbi.c                |    4 +-
+ drivers/video/omap2/dss/Kconfig          |    7 ++
+ drivers/video/omap2/dss/core.c           |   10 ++
+ drivers/video/omap2/dss/dispc.c          |   74 +++++++++++++-
+ drivers/video/omap2/dss/dsi.c            |  160 +++++++++++++++++++++++++++---
+ drivers/video/omap2/dss/dss.c            |    6 +-
+ drivers/video/omap2/dss/dss.h            |   14 +++
+ drivers/video/omap2/dss/rfbi.c           |   30 +++---
+ drivers/video/omap2/omapfb/omapfb-main.c |    6 +
+ 14 files changed, 309 insertions(+), 66 deletions(-)
+

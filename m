@@ -1,33 +1,53 @@
-From: Bernie Thompson <bernie@plugable.com>
-Date: Sat, 02 Jan 2010 04:35:57 +0000
-Subject: fbdev: ARGB8888 vs. RGB888
-Message-Id: <480988181001012035iccffebbn21ed0bb69d29a670@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Fri, 08 Jan 2010 13:22:44 +0000
+Subject: [PATCH 10/15] OMAP: DSS2: Fix compile warning
+Message-Id: <1262956969-1664-11-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1262956969-1664-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-4-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-5-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-6-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-7-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-8-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-9-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-10-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1262956969-1664-10-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Vaibhav Hiremath <hvaibhav@ti.com>
 
-The udlfb (DisplayLink virtual USB) framebuffer driver currently
-supports 16bpp (RGB565) only.  Looking at adding 24/32bpp support.
-Because it's a virtual device where the pixels get processed before
-sending over USB, any pixel encoding on the host side could work.
-Just have to choose the best one.
+From: Vaibhav Hiremath <hvaibhav@ti.com>
 
-Anyone know of any surprising pros/cons which would lead one of
-ARGB8888 or RGB888 being an obvious choice, all other things equal?
-Is either mode known to work better for xf86-video-fbdev or other
-client app compatibility?
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+Acked-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ drivers/video/omap2/dss/core.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-RBG888 has several advantages, of course.  One interesting advantage
-of ARG8888 is udlfb has a mode where it's a defio client -- and larger
-bpp means page faults are actually somewhat more precise in
-identifying the damaged areas of the screen, in addition to natural
-alignment advantages.
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index dbb0ce2..82918ee 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -124,6 +124,7 @@ static void restore_all_ctx(void)
+ 	dss_clk_disable_all_no_ctx();
+ }
+ 
++#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
+ /* CLOCKS */
+ static void core_dump_clocks(struct seq_file *s)
+ {
+@@ -149,6 +150,7 @@ static void core_dump_clocks(struct seq_file *s)
+ 				clocks[i]->usecount);
+ 	}
+ }
++#endif /* defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT) */
+ 
+ static int dss_get_clock(struct clk **clock, const char *clk_name)
+ {
+-- 
+1.6.5
 
-As background -- udlfb is in the kernel staging tree. And there is
-some future work at git.plugable.com.
-
-Thanks,
-Bernie
-http://plugable.com/

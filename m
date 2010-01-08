@@ -1,177 +1,122 @@
-From: Grazvydas Ignotas <notasas@gmail.com>
-Date: Wed, 13 Jan 2010 21:19:07 +0000
-Subject: [PATCHv2] OMAP: pandora: add DSS2 support and related regulators
-Message-Id: <1263417547-24575-1-git-send-email-notasas@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Fri, 08 Jan 2010 13:22:47 +0000
+Subject: [PATCH 13/15] OMAP: DSS2: Make check-delay-loops consistent
+Message-Id: <1262956969-1664-14-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1262956969-1664-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-4-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-5-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-6-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-7-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-8-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-9-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-10-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-11-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-12-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-13-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1262956969-1664-13-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@nokia.com>, Grazvydas Ignotas <notasas@gmail.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-This patch adds configuration data for DSS2 and sets up
-display related regulators.
+Loops checking for certain condition were rather inconsistent.
 
-Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Reported-by: Juha Leppanen <juha_motorsportcom@luukku.com>
 ---
- arch/arm/mach-omap2/board-omap3pandora.c |  109 ++++++++++++++++++++++++++++++
- 1 files changed, 109 insertions(+), 0 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   14 +++++++-------
+ drivers/video/omap2/dss/dss.c |    6 +++---
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-omap3pandora.c b/arch/arm/mach-omap2/board-omap3pandora.c
-index ef17cf1..bd3e577 100644
---- a/arch/arm/mach-omap2/board-omap3pandora.c
-+++ b/arch/arm/mach-omap2/board-omap3pandora.c
-@@ -40,6 +40,7 @@
- #include <mach/hardware.h>
- #include <plat/mcspi.h>
- #include <plat/usb.h>
-+#include <plat/display.h>
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 2881d93..d964869 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -828,12 +828,12 @@ static int dsi_pll_power(enum dsi_pll_power_state state)
  
- #include "mux.h"
- #include "sdram-micron-mt46h32m32lf-6.h"
-@@ -192,6 +193,61 @@ static struct twl4030_keypad_data pandora_kp_data = {
- 	.rep		= 1,
- };
- 
-+static struct omap_dss_device pandora_lcd_device = {
-+	.name			= "lcd",
-+	.driver_name		= "tpo_td043mtea1_panel",
-+	.type			= OMAP_DISPLAY_TYPE_DPI,
-+	.phy.dpi.data_lines	= 24,
-+	.reset_gpio		= 157,
-+};
-+
-+static struct omap_dss_device pandora_tv_device = {
-+	.name			= "tv",
-+	.driver_name		= "venc",
-+	.type			= OMAP_DISPLAY_TYPE_VENC,
-+	.phy.venc.type		= OMAP_DSS_VENC_TYPE_SVIDEO,
-+};
-+
-+static struct omap_dss_device *pandora_dss_devices[] = {
-+	&pandora_lcd_device,
-+	&pandora_tv_device,
-+};
-+
-+static struct omap_dss_board_info pandora_dss_data = {
-+	.num_devices	= ARRAY_SIZE(pandora_dss_devices),
-+	.devices	= pandora_dss_devices,
-+	.default_device	= &pandora_lcd_device,
-+};
-+
-+static struct platform_device pandora_dss_device = {
-+	.name		= "omapdss",
-+	.id		= -1,
-+	.dev		= {
-+		.platform_data = &pandora_dss_data,
-+	},
-+};
-+
-+static struct regulator_consumer_supply pandora_vcc_lcd_supply = {
-+	.supply		= "vcc",
-+	.dev		= &pandora_lcd_device.dev,
-+};
-+
-+static struct regulator_consumer_supply pandora_vdda_dac_supply = {
-+	.supply		= "vdda_dac",
-+	.dev		= &pandora_dss_device.dev,
-+};
-+
-+static struct regulator_consumer_supply pandora_vdds_supplies[] = {
-+	{
-+		.supply		= "vdds_sdi",
-+		.dev		= &pandora_dss_device.dev,
-+	},
-+	{
-+		.supply		= "vdds_dsi",
-+		.dev		= &pandora_dss_device.dev,
-+	},
-+};
-+
- static struct twl4030_hsmmc_info omap3pandora_mmc[] = {
- 	{
- 		.mmc		= 1,
-@@ -277,6 +333,49 @@ static struct regulator_init_data pandora_vmmc2 = {
- 	.consumer_supplies	= &pandora_vmmc2_supply,
- };
- 
-+/* VDAC for DSS driving S-Video */
-+static struct regulator_init_data pandora_vdac = {
-+	.constraints = {
-+		.min_uV			= 1800000,
-+		.max_uV			= 1800000,
-+		.apply_uV		= true,
-+		.valid_modes_mask	= REGULATOR_MODE_NORMAL
-+					| REGULATOR_MODE_STANDBY,
-+		.valid_ops_mask		= REGULATOR_CHANGE_MODE
-+					| REGULATOR_CHANGE_STATUS,
-+	},
-+	.num_consumer_supplies	= 1,
-+	.consumer_supplies	= &pandora_vdda_dac_supply,
-+};
-+
-+/* VPLL2 for digital video outputs */
-+static struct regulator_init_data pandora_vpll2 = {
-+	.constraints = {
-+		.min_uV			= 1800000,
-+		.max_uV			= 1800000,
-+		.apply_uV		= true,
-+		.valid_modes_mask	= REGULATOR_MODE_NORMAL
-+					| REGULATOR_MODE_STANDBY,
-+		.valid_ops_mask		= REGULATOR_CHANGE_MODE
-+					| REGULATOR_CHANGE_STATUS,
-+	},
-+	.num_consumer_supplies	= ARRAY_SIZE(pandora_vdds_supplies),
-+	.consumer_supplies	= pandora_vdds_supplies,
-+};
-+
-+/* VAUX1 for LCD */
-+static struct regulator_init_data pandora_vaux1 = {
-+	.constraints = {
-+		.min_uV			= 3000000,
-+		.max_uV			= 3000000,
-+		.apply_uV		= true,
-+		.valid_modes_mask	= REGULATOR_MODE_NORMAL,
-+		.valid_ops_mask		= REGULATOR_CHANGE_STATUS,
-+	},
-+	.num_consumer_supplies	= 1,
-+	.consumer_supplies	= &pandora_vcc_lcd_supply,
-+};
-+
- static struct twl4030_usb_data omap3pandora_usb_data = {
- 	.usb_mode	= T2_USB_MODE_ULPI,
- };
-@@ -298,6 +397,9 @@ static struct twl4030_platform_data omap3pandora_twldata = {
- 	.codec		= &omap3pandora_codec_data,
- 	.vmmc1		= &pandora_vmmc1,
- 	.vmmc2		= &pandora_vmmc2,
-+	.vdac		= &pandora_vdac,
-+	.vpll2		= &pandora_vpll2,
-+	.vaux1		= &pandora_vaux1,
- 	.keypad		= &pandora_kp_data,
- };
- 
-@@ -365,6 +467,12 @@ static struct spi_board_info omap3pandora_spi_board_info[] __initdata = {
- 		.controller_data	= &ads7846_mcspi_config,
- 		.irq			= OMAP_GPIO_IRQ(OMAP3_PANDORA_TS_GPIO),
- 		.platform_data		= &ads7846_config,
-+	}, {
-+		.modalias		= "tpo_td043mtea1_panel_spi",
-+		.bus_num		= 1,
-+		.chip_select		= 1,
-+		.max_speed_hz		= 375000,
-+		.platform_data		= &pandora_lcd_device,
+ 	/* PLL_PWR_STATUS */
+ 	while (FLD_GET(dsi_read_reg(DSI_CLK_CTRL), 29, 28) != state) {
+-		udelay(1);
+-		if (t++ > 1000) {
++		if (++t > 1000) {
+ 			DSSERR("Failed to set DSI PLL power mode to %d\n",
+ 					state);
+ 			return -ENODEV;
+ 		}
++		udelay(1);
  	}
- };
  
-@@ -379,6 +487,7 @@ static void __init omap3pandora_init_irq(void)
- static struct platform_device *omap3pandora_devices[] __initdata = {
- 	&pandora_leds_gpio,
- 	&pandora_keys_gpio,
-+	&pandora_dss_device,
- };
+ 	return 0;
+@@ -1441,12 +1441,12 @@ static int dsi_complexio_power(enum dsi_complexio_power_state state)
  
- static struct ehci_hcd_omap_platform_data ehci_pdata __initconst = {
+ 	/* PWR_STATUS */
+ 	while (FLD_GET(dsi_read_reg(DSI_COMPLEXIO_CFG1), 26, 25) != state) {
+-		udelay(1);
+-		if (t++ > 1000) {
++		if (++t > 1000) {
+ 			DSSERR("failed to set complexio power state to "
+ 					"%d\n", state);
+ 			return -ENODEV;
+ 		}
++		udelay(1);
+ 	}
+ 
+ 	return 0;
+@@ -1646,10 +1646,10 @@ static void dsi_complexio_uninit(void)
+ 
+ static int _dsi_wait_reset(void)
+ {
+-	int i = 0;
++	int t = 0;
+ 
+ 	while (REG_GET(DSI_SYSSTATUS, 0, 0) = 0) {
+-		if (i++ > 5) {
++		if (++t > 5) {
+ 			DSSERR("soft reset failed\n");
+ 			return -ENODEV;
+ 		}
+@@ -2707,7 +2707,6 @@ static int dsi_update_screen_l4(struct omap_dss_device *dssdev,
+ 		/* using fifo not empty */
+ 		/* TX_FIFO_NOT_EMPTY */
+ 		while (FLD_GET(dsi_read_reg(DSI_VC_CTRL(0)), 5, 5)) {
+-			udelay(1);
+ 			fifo_stalls++;
+ 			if (fifo_stalls > 0xfffff) {
+ 				DSSERR("fifo stalls overflow, pixels left %d\n",
+@@ -2715,6 +2714,7 @@ static int dsi_update_screen_l4(struct omap_dss_device *dssdev,
+ 				dsi_if_enable(0);
+ 				return -EIO;
+ 			}
++			udelay(1);
+ 		}
+ #elif 1
+ 		/* using fifo emptiness */
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 9b05ee6..0a26b7d 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -467,14 +467,14 @@ static irqreturn_t dss_irq_handler_omap3(int irq, void *arg)
+ 
+ static int _omap_dss_wait_reset(void)
+ {
+-	unsigned timeout = 1000;
++	int t = 0;
+ 
+ 	while (REG_GET(DSS_SYSSTATUS, 0, 0) = 0) {
+-		udelay(1);
+-		if (!--timeout) {
++		if (++t > 1000) {
+ 			DSSERR("soft reset failed\n");
+ 			return -ENODEV;
+ 		}
++		udelay(1);
+ 	}
+ 
+ 	return 0;
 -- 
-1.6.3.3
+1.6.5
 

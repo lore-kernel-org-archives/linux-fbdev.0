@@ -1,57 +1,122 @@
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Mon, 04 Jan 2010 09:42:59 +0000
-Subject: RE: [PATCH 1/5] dss2-core:Warning Fix: core_dump_clocks enclosed
-Message-Id: <1262598179.2381.20.camel@tubuntu.research.nokia.com>
+Date: Fri, 08 Jan 2010 13:22:39 +0000
+Subject: [PATCH 05/15] OMAP: DSS2: RFBI: convert to new kfifo API
+Message-Id: <1262956969-1664-6-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <hvaibhav@ti.com>
-	 <1261063105-19874-1-git-send-email-hvaibhav@ti.com>
-	 <1261483154.2108.86.camel@tubuntu.research.nokia.com>
-	 <19F8576C6E063C45BE387C64729E7394044A277589@dbde02.ent.ti.com>
-In-Reply-To: <19F8576C6E063C45BE387C64729E7394044A277589@dbde02.ent.ti.com>
+References: <1262956969-1664-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-4-git-send-email-tomi.valkeinen@nokia.com>
+ <1262956969-1664-5-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1262956969-1664-5-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "ext Hiremath, Vaibhav" <hvaibhav@ti.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-On Wed, 2009-12-23 at 17:34 +0100, ext Hiremath, Vaibhav wrote:
-> > -----Original Message-----
-> > From: Tomi Valkeinen [mailto:tomi.valkeinen@nokia.com]
-> > Sent: Tuesday, December 22, 2009 5:29 PM
-> > To: Hiremath, Vaibhav
-> > Cc: linux-omap@vger.kernel.org; linux-fbdev-
-> > devel@lists.sourceforge.net; linux-fbdev@vger.kernel.org
-> > Subject: Re: [PATCH 1/5] dss2-core:Warning Fix: core_dump_clocks
-> > enclosed under DEBUG_FS
-> > 
-> > Hi,
-> > 
-> > On Thu, 2009-12-17 at 16:18 +0100, ext hvaibhav@ti.com wrote:
-> > > From: Vaibhav Hiremath <hvaibhav@ti.com>
-> > >
-> > >
-> > > Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
-> > 
-> > Which warning does this fix? I don't get any compiler warnings.
-> > 
-> [Hiremath, Vaibhav] Below is the log - 
-> 
-> 
->   CC      drivers/video/omap2/dss/core.o
-> drivers/video/omap2/dss/core.c:129: warning: 'core_dump_clocks' defined but not used
->   CC      drivers/video/omap2/dss/dss.o
+Compiles, but not tested.
 
-Ok. For some reason my compiler doesn't warn about that.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ drivers/video/omap2/dss/rfbi.c |   30 +++++++++++++++---------------
+ 1 files changed, 15 insertions(+), 15 deletions(-)
 
-> 
-> > Can you change the name of the patch to a more standard one?
-> > 
-> [Hiremath, Vaibhav] Ok, will do that and resubmit. I believe only prefix "OMAP" should do.
-
-Something like:
-
-OMAP: DSS2: fix compile warning
-
- Tomi
-
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index d0b3006..b936495 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -120,7 +120,7 @@ static struct {
+ 
+ 	struct omap_dss_device *dssdev[2];
+ 
+-	struct kfifo      *cmd_fifo;
++	struct kfifo      cmd_fifo;
+ 	spinlock_t        cmd_lock;
+ 	struct completion cmd_done;
+ 	atomic_t          cmd_fifo_full;
+@@ -1011,20 +1011,20 @@ static void process_cmd_fifo(void)
+ 		return;
+ 
+ 	while (true) {
+-		spin_lock_irqsave(rfbi.cmd_fifo->lock, flags);
++		spin_lock_irqsave(&rfbi.cmd_lock, flags);
+ 
+-		len = __kfifo_get(rfbi.cmd_fifo, (unsigned char *)&p,
++		len = kfifo_out(&rfbi.cmd_fifo, (unsigned char *)&p,
+ 				  sizeof(struct update_param));
+ 		if (len = 0) {
+ 			DSSDBG("nothing more in fifo\n");
+ 			atomic_set(&rfbi.cmd_pending, 0);
+-			spin_unlock_irqrestore(rfbi.cmd_fifo->lock, flags);
++			spin_unlock_irqrestore(&rfbi.cmd_lock, flags);
+ 			break;
+ 		}
+ 
+ 		/* DSSDBG("fifo full %d\n", rfbi.cmd_fifo_full.counter);*/
+ 
+-		spin_unlock_irqrestore(rfbi.cmd_fifo->lock, flags);
++		spin_unlock_irqrestore(&rfbi.cmd_lock, flags);
+ 
+ 		BUG_ON(len != sizeof(struct update_param));
+ 		BUG_ON(p.rfbi_module > 1);
+@@ -1052,25 +1052,25 @@ static void rfbi_push_cmd(struct update_param *p)
+ 		unsigned long flags;
+ 		int available;
+ 
+-		spin_lock_irqsave(rfbi.cmd_fifo->lock, flags);
++		spin_lock_irqsave(&rfbi.cmd_lock, flags);
+ 		available = RFBI_CMD_FIFO_LEN_BYTES -
+-			__kfifo_len(rfbi.cmd_fifo);
++			kfifo_len(&rfbi.cmd_fifo);
+ 
+ /*		DSSDBG("%d bytes left in fifo\n", available); */
+ 		if (available < sizeof(struct update_param)) {
+ 			DSSDBG("Going to wait because FIFO FULL..\n");
+-			spin_unlock_irqrestore(rfbi.cmd_fifo->lock, flags);
++			spin_unlock_irqrestore(&rfbi.cmd_lock, flags);
+ 			atomic_inc(&rfbi.cmd_fifo_full);
+ 			wait_for_completion(&rfbi.cmd_done);
+ 			/*DSSDBG("Woke up because fifo not full anymore\n");*/
+ 			continue;
+ 		}
+ 
+-		ret = __kfifo_put(rfbi.cmd_fifo, (unsigned char *)p,
++		ret = kfifo_in(&rfbi.cmd_fifo, (unsigned char *)p,
+ 				  sizeof(struct update_param));
+ /*		DSSDBG("pushed %d bytes\n", ret);*/
+ 
+-		spin_unlock_irqrestore(rfbi.cmd_fifo->lock, flags);
++		spin_unlock_irqrestore(&rfbi.cmd_lock, flags);
+ 
+ 		BUG_ON(ret != sizeof(struct update_param));
+ 
+@@ -1155,12 +1155,12 @@ int rfbi_init(void)
+ {
+ 	u32 rev;
+ 	u32 l;
++	int r;
+ 
+ 	spin_lock_init(&rfbi.cmd_lock);
+-	rfbi.cmd_fifo = kfifo_alloc(RFBI_CMD_FIFO_LEN_BYTES, GFP_KERNEL,
+-				    &rfbi.cmd_lock);
+-	if (IS_ERR(rfbi.cmd_fifo))
+-		return -ENOMEM;
++	r = kfifo_alloc(&rfbi.cmd_fifo, RFBI_CMD_FIFO_LEN_BYTES, GFP_KERNEL);
++	if (r)
++		return r;
+ 
+ 	init_completion(&rfbi.cmd_done);
+ 	atomic_set(&rfbi.cmd_fifo_full, 0);
+@@ -1196,7 +1196,7 @@ void rfbi_exit(void)
+ {
+ 	DSSDBG("rfbi_exit\n");
+ 
+-	kfifo_free(rfbi.cmd_fifo);
++	kfifo_free(&rfbi.cmd_fifo);
+ 
+ 	iounmap(rfbi.base);
+ }
+-- 
+1.6.5
 

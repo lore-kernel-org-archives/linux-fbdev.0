@@ -1,29 +1,47 @@
-From: Oliver Neukum <oliver@neukum.org>
-Date: Thu, 28 Jan 2010 07:47:50 +0000
-Subject: Re: [PATCH] hid: Logitech G13 driver 0.0.4
-Message-Id: <201001280847.50445.oliver@neukum.org>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Fri, 08 Jan 2010 13:22:35 +0000
+Subject: [PATCH 01/15] OMAP: DSS2: DSI: fix VC channels in send_short and send_null
+Message-Id: <1262956969-1664-2-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201001202047.o0KKlMTr014003@mustang.cs.nmsu.edu> <8512e098224714ed7d54c62b46346796.squirrel@intranet.cs.nmsu.edu> <20100128072425.GA25633@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20100128072425.GA25633@atrey.karlin.mff.cuni.cz>
+References: <1262956969-1664-1-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1262956969-1664-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>, Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org, felipe.balbi@nokia.com, jayakumar.lkml@gmail.com, linux-fbdev@vger.kernel.org, krzysztof.h1@wp.pl, akpm@linux-foundation.org, linux-usb@vger.kernel.org, linux-input@vger.kernel.org, dmitry.torokhov@gmail.com
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
- Am Donnerstag, 28. Januar 2010 08:24:26 schrieben Sie:
-> > Again, like I said, I don't have a problem changing it. If it's wrong,
-> > it's wrong no matter how many other drivers may take the same
-> > approach.
-> 
-> I believe it is wrong.
+- dsi_vc_send_short() needs to use dest_per for the peripheral id
+- dsi_vc_send_null() was always using channel id 0
 
-So do I. You need not fail if copy_to_user() fails, but if you go
-that route you need to evaluate the return value of copy_to_user()
-and return:
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ drivers/video/omap2/dss/dsi.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-not_written = copy_to_user(...);
-return to_be_written - not_written ? to_be_written - not_written : -EFAULT;
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 5936487..c37bc5b 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -1999,7 +1999,8 @@ static int dsi_vc_send_short(int channel, u8 data_type, u16 data, u8 ecc)
+ 		return -EINVAL;
+ 	}
+ 
+-	data_id = data_type | channel << 6;
++	/* data_id = data_type | channel << 6; */
++	data_id = data_type | dsi.vc[channel].dest_per << 6;
+ 
+ 	r = (data_id << 0) | (data << 8) | (ecc << 24);
+ 
+@@ -2011,7 +2012,7 @@ static int dsi_vc_send_short(int channel, u8 data_type, u16 data, u8 ecc)
+ int dsi_vc_send_null(int channel)
+ {
+ 	u8 nullpkg[] = {0, 0, 0, 0};
+-	return dsi_vc_send_long(0, DSI_DT_NULL_PACKET, nullpkg, 4, 0);
++	return dsi_vc_send_long(channel, DSI_DT_NULL_PACKET, nullpkg, 4, 0);
+ }
+ EXPORT_SYMBOL(dsi_vc_send_null);
+ 
+-- 
+1.6.5
 
-	Regards
-		Oliver

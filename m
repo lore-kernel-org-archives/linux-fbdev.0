@@ -1,29 +1,29 @@
-From: Ben Hutchings <ben@decadent.org.uk>
-Date: Wed, 13 Jan 2010 23:40:29 +0000
-Subject: [PATCH 09/11] metronomefb: declare MODULE_FIRMWARE
-Message-Id: <1263426029.3852.126.camel@localhost>
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+Date: Sun, 10 Jan 2010 17:04:31 +0000
+Subject: [PATCH] video skeletonfb: use DEFINE_PCI_DEVICE_TABLE()
+Message-Id: <4B4A089F.3090908@freemail.hu>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-fbdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
 
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+From: Márton Németh <nm127@freemail.hu>
+
+Use DEFINE_PCI_DEVICE_TABLE() when declaring the PCI device
+table as suggested in Documentation/PCI/pci.txt .
+
+Signed-off-by: Márton Németh <nm127@freemail.hu>
 ---
- drivers/video/metronomefb.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+--- linux/drivers/video/skeletonfb.c.orig	2009-12-03 04:51:21.000000000 +0100
++++ linux/drivers/video/skeletonfb.c	2010-01-10 17:59:55.000000000 +0100
+@@ -887,7 +887,7 @@ static int xxxfb_resume(struct pci_dev *
+ #define xxxfb_resume NULL
+ #endif /* CONFIG_PM */
 
-diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
-index 661bfd2..7b89532 100644
---- a/drivers/video/metronomefb.c
-+++ b/drivers/video/metronomefb.c
-@@ -792,3 +792,4 @@ module_exit(metronomefb_exit);
- MODULE_DESCRIPTION("fbdev driver for Metronome controller");
- MODULE_AUTHOR("Jaya Kumar");
- MODULE_LICENSE("GPL");
-+MODULE_FIRMWARE("metronome.wbf");
--- 
-1.6.5.7
-
-
-
+-static struct pci_device_id xxxfb_id_table[] = {
++static DEFINE_PCI_DEVICE_TABLE(xxxfb_id_table) = {
+ 	{ PCI_VENDOR_ID_XXX, PCI_DEVICE_ID_XXX,
+ 	  PCI_ANY_ID, PCI_ANY_ID, PCI_BASE_CLASS_DISPLAY << 16,
+ 	  PCI_CLASS_MASK, 0 },

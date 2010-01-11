@@ -1,61 +1,74 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Fri, 08 Jan 2010 13:22:43 +0000
-Subject: [PATCH 09/15] MAINTAINERS: Combine DSS2 and OMAPFB2 into one entry
-Message-Id: <1262956969-1664-10-git-send-email-tomi.valkeinen@nokia.com>
+From: Grazvydas Ignotas <notasas@gmail.com>
+Date: Mon, 11 Jan 2010 11:46:40 +0000
+Subject: Re: [PATCH 09/15] MAINTAINERS: Combine DSS2 and OMAPFB2 into one
+Message-Id: <6ed0b2681001110346w284ab362s6fd10421e81d9edd@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1262956969-1664-1-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-2-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-3-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-4-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-5-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-6-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-7-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-8-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-9-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1262956969-1664-9-git-send-email-tomi.valkeinen@nokia.com>
+	 <1262956969-1664-2-git-send-email-tomi.valkeinen@nokia.com>
+	 <1262956969-1664-3-git-send-email-tomi.valkeinen@nokia.com>
+	 <1262956969-1664-4-git-send-email-tomi.valkeinen@nokia.com>
+	 <1262956969-1664-5-git-send-email-tomi.valkeinen@nokia.com>
+	 <1262956969-1664-6-git-send-email-tomi.valkeinen@nokia.com>
+	 <1262956969-1664-7-git-send-email-tomi.valkeinen@nokia.com>
+	 <1262956969-1664-8-git-send-email-tomi.valkeinen@nokia.com>
+	 <1262956969-1664-9-git-send-email-tomi.valkeinen@nokia.com>
+	 <1262956969-1664-10-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1262956969-1664-10-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-There isn't really any reason to divide those.
+On Fri, Jan 8, 2010 at 3:22 PM, Tomi Valkeinen <tomi.valkeinen@nokia.com> w=
+rote:
+> There isn't really any reason to divide those.
+>
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+> ---
+> =A0MAINTAINERS | =A0 13 ++-----------
+> =A01 files changed, 2 insertions(+), 11 deletions(-)
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 8d2fcee..d370787 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3955,23 +3955,14 @@ L: =A0 =A0 =A0linux-omap@vger.kernel.org
+> =A0S: =A0 =A0 Maintained
+> =A0F: =A0 =A0 drivers/video/omap/
+>
+> -OMAP DISPLAY SUBSYSTEM SUPPORT (DSS2)
+> +OMAP DISPLAY SUBSYSTEM and FRAMEBUFFER SUPPORT (DSS2)
+> =A0M: =A0 =A0 Tomi Valkeinen <tomi.valkeinen@nokia.com>
+> =A0L: =A0 =A0 linux-omap@vger.kernel.org
+> =A0L: =A0 =A0 linux-fbdev@vger.kernel.org (moderated for non-subscribers)
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
----
- MAINTAINERS |   13 ++-----------
- 1 files changed, 2 insertions(+), 11 deletions(-)
+Not that it's very important, but linux-fbdev is not really moderated
+(see other entries in this file), this is probably leftover from the
+old list (linux-fbdev-devel@lists.sourceforge.net).
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 8d2fcee..d370787 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3955,23 +3955,14 @@ L:	linux-omap@vger.kernel.org
- S:	Maintained
- F:	drivers/video/omap/
- 
--OMAP DISPLAY SUBSYSTEM SUPPORT (DSS2)
-+OMAP DISPLAY SUBSYSTEM and FRAMEBUFFER SUPPORT (DSS2)
- M:	Tomi Valkeinen <tomi.valkeinen@nokia.com>
- L:	linux-omap@vger.kernel.org
- L:	linux-fbdev@vger.kernel.org (moderated for non-subscribers)
- S:	Maintained
--F:	drivers/video/omap2/dss/
--F:	drivers/video/omap2/vrfb.c
--F:	drivers/video/omap2/vram.c
-+F:	drivers/video/omap2/
- F:	Documentation/arm/OMAP/DSS
- 
--OMAP FRAMEBUFFER SUPPORT (FOR DSS2)
--M:	Tomi Valkeinen <tomi.valkeinen@nokia.com>
--L:	linux-omap@vger.kernel.org
--L:	linux-fbdev@vger.kernel.org (moderated for non-subscribers)
--S:	Maintained
--F:	drivers/video/omap2/omapfb/
--
- OMAP MMC SUPPORT
- M:	Jarkko Lavinen <jarkko.lavinen@nokia.com>
- L:	linux-omap@vger.kernel.org
--- 
-1.6.5
-
+> =A0S: =A0 =A0 Maintained
+> -F: =A0 =A0 drivers/video/omap2/dss/
+> -F: =A0 =A0 drivers/video/omap2/vrfb.c
+> -F: =A0 =A0 drivers/video/omap2/vram.c
+> +F: =A0 =A0 drivers/video/omap2/
+> =A0F: =A0 =A0 Documentation/arm/OMAP/DSS
+>
+> -OMAP FRAMEBUFFER SUPPORT (FOR DSS2)
+> -M: =A0 =A0 Tomi Valkeinen <tomi.valkeinen@nokia.com>
+> -L: =A0 =A0 linux-omap@vger.kernel.org
+> -L: =A0 =A0 linux-fbdev@vger.kernel.org (moderated for non-subscribers)
+> -S: =A0 =A0 Maintained
+> -F: =A0 =A0 drivers/video/omap2/omapfb/
+> -
+> =A0OMAP MMC SUPPORT
+> =A0M: =A0 =A0 Jarkko Lavinen <jarkko.lavinen@nokia.com>
+> =A0L: =A0 =A0 linux-omap@vger.kernel.org
+> --
+> 1.6.5
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+>

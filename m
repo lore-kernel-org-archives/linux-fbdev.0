@@ -1,28 +1,50 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Date: Thu, 14 Jan 2010 22:05:43 +0000
-Subject: Re: Best way to post Logitech G13 driver 0.0.4?
-Message-Id: <alpine.LNX.2.00.1001142305010.30977@pobox.suse.cz>
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=
+Date: Mon, 11 Jan 2010 16:21:21 +0000
+Subject: [PATCH] imxfb: correct location of callbacks in suspend and resume
+Message-Id: <1263226881-28008-1-git-send-email-u.kleine-koenig@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201001071623.o07GNOB4022157@mustang.cs.nmsu.edu>    <45a44e481001071832q40d6f913w2ccf89c4c45a692a@mail.gmail.com>    <5370b38ca0c149470c0e364627c56ee4.squirrel@intranet.cs.nmsu.edu>    <alpine.LNX.2.00.1001091441180.7275@pobox.suse.cz>   
- <cf0603d7c734f836f0b4a64815d649ae.squirrel@intranet.cs.nmsu.edu> <fbd89f64a86fc72184658fe9b27509f3.squirrel@intranet.cs.nmsu.edu>
-In-Reply-To: <fbd89f64a86fc72184658fe9b27509f3.squirrel@intranet.cs.nmsu.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-kernel@vger.kernel.org, felipe.balbi@nokia.com, Pavel Machek <pavel@ucw.cz>, linux-fbdev@vger.kernel.org, krzysztof.h1@wp.pl, Andrew Morton <akpm@linux-foundation.org>, linux-usb@vger.kernel.org, Oliver Neukum <oliver@neukum.org>, linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-On Thu, 14 Jan 2010, Rick L. Vinyard, Jr. wrote:
+The probe function passes a pointer to a struct fb_info to
+platform_set_drvdata, so don't interpret the return value of
+platform_get_drvdata as a pointer to struct imxfb_info.
 
-> What would be the best way to post 0.0.4 of the driver; as a diff against
-> the previous 0.0.3 patch to emphasize the changes or as a diff against the
-> torvalds tree to show the patch in its entirety?
+Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org
+---
+ drivers/video/imxfb.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-Diff against current Linus' tree (or linux-next tree) is much preferred 
-over any other options.
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index 66358fa..b4b6dec 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -593,7 +593,8 @@ static int imxfb_activate_var(struct fb_var_screeninfo =
+*var, struct fb_info *inf
+  */
+ static int imxfb_suspend(struct platform_device *dev, pm_message_t state)
+ {
+-	struct imxfb_info *fbi =3D platform_get_drvdata(dev);
++	struct fb_info *info =3D platform_get_drvdata(dev);
++	struct imxfb_info *fbi =3D info->par;
+=20
+ 	pr_debug("%s\n", __func__);
+=20
+@@ -603,7 +604,8 @@ static int imxfb_suspend(struct platform_device *dev, p=
+m_message_t state)
+=20
+ static int imxfb_resume(struct platform_device *dev)
+ {
+-	struct imxfb_info *fbi =3D platform_get_drvdata(dev);
++	struct fb_info *info =3D platform_get_drvdata(dev);
++	struct imxfb_info *fbi =3D info->par;
+=20
+ 	pr_debug("%s\n", __func__);
+=20
+--=20
+1.6.5.2
 
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.

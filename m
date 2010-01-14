@@ -1,38 +1,61 @@
-From: Jean Delvare <khali@linux-fr.org>
-Date: Mon, 18 Jan 2010 21:11:46 +0000
-Subject: Re: [PATCH] video/matrox: Checkpatch cleanups for matroxfb_crtc2.c
-Message-Id: <20100118221146.5d81fc0e@hyperion.delvare>
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Date: Thu, 14 Jan 2010 20:25:43 +0000
+Subject: [RFC] [PATCH] omapfb: Fix 12-bit display (RGB444 color mode) handling
+Message-Id: <201001142125.45468.jkrzyszt@tis.icnet.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201001181934.49519.PeterHuewe@gmx.de>
-	<1263842269.26846.122.camel@Joe-Laptop.home>
-	<201001182027.29805.PeterHuewe@gmx.de>
-	<1263844770.26846.134.camel@Joe-Laptop.home>
-In-Reply-To: <1263844770.26846.134.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Joe Perches <joe@perches.com>
-Cc: Peter =?UTF-8?B?SMO8d2U=?= <PeterHuewe@gmx.de>, Petr Vandrovec <vandrove@vc.cvut.cz>, Andrew Morton <akpm@linux-foundation.org>, Krzysztof Helt <krzysztof.h1@wp.pl>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: linux-omap@vger.kernel.org, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 18 Jan 2010 11:59:30 -0800, Joe Perches wrote:
-> On Mon, 2010-01-18 at 20:27 +0100, Peter H=C3=BCwe wrote:
-> > the reason behind this change was that spaces and tabs were mixed for=20
-> > indention.=20
->=20
-> Checkpatch isn't gospel and isn't always right.
->=20
-> There should be room for taste preference here
-> and I think whatever Petr V's is should prevail.
->=20
-> > How about this indention? Would this be better?
->=20
-> Well, I don't think so, but others will have different opinions.
+Support for RGB444 (12-bit) pixel format has been introduced into omapfb/lcdc 
+by Mark Underwood on 2006-05-26 (commit 
+f74edb6668aad9fc8e81585861b18f996c78a574) in preparation for Amstrad Delta 
+(E3) videophone LCD display support.
 
-I don't see it as an improvement either. Was checkpatch.pl really
-complaining about the alignment? Tabs followed by less than 8 spaces is
-acceptable and fairly common AFAICT, I can't remember the script
-yelling at me when I do it.
+Before the Amstrad Delta LCD patch by Jonathan McDowell was applied (on 
+2006-08-04, commit 8d22fb2ea004cdb6379b54c1a8fd1546cfe40ed7), omapfb and lcdc 
+code was changed substantially (commit 
+e563dc81aa01bd8bbb01bc53975a15c398715f62 dated 2006-06-26) in a way that broke 
+Mark's 12-bit display support. Than, a patch by Jonathan, that supposed to 
+correct the problem, was introduced immediatelly (on 2006-08-04, commit 
+e10a75b49e7a57ae17c28b705153c70eba15a8ef).
 
+As a result, the Amstrad Delta display was working correctly at boot time, 
+with fbset reporting:
 
---=20
-Jean Delvare
+	geometry 480 320 480 320 16
+	...
+	rgba 4/8,4/4,4/0,0/0
+
+However, after first framebuffer reinitialization, colors were no longer being 
+displayed correctly and fbset was reporting:
+
+        rgba 5/11,6/5,5/0,0/0
+
+The patch tries to correct the issue by setting plane->color_mode depending on 
+panel->bpp, not var->bits_per_pixel.
+
+Created and tested on Amstrad Delta against linux-2.6.33-rc3.
+
+Signed-off-by: Janusz Krzysztofik <jkrzysz@tis.icnet.pl>
+
+---
+--- git/drivers/video/omap/omapfb_main.c.orig	2010-01-14 19:30:23.000000000 +0100
++++ git/drivers/video/omap/omapfb_main.c	2010-01-14 20:31:18.000000000 +0100
+@@ -473,10 +473,11 @@ static int set_color_mode(struct omapfb_
+ 		return 0;
+ 	case 12:
+ 		var->bits_per_pixel = 16;
+-		plane->color_mode = OMAPFB_COLOR_RGB444;
+-		return 0;
+ 	case 16:
+-		plane->color_mode = OMAPFB_COLOR_RGB565;
++		if (plane->fbdev->panel->bpp = 12)
++			plane->color_mode = OMAPFB_COLOR_RGB444;
++		else
++			plane->color_mode = OMAPFB_COLOR_RGB565;
+ 		return 0;
+ 	default:
+ 		return -EINVAL;

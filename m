@@ -1,40 +1,26 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Wed, 13 Jan 2010 11:33:20 +0000
-Subject: Re: [PATCH] OMAP: DSS: add TPO TD043MTEA1 panel
-Message-Id: <1263382400.2087.96.camel@tubuntu.research.nokia.com>
+From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+Date: Thu, 14 Jan 2010 20:50:49 +0000
+Subject: Best way to post Logitech G13 driver 0.0.4?
+Message-Id: <fbd89f64a86fc72184658fe9b27509f3.squirrel@intranet.cs.nmsu.edu>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1260559814-25075-1-git-send-email-notasas@gmail.com>
-	 <1263372574.2087.93.camel@tubuntu.research.nokia.com>
-	 <6ed0b2681001130306p4164fa81ne95f5816f97297ec@mail.gmail.com>
-In-Reply-To: <6ed0b2681001130306p4164fa81ne95f5816f97297ec@mail.gmail.com>
+References: <201001071623.o07GNOB4022157@mustang.cs.nmsu.edu>
+    <45a44e481001071832q40d6f913w2ccf89c4c45a692a@mail.gmail.com>
+    <5370b38ca0c149470c0e364627c56ee4.squirrel@intranet.cs.nmsu.edu>
+    <alpine.LNX.2.00.1001091441180.7275@pobox.suse.cz>
+    <cf0603d7c734f836f0b4a64815d649ae.squirrel@intranet.cs.nmsu.edu>
+In-Reply-To: <cf0603d7c734f836f0b4a64815d649ae.squirrel@intranet.cs.nmsu.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: ext Grazvydas Ignotas <notasas@gmail.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+Cc: Jiri Kosina <jkosina@suse.cz>, Jaya Kumar <jayakumar.lkml@gmail.com>, linux-kernel@vger.kernel.org, felipe.balbi@nokia.com, Pavel Machek <pavel@ucw.cz>, linux-fbdev@vger.kernel.org, krzysztof.h1@wp.pl, Andrew Morton <akpm@linux-foundation.org>, linux-usb@vger.kernel.org, Oliver Neukum <oliver@neukum.org>, linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-On Wed, 2010-01-13 at 12:06 +0100, ext Grazvydas Ignotas wrote:
-> On Wed, Jan 13, 2010 at 10:49 AM, Tomi Valkeinen
-> <tomi.valkeinen@nokia.com> wrote:
-> > Hi,
-> >
-> > Sorry for the long time it took me to check this out. Checkpatch
-> > complains about indentation, I think the whole file is indented with
-> > spaces, not tabs.
-> 
-> No it isn't , maybe it's your mail client?
-> (latest mainline):
-> ./scripts/checkpatch.pl --strict
-> /tmp/0001-OMAP-DSS-add-TPO-TD043MTEA1-panel.patch
-> total: 0 errors, 0 warnings, 0 checks, 503 lines checked
-> 
-> Here is the same patch as file (still applies cleanly on mainline):
-> http://notaz.gp2x.de/misc/pnd/0001-OMAP-DSS-add-TPO-TD043MTEA1-panel.patch
+What would be the best way to post 0.0.4 of the driver; as a diff against
+the previous 0.0.3 patch to emphasize the changes or as a diff against the
+torvalds tree to show the patch in its entirety?
 
-Strange. Maybe it's my mail client, although every other patch,
-including your other patch, was fine. Well... That patch file works
-fine. Thanks =).
+Thanks,
 
- Tomi
+Rick
 
 

@@ -1,260 +1,87 @@
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Date: Mon, 25 Jan 2010 05:03:56 +0000
-Subject: [PATCH/RFC 2.6.33-rc5 1/1] broadsheetfb: add MMIO hooks
-Message-Id: <1264395836-9892-1-git-send-email-jayakumar.lkml@gmail.com>
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Date: Wed, 20 Jan 2010 11:16:28 +0000
+Subject: [Fwd: [PATCH] obsolete config in kernel source (FB_SOFT_CURSOR)]
+Message-Id: <20100120111628.GA2040@stud.informatik.uni-erlangen.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Geert, Krzysztof, Andrew, fbdev friends,
+----- Forwarded message from Christoph Egger <siccegge@stud.informatik.uni-erlangen.de> -----
 
-This patch updates broadsheetfb to add support for MMIO based access. Please
-let me know your feedback.
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+To: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org
+Cc: siccegge@stud.informatik.uni-erlangen.de,
+	Reinhard.Tartler@informatik.uni-erlangen.de
+Subject: [PATCH] obsolete config in kernel source (FB_SOFT_CURSOR)
 
-Thanks,
-jaya
+Hi all!
 
-This patch allows boards with GP-MMIO controllers to provide hooks to
-broadsheetfb in order to offload cmd/data writes and data reads instead
-of relying only on host based GPIO wiggling.
+	As part of the VAMOS[0] research project at the University of
+Erlangen we're checking referential integrity between kernel KConfig
+options and in-code Conditional blocks.
 
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: adaplas@gmail.com
-Cc: akpm@linux-foundation.org
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+	While probably not strictly a integrity violation (as
+FB_SOFT_CURSOR can still be set as it is once mentioned in a KConfig
+select statement this looks like a left-over of
+c465e05a03209651078b95686158648fd7ed84c5
+
+	Please keep me informed of this patch getting confirmed /
+merged so we can keep track of it.
+
+Regards
+
+	Christoph Egger
+
+[0] http://vamos1.informatik.uni-erlangen.de/
+
+From 5461c8d1ebc54e9f5c86233aa831cefc7c06a140 Mon Sep 17 00:00:00 2001
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Date: Fri, 15 Jan 2010 11:03:50 +0100
+Subject: [PATCH 1/4] Clean missed bit of FB_SOFT_CURSOR
+
+While the config Option FB_SOFT_BUFFER was removed in
+c465e05a03209651078b95686158648fd7ed84c5 while moving to fbcon this
+single driver has it left as a select in KConfig / #ifdef in
+source. This last occurence is removed here so the option is really
+gone
+
+Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
 ---
- drivers/video/broadsheetfb.c |  110 +++++++++++++++++++++++++++++++++++------
- include/video/broadsheetfb.h |   17 +++++--
- 2 files changed, 107 insertions(+), 20 deletions(-)
+ drivers/video/Kconfig        |    1 -
+ drivers/video/sis/sis_main.c |    3 ---
+ 2 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/broadsheetfb.c b/drivers/video/broadsheetfb.c
-index 8f01106..57dc1a0 100644
---- a/drivers/video/broadsheetfb.c
-+++ b/drivers/video/broadsheetfb.c
-@@ -115,30 +115,30 @@ static struct fb_var_screeninfo broadsheetfb_var __devinitdata = {
- };
- 
- /* main broadsheetfb functions */
--static void broadsheet_issue_data(struct broadsheetfb_par *par, u16 data)
-+static void broadsheet_gpio_issue_data(struct broadsheetfb_par *par, u16 data)
- {
- 	par->board->set_ctl(par, BS_WR, 0);
- 	par->board->set_hdb(par, data);
- 	par->board->set_ctl(par, BS_WR, 1);
- }
- 
--static void broadsheet_issue_cmd(struct broadsheetfb_par *par, u16 data)
-+static void broadsheet_gpio_issue_cmd(struct broadsheetfb_par *par, u16 data)
- {
- 	par->board->set_ctl(par, BS_DC, 0);
--	broadsheet_issue_data(par, data);
-+	broadsheet_gpio_issue_data(par, data);
- }
- 
--static void broadsheet_send_command(struct broadsheetfb_par *par, u16 data)
-+static void broadsheet_gpio_send_command(struct broadsheetfb_par *par, u16 data)
- {
- 	par->board->wait_for_rdy(par);
- 
- 	par->board->set_ctl(par, BS_CS, 0);
--	broadsheet_issue_cmd(par, data);
-+	broadsheet_gpio_issue_cmd(par, data);
- 	par->board->set_ctl(par, BS_DC, 1);
- 	par->board->set_ctl(par, BS_CS, 1);
- }
- 
--static void broadsheet_send_cmdargs(struct broadsheetfb_par *par, u16 cmd,
-+static void broadsheet_gpio_send_cmdargs(struct broadsheetfb_par *par, u16 cmd,
- 					int argc, u16 *argv)
- {
- 	int i;
-@@ -146,15 +146,43 @@ static void broadsheet_send_cmdargs(struct broadsheetfb_par *par, u16 cmd,
- 	par->board->wait_for_rdy(par);
- 
- 	par->board->set_ctl(par, BS_CS, 0);
--	broadsheet_issue_cmd(par, cmd);
-+	broadsheet_gpio_issue_cmd(par, cmd);
- 	par->board->set_ctl(par, BS_DC, 1);
- 
- 	for (i = 0; i < argc; i++)
--		broadsheet_issue_data(par, argv[i]);
-+		broadsheet_gpio_issue_data(par, argv[i]);
- 	par->board->set_ctl(par, BS_CS, 1);
- }
- 
--static void broadsheet_burst_write(struct broadsheetfb_par *par, int size,
-+static void broadsheet_mmio_send_cmdargs(struct broadsheetfb_par *par, u16 cmd,
-+				    int argc, u16 *argv)
-+{
-+	int i;
-+
-+	par->board->mmio_write(par, BS_MMIO_CMD, cmd);
-+
-+	for (i = 0; i < argc; i++)
-+		par->board->mmio_write(par, BS_MMIO_DATA, argv[i]);
-+}
-+
-+static void broadsheet_send_command(struct broadsheetfb_par *par, u16 data)
-+{
-+	if (par->board->mmio_write)
-+		par->board->mmio_write(par, BS_MMIO_CMD, data);
-+	else
-+		broadsheet_gpio_send_command(par, data);
-+}
-+
-+static void broadsheet_send_cmdargs(struct broadsheetfb_par *par, u16 cmd,
-+				    int argc, u16 *argv)
-+{
-+	if (par->board->mmio_write)
-+		broadsheet_mmio_send_cmdargs(par, cmd, argc, argv);
-+	else
-+		broadsheet_gpio_send_cmdargs(par, cmd, argc, argv);
-+}
-+
-+static void broadsheet_gpio_burst_write(struct broadsheetfb_par *par, int size,
- 					u16 *data)
- {
- 	int i;
-@@ -174,7 +202,30 @@ static void broadsheet_burst_write(struct broadsheetfb_par *par, int size,
- 	par->board->set_ctl(par, BS_CS, 1);
- }
- 
--static u16 broadsheet_get_data(struct broadsheetfb_par *par)
-+static void broadsheet_mmio_burst_write(struct broadsheetfb_par *par, int size,
-+				   u16 *data)
-+{
-+	int i;
-+	u16 tmp;
-+
-+	for (i = 0; i < size; i++) {
-+		tmp = (data[i] & 0x0F) << 4;
-+		tmp |= (data[i] & 0x0F00) << 4;
-+		par->board->mmio_write(par, BS_MMIO_DATA, tmp);
-+	}
-+
-+}
-+
-+static void broadsheet_burst_write(struct broadsheetfb_par *par, int size,
-+				   u16 *data)
-+{
-+	if (par->board->mmio_write)
-+		broadsheet_mmio_burst_write(par, size, data);
-+	else
-+		broadsheet_gpio_burst_write(par, size, data);
-+}
-+
-+static u16 broadsheet_gpio_get_data(struct broadsheetfb_par *par)
- {
- 	u16 res;
- 	/* wait for ready to go hi. (lo is busy) */
-@@ -194,7 +245,16 @@ static u16 broadsheet_get_data(struct broadsheetfb_par *par)
- 	return res;
- }
- 
--static void broadsheet_write_reg(struct broadsheetfb_par *par, u16 reg,
-+
-+static u16 broadsheet_get_data(struct broadsheetfb_par *par)
-+{
-+	if (par->board->mmio_read)
-+		return par->board->mmio_read(par);
-+	else
-+		return broadsheet_gpio_get_data(par);
-+}
-+
-+static void broadsheet_gpio_write_reg(struct broadsheetfb_par *par, u16 reg,
- 					u16 data)
- {
- 	/* wait for ready to go hi. (lo is busy) */
-@@ -203,16 +263,34 @@ static void broadsheet_write_reg(struct broadsheetfb_par *par, u16 reg,
- 	/* cs lo, dc lo for cmd, we lo for each data, db as usual */
- 	par->board->set_ctl(par, BS_CS, 0);
- 
--	broadsheet_issue_cmd(par, BS_CMD_WR_REG);
-+	broadsheet_gpio_issue_cmd(par, BS_CMD_WR_REG);
- 
- 	par->board->set_ctl(par, BS_DC, 1);
- 
--	broadsheet_issue_data(par, reg);
--	broadsheet_issue_data(par, data);
-+	broadsheet_gpio_issue_data(par, reg);
-+	broadsheet_gpio_issue_data(par, data);
- 
- 	par->board->set_ctl(par, BS_CS, 1);
- }
- 
-+static void broadsheet_mmio_write_reg(struct broadsheetfb_par *par, u16 reg,
-+				 u16 data)
-+{
-+	par->board->mmio_write(par, BS_MMIO_CMD, BS_CMD_WR_REG);
-+	par->board->mmio_write(par, BS_MMIO_DATA, reg);
-+	par->board->mmio_write(par, BS_MMIO_DATA, data);
-+
-+}
-+
-+static void broadsheet_write_reg(struct broadsheetfb_par *par, u16 reg,
-+					u16 data)
-+{
-+	if (par->board->mmio_write)
-+		broadsheet_mmio_write_reg(par, reg, data);
-+	else
-+		broadsheet_gpio_write_reg(par, reg, data);
-+}
-+
- static void broadsheet_write_reg32(struct broadsheetfb_par *par, u16 reg,
- 					u32 data)
- {
-@@ -223,8 +301,8 @@ static void broadsheet_write_reg32(struct broadsheetfb_par *par, u16 reg,
- 
- static u16 broadsheet_read_reg(struct broadsheetfb_par *par, u16 reg)
- {
--	broadsheet_send_command(par, reg);
--	msleep(100);
-+	broadsheet_send_cmdargs(par, BS_CMD_RD_REG, 1, &reg);
-+	par->board->wait_for_rdy(par);
- 	return broadsheet_get_data(par);
- }
- 
-diff --git a/include/video/broadsheetfb.h b/include/video/broadsheetfb.h
-index a2c2829..d65b668 100644
---- a/include/video/broadsheetfb.h
-+++ b/include/video/broadsheetfb.h
-@@ -34,6 +34,10 @@
- #define BS_DC 	0x02
- #define BS_WR 	0x03
- 
-+/* Broadsheet IO interface specific defines */
-+#define BS_MMIO_CMD	0x01
-+#define BS_MMIO_DATA	0x02
-+
- /* struct used by broadsheet. board specific stuff comes from *board */
- struct broadsheetfb_par {
- 	struct fb_info *info;
-@@ -49,12 +53,17 @@ struct broadsheet_board {
- 	struct module *owner;
- 	int (*init)(struct broadsheetfb_par *);
- 	int (*wait_for_rdy)(struct broadsheetfb_par *);
--	void (*set_ctl)(struct broadsheetfb_par *, unsigned char, u8);
--	void (*set_hdb)(struct broadsheetfb_par *, u16);
--	u16 (*get_hdb)(struct broadsheetfb_par *);
- 	void (*cleanup)(struct broadsheetfb_par *);
- 	int (*get_panel_type)(void);
- 	int (*setup_irq)(struct fb_info *);
--};
- 
-+	/* Functions for boards that use GPIO */
-+	void (*set_ctl)(struct broadsheetfb_par *, unsigned char, u8);
-+	void (*set_hdb)(struct broadsheetfb_par *, u16);
-+	u16 (*get_hdb)(struct broadsheetfb_par *);
-+
-+	/* Functions for boards that have specialized MMIO */
-+	void (*mmio_write)(struct broadsheetfb_par *, int type, u16);
-+	u16 (*mmio_read)(struct broadsheetfb_par *);
-+};
- #endif
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 5a5c303..7fe1839 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1494,7 +1494,6 @@ config FB_VIA
+        select FB_CFB_FILLRECT
+        select FB_CFB_COPYAREA
+        select FB_CFB_IMAGEBLIT
+-       select FB_SOFT_CURSOR
+        select I2C_ALGOBIT
+        select I2C
+        help
+diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+index 9d2b6bc..a531a0f 100644
+--- a/drivers/video/sis/sis_main.c
++++ b/drivers/video/sis/sis_main.c
+@@ -1891,9 +1891,6 @@ static struct fb_ops sisfb_ops = {
+ 	.fb_fillrect	= fbcon_sis_fillrect,
+ 	.fb_copyarea	= fbcon_sis_copyarea,
+ 	.fb_imageblit	= cfb_imageblit,
+-#ifdef CONFIG_FB_SOFT_CURSOR
+-	.fb_cursor	= soft_cursor,
+-#endif
+ 	.fb_sync	= fbcon_sis_sync,
+ #ifdef SIS_NEW_CONFIG_COMPAT
+ 	.fb_compat_ioctl= sisfb_ioctl,
 -- 
 1.6.3.3
 
+
+
+----- End forwarded message -----

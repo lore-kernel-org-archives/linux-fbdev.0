@@ -1,52 +1,47 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Fri, 08 Jan 2010 13:22:38 +0000
-Subject: [PATCH 04/15] OMAP: DSS2: Fix crash when panel doesn't define enable_te()
-Message-Id: <1262956969-1664-5-git-send-email-tomi.valkeinen@nokia.com>
+From: Maik Broemme <mbroemme@plusserver.de>
+Date: Wed, 27 Jan 2010 02:11:14 +0000
+Subject: [PATCH] New Maintainer for intelfb driver.
+Message-Id: <20100127021114.GD3802@bart.intergenia.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="AhhlLboLdkugWU4S"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1262956969-1664-1-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-2-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-3-git-send-email-tomi.valkeinen@nokia.com>
- <1262956969-1664-4-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1262956969-1664-4-git-send-email-tomi.valkeinen@nokia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: linux-fbdev@vger.kernel.org
 
-DSI driver didn't check if the panel driver actually implements
-enable_te().
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
----
- drivers/video/omap2/dss/dsi.c |   14 +++++++++-----
- 1 files changed, 9 insertions(+), 5 deletions(-)
+--AhhlLboLdkugWU4S
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index f3eaf12..2881d93 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -2933,11 +2933,15 @@ static int dsi_set_update_mode(struct omap_dss_device *dssdev,
+Hi,
+
+it seems that Sylvain no longer maintain the intelfb driver. Two weeks
+ago I had a short mail conversation with Jean who can replace him. Well
+I will do it, because I know the driver and use it very often. I wasn't
+able to create the diff earlier, because the weekend after the conversation
+I moved to Freiburg.
+
+Attached is a patch which update the maintainer file to make bug reporting
+easier.
+
+Signed-off-by: Maik Broemme <mbroemme@plusserver.de>
+
+--Maik
+
+--AhhlLboLdkugWU4S
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="linux-2.6-intelfb.patch"
+
+diff -Nur linux-2.6/MAINTAINERS linux-2.6-intelfb/MAINTAINERS
+--- linux-2.6/MAINTAINERS	2010-01-27 02:55:41.171319055 +0100
++++ linux-2.6-intelfb/MAINTAINERS	2010-01-27 02:52:41.963318562 +0100
+@@ -2758,7 +2758,7 @@
+ F:	drivers/input/
  
- static int dsi_set_te(struct omap_dss_device *dssdev, bool enable)
- {
--	int r;
--	r = dssdev->driver->enable_te(dssdev, enable);
--	/* XXX for some reason, DSI TE breaks if we don't wait here.
--	 * Panel bug? Needs more studying */
--	msleep(100);
-+	int r = 0;
-+
-+	if (dssdev->driver->enable_te) {
-+		r = dssdev->driver->enable_te(dssdev, enable);
-+		/* XXX for some reason, DSI TE breaks if we don't wait here.
-+		 * Panel bug? Needs more studying */
-+		msleep(100);
-+	}
-+
- 	return r;
- }
- 
--- 
-1.6.5
+ INTEL FRAMEBUFFER DRIVER (excluding 810 and 815)
+-M:	Sylvain Meyer <sylvain.meyer@worldonline.fr>
++M:	Maik Broemme <mbroemme@plusserver.de>
+ L:	linux-fbdev@vger.kernel.org
+ S:	Maintained
+ F:	Documentation/fb/intelfb.txt
 
+--AhhlLboLdkugWU4S--

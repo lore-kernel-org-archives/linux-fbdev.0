@@ -1,8 +1,10 @@
 From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-Date: Wed, 20 Jan 2010 11:16:28 +0000
-Subject: [Fwd: [PATCH] obsolete config in kernel source (FB_SOFT_CURSOR)]
-Message-Id: <20100120111628.GA2040@stud.informatik.uni-erlangen.de>
+Date: Wed, 27 Jan 2010 09:44:35 +0000
+Subject: [fwd: [PATCH] obsolete config in kernel source (FB_SOFT_CURSOR)]
+Message-Id: <20100127094313.GA1873@faui49.informatik.uni-erlangen.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20100120111628.GA2040@stud.informatik.uni-erlangen.de>
+In-Reply-To: <20100120111628.GA2040@stud.informatik.uni-erlangen.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,11 +12,7 @@ To: linux-fbdev@vger.kernel.org
 
 ----- Forwarded message from Christoph Egger <siccegge@stud.informatik.uni-erlangen.de> -----
 
-From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-To: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org
-Cc: siccegge@stud.informatik.uni-erlangen.de,
-	Reinhard.Tartler@informatik.uni-erlangen.de
-Subject: [PATCH] obsolete config in kernel source (FB_SOFT_CURSOR)
+Date: Fri, 15 Jan 2010 13:27:56 +0100
 
 Hi all!
 
@@ -39,7 +37,7 @@ Regards
 From 5461c8d1ebc54e9f5c86233aa831cefc7c06a140 Mon Sep 17 00:00:00 2001
 From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
 Date: Fri, 15 Jan 2010 11:03:50 +0100
-Subject: [PATCH 1/4] Clean missed bit of FB_SOFT_CURSOR
+Subject: [PATCH] Clean missed bit of FB_SOFT_CURSOR
 
 While the config Option FB_SOFT_BUFFER was removed in
 c465e05a03209651078b95686158648fd7ed84c5 while moving to fbcon this

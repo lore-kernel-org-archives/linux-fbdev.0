@@ -1,77 +1,79 @@
-From: Peter Jones <pjones@redhat.com>
-Date: Mon, 15 Feb 2010 15:36:35 +0000
-Subject: Re: [PATCH] efifb: fix framebuffer handoff
-Message-Id: <4B796A03.5060909@redhat.com>
+From: Joe Perches <joe@perches.com>
+Date: Tue, 02 Feb 2010 07:22:15 +0000
+Subject: [PATCH 09/10] drivers/video/via: Fix continuation line formats
+Message-Id: <4affbba1523b0cc13bb02f309e3091a29a6ccf6a.1265095094.git.joe@perches.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100213104148.GB2880@joi.lan>
-In-Reply-To: <20100213104148.GB2880@joi.lan>
+References: <cover.1265095093.git.joe@perches.com>
+In-Reply-To: <cover.1265095093.git.joe@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Dave Airlie <airlied@redhat.com>, Huang Ying <ying.huang@intel.com>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Alex Zhavnerchik <alex.vizor@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Joseph Chan <JosephChan@via.com.tw>, Scott Fang <ScottFang@viatech.com.cn>, linux-fbdev@vger.kernel.org
 
-On 02/13/2010 05:41 AM, Marcin Slusarz wrote:
-> Commit 4410f3910947dcea8672280b3adecd53cec4e85e
-> (fbdev: add support for handoff from firmware to hw framebuffers)
-> didn't add fb_destroy operation to efifb. Fix it and change
-> aperture_size to match size passed to request_mem_region.
-> 
-> See: http://bugzilla.kernel.org/show_bug.cgi?id151
-> 
-> Reported-by: Alex Zhavnerchik <alex.vizor@gmail.com>
-> Tested-by: Alex Zhavnerchik <alex.vizor@gmail.com>
-> Cc: Peter Jones <pjones@redhat.com>
-> Cc: Huang Ying <ying.huang@intel.com>
-> Cc: Dave Airlie <airlied@redhat.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+String constants that are continued on subsequent lines with \
+are not good.
 
-Looks good.
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ drivers/video/via/dvi.c |    8 ++++----
+ drivers/video/via/lcd.c |   12 ++++++------
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
-Acked by: Peter Jones <pjones@redhat.com>
-
-> ---
->  drivers/video/efifb.c |   11 ++++++++++-
->  1 files changed, 10 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
-> index eb12182..d25df51 100644
-> --- a/drivers/video/efifb.c
-> +++ b/drivers/video/efifb.c
-> @@ -161,8 +161,17 @@ static int efifb_setcolreg(unsigned regno, unsigned red, unsigned green,
->  	return 0;
->  }
->  
-> +static void efifb_destroy(struct fb_info *info)
-> +{
-> +	if (info->screen_base)
-> +		iounmap(info->screen_base);
-> +	release_mem_region(info->aperture_base, info->aperture_size);
-> +	framebuffer_release(info);
-> +}
-> +
->  static struct fb_ops efifb_ops = {
->  	.owner		= THIS_MODULE,
-> +	.fb_destroy	= efifb_destroy,
->  	.fb_setcolreg	= efifb_setcolreg,
->  	.fb_fillrect	= cfb_fillrect,
->  	.fb_copyarea	= cfb_copyarea,
-> @@ -281,7 +290,7 @@ static int __init efifb_probe(struct platform_device *dev)
->  	info->par = NULL;
->  
->  	info->aperture_base = efifb_fix.smem_start;
-> -	info->aperture_size = size_total;
-> +	info->aperture_size = size_remap;
->  
->  	info->screen_base = ioremap(efifb_fix.smem_start, efifb_fix.smem_len);
->  	if (!info->screen_base) {
-
-
+diff --git a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
+index 67b3693..b3b7822 100644
+--- a/drivers/video/via/dvi.c
++++ b/drivers/video/via/dvi.c
+@@ -467,8 +467,8 @@ static int dvi_get_panel_size_from_DDCv1(void)
+ 	default:
+ 		viaparinfo->tmds_setting_info->dvi_panel_size  			VIA_RES_1024X768;
+-		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d !\
+-					 set default panel size.\n", max_h);
++		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d ! "
++			  "set default panel size.\n", max_h);
+ 		break;
+ 	}
+ 
+@@ -534,8 +534,8 @@ static int dvi_get_panel_size_from_DDCv2(void)
+ 	default:
+ 		viaparinfo->tmds_setting_info->dvi_panel_size  			VIA_RES_1024X768;
+-		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d!\
+-					set default panel size.\n", HSize);
++		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d! "
++			  "set default panel size.\n", HSize);
+ 		break;
+ 	}
+ 
+diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
+index 09353e2..4962297 100644
+--- a/drivers/video/via/lcd.c
++++ b/drivers/video/via/lcd.c
+@@ -171,13 +171,13 @@ static bool lvds_identify_integratedlvds(void)
+ 		if (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
+ 			viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name  			    INTEGRATED_LVDS;
+-			DEBUG_MSG(KERN_INFO "Support two dual channel LVDS!\
+-				  (Internal LVDS + External LVDS)\n");
++			DEBUG_MSG(KERN_INFO "Support two dual channel LVDS! "
++				  "(Internal LVDS + External LVDS)\n");
+ 		} else {
+ 			viaparinfo->chip_info->lvds_chip_info.lvds_chip_name  			    INTEGRATED_LVDS;
+-			DEBUG_MSG(KERN_INFO "Not found external LVDS,\
+-				  so can't support two dual channel LVDS!\n");
++			DEBUG_MSG(KERN_INFO "Not found external LVDS, "
++				  "so can't support two dual channel LVDS!\n");
+ 		}
+ 	} else if (viafb_display_hardware_layout = HW_LAYOUT_LCD1_LCD2) {
+ 		/* Two single channel LCD (Internal LVDS + Internal LVDS): */
+@@ -185,8 +185,8 @@ static bool lvds_identify_integratedlvds(void)
+ 		INTEGRATED_LVDS;
+ 		viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name  			INTEGRATED_LVDS;
+-		DEBUG_MSG(KERN_INFO "Support two single channel LVDS!\
+-			  (Internal LVDS + Internal LVDS)\n");
++		DEBUG_MSG(KERN_INFO "Support two single channel LVDS! "
++			  "(Internal LVDS + Internal LVDS)\n");
+ 	} else if (viafb_display_hardware_layout != HW_LAYOUT_DVI_ONLY) {
+ 		/* If we have found external LVDS, just use it,
+ 		   otherwise, we will use internal LVDS as default. */
 -- 
-        Peter
+1.6.6.rc0.57.gad7a
 
-Computer games don't affect kids; I mean if Pac-Man affected us as
-kids, we'd all be running around in darkened rooms, munching magic
-pills and listening to repetitive electronic music.
-		-- Not actually Kristian Wilson, Nintendo, Inc, 1989

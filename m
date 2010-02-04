@@ -1,87 +1,42 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Thu, 04 Feb 2010 15:31:26 +0000
-Subject: [PATCH 2/2] OMAP: DSS2: OMAPFB: implement OMAPFB_GET_DISPLAY_INFO
-Message-Id: <1265297486-22438-2-git-send-email-tomi.valkeinen@nokia.com>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Date: Thu, 04 Feb 2010 23:05:12 +0000
+Subject: Re: [PATCH 2/2] OMAP: DSS2: OMAPFB: implement
+Message-Id: <20100204230512.GA10145@sci.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1265297486-22438-1-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1265297486-22438-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1265297486-22438-2-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1265297486-22438-2-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Previously the only place to get the size of the display was from the
-DSS's sysfs interface, making, for example, configuring overlays and doing
-updates on manual displays more difficult.
+On Thu, Feb 04, 2010 at 05:31:26PM +0200, Tomi Valkeinen wrote:
+> Previously the only place to get the size of the display was from the
+> DSS's sysfs interface, making, for example, configuring overlays and doing
+> updates on manual displays more difficult.
+>=20
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+> ---
+>  drivers/video/omap2/omapfb/omapfb-ioctl.c |   18 ++++++++++++++++++
+>  include/linux/omapfb.h                    |    7 +++++++
+>  2 files changed, 25 insertions(+), 0 deletions(-)
+>=20
+<snip>
+> @@ -216,6 +217,12 @@ struct omapfb_tearsync_info {
+>  	__u16 reserved2;
+>  };
+> =20
+> +struct omapfb_display_info {
+> +	__u16 width;
+> +	__u16 height;
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
----
- drivers/video/omap2/omapfb/omapfb-ioctl.c |   18 ++++++++++++++++++
- include/linux/omapfb.h                    |    7 +++++++
- 2 files changed, 25 insertions(+), 0 deletions(-)
+How about adding the physical display size here as well? I suppose
+mm is the standard unit for such things but for small displays more
+accuracy might be nice.
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
-index 5562a76..c97aaf1 100644
---- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
-+++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
-@@ -525,6 +525,7 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
- 		struct omapfb_memory_read	memory_read;
- 		struct omapfb_vram_info		vram_info;
- 		struct omapfb_tearsync_info	tearsync_info;
-+		struct omapfb_display_info	display_info;
- 	} p;
- 
- 	int r = 0;
-@@ -792,6 +793,23 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
- 		break;
- 	}
- 
-+	case OMAPFB_GET_DISPLAY_INFO: {
-+		DBG("ioctl GET_DISPLAY_INFO\n");
-+
-+		if (display = NULL) {
-+			r = -ENODEV;
-+			break;
-+		}
-+
-+		p.display_info.width = display->panel.timings.x_res;
-+		p.display_info.height = display->panel.timings.y_res;
-+
-+		if (copy_to_user((void __user *)arg, &p.display_info,
-+					sizeof(p.display_info)))
-+			r = -EFAULT;
-+		break;
-+	}
-+
- 	default:
- 		dev_err(fbdev->dev, "Unknown ioctl 0x%x\n", cmd);
- 		r = -EINVAL;
-diff --git a/include/linux/omapfb.h b/include/linux/omapfb.h
-index ef4c2cf..4a88cbe 100644
---- a/include/linux/omapfb.h
-+++ b/include/linux/omapfb.h
-@@ -58,6 +58,7 @@
- #define OMAPFB_GET_VRAM_INFO	OMAP_IOR(61, struct omapfb_vram_info)
- #define OMAPFB_SET_TEARSYNC	OMAP_IOW(62, struct omapfb_tearsync_info)
- #define OMAPFB_RESERVE_BUFFER	OMAP_IOW(63, struct omapfb_res_buf_info)
-+#define OMAPFB_GET_DISPLAY_INFO	OMAP_IOR(64, struct omapfb_display_info)
- 
- #define OMAPFB_CAPS_GENERIC_MASK	0x00000fff
- #define OMAPFB_CAPS_LCDC_MASK		0x00fff000
-@@ -216,6 +217,12 @@ struct omapfb_tearsync_info {
- 	__u16 reserved2;
- };
- 
-+struct omapfb_display_info {
-+	__u16 width;
-+	__u16 height;
-+	__u32 reserved[5];
-+};
-+
- #ifdef __KERNEL__
- 
- #include <plat/board.h>
--- 
-1.6.5
-
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/

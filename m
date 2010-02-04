@@ -1,21 +1,87 @@
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Mon, 22 Feb 2010 19:35:27 +0000
-Subject: Re: [PATCH 2/3] backlight: mark struct backlight_ops const
-Message-Id: <8bd0f97a1002221135n6c52a657i1817063d2664bfda@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Thu, 04 Feb 2010 15:31:26 +0000
+Subject: [PATCH 2/2] OMAP: DSS2: OMAPFB: implement OMAPFB_GET_DISPLAY_INFO
+Message-Id: <1265297486-22438-2-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100221001049.2f63f5d6@neptune.home>
-	<20100221001851.673db863@neptune.home>
-In-Reply-To: <20100221001851.673db863-hY15tx4IgV39zxVx7UNMDg@public.gmane.org>
+References: <1265297486-22438-1-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1265297486-22438-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1253"
-Content-Transfer-Encoding: base64
-To: =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
-Cc: devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, acpi4asus-user-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linuxppc-dev-mnsaURCQ41sdnm+yROfE0A@public.gmane.org, Greg Kroah-Hartman <gregkh-l3A5Bk7waGM@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, dri-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-T24gU2F0LCBGZWIgMjAsIDIwMTAgYXQgMTg6MTgsIEJydW5vIFByw6ltb250IHdyb3RlOgo+IMKg
-ZHJpdmVycy92aWRlby9iZjU0eC1scTA0M2ZiLmMgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-fCDCoCDCoDIgKy0KPiDCoGRyaXZlcnMvdmlkZW8vYmZpbi10MzUwbWNxYi1mYi5jIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgfCDCoCDCoDIgKy0KCkFja2VkLWJ5OiBNaWtlIEZyeXNpbmdlciA8dmFw
-aWVyQGdlbnRvby5vcmc+Ci1taWtlCv/06Lp7Lm7HK4m3n66JrYYrJYrL/7Hp3bYXpYp3/7p7Lm7H
-K4m3pYp7sf323Xr/4p7YXm6HcqH2pnrLGoHraJmo6K3aJqP74Hq/5Hq53pf6K4DKK3pmo6K3aJqI
-p36GrYbbaf//74Hq/5Hq53pf6K4P5mo6K3aJqP4p36P4bQo=
+Previously the only place to get the size of the display was from the
+DSS's sysfs interface, making, for example, configuring overlays and doing
+updates on manual displays more difficult.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ drivers/video/omap2/omapfb/omapfb-ioctl.c |   18 ++++++++++++++++++
+ include/linux/omapfb.h                    |    7 +++++++
+ 2 files changed, 25 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+index 5562a76..c97aaf1 100644
+--- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
++++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+@@ -525,6 +525,7 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
+ 		struct omapfb_memory_read	memory_read;
+ 		struct omapfb_vram_info		vram_info;
+ 		struct omapfb_tearsync_info	tearsync_info;
++		struct omapfb_display_info	display_info;
+ 	} p;
+ 
+ 	int r = 0;
+@@ -792,6 +793,23 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
+ 		break;
+ 	}
+ 
++	case OMAPFB_GET_DISPLAY_INFO: {
++		DBG("ioctl GET_DISPLAY_INFO\n");
++
++		if (display = NULL) {
++			r = -ENODEV;
++			break;
++		}
++
++		p.display_info.width = display->panel.timings.x_res;
++		p.display_info.height = display->panel.timings.y_res;
++
++		if (copy_to_user((void __user *)arg, &p.display_info,
++					sizeof(p.display_info)))
++			r = -EFAULT;
++		break;
++	}
++
+ 	default:
+ 		dev_err(fbdev->dev, "Unknown ioctl 0x%x\n", cmd);
+ 		r = -EINVAL;
+diff --git a/include/linux/omapfb.h b/include/linux/omapfb.h
+index ef4c2cf..4a88cbe 100644
+--- a/include/linux/omapfb.h
++++ b/include/linux/omapfb.h
+@@ -58,6 +58,7 @@
+ #define OMAPFB_GET_VRAM_INFO	OMAP_IOR(61, struct omapfb_vram_info)
+ #define OMAPFB_SET_TEARSYNC	OMAP_IOW(62, struct omapfb_tearsync_info)
+ #define OMAPFB_RESERVE_BUFFER	OMAP_IOW(63, struct omapfb_res_buf_info)
++#define OMAPFB_GET_DISPLAY_INFO	OMAP_IOR(64, struct omapfb_display_info)
+ 
+ #define OMAPFB_CAPS_GENERIC_MASK	0x00000fff
+ #define OMAPFB_CAPS_LCDC_MASK		0x00fff000
+@@ -216,6 +217,12 @@ struct omapfb_tearsync_info {
+ 	__u16 reserved2;
+ };
+ 
++struct omapfb_display_info {
++	__u16 width;
++	__u16 height;
++	__u32 reserved[5];
++};
++
+ #ifdef __KERNEL__
+ 
+ #include <plat/board.h>
+-- 
+1.6.5
+

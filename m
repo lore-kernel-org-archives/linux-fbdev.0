@@ -1,134 +1,162 @@
-From: Bernie Thompson <bernie@plugable.com>
-Date: Mon, 15 Feb 2010 14:45:49 +0000
-Subject: [PATCH 2/10] udlfb: reorganize function order
-Message-Id: <1266245149.4353.3289.camel@bernie-aspireone>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Thu, 04 Feb 2010 15:31:25 +0000
+Subject: [PATCH 1/2] OMAP: DSS2: OMAPFB: implement OMAPFB_RESERVE_BUFFER
+Message-Id: <1265297486-22438-1-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-Reorganize the location of a few things to be closer to related code
+Currently applications can reserve fb memory with OMAPFB_SETUP_MEM
+ioctl, which takes the size in bytes as an argument. This falls apart
+when using VRFB, as the memory need for VRFB is not trivial
 
-Signed-off-by: Bernie Thompson <bernie@plugable.com>
+This patch implements OMAPFB_RESERVE_BUFFER ioctl, which reserves memory
+just like SETUP_MEM, but takes width, height and bytes per pixel as
+arguments. This will let omapfb driver allocate the memory more
+intelligently.
 
+The "size" entry in sysfs now also supports writing the size in
+"width,height,bytespp" format.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/staging/udlfb/udlfb.c |   62 +++++++++++++++++++-----------------------
- drivers/staging/udlfb/udlfb.h |    3 ++
- 2 files changed, 32 insertions(+), 33 deletions(-)
+ drivers/video/omap2/omapfb/omapfb-ioctl.c |   51 +++++++++++++++++++++++++++++
+ drivers/video/omap2/omapfb/omapfb-sysfs.c |   13 +++++++-
+ include/linux/omapfb.h                    |   10 ++++++
+ 3 files changed, 73 insertions(+), 1 deletions(-)
 
-Index: linux-next/drivers/staging/udlfb/udlfb.c
-=================================--- linux-next.orig/drivers/staging/udlfb/udlfb.c	2010-02-14 20:21:39.000000000 -0800
-+++ linux-next/drivers/staging/udlfb/udlfb.c	2010-02-14 20:26:49.000000000 -0800
-@@ -39,8 +39,17 @@ static struct fb_fix_screeninfo dlfb_fix
- 	.accel =        FB_ACCEL_NONE,
- };
- 
--#define NR_USB_REQUEST_I2C_SUB_IO 0x02
--#define NR_USB_REQUEST_CHANNEL 0x12
-+/*
-+ * There are many DisplayLink-based products, all with unique PIDs. We are able
-+ * to support all volume ones (circa 2009) with a single driver, so we match
-+ * globally on VID. TODO: Probe() needs to detect when we might be running
-+ * "future" chips, and bail on those, so a compatible driver can match.
-+ */
-+static struct usb_device_id id_table[] = {
-+	{.idVendor = 0x17e9, .match_flags = USB_DEVICE_ID_MATCH_VENDOR,},
-+	{},
-+};
-+MODULE_DEVICE_TABLE(usb, id_table);
- 
- /*
-  * Inserts a specific DisplayLink controller command into the provided
-@@ -252,24 +261,6 @@ error:
- 	return retval;
+diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+index 4c4bafd..5562a76 100644
+--- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
++++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+@@ -155,6 +155,47 @@ static int omapfb_query_mem(struct fb_info *fbi, struct omapfb_mem_info *mi)
+ 	return 0;
  }
  
--/*
-- * This is necessary before we can communicate with the display controller.
-- */
--static int dlfb_select_std_channel(struct dlfb_data *dev)
--{
--	int ret;
--	u8 set_def_chn[] = {	   0x57, 0xCD, 0xDC, 0xA7,
--				0x1C, 0x88, 0x5E, 0x15,
--				0x60, 0xFE, 0xC6, 0x97,
--				0x16, 0x3D, 0x47, 0xF2  };
--
--	ret = usb_control_msg(dev->udev, usb_sndctrlpipe(dev->udev, 0),
--			NR_USB_REQUEST_CHANNEL,
--			(USB_DIR_OUT | USB_TYPE_VENDOR), 0, 0,
--			set_def_chn, sizeof(set_def_chn), USB_CTRL_SET_TIMEOUT);
--	return ret;
--}
--
- 
- /*
-  * Query EDID from the handware, then hand it off to fbdev's edid parse
-@@ -325,18 +316,6 @@ struct dloarea {
- 	int x2, y2;
- };
- 
--/*
-- * There are many DisplayLink-based products, all with unique PIDs. We are able
-- * to support all volume ones (circa 2009) with a single driver, so we match
-- * globally on VID. TODO: Probe() needs to detect when we might be running
-- * "future" chips, and bail on those, so a compatible driver can match.
-- */
--static struct usb_device_id id_table[] = {
--	{.idVendor = 0x17e9, .match_flags = USB_DEVICE_ID_MATCH_VENDOR,},
--	{},
--};
--MODULE_DEVICE_TABLE(usb, id_table);
--
- static struct usb_driver dlfb_driver;
- 
- /* thanks to Henrik Bjerregaard Pedersen for this function */
-@@ -888,7 +867,6 @@ static int dlfb_ioctl(struct fb_info *in
- }
- 
- /* taken from vesafb */
--
- static int
- dlfb_setcolreg(unsigned regno, unsigned red, unsigned green,
- 	       unsigned blue, unsigned transp, struct fb_info *info)
-@@ -952,6 +930,24 @@ static struct fb_ops dlfb_ops = {
- 	.fb_blank = dlfb_blank,
- };
- 
-+/*
-+ * This is necessary before we can communicate with the display controller.
-+ */
-+static int dlfb_select_std_channel(struct dlfb_data *dev)
++static int omapfb_reserve_buffer(struct fb_info *fbi,
++		struct omapfb_res_buf_info *bi)
 +{
-+	int ret;
-+	u8 set_def_chn[] = {	   0x57, 0xCD, 0xDC, 0xA7,
-+				0x1C, 0x88, 0x5E, 0x15,
-+				0x60, 0xFE, 0xC6, 0x97,
-+				0x16, 0x3D, 0x47, 0xF2  };
++	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omapfb2_device *fbdev = ofbi->fbdev;
++	struct omapfb2_mem_region *rg;
++	int r, i;
++	size_t size;
++	unsigned w = bi->width;
++	unsigned h = bi->height;
 +
-+	ret = usb_control_msg(dev->udev, usb_sndctrlpipe(dev->udev, 0),
-+			NR_USB_REQUEST_CHANNEL,
-+			(USB_DIR_OUT | USB_TYPE_VENDOR), 0, 0,
-+			set_def_chn, sizeof(set_def_chn), USB_CTRL_SET_TIMEOUT);
-+	return ret;
++	if (bi->type > OMAPFB_MEMTYPE_MAX)
++		return -EINVAL;
++
++	if (ofbi->rotation_type = OMAP_DSS_ROT_VRFB) {
++		size = max(omap_vrfb_min_phys_size(w, h, bi->bytespp),
++				omap_vrfb_min_phys_size(h, w, bi->bytespp));
++	} else {
++		size = w * h * bi->bytespp;
++	}
++
++	size = PAGE_ALIGN(size);
++
++	rg = &ofbi->region;
++
++	for (i = 0; i < ofbi->num_overlays; i++) {
++		if (ofbi->overlays[i]->info.enabled)
++			return -EBUSY;
++	}
++
++	if (rg->size != size || rg->type != bi->type) {
++		r = omapfb_realloc_fbmem(fbi, size, bi->type);
++		if (r) {
++			dev_err(fbdev->dev, "realloc fbmem failed\n");
++			return r;
++		}
++	}
++
++	return 0;
 +}
 +
- static int dlfb_probe(struct usb_interface *interface,
- 			const struct usb_device_id *id)
+ static int omapfb_update_window_nolock(struct fb_info *fbi,
+ 		u32 x, u32 y, u32 w, u32 h)
  {
-Index: linux-next/drivers/staging/udlfb/udlfb.h
-=================================--- linux-next.orig/drivers/staging/udlfb/udlfb.h	2010-02-14 20:21:39.000000000 -0800
-+++ linux-next/drivers/staging/udlfb/udlfb.h	2010-02-14 20:26:49.000000000 -0800
-@@ -26,6 +26,9 @@ struct dlfb_data {
- 	u32 pseudo_palette[256];
+@@ -476,6 +517,7 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
+ 		struct omapfb_plane_info	plane_info;
+ 		struct omapfb_caps		caps;
+ 		struct omapfb_mem_info          mem_info;
++		struct omapfb_res_buf_info	res_buf_info;
+ 		struct omapfb_color_key		color_key;
+ 		struct omapfb_ovl_colormode	ovl_colormode;
+ 		enum omapfb_update_mode		update_mode;
+@@ -572,6 +614,15 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
+ 			r = -EFAULT;
+ 		break;
+ 
++	case OMAPFB_RESERVE_BUFFER:
++		DBG("ioctl RESERVE_BUFFER\n");
++		if (copy_from_user(&p.res_buf_info, (void __user *)arg,
++					sizeof(p.res_buf_info)))
++			r = -EFAULT;
++		else
++			r = omapfb_reserve_buffer(fbi, &p.res_buf_info);
++		break;
++
+ 	case OMAPFB_GET_CAPS:
+ 		DBG("ioctl GET_CAPS\n");
+ 		if (!display) {
+diff --git a/drivers/video/omap2/omapfb/omapfb-sysfs.c b/drivers/video/omap2/omapfb/omapfb-sysfs.c
+index 62bb88f..9cd7957 100644
+--- a/drivers/video/omap2/omapfb/omapfb-sysfs.c
++++ b/drivers/video/omap2/omapfb/omapfb-sysfs.c
+@@ -413,8 +413,19 @@ static ssize_t store_size(struct device *dev, struct device_attribute *attr,
+ 	unsigned long size;
+ 	int r;
+ 	int i;
++	unsigned w, h, bytespp;
++
++	if (sscanf(buf, "%u,%u,%u", &w, &h, &bytespp) = 3) {
++		if (ofbi->rotation_type = OMAP_DSS_ROT_VRFB)
++			size = max(omap_vrfb_min_phys_size(w, h, bytespp),
++					omap_vrfb_min_phys_size(h, w, bytespp));
++		else
++			size = w * h * bytespp;
++	} else {
++		size = simple_strtoul(buf, NULL, 0);
++	}
+ 
+-	size = PAGE_ALIGN(simple_strtoul(buf, NULL, 0));
++	size = PAGE_ALIGN(size);
+ 
+ 	lock_fb_info(fbi);
+ 
+diff --git a/include/linux/omapfb.h b/include/linux/omapfb.h
+index f46c40a..ef4c2cf 100644
+--- a/include/linux/omapfb.h
++++ b/include/linux/omapfb.h
+@@ -57,6 +57,7 @@
+ #define OMAPFB_WAITFORGO	OMAP_IO(60)
+ #define OMAPFB_GET_VRAM_INFO	OMAP_IOR(61, struct omapfb_vram_info)
+ #define OMAPFB_SET_TEARSYNC	OMAP_IOW(62, struct omapfb_tearsync_info)
++#define OMAPFB_RESERVE_BUFFER	OMAP_IOW(63, struct omapfb_res_buf_info)
+ 
+ #define OMAPFB_CAPS_GENERIC_MASK	0x00000fff
+ #define OMAPFB_CAPS_LCDC_MASK		0x00fff000
+@@ -147,6 +148,15 @@ struct omapfb_mem_info {
+ 	__u8  reserved[3];
  };
  
-+#define NR_USB_REQUEST_I2C_SUB_IO 0x02
-+#define NR_USB_REQUEST_CHANNEL 0x12
++struct omapfb_res_buf_info {
++	__u16	width;
++	__u16	height;
++	__u8	bytespp;
++	__u8	type;
++	__u8	reserved[2];
++	__u32	reserved2[6];
++};
 +
- static void dlfb_bulk_callback(struct urb *urb)
- {
- 	struct dlfb_data *dev_info = urb->context;
-
+ struct omapfb_caps {
+ 	__u32 ctrl;
+ 	__u32 plane_color;
+-- 
+1.6.5
 

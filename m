@@ -1,124 +1,95 @@
-From: Baruch Siach <baruch@tkos.co.il>
-Date: Wed, 17 Feb 2010 10:33:25 +0000
-Subject: [PATCH 3/3] mx25pdk: add LCD support
-Message-Id: <88d35ab38e7f0adf7a8c712843785d21d6225065.1266402631.git.baruch@tkos.co.il>
+From: James Simmons <jsimmons@infradead.org>
+Date: Fri, 05 Feb 2010 15:14:51 +0000
+Subject: Re: [fwd: [PATCH] obsolete config in kernel source
+Message-Id: <alpine.LFD.2.00.1002051513060.23086@casper.infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100217094359.GY17643@pengutronix.de>
-In-Reply-To: <20100217094359.GY17643@pengutronix.de>
+References: <20100120111628.GA2040@stud.informatik.uni-erlangen.de>
+In-Reply-To: <20100120111628.GA2040@stud.informatik.uni-erlangen.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
----
- arch/arm/mach-mx25/mx25pdk.c                |   55 +++++++++++++++++++++++++++
- arch/arm/plat-mxc/include/mach/iomux-mx25.h |    2 +
- 2 files changed, 57 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/mach-mx25/mx25pdk.c b/arch/arm/mach-mx25/mx25pdk.c
-index f4e8b98..6d9dd33 100644
---- a/arch/arm/mach-mx25/mx25pdk.c
-+++ b/arch/arm/mach-mx25/mx25pdk.c
-@@ -35,6 +35,7 @@
- #include <mach/imx-uart.h>
- #include <mach/mx25.h>
- #include <mach/mxc_nand.h>
-+#include <mach/imxfb.h>
- #include "devices.h"
- #include <mach/iomux.h>
- 
-@@ -54,6 +55,31 @@ static struct pad_desc mx25pdk_pads[] = {
- 	MX25_PAD_FEC_TX_CLK__FEC_TX_CLK,
- 	MX25_PAD_A17__GPIO_2_3, /* FEC_EN, GPIO 35 */
- 	MX25_PAD_D12__GPIO_4_8, /* FEC_RESET_B, GPIO 104 */
-+
-+	/* LCD */
-+	MX25_PAD_LD0__LD0,
-+	MX25_PAD_LD1__LD1,
-+	MX25_PAD_LD2__LD2,
-+	MX25_PAD_LD3__LD3,
-+	MX25_PAD_LD4__LD4,
-+	MX25_PAD_LD5__LD5,
-+	MX25_PAD_LD6__LD6,
-+	MX25_PAD_LD7__LD7,
-+	MX25_PAD_LD8__LD8,
-+	MX25_PAD_LD9__LD9,
-+	MX25_PAD_LD10__LD10,
-+	MX25_PAD_LD11__LD11,
-+	MX25_PAD_LD12__LD12,
-+	MX25_PAD_LD13__LD13,
-+	MX25_PAD_LD14__LD14,
-+	MX25_PAD_LD15__LD15,
-+	MX25_PAD_GPIO_E__LD16,
-+	MX25_PAD_GPIO_F__LD17,
-+	MX25_PAD_HSYNC__HSYNC,
-+	MX25_PAD_VSYNC__VSYNC,
-+	MX25_PAD_LSCLK__LSCLK,
-+	MX25_PAD_OE_ACD__OE_ACD,
-+	MX25_PAD_CONTRAST__CONTRAST,
- };
- 
- static struct fec_platform_data mx25_fec_pdata = {
-@@ -83,6 +109,34 @@ static struct mxc_nand_platform_data mx25pdk_nand_board_info = {
- 	.flash_bbt	= 1,
- };
- 
-+static struct imx_fb_videomode mx25pdk_modes[] = {
-+	{
-+		.mode	= {
-+			.name		= "CRT-VGA",
-+			.refresh	= 60,
-+			.xres		= 640,
-+			.yres		= 480,
-+			.pixclock	= 39683,
-+			.left_margin	= 45,
-+			.right_margin	= 114,
-+			.upper_margin	= 33,
-+			.lower_margin	= 11,
-+			.hsync_len	= 1,
-+			.vsync_len	= 1,
-+		},
-+		.bpp	= 16,
-+		.pcr	= 0xFA208B80,
-+	},
-+};
-+
-+static struct imx_fb_platform_data mx25pdk_fb_pdata = {
-+	.mode		= mx25pdk_modes,
-+	.num_modes	= ARRAY_SIZE(mx25pdk_modes),
-+	.pwmr		= 0x00A903FF,
-+	.lscr1		= 0x00120300,
-+	.dmacr		= 0x00020010,
-+};
-+
- static void __init mx25pdk_init(void)
- {
- 	mxc_iomux_v3_setup_multiple_pads(mx25pdk_pads,
-@@ -92,6 +146,7 @@ static void __init mx25pdk_init(void)
- 	mxc_register_device(&mxc_usbh2, NULL);
- 	mxc_register_device(&mxc_nand_device, &mx25pdk_nand_board_info);
- 	mxc_register_device(&mx25_rtc_device, NULL);
-+	mxc_register_device(&mx25_fb_device, &mx25pdk_fb_pdata);
- 
- 	mx25pdk_fec_reset();
- 	mxc_register_device(&mx25_fec_device, &mx25_fec_pdata);
-diff --git a/arch/arm/plat-mxc/include/mach/iomux-mx25.h b/arch/arm/plat-mxc/include/mach/iomux-mx25.h
-index 9af494f..5418d52 100644
---- a/arch/arm/plat-mxc/include/mach/iomux-mx25.h
-+++ b/arch/arm/plat-mxc/include/mach/iomux-mx25.h
-@@ -462,9 +462,11 @@
- #define MX25_PAD_GPIO_C__CAN2_TX	IOMUX_PAD(0x3f8, 0x1fc, 0x16, 0, 0, PAD_CTL_PUS_22K_UP)
- 
- #define MX25_PAD_GPIO_D__GPIO_D		IOMUX_PAD(0x3fc, 0x200, 0x10, 0, 0, NO_PAD_CTRL)
-+#define MX25_PAD_GPIO_E__LD16		IOMUX_PAD(0x400, 0x204, 0x02, 0, 0, NO_PAD_CTRL)
- #define MX25_PAD_GPIO_D__CAN2_RX	IOMUX_PAD(0x3fc, 0x200, 0x16, 0x484, 1, PAD_CTL_PUS_22K_UP)
- 
- #define MX25_PAD_GPIO_E__GPIO_E		IOMUX_PAD(0x400, 0x204, 0x10, 0, 0, NO_PAD_CTRL)
-+#define MX25_PAD_GPIO_F__LD17		IOMUX_PAD(0x404, 0x208, 0x02, 0, 0, NO_PAD_CTRL)
- #define MX25_PAD_GPIO_E__AUD7_TXD	IOMUX_PAD(0x400, 0x204, 0x14, 0, 0, NO_PAD_CTRL)
- 
- #define MX25_PAD_GPIO_F__GPIO_F		IOMUX_PAD(0x404, 0x208, 0x10, 0, 0, NO_PAD_CTRL)
--- 
-1.6.6.1
+> ----- Forwarded message from Christoph Egger <siccegge@stud.informatik.uni-erlangen.de> -----
+> 
+> Date: Fri, 15 Jan 2010 13:27:56 +0100
+> 
+> Hi all!
+> 
+> 	As part of the VAMOS[0] research project at the University of
+> Erlangen we're checking referential integrity between kernel KConfig
+> options and in-code Conditional blocks.
+> 
+> 	While probably not strictly a integrity violation (as
+> FB_SOFT_CURSOR can still be set as it is once mentioned in a KConfig
+> select statement this looks like a left-over of
+> c465e05a03209651078b95686158648fd7ed84c5
+> 
+> 	Please keep me informed of this patch getting confirmed /
+> merged so we can keep track of it.
+> 
+> Regards
+> 
+> 	Christoph Egger
+> 
+> [0] http://vamos1.informatik.uni-erlangen.de/
+> 
+> >From 5461c8d1ebc54e9f5c86233aa831cefc7c06a140 Mon Sep 17 00:00:00 2001
+> From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+> Date: Fri, 15 Jan 2010 11:03:50 +0100
+> Subject: [PATCH] Clean missed bit of FB_SOFT_CURSOR
+> 
+> While the config Option FB_SOFT_BUFFER was removed in
+> c465e05a03209651078b95686158648fd7ed84c5 while moving to fbcon this
+> single driver has it left as a select in KConfig / #ifdef in
+> source. This last occurence is removed here so the option is really
+> gone
+> 
+> Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
 
+Acked-by: James Simmons <jsimmons@infradead.org>
+
+Patches is fine.
+
+>  drivers/video/Kconfig        |    1 -
+>  drivers/video/sis/sis_main.c |    3 ---
+>  2 files changed, 0 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index 5a5c303..7fe1839 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -1494,7 +1494,6 @@ config FB_VIA
+>         select FB_CFB_FILLRECT
+>         select FB_CFB_COPYAREA
+>         select FB_CFB_IMAGEBLIT
+> -       select FB_SOFT_CURSOR
+>         select I2C_ALGOBIT
+>         select I2C
+>         help
+> diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+> index 9d2b6bc..a531a0f 100644
+> --- a/drivers/video/sis/sis_main.c
+> +++ b/drivers/video/sis/sis_main.c
+> @@ -1891,9 +1891,6 @@ static struct fb_ops sisfb_ops = {
+>  	.fb_fillrect	= fbcon_sis_fillrect,
+>  	.fb_copyarea	= fbcon_sis_copyarea,
+>  	.fb_imageblit	= cfb_imageblit,
+> -#ifdef CONFIG_FB_SOFT_CURSOR
+> -	.fb_cursor	= soft_cursor,
+> -#endif
+>  	.fb_sync	= fbcon_sis_sync,
+>  #ifdef SIS_NEW_CONFIG_COMPAT
+>  	.fb_compat_ioctl= sisfb_ioctl,
+> -- 
+> 1.6.3.3
+> 
+> 
+> 
+> ----- End forwarded message -----
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 

@@ -1,196 +1,260 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 11 Feb 2010 19:27:57 +0000
-Subject: [PATCH 1/4] viafb: introduce strict parameter checking
-Message-Id: <1265916480-6805-1-git-send-email-FlorianSchandinat@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Mon, 08 Feb 2010 15:57:34 +0000
+Subject: [PATCH 10/17] OMAP: DSS2: move get_recommended_bpp()
+Message-Id: <1265644661-3694-11-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1265644661-3694-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-4-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-5-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-6-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-7-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-8-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-9-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-10-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1265644661-3694-10-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-viafb: introduce strict parameter checking
+Move get_recommended_bpp() from omap_dss_device to omap_dss_driver.
 
-Refuse to work if wrong parameters are given. This should improve
-the user experience as it will be clear that something is wrong
-and not silently ignored.
+This is part of a larger patch-set, which moves the control from omapdss
+driver to the display driver.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/via/viafbdev.c |   67 +++++++++++++++++++++++------------------
- 1 files changed, 38 insertions(+), 29 deletions(-)
+ arch/arm/plat-omap/include/plat/display.h |    7 ++---
+ drivers/video/omap2/displays/panel-taal.c |    2 +
+ drivers/video/omap2/dss/core.c            |    3 ++
+ drivers/video/omap2/dss/display.c         |    8 +-----
+ drivers/video/omap2/dss/venc.c            |    1 +
+ drivers/video/omap2/omapfb/omapfb-main.c  |   31 ++++++++++++++++++++++++----
+ drivers/video/omap2/omapfb/omapfb.h       |    6 +++++
+ 7 files changed, 43 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index b1569a7..902f8a1 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -31,13 +31,13 @@ static char *viafb_name = "Via";
- static u32 pseudo_pal[17];
+diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
+index c66397f..950d781 100644
+--- a/arch/arm/plat-omap/include/plat/display.h
++++ b/arch/arm/plat-omap/include/plat/display.h
+@@ -434,8 +434,6 @@ struct omap_dss_device {
  
- /* video mode */
--static char *viafb_mode = "640x480";
--static char *viafb_mode1 = "640x480";
-+static char *viafb_mode;
-+static char *viafb_mode1;
+ 		enum omap_panel_config config;
  
- static int viafb_accel = 1;
+-		u8 recommended_bpp;
+-
+ 		struct omap_dss_device *ctrl;
+ 	} panel;
  
- /* Added for specifying active devices.*/
--char *viafb_active_dev = "";
-+char *viafb_active_dev;
+@@ -473,8 +471,6 @@ struct omap_dss_device {
+ 	int (*suspend)(struct omap_dss_device *dssdev);
+ 	int (*resume)(struct omap_dss_device *dssdev);
  
- /*Added for specify lcd output port*/
- char *viafb_lcd_port = "";
-@@ -1327,7 +1327,7 @@ static void retrieve_device_setting(struct viafb_ioctl_setting
- 	setting_info->lcd_attributes.lcd_mode = viafb_lcd_mode;
- }
+-	int (*get_recommended_bpp)(struct omap_dss_device *dssdev);
+-
+ 	int (*check_timings)(struct omap_dss_device *dssdev,
+ 			struct omap_video_timings *timings);
+ 	void (*set_timings)(struct omap_dss_device *dssdev,
+@@ -533,6 +529,7 @@ struct omap_dss_driver {
  
--static void parse_active_dev(void)
-+static int parse_active_dev(void)
- {
- 	viafb_CRT_ON = STATE_OFF;
- 	viafb_DVI_ON = STATE_OFF;
-@@ -1338,60 +1338,63 @@ static void parse_active_dev(void)
- 	   IGA path to devices in SAMM case. */
- 	/*    Note: The previous of active_dev is primary device,
- 	   and the following is secondary device. */
--	if (!strncmp(viafb_active_dev, "CRT+DVI", 7)) {
-+	if (!viafb_active_dev) {
-+		viafb_CRT_ON = STATE_ON;
-+		viafb_SAMM_ON = STATE_OFF;
-+	} else if (!strcmp(viafb_active_dev, "CRT+DVI")) {
- 		/* CRT+DVI */
- 		viafb_CRT_ON = STATE_ON;
- 		viafb_DVI_ON = STATE_ON;
- 		viafb_primary_dev = CRT_Device;
--	} else if (!strncmp(viafb_active_dev, "DVI+CRT", 7)) {
-+	} else if (!strcmp(viafb_active_dev, "DVI+CRT")) {
- 		/* DVI+CRT */
- 		viafb_CRT_ON = STATE_ON;
- 		viafb_DVI_ON = STATE_ON;
- 		viafb_primary_dev = DVI_Device;
--	} else if (!strncmp(viafb_active_dev, "CRT+LCD", 7)) {
-+	} else if (!strcmp(viafb_active_dev, "CRT+LCD")) {
- 		/* CRT+LCD */
- 		viafb_CRT_ON = STATE_ON;
- 		viafb_LCD_ON = STATE_ON;
- 		viafb_primary_dev = CRT_Device;
--	} else if (!strncmp(viafb_active_dev, "LCD+CRT", 7)) {
-+	} else if (!strcmp(viafb_active_dev, "LCD+CRT")) {
- 		/* LCD+CRT */
- 		viafb_CRT_ON = STATE_ON;
- 		viafb_LCD_ON = STATE_ON;
- 		viafb_primary_dev = LCD_Device;
--	} else if (!strncmp(viafb_active_dev, "DVI+LCD", 7)) {
-+	} else if (!strcmp(viafb_active_dev, "DVI+LCD")) {
- 		/* DVI+LCD */
- 		viafb_DVI_ON = STATE_ON;
- 		viafb_LCD_ON = STATE_ON;
- 		viafb_primary_dev = DVI_Device;
--	} else if (!strncmp(viafb_active_dev, "LCD+DVI", 7)) {
-+	} else if (!strcmp(viafb_active_dev, "LCD+DVI")) {
- 		/* LCD+DVI */
- 		viafb_DVI_ON = STATE_ON;
- 		viafb_LCD_ON = STATE_ON;
- 		viafb_primary_dev = LCD_Device;
--	} else if (!strncmp(viafb_active_dev, "LCD+LCD2", 8)) {
-+	} else if (!strcmp(viafb_active_dev, "LCD+LCD2")) {
- 		viafb_LCD_ON = STATE_ON;
- 		viafb_LCD2_ON = STATE_ON;
- 		viafb_primary_dev = LCD_Device;
--	} else if (!strncmp(viafb_active_dev, "LCD2+LCD", 8)) {
-+	} else if (!strcmp(viafb_active_dev, "LCD2+LCD")) {
- 		viafb_LCD_ON = STATE_ON;
- 		viafb_LCD2_ON = STATE_ON;
- 		viafb_primary_dev = LCD2_Device;
--	} else if (!strncmp(viafb_active_dev, "CRT", 3)) {
-+	} else if (!strcmp(viafb_active_dev, "CRT")) {
- 		/* CRT only */
- 		viafb_CRT_ON = STATE_ON;
- 		viafb_SAMM_ON = STATE_OFF;
--	} else if (!strncmp(viafb_active_dev, "DVI", 3)) {
-+	} else if (!strcmp(viafb_active_dev, "DVI")) {
- 		/* DVI only */
- 		viafb_DVI_ON = STATE_ON;
- 		viafb_SAMM_ON = STATE_OFF;
--	} else if (!strncmp(viafb_active_dev, "LCD", 3)) {
-+	} else if (!strcmp(viafb_active_dev, "LCD")) {
- 		/* LCD only */
- 		viafb_LCD_ON = STATE_ON;
- 		viafb_SAMM_ON = STATE_OFF;
--	} else {
--		viafb_CRT_ON = STATE_ON;
--		viafb_SAMM_ON = STATE_OFF;
--	}
-+	} else
-+		return -EINVAL;
+ 	void (*get_resolution)(struct omap_dss_device *dssdev,
+ 			u16 *xres, u16 *yres);
++	int (*get_recommended_bpp)(struct omap_dss_device *dssdev);
+ };
+ 
+ int omap_dss_register_driver(struct omap_dss_driver *);
+@@ -559,6 +556,8 @@ struct omap_overlay *omap_dss_get_overlay(int num);
+ 
+ void omapdss_default_get_resolution(struct omap_dss_device *dssdev,
+ 		u16 *xres, u16 *yres);
++int omapdss_default_get_recommended_bpp(struct omap_dss_device *dssdev);
 +
-+	return 0;
+ typedef void (*omap_dispc_isr_t) (void *arg, u32 mask);
+ int omap_dispc_register_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
+ int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 11d69b6..e00502e 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -990,6 +990,8 @@ static struct omap_dss_driver taal_driver = {
+ 
+ 	.setup_update	= taal_setup_update,
+ 	.get_resolution	= taal_get_resolution,
++	.get_recommended_bpp = omapdss_default_get_recommended_bpp,
++
+ 	.enable_te	= taal_enable_te,
+ 	.wait_for_te	= taal_wait_te,
+ 	.set_rotate	= taal_rotate,
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 67ea00d..991dd29 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -814,6 +814,9 @@ int omap_dss_register_driver(struct omap_dss_driver *dssdriver)
+ 
+ 	if (dssdriver->get_resolution = NULL)
+ 		dssdriver->get_resolution = omapdss_default_get_resolution;
++	if (dssdriver->get_recommended_bpp = NULL)
++		dssdriver->get_recommended_bpp +			omapdss_default_get_recommended_bpp;
+ 
+ 	return driver_register(&dssdriver->driver);
+ }
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index 6c34233..c5fecee 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -324,11 +324,8 @@ void default_get_overlay_fifo_thresholds(enum omap_plane plane,
+ 	*fifo_low = fifo_size - burst_size_bytes;
  }
  
- static int parse_port(char *opt_str, int *output_interface)
-@@ -1820,24 +1823,25 @@ static void viafb_remove_proc(struct proc_dir_entry *viafb_entry)
- 	remove_proc_entry("viafb", NULL);
- }
- 
--static void parse_mode(const char *str, u32 *xres, u32 *yres)
-+static int parse_mode(const char *str, u32 *xres, u32 *yres)
+-static int default_get_recommended_bpp(struct omap_dss_device *dssdev)
++int omapdss_default_get_recommended_bpp(struct omap_dss_device *dssdev)
  {
- 	char *ptr;
+-	if (dssdev->panel.recommended_bpp)
+-		return dssdev->panel.recommended_bpp;
+-
+ 	switch (dssdev->type) {
+ 	case OMAP_DISPLAY_TYPE_DPI:
+ 		if (dssdev->phy.dpi.data_lines = 24)
+@@ -350,6 +347,7 @@ static int default_get_recommended_bpp(struct omap_dss_device *dssdev)
+ 		BUG();
+ 	}
+ }
++EXPORT_SYMBOL(omapdss_default_get_recommended_bpp);
  
-+	if (!str) {
-+		*xres = 640;
-+		*yres = 480;
-+		return 0;
+ /* Checks if replication logic should be used. Only use for active matrix,
+  * when overlay is in RGB12U or RGB16 mode, and LCD interface is
+@@ -413,8 +411,6 @@ void dss_init_device(struct platform_device *pdev,
+ 		return;
+ 	}
+ 
+-	dssdev->get_recommended_bpp = default_get_recommended_bpp;
+-
+ 	switch (dssdev->type) {
+ 	case OMAP_DISPLAY_TYPE_DPI:
+ 		r = dpi_init_display(dssdev);
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 65514f0..d13071d 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -460,6 +460,7 @@ static struct omap_dss_driver venc_driver = {
+ 	.resume		= venc_panel_resume,
+ 
+ 	.get_resolution	= omapdss_default_get_resolution,
++	.get_recommended_bpp = omapdss_default_get_recommended_bpp,
+ 
+ 	.driver         = {
+ 		.name   = "venc",
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 75d517e..f77256f 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -54,6 +54,8 @@ module_param_named(test, omapfb_test_pattern, bool, 0644);
+ #endif
+ 
+ static int omapfb_fb_init(struct omapfb2_device *fbdev, struct fb_info *fbi);
++static int omapfb_get_recommended_bpp(struct omapfb2_device *fbdev,
++		struct omap_dss_device *dssdev);
+ 
+ #ifdef DEBUG
+ static void draw_pixel(struct fb_info *fbi, int x, int y, unsigned color)
+@@ -1404,6 +1406,7 @@ static int omapfb_alloc_fbmem_display(struct fb_info *fbi, unsigned long size,
+ 		unsigned long paddr)
+ {
+ 	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omapfb2_device *fbdev = ofbi->fbdev;
+ 	struct omap_dss_device *display;
+ 	int bytespp;
+ 
+@@ -1412,7 +1415,7 @@ static int omapfb_alloc_fbmem_display(struct fb_info *fbi, unsigned long size,
+ 	if (!display)
+ 		return 0;
+ 
+-	switch (display->get_recommended_bpp(display)) {
++	switch (omapfb_get_recommended_bpp(fbdev, display)) {
+ 	case 16:
+ 		bytespp = 2;
+ 		break;
+@@ -1760,7 +1763,7 @@ static int omapfb_fb_init(struct omapfb2_device *fbdev, struct fb_info *fbi)
+ 		var->yres_virtual = var->yres;
+ 
+ 		if (!var->bits_per_pixel) {
+-			switch (display->get_recommended_bpp(display)) {
++			switch (omapfb_get_recommended_bpp(fbdev, display)) {
+ 			case 16:
+ 				var->bits_per_pixel = 16;
+ 				break;
+@@ -2011,7 +2014,8 @@ static int omapfb_mode_to_timings(const char *mode_str,
+ 	}
+ }
+ 
+-static int omapfb_set_def_mode(struct omap_dss_device *display, char *mode_str)
++static int omapfb_set_def_mode(struct omapfb2_device *fbdev,
++		struct omap_dss_device *display, char *mode_str)
+ {
+ 	int r;
+ 	u8 bpp;
+@@ -2021,7 +2025,9 @@ static int omapfb_set_def_mode(struct omap_dss_device *display, char *mode_str)
+ 	if (r)
+ 		return r;
+ 
+-	display->panel.recommended_bpp = bpp;
++	fbdev->bpp_overrides[fbdev->num_bpp_overrides].dssdev = display;
++	fbdev->bpp_overrides[fbdev->num_bpp_overrides].bpp = bpp;
++	++fbdev->num_bpp_overrides;
+ 
+ 	if (!display->check_timings || !display->set_timings)
+ 		return -EINVAL;
+@@ -2035,6 +2041,21 @@ static int omapfb_set_def_mode(struct omap_dss_device *display, char *mode_str)
+ 	return 0;
+ }
+ 
++static int omapfb_get_recommended_bpp(struct omapfb2_device *fbdev,
++		struct omap_dss_device *dssdev)
++{
++	int i;
++
++	BUG_ON(dssdev->driver->get_recommended_bpp = NULL);
++
++	for (i = 0; i < fbdev->num_bpp_overrides; ++i) {
++		if (dssdev = fbdev->bpp_overrides[i].dssdev)
++			return fbdev->bpp_overrides[i].bpp;
 +	}
 +
- 	*xres = simple_strtoul(str, &ptr, 10);
- 	if (ptr[0] != 'x')
--		goto out_default;
-+		return -EINVAL;
- 
- 	*yres = simple_strtoul(&ptr[1], &ptr, 10);
- 	if (ptr[0])
--		goto out_default;
--
--	return;
-+		return -EINVAL;
- 
--out_default:
--	printk(KERN_WARNING "viafb received invalid mode string: %s\n", str);
--	*xres = 640;
--	*yres = 480;
-+	return 0;
- }
- 
- static int __devinit via_pci_probe(struct pci_dev *pdev,
-@@ -1874,7 +1878,6 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 
- 	if (viafb_dual_fb)
- 		viafb_SAMM_ON = 1;
--	parse_active_dev();
- 	parse_lcd_port();
- 	parse_dvi_port();
- 
-@@ -2192,12 +2195,18 @@ static struct pci_driver viafb_driver = {
- 
- static int __init viafb_init(void)
- {
-+	u32 dummy;
- #ifndef MODULE
- 	char *option = NULL;
- 	if (fb_get_options("viafb", &option))
- 		return -ENODEV;
- 	viafb_setup(option);
- #endif
-+	if (parse_mode(viafb_mode, &dummy, &dummy)
-+		|| parse_mode(viafb_mode1, &dummy, &dummy)
-+		|| parse_active_dev())
-+		return -EINVAL;
++	return dssdev->driver->get_recommended_bpp(dssdev);
++}
 +
- 	printk(KERN_INFO
-        "VIA Graphics Intergration Chipset framebuffer %d.%d initializing\n",
- 	       VERSION_MAJOR, VERSION_MINOR);
+ static int omapfb_parse_def_modes(struct omapfb2_device *fbdev)
+ {
+ 	char *str, *options, *this_opt;
+@@ -2073,7 +2094,7 @@ static int omapfb_parse_def_modes(struct omapfb2_device *fbdev)
+ 			break;
+ 		}
+ 
+-		r = omapfb_set_def_mode(display, mode_str);
++		r = omapfb_set_def_mode(fbdev, display, mode_str);
+ 		if (r)
+ 			break;
+ 	}
+diff --git a/drivers/video/omap2/omapfb/omapfb.h b/drivers/video/omap2/omapfb/omapfb.h
+index 4ae0b64..cd54fdb 100644
+--- a/drivers/video/omap2/omapfb/omapfb.h
++++ b/drivers/video/omap2/omapfb/omapfb.h
+@@ -83,6 +83,12 @@ struct omapfb2_device {
+ 	struct omap_overlay *overlays[10];
+ 	unsigned num_managers;
+ 	struct omap_overlay_manager *managers[10];
++
++	unsigned num_bpp_overrides;
++	struct {
++		struct omap_dss_device *dssdev;
++		u8 bpp;
++	} bpp_overrides[10];
+ };
+ 
+ struct omapfb_colormode {
 -- 
-1.6.3.2
+1.6.5
 

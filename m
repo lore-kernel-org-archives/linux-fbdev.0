@@ -1,95 +1,51 @@
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Mon, 08 Feb 2010 15:56:04 +0000
-Subject: [PATCH 05/13] OMAP: DSS2: OMAPFB: implement OMAPFB_GET_DISPLAY_INFO
-Message-Id: <1265644572-3578-6-git-send-email-tomi.valkeinen@nokia.com>
+Date: Mon, 08 Feb 2010 15:55:59 +0000
+Subject: [PATCH 00/13] OMAP DSS2 patches
+Message-Id: <1265644572-3578-1-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1265644572-3578-1-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-2-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-3-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-4-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-5-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1265644572-3578-5-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-Previously the only place to get the size of the display was from the
-DSS's sysfs interface, making, for example, configuring overlays and doing
-updates on manual displays more difficult.
+Here are some smallish patches for DSS2 for review. Some fixes, couple of new
+ioctls, and DSI changes.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
----
- drivers/video/omap2/omapfb/omapfb-ioctl.c |   20 ++++++++++++++++++++
- include/linux/omapfb.h                    |    9 +++++++++
- 2 files changed, 29 insertions(+), 0 deletions(-)
+They can also be found from
+http://gitorious.org/linux-omap-dss2/linux master branch
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
-index 5562a76..56e3ec2 100644
---- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
-+++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
-@@ -525,6 +525,7 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
- 		struct omapfb_memory_read	memory_read;
- 		struct omapfb_vram_info		vram_info;
- 		struct omapfb_tearsync_info	tearsync_info;
-+		struct omapfb_display_info	display_info;
- 	} p;
- 
- 	int r = 0;
-@@ -792,6 +793,25 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
- 		break;
- 	}
- 
-+	case OMAPFB_GET_DISPLAY_INFO: {
-+		DBG("ioctl GET_DISPLAY_INFO\n");
-+
-+		if (display = NULL) {
-+			r = -ENODEV;
-+			break;
-+		}
-+
-+		p.display_info.xres = display->panel.timings.x_res;
-+		p.display_info.yres = display->panel.timings.y_res;
-+		p.display_info.width = 0;
-+		p.display_info.height = 0;
-+
-+		if (copy_to_user((void __user *)arg, &p.display_info,
-+					sizeof(p.display_info)))
-+			r = -EFAULT;
-+		break;
-+	}
-+
- 	default:
- 		dev_err(fbdev->dev, "Unknown ioctl 0x%x\n", cmd);
- 		r = -EINVAL;
-diff --git a/include/linux/omapfb.h b/include/linux/omapfb.h
-index ef4c2cf..0381436 100644
---- a/include/linux/omapfb.h
-+++ b/include/linux/omapfb.h
-@@ -58,6 +58,7 @@
- #define OMAPFB_GET_VRAM_INFO	OMAP_IOR(61, struct omapfb_vram_info)
- #define OMAPFB_SET_TEARSYNC	OMAP_IOW(62, struct omapfb_tearsync_info)
- #define OMAPFB_RESERVE_BUFFER	OMAP_IOW(63, struct omapfb_res_buf_info)
-+#define OMAPFB_GET_DISPLAY_INFO	OMAP_IOR(64, struct omapfb_display_info)
- 
- #define OMAPFB_CAPS_GENERIC_MASK	0x00000fff
- #define OMAPFB_CAPS_LCDC_MASK		0x00fff000
-@@ -216,6 +217,14 @@ struct omapfb_tearsync_info {
- 	__u16 reserved2;
- };
- 
-+struct omapfb_display_info {
-+	__u16 xres;
-+	__u16 yres;
-+	__u32 width;	/* phys width of the display in micrometers */
-+	__u32 height;	/* phys height of the display in micrometers */
-+	__u32 reserved[5];
-+};
-+
- #ifdef __KERNEL__
- 
- #include <plat/board.h>
--- 
-1.6.5
+Aaro Koskinen (1):
+  OMAP: DSS: Taal: fix error returns in taal_probe()
+
+Tomi Valkeinen (12):
+  OMAP: DSS2: enable VDDS_DSI when using DPI
+  OMAP: 3430SDP: remove vdvi regulator
+  OMAP: DSS2: OMAPFB: implement OMAPFB_RESERVE_BUFFER
+  OMAP: DSS2: OMAPFB: implement OMAPFB_GET_DISPLAY_INFO
+  OMAP: DSS2: fix irq-stats compilation
+  OMAP: DSS2: OMAPFB: Add omapfb_update_window prototype
+  OMAP: DSS2: improve DSS clk src selection
+  OMAP: DSS2: DSI: add dsi_bus_is_locked()
+  OMAP: DSS2: DSI: add helpers for DCS read/write
+  OMAP: DSS2: DSI: export dsi_vc_enable_hs()
+  OMAP: DSS2: DSI: configure all DSI VCs
+  OMAP: DSS2: DSI: remove dsi_vc_print_status()
+
+ arch/arm/mach-omap2/board-3430sdp.c                |    4 -
+ arch/arm/plat-omap/include/plat/display.h          |    5 +
+ .../video/omap2/displays/panel-sharp-ls037v7dw01.c |   35 ------
+ drivers/video/omap2/displays/panel-taal.c          |    4 +-
+ drivers/video/omap2/dss/core.c                     |   70 ++++++++++-
+ drivers/video/omap2/dss/dispc.c                    |    2 -
+ drivers/video/omap2/dss/dpi.c                      |   59 +++++++--
+ drivers/video/omap2/dss/dsi.c                      |  129 +++++++++++---------
+ drivers/video/omap2/dss/dss.c                      |   42 +++++--
+ drivers/video/omap2/dss/dss.h                      |   19 +++-
+ drivers/video/omap2/dss/venc.c                     |    4 +-
+ drivers/video/omap2/omapfb/omapfb-ioctl.c          |   71 +++++++++++
+ drivers/video/omap2/omapfb/omapfb-sysfs.c          |   13 ++-
+ drivers/video/omap2/omapfb/omapfb.h                |    3 +
+ include/linux/omapfb.h                             |   19 +++
+ 15 files changed, 347 insertions(+), 132 deletions(-)
 

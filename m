@@ -1,29 +1,200 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 09 Feb 2010 21:41:51 +0000
-Subject: Re: i810fb: Breaks EDID for Xorg
-Message-Id: <20100209134151.9ee5d4f4.akpm@linux-foundation.org>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Mon, 08 Feb 2010 15:57:39 +0000
+Subject: [PATCH 15/17] OMAP: DSS2: move set/get_wss()
+Message-Id: <1265644661-3694-16-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <be7a9f3d1002080536v4c38f6e7k492fd09fdab72b5a@mail.gmail.com>
-In-Reply-To: <be7a9f3d1002080536v4c38f6e7k492fd09fdab72b5a@mail.gmail.com>
+References: <1265644661-3694-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-4-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-5-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-6-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-7-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-8-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-9-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-10-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-11-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-12-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-13-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-14-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-15-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1265644661-3694-15-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Otavio Salvador <otavio@ossystems.com.br>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-(cc linux-fbdev-devel)
+Move set/get_wss() from omap_dss_device to omap_dss_driver.
 
-On Mon, 8 Feb 2010 11:36:39 -0200
-Otavio Salvador <otavio@ossystems.com.br> wrote:
+This is part of a larger patch-set, which moves the control from omapdss
+driver to the display driver.
 
-> Hello,
-> 
-> After some time looking for why one system had EDID working, for Xorg,
-> and other don't I found the reason being CONFIG_FB_I810.
-> 
-> When I enable CONFIG_FB_I810 the Xorg VBE reading fails; if I disable
-> it, it works fine.
-> 
-> Anyone has any idea how to fix it?
-> 
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ arch/arm/plat-omap/include/plat/display.h |    6 +-
+ drivers/video/omap2/dss/display.c         |    8 ++--
+ drivers/video/omap2/dss/venc.c            |   67 +++++++++++++++--------------
+ 3 files changed, 41 insertions(+), 40 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
+index cc2b4e3..e2d785c 100644
+--- a/arch/arm/plat-omap/include/plat/display.h
++++ b/arch/arm/plat-omap/include/plat/display.h
+@@ -472,9 +472,6 @@ struct omap_dss_device {
+ 	void (*get_timings)(struct omap_dss_device *dssdev,
+ 			struct omap_video_timings *timings);
+ 
+-	int (*set_wss)(struct omap_dss_device *dssdev, u32 wss);
+-	u32 (*get_wss)(struct omap_dss_device *dssdev);
+-
+ 	/* platform specific  */
+ 	int (*platform_enable)(struct omap_dss_device *dssdev);
+ 	void (*platform_disable)(struct omap_dss_device *dssdev);
+@@ -519,6 +516,9 @@ struct omap_dss_driver {
+ 	void (*get_resolution)(struct omap_dss_device *dssdev,
+ 			u16 *xres, u16 *yres);
+ 	int (*get_recommended_bpp)(struct omap_dss_device *dssdev);
++
++	int (*set_wss)(struct omap_dss_device *dssdev, u32 wss);
++	u32 (*get_wss)(struct omap_dss_device *dssdev);
+ };
+ 
+ int omap_dss_register_driver(struct omap_dss_driver *);
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index bc8ae35..3194f21 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -247,10 +247,10 @@ static ssize_t display_wss_show(struct device *dev,
+ 	struct omap_dss_device *dssdev = to_dss_device(dev);
+ 	unsigned int wss;
+ 
+-	if (!dssdev->get_wss)
++	if (!dssdev->driver->get_wss)
+ 		return -ENOENT;
+ 
+-	wss = dssdev->get_wss(dssdev);
++	wss = dssdev->driver->get_wss(dssdev);
+ 
+ 	return snprintf(buf, PAGE_SIZE, "0x%05x\n", wss);
+ }
+@@ -262,7 +262,7 @@ static ssize_t display_wss_store(struct device *dev,
+ 	unsigned long wss;
+ 	int r;
+ 
+-	if (!dssdev->get_wss || !dssdev->set_wss)
++	if (!dssdev->driver->get_wss || !dssdev->driver->set_wss)
+ 		return -ENOENT;
+ 
+ 	if (strict_strtoul(buf, 0, &wss))
+@@ -271,7 +271,7 @@ static ssize_t display_wss_store(struct device *dev,
+ 	if (wss > 0xfffff)
+ 		return -EINVAL;
+ 
+-	r = dssdev->set_wss(dssdev, wss);
++	r = dssdev->driver->set_wss(dssdev, wss);
+ 	if (r)
+ 		return r;
+ 
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index a0ab52c..5c6e98b 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -557,6 +557,37 @@ static int venc_set_update_mode(struct omap_dss_device *dssdev,
+ 	return 0;
+ }
+ 
++static u32 venc_get_wss(struct omap_dss_device *dssdev)
++{
++	/* Invert due to VENC_L21_WC_CTL:INV=1 */
++	return (venc.wss_data >> 8) ^ 0xfffff;
++}
++
++static int venc_set_wss(struct omap_dss_device *dssdev,	u32 wss)
++{
++	const struct venc_config *config;
++
++	DSSDBG("venc_set_wss\n");
++
++	mutex_lock(&venc.venc_lock);
++
++	config = venc_timings_to_config(&dssdev->panel.timings);
++
++	/* Invert due to VENC_L21_WC_CTL:INV=1 */
++	venc.wss_data = (wss ^ 0xfffff) << 8;
++
++	venc_enable_clocks(1);
++
++	venc_write_reg(VENC_BSTAMP_WSS_DATA, config->bstamp_wss_data |
++			venc.wss_data);
++
++	venc_enable_clocks(0);
++
++	mutex_unlock(&venc.venc_lock);
++
++	return 0;
++}
++
+ static struct omap_dss_driver venc_driver = {
+ 	.probe		= venc_panel_probe,
+ 	.remove		= venc_panel_remove,
+@@ -572,6 +603,9 @@ static struct omap_dss_driver venc_driver = {
+ 	.set_update_mode = venc_set_update_mode,
+ 	.get_update_mode = venc_get_update_mode,
+ 
++	.get_wss	= venc_get_wss,
++	.set_wss	= venc_set_wss,
++
+ 	.driver         = {
+ 		.name   = "venc",
+ 		.owner  = THIS_MODULE,
+@@ -656,37 +690,6 @@ static int venc_check_timings(struct omap_dss_device *dssdev,
+ 	return -EINVAL;
+ }
+ 
+-static u32 venc_get_wss(struct omap_dss_device *dssdev)
+-{
+-	/* Invert due to VENC_L21_WC_CTL:INV=1 */
+-	return (venc.wss_data >> 8) ^ 0xfffff;
+-}
+-
+-static int venc_set_wss(struct omap_dss_device *dssdev,	u32 wss)
+-{
+-	const struct venc_config *config;
+-
+-	DSSDBG("venc_set_wss\n");
+-
+-	mutex_lock(&venc.venc_lock);
+-
+-	config = venc_timings_to_config(&dssdev->panel.timings);
+-
+-	/* Invert due to VENC_L21_WC_CTL:INV=1 */
+-	venc.wss_data = (wss ^ 0xfffff) << 8;
+-
+-	venc_enable_clocks(1);
+-
+-	venc_write_reg(VENC_BSTAMP_WSS_DATA, config->bstamp_wss_data |
+-			venc.wss_data);
+-
+-	venc_enable_clocks(0);
+-
+-	mutex_unlock(&venc.venc_lock);
+-
+-	return 0;
+-}
+-
+ int venc_init_display(struct omap_dss_device *dssdev)
+ {
+ 	DSSDBG("init_display\n");
+@@ -694,8 +697,6 @@ int venc_init_display(struct omap_dss_device *dssdev)
+ 	dssdev->get_timings = venc_get_timings;
+ 	dssdev->set_timings = venc_set_timings;
+ 	dssdev->check_timings = venc_check_timings;
+-	dssdev->get_wss = venc_get_wss;
+-	dssdev->set_wss = venc_set_wss;
+ 
+ 	return 0;
+ }
+-- 
+1.6.5
 

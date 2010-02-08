@@ -1,66 +1,83 @@
-From: Ben Hutchings <ben@decadent.org.uk>
-Date: Sun, 14 Feb 2010 14:20:13 +0000
-Subject: [PATCH 4/5] video: Fix first line of kernel-doc for a few functions
-Message-Id: <1266157213.10567.16.camel@localhost>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Mon, 08 Feb 2010 15:56:08 +0000
+Subject: [PATCH 09/13] OMAP: DSS2: DSI: add dsi_bus_is_locked()
+Message-Id: <1265644572-3578-10-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1266157055.10567.13.camel@localhost>
-In-Reply-To: <1266157055.10567.13.camel@localhost>
+References: <1265644572-3578-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-4-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-5-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-6-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-7-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-8-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-9-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1265644572-3578-9-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-The function name must be followed by a space, hypen, space, and a
-short description.
+Helper function to clean up the checking of the bus lock.
 
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/modedb.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   13 +++++++++----
+ 1 files changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index 0129f1b..b895aae 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -893,7 +893,7 @@ const struct fb_videomode *fb_match_mode(const struct fb_var_screeninfo *var,
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 4fdb628..b389745 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -309,6 +309,11 @@ void dsi_bus_unlock(void)
  }
+ EXPORT_SYMBOL(dsi_bus_unlock);
  
- /**
-- * fb_add_videomode: adds videomode entry to modelist
-+ * fb_add_videomode - adds videomode entry to modelist
-  * @mode: videomode to add
-  * @head: struct list_head of modelist
-  *
-@@ -928,7 +928,7 @@ int fb_add_videomode(const struct fb_videomode *mode, struct list_head *head)
- }
++static bool dsi_bus_is_locked(void)
++{
++	return mutex_is_locked(&dsi.bus_lock);
++}
++
+ static inline int wait_for_bit_change(const struct dsi_reg idx, int bitnum,
+ 		int value)
+ {
+@@ -1959,7 +1964,7 @@ static int dsi_vc_send_bta(int channel)
+ 			(dsi.debug_write || dsi.debug_read))
+ 		DSSDBG("dsi_vc_send_bta %d\n", channel);
  
- /**
-- * fb_delete_videomode: removed videomode entry from modelist
-+ * fb_delete_videomode - removed videomode entry from modelist
-  * @mode: videomode to remove
-  * @head: struct list_head of modelist
-  *
-@@ -953,7 +953,7 @@ void fb_delete_videomode(const struct fb_videomode *mode,
- }
+-	WARN_ON(!mutex_is_locked(&dsi.bus_lock));
++	WARN_ON(!dsi_bus_is_locked());
  
- /**
-- * fb_destroy_modelist: destroy modelist
-+ * fb_destroy_modelist - destroy modelist
-  * @head: struct list_head of modelist
-  */
- void fb_destroy_modelist(struct list_head *head)
-@@ -968,7 +968,7 @@ void fb_destroy_modelist(struct list_head *head)
- EXPORT_SYMBOL_GPL(fb_destroy_modelist);
+ 	if (REG_GET(DSI_VC_CTRL(channel), 20, 20)) {	/* RX_FIFO_NOT_EMPTY */
+ 		DSSERR("rx fifo not empty when sending BTA, dumping data:\n");
+@@ -2010,7 +2015,7 @@ static inline void dsi_vc_write_long_header(int channel, u8 data_type,
+ 	u32 val;
+ 	u8 data_id;
  
- /**
-- * fb_videomode_to_modelist: convert mode array to mode list
-+ * fb_videomode_to_modelist - convert mode array to mode list
-  * @modedb: array of struct fb_videomode
-  * @num: number of entries in array
-  * @head: struct list_head of modelist
+-	WARN_ON(!mutex_is_locked(&dsi.bus_lock));
++	WARN_ON(!dsi_bus_is_locked());
+ 
+ 	/*data_id = data_type | channel << 6; */
+ 	data_id = data_type | dsi.vc[channel].dest_per << 6;
+@@ -2105,7 +2110,7 @@ static int dsi_vc_send_short(int channel, u8 data_type, u16 data, u8 ecc)
+ 	u32 r;
+ 	u8 data_id;
+ 
+-	WARN_ON(!mutex_is_locked(&dsi.bus_lock));
++	WARN_ON(!dsi_bus_is_locked());
+ 
+ 	if (dsi.debug_write)
+ 		DSSDBG("dsi_vc_send_short(ch%d, dt %#x, b1 %#x, b2 %#x)\n",
+@@ -2895,7 +2900,7 @@ static int dsi_set_update_mode(struct omap_dss_device *dssdev,
+ 	int r = 0;
+ 	int i;
+ 
+-	WARN_ON(!mutex_is_locked(&dsi.bus_lock));
++	WARN_ON(!dsi_bus_is_locked());
+ 
+ 	if (dsi.update_mode != mode) {
+ 		dsi.update_mode = mode;
 -- 
-1.6.6.2
-
-
+1.6.5
 

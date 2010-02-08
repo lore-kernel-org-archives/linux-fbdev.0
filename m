@@ -1,61 +1,132 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sat, 13 Feb 2010 22:54:13 +0000
-Subject: [PATCH 2/4] viafb: some virtual_xres handling fixes
-Message-Id: <1266102049-6209-2-git-send-email-FlorianSchandinat@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Mon, 08 Feb 2010 15:57:31 +0000
+Subject: [PATCH 07/17] OMAP: DSS2: move wait_vsync()
+Message-Id: <1265644661-3694-8-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1266102049-6209-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1266102049-6209-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <1265644661-3694-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-4-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-5-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-6-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-7-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1265644661-3694-7-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-viafb: some virtual_xres handling fixes
+Move wait_vsync() from omap_dss_device to overlay manager.
 
-Do not require the virtual_xres to be aligned as line length is for
-such purposes. Calculate always the smallest line length required.
+This is part of a larger patch-set, which moves the control from omapdss
+driver to the display driver.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/via/viafbdev.c |   12 ++++--------
- 1 files changed, 4 insertions(+), 8 deletions(-)
+ arch/arm/plat-omap/include/plat/display.h |    2 +-
+ drivers/video/omap2/dss/display.c         |   14 --------------
+ drivers/video/omap2/dss/manager.c         |   14 ++++++++++++++
+ drivers/video/omap2/omapfb/omapfb-ioctl.c |    2 +-
+ 4 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index bd8db75..0fe748d 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -107,8 +107,7 @@ static void viafb_update_fix(struct fb_info *info)
+diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
+index 2fd3c10..2308912 100644
+--- a/arch/arm/plat-omap/include/plat/display.h
++++ b/arch/arm/plat-omap/include/plat/display.h
+@@ -370,6 +370,7 @@ struct omap_overlay_manager {
  
- 	info->fix.visual  		bpp = 8 ? FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
--	info->fix.line_length -		((info->var.xres_virtual + 7) & ~7) * bpp / 8;
-+	info->fix.line_length = (info->var.xres_virtual * bpp / 8 + 7) & ~7;
+ 	int (*apply)(struct omap_overlay_manager *mgr);
+ 	int (*wait_for_go)(struct omap_overlay_manager *mgr);
++	int (*wait_for_vsync)(struct omap_overlay_manager *mgr);
+ };
+ 
+ struct omap_dss_device {
+@@ -482,7 +483,6 @@ struct omap_dss_device {
+ 	int (*update)(struct omap_dss_device *dssdev,
+ 			       u16 x, u16 y, u16 w, u16 h);
+ 	int (*sync)(struct omap_dss_device *dssdev);
+-	int (*wait_vsync)(struct omap_dss_device *dssdev);
+ 
+ 	int (*set_update_mode)(struct omap_dss_device *dssdev,
+ 			enum omap_dss_update_mode);
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index 5989afb..987a8ae 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -323,19 +323,6 @@ void default_get_overlay_fifo_thresholds(enum omap_plane plane,
+ 	*fifo_low = fifo_size - burst_size_bytes;
  }
  
- static void viafb_setup_fixinfo(struct fb_fix_screeninfo *fix,
-@@ -148,7 +147,7 @@ static int viafb_check_var(struct fb_var_screeninfo *var,
- 	int htotal, vtotal, depth;
- 	struct VideoModeTable *vmode_entry;
- 	struct viafb_par *ppar = info->par;
--	u32 long_refresh;
-+	u32 long_refresh, line;
+-static int default_wait_vsync(struct omap_dss_device *dssdev)
+-{
+-	unsigned long timeout = msecs_to_jiffies(500);
+-	u32 irq;
+-
+-	if (dssdev->type = OMAP_DISPLAY_TYPE_VENC)
+-		irq = DISPC_IRQ_EVSYNC_ODD;
+-	else
+-		irq = DISPC_IRQ_VSYNC;
+-
+-	return omap_dispc_wait_for_irq_interruptible_timeout(irq, timeout);
+-}
+-
+ static int default_get_recommended_bpp(struct omap_dss_device *dssdev)
+ {
+ 	if (dssdev->panel.recommended_bpp)
+@@ -427,7 +414,6 @@ void dss_init_device(struct platform_device *pdev,
  
- 	DEBUG_MSG(KERN_INFO "viafb_check_var!\n");
- 	/* Sanity check */
-@@ -180,11 +179,8 @@ static int viafb_check_var(struct fb_var_screeninfo *var,
- 		depth = 24;
+ 	dssdev->get_resolution = default_get_resolution;
+ 	dssdev->get_recommended_bpp = default_get_recommended_bpp;
+-	dssdev->wait_vsync = default_wait_vsync;
  
- 	viafb_fill_var_color_info(var, depth);
--	if ((var->xres_virtual * (var->bits_per_pixel >> 3)) & 0x1F)
--		/*32 pixel alignment */
--		var->xres_virtual = (var->xres_virtual + 31) & ~31;
--	if (var->xres_virtual * var->yres_virtual * var->bits_per_pixel / 8 >
--		ppar->memsize)
-+	line = (var->xres_virtual * var->bits_per_pixel / 8 + 7) & ~7;
-+	if (line * var->yres_virtual > ppar->memsize)
- 		return -EINVAL;
+ 	switch (dssdev->type) {
+ 	case OMAP_DISPLAY_TYPE_DPI:
+diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+index 27d9c46..486cd4a 100644
+--- a/drivers/video/omap2/dss/manager.c
++++ b/drivers/video/omap2/dss/manager.c
+@@ -501,6 +501,19 @@ static int omap_dss_unset_device(struct omap_overlay_manager *mgr)
+ 	return 0;
+ }
  
- 	/* Based on var passed in to calculate the refresh,
++static int dss_mgr_wait_for_vsync(struct omap_overlay_manager *mgr)
++{
++	unsigned long timeout = msecs_to_jiffies(500);
++	u32 irq;
++
++	if (mgr->device->type = OMAP_DISPLAY_TYPE_VENC)
++		irq = DISPC_IRQ_EVSYNC_ODD;
++	else
++		irq = DISPC_IRQ_VSYNC;
++
++	return omap_dispc_wait_for_irq_interruptible_timeout(irq, timeout);
++}
++
+ static int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr)
+ {
+ 	unsigned long timeout = msecs_to_jiffies(500);
+@@ -1394,6 +1407,7 @@ int dss_init_overlay_managers(struct platform_device *pdev)
+ 		mgr->set_manager_info = &omap_dss_mgr_set_info;
+ 		mgr->get_manager_info = &omap_dss_mgr_get_info;
+ 		mgr->wait_for_go = &dss_mgr_wait_for_go;
++		mgr->wait_for_vsync = &dss_mgr_wait_for_vsync;
+ 
+ 		mgr->caps = OMAP_DSS_OVL_MGR_CAP_DISPC;
+ 
+diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+index f3c9c80..4e1b0cc 100644
+--- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
++++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+@@ -700,7 +700,7 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
+ 			break;
+ 		}
+ 
+-		r = display->wait_vsync(display);
++		r = display->manager->wait_for_vsync(display->manager);
+ 		break;
+ 
+ 	case OMAPFB_WAITFORGO:
 -- 
-1.6.3.2
+1.6.5
 

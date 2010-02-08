@@ -1,194 +1,309 @@
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Mon, 08 Feb 2010 15:56:07 +0000
-Subject: [PATCH 08/13] OMAP: DSS2: improve DSS clk src selection
-Message-Id: <1265644572-3578-9-git-send-email-tomi.valkeinen@nokia.com>
+Date: Mon, 08 Feb 2010 15:57:35 +0000
+Subject: [PATCH 11/17] OMAP: DSS2: move enable/get_te()
+Message-Id: <1265644661-3694-12-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1265644572-3578-1-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-2-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-3-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-4-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-5-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-6-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-7-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-8-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1265644572-3578-8-git-send-email-tomi.valkeinen@nokia.com>
+References: <1265644661-3694-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-4-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-5-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-6-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-7-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-8-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-9-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-10-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-11-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1265644661-3694-11-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-dss_select_clk_source() was rather confusing. Selecting the source with
-enums is much clearer.
+Move enable/get_te() from omap_dss_device to omap_dss_driver.
 
-The clk source selection is also stored into memory, so that we know what
-is the selected source, even when clocks are off. This is important during
-setup, as we need to what clocks to turn on before the clocks are turned
-on.
+This is part of a larger patch-set, which moves the control from omapdss
+driver to the display driver.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/omap2/dss/dpi.c |    4 +-
- drivers/video/omap2/dss/dsi.c |    9 +++++--
- drivers/video/omap2/dss/dss.c |   42 +++++++++++++++++++++++++++++++---------
- drivers/video/omap2/dss/dss.h |   14 ++++++++++--
- 4 files changed, 51 insertions(+), 18 deletions(-)
+ arch/arm/plat-omap/include/plat/display.h |    5 +--
+ drivers/video/omap2/displays/panel-taal.c |   18 ++++++++++
+ drivers/video/omap2/dss/display.c         |    7 ++--
+ drivers/video/omap2/dss/dsi.c             |   53 ++---------------------------
+ drivers/video/omap2/dss/rfbi.c            |    7 ----
+ drivers/video/omap2/omapfb/omapfb-ioctl.c |    5 ++-
+ drivers/video/omap2/omapfb/omapfb-main.c  |    4 +-
+ 7 files changed, 32 insertions(+), 67 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index 69ce31a..c5091ed 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -57,7 +57,7 @@ static int dpi_set_dsi_clk(bool is_tft, unsigned long pck_req,
+diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
+index 950d781..d9829f1 100644
+--- a/arch/arm/plat-omap/include/plat/display.h
++++ b/arch/arm/plat-omap/include/plat/display.h
+@@ -486,9 +486,6 @@ struct omap_dss_device {
+ 	enum omap_dss_update_mode (*get_update_mode)
+ 		(struct omap_dss_device *dssdev);
+ 
+-	int (*enable_te)(struct omap_dss_device *dssdev, bool enable);
+-	int (*get_te)(struct omap_dss_device *dssdev);
+-
+ 	int (*set_wss)(struct omap_dss_device *dssdev, u32 wss);
+ 	u32 (*get_wss)(struct omap_dss_device *dssdev);
+ 
+@@ -516,6 +513,7 @@ struct omap_dss_driver {
+ 
+ 	int (*enable_te)(struct omap_dss_device *dssdev, bool enable);
+ 	int (*wait_for_te)(struct omap_dss_device *dssdev);
++	int (*get_te)(struct omap_dss_device *dssdev);
+ 
+ 	u8 (*get_rotate)(struct omap_dss_device *dssdev);
+ 	int (*set_rotate)(struct omap_dss_device *dssdev, u8 rotate);
+@@ -570,5 +568,6 @@ int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
+ #define to_dss_device(x) container_of((x), struct omap_dss_device, dev)
+ 
+ void omapdss_dsi_vc_enable_hs(int channel, bool enable);
++int omapdss_dsi_enable_te(struct omap_dss_device *dssdev, bool enable);
+ 
+ #endif
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index e00502e..af4b0b0 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -736,6 +736,8 @@ static int taal_enable_te(struct omap_dss_device *dssdev, bool enable)
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+ 	int r;
+ 
++	dsi_bus_lock();
++
+ 	td->te_enabled = enable;
+ 
+ 	if (enable)
+@@ -743,9 +745,23 @@ static int taal_enable_te(struct omap_dss_device *dssdev, bool enable)
+ 	else
+ 		r = taal_dcs_write_0(DCS_TEAR_OFF);
+ 
++	omapdss_dsi_enable_te(dssdev, enable);
++
++	/* XXX for some reason, DSI TE breaks if we don't wait here.
++	 * Panel bug? Needs more studying */
++	msleep(100);
++
++	dsi_bus_unlock();
++
+ 	return r;
+ }
+ 
++static int taal_get_te(struct omap_dss_device *dssdev)
++{
++	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++	return td->te_enabled;
++}
++
+ static int taal_wait_te(struct omap_dss_device *dssdev)
+ {
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+@@ -993,7 +1009,9 @@ static struct omap_dss_driver taal_driver = {
+ 	.get_recommended_bpp = omapdss_default_get_recommended_bpp,
+ 
+ 	.enable_te	= taal_enable_te,
++	.get_te		= taal_get_te,
+ 	.wait_for_te	= taal_wait_te,
++
+ 	.set_rotate	= taal_rotate,
+ 	.get_rotate	= taal_get_rotate,
+ 	.set_mirror	= taal_mirror,
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index c5fecee..4c40300 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -106,7 +106,8 @@ static ssize_t display_tear_show(struct device *dev,
+ {
+ 	struct omap_dss_device *dssdev = to_dss_device(dev);
+ 	return snprintf(buf, PAGE_SIZE, "%d\n",
+-			dssdev->get_te ? dssdev->get_te(dssdev) : 0);
++			dssdev->driver->get_te ?
++			dssdev->driver->get_te(dssdev) : 0);
+ }
+ 
+ static ssize_t display_tear_store(struct device *dev,
+@@ -116,12 +117,12 @@ static ssize_t display_tear_store(struct device *dev,
+ 	unsigned long te;
+ 	int r;
+ 
+-	if (!dssdev->enable_te || !dssdev->get_te)
++	if (!dssdev->driver->enable_te || !dssdev->driver->get_te)
+ 		return -ENOENT;
+ 
+ 	te = simple_strtoul(buf, NULL, 0);
+ 
+-	r = dssdev->enable_te(dssdev, te);
++	r = dssdev->driver->enable_te(dssdev, te);
  	if (r)
  		return r;
  
--	dss_select_clk_source(0, 1);
-+	dss_select_dispc_clk_source(DSS_SRC_DSI1_PLL_FCLK);
- 
- 	r = dispc_set_clock_div(&dispc_cinfo);
- 	if (r)
-@@ -238,7 +238,7 @@ static void dpi_display_disable(struct omap_dss_device *dssdev)
- 	dispc_enable_lcd_out(0);
- 
- #ifdef CONFIG_OMAP2_DSS_USE_DSI_PLL
--	dss_select_clk_source(0, 0);
-+	dss_select_dispc_clk_source(DSS_SRC_DSS1_ALWON_FCLK);
- 	dsi_pll_uninit();
- 	dss_clk_disable(DSS_CLK_FCK2);
- #endif
 diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 036f422..4fdb628 100644
+index eab45b8..4b885a4 100644
 --- a/drivers/video/omap2/dss/dsi.c
 +++ b/drivers/video/omap2/dss/dsi.c
-@@ -3203,7 +3203,8 @@ static int dsi_display_init_dsi(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err1;
+@@ -2877,20 +2877,6 @@ static int dsi_set_update_mode(struct omap_dss_device *dssdev,
+ 	return r;
+ }
  
--	dss_select_clk_source(true, true);
-+	dss_select_dispc_clk_source(DSS_SRC_DSI1_PLL_FCLK);
-+	dss_select_dsi_clk_source(DSS_SRC_DSI2_PLL_FCLK);
+-static int dsi_set_te(struct omap_dss_device *dssdev, bool enable)
+-{
+-	int r = 0;
+-
+-	if (dssdev->driver->enable_te) {
+-		r = dssdev->driver->enable_te(dssdev, enable);
+-		/* XXX for some reason, DSI TE breaks if we don't wait here.
+-		 * Panel bug? Needs more studying */
+-		msleep(100);
+-	}
+-
+-	return r;
+-}
+-
+ static void dsi_handle_framedone(void)
+ {
+ 	int r;
+@@ -3265,9 +3251,6 @@ static int dsi_display_enable(struct omap_dss_device *dssdev)
+ 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
  
- 	DSSDBG("PLL OK\n");
+ 	dsi.use_ext_te = dssdev->phy.dsi.ext_te;
+-	r = dsi_set_te(dssdev, dsi.te_enabled);
+-	if (r)
+-		goto err4;
  
-@@ -3247,7 +3248,8 @@ err4:
+ 	dsi_set_update_mode(dssdev, dsi.user_update_mode);
+ 
+@@ -3276,9 +3259,6 @@ static int dsi_display_enable(struct omap_dss_device *dssdev)
+ 
+ 	return 0;
+ 
+-err4:
+-
+-	dsi_display_uninit_dsi(dssdev);
  err3:
- 	dsi_complexio_uninit();
+ 	dsi_display_uninit_dispc(dssdev);
  err2:
--	dss_select_clk_source(false, false);
-+	dss_select_dispc_clk_source(DSS_SRC_DSS1_ALWON_FCLK);
-+	dss_select_dsi_clk_source(DSS_SRC_DSS1_ALWON_FCLK);
- err1:
- 	dsi_pll_uninit();
- err0:
-@@ -3259,7 +3261,8 @@ static void dsi_display_uninit_dsi(struct omap_dss_device *dssdev)
- 	if (dssdev->driver->disable)
- 		dssdev->driver->disable(dssdev);
+@@ -3381,10 +3361,6 @@ static int dsi_display_resume(struct omap_dss_device *dssdev)
  
--	dss_select_clk_source(false, false);
-+	dss_select_dispc_clk_source(DSS_SRC_DSS1_ALWON_FCLK);
-+	dss_select_dsi_clk_source(DSS_SRC_DSS1_ALWON_FCLK);
- 	dsi_complexio_uninit();
- 	dsi_pll_uninit();
- }
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 0a26b7d..8254a42 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -68,6 +68,9 @@ static struct {
- 	struct dss_clock_info cache_dss_cinfo;
- 	struct dispc_clock_info cache_dispc_cinfo;
+ 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
  
-+	enum dss_clk_source dsi_clk_source;
-+	enum dss_clk_source dispc_clk_source;
-+
- 	u32		ctx[DSS_SZ_REGS / sizeof(u32)];
- } dss;
+-	r = dsi_set_te(dssdev, dsi.te_enabled);
+-	if (r)
+-		goto err2;
+-
+ 	dsi_set_update_mode(dssdev, dsi.user_update_mode);
  
-@@ -247,23 +250,42 @@ void dss_dump_regs(struct seq_file *s)
- #undef DUMPREG
+ 	dsi_bus_unlock();
+@@ -3502,33 +3478,12 @@ static enum omap_dss_update_mode dsi_display_get_update_mode(
  }
  
--void dss_select_clk_source(bool dsi, bool dispc)
-+void dss_select_dispc_clk_source(enum dss_clk_source clk_src)
-+{
-+	int b;
-+
-+	BUG_ON(clk_src != DSS_SRC_DSI1_PLL_FCLK &&
-+			clk_src != DSS_SRC_DSS1_ALWON_FCLK);
-+
-+	b = clk_src = DSS_SRC_DSS1_ALWON_FCLK ? 0 : 1;
-+
-+	REG_FLD_MOD(DSS_CONTROL, b, 0, 0);	/* DISPC_CLK_SWITCH */
-+
-+	dss.dispc_clk_source = clk_src;
-+}
-+
-+void dss_select_dsi_clk_source(enum dss_clk_source clk_src)
+ 
+-static int dsi_display_enable_te(struct omap_dss_device *dssdev, bool enable)
++int omapdss_dsi_enable_te(struct omap_dss_device *dssdev, bool enable)
  {
--	u32 r;
--	r = dss_read_reg(DSS_CONTROL);
--	r = FLD_MOD(r, dsi, 1, 1);	/* DSI_CLK_SWITCH */
--	r = FLD_MOD(r, dispc, 0, 0);	/* DISPC_CLK_SWITCH */
--	dss_write_reg(DSS_CONTROL, r);
-+	int b;
-+
-+	BUG_ON(clk_src != DSS_SRC_DSI2_PLL_FCLK &&
-+			clk_src != DSS_SRC_DSS1_ALWON_FCLK);
-+
-+	b = clk_src = DSS_SRC_DSS1_ALWON_FCLK ? 0 : 1;
-+
-+	REG_FLD_MOD(DSS_CONTROL, b, 1, 1);	/* DSI_CLK_SWITCH */
-+
-+	dss.dsi_clk_source = clk_src;
+-	int r = 0;
+-
+-	DSSDBGF("%d", enable);
+-
+-	if (!dssdev->driver->enable_te)
+-		return -ENOENT;
+-
+-	dsi_bus_lock();
+-
+ 	dsi.te_enabled = enable;
+-
+-	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
+-		goto end;
+-
+-	r = dsi_set_te(dssdev, enable);
+-end:
+-	dsi_bus_unlock();
+-
+-	return r;
+-}
+-
+-static int dsi_display_get_te(struct omap_dss_device *dssdev)
+-{
+-	return dsi.te_enabled;
++	return 0;
+ }
++EXPORT_SYMBOL(omapdss_dsi_enable_te);
+ 
+ void dsi_get_overlay_fifo_thresholds(enum omap_plane plane,
+ 		u32 fifo_size, enum omap_burst_size *burst_size,
+@@ -3555,8 +3510,6 @@ int dsi_init_display(struct omap_dss_device *dssdev)
+ 	dssdev->sync = dsi_display_sync;
+ 	dssdev->set_update_mode = dsi_display_set_update_mode;
+ 	dssdev->get_update_mode = dsi_display_get_update_mode;
+-	dssdev->enable_te = dsi_display_enable_te;
+-	dssdev->get_te = dsi_display_get_te;
+ 
+ 	/* XXX these should be figured out dynamically */
+ 	dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE |
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 6b9cd76..7129387 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -1232,12 +1232,6 @@ static int rfbi_display_sync(struct omap_dss_device *dssdev)
+ 	return 0;
  }
  
--int dss_get_dsi_clk_source(void)
-+enum dss_clk_source dss_get_dispc_clk_source(void)
+-static int rfbi_display_enable_te(struct omap_dss_device *dssdev, bool enable)
+-{
+-	dssdev->driver->enable_te(dssdev, enable);
+-	return 0;
+-}
+-
+ static int rfbi_display_enable(struct omap_dss_device *dssdev)
  {
--	return FLD_GET(dss_read_reg(DSS_CONTROL), 1, 1);
-+	return dss.dispc_clk_source;
- }
+ 	int r;
+@@ -1299,7 +1293,6 @@ int rfbi_init_display(struct omap_dss_device *dssdev)
+ 	dssdev->disable = rfbi_display_disable;
+ 	dssdev->update = rfbi_display_update;
+ 	dssdev->sync = rfbi_display_sync;
+-	dssdev->enable_te = rfbi_display_enable_te;
  
--int dss_get_dispc_clk_source(void)
-+enum dss_clk_source dss_get_dsi_clk_source(void)
- {
--	return FLD_GET(dss_read_reg(DSS_CONTROL), 0, 0);
-+	return dss.dsi_clk_source;
- }
+ 	rfbi.dssdev[dssdev->phy.rfbi.channel] = dssdev;
  
- /* calculate clock rates using dividers in cinfo */
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 41145af..3713dc6 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -119,6 +119,12 @@ enum dss_clock {
- 	DSS_CLK_96M	= 1 << 4,
- };
+diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+index e18a723..86467f8 100644
+--- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
++++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+@@ -783,12 +783,13 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
+ 			break;
+ 		}
  
-+enum dss_clk_source {
-+	DSS_SRC_DSI1_PLL_FCLK,
-+	DSS_SRC_DSI2_PLL_FCLK,
-+	DSS_SRC_DSS1_ALWON_FCLK,
-+};
-+
- struct dss_clock_info {
- 	/* rates that we get with dividers below */
- 	unsigned long fck;
-@@ -219,9 +225,11 @@ void dss_sdi_init(u8 datapairs);
- int dss_sdi_enable(void);
- void dss_sdi_disable(void);
+-		if (!display->enable_te) {
++		if (!display->driver->enable_te) {
+ 			r = -ENODEV;
+ 			break;
+ 		}
  
--void dss_select_clk_source(bool dsi, bool dispc);
--int dss_get_dsi_clk_source(void);
--int dss_get_dispc_clk_source(void);
-+void dss_select_dispc_clk_source(enum dss_clk_source clk_src);
-+void dss_select_dsi_clk_source(enum dss_clk_source clk_src);
-+enum dss_clk_source dss_get_dispc_clk_source(void);
-+enum dss_clk_source dss_get_dsi_clk_source(void);
-+
- void dss_set_venc_output(enum omap_dss_venc_type type);
- void dss_set_dac_pwrdn_bgz(bool enable);
+-		r = display->enable_te(display, !!p.tearsync_info.enabled);
++		r = display->driver->enable_te(display,
++				!!p.tearsync_info.enabled);
  
+ 		break;
+ 	}
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index f77256f..fff687b 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -2205,8 +2205,8 @@ static int omapfb_probe(struct platform_device *pdev)
+ 				def_display->set_update_mode(def_display,
+ 						OMAP_DSS_UPDATE_AUTO);
+ #else /* MANUAL_UPDATE */
+-			if (def_display->enable_te)
+-				def_display->enable_te(def_display, 0);
++			if (def_display->driver->enable_te)
++				def_display->driver->enable_te(def_display, 0);
+ 			if (def_display->set_update_mode)
+ 				def_display->set_update_mode(def_display,
+ 						OMAP_DSS_UPDATE_MANUAL);
 -- 
 1.6.5
 

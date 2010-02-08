@@ -1,327 +1,165 @@
-From: Bernie Thompson <bernie@plugable.com>
-Date: Mon, 15 Feb 2010 14:46:04 +0000
-Subject: [PATCH 4/10] udlfb: clean up function naming
-Message-Id: <1266245164.4353.3299.camel@bernie-aspireone>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Mon, 08 Feb 2010 15:57:28 +0000
+Subject: [PATCH 04/17] OMAP: DSS2: move memory_read()
+Message-Id: <1265644661-3694-5-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1265644661-3694-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-4-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1265644661-3694-4-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-Move to more consistent naming scheme
+Move memory_read() from omap_dss_device to omap_dss_driver.
 
-All udlfb functions start with udlfb_
-All functions for udlfb's fbdev interface start with udlfb_ops_
-All functinos for udlfb's usb interface start with udlfb_usb_
+This is part of a larger patch-set, which moves the control from omapdss
+driver to the display driver.
 
-Signed-off-by: Bernie Thompson <bernie@plugable.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/staging/udlfb/udlfb.c |  133 +++++++++++++++++++++---------------------
- 1 file changed, 67 insertions(+), 66 deletions(-)
+ arch/arm/plat-omap/include/plat/display.h |    4 ---
+ drivers/video/omap2/displays/panel-taal.c |   13 +++++++++--
+ drivers/video/omap2/dss/dsi.c             |   30 -----------------------------
+ drivers/video/omap2/omapfb/omapfb-ioctl.c |    4 +-
+ 4 files changed, 12 insertions(+), 39 deletions(-)
 
-Index: linux-next/drivers/staging/udlfb/udlfb.c
-=================================--- linux-next.orig/drivers/staging/udlfb/udlfb.c	2010-02-14 20:26:52.000000000 -0800
-+++ linux-next/drivers/staging/udlfb/udlfb.c	2010-02-14 20:26:54.000000000 -0800
-@@ -62,7 +62,7 @@ static void dlfb_free_urb_list(struct dl
-  * Inserts a specific DisplayLink controller command into the provided
-  * buffer.
-  */
--static char *insert_command(char *buf, u8 reg, u8 val)
-+static char *dlfb_set_register(char *buf, u8 reg, u8 val)
- {
- 	*buf++ = 0xAF;
- 	*buf++ = 0x20;
-@@ -71,59 +71,59 @@ static char *insert_command(char *buf, u
- 	return buf;
- }
+diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
+index 7c6413a..37be8bc 100644
+--- a/arch/arm/plat-omap/include/plat/display.h
++++ b/arch/arm/plat-omap/include/plat/display.h
+@@ -498,10 +498,6 @@ struct omap_dss_device {
+ 	bool (*get_mirror)(struct omap_dss_device *dssdev);
+ 	int (*set_mirror)(struct omap_dss_device *dssdev, bool enable);
  
--static char *insert_vidreg_lock(char *buf)
-+static char *dlfb_vidreg_lock(char *buf)
- {
--	return insert_command(buf, 0xFF, 0x00);
-+	return dlfb_set_register(buf, 0xFF, 0x00);
- }
- 
--static char *insert_vidreg_unlock(char *buf)
-+static char *dlfb_vidreg_unlock(char *buf)
- {
--	return insert_command(buf, 0xFF, 0xFF);
-+	return dlfb_set_register(buf, 0xFF, 0xFF);
- }
- 
- /*
-  * Once you send this command, the DisplayLink framebuffer gets driven to the
-  * display.
-  */
--static char *insert_enable_hvsync(char *buf)
-+static char *dlfb_enable_hvsync(char *buf)
- {
--	return insert_command(buf, 0x1F, 0x00);
-+	return dlfb_set_register(buf, 0x1F, 0x00);
- }
- 
--static char *insert_set_color_depth(char *buf, u8 selection)
-+static char *dlfb_set_color_depth(char *buf, u8 selection)
- {
--	return insert_command(buf, 0x00, selection);
-+	return dlfb_set_register(buf, 0x00, selection);
- }
- 
--static char *insert_set_base16bpp(char *wrptr, u32 base)
-+static char *dlfb_set_base16bpp(char *wrptr, u32 base)
- {
- 	/* the base pointer is 16 bits wide, 0x20 is hi byte. */
--	wrptr = insert_command(wrptr, 0x20, base >> 16);
--	wrptr = insert_command(wrptr, 0x21, base >> 8);
--	return insert_command(wrptr, 0x22, base);
-+	wrptr = dlfb_set_register(wrptr, 0x20, base >> 16);
-+	wrptr = dlfb_set_register(wrptr, 0x21, base >> 8);
-+	return dlfb_set_register(wrptr, 0x22, base);
- }
- 
--static char *insert_set_base8bpp(char *wrptr, u32 base)
-+static char *dlfb_set_base8bpp(char *wrptr, u32 base)
- {
--	wrptr = insert_command(wrptr, 0x26, base >> 16);
--	wrptr = insert_command(wrptr, 0x27, base >> 8);
--	return insert_command(wrptr, 0x28, base);
-+	wrptr = dlfb_set_register(wrptr, 0x26, base >> 16);
-+	wrptr = dlfb_set_register(wrptr, 0x27, base >> 8);
-+	return dlfb_set_register(wrptr, 0x28, base);
- }
- 
--static char *insert_command_16(char *wrptr, u8 reg, u16 value)
-+static char *dlfb_set_register_16(char *wrptr, u8 reg, u16 value)
- {
--	wrptr = insert_command(wrptr, reg, value >> 8);
--	return insert_command(wrptr, reg+1, value);
-+	wrptr = dlfb_set_register(wrptr, reg, value >> 8);
-+	return dlfb_set_register(wrptr, reg+1, value);
- }
- 
- /*
-  * This is kind of weird because the controller takes some
-  * register values in a different byte order than other registers.
-  */
--static char *insert_command_16be(char *wrptr, u8 reg, u16 value)
-+static char *dlfb_set_register_16be(char *wrptr, u8 reg, u16 value)
- {
--	wrptr = insert_command(wrptr, reg, value);
--	return insert_command(wrptr, reg+1, value >> 8);
-+	wrptr = dlfb_set_register(wrptr, reg, value);
-+	return dlfb_set_register(wrptr, reg+1, value >> 8);
- }
- 
- /*
-@@ -152,64 +152,65 @@ static u16 lfsr16(u16 actual_count)
-  * This does LFSR conversion on the value that is to be written.
-  * See LFSR explanation above for more detail.
-  */
--static char *insert_command_lfsr16(char *wrptr, u8 reg, u16 value)
-+static char *dlfb_set_register_lfsr16(char *wrptr, u8 reg, u16 value)
- {
--	return insert_command_16(wrptr, reg, lfsr16(value));
-+	return dlfb_set_register_16(wrptr, reg, lfsr16(value));
- }
- 
- /*
-  * This takes a standard fbdev screeninfo struct and all of its monitor mode
-  * details and converts them into the DisplayLink equivalent register commands.
-  */
--static char *insert_set_vid_cmds(char *wrptr, struct fb_var_screeninfo *var)
-+static char *dlfb_set_vid_cmds(char *wrptr, struct fb_var_screeninfo *var)
- {
- 	u16 xds, yds;
- 	u16 xde, yde;
- 	u16 yec;
- 
+-	int (*memory_read)(struct omap_dss_device *dssdev,
+-			void *buf, size_t size,
+-			u16 x, u16 y, u16 w, u16 h);
 -
- 	/* x display start */
- 	xds = var->left_margin + var->hsync_len;
--	wrptr = insert_command_lfsr16(wrptr, 0x01, xds);
-+	wrptr = dlfb_set_register_lfsr16(wrptr, 0x01, xds);
- 	/* x display end */
- 	xde = xds + var->xres;
--	wrptr = insert_command_lfsr16(wrptr, 0x03, xde);
-+	wrptr = dlfb_set_register_lfsr16(wrptr, 0x03, xde);
+ 	int (*set_wss)(struct omap_dss_device *dssdev, u32 wss);
+ 	u32 (*get_wss)(struct omap_dss_device *dssdev);
  
- 	/* y display start */
- 	yds = var->upper_margin + var->vsync_len;
--	wrptr = insert_command_lfsr16(wrptr, 0x05, yds);
-+	wrptr = dlfb_set_register_lfsr16(wrptr, 0x05, yds);
- 	/* y display end */
- 	yde = yds + var->yres;
--	wrptr = insert_command_lfsr16(wrptr, 0x07, yde);
-+	wrptr = dlfb_set_register_lfsr16(wrptr, 0x07, yde);
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index e6d0954..5f78d38 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -847,6 +847,10 @@ static int taal_memory_read(struct omap_dss_device *dssdev,
+ 	int first = 1;
+ 	int plen;
+ 	unsigned buf_used = 0;
++	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++
++	if (!td->enabled)
++		return -ENODEV;
  
- 	/* x end count is active + blanking - 1 */
--	wrptr = insert_command_lfsr16(wrptr, 0x09, xde + var->right_margin - 1);
-+	wrptr = dlfb_set_register_lfsr16(wrptr, 0x09,
-+			xde + var->right_margin - 1);
+ 	if (size < w * h * 3)
+ 		return -ENOMEM;
+@@ -855,6 +859,8 @@ static int taal_memory_read(struct omap_dss_device *dssdev,
+ 			dssdev->panel.timings.x_res *
+ 			dssdev->panel.timings.y_res * 3);
  
- 	/* libdlo hardcodes hsync start to 1 */
--	wrptr = insert_command_lfsr16(wrptr, 0x0B, 1);
-+	wrptr = dlfb_set_register_lfsr16(wrptr, 0x0B, 1);
++	dsi_bus_lock();
++
+ 	/* plen 1 or 2 goes into short packet. until checksum error is fixed,
+ 	 * use short packets. plen 32 works, but bigger packets seem to cause
+ 	 * an error. */
+@@ -863,11 +869,11 @@ static int taal_memory_read(struct omap_dss_device *dssdev,
+ 	else
+ 		plen = 2;
  
- 	/* hsync end is width of sync pulse + 1 */
--	wrptr = insert_command_lfsr16(wrptr, 0x0D, var->hsync_len + 1);
-+	wrptr = dlfb_set_register_lfsr16(wrptr, 0x0D, var->hsync_len + 1);
+-	taal_setup_update(dssdev, x, y, w, h);
++	taal_set_update_window(x, y, w, h);
  
- 	/* hpixels is active pixels */
--	wrptr = insert_command_16(wrptr, 0x0F, var->xres);
-+	wrptr = dlfb_set_register_16(wrptr, 0x0F, var->xres);
+ 	r = dsi_vc_set_max_rx_packet_size(TCH, plen);
+ 	if (r)
+-		return r;
++		goto err0;
  
- 	/* yendcount is vertical active + vertical blanking */
- 	yec = var->yres + var->upper_margin + var->lower_margin +
- 			var->vsync_len;
--	wrptr = insert_command_lfsr16(wrptr, 0x11, yec);
-+	wrptr = dlfb_set_register_lfsr16(wrptr, 0x11, yec);
+ 	while (buf_used < size) {
+ 		u8 dcs_cmd = first ? 0x2e : 0x3e;
+@@ -900,7 +906,8 @@ static int taal_memory_read(struct omap_dss_device *dssdev,
  
- 	/* libdlo hardcodes vsync start to 0 */
--	wrptr = insert_command_lfsr16(wrptr, 0x13, 0);
-+	wrptr = dlfb_set_register_lfsr16(wrptr, 0x13, 0);
- 
- 	/* vsync end is width of vsync pulse */
--	wrptr = insert_command_lfsr16(wrptr, 0x15, var->vsync_len);
-+	wrptr = dlfb_set_register_lfsr16(wrptr, 0x15, var->vsync_len);
- 
- 	/* vpixels is active pixels */
--	wrptr = insert_command_16(wrptr, 0x17, var->yres);
-+	wrptr = dlfb_set_register_16(wrptr, 0x17, var->yres);
- 
- 	/* convert picoseconds to 5kHz multiple for pclk5k = x * 1E12/5k */
--	wrptr = insert_command_16be(wrptr, 0x1B, 200*1000*1000/var->pixclock);
-+	wrptr = dlfb_set_register_16be(wrptr, 0x1B,
-+			200*1000*1000/var->pixclock);
- 
- 	return wrptr;
- }
-@@ -234,16 +235,16 @@ static int dlfb_set_video_mode(struct dl
- 	* controller * associated with the display. There are 2 base
- 	* pointers, currently, we only * use the 16 bpp segment.
- 	*/
--	wrptr = insert_vidreg_lock(buf);
--	wrptr = insert_set_color_depth(wrptr, 0x00);
-+	wrptr = dlfb_vidreg_lock(buf);
-+	wrptr = dlfb_set_color_depth(wrptr, 0x00);
- 	/* set base for 16bpp segment to 0 */
--	wrptr = insert_set_base16bpp(wrptr, 0);
-+	wrptr = dlfb_set_base16bpp(wrptr, 0);
- 	/* set base for 8bpp segment to end of fb */
--	wrptr = insert_set_base8bpp(wrptr, dev->info->fix.smem_len);
-+	wrptr = dlfb_set_base8bpp(wrptr, dev->info->fix.smem_len);
- 
--	wrptr = insert_set_vid_cmds(wrptr, var);
--	wrptr = insert_enable_hvsync(wrptr);
--	wrptr = insert_vidreg_unlock(wrptr);
-+	wrptr = dlfb_set_vid_cmds(wrptr, var);
-+	wrptr = dlfb_enable_hvsync(wrptr);
-+	wrptr = dlfb_vidreg_unlock(wrptr);
- 
- 	writesize = wrptr - buf;
- 
-@@ -284,7 +285,7 @@ static int dlfb_get_var_from_edid(struct
- 	return ret;
- }
- 
--static int dlfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
-+static int dlfb_ops_mmap(struct fb_info *info, struct vm_area_struct *vma)
- {
- 	unsigned long start = vma->vm_start;
- 	unsigned long size = vma->vm_end - vma->vm_start;
-@@ -781,18 +782,18 @@ copyarea(struct dlfb_data *dev_info, int
- 	return 1;
- }
- 
--static void dlfb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
-+static void dlfb_ops_copyarea(struct fb_info *info,
-+			const struct fb_copyarea *area)
- {
+ err:
+ 	dsi_vc_set_max_rx_packet_size(TCH, 1);
 -
- 	struct dlfb_data *dev = info->par;
- 
- 	copyarea(dev, area->dx, area->dy, area->sx, area->sy, area->width,
- 		 area->height);
++err0:
++	dsi_bus_unlock();
+ 	return r;
  }
  
--static void dlfb_imageblit(struct fb_info *info, const struct fb_image *image)
-+static void dlfb_ops_imageblit(struct fb_info *info,
-+			const struct fb_image *image)
- {
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index f7d494e..ecb15d6 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -3582,34 +3582,6 @@ static bool dsi_display_get_mirror(struct omap_dss_device *dssdev)
+ 	return dssdev->driver->get_mirror(dssdev);
+ }
+ 
+-static int dsi_display_memory_read(struct omap_dss_device *dssdev,
+-		void *buf, size_t size,
+-		u16 x, u16 y, u16 w, u16 h)
+-{
+-	int r;
 -
- 	int ret;
- 	struct dlfb_data *dev = info->par;
- 	cfb_imageblit(info, image);
-@@ -801,7 +802,7 @@ static void dlfb_imageblit(struct fb_inf
- 		       info->screen_base);
- }
- 
--static void dlfb_fillrect(struct fb_info *info,
-+static void dlfb_ops_fillrect(struct fb_info *info,
- 			  const struct fb_fillrect *region)
- {
- 
-@@ -817,9 +818,9 @@ static void dlfb_fillrect(struct fb_info
- 
- }
- 
--static int dlfb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
-+static int dlfb_ops_ioctl(struct fb_info *info, unsigned int cmd,
-+			unsigned long arg)
- {
+-	DSSDBGF("");
 -
- 	struct dlfb_data *dev_info = info->par;
- 	struct dloarea *area = NULL;
+-	if (!dssdev->driver->memory_read)
+-		return -EINVAL;
+-
+-	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
+-		return -EIO;
+-
+-	dsi_bus_lock();
+-
+-	r = dssdev->driver->memory_read(dssdev, buf, size,
+-			x, y, w, h);
+-
+-	/* Memory read usually changes the update area. This will
+-	 * force the next update to re-set the update area */
+-	dsi.active_update_region.dirty = true;
+-
+-	dsi_bus_unlock();
+-
+-	return r;
+-}
+-
+ void dsi_get_overlay_fifo_thresholds(enum omap_plane plane,
+ 		u32 fifo_size, enum omap_burst_size *burst_size,
+ 		u32 *fifo_low, u32 *fifo_high)
+@@ -3644,8 +3616,6 @@ int dsi_init_display(struct omap_dss_device *dssdev)
+ 	dssdev->get_mirror = dsi_display_get_mirror;
+ 	dssdev->set_mirror = dsi_display_set_mirror;
  
-@@ -875,7 +876,7 @@ static int dlfb_ioctl(struct fb_info *in
+-	dssdev->memory_read = dsi_display_memory_read;
+-
+ 	/* XXX these should be figured out dynamically */
+ 	dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE |
+ 		OMAP_DSS_DISPLAY_CAP_TEAR_ELIM;
+diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+index b5657be..f3c9c80 100644
+--- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
++++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+@@ -415,7 +415,7 @@ static int omapfb_memory_read(struct fb_info *fbi,
+ 	void *buf;
+ 	int r;
  
- /* taken from vesafb */
- static int
--dlfb_setcolreg(unsigned regno, unsigned red, unsigned green,
-+dlfb_ops_setcolreg(unsigned regno, unsigned red, unsigned green,
- 	       unsigned blue, unsigned transp, struct fb_info *info)
- {
- 	int err = 0;
-@@ -900,7 +901,7 @@ dlfb_setcolreg(unsigned regno, unsigned 
- 	return err;
- }
+-	if (!display || !display->memory_read)
++	if (!display || !display->driver->memory_read)
+ 		return -ENOENT;
  
--static int dlfb_release(struct fb_info *info, int user)
-+static int dlfb_ops_release(struct fb_info *info, int user)
- {
- 	struct dlfb_data *dev_info = info->par;
- 	image_blit(dev_info, 0, 0, info->var.xres, info->var.yres,
-@@ -923,7 +924,7 @@ static void dlfb_delete(struct kref *kre
- 	kfree(dev);
- }
+ 	if (!access_ok(VERIFY_WRITE, mr->buffer, mr->buffer_size))
+@@ -430,7 +430,7 @@ static int omapfb_memory_read(struct fb_info *fbi,
+ 		return -ENOMEM;
+ 	}
  
--static int dlfb_blank(int blank_mode, struct fb_info *info)
-+static int dlfb_ops_blank(int blank_mode, struct fb_info *info)
- {
- 	struct dlfb_data *dev_info = info->par;
- 	char *bufptr = dev_info->buf;
-@@ -942,14 +943,14 @@ static int dlfb_blank(int blank_mode, st
- }
+-	r = display->memory_read(display, buf, mr->buffer_size,
++	r = display->driver->memory_read(display, buf, mr->buffer_size,
+ 			mr->x, mr->y, mr->w, mr->h);
  
- static struct fb_ops dlfb_ops = {
--	.fb_setcolreg = dlfb_setcolreg,
--	.fb_fillrect = dlfb_fillrect,
--	.fb_copyarea = dlfb_copyarea,
--	.fb_imageblit = dlfb_imageblit,
--	.fb_mmap = dlfb_mmap,
--	.fb_ioctl = dlfb_ioctl,
--	.fb_release = dlfb_release,
--	.fb_blank = dlfb_blank,
-+	.fb_setcolreg = dlfb_ops_setcolreg,
-+	.fb_fillrect = dlfb_ops_fillrect,
-+	.fb_copyarea = dlfb_ops_copyarea,
-+	.fb_imageblit = dlfb_ops_imageblit,
-+	.fb_mmap = dlfb_ops_mmap,
-+	.fb_ioctl = dlfb_ops_ioctl,
-+	.fb_release = dlfb_ops_release,
-+	.fb_blank = dlfb_ops_blank,
- };
- 
- /*
-
+ 	if (r > 0) {
+-- 
+1.6.5
 

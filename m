@@ -1,77 +1,50 @@
-From: d binderman <dcb314@hotmail.com>
-Date: Sun, 21 Feb 2010 10:19:38 +0000
-Subject: drivers/video/uvesafb.c: 6 * redundant condition
-Message-Id: <BLU108-W1367923D11AF128D7564D39C440@phx.gbl>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="_445ce773-0122-42a9-8d0c-b5a38e5582ea_"
+From: "Maupin, Chase" <chase.maupin@ti.com>
+Date: Mon, 08 Feb 2010 15:14:36 +0000
+Subject: FW: Requested feedback on FBDev driver design
+Message-Id: <131E5DFBE7373E4C8D813795A6AA7F0802C4E0FF46@dlee06.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
---_445ce773-0122-42a9-8d0c-b5a38e5582ea_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+All,
 
+I am forwarding the below message to this mailing list since the linux-fbdev-devel@lists.sourceforge.net list has been moved here.
 
-Hello there=2C
+Sincerely,
+Chase Maupin
+Software Applications
+Catalog DSP Products
+e-mail: chase.maupin@ti.com
 
-I just ran the sourceforge tool cppcheck over the source code of the
-new Linux kernel 2.6.33-rc8
+For support:
+Forums - http://community.ti.com/forums/
+Wiki - http://wiki.davincidsp.com/
 
-It said
+-----Original Message-----
+From: Maupin, Chase 
+Sent: Monday, February 08, 2010 9:12 AM
+To: 'imre.deak@nokia.com'; 'tomi.valkeinen@nokia.com'; 'linux-fbdev-devel@lists.sourceforge.net'
+Cc: vpss_driver_design@list.ti.com - This list is to discuss the VPSS driver design (May contain non-TIers)
+Subject: Requested feedback on FBDev driver design
 
-[./drivers/video/uvesafb.c:238]: (style) Redundant condition. It is safe to=
- deallocate a NULL pointer
-[./drivers/video/uvesafb.c:1321]: (style) Redundant condition. It is safe t=
-o deallocate a NULL pointer
-[./drivers/video/uvesafb.c:1799]: (style) Redundant condition. It is safe t=
-o deallocate a NULL pointer
-[./drivers/video/uvesafb.c:1822]: (style) Redundant condition. It is safe t=
-o deallocate a NULL pointer
-[./drivers/video/uvesafb.c:1824]: (style) Redundant condition. It is safe t=
-o deallocate a NULL pointer
-[./drivers/video/uvesafb.c:1826]: (style) Redundant condition. It is safe t=
-o deallocate a NULL pointer
+All,
 
+Texas Instruments (TI) is working on the design for the FBDev driver for our next generation system-on-chip (SoC) processor and would like to solicit your feedback.  Our new SoCs have been improved to allow for higher video resolutions and greater frame rates.  To this end the display hardware has been moved to a separate processing block called the video processing subsystem (VPSS).  The VPSS will be running a firmware image that controls the display hardware and services requests from one or more host processors.
 
-I checked the source code and I agree with cppcheck.
-Patch file attached.
+Moving to a remote processor for the processing of graphics output data requires that commands to control the hardware be passed to this processing block using some form of inter-processor communication (IPC).  TI would like to solicit your feedback on proposal for the FBDev driver design to get a feel for whether or not this design would be accepted into the Linux kernel.  To this end we have put together an overview of the design and usage on our wiki at http://wiki.davincidsp.com/index.php/Video_Processing_Subsystem_Driver_Design.  We would greatly appreciate feedback from community members on the acceptability of our driver design.
 
-Regards
+If you have additional questions or need more information please feel free to contact us (we have setup a mailing list at vpss_driver_design@list.ti.com) so we can answer them.
 
-David Binderman
+Sincerely,
+Chase Maupin
+Software Applications
+Catalog DSP Products
+e-mail: chase.maupin@ti.com
+phone: (281) 274-3285
 
- 		 	   		 =20
-_________________________________________________________________
-Do you have a story that started on Hotmail? Tell us now
-http://clk.atdmt.com/UKM/go/195013117/direct/01/=
+For support:
+Forums - http://community.ti.com/forums/
+Wiki - http://wiki.davincidsp.com/
 
---_445ce773-0122-42a9-8d0c-b5a38e5582ea_
-Content-Type: text/x-patch
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="bug34.patch"
-
-ClNpZ25lZC1vZmYtYnk6IERhdmlkIEJpbmRlcm1hbiA8ZGNiMzE0QGhvdG1haWwuY29tPgoKLS0t
-IGRyaXZlcnMvdmlkZW8vdXZlc2FmYi5jLnNhdgkyMDEwLTAyLTIxIDEwOjA4OjI3LjAwMDAwMDAw
-MCArMDAwMAorKysgZHJpdmVycy92aWRlby91dmVzYWZiLmMJMjAxMC0wMi0yMSAxMDowOTozNS4w
-MDAwMDAwMDAgKzAwMDAKQEAgLTIzNSw4ICsyMzUsNyBAQCBvdXQ6CiBzdGF0aWMgdm9pZCB1dmVz
-YWZiX2ZyZWUoc3RydWN0IHV2ZXNhZmJfa3Rhc2sgKnRhc2spCiB7CiAJaWYgKHRhc2spIHsKLQkJ
-aWYgKHRhc2stPmRvbmUpCi0JCQlrZnJlZSh0YXNrLT5kb25lKTsKKwkJa2ZyZWUodGFzay0+ZG9u
-ZSk7CiAJCWtmcmVlKHRhc2spOwogCX0KIH0KQEAgLTEzMTgsOCArMTMxNyw4IEBAIHNldG1vZGU6
-CiAJCQkJRkJfVklTVUFMX1BTRVVET0NPTE9SIDogRkJfVklTVUFMX1RSVUVDT0xPUjsKIAlpbmZv
-LT5maXgubGluZV9sZW5ndGggPSBtb2RlLT5ieXRlc19wZXJfc2Nhbl9saW5lOwogCi1vdXQ6CWlm
-IChjcnRjICE9IE5VTEwpCi0JCWtmcmVlKGNydGMpOworb3V0OgorCWtmcmVlKGNydGMpOwogCXV2
-ZXNhZmJfZnJlZSh0YXNrKTsKIAogCXJldHVybiBlcnI7CkBAIC0xNzk2LDggKzE3OTUsNyBAQCBv
-dXRfbW9kZToKIAlmYl9kZXN0cm95X21vZGVkYihpbmZvLT5tb25zcGVjcy5tb2RlZGIpOwogCWZi
-X2RlYWxsb2NfY21hcCgmaW5mby0+Y21hcCk7CiBvdXQ6Ci0JaWYgKHBhci0+dmJlX21vZGVzKQot
-CQlrZnJlZShwYXItPnZiZV9tb2Rlcyk7CisJa2ZyZWUocGFyLT52YmVfbW9kZXMpOwogCiAJZnJh
-bWVidWZmZXJfcmVsZWFzZShpbmZvKTsKIAlyZXR1cm4gZXJyOwpAQCAtMTgxOSwxMiArMTgxNyw5
-IEBAIHN0YXRpYyBpbnQgdXZlc2FmYl9yZW1vdmUoc3RydWN0IHBsYXRmb3IKIAkJZmJfZGVhbGxv
-Y19jbWFwKCZpbmZvLT5jbWFwKTsKIAogCQlpZiAocGFyKSB7Ci0JCQlpZiAocGFyLT52YmVfbW9k
-ZXMpCi0JCQkJa2ZyZWUocGFyLT52YmVfbW9kZXMpOwotCQkJaWYgKHBhci0+dmJlX3N0YXRlX29y
-aWcpCi0JCQkJa2ZyZWUocGFyLT52YmVfc3RhdGVfb3JpZyk7Ci0JCQlpZiAocGFyLT52YmVfc3Rh
-dGVfc2F2ZWQpCi0JCQkJa2ZyZWUocGFyLT52YmVfc3RhdGVfc2F2ZWQpOworCQkJa2ZyZWUocGFy
-LT52YmVfbW9kZXMpOworCQkJa2ZyZWUocGFyLT52YmVfc3RhdGVfb3JpZyk7CisJCQlrZnJlZShw
-YXItPnZiZV9zdGF0ZV9zYXZlZCk7CiAJCX0KIAogCQlmcmFtZWJ1ZmZlcl9yZWxlYXNlKGluZm8p
-Owo=
-
---_445ce773-0122-42a9-8d0c-b5a38e5582ea_--

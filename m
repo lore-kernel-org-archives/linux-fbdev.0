@@ -1,52 +1,148 @@
-From: Baruch Siach <baruch@tkos.co.il>
-Date: Thu, 11 Feb 2010 06:37:39 +0000
-Subject: [PATCH] imxfb: add support for i.MX25
-Message-Id: <855e977f1f610de9d409602da41ed3e191e7e613.1265869827.git.baruch@tkos.co.il>
+From: Tomi Valkeinen <tomi.valkeinen@NOKIA.COM>
+Date: Mon, 08 Feb 2010 15:57:29 +0000
+Subject: [PATCH 05/17] OMAP: DSS2: move set/get_mirror()
+Message-Id: <1265644661-3694-6-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100210162942.GA15883@pengutronix.de>
-In-Reply-To: <20100210162942.GA15883@pengutronix.de>
+References: <1265644661-3694-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-4-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-5-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1265644661-3694-5-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@NOKIA.COM>
 
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-Acked-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+Move set/get_mirror() from omap_dss_device to omap_dss_driver.
+
+This is part of a larger patch-set, which moves the control from omapdss
+driver to the display driver.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- arch/arm/plat-mxc/Kconfig |    1 +
- drivers/video/Kconfig     |    5 ++++-
- 2 files changed, 5 insertions(+), 1 deletions(-)
+ arch/arm/plat-omap/include/plat/display.h |    3 ---
+ drivers/video/omap2/displays/panel-taal.c |    8 ++++++--
+ drivers/video/omap2/dss/display.c         |    8 ++++----
+ drivers/video/omap2/dss/dsi.c             |   25 -------------------------
+ 4 files changed, 10 insertions(+), 34 deletions(-)
 
-diff --git a/arch/arm/plat-mxc/Kconfig b/arch/arm/plat-mxc/Kconfig
-index 8b0a1ee..2a049df 100644
---- a/arch/arm/plat-mxc/Kconfig
-+++ b/arch/arm/plat-mxc/Kconfig
-@@ -24,6 +24,7 @@ config ARCH_MX25
- 	bool "MX25-based"
- 	select CPU_ARM926T
- 	select COMMON_CLKDEV
-+	select HAVE_FB_IMX
- 	help
- 	  This enables support for systems based on the Freescale i.MX25 family
-=20
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 5a5c303..83d40ed 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -400,9 +400,12 @@ config FB_SA1100
- 	  If you plan to use the LCD display with your SA-1100 system, say
- 	  Y here.
-=20
-+config HAVE_FB_IMX
-+	bool
-+
- config FB_IMX
- 	tristate "Motorola i.MX LCD support"
--	depends on FB && (ARCH_MX1 || ARCH_MX2)
-+	depends on FB && (HAVE_FB_IMX || ARCH_MX1 || ARCH_MX2)
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
---=20
-1.6.6.1
+diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
+index 37be8bc..4730e71 100644
+--- a/arch/arm/plat-omap/include/plat/display.h
++++ b/arch/arm/plat-omap/include/plat/display.h
+@@ -495,9 +495,6 @@ struct omap_dss_device {
+ 	u8 (*get_rotate)(struct omap_dss_device *dssdev);
+ 	int (*set_rotate)(struct omap_dss_device *dssdev, u8 rotate);
+ 
+-	bool (*get_mirror)(struct omap_dss_device *dssdev);
+-	int (*set_mirror)(struct omap_dss_device *dssdev, bool enable);
+-
+ 	int (*set_wss)(struct omap_dss_device *dssdev, u32 wss);
+ 	u32 (*get_wss)(struct omap_dss_device *dssdev);
+ 
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 5f78d38..4d64449 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -797,16 +797,20 @@ static int taal_mirror(struct omap_dss_device *dssdev, bool enable)
+ 
+ 	dev_dbg(&dssdev->dev, "mirror %d\n", enable);
+ 
++	dsi_bus_lock();
+ 	if (td->enabled) {
+ 		r = taal_set_addr_mode(td->rotate, enable);
+-
+ 		if (r)
+-			return r;
++			goto err;
+ 	}
+ 
+ 	td->mirror = enable;
+ 
++	dsi_bus_unlock();
+ 	return 0;
++err:
++	dsi_bus_unlock();
++	return r;
+ }
+ 
+ static bool taal_get_mirror(struct omap_dss_device *dssdev)
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index 3b92b84..ec82f5a 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -215,9 +215,9 @@ static ssize_t display_mirror_show(struct device *dev,
+ {
+ 	struct omap_dss_device *dssdev = to_dss_device(dev);
+ 	int mirror;
+-	if (!dssdev->get_mirror)
++	if (!dssdev->driver->get_mirror)
+ 		return -ENOENT;
+-	mirror = dssdev->get_mirror(dssdev);
++	mirror = dssdev->driver->get_mirror(dssdev);
+ 	return snprintf(buf, PAGE_SIZE, "%u\n", mirror);
+ }
+ 
+@@ -228,12 +228,12 @@ static ssize_t display_mirror_store(struct device *dev,
+ 	unsigned long mirror;
+ 	int r;
+ 
+-	if (!dssdev->set_mirror || !dssdev->get_mirror)
++	if (!dssdev->driver->set_mirror || !dssdev->driver->get_mirror)
+ 		return -ENOENT;
+ 
+ 	mirror = simple_strtoul(buf, NULL, 0);
+ 
+-	r = dssdev->set_mirror(dssdev, mirror);
++	r = dssdev->driver->set_mirror(dssdev, mirror);
+ 	if (r)
+ 		return r;
+ 
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index ecb15d6..8f4f28d 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -3560,28 +3560,6 @@ static u8 dsi_display_get_rotate(struct omap_dss_device *dssdev)
+ 	return dssdev->driver->get_rotate(dssdev);
+ }
+ 
+-static int dsi_display_set_mirror(struct omap_dss_device *dssdev, bool mirror)
+-{
+-	DSSDBGF("%d", mirror);
+-
+-	if (!dssdev->driver->set_mirror || !dssdev->driver->get_mirror)
+-		return -EINVAL;
+-
+-	dsi_bus_lock();
+-	dssdev->driver->set_mirror(dssdev, mirror);
+-	dsi_bus_unlock();
+-
+-	return 0;
+-}
+-
+-static bool dsi_display_get_mirror(struct omap_dss_device *dssdev)
+-{
+-	if (!dssdev->driver->set_mirror || !dssdev->driver->get_mirror)
+-		return 0;
+-
+-	return dssdev->driver->get_mirror(dssdev);
+-}
+-
+ void dsi_get_overlay_fifo_thresholds(enum omap_plane plane,
+ 		u32 fifo_size, enum omap_burst_size *burst_size,
+ 		u32 *fifo_low, u32 *fifo_high)
+@@ -3613,9 +3591,6 @@ int dsi_init_display(struct omap_dss_device *dssdev)
+ 	dssdev->get_rotate = dsi_display_get_rotate;
+ 	dssdev->set_rotate = dsi_display_set_rotate;
+ 
+-	dssdev->get_mirror = dsi_display_get_mirror;
+-	dssdev->set_mirror = dsi_display_set_mirror;
+-
+ 	/* XXX these should be figured out dynamically */
+ 	dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE |
+ 		OMAP_DSS_DISPLAY_CAP_TEAR_ELIM;
+-- 
+1.6.5
 

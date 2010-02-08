@@ -1,55 +1,60 @@
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Wed, 17 Feb 2010 11:57:18 +0000
-Subject: [PATCH 3/4] OMAP: DSS2: OMAPFB: fix dssdev cleanup on error
-Message-Id: <1266407839-14713-3-git-send-email-tomi.valkeinen@nokia.com>
+Date: Mon, 08 Feb 2010 15:56:05 +0000
+Subject: [PATCH 06/13] OMAP: DSS2: fix irq-stats compilation
+Message-Id: <1265644572-3578-7-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1266407839-14713-1-git-send-email-tomi.valkeinen@nokia.com>
- <1266407839-14713-2-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1266407839-14713-2-git-send-email-tomi.valkeinen@nokia.com>
+References: <1265644572-3578-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-4-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-5-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-6-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1265644572-3578-6-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-If there was a dss device without a driver and thus omapfb probe failed,
-ref counts could be left to dss devices.
+Fix compilation of the CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS feature.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/core.c  |    4 +++-
+ drivers/video/omap2/dss/dispc.c |    2 --
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index d17caef..973bf79 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -2111,18 +2111,23 @@ static int omapfb_probe(struct platform_device *pdev)
- 	fbdev->dev = &pdev->dev;
- 	platform_set_drvdata(pdev, fbdev);
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 791e1cb..5939da9 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -446,10 +446,12 @@ static int dss_initialize_debugfs(void)
+ 	debugfs_create_file("clk", S_IRUGO, dss_debugfs_dir,
+ 			&dss_debug_dump_clocks, &dss_debug_fops);
  
-+	r = 0;
- 	fbdev->num_displays = 0;
- 	dssdev = NULL;
- 	for_each_dss_dev(dssdev) {
- 		omap_dss_get_device(dssdev);
-+
- 		if (!dssdev->driver) {
- 			dev_err(&pdev->dev, "no driver for display\n");
--			r = -EINVAL;
--			goto cleanup;
-+			r = -ENODEV;
- 		}
-+
- 		fbdev->displays[fbdev->num_displays++] = dssdev;
- 	}
++#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
+ 	debugfs_create_file("dispc_irq", S_IRUGO, dss_debugfs_dir,
+ 			&dispc_dump_irqs, &dss_debug_fops);
++#endif
  
-+	if (r)
-+		goto cleanup;
-+
- 	if (fbdev->num_displays = 0) {
- 		dev_err(&pdev->dev, "no displays\n");
- 		r = -EINVAL;
+-#ifdef CONFIG_OMAP2_DSS_DSI
++#if defined(CONFIG_OMAP2_DSS_DSI) && defined(CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS)
+ 	debugfs_create_file("dsi_irq", S_IRUGO, dss_debugfs_dir,
+ 			&dsi_dump_irqs, &dss_debug_fops);
+ #endif
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index de8bfba..7781c65 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2301,8 +2301,6 @@ void dispc_dump_irqs(struct seq_file *s)
+ 	PIS(WAKEUP);
+ #undef PIS
+ }
+-#else
+-void dispc_dump_irqs(struct seq_file *s) { }
+ #endif
+ 
+ void dispc_dump_regs(struct seq_file *s)
 -- 
 1.6.5
 

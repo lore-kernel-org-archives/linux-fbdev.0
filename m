@@ -1,142 +1,158 @@
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Mon, 08 Feb 2010 15:56:11 +0000
-Subject: [PATCH 12/13] OMAP: DSS2: DSI: configure all DSI VCs
-Message-Id: <1265644572-3578-13-git-send-email-tomi.valkeinen@nokia.com>
+Date: Mon, 08 Feb 2010 15:57:30 +0000
+Subject: [PATCH 06/17] OMAP: DSS2: move get/set_rotate()
+Message-Id: <1265644661-3694-7-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1265644572-3578-1-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-2-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-3-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-4-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-5-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-6-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-7-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-8-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-9-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-10-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-11-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-12-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1265644572-3578-12-git-send-email-tomi.valkeinen@nokia.com>
+References: <1265644661-3694-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-4-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-5-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-6-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1265644661-3694-6-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-Instead of configuring only VC0 to be usable, configure all four VCs
-similarly. This is needed to utilize the other VCs.
+Move get/set_rotate() from omap_dss_device to omap_dss_driver.
 
-Setting the FIFO sizes evenly for all VCs, regardless of how many VCs are
-actually used, is not optimal. However, this affects only cases when
-larger amounts of data are written or read via L4, meaning that normal use
-cases are not affected.
-
-At some point this could be optimized better to suit different use cases.
+This is part of a larger patch-set, which moves the control from omapdss
+driver to the display driver.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/omap2/dss/dsi.c |   39 +++++++++++++++++----------------------
- 1 files changed, 17 insertions(+), 22 deletions(-)
+ arch/arm/plat-omap/include/plat/display.h |    3 --
+ drivers/video/omap2/displays/panel-taal.c |    9 ++++++-
+ drivers/video/omap2/dss/display.c         |    8 +++---
+ drivers/video/omap2/dss/dsi.c             |   33 -----------------------------
+ 4 files changed, 11 insertions(+), 42 deletions(-)
 
+diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
+index 4730e71..2fd3c10 100644
+--- a/arch/arm/plat-omap/include/plat/display.h
++++ b/arch/arm/plat-omap/include/plat/display.h
+@@ -492,9 +492,6 @@ struct omap_dss_device {
+ 	int (*enable_te)(struct omap_dss_device *dssdev, bool enable);
+ 	int (*get_te)(struct omap_dss_device *dssdev);
+ 
+-	u8 (*get_rotate)(struct omap_dss_device *dssdev);
+-	int (*set_rotate)(struct omap_dss_device *dssdev, u8 rotate);
+-
+ 	int (*set_wss)(struct omap_dss_device *dssdev, u32 wss);
+ 	u32 (*get_wss)(struct omap_dss_device *dssdev);
+ 
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 4d64449..8f90de0 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -772,16 +772,21 @@ static int taal_rotate(struct omap_dss_device *dssdev, u8 rotate)
+ 
+ 	dev_dbg(&dssdev->dev, "rotate %d\n", rotate);
+ 
++	dsi_bus_lock();
++
+ 	if (td->enabled) {
+ 		r = taal_set_addr_mode(rotate, td->mirror);
+-
+ 		if (r)
+-			return r;
++			goto err;
+ 	}
+ 
+ 	td->rotate = rotate;
+ 
++	dsi_bus_unlock();
+ 	return 0;
++err:
++	dsi_bus_unlock();
++	return r;
+ }
+ 
+ static u8 taal_get_rotate(struct omap_dss_device *dssdev)
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index ec82f5a..5989afb 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -185,9 +185,9 @@ static ssize_t display_rotate_show(struct device *dev,
+ {
+ 	struct omap_dss_device *dssdev = to_dss_device(dev);
+ 	int rotate;
+-	if (!dssdev->get_rotate)
++	if (!dssdev->driver->get_rotate)
+ 		return -ENOENT;
+-	rotate = dssdev->get_rotate(dssdev);
++	rotate = dssdev->driver->get_rotate(dssdev);
+ 	return snprintf(buf, PAGE_SIZE, "%u\n", rotate);
+ }
+ 
+@@ -198,12 +198,12 @@ static ssize_t display_rotate_store(struct device *dev,
+ 	unsigned long rot;
+ 	int r;
+ 
+-	if (!dssdev->set_rotate || !dssdev->get_rotate)
++	if (!dssdev->driver->set_rotate || !dssdev->driver->get_rotate)
+ 		return -ENOENT;
+ 
+ 	rot = simple_strtoul(buf, NULL, 0);
+ 
+-	r = dssdev->set_rotate(dssdev, rot);
++	r = dssdev->driver->set_rotate(dssdev, rot);
+ 	if (r)
+ 		return r;
+ 
 diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index e003fe9..131bd53 100644
+index 8f4f28d..8d6a436 100644
 --- a/drivers/video/omap2/dss/dsi.c
 +++ b/drivers/video/omap2/dss/dsi.c
-@@ -224,7 +224,6 @@ static struct
- 		enum dsi_vc_mode mode;
- 		struct omap_dss_device *dssdev;
- 		enum fifo_size fifo_size;
--		int dest_per;	/* destination peripheral 0-3 */
- 	} vc[4];
- 
- 	struct mutex lock;
-@@ -2020,8 +2019,7 @@ static inline void dsi_vc_write_long_header(int channel, u8 data_type,
- 
- 	WARN_ON(!dsi_bus_is_locked());
- 
--	/*data_id = data_type | channel << 6; */
--	data_id = data_type | dsi.vc[channel].dest_per << 6;
-+	data_id = data_type | channel << 6;
- 
- 	val = FLD_VAL(data_id, 7, 0) | FLD_VAL(len, 23, 8) |
- 		FLD_VAL(ecc, 31, 24);
-@@ -2127,7 +2125,7 @@ static int dsi_vc_send_short(int channel, u8 data_type, u16 data, u8 ecc)
- 		return -EINVAL;
- 	}
- 
--	data_id = data_type | dsi.vc[channel].dest_per << 6;
-+	data_id = data_type | channel << 6;
- 
- 	r = (data_id << 0) | (data << 8) | (ecc << 24);
- 
-@@ -2529,15 +2527,15 @@ static int dsi_proto_config(struct omap_dss_device *dssdev)
- 	u32 r;
- 	int buswidth = 0;
- 
--	dsi_config_tx_fifo(DSI_FIFO_SIZE_128,
--			DSI_FIFO_SIZE_0,
--			DSI_FIFO_SIZE_0,
--			DSI_FIFO_SIZE_0);
-+	dsi_config_tx_fifo(DSI_FIFO_SIZE_32,
-+			DSI_FIFO_SIZE_32,
-+			DSI_FIFO_SIZE_32,
-+			DSI_FIFO_SIZE_32);
- 
--	dsi_config_rx_fifo(DSI_FIFO_SIZE_128,
--			DSI_FIFO_SIZE_0,
--			DSI_FIFO_SIZE_0,
--			DSI_FIFO_SIZE_0);
-+	dsi_config_rx_fifo(DSI_FIFO_SIZE_32,
-+			DSI_FIFO_SIZE_32,
-+			DSI_FIFO_SIZE_32,
-+			DSI_FIFO_SIZE_32);
- 
- 	/* XXX what values for the timeouts? */
- 	dsi_set_stop_state_counter(1000);
-@@ -2575,12 +2573,9 @@ static int dsi_proto_config(struct omap_dss_device *dssdev)
- 	dsi_write_reg(DSI_CTRL, r);
- 
- 	dsi_vc_initial_config(0);
--
--	/* set all vc targets to peripheral 0 */
--	dsi.vc[0].dest_per = 0;
--	dsi.vc[1].dest_per = 0;
--	dsi.vc[2].dest_per = 0;
--	dsi.vc[3].dest_per = 0;
-+	dsi_vc_initial_config(1);
-+	dsi_vc_initial_config(2);
-+	dsi_vc_initial_config(3);
- 
- 	return 0;
+@@ -3530,36 +3530,6 @@ static int dsi_display_get_te(struct omap_dss_device *dssdev)
+ 	return dsi.te_enabled;
  }
-@@ -2846,9 +2841,6 @@ static void dsi_update_screen_dispc(struct omap_dss_device *dssdev,
- 	if (bytespf % packet_payload)
- 		total_len += (bytespf % packet_payload) + 1;
  
--	if (0)
--		dsi_vc_print_status(1);
+-static int dsi_display_set_rotate(struct omap_dss_device *dssdev, u8 rotate)
+-{
 -
- 	l = FLD_VAL(total_len, 23, 0); /* TE_SIZE */
- 	dsi_write_reg(DSI_VC_TE(channel), l);
+-	DSSDBGF("%d", rotate);
+-
+-	if (!dssdev->driver->set_rotate || !dssdev->driver->get_rotate)
+-		return -EINVAL;
+-
+-	dsi_bus_lock();
+-	dssdev->driver->set_rotate(dssdev, rotate);
+-	if (dsi.update_mode = OMAP_DSS_UPDATE_AUTO) {
+-		u16 w, h;
+-		/* the display dimensions may have changed, so set a new
+-		 * update region */
+-		dssdev->get_resolution(dssdev, &w, &h);
+-		dsi_set_update_region(dssdev, 0, 0, w, h);
+-	}
+-	dsi_bus_unlock();
+-
+-	return 0;
+-}
+-
+-static u8 dsi_display_get_rotate(struct omap_dss_device *dssdev)
+-{
+-	if (!dssdev->driver->set_rotate || !dssdev->driver->get_rotate)
+-		return 0;
+-
+-	return dssdev->driver->get_rotate(dssdev);
+-}
+-
+ void dsi_get_overlay_fifo_thresholds(enum omap_plane plane,
+ 		u32 fifo_size, enum omap_burst_size *burst_size,
+ 		u32 *fifo_low, u32 *fifo_high)
+@@ -3588,9 +3558,6 @@ int dsi_init_display(struct omap_dss_device *dssdev)
+ 	dssdev->enable_te = dsi_display_enable_te;
+ 	dssdev->get_te = dsi_display_get_te;
  
-@@ -3014,7 +3006,7 @@ static void dsi_handle_framedone(void)
- 	/* RX_FIFO_NOT_EMPTY */
- 	if (REG_GET(DSI_VC_CTRL(channel), 20, 20)) {
- 		DSSERR("Received error during frame transfer:\n");
--		dsi_vc_flush_receive_data(0);
-+		dsi_vc_flush_receive_data(channel);
- 	}
- 
- #ifdef CONFIG_OMAP2_DSS_FAKE_VSYNC
-@@ -3268,6 +3260,9 @@ static int dsi_display_init_dsi(struct omap_dss_device *dssdev)
- 
- 	/* enable interface */
- 	dsi_vc_enable(0, 1);
-+	dsi_vc_enable(1, 1);
-+	dsi_vc_enable(2, 1);
-+	dsi_vc_enable(3, 1);
- 	dsi_if_enable(1);
- 	dsi_force_tx_stop_mode_io();
- 
+-	dssdev->get_rotate = dsi_display_get_rotate;
+-	dssdev->set_rotate = dsi_display_set_rotate;
+-
+ 	/* XXX these should be figured out dynamically */
+ 	dssdev->caps = OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE |
+ 		OMAP_DSS_DISPLAY_CAP_TEAR_ELIM;
 -- 
 1.6.5
 

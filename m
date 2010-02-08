@@ -1,51 +1,54 @@
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Mon, 08 Feb 2010 15:55:59 +0000
-Subject: [PATCH 00/13] OMAP DSS2 patches
-Message-Id: <1265644572-3578-1-git-send-email-tomi.valkeinen@nokia.com>
+Date: Mon, 08 Feb 2010 15:56:02 +0000
+Subject: [PATCH 03/13] OMAP: DSS: Taal: fix error returns in taal_probe()
+Message-Id: <1265644572-3578-4-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1265644572-3578-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-3-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1265644572-3578-3-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: Aaro Koskinen <aaro.koskinen@nokia.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-Here are some smallish patches for DSS2 for review. Some fixes, couple of new
-ioctls, and DSI changes.
+From: Aaro Koskinen <aaro.koskinen@nokia.com>
 
-They can also be found from
-http://gitorious.org/linux-omap-dss2/linux master branch
+The workqueue creation error branch attempted to destroy a NULL wq,
+and, in turn, a failed registration does not destroy the newly created
+workqueue.
 
-Aaro Koskinen (1):
-  OMAP: DSS: Taal: fix error returns in taal_probe()
+The problem was reported by a static analysis tool.
 
-Tomi Valkeinen (12):
-  OMAP: DSS2: enable VDDS_DSI when using DPI
-  OMAP: 3430SDP: remove vdvi regulator
-  OMAP: DSS2: OMAPFB: implement OMAPFB_RESERVE_BUFFER
-  OMAP: DSS2: OMAPFB: implement OMAPFB_GET_DISPLAY_INFO
-  OMAP: DSS2: fix irq-stats compilation
-  OMAP: DSS2: OMAPFB: Add omapfb_update_window prototype
-  OMAP: DSS2: improve DSS clk src selection
-  OMAP: DSS2: DSI: add dsi_bus_is_locked()
-  OMAP: DSS2: DSI: add helpers for DCS read/write
-  OMAP: DSS2: DSI: export dsi_vc_enable_hs()
-  OMAP: DSS2: DSI: configure all DSI VCs
-  OMAP: DSS2: DSI: remove dsi_vc_print_status()
+Signed-off-by: Aaro Koskinen <aaro.koskinen@nokia.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ drivers/video/omap2/displays/panel-taal.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
- arch/arm/mach-omap2/board-3430sdp.c                |    4 -
- arch/arm/plat-omap/include/plat/display.h          |    5 +
- .../video/omap2/displays/panel-sharp-ls037v7dw01.c |   35 ------
- drivers/video/omap2/displays/panel-taal.c          |    4 +-
- drivers/video/omap2/dss/core.c                     |   70 ++++++++++-
- drivers/video/omap2/dss/dispc.c                    |    2 -
- drivers/video/omap2/dss/dpi.c                      |   59 +++++++--
- drivers/video/omap2/dss/dsi.c                      |  129 +++++++++++---------
- drivers/video/omap2/dss/dss.c                      |   42 +++++--
- drivers/video/omap2/dss/dss.h                      |   19 +++-
- drivers/video/omap2/dss/venc.c                     |    4 +-
- drivers/video/omap2/omapfb/omapfb-ioctl.c          |   71 +++++++++++
- drivers/video/omap2/omapfb/omapfb-sysfs.c          |   13 ++-
- drivers/video/omap2/omapfb/omapfb.h                |    3 +
- include/linux/omapfb.h                             |   19 +++
- 15 files changed, 347 insertions(+), 132 deletions(-)
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 1f01dfc..0aaaa8a 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -510,7 +510,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 	if (td->esd_wq = NULL) {
+ 		dev_err(&dssdev->dev, "can't create ESD workqueue\n");
+ 		r = -ENOMEM;
+-		goto err2;
++		goto err1;
+ 	}
+ 	INIT_DELAYED_WORK_DEFERRABLE(&td->esd_work, taal_esd_work);
+ 
+@@ -528,7 +528,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 			&taal_bl_ops);
+ 	if (IS_ERR(bldev)) {
+ 		r = PTR_ERR(bldev);
+-		goto err1;
++		goto err2;
+ 	}
+ 
+ 	td->bldev = bldev;
+-- 
+1.6.5
 

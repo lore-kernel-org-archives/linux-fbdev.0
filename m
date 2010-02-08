@@ -1,146 +1,118 @@
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Mon, 08 Feb 2010 15:57:26 +0000
-Subject: [PATCH 02/17] OMAP: DSS2: DSI: remove auto-update perf measurement
-Message-Id: <1265644661-3694-3-git-send-email-tomi.valkeinen@nokia.com>
+Date: Mon, 08 Feb 2010 15:57:41 +0000
+Subject: [PATCH 17/17] OMAP: DSS2: DSI: Add VC support for update
+Message-Id: <1265644661-3694-18-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1265644661-3694-1-git-send-email-tomi.valkeinen@nokia.com>
  <1265644661-3694-2-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1265644661-3694-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-4-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-5-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-6-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-7-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-8-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-9-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-10-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-11-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-12-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-13-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-14-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-15-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-16-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644661-3694-17-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1265644661-3694-17-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-Remove performance measurement for auto-update. Auto-update and thus
-performance measurement cannot be supported after the driver change where
-the control is moved to display drivers.
-
-This is part of a larger patch-set, which moves the control from omapdss
-driver to the display driver.
+Update was hardcoded to use virtual channel 0. This patch adds a parameter
+that specifies the VC.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/omap2/dss/dsi.c |   81 +++++------------------------------------
- 1 files changed, 9 insertions(+), 72 deletions(-)
+ arch/arm/plat-omap/include/plat/display.h |    1 +
+ drivers/video/omap2/dss/dsi.c             |   13 +++++++++----
+ 2 files changed, 10 insertions(+), 4 deletions(-)
 
+diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
+index ccf35a8..cd7b769 100644
+--- a/arch/arm/plat-omap/include/plat/display.h
++++ b/arch/arm/plat-omap/include/plat/display.h
+@@ -564,6 +564,7 @@ int omapdss_dsi_enable_te(struct omap_dss_device *dssdev, bool enable);
+ int omap_dsi_prepare_update(struct omap_dss_device *dssdev,
+ 				    u16 *x, u16 *y, u16 *w, u16 *h);
+ int omap_dsi_update(struct omap_dss_device *dssdev,
++		int channel,
+ 		u16 x, u16 y, u16 w, u16 h,
+ 		void (*callback)(int, void *), void *data);
+ 
 diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 74df72b..a6ea8c8 100644
+index 79d27de..624d53e 100644
 --- a/drivers/video/omap2/dss/dsi.c
 +++ b/drivers/video/omap2/dss/dsi.c
-@@ -261,8 +261,6 @@ static struct
- #ifdef DEBUG
- 	ktime_t perf_setup_time;
- 	ktime_t perf_start_time;
--	ktime_t perf_start_time_auto;
--	int perf_measure_frames;
- #endif
- 	int debug_read;
- 	int debug_write;
-@@ -338,12 +336,6 @@ static void dsi_perf_mark_start(void)
- 	dsi.perf_start_time = ktime_get();
- }
+@@ -233,6 +233,7 @@ static struct
  
--static void dsi_perf_mark_start_auto(void)
--{
--	dsi.perf_measure_frames = 0;
--	dsi.perf_start_time_auto = ktime_get();
--}
--
- static void dsi_perf_show(const char *name)
+ 	struct completion bta_completion;
+ 
++	int update_channel;
+ 	struct dsi_update_region update_region;
+ 
+ 	bool te_enabled;
+@@ -2721,7 +2722,7 @@ static void dsi_update_screen_dispc(struct omap_dss_device *dssdev,
+ 	unsigned packet_len;
+ 	u32 l;
+ 	bool use_te_trigger;
+-	const unsigned channel = 0;
++	const unsigned channel = dsi.update_channel;
+ 	/* line buffer is 1024 x 24bits */
+ 	/* XXX: for some reason using full buffer size causes considerable TX
+ 	 * slowdown with update sizes that fill the whole buffer */
+@@ -2732,6 +2733,8 @@ static void dsi_update_screen_dispc(struct omap_dss_device *dssdev,
+ 	DSSDBG("dsi_update_screen_dispc(%d,%d %dx%d)\n",
+ 			x, y, w, h);
+ 
++	dsi_vc_config_vp(channel);
++
+ 	bytespp	= dssdev->ctrl.pixel_size / 8;
+ 	bytespl = w * bytespp;
+ 	bytespf = bytespl * h;
+@@ -2799,7 +2802,7 @@ static void dsi_te_timeout(unsigned long arg)
+ static void dsi_framedone_timeout_work_callback(struct work_struct *work)
  {
- 	ktime_t t, setup_time, trans_time;
-@@ -374,72 +366,19 @@ static void dsi_perf_show(const char *name)
- 		dsi.active_update_region.h *
- 		dsi.active_update_region.device->ctrl.pixel_size / 8;
+ 	int r;
+-	const int channel = 0;
++	const int channel = dsi.update_channel;
+ 	bool use_te_trigger;
  
--	if (dsi.update_mode = OMAP_DSS_UPDATE_AUTO) {
--		static u32 s_total_trans_us, s_total_setup_us;
--		static u32 s_min_trans_us = 0xffffffff, s_min_setup_us;
--		static u32 s_max_trans_us, s_max_setup_us;
--		const int numframes = 100;
--		ktime_t total_time_auto;
--		u32 total_time_auto_us;
--
--		dsi.perf_measure_frames++;
--
--		if (setup_us < s_min_setup_us)
--			s_min_setup_us = setup_us;
--
--		if (setup_us > s_max_setup_us)
--			s_max_setup_us = setup_us;
--
--		s_total_setup_us += setup_us;
--
--		if (trans_us < s_min_trans_us)
--			s_min_trans_us = trans_us;
--
--		if (trans_us > s_max_trans_us)
--			s_max_trans_us = trans_us;
--
--		s_total_trans_us += trans_us;
--
--		if (dsi.perf_measure_frames < numframes)
--			return;
--
--		total_time_auto = ktime_sub(t, dsi.perf_start_time_auto);
--		total_time_auto_us = (u32)ktime_to_us(total_time_auto);
--
--		printk(KERN_INFO "DSI(%s): %u fps, setup %u/%u/%u, "
--				"trans %u/%u/%u\n",
--				name,
--				1000 * 1000 * numframes / total_time_auto_us,
--				s_min_setup_us,
--				s_max_setup_us,
--				s_total_setup_us / numframes,
--				s_min_trans_us,
--				s_max_trans_us,
--				s_total_trans_us / numframes);
--
--		s_total_setup_us = 0;
--		s_min_setup_us = 0xffffffff;
--		s_max_setup_us = 0;
--		s_total_trans_us = 0;
--		s_min_trans_us = 0xffffffff;
--		s_max_trans_us = 0;
--		dsi_perf_mark_start_auto();
--	} else {
--		printk(KERN_INFO "DSI(%s): %u us + %u us = %u us (%uHz), "
--				"%u bytes, %u kbytes/sec\n",
--				name,
--				setup_us,
--				trans_us,
--				total_us,
--				1000*1000 / total_us,
--				total_bytes,
--				total_bytes * 1000 / total_us);
--	}
-+	printk(KERN_INFO "DSI(%s): %u us + %u us = %u us (%uHz), "
-+			"%u bytes, %u kbytes/sec\n",
-+			name,
-+			setup_us,
-+			trans_us,
-+			total_us,
-+			1000*1000 / total_us,
-+			total_bytes,
-+			total_bytes * 1000 / total_us);
- }
- #else
- #define dsi_perf_mark_setup()
- #define dsi_perf_mark_start()
--#define dsi_perf_mark_start_auto()
- #define dsi_perf_show(x)
- #endif
+ 	DSSERR("Framedone not received for 250ms!\n");
+@@ -2852,7 +2855,7 @@ static void dsi_framedone_irq_callback(void *data, u32 mask)
+ static void dsi_handle_framedone(void)
+ {
+ 	int r;
+-	const int channel = 0;
++	const int channel = dsi.update_channel;
+ 	bool use_te_trigger;
  
-@@ -2931,8 +2870,6 @@ static int dsi_set_update_mode(struct omap_dss_device *dssdev,
+ 	use_te_trigger = dsi.te_enabled && !dsi.use_ext_te;
+@@ -2935,13 +2938,15 @@ int omap_dsi_prepare_update(struct omap_dss_device *dssdev,
+ EXPORT_SYMBOL(omap_dsi_prepare_update);
  
- 			dsi_set_update_region(dssdev, 0, 0, w, h);
+ int omap_dsi_update(struct omap_dss_device *dssdev,
++		int channel,
+ 		u16 x, u16 y, u16 w, u16 h,
+ 		void (*callback)(int, void *), void *data)
+ {
++	dsi.update_channel = channel;
++
+ 	if (dssdev->manager->caps & OMAP_DSS_OVL_MGR_CAP_DISPC) {
+ 		dsi.framedone_callback = callback;
+ 		dsi.framedone_data = data;
+-		dsi_vc_config_vp(0);
  
--			dsi_perf_mark_start_auto();
--
- 			wake_up(&dsi.waitqueue);
- 		}
- 	}
+ 		dsi.update_region.x = x;
+ 		dsi.update_region.y = y;
 -- 
 1.6.5
 

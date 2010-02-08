@@ -1,108 +1,194 @@
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Mon, 08 Feb 2010 15:57:25 +0000
-Subject: [PATCH 01/17] OMAP: DSS2: DSI: change DSI bus_lock to semaphore
-Message-Id: <1265644661-3694-2-git-send-email-tomi.valkeinen@nokia.com>
+Date: Mon, 08 Feb 2010 15:56:07 +0000
+Subject: [PATCH 08/13] OMAP: DSS2: improve DSS clk src selection
+Message-Id: <1265644572-3578-9-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1265644661-3694-1-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1265644661-3694-1-git-send-email-tomi.valkeinen@nokia.com>
+References: <1265644572-3578-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-4-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-5-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-6-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-7-git-send-email-tomi.valkeinen@nokia.com>
+ <1265644572-3578-8-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1265644572-3578-8-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-Physical DSI bus is protected by a mutex. This patch changed the mutex to
-a semaphore, so that we can lock and unlock the bus_lock from different
-threads.
+dss_select_clk_source() was rather confusing. Selecting the source with
+enums is much clearer.
 
-This is needed as the update process is started by user space program, and
-thus the lock is acquired in that context, but the lock can be released in
-different context, a work thread via irq.
+The clk source selection is also stored into memory, so that we know what
+is the selected source, even when clocks are off. This is important during
+setup, as we need to what clocks to turn on before the clocks are turned
+on.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/omap2/dss/dsi.c |   20 ++++++--------------
- 1 files changed, 6 insertions(+), 14 deletions(-)
+ drivers/video/omap2/dss/dpi.c |    4 +-
+ drivers/video/omap2/dss/dsi.c |    9 +++++--
+ drivers/video/omap2/dss/dss.c |   42 +++++++++++++++++++++++++++++++---------
+ drivers/video/omap2/dss/dss.h |   14 ++++++++++--
+ 4 files changed, 51 insertions(+), 18 deletions(-)
 
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 69ce31a..c5091ed 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -57,7 +57,7 @@ static int dpi_set_dsi_clk(bool is_tft, unsigned long pck_req,
+ 	if (r)
+ 		return r;
+ 
+-	dss_select_clk_source(0, 1);
++	dss_select_dispc_clk_source(DSS_SRC_DSI1_PLL_FCLK);
+ 
+ 	r = dispc_set_clock_div(&dispc_cinfo);
+ 	if (r)
+@@ -238,7 +238,7 @@ static void dpi_display_disable(struct omap_dss_device *dssdev)
+ 	dispc_enable_lcd_out(0);
+ 
+ #ifdef CONFIG_OMAP2_DSS_USE_DSI_PLL
+-	dss_select_clk_source(0, 0);
++	dss_select_dispc_clk_source(DSS_SRC_DSS1_ALWON_FCLK);
+ 	dsi_pll_uninit();
+ 	dss_clk_disable(DSS_CLK_FCK2);
+ #endif
 diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 4b85ed2..74df72b 100644
+index 036f422..4fdb628 100644
 --- a/drivers/video/omap2/dss/dsi.c
 +++ b/drivers/video/omap2/dss/dsi.c
-@@ -27,6 +27,7 @@
- #include <linux/interrupt.h>
- #include <linux/delay.h>
- #include <linux/mutex.h>
-+#include <linux/semaphore.h>
- #include <linux/seq_file.h>
- #include <linux/platform_device.h>
- #include <linux/regulator/consumer.h>
-@@ -227,7 +228,7 @@ static struct
- 	} vc[4];
+@@ -3203,7 +3203,8 @@ static int dsi_display_init_dsi(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err1;
  
- 	struct mutex lock;
--	struct mutex bus_lock;
-+	struct semaphore bus_lock;
+-	dss_select_clk_source(true, true);
++	dss_select_dispc_clk_source(DSS_SRC_DSI1_PLL_FCLK);
++	dss_select_dsi_clk_source(DSS_SRC_DSI2_PLL_FCLK);
  
- 	unsigned pll_locked;
+ 	DSSDBG("PLL OK\n");
  
-@@ -298,19 +299,19 @@ void dsi_restore_context(void)
+@@ -3247,7 +3248,8 @@ err4:
+ err3:
+ 	dsi_complexio_uninit();
+ err2:
+-	dss_select_clk_source(false, false);
++	dss_select_dispc_clk_source(DSS_SRC_DSS1_ALWON_FCLK);
++	dss_select_dsi_clk_source(DSS_SRC_DSS1_ALWON_FCLK);
+ err1:
+ 	dsi_pll_uninit();
+ err0:
+@@ -3259,7 +3261,8 @@ static void dsi_display_uninit_dsi(struct omap_dss_device *dssdev)
+ 	if (dssdev->driver->disable)
+ 		dssdev->driver->disable(dssdev);
  
- void dsi_bus_lock(void)
- {
--	mutex_lock(&dsi.bus_lock);
-+	down(&dsi.bus_lock);
+-	dss_select_clk_source(false, false);
++	dss_select_dispc_clk_source(DSS_SRC_DSS1_ALWON_FCLK);
++	dss_select_dsi_clk_source(DSS_SRC_DSS1_ALWON_FCLK);
+ 	dsi_complexio_uninit();
+ 	dsi_pll_uninit();
  }
- EXPORT_SYMBOL(dsi_bus_lock);
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 0a26b7d..8254a42 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -68,6 +68,9 @@ static struct {
+ 	struct dss_clock_info cache_dss_cinfo;
+ 	struct dispc_clock_info cache_dispc_cinfo;
  
- void dsi_bus_unlock(void)
- {
--	mutex_unlock(&dsi.bus_lock);
-+	up(&dsi.bus_lock);
++	enum dss_clk_source dsi_clk_source;
++	enum dss_clk_source dispc_clk_source;
++
+ 	u32		ctx[DSS_SZ_REGS / sizeof(u32)];
+ } dss;
+ 
+@@ -247,23 +250,42 @@ void dss_dump_regs(struct seq_file *s)
+ #undef DUMPREG
  }
- EXPORT_SYMBOL(dsi_bus_unlock);
  
- static bool dsi_bus_is_locked(void)
+-void dss_select_clk_source(bool dsi, bool dispc)
++void dss_select_dispc_clk_source(enum dss_clk_source clk_src)
++{
++	int b;
++
++	BUG_ON(clk_src != DSS_SRC_DSI1_PLL_FCLK &&
++			clk_src != DSS_SRC_DSS1_ALWON_FCLK);
++
++	b = clk_src = DSS_SRC_DSS1_ALWON_FCLK ? 0 : 1;
++
++	REG_FLD_MOD(DSS_CONTROL, b, 0, 0);	/* DISPC_CLK_SWITCH */
++
++	dss.dispc_clk_source = clk_src;
++}
++
++void dss_select_dsi_clk_source(enum dss_clk_source clk_src)
  {
--	return mutex_is_locked(&dsi.bus_lock);
-+	return dsi.bus_lock.count = 0;
+-	u32 r;
+-	r = dss_read_reg(DSS_CONTROL);
+-	r = FLD_MOD(r, dsi, 1, 1);	/* DSI_CLK_SWITCH */
+-	r = FLD_MOD(r, dispc, 0, 0);	/* DISPC_CLK_SWITCH */
+-	dss_write_reg(DSS_CONTROL, r);
++	int b;
++
++	BUG_ON(clk_src != DSS_SRC_DSI2_PLL_FCLK &&
++			clk_src != DSS_SRC_DSS1_ALWON_FCLK);
++
++	b = clk_src = DSS_SRC_DSS1_ALWON_FCLK ? 0 : 1;
++
++	REG_FLD_MOD(DSS_CONTROL, b, 1, 1);	/* DSI_CLK_SWITCH */
++
++	dss.dsi_clk_source = clk_src;
  }
  
- static inline int wait_for_bit_change(const struct dsi_reg idx, int bitnum,
-@@ -3000,8 +3001,6 @@ static int dsi_update_thread(void *data)
- 	u16 x, y, w, h;
+-int dss_get_dsi_clk_source(void)
++enum dss_clk_source dss_get_dispc_clk_source(void)
+ {
+-	return FLD_GET(dss_read_reg(DSS_CONTROL), 1, 1);
++	return dss.dispc_clk_source;
+ }
  
- 	while (1) {
--		bool sched;
--
- 		wait_event_interruptible(dsi.waitqueue,
- 				dsi.update_mode = OMAP_DSS_UPDATE_AUTO ||
- 				(dsi.update_mode = OMAP_DSS_UPDATE_MANUAL &&
-@@ -3087,16 +3086,9 @@ static int dsi_update_thread(void *data)
- 			dsi_perf_show("L4");
- 		}
+-int dss_get_dispc_clk_source(void)
++enum dss_clk_source dss_get_dsi_clk_source(void)
+ {
+-	return FLD_GET(dss_read_reg(DSS_CONTROL), 0, 0);
++	return dss.dsi_clk_source;
+ }
  
--		sched = atomic_read(&dsi.bus_lock.count) < 0;
--
- 		complete_all(&dsi.update_completion);
+ /* calculate clock rates using dividers in cinfo */
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 41145af..3713dc6 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -119,6 +119,12 @@ enum dss_clock {
+ 	DSS_CLK_96M	= 1 << 4,
+ };
  
- 		dsi_bus_unlock();
--
--		/* XXX We need to give others chance to get the bus lock. Is
--		 * there a better way for this? */
--		if (dsi.update_mode = OMAP_DSS_UPDATE_AUTO && sched)
--			schedule_timeout_interruptible(1);
- 	}
++enum dss_clk_source {
++	DSS_SRC_DSI1_PLL_FCLK,
++	DSS_SRC_DSI2_PLL_FCLK,
++	DSS_SRC_DSS1_ALWON_FCLK,
++};
++
+ struct dss_clock_info {
+ 	/* rates that we get with dividers below */
+ 	unsigned long fck;
+@@ -219,9 +225,11 @@ void dss_sdi_init(u8 datapairs);
+ int dss_sdi_enable(void);
+ void dss_sdi_disable(void);
  
- 	DSSDBG("update thread exiting\n");
-@@ -3796,7 +3788,7 @@ int dsi_init(struct platform_device *pdev)
- 	spin_lock_init(&dsi.update_lock);
+-void dss_select_clk_source(bool dsi, bool dispc);
+-int dss_get_dsi_clk_source(void);
+-int dss_get_dispc_clk_source(void);
++void dss_select_dispc_clk_source(enum dss_clk_source clk_src);
++void dss_select_dsi_clk_source(enum dss_clk_source clk_src);
++enum dss_clk_source dss_get_dispc_clk_source(void);
++enum dss_clk_source dss_get_dsi_clk_source(void);
++
+ void dss_set_venc_output(enum omap_dss_venc_type type);
+ void dss_set_dac_pwrdn_bgz(bool enable);
  
- 	mutex_init(&dsi.lock);
--	mutex_init(&dsi.bus_lock);
-+	sema_init(&dsi.bus_lock, 1);
- 
- #ifdef DSI_CATCH_MISSING_TE
- 	init_timer(&dsi.te_timer);
 -- 
 1.6.5
 

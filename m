@@ -1,63 +1,80 @@
-From: ville.syrjala@nokia.com
-Date: Tue, 23 Feb 2010 22:36:26 +0000
-Subject: [PATCH 2/3] DSS2: OMAPFB: Constify some function parameters
-Message-Id: <1266964587-14381-2-git-send-email-ville.syrjala@nokia.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Tue, 09 Feb 2010 14:32:38 +0000
+Subject: [PATCH 3/3] viafb: make viafb_set_par more dual framebuffer compatible
+Message-Id: <1265725958-4641-3-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1266964587-14381-1-git-send-email-ville.syrjala@nokia.com>
-In-Reply-To: <1266964587-14381-1-git-send-email-ville.syrjala@nokia.com>
+References: <1265725958-4641-1-git-send-email-FlorianSchandinat@gmx.de>
+ <1265725958-4641-2-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1265725958-4641-2-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@nokia.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KCgpTaWduZWQt
-b2ZmLWJ5OiBWaWxsZSBTeXJqw6Rsw6QgPHZpbGxlLnN5cmphbGFAbm9raWEuY29tPgotLS0KIGRy
-aXZlcnMvdmlkZW8vb21hcDIvb21hcGZiL29tYXBmYi1tYWluLmMgfCAgIDE4ICsrKysrKysrKy0t
-LS0tLS0tLQogMSBmaWxlcyBjaGFuZ2VkLCA5IGluc2VydGlvbnMoKyksIDkgZGVsZXRpb25zKC0p
-CgpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9vbWFwMi9vbWFwZmIvb21hcGZiLW1haW4uYyBi
-L2RyaXZlcnMvdmlkZW8vb21hcDIvb21hcGZiL29tYXBmYi1tYWluLmMKaW5kZXggZDE3Y2FlZi4u
-ZDFmMDJhZSAxMDA2NDQKLS0tIGEvZHJpdmVycy92aWRlby9vbWFwMi9vbWFwZmIvb21hcGZiLW1h
-aW4uYworKysgYi9kcml2ZXJzL3ZpZGVvL29tYXAyL29tYXBmYi9vbWFwZmItbWFpbi5jCkBAIC0x
-NTIsOSArMTUyLDkgQEAgc3RhdGljIHZvaWQgZmlsbF9mYihzdHJ1Y3QgZmJfaW5mbyAqZmJpKQog
-fQogI2VuZGlmCiAKLXN0YXRpYyB1bnNpZ25lZCBvbWFwZmJfZ2V0X3ZyZmJfb2Zmc2V0KHN0cnVj
-dCBvbWFwZmJfaW5mbyAqb2ZiaSwgaW50IHJvdCkKK3N0YXRpYyB1bnNpZ25lZCBvbWFwZmJfZ2V0
-X3ZyZmJfb2Zmc2V0KGNvbnN0IHN0cnVjdCBvbWFwZmJfaW5mbyAqb2ZiaSwgaW50IHJvdCkKIHsK
-LQlzdHJ1Y3QgdnJmYiAqdnJmYiA9ICZvZmJpLT5yZWdpb24udnJmYjsKKwljb25zdCBzdHJ1Y3Qg
-dnJmYiAqdnJmYiA9ICZvZmJpLT5yZWdpb24udnJmYjsKIAl1bnNpZ25lZCBvZmZzZXQ7CiAKIAlz
-d2l0Y2ggKHJvdCkgewpAQCAtMTc5LDcgKzE3OSw3IEBAIHN0YXRpYyB1bnNpZ25lZCBvbWFwZmJf
-Z2V0X3ZyZmJfb2Zmc2V0KHN0cnVjdCBvbWFwZmJfaW5mbyAqb2ZiaSwgaW50IHJvdCkKIAlyZXR1
-cm4gb2Zmc2V0OwogfQogCi1zdGF0aWMgdTMyIG9tYXBmYl9nZXRfcmVnaW9uX3JvdF9wYWRkcihz
-dHJ1Y3Qgb21hcGZiX2luZm8gKm9mYmksIGludCByb3QpCitzdGF0aWMgdTMyIG9tYXBmYl9nZXRf
-cmVnaW9uX3JvdF9wYWRkcihjb25zdCBzdHJ1Y3Qgb21hcGZiX2luZm8gKm9mYmksIGludCByb3Qp
-CiB7CiAJaWYgKG9mYmktPnJvdGF0aW9uX3R5cGUgPSBPTUFQX0RTU19ST1RfVlJGQikgewogCQly
-ZXR1cm4gb2ZiaS0+cmVnaW9uLnZyZmIucGFkZHJbcm90XQpAQCAtMTg5LDcgKzE4OSw3IEBAIHN0
-YXRpYyB1MzIgb21hcGZiX2dldF9yZWdpb25fcm90X3BhZGRyKHN0cnVjdCBvbWFwZmJfaW5mbyAq
-b2ZiaSwgaW50IHJvdCkKIAl9CiB9CiAKLXN0YXRpYyB1MzIgb21hcGZiX2dldF9yZWdpb25fcGFk
-ZHIoc3RydWN0IG9tYXBmYl9pbmZvICpvZmJpKQorc3RhdGljIHUzMiBvbWFwZmJfZ2V0X3JlZ2lv
-bl9wYWRkcihjb25zdCBzdHJ1Y3Qgb21hcGZiX2luZm8gKm9mYmkpCiB7CiAJaWYgKG9mYmktPnJv
-dGF0aW9uX3R5cGUgPSBPTUFQX0RTU19ST1RfVlJGQikKIAkJcmV0dXJuIG9mYmktPnJlZ2lvbi52
-cmZiLnBhZGRyWzBdOwpAQCAtMTk3LDcgKzE5Nyw3IEBAIHN0YXRpYyB1MzIgb21hcGZiX2dldF9y
-ZWdpb25fcGFkZHIoc3RydWN0IG9tYXBmYl9pbmZvICpvZmJpKQogCQlyZXR1cm4gb2ZiaS0+cmVn
-aW9uLnBhZGRyOwogfQogCi1zdGF0aWMgdm9pZCBfX2lvbWVtICpvbWFwZmJfZ2V0X3JlZ2lvbl92
-YWRkcihzdHJ1Y3Qgb21hcGZiX2luZm8gKm9mYmkpCitzdGF0aWMgdm9pZCBfX2lvbWVtICpvbWFw
-ZmJfZ2V0X3JlZ2lvbl92YWRkcihjb25zdCBzdHJ1Y3Qgb21hcGZiX2luZm8gKm9mYmkpCiB7CiAJ
-aWYgKG9mYmktPnJvdGF0aW9uX3R5cGUgPSBPTUFQX0RTU19ST1RfVlJGQikKIAkJcmV0dXJuIG9m
-YmktPnJlZ2lvbi52cmZiLnZhZGRyWzBdOwpAQCAtNzc4LDggKzc3OCw4IEBAIHN0YXRpYyBpbnQg
-b21hcGZiX3JlbGVhc2Uoc3RydWN0IGZiX2luZm8gKmZiaSwgaW50IHVzZXIpCiAJcmV0dXJuIDA7
-CiB9CiAKLXN0YXRpYyB1bnNpZ25lZCBjYWxjX3JvdGF0aW9uX29mZnNldF9kbWEoc3RydWN0IGZi
-X3Zhcl9zY3JlZW5pbmZvICp2YXIsCi0JCXN0cnVjdCBmYl9maXhfc2NyZWVuaW5mbyAqZml4LCBp
-bnQgcm90YXRpb24pCitzdGF0aWMgdW5zaWduZWQgY2FsY19yb3RhdGlvbl9vZmZzZXRfZG1hKGNv
-bnN0IHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbyAqdmFyLAorCQljb25zdCBzdHJ1Y3QgZmJfZml4
-X3NjcmVlbmluZm8gKmZpeCwgaW50IHJvdGF0aW9uKQogewogCXVuc2lnbmVkIG9mZnNldDsKIApA
-QCAtNzg5LDggKzc4OSw4IEBAIHN0YXRpYyB1bnNpZ25lZCBjYWxjX3JvdGF0aW9uX29mZnNldF9k
-bWEoc3RydWN0IGZiX3Zhcl9zY3JlZW5pbmZvICp2YXIsCiAJcmV0dXJuIG9mZnNldDsKIH0KIAot
-c3RhdGljIHVuc2lnbmVkIGNhbGNfcm90YXRpb25fb2Zmc2V0X3ZyZmIoc3RydWN0IGZiX3Zhcl9z
-Y3JlZW5pbmZvICp2YXIsCi0JCXN0cnVjdCBmYl9maXhfc2NyZWVuaW5mbyAqZml4LCBpbnQgcm90
-YXRpb24pCitzdGF0aWMgdW5zaWduZWQgY2FsY19yb3RhdGlvbl9vZmZzZXRfdnJmYihjb25zdCBz
-dHJ1Y3QgZmJfdmFyX3NjcmVlbmluZm8gKnZhciwKKwkJY29uc3Qgc3RydWN0IGZiX2ZpeF9zY3Jl
-ZW5pbmZvICpmaXgsIGludCByb3RhdGlvbikKIHsKIAl1bnNpZ25lZCBvZmZzZXQ7CiAKLS0gCjEu
-Ni40LjQKCi0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1
-bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4KdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9y
-ZG9tb0B2Z2VyLmtlcm5lbC5vcmcKTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIu
-a2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s
+viafb: make viafb_set_par more dual framebuffer compatible
+
+This patch is an attempt to make viafb_set_par work correctly with
+more than one framebuffer. As modesetting is not (yet/easily)
+possible for each individual IGA it uses the (normally to be avoided)
+global variables viafbinfo{,1} to ensure that each function is called
+with the correct values.
+This patch (finally) allows usable dual framebuffer setups and should
+not affect non dual fb ones. It works in some (most?) configurations
+as sometimes the driver still gets device connections wrong. It can
+be worth to try the devices in reverse order (in viafb_active_dev).
+The user experience is still not very nice as:
+- on the second fb you'll normally have a garbled picture as long as
+  no application draws to it
+  goal: auto on/off devices depending on reference counting
+- as the whole machinery is always done you can see mode changes also
+  in an unaffected framebuffer
+  goal: split modesetting up for each individual IGA
+
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+---
+ drivers/video/via/viafbdev.c |   22 ++++++++++++++++------
+ 1 files changed, 16 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index b417259..b1569a7 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -160,11 +160,17 @@ static int viafb_set_par(struct fb_info *info)
+ 	DEBUG_MSG(KERN_INFO "viafb_set_par!\n");
+ 
+ 	viapar->depth = fb_get_color_depth(&info->var, &info->fix);
+-	viafb_update_device_setting(info->var.xres, info->var.yres,
+-			      info->var.bits_per_pixel, viafb_refresh, 0);
++	viafb_update_device_setting(viafbinfo->var.xres, viafbinfo->var.yres,
++		viafbinfo->var.bits_per_pixel, viafb_refresh, 0);
+ 
+-	vmode_entry = viafb_get_mode(info->var.xres, info->var.yres);
+-	if (viafb_SAMM_ON = 1) {
++	vmode_entry = viafb_get_mode(viafbinfo->var.xres, viafbinfo->var.yres);
++	if (viafb_dual_fb) {
++		vmode_entry1 = viafb_get_mode(viafbinfo1->var.xres,
++			viafbinfo1->var.yres);
++		viafb_update_device_setting(viafbinfo1->var.xres,
++			viafbinfo1->var.yres, viafbinfo1->var.bits_per_pixel,
++			viafb_refresh1, 1);
++	} else if (viafb_SAMM_ON = 1) {
+ 		DEBUG_MSG(KERN_INFO
+ 		"viafb_second_xres = %d, viafb_second_yres = %d, bpp = %d\n",
+ 			  viafb_second_xres, viafb_second_yres, viafb_bpp1);
+@@ -177,7 +183,11 @@ static int viafb_set_par(struct fb_info *info)
+ 
+ 	if (vmode_entry) {
+ 		viafb_update_fix(info);
+-		viafb_bpp = info->var.bits_per_pixel;
++		if (viafb_dual_fb && viapar->iga_path = IGA2)
++			viafb_bpp1 = info->var.bits_per_pixel;
++		else
++			viafb_bpp = info->var.bits_per_pixel;
++
+ 		if (info->var.accel_flags & FB_ACCELF_TEXT)
+ 			info->flags &= ~FBINFO_HWACCEL_DISABLED;
+ 		else
+-- 
+1.6.3.2
+

@@ -1,73 +1,53 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Sat, 20 Feb 2010 23:20:01 +0000
-Subject: [PATCH 1/3] backlight: Add backlight_device parameter to check_fb
-Message-Id: <20100221002001.0a7e05a7@neptune.home>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Tue, 09 Feb 2010 14:32:36 +0000
+Subject: [PATCH 1/3] viafb: reorder initialization for dual framebuffer mode
+Message-Id: <1265725958-4641-1-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100221001049.2f63f5d6@neptune.home>
-In-Reply-To: <20100221001049.2f63f5d6@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Richard Purdie <rpurdie@rpsys.net>, Thierry Reding <thierry.reding@avionic-design.de>, Emese Revfy <re.emese@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-check_fb from backlight_ops lacks a reference to the backlight_device
-that's being referred to. Add this parameter so a backlight_device
-can be mapped to a single framebuffer, especially if the same driver
-handles multiple devices on a single system.
+viafb: reorder initialization for dual framebuffer mode
 
-Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
+This patch reorders the initialization for dual framebuffer mode to
+not ignore the settings for the first mode. Previously they were
+overwritten with the settings for the second one before they were
+applied.
+This should have no effect on non dual framebuffer mode and do
+what the user intended (initalization to desired modes) in dual
+framebuffer mode.
+
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/backlight/adx_bl.c    |    2 +-
- drivers/video/backlight/backlight.c |    2 +-
- include/linux/backlight.h           |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/via/viafbdev.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/backlight/adx_bl.c b/drivers/video/backlight/adx=
-_bl.c
-index d769b0b..a683dd1 100644
---- a/drivers/video/backlight/adx_bl.c
-+++ b/drivers/video/backlight/adx_bl.c
-@@ -56,7 +56,7 @@ static int adx_backlight_get_brightness(struct backlight_=
-device *bldev)
- 	return brightness & 0xff;
- }
-=20
--static int adx_backlight_check_fb(struct fb_info *fb)
-+static int adx_backlight_check_fb(struct backlight_device *bldev, struct f=
-b_info *fb)
- {
- 	return 1;
- }
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/=
-backlight.c
-index 18829cf..b800cd4 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -38,7 +38,7 @@ static int fb_notifier_callback(struct notifier_block *se=
-lf,
- 	mutex_lock(&bd->ops_lock);
- 	if (bd->ops)
- 		if (!bd->ops->check_fb ||
--		    bd->ops->check_fb(evdata->info)) {
-+		    bd->ops->check_fb(bd, evdata->info)) {
- 			bd->props.fb_blank =3D *(int *)evdata->data;
- 			if (bd->props.fb_blank =3D FB_BLANK_UNBLANK)
- 				bd->props.state &=3D ~BL_CORE_FBBLANK;
-diff --git a/include/linux/backlight.h b/include/linux/backlight.h
-index 8c4f884..15413ce 100644
---- a/include/linux/backlight.h
-+++ b/include/linux/backlight.h
-@@ -47,7 +47,7 @@ struct backlight_ops {
- 	int (* const get_brightness)(struct backlight_device *);
- 	/* Check if given framebuffer device is the one bound to this backlight;
- 	   return 0 if not, !=3D0 if it is. If NULL, backlight always matches the=
- fb. */
--	int (* const check_fb)(struct fb_info *);
-+	int (* const check_fb)(struct backlight_device *, struct fb_info *);
- };
-=20
- /* This structure defines all the properties of a backlight */
---=20
-1.6.4.4
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 5f5b5e9..4d955ca 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1960,6 +1960,9 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 	default_var.lower_margin = 4;
+ 	default_var.hsync_len = default_var.left_margin;
+ 	default_var.vsync_len = 4;
++	viafb_setup_fixinfo(&viafbinfo->fix, viaparinfo);
++	viafb_check_var(&default_var, viafbinfo);
++	viafbinfo->var = default_var;
+ 
+ 	if (viafb_dual_fb) {
+ 		viafbinfo1 = framebuffer_alloc(viafb_par_length, &pdev->dev);
+@@ -2015,9 +2018,6 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 			&viafbinfo1->fix);
+ 	}
+ 
+-	viafb_setup_fixinfo(&viafbinfo->fix, viaparinfo);
+-	viafb_check_var(&default_var, viafbinfo);
+-	viafbinfo->var = default_var;
+ 	viafb_update_fix(viafbinfo);
+ 	viaparinfo->depth = fb_get_color_depth(&viafbinfo->var,
+ 		&viafbinfo->fix);
+-- 
+1.6.3.2
 

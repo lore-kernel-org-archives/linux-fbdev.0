@@ -1,176 +1,98 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Wed, 17 Feb 2010 11:57:16 +0000
-Subject: [PATCH 1/4] OMAP: DSS2: remove sub-panel system
-Message-Id: <1266407839-14713-1-git-send-email-tomi.valkeinen@nokia.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Tue, 09 Feb 2010 14:32:37 +0000
+Subject: [PATCH 2/3] viafb: video address setting revisited
+Message-Id: <1265725958-4641-2-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1265725958-4641-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1265725958-4641-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-The system to allow panel drivers to exists as attached to ctrl drivers
-did never work very well. It is not useed, and this patch removes it to
-make the driver cleaner.
+viafb: video address setting revisited
 
-For now, controller drivers need to include also the panel driver code. In
-the future a proper mechanism for this should be developed, perhaps by
-creating busses for controllers.
+Set always the correct video address. Especially do panning right on
+multiple IGAs.
+This should have no effect on single monitor mode (no SAMM, no dual fb).
+For SAMM without dual fb this might break something as I really cannot
+image what we are supposed to do for different resolutions with a single
+framebuffer as we can't get data out of nowhere (no, they are not set
+up in something one would call "expanded"). Previously I got for that
+funny colored pictures as the second IGA pointed to video memory that
+was never written to. After the patch it'll work as cloning if the first
+and second mode are identical (this was working already without SAMM).
+Finally for dual fb this should push us a step in the right direction.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- arch/arm/plat-omap/include/plat/display.h |    3 --
- drivers/video/omap2/dss/core.c            |   35 ++--------------------------
- drivers/video/omap2/dss/display.c         |   32 +------------------------
- 3 files changed, 5 insertions(+), 65 deletions(-)
+ drivers/video/via/hw.c       |    2 --
+ drivers/video/via/viafbdev.c |   23 +++++++++++++++--------
+ 2 files changed, 15 insertions(+), 10 deletions(-)
 
-diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
-index 8c3688b..0022f6c 100644
---- a/arch/arm/plat-omap/include/plat/display.h
-+++ b/arch/arm/plat-omap/include/plat/display.h
-@@ -431,14 +431,11 @@ struct omap_dss_device {
- 		enum omap_panel_config config;
- 
- 		u8 recommended_bpp;
--
--		struct omap_dss_device *ctrl;
- 	} panel;
- 
- 	struct {
- 		u8 pixel_size;
- 		struct rfbi_timings rfbi_timings;
--		struct omap_dss_device *panel;
- 	} ctrl;
- 
- 	int reset_gpio;
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index 72547df..967cbda 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -771,11 +771,8 @@ static int dss_driver_probe(struct device *dev)
- 
- 	dss_init_device(core.pdev, dssdev);
- 
--	/* skip this if the device is behind a ctrl */
--	if (!dssdev->panel.ctrl) {
--		force = pdata->default_device = dssdev;
--		dss_recheck_connections(dssdev, force);
--	}
-+	force = pdata->default_device = dssdev;
-+	dss_recheck_connections(dssdev, force);
- 
- 	r = dssdrv->probe(dssdev);
- 
-@@ -861,8 +858,6 @@ static void omap_dss_dev_release(struct device *dev)
- int omap_dss_register_device(struct omap_dss_device *dssdev)
- {
- 	static int dev_num;
--	static int panel_num;
--	int r;
- 
- 	WARN_ON(!dssdev->driver_name);
- 
-@@ -871,36 +866,12 @@ int omap_dss_register_device(struct omap_dss_device *dssdev)
- 	dssdev->dev.parent = &dss_bus;
- 	dssdev->dev.release = omap_dss_dev_release;
- 	dev_set_name(&dssdev->dev, "display%d", dev_num++);
--	r = device_register(&dssdev->dev);
--	if (r)
--		return r;
--
--	if (dssdev->ctrl.panel) {
--		struct omap_dss_device *panel = dssdev->ctrl.panel;
--
--		panel->panel.ctrl = dssdev;
--
--		reset_device(&panel->dev, 1);
--		panel->dev.bus = &dss_bus_type;
--		panel->dev.parent = &dssdev->dev;
--		panel->dev.release = omap_dss_dev_release;
--		dev_set_name(&panel->dev, "panel%d", panel_num++);
--		r = device_register(&panel->dev);
--		if (r)
--			return r;
--	}
--
--	return 0;
-+	return device_register(&dssdev->dev);
- }
- 
- void omap_dss_unregister_device(struct omap_dss_device *dssdev)
- {
- 	device_unregister(&dssdev->dev);
--
--	if (dssdev->ctrl.panel) {
--		struct omap_dss_device *panel = dssdev->ctrl.panel;
--		device_unregister(&panel->dev);
--	}
- }
- 
- /* BUS */
-diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
-index 3b92b84..3f345b8 100644
---- a/drivers/video/omap2/dss/display.c
-+++ b/drivers/video/omap2/dss/display.c
-@@ -591,10 +591,6 @@ struct omap_dss_device *omap_dss_get_next_device(struct omap_dss_device *from)
- 
- 	int match(struct device *dev, void *data)
- 	{
--		/* skip panels connected to controllers */
--		if (to_dss_device(dev)->panel.ctrl)
--			return 0;
--
- 		return 1;
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 1aa3bb2..400373f 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -2206,8 +2206,6 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
+ 		outb(VPIT.SR[i - 1], VIASR + 1);
  	}
  
-@@ -626,45 +622,21 @@ EXPORT_SYMBOL(omap_dss_find_device);
+-	viafb_set_primary_address(0);
+-	viafb_set_secondary_address(viafb_SAMM_ON ? viafb_second_offset : 0);
+ 	viafb_set_iga_path();
  
- int omap_dss_start_device(struct omap_dss_device *dssdev)
- {
--	int r;
--
- 	if (!dssdev->driver) {
- 		DSSDBG("no driver\n");
--		r = -ENODEV;
--		goto err0;
--	}
--
--	if (dssdev->ctrl.panel && !dssdev->ctrl.panel->driver) {
--		DSSDBG("no panel driver\n");
--		r = -ENODEV;
--		goto err0;
-+		return -ENODEV;
- 	}
+ 	/* Write CRTC */
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 4d955ca..b417259 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -50,6 +50,8 @@ static void apply_second_mode_setting(struct fb_var_screeninfo
+ 	*sec_var);
+ static void retrieve_device_setting(struct viafb_ioctl_setting
+ 	*setting_info);
++static int viafb_pan_display(struct fb_var_screeninfo *var,
++	struct fb_info *info);
  
- 	if (!try_module_get(dssdev->dev.driver->owner)) {
--		r = -ENODEV;
--		goto err0;
--	}
--
--	if (dssdev->ctrl.panel) {
--		if (!try_module_get(dssdev->ctrl.panel->dev.driver->owner)) {
--			r = -ENODEV;
--			goto err1;
--		}
-+		return -ENODEV;
+ static struct fb_ops viafb_ops;
+ 
+@@ -182,6 +184,7 @@ static int viafb_set_par(struct fb_info *info)
+ 			info->flags |= FBINFO_HWACCEL_DISABLED;
+ 		viafb_setmode(vmode_entry, info->var.bits_per_pixel,
+ 			vmode_entry1, viafb_bpp1);
++		viafb_pan_display(&info->var, info);
  	}
  
  	return 0;
--err1:
--	module_put(dssdev->dev.driver->owner);
--err0:
--	return r;
- }
- EXPORT_SYMBOL(omap_dss_start_device);
- 
- void omap_dss_stop_device(struct omap_dss_device *dssdev)
+@@ -410,15 +413,19 @@ static int viafb_setcmap(struct fb_cmap *cmap, struct fb_info *info)
+ static int viafb_pan_display(struct fb_var_screeninfo *var,
+ 	struct fb_info *info)
  {
--	if (dssdev->ctrl.panel)
--		module_put(dssdev->ctrl.panel->dev.driver->owner);
+-	unsigned int offset;
 -
- 	module_put(dssdev->dev.driver->owner);
+-	DEBUG_MSG(KERN_INFO "viafb_pan_display!\n");
+-
+-	offset = (var->xoffset + (var->yoffset * var->xres_virtual)) *
+-	    var->bits_per_pixel / 16;
++	struct viafb_par *viapar = info->par;
++	u32 vram_addr = (var->yoffset * var->xres_virtual + var->xoffset)
++		* (var->bits_per_pixel / 8) + viapar->vram_addr;
++
++	DEBUG_MSG(KERN_DEBUG "viafb_pan_display, address = %d\n", vram_addr);
++	if (!viafb_dual_fb) {
++		viafb_set_primary_address(vram_addr);
++		viafb_set_secondary_address(vram_addr);
++	} else if (viapar->iga_path = IGA1)
++		viafb_set_primary_address(vram_addr);
++	else
++		viafb_set_secondary_address(vram_addr);
+ 
+-	DEBUG_MSG(KERN_INFO "\nviafb_pan_display,offset =%d ", offset);
+-	viafb_set_primary_address(offset);
+ 	return 0;
  }
- EXPORT_SYMBOL(omap_dss_stop_device);
+ 
 -- 
-1.6.5
+1.6.3.2
 

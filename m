@@ -1,26 +1,33 @@
-From: ville.syrjala@nokia.com
-Date: Tue, 23 Feb 2010 22:36:25 +0000
-Subject: [PATCH 1/3] OMAPFB: install omapfb.h
-Message-Id: <1266964587-14381-1-git-send-email-ville.syrjala@nokia.com>
+From: Baruch Siach <baruch@tkos.co.il>
+Date: Wed, 10 Feb 2010 07:25:18 +0000
+Subject: [PATCH 1/3] imxfb: add support for i.MX25
+Message-Id: <0bea69783cf8f6b04c64fed75f10c3dd3c567fb4.1265786237.git.baruch@tkos.co.il>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1265786237.git.baruch@tkos.co.il>
+In-Reply-To: <cover.1265786237.git.baruch@tkos.co.il>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@nokia.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KCm9tYXBmYiBo
-YXMgc2V2ZXJhbCBjdXN0b20gaW9jdGxzIHNvIHVzZXIgc3BhY2UgbmVlZHMKdGhlIGhlYWRlciBp
-biBvcmRlciB0byB1dGlsaXplIHRoZW0uCgpTaWduZWQtb2ZmLWJ5OiBWaWxsZSBTeXJqw6Rsw6Qg
-PHZpbGxlLnN5cmphbGFAbm9raWEuY29tPgotLS0KIGluY2x1ZGUvbGludXgvS2J1aWxkIHwgICAg
-MSArCiAxIGZpbGVzIGNoYW5nZWQsIDEgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKCmRp
-ZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L0tidWlsZCBiL2luY2x1ZGUvbGludXgvS2J1aWxkCmlu
-ZGV4IDFmZWVkNzEuLjUwNWZmOWUgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvS2J1aWxkCisr
-KyBiL2luY2x1ZGUvbGludXgvS2J1aWxkCkBAIC0xMjQsNiArMTI0LDcgQEAgaGVhZGVyLXkgKz0g
-bmZzMi5oCiBoZWFkZXIteSArPSBuZnM0X21vdW50LmgKIGhlYWRlci15ICs9IG5mc19tb3VudC5o
-CiBoZWFkZXIteSArPSBubDgwMjExLmgKK2hlYWRlci15ICs9IG9tYXBmYi5oCiBoZWFkZXIteSAr
-PSBwYXJhbS5oCiBoZWFkZXIteSArPSBwY2lfcmVncy5oCiBoZWFkZXIteSArPSBwZXJmX2V2ZW50
-LmgKLS0gCjEuNi40LjQKCi0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRo
-ZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4KdGhlIGJvZHkgb2YgYSBtZXNzYWdl
-IHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0
-cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s
+Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+---
+ drivers/video/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 5a5c303..7ff9acc 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -402,7 +402,7 @@ config FB_SA1100
+ 
+ config FB_IMX
+ 	tristate "Motorola i.MX LCD support"
+-	depends on FB && (ARCH_MX1 || ARCH_MX2)
++	depends on FB && (ARCH_MX1 || ARCH_MX2 || ARCH_MX25)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-- 
+1.6.6.1
+

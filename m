@@ -1,95 +1,124 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 03 Feb 2010 22:36:44 +0000
-Subject: Re: [PATCH 09/10] drivers/video/via: Fix continuation line formats
-Message-Id: <4B69FA7C.9040309@gmx.de>
+From: Baruch Siach <baruch@tkos.co.il>
+Date: Wed, 10 Feb 2010 07:25:20 +0000
+Subject: [PATCH 3/3] mx25pdk: add LCD support
+Message-Id: <d46f11162815bb8e4bb85d49870f600df2a8aee1.1265786237.git.baruch@tkos.co.il>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1265095093.git.joe@perches.com> <4affbba1523b0cc13bb02f309e3091a29a6ccf6a.1265095094.git.joe@perches.com>
-In-Reply-To: <4affbba1523b0cc13bb02f309e3091a29a6ccf6a.1265095094.git.joe@perches.com>
+References: <cover.1265786237.git.baruch@tkos.co.il>
+In-Reply-To: <cover.1265786237.git.baruch@tkos.co.il>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Joseph Chan <JosephChan@via.com.tw>, Scott Fang <ScottFang@viatech.com.cn>, linux-fbdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+---
+ arch/arm/mach-mx25/mx25pdk.c                |   55 +++++++++++++++++++++++++++
+ arch/arm/plat-mxc/include/mach/iomux-mx25.h |    2 +
+ 2 files changed, 57 insertions(+), 0 deletions(-)
 
-Joe Perches schrieb:
-> String constants that are continued on subsequent lines with \
-> are not good.
-
-I agree.
-
-> Signed-off-by: Joe Perches <joe@perches.com>
-
-According to how I understand CodingStyle this is the way those things 
-should be done.
-
-Acked-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-
-Andrew, can you please take care of this patch?
-
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/via/dvi.c |    8 ++++----
->  drivers/video/via/lcd.c |   12 ++++++------
->  2 files changed, 10 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
-> index 67b3693..b3b7822 100644
-> --- a/drivers/video/via/dvi.c
-> +++ b/drivers/video/via/dvi.c
-> @@ -467,8 +467,8 @@ static int dvi_get_panel_size_from_DDCv1(void)
->  	default:
->  		viaparinfo->tmds_setting_info->dvi_panel_size >  			VIA_RES_1024X768;
-> -		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d !\
-> -					 set default panel size.\n", max_h);
-> +		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d ! "
-> +			  "set default panel size.\n", max_h);
->  		break;
->  	}
->  
-> @@ -534,8 +534,8 @@ static int dvi_get_panel_size_from_DDCv2(void)
->  	default:
->  		viaparinfo->tmds_setting_info->dvi_panel_size >  			VIA_RES_1024X768;
-> -		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d!\
-> -					set default panel size.\n", HSize);
-> +		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d! "
-> +			  "set default panel size.\n", HSize);
->  		break;
->  	}
->  
-> diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
-> index 09353e2..4962297 100644
-> --- a/drivers/video/via/lcd.c
-> +++ b/drivers/video/via/lcd.c
-> @@ -171,13 +171,13 @@ static bool lvds_identify_integratedlvds(void)
->  		if (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
->  			viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name >  			    INTEGRATED_LVDS;
-> -			DEBUG_MSG(KERN_INFO "Support two dual channel LVDS!\
-> -				  (Internal LVDS + External LVDS)\n");
-> +			DEBUG_MSG(KERN_INFO "Support two dual channel LVDS! "
-> +				  "(Internal LVDS + External LVDS)\n");
->  		} else {
->  			viaparinfo->chip_info->lvds_chip_info.lvds_chip_name >  			    INTEGRATED_LVDS;
-> -			DEBUG_MSG(KERN_INFO "Not found external LVDS,\
-> -				  so can't support two dual channel LVDS!\n");
-> +			DEBUG_MSG(KERN_INFO "Not found external LVDS, "
-> +				  "so can't support two dual channel LVDS!\n");
->  		}
->  	} else if (viafb_display_hardware_layout = HW_LAYOUT_LCD1_LCD2) {
->  		/* Two single channel LCD (Internal LVDS + Internal LVDS): */
-> @@ -185,8 +185,8 @@ static bool lvds_identify_integratedlvds(void)
->  		INTEGRATED_LVDS;
->  		viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name >  			INTEGRATED_LVDS;
-> -		DEBUG_MSG(KERN_INFO "Support two single channel LVDS!\
-> -			  (Internal LVDS + Internal LVDS)\n");
-> +		DEBUG_MSG(KERN_INFO "Support two single channel LVDS! "
-> +			  "(Internal LVDS + Internal LVDS)\n");
->  	} else if (viafb_display_hardware_layout != HW_LAYOUT_DVI_ONLY) {
->  		/* If we have found external LVDS, just use it,
->  		   otherwise, we will use internal LVDS as default. */
+diff --git a/arch/arm/mach-mx25/mx25pdk.c b/arch/arm/mach-mx25/mx25pdk.c
+index f4e8b98..6d9dd33 100644
+--- a/arch/arm/mach-mx25/mx25pdk.c
++++ b/arch/arm/mach-mx25/mx25pdk.c
+@@ -35,6 +35,7 @@
+ #include <mach/imx-uart.h>
+ #include <mach/mx25.h>
+ #include <mach/mxc_nand.h>
++#include <mach/imxfb.h>
+ #include "devices.h"
+ #include <mach/iomux.h>
+ 
+@@ -54,6 +55,31 @@ static struct pad_desc mx25pdk_pads[] = {
+ 	MX25_PAD_FEC_TX_CLK__FEC_TX_CLK,
+ 	MX25_PAD_A17__GPIO_2_3, /* FEC_EN, GPIO 35 */
+ 	MX25_PAD_D12__GPIO_4_8, /* FEC_RESET_B, GPIO 104 */
++
++	/* LCD */
++	MX25_PAD_LD0__LD0,
++	MX25_PAD_LD1__LD1,
++	MX25_PAD_LD2__LD2,
++	MX25_PAD_LD3__LD3,
++	MX25_PAD_LD4__LD4,
++	MX25_PAD_LD5__LD5,
++	MX25_PAD_LD6__LD6,
++	MX25_PAD_LD7__LD7,
++	MX25_PAD_LD8__LD8,
++	MX25_PAD_LD9__LD9,
++	MX25_PAD_LD10__LD10,
++	MX25_PAD_LD11__LD11,
++	MX25_PAD_LD12__LD12,
++	MX25_PAD_LD13__LD13,
++	MX25_PAD_LD14__LD14,
++	MX25_PAD_LD15__LD15,
++	MX25_PAD_GPIO_E__LD16,
++	MX25_PAD_GPIO_F__LD17,
++	MX25_PAD_HSYNC__HSYNC,
++	MX25_PAD_VSYNC__VSYNC,
++	MX25_PAD_LSCLK__LSCLK,
++	MX25_PAD_OE_ACD__OE_ACD,
++	MX25_PAD_CONTRAST__CONTRAST,
+ };
+ 
+ static struct fec_platform_data mx25_fec_pdata = {
+@@ -83,6 +109,34 @@ static struct mxc_nand_platform_data mx25pdk_nand_board_info = {
+ 	.flash_bbt	= 1,
+ };
+ 
++static struct imx_fb_videomode mx25pdk_modes[] = {
++	{
++		.mode	= {
++			.name		= "CRT-VGA",
++			.refresh	= 60,
++			.xres		= 640,
++			.yres		= 480,
++			.pixclock	= 39683,
++			.left_margin	= 45,
++			.right_margin	= 114,
++			.upper_margin	= 33,
++			.lower_margin	= 11,
++			.hsync_len	= 1,
++			.vsync_len	= 1,
++		},
++		.bpp	= 16,
++		.pcr	= 0xFA208B80,
++	},
++};
++
++static struct imx_fb_platform_data mx25pdk_fb_pdata = {
++	.mode		= mx25pdk_modes,
++	.num_modes	= ARRAY_SIZE(mx25pdk_modes),
++	.pwmr		= 0x00A903FF,
++	.lscr1		= 0x00120300,
++	.dmacr		= 0x00020010,
++};
++
+ static void __init mx25pdk_init(void)
+ {
+ 	mxc_iomux_v3_setup_multiple_pads(mx25pdk_pads,
+@@ -92,6 +146,7 @@ static void __init mx25pdk_init(void)
+ 	mxc_register_device(&mxc_usbh2, NULL);
+ 	mxc_register_device(&mxc_nand_device, &mx25pdk_nand_board_info);
+ 	mxc_register_device(&mx25_rtc_device, NULL);
++	mxc_register_device(&mx25_fb_device, &mx25pdk_fb_pdata);
+ 
+ 	mx25pdk_fec_reset();
+ 	mxc_register_device(&mx25_fec_device, &mx25_fec_pdata);
+diff --git a/arch/arm/plat-mxc/include/mach/iomux-mx25.h b/arch/arm/plat-mxc/include/mach/iomux-mx25.h
+index 9af494f..5418d52 100644
+--- a/arch/arm/plat-mxc/include/mach/iomux-mx25.h
++++ b/arch/arm/plat-mxc/include/mach/iomux-mx25.h
+@@ -462,9 +462,11 @@
+ #define MX25_PAD_GPIO_C__CAN2_TX	IOMUX_PAD(0x3f8, 0x1fc, 0x16, 0, 0, PAD_CTL_PUS_22K_UP)
+ 
+ #define MX25_PAD_GPIO_D__GPIO_D		IOMUX_PAD(0x3fc, 0x200, 0x10, 0, 0, NO_PAD_CTRL)
++#define MX25_PAD_GPIO_E__LD16		IOMUX_PAD(0x400, 0x204, 0x02, 0, 0, NO_PAD_CTRL)
+ #define MX25_PAD_GPIO_D__CAN2_RX	IOMUX_PAD(0x3fc, 0x200, 0x16, 0x484, 1, PAD_CTL_PUS_22K_UP)
+ 
+ #define MX25_PAD_GPIO_E__GPIO_E		IOMUX_PAD(0x400, 0x204, 0x10, 0, 0, NO_PAD_CTRL)
++#define MX25_PAD_GPIO_F__LD17		IOMUX_PAD(0x404, 0x208, 0x02, 0, 0, NO_PAD_CTRL)
+ #define MX25_PAD_GPIO_E__AUD7_TXD	IOMUX_PAD(0x400, 0x204, 0x14, 0, 0, NO_PAD_CTRL)
+ 
+ #define MX25_PAD_GPIO_F__GPIO_F		IOMUX_PAD(0x404, 0x208, 0x10, 0, 0, NO_PAD_CTRL)
+-- 
+1.6.6.1
 

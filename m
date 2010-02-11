@@ -1,108 +1,128 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Mon, 08 Feb 2010 15:56:10 +0000
-Subject: [PATCH 11/13] OMAP: DSS2: DSI: export dsi_vc_enable_hs()
-Message-Id: <1265644572-3578-12-git-send-email-tomi.valkeinen@nokia.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Thu, 11 Feb 2010 19:28:00 +0000
+Subject: [PATCH 4/4] viafb: make some variables a bit less global
+Message-Id: <1265916480-6805-4-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1265644572-3578-1-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-2-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-3-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-4-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-5-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-6-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-7-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-8-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-9-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-10-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-11-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1265644572-3578-11-git-send-email-tomi.valkeinen@nokia.com>
+References: <1265916480-6805-1-git-send-email-FlorianSchandinat@gmx.de>
+ <1265916480-6805-2-git-send-email-FlorianSchandinat@gmx.de>
+ <1265916480-6805-3-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1265916480-6805-3-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Rename and export dsi_vc_enable_hs() so that the display drivers can
-control the mode of the DSI link.
+viafb: make some variables a bit less global
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Move some variables closer to their usage.
+
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- arch/arm/plat-omap/include/plat/display.h |    2 ++
- drivers/video/omap2/dss/dsi.c             |   13 ++++++++-----
- 2 files changed, 10 insertions(+), 5 deletions(-)
+ drivers/video/via/global.c   |    4 ----
+ drivers/video/via/global.h   |    2 --
+ drivers/video/via/hw.h       |    2 --
+ drivers/video/via/viafbdev.c |    9 +++++++--
+ drivers/video/via/viafbdev.h |    2 --
+ 5 files changed, 7 insertions(+), 12 deletions(-)
 
-diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
-index 47df5f6..8c3688b 100644
---- a/arch/arm/plat-omap/include/plat/display.h
-+++ b/arch/arm/plat-omap/include/plat/display.h
-@@ -575,4 +575,6 @@ int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
- #define to_dss_driver(x) container_of((x), struct omap_dss_driver, driver)
- #define to_dss_device(x) container_of((x), struct omap_dss_device, dev)
+diff --git a/drivers/video/via/global.c b/drivers/video/via/global.c
+index 7fbc618..1ee511b 100644
+--- a/drivers/video/via/global.c
++++ b/drivers/video/via/global.c
+@@ -29,8 +29,6 @@ int viafb_refresh = 60;
+ int viafb_refresh1 = 60;
+ int viafb_lcd_dsp_method = LCD_EXPANDSION;
+ int viafb_lcd_mode = LCD_OPENLDI;
+-int viafb_bpp = 32;
+-int viafb_bpp1 = 32;
+ int viafb_CRT_ON = 1;
+ int viafb_DVI_ON;
+ int viafb_LCD_ON ;
+@@ -41,8 +39,6 @@ int viafb_hotplug_Xres = 640;
+ int viafb_hotplug_Yres = 480;
+ int viafb_hotplug_bpp = 32;
+ int viafb_hotplug_refresh = 60;
+-unsigned int viafb_second_offset;
+-int viafb_second_size;
+ int viafb_primary_dev = None_Device;
+ unsigned int viafb_second_xres = 640;
+ unsigned int viafb_second_yres = 480;
+diff --git a/drivers/video/via/global.h b/drivers/video/via/global.h
+index 865b050..8d95d5f 100644
+--- a/drivers/video/via/global.h
++++ b/drivers/video/via/global.h
+@@ -67,8 +67,6 @@ extern int viafb_refresh;
+ extern int viafb_refresh1;
+ extern int viafb_lcd_dsp_method;
+ extern int viafb_lcd_mode;
+-extern int viafb_bpp;
+-extern int viafb_bpp1;
  
-+void omapdss_dsi_vc_enable_hs(int channel, bool enable);
+ extern int viafb_CRT_ON;
+ extern int viafb_hotplug_Xres;
+diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
+index dd54d3e..691fbd2 100644
+--- a/drivers/video/via/hw.h
++++ b/drivers/video/via/hw.h
+@@ -863,8 +863,6 @@ struct pci_device_id_info {
+ };
+ 
+ extern unsigned int viafb_second_virtual_xres;
+-extern unsigned int viafb_second_offset;
+-extern int viafb_second_size;
+ extern int viafb_SAMM_ON;
+ extern int viafb_dual_fb;
+ extern int viafb_LCD2_ON;
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 902f8a1..bb0f616 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -26,13 +26,17 @@
+ 
+ #include "global.h"
+ 
+-static struct fb_var_screeninfo default_var;
+ static char *viafb_name = "Via";
+ static u32 pseudo_pal[17];
+ 
+ /* video mode */
+ static char *viafb_mode;
+ static char *viafb_mode1;
++static int viafb_bpp = 32;
++static int viafb_bpp1 = 32;
 +
- #endif
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index e49f063..e003fe9 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -1864,10 +1864,12 @@ static void dsi_vc_config_vp(int channel)
- }
++static unsigned int viafb_second_offset;
++static int viafb_second_size;
  
+ static int viafb_accel = 1;
  
--static void dsi_vc_enable_hs(int channel, bool enable)
-+void omapdss_dsi_vc_enable_hs(int channel, bool enable)
+@@ -1849,10 +1853,11 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
  {
- 	DSSDBG("dsi_vc_enable_hs(%d, %d)\n", channel, enable);
+ 	u32 default_xres, default_yres;
+ 	struct VideoModeTable *vmode_entry;
++	struct fb_var_screeninfo default_var;
+ 	u32 viafb_par_length;
  
-+	WARN_ON(!dsi_bus_is_locked());
-+
- 	dsi_vc_enable(channel, 0);
- 	dsi_if_enable(0);
+ 	DEBUG_MSG(KERN_INFO "VIAFB PCI Probe!!\n");
+-
++	memset(&default_var, 0, sizeof(default_var));
+ 	viafb_par_length = ALIGN(sizeof(struct viafb_par), BITS_PER_LONG/8);
  
-@@ -1878,6 +1880,7 @@ static void dsi_vc_enable_hs(int channel, bool enable)
+ 	/* Allocate fb_info and ***_par here, also including some other needed
+diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
+index ecdaed8..61b5953 100644
+--- a/drivers/video/via/viafbdev.h
++++ b/drivers/video/via/viafbdev.h
+@@ -83,8 +83,6 @@ struct viafb_par {
  
- 	dsi_force_tx_stop_mode_io();
- }
-+EXPORT_SYMBOL(omapdss_dsi_vc_enable_hs);
- 
- static void dsi_vc_flush_long_data(int channel)
- {
-@@ -3275,7 +3278,7 @@ static int dsi_display_init_dsi(struct omap_dss_device *dssdev)
- 	}
- 
- 	/* enable high-speed after initial config */
--	dsi_vc_enable_hs(0, 1);
-+	omapdss_dsi_vc_enable_hs(0, 1);
- 
- 	return 0;
- err4:
-@@ -3688,7 +3691,7 @@ static int dsi_display_run_test(struct omap_dss_device *dssdev, int test_num)
- 	dsi_bus_lock();
- 
- 	/* run test first in low speed mode */
--	dsi_vc_enable_hs(0, 0);
-+	omapdss_dsi_vc_enable_hs(0, 0);
- 
- 	if (dssdev->driver->run_test) {
- 		r = dssdev->driver->run_test(dssdev, test_num);
-@@ -3697,7 +3700,7 @@ static int dsi_display_run_test(struct omap_dss_device *dssdev, int test_num)
- 	}
- 
- 	/* then in high speed */
--	dsi_vc_enable_hs(0, 1);
-+	omapdss_dsi_vc_enable_hs(0, 1);
- 
- 	if (dssdev->driver->run_test) {
- 		r = dssdev->driver->run_test(dssdev, test_num);
-@@ -3706,7 +3709,7 @@ static int dsi_display_run_test(struct omap_dss_device *dssdev, int test_num)
- 	}
- 
- end:
--	dsi_vc_enable_hs(0, 1);
-+	omapdss_dsi_vc_enable_hs(0, 1);
- 
- 	dsi_bus_unlock();
- 
+ extern unsigned int viafb_second_virtual_yres;
+ extern unsigned int viafb_second_virtual_xres;
+-extern unsigned int viafb_second_offset;
+-extern int viafb_second_size;
+ extern int viafb_SAMM_ON;
+ extern int viafb_dual_fb;
+ extern int viafb_LCD2_ON;
 -- 
-1.6.5
+1.6.3.2
 

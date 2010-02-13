@@ -1,183 +1,179 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 11 Feb 2010 19:27:58 +0000
-Subject: [PATCH 2/4] viafb: split color mode setting up
-Message-Id: <1265916480-6805-2-git-send-email-FlorianSchandinat@gmx.de>
+Date: Sat, 13 Feb 2010 22:54:43 +0000
+Subject: [PATCH 4/4] viafb: support color depth 15 and 30
+Message-Id: <1266102049-6209-4-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1265916480-6805-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1265916480-6805-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <1266102049-6209-1-git-send-email-FlorianSchandinat@gmx.de>
+ <1266102049-6209-2-git-send-email-FlorianSchandinat@gmx.de>
+ <1266102049-6209-3-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1266102049-6209-3-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-viafb: split color mode setting up
+viafb: support color depth 15 and 30
 
-This patch splits color mode setting up in seperate functions. Some
-hardware initialization that was previously mixed with it is moved
-to viafb_setmode. As are the calls to the newly created function.
-This is yet another little step towards controlling each IGA on its
-own.
-As this patch really aims too mimic the old behaviour no regressions
-are expected. However I noticed that 8bpp (or 6bpp?) seems actually
-a bit broken before and after the patch.
+This patch adds support for the color depth 15 on IGA1 and 30 on
+IGA1 and IGA2. To allow the usage of those the driver now refuses
+color depth that are totally off and otherwise the selection in
+viafb_check_var is used. Therefore the first call to this for the
+first framebuffer was delayed a bit. It only enables the new formats
+if they are requested exactly (viafb_bpp|30).
+As this is a new feature, no regressions are expected. The color
+depth 15 was successfully tested. Didn't get anything usable for 30
+but that might be the programs fault. I would like to get some
+feedback whether it works as expected or not if somebody knows a
+program/configuration where it should.
 
 Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/via/hw.c  |   85 +++++++++++++++++++++++++++++-----------------
- drivers/video/via/hw.h  |    1 -
- drivers/video/via/lcd.c |    2 -
- 3 files changed, 53 insertions(+), 35 deletions(-)
+ drivers/video/via/hw.c       |    9 ++++++++
+ drivers/video/via/viafbdev.c |   43 ++++++++++++++++++++++++-----------------
+ 2 files changed, 34 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 400373f..ecbb01f 100644
+index 1823253..f2583b1 100644
 --- a/drivers/video/via/hw.c
 +++ b/drivers/video/via/hw.c
-@@ -685,6 +685,54 @@ void viafb_set_secondary_pitch(u32 pitch)
- 	viafb_write_reg_mask(0x71, VIACR, (pitch >> (10 - 7)) & 0x80, 0x80);
+@@ -694,12 +694,18 @@ void viafb_set_primary_color_depth(u8 depth)
+ 	case 8:
+ 		value = 0x00;
+ 		break;
++	case 15:
++		value = 0x04;
++		break;
+ 	case 16:
+ 		value = 0x14;
+ 		break;
+ 	case 24:
+ 		value = 0x0C;
+ 		break;
++	case 30:
++		value = 0x08;
++		break;
+ 	default:
+ 		printk(KERN_WARNING "viafb_set_primary_color_depth: "
+ 			"Unsupported depth: %d\n", depth);
+@@ -724,6 +730,9 @@ void viafb_set_secondary_color_depth(u8 depth)
+ 	case 24:
+ 		value = 0xC0;
+ 		break;
++	case 30:
++		value = 0x80;
++		break;
+ 	default:
+ 		printk(KERN_WARNING "viafb_set_secondary_color_depth: "
+ 			"Unsupported depth: %d\n", depth);
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 410de33..ce7783b 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -80,6 +80,15 @@ static void viafb_fill_var_color_info(struct fb_var_screeninfo *var, u8 depth)
+ 		var->green.length = 8;
+ 		var->blue.length = 8;
+ 		break;
++	case 15:
++		var->bits_per_pixel = 16;
++		var->red.offset = 10;
++		var->green.offset = 5;
++		var->blue.offset = 0;
++		var->red.length = 5;
++		var->green.length = 5;
++		var->blue.length = 5;
++		break;
+ 	case 16:
+ 		var->bits_per_pixel = 16;
+ 		var->red.offset = 11;
+@@ -98,6 +107,15 @@ static void viafb_fill_var_color_info(struct fb_var_screeninfo *var, u8 depth)
+ 		var->green.length = 8;
+ 		var->blue.length = 8;
+ 		break;
++	case 30:
++		var->bits_per_pixel = 32;
++		var->red.offset = 20;
++		var->green.offset = 10;
++		var->blue.offset = 0;
++		var->red.length = 10;
++		var->green.length = 10;
++		var->blue.length = 10;
++		break;
+ 	}
  }
  
-+void viafb_set_primary_color_depth(u8 depth)
-+{
-+	u8 value;
-+
-+	DEBUG_MSG(KERN_DEBUG "viafb_set_primary_color_depth(%d)\n", depth);
-+	switch (depth) {
-+	case 6:
-+		value = 0x00;
-+		break;
-+	case 16:
-+		value = 0x14;
-+		break;
-+	case 24:
-+		value = 0x0C;
-+		break;
-+	default:
-+		printk(KERN_WARNING "viafb_set_primary_color_depth: "
-+			"Unsupported depth: %d\n", depth);
-+		return;
-+	}
-+
-+	viafb_write_reg_mask(0x15, VIASR, value, 0x1C);
-+}
-+
-+void viafb_set_secondary_color_depth(u8 depth)
-+{
-+	u8 value;
-+
-+	DEBUG_MSG(KERN_DEBUG "viafb_set_secondary_color_depth(%d)\n", depth);
-+	switch (depth) {
-+	case 6:
-+		value = 0x00;
-+		break;
-+	case 16:
-+		value = 0x40;
-+		break;
-+	case 24:
-+		value = 0xC0;
-+		break;
-+	default:
-+		printk(KERN_WARNING "viafb_set_secondary_color_depth: "
-+			"Unsupported depth: %d\n", depth);
-+		return;
-+	}
-+
-+	viafb_write_reg_mask(0x67, VIACR, value, 0xC0);
-+}
-+
- void viafb_set_output_path(int device, int set_iga, int output_interface)
- {
- 	switch (device) {
-@@ -1761,35 +1809,6 @@ void viafb_load_crtc_timing(struct display_timing device_timing,
- 	viafb_lock_crt();
- }
+@@ -171,6 +189,10 @@ static int viafb_check_var(struct fb_var_screeninfo *var,
+ 		return -EINVAL;
+ 	else if (!depth)
+ 		depth = 24;
++	else if (depth = 15 && viafb_dual_fb && ppar->iga_path = IGA1)
++		depth = 15;
++	else if (depth = 30)
++		depth = 30;
+ 	else if (depth <= 8)
+ 		depth = 8;
+ 	else if (depth <= 16)
+@@ -1811,19 +1833,6 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 			viafb_second_virtual_yres = viafb_second_yres;
+ 	}
  
--void viafb_set_color_depth(int bpp_byte, int set_iga)
--{
--	if (set_iga = IGA1) {
--		switch (bpp_byte) {
--		case MODE_8BPP:
--			viafb_write_reg_mask(SR15, VIASR, 0x22, 0x7E);
--			break;
--		case MODE_16BPP:
--			viafb_write_reg_mask(SR15, VIASR, 0xB6, 0xFE);
--			break;
--		case MODE_32BPP:
--			viafb_write_reg_mask(SR15, VIASR, 0xAE, 0xFE);
--			break;
--		}
--	} else {
--		switch (bpp_byte) {
--		case MODE_8BPP:
--			viafb_write_reg_mask(CR67, VIACR, 0x00, BIT6 + BIT7);
--			break;
--		case MODE_16BPP:
--			viafb_write_reg_mask(CR67, VIACR, 0x40, BIT6 + BIT7);
--			break;
--		case MODE_32BPP:
--			viafb_write_reg_mask(CR67, VIACR, 0xC0, BIT6 + BIT7);
--			break;
--		}
+-	switch (viafb_bpp) {
+-	case 0 ... 8:
+-		viafb_bpp = 8;
+-		break;
+-	case 9 ... 16:
+-		viafb_bpp = 16;
+-		break;
+-	case 17 ... 32:
+-		viafb_bpp = 32;
+-		break;
+-	default:
+-		viafb_bpp = 8;
 -	}
--}
--
- void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
- 	struct VideoModeTable *video_mode, int bpp_byte, int set_iga)
- {
-@@ -1867,9 +1886,6 @@ void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
- 	    && (viaparinfo->chip_info->gfx_chip_name != UNICHROME_K400))
- 		viafb_load_FIFO_reg(set_iga, h_addr, v_addr);
+ 	default_var.xres = default_xres;
+ 	default_var.yres = default_yres;
+ 	switch (default_xres) {
+@@ -1836,8 +1845,6 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 	}
+ 	default_var.yres_virtual = default_yres;
+ 	default_var.bits_per_pixel = viafb_bpp;
+-	if (default_var.bits_per_pixel = 15)
+-		default_var.bits_per_pixel = 16;
+ 	default_var.pixclock  	    viafb_get_pixclock(default_xres, default_yres, viafb_refresh);
+ 	default_var.left_margin = (default_xres >> 3) & 0xf8;
+@@ -1847,7 +1854,6 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 	default_var.hsync_len = default_var.left_margin;
+ 	default_var.vsync_len = 4;
+ 	viafb_setup_fixinfo(&viafbinfo->fix, viaparinfo);
+-	viafb_check_var(&default_var, viafbinfo);
+ 	viafbinfo->var = default_var;
  
--	/* load SR Register About Memory and Color part */
--	viafb_set_color_depth(bpp_byte, set_iga);
--
- 	pll_D_N = viafb_get_clk_value(crt_table[index].clk);
- 	DEBUG_MSG(KERN_INFO "PLL=%x", pll_D_N);
- 	viafb_set_vclock(pll_D_N, set_iga);
-@@ -2206,6 +2222,8 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
- 		outb(VPIT.SR[i - 1], VIASR + 1);
+ 	if (viafb_dual_fb) {
+@@ -1883,8 +1889,6 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 		default_var.yres = viafb_second_yres;
+ 		default_var.xres_virtual = viafb_second_virtual_xres;
+ 		default_var.yres_virtual = viafb_second_virtual_yres;
+-		if (viafb_bpp1 != viafb_bpp)
+-			viafb_bpp1 = viafb_bpp;
+ 		default_var.bits_per_pixel = viafb_bpp1;
+ 		default_var.pixclock  		    viafb_get_pixclock(viafb_second_xres, viafb_second_yres,
+@@ -1904,6 +1908,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 			&viafbinfo1->fix);
  	}
  
-+	viafb_write_reg_mask(0x15, VIASR, viafbinfo->fix.visual
-+		= FB_VISUAL_PSEUDOCOLOR ? 0x22 : 0xA2, 0xA2);
- 	viafb_set_iga_path();
++	viafb_check_var(&viafbinfo->var, viafbinfo);
+ 	viafb_update_fix(viafbinfo);
+ 	viaparinfo->depth = fb_get_color_depth(&viafbinfo->var,
+ 		&viafbinfo->fix);
+@@ -2070,6 +2075,8 @@ static int __init viafb_init(void)
+ #endif
+ 	if (parse_mode(viafb_mode, &dummy, &dummy)
+ 		|| parse_mode(viafb_mode1, &dummy, &dummy)
++		|| viafb_bpp < 0 || viafb_bpp > 32
++		|| viafb_bpp1 < 0 || viafb_bpp1 > 32
+ 		|| parse_active_dev())
+ 		return -EINVAL;
  
- 	/* Write CRTC */
-@@ -2245,6 +2263,9 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
- 	viafb_set_primary_pitch(viafbinfo->fix.line_length);
- 	viafb_set_secondary_pitch(viafb_dual_fb ? viafbinfo1->fix.line_length
- 		: viafbinfo->fix.line_length);
-+	viafb_set_primary_color_depth(viaparinfo->depth);
-+	viafb_set_secondary_color_depth(viafb_dual_fb ? viaparinfo1->depth
-+		: viaparinfo->depth);
- 	/* Update Refresh Rate Setting */
- 
- 	/* Clear On Screen */
-diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
-index 789c58a..dd54d3e 100644
---- a/drivers/video/via/hw.h
-+++ b/drivers/video/via/hw.h
-@@ -895,7 +895,6 @@ void viafb_load_fetch_count_reg(int h_addr, int bpp_byte, int set_iga);
- void viafb_write_regx(struct io_reg RegTable[], int ItemNum);
- u32 viafb_get_clk_value(int clk);
- void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active);
--void viafb_set_color_depth(int bpp_byte, int set_iga);
- void viafb_set_dpa_gfx(int output_interface, struct GFX_DPA_SETTING\
- 					*p_gfx_dpa_setting);
- 
-diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
-index 3a83e5b..49651e0 100644
---- a/drivers/video/via/lcd.c
-+++ b/drivers/video/via/lcd.c
-@@ -1006,8 +1006,6 @@ void viafb_lcd_set_mode(struct crt_mode_table *mode_crt_table,
- 		if ((viaparinfo->chip_info->gfx_chip_name != UNICHROME_CLE266)
- 		    && (viaparinfo->chip_info->gfx_chip_name != UNICHROME_K400))
- 			viafb_load_FIFO_reg(set_iga, set_hres, set_vres);
--
--		viafb_set_color_depth(mode_bpp / 8, set_iga);
- 	}
- 
- 	fill_lcd_format();
 -- 
 1.6.3.2
 

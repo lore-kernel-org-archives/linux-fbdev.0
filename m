@@ -1,24 +1,29 @@
 From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Date: Wed, 10 Feb 2010 19:55:30 +0000
+Date: Sat, 13 Feb 2010 10:41:48 +0000
 Subject: [PATCH] efifb: fix framebuffer handoff
-Message-Id: <20100210195530.GA29558@joi.lan>
+Message-Id: <20100213104148.GB2880@joi.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20100210195530.GA29558@joi.lan>
+In-Reply-To: <20100210195530.GA29558@joi.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Airlie <airlied@redhat.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.sourceforge.net, Alex Zhavnerchik <alex.vizor@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Jones <pjones@redhat.com>, Dave Airlie <airlied@redhat.com>, Huang Ying <ying.huang@intel.com>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Alex Zhavnerchik <alex.vizor@gmail.com>
 
 Commit 4410f3910947dcea8672280b3adecd53cec4e85e
 (fbdev: add support for handoff from firmware to hw framebuffers)
-for unknown reason didn't add fb_destroy operation to efifb.
-Fix it and change aperture_size to match size passed
-to request_mem_region.
+didn't add fb_destroy operation to efifb. Fix it and change
+aperture_size to match size passed to request_mem_region.
 
-http://bugzilla.kernel.org/show_bug.cgi?id151
+See: http://bugzilla.kernel.org/show_bug.cgi?id151
 
 Reported-by: Alex Zhavnerchik <alex.vizor@gmail.com>
 Tested-by: Alex Zhavnerchik <alex.vizor@gmail.com>
+Cc: Peter Jones <pjones@redhat.com>
+Cc: Huang Ying <ying.huang@intel.com>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: linux-fbdev@vger.kernel.org
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
 ---
  drivers/video/efifb.c |   11 ++++++++++-

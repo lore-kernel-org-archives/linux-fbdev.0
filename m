@@ -1,101 +1,167 @@
-From: "Phil Edworthy" <Phil.Edworthy@renesas.com>
-Date: Thu, 11 Feb 2010 10:24:25 +0000
-Subject: [PATCH 02/02] sh: Fix panning
-Message-Id: <AB12B32E73474741A2C5361C433A44DE01783685@rte-ben-exch.RTE.ADWIN.RENESAS.COM>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 13 Feb 2010 22:54:13 +0000
+Subject: [PATCH 1/4] viafb: rework color checking
+Message-Id: <1266102049-6209-1-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Fixed SH-Mobile panning. Previously the address of the frame to be displayed
-was updated in the VSync end interrupt. This meant there was a minimum of 1
-frame bewteen calling FBIOPAN_DISPLAY ioctl and the pan occuring. This meant
-that apps were not able to use the FBIO_WAITFORVSYNC ioctl to wait for the
-pan to complete. This patch moves the write to LDSA1R mirror reg into the
-pan
-ioctl.
-Tested on MS7724 board against 2.6.33-rc7
+viafb: rework color checking
 
-Signed-off-by: Phil Edworthy <phil.edworthy@renesas.com>
+This patch makes color checking a bit more tolerant in what values it
+allows and more fine grained to later support 15 and 30 bits formats.
+It splits the filling of the color information in var to a seperate
+function and sets some color related values in var that where previously
+untouched.
+This could be a bug fix but at least I don't know any applications that
+was fooled by not correctly setting the fields in var. At least no
+regressions are expected.
+
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -128,7 +128,6 @@ struct sh_mobile_lcdc_chan {
- 	struct scatterlist *sglist;
- 	unsigned long frame_end;
- 	unsigned long pan_offset;
--	unsigned long new_pan_offset;
- 	wait_queue_head_t frame_end_wait;
- 	struct completion vsync_completion;
- };
-@@ -373,21 +372,6 @@ static irqreturn_t sh_mobile_lcdc_irq(in
- 		}
- 
- 		/* VSYNC End */
--		if ((ldintr & LDINTR_VES) &&
--		    (ch->pan_offset != ch->new_pan_offset)) {
--			unsigned long ldrcntr = lcdc_read(priv, _LDRCNTR);
--			/* Set the source address for the next refresh */
--			lcdc_write_chan_mirror(ch, LDSA1R, ch->dma_handle +
--					       ch->new_pan_offset);
--			if (lcdc_chan_is_sublcd(ch))
--				lcdc_write(ch->lcdc, _LDRCNTR,
--					   ldrcntr ^ LDRCNTR_SRS);
--			else
--				lcdc_write(ch->lcdc, _LDRCNTR,
--					   ldrcntr ^ LDRCNTR_MRS);
--			ch->pan_offset = ch->new_pan_offset;
--		}
--
- 		if (ldintr & LDINTR_VES)
- 			complete(&ch->vsync_completion);
+ drivers/video/via/hw.c       |   30 --------------------
+ drivers/video/via/viafbdev.c |   63 ++++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 57 insertions(+), 36 deletions(-)
+
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index ed8d78a..47d9024 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -2622,36 +2622,6 @@ void viafb_fill_var_timing_info(struct fb_var_screeninfo *var, int refresh,
  	}
-@@ -778,21 +762,28 @@ static int sh_mobile_fb_pan_display(stru
- 				     struct fb_info *info)
- {
- 	struct sh_mobile_lcdc_chan *ch = info->par;
-+	struct sh_mobile_lcdc_priv *priv = ch->lcdc;
-+	unsigned long ldrcntr;
-+	unsigned long new_pan_offset;
-+
-+	new_pan_offset = (var->yoffset * info->fix.line_length) +
-+		(var->xoffset * (info->var.bits_per_pixel / 8));
  
--	if (info->var.xoffset = var->xoffset &&
--	    info->var.yoffset = var->yoffset)
-+	if (new_pan_offset = ch->pan_offset)
- 		return 0;	/* No change, do nothing */
- 
--	ch->new_pan_offset = (var->yoffset * info->fix.line_length) +
--		(var->xoffset * (info->var.bits_per_pixel / 8));
-+	ldrcntr = lcdc_read(priv, _LDRCNTR);
- 
--	if (ch->new_pan_offset != ch->pan_offset) {
--		unsigned long ldintr;
--		ldintr = lcdc_read(ch->lcdc, _LDINTR);
--		ldintr |= LDINTR_VEE;
--		lcdc_write(ch->lcdc, _LDINTR, ldintr);
--		sh_mobile_lcdc_deferred_io_touch(info);
+ 	crt_reg = crt_timing[index].crtc;
+-	switch (var->bits_per_pixel) {
+-	case 8:
+-		var->red.offset = 0;
+-		var->green.offset = 0;
+-		var->blue.offset = 0;
+-		var->red.length = 6;
+-		var->green.length = 6;
+-		var->blue.length = 6;
+-		break;
+-	case 16:
+-		var->red.offset = 11;
+-		var->green.offset = 5;
+-		var->blue.offset = 0;
+-		var->red.length = 5;
+-		var->green.length = 6;
+-		var->blue.length = 5;
+-		break;
+-	case 32:
+-		var->red.offset = 16;
+-		var->green.offset = 8;
+-		var->blue.offset = 0;
+-		var->red.length = 8;
+-		var->green.length = 8;
+-		var->blue.length = 8;
+-		break;
+-	default:
+-		/* never happed, put here to keep consistent */
+-		break;
 -	}
-+	/* Set the source address for the next refresh */
-+	lcdc_write_chan_mirror(ch, LDSA1R, ch->dma_handle + new_pan_offset);
-+	if (lcdc_chan_is_sublcd(ch))
-+		lcdc_write(ch->lcdc, _LDRCNTR, ldrcntr ^ LDRCNTR_SRS);
+-
+ 	var->pixclock = viafb_get_pixclock(var->xres, var->yres, refresh);
+ 	var->left_margin  	    crt_reg.hor_total - (crt_reg.hor_sync_start + crt_reg.hor_sync_end);
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index bb0f616..bd8db75 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -60,6 +60,47 @@ static int viafb_pan_display(struct fb_var_screeninfo *var,
+ static struct fb_ops viafb_ops;
+ 
+ 
++static void viafb_fill_var_color_info(struct fb_var_screeninfo *var, u8 depth)
++{
++	var->grayscale = 0;
++	var->red.msb_right = 0;
++	var->green.msb_right = 0;
++	var->blue.msb_right = 0;
++	var->transp.offset = 0;
++	var->transp.length = 0;
++	var->transp.msb_right = 0;
++	var->nonstd = 0;
++	switch (depth) {
++	case 8:
++		var->bits_per_pixel = 8;
++		var->red.offset = 0;
++		var->green.offset = 0;
++		var->blue.offset = 0;
++		var->red.length = 6;
++		var->green.length = 6;
++		var->blue.length = 6;
++		break;
++	case 16:
++		var->bits_per_pixel = 16;
++		var->red.offset = 11;
++		var->green.offset = 5;
++		var->blue.offset = 0;
++		var->red.length = 5;
++		var->green.length = 6;
++		var->blue.length = 5;
++		break;
++	case 24:
++		var->bits_per_pixel = 32;
++		var->red.offset = 16;
++		var->green.offset = 8;
++		var->blue.offset = 0;
++		var->red.length = 8;
++		var->green.length = 8;
++		var->blue.length = 8;
++		break;
++	}
++}
++
+ static void viafb_update_fix(struct fb_info *info)
+ {
+ 	u32 bpp = info->var.bits_per_pixel;
+@@ -81,6 +122,7 @@ static void viafb_setup_fixinfo(struct fb_fix_screeninfo *fix,
+ 
+ 	fix->type = FB_TYPE_PACKED_PIXELS;
+ 	fix->type_aux = 0;
++	fix->visual = FB_VISUAL_TRUECOLOR;
+ 
+ 	fix->xpanstep = fix->ywrapstep = 0;
+ 	fix->ypanstep = 1;
+@@ -103,7 +145,7 @@ static int viafb_release(struct fb_info *info, int user)
+ static int viafb_check_var(struct fb_var_screeninfo *var,
+ 	struct fb_info *info)
+ {
+-	int htotal, vtotal;
++	int htotal, vtotal, depth;
+ 	struct VideoModeTable *vmode_entry;
+ 	struct viafb_par *ppar = info->par;
+ 	u32 long_refresh;
+@@ -122,13 +164,22 @@ static int viafb_check_var(struct fb_var_screeninfo *var,
+ 		return -EINVAL;
+ 	}
+ 
+-	if (24 = var->bits_per_pixel)
+-		var->bits_per_pixel = 32;
++	depth = fb_get_color_depth(var, &info->fix);
++	if (!depth)
++		depth = var->bits_per_pixel;
+ 
+-	if (var->bits_per_pixel != 8 && var->bits_per_pixel != 16 &&
+-		var->bits_per_pixel != 32)
++	if (depth < 0 || depth > 32)
+ 		return -EINVAL;
++	else if (!depth)
++		depth = 24;
++	else if (depth <= 8)
++		depth = 8;
++	else if (depth <= 16)
++		depth = 16;
 +	else
-+		lcdc_write(ch->lcdc, _LDRCNTR, ldrcntr ^ LDRCNTR_MRS);
-+
-+	ch->pan_offset = new_pan_offset;
-+
-+	sh_mobile_lcdc_deferred_io_touch(info);
++		depth = 24;
  
- 	return 0;
- }
-@@ -1015,7 +1006,6 @@ static int __init sh_mobile_lcdc_probe(s
- 		init_waitqueue_head(&priv->ch[i].frame_end_wait);
- 		init_completion(&priv->ch[i].vsync_completion);
- 		priv->ch[j].pan_offset = 0;
--		priv->ch[j].new_pan_offset = 0;
- 
- 		switch (pdata->ch[i].chan) {
- 		case LCDC_CHAN_MAINLCD:
++	viafb_fill_var_color_info(var, depth);
+ 	if ((var->xres_virtual * (var->bits_per_pixel >> 3)) & 0x1F)
+ 		/*32 pixel alignment */
+ 		var->xres_virtual = (var->xres_virtual + 31) & ~31;
+-- 
+1.6.3.2
+

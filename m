@@ -1,78 +1,66 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Mon, 08 Feb 2010 15:56:12 +0000
-Subject: [PATCH 13/13] OMAP: DSS2: DSI: remove dsi_vc_print_status()
-Message-Id: <1265644572-3578-14-git-send-email-tomi.valkeinen@nokia.com>
+From: Ben Hutchings <ben@decadent.org.uk>
+Date: Sun, 14 Feb 2010 14:20:13 +0000
+Subject: [PATCH 4/5] video: Fix first line of kernel-doc for a few functions
+Message-Id: <1266157213.10567.16.camel@localhost>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1265644572-3578-1-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-2-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-3-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-4-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-5-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-6-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-7-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-8-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-9-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-10-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-11-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-12-git-send-email-tomi.valkeinen@nokia.com>
- <1265644572-3578-13-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1265644572-3578-13-git-send-email-tomi.valkeinen@nokia.com>
+References: <1266157055.10567.13.camel@localhost>
+In-Reply-To: <1266157055.10567.13.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: linux-fbdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
 
-It was not used.
+The function name must be followed by a space, hypen, space, and a
+short description.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 ---
- drivers/video/omap2/dss/dsi.c |   21 ---------------------
- 1 files changed, 0 insertions(+), 21 deletions(-)
+ drivers/video/modedb.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 131bd53..4b85ed2 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -1760,24 +1760,6 @@ static int dsi_force_tx_stop_mode_io(void)
- 	return 0;
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+index 0129f1b..b895aae 100644
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -893,7 +893,7 @@ const struct fb_videomode *fb_match_mode(const struct fb_var_screeninfo *var,
  }
  
--static void dsi_vc_print_status(int channel)
--{
--	u32 r;
--
--	r = dsi_read_reg(DSI_VC_CTRL(channel));
--	DSSDBG("vc %d: TX_FIFO_NOT_EMPTY %d, BTA_EN %d, VC_BUSY %d, "
--			"TX_FIFO_FULL %d, RX_FIFO_NOT_EMPTY %d, ",
--			channel,
--			FLD_GET(r, 5, 5),
--			FLD_GET(r, 6, 6),
--			FLD_GET(r, 15, 15),
--			FLD_GET(r, 16, 16),
--			FLD_GET(r, 20, 20));
--
--	r = dsi_read_reg(DSI_TX_FIFO_VC_EMPTINESS);
--	DSSDBG("EMPTINESS %d\n", (r >> (8 * channel)) & 0xff);
--}
--
- static int dsi_vc_enable(int channel, bool enable)
- {
- 	if (dsi.update_mode != OMAP_DSS_UPDATE_AUTO)
-@@ -2062,13 +2044,10 @@ static int dsi_vc_send_long(int channel, u8 data_type, u8 *data, u16 len,
+ /**
+- * fb_add_videomode: adds videomode entry to modelist
++ * fb_add_videomode - adds videomode entry to modelist
+  * @mode: videomode to add
+  * @head: struct list_head of modelist
+  *
+@@ -928,7 +928,7 @@ int fb_add_videomode(const struct fb_videomode *mode, struct list_head *head)
+ }
  
- 	dsi_vc_write_long_header(channel, data_type, len, ecc);
+ /**
+- * fb_delete_videomode: removed videomode entry from modelist
++ * fb_delete_videomode - removed videomode entry from modelist
+  * @mode: videomode to remove
+  * @head: struct list_head of modelist
+  *
+@@ -953,7 +953,7 @@ void fb_delete_videomode(const struct fb_videomode *mode,
+ }
  
--	/*dsi_vc_print_status(0); */
--
- 	p = data;
- 	for (i = 0; i < len >> 2; i++) {
- 		if (dsi.debug_write)
- 			DSSDBG("\tsending full packet %d\n", i);
--		/*dsi_vc_print_status(0); */
+ /**
+- * fb_destroy_modelist: destroy modelist
++ * fb_destroy_modelist - destroy modelist
+  * @head: struct list_head of modelist
+  */
+ void fb_destroy_modelist(struct list_head *head)
+@@ -968,7 +968,7 @@ void fb_destroy_modelist(struct list_head *head)
+ EXPORT_SYMBOL_GPL(fb_destroy_modelist);
  
- 		b1 = *p++;
- 		b2 = *p++;
+ /**
+- * fb_videomode_to_modelist: convert mode array to mode list
++ * fb_videomode_to_modelist - convert mode array to mode list
+  * @modedb: array of struct fb_videomode
+  * @num: number of entries in array
+  * @head: struct list_head of modelist
 -- 
-1.6.5
+1.6.6.2
+
+
 

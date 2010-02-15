@@ -1,62 +1,224 @@
-From: "sun york-R58495" <R58495@freescale.com>
-Date: Sun, 28 Feb 2010 14:32:06 +0000
-Subject: RE: [PATCH 0/3] Rework MPC5121 DIU support (for 2.6.34)
-Message-Id: <10cb201cab882$d0026955$0c23400a@fsl.freescale.net>
+From: Bernie Thompson <bernie@plugable.com>
+Date: Mon, 15 Feb 2010 14:45:43 +0000
+Subject: [PATCH 1/10] udlfb: checkpatch cleanup
+Message-Id: <1266245143.4353.3288.camel@bernie-aspireone>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1267307902-31939-1-git-send-email-agust@denx.de>
-In-Reply-To: <1267307902-31939-1-git-send-email-agust@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Anatolij Gustschin <agust@denx.de>
-Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de, jrigby@gmail.com, linuxppc-dev@ozlabs.org
+To: linux-fbdev@vger.kernel.org
 
-I agree device tree is the right direction to go.
+Eliminate checkpatch.pl warnings and errors so later patches in series are clean
 
-Sent from my Android phone
------ Original Message -----
-From:"Anatolij Gustschin" <agust@denx.de>
-To:"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Cc:"grant.likely@secretlab.ca" <grant.likely@secretlab.ca>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "yorksun@freescale.com" <yorksun@freescale.com>, "dzu@denx.de" <dzu@denx.de>, "wd@denx.de" <wd@denx.de>, "jrigby@gmail.com" <jrigby@gmail.com>, "Anatolij Gustschin" <agust@denx.de>
-Sent:02-27-2010 16:00
-Subject:[PATCH 0/3] Rework MPC5121 DIU support (for 2.6.34)
+Signed-off-by: Bernie Thompson <bernie@plugable.com>
+=================================---
+ drivers/staging/udlfb/udlfb.c |   74 +++++++++++++++++++-----------------------
+ drivers/staging/udlfb/udlfb.h |    1 
+ 2 files changed, 34 insertions(+), 41 deletions(-)
 
-
-This patch series rework DIU support patch submitted
-previously with the patch series for updating MPC5121
-support in mainline. It doesn't add new panel timing data
-to the framebuffer driver anymore. Instead we now allow
-encoding this data in the device tree. First two patches
-add this support.
-
-The third patch for DIU support is rebased, but still
-depends on patches for adding MPC5121 USB support (because
-it touches shared platform code).
-
-It is intended for inclusion in 2.6.34, since without
-DIU support patch framebuffer doesn't work on mpc5121.
-
-Anatolij Gustschin (3):
-  video: add support for getting video mode from device tree
-  fbdev: fsl-diu-fb.c: allow setting panel video mode from DT
-  powerpc/mpc5121: shared DIU framebuffer support
-
- arch/powerpc/platforms/512x/mpc5121_ads.c     |    7 +
- arch/powerpc/platforms/512x/mpc5121_generic.c |   13 ++
- arch/powerpc/platforms/512x/mpc512x.h         |    3 +
- arch/powerpc/platforms/512x/mpc512x_shared.c  |  282 +++++++++++++++++++++++++
- arch/powerpc/sysdev/fsl_soc.h                 |    1 +
- drivers/video/Kconfig                         |    6 +
- drivers/video/Makefile                        |    1 +
- drivers/video/fsl-diu-fb.c                    |   88 +++++---
- drivers/video/fsl-diu-fb.h                    |  223 -------------------
- drivers/video/ofmode.c                        |   95 +++++++++
- drivers/video/ofmode.h                        |    6 +
- include/linux/fsl-diu-fb.h                    |  223 +++++++++++++++++++
- 12 files changed, 693 insertions(+), 255 deletions(-)
- delete mode 100644 drivers/video/fsl-diu-fb.h
- create mode 100644 drivers/video/ofmode.c
- create mode 100644 drivers/video/ofmode.h
- create mode 100644 include/linux/fsl-diu-fb.h
+Index: linux-next/drivers/staging/udlfb/udlfb.c
+=================================--- linux-next.orig/drivers/staging/udlfb/udlfb.c	2010-02-14 20:21:36.000000000 -0800
++++ linux-next/drivers/staging/udlfb/udlfb.c	2010-02-14 20:21:39.000000000 -0800
+@@ -30,13 +30,13 @@
+ #define DRIVER_VERSION "DisplayLink Framebuffer Driver 0.4.1"
+ 
+ static struct fb_fix_screeninfo dlfb_fix = {
+-       .id =           "displaylinkfb",
+-       .type =         FB_TYPE_PACKED_PIXELS,
+-       .visual =       FB_VISUAL_TRUECOLOR,
+-       .xpanstep =     0,
+-       .ypanstep =     0,
+-       .ywrapstep =    0,
+-       .accel =        FB_ACCEL_NONE,
++	.id =           "displaylinkfb",
++	.type =         FB_TYPE_PACKED_PIXELS,
++	.visual =       FB_VISUAL_TRUECOLOR,
++	.xpanstep =     0,
++	.ypanstep =     0,
++	.ywrapstep =    0,
++	.accel =        FB_ACCEL_NONE,
+ };
+ 
+ #define NR_USB_REQUEST_I2C_SUB_IO 0x02
+@@ -48,21 +48,21 @@ static struct fb_fix_screeninfo dlfb_fix
+  */
+ static char *insert_command(char *buf, u8 reg, u8 val)
+ {
+-       *buf++ = 0xAF;
+-       *buf++ = 0x20;
+-       *buf++ = reg;
+-       *buf++ = val;
+-       return buf;
++	*buf++ = 0xAF;
++	*buf++ = 0x20;
++	*buf++ = reg;
++	*buf++ = val;
++	return buf;
+ }
+ 
+ static char *insert_vidreg_lock(char *buf)
+ {
+-       return insert_command(buf, 0xFF, 0x00);
++	return insert_command(buf, 0xFF, 0x00);
+ }
+ 
+ static char *insert_vidreg_unlock(char *buf)
+ {
+-       return insert_command(buf, 0xFF, 0xFF);
++	return insert_command(buf, 0xFF, 0xFF);
+ }
+ 
+ /*
+@@ -71,33 +71,33 @@ static char *insert_vidreg_unlock(char *
+  */
+ static char *insert_enable_hvsync(char *buf)
+ {
+-       return insert_command(buf, 0x1F, 0x00);
++	return insert_command(buf, 0x1F, 0x00);
+ }
+ 
+ static char *insert_set_color_depth(char *buf, u8 selection)
+ {
+-       return insert_command(buf, 0x00, selection);
++	return insert_command(buf, 0x00, selection);
+ }
+ 
+ static char *insert_set_base16bpp(char *wrptr, u32 base)
+ {
+-       /* the base pointer is 16 bits wide, 0x20 is hi byte. */
+-       wrptr = insert_command(wrptr, 0x20, base >> 16);
+-       wrptr = insert_command(wrptr, 0x21, base >> 8);
+-       return insert_command(wrptr, 0x22, base);
++	/* the base pointer is 16 bits wide, 0x20 is hi byte. */
++	wrptr = insert_command(wrptr, 0x20, base >> 16);
++	wrptr = insert_command(wrptr, 0x21, base >> 8);
++	return insert_command(wrptr, 0x22, base);
+ }
+ 
+ static char *insert_set_base8bpp(char *wrptr, u32 base)
+ {
+-       wrptr = insert_command(wrptr, 0x26, base >> 16);
+-       wrptr = insert_command(wrptr, 0x27, base >> 8);
+-       return insert_command(wrptr, 0x28, base);
++	wrptr = insert_command(wrptr, 0x26, base >> 16);
++	wrptr = insert_command(wrptr, 0x27, base >> 8);
++	return insert_command(wrptr, 0x28, base);
+ }
+ 
+ static char *insert_command_16(char *wrptr, u8 reg, u16 value)
+ {
+-       wrptr = insert_command(wrptr, reg, value >> 8);
+-       return insert_command(wrptr, reg+1, value);
++	wrptr = insert_command(wrptr, reg, value >> 8);
++	return insert_command(wrptr, reg+1, value);
+ }
+ 
+ /*
+@@ -106,8 +106,8 @@ static char *insert_command_16(char *wrp
+  */
+ static char *insert_command_16be(char *wrptr, u8 reg, u16 value)
+ {
+-       wrptr = insert_command(wrptr, reg, value);
+-       return insert_command(wrptr, reg+1, value >> 8);
++	wrptr = insert_command(wrptr, reg, value);
++	return insert_command(wrptr, reg+1, value >> 8);
+ }
+ 
+ /*
+@@ -339,7 +339,7 @@ MODULE_DEVICE_TABLE(usb, id_table);
+ 
+ static struct usb_driver dlfb_driver;
+ 
+-// thanks to Henrik Bjerregaard Pedersen for this function
++/* thanks to Henrik Bjerregaard Pedersen for this function */
+ static char *rle_compress16(uint16_t * src, char *dst, int rem)
+ {
+ 
+@@ -347,7 +347,7 @@ static char *rle_compress16(uint16_t * s
+ 	uint16_t pix0;
+ 	char *end_if_raw = dst + 6 + 2 * rem;
+ 
+-	dst += 6;		// header will be filled in if RLE is worth it
++	dst += 6; /* header will be filled in if RLE is worth it */
+ 
+ 	while (rem && dst < end_if_raw) {
+ 		char *start = (char *)src;
+@@ -366,8 +366,8 @@ static char *rle_compress16(uint16_t * s
+ }
+ 
+ /*
+-Thanks to Henrik Bjerregaard Pedersen for rle implementation and code refactoring.
+-Next step is huffman compression.
++Thanks to Henrik Bjerregaard Pedersen for rle implementation
++and code refactoring. Next step is huffman compression.
+ */
+ 
+ static int
+@@ -419,7 +419,7 @@ image_blit(struct dlfb_data *dev_info, i
+ 						  bufptr - dev_info->buf);
+ 				bufptr = dev_info->buf;
+ 			}
+-			// number of pixels to consider this time
++			/* number of pixels to consider this time */
+ 			thistime = rem;
+ 			if (thistime > 255)
+ 				thistime = 255;
+@@ -467,7 +467,7 @@ image_blit(struct dlfb_data *dev_info, i
+ 					bufptr = end_of_rle;
+ 
+ 				} else {
+-					// fallback to raw (or some other encoding?)
++					/* fallback to raw (or other?) */
+ 					*bufptr++ = 0xAF;
+ 					*bufptr++ = 0x68;
+ 
+@@ -479,7 +479,6 @@ image_blit(struct dlfb_data *dev_info, i
+ 					*bufptr++  					    (char)(base + firstdiff * 2);
+ 					*bufptr++ = thistime - firstdiff;
+-					// PUT COMPRESSION HERE
+ 					for (j = firstdiff * 2;
+ 					     j < thistime * 2; j += 2) {
+ 						*bufptr++ = data[j + 1];
+@@ -621,7 +620,7 @@ static void swapfb(struct dlfb_data *dev
+ 
+ 	bufptr = dlfb_set_register(bufptr, 0xFF, 0x00);
+ 
+-	// set addresses
++	/* set addresses */
+ 	bufptr  	    dlfb_set_register(bufptr, 0x20, (char)(dev_info->base16 >> 16));
+ 	bufptr = dlfb_set_register(bufptr, 0x21, (char)(dev_info->base16 >> 8));
+@@ -803,9 +802,6 @@ static void dlfb_copyarea(struct fb_info
+ 
+ 	copyarea(dev, area->dx, area->dy, area->sx, area->sy, area->width,
+ 		 area->height);
+-
+-	/* printk("COPY AREA %d %d %d %d %d %d !!!\n", area->dx, area->dy, area->sx, area->sy, area->width, area->height); */
+-
+ }
+ 
+ static void dlfb_imageblit(struct fb_info *info, const struct fb_image *image)
+@@ -813,12 +809,10 @@ static void dlfb_imageblit(struct fb_inf
+ 
+ 	int ret;
+ 	struct dlfb_data *dev = info->par;
+-	/* printk("IMAGE BLIT (1) %d %d %d %d DEPTH %d {%p}!!!\n", image->dx, image->dy, image->width, image->height, image->depth, dev->udev); */
+ 	cfb_imageblit(info, image);
+ 	ret  	    image_blit(dev, image->dx, image->dy, image->width, image->height,
+ 		       info->screen_base);
+-	/* printk("IMAGE BLIT (2) %d %d %d %d DEPTH %d {%p} %d!!!\n", image->dx, image->dy, image->width, image->height, image->depth, dev->udev, ret); */
+ }
+ 
+ static void dlfb_fillrect(struct fb_info *info,
+Index: linux-next/drivers/staging/udlfb/udlfb.h
+=================================--- linux-next.orig/drivers/staging/udlfb/udlfb.h	2010-02-14 20:21:35.000000000 -0800
++++ linux-next/drivers/staging/udlfb/udlfb.h	2010-02-14 20:21:39.000000000 -0800
+@@ -44,7 +44,6 @@ static void dlfb_edid(struct dlfb_data *
+ 				    usb_rcvctrlpipe(dev_info->udev, 0), (0x02),
+ 				    (0x80 | (0x02 << 5)), i << 8, 0xA1, rbuf, 2,
+ 				    0);
+-		/*printk("ret control msg edid %d: %d [%d]\n",i, ret, rbuf[1]); */
+ 		dev_info->edid[i] = rbuf[1];
+ 	}
+ 
 
 

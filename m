@@ -1,10 +1,10 @@
 From: Baruch Siach <baruch@tkos.co.il>
-Date: Wed, 10 Feb 2010 07:25:20 +0000
+Date: Wed, 17 Feb 2010 10:33:25 +0000
 Subject: [PATCH 3/3] mx25pdk: add LCD support
-Message-Id: <d46f11162815bb8e4bb85d49870f600df2a8aee1.1265786237.git.baruch@tkos.co.il>
+Message-Id: <88d35ab38e7f0adf7a8c712843785d21d6225065.1266402631.git.baruch@tkos.co.il>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1265786237.git.baruch@tkos.co.il>
-In-Reply-To: <cover.1265786237.git.baruch@tkos.co.il>
+References: <20100217094359.GY17643@pengutronix.de>
+In-Reply-To: <20100217094359.GY17643@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

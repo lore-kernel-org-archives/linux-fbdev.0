@@ -1,70 +1,57 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=
-Date: Wed, 10 Feb 2010 08:26:54 +0000
-Subject: Re: [PATCH 1/3] imxfb: add support for i.MX25
-Message-Id: <20100210082654.GC10185@pengutronix.de>
+From: Baruch Siach <baruch@tkos.co.il>
+Date: Wed, 17 Feb 2010 10:33:23 +0000
+Subject: [PATCH 1/3] imxfb: add support for i.MX25
+Message-Id: <4462289450ddcd8b075afc1445bacb78615c38eb.1266402631.git.baruch@tkos.co.il>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1265786237.git.baruch@tkos.co.il>
-	<0bea69783cf8f6b04c64fed75f10c3dd3c567fb4.1265786237.git.baruch@tkos.co.il>
-	<20100210075007.GA10185@pengutronix.de>
-	<20100210081512.GA29489@jasper.tkos.co.il>
-In-Reply-To: <20100210081512.GA29489@jasper.tkos.co.il>
+References: <20100217094359.GY17643@pengutronix.de>
+In-Reply-To: <20100217094359.GY17643@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 To: linux-arm-kernel@lists.infradead.org
 
-Hello Baruch,
+The commit also introduces the HAVE_FB_IMX config that is to be selected fr=
+om
+the MX25 platform config. Once this commit gets merged, the two other i.MX
+archs, ARCH_MX1 and ARCH_MX2, should follow this one.
 
-On Wed, Feb 10, 2010 at 10:15:13AM +0200, Baruch Siach wrote:
-> On Wed, Feb 10, 2010 at 08:50:07AM +0100, Uwe Kleine-K=F6nig wrote:
-> > On Wed, Feb 10, 2010 at 09:25:18AM +0200, Baruch Siach wrote:
-> > > Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-> > > ---
-> > >  drivers/video/Kconfig |    2 +-
-> > >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > >=20
-> > > diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> > > index 5a5c303..7ff9acc 100644
-> > > --- a/drivers/video/Kconfig
-> > > +++ b/drivers/video/Kconfig
-> > > @@ -402,7 +402,7 @@ config FB_SA1100
-> > > =20
-> > >  config FB_IMX
-> > >  	tristate "Motorola i.MX LCD support"
-> > > -	depends on FB && (ARCH_MX1 || ARCH_MX2)
-> > > +	depends on FB && (ARCH_MX1 || ARCH_MX2 || ARCH_MX25)
-> > Can we make this
-> >=20
-> > 	depends on FB && HAVE_FB_IMX
-> >=20
-> > and let the archs select HAVE_FB_IMX?
->=20
-> I just wanted to do the minimal working change. Do you want me to send a =
-patch=20
-> updating each ARCH's Kconfig?
-Of course this should go in a seperate patch, so this is your chance to
-increase your patch count even further :-)
+Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+Acked-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+---
+ arch/arm/plat-mxc/Kconfig |    1 +
+ drivers/video/Kconfig     |    5 ++++-
+ 2 files changed, 5 insertions(+), 1 deletions(-)
 
-For now I'd do the following to minimize inter-tree dependencies:
-
-	* remove all explicit dependencies on FB in the above block
-	* define
-		config HAVE_FB_IMX
-		bool
-	  just before config FB_IMX and add it to the latter's
-	  dependencies, such that it reads:
-
-		depends on HAVE_FB_IMX || ARCH_MX1 || ARCH_MX2
-
-and when this change hit's Linus' tree let ARCH_MX1 and ARCH_MX2 select
-HAVE_FB_IMX, too and remove it from the list.
-
-I don't care when you add ARCH_MX25 as everything is more or less
-orthogonal here.
-
-Best regards
-Uwe
-
+diff --git a/arch/arm/plat-mxc/Kconfig b/arch/arm/plat-mxc/Kconfig
+index 8b0a1ee..2a049df 100644
+--- a/arch/arm/plat-mxc/Kconfig
++++ b/arch/arm/plat-mxc/Kconfig
+@@ -24,6 +24,7 @@ config ARCH_MX25
+ 	bool "MX25-based"
+ 	select CPU_ARM926T
+ 	select COMMON_CLKDEV
++	select HAVE_FB_IMX
+ 	help
+ 	  This enables support for systems based on the Freescale i.MX25 family
+=20
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 5a5c303..83d40ed 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -400,9 +400,12 @@ config FB_SA1100
+ 	  If you plan to use the LCD display with your SA-1100 system, say
+ 	  Y here.
+=20
++config HAVE_FB_IMX
++	bool
++
+ config FB_IMX
+ 	tristate "Motorola i.MX LCD support"
+-	depends on FB && (ARCH_MX1 || ARCH_MX2)
++	depends on FB && (HAVE_FB_IMX || ARCH_MX1 || ARCH_MX2)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
 --=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+1.6.6.1
+

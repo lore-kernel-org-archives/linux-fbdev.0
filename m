@@ -1,7 +1,7 @@
-From: Greg KH <greg@kroah.com>
-Date: Thu, 18 Feb 2010 15:59:37 +0000
+From: Bernie Thompson <bernie@plugable.com>
+Date: Thu, 18 Feb 2010 23:06:48 +0000
 Subject: Re: [PATCH 7/10] udlfb: improved rendering performance
-Message-Id: <20100218155937.GE21785@kroah.com>
+Message-Id: <480988181002181506x6093b48bof00554c9848197fd@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1266245181.4353.3302.camel@bernie-aspireone>
 In-Reply-To: <1266245181.4353.3302.camel@bernie-aspireone>
@@ -10,22 +10,13 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 06:46:21AM -0800, Bernie Thompson wrote:
-> Rework rendering for improved performance
-> 
-> Approx 10-20% gain avg across several "benchmarks": x11perf, gtkperf, glxgears
-> Moves from a single pre-alloc'd urb protected by a long-held mutex
-> To a list of (4) pre-alloc'd urbs which can be dispatched asynchonously
-> 
-> Improved rendering algorithm to hardware with lower CPU consumption, 
-> fewer system memory accesses, and slightly higher compression.
-> 
-> Better scalability to multiple processors, especially with
-> multiple framebuffers active.
+On Thu, Feb 18, 2010 at 7:59 AM, Greg KH <greg@kroah.com> wrote:
+> Very nice job, although it would be interesting to see if the
+> preallocated urbs really had any affect here :)
 
-Very nice job, although it would be interesting to see if the
-preallocated urbs really had any affect here :)
+Yea, as you say it's not the pre-alloc, it's the async dispatch
+(multiple urbs in flight - rendering of one buffer being able to be
+concurrent with others in transit) that's the big win.
 
-thanks,
-
-greg k-h
+Best wishes,
+Bernie

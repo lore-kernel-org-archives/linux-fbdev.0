@@ -1,98 +1,73 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Tue, 09 Feb 2010 14:32:37 +0000
-Subject: [PATCH 2/3] viafb: video address setting revisited
-Message-Id: <1265725958-4641-2-git-send-email-FlorianSchandinat@gmx.de>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Sat, 20 Feb 2010 23:20:01 +0000
+Subject: [PATCH 1/3] backlight: Add backlight_device parameter to check_fb
+Message-Id: <20100221002001.0a7e05a7@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1265725958-4641-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1265725958-4641-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <20100221001049.2f63f5d6@neptune.home>
+In-Reply-To: <20100221001049.2f63f5d6@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Richard Purdie <rpurdie@rpsys.net>, Thierry Reding <thierry.reding@avionic-design.de>, Emese Revfy <re.emese@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-viafb: video address setting revisited
+check_fb from backlight_ops lacks a reference to the backlight_device
+that's being referred to. Add this parameter so a backlight_device
+can be mapped to a single framebuffer, especially if the same driver
+handles multiple devices on a single system.
 
-Set always the correct video address. Especially do panning right on
-multiple IGAs.
-This should have no effect on single monitor mode (no SAMM, no dual fb).
-For SAMM without dual fb this might break something as I really cannot
-image what we are supposed to do for different resolutions with a single
-framebuffer as we can't get data out of nowhere (no, they are not set
-up in something one would call "expanded"). Previously I got for that
-funny colored pictures as the second IGA pointed to video memory that
-was never written to. After the patch it'll work as cloning if the first
-and second mode are identical (this was working already without SAMM).
-Finally for dual fb this should push us a step in the right direction.
-
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
 ---
- drivers/video/via/hw.c       |    2 --
- drivers/video/via/viafbdev.c |   23 +++++++++++++++--------
- 2 files changed, 15 insertions(+), 10 deletions(-)
+ drivers/video/backlight/adx_bl.c    |    2 +-
+ drivers/video/backlight/backlight.c |    2 +-
+ include/linux/backlight.h           |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 1aa3bb2..400373f 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -2206,8 +2206,6 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
- 		outb(VPIT.SR[i - 1], VIASR + 1);
- 	}
- 
--	viafb_set_primary_address(0);
--	viafb_set_secondary_address(viafb_SAMM_ON ? viafb_second_offset : 0);
- 	viafb_set_iga_path();
- 
- 	/* Write CRTC */
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 4d955ca..b417259 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -50,6 +50,8 @@ static void apply_second_mode_setting(struct fb_var_screeninfo
- 	*sec_var);
- static void retrieve_device_setting(struct viafb_ioctl_setting
- 	*setting_info);
-+static int viafb_pan_display(struct fb_var_screeninfo *var,
-+	struct fb_info *info);
- 
- static struct fb_ops viafb_ops;
- 
-@@ -182,6 +184,7 @@ static int viafb_set_par(struct fb_info *info)
- 			info->flags |= FBINFO_HWACCEL_DISABLED;
- 		viafb_setmode(vmode_entry, info->var.bits_per_pixel,
- 			vmode_entry1, viafb_bpp1);
-+		viafb_pan_display(&info->var, info);
- 	}
- 
- 	return 0;
-@@ -410,15 +413,19 @@ static int viafb_setcmap(struct fb_cmap *cmap, struct fb_info *info)
- static int viafb_pan_display(struct fb_var_screeninfo *var,
- 	struct fb_info *info)
- {
--	unsigned int offset;
--
--	DEBUG_MSG(KERN_INFO "viafb_pan_display!\n");
--
--	offset = (var->xoffset + (var->yoffset * var->xres_virtual)) *
--	    var->bits_per_pixel / 16;
-+	struct viafb_par *viapar = info->par;
-+	u32 vram_addr = (var->yoffset * var->xres_virtual + var->xoffset)
-+		* (var->bits_per_pixel / 8) + viapar->vram_addr;
-+
-+	DEBUG_MSG(KERN_DEBUG "viafb_pan_display, address = %d\n", vram_addr);
-+	if (!viafb_dual_fb) {
-+		viafb_set_primary_address(vram_addr);
-+		viafb_set_secondary_address(vram_addr);
-+	} else if (viapar->iga_path = IGA1)
-+		viafb_set_primary_address(vram_addr);
-+	else
-+		viafb_set_secondary_address(vram_addr);
- 
--	DEBUG_MSG(KERN_INFO "\nviafb_pan_display,offset =%d ", offset);
--	viafb_set_primary_address(offset);
- 	return 0;
+diff --git a/drivers/video/backlight/adx_bl.c b/drivers/video/backlight/adx=
+_bl.c
+index d769b0b..a683dd1 100644
+--- a/drivers/video/backlight/adx_bl.c
++++ b/drivers/video/backlight/adx_bl.c
+@@ -56,7 +56,7 @@ static int adx_backlight_get_brightness(struct backlight_=
+device *bldev)
+ 	return brightness & 0xff;
  }
- 
--- 
-1.6.3.2
+=20
+-static int adx_backlight_check_fb(struct fb_info *fb)
++static int adx_backlight_check_fb(struct backlight_device *bldev, struct f=
+b_info *fb)
+ {
+ 	return 1;
+ }
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/=
+backlight.c
+index 18829cf..b800cd4 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -38,7 +38,7 @@ static int fb_notifier_callback(struct notifier_block *se=
+lf,
+ 	mutex_lock(&bd->ops_lock);
+ 	if (bd->ops)
+ 		if (!bd->ops->check_fb ||
+-		    bd->ops->check_fb(evdata->info)) {
++		    bd->ops->check_fb(bd, evdata->info)) {
+ 			bd->props.fb_blank =3D *(int *)evdata->data;
+ 			if (bd->props.fb_blank =3D FB_BLANK_UNBLANK)
+ 				bd->props.state &=3D ~BL_CORE_FBBLANK;
+diff --git a/include/linux/backlight.h b/include/linux/backlight.h
+index 8c4f884..15413ce 100644
+--- a/include/linux/backlight.h
++++ b/include/linux/backlight.h
+@@ -47,7 +47,7 @@ struct backlight_ops {
+ 	int (* const get_brightness)(struct backlight_device *);
+ 	/* Check if given framebuffer device is the one bound to this backlight;
+ 	   return 0 if not, !=3D0 if it is. If NULL, backlight always matches the=
+ fb. */
+-	int (* const check_fb)(struct fb_info *);
++	int (* const check_fb)(struct backlight_device *, struct fb_info *);
+ };
+=20
+ /* This structure defines all the properties of a backlight */
+--=20
+1.6.4.4
 

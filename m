@@ -1,130 +1,147 @@
-From: Baruch Siach <baruch@tkos.co.il>
-Date: Wed, 17 Feb 2010 10:33:24 +0000
-Subject: [PATCH 2/3] mx25: add platform support for imxfb
-Message-Id: <b12ebbc018327b298d8bcd8a9fb50bcedddba3ff.1266402631.git.baruch@tkos.co.il>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Sat, 20 Feb 2010 23:28:31 +0000
+Subject: [PATCH 3/3] backlight: fix missing/incomplete registration failure
+Message-Id: <20100221002831.689bace8@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100217094359.GY17643@pengutronix.de>
-In-Reply-To: <20100217094359.GY17643@pengutronix.de>
+References: <20100221001049.2f63f5d6@neptune.home>
+In-Reply-To: <20100221001049.2f63f5d6@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>, Daniel Oliveira Nascimento <don@syst.com.br>, Len Brown <len.brown@intel.com>, Anisse Astier <anisse@astier.eu>, Thomas Renninger <trenn@suse.de>, Matt Chen <machen@novell.com>, Harald Welte <laforge@gnumonks.org>, Martin Lucina <mato@kotelna.sk>, Bjorn Helgaas <bjorn.helgaas@hp.com>, pancho horrillo <pancho@pancho.name>, Mike Frysinger <vapier@gentoo.org>, Vivek Kutal <vivek.kutal@azingo.com>, Michael Hennerich <michael.hennerich@analog.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
 
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+Check newly registered backlight_device for error and properly
+return error to parent
+
+Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
 ---
- arch/arm/mach-mx25/clock.c            |   12 ++++++++++++
- arch/arm/mach-mx25/devices.c          |   23 +++++++++++++++++++++++
- arch/arm/mach-mx25/devices.h          |    1 +
- arch/arm/plat-mxc/include/mach/mx25.h |    2 ++
- 4 files changed, 38 insertions(+), 0 deletions(-)
+ drivers/platform/x86/classmate-laptop.c |    2 ++
+ drivers/platform/x86/msi-wmi.c          |    4 +++-
+ drivers/platform/x86/panasonic-laptop.c |    4 +++-
+ drivers/usb/misc/appledisplay.c         |    1 +
+ drivers/video/bf54x-lq043fb.c           |    8 ++++++++
+ drivers/video/bfin-t350mcqb-fb.c        |    8 ++++++++
+ 6 files changed, 25 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/mach-mx25/clock.c b/arch/arm/mach-mx25/clock.c
-index 744b52a..56bf958 100644
---- a/arch/arm/mach-mx25/clock.c
-+++ b/arch/arm/mach-mx25/clock.c
-@@ -124,6 +124,11 @@ static unsigned long get_rate_gpt(struct clk *clk)
- 	return get_rate_per(5);
- }
- 
-+static unsigned long get_rate_lcdc(struct clk *clk)
-+{
-+	return get_rate_per(7);
-+}
-+
- static unsigned long get_rate_otg(struct clk *clk)
- {
- 	return 48000000; /* FIXME */
-@@ -167,6 +172,8 @@ DEFINE_CLOCK(cspi1_clk,  0, CCM_CGCR1,  5, get_rate_ipg, NULL, NULL);
- DEFINE_CLOCK(cspi2_clk,  0, CCM_CGCR1,  6, get_rate_ipg, NULL, NULL);
- DEFINE_CLOCK(cspi3_clk,  0, CCM_CGCR1,  7, get_rate_ipg, NULL, NULL);
- DEFINE_CLOCK(fec_ahb_clk, 0, CCM_CGCR0, 23, NULL,	 NULL, NULL);
-+DEFINE_CLOCK(lcdc_ahb_clk, 0, CCM_CGCR0, 24, NULL,	 NULL, NULL);
-+DEFINE_CLOCK(lcdc_per_clk, 0, CCM_CGCR0,  7, NULL,	 NULL, &lcdc_ahb_clk);
- DEFINE_CLOCK(uart1_clk,  0, CCM_CGCR2, 14, get_rate_uart, NULL, &uart_per_clk);
- DEFINE_CLOCK(uart2_clk,  0, CCM_CGCR2, 15, get_rate_uart, NULL, &uart_per_clk);
- DEFINE_CLOCK(uart3_clk,  0, CCM_CGCR2, 16, get_rate_uart, NULL, &uart_per_clk);
-@@ -183,6 +190,7 @@ DEFINE_CLOCK(tsc_clk,	 0, CCM_CGCR2, 13, get_rate_ipg, NULL, NULL);
- DEFINE_CLOCK(i2c_clk,	 0, CCM_CGCR0,  6, get_rate_i2c, NULL, NULL);
- DEFINE_CLOCK(fec_clk,	 0, CCM_CGCR1, 15, get_rate_ipg, NULL, &fec_ahb_clk);
- DEFINE_CLOCK(dryice_clk, 0, CCM_CGCR1,  8, get_rate_ipg, NULL, NULL);
-+DEFINE_CLOCK(lcdc_clk,	 0, CCM_CGCR1, 29, get_rate_lcdc, NULL, &lcdc_per_clk);
- 
- #define _REGISTER_CLOCK(d, n, c)	\
- 	{				\
-@@ -216,6 +224,7 @@ static struct clk_lookup lookups[] = {
- 	_REGISTER_CLOCK("imx-i2c.2", NULL, i2c_clk)
- 	_REGISTER_CLOCK("fec.0", NULL, fec_clk)
- 	_REGISTER_CLOCK("imxdi_rtc.0", NULL, dryice_clk)
-+	_REGISTER_CLOCK("imx-fb.0", NULL, lcdc_clk)
- };
- 
- int __init mx25_clocks_init(void)
-@@ -233,6 +242,9 @@ int __init mx25_clocks_init(void)
- 	__raw_writel((0xf << 16) | (3 << 26), CRM_BASE + CCM_CGCR1);
- 	__raw_writel((1 << 5), CRM_BASE + CCM_CGCR2);
- 
-+	/* Clock source for lcdc is upll */
-+	__raw_writel(__raw_readl(CRM_BASE+0x64) | (1 << 7), CRM_BASE + 0x64);
-+
- 	mxc_timer_init(&gpt_clk, MX25_IO_ADDRESS(MX25_GPT1_BASE_ADDR), 54);
- 
+diff --git a/drivers/platform/x86/classmate-laptop.c b/drivers/platform/x86=
+/classmate-laptop.c
+index bfae789..66f6aad 100644
+--- a/drivers/platform/x86/classmate-laptop.c
++++ b/drivers/platform/x86/classmate-laptop.c
+@@ -463,6 +463,8 @@ static int cmpc_bl_add(struct acpi_device *acpi)
+=20
+ 	bd =3D backlight_device_register("cmpc_bl", &acpi->dev,
+ 				       acpi->handle, &cmpc_bl_ops);
++	if (IS_ERR(bd))
++		return PTR_ERR(bd);
+ 	bd->props.max_brightness =3D 7;
+ 	dev_set_drvdata(&acpi->dev, bd);
  	return 0;
-diff --git a/arch/arm/mach-mx25/devices.c b/arch/arm/mach-mx25/devices.c
-index b0b75fc..3f4b8a0 100644
---- a/arch/arm/mach-mx25/devices.c
-+++ b/arch/arm/mach-mx25/devices.c
-@@ -477,3 +477,26 @@ struct platform_device mx25_rtc_device = {
- 	.num_resources	= ARRAY_SIZE(mx25_rtc_resources),
- 	.resource	= mx25_rtc_resources,
- };
-+
-+static struct resource mx25_fb_resources[] = {
-+	{
-+		.start	= MX25_LCDC_BASE_ADDR,
-+		.end	= MX25_LCDC_BASE_ADDR + 0xfff,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	{
-+		.start	= MX25_INT_LCDC,
-+		.end	= MX25_INT_LCDC,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+struct platform_device mx25_fb_device = {
-+	.name		= "imx-fb",
-+	.id		= 0,
-+	.resource	= mx25_fb_resources,
-+	.num_resources	= ARRAY_SIZE(mx25_fb_resources),
-+	.dev		= {
-+		.coherent_dma_mask = 0xFFFFFFFF,
-+	},
-+};
-diff --git a/arch/arm/mach-mx25/devices.h b/arch/arm/mach-mx25/devices.h
-index 37e6a08..39560e1 100644
---- a/arch/arm/mach-mx25/devices.h
-+++ b/arch/arm/mach-mx25/devices.h
-@@ -20,3 +20,4 @@ extern struct platform_device mxc_i2c_device2;
- extern struct platform_device mx25_fec_device;
- extern struct platform_device mxc_nand_device;
- extern struct platform_device mx25_rtc_device;
-+extern struct platform_device mx25_fb_device;
-diff --git a/arch/arm/plat-mxc/include/mach/mx25.h b/arch/arm/plat-mxc/include/mach/mx25.h
-index 215c4d8..f29798d 100644
---- a/arch/arm/plat-mxc/include/mach/mx25.h
-+++ b/arch/arm/plat-mxc/include/mach/mx25.h
-@@ -44,9 +44,11 @@
- #define MX25_FEC_BASE_ADDR		0x50038000
- #define MX25_NFC_BASE_ADDR		0xbb000000
- #define MX25_DRYICE_BASE_ADDR		0x53ffc000
-+#define MX25_LCDC_BASE_ADDR		0x53fbc000
- 
- #define MX25_INT_DRYICE	25
- #define MX25_INT_FEC	57
- #define MX25_INT_NANDFC	33
-+#define MX25_INT_LCDC	39
- 
- #endif /* __MACH_MX25_H__ */
--- 
-1.6.6.1
+diff --git a/drivers/platform/x86/msi-wmi.c b/drivers/platform/x86/msi-wmi.c
+index 5f7cff1..2ffbfcf 100644
+--- a/drivers/platform/x86/msi-wmi.c
++++ b/drivers/platform/x86/msi-wmi.c
+@@ -251,8 +251,10 @@ static int __init msi_wmi_init(void)
+ 	if (!acpi_video_backlight_support()) {
+ 		backlight =3D backlight_device_register(DRV_NAME,
+ 				NULL, NULL, &msi_backlight_ops);
+-		if (IS_ERR(backlight))
++		if (IS_ERR(backlight)) {
++			err =3D PTR_ERR(backlight);
+ 			goto err_free_input;
++		}
+=20
+ 		backlight->props.max_brightness =3D ARRAY_SIZE(backlight_map) - 1;
+ 		err =3D bl_get(NULL);
+diff --git a/drivers/platform/x86/panasonic-laptop.c b/drivers/platform/x86=
+/panasonic-laptop.c
+index 9012d8d..9b17343 100644
+--- a/drivers/platform/x86/panasonic-laptop.c
++++ b/drivers/platform/x86/panasonic-laptop.c
+@@ -644,8 +644,10 @@ static int acpi_pcc_hotkey_add(struct acpi_device *dev=
+ice)
+ 	/* initialize backlight */
+ 	pcc->backlight =3D backlight_device_register("panasonic", NULL, pcc,
+ 						   &pcc_backlight_ops);
+-	if (IS_ERR(pcc->backlight))
++	if (IS_ERR(pcc->backlight)) {
++		result =3D PTR_ERR(pcc->backlight);
+ 		goto out_input;
++	}
+=20
+ 	if (!acpi_pcc_retrieve_biosdata(pcc, pcc->sinf)) {
+ 		ACPI_DEBUG_PRINT((ACPI_DB_ERROR,
+diff --git a/drivers/usb/misc/appledisplay.c b/drivers/usb/misc/appledispla=
+y.c
+index ef79ca2..413f154 100644
+--- a/drivers/usb/misc/appledisplay.c
++++ b/drivers/usb/misc/appledisplay.c
+@@ -283,6 +283,7 @@ static int appledisplay_probe(struct usb_interface *ifa=
+ce,
+ 						&appledisplay_bl_data);
+ 	if (IS_ERR(pdata->bd)) {
+ 		dev_err(&iface->dev, "Backlight registration failed\n");
++		retval =3D PTR_ERR(pdata->bd);
+ 		goto error;
+ 	}
+=20
+diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
+index db4e6f7..a589216 100644
+--- a/drivers/video/bf54x-lq043fb.c
++++ b/drivers/video/bf54x-lq043fb.c
+@@ -678,6 +678,12 @@ static int __devinit bfin_bf54x_probe(struct platform_=
+device *pdev)
+ 	bl_dev  	    backlight_device_register("bf54x-bl", NULL, NULL,
+ 				      &bfin_lq043fb_bl_ops);
++	if (IS_ERR(bl_dev)) {
++		printk(KERN_ERR DRIVER_NAME
++		       ": unable to register backlight.\n");
++		ret =3D -EINVAL;
++		goto out9;
++	}
+ 	bl_dev->props.max_brightness =3D 255;
+=20
+ 	lcd_dev =3D lcd_device_register(DRIVER_NAME, &pdev->dev, NULL, &bfin_lcd_=
+ops);
+@@ -686,6 +692,8 @@ static int __devinit bfin_bf54x_probe(struct platform_d=
+evice *pdev)
+=20
+ 	return 0;
+=20
++out9:
++	unregister_framebuffer(fbinfo);
+ out8:
+ 	free_irq(info->irq, info);
+ out7:
+diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb=
+-fb.c
+index bc204c6..fe1492b 100644
+--- a/drivers/video/bfin-t350mcqb-fb.c
++++ b/drivers/video/bfin-t350mcqb-fb.c
+@@ -572,6 +572,12 @@ static int __devinit bfin_t350mcqb_probe(struct platfo=
+rm_device *pdev)
+ 	bl_dev  	    backlight_device_register("bf52x-bl", NULL, NULL,
+ 				      &bfin_lq043fb_bl_ops);
++	if (IS_ERR(bl_dev)) {
++		printk(KERN_ERR DRIVER_NAME
++		       ": unable to register backlight.\n");
++		ret =3D -EINVAL;
++		goto out9;
++	}
+ 	bl_dev->props.max_brightness =3D 255;
+=20
+ 	lcd_dev =3D lcd_device_register(DRIVER_NAME, NULL, &bfin_lcd_ops);
+@@ -580,6 +586,8 @@ static int __devinit bfin_t350mcqb_probe(struct platfor=
+m_device *pdev)
+=20
+ 	return 0;
+=20
++out9:
++	unregister_framebuffer(fbinfo);
+ out8:
+ 	free_irq(info->irq, info);
+ out7:
+--=20
+1.6.4.4
 

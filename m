@@ -1,179 +1,77 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sat, 13 Feb 2010 22:54:43 +0000
-Subject: [PATCH 4/4] viafb: support color depth 15 and 30
-Message-Id: <1266102049-6209-4-git-send-email-FlorianSchandinat@gmx.de>
+From: d binderman <dcb314@hotmail.com>
+Date: Sun, 21 Feb 2010 10:19:38 +0000
+Subject: drivers/video/uvesafb.c: 6 * redundant condition
+Message-Id: <BLU108-W1367923D11AF128D7564D39C440@phx.gbl>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="_445ce773-0122-42a9-8d0c-b5a38e5582ea_"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1266102049-6209-1-git-send-email-FlorianSchandinat@gmx.de>
- <1266102049-6209-2-git-send-email-FlorianSchandinat@gmx.de>
- <1266102049-6209-3-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1266102049-6209-3-git-send-email-FlorianSchandinat@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-viafb: support color depth 15 and 30
+--_445ce773-0122-42a9-8d0c-b5a38e5582ea_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-This patch adds support for the color depth 15 on IGA1 and 30 on
-IGA1 and IGA2. To allow the usage of those the driver now refuses
-color depth that are totally off and otherwise the selection in
-viafb_check_var is used. Therefore the first call to this for the
-first framebuffer was delayed a bit. It only enables the new formats
-if they are requested exactly (viafb_bpp|30).
-As this is a new feature, no regressions are expected. The color
-depth 15 was successfully tested. Didn't get anything usable for 30
-but that might be the programs fault. I would like to get some
-feedback whether it works as expected or not if somebody knows a
-program/configuration where it should.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
----
- drivers/video/via/hw.c       |    9 ++++++++
- drivers/video/via/viafbdev.c |   43 ++++++++++++++++++++++++-----------------
- 2 files changed, 34 insertions(+), 18 deletions(-)
+Hello there=2C
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 1823253..f2583b1 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -694,12 +694,18 @@ void viafb_set_primary_color_depth(u8 depth)
- 	case 8:
- 		value = 0x00;
- 		break;
-+	case 15:
-+		value = 0x04;
-+		break;
- 	case 16:
- 		value = 0x14;
- 		break;
- 	case 24:
- 		value = 0x0C;
- 		break;
-+	case 30:
-+		value = 0x08;
-+		break;
- 	default:
- 		printk(KERN_WARNING "viafb_set_primary_color_depth: "
- 			"Unsupported depth: %d\n", depth);
-@@ -724,6 +730,9 @@ void viafb_set_secondary_color_depth(u8 depth)
- 	case 24:
- 		value = 0xC0;
- 		break;
-+	case 30:
-+		value = 0x80;
-+		break;
- 	default:
- 		printk(KERN_WARNING "viafb_set_secondary_color_depth: "
- 			"Unsupported depth: %d\n", depth);
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 410de33..ce7783b 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -80,6 +80,15 @@ static void viafb_fill_var_color_info(struct fb_var_screeninfo *var, u8 depth)
- 		var->green.length = 8;
- 		var->blue.length = 8;
- 		break;
-+	case 15:
-+		var->bits_per_pixel = 16;
-+		var->red.offset = 10;
-+		var->green.offset = 5;
-+		var->blue.offset = 0;
-+		var->red.length = 5;
-+		var->green.length = 5;
-+		var->blue.length = 5;
-+		break;
- 	case 16:
- 		var->bits_per_pixel = 16;
- 		var->red.offset = 11;
-@@ -98,6 +107,15 @@ static void viafb_fill_var_color_info(struct fb_var_screeninfo *var, u8 depth)
- 		var->green.length = 8;
- 		var->blue.length = 8;
- 		break;
-+	case 30:
-+		var->bits_per_pixel = 32;
-+		var->red.offset = 20;
-+		var->green.offset = 10;
-+		var->blue.offset = 0;
-+		var->red.length = 10;
-+		var->green.length = 10;
-+		var->blue.length = 10;
-+		break;
- 	}
- }
- 
-@@ -171,6 +189,10 @@ static int viafb_check_var(struct fb_var_screeninfo *var,
- 		return -EINVAL;
- 	else if (!depth)
- 		depth = 24;
-+	else if (depth = 15 && viafb_dual_fb && ppar->iga_path = IGA1)
-+		depth = 15;
-+	else if (depth = 30)
-+		depth = 30;
- 	else if (depth <= 8)
- 		depth = 8;
- 	else if (depth <= 16)
-@@ -1811,19 +1833,6 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 			viafb_second_virtual_yres = viafb_second_yres;
- 	}
- 
--	switch (viafb_bpp) {
--	case 0 ... 8:
--		viafb_bpp = 8;
--		break;
--	case 9 ... 16:
--		viafb_bpp = 16;
--		break;
--	case 17 ... 32:
--		viafb_bpp = 32;
--		break;
--	default:
--		viafb_bpp = 8;
--	}
- 	default_var.xres = default_xres;
- 	default_var.yres = default_yres;
- 	switch (default_xres) {
-@@ -1836,8 +1845,6 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 	}
- 	default_var.yres_virtual = default_yres;
- 	default_var.bits_per_pixel = viafb_bpp;
--	if (default_var.bits_per_pixel = 15)
--		default_var.bits_per_pixel = 16;
- 	default_var.pixclock  	    viafb_get_pixclock(default_xres, default_yres, viafb_refresh);
- 	default_var.left_margin = (default_xres >> 3) & 0xf8;
-@@ -1847,7 +1854,6 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 	default_var.hsync_len = default_var.left_margin;
- 	default_var.vsync_len = 4;
- 	viafb_setup_fixinfo(&viafbinfo->fix, viaparinfo);
--	viafb_check_var(&default_var, viafbinfo);
- 	viafbinfo->var = default_var;
- 
- 	if (viafb_dual_fb) {
-@@ -1883,8 +1889,6 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 		default_var.yres = viafb_second_yres;
- 		default_var.xres_virtual = viafb_second_virtual_xres;
- 		default_var.yres_virtual = viafb_second_virtual_yres;
--		if (viafb_bpp1 != viafb_bpp)
--			viafb_bpp1 = viafb_bpp;
- 		default_var.bits_per_pixel = viafb_bpp1;
- 		default_var.pixclock  		    viafb_get_pixclock(viafb_second_xres, viafb_second_yres,
-@@ -1904,6 +1908,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 			&viafbinfo1->fix);
- 	}
- 
-+	viafb_check_var(&viafbinfo->var, viafbinfo);
- 	viafb_update_fix(viafbinfo);
- 	viaparinfo->depth = fb_get_color_depth(&viafbinfo->var,
- 		&viafbinfo->fix);
-@@ -2070,6 +2075,8 @@ static int __init viafb_init(void)
- #endif
- 	if (parse_mode(viafb_mode, &dummy, &dummy)
- 		|| parse_mode(viafb_mode1, &dummy, &dummy)
-+		|| viafb_bpp < 0 || viafb_bpp > 32
-+		|| viafb_bpp1 < 0 || viafb_bpp1 > 32
- 		|| parse_active_dev())
- 		return -EINVAL;
- 
--- 
-1.6.3.2
+I just ran the sourceforge tool cppcheck over the source code of the
+new Linux kernel 2.6.33-rc8
 
+It said
+
+[./drivers/video/uvesafb.c:238]: (style) Redundant condition. It is safe to=
+ deallocate a NULL pointer
+[./drivers/video/uvesafb.c:1321]: (style) Redundant condition. It is safe t=
+o deallocate a NULL pointer
+[./drivers/video/uvesafb.c:1799]: (style) Redundant condition. It is safe t=
+o deallocate a NULL pointer
+[./drivers/video/uvesafb.c:1822]: (style) Redundant condition. It is safe t=
+o deallocate a NULL pointer
+[./drivers/video/uvesafb.c:1824]: (style) Redundant condition. It is safe t=
+o deallocate a NULL pointer
+[./drivers/video/uvesafb.c:1826]: (style) Redundant condition. It is safe t=
+o deallocate a NULL pointer
+
+
+I checked the source code and I agree with cppcheck.
+Patch file attached.
+
+Regards
+
+David Binderman
+
+ 		 	   		 =20
+_________________________________________________________________
+Do you have a story that started on Hotmail? Tell us now
+http://clk.atdmt.com/UKM/go/195013117/direct/01/=
+
+--_445ce773-0122-42a9-8d0c-b5a38e5582ea_
+Content-Type: text/x-patch
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="bug34.patch"
+
+ClNpZ25lZC1vZmYtYnk6IERhdmlkIEJpbmRlcm1hbiA8ZGNiMzE0QGhvdG1haWwuY29tPgoKLS0t
+IGRyaXZlcnMvdmlkZW8vdXZlc2FmYi5jLnNhdgkyMDEwLTAyLTIxIDEwOjA4OjI3LjAwMDAwMDAw
+MCArMDAwMAorKysgZHJpdmVycy92aWRlby91dmVzYWZiLmMJMjAxMC0wMi0yMSAxMDowOTozNS4w
+MDAwMDAwMDAgKzAwMDAKQEAgLTIzNSw4ICsyMzUsNyBAQCBvdXQ6CiBzdGF0aWMgdm9pZCB1dmVz
+YWZiX2ZyZWUoc3RydWN0IHV2ZXNhZmJfa3Rhc2sgKnRhc2spCiB7CiAJaWYgKHRhc2spIHsKLQkJ
+aWYgKHRhc2stPmRvbmUpCi0JCQlrZnJlZSh0YXNrLT5kb25lKTsKKwkJa2ZyZWUodGFzay0+ZG9u
+ZSk7CiAJCWtmcmVlKHRhc2spOwogCX0KIH0KQEAgLTEzMTgsOCArMTMxNyw4IEBAIHNldG1vZGU6
+CiAJCQkJRkJfVklTVUFMX1BTRVVET0NPTE9SIDogRkJfVklTVUFMX1RSVUVDT0xPUjsKIAlpbmZv
+LT5maXgubGluZV9sZW5ndGggPSBtb2RlLT5ieXRlc19wZXJfc2Nhbl9saW5lOwogCi1vdXQ6CWlm
+IChjcnRjICE9IE5VTEwpCi0JCWtmcmVlKGNydGMpOworb3V0OgorCWtmcmVlKGNydGMpOwogCXV2
+ZXNhZmJfZnJlZSh0YXNrKTsKIAogCXJldHVybiBlcnI7CkBAIC0xNzk2LDggKzE3OTUsNyBAQCBv
+dXRfbW9kZToKIAlmYl9kZXN0cm95X21vZGVkYihpbmZvLT5tb25zcGVjcy5tb2RlZGIpOwogCWZi
+X2RlYWxsb2NfY21hcCgmaW5mby0+Y21hcCk7CiBvdXQ6Ci0JaWYgKHBhci0+dmJlX21vZGVzKQot
+CQlrZnJlZShwYXItPnZiZV9tb2Rlcyk7CisJa2ZyZWUocGFyLT52YmVfbW9kZXMpOwogCiAJZnJh
+bWVidWZmZXJfcmVsZWFzZShpbmZvKTsKIAlyZXR1cm4gZXJyOwpAQCAtMTgxOSwxMiArMTgxNyw5
+IEBAIHN0YXRpYyBpbnQgdXZlc2FmYl9yZW1vdmUoc3RydWN0IHBsYXRmb3IKIAkJZmJfZGVhbGxv
+Y19jbWFwKCZpbmZvLT5jbWFwKTsKIAogCQlpZiAocGFyKSB7Ci0JCQlpZiAocGFyLT52YmVfbW9k
+ZXMpCi0JCQkJa2ZyZWUocGFyLT52YmVfbW9kZXMpOwotCQkJaWYgKHBhci0+dmJlX3N0YXRlX29y
+aWcpCi0JCQkJa2ZyZWUocGFyLT52YmVfc3RhdGVfb3JpZyk7Ci0JCQlpZiAocGFyLT52YmVfc3Rh
+dGVfc2F2ZWQpCi0JCQkJa2ZyZWUocGFyLT52YmVfc3RhdGVfc2F2ZWQpOworCQkJa2ZyZWUocGFy
+LT52YmVfbW9kZXMpOworCQkJa2ZyZWUocGFyLT52YmVfc3RhdGVfb3JpZyk7CisJCQlrZnJlZShw
+YXItPnZiZV9zdGF0ZV9zYXZlZCk7CiAJCX0KIAogCQlmcmFtZWJ1ZmZlcl9yZWxlYXNlKGluZm8p
+Owo=
+
+--_445ce773-0122-42a9-8d0c-b5a38e5582ea_--

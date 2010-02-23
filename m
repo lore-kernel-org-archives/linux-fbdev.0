@@ -1,64 +1,26 @@
-From: Greg KH <gregkh@suse.de>
-Date: Fri, 19 Feb 2010 00:37:26 +0000
-Subject: Re: [PATCH 9/10] udlfb: explicit dependencies and warnings
-Message-Id: <20100219003724.GC29873@suse.de>
+From: ville.syrjala@nokia.com
+Date: Tue, 23 Feb 2010 22:36:25 +0000
+Subject: [PATCH 1/3] OMAPFB: install omapfb.h
+Message-Id: <1266964587-14381-1-git-send-email-ville.syrjala@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1266245195.4353.3304.camel@bernie-aspireone>
-In-Reply-To: <1266245195.4353.3304.camel@bernie-aspireone>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@nokia.com>
 
-On Thu, Feb 18, 2010 at 02:49:34PM -0800, Bernie Thompson wrote:
-> Hi Greg,
->=20
-> On Thu, Feb 18, 2010 at 8:01 AM, Greg KH <greg@kroah.com> wrote:
-> > This patch adds the warning to the build:
-> > =A0 =A0 =A0 =A0drivers/staging/udlfb/udlfb.c:65:2: warning: #warning me=
-ssage "FB_SYS_* in kernel or module option to support fb console"
->=20
-> The intent is you'd get that warning when:
->=20
-> * You're building udlfb as a module outside of full kernel rebuild
-> * You don't have a dependency you need (for full functionality)
->=20
-> If you were doing a full kernel build, Kconfig (as of this patch)
-> knows the dependencies as should pull them in.
->=20
-> In this case, your kernel headers say you don't have
-> CONFIG_FB_SYS_IMAGEBLIT (which is part of the "virtual framebuffer
-> driver" ops set of BLIT, FILL, etc. which has a lot of (IMHO
-> incorrectly strong) warnings around it in Kconfig not to enable, since
-> several drivers are now dependent.
->=20
-> That dependency is needed for framebuffer consoles (fbcon) to work
-> properly in udlfb with the current implementation. This post gives a
-> little background on the different types of framebuffer clients:
-> http://plugable.com/2010/01/30/linux-kernel-framebuffer-rendering-apis/
->=20
-> So you either need to recompile your kernel to get this dependency, or
-> live without framebuffer console functionality (which many people
-> don't care about -- but some do a lot).
->=20
-> Failing compile completely generated a strong response from some users
-> -- they didn't want to recompile their whole kernel to get a single
-> module, if the dependency was for functionality they didn't care
-> about.
->=20
-> Keeping the #ifdefs but getting rid of the #warnings would mean
-> silently loosing functionality, which would throw people off later.
->=20
-> So two questions:
-> * Is there evidence the #warning is getting triggered in a case where
-> it shouldn't (you actually have the dependency)?
-> * Does the wording of the #warning need to be better - any suggestions
-> for future patches?
-
-I must have done something wrong, built only the drivers/staging/udlfb/
-directory or something, with a full kernel build I no longer see this
-issue.
-
-Very sorry for the noise, and thanks for the full response.
-
-greg k-h
+RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KCm9tYXBmYiBo
+YXMgc2V2ZXJhbCBjdXN0b20gaW9jdGxzIHNvIHVzZXIgc3BhY2UgbmVlZHMKdGhlIGhlYWRlciBp
+biBvcmRlciB0byB1dGlsaXplIHRoZW0uCgpTaWduZWQtb2ZmLWJ5OiBWaWxsZSBTeXJqw6Rsw6Qg
+PHZpbGxlLnN5cmphbGFAbm9raWEuY29tPgotLS0KIGluY2x1ZGUvbGludXgvS2J1aWxkIHwgICAg
+MSArCiAxIGZpbGVzIGNoYW5nZWQsIDEgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKCmRp
+ZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L0tidWlsZCBiL2luY2x1ZGUvbGludXgvS2J1aWxkCmlu
+ZGV4IDFmZWVkNzEuLjUwNWZmOWUgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvS2J1aWxkCisr
+KyBiL2luY2x1ZGUvbGludXgvS2J1aWxkCkBAIC0xMjQsNiArMTI0LDcgQEAgaGVhZGVyLXkgKz0g
+bmZzMi5oCiBoZWFkZXIteSArPSBuZnM0X21vdW50LmgKIGhlYWRlci15ICs9IG5mc19tb3VudC5o
+CiBoZWFkZXIteSArPSBubDgwMjExLmgKK2hlYWRlci15ICs9IG9tYXBmYi5oCiBoZWFkZXIteSAr
+PSBwYXJhbS5oCiBoZWFkZXIteSArPSBwY2lfcmVncy5oCiBoZWFkZXIteSArPSBwZXJmX2V2ZW50
+LmgKLS0gCjEuNi40LjQKCi0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRo
+ZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4KdGhlIGJvZHkgb2YgYSBtZXNzYWdl
+IHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0
+cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s

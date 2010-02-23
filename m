@@ -1,213 +1,63 @@
-From: Bernie Thompson <bernie@plugable.com>
-Date: Mon, 15 Feb 2010 14:46:26 +0000
-Subject: [PATCH 8/10] udlfb: Support for fbdev mmap clients (defio)
-Message-Id: <1266245186.4353.3303.camel@bernie-aspireone>
+From: ville.syrjala@nokia.com
+Date: Tue, 23 Feb 2010 22:36:26 +0000
+Subject: [PATCH 2/3] DSS2: OMAPFB: Constify some function parameters
+Message-Id: <1266964587-14381-2-git-send-email-ville.syrjala@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1266964587-14381-1-git-send-email-ville.syrjala@nokia.com>
+In-Reply-To: <1266964587-14381-1-git-send-email-ville.syrjala@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@nokia.com>
 
-Add support for fbdev mmap clients who don't send damage ioctls
-
-Because DisplayLink devices are out on the other end of usb, their
-"framebuffer" is just normal system memory. So memory mapped writes
-don't automatically trigger anything. So up to this point, standard
-fbdev clients who rely on mmap() will get an unchanging screen.
-
-This patch makes udlfb a client of Jaya Kumar's defio framework - which sets
-up page fault triggers, and those faults are accumulated and sent to udlfb
-on a defferred basis, to process as damage notifications for the framebuffer.
-
-Because this involves more overhead than a notification directly from
-the application (e.g. just passing on X DAMAGE extension notifications),
-a sysfs attribute is provided by udlfb to control defio support.
-
-/sys/class/graphics/fb*/use_defio - writing a "0" to this file before
-calling mmap() causes defio to not be initialized - instead udlfb
-will rely on getting damage notifications directly through the damage ioctl.
-
-There are unsolved rendering problems with defio (horizontal dead regions
-on framebuffer, that accumulate over time) which still needs a fix.
-
-Signed-off-by: Bernie Thompson <bernie@plugable.com>
----
- drivers/staging/udlfb/udlfb.c |  124 ++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 121 insertions(+), 3 deletions(-)
-
-Index: linux-next/drivers/staging/udlfb/udlfb.c
-=================================--- linux-next.orig/drivers/staging/udlfb/udlfb.c	2010-02-14 20:26:59.000000000 -0800
-+++ linux-next/drivers/staging/udlfb/udlfb.c	2010-02-14 20:27:01.000000000 -0800
-@@ -63,6 +63,11 @@ static int dlfb_submit_urb(struct dlfb_d
- static int dlfb_alloc_urb_list(struct dlfb_data *dev, int count, size_t size);
- static void dlfb_free_urb_list(struct dlfb_data *dev);
- 
-+/* other symbols with dependents */
-+#ifdef CONFIG_FB_DEFERRED_IO
-+static struct fb_deferred_io dlfb_defio;
-+#endif
-+
- /*
-  * Inserts a specific DisplayLink controller command into the provided
-  * buffer.
-@@ -717,9 +722,59 @@ dlfb_ops_setcolreg(unsigned regno, unsig
- 	return err;
- }
- 
-+/*
-+ * It's common for several clients to have framebuffer open simultaneously.
-+ * e.g. both fbcon and X. Makes things interesting.
-+ */
-+static int dlfb_ops_open(struct fb_info *info, int user)
-+{
-+	struct dlfb_data *dev = info->par;
-+
-+/*	if (user = 0)
-+ *		We could special case kernel mode clients (fbcon) here
-+ */
-+
-+	mutex_lock(&dev->fb_open_lock);
-+
-+	dev->fb_count++;
-+
-+#ifdef CONFIG_FB_DEFERRED_IO
-+	if ((atomic_read(&dev->use_defio)) && (info->fbdefio = NULL)) {
-+		/* enable defio */
-+		info->fbdefio = &dlfb_defio;
-+		fb_deferred_io_init(info);
-+	}
-+#endif
-+
-+	dl_notice("open /dev/fb%d user=%d fb_info=%p count=%d\n",
-+	    info->node, user, info, dev->fb_count);
-+
-+	mutex_unlock(&dev->fb_open_lock);
-+
-+	return 0;
-+}
-+
- static int dlfb_ops_release(struct fb_info *info, int user)
- {
--	struct dlfb_data *dev_info = info->par;
-+	struct dlfb_data *dev = info->par;
-+
-+	mutex_lock(&dev->fb_open_lock);
-+
-+	dev->fb_count--;
-+
-+#ifdef CONFIG_FB_DEFERRED_IO
-+	if ((dev->fb_count = 0) && (info->fbdefio)) {
-+		fb_deferred_io_cleanup(info);
-+		info->fbdefio = NULL;
-+		info->fbops->fb_mmap = dlfb_ops_mmap;
-+	}
-+#endif
-+
-+	dl_notice("release /dev/fb%d user=%d count=%d\n",
-+		  info->node, user, dev->fb_count);
-+
-+	mutex_unlock(&dev->fb_open_lock);
-+
- 	return 0;
- }
- 
-@@ -735,6 +790,8 @@ static void dlfb_delete(struct kref *kre
- 	if (dev->backing_buffer)
- 		vfree(dev->backing_buffer);
- 
-+	mutex_destroy(&dev->fb_open_lock);
-+
- 	kfree(dev);
- }
- 
-@@ -853,6 +910,7 @@ static struct fb_ops dlfb_ops = {
- 	.fb_imageblit = dlfb_ops_imageblit,
- 	.fb_mmap = dlfb_ops_mmap,
- 	.fb_ioctl = dlfb_ops_ioctl,
-+	.fb_open = dlfb_ops_open,
- 	.fb_release = dlfb_ops_release,
- 	.fb_blank = dlfb_ops_blank,
- 	.fb_check_var = dlfb_ops_check_var,
-@@ -1068,6 +1126,68 @@ static struct device_attribute fb_device
- 	__ATTR_RW(use_defio),
- };
- 
-+#ifdef CONFIG_FB_DEFERRED_IO
-+static void dlfb_dpy_deferred_io(struct fb_info *info,
-+				struct list_head *pagelist)
-+{
-+	struct page *cur;
-+	struct fb_deferred_io *fbdefio = info->fbdefio;
-+	struct dlfb_data *dev = info->par;
-+	struct urb *urb;
-+	char *cmd;
-+	cycles_t start_cycles, end_cycles;
-+	int bytes_sent = 0;
-+	int bytes_identical = 0;
-+	int bytes_rendered = 0;
-+	int fault_count = 0;
-+
-+	if (!atomic_read(&dev->use_defio))
-+		return;
-+
-+	if (!atomic_read(&dev->usb_active))
-+		return;
-+
-+	start_cycles = get_cycles();
-+
-+	urb = dlfb_get_urb(dev);
-+	if (!urb)
-+		return;
-+	cmd = urb->transfer_buffer;
-+
-+	/* walk the written page list and render each to device */
-+	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
-+		dlfb_render_hline(dev, &urb, (char *) info->fix.smem_start,
-+				  &cmd, cur->index << PAGE_SHIFT,
-+				  PAGE_SIZE, &bytes_identical, &bytes_sent);
-+		bytes_rendered += PAGE_SIZE;
-+		fault_count++;
-+	}
-+
-+	if (cmd > (char *) urb->transfer_buffer) {
-+		/* Send partial buffer remaining before exiting */
-+		int len = cmd - (char *) urb->transfer_buffer;
-+		dlfb_submit_urb(dev, urb, len);
-+		bytes_sent += len;
-+	} else
-+		dlfb_urb_completion(urb);
-+
-+	atomic_add(fault_count, &dev->defio_fault_count);
-+	atomic_add(bytes_sent, &dev->bytes_sent);
-+	atomic_add(bytes_identical, &dev->bytes_identical);
-+	atomic_add(bytes_rendered, &dev->bytes_rendered);
-+	end_cycles = get_cycles();
-+	atomic_add(((unsigned int) ((end_cycles - start_cycles)
-+		    >> 10)), /* Kcycles */
-+		   &dev->cpu_kcycles_used);
-+}
-+
-+static struct fb_deferred_io dlfb_defio = {
-+	.delay          = 5,
-+	.deferred_io    = dlfb_dpy_deferred_io,
-+};
-+
-+#endif
-+
- /*
-  * This is necessary before we can communicate with the display controller.
-  */
-@@ -1193,11 +1313,9 @@ static int dlfb_usb_probe(struct usb_int
- 
- 	/* ready to begin using device */
- 
--/*
- #ifdef CONFIG_FB_DEFERRED_IO
- 	atomic_set(&dev->use_defio, 1);
- #endif
--*/
- 	atomic_set(&dev->usb_active, 1);
- 	dlfb_select_std_channel(dev);
- 
-
-
+RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KCgpTaWduZWQt
+b2ZmLWJ5OiBWaWxsZSBTeXJqw6Rsw6QgPHZpbGxlLnN5cmphbGFAbm9raWEuY29tPgotLS0KIGRy
+aXZlcnMvdmlkZW8vb21hcDIvb21hcGZiL29tYXBmYi1tYWluLmMgfCAgIDE4ICsrKysrKysrKy0t
+LS0tLS0tLQogMSBmaWxlcyBjaGFuZ2VkLCA5IGluc2VydGlvbnMoKyksIDkgZGVsZXRpb25zKC0p
+CgpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9vbWFwMi9vbWFwZmIvb21hcGZiLW1haW4uYyBi
+L2RyaXZlcnMvdmlkZW8vb21hcDIvb21hcGZiL29tYXBmYi1tYWluLmMKaW5kZXggZDE3Y2FlZi4u
+ZDFmMDJhZSAxMDA2NDQKLS0tIGEvZHJpdmVycy92aWRlby9vbWFwMi9vbWFwZmIvb21hcGZiLW1h
+aW4uYworKysgYi9kcml2ZXJzL3ZpZGVvL29tYXAyL29tYXBmYi9vbWFwZmItbWFpbi5jCkBAIC0x
+NTIsOSArMTUyLDkgQEAgc3RhdGljIHZvaWQgZmlsbF9mYihzdHJ1Y3QgZmJfaW5mbyAqZmJpKQog
+fQogI2VuZGlmCiAKLXN0YXRpYyB1bnNpZ25lZCBvbWFwZmJfZ2V0X3ZyZmJfb2Zmc2V0KHN0cnVj
+dCBvbWFwZmJfaW5mbyAqb2ZiaSwgaW50IHJvdCkKK3N0YXRpYyB1bnNpZ25lZCBvbWFwZmJfZ2V0
+X3ZyZmJfb2Zmc2V0KGNvbnN0IHN0cnVjdCBvbWFwZmJfaW5mbyAqb2ZiaSwgaW50IHJvdCkKIHsK
+LQlzdHJ1Y3QgdnJmYiAqdnJmYiA9ICZvZmJpLT5yZWdpb24udnJmYjsKKwljb25zdCBzdHJ1Y3Qg
+dnJmYiAqdnJmYiA9ICZvZmJpLT5yZWdpb24udnJmYjsKIAl1bnNpZ25lZCBvZmZzZXQ7CiAKIAlz
+d2l0Y2ggKHJvdCkgewpAQCAtMTc5LDcgKzE3OSw3IEBAIHN0YXRpYyB1bnNpZ25lZCBvbWFwZmJf
+Z2V0X3ZyZmJfb2Zmc2V0KHN0cnVjdCBvbWFwZmJfaW5mbyAqb2ZiaSwgaW50IHJvdCkKIAlyZXR1
+cm4gb2Zmc2V0OwogfQogCi1zdGF0aWMgdTMyIG9tYXBmYl9nZXRfcmVnaW9uX3JvdF9wYWRkcihz
+dHJ1Y3Qgb21hcGZiX2luZm8gKm9mYmksIGludCByb3QpCitzdGF0aWMgdTMyIG9tYXBmYl9nZXRf
+cmVnaW9uX3JvdF9wYWRkcihjb25zdCBzdHJ1Y3Qgb21hcGZiX2luZm8gKm9mYmksIGludCByb3Qp
+CiB7CiAJaWYgKG9mYmktPnJvdGF0aW9uX3R5cGUgPSBPTUFQX0RTU19ST1RfVlJGQikgewogCQly
+ZXR1cm4gb2ZiaS0+cmVnaW9uLnZyZmIucGFkZHJbcm90XQpAQCAtMTg5LDcgKzE4OSw3IEBAIHN0
+YXRpYyB1MzIgb21hcGZiX2dldF9yZWdpb25fcm90X3BhZGRyKHN0cnVjdCBvbWFwZmJfaW5mbyAq
+b2ZiaSwgaW50IHJvdCkKIAl9CiB9CiAKLXN0YXRpYyB1MzIgb21hcGZiX2dldF9yZWdpb25fcGFk
+ZHIoc3RydWN0IG9tYXBmYl9pbmZvICpvZmJpKQorc3RhdGljIHUzMiBvbWFwZmJfZ2V0X3JlZ2lv
+bl9wYWRkcihjb25zdCBzdHJ1Y3Qgb21hcGZiX2luZm8gKm9mYmkpCiB7CiAJaWYgKG9mYmktPnJv
+dGF0aW9uX3R5cGUgPSBPTUFQX0RTU19ST1RfVlJGQikKIAkJcmV0dXJuIG9mYmktPnJlZ2lvbi52
+cmZiLnBhZGRyWzBdOwpAQCAtMTk3LDcgKzE5Nyw3IEBAIHN0YXRpYyB1MzIgb21hcGZiX2dldF9y
+ZWdpb25fcGFkZHIoc3RydWN0IG9tYXBmYl9pbmZvICpvZmJpKQogCQlyZXR1cm4gb2ZiaS0+cmVn
+aW9uLnBhZGRyOwogfQogCi1zdGF0aWMgdm9pZCBfX2lvbWVtICpvbWFwZmJfZ2V0X3JlZ2lvbl92
+YWRkcihzdHJ1Y3Qgb21hcGZiX2luZm8gKm9mYmkpCitzdGF0aWMgdm9pZCBfX2lvbWVtICpvbWFw
+ZmJfZ2V0X3JlZ2lvbl92YWRkcihjb25zdCBzdHJ1Y3Qgb21hcGZiX2luZm8gKm9mYmkpCiB7CiAJ
+aWYgKG9mYmktPnJvdGF0aW9uX3R5cGUgPSBPTUFQX0RTU19ST1RfVlJGQikKIAkJcmV0dXJuIG9m
+YmktPnJlZ2lvbi52cmZiLnZhZGRyWzBdOwpAQCAtNzc4LDggKzc3OCw4IEBAIHN0YXRpYyBpbnQg
+b21hcGZiX3JlbGVhc2Uoc3RydWN0IGZiX2luZm8gKmZiaSwgaW50IHVzZXIpCiAJcmV0dXJuIDA7
+CiB9CiAKLXN0YXRpYyB1bnNpZ25lZCBjYWxjX3JvdGF0aW9uX29mZnNldF9kbWEoc3RydWN0IGZi
+X3Zhcl9zY3JlZW5pbmZvICp2YXIsCi0JCXN0cnVjdCBmYl9maXhfc2NyZWVuaW5mbyAqZml4LCBp
+bnQgcm90YXRpb24pCitzdGF0aWMgdW5zaWduZWQgY2FsY19yb3RhdGlvbl9vZmZzZXRfZG1hKGNv
+bnN0IHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbyAqdmFyLAorCQljb25zdCBzdHJ1Y3QgZmJfZml4
+X3NjcmVlbmluZm8gKmZpeCwgaW50IHJvdGF0aW9uKQogewogCXVuc2lnbmVkIG9mZnNldDsKIApA
+QCAtNzg5LDggKzc4OSw4IEBAIHN0YXRpYyB1bnNpZ25lZCBjYWxjX3JvdGF0aW9uX29mZnNldF9k
+bWEoc3RydWN0IGZiX3Zhcl9zY3JlZW5pbmZvICp2YXIsCiAJcmV0dXJuIG9mZnNldDsKIH0KIAot
+c3RhdGljIHVuc2lnbmVkIGNhbGNfcm90YXRpb25fb2Zmc2V0X3ZyZmIoc3RydWN0IGZiX3Zhcl9z
+Y3JlZW5pbmZvICp2YXIsCi0JCXN0cnVjdCBmYl9maXhfc2NyZWVuaW5mbyAqZml4LCBpbnQgcm90
+YXRpb24pCitzdGF0aWMgdW5zaWduZWQgY2FsY19yb3RhdGlvbl9vZmZzZXRfdnJmYihjb25zdCBz
+dHJ1Y3QgZmJfdmFyX3NjcmVlbmluZm8gKnZhciwKKwkJY29uc3Qgc3RydWN0IGZiX2ZpeF9zY3Jl
+ZW5pbmZvICpmaXgsIGludCByb3RhdGlvbikKIHsKIAl1bnNpZ25lZCBvZmZzZXQ7CiAKLS0gCjEu
+Ni40LjQKCi0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1
+bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4KdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9y
+ZG9tb0B2Z2VyLmtlcm5lbC5vcmcKTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIu
+a2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s

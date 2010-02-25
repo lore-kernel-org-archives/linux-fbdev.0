@@ -1,37 +1,47 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Date: Thu, 25 Feb 2010 15:18:08 +0000
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Thu, 25 Feb 2010 15:29:32 +0000
 Subject: Re: [PATCH 1/3] picolcd: driver for PicoLCD HID device
-Message-Id: <alpine.LNX.2.00.1002251615570.30967@pobox.suse.cz>
+Message-Id: <20100225162932.43ee42a8@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100221002001.0a7e05a7@neptune.home> <20100224170049.0d04af3c@neptune.home> <alpine.LNX.2.00.1002251201430.30967@pobox.suse.cz> <20100225123214.0523a310@neptune.home>
-In-Reply-To: <20100225123214.0523a310@neptune.home>
+References: <20100221002001.0a7e05a7@neptune.home>
+	<20100224170049.0d04af3c@neptune.home>
+	<alpine.LNX.2.00.1002251201430.30967@pobox.suse.cz>
+	<20100225123214.0523a310@neptune.home>
+	<alpine.LNX.2.00.1002251615570.30967@pobox.suse.cz>
+In-Reply-To: <alpine.LNX.2.00.1002251615570.30967@pobox.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
+To: Jiri Kosina <jkosina@suse.cz>
 Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, Nicu Pavel <npavel@ituner.com>
 
-On Thu, 25 Feb 2010, Bruno Pr=E9mont wrote:
+On Thu, 25 February 2010 Jiri Kosina <jkosina@suse.cz> wrote:
+>
+> On Thu, 25 Feb 2010, Bruno Pr=C3=A9mont wrote:
+>=20
+> > For the two sysfs attributes I currently use, the 'reset' one shall=20
+> > probably be moved to debugfs (I would like to place it under=20
+> > /sys/kernel/debug/hid/$device/ next to rdesc and event).
+>=20
+> Yes, that would make sense.
 
-> For the two sysfs attributes I currently use, the 'reset' one shall=20
-> probably be moved to debugfs (I would like to place it under=20
-> /sys/kernel/debug/hid/$device/ next to rdesc and event).
+So I will move it.
 
-Yes, that would make sense.
+> ( ... which reminds me to finally to the Documentation/ABI part in
+> sync with respect to current HID code again ... )
+>=20
+> > By the way, I'm wondering why event does not list any of the
+> > reports coming from my device though as I understand the code it
+> > should be doing that before my raw_event function gets called...
+>=20
+> Sorry, what 'event' do you mean in 'event does not list any of the=20
+> reports'?
 
-( ... which reminds me to finally to the Documentation/ABI part in sync=20
-with respect to current HID code again ... )
-
-> By the way, I'm wondering why event does not list any of the reports=20
-> coming from my device though as I understand the code it should be doing =
-
-> that before my raw_event function gets called...
-
-Sorry, what 'event' do you mean in 'event does not list any of the=20
-reports'?
+Sorry, one 's' that got eaten between my brain and mail client. I
+mean events file in debugfs.
+For USB HID keyboard each key press generates "report dump" under
+/sys/kernel/debug/hid/$device/events but for my PicoLCD I don't get
+any entry in there. I'm wondering why.
 
 Thanks,
-
---=20
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Bruno

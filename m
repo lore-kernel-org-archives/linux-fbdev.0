@@ -1,10 +1,10 @@
 From: Dave Airlie <airlied@gmail.com>
-Date: Thu, 25 Feb 2010 04:44:26 +0000
+Date: Thu, 25 Feb 2010 05:07:55 +0000
 Subject: [PATCH 1/2] fb: for framebuffer handover don't exit the loop early.
-Message-Id: <1267073067-23117-2-git-send-email-airlied@gmail.com>
+Message-Id: <1267074476-28347-2-git-send-email-airlied@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1267073067-23117-1-git-send-email-airlied@gmail.com>
-In-Reply-To: <1267073067-23117-1-git-send-email-airlied@gmail.com>
+References: <1267074476-28347-1-git-send-email-airlied@gmail.com>
+In-Reply-To: <1267074476-28347-1-git-send-email-airlied@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

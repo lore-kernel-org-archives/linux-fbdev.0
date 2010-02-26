@@ -1,63 +1,68 @@
-From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-Date: Thu, 25 Feb 2010 22:41:21 +0000
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
+Date: Fri, 26 Feb 2010 02:30:32 +0000
 Subject: Re: [PATCH] Add sysfs support for fbdefio delay
-Message-Id: <49e34e8ba40c44c622171868798f9919.squirrel@intranet.cs.nmsu.edu>
+Message-Id: <45a44e481002251830j710e87bah52486a489eef04cb@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <201002252215.o1PMFnoP011425@mustang.cs.nmsu.edu>
-    <20100225233250.241e7d6d@neptune.home>
-In-Reply-To: <20100225233250.241e7d6d@neptune.home>
+In-Reply-To: <201002252215.o1PMFnoP011425@mustang.cs.nmsu.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Bruno =?iso-8859-1?Q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>
-Cc: linux-kernel@vger.kernel.org, npavel@ituner.com, tomi.valkeinen@nokia.com, tony@atomide.com, florianschandinat@gmx.de, krzysztof.h1@wp.pl, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, jkosina@suse.cz
+To: "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>
+Cc: linux-kernel@vger.kernel.org, npavel@ituner.com, tomi.valkeinen@nokia.com, tony@atomide.com, FlorianSchandinat@gmx.de, krzysztof.h1@wp.pl, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, jkosina@suse.cz, bonbons@linux-vserver.org
 
+Hi Rick,
 
-Bruno Pr=C3=A9mont wrote:
-> On Thu, 25 February 2010 "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>
-> wrote:
->> This patch adds support for examining and modifying the fbdefio delay
->> parameter through sysfs. It also adds two driver definable minimum
->> and maximum bounds.
->>
->> The default behavior is to not permit modifications if delay_max is 0,
->> thus preventing modification of the delay if the driver does not
->> explicitly permit modification.
->>
->
-> ...
->
->> @@ -503,6 +584,12 @@ static struct device_attribute device_attrs[] =3D {
->>  #ifdef CONFIG_FB_BACKLIGHT
->>  	__ATTR(bl_curve, S_IRUGO|S_IWUSR, show_bl_curve, store_bl_curve),
->>  #endif
->> +#ifdef CONFIG_FB_DEFERRED_IO
->> +	__ATTR(defio_delay, S_IRUGO|S_IWUSR,
->> +	       show_defio_delay, store_defio_delay),
->> +	__ATTR(defio_delay_min, S_IRUGO, show_defio_delay_min, NULL),
->> +	__ATTR(defio_delay_max, S_IRUGO, show_defio_delay_max, NULL),
->> +#endif
->>  };
->>
->>  int fb_init_device(struct fb_info *fb_info)
->
-> Would it be reasonable to add these attributes in
-> fb_deferred_io_init() and remove them in fb_deferred_io_cleanup()?
-> This would also make it possible to add write permission to delay
-> attribute only when it effectively can be modified.
->
-> IMHO having only attributes pertinent to the features supported by the
-> framebuffer is better than having all the possible ones and those of
-> unsupported features returning -ENODEV.
->
-> Bruno
->
+On Fri, Feb 26, 2010 at 6:15 AM, Rick L. Vinyard Jr.
+<rvinyard@cs.nmsu.edu> wrote:
+> This patch adds support for examining and modifying the fbdefio delay
+> parameter through sysfs. It also adds two driver definable minimum
+> and maximum bounds.
 
-I looked at that, but it seems like all the sysfs stuff has been
-co-located in fbsysfs.c, so I tried to just follow the pattern of the
-backlight code which takes the same approach.
+Thanks for posting this. I've now read through this patch and your
+past patches, but I couldn't get a good understanding of how this
+userspace exposed defio delay would interact with most existing
+systems.
 
---=20
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 Set the deferred I/O delay of the framebuff=
+er in ms.
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 This value can be used to throttle deferred=
+ I/O updates.
 
-Rick
+Please help us understand how userspace should use the ability to set
+this delay. Who in userspace is intended to use it? Would this be the
+X server, cairo, or papyrus? A separate daemon? Human interaction?
+When should said userspace entity throttle updates? How would this
+entity know when throttling is needed? Could this throttling possibly
+or should this possibly be done automatically by the driver itself?
 
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 Most framebuffer devices do not have or nee=
+d support for
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 deferred I/O. Accessing a framebuffer witho=
+ut deferred I/O
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 support will return -ENODEV. Can be read bu=
+t not modified if
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /sys/class/graphics/<fb>/defio_delay_max is=
+ 0. When modifying,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 the value must be greater than or equal to
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /sys/class/graphics/<fb>/defio_delay_min an=
+d less than or equal
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 to /sys/class/graphics/<fb>/defio_delay_max.
+
+Please help the reader of above understand the sequence of userspace
+changing the defio delay, and how and when that would affect the
+associated drivers. Will the delay behaviour be standard for all defio
+client drivers? What happens in all the various timing scenarios, eg:
+if a defio delay is changed in the middle of a display update or a
+defio page clean or before? The sysfs parameter description mentioning
+min/max above could use some elaboration as reading it doesn't make
+clear if userspace can also affect min/max or if it is completely
+owned by the driver.
+
+Thanks,
+jaya
+
+ps: I only found your patches by accident when reading through the
+fbdev mailing list. I'm very interested in defio (I happen to be the
+author of it) and also drivers that use defio so I would appreciate
+being CCed on such changes. Thanks a bunch.

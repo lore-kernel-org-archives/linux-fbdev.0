@@ -1,59 +1,172 @@
-From: Anisse Astier <anisse@astier.eu>
-Date: Wed, 24 Feb 2010 15:33:56 +0000
-Subject: Re: [PATCH 3/3] backlight: fix missing/incomplete registration
-Message-Id: <20100224163356.7e8c4464@destiny.ordissimo>
+From: Anatolij Gustschin <agust@denx.de>
+Date: Sat, 27 Feb 2010 21:58:20 +0000
+Subject: [PATCH 1/3] video: add support for getting video mode from device tree
+Message-Id: <1267307902-31939-2-git-send-email-agust@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100221001049.2f63f5d6@neptune.home>
-	<20100221002831.689bace8@neptune.home>
-	<20100221133528.GB1840@holoscopio.com>
-In-Reply-To: <20100221133528.GB1840@holoscopio.com>
+References: <fa686aa41002161006l3b301febt94fe990df4bddfe9@mail.gmail.com>
+In-Reply-To: <fa686aa41002161006l3b301febt94fe990df4bddfe9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Daniel Oliveira Nascimento <don@syst.com.br>, Len Brown <len.brown@intel.com>, Thomas Renninger <trenn@suse.de>, Matt Chen <machen@novell.com>, Harald Welte <laforge@gnumonks.org>, Martin Lucina <mato@kotelna.sk>, Bjorn Helgaas <bjorn.helgaas@hp.com>, pancho horrillo <pancho@pancho.name>, Mike Frysinger <vapier@gentoo.org>, Vivek Kutal <vivek.kutal@azingo.com>, Michael Hennerich <michael.hennerich@analog.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linuxppc-dev@ozlabs.org
+Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de, jrigby@gmail.com, Anatolij Gustschin <agust@denx.de>, yorksun@freescale.com
 
-On Sun, 21 Feb 2010 10:35:29 -0300, Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com> wrote :
+Framebuffer drivers may want to get panel timing info
+from the device tree. This patch adds appropriate support.
+Subsequent patch for FSL DIU frame buffer driver makes use
+of this functionality.
 
-> On Sun, Feb 21, 2010 at 12:28:31AM +0100, Bruno Prémont wrote:
-> > Check newly registered backlight_device for error and properly
-> > return error to parent
-> > 
-> > Signed-off-by: Bruno Prémont <bonbons@linux-vserver.org>
-> > ---
-> >  drivers/platform/x86/classmate-laptop.c |    2 ++
-> >  drivers/platform/x86/msi-wmi.c          |    4 +++-
-> >  drivers/platform/x86/panasonic-laptop.c |    4 +++-
-> >  drivers/usb/misc/appledisplay.c         |    1 +
-> >  drivers/video/bf54x-lq043fb.c           |    8 ++++++++
-> >  drivers/video/bfin-t350mcqb-fb.c        |    8 ++++++++
-> >  6 files changed, 25 insertions(+), 2 deletions(-)
-> > 
-> 
-> I think you should split the patch for every driver. Then, every
-> mantainer may ack only its particular section of the patch.
-> 
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+---
+ drivers/video/Kconfig  |    5 +++
+ drivers/video/Makefile |    1 +
+ drivers/video/ofmode.c |   95 ++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/video/ofmode.h |    6 +++
+ 4 files changed, 107 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/ofmode.c
+ create mode 100644 drivers/video/ofmode.h
 
-I agree.
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 5a5c303..dc1beb0 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -203,6 +203,11 @@ config FB_MACMODES
+        depends on FB
+        default n
+ 
++config FB_OF_MODE
++       tristate
++       depends on FB && OF
++       default n
++
+ config FB_BACKLIGHT
+ 	bool
+ 	depends on FB
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 4ecb30c..c4a912b 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -26,6 +26,7 @@ obj-$(CONFIG_FB_SVGALIB)       += svgalib.o
+ obj-$(CONFIG_FB_MACMODES)      += macmodes.o
+ obj-$(CONFIG_FB_DDC)           += fb_ddc.o
+ obj-$(CONFIG_FB_DEFERRED_IO)   += fb_defio.o
++obj-$(CONFIG_FB_OF_MODE)       += ofmode.o
+ 
+ # Hardware specific drivers go first
+ obj-$(CONFIG_FB_AMIGA)            += amifb.o c2p_planar.o
+diff --git a/drivers/video/ofmode.c b/drivers/video/ofmode.c
+new file mode 100644
+index 0000000..78caad1
+--- /dev/null
++++ b/drivers/video/ofmode.c
+@@ -0,0 +1,95 @@
++/*
++ * Get video mode settings from Flattened Device Tree.
++ *
++ * Copyright (C) 2010 DENX Software Engineering.
++ * Anatolij Gustschin <agust@denx.de>
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License version 2. See the file COPYING in the main directory
++ * of this archive for more details.
++ */
++
++#include <linux/fb.h>
++#include <linux/of.h>
++
++int __devinit of_get_video_mode(struct device_node *np,
++				struct fb_info *info)
++{
++	struct fb_videomode dt_mode;
++	const u32 *prop;
++	unsigned int len;
++
++	if (!np || !info)
++		return -EINVAL;
++
++	prop = of_get_property(np, "width", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.xres = *prop;
++
++	prop = of_get_property(np, "height", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.yres = *prop;
++
++	prop = of_get_property(np, "depth", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	info->var.bits_per_pixel = *prop;
++
++	prop = of_get_property(np, "linebytes", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	info->fix.line_length = *prop;
++
++	prop = of_get_property(np, "refresh", &len);
++	if (prop && len = sizeof(u32))
++		dt_mode.refresh = *prop; /* optional */
++
++	prop = of_get_property(np, "pixclock", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.pixclock = *prop;
++
++	prop = of_get_property(np, "left_margin", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.left_margin = *prop;
++
++	prop = of_get_property(np, "right_margin", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.right_margin = *prop;
++
++	prop = of_get_property(np, "upper_margin", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.upper_margin = *prop;
++
++	prop = of_get_property(np, "lower_margin", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.lower_margin = *prop;
++
++	prop = of_get_property(np, "hsync_len", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.hsync_len = *prop;
++
++	prop = of_get_property(np, "vsync_len", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.vsync_len = *prop;
++
++	prop = of_get_property(np, "sync", &len);
++	if (!prop || len != sizeof(u32))
++		goto err;
++	dt_mode.sync = *prop;
++
++	fb_videomode_to_var(&info->var, &dt_mode);
++
++	return 0;
++err:
++	pr_err("%s: Can't find expected mode entry\n", np->full_name);
++	return -EINVAL;
++}
+diff --git a/drivers/video/ofmode.h b/drivers/video/ofmode.h
+new file mode 100644
+index 0000000..9a13bec
+--- /dev/null
++++ b/drivers/video/ofmode.h
+@@ -0,0 +1,6 @@
++#ifndef _OFMODE_H
++#define _OFMODE_H
++
++extern int __devinit of_get_video_mode(struct device_node *np,
++					struct fb_info *info);
++#endif
+-- 
+1.6.3.3
 
-> > diff --git a/drivers/platform/x86/msi-wmi.c b/drivers/platform/x86/msi-wmi.c
-> > index 5f7cff1..2ffbfcf 100644
-> > --- a/drivers/platform/x86/msi-wmi.c
-> > +++ b/drivers/platform/x86/msi-wmi.c
-> > @@ -251,8 +251,10 @@ static int __init msi_wmi_init(void)
-> >  	if (!acpi_video_backlight_support()) {
-> >  		backlight = backlight_device_register(DRV_NAME,
-> >  				NULL, NULL, &msi_backlight_ops);
-> > -		if (IS_ERR(backlight))
-> > +		if (IS_ERR(backlight)) {
-> > +			err = PTR_ERR(backlight);
-> >  			goto err_free_input;
-> > +		}
-> >  
-> >  		backlight->props.max_brightness = ARRAY_SIZE(backlight_map) - 1;
-> >  		err = bl_get(NULL);
-
-Anyway, the msi-wmi part looks good to me.
-
-
-Anisse

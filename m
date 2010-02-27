@@ -1,59 +1,135 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Mon, 15 Feb 2010 07:45:24 +0000
-Subject: Re: [PATCH 00/17] OMAP DSS2 model restructuring
-Message-Id: <1266219924.2433.353.camel@tubuntu.research.nokia.com>
+From: Anatolij Gustschin <agust@denx.de>
+Date: Sat, 27 Feb 2010 21:58:21 +0000
+Subject: [PATCH 2/3] fbdev: fsl-diu-fb.c: allow setting panel video mode from DT
+Message-Id: <1267307902-31939-3-git-send-email-agust@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1265644661-3694-1-git-send-email-tomi.valkeinen@nokia.com>
-	 <6ed0b2681002130734k77de274fx5ceb169e0853b58d@mail.gmail.com>
-In-Reply-To: <6ed0b2681002130734k77de274fx5ceb169e0853b58d@mail.gmail.com>
+References: <fa686aa41002161006l3b301febt94fe990df4bddfe9@mail.gmail.com>
+In-Reply-To: <fa686aa41002161006l3b301febt94fe990df4bddfe9@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: ext Grazvydas Ignotas <notasas@gmail.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linuxppc-dev@ozlabs.org
+Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de, jrigby@gmail.com, Anatolij Gustschin <agust@denx.de>, yorksun@freescale.com
 
-On Sat, 2010-02-13 at 16:34 +0100, ext Grazvydas Ignotas wrote:
-> On Mon, Feb 8, 2010 at 5:57 PM, Tomi Valkeinen <tomi.valkeinen@nokia.com> wrote:
-> > Here are a bunch of patches that change the DSS2 driver's driver model a bit.
-> > This change was triggered by trying to support new hardware, and realizing that
-> > the current model just won't work.
-> >
-> > Currently the omapdss driver is in control of most aspects of the DSS, and
-> > omapdss calls necessary functions in display drivers. I made it that way to
-> > keep the display drivers simple, and I, naively, thought that it will work
-> > because the display panels are using standard bus interfaces and thus will be
-> > very similar. I was so wrong =).
-> >
-> > This patch set moves the control to the display driver. The display driver then
-> > calls omapdss functions to perform whatever deed is needed at that time. This
-> > will make display drivers slightly more complex, but it will be easier to
-> > control the hardware properly with strange or complex display devices.
-> >
-> > As a simple example, let's look at the update function.
-> >
-> > Currently user space app issues OMAPFB_UPDATE_WINDOW ioctl, and omapfb driver
-> > then calls update() in corresponding dss device struct, which goes to omapdss.
-> > omapdss will configure the update, calling the panel driver if needed.
-> >
-> > After these patches, omapfb will call update() in the panel driver. The panel
-> > driver will then call functions in omapdss to setup the update, start the
-> > update, and the panel driver will eventually get a callback informing that the
-> > update is done.
-> >
-> > These patches are still under work, but my basic tests on 3430SDP board seems
-> > to work ok.
-> >
-> > The patches can also be found from
-> > http://gitorious.org/linux-omap-dss2/linux work branch
-> 
-> Tested those along with the other series, seems to work fine on
-> pandora too. Panel callbacks like set_mirror
-> also work now, thanks.
-> 
-> Tested-by: Grazvydas Ignotas <notasas@gmail.com>
+Add support for specifying display panel data in the device
+tree. If no panel data is provided in the device tree, default
+video mode will be used as usual.
 
-Ok, thanks!
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+---
+ drivers/video/Kconfig      |    1 +
+ drivers/video/fsl-diu-fb.c |   63 +++++++++++++++++++++++++-------------------
+ 2 files changed, 37 insertions(+), 27 deletions(-)
 
- Tomi
-
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index dc1beb0..c805ecd 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1850,6 +1850,7 @@ config FB_FSL_DIU
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+ 	select PPC_LIB_RHEAP
++	select FB_OF_MODE
+ 	---help---
+ 	  Framebuffer driver for the Freescale SoC DIU
+ 
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 4637bcb..19ca1da 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -36,6 +36,8 @@
+ #include <sysdev/fsl_soc.h>
+ #include "fsl-diu-fb.h"
+ 
++#include "ofmode.h"
++
+ /*
+  * These parameters give default parameters
+  * for video output 1024x768,
+@@ -1168,7 +1170,7 @@ static int init_fbinfo(struct fb_info *info)
+ 	return 0;
+ }
+ 
+-static int __devinit install_fb(struct fb_info *info)
++static int __devinit install_fb(struct device_node *np, struct fb_info *info)
+ {
+ 	int rc;
+ 	struct mfb_info *mfbi = info->par;
+@@ -1177,33 +1179,40 @@ static int __devinit install_fb(struct fb_info *info)
+ 	if (init_fbinfo(info))
+ 		return -EINVAL;
+ 
+-	if (mfbi->index = 0)	/* plane 0 */
+-		aoi_mode = fb_mode;
+-	else
++	if (mfbi->index = 0) {	/* plane 0 */
++		/* use default mode for plane0 if there is no mode in DTB */
++		if (of_get_video_mode(np, info) < 0)
++			aoi_mode = fb_mode;
++		else
++			aoi_mode = NULL;
++	} else
+ 		aoi_mode = init_aoi_mode;
+-	pr_debug("mode used = %s\n", aoi_mode);
+-	rc = fb_find_mode(&info->var, info, aoi_mode, fsl_diu_mode_db,
+-	     ARRAY_SIZE(fsl_diu_mode_db), &fsl_diu_default_mode, default_bpp);
+ 
+-	switch (rc) {
+-	case 1:
+-		pr_debug("using mode specified in @mode\n");
+-		break;
+-	case 2:
+-		pr_debug("using mode specified in @mode "
+-			"with ignored refresh rate\n");
+-		break;
+-	case 3:
+-		pr_debug("using mode default mode\n");
+-		break;
+-	case 4:
+-		pr_debug("using mode from list\n");
+-		break;
+-	default:
+-		pr_debug("rc = %d\n", rc);
+-		pr_debug("failed to find mode\n");
+-		return -EINVAL;
+-		break;
++	if (aoi_mode) {
++		pr_debug("mode used = %s\n", aoi_mode);
++		rc = fb_find_mode(&info->var, info, aoi_mode, fsl_diu_mode_db,
++				  ARRAY_SIZE(fsl_diu_mode_db),
++				  &fsl_diu_default_mode, default_bpp);
++		switch (rc) {
++		case 1:
++			pr_debug("using mode specified in @mode\n");
++			break;
++		case 2:
++			pr_debug("using mode specified in @mode "
++				"with ignored refresh rate\n");
++			break;
++		case 3:
++			pr_debug("using mode default mode\n");
++			break;
++		case 4:
++			pr_debug("using mode from list\n");
++			break;
++		default:
++			pr_debug("rc = %d\n", rc);
++			pr_debug("failed to find mode\n");
++			return -EINVAL;
++			break;
++		}
+ 	}
+ 
+ 	pr_debug("xres_virtual %d\n", info->var.xres_virtual);
+@@ -1521,7 +1530,7 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
+ 		mfbi->ad = (struct diu_ad *)((u32)pool.ad.vaddr
+ 					+ pool.ad.offset) + i;
+ 		mfbi->ad->paddr = pool.ad.paddr + i * sizeof(struct diu_ad);
+-		ret = install_fb(machine_data->fsl_diu_info[i]);
++		ret = install_fb(np, machine_data->fsl_diu_info[i]);
+ 		if (ret) {
+ 			dev_err(&ofdev->dev,
+ 				"Failed to register framebuffer %d\n",
+-- 
+1.6.3.3
 

@@ -1,103 +1,50 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Tue, 23 Feb 2010 11:54:55 +0000
-Subject: Re: [RESEND][PATCHv2 4/4] OMAP: DSS2: Add Innolux 7" display for
-Message-Id: <1266926095.2411.69.camel@tubuntu.research.nokia.com>
+From: Anatolij Gustschin <agust@denx.de>
+Date: Sat, 27 Feb 2010 21:58:19 +0000
+Subject: [PATCH 0/3] Rework MPC5121 DIU support (for 2.6.34)
+Message-Id: <1267307902-31939-1-git-send-email-agust@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1265917278-22011-1-git-send-email-swirl@gmx.li>
-	 <45a44e481002112155u68c806beg9fe0a3a122d09d25@mail.gmail.com>
-	 <1265988343.2433.312.camel@tubuntu.research.nokia.com>
-	 <4B7E8AA4.40307@corscience.de>
-In-Reply-To: <4B7E8AA4.40307@corscience.de>
+References: <fa686aa41002161006l3b301febt94fe990df4bddfe9@mail.gmail.com>
+In-Reply-To: <fa686aa41002161006l3b301febt94fe990df4bddfe9@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: ext Thomas Weber <weber@corscience.de>
-Cc: ext Jaya Kumar <jayakumar.lkml@gmail.com>, Thomas Weber <swirl@gmx.li>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: linuxppc-dev@ozlabs.org
+Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de, jrigby@gmail.com, Anatolij Gustschin <agust@denx.de>, yorksun@freescale.com
 
-On Fri, 2010-02-19 at 13:57 +0100, ext Thomas Weber wrote:
-> Tomi Valkeinen wrote:
-> > On Fri, 2010-02-12 at 06:55 +0100, ext Jaya Kumar wrote:
-> >   
-> >> On Fri, Feb 12, 2010 at 3:41 AM, Thomas Weber <swirl@gmx.li> wrote:
-> >>     
-> >
-> > [snip]
-> >
-> >   
-> >>> +
-> >>> +static struct omap_video_timings innolux_at_timings = {
-> >>> +       .x_res          = 800,
-> >>> +       .y_res          = 480,
-> >>> +
-> >>> +       .pixel_clock    = 40000,
-> >>> +
-> >>> +       .hsw            = 48,
-> >>> +       .hfp            = 1,
-> >>> +       .hbp            = 1,
-> >>> +
-> >>> +       .vsw            = 3,
-> >>> +       .vfp            = 12,
-> >>> +       .vbp            = 25,
-> >>> +};
-> >>> +
-> >>> +static int innolux_at_panel_probe(struct omap_dss_device *dssdev)
-> >>> +{
-> >>> +       dssdev->panel.config = OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
-> >>> +               OMAP_DSS_LCD_IHS;
-> >>> +       dssdev->panel.acb = 0x28;
-> >>> +       dssdev->panel.timings = innolux_at_timings;
-> >>> +
-> >>> +       return 0;
-> >>> +}
-> >>> +
-> >>>       
-> >> Hi Thomas, Tomi,
-> >>
-> >> Just curious, does this patch imply that code like this needs to be
-> >> written for every single LCD type and resolution that can be connected
-> >> to omap2? Maybe there is a better way, like a common table of timings
-> >> and values that can be selected with a module option or even
-> >> autodetected.
-> >>     
-> >
-> > Yes, it is true that currently you need to write these for every LCD. I
-> > have been thinking this issue, and I think we can make a common driver. 
-> >
-> > However, it's not just selecting timings, as LCDs can have also other
-> > characteristics than just the video timings. For example, some may have
-> > power on/off line, some reset enable/disable, some need 50ms after
-> > reset, some 80ms after reset etc.
-> >
-> > But if we manage to get a sane set of those settings into the table, we
-> > could perhaps cover most of the "dummy" LCDs with it.
-> >
-> > This change doesn't probably need any changes to the DSS core, only for
-> > the panel driver. Any takers for this task? =) 
-> >
-> >  Tomi
-> >
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
-> >
-> >   
-> Hello,
-> 
-> sorry but I am not able to take the task.
-> Make it sense to rework this patch or do you want first the changes to
-> the panel driver?
+This patch series rework DIU support patch submitted
+previously with the patch series for updating MPC5121
+support in mainline. It doesn't add new panel timing data
+to the framebuffer driver anymore. Instead we now allow
+encoding this data in the device tree. First two patches
+add this support.
 
-I probably won't have time to implement this generic panel driver yet.
-However, I will be merging some DSS driver model changes (sent to
-mailing lists) soon, after which this patch needs to be changed a bit.
+The third patch for DIU support is rebased, but still
+depends on patches for adding MPC5121 USB support (because
+it touches shared platform code).
 
-The changes can be found from
-http://gitorious.org/linux-omap-dss2/linux/commits/work but they may
-still change a bit.
+It is intended for inclusion in 2.6.34, since without
+DIU support patch framebuffer doesn't work on mpc5121.
 
- Tomi
+Anatolij Gustschin (3):
+  video: add support for getting video mode from device tree
+  fbdev: fsl-diu-fb.c: allow setting panel video mode from DT
+  powerpc/mpc5121: shared DIU framebuffer support
 
+ arch/powerpc/platforms/512x/mpc5121_ads.c     |    7 +
+ arch/powerpc/platforms/512x/mpc5121_generic.c |   13 ++
+ arch/powerpc/platforms/512x/mpc512x.h         |    3 +
+ arch/powerpc/platforms/512x/mpc512x_shared.c  |  282 +++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_soc.h                 |    1 +
+ drivers/video/Kconfig                         |    6 +
+ drivers/video/Makefile                        |    1 +
+ drivers/video/fsl-diu-fb.c                    |   88 +++++---
+ drivers/video/fsl-diu-fb.h                    |  223 -------------------
+ drivers/video/ofmode.c                        |   95 +++++++++
+ drivers/video/ofmode.h                        |    6 +
+ include/linux/fsl-diu-fb.h                    |  223 +++++++++++++++++++
+ 12 files changed, 693 insertions(+), 255 deletions(-)
+ delete mode 100644 drivers/video/fsl-diu-fb.h
+ create mode 100644 drivers/video/ofmode.c
+ create mode 100644 drivers/video/ofmode.h
+ create mode 100644 include/linux/fsl-diu-fb.h
 

@@ -1,47 +1,67 @@
-From: Roger Quadros <roger.quadros@nokia.com>
-Date: Tue, 23 Mar 2010 08:45:54 +0000
-Subject: Re: [PATCHv2 0/3] OMAP: DSS2: Allow us to use SDI
-Message-Id: <4BA87FC2.8000405@nokia.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 01 Mar 2010 03:45:20 +0000
+Subject: Re: [PATCH 1/3] video: add support for getting video mode from
+Message-Id: <1267415120.23523.1898.camel@pasglop>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1268829321-29769-1-git-send-email-roger.quadros@nokia.com> <1268835050.2417.277.camel@tubuntu.research.nokia.com>
-In-Reply-To: <1268835050.2417.277.camel@tubuntu.research.nokia.com>
+References: <fa686aa41002161006l3b301febt94fe990df4bddfe9@mail.gmail.com>
+	<1267307902-31939-2-git-send-email-agust@denx.de>
+	<fa686aa41002272230s7f900c0fv1aabf0e26ccbf84c@mail.gmail.com>
+	<4B8A2CD7.7070305@firmworks.com>
+In-Reply-To: <4B8A2CD7.7070305-D5eQfiDGL7eakBO8gow8eQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Valkeinen Tomi (Nokia-D/Helsinki)" <Tomi.Valkeinen@nokia.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: Mitch Bradley <wmb-D5eQfiDGL7eakBO8gow8eQ@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, wd-ynQEQJNshbs@public.gmane.org, dzu-ynQEQJNshbs@public.gmane.org, jrigby-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, devicetree-discuss <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, linuxppc-dev-mnsaURCQ41sdnm+yROfE0A@public.gmane.org, yorksun-KZfg59tc24xl57MIdRCFDg@public.gmane.org
 
-Hi,
+At some stage, Grant wrote:
 
-Valkeinen Tomi (Nokia-D/Helsinki) wrote:
-> Hi,
-> 
-> On Wed, 2010-03-17 at 13:35 +0100, Quadros Roger (Nokia-D/Helsinki)
-> wrote:
->> SDI now makes use of vdds_sdi regulator supply.
->> DPI can now be disabled on systems that don't have it
->>
->> changes since v1:
->> - Incorporated review comments
->> - no more omap3xx checks for regulator enable/disable in SDI
->> - Added Kconfig option to enable/disable DPI
->>
->> Roger Quadros (3):
->>   OMAP: DSS2: Add Kconfig option for DPI display type
->>   OMAP: DSS2: Remove redundant enable/disable calls from SDI
->>   OMAP: DSS2: Use vdds_sdi regulator supply in SDI
-> 
-> I think this patch set looks ok. Thanks!
-> 
->  Tomi
-> 
-> Ps. I took the liberty of removing an extra #include <plat/cpu.h>
-> 
-> 
-Are these patches applied somewhere already. I need to send more patches that 
-get N900 panel working for which I need these patches applied.
+> > First off, I did a tiny amount of research, and I didn't find any
+> > existing OpenFirmware bindings for describing video displays.
+> > Otherwise, I'd suggest considering that.
 
-cheers,
--roger
+There's a binding for framebuffers but it sucks big time :-) It doesn't
+provide a reliable way for the OS to get to the physical address of the
+fb, doesn't define outputs and mode setting, doesn't really deal with
+>8bpp, etc....
+
+On Sat, 2010-02-27 at 22:44 -1000, Mitch Bradley wrote:
+
+> As it turns out, I'm doing exactly that - exporting verbatim EDID
+> data 
+> as the value of the "edid" property - for the display node on the Via 
+> version of the OLPC machine.  The kernel driver uses it instead of 
+> trying to obtain the EDID data from the monitor, because the builtin 
+> OLPC display cannot supply EDID data through the usual hardware
+> interfaces.
+
+This is actually a common practice (though EDID is most often in
+uppercase) on Apple hardware too. It has issues though in the sense that
+it doesn't carry proper connector information and falls over in many
+multi-head cases.
+
+I think passing the EDID data, when available, is thus the right thing
+to do indeed, however that doesn't solve two problems:
+
+ - Where to put that property ? This is a complicated problem and we
+might argue on a binding for weeks because video cards typically support
+multiple outputs, etc. etc... I think the best for now is to stick as
+closely as possible to the existing OF fb binding, and have "display"
+nodes for each output, which can eventually contain an EDID. We might
+also want to add a string that indicate the connector type. Specific
+drivers might want to define additional properties here where it makes
+sense such as binding of those outputs to CRTCs or such, up to you.
+
+ - We -also- want a way to specify the "default" mode as set by the
+firmware, at least on some devices. The EDID gives capabilities, and
+often for LCDs also the "preferred" mode which is almost always the
+"default" mode ... but could be different. In order to avoid "flicking",
+the driver might wants to know what is the currently programmed mode.
+For that, having split out properties makes sense, though I would like
+to either prefix them all with "mode," or stick them in a sub-node of
+the display@.
+
+Cheers,
+Ben.
 
 

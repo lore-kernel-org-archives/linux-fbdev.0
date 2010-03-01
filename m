@@ -1,43 +1,149 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Date: Wed, 31 Mar 2010 12:15:53 +0000
-Subject: Re: [PATCH v6 7/8, needs improvement] hid: add suspend/resume hooks
-Message-Id: <alpine.LNX.2.00.1003311415000.24576@pobox.suse.cz>
+From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+Date: Mon, 01 Mar 2010 16:10:39 +0000
+Subject: Re: [PATCH] Add sysfs support for fbdefio delay
+Message-Id: <0b055dc4810836e24ff21a776504142b.squirrel@intranet.cs.nmsu.edu>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100324233707.7243b04d@neptune.home> <20100324234022.0361bd80@neptune.home> <20100326065656.GC26602@core.coreip.homeip.net> <20100326102951.3b9ecda1@neptune.home> <alpine.LNX.2.00.1003262156280.24576@pobox.suse.cz> <20100327012245.0ace6a09@neptune.home>
- <alpine.LNX.2.00.1003291144350.24576@pobox.suse.cz> <20100329121611.0c22dcaf@pluto.restena.lu> <alpine.LNX.2.00.1003301010410.24576@pobox.suse.cz> <20100330223224.18fe4f3e@neptune.home> <20100330224230.7b84df75@neptune.home>
-In-Reply-To: <20100330224230.7b84df75@neptune.home>
+References: <201002252215.o1PMFnoP011425@mustang.cs.nmsu.edu>
+    <45a44e481002251830j710e87bah52486a489eef04cb@mail.gmail.com>
+In-Reply-To: <45a44e481002251830j710e87bah52486a489eef04cb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, Nicu Pavel <npavel@ituner.com>, Oliver Neukum <oliver@neukum.org>, Jaya Kumar <jayakumar.lkml@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: linux-kernel@vger.kernel.org, npavel@ituner.com, tomi.valkeinen@nokia.com, tony@atomide.com, florianschandinat@gmx.de, krzysztof.h1@wp.pl, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, jkosina@suse.cz, bonbons@linux-vserver.org
 
-On Tue, 30 Mar 2010, Bruno Prémont wrote:
+Jaya Kumar wrote:
+> Hi Rick,
+>
+> On Fri, Feb 26, 2010 at 6:15 AM, Rick L. Vinyard Jr.
+> <rvinyard@cs.nmsu.edu> wrote:
+>> This patch adds support for examining and modifying the fbdefio delay
+>> parameter through sysfs. It also adds two driver definable minimum
+>> and maximum bounds.
+>
+> Thanks for posting this. I've now read through this patch and your
+> past patches, but I couldn't get a good understanding of how this
+> userspace exposed defio delay would interact with most existing
+> systems.
+>
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 Set the deferred I/O delay of the framebuf=
+fer in ms.
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 This value can be used to throttle deferre=
+d I/O updates.
+>
+> Please help us understand how userspace should use the ability to set
+> this delay.
 
-> Add suspend/resume hooks for HID drivers so these can do some
-> additional state adjustment when device gets suspended/resumed.
-> 
-> This patch calls these hooks from usbhid suspend/resume functions,
-> only calling suspend on plain suspend, not autosuspend.
-> (it might be worth adding an autosuspend parameter to suspend
-> hook and calling suspend in both cases)
-> 
-> Signed-off-by: Bruno Prémont <bonbons@linux-vserver.org>
-> ---
-> 
-> Note:
->   this patch needs improvements as mentionned by Olivier Neukum:
->   - suspend hook for both system suspend and autosuspend
->   - no call of hook on USB-HID-resume failure
+I think that there isn't one specific answer since, just like the approach
+to priority of processes there isn't one specific answer. The real answer
+is: it depends.
 
-I agree with Oliver's comments.
+Bruno has already provided some feedback on his driver so I'll add a few
+comments on what motivated it for the G13.
 
-We should also consider putting the hook calls into bluetooth 
-implementation as well (though there is currently no driver using it, but 
-I don't know, maybe Wacom could benefit from it as well).
+One of the factors I was concerned about was having two or more G13
+devices on the same bus with other traffic. Each frame is sent as an
+interrupt transfer out, and I was concerned that the framebuffer updates
+might be detrimental to other traffic.
 
-Thanks,
+I know that a pair of G13 devices running at 30 FPS would only consume
+about 5% of the USB 1.1 bandwidth (~500 Mbit/s) for framebuffer transfers
+(sans headers and other control messages), but I was concerned that it
+could introduce enough latency to make other devices laggy.
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+There is a bit of translation that has to go on for each framebuffer as
+well. The G13 doesn't use the traditional bitwise layout where 0,0 is the
+high bit of the first byte and 7,0 is the low bit of the first byte. The
+format the G13 expects is 0,0 in the high bit and 0,7 in the low bit.
+
+As a result of this translation, I was concerned with the driver consuming
+too much CPU time when doing multiple translations for multiple devices...
+or even one translation on a limited or saturated CPU at a high frame
+rate.
+
+Extending this beyond the simple case of the G13, I think it could be
+useful for any deferred framebuffer that consumes a limited critical
+resource, whether it be USB bandwidth, CPU usage, or some other resource.
+
+One driver in particular that I noticed is the xen-fbfront. The update
+rate is set at 20FPS, but what if someone wanted 30 FPS?
+
+> Who in userspace is intended to use it? Would this be the
+> X server, cairo, or papyrus? A separate daemon? Human interaction?
+
+Again, that has the same issue as who sets priority on processes... It
+depends.
+
+As for the G13 I was planning, for the current time, on putting a slider
+in the configuration window that allowed the user to modify the update
+rate. The slider would populate off the sysfs values.
+
+I think it would be an interesting possibility to develop a daemon that
+watched traffic on buses with USB devices that could be throttled and
+throttle them according to bus saturation.
+
+However, at this point I wasn't planning on going there. But, having the
+ability to throttle would be a key point for developing such daemons.
+
+> When should said userspace entity throttle updates? How would this
+> entity know when throttling is needed? Could this throttling possibly
+> or should this possibly be done automatically by the driver itself?
+>
+
+I don't think it should be incorporated into the driver because I believe
+most circumstances will involve factors outside the purview of the driver,
+such as bandwidth utilization. One factor could be rather subjective, like
+'laggy'. What is 'laggy' to one user may not be to another.
+
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 Most framebuffer devices do not have or ne=
+ed support for
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 deferred I/O. Accessing a framebuffer with=
+out deferred
+>> I/O
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 support will return -ENODEV. Can be read b=
+ut not
+>> modified if
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /sys/class/graphics/<fb>/defio_delay_max i=
+s 0. When
+>> modifying,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 the value must be greater than or equal to
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /sys/class/graphics/<fb>/defio_delay_min a=
+nd less than
+>> or equal
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 to /sys/class/graphics/<fb>/defio_delay_ma=
+x.
+>
+> Please help the reader of above understand the sequence of userspace
+> changing the defio delay, and how and when that would affect the
+> associated drivers. Will the delay behaviour be standard for all defio
+> client drivers? What happens in all the various timing scenarios, eg:
+> if a defio delay is changed in the middle of a display update or a
+> defio page clean or before?
+
+I think this could be taken care of by explaining that the parameter will
+only effect the next queued framebuffer update. But, it should definitely
+be in there.
+
+> The sysfs parameter description mentioning
+> min/max above could use some elaboration as reading it doesn't make
+> clear if userspace can also affect min/max or if it is completely
+> owned by the driver.
+>
+
+I can add that as well.
+
+> Thanks,
+> jaya
+>
+> ps: I only found your patches by accident when reading through the
+> fbdev mailing list. I'm very interested in defio (I happen to be the
+> author of it) and also drivers that use defio so I would appreciate
+> being CCed on such changes. Thanks a bunch.
+>
+
+No problem. I didn't mean to leave you out.
+
+--=20
+
+Rick
+

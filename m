@@ -1,39 +1,36 @@
-From: =?iso-8859-1?Q?Syrj=E4l=E4_Ville_=28Nokia-D=2FHelsinki=29?=
-Date: Tue, 02 Mar 2010 16:16:31 +0000
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Tue, 02 Mar 2010 16:20:09 +0000
 Subject: Re: [PATCH 1/3] OMAPFB: install omapfb.h
-Message-Id: <20100302161631.GK18322@nokia.com>
+Message-Id: <1267546809.2406.69.camel@tubuntu.research.nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1266964587-14381-1-git-send-email-ville.syrjala@nokia.com>
- <1267442684.2406.11.camel@tubuntu.research.nokia.com>
-In-Reply-To: <1267442684.2406.11.camel@tubuntu.research.nokia.com>
+	 <1267442684.2406.11.camel@tubuntu.research.nokia.com>
+	 <20100302161631.GK18322@nokia.com>
+In-Reply-To: <20100302161631.GK18322@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: "Valkeinen Tomi (Nokia-D/Helsinki)" <Tomi.Valkeinen@nokia.com>
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
+To: "Syrjala Ville (Nokia-D/Helsinki)" <ville.syrjala@nokia.com>
 Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 
-On Mon, Mar 01, 2010 at 12:24:44PM +0100, Valkeinen Tomi (Nokia-D/Helsinki)=
- wrote:
-> Hi,
->=20
-> On Tue, 2010-02-23 at 23:36 +0100, Syrjala Ville (Nokia-D/Helsinki)
-> wrote:
-> > From: Ville Syrj=E4l=E4 <ville.syrjala@nokia.com>
-> >=20
-> > omapfb has several custom ioctls so user space needs
-> > the header in order to utilize them.
-> >=20
-> > Signed-off-by: Ville Syrj=E4l=E4 <ville.syrjala@nokia.com>
->=20
-> This one, and the 2/3 patch look fine, I'll apply them.
->=20
-> The third one does not apply to my current DSS2 tree, so it needs some
-> updating.
-
-Hmm, OK. Do you want it against master or some other branch? IIRC
-that's what I used.
-
-I just hit a few bugs in this patch as well so I will send a v2 soon.
-
---=20
-Ville Syrj=E4l=E4
+T24gVHVlLCAyMDEwLTAzLTAyIGF0IDE3OjE2ICswMTAwLCBTeXJqYWxhIFZpbGxlIChOb2tpYS1E
+L0hlbHNpbmtpKQp3cm90ZToKPiBPbiBNb24sIE1hciAwMSwgMjAxMCBhdCAxMjoyNDo0NFBNICsw
+MTAwLCBWYWxrZWluZW4gVG9taSAoTm9raWEtRC9IZWxzaW5raSkgd3JvdGU6Cj4gPiBIaSwKPiA+
+IAo+ID4gT24gVHVlLCAyMDEwLTAyLTIzIGF0IDIzOjM2ICswMTAwLCBTeXJqYWxhIFZpbGxlIChO
+b2tpYS1EL0hlbHNpbmtpKQo+ID4gd3JvdGU6Cj4gPiA+IEZyb206IFZpbGxlIFN5cmrDpGzDpCA8
+dmlsbGUuc3lyamFsYUBub2tpYS5jb20+Cj4gPiA+IAo+ID4gPiBvbWFwZmIgaGFzIHNldmVyYWwg
+Y3VzdG9tIGlvY3RscyBzbyB1c2VyIHNwYWNlIG5lZWRzCj4gPiA+IHRoZSBoZWFkZXIgaW4gb3Jk
+ZXIgdG8gdXRpbGl6ZSB0aGVtLgo+ID4gPiAKPiA+ID4gU2lnbmVkLW9mZi1ieTogVmlsbGUgU3ly
+asOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KPiA+IAo+ID4gVGhpcyBvbmUsIGFuZCB0
+aGUgMi8zIHBhdGNoIGxvb2sgZmluZSwgSSdsbCBhcHBseSB0aGVtLgo+ID4gCj4gPiBUaGUgdGhp
+cmQgb25lIGRvZXMgbm90IGFwcGx5IHRvIG15IGN1cnJlbnQgRFNTMiB0cmVlLCBzbyBpdCBuZWVk
+cyBzb21lCj4gPiB1cGRhdGluZy4KPiAKPiBIbW0sIE9LLiBEbyB5b3Ugd2FudCBpdCBhZ2FpbnN0
+IG1hc3RlciBvciBzb21lIG90aGVyIGJyYW5jaD8gSUlSQwo+IHRoYXQncyB3aGF0IEkgdXNlZC4K
+PiAKPiBJIGp1c3QgaGl0IGEgZmV3IGJ1Z3MgaW4gdGhpcyBwYXRjaCBhcyB3ZWxsIHNvIEkgd2ls
+bCBzZW5kIGEgdjIgc29vbi4KCk9rLiBZb3UgY2FuIHVzZSBnaXQ6Ly9naXRvcmlvdXMub3JnL2xp
+bnV4LW9tYXAtZHNzMi9saW51eC5naXQgZm9yLW5leHQKYnJhbmNoLCB0aGF0IGNvbnRhaW5zIHRo
+ZSBsYXRlc3QgIm9mZmljaWFsIiBzdHVmZi4KCiBUb21pCgoKCi0tClRvIHVuc3Vic2NyaWJlIGZy
+b20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4K
+dGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKTW9yZSBt
+YWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5o
+dG1s

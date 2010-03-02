@@ -1,146 +1,199 @@
-From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-Date: Tue, 02 Mar 2010 15:36:54 +0000
-Subject: Re: [PATCH] Add sysfs support for fbdefio delay
-Message-Id: <84774cde4a948cb726db3bfcb463a04c.squirrel@intranet.cs.nmsu.edu>
+From: "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>
+Date: Tue, 02 Mar 2010 18:47:34 +0000
+Subject: [PATCH] Add sysfs support for fbdefio delay
+Message-Id: <201003021847.o22IlYR8004349@mustang.cs.nmsu.edu>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <201002252215.o1PMFnoP011425@mustang.cs.nmsu.edu>
-    <45a44e481002251830j710e87bah52486a489eef04cb@mail.gmail.com>
-    <0b055dc4810836e24ff21a776504142b.squirrel@intranet.cs.nmsu.edu>
-    <45a44e481003012249p6970d442o593af7d4971f0183@mail.gmail.com>
-In-Reply-To: <45a44e481003012249p6970d442o593af7d4971f0183@mail.gmail.com>
+In-Reply-To: <201002252215.o1PMFnoP011425@mustang.cs.nmsu.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-kernel@vger.kernel.org, npavel@ituner.com, tomi.valkeinen@nokia.com, tony@atomide.com, florianschandinat@gmx.de, krzysztof.h1@wp.pl, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, jkosina@suse.cz, bonbons@linux-vserver.org
+To: linux-kernel@vger.kernel.org
+Cc: felipe.balbi@nokia.com, pavel@ucw.cz, jayakumar.lkml@gmail.com, linux-usb@vger.kernel.org, oliver@neukum.org, linux-input@vger.kernel.org, dmitry.torokhov@gmail.com, npavel@ituner.com, tomi.valkeinen@nokia.com, tony@atomide.com, FlorianSchandinat@gmx.de, krzysztof.h1@wp.pl, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, jkosina@suse.cz, bonbons@linux-vserver.org
 
+This patch adds support for examining and modifying the fbdefio delay
+parameter through sysfs. It also adds two driver definable minimum
+and maximum bounds.
 
-Jaya Kumar wrote:
-> On Tue, Mar 2, 2010 at 12:10 AM, Rick L. Vinyard, Jr.
-> <rvinyard@cs.nmsu.edu> wrote:
->> Jaya Kumar wrote:
->>> Hi Rick,
->>>
->>> On Fri, Feb 26, 2010 at 6:15 AM, Rick L. Vinyard Jr.
->>> <rvinyard@cs.nmsu.edu> wrote:
->>>
->>>> +               Set the deferred I/O delay of the framebuffer in ms.
->>>> +               This value can be used to throttle deferred I/O
->>>> updates.
->>>
->>> Please help us understand how userspace should use the ability to set
->>> this delay.
->>
->> I think that there isn't one specific answer since, just like the
->> approach
->> to priority of processes there isn't one specific answer. The real
->> answer
->> is: it depends.
->
-> Rick,
->
-> Thanks for your reply.
->
->>
->> One of the factors I was concerned about was having two or more G13
->> devices on the same bus with other traffic. Each frame is sent as an
->> interrupt transfer out, and I was concerned that the framebuffer updates
->> might be detrimental to other traffic.
->>
->> I know that a pair of G13 devices running at 30 FPS would only consume
->> about 5% of the USB 1.1 bandwidth (~500 Mbit/s) for framebuffer
->> transfers
->> (sans headers and other control messages), but I was concerned that it
->> could introduce enough latency to make other devices laggy.
->
-> You mentioned in your responses and above that you're concerned about
-> saturating the USB bus and lagginess, and I think it is good to have
-> those concerns. Defio delay may be an easy parameter to expose, and in
-> at least a specific set of drivers, changing it would have a
-> meaningful effect on bus utilization, but are you convinced that
-> exposing it generally (remember your patch makes it apply to all fb
-> drivers) to userspace is a right way or even a good way to address bus
-> saturation concerns?
->
->> As a result of this translation, I was concerned with the driver
->> consuming
->> too much CPU time when doing multiple translations for multiple
->> devices...
->> or even one translation on a limited or saturated CPU at a high frame
->> rate.
->
-> Being concerned about CPU utilization is a good thing. But say for
-> example, your USB ethernet driver or USB audio driver is taking a lot
-> of cpu time packetizing traffic, then would I be correct that your
-> desire is to expose an inter-packetization driver specific sleep time
-> controllable by userspace via sysfs for all ethernet, audio, etc
-> drivers? (by driver specific, I mean the sysfs parameter would be
-> presented by all drivers but the value would be specific to each one,
-> which is the way your current patch would behave for all fb drivers).
->
+The default behavior is to not permit modifications if delay_max is 0,
+thus preventing modification of the delay if the driver does not
+explicitly permit modification.
 
-I think the answer is yes, whether this were a fb, network, audio, etc. If
-there is a clearly defined parameter at which resource utilization can be
-adjusted in a standard way.
+Signed-off-by: Rick L. Vinyard, Jr <rvinyard@cs.nmsu.edu>
+---
+ .../ABI/testing/sysfs-class-graphics-defio         |   35 ++++++++
+ drivers/video/fbsysfs.c                            |   87 ++++++++++++++++++++
+ include/linux/fb.h                                 |    9 ++-
+ 3 files changed, 130 insertions(+), 1 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-graphics-defio
 
-Although the value is specific to each one, the min/max parameters provide
-the bounds and standardized units, allowing userspace to modify the delay
-parameter in a standardized way.
-
-I also tried to make it where the driver had to explicitly modify the
-min/max parameters so that unless a driver sets min/max values the delay
-parameter can be examined from userspace but not modified.
-
-I agree that the motivation for throttling varies by device, and even as
-in this case there could be different motivations for the same device (USB
-bus bandwidth and/or CPU utilization).
-
-I think that what also distinguishes the fbdefio case is the fact that
-there is a single defined point at which resource utilization would be
-throttled and that's the fb_deferred_io structure's deferred_io hook.
-
->> I think it would be an interesting possibility to develop a daemon that
->> watched traffic on buses with USB devices that could be throttled and
->> throttle them according to bus saturation.
->>
->> However, at this point I wasn't planning on going there. But, having the
->> ability to throttle would be a key point for developing such daemons.
->
-> Just curious, do such sysfs throttling parameters exist for any other
-> subsystems? If so, are userspace apps/services using them, and are
-> they happy with it?
-
-An example of something like this is the ACPI CPU thermal class. It
-provides two parameters, cur_state and max_state. The minimum is presumed
-to be 0.
-
-In this case though, I think fbdefio needs to provide both a min and a max
-as a driver may want to set the minimum refresh rate to be non-zero.
-
-Another example would be the CPU frequency subsystem, and in particular
-the userspace governor. There are similar sysfs attributes for obtaining
-the current frequency, setting the frequency, and obtaining the min/max
-frequencies.
-
-In particular they used:
-     scaling_cur_freq (ro)
-     scaling_min_freq (ro)
-     scaling_max_freq (ro)
-     scaling_setspeed (wo)
-
-I used a single read/write attribute for read/write on the delay instead
-of the two parameter approach used for frequencies. I used:
-     defio_delay     (rw)
-     defio_delay_min (ro)
-     defio_delay_max (ro)
-
-But, it wouldn't be hard to use an analogous set like:
-     defio_cur_delay (ro)
-     defio_min_delay (ro)
-     defio_max_delay (ro)
-     defio_set_delay (wo)
-
+diff --git a/Documentation/ABI/testing/sysfs-class-graphics-defio b/Documentation/ABI/testing/sysfs-class-graphics-defio
+new file mode 100644
+index 0000000..e0ef924
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-class-graphics-defio
+@@ -0,0 +1,35 @@
++What:		/sys/class/graphics/<fb>/defio_delay
++Date:		February 2010
++KernelVersion:	2.6.34
++Contact:	Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
++Description:
++		Set the deferred I/O delay of the framebuffer in ms.
++		This value can be used to throttle deferred I/O updates.
++		Most framebuffer devices do not have or need support for
++		deferred I/O. Accessing a framebuffer without deferred I/O
++		support will return -ENODEV. Can be read but not modified if
++		/sys/class/graphics/<fb>/defio_delay_max is 0. When modifying,
++		the value must be greater than or equal to
++		/sys/class/graphics/<fb>/defio_delay_min and less than or equal
++		to /sys/class/graphics/<fb>/defio_delay_max.
++
++What:		/sys/class/graphics/<fb>/defio_delay_min
++Date:		February 2010
++KernelVersion:	2.6.34
++Contact:	Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
++Description:
++		Minimum deferred I/O value in ms for this framebuffer.
++		This value is specified by the driver and cannot be modified
++		from sysfs. Default is 0.
++
++What:		/sys/class/graphics/<fb>/defio_delay_min
++Date:		February 2010
++KernelVersion:	2.6.34
++Contact:	Rick L Vinyard Jr <rvinyard@cs.nmsu.edu>
++Description:
++		Maximum deferred I/O value in ms for this framebuffer.
++		This value is specified by the driver and cannot be modified
++		from sysfs. Default is 0.
++		If this value is 0 /sys/class/graphics/<fb>/defio_delay cannot
++		be modified, but can be read.
++
+diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
+index d4a2c11..d00ea2d 100644
+--- a/drivers/video/fbsysfs.c
++++ b/drivers/video/fbsysfs.c
+@@ -484,6 +484,87 @@ static ssize_t show_bl_curve(struct device *device,
+ }
+ #endif
+ 
++#ifdef CONFIG_FB_DEFERRED_IO
++static ssize_t store_defio_delay(struct device *device,
++				 struct device_attribute *attr,
++				 const char *buf, size_t count)
++{
++	struct fb_info *fb_info = dev_get_drvdata(device);
++	unsigned long delay_ms = 0;
++	unsigned long delay;
++	int error;
++	char *last = NULL;
++
++	/* Check to see whether this is a deferred I/O driver */
++	if (!fb_info || !fb_info->fbdefio)
++		return -ENODEV;
++
++	/* Check whether delay_max permits setting of delay */
++	if (fb_info->fbdefio->delay_max = 0)
++		return -EPERM;
++
++	error = strict_strtoul(buf, 10, &delay_ms);
++	if (error < 0)
++		return error;
++
++	delay = delay_ms * HZ / 1000;
++
++	if (delay < fb_info->fbdefio->delay_min ||
++	    delay > fb_info->fbdefio->delay_max)
++		return -EINVAL;
++
++	fb_info->fbdefio->delay = delay;
++
++	return count;
++}
++
++static ssize_t show_defio_delay(struct device *device,
++				struct device_attribute *attr, char *buf)
++{
++	struct fb_info *fb_info = dev_get_drvdata(device);
++	unsigned long delay_ms;
++
++	/* Check to see whether this is a deferred I/O driver */
++	if (!fb_info || !fb_info->fbdefio)
++		return -ENODEV;
++
++	delay_ms = fb_info->fbdefio->delay * 1000 / HZ;
++
++	return snprintf(buf, PAGE_SIZE, "%lu\n", delay_ms);
++}
++
++static ssize_t show_defio_delay_min(struct device *device,
++				    struct device_attribute *attr, char *buf)
++{
++	struct fb_info *fb_info = dev_get_drvdata(device);
++	unsigned long delay_ms;
++
++	/* Check to see whether this is a deferred I/O driver */
++	if (!fb_info || !fb_info->fbdefio)
++		return -ENODEV;
++
++	delay_ms = fb_info->fbdefio->delay_min * 1000 / HZ;
++
++	return snprintf(buf, PAGE_SIZE, "%lu\n", delay_ms);
++}
++
++static ssize_t show_defio_delay_max(struct device *device,
++				    struct device_attribute *attr, char *buf)
++{
++	struct fb_info *fb_info = dev_get_drvdata(device);
++	unsigned long delay_ms;
++
++	/* Check to see whether this is a deferred I/O driver */
++	if (!fb_info || !fb_info->fbdefio)
++		return -ENODEV;
++
++	delay_ms = fb_info->fbdefio->delay_max * 1000 / HZ;
++
++	return snprintf(buf, PAGE_SIZE, "%lu\n", delay_ms);
++}
++
++#endif
++
+ /* When cmap is added back in it should be a binary attribute
+  * not a text one. Consideration should also be given to converting
+  * fbdev to use configfs instead of sysfs */
+@@ -503,6 +584,12 @@ static struct device_attribute device_attrs[] = {
+ #ifdef CONFIG_FB_BACKLIGHT
+ 	__ATTR(bl_curve, S_IRUGO|S_IWUSR, show_bl_curve, store_bl_curve),
+ #endif
++#ifdef CONFIG_FB_DEFERRED_IO
++	__ATTR(defio_delay, S_IRUGO|S_IWUSR,
++	       show_defio_delay, store_defio_delay),
++	__ATTR(defio_delay_min, S_IRUGO, show_defio_delay_min, NULL),
++	__ATTR(defio_delay_max, S_IRUGO, show_defio_delay_max, NULL),
++#endif
+ };
+ 
+ int fb_init_device(struct fb_info *fb_info)
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 369767b..76f35fd 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -591,8 +591,15 @@ struct fb_pixmap {
+ 
+ #ifdef CONFIG_FB_DEFERRED_IO
+ struct fb_deferred_io {
+-	/* delay between mkwrite and deferred handler */
++	/* delay in jiffies between mkwrite and deferred handler */
+ 	unsigned long delay;
++	/* The minimum delay in jiffies that may be set through sysfs */
++	unsigned long delay_min;
++	/*
++	 * The maximum delay in jiffies that may be set through sysfs.
++	 * If delay_max is 0, delay cannot be set through sysfs.
++	 */
++	unsigned long delay_max;
+ 	struct mutex lock; /* mutex that protects the page list */
+ 	struct list_head pagelist; /* list of touched pages */
+ 	/* callback */
 -- 
-
-Rick
+1.6.6.1
 

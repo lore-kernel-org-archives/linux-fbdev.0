@@ -1,18 +1,18 @@
-From: Dave Airlie <airlied@gmail.com>
+From: Michal Suchanek <hramrach@centrum.cz>
 Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video 
 	mode
-Date: Wed, 3 Mar 2010 19:23:37 +1000
-Message-ID: <21d7e9971003030123q2e5d073dj68a81d612e26dc94@mail.gmail.com>
-References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
-	<21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com>
-	<a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com>
-	<21d7e9971003022102v232c099r441b0bd843b30313@mail.gmail.com>
-	<a5d587fb1003030023l355eab4dtb9f4cd62058dea3e@mail.gmail.com>
+Date: Wed, 3 Mar 2010 11:32:42 +0100
+Message-ID: <a5d587fb1003030232s2c5bf153s5a2b67e47f28a29c@mail.gmail.com>
+References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com> 
+	<21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com> 
+	<a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com> 
+	<21d7e9971003022102v232c099r441b0bd843b30313@mail.gmail.com> 
+	<a5d587fb1003030023l355eab4dtb9f4cd62058dea3e@mail.gmail.com> 
+	<21d7e9971003030123q2e5d073dj68a81d612e26dc94@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <dri-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <a5d587fb1003030023l355eab4dtb9f4cd62058dea3e@mail.gmail.com>
+In-Reply-To: <21d7e9971003030123q2e5d073dj68a81d612e26dc94@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
 	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -22,50 +22,66 @@ List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
 	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: dri-devel-bounces@lists.sourceforge.net
-To: Michal Suchanek <hramrach@centrum.cz>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Dave Airlie <airlied@gmail.com>
 Cc: dri-devel@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, Paulius Zaleckas <paulius.zaleckas@gmail.com>
 
->>
->>
->> I've only really got two answer for this:
->>
->> (a) hook up another /dev/dri/card_fb device and use the current KMS
->> ioctls to control the framebuffer, have the drm callback into fbdev/fbcon
->> to mention resizes etc. Or add one or two info gathering ioctls and
->> allow use of the /dev/dri/control device to control stuff.
->>
->
-> What about writing a drmfbset or something and have fbset call it when
-> it detects a drm framebuffer and warn that it does not support drm
-> framebuffers fully?
->
-
-My main problem with calling the drm underneath the fbdev is it
-seems like a layering violation. Then again some of code in the kernel
-is also contributing to this violation. I'd really like to make fbdev more
-like an in-kernel version of what X driver have to do, and leave all the
-initial modepicking etc to the fbdev interface layer.
-
-If we take  the layering as
-fbcon -> fbdev -> kms -> hw
-
-I feel calling ioctls on the KMS layer from userspace to do stuff for
-fbcon or fbdev
-is wrong, and we should rather expose a more intelligent set of ioctls via the
-fbdev device node. This points at quite a bit of typing.
-
-So we'd need to add a bunch of KMS fb specifc ioctl like some of the other fbdev
-drivers do, and then a new fbset could tkae advantage of these. I'm not sure
-how much different to the current kms interface or how powerful we really need
-to make tihs interface though, and I feel kinda bad implementing it without
-some idea what users would want from it.
-
-Dave.
-
-------------------------------------------------------------------------------
-Download Intel&#174; Parallel Studio Eval
-Try the new software tools for yourself. Speed compiling, find bugs
-proactively, and fine-tune applications for parallel performance.
-See why Intel Parallel Studio got high marks during beta.
-http://p.sf.net/sfu/intel-sw-dev
---
+T24gMyBNYXJjaCAyMDEwIDEwOjIzLCBEYXZlIEFpcmxpZSA8YWlybGllZEBnbWFpbC5jb20+IHdy
+b3RlOgo+Pj4KPj4+Cj4+PiBJJ3ZlIG9ubHkgcmVhbGx5IGdvdCB0d28gYW5zd2VyIGZvciB0aGlz
+Ogo+Pj4KPj4+IChhKSBob29rIHVwIGFub3RoZXIgL2Rldi9kcmkvY2FyZF9mYiBkZXZpY2UgYW5k
+IHVzZSB0aGUgY3VycmVudCBLTVMKPj4+IGlvY3RscyB0byBjb250cm9sIHRoZSBmcmFtZWJ1ZmZl
+ciwgaGF2ZSB0aGUgZHJtIGNhbGxiYWNrIGludG8gZmJkZXYvZmJjb24KPj4+IHRvIG1lbnRpb24g
+cmVzaXplcyBldGMuIE9yIGFkZCBvbmUgb3IgdHdvIGluZm8gZ2F0aGVyaW5nIGlvY3RscyBhbmQK
+Pj4+IGFsbG93IHVzZSBvZiB0aGUgL2Rldi9kcmkvY29udHJvbCBkZXZpY2UgdG8gY29udHJvbCBz
+dHVmZi4KPj4+Cj4+Cj4+IFdoYXQgYWJvdXQgd3JpdGluZyBhIGRybWZic2V0IG9yIHNvbWV0aGlu
+ZyBhbmQgaGF2ZSBmYnNldCBjYWxsIGl0IHdoZW4KPj4gaXQgZGV0ZWN0cyBhIGRybSBmcmFtZWJ1
+ZmZlciBhbmQgd2FybiB0aGF0IGl0IGRvZXMgbm90IHN1cHBvcnQgZHJtCj4+IGZyYW1lYnVmZmVy
+cyBmdWxseT8KPj4KPgo+IE15IG1haW4gcHJvYmxlbSB3aXRoIGNhbGxpbmcgdGhlIGRybSB1bmRl
+cm5lYXRoIHRoZSBmYmRldiBpcyBpdAo+IHNlZW1zIGxpa2UgYSBsYXllcmluZyB2aW9sYXRpb24u
+IFRoZW4gYWdhaW4gc29tZSBvZiBjb2RlIGluIHRoZSBrZXJuZWwKPiBpcyBhbHNvIGNvbnRyaWJ1
+dGluZyB0byB0aGlzIHZpb2xhdGlvbi4gSSdkIHJlYWxseSBsaWtlIHRvIG1ha2UgZmJkZXYgbW9y
+ZQo+IGxpa2UgYW4gaW4ta2VybmVsIHZlcnNpb24gb2Ygd2hhdCBYIGRyaXZlciBoYXZlIHRvIGRv
+LCBhbmQgbGVhdmUgYWxsIHRoZQo+IGluaXRpYWwgbW9kZXBpY2tpbmcgZXRjIHRvIHRoZSBmYmRl
+diBpbnRlcmZhY2UgbGF5ZXIuCj4KPiBJZiB3ZSB0YWtlIMKgdGhlIGxheWVyaW5nIGFzCj4gZmJj
+b24gLT4gZmJkZXYgLT4ga21zIC0+IGh3Cj4KPiBJIGZlZWwgY2FsbGluZyBpb2N0bHMgb24gdGhl
+IEtNUyBsYXllciBmcm9tIHVzZXJzcGFjZSB0byBkbyBzdHVmZiBmb3IKPiBmYmNvbiBvciBmYmRl
+dgo+IGlzIHdyb25nLCBhbmQgd2Ugc2hvdWxkIHJhdGhlciBleHBvc2UgYSBtb3JlIGludGVsbGln
+ZW50IHNldCBvZiBpb2N0bHMgdmlhIHRoZQo+IGZiZGV2IGRldmljZSBub2RlLiBUaGlzIHBvaW50
+cyBhdCBxdWl0ZSBhIGJpdCBvZiB0eXBpbmcuCgpJIGRvbid0IHRoaW5rIHNvLiBUaGVyZSBpcyBh
+bm90aGVyIGRyaXZlciB3aGljaCBkb2VzIHRoaXMgLQp2ZXNhL3V2ZXNhLiBGb3IgdGhlc2UgaXQg
+aXMgbm90IHBvc3NpYmxlIHRvIGNoYW5nZSB0aGUgcmVzb2x1dGlvbiBmcm9tCmZiZGV2LCBpdCBq
+dXN0IHByb3ZpZGVzIHNvbWUgZnJhbWVidWZmZXIgb24gdG9wIG9mIHdoaWNoIGZiCmFwcGxpY2F0
+aW9ucyBvciBmYmNvbnMgcnVuLgoKWW91IHNldCB0aGUgcHJvcGVyIG9wdGlvbnMgb24gdGhlIHBy
+b3BlciBsYXllciAtIGZvbnRzIGluIGZiY29ucywKcmVzb2x1dGlvbiBpbiBmYmRldiBvciB0aGUg
+ZHJpdmVyICh3aGljaCBzdWNrcyBidXQgc28gZmFyIG5vYm9keSBjYW1lCnVwIHdpdGggYSBtb2Rl
+c2V0dGluZyBzb2x1dGlvbiB1bml2ZXJzYWwgZW5vdWdoIHRvIHdvcmsgd2l0aCBhbGwKZHJpdmVy
+cyksIGFuZCBzb21lIGhhcmR3YXJlLXNwZWNpZmljIG9wdGlvbnMgaW4gdGhlIGRyaXZlciBhcyB3
+ZWxsLgoKU3RpbGwgaWYgbW9zdCBmcmFtZWJ1ZmZlciBkcml2ZXJzIGFyZSBjb252ZXJ0ZWQgdG8g
+S01TIHRoZXJlIHdvdWxkIG5vdApiZSBpbnRlcmZhY2UgZGlzY3JlcGFuY2llcy4gS01TIHdvdWxk
+IGJlIHVzZWQgdG8gc2V0IHJlc29sdXRpb24gYW5kCmZiZGV2IHRvIGRyYXcgb24gdGhlIHNjcmVl
+bi4KCj4KPiBTbyB3ZSdkIG5lZWQgdG8gYWRkIGEgYnVuY2ggb2YgS01TIGZiIHNwZWNpZmMgaW9j
+dGwgbGlrZSBzb21lIG9mIHRoZSBvdGhlciBmYmRldgo+IGRyaXZlcnMgZG8sIGFuZCB0aGVuIGEg
+bmV3IGZic2V0IGNvdWxkIHRrYWUgYWR2YW50YWdlIG9mIHRoZXNlLiBJJ20gbm90IHN1cmUKPiBo
+b3cgbXVjaCBkaWZmZXJlbnQgdG8gdGhlIGN1cnJlbnQga21zIGludGVyZmFjZSBvciBob3cgcG93
+ZXJmdWwgd2UgcmVhbGx5IG5lZWQKPiB0byBtYWtlIHRpaHMgaW50ZXJmYWNlIHRob3VnaCwgYW5k
+IEkgZmVlbCBraW5kYSBiYWQgaW1wbGVtZW50aW5nIGl0IHdpdGhvdXQKPiBzb21lIGlkZWEgd2hh
+dCB1c2VycyB3b3VsZCB3YW50IGZyb20gaXQuCj4KCkkgZ3Vlc3MgZXF1aXZhbGVudCBvZiB4cmFu
+ZHIgd291bGQgYmUgd2hhdCBwZW9wbGUgd291bGQgd2FudCBidXQgdGhlCmN1cnJlbnQgZmJkZXYg
+Y2FwYWJpbGl0aWVzIGFyZSBmYXIgZnJvbSB0aGF0LgpTaW5jZSBLTVMgcHJvdmlkZXMgdGhlc2Ug
+Y2FwYWJpbGl0aWVzIGFscmVhZHkgSSB3b3VsZCB0aGluayBhZGRpbmcgYQp0b29sIHRoYXQgbWFu
+aXB1bGF0ZXMgS01TIGRpcmVjdGx5IChrbXNldD8pIGlzIHRoZSBzaW1wbGVzdCB3YXkuCgpUaGVy
+ZSBhcmUgb3RoZXIgZHJpdmVycyB0aGF0IHN1cHBvcnQgbXVsdGloZWFkIGFscmVhZHkgKG1hdHJv
+eGZiLCBhbnkKb3RoZXI/KSBhbmQgaGF2ZSB0aGVpciBvd24gZHJpdmVyLXNwZWNpZmljIGludGVm
+YWNlLgoKRGVzaWduaW5nIGFuIHVuaWZpZWQgbXVsdGloZWFkIGZiZGV2IGV4dGVuc2lvbiBpbnRl
+cmZhY2Ugd291bGQKcHJvYmFibHkgdGFrZSBxdWl0ZSBhIGJpdCBvZiB0eXBpbmcgYW5kIHRpbWUu
+IEl0IHdvdWxkIGFsc28gaGVscCB0bwpoYXZlIHNvbWV0aGluZyB3b3JraW5nIHRvIGNvbXBhcmUg
+dG8uCgpUaGFua3MKCk1pY2hhbAoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCkRvd25sb2FkIEludGVs
+JiMxNzQ7IFBhcmFsbGVsIFN0dWRpbyBFdmFsClRyeSB0aGUgbmV3IHNvZnR3YXJlIHRvb2xzIGZv
+ciB5b3Vyc2VsZi4gU3BlZWQgY29tcGlsaW5nLCBmaW5kIGJ1Z3MKcHJvYWN0aXZlbHksIGFuZCBm
+aW5lLXR1bmUgYXBwbGljYXRpb25zIGZvciBwYXJhbGxlbCBwZXJmb3JtYW5jZS4KU2VlIHdoeSBJ
+bnRlbCBQYXJhbGxlbCBTdHVkaW8gZ290IGhpZ2ggbWFya3MgZHVyaW5nIGJldGEuCmh0dHA6Ly9w
+LnNmLm5ldC9zZnUvaW50ZWwtc3ctZGV2Ci0tCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fCkRyaS1kZXZlbCBtYWlsaW5nIGxpc3QKRHJpLWRldmVsQGxpc3Rz
+LnNvdXJjZWZvcmdlLm5ldApodHRwczovL2xpc3RzLnNvdXJjZWZvcmdlLm5ldC9saXN0cy9saXN0
+aW5mby9kcmktZGV2ZWwK

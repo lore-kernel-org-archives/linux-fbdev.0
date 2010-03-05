@@ -1,54 +1,38 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Mon, 22 Mar 2010 11:01:16 +0000
-Subject: Re: [PATCH v2 3/6] hid: add backlight support to PicoLCD device
-Message-Id: <20100322120116.12979762@neptune.home>
+From: ville.syrjala@nokia.com
+Date: Fri, 05 Mar 2010 13:26:22 +0000
+Subject: [PATCH 4/4] DSS2: clear spurious SYNC_LOST_DIGIT interrupts
+Message-Id: <1267795582-21004-4-git-send-email-ville.syrjala@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100320170014.440959a8@neptune.home>
-	<20100320170619.4ae99546@neptune.home>
-	<alpine.LNX.2.00.1003220957390.18642@pobox.suse.cz>
-In-Reply-To: <alpine.LNX.2.00.1003220957390.18642@pobox.suse.cz>
+References: <1267795582-21004-1-git-send-email-ville.syrjala@nokia.com>
+In-Reply-To: <1267795582-21004-1-git-send-email-ville.syrjala@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, Nicu Pavel <npavel@ituner.com>, Oliver Neukum <oliver@neukum.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, Richard Purdie <rpurdie@rpsys.net>
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@nokia.com>
 
-On Mon, 22 March 2010 Jiri Kosina <jkosina@suse.cz> wrote:
-> On Sat, 20 Mar 2010, Bruno Prémont wrote:
-> 
-> > Add backlight support to PicoLCD device.
-> > 
-> > Backlight support depends on backlight class and is only being
-> > compiled if backlight class has been selected.
-> > 
-> > Signed-off-by: Bruno Prémont <bonbons@linux-vserver.org>
-> > ---
-> >  drivers/hid/Kconfig       |    2 +-
-> >  drivers/hid/hid-picolcd.c |  134 ++++++++++++++++++++++++++++++++++++++++++++-
-> >  2 files changed, 134 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
-> > index a474bcd..5ec3cb7 100644
-> > --- a/drivers/hid/Kconfig
-> > +++ b/drivers/hid/Kconfig
-> > @@ -243,8 +243,8 @@ config HID_PICOLCD
-> >  	  - Keypad
-> >  	  - Switching between Firmware and Flash mode
-> >  	  - Framebuffer for monochrome 256x64 display
-> > +	  - Backlight control    (needs CONFIG_BACKLIGHT_CLASS_DEVICE)
-> 
-> Wouldn't it be better to have Kconfig rules actually resolve the 
-> dependency?
-> 
-> I don't see any issue with HID_PICOLCD directly selecting 
-> BACKLIGHT_CLASS_DEVICE. Or you can do a separate sub-option for that, if 
-> you really want to avoid the direct dependency of the whole driver.
-
-I could select both BACKLIGHT_CLASS_DEVICE and LCD_CLASS_DEVICE (as
-well as their common parent -- same applies to FB) though for the
-LEDS_CLASS I would definitely rather go the path of a sub-option, by
-default the GPO pins operated with the LEDs are not connected to
-anything.
-
-Thanks for the review,
-Bruno
+RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KCldoZW4gRFNT
+IHRyYW5zaXRpb25zIGZyb20gb2ZmIG1vZGUgdG8gb24gVkVOQyBtYXkgZ2VuZXJhdGUgYSBzcHVy
+aW91cwpTWU5DX0xPU1RfRElHSVQgZXJyb3IuIEp1c3QgYWNrIGl0IHdoZW4gcmVzdG9yaW5nIHRo
+ZSBjb250ZXh0LiBBbHNvCnJlc3RvcmUgSVJRRU5BQkxFIGxhc3QgdG8gYXZvaWQgdHJpZ2dlcmlu
+ZyBpbnRlcnJ1cHRzIGJlZm9yZSB0aGUKY29udGV4dCBpcyBmdWxseSByZXN0b3JlZC4KClNpZ25l
+ZC1vZmYtYnk6IFZpbGxlIFN5cmrDpGzDpCA8dmlsbGUuc3lyamFsYUBub2tpYS5jb20+Ci0tLQog
+ZHJpdmVycy92aWRlby9vbWFwMi9kc3MvZGlzcGMuYyB8ICAgMTEgKysrKysrKysrKy0KIDEgZmls
+ZXMgY2hhbmdlZCwgMTAgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQg
+YS9kcml2ZXJzL3ZpZGVvL29tYXAyL2Rzcy9kaXNwYy5jIGIvZHJpdmVycy92aWRlby9vbWFwMi9k
+c3MvZGlzcGMuYwppbmRleCBlNzc3ZTM1Li5iOGMxNjAzIDEwMDY0NAotLS0gYS9kcml2ZXJzL3Zp
+ZGVvL29tYXAyL2Rzcy9kaXNwYy5jCisrKyBiL2RyaXZlcnMvdmlkZW8vb21hcDIvZHNzL2Rpc3Bj
+LmMKQEAgLTMzNSw3ICszMzUsNyBAQCB2b2lkIGRpc3BjX3NhdmVfY29udGV4dCh2b2lkKQogdm9p
+ZCBkaXNwY19yZXN0b3JlX2NvbnRleHQodm9pZCkKIHsKIAlSUihTWVNDT05GSUcpOwotCVJSKElS
+UUVOQUJMRSk7CisJLypSUihJUlFFTkFCTEUpOyovCiAJLypSUihDT05UUk9MKTsqLwogCVJSKENP
+TkZJRyk7CiAJUlIoREVGQVVMVF9DT0xPUjApOwpAQCAtNDcyLDYgKzQ3MiwxNSBAQCB2b2lkIGRp
+c3BjX3Jlc3RvcmVfY29udGV4dCh2b2lkKQogCiAJLyogZW5hYmxlIGxhc3QsIGJlY2F1c2UgTENE
+ICYgRElHSVQgZW5hYmxlIGFyZSBoZXJlICovCiAJUlIoQ09OVFJPTCk7CisKKwkvKiBjbGVhciBz
+cHVyaW91cyBTWU5DX0xPU1RfRElHSVQgaW50ZXJydXB0cyAqLworCWRpc3BjX3dyaXRlX3JlZyhE
+SVNQQ19JUlFTVEFUVVMsIERJU1BDX0lSUV9TWU5DX0xPU1RfRElHSVQpOworCisJLyoKKwkgKiBl
+bmFibGUgbGFzdCBzbyBJUlFzIHdvbid0IHRyaWdnZXIgYmVmb3JlCisJICogdGhlIGNvbnRleHQg
+aXMgZnVsbHkgcmVzdG9yZWQKKwkgKi8KKwlSUihJUlFFTkFCTEUpOwogfQogCiAjdW5kZWYgU1IK
+LS0gCjEuNi40LjQKCi0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBs
+aW5lICJ1bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4KdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRv
+IG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDov
+L3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s

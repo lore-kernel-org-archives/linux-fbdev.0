@@ -1,38 +1,86 @@
-From: ville.syrjala@nokia.com
-Date: Fri, 05 Mar 2010 13:26:22 +0000
-Subject: [PATCH 4/4] DSS2: clear spurious SYNC_LOST_DIGIT interrupts
-Message-Id: <1267795582-21004-4-git-send-email-ville.syrjala@nokia.com>
+From: "Aguirre, Sergio" <saaguirre@ti.com>
+Date: Fri, 05 Mar 2010 15:19:44 +0000
+Subject: RE: [PATCH 4/4] DSS2: clear spurious SYNC_LOST_DIGIT interrupts
+Message-Id: <A24693684029E5489D1D202277BE894453CC5CA0@dlee02.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1267795582-21004-1-git-send-email-ville.syrjala@nokia.com>
-In-Reply-To: <1267795582-21004-1-git-send-email-ville.syrjala@nokia.com>
+ <1267795582-21004-4-git-send-email-ville.syrjala@nokia.com>
+In-Reply-To: <1267795582-21004-4-git-send-email-ville.syrjala@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@nokia.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: "ville.syrjala@nokia.com" <ville.syrjala@nokia.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 
-RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KCldoZW4gRFNT
-IHRyYW5zaXRpb25zIGZyb20gb2ZmIG1vZGUgdG8gb24gVkVOQyBtYXkgZ2VuZXJhdGUgYSBzcHVy
-aW91cwpTWU5DX0xPU1RfRElHSVQgZXJyb3IuIEp1c3QgYWNrIGl0IHdoZW4gcmVzdG9yaW5nIHRo
-ZSBjb250ZXh0LiBBbHNvCnJlc3RvcmUgSVJRRU5BQkxFIGxhc3QgdG8gYXZvaWQgdHJpZ2dlcmlu
-ZyBpbnRlcnJ1cHRzIGJlZm9yZSB0aGUKY29udGV4dCBpcyBmdWxseSByZXN0b3JlZC4KClNpZ25l
-ZC1vZmYtYnk6IFZpbGxlIFN5cmrDpGzDpCA8dmlsbGUuc3lyamFsYUBub2tpYS5jb20+Ci0tLQog
-ZHJpdmVycy92aWRlby9vbWFwMi9kc3MvZGlzcGMuYyB8ICAgMTEgKysrKysrKysrKy0KIDEgZmls
-ZXMgY2hhbmdlZCwgMTAgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQg
-YS9kcml2ZXJzL3ZpZGVvL29tYXAyL2Rzcy9kaXNwYy5jIGIvZHJpdmVycy92aWRlby9vbWFwMi9k
-c3MvZGlzcGMuYwppbmRleCBlNzc3ZTM1Li5iOGMxNjAzIDEwMDY0NAotLS0gYS9kcml2ZXJzL3Zp
-ZGVvL29tYXAyL2Rzcy9kaXNwYy5jCisrKyBiL2RyaXZlcnMvdmlkZW8vb21hcDIvZHNzL2Rpc3Bj
-LmMKQEAgLTMzNSw3ICszMzUsNyBAQCB2b2lkIGRpc3BjX3NhdmVfY29udGV4dCh2b2lkKQogdm9p
-ZCBkaXNwY19yZXN0b3JlX2NvbnRleHQodm9pZCkKIHsKIAlSUihTWVNDT05GSUcpOwotCVJSKElS
-UUVOQUJMRSk7CisJLypSUihJUlFFTkFCTEUpOyovCiAJLypSUihDT05UUk9MKTsqLwogCVJSKENP
-TkZJRyk7CiAJUlIoREVGQVVMVF9DT0xPUjApOwpAQCAtNDcyLDYgKzQ3MiwxNSBAQCB2b2lkIGRp
-c3BjX3Jlc3RvcmVfY29udGV4dCh2b2lkKQogCiAJLyogZW5hYmxlIGxhc3QsIGJlY2F1c2UgTENE
-ICYgRElHSVQgZW5hYmxlIGFyZSBoZXJlICovCiAJUlIoQ09OVFJPTCk7CisKKwkvKiBjbGVhciBz
-cHVyaW91cyBTWU5DX0xPU1RfRElHSVQgaW50ZXJydXB0cyAqLworCWRpc3BjX3dyaXRlX3JlZyhE
-SVNQQ19JUlFTVEFUVVMsIERJU1BDX0lSUV9TWU5DX0xPU1RfRElHSVQpOworCisJLyoKKwkgKiBl
-bmFibGUgbGFzdCBzbyBJUlFzIHdvbid0IHRyaWdnZXIgYmVmb3JlCisJICogdGhlIGNvbnRleHQg
-aXMgZnVsbHkgcmVzdG9yZWQKKwkgKi8KKwlSUihJUlFFTkFCTEUpOwogfQogCiAjdW5kZWYgU1IK
-LS0gCjEuNi40LjQKCi0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBs
-aW5lICJ1bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4KdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRv
-IG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDov
-L3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s
+Hi Ville,
+
+> -----Original Message-----
+> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
+> owner@vger.kernel.org] On Behalf Of ville.syrjala@nokia.com
+> Sent: Friday, March 05, 2010 7:26 AM
+> To: Tomi Valkeinen
+> Cc: linux-fbdev@vger.kernel.org; linux-omap@vger.kernel.org; Ville Syrj=
+=E4l=E4
+> Subject: [PATCH 4/4] DSS2: clear spurious SYNC_LOST_DIGIT interrupts
+>=20
+> From: Ville Syrj=E4l=E4 <ville.syrjala@nokia.com>
+>=20
+> When DSS transitions from off mode to on VENC may generate a spurious
+> SYNC_LOST_DIGIT error. Just ack it when restoring the context. Also
+> restore IRQENABLE last to avoid triggering interrupts before the
+> context is fully restored.
+
+(Tomi or anyone can correct me if I'm wrong)
+
+AFAIK, The solution for spurious interrupts is to flush posted bus writes d=
+uring interrupt handling, which can be achieved by reading the same registe=
+r just after you have written it.
+
+Tomi, what do you think?
+
+Regards,
+Sergio
+
+>=20
+> Signed-off-by: Ville Syrj=E4l=E4 <ville.syrjala@nokia.com>
+> ---
+>  drivers/video/omap2/dss/dispc.c |   11 ++++++++++-
+>  1 files changed, 10 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/drivers/video/omap2/dss/dispc.c
+> b/drivers/video/omap2/dss/dispc.c
+> index e777e35..b8c1603 100644
+> --- a/drivers/video/omap2/dss/dispc.c
+> +++ b/drivers/video/omap2/dss/dispc.c
+> @@ -335,7 +335,7 @@ void dispc_save_context(void)
+>  void dispc_restore_context(void)
+>  {
+>  	RR(SYSCONFIG);
+> -	RR(IRQENABLE);
+> +	/*RR(IRQENABLE);*/
+>  	/*RR(CONTROL);*/
+>  	RR(CONFIG);
+>  	RR(DEFAULT_COLOR0);
+> @@ -472,6 +472,15 @@ void dispc_restore_context(void)
+>=20
+>  	/* enable last, because LCD & DIGIT enable are here */
+>  	RR(CONTROL);
+> +
+> +	/* clear spurious SYNC_LOST_DIGIT interrupts */
+> +	dispc_write_reg(DISPC_IRQSTATUS, DISPC_IRQ_SYNC_LOST_DIGIT);
+> +
+> +	/*
+> +	 * enable last so IRQs won't trigger before
+> +	 * the context is fully restored
+> +	 */
+> +	RR(IRQENABLE);
+>  }
+>=20
+>  #undef SR
+> --
+> 1.6.4.4
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html

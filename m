@@ -1,33 +1,38 @@
-From: pavel@ucw.cz
-Date: Thu, 11 Mar 2010 19:00:17 +0000
-Subject: lxfb_core: support 800x480 panel
-Message-Id: <20100311190017.GA27619@elf.ucw.cz>
+From: ville.syrjala@nokia.com
+Date: Fri, 05 Mar 2010 13:26:21 +0000
+Subject: [PATCH 3/4] DSS2: Make wait_for_go() succeed for disabled displays
+Message-Id: <1267795582-21004-3-git-send-email-ville.syrjala@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1267795582-21004-1-git-send-email-ville.syrjala@nokia.com>
+In-Reply-To: <1267795582-21004-1-git-send-email-ville.syrjala@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-geode@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@nokia.com>
 
-
-I need something like this to support full resolution of internal LCD
-panel on Kohjinsha subnotebook.
-
-(Note: I basically made up the numbers, if someone knows how to
-generate them properly, let me know. It somehow works even on external
-display, but last few columns are missing.)
-
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
-
-index 889cbe3..2c04a01 100644
---- a/drivers/video/geode/lxfb_core.c
-+++ b/drivers/video/geode/lxfb_core.c
-@@ -37,6 +37,9 @@ static int vt_switch;
-  */
- 
- static struct fb_videomode geode_modedb[] __initdata = {
-+	/* 800x480-?? */
-+	{ NULL, 60, 800, 480, 25131, 72, 32, 29, 1, 136, 6,
-+	  0, FB_VMODE_NONINTERLACED, 0 },
- 	/* 640x480-60 */
- 	{ NULL, 60, 640, 480, 39682, 48, 8, 25, 2, 88, 2,
- 	  FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KCldoZW4gdGhl
+IGRpc3BsYXkgaXMgbm90IGFjdGl2ZSBtYWtlIHRoZSB3YWl0X2Zvcl9nbygpIGZ1bmN0aW9ucyBy
+ZXR1cm4KaW1tZWRpYXRlbHkuCgpTaWduZWQtb2ZmLWJ5OiBWaWxsZSBTeXJqw6Rsw6QgPHZpbGxl
+LnN5cmphbGFAbm9raWEuY29tPgotLS0KIGRyaXZlcnMvdmlkZW8vb21hcDIvZHNzL21hbmFnZXIu
+YyB8ICAgIDcgKysrKystLQogMSBmaWxlcyBjaGFuZ2VkLCA1IGluc2VydGlvbnMoKyksIDIgZGVs
+ZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9vbWFwMi9kc3MvbWFuYWdlci5j
+IGIvZHJpdmVycy92aWRlby9vbWFwMi9kc3MvbWFuYWdlci5jCmluZGV4IDkxMzE0MmQuLjBlN2Iw
+MzYgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvdmlkZW8vb21hcDIvZHNzL21hbmFnZXIuYworKysgYi9k
+cml2ZXJzL3ZpZGVvL29tYXAyL2Rzcy9tYW5hZ2VyLmMKQEAgLTUyNCw3ICs1MjQsNyBAQCBzdGF0
+aWMgaW50IGRzc19tZ3Jfd2FpdF9mb3JfZ28oc3RydWN0IG9tYXBfb3ZlcmxheV9tYW5hZ2VyICpt
+Z3IpCiAJaW50IGk7CiAJc3RydWN0IG9tYXBfZHNzX2RldmljZSAqZHNzZGV2ID0gbWdyLT5kZXZp
+Y2U7CiAKLQlpZiAoIWRzc2RldikKKwlpZiAoIWRzc2RldiB8fCBkc3NkZXYtPnN0YXRlICE9IE9N
+QVBfRFNTX0RJU1BMQVlfQUNUSVZFKQogCQlyZXR1cm4gMDsKIAogCWlmIChkc3NkZXYtPnR5cGUg
+PSBPTUFQX0RJU1BMQVlfVFlQRV9WRU5DKSB7CkBAIC01OTUsMTEgKzU5NSwxNCBAQCBpbnQgZHNz
+X21ncl93YWl0X2Zvcl9nb19vdmwoc3RydWN0IG9tYXBfb3ZlcmxheSAqb3ZsKQogCWludCByOwog
+CWludCBpOwogCi0JaWYgKCFvdmwtPm1hbmFnZXIgfHwgIW92bC0+bWFuYWdlci0+ZGV2aWNlKQor
+CWlmICghb3ZsLT5tYW5hZ2VyKQogCQlyZXR1cm4gMDsKIAogCWRzc2RldiA9IG92bC0+bWFuYWdl
+ci0+ZGV2aWNlOwogCisJaWYgKCFkc3NkZXYgfHwgZHNzZGV2LT5zdGF0ZSAhPSBPTUFQX0RTU19E
+SVNQTEFZX0FDVElWRSkKKwkJcmV0dXJuIDA7CisKIAlpZiAoZHNzZGV2LT50eXBlID0gT01BUF9E
+SVNQTEFZX1RZUEVfVkVOQykgewogCQlpcnEgPSBESVNQQ19JUlFfRVZTWU5DX09ERCB8IERJU1BD
+X0lSUV9FVlNZTkNfRVZFTjsKIAkJY2hhbm5lbCA9IE9NQVBfRFNTX0NIQU5ORUxfRElHSVQ7Ci0t
+IAoxLjYuNC40CgotLQpUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGlu
+ZSAidW5zdWJzY3JpYmUgbGludXgtZmJkZXYiIGluCnRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBt
+YWpvcmRvbW9Admdlci5rZXJuZWwub3JnCk1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92
+Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA==

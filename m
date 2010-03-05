@@ -1,40 +1,71 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Fri, 05 Mar 2010 15:25:13 +0000
+From: "Aguirre, Sergio" <saaguirre@ti.com>
+Date: Fri, 05 Mar 2010 15:28:43 +0000
 Subject: RE: [PATCH 4/4] DSS2: clear spurious SYNC_LOST_DIGIT interrupts
-Message-Id: <1267802713.25148.146.camel@tubuntu.research.nokia.com>
+Message-Id: <A24693684029E5489D1D202277BE894453CC5CD3@dlee02.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1267795582-21004-1-git-send-email-ville.syrjala@nokia.com>
 	 <1267795582-21004-4-git-send-email-ville.syrjala@nokia.com>
 	 <A24693684029E5489D1D202277BE894453CC5CA0@dlee02.ent.ti.com>
-In-Reply-To: <A24693684029E5489D1D202277BE894453CC5CA0@dlee02.ent.ti.com>
+ <1267802713.25148.146.camel@tubuntu.research.nokia.com>
+In-Reply-To: <1267802713.25148.146.camel@tubuntu.research.nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: "ext Aguirre, Sergio" <saaguirre@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 Cc: "Syrjala Ville (Nokia-D/Helsinki)" <ville.syrjala@nokia.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 
-T24gRnJpLCAyMDEwLTAzLTA1IGF0IDE2OjE5ICswMTAwLCBleHQgQWd1aXJyZSwgU2VyZ2lvIHdy
-b3RlOgo+IEhpIFZpbGxlLAo+IAo+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0KPiA+IEZy
-b206IGxpbnV4LW9tYXAtb3duZXJAdmdlci5rZXJuZWwub3JnIFttYWlsdG86bGludXgtb21hcC0K
-PiA+IG93bmVyQHZnZXIua2VybmVsLm9yZ10gT24gQmVoYWxmIE9mIHZpbGxlLnN5cmphbGFAbm9r
-aWEuY29tCj4gPiBTZW50OiBGcmlkYXksIE1hcmNoIDA1LCAyMDEwIDc6MjYgQU0KPiA+IFRvOiBU
-b21pIFZhbGtlaW5lbgo+ID4gQ2M6IGxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZzsgbGludXgt
-b21hcEB2Z2VyLmtlcm5lbC5vcmc7IFZpbGxlIFN5cmrDpGzDpAo+ID4gU3ViamVjdDogW1BBVENI
-IDQvNF0gRFNTMjogY2xlYXIgc3B1cmlvdXMgU1lOQ19MT1NUX0RJR0lUIGludGVycnVwdHMKPiA+
-IAo+ID4gRnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KPiA+
-IAo+ID4gV2hlbiBEU1MgdHJhbnNpdGlvbnMgZnJvbSBvZmYgbW9kZSB0byBvbiBWRU5DIG1heSBn
-ZW5lcmF0ZSBhIHNwdXJpb3VzCj4gPiBTWU5DX0xPU1RfRElHSVQgZXJyb3IuIEp1c3QgYWNrIGl0
-IHdoZW4gcmVzdG9yaW5nIHRoZSBjb250ZXh0LiBBbHNvCj4gPiByZXN0b3JlIElSUUVOQUJMRSBs
-YXN0IHRvIGF2b2lkIHRyaWdnZXJpbmcgaW50ZXJydXB0cyBiZWZvcmUgdGhlCj4gPiBjb250ZXh0
-IGlzIGZ1bGx5IHJlc3RvcmVkLgo+IAo+IChUb21pIG9yIGFueW9uZSBjYW4gY29ycmVjdCBtZSBp
-ZiBJJ20gd3JvbmcpCj4gCj4gQUZBSUssIFRoZSBzb2x1dGlvbiBmb3Igc3B1cmlvdXMgaW50ZXJy
-dXB0cyBpcyB0byBmbHVzaCBwb3N0ZWQgYnVzIHdyaXRlcyBkdXJpbmcgaW50ZXJydXB0IGhhbmRs
-aW5nLCB3aGljaCBjYW4gYmUgYWNoaWV2ZWQgYnkgcmVhZGluZyB0aGUgc2FtZSByZWdpc3RlciBq
-dXN0IGFmdGVyIHlvdSBoYXZlIHdyaXR0ZW4gaXQuCj4gCj4gVG9taSwgd2hhdCBkbyB5b3UgdGhp
-bms/CgpUaGF0J3MgYSBkaWZmZXJlbnQgc3B1cmlvdXMgaW50ZXJydXB0ID0pLgoKSW4gdGhpcyBj
-YXNlIHRoZSBJUlEgbWVjaGFuaXNtIGZyb20gQ1BVIHNpZGUgaXMgd29ya2luZyBmaW5lLCBidXQg
-VkVOQwppcyBqdXN0IHNwYW1taW5nIHRoZSBlcnJvciBpbnRlcnJ1cHRzLCBmb3IgdW5rbm93biBy
-ZWFzb24uCgogVG9taQoKCi0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRo
-ZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4KdGhlIGJvZHkgb2YgYSBtZXNzYWdl
-IHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0
-cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s
+
+
+> -----Original Message-----
+> From: Tomi Valkeinen [mailto:tomi.valkeinen@nokia.com]
+> Sent: Friday, March 05, 2010 9:25 AM
+> To: Aguirre, Sergio
+> Cc: Syrjala Ville (Nokia-D/Helsinki); linux-fbdev@vger.kernel.org; linux-
+> omap@vger.kernel.org
+> Subject: RE: [PATCH 4/4] DSS2: clear spurious SYNC_LOST_DIGIT interrupts
+>=20
+> On Fri, 2010-03-05 at 16:19 +0100, ext Aguirre, Sergio wrote:
+> > Hi Ville,
+> >
+> > > -----Original Message-----
+> > > From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
+> > > owner@vger.kernel.org] On Behalf Of ville.syrjala@nokia.com
+> > > Sent: Friday, March 05, 2010 7:26 AM
+> > > To: Tomi Valkeinen
+> > > Cc: linux-fbdev@vger.kernel.org; linux-omap@vger.kernel.org; Ville
+> Syrj=E4l=E4
+> > > Subject: [PATCH 4/4] DSS2: clear spurious SYNC_LOST_DIGIT interrupts
+> > >
+> > > From: Ville Syrj=E4l=E4 <ville.syrjala@nokia.com>
+> > >
+> > > When DSS transitions from off mode to on VENC may generate a spurious
+> > > SYNC_LOST_DIGIT error. Just ack it when restoring the context. Also
+> > > restore IRQENABLE last to avoid triggering interrupts before the
+> > > context is fully restored.
+> >
+> > (Tomi or anyone can correct me if I'm wrong)
+> >
+> > AFAIK, The solution for spurious interrupts is to flush posted bus
+> writes during interrupt handling, which can be achieved by reading the
+> same register just after you have written it.
+> >
+> > Tomi, what do you think?
+>=20
+> That's a different spurious interrupt =3D).
+>=20
+> In this case the IRQ mechanism from CPU side is working fine, but VENC
+> is just spamming the error interrupts, for unknown reason.
+
+Ohh ok, I see.
+
+Thanks for clarifying. And sorry for the noise.
+
+I'm trying to learn about DSS subsystem, but I'm just a n00b for the moment=
+ :)
+
+Regards,
+Sergio
+>=20
+>  Tomi
+>=20
+

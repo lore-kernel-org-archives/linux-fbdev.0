@@ -1,26 +1,46 @@
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Date: Tue, 09 Mar 2010 10:17:42 +0000
-Subject: Re: How to know that a refresh is required ?
-Message-Id: <45a44e481003090217n6ebfb8e7qd9b0edece5fa9f93@mail.gmail.com>
+From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
+Date: Mon, 08 Mar 2010 23:33:06 +0000
+Subject: [PATCH] s3c2410fb: silence warning
+Message-Id: <876356o0ct.fsf@lechat.rtp-net.org>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-=-="
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1268128232.4b9619e871ed7@imp.free.fr>
-In-Reply-To: <1268128232.4b9619e871ed7@imp.free.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-samsung-soc@vger.kernel.org
 
-On Tue, Mar 9, 2010 at 5:50 PM,  <fuhz@free.fr> wrote:
-> My board has a LCD controller which has its own internal buffer.
+--=-=-=
 
-Cool.
 
-> I need to run GTK on an embedded board. So I guess writing a FrameBuffer driver
-> is not a bad choice.
 
-Out of curiosity, which LCD controller is it and which embedded board
-are you using? There should normally already be a driver for it in
-Linux.
+When building s3c2410fb with CPU_FREQ set, one gets :
 
-Best regards,
-jaya
+drivers/video/s3c2410fb.c: In function 's3c2410fb_cpufreq_transition':
+drivers/video/s3c2410fb.c:769: warning: unused variable 'freqs'
+
+Remove this useless declaration to silence the warning.
+
+Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+---
+
+--=-=-=
+Content-Type: text/x-diff
+Content-Disposition: inline; filename=fix_fb_warning.patch
+
+---
+ drivers/video/s3c2410fb.c |    1 	0 +	1 -	0 !
+ 1 file changed, 1 deletion(-)
+
+Index: linux-2.6/drivers/video/s3c2410fb.c
+===================================================================
+--- linux-2.6.orig/drivers/video/s3c2410fb.c	2010-03-09 00:22:08.317640239 +0100
++++ linux-2.6/drivers/video/s3c2410fb.c	2010-03-09 00:22:33.117640575 +0100
+@@ -766,7 +766,6 @@ static irqreturn_t s3c2410fb_irq(int irq
+ static int s3c2410fb_cpufreq_transition(struct notifier_block *nb,
+ 					unsigned long val, void *data)
+ {
+-	struct cpufreq_freqs *freqs = data;
+ 	struct s3c2410fb_info *info;
+ 	struct fb_info *fbinfo;
+ 	long delta_f;
+
+--=-=-=--

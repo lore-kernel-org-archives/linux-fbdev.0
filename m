@@ -1,28 +1,43 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Date: Mon, 29 Mar 2010 09:44:23 +0000
-Subject: Re: [PATCH v3 6/6] hid: add experimental access to PicoLCD device's
-Message-Id: <alpine.LNX.2.00.1003291142400.24576@pobox.suse.cz>
+From: fuhz@free.fr
+Date: Tue, 09 Mar 2010 09:50:32 +0000
+Subject: How to know that a refresh is required ?
+Message-Id: <1268128232.4b9619e871ed7@imp.free.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100324233707.7243b04d@neptune.home> <20100324235835.0e7e1bcb@neptune.home>
-In-Reply-To: <20100324235835.0e7e1bcb@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, Nicu Pavel <npavel@ituner.com>, Oliver Neukum <oliver@neukum.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-On Wed, 24 Mar 2010, Bruno Pr=C3=A9mont wrote:
+Hi !
 
-> +static ssize_t picolcd_debug_reset_open(struct inode *inode, struct file=
- *f)
-> +{
-> +	return single_open(f, picolcd_debug_reset_show, inode->i_private);
-> +}
-> +
+I am currently writing a FrameBuffer driver for a custom embedded board.
+I already read some documentation, including skeletonfb.c and vfb.c.
 
-struct file_operations->open is supposed to return int (filedescriptor),=20
-not ssize_t.
+There are still some details that I don't really understand.
 
---=20
-Jiri Kosina
-SUSE Labs, Novell Inc.
+My board has a LCD controller which has its own internal buffer.
+I am using DMA transfer to modify this buffer when I need to update the screen.
+
+Programs using the framebuffer drivers (ie. gui apis) can write anytime to the
+framebuffer internal buffer trough nmap.
+
+My question : how do I know when to refresh my screen ?
+
+
+Currently, I am thinking about these solutions :
+- endless DMA transfer : the screen is always refresh (consumes power)
+- timer based solution : refresh the screen every n milliseconds (latency)
+
+I am waiting for your advices ! Are there other solutions ?
+
+Thanks for all.
+
+
+Best regards.
+
+fuhz
+
+
+PS:
+I need to run GTK on an embedded board. So I guess writing a FrameBuffer driver
+is not a bad choice.

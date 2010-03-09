@@ -1,79 +1,37 @@
-From: James Simmons <jsimmons@infradead.org>
-Date: Sat, 13 Mar 2010 21:28:16 +0000
-Subject: Re: [PATCH] drm modes to fbdev mode patch
-Message-Id: <alpine.LFD.2.00.1003132123340.7379@casper.infradead.org>
+From: Mike Frysinger <vapier@gentoo.org>
+Date: Tue, 09 Mar 2010 16:04:19 +0000
+Subject: [PATCH] fbdev: bfin-lq035q1-fb: remove duplicated #include
+Message-Id: <1268150659-27335-1-git-send-email-vapier@gentoo.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.LFD.2.00.1003131440230.12031@casper.infradead.org>
-	<20100313153147.GD4536@sci.fi>
-In-Reply-To: <20100313153147.GD4536@sci.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: =?ISO-8859-15?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, DRI development list <dri-devel@lists.sourceforge.net>
+To: linux-fbdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org, Huang Weiyi <weiyi.huang@gmail.com>
 
+From: Huang Weiyi <weiyi.huang@gmail.com>
 
-> > For the fbdev layer the you have your struct fb_var_screeninfo and also 
-> > struct fb_videomode. The struct fb_videomode was developed for the modes
-> > database we have. Struct fb_var_screeninfo is more than just resolution 
-> > data which is why we create struct fb_videomode. The really nice thing 
-> > is that the conversion from fb_var to fb_videomode always fixes the 
-> > pixclock to the proper values so you don't need the pixclock = 0 work 
-> > around. I tested this patch with the intelfb driver and had no problem.
-> > I have used it in the past with a KMS enabled tdfx drver I wrote. In the 
-> > future this function can be used for fbdev level mode setting. Please try 
-> > it out and i hope it can be merged. Thanks.
-> > 
-> > diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-> > index 5054970..467ac68 100644
-> > --- a/drivers/gpu/drm/drm_fb_helper.c
-> > +++ b/drivers/gpu/drm/drm_fb_helper.c
-> > @@ -581,6 +581,60 @@ int drm_fb_helper_setcolreg(unsigned regno,
-> >  }
-> >  EXPORT_SYMBOL(drm_fb_helper_setcolreg);
-> >  
-> > +void drm_display_mode_to_fbmode(struct drm_display_mode *mode,
-> > +                                struct fb_videomode *fbmode)
-> > +{
-> > +	fbmode->xres = mode->hdisplay;
-> > +	fbmode->yres = mode->vdisplay;
-> > +	fbmode->right_margin = mode->hsync_start - mode->hdisplay;
-> > +	fbmode->lower_margin = mode->vsync_start - mode->vdisplay;
-> > +	fbmode->hsync_len = mode->hsync_end - mode->hsync_start;
-> > +	fbmode->vsync_len = mode->vsync_end - mode->vsync_start;
-> > +	fbmode->left_margin = mode->htotal - mode->hsync_end;
-> > +	fbmode->upper_margin = mode->vtotal - mode->vsync_end;
-> > +	fbmode->refresh = mode->vrefresh;
-> > +	fbmode->name = mode->name;
-> 
-> Is there some guarantee that mode won't be freed before fbmode? That
-> would leave fbmode->name pointing to invalid memory.
+Remove duplicated #include('s) in
+  drivers/video/bfin-lq035q1-fb.c
 
-Ah. The fbdev layer doesn't alloc memory for this string. Will fix.
+Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ drivers/video/bfin-lq035q1-fb.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
+index b690c26..0387236 100644
+--- a/drivers/video/bfin-lq035q1-fb.c
++++ b/drivers/video/bfin-lq035q1-fb.c
+@@ -22,7 +22,6 @@
+ #include <linux/dma-mapping.h>
+ #include <linux/platform_device.h>
+ #include <linux/spi/spi.h>
+-#include <linux/dma-mapping.h>
  
-> > +
-> > +	if (mode->flags & DRM_MODE_FLAG_INTERLACE)
-> > +		fbmode->vmode |= FB_VMODE_INTERLACED;
-> > +
-> > +	if (mode->flags & DRM_MODE_FLAG_DBLSCAN)
-> > +		fbmode->vmode |= FB_VMODE_DOUBLE;
-> > +
-> 
-> What about the sync flags?
-
-Haven't got around to it yet. Plus some flags don't map so well.
-
-> > +	mode->vrefresh = fbmode->refresh;
-> > +	mode->clock = PICOS2KHZ(fbmode->pixclock);
-> > +
-> > +	if ((fbmode->vmode & FB_VMODE_MASK) = FB_VMODE_INTERLACED)
-> > +		mode->flags |= DRM_MODE_FLAG_INTERLACE;
-> > +
-> > +	if ((fbmode->vmode & FB_VMODE_MASK) = FB_VMODE_DOUBLE)
-> > +		mode->flags |= DRM_MODE_FLAG_DBLSCAN;
-> 
-> Is interlaced+dblscan considered an invalid combination? The conversion
-> to the other direction didn't make that assumption.
-
-True they tend to cancel each other out. I can work on that as well.
+ #include <asm/blackfin.h>
+ #include <asm/irq.h>
+-- 
+1.7.0.2
 

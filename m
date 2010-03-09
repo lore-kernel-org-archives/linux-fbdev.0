@@ -1,283 +1,473 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Wed, 24 Mar 2010 22:55:56 +0000
-Subject: [PATCH v3 5/6] hid: add GPO (leds) support to PicoLCD device
-Message-Id: <20100324235556.1608ee39@neptune.home>
+From: Mike Frysinger <vapier@gentoo.org>
+Date: Tue, 09 Mar 2010 16:22:52 +0000
+Subject: [PATCH] fbdev: bfin-lq035q1-fb: respect new PPI mode platform field
+Message-Id: <1268151772-28815-1-git-send-email-vapier@gentoo.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100324233707.7243b04d@neptune.home>
-In-Reply-To: <20100324233707.7243b04d-hY15tx4IgV39zxVx7UNMDg@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>
-Cc: linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rick L. Vinyard Jr." <rvinyard-qcTL/1vZYtiVc3sceRu5cw@public.gmane.org>, Nicu Pavel <npavel-VxACSXvuqMTQT0dZR+AlfA@public.gmane.org>, Oliver Neukum <oliver-GvhC2dPhHPQdnm+yROfE0A@public.gmane.org>, Jaya Kumar <jayakumar.lkml-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org, Michael Hennerich <michael.hennerich@analog.com>
 
-Add leds support to PicoLCD device to drive the GPO pins.
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-GPO support depends on leds class and is only being
-compiled if leds class has been selected.
+This lets us support the new BF527-EZKIT V2.1 via platform resources
+tweaks only.
 
-Changes since v2:
- - Drop inline keyword on non-stub functions
-
-Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- drivers/hid/Kconfig       |    6 +-
- drivers/hid/hid-picolcd.c |  164 +++++++++++++++++++++++++++++++++++++++++=
-++++
- 2 files changed, 167 insertions(+), 3 deletions(-)
+ drivers/video/bfin-lq035q1-fb.c |  252 ++++++++++++++++++++++----------------
+ 1 files changed, 146 insertions(+), 106 deletions(-)
 
-diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
-index 399edc5..34f6593 100644
---- a/drivers/hid/Kconfig
-+++ b/drivers/hid/Kconfig
-@@ -278,11 +278,11 @@ config HID_PICOLCD
- 	  - Keypad
- 	  - Switching between Firmware and Flash mode
- 	  - Framebuffer for monochrome 256x64 display
--	  - Backlight control    (needs CONFIG_BACKLIGHT_CLASS_DEVICE)
--	  - Contrast control     (needs CONFIG_LCD_CLASS_DEVICE)
-+	  - Backlight control         (needs CONFIG_BACKLIGHT_CLASS_DEVICE)
-+	  - Contrast control          (needs CONFIG_LCD_CLASS_DEVICE)
-+	  - General purpose outputs   (needs CONFIG_LEDS_CLASS)
- 	  Features that are not (yet) supported:
- 	  - IR
--	  - General purpose outputs
- 	  - EEProm / Flash access
-=20
- config HID_QUANTA
-diff --git a/drivers/hid/hid-picolcd.c b/drivers/hid/hid-picolcd.c
-index 0cc0d71..ff70aa2 100644
---- a/drivers/hid/hid-picolcd.c
-+++ b/drivers/hid/hid-picolcd.c
-@@ -29,6 +29,8 @@
- #include <linux/backlight.h>
- #include <linux/lcd.h>
-=20
-+#include <linux/leds.h>
+diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
+index 0387236..0c50de9 100644
+--- a/drivers/video/bfin-lq035q1-fb.c
++++ b/drivers/video/bfin-lq035q1-fb.c
+@@ -60,47 +60,13 @@
+ #define LCD_X_RES		320	/* Horizontal Resolution */
+ #define LCD_Y_RES		240	/* Vertical Resolution */
+ #define	DMA_BUS_SIZE		16
++#define U_LINE			4	/* Blanking Lines */
+ 
+-#define USE_RGB565_16_BIT_PPI
+-
+-#ifdef USE_RGB565_16_BIT_PPI
+-#define LCD_BPP		16	/* Bit Per Pixel */
+-#define CLOCKS_PER_PIX	1
+-#define CPLD_PIPELINE_DELAY_COR 0	/* NO CPLB */
+-#endif
+ 
+ /* Interface 16/18-bit TFT over an 8-bit wide PPI using a small Programmable Logic Device (CPLD)
+  * http://blackfin.uclinux.org/gf/project/stamp/frs/?action=FrsReleaseBrowse&frs_package_id5
+  */
+ 
+-#ifdef USE_RGB565_8_BIT_PPI
+-#define LCD_BPP		16	/* Bit Per Pixel */
+-#define CLOCKS_PER_PIX	2
+-#define CPLD_PIPELINE_DELAY_COR 3	/* RGB565 */
+-#endif
+-
+-#ifdef USE_RGB888_8_BIT_PPI
+-#define LCD_BPP		24	/* Bit Per Pixel */
+-#define CLOCKS_PER_PIX	3
+-#define CPLD_PIPELINE_DELAY_COR 5	/* RGB888 */
+-#endif
+-
+-	/*
+-	 * HS and VS timing parameters (all in number of PPI clk ticks)
+-	 */
+-
+-#define U_LINE		4				/* Blanking Lines */
+-
+-#define H_ACTPIX	(LCD_X_RES * CLOCKS_PER_PIX)	/* active horizontal pixel */
+-#define H_PERIOD	(336 * CLOCKS_PER_PIX)		/* HS period */
+-#define H_PULSE		(2 * CLOCKS_PER_PIX)				/* HS pulse width */
+-#define H_START		(7 * CLOCKS_PER_PIX + CPLD_PIPELINE_DELAY_COR)	/* first valid pixel */
+-
+-#define	V_LINES		(LCD_Y_RES + U_LINE)		/* total vertical lines */
+-#define V_PULSE		(2 * CLOCKS_PER_PIX)		/* VS pulse width (1-5 H_PERIODs) */
+-#define V_PERIOD	(H_PERIOD * V_LINES)		/* VS period */
+-
+-#define ACTIVE_VIDEO_MEM_OFFSET		((U_LINE / 2) * LCD_X_RES * (LCD_BPP / 8))
+ 
+ #define BFIN_LCD_NBR_PALETTE_ENTRIES	256
+ 
+@@ -109,12 +75,6 @@
+ #define PPI_PORT_CFG_01			0x10
+ #define PPI_POLS_1			0x8000
+ 
+-#if (CLOCKS_PER_PIX > 1)
+-#define PPI_PMODE (DLEN_8 | PACK_EN)
+-#else
+-#define PPI_PMODE (DLEN_16)
+-#endif
+-
+ #define LQ035_INDEX			0x74
+ #define LQ035_DATA			0x76
+ 
+@@ -138,6 +98,15 @@ struct bfin_lq035q1fb_info {
+ 	int irq;
+ 	spinlock_t lock;	/* lock */
+ 	u32 pseudo_pal[16];
 +
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
-=20
-@@ -194,6 +196,11 @@ struct picolcd_data {
- 	u8 lcd_brightness;
- 	u8 lcd_power;
- #endif /* CONFIG_BACKLIGHT_CLASS_DEVICE */
-+#if defined(CONFIG_LEDS_CLASS) || defined(CONFIG_LEDS_CLASS_MODULE)
-+	/* LED stuff */
-+	u8 led_state;
-+	struct led_classdev *led[8];
-+#endif /* CONFIG_LEDS_CLASS */
-=20
- 	/* Housekeeping stuff */
- 	spinlock_t lock;
-@@ -934,6 +941,153 @@ static inline int picolcd_resume_lcd(struct picolcd_d=
-ata *data)
++	u32 lcd_bpp;
++	u32 h_actpix;
++	u32 h_period;
++	u32 h_pulse;
++	u32 h_start;
++	u32 v_lines;
++	u32 v_pulse;
++	u32 v_period;
+ };
+ 
+ static int nocursor;
+@@ -233,16 +202,69 @@ static int lq035q1_backlight(struct bfin_lq035q1fb_info *info, unsigned arg)
+ 	return 0;
  }
- #endif /* CONFIG_LCD_CLASS_DEVICE */
-=20
-+#if defined(CONFIG_LEDS_CLASS) || defined(CONFIG_LEDS_CLASS_MODULE)
-+/**
-+ * LED class device
-+ */
-+static void picolcd_leds_set(struct picolcd_data *data)
+ 
++static int bfin_lq035q1_calc_timing(struct bfin_lq035q1fb_info *fbi)
 +{
-+	struct hid_report *report;
-+	unsigned long flags;
++	unsigned long clocks_per_pix, cpld_pipeline_delay_cor;
 +
-+	if (!data->led[0])
-+		return;
-+	report =3D picolcd_out_report(REPORT_LED_STATE, data->hdev);
-+	if (!report || report->maxfield !=3D 1 || report->field[0]->report_count =
-!=3D 1)
-+		return;
++	/*
++	 * Interface 16/18-bit TFT over an 8-bit wide PPI using a small
++	 * Programmable Logic Device (CPLD)
++	 * http://blackfin.uclinux.org/gf/project/stamp/frs/?action=FrsReleaseBrowse&frs_package_id5
++	 */
 +
-+	spin_lock_irqsave(&data->lock, flags);
-+	hid_set_field(report->field[0], 0, data->led_state);
-+	usbhid_submit_report(data->hdev, report, USB_DIR_OUT);
-+	spin_unlock_irqrestore(&data->lock, flags);
-+}
-+
-+static void picolcd_led_set_brightness(struct led_classdev *led_cdev,
-+			enum led_brightness value)
-+{
-+	struct device *dev;
-+	struct hid_device *hdev;
-+	struct picolcd_data *data;
-+	int i, state =3D 0;
-+
-+	dev  =3D led_cdev->dev->parent;
-+	hdev =3D container_of(dev, struct hid_device, dev);
-+	data =3D hid_get_drvdata(hdev);
-+	for (i =3D 0; i < 8; i++) {
-+		if (led_cdev !=3D data->led[i])
-+			continue;
-+		state =3D (data->led_state >> i) & 1;
-+		if (value =3D LED_OFF && state) {
-+			data->led_state &=3D ~(1 << i);
-+			picolcd_leds_set(data);
-+		} else if (value !=3D LED_OFF && !state) {
-+			data->led_state |=3D 1 << i;
-+			picolcd_leds_set(data);
-+		}
++	switch (fbi->disp_info->ppi_mode) {
++	case USE_RGB565_16_BIT_PPI:
++		fbi->lcd_bpp = 16;
++		clocks_per_pix = 1;
++		cpld_pipeline_delay_cor = 0;
 +		break;
-+	}
-+}
-+
-+static enum led_brightness picolcd_led_get_brightness(struct led_classdev =
-*led_cdev)
-+{
-+	struct device *dev;
-+	struct hid_device *hdev;
-+	struct picolcd_data *data;
-+	int i, value =3D 0;
-+
-+	dev  =3D led_cdev->dev->parent;
-+	hdev =3D container_of(dev, struct hid_device, dev);
-+	data =3D hid_get_drvdata(hdev);
-+	for (i =3D 0; i < 8; i++)
-+		if (led_cdev =3D data->led[i]) {
-+			value =3D (data->led_state >> i) & 1;
-+			break;
-+		}
-+	return value ? LED_FULL : LED_OFF;
-+}
-+
-+static int picolcd_init_leds(struct picolcd_data *data, struct hid_report =
-*report)
-+{
-+	struct device *dev =3D &data->hdev->dev;
-+	struct led_classdev *led;
-+	size_t name_sz =3D strlen(dev_name(dev)) + 8;
-+	char *name;
-+	int i, ret =3D 0;
-+
-+	if (!report)
-+		return -ENODEV;
-+	if (report->maxfield !=3D 1 || report->field[0]->report_count !=3D 1 ||
-+			report->field[0]->report_size !=3D 8) {
-+		dev_err(dev, "unsupported LED_STATE report");
++	case USE_RGB565_8_BIT_PPI:
++		fbi->lcd_bpp = 16;
++		clocks_per_pix = 2;
++		cpld_pipeline_delay_cor = 3;
++		break;
++	case USE_RGB888_8_BIT_PPI:
++		fbi->lcd_bpp = 24;
++		clocks_per_pix = 3;
++		cpld_pipeline_delay_cor = 5;
++		break;
++	default:
 +		return -EINVAL;
 +	}
 +
-+	for (i =3D 0; i < 8; i++) {
-+		led =3D kzalloc(sizeof(struct led_classdev)+name_sz, GFP_KERNEL);
-+		if (!led) {
-+			dev_err(dev, "can't allocate memory for LED %d\n", i);
-+			ret =3D -ENOMEM;
-+			goto err;
-+		}
-+		name =3D (void *)(&led[1]);
-+		snprintf(name, name_sz, "%s::GPO%d", dev_name(dev), i);
-+		led->name =3D name;
-+		led->brightness =3D 0;
-+		led->max_brightness =3D 1;
-+		led->brightness_get =3D picolcd_led_get_brightness;
-+		led->brightness_set =3D picolcd_led_set_brightness;
++	/*
++	 * HS and VS timing parameters (all in number of PPI clk ticks)
++	 */
 +
-+		data->led[i] =3D led;
-+		ret =3D led_classdev_register(dev, data->led[i]);
-+		if (ret) {
-+			data->led[i] =3D NULL;
-+			kfree(led);
-+			dev_err(dev, "can't register LED %d\n", i);
-+			goto err;
-+		}
-+	}
-+	return 0;
-+err:
-+	for (i =3D 0; i < 8; i++)
-+		if (data->led[i]) {
-+			led =3D data->led[i];
-+			data->led[i] =3D NULL;
-+			led_classdev_unregister(led);
-+			kfree(led);
-+		}
-+	return ret;
-+}
++	fbi->h_actpix = (LCD_X_RES * clocks_per_pix);	/* active horizontal pixel */
++	fbi->h_period = (336 * clocks_per_pix);		/* HS period */
++	fbi->h_pulse = (2 * clocks_per_pix);				/* HS pulse width */
++	fbi->h_start = (7 * clocks_per_pix + cpld_pipeline_delay_cor);	/* first valid pixel */
 +
-+static void picolcd_exit_leds(struct picolcd_data *data)
-+{
-+	struct led_classdev *led;
-+	int i;
++	fbi->v_lines = (LCD_Y_RES + U_LINE);		/* total vertical lines */
++	fbi->v_pulse = (2 * clocks_per_pix);		/* VS pulse width (1-5 H_PERIODs) */
++	fbi->v_period =	(fbi->h_period * fbi->v_lines);	/* VS period */
 +
-+	for (i =3D 0; i < 8; i++) {
-+		led =3D data->led[i];
-+		data->led[i] =3D NULL;
-+		if (!led)
-+			continue;
-+		led_classdev_unregister(led);
-+		kfree(led);
-+	}
-+}
-+
-+#else
-+static inline int picolcd_init_leds(struct picolcd_data *data,
-+		struct hid_report *report)
-+{
 +	return 0;
 +}
-+static void picolcd_exit_leds(struct picolcd_data *data)
-+{
-+}
-+static inline int picolcd_leds_set(struct picolcd_data *data)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_LEDS_CLASS */
 +
- /*
-  * input class device
-  */
-@@ -1076,6 +1230,7 @@ static int picolcd_reset(struct hid_device *hdev)
- 		schedule_delayed_work(&data->fb_info->deferred_work, 0);
- #endif /* CONFIG_FB */
-=20
-+	picolcd_leds_set(data);
- 	return 0;
+ static void bfin_lq035q1_config_ppi(struct bfin_lq035q1fb_info *fbi)
+ {
+-	bfin_write_PPI_DELAY(H_START);
+-	bfin_write_PPI_COUNT(H_ACTPIX - 1);
+-	bfin_write_PPI_FRAME(V_LINES);
++	unsigned ppi_pmode;
++
++	if (fbi->disp_info->ppi_mode = USE_RGB565_16_BIT_PPI)
++		ppi_pmode = DLEN_16;
++	else
++		ppi_pmode = (DLEN_8 | PACK_EN);
++
++	bfin_write_PPI_DELAY(fbi->h_start);
++	bfin_write_PPI_COUNT(fbi->h_actpix - 1);
++	bfin_write_PPI_FRAME(fbi->v_lines);
+ 
+ 	bfin_write_PPI_CONTROL(PPI_TX_MODE |	   /* output mode , PORT_DIR */
+ 				PPI_XFER_TYPE_11 | /* sync mode XFR_TYPE */
+ 				PPI_PORT_CFG_01 |  /* two frame sync PORT_CFG */
+-				PPI_PMODE |	   /* 8/16 bit data length / PACK_EN? */
++				ppi_pmode |	   /* 8/16 bit data length / PACK_EN? */
+ 				PPI_POLS_1);	   /* faling edge syncs POLS */
  }
-=20
-@@ -1694,6 +1849,7 @@ static int picolcd_reset_resume(struct hid_device *hd=
-ev)
- 	ret =3D picolcd_resume_backlight(hid_get_drvdata(hdev));
- 	if (ret)
- 		dbg_hid(PICOLCD_NAME " restoring backlight failed: %d\n", ret);
-+	picolcd_leds_set(hid_get_drvdata(hdev));
- 	return 0;
+ 
+@@ -271,19 +293,19 @@ static void bfin_lq035q1_stop_timers(void)
+ 
  }
- #endif
-@@ -1808,6 +1964,11 @@ static int picolcd_probe_lcd(struct hid_device *hdev=
-, struct picolcd_data *data)
- 	if (error)
- 		goto err;
-=20
-+	/* Setup the LED class devices */
-+	error =3D picolcd_init_leds(data, picolcd_out_report(REPORT_LED_STATE, hd=
-ev));
-+	if (error)
-+		goto err;
+ 
+-static void bfin_lq035q1_init_timers(void)
++static void bfin_lq035q1_init_timers(struct bfin_lq035q1fb_info *fbi)
+ {
+ 
+ 	bfin_lq035q1_stop_timers();
+ 
+-	set_gptimer_period(TIMER_HSYNC_id, H_PERIOD);
+-	set_gptimer_pwidth(TIMER_HSYNC_id, H_PULSE);
++	set_gptimer_period(TIMER_HSYNC_id, fbi->h_period);
++	set_gptimer_pwidth(TIMER_HSYNC_id, fbi->h_pulse);
+ 	set_gptimer_config(TIMER_HSYNC_id, TIMER_MODE_PWM | TIMER_PERIOD_CNT |
+ 				      TIMER_TIN_SEL | TIMER_CLK_SEL|
+ 				      TIMER_EMU_RUN);
+ 
+-	set_gptimer_period(TIMER_VSYNC_id, V_PERIOD);
+-	set_gptimer_pwidth(TIMER_VSYNC_id, V_PULSE);
++	set_gptimer_period(TIMER_VSYNC_id, fbi->v_period);
++	set_gptimer_pwidth(TIMER_VSYNC_id, fbi->v_pulse);
+ 	set_gptimer_config(TIMER_VSYNC_id, TIMER_MODE_PWM | TIMER_PERIOD_CNT |
+ 				      TIMER_TIN_SEL | TIMER_CLK_SEL |
+ 				      TIMER_EMU_RUN);
+@@ -293,21 +315,21 @@ static void bfin_lq035q1_init_timers(void)
+ static void bfin_lq035q1_config_dma(struct bfin_lq035q1fb_info *fbi)
+ {
+ 
 +
- #ifdef CONFIG_DEBUG_FS
- 	report =3D picolcd_out_report(REPORT_READ_MEMORY, hdev);
- 	if (report && report->maxfield =3D 1 && report->field[0]->report_size =3D=
- 8)
-@@ -1817,6 +1978,7 @@ static int picolcd_probe_lcd(struct hid_device *hdev,=
- struct picolcd_data *data)
- #endif
+ 	set_dma_config(CH_PPI,
+ 		       set_bfin_dma_config(DIR_READ, DMA_FLOW_AUTO,
+ 					   INTR_DISABLE, DIMENSION_2D,
+ 					   DATA_SIZE_16,
+ 					   DMA_NOSYNC_KEEP_DMA_BUF));
+-	set_dma_x_count(CH_PPI, (LCD_X_RES * LCD_BPP) / DMA_BUS_SIZE);
++	set_dma_x_count(CH_PPI, (LCD_X_RES * fbi->lcd_bpp) / DMA_BUS_SIZE);
+ 	set_dma_x_modify(CH_PPI, DMA_BUS_SIZE / 8);
+-	set_dma_y_count(CH_PPI, V_LINES);
++	set_dma_y_count(CH_PPI, fbi->v_lines);
+ 
+ 	set_dma_y_modify(CH_PPI, DMA_BUS_SIZE / 8);
+ 	set_dma_start_addr(CH_PPI, (unsigned long)fbi->fb_buffer);
+ 
+ }
+ 
+-#if (CLOCKS_PER_PIX = 1)
+ static const u16 ppi0_req_16[] = {P_PPI0_CLK, P_PPI0_FS1, P_PPI0_FS2,
+ 			    P_PPI0_D0, P_PPI0_D1, P_PPI0_D2,
+ 			    P_PPI0_D3, P_PPI0_D4, P_PPI0_D5,
+@@ -315,22 +337,27 @@ static const u16 ppi0_req_16[] = {P_PPI0_CLK, P_PPI0_FS1, P_PPI0_FS2,
+ 			    P_PPI0_D9, P_PPI0_D10, P_PPI0_D11,
+ 			    P_PPI0_D12, P_PPI0_D13, P_PPI0_D14,
+ 			    P_PPI0_D15, 0};
+-#else
+-static const u16 ppi0_req_16[] = {P_PPI0_CLK, P_PPI0_FS1, P_PPI0_FS2,
++
++static const u16 ppi0_req_8[] = {P_PPI0_CLK, P_PPI0_FS1, P_PPI0_FS2,
+ 			    P_PPI0_D0, P_PPI0_D1, P_PPI0_D2,
+ 			    P_PPI0_D3, P_PPI0_D4, P_PPI0_D5,
+ 			    P_PPI0_D6, P_PPI0_D7, 0};
+-#endif
+ 
+-static inline void bfin_lq035q1_free_ports(void)
++static inline void bfin_lq035q1_free_ports(unsigned ppi16)
+ {
+-	peripheral_free_list(ppi0_req_16);
++	if (ppi16)
++		peripheral_free_list(ppi0_req_16);
++	else
++		peripheral_free_list(ppi0_req_8);
++
+ 	if (ANOMALY_05000400)
+ 		gpio_free(P_IDENT(P_PPI0_FS3));
+ }
+ 
+-static int __devinit bfin_lq035q1_request_ports(struct platform_device *pdev)
++static int __devinit bfin_lq035q1_request_ports(struct platform_device *pdev,
++						unsigned ppi16)
+ {
++	int ret;
+ 	/* ANOMALY_05000400 - PPI Does Not Start Properly In Specific Mode:
+ 	 * Drive PPI_FS3 Low
+ 	 */
+@@ -341,7 +368,12 @@ static int __devinit bfin_lq035q1_request_ports(struct platform_device *pdev)
+ 		gpio_direction_output(P_IDENT(P_PPI0_FS3), 0);
+ 	}
+ 
+-	if (peripheral_request_list(ppi0_req_16, DRIVER_NAME)) {
++	if (ppi16)
++		ret = peripheral_request_list(ppi0_req_16, DRIVER_NAME);
++	else
++		ret = peripheral_request_list(ppi0_req_8, DRIVER_NAME);
++
++	if (ret) {
+ 		dev_err(&pdev->dev, "requesting peripherals failed\n");
+ 		return -EFAULT;
+ 	}
+@@ -363,7 +395,7 @@ static int bfin_lq035q1_fb_open(struct fb_info *info, int user)
+ 
+ 		bfin_lq035q1_config_dma(fbi);
+ 		bfin_lq035q1_config_ppi(fbi);
+-		bfin_lq035q1_init_timers();
++		bfin_lq035q1_init_timers(fbi);
+ 
+ 		/* start dma */
+ 		enable_dma(CH_PPI);
+@@ -401,12 +433,9 @@ static int bfin_lq035q1_fb_release(struct fb_info *info, int user)
+ static int bfin_lq035q1_fb_check_var(struct fb_var_screeninfo *var,
+ 				     struct fb_info *info)
+ {
+-	switch (var->bits_per_pixel) {
+-#if (LCD_BPP = 24)
+-	case 24:/* TRUECOLOUR, 16m */
+-#else
+-	case 16:/* DIRECTCOLOUR, 64k */
+-#endif
++	struct bfin_lq035q1fb_info *fbi = info->par;
++
++	if (var->bits_per_pixel = fbi->lcd_bpp) {
+ 		var->red.offset = info->var.red.offset;
+ 		var->green.offset = info->var.green.offset;
+ 		var->blue.offset = info->var.blue.offset;
+@@ -419,8 +448,7 @@ static int bfin_lq035q1_fb_check_var(struct fb_var_screeninfo *var,
+ 		var->red.msb_right = 0;
+ 		var->green.msb_right = 0;
+ 		var->blue.msb_right = 0;
+-		break;
+-	default:
++	} else {
+ 		pr_debug("%s: depth not supported: %u BPP\n", __func__,
+ 			 var->bits_per_pixel);
+ 		return -EINVAL;
+@@ -527,6 +555,7 @@ static int __devinit bfin_lq035q1_probe(struct platform_device *pdev)
+ {
+ 	struct bfin_lq035q1fb_info *info;
+ 	struct fb_info *fbinfo;
++	u32 active_video_mem_offset;
+ 	int ret;
+ 
+ 	ret = request_dma(CH_PPI, DRIVER_NAME"_CH_PPI");
+@@ -549,6 +578,12 @@ static int __devinit bfin_lq035q1_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, fbinfo);
+ 
++	ret = bfin_lq035q1_calc_timing(info);
++	if (ret < 0) {
++		dev_err(&pdev->dev, "Failed PPI Mode\n");
++		goto out3;
++	}
++
+ 	strcpy(fbinfo->fix.id, DRIVER_NAME);
+ 
+ 	fbinfo->fix.type = FB_TYPE_PACKED_PIXELS;
+@@ -570,46 +605,48 @@ static int __devinit bfin_lq035q1_probe(struct platform_device *pdev)
+ 	fbinfo->var.xres_virtual = LCD_X_RES;
+ 	fbinfo->var.yres = LCD_Y_RES;
+ 	fbinfo->var.yres_virtual = LCD_Y_RES;
+-	fbinfo->var.bits_per_pixel = LCD_BPP;
++	fbinfo->var.bits_per_pixel = info->lcd_bpp;
+ 
+ 	if (info->disp_info->mode & LQ035_BGR) {
+-#if (LCD_BPP = 24)
+-		fbinfo->var.red.offset = 0;
+-		fbinfo->var.green.offset = 8;
+-		fbinfo->var.blue.offset = 16;
+-#else
+-		fbinfo->var.red.offset = 0;
+-		fbinfo->var.green.offset = 5;
+-		fbinfo->var.blue.offset = 11;
+-#endif
++		if (info->lcd_bpp = 24) {
++			fbinfo->var.red.offset = 0;
++			fbinfo->var.green.offset = 8;
++			fbinfo->var.blue.offset = 16;
++		} else {
++			fbinfo->var.red.offset = 0;
++			fbinfo->var.green.offset = 5;
++			fbinfo->var.blue.offset = 11;
++		}
+ 	} else {
+-#if (LCD_BPP = 24)
+-		fbinfo->var.red.offset = 16;
+-		fbinfo->var.green.offset = 8;
+-		fbinfo->var.blue.offset = 0;
+-#else
+-		fbinfo->var.red.offset = 11;
+-		fbinfo->var.green.offset = 5;
+-		fbinfo->var.blue.offset = 0;
+-#endif
++		if (info->lcd_bpp = 24) {
++			fbinfo->var.red.offset = 16;
++			fbinfo->var.green.offset = 8;
++			fbinfo->var.blue.offset = 0;
++		} else {
++			fbinfo->var.red.offset = 11;
++			fbinfo->var.green.offset = 5;
++			fbinfo->var.blue.offset = 0;
++		}
+ 	}
+ 
+ 	fbinfo->var.transp.offset = 0;
+ 
+-#if (LCD_BPP = 24)
+-	fbinfo->var.red.length = 8;
+-	fbinfo->var.green.length = 8;
+-	fbinfo->var.blue.length = 8;
+-#else
+-	fbinfo->var.red.length = 5;
+-	fbinfo->var.green.length = 6;
+-	fbinfo->var.blue.length = 5;
+-#endif
++	if (info->lcd_bpp = 24) {
++		fbinfo->var.red.length = 8;
++		fbinfo->var.green.length = 8;
++		fbinfo->var.blue.length = 8;
++	} else {
++		fbinfo->var.red.length = 5;
++		fbinfo->var.green.length = 6;
++		fbinfo->var.blue.length = 5;
++	}
+ 
+ 	fbinfo->var.transp.length = 0;
+ 
+-	fbinfo->fix.smem_len = LCD_X_RES * LCD_Y_RES * LCD_BPP / 8
+-				+ ACTIVE_VIDEO_MEM_OFFSET;
++	active_video_mem_offset = ((U_LINE / 2) * LCD_X_RES * (info->lcd_bpp / 8));
++
++	fbinfo->fix.smem_len = LCD_X_RES * LCD_Y_RES * info->lcd_bpp / 8
++				+ active_video_mem_offset;
+ 
+ 	fbinfo->fix.line_length = fbinfo->var.xres_virtual *
+ 	    fbinfo->var.bits_per_pixel / 8;
+@@ -628,8 +665,8 @@ static int __devinit bfin_lq035q1_probe(struct platform_device *pdev)
+ 		goto out3;
+ 	}
+ 
+-	fbinfo->screen_base = (void *)info->fb_buffer + ACTIVE_VIDEO_MEM_OFFSET;
+-	fbinfo->fix.smem_start = (int)info->fb_buffer + ACTIVE_VIDEO_MEM_OFFSET;
++	fbinfo->screen_base = (void *)info->fb_buffer + active_video_mem_offset;
++	fbinfo->fix.smem_start = (int)info->fb_buffer + active_video_mem_offset;
+ 
+ 	fbinfo->fbops = &bfin_lq035q1_fb_ops;
+ 
+@@ -642,7 +679,8 @@ static int __devinit bfin_lq035q1_probe(struct platform_device *pdev)
+ 		goto out4;
+ 	}
+ 
+-	ret = bfin_lq035q1_request_ports(pdev);
++	ret = bfin_lq035q1_request_ports(pdev,
++			info->disp_info->ppi_mode = USE_RGB565_16_BIT_PPI);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "couldn't request gpio port\n");
+ 		goto out6;
+@@ -692,7 +730,7 @@ static int __devinit bfin_lq035q1_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	dev_info(&pdev->dev, "%dx%d %d-bit RGB FrameBuffer initialized\n",
+-		LCD_X_RES, LCD_Y_RES, LCD_BPP);
++		LCD_X_RES, LCD_Y_RES, info->lcd_bpp);
+ 
  	return 0;
- err:
-+	picolcd_exit_leds(data);
- 	picolcd_exit_backlight(data);
- 	picolcd_exit_lcd(data);
- 	picolcd_exit_framebuffer(data);
-@@ -1949,6 +2111,8 @@ static void picolcd_remove(struct hid_device *hdev)
- 		complete(&data->pending->ready);
- 	spin_unlock_irqrestore(&data->lock, flags);
-=20
-+	/* Cleanup LED */
-+	picolcd_exit_leds(data);
- 	/* Clean up the framebuffer */
- 	picolcd_exit_backlight(data);
- 	picolcd_exit_lcd(data);
---=20
-1.6.4.4
+ 
+@@ -704,7 +742,8 @@ static int __devinit bfin_lq035q1_probe(struct platform_device *pdev)
+  out8:
+ 	free_irq(info->irq, info);
+  out7:
+-	bfin_lq035q1_free_ports();
++	bfin_lq035q1_free_ports(info->disp_info->ppi_mode =
++				USE_RGB565_16_BIT_PPI);
+  out6:
+ 	fb_dealloc_cmap(&fbinfo->cmap);
+  out4:
+@@ -741,7 +780,8 @@ static int __devexit bfin_lq035q1_remove(struct platform_device *pdev)
+ 
+ 	fb_dealloc_cmap(&fbinfo->cmap);
+ 
+-	bfin_lq035q1_free_ports();
++	bfin_lq035q1_free_ports(info->disp_info->ppi_mode =
++				USE_RGB565_16_BIT_PPI);
+ 
+ 	platform_set_drvdata(pdev, NULL);
+ 	framebuffer_release(fbinfo);
+@@ -780,7 +820,7 @@ static int bfin_lq035q1_resume(struct device *dev)
+ 
+ 		bfin_lq035q1_config_dma(info);
+ 		bfin_lq035q1_config_ppi(info);
+-		bfin_lq035q1_init_timers();
++		bfin_lq035q1_init_timers(info);
+ 
+ 		/* start dma */
+ 		enable_dma(CH_PPI);
+-- 
+1.7.0.2
 

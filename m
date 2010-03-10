@@ -1,19 +1,19 @@
-From: Alex Deucher <alexdeucher@gmail.com>
+From: Michal Suchanek <hramrach@centrum.cz>
 Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video 
 	mode
-Date: Wed, 10 Mar 2010 15:06:08 -0500
-Message-ID: <a728f9f91003101206ye50e82dt1ff96b402d1e36ae@mail.gmail.com>
-References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
-	<21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com>
-	<a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com>
-	<21d7e9971003022102v232c099r441b0bd843b30313@mail.gmail.com>
-	<alpine.LFD.2.00.1003101738420.4419@casper.infradead.org>
-	<a728f9f91003101005v374b2cacpb307542e65d22d6f@mail.gmail.com>
-	<a728f9f91003101010m4fc94398l14c8625d7442100a@mail.gmail.com>
+Date: Wed, 10 Mar 2010 20:49:47 +0100
+Message-ID: <a5d587fb1003101149m4b76ca1wcd07e5fef956b5a5@mail.gmail.com>
+References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com> 
+	<21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com> 
+	<a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com> 
+	<21d7e9971003022102v232c099r441b0bd843b30313@mail.gmail.com> 
+	<alpine.LFD.2.00.1003101738420.4419@casper.infradead.org> 
+	<a728f9f91003101005v374b2cacpb307542e65d22d6f@mail.gmail.com> 
+	<a728f9f91003101010m4fc94398l14c8625d7442100a@mail.gmail.com> 
 	<alpine.LFD.2.00.1003101819290.4419@casper.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <dri-devel-bounces@lists.sourceforge.net>
 In-Reply-To: <alpine.LFD.2.00.1003101819290.4419@casper.infradead.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
@@ -26,56 +26,47 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
 	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: dri-devel-bounces@lists.sourceforge.net
 To: James Simmons <jsimmons@infradead.org>
-Cc: Old FrameBuffer List <linux-fbdev-devel@lists.sourceforge.net>, DRI development list <dri-devel@lists.sourceforge.net>, Michal Suchanek <hramrach@centrum.cz>, Paulius Zaleckas <paulius.zaleckas@gmail.com>
+Cc: Alex Deucher <alexdeucher@gmail.com>, Old FrameBuffer List <linux-fbdev-devel@lists.sourceforge.net>, DRI development list <dri-devel@lists.sourceforge.net>, Paulius Zaleckas <paulius.zaleckas@gmail.com>
 
-On Wed, Mar 10, 2010 at 1:47 PM, James Simmons <jsimmons@infradead.org> wro=
-te:
->
->> >> Yuck. See my other post about what fbdev really means in its historic=
-al
->> >> context. The struct fb_info really maps better to drm_crtc than to
->> >> drm_framebuffer. In fact take the case of the matrox fbdev driver. It
->> >> creates two framebuffer devices even tho it used one static framebuff=
-er.
->> >> What the driver does is splits the framebuffer in two and assigned ea=
-ch
->> >> part to a CRTC.
->> >
->> > The only problem with that is that it eats a lot of memory for the
->> > console which limits X when it starts. On cards with limited vram ,
->> > you might not have enough memory left for any meaningful acceleration
->> > when X starts.
->>
->> It would be nice to find a way to reclaim the console memory for X,
->> but I'm not sure that can be done and still provide a good way to
->> provide oops support.
->
-> =A0 =A0 =A0 =A0Ah, the power of flags. We had the same issue with user re=
-questing a mode
-> change or fbcon asking for a different mode. We handled it with the flag
-> FBINFO_MISC_USEREVENT. Since you are using KMS as the backend for fbcon y=
-ou will
-> have to deal also with the ability to change the resolution with tools li=
-ke stty.
-> I can easily see how to do this plus give you more memory like you want :=
--)
-> =A0 =A0 =A0 =A0For the oops are you talking about printing oops to the sc=
-reen
-> while X is running ? Otherwise if you experience a oops and go back to
-> console mode you should be able to view it. The console text buffer is
-> independent of the graphics card memory system.
->
-
-Right now we keep the console buffer pinned in vram and we switch to
-it when there is an oops or when you switch VTs.
-
-Alex
-
----------------------------------------------------------------------------=
----
-Download Intel&#174; Parallel Studio Eval
-Try the new software tools for yourself. Speed compiling, find bugs
-proactively, and fine-tune applications for parallel performance.
-See why Intel Parallel Studio got high marks during beta.
-http://p.sf.net/sfu/intel-sw-dev
---
+T24gMTAgTWFyY2ggMjAxMCAxOTo0NywgSmFtZXMgU2ltbW9ucyA8anNpbW1vbnNAaW5mcmFkZWFk
+Lm9yZz4gd3JvdGU6Cj4KPj4gPj4gWXVjay4gU2VlIG15IG90aGVyIHBvc3QgYWJvdXQgd2hhdCBm
+YmRldiByZWFsbHkgbWVhbnMgaW4gaXRzIGhpc3RvcmljYWwKPj4gPj4gY29udGV4dC4gVGhlIHN0
+cnVjdCBmYl9pbmZvIHJlYWxseSBtYXBzIGJldHRlciB0byBkcm1fY3J0YyB0aGFuIHRvCj4+ID4+
+IGRybV9mcmFtZWJ1ZmZlci4gSW4gZmFjdCB0YWtlIHRoZSBjYXNlIG9mIHRoZSBtYXRyb3ggZmJk
+ZXYgZHJpdmVyLiBJdAo+PiA+PiBjcmVhdGVzIHR3byBmcmFtZWJ1ZmZlciBkZXZpY2VzIGV2ZW4g
+dGhvIGl0IHVzZWQgb25lIHN0YXRpYyBmcmFtZWJ1ZmZlci4KPj4gPj4gV2hhdCB0aGUgZHJpdmVy
+IGRvZXMgaXMgc3BsaXRzIHRoZSBmcmFtZWJ1ZmZlciBpbiB0d28gYW5kIGFzc2lnbmVkIGVhY2gK
+Pj4gPj4gcGFydCB0byBhIENSVEMuCj4+ID4KPj4gPiBUaGUgb25seSBwcm9ibGVtIHdpdGggdGhh
+dCBpcyB0aGF0IGl0IGVhdHMgYSBsb3Qgb2YgbWVtb3J5IGZvciB0aGUKPj4gPiBjb25zb2xlIHdo
+aWNoIGxpbWl0cyBYIHdoZW4gaXQgc3RhcnRzLiBPbiBjYXJkcyB3aXRoIGxpbWl0ZWQgdnJhbSAs
+Cj4+ID4geW91IG1pZ2h0IG5vdCBoYXZlIGVub3VnaCBtZW1vcnkgbGVmdCBmb3IgYW55IG1lYW5p
+bmdmdWwgYWNjZWxlcmF0aW9uCj4+ID4gd2hlbiBYIHN0YXJ0cy4KPj4KPj4gSXQgd291bGQgYmUg
+bmljZSB0byBmaW5kIGEgd2F5IHRvIHJlY2xhaW0gdGhlIGNvbnNvbGUgbWVtb3J5IGZvciBYLAo+
+PiBidXQgSSdtIG5vdCBzdXJlIHRoYXQgY2FuIGJlIGRvbmUgYW5kIHN0aWxsIHByb3ZpZGUgYSBn
+b29kIHdheSB0bwo+PiBwcm92aWRlIG9vcHMgc3VwcG9ydC4KPgo+IMKgIMKgIMKgIMKgQWgsIHRo
+ZSBwb3dlciBvZiBmbGFncy4gV2UgaGFkIHRoZSBzYW1lIGlzc3VlIHdpdGggdXNlciByZXF1ZXN0
+aW5nIGEgbW9kZQo+IGNoYW5nZSBvciBmYmNvbiBhc2tpbmcgZm9yIGEgZGlmZmVyZW50IG1vZGUu
+IFdlIGhhbmRsZWQgaXQgd2l0aCB0aGUgZmxhZwo+IEZCSU5GT19NSVNDX1VTRVJFVkVOVC4gU2lu
+Y2UgeW91IGFyZSB1c2luZyBLTVMgYXMgdGhlIGJhY2tlbmQgZm9yIGZiY29uIHlvdSB3aWxsCj4g
+aGF2ZSB0byBkZWFsIGFsc28gd2l0aCB0aGUgYWJpbGl0eSB0byBjaGFuZ2UgdGhlIHJlc29sdXRp
+b24gd2l0aCB0b29scyBsaWtlIHN0dHkuCj4gSSBjYW4gZWFzaWx5IHNlZSBob3cgdG8gZG8gdGhp
+cyBwbHVzIGdpdmUgeW91IG1vcmUgbWVtb3J5IGxpa2UgeW91IHdhbnQgOi0pCj4gwqAgwqAgwqAg
+wqBGb3IgdGhlIG9vcHMgYXJlIHlvdSB0YWxraW5nIGFib3V0IHByaW50aW5nIG9vcHMgdG8gdGhl
+IHNjcmVlbgo+IHdoaWxlIFggaXMgcnVubmluZyA/IE90aGVyd2lzZSBpZiB5b3UgZXhwZXJpZW5j
+ZSBhIG9vcHMgYW5kIGdvIGJhY2sgdG8KPiBjb25zb2xlIG1vZGUgeW91IHNob3VsZCBiZSBhYmxl
+IHRvIHZpZXcgaXQuIFRoZSBjb25zb2xlIHRleHQgYnVmZmVyIGlzCj4gaW5kZXBlbmRlbnQgb2Yg
+dGhlIGdyYXBoaWNzIGNhcmQgbWVtb3J5IHN5c3RlbS4KPgoKQWJpbGl0eSB0byBwcmludCB0aGUg
+b29wcyBvdmVyIFggZG9lcyBub3Qgc2VlbSB0byBiZSB0aGF0IGJhZCBpZGVhLgpTaW5jZSB3aXRo
+IEtNUyB0aGUga2VybmVsIGZpbmFsbHkga25vd3Mgd2hhdCBYIGlzIGRvaW5nIHdpdGggdGhlCmdy
+YXBoaWNzIGl0IHNob3VsZCBiZSBhYmxlIHRvIHByaW50IGl0LiBOb3RlIHRoYXQgaXQgbWF5IGJl
+IHRoZSBvbmx5CndheSB0byBzZWUgaXQgaW4gc2l0dWF0aW9ucyB3aGVuIHRoZSBjb25zb2xlIGRp
+ZXMgaW4gb25lIHdheSBvcgphbm90aGVyLgoKVGhhbmtzCgpNaWNoYWwKCi0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLQpEb3dubG9hZCBJbnRlbCYjMTc0OyBQYXJhbGxlbCBTdHVkaW8gRXZhbApUcnkgdGhl
+IG5ldyBzb2Z0d2FyZSB0b29scyBmb3IgeW91cnNlbGYuIFNwZWVkIGNvbXBpbGluZywgZmluZCBi
+dWdzCnByb2FjdGl2ZWx5LCBhbmQgZmluZS10dW5lIGFwcGxpY2F0aW9ucyBmb3IgcGFyYWxsZWwg
+cGVyZm9ybWFuY2UuClNlZSB3aHkgSW50ZWwgUGFyYWxsZWwgU3R1ZGlvIGdvdCBoaWdoIG1hcmtz
+IGR1cmluZyBiZXRhLgpodHRwOi8vcC5zZi5uZXQvc2Z1L2ludGVsLXN3LWRldgotLQpfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpEcmktZGV2ZWwgbWFpbGlu
+ZyBsaXN0CkRyaS1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3Vy
+Y2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vZHJpLWRldmVsCg==

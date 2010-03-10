@@ -1,65 +1,51 @@
 From: James Simmons <jsimmons@infradead.org>
-Date: Wed, 10 Mar 2010 17:42:10 +0000
+Date: Wed, 10 Mar 2010 18:04:35 +0000
 Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video
-Message-Id: <alpine.LFD.2.00.1003101738420.4419@casper.infradead.org>
+Message-Id: <alpine.LFD.2.00.1003101744450.4419@casper.infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
 	<21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com>
 	<a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com>
 	<21d7e9971003022102v232c099r441b0bd843b30313@mail.gmail.com>
-In-Reply-To: <21d7e9971003022102v232c099r441b0bd843b30313@mail.gmail.com>
+	<a5d587fb1003030023l355eab4dtb9f4cd62058dea3e@mail.gmail.com>
+	<21d7e9971003030123q2e5d073dj68a81d612e26dc94@mail.gmail.com>
+In-Reply-To: <21d7e9971003030123q2e5d073dj68a81d612e26dc94@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Dave Airlie <airlied@gmail.com>
-Cc: dri-devel@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, Paulius Zaleckas <paulius.zaleckas@gmail.com>, Michal Suchanek <hramrach@centrum.cz>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, DRI development list <dri-devel@lists.sourceforge.net>, Paulius Zaleckas <paulius.zaleckas@gmail.com>, Michal Suchanek <hramrach@centrum.cz>
 
 
-> >> At the moment the problem with fbset is what to do with it in the
-> >> dual head case. Currently we create an fb console that is lowest
-> >> common size of the two heads and set native modes on both,
-> >
-> > Does that mean that fbset is supposed to work (set resolution) on drmfb?
+> My main problem with calling the drm underneath the fbdev is it
+> seems like a layering violation. Then again some of code in the kernel
+> is also contributing to this violation. I'd really like to make fbdev more
+> like an in-kernel version of what X driver have to do, and leave all the
+> initial modepicking etc to the fbdev interface layer.
 > 
-> No we've never hooked it up but it could be made work.
+> If we take  the layering as
+> fbcon -> fbdev -> kms -> hw
+> 
+> I feel calling ioctls on the KMS layer from userspace to do stuff for
+> fbcon or fbdev
+> is wrong, and we should rather expose a more intelligent set of ioctls via the
+> fbdev device node. This points at quite a bit of typing.
 
-I had it to the point of almost working. I plan on working on getting it 
-working again.
- 
-> > Schemes which would make a multihead setup look like a single screen
-> > get complicated quite easily. Perhaps an option to turn off some
-> > outputs so that the native resolution of one output is used (instead
-> > of clone) would work.
-> >
-> 
-> I've only really got two answer for this:
-> 
-> (a) hook up another /dev/dri/card_fb device and use the current KMS
-> ioctls to control the framebuffer, have the drm callback into fbdev/fbcon
-> to mention resizes etc. Or add one or two info gathering ioctls and
-> allow use of the /dev/dri/control device to control stuff.
-> 
-> (b) add a lot of ioctls to KMS fbdev device, which implement some sort
-> of sane multi-output settings.
-> 
-> Now the second sounds like a lot of work if not the correct solution,
-> you basically needs a way to pretty much expose what the KMS ioctls
-> expose on the fb device, and then upgrade fbset to make sense of it all.
-
-Yuck. See my other post about what fbdev really means in its historical 
-context. The struct fb_info really maps better to drm_crtc than to 
-drm_framebuffer. In fact take the case of the matrox fbdev driver. It  
-creates two framebuffer devices even tho it used one static framebuffer.
-What the driver does is splits the framebuffer in two and assigned each 
-part to a CRTC.
-
-------------------------------------------------------------------------------
-Download Intel&#174; Parallel Studio Eval
-Try the new software tools for yourself. Speed compiling, find bugs
-proactively, and fine-tune applications for parallel performance.
-See why Intel Parallel Studio got high marks during beta.
-http://p.sf.net/sfu/intel-sw-dev
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+	I agree. We had the same issue with fbdev and fbcon. From the 
+fbcon layer you can call stty to change the resolution. In that case the 
+mode change came from fbcon to fbdev. Easy problem to handle. Well some 
+people still wanted to be able to able to change their console resolution 
+with fbset. Not only change the resolution on one VC (virtual consoel) but 
+in some cases change the resolution on all the VCs mapped to that fbdev. 
+Now some times the user wanted to change the resolution for say a game (using 
+SDL for example) and then expected the fbcon resolution to be restored 
+when they exited. In that case we wanted the resolution change not to be 
+propagated up to the fbcon layer. The way the fbdev changes are propagated 
+with a notifier chain. Now the issue of mirroring is another thing which 
+was never settled on.
+	Considering now the KMS layer is not so bad as it seems. The fbdev 
+emulation layer already changes the drm mode (fbdev -> kms) plus in that
+case you get the benefit of automatically sending a signal to the fbcon 
+layer to keep it in sync. In the case of kms -> fbdev you need to update 
+the fbdev state. This could be done pretty easily plus if done right would
+update the fbcon state as well.

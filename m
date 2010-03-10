@@ -1,21 +1,18 @@
 From: Michal Suchanek <hramrach@centrum.cz>
 Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video 
 	mode
-Date: Wed, 10 Mar 2010 20:49:47 +0100
-Message-ID: <a5d587fb1003101149m4b76ca1wcd07e5fef956b5a5@mail.gmail.com>
+Date: Wed, 10 Mar 2010 21:58:34 +0100
+Message-ID: <a5d587fb1003101258j2fca77eek3fa4cd75ea7d0813@mail.gmail.com>
 References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com> 
 	<21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com> 
 	<a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com> 
 	<21d7e9971003022102v232c099r441b0bd843b30313@mail.gmail.com> 
-	<alpine.LFD.2.00.1003101738420.4419@casper.infradead.org> 
-	<a728f9f91003101005v374b2cacpb307542e65d22d6f@mail.gmail.com> 
-	<a728f9f91003101010m4fc94398l14c8625d7442100a@mail.gmail.com> 
-	<alpine.LFD.2.00.1003101819290.4419@casper.infradead.org>
+	<alpine.LFD.2.00.1003101738420.4419@casper.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <dri-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <alpine.LFD.2.00.1003101819290.4419@casper.infradead.org>
+In-Reply-To: <alpine.LFD.2.00.1003101738420.4419@casper.infradead.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
 	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,47 +23,68 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
 	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: dri-devel-bounces@lists.sourceforge.net
 To: James Simmons <jsimmons@infradead.org>
-Cc: Alex Deucher <alexdeucher@gmail.com>, Old FrameBuffer List <linux-fbdev-devel@lists.sourceforge.net>, DRI development list <dri-devel@lists.sourceforge.net>, Paulius Zaleckas <paulius.zaleckas@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net, Paulius Zaleckas <paulius.zaleckas@gmail.com>
 
-T24gMTAgTWFyY2ggMjAxMCAxOTo0NywgSmFtZXMgU2ltbW9ucyA8anNpbW1vbnNAaW5mcmFkZWFk
-Lm9yZz4gd3JvdGU6Cj4KPj4gPj4gWXVjay4gU2VlIG15IG90aGVyIHBvc3QgYWJvdXQgd2hhdCBm
-YmRldiByZWFsbHkgbWVhbnMgaW4gaXRzIGhpc3RvcmljYWwKPj4gPj4gY29udGV4dC4gVGhlIHN0
-cnVjdCBmYl9pbmZvIHJlYWxseSBtYXBzIGJldHRlciB0byBkcm1fY3J0YyB0aGFuIHRvCj4+ID4+
-IGRybV9mcmFtZWJ1ZmZlci4gSW4gZmFjdCB0YWtlIHRoZSBjYXNlIG9mIHRoZSBtYXRyb3ggZmJk
-ZXYgZHJpdmVyLiBJdAo+PiA+PiBjcmVhdGVzIHR3byBmcmFtZWJ1ZmZlciBkZXZpY2VzIGV2ZW4g
-dGhvIGl0IHVzZWQgb25lIHN0YXRpYyBmcmFtZWJ1ZmZlci4KPj4gPj4gV2hhdCB0aGUgZHJpdmVy
-IGRvZXMgaXMgc3BsaXRzIHRoZSBmcmFtZWJ1ZmZlciBpbiB0d28gYW5kIGFzc2lnbmVkIGVhY2gK
-Pj4gPj4gcGFydCB0byBhIENSVEMuCj4+ID4KPj4gPiBUaGUgb25seSBwcm9ibGVtIHdpdGggdGhh
-dCBpcyB0aGF0IGl0IGVhdHMgYSBsb3Qgb2YgbWVtb3J5IGZvciB0aGUKPj4gPiBjb25zb2xlIHdo
-aWNoIGxpbWl0cyBYIHdoZW4gaXQgc3RhcnRzLiBPbiBjYXJkcyB3aXRoIGxpbWl0ZWQgdnJhbSAs
-Cj4+ID4geW91IG1pZ2h0IG5vdCBoYXZlIGVub3VnaCBtZW1vcnkgbGVmdCBmb3IgYW55IG1lYW5p
-bmdmdWwgYWNjZWxlcmF0aW9uCj4+ID4gd2hlbiBYIHN0YXJ0cy4KPj4KPj4gSXQgd291bGQgYmUg
-bmljZSB0byBmaW5kIGEgd2F5IHRvIHJlY2xhaW0gdGhlIGNvbnNvbGUgbWVtb3J5IGZvciBYLAo+
-PiBidXQgSSdtIG5vdCBzdXJlIHRoYXQgY2FuIGJlIGRvbmUgYW5kIHN0aWxsIHByb3ZpZGUgYSBn
-b29kIHdheSB0bwo+PiBwcm92aWRlIG9vcHMgc3VwcG9ydC4KPgo+IMKgIMKgIMKgIMKgQWgsIHRo
-ZSBwb3dlciBvZiBmbGFncy4gV2UgaGFkIHRoZSBzYW1lIGlzc3VlIHdpdGggdXNlciByZXF1ZXN0
-aW5nIGEgbW9kZQo+IGNoYW5nZSBvciBmYmNvbiBhc2tpbmcgZm9yIGEgZGlmZmVyZW50IG1vZGUu
-IFdlIGhhbmRsZWQgaXQgd2l0aCB0aGUgZmxhZwo+IEZCSU5GT19NSVNDX1VTRVJFVkVOVC4gU2lu
-Y2UgeW91IGFyZSB1c2luZyBLTVMgYXMgdGhlIGJhY2tlbmQgZm9yIGZiY29uIHlvdSB3aWxsCj4g
-aGF2ZSB0byBkZWFsIGFsc28gd2l0aCB0aGUgYWJpbGl0eSB0byBjaGFuZ2UgdGhlIHJlc29sdXRp
-b24gd2l0aCB0b29scyBsaWtlIHN0dHkuCj4gSSBjYW4gZWFzaWx5IHNlZSBob3cgdG8gZG8gdGhp
-cyBwbHVzIGdpdmUgeW91IG1vcmUgbWVtb3J5IGxpa2UgeW91IHdhbnQgOi0pCj4gwqAgwqAgwqAg
-wqBGb3IgdGhlIG9vcHMgYXJlIHlvdSB0YWxraW5nIGFib3V0IHByaW50aW5nIG9vcHMgdG8gdGhl
-IHNjcmVlbgo+IHdoaWxlIFggaXMgcnVubmluZyA/IE90aGVyd2lzZSBpZiB5b3UgZXhwZXJpZW5j
-ZSBhIG9vcHMgYW5kIGdvIGJhY2sgdG8KPiBjb25zb2xlIG1vZGUgeW91IHNob3VsZCBiZSBhYmxl
-IHRvIHZpZXcgaXQuIFRoZSBjb25zb2xlIHRleHQgYnVmZmVyIGlzCj4gaW5kZXBlbmRlbnQgb2Yg
-dGhlIGdyYXBoaWNzIGNhcmQgbWVtb3J5IHN5c3RlbS4KPgoKQWJpbGl0eSB0byBwcmludCB0aGUg
-b29wcyBvdmVyIFggZG9lcyBub3Qgc2VlbSB0byBiZSB0aGF0IGJhZCBpZGVhLgpTaW5jZSB3aXRo
-IEtNUyB0aGUga2VybmVsIGZpbmFsbHkga25vd3Mgd2hhdCBYIGlzIGRvaW5nIHdpdGggdGhlCmdy
-YXBoaWNzIGl0IHNob3VsZCBiZSBhYmxlIHRvIHByaW50IGl0LiBOb3RlIHRoYXQgaXQgbWF5IGJl
-IHRoZSBvbmx5CndheSB0byBzZWUgaXQgaW4gc2l0dWF0aW9ucyB3aGVuIHRoZSBjb25zb2xlIGRp
-ZXMgaW4gb25lIHdheSBvcgphbm90aGVyLgoKVGhhbmtzCgpNaWNoYWwKCi0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLQpEb3dubG9hZCBJbnRlbCYjMTc0OyBQYXJhbGxlbCBTdHVkaW8gRXZhbApUcnkgdGhl
-IG5ldyBzb2Z0d2FyZSB0b29scyBmb3IgeW91cnNlbGYuIFNwZWVkIGNvbXBpbGluZywgZmluZCBi
-dWdzCnByb2FjdGl2ZWx5LCBhbmQgZmluZS10dW5lIGFwcGxpY2F0aW9ucyBmb3IgcGFyYWxsZWwg
-cGVyZm9ybWFuY2UuClNlZSB3aHkgSW50ZWwgUGFyYWxsZWwgU3R1ZGlvIGdvdCBoaWdoIG1hcmtz
-IGR1cmluZyBiZXRhLgpodHRwOi8vcC5zZi5uZXQvc2Z1L2ludGVsLXN3LWRldgotLQpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpEcmktZGV2ZWwgbWFpbGlu
-ZyBsaXN0CkRyaS1kZXZlbEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3Vy
-Y2Vmb3JnZS5uZXQvbGlzdHMvbGlzdGluZm8vZHJpLWRldmVsCg==
+On 10 March 2010 18:42, James Simmons <jsimmons@infradead.org> wrote:
+>
+>> >> At the moment the problem with fbset is what to do with it in the
+>> >> dual head case. Currently we create an fb console that is lowest
+>> >> common size of the two heads and set native modes on both,
+>> >
+>> > Does that mean that fbset is supposed to work (set resolution) on drmfb?
+>>
+>> No we've never hooked it up but it could be made work.
+>
+> I had it to the point of almost working. I plan on working on getting it
+> working again.
+>
+>> > Schemes which would make a multihead setup look like a single screen
+>> > get complicated quite easily. Perhaps an option to turn off some
+>> > outputs so that the native resolution of one output is used (instead
+>> > of clone) would work.
+>> >
+>>
+>> I've only really got two answer for this:
+>>
+>> (a) hook up another /dev/dri/card_fb device and use the current KMS
+>> ioctls to control the framebuffer, have the drm callback into fbdev/fbcon
+>> to mention resizes etc. Or add one or two info gathering ioctls and
+>> allow use of the /dev/dri/control device to control stuff.
+>>
+>> (b) add a lot of ioctls to KMS fbdev device, which implement some sort
+>> of sane multi-output settings.
+>>
+>> Now the second sounds like a lot of work if not the correct solution,
+>> you basically needs a way to pretty much expose what the KMS ioctls
+>> expose on the fb device, and then upgrade fbset to make sense of it all.
+>
+> Yuck. See my other post about what fbdev really means in its historical
+> context. The struct fb_info really maps better to drm_crtc than to
+> drm_framebuffer. In fact take the case of the matrox fbdev driver. It
+> creates two framebuffer devices even tho it used one static framebuffer.
+> What the driver does is splits the framebuffer in two and assigned each
+> part to a CRTC.
+>
+
+So you get the layering naturally. On fbset - fbev layer you can
+choose from the resolutions available in the current output setup, in
+kmset or whatever - drm layer you can set up the outputs, merge
+multiple outputs into single cloned fbdev or separate them, ..
+
+It's obviously nice if you can set the resolution on all of fbcons,
+fbdev and drm layers but getting it work on at least one layer with
+proper propagation up and down also works. BTW I don't know any
+application which sets linux console (or xterm for that matter)
+resolution through the terminal API.
+
+Thanks
+
+Michal
+
+------------------------------------------------------------------------------
+Download Intel&#174; Parallel Studio Eval
+Try the new software tools for yourself. Speed compiling, find bugs
+proactively, and fine-tune applications for parallel performance.
+See why Intel Parallel Studio got high marks during beta.
+http://p.sf.net/sfu/intel-sw-dev
+--

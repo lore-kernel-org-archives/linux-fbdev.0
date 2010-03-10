@@ -1,279 +1,69 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Wed, 24 Mar 2010 22:51:49 +0000
-Subject: [PATCH v3 3/6] hid: add backlight support to PicoLCD device
-Message-Id: <20100324235149.3e38bcb2@neptune.home>
+From: James Simmons <jsimmons@infradead.org>
+Date: Wed, 10 Mar 2010 17:35:01 +0000
+Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video
+Message-Id: <alpine.LFD.2.00.1003101719030.4419@casper.infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100324233707.7243b04d@neptune.home>
-In-Reply-To: <20100324233707.7243b04d@neptune.home>
+References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
+	<21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com>
+	<a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com>
+In-Reply-To: <a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, Nicu Pavel <npavel@ituner.com>, Oliver Neukum <oliver@neukum.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Richard Purdie <rpurdie@rpsys.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Michal Suchanek <hramrach@centrum.cz>
+Cc: David Airlie <airlied@linux.ie>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, DRI development list <dri-devel@lists.sourceforge.net>, Paulius Zaleckas <paulius.zaleckas@gmail.com>
 
-Add backlight support to PicoLCD device.
 
-Backlight support depends on backlight class and is only being
-compiled if backlight class has been selected.
+> On 21 November 2009 05:27, Dave Airlie <airlied@gmail.com> wrote:
+> 
+> > At the moment the problem with fbset is what to do with it in the
+> > dual head case. Currently we create an fb console that is lowest
+> > common size of the two heads and set native modes on both,
+> 
+> Does that mean that fbset is supposed to work (set resolution) on drmfb?
 
-Changes since v2:
- - Drop inline keyword on non-stub functions
+Yes it could work. No it doesn't work.
+ 
+> >
+> > Now if a user runs fbset, I'm not sure what the right answer is,
+> > a) pick a head in advance via sysfs maybe and set it on that.
+> > b) try and set the mode on both heads cloned (what to do if
+> > there is no common mode is another issue).
+> >
+> 
+> I would say it's time to support multihead with fbset properly.
+> 
+> That is people would need new fbset which sees both (all) heads, and
+> fbset can then choose the head itself (and people can make it do
+> something different when they don't like the default). It should also
+> support setting up rotation on each head.
+> 
+> For old fbset setting something visible is probably good enough.
+> 
+> Schemes which would make a multihead setup look like a single screen
+> get complicated quite easily. Perhaps an option to turn off some
+> outputs so that the native resolution of one output is used (instead
+> of clone) would work.
 
-Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
----
- drivers/hid/Kconfig       |    2 +-
- drivers/hid/hid-picolcd.c |  136 +++++++++++++++++++++++++++++++++++++++++=
-+++-
- 2 files changed, 136 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
-index a813ea9..588b9ac 100644
---- a/drivers/hid/Kconfig
-+++ b/drivers/hid/Kconfig
-@@ -278,8 +278,8 @@ config HID_PICOLCD
- 	  - Keypad
- 	  - Switching between Firmware and Flash mode
- 	  - Framebuffer for monochrome 256x64 display
-+	  - Backlight control    (needs CONFIG_BACKLIGHT_CLASS_DEVICE)
- 	  Features that are not (yet) supported:
--	  - Backlight control
- 	  - Contrast control
- 	  - IR
- 	  - General purpose outputs
-diff --git a/drivers/hid/hid-picolcd.c b/drivers/hid/hid-picolcd.c
-index 6d17d89..2417a9d 100644
---- a/drivers/hid/hid-picolcd.c
-+++ b/drivers/hid/hid-picolcd.c
-@@ -26,6 +26,7 @@
-=20
- #include <linux/fb.h>
- #include <linux/vmalloc.h>
-+#include <linux/backlight.h>
-=20
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
-@@ -183,6 +184,11 @@ struct picolcd_data {
- 	struct fb_info *fb_info;
- 	struct fb_deferred_io fb_defio;
- #endif /* CONFIG_FB */
-+#if defined(CONFIG_BACKLIGHT_CLASS_DEVICE) || defined(CONFIG_BACKLIGHT_CLA=
-SS_DEVICE_MODULE)
-+	struct backlight_device *backlight;
-+	u8 lcd_brightness;
-+	u8 lcd_power;
-+#endif /* CONFIG_BACKLIGHT_CLASS_DEVICE */
-=20
- 	/* Housekeeping stuff */
- 	spinlock_t lock;
-@@ -703,7 +709,7 @@ static void picolcd_exit_framebuffer(struct picolcd_dat=
-a *data)
- 	kfree(fb_vbitmap);
- }
-=20
--
-+#define picolcd_fbinfo(d) ((d)->fb_info)
- #else
- static inline int picolcd_fb_reset(struct picolcd_data *data, int clear)
- {
-@@ -716,8 +722,120 @@ static inline int picolcd_init_framebuffer(struct pic=
-olcd_data *data)
- static void picolcd_exit_framebuffer(struct picolcd_data *data)
- {
- }
-+#define picolcd_fbinfo(d) NULL
- #endif /* CONFIG_FB */
-=20
-+#if defined(CONFIG_BACKLIGHT_CLASS_DEVICE) || defined(CONFIG_BACKLIGHT_CLA=
-SS_DEVICE_MODULE)
-+/*
-+ * backlight class device
-+ */
-+static int picolcd_get_brightness(struct backlight_device *bdev)
-+{
-+	struct picolcd_data *data =3D bl_get_data(bdev);
-+	return data->lcd_brightness;
-+}
-+
-+static int picolcd_set_brightness(struct backlight_device *bdev)
-+{
-+	struct picolcd_data *data =3D bl_get_data(bdev);
-+	struct hid_report *report =3D picolcd_out_report(REPORT_BRIGHTNESS, data-=
->hdev);
-+	unsigned long flags;
-+
-+	if (!report || report->maxfield !=3D 1 || report->field[0]->report_count =
-!=3D 1)
-+		return -ENODEV;
-+
-+	data->lcd_brightness =3D bdev->props.brightness & 0x0ff;
-+	data->lcd_power      =3D bdev->props.power;
-+	spin_lock_irqsave(&data->lock, flags);
-+	hid_set_field(report->field[0], 0, data->lcd_power =3D FB_BLANK_UNBLANK ?=
- data->lcd_brightness : 0);
-+	usbhid_submit_report(data->hdev, report, USB_DIR_OUT);
-+	spin_unlock_irqrestore(&data->lock, flags);
-+	return 0;
-+}
-+
-+static int picolcd_check_bl_fb(struct backlight_device *bdev, struct fb_in=
-fo *fb)
-+{
-+	return fb && fb =3D picolcd_fbinfo((struct picolcd_data *)bl_get_data(bde=
-v));
-+}
-+
-+static const struct backlight_ops picolcd_blops =3D {
-+	.update_status  =3D picolcd_set_brightness,
-+	.get_brightness =3D picolcd_get_brightness,
-+	.check_fb       =3D picolcd_check_bl_fb,
-+};
-+
-+static int picolcd_init_backlight(struct picolcd_data *data, struct hid_re=
-port *report)
-+{
-+	struct device *dev =3D &data->hdev->dev;
-+	struct backlight_device *bdev;
-+	struct backlight_properties props;
-+	if (!report)
-+		return -ENODEV;
-+	if (report->maxfield !=3D 1 || report->field[0]->report_count !=3D 1 ||
-+			report->field[0]->report_size !=3D 8) {
-+		dev_err(dev, "unsupported BRIGHTNESS report");
-+		return -EINVAL;
-+	}
-+
-+	memset(&props, 0, sizeof(props));
-+	props.max_brightness =3D 0xff;
-+	bdev =3D backlight_device_register(dev_name(dev), dev, data,
-+			&picolcd_blops, &props);
-+	if (IS_ERR(bdev)) {
-+		dev_err(dev, "failed to register backlight\n");
-+		return PTR_ERR(bdev);
-+	}
-+	bdev->props.brightness     =3D 0xff;
-+	data->lcd_brightness       =3D 0xff;
-+	data->backlight            =3D bdev;
-+	picolcd_set_brightness(bdev);
-+	return 0;
-+}
-+
-+static void picolcd_exit_backlight(struct picolcd_data *data)
-+{
-+	struct backlight_device *bdev =3D data->backlight;
-+
-+	data->backlight =3D NULL;
-+	if (bdev)
-+		backlight_device_unregister(bdev);
-+}
-+
-+static inline int picolcd_resume_backlight(struct picolcd_data *data)
-+{
-+	if (!data->backlight)
-+		return 0;
-+	return picolcd_set_brightness(data->backlight);
-+}
-+
-+static void picolcd_suspend_backlight(struct picolcd_data *data)
-+{
-+	int bl_power =3D data->lcd_power;
-+	if (!data->backlight)
-+		return;
-+
-+	data->backlight->props.power =3D FB_BLANK_POWERDOWN;
-+	picolcd_set_brightness(data->backlight);
-+	data->lcd_power =3D data->backlight->props.power =3D bl_power;
-+}
-+#else
-+static inline int picolcd_init_backlight(struct picolcd_data *data,
-+		struct hid_report *report)
-+{
-+	return 0;
-+}
-+static inline void picolcd_exit_backlight(struct picolcd_data *data)
-+{
-+}
-+static inline int picolcd_resume_backlight(struct picolcd_data *data)
-+{
-+	return 0;
-+}
-+static void picolcd_suspend_backlight(struct picolcd_data *data)
-+{
-+}
-+#endif /* CONFIG_BACKLIGHT_CLASS_DEVICE */
-+
- /*
-  * input class device
-  */
-@@ -853,6 +971,7 @@ static int picolcd_reset(struct hid_device *hdev)
- 	if (error)
- 		return error;
-=20
-+	picolcd_resume_backlight(data);
- #if defined(CONFIG_FB) || defined(CONFIG_FB_MODULE)
- 	if (data->fb_info)
- 		schedule_delayed_work(&data->fb_info->deferred_work, 0);
-@@ -1447,12 +1566,17 @@ static int picolcd_raw_event(struct hid_device *hde=
-v,
- #ifdef CONFIG_PM
- static int picolcd_suspend(struct hid_device *hdev)
- {
-+	picolcd_suspend_backlight(hid_get_drvdata(hdev));
- 	dbg_hid(PICOLCD_NAME " device ready for suspend\n");
- 	return 0;
- }
-=20
- static int picolcd_resume(struct hid_device *hdev)
- {
-+	int ret;
-+	ret =3D picolcd_resume_backlight(hid_get_drvdata(hdev));
-+	if (ret)
-+		dbg_hid(PICOLCD_NAME " restoring backlight failed: %d\n", ret);
- 	return 0;
- }
-=20
-@@ -1465,6 +1589,9 @@ static int picolcd_reset_resume(struct hid_device *hd=
-ev)
- 	ret =3D picolcd_fb_reset(hid_get_drvdata(hdev), 0);
- 	if (ret)
- 		dbg_hid(PICOLCD_NAME " restoring framebuffer content failed: %d\n", ret);
-+	ret =3D picolcd_resume_backlight(hid_get_drvdata(hdev));
-+	if (ret)
-+		dbg_hid(PICOLCD_NAME " restoring backlight failed: %d\n", ret);
- 	return 0;
- }
- #endif
-@@ -1569,6 +1696,11 @@ static int picolcd_probe_lcd(struct hid_device *hdev=
-, struct picolcd_data *data)
- 	if (error)
- 		goto err;
-=20
-+	/* Setup backlight class device */
-+	error =3D picolcd_init_backlight(data, picolcd_out_report(REPORT_BRIGHTNE=
-SS, hdev));
-+	if (error)
-+		goto err;
-+
- #ifdef CONFIG_DEBUG_FS
- 	report =3D picolcd_out_report(REPORT_READ_MEMORY, hdev);
- 	if (report && report->maxfield =3D 1 && report->field[0]->report_size =3D=
- 8)
-@@ -1578,6 +1710,7 @@ static int picolcd_probe_lcd(struct hid_device *hdev,=
- struct picolcd_data *data)
- #endif
- 	return 0;
- err:
-+	picolcd_exit_backlight(data);
- 	picolcd_exit_framebuffer(data);
- 	picolcd_exit_cir(data);
- 	picolcd_exit_keys(data);
-@@ -1709,6 +1842,7 @@ static void picolcd_remove(struct hid_device *hdev)
- 	spin_unlock_irqrestore(&data->lock, flags);
-=20
- 	/* Clean up the framebuffer */
-+	picolcd_exit_backlight(data);
- 	picolcd_exit_framebuffer(data);
- 	/* Cleanup input */
- 	picolcd_exit_cir(data);
---=20
-1.6.4.4
+	Before we go there you have to reflect on what the original reason was to 
+have a framebuffer layer. The point to have a VT console terminal on 
+platforms that lacked hardware that supported native text mode hardware. 
+In other words had no vga text mode. A VT terminal is just a keyboard and 
+a display. In fact in the old days you had to write framebuffer console 
+drivers with things like con_putcs, con_write. Then the api was changed to 
+make driver writing simple. The struct fb_info represented your graphics 
+card.
+	Of course at that time we also had hardware that supported more 
+than one crtc which made things more complex. This was reflected in the 
+new api. Struct fb_info was moved in the direction to represent the 
+display. Remember the terminal only really cares about the display. Inside 
+struct fb_info we have a void *par that was a pointer to some structure 
+that represented the graphics card itself. So in the case of multi-head 
+systems you could have two struct fb_info and one shared *par. That way if 
+you wanted to changed the resolution on one screen the check_var function 
+could using the *par to test if the hardware could support both 
+resolutions at the same time. 
+	Note also there is exist a sysfs that allows you to migrate your 
+second fbdev devices to a new terminal. Also problems exist in the upper 
+console layers that prohibit true multi-desktop systems.
 

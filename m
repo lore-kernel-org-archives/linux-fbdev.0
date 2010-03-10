@@ -1,98 +1,81 @@
-From: "Hiremath, Vaibhav" <hvaibhav@ti.com>
-Subject: RE: vdds_dsi doesn't exist on all omap3430 arch chip
-Date: Fri, 5 Mar 2010 09:25:51 +0530
-Message-ID: <19F8576C6E063C45BE387C64729E7394044DC53538@dbde02.ent.ti.com>
-References: <4B8F8B76.9050807@windriver.com>
-	 <1267699040.2406.115.camel@tubuntu.research.nokia.com>
-	 <19F8576C6E063C45BE387C64729E7394044DC534C4@dbde02.ent.ti.com>
- <1267719310.25148.51.camel@tubuntu.research.nokia.com>
+From: Alex Deucher <alexdeucher@gmail.com>
+Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video 
+	mode
+Date: Wed, 10 Mar 2010 13:05:46 -0500
+Message-ID: <a728f9f91003101005v374b2cacpb307542e65d22d6f@mail.gmail.com>
+References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
+	<21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com>
+	<a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com>
+	<21d7e9971003022102v232c099r441b0bd843b30313@mail.gmail.com>
+	<alpine.LFD.2.00.1003101738420.4419@casper.infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <1267719310.25148.51.camel@tubuntu.research.nokia.com>
-Content-Language: en-US
-Sender: linux-omap-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: "ext stanley.miao" <stanley.miao@windriver.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <dri-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <alpine.LFD.2.00.1003101738420.4419@casper.infradead.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=dri-devel>
+List-Post: <mailto:dri-devel@lists.sourceforge.net>
+List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.sourceforge.net
+To: James Simmons <jsimmons@infradead.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net, Michal Suchanek <hramrach@centrum.cz>, Paulius Zaleckas <paulius.zaleckas@gmail.com>
 
+On Wed, Mar 10, 2010 at 12:42 PM, James Simmons <jsimmons@infradead.org> wrote:
+>
+>> >> At the moment the problem with fbset is what to do with it in the
+>> >> dual head case. Currently we create an fb console that is lowest
+>> >> common size of the two heads and set native modes on both,
+>> >
+>> > Does that mean that fbset is supposed to work (set resolution) on drmfb?
+>>
+>> No we've never hooked it up but it could be made work.
+>
+> I had it to the point of almost working. I plan on working on getting it
+> working again.
+>
+>> > Schemes which would make a multihead setup look like a single screen
+>> > get complicated quite easily. Perhaps an option to turn off some
+>> > outputs so that the native resolution of one output is used (instead
+>> > of clone) would work.
+>> >
+>>
+>> I've only really got two answer for this:
+>>
+>> (a) hook up another /dev/dri/card_fb device and use the current KMS
+>> ioctls to control the framebuffer, have the drm callback into fbdev/fbcon
+>> to mention resizes etc. Or add one or two info gathering ioctls and
+>> allow use of the /dev/dri/control device to control stuff.
+>>
+>> (b) add a lot of ioctls to KMS fbdev device, which implement some sort
+>> of sane multi-output settings.
+>>
+>> Now the second sounds like a lot of work if not the correct solution,
+>> you basically needs a way to pretty much expose what the KMS ioctls
+>> expose on the fb device, and then upgrade fbset to make sense of it all.
+>
+> Yuck. See my other post about what fbdev really means in its historical
+> context. The struct fb_info really maps better to drm_crtc than to
+> drm_framebuffer. In fact take the case of the matrox fbdev driver. It
+> creates two framebuffer devices even tho it used one static framebuffer.
+> What the driver does is splits the framebuffer in two and assigned each
+> part to a CRTC.
 
-> -----Original Message-----
-> From: Tomi Valkeinen [mailto:tomi.valkeinen@nokia.com]
-> Sent: Thursday, March 04, 2010 9:45 PM
-> To: Hiremath, Vaibhav
-> Cc: ext stanley.miao; linux-fbdev-devel@lists.sourceforge.net; linux-
-> omap@vger.kernel.org
-> Subject: RE: vdds_dsi doesn't exist on all omap3430 arch chip
-> 
-> On Thu, 2010-03-04 at 17:00 +0100, ext Hiremath, Vaibhav wrote:
-> > > -----Original Message-----
-> > > From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
-> > > owner@vger.kernel.org] On Behalf Of Tomi Valkeinen
-> > > Sent: Thursday, March 04, 2010 4:07 PM
-> > > To: ext stanley.miao
-> > > Cc: linux-fbdev-devel@lists.sourceforge.net; linux-omap@vger.kernel.org
-> > > Subject: Re: vdds_dsi doesn't exist on all omap3430 arch chip
-> > >
-> > > Hi,
-> > >
-> > > On Thu, 2010-03-04 at 11:29 +0100, ext stanley.miao wrote:
-> > > > Hi, Tomi,
-> > > >
-> > > > The commit below:
-> > > > http://www.gitorious.org/linux-omap-
-> > > dss2/linux/commit/ec70668fa99b2dd0d305fbdb451a728f2e2a4c58
-> > > > doesn't apply to ti_omap_am3517. There is no "vdds_dsi" on am3517.
-> > >
-> > > DSS hardware seems to require vdds_dsi power on OMAP3 chips. You need to
-> > > add it to the board file's regulator configuration. Or do you mean that
-> > > on am3517 there's no power connected to OMAP's vdds_dsi line?
-> > >
-> > [Hiremath, Vaibhav] Tomi,
-> >
-> > Currently we do have only one EVM for AM3517 available in the market and
-> which doesn't support DSI interface, so there is no DSI power source
-> available or required. Also the power chip being used is low cost which
-> doesn't have these many sources available.
-> >
-> > At-least for our internal release, the quick solution I did is, I have
-> encapsulated the regulator_* API calls under !cpu_is_omap3517() &&
-> !cpu_is_omap3505().
-> >
-> > The ideal solution would be to take the input from board hook up part for
-> power supply also, that way we can support OMAP3 based various EVM's where
-> we have different power chip. Since I am busy with some other high priority
-> issues, I will be able to take this up after this only.
-> 
-> Hmm okay, so what is AM3517 exactly =)?
-> 
-> An OMAP-like SoC, with the same DSS block as on OMAP?
-[Hiremath, Vaibhav] Yes, this is an OMAP-like SoC with some new IP addition and some got removed. But the DSS block is exactly same as OMAP3.
+The only problem with that is that it eats a lot of memory for the
+console which limits X when it starts. On cards with limited vram ,
+you might not have enough memory left for any meaningful acceleration
+when X starts.
 
-> 
-> I think this power issue should be asked from some TI HW guy who can
-> tell us what is going on there. If OMAP3430 requires vdds_dsi power to
-> power all the pins (and this is still unclear, although it is the
-> current assumption), then which OMAP variants need the power and which
-> do not?
-> 
-[Hiremath, Vaibhav] I will take this issue and explore more on this, but as I said will be able to spend time after next week only.
+Alex
 
-> Also something related I've been wondering: Different OMAP versions have
-> different DSS features. Currently we check these features by checking
-> what OMAP version we're running on.
-> 
-> But there is a readable revision number in the DSS HW blocks, and if
-> that could be used to choose which features are available, it'd be a
-> much better solution. TRM doesn't mention these revision numbers. I
-> wonder if TI has a list of DSS revisions...
-[Hiremath, Vaibhav] Yes you are right, TRM doesn't talk about it. I will try to get further details on this.
-
-Thanks,
-Vaibhav
-
-> 
->  Tomi
-> 
-
+------------------------------------------------------------------------------
+Download Intel&#174; Parallel Studio Eval
+Try the new software tools for yourself. Speed compiling, find bugs
+proactively, and fine-tune applications for parallel performance.
+See why Intel Parallel Studio got high marks during beta.
+http://p.sf.net/sfu/intel-sw-dev
+--

@@ -1,18 +1,19 @@
-From: Michal Suchanek <hramrach@centrum.cz>
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
 Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video 
 	mode
-Date: Wed, 10 Mar 2010 21:58:34 +0100
-Message-ID: <a5d587fb1003101258j2fca77eek3fa4cd75ea7d0813@mail.gmail.com>
-References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com> 
-	<21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com> 
-	<a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com> 
-	<21d7e9971003022102v232c099r441b0bd843b30313@mail.gmail.com> 
+Date: Thu, 11 Mar 2010 11:13:46 +0100
+Message-ID: <1268302426.7444.117.camel@thor.local>
+References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
+	<21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com>
+	<a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com>
+	<21d7e9971003022102v232c099r441b0bd843b30313@mail.gmail.com>
 	<alpine.LFD.2.00.1003101738420.4419@casper.infradead.org>
+	<a728f9f91003101005v374b2cacpb307542e65d22d6f@mail.gmail.com>
+	<a728f9f91003101010m4fc94398l14c8625d7442100a@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <dri-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <alpine.LFD.2.00.1003101738420.4419@casper.infradead.org>
+In-Reply-To: <a728f9f91003101010m4fc94398l14c8625d7442100a@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
 	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -22,69 +23,47 @@ List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
 	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: dri-devel-bounces@lists.sourceforge.net
-To: James Simmons <jsimmons@infradead.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net, Paulius Zaleckas <paulius.zaleckas@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Alex Deucher <alexdeucher@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net, Paulius Zaleckas <paulius.zaleckas@gmail.com>, Michal Suchanek <hramrach@centrum.cz>
 
-On 10 March 2010 18:42, James Simmons <jsimmons@infradead.org> wrote:
->
->> >> At the moment the problem with fbset is what to do with it in the
->> >> dual head case. Currently we create an fb console that is lowest
->> >> common size of the two heads and set native modes on both,
->> >
->> > Does that mean that fbset is supposed to work (set resolution) on drmfb?
->>
->> No we've never hooked it up but it could be made work.
->
-> I had it to the point of almost working. I plan on working on getting it
-> working again.
->
->> > Schemes which would make a multihead setup look like a single screen
->> > get complicated quite easily. Perhaps an option to turn off some
->> > outputs so that the native resolution of one output is used (instead
->> > of clone) would work.
->> >
->>
->> I've only really got two answer for this:
->>
->> (a) hook up another /dev/dri/card_fb device and use the current KMS
->> ioctls to control the framebuffer, have the drm callback into fbdev/fbcon
->> to mention resizes etc. Or add one or two info gathering ioctls and
->> allow use of the /dev/dri/control device to control stuff.
->>
->> (b) add a lot of ioctls to KMS fbdev device, which implement some sort
->> of sane multi-output settings.
->>
->> Now the second sounds like a lot of work if not the correct solution,
->> you basically needs a way to pretty much expose what the KMS ioctls
->> expose on the fb device, and then upgrade fbset to make sense of it all.
->
-> Yuck. See my other post about what fbdev really means in its historical
-> context. The struct fb_info really maps better to drm_crtc than to
-> drm_framebuffer. In fact take the case of the matrox fbdev driver. It
-> creates two framebuffer devices even tho it used one static framebuffer.
-> What the driver does is splits the framebuffer in two and assigned each
-> part to a CRTC.
->
-
-So you get the layering naturally. On fbset - fbev layer you can
-choose from the resolutions available in the current output setup, in
-kmset or whatever - drm layer you can set up the outputs, merge
-multiple outputs into single cloned fbdev or separate them, ..
-
-It's obviously nice if you can set the resolution on all of fbcons,
-fbdev and drm layers but getting it work on at least one layer with
-proper propagation up and down also works. BTW I don't know any
-application which sets linux console (or xterm for that matter)
-resolution through the terminal API.
-
-Thanks
-
-Michal
-
-------------------------------------------------------------------------------
-Download Intel&#174; Parallel Studio Eval
-Try the new software tools for yourself. Speed compiling, find bugs
-proactively, and fine-tune applications for parallel performance.
-See why Intel Parallel Studio got high marks during beta.
-http://p.sf.net/sfu/intel-sw-dev
---
+T24gV2VkLCAyMDEwLTAzLTEwIGF0IDEzOjEwIC0wNTAwLCBBbGV4IERldWNoZXIgd3JvdGU6IAo+
+IE9uIFdlZCwgTWFyIDEwLCAyMDEwIGF0IDE6MDUgUE0sIEFsZXggRGV1Y2hlciA8YWxleGRldWNo
+ZXJAZ21haWwuY29tPiB3cm90ZToKPiA+IE9uIFdlZCwgTWFyIDEwLCAyMDEwIGF0IDEyOjQyIFBN
+LCBKYW1lcyBTaW1tb25zIDxqc2ltbW9uc0BpbmZyYWRlYWQub3JnPiB3cm90ZToKPiA+Pgo+ID4+
+IFNlZSBteSBvdGhlciBwb3N0IGFib3V0IHdoYXQgZmJkZXYgcmVhbGx5IG1lYW5zIGluIGl0cyBo
+aXN0b3JpY2FsCj4gPj4gY29udGV4dC4gVGhlIHN0cnVjdCBmYl9pbmZvIHJlYWxseSBtYXBzIGJl
+dHRlciB0byBkcm1fY3J0YyB0aGFuIHRvCj4gPj4gZHJtX2ZyYW1lYnVmZmVyLiBJbiBmYWN0IHRh
+a2UgdGhlIGNhc2Ugb2YgdGhlIG1hdHJveCBmYmRldiBkcml2ZXIuIEl0Cj4gPj4gY3JlYXRlcyB0
+d28gZnJhbWVidWZmZXIgZGV2aWNlcyBldmVuIHRobyBpdCB1c2VkIG9uZSBzdGF0aWMgZnJhbWVi
+dWZmZXIuCj4gPj4gV2hhdCB0aGUgZHJpdmVyIGRvZXMgaXMgc3BsaXRzIHRoZSBmcmFtZWJ1ZmZl
+ciBpbiB0d28gYW5kIGFzc2lnbmVkIGVhY2gKPiA+PiBwYXJ0IHRvIGEgQ1JUQy4KPiA+Cj4gPiBU
+aGUgb25seSBwcm9ibGVtIHdpdGggdGhhdCBpcyB0aGF0IGl0IGVhdHMgYSBsb3Qgb2YgbWVtb3J5
+IGZvciB0aGUKPiA+IGNvbnNvbGUgd2hpY2ggbGltaXRzIFggd2hlbiBpdCBzdGFydHMuIE9uIGNh
+cmRzIHdpdGggbGltaXRlZCB2cmFtICwKPiA+IHlvdSBtaWdodCBub3QgaGF2ZSBlbm91Z2ggbWVt
+b3J5IGxlZnQgZm9yIGFueSBtZWFuaW5nZnVsIGFjY2VsZXJhdGlvbgo+ID4gd2hlbiBYIHN0YXJ0
+cy4KPiAKPiBJdCB3b3VsZCBiZSBuaWNlIHRvIGZpbmQgYSB3YXkgdG8gcmVjbGFpbSB0aGUgY29u
+c29sZSBtZW1vcnkgZm9yIFgsCj4gYnV0IEknbSBub3Qgc3VyZSB0aGF0IGNhbiBiZSBkb25lIGFu
+ZCBzdGlsbCBwcm92aWRlIGEgZ29vZCB3YXkgdG8KPiBwcm92aWRlIG9vcHMgc3VwcG9ydC4KCldo
+YXQgZG8geW91IHRoaW5rIHRoZSBhdmVyYWdlIHVzZXIgd2lsbCBjYXJlIGFib3V0IG1vcmU/Cgog
+ICAgICAqIFNlZWluZyBrZXJuZWwgb29wcy9wYW5pYyBvdXRwdXQgYWJvdXQgb25jZSBpbiBhIGxp
+ZmV0aW1lLiAKICAgICAgKiBCZWluZyBhYmxlIHRvIHN0YXJ0L3VzZSBYIGluIHRoZSBmaXJzdCBw
+bGFjZSBhbmQgZW5hYmxpbmcgaXQgdG8KICAgICAgICB1c2UgYWxsIG9mIFZSQU0uCgpQZXJzb25h
+bGx5LCBJJ3ZlIG5ldmVyIGV2ZW4gc2VlbiBhbnkga2VybmVsIG9vcHMvcGFuaWMgb3V0cHV0IGRl
+c3BpdGUKbnVtZXJvdXMgb3Bwb3J0dW5pdGllcyBmb3IgdGhhdCBpbiB0aGUgY291cGxlIG9mIG1v
+bnRocyBJJ3ZlIGJlZW4gdXNpbmcKS01TLiBCdXQgSSBoYXZlIHNwZW50IGNvbnNpZGVyYWJsZSB0
+aW1lIGFuZCBlZmZvcnQgdHJ5aW5nIHRvIGdldCByaWQgb2YKdGhlIHBpbm5lZCBmYmNvbiBCTy4g
+SWYgdGhlIG9vcHMvcGFuaWMgb3V0cHV0IGlzIHRoZSBvbmx5IHRoaW5nCnByZXZlbnRpbmcgdGhh
+dCwgbWF5YmUgdGhhdCBzaG91bGQgb25seSBiZSBlbmFibGVkIHZpYSBzb21lIG1vZHVsZQpvcHRp
+b24gZm9yIGRldmVsb3BlcnMuCgoKLS0gCkVhcnRobGluZyBNaWNoZWwgRMOkbnplciAgICAgICAg
+ICAgfCAgICAgICAgICAgICAgICBodHRwOi8vd3d3LnZtd2FyZS5jb20KTGlicmUgc29mdHdhcmUg
+ZW50aHVzaWFzdCAgICAgICAgIHwgICAgICAgICAgRGViaWFuLCBYIGFuZCBEUkkgZGV2ZWxvcGVy
+CgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KRG93bmxvYWQgSW50ZWwmIzE3NDsgUGFyYWxsZWwgU3R1
+ZGlvIEV2YWwKVHJ5IHRoZSBuZXcgc29mdHdhcmUgdG9vbHMgZm9yIHlvdXJzZWxmLiBTcGVlZCBj
+b21waWxpbmcsIGZpbmQgYnVncwpwcm9hY3RpdmVseSwgYW5kIGZpbmUtdHVuZSBhcHBsaWNhdGlv
+bnMgZm9yIHBhcmFsbGVsIHBlcmZvcm1hbmNlLgpTZWUgd2h5IEludGVsIFBhcmFsbGVsIFN0dWRp
+byBnb3QgaGlnaCBtYXJrcyBkdXJpbmcgYmV0YS4KaHR0cDovL3Auc2YubmV0L3NmdS9pbnRlbC1z
+dy1kZXYKLS0KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+RHJpLWRldmVsIG1haWxpbmcgbGlzdApEcmktZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0
+dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2RyaS1kZXZlbAo=

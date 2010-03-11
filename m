@@ -1,8 +1,8 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+From: Pauli Nieminen <suokkos@gmail.com>
 Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video 
 	mode
-Date: Thu, 11 Mar 2010 11:13:46 +0100
-Message-ID: <1268302426.7444.117.camel@thor.local>
+Date: Thu, 11 Mar 2010 12:31:54 +0200
+Message-ID: <548cdfc21003110231y5a452010y211c02589c179e94@mail.gmail.com>
 References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
 	<21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com>
 	<a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com>
@@ -10,10 +10,12 @@ References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
 	<alpine.LFD.2.00.1003101738420.4419@casper.infradead.org>
 	<a728f9f91003101005v374b2cacpb307542e65d22d6f@mail.gmail.com>
 	<a728f9f91003101010m4fc94398l14c8625d7442100a@mail.gmail.com>
+	<1268302426.7444.117.camel@thor.local>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <dri-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <a728f9f91003101010m4fc94398l14c8625d7442100a@mail.gmail.com>
+In-Reply-To: <1268302426.7444.117.camel@thor.local>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
 	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -23,47 +25,69 @@ List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
 	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: dri-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: Alex Deucher <alexdeucher@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net, Paulius Zaleckas <paulius.zaleckas@gmail.com>, Michal Suchanek <hramrach@centrum.cz>
+To: =?ISO-8859-1?Q?Michel_D=E4nzer?= <michel@daenzer.net>
+Cc: Alex Deucher <alexdeucher@gmail.com>, dri-devel@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, Michal Suchanek <hramrach@centrum.cz>, Paulius Zaleckas <paulius.zaleckas@gmail.com>
 
-T24gV2VkLCAyMDEwLTAzLTEwIGF0IDEzOjEwIC0wNTAwLCBBbGV4IERldWNoZXIgd3JvdGU6IAo+
-IE9uIFdlZCwgTWFyIDEwLCAyMDEwIGF0IDE6MDUgUE0sIEFsZXggRGV1Y2hlciA8YWxleGRldWNo
-ZXJAZ21haWwuY29tPiB3cm90ZToKPiA+IE9uIFdlZCwgTWFyIDEwLCAyMDEwIGF0IDEyOjQyIFBN
-LCBKYW1lcyBTaW1tb25zIDxqc2ltbW9uc0BpbmZyYWRlYWQub3JnPiB3cm90ZToKPiA+Pgo+ID4+
-IFNlZSBteSBvdGhlciBwb3N0IGFib3V0IHdoYXQgZmJkZXYgcmVhbGx5IG1lYW5zIGluIGl0cyBo
-aXN0b3JpY2FsCj4gPj4gY29udGV4dC4gVGhlIHN0cnVjdCBmYl9pbmZvIHJlYWxseSBtYXBzIGJl
-dHRlciB0byBkcm1fY3J0YyB0aGFuIHRvCj4gPj4gZHJtX2ZyYW1lYnVmZmVyLiBJbiBmYWN0IHRh
-a2UgdGhlIGNhc2Ugb2YgdGhlIG1hdHJveCBmYmRldiBkcml2ZXIuIEl0Cj4gPj4gY3JlYXRlcyB0
-d28gZnJhbWVidWZmZXIgZGV2aWNlcyBldmVuIHRobyBpdCB1c2VkIG9uZSBzdGF0aWMgZnJhbWVi
-dWZmZXIuCj4gPj4gV2hhdCB0aGUgZHJpdmVyIGRvZXMgaXMgc3BsaXRzIHRoZSBmcmFtZWJ1ZmZl
-ciBpbiB0d28gYW5kIGFzc2lnbmVkIGVhY2gKPiA+PiBwYXJ0IHRvIGEgQ1JUQy4KPiA+Cj4gPiBU
-aGUgb25seSBwcm9ibGVtIHdpdGggdGhhdCBpcyB0aGF0IGl0IGVhdHMgYSBsb3Qgb2YgbWVtb3J5
-IGZvciB0aGUKPiA+IGNvbnNvbGUgd2hpY2ggbGltaXRzIFggd2hlbiBpdCBzdGFydHMuIE9uIGNh
-cmRzIHdpdGggbGltaXRlZCB2cmFtICwKPiA+IHlvdSBtaWdodCBub3QgaGF2ZSBlbm91Z2ggbWVt
-b3J5IGxlZnQgZm9yIGFueSBtZWFuaW5nZnVsIGFjY2VsZXJhdGlvbgo+ID4gd2hlbiBYIHN0YXJ0
-cy4KPiAKPiBJdCB3b3VsZCBiZSBuaWNlIHRvIGZpbmQgYSB3YXkgdG8gcmVjbGFpbSB0aGUgY29u
-c29sZSBtZW1vcnkgZm9yIFgsCj4gYnV0IEknbSBub3Qgc3VyZSB0aGF0IGNhbiBiZSBkb25lIGFu
-ZCBzdGlsbCBwcm92aWRlIGEgZ29vZCB3YXkgdG8KPiBwcm92aWRlIG9vcHMgc3VwcG9ydC4KCldo
-YXQgZG8geW91IHRoaW5rIHRoZSBhdmVyYWdlIHVzZXIgd2lsbCBjYXJlIGFib3V0IG1vcmU/Cgog
-ICAgICAqIFNlZWluZyBrZXJuZWwgb29wcy9wYW5pYyBvdXRwdXQgYWJvdXQgb25jZSBpbiBhIGxp
-ZmV0aW1lLiAKICAgICAgKiBCZWluZyBhYmxlIHRvIHN0YXJ0L3VzZSBYIGluIHRoZSBmaXJzdCBw
-bGFjZSBhbmQgZW5hYmxpbmcgaXQgdG8KICAgICAgICB1c2UgYWxsIG9mIFZSQU0uCgpQZXJzb25h
-bGx5LCBJJ3ZlIG5ldmVyIGV2ZW4gc2VlbiBhbnkga2VybmVsIG9vcHMvcGFuaWMgb3V0cHV0IGRl
-c3BpdGUKbnVtZXJvdXMgb3Bwb3J0dW5pdGllcyBmb3IgdGhhdCBpbiB0aGUgY291cGxlIG9mIG1v
-bnRocyBJJ3ZlIGJlZW4gdXNpbmcKS01TLiBCdXQgSSBoYXZlIHNwZW50IGNvbnNpZGVyYWJsZSB0
-aW1lIGFuZCBlZmZvcnQgdHJ5aW5nIHRvIGdldCByaWQgb2YKdGhlIHBpbm5lZCBmYmNvbiBCTy4g
-SWYgdGhlIG9vcHMvcGFuaWMgb3V0cHV0IGlzIHRoZSBvbmx5IHRoaW5nCnByZXZlbnRpbmcgdGhh
-dCwgbWF5YmUgdGhhdCBzaG91bGQgb25seSBiZSBlbmFibGVkIHZpYSBzb21lIG1vZHVsZQpvcHRp
-b24gZm9yIGRldmVsb3BlcnMuCgoKLS0gCkVhcnRobGluZyBNaWNoZWwgRMOkbnplciAgICAgICAg
-ICAgfCAgICAgICAgICAgICAgICBodHRwOi8vd3d3LnZtd2FyZS5jb20KTGlicmUgc29mdHdhcmUg
-ZW50aHVzaWFzdCAgICAgICAgIHwgICAgICAgICAgRGViaWFuLCBYIGFuZCBEUkkgZGV2ZWxvcGVy
-CgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KRG93bmxvYWQgSW50ZWwmIzE3NDsgUGFyYWxsZWwgU3R1
-ZGlvIEV2YWwKVHJ5IHRoZSBuZXcgc29mdHdhcmUgdG9vbHMgZm9yIHlvdXJzZWxmLiBTcGVlZCBj
-b21waWxpbmcsIGZpbmQgYnVncwpwcm9hY3RpdmVseSwgYW5kIGZpbmUtdHVuZSBhcHBsaWNhdGlv
-bnMgZm9yIHBhcmFsbGVsIHBlcmZvcm1hbmNlLgpTZWUgd2h5IEludGVsIFBhcmFsbGVsIFN0dWRp
-byBnb3QgaGlnaCBtYXJrcyBkdXJpbmcgYmV0YS4KaHR0cDovL3Auc2YubmV0L3NmdS9pbnRlbC1z
-dy1kZXYKLS0KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
-RHJpLWRldmVsIG1haWxpbmcgbGlzdApEcmktZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0
-dHBzOi8vbGlzdHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2RyaS1kZXZlbAo=
+2010/3/11 Michel D=E4nzer <michel@daenzer.net>:
+> On Wed, 2010-03-10 at 13:10 -0500, Alex Deucher wrote:
+>> On Wed, Mar 10, 2010 at 1:05 PM, Alex Deucher <alexdeucher@gmail.com> wr=
+ote:
+>> > On Wed, Mar 10, 2010 at 12:42 PM, James Simmons <jsimmons@infradead.or=
+g> wrote:
+>> >>
+>> >> See my other post about what fbdev really means in its historical
+>> >> context. The struct fb_info really maps better to drm_crtc than to
+>> >> drm_framebuffer. In fact take the case of the matrox fbdev driver. It
+>> >> creates two framebuffer devices even tho it used one static framebuff=
+er.
+>> >> What the driver does is splits the framebuffer in two and assigned ea=
+ch
+>> >> part to a CRTC.
+>> >
+>> > The only problem with that is that it eats a lot of memory for the
+>> > console which limits X when it starts. On cards with limited vram ,
+>> > you might not have enough memory left for any meaningful acceleration
+>> > when X starts.
+>>
+>> It would be nice to find a way to reclaim the console memory for X,
+>> but I'm not sure that can be done and still provide a good way to
+>> provide oops support.
+>
+> What do you think the average user will care about more?
+>
+> =A0 =A0 =A0* Seeing kernel oops/panic output about once in a lifetime.
+> =A0 =A0 =A0* Being able to start/use X in the first place and enabling it=
+ to
+> =A0 =A0 =A0 =A0use all of VRAM.
+>
+> Personally, I've never even seen any kernel oops/panic output despite
+> numerous opportunities for that in the couple of months I've been using
+> KMS. But I have spent considerable time and effort trying to get rid of
+> the pinned fbcon BO. If the oops/panic output is the only thing
+> preventing that, maybe that should only be enabled via some module
+> option for developers.
+>
+
++1
+
+For me only way to capture oopses is netconsole. But I'm causing all
+my oopses in radeon/ttm modules. That might prevent the system from
+returning to framebuffer console.
+
+Pinning framebuffer console is only for developers feature so it
+should be non-default option. For users it is more important to have
+all VRAM available when required and fully functional console if they
+use it.
+In case of kernel oops there should some different way to collect them
+in users system. They should be stored in hard disk for easier
+attaching to the bug report. Also oopses that are stored in hd can be
+later uploaded automatically with kerneloops daemon.
+
+---------------------------------------------------------------------------=
+---
+Download Intel&#174; Parallel Studio Eval
+Try the new software tools for yourself. Speed compiling, find bugs
+proactively, and fine-tune applications for parallel performance.
+See why Intel Parallel Studio got high marks during beta.
+http://p.sf.net/sfu/intel-sw-dev
+--

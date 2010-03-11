@@ -1,8 +1,8 @@
-From: Pauli Nieminen <suokkos@gmail.com>
+From: Alex Deucher <alexdeucher@gmail.com>
 Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video 
 	mode
-Date: Thu, 11 Mar 2010 12:31:54 +0200
-Message-ID: <548cdfc21003110231y5a452010y211c02589c179e94@mail.gmail.com>
+Date: Thu, 11 Mar 2010 10:12:52 -0500
+Message-ID: <a728f9f91003110712l407ed04dl28b86ef77a427218@mail.gmail.com>
 References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
 	<21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com>
 	<a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com>
@@ -26,7 +26,7 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
 	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: dri-devel-bounces@lists.sourceforge.net
 To: =?ISO-8859-1?Q?Michel_D=E4nzer?= <michel@daenzer.net>
-Cc: Alex Deucher <alexdeucher@gmail.com>, dri-devel@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, Michal Suchanek <hramrach@centrum.cz>, Paulius Zaleckas <paulius.zaleckas@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net, Paulius Zaleckas <paulius.zaleckas@gmail.com>, Michal Suchanek <hramrach@centrum.cz>
 
 2010/3/11 Michel D=E4nzer <michel@daenzer.net>:
 > On Wed, 2010-03-10 at 13:10 -0500, Alex Deucher wrote:
@@ -66,22 +66,10 @@ ch
 > the pinned fbcon BO. If the oops/panic output is the only thing
 > preventing that, maybe that should only be enabled via some module
 > option for developers.
->
 
-+1
+I'm all for it!
 
-For me only way to capture oopses is netconsole. But I'm causing all
-my oopses in radeon/ttm modules. That might prevent the system from
-returning to framebuffer console.
-
-Pinning framebuffer console is only for developers feature so it
-should be non-default option. For users it is more important to have
-all VRAM available when required and fully functional console if they
-use it.
-In case of kernel oops there should some different way to collect them
-in users system. They should be stored in hard disk for easier
-attaching to the bug report. Also oopses that are stored in hd can be
-later uploaded automatically with kerneloops daemon.
+Alex
 
 ---------------------------------------------------------------------------=
 ---

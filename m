@@ -1,21 +1,23 @@
-From: Alex Deucher <alexdeucher@gmail.com>
+From: Michal Suchanek <hramrach@centrum.cz>
 Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video 
 	mode
-Date: Thu, 11 Mar 2010 10:12:52 -0500
-Message-ID: <a728f9f91003110712l407ed04dl28b86ef77a427218@mail.gmail.com>
-References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
-	<21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com>
-	<a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com>
-	<21d7e9971003022102v232c099r441b0bd843b30313@mail.gmail.com>
-	<alpine.LFD.2.00.1003101738420.4419@casper.infradead.org>
-	<a728f9f91003101005v374b2cacpb307542e65d22d6f@mail.gmail.com>
-	<a728f9f91003101010m4fc94398l14c8625d7442100a@mail.gmail.com>
+Date: Thu, 11 Mar 2010 16:47:47 +0100
+Message-ID: <a5d587fb1003110747j40e5c5f1h70aab0e74f03eef2@mail.gmail.com>
+References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com> 
+	<21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com> 
+	<a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com> 
+	<21d7e9971003022102v232c099r441b0bd843b30313@mail.gmail.com> 
+	<alpine.LFD.2.00.1003101738420.4419@casper.infradead.org> 
+	<a728f9f91003101005v374b2cacpb307542e65d22d6f@mail.gmail.com> 
+	<a728f9f91003101010m4fc94398l14c8625d7442100a@mail.gmail.com> 
 	<1268302426.7444.117.camel@thor.local>
+	<a728f9f91003110712l407ed04dl28b86ef77a427218@mail.gmail.com> 
+	<alpine.LFD.2.00.1003111516540.1912@casper.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <dri-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <1268302426.7444.117.camel@thor.local>
+In-Reply-To: <alpine.LFD.2.00.1003111516540.1912@casper.infradead.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
 	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,57 +27,37 @@ List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
 	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
 Errors-To: dri-devel-bounces@lists.sourceforge.net
-To: =?ISO-8859-1?Q?Michel_D=E4nzer?= <michel@daenzer.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net, Paulius Zaleckas <paulius.zaleckas@gmail.com>, Michal Suchanek <hramrach@centrum.cz>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Alex Deucher <alexdeucher@gmail.com>, =?UTF-8?Q?Michel_D=C3=A4nzer?= <michel@daenzer.net>, dri-devel@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, Paulius Zaleckas <paulius.zaleckas@gmail.com>
 
-2010/3/11 Michel D=E4nzer <michel@daenzer.net>:
-> On Wed, 2010-03-10 at 13:10 -0500, Alex Deucher wrote:
->> On Wed, Mar 10, 2010 at 1:05 PM, Alex Deucher <alexdeucher@gmail.com> wr=
-ote:
->> > On Wed, Mar 10, 2010 at 12:42 PM, James Simmons <jsimmons@infradead.or=
-g> wrote:
->> >>
->> >> See my other post about what fbdev really means in its historical
->> >> context. The struct fb_info really maps better to drm_crtc than to
->> >> drm_framebuffer. In fact take the case of the matrox fbdev driver. It
->> >> creates two framebuffer devices even tho it used one static framebuff=
-er.
->> >> What the driver does is splits the framebuffer in two and assigned ea=
-ch
->> >> part to a CRTC.
->> >
->> > The only problem with that is that it eats a lot of memory for the
->> > console which limits X when it starts. On cards with limited vram ,
->> > you might not have enough memory left for any meaningful acceleration
->> > when X starts.
->>
->> It would be nice to find a way to reclaim the console memory for X,
->> but I'm not sure that can be done and still provide a good way to
->> provide oops support.
->
-> What do you think the average user will care about more?
->
-> =A0 =A0 =A0* Seeing kernel oops/panic output about once in a lifetime.
-> =A0 =A0 =A0* Being able to start/use X in the first place and enabling it=
- to
-> =A0 =A0 =A0 =A0use all of VRAM.
->
-> Personally, I've never even seen any kernel oops/panic output despite
-> numerous opportunities for that in the couple of months I've been using
-> KMS. But I have spent considerable time and effort trying to get rid of
-> the pinned fbcon BO. If the oops/panic output is the only thing
-> preventing that, maybe that should only be enabled via some module
-> option for developers.
-
-I'm all for it!
-
-Alex
-
----------------------------------------------------------------------------=
----
-Download Intel&#174; Parallel Studio Eval
-Try the new software tools for yourself. Speed compiling, find bugs
-proactively, and fine-tune applications for parallel performance.
-See why Intel Parallel Studio got high marks during beta.
-http://p.sf.net/sfu/intel-sw-dev
---
+T24gMTEgTWFyY2ggMjAxMCAxNjoxNywgSmFtZXMgU2ltbW9ucyA8anNpbW1vbnNAaW5mcmFkZWFk
+Lm9yZz4gd3JvdGU6Cj4KPj4gPj4gSXQgd291bGQgYmUgbmljZSB0byBmaW5kIGEgd2F5IHRvIHJl
+Y2xhaW0gdGhlIGNvbnNvbGUgbWVtb3J5IGZvciBYLAo+PiA+PiBidXQgSSdtIG5vdCBzdXJlIHRo
+YXQgY2FuIGJlIGRvbmUgYW5kIHN0aWxsIHByb3ZpZGUgYSBnb29kIHdheSB0bwo+PiA+PiBwcm92
+aWRlIG9vcHMgc3VwcG9ydC4KPj4gPgo+PiA+IFdoYXQgZG8geW91IHRoaW5rIHRoZSBhdmVyYWdl
+IHVzZXIgd2lsbCBjYXJlIGFib3V0IG1vcmU/Cj4+ID4KPj4gPiDCoCDCoCDCoCogU2VlaW5nIGtl
+cm5lbCBvb3BzL3BhbmljIG91dHB1dCBhYm91dCBvbmNlIGluIGEgbGlmZXRpbWUuCj4+ID4gwqAg
+wqAgwqAqIEJlaW5nIGFibGUgdG8gc3RhcnQvdXNlIFggaW4gdGhlIGZpcnN0IHBsYWNlIGFuZCBl
+bmFibGluZyBpdCB0bwo+PiA+IMKgIMKgIMKgIMKgdXNlIGFsbCBvZiBWUkFNLgo+PiA+Cj4+ID4g
+UGVyc29uYWxseSwgSSd2ZSBuZXZlciBldmVuIHNlZW4gYW55IGtlcm5lbCBvb3BzL3BhbmljIG91
+dHB1dCBkZXNwaXRlCj4+ID4gbnVtZXJvdXMgb3Bwb3J0dW5pdGllcyBmb3IgdGhhdCBpbiB0aGUg
+Y291cGxlIG9mIG1vbnRocyBJJ3ZlIGJlZW4gdXNpbmcKPj4gPiBLTVMuIEJ1dCBJIGhhdmUgc3Bl
+bnQgY29uc2lkZXJhYmxlIHRpbWUgYW5kIGVmZm9ydCB0cnlpbmcgdG8gZ2V0IHJpZCBvZgo+PiA+
+IHRoZSBwaW5uZWQgZmJjb24gQk8uIElmIHRoZSBvb3BzL3BhbmljIG91dHB1dCBpcyB0aGUgb25s
+eSB0aGluZwo+PiA+IHByZXZlbnRpbmcgdGhhdCwgbWF5YmUgdGhhdCBzaG91bGQgb25seSBiZSBl
+bmFibGVkIHZpYSBzb21lIG1vZHVsZQo+PiA+IG9wdGlvbiBmb3IgZGV2ZWxvcGVycy4KPj4KPj4g
+SSdtIGFsbCBmb3IgaXQhCj4KPiBJJ20gbG9va2luZyBpbnRvIHRoZSBkZXRhaWxzIGZvciB0aGlz
+LiBJdCB3aWxsIHJlcXVpcmUgc29tZSBjaGFuZ2VzIHRvCj4gaW50ZXJuYWwgYXBpcyB0byBtYWtl
+IGl0IHRvIHdvcmsuCj4KCkNhbid0IGl0IHByaW50IHRoZSBvb3BzIG9uIHdoYXRldmVyIGlzIGN1
+cnJlbnRseSBkaXNwbGF5ZWQ/CgpJdCBuZWVkIG5vdCBiZSBhIGRlZGljYXRlZCBidWZmZXIgYXMg
+bG9uZyBhcyB0aGVyZSBpcyBhbHdheXMgc29tZSBidWZmZXIuCgpCdXQgcGVyaGFwcyB0aGlzIGlz
+IG1vcmUgY29tcGxleCB0aGFuIHRoYXQuCgpUaGFua3MKCk1pY2hhbAoKLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tCkRvd25sb2FkIEludGVsJiMxNzQ7IFBhcmFsbGVsIFN0dWRpbyBFdmFsClRyeSB0aGUg
+bmV3IHNvZnR3YXJlIHRvb2xzIGZvciB5b3Vyc2VsZi4gU3BlZWQgY29tcGlsaW5nLCBmaW5kIGJ1
+Z3MKcHJvYWN0aXZlbHksIGFuZCBmaW5lLXR1bmUgYXBwbGljYXRpb25zIGZvciBwYXJhbGxlbCBw
+ZXJmb3JtYW5jZS4KU2VlIHdoeSBJbnRlbCBQYXJhbGxlbCBTdHVkaW8gZ290IGhpZ2ggbWFya3Mg
+ZHVyaW5nIGJldGEuCmh0dHA6Ly9wLnNmLm5ldC9zZnUvaW50ZWwtc3ctZGV2Ci0tCl9fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkRyaS1kZXZlbCBtYWlsaW5n
+IGxpc3QKRHJpLWRldmVsQGxpc3RzLnNvdXJjZWZvcmdlLm5ldApodHRwczovL2xpc3RzLnNvdXJj
+ZWZvcmdlLm5ldC9saXN0cy9saXN0aW5mby9kcmktZGV2ZWwK

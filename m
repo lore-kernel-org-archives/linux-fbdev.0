@@ -1,71 +1,50 @@
-From: "Aguirre, Sergio" <saaguirre@ti.com>
-Date: Fri, 05 Mar 2010 15:28:43 +0000
-Subject: RE: [PATCH 4/4] DSS2: clear spurious SYNC_LOST_DIGIT interrupts
-Message-Id: <A24693684029E5489D1D202277BE894453CC5CD3@dlee02.ent.ti.com>
+From: Roger Quadros <roger.quadros@nokia.com>
+Date: Fri, 12 Mar 2010 15:37:54 +0000
+Subject: [RFC][PATCH 2/3] OMAP: DSS2: Prevent recursive Panel Enable/Disable calls from SDI
+Message-Id: <1268408275-31633-3-git-send-email-roger.quadros@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1267795582-21004-1-git-send-email-ville.syrjala@nokia.com>
-	 <1267795582-21004-4-git-send-email-ville.syrjala@nokia.com>
-	 <A24693684029E5489D1D202277BE894453CC5CA0@dlee02.ent.ti.com>
- <1267802713.25148.146.camel@tubuntu.research.nokia.com>
-In-Reply-To: <1267802713.25148.146.camel@tubuntu.research.nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: "Syrjala Ville (Nokia-D/Helsinki)" <ville.syrjala@nokia.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
+From: Roger Quadros <roger.quadros@nokia.com>
 
+Panel enable/disable is now done inside display manager,
+so don't need to do it again.
 
-> -----Original Message-----
-> From: Tomi Valkeinen [mailto:tomi.valkeinen@nokia.com]
-> Sent: Friday, March 05, 2010 9:25 AM
-> To: Aguirre, Sergio
-> Cc: Syrjala Ville (Nokia-D/Helsinki); linux-fbdev@vger.kernel.org; linux-
-> omap@vger.kernel.org
-> Subject: RE: [PATCH 4/4] DSS2: clear spurious SYNC_LOST_DIGIT interrupts
->=20
-> On Fri, 2010-03-05 at 16:19 +0100, ext Aguirre, Sergio wrote:
-> > Hi Ville,
-> >
-> > > -----Original Message-----
-> > > From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
-> > > owner@vger.kernel.org] On Behalf Of ville.syrjala@nokia.com
-> > > Sent: Friday, March 05, 2010 7:26 AM
-> > > To: Tomi Valkeinen
-> > > Cc: linux-fbdev@vger.kernel.org; linux-omap@vger.kernel.org; Ville
-> Syrj=E4l=E4
-> > > Subject: [PATCH 4/4] DSS2: clear spurious SYNC_LOST_DIGIT interrupts
-> > >
-> > > From: Ville Syrj=E4l=E4 <ville.syrjala@nokia.com>
-> > >
-> > > When DSS transitions from off mode to on VENC may generate a spurious
-> > > SYNC_LOST_DIGIT error. Just ack it when restoring the context. Also
-> > > restore IRQENABLE last to avoid triggering interrupts before the
-> > > context is fully restored.
-> >
-> > (Tomi or anyone can correct me if I'm wrong)
-> >
-> > AFAIK, The solution for spurious interrupts is to flush posted bus
-> writes during interrupt handling, which can be achieved by reading the
-> same register just after you have written it.
-> >
-> > Tomi, what do you think?
->=20
-> That's a different spurious interrupt =3D).
->=20
-> In this case the IRQ mechanism from CPU side is working fine, but VENC
-> is just spamming the error interrupts, for unknown reason.
+Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
+---
+ drivers/video/omap2/dss/sdi.c |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
 
-Ohh ok, I see.
-
-Thanks for clarifying. And sorry for the noise.
-
-I'm trying to learn about DSS subsystem, but I'm just a n00b for the moment=
- :)
-
-Regards,
-Sergio
->=20
->  Tomi
->=20
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 12eb404..45aab89 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -115,12 +115,6 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+ 
+ 	dssdev->manager->enable(dssdev->manager);
+ 
+-	if (dssdev->driver->enable) {
+-		r = dssdev->driver->enable(dssdev);
+-		if (r)
+-			goto err3;
+-	}
+-
+ 	sdi.skip_init = 0;
+ 
+ 	return 0;
+@@ -137,9 +131,6 @@ EXPORT_SYMBOL(omapdss_sdi_display_enable);
+ 
+ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev)
+ {
+-	if (dssdev->driver->disable)
+-		dssdev->driver->disable(dssdev);
+-
+ 	dssdev->manager->disable(dssdev->manager);
+ 
+ 	dss_sdi_disable();
+-- 
+1.6.0.4
 

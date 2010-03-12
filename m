@@ -1,44 +1,28 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Sat, 20 Mar 2010 16:00:14 +0000
-Subject: [PATCH v2 0/6] hid: new driver for PicoLCD device
-Message-Id: <20100320170014.440959a8@neptune.home>
+From: Roger Quadros <roger.quadros@nokia.com>
+Date: Fri, 12 Mar 2010 15:37:52 +0000
+Subject: [RFC][PATCH 0/3] OMAP: DSS2: Allow us to use SDI
+Message-Id: <1268408275-31633-1-git-send-email-roger.quadros@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>
-Cc: linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rick L. Vinyard Jr." <rvinyard-qcTL/1vZYtiVc3sceRu5cw@public.gmane.org>, Nicu Pavel <npavel-VxACSXvuqMTQT0dZR+AlfA@public.gmane.org>, Oliver Neukum <oliver-GvhC2dPhHPQdnm+yROfE0A@public.gmane.org>, Jaya Kumar <jayakumar.lkml-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: linux-fbdev@vger.kernel.org
 
-This series adds support for PicoLCD USB HID device adding support for
-the various features in different patches so each patch concentrates
-on a device class.
+I want to get DSS2 working on N900. N900 requires SDI.
 
-I implemented the patches so input support is required (this should
-make it easy to later on add support for other PicoLCD device that
-don't have the same feature set but share compatible HID reports.
+Technically we should be able to use SDI without having DSI
+regulators enabled.
+Thes patches also add the vdds_sdi supply support to SDI.
 
-This causes presence of a few #ifdef blocks to include support for the
-different feature sets when their matching device class has been
-selected.
-Though to minimize the amount of such #ifs I put all code for a single
-class together and defined a few stubs in the #else part so global
-device initialization is not filled with #ifs.
+NOTE: I cannot yet confirm that SDI was working or will work with this.
 
-I'm not sure which of the following approaches is better (I took the
-first one):
-- Check for built-in or build-as-module class support
-  with #if defined():
-  #if defined(CONFIG_..CLASS) || defined(CONFIG_..CLASS_MODULE)
-- Add extra CONFIG_PICOLCD_$CLASS to Kconfig and let Kconfig get
-  things correctly set having just simple
-  #ifdef CONFIG_PICOLCD_$CLASS in the code.
+---
+Roger Quadros (3):
+  OMAP: DSS2: Do regulator stuff in dpi_init_display()
+  OMAP: DSS2: Prevent recursive Panel Enable/Disable calls from SDI
+  OMAP: DSS2: Use vdds_sdi regulator supply in SDI
 
+ drivers/video/omap2/dss/dpi.c |   10 +++++-----
+ drivers/video/omap2/dss/sdi.c |   32 +++++++++++++++++++++-----------
+ 2 files changed, 26 insertions(+), 16 deletions(-)
 
-The series depends on my previous patch adding HID suspend support
-(I've not yet looked at improving it). The patch adding support
-for backlight class depends on backlight state as of 2.6.34-rc2.
-
-All the rest should apply against 2.6.33 (unless I did oversee some
-detail).
-
-Bruno

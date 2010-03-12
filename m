@@ -1,47 +1,55 @@
-From: "Justin P. mattock" <justinmattock@gmail.com>
-Date: Sun, 28 Mar 2010 19:08:41 +0000
-Subject: Re: [PATCH] Rename imacfb.txt to efifb.txt and change imacfb to
-Message-Id: <4BAFA939.7080000@gmail.com>
+From: Roger Quadros <roger.quadros@nokia.com>
+Date: Fri, 12 Mar 2010 15:37:53 +0000
+Subject: [RFC][PATCH 1/3] OMAP: DSS2: Do regulator stuff in dpi_init_display()
+Message-Id: <1268408275-31633-2-git-send-email-roger.quadros@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1269798210-8664-1-git-send-email-justinmattock@gmail.com> <10f740e81003281154i4885f559s3f6ac79f1e697a3e@mail.gmail.com>
-In-Reply-To: <10f740e81003281154i4885f559s3f6ac79f1e697a3e@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On 03/28/2010 11:54 AM, Geert Uytterhoeven wrote:
-> On Sun, Mar 28, 2010 at 19:43, Justin P. Mattock
-> <justinmattock@gmail.com>  wrote:
->> Rename imacfb.txt to efifb.txt since imacfb was moved to
->> efifb,and change imacfb to efifb.
->> Note:I used git rm for imacfb.txt, but
->> git renamed this file to efifb.txt after everything was said and
->> done, not sure if this is correct or not.
->
-> Git doesn't track renames. It just notices a new file is very similar
-> (in this case identical)
-> to a deleted one.
->
-> Gr{oetje,eeting}s,
->
-> 						Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
->
+From: Roger Quadros <roger.quadros@nokia.com>
 
-that's what happened i.g. I did git rm imacfb.txt
-then did a git add efifb.txt
-then git commit
-then git said rename in the end
+We don't want dpi_init() to fail in any case as it will prevent us
+from using DSS2 if we don't have DSI in the system. This is because
+dpi_init() is done unconditionally by the DSS2 core.
 
-I've never submitted an add/delete so hopefully
-this is o.k.
+We will only need to do regulator initialization when DPI is actually
+present in the system. So we do regulator init stuff in dpi_init_display()
 
-Justin P. Mattock
+Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
+---
+ drivers/video/omap2/dss/dpi.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 960e977..bcedafd 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -299,11 +299,6 @@ int dpi_init_display(struct omap_dss_device *dssdev)
+ {
+ 	DSSDBG("init_display\n");
+ 
+-	return 0;
+-}
+-
+-int dpi_init(struct platform_device *pdev)
+-{
+ 	if (cpu_is_omap34xx()) {
+ 		dpi.vdds_dsi_reg = dss_get_vdds_dsi();
+ 		if (IS_ERR(dpi.vdds_dsi_reg)) {
+@@ -315,6 +310,11 @@ int dpi_init(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++int dpi_init(struct platform_device *pdev)
++{
++	return 0;
++}
++
+ void dpi_exit(void)
+ {
+ }
+-- 
+1.6.0.4
+

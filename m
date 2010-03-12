@@ -1,63 +1,56 @@
-From: Michal Suchanek <hramrach@centrum.cz>
-Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video 
-	mode
-Date: Thu, 11 Mar 2010 16:47:47 +0100
-Message-ID: <a5d587fb1003110747j40e5c5f1h70aab0e74f03eef2@mail.gmail.com>
-References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com> 
-	<21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com> 
-	<a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com> 
-	<21d7e9971003022102v232c099r441b0bd843b30313@mail.gmail.com> 
-	<alpine.LFD.2.00.1003101738420.4419@casper.infradead.org> 
-	<a728f9f91003101005v374b2cacpb307542e65d22d6f@mail.gmail.com> 
-	<a728f9f91003101010m4fc94398l14c8625d7442100a@mail.gmail.com> 
-	<1268302426.7444.117.camel@thor.local>
-	<a728f9f91003110712l407ed04dl28b86ef77a427218@mail.gmail.com> 
-	<alpine.LFD.2.00.1003111516540.1912@casper.infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <alpine.LFD.2.00.1003111516540.1912@casper.infradead.org>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=dri-devel>
-List-Post: <mailto:dri-devel@lists.sourceforge.net>
-List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.sourceforge.net
-To: James Simmons <jsimmons@infradead.org>
-Cc: Alex Deucher <alexdeucher@gmail.com>, =?UTF-8?Q?Michel_D=C3=A4nzer?= <michel@daenzer.net>, dri-devel@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, Paulius Zaleckas <paulius.zaleckas@gmail.com>
+From: Roger Quadros <roger.quadros@nokia.com>
+Subject: [RFC][PATCH 2/3] OMAP: DSS2: Prevent recursive Panel Enable/Disable calls from SDI
+Date: Fri, 12 Mar 2010 17:27:23 +0200
+Message-ID: <1268407644-31230-3-git-send-email-roger.quadros@nokia.com>
+References: <1268407644-31230-1-git-send-email-roger.quadros@nokia.com>
+ <1268407644-31230-2-git-send-email-roger.quadros@nokia.com>
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <1268407644-31230-2-git-send-email-roger.quadros@nokia.com>
+Sender: linux-omap-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi.Valkeinen@nokia.com
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org
 
-T24gMTEgTWFyY2ggMjAxMCAxNjoxNywgSmFtZXMgU2ltbW9ucyA8anNpbW1vbnNAaW5mcmFkZWFk
-Lm9yZz4gd3JvdGU6Cj4KPj4gPj4gSXQgd291bGQgYmUgbmljZSB0byBmaW5kIGEgd2F5IHRvIHJl
-Y2xhaW0gdGhlIGNvbnNvbGUgbWVtb3J5IGZvciBYLAo+PiA+PiBidXQgSSdtIG5vdCBzdXJlIHRo
-YXQgY2FuIGJlIGRvbmUgYW5kIHN0aWxsIHByb3ZpZGUgYSBnb29kIHdheSB0bwo+PiA+PiBwcm92
-aWRlIG9vcHMgc3VwcG9ydC4KPj4gPgo+PiA+IFdoYXQgZG8geW91IHRoaW5rIHRoZSBhdmVyYWdl
-IHVzZXIgd2lsbCBjYXJlIGFib3V0IG1vcmU/Cj4+ID4KPj4gPiDCoCDCoCDCoCogU2VlaW5nIGtl
-cm5lbCBvb3BzL3BhbmljIG91dHB1dCBhYm91dCBvbmNlIGluIGEgbGlmZXRpbWUuCj4+ID4gwqAg
-wqAgwqAqIEJlaW5nIGFibGUgdG8gc3RhcnQvdXNlIFggaW4gdGhlIGZpcnN0IHBsYWNlIGFuZCBl
-bmFibGluZyBpdCB0bwo+PiA+IMKgIMKgIMKgIMKgdXNlIGFsbCBvZiBWUkFNLgo+PiA+Cj4+ID4g
-UGVyc29uYWxseSwgSSd2ZSBuZXZlciBldmVuIHNlZW4gYW55IGtlcm5lbCBvb3BzL3BhbmljIG91
-dHB1dCBkZXNwaXRlCj4+ID4gbnVtZXJvdXMgb3Bwb3J0dW5pdGllcyBmb3IgdGhhdCBpbiB0aGUg
-Y291cGxlIG9mIG1vbnRocyBJJ3ZlIGJlZW4gdXNpbmcKPj4gPiBLTVMuIEJ1dCBJIGhhdmUgc3Bl
-bnQgY29uc2lkZXJhYmxlIHRpbWUgYW5kIGVmZm9ydCB0cnlpbmcgdG8gZ2V0IHJpZCBvZgo+PiA+
-IHRoZSBwaW5uZWQgZmJjb24gQk8uIElmIHRoZSBvb3BzL3BhbmljIG91dHB1dCBpcyB0aGUgb25s
-eSB0aGluZwo+PiA+IHByZXZlbnRpbmcgdGhhdCwgbWF5YmUgdGhhdCBzaG91bGQgb25seSBiZSBl
-bmFibGVkIHZpYSBzb21lIG1vZHVsZQo+PiA+IG9wdGlvbiBmb3IgZGV2ZWxvcGVycy4KPj4KPj4g
-SSdtIGFsbCBmb3IgaXQhCj4KPiBJJ20gbG9va2luZyBpbnRvIHRoZSBkZXRhaWxzIGZvciB0aGlz
-LiBJdCB3aWxsIHJlcXVpcmUgc29tZSBjaGFuZ2VzIHRvCj4gaW50ZXJuYWwgYXBpcyB0byBtYWtl
-IGl0IHRvIHdvcmsuCj4KCkNhbid0IGl0IHByaW50IHRoZSBvb3BzIG9uIHdoYXRldmVyIGlzIGN1
-cnJlbnRseSBkaXNwbGF5ZWQ/CgpJdCBuZWVkIG5vdCBiZSBhIGRlZGljYXRlZCBidWZmZXIgYXMg
-bG9uZyBhcyB0aGVyZSBpcyBhbHdheXMgc29tZSBidWZmZXIuCgpCdXQgcGVyaGFwcyB0aGlzIGlz
-IG1vcmUgY29tcGxleCB0aGFuIHRoYXQuCgpUaGFua3MKCk1pY2hhbAoKLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tCkRvd25sb2FkIEludGVsJiMxNzQ7IFBhcmFsbGVsIFN0dWRpbyBFdmFsClRyeSB0aGUg
-bmV3IHNvZnR3YXJlIHRvb2xzIGZvciB5b3Vyc2VsZi4gU3BlZWQgY29tcGlsaW5nLCBmaW5kIGJ1
-Z3MKcHJvYWN0aXZlbHksIGFuZCBmaW5lLXR1bmUgYXBwbGljYXRpb25zIGZvciBwYXJhbGxlbCBw
-ZXJmb3JtYW5jZS4KU2VlIHdoeSBJbnRlbCBQYXJhbGxlbCBTdHVkaW8gZ290IGhpZ2ggbWFya3Mg
-ZHVyaW5nIGJldGEuCmh0dHA6Ly9wLnNmLm5ldC9zZnUvaW50ZWwtc3ctZGV2Ci0tCl9fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkRyaS1kZXZlbCBtYWlsaW5n
-IGxpc3QKRHJpLWRldmVsQGxpc3RzLnNvdXJjZWZvcmdlLm5ldApodHRwczovL2xpc3RzLnNvdXJj
-ZWZvcmdlLm5ldC9saXN0cy9saXN0aW5mby9kcmktZGV2ZWwK
+From: Roger Quadros <roger.quadros@nokia.com>
+
+Panel enable/disable is now done inside display manager,
+so don't need to do it again.
+
+Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
+---
+ drivers/video/omap2/dss/sdi.c |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 12eb404..45aab89 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -115,12 +115,6 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+ 
+ 	dssdev->manager->enable(dssdev->manager);
+ 
+-	if (dssdev->driver->enable) {
+-		r = dssdev->driver->enable(dssdev);
+-		if (r)
+-			goto err3;
+-	}
+-
+ 	sdi.skip_init = 0;
+ 
+ 	return 0;
+@@ -137,9 +131,6 @@ EXPORT_SYMBOL(omapdss_sdi_display_enable);
+ 
+ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev)
+ {
+-	if (dssdev->driver->disable)
+-		dssdev->driver->disable(dssdev);
+-
+ 	dssdev->manager->disable(dssdev->manager);
+ 
+ 	dss_sdi_disable();
+-- 
+1.6.0.4
+

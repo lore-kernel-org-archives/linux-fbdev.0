@@ -1,60 +1,55 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video 
-	mode
-Date: Sun, 14 Mar 2010 12:41:20 +0100
-Message-ID: <1268566880.9302.65.camel@thor.local>
-References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
-	<a728f9f91003101005v374b2cacpb307542e65d22d6f@mail.gmail.com>
-	<a728f9f91003101010m4fc94398l14c8625d7442100a@mail.gmail.com>
-	<1268302426.7444.117.camel@thor.local>
-	<a728f9f91003110712l407ed04dl28b86ef77a427218@mail.gmail.com>
-	<alpine.LFD.2.00.1003111516540.1912@casper.infradead.org>
-	<a5d587fb1003110747j40e5c5f1h70aab0e74f03eef2@mail.gmail.com>
-	<alpine.LFD.2.00.1003121332470.10546@casper.infradead.org>
-	<21d7e9971003121251v4bef7e96v67f3d98aa9ab384a@mail.gmail.com>
-	<alpine.LFD.2.00.1003131421360.12031@casper.infradead.org>
-	<21d7e9971003131301r723f3311p3553ea8a1a86bf0a@mail.gmail.com>
+From: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] fix Kconfig breakage in
+	drivers/video
+Date: Sun, 14 Mar 2010 15:19:41 -0700 (PDT)
+Message-ID: <20100314.151941.24322068.davem@davemloft.net>
+References: <20100314225329.f5dc3e05.krzysztof.h1@poczta.fm>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.sourceforge.net>
-In-Reply-To: <21d7e9971003131301r723f3311p3553ea8a1a86bf0a@mail.gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by sfs-ml-3.v29.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <davem@davemloft.net>) id 1Nqw9e-0005ok-IS
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 14 Mar 2010 22:19:26 +0000
+Received: from 74-93-104-97-washington.hfc.comcastbusiness.net ([74.93.104.97]
+	helo=sunset.davemloft.net)
+	by sfi-mx-2.v28.ch3.sourceforge.com with esmtp (Exim 4.69)
+	id 1Nqw9d-0003rQ-C6 for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 14 Mar 2010 22:19:26 +0000
+In-Reply-To: <20100314225329.f5dc3e05.krzysztof.h1@poczta.fm>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=dri-devel>
-List-Post: <mailto:dri-devel@lists.sourceforge.net>
-List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: Dave Airlie <airlied@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Paulius Zaleckas <paulius.zaleckas@gmail.com>, Michal Suchanek <hramrach@centrum.cz>, Alex Deucher <alexdeucher@gmail.com>, dri-devel@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: krzysztof.h1@poczta.fm
+Cc: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, baruch@tkos.co.il
 
-T24gU3VuLCAyMDEwLTAzLTE0IGF0IDA3OjAxICsxMDAwLCBEYXZlIEFpcmxpZSB3cm90ZTogCj4g
-Cj4gVGhlIGJpZyBpc3N1ZSB3ZSBoYXZlIHdpdGggcmVzaXppbmcgdGhlIGJ1ZmZlciBpcyB1c2Vy
-c3BhY2UgbW1hcHMgb2YgdGhlIGZiZGV2Cj4gZGV2aWNlLCBhbmQgaW52YWxpZGF0aW9uLgo+IFBy
-ZXZpb3VzIHRocmVhZCBvZiB1bnJlc29sdmVkbmVzcyBpcyBoZXJlLgo+IGh0dHA6Ly93d3cubWFp
-bC1hcmNoaXZlLmNvbS9kcmktZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0L21zZzQxODc4Lmh0
-bWwKCkFjdHVhbGx5IEFGQUlSIChhbmQgcmVhZGluZyB0aHJvdWdoIGl0IGFnYWluIHNlZW1zIHRv
-IGNvbmZpcm0gdGhpcykKdXNlcnNwYWNlIG1hcHBpbmdzIHNob3VsZCBiZSBmdWxseSBoYW5kbGVk
-IGJ5IHRoZSBsYXN0IHBhdGNoIHNlcmllcyBJCnBvc3RlZCBiYWNrIHRoZW5bMF0uIFRoZSBwcm9i
-bGVtIHdhcyB0aGF0IHRoZSBzdHJ1Y3QgZmJfb3BzIGhvb2tzIG1heSBiZQpjYWxsZWQgYnkgdGhl
-IGtlcm5lbCBmcm9tIHByZXR0eSBtdWNoIGFueSBjb250ZXh0LCBhbmQgbmVpdGhlciBJIG5vcgpU
-aG9tYXMgd2FzIHN1cmUgaG93IHRvIGhhbmRsZSB0aGUgVFRNIGxvY2tpbmcgZ2l2ZW4gdGhhdC4g
-TWF5YmUgSmFtZXMKaGFzIGlkZWFzIGZvciB0aGlzIGdpdmVuIGhpcyBiZXR0ZXIgZmFtaWxpYXJp
-dHkgd2l0aCBmYmRldiBpbnRlcm5hbHMuCgoKWzBdIFRob3VnaCB0aGF0IHdhcyByZWFsbHkgb25s
-eSBhYm91dCBtYWtpbmcgaXQgcG9zc2libGUgdG8gdW5waW4gdGhlCmZiY29uIEJPIHdoaWxlIGl0
-IGlzbid0IGJlaW5nIGRpc3BsYXllZCwgcmVzaXppbmcgaXQgbWlnaHQgaW52b2x2ZSBvdGhlcgpp
-c3N1ZXMgSSdtIG5vdCBhd2FyZSBvZi4KCi0tIApFYXJ0aGxpbmcgTWljaGVsIETDpG56ZXIgICAg
-ICAgICAgIHwgICAgICAgICAgICAgICAgaHR0cDovL3d3dy52bXdhcmUuY29tCkxpYnJlIHNvZnR3
-YXJlIGVudGh1c2lhc3QgICAgICAgICB8ICAgICAgICAgIERlYmlhbiwgWCBhbmQgRFJJIGRldmVs
-b3BlcgoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCkRvd25sb2FkIEludGVsJiMxNzQ7IFBhcmFsbGVs
-IFN0dWRpbyBFdmFsClRyeSB0aGUgbmV3IHNvZnR3YXJlIHRvb2xzIGZvciB5b3Vyc2VsZi4gU3Bl
-ZWQgY29tcGlsaW5nLCBmaW5kIGJ1Z3MKcHJvYWN0aXZlbHksIGFuZCBmaW5lLXR1bmUgYXBwbGlj
-YXRpb25zIGZvciBwYXJhbGxlbCBwZXJmb3JtYW5jZS4KU2VlIHdoeSBJbnRlbCBQYXJhbGxlbCBT
-dHVkaW8gZ290IGhpZ2ggbWFya3MgZHVyaW5nIGJldGEuCmh0dHA6Ly9wLnNmLm5ldC9zZnUvaW50
-ZWwtc3ctZGV2Ci0tCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fCkRyaS1kZXZlbCBtYWlsaW5nIGxpc3QKRHJpLWRldmVsQGxpc3RzLnNvdXJjZWZvcmdlLm5l
-dApodHRwczovL2xpc3RzLnNvdXJjZWZvcmdlLm5ldC9saXN0cy9saXN0aW5mby9kcmktZGV2ZWwK
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Date: Sun, 14 Mar 2010 22:53:29 +0100
+
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> There are two new options inside the CONFIG_FB section which do not
+> depend on the CONFIG_FB. This break Kconfig menu layout.
+> 
+> Fix it and reduce few conditions for sparc frame buffers
+> as the FB_SBUS == ((FB = y) && SPARC).
+> 
+> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+Acked-by: David S. Miller <davem@davemloft.net>
+
+------------------------------------------------------------------------------
+Download Intel&#174; Parallel Studio Eval
+Try the new software tools for yourself. Speed compiling, find bugs
+proactively, and fine-tune applications for parallel performance.
+See why Intel Parallel Studio got high marks during beta.
+http://p.sf.net/sfu/intel-sw-dev

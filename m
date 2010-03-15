@@ -1,57 +1,100 @@
 From: James Simmons <jsimmons@infradead.org>
-Date: Thu, 25 Mar 2010 12:30:32 +0000
-Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video
-Message-Id: <alpine.LFD.2.00.1003241343350.32256@casper.infradead.org>
+Date: Mon, 15 Mar 2010 11:54:18 +0000
+Subject: [PATCH] fix Kconfig breakage in drivers/video
+Message-Id: <alpine.LFD.2.00.1003151152260.16108@casper.infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
-	<a728f9f91003101005v374b2cacpb307542e65d22d6f@mail.gmail.com>
-	<a728f9f91003101010m4fc94398l14c8625d7442100a@mail.gmail.com>
-	<1268302426.7444.117.camel@thor.local>
-	<a728f9f91003110712l407ed04dl28b86ef77a427218@mail.gmail.com>
-	<alpine.LFD.2.00.1003111516540.1912@casper.infradead.org>
-	<a5d587fb1003110747j40e5c5f1h70aab0e74f03eef2@mail.gmail.com>
-	<alpine.LFD.2.00.1003121332470.10546@casper.infradead.org>
-	<21d7e9971003121251v4bef7e96v67f3d98aa9ab384a@mail.gmail.com>
-	<alpine.LFD.2.00.1003131421360.12031@casper.infradead.org>
-	<21d7e9971003131301r723f3311p3553ea8a1a86bf0a@mail.gmail.com>
-	<1268566880.9302.65.camel@thor.local>
-	<alpine.LFD.2.00.1003151830070.16108@casper.infradead.org>
-	<1268747186.4176.38.camel@thor.local>
-	<alpine.LFD.2.00.1003161353200.14714@casper.infradead.org>
-	<1268748032.4176.56.camel@thor.local>
-In-Reply-To: <1268748032.4176.56.camel@thor.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: =?ISO-8859-15?Q?Michel_D=E4nzer?= <michel@daenzer.net>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Paulius Zaleckas <paulius.zaleckas@gmail.com>, Michal Suchanek <hramrach@centrum.cz>, Alex Deucher <alexdeucher@gmail.com>, DRI development list <dri-devel@lists.sourceforge.net>
+To: linux-fbdev@vger.kernel.org
 
 
-> > > > The fb_ops can only be called from fbcon or the fbdev userland interface. 
-> > > > The fbcon calls should only happen when the VC is in KD_TEXT mode. Now 
-> > > > with the DRM backend we have the advantage of creating a mapping seperate 
-> > > > from the console mapping. A fb_open/fb_close could be used to cleaning up 
-> > > > the userland mmap as well as handle the console pinning. We can supply 
-> > > > your own fb_mmap hook.
-> > > 
-> > > Again, the issue is not userspace but that fb_ops hooks can be called
-> > > from interrupt context etc.
-> > 
-> > This should not happen. The VT layer is protected from calling in the 
-> > interrupt context. TNor does fbcon call any fb_ops methods from a irq.
-> 
-> E.g. printk?
+Forward to new mailing list. Please us this mailing list instead.
 
-Sorry I have been sick. This is true when you are in KD_TEXT mode and using fbcon. 
-Now while working on a graphical console yes you can have other hardware devices do
-a printk which can alter the state of of your graphics card. As for debugging a 
-graphics driver you have to be very careful with your printks. Usually in that case
-I use two graphics cards in my system and map one to fbcon and test the other
-graphcis cards driver.
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@linux-foundation.org>, David Miller <davem@davemloft.net>, Baruch Siach <baruch@tkos.co.il>
+Subject: [PATCH] fix Kconfig breakage in drivers/video
 
-P.S
-	The fbdev api is such that it doesn't always require a permanent framebuffer
-mapping. This was done for the case of graphical hardware that lacks a directly 
-accessable framebuffer. If you have accelerated fillrect,copyarea,and imageblit then 
-you don't even the mapping except in the case of someone calling mmap on /dev/fbX.
-I noticed the nouveau drivers has a accelerated fbcon :-)
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+
+There are two new options inside the CONFIG_FB section which do not
+depend on the CONFIG_FB. This break Kconfig menu layout.
+
+Fix it and reduce few conditions for sparc frame buffers
+as the FB_SBUS = ((FB = y) && SPARC).
+
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+---
+
+--- linux-orig/drivers/video/Kconfig	2010-03-14 23:54:39.000000000 +0100
++++ linux-git/drivers/video/Kconfig	2010-03-15 00:05:59.000000000 +0100
+@@ -400,12 +400,9 @@ config FB_SA1100
+ 	  If you plan to use the LCD display with your SA-1100 system, say
+ 	  Y here.
+ 
+-config HAVE_FB_IMX
+-	bool
+-
+ config FB_IMX
+ 	tristate "Motorola i.MX LCD support"
+-	depends on FB && (HAVE_FB_IMX || ARCH_MX1 || ARCH_MX2)
++	depends on FB && (ARCH_MX1 || ARCH_MX2)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -802,7 +799,7 @@ config FB_SBUS
+ 
+ config FB_BW2
+ 	bool "BWtwo support"
+-	depends on (FB = y) && (SPARC && FB_SBUS)
++	depends on FB_SBUS
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -811,7 +808,7 @@ config FB_BW2
+ 
+ config FB_CG3
+ 	bool "CGthree support"
+-	depends on (FB = y) && (SPARC && FB_SBUS)
++	depends on FB_SBUS
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -820,7 +817,7 @@ config FB_CG3
+ 
+ config FB_CG6
+ 	bool "CGsix (GX,TurboGX) support"
+-	depends on (FB = y) && (SPARC && FB_SBUS)
++	depends on FB_SBUS
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+ 	help
+@@ -914,7 +911,7 @@ config FB_XVR2500
+ 
+ config FB_XVR1000
+ 	bool "Sun XVR-1000 support"
+-	depends on SPARC64
++	depends on (FB = y) && SPARC64
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+
+----------------------------------------------------------------------
+Wygraj z armia wampirow!
+Kliknij >>> http://link.interia.pl/f23a0
+
+
+
+
+    [ Part 3: "Included Message" ]
+
+From: linux-fbdev-devel-request@lists.sourceforge.net
+Subject: confirm 9aa31557d6574dc9acdf61937aa75c169a46fb42
+
+If you reply to this message, keeping the Subject: header intact,
+Mailman will discard the held message.  Do this if the message is
+spam.  If you reply to this message and include an Approved: header
+with the list password in it, the message will be approved for posting
+to the list.  The Approved: header can also appear in the first line
+of the body of the reply.

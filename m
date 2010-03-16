@@ -1,7 +1,7 @@
-From: James Simmons <jsimmons@infradead.org>
-Date: Tue, 16 Mar 2010 13:56:38 +0000
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Date: Tue, 16 Mar 2010 14:00:32 +0000
 Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video
-Message-Id: <alpine.LFD.2.00.1003161353200.14714@casper.infradead.org>
+Message-Id: <1268748032.4176.56.camel@thor.local>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
 	<a728f9f91003101005v374b2cacpb307542e65d22d6f@mail.gmail.com>
@@ -17,26 +17,37 @@ References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
 	<1268566880.9302.65.camel@thor.local>
 	<alpine.LFD.2.00.1003151830070.16108@casper.infradead.org>
 	<1268747186.4176.38.camel@thor.local>
-In-Reply-To: <1268747186.4176.38.camel@thor.local>
+	<alpine.LFD.2.00.1003161353200.14714@casper.infradead.org>
+In-Reply-To: <alpine.LFD.2.00.1003161353200.14714@casper.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: =?ISO-8859-15?Q?Michel_D=E4nzer?= <michel@daenzer.net>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: James Simmons <jsimmons@infradead.org>
 Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Paulius Zaleckas <paulius.zaleckas@gmail.com>, Michal Suchanek <hramrach@centrum.cz>, Alex Deucher <alexdeucher@gmail.com>, DRI development list <dri-devel@lists.sourceforge.net>
 
+On Tue, 2010-03-16 at 13:56 +0000, James Simmons wrote:=20
+> > > The fb_ops can only be called from fbcon or the fbdev userland interf=
+ace.=20
+> > > The fbcon calls should only happen when the VC is in KD_TEXT mode. No=
+w=20
+> > > with the DRM backend we have the advantage of creating a mapping sepe=
+rate=20
+> > > from the console mapping. A fb_open/fb_close could be used to cleanin=
+g up=20
+> > > the userland mmap as well as handle the console pinning. We can suppl=
+y=20
+> > > your own fb_mmap hook.
+> >=20
+> > Again, the issue is not userspace but that fb_ops hooks can be called
+> > from interrupt context etc.
+>=20
+> This should not happen. The VT layer is protected from calling in the=20
+> interrupt context. TNor does fbcon call any fb_ops methods from a irq.
 
-> > The fb_ops can only be called from fbcon or the fbdev userland interface. 
-> > The fbcon calls should only happen when the VC is in KD_TEXT mode. Now 
-> > with the DRM backend we have the advantage of creating a mapping seperate 
-> > from the console mapping. A fb_open/fb_close could be used to cleaning up 
-> > the userland mmap as well as handle the console pinning. We can supply 
-> > your own fb_mmap hook.
-> 
-> Again, the issue is not userspace but that fb_ops hooks can be called
-> from interrupt context etc.
+E.g. printk?
 
-This should not happen. The VT layer is protected from calling in the 
-interrupt context. TNor does fbcon call any fb_ops methods from a irq.
-I have to look at the fbdev drivers but to my knowledge none touch any 
-memory while in a context. Have you seen this happen before? Please let me 
-know do I can fix it right a way.
+
+--=20
+Earthling Michel D=C3=A4nzer           |                http://www.vmware.c=
+om
+Libre software enthusiast         |          Debian, X and DRI developer

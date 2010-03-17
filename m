@@ -1,69 +1,111 @@
-From: James Simmons <jsimmons@infradead.org>
-Date: Wed, 10 Mar 2010 17:35:01 +0000
-Subject: Re: [Linux-fbdev-devel] drm_fb_helper: Impossible to change video
-Message-Id: <alpine.LFD.2.00.1003101719030.4419@casper.infradead.org>
+From: Roger Quadros <roger.quadros@nokia.com>
+Date: Wed, 17 Mar 2010 12:35:19 +0000
+Subject: [PATCHv2 1/3] OMAP: DSS2: Add Kconfig option for DPI display type
+Message-Id: <1268829321-29769-2-git-send-email-roger.quadros@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <badfd5ba0911200516m55693acbp8fc5164bd6d828cf@mail.gmail.com>
-	<21d7e9970911202027l1d4deec6p5750b8425cd6bb3f@mail.gmail.com>
-	<a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com>
-In-Reply-To: <a5d587fb1003010118r1b586990ja4144441143bb4be@mail.gmail.com>
+References: <1268829321-29769-1-git-send-email-roger.quadros@nokia.com>
+In-Reply-To: <1268829321-29769-1-git-send-email-roger.quadros@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michal Suchanek <hramrach@centrum.cz>
-Cc: David Airlie <airlied@linux.ie>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, DRI development list <dri-devel@lists.sourceforge.net>, Paulius Zaleckas <paulius.zaleckas@gmail.com>
+To: Tomi.Valkeinen@nokia.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
+From: Roger Quadros <roger.quadros@nokia.com>
 
-> On 21 November 2009 05:27, Dave Airlie <airlied@gmail.com> wrote:
-> 
-> > At the moment the problem with fbset is what to do with it in the
-> > dual head case. Currently we create an fb console that is lowest
-> > common size of the two heads and set native modes on both,
-> 
-> Does that mean that fbset is supposed to work (set resolution) on drmfb?
+This allows us to disable DPI on systems that do not have it
 
-Yes it could work. No it doesn't work.
+Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
+---
+ drivers/video/omap2/dss/Kconfig   |    6 ++++++
+ drivers/video/omap2/dss/Makefile  |    3 ++-
+ drivers/video/omap2/dss/core.c    |    4 ++++
+ drivers/video/omap2/dss/display.c |    4 ++++
+ 4 files changed, 16 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/Kconfig b/drivers/video/omap2/dss/Kconfig
+index 87afb81..7cc2bda 100644
+--- a/drivers/video/omap2/dss/Kconfig
++++ b/drivers/video/omap2/dss/Kconfig
+@@ -36,6 +36,12 @@ config OMAP2_DSS_COLLECT_IRQ_STATS
+ 	  <debugfs>/omapdss/dispc_irq for DISPC interrupts, and
+ 	  <debugfs>/omapdss/dsi_irq for DSI interrupts.
  
-> >
-> > Now if a user runs fbset, I'm not sure what the right answer is,
-> > a) pick a head in advance via sysfs maybe and set it on that.
-> > b) try and set the mode on both heads cloned (what to do if
-> > there is no common mode is another issue).
-> >
-> 
-> I would say it's time to support multihead with fbset properly.
-> 
-> That is people would need new fbset which sees both (all) heads, and
-> fbset can then choose the head itself (and people can make it do
-> something different when they don't like the default). It should also
-> support setting up rotation on each head.
-> 
-> For old fbset setting something visible is probably good enough.
-> 
-> Schemes which would make a multihead setup look like a single screen
-> get complicated quite easily. Perhaps an option to turn off some
-> outputs so that the native resolution of one output is used (instead
-> of clone) would work.
-
-	Before we go there you have to reflect on what the original reason was to 
-have a framebuffer layer. The point to have a VT console terminal on 
-platforms that lacked hardware that supported native text mode hardware. 
-In other words had no vga text mode. A VT terminal is just a keyboard and 
-a display. In fact in the old days you had to write framebuffer console 
-drivers with things like con_putcs, con_write. Then the api was changed to 
-make driver writing simple. The struct fb_info represented your graphics 
-card.
-	Of course at that time we also had hardware that supported more 
-than one crtc which made things more complex. This was reflected in the 
-new api. Struct fb_info was moved in the direction to represent the 
-display. Remember the terminal only really cares about the display. Inside 
-struct fb_info we have a void *par that was a pointer to some structure 
-that represented the graphics card itself. So in the case of multi-head 
-systems you could have two struct fb_info and one shared *par. That way if 
-you wanted to changed the resolution on one screen the check_var function 
-could using the *par to test if the hardware could support both 
-resolutions at the same time. 
-	Note also there is exist a sysfs that allows you to migrate your 
-second fbdev devices to a new terminal. Also problems exist in the upper 
-console layers that prohibit true multi-desktop systems.
++config OMAP2_DSS_DPI
++	bool "DPI support"
++	default y
++	help
++	  DPI Interface. This is the Parallel Display Interface.
++
+ config OMAP2_DSS_RFBI
+ 	bool "RFBI support"
+         default n
+diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
+index 980c72c..d71b5d9 100644
+--- a/drivers/video/omap2/dss/Makefile
++++ b/drivers/video/omap2/dss/Makefile
+@@ -1,5 +1,6 @@
+ obj-$(CONFIG_OMAP2_DSS) += omapdss.o
+-omapdss-y := core.o dss.o dispc.o dpi.o display.o manager.o overlay.o
++omapdss-y := core.o dss.o dispc.o display.o manager.o overlay.o
++omapdss-$(CONFIG_OMAP2_DSS_DPI) += dpi.o
+ omapdss-$(CONFIG_OMAP2_DSS_RFBI) += rfbi.o
+ omapdss-$(CONFIG_OMAP2_DSS_VENC) += venc.o
+ omapdss-$(CONFIG_OMAP2_DSS_SDI) += sdi.o
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 7ebe50b..6d54467 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -526,11 +526,13 @@ static int omap_dss_probe(struct platform_device *pdev)
+ 	}
+ #endif
+ 
++#ifdef CONFIG_OMAP2_DSS_DPI
+ 	r = dpi_init(pdev);
+ 	if (r) {
+ 		DSSERR("Failed to initialize dpi\n");
+ 		goto fail0;
+ 	}
++#endif
+ 
+ 	r = dispc_init();
+ 	if (r) {
+@@ -601,7 +603,9 @@ static int omap_dss_remove(struct platform_device *pdev)
+ 	venc_exit();
+ #endif
+ 	dispc_exit();
++#ifdef CONFIG_OMAP2_DSS_DPI
+ 	dpi_exit();
++#endif
+ #ifdef CONFIG_OMAP2_DSS_RFBI
+ 	rfbi_exit();
+ #endif
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index 6a74ea1..7138963 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -392,7 +392,9 @@ void dss_init_device(struct platform_device *pdev,
+ 	int r;
+ 
+ 	switch (dssdev->type) {
++#ifdef CONFIG_OMAP2_DSS_DPI
+ 	case OMAP_DISPLAY_TYPE_DPI:
++#endif
+ #ifdef CONFIG_OMAP2_DSS_RFBI
+ 	case OMAP_DISPLAY_TYPE_DBI:
+ #endif
+@@ -413,9 +415,11 @@ void dss_init_device(struct platform_device *pdev,
+ 	}
+ 
+ 	switch (dssdev->type) {
++#ifdef CONFIG_OMAP2_DSS_DPI
+ 	case OMAP_DISPLAY_TYPE_DPI:
+ 		r = dpi_init_display(dssdev);
+ 		break;
++#endif
+ #ifdef CONFIG_OMAP2_DSS_RFBI
+ 	case OMAP_DISPLAY_TYPE_DBI:
+ 		r = rfbi_init_display(dssdev);
+-- 
+1.6.3.3
 

@@ -1,80 +1,59 @@
-From: ville.syrjala@nokia.com
-Date: Wed, 17 Mar 2010 22:46:23 +0000
-Subject: [PATCH v4 8/8] DSS2: OMAPFB: Add some locking debug checks
-Message-Id: <1268865983-16270-9-git-send-email-ville.syrjala@nokia.com>
+From: Roger Quadros <roger.quadros@Nokia.com>
+Date: Wed, 17 Mar 2010 12:35:20 +0000
+Subject: [PATCHv2 2/3] OMAP: DSS2: Remove redundant enable/disable calls from SDI
+Message-Id: <1268829321-29769-3-git-send-email-roger.quadros@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1268865983-16270-1-git-send-email-ville.syrjala@nokia.com>
-In-Reply-To: <1268865983-16270-1-git-send-email-ville.syrjala@nokia.com>
+References: <1268829321-29769-1-git-send-email-roger.quadros@nokia.com>
+ <1268829321-29769-2-git-send-email-roger.quadros@nokia.com>
+In-Reply-To: <1268829321-29769-2-git-send-email-roger.quadros@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: Imre Deak <imre.deak@nokia.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@nokia.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi.Valkeinen@Nokia.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KClRyaWdnZXIg
-V0FSTl9PTigpIG1lc3NhZ2VzIGZyb20gdmFyaW91cyBwbGFjZXMgaW4gdGhlIGNvZGUgaW4gY2Fz
-ZSB0aGUKbWVtb3J5IHJlZ2lvbiBpcyBub3QgY3VycmVudGx5IGxvY2tlZC4KClNpZ25lZC1vZmYt
-Ynk6IFZpbGxlIFN5cmrDpGzDpCA8dmlsbGUuc3lyamFsYUBub2tpYS5jb20+Ci0tLQogZHJpdmVy
-cy92aWRlby9vbWFwMi9vbWFwZmIvb21hcGZiLWlvY3RsLmMgfCAgICAyICsrCiBkcml2ZXJzL3Zp
-ZGVvL29tYXAyL29tYXBmYi9vbWFwZmItbWFpbi5jICB8ICAgIDYgKysrKysrCiBkcml2ZXJzL3Zp
-ZGVvL29tYXAyL29tYXBmYi9vbWFwZmItc3lzZnMuYyB8ICAgIDIgKysKIGRyaXZlcnMvdmlkZW8v
-b21hcDIvb21hcGZiL29tYXBmYi5oICAgICAgIHwgICAgMyArKysKIDQgZmlsZXMgY2hhbmdlZCwg
-MTMgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL3Zp
-ZGVvL29tYXAyL29tYXBmYi9vbWFwZmItaW9jdGwuYyBiL2RyaXZlcnMvdmlkZW8vb21hcDIvb21h
-cGZiL29tYXBmYi1pb2N0bC5jCmluZGV4IGEzNjgxZGEuLjY0ZTcwZTAgMTAwNjQ0Ci0tLSBhL2Ry
-aXZlcnMvdmlkZW8vb21hcDIvb21hcGZiL29tYXBmYi1pb2N0bC5jCisrKyBiL2RyaXZlcnMvdmlk
-ZW8vb21hcDIvb21hcGZiL29tYXBmYi1pb2N0bC5jCkBAIC0yMjIsNiArMjIyLDcgQEAgc3RhdGlj
-IGludCBvbWFwZmJfc2V0dXBfbWVtKHN0cnVjdCBmYl9pbmZvICpmYmksIHN0cnVjdCBvbWFwZmJf
-bWVtX2luZm8gKm1pKQogCXJnID0gb2ZiaS0+cmVnaW9uOwogCiAJZG93bl93cml0ZV9uZXN0ZWQo
-JnJnLT5sb2NrLCByZy0+aWQpOworCWF0b21pY19pbmMoJnJnLT5sb2NrX2NvdW50KTsKIAogCWlm
-IChhdG9taWNfcmVhZCgmcmctPm1hcF9jb3VudCkpIHsKIAkJciA9IC1FQlVTWTsKQEAgLTI1Miw2
-ICsyNTMsNyBAQCBzdGF0aWMgaW50IG9tYXBmYl9zZXR1cF9tZW0oc3RydWN0IGZiX2luZm8gKmZi
-aSwgc3RydWN0IG9tYXBmYl9tZW1faW5mbyAqbWkpCiAJfQogCiAgb3V0OgorCWF0b21pY19kZWMo
-JnJnLT5sb2NrX2NvdW50KTsKIAl1cF93cml0ZSgmcmctPmxvY2spOwogCiAJcmV0dXJuIHI7CmRp
-ZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL29tYXAyL29tYXBmYi9vbWFwZmItbWFpbi5jIGIvZHJp
-dmVycy92aWRlby9vbWFwMi9vbWFwZmIvb21hcGZiLW1haW4uYwppbmRleCAyYmQ1YjQyLi5hYzc2
-MjVkIDEwMDY0NAotLS0gYS9kcml2ZXJzL3ZpZGVvL29tYXAyL29tYXBmYi9vbWFwZmItbWFpbi5j
-CisrKyBiL2RyaXZlcnMvdmlkZW8vb21hcDIvb21hcGZiL29tYXBmYi1tYWluLmMKQEAgLTY2Nyw2
-ICs2NjcsOCBAQCBpbnQgY2hlY2tfZmJfdmFyKHN0cnVjdCBmYl9pbmZvICpmYmksIHN0cnVjdCBm
-Yl92YXJfc2NyZWVuaW5mbyAqdmFyKQogCiAJREJHKCJjaGVja19mYl92YXIgJWRcbiIsIG9mYmkt
-PmlkKTsKIAorCVdBUk5fT04oIWF0b21pY19yZWFkKCZvZmJpLT5yZWdpb24tPmxvY2tfY291bnQp
-KTsKKwogCXIgPSBmYl9tb2RlX3RvX2Rzc19tb2RlKHZhciwgJm1vZGUpOwogCWlmIChyKSB7CiAJ
-CURCRygiY2Fubm90IGNvbnZlcnQgdmFyIHRvIG9tYXAgZHNzIG1vZGVcbiIpOwpAQCAtODcyLDYg
-Kzg3NCw4IEBAIGludCBvbWFwZmJfc2V0dXBfb3ZlcmxheShzdHJ1Y3QgZmJfaW5mbyAqZmJpLCBz
-dHJ1Y3Qgb21hcF9vdmVybGF5ICpvdmwsCiAJaW50IHJvdGF0aW9uID0gdmFyLT5yb3RhdGU7CiAJ
-aW50IGk7CiAKKwlXQVJOX09OKCFhdG9taWNfcmVhZCgmb2ZiaS0+cmVnaW9uLT5sb2NrX2NvdW50
-KSk7CisKIAlmb3IgKGkgPSAwOyBpIDwgb2ZiaS0+bnVtX292ZXJsYXlzOyBpKyspIHsKIAkJaWYg
-KG92bCAhPSBvZmJpLT5vdmVybGF5c1tpXSkKIAkJCWNvbnRpbnVlOwpAQCAtOTY1LDYgKzk2OSw4
-IEBAIGludCBvbWFwZmJfYXBwbHlfY2hhbmdlcyhzdHJ1Y3QgZmJfaW5mbyAqZmJpLCBpbnQgaW5p
-dCkKIAkJZmlsbF9mYihmYmkpOwogI2VuZGlmCiAKKwlXQVJOX09OKCFhdG9taWNfcmVhZCgmb2Zi
-aS0+cmVnaW9uLT5sb2NrX2NvdW50KSk7CisKIAlmb3IgKGkgPSAwOyBpIDwgb2ZiaS0+bnVtX292
-ZXJsYXlzOyBpKyspIHsKIAkJb3ZsID0gb2ZiaS0+b3ZlcmxheXNbaV07CiAKZGlmZiAtLWdpdCBh
-L2RyaXZlcnMvdmlkZW8vb21hcDIvb21hcGZiL29tYXBmYi1zeXNmcy5jIGIvZHJpdmVycy92aWRl
-by9vbWFwMi9vbWFwZmIvb21hcGZiLXN5c2ZzLmMKaW5kZXggMWI3Y2Y1Ny4uY2YyZjQ3OCAxMDA2
-NDQKLS0tIGEvZHJpdmVycy92aWRlby9vbWFwMi9vbWFwZmIvb21hcGZiLXN5c2ZzLmMKKysrIGIv
-ZHJpdmVycy92aWRlby9vbWFwMi9vbWFwZmIvb21hcGZiLXN5c2ZzLmMKQEAgLTQ0Niw2ICs0NDYs
-NyBAQCBzdGF0aWMgc3NpemVfdCBzdG9yZV9zaXplKHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0
-IGRldmljZV9hdHRyaWJ1dGUgKmF0dHIsCiAJcmcgPSBvZmJpLT5yZWdpb247CiAKIAlkb3duX3dy
-aXRlX25lc3RlZCgmcmctPmxvY2ssIHJnLT5pZCk7CisJYXRvbWljX2luYygmcmctPmxvY2tfY291
-bnQpOwogCiAJaWYgKGF0b21pY19yZWFkKCZyZy0+bWFwX2NvdW50KSkgewogCQlyID0gLUVCVVNZ
-OwpAQCAtNDc3LDYgKzQ3OCw3IEBAIHN0YXRpYyBzc2l6ZV90IHN0b3JlX3NpemUoc3RydWN0IGRl
-dmljZSAqZGV2LCBzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwKIAogCXIgPSBjb3VudDsK
-IG91dDoKKwlhdG9taWNfZGVjKCZyZy0+bG9ja19jb3VudCk7CiAJdXBfd3JpdGUoJnJnLT5sb2Nr
-KTsKIAogCXVubG9ja19mYl9pbmZvKGZiaSk7CmRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL29t
-YXAyL29tYXBmYi9vbWFwZmIuaCBiL2RyaXZlcnMvdmlkZW8vb21hcDIvb21hcGZiL29tYXBmYi5o
-CmluZGV4IDY3NmI1NWQuLjEzMDVmYzkgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvdmlkZW8vb21hcDIv
-b21hcGZiL29tYXBmYi5oCisrKyBiL2RyaXZlcnMvdmlkZW8vb21hcDIvb21hcGZiL29tYXBmYi5o
-CkBAIC01Niw2ICs1Niw3IEBAIHN0cnVjdCBvbWFwZmIyX21lbV9yZWdpb24gewogCWJvb2wJCW1h
-cDsJCS8qIGtlcm5lbCBtYXBwZWQgYnkgdGhlIGRyaXZlciAqLwogCWF0b21pY190CW1hcF9jb3Vu
-dDsKIAlzdHJ1Y3Qgcndfc2VtYXBob3JlIGxvY2s7CisJYXRvbWljX3QJbG9ja19jb3VudDsKIH07
-CiAKIC8qIGFwcGVuZGVkIHRvIGZiX2luZm8gKi8KQEAgLTE2NiwxMSArMTY3LDEzIEBAIHN0YXRp
-YyBpbmxpbmUgc3RydWN0IG9tYXBmYjJfbWVtX3JlZ2lvbiAqCiBvbWFwZmJfZ2V0X21lbV9yZWdp
-b24oc3RydWN0IG9tYXBmYjJfbWVtX3JlZ2lvbiAqcmcpCiB7CiAJZG93bl9yZWFkX25lc3RlZCgm
-cmctPmxvY2ssIHJnLT5pZCk7CisJYXRvbWljX2luYygmcmctPmxvY2tfY291bnQpOwogCXJldHVy
-biByZzsKIH0KIAogc3RhdGljIGlubGluZSB2b2lkIG9tYXBmYl9wdXRfbWVtX3JlZ2lvbihzdHJ1
-Y3Qgb21hcGZiMl9tZW1fcmVnaW9uICpyZykKIHsKKwlhdG9taWNfZGVjKCZyZy0+bG9ja19jb3Vu
-dCk7CiAJdXBfcmVhZCgmcmctPmxvY2spOwogfQogCi0tIAoxLjYuNC40CgotLQpUbyB1bnN1YnNj
-cmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtZmJk
-ZXYiIGluCnRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3Jn
-Ck1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21v
-LWluZm8uaHRtbA==
+From: Roger Quadros <roger.quadros@nokia.com>
+
+Panel enable/disable is now done via the panel driver, so we should not
+call the panel driver again
+
+Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
+---
+ drivers/video/omap2/dss/sdi.c |   11 -----------
+ 1 files changed, 0 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 12eb404..3de3c1e 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -115,17 +115,9 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+ 
+ 	dssdev->manager->enable(dssdev->manager);
+ 
+-	if (dssdev->driver->enable) {
+-		r = dssdev->driver->enable(dssdev);
+-		if (r)
+-			goto err3;
+-	}
+-
+ 	sdi.skip_init = 0;
+ 
+ 	return 0;
+-err3:
+-	dssdev->manager->disable(dssdev->manager);
+ err2:
+ 	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
+ err1:
+@@ -137,9 +129,6 @@ EXPORT_SYMBOL(omapdss_sdi_display_enable);
+ 
+ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev)
+ {
+-	if (dssdev->driver->disable)
+-		dssdev->driver->disable(dssdev);
+-
+ 	dssdev->manager->disable(dssdev->manager);
+ 
+ 	dss_sdi_disable();
+-- 
+1.6.3.3
+

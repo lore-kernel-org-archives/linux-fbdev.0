@@ -1,10 +1,9 @@
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Date: Tue, 16 Mar 2010 07:57:51 +0000
+From: Colin Cross <ccross@android.com>
+Date: Wed, 17 Mar 2010 00:31:28 +0000
 Subject: Re: [RFC/PATCH 08/10] [ARM] tegra: Add framebuffer driver
-Message-Id: <45a44e481003160057oaf4a75ax2ec6c9eee9f4a3e9@mail.gmail.com>
+Message-Id: <d73d4eaf1003161731h2b8032dch55baf7b49eede625@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <4344f3c71003151538r7dc30e01uc9885ca5d3f327cd@mail.gmail.com>
-	<1268721688-27550-1-git-send-email-konkers@google.com>
 	<1268721688-27550-2-git-send-email-konkers@google.com>
 	<1268721688-27550-3-git-send-email-konkers@google.com>
 	<1268721688-27550-4-git-send-email-konkers@google.com>
@@ -13,213 +12,145 @@ References: <4344f3c71003151538r7dc30e01uc9885ca5d3f327cd@mail.gmail.com>
 	<1268721688-27550-7-git-send-email-konkers@google.com>
 	<1268721688-27550-8-git-send-email-konkers@google.com>
 	<1268721688-27550-9-git-send-email-konkers@google.com>
-In-Reply-To: <1268721688-27550-9-git-send-email-konkers@google.com>
+	<45a44e481003160057oaf4a75ax2ec6c9eee9f4a3e9@mail.gmail.com>
+In-Reply-To: <45a44e481003160057oaf4a75ax2ec6c9eee9f4a3e9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Colin, Erik,
+(Sorry about the HTML - resending in plain text for the linux-fbdev list)
 
-Interesting work.
+Hi Jaya, thanks for your comments.
 
-I'd recommend CCing linux-fbdev as well in future so that fbdev folks
-can also get a chance to review your new fbdev driver.
+On Tue, Mar 16, 2010 at 12:57 AM, Jaya Kumar <jayakumar.lkml@gmail.com>wrote:
 
-On Tue, Mar 16, 2010 at 2:41 PM,  <konkers@google.com> wrote:
-> From: Colin Cross <ccross@android.com>
+> Hi Colin, Erik,
 >
-> Signed-off-by: Colin Cross <ccross@android.com>
-> Signed-off-by: Erik Gilling <konkers@android.com>
-> ---
-> =A0arch/arm/mach-tegra/include/mach/tegra_fb.h | =A0 24 +
-> =A0drivers/video/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0 11 +
-> =A0drivers/video/Makefile =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =
-=A0 =A01 +
-> =A0drivers/video/tegrafb.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A06=
-20 +++++++++++++++++++++++++++
-> =A04 files changed, 656 insertions(+), 0 deletions(-)
-> =A0create mode 100644 arch/arm/mach-tegra/include/mach/tegra_fb.h
-> =A0create mode 100644 drivers/video/tegrafb.c
+> Interesting work.
 >
-> diff --git a/arch/arm/mach-tegra/include/mach/tegra_fb.h b/arch/arm/mach-=
-tegra/include/mach/tegra_fb.h
-> new file mode 100644
-> index 0000000..f173544
-> --- /dev/null
-> +++ b/arch/arm/mach-tegra/include/mach/tegra_fb.h
-> @@ -0,0 +1,24 @@
-> +/*
-> + * arch/arm/mach-tegra/include/mach/tegra_fb.h
-> + *
-> + * Copyright (C) 2010 Google, Inc.
-> + * Author: Colin Cross <ccross@android.com>
-> + *
-> + * This software is licensed under the terms of the GNU General Public
-> + * License version 2, as published by the Free Software Foundation, and
-> + * may be copied, distributed, and modified under those terms.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. =A0See the
-> + * GNU General Public License for more details.
-> + *
-> + */
-> +
+> I'd recommend CCing linux-fbdev as well in future so that fbdev folks
+> can also get a chance to review your new fbdev driver.
+
+Will do
+
 > +struct tegra_fb_lcd_data {
-> + =A0 =A0 =A0 int =A0 =A0 fb_xres;
-> + =A0 =A0 =A0 int =A0 =A0 fb_yres;
-> + =A0 =A0 =A0 int =A0 =A0 lcd_xres;
-> + =A0 =A0 =A0 int =A0 =A0 lcd_yres;
-> + =A0 =A0 =A0 int =A0 =A0 bits_per_pixel;
-> +};
-
-I'm trying to understand what's the difference between fb and lcd *res.
-
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 5a5c303..b2e68e2 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -1074,6 +1074,17 @@ config FB_RIVA_BACKLIGHT
-> =A0 =A0 =A0 =A0help
-> =A0 =A0 =A0 =A0 =A0Say Y here if you want to control the backlight of you=
-r display.
+> > +       int     fb_xres;
+> > +       int     fb_yres;
+> > +       int     lcd_xres;
+> > +       int     lcd_yres;
+> > +       int     bits_per_pixel;
+> > +};
 >
-> +config FB_TEGRA
-> + =A0 =A0 =A0 tristate "NVIDIA Tegra SoC display support"
-> + =A0 =A0 =A0 depends on ARCH_TEGRA && FB =3D y
-> + =A0 =A0 =A0 select FB_CFB_FILLRECT
-> + =A0 =A0 =A0 select FB_CFB_COPYAREA
-> + =A0 =A0 =A0 select FB_CFB_IMAGEBLIT
-> + =A0 =A0 =A0 default FB
-> + =A0 =A0 =A0 help
-> + =A0 =A0 =A0 =A0 This driver supports the NVIDIA Tegra systems-on-a-chip=
-. =A0This
-> + =A0 =A0 =A0 =A0 driver can not be compiled as a module.
+> I'm trying to understand what's the difference between fb and lcd *res.
 
-Out of curiosity, why not?
+fb res is the resolution of the framebuffer driver as seen by userspace.
+ lcd res is the resolution of the screen connected to the Tegra pins.  If
+they are different, the Tegra display block can do scaling on the output.
+ Generally they will be the same.  I'll add a comment to the lcd resolution.
 
-> +
-> =A0config FB_I810
-> =A0 =A0 =A0 =A0tristate "Intel 810/815 support (EXPERIMENTAL)"
-> =A0 =A0 =A0 =A0depends on EXPERIMENTAL && FB && PCI && X86_32 && AGP_INTEL
-> diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-> index 4ecb30c..d4a14f2 100644
-> --- a/drivers/video/Makefile
-> +++ b/drivers/video/Makefile
-> @@ -129,6 +129,7 @@ obj-$(CONFIG_XEN_FBDEV_FRONTEND) =A0+=3D xen-fbfront.o
-> =A0obj-$(CONFIG_FB_CARMINE) =A0 =A0 =A0 =A0 =A0+=3D carminefb.o
-> =A0obj-$(CONFIG_FB_MB862XX) =A0 =A0 =A0 =A0 +=3D mb862xx/
-> =A0obj-$(CONFIG_FB_MSM) =A0 =A0 =A0 =A0 =A0 =A0 =A0+=3D msm/
-> +obj-$(CONFIG_FB_TEGRA) =A0 =A0 =A0 =A0 =A0 =A0+=3D tegrafb.o
+
+> > +config FB_TEGRA
+> > +       tristate "NVIDIA Tegra SoC display support"
+> > +       depends on ARCH_TEGRA && FB = y
+> > +       select FB_CFB_FILLRECT
+> > +       select FB_CFB_COPYAREA
+> > +       select FB_CFB_IMAGEBLIT
+> > +       default FB
+> > +       help
+> > +         This driver supports the NVIDIA Tegra systems-on-a-chip.  This
+> > +         driver can not be compiled as a module.
 >
-> =A0# Platform or fallback drivers go here
-> =A0obj-$(CONFIG_FB_UVESA) =A0 =A0 =A0 =A0 =A0 =A0+=3D uvesafb.o
-> diff --git a/drivers/video/tegrafb.c b/drivers/video/tegrafb.c
-> new file mode 100644
-> index 0000000..634022b
-> --- /dev/null
-> +++ b/drivers/video/tegrafb.c
-> @@ -0,0 +1,620 @@
-> +/*
-> + * drivers/video/tegrafb.c
-> + *
-> + * Copyright (C) 2010 Google, Inc.
-> + * Author: Colin Cross <ccross@android.com>
-> + * =A0 =A0 =A0 =A0 Travis Geiselbrecht <travis@palm.com>
-> + *
-> + * This software is licensed under the terms of the GNU General Public
-> + * License version 2, as published by the Free Software Foundation, and
-> + * may be copied, distributed, and modified under those terms.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. =A0See the
-> + * GNU General Public License for more details.
-> + *
-> + */
-> +
-> +#include <linux/fb.h>
-> +#include <linux/module.h>
-> +#include <linux/kernel.h>
-> +#include <linux/errno.h>
-> +#include <linux/string.h>
-> +#include <linux/mm.h>
-> +#include <linux/slab.h>
-> +#include <linux/delay.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/clk.h>
-> +#include <linux/wait.h>
-> +#include <asm/cacheflush.h>
-> +#include <mach/tegra_fb.h>
-> +
-> +#define DEBUG 1
+> Out of curiosity, why not?
+>
+Oversight, the option is tristate, so I'll remove this text.
 
-You want to enable Debug by default for everyone?
 
-> +
-> +struct tegra_fb_info {
-> + =A0 =A0 =A0 struct clk *clk;
-> + =A0 =A0 =A0 struct resource *reg_mem;
-> + =A0 =A0 =A0 struct resource *fb_mem;
-> + =A0 =A0 =A0 void __iomem *reg_base;
-> + =A0 =A0 =A0 wait_queue_head_t event_wq;
-> + =A0 =A0 =A0 unsigned int wait_condition;
-> + =A0 =A0 =A0 int lcd_xres;
-> + =A0 =A0 =A0 int lcd_yres;
-> + =A0 =A0 =A0 int irq;
-> +};
+> > +#define DEBUG 1
+>
+> You want to enable Debug by default for everyone?
 
-I think a comment about lcd_.res would help us understand what its
-used for and how it differs from fb_.res. How come it is being
-duplicated in multiple structures?
+Oops, I'll take it out
 
-> +static int tegra_fb_cursor(struct fb_info *info, struct fb_cursor *curso=
-r)
-> +{
-> + =A0 =A0 =A0 return 0;
-> +}
-> +
-> +static int tegra_fb_sync(struct fb_info *info)
-> +{
-> + =A0 =A0 =A0 return 0;
-> +}
 
-Out of curiosity, why populate these functions if they don't do anything?
+> > +struct tegra_fb_info {
+> > +       struct clk *clk;
+> > +       struct resource *reg_mem;
+> > +       struct resource *fb_mem;
+> > +       void __iomem *reg_base;
+> > +       wait_queue_head_t event_wq;
+> > +       unsigned int wait_condition;
+> > +       int lcd_xres;
+> > +       int lcd_yres;
+> > +       int irq;
+> > +};
+>
+> I think a comment about lcd_.res would help us understand what its
+> used for and how it differs from fb_.res. How come it is being
+> duplicated in multiple structures?
 
-> +
-> +#ifdef DEBUG
-> +#define DUMP_REG(a) pr_info("%-32s\t%03x\t%08x\n", #a, a, tegra_fb_readl=
-(tegra_fb, a));
+ The tegra_fb_lcd_data struct is passed in as platform_data, and used to
+initialize the state in the tegra_fb_info struct.
 
-Could pr_debug be useful above?
+ > +static int tegra_fb_cursor(struct fb_info *info, struct fb_cursor
+> *cursor)
+> > +{
+> > +       return 0;
+> > +}
+> > +
+> > +static int tegra_fb_sync(struct fb_info *info)
+> > +{
+> > +       return 0;
+> > +}
+>
+> Out of curiosity, why populate these functions if they don't do anything?
 
-> +static struct fb_ops tegra_fb_ops =3D {
-> + =A0 =A0 =A0 .fb_cursor =3D tegra_fb_cursor,
-> + =A0 =A0 =A0 .fb_sync =3D tegra_fb_sync,
+They were placeholders, I'll remove them until they get implemented.
 
-These 2 were the empty functions from above. I'm guessing this isn't needed.
 
-> +
-> +static int tegra_plat_remove(struct platform_device *pdev)
-> +{
-> + =A0 =A0 =A0 struct fb_info *fb =3D platform_get_drvdata(pdev);
-> + =A0 =A0 =A0 struct tegra_fb_info *tegra_fb =3D fb->par;
-> + =A0 =A0 =A0 clk_disable(tegra_fb->clk);
-> + =A0 =A0 =A0 iounmap(fb->screen_base);
-> + =A0 =A0 =A0 release_resource(tegra_fb->fb_mem);
-> + =A0 =A0 =A0 iounmap(tegra_fb->reg_base);
-> + =A0 =A0 =A0 release_resource(tegra_fb->reg_mem);
-> + =A0 =A0 =A0 framebuffer_release(fb);
-> + =A0 =A0 =A0 return 0;
-> +}
-> +
+>  > +
+> > +#ifdef DEBUG
+> > +#define DUMP_REG(a) pr_info("%-32s\t%03x\t%08x\n", #a, a,
+> tegra_fb_readl(tegra_fb, a));
+>
+> Could pr_debug be useful above?
+>
+The dump_regs function still needs to be inside the #ifdef DEBUG, but I'll
+change the pr_info to pr_debug to lower the log level.
 
-I didn't read through carefully but shouldn't there be an
-unregister_framebuffer in above? Wouldn't the above cause a free while
-the structures could still in use by fb*?
+
+>  > +static struct fb_ops tegra_fb_ops = {
+> > +       .fb_cursor = tegra_fb_cursor,
+> > +       .fb_sync = tegra_fb_sync,
+>
+> These 2 were the empty functions from above. I'm guessing this isn't
+> needed.
+
+Removed
+
+
+>  > +
+> > +static int tegra_plat_remove(struct platform_device *pdev)
+> > +{
+> > +       struct fb_info *fb = platform_get_drvdata(pdev);
+> > +       struct tegra_fb_info *tegra_fb = fb->par;
+> > +       clk_disable(tegra_fb->clk);
+> > +       iounmap(fb->screen_base);
+> > +       release_resource(tegra_fb->fb_mem);
+> > +       iounmap(tegra_fb->reg_base);
+> > +       release_resource(tegra_fb->reg_mem);
+> > +       framebuffer_release(fb);
+> > +       return 0;
+> > +}
+> > +
+>
+> I didn't read through carefully but shouldn't there be an
+> unregister_framebuffer in above? Wouldn't the above cause a free while
+> the structures could still in use by fb*?
+>
+Good catch - unregister_framebuffer should be the first call. We generally
+don't use modules much, so compiling as a module has been tested, but not
+running as a module.
 
 Thanks,
-jaya
+Colin

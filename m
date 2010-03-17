@@ -1,132 +1,215 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Wed, 17 Mar 2010 13:50:45 +0000
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@nokia.com>
+Date: Wed, 17 Mar 2010 15:51:40 +0000
 Subject: Re: [PATCH v3 1/4] DSS2: OMAPFB: Add support for switching memory
-Message-Id: <1268833845.2417.274.camel@tubuntu.research.nokia.com>
+Message-Id: <20100317155140.GG18243@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1267795582-21004-1-git-send-email-ville.syrjala@nokia.com>
-In-Reply-To: <1267795582-21004-1-git-send-email-ville.syrjala@nokia.com>
+ <1268833845.2417.274.camel@tubuntu.research.nokia.com>
+In-Reply-To: <1268833845.2417.274.camel@tubuntu.research.nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: "Syrjala Ville (Nokia-D/Helsinki)" <ville.syrjala@nokia.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: "Valkeinen Tomi (Nokia-D/Helsinki)" <Tomi.Valkeinen@nokia.com>
 Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 
-SGksCgpPbiBGcmksIDIwMTAtMDMtMDUgYXQgMTQ6MjYgKzAxMDAsIFN5cmphbGEgVmlsbGUgKE5v
-a2lhLUQvSGVsc2lua2kpCndyb3RlOgo+IEZyb206IFZpbGxlIFN5cmrDpGzDpCA8dmlsbGUuc3ly
-amFsYUBub2tpYS5jb20+Cj4gCj4gU2VwYXJhdGUgdGhlIG1lbW9yeSByZWdpb24gZnJvbSB0aGUg
-ZnJhbWVidWZmZXIgZGV2aWNlIGEgbGl0dGxlIGJpdC4KPiBJdCdzIG5vdyBwb3NzaWJsZSB0byBz
-ZWxlY3QgdGhlIG1lbW9yeSByZWdpb24gdXNlZCBieSB0aGUgZnJhbWVidWZmZXIKPiBkZXZpY2Ug
-dXNpbmcgdGhlIG5ldyBtZW1faWR4IHBhcmFtZXRlciBvZiBvbWFwZmJfcGxhbmVfaW5mby4gSWYg
-dGhlCj4gbWVtX2lkeCBpcyBzcGVjaWZpZWQgaXQgd2lsbCBiZSBpbnRlcnByZXRlZCBhcyBhbiBp
-bmRleCBpbnRvIHRoZQo+IG1lbW9yeSByZWdpb25zIGFycmF5LCBpZiBpdCdzIG5vdCBzcGVjaWZp
-ZWQgdGhlIGZyYW1lYnVmZmVyJ3MgaW5kZXggaXMKPiB1c2VkIGluc3RlYWQuIFNvIGJ5IGRlZmF1
-bHQgZWFjaCBmcmFtZWJ1ZmZlciBrZWVwcyB1c2luZyBpdCdzIG93bgo+IG1lbW9yeSByZWdpb24g
-d2hpY2ggcHJlc2VydmVzIGJhY2t3YXJkcyBjb21wYXRpYmlsaXR5Lgo+IAo+IFRoaXMgYWxsb3dz
-IGNsb25pbmcgdGhlIHNhbWUgbWVtb3J5IHJlZ2lvbiB0byBzZXZlcmFsIG92ZXJsYXlzIGFuZCB5
-ZXQKPiBlYWNoIG92ZXJsYXkgY2FuIGJlIGNvbnRyb2xsZWQgaW5kZXBlbmRlbnRseSBzaW5jZSB0
-aGV5IGNhbiBiZQo+IGFzc29jaWF0ZWQgd2l0aCBzZXBhcmF0ZSBmcmFtZWJ1ZmZlciBkZXZpY2Vz
-LgoKQ291cGxlIG9mIGNvbW1lbnRzIGlubGluZS4gTW9zdGx5IGFib3V0IG1ha2luZyB0aGUgcGF0
-Y2ggYSBiaXQgc2ltcGxlci4KCj4gCj4gU2lnbmVkLW9mZi1ieTogVmlsbGUgU3lyasOkbMOkIDx2
-aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KPiAtLS0KPiBDaGFuZ2VzIHNpbmNlIHYyOgo+ICogUmVt
-b3ZlZCB0aGUgdXNlX2NvdW50IGFuZCByZWx5IG9uIGp1c3QgY291bnRpbmcgYWxsIGFjdGl2ZSBv
-dmVybGF5cy4gQSBiaXQgcmFjeQo+ICAgYnV0IG5vIGNoYW5jZSBvZiBnZXR0aW5nIHN0dWNrIGlu
-IGEgc3RhdGUgd2hlcmUgbWVtb3J5IGFsbG9jYXRpb24gY2FuJ3QgYmUgY2hhbmdlZC4KPiAqIHMv
-c291cmNlX2lkeC9tZW1faWR4IGFzIHRoYXQgc2VlbXMgdG8gYmUgYSBsaXR0bGUgbW9yZSBzZWxm
-IGV4cGxhbmF0b3J5Cj4gCj4gIGRyaXZlcnMvdmlkZW8vb21hcDIvb21hcGZiL29tYXBmYi1pb2N0
-bC5jIHwgIDE2MyArKysrKysrKysrKysrKysrKysrKy0tLS0tCj4gIGRyaXZlcnMvdmlkZW8vb21h
-cDIvb21hcGZiL29tYXBmYi1tYWluLmMgIHwgIDE4NCArKysrKysrKysrKysrKysrKysrLS0tLS0t
-LS0tLQo+ICBkcml2ZXJzL3ZpZGVvL29tYXAyL29tYXBmYi9vbWFwZmItc3lzZnMuYyB8ICAgNjAg
-KysrKysrKystLQo+ICBkcml2ZXJzL3ZpZGVvL29tYXAyL29tYXBmYi9vbWFwZmIuaCAgICAgICB8
-ICAgMzggKysrKysrLQo+ICBpbmNsdWRlL2xpbnV4L29tYXBmYi5oICAgICAgICAgICAgICAgICAg
-ICB8ICAgIDUgKy0KPiAgNSBmaWxlcyBjaGFuZ2VkLCAzMzkgaW5zZXJ0aW9ucygrKSwgMTExIGRl
-bGV0aW9ucygtKQoKPHNuaXA+Cgo+ICtzdGF0aWMgdm9pZCBvbWFwZmJfY2FsY19hZGRyKGNvbnN0
-IHN0cnVjdCBvbWFwZmJfaW5mbyAqb2ZiaSwKPiArICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IGNvbnN0IHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbyAqdmFyLAo+ICsgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgY29uc3Qgc3RydWN0IGZiX2ZpeF9zY3JlZW5pbmZvICpmaXgsCj4gKyAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICBpbnQgcm90YXRpb24sIHUzMiAqcGFkZHIsIHZvaWQgX19p
-b21lbSAqKnZhZGRyKQo+ICt7Cj4gKyAgICAgICB1MzIgZGF0YV9zdGFydF9wOwo+ICsgICAgICAg
-dm9pZCBfX2lvbWVtICpkYXRhX3N0YXJ0X3Y7Cj4gKyAgICAgICBpbnQgb2Zmc2V0Owo+ICsKPiAr
-ICAgICAgIGlmIChvZmJpLT5yb3RhdGlvbl90eXBlID0gT01BUF9EU1NfUk9UX1ZSRkIpIHsKPiAr
-ICAgICAgICAgICAgICAgZGF0YV9zdGFydF9wID0gb21hcGZiX2dldF9yZWdpb25fcm90X3BhZGRy
-KG9mYmksIHJvdGF0aW9uKTsKPiArICAgICAgICAgICAgICAgZGF0YV9zdGFydF92ID0gTlVMTDsK
-PiArICAgICAgIH0gZWxzZSB7Cj4gKyAgICAgICAgICAgICAgIGRhdGFfc3RhcnRfcCA9IG9tYXBm
-Yl9nZXRfcmVnaW9uX3BhZGRyKG9mYmkpOwo+ICsgICAgICAgICAgICAgICBkYXRhX3N0YXJ0X3Yg
-PSBvbWFwZmJfZ2V0X3JlZ2lvbl92YWRkcihvZmJpKTsKPiArICAgICAgIH0KPiArCj4gKyAgICAg
-ICBpZiAob2ZiaS0+cm90YXRpb25fdHlwZSA9IE9NQVBfRFNTX1JPVF9WUkZCKQo+ICsgICAgICAg
-ICAgICAgICBvZmZzZXQgPSBjYWxjX3JvdGF0aW9uX29mZnNldF92cmZiKHZhciwgZml4LCByb3Rh
-dGlvbik7Cj4gKyAgICAgICBlbHNlCj4gKyAgICAgICAgICAgICAgIG9mZnNldCA9IGNhbGNfcm90
-YXRpb25fb2Zmc2V0X2RtYSh2YXIsIGZpeCwgcm90YXRpb24pOwo+ICsKPiArICAgICAgIGRhdGFf
-c3RhcnRfcCArPSBvZmZzZXQ7Cj4gKyAgICAgICBkYXRhX3N0YXJ0X3YgKz0gb2Zmc2V0Owo+ICsK
-PiArICAgICAgIGlmIChvZmZzZXQpCj4gKyAgICAgICAgICAgICAgIERCRygib2Zmc2V0ICVkLCAl
-ZCA9ICVkXG4iLAo+ICsgICAgICAgICAgICAgICAgICAgdmFyLT54b2Zmc2V0LCB2YXItPnlvZmZz
-ZXQsIG9mZnNldCk7Cj4gKwo+ICsgICAgICAgREJHKCJwYWRkciAleCwgdmFkZHIgJXBcbiIsIGRh
-dGFfc3RhcnRfcCwgZGF0YV9zdGFydF92KTsKPiArCj4gKyAgICAgICAqcGFkZHIgPSBkYXRhX3N0
-YXJ0X3A7Cj4gKyAgICAgICAqdmFkZHIgPSBkYXRhX3N0YXJ0X3Y7Cj4gK30KPiAKPiAgLyogc2V0
-dXAgb3ZlcmxheSBhY2NvcmRpbmcgdG8gdGhlIGZiICovCj4gLXN0YXRpYyBpbnQgb21hcGZiX3Nl
-dHVwX292ZXJsYXkoc3RydWN0IGZiX2luZm8gKmZiaSwgc3RydWN0IG9tYXBfb3ZlcmxheSAqb3Zs
-LAo+ICtpbnQgb21hcGZiX3NldHVwX292ZXJsYXkoc3RydWN0IGZiX2luZm8gKmZiaSwgc3RydWN0
-IG9tYXBfb3ZlcmxheSAqb3ZsLAo+ICAgICAgICAgICAgICAgICB1MTYgcG9zeCwgdTE2IHBvc3ks
-IHUxNiBvdXR3LCB1MTYgb3V0aCkKPiAgewo+ICAgICAgICAgaW50IHIgPSAwOwo+IEBAIC04MzEs
-OSArODYzLDggQEAgc3RhdGljIGludCBvbWFwZmJfc2V0dXBfb3ZlcmxheShzdHJ1Y3QgZmJfaW5m
-byAqZmJpLCBzdHJ1Y3Qgb21hcF9vdmVybGF5ICpvdmwsCj4gICAgICAgICBzdHJ1Y3QgZmJfdmFy
-X3NjcmVlbmluZm8gKnZhciA9ICZmYmktPnZhcjsKPiAgICAgICAgIHN0cnVjdCBmYl9maXhfc2Ny
-ZWVuaW5mbyAqZml4ID0gJmZiaS0+Zml4Owo+ICAgICAgICAgZW51bSBvbWFwX2NvbG9yX21vZGUg
-bW9kZSA9IDA7Cj4gLSAgICAgICBpbnQgb2Zmc2V0Owo+IC0gICAgICAgdTMyIGRhdGFfc3RhcnRf
-cDsKPiAtICAgICAgIHZvaWQgX19pb21lbSAqZGF0YV9zdGFydF92Owo+ICsgICAgICAgdTMyIGRh
-dGFfc3RhcnRfcCA9IDA7Cj4gKyAgICAgICB2b2lkIF9faW9tZW0gKmRhdGFfc3RhcnRfdiA9IE5V
-TEw7Cj4gICAgICAgICBzdHJ1Y3Qgb21hcF9vdmVybGF5X2luZm8gaW5mbzsKPiAgICAgICAgIGlu
-dCB4cmVzLCB5cmVzOwo+ICAgICAgICAgaW50IHNjcmVlbl93aWR0aDsKPiBAQCAtODYwLDI4ICs4
-OTEsOSBAQCBzdGF0aWMgaW50IG9tYXBmYl9zZXR1cF9vdmVybGF5KHN0cnVjdCBmYl9pbmZvICpm
-YmksIHN0cnVjdCBvbWFwX292ZXJsYXkgKm92bCwKPiAgICAgICAgICAgICAgICAgeXJlcyA9IHZh
-ci0+eXJlczsKPiAgICAgICAgIH0KPiAKPiAtCj4gLSAgICAgICBpZiAob2ZiaS0+cm90YXRpb25f
-dHlwZSA9IE9NQVBfRFNTX1JPVF9WUkZCKSB7Cj4gLSAgICAgICAgICAgICAgIGRhdGFfc3RhcnRf
-cCA9IG9tYXBmYl9nZXRfcmVnaW9uX3JvdF9wYWRkcihvZmJpLCByb3RhdGlvbik7Cj4gLSAgICAg
-ICAgICAgICAgIGRhdGFfc3RhcnRfdiA9IE5VTEw7Cj4gLSAgICAgICB9IGVsc2Ugewo+IC0gICAg
-ICAgICAgICAgICBkYXRhX3N0YXJ0X3AgPSBvbWFwZmJfZ2V0X3JlZ2lvbl9wYWRkcihvZmJpKTsK
-PiAtICAgICAgICAgICAgICAgZGF0YV9zdGFydF92ID0gb21hcGZiX2dldF9yZWdpb25fdmFkZHIo
-b2ZiaSk7Cj4gLSAgICAgICB9Cj4gLQo+IC0gICAgICAgaWYgKG9mYmktPnJvdGF0aW9uX3R5cGUg
-PSBPTUFQX0RTU19ST1RfVlJGQikKPiAtICAgICAgICAgICAgICAgb2Zmc2V0ID0gY2FsY19yb3Rh
-dGlvbl9vZmZzZXRfdnJmYih2YXIsIGZpeCwgcm90YXRpb24pOwo+IC0gICAgICAgZWxzZQo+IC0g
-ICAgICAgICAgICAgICBvZmZzZXQgPSBjYWxjX3JvdGF0aW9uX29mZnNldF9kbWEodmFyLCBmaXgs
-IHJvdGF0aW9uKTsKPiAtCj4gLSAgICAgICBkYXRhX3N0YXJ0X3AgKz0gb2Zmc2V0Owo+IC0gICAg
-ICAgZGF0YV9zdGFydF92ICs9IG9mZnNldDsKPiAtCj4gLSAgICAgICBpZiAob2Zmc2V0KQo+IC0g
-ICAgICAgICAgICAgICBEQkcoIm9mZnNldCAlZCwgJWQgPSAlZFxuIiwKPiAtICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgIHZhci0+eG9mZnNldCwgdmFyLT55b2Zmc2V0LCBvZmZzZXQpOwo+
-IC0KPiAtICAgICAgIERCRygicGFkZHIgJXgsIHZhZGRyICVwXG4iLCBkYXRhX3N0YXJ0X3AsIGRh
-dGFfc3RhcnRfdik7Cj4gKyAgICAgICBpZiAob2ZiaS0+cmVnaW9uLT5zaXplKQo+ICsgICAgICAg
-ICAgICAgICBvbWFwZmJfY2FsY19hZGRyKG9mYmksIHZhciwgZml4LCByb3RhdGlvbiwKPiArICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAmZGF0YV9zdGFydF9wLCAmZGF0YV9zdGFydF92
-KTsKPiAKPiAgICAgICAgIHIgPSBmYl9tb2RlX3RvX2Rzc19tb2RlKHZhciwgJm1vZGUpOwo+ICAg
-ICAgICAgaWYgKHIpIHsKCk1vdmluZyB0aGlzIGNvZGUgdG8gb21hcGZiX2NhbGNfYWRkcigpIGNv
-dWxkIHBlcmhhcHMgYmUgYSBzZXBhcmF0ZQpwYXRjaD8gSSBkb24ndCBzZWUgb3RoZXIgY2hhbmdl
-cyBpbiB0aGVyZS4KCj4gIHN0YXRpYyBzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSBvbWFwZmJfYXR0
-cnNbXSA9IHsKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9vbWFwMi9vbWFwZmIvb21hcGZi
-LmggYi9kcml2ZXJzL3ZpZGVvL29tYXAyL29tYXBmYi9vbWFwZmIuaAo+IGluZGV4IGNkNTRmZGIu
-LmNlMTU1MzMgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy92aWRlby9vbWFwMi9vbWFwZmIvb21hcGZi
-LmgKPiArKysgYi9kcml2ZXJzL3ZpZGVvL29tYXAyL29tYXBmYi9vbWFwZmIuaAoKPiAgc3RhdGlj
-IGlubGluZSBpbnQgb21hcGZiX292ZXJsYXlfZW5hYmxlKHN0cnVjdCBvbWFwX292ZXJsYXkgKm92
-bCwKPiAtICAgICAgICAgICAgICAgaW50IGVuYWJsZSkKPiArICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgaW50IGVuYWJsZSkKPiAgewo+ICAgICAgICAgc3RydWN0IG9tYXBf
-b3ZlcmxheV9pbmZvIGluZm87Cj4gKyAgICAgICBpbnQgcjsKPiAKPiAgICAgICAgIG92bC0+Z2V0
-X292ZXJsYXlfaW5mbyhvdmwsICZpbmZvKTsKPiArICAgICAgIGlmIChpbmZvLmVuYWJsZWQgPSBl
-bmFibGUpCj4gKyAgICAgICAgICAgICAgIHJldHVybiAwOwo+ICAgICAgICAgaW5mby5lbmFibGVk
-ID0gZW5hYmxlOwo+IC0gICAgICAgcmV0dXJuIG92bC0+c2V0X292ZXJsYXlfaW5mbyhvdmwsICZp
-bmZvKTsKPiArICAgICAgIHIgPSBvdmwtPnNldF9vdmVybGF5X2luZm8ob3ZsLCAmaW5mbyk7Cj4g
-KyAgICAgICBpZiAocikKPiArICAgICAgICAgICAgICAgcmV0dXJuIHI7Cj4gKwo+ICsgICAgICAg
-cmV0dXJuIDA7Cj4gK30KClRoZXJlIGFyZSBwZXJoYXBzIG1vcmUgY2hhbmdlcyBoZXJlIHRoYW4g
-bmVlZGVkLiBpbnQgciBpcyBub3QgbmVlZGVkLAphbmQgdGhlIGxhc3QgbGluZXMgZG8gbm90IG5l
-ZWQgdG8gYmUgY2hhbmdlZC4gQW5kIGlzIGlmIChpbmZvLmVuYWJsZWQgPQplbmFibGUpIHJlcXVp
-cmVkIGJ5IHRoaXMgcGF0Y2gsIG9yIGlzIGl0IGp1c3Qgb3B0aW1pemF0aW9uPyBJZgpvcHRpbWl6
-YXRpb24sIGl0IGNvdWxkIGJlIGluIHNlcGFyYXRlIHBhdGNoLgoKPiAgI2VuZGlmCj4gZGlmZiAt
-LWdpdCBhL2luY2x1ZGUvbGludXgvb21hcGZiLmggYi9pbmNsdWRlL2xpbnV4L29tYXBmYi5oCj4g
-aW5kZXggOWJkZDkxNC4uNWRlNDczYyAxMDA2NDQKPiAtLS0gYS9pbmNsdWRlL2xpbnV4L29tYXBm
-Yi5oCj4gKysrIGIvaW5jbHVkZS9saW51eC9vbWFwZmIuaAo+IEBAIC04NSw2ICs4NSw5IEBACj4g
-ICNkZWZpbmUgT01BUEZCX01FTVRZUEVfU1JBTSAgICAgICAgICAgIDEKPiAgI2RlZmluZSBPTUFQ
-RkJfTUVNVFlQRV9NQVggICAgICAgICAgICAgMQo+IAo+ICsjZGVmaW5lIE9NQVBGQl9NRU1fSURY
-X0VOQUJMRUQgMHg4Cj4gKyNkZWZpbmUgT01BUEZCX01FTV9JRFhfTUFTSyAgICAweDcKClNob3Vs
-ZCBlbmFibGVkIGJlIDB4ODAsIGFuZCBtYXNrIDB4N2Y/IFRoZXJlIGFyZSBuZXZlciB0aGF0IG1h
-bnkgbWVtCmluZGV4ZXMsIGJ1dCBpcyB0aGVyZSBhbnkgcG9pbnQgaW4gbGltaXRpbmcgdGhlIHZh
-bHVlPwoKIFRvbWkKCgotLQpUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUg
-bGluZSAidW5zdWJzY3JpYmUgbGludXgtZmJkZXYiIGluCnRoZSBib2R5IG9mIGEgbWVzc2FnZSB0
-byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnCk1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6
-Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA==
+On Wed, Mar 17, 2010 at 02:50:45PM +0100, Valkeinen Tomi (Nokia-D/Helsinki)=
+ wrote:
+> Hi,
+>=20
+> On Fri, 2010-03-05 at 14:26 +0100, Syrjala Ville (Nokia-D/Helsinki)
+> wrote:
+> > From: Ville Syrj=E4l=E4 <ville.syrjala@nokia.com>
+> >=20
+> > Separate the memory region from the framebuffer device a little bit.
+> > It's now possible to select the memory region used by the framebuffer
+> > device using the new mem_idx parameter of omapfb_plane_info. If the
+> > mem_idx is specified it will be interpreted as an index into the
+> > memory regions array, if it's not specified the framebuffer's index is
+> > used instead. So by default each framebuffer keeps using it's own
+> > memory region which preserves backwards compatibility.
+> >=20
+> > This allows cloning the same memory region to several overlays and yet
+> > each overlay can be controlled independently since they can be
+> > associated with separate framebuffer devices.
+>=20
+> Couple of comments inline. Mostly about making the patch a bit simpler.
+>=20
+> >=20
+> > Signed-off-by: Ville Syrj=E4l=E4 <ville.syrjala@nokia.com>
+> > ---
+> > Changes since v2:
+> > * Removed the use_count and rely on just counting all active overlays. =
+A bit racy
+> >   but no chance of getting stuck in a state where memory allocation can=
+'t be changed.
+> > * s/source_idx/mem_idx as that seems to be a little more self explanato=
+ry
+> >=20
+> >  drivers/video/omap2/omapfb/omapfb-ioctl.c |  163 ++++++++++++++++++++-=
+----
+> >  drivers/video/omap2/omapfb/omapfb-main.c  |  184 +++++++++++++++++++--=
+--------
+> >  drivers/video/omap2/omapfb/omapfb-sysfs.c |   60 ++++++++--
+> >  drivers/video/omap2/omapfb/omapfb.h       |   38 ++++++-
+> >  include/linux/omapfb.h                    |    5 +-
+> >  5 files changed, 339 insertions(+), 111 deletions(-)
+>=20
+> <snip>
+>=20
+> > +static void omapfb_calc_addr(const struct omapfb_info *ofbi,
+> > +                            const struct fb_var_screeninfo *var,
+> > +                            const struct fb_fix_screeninfo *fix,
+> > +                            int rotation, u32 *paddr, void __iomem **v=
+addr)
+> > +{
+> > +       u32 data_start_p;
+> > +       void __iomem *data_start_v;
+> > +       int offset;
+> > +
+> > +       if (ofbi->rotation_type =3D OMAP_DSS_ROT_VRFB) {
+> > +               data_start_p =3D omapfb_get_region_rot_paddr(ofbi, rota=
+tion);
+> > +               data_start_v =3D NULL;
+> > +       } else {
+> > +               data_start_p =3D omapfb_get_region_paddr(ofbi);
+> > +               data_start_v =3D omapfb_get_region_vaddr(ofbi);
+> > +       }
+> > +
+> > +       if (ofbi->rotation_type =3D OMAP_DSS_ROT_VRFB)
+> > +               offset =3D calc_rotation_offset_vrfb(var, fix, rotation=
+);
+> > +       else
+> > +               offset =3D calc_rotation_offset_dma(var, fix, rotation);
+> > +
+> > +       data_start_p +=3D offset;
+> > +       data_start_v +=3D offset;
+> > +
+> > +       if (offset)
+> > +               DBG("offset %d, %d =3D %d\n",
+> > +                   var->xoffset, var->yoffset, offset);
+> > +
+> > +       DBG("paddr %x, vaddr %p\n", data_start_p, data_start_v);
+> > +
+> > +       *paddr =3D data_start_p;
+> > +       *vaddr =3D data_start_v;
+> > +}
+> >=20
+> >  /* setup overlay according to the fb */
+> > -static int omapfb_setup_overlay(struct fb_info *fbi, struct omap_overl=
+ay *ovl,
+> > +int omapfb_setup_overlay(struct fb_info *fbi, struct omap_overlay *ovl,
+> >                 u16 posx, u16 posy, u16 outw, u16 outh)
+> >  {
+> >         int r =3D 0;
+> > @@ -831,9 +863,8 @@ static int omapfb_setup_overlay(struct fb_info *fbi=
+, struct omap_overlay *ovl,
+> >         struct fb_var_screeninfo *var =3D &fbi->var;
+> >         struct fb_fix_screeninfo *fix =3D &fbi->fix;
+> >         enum omap_color_mode mode =3D 0;
+> > -       int offset;
+> > -       u32 data_start_p;
+> > -       void __iomem *data_start_v;
+> > +       u32 data_start_p =3D 0;
+> > +       void __iomem *data_start_v =3D NULL;
+> >         struct omap_overlay_info info;
+> >         int xres, yres;
+> >         int screen_width;
+> > @@ -860,28 +891,9 @@ static int omapfb_setup_overlay(struct fb_info *fb=
+i, struct omap_overlay *ovl,
+> >                 yres =3D var->yres;
+> >         }
+> >=20
+> > -
+> > -       if (ofbi->rotation_type =3D OMAP_DSS_ROT_VRFB) {
+> > -               data_start_p =3D omapfb_get_region_rot_paddr(ofbi, rota=
+tion);
+> > -               data_start_v =3D NULL;
+> > -       } else {
+> > -               data_start_p =3D omapfb_get_region_paddr(ofbi);
+> > -               data_start_v =3D omapfb_get_region_vaddr(ofbi);
+> > -       }
+> > -
+> > -       if (ofbi->rotation_type =3D OMAP_DSS_ROT_VRFB)
+> > -               offset =3D calc_rotation_offset_vrfb(var, fix, rotation=
+);
+> > -       else
+> > -               offset =3D calc_rotation_offset_dma(var, fix, rotation);
+> > -
+> > -       data_start_p +=3D offset;
+> > -       data_start_v +=3D offset;
+> > -
+> > -       if (offset)
+> > -               DBG("offset %d, %d =3D %d\n",
+> > -                               var->xoffset, var->yoffset, offset);
+> > -
+> > -       DBG("paddr %x, vaddr %p\n", data_start_p, data_start_v);
+> > +       if (ofbi->region->size)
+> > +               omapfb_calc_addr(ofbi, var, fix, rotation,
+> > +                                &data_start_p, &data_start_v);
+> >=20
+> >         r =3D fb_mode_to_dss_mode(var, &mode);
+> >         if (r) {
+>=20
+> Moving this code to omapfb_calc_addr() could perhaps be a separate
+> patch? I don't see other changes in there.
+
+Ah right. It was leftover from an earlier patch with different logic in
+the SETUP_PLANE ioctl. But it's still probable easier on the eyes to
+have it in a separate function. I'll split the patch up.
+
+>=20
+> >  static struct device_attribute omapfb_attrs[] =3D {
+> > diff --git a/drivers/video/omap2/omapfb/omapfb.h b/drivers/video/omap2/=
+omapfb/omapfb.h
+> > index cd54fdb..ce15533 100644
+> > --- a/drivers/video/omap2/omapfb/omapfb.h
+> > +++ b/drivers/video/omap2/omapfb/omapfb.h
+>=20
+> >  static inline int omapfb_overlay_enable(struct omap_overlay *ovl,
+> > -               int enable)
+> > +                                       int enable)
+> >  {
+> >         struct omap_overlay_info info;
+> > +       int r;
+> >=20
+> >         ovl->get_overlay_info(ovl, &info);
+> > +       if (info.enabled =3D enable)
+> > +               return 0;
+> >         info.enabled =3D enable;
+> > -       return ovl->set_overlay_info(ovl, &info);
+> > +       r =3D ovl->set_overlay_info(ovl, &info);
+> > +       if (r)
+> > +               return r;
+> > +
+> > +       return 0;
+> > +}
+>=20
+> There are perhaps more changes here than needed. int r is not needed,
+> and the last lines do not need to be changed. And is if (info.enabled =3D
+> enable) required by this patch, or is it just optimization? If
+> optimization, it could be in separate patch.
+
+That too was leftover from an earlier version which require more logic
+here. I'll split it up as well.
+
+> >  #endif
+> > diff --git a/include/linux/omapfb.h b/include/linux/omapfb.h
+> > index 9bdd914..5de473c 100644
+> > --- a/include/linux/omapfb.h
+> > +++ b/include/linux/omapfb.h
+> > @@ -85,6 +85,9 @@
+> >  #define OMAPFB_MEMTYPE_SRAM            1
+> >  #define OMAPFB_MEMTYPE_MAX             1
+> >=20
+> > +#define OMAPFB_MEM_IDX_ENABLED 0x8
+> > +#define OMAPFB_MEM_IDX_MASK    0x7
+>=20
+> Should enabled be 0x80, and mask 0x7f? There are never that many mem
+> indexes, but is there any point in limiting the value?
+
+Hmm. Right. The original clone_idx enable on rover was 0x4 for some
+reason. My idea clearly was to move it to the msb but apparently my
+brain skipped a beat there and I forgot to add the 0s. Will fix.
+
+--=20
+Ville Syrj=E4l=E4

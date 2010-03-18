@@ -1,41 +1,49 @@
-From: Bernie Thompson <bernie@plugable.com>
-Date: Thu, 11 Mar 2010 14:57:10 +0000
+From: Dave Airlie <airlied@gmail.com>
+Date: Thu, 18 Mar 2010 00:05:32 +0000
 Subject: Re: My goal
-Message-Id: <480988181003110657m5d33fd1dwc674e0b370551498@mail.gmail.com>
+Message-Id: <21d7e9971003171705mbd61603n4c8a998108d1b227@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <alpine.LFD.2.00.1003110341550.21470@casper.infradead.org>
-	<1268289985.4b9891c1d28e3@online.sigmanet.lv>
-In-Reply-To: <1268289985.4b9891c1d28e3@online.sigmanet.lv>
+In-Reply-To: <alpine.LFD.2.00.1003110341550.21470@casper.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: aivils@latnet.lv, James Simmons <jsimmons@infradead.org>, DRI development list <dri-devel@lists.sourceforge.net>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>Linux
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux console project <linuxconsole-dev@lists.sourceforge.net>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, DRI development list <dri-devel@lists.sourceforge.net>
 
-2010/3/10  <aivils@latnet.lv>:
-> Over the world are around 10 versions of multiseat:
+On Thu, Mar 11, 2010 at 1:51 PM, James Simmons <jsimmons@infradead.org> wrote:
+>
+> Okay all the discussion about multiple display brings me to why I'm doing
+> this. I'm attempting to revive the linux console project. I'm in a
+> position to again work on this project. About 4 years ago the eproject
+> managed to get multi-seat working. My goal is to get there again. My first
+> goal is to get my netbook to act has a multiseat system for two. With a plugged
+> in external montior and a USB keyboard run two concurrent X sessions both
+> running OpenGL applications at the same time. I set out to do this 10
+> years ago and I want to finally accomplish this.
 
-There's also the USB multiseat case, which avoids shared resources
-(VGA arbiter) and so can cleanly launch independent X instances for
-each USB graphics device even now. Better yet, the USB topology can be
-used (via udev scripts) to know exactly which keyboard, mouse,
-keyboard, etc. go together so adding seats is completely plug and
-play.
+Okay I took an afternoon to flesh out my design and got something working here,
+I'll try and setup a videod demo later (if I can find a camera).
 
-BUT it's a bit hackish on Linux today, because of the some assumptions
-that need cleaned up (e.g. that all graphics are on PCIe).  Some of
-that cleanup is happening (e.g. hal->libudev), but it could use a lot
-more attention and experienced help on the USB case. Also on
-whether/how to move USB graphics driver from fbdev->dri with matching
-xorg driver, on better newgdm/consolekit integration, and then on
-getting this into distros.
+But I can now run two *separate* X servers on different outputs of the same GPU.
 
-http://plugable.com/2009/11/16/setting-up-usb-multiseat-with-displaylink-on-linux-gdm-up-to-2-20/
-to see stuff to get it running in the hal/gdmdynamic world.
+http://people.freedesktop.org/~airlied/multiseat/
 
-A lot of discussion and work is on the libdlo list, but needs more
-contact with experts on those lists with deeper expertise (dri, fbdev,
-console, etc.)
+has the kernel + libdrm patch, this is hacked for *my* X1900 (the radeon driver
+hardcodes a seat -> crtc/connector/encoder mapping that should be dynamically
+setup from userspace via the drm control node.
 
-Best wishes,
-Bernie
-http://plugable.com/
+The libdrm patches adds an env var to pick device node (probably needs to be
+secured).
+
+With this I can and some proper xorg.conf to pick the correct input devices
+
+DRM_DEVICE_PATH=/dev/dri/renderD128 /opt/xorg/bin/Xorg -retro
+DRM_DEVICE_PATH=/dev/dri/renderD129 /opt/xorg/bin/Xorg :1 -sharevts
+-novtswitch -retro
+
+I can run two independent X servers on the same GPU.
+
+Hopefully this gives you some idea of where I was planning on heading with this.
+
+Dave.

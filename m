@@ -1,55 +1,76 @@
-From: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] fix Kconfig breakage in
-	drivers/video
-Date: Sun, 14 Mar 2010 15:19:41 -0700 (PDT)
-Message-ID: <20100314.151941.24322068.davem@davemloft.net>
-References: <20100314225329.f5dc3e05.krzysztof.h1@poczta.fm>
+From: Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH] fixed sparkling issue on lcd panel when fb_blank mode
+ is  changed.
+Date: Fri, 19 Mar 2010 13:11:34 +0000
+Message-ID: <1269004294.4292.18.camel@rex>
+References: <90b950fc1003182136n73d54c2di4be84f16e4c3534f@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
-	helo=mx.sourceforge.net)
-	by sfs-ml-3.v29.ch3.sourceforge.com with esmtp (Exim 4.69)
-	(envelope-from <davem@davemloft.net>) id 1Nqw9e-0005ok-IS
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 14 Mar 2010 22:19:26 +0000
-Received: from 74-93-104-97-washington.hfc.comcastbusiness.net ([74.93.104.97]
-	helo=sunset.davemloft.net)
-	by sfi-mx-2.v28.ch3.sourceforge.com with esmtp (Exim 4.69)
-	id 1Nqw9d-0003rQ-C6 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 14 Mar 2010 22:19:26 +0000
-In-Reply-To: <20100314225329.f5dc3e05.krzysztof.h1@poczta.fm>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: krzysztof.h1@poczta.fm
-Cc: akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net, baruch@tkos.co.il
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <90b950fc1003182136n73d54c2di4be84f16e4c3534f@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: InKi Dae <daeinki@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, Kyungmin Park <kmpark@infradead.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Date: Sun, 14 Mar 2010 22:53:29 +0100
+Hi,
 
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Fri, 2010-03-19 at 13:36 +0900, InKi Dae wrote:
+> This issue is a problem that lcd panel is spakled when fb_blank mode is changed
+> From FB_BLANK_UNBLANK to FB_BLANK_POWER or FB_BLANK_POWER to FB_BLANK_UNBLANK.
 > 
-> There are two new options inside the CONFIG_FB section which do not
-> depend on the CONFIG_FB. This break Kconfig menu layout.
+> In case of FB_BLANK_UNBLANK, screen = on, vsync = on, hsync = on and
+> For FB_BLANK_POWERDOWN screen = blanked, vsync = off, hsync = off
+> So like this when fb_blank mode becomes FB_BLANK_POWERDOWN,
+> Display controller and lcd panel should become off to reduce power consumption.
 > 
-> Fix it and reduce few conditions for sparc frame buffers
-> as the FB_SBUS == ((FB = y) && SPARC).
+> Let's see fb_blank function of fbmem.c file.
 > 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> fb_blank()
+> {
+>     if (info->fbops->fb_blank)
+>             ret = info->fbops->fb_blank(blank, info(
+>     if (!ret)
+>             fb_notifier_call_chain(FB_EVENT_BLANK, &event);
+> }
+> 
+> This problem is because this code calls fb_blank (fb_blank of device
+> specific framebuffer driver)
+> Earlier then fb_notifier_call_chain.
+> 
+> For example,
+> Device specific fb_blank function is registered to generic framebuffer
+> driver through register_framebuffer function
+> And fb_notifier_call_chain calls any callback function registered to
+> lcd class(lcd.c) through fb_notifier_callback function.
+> So if fb_blank mode is changed to FB_BLANK_POWERDOWN then display
+> controller would become off(clock disable)
+> On the other hand, lcd panel would still be on. at this time, some
+> situation on lcd panel occers like sparkling
+> Because video clock to be delivered to ldi module of lcd panel is disabled also.
+> 
+> This patch get fb_notifier_call_chain to be called earlier then fb_blank.
+> Please, review this patch.
 
-Acked-by: David S. Miller <davem@davemloft.net>
+So to summarise the problem more succinctly the LCD and the display
+controllers power off in the wrong order causing visual defects
+(sparkling) on the display.
 
-------------------------------------------------------------------------------
-Download Intel&#174; Parallel Studio Eval
-Try the new software tools for yourself. Speed compiling, find bugs
-proactively, and fine-tune applications for parallel performance.
-See why Intel Parallel Studio got high marks during beta.
-http://p.sf.net/sfu/intel-sw-dev
+I was a bit worried about event order and loops with this change so I
+checked and there are three consumers of these events in the kernel:
+consoles, LCD and backlight. None of them have a problem with this
+change of order for power down so from that point of view I'm ok with
+the change.
+
+However this function also covers powerup from a screen blank to an
+active screen. When powering up it makes sense to power up the video
+device first, then the LCD, backlight and console as per the current
+code, otherwise I can imagine "sparkling" upon powerup.
+
+So it looks like we need to change order only on powerdown, not upon
+resume, otherwise we'll get further regression reports on poweron?
+
+Cheers,
+
+Richard

@@ -1,32 +1,44 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Wed, 03 Mar 2010 00:19:19 +0000
-Subject: Re: [PATCH] Add sysfs support for fbdefio delay
-Message-Id: <20100302161919.19df3a18.akpm@linux-foundation.org>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Sat, 20 Mar 2010 16:00:14 +0000
+Subject: [PATCH v2 0/6] hid: new driver for PicoLCD device
+Message-Id: <20100320170014.440959a8@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201003021847.o22IlYR8004349@mustang.cs.nmsu.edu>
-In-Reply-To: <201003021847.o22IlYR8004349@mustang.cs.nmsu.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>
-Cc: linux-kernel@vger.kernel.org, felipe.balbi@nokia.com, pavel@ucw.cz, jayakumar.lkml@gmail.com, linux-usb@vger.kernel.org, oliver@neukum.org, linux-input@vger.kernel.org, dmitry.torokhov@gmail.com, npavel@ituner.com, tomi.valkeinen@nokia.com, tony@atomide.com, FlorianSchandinat@gmx.de, krzysztof.h1@wp.pl, linux-fbdev@vger.kernel.org, jkosina@suse.cz, bonbons@linux-vserver.org
+To: Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>
+Cc: linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rick L. Vinyard Jr." <rvinyard-qcTL/1vZYtiVc3sceRu5cw@public.gmane.org>, Nicu Pavel <npavel-VxACSXvuqMTQT0dZR+AlfA@public.gmane.org>, Oliver Neukum <oliver-GvhC2dPhHPQdnm+yROfE0A@public.gmane.org>, Jaya Kumar <jayakumar.lkml-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-On Tue, 02 Mar 2010 11:47:34 -0700
-"Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu> wrote:
+This series adds support for PicoLCD USB HID device adding support for
+the various features in different patches so each patch concentrates
+on a device class.
 
-> This patch adds support for examining and modifying the fbdefio delay
-> parameter through sysfs. It also adds two driver definable minimum
-> and maximum bounds.
-> 
-> The default behavior is to not permit modifications if delay_max is 0,
-> thus preventing modification of the delay if the driver does not
-> explicitly permit modification.
+I implemented the patches so input support is required (this should
+make it easy to later on add support for other PicoLCD device that
+don't have the same feature set but share compatible HID reports.
 
-Why is this being added?  You have some device which doesn't function
-properly without this change?
+This causes presence of a few #ifdef blocks to include support for the
+different feature sets when their matching device class has been
+selected.
+Though to minimize the amount of such #ifs I put all code for a single
+class together and defined a few stubs in the #else part so global
+device initialization is not filled with #ifs.
 
-If so, that's pretty critical changelog info - we presently have no
-reason to merge the patch!
+I'm not sure which of the following approaches is better (I took the
+first one):
+- Check for built-in or build-as-module class support
+  with #if defined():
+  #if defined(CONFIG_..CLASS) || defined(CONFIG_..CLASS_MODULE)
+- Add extra CONFIG_PICOLCD_$CLASS to Kconfig and let Kconfig get
+  things correctly set having just simple
+  #ifdef CONFIG_PICOLCD_$CLASS in the code.
 
-Thanks.
 
+The series depends on my previous patch adding HID suspend support
+(I've not yet looked at improving it). The patch adding support
+for backlight class depends on backlight state as of 2.6.34-rc2.
+
+All the rest should apply against 2.6.33 (unless I did oversee some
+detail).
+
+Bruno

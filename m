@@ -1,48 +1,94 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Date: Mon, 22 Mar 2010 08:54:12 +0000
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Mon, 22 Mar 2010 11:38:40 +0000
 Subject: Re: [PATCH v2 1/6] hid: new driver for PicoLCD device
-Message-Id: <alpine.LNX.2.00.1003220951440.18642@pobox.suse.cz>
+Message-Id: <20100322123840.7351cc82@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100320170014.440959a8@neptune.home> <20100320170241.55258b0d@neptune.home> <20100321034600.GE29360@core.coreip.homeip.net> <20100321173737.5fcf3580@neptune.home>
-In-Reply-To: <20100321173737.5fcf3580@neptune.home>
+References: <20100320170014.440959a8@neptune.home>
+	<20100320170241.55258b0d@neptune.home>
+	<20100321034600.GE29360@core.coreip.homeip.net>
+	<20100321173737.5fcf3580@neptune.home>
+	<20100322043508.GC31621@core.coreip.homeip.net>
+In-Reply-To: <20100322043508.GC31621-WlK9ik9hQGAhIp7JRqBPierSzoNAToWh@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, Nicu Pavel <npavel@ituner.com>, Oliver Neukum <oliver@neukum.org>, Jaya Kumar <jayakumar.lkml@gmail.com>
+To: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rick L. Vinyard Jr." <rvinyard-qcTL/1vZYtiVc3sceRu5cw@public.gmane.org>, Nicu Pavel <npavel-VxACSXvuqMTQT0dZR+AlfA@public.gmane.org>, Oliver Neukum <oliver-GvhC2dPhHPQdnm+yROfE0A@public.gmane.org>, Jaya Kumar <jayakumar.lkml-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-On Sun, 21 Mar 2010, Bruno Pr=E9mont wrote:
-
-> > > +	}
-> > > +	data->status |=3D PICOLCD_BUSY;
-> > > +	data->pending =3D work;
-> > > +	for (i =3D k =3D 0; i < report->maxfield; i++)
-> > > +		for (j =3D 0; j < report->field[i]->report_count; j++) {
-> > > +			hid_set_field(report->field[i], j, k < size ? raw_data[k] : 0);
-> > > +			k++;
-> > > +		}
-> > > +	usbhid_submit_report(data->hdev, report, USB_DIR_OUT);
-> > > +	complete_all(&data->ready);
-> > > +	INIT_COMPLETION(data->ready);
+On Sun, 21 March 2010 Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> On Sun, Mar 21, 2010 at 05:37:37PM +0100, Bruno Pr=C3=A9mont wrote:
+> > On Sat, 20 March 2010 Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > > > +	usbhid_submit_report(data->hdev, report, USB_DIR_OUT);
+> > > > +	complete_all(&data->ready);
+> > > > +	INIT_COMPLETION(data->ready);
+> > >=20
+> > > Umm, what does this do, exactly?
 > >=20
-> > Umm, what does this do, exactly?
-> >
-> It wakes up anyone waiting on the completion and then resets the completi=
-on
-> as otherwise any future attempt to wait on it would succeed immediately.
+> > It wakes up anyone waiting on the completion and then resets the comple=
+tion
+> > as otherwise any future attempt to wait on it would succeed immediately.
+> >=20
 >=20
-> The complete_all() instead of just complete() comes from the reset() func=
-tion.
-> I can probably reduce it here.
+> You realize that if you re-initialize the completion right after
+> signalling it there is a big chance the waiters will miss it (they do
+> check completion->done flags that you reset right away.
 >=20
-> Will check this combined with your mutex suggestion above.
+> In general completions are suited for something that happens once (a
+> single request - allocated - processed - signalled) but not for
+> repeating use.
 
-I am afraid this code is racy as is. You can't be sure that whoever has=20
-been waiting on the completion has been notified already between=20
-complete_all() and INIT_COMPLETION(), can you?
+Would below approach be more correct?
 
-Thanks for the driver!
+- move the completion to struct picolcd_pending
+  so it meets the "happens once" requirement
 
---=20
-Jiri Kosina
-SUSE Labs, Novell Inc.
+- protect data->pending with a mutex
+  (though also use spinlock to prevent race between event which
+   signals the completion and picolcd_send_and_wait() around timeout)
+
+- use the data->lock spinlock to protect multi-report requests from
+  interleaving
+
+In speudo-code this would be something like:
+
+picolcd_send_and_wait(...)
+{
+	struct picolcd_pending pending;
+	...
+	init_completion(&pending->ready);
+	aquire_mutex(data->mutex);
+	spin_lock_irqsave(&data->lock, flags);
+	... // prepare report
+	data->pending =3D &pending;
+	usbhid_submit_report(data->hdev, report, USB_DIR_OUT);
+	spin_unlock_irqrestore(&data->lock, flags);
+	wait_for_completion_interruptible_timeout(&pending->ready, HZ*2);
+	spin_lock_irqsave(&data->lock, flags);
+	if (data->pending =3D &pending)
+		data->pending =3D NULL;
+	spin_unlock_irqrestore(&data->lock, flags);
+	release_mutext(data->mutex);
+	...
+}
+
+picolcd_raw_event(...)
+{
+	...
+	spin_lock_irqsave(&data->lock, flags);
+	if (data->pending) {
+		// copy event data to pending
+		...
+		complete(&pending->ready);
+	}
+	spin_unlock_irqrestore(&data->lock, flags);
+	...
+}
+
+In picolcd_remove() and picolcd_reset() I could then do something
+similar to picolcd_raw_event() to trigger completion with no
+data/error in order to skip timeout on the requester side.
+
+Though how should I prevent races on hot-unplug?
+
+Thanks,
+Bruno

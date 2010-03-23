@@ -1,99 +1,71 @@
-From: Henrik Kretzschmar <henne@nachtwindheim.de>
-Date: Sat, 27 Mar 2010 06:29:08 +0000
-Subject: [PATCH 4/7] fbdev: section cleanup in vesafb
-Message-Id: <1269671353-22041-3-git-send-email-henne@nachtwindheim.de>
+From: Roger Quadros <roger.quadros@nokia.com>
+Date: Tue, 23 Mar 2010 09:56:29 +0000
+Subject: [PATCH 3/5] OMAP: RX51: Add Touch Controller in SPI board info
+Message-Id: <1269338191-10734-4-git-send-email-roger.quadros@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1269671353-22041-1-git-send-email-henne@nachtwindheim.de>
-In-Reply-To: <1269671353-22041-1-git-send-email-henne@nachtwindheim.de>
+References: <1269338191-10734-1-git-send-email-roger.quadros@nokia.com>
+ <1269338191-10734-2-git-send-email-roger.quadros@nokia.com>
+ <1269338191-10734-3-git-send-email-roger.quadros@nokia.com>
+In-Reply-To: <1269338191-10734-3-git-send-email-roger.quadros@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: Henrik Kretzschmar <henne@nachtwindheim.de>, Andrew Morton <akpm@linux-foundation.org>, Peter Jones <pjones@redhat.com>, Arnaud Patard <arnaud.patard@rtp-net.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+To: tony@atomide.com
+Cc: Tomi.Valkeinen@nokia.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-This patch cleans up the sections in the vesafb driver.
+From: Roger Quadros <roger.quadros@nokia.com>
 
-WARNING: drivers/video/built-in.o(.devinit.text+0x19495): Section mismatch in reference from the function vesafb_probe() to the variable .init.data:vesafb_fix
-The function __devinit vesafb_probe() references
-a variable __initdata vesafb_fix.
-If vesafb_fix is only used by vesafb_probe then
-annotate vesafb_fix with a matching annotation.
+The Touch controller and LCD Panel share the same SPI bus 1.
+So, we need to define the touch controller in the SPI board info
+else, the SPI bus will be contended due to invalid state of
+Touch controller's Chip Select thus preventing the LCD panel
+from working.
 
-WARNING: drivers/video/built-in.o(.devinit.text+0x194a5): Section mismatch in reference from the function vesafb_probe() to the (unknown reference) .init.data:(unknown)
-The function __devinit vesafb_probe() references
-a (unknown reference) __initdata (unknown).
-If (unknown) is only used by vesafb_probe then
-annotate (unknown) with a matching annotation.
-
-WARNING: drivers/video/built-in.o(.devinit.text+0x194d5): Section mismatch in reference from the function vesafb_probe() to the variable .init.data:vesafb_defined
-The function __devinit vesafb_probe() references
-a variable __initdata vesafb_defined.
-If vesafb_defined is only used by vesafb_probe then
-annotate vesafb_defined with a matching annotation.
-
-...
-fbdev: section cleanup in vesafb
-
-This patch cleans up the sections in the vesafb driver.
-
-WARNING: drivers/video/built-in.o(.devinit.text+0x19495): Section mismatch in reference from the function vesafb_probe() to the variable .init.data:vesafb_fix
-The function __devinit vesafb_probe() references
-a variable __initdata vesafb_fix.
-If vesafb_fix is only used by vesafb_probe then
-annotate vesafb_fix with a matching annotation.
-
-WARNING: drivers/video/built-in.o(.devinit.text+0x194a5): Section mismatch in reference from the function vesafb_probe() to the (unknown reference) .init.data:(unknown)
-The function __devinit vesafb_probe() references
-a (unknown reference) __initdata (unknown).
-If (unknown) is only used by vesafb_probe then
-annotate (unknown) with a matching annotation.
-
-WARNING: drivers/video/built-in.o(.devinit.text+0x194d5): Section mismatch in reference from the function vesafb_probe() to the variable .init.data:vesafb_defined
-The function __devinit vesafb_probe() references
-a variable __initdata vesafb_defined.
-If vesafb_defined is only used by vesafb_probe then
-annotate vesafb_defined with a matching annotation.
-
-...
-
-Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
+Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
 ---
- drivers/video/vesafb.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ arch/arm/mach-omap2/board-rx51-peripherals.c |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/vesafb.c b/drivers/video/vesafb.c
-index ef4128c..ba8e394 100644
---- a/drivers/video/vesafb.c
-+++ b/drivers/video/vesafb.c
-@@ -30,7 +30,7 @@
- 
- /* --------------------------------------------------------------------- */
- 
--static struct fb_var_screeninfo vesafb_defined __initdata = {
-+static struct fb_var_screeninfo vesafb_defined __devinitdata = {
- 	.activate	= FB_ACTIVATE_NOW,
- 	.height		= -1,
- 	.width		= -1,
-@@ -41,7 +41,7 @@ static struct fb_var_screeninfo vesafb_defined __initdata = {
- 	.vmode		= FB_VMODE_NONINTERLACED,
+diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
+index 3ef805e..020f354 100644
+--- a/arch/arm/mach-omap2/board-rx51-peripherals.c
++++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
+@@ -46,6 +46,7 @@
+ enum {
+ 	RX51_SPI_WL1251,
+ 	RX51_SPI_MIPID,		/* LCD panel */
++	RX51_SPI_TSC2005,	/* Touch Controller */
  };
  
--static struct fb_fix_screeninfo vesafb_fix __initdata = {
-+static struct fb_fix_screeninfo vesafb_fix __devinitdata = {
- 	.id	= "VESA VGA",
- 	.type	= FB_TYPE_PACKED_PIXELS,
- 	.accel	= FB_ACCEL_NONE,
-@@ -49,8 +49,8 @@ static struct fb_fix_screeninfo vesafb_fix __initdata = {
+ static struct wl12xx_platform_data wl1251_pdata;
+@@ -60,6 +61,11 @@ static struct omap2_mcspi_device_config mipid_mcspi_config = {
+ 	.single_channel	= 1,
+ };
  
- static int   inverse    __read_mostly;
- static int   mtrr       __read_mostly;		/* disable mtrr */
--static int   vram_remap __initdata;		/* Set amount of memory to be used */
--static int   vram_total __initdata;		/* Set total amount of memory */
-+static int   vram_remap __devinitdata;		/* Set amount of memory to be used */
-+static int   vram_total __devinitdata;		/* Set total amount of memory */
- static int   pmi_setpal __read_mostly = 1;	/* pmi for palette changes ??? */
- static int   ypan       __read_mostly;		/* 0..nothing, 1..ypan, 2..ywrap */
- static void  (*pmi_start)(void) __read_mostly;
++static struct omap2_mcspi_device_config tsc2005_mcspi_config = {
++	.turbo_mode	= 0,
++	.single_channel	= 1,
++};
++
+ static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
+ 	[RX51_SPI_WL1251] = {
+ 		.modalias		= "wl1251",
+@@ -77,6 +83,15 @@ static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
+ 		.max_speed_hz		= 6000000,
+ 		.controller_data	= &mipid_mcspi_config,
+ 	},
++	[RX51_SPI_TSC2005] = {
++		.modalias		= "tsc2005",
++		.bus_num		= 1,
++		.chip_select		= 0,
++		/* .irq = OMAP_GPIO_IRQ(RX51_TSC2005_IRQ_GPIO),*/
++		.max_speed_hz		= 6000000,
++		.controller_data	= &tsc2005_mcspi_config,
++		/* .platform_data = &tsc2005_config,*/
++	},
+ };
+ 
+ #if defined(CONFIG_KEYBOARD_GPIO) || defined(CONFIG_KEYBOARD_GPIO_MODULE)
 -- 
-1.7.0
+1.6.0.4
 

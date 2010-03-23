@@ -1,7 +1,7 @@
 From: Roger Quadros <roger.quadros@nokia.com>
-Date: Thu, 18 Mar 2010 07:39:39 +0000
+Date: Tue, 23 Mar 2010 08:45:54 +0000
 Subject: Re: [PATCHv2 0/3] OMAP: DSS2: Allow us to use SDI
-Message-Id: <4BA1D8BB.8080604@nokia.com>
+Message-Id: <4BA87FC2.8000405@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1268829321-29769-1-git-send-email-roger.quadros@nokia.com> <1268835050.2417.277.camel@tubuntu.research.nokia.com>
 In-Reply-To: <1268835050.2417.277.camel@tubuntu.research.nokia.com>
@@ -36,7 +36,12 @@ Valkeinen Tomi (Nokia-D/Helsinki) wrote:
 >  Tomi
 > 
 > Ps. I took the liberty of removing an extra #include <plat/cpu.h>
+> 
+> 
+Are these patches applied somewhere already. I need to send more patches that 
+get N900 panel working for which I need these patches applied.
 
-Thanks, I had overlooked it.
-
+cheers,
 -roger
+
+

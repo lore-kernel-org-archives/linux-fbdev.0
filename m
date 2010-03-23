@@ -1,574 +1,611 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Mon, 29 Mar 2010 20:34:18 +0000
-Subject: [PATCH v4 6/6] hid: add experimental access to PicoLCD device's
-Message-Id: <20100329223418.77c8ccb7@neptune.home>
+From: Roger Quadros <roger.quadros@nokia.com>
+Date: Tue, 23 Mar 2010 09:56:30 +0000
+Subject: [PATCH 4/5] OMAP: DSS2: Add ACX565AKM Panel Driver
+Message-Id: <1269338191-10734-5-git-send-email-roger.quadros@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100324233707.7243b04d@neptune.home>
-	<20100324235835.0e7e1bcb@neptune.home>
-	<alpine.LNX.2.00.1003291142400.24576@pobox.suse.cz>
-In-Reply-To: <alpine.LNX.2.00.1003291142400.24576-ztGlSCb7Y1iN3ZZ/Hiejyg@public.gmane.org>
+References: <1269338191-10734-1-git-send-email-roger.quadros@nokia.com>
+ <1269338191-10734-2-git-send-email-roger.quadros@nokia.com>
+ <1269338191-10734-3-git-send-email-roger.quadros@nokia.com>
+ <1269338191-10734-4-git-send-email-roger.quadros@nokia.com>
+In-Reply-To: <1269338191-10734-4-git-send-email-roger.quadros@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>
-Cc: linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rick L. Vinyard Jr." <rvinyard-qcTL/1vZYtiVc3sceRu5cw@public.gmane.org>, Nicu Pavel <npavel-VxACSXvuqMTQT0dZR+AlfA@public.gmane.org>, Oliver Neukum <oliver-GvhC2dPhHPQdnm+yROfE0A@public.gmane.org>, Jaya Kumar <jayakumar.lkml-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tony@atomide.com
+Cc: Tomi.Valkeinen@nokia.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-The PicoLCD device has a small amount of EEPROM and also provides access
-to its FLASH where firmware and splash image are saved.
-In flasher mode FLASH access is the only active feature.
+From: Roger Quadros <roger.quadros@nokia.com>
 
-Give read/write access to both via debugfs files.
+This is the panel used on Nokia N900
 
-NOTE: EEPROM and FLASH access should be switched to better suited API,
-      until then the will reside in debugfs
-
-Changes since v3:
- - Fix return value of picolcd_debug_reset_open
-Changes since v2:
- - Drop inline keyword on non-stub functions
- - Prevent interleaved flash writes via mutex
- - Add description of flash/eeprom access schematincs
-
-Signed-off-by: Bruno Prémont <bonbons@linux-vserver.org>
+Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
 ---
+ drivers/video/omap2/displays/Kconfig           |    5 +
+ drivers/video/omap2/displays/Makefile          |    1 +
+ drivers/video/omap2/displays/panel-acx565akm.c |  551 ++++++++++++++++++++++++
+ 3 files changed, 557 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/omap2/displays/panel-acx565akm.c
 
-On Mon, 29 March 2010 Jiri Kosina <jkosina@suse.cz> wrote:
-> On Wed, 24 Mar 2010, Bruno Prémont wrote:
-> 
-> > +static ssize_t picolcd_debug_reset_open(struct inode *inode, struct file *f)
-> > +{
-> > +	return single_open(f, picolcd_debug_reset_show, inode->i_private);
-> > +}
-> > +
-> 
-> struct file_operations->open is supposed to return int (filedescriptor), 
-> not ssize_t.
-
-Fixed with this updated patch, thanks for noticing.
-(today I compiled on both x86 32bit and 64bit without compiler warnings,
- so hopefully no remaining type mixes of that kind)
-
-
- drivers/hid/Kconfig       |    2 +-
- drivers/hid/hid-picolcd.c |  439 +++++++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 423 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
-index 34f6593..a2ecd83 100644
---- a/drivers/hid/Kconfig
-+++ b/drivers/hid/Kconfig
-@@ -281,9 +281,9 @@ config HID_PICOLCD
- 	  - Backlight control         (needs CONFIG_BACKLIGHT_CLASS_DEVICE)
- 	  - Contrast control          (needs CONFIG_LCD_CLASS_DEVICE)
- 	  - General purpose outputs   (needs CONFIG_LEDS_CLASS)
-+	  - EEProm / Flash access     (via debugfs)
- 	  Features that are not (yet) supported:
- 	  - IR
--	  - EEProm / Flash access
+diff --git a/drivers/video/omap2/displays/Kconfig b/drivers/video/omap2/displays/Kconfig
+index dfb57ee..c34e1f5 100644
+--- a/drivers/video/omap2/displays/Kconfig
++++ b/drivers/video/omap2/displays/Kconfig
+@@ -37,4 +37,9 @@ config PANEL_TPO_TD043MTEA1
+         help
+           LCD Panel used in OMAP3 Pandora
  
- config HID_QUANTA
- 	tristate "Quanta Optical Touch"
-diff --git a/drivers/hid/hid-picolcd.c b/drivers/hid/hid-picolcd.c
-index 38c6711..daa7c5d 100644
---- a/drivers/hid/hid-picolcd.c
-+++ b/drivers/hid/hid-picolcd.c
-@@ -169,6 +169,10 @@ struct picolcd_pending {
- struct picolcd_data {
- 	struct hid_device *hdev;
- #ifdef CONFIG_DEBUG_FS
-+	struct dentry *debug_reset;
-+	struct dentry *debug_eeprom;
-+	struct dentry *debug_flash;
-+	struct mutex mutex_flash;
- 	int addr_sz;
- #endif
- 	u8 version[2];
-@@ -1327,6 +1331,357 @@ static DEVICE_ATTR(operation_mode, 0644, picolcd_operation_mode_show,
- 
- #ifdef CONFIG_DEBUG_FS
- /*
-+ * The "reset" file
++config PANEL_ACX565AKM
++	tristate "ACX565AKM Panel"
++	depends on OMAP2_DSS_SDI
++	help
++	  This is the LCD panel used on Nokia N900
+ endmenu
+diff --git a/drivers/video/omap2/displays/Makefile b/drivers/video/omap2/displays/Makefile
+index e2bb321..aa38609 100644
+--- a/drivers/video/omap2/displays/Makefile
++++ b/drivers/video/omap2/displays/Makefile
+@@ -5,3 +5,4 @@ obj-$(CONFIG_PANEL_SHARP_LQ043T1DG01) += panel-sharp-lq043t1dg01.o
+ obj-$(CONFIG_PANEL_TAAL) += panel-taal.o
+ obj-$(CONFIG_PANEL_TOPPOLY_TDO35S) += panel-toppoly-tdo35s.o
+ obj-$(CONFIG_PANEL_TPO_TD043MTEA1) += panel-tpo-td043mtea1.o
++obj-$(CONFIG_PANEL_ACX565AKM) += panel-acx565akm.o
+diff --git a/drivers/video/omap2/displays/panel-acx565akm.c b/drivers/video/omap2/displays/panel-acx565akm.c
+new file mode 100644
+index 0000000..a63447f
+--- /dev/null
++++ b/drivers/video/omap2/displays/panel-acx565akm.c
+@@ -0,0 +1,551 @@
++/*
++ * Support for ACX565AKM LCD Panel used on Nokia N900
++ *
++ * Copyright (C) 2010 Nokia Corporation
++ * Author: Roger Quadros <roger.quadros@nokia.com>
++ *
++ * Based on panel-generic.c by Tomi Valkeinen <tomi.valkeinen@nokia.com>
++ * Borrowed MIPID SPI code from Imre Deak <imre.deak@nokia.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
 + */
-+static int picolcd_debug_reset_show(struct seq_file *f, void *p)
-+{
-+	if (picolcd_fbinfo((struct picolcd_data *)f->private))
-+		seq_printf(f, "all fb\n");
-+	else
-+		seq_printf(f, "all\n");
-+	return 0;
-+}
 +
-+static int picolcd_debug_reset_open(struct inode *inode, struct file *f)
-+{
-+	return single_open(f, picolcd_debug_reset_show, inode->i_private);
-+}
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/delay.h>
++#include <linux/spi/spi.h>
++#include <linux/jiffies.h>
++#include <linux/sched.h>
++#include <linux/backlight.h>
 +
-+static ssize_t picolcd_debug_reset_write(struct file *f, const char __user *user_buf,
-+		size_t count, loff_t *ppos)
-+{
-+	struct picolcd_data *data = ((struct seq_file *)f->private_data)->private;
-+	char buf[32];
-+	size_t cnt = min(count, sizeof(buf)-1);
-+	if (copy_from_user(buf, user_buf, cnt))
-+		return -EFAULT;
++#include <plat/display.h>
 +
-+	while (cnt > 0 && (buf[cnt-1] = ' ' || buf[cnt-1] = '\n'))
-+		cnt--;
-+	buf[cnt] = '\0';
-+	if (strcmp(buf, "all") = 0) {
-+		picolcd_reset(data->hdev);
-+		picolcd_fb_reset(data, 1);
-+	} else if (strcmp(buf, "fb") = 0) {
-+		picolcd_fb_reset(data, 1);
-+	} else {
-+		return -EINVAL;
-+	}
-+	return count;
-+}
++#define MIPID_CMD_READ_DISP_ID		0x04
++#define MIPID_CMD_READ_RED		0x06
++#define MIPID_CMD_READ_GREEN		0x07
++#define MIPID_CMD_READ_BLUE		0x08
++#define MIPID_CMD_READ_DISP_STATUS	0x09
++#define MIPID_CMD_RDDSDR		0x0F
++#define MIPID_CMD_SLEEP_IN		0x10
++#define MIPID_CMD_SLEEP_OUT		0x11
++#define MIPID_CMD_DISP_OFF		0x28
++#define MIPID_CMD_DISP_ON		0x29
++#define MIPID_CMD_WRITE_DISP_BRIGHTNESS	0x51
++#define MIPID_CMD_READ_DISP_BRIGHTNESS	0x52
++#define MIPID_CMD_WRITE_CTRL_DISP	0x53
 +
-+static const struct file_operations picolcd_debug_reset_fops = {
-+	.owner    = THIS_MODULE,
-+	.open     = picolcd_debug_reset_open,
-+	.read     = seq_read,
-+	.llseek   = seq_lseek,
-+	.write    = picolcd_debug_reset_write,
-+	.release  = single_release,
++#define CTRL_DISP_BRIGHTNESS_CTRL_ON	(1 << 5)
++#define CTRL_DISP_AMBIENT_LIGHT_CTRL_ON	(1 << 4)
++#define CTRL_DISP_BACKLIGHT_ON		(1 << 2)
++#define CTRL_DISP_AUTO_BRIGHTNESS_ON	(1 << 1)
++
++#define MIPID_CMD_READ_CTRL_DISP	0x54
++#define MIPID_CMD_WRITE_CABC		0x55
++#define MIPID_CMD_READ_CABC		0x56
++
++#define MIPID_VER_LPH8923		3
++#define MIPID_VER_LS041Y3		4
++#define MIPID_VER_L4F00311		8
++#define MIPID_VER_ACX565AKM		9
++
++struct acx565akm_device {
++	char		*name;
++	int		enabled;
++	int		model;
++	int		revision;
++	u8		display_id[3];
++	unsigned	has_bc:1;
++	unsigned	has_cabc:1;
++	unsigned	cabc_mode;
++	unsigned long	hw_guard_end;		/* next value of jiffies
++						   when we can issue the
++						   next sleep in/out command */
++	unsigned long	hw_guard_wait;		/* max guard time in jiffies */
++
++	struct spi_device	*spi;
++	struct mutex		mutex;
++
++	struct omap_dss_device	*dssdev;
 +};
 +
-+/*
-+ * The "eeprom" file
-+ */
-+static int picolcd_debug_eeprom_open(struct inode *i, struct file *f)
++static struct acx565akm_device acx_dev;
++
++/*--------------------MIPID interface-----------------------------*/
++
++static void acx565akm_transfer(struct acx565akm_device *md, int cmd,
++			      const u8 *wbuf, int wlen, u8 *rbuf, int rlen)
 +{
-+	f->private_data = i->i_private;
++	struct spi_message	m;
++	struct spi_transfer	*x, xfer[5];
++	int			r;
++
++	BUG_ON(md->spi = NULL);
++
++	spi_message_init(&m);
++
++	memset(xfer, 0, sizeof(xfer));
++	x = &xfer[0];
++
++	cmd &=  0xff;
++	x->tx_buf = &cmd;
++	x->bits_per_word = 9;
++	x->len = 2;
++
++	if (rlen > 1 && wlen = 0) {
++		/*
++		 * Between the command and the response data there is a
++		 * dummy clock cycle. Add an extra bit after the command
++		 * word to account for this.
++		 */
++		x->bits_per_word = 10;
++		cmd <<= 1;
++	}
++	spi_message_add_tail(x, &m);
++
++	if (wlen) {
++		x++;
++		x->tx_buf = wbuf;
++		x->len = wlen;
++		x->bits_per_word = 9;
++		spi_message_add_tail(x, &m);
++	}
++
++	if (rlen) {
++		x++;
++		x->rx_buf	= rbuf;
++		x->len		= rlen;
++		spi_message_add_tail(x, &m);
++	}
++
++	r = spi_sync(md->spi, &m);
++	if (r < 0)
++		dev_dbg(&md->spi->dev, "spi_sync %d\n", r);
++}
++
++static inline void acx565akm_cmd(struct acx565akm_device *md, int cmd)
++{
++	acx565akm_transfer(md, cmd, NULL, 0, NULL, 0);
++}
++
++static inline void acx565akm_write(struct acx565akm_device *md,
++			       int reg, const u8 *buf, int len)
++{
++	acx565akm_transfer(md, reg, buf, len, NULL, 0);
++}
++
++static inline void acx565akm_read(struct acx565akm_device *md,
++			      int reg, u8 *buf, int len)
++{
++	acx565akm_transfer(md, reg, NULL, 0, buf, len);
++}
++
++static void hw_guard_start(struct acx565akm_device *md, int guard_msec)
++{
++	md->hw_guard_wait = msecs_to_jiffies(guard_msec);
++	md->hw_guard_end = jiffies + md->hw_guard_wait;
++}
++
++static void hw_guard_wait(struct acx565akm_device *md)
++{
++	unsigned long wait = md->hw_guard_end - jiffies;
++
++	if ((long)wait > 0 && wait <= md->hw_guard_wait) {
++		set_current_state(TASK_UNINTERRUPTIBLE);
++		schedule_timeout(wait);
++	}
++}
++
++/*----------------------MIPID wrappers----------------------------*/
++
++static void set_sleep_mode(struct acx565akm_device *md, int on)
++{
++	int cmd;
++
++	if (on)
++		cmd = MIPID_CMD_SLEEP_IN;
++	else
++		cmd = MIPID_CMD_SLEEP_OUT;
++	/*
++	 * We have to keep 120msec between sleep in/out commands.
++	 * (8.2.15, 8.2.16).
++	 */
++	hw_guard_wait(md);
++	acx565akm_cmd(md, cmd);
++	hw_guard_start(md, 120);
++}
++
++static void set_display_state(struct acx565akm_device *md, int enabled)
++{
++	int cmd = enabled ? MIPID_CMD_DISP_ON : MIPID_CMD_DISP_OFF;
++
++	acx565akm_cmd(md, cmd);
++}
++
++static int panel_enabled(struct acx565akm_device *md)
++{
++	u32 disp_status;
++	int enabled;
++
++	acx565akm_read(md, MIPID_CMD_READ_DISP_STATUS, (u8 *)&disp_status, 4);
++	disp_status = __be32_to_cpu(disp_status);
++	enabled = (disp_status & (1 << 17)) && (disp_status & (1 << 10));
++	dev_dbg(&md->spi->dev,
++		"LCD panel %senabled by bootloader (status 0x%04x)\n",
++		enabled ? "" : "not ", disp_status);
++	return enabled;
++}
++
++static int panel_detect(struct acx565akm_device *md)
++{
++	acx565akm_read(md, MIPID_CMD_READ_DISP_ID, md->display_id, 3);
++	dev_dbg(&md->spi->dev, "MIPI display ID: %02x%02x%02x\n",
++		md->display_id[0], md->display_id[1], md->display_id[2]);
++
++	switch (md->display_id[0]) {
++	case 0x10:
++		md->model = MIPID_VER_ACX565AKM;
++		md->name = "acx565akm";
++		md->has_bc = 1;
++		md->has_cabc = 1;
++		break;
++	case 0x29:
++		md->model = MIPID_VER_L4F00311;
++		md->name = "l4f00311";
++		break;
++	case 0x45:
++		md->model = MIPID_VER_LPH8923;
++		md->name = "lph8923";
++		break;
++	case 0x83:
++		md->model = MIPID_VER_LS041Y3;
++		md->name = "ls041y3";
++		break;
++	default:
++		md->name = "unknown";
++		dev_err(&md->spi->dev, "invalid display ID\n");
++		return -ENODEV;
++	}
++
++	md->revision = md->display_id[1];
++
++	dev_info(&md->spi->dev, "omapfb: %s rev %02x LCD detected\n",
++			md->name, md->revision);
++
 +	return 0;
 +}
 +
-+static ssize_t picolcd_debug_eeprom_read(struct file *f, char __user *u,
-+		size_t s, loff_t *off)
-+{
-+	struct picolcd_data *data = f->private_data;
-+	struct picolcd_pending *resp;
-+	u8 raw_data[3];
-+	ssize_t ret = -EIO;
++/*---------------------------ACX Panel----------------------------*/
 +
-+	if (s = 0)
-+		return -EINVAL;
-+	if (*off > 0x0ff)
++static int acx_get_recommended_bpp(struct omap_dss_device *dssdev)
++{
++	return 16;
++}
++
++static struct omap_video_timings acx_panel_timings = {
++	.x_res		= 800,
++	.y_res		= 480,
++	.pixel_clock	= 24000,
++	.hfp		= 28,
++	.hsw		= 4,
++	.hbp		= 24,
++	.vfp		= 3,
++	.vsw		= 3,
++	.vbp		= 4,
++};
++
++static int acx_panel_probe(struct omap_dss_device *dssdev)
++{
++	int r;
++	struct acx565akm_device *md = &acx_dev;
++
++	dev_dbg(&dssdev->dev, "%s\n", __func__);
++	dssdev->panel.config = OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
++					OMAP_DSS_LCD_IHS;
++	/* FIXME AC bias ? */
++	dssdev->panel.timings = acx_panel_timings;
++
++	if (dssdev->platform_enable)
++		dssdev->platform_enable(dssdev);
++	/*
++	 * After reset we have to wait 5 msec before the first
++	 * command can be sent.
++	 */
++	msleep(5);
++
++	md->enabled = panel_enabled(md);
++
++	r = panel_detect(md);
++	if (r) {
++		dev_err(&dssdev->dev, "%s panel detect error\n", __func__);
++		if (!md->enabled && dssdev->platform_disable)
++			dssdev->platform_disable(dssdev);
++		return r;
++	}
++
++	mutex_lock(&acx_dev.mutex);
++	acx_dev.dssdev = dssdev;
++	mutex_unlock(&acx_dev.mutex);
++
++	if (!md->enabled) {
++		if (dssdev->platform_disable)
++			dssdev->platform_disable(dssdev);
++	}
++
++	return 0;
++}
++
++static void acx_panel_remove(struct omap_dss_device *dssdev)
++{
++	dev_dbg(&dssdev->dev, "%s\n", __func__);
++	mutex_lock(&acx_dev.mutex);
++	acx_dev.dssdev = NULL;
++	mutex_unlock(&acx_dev.mutex);
++}
++
++static int acx_panel_power_on(struct omap_dss_device *dssdev)
++{
++	struct acx565akm_device *md = &acx_dev;
++	int r;
++
++	dev_dbg(&dssdev->dev, "%s\n", __func__);
++
++	mutex_lock(&md->mutex);
++
++	r = omapdss_sdi_display_enable(dssdev);
++	if (r) {
++		pr_err("%s sdi enable failed\n", __func__);
++		return r;
++	}
++
++	/*FIXME tweak me */
++	msleep(50);
++
++	if (dssdev->platform_enable) {
++		r = dssdev->platform_enable(dssdev);
++		if (r)
++			goto fail;
++	}
++
++	if (md->enabled) {
++		dev_dbg(&md->spi->dev, "panel already enabled\n");
++		mutex_unlock(&md->mutex);
 +		return 0;
-+
-+	/* prepare buffer with info about what we want to read (addr & len) */
-+	raw_data[0] = *off & 0xff;
-+	raw_data[1] = (*off >> 8) && 0xff;
-+	raw_data[2] = s < 20 ? s : 20;
-+	if (*off + raw_data[2] > 0xff)
-+		raw_data[2] = 0x100 - *off;
-+	resp = picolcd_send_and_wait(data->hdev, REPORT_EE_READ, raw_data,
-+			sizeof(raw_data));
-+	if (!resp)
-+		return -EIO;
-+
-+	if (resp->in_report && resp->in_report->id = REPORT_EE_DATA) {
-+		/* successful read :) */
-+		ret = resp->raw_data[2];
-+		if (ret > s)
-+			ret = s;
-+		if (copy_to_user(u, resp->raw_data+3, ret))
-+			ret = -EFAULT;
-+		else
-+			*off += ret;
-+	} /* anything else is some kind of IO error */
-+
-+	kfree(resp);
-+	return ret;
-+}
-+
-+static ssize_t picolcd_debug_eeprom_write(struct file *f, const char __user *u,
-+		size_t s, loff_t *off)
-+{
-+	struct picolcd_data *data = f->private_data;
-+	struct picolcd_pending *resp;
-+	ssize_t ret = -EIO;
-+	u8 raw_data[23];
-+
-+	if (s = 0)
-+		return -EINVAL;
-+	if (*off > 0x0ff)
-+		return -ENOSPC;
-+
-+	memset(raw_data, 0, sizeof(raw_data));
-+	raw_data[0] = *off & 0xff;
-+	raw_data[1] = (*off >> 8) && 0xff;
-+	raw_data[2] = s < 20 ? s : 20;
-+	if (*off + raw_data[2] > 0xff)
-+		raw_data[2] = 0x100 - *off;
-+
-+	if (copy_from_user(raw_data+3, u, raw_data[2]))
-+		return -EFAULT;
-+	resp = picolcd_send_and_wait(data->hdev, REPORT_EE_WRITE, raw_data,
-+			sizeof(raw_data));
-+
-+	if (!resp)
-+		return -EIO;
-+
-+	if (resp->in_report && resp->in_report->id = REPORT_EE_DATA) {
-+		/* check if written data matches */
-+		if (memcmp(raw_data, resp->raw_data, 3+raw_data[2]) = 0) {
-+			*off += raw_data[2];
-+			ret = raw_data[2];
-+		}
 +	}
-+	kfree(resp);
-+	return ret;
++
++	/*
++	 * We have to meet all the following delay requirements:
++	 * 1. tRW: reset pulse width 10usec (7.12.1)
++	 * 2. tRT: reset cancel time 5msec (7.12.1)
++	 * 3. Providing PCLK,HS,VS signals for 2 frames = ~50msec worst
++	 *    case (7.6.2)
++	 * 4. 120msec before the sleep out command (7.12.1)
++	 */
++	msleep(120);
++
++	set_sleep_mode(md, 0);
++	md->enabled = 1;
++
++	/* 5msec between sleep out and the next command. (8.2.16) */
++	msleep(5);
++	set_display_state(md, 1);
++
++	mutex_unlock(&md->mutex);
++
++	return 0;
++fail:
++	omapdss_sdi_display_disable(dssdev);
++	return r;
 +}
 +
-+/*
-+ * Notes:
-+ * - read/write happens in chunks of at most 20 bytes, it's up to userspace
-+ *   to loop in order to get more data.
-+ * - on write errors on otherwise correct write request the bytes
-+ *   that should have been written are in undefined state.
-+ */
-+static const struct file_operations picolcd_debug_eeprom_fops = {
-+	.owner    = THIS_MODULE,
-+	.open     = picolcd_debug_eeprom_open,
-+	.read     = picolcd_debug_eeprom_read,
-+	.write    = picolcd_debug_eeprom_write,
-+	.llseek   = generic_file_llseek,
-+};
-+
-+/*
-+ * The "flash" file
-+ */
-+static int picolcd_debug_flash_open(struct inode *i, struct file *f)
++static void acx_panel_power_off(struct omap_dss_device *dssdev)
 +{
-+	f->private_data = i->i_private;
++	struct acx565akm_device *md = &acx_dev;
++
++	dev_dbg(&dssdev->dev, "%s\n", __func__);
++
++	mutex_lock(&md->mutex);
++
++	if (!md->enabled) {
++		mutex_unlock(&md->mutex);
++		return;
++	}
++	set_display_state(md, 0);
++	set_sleep_mode(md, 1);
++	md->enabled = 0;
++	/*
++	 * We have to provide PCLK,HS,VS signals for 2 frames (worst case
++	 * ~50msec) after sending the sleep in command and asserting the
++	 * reset signal. We probably could assert the reset w/o the delay
++	 * but we still delay to avoid possible artifacts. (7.6.1)
++	 */
++	msleep(50);
++
++	if (dssdev->platform_disable)
++		dssdev->platform_disable(dssdev);
++
++	/* FIXME need to tweak this delay */
++	msleep(100);
++
++	omapdss_sdi_display_disable(dssdev);
++
++	mutex_unlock(&md->mutex);
++}
++
++static int acx_panel_enable(struct omap_dss_device *dssdev)
++{
++	int r;
++
++	dev_dbg(&dssdev->dev, "%s\n", __func__);
++	r = acx_panel_power_on(dssdev);
++
++	if (r)
++		return r;
++
++	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
 +	return 0;
 +}
 +
-+/* record a flash address to buf (bounds check to be done by caller) */
-+static int _picolcd_flash_setaddr(struct picolcd_data *data, u8 *buf, long off)
++static void acx_panel_disable(struct omap_dss_device *dssdev)
 +{
-+	buf[0] = off & 0xff;
-+	buf[1] = (off >> 8) & 0xff;
-+	if (data->addr_sz = 3)
-+		buf[2] = (off >> 16) & 0xff;
-+	return data->addr_sz = 2 ? 2 : 3;
++	dev_dbg(&dssdev->dev, "%s\n", __func__);
++	acx_panel_power_off(dssdev);
++	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
 +}
 +
-+/* read a given size of data (bounds check to be done by caller) */
-+static ssize_t _picolcd_flash_read(struct picolcd_data *data, int report_id,
-+		char __user *u, size_t s, loff_t *off)
++static int acx_panel_suspend(struct omap_dss_device *dssdev)
 +{
-+	struct picolcd_pending *resp;
-+	u8 raw_data[4];
-+	ssize_t ret = 0;
-+	int len_off, err = -EIO;
++	dev_dbg(&dssdev->dev, "%s\n", __func__);
++	acx_panel_power_off(dssdev);
++	dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED;
++	return 0;
++}
 +
-+	while (s > 0) {
-+		err = -EIO;
-+		len_off = _picolcd_flash_setaddr(data, raw_data, *off);
-+		raw_data[len_off] = s > 32 ? 32 : s;
-+		resp = picolcd_send_and_wait(data->hdev, report_id, raw_data, len_off+1);
-+		if (!resp || !resp->in_report)
-+			goto skip;
-+		if (resp->in_report->id = REPORT_MEMORY ||
-+			resp->in_report->id = REPORT_BL_READ_MEMORY) {
-+			if (memcmp(raw_data, resp->raw_data, len_off+1) != 0)
-+				goto skip;
-+			if (copy_to_user(u+ret, resp->raw_data+len_off+1, raw_data[len_off])) {
-+				err = -EFAULT;
-+				goto skip;
-+			}
-+			*off += raw_data[len_off];
-+			s    -= raw_data[len_off];
-+			ret  += raw_data[len_off];
-+			err   = 0;
-+		}
-+skip:
-+		kfree(resp);
-+		if (err)
-+			return ret > 0 ? ret : err;
++static int acx_panel_resume(struct omap_dss_device *dssdev)
++{
++	int r;
++
++	dev_dbg(&dssdev->dev, "%s\n", __func__);
++	r = acx_panel_power_on(dssdev);
++	if (r)
++		return r;
++
++	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
++	return 0;
++}
++
++static void acx_panel_set_timings(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings)
++{
++	int r;
++
++	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
++		omapdss_sdi_display_disable(dssdev);
++
++	dssdev->panel.timings = *timings;
++
++	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
++		r = omapdss_sdi_display_enable(dssdev);
++		if (r)
++			dev_err(&dssdev->dev, "%s enable failed\n", __func__);
 +	}
-+	return ret;
 +}
 +
-+static ssize_t picolcd_debug_flash_read(struct file *f, char __user *u,
-+		size_t s, loff_t *off)
++static void acx_panel_get_timings(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings)
 +{
-+	struct picolcd_data *data = f->private_data;
-+
-+	if (s = 0)
-+		return -EINVAL;
-+	if (*off > 0x05fff)
-+		return 0;
-+	if (*off + s > 0x05fff)
-+		s = 0x06000 - *off;
-+
-+	if (data->status & PICOLCD_BOOTLOADER)
-+		return _picolcd_flash_read(data, REPORT_BL_READ_MEMORY, u, s, off);
-+	else
-+		return _picolcd_flash_read(data, REPORT_READ_MEMORY, u, s, off);
++	*timings = dssdev->panel.timings;
 +}
 +
-+/* erase block aligned to 64bytes boundary */
-+static ssize_t _picolcd_flash_erase64(struct picolcd_data *data, int report_id,
-+		loff_t *off)
++static int acx_panel_check_timings(struct omap_dss_device *dssdev,
++		struct omap_video_timings *timings)
 +{
-+	struct picolcd_pending *resp;
-+	u8 raw_data[3];
-+	int len_off;
-+	ssize_t ret = -EIO;
-+
-+	if (*off & 0x3f)
-+		return -EINVAL;
-+
-+	len_off = _picolcd_flash_setaddr(data, raw_data, *off);
-+	resp = picolcd_send_and_wait(data->hdev, report_id, raw_data, len_off);
-+	if (!resp || !resp->in_report)
-+		goto skip;
-+	if (resp->in_report->id = REPORT_MEMORY ||
-+		resp->in_report->id = REPORT_BL_ERASE_MEMORY) {
-+		if (memcmp(raw_data, resp->raw_data, len_off) != 0)
-+			goto skip;
-+		ret = 0;
-+	}
-+skip:
-+	kfree(resp);
-+	return ret;
++	return 0;
 +}
 +
-+/* write a given size of data (bounds check to be done by caller) */
-+static ssize_t _picolcd_flash_write(struct picolcd_data *data, int report_id,
-+		const char __user *u, size_t s, loff_t *off)
-+{
-+	struct picolcd_pending *resp;
-+	u8 raw_data[36];
-+	ssize_t ret = 0;
-+	int len_off, err = -EIO;
 +
-+	while (s > 0) {
-+		err = -EIO;
-+		len_off = _picolcd_flash_setaddr(data, raw_data, *off);
-+		raw_data[len_off] = s > 32 ? 32 : s;
-+		if (copy_from_user(raw_data+len_off+1, u, raw_data[len_off])) {
-+			err = -EFAULT;
-+			goto skip;
-+		}
-+		resp = picolcd_send_and_wait(data->hdev, report_id, raw_data,
-+				len_off+1+raw_data[len_off]);
-+		if (!resp || !resp->in_report)
-+			goto skip;
-+		if (resp->in_report->id = REPORT_MEMORY ||
-+			resp->in_report->id = REPORT_BL_WRITE_MEMORY) {
-+			if (memcmp(raw_data, resp->raw_data, len_off+1+raw_data[len_off]) != 0)
-+				goto skip;
-+			*off += raw_data[len_off];
-+			s    -= raw_data[len_off];
-+			ret  += raw_data[len_off];
-+			err   = 0;
-+		}
-+skip:
-+		kfree(resp);
-+		if (err)
-+			break;
-+	}
-+	return ret > 0 ? ret : err;
-+}
++static struct omap_dss_driver acx_panel_driver = {
++	.probe		= acx_panel_probe,
++	.remove		= acx_panel_remove,
 +
-+static ssize_t picolcd_debug_flash_write(struct file *f, const char __user *u,
-+		size_t s, loff_t *off)
-+{
-+	struct picolcd_data *data = f->private_data;
-+	ssize_t err, ret = 0;
-+	int report_erase, report_write;
++	.enable		= acx_panel_enable,
++	.disable	= acx_panel_disable,
++	.suspend	= acx_panel_suspend,
++	.resume		= acx_panel_resume,
 +
-+	if (s = 0)
-+		return -EINVAL;
-+	if (*off > 0x5fff)
-+		return -ENOSPC;
-+	if (s & 0x3f)
-+		return -EINVAL;
-+	if (*off & 0x3f)
-+		return -EINVAL;
++	.set_timings	= acx_panel_set_timings,
++	.get_timings	= acx_panel_get_timings,
++	.check_timings	= acx_panel_check_timings,
 +
-+	if (data->status & PICOLCD_BOOTLOADER) {
-+		report_erase = REPORT_BL_ERASE_MEMORY;
-+		report_write = REPORT_BL_WRITE_MEMORY;
-+	} else {
-+		report_erase = REPORT_ERASE_MEMORY;
-+		report_write = REPORT_WRITE_MEMORY;
-+	}
-+	mutex_lock(&data->mutex_flash);
-+	while (s > 0) {
-+		err = _picolcd_flash_erase64(data, report_erase, off);
-+		if (err)
-+			break;
-+		err = _picolcd_flash_write(data, report_write, u, 64, off);
-+		if (err < 0)
-+			break;
-+		ret += err;
-+		*off += err;
-+		s -= err;
-+		if (err != 64)
-+			break;
-+	}
-+	mutex_unlock(&data->mutex_flash);
-+	return ret > 0 ? ret : err;
-+}
++	.get_recommended_bpp = acx_get_recommended_bpp,
 +
-+/*
-+ * Notes:
-+ * - concurrent writing is prevented by mutex and all writes must be
-+ *   n*64 bytes and 64-byte aligned, each write being preceeded by an
-+ *   ERASE which erases a 64byte block.
-+ *   If less than requested was written or an error is returned for an
-+ *   otherwise correct write request the next 64-byte block which should
-+ *   have been written is in undefined state (mostly: original, erased,
-+ *   (half-)written with write error)
-+ * - reading can happend without special restriction
-+ */
-+static const struct file_operations picolcd_debug_flash_fops = {
-+	.owner    = THIS_MODULE,
-+	.open     = picolcd_debug_flash_open,
-+	.read     = picolcd_debug_flash_read,
-+	.write    = picolcd_debug_flash_write,
-+	.llseek   = generic_file_llseek,
++	.driver         = {
++		.name   = "panel-acx565akm",
++		.owner  = THIS_MODULE,
++	},
 +};
 +
++/*--------------------SPI probe-------------------------*/
 +
-+/*
-  * Helper code for HID report level dumping/debugging
-  */
- static const char *error_codes[] = {
-@@ -1801,9 +2156,66 @@ static void picolcd_debug_raw_event(struct picolcd_data *data,
- 	wake_up_interruptible(&hdev->debug_wait);
- 	kfree(buff);
- }
-+
-+static void picolcd_init_devfs(struct picolcd_data *data,
-+		struct hid_report *eeprom_r, struct hid_report *eeprom_w,
-+		struct hid_report *flash_r, struct hid_report *flash_w,
-+		struct hid_report *reset)
++static int acx565akm_spi_probe(struct spi_device *spi)
 +{
-+	struct hid_device *hdev = data->hdev;
++	struct acx565akm_device *md = &acx_dev;
 +
-+	mutex_init(&data->mutex_flash);
++	dev_dbg(&spi->dev, "%s\n", __func__);
 +
-+	/* reset */
-+	if (reset)
-+		data->debug_reset = debugfs_create_file("reset", 0600,
-+				hdev->debug_dir, data, &picolcd_debug_reset_fops);
++	spi->mode = SPI_MODE_3;
++	md->spi = spi;
++	mutex_init(&md->mutex);
++	dev_set_drvdata(&spi->dev, md);
 +
-+	/* eeprom */
-+	if (eeprom_r || eeprom_w)
-+		data->debug_eeprom = debugfs_create_file("eeprom",
-+			(eeprom_w ? S_IWUSR : 0) | (eeprom_r ? S_IRUSR : 0),
-+			hdev->debug_dir, data, &picolcd_debug_eeprom_fops);
++	omap_dss_register_driver(&acx_panel_driver);
 +
-+	/* flash */
-+	if (flash_r && flash_r->maxfield = 1 && flash_r->field[0]->report_size = 8)
-+		data->addr_sz = flash_r->field[0]->report_count - 1;
-+	else
-+		data->addr_sz = -1;
-+	if (data->addr_sz = 2 || data->addr_sz = 3) {
-+		data->debug_flash = debugfs_create_file("flash",
-+			(flash_w ? S_IWUSR : 0) | (flash_r ? S_IRUSR : 0),
-+			hdev->debug_dir, data, &picolcd_debug_flash_fops);
-+	} else if (flash_r || flash_w)
-+		dev_warn(&hdev->dev, "Unexpected FLASH access reports, "
-+				"please submit rdesc for review\n");
++	return 0;
 +}
 +
-+static void picolcd_exit_devfs(struct picolcd_data *data)
++static int acx565akm_spi_remove(struct spi_device *spi)
 +{
-+	struct dentry *dent;
++	struct acx565akm_device *md = dev_get_drvdata(&spi->dev);
 +
-+	dent = data->debug_reset;
-+	data->debug_reset = NULL;
-+	if (dent)
-+		debugfs_remove(dent);
-+	dent = data->debug_eeprom;
-+	data->debug_eeprom = NULL;
-+	if (dent)
-+		debugfs_remove(dent);
-+	dent = data->debug_flash;
-+	data->debug_flash = NULL;
-+	if (dent)
-+		debugfs_remove(dent);
-+	mutex_destroy(&data->mutex_flash);
++	dev_dbg(&md->spi->dev, "%s\n", __func__);
++	omap_dss_unregister_driver(&acx_panel_driver);
++
++	return 0;
 +}
- #else
- #define picolcd_debug_raw_event(data, hdev, report, raw_data, size)
--#endif
-+#define picolcd_init_devfs(data, eeprom_r, eeprom_w, flash_r, flash_w, reset)
-+static void picolcd_exit_devfs(struct picolcd_data *data)
++
++static struct spi_driver acx565akm_spi_driver = {
++	.driver = {
++		.name	= "acx565akm",
++		.bus	= &spi_bus_type,
++		.owner	= THIS_MODULE,
++	},
++	.probe	= acx565akm_spi_probe,
++	.remove	= __devexit_p(acx565akm_spi_remove),
++};
++
++static int __init acx565akm_init(void)
 +{
++	return spi_register_driver(&acx565akm_spi_driver);
 +}
-+#endif /* CONFIG_DEBUG_FS */
- 
- /*
-  * Handle raw report as sent by device
-@@ -1950,7 +2362,6 @@ static inline void picolcd_exit_cir(struct picolcd_data *data)
- 
- static int picolcd_probe_lcd(struct hid_device *hdev, struct picolcd_data *data)
- {
--	struct hid_report *report;
- 	int error;
- 
- 	error = picolcd_check_version(hdev);
-@@ -1992,13 +2403,11 @@ static int picolcd_probe_lcd(struct hid_device *hdev, struct picolcd_data *data)
- 	if (error)
- 		goto err;
- 
--#ifdef CONFIG_DEBUG_FS
--	report = picolcd_out_report(REPORT_READ_MEMORY, hdev);
--	if (report && report->maxfield = 1 && report->field[0]->report_size = 8)
--		data->addr_sz = report->field[0]->report_count - 1;
--	else
--		data->addr_sz = -1;
--#endif
-+	picolcd_init_devfs(data, picolcd_out_report(REPORT_EE_READ, hdev),
-+			picolcd_out_report(REPORT_EE_WRITE, hdev),
-+			picolcd_out_report(REPORT_READ_MEMORY, hdev),
-+			picolcd_out_report(REPORT_WRITE_MEMORY, hdev),
-+			picolcd_out_report(REPORT_RESET, hdev));
- 	return 0;
- err:
- 	picolcd_exit_leds(data);
-@@ -2012,7 +2421,6 @@ err:
- 
- static int picolcd_probe_bootloader(struct hid_device *hdev, struct picolcd_data *data)
- {
--	struct hid_report *report;
- 	int error;
- 
- 	error = picolcd_check_version(hdev);
-@@ -2024,13 +2432,9 @@ static int picolcd_probe_bootloader(struct hid_device *hdev, struct picolcd_data
- 				"please submit /sys/kernel/debug/hid/%s/rdesc for this device.\n",
- 				dev_name(&hdev->dev));
- 
--#ifdef CONFIG_DEBUG_FS
--	report = picolcd_out_report(REPORT_BL_READ_MEMORY, hdev);
--	if (report && report->maxfield = 1 && report->field[0]->report_size = 8)
--		data->addr_sz = report->field[0]->report_count - 1;
--	else
--		data->addr_sz = -1;
--#endif
-+	picolcd_init_devfs(data, NULL, NULL,
-+			picolcd_out_report(REPORT_BL_READ_MEMORY, hdev),
-+			picolcd_out_report(REPORT_BL_WRITE_MEMORY, hdev), NULL);
- 	return 0;
- }
- 
-@@ -2123,6 +2527,7 @@ static void picolcd_remove(struct hid_device *hdev)
- 	data->status |= PICOLCD_FAILED;
- 	spin_unlock_irqrestore(&data->lock, flags);
- 
-+	picolcd_exit_devfs(data);
- 	device_remove_file(&hdev->dev, &dev_attr_operation_mode);
- 	hdev->ll_driver->close(hdev);
- 	hid_hw_stop(hdev);
++
++static void __exit acx565akm_exit(void)
++{
++	spi_unregister_driver(&acx565akm_spi_driver);
++}
++
++module_init(acx565akm_init);
++module_exit(acx565akm_exit);
++
++MODULE_AUTHOR("Roger Quadros <roger.quadros@nokia.com>");
++MODULE_DESCRIPTION("acx565akm LCD Driver");
++MODULE_LICENSE("GPL");
 -- 
-1.6.4.4
+1.6.0.4
 

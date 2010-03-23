@@ -1,94 +1,179 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Mon, 22 Mar 2010 11:38:40 +0000
-Subject: Re: [PATCH v2 1/6] hid: new driver for PicoLCD device
-Message-Id: <20100322123840.7351cc82@neptune.home>
+From: Roger Quadros <roger.quadros@nokia.com>
+Date: Tue, 23 Mar 2010 09:56:27 +0000
+Subject: [PATCH 1/5] OMAP: RX51: Add LCD Panel support
+Message-Id: <1269338191-10734-2-git-send-email-roger.quadros@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100320170014.440959a8@neptune.home>
-	<20100320170241.55258b0d@neptune.home>
-	<20100321034600.GE29360@core.coreip.homeip.net>
-	<20100321173737.5fcf3580@neptune.home>
-	<20100322043508.GC31621@core.coreip.homeip.net>
-In-Reply-To: <20100322043508.GC31621-WlK9ik9hQGAhIp7JRqBPierSzoNAToWh@public.gmane.org>
+References: <1269338191-10734-1-git-send-email-roger.quadros@nokia.com>
+In-Reply-To: <1269338191-10734-1-git-send-email-roger.quadros@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rick L. Vinyard Jr." <rvinyard-qcTL/1vZYtiVc3sceRu5cw@public.gmane.org>, Nicu Pavel <npavel-VxACSXvuqMTQT0dZR+AlfA@public.gmane.org>, Oliver Neukum <oliver-GvhC2dPhHPQdnm+yROfE0A@public.gmane.org>, Jaya Kumar <jayakumar.lkml-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tony@atomide.com
+Cc: Tomi.Valkeinen@nokia.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Sun, 21 March 2010 Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> On Sun, Mar 21, 2010 at 05:37:37PM +0100, Bruno Pr=C3=A9mont wrote:
-> > On Sat, 20 March 2010 Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> > > > +	usbhid_submit_report(data->hdev, report, USB_DIR_OUT);
-> > > > +	complete_all(&data->ready);
-> > > > +	INIT_COMPLETION(data->ready);
-> > >=20
-> > > Umm, what does this do, exactly?
-> >=20
-> > It wakes up anyone waiting on the completion and then resets the comple=
-tion
-> > as otherwise any future attempt to wait on it would succeed immediately.
-> >=20
->=20
-> You realize that if you re-initialize the completion right after
-> signalling it there is a big chance the waiters will miss it (they do
-> check completion->done flags that you reset right away.
->=20
-> In general completions are suited for something that happens once (a
-> single request - allocated - processed - signalled) but not for
-> repeating use.
+From: Roger Quadros <roger.quadros@nokia.com>
 
-Would below approach be more correct?
+Adds basic support for LCD Panel on Nokia N900
 
-- move the completion to struct picolcd_pending
-  so it meets the "happens once" requirement
+Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
+---
+ arch/arm/mach-omap2/Makefile                 |    1 +
+ arch/arm/mach-omap2/board-rx51-peripherals.c |   13 ++++
+ arch/arm/mach-omap2/board-rx51-video.c       |   95 ++++++++++++++++++++++++++
+ 3 files changed, 109 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/mach-omap2/board-rx51-video.c
 
-- protect data->pending with a mutex
-  (though also use spinlock to prevent race between event which
-   signals the completion and picolcd_send_and_wait() around timeout)
+diff --git a/arch/arm/mach-omap2/Makefile b/arch/arm/mach-omap2/Makefile
+index 4b9fc57..b03cbb4 100644
+--- a/arch/arm/mach-omap2/Makefile
++++ b/arch/arm/mach-omap2/Makefile
+@@ -122,6 +122,7 @@ obj-$(CONFIG_MACH_NOKIA_N8X0)		+= board-n8x0.o
+ obj-$(CONFIG_MACH_NOKIA_RX51)		+= board-rx51.o \
+ 					   board-rx51-sdram.o \
+ 					   board-rx51-peripherals.o \
++					   board-rx51-video.o \
+ 					   hsmmc.o
+ obj-$(CONFIG_MACH_OMAP_ZOOM2)		+= board-zoom2.o \
+ 					   board-zoom-peripherals.o \
+diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
+index 4377a4c..f404537 100644
+--- a/arch/arm/mach-omap2/board-rx51-peripherals.c
++++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
+@@ -45,6 +45,7 @@
+ /* list all spi devices here */
+ enum {
+ 	RX51_SPI_WL1251,
++	RX51_SPI_MIPID,		/* LCD panel */
+ };
+ 
+ static struct wl12xx_platform_data wl1251_pdata;
+@@ -54,6 +55,11 @@ static struct omap2_mcspi_device_config wl1251_mcspi_config = {
+ 	.single_channel	= 1,
+ };
+ 
++static struct omap2_mcspi_device_config mipid_mcspi_config = {
++	.turbo_mode	= 0,
++	.single_channel	= 1,
++};
++
+ static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
+ 	[RX51_SPI_WL1251] = {
+ 		.modalias		= "wl1251",
+@@ -64,6 +70,13 @@ static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
+ 		.controller_data	= &wl1251_mcspi_config,
+ 		.platform_data		= &wl1251_pdata,
+ 	},
++	[RX51_SPI_MIPID] = {
++		.modalias		= "acx565akm",
++		.bus_num		= 1,
++		.chip_select		= 2,
++		.max_speed_hz		= 6000000,
++		.controller_data	= &mipid_mcspi_config,
++	},
+ };
+ 
+ #if defined(CONFIG_KEYBOARD_GPIO) || defined(CONFIG_KEYBOARD_GPIO_MODULE)
+diff --git a/arch/arm/mach-omap2/board-rx51-video.c b/arch/arm/mach-omap2/board-rx51-video.c
+new file mode 100644
+index 0000000..e3e22a8
+--- /dev/null
++++ b/arch/arm/mach-omap2/board-rx51-video.c
+@@ -0,0 +1,95 @@
++/*
++ * linux/arch/arm/mach-omap2/board-rx51-peripherals.c
++ *
++ * Copyright (C) 2010 Nokia
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/gpio.h>
++#include <linux/spi/spi.h>
++
++#include <asm/mach-types.h>
++#include <plat/mux.h>
++#include <plat/display.h>
++#include <plat/mcspi.h>
++
++#include "mux.h"
++
++#define RX51_LCD_RESET_GPIO	90
++
++#if defined(CONFIG_FB_OMAP2) || defined(CONFIG_FB_OMAP2_MODULE)
++
++static int rx51_lcd_enable(struct omap_dss_device *dssdev)
++{
++	gpio_set_value(dssdev->reset_gpio, 1);
++	return 0;
++}
++
++static void rx51_lcd_disable(struct omap_dss_device *dssdev)
++{
++	gpio_set_value(dssdev->reset_gpio, 0);
++}
++
++static struct omap_dss_device rx51_lcd_device = {
++	.name			= "lcd",
++	.driver_name		= "panel-acx565akm",
++	.type			= OMAP_DISPLAY_TYPE_SDI,
++	.phy.sdi.datapairs	= 2,
++	.reset_gpio		= RX51_LCD_RESET_GPIO,
++	.platform_enable	= rx51_lcd_enable,
++	.platform_disable	= rx51_lcd_disable,
++};
++
++static struct omap_dss_device *rx51_dss_devices[] = {
++	&rx51_lcd_device,
++};
++
++static struct omap_dss_board_info rx51_dss_board_info = {
++	.num_devices	= ARRAY_SIZE(rx51_dss_devices),
++	.devices	= rx51_dss_devices,
++	.default_device	= &rx51_lcd_device,
++};
++
++struct platform_device rx51_display_device = {
++	.name	= "omapdss",
++	.id	= -1,
++	.dev	= {
++		.platform_data = &rx51_dss_board_info,
++	},
++};
++
++static struct platform_device *rx51_video_devices[] __initdata = {
++	&rx51_display_device,
++};
++
++static int __init rx51_video_init(void)
++{
++	if (!machine_is_nokia_rx51())
++		return 0;
++
++	if (omap_mux_init_gpio(RX51_LCD_RESET_GPIO, OMAP_PIN_OUTPUT)) {
++		pr_err("%s cannot configure MUX for LCD RESET\n", __func__);
++		return 0;
++	}
++
++	if (gpio_request(RX51_LCD_RESET_GPIO, "LCD ACX565AKM reset")) {
++		pr_err("%s failed to get LCD Reset GPIO\n", __func__);
++		return 0;
++	}
++
++	gpio_direction_output(RX51_LCD_RESET_GPIO, 1);
++
++	platform_add_devices(rx51_video_devices,
++				ARRAY_SIZE(rx51_video_devices));
++	return 0;
++}
++
++subsys_initcall(rx51_video_init);
++
++#endif /* defined(CONFIG_FB_OMAP2) || defined(CONFIG_FB_OMAP2_MODULE) */
+-- 
+1.6.0.4
 
-- use the data->lock spinlock to protect multi-report requests from
-  interleaving
-
-In speudo-code this would be something like:
-
-picolcd_send_and_wait(...)
-{
-	struct picolcd_pending pending;
-	...
-	init_completion(&pending->ready);
-	aquire_mutex(data->mutex);
-	spin_lock_irqsave(&data->lock, flags);
-	... // prepare report
-	data->pending =3D &pending;
-	usbhid_submit_report(data->hdev, report, USB_DIR_OUT);
-	spin_unlock_irqrestore(&data->lock, flags);
-	wait_for_completion_interruptible_timeout(&pending->ready, HZ*2);
-	spin_lock_irqsave(&data->lock, flags);
-	if (data->pending =3D &pending)
-		data->pending =3D NULL;
-	spin_unlock_irqrestore(&data->lock, flags);
-	release_mutext(data->mutex);
-	...
-}
-
-picolcd_raw_event(...)
-{
-	...
-	spin_lock_irqsave(&data->lock, flags);
-	if (data->pending) {
-		// copy event data to pending
-		...
-		complete(&pending->ready);
-	}
-	spin_unlock_irqrestore(&data->lock, flags);
-	...
-}
-
-In picolcd_remove() and picolcd_reset() I could then do something
-similar to picolcd_raw_event() to trigger completion with no
-data/error in order to skip timeout on the requester side.
-
-Though how should I prevent races on hot-unplug?
-
-Thanks,
-Bruno

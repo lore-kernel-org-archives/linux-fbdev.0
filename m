@@ -1,7 +1,7 @@
 From: Roger Quadros <roger.quadros@nokia.com>
-Date: Tue, 23 Mar 2010 13:55:39 +0000
+Date: Tue, 23 Mar 2010 13:55:45 +0000
 Subject: Re: [PATCH 1/5] OMAP: RX51: Add LCD Panel support
-Message-Id: <4BA8C85B.1030606@nokia.com>
+Message-Id: <4BA8C861.4080501@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1269338191-10734-1-git-send-email-roger.quadros@nokia.com> <1269338191-10734-2-git-send-email-roger.quadros@nokia.com> <E0D41E29EB0DAC4E9F3FF173962E9E94026F1D1D6C@dbde02.ent.ti.com>
 In-Reply-To: <E0D41E29EB0DAC4E9F3FF173962E9E94026F1D1D6C@dbde02.ent.ti.com>

@@ -1,26 +1,84 @@
-From: melodramus@online.de
-Date: Wed, 31 Mar 2010 02:36:58 +0000
-Subject: compiled-in console fonts on fb with 1600x1200 too small and slim
-Message-Id: <20100331043658.46ab9e19.melodramus@online.de>
+From: Roger Quadros <roger.quadros@nokia.com>
+Date: Tue, 23 Mar 2010 09:56:31 +0000
+Subject: [PATCH 5/5] OMAP: RX51: Add LCD Panel and framebuffer console to defconfig
+Message-Id: <1269338191-10734-6-git-send-email-roger.quadros@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1269338191-10734-1-git-send-email-roger.quadros@nokia.com>
+ <1269338191-10734-2-git-send-email-roger.quadros@nokia.com>
+ <1269338191-10734-3-git-send-email-roger.quadros@nokia.com>
+ <1269338191-10734-4-git-send-email-roger.quadros@nokia.com>
+ <1269338191-10734-5-git-send-email-roger.quadros@nokia.com>
+In-Reply-To: <1269338191-10734-5-git-send-email-roger.quadros@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tony@atomide.com
+Cc: Tomi.Valkeinen@nokia.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-hello
+From: Roger Quadros <roger.quadros@nokia.com>
 
-don't really know where to put this right. it is possibly best sent to the kbd-people but i'd like to see a further choice in menuconfig too.
+Let's see the flashy Tux and console on N900's LCD screen.
 
-this is just a pledge for the wishlist. 
+Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
+---
+ arch/arm/configs/rx51_defconfig |   37 ++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 36 insertions(+), 1 deletions(-)
 
-i got ksm working with radeondrmfb. the resolution seems to be set correctly to 1600x1200i (or possibly just 1200x1024?). i'd like to keep that so because of crispness and fast switching between console and X. however, the few choices of console fonts in menuconfig are so small that the boot output is unreadable. even the greater fonts are unreadable, mainly because they are very slim and with serifs.
+diff --git a/arch/arm/configs/rx51_defconfig b/arch/arm/configs/rx51_defconfig
+index 45135ff..d3bac0e 100644
+--- a/arch/arm/configs/rx51_defconfig
++++ b/arch/arm/configs/rx51_defconfig
+@@ -1113,7 +1113,40 @@ CONFIG_RADIO_ADAPTERS=y
+ #
+ # CONFIG_VGASTATE is not set
+ # CONFIG_VIDEO_OUTPUT_CONTROL is not set
+-# CONFIG_FB is not set
++CONFIG_FB=y
++CONFIG_FB_CFB_FILLRECT=y
++CONFIG_FB_CFB_COPYAREA=y
++CONFIG_FB_CFB_IMAGEBLIT=y
++
++# Frame buffer hardware drivers
++#
++CONFIG_OMAP2_VRAM=y
++CONFIG_OMAP2_VRFB=y
++CONFIG_OMAP2_DSS=y
++CONFIG_OMAP2_VRAM_SIZE=2
++CONFIG_OMAP2_DSS_DEBUG_SUPPORT=y
++# CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS is not set
++# CONFIG_OMAP2_DSS_DPI is not set
++# CONFIG_OMAP2_DSS_RFBI is not set
++# CONFIG_OMAP2_DSS_VENC is not set
++CONFIG_OMAP2_DSS_SDI=y
++# CONFIG_OMAP2_DSS_DSI is not set
++# CONFIG_OMAP2_DSS_FAKE_VSYNC is not set
++CONFIG_OMAP2_DSS_MIN_FCK_PER_PCK=0
++CONFIG_FB_OMAP2=y
++CONFIG_FB_OMAP2_DEBUG_SUPPORT=y
++CONFIG_FB_OMAP2_NUM_FBS=3
++
++#
++# OMAP2/3 Display Device Drivers
++#
++# CONFIG_PANEL_GENERIC is not set
++# CONFIG_PANEL_SHARP_LS037V7DW01 is not set
++# CONFIG_PANEL_SHARP_LQ043T1DG01 is not set
++# CONFIG_PANEL_TOPPOLY_TDO35S is not set
++# CONFIG_PANEL_TPO_TD043MTEA1 is not set
++CONFIG_PANEL_ACX565AKM=y
++
+ # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+ 
+ #
+@@ -1130,6 +1163,8 @@ CONFIG_DISPLAY_SUPPORT=y
+ #
+ # CONFIG_VGA_CONSOLE is not set
+ CONFIG_DUMMY_CONSOLE=y
++CONFIG_FRAMEBUFFER_CONSOLE=y
++CONFIG_LOGO=y
+ CONFIG_SOUND=y
+ # CONFIG_SOUND_OSS_CORE is not set
+ CONFIG_SND=y
+-- 
+1.6.0.4
 
-there is a great console-font package coming with a clean, default-font-like look and in lots of sizes/widths. it suppports more than hundred languages and is under the GPL 2 (and higher).
-
-possibly you could take out some rare versions like ter-v24b and put them into linux?
-
-here is the link: http://www.is-vn.bg/hamster/
-
-many thanks for listening,
-MeloDramus <melodramus@online.de>

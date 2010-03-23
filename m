@@ -1,72 +1,60 @@
-From: Henrik Kretzschmar <henne@nachtwindheim.de>
-Date: Sat, 27 Mar 2010 06:29:11 +0000
-Subject: [PATCH 7/7] fbdev: section cleanup in w100fb
-Message-Id: <1269671353-22041-6-git-send-email-henne@nachtwindheim.de>
+From: Roger Quadros <roger.quadros@nokia.com>
+Date: Tue, 23 Mar 2010 09:56:28 +0000
+Subject: [PATCH 2/5] OMAP: RX51: Add "vdds_sdi" supply voltage for SDI
+Message-Id: <1269338191-10734-3-git-send-email-roger.quadros@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1269671353-22041-1-git-send-email-henne@nachtwindheim.de>
-In-Reply-To: <1269671353-22041-1-git-send-email-henne@nachtwindheim.de>
+References: <1269338191-10734-1-git-send-email-roger.quadros@nokia.com>
+ <1269338191-10734-2-git-send-email-roger.quadros@nokia.com>
+In-Reply-To: <1269338191-10734-2-git-send-email-roger.quadros@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: Henrik Kretzschmar <henne@nachtwindheim.de>, Krzysztof Helt <krzysztof.h1@wp.pl>, Arnaud Patard <arnaud.patard@rtp-net.org>, Andrew Morton <akpm@linux-foundation.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+To: tony@atomide.com
+Cc: Tomi.Valkeinen@nokia.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-This patch cleans up the section in the w100fb driver.
+From: Roger Quadros <roger.quadros@nokia.com>
 
-Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
+The SDI Display subsystem needs access to the vdds_sdi supply
+regulator. This is TWL4030's VAUX1 supply on RX-51.
+
+Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
 ---
- drivers/video/w100fb.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ arch/arm/mach-omap2/board-rx51-peripherals.c |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/w100fb.c b/drivers/video/w100fb.c
-index 5d22395..a37a46c 100644
---- a/drivers/video/w100fb.c
-+++ b/drivers/video/w100fb.c
-@@ -52,7 +52,7 @@ static void w100_update_enable(void);
- static void w100_update_disable(void);
- static void calc_hsync(struct w100fb_par *par);
- static void w100_init_graphic_engine(struct w100fb_par *par);
--struct w100_pll_info *w100_get_xtal_table(unsigned int freq);
-+struct w100_pll_info *w100_get_xtal_table(unsigned int freq) __devinit;
- 
- /* Pseudo palette size */
- #define MAX_PALETTES      16
-@@ -781,7 +781,7 @@ out:
- }
- 
- 
--static int w100fb_remove(struct platform_device *pdev)
-+static int __devexit w100fb_remove(struct platform_device *pdev)
- {
- 	struct fb_info *info = platform_get_drvdata(pdev);
- 	struct w100fb_par *par=info->par;
-@@ -1019,7 +1019,7 @@ static struct pll_entries {
- 	{ 0 },
+diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
+index f404537..3ef805e 100644
+--- a/arch/arm/mach-omap2/board-rx51-peripherals.c
++++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
+@@ -300,6 +300,19 @@ static struct regulator_consumer_supply rx51_vsim_supply = {
+ 	.dev_name = "mmci-omap-hs.1",
  };
  
--struct w100_pll_info *w100_get_xtal_table(unsigned int freq)
-+struct w100_pll_info __devinit *w100_get_xtal_table(unsigned int freq)
- {
- 	struct pll_entries *pll_entry = w100_pll_tables;
- 
-@@ -1610,7 +1610,7 @@ static void w100_vsync(void)
- 
- static struct platform_driver w100fb_driver = {
- 	.probe		= w100fb_probe,
--	.remove		= w100fb_remove,
-+	.remove		= __devexit_p(w100fb_remove),
- 	.suspend	= w100fb_suspend,
- 	.resume		= w100fb_resume,
- 	.driver		= {
-@@ -1618,7 +1618,7 @@ static struct platform_driver w100fb_driver = {
++#if defined(CONFIG_FB_OMAP2) || defined(CONFIG_FB_OMAP2_MODULE)
++extern struct platform_device rx51_display_device;
++#endif
++
++static struct regulator_consumer_supply rx51_vaux1_consumers[] = {
++#if defined(CONFIG_FB_OMAP2) || defined(CONFIG_FB_OMAP2_MODULE)
++	{
++		.supply	= "vdds_sdi",
++		.dev	= &rx51_display_device.dev,
++	},
++#endif
++};
++
+ static struct regulator_init_data rx51_vaux1 = {
+ 	.constraints = {
+ 		.name			= "V28",
+@@ -310,6 +323,8 @@ static struct regulator_init_data rx51_vaux1 = {
+ 		.valid_ops_mask		= REGULATOR_CHANGE_MODE
+ 					| REGULATOR_CHANGE_STATUS,
  	},
++	.num_consumer_supplies	= ARRAY_SIZE(rx51_vaux1_consumers),
++	.consumer_supplies	= rx51_vaux1_consumers,
  };
  
--int __devinit w100fb_init(void)
-+int __init w100fb_init(void)
- {
- 	return platform_driver_register(&w100fb_driver);
- }
+ static struct regulator_init_data rx51_vaux2 = {
 -- 
-1.7.0
+1.6.0.4
 

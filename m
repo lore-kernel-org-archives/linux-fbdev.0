@@ -1,168 +1,80 @@
-From: InKi Dae <daeinki@gmail.com>
-Subject: Re: [PATCH] fixed sparkling issue on lcd panel when fb_blank mode is 
-	changed.
-Date: Mon, 22 Mar 2010 13:51:45 +0900
-Message-ID: <90b950fc1003212151q4e91cf77re0f8e031c777c48b@mail.gmail.com>
-References: <90b950fc1003182136n73d54c2di4be84f16e4c3534f@mail.gmail.com>
-	 <1269004294.4292.18.camel@rex>
-	 <90b950fc1003212018h69bb0fa0t9dd62815b08eb7b3@mail.gmail.com>
-	 <90b950fc1003212148h5fd0359ay3e21a99b0c16387a@mail.gmail.com>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fix Kconfig breakage in
+	drivers/video
+Date: Tue, 23 Mar 2010 12:11:37 -0700
+Message-ID: <20100323121137.7fe466de.akpm@linux-foundation.org>
+References: <20100314225329.f5dc3e05.krzysztof.h1@poczta.fm>
+	<20100315063919.GB27515@jasper.tkos.co.il>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=005045016fbb45e36504825c74c9
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <90b950fc1003212148h5fd0359ay3e21a99b0c16387a@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>, Kyungmin Park <kmpark@infradead.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sfi-mx-2.v28.ch3.sourceforge.com ([172.29.28.122]
+	helo=mx.sourceforge.net)
+	by sfs-ml-3.v29.ch3.sourceforge.com with esmtp (Exim 4.69)
+	(envelope-from <akpm@linux-foundation.org>) id 1Nu9Wp-00044Z-40
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 23 Mar 2010 19:12:39 +0000
+Received: from smtp1.linux-foundation.org ([140.211.169.13])
+	by sfi-mx-2.v28.ch3.sourceforge.com with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.69) id 1Nu9Wk-0004lG-MN
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 23 Mar 2010 19:12:38 +0000
+In-Reply-To: <20100315063919.GB27515@jasper.tkos.co.il>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Baruch Siach <baruch@tkos.co.il>
+Cc: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, linux-fbdev-devel@lists.sourceforge.net, David Miller <davem@davemloft.net>
 
---005045016fbb45e36504825c74c9
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Mon, 15 Mar 2010 08:39:20 +0200
+Baruch Siach <baruch@tkos.co.il> wrote:
 
-Sorry, I have modified typing error.
+> Hi Krzysztof,
+> 
+> On Sun, Mar 14, 2010 at 10:53:29PM +0100, Krzysztof Helt wrote:
+> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> > 
+> > There are two new options inside the CONFIG_FB section which do not
+> > depend on the CONFIG_FB. This break Kconfig menu layout.
+> > 
+> > Fix it and reduce few conditions for sparc frame buffers
+> > as the FB_SBUS == ((FB = y) && SPARC).
+> > 
+> > Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> > ---
+> > 
+> > --- linux-orig/drivers/video/Kconfig	2010-03-14 23:54:39.000000000 +0100
+> > +++ linux-git/drivers/video/Kconfig	2010-03-15 00:05:59.000000000 +0100
+> > @@ -400,12 +400,9 @@ config FB_SA1100
+> >  	  If you plan to use the LCD display with your SA-1100 system, say
+> >  	  Y here.
+> >  
+> > -config HAVE_FB_IMX
+> > -	bool
+> > -
+> >  config FB_IMX
+> >  	tristate "Motorola i.MX LCD support"
+> > -	depends on FB && (HAVE_FB_IMX || ARCH_MX1 || ARCH_MX2)
+> > +	depends on FB && (ARCH_MX1 || ARCH_MX2)
+> 
+> This hunk reverts f6014419 (imxfb: add support for i.MX25). Is this 
+> intentional?
+> 
 
-2010/3/22 InKi Dae <daeinki@gmail.com>:
-> I have modified my patch.
->
-> this patch would change order only in case of FB_BLANK_POWERDOWN
-> with Richard's opinion.
->
-> if requested blank mode is less then FB_BLANK_POWERDOWN then
-> it would call device specific fb_blank and then fb_notifer_call_chan
-> otherwise fb_notifier_call_chain first, this case means power up
-----> otherwise fb_notifier_call_chain first, this case means power down
+Did this question get addressed?
 
-> and display controller should become on earlier then other devices
-> like lcd panel.
->
-> Please review this path again.
->
-> signed-off-by : InKi Dae <inki.dae@samsung.com>
->
-> Best Regards,
-> InKi Dae.
->
-> 2010/3/22 InKi Dae <daeinki@gmail.com>:
->> yes, you are right.
->>
->> when fb_blank mode is changed to FB_BLANK_NORMAL or
->> FB_BLANK_UNBLANK(power down -> power up)
->> it has a possibility that we would encounter same issue.
->>
->> I'd try to modify my patch to be considered with your opinion and will
->> send it again.
->> Thank you for your answer.
->>
->> Best Regards,
->> InKi Dae.
->>
->> 2010/3/19 Richard Purdie <rpurdie@rpsys.net>:
->>> Hi,
->>>
->>> On Fri, 2010-03-19 at 13:36 +0900, InKi Dae wrote:
->>>> This issue is a problem that lcd panel is spakled when fb_blank mode i=
-s changed
->>>> From FB_BLANK_UNBLANK to FB_BLANK_POWER or FB_BLANK_POWER to FB_BLANK_=
-UNBLANK.
->>>>
->>>> In case of FB_BLANK_UNBLANK, screen =3D on, vsync =3D on, hsync =3D on=
- and
->>>> For FB_BLANK_POWERDOWN screen =3D blanked, vsync =3D off, hsync =3D of=
-f
->>>> So like this when fb_blank mode becomes FB_BLANK_POWERDOWN,
->>>> Display controller and lcd panel should become off to reduce power con=
-sumption.
->>>>
->>>> Let's see fb_blank function of fbmem.c file.
->>>>
->>>> fb_blank()
->>>> {
->>>> =A0 =A0 if (info->fbops->fb_blank)
->>>> =A0 =A0 =A0 =A0 =A0 =A0 ret =3D info->fbops->fb_blank(blank, info(
->>>> =A0 =A0 if (!ret)
->>>> =A0 =A0 =A0 =A0 =A0 =A0 fb_notifier_call_chain(FB_EVENT_BLANK, &event)=
-;
->>>> }
->>>>
->>>> This problem is because this code calls fb_blank (fb_blank of device
->>>> specific framebuffer driver)
->>>> Earlier then fb_notifier_call_chain.
->>>>
->>>> For example,
->>>> Device specific fb_blank function is registered to generic framebuffer
->>>> driver through register_framebuffer function
->>>> And fb_notifier_call_chain calls any callback function registered to
->>>> lcd class(lcd.c) through fb_notifier_callback function.
->>>> So if fb_blank mode is changed to FB_BLANK_POWERDOWN then display
->>>> controller would become off(clock disable)
->>>> On the other hand, lcd panel would still be on. at this time, some
->>>> situation on lcd panel occers like sparkling
->>>> Because video clock to be delivered to ldi module of lcd panel is disa=
-bled also.
->>>>
->>>> This patch get fb_notifier_call_chain to be called earlier then fb_bla=
-nk.
->>>> Please, review this patch.
->>>
->>> So to summarise the problem more succinctly the LCD and the display
->>> controllers power off in the wrong order causing visual defects
->>> (sparkling) on the display.
->>>
->>> I was a bit worried about event order and loops with this change so I
->>> checked and there are three consumers of these events in the kernel:
->>> consoles, LCD and backlight. None of them have a problem with this
->>> change of order for power down so from that point of view I'm ok with
->>> the change.
->>>
->>> However this function also covers powerup from a screen blank to an
->>> active screen. When powering up it makes sense to power up the video
->>> device first, then the LCD, backlight and console as per the current
->>> code, otherwise I can imagine "sparkling" upon powerup.
->>>
->>> So it looks like we need to change order only on powerdown, not upon
->>> resume, otherwise we'll get further regression reports on poweron?
->>>
->>> Cheers,
->>>
->>> Richard
->>>
->>>
->>>
->>>
->>>
->>
->
+Thanks.
 
---005045016fbb45e36504825c74c9
-Content-Type: application/octet-stream; name="fbmem.patch"
-Content-Disposition: attachment; filename="fbmem.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g72stgzx1
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJtZW0uYyBiL2RyaXZlcnMvdmlkZW8vZmJtZW0u
-YwppbmRleCBhMTViNDRlLi5kODBlMDk3IDEwMDY0NAotLS0gYS9kcml2ZXJzL3ZpZGVvL2ZibWVt
-LmMKKysrIGIvZHJpdmVycy92aWRlby9mYm1lbS5jCkBAIC0xMDA3LDI0ICsxMDA3LDMzIEBAIGZi
-X3NldF92YXIoc3RydWN0IGZiX2luZm8gKmluZm8sIHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbyAq
-dmFyKQogCiBpbnQKIGZiX2JsYW5rKHN0cnVjdCBmYl9pbmZvICppbmZvLCBpbnQgYmxhbmspCi17
-CQotIAlpbnQgcmV0ID0gLUVJTlZBTDsKK3sKKwlzdHJ1Y3QgZmJfZXZlbnQgZXZlbnQ7CisJaW50
-IHJldCA9IC1FSU5WQUw7CiAKLSAJaWYgKGJsYW5rID4gRkJfQkxBTktfUE9XRVJET1dOKQotIAkJ
-YmxhbmsgPSBGQl9CTEFOS19QT1dFUkRPV047CisJaWYgKGJsYW5rID4gRkJfQkxBTktfUE9XRVJE
-T1dOKQorCQlibGFuayA9IEZCX0JMQU5LX1BPV0VSRE9XTjsKIAotCWlmIChpbmZvLT5mYm9wcy0+
-ZmJfYmxhbmspCi0gCQlyZXQgPSBpbmZvLT5mYm9wcy0+ZmJfYmxhbmsoYmxhbmssIGluZm8pOwor
-CWV2ZW50LmluZm8gPSBpbmZvOworCWV2ZW50LmRhdGEgPSAmYmxhbms7CiAKLSAJaWYgKCFyZXQp
-IHsKLQkJc3RydWN0IGZiX2V2ZW50IGV2ZW50OworCWlmIChibGFuayA8ICBGQl9CTEFOS19QT1dF
-UkRPV04pIHsKKwkJaWYgKGluZm8tPmZib3BzLT5mYl9ibGFuaykKKwkJCXJldCA9IGluZm8tPmZi
-b3BzLT5mYl9ibGFuayhibGFuaywgaW5mbyk7CiAKLQkJZXZlbnQuaW5mbyA9IGluZm87Ci0JCWV2
-ZW50LmRhdGEgPSAmYmxhbms7Ci0JCWZiX25vdGlmaWVyX2NhbGxfY2hhaW4oRkJfRVZFTlRfQkxB
-TkssICZldmVudCk7CisJCXJldCA9IGZiX25vdGlmaWVyX2NhbGxfY2hhaW4oRkJfRVZFTlRfQkxB
-TkssICZldmVudCk7CisJCWlmICgocmV0ICYgTk9USUZZX1NUT1BfTUFTSykgPT0gTk9USUZZX1NU
-T1BfTUFTSykKKwkJCXByaW50ayhLRVJOX0VSUiAibm90aWZpZXJfY2FsbCBmYWlsZWQuXG4iKTsK
-Kwl9IGVsc2UgeworCQlyZXQgPSBmYl9ub3RpZmllcl9jYWxsX2NoYWluKEZCX0VWRU5UX0JMQU5L
-LCAmZXZlbnQpOworCQlpZiAoKHJldCAmIE5PVElGWV9TVE9QX01BU0spID09IE5PVElGWV9TVE9Q
-X01BU0spCisJCQlwcmludGsoS0VSTl9FUlIgIm5vdGlmaWVyX2NhbGwgZmFpbGVkLlxuIik7CisK
-KwkJaWYgKGluZm8tPmZib3BzLT5mYl9ibGFuaykKKwkJCXJldCA9IGluZm8tPmZib3BzLT5mYl9i
-bGFuayhibGFuaywgaW5mbyk7CiAJfQogCi0gCXJldHVybiByZXQ7CisJcmV0dXJuIHJldDsKIH0K
-IAogc3RhdGljIGxvbmcgZG9fZmJfaW9jdGwoc3RydWN0IGZiX2luZm8gKmluZm8sIHVuc2lnbmVk
-IGludCBjbWQsCg==
---005045016fbb45e36504825c74c9--
+------------------------------------------------------------------------------
+Download Intel&#174; Parallel Studio Eval
+Try the new software tools for yourself. Speed compiling, find bugs
+proactively, and fine-tune applications for parallel performance.
+See why Intel Parallel Studio got high marks during beta.
+http://p.sf.net/sfu/intel-sw-dev

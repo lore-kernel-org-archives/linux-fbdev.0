@@ -1,39 +1,22 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Date: Tue, 23 Mar 2010 23:02:26 +0000
-Subject: Re: kdrive vs. xorg rotation on AT91SAM9263 atmel_lcdfb
-Message-Id: <1269385346.16545.288.camel@thor.local>
+From: "Chris Verges" <chrisv@cyberswitching.com>
+Date: Wed, 24 Mar 2010 00:14:44 +0000
+Subject: RE: kdrive vs. xorg rotation on AT91SAM9263 atmel_lcdfb
+Message-Id: <68FBE0F3CE97264395875AC1C468F22C2764B6@mail03.cyberswitching.local>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <68FBE0F3CE97264395875AC1C468F22C276323@mail03.cyberswitching.local>
 In-Reply-To: <68FBE0F3CE97264395875AC1C468F22C276323@mail03.cyberswitching.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
 To: linux-fbdev@vger.kernel.org
 
-On Sam, 2010-03-20 at 12:25 -0700, Chris Verges wrote:=20
-> Hi fellow fbdev users,
->=20
-> I'm seeking help with a migration from kdrive to xorg.  Under
-> kdrive-fbdev, I'm able to rotate the X11 output using xrandr in all four
-> orientations: normal, left, right, inverted.  However, under
-> xf86-video-fbdev, xrandr only reports that it does not support left,
-> right, or inverted rotations.  Dynamic rotation is critical for this
-> application, so I cannot use the "Rotate" option in xorg.conf.
->=20
-> The atmel_lcdfb driver that we're using in the kernel does not support
-> hardware rotation, so I believe that a software-based Shadow Buffer is
-> required.  (Please correct me if I'm wrong on this!)  I added in the
-> "ShadowFB" option to xorg.conf for the fbdev device, but xrandr still
-> only reports normal rotation possible.
->=20
-> I've hit a brick wall in my own research on this, so would appreciate
-> any help that the community can offer.  Any suggestions?
-
-Support for this simply hasn't been implemented yet in the
-xf86-video-fbdev driver.
-
-
---=20
-Earthling Michel D=C3=A4nzer           |                http://www.vmware.c=
-om
-Libre software enthusiast         |          Debian, X and DRI developer
+PiBTdXBwb3J0IGZvciB0aGlzIHNpbXBseSBoYXNuJ3QgYmVlbiBpbXBsZW1lbnRlZCB5ZXQgaW4g
+dGhlCj4geGY4Ni12aWRlby1mYmRldiBkcml2ZXIuCgpPaCwgd2VsbCwgdGhhdCB3b3VsZCBjZXJ0
+YWlubHkgZXhwbGFpbiB3aHkuICBUaGFua3MgZm9yIHRoZSBhbnN3ZXIhCgpEbyB5b3UgaGFwcGVu
+IHRvIGtub3cgaWYgc3VwcG9ydCBmb3IgeHJhbmRyIHJvdGF0aW9uIGlzIGluIHRoZSBmYmRldiBy
+b2FkbWFwPyAgSWYgbm90LCBhbnkgcG9pbnRlcnMgb24gaG93IEkgY291bGQgZ28gYWJvdXQgYWRk
+aW5nIHN1cHBvcnQ/ICBJcyB0aGVyZSBhbm90aGVyIGRyaXZlciB0aGF0IHByb3ZpZGVzIGEgc2Ft
+cGxlIHRoYXQgeW91J2QgcmVjb21tZW5kIEkgdXNlIGFzIGEgdGVtcGxhdGU/CgpUaGFua3MgYWdh
+aW4sCkNocmlzCv/06Lp7Lm7HK4m3n66JrYYrJYrL/7Hp3bYXpYp3/7p7Lm7HK4m3pYp7sf323Xr/
+4p7YXm6HcqH2pnrLGoHraJmo6K3aJqP74Hq/5Hq53pf6K4DKK3pmo6K3aJqIp36GrYbbaf//74Hq
+/5Hq53pf6K4P5mo6K3aJqP4p36P4bQo=

@@ -1,41 +1,46 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Date: Mon, 22 Mar 2010 08:56:38 +0000
-Subject: Re: [PATCH v2 2/6] hid: add framebuffer support to PicoLCD device
-Message-Id: <alpine.LNX.2.00.1003220955000.18642@pobox.suse.cz>
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Wed, 24 Mar 2010 08:04:51 +0000
+Subject: vram.c broken in mainline
+Message-Id: <20100324080451.GF7534@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100320170014.440959a8@neptune.home> <20100320170415.6ee219c8@neptune.home> <45a44e481003210024l2c66938fp9436d34f6473f811@mail.gmail.com> <20100321171128.324a606f@neptune.home>
-In-Reply-To: <20100321171128.324a606f@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-input@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, Nicu Pavel <npavel@ituner.com>, Oliver Neukum <oliver@neukum.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Sun, 21 Mar 2010, Bruno Prémont wrote:
+Hi Tomi,
 
-> > > ---
-> > >  drivers/hid/Kconfig       |    7 +-
-> > >  drivers/hid/hid-picolcd.c |  454 +++++++++++++++++++++++++++++++++++++++++++++
-> > >  2 files changed, 460 insertions(+), 1 deletions(-)
-> > 
-> > It is customary for framebuffer drivers to live in drivers/video. This
-> > is the first one I've reviewed that is outside of it. Is there a good
-> > reason for this one to be outside of it? If so, could you put it in
-> > the comments.
-> 
-> I've kept all the pieces of PicoLCD driver together under hid,
-> as it's a HID based device. Framebuffer is just one of its features and
-> keeping pieces together makes it easier to handle.
+drivers/video/omap2/vram.c doesn't compile with 3430sdp in mainline. The 
+patch below fixes it.
 
-I think it makes sense for a HID driver for this device to contain the 
-framebuffer bits as well ... from user perspective, this seems to be HID 
-device, with "extra" framebuffer display on it.
+ From 668f08d0e3cabd0517a5472cd10ce3d147993d69 Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <felipe.balbi@nokia.com>
+Date: Wed, 24 Mar 2010 10:03:57 +0200
+Subject: [PATCH] video: omap2: vram: fix compilation of vram.c
 
-If framebuffer folks Ack the fb-related code, I am fine keeping it under 
-drivers/hid.
+a trivial patch changing __early_param into early_param.
 
-Thanks,
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+---
+  drivers/video/omap2/vram.c |    2 +-
+  1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/omap2/vram.c b/drivers/video/omap2/vram.c
+index 55a4de5..74df5ea 100644
+--- a/drivers/video/omap2/vram.c
++++ b/drivers/video/omap2/vram.c
+@@ -517,7 +517,7 @@ static void __init omap_vram_early_vram(char **p)
+  	if (**p = ',')
+  		omap_vram_def_sdram_start = simple_strtoul((*p) + 1, p, 16);
+  }
+-__early_param("vram=", omap_vram_early_vram);
++early_param("vram=", omap_vram_early_vram);
+  
+  /*
+   * Called from map_io. We need to call to this early enough so that we
+-- 
+1.7.0.rc0.33.g7c3932
+
 
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+balbi

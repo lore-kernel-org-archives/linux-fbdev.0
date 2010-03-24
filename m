@@ -1,35 +1,54 @@
-From: Andrea Gelmini <andrea.gelmini@gelma.net>
-Date: Thu, 25 Mar 2010 17:22:46 +0000
-Subject: [PATCH 16/16] Video omap lcd_omap3beagle.c: duplicated include
-Message-Id: <1269537767-7553-16-git-send-email-andrea.gelmini@gelma.net>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Wed, 24 Mar 2010 22:37:07 +0000
+Subject: [PATCH v3 0/6] hid: new driver for PicoLCD device
+Message-Id: <20100324233707.7243b04d@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1269537767-7553-1-git-send-email-andrea.gelmini@gelma.net>
-In-Reply-To: <1269537767-7553-1-git-send-email-andrea.gelmini@gelma.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-doc@vger.kernel.org
-Cc: Andrea Gelmini <andrea.gelmini@gelma.net>, Tomi Valkeinen <tomi.valkeinen@nokia.com>, Tony Lindgren <tony@atomide.com>, Andrew Morton <akpm@linux-foundation.org>, Koen Kooi <koen@openembedded.org>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, Nicu Pavel <npavel@ituner.com>, Oliver Neukum <oliver@neukum.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-drivers/video/omap/lcd_omap3beagle.c: plat/mux.h is included more than once.
+This series adds support for PicoLCD USB HID device adding support for
+the various features in different patches so each patch concentrates
+on a device class.
 
-Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
----
- drivers/video/omap/lcd_omap3beagle.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+Changes since revision 2:
+- drop most inline keywords
+- use mutex to protect question-wait-for-answer requests
+- use mutex to protect flash erase+write+write sequence
+- add support for simulated 8-bit mode (advertised grayscale and
+  translated by "pixel & 0x80 ? 1 : 0"
+    Explaining Jaya's curiosity about my choice, there seem to be
+    (near) no userspace application willing to operate on a 1bpp
+    framebuffer. Simulated 8bpp tested with links (dfbsee has
+    unrelated? issues, fbv seems to always want color map for 8bpp
+    even for grayscale...)
+    Is it correct to call "8bpp grayscale" TRUECOLOR? If not, what's
+    the right FB_VISUAL_* name?
+- fix a couple checkpatch warnings/errors
+  (there are multiple "longer than 80 char" lines left though
+   I don't think it's worth/readable to kill them all)
+- extract version check into a separate function
+- do direct keycode lookup
+- replace sysfs_{create,remove}_file with device_{create,remove}_file
+- correct initial update of framebuffer
 
-diff --git a/drivers/video/omap/lcd_omap3beagle.c b/drivers/video/omap/lcd_omap3beagle.c
-index ca75cc2..ac715f9 100644
---- a/drivers/video/omap/lcd_omap3beagle.c
-+++ b/drivers/video/omap/lcd_omap3beagle.c
-@@ -26,7 +26,6 @@
- #include <linux/i2c/twl.h>
- 
- #include <plat/mux.h>
--#include <plat/mux.h>
- #include <asm/mach-types.h>
- 
- #include "omapfb.h"
--- 
-1.7.0.3.296.g9776a
 
+I've not changed the Kconfig part from v2 as an attempt to add
+sub-options which would select FB, LCD_CLASS, BACKLIGHT_CLASS
+or LEDS_CLASS ended up in kbuild to complain about a dependency loop
+for FB.
+I'm wondering why I didn't get such a loop for first revision when
+HID_PICOLCD did select everything...
+As this is build-cosmetic it can be looked into at a later time.
+
+
+The series depends on my previous patch adding HID suspend support
+(I've not yet looked at improving it). Except that one the series is
+on top of 2.6.34-rc2.
+Note that debugfs registration is wrong on hotplug (a fix for this
+one is waiting in Jiri's upstream branch:
+  http://git.kernel.org/?p=linux/kernel/git/jikos/hid.git;a=commitdiff;hMa361b69102cdffe73006771eae7504d2cb8736 )
+
+Bruno

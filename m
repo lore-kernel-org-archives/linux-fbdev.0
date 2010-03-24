@@ -1,257 +1,225 @@
 From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Tue, 30 Mar 2010 20:35:27 +0000
-Subject: [PATCH v6 3/8] hid: add backlight support to PicoLCD device
-Message-Id: <20100330223527.48315e0e@neptune.home>
+Date: Wed, 24 Mar 2010 22:54:20 +0000
+Subject: [PATCH v3 4/6] hid: add lcd support to PicoLCD device
+Message-Id: <20100324235420.3515be9b@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20100324233707.7243b04d@neptune.home>
-	<20100324234022.0361bd80@neptune.home>
-	<20100326065656.GC26602@core.coreip.homeip.net>
-	<20100326102951.3b9ecda1@neptune.home>
-	<alpine.LNX.2.00.1003262156280.24576@pobox.suse.cz>
-	<20100327012245.0ace6a09@neptune.home>
-	<alpine.LNX.2.00.1003291144350.24576@pobox.suse.cz>
-	<20100329121611.0c22dcaf@pluto.restena.lu>
-	<alpine.LNX.2.00.1003301010410.24576@pobox.suse.cz>
-	<20100330223224.18fe4f3e@neptune.home>
-In-Reply-To: <20100330223224.18fe4f3e-hY15tx4IgV39zxVx7UNMDg@public.gmane.org>
+In-Reply-To: <20100324233707.7243b04d@neptune.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>
-Cc: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rick L. Vinyard Jr." <rvinyard-qcTL/1vZYtiVc3sceRu5cw@public.gmane.org>, Nicu Pavel <npavel-VxACSXvuqMTQT0dZR+AlfA@public.gmane.org>, Oliver Neukum <oliver-GvhC2dPhHPQdnm+yROfE0A@public.gmane.org>, Jaya Kumar <jayakumar.lkml-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: Jiri Kosina <jkosina@suse.cz>, Richard Purdie <rpurdie@rpsys.net>
+Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, Nicu Pavel <npavel@ituner.com>, Oliver Neukum <oliver@neukum.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-Add backlight support to PicoLCD device.
+Add lcd support to PicoLCD device.
 
-Backlight support depends on backlight class and is only being
-compiled if backlight class has been selected.
+LCD support depends on lcd class and is only being
+compiled if lcd class has been selected.
 
-Changes since v3:
- - Moved PM support to separate patch
 Changes since v2:
  - Drop inline keyword on non-stub functions
 
 Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
 ---
  drivers/hid/Kconfig       |    2 +-
- drivers/hid/hid-picolcd.c |  128 +++++++++++++++++++++++++++++++++++++++++=
-+++-
- 2 files changed, 128 insertions(+), 2 deletions(-)
+ drivers/hid/hid-picolcd.c |  109 +++++++++++++++++++++++++++++++++++++++++=
+++++
+ 2 files changed, 110 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
-index a813ea9..588b9ac 100644
+index 588b9ac..399edc5 100644
 --- a/drivers/hid/Kconfig
 +++ b/drivers/hid/Kconfig
-@@ -278,8 +278,8 @@ config HID_PICOLCD
- 	  - Keypad
+@@ -279,8 +279,8 @@ config HID_PICOLCD
  	  - Switching between Firmware and Flash mode
  	  - Framebuffer for monochrome 256x64 display
-+	  - Backlight control    (needs CONFIG_BACKLIGHT_CLASS_DEVICE)
+ 	  - Backlight control    (needs CONFIG_BACKLIGHT_CLASS_DEVICE)
++	  - Contrast control     (needs CONFIG_LCD_CLASS_DEVICE)
  	  Features that are not (yet) supported:
--	  - Backlight control
- 	  - Contrast control
+-	  - Contrast control
  	  - IR
  	  - General purpose outputs
+ 	  - EEProm / Flash access
 diff --git a/drivers/hid/hid-picolcd.c b/drivers/hid/hid-picolcd.c
-index 0fa3ca3..4d5fc2d 100644
+index 2417a9d..0cc0d71 100644
 --- a/drivers/hid/hid-picolcd.c
 +++ b/drivers/hid/hid-picolcd.c
-@@ -26,6 +26,7 @@
-=20
+@@ -27,6 +27,7 @@
  #include <linux/fb.h>
  #include <linux/vmalloc.h>
-+#include <linux/backlight.h>
+ #include <linux/backlight.h>
++#include <linux/lcd.h>
 =20
  #include <linux/seq_file.h>
  #include <linux/debugfs.h>
-@@ -183,6 +184,11 @@ struct picolcd_data {
+@@ -184,6 +185,10 @@ struct picolcd_data {
  	struct fb_info *fb_info;
  	struct fb_deferred_io fb_defio;
  #endif /* CONFIG_FB */
-+#if defined(CONFIG_BACKLIGHT_CLASS_DEVICE) || defined(CONFIG_BACKLIGHT_CLA=
++#if defined(CONFIG_LCD_CLASS_DEVICE) || defined(CONFIG_LCD_CLASS_DEVICE_MO=
+DULE)
++	struct lcd_device *lcd;
++	u8 lcd_contrast;
++#endif
+ #if defined(CONFIG_BACKLIGHT_CLASS_DEVICE) || defined(CONFIG_BACKLIGHT_CLA=
 SS_DEVICE_MODULE)
-+	struct backlight_device *backlight;
-+	u8 lcd_brightness;
-+	u8 lcd_power;
-+#endif /* CONFIG_BACKLIGHT_CLASS_DEVICE */
-=20
- 	/* Housekeeping stuff */
- 	spinlock_t lock;
-@@ -729,7 +735,7 @@ static void picolcd_exit_framebuffer(struct picolcd_dat=
-a *data)
- 	kfree(fb_vbitmap);
+ 	struct backlight_device *backlight;
+ 	u8 lcd_brightness;
+@@ -836,6 +841,99 @@ static void picolcd_suspend_backlight(struct picolcd_d=
+ata *data)
  }
+ #endif /* CONFIG_BACKLIGHT_CLASS_DEVICE */
 =20
--
-+#define picolcd_fbinfo(d) ((d)->fb_info)
- #else
- static inline int picolcd_fb_reset(struct picolcd_data *data, int clear)
- {
-@@ -742,8 +748,120 @@ static inline int picolcd_init_framebuffer(struct pic=
-olcd_data *data)
- static void picolcd_exit_framebuffer(struct picolcd_data *data)
- {
- }
-+#define picolcd_fbinfo(d) NULL
- #endif /* CONFIG_FB */
-=20
-+#if defined(CONFIG_BACKLIGHT_CLASS_DEVICE) || defined(CONFIG_BACKLIGHT_CLA=
-SS_DEVICE_MODULE)
++#if defined(CONFIG_LCD_CLASS_DEVICE) || defined(CONFIG_LCD_CLASS_DEVICE_MO=
+DULE)
 +/*
-+ * backlight class device
++ * lcd class device
 + */
-+static int picolcd_get_brightness(struct backlight_device *bdev)
++static int picolcd_get_contrast(struct lcd_device *ldev)
 +{
-+	struct picolcd_data *data =3D bl_get_data(bdev);
-+	return data->lcd_brightness;
++	struct picolcd_data *data =3D lcd_get_data(ldev);
++	return data->lcd_contrast;
 +}
 +
-+static int picolcd_set_brightness(struct backlight_device *bdev)
++static int picolcd_set_contrast(struct lcd_device *ldev, int contrast)
 +{
-+	struct picolcd_data *data =3D bl_get_data(bdev);
-+	struct hid_report *report =3D picolcd_out_report(REPORT_BRIGHTNESS, data-=
->hdev);
++	struct picolcd_data *data =3D lcd_get_data(ldev);
++	struct hid_report *report =3D picolcd_out_report(REPORT_CONTRAST, data->h=
+dev);
 +	unsigned long flags;
 +
 +	if (!report || report->maxfield !=3D 1 || report->field[0]->report_count =
 !=3D 1)
 +		return -ENODEV;
 +
-+	data->lcd_brightness =3D bdev->props.brightness & 0x0ff;
-+	data->lcd_power      =3D bdev->props.power;
++	data->lcd_contrast =3D contrast & 0x0ff;
 +	spin_lock_irqsave(&data->lock, flags);
-+	hid_set_field(report->field[0], 0, data->lcd_power =3D FB_BLANK_UNBLANK ?=
- data->lcd_brightness : 0);
++	hid_set_field(report->field[0], 0, data->lcd_contrast);
 +	usbhid_submit_report(data->hdev, report, USB_DIR_OUT);
 +	spin_unlock_irqrestore(&data->lock, flags);
 +	return 0;
 +}
 +
-+static int picolcd_check_bl_fb(struct backlight_device *bdev, struct fb_in=
-fo *fb)
++static int picolcd_check_lcd_fb(struct lcd_device *ldev, struct fb_info *f=
+b)
 +{
-+	return fb && fb =3D picolcd_fbinfo((struct picolcd_data *)bl_get_data(bde=
-v));
++	return fb && fb =3D picolcd_fbinfo((struct picolcd_data *)lcd_get_data(ld=
+ev));
 +}
 +
-+static const struct backlight_ops picolcd_blops =3D {
-+	.update_status  =3D picolcd_set_brightness,
-+	.get_brightness =3D picolcd_get_brightness,
-+	.check_fb       =3D picolcd_check_bl_fb,
++static struct lcd_ops picolcd_lcdops =3D {
++	.get_contrast   =3D picolcd_get_contrast,
++	.set_contrast   =3D picolcd_set_contrast,
++	.check_fb       =3D picolcd_check_lcd_fb,
 +};
 +
-+static int picolcd_init_backlight(struct picolcd_data *data, struct hid_re=
-port *report)
++static int picolcd_init_lcd(struct picolcd_data *data, struct hid_report *=
+report)
 +{
 +	struct device *dev =3D &data->hdev->dev;
-+	struct backlight_device *bdev;
-+	struct backlight_properties props;
++	struct lcd_device *ldev;
++
 +	if (!report)
 +		return -ENODEV;
 +	if (report->maxfield !=3D 1 || report->field[0]->report_count !=3D 1 ||
 +			report->field[0]->report_size !=3D 8) {
-+		dev_err(dev, "unsupported BRIGHTNESS report");
++		dev_err(dev, "unsupported CONTRAST report");
 +		return -EINVAL;
 +	}
 +
-+	memset(&props, 0, sizeof(props));
-+	props.max_brightness =3D 0xff;
-+	bdev =3D backlight_device_register(dev_name(dev), dev, data,
-+			&picolcd_blops, &props);
-+	if (IS_ERR(bdev)) {
-+		dev_err(dev, "failed to register backlight\n");
-+		return PTR_ERR(bdev);
++	ldev =3D lcd_device_register(dev_name(dev), dev, data, &picolcd_lcdops);
++	if (IS_ERR(ldev)) {
++		dev_err(dev, "failed to register LCD\n");
++		return PTR_ERR(ldev);
 +	}
-+	bdev->props.brightness     =3D 0xff;
-+	data->lcd_brightness       =3D 0xff;
-+	data->backlight            =3D bdev;
-+	picolcd_set_brightness(bdev);
++	ldev->props.max_contrast =3D 0x0ff;
++	data->lcd_contrast =3D 0xe5;
++	data->lcd =3D ldev;
++	picolcd_set_contrast(ldev, 0xe5);
 +	return 0;
 +}
 +
-+static void picolcd_exit_backlight(struct picolcd_data *data)
++static void picolcd_exit_lcd(struct picolcd_data *data)
 +{
-+	struct backlight_device *bdev =3D data->backlight;
++	struct lcd_device *ldev =3D data->lcd;
 +
-+	data->backlight =3D NULL;
-+	if (bdev)
-+		backlight_device_unregister(bdev);
++	data->lcd =3D NULL;
++	if (ldev)
++		lcd_device_unregister(ldev);
 +}
 +
-+static inline int picolcd_resume_backlight(struct picolcd_data *data)
++static inline int picolcd_resume_lcd(struct picolcd_data *data)
 +{
-+	if (!data->backlight)
++	if (!data->lcd)
 +		return 0;
-+	return picolcd_set_brightness(data->backlight);
-+}
-+
-+static void picolcd_suspend_backlight(struct picolcd_data *data)
-+{
-+	int bl_power =3D data->lcd_power;
-+	if (!data->backlight)
-+		return;
-+
-+	data->backlight->props.power =3D FB_BLANK_POWERDOWN;
-+	picolcd_set_brightness(data->backlight);
-+	data->lcd_power =3D data->backlight->props.power =3D bl_power;
++	return picolcd_set_contrast(data->lcd, data->lcd_contrast);
 +}
 +#else
-+static inline int picolcd_init_backlight(struct picolcd_data *data,
++static inline int picolcd_init_lcd(struct picolcd_data *data,
 +		struct hid_report *report)
 +{
 +	return 0;
 +}
-+static inline void picolcd_exit_backlight(struct picolcd_data *data)
++static inline void picolcd_exit_lcd(struct picolcd_data *data)
 +{
 +}
-+static inline int picolcd_resume_backlight(struct picolcd_data *data)
++static inline int picolcd_resume_lcd(struct picolcd_data *data)
 +{
 +	return 0;
 +}
-+static void picolcd_suspend_backlight(struct picolcd_data *data)
-+{
-+}
-+#endif /* CONFIG_BACKLIGHT_CLASS_DEVICE */
++#endif /* CONFIG_LCD_CLASS_DEVICE */
 +
  /*
   * input class device
   */
-@@ -879,6 +997,7 @@ static int picolcd_reset(struct hid_device *hdev)
+@@ -971,6 +1069,7 @@ static int picolcd_reset(struct hid_device *hdev)
  	if (error)
  		return error;
 =20
-+	picolcd_resume_backlight(data);
++	picolcd_resume_lcd(data);
+ 	picolcd_resume_backlight(data);
  #if defined(CONFIG_FB) || defined(CONFIG_FB_MODULE)
  	if (data->fb_info)
- 		schedule_delayed_work(&data->fb_info->deferred_work, 0);
-@@ -1567,6 +1686,11 @@ static int picolcd_probe_lcd(struct hid_device *hdev=
+@@ -1589,6 +1688,9 @@ static int picolcd_reset_resume(struct hid_device *hd=
+ev)
+ 	ret =3D picolcd_fb_reset(hid_get_drvdata(hdev), 0);
+ 	if (ret)
+ 		dbg_hid(PICOLCD_NAME " restoring framebuffer content failed: %d\n", ret);
++	ret =3D picolcd_resume_lcd(hid_get_drvdata(hdev));
++	if (ret)
++		dbg_hid(PICOLCD_NAME " restoring lcd failed: %d\n", ret);
+ 	ret =3D picolcd_resume_backlight(hid_get_drvdata(hdev));
+ 	if (ret)
+ 		dbg_hid(PICOLCD_NAME " restoring backlight failed: %d\n", ret);
+@@ -1696,6 +1798,11 @@ static int picolcd_probe_lcd(struct hid_device *hdev=
 , struct picolcd_data *data)
  	if (error)
  		goto err;
 =20
-+	/* Setup backlight class device */
-+	error =3D picolcd_init_backlight(data, picolcd_out_report(REPORT_BRIGHTNE=
-SS, hdev));
++	/* Setup lcd class device */
++	error =3D picolcd_init_lcd(data, picolcd_out_report(REPORT_CONTRAST, hdev=
+));
 +	if (error)
 +		goto err;
 +
- #ifdef CONFIG_DEBUG_FS
- 	report =3D picolcd_out_report(REPORT_READ_MEMORY, hdev);
- 	if (report && report->maxfield =3D 1 && report->field[0]->report_size =3D=
- 8)
-@@ -1576,6 +1700,7 @@ static int picolcd_probe_lcd(struct hid_device *hdev,=
+ 	/* Setup backlight class device */
+ 	error =3D picolcd_init_backlight(data, picolcd_out_report(REPORT_BRIGHTNE=
+SS, hdev));
+ 	if (error)
+@@ -1711,6 +1818,7 @@ static int picolcd_probe_lcd(struct hid_device *hdev,=
  struct picolcd_data *data)
- #endif
  	return 0;
  err:
-+	picolcd_exit_backlight(data);
+ 	picolcd_exit_backlight(data);
++	picolcd_exit_lcd(data);
  	picolcd_exit_framebuffer(data);
  	picolcd_exit_cir(data);
  	picolcd_exit_keys(data);
-@@ -1707,6 +1832,7 @@ static void picolcd_remove(struct hid_device *hdev)
- 	spin_unlock_irqrestore(&data->lock, flags);
+@@ -1843,6 +1951,7 @@ static void picolcd_remove(struct hid_device *hdev)
 =20
  	/* Clean up the framebuffer */
-+	picolcd_exit_backlight(data);
+ 	picolcd_exit_backlight(data);
++	picolcd_exit_lcd(data);
  	picolcd_exit_framebuffer(data);
  	/* Cleanup input */
  	picolcd_exit_cir(data);

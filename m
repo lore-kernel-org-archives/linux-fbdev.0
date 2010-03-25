@@ -1,90 +1,35 @@
-From: Roger Quadros <roger.quadros@nokia.com>
-Date: Wed, 17 Mar 2010 12:35:21 +0000
-Subject: [PATCHv2 3/3] OMAP: DSS2: Use vdds_sdi regulator supply in SDI
-Message-Id: <1268829321-29769-4-git-send-email-roger.quadros@nokia.com>
+From: Andrea Gelmini <andrea.gelmini@gelma.net>
+Date: Thu, 25 Mar 2010 17:22:46 +0000
+Subject: [PATCH 16/16] Video omap lcd_omap3beagle.c: duplicated include
+Message-Id: <1269537767-7553-16-git-send-email-andrea.gelmini@gelma.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1268829321-29769-1-git-send-email-roger.quadros@nokia.com>
- <1268829321-29769-2-git-send-email-roger.quadros@nokia.com>
- <1268829321-29769-3-git-send-email-roger.quadros@nokia.com>
-In-Reply-To: <1268829321-29769-3-git-send-email-roger.quadros@nokia.com>
+References: <1269537767-7553-1-git-send-email-andrea.gelmini@gelma.net>
+In-Reply-To: <1269537767-7553-1-git-send-email-andrea.gelmini@gelma.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+To: linux-doc@vger.kernel.org
+Cc: Andrea Gelmini <andrea.gelmini@gelma.net>, Tomi Valkeinen <tomi.valkeinen@nokia.com>, Tony Lindgren <tony@atomide.com>, Andrew Morton <akpm@linux-foundation.org>, Koen Kooi <koen@openembedded.org>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Roger Quadros <roger.quadros@nokia.com>
+drivers/video/omap/lcd_omap3beagle.c: plat/mux.h is included more than once.
 
-This patch enables the use of vdds_sdi regulator in SDI subsystem.
-We can disable the vdds_sdi voltage when not in use to save
-power.
-
-Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
+Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
 ---
- drivers/video/omap2/dss/sdi.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+ drivers/video/omap/lcd_omap3beagle.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index 3de3c1e..ee07a3c 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -23,13 +23,16 @@
- #include <linux/clk.h>
- #include <linux/delay.h>
- #include <linux/err.h>
-+#include <linux/regulator/consumer.h>
+diff --git a/drivers/video/omap/lcd_omap3beagle.c b/drivers/video/omap/lcd_omap3beagle.c
+index ca75cc2..ac715f9 100644
+--- a/drivers/video/omap/lcd_omap3beagle.c
++++ b/drivers/video/omap/lcd_omap3beagle.c
+@@ -26,7 +26,6 @@
+ #include <linux/i2c/twl.h>
  
- #include <plat/display.h>
-+#include <plat/cpu.h>
- #include "dss.h"
+ #include <plat/mux.h>
+-#include <plat/mux.h>
+ #include <asm/mach-types.h>
  
- static struct {
- 	bool skip_init;
- 	bool update_enabled;
-+	struct regulator *vdds_sdi_reg;
- } sdi;
- 
- static void sdi_basic_init(void)
-@@ -57,6 +60,10 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- 		goto err0;
- 	}
- 
-+	r = regulator_enable(sdi.vdds_sdi_reg);
-+	if (r)
-+		goto err1;
-+
- 	/* In case of skip_init sdi_init has already enabled the clocks */
- 	if (!sdi.skip_init)
- 		dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK1);
-@@ -120,6 +127,7 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- 	return 0;
- err2:
- 	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
-+	regulator_disable(sdi.vdds_sdi_reg);
- err1:
- 	omap_dss_stop_device(dssdev);
- err0:
-@@ -135,6 +143,8 @@ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev)
- 
- 	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
- 
-+	regulator_disable(sdi.vdds_sdi_reg);
-+
- 	omap_dss_stop_device(dssdev);
- }
- EXPORT_SYMBOL(omapdss_sdi_display_disable);
-@@ -151,6 +161,11 @@ int sdi_init(bool skip_init)
- 	/* we store this for first display enable, then clear it */
- 	sdi.skip_init = skip_init;
- 
-+	sdi.vdds_sdi_reg = dss_get_vdds_sdi();
-+	if (IS_ERR(sdi.vdds_sdi_reg)) {
-+		DSSERR("can't get VDDS_SDI regulator\n");
-+		return PTR_ERR(sdi.vdds_sdi_reg);
-+	}
- 	/*
- 	 * Enable clocks already here, otherwise there would be a toggle
- 	 * of them until sdi_display_enable is called.
+ #include "omapfb.h"
 -- 
-1.6.3.3
+1.7.0.3.296.g9776a
 

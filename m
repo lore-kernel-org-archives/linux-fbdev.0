@@ -1,42 +1,87 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=
-Date: Sat, 27 Mar 2010 14:21:13 +0000
-Subject: Re: [PATCH 1/7] fbdev: section cleanup in arcfb
-Message-Id: <20100327142113.GB15267@pengutronix.de>
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Date: Fri, 26 Mar 2010 17:40:26 +0000
+Subject: Re: [PATCH] Fix section mismatches in virtual framebuffer
+Message-Id: <20100326104026.5cda2fbf.randy.dunlap@oracle.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1269671092-19948-1-git-send-email-henne@nachtwindheim.de>
-In-Reply-To: <1269671092-19948-1-git-send-email-henne@nachtwindheim.de>
+References: <1269433035-6141-1-git-send-email-henne@nachtwindheim.de>
+In-Reply-To: <1269433035-6141-1-git-send-email-henne@nachtwindheim.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Henrik Kretzschmar <henne@nachtwindheim.de>
-Cc: linux-fbdev@vger.kernel.org, Jaya Kumar <jayalk@intworks.biz>, Arnaud Patard <arnaud.patard@rtp-net.org>, James Simmons <jsimmons@infradead.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Henrik Kretzschmar <henne@nachtwindheim.de>, linux-fbdev@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, Krzysztof Helt <krzysztof.h1@poczta.fm>, Arnaud Patard <arnaud.patard@rtp-net.org>, Andres Salomon <dilinger@debian.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, linux-kernel@vger.kernel.org
 
-On Sat, Mar 27, 2010 at 07:24:45AM +0100, Henrik Kretzschmar wrote:
-> This patch fixes the sections in the arcfb driver.
->=20
-> WARNING: drivers/video/built-in.o(.devinit.text+0x543): Section mismatch =
-in reference from the function arcfb_probe() to the variable .init.data:arc=
-fb_var
-> The function __devinit arcfb_probe() references
-> a variable __initdata arcfb_var.
-> If arcfb_var is only used by arcfb_probe then
-> annotate arcfb_var with a matching annotation.
->=20
-> WARNING: drivers/video/built-in.o(.devinit.text+0x558): Section mismatch =
-in reference from the function arcfb_probe() to the variable .init.data:arc=
-fb_fix
-> The function __devinit arcfb_probe() references
-> a variable __initdata arcfb_fix.
-> If arcfb_fix is only used by arcfb_probe then
-> annotate arcfb_fix with a matching annotation.
+[adding linux-fbdev mailing list]
 
-... by moving arcfb_fix and arcfb_var to .devinit.data
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-Addionally it moves arcfb_remove to .devexit.text.
 
-Best regards
-Uwe
+On Wed, 24 Mar 2010 13:17:15 +0100 Henrik Kretzschmar wrote:
 
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+> Both structs, vfb_default and vfb_fix, should not be freed,
+> since they are referenced and used by the struct fb_info of that device.
+> 
+> WARNING: drivers/video/vfb.o(.devinit.text+0x13f): Section mismatch in
+> reference from the function vfb_probe() to the variable
+> .init.data:vfb_default
+> The function __devinit vfb_probe() references
+> a variable __initdata vfb_default.
+> If vfb_default is only used by vfb_probe then
+> annotate vfb_default with a matching annotation.
+> 
+> WARNING: drivers/video/vfb.o(.devinit.text+0x162): Section mismatch in
+> reference from the function vfb_probe() to the variable
+> .init.data:vfb_fix
+> The function __devinit vfb_probe() references
+> a variable __initdata vfb_fix.
+> If vfb_fix is only used by vfb_probe then
+> annotate vfb_fix with a matching annotation.
+> 
+> WARNING: drivers/video/vfb.o(.devinit.text+0x177): Section mismatch in
+> reference from the function vfb_probe() to the variable
+> .init.data:vfb_fix
+> The function __devinit vfb_probe() references
+> a variable __initdata vfb_fix.
+> If vfb_fix is only used by vfb_probe then
+> annotate vfb_fix with a matching annotation.
+> 
+> WARNING: drivers/video/vfb.o(.devinit.text+0x184): Section mismatch in
+> reference from the function vfb_probe() to the (unknown reference)
+> .init.data:(unknown)
+> The function __devinit vfb_probe() references
+> a (unknown reference) __initdata (unknown).
+> If (unknown) is only used by vfb_probe then
+> annotate (unknown) with a matching annotation.
+> 
+> Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
+> ---
+>  drivers/video/vfb.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
+> index b8ab995..ae5796d 100644
+> --- a/drivers/video/vfb.c
+> +++ b/drivers/video/vfb.c
+> @@ -79,7 +79,7 @@ static void rvfree(void *mem, unsigned long size)
+>  	vfree(mem);
+>  }
+>  
+> -static struct fb_var_screeninfo vfb_default __initdata = {
+> +static struct fb_var_screeninfo vfb_default = {
+>  	.xres =		640,
+>  	.yres =		480,
+>  	.xres_virtual =	640,
+> @@ -101,7 +101,7 @@ static struct fb_var_screeninfo vfb_default __initdata = {
+>        	.vmode =	FB_VMODE_NONINTERLACED,
+>  };
+>  
+> -static struct fb_fix_screeninfo vfb_fix __initdata = {
+> +static struct fb_fix_screeninfo vfb_fix = {
+>  	.id =		"Virtual FB",
+>  	.type =		FB_TYPE_PACKED_PIXELS,
+>  	.visual =	FB_VISUAL_PSEUDOCOLOR,
+> -- 
+
+
+---
+~Randy

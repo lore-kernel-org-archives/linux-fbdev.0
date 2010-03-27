@@ -1,73 +1,42 @@
-From: Henrik Kretzschmar <henne@nachtwindheim.de>
-Date: Sat, 27 Mar 2010 06:24:45 +0000
-Subject: [PATCH 1/7] fbdev: section cleanup in arcfb
-Message-Id: <1269671092-19948-1-git-send-email-henne@nachtwindheim.de>
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=
+Date: Sat, 27 Mar 2010 14:21:13 +0000
+Subject: Re: [PATCH 1/7] fbdev: section cleanup in arcfb
+Message-Id: <20100327142113.GB15267@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1269671092-19948-1-git-send-email-henne@nachtwindheim.de>
+In-Reply-To: <1269671092-19948-1-git-send-email-henne@nachtwindheim.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: Henrik Kretzschmar <henne@nachtwindheim.de>, Jaya Kumar <jayalk@intworks.biz>, Arnaud Patard <arnaud.patard@rtp-net.org>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, James Simmons <jsimmons@infradead.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Henrik Kretzschmar <henne@nachtwindheim.de>
+Cc: linux-fbdev@vger.kernel.org, Jaya Kumar <jayalk@intworks.biz>, Arnaud Patard <arnaud.patard@rtp-net.org>, James Simmons <jsimmons@infradead.org>, linux-kernel@vger.kernel.org
 
-This patch fixes the sections in the arcfb driver.
+On Sat, Mar 27, 2010 at 07:24:45AM +0100, Henrik Kretzschmar wrote:
+> This patch fixes the sections in the arcfb driver.
+>=20
+> WARNING: drivers/video/built-in.o(.devinit.text+0x543): Section mismatch =
+in reference from the function arcfb_probe() to the variable .init.data:arc=
+fb_var
+> The function __devinit arcfb_probe() references
+> a variable __initdata arcfb_var.
+> If arcfb_var is only used by arcfb_probe then
+> annotate arcfb_var with a matching annotation.
+>=20
+> WARNING: drivers/video/built-in.o(.devinit.text+0x558): Section mismatch =
+in reference from the function arcfb_probe() to the variable .init.data:arc=
+fb_fix
+> The function __devinit arcfb_probe() references
+> a variable __initdata arcfb_fix.
+> If arcfb_fix is only used by arcfb_probe then
+> annotate arcfb_fix with a matching annotation.
 
-WARNING: drivers/video/built-in.o(.devinit.text+0x543): Section mismatch in reference from the function arcfb_probe() to the variable .init.data:arcfb_var
-The function __devinit arcfb_probe() references
-a variable __initdata arcfb_var.
-If arcfb_var is only used by arcfb_probe then
-annotate arcfb_var with a matching annotation.
+... by moving arcfb_fix and arcfb_var to .devinit.data
 
-WARNING: drivers/video/built-in.o(.devinit.text+0x558): Section mismatch in reference from the function arcfb_probe() to the variable .init.data:arcfb_fix
-The function __devinit arcfb_probe() references
-a variable __initdata arcfb_fix.
-If arcfb_fix is only used by arcfb_probe then
-annotate arcfb_fix with a matching annotation.
+Addionally it moves arcfb_remove to .devexit.text.
 
-Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
----
- drivers/video/arcfb.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+Best regards
+Uwe
 
-diff --git a/drivers/video/arcfb.c b/drivers/video/arcfb.c
-index 01554d6..3d18039 100644
---- a/drivers/video/arcfb.c
-+++ b/drivers/video/arcfb.c
-@@ -81,7 +81,7 @@ struct arcfb_par {
- 	spinlock_t lock;
- };
- 
--static struct fb_fix_screeninfo arcfb_fix __initdata = {
-+static struct fb_fix_screeninfo arcfb_fix __devinitdata = {
- 	.id =		"arcfb",
- 	.type =		FB_TYPE_PACKED_PIXELS,
- 	.visual =	FB_VISUAL_MONO01,
-@@ -91,7 +91,7 @@ static struct fb_fix_screeninfo arcfb_fix __initdata = {
- 	.accel =	FB_ACCEL_NONE,
- };
- 
--static struct fb_var_screeninfo arcfb_var __initdata = {
-+static struct fb_var_screeninfo arcfb_var __devinitdata = {
- 	.xres		= 128,
- 	.yres		= 64,
- 	.xres_virtual	= 128,
-@@ -589,7 +589,7 @@ err:
- 	return retval;
- }
- 
--static int arcfb_remove(struct platform_device *dev)
-+static int __devexit arcfb_remove(struct platform_device *dev)
- {
- 	struct fb_info *info = platform_get_drvdata(dev);
- 
-@@ -603,7 +603,7 @@ static int arcfb_remove(struct platform_device *dev)
- 
- static struct platform_driver arcfb_driver = {
- 	.probe	= arcfb_probe,
--	.remove = arcfb_remove,
-+	.remove = __devexit_p(arcfb_remove),
- 	.driver	= {
- 		.name	= "arcfb",
- 	},
--- 
-1.7.0
-
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |

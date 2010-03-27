@@ -1,133 +1,99 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Tue, 02 Mar 2010 16:01:59 +0000
-Subject: [GIT PULL] OMAP DSS updates for 2.6.34
-Message-Id: <1267545719.2406.65.camel@tubuntu.research.nokia.com>
+From: Henrik Kretzschmar <henne@nachtwindheim.de>
+Date: Sat, 27 Mar 2010 06:29:08 +0000
+Subject: [PATCH 4/7] fbdev: section cleanup in vesafb
+Message-Id: <1269671353-22041-3-git-send-email-henne@nachtwindheim.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1269671353-22041-1-git-send-email-henne@nachtwindheim.de>
+In-Reply-To: <1269671353-22041-1-git-send-email-henne@nachtwindheim.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: ext Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: Henrik Kretzschmar <henne@nachtwindheim.de>, Andrew Morton <akpm@linux-foundation.org>, Peter Jones <pjones@redhat.com>, Arnaud Patard <arnaud.patard@rtp-net.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
 
-Hi Linus,
+This patch cleans up the sections in the vesafb driver.
 
-Please pull the OMAP Display Subsystem patches below.
+WARNING: drivers/video/built-in.o(.devinit.text+0x19495): Section mismatch in reference from the function vesafb_probe() to the variable .init.data:vesafb_fix
+The function __devinit vesafb_probe() references
+a variable __initdata vesafb_fix.
+If vesafb_fix is only used by vesafb_probe then
+annotate vesafb_fix with a matching annotation.
 
-- Couple of new panel drivers
-- Various small fixes and improvements
-- Multiple patches making the DSS device model more sane, moving the
-control from the DSS core driver to the panel drivers. This makes it
-possible for the panel drivers to fully control what is going on,
-instead of having to work with the limits imposed by the DSS core.
+WARNING: drivers/video/built-in.o(.devinit.text+0x194a5): Section mismatch in reference from the function vesafb_probe() to the (unknown reference) .init.data:(unknown)
+The function __devinit vesafb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by vesafb_probe then
+annotate (unknown) with a matching annotation.
 
- Tomi
+WARNING: drivers/video/built-in.o(.devinit.text+0x194d5): Section mismatch in reference from the function vesafb_probe() to the variable .init.data:vesafb_defined
+The function __devinit vesafb_probe() references
+a variable __initdata vesafb_defined.
+If vesafb_defined is only used by vesafb_probe then
+annotate vesafb_defined with a matching annotation.
 
+...
+fbdev: section cleanup in vesafb
 
-The following changes since commit 13dda80e48439b446d0bc9bab34b91484bc8f533:
-  Linus Torvalds (1):
-        Merge branch 'davinci-for-linus' of git://git.kernel.org/.../khilman/linux-davinci
+This patch cleans up the sections in the vesafb driver.
 
-are available in the git repository at:
+WARNING: drivers/video/built-in.o(.devinit.text+0x19495): Section mismatch in reference from the function vesafb_probe() to the variable .init.data:vesafb_fix
+The function __devinit vesafb_probe() references
+a variable __initdata vesafb_fix.
+If vesafb_fix is only used by vesafb_probe then
+annotate vesafb_fix with a matching annotation.
 
-  git://gitorious.org/linux-omap-dss2/linux.git for-linus
+WARNING: drivers/video/built-in.o(.devinit.text+0x194a5): Section mismatch in reference from the function vesafb_probe() to the (unknown reference) .init.data:(unknown)
+The function __devinit vesafb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by vesafb_probe then
+annotate (unknown) with a matching annotation.
 
-Aaro Koskinen (1):
-      OMAP: DSS: Taal: fix error returns in taal_probe()
+WARNING: drivers/video/built-in.o(.devinit.text+0x194d5): Section mismatch in reference from the function vesafb_probe() to the variable .init.data:vesafb_defined
+The function __devinit vesafb_probe() references
+a variable __initdata vesafb_defined.
+If vesafb_defined is only used by vesafb_probe then
+annotate vesafb_defined with a matching annotation.
 
-Grazvydas Ignotas (1):
-      OMAP: DSS: add TPO TD043MTEA1 panel
+...
 
-Janusz Krzysztofik (2):
-      omapfb: Fix 12-bit display (RGB444 color mode) handling
-      omapfb: lcd_ams_delta: add support for contrast control
+Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
+---
+ drivers/video/vesafb.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-Mike Rapoport (1):
-      OMAP: DSS2: add Toppoly TDO35S panel
-
-Tomi Valkeinen (41):
-      OMAP: DSS2: Improve Kconfig help texts
-      OMAP: DSS2: enable VDDS_DSI when using DPI
-      OMAP: 3430SDP: remove vdvi regulator
-      OMAP: DSS2: OMAPFB: implement OMAPFB_GET_DISPLAY_INFO
-      OMAP: DSS2: fix irq-stats compilation
-      OMAP: DSS2: OMAPFB: Add omapfb_update_window prototype
-      OMAP: DSS2: improve DSS clk src selection
-      OMAP: DSS2: DSI: add dsi_bus_is_locked()
-      OMAP: DSS2: DSI: add helpers for DCS read/write
-      OMAP: DSS2: DSI: export dsi_vc_enable_hs()
-      OMAP: DSS2: DSI: configure all DSI VCs
-      OMAP: DSS2: DSI: remove dsi_vc_print_status()
-      OMAP: DSS2: Check ctx loss count only when starting the first clock
-      OMAP: DSS2: remove sub-panel system
-      OMAP: DSS2: fix driver probe error handling
-      OMAP: DSS2: OMAPFB: fix dssdev cleanup on error
-      OMAP: DSS2: OMAPFB: fix cleanup on dssdev enable error
-      OMAP: DSS2: fix get_dsi/dispc_clk_source() usage
-      OMAP: DSS2: DSI: change DSI bus_lock to semaphore
-      OMAP: DSS2: DSI: remove auto-update perf measurement
-      OMAP: DSS2: move run_test()
-      OMAP: DSS2: move memory_read()
-      OMAP: DSS2: move set/get_mirror()
-      OMAP: DSS2: move get/set_rotate()
-      OMAP: DSS2: move wait_vsync()
-      OMAP: DSS2: move enable/disable_channel to overlay manager
-      OMAP: DSS2: move get_resolution()
-      OMAP: DSS2: move get_recommended_bpp()
-      OMAP: DSS2: move enable/get_te()
-      OMAP: DSS2: move set/get_update_mode()
-      OMAP: DSS2: move update() and sync()
-      OMAP: DSS2: move enable/disable/suspend/resume
-      OMAP: DSS2: move set/get_wss()
-      OMAP: DSS2: move timing functions
-      OMAP: DSS2: DSI: remove external TE support
-      OMAP: DSS2: OMAPFB: Remove FB_OMAP2_FORCE_AUTO_UPDATE
-      OMAP: DSS2: DSI: add dsi_vc_dcs_read_2() helper
-      OMAP: DSS2: TPO-TD03MTEA1: fix function names
-      OMAP: DSS2: DSI: add error prints
-      OMAP: DSS2: Taal: Fix ESD check
-      OMAP: DSS2: Taal: Fix TE when resuming
-
-Vaibhav Hiremath (1):
-      OMAP: DSS2: Add Sharp LQ043T1DG01 panel driver
-
-Ville Syrjälä (2):
-      OMAP: DSS2: OMAPFB: install omapfb.h
-      OMAP: DSS2: OMAPFB: Constify some function parameters
-
- arch/arm/mach-omap2/board-3430sdp.c                |    4 -
- arch/arm/plat-omap/include/plat/display.h          |  117 ++-
- drivers/video/omap/lcd_ams_delta.c                 |   93 ++-
- drivers/video/omap/omapfb_main.c                   |    7 +-
- drivers/video/omap2/displays/Kconfig               |   18 +
- drivers/video/omap2/displays/Makefile              |    3 +
- drivers/video/omap2/displays/panel-generic.c       |   56 +-
- .../video/omap2/displays/panel-sharp-lq043t1dg01.c |  159 +++
- .../video/omap2/displays/panel-sharp-ls037v7dw01.c |   77 +-
- drivers/video/omap2/displays/panel-taal.c          |  253 ++++-
- .../video/omap2/displays/panel-toppoly-tdo35s.c    |  154 +++
- .../video/omap2/displays/panel-tpo-td043mtea1.c    |  528 ++++++++++
- drivers/video/omap2/dss/Kconfig                    |   26 +-
- drivers/video/omap2/dss/core.c                     |  117 ++-
- drivers/video/omap2/dss/dispc.c                    |   42 +-
- drivers/video/omap2/dss/display.c                  |  119 +--
- drivers/video/omap2/dss/dpi.c                      |  144 +---
- drivers/video/omap2/dss/dsi.c                      | 1031 +++++---------------
- drivers/video/omap2/dss/dss.c                      |   42 +-
- drivers/video/omap2/dss/dss.h                      |   23 +-
- drivers/video/omap2/dss/manager.c                  |   48 +-
- drivers/video/omap2/dss/overlay.c                  |    2 +-
- drivers/video/omap2/dss/rfbi.c                     |  321 +------
- drivers/video/omap2/dss/sdi.c                      |  115 +--
- drivers/video/omap2/dss/venc.c                     |  296 +++----
- drivers/video/omap2/omapfb/Kconfig                 |   11 +-
- drivers/video/omap2/omapfb/omapfb-ioctl.c          |   68 +-
- drivers/video/omap2/omapfb/omapfb-main.c           |  133 ++--
- drivers/video/omap2/omapfb/omapfb.h                |    9 +
- include/linux/Kbuild                               |    1 +
- include/linux/omapfb.h                             |    9 +
- 31 files changed, 2186 insertions(+), 1840 deletions(-)
- create mode 100644 drivers/video/omap2/displays/panel-sharp-lq043t1dg01.c
- create mode 100644 drivers/video/omap2/displays/panel-toppoly-tdo35s.c
- create mode 100644 drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-
+diff --git a/drivers/video/vesafb.c b/drivers/video/vesafb.c
+index ef4128c..ba8e394 100644
+--- a/drivers/video/vesafb.c
++++ b/drivers/video/vesafb.c
+@@ -30,7 +30,7 @@
+ 
+ /* --------------------------------------------------------------------- */
+ 
+-static struct fb_var_screeninfo vesafb_defined __initdata = {
++static struct fb_var_screeninfo vesafb_defined __devinitdata = {
+ 	.activate	= FB_ACTIVATE_NOW,
+ 	.height		= -1,
+ 	.width		= -1,
+@@ -41,7 +41,7 @@ static struct fb_var_screeninfo vesafb_defined __initdata = {
+ 	.vmode		= FB_VMODE_NONINTERLACED,
+ };
+ 
+-static struct fb_fix_screeninfo vesafb_fix __initdata = {
++static struct fb_fix_screeninfo vesafb_fix __devinitdata = {
+ 	.id	= "VESA VGA",
+ 	.type	= FB_TYPE_PACKED_PIXELS,
+ 	.accel	= FB_ACCEL_NONE,
+@@ -49,8 +49,8 @@ static struct fb_fix_screeninfo vesafb_fix __initdata = {
+ 
+ static int   inverse    __read_mostly;
+ static int   mtrr       __read_mostly;		/* disable mtrr */
+-static int   vram_remap __initdata;		/* Set amount of memory to be used */
+-static int   vram_total __initdata;		/* Set total amount of memory */
++static int   vram_remap __devinitdata;		/* Set amount of memory to be used */
++static int   vram_total __devinitdata;		/* Set total amount of memory */
+ static int   pmi_setpal __read_mostly = 1;	/* pmi for palette changes ??? */
+ static int   ypan       __read_mostly;		/* 0..nothing, 1..ypan, 2..ywrap */
+ static void  (*pmi_start)(void) __read_mostly;
+-- 
+1.7.0
 

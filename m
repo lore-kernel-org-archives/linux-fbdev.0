@@ -1,47 +1,57 @@
-From: ville.syrjala@nokia.com
-Date: Wed, 17 Mar 2010 22:46:17 +0000
-Subject: [PATCH v4 2/8] DSS2: OMAPFB: Check var even if there isn't memory
-Message-Id: <1268865983-16270-3-git-send-email-ville.syrjala@nokia.com>
+From: Henrik Kretzschmar <henne@nachtwindheim.de>
+Date: Sat, 27 Mar 2010 06:29:09 +0000
+Subject: [PATCH 5/7] fbdev: section cleanup in vfb
+Message-Id: <1269671353-22041-4-git-send-email-henne@nachtwindheim.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1268865983-16270-1-git-send-email-ville.syrjala@nokia.com>
-In-Reply-To: <1268865983-16270-1-git-send-email-ville.syrjala@nokia.com>
+References: <1269671353-22041-1-git-send-email-henne@nachtwindheim.de>
+In-Reply-To: <1269671353-22041-1-git-send-email-henne@nachtwindheim.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: Imre Deak <imre.deak@nokia.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@nokia.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: Henrik Kretzschmar <henne@nachtwindheim.de>, Andrew Morton <akpm@linux-foundation.org>, Krzysztof Helt <krzysztof.h1@poczta.fm>, Arnaud Patard <arnaud.patard@rtp-net.org>, Andres Salomon <dilinger@debian.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, linux-kernel@vger.kernel.org
 
-RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KCklmIHZpZGVv
-IG1lbW9yeSBoYXNuJ3QgYmVlbiBhbGxvY2F0ZSBoYXZlIGNoZWNrX2ZiX3ZhcigpIHN0aWxsIGNo
-ZWNrCm1vc3Qgb2YgdGhlIHNldHRpbmdzLCBqdXN0IHNraXAgdGhlIG9uZXMgaW52b2x2aW5nIHRo
-ZSBzaXplIG9mIHRoZQptZW1vcnkgcmVnaW9uLiBBbHNvIHNraXAgdGhlIG1lbW9yeSBhZGRyZXNz
-IGNhbGN1bGF0aW9ucyBpbgpvbWFwZmJfc2V0dXBfb3ZlcmxheSgpIGlmIHRoZXJlJ3Mgbm8gbWVt
-b3J5LgoKU2lnbmVkLW9mZi1ieTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lh
-LmNvbT4KLS0tCiBkcml2ZXJzL3ZpZGVvL29tYXAyL29tYXBmYi9vbWFwZmItbWFpbi5jIHwgICAx
-MSArKysrKy0tLS0tLQogMSBmaWxlcyBjaGFuZ2VkLCA1IGluc2VydGlvbnMoKyksIDYgZGVsZXRp
-b25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9vbWFwMi9vbWFwZmIvb21hcGZiLW1h
-aW4uYyBiL2RyaXZlcnMvdmlkZW8vb21hcDIvb21hcGZiL29tYXBmYi1tYWluLmMKaW5kZXggZWE2
-MTlhOS4uNzM1MWU5NiAxMDA2NDQKLS0tIGEvZHJpdmVycy92aWRlby9vbWFwMi9vbWFwZmIvb21h
-cGZiLW1haW4uYworKysgYi9kcml2ZXJzL3ZpZGVvL29tYXAyL29tYXBmYi9vbWFwZmItbWFpbi5j
-CkBAIC02NjcsOSArNjY3LDYgQEAgaW50IGNoZWNrX2ZiX3ZhcihzdHJ1Y3QgZmJfaW5mbyAqZmJp
-LCBzdHJ1Y3QgZmJfdmFyX3NjcmVlbmluZm8gKnZhcikKIAogCURCRygiY2hlY2tfZmJfdmFyICVk
-XG4iLCBvZmJpLT5pZCk7CiAKLQlpZiAob2ZiaS0+cmVnaW9uLnNpemUgPSAwKQotCQlyZXR1cm4g
-MDsKLQogCXIgPSBmYl9tb2RlX3RvX2Rzc19tb2RlKHZhciwgJm1vZGUpOwogCWlmIChyKSB7CiAJ
-CURCRygiY2Fubm90IGNvbnZlcnQgdmFyIHRvIG9tYXAgZHNzIG1vZGVcbiIpOwpAQCAtNjg5LDcg
-KzY4Niw4IEBAIGludCBjaGVja19mYl92YXIoc3RydWN0IGZiX2luZm8gKmZiaSwgc3RydWN0IGZi
-X3Zhcl9zY3JlZW5pbmZvICp2YXIpCiAJaWYgKGNoZWNrX2ZiX3Jlc19ib3VuZHModmFyKSkKIAkJ
-cmV0dXJuIC1FSU5WQUw7CiAKLQlpZiAoY2hlY2tfZmJfc2l6ZShvZmJpLCB2YXIpKQorCS8qIFdo
-ZW4gbm8gbWVtb3J5IGlzIGFsbG9jYXRlZCBpZ25vcmUgdGhlIHNpemUgY2hlY2sgKi8KKwlpZiAo
-b2ZiaS0+cmVnaW9uLnNpemUgIT0gMCAmJiBjaGVja19mYl9zaXplKG9mYmksIHZhcikpCiAJCXJl
-dHVybiAtRUlOVkFMOwogCiAJaWYgKHZhci0+eHJlcyArIHZhci0+eG9mZnNldCA+IHZhci0+eHJl
-c192aXJ0dWFsKQpAQCAtODkzLDggKzg5MSw5IEBAIHN0YXRpYyBpbnQgb21hcGZiX3NldHVwX292
-ZXJsYXkoc3RydWN0IGZiX2luZm8gKmZiaSwgc3RydWN0IG9tYXBfb3ZlcmxheSAqb3ZsLAogCQl5
-cmVzID0gdmFyLT55cmVzOwogCX0KIAotCW9tYXBmYl9jYWxjX2FkZHIob2ZiaSwgdmFyLCBmaXgs
-IHJvdGF0aW9uLAotCQkJICZkYXRhX3N0YXJ0X3AsICZkYXRhX3N0YXJ0X3YpOworCWlmIChvZmJp
-LT5yZWdpb24uc2l6ZSkKKwkJb21hcGZiX2NhbGNfYWRkcihvZmJpLCB2YXIsIGZpeCwgcm90YXRp
-b24sCisJCQkJICZkYXRhX3N0YXJ0X3AsICZkYXRhX3N0YXJ0X3YpOwogCiAJciA9IGZiX21vZGVf
-dG9fZHNzX21vZGUodmFyLCAmbW9kZSk7CiAJaWYgKHIpIHsKLS0gCjEuNi40LjQKCi0tClRvIHVu
-c3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51
-eC1mYmRldiIgaW4KdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5l
-bC5vcmcKTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpv
-cmRvbW8taW5mby5odG1s
+This patch cleans up the section in the vfb driver.
+
+WARNING: drivers/video/vfb.o(.devinit.text+0xf8): Section mismatch in reference from the function vfb_probe() to the variable .init.data:vfb_default
+The function __devinit vfb_probe() references
+a variable __initdata vfb_default.
+If vfb_default is only used by vfb_probe then
+annotate vfb_default with a matching annotation.
+
+WARNING: drivers/video/vfb.o(.devinit.text+0x114): Section mismatch in reference from the function vfb_probe() to the variable .init.data:vfb_fix
+The function __devinit vfb_probe() references
+a variable __initdata vfb_fix.
+If vfb_fix is only used by vfb_probe then
+annotate vfb_fix with a matching annotation.
+
+Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
+---
+ drivers/video/vfb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
+index b8ab995..488520b 100644
+--- a/drivers/video/vfb.c
++++ b/drivers/video/vfb.c
+@@ -79,7 +79,7 @@ static void rvfree(void *mem, unsigned long size)
+ 	vfree(mem);
+ }
+ 
+-static struct fb_var_screeninfo vfb_default __initdata = {
++static struct fb_var_screeninfo vfb_default __devinitdata = {
+ 	.xres =		640,
+ 	.yres =		480,
+ 	.xres_virtual =	640,
+@@ -101,7 +101,7 @@ static struct fb_var_screeninfo vfb_default __initdata = {
+       	.vmode =	FB_VMODE_NONINTERLACED,
+ };
+ 
+-static struct fb_fix_screeninfo vfb_fix __initdata = {
++static struct fb_fix_screeninfo vfb_fix __devinitdata = {
+ 	.id =		"Virtual FB",
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =	FB_VISUAL_PSEUDOCOLOR,
+-- 
+1.7.0
+

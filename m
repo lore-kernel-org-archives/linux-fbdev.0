@@ -1,107 +1,72 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 26 Mar 2010 17:18:07 +0000
-Subject: Fwd: [PATCH] vesafb: use platform_driver_probe() instead of
-Message-Id: <10f740e81003261018n20b8af34ma946b17dc047a67b@mail.gmail.com>
+From: Henrik Kretzschmar <henne@nachtwindheim.de>
+Date: Sat, 27 Mar 2010 06:29:11 +0000
+Subject: [PATCH 7/7] fbdev: section cleanup in w100fb
+Message-Id: <1269671353-22041-6-git-send-email-henne@nachtwindheim.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1269671353-22041-1-git-send-email-henne@nachtwindheim.de>
+In-Reply-To: <1269671353-22041-1-git-send-email-henne@nachtwindheim.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: Henrik Kretzschmar <henne@nachtwindheim.de>, Krzysztof Helt <krzysztof.h1@wp.pl>, Arnaud Patard <arnaud.patard@rtp-net.org>, Andrew Morton <akpm@linux-foundation.org>, Jaya Kumar <jayakumar.lkml@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
 
----------- Forwarded message ----------
-From: Jan Beulich <JBeulich@novell.com>
-Date: Fri, Mar 26, 2010 at 17:48
-Subject: [PATCH] vesafb: use platform_driver_probe() instead of
-platform_driver_register()
-To: u.kleine-koenig@pengutronix.de, gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org
+This patch cleans up the section in the w100fb driver.
 
-
-Commit c2e13037e6794bd0d9de3f9ecabf5615f15c160b introduced a huge
-amount of section mismatch warnings in vesafb code. Rather than
-converting all of the annotations, do the obvious and revert the
-__init -> __devinit change, and use the recommended (in that patch)
-alternative to calling platform_driver_register(): vesafb depends on
-information obtained from by kernel at boot time, cannot be a module,
-and no post-boot devices can ever show up.
-
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-
+Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
 ---
- drivers/video/vesafb.c |   26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+ drivers/video/w100fb.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
---- linux-2.6.34-rc2/drivers/video/vesafb.c
-+++ 2.6.34-rc2-vesafb-init/drivers/video/vesafb.c
-@@ -226,7 +226,7 @@ static int __init vesafb_setup(char *opt
-       return 0;
- }
-
--static int __devinit vesafb_probe(struct platform_device *dev)
-+static int __init vesafb_probe(struct platform_device *dev)
- {
-       struct fb_info *info;
-       int i, err;
-@@ -477,7 +477,6 @@ err:
- }
-
- static struct platform_driver vesafb_driver = {
--       .probe  = vesafb_probe,
-       .driver = {
-               .name   = "vesafb",
-       },
-@@ -493,20 +492,21 @@ static int __init vesafb_init(void)
-       /* ignore error return of fb_get_options */
-       fb_get_options("vesafb", &option);
-       vesafb_setup(option);
--       ret = platform_driver_register(&vesafb_driver);
-
-+       vesafb_device = platform_device_alloc("vesafb", 0);
-+       if (!vesafb_device)
-+               return -ENOMEM;
-+
-+       ret = platform_device_add(vesafb_device);
-       if (!ret) {
--               vesafb_device = platform_device_alloc("vesafb", 0);
-+               ret = platform_driver_probe(&vesafb_driver, vesafb_probe);
-+               if (ret)
-+                       platform_device_del(vesafb_device);
-+       }
-
--               if (vesafb_device)
--                       ret = platform_device_add(vesafb_device);
--               else
--                       ret = -ENOMEM;
--
--               if (ret) {
--                       platform_device_put(vesafb_device);
--                       platform_driver_unregister(&vesafb_driver);
--               }
-+       if (ret) {
-+               platform_device_put(vesafb_device);
-+               vesafb_device = NULL;
-       }
-
-       return ret;
-
-
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
-
-
+diff --git a/drivers/video/w100fb.c b/drivers/video/w100fb.c
+index 5d22395..a37a46c 100644
+--- a/drivers/video/w100fb.c
++++ b/drivers/video/w100fb.c
+@@ -52,7 +52,7 @@ static void w100_update_enable(void);
+ static void w100_update_disable(void);
+ static void calc_hsync(struct w100fb_par *par);
+ static void w100_init_graphic_engine(struct w100fb_par *par);
+-struct w100_pll_info *w100_get_xtal_table(unsigned int freq);
++struct w100_pll_info *w100_get_xtal_table(unsigned int freq) __devinit;
+ 
+ /* Pseudo palette size */
+ #define MAX_PALETTES      16
+@@ -781,7 +781,7 @@ out:
+ }
+ 
+ 
+-static int w100fb_remove(struct platform_device *pdev)
++static int __devexit w100fb_remove(struct platform_device *pdev)
+ {
+ 	struct fb_info *info = platform_get_drvdata(pdev);
+ 	struct w100fb_par *par=info->par;
+@@ -1019,7 +1019,7 @@ static struct pll_entries {
+ 	{ 0 },
+ };
+ 
+-struct w100_pll_info *w100_get_xtal_table(unsigned int freq)
++struct w100_pll_info __devinit *w100_get_xtal_table(unsigned int freq)
+ {
+ 	struct pll_entries *pll_entry = w100_pll_tables;
+ 
+@@ -1610,7 +1610,7 @@ static void w100_vsync(void)
+ 
+ static struct platform_driver w100fb_driver = {
+ 	.probe		= w100fb_probe,
+-	.remove		= w100fb_remove,
++	.remove		= __devexit_p(w100fb_remove),
+ 	.suspend	= w100fb_suspend,
+ 	.resume		= w100fb_resume,
+ 	.driver		= {
+@@ -1618,7 +1618,7 @@ static struct platform_driver w100fb_driver = {
+ 	},
+ };
+ 
+-int __devinit w100fb_init(void)
++int __init w100fb_init(void)
+ {
+ 	return platform_driver_register(&w100fb_driver);
+ }
 -- 
-Gr{oetje,eeting}s,
+1.7.0
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds

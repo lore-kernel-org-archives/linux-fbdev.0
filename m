@@ -1,228 +1,92 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Tue, 30 Mar 2010 20:36:07 +0000
-Subject: [PATCH v6 4/8] hid: add lcd support to PicoLCD device
-Message-Id: <20100330223607.5bd5c3a8@neptune.home>
+From: Henrik Kretzschmar <henne@nachtwindheim.de>
+Date: Sat, 27 Mar 2010 06:29:07 +0000
+Subject: [PATCH 3/7] fbdev: section cleanup in hgafb
+Message-Id: <1269671353-22041-2-git-send-email-henne@nachtwindheim.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100324233707.7243b04d@neptune.home>
-	<20100324234022.0361bd80@neptune.home>
-	<20100326065656.GC26602@core.coreip.homeip.net>
-	<20100326102951.3b9ecda1@neptune.home>
-	<alpine.LNX.2.00.1003262156280.24576@pobox.suse.cz>
-	<20100327012245.0ace6a09@neptune.home>
-	<alpine.LNX.2.00.1003291144350.24576@pobox.suse.cz>
-	<20100329121611.0c22dcaf@pluto.restena.lu>
-	<alpine.LNX.2.00.1003301010410.24576@pobox.suse.cz>
-	<20100330223224.18fe4f3e@neptune.home>
-In-Reply-To: <20100330223224.18fe4f3e@neptune.home>
+References: <1269671353-22041-1-git-send-email-henne@nachtwindheim.de>
+In-Reply-To: <1269671353-22041-1-git-send-email-henne@nachtwindheim.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, Nicu Pavel <npavel@ituner.com>, Oliver Neukum <oliver@neukum.org>, Jaya Kumar <jayakumar.lkml@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: Henrik Kretzschmar <henne@nachtwindheim.de>, Ferenc Bakonyi <fero@drama.obuda.kando.hu>, Arnaud Patard <arnaud.patard@rtp-net.org>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Jaya Kumar <jayakumar.lkml@gmail.com>, James Simmons <jsimmons@infradead.org>, linux-nvidia@lists.surfsouth.com, linux-kernel@vger.kernel.org
 
-Add lcd support to PicoLCD device.
+This patch cleans up the sections in the hgafb driver.
 
-LCD support depends on lcd class and is only being
-compiled if lcd class has been selected.
+WARNING: drivers/video/hgafb.o(.devinit.text+0x18): Section mismatch in referenc
+e from the function hgafb_probe() to the function .init.text:hga_card_detect()
+The function __devinit hgafb_probe() references
+a function __init hga_card_detect().
+If hga_card_detect is only used by hgafb_probe then
+annotate hga_card_detect with a matching annotation.
 
-Changes since v3:
- - Moved PM support to separate patch
-Changes since v2:
- - Drop inline keyword on non-stub functions
+WARNING: drivers/video/hgafb.o(.devinit.text+0xfe): Section mismatch in referenc
+e from the function hgafb_probe() to the variable .init.data:hga_fix
+The function __devinit hgafb_probe() references
+a variable __initdata hga_fix.
+If hga_fix is only used by hgafb_probe then
+annotate hga_fix with a matching annotation.
 
-Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
+WARNING: drivers/video/hgafb.o(.devinit.text+0x105): Section mismatch in reference from the function hgafb_probe() to the variable .init.data:hga_default_var
+The function __devinit hgafb_probe() references
+a variable __initdata hga_default_var.
+If hga_default_var is only used by hgafb_probe then
+annotate hga_default_var with a matching annotation.
+
+Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
 ---
- drivers/hid/Kconfig       |    2 +-
- drivers/hid/hid-picolcd.c |  106 +++++++++++++++++++++++++++++++++++++++++=
-++++
- 2 files changed, 107 insertions(+), 1 deletions(-)
+ drivers/video/hgafb.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
-index 588b9ac..399edc5 100644
---- a/drivers/hid/Kconfig
-+++ b/drivers/hid/Kconfig
-@@ -279,8 +279,8 @@ config HID_PICOLCD
- 	  - Switching between Firmware and Flash mode
- 	  - Framebuffer for monochrome 256x64 display
- 	  - Backlight control    (needs CONFIG_BACKLIGHT_CLASS_DEVICE)
-+	  - Contrast control     (needs CONFIG_LCD_CLASS_DEVICE)
- 	  Features that are not (yet) supported:
--	  - Contrast control
- 	  - IR
- 	  - General purpose outputs
- 	  - EEProm / Flash access
-diff --git a/drivers/hid/hid-picolcd.c b/drivers/hid/hid-picolcd.c
-index 4d5fc2d..9f2c859 100644
---- a/drivers/hid/hid-picolcd.c
-+++ b/drivers/hid/hid-picolcd.c
-@@ -27,6 +27,7 @@
- #include <linux/fb.h>
- #include <linux/vmalloc.h>
- #include <linux/backlight.h>
-+#include <linux/lcd.h>
-=20
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
-@@ -184,6 +185,10 @@ struct picolcd_data {
- 	struct fb_info *fb_info;
- 	struct fb_deferred_io fb_defio;
- #endif /* CONFIG_FB */
-+#if defined(CONFIG_LCD_CLASS_DEVICE) || defined(CONFIG_LCD_CLASS_DEVICE_MO=
-DULE)
-+	struct lcd_device *lcd;
-+	u8 lcd_contrast;
-+#endif
- #if defined(CONFIG_BACKLIGHT_CLASS_DEVICE) || defined(CONFIG_BACKLIGHT_CLA=
-SS_DEVICE_MODULE)
- 	struct backlight_device *backlight;
- 	u8 lcd_brightness;
-@@ -862,6 +867,99 @@ static void picolcd_suspend_backlight(struct picolcd_d=
-ata *data)
+diff --git a/drivers/video/hgafb.c b/drivers/video/hgafb.c
+index db9b785..234a6a5 100644
+--- a/drivers/video/hgafb.c
++++ b/drivers/video/hgafb.c
+@@ -107,7 +107,7 @@ static DEFINE_SPINLOCK(hga_reg_lock);
+ 
+ /* Framebuffer driver structures */
+ 
+-static struct fb_var_screeninfo __initdata hga_default_var = {
++static struct fb_var_screeninfo hga_default_var __devinitdata = {
+ 	.xres		= 720,
+ 	.yres 		= 348,
+ 	.xres_virtual 	= 720,
+@@ -121,7 +121,7 @@ static struct fb_var_screeninfo __initdata hga_default_var = {
+ 	.width 		= -1,
+ };
+ 
+-static struct fb_fix_screeninfo __initdata hga_fix = {
++static struct fb_fix_screeninfo hga_fix __devinitdata = {
+ 	.id 		= "HGA",
+ 	.type 		= FB_TYPE_PACKED_PIXELS,	/* (not sure) */
+ 	.visual 	= FB_VISUAL_MONO10,
+@@ -277,7 +277,7 @@ static void hga_blank(int blank_mode)
+ 	spin_unlock_irqrestore(&hga_reg_lock, flags);
  }
- #endif /* CONFIG_BACKLIGHT_CLASS_DEVICE */
-=20
-+#if defined(CONFIG_LCD_CLASS_DEVICE) || defined(CONFIG_LCD_CLASS_DEVICE_MO=
-DULE)
-+/*
-+ * lcd class device
-+ */
-+static int picolcd_get_contrast(struct lcd_device *ldev)
-+{
-+	struct picolcd_data *data =3D lcd_get_data(ldev);
-+	return data->lcd_contrast;
-+}
-+
-+static int picolcd_set_contrast(struct lcd_device *ldev, int contrast)
-+{
-+	struct picolcd_data *data =3D lcd_get_data(ldev);
-+	struct hid_report *report =3D picolcd_out_report(REPORT_CONTRAST, data->h=
-dev);
-+	unsigned long flags;
-+
-+	if (!report || report->maxfield !=3D 1 || report->field[0]->report_count =
-!=3D 1)
-+		return -ENODEV;
-+
-+	data->lcd_contrast =3D contrast & 0x0ff;
-+	spin_lock_irqsave(&data->lock, flags);
-+	hid_set_field(report->field[0], 0, data->lcd_contrast);
-+	usbhid_submit_report(data->hdev, report, USB_DIR_OUT);
-+	spin_unlock_irqrestore(&data->lock, flags);
-+	return 0;
-+}
-+
-+static int picolcd_check_lcd_fb(struct lcd_device *ldev, struct fb_info *f=
-b)
-+{
-+	return fb && fb =3D picolcd_fbinfo((struct picolcd_data *)lcd_get_data(ld=
-ev));
-+}
-+
-+static struct lcd_ops picolcd_lcdops =3D {
-+	.get_contrast   =3D picolcd_get_contrast,
-+	.set_contrast   =3D picolcd_set_contrast,
-+	.check_fb       =3D picolcd_check_lcd_fb,
-+};
-+
-+static int picolcd_init_lcd(struct picolcd_data *data, struct hid_report *=
-report)
-+{
-+	struct device *dev =3D &data->hdev->dev;
-+	struct lcd_device *ldev;
-+
-+	if (!report)
-+		return -ENODEV;
-+	if (report->maxfield !=3D 1 || report->field[0]->report_count !=3D 1 ||
-+			report->field[0]->report_size !=3D 8) {
-+		dev_err(dev, "unsupported CONTRAST report");
-+		return -EINVAL;
-+	}
-+
-+	ldev =3D lcd_device_register(dev_name(dev), dev, data, &picolcd_lcdops);
-+	if (IS_ERR(ldev)) {
-+		dev_err(dev, "failed to register LCD\n");
-+		return PTR_ERR(ldev);
-+	}
-+	ldev->props.max_contrast =3D 0x0ff;
-+	data->lcd_contrast =3D 0xe5;
-+	data->lcd =3D ldev;
-+	picolcd_set_contrast(ldev, 0xe5);
-+	return 0;
-+}
-+
-+static void picolcd_exit_lcd(struct picolcd_data *data)
-+{
-+	struct lcd_device *ldev =3D data->lcd;
-+
-+	data->lcd =3D NULL;
-+	if (ldev)
-+		lcd_device_unregister(ldev);
-+}
-+
-+static inline int picolcd_resume_lcd(struct picolcd_data *data)
-+{
-+	if (!data->lcd)
-+		return 0;
-+	return picolcd_set_contrast(data->lcd, data->lcd_contrast);
-+}
-+#else
-+static inline int picolcd_init_lcd(struct picolcd_data *data,
-+		struct hid_report *report)
-+{
-+	return 0;
-+}
-+static inline void picolcd_exit_lcd(struct picolcd_data *data)
-+{
-+}
-+static inline int picolcd_resume_lcd(struct picolcd_data *data)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_LCD_CLASS_DEVICE */
-+
- /*
-  * input class device
-  */
-@@ -997,6 +1095,7 @@ static int picolcd_reset(struct hid_device *hdev)
- 	if (error)
- 		return error;
-=20
-+	picolcd_resume_lcd(data);
- 	picolcd_resume_backlight(data);
- #if defined(CONFIG_FB) || defined(CONFIG_FB_MODULE)
- 	if (data->fb_info)
-@@ -1686,6 +1785,11 @@ static int picolcd_probe_lcd(struct hid_device *hdev=
-, struct picolcd_data *data)
- 	if (error)
- 		goto err;
-=20
-+	/* Setup lcd class device */
-+	error =3D picolcd_init_lcd(data, picolcd_out_report(REPORT_CONTRAST, hdev=
-));
-+	if (error)
-+		goto err;
-+
- 	/* Setup backlight class device */
- 	error =3D picolcd_init_backlight(data, picolcd_out_report(REPORT_BRIGHTNE=
-SS, hdev));
- 	if (error)
-@@ -1701,6 +1805,7 @@ static int picolcd_probe_lcd(struct hid_device *hdev,=
- struct picolcd_data *data)
+ 
+-static int __init hga_card_detect(void)
++static int __devinit hga_card_detect(void)
+ {
+ 	int count = 0;
+ 	void __iomem *p, *q;
+@@ -597,7 +597,7 @@ static int __devinit hgafb_probe(struct platform_device *pdev)
  	return 0;
- err:
- 	picolcd_exit_backlight(data);
-+	picolcd_exit_lcd(data);
- 	picolcd_exit_framebuffer(data);
- 	picolcd_exit_cir(data);
- 	picolcd_exit_keys(data);
-@@ -1833,6 +1938,7 @@ static void picolcd_remove(struct hid_device *hdev)
-=20
- 	/* Clean up the framebuffer */
- 	picolcd_exit_backlight(data);
-+	picolcd_exit_lcd(data);
- 	picolcd_exit_framebuffer(data);
- 	/* Cleanup input */
- 	picolcd_exit_cir(data);
---=20
-1.6.4.4
+ }
+ 
+-static int hgafb_remove(struct platform_device *pdev)
++static int __devexit hgafb_remove(struct platform_device *pdev)
+ {
+ 	struct fb_info *info = platform_get_drvdata(pdev);
+ 
+@@ -622,7 +622,7 @@ static int hgafb_remove(struct platform_device *pdev)
+ 
+ static struct platform_driver hgafb_driver = {
+ 	.probe = hgafb_probe,
+-	.remove = hgafb_remove,
++	.remove = __devexit_p(hgafb_remove),
+ 	.driver = {
+ 		.name = "hgafb",
+ 	},
+-- 
+1.7.0
 

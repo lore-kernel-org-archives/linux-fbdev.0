@@ -1,42 +1,33 @@
-From: Wolfram Sang <w.sang@pengutronix.de>
-Date: Sat, 20 Mar 2010 14:13:04 +0000
-Subject: [PATCH 23/24] video/matrox: fix dangling pointers
-Message-Id: <1269094385-16114-24-git-send-email-w.sang@pengutronix.de>
+From: "Justin P. mattock" <justinmattock@gmail.com>
+Date: Sun, 28 Mar 2010 18:04:19 +0000
+Subject: adding some machines to efifb.c
+Message-Id: <4BAF9A23.9080901@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1269094385-16114-1-git-send-email-w.sang@pengutronix.de>
-In-Reply-To: <1269094385-16114-1-git-send-email-w.sang@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: kernel-janitors@vger.kernel.org
-Cc: linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, Wolfram Sang <w.sang@pengutronix.de>, Petr Vandrovec <vandrove@vc.cvut.cz>, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Fix I2C-drivers which missed setting clientdata to NULL before freeing the
-structure it points to. Also fix drivers which do this _after_ the structure
-was freed already.
+I've noticed in efifb.c that there is no
+entry for MacbookPro2,2 and iMac9,1
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Petr Vandrovec <vandrove@vc.cvut.cz>
----
+I've spent the last few days looking into this, but
+had no luck i.g. finding the physical address
+of the framebuffer seems a bit tricky for my knowledge.
 
-Found using coccinelle, then reviewed. Full patchset is available via
-kernel-janitors, linux-i2c, and LKML.
----
- drivers/video/matrox/matroxfb_maven.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+I do have these machines, if it's possible I'd like to
+add these machines, but need info on what/where I might
+find these addresses to add to efifb.c
+(example)
+} dmi_list[] = {
+		[M_MB] = { "macbook", 0x80000000, 2048 * 4, 1280, 800 },
 
-diff --git a/drivers/video/matrox/matroxfb_maven.c b/drivers/video/matrox/matroxfb_maven.c
-index 91af915..e7b0ec3 100644
---- a/drivers/video/matrox/matroxfb_maven.c
-+++ b/drivers/video/matrox/matroxfb_maven.c
-@@ -1254,6 +1254,7 @@ static int maven_probe(struct i2c_client *client,
- 		goto ERROR4;
- 	return 0;
- ERROR4:;
-+	i2c_set_clientdata(client, NULL);
- 	kfree(data);
- ERROR0:;
- 	return err;
--- 
-1.7.0
+I've tried punching in random numbers, but came to the conclusion
+that in order to run grub efi, and or elilo I would
+have to change some things(partition).
 
+Any info would be appreciated and/or I can supply
+info to somebody etc...
+
+Justin P. Mattock

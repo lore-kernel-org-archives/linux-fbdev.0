@@ -1,80 +1,101 @@
-From: Peter Jones <pjones@redhat.com>
-Date: Mon, 29 Mar 2010 15:21:12 +0000
-Subject: Re: [PATCH 2/7] fbdev: section cleanup in efifb
-Message-Id: <4BB0C568.1070803@redhat.com>
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+Date: Sun, 28 Mar 2010 17:43:30 +0000
+Subject: [PATCH] Rename imacfb.txt to efifb.txt and change imacfb to efifb.
+Message-Id: <1269798210-8664-1-git-send-email-justinmattock@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1269671353-22041-1-git-send-email-henne@nachtwindheim.de>
-In-Reply-To: <1269671353-22041-1-git-send-email-henne@nachtwindheim.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Henrik Kretzschmar <henne@nachtwindheim.de>
-Cc: linux-fbdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Alex Zhavnerchik <alex.vizor@gmail.com>, Huang Ying <ying.huang@intel.com>, Arnaud Patard <arnaud.patard@rtp-net.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Justin P. Mattock" <justinmattock@gmail.com>
 
-On 03/27/2010 02:29 AM, Henrik Kretzschmar wrote:
-> This patch fixes the sections on the efifb driver.
-> 
-> WARNING: drivers/video/built-in.o(.devinit.text+0x19f8c): Section mismatch in re
-> ference from the function efifb_probe() to the (unknown reference) .init.data:(u
-> nknown)
-> The function __devinit efifb_probe() references
-> a (unknown reference) __initdata (unknown).
-> If (unknown) is only used by efifb_probe then
-> annotate (unknown) with a matching annotation.
-> 
-> WARNING: drivers/video/built-in.o(.devinit.text+0x19f9a): Section mismatch in reference from the function efifb_probe() to the (unknown reference) .init.data:(unknown)
-> The function __devinit efifb_probe() references
-> a (unknown reference) __initdata (unknown).
-> If (unknown) is only used by efifb_probe then
-> annotate (unknown) with a matching annotation.
-> 
-> WARNING: drivers/video/built-in.o(.devinit.text+0x19fa1): Section mismatch in reference from the function efifb_probe() to the variable .init.data:efifb_fix
-> The function __devinit efifb_probe() references
-> a variable __initdata efifb_fix.
-> If efifb_fix is only used by efifb_probe then
-> annotate efifb_fix with a matching annotation.
-> 
-> WARNING: drivers/video/built-in.o(.devinit.text+0x19fa7): Section mismatch in reference from the function efifb_probe() to the variable .init.data:efifb_defined
-> The function __devinit efifb_probe() references
-> a variable __initdata efifb_defined.
-> If efifb_defined is only used by efifb_probe then
-> annotate efifb_defined with a matching annotation.
-> 
-> Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
-
-Acked-by: Peter Jones <pjones@redhat.com>
-
-> ---
->  drivers/video/efifb.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
-> index 581d2db..6aea0d3 100644
-> --- a/drivers/video/efifb.c
-> +++ b/drivers/video/efifb.c
-> @@ -16,7 +16,7 @@
->  
->  #include <video/vga.h>
->  
-> -static struct fb_var_screeninfo efifb_defined __initdata = {
-> +static struct fb_var_screeninfo efifb_defined __devinitdata = {
->  	.activate		= FB_ACTIVATE_NOW,
->  	.height			= -1,
->  	.width			= -1,
-> @@ -27,7 +27,7 @@ static struct fb_var_screeninfo efifb_defined __initdata = {
->  	.vmode			= FB_VMODE_NONINTERLACED,
->  };
->  
-> -static struct fb_fix_screeninfo efifb_fix __initdata = {
-> +static struct fb_fix_screeninfo efifb_fix __devinitdata = {
->  	.id			= "EFI VGA",
->  	.type			= FB_TYPE_PACKED_PIXELS,
->  	.accel			= FB_ACCEL_NONE,
+Rename imacfb.txt to efifb.txt since imacfb was moved to
+efifb,and change imacfb to efifb.=20
+Note:I used git rm for imacfb.txt, but
+git renamed this file to efifb.txt after everything was said and
+done, not sure if this is correct or not.
 
 
--- 
-        Peter
+Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
+---
+ Documentation/fb/efifb.txt  |   31 +++++++++++++++++++++++++++++++
+ Documentation/fb/imacfb.txt |   31 -------------------------------
+ 2 files changed, 31 insertions(+), 31 deletions(-)
+ create mode 100644 Documentation/fb/efifb.txt
+ delete mode 100644 Documentation/fb/imacfb.txt
 
-Sanity's just a one trick pony anyway.  You only get one trick -- rational
-thinking -- but when you're good and crazy, the sky's the limit!
-		-- The Tick
+diff --git a/Documentation/fb/efifb.txt b/Documentation/fb/efifb.txt
+new file mode 100644
+index 0000000..a59916c
+--- /dev/null
++++ b/Documentation/fb/efifb.txt
+@@ -0,0 +1,31 @@
++
++What is efifb?
++=3D=3D=3D=3D=3D=3D=3D+
++This is a generic EFI platform driver for Intel based Apple computers.
++efifb is only for EFI booted Intel Macs.
++
++Supported Hardware
++=3D=3D=3D=3D=3D=3D=3D=3D=3D
++
++iMac 17"/20"
++Macbook
++Macbook Pro 15"/17"
++MacMini
++
++How to use it?
++=3D=3D=3D=3D=3D=3D=3D
++
++efifb does not have any kind of autodetection of your machine.
++You have to add the following kernel parameters in your elilo.conf:
++	Macbook :
++		video=EFifb:macbook
++	MacMini :
++		video=EFifb:mini
++	Macbook Pro 15", iMac 17" :
++		video=EFifb:i17
++	Macbook Pro 17", iMac 20" :
++		video=EFifb:i20
++
++--
++Edgar Hucek <gimli@dark-green.com>
+diff --git a/Documentation/fb/imacfb.txt b/Documentation/fb/imacfb.txt
+deleted file mode 100644
+index 316ec9b..0000000
+--- a/Documentation/fb/imacfb.txt
++++ /dev/null
+@@ -1,31 +0,0 @@
+-
+-What is imacfb?
+-=3D=3D=3D=3D=3D=3D=3D-
+-This is a generic EFI platform driver for Intel based Apple computers.
+-Imacfb is only for EFI booted Intel Macs.
+-
+-Supported Hardware
+-=3D=3D=3D=3D=3D=3D=3D=3D=3D
+-
+-iMac 17"/20"
+-Macbook
+-Macbook Pro 15"/17"
+-MacMini
+-
+-How to use it?
+-=3D=3D=3D=3D=3D=3D=3D
+-
+-Imacfb does not have any kind of autodetection of your machine.
+-You have to add the following kernel parameters in your elilo.conf:
+-	Macbook :
+-		video=3Dimacfb:macbook
+-	MacMini :
+-		video=3Dimacfb:mini
+-	Macbook Pro 15", iMac 17" :
+-		video=3Dimacfb:i17
+-	Macbook Pro 17", iMac 20" :
+-		video=3Dimacfb:i20
+-
+---
+-Edgar Hucek <gimli@dark-green.com>
+--=20
+1.6.5.GIT
+

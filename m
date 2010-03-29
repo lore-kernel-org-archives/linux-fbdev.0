@@ -1,473 +1,574 @@
-From: Mike Frysinger <vapier@gentoo.org>
-Date: Tue, 09 Mar 2010 16:22:52 +0000
-Subject: [PATCH] fbdev: bfin-lq035q1-fb: respect new PPI mode platform field
-Message-Id: <1268151772-28815-1-git-send-email-vapier@gentoo.org>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Mon, 29 Mar 2010 20:34:18 +0000
+Subject: [PATCH v4 6/6] hid: add experimental access to PicoLCD device's
+Message-Id: <20100329223418.77c8ccb7@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20100324233707.7243b04d@neptune.home>
+	<20100324235835.0e7e1bcb@neptune.home>
+	<alpine.LNX.2.00.1003291142400.24576@pobox.suse.cz>
+In-Reply-To: <alpine.LNX.2.00.1003291142400.24576-ztGlSCb7Y1iN3ZZ/Hiejyg@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org, Michael Hennerich <michael.hennerich@analog.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>
+Cc: linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rick L. Vinyard Jr." <rvinyard-qcTL/1vZYtiVc3sceRu5cw@public.gmane.org>, Nicu Pavel <npavel-VxACSXvuqMTQT0dZR+AlfA@public.gmane.org>, Oliver Neukum <oliver-GvhC2dPhHPQdnm+yROfE0A@public.gmane.org>, Jaya Kumar <jayakumar.lkml-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+The PicoLCD device has a small amount of EEPROM and also provides access
+to its FLASH where firmware and splash image are saved.
+In flasher mode FLASH access is the only active feature.
 
-This lets us support the new BF527-EZKIT V2.1 via platform resources
-tweaks only.
+Give read/write access to both via debugfs files.
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+NOTE: EEPROM and FLASH access should be switched to better suited API,
+      until then the will reside in debugfs
+
+Changes since v3:
+ - Fix return value of picolcd_debug_reset_open
+Changes since v2:
+ - Drop inline keyword on non-stub functions
+ - Prevent interleaved flash writes via mutex
+ - Add description of flash/eeprom access schematincs
+
+Signed-off-by: Bruno Prémont <bonbons@linux-vserver.org>
 ---
- drivers/video/bfin-lq035q1-fb.c |  252 ++++++++++++++++++++++----------------
- 1 files changed, 146 insertions(+), 106 deletions(-)
 
-diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
-index 0387236..0c50de9 100644
---- a/drivers/video/bfin-lq035q1-fb.c
-+++ b/drivers/video/bfin-lq035q1-fb.c
-@@ -60,47 +60,13 @@
- #define LCD_X_RES		320	/* Horizontal Resolution */
- #define LCD_Y_RES		240	/* Vertical Resolution */
- #define	DMA_BUS_SIZE		16
-+#define U_LINE			4	/* Blanking Lines */
+On Mon, 29 March 2010 Jiri Kosina <jkosina@suse.cz> wrote:
+> On Wed, 24 Mar 2010, Bruno Prémont wrote:
+> 
+> > +static ssize_t picolcd_debug_reset_open(struct inode *inode, struct file *f)
+> > +{
+> > +	return single_open(f, picolcd_debug_reset_show, inode->i_private);
+> > +}
+> > +
+> 
+> struct file_operations->open is supposed to return int (filedescriptor), 
+> not ssize_t.
+
+Fixed with this updated patch, thanks for noticing.
+(today I compiled on both x86 32bit and 64bit without compiler warnings,
+ so hopefully no remaining type mixes of that kind)
+
+
+ drivers/hid/Kconfig       |    2 +-
+ drivers/hid/hid-picolcd.c |  439 +++++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 423 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
+index 34f6593..a2ecd83 100644
+--- a/drivers/hid/Kconfig
++++ b/drivers/hid/Kconfig
+@@ -281,9 +281,9 @@ config HID_PICOLCD
+ 	  - Backlight control         (needs CONFIG_BACKLIGHT_CLASS_DEVICE)
+ 	  - Contrast control          (needs CONFIG_LCD_CLASS_DEVICE)
+ 	  - General purpose outputs   (needs CONFIG_LEDS_CLASS)
++	  - EEProm / Flash access     (via debugfs)
+ 	  Features that are not (yet) supported:
+ 	  - IR
+-	  - EEProm / Flash access
  
--#define USE_RGB565_16_BIT_PPI
--
--#ifdef USE_RGB565_16_BIT_PPI
--#define LCD_BPP		16	/* Bit Per Pixel */
--#define CLOCKS_PER_PIX	1
--#define CPLD_PIPELINE_DELAY_COR 0	/* NO CPLB */
--#endif
+ config HID_QUANTA
+ 	tristate "Quanta Optical Touch"
+diff --git a/drivers/hid/hid-picolcd.c b/drivers/hid/hid-picolcd.c
+index 38c6711..daa7c5d 100644
+--- a/drivers/hid/hid-picolcd.c
++++ b/drivers/hid/hid-picolcd.c
+@@ -169,6 +169,10 @@ struct picolcd_pending {
+ struct picolcd_data {
+ 	struct hid_device *hdev;
+ #ifdef CONFIG_DEBUG_FS
++	struct dentry *debug_reset;
++	struct dentry *debug_eeprom;
++	struct dentry *debug_flash;
++	struct mutex mutex_flash;
+ 	int addr_sz;
+ #endif
+ 	u8 version[2];
+@@ -1327,6 +1331,357 @@ static DEVICE_ATTR(operation_mode, 0644, picolcd_operation_mode_show,
  
- /* Interface 16/18-bit TFT over an 8-bit wide PPI using a small Programmable Logic Device (CPLD)
-  * http://blackfin.uclinux.org/gf/project/stamp/frs/?action=FrsReleaseBrowse&frs_package_id5
-  */
- 
--#ifdef USE_RGB565_8_BIT_PPI
--#define LCD_BPP		16	/* Bit Per Pixel */
--#define CLOCKS_PER_PIX	2
--#define CPLD_PIPELINE_DELAY_COR 3	/* RGB565 */
--#endif
--
--#ifdef USE_RGB888_8_BIT_PPI
--#define LCD_BPP		24	/* Bit Per Pixel */
--#define CLOCKS_PER_PIX	3
--#define CPLD_PIPELINE_DELAY_COR 5	/* RGB888 */
--#endif
--
--	/*
--	 * HS and VS timing parameters (all in number of PPI clk ticks)
--	 */
--
--#define U_LINE		4				/* Blanking Lines */
--
--#define H_ACTPIX	(LCD_X_RES * CLOCKS_PER_PIX)	/* active horizontal pixel */
--#define H_PERIOD	(336 * CLOCKS_PER_PIX)		/* HS period */
--#define H_PULSE		(2 * CLOCKS_PER_PIX)				/* HS pulse width */
--#define H_START		(7 * CLOCKS_PER_PIX + CPLD_PIPELINE_DELAY_COR)	/* first valid pixel */
--
--#define	V_LINES		(LCD_Y_RES + U_LINE)		/* total vertical lines */
--#define V_PULSE		(2 * CLOCKS_PER_PIX)		/* VS pulse width (1-5 H_PERIODs) */
--#define V_PERIOD	(H_PERIOD * V_LINES)		/* VS period */
--
--#define ACTIVE_VIDEO_MEM_OFFSET		((U_LINE / 2) * LCD_X_RES * (LCD_BPP / 8))
- 
- #define BFIN_LCD_NBR_PALETTE_ENTRIES	256
- 
-@@ -109,12 +75,6 @@
- #define PPI_PORT_CFG_01			0x10
- #define PPI_POLS_1			0x8000
- 
--#if (CLOCKS_PER_PIX > 1)
--#define PPI_PMODE (DLEN_8 | PACK_EN)
--#else
--#define PPI_PMODE (DLEN_16)
--#endif
--
- #define LQ035_INDEX			0x74
- #define LQ035_DATA			0x76
- 
-@@ -138,6 +98,15 @@ struct bfin_lq035q1fb_info {
- 	int irq;
- 	spinlock_t lock;	/* lock */
- 	u32 pseudo_pal[16];
-+
-+	u32 lcd_bpp;
-+	u32 h_actpix;
-+	u32 h_period;
-+	u32 h_pulse;
-+	u32 h_start;
-+	u32 v_lines;
-+	u32 v_pulse;
-+	u32 v_period;
- };
- 
- static int nocursor;
-@@ -233,16 +202,69 @@ static int lq035q1_backlight(struct bfin_lq035q1fb_info *info, unsigned arg)
- 	return 0;
- }
- 
-+static int bfin_lq035q1_calc_timing(struct bfin_lq035q1fb_info *fbi)
+ #ifdef CONFIG_DEBUG_FS
+ /*
++ * The "reset" file
++ */
++static int picolcd_debug_reset_show(struct seq_file *f, void *p)
 +{
-+	unsigned long clocks_per_pix, cpld_pipeline_delay_cor;
-+
-+	/*
-+	 * Interface 16/18-bit TFT over an 8-bit wide PPI using a small
-+	 * Programmable Logic Device (CPLD)
-+	 * http://blackfin.uclinux.org/gf/project/stamp/frs/?action=FrsReleaseBrowse&frs_package_id5
-+	 */
-+
-+	switch (fbi->disp_info->ppi_mode) {
-+	case USE_RGB565_16_BIT_PPI:
-+		fbi->lcd_bpp = 16;
-+		clocks_per_pix = 1;
-+		cpld_pipeline_delay_cor = 0;
-+		break;
-+	case USE_RGB565_8_BIT_PPI:
-+		fbi->lcd_bpp = 16;
-+		clocks_per_pix = 2;
-+		cpld_pipeline_delay_cor = 3;
-+		break;
-+	case USE_RGB888_8_BIT_PPI:
-+		fbi->lcd_bpp = 24;
-+		clocks_per_pix = 3;
-+		cpld_pipeline_delay_cor = 5;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * HS and VS timing parameters (all in number of PPI clk ticks)
-+	 */
-+
-+	fbi->h_actpix = (LCD_X_RES * clocks_per_pix);	/* active horizontal pixel */
-+	fbi->h_period = (336 * clocks_per_pix);		/* HS period */
-+	fbi->h_pulse = (2 * clocks_per_pix);				/* HS pulse width */
-+	fbi->h_start = (7 * clocks_per_pix + cpld_pipeline_delay_cor);	/* first valid pixel */
-+
-+	fbi->v_lines = (LCD_Y_RES + U_LINE);		/* total vertical lines */
-+	fbi->v_pulse = (2 * clocks_per_pix);		/* VS pulse width (1-5 H_PERIODs) */
-+	fbi->v_period =	(fbi->h_period * fbi->v_lines);	/* VS period */
-+
++	if (picolcd_fbinfo((struct picolcd_data *)f->private))
++		seq_printf(f, "all fb\n");
++	else
++		seq_printf(f, "all\n");
 +	return 0;
 +}
 +
- static void bfin_lq035q1_config_ppi(struct bfin_lq035q1fb_info *fbi)
- {
--	bfin_write_PPI_DELAY(H_START);
--	bfin_write_PPI_COUNT(H_ACTPIX - 1);
--	bfin_write_PPI_FRAME(V_LINES);
-+	unsigned ppi_pmode;
++static int picolcd_debug_reset_open(struct inode *inode, struct file *f)
++{
++	return single_open(f, picolcd_debug_reset_show, inode->i_private);
++}
 +
-+	if (fbi->disp_info->ppi_mode = USE_RGB565_16_BIT_PPI)
-+		ppi_pmode = DLEN_16;
-+	else
-+		ppi_pmode = (DLEN_8 | PACK_EN);
++static ssize_t picolcd_debug_reset_write(struct file *f, const char __user *user_buf,
++		size_t count, loff_t *ppos)
++{
++	struct picolcd_data *data = ((struct seq_file *)f->private_data)->private;
++	char buf[32];
++	size_t cnt = min(count, sizeof(buf)-1);
++	if (copy_from_user(buf, user_buf, cnt))
++		return -EFAULT;
 +
-+	bfin_write_PPI_DELAY(fbi->h_start);
-+	bfin_write_PPI_COUNT(fbi->h_actpix - 1);
-+	bfin_write_PPI_FRAME(fbi->v_lines);
- 
- 	bfin_write_PPI_CONTROL(PPI_TX_MODE |	   /* output mode , PORT_DIR */
- 				PPI_XFER_TYPE_11 | /* sync mode XFR_TYPE */
- 				PPI_PORT_CFG_01 |  /* two frame sync PORT_CFG */
--				PPI_PMODE |	   /* 8/16 bit data length / PACK_EN? */
-+				ppi_pmode |	   /* 8/16 bit data length / PACK_EN? */
- 				PPI_POLS_1);	   /* faling edge syncs POLS */
- }
- 
-@@ -271,19 +293,19 @@ static void bfin_lq035q1_stop_timers(void)
- 
- }
- 
--static void bfin_lq035q1_init_timers(void)
-+static void bfin_lq035q1_init_timers(struct bfin_lq035q1fb_info *fbi)
- {
- 
- 	bfin_lq035q1_stop_timers();
- 
--	set_gptimer_period(TIMER_HSYNC_id, H_PERIOD);
--	set_gptimer_pwidth(TIMER_HSYNC_id, H_PULSE);
-+	set_gptimer_period(TIMER_HSYNC_id, fbi->h_period);
-+	set_gptimer_pwidth(TIMER_HSYNC_id, fbi->h_pulse);
- 	set_gptimer_config(TIMER_HSYNC_id, TIMER_MODE_PWM | TIMER_PERIOD_CNT |
- 				      TIMER_TIN_SEL | TIMER_CLK_SEL|
- 				      TIMER_EMU_RUN);
- 
--	set_gptimer_period(TIMER_VSYNC_id, V_PERIOD);
--	set_gptimer_pwidth(TIMER_VSYNC_id, V_PULSE);
-+	set_gptimer_period(TIMER_VSYNC_id, fbi->v_period);
-+	set_gptimer_pwidth(TIMER_VSYNC_id, fbi->v_pulse);
- 	set_gptimer_config(TIMER_VSYNC_id, TIMER_MODE_PWM | TIMER_PERIOD_CNT |
- 				      TIMER_TIN_SEL | TIMER_CLK_SEL |
- 				      TIMER_EMU_RUN);
-@@ -293,21 +315,21 @@ static void bfin_lq035q1_init_timers(void)
- static void bfin_lq035q1_config_dma(struct bfin_lq035q1fb_info *fbi)
- {
- 
-+
- 	set_dma_config(CH_PPI,
- 		       set_bfin_dma_config(DIR_READ, DMA_FLOW_AUTO,
- 					   INTR_DISABLE, DIMENSION_2D,
- 					   DATA_SIZE_16,
- 					   DMA_NOSYNC_KEEP_DMA_BUF));
--	set_dma_x_count(CH_PPI, (LCD_X_RES * LCD_BPP) / DMA_BUS_SIZE);
-+	set_dma_x_count(CH_PPI, (LCD_X_RES * fbi->lcd_bpp) / DMA_BUS_SIZE);
- 	set_dma_x_modify(CH_PPI, DMA_BUS_SIZE / 8);
--	set_dma_y_count(CH_PPI, V_LINES);
-+	set_dma_y_count(CH_PPI, fbi->v_lines);
- 
- 	set_dma_y_modify(CH_PPI, DMA_BUS_SIZE / 8);
- 	set_dma_start_addr(CH_PPI, (unsigned long)fbi->fb_buffer);
- 
- }
- 
--#if (CLOCKS_PER_PIX = 1)
- static const u16 ppi0_req_16[] = {P_PPI0_CLK, P_PPI0_FS1, P_PPI0_FS2,
- 			    P_PPI0_D0, P_PPI0_D1, P_PPI0_D2,
- 			    P_PPI0_D3, P_PPI0_D4, P_PPI0_D5,
-@@ -315,22 +337,27 @@ static const u16 ppi0_req_16[] = {P_PPI0_CLK, P_PPI0_FS1, P_PPI0_FS2,
- 			    P_PPI0_D9, P_PPI0_D10, P_PPI0_D11,
- 			    P_PPI0_D12, P_PPI0_D13, P_PPI0_D14,
- 			    P_PPI0_D15, 0};
--#else
--static const u16 ppi0_req_16[] = {P_PPI0_CLK, P_PPI0_FS1, P_PPI0_FS2,
-+
-+static const u16 ppi0_req_8[] = {P_PPI0_CLK, P_PPI0_FS1, P_PPI0_FS2,
- 			    P_PPI0_D0, P_PPI0_D1, P_PPI0_D2,
- 			    P_PPI0_D3, P_PPI0_D4, P_PPI0_D5,
- 			    P_PPI0_D6, P_PPI0_D7, 0};
--#endif
- 
--static inline void bfin_lq035q1_free_ports(void)
-+static inline void bfin_lq035q1_free_ports(unsigned ppi16)
- {
--	peripheral_free_list(ppi0_req_16);
-+	if (ppi16)
-+		peripheral_free_list(ppi0_req_16);
-+	else
-+		peripheral_free_list(ppi0_req_8);
-+
- 	if (ANOMALY_05000400)
- 		gpio_free(P_IDENT(P_PPI0_FS3));
- }
- 
--static int __devinit bfin_lq035q1_request_ports(struct platform_device *pdev)
-+static int __devinit bfin_lq035q1_request_ports(struct platform_device *pdev,
-+						unsigned ppi16)
- {
-+	int ret;
- 	/* ANOMALY_05000400 - PPI Does Not Start Properly In Specific Mode:
- 	 * Drive PPI_FS3 Low
- 	 */
-@@ -341,7 +368,12 @@ static int __devinit bfin_lq035q1_request_ports(struct platform_device *pdev)
- 		gpio_direction_output(P_IDENT(P_PPI0_FS3), 0);
- 	}
- 
--	if (peripheral_request_list(ppi0_req_16, DRIVER_NAME)) {
-+	if (ppi16)
-+		ret = peripheral_request_list(ppi0_req_16, DRIVER_NAME);
-+	else
-+		ret = peripheral_request_list(ppi0_req_8, DRIVER_NAME);
-+
-+	if (ret) {
- 		dev_err(&pdev->dev, "requesting peripherals failed\n");
- 		return -EFAULT;
- 	}
-@@ -363,7 +395,7 @@ static int bfin_lq035q1_fb_open(struct fb_info *info, int user)
- 
- 		bfin_lq035q1_config_dma(fbi);
- 		bfin_lq035q1_config_ppi(fbi);
--		bfin_lq035q1_init_timers();
-+		bfin_lq035q1_init_timers(fbi);
- 
- 		/* start dma */
- 		enable_dma(CH_PPI);
-@@ -401,12 +433,9 @@ static int bfin_lq035q1_fb_release(struct fb_info *info, int user)
- static int bfin_lq035q1_fb_check_var(struct fb_var_screeninfo *var,
- 				     struct fb_info *info)
- {
--	switch (var->bits_per_pixel) {
--#if (LCD_BPP = 24)
--	case 24:/* TRUECOLOUR, 16m */
--#else
--	case 16:/* DIRECTCOLOUR, 64k */
--#endif
-+	struct bfin_lq035q1fb_info *fbi = info->par;
-+
-+	if (var->bits_per_pixel = fbi->lcd_bpp) {
- 		var->red.offset = info->var.red.offset;
- 		var->green.offset = info->var.green.offset;
- 		var->blue.offset = info->var.blue.offset;
-@@ -419,8 +448,7 @@ static int bfin_lq035q1_fb_check_var(struct fb_var_screeninfo *var,
- 		var->red.msb_right = 0;
- 		var->green.msb_right = 0;
- 		var->blue.msb_right = 0;
--		break;
--	default:
++	while (cnt > 0 && (buf[cnt-1] = ' ' || buf[cnt-1] = '\n'))
++		cnt--;
++	buf[cnt] = '\0';
++	if (strcmp(buf, "all") = 0) {
++		picolcd_reset(data->hdev);
++		picolcd_fb_reset(data, 1);
++	} else if (strcmp(buf, "fb") = 0) {
++		picolcd_fb_reset(data, 1);
 +	} else {
- 		pr_debug("%s: depth not supported: %u BPP\n", __func__,
- 			 var->bits_per_pixel);
- 		return -EINVAL;
-@@ -527,6 +555,7 @@ static int __devinit bfin_lq035q1_probe(struct platform_device *pdev)
- {
- 	struct bfin_lq035q1fb_info *info;
- 	struct fb_info *fbinfo;
-+	u32 active_video_mem_offset;
- 	int ret;
- 
- 	ret = request_dma(CH_PPI, DRIVER_NAME"_CH_PPI");
-@@ -549,6 +578,12 @@ static int __devinit bfin_lq035q1_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, fbinfo);
- 
-+	ret = bfin_lq035q1_calc_timing(info);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "Failed PPI Mode\n");
-+		goto out3;
++		return -EINVAL;
 +	}
++	return count;
++}
 +
- 	strcpy(fbinfo->fix.id, DRIVER_NAME);
- 
- 	fbinfo->fix.type = FB_TYPE_PACKED_PIXELS;
-@@ -570,46 +605,48 @@ static int __devinit bfin_lq035q1_probe(struct platform_device *pdev)
- 	fbinfo->var.xres_virtual = LCD_X_RES;
- 	fbinfo->var.yres = LCD_Y_RES;
- 	fbinfo->var.yres_virtual = LCD_Y_RES;
--	fbinfo->var.bits_per_pixel = LCD_BPP;
-+	fbinfo->var.bits_per_pixel = info->lcd_bpp;
- 
- 	if (info->disp_info->mode & LQ035_BGR) {
--#if (LCD_BPP = 24)
--		fbinfo->var.red.offset = 0;
--		fbinfo->var.green.offset = 8;
--		fbinfo->var.blue.offset = 16;
--#else
--		fbinfo->var.red.offset = 0;
--		fbinfo->var.green.offset = 5;
--		fbinfo->var.blue.offset = 11;
--#endif
-+		if (info->lcd_bpp = 24) {
-+			fbinfo->var.red.offset = 0;
-+			fbinfo->var.green.offset = 8;
-+			fbinfo->var.blue.offset = 16;
-+		} else {
-+			fbinfo->var.red.offset = 0;
-+			fbinfo->var.green.offset = 5;
-+			fbinfo->var.blue.offset = 11;
++static const struct file_operations picolcd_debug_reset_fops = {
++	.owner    = THIS_MODULE,
++	.open     = picolcd_debug_reset_open,
++	.read     = seq_read,
++	.llseek   = seq_lseek,
++	.write    = picolcd_debug_reset_write,
++	.release  = single_release,
++};
++
++/*
++ * The "eeprom" file
++ */
++static int picolcd_debug_eeprom_open(struct inode *i, struct file *f)
++{
++	f->private_data = i->i_private;
++	return 0;
++}
++
++static ssize_t picolcd_debug_eeprom_read(struct file *f, char __user *u,
++		size_t s, loff_t *off)
++{
++	struct picolcd_data *data = f->private_data;
++	struct picolcd_pending *resp;
++	u8 raw_data[3];
++	ssize_t ret = -EIO;
++
++	if (s = 0)
++		return -EINVAL;
++	if (*off > 0x0ff)
++		return 0;
++
++	/* prepare buffer with info about what we want to read (addr & len) */
++	raw_data[0] = *off & 0xff;
++	raw_data[1] = (*off >> 8) && 0xff;
++	raw_data[2] = s < 20 ? s : 20;
++	if (*off + raw_data[2] > 0xff)
++		raw_data[2] = 0x100 - *off;
++	resp = picolcd_send_and_wait(data->hdev, REPORT_EE_READ, raw_data,
++			sizeof(raw_data));
++	if (!resp)
++		return -EIO;
++
++	if (resp->in_report && resp->in_report->id = REPORT_EE_DATA) {
++		/* successful read :) */
++		ret = resp->raw_data[2];
++		if (ret > s)
++			ret = s;
++		if (copy_to_user(u, resp->raw_data+3, ret))
++			ret = -EFAULT;
++		else
++			*off += ret;
++	} /* anything else is some kind of IO error */
++
++	kfree(resp);
++	return ret;
++}
++
++static ssize_t picolcd_debug_eeprom_write(struct file *f, const char __user *u,
++		size_t s, loff_t *off)
++{
++	struct picolcd_data *data = f->private_data;
++	struct picolcd_pending *resp;
++	ssize_t ret = -EIO;
++	u8 raw_data[23];
++
++	if (s = 0)
++		return -EINVAL;
++	if (*off > 0x0ff)
++		return -ENOSPC;
++
++	memset(raw_data, 0, sizeof(raw_data));
++	raw_data[0] = *off & 0xff;
++	raw_data[1] = (*off >> 8) && 0xff;
++	raw_data[2] = s < 20 ? s : 20;
++	if (*off + raw_data[2] > 0xff)
++		raw_data[2] = 0x100 - *off;
++
++	if (copy_from_user(raw_data+3, u, raw_data[2]))
++		return -EFAULT;
++	resp = picolcd_send_and_wait(data->hdev, REPORT_EE_WRITE, raw_data,
++			sizeof(raw_data));
++
++	if (!resp)
++		return -EIO;
++
++	if (resp->in_report && resp->in_report->id = REPORT_EE_DATA) {
++		/* check if written data matches */
++		if (memcmp(raw_data, resp->raw_data, 3+raw_data[2]) = 0) {
++			*off += raw_data[2];
++			ret = raw_data[2];
 +		}
- 	} else {
--#if (LCD_BPP = 24)
--		fbinfo->var.red.offset = 16;
--		fbinfo->var.green.offset = 8;
--		fbinfo->var.blue.offset = 0;
--#else
--		fbinfo->var.red.offset = 11;
--		fbinfo->var.green.offset = 5;
--		fbinfo->var.blue.offset = 0;
--#endif
-+		if (info->lcd_bpp = 24) {
-+			fbinfo->var.red.offset = 16;
-+			fbinfo->var.green.offset = 8;
-+			fbinfo->var.blue.offset = 0;
-+		} else {
-+			fbinfo->var.red.offset = 11;
-+			fbinfo->var.green.offset = 5;
-+			fbinfo->var.blue.offset = 0;
++	}
++	kfree(resp);
++	return ret;
++}
++
++/*
++ * Notes:
++ * - read/write happens in chunks of at most 20 bytes, it's up to userspace
++ *   to loop in order to get more data.
++ * - on write errors on otherwise correct write request the bytes
++ *   that should have been written are in undefined state.
++ */
++static const struct file_operations picolcd_debug_eeprom_fops = {
++	.owner    = THIS_MODULE,
++	.open     = picolcd_debug_eeprom_open,
++	.read     = picolcd_debug_eeprom_read,
++	.write    = picolcd_debug_eeprom_write,
++	.llseek   = generic_file_llseek,
++};
++
++/*
++ * The "flash" file
++ */
++static int picolcd_debug_flash_open(struct inode *i, struct file *f)
++{
++	f->private_data = i->i_private;
++	return 0;
++}
++
++/* record a flash address to buf (bounds check to be done by caller) */
++static int _picolcd_flash_setaddr(struct picolcd_data *data, u8 *buf, long off)
++{
++	buf[0] = off & 0xff;
++	buf[1] = (off >> 8) & 0xff;
++	if (data->addr_sz = 3)
++		buf[2] = (off >> 16) & 0xff;
++	return data->addr_sz = 2 ? 2 : 3;
++}
++
++/* read a given size of data (bounds check to be done by caller) */
++static ssize_t _picolcd_flash_read(struct picolcd_data *data, int report_id,
++		char __user *u, size_t s, loff_t *off)
++{
++	struct picolcd_pending *resp;
++	u8 raw_data[4];
++	ssize_t ret = 0;
++	int len_off, err = -EIO;
++
++	while (s > 0) {
++		err = -EIO;
++		len_off = _picolcd_flash_setaddr(data, raw_data, *off);
++		raw_data[len_off] = s > 32 ? 32 : s;
++		resp = picolcd_send_and_wait(data->hdev, report_id, raw_data, len_off+1);
++		if (!resp || !resp->in_report)
++			goto skip;
++		if (resp->in_report->id = REPORT_MEMORY ||
++			resp->in_report->id = REPORT_BL_READ_MEMORY) {
++			if (memcmp(raw_data, resp->raw_data, len_off+1) != 0)
++				goto skip;
++			if (copy_to_user(u+ret, resp->raw_data+len_off+1, raw_data[len_off])) {
++				err = -EFAULT;
++				goto skip;
++			}
++			*off += raw_data[len_off];
++			s    -= raw_data[len_off];
++			ret  += raw_data[len_off];
++			err   = 0;
 +		}
- 	}
- 
- 	fbinfo->var.transp.offset = 0;
- 
--#if (LCD_BPP = 24)
--	fbinfo->var.red.length = 8;
--	fbinfo->var.green.length = 8;
--	fbinfo->var.blue.length = 8;
--#else
--	fbinfo->var.red.length = 5;
--	fbinfo->var.green.length = 6;
--	fbinfo->var.blue.length = 5;
--#endif
-+	if (info->lcd_bpp = 24) {
-+		fbinfo->var.red.length = 8;
-+		fbinfo->var.green.length = 8;
-+		fbinfo->var.blue.length = 8;
++skip:
++		kfree(resp);
++		if (err)
++			return ret > 0 ? ret : err;
++	}
++	return ret;
++}
++
++static ssize_t picolcd_debug_flash_read(struct file *f, char __user *u,
++		size_t s, loff_t *off)
++{
++	struct picolcd_data *data = f->private_data;
++
++	if (s = 0)
++		return -EINVAL;
++	if (*off > 0x05fff)
++		return 0;
++	if (*off + s > 0x05fff)
++		s = 0x06000 - *off;
++
++	if (data->status & PICOLCD_BOOTLOADER)
++		return _picolcd_flash_read(data, REPORT_BL_READ_MEMORY, u, s, off);
++	else
++		return _picolcd_flash_read(data, REPORT_READ_MEMORY, u, s, off);
++}
++
++/* erase block aligned to 64bytes boundary */
++static ssize_t _picolcd_flash_erase64(struct picolcd_data *data, int report_id,
++		loff_t *off)
++{
++	struct picolcd_pending *resp;
++	u8 raw_data[3];
++	int len_off;
++	ssize_t ret = -EIO;
++
++	if (*off & 0x3f)
++		return -EINVAL;
++
++	len_off = _picolcd_flash_setaddr(data, raw_data, *off);
++	resp = picolcd_send_and_wait(data->hdev, report_id, raw_data, len_off);
++	if (!resp || !resp->in_report)
++		goto skip;
++	if (resp->in_report->id = REPORT_MEMORY ||
++		resp->in_report->id = REPORT_BL_ERASE_MEMORY) {
++		if (memcmp(raw_data, resp->raw_data, len_off) != 0)
++			goto skip;
++		ret = 0;
++	}
++skip:
++	kfree(resp);
++	return ret;
++}
++
++/* write a given size of data (bounds check to be done by caller) */
++static ssize_t _picolcd_flash_write(struct picolcd_data *data, int report_id,
++		const char __user *u, size_t s, loff_t *off)
++{
++	struct picolcd_pending *resp;
++	u8 raw_data[36];
++	ssize_t ret = 0;
++	int len_off, err = -EIO;
++
++	while (s > 0) {
++		err = -EIO;
++		len_off = _picolcd_flash_setaddr(data, raw_data, *off);
++		raw_data[len_off] = s > 32 ? 32 : s;
++		if (copy_from_user(raw_data+len_off+1, u, raw_data[len_off])) {
++			err = -EFAULT;
++			goto skip;
++		}
++		resp = picolcd_send_and_wait(data->hdev, report_id, raw_data,
++				len_off+1+raw_data[len_off]);
++		if (!resp || !resp->in_report)
++			goto skip;
++		if (resp->in_report->id = REPORT_MEMORY ||
++			resp->in_report->id = REPORT_BL_WRITE_MEMORY) {
++			if (memcmp(raw_data, resp->raw_data, len_off+1+raw_data[len_off]) != 0)
++				goto skip;
++			*off += raw_data[len_off];
++			s    -= raw_data[len_off];
++			ret  += raw_data[len_off];
++			err   = 0;
++		}
++skip:
++		kfree(resp);
++		if (err)
++			break;
++	}
++	return ret > 0 ? ret : err;
++}
++
++static ssize_t picolcd_debug_flash_write(struct file *f, const char __user *u,
++		size_t s, loff_t *off)
++{
++	struct picolcd_data *data = f->private_data;
++	ssize_t err, ret = 0;
++	int report_erase, report_write;
++
++	if (s = 0)
++		return -EINVAL;
++	if (*off > 0x5fff)
++		return -ENOSPC;
++	if (s & 0x3f)
++		return -EINVAL;
++	if (*off & 0x3f)
++		return -EINVAL;
++
++	if (data->status & PICOLCD_BOOTLOADER) {
++		report_erase = REPORT_BL_ERASE_MEMORY;
++		report_write = REPORT_BL_WRITE_MEMORY;
 +	} else {
-+		fbinfo->var.red.length = 5;
-+		fbinfo->var.green.length = 6;
-+		fbinfo->var.blue.length = 5;
++		report_erase = REPORT_ERASE_MEMORY;
++		report_write = REPORT_WRITE_MEMORY;
 +	}
- 
- 	fbinfo->var.transp.length = 0;
- 
--	fbinfo->fix.smem_len = LCD_X_RES * LCD_Y_RES * LCD_BPP / 8
--				+ ACTIVE_VIDEO_MEM_OFFSET;
-+	active_video_mem_offset = ((U_LINE / 2) * LCD_X_RES * (info->lcd_bpp / 8));
++	mutex_lock(&data->mutex_flash);
++	while (s > 0) {
++		err = _picolcd_flash_erase64(data, report_erase, off);
++		if (err)
++			break;
++		err = _picolcd_flash_write(data, report_write, u, 64, off);
++		if (err < 0)
++			break;
++		ret += err;
++		*off += err;
++		s -= err;
++		if (err != 64)
++			break;
++	}
++	mutex_unlock(&data->mutex_flash);
++	return ret > 0 ? ret : err;
++}
 +
-+	fbinfo->fix.smem_len = LCD_X_RES * LCD_Y_RES * info->lcd_bpp / 8
-+				+ active_video_mem_offset;
++/*
++ * Notes:
++ * - concurrent writing is prevented by mutex and all writes must be
++ *   n*64 bytes and 64-byte aligned, each write being preceeded by an
++ *   ERASE which erases a 64byte block.
++ *   If less than requested was written or an error is returned for an
++ *   otherwise correct write request the next 64-byte block which should
++ *   have been written is in undefined state (mostly: original, erased,
++ *   (half-)written with write error)
++ * - reading can happend without special restriction
++ */
++static const struct file_operations picolcd_debug_flash_fops = {
++	.owner    = THIS_MODULE,
++	.open     = picolcd_debug_flash_open,
++	.read     = picolcd_debug_flash_read,
++	.write    = picolcd_debug_flash_write,
++	.llseek   = generic_file_llseek,
++};
++
++
++/*
+  * Helper code for HID report level dumping/debugging
+  */
+ static const char *error_codes[] = {
+@@ -1801,9 +2156,66 @@ static void picolcd_debug_raw_event(struct picolcd_data *data,
+ 	wake_up_interruptible(&hdev->debug_wait);
+ 	kfree(buff);
+ }
++
++static void picolcd_init_devfs(struct picolcd_data *data,
++		struct hid_report *eeprom_r, struct hid_report *eeprom_w,
++		struct hid_report *flash_r, struct hid_report *flash_w,
++		struct hid_report *reset)
++{
++	struct hid_device *hdev = data->hdev;
++
++	mutex_init(&data->mutex_flash);
++
++	/* reset */
++	if (reset)
++		data->debug_reset = debugfs_create_file("reset", 0600,
++				hdev->debug_dir, data, &picolcd_debug_reset_fops);
++
++	/* eeprom */
++	if (eeprom_r || eeprom_w)
++		data->debug_eeprom = debugfs_create_file("eeprom",
++			(eeprom_w ? S_IWUSR : 0) | (eeprom_r ? S_IRUSR : 0),
++			hdev->debug_dir, data, &picolcd_debug_eeprom_fops);
++
++	/* flash */
++	if (flash_r && flash_r->maxfield = 1 && flash_r->field[0]->report_size = 8)
++		data->addr_sz = flash_r->field[0]->report_count - 1;
++	else
++		data->addr_sz = -1;
++	if (data->addr_sz = 2 || data->addr_sz = 3) {
++		data->debug_flash = debugfs_create_file("flash",
++			(flash_w ? S_IWUSR : 0) | (flash_r ? S_IRUSR : 0),
++			hdev->debug_dir, data, &picolcd_debug_flash_fops);
++	} else if (flash_r || flash_w)
++		dev_warn(&hdev->dev, "Unexpected FLASH access reports, "
++				"please submit rdesc for review\n");
++}
++
++static void picolcd_exit_devfs(struct picolcd_data *data)
++{
++	struct dentry *dent;
++
++	dent = data->debug_reset;
++	data->debug_reset = NULL;
++	if (dent)
++		debugfs_remove(dent);
++	dent = data->debug_eeprom;
++	data->debug_eeprom = NULL;
++	if (dent)
++		debugfs_remove(dent);
++	dent = data->debug_flash;
++	data->debug_flash = NULL;
++	if (dent)
++		debugfs_remove(dent);
++	mutex_destroy(&data->mutex_flash);
++}
+ #else
+ #define picolcd_debug_raw_event(data, hdev, report, raw_data, size)
+-#endif
++#define picolcd_init_devfs(data, eeprom_r, eeprom_w, flash_r, flash_w, reset)
++static void picolcd_exit_devfs(struct picolcd_data *data)
++{
++}
++#endif /* CONFIG_DEBUG_FS */
  
- 	fbinfo->fix.line_length = fbinfo->var.xres_virtual *
- 	    fbinfo->var.bits_per_pixel / 8;
-@@ -628,8 +665,8 @@ static int __devinit bfin_lq035q1_probe(struct platform_device *pdev)
- 		goto out3;
- 	}
+ /*
+  * Handle raw report as sent by device
+@@ -1950,7 +2362,6 @@ static inline void picolcd_exit_cir(struct picolcd_data *data)
  
--	fbinfo->screen_base = (void *)info->fb_buffer + ACTIVE_VIDEO_MEM_OFFSET;
--	fbinfo->fix.smem_start = (int)info->fb_buffer + ACTIVE_VIDEO_MEM_OFFSET;
-+	fbinfo->screen_base = (void *)info->fb_buffer + active_video_mem_offset;
-+	fbinfo->fix.smem_start = (int)info->fb_buffer + active_video_mem_offset;
+ static int picolcd_probe_lcd(struct hid_device *hdev, struct picolcd_data *data)
+ {
+-	struct hid_report *report;
+ 	int error;
  
- 	fbinfo->fbops = &bfin_lq035q1_fb_ops;
+ 	error = picolcd_check_version(hdev);
+@@ -1992,13 +2403,11 @@ static int picolcd_probe_lcd(struct hid_device *hdev, struct picolcd_data *data)
+ 	if (error)
+ 		goto err;
  
-@@ -642,7 +679,8 @@ static int __devinit bfin_lq035q1_probe(struct platform_device *pdev)
- 		goto out4;
- 	}
- 
--	ret = bfin_lq035q1_request_ports(pdev);
-+	ret = bfin_lq035q1_request_ports(pdev,
-+			info->disp_info->ppi_mode = USE_RGB565_16_BIT_PPI);
- 	if (ret) {
- 		dev_err(&pdev->dev, "couldn't request gpio port\n");
- 		goto out6;
-@@ -692,7 +730,7 @@ static int __devinit bfin_lq035q1_probe(struct platform_device *pdev)
- 	}
- 
- 	dev_info(&pdev->dev, "%dx%d %d-bit RGB FrameBuffer initialized\n",
--		LCD_X_RES, LCD_Y_RES, LCD_BPP);
-+		LCD_X_RES, LCD_Y_RES, info->lcd_bpp);
- 
+-#ifdef CONFIG_DEBUG_FS
+-	report = picolcd_out_report(REPORT_READ_MEMORY, hdev);
+-	if (report && report->maxfield = 1 && report->field[0]->report_size = 8)
+-		data->addr_sz = report->field[0]->report_count - 1;
+-	else
+-		data->addr_sz = -1;
+-#endif
++	picolcd_init_devfs(data, picolcd_out_report(REPORT_EE_READ, hdev),
++			picolcd_out_report(REPORT_EE_WRITE, hdev),
++			picolcd_out_report(REPORT_READ_MEMORY, hdev),
++			picolcd_out_report(REPORT_WRITE_MEMORY, hdev),
++			picolcd_out_report(REPORT_RESET, hdev));
  	return 0;
+ err:
+ 	picolcd_exit_leds(data);
+@@ -2012,7 +2421,6 @@ err:
  
-@@ -704,7 +742,8 @@ static int __devinit bfin_lq035q1_probe(struct platform_device *pdev)
-  out8:
- 	free_irq(info->irq, info);
-  out7:
--	bfin_lq035q1_free_ports();
-+	bfin_lq035q1_free_ports(info->disp_info->ppi_mode =
-+				USE_RGB565_16_BIT_PPI);
-  out6:
- 	fb_dealloc_cmap(&fbinfo->cmap);
-  out4:
-@@ -741,7 +780,8 @@ static int __devexit bfin_lq035q1_remove(struct platform_device *pdev)
+ static int picolcd_probe_bootloader(struct hid_device *hdev, struct picolcd_data *data)
+ {
+-	struct hid_report *report;
+ 	int error;
  
- 	fb_dealloc_cmap(&fbinfo->cmap);
+ 	error = picolcd_check_version(hdev);
+@@ -2024,13 +2432,9 @@ static int picolcd_probe_bootloader(struct hid_device *hdev, struct picolcd_data
+ 				"please submit /sys/kernel/debug/hid/%s/rdesc for this device.\n",
+ 				dev_name(&hdev->dev));
  
--	bfin_lq035q1_free_ports();
-+	bfin_lq035q1_free_ports(info->disp_info->ppi_mode =
-+				USE_RGB565_16_BIT_PPI);
+-#ifdef CONFIG_DEBUG_FS
+-	report = picolcd_out_report(REPORT_BL_READ_MEMORY, hdev);
+-	if (report && report->maxfield = 1 && report->field[0]->report_size = 8)
+-		data->addr_sz = report->field[0]->report_count - 1;
+-	else
+-		data->addr_sz = -1;
+-#endif
++	picolcd_init_devfs(data, NULL, NULL,
++			picolcd_out_report(REPORT_BL_READ_MEMORY, hdev),
++			picolcd_out_report(REPORT_BL_WRITE_MEMORY, hdev), NULL);
+ 	return 0;
+ }
  
- 	platform_set_drvdata(pdev, NULL);
- 	framebuffer_release(fbinfo);
-@@ -780,7 +820,7 @@ static int bfin_lq035q1_resume(struct device *dev)
+@@ -2123,6 +2527,7 @@ static void picolcd_remove(struct hid_device *hdev)
+ 	data->status |= PICOLCD_FAILED;
+ 	spin_unlock_irqrestore(&data->lock, flags);
  
- 		bfin_lq035q1_config_dma(info);
- 		bfin_lq035q1_config_ppi(info);
--		bfin_lq035q1_init_timers();
-+		bfin_lq035q1_init_timers(info);
- 
- 		/* start dma */
- 		enable_dma(CH_PPI);
++	picolcd_exit_devfs(data);
+ 	device_remove_file(&hdev->dev, &dev_attr_operation_mode);
+ 	hdev->ll_driver->close(hdev);
+ 	hid_hw_stop(hdev);
 -- 
-1.7.0.2
+1.6.4.4
 

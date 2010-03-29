@@ -1,156 +1,540 @@
-From: Colin Cross <ccross@android.com>
-Date: Wed, 17 Mar 2010 00:31:28 +0000
-Subject: Re: [RFC/PATCH 08/10] [ARM] tegra: Add framebuffer driver
-Message-Id: <d73d4eaf1003161731h2b8032dch55baf7b49eede625@mail.gmail.com>
+From: "Ambrose, Martin" <martin@ti.com>
+Date: Mon, 29 Mar 2010 13:16:51 +0000
+Subject: [PATCH v2] DA8XX/OMAP-L1XX: FB: Implement double buffering
+Message-Id: <A24693684029E5489D1D202277BE89445316FAB1@dlee02.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4344f3c71003151538r7dc30e01uc9885ca5d3f327cd@mail.gmail.com>
-	<1268721688-27550-2-git-send-email-konkers@google.com>
-	<1268721688-27550-3-git-send-email-konkers@google.com>
-	<1268721688-27550-4-git-send-email-konkers@google.com>
-	<1268721688-27550-5-git-send-email-konkers@google.com>
-	<1268721688-27550-6-git-send-email-konkers@google.com>
-	<1268721688-27550-7-git-send-email-konkers@google.com>
-	<1268721688-27550-8-git-send-email-konkers@google.com>
-	<1268721688-27550-9-git-send-email-konkers@google.com>
-	<45a44e481003160057oaf4a75ax2ec6c9eee9f4a3e9@mail.gmail.com>
-In-Reply-To: <45a44e481003160057oaf4a75ax2ec6c9eee9f4a3e9@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-(Sorry about the HTML - resending in plain text for the linux-fbdev list)
+ This work includes the following:
+ . Implement handler for FBIO_WAITFORVSYNC ioctl.
 
-Hi Jaya, thanks for your comments.
+ . Allocate the data and palette buffers separately.
+   A consequence of this is that the palette and data loading is now
+   done in different phases. And that the LCD must be disabled
+   temporarily after the palette is loaded but this will only happen
+   once after init and each time the palette is changed. I think this
+   is OK.
 
-On Tue, Mar 16, 2010 at 12:57 AM, Jaya Kumar <jayakumar.lkml@gmail.com>wrote:
+ . Allocate two (ping and pong) framebuffers from memory.
 
-> Hi Colin, Erik,
->
-> Interesting work.
->
-> I'd recommend CCing linux-fbdev as well in future so that fbdev folks
-> can also get a chance to review your new fbdev driver.
+ . Add pan_display handler which toggles the LCDC DMA registers between
+   the ping and pong buffers.
 
-Will do
+Signed-off-by: Martin Ambrose <martin@ti.com>
+---
+ drivers/video/da8xx-fb.c |  296 ++++++++++++++++++++++++++++++++++++----------
+ include/video/da8xx-fb.h |    1 +
+ 2 files changed, 234 insertions(+), 63 deletions(-)
 
-> +struct tegra_fb_lcd_data {
-> > +       int     fb_xres;
-> > +       int     fb_yres;
-> > +       int     lcd_xres;
-> > +       int     lcd_yres;
-> > +       int     bits_per_pixel;
-> > +};
->
-> I'm trying to understand what's the difference between fb and lcd *res.
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 369a5b3..e4ddcfe 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -35,7 +35,9 @@
+ #define DRIVER_NAME "da8xx_lcdc"
 
-fb res is the resolution of the framebuffer driver as seen by userspace.
- lcd res is the resolution of the screen connected to the Tegra pins.  If
-they are different, the Tegra display block can do scaling on the output.
- Generally they will be the same.  I'll add a comment to the lcd resolution.
+ /* LCD Status Register */
++#define LCD_END_OF_FRAME1              BIT(9)
+ #define LCD_END_OF_FRAME0              BIT(8)
++#define LCD_PL_LOAD_DONE               BIT(6)
+ #define LCD_FIFO_UNDERFLOW             BIT(5)
+ #define LCD_SYNC_LOST                  BIT(2)
 
+@@ -57,11 +59,13 @@
+ #define LCD_PALETTE_LOAD_MODE(x)       ((x) << 20)
+ #define PALETTE_AND_DATA               0x00
+ #define PALETTE_ONLY                   0x01
++#define DATA_ONLY                      0x02
 
-> > +config FB_TEGRA
-> > +       tristate "NVIDIA Tegra SoC display support"
-> > +       depends on ARCH_TEGRA && FB = y
-> > +       select FB_CFB_FILLRECT
-> > +       select FB_CFB_COPYAREA
-> > +       select FB_CFB_IMAGEBLIT
-> > +       default FB
-> > +       help
-> > +         This driver supports the NVIDIA Tegra systems-on-a-chip.  This
-> > +         driver can not be compiled as a module.
->
-> Out of curiosity, why not?
->
-Oversight, the option is tristate, so I'll remove this text.
+ #define LCD_MONO_8BIT_MODE             BIT(9)
+ #define LCD_RASTER_ORDER               BIT(8)
+ #define LCD_TFT_MODE                   BIT(7)
+ #define LCD_UNDERFLOW_INT_ENA          BIT(6)
++#define LCD_PL_ENABLE                  BIT(4)
+ #define LCD_MONOCHROME_MODE            BIT(1)
+ #define LCD_RASTER_ENABLE              BIT(0)
+ #define LCD_TFT_ALT_ENABLE             BIT(23)
+@@ -86,6 +90,10 @@
+ #define  LCD_DMA_CTRL_REG                      0x40
+ #define  LCD_DMA_FRM_BUF_BASE_ADDR_0_REG       0x44
+ #define  LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG    0x48
++#define  LCD_DMA_FRM_BUF_BASE_ADDR_1_REG       0x4C
++#define  LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG    0x50
++
++#define LCD_NUM_BUFFERS        2
 
+ #define WSI_TIMEOUT    50
+ #define PALETTE_SIZE   256
+@@ -110,13 +118,20 @@ static inline void lcdc_write(unsigned int val, unsigned int addr)
+ struct da8xx_fb_par {
+        resource_size_t p_palette_base;
+        unsigned char *v_palette_base;
++       dma_addr_t              vram_phys;
++       unsigned long           vram_size;
++       void                    *vram_virt;
++       unsigned int            dma_start;
++       unsigned int            dma_end;
+        struct clk *lcdc_clk;
+        int irq;
+        unsigned short pseudo_palette[16];
+-       unsigned int databuf_sz;
+        unsigned int palette_sz;
+        unsigned int pxl_clk;
+        int blank;
++       wait_queue_head_t       vsync_wait;
++       int                     vsync_flag;
++       int                     vsync_timeout;
+ #ifdef CONFIG_CPU_FREQ
+        struct notifier_block   freq_transition;
+ #endif
+@@ -147,9 +162,9 @@ static struct fb_fix_screeninfo da8xx_fb_fix __devinitdata = {
+        .type = FB_TYPE_PACKED_PIXELS,
+        .type_aux = 0,
+        .visual = FB_VISUAL_PSEUDOCOLOR,
+-       .xpanstep = 1,
++       .xpanstep = 0,
+        .ypanstep = 1,
+-       .ywrapstep = 1,
++       .ywrapstep = 0,
+        .accel = FB_ACCEL_NONE
+ };
 
-> > +#define DEBUG 1
->
-> You want to enable Debug by default for everyone?
+@@ -220,22 +235,48 @@ static inline void lcd_disable_raster(void)
 
-Oops, I'll take it out
+ static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
+ {
+-       u32 tmp = par->p_palette_base + par->databuf_sz - 4;
+-       u32 reg;
++       u32 start;
++       u32 end;
++       u32 reg_ras;
++       u32 reg_dma;
++
++       /* init reg to clear PLM (loading mode) fields */
++       reg_ras = lcdc_read(LCD_RASTER_CTRL_REG);
++       reg_ras &= ~(3 << 20);
++
++       reg_dma  = lcdc_read(LCD_DMA_CTRL_REG);
++
++       if (load_mode = LOAD_DATA) {
++               start    = par->dma_start;
++               end      = par->dma_end;
++
++               reg_ras |= LCD_PALETTE_LOAD_MODE(DATA_ONLY);
++               reg_dma |= LCD_END_OF_FRAME_INT_ENA;
++               reg_dma |= LCD_DUAL_FRAME_BUFFER_ENABLE;
++
++               lcdc_write(start, LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
++               lcdc_write(end, LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
++               lcdc_write(start, LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
++               lcdc_write(end, LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
++       } else if (load_mode = LOAD_PALETTE) {
++               start    = par->p_palette_base;
++               end      = start + par->palette_sz - 1;
++
++               reg_ras |= LCD_PALETTE_LOAD_MODE(PALETTE_ONLY);
++               reg_ras |= LCD_PL_ENABLE;
++
++               lcdc_write(start, LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
++               lcdc_write(end, LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
++       }
 
+-       /* Update the databuf in the hw. */
+-       lcdc_write(par->p_palette_base, LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
+-       lcdc_write(tmp, LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
++       lcdc_write(reg_dma, LCD_DMA_CTRL_REG);
++       lcdc_write(reg_ras, LCD_RASTER_CTRL_REG);
 
-> > +struct tegra_fb_info {
-> > +       struct clk *clk;
-> > +       struct resource *reg_mem;
-> > +       struct resource *fb_mem;
-> > +       void __iomem *reg_base;
-> > +       wait_queue_head_t event_wq;
-> > +       unsigned int wait_condition;
-> > +       int lcd_xres;
-> > +       int lcd_yres;
-> > +       int irq;
-> > +};
->
-> I think a comment about lcd_.res would help us understand what its
-> used for and how it differs from fb_.res. How come it is being
-> duplicated in multiple structures?
+-       /* Start the DMA. */
+-       reg = lcdc_read(LCD_RASTER_CTRL_REG);
+-       reg &= ~(3 << 20);
+-       if (load_mode = LOAD_DATA)
+-               reg |= LCD_PALETTE_LOAD_MODE(PALETTE_AND_DATA);
+-       else if (load_mode = LOAD_PALETTE)
+-               reg |= LCD_PALETTE_LOAD_MODE(PALETTE_ONLY);
+-
+-       lcdc_write(reg, LCD_RASTER_CTRL_REG);
++       /*
++        * The Raster enable bit must be set after all other control fields are
++        * set.
++        */
++       lcd_enable_raster();
+ }
 
- The tegra_fb_lcd_data struct is passed in as platform_data, and used to
-initialize the state in the tegra_fb_info struct.
+ /* Configure the Burst Size of DMA */
+@@ -367,12 +408,8 @@ static int lcd_cfg_display(const struct lcd_ctrl_config *cfg)
+ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+                u32 bpp, u32 raster_order)
+ {
+-       u32 bpl, reg;
++       u32 reg;
 
- > +static int tegra_fb_cursor(struct fb_info *info, struct fb_cursor
-> *cursor)
-> > +{
-> > +       return 0;
-> > +}
-> > +
-> > +static int tegra_fb_sync(struct fb_info *info)
-> > +{
-> > +       return 0;
-> > +}
->
-> Out of curiosity, why populate these functions if they don't do anything?
+-       /* Disable Dual Frame Buffer. */
+-       reg = lcdc_read(LCD_DMA_CTRL_REG);
+-       lcdc_write(reg & ~LCD_DUAL_FRAME_BUFFER_ENABLE,
+-                                               LCD_DMA_CTRL_REG);
+        /* Set the Panel Width */
+        /* Pixels per line = (PPL + 1)*16 */
+        /*0x3F in bits 4..9 gives max horisontal resolution = 1024 pixels*/
+@@ -409,9 +446,6 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+                return -EINVAL;
+        }
 
-They were placeholders, I'll remove them until they get implemented.
+-       bpl = width * bpp / 8;
+-       par->databuf_sz = height * bpl + par->palette_sz;
+-
+        return 0;
+ }
 
+@@ -420,8 +454,9 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+                              struct fb_info *info)
+ {
+        struct da8xx_fb_par *par = info->par;
+-       unsigned short *palette = (unsigned short *)par->v_palette_base;
++       unsigned short *palette = (unsigned short *) par->v_palette_base;
+        u_short pal;
++       int update_hw = 0;
 
->  > +
-> > +#ifdef DEBUG
-> > +#define DUMP_REG(a) pr_info("%-32s\t%03x\t%08x\n", #a, a,
-> tegra_fb_readl(tegra_fb, a));
->
-> Could pr_debug be useful above?
->
-The dump_regs function still needs to be inside the #ifdef DEBUG, but I'll
-change the pr_info to pr_debug to lower the log level.
+        if (regno > 255)
+                return 1;
+@@ -438,8 +473,10 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+                pal |= (green & 0x00f0);
+                pal |= (blue & 0x000f);
 
+-               palette[regno] = pal;
+-
++               if (palette[regno] != pal) {
++                       update_hw = 1;
++                       palette[regno] = pal;
++               }
+        } else if ((info->var.bits_per_pixel = 16) && regno < 16) {
+                red >>= (16 - info->var.red.length);
+                red <<= info->var.red.offset;
+@@ -452,9 +489,16 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
 
->  > +static struct fb_ops tegra_fb_ops = {
-> > +       .fb_cursor = tegra_fb_cursor,
-> > +       .fb_sync = tegra_fb_sync,
->
-> These 2 were the empty functions from above. I'm guessing this isn't
-> needed.
+                par->pseudo_palette[regno] = red | green | blue;
 
-Removed
+-               palette[0] = 0x4000;
++               if (palette[0] != 0x4000) {
++                       update_hw = 1;
++                       palette[0] = 0x4000;
++               }
+        }
 
++       /* Update the palette in the h/w as needed. */
++       if (update_hw)
++               lcd_blit(LOAD_PALETTE, par);
++
+        return 0;
+ }
 
->  > +
-> > +static int tegra_plat_remove(struct platform_device *pdev)
-> > +{
-> > +       struct fb_info *fb = platform_get_drvdata(pdev);
-> > +       struct tegra_fb_info *tegra_fb = fb->par;
-> > +       clk_disable(tegra_fb->clk);
-> > +       iounmap(fb->screen_base);
-> > +       release_resource(tegra_fb->fb_mem);
-> > +       iounmap(tegra_fb->reg_base);
-> > +       release_resource(tegra_fb->reg_mem);
-> > +       framebuffer_release(fb);
-> > +       return 0;
-> > +}
-> > +
->
-> I didn't read through carefully but shouldn't there be an
-> unregister_framebuffer in above? Wouldn't the above cause a free while
-> the structures could still in use by fb*?
->
-Good catch - unregister_framebuffer should be the first call. We generally
-don't use modules much, so compiling as a module has been tested, but not
-running as a module.
+@@ -540,15 +584,51 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
 
-Thanks,
-Colin
+ static irqreturn_t lcdc_irq_handler(int irq, void *arg)
+ {
++       struct da8xx_fb_par *par = arg;
+        u32 stat = lcdc_read(LCD_STAT_REG);
++       u32 reg_ras;
+
+        if ((stat & LCD_SYNC_LOST) && (stat & LCD_FIFO_UNDERFLOW)) {
+                lcd_disable_raster();
+                lcdc_write(stat, LCD_STAT_REG);
+                lcd_enable_raster();
+-       } else
++       } else if (stat & LCD_PL_LOAD_DONE) {
+                lcdc_write(stat, LCD_STAT_REG);
+
++               /*
++                * Must disable raster before changing state of any control bit.
++                */
++               lcd_disable_raster();
++
++               /* Disable PL completion inerrupt */
++               reg_ras  = lcdc_read(LCD_RASTER_CTRL_REG);
++               reg_ras &= ~LCD_PL_ENABLE;
++               lcdc_write(reg_ras, LCD_RASTER_CTRL_REG);
++
++               /* Setup and start data loading mode */
++               lcd_blit(LOAD_DATA, par);
++       } else {
++               lcdc_write(stat, LCD_STAT_REG);
++
++               if (stat & LCD_END_OF_FRAME0) {
++                       lcdc_write(par->dma_start,
++                                  LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
++                       lcdc_write(par->dma_end,
++                                  LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
++                       par->vsync_flag = 1;
++                       wake_up_interruptible(&par->vsync_wait);
++               }
++
++               if (stat & LCD_END_OF_FRAME1) {
++                       lcdc_write(par->dma_start,
++                                  LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
++                       lcdc_write(par->dma_end,
++                                  LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
++                       par->vsync_flag = 1;
++                       wake_up_interruptible(&par->vsync_wait);
++               }
++       }
++
+        return IRQ_HANDLED;
+ }
+
+@@ -653,9 +733,10 @@ static int __devexit fb_remove(struct platform_device *dev)
+
+                unregister_framebuffer(info);
+                fb_dealloc_cmap(&info->cmap);
+-               dma_free_coherent(NULL, par->databuf_sz + PAGE_SIZE,
+-                                       info->screen_base - PAGE_SIZE,
+-                                       info->fix.smem_start);
++               dma_free_coherent(NULL, PALETTE_SIZE, par->v_palette_base,
++                                 par->p_palette_base);
++               dma_free_coherent(NULL, par->vram_size, par->vram_virt,
++                                 par->vram_phys);
+                free_irq(par->irq, par);
+                clk_disable(par->lcdc_clk);
+                clk_put(par->lcdc_clk);
+@@ -667,6 +748,42 @@ static int __devexit fb_remove(struct platform_device *dev)
+        return 0;
+ }
+
++/*
++ * Function to wait for vertical sync which for this LCD peripheral
++ * translates into waiting for the current raster frame to complete.
++ */
++static int fb_wait_for_vsync(struct fb_info *info)
++{
++       struct da8xx_fb_par *par = info->par;
++       wait_queue_t wq;
++       int ret;
++
++       init_waitqueue_entry(&wq, current);
++
++       /*
++        * Set flag to 0 and wait for isr to set to 1. It would seem there is a
++        * race condition here where the ISR could have occured just before or
++        * just after this set. But since we are just coarsely waiting for
++        * a frame to complete then that's OK. i.e. if the frame completed
++        * just before this code executed then we have to wait another full
++        * frame time but there is no way to avoid such a situation. On the
++        * other hand if the frame completed just after then we don't need
++        * to wait long at all. Either way we are guaranteed to return to the
++        * user immediately after a frame completion which is all that is
++        * required.
++        */
++       par->vsync_flag = 0;
++       ret = wait_event_interruptible_timeout(par->vsync_wait,
++                                              par->vsync_flag != 0,
++                                              par->vsync_timeout);
++       if (ret < 0)
++               return ret;
++       if (ret = 0)
++               return -ETIMEDOUT;
++
++       return 0;
++}
++
+ static int fb_ioctl(struct fb_info *info, unsigned int cmd,
+                          unsigned long arg)
+ {
+@@ -696,6 +813,8 @@ static int fb_ioctl(struct fb_info *info, unsigned int cmd,
+                                        sync_arg.pulse_width,
+                                        sync_arg.front_porch);
+                break;
++       case FBIO_WAITFORVSYNC:
++               return fb_wait_for_vsync(info);
+        default:
+                return -EINVAL;
+        }
+@@ -731,10 +850,47 @@ static int cfb_blank(int blank, struct fb_info *info)
+        return ret;
+ }
+
++/*
++ * Set new x,y offsets in the virtual display for the visible area and switch
++ * to the new mode.
++ */
++static int da8xx_pan_display(struct fb_var_screeninfo *var,
++                            struct fb_info *fbi)
++{
++       int ret = 0;
++       struct fb_var_screeninfo new_var;
++       struct da8xx_fb_par         *par = fbi->par;
++       struct fb_fix_screeninfo    *fix = &fbi->fix;
++       unsigned int end;
++       unsigned int start;
++
++       if (var->xoffset != fbi->var.xoffset ||
++                       var->yoffset != fbi->var.yoffset) {
++               memcpy(&new_var, &fbi->var, sizeof(new_var));
++               new_var.xoffset = var->xoffset;
++               new_var.yoffset = var->yoffset;
++               if (fb_check_var(&new_var, fbi))
++                       ret = -EINVAL;
++               else {
++                       memcpy(&fbi->var, &new_var, sizeof(new_var));
++
++                       start   = fix->smem_start +
++                               new_var.yoffset * fix->line_length +
++                               new_var.xoffset * var->bits_per_pixel / 8;
++                       end     = start + var->yres * fix->line_length - 1;
++                       par->dma_start  = start;
++                       par->dma_end    = end;
++               }
++       }
++
++       return ret;
++}
++
+ static struct fb_ops da8xx_fb_ops = {
+        .owner = THIS_MODULE,
+        .fb_check_var = fb_check_var,
+        .fb_setcolreg = fb_setcolreg,
++       .fb_pan_display = da8xx_pan_display,
+        .fb_ioctl = fb_ioctl,
+        .fb_fillrect = cfb_fillrect,
+        .fb_copyarea = cfb_copyarea,
+@@ -828,40 +984,53 @@ static int __init fb_probe(struct platform_device *device)
+        }
+
+        /* allocate frame buffer */
+-       da8xx_fb_info->screen_base = dma_alloc_coherent(NULL,
+-                                       par->databuf_sz + PAGE_SIZE,
+-                                       (resource_size_t *)
+-                                       &da8xx_fb_info->fix.smem_start,
+-                                       GFP_KERNEL | GFP_DMA);
+-
+-       if (!da8xx_fb_info->screen_base) {
++       par->vram_size = lcdc_info->width * lcdc_info->height * lcd_cfg->bpp;
++       par->vram_size = PAGE_ALIGN(par->vram_size/8);
++       par->vram_size = par->vram_size * LCD_NUM_BUFFERS;
++
++       par->vram_virt = dma_alloc_coherent(NULL,
++                                           par->vram_size,
++                                           (resource_size_t *) &par->vram_phys,
++                                           GFP_KERNEL | GFP_DMA);
++       if (!par->vram_virt) {
+                dev_err(&device->dev,
+                        "GLCD: kmalloc for frame buffer failed\n");
+                ret = -EINVAL;
+                goto err_release_fb;
+        }
+
+-       /* move palette base pointer by (PAGE_SIZE - palette_sz) bytes */
+-       par->v_palette_base = da8xx_fb_info->screen_base +
+-                               (PAGE_SIZE - par->palette_sz);
+-       par->p_palette_base = da8xx_fb_info->fix.smem_start +
+-                               (PAGE_SIZE - par->palette_sz);
+-
+-       /* the rest of the frame buffer is pixel data */
+-       da8xx_fb_info->screen_base = par->v_palette_base + par->palette_sz;
+-       da8xx_fb_fix.smem_start = par->p_palette_base + par->palette_sz;
+-       da8xx_fb_fix.smem_len = par->databuf_sz - par->palette_sz;
+-       da8xx_fb_fix.line_length = (lcdc_info->width * lcd_cfg->bpp) / 8;
++       da8xx_fb_info->screen_base = (char __iomem *) par->vram_virt;
++       da8xx_fb_fix.smem_start    = par->vram_phys;
++       da8xx_fb_fix.smem_len      = par->vram_size;
++       da8xx_fb_fix.line_length   = (lcdc_info->width * lcd_cfg->bpp) / 8;
++
++       par->dma_start = par->vram_phys;
++       par->dma_end   = par->dma_start + lcdc_info->height *
++               da8xx_fb_fix.line_length - 1;
++
++       /* allocate palette buffer */
++       par->v_palette_base = dma_alloc_coherent(NULL,
++                                              PALETTE_SIZE,
++                                              (resource_size_t *)
++                                              &par->p_palette_base,
++                                              GFP_KERNEL | GFP_DMA);
++       if (!par->v_palette_base) {
++               dev_err(&device->dev,
++                       "GLCD: kmalloc for palette buffer failed\n");
++               ret = -EINVAL;
++               goto err_release_fb_mem;
++       }
++       memset(par->v_palette_base, 0, PALETTE_SIZE);
+
+        par->irq = platform_get_irq(device, 0);
+        if (par->irq < 0) {
+                ret = -ENOENT;
+-               goto err_release_fb_mem;
++               goto err_release_pl_mem;
+        }
+
+        ret = request_irq(par->irq, lcdc_irq_handler, 0, DRIVER_NAME, par);
+        if (ret)
+-               goto err_release_fb_mem;
++               goto err_release_pl_mem;
+
+        /* Initialize par */
+        da8xx_fb_info->var.bits_per_pixel = lcd_cfg->bpp;
+@@ -869,8 +1038,8 @@ static int __init fb_probe(struct platform_device *device)
+        da8xx_fb_var.xres = lcdc_info->width;
+        da8xx_fb_var.xres_virtual = lcdc_info->width;
+
+-       da8xx_fb_var.yres = lcdc_info->height;
+-       da8xx_fb_var.yres_virtual = lcdc_info->height;
++       da8xx_fb_var.yres         = lcdc_info->height;
++       da8xx_fb_var.yres_virtual = lcdc_info->height * LCD_NUM_BUFFERS;
+
+        da8xx_fb_var.grayscale             lcd_cfg->p_disp_panel->panel_shade = MONOCHROME ? 1 : 0;
+@@ -891,13 +1060,8 @@ static int __init fb_probe(struct platform_device *device)
+        ret = fb_alloc_cmap(&da8xx_fb_info->cmap, PALETTE_SIZE, 0);
+        if (ret)
+                goto err_free_irq;
+-
+-       /* First palette_sz byte of the frame buffer is the palette */
+        da8xx_fb_info->cmap.len = par->palette_sz;
+
+-       /* Flush the buffer to the screen. */
+-       lcd_blit(LOAD_DATA, par);
+-
+        /* initialize var_screeninfo */
+        da8xx_fb_var.activate = FB_ACTIVATE_FORCE;
+        fb_set_var(da8xx_fb_info, &da8xx_fb_var);
+@@ -919,6 +1083,10 @@ static int __init fb_probe(struct platform_device *device)
+        }
+ #endif
+
++       /* initialize the vsync wait queue */
++       init_waitqueue_head(&par->vsync_wait);
++       par->vsync_timeout = HZ / 5;
++
+        /* enable raster engine */
+        lcd_enable_raster();
+
+@@ -935,10 +1103,12 @@ err_dealloc_cmap:
+ err_free_irq:
+        free_irq(par->irq, par);
+
++err_release_pl_mem:
++       dma_free_coherent(NULL, PALETTE_SIZE, par->v_palette_base,
++                         par->p_palette_base);
++
+ err_release_fb_mem:
+-       dma_free_coherent(NULL, par->databuf_sz + PAGE_SIZE,
+-                               da8xx_fb_info->screen_base - PAGE_SIZE,
+-                               da8xx_fb_info->fix.smem_start);
++       dma_free_coherent(NULL, par->vram_size, par->vram_virt, par->vram_phys);
+
+ err_release_fb:
+        framebuffer_release(da8xx_fb_info);
+diff --git a/include/video/da8xx-fb.h b/include/video/da8xx-fb.h
+index 89d43b3..6316cda 100644
+--- a/include/video/da8xx-fb.h
++++ b/include/video/da8xx-fb.h
+@@ -99,6 +99,7 @@ struct lcd_sync_arg {
+ #define FBIPUT_COLOR           _IOW('F', 6, int)
+ #define FBIPUT_HSYNC           _IOW('F', 9, int)
+ #define FBIPUT_VSYNC           _IOW('F', 10, int)
++#define FBIO_WAITFORVSYNC      _IOW('F', 0x20, u_int32_t)
+
+ #endif  /* ifndef DA8XX_FB_H */
+
+--
+1.6.6.1
+

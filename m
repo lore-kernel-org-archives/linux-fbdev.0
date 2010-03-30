@@ -1,58 +1,120 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 30 Mar 2010 20:36:21 +0000
-Subject: Re: [PATCH v2] DA8XX/OMAP-L1XX: FB: Implement double buffering
-Message-Id: <20100330133621.e897cdb5.akpm@linux-foundation.org>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Tue, 30 Mar 2010 20:42:30 +0000
+Subject: [PATCH v6 7/8, needs improvement] hid: add suspend/resume hooks for
+Message-Id: <20100330224230.7b84df75@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <A24693684029E5489D1D202277BE89445316FAB1@dlee02.ent.ti.com>
-In-Reply-To: <A24693684029E5489D1D202277BE89445316FAB1@dlee02.ent.ti.com>
+References: <20100324233707.7243b04d@neptune.home>
+	<20100324234022.0361bd80@neptune.home>
+	<20100326065656.GC26602@core.coreip.homeip.net>
+	<20100326102951.3b9ecda1@neptune.home>
+	<alpine.LNX.2.00.1003262156280.24576@pobox.suse.cz>
+	<20100327012245.0ace6a09@neptune.home>
+	<alpine.LNX.2.00.1003291144350.24576@pobox.suse.cz>
+	<20100329121611.0c22dcaf@pluto.restena.lu>
+	<alpine.LNX.2.00.1003301010410.24576@pobox.suse.cz>
+	<20100330223224.18fe4f3e@neptune.home>
+In-Reply-To: <20100330223224.18fe4f3e@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, Nicu Pavel <npavel@ituner.com>, Oliver Neukum <oliver@neukum.org>, Jaya Kumar <jayakumar.lkml@gmail.com>
 
-On Mon, 29 Mar 2010 08:16:51 -0500
-"Ambrose, Martin" <martin@ti.com> wrote:
+Add suspend/resume hooks for HID drivers so these can do some
+additional state adjustment when device gets suspended/resumed.
 
-> +/*
-> + * Function to wait for vertical sync which for this LCD peripheral
-> + * translates into waiting for the current raster frame to complete.
-> + */
-> +static int fb_wait_for_vsync(struct fb_info *info)
-> +{
-> +       struct da8xx_fb_par *par = info->par;
-> +       wait_queue_t wq;
-> +       int ret;
-> +
-> +       init_waitqueue_entry(&wq, current);
+This patch calls these hooks from usbhid suspend/resume functions,
+only calling suspend on plain suspend, not autosuspend.
+(it might be worth adding an autosuspend parameter to suspend
+hook and calling suspend in both cases)
 
-DECLARE_WAITQUEUE() would be more conventional.
+Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
+---
 
-> +       /*
-> +        * Set flag to 0 and wait for isr to set to 1. It would seem there is a
-> +        * race condition here where the ISR could have occured just before or
-> +        * just after this set. But since we are just coarsely waiting for
-> +        * a frame to complete then that's OK. i.e. if the frame completed
-> +        * just before this code executed then we have to wait another full
-> +        * frame time but there is no way to avoid such a situation. On the
-> +        * other hand if the frame completed just after then we don't need
-> +        * to wait long at all. Either way we are guaranteed to return to the
-> +        * user immediately after a frame completion which is all that is
-> +        * required.
-> +        */
-> +       par->vsync_flag = 0;
-> +       ret = wait_event_interruptible_timeout(par->vsync_wait,
-> +                                              par->vsync_flag != 0,
-> +                                              par->vsync_timeout);
-
-If the calling process has signal_pending() (say, someone hit ^C) then
-wait_event_interruptible_timeout() will fall straight through with
--ERESTARTSYS.  Will this cause the driver to malfunction at all?
+Note:
+  this patch needs improvements as mentionned by Olivier Neukum:
+  - suspend hook for both system suspend and autosuspend
+  - no call of hook on USB-HID-resume failure
 
 
-> +       if (ret < 0)
-> +               return ret;
-> +       if (ret = 0)
-> +               return -ETIMEDOUT;
-> +
-> +       return 0;
-> +}
+ drivers/hid/usbhid/hid-core.c |   19 ++++++++++++++++++-
+ include/linux/hid.h           |    8 ++++++++
+ 2 files changed, 26 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
+index 3e7909b..9acf573 100644
+--- a/drivers/hid/usbhid/hid-core.c
++++ b/drivers/hid/usbhid/hid-core.c
+@@ -1298,6 +1298,11 @@ static int hid_suspend(struct usb_interface *intf, p=
+m_message_t message)
+ 		}
+=20
+ 	} else {
++		if (hid->driver && hid->driver->suspend) {
++			status =3D hid->driver->suspend(hid);
++			if (status < 0)
++				return status;
++		}
+ 		spin_lock_irq(&usbhid->lock);
+ 		set_bit(HID_REPORTED_IDLE, &usbhid->iofl);
+ 		spin_unlock_irq(&usbhid->lock);
+@@ -1352,6 +1357,11 @@ static int hid_resume(struct usb_interface *intf)
+ 		hid_io_error(hid);
+ 	usbhid_restart_queues(usbhid);
+=20
++	if (hid->driver && hid->driver->resume) {
++		int ret =3D hid->driver->resume(hid);
++		if (ret < 0 && status =3D 0)
++			status =3D ret;
++	}
+ 	dev_dbg(&intf->dev, "resume status %d\n", status);
+ 	return 0;
+ }
+@@ -1360,9 +1370,16 @@ static int hid_reset_resume(struct usb_interface *in=
+tf)
+ {
+ 	struct hid_device *hid =3D usb_get_intfdata(intf);
+ 	struct usbhid_device *usbhid =3D hid->driver_data;
++	int status;
+=20
+ 	clear_bit(HID_REPORTED_IDLE, &usbhid->iofl);
+-	return hid_post_reset(intf);
++	status =3D hid_post_reset(intf);
++	if (hid->driver && hid->driver->reset_resume) {
++		int ret =3D hid->driver->reset_resume(hid);
++		if (ret < 0 && status =3D 0)
++			status =3D ret;
++	}
++	return status;
+ }
+=20
+ #endif /* CONFIG_PM */
+diff --git a/include/linux/hid.h b/include/linux/hid.h
+index b1344ec..fcf3e5c 100644
+--- a/include/linux/hid.h
++++ b/include/linux/hid.h
+@@ -589,6 +589,9 @@ struct hid_usage_id {
+  * @report_fixup: called before report descriptor parsing (NULL means nop)
+  * @input_mapping: invoked on input registering before mapping an usage
+  * @input_mapped: invoked on input registering after mapping an usage
++ * @suspend: invoked on suspend (NULL means nop)
++ * @resume: invoked on resume if device was not reset (NULL means nop)
++ * @reset_resume: invoked on resume if device was reset (NULL means nop)
+  *
+  * raw_event and event should return 0 on no action performed, 1 when no
+  * further processing should be done and negative on error
+@@ -629,6 +632,11 @@ struct hid_driver {
+ 	int (*input_mapped)(struct hid_device *hdev,
+ 			struct hid_input *hidinput, struct hid_field *field,
+ 			struct hid_usage *usage, unsigned long **bit, int *max);
++#ifdef CONFIG_PM
++	int (*suspend)(struct hid_device *hdev);
++	int (*resume)(struct hid_device *hdev);
++	int (*reset_resume)(struct hid_device *hdev);
++#endif
+ /* private: */
+ 	struct device_driver driver;
+ };
+--=20
+1.6.4.4
+

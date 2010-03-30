@@ -1,31 +1,285 @@
-From: ville.syrjala@nokia.com
-Date: Wed, 17 Mar 2010 22:46:18 +0000
-Subject: [PATCH v4 3/8] DSS2: OMAPFB: Skip unnecessary set_overlay_info()
-Message-Id: <1268865983-16270-4-git-send-email-ville.syrjala@nokia.com>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Tue, 30 Mar 2010 20:36:49 +0000
+Subject: [PATCH v6 5/8] hid: add GPO (leds) support to PicoLCD device
+Message-Id: <20100330223649.049e2846@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1268865983-16270-1-git-send-email-ville.syrjala@nokia.com>
-In-Reply-To: <1268865983-16270-1-git-send-email-ville.syrjala@nokia.com>
+References: <20100324233707.7243b04d@neptune.home>
+	<20100324234022.0361bd80@neptune.home>
+	<20100326065656.GC26602@core.coreip.homeip.net>
+	<20100326102951.3b9ecda1@neptune.home>
+	<alpine.LNX.2.00.1003262156280.24576@pobox.suse.cz>
+	<20100327012245.0ace6a09@neptune.home>
+	<alpine.LNX.2.00.1003291144350.24576@pobox.suse.cz>
+	<20100329121611.0c22dcaf@pluto.restena.lu>
+	<alpine.LNX.2.00.1003301010410.24576@pobox.suse.cz>
+	<20100330223224.18fe4f3e@neptune.home>
+In-Reply-To: <20100330223224.18fe4f3e@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: Imre Deak <imre.deak@nokia.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@nokia.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, Nicu Pavel <npavel@ituner.com>, Oliver Neukum <oliver@neukum.org>, Jaya Kumar <jayakumar.lkml@gmail.com>
 
-RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KCkluIG9tYXBm
-Yl9lbmFibGVfb3ZlcmxheSgpIGlmIHRoZSBvdmVybGF5IHN0YXRlIGlzIGFscmVhZHkgd2hhdCB3
-ZSB3YW50CnNraXAgdGhlIHNldF9vdmVybGF5X2luZm8oKS4KClNpZ25lZC1vZmYtYnk6IFZpbGxl
-IFN5cmrDpGzDpCA8dmlsbGUuc3lyamFsYUBub2tpYS5jb20+Ci0tLQogZHJpdmVycy92aWRlby9v
-bWFwMi9vbWFwZmIvb21hcGZiLmggfCAgICAyICsrCiAxIGZpbGVzIGNoYW5nZWQsIDIgaW5zZXJ0
-aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL29tYXAy
-L29tYXBmYi9vbWFwZmIuaCBiL2RyaXZlcnMvdmlkZW8vb21hcDIvb21hcGZiL29tYXBmYi5oCmlu
-ZGV4IGNkNTRmZGIuLmM5ODY2YmUgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvdmlkZW8vb21hcDIvb21h
-cGZiL29tYXBmYi5oCisrKyBiL2RyaXZlcnMvdmlkZW8vb21hcDIvb21hcGZiL29tYXBmYi5oCkBA
-IC0xNDgsNiArMTQ4LDggQEAgc3RhdGljIGlubGluZSBpbnQgb21hcGZiX292ZXJsYXlfZW5hYmxl
-KHN0cnVjdCBvbWFwX292ZXJsYXkgKm92bCwKIAlzdHJ1Y3Qgb21hcF9vdmVybGF5X2luZm8gaW5m
-bzsKIAogCW92bC0+Z2V0X292ZXJsYXlfaW5mbyhvdmwsICZpbmZvKTsKKwlpZiAoaW5mby5lbmFi
-bGVkID0gZW5hYmxlKQorCQlyZXR1cm4gMDsKIAlpbmZvLmVuYWJsZWQgPSBlbmFibGU7CiAJcmV0
-dXJuIG92bC0+c2V0X292ZXJsYXlfaW5mbyhvdmwsICZpbmZvKTsKIH0KLS0gCjEuNi40LjQKCi0t
-ClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmli
-ZSBsaW51eC1mYmRldiIgaW4KdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2Vy
-Lmtlcm5lbC5vcmcKTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9y
-Zy9tYWpvcmRvbW8taW5mby5odG1s
+Add leds support to PicoLCD device to drive the GPO pins.
+
+GPO support depends on leds class and is only being
+compiled if leds class has been selected.
+
+Changes since v3:
+ - Moved PM support to separate patch
+Changes since v2:
+ - Drop inline keyword on non-stub functions
+
+Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
+---
+ drivers/hid/Kconfig       |    6 +-
+ drivers/hid/hid-picolcd.c |  163 +++++++++++++++++++++++++++++++++++++++++=
+++++
+ 2 files changed, 166 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
+index 399edc5..34f6593 100644
+--- a/drivers/hid/Kconfig
++++ b/drivers/hid/Kconfig
+@@ -278,11 +278,11 @@ config HID_PICOLCD
+ 	  - Keypad
+ 	  - Switching between Firmware and Flash mode
+ 	  - Framebuffer for monochrome 256x64 display
+-	  - Backlight control    (needs CONFIG_BACKLIGHT_CLASS_DEVICE)
+-	  - Contrast control     (needs CONFIG_LCD_CLASS_DEVICE)
++	  - Backlight control         (needs CONFIG_BACKLIGHT_CLASS_DEVICE)
++	  - Contrast control          (needs CONFIG_LCD_CLASS_DEVICE)
++	  - General purpose outputs   (needs CONFIG_LEDS_CLASS)
+ 	  Features that are not (yet) supported:
+ 	  - IR
+-	  - General purpose outputs
+ 	  - EEProm / Flash access
+=20
+ config HID_QUANTA
+diff --git a/drivers/hid/hid-picolcd.c b/drivers/hid/hid-picolcd.c
+index 9f2c859..9c8bbaf 100644
+--- a/drivers/hid/hid-picolcd.c
++++ b/drivers/hid/hid-picolcd.c
+@@ -29,6 +29,8 @@
+ #include <linux/backlight.h>
+ #include <linux/lcd.h>
+=20
++#include <linux/leds.h>
++
+ #include <linux/seq_file.h>
+ #include <linux/debugfs.h>
+=20
+@@ -194,6 +196,11 @@ struct picolcd_data {
+ 	u8 lcd_brightness;
+ 	u8 lcd_power;
+ #endif /* CONFIG_BACKLIGHT_CLASS_DEVICE */
++#if defined(CONFIG_LEDS_CLASS) || defined(CONFIG_LEDS_CLASS_MODULE)
++	/* LED stuff */
++	u8 led_state;
++	struct led_classdev *led[8];
++#endif /* CONFIG_LEDS_CLASS */
+=20
+ 	/* Housekeeping stuff */
+ 	spinlock_t lock;
+@@ -960,6 +967,153 @@ static inline int picolcd_resume_lcd(struct picolcd_d=
+ata *data)
+ }
+ #endif /* CONFIG_LCD_CLASS_DEVICE */
+=20
++#if defined(CONFIG_LEDS_CLASS) || defined(CONFIG_LEDS_CLASS_MODULE)
++/**
++ * LED class device
++ */
++static void picolcd_leds_set(struct picolcd_data *data)
++{
++	struct hid_report *report;
++	unsigned long flags;
++
++	if (!data->led[0])
++		return;
++	report =3D picolcd_out_report(REPORT_LED_STATE, data->hdev);
++	if (!report || report->maxfield !=3D 1 || report->field[0]->report_count =
+!=3D 1)
++		return;
++
++	spin_lock_irqsave(&data->lock, flags);
++	hid_set_field(report->field[0], 0, data->led_state);
++	usbhid_submit_report(data->hdev, report, USB_DIR_OUT);
++	spin_unlock_irqrestore(&data->lock, flags);
++}
++
++static void picolcd_led_set_brightness(struct led_classdev *led_cdev,
++			enum led_brightness value)
++{
++	struct device *dev;
++	struct hid_device *hdev;
++	struct picolcd_data *data;
++	int i, state =3D 0;
++
++	dev  =3D led_cdev->dev->parent;
++	hdev =3D container_of(dev, struct hid_device, dev);
++	data =3D hid_get_drvdata(hdev);
++	for (i =3D 0; i < 8; i++) {
++		if (led_cdev !=3D data->led[i])
++			continue;
++		state =3D (data->led_state >> i) & 1;
++		if (value =3D LED_OFF && state) {
++			data->led_state &=3D ~(1 << i);
++			picolcd_leds_set(data);
++		} else if (value !=3D LED_OFF && !state) {
++			data->led_state |=3D 1 << i;
++			picolcd_leds_set(data);
++		}
++		break;
++	}
++}
++
++static enum led_brightness picolcd_led_get_brightness(struct led_classdev =
+*led_cdev)
++{
++	struct device *dev;
++	struct hid_device *hdev;
++	struct picolcd_data *data;
++	int i, value =3D 0;
++
++	dev  =3D led_cdev->dev->parent;
++	hdev =3D container_of(dev, struct hid_device, dev);
++	data =3D hid_get_drvdata(hdev);
++	for (i =3D 0; i < 8; i++)
++		if (led_cdev =3D data->led[i]) {
++			value =3D (data->led_state >> i) & 1;
++			break;
++		}
++	return value ? LED_FULL : LED_OFF;
++}
++
++static int picolcd_init_leds(struct picolcd_data *data, struct hid_report =
+*report)
++{
++	struct device *dev =3D &data->hdev->dev;
++	struct led_classdev *led;
++	size_t name_sz =3D strlen(dev_name(dev)) + 8;
++	char *name;
++	int i, ret =3D 0;
++
++	if (!report)
++		return -ENODEV;
++	if (report->maxfield !=3D 1 || report->field[0]->report_count !=3D 1 ||
++			report->field[0]->report_size !=3D 8) {
++		dev_err(dev, "unsupported LED_STATE report");
++		return -EINVAL;
++	}
++
++	for (i =3D 0; i < 8; i++) {
++		led =3D kzalloc(sizeof(struct led_classdev)+name_sz, GFP_KERNEL);
++		if (!led) {
++			dev_err(dev, "can't allocate memory for LED %d\n", i);
++			ret =3D -ENOMEM;
++			goto err;
++		}
++		name =3D (void *)(&led[1]);
++		snprintf(name, name_sz, "%s::GPO%d", dev_name(dev), i);
++		led->name =3D name;
++		led->brightness =3D 0;
++		led->max_brightness =3D 1;
++		led->brightness_get =3D picolcd_led_get_brightness;
++		led->brightness_set =3D picolcd_led_set_brightness;
++
++		data->led[i] =3D led;
++		ret =3D led_classdev_register(dev, data->led[i]);
++		if (ret) {
++			data->led[i] =3D NULL;
++			kfree(led);
++			dev_err(dev, "can't register LED %d\n", i);
++			goto err;
++		}
++	}
++	return 0;
++err:
++	for (i =3D 0; i < 8; i++)
++		if (data->led[i]) {
++			led =3D data->led[i];
++			data->led[i] =3D NULL;
++			led_classdev_unregister(led);
++			kfree(led);
++		}
++	return ret;
++}
++
++static void picolcd_exit_leds(struct picolcd_data *data)
++{
++	struct led_classdev *led;
++	int i;
++
++	for (i =3D 0; i < 8; i++) {
++		led =3D data->led[i];
++		data->led[i] =3D NULL;
++		if (!led)
++			continue;
++		led_classdev_unregister(led);
++		kfree(led);
++	}
++}
++
++#else
++static inline int picolcd_init_leds(struct picolcd_data *data,
++		struct hid_report *report)
++{
++	return 0;
++}
++static void picolcd_exit_leds(struct picolcd_data *data)
++{
++}
++static inline int picolcd_leds_set(struct picolcd_data *data)
++{
++	return 0;
++}
++#endif /* CONFIG_LEDS_CLASS */
++
+ /*
+  * input class device
+  */
+@@ -1102,6 +1256,7 @@ static int picolcd_reset(struct hid_device *hdev)
+ 		schedule_delayed_work(&data->fb_info->deferred_work, 0);
+ #endif /* CONFIG_FB */
+=20
++	picolcd_leds_set(data);
+ 	return 0;
+ }
+=20
+@@ -1795,6 +1950,11 @@ static int picolcd_probe_lcd(struct hid_device *hdev=
+, struct picolcd_data *data)
+ 	if (error)
+ 		goto err;
+=20
++	/* Setup the LED class devices */
++	error =3D picolcd_init_leds(data, picolcd_out_report(REPORT_LED_STATE, hd=
+ev));
++	if (error)
++		goto err;
++
+ #ifdef CONFIG_DEBUG_FS
+ 	report =3D picolcd_out_report(REPORT_READ_MEMORY, hdev);
+ 	if (report && report->maxfield =3D 1 && report->field[0]->report_size =3D=
+ 8)
+@@ -1804,6 +1964,7 @@ static int picolcd_probe_lcd(struct hid_device *hdev,=
+ struct picolcd_data *data)
+ #endif
+ 	return 0;
+ err:
++	picolcd_exit_leds(data);
+ 	picolcd_exit_backlight(data);
+ 	picolcd_exit_lcd(data);
+ 	picolcd_exit_framebuffer(data);
+@@ -1936,6 +2097,8 @@ static void picolcd_remove(struct hid_device *hdev)
+ 		complete(&data->pending->ready);
+ 	spin_unlock_irqrestore(&data->lock, flags);
+=20
++	/* Cleanup LED */
++	picolcd_exit_leds(data);
+ 	/* Clean up the framebuffer */
+ 	picolcd_exit_backlight(data);
+ 	picolcd_exit_lcd(data);
+--=20
+1.6.4.4
+

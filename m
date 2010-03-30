@@ -1,31 +1,93 @@
-From: ville.syrjala@nokia.com
-Date: Fri, 05 Mar 2010 13:26:20 +0000
-Subject: [PATCH 2/4] DSS2: Check if display supports update mode changes
-Message-Id: <1267795582-21004-2-git-send-email-ville.syrjala@nokia.com>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Tue, 30 Mar 2010 20:43:28 +0000
+Subject: [PATCH v6 8/8] hid: add PM support to PicoLCD device
+Message-Id: <20100330224328.685f74ef@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1267795582-21004-1-git-send-email-ville.syrjala@nokia.com>
-In-Reply-To: <1267795582-21004-1-git-send-email-ville.syrjala@nokia.com>
+References: <20100324233707.7243b04d@neptune.home>
+	<20100324234022.0361bd80@neptune.home>
+	<20100326065656.GC26602@core.coreip.homeip.net>
+	<20100326102951.3b9ecda1@neptune.home>
+	<alpine.LNX.2.00.1003262156280.24576@pobox.suse.cz>
+	<20100327012245.0ace6a09@neptune.home>
+	<alpine.LNX.2.00.1003291144350.24576@pobox.suse.cz>
+	<20100329121611.0c22dcaf@pluto.restena.lu>
+	<alpine.LNX.2.00.1003301010410.24576@pobox.suse.cz>
+	<20100330223224.18fe4f3e@neptune.home>
+In-Reply-To: <20100330223224.18fe4f3e@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@nokia.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, Nicu Pavel <npavel@ituner.com>, Oliver Neukum <oliver@neukum.org>, Jaya Kumar <jayakumar.lkml@gmail.com>
 
-RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KCkNoZWNrIHdo
-ZXRoZXIgdGhlIGRpc3BsYXkgYWN0dWFsbHkgaGFzIHRoZSBzZXRfdXBkYXRlX21vZGUoKSBmdW5j
-dGlvbgpiZWZvcmUgY2FsbGluZyBpdC4gT25seSB0aGUgc3lzZnMgY29kZXBhdGggd2FzIGJyb2tl
-biwgdGhlIG9tYXBmYiBpb2N0bApoYWQgdGhlIG5lY2Vzc2FyeSBwcm90ZWN0aW9uLgoKU2lnbmVk
-LW9mZi1ieTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KLS0tCiBk
-cml2ZXJzL3ZpZGVvL29tYXAyL2Rzcy9kaXNwbGF5LmMgfCAgICAzICsrKwogMSBmaWxlcyBjaGFu
-Z2VkLCAzIGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVy
-cy92aWRlby9vbWFwMi9kc3MvZGlzcGxheS5jIGIvZHJpdmVycy92aWRlby9vbWFwMi9kc3MvZGlz
-cGxheS5jCmluZGV4IDZhNzRlYTEuLjNhOGYxNDYgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvdmlkZW8v
-b21hcDIvZHNzL2Rpc3BsYXkuYworKysgYi9kcml2ZXJzL3ZpZGVvL29tYXAyL2Rzcy9kaXNwbGF5
-LmMKQEAgLTgyLDYgKzgyLDkgQEAgc3RhdGljIHNzaXplX3QgZGlzcGxheV91cGRfbW9kZV9zdG9y
-ZShzdHJ1Y3QgZGV2aWNlICpkZXYsCiAJaW50IHZhbCwgcjsKIAllbnVtIG9tYXBfZHNzX3VwZGF0
-ZV9tb2RlIG1vZGU7CiAKKwlpZiAoIWRzc2Rldi0+ZHJpdmVyLT5zZXRfdXBkYXRlX21vZGUpCisJ
-CXJldHVybiAtRUlOVkFMOworCiAJdmFsID0gc2ltcGxlX3N0cnRvdWwoYnVmLCBOVUxMLCAxMCk7
-CiAKIAlzd2l0Y2ggKHZhbCkgewotLSAKMS42LjQuNAoKLS0KVG8gdW5zdWJzY3JpYmUgZnJvbSB0
-aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LWZiZGV2IiBpbgp0aGUg
-Ym9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZwpNb3JlIG1ham9y
-ZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWw=
+Add PM support in order to turn off backlight on suspend, restore
+it on resume and especially restore complete state on reset-resume.
+
+Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
+---
+ drivers/hid/hid-picolcd.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 42 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/hid/hid-picolcd.c b/drivers/hid/hid-picolcd.c
+index fe1f772..daa7c5d 100644
+--- a/drivers/hid/hid-picolcd.c
++++ b/drivers/hid/hid-picolcd.c
+@@ -2255,6 +2255,43 @@ static int picolcd_raw_event(struct hid_device *hdev,
+ 	return 1;
+ }
+=20
++#ifdef CONFIG_PM
++static int picolcd_suspend(struct hid_device *hdev)
++{
++	picolcd_suspend_backlight(hid_get_drvdata(hdev));
++	dbg_hid(PICOLCD_NAME " device ready for suspend\n");
++	return 0;
++}
++
++static int picolcd_resume(struct hid_device *hdev)
++{
++	int ret;
++	ret =3D picolcd_resume_backlight(hid_get_drvdata(hdev));
++	if (ret)
++		dbg_hid(PICOLCD_NAME " restoring backlight failed: %d\n", ret);
++	return 0;
++}
++
++static int picolcd_reset_resume(struct hid_device *hdev)
++{
++	int ret;
++	ret =3D picolcd_reset(hdev);
++	if (ret)
++		dbg_hid(PICOLCD_NAME " resetting our device failed: %d\n", ret);
++	ret =3D picolcd_fb_reset(hid_get_drvdata(hdev), 0);
++	if (ret)
++		dbg_hid(PICOLCD_NAME " restoring framebuffer content failed: %d\n", ret);
++	ret =3D picolcd_resume_lcd(hid_get_drvdata(hdev));
++	if (ret)
++		dbg_hid(PICOLCD_NAME " restoring lcd failed: %d\n", ret);
++	ret =3D picolcd_resume_backlight(hid_get_drvdata(hdev));
++	if (ret)
++		dbg_hid(PICOLCD_NAME " restoring backlight failed: %d\n", ret);
++	picolcd_leds_set(hid_get_drvdata(hdev));
++	return 0;
++}
++#endif
++
+ /* initialize keypad input device */
+ static int picolcd_init_keys(struct picolcd_data *data,
+ 		struct hid_report *report)
+@@ -2530,6 +2567,11 @@ static struct hid_driver picolcd_driver =3D {
+ 	.probe =3D         picolcd_probe,
+ 	.remove =3D        picolcd_remove,
+ 	.raw_event =3D     picolcd_raw_event,
++#ifdef CONFIG_PM
++	.suspend =3D       picolcd_suspend,
++	.resume =3D        picolcd_resume,
++	.reset_resume =3D  picolcd_reset_resume,
++#endif
+ };
+=20
+ static int __init picolcd_init(void)
+--=20
+1.6.4.4
+

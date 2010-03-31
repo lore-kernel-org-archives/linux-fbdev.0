@@ -1,38 +1,26 @@
-From: ville.syrjala@nokia.com
-Date: Fri, 05 Mar 2010 13:26:21 +0000
-Subject: [PATCH 3/4] DSS2: Make wait_for_go() succeed for disabled displays
-Message-Id: <1267795582-21004-3-git-send-email-ville.syrjala@nokia.com>
+From: melodramus@online.de
+Date: Wed, 31 Mar 2010 02:36:58 +0000
+Subject: compiled-in console fonts on fb with 1600x1200 too small and slim
+Message-Id: <20100331043658.46ab9e19.melodramus@online.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1267795582-21004-1-git-send-email-ville.syrjala@nokia.com>
-In-Reply-To: <1267795582-21004-1-git-send-email-ville.syrjala@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@nokia.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KCldoZW4gdGhl
-IGRpc3BsYXkgaXMgbm90IGFjdGl2ZSBtYWtlIHRoZSB3YWl0X2Zvcl9nbygpIGZ1bmN0aW9ucyBy
-ZXR1cm4KaW1tZWRpYXRlbHkuCgpTaWduZWQtb2ZmLWJ5OiBWaWxsZSBTeXJqw6Rsw6QgPHZpbGxl
-LnN5cmphbGFAbm9raWEuY29tPgotLS0KIGRyaXZlcnMvdmlkZW8vb21hcDIvZHNzL21hbmFnZXIu
-YyB8ICAgIDcgKysrKystLQogMSBmaWxlcyBjaGFuZ2VkLCA1IGluc2VydGlvbnMoKyksIDIgZGVs
-ZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9vbWFwMi9kc3MvbWFuYWdlci5j
-IGIvZHJpdmVycy92aWRlby9vbWFwMi9kc3MvbWFuYWdlci5jCmluZGV4IDkxMzE0MmQuLjBlN2Iw
-MzYgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvdmlkZW8vb21hcDIvZHNzL21hbmFnZXIuYworKysgYi9k
-cml2ZXJzL3ZpZGVvL29tYXAyL2Rzcy9tYW5hZ2VyLmMKQEAgLTUyNCw3ICs1MjQsNyBAQCBzdGF0
-aWMgaW50IGRzc19tZ3Jfd2FpdF9mb3JfZ28oc3RydWN0IG9tYXBfb3ZlcmxheV9tYW5hZ2VyICpt
-Z3IpCiAJaW50IGk7CiAJc3RydWN0IG9tYXBfZHNzX2RldmljZSAqZHNzZGV2ID0gbWdyLT5kZXZp
-Y2U7CiAKLQlpZiAoIWRzc2RldikKKwlpZiAoIWRzc2RldiB8fCBkc3NkZXYtPnN0YXRlICE9IE9N
-QVBfRFNTX0RJU1BMQVlfQUNUSVZFKQogCQlyZXR1cm4gMDsKIAogCWlmIChkc3NkZXYtPnR5cGUg
-PSBPTUFQX0RJU1BMQVlfVFlQRV9WRU5DKSB7CkBAIC01OTUsMTEgKzU5NSwxNCBAQCBpbnQgZHNz
-X21ncl93YWl0X2Zvcl9nb19vdmwoc3RydWN0IG9tYXBfb3ZlcmxheSAqb3ZsKQogCWludCByOwog
-CWludCBpOwogCi0JaWYgKCFvdmwtPm1hbmFnZXIgfHwgIW92bC0+bWFuYWdlci0+ZGV2aWNlKQor
-CWlmICghb3ZsLT5tYW5hZ2VyKQogCQlyZXR1cm4gMDsKIAogCWRzc2RldiA9IG92bC0+bWFuYWdl
-ci0+ZGV2aWNlOwogCisJaWYgKCFkc3NkZXYgfHwgZHNzZGV2LT5zdGF0ZSAhPSBPTUFQX0RTU19E
-SVNQTEFZX0FDVElWRSkKKwkJcmV0dXJuIDA7CisKIAlpZiAoZHNzZGV2LT50eXBlID0gT01BUF9E
-SVNQTEFZX1RZUEVfVkVOQykgewogCQlpcnEgPSBESVNQQ19JUlFfRVZTWU5DX09ERCB8IERJU1BD
-X0lSUV9FVlNZTkNfRVZFTjsKIAkJY2hhbm5lbCA9IE9NQVBfRFNTX0NIQU5ORUxfRElHSVQ7Ci0t
-IAoxLjYuNC40CgotLQpUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGlu
-ZSAidW5zdWJzY3JpYmUgbGludXgtZmJkZXYiIGluCnRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBt
-YWpvcmRvbW9Admdlci5rZXJuZWwub3JnCk1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92
-Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA==
+hello
+
+don't really know where to put this right. it is possibly best sent to the kbd-people but i'd like to see a further choice in menuconfig too.
+
+this is just a pledge for the wishlist. 
+
+i got ksm working with radeondrmfb. the resolution seems to be set correctly to 1600x1200i (or possibly just 1200x1024?). i'd like to keep that so because of crispness and fast switching between console and X. however, the few choices of console fonts in menuconfig are so small that the boot output is unreadable. even the greater fonts are unreadable, mainly because they are very slim and with serifs.
+
+there is a great console-font package coming with a clean, default-font-like look and in lots of sizes/widths. it suppports more than hundred languages and is under the GPL 2 (and higher).
+
+possibly you could take out some rare versions like ter-v24b and put them into linux?
+
+here is the link: http://www.is-vn.bg/hamster/
+
+many thanks for listening,
+MeloDramus <melodramus@online.de>

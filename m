@@ -1,50 +1,69 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Sun, 18 Apr 2010 18:21:05 +0000
-Subject: [PATCH 03/11] viafb: Unmap the frame buffer on initialization error
-Message-Id: <1271614873-5952-4-git-send-email-corbet@lwn.net>
+From: Oliver Neukum <oliver@neukum.org>
+Date: Thu, 01 Apr 2010 16:58:45 +0000
+Subject: Re: [PATCH v6 1/8] hid: new driver for PicoLCD device
+Message-Id: <201004011858.45859.oliver@neukum.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1271614873-5952-1-git-send-email-corbet@lwn.net>
-In-Reply-To: <1271614873-5952-1-git-send-email-corbet@lwn.net>
+References: <20100324233707.7243b04d@neptune.home> <20100330223224.18fe4f3e@neptune.home> <20100330223350.32044891@neptune.home>
+In-Reply-To: <20100330223350.32044891@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Bruno =?utf-8?q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>
+Cc: Jiri Kosina <jkosina@suse.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, Nicu Pavel <npavel@ituner.com>, Jaya Kumar <jayakumar.lkml@gmail.com>
 
-This was part of Harald's "make viafb a first-class citizen using
-pci_driver" patch, but somehow got dropped when that patch went into
-mainline.
+Am Dienstag, 30. März 2010 22:33:50 schrieb Bruno Prémont:
+> +static ssize_t picolcd_operation_mode_store(struct device *dev,
+> +               struct device_attribute *attr, const char *buf, size_t count)
+> +{
+> +       struct picolcd_data *data = dev_get_drvdata(dev);
+> +       struct hid_report *report = NULL;
+> +       size_t cnt = count;
+> +       int timeout = 5000;
+> +       unsigned u;
+> +       unsigned long flags;
+> +
+> +       if (cnt >= 3 && strncmp("lcd", buf, 3) = 0) {
+> +               if (data->status & PICOLCD_BOOTLOADER)
+> +                       report = picolcd_out_report(REPORT_EXIT_FLASHER, data->hdev);
+> +               buf += 3;
+> +               cnt -= 3;
+> +       } else if (cnt >= 10 && strncmp("bootloader", buf, 10) = 0) {
+> +               if (!(data->status & PICOLCD_BOOTLOADER))
+> +                       report = picolcd_out_report(REPORT_EXIT_KEYBOARD, data->hdev);
+> +               buf += 10;
+> +               cnt -= 10;
+> +       }
+> +       if (!report)
+> +               return -EINVAL;
+> +
+> +       while (cnt > 0 && (*buf = ' ' || *buf = '\t')) {
+> +               buf++;
+> +               cnt--;
+> +       }
+> +       while (cnt > 0 && (buf[cnt-1] = '\n' || buf[cnt-1] = '\r'))
+> +               cnt--;
+> +       if (cnt > 0) {
+> +               if (sscanf(buf, "%u", &u) != 1)
+> +                       return -EINVAL;
+> +               if (u > 30000)
+> +                       return -EINVAL;
+> +               else
+> +                       timeout = u;
+> +       }
+> +
+> +       spin_lock_irqsave(&data->lock, flags);
+> +       hid_set_field(report->field[0], 0, timeout & 0xff);
+> +       hid_set_field(report->field[0], 1, (timeout >> 8) & 0xff);
+> +       usbhid_submit_report(data->hdev, report, USB_DIR_OUT);
+> +       spin_unlock_irqrestore(&data->lock, flags);
+> +       return count;
+> +}
+> +
+> +static DEVICE_ATTR(operation_mode, 0644, picolcd_operation_mode_show,
+> +               picolcd_operation_mode_store);
 
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: ScottFang@viatech.com.cn
-Cc: JosephChan@via.com.tw
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
----
- drivers/video/via/viafbdev.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+This violates the one file = one attribute rule.
+Can you change this interface?
 
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 8af405b..8955ab4 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -1870,7 +1870,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 			printk(KERN_ERR
- 			"allocate the second framebuffer struct error\n");
- 			rc = -ENOMEM;
--			goto out_delete_i2c;
-+			goto out_unmap_screen;
- 		}
- 		viaparinfo1 = viafbinfo1->par;
- 		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
-@@ -1961,6 +1961,8 @@ out_dealloc_cmap:
- out_fb1_release:
- 	if (viafbinfo1)
- 		framebuffer_release(viafbinfo1);
-+out_unmap_screen:
-+	iounmap(viafbinfo->screen_base);
- out_delete_i2c:
- 	viafb_delete_i2c_buss(viaparinfo);
- out_fb_release:
--- 
-1.7.0.1
-
+	Regards
+		Oliver

@@ -1,60 +1,55 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 28 Apr 2010 22:17:21 +0000
-Subject: [PATCH 20/30] via: Rationalize vt1636 detection
-Message-Id: <1272493051-25380-21-git-send-email-corbet@lwn.net>
+From: Henrik Kretzschmar <henne@nachtwindheim.de>
+Date: Fri, 02 Apr 2010 11:59:32 +0000
+Subject: [PATCH v2 3/5] fbdev: section cleanup in vfb
+Message-Id: <1270209574-31890-3-git-send-email-henne@nachtwindheim.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
-In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-fbdev@vger.kernel.org
 
-The code was ugly and didn't check whether i2c operations were succeeding;
-make it a little better.
+This patch cleans up the section in the vfb driver, by moving
+the variables vfb_default and vfb_fix from .init.data to .devinit.data
 
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+WARNING: drivers/video/vfb.o(.devinit.text+0xf8): Section mismatch in reference from the function vfb_probe() to the variable .init.data:vfb_default
+The function __devinit vfb_probe() references
+a variable __initdata vfb_default.
+If vfb_default is only used by vfb_probe then
+annotate vfb_default with a matching annotation.
+
+WARNING: drivers/video/vfb.o(.devinit.text+0x114): Section mismatch in reference from the function vfb_probe() to the variable .init.data:vfb_fix
+The function __devinit vfb_probe() references
+a variable __initdata vfb_fix.
+If vfb_fix is only used by vfb_probe then
+annotate vfb_fix with a matching annotation.
+
+Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
 ---
- drivers/video/via/vt1636.c |   20 +++++++-------------
- 1 files changed, 7 insertions(+), 13 deletions(-)
+ drivers/video/vfb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/via/vt1636.c b/drivers/video/via/vt1636.c
-index e9f3661..e5f8024 100644
---- a/drivers/video/via/vt1636.c
-+++ b/drivers/video/via/vt1636.c
-@@ -167,26 +167,20 @@ bool viafb_lvds_identify_vt1636(u8 i2c_adapter)
+diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
+index b8ab995..488520b 100644
+--- a/drivers/video/vfb.c
++++ b/drivers/video/vfb.c
+@@ -79,7 +79,7 @@ static void rvfree(void *mem, unsigned long size)
+ 	vfree(mem);
+ }
  
- 	/* Sense VT1636 LVDS Transmiter */
- 	viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr -	VT1636_LVDS_I2C_ADDR;
-+		VT1636_LVDS_I2C_ADDR;
+-static struct fb_var_screeninfo vfb_default __initdata = {
++static struct fb_var_screeninfo vfb_default __devinitdata = {
+ 	.xres =		640,
+ 	.yres =		480,
+ 	.xres_virtual =	640,
+@@ -101,7 +101,7 @@ static struct fb_var_screeninfo vfb_default __initdata = {
+       	.vmode =	FB_VMODE_NONINTERLACED,
+ };
  
- 	/* Check vendor ID first: */
--	viafb_i2c_readbyte(i2c_adapter,
--			   (u8) viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr,
--			   0x00, &Buffer[0]);
--	viafb_i2c_readbyte(i2c_adapter,
--			   (u8) viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr,
--			   0x01, &Buffer[1]);
-+	if (viafb_i2c_readbyte(i2c_adapter, VT1636_LVDS_I2C_ADDR,
-+					0x00, &Buffer[0]))
-+		return false;
-+	viafb_i2c_readbyte(i2c_adapter, VT1636_LVDS_I2C_ADDR, 0x01, &Buffer[1]);
- 
- 	if (!((Buffer[0] = 0x06) && (Buffer[1] = 0x11)))
- 		return false;
- 
- 	/* Check Chip ID: */
--	viafb_i2c_readbyte(i2c_adapter,
--			   (u8) viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr,
--			   0x02, &Buffer[0]);
--	viafb_i2c_readbyte(i2c_adapter,
--			   (u8) viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr,
--			   0x03, &Buffer[1]);
-+	viafb_i2c_readbyte(i2c_adapter, VT1636_LVDS_I2C_ADDR, 0x02, &Buffer[0]);
-+	viafb_i2c_readbyte(i2c_adapter, VT1636_LVDS_I2C_ADDR, 0x03, &Buffer[1]);
- 	if ((Buffer[0] = 0x45) && (Buffer[1] = 0x33)) {
- 		viaparinfo->chip_info->lvds_chip_info.lvds_chip_name  			VT1636_LVDS;
+-static struct fb_fix_screeninfo vfb_fix __initdata = {
++static struct fb_fix_screeninfo vfb_fix __devinitdata = {
+ 	.id =		"Virtual FB",
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =	FB_VISUAL_PSEUDOCOLOR,
 -- 
-1.7.0.1
+1.7.0
 

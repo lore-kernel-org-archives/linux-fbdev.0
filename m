@@ -1,15 +1,253 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Date: Fri, 02 Apr 2010 10:02:00 +0000
-Subject: Re: PROBLEM: intelfb driver causes trace
-Message-Id: <alpine.LRH.2.00.1004021201170.20810@twin.jikos.cz>
+From: "Troilo, Domenic" <Domenic.Troilo@gwl.ca>
+Date: Sun, 04 Apr 2010 13:23:23 +0000
+Subject: RE: PROBLEM: intelfb driver causes trace
+Message-Id: <CBF11783AA883E41A86C009F3AE5D47F0CAE08C3@GWCORPMAIL4.gwl.bz>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CBF11783AA883E41A86C009F3AE5D47F0CAE08C1@GWCORPMAIL4.gwl.bz>
-In-Reply-To: <CBF11783AA883E41A86C009F3AE5D47F0CAE08C1@GWCORPMAIL4.gwl.bz>
+ <alpine.LRH.2.00.1004021201170.20810@twin.jikos.cz>
+In-Reply-To: <alpine.LRH.2.00.1004021201170.20810@twin.jikos.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: "Troilo, Domenic" <Domenic.Troilo@gwl.ca>
+To: Jiri Kosina <jkosina@suse.cz>
 Cc: linux-kernel@vger.kernel.org, Maik Broemme <mbroemme@plusserver.de>, linux-fbdev@vger.kernel.org
+
+I have built  Linux version 2.6.34-rc3-git2 and the problem still
+occurs:
+
+Here is a cut from syslog and some data before and after:
+
+Apr  4 08:02:50 upstairs kernel: Intel ICH 0000:00:1f.5: setting latency
+timer to 64
+Apr  4 08:02:50 upstairs kernel: intel8x0_measure_ac97_clock: measured
+50251 usecs (2422 samples)
+Apr  4 08:02:50 upstairs kernel: intel8x0: clocking to 48000
+Apr  4 08:02:50 upstairs kernel: Adding 546204k swap on /dev/sda2.
+Priority:-1 extents:1 across:546204k=20
+Apr  4 08:02:50 upstairs kernel: EXT3-fs (sda1): using internal journal
+Apr  4 08:02:50 upstairs kernel: intelfb: intelfb_init
+Apr  4 08:02:50 upstairs kernel: intelfb: Framebuffer driver for
+Intel(R)
+830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/945GME/965G/965GM
+chipsets
+Apr  4 08:02:50 upstairs kernel: intelfb: Version 0.9.6
+Apr  4 08:02:50 upstairs kernel: intelfb: intelfb_pci_register
+Apr  4 08:02:50 upstairs kernel: intelfb 0000:00:02.0: PCI INT A -> GSI
+16 (level, low) -> IRQ 16
+Apr  4 08:02:50 upstairs kernel: intelfb: fb aperture:
+0xd8000000/0x8000000, MMIO region: 0xd0000000/0x80000
+Apr  4 08:02:50 upstairs kernel: intelfb: 00:02.0: Intel(R) 865G,
+aperture size 128MB, stolen memory 32636kB
+Apr  4 08:02:50 upstairs kernel: intelfb: fb: 0xd8000000(+
+0x0)/0x1fdf000 (0xf8780000)
+Apr  4 08:02:50 upstairs kernel: intelfb: MMIO: 0xd0000000/0x80000
+(0xfd780000)
+Apr  4 08:02:50 upstairs kernel: intelfb: ring buffer:
+0xdb001000/0x10000 (0xfb781000)
+Apr  4 08:02:50 upstairs kernel: intelfb: HW cursor: 0x0/0x0 (0x(null))
+(offset 0x0) (phys 0x0)
+Apr  4 08:02:50 upstairs kernel: intelfb: options: vram =3D 4, accel =3D 1,
+hwcursor =3D 0, fixed =3D 0, noinit =3D 0
+Apr  4 08:02:50 upstairs kernel: intelfb: options: mode =3D ""
+Apr  4 08:02:50 upstairs kernel: intelfb: intelfb_set_fbinfo
+Apr  4 08:02:50 upstairs kernel: intelfb: intelfb_init_var
+Apr  4 08:02:50 upstairs kernel: intelfb: intelfb_check_var: accel_flags
+is 0
+Apr  4 08:02:50 upstairs kernel: intelfb: intelfb_var_to_depth: bpp: 32,
+green.length is 0
+Apr  4 08:02:50 upstairs kernel: intelfb: intelfb_check_var: accel_flags
+is 0
+Apr  4 08:02:50 upstairs kernel: intelfb: intelfb_var_to_depth: bpp: 32,
+green.length is 8
+Apr  4 08:02:50 upstairs kernel: intelfb: intelfb_check_var: accel_flags
+is 0
+Apr  4 08:02:50 upstairs kernel: intelfb: intelfb_var_to_depth: bpp: 32,
+green.length is 8
+Apr  4 08:02:50 upstairs kernel: intelfb: Initial video mode is
+1024x768-32@70.
+Apr  4 08:02:50 upstairs kernel: intelfb: Initial video mode is from 1.
+Apr  4 08:02:50 upstairs kernel: intelfb: update_dinfo
+Apr  4 08:02:50 upstairs kernel: intelfb: intelfb_var_to_depth: bpp: 32,
+green.length is 8
+Apr  4 08:02:50 upstairs kernel: intelfb: intelfbhw_print_hw_state
+Apr  4 08:02:50 upstairs kernel: hw state dump start
+Apr  4 08:02:50 upstairs kernel: ^IVGA0_DIVISOR:^I^I0x00021207
+Apr  4 08:02:50 upstairs kernel: ^IVGA1_DIVISOR:^I^I0x00031406
+Apr  4 08:02:50 upstairs kernel: ^IVGAPD:^I^I^I0x0000888b
+Apr  4 08:02:50 upstairs kernel: ^IVGA0: (m1, m2, n, p1, p2) =3D (18, 7,
+2, 0, 0)
+Apr  4 08:02:50 upstairs kernel: ^IVGA0: clock is 327000
+Apr  4 08:02:50 upstairs kernel: ^IVGA1: (m1, m2, n, p1, p2) =3D (20, 6,
+3, 0, 0)
+Apr  4 08:02:50 upstairs kernel: ^IVGA1: clock is 283200
+Apr  4 08:02:50 upstairs kernel: ^IDPLL_A:^I^I^I0x808b0000
+Apr  4 08:02:50 upstairs kernel: ^IDPLL_B:^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IFPA0:^I^I^I0x00021207
+Apr  4 08:02:50 upstairs kernel: ^IFPA1:^I^I^I0x00021207
+Apr  4 08:02:50 upstairs kernel: ^IFPB0:^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IFPB1:^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IPLLA0: (m1, m2, n, p1, p2) =3D (18, 7,
+2, 11, 1)
+Apr  4 08:02:50 upstairs kernel: ^IPLLA0: clock is 25153
+Apr  4 08:02:50 upstairs kernel: ^IPLLA1: (m1, m2, n, p1, p2) =3D (18, 7,
+2, 11, 1)
+Apr  4 08:02:50 upstairs kernel: ^IPLLA1: clock is 25153
+Apr  4 08:02:50 upstairs kernel: ^IHTOTAL_A:^I^I0x031f027f
+Apr  4 08:02:50 upstairs kernel: ^IHBLANK_A:^I^I0x03170287
+Apr  4 08:02:50 upstairs kernel: ^IHSYNC_A:^I^I0x02ef028f
+Apr  4 08:02:50 upstairs kernel: ^IVTOTAL_A:^I^I0x020c01df
+Apr  4 08:02:50 upstairs kernel: ^IVBLANK_A:^I^I0x020401e7
+Apr  4 08:02:50 upstairs kernel: ^IVSYNC_A:^I^I0x01eb01e9
+Apr  4 08:02:50 upstairs kernel: ^ISRC_SIZE_A:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IBCLRPAT_A:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IHTOTAL_B:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IHBLANK_B:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IHSYNC_B:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IVTOTAL_B:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IVBLANK_B:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IVSYNC_B:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ISRC_SIZE_B:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IBCLRPAT_B:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IADPA:^I^I^I0x80008000
+Apr  4 08:02:50 upstairs kernel: ^IDVOA:^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IDVOB:^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IDVOC:^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IDVOA_SRCDIM:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IDVOB_SRCDIM:^I^I0x002d0190
+Apr  4 08:02:50 upstairs kernel: ^IDVOC_SRCDIM:^I^I0x002d0190
+Apr  4 08:02:50 upstairs kernel: ^ILVDS:^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IPIPEACONF:^I^I0x80000000
+Apr  4 08:02:50 upstairs kernel: ^IPIPEBCONF:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IDISPARB:^I^I0x0000005f
+Apr  4 08:02:50 upstairs kernel: ^ICURSOR_A_CONTROL:^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ICURSOR_B_CONTROL:^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ICURSOR_A_BASEADDR:^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ICURSOR_B_BASEADDR:^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ICURSOR_A_PALETTE:^I0x00000000,
+0x00000000, 0x00000000, 0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ICURSOR_B_PALETTE:^I0x00000000,
+0x00000000, 0x00000000, 0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ICURSOR_SIZE:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IDSPACNTR:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IDSPBCNTR:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IDSPABASE:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IDSPBBASE:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IDSPASTRIDE:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IDSPBSTRIDE:^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IVGACNTRL:^I^I0x0000008e
+Apr  4 08:02:50 upstairs kernel: ^IADD_ID:^I^I^I0x000000ff
+Apr  4 08:02:50 upstairs kernel: ^ISWF00^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ISWF01^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ISWF02^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ISWF03^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ISWF04^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ISWF05^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ISWF06^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ISWF10^I^I^I0x00000001
+Apr  4 08:02:50 upstairs kernel: ^ISWF11^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ISWF12^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ISWF13^I^I^I0x03030000
+Apr  4 08:02:50 upstairs kernel: ^ISWF14^I^I^I0xc0000000
+Apr  4 08:02:50 upstairs kernel: ^ISWF15^I^I^I0x00000041
+Apr  4 08:02:50 upstairs kernel: ^ISWF16^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ISWF30^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ISWF31^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^ISWF32^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IFENCE0^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IFENCE1^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IFENCE2^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IFENCE3^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IFENCE4^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IFENCE5^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IFENCE6^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IFENCE7^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IINSTPM^I^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IMEM_MODE^I^I0x00000000
+Apr  4 08:02:50 upstairs kernel: ^IFW_BLC_0^I^I0x01080108
+Apr  4 08:02:50 upstairs kernel: ^IFW_BLC_1^I^I0x00000108
+Apr  4 08:02:50 upstairs kernel: ^IHWSTAM^I^I^I0xffff
+Apr  4 08:02:50 upstairs kernel: ^IIER^I^I^I0x0000
+Apr  4 08:02:50 upstairs kernel: ^IIIR^I^I^I0x0000
+Apr  4 08:02:50 upstairs kernel: ^IIMR^I^I^I0xffff
+Apr  4 08:02:50 upstairs kernel: hw state dump end
+Apr  4 08:02:50 upstairs kernel: ------------[ cut here ]------------
+Apr  4 08:02:50 upstairs kernel: WARNING: at
+drivers/video/intelfb/intelfbhw.c:491 intelfbhw_active_pipe+0x52/0x55
+[intelfb]()
+Apr  4 08:02:50 upstairs kernel: Hardware name: DFDFGDF
+Apr  4 08:02:50 upstairs kernel: Modules linked in: intelfb(+)
+snd_intel8x0 snd_emu10k1_synth snd_emux_synth snd_seq_virmidi
+snd_seq_midi_emul snd_emu10k1 stv0299 snd_ac97_codec ac97_bus
+snd_pcm_oss snd_mixer_oss snd_pcm rtl8187 mac80211 snd_util_mem
+led_class snd_hwdep ati_remote cfg80211 eeprom_93cx6 snd_seq_dummy
+snd_seq_oss snd_seq_midi snd_rawmidi snd_seq_midi_event rtc_cmos
+rtc_core rtc_lib snd_seq snd_timer snd_seq_device budget_ci 8250_pnp
+8250 ir_common budget_core serial_core snd dvb_core saa7146 ttpci_eeprom
+ir_core e1000 parport_pc parport intel_agp ehci_hcd pcspkr psmouse
+i2c_i801 agpgart uhci_hcd soundcore snd_page_alloc usbcore evdev
+Apr  4 08:02:50 upstairs kernel: Pid: 1476, comm: modprobe Not tainted
+2.6.34-rc3-git2 #1
+Apr  4 08:02:50 upstairs kernel: Call Trace:
+Apr  4 08:02:50 upstairs kernel:  [<f871e6a9>] ?
+intelfbhw_active_pipe+0x52/0x55 [intelfb]
+Apr  4 08:02:50 upstairs kernel:  [<f871e6a9>] ?
+intelfbhw_active_pipe+0x52/0x55 [intelfb]
+Apr  4 08:02:50 upstairs kernel:  [<c102855e>] ?
+warn_slowpath_common+0x6a/0xb3
+Apr  4 08:02:50 upstairs kernel:  [<f871e6a9>] ?
+intelfbhw_active_pipe+0x52/0x55 [intelfb]
+Apr  4 08:02:50 upstairs kernel:  [<c10285ba>] ?
+warn_slowpath_null+0x13/0x17
+Apr  4 08:02:50 upstairs kernel:  [<f871e6a9>] ?
+intelfbhw_active_pipe+0x52/0x55 [intelfb]
+Apr  4 08:02:50 upstairs kernel:  [<f872135e>] ?
+intelfb_pci_register+0x112e/0x13cb [intelfb]
+Apr  4 08:02:50 upstairs kernel:  [<c118bd8f>] ?
+ida_get_new_above+0x7c/0x1d4
+Apr  4 08:02:50 upstairs kernel:  [<c119eef0>] ? local_pci_probe+0xb/0xc
+Apr  4 08:02:50 upstairs kernel:  [<c119eff8>] ?
+pci_device_probe+0x4e/0x69
+Apr  4 08:02:50 upstairs kernel:  [<c12183c0>] ?
+driver_probe_device+0x50/0x13f
+Apr  4 08:02:50 upstairs kernel:  [<c1218514>] ?
+__driver_attach+0x65/0x67
+Apr  4 08:02:50 upstairs kernel:  [<c119ef61>] ?
+pci_device_remove+0x0/0x36
+Apr  4 08:02:50 upstairs kernel:  [<c1217d94>] ?
+bus_for_each_dev+0x47/0x65
+Apr  4 08:02:50 upstairs kernel:  [<c119ef61>] ?
+pci_device_remove+0x0/0x36
+Apr  4 08:02:50 upstairs kernel:  [<c12182b6>] ? driver_attach+0x16/0x1a
+Apr  4 08:02:50 upstairs kernel:  [<c12184af>] ?
+__driver_attach+0x0/0x67
+Apr  4 08:02:50 upstairs kernel:  [<c12177bb>] ?
+bus_add_driver+0x1de/0x297
+Apr  4 08:02:50 upstairs kernel:  [<c119ef61>] ?
+pci_device_remove+0x0/0x36
+Apr  4 08:02:50 upstairs kernel:  [<c121871d>] ?
+driver_register+0x67/0x12e
+Apr  4 08:02:50 upstairs kernel:  [<f8726000>] ? intelfb_init+0x0/0x50
+[intelfb]
+Apr  4 08:02:50 upstairs kernel:  [<c119f1cf>] ?
+__pci_register_driver+0x2b/0x82
+Apr  4 08:02:50 upstairs kernel:  [<f8726000>] ? intelfb_init+0x0/0x50
+[intelfb]
+Apr  4 08:02:50 upstairs kernel:  [<c1001022>] ?
+do_one_initcall+0x22/0x15b
+Apr  4 08:02:50 upstairs kernel:  [<c104f698>] ?
+sys_init_module+0xab/0x213
+Apr  4 08:02:50 upstairs kernel:  [<c130376d>] ? syscall_call+0x7/0xb
+Apr  4 08:02:50 upstairs kernel: ---[ end trace ff21d332bbc6f6a8 ]---
+Apr  4 08:02:50 upstairs kernel: end_request: I/O error, dev fd0, sector
+0
+
+-----Original Message-----
+From: Jiri Kosina [mailto:jkosina@suse.cz]=20
+Sent: Friday, April 02, 2010 5:02 AM
+To: Troilo, Domenic
+Cc: linux-kernel@vger.kernel.org; Maik Broemme;
+linux-fbdev@vger.kernel.org
+Subject: Re: PROBLEM: intelfb driver causes trace
 
 
 [ adding some appropriate CCs ]
@@ -19,14 +257,16 @@ On Thu, 1 Apr 2010, Troilo, Domenic wrote:
 > [1.] One line summary of the problem:     intelfb driver causes trace
 > [2.] Full description of the problem/report: upon boot of system, no
 > longer see data on console, as the intelfb driver abends
-> [3.] Keywords (i.e., modules, networking, kernel): modules, framebuffer,
+> [3.] Keywords (i.e., modules, networking, kernel): modules,
+framebuffer,
 > intelfb
 > [4.] Kernel version (from /proc/version): Linux version 2.6.33.1
 
 Does it happen with current latest Linus' git as well?
 
 > (root@upstairs) (gcc version 4.3.2 (Debian 4.3.2-1.1) )
-> [5.] Output of Oops.. message (if applicable) with symbolic information=20
+> [5.] Output of Oops.. message (if applicable) with symbolic
+information=20
 >      resolved (see Documentation/oops-tracing.txt)
 > Mar 31 07:02:04 upstairs kernel: ------------[ cut here ]------------
 > Mar 31 07:02:04 upstairs kernel: WARNING: at
@@ -37,7 +277,8 @@ Does it happen with current latest Linus' git as well?
 > snd_intel8x0 snd_emu10k1_synth snd_emux_synth snd_seq_virmidi
 > snd_seq_midi_emul snd_emu10k1 snd_ac97_codec stv0299 ac97_bus
 > snd_pcm_oss rtl8187 snd_mixer_oss snd_pcm mac80211 led_class cfg80211
-> snd_util_mem eeprom_93cx6 snd_hwdep ati_remote snd_seq_dummy snd_seq_oss
+> snd_util_mem eeprom_93cx6 snd_hwdep ati_remote snd_seq_dummy
+snd_seq_oss
 > snd_seq_midi snd_rawmidi snd_seq_midi_event rtc_cmos rtc_core rtc_lib
 > snd_seq snd_timer snd_seq_device budget_ci 8250_pnp 8250 ir_common
 > budget_core serial_core snd dvb_core saa7146 ttpci_eeprom ehci_hcd
@@ -62,7 +303,8 @@ Does it happen with current latest Linus' git as well?
 > intelfb_pci_register+0x112e/0x13cb [intelfb]
 > Mar 31 07:02:04 upstairs kernel:  [<c118f2ef>] ?
 > ida_get_new_above+0x7c/0x1d4
-> Mar 31 07:02:04 upstairs kernel:  [<c11a30d0>] ? local_pci_probe+0xb/0xc
+> Mar 31 07:02:04 upstairs kernel:  [<c11a30d0>] ?
+local_pci_probe+0xb/0xc
 > Mar 31 07:02:04 upstairs kernel:  [<c11a31d8>] ?
 > pci_device_probe+0x4e/0x69
 > Mar 31 07:02:04 upstairs kernel:  [<c121b030>] ?
@@ -75,7 +317,8 @@ Does it happen with current latest Linus' git as well?
 > bus_for_each_dev+0x47/0x65
 > Mar 31 07:02:04 upstairs kernel:  [<c11a3141>] ?
 > pci_device_remove+0x0/0x36
-> Mar 31 07:02:04 upstairs kernel:  [<c121af26>] ? driver_attach+0x16/0x1a
+> Mar 31 07:02:04 upstairs kernel:  [<c121af26>] ?
+driver_attach+0x16/0x1a
 > Mar 31 07:02:04 upstairs kernel:  [<c121b11f>] ?
 > __driver_attach+0x0/0x67
 > Mar 31 07:02:04 upstairs kernel:  [<c121a42b>] ?
@@ -127,11 +370,13 @@ Does it happen with current latest Linus' git as well?
 > Sh-utils               6.10
 > udev                   125
 > wireless-tools         29
-> Modules Loaded         i915 drm_kms_helper drm i2c_algo_bit video output
+> Modules Loaded         i915 drm_kms_helper drm i2c_algo_bit video
+output
 > intelfb snd_intel8x0 snd_emu10k1_synth snd_emux_synth snd_seq_virmidi
 > snd_seq_midi_emul snd_emu10k1 snd_ac97_codec stv0299 ac97_bus
 > snd_pcm_oss rtl8187 snd_mixer_oss snd_pcm mac80211 led_class cfg80211
-> snd_util_mem eeprom_93cx6 snd_hwdep ati_remote snd_seq_dummy snd_seq_oss
+> snd_util_mem eeprom_93cx6 snd_hwdep ati_remote snd_seq_dummy
+snd_seq_oss
 > snd_seq_midi snd_rawmidi snd_seq_midi_event rtc_cmos rtc_core rtc_lib
 > snd_seq snd_timer snd_seq_device budget_ci 8250_pnp 8250 ir_common
 > budget_core serial_core snd dvb_core saa7146 ttpci_eeprom ehci_hcd
@@ -198,17 +443,20 @@ Does it happen with current latest Linus' git as well?
 > snd_seq_midi 3784 0 - Live 0xf8351000
 > snd_rawmidi 13375 3 snd_seq_virmidi,snd_emu10k1,snd_seq_midi, Live
 > 0xf8341000
-> snd_seq_midi_event 3908 3 snd_seq_virmidi,snd_seq_oss,snd_seq_midi, Live
+> snd_seq_midi_event 3908 3 snd_seq_virmidi,snd_seq_oss,snd_seq_midi,
+Live
 > 0xf8331000
 > rtc_cmos 6237 0 - Live 0xf8325000
 > rtc_core 9725 1 rtc_cmos, Live 0xf8316000
 > rtc_lib 1513 1 rtc_core, Live 0xf8308000
 > snd_seq 34165 9
-> snd_emux_synth,snd_seq_virmidi,snd_seq_midi_emul,snd_seq_dummy,snd_seq_o
+>
+snd_emux_synth,snd_seq_virmidi,snd_seq_midi_emul,snd_seq_dummy,snd_seq_o
 > ss,snd_seq_midi,snd_seq_midi_event, Live 0xf82f3000
 > snd_timer 13776 4 snd_emu10k1,snd_pcm,snd_seq, Live 0xf82d9000
 > snd_seq_device 4025 8
-> snd_emu10k1_synth,snd_emux_synth,snd_emu10k1,snd_seq_dummy,snd_seq_oss,s
+>
+snd_emu10k1_synth,snd_emux_synth,snd_emu10k1,snd_seq_dummy,snd_seq_oss,s
 > nd_seq_midi,snd_rawmidi,snd_seq, Live 0xf82ca000
 > budget_ci 17145 16 - Live 0xf82ba000
 > 8250_pnp 3516 0 - Live 0xf82a8000
@@ -217,8 +465,10 @@ Does it happen with current latest Linus' git as well?
 > budget_core 5480 1 budget_ci, Live 0xf8268000
 > serial_core 12309 1 8250, Live 0xf8258000
 > snd 37125 18
-> snd_intel8x0,snd_emux_synth,snd_seq_virmidi,snd_emu10k1,snd_ac97_codec,s
-> nd_pcm_oss,snd_mixer_oss,snd_pcm,snd_hwdep,snd_seq_oss,snd_rawmidi,snd_s
+>
+snd_intel8x0,snd_emux_synth,snd_seq_virmidi,snd_emu10k1,snd_ac97_codec,s
+>
+nd_pcm_oss,snd_mixer_oss,snd_pcm,snd_hwdep,snd_seq_oss,snd_rawmidi,snd_s
 > eq,snd_timer,snd_seq_device, Live 0xf823b000
 > dvb_core 70731 3 stv0299,budget_ci,budget_core, Live 0xf816b000
 > saa7146 11878 2 budget_ci,budget_core, Live 0xf8162000
@@ -236,7 +486,8 @@ Does it happen with current latest Linus' git as well?
 > soundcore 4175 1 snd, Live 0xf806a000
 > i2c_i801 6372 0 - Live 0xf805e000
 > agpgart 21944 4 drm,intelfb,intel_agp, Live 0xf804a000
-> snd_page_alloc 5297 3 snd_intel8x0,snd_emu10k1,snd_pcm, Live 0xf8036000
+> snd_page_alloc 5297 3 snd_intel8x0,snd_emu10k1,snd_pcm, Live
+0xf8036000
 > evdev 6392 5 - Live 0xf8029000
 >=20
 > [7.4.] Loaded driver and hardware information (/proc/ioports,
@@ -353,7 +604,8 @@ Does it happen with current latest Linus' git as well?
 >         Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=FAst >TAbort-
 > <TAbort- <MAbort+ >SERR- <PERR- INTx-
 >         Latency: 0
->         Region 0: Memory at e0000000 (32-bit, prefetchable) [size%6M]
+>         Region 0: Memory at e0000000 (32-bit, prefetchable)
+[size%6M]
 >         Capabilities: [e4] Vendor Specific Information <?>
 >         Kernel driver in use: agpgart-intel
 >         Kernel modules: intel-agp
@@ -367,7 +619,8 @@ Does it happen with current latest Linus' git as well?
 > <TAbort- <MAbort- >SERR- <PERR- INTx-
 >         Latency: 0
 >         Interrupt: pin A routed to IRQ 16
->         Region 0: Memory at d8000000 (32-bit, prefetchable) [size=128M]
+>         Region 0: Memory at d8000000 (32-bit, prefetchable)
+[size=128M]
 >         Region 1: Memory at d0000000 (32-bit, non-prefetchable)
 > [sizeQ2K]
 >         Region 2: I/O ports at 1800 [size=3D8]
@@ -392,7 +645,8 @@ Does it happen with current latest Linus' git as well?
 >         Subsystem: IBM Device 0287
 >         Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop-
 > ParErr- Stepping- SERR- FastB2B- DisINTx-
->         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+>         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium
+>TAbort-
 > <TAbort- <MAbort- >SERR- <PERR- INTx-
 >         Latency: 0
 >         Interrupt: pin A routed to IRQ 16
@@ -405,7 +659,8 @@ Does it happen with current latest Linus' git as well?
 >         Subsystem: IBM Device 0287
 >         Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop-
 > ParErr- Stepping- SERR- FastB2B- DisINTx-
->         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+>         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium
+>TAbort-
 > <TAbort- <MAbort- >SERR- <PERR- INTx-
 >         Latency: 0
 >         Interrupt: pin B routed to IRQ 19
@@ -418,7 +673,8 @@ Does it happen with current latest Linus' git as well?
 >         Subsystem: IBM Device 0287
 >         Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop-
 > ParErr- Stepping- SERR- FastB2B- DisINTx-
->         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+>         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium
+>TAbort-
 > <TAbort- <MAbort- >SERR- <PERR- INTx-
 >         Latency: 0
 >         Interrupt: pin C routed to IRQ 18
@@ -431,7 +687,8 @@ Does it happen with current latest Linus' git as well?
 >         Subsystem: IBM Device 0287
 >         Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop-
 > ParErr- Stepping- SERR- FastB2B- DisINTx-
->         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+>         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium
+>TAbort-
 > <TAbort- <MAbort- >SERR- <PERR- INTx-
 >         Latency: 0
 >         Interrupt: pin A routed to IRQ 16
@@ -444,7 +701,8 @@ Does it happen with current latest Linus' git as well?
 >         Subsystem: IBM Device 0287
 >         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
 > ParErr- Stepping- SERR+ FastB2B- DisINTx-
->         Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+>         Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium
+>TAbort-
 > <TAbort- <MAbort- >SERR- <PERR- INTx-
 >         Latency: 0
 >         Interrupt: pin D routed to IRQ 23
@@ -458,7 +716,8 @@ Does it happen with current latest Linus' git as well?
 >         Kernel driver in use: ehci_hcd
 >         Kernel modules: ehci-hcd
 >=20
-> 00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev c2) (prog-if
+> 00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev c2)
+(prog-if
 > 00 [Normal decode])
 >         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
 > ParErr- Stepping- SERR+ FastB2B- DisINTx-
@@ -469,7 +728,8 @@ Does it happen with current latest Linus' git as well?
 >         I/O behind bridge: 00002000-00002fff
 >         Memory behind bridge: d0100000-d01fffff
 >         Prefetchable memory behind bridge: fff00000-000fffff
->         Secondary status: 66MHz- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+>         Secondary status: 66MHz- FastB2B+ ParErr- DEVSEL=3Dmedium
+>TAbort-
 > <TAbort- <MAbort- <SERR- <PERR-
 >         BridgeCtl: Parity- SERR- NoISA+ VGA- MAbort- >Reset- FastB2B-
 >                 PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
@@ -478,7 +738,8 @@ Does it happen with current latest Linus' git as well?
 > Interface Bridge (rev 02)
 >         Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV- VGASnoop-
 > ParErr- Stepping- SERR+ FastB2B- DisINTx-
->         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+>         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium
+>TAbort-
 > <TAbort- <MAbort- >SERR- <PERR- INTx-
 >         Latency: 0
 >=20
@@ -487,7 +748,8 @@ Does it happen with current latest Linus' git as well?
 >         Subsystem: IBM Device 0287
 >         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
 > ParErr- Stepping- SERR- FastB2B- DisINTx-
->         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+>         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium
+>TAbort-
 > <TAbort- <MAbort- >SERR- <PERR- INTx+
 >         Latency: 0
 >         Interrupt: pin A routed to IRQ 18
@@ -505,7 +767,8 @@ Does it happen with current latest Linus' git as well?
 >         Subsystem: IBM Device 0287
 >         Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop-
 > ParErr- Stepping- SERR- FastB2B- DisINTx-
->         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+>         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium
+>TAbort-
 > <TAbort- <MAbort- >SERR- <PERR- INTx-
 >         Interrupt: pin B routed to IRQ 17
 >         Region 4: I/O ports at 18a0 [size2]
@@ -516,7 +779,8 @@ Does it happen with current latest Linus' git as well?
 >         Subsystem: IBM Device 0287
 >         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
 > ParErr- Stepping- SERR- FastB2B- DisINTx-
->         Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+>         Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium
+>TAbort-
 > <TAbort- <MAbort- >SERR- <PERR- INTx-
 >         Latency: 0
 >         Interrupt: pin B routed to IRQ 17
@@ -538,7 +802,8 @@ Does it happen with current latest Linus' git as well?
 > Technotrend-Budget/Hauppauge WinTV-NOVA-CI DVB card
 >         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
 > ParErr- Stepping- SERR- FastB2B- DisINTx-
->         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium >TAbort-
+>         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium
+>TAbort-
 > <TAbort- <MAbort- >SERR- <PERR- INTx-
 >         Latency: 123 (3750ns min, 9500ns max)
 >         Interrupt: pin A routed to IRQ 22
@@ -547,12 +812,14 @@ Does it happen with current latest Linus' git as well?
 >         Kernel driver in use: budget_ci dvb
 >         Kernel modules: budget-ci
 >=20
-> 03:0b.0 Ethernet controller: Intel Corporation 82541EI Gigabit Ethernet
+> 03:0b.0 Ethernet controller: Intel Corporation 82541EI Gigabit
+Ethernet
 > Controller
 >         Subsystem: IBM Device 0287
 >         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop-
 > ParErr- Stepping- SERR+ FastB2B- DisINTx-
->         Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=3Dmedium >TAbort-
+>         Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=3Dmedium
+>TAbort-
 > <TAbort- <MAbort- >SERR- <PERR- INTx-
 >         Latency: 52 (63750ns min), Cache Line Size: 32 bytes
 >         Interrupt: pin A routed to IRQ 16
@@ -591,7 +858,8 @@ Does it happen with current latest Linus' git as well?
 > [X.] Other notes, patches, fixes, workarounds:
 >=20
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> To unsubscribe from this list: send the line "unsubscribe
+linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > Please read the FAQ at  http://www.tux.org/lkml/
@@ -600,4 +868,6 @@ Does it happen with current latest Linus' git as well?
 --=20
 Jiri Kosina
 SUSE Labs, Novell Inc.
+
+
 

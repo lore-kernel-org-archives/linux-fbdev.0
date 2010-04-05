@@ -1,135 +1,52 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Sun, 18 Apr 2010 18:21:07 +0000
-Subject: [PATCH 05/11] viafb: Unify duplicated set_bpp() code
-Message-Id: <1271614873-5952-6-git-send-email-corbet@lwn.net>
+From: James Simmons <jsimmons@infradead.org>
+Date: Mon, 05 Apr 2010 14:04:43 +0000
+Subject: Re: [PATCH 23/24] video/matrox: fix dangling pointers
+Message-Id: <alpine.LFD.2.00.1004051504200.16108@casper.infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1271614873-5952-1-git-send-email-corbet@lwn.net>
-In-Reply-To: <1271614873-5952-1-git-send-email-corbet@lwn.net>
+References: <1269094385-16114-1-git-send-email-w.sang@pengutronix.de> <1269094385-16114-24-git-send-email-w.sang@pengutronix.de>
+In-Reply-To: <1269094385-16114-24-git-send-email-w.sang-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: Wolfram Sang <w.sang-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Cc: kernel-janitors-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Petr Vandrovec <vandrove-hnqZr3NxcozrBKCeMvbIDA@public.gmane.org>, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andrew Morton <akpm-3NddpPZAyC0@public.gmane.org>
 
-As suggested by Florian: make both mode-setting paths use the same code.
 
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: ScottFang@viatech.com.cn
-Cc: JosephChan@via.com.tw
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
----
- drivers/video/via/accel.c |   78 +++++++++++++++++++--------------------------
- 1 files changed, 33 insertions(+), 45 deletions(-)
+On Sat, 20 Mar 2010, Wolfram Sang wrote:
 
-diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
-index a52147c..7c1d9c4 100644
---- a/drivers/video/via/accel.c
-+++ b/drivers/video/via/accel.c
-@@ -20,12 +20,42 @@
-  */
- #include "global.h"
- 
-+/*
-+ * Figure out an appropriate bytes-per-pixel setting.
-+ */
-+static int viafb_set_bpp(void __iomem *engine, u8 bpp)
-+{
-+	u32 gemode;
-+
-+	/* Preserve the reserved bits */
-+	/* Lowest 2 bits to zero gives us no rotation */
-+	gemode = readl(engine + VIA_REG_GEMODE) & 0xfffffcfc;
-+	switch (bpp) {
-+	case 8:
-+		gemode |= VIA_GEM_8bpp;
-+		break;
-+	case 16:
-+		gemode |= VIA_GEM_16bpp;
-+		break;
-+	case 32:
-+		gemode |= VIA_GEM_32bpp;
-+		break;
-+	default:
-+		printk(KERN_WARNING "viafb_set_bpp: Unsupported bpp %d\n", bpp);
-+		return -EINVAL;
-+	}
-+	writel(gemode, engine + VIA_REG_GEMODE);
-+	return 0;
-+}
-+
-+
- static int hw_bitblt_1(void __iomem *engine, u8 op, u32 width, u32 height,
- 	u8 dst_bpp, u32 dst_addr, u32 dst_pitch, u32 dst_x, u32 dst_y,
- 	u32 *src_mem, u32 src_addr, u32 src_pitch, u32 src_x, u32 src_y,
- 	u32 fg_color, u32 bg_color, u8 fill_rop)
- {
- 	u32 ge_cmd = 0, tmp, i;
-+	int ret;
- 
- 	if (!op || op > 3) {
- 		printk(KERN_WARNING "hw_bitblt_1: Invalid operation: %d\n", op);
-@@ -59,22 +89,9 @@ static int hw_bitblt_1(void __iomem *engine, u8 op, u32 width, u32 height,
- 		}
- 	}
- 
--	switch (dst_bpp) {
--	case 8:
--		tmp = 0x00000000;
--		break;
--	case 16:
--		tmp = 0x00000100;
--		break;
--	case 32:
--		tmp = 0x00000300;
--		break;
--	default:
--		printk(KERN_WARNING "hw_bitblt_1: Unsupported bpp %d\n",
--			dst_bpp);
--		return -EINVAL;
--	}
--	writel(tmp, engine + 0x04);
-+	ret = viafb_set_bpp(engine, dst_bpp);
-+	if (ret)
-+		return ret;
- 
- 	if (op != VIA_BITBLT_FILL) {
- 		if (src_x & (op = VIA_BITBLT_MONO ? 0xFFFF8000 : 0xFFFFF000)
-@@ -165,35 +182,6 @@ static int hw_bitblt_1(void __iomem *engine, u8 op, u32 width, u32 height,
- 	return 0;
- }
- 
--/*
-- * Figure out an appropriate bytes-per-pixel setting.
-- */
--static int viafb_set_bpp(void __iomem *engine, u8 bpp)
--{
--	u32 gemode;
--
--	/* Preserve the reserved bits */
--	/* Lowest 2 bits to zero gives us no rotation */
--	gemode = readl(engine + VIA_REG_GEMODE) & 0xfffffcfc;
--	switch (bpp) {
--	case 8:
--		gemode |= VIA_GEM_8bpp;
--		break;
--	case 16:
--		gemode |= VIA_GEM_16bpp;
--		break;
--	case 32:
--		gemode |= VIA_GEM_32bpp;
--		break;
--	default:
--		printk(KERN_WARNING "hw_bitblt_2: Unsupported bpp %d\n", bpp);
--		return -EINVAL;
--	}
--	writel(gemode, engine + VIA_REG_GEMODE);
--	return 0;
--}
--
--
- static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
- 	u8 dst_bpp, u32 dst_addr, u32 dst_pitch, u32 dst_x, u32 dst_y,
- 	u32 *src_mem, u32 src_addr, u32 src_pitch, u32 src_x, u32 src_y,
--- 
-1.7.0.1
+> Fix I2C-drivers which missed setting clientdata to NULL before freeing the
+> structure it points to. Also fix drivers which do this _after_ the structure
+> was freed already.
+> 
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> Cc: Petr Vandrovec <vandrove@vc.cvut.cz>
+> ---
 
+Acked-by: James Simmons <jsimmons@infradead.org>
+ 
+> Found using coccinelle, then reviewed. Full patchset is available via
+> kernel-janitors, linux-i2c, and LKML.
+> ---
+>  drivers/video/matrox/matroxfb_maven.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/video/matrox/matroxfb_maven.c b/drivers/video/matrox/matroxfb_maven.c
+> index 91af915..e7b0ec3 100644
+> --- a/drivers/video/matrox/matroxfb_maven.c
+> +++ b/drivers/video/matrox/matroxfb_maven.c
+> @@ -1254,6 +1254,7 @@ static int maven_probe(struct i2c_client *client,
+>  		goto ERROR4;
+>  	return 0;
+>  ERROR4:;
+> +	i2c_set_clientdata(client, NULL);
+>  	kfree(data);
+>  ERROR0:;
+>  	return err;
+> -- 
+> 1.7.0
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 

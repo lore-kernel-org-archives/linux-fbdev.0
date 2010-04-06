@@ -1,41 +1,43 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Mon, 26 Apr 2010 19:40:08 +0000
-Subject: Re: [PATCH 10/11] viafb: rework the I2C support in the VIA
-Message-Id: <20100426134008.0276261b@bike.lwn.net>
+From: arno@natisbad.org (Arnaud Ebalard)
+Date: Tue, 06 Apr 2010 08:14:46 +0000
+Subject: Re: [PATCH 0/5] OMAP: RX51: Add LCD Panel Support for N900
+Message-Id: <87pr2datft.fsf@small.ssi.corp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1271614873-5952-1-git-send-email-corbet@lwn.net>
-	<1271614873-5952-11-git-send-email-corbet@lwn.net>
-	<4BD20D56.7080402@gmx.de>
-	<20100423155725.7d3b2d2d@bike.lwn.net>
-	<4BD221E7.7060705@gmx.de>
-	<20100423165256.654ca5eb@bike.lwn.net>
-	<4BD22B96.5020102@gmx.de>
-	<4BD2CC46.4060908@gmx.de>
-	<20100424073359.349b4397@bike.lwn.net>
-	<20100424135316.GR24811@prithivi.gnumonks.org>
-	<20100425083858.269bf0d8@bike.lwn.net>
-	<4BD46619.5010701@gmx.de>
-In-Reply-To: <4BD46619.5010701@gmx.de>
+References: <1269338191-10734-1-git-send-email-roger.quadros@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Harald Welte <laforge@gnumonks.org>, linux-kernel@vger.kernel.org, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn
+To: Roger Quadros <roger.quadros@nokia.com>
+Cc: tony@atomide.com, Tomi.Valkeinen@nokia.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Sun, 25 Apr 2010 17:56:09 +0200
-Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
+Hi Roger,
 
-> +		if (viafb_lvds_identify_vt1636(VIA_I2C_ADAP_26)) {
-> which should rather be
-> -		viaparinfo->shared->i2c_stuff.i2c_port = GPIOPORTINDEX;
-> -		if (viafb_lvds_identify_vt1636()) {
-> +		if (viafb_lvds_identify_vt1636(VIA_I2C_ADAP_2C)) {
-> after which your patches including this work fine (on VX800 and CLE266).
+Roger Quadros <roger.quadros@nokia.com> writes:
 
-Two bugs, actually...I wouldn't expect things to work with the wrong
-port, but neither should it crash.  The crash is fixed in the second
-series (where I added checks to ensure that the adapter was active) so
-I'll probably leave it as-is in between.  The port number needs to be
-fixed, though, thanks for catching that.
+> These patches get the N900 LCD panel working.
+> Apply's cleanly on 2.6.34-rc2
+>
+> Pre-requisites:
+> https://patchwork.kernel.org/patch/86318/
+> https://patchwork.kernel.org/patch/86319/
+> https://patchwork.kernel.org/patch/86320/
 
-jon
+First, thanks for pushing the missing bits for N900 hardware support
+upstream! I wanted to give your patches a try and test a l-o kernel on
+my N900 (I know I won't have full hardware support ... at the moment).
+
+Using current l-o tree with your 5 panel patches and the 3 you link on
+patchwork, I initially ended up with a kernel panic in
+omap3_onenand_write_bufferram() (i.e. unrelated to your patches).
+
+With http://patchwork.ozlabs.org/patch/48337/ (mtd: OneNAND: OMAP3:
+unmap correct DMA buffer), I am able to get the official Nokia
+/sbin/preinit called: then, getbootstate reports a malfunction but
+AFAICT, the panel is working ok.
+
+If there are additional patches I should be aware of regarding N900
+support, I am also interested.
+
+Cheers,
+
+a+

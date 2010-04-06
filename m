@@ -1,67 +1,45 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Fri, 30 Apr 2010 16:07:14 +0000
-Subject: [PATCH 2/2] sh: make interrupt resource optional in SH framebuffer
-Message-Id: <Pine.LNX.4.64.1004301805371.4055@axis700.grange>
+From: Roger Quadros <roger.quadros@nokia.com>
+Date: Tue, 06 Apr 2010 16:03:20 +0000
+Subject: Re: [PATCHv2 0/3] OMAP: DSS2: Allow us to use SDI
+Message-Id: <4BBB5B48.4060804@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1268829321-29769-1-git-send-email-roger.quadros@nokia.com> <1268835050.2417.277.camel@tubuntu.research.nokia.com>
+In-Reply-To: <1268835050.2417.277.camel@tubuntu.research.nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: "Valkeinen Tomi (Nokia-D/Helsinki)" <Tomi.Valkeinen@nokia.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 
-The SH LCDC driver can also function without the IRQ, in which case the
-FBIO_WAITFORVSYNC ioctl() cannot be supported. Enable such a mode.
+hi Tomi,
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
----
- drivers/video/sh_mobile_lcdcfb.c |   19 ++++++++++++-------
- 1 files changed, 12 insertions(+), 7 deletions(-)
+Valkeinen Tomi (Nokia-D/Helsinki) wrote:
+> Hi,
+> 
+> On Wed, 2010-03-17 at 13:35 +0100, Quadros Roger (Nokia-D/Helsinki)
+> wrote:
+>> SDI now makes use of vdds_sdi regulator supply.
+>> DPI can now be disabled on systems that don't have it
+>>
+>> changes since v1:
+>> - Incorporated review comments
+>> - no more omap3xx checks for regulator enable/disable in SDI
+>> - Added Kconfig option to enable/disable DPI
+>>
+>> Roger Quadros (3):
+>>   OMAP: DSS2: Add Kconfig option for DPI display type
+>>   OMAP: DSS2: Remove redundant enable/disable calls from SDI
+>>   OMAP: DSS2: Use vdds_sdi regulator supply in SDI
+> 
+> I think this patch set looks ok. Thanks!
+> 
+>  Tomi
+> 
+> Ps. I took the liberty of removing an extra #include <plat/cpu.h>
+> 
+> 
+What is the status of this patch set?
+Is it supposed to go into your tree or Tony's tree?
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index e498fb5..b8f7811 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -791,6 +791,9 @@ static int sh_mobile_wait_for_vsync(struct fb_info *info)
- 	unsigned long ldintr;
- 	int ret;
- 
-+	if (!ch->lcdc->irq)
-+		return -ENOIOCTLCMD;
-+
- 	/* Enable VSync End interrupt */
- 	ldintr = lcdc_read(ch->lcdc, _LDINTR);
- 	ldintr |= LDINTR_VEE;
-@@ -962,7 +965,7 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	i = platform_get_irq(pdev, 0);
--	if (!res || i < 0) {
-+	if (!res) {
- 		dev_err(&pdev->dev, "cannot get platform resources\n");
- 		return -ENOENT;
- 	}
-@@ -975,14 +978,16 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, priv);
- 
--	error = request_irq(i, sh_mobile_lcdc_irq, IRQF_DISABLED,
--			    dev_name(&pdev->dev), priv);
--	if (error) {
--		dev_err(&pdev->dev, "unable to request irq\n");
--		goto err1;
-+	if (i >= 0) {
-+		error = request_irq(i, sh_mobile_lcdc_irq, IRQF_DISABLED,
-+				    dev_name(&pdev->dev), priv);
-+		if (error) {
-+			dev_err(&pdev->dev, "unable to request irq\n");
-+			goto err1;
-+		}
-+		priv->irq = i;
- 	}
- 
--	priv->irq = i;
- 	pdata = pdev->dev.platform_data;
- 
- 	j = 0;
--- 
-1.6.2.4
-
+cheers
+-roger

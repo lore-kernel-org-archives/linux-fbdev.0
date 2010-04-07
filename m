@@ -1,278 +1,224 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Fri, 02 Apr 2010 13:03:18 +0000
-Subject: Re: + fbdev-section-cleanup-in-vesafb.patch added to -mm tree
-Message-Id: <4BB5EB16.8010408@gmx.de>
+From: swirl@gmx.li
+Date: Wed, 07 Apr 2010 18:33:32 +0000
+Subject: [PATCHv2] OMAP2: DSS: Add Innolux 7" display for DEVKIT8000
+Message-Id: <1270665212-24061-1-git-send-email-swirl@gmx.li>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201003312144.o2VLifB0010456@imap1.linux-foundation.org> <4BB5E2E3.20802@nachtwindheim.de>
-In-Reply-To: <4BB5E2E3.20802@nachtwindheim.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Henrik Kretzschmar <henne@nachtwindheim.de>
-Cc: akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, JBeulich@novell.com, ben.collins@canonical.com
+To: linux-omap@vger.kernel.org
+Cc: Thomas Weber <swirl@gmx.li>, Tomi Valkeinen <tomi.valkeinen@nokia.com>, Vaibhav Hiremath <hvaibhav@ti.com>, linux-fbdev@vger.kernel.org, Thomas Weber <weber@corscience.de>
 
-Hi,
+From: Thomas Weber <swirl@gmx.li>
 
-Henrik Kretzschmar schrieb:
-> Please also drop from you tree the fbdev-section-cleanup-in-vesafb.patch
-> 
-> I wrote it in the believe that it's a module, which is not the case in mainline.
-> So my patch would make the section mismatch warnings go away,
-> but hides that theres more work than that to do.
-> 
-> Jan Beulich wrote on linux-fbdev-ml a patch which assumes that vesafb is builtin (1st patch).
-> Ben Collins from Canonical had patched their lucid-kernel that vesafb is a module instead (2nd patch).
-> So the first question is if it makes sense to have the vesafb driver as a module,
-> before deciding what comes in which section.
-> 
-> Does someone have an idea about that?
+This patch adds the 7 inch display for the DEVKIT8000.
 
-I don't know VESA too well but if I understand it right its as the 
-header of vesafb states:
-"switching to graphics mode happens at boot time (while running in real 
-mode, see arch/i386/boot/video.S)."
-that means that most of the work is done during boot and that's why a 
-module based on this probably won't work. Was the Ubuntu module tested 
-successfully?
-That's also the reason for vesafb not supporting mode switching as it 
-can only select the mode during boot as long as the VESA BIOS is 
-available. There is an alternative uvesafb in the kernel which doesn't 
-have these limitations but requires some userspace tools to work (AFAIK 
-they execute/emulate the VESA BIOS there)
+Thanks to Vaibhav Hiremath for comments.
 
+Change log:
+	v2 
+	Kconfig option description changed.
+	Remove unneeded header file inclusion.
+	Remove gotos.
 
-Regards,
+Signed-off-by: Thomas Weber <weber@corscience.de>
+---
 
-Florian Tobias Schandinat
+ drivers/video/omap2/displays/Kconfig               |    8 +-
+ drivers/video/omap2/displays/Makefile              |    1 +
+ .../video/omap2/displays/panel-innolux-at070tn83.c |  148 ++++++++++++++++++++
+ 3 files changed, 156 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/video/omap2/displays/panel-innolux-at070tn83.c
 
-> From: Jan Beulich <JBeulich@novell.com>
-> Date: Fri, Mar 26, 2010 at 17:48
-> Subject: [PATCH] vesafb: use platform_driver_probe() instead of
-> platform_driver_register()
-> To: u.kleine-koenig@pengutronix.de, gregkh@suse.de
-> Cc: linux-kernel@vger.kernel.org
-> 
-> 
-> Commit c2e13037e6794bd0d9de3f9ecabf5615f15c160b introduced a huge
-> amount of section mismatch warnings in vesafb code. Rather than
-> converting all of the annotations, do the obvious and revert the
-> __init -> __devinit change, and use the recommended (in that patch)
-> alternative to calling platform_driver_register(): vesafb depends on
-> information obtained from by kernel at boot time, cannot be a module,
-> and no post-boot devices can ever show up.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> 
-> ---
->  drivers/video/vesafb.c |   26 +++++++++++++-------------
->  1 file changed, 13 insertions(+), 13 deletions(-)
-> 
-> --- linux-2.6.34-rc2/drivers/video/vesafb.c
-> +++ 2.6.34-rc2-vesafb-init/drivers/video/vesafb.c
-> @@ -226,7 +226,7 @@ static int __init vesafb_setup(char *opt
->        return 0;
->  }
-> 
-> -static int __devinit vesafb_probe(struct platform_device *dev)
-> +static int __init vesafb_probe(struct platform_device *dev)
->  {
->        struct fb_info *info;
->        int i, err;
-> @@ -477,7 +477,6 @@ err:
->  }
-> 
->  static struct platform_driver vesafb_driver = {
-> -       .probe  = vesafb_probe,
->        .driver = {
->                .name   = "vesafb",
->        },
-> @@ -493,20 +492,21 @@ static int __init vesafb_init(void)
->        /* ignore error return of fb_get_options */
->        fb_get_options("vesafb", &option);
->        vesafb_setup(option);
-> -       ret = platform_driver_register(&vesafb_driver);
-> 
-> +       vesafb_device = platform_device_alloc("vesafb", 0);
-> +       if (!vesafb_device)
-> +               return -ENOMEM;
-> +
-> +       ret = platform_device_add(vesafb_device);
->        if (!ret) {
-> -               vesafb_device = platform_device_alloc("vesafb", 0);
-> +               ret = platform_driver_probe(&vesafb_driver, vesafb_probe);
-> +               if (ret)
-> +                       platform_device_del(vesafb_device);
-> +       }
-> 
-> -               if (vesafb_device)
-> -                       ret = platform_device_add(vesafb_device);
-> -               else
-> -                       ret = -ENOMEM;
-> -
-> -               if (ret) {
-> -                       platform_device_put(vesafb_device);
-> -                       platform_driver_unregister(&vesafb_driver);
-> -               }
-> +       if (ret) {
-> +               platform_device_put(vesafb_device);
-> +               vesafb_device = NULL;
->        }
-> 
->        return ret;
-> 
-> 
-> 
-> --
-> 
-> commit 0afa62be6d93770801581d915667d89f38a60d37
-> Author: Ben Collins <ben.collins@canonical.com>
-> Date:   Tue Oct 14 11:30:10 2008 -0400
-> 
->     UBUNTU: SAUCE: (no-up) Modularize vesafb
->     
->     Signed-off-by: Ben Collins <ben.collins@canonical.com>
-> 
-> diff --git a/drivers/video/vesafb.c b/drivers/video/vesafb.c
-> index bd37ee1..0bcae3c 100644
-> --- a/drivers/video/vesafb.c
-> +++ b/drivers/video/vesafb.c
-> @@ -28,6 +28,12 @@
->  #define dac_reg	(0x3c8)
->  #define dac_val	(0x3c9)
->  
-> +struct vesafb_info
-> +{
-> +	u32 pseudo_palette[256];
-> +	int mtrr_hdl;
-> +};
-> +
->  /* --------------------------------------------------------------------- */
->  
->  static struct fb_var_screeninfo vesafb_defined __initdata = {
-> @@ -47,16 +53,37 @@ static struct fb_fix_screeninfo vesafb_fix __initdata = {
->  	.accel	= FB_ACCEL_NONE,
->  };
->  
-> +#ifndef MODULE
->  static int   inverse    __read_mostly;
-> +#endif
->  static int   mtrr       __read_mostly;		/* disable mtrr */
->  static int   vram_remap __initdata;		/* Set amount of memory to be used */
->  static int   vram_total __initdata;		/* Set total amount of memory */
->  static int   pmi_setpal __read_mostly = 1;	/* pmi for palette changes ??? */
-> +static int	redraw		__read_mostly;
->  static int   ypan       __read_mostly;		/* 0..nothing, 1..ypan, 2..ywrap */
-> +static int	ywrap		__read_mostly;
->  static void  (*pmi_start)(void) __read_mostly;
->  static void  (*pmi_pal)  (void) __read_mostly;
->  static int   depth      __read_mostly;
->  static int   vga_compat __read_mostly;
-> +
-> +module_param(redraw, bool, 0);
-> +module_param(ypan, bool, 0);
-> +module_param(ywrap, bool, 0);
-> +module_param_named(vgapal, pmi_setpal, invbool, 0);
-> +MODULE_PARM_DESC(vgapal, "Use VGA for setting palette (default)");
-> +module_param_named(pmipal, pmi_setpal, bool, 0);
-> +MODULE_PARM_DESC(pmipal, "Use PMI for setting palette");
-> +module_param(mtrr, bool, 0);
-> +MODULE_PARM_DESC(mtrr, "Enable MTRR support (default)");
-> +module_param_named(nomtrr, mtrr, invbool, 0);
-> +MODULE_PARM_DESC(nomtrr, "Disable MTRR support");
-> +module_param(vram_remap, int, 0);
-> +MODULE_PARM_DESC(vram_remap, "Set total amount of memory to be used");
-> +module_param(vram_total, int, 0);
-> +MODULE_PARM_DESC(vram_total, "Total amount of memory");
-> +
->  /* --------------------------------------------------------------------- */
->  
->  static int vesafb_pan_display(struct fb_var_screeninfo *var,
-> @@ -192,6 +219,7 @@ static struct fb_ops vesafb_ops = {
->  	.fb_imageblit	= cfb_imageblit,
->  };
->  
-> +#ifndef MODULE
->  static int __init vesafb_setup(char *options)
->  {
->  	char *this_opt;
-> @@ -225,6 +253,7 @@ static int __init vesafb_setup(char *options)
->  	}
->  	return 0;
->  }
-> +#endif
->  
->  static int __init vesafb_probe(struct platform_device *dev)
->  {
-> @@ -476,8 +505,28 @@ err:
->  	return err;
->  }
->  
-> +static int __exit vesafb_remove(struct platform_device *device)
-> +{
-> +	struct fb_info *info = dev_get_drvdata(&device->dev);
-> +
-> +	unregister_framebuffer(info);
-> +#ifdef CONFIG_MTRR
-> +	{
-> +		struct vesafb_info *vfb_info = (struct vesafb_info *) info->par;
-> +		if (vfb_info->mtrr_hdl >= 0)
-> +			mtrr_del(vfb_info->mtrr_hdl, 0, 0);
-> +	}
-> +#endif
-> +	iounmap(info->screen_base);
-> +	framebuffer_release(info);
-> +	release_mem_region(vesafb_fix.smem_start, vesafb_fix.smem_len);
-> +
-> +	return 0;
-> +}
-> +
->  static struct platform_driver vesafb_driver = {
->  	.probe	= vesafb_probe,
-> +	.remove = vesafb_remove,
->  	.driver	= {
->  		.name	= "vesafb",
->  	},
-> @@ -488,11 +537,18 @@ static struct platform_device *vesafb_device;
->  static int __init vesafb_init(void)
->  {
->  	int ret;
-> +#ifndef MODULE
->  	char *option = NULL;
->  
->  	/* ignore error return of fb_get_options */
->  	fb_get_options("vesafb", &option);
->  	vesafb_setup(option);
-> +#else
-> +	if (redraw)
-> +		ypan = 0;
-> +	if (ywrap)
-> +		ypan = 2;
-> +#endif
->  	ret = platform_driver_register(&vesafb_driver);
->  
->  	if (!ret) {
-> @@ -511,6 +567,14 @@ static int __init vesafb_init(void)
->  
->  	return ret;
->  }
-> +
-> +static void __exit vesafb_exit(void)
-> +{
-> +	platform_device_unregister(vesafb_device);
-> +	platform_driver_unregister(&vesafb_driver);
-> +}
-> +
->  module_init(vesafb_init);
-> +module_exit(vesafb_exit);
->  
->  MODULE_LICENSE("GPL");
-> 
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+diff --git a/drivers/video/omap2/displays/Kconfig b/drivers/video/omap2/displays/Kconfig
+index dfb57ee..9d9742e 100644
+--- a/drivers/video/omap2/displays/Kconfig
++++ b/drivers/video/omap2/displays/Kconfig
+@@ -5,7 +5,7 @@ config PANEL_GENERIC
+         tristate "Generic Panel"
+         help
+ 	  Generic panel driver.
+-	  Used for DVI output for Beagle and OMAP3 SDP.
++	  Used for OMAP3 DVI output.
+ 
+ config PANEL_SHARP_LS037V7DW01
+         tristate "Sharp LS037V7DW01 LCD Panel"
+@@ -19,6 +19,12 @@ config PANEL_SHARP_LQ043T1DG01
+         help
+           LCD Panel used in TI's OMAP3517 EVM boards
+ 
++config PANEL_INNOLUX_AT070TN83
++	tristate "Innolux AT070TN83 LCD Panel"
++	depends on OMAP2_DSS
++	help
++	 LCD Panel used in TimLL's Devkit8000
++
+ config PANEL_TAAL
+         tristate "Taal DSI Panel"
+         depends on OMAP2_DSS_DSI
+diff --git a/drivers/video/omap2/displays/Makefile b/drivers/video/omap2/displays/Makefile
+index e2bb321..fe3ae8d 100644
+--- a/drivers/video/omap2/displays/Makefile
++++ b/drivers/video/omap2/displays/Makefile
+@@ -5,3 +5,4 @@ obj-$(CONFIG_PANEL_SHARP_LQ043T1DG01) += panel-sharp-lq043t1dg01.o
+ obj-$(CONFIG_PANEL_TAAL) += panel-taal.o
+ obj-$(CONFIG_PANEL_TOPPOLY_TDO35S) += panel-toppoly-tdo35s.o
+ obj-$(CONFIG_PANEL_TPO_TD043MTEA1) += panel-tpo-td043mtea1.o
++obj-$(CONFIG_PANEL_INNOLUX_AT070TN83) += panel-innolux-at070tn83.o
+diff --git a/drivers/video/omap2/displays/panel-innolux-at070tn83.c b/drivers/video/omap2/displays/panel-innolux-at070tn83.c
+new file mode 100644
+index 0000000..2005653
+--- /dev/null
++++ b/drivers/video/omap2/displays/panel-innolux-at070tn83.c
+@@ -0,0 +1,148 @@
++/*
++ * LCD panel driver for Innolux AT70TN83
++ *
++ * Copyright (C) 2010 Thomas Weber <weber@corscience.de>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include <linux/module.h>
++#include <linux/delay.h>
++#include <linux/device.h>
++#include <linux/err.h>
++
++#include <plat/display.h>
++
++static struct omap_video_timings innolux_at_timings = {
++	.x_res		= 800,
++	.y_res		= 480,
++
++	.pixel_clock	= 40000,
++
++	.hsw		= 48,
++	.hfp		= 1,
++	.hbp		= 1,
++
++	.vsw		= 3,
++	.vfp		= 12,
++	.vbp		= 25,
++};
++
++static int innolux_at_panel_power_on(struct omap_dss_device *dssdev)
++{
++	int r;
++
++	r = omapdss_dpi_display_enable(dssdev);
++	if (r)
++		return r;
++
++	if (dssdev->platform_enable) {
++		r = dssdev->platform_enable(dssdev);
++		if (r)
++			omapdss_dpi_display_disable(dssdev);
++	}
++	return r;
++}
++
++static void innolux_at_panel_power_off(struct omap_dss_device *dssdev)
++{
++	if (dssdev->platform_disable)
++		dssdev->platform_disable(dssdev);
++
++	omapdss_dpi_display_disable(dssdev);
++
++}
++
++static int innolux_at_panel_probe(struct omap_dss_device *dssdev)
++{
++	dssdev->panel.config = OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
++		OMAP_DSS_LCD_IHS;
++	dssdev->panel.acb = 0x28;
++	dssdev->panel.timings = innolux_at_timings;
++
++	return 0;
++}
++
++static void innolux_at_panel_remove(struct omap_dss_device *dssdev)
++{
++}
++
++static int innolux_at_panel_enable(struct omap_dss_device *dssdev)
++{
++	int r = 0;
++
++	r = innolux_at_panel_power_on(dssdev);
++	if (r)
++		return r;
++
++	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
++
++	return 0;
++}
++
++static void innolux_at_panel_disable(struct omap_dss_device *dssdev)
++{
++	innolux_at_panel_power_off(dssdev);
++
++	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
++}
++
++static int innolux_at_panel_suspend(struct omap_dss_device *dssdev)
++{
++	innolux_at_panel_power_off(dssdev);
++	dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED;
++	return 0;
++}
++
++static int innolux_at_panel_resume(struct omap_dss_device *dssdev)
++{
++	int r = 0;
++
++	r = innolux_at_panel_power_on(dssdev);
++
++	if (r)
++		return r;
++
++	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
++
++	return 0;
++}
++
++static struct omap_dss_driver innolux_at_driver = {
++	.probe		= innolux_at_panel_probe,
++	.remove		= innolux_at_panel_remove,
++
++	.enable		= innolux_at_panel_enable,
++	.disable	= innolux_at_panel_disable,
++	.suspend	= innolux_at_panel_suspend,
++	.resume		= innolux_at_panel_resume,
++
++	.driver         = {
++		.name   = "innolux_at_panel",
++		.owner  = THIS_MODULE,
++	},
++};
++
++static int __init innolux_at_panel_drv_init(void)
++{
++	return omap_dss_register_driver(&innolux_at_driver);
++}
++
++static void __exit innolux_at_panel_drv_exit(void)
++{
++	omap_dss_unregister_driver(&innolux_at_driver);
++}
++
++module_init(innolux_at_panel_drv_init);
++module_exit(innolux_at_panel_drv_exit);
++MODULE_LICENSE("GPL");
+-- 
+1.6.4.4
 

@@ -1,185 +1,179 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 28 Apr 2010 22:17:08 +0000
-Subject: [PATCH 07/30] viafb: complete support for VX800/VX855 accelerated framebuffer
-Message-Id: <1272493051-25380-8-git-send-email-corbet@lwn.net>
+From: Roger Quadros <roger.quadros@nokia.com>
+Date: Thu, 08 Apr 2010 12:21:03 +0000
+Subject: [PATCHv2 1/5] OMAP: RX51: Add LCD Panel support
+Message-Id: <1270729267-27553-2-git-send-email-roger.quadros@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
-In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+References: <1270729267-27553-1-git-send-email-roger.quadros@nokia.com>
+In-Reply-To: <1270729267-27553-1-git-send-email-roger.quadros@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: Tomi.Valkeinen@nokia.com
+Cc: tony@atomide.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-This patch is a painful merge of change
-a90bab567ece3e915d0ccd55ab00c9bb333fa8c0 (viafb: Add support for 2D
-accelerated framebuffer on VX800/VX855) in the OLPC tree, originally by
-Harald Welte.  Harald's changelog read:
+From: Roger Quadros <roger.quadros@nokia.com>
 
-	The VX800/VX820 and the VX855/VX875 chipsets have a different 2D
-    	acceleration engine called "M1".  The M1 engine has some subtle
-    	(and some not-so-subtle) differences to the previous engines, so
-    	support for accelerated framebuffer on those chipsets was disabled
-    	so far.
+Adds basic support for LCD Panel on Nokia N900
 
-This merge tries to preserve Harald's changes in the framework of the
-much-changed 2.6.34 viafb code.
-
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: ScottFang@viatech.com.cn
-Cc: JosephChan@via.com.tw
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
 ---
- drivers/video/via/accel.c |   42 +++++++++++++++++++++++++++++++++---------
- drivers/video/via/accel.h |   40 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 73 insertions(+), 9 deletions(-)
+ arch/arm/mach-omap2/Makefile                 |    1 +
+ arch/arm/mach-omap2/board-rx51-peripherals.c |   13 ++++
+ arch/arm/mach-omap2/board-rx51-video.c       |   95 ++++++++++++++++++++++++++
+ 3 files changed, 109 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/mach-omap2/board-rx51-video.c
 
-diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
-index 7c1d9c4..0d90c85 100644
---- a/drivers/video/via/accel.c
-+++ b/drivers/video/via/accel.c
-@@ -317,6 +317,7 @@ int viafb_init_engine(struct fb_info *info)
- {
- 	struct viafb_par *viapar = info->par;
- 	void __iomem *engine;
-+	int highest_reg, i;
- 	u32 vq_start_addr, vq_end_addr, vq_start_low, vq_end_low, vq_high,
- 		vq_len, chip_name = viapar->shared->chip_info.gfx_chip_name;
+diff --git a/arch/arm/mach-omap2/Makefile b/arch/arm/mach-omap2/Makefile
+index 4b9fc57..b03cbb4 100644
+--- a/arch/arm/mach-omap2/Makefile
++++ b/arch/arm/mach-omap2/Makefile
+@@ -122,6 +122,7 @@ obj-$(CONFIG_MACH_NOKIA_N8X0)		+= board-n8x0.o
+ obj-$(CONFIG_MACH_NOKIA_RX51)		+= board-rx51.o \
+ 					   board-rx51-sdram.o \
+ 					   board-rx51-peripherals.o \
++					   board-rx51-video.o \
+ 					   hsmmc.o
+ obj-$(CONFIG_MACH_OMAP_ZOOM2)		+= board-zoom2.o \
+ 					   board-zoom-peripherals.o \
+diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
+index 4377a4c..f404537 100644
+--- a/arch/arm/mach-omap2/board-rx51-peripherals.c
++++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
+@@ -45,6 +45,7 @@
+ /* list all spi devices here */
+ enum {
+ 	RX51_SPI_WL1251,
++	RX51_SPI_MIPID,		/* LCD panel */
+ };
  
-@@ -328,6 +329,18 @@ int viafb_init_engine(struct fb_info *info)
- 		return -ENOMEM;
- 	}
+ static struct wl12xx_platform_data wl1251_pdata;
+@@ -54,6 +55,11 @@ static struct omap2_mcspi_device_config wl1251_mcspi_config = {
+ 	.single_channel	= 1,
+ };
  
-+	/* Initialize registers to reset the 2D engine */
-+	switch (viapar->shared->chip_info.twod_engine) {
-+	case VIA_2D_ENG_M1:
-+		highest_reg = 0x5c;
-+		break;
-+	default:
-+		highest_reg = 0x40;
-+		break;
++static struct omap2_mcspi_device_config mipid_mcspi_config = {
++	.turbo_mode	= 0,
++	.single_channel	= 1,
++};
++
+ static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
+ 	[RX51_SPI_WL1251] = {
+ 		.modalias		= "wl1251",
+@@ -64,6 +70,13 @@ static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
+ 		.controller_data	= &wl1251_mcspi_config,
+ 		.platform_data		= &wl1251_pdata,
+ 	},
++	[RX51_SPI_MIPID] = {
++		.modalias		= "acx565akm",
++		.bus_num		= 1,
++		.chip_select		= 2,
++		.max_speed_hz		= 6000000,
++		.controller_data	= &mipid_mcspi_config,
++	},
+ };
+ 
+ #if defined(CONFIG_KEYBOARD_GPIO) || defined(CONFIG_KEYBOARD_GPIO_MODULE)
+diff --git a/arch/arm/mach-omap2/board-rx51-video.c b/arch/arm/mach-omap2/board-rx51-video.c
+new file mode 100644
+index 0000000..9ba4e61
+--- /dev/null
++++ b/arch/arm/mach-omap2/board-rx51-video.c
+@@ -0,0 +1,95 @@
++/*
++ * linux/arch/arm/mach-omap2/board-rx51-video.c
++ *
++ * Copyright (C) 2010 Nokia
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/gpio.h>
++#include <linux/spi/spi.h>
++
++#include <asm/mach-types.h>
++#include <plat/mux.h>
++#include <plat/display.h>
++#include <plat/mcspi.h>
++
++#include "mux.h"
++
++#define RX51_LCD_RESET_GPIO	90
++
++#if defined(CONFIG_FB_OMAP2) || defined(CONFIG_FB_OMAP2_MODULE)
++
++static int rx51_lcd_enable(struct omap_dss_device *dssdev)
++{
++	gpio_set_value(dssdev->reset_gpio, 1);
++	return 0;
++}
++
++static void rx51_lcd_disable(struct omap_dss_device *dssdev)
++{
++	gpio_set_value(dssdev->reset_gpio, 0);
++}
++
++static struct omap_dss_device rx51_lcd_device = {
++	.name			= "lcd",
++	.driver_name		= "panel-acx565akm",
++	.type			= OMAP_DISPLAY_TYPE_SDI,
++	.phy.sdi.datapairs	= 2,
++	.reset_gpio		= RX51_LCD_RESET_GPIO,
++	.platform_enable	= rx51_lcd_enable,
++	.platform_disable	= rx51_lcd_disable,
++};
++
++static struct omap_dss_device *rx51_dss_devices[] = {
++	&rx51_lcd_device,
++};
++
++static struct omap_dss_board_info rx51_dss_board_info = {
++	.num_devices	= ARRAY_SIZE(rx51_dss_devices),
++	.devices	= rx51_dss_devices,
++	.default_device	= &rx51_lcd_device,
++};
++
++struct platform_device rx51_display_device = {
++	.name	= "omapdss",
++	.id	= -1,
++	.dev	= {
++		.platform_data = &rx51_dss_board_info,
++	},
++};
++
++static struct platform_device *rx51_video_devices[] __initdata = {
++	&rx51_display_device,
++};
++
++static int __init rx51_video_init(void)
++{
++	if (!machine_is_nokia_rx51())
++		return 0;
++
++	if (omap_mux_init_gpio(RX51_LCD_RESET_GPIO, OMAP_PIN_OUTPUT)) {
++		pr_err("%s cannot configure MUX for LCD RESET\n", __func__);
++		return 0;
 +	}
-+	for (i = 0; i <= highest_reg; i += 4)
-+		writel(0x0, engine + i);
 +
- 	switch (chip_name) {
- 	case UNICHROME_CLE266:
- 	case UNICHROME_K400:
-@@ -357,13 +370,12 @@ int viafb_init_engine(struct fb_info *info)
- 	viapar->shared->vq_vram_addr = viapar->fbmem_free;
- 	viapar->fbmem_used += VQ_SIZE;
- 
--	/* Init 2D engine reg to reset 2D engine */
--	writel(0x0, engine + VIA_REG_KEYCONTROL);
--
- 	/* Init AGP and VQ regs */
- 	switch (chip_name) {
- 	case UNICHROME_K8M890:
- 	case UNICHROME_P4M900:
-+	case UNICHROME_VX800:
-+	case UNICHROME_VX855:
- 		writel(0x00100000, engine + VIA_REG_CR_TRANSET);
- 		writel(0x680A0000, engine + VIA_REG_CR_TRANSPACE);
- 		writel(0x02000000, engine + VIA_REG_CR_TRANSPACE);
-@@ -398,6 +410,8 @@ int viafb_init_engine(struct fb_info *info)
- 	switch (chip_name) {
- 	case UNICHROME_K8M890:
- 	case UNICHROME_P4M900:
-+	case UNICHROME_VX800:
-+	case UNICHROME_VX855:
- 		vq_start_low |= 0x20000000;
- 		vq_end_low |= 0x20000000;
- 		vq_high |= 0x20000000;
-@@ -475,15 +489,25 @@ void viafb_wait_engine_idle(struct fb_info *info)
- {
- 	struct viafb_par *viapar = info->par;
- 	int loop = 0;
-+	u32 mask;
- 
--	while (!(readl(viapar->shared->engine_mmio + VIA_REG_STATUS) &
--			VIA_VR_QUEUE_BUSY) && (loop < MAXLOOP)) {
--		loop++;
--		cpu_relax();
-+	switch (viapar->shared->chip_info.twod_engine) {
-+	case VIA_2D_ENG_H5:
-+	case VIA_2D_ENG_M1:
-+		mask = VIA_CMD_RGTR_BUSY_M1 | VIA_2D_ENG_BUSY_M1 |
-+			      VIA_3D_ENG_BUSY_M1;
-+		break;
-+	default:
-+		while (!(readl(viapar->shared->engine_mmio + VIA_REG_STATUS) &
-+				VIA_VR_QUEUE_BUSY) && (loop < MAXLOOP)) {
-+			loop++;
-+			cpu_relax();
-+		}
-+		mask = VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY;
-+		break;
- 	}
- 
--	while ((readl(viapar->shared->engine_mmio + VIA_REG_STATUS) &
--		    (VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY)) &&
-+	while ((readl(viapar->shared->engine_mmio + VIA_REG_STATUS) & mask) &&
- 		    (loop < MAXLOOP)) {
- 		loop++;
- 		cpu_relax();
-diff --git a/drivers/video/via/accel.h b/drivers/video/via/accel.h
-index 615c84a..2c122d2 100644
---- a/drivers/video/via/accel.h
-+++ b/drivers/video/via/accel.h
-@@ -67,6 +67,34 @@
- /* from 0x100 to 0x1ff */
- #define VIA_REG_COLORPAT        0x100
- 
-+/* defines for VIA 2D registers for vt3353/3409 (M1 engine)*/
-+#define VIA_REG_GECMD_M1        0x000
-+#define VIA_REG_GEMODE_M1       0x004
-+#define VIA_REG_GESTATUS_M1     0x004       /* as same as VIA_REG_GEMODE */
-+#define VIA_REG_PITCH_M1        0x008       /* pitch of src and dst */
-+#define VIA_REG_DIMENSION_M1    0x00C       /* width and height */
-+#define VIA_REG_DSTPOS_M1       0x010
-+#define VIA_REG_LINE_XY_M1      0x010
-+#define VIA_REG_DSTBASE_M1      0x014
-+#define VIA_REG_SRCPOS_M1       0x018
-+#define VIA_REG_LINE_K1K2_M1    0x018
-+#define VIA_REG_SRCBASE_M1      0x01C
-+#define VIA_REG_PATADDR_M1      0x020
-+#define VIA_REG_MONOPAT0_M1     0x024
-+#define VIA_REG_MONOPAT1_M1     0x028
-+#define VIA_REG_OFFSET_M1       0x02C
-+#define VIA_REG_LINE_ERROR_M1   0x02C
-+#define VIA_REG_CLIPTL_M1       0x040       /* top and left of clipping */
-+#define VIA_REG_CLIPBR_M1       0x044       /* bottom and right of clipping */
-+#define VIA_REG_KEYCONTROL_M1   0x048       /* color key control */
-+#define VIA_REG_FGCOLOR_M1      0x04C
-+#define VIA_REG_DSTCOLORKEY_M1  0x04C       /* as same as VIA_REG_FG */
-+#define VIA_REG_BGCOLOR_M1      0x050
-+#define VIA_REG_SRCCOLORKEY_M1  0x050       /* as same as VIA_REG_BG */
-+#define VIA_REG_MONOPATFGC_M1   0x058       /* Add BG color of Pattern. */
-+#define VIA_REG_MONOPATBGC_M1   0x05C       /* Add FG color of Pattern. */
-+#define VIA_REG_COLORPAT_M1     0x100       /* from 0x100 to 0x1ff */
++	if (gpio_request(RX51_LCD_RESET_GPIO, "LCD ACX565AKM reset")) {
++		pr_err("%s failed to get LCD Reset GPIO\n", __func__);
++		return 0;
++	}
 +
- /* VIA_REG_PITCH(0x38): Pitch Setting */
- #define VIA_PITCH_ENABLE        0x80000000
- 
-@@ -157,6 +185,18 @@
- /* Virtual Queue is busy */
- #define VIA_VR_QUEUE_BUSY       0x00020000
- 
-+/* VIA_REG_STATUS(0x400): Engine Status for H5 */
-+#define VIA_CMD_RGTR_BUSY_H5   0x00000010  /* Command Regulator is busy */
-+#define VIA_2D_ENG_BUSY_H5     0x00000002  /* 2D Engine is busy */
-+#define VIA_3D_ENG_BUSY_H5     0x00001FE1  /* 3D Engine is busy */
-+#define VIA_VR_QUEUE_BUSY_H5   0x00000004  /* Virtual Queue is busy */
++	gpio_direction_output(RX51_LCD_RESET_GPIO, 1);
 +
-+/* VIA_REG_STATUS(0x400): Engine Status for VT3353/3409 */
-+#define VIA_CMD_RGTR_BUSY_M1   0x00000010  /* Command Regulator is busy */
-+#define VIA_2D_ENG_BUSY_M1     0x00000002  /* 2D Engine is busy */
-+#define VIA_3D_ENG_BUSY_M1     0x00001FE1  /* 3D Engine is busy */
-+#define VIA_VR_QUEUE_BUSY_M1   0x00000004  /* Virtual Queue is busy */
++	platform_add_devices(rx51_video_devices,
++				ARRAY_SIZE(rx51_video_devices));
++	return 0;
++}
 +
- #define MAXLOOP                 0xFFFFFF
- 
- #define VIA_BITBLT_COLOR	1
++subsys_initcall(rx51_video_init);
++
++#endif /* defined(CONFIG_FB_OMAP2) || defined(CONFIG_FB_OMAP2_MODULE) */
 -- 
-1.7.0.1
+1.6.0.4
 

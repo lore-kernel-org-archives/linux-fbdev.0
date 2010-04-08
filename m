@@ -1,7 +1,7 @@
 From: Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH 14/16] Remove cursor restore hack in viafb
-Date: Thu,  8 Apr 2010 11:15:44 -0600
-Message-ID: <1270746946-12467-15-git-send-email-corbet@lwn.net>
+Subject: [PATCH 11/16] Minimal support for viafb suspend/resume
+Date: Thu,  8 Apr 2010 11:15:41 -0600
+Message-ID: <1270746946-12467-12-git-send-email-corbet@lwn.net>
 References: <1270746946-12467-1-git-send-email-corbet@lwn.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1270746946-12467-1-git-send-email-corbet@lwn.net>
@@ -15,30 +15,103 @@ Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Harald Welte <laforge@
 
 From: Deepak Saxena <dsaxena@laptop.org>
 
+This patch adds minimal support for suspend/resume of the
+VIA framebuffer device. It requires a version of OFW
+that restores the video mode.
+
+This patch is OLPC-specific as the proper upstream solution
+is to move the VIA video path to using the kernel modesetting
+infrastructure and doing a proper save/restore in the kernel.
+
+[jc: extensive changes for 2.6.34 merge]
 Signed-off-by: Deepak Saxena <dsaxena@laptop.org>
 ---
- drivers/video/via/viafbdev.c |    9 ---------
- 1 files changed, 0 insertions(+), 9 deletions(-)
+ drivers/video/via/viafbdev.c |   51 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/video/via/viafbdev.h |    3 ++
+ 2 files changed, 54 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 56d5416..684a5c4 100644
+index ea3018e..88298e1 100644
 --- a/drivers/video/via/viafbdev.c
 +++ b/drivers/video/via/viafbdev.c
-@@ -1940,15 +1940,6 @@ static int viafb_resume(struct pci_dev *pdev)
- 	viaVidEng->cursor_bg = localVidEng->cursor_bg;
- 	viaVidEng->cursor_fg = localVidEng->cursor_fg;
+@@ -1843,6 +1843,53 @@ out_default:
+ 	*yres = 480;
+ }
  
--	/*
--	 * Magic register dance to  make cursor reappear.
--	 *
--	 * Currently hardcoded settings need to clean this all
--	 * up later...
--	 */
--	viaVidEng->hi_control = 0xb6000005;
--	viaVidEng->compose   |= 0xc0000000;
--
- 	fb_set_suspend(viafbinfo, 0);
++
++#ifdef CONFIG_PM
++static int viafb_suspend(struct pci_dev *pdev, pm_message_t state)
++{
++	if (state.event == PM_EVENT_SUSPEND) {
++		acquire_console_sem();
++
++		memcpy_fromio(viaparinfo->shared->saved_regs,
++			      viaparinfo->shared->engine_mmio + 0x100,
++			      0xff * sizeof(u32));
++
++		fb_set_suspend(viafbinfo, 1);
++
++		viafb_sync(viafbinfo);
++
++		pci_save_state(pdev);
++		pci_disable_device(pdev);
++		pci_set_power_state(pdev, pci_choose_state(pdev, state));
++		release_console_sem();
++	}
++
++	return 0;
++}
++
++static int viafb_resume(struct pci_dev *pdev)
++{
++	acquire_console_sem();
++	pci_set_power_state(pdev, PCI_D0);
++	pci_restore_state(pdev);
++	if (pci_enable_device(pdev))
++    		goto fail;
++	pci_set_master(pdev);
++
++	memcpy_toio(viaparinfo->shared->engine_mmio + 0x100,
++		    viaparinfo->shared->saved_regs,
++		    0x100 * sizeof(u32));
++
++	fb_set_suspend(viafbinfo, 0);
++
++fail:
++	release_console_sem();
++	return 0;
++}
++
++#endif
++
++
+ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 				   const struct pci_device_id *ent)
+ {
+@@ -2219,6 +2266,10 @@ static struct pci_driver viafb_driver = {
+ 	.id_table	= viafb_pci_table,
+ 	.probe		= via_pci_probe,
+ 	.remove		= __devexit_p(via_pci_remove),
++#ifdef CONFIG_PM
++	.suspend	= viafb_suspend,
++	.resume		= viafb_resume,
++#endif
+ };
  
- fail:
+ static int __init viafb_init(void)
+diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
+index 1dab97b..46d41af 100644
+--- a/drivers/video/via/viafbdev.h
++++ b/drivers/video/via/viafbdev.h
+@@ -60,6 +60,9 @@ struct viafb_shared {
+ 		u8 dst_bpp, u32 dst_addr, u32 dst_pitch, u32 dst_x, u32 dst_y,
+ 		u32 *src_mem, u32 src_addr, u32 src_pitch, u32 src_x, u32 src_y,
+ 		u32 fg_color, u32 bg_color, u8 fill_rop);
++
++	/* For suspend/resume */
++	u32 saved_regs[0x100];
+ };
+ 
+ struct viafb_par {
 -- 
 1.7.0.1

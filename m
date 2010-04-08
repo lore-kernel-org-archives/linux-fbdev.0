@@ -1,165 +1,153 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: Re: [PATCH 01/16] [FB] viafb: Fix various resource leaks during module_init()
-Date: Thu, 08 Apr 2010 20:22:57 +0200
-Message-ID: <4BBE1F01.5000800@gmx.de>
-References: <1270746946-12467-1-git-send-email-corbet@lwn.net> <1270746946-12467-2-git-send-email-corbet@lwn.net>
+Subject: Re: [PATCH 02/16] viafb: use proper pci config API
+Date: Thu, 08 Apr 2010 20:42:17 +0200
+Message-ID: <4BBE2389.5010802@gmx.de>
+References: <1270746946-12467-1-git-send-email-corbet@lwn.net> <1270746946-12467-3-git-send-email-corbet@lwn.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1270746946-12467-2-git-send-email-corbet@lwn.net>
+In-Reply-To: <1270746946-12467-3-git-send-email-corbet@lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev-devel@lists.sourceforge.net
+
+Hi,
+
+something I am wondering about is whether we can't simply do:
+viaparinfo->memsize = pci_resource_len(pdev, 0);
+I suppose that this is not possible meaning that the pci len can be 
+longer than the actual memory but I just wanted to use the moment to 
+make sure.
 
 Jonathan Corbet schrieb:
 > From: Harald Welte <laforge@gnumonks.org>
 > 
-> The current code executed from module_init() in viafb does not have
-> proper error checking and [partial] resoure release paths in case
-> an error happens half way through driver initialization.
+> This patch alters viafb to use the proper Linux in-kernel API to access
+> PCI configuration space, rather than poking at I/O ports by itself.
 > 
-> This patch adresses the most obvious of those issues, such as a
-> leftover i2c bus if module_init (and thus module load) fails.
-> 
-> [jc: fixed merge conflicts]
 > Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
 > ---
->  drivers/video/via/viafbdev.c |   52 ++++++++++++++++++++++++++++++-----------
->  1 files changed, 38 insertions(+), 14 deletions(-)
+>  drivers/video/via/hw.c |   64 +++++++++++++++++++++++++++++------------------
+>  drivers/video/via/hw.h |    4 +-
+>  2 files changed, 41 insertions(+), 27 deletions(-)
 > 
-> diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-> index 3028e7d..91bfe6d 100644
-> --- a/drivers/video/via/viafbdev.c
-> +++ b/drivers/video/via/viafbdev.c
-> @@ -1,5 +1,5 @@
->  /*
-> - * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-> + * Copyright 1998-2009 VIA Technologies, Inc. All Rights Reserved.
->   * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
->  
->   * This program is free software; you can redistribute it and/or
-> @@ -1847,7 +1847,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
->  				   const struct pci_device_id *ent)
->  {
->  	u32 default_xres, default_yres;
-> -	int vmode_index;
-> +	int rc, vmode_index;
->  	u32 viafb_par_length;
->  
->  	DEBUG_MSG(KERN_INFO "VIAFB PCI Probe!!\n");
-> @@ -1862,7 +1862,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
->  		&pdev->dev);
->  	if (!viafbinfo) {
->  		printk(KERN_ERR"Could not allocate memory for viafb_info.\n");
-> -		return -ENODEV;
-> +		return -ENOMEM;
->  	}
->  
->  	viaparinfo = (struct viafb_par *)viafbinfo->par;
-> @@ -1886,7 +1886,9 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
->  		viafb_dual_fb = 0;
->  
->  	/* Set up I2C bus stuff */
-> -	viafb_create_i2c_bus(viaparinfo);
-> +	rc = viafb_create_i2c_bus(viaparinfo);
-> +	if (rc)
-> +		goto out_fb_release;
->  
->  	viafb_init_chip_info(pdev, ent);
->  	viaparinfo->fbmem = pci_resource_start(pdev, 0);
-> @@ -1897,7 +1899,8 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
->  		viaparinfo->memsize);
->  	if (!viafbinfo->screen_base) {
->  		printk(KERN_INFO "ioremap failed\n");
-> -		return -ENOMEM;
-> +		rc = -EIO;
-
-I don't know whether this is right (changing the return code) as Andrew 
-recommend a while ago:
-"It should return -ENOMEM rather than -1, but that's minor."
-So I did and now I wonder which one is correct?
-
-> +		goto out_delete_i2c;
->  	}
->  
->  	viafbinfo->fix.mmio_start = pci_resource_start(pdev, 1);
-> @@ -1988,8 +1991,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
->  		if (!viafbinfo1) {
->  			printk(KERN_ERR
->  			"allocate the second framebuffer struct error\n");
-> -			framebuffer_release(viafbinfo);
-> -			return -ENOMEM;
-
-rc = -ENOMEM;
-is missing?
-
-> +			goto out_delete_i2c;
->  		}
->  		viaparinfo1 = viafbinfo1->par;
->  		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
-> @@ -2044,21 +2046,26 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
->  	viaparinfo->depth = fb_get_color_depth(&viafbinfo->var,
->  		&viafbinfo->fix);
->  	default_var.activate = FB_ACTIVATE_NOW;
-> -	fb_alloc_cmap(&viafbinfo->cmap, 256, 0);
-> +	rc = fb_alloc_cmap(&viafbinfo->cmap, 256, 0);
-> +	if (rc)
-> +		goto out_fb1_release;
->  
->  	if (viafb_dual_fb && (viafb_primary_dev == LCD_Device)
->  	    && (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266)) {
-> -		if (register_framebuffer(viafbinfo1) < 0)
-> -			return -EINVAL;
-> +		rc = register_framebuffer(viafbinfo1);
-> +		if (rc)
-> +			goto out_dealloc_cmap;
->  	}
-> -	if (register_framebuffer(viafbinfo) < 0)
-> -		return -EINVAL;
-> +	rc = register_framebuffer(viafbinfo);
-> +	if (rc)
-> +		goto out_fb1_unreg_lcd_cle266;
->  
->  	if (viafb_dual_fb && ((viafb_primary_dev != LCD_Device)
->  			|| (viaparinfo->chip_info->gfx_chip_name !=
->  			UNICHROME_CLE266))) {
-> -		if (register_framebuffer(viafbinfo1) < 0)
-> -			return -EINVAL;
-> +		rc = register_framebuffer(viafbinfo1);
-> +		if (rc)
-> +			goto out_fb_unreg;
->  	}
->  	DEBUG_MSG(KERN_INFO "fb%d: %s frame buffer device %dx%d-%dbpp\n",
->  		  viafbinfo->node, viafbinfo->fix.id, default_var.xres,
-> @@ -2067,6 +2074,23 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
->  	viafb_init_proc(&viaparinfo->shared->proc_entry);
->  	viafb_init_dac(IGA2);
->  	return 0;
-> +
-> +out_fb_unreg:
-> +	unregister_framebuffer(viafbinfo);
-> +out_fb1_unreg_lcd_cle266:
-> +	if (viafb_dual_fb && (viafb_primary_dev == LCD_Device)
-> +            && (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266))
-> +		unregister_framebuffer(viafbinfo1);
-> +out_dealloc_cmap:
-> +	fb_dealloc_cmap(&viafbinfo->cmap);
-> +out_fb1_release:
-> +	if (viafbinfo1)
-> +		framebuffer_release(viafbinfo1);
-> +out_delete_i2c:
-> +	viafb_delete_i2c_buss(viaparinfo);
-> +out_fb_release:
-> +	framebuffer_release(viafbinfo);
-> +	return rc;
+> diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+> index ea0f8ec..f2e4bda 100644
+> --- a/drivers/video/via/hw.c
+> +++ b/drivers/video/via/hw.c
+> @@ -2542,24 +2542,37 @@ static void disable_second_display_channel(void)
+>  	viafb_write_reg_mask(CR6A, VIACR, BIT6, BIT6);
 >  }
 >  
->  static void __devexit via_pci_remove(struct pci_dev *pdev)
+> +static u_int16_t via_function3[] = {
+> +	CLE266_FUNCTION3, KM400_FUNCTION3, CN400_FUNCTION3, CN700_FUNCTION3,
+> +	CX700_FUNCTION3, KM800_FUNCTION3, KM890_FUNCTION3, P4M890_FUNCTION3,
+> +	P4M900_FUNCTION3, VX800_FUNCTION3, VX855_FUNCTION3,
+> +};
+> +
+> +/* Get the BIOS-configured framebuffer size from PCI configuration space
+> + * of function 3 in the respective chipset */
+>  int viafb_get_fb_size_from_pci(void)
+>  {
+> -	unsigned long configid, deviceid, FBSize = 0;
+> -	int VideoMemSize;
+> -	int DeviceFound = false;
+> -
+> -	for (configid = 0x80000000; configid < 0x80010800; configid += 0x100) {
+> -		outl(configid, (unsigned long)0xCF8);
+> -		deviceid = (inl((unsigned long)0xCFC) >> 16) & 0xffff;
+> -
+> -		switch (deviceid) {
+> -		case CLE266:
+> -		case KM400:
+> -			outl(configid + 0xE0, (unsigned long)0xCF8);
+> -			FBSize = inl((unsigned long)0xCFC);
+> -			DeviceFound = true;	/* Found device id */
+> -			break;
+> +	int i;
+> +	u_int8_t offset = 0;
+> +	u_int32_t FBSize;
+> +	u_int32_t VideoMemSize;
+> +
+> +	/* search for the "FUNCTION3" device in this chipset */
+> +	for (i = 0; i < ARRAY_SIZE(via_function3); i++) {
 
-Otherwise it looks okay.
+Would it be possible to replace this loop with a lookup table that uses 
+the fact that we already know which IGP we have?
+Yeah, that's not a bug it only feels a bit awkward to do it this way.
 
+> +		struct pci_dev *pdev;
+> +
+> +		pdev = pci_get_device(PCI_VENDOR_ID_VIA, via_function3[i],
+> +				      NULL);
+> +		if (!pdev)
+> +			continue;
+> +
+> +		DEBUG_MSG(KERN_INFO "Device ID = %x\n", pdev->device);
+>  
+> +		switch (pdev->device) {
+> +		case CLE266_FUNCTION3:
+> +		case KM400_FUNCTION3:
+> +			offset = 0xE0;
+> +			break;
+>  		case CN400_FUNCTION3:
+>  		case CN700_FUNCTION3:
+>  		case CX700_FUNCTION3:
+> @@ -2569,21 +2582,22 @@ int viafb_get_fb_size_from_pci(void)
+>  		case P4M900_FUNCTION3:
+>  		case VX800_FUNCTION3:
+>  		case VX855_FUNCTION3:
+> -			/*case CN750_FUNCTION3: */
+> -			outl(configid + 0xA0, (unsigned long)0xCF8);
+> -			FBSize = inl((unsigned long)0xCFC);
+> -			DeviceFound = true;	/* Found device id */
+> -			break;
+> -
+> -		default:
+> +		/*case CN750_FUNCTION3: */
+> +			offset = 0xA0;
+>  			break;
+>  		}
+> -
+> -		if (DeviceFound)
+> +		
+> +		if (!offset)
+>  			break;
+> +
+> +		pci_read_config_dword(pdev, offset, &FBSize);
+> +		pci_dev_put(pdev);
+>  	}
+>  
+> -	DEBUG_MSG(KERN_INFO "Device ID = %lx\n", deviceid);
+> +	if (!offset) {
+> +		printk(KERN_ERR "cannot determine framebuffer size\n");
+> +		return -EIO;
+
+This function was not designed to return an error (memsize is not 
+checked). Either return a default value (let's say 8MB) or add a check 
+for memsize.
+
+> +	}
+>  
+>  	FBSize = FBSize & 0x00007000;
+>  	DEBUG_MSG(KERN_INFO "FB Size = %x\n", FBSize);
+> diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
+> index b874d95..f67a56a 100644
+> --- a/drivers/video/via/hw.h
+> +++ b/drivers/video/via/hw.h
+> @@ -822,8 +822,8 @@ struct iga2_crtc_timing {
+>  };
+>  
+>  /* device ID */
+> -#define CLE266              0x3123
+> -#define KM400               0x3205
+> +#define CLE266_FUNCTION3    0x3123
+> +#define KM400_FUNCTION3     0x3205
+>  #define CN400_FUNCTION2     0x2259
+>  #define CN400_FUNCTION3     0x3259
+>  /* support VT3314 chipset */
 
 Thanks,
 

@@ -1,84 +1,71 @@
 From: Jonathan Corbet <corbet@lwn.net>
-Date: Fri, 23 Apr 2010 21:28:12 +0000
-Subject: [PATCH 12/13] viafb: Reserve framebuffer memory for the upcoming camera driver
-Message-Id: <1272058093-20914-13-git-send-email-corbet@lwn.net>
-List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272058093-20914-1-git-send-email-corbet@lwn.net>
-In-Reply-To: <1272058093-20914-1-git-send-email-corbet@lwn.net>
+Subject: [RFC] Initial OLPC Viafb merge
+Date: Thu,  8 Apr 2010 11:15:30 -0600
+Message-ID: <1270746946-12467-1-git-send-email-corbet@lwn.net>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Harald Welte <laforge@gnumonks.org>, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev-devel@lists.sourceforge.net
 
-The camera engine captures to framebuffer memory, so we need to set some
-aside for that purpose.  There is no proper memory allocator for fbmem;
-instead, accel.c just trims some space off the top.  Alas, without creating
-that proper memory allocator, the only way to make this work is to hack it
-into the same bit of code in accel.c.  The allocation must happen *after*
-the others (some code, including user-space XV stuff, makes assumptions on
-where the cursor space is), and before the rest of the framebuffer is set
-up.
+The following patches are the beginning of an effort to move work done for
+the OLPC XO 1.5 machine into the mainline.  What's here is basic support
+for the VX855 chipset, I2C, suspend/resume, and the OLPC panel display.
+What's coming in the future is a reworking of the viafb driver into
+something resembling a proper multifunction device, GPIO support, and
+camera support.  But I'd like to start here.
 
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
----
- drivers/video/via/accel.c    |   16 ++++++++++++++++
- drivers/video/via/via-core.h |   10 ++++++++++
- 2 files changed, 26 insertions(+), 0 deletions(-)
+If there's no objections, I'll start a tree and get it into linux-next in
+the near future, with an eye toward a 2.6.35 merge.
 
-diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
-index e777468..189aba4 100644
---- a/drivers/video/via/accel.c
-+++ b/drivers/video/via/accel.c
-@@ -370,6 +370,22 @@ int viafb_init_engine(struct fb_info *info)
- 	viapar->shared->vq_vram_addr = viapar->fbmem_free;
- 	viapar->fbmem_used += VQ_SIZE;
- 
-+#if defined(CONFIG_FB_VIA_CAMERA) || defined(CONFIG_FB_VIA_CAMERA_MODULE)
-+	/*
-+	 * Set aside a chunk of framebuffer memory for the camera
-+	 * driver.  Someday this driver probably needs a proper allocator
-+	 * for fbmem; for now, we just have to do this before the
-+	 * framebuffer initializes itself.
-+	 *
-+	 * As for the size: the engine can handle three frames,
-+	 * 16 bits deep, up to VGA resolution.
-+	 */
-+	viapar->shared->vdev->camera_fbmem_size = 3*VGA_HEIGHT*VGA_WIDTH*2;
-+	viapar->fbmem_free -= viapar->shared->vdev->camera_fbmem_size;
-+	viapar->fbmem_used += viapar->shared->vdev->camera_fbmem_size;
-+	viapar->shared->vdev->camera_fbmem_offset = viapar->fbmem_free;
-+#endif
-+
- 	/* Init AGP and VQ regs */
- 	switch (chip_name) {
- 	case UNICHROME_K8M890:
-diff --git a/drivers/video/via/via-core.h b/drivers/video/via/via-core.h
-index 3d03141..087c562 100644
---- a/drivers/video/via/via-core.h
-+++ b/drivers/video/via/via-core.h
-@@ -78,6 +78,10 @@ struct viafb_dev {
- 	unsigned long fbmem_start;
- 	long fbmem_len;
- 	void __iomem *fbmem;
-+#if defined(CONFIG_FB_VIA_CAMERA) || defined(CONFIG_FB_VIA_CAMERA_MODULE)
-+	long camera_fbmem_offset;
-+	long camera_fbmem_size;
-+#endif
- 	/*
- 	 * The MMIO region for device registers.
- 	 */
-@@ -160,4 +164,10 @@ int viafb_dma_copy_out_sg(unsigned int offset, struct scatterlist *sg, int nsg);
- #define VDMA_DPRH0	0xe38
- #define VDMA_PMR0	(0xe00 + 0x134) /* Pitch mode */
- 
-+/*
-+ * Useful stuff that probably belongs somewhere global.
-+ */
-+#define VGA_WIDTH	640
-+#define VGA_HEIGHT	480
-+
- #endif /* __VIA_CORE_H__ */
--- 
-1.7.0.1
+Thanks,
 
+jon
+
+Chris Ball (2):
+      viafb: Add 1200x900 DCON/LCD panel modes for OLPC XO-1.5
+      viafb: Do not probe for LVDS/TMDS on OLPC XO-1.5
+
+Deepak Saxena (3):
+      Minimal support for viafb suspend/resume
+      VIAFB: Update suspend/resume to selectively restore registers
+      Remove cursor restore hack in viafb
+
+Harald Welte (4):
+      [FB] viafb: Fix various resource leaks during module_init()
+      viafb: use proper pci config API
+      viafb: Determine type of 2D engine and store it in chip_info
+      viafb: rework the I2C support in the VIA framebuffer driver
+
+Jonathan Corbet (5):
+      viafb: Unmap the frame buffer on initialization error
+      viafb: Retain GEMODE reserved bits
+      viafb: complete support for VX800/VX855 accelerated framebuffer
+      viafb: rework suspend/resume
+      viafb: Only suspend/resume on VX855
+
+Paul Fox (2):
+      suppress verbose debug messages:  change printk() to DEBUG_MSG()
+      fix register save count, so it matches the restore count.
+
+ drivers/video/via/accel.c    |   87 ++++++++++++++-----
+ drivers/video/via/accel.h    |   40 +++++++++
+ drivers/video/via/chip.h     |    8 +
+ drivers/video/via/dvi.c      |   35 +++----
+ drivers/video/via/hw.c       |   84 +++++++++++++-----
+ drivers/video/via/hw.h       |    4 
+ drivers/video/via/ioctl.h    |    2 
+ drivers/video/via/lcd.c      |   29 ++++--
+ drivers/video/via/lcd.h      |    2 
+ drivers/video/via/share.h    |    8 +
+ drivers/video/via/via_i2c.c  |  172 ++++++++++++++++++++++++--------------
+ drivers/video/via/via_i2c.h  |   43 ++++++---
+ drivers/video/via/viafbdev.c |  191 +++++++++++++++++++++++++++++++++++++++----
+ drivers/video/via/viafbdev.h |    5 -
+ drivers/video/via/viamode.c  |   14 +++
+ drivers/video/via/vt1636.c   |   36 +++-----
+ drivers/video/via/vt1636.h   |    2 
+ 17 files changed, 568 insertions(+), 194 deletions(-)

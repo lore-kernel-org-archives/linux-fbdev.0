@@ -1,61 +1,45 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: Re: [PATCH 10/16] suppress verbose debug messages:  change printk()
- to DEBUG_MSG()
-Date: Sat, 10 Apr 2010 00:09:06 +0200
-Message-ID: <4BBFA582.2010701@gmx.de>
-References: <1270746946-12467-1-git-send-email-corbet@lwn.net> <1270746946-12467-11-git-send-email-corbet@lwn.net>
+Subject: Re: [RFC] Initial OLPC Viafb merge
+Date: Sat, 10 Apr 2010 01:32:36 +0200
+Message-ID: <4BBFB914.1020600@gmx.de>
+References: <1270746946-12467-1-git-send-email-corbet@lwn.net>	<4BBEBE87.4000809@gmx.de> <20100409124626.0b150104@bike.lwn.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1270746946-12467-11-git-send-email-corbet@lwn.net>
+In-Reply-To: <20100409124626.0b150104@bike.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: Jonathan Corbet <corbet@lwn.net>
 Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev-devel@lists.sourceforge.net
 
-This patch is fine.
+Jonathan Corbet schrieb:
+> Sorry, the only working platform I had was the OLPC 2.6.31 tree, and
+> there was little point in publishing that by the time it was ready to
+> be seen.  That said, I *did* point out the tree where the work could be
+> seen for anybody who was interested.
+
+Well the time I looked in your tree I didn't see any of the remaining 
+suspend/resume efforts. Okay perhaps I should have rechecked it now and 
+than.
+Please correct me if I am wrong but the remaining 6 patches concerning 
+suspend&resume look like a real big FIXME. So at the end it is expected 
+to work only on VX855 and needs something called OFW?
+It doesn't seem to make much sense to review each of them because the 
+following patches might or might not correct some of the issues of the 
+other. It is really a pain to have 6 patches trying to add a single 
+feature. Is there any way to fix this mess. (I assume you didn't merge 
+them due to authorship issues?)
+I think it might be better to drop those for now and wait for viafb to 
+be in a better shape before adding this feature. The mode setting should 
+be in a pretty good shape just 1 or 2 kernel versions ahead so that the 
+dependency on OFW can be dropped I think.
+
+Sorry but I really think this is not in a shape where merging it is an 
+option. I think it would be better to skip those suspend/resume patches 
+for the next merge window.
 
 
 Thanks,
 
 Florian Tobias Schandinat
-
-Jonathan Corbet schrieb:
-> From: Paul Fox <pgf@laptop.org>
-> 
-> ---
->  drivers/video/via/via_i2c.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
-> index 18bbbdd..86e6e8d 100644
-> --- a/drivers/video/via/via_i2c.c
-> +++ b/drivers/video/via/via_i2c.c
-> @@ -26,7 +26,7 @@ static void via_i2c_setscl(void *data, int state)
->  	u8 val;
->  	struct via_i2c_adap_cfg *adap_data = data;
->  
-> -	printk(KERN_DEBUG "reading index 0x%02x from IO 0x%x\n",
-> +	DEBUG_MSG(KERN_DEBUG "reading index 0x%02x from IO 0x%x\n",
->  		adap_data->ioport_index, adap_data->io_port);
->  	val = viafb_read_reg(adap_data->io_port,
->  			     adap_data->ioport_index) & 0xF0;
-> @@ -140,7 +140,7 @@ static int create_i2c_bus(struct i2c_adapter *adapter,
->  			  struct via_i2c_adap_cfg *adap_cfg,
->  			  struct pci_dev *pdev)
->  {
-> -	printk(KERN_DEBUG "viafb: creating bus adap=0x%p, algo_bit_data=0x%p, adap_cfg=0x%p\n", adapter, algo, adap_cfg);
-> +	DEBUG_MSG(KERN_DEBUG "viafb: creating bus adap=0x%p, algo_bit_data=0x%p, adap_cfg=0x%p\n", adapter, algo, adap_cfg);
->  
->  	algo->setsda = via_i2c_setsda;
->  	algo->setscl = via_i2c_setscl;
-> @@ -182,7 +182,7 @@ static struct via_i2c_adap_cfg adap_configs[] = {
->  int viafb_create_i2c_busses(struct viafb_par *viapar)
->  {
->  	int i, ret;
-> -	printk(KERN_DEBUG "%s: entering\n", __FUNCTION__);
-> +	DEBUG_MSG(KERN_DEBUG "%s: entering\n", __FUNCTION__);
->  
->  	for (i = 0; i < VIAFB_NUM_I2C; i++) {
->  		struct via_i2c_adap_cfg *adap_cfg = &adap_configs[i];

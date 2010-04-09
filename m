@@ -1,205 +1,105 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: Re: [PATCH 06/16] viafb: complete support for VX800/VX855 accelerated
- framebuffer
-Date: Fri, 09 Apr 2010 06:21:18 +0200
-Message-ID: <4BBEAB3E.5090709@gmx.de>
-References: <1270746946-12467-1-git-send-email-corbet@lwn.net> <1270746946-12467-7-git-send-email-corbet@lwn.net>
+Subject: Re: [RFC] Initial OLPC Viafb merge
+Date: Fri, 09 Apr 2010 07:43:35 +0200
+Message-ID: <4BBEBE87.4000809@gmx.de>
+References: <1270746946-12467-1-git-send-email-corbet@lwn.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1270746946-12467-7-git-send-email-corbet@lwn.net>
+In-Reply-To: <1270746946-12467-1-git-send-email-corbet@lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: Jonathan Corbet <corbet@lwn.net>
 Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev-devel@lists.sourceforge.net
 
+Hi Jon,
+
 Jonathan Corbet schrieb:
-> This patch is a painful merge of change
-> a90bab567ece3e915d0ccd55ab00c9bb333fa8c0 (viafb: Add support for 2D
-> accelerated framebuffer on VX800/VX855) in the OLPC tree, originally by
-> Harald Welte.  Harald's changelog read:
-> 
-> 	The VX800/VX820 and the VX855/VX875 chipsets have a different 2D
->     	acceleration engine called "M1".  The M1 engine has some subtle
->     	(and some not-so-subtle) differences to the previous engines, so
->     	support for accelerated framebuffer on those chipsets was disabled
->     	so far.
-> 
-> This merge tries to preserve Harald's changes in the framework of the
-> much-changed 2.6.34 viafb code.
-> 
-> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+> The following patches are the beginning of an effort to move work done for
+> the OLPC XO 1.5 machine into the mainline.  What's here is basic support
+> for the VX855 chipset, I2C, suspend/resume, and the OLPC panel display.
 
-The patch itself looks good. However I have a few minor issues below 
-which could be addressed by follow-ups (or ignored for the moment).
+Thanks a lot for your work I appreciate it very much.
+However there are 2 things I'd like to ask for:
 
-> ---
->  drivers/video/via/accel.c |   39 +++++++++++++++++++++++++++++++++------
->  drivers/video/via/accel.h |   40 ++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 73 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
-> index 78c0a2b..7fe1c1d 100644
-> --- a/drivers/video/via/accel.c
-> +++ b/drivers/video/via/accel.c
-> @@ -328,6 +328,7 @@ int viafb_init_engine(struct fb_info *info)
->  {
->  	struct viafb_par *viapar = info->par;
->  	void __iomem *engine;
-> +	int highest_reg, i;
->  	u32 vq_start_addr, vq_end_addr, vq_start_low, vq_end_low, vq_high,
->  		vq_len, chip_name = viapar->shared->chip_info.gfx_chip_name;
->  
-> @@ -339,6 +340,18 @@ int viafb_init_engine(struct fb_info *info)
->  		return -ENOMEM;
->  	}
->  
-> +	/* Initialize registers to reset the 2D engine */
-> +	switch (viapar->shared->chip_info.twod_engine) {
-> +	case VIA_2D_ENG_M1:
-> +		highest_reg = 0x5c;
-> +		break;
-> +	default:
-> +		highest_reg = 0x40;
-> +		break;
-> +	}
-> +	for (i = 0; i <= highest_reg; i+= 4)
-> +		writel(0x0, engine + i);
-> +
+Could you please forward port them to latest mainline? There went some 
+changes in for 2.6.34 that break some of your patches (but not many and 
+at least the first conflict is easy to fix) as I generally prefer to 
+test a version that does not contain too much changes from myself.
 
-this obsoletes
-	/* Init 2D engine reg to reset 2D engine */
-	writel(0x0, engine + VIA_REG_KEYCONTROL);
-as VIA_REG_KEYCONTROL is 0x02C.
+Please make checkpatch happy where appropriate. (whitespaces, ...)
 
->  	switch (chip_name) {
->  	case UNICHROME_CLE266:
->  	case UNICHROME_K400:
-> @@ -375,6 +388,8 @@ int viafb_init_engine(struct fb_info *info)
->  	switch (chip_name) {
->  	case UNICHROME_K8M890:
->  	case UNICHROME_P4M900:
-> +	case UNICHROME_VX800:
-> +	case UNICHROME_VX855:
->  		writel(0x00100000, engine + VIA_REG_CR_TRANSET);
->  		writel(0x680A0000, engine + VIA_REG_CR_TRANSPACE);
->  		writel(0x02000000, engine + VIA_REG_CR_TRANSPACE);
-> @@ -409,6 +424,8 @@ int viafb_init_engine(struct fb_info *info)
->  	switch (chip_name) {
->  	case UNICHROME_K8M890:
->  	case UNICHROME_P4M900:
-> +	case UNICHROME_VX800:
-> +	case UNICHROME_VX855:
->  		vq_start_low |= 0x20000000;
->  		vq_end_low |= 0x20000000;
->  		vq_high |= 0x20000000;
-> @@ -486,15 +503,25 @@ void viafb_wait_engine_idle(struct fb_info *info)
->  {
->  	struct viafb_par *viapar = info->par;
->  	int loop = 0;
-> +	u32 mask;
->  
-> -	while (!(readl(viapar->shared->engine_mmio + VIA_REG_STATUS) &
-> -			VIA_VR_QUEUE_BUSY) && (loop < MAXLOOP)) {
-> -		loop++;
-> -		cpu_relax();
-> +	switch (viapar->shared->chip_info.twod_engine) {
-> +	case VIA_2D_ENG_H5:
-> +	case VIA_2D_ENG_M1:
-> +		mask = VIA_CMD_RGTR_BUSY_M1 | VIA_2D_ENG_BUSY_M1 |
-> +			      VIA_3D_ENG_BUSY_M1;
-> +		break;
-> +	default:
+> What's coming in the future is a reworking of the viafb driver into
+> something resembling a proper multifunction device, GPIO support, and
+> camera support.  But I'd like to start here.
 
-As in the previous patch I'd appreciate a default of
-	printk(KERN_ALERT "viafb_xy: FIXME");
-I have to admit to be consistent a few switches that are already there 
-would need to be changed but that's another issue.
+Yeah, that's already a whole bunch of stuff. I agree that it's time to 
+get this in.
 
-> +		while (!(readl(viapar->shared->engine_mmio + VIA_REG_STATUS) &
-> +				VIA_VR_QUEUE_BUSY) && (loop < MAXLOOP)) {
-> +			loop++;
-> +			cpu_relax();
-> +		}
-> +		mask = VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY;
-> +		break;
->  	}
->  
-> -	while ((readl(viapar->shared->engine_mmio + VIA_REG_STATUS) &
-> -		    (VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY)) &&
-> +	while ((readl(viapar->shared->engine_mmio + VIA_REG_STATUS) & mask) &&
->  		    (loop < MAXLOOP)) {
->  		loop++;
->  		cpu_relax();
-> diff --git a/drivers/video/via/accel.h b/drivers/video/via/accel.h
-> index 615c84a..2c122d2 100644
-> --- a/drivers/video/via/accel.h
-> +++ b/drivers/video/via/accel.h
-> @@ -67,6 +67,34 @@
->  /* from 0x100 to 0x1ff */
->  #define VIA_REG_COLORPAT        0x100
->  
-> +/* defines for VIA 2D registers for vt3353/3409 (M1 engine)*/
-> +#define VIA_REG_GECMD_M1        0x000
-> +#define VIA_REG_GEMODE_M1       0x004
-> +#define VIA_REG_GESTATUS_M1     0x004       /* as same as VIA_REG_GEMODE */
-> +#define VIA_REG_PITCH_M1        0x008       /* pitch of src and dst */
-> +#define VIA_REG_DIMENSION_M1    0x00C       /* width and height */
-> +#define VIA_REG_DSTPOS_M1       0x010
-> +#define VIA_REG_LINE_XY_M1      0x010
-> +#define VIA_REG_DSTBASE_M1      0x014
-> +#define VIA_REG_SRCPOS_M1       0x018
-> +#define VIA_REG_LINE_K1K2_M1    0x018
-> +#define VIA_REG_SRCBASE_M1      0x01C
-> +#define VIA_REG_PATADDR_M1      0x020
-> +#define VIA_REG_MONOPAT0_M1     0x024
-> +#define VIA_REG_MONOPAT1_M1     0x028
-> +#define VIA_REG_OFFSET_M1       0x02C
-> +#define VIA_REG_LINE_ERROR_M1   0x02C
-> +#define VIA_REG_CLIPTL_M1       0x040       /* top and left of clipping */
-> +#define VIA_REG_CLIPBR_M1       0x044       /* bottom and right of clipping */
-> +#define VIA_REG_KEYCONTROL_M1   0x048       /* color key control */
-> +#define VIA_REG_FGCOLOR_M1      0x04C
-> +#define VIA_REG_DSTCOLORKEY_M1  0x04C       /* as same as VIA_REG_FG */
-> +#define VIA_REG_BGCOLOR_M1      0x050
-> +#define VIA_REG_SRCCOLORKEY_M1  0x050       /* as same as VIA_REG_BG */
-> +#define VIA_REG_MONOPATFGC_M1   0x058       /* Add BG color of Pattern. */
-> +#define VIA_REG_MONOPATBGC_M1   0x05C       /* Add FG color of Pattern. */
-> +#define VIA_REG_COLORPAT_M1     0x100       /* from 0x100 to 0x1ff */
-> +
+> If there's no objections, I'll start a tree and get it into linux-next in
+> the near future, with an eye toward a 2.6.35 merge.
 
-All of these defines are unused. I admit that it is my fault. I've not 
-yet found a way I like to use them as the meaning of the same hardware 
-address changed. I think the most clean long term solution would be to 
-put the engines in separate files and the definitions in private headers 
-to at least avoid the need to decode the engine version in the name.
-However as the old headers already contain a bunch of trash feel free to 
-ignore this issue and add it for now.
+At least I'd like to see your work as early as possible so that we can 
+avoid conflicts (in patches and design). I hope this will get a bit 
+better after viafb is split up.
+I don't have a strong opinion on the patch submission route as long as I 
+have the possibility to work on viafb and get some patches in as getting 
+to far ahead/away from mainline really sucks especially if one has not 
+all the hardware to test with. That said I'd be glad if we could 
+work/discuss the issues on these patches and get them in the next merge 
+window somehow.
+Fortunately I still have a bit time left to finish the review of the 
+remaining patches in the next days but I would really appreciate it very 
+much if you could publish your work more frequently in the future.
 
->  /* VIA_REG_PITCH(0x38): Pitch Setting */
->  #define VIA_PITCH_ENABLE        0x80000000
->  
-> @@ -157,6 +185,18 @@
->  /* Virtual Queue is busy */
->  #define VIA_VR_QUEUE_BUSY       0x00020000
->  
-> +/* VIA_REG_STATUS(0x400): Engine Status for H5 */
-> +#define VIA_CMD_RGTR_BUSY_H5   0x00000010  /* Command Regulator is busy */
-> +#define VIA_2D_ENG_BUSY_H5     0x00000002  /* 2D Engine is busy */
-> +#define VIA_3D_ENG_BUSY_H5     0x00001FE1  /* 3D Engine is busy */
-> +#define VIA_VR_QUEUE_BUSY_H5   0x00000004  /* Virtual Queue is busy */
-> +
-> +/* VIA_REG_STATUS(0x400): Engine Status for VT3353/3409 */
-> +#define VIA_CMD_RGTR_BUSY_M1   0x00000010  /* Command Regulator is busy */
-> +#define VIA_2D_ENG_BUSY_M1     0x00000002  /* 2D Engine is busy */
-> +#define VIA_3D_ENG_BUSY_M1     0x00001FE1  /* 3D Engine is busy */
-> +#define VIA_VR_QUEUE_BUSY_M1   0x00000004  /* Virtual Queue is busy */
-> +
->  #define MAXLOOP                 0xFFFFFF
->  
->  #define VIA_BITBLT_COLOR	1
 
 Thanks,
 
 Florian Tobias Schandinat
+
+> Chris Ball (2):
+>       viafb: Add 1200x900 DCON/LCD panel modes for OLPC XO-1.5
+>       viafb: Do not probe for LVDS/TMDS on OLPC XO-1.5
+> 
+> Deepak Saxena (3):
+>       Minimal support for viafb suspend/resume
+>       VIAFB: Update suspend/resume to selectively restore registers
+>       Remove cursor restore hack in viafb
+> 
+> Harald Welte (4):
+>       [FB] viafb: Fix various resource leaks during module_init()
+>       viafb: use proper pci config API
+>       viafb: Determine type of 2D engine and store it in chip_info
+>       viafb: rework the I2C support in the VIA framebuffer driver
+> 
+> Jonathan Corbet (5):
+>       viafb: Unmap the frame buffer on initialization error
+>       viafb: Retain GEMODE reserved bits
+>       viafb: complete support for VX800/VX855 accelerated framebuffer
+>       viafb: rework suspend/resume
+>       viafb: Only suspend/resume on VX855
+> 
+> Paul Fox (2):
+>       suppress verbose debug messages:  change printk() to DEBUG_MSG()
+>       fix register save count, so it matches the restore count.
+> 
+>  drivers/video/via/accel.c    |   87 ++++++++++++++-----
+>  drivers/video/via/accel.h    |   40 +++++++++
+>  drivers/video/via/chip.h     |    8 +
+>  drivers/video/via/dvi.c      |   35 +++----
+>  drivers/video/via/hw.c       |   84 +++++++++++++-----
+>  drivers/video/via/hw.h       |    4 
+>  drivers/video/via/ioctl.h    |    2 
+>  drivers/video/via/lcd.c      |   29 ++++--
+>  drivers/video/via/lcd.h      |    2 
+>  drivers/video/via/share.h    |    8 +
+>  drivers/video/via/via_i2c.c  |  172 ++++++++++++++++++++++++--------------
+>  drivers/video/via/via_i2c.h  |   43 ++++++---
+>  drivers/video/via/viafbdev.c |  191 +++++++++++++++++++++++++++++++++++++++----
+>  drivers/video/via/viafbdev.h |    5 -
+>  drivers/video/via/viamode.c  |   14 +++
+>  drivers/video/via/vt1636.c   |   36 +++-----
+>  drivers/video/via/vt1636.h   |    2 
+>  17 files changed, 568 insertions(+), 194 deletions(-)
+> 

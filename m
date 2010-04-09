@@ -1,118 +1,92 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: Re: [PATCH 04/16] viafb: Retain GEMODE reserved bits
-Date: Fri, 09 Apr 2010 05:07:34 +0200
-Message-ID: <4BBE99F6.9060300@gmx.de>
-References: <1270746946-12467-1-git-send-email-corbet@lwn.net> <1270746946-12467-5-git-send-email-corbet@lwn.net>
+Subject: Re: [PATCH 05/16] viafb: Determine type of 2D engine and store it
+ in chip_info
+Date: Fri, 09 Apr 2010 05:20:28 +0200
+Message-ID: <4BBE9CFC.2020804@gmx.de>
+References: <1270746946-12467-1-git-send-email-corbet@lwn.net> <1270746946-12467-6-git-send-email-corbet@lwn.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1270746946-12467-5-git-send-email-corbet@lwn.net>
+In-Reply-To: <1270746946-12467-6-git-send-email-corbet@lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: Jonathan Corbet <corbet@lwn.net>
 Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Hi Jon,
-
 Jonathan Corbet schrieb:
-> Commit c3e25673843153ea75fda79a47cf12f10a25ca37 (viafb: 2D engine rewrite)
-> changed the setting of the GEMODE register so that the reserved bits are no
-> longer preserved.  Fix that; at the same time, move this code to its own
-> function and restore the use of symbolic constants.
+> From: Harald Welte <laforge@gnumonks.org>
+> 
+> This will help us for the upcoming support for 2D acceleration using
+> the M1 engine.
+> 
+> [jc: fixed merge conflicts]
+> Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
 
-in your later patch "[PATCH 06/16] viafb: complete support for 
-VX800/VX855 accelerated framebuffer" you reintroduce initializing those 
-bits to 0. That's fine but I can't see a reason for preserving this bits 
-here as it adds useless overhead unless the hardware itself changed some 
-of those bits and behaves differently according to those bits. 
-Additionally the first 2 bits are not reserved but provide a rotation 
-where 00 is what we want (no rotation).
-And if you rip code off hw_bitblt_2 it would be better to do the same 
-with hw_bitblt_1. A quick look reveals that the same function can be 
-used there (the error message would need to be adjusted but that's minor).
-So nack@preserving (unless it would cause problems otherwise) but 
-ack@ripping code off and sharing between hw_bitblt_1 & hw_bitblt_2.
+That's probably a good idea (although most things are already done in 
+the separate blitting functions).
+Just a minor nit:
+Could we change the default so that if someone adds support for a new 
+IGP (and misses this function) we default to either the newest or 
+preferably to none? I've just seen too much poorly maintained code in 
+this driver and defaulting to the oldest is hence a bad idea.
+Otherwise it's fine.
 
 
 Thanks,
 
 Florian Tobias Schandinat
 
-> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 > ---
->  drivers/video/via/accel.c |   48 ++++++++++++++++++++++++++++++---------------
->  1 files changed, 32 insertions(+), 16 deletions(-)
+>  drivers/video/via/chip.h |    8 ++++++++
+>  drivers/video/via/hw.c   |   15 +++++++++++++++
+>  2 files changed, 23 insertions(+), 0 deletions(-)
 > 
-> diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
-> index d5077df..78c0a2b 100644
-> --- a/drivers/video/via/accel.c
-> +++ b/drivers/video/via/accel.c
-> @@ -165,12 +165,41 @@ static int hw_bitblt_1(void __iomem *engine, u8 op, u32 width, u32 height,
->  	return 0;
->  }
+> diff --git a/drivers/video/via/chip.h b/drivers/video/via/chip.h
+> index 474f428..f799e2c 100644
+> --- a/drivers/video/via/chip.h
+> +++ b/drivers/video/via/chip.h
+> @@ -122,9 +122,17 @@ struct lvds_chip_information {
+>  	int i2c_port;
+>  };
 >  
-> +/*
-> + * Figure out an appropriate bytes-per-pixel setting.
-> + */
-> +static int viafb_set_bpp(void __iomem *engine, u8 bpp)
-> +{
-> +	u32 gemode;
+> +/* The type of 2D engine */
+> +enum via_2d_engine {
+> +	VIA_2D_ENG_H2,
+> +	VIA_2D_ENG_H5,
+> +	VIA_2D_ENG_M1,
+> +};
 > +
-> +	/* Preserve the reserved bits */
-> +	gemode = readl(engine + VIA_REG_GEMODE) & 0xfffffcff;
-> +	switch (bpp) {
-> +	case 8:
-> +		gemode |= VIA_GEM_8bpp;
-> +		break;
-> +	case 16:
-> +		gemode |= VIA_GEM_16bpp;
-> +		break;
-> +	case 32:
-> +		gemode |= VIA_GEM_32bpp;
-> +		break;
-> +	default:
-> +		printk(KERN_WARNING "hw_bitblt_2: Unsupported bpp %d\n", bpp);
-> +		return -EINVAL;
-> +	}
-> +	writel(gemode, engine + VIA_REG_GEMODE);
-> +	return 0;
-> +}
-> +
-> +
->  static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
->  	u8 dst_bpp, u32 dst_addr, u32 dst_pitch, u32 dst_x, u32 dst_y,
->  	u32 *src_mem, u32 src_addr, u32 src_pitch, u32 src_x, u32 src_y,
->  	u32 fg_color, u32 bg_color, u8 fill_rop)
->  {
->  	u32 ge_cmd = 0, tmp, i;
-> +	int ret;
->  
->  	if (!op || op > 3) {
->  		printk(KERN_WARNING "hw_bitblt_2: Invalid operation: %d\n", op);
-> @@ -204,22 +233,9 @@ static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
+>  struct chip_information {
+>  	int gfx_chip_name;
+>  	int gfx_chip_revision;
+> +	enum via_2d_engine twod_engine;
+>  	struct tmds_chip_information tmds_chip_info;
+>  	struct lvds_chip_information lvds_chip_info;
+>  	struct lvds_chip_information lvds_chip_info2;
+> diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+> index f2e4bda..963704e 100644
+> --- a/drivers/video/via/hw.c
+> +++ b/drivers/video/via/hw.c
+> @@ -2034,6 +2034,21 @@ static void init_gfx_chip_info(struct pci_dev *pdev,
+>  				CX700_REVISION_700;
 >  		}
 >  	}
+> +
+> +	/* Determine which 2D engine we have */
+> +	switch (viaparinfo->chip_info->gfx_chip_name) {
+> +	case UNICHROME_VX800:
+> +	case UNICHROME_VX855:
+> +		viaparinfo->chip_info->twod_engine = VIA_2D_ENG_M1;
+> +		break;
+> +	case UNICHROME_K8M890:
+> +	case UNICHROME_P4M900:
+> +		viaparinfo->chip_info->twod_engine = VIA_2D_ENG_H5;
+> +		break;
+> +	default:
+> +		viaparinfo->chip_info->twod_engine = VIA_2D_ENG_H2;
+> +		break;
+> +	}
+>  }
 >  
-> -	switch (dst_bpp) {
-> -	case 8:
-> -		tmp = 0x00000000;
-> -		break;
-> -	case 16:
-> -		tmp = 0x00000100;
-> -		break;
-> -	case 32:
-> -		tmp = 0x00000300;
-> -		break;
-> -	default:
-> -		printk(KERN_WARNING "hw_bitblt_2: Unsupported bpp %d\n",
-> -			dst_bpp);
-> -		return -EINVAL;
-> -	}
-> -	writel(tmp, engine + 0x04);
-> +	ret = viafb_set_bpp(engine, dst_bpp);
-> +	if (ret)
-> +		return ret;
->  
->  	if (op == VIA_BITBLT_FILL)
->  		tmp = 0;
+>  static void init_tmds_chip_info(void)

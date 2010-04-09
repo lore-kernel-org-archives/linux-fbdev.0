@@ -1,30 +1,38 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: Re: [PATCH 03/16] viafb: Unmap the frame buffer on initialization
- error
-Date: Thu, 08 Apr 2010 20:55:59 +0200
-Message-ID: <4BBE26BF.3000404@gmx.de>
-References: <1270746946-12467-1-git-send-email-corbet@lwn.net> <1270746946-12467-4-git-send-email-corbet@lwn.net>
+Subject: Re: [PATCH 04/16] viafb: Retain GEMODE reserved bits
+Date: Fri, 09 Apr 2010 05:07:34 +0200
+Message-ID: <4BBE99F6.9060300@gmx.de>
+References: <1270746946-12467-1-git-send-email-corbet@lwn.net> <1270746946-12467-5-git-send-email-corbet@lwn.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1270746946-12467-4-git-send-email-corbet@lwn.net>
+In-Reply-To: <1270746946-12467-5-git-send-email-corbet@lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: Jonathan Corbet <corbet@lwn.net>
 Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Jonathan Corbet schrieb:
-> This was part of Harald's "make viafb a first-class citizen using
-> pci_driver" patch, but somehow got dropped when that patch went into
-> mainline.
+Hi Jon,
 
-Well it was dropped because the patch introducing the goto_error_out 
-logic wasn't backported that time because I planned to rewrite the 
-framebuffer initialization to use a common function for multiple 
-framebuffers.
-As we now (due to your previous patches) have this logic it looks good 
-to me.
+Jonathan Corbet schrieb:
+> Commit c3e25673843153ea75fda79a47cf12f10a25ca37 (viafb: 2D engine rewrite)
+> changed the setting of the GEMODE register so that the reserved bits are no
+> longer preserved.  Fix that; at the same time, move this code to its own
+> function and restore the use of symbolic constants.
+
+in your later patch "[PATCH 06/16] viafb: complete support for 
+VX800/VX855 accelerated framebuffer" you reintroduce initializing those 
+bits to 0. That's fine but I can't see a reason for preserving this bits 
+here as it adds useless overhead unless the hardware itself changed some 
+of those bits and behaves differently according to those bits. 
+Additionally the first 2 bits are not reserved but provide a rotation 
+where 00 is what we want (no rotation).
+And if you rip code off hw_bitblt_2 it would be better to do the same 
+with hw_bitblt_1. A quick look reveals that the same function can be 
+used there (the error message would need to be adjusted but that's minor).
+So nack@preserving (unless it would cause problems otherwise) but 
+ack@ripping code off and sharing between hw_bitblt_1 & hw_bitblt_2.
 
 
 Thanks,
@@ -33,28 +41,78 @@ Florian Tobias Schandinat
 
 > Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 > ---
->  drivers/video/via/viafbdev.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
+>  drivers/video/via/accel.c |   48 ++++++++++++++++++++++++++++++---------------
+>  1 files changed, 32 insertions(+), 16 deletions(-)
 > 
-> diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-> index 91bfe6d..4a34d4f 100644
-> --- a/drivers/video/via/viafbdev.c
-> +++ b/drivers/video/via/viafbdev.c
-> @@ -1991,7 +1991,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
->  		if (!viafbinfo1) {
->  			printk(KERN_ERR
->  			"allocate the second framebuffer struct error\n");
-> -			goto out_delete_i2c;
-> +			goto out_unmap_screen;
+> diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
+> index d5077df..78c0a2b 100644
+> --- a/drivers/video/via/accel.c
+> +++ b/drivers/video/via/accel.c
+> @@ -165,12 +165,41 @@ static int hw_bitblt_1(void __iomem *engine, u8 op, u32 width, u32 height,
+>  	return 0;
+>  }
+>  
+> +/*
+> + * Figure out an appropriate bytes-per-pixel setting.
+> + */
+> +static int viafb_set_bpp(void __iomem *engine, u8 bpp)
+> +{
+> +	u32 gemode;
+> +
+> +	/* Preserve the reserved bits */
+> +	gemode = readl(engine + VIA_REG_GEMODE) & 0xfffffcff;
+> +	switch (bpp) {
+> +	case 8:
+> +		gemode |= VIA_GEM_8bpp;
+> +		break;
+> +	case 16:
+> +		gemode |= VIA_GEM_16bpp;
+> +		break;
+> +	case 32:
+> +		gemode |= VIA_GEM_32bpp;
+> +		break;
+> +	default:
+> +		printk(KERN_WARNING "hw_bitblt_2: Unsupported bpp %d\n", bpp);
+> +		return -EINVAL;
+> +	}
+> +	writel(gemode, engine + VIA_REG_GEMODE);
+> +	return 0;
+> +}
+> +
+> +
+>  static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
+>  	u8 dst_bpp, u32 dst_addr, u32 dst_pitch, u32 dst_x, u32 dst_y,
+>  	u32 *src_mem, u32 src_addr, u32 src_pitch, u32 src_x, u32 src_y,
+>  	u32 fg_color, u32 bg_color, u8 fill_rop)
+>  {
+>  	u32 ge_cmd = 0, tmp, i;
+> +	int ret;
+>  
+>  	if (!op || op > 3) {
+>  		printk(KERN_WARNING "hw_bitblt_2: Invalid operation: %d\n", op);
+> @@ -204,22 +233,9 @@ static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
 >  		}
->  		viaparinfo1 = viafbinfo1->par;
->  		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
-> @@ -2086,6 +2086,8 @@ out_dealloc_cmap:
->  out_fb1_release:
->  	if (viafbinfo1)
->  		framebuffer_release(viafbinfo1);
-> +out_unmap_screen:
-> +	iounmap(viafbinfo->screen_base);
->  out_delete_i2c:
->  	viafb_delete_i2c_buss(viaparinfo);
->  out_fb_release:
+>  	}
+>  
+> -	switch (dst_bpp) {
+> -	case 8:
+> -		tmp = 0x00000000;
+> -		break;
+> -	case 16:
+> -		tmp = 0x00000100;
+> -		break;
+> -	case 32:
+> -		tmp = 0x00000300;
+> -		break;
+> -	default:
+> -		printk(KERN_WARNING "hw_bitblt_2: Unsupported bpp %d\n",
+> -			dst_bpp);
+> -		return -EINVAL;
+> -	}
+> -	writel(tmp, engine + 0x04);
+> +	ret = viafb_set_bpp(engine, dst_bpp);
+> +	if (ret)
+> +		return ret;
+>  
+>  	if (op == VIA_BITBLT_FILL)
+>  		tmp = 0;

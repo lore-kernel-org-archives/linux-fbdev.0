@@ -1,83 +1,63 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Fri, 30 Apr 2010 20:01:43 +0000
-Subject: Re: [PATCH 13/30] viafb: Separate global and fb-specific data
-Message-Id: <20100430220143.000fb535@neptune.home>
+From: marcin.slusarz@gmail.com
+Date: Sat, 10 Apr 2010 19:55:32 +0000
+Subject: [PATCH 1/3] fbmem: fix aperture overlapping check
+Message-Id: <1270929334-3742-1-git-send-email-marcin.slusarz@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
-	<1272493051-25380-14-git-send-email-corbet@lwn.net>
-	<20100429201902.6379f8d3@neptune.home>
-	<20100430102157.5eb59055@bike.lwn.net>
-	<4BDB1C46.8020101@gmx.de>
-	<20100430122236.2357c034@bike.lwn.net>
-	<4BDB24ED.7010907@gmx.de>
-In-Reply-To: <4BDB24ED.7010907@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn
+To: LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>
+Cc: nouveau@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Peter Jones <pjones@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Dave Airlie <airlied@redhat.com>
 
-On Fri, 30 April 2010 Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
-> Jonathan Corbet schrieb:
-> > On Fri, 30 Apr 2010 20:07:02 +0200
-> > Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
-> > 
-> >> Please don't do this. The reason for not failing in viafb is that 
-> >> ioremap failure of the engine is not critical it just disables the 
-> >> hardware acceleration but otherwiese it works quite nice. The problem is 
-> >> that ioremap failures are quite common as we really try to remap huge 
-> >> amount (sometimes above 128 or even 256 MB). 
-> > 
-> > But...this region is small should never be hard to remap.  Are you sure
-> > you've seen trouble with the engine region?
-> 
-> Well I agree that after the reordering you did it should more likely 
-> work. But it remains valid that viafb can work without it and so it 
-> should (IMHO).
-> Yes there were actually problems, especially since the really old code 
-> did not even catch the error:
-> https://bugzilla.kernel.org/show_bug.cgi?id976
+fb_do_apertures_overlap is returning wrong value when one aperture
+is completely whithin the other. Add generic ranges_overlap macro
+(probably kernel.h candidate) and use it here.
 
-Ok, but then it would help to have the comment explain that ioremap
-is allowed to fail but will disable accel or what other impact it has
-(probably also put similar comment at declaration of vdev->engine_mmio)
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Peter Jones <pjones@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ drivers/video/fbmem.c |   24 +++++++++++++++++-------
+ 1 files changed, 17 insertions(+), 7 deletions(-)
 
-Thanks,
-Bruno
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index a15b44e..41f2e5e 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1468,15 +1468,25 @@ static int fb_check_foreignness(struct fb_info *fi)
+ 	return 0;
+ }
+ 
++/**
++ * ranges_overlap - check whether two ranges overlap (their intersection is not empty)
++ * @start1: start of the first range
++ * @size1:  length of the first range
++ * @start2: start of the second range
++ * @size2:  length of the second range
++ */
++#define ranges_overlap(start1, size1, start2, size2) ({	\
++	typeof(start1) __start1 = (start1);		\
++	typeof(size1)  __size1  = (size1);		\
++	typeof(start2) __start2 = (start2);		\
++	typeof(size2)  __size2  = (size2);		\
++	__start1 < __start2 + __size2 && __start1 + __size1 > __start2; \
++})
++
+ static bool fb_do_apertures_overlap(struct fb_info *gen, struct fb_info *hw)
+ {
+-	/* is the generic aperture base the same as the HW one */
+-	if (gen->aperture_base = hw->aperture_base)
+-		return true;
+-	/* is the generic aperture base inside the hw base->hw base+size */
+-	if (gen->aperture_base > hw->aperture_base && gen->aperture_base <= hw->aperture_base + hw->aperture_size)
+-		return true;
+-	return false;
++	return ranges_overlap(gen->aperture_base, gen->aperture_size,
++				hw->aperture_base, hw->aperture_size);
+ }
+ /**
+  *	register_framebuffer - registers a frame buffer device
+-- 
+1.7.0.4
 
-
-> >> In fact the bug (or missing 
-> >> feature) is that the first ioremap is fatal and that needs to be fixed 
-> >> on the long run. Sorry but I don't want to make viafb unusable for many 
-> >> people if they don't add the "vmalloc=" kernel option so failing here 
-> >> would be a step in the wrong direction.
-> > 
-> > Is the real problem, perhaps, that we're remapping the entire
-> > framebuffer?  One wonders if we could get away without doing that.
-> > Some quick greppery suggests that the cursor code goes straight to a
-> 
-> > small region of framebuffer memory.  With working acceleration, we
-> > shouldn't need cfb_*().  But, probably, I'm missing something?
-> 
-> That mostly works I just tried it once for fun. But that's probably 
-> nothing we want to have in mainline as the hardware acceleration 
-> functions do at least have the possibility to fail. Possible solutions 
-> would include reducing the remapped memory on error (example: dividing 
-> it each time by 2 and failing if not at least 4 MB could be reamapped) 
-> or remapping it on demand: framebuffer only as big as needed (often 
-> between 4 and 8MB) with the possibility to "grow" and the cursor. The 
-> last would be my favourite as it does not needlessly eats memory space 
-> but is hardest to implement. Probably it will be fixed the next time 
-> I'll work around the memory management (which will be also tricky due to 
-> the framebuffer interface)
-> 
-> > Meanwhile, I can let initialization continue without the engine space.
-> > It kills interrupts/dma/camera, of course, but so be it.
-> 
-> Yeah at least for viafb that would be nice as it does not use any of 
-> these until now.
-> 
-> 
-> Thanks,
-> 
-> Florian Tobias Schandinat

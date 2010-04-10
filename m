@@ -1,47 +1,62 @@
 From: Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH 08/16] viafb: Do not probe for LVDS/TMDS on OLPC XO-1.5
-Date: Fri, 9 Apr 2010 18:19:42 -0600
-Message-ID: <20100409181942.175b375a@bike.lwn.net>
+Subject: Re: [RFC] Initial OLPC Viafb merge
+Date: Fri, 9 Apr 2010 18:27:22 -0600
+Message-ID: <20100409182722.3080bb2d@bike.lwn.net>
 References: <1270746946-12467-1-git-send-email-corbet@lwn.net>
-	<1270746946-12467-9-git-send-email-corbet@lwn.net>
-	<4BBF9EE7.50707@gmx.de>
+	<4BBEBE87.4000809@gmx.de>
+	<20100409124626.0b150104@bike.lwn.net>
+	<4BBFB914.1020600@gmx.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4BBF9EE7.50707@gmx.de>
+In-Reply-To: <4BBFB914.1020600@gmx.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
 To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 09 Apr 2010 23:40:55 +0200
+On Sat, 10 Apr 2010 01:32:36 +0200
 Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
 
-> I don't like the idea of OLPC specific code. Isn't there any way to 
-> speed this up in general?
+> Please correct me if I am wrong but the remaining 6 patches concerning 
+> suspend&resume look like a real big FIXME. So at the end it is expected 
+> to work only on VX855 and needs something called OFW?
 
-Architecture-specific code happens.  OLPCs are wired differently; if
-you go trying to do LVDS out those GPIO ports on an OLPC, you'll not
-end up talking to the hardware you think you're talking to.  The best
-thing to do is to avoid it altogether.
+OFW = OpenFirmware.  You could say BIOS instead.  It's pretty normal to
+expect the BIOS to put things into a semi-rational state at resume time.
 
-> There is not yet even an option for OLPC_XO_1_5 (in contrast to 
-> CONFIG_OLPC) in mainline. Is such a thing planned?
+> It doesn't seem to make much sense to review each of them because the 
+> following patches might or might not correct some of the issues of the 
+> other. It is really a pain to have 6 patches trying to add a single 
+> feature. Is there any way to fix this mess. (I assume you didn't merge 
+> them due to authorship issues?)
 
-Yes, it is.  That's part of the remaining OLPC support code which has
-also been brought forward to 2.6.34 with the intention of mainlining it.
+It's true that one needs to look at the end product.  I only looked at
+the S/R code recently, and tried to fix some of the biggest issues that
+would keep it out of the mainline.
 
-> I can't really see anything that would speak for accepting this patch 
-> now in current mainline, sorry.
+> I think it might be better to drop those for now and wait for viafb to 
+> be in a better shape before adding this feature. The mode setting should 
+> be in a pretty good shape just 1 or 2 kernel versions ahead so that the 
+> dependency on OFW can be dropped I think.
+> 
+> Sorry but I really think this is not in a shape where merging it is an 
+> option. I think it would be better to skip those suspend/resume patches 
+> for the next merge window.
 
-If you can come up with a better solution to the problem, I'm all
-ears.  But without it you'll have a hard time running mainline kernels
-on XO 1.5 systems.  It is all coming, but the OLPC folks are scrambling
-to get everything together; I don't think we really need to make things
-harder for them.
+Well, if we want to keep s/r out of tree, we can do that.  It will
+complicate the merge of the other stuff, since it's got hooks into the
+GPIO and camera code too.  But, like everything else I've posted so
+far, it's not the work that I personally set out to do.  I can push
+that work on others :)
 
-That said, machine_is_olpc() is properly defined for all
-configurations, so the #ifdefs can (and should) come out.
+That said, the suspend/resume support in this patch set makes suspend
+work on one chipset, and probably comes pretty close on the others
+without breaking anything there.  I don't see the harm in merging it;
+it makes the code better than it is now.  I would rather not have to
+separate it out from the rest.  But I'll not fight over this one; if
+there's real opposition then we can force OLPC to continue to carry it
+out of tree.
 
 jon

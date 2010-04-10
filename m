@@ -1,45 +1,47 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: Re: [RFC] Initial OLPC Viafb merge
-Date: Sat, 10 Apr 2010 01:32:36 +0200
-Message-ID: <4BBFB914.1020600@gmx.de>
-References: <1270746946-12467-1-git-send-email-corbet@lwn.net>	<4BBEBE87.4000809@gmx.de> <20100409124626.0b150104@bike.lwn.net>
+From: Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH 08/16] viafb: Do not probe for LVDS/TMDS on OLPC XO-1.5
+Date: Fri, 9 Apr 2010 18:19:42 -0600
+Message-ID: <20100409181942.175b375a@bike.lwn.net>
+References: <1270746946-12467-1-git-send-email-corbet@lwn.net>
+	<1270746946-12467-9-git-send-email-corbet@lwn.net>
+	<4BBF9EE7.50707@gmx.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20100409124626.0b150104@bike.lwn.net>
+In-Reply-To: <4BBF9EE7.50707@gmx.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Jonathan Corbet <corbet@lwn.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Jonathan Corbet schrieb:
-> Sorry, the only working platform I had was the OLPC 2.6.31 tree, and
-> there was little point in publishing that by the time it was ready to
-> be seen.  That said, I *did* point out the tree where the work could be
-> seen for anybody who was interested.
+On Fri, 09 Apr 2010 23:40:55 +0200
+Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
 
-Well the time I looked in your tree I didn't see any of the remaining 
-suspend/resume efforts. Okay perhaps I should have rechecked it now and 
-than.
-Please correct me if I am wrong but the remaining 6 patches concerning 
-suspend&resume look like a real big FIXME. So at the end it is expected 
-to work only on VX855 and needs something called OFW?
-It doesn't seem to make much sense to review each of them because the 
-following patches might or might not correct some of the issues of the 
-other. It is really a pain to have 6 patches trying to add a single 
-feature. Is there any way to fix this mess. (I assume you didn't merge 
-them due to authorship issues?)
-I think it might be better to drop those for now and wait for viafb to 
-be in a better shape before adding this feature. The mode setting should 
-be in a pretty good shape just 1 or 2 kernel versions ahead so that the 
-dependency on OFW can be dropped I think.
+> I don't like the idea of OLPC specific code. Isn't there any way to 
+> speed this up in general?
 
-Sorry but I really think this is not in a shape where merging it is an 
-option. I think it would be better to skip those suspend/resume patches 
-for the next merge window.
+Architecture-specific code happens.  OLPCs are wired differently; if
+you go trying to do LVDS out those GPIO ports on an OLPC, you'll not
+end up talking to the hardware you think you're talking to.  The best
+thing to do is to avoid it altogether.
 
+> There is not yet even an option for OLPC_XO_1_5 (in contrast to 
+> CONFIG_OLPC) in mainline. Is such a thing planned?
 
-Thanks,
+Yes, it is.  That's part of the remaining OLPC support code which has
+also been brought forward to 2.6.34 with the intention of mainlining it.
 
-Florian Tobias Schandinat
+> I can't really see anything that would speak for accepting this patch 
+> now in current mainline, sorry.
+
+If you can come up with a better solution to the problem, I'm all
+ears.  But without it you'll have a hard time running mainline kernels
+on XO 1.5 systems.  It is all coming, but the OLPC folks are scrambling
+to get everything together; I don't think we really need to make things
+harder for them.
+
+That said, machine_is_olpc() is properly defined for all
+configurations, so the #ifdefs can (and should) come out.
+
+jon

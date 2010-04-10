@@ -1,59 +1,51 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: Re: [RFC] Initial OLPC Viafb merge
-Date: Sat, 10 Apr 2010 03:02:28 +0200
-Message-ID: <4BBFCE24.2070207@gmx.de>
-References: <1270746946-12467-1-git-send-email-corbet@lwn.net>	<4BBEBE87.4000809@gmx.de>	<20100409124626.0b150104@bike.lwn.net>	<4BBFB914.1020600@gmx.de> <20100409182722.3080bb2d@bike.lwn.net>
+From: Harald Welte <laforge@gnumonks.org>
+Subject: Re: [PATCH 08/16] viafb: Do not probe for LVDS/TMDS on OLPC XO-1.5
+Date: Sat, 10 Apr 2010 08:34:32 +0200
+Message-ID: <20100410063431.GR14576@prithivi.gnumonks.org>
+References: <1270746946-12467-1-git-send-email-corbet@lwn.net>
+ <1270746946-12467-9-git-send-email-corbet@lwn.net>
+ <4BBF9EE7.50707@gmx.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20100409182722.3080bb2d@bike.lwn.net>
+Content-Disposition: inline
+In-Reply-To: <4BBF9EE7.50707@gmx.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Jonathan Corbet schrieb:
-> On Sat, 10 Apr 2010 01:32:36 +0200
-> Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
+Hi Florian,
+
+On Fri, Apr 09, 2010 at 11:40:55PM +0200, Florian Tobias Schandinat wrote:
+
+> >The i2c transactions involved in detecting LVDS (9 seconds) and TMDS
+> >(16 seconds) add an extra 25 seconds to viafb load time on the XO-1.5.
 > 
->> Please correct me if I am wrong but the remaining 6 patches concerning 
->> suspend&resume look like a real big FIXME. So at the end it is expected 
->> to work only on VX855 and needs something called OFW?
-> 
-> OFW = OpenFirmware.  You could say BIOS instead.  It's pretty normal to
-> expect the BIOS to put things into a semi-rational state at resume time.
+> I don't like the idea of OLPC specific code. Isn't there any way to
+> speed this up in general?
 
-So its more or less the same I always do for testing the module.
+I'm quite sure it can be sped up at least a bit... however:
 
-> Well, if we want to keep s/r out of tree, we can do that.  It will
-> complicate the merge of the other stuff, since it's got hooks into the
-> GPIO and camera code too.  But, like everything else I've posted so
-> far, it's not the work that I personally set out to do.  I can push
-> that work on others :)
-> 
-> That said, the suspend/resume support in this patch set makes suspend
-> work on one chipset, and probably comes pretty close on the others
-> without breaking anything there.  I don't see the harm in merging it;
-> it makes the code better than it is now.  I would rather not have to
-> separate it out from the rest.  But I'll not fight over this one; if
-> there's real opposition then we can force OLPC to continue to carry it
-> out of tree.
+> There is not yet even an option for OLPC_XO_1_5 (in contrast to
+> CONFIG_OLPC) in mainline. Is such a thing planned?
+> I can't really see anything that would speak for accepting this
+> patch now in current mainline, sorry.
 
-At least I'd like some more time (multiple weeks) to have a look at this 
-issue & patches and try to come up with improvements that make it likely 
-work on other IGPs and eventually not needing any BIOS/OFW. I agree its 
-already an improvement but certainly one of the kind I like less as VIA 
-could come up with such "improvements" too. IMHO it's a bad thing to 
-push one chipset first if the target is to support all equally well (as 
-long as the hardware permits).
-So I'd be glad if you could go on with the patches that are less painful 
-and get them ready for the merge window (as I really don't have a clue 
-how long it will take me to get the suspend/resume stuff to a state I 
-consider acceptable). Perhaps we should make suspend and resume a 
-configure option and mark it as experimental?
+I think there is little choice in this matter.  It is a _very_ uncommon
+hardware design decision to attach anything but the DDC to one of the
+I2C ports of the graphics chip, and the assumption that there is only
+DDC connected is made in VIA's BIOS (not used in OLPC), the linux
+framebuffer driver, as well as VIA's own Xorg driver and I believe as
+well in OpenChrome, too :(
 
+OLPC has told me that the particular chip that is attached to I2C is
+also very timing sensitive and not 100% I2C compliant, so I think it is
+the safe choice to not try to do DDC on that port for the OLPC 1.5.
 
-Thanks,
-
-Florian Tobias Schandinat
+-- 
+- Harald Welte <laforge@gnumonks.org>           http://laforge.gnumonks.org/
+============================================================================
+"Privacy in residential applications is a desirable marketing option."
+                                                  (ETSI EN 300 175-7 Ch. A6)

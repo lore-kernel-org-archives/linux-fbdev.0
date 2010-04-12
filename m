@@ -1,55 +1,239 @@
-From: Anatolij Gustschin <agust@denx.de>
-Date: Thu, 29 Apr 2010 23:49:37 +0000
-Subject: [PATCH 4/5] powerpc: doc/dts-bindings: update doc of FSL DIU bindings
-Message-Id: <1272584978-19063-5-git-send-email-agust@denx.de>
+From: marcin.slusarz@gmail.com
+Date: Mon, 12 Apr 2010 22:12:10 +0000
+Subject: [PATCHv2 2/2] fbmem, drm/nouveau: kick firmware framebuffers as soon as possible
+Message-Id: <1271110330-3218-2-git-send-email-marcin.slusarz@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272584978-19063-1-git-send-email-agust@denx.de>
-In-Reply-To: <1272584978-19063-1-git-send-email-agust@denx.de>
+References: <1271110330-3218-1-git-send-email-marcin.slusarz@gmail.com>
+In-Reply-To: <1271110330-3218-1-git-send-email-marcin.slusarz@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@ozlabs.org
-Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de, devicetree-discuss@lists.ozlabs.org, yorksun@freescale.com
+To: LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>
+Cc: nouveau@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Didier Spaier <didier.spaier@epsm.fr>, Ben Skeggs <bskeggs@redhat.com>, Dave Airlie <airlied@redhat.com>, Peter Jones <pjones@redhat.com>, Andrew Morton <akpm@linux-foundation.org>
 
-Update compatible and interrupt properties description.
-Furthermore an example for the MPC5121 has been added.
+Currently vesafb/efifb/... is kicked when hardware driver is registering
+framebuffer. To do it hardware must be fully functional, so there's a short
+window between start of initialisation and framebuffer registration when
+two drivers touch the hardware. Unfortunately sometimes it breaks nouveau
+initialisation.
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Fix it by kicking firmware driver(s) before we start touching the hardware.
+
+Reported-by: Didier Spaier <didier.spaier@epsm.fr>
+Tested-by: Didier Spaier <didier.spaier@epsm.fr>
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Ben Skeggs <bskeggs@redhat.com>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Peter Jones <pjones@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- Documentation/powerpc/dts-bindings/fsl/diu.txt |   14 ++++++++++++--
- 1 files changed, 12 insertions(+), 2 deletions(-)
+v2 - rebase after drop of patch 1/3 + compile fix
+---
+ drivers/gpu/drm/nouveau/nouveau_drv.h   |    2 +
+ drivers/gpu/drm/nouveau/nouveau_fbcon.c |   19 +-------------
+ drivers/gpu/drm/nouveau/nouveau_state.c |   43 +++++++++++++++++++++++++++++++
+ drivers/video/fbmem.c                   |   43 ++++++++++++++++++-------------
+ include/linux/fb.h                      |    1 +
+ 5 files changed, 72 insertions(+), 36 deletions(-)
 
-diff --git a/Documentation/powerpc/dts-bindings/fsl/diu.txt b/Documentation/powerpc/dts-bindings/fsl/diu.txt
-index deb35de..326cddf 100644
---- a/Documentation/powerpc/dts-bindings/fsl/diu.txt
-+++ b/Documentation/powerpc/dts-bindings/fsl/diu.txt
-@@ -4,10 +4,12 @@ The Freescale DIU is a LCD controller, with proper hardware, it can also
- drive DVI monitors.
- 
- Required properties:
--- compatible : should be "fsl-diu".
-+- compatible : should be "fsl,diu" or "fsl,mpc5121-diu".
- - reg : should contain at least address and length of the DIU register
-   set.
--- Interrupts : one DIU interrupt should be describe here.
-+- interrupts : one DIU interrupt should be described here.
-+- interrupt-parent : the phandle for the interrupt controller that
-+  services interrupts for this device.
- 
- Example (MPC8610HPCD):
- 	display@2c000 {
-@@ -16,3 +18,11 @@ Example (MPC8610HPCD):
- 		interrupts = <72 2>;
- 		interrupt-parent = <&mpic>;
- 	};
+diff --git a/drivers/gpu/drm/nouveau/nouveau_drv.h b/drivers/gpu/drm/nouveau/nouveau_drv.h
+index cb16a1b..a1f61f7 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_drv.h
++++ b/drivers/gpu/drm/nouveau/nouveau_drv.h
+@@ -621,6 +621,8 @@ struct drm_nouveau_private {
+ 	struct {
+ 		struct dentry *channel_root;
+ 	} debugfs;
 +
-+Example for MPC5121:
-+	display@2100 {
-+		compatible = "fsl,mpc5121-diu";
-+		reg = <0x2100 0x100>;
-+		interrupts = <64 0x8>;
-+		interrupt-parent = <&ipic>;
-+	};
++	struct apertures_struct *apertures;
+ };
+ 
+ static inline struct drm_nouveau_private *
+diff --git a/drivers/gpu/drm/nouveau/nouveau_fbcon.c b/drivers/gpu/drm/nouveau/nouveau_fbcon.c
+index 206368b..5e4367b 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_fbcon.c
++++ b/drivers/gpu/drm/nouveau/nouveau_fbcon.c
+@@ -195,7 +195,6 @@ nouveau_fbcon_create(struct drm_device *dev, uint32_t fb_width,
+ 	struct drm_mode_fb_cmd mode_cmd;
+ 	struct pci_dev *pdev = dev->pdev;
+ 	struct device *device = &pdev->dev;
+-	struct apertures_struct *aper;
+ 	int size, ret;
+ 
+ 	mode_cmd.width = surface_width;
+@@ -282,28 +281,12 @@ nouveau_fbcon_create(struct drm_device *dev, uint32_t fb_width,
+ 	info->fix.mmio_len = pci_resource_len(pdev, 1);
+ 
+ 	/* Set aperture base/size for vesafb takeover */
+-	aper = info->apertures = alloc_apertures(3);
++	info->apertures = dev_priv->apertures;
+ 	if (!info->apertures) {
+ 		ret = -ENOMEM;
+ 		goto out_unref;
+ 	}
+ 
+-	aper->ranges[0].base = pci_resource_start(pdev, 1);
+-	aper->ranges[0].size = pci_resource_len(pdev, 1);
+-	aper->count = 1;
+-
+-	if (pci_resource_len(pdev, 2)) {
+-		aper->ranges[aper->count].base = pci_resource_start(pdev, 2);
+-		aper->ranges[aper->count].size = pci_resource_len(pdev, 2);
+-		aper->count++;
+-	}
+-
+-	if (pci_resource_len(pdev, 3)) {
+-		aper->ranges[aper->count].base = pci_resource_start(pdev, 3);
+-		aper->ranges[aper->count].size = pci_resource_len(pdev, 3);
+-		aper->count++;
+-	}
+-
+ 	info->pixmap.size = 64*1024;
+ 	info->pixmap.buf_align = 8;
+ 	info->pixmap.access_align = 32;
+diff --git a/drivers/gpu/drm/nouveau/nouveau_state.c b/drivers/gpu/drm/nouveau/nouveau_state.c
+index a9e9cf3..cfa3239 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_state.c
++++ b/drivers/gpu/drm/nouveau/nouveau_state.c
+@@ -636,6 +636,43 @@ static void nouveau_OF_copy_vbios_to_ramin(struct drm_device *dev)
+ #endif
+ }
+ 
++static struct apertures_struct *nouveau_get_apertures(struct drm_device *dev)
++{
++	struct pci_dev *pdev = dev->pdev;
++	struct apertures_struct *aper = alloc_apertures(3);
++	if (!aper)
++		return NULL;
++
++	aper->ranges[0].base = pci_resource_start(pdev, 1);
++	aper->ranges[0].size = pci_resource_len(pdev, 1);
++	aper->count = 1;
++
++	if (pci_resource_len(pdev, 2)) {
++		aper->ranges[aper->count].base = pci_resource_start(pdev, 2);
++		aper->ranges[aper->count].size = pci_resource_len(pdev, 2);
++		aper->count++;
++	}
++
++	if (pci_resource_len(pdev, 3)) {
++		aper->ranges[aper->count].base = pci_resource_start(pdev, 3);
++		aper->ranges[aper->count].size = pci_resource_len(pdev, 3);
++		aper->count++;
++	}
++
++	return aper;
++}
++
++static int nouveau_remove_conflicting_drivers(struct drm_device *dev)
++{
++	struct drm_nouveau_private *dev_priv = dev->dev_private;
++	dev_priv->apertures = nouveau_get_apertures(dev);
++	if (!dev_priv->apertures)
++		return -ENOMEM;
++	
++	remove_conflicting_framebuffers(dev_priv->apertures, "nouveaufb");
++	return 0;
++}
++
+ int nouveau_load(struct drm_device *dev, unsigned long flags)
+ {
+ 	struct drm_nouveau_private *dev_priv;
+@@ -723,6 +760,12 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
+ 	NV_INFO(dev, "Detected an NV%2x generation card (0x%08x)\n",
+ 		dev_priv->card_type, reg0);
+ 
++	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
++		int ret = nouveau_remove_conflicting_drivers(dev);
++		if (ret)
++			return ret;
++	}
++
+ 	/* map larger RAMIN aperture on NV40 cards */
+ 	dev_priv->ramin  = NULL;
+ 	if (dev_priv->card_type >= NV_40) {
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 03f2dc2..7cfcd71 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1479,11 +1479,10 @@ static bool apertures_overlap(struct aperture *gen, struct aperture *hw)
+ 	return false;
+ }
+ 
+-static bool fb_do_apertures_overlap(struct fb_info *gen, struct fb_info *hw)
++static bool fb_do_apertures_overlap(struct apertures_struct *gena,
++				    struct apertures_struct *hwa)
+ {
+ 	int i, j;
+-	struct apertures_struct *hwa = hw->apertures;
+-	struct apertures_struct *gena = gen->apertures;
+ 	if (!hwa || !gena)
+ 		return false;
+ 
+@@ -1501,6 +1500,28 @@ static bool fb_do_apertures_overlap(struct fb_info *gen, struct fb_info *hw)
+ 	return false;
+ }
+ 
++void remove_conflicting_framebuffers(struct apertures_struct *a, const char *name)
++{
++	int i;
++
++	/* check all firmware fbs and kick off if the base addr overlaps */
++	for (i = 0 ; i < FB_MAX; i++) {
++		if (!registered_fb[i])
++			continue;
++
++		if (!(registered_fb[i]->flags & FBINFO_MISC_FIRMWARE))
++			continue;
++
++		if (fb_do_apertures_overlap(registered_fb[i]->apertures, a)) {
++			printk(KERN_ERR "fb: conflicting fb hw usage "
++			       "%s vs %s - removing generic driver\n",
++			       name, registered_fb[i]->fix.id);
++			unregister_framebuffer(registered_fb[i]);
++		}
++	}
++}
++EXPORT_SYMBOL(remove_conflicting_framebuffers);
++
+ /**
+  *	register_framebuffer - registers a frame buffer device
+  *	@fb_info: frame buffer info structure
+@@ -1524,21 +1545,7 @@ register_framebuffer(struct fb_info *fb_info)
+ 	if (fb_check_foreignness(fb_info))
+ 		return -ENOSYS;
+ 
+-	/* check all firmware fbs and kick off if the base addr overlaps */
+-	for (i = 0 ; i < FB_MAX; i++) {
+-		if (!registered_fb[i])
+-			continue;
+-
+-		if (registered_fb[i]->flags & FBINFO_MISC_FIRMWARE) {
+-			if (fb_do_apertures_overlap(registered_fb[i], fb_info)) {
+-				printk(KERN_ERR "fb: conflicting fb hw usage "
+-				       "%s vs %s - removing generic driver\n",
+-				       fb_info->fix.id,
+-				       registered_fb[i]->fix.id);
+-				unregister_framebuffer(registered_fb[i]);
+-			}
+-		}
+-	}
++	remove_conflicting_framebuffers(fb_info->apertures, fb_info->fix.id);
+ 
+ 	num_registered_fb++;
+ 	for (i = 0 ; i < FB_MAX; i++)
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 9605b81..9e854a7 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -970,6 +970,7 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
+ /* drivers/video/fbmem.c */
+ extern int register_framebuffer(struct fb_info *fb_info);
+ extern int unregister_framebuffer(struct fb_info *fb_info);
++extern void remove_conflicting_framebuffers(struct apertures_struct *a, const char *name);
+ extern int fb_prepare_logo(struct fb_info *fb_info, int rotate);
+ extern int fb_show_logo(struct fb_info *fb_info, int rotate);
+ extern char* fb_get_buffer_offset(struct fb_info *info, struct fb_pixmap *buf, u32 size);
 -- 
-1.6.3.3
+1.7.0.4
 

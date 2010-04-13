@@ -1,120 +1,95 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Fri, 30 Apr 2010 16:07:00 +0000
-Subject: [PATCH 1/2] sh: fix a number of Oopses and leaks in SH framebuffer
-Message-Id: <Pine.LNX.4.64.1004301802370.4055@axis700.grange>
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
+Date: Tue, 13 Apr 2010 23:26:00 +0000
+Subject: Re: [PATCH v2 08/10] [ARM] tegra: Add framebuffer driver
+Message-Id: <q2l45a44e481004131626j7f5afbfcsfcf861aa70dab651@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1268721431-24434-1-git-send-email-konkers@google.com>
+	<1271198563-10424-1-git-send-email-konkers@android.com>
+	<1271198563-10424-2-git-send-email-konkers@android.com>
+	<1271198563-10424-3-git-send-email-konkers@android.com>
+	<1271198563-10424-4-git-send-email-konkers@android.com>
+	<1271198563-10424-5-git-send-email-konkers@android.com>
+	<1271198563-10424-6-git-send-email-konkers@android.com>
+	<1271198563-10424-7-git-send-email-konkers@android.com>
+	<1271198563-10424-8-git-send-email-konkers@android.com>
+	<1271198563-10424-9-git-send-email-konkers@android.com>
+In-Reply-To: <1271198563-10424-9-git-send-email-konkers@android.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-Fix a number of Oopses, memory leaks and unbalanced calls on error paths in
-sh_mobile_lcdcfb.c.
+Please CC fbdev as well. Thanks.
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
----
+On Wed, Apr 14, 2010 at 6:42 AM,  <konkers@android.com> wrote:
+> +/* palette attary used by the fbcon */
+> +u32 pseudo_palette[16];
 
-Patches are not really related, but the second one applies on top of this 
-one.
+attary?
 
- drivers/video/sh_mobile_lcdcfb.c |   27 +++++++++++++--------------
- 1 files changed, 13 insertions(+), 14 deletions(-)
+> +static int tegra_plat_probe(struct platform_device *pdev)
+> +{
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index bbd1dbf..e498fb5 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -694,6 +694,7 @@ static int sh_mobile_lcdc_setup_clocks(struct platform_device *pdev,
- 	 * 1) Enable Runtime PM
- 	 * 2) Force Runtime PM Resume since hardware is accessed from probe()
- 	 */
-+	priv->dev = &pdev->dev;
- 	pm_runtime_enable(priv->dev);
- 	pm_runtime_resume(priv->dev);
- 	return 0;
-@@ -956,25 +957,24 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
- 
- 	if (!pdev->dev.platform_data) {
- 		dev_err(&pdev->dev, "no platform data defined\n");
--		error = -EINVAL;
--		goto err0;
-+		return -EINVAL;
- 	}
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	i = platform_get_irq(pdev, 0);
- 	if (!res || i < 0) {
- 		dev_err(&pdev->dev, "cannot get platform resources\n");
--		error = -ENOENT;
--		goto err0;
-+		return -ENOENT;
- 	}
- 
- 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
- 	if (!priv) {
- 		dev_err(&pdev->dev, "cannot allocate device data\n");
--		error = -ENOMEM;
--		goto err0;
-+		return -ENOMEM;
- 	}
- 
-+	platform_set_drvdata(pdev, priv);
-+
- 	error = request_irq(i, sh_mobile_lcdc_irq, IRQF_DISABLED,
- 			    dev_name(&pdev->dev), priv);
- 	if (error) {
-@@ -983,8 +983,6 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
- 	}
- 
- 	priv->irq = i;
--	priv->dev = &pdev->dev;
--	platform_set_drvdata(pdev, priv);
- 	pdata = pdev->dev.platform_data;
- 
- 	j = 0;
-@@ -1098,9 +1096,9 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
- 		info = ch->info;
- 
- 		if (info->fbdefio) {
--			priv->ch->sglist = vmalloc(sizeof(struct scatterlist) *
-+			ch->sglist = vmalloc(sizeof(struct scatterlist) *
- 					info->fix.smem_len >> PAGE_SHIFT);
--			if (!priv->ch->sglist) {
-+			if (!ch->sglist) {
- 				dev_err(&pdev->dev, "cannot allocate sglist\n");
- 				goto err1;
- 			}
-@@ -1125,9 +1123,9 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
- 	}
- 
- 	return 0;
-- err1:
-+err1:
- 	sh_mobile_lcdc_remove(pdev);
-- err0:
-+
- 	return error;
- }
- 
-@@ -1138,7 +1136,7 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
- 	int i;
- 
- 	for (i = 0; i < ARRAY_SIZE(priv->ch); i++)
--		if (priv->ch[i].info->dev)
-+		if (priv->ch[i].info && priv->ch[i].info->dev)
- 			unregister_framebuffer(priv->ch[i].info);
- 
- 	sh_mobile_lcdc_stop(priv);
-@@ -1161,7 +1159,8 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
- 	if (priv->dot_clk)
- 		clk_put(priv->dot_clk);
- 
--	pm_runtime_disable(priv->dev);
-+	if (priv->dev)
-+		pm_runtime_disable(priv->dev);
- 
- 	if (priv->base)
- 		iounmap(priv->base);
--- 
-1.6.2.4
+> + =A0 =A0 =A0 info =3D framebuffer_alloc(sizeof(struct tegra_fb_info), &p=
+dev->dev);
+> + =A0 =A0 =A0 if (!info) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -ENOMEM;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err;
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 irq =3D platform_get_irq(pdev, 0);
+> + =A0 =A0 =A0 if (irq <=3D 0) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_debug("%s: no irq\n", pdev->name);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -ENOENT;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_free;
+> + =A0 =A0 =A0 }
 
+I see the irq get and the request_irq.
+
+> +
+> + =A0 =A0 =A0 if (request_irq(irq, tegra_fb_irq, IRQF_DISABLED,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_name(&pdev->dev), info)=
+) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_debug("%s: request_irq %d failed\n",
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdev->name, irq);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -EBUSY;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_clk_disable;
+> + =A0 =A0 =A0 }
+> +
+
+but when I look at the failout cleanup, I didn't see the irq being
+cleaned up. Maybe I missed something, just wanted to check that.
+
+> +err_clk_disable:
+> + =A0 =A0 =A0 clk_disable(clk);
+> +err_iounmap_fb:
+> + =A0 =A0 =A0 iounmap(fb_base);
+> +err_release_resource_fb:
+> + =A0 =A0 =A0 release_resource(fb_mem);
+> +err_iounmap_reg:
+> + =A0 =A0 =A0 iounmap(reg_base);
+> +err_release_resource_reg:
+> + =A0 =A0 =A0 release_resource(reg_mem);
+> +err_free:
+> + =A0 =A0 =A0 framebuffer_release(info);
+> +err:
+> + =A0 =A0 =A0 return ret;
+> +}
+> +
+> +static int tegra_plat_remove(struct platform_device *pdev)
+> +{
+> + =A0 =A0 =A0 struct fb_info *info =3D platform_get_drvdata(pdev);
+> + =A0 =A0 =A0 struct tegra_fb_info *tegra_fb =3D info->par;
+> + =A0 =A0 =A0 unregister_framebuffer(info);
+> + =A0 =A0 =A0 clk_disable(tegra_fb->clk);
+> + =A0 =A0 =A0 iounmap(info->screen_base);
+> + =A0 =A0 =A0 release_resource(tegra_fb->fb_mem);
+> + =A0 =A0 =A0 iounmap(tegra_fb->reg_base);
+> + =A0 =A0 =A0 release_resource(tegra_fb->reg_mem);
+> + =A0 =A0 =A0 framebuffer_release(info);
+> + =A0 =A0 =A0 return 0;
+> +}
+> +
+
+Thanks,
+jaya

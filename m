@@ -1,60 +1,154 @@
-From: Roger Quadros <roger.quadros@nokia.com>
-Date: Thu, 15 Apr 2010 12:06:18 +0000
-Subject: [PATCHv3 2/5] OMAP: RX51: Add "vdds_sdi" supply voltage for SDI
-Message-Id: <1271333181-23609-3-git-send-email-roger.quadros@nokia.com>
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+Date: Tue, 13 Apr 2010 19:50:04 +0000
+Subject: [PATCH] vga16fb, drm/nouveau: vga16fb->nouveau handoff
+Message-Id: <20100413195004.GA4402@joi.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1271333181-23609-1-git-send-email-roger.quadros@nokia.com>
- <1271333181-23609-2-git-send-email-roger.quadros@nokia.com>
-In-Reply-To: <1271333181-23609-2-git-send-email-roger.quadros@nokia.com>
+References: <1270929334-3742-1-git-send-email-marcin.slusarz@gmail.com>
+	<1271030068.3554.1.camel@localhost> <20100412113438.GB2789@joi.lan>
+	<1271104101.5726.3.camel@t60prh> <20100412213327.GA4463@joi.lan>
+In-Reply-To: <20100412213327.GA4463@joi.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com
-Cc: tony@atomide.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Dave Airlie <airlied@redhat.com>
+Cc: linux-fbdev@vger.kernel.org, nouveau@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Peter Jones <pjones@redhat.com>, Andrew Morton <akpm@linux-foundation.org>
 
-From: Roger Quadros <roger.quadros@nokia.com>
+On Mon, Apr 12, 2010 at 11:33:27PM +0200, Marcin Slusarz wrote:
+> > > > Have you got a pointer to a machine where it fails?
+> > > 
+> > > No, it failed with an artifical test while I was working on vga16fb handoff
+> > > (unfinished).
+> > 
+> > You won't be able to make this work for vga16fb from what I can see
+> > since it access 0xa000 directly, not via any of the defined apertures
+> > that vesafb/offb use. vga16fb will need a different approach I suspect.
+> 
+> Yeah, there's an idea to claim 0xa0000 as an aperture of vga16fb and then
+> do the same in KMS driver but only if it's the primary card. 
+> (You hinted to use SHADOW resource bit to check whether card is primary)
+> I think I'll try this approach soon.
 
-The SDI Display subsystem needs access to the vdds_sdi supply
-regulator. This is TWL4030's VAUX1 supply on RX-51.
+Patch below works for me, but I couldn't test the case when nvidia card is secondary.
 
-Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
 ---
- arch/arm/mach-omap2/board-rx51-peripherals.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+Date: Tue, 13 Apr 2010 09:20:53 +0200
+Subject: [PATCH] vga16fb, drm/nouveau: vga16fb->nouveau handoff
 
-diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
-index f404537..3ef805e 100644
---- a/arch/arm/mach-omap2/board-rx51-peripherals.c
-+++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
-@@ -300,6 +300,19 @@ static struct regulator_consumer_supply rx51_vsim_supply = {
- 	.dev_name = "mmci-omap-hs.1",
- };
+let vga16fb claim 0xA0000+0x10000 region as its aperture;
+nouveau does not use it, so we need to lie to kick vga16fb,
+but only if it's driving the primary card (by checking
+IORESOURCE_ROM_SHADOW resource flag)
+
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+---
+ drivers/gpu/drm/nouveau/nouveau_state.c |   11 ++++++++++-
+ drivers/video/vga16fb.c                 |   26 +++++++++++++++++++-------
+ 2 files changed, 29 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/gpu/drm/nouveau/nouveau_state.c b/drivers/gpu/drm/nouveau/nouveau_state.c
+index cfa3239..a101861 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_state.c
++++ b/drivers/gpu/drm/nouveau/nouveau_state.c
+@@ -636,10 +636,12 @@ static void nouveau_OF_copy_vbios_to_ramin(struct drm_device *dev)
+ #endif
+ }
  
-+#if defined(CONFIG_FB_OMAP2) || defined(CONFIG_FB_OMAP2_MODULE)
-+extern struct platform_device rx51_display_device;
-+#endif
-+
-+static struct regulator_consumer_supply rx51_vaux1_consumers[] = {
-+#if defined(CONFIG_FB_OMAP2) || defined(CONFIG_FB_OMAP2_MODULE)
-+	{
-+		.supply	= "vdds_sdi",
-+		.dev	= &rx51_display_device.dev,
-+	},
-+#endif
-+};
-+
- static struct regulator_init_data rx51_vaux1 = {
- 	.constraints = {
- 		.name			= "V28",
-@@ -310,6 +323,8 @@ static struct regulator_init_data rx51_vaux1 = {
- 		.valid_ops_mask		= REGULATOR_CHANGE_MODE
- 					| REGULATOR_CHANGE_STATUS,
- 	},
-+	.num_consumer_supplies	= ARRAY_SIZE(rx51_vaux1_consumers),
-+	.consumer_supplies	= rx51_vaux1_consumers,
- };
++#define VGA_FB_PHYS 0xA0000
++#define VGA_FB_PHYS_LEN 65536
+ static struct apertures_struct *nouveau_get_apertures(struct drm_device *dev)
+ {
+ 	struct pci_dev *pdev = dev->pdev;
+-	struct apertures_struct *aper = alloc_apertures(3);
++	struct apertures_struct *aper = alloc_apertures(4);
+ 	if (!aper)
+ 		return NULL;
  
- static struct regulator_init_data rx51_vaux2 = {
+@@ -658,6 +660,13 @@ static struct apertures_struct *nouveau_get_apertures(struct drm_device *dev)
+ 		aper->ranges[aper->count].size = pci_resource_len(pdev, 3);
+ 		aper->count++;
+ 	}
++	
++	/* if it's the primary card, claim 0xa0000 as ours to kick vga16fb */
++	if (pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW) {
++		aper->ranges[aper->count].base = VGA_FB_PHYS;
++		aper->ranges[aper->count].size = VGA_FB_PHYS_LEN;
++		aper->count++;
++	}
+ 
+ 	return aper;
+ }
+diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
+index 76d8dae..45d7a3d 100644
+--- a/drivers/video/vga16fb.c
++++ b/drivers/video/vga16fb.c
+@@ -1264,10 +1264,19 @@ static void vga16fb_imageblit(struct fb_info *info, const struct fb_image *image
+ 		vga_imageblit_color(info, image);
+ }
+ 
++static void vga16fb_destroy(struct fb_info *info)
++{
++	iounmap(info->screen_base);
++	fb_dealloc_cmap(&info->cmap);
++	/* XXX unshare VGA regions */
++	framebuffer_release(info);
++}
++
+ static struct fb_ops vga16fb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_open        = vga16fb_open,
+ 	.fb_release     = vga16fb_release,
++	.fb_destroy	= vga16fb_destroy,
+ 	.fb_check_var	= vga16fb_check_var,
+ 	.fb_set_par	= vga16fb_set_par,
+ 	.fb_setcolreg 	= vga16fb_setcolreg,
+@@ -1307,6 +1316,11 @@ static int __devinit vga16fb_probe(struct platform_device *dev)
+ 		ret = -ENOMEM;
+ 		goto err_fb_alloc;
+ 	}
++	info->apertures = alloc_apertures(1);
++	if (!info->apertures) {
++		ret = -ENOMEM;
++		goto err_ioremap;
++	}
+ 
+ 	/* XXX share VGA_FB_PHYS and I/O region with vgacon and others */
+ 	info->screen_base = (void __iomem *)VGA_MAP_MEM(VGA_FB_PHYS, 0);
+@@ -1336,7 +1350,7 @@ static int __devinit vga16fb_probe(struct platform_device *dev)
+ 	info->fix = vga16fb_fix;
+ 	/* supports rectangles with widths of multiples of 8 */
+ 	info->pixmap.blit_x = 1 << 7 | 1 << 15 | 1 << 23 | 1 << 31;
+-	info->flags = FBINFO_FLAG_DEFAULT |
++	info->flags = FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE |
+ 		FBINFO_HWACCEL_YPAN;
+ 
+ 	i = (info->var.bits_per_pixel = 8) ? 256 : 16;
+@@ -1355,6 +1369,9 @@ static int __devinit vga16fb_probe(struct platform_device *dev)
+ 
+ 	vga16fb_update_fix(info);
+ 
++	info->apertures->ranges[0].base = VGA_FB_PHYS;
++	info->apertures->ranges[0].size = VGA_FB_PHYS_LEN;
++
+ 	if (register_framebuffer(info) < 0) {
+ 		printk(KERN_ERR "vga16fb: unable to register framebuffer\n");
+ 		ret = -EINVAL;
+@@ -1381,13 +1398,8 @@ static int vga16fb_remove(struct platform_device *dev)
+ {
+ 	struct fb_info *info = platform_get_drvdata(dev);
+ 
+-	if (info) {
++	if (info)
+ 		unregister_framebuffer(info);
+-		iounmap(info->screen_base);
+-		fb_dealloc_cmap(&info->cmap);
+-	/* XXX unshare VGA regions */
+-		framebuffer_release(info);
+-	}
+ 
+ 	return 0;
+ }
 -- 
-1.6.0.4
+1.7.0.4
+
 

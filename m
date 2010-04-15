@@ -1,50 +1,71 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 28 Apr 2010 22:17:04 +0000
-Subject: [PATCH 03/30] viafb: Unmap the frame buffer on initialization error
-Message-Id: <1272493051-25380-4-git-send-email-corbet@lwn.net>
+From: Roger Quadros <roger.quadros@nokia.com>
+Date: Thu, 15 Apr 2010 12:06:19 +0000
+Subject: [PATCHv3 3/5] OMAP: RX51: Add Touch Controller in SPI board info
+Message-Id: <1271333181-23609-4-git-send-email-roger.quadros@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
-In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+References: <1271333181-23609-1-git-send-email-roger.quadros@nokia.com>
+ <1271333181-23609-2-git-send-email-roger.quadros@nokia.com>
+ <1271333181-23609-3-git-send-email-roger.quadros@nokia.com>
+In-Reply-To: <1271333181-23609-3-git-send-email-roger.quadros@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: Tomi.Valkeinen@nokia.com
+Cc: tony@atomide.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-This was part of Harald's "make viafb a first-class citizen using
-pci_driver" patch, but somehow got dropped when that patch went into
-mainline.
+From: Roger Quadros <roger.quadros@nokia.com>
 
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: ScottFang@viatech.com.cn
-Cc: JosephChan@via.com.tw
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+The Touch controller and LCD Panel share the same SPI bus 1.
+So, we need to define the touch controller in the SPI board info
+else, the SPI bus will be contended due to invalid state of
+Touch controller's Chip Select thus preventing the LCD panel
+from working.
+
+Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
 ---
- drivers/video/via/viafbdev.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ arch/arm/mach-omap2/board-rx51-peripherals.c |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 8af405b..8955ab4 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -1870,7 +1870,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 			printk(KERN_ERR
- 			"allocate the second framebuffer struct error\n");
- 			rc = -ENOMEM;
--			goto out_delete_i2c;
-+			goto out_unmap_screen;
- 		}
- 		viaparinfo1 = viafbinfo1->par;
- 		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
-@@ -1961,6 +1961,8 @@ out_dealloc_cmap:
- out_fb1_release:
- 	if (viafbinfo1)
- 		framebuffer_release(viafbinfo1);
-+out_unmap_screen:
-+	iounmap(viafbinfo->screen_base);
- out_delete_i2c:
- 	viafb_delete_i2c_buss(viaparinfo);
- out_fb_release:
+diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
+index 3ef805e..020f354 100644
+--- a/arch/arm/mach-omap2/board-rx51-peripherals.c
++++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
+@@ -46,6 +46,7 @@
+ enum {
+ 	RX51_SPI_WL1251,
+ 	RX51_SPI_MIPID,		/* LCD panel */
++	RX51_SPI_TSC2005,	/* Touch Controller */
+ };
+ 
+ static struct wl12xx_platform_data wl1251_pdata;
+@@ -60,6 +61,11 @@ static struct omap2_mcspi_device_config mipid_mcspi_config = {
+ 	.single_channel	= 1,
+ };
+ 
++static struct omap2_mcspi_device_config tsc2005_mcspi_config = {
++	.turbo_mode	= 0,
++	.single_channel	= 1,
++};
++
+ static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
+ 	[RX51_SPI_WL1251] = {
+ 		.modalias		= "wl1251",
+@@ -77,6 +83,15 @@ static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
+ 		.max_speed_hz		= 6000000,
+ 		.controller_data	= &mipid_mcspi_config,
+ 	},
++	[RX51_SPI_TSC2005] = {
++		.modalias		= "tsc2005",
++		.bus_num		= 1,
++		.chip_select		= 0,
++		/* .irq = OMAP_GPIO_IRQ(RX51_TSC2005_IRQ_GPIO),*/
++		.max_speed_hz		= 6000000,
++		.controller_data	= &tsc2005_mcspi_config,
++		/* .platform_data = &tsc2005_config,*/
++	},
+ };
+ 
+ #if defined(CONFIG_KEYBOARD_GPIO) || defined(CONFIG_KEYBOARD_GPIO_MODULE)
 -- 
-1.7.0.1
+1.6.0.4
 

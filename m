@@ -1,51 +1,34 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=
-Date: Fri, 02 Apr 2010 18:10:21 +0000
-Subject: Re: [PATCH v2 1/5] fbdev: section cleanup in arcfb
-Message-Id: <20100402181020.GA1834@pengutronix.de>
+From: Grazvydas Ignotas <notasas@gmail.com>
+Date: Thu, 15 Apr 2010 14:59:03 +0000
+Subject: [PATCH] OMAP: DSS2: TPO-TD03MTEA1: fix Kconfig dependency
+Message-Id: <1271343543-14348-1-git-send-email-notasas@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1270209574-31890-1-git-send-email-henne@nachtwindheim.de>
-In-Reply-To: <1270209574-31890-1-git-send-email-henne@nachtwindheim.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@nokia.com>, Grazvydas Ignotas <notasas@gmail.com>
 
-Hi Hendrik,
+This panel depends on SPI, not I2C.
 
-[added stable@kernel.org to Cc: as
-c2e13037e6794bd0d9de3f9ecabf5615f15c160b was requested to be added, too]
+Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
+---
+ drivers/video/omap2/displays/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-The whole series looks good
-(aka. Acked-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>).
+diff --git a/drivers/video/omap2/displays/Kconfig b/drivers/video/omap2/displays/Kconfig
+index dfb57ee..a2faf8a 100644
+--- a/drivers/video/omap2/displays/Kconfig
++++ b/drivers/video/omap2/displays/Kconfig
+@@ -33,7 +33,7 @@ config PANEL_TOPPOLY_TDO35S
+ 
+ config PANEL_TPO_TD043MTEA1
+         tristate "TPO TD043MTEA1 LCD Panel"
+-        depends on OMAP2_DSS && I2C
++        depends on OMAP2_DSS && SPI
+         help
+           LCD Panel used in OMAP3 Pandora
+ 
+-- 
+1.6.3.3
 
-On Fri, Apr 02, 2010 at 01:59:30PM +0200, Henrik Kretzschmar wrote:
-> This patch fixes the sections in the arcfb driver, by moving:
->=20
-> *	the variables arcfb_fix and arcfb_var from .init.data to .devinit.data
->=20
-> *	arcfb_remove() from .text to .devexit.text
-
-Maybe add: "This fixes the following warnings issued by modpost:" here?
-
-Thanks
-Uwe
-
-> WARNING: drivers/video/built-in.o(.devinit.text+0x543): Section mismatch =
-in reference from the function arcfb_probe() to the variable .init.data:arc=
-fb_var
-> The function __devinit arcfb_probe() references
-> a variable __initdata arcfb_var.
-> If arcfb_var is only used by arcfb_probe then
-> annotate arcfb_var with a matching annotation.
->=20
-> WARNING: drivers/video/built-in.o(.devinit.text+0x558): Section mismatch =
-in reference from the function arcfb_probe() to the variable .init.data:arc=
-fb_fix
-> The function __devinit arcfb_probe() references
-> a variable __initdata arcfb_fix.
-> If arcfb_fix is only used by arcfb_probe then
-> annotate arcfb_fix with a matching annotation.
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |

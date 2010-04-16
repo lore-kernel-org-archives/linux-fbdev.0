@@ -1,40 +1,89 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Thu, 29 Apr 2010 19:06:38 +0000
-Subject: Re: [PATCH 24/30] viafb: Add a driver for the video capture engine
-Message-Id: <20100429130638.0abff0dc@tpl.lwn.net>
+From: Kan-Ru Chen <kanru@0xlab.org>
+Date: Fri, 16 Apr 2010 08:12:21 +0000
+Subject: [RFC] [PATCH] Devkit8000: Use generic panel driver instead of new driver for every panel
+Message-Id: <1271405541-7048-1-git-send-email-kanru@0xlab.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
-	<1272493051-25380-25-git-send-email-corbet@lwn.net>
-	<20100429191624.30cd67e0@neptune.home>
-In-Reply-To: <20100429191624.30cd67e0@neptune.home>
+References: <1271329417.2690.243.camel@tubuntu.research.nokia.com>
+In-Reply-To: <1271329417.2690.243.camel@tubuntu.research.nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: Kan-Ru Chen <kanru@0xlab.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Vaibhav Hiremath <hvaibhav@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Thomas Weber <weber@corscience.de>
 
-On Thu, 29 Apr 2010 19:16:24 +0200
-Bruno Pr=C3=A9mont <bonbons@linux-vserver.org> wrote:
+Instead of use special driver for every new panel, we can use the
+generic driver and modedb database to specify the timing
+information. Now supports 4.3, 5.6 and 7 inch panel.
 
-> I think the extra 'viafb-camera' entry should be wrapped into a
->=20
-> #if defined(CONFIG_FB_VIA_CAMERA) || defined(CONFIG_FB_VIA_CAMERA_MODULE)
+Signed-off-by: Kan-Ru Chen <kanru@0xlab.org>
+---
 
-I think you're right, yes.  (As noted above, the camera driver isn't
-quite ready for merging yet - but I can't swear I would have caught
-this one, so I'm glad you did).
+ Hi!
 
-> or probably better be dynamically added when camera module is loaded
-> and/or detects/probes the camera sub-device.
+ Some time ago there was a discussion about implementing a common
+ driver for dummy LCDs. I tried the generic-panel and found it can
+ cover most panels, by adding new entries to modedb.
 
-That's a little harder - the platform device is the means by which the
-camera and the core communicate.  I guess I could add a general "I'm a
-via-core subdev and I'm here now" exported function in the core, but
-I'm not sure that would be better than just having the platform dev be
-there.
+ I've discussed with Thomas and he think this approach might be
+ cleaner. I'd like to know others opinions.
 
-But it definitely shouldn't be around if the camera is configured out.
+ arch/arm/mach-omap2/board-devkit8000.c       |    3 ++-
+ drivers/video/modedb.c                       |   12 ++++++++++++
+ drivers/video/omap2/displays/panel-generic.c |    3 ++-
+ 3 files changed, 16 insertions(+), 2 deletions(-)
 
-Thanks,
+diff --git a/arch/arm/mach-omap2/board-devkit8000.c b/arch/arm/mach-omap2/board-devkit8000.c
+index 5bfc13b..4f52dfd 100644
+--- a/arch/arm/mach-omap2/board-devkit8000.c
++++ b/arch/arm/mach-omap2/board-devkit8000.c
+@@ -172,8 +172,9 @@ static struct regulator_consumer_supply devkit8000_vsim_supply = {
+ 
+ static struct omap_dss_device devkit8000_lcd_device = {
+ 	.name                   = "lcd",
+-	.driver_name            = "innolux_at_panel",
++	.driver_name            = "generic_panel",
+ 	.type                   = OMAP_DISPLAY_TYPE_DPI,
++	.panel.config           = OMAP_DSS_LCD_TFT|OMAP_DSS_LCD_IVS|OMAP_DSS_LCD_IHS,
+ 	.phy.dpi.data_lines     = 24,
+ 	.platform_enable        = devkit8000_panel_enable_lcd,
+ 	.platform_disable       = devkit8000_panel_disable_lcd,
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+index b895aae..89bb3e5 100644
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -273,6 +273,18 @@ static const struct fb_videomode modedb[] = {
+        /* 800x520i @ 50 Hz, 15.625 kHz hsync (PAL RGB) */
+        NULL, 50, 800, 520, 58823, 144, 64, 72, 28, 80, 5,
+        0, FB_VMODE_INTERLACED
++    }, {
++       /* 480x272 @ 60 Hz, Devkit8000 4.3 inch LCD */
++       NULL, 60, 480, 272, 111000, 2, 2, 2, 2, 41, 10,
++       0, FB_VMODE_NONINTERLACED
++    }, {
++       /* 640x480 @ 60 Hz, Devkit8000 5.6 inch LCD */
++       NULL, 60, 640, 480, 39682, 16, 143, 32, 12, 1, 1,
++       0, FB_VMODE_NONINTERLACED
++    }, {
++       /* 800x480 @ 60 Hz, Devkit8000 7 inch LCD */
++       NULL, 60, 800, 480, 24855, 210, 45, 132, 22, 1, 1,
++       0, FB_VMODE_NONINTERLACED
+     },
+ };
+ 
+diff --git a/drivers/video/omap2/displays/panel-generic.c b/drivers/video/omap2/displays/panel-generic.c
+index 300eff5..b0a5599 100644
+--- a/drivers/video/omap2/displays/panel-generic.c
++++ b/drivers/video/omap2/displays/panel-generic.c
+@@ -66,7 +66,8 @@ static void generic_panel_power_off(struct omap_dss_device *dssdev)
+ 
+ static int generic_panel_probe(struct omap_dss_device *dssdev)
+ {
+-	dssdev->panel.config = OMAP_DSS_LCD_TFT;
++	if (dssdev->panel.config = 0)
++		dssdev->panel.config = OMAP_DSS_LCD_TFT;
+ 	dssdev->panel.timings = generic_panel_timings;
+ 
+ 	return 0;
+-- 
+1.7.0.4
 
-jon

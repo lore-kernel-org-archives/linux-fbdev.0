@@ -1,135 +1,77 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 28 Apr 2010 22:17:06 +0000
-Subject: [PATCH 05/30] viafb: Unify duplicated set_bpp() code
-Message-Id: <1272493051-25380-6-git-send-email-corbet@lwn.net>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 17 Apr 2010 19:44:54 +0000
+Subject: [PATCH 4/7] viafb: replace inb/outb
+Message-Id: <1271533498-3376-4-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
-In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+References: <1271533498-3376-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1271533498-3376-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, corbet@lwn.net, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-As suggested by Florian: make both mode-setting paths use the same code.
+viafb: replace inb/outb
 
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: ScottFang@viatech.com.cn
-Cc: JosephChan@via.com.tw
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+This patch replaces occurences of inb/outb with via_write_reg and
+via_write_reg_mask where this is possible to improve code
+readability.
+
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/via/accel.c |   78 +++++++++++++++++++--------------------------
- 1 files changed, 33 insertions(+), 45 deletions(-)
+ drivers/video/via/hw.c |   22 +++++++---------------
+ 1 files changed, 7 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
-index a52147c..7c1d9c4 100644
---- a/drivers/video/via/accel.c
-+++ b/drivers/video/via/accel.c
-@@ -20,12 +20,42 @@
-  */
- #include "global.h"
- 
-+/*
-+ * Figure out an appropriate bytes-per-pixel setting.
-+ */
-+static int viafb_set_bpp(void __iomem *engine, u8 bpp)
-+{
-+	u32 gemode;
-+
-+	/* Preserve the reserved bits */
-+	/* Lowest 2 bits to zero gives us no rotation */
-+	gemode = readl(engine + VIA_REG_GEMODE) & 0xfffffcfc;
-+	switch (bpp) {
-+	case 8:
-+		gemode |= VIA_GEM_8bpp;
-+		break;
-+	case 16:
-+		gemode |= VIA_GEM_16bpp;
-+		break;
-+	case 32:
-+		gemode |= VIA_GEM_32bpp;
-+		break;
-+	default:
-+		printk(KERN_WARNING "viafb_set_bpp: Unsupported bpp %d\n", bpp);
-+		return -EINVAL;
-+	}
-+	writel(gemode, engine + VIA_REG_GEMODE);
-+	return 0;
-+}
-+
-+
- static int hw_bitblt_1(void __iomem *engine, u8 op, u32 width, u32 height,
- 	u8 dst_bpp, u32 dst_addr, u32 dst_pitch, u32 dst_x, u32 dst_y,
- 	u32 *src_mem, u32 src_addr, u32 src_pitch, u32 src_x, u32 src_y,
- 	u32 fg_color, u32 bg_color, u8 fill_rop)
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 1c3a8f3..41628c8 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -1008,16 +1008,12 @@ void viafb_load_reg(int timing_value, int viafb_load_reg_num,
+ void viafb_write_regx(struct io_reg RegTable[], int ItemNum)
  {
- 	u32 ge_cmd = 0, tmp, i;
-+	int ret;
+ 	int i;
+-	unsigned char RegTemp;
  
- 	if (!op || op > 3) {
- 		printk(KERN_WARNING "hw_bitblt_1: Invalid operation: %d\n", op);
-@@ -59,22 +89,9 @@ static int hw_bitblt_1(void __iomem *engine, u8 op, u32 width, u32 height,
- 		}
- 	}
+ 	/*DEBUG_MSG(KERN_INFO "Table Size : %x!!\n",ItemNum ); */
  
--	switch (dst_bpp) {
--	case 8:
--		tmp = 0x00000000;
--		break;
--	case 16:
--		tmp = 0x00000100;
--		break;
--	case 32:
--		tmp = 0x00000300;
--		break;
--	default:
--		printk(KERN_WARNING "hw_bitblt_1: Unsupported bpp %d\n",
--			dst_bpp);
--		return -EINVAL;
+-	for (i = 0; i < ItemNum; i++) {
+-		outb(RegTable[i].index, RegTable[i].port);
+-		RegTemp = inb(RegTable[i].port + 1);
+-		RegTemp = (RegTemp & (~RegTable[i].mask)) | RegTable[i].value;
+-		outb(RegTemp, RegTable[i].port + 1);
 -	}
--	writel(tmp, engine + 0x04);
-+	ret = viafb_set_bpp(engine, dst_bpp);
-+	if (ret)
-+		return ret;
- 
- 	if (op != VIA_BITBLT_FILL) {
- 		if (src_x & (op = VIA_BITBLT_MONO ? 0xFFFF8000 : 0xFFFFF000)
-@@ -165,35 +182,6 @@ static int hw_bitblt_1(void __iomem *engine, u8 op, u32 width, u32 height,
- 	return 0;
++	for (i = 0; i < ItemNum; i++)
++		via_write_reg_mask(RegTable[i].port, RegTable[i].index,
++			RegTable[i].value, RegTable[i].mask);
  }
  
--/*
-- * Figure out an appropriate bytes-per-pixel setting.
-- */
--static int viafb_set_bpp(void __iomem *engine, u8 bpp)
--{
--	u32 gemode;
--
--	/* Preserve the reserved bits */
--	/* Lowest 2 bits to zero gives us no rotation */
--	gemode = readl(engine + VIA_REG_GEMODE) & 0xfffffcfc;
--	switch (bpp) {
--	case 8:
--		gemode |= VIA_GEM_8bpp;
--		break;
--	case 16:
--		gemode |= VIA_GEM_16bpp;
--		break;
--	case 32:
--		gemode |= VIA_GEM_32bpp;
--		break;
--	default:
--		printk(KERN_WARNING "hw_bitblt_2: Unsupported bpp %d\n", bpp);
--		return -EINVAL;
+ void viafb_load_fetch_count_reg(int h_addr, int bpp_byte, int set_iga)
+@@ -2117,10 +2113,8 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
+ 	outb(VPIT.Misc, VIAWMisc);
+ 
+ 	/* Write Sequencer */
+-	for (i = 1; i <= StdSR; i++) {
+-		outb(i, VIASR);
+-		outb(VPIT.SR[i - 1], VIASR + 1);
 -	}
--	writel(gemode, engine + VIA_REG_GEMODE);
--	return 0;
--}
--
--
- static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
- 	u8 dst_bpp, u32 dst_addr, u32 dst_pitch, u32 dst_x, u32 dst_y,
- 	u32 *src_mem, u32 src_addr, u32 src_pitch, u32 src_x, u32 src_y,
++	for (i = 1; i <= StdSR; i++)
++		via_write_reg(VIASR, i, VPIT.SR[i - 1]);
+ 
+ 	viafb_write_reg_mask(0x15, VIASR, 0xA2, 0xA2);
+ 	viafb_set_iga_path();
+@@ -2129,10 +2123,8 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
+ 	viafb_fill_crtc_timing(crt_timing, vmode_tbl, video_bpp / 8, IGA1);
+ 
+ 	/* Write Graphic Controller */
+-	for (i = 0; i < StdGR; i++) {
+-		outb(i, VIAGR);
+-		outb(VPIT.GR[i], VIAGR + 1);
+-	}
++	for (i = 0; i < StdGR; i++)
++		via_write_reg(VIAGR, i, VPIT.GR[i]);
+ 
+ 	/* Write Attribute Controller */
+ 	for (i = 0; i < StdAR; i++) {
 -- 
-1.7.0.1
+1.6.3.2
 

@@ -1,116 +1,179 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 28 Apr 2010 22:17:16 +0000
-Subject: [PATCH 15/30] viafb: package often used basic io functions
-Message-Id: <1272493051-25380-16-git-send-email-corbet@lwn.net>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 17 Apr 2010 19:44:53 +0000
+Subject: [PATCH 3/7] viafb: move some modesetting functions to a seperate file
+Message-Id: <1271533498-3376-3-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
-In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+References: <1271533498-3376-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1271533498-3376-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, corbet@lwn.net, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+viafb: move some modesetting functions to a seperate file
 
-This patch puts redesigned versions of the basic io functions that
-are used overall the driver in an extra header. It is prefixed with
-via_ as no framebuffer dependend stuff is in there. They were inlined
-as they are really simple which reduced the module size about 2.5%.
-The parameter order of read and write was fixed as it really doesn't
-make sense to change the order as they are parts of the same address
-and not source and destination.
-Wrapper which use the new functions were added to hw.h to replicate
-the old interface and avoid changing all old code.
+This patch moves the modesetting functions which are already cleaned up
+to a seperate file.
+Just the beginning to bring some structure in this mess.
 
-[jc: added one comment]
 Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/via/hw.c     |   22 ----------------
- drivers/video/via/hw.h     |    8 ++++--
- drivers/video/via/via_io.h |   58 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 63 insertions(+), 25 deletions(-)
- create mode 100644 drivers/video/via/via_io.h
+ drivers/video/via/Makefile          |    2 +-
+ drivers/video/via/hw.c              |   96 --------------------------
+ drivers/video/via/hw.h              |    5 +-
+ drivers/video/via/via_modesetting.c |  126 +++++++++++++++++++++++++++++++++++
+ drivers/video/via/via_modesetting.h |   38 +++++++++++
+ 5 files changed, 166 insertions(+), 101 deletions(-)
+ create mode 100644 drivers/video/via/via_modesetting.c
+ create mode 100644 drivers/video/via/via_modesetting.h
 
+diff --git a/drivers/video/via/Makefile b/drivers/video/via/Makefile
+index eeed238..6f5b010 100644
+--- a/drivers/video/via/Makefile
++++ b/drivers/video/via/Makefile
+@@ -4,4 +4,4 @@
+ 
+ obj-$(CONFIG_FB_VIA) += viafb.o
+ 
+-viafb-y	:=viafbdev.o hw.o via_i2c.o dvi.o lcd.o ioctl.o accel.o via_utility.o vt1636.o global.o tblDPASetting.o viamode.o tbl1636.o
++viafb-y	:=viafbdev.o hw.o via_i2c.o dvi.o lcd.o ioctl.o accel.o via_utility.o vt1636.o global.o tblDPASetting.o viamode.o tbl1636.o via_modesetting.o
 diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index f2425ae..805151f 100644
+index 6c6c140..1c3a8f3 100644
 --- a/drivers/video/via/hw.c
 +++ b/drivers/video/via/hw.c
-@@ -537,18 +537,6 @@ static void device_on(void);
- static void enable_second_display_channel(void);
- static void disable_second_display_channel(void);
- 
--void viafb_write_reg(u8 index, u16 io_port, u8 data)
--{
--	outb(index, io_port);
--	outb(data, io_port + 1);
--	/*DEBUG_MSG(KERN_INFO "\nIndex=%2d Value=%2d", index, data); */
--}
--u8 viafb_read_reg(int io_port, u8 index)
--{
--	outb(index, io_port);
--	return inb(io_port + 1);
--}
--
- void viafb_lock_crt(void)
- {
- 	viafb_write_reg_mask(CR11, VIACR, BIT7, BIT7);
-@@ -560,16 +548,6 @@ void viafb_unlock_crt(void)
- 	viafb_write_reg_mask(CR47, VIACR, 0, BIT0);
+@@ -624,102 +624,6 @@ void viafb_set_iga_path(void)
+ 	}
  }
  
--void viafb_write_reg_mask(u8 index, int io_port, u8 data, u8 mask)
+-void via_set_primary_address(u32 addr)
 -{
--	u8 tmp;
--
--	outb(index, io_port);
--	tmp = inb(io_port + 1);
--	outb((data & mask) | (tmp & (~mask)), io_port + 1);
--	/*DEBUG_MSG(KERN_INFO "\nIndex=%2d Value=%2d", index, tmp); */
+-	DEBUG_MSG(KERN_DEBUG "via_set_primary_address(0x%08X)\n", addr);
+-	via_write_reg(VIACR, 0x0D, addr & 0xFF);
+-	via_write_reg(VIACR, 0x0C, (addr >> 8) & 0xFF);
+-	via_write_reg(VIACR, 0x34, (addr >> 16) & 0xFF);
+-	via_write_reg_mask(VIACR, 0x48, (addr >> 24) & 0x1F, 0x1F);
 -}
 -
- void write_dac_reg(u8 index, u8 r, u8 g, u8 b)
+-void via_set_secondary_address(u32 addr)
+-{
+-	DEBUG_MSG(KERN_DEBUG "via_set_secondary_address(0x%08X)\n", addr);
+-	/* secondary display supports only quadword aligned memory */
+-	via_write_reg_mask(VIACR, 0x62, (addr >> 2) & 0xFE, 0xFE);
+-	via_write_reg(VIACR, 0x63, (addr >> 10) & 0xFF);
+-	via_write_reg(VIACR, 0x64, (addr >> 18) & 0xFF);
+-	via_write_reg_mask(VIACR, 0xA3, (addr >> 26) & 0x07, 0x07);
+-}
+-
+-void via_set_primary_pitch(u32 pitch)
+-{
+-	DEBUG_MSG(KERN_DEBUG "via_set_primary_pitch(0x%08X)\n", pitch);
+-	/* spec does not say that first adapter skips 3 bits but old
+-	 * code did it and seems to be reasonable in analogy to 2nd adapter
+-	 */
+-	pitch = pitch >> 3;
+-	via_write_reg(VIACR, 0x13, pitch & 0xFF);
+-	via_write_reg_mask(VIACR, 0x35, (pitch >> (8 - 5)) & 0xE0, 0xE0);
+-}
+-
+-void via_set_secondary_pitch(u32 pitch)
+-{
+-	DEBUG_MSG(KERN_DEBUG "via_set_secondary_pitch(0x%08X)\n", pitch);
+-	pitch = pitch >> 3;
+-	via_write_reg(VIACR, 0x66, pitch & 0xFF);
+-	via_write_reg_mask(VIACR, 0x67, (pitch >> 8) & 0x03, 0x03);
+-	via_write_reg_mask(VIACR, 0x71, (pitch >> (10 - 7)) & 0x80, 0x80);
+-}
+-
+-void via_set_primary_color_depth(u8 depth)
+-{
+-	u8 value;
+-
+-	DEBUG_MSG(KERN_DEBUG "via_set_primary_color_depth(%d)\n", depth);
+-	switch (depth) {
+-	case 8:
+-		value = 0x00;
+-		break;
+-	case 15:
+-		value = 0x04;
+-		break;
+-	case 16:
+-		value = 0x14;
+-		break;
+-	case 24:
+-		value = 0x0C;
+-		break;
+-	case 30:
+-		value = 0x08;
+-		break;
+-	default:
+-		printk(KERN_WARNING "via_set_primary_color_depth: "
+-			"Unsupported depth: %d\n", depth);
+-		return;
+-	}
+-
+-	via_write_reg_mask(VIASR, 0x15, value, 0x1C);
+-}
+-
+-void via_set_secondary_color_depth(u8 depth)
+-{
+-	u8 value;
+-
+-	DEBUG_MSG(KERN_DEBUG "via_set_secondary_color_depth(%d)\n", depth);
+-	switch (depth) {
+-	case 8:
+-		value = 0x00;
+-		break;
+-	case 16:
+-		value = 0x40;
+-		break;
+-	case 24:
+-		value = 0xC0;
+-		break;
+-	case 30:
+-		value = 0x80;
+-		break;
+-	default:
+-		printk(KERN_WARNING "via_set_secondary_color_depth: "
+-			"Unsupported depth: %d\n", depth);
+-		return;
+-	}
+-
+-	via_write_reg_mask(VIACR, 0x67, value, 0xC0);
+-}
+-
+ static void set_color_register(u8 index, u8 red, u8 green, u8 blue)
  {
- 	outb(index, LUT_INDEX_WRITE);
+ 	outb(0xFF, 0x3C6); /* bit mask of palette */
 diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
-index d248f4d..23c3190 100644
+index cb63f22..ddd15df 100644
 --- a/drivers/video/via/hw.h
 +++ b/drivers/video/via/hw.h
-@@ -24,6 +24,11 @@
- 
+@@ -25,6 +25,7 @@
  #include "viamode.h"
  #include "global.h"
-+#include "via_io.h"
-+
-+#define viafb_read_reg(p, i)			via_read_reg(p, i)
-+#define viafb_write_reg(i, p, d)		via_write_reg(p, i, d)
-+#define viafb_write_reg_mask(i, p, d, m)	via_write_reg_mask(p, i, d, m)
+ #include "via_io.h"
++#include "via_modesetting.h"
  
- /***************************************************
- * Definition IGA1 Design Method of CRTC Registers *
-@@ -870,7 +875,6 @@ extern int viafb_LCD_ON;
- extern int viafb_DVI_ON;
- extern int viafb_hotplug;
+ #define viafb_read_reg(p, i)			via_read_reg(p, i)
+ #define viafb_write_reg(i, p, d)		via_write_reg(p, i, d)
+@@ -912,10 +913,6 @@ void viafb_update_device_setting(int hres, int vres, int bpp,
  
--void viafb_write_reg_mask(u8 index, int io_port, u8 data, u8 mask);
- void viafb_set_output_path(int device, int set_iga,
- 	int output_interface);
- 
-@@ -885,8 +889,6 @@ void viafb_crt_disable(void);
- void viafb_crt_enable(void);
- void init_ad9389(void);
- /* Access I/O Function */
--void viafb_write_reg(u8 index, u16 io_port, u8 data);
--u8 viafb_read_reg(int io_port, u8 index);
- void viafb_lock_crt(void);
- void viafb_unlock_crt(void);
- void viafb_load_fetch_count_reg(int h_addr, int bpp_byte, int set_iga);
-diff --git a/drivers/video/via/via_io.h b/drivers/video/via/via_io.h
+ int viafb_get_fb_size_from_pci(void);
+ void viafb_set_iga_path(void);
+-void via_set_primary_address(u32 addr);
+-void via_set_secondary_address(u32 addr);
+-void via_set_primary_pitch(u32 pitch);
+-void via_set_secondary_pitch(u32 pitch);
+ void viafb_set_primary_color_register(u8 index, u8 red, u8 green, u8 blue);
+ void viafb_set_secondary_color_register(u8 index, u8 red, u8 green, u8 blue);
+ void viafb_get_fb_info(unsigned int *fb_base, unsigned int *fb_len);
+diff --git a/drivers/video/via/via_modesetting.c b/drivers/video/via/via_modesetting.c
 new file mode 100644
-index 0000000..e1c1093
+index 0000000..69ff285
 --- /dev/null
-+++ b/drivers/video/via/via_io.h
-@@ -0,0 +1,58 @@
++++ b/drivers/video/via/via_modesetting.c
+@@ -0,0 +1,126 @@
 +/*
 + * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
 + * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
@@ -133,42 +196,154 @@ index 0000000..e1c1093
 + * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 + */
 +/*
-+ * basic io functions
++ * basic modesetting functions
 + */
 +
-+#ifndef __VIA_IO_H__
-+#define __VIA_IO_H__
++#include <linux/kernel.h>
++#include "via_modesetting.h"
++#include "via_io.h"
++#include "share.h"
++#include "debug.h"
++
++void via_set_primary_address(u32 addr)
++{
++	DEBUG_MSG(KERN_DEBUG "via_set_primary_address(0x%08X)\n", addr);
++	via_write_reg(VIACR, 0x0D, addr & 0xFF);
++	via_write_reg(VIACR, 0x0C, (addr >> 8) & 0xFF);
++	via_write_reg(VIACR, 0x34, (addr >> 16) & 0xFF);
++	via_write_reg_mask(VIACR, 0x48, (addr >> 24) & 0x1F, 0x1F);
++}
++
++void via_set_secondary_address(u32 addr)
++{
++	DEBUG_MSG(KERN_DEBUG "via_set_secondary_address(0x%08X)\n", addr);
++	/* secondary display supports only quadword aligned memory */
++	via_write_reg_mask(VIACR, 0x62, (addr >> 2) & 0xFE, 0xFE);
++	via_write_reg(VIACR, 0x63, (addr >> 10) & 0xFF);
++	via_write_reg(VIACR, 0x64, (addr >> 18) & 0xFF);
++	via_write_reg_mask(VIACR, 0xA3, (addr >> 26) & 0x07, 0x07);
++}
++
++void via_set_primary_pitch(u32 pitch)
++{
++	DEBUG_MSG(KERN_DEBUG "via_set_primary_pitch(0x%08X)\n", pitch);
++	/* spec does not say that first adapter skips 3 bits but old
++	 * code did it and seems to be reasonable in analogy to 2nd adapter
++	 */
++	pitch = pitch >> 3;
++	via_write_reg(VIACR, 0x13, pitch & 0xFF);
++	via_write_reg_mask(VIACR, 0x35, (pitch >> (8 - 5)) & 0xE0, 0xE0);
++}
++
++void via_set_secondary_pitch(u32 pitch)
++{
++	DEBUG_MSG(KERN_DEBUG "via_set_secondary_pitch(0x%08X)\n", pitch);
++	pitch = pitch >> 3;
++	via_write_reg(VIACR, 0x66, pitch & 0xFF);
++	via_write_reg_mask(VIACR, 0x67, (pitch >> 8) & 0x03, 0x03);
++	via_write_reg_mask(VIACR, 0x71, (pitch >> (10 - 7)) & 0x80, 0x80);
++}
++
++void via_set_primary_color_depth(u8 depth)
++{
++	u8 value;
++
++	DEBUG_MSG(KERN_DEBUG "via_set_primary_color_depth(%d)\n", depth);
++	switch (depth) {
++	case 8:
++		value = 0x00;
++		break;
++	case 15:
++		value = 0x04;
++		break;
++	case 16:
++		value = 0x14;
++		break;
++	case 24:
++		value = 0x0C;
++		break;
++	case 30:
++		value = 0x08;
++		break;
++	default:
++		printk(KERN_WARNING "via_set_primary_color_depth: "
++			"Unsupported depth: %d\n", depth);
++		return;
++	}
++
++	via_write_reg_mask(VIASR, 0x15, value, 0x1C);
++}
++
++void via_set_secondary_color_depth(u8 depth)
++{
++	u8 value;
++
++	DEBUG_MSG(KERN_DEBUG "via_set_secondary_color_depth(%d)\n", depth);
++	switch (depth) {
++	case 8:
++		value = 0x00;
++		break;
++	case 16:
++		value = 0x40;
++		break;
++	case 24:
++		value = 0xC0;
++		break;
++	case 30:
++		value = 0x80;
++		break;
++	default:
++		printk(KERN_WARNING "via_set_secondary_color_depth: "
++			"Unsupported depth: %d\n", depth);
++		return;
++	}
++
++	via_write_reg_mask(VIACR, 0x67, value, 0xC0);
++}
+diff --git a/drivers/video/via/via_modesetting.h b/drivers/video/via/via_modesetting.h
+new file mode 100644
+index 0000000..ae35cfd
+--- /dev/null
++++ b/drivers/video/via/via_modesetting.h
+@@ -0,0 +1,38 @@
++/*
++ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
++ * Copyright 2010 Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public
++ * License as published by the Free Software Foundation;
++ * either version 2, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
++ * the implied warranty of MERCHANTABILITY or FITNESS FOR
++ * A PARTICULAR PURPOSE.See the GNU General Public License
++ * for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc.,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++/*
++ * basic modesetting functions
++ */
++
++#ifndef __VIA_MODESETTING_H__
++#define __VIA_MODESETTING_H__
 +
 +#include <linux/types.h>
-+#include <linux/io.h>
 +
-+/*
-+ * Indexed port operations.  Note that these are all multi-op
-+ * functions; every invocation will be racy if you're not holding
-+ * reg_lock.
-+ */
-+static inline u8 via_read_reg(u16 port, u8 index)
-+{
-+	outb(index, port);
-+	return inb(port + 1);
-+}
++void via_set_primary_address(u32 addr);
++void via_set_secondary_address(u32 addr);
++void via_set_primary_pitch(u32 pitch);
++void via_set_secondary_pitch(u32 pitch);
++void via_set_primary_color_depth(u8 depth);
++void via_set_secondary_color_depth(u8 depth);
 +
-+static inline void via_write_reg(u16 port, u8 index, u8 data)
-+{
-+	outb(index, port);
-+	outb(data, port + 1);
-+}
-+
-+static inline void via_write_reg_mask(u16 port, u8 index, u8 data, u8 mask)
-+{
-+	u8 old;
-+
-+	outb(index, port);
-+	old = inb(port + 1);
-+	outb((data & mask) | (old & ~mask), port + 1);
-+}
-+
-+#endif /* __VIA_IO_H__ */
++#endif /* __VIA_MODESETTING_H__ */
 -- 
-1.7.0.1
+1.6.3.2
 

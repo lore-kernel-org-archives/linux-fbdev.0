@@ -1,211 +1,226 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 28 Apr 2010 22:17:17 +0000
-Subject: [PATCH 16/30] viafb: Convert GPIO and i2c to the new indexed port ops
-Message-Id: <1272493051-25380-17-git-send-email-corbet@lwn.net>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 17 Apr 2010 19:44:52 +0000
+Subject: [PATCH 2/7] viafb: unify modesetting functions
+Message-Id: <1271533498-3376-2-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
-In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+References: <1271533498-3376-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1271533498-3376-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, corbet@lwn.net, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Also add low-level locking to the i2c driver.
+viafb: unify modesetting functions
 
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+This patch unifies some cleaned up modesetting functions to prepare for
+moving them to an extra file. This includes make them use via_io and
+changing there names to reflect that they do not depend on anything
+framebuffer specific.
+
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/via/via-core.c |    2 +-
- drivers/video/via/via-gpio.c |   14 ++++++------
- drivers/video/via/via_i2c.c  |   46 ++++++++++++++++++++++++++---------------
- drivers/video/via/via_i2c.h  |    2 +-
- 4 files changed, 38 insertions(+), 26 deletions(-)
+ drivers/video/via/hw.c       |   66 +++++++++++++++++++++---------------------
+ drivers/video/via/hw.h       |    8 ++--
+ drivers/video/via/viafbdev.c |   17 ++++++-----
+ 3 files changed, 46 insertions(+), 45 deletions(-)
 
-diff --git a/drivers/video/via/via-core.c b/drivers/video/via/via-core.c
-index 2f7eba3..a2e08ac 100644
---- a/drivers/video/via/via-core.c
-+++ b/drivers/video/via/via-core.c
-@@ -219,7 +219,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 	 * Create the I2C busses.  Bailing out on failure seems extreme,
- 	 * but that's what the code did before.
- 	 */
--	ret = viafb_create_i2c_busses(adap_configs);
-+	ret = viafb_create_i2c_busses(&global_dev, adap_configs);
- 	if (ret) {
- 		via_fb_pci_remove(pdev);
- 		return ret;
-diff --git a/drivers/video/via/via-gpio.c b/drivers/video/via/via-gpio.c
-index e119d21..6b36117 100644
---- a/drivers/video/via/via-gpio.c
-+++ b/drivers/video/via/via-gpio.c
-@@ -91,13 +91,13 @@ static void via_gpio_set(struct gpio_chip *chip, unsigned int nr,
- 
- 	spin_lock_irqsave(&cfg->vdev->reg_lock, flags);
- 	gpio = cfg->active_gpios[nr];
--	reg = viafb_read_reg(VIASR, gpio->vg_port_index);
-+	reg = via_read_reg(VIASR, gpio->vg_port_index);
- 	reg |= 0x40 << gpio->vg_mask_shift;  /* output enable */
- 	if (value)
- 		reg |= 0x10 << gpio->vg_mask_shift;
- 	else
- 		reg &= ~(0x10 << gpio->vg_mask_shift);
--	viafb_write_reg(gpio->vg_port_index, VIASR, reg);
-+	via_write_reg(VIASR, gpio->vg_port_index, reg);
- 	spin_unlock_irqrestore(&cfg->vdev->reg_lock, flags);
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 32742dd..6c6c140 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -624,50 +624,50 @@ void viafb_set_iga_path(void)
+ 	}
  }
  
-@@ -122,8 +122,8 @@ static int via_gpio_dir_input(struct gpio_chip *chip, unsigned int nr)
+-void viafb_set_primary_address(u32 addr)
++void via_set_primary_address(u32 addr)
+ {
+-	DEBUG_MSG(KERN_DEBUG "viafb_set_primary_address(0x%08X)\n", addr);
+-	viafb_write_reg(CR0D, VIACR, addr & 0xFF);
+-	viafb_write_reg(CR0C, VIACR, (addr >> 8) & 0xFF);
+-	viafb_write_reg(CR34, VIACR, (addr >> 16) & 0xFF);
+-	viafb_write_reg_mask(CR48, VIACR, (addr >> 24) & 0x1F, 0x1F);
++	DEBUG_MSG(KERN_DEBUG "via_set_primary_address(0x%08X)\n", addr);
++	via_write_reg(VIACR, 0x0D, addr & 0xFF);
++	via_write_reg(VIACR, 0x0C, (addr >> 8) & 0xFF);
++	via_write_reg(VIACR, 0x34, (addr >> 16) & 0xFF);
++	via_write_reg_mask(VIACR, 0x48, (addr >> 24) & 0x1F, 0x1F);
+ }
  
- 	spin_lock_irqsave(&cfg->vdev->reg_lock, flags);
- 	gpio = cfg->active_gpios[nr];
--	viafb_write_reg_mask(gpio->vg_port_index, VIASR, 0,
--			     0x40 << gpio->vg_mask_shift);
-+	via_write_reg_mask(VIASR, gpio->vg_port_index, 0,
-+			0x40 << gpio->vg_mask_shift);
- 	spin_unlock_irqrestore(&cfg->vdev->reg_lock, flags);
+-void viafb_set_secondary_address(u32 addr)
++void via_set_secondary_address(u32 addr)
+ {
+-	DEBUG_MSG(KERN_DEBUG "viafb_set_secondary_address(0x%08X)\n", addr);
++	DEBUG_MSG(KERN_DEBUG "via_set_secondary_address(0x%08X)\n", addr);
+ 	/* secondary display supports only quadword aligned memory */
+-	viafb_write_reg_mask(CR62, VIACR, (addr >> 2) & 0xFE, 0xFE);
+-	viafb_write_reg(CR63, VIACR, (addr >> 10) & 0xFF);
+-	viafb_write_reg(CR64, VIACR, (addr >> 18) & 0xFF);
+-	viafb_write_reg_mask(CRA3, VIACR, (addr >> 26) & 0x07, 0x07);
++	via_write_reg_mask(VIACR, 0x62, (addr >> 2) & 0xFE, 0xFE);
++	via_write_reg(VIACR, 0x63, (addr >> 10) & 0xFF);
++	via_write_reg(VIACR, 0x64, (addr >> 18) & 0xFF);
++	via_write_reg_mask(VIACR, 0xA3, (addr >> 26) & 0x07, 0x07);
+ }
+ 
+-void viafb_set_primary_pitch(u32 pitch)
++void via_set_primary_pitch(u32 pitch)
+ {
+-	DEBUG_MSG(KERN_DEBUG "viafb_set_primary_pitch(0x%08X)\n", pitch);
++	DEBUG_MSG(KERN_DEBUG "via_set_primary_pitch(0x%08X)\n", pitch);
+ 	/* spec does not say that first adapter skips 3 bits but old
+ 	 * code did it and seems to be reasonable in analogy to 2nd adapter
+ 	 */
+ 	pitch = pitch >> 3;
+-	viafb_write_reg(0x13, VIACR, pitch & 0xFF);
+-	viafb_write_reg_mask(0x35, VIACR, (pitch >> (8 - 5)) & 0xE0, 0xE0);
++	via_write_reg(VIACR, 0x13, pitch & 0xFF);
++	via_write_reg_mask(VIACR, 0x35, (pitch >> (8 - 5)) & 0xE0, 0xE0);
+ }
+ 
+-void viafb_set_secondary_pitch(u32 pitch)
++void via_set_secondary_pitch(u32 pitch)
+ {
+-	DEBUG_MSG(KERN_DEBUG "viafb_set_secondary_pitch(0x%08X)\n", pitch);
++	DEBUG_MSG(KERN_DEBUG "via_set_secondary_pitch(0x%08X)\n", pitch);
+ 	pitch = pitch >> 3;
+-	viafb_write_reg(0x66, VIACR, pitch & 0xFF);
+-	viafb_write_reg_mask(0x67, VIACR, (pitch >> 8) & 0x03, 0x03);
+-	viafb_write_reg_mask(0x71, VIACR, (pitch >> (10 - 7)) & 0x80, 0x80);
++	via_write_reg(VIACR, 0x66, pitch & 0xFF);
++	via_write_reg_mask(VIACR, 0x67, (pitch >> 8) & 0x03, 0x03);
++	via_write_reg_mask(VIACR, 0x71, (pitch >> (10 - 7)) & 0x80, 0x80);
+ }
+ 
+-void viafb_set_primary_color_depth(u8 depth)
++void via_set_primary_color_depth(u8 depth)
+ {
+ 	u8 value;
+ 
+-	DEBUG_MSG(KERN_DEBUG "viafb_set_primary_color_depth(%d)\n", depth);
++	DEBUG_MSG(KERN_DEBUG "via_set_primary_color_depth(%d)\n", depth);
+ 	switch (depth) {
+ 	case 8:
+ 		value = 0x00;
+@@ -685,19 +685,19 @@ void viafb_set_primary_color_depth(u8 depth)
+ 		value = 0x08;
+ 		break;
+ 	default:
+-		printk(KERN_WARNING "viafb_set_primary_color_depth: "
++		printk(KERN_WARNING "via_set_primary_color_depth: "
+ 			"Unsupported depth: %d\n", depth);
+ 		return;
+ 	}
+ 
+-	viafb_write_reg_mask(0x15, VIASR, value, 0x1C);
++	via_write_reg_mask(VIASR, 0x15, value, 0x1C);
+ }
+ 
+-void viafb_set_secondary_color_depth(u8 depth)
++void via_set_secondary_color_depth(u8 depth)
+ {
+ 	u8 value;
+ 
+-	DEBUG_MSG(KERN_DEBUG "viafb_set_secondary_color_depth(%d)\n", depth);
++	DEBUG_MSG(KERN_DEBUG "via_set_secondary_color_depth(%d)\n", depth);
+ 	switch (depth) {
+ 	case 8:
+ 		value = 0x00;
+@@ -712,12 +712,12 @@ void viafb_set_secondary_color_depth(u8 depth)
+ 		value = 0x80;
+ 		break;
+ 	default:
+-		printk(KERN_WARNING "viafb_set_secondary_color_depth: "
++		printk(KERN_WARNING "via_set_secondary_color_depth: "
+ 			"Unsupported depth: %d\n", depth);
+ 		return;
+ 	}
+ 
+-	viafb_write_reg_mask(0x67, VIACR, value, 0xC0);
++	via_write_reg_mask(VIACR, 0x67, value, 0xC0);
+ }
+ 
+ static void set_color_register(u8 index, u8 red, u8 green, u8 blue)
+@@ -2255,11 +2255,11 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
+ 		}
+ 	}
+ 
+-	viafb_set_primary_pitch(viafbinfo->fix.line_length);
+-	viafb_set_secondary_pitch(viafb_dual_fb ? viafbinfo1->fix.line_length
++	via_set_primary_pitch(viafbinfo->fix.line_length);
++	via_set_secondary_pitch(viafb_dual_fb ? viafbinfo1->fix.line_length
+ 		: viafbinfo->fix.line_length);
+-	viafb_set_primary_color_depth(viaparinfo->depth);
+-	viafb_set_secondary_color_depth(viafb_dual_fb ? viaparinfo1->depth
++	via_set_primary_color_depth(viaparinfo->depth);
++	via_set_secondary_color_depth(viafb_dual_fb ? viaparinfo1->depth
+ 		: viaparinfo->depth);
+ 	/* Update Refresh Rate Setting */
+ 
+diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
+index f0c202d..cb63f22 100644
+--- a/drivers/video/via/hw.h
++++ b/drivers/video/via/hw.h
+@@ -912,10 +912,10 @@ void viafb_update_device_setting(int hres, int vres, int bpp,
+ 
+ int viafb_get_fb_size_from_pci(void);
+ void viafb_set_iga_path(void);
+-void viafb_set_primary_address(u32 addr);
+-void viafb_set_secondary_address(u32 addr);
+-void viafb_set_primary_pitch(u32 pitch);
+-void viafb_set_secondary_pitch(u32 pitch);
++void via_set_primary_address(u32 addr);
++void via_set_secondary_address(u32 addr);
++void via_set_primary_pitch(u32 pitch);
++void via_set_secondary_pitch(u32 pitch);
+ void viafb_set_primary_color_register(u8 index, u8 red, u8 green, u8 blue);
+ void viafb_set_secondary_color_register(u8 index, u8 red, u8 green, u8 blue);
+ void viafb_get_fb_info(unsigned int *fb_base, unsigned int *fb_len);
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 777b38a..c6c01ef 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -317,12 +317,12 @@ static int viafb_pan_display(struct fb_var_screeninfo *var,
+ 
+ 	DEBUG_MSG(KERN_DEBUG "viafb_pan_display, address = %d\n", vram_addr);
+ 	if (!viafb_dual_fb) {
+-		viafb_set_primary_address(vram_addr);
+-		viafb_set_secondary_address(vram_addr);
++		via_set_primary_address(vram_addr);
++		via_set_secondary_address(vram_addr);
+ 	} else if (viapar->iga_path = IGA1)
+-		viafb_set_primary_address(vram_addr);
++		via_set_primary_address(vram_addr);
+ 	else
+-		viafb_set_secondary_address(vram_addr);
++		via_set_secondary_address(vram_addr);
+ 
  	return 0;
  }
-@@ -139,7 +139,7 @@ static int via_gpio_get(struct gpio_chip *chip, unsigned int nr)
+@@ -1018,8 +1018,8 @@ static void viafb_set_device(struct device_t active_dev)
+ 		viafb_SAMM_ON = active_dev.samm;
+ 	viafb_primary_dev = active_dev.primary_dev;
  
- 	spin_lock_irqsave(&cfg->vdev->reg_lock, flags);
- 	gpio = cfg->active_gpios[nr];
--	reg = viafb_read_reg(VIASR, gpio->vg_port_index);
-+	reg = via_read_reg(VIASR, gpio->vg_port_index);
- 	spin_unlock_irqrestore(&cfg->vdev->reg_lock, flags);
- 	return reg & (0x04 << gpio->vg_mask_shift);
- }
-@@ -164,12 +164,12 @@ static struct viafb_gpio_cfg gpio_config = {
-  */
- static void viafb_gpio_enable(struct viafb_gpio *gpio)
- {
--	viafb_write_reg_mask(gpio->vg_port_index, VIASR, 0x02, 0x02);
-+	via_write_reg_mask(VIASR, gpio->vg_port_index, 0x02, 0x02);
+-	viafb_set_primary_address(0);
+-	viafb_set_secondary_address(viafb_SAMM_ON ? viafb_second_offset : 0);
++	via_set_primary_address(0);
++	via_set_secondary_address(viafb_SAMM_ON ? viafb_second_offset : 0);
+ 	viafb_set_iga_path();
  }
  
- static void viafb_gpio_disable(struct viafb_gpio *gpio)
- {
--	viafb_write_reg_mask(gpio->vg_port_index, VIASR, 0, 0x02);
-+	via_write_reg_mask(VIASR, gpio->vg_port_index, 0, 0x02);
- }
+@@ -1165,8 +1165,9 @@ static int apply_device_setting(struct viafb_ioctl_setting setting_info,
+ 			if (viafb_SAMM_ON)
+ 				viafb_primary_dev = setting_info.primary_device;
  
- 
-diff --git a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
-index bcf2fe6..116fd3e 100644
---- a/drivers/video/via/via_i2c.c
-+++ b/drivers/video/via/via_i2c.c
-@@ -29,14 +29,16 @@
-  */
- #define VIAFB_NUM_I2C		5
- static struct via_i2c_stuff via_i2c_par[VIAFB_NUM_I2C];
-+struct viafb_dev *i2c_vdev;  /* Passed in from core */
- 
- static void via_i2c_setscl(void *data, int state)
- {
- 	u8 val;
- 	struct via_port_cfg *adap_data = data;
-+	unsigned long flags;
- 
--	val = viafb_read_reg(adap_data->io_port,
--			     adap_data->ioport_index) & 0xF0;
-+	spin_lock_irqsave(&i2c_vdev->reg_lock, flags);
-+	val = via_read_reg(adap_data->io_port, adap_data->ioport_index) & 0xF0;
- 	if (state)
- 		val |= 0x20;
- 	else
-@@ -51,35 +53,44 @@ static void via_i2c_setscl(void *data, int state)
- 	default:
- 		DEBUG_MSG("viafb_i2c: specify wrong i2c type.\n");
- 	}
--	viafb_write_reg(adap_data->ioport_index,
--			adap_data->io_port, val);
-+	via_write_reg(adap_data->io_port, adap_data->ioport_index, val);
-+	spin_unlock_irqrestore(&i2c_vdev->reg_lock, flags);
- }
- 
- static int via_i2c_getscl(void *data)
- {
- 	struct via_port_cfg *adap_data = data;
--
--	if (viafb_read_reg(adap_data->io_port, adap_data->ioport_index) & 0x08)
--		return 1;
--	return 0;
-+	unsigned long flags;
-+	int ret = 0;
-+
-+	spin_lock_irqsave(&i2c_vdev->reg_lock, flags);
-+	if (via_read_reg(adap_data->io_port, adap_data->ioport_index) & 0x08)
-+		ret = 1;
-+	spin_unlock_irqrestore(&i2c_vdev->reg_lock, flags);
-+	return ret;
- }
- 
- static int via_i2c_getsda(void *data)
- {
- 	struct via_port_cfg *adap_data = data;
--
--	if (viafb_read_reg(adap_data->io_port, adap_data->ioport_index) & 0x04)
--		return 1;
--	return 0;
-+	unsigned long flags;
-+	int ret = 0;
-+
-+	spin_lock_irqsave(&i2c_vdev->reg_lock, flags);
-+	if (via_read_reg(adap_data->io_port, adap_data->ioport_index) & 0x04)
-+		ret = 1;
-+	spin_unlock_irqrestore(&i2c_vdev->reg_lock, flags);
-+	return ret;
- }
- 
- static void via_i2c_setsda(void *data, int state)
- {
- 	u8 val;
- 	struct via_port_cfg *adap_data = data;
-+	unsigned long flags;
- 
--	val = viafb_read_reg(adap_data->io_port,
--			     adap_data->ioport_index) & 0xF0;
-+	spin_lock_irqsave(&i2c_vdev->reg_lock, flags);
-+	val = via_read_reg(adap_data->io_port, adap_data->ioport_index) & 0xF0;
- 	if (state)
- 		val |= 0x10;
- 	else
-@@ -94,8 +105,8 @@ static void via_i2c_setsda(void *data, int state)
- 	default:
- 		DEBUG_MSG("viafb_i2c: specify wrong i2c type.\n");
- 	}
--	viafb_write_reg(adap_data->ioport_index,
--			adap_data->io_port, val);
-+	via_write_reg(adap_data->io_port, adap_data->ioport_index, val);
-+	spin_unlock_irqrestore(&i2c_vdev->reg_lock, flags);
- }
- 
- int viafb_i2c_readbyte(u8 adap, u8 slave_addr, u8 index, u8 *pdata)
-@@ -174,10 +185,11 @@ static int create_i2c_bus(struct i2c_adapter *adapter,
- 	return i2c_bit_add_bus(adapter);
- }
- 
--int viafb_create_i2c_busses(struct via_port_cfg *configs)
-+int viafb_create_i2c_busses(struct viafb_dev *dev, struct via_port_cfg *configs)
- {
- 	int i, ret;
- 
-+	i2c_vdev = dev;
- 	for (i = 0; i < VIAFB_NUM_PORTS; i++) {
- 		struct via_port_cfg *adap_cfg = configs++;
- 		struct via_i2c_stuff *i2c_stuff = &via_i2c_par[i];
-diff --git a/drivers/video/via/via_i2c.h b/drivers/video/via/via_i2c.h
-index 0093291..0685de9 100644
---- a/drivers/video/via/via_i2c.h
-+++ b/drivers/video/via/via_i2c.h
-@@ -36,7 +36,7 @@ int viafb_i2c_writebyte(u8 adap, u8 slave_addr, u8 index, u8 data);
- int viafb_i2c_readbytes(u8 adap, u8 slave_addr, u8 index, u8 *buff, int buff_len);
- 
- struct viafb_par;
--int viafb_create_i2c_busses(struct via_port_cfg *cfg);
-+int viafb_create_i2c_busses(struct viafb_dev *vdev, struct via_port_cfg *cfg);
- void viafb_delete_i2c_busses(void);
- struct i2c_adapter *viafb_find_adapter(enum viafb_i2c_adap which);
- #endif /* __VIA_I2C_H__ */
+-			viafb_set_primary_address(0);
+-			viafb_set_secondary_address(viafb_SAMM_ON ? viafb_second_offset : 0);
++			via_set_primary_address(0);
++			via_set_secondary_address(viafb_SAMM_ON ?
++				viafb_second_offset : 0);
+ 			viafb_set_iga_path();
+ 		}
+ 		need_set_mode = 1;
 -- 
-1.7.0.1
+1.6.3.2
 

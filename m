@@ -1,52 +1,101 @@
-From: James Simmons <jsimmons@infradead.org>
-Date: Mon, 05 Apr 2010 14:04:43 +0000
-Subject: Re: [PATCH 23/24] video/matrox: fix dangling pointers
-Message-Id: <alpine.LFD.2.00.1004051504200.16108@casper.infradead.org>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 17 Apr 2010 19:44:57 +0000
+Subject: [PATCH 7/7] viafb: make procfs entries optional
+Message-Id: <1271533498-3376-7-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1269094385-16114-1-git-send-email-w.sang@pengutronix.de> <1269094385-16114-24-git-send-email-w.sang@pengutronix.de>
-In-Reply-To: <1269094385-16114-24-git-send-email-w.sang-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+References: <1271533498-3376-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1271533498-3376-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wolfram Sang <w.sang-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: kernel-janitors-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Petr Vandrovec <vandrove-hnqZr3NxcozrBKCeMvbIDA@public.gmane.org>, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andrew Morton <akpm-3NddpPZAyC0@public.gmane.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, corbet@lwn.net, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
+viafb: make procfs entries optional
 
-On Sat, 20 Mar 2010, Wolfram Sang wrote:
+This patch adds a config option to enable procfs entries for direct
+hardware access. This was the old behaviour but the option defaults
+to no as this is really ugly and should not be needed if the driver
+works correct (and if it doesn't, it needs to be fixed).
+That stuff is really something that should
+- not be needed at all (the driver should be capable of doing it)
+- not be there (debugfs would be better for such things)
+So add this option just for backwards compatiblity.
 
-> Fix I2C-drivers which missed setting clientdata to NULL before freeing the
-> structure it points to. Also fix drivers which do this _after_ the structure
-> was freed already.
-> 
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-> Cc: Petr Vandrovec <vandrove@vc.cvut.cz>
-> ---
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+---
+ drivers/video/Kconfig        |   15 +++++++++++++++
+ drivers/video/via/viafbdev.c |    8 ++++++++
+ 2 files changed, 23 insertions(+), 0 deletions(-)
 
-Acked-by: James Simmons <jsimmons@infradead.org>
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 6e16244..de82639 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1520,6 +1520,21 @@ config FB_VIA
  
-> Found using coccinelle, then reviewed. Full patchset is available via
-> kernel-janitors, linux-i2c, and LKML.
-> ---
->  drivers/video/matrox/matroxfb_maven.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/matrox/matroxfb_maven.c b/drivers/video/matrox/matroxfb_maven.c
-> index 91af915..e7b0ec3 100644
-> --- a/drivers/video/matrox/matroxfb_maven.c
-> +++ b/drivers/video/matrox/matroxfb_maven.c
-> @@ -1254,6 +1254,7 @@ static int maven_probe(struct i2c_client *client,
->  		goto ERROR4;
->  	return 0;
->  ERROR4:;
-> +	i2c_set_clientdata(client, NULL);
->  	kfree(data);
->  ERROR0:;
->  	return err;
-> -- 
-> 1.7.0
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called viafb.
++
++if FB_VIA
++
++config FB_VIA_DIRECT_PROCFS
++	bool "direct hardware access via procfs (DEPRECATED)(DANGEROUS)"
++	depends on FB_VIA
++	default n
++	help
++	  Allow direct hardware access to some output registers via procfs.
++	  This is dangerous but may provide the only chance to get the
++	  correct output device configuration.
++	  Its use is strongly discouraged.
++
++endif
++
+ config FB_NEOMAGIC
+ 	tristate "NeoMagic display support"
+ 	depends on FB && PCI
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 457a9b2..b1323d9 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1326,6 +1326,8 @@ static void parse_dvi_port(void)
+ 		  output_interface);
+ }
+ 
++#ifdef CONFIG_FB_VIA_DIRECT_PROCFS
++
+ /*
+  * The proc filesystem read/write function, a simple proc implement to
+  * get/set the value of DPA  DVP0,   DVP0DataDriving,  DVP0ClockDriving, DVP1,
+@@ -1715,6 +1717,8 @@ static void viafb_remove_proc(struct proc_dir_entry *viafb_entry)
+ 	remove_proc_entry("viafb", NULL);
+ }
+ 
++#endif /* CONFIG_FB_VIA_DIRECT_PROCFS */
++
+ static int parse_mode(const char *str, u32 *xres, u32 *yres)
+ {
+ 	char *ptr;
+@@ -1938,7 +1942,9 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 		  viafbinfo->node, viafbinfo->fix.id, default_var.xres,
+ 		  default_var.yres, default_var.bits_per_pixel);
+ 
++#ifdef CONFIG_FB_VIA_DIRECT_PROCFS
+ 	viafb_init_proc(&viaparinfo->shared->proc_entry);
++#endif
+ 	viafb_init_dac(IGA2);
+ 	return 0;
+ }
+@@ -1954,7 +1960,9 @@ static void __devexit via_pci_remove(struct pci_dev *pdev)
+ 	iounmap(viaparinfo->shared->engine_mmio);
+ 
+ 	viafb_delete_i2c_buss(viaparinfo);
++#ifdef CONFIG_FB_VIA_DIRECT_PROCFS
+ 	viafb_remove_proc(viaparinfo->shared->proc_entry);
++#endif
+ 	framebuffer_release(viafbinfo);
+ 	if (viafb_dual_fb)
+ 		framebuffer_release(viafbinfo1);
+-- 
+1.6.3.2
+

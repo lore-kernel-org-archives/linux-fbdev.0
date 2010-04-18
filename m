@@ -1,136 +1,153 @@
 From: Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 28 Apr 2010 22:17:29 +0000
-Subject: [PATCH 28/30] viafb: improve misc register handling
-Message-Id: <1272493051-25380-29-git-send-email-corbet@lwn.net>
+Date: Sun, 18 Apr 2010 18:21:03 +0000
+Subject: [PATCH 01/11] [FB] viafb: Fix various resource leaks during module_init()
+Message-Id: <1271614873-5952-2-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
-In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+References: <1271614873-5952-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1271614873-5952-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+From: Harald Welte <laforge@gnumonks.org>
 
-viafb: improve misc register handling
+The current code executed from module_init() in viafb does not have
+proper error checking and [partial] resoure release paths in case
+an error happens half way through driver initialization.
 
-This patch improves the misc register handling by adding a modify
-function for this to via_io.h and moving expanded definitions of the
-relevant ports there. The code was changed to use those to improve
-readability.
+This patch adresses the most obvious of those issues, such as a
+leftover i2c bus if module_init (and thus module load) fails.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+[jc: fixed merge conflicts]
+[jc: also restored -ENOMEM return on ioremap() fail]
+
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: ScottFang@viatech.com.cn
+Cc: JosephChan@via.com.tw
+Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
 ---
- drivers/video/via/hw.c     |   27 ++++++++-------------------
- drivers/video/via/share.h  |    2 --
- drivers/video/via/via_io.h |    9 +++++++++
- 3 files changed, 17 insertions(+), 21 deletions(-)
+ drivers/video/via/viafbdev.c |   52 +++++++++++++++++++++++++++++++----------
+ 1 files changed, 39 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index b2bb24e..e356fe8 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -1394,8 +1394,6 @@ u32 viafb_get_clk_value(int clk)
- /* Set VCLK*/
- void viafb_set_vclock(u32 CLK, int set_iga)
- {
--	unsigned char RegTemp;
--
- 	/* H.W. Reset : ON */
- 	viafb_write_reg_mask(CR17, VIACR, 0x00, BIT7);
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index ce7783b..b7018ef 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 1998-2009 VIA Technologies, Inc. All Rights Reserved.
+  * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
  
-@@ -1468,8 +1466,7 @@ void viafb_set_vclock(u32 CLK, int set_iga)
+  * This program is free software; you can redistribute it and/or
+@@ -1737,6 +1737,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 	u32 default_xres, default_yres;
+ 	struct VideoModeTable *vmode_entry;
+ 	struct fb_var_screeninfo default_var;
++	int rc;
+ 	u32 viafb_par_length;
+ 
+ 	DEBUG_MSG(KERN_INFO "VIAFB PCI Probe!!\n");
+@@ -1751,7 +1752,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 		&pdev->dev);
+ 	if (!viafbinfo) {
+ 		printk(KERN_ERR"Could not allocate memory for viafb_info.\n");
+-		return -ENODEV;
++		return -ENOMEM;
  	}
  
- 	/* Fire! */
--	RegTemp = inb(VIARMisc);
--	outb(RegTemp | (BIT2 + BIT3), VIAWMisc);
-+	via_write_misc_reg_mask(0x0C, 0x0C); /* select external clock */
+ 	viaparinfo = (struct viafb_par *)viafbinfo->par;
+@@ -1774,7 +1775,9 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 		viafb_dual_fb = 0;
+ 
+ 	/* Set up I2C bus stuff */
+-	viafb_create_i2c_bus(viaparinfo);
++	rc = viafb_create_i2c_bus(viaparinfo);
++	if (rc)
++		goto out_fb_release;
+ 
+ 	viafb_init_chip_info(pdev, ent);
+ 	viaparinfo->fbmem = pci_resource_start(pdev, 0);
+@@ -1785,7 +1788,8 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 		viaparinfo->memsize);
+ 	if (!viafbinfo->screen_base) {
+ 		printk(KERN_INFO "ioremap failed\n");
+-		return -ENOMEM;
++		rc = -ENOMEM;
++		goto out_delete_i2c;
+ 	}
+ 
+ 	viafbinfo->fix.mmio_start = pci_resource_start(pdev, 1);
+@@ -1861,8 +1865,8 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 		if (!viafbinfo1) {
+ 			printk(KERN_ERR
+ 			"allocate the second framebuffer struct error\n");
+-			framebuffer_release(viafbinfo);
+-			return -ENOMEM;
++			rc = -ENOMEM;
++			goto out_delete_i2c;
+ 		}
+ 		viaparinfo1 = viafbinfo1->par;
+ 		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
+@@ -1913,21 +1917,26 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 	viaparinfo->depth = fb_get_color_depth(&viafbinfo->var,
+ 		&viafbinfo->fix);
+ 	default_var.activate = FB_ACTIVATE_NOW;
+-	fb_alloc_cmap(&viafbinfo->cmap, 256, 0);
++	rc = fb_alloc_cmap(&viafbinfo->cmap, 256, 0);
++	if (rc)
++		goto out_fb1_release;
+ 
+ 	if (viafb_dual_fb && (viafb_primary_dev = LCD_Device)
+ 	    && (viaparinfo->chip_info->gfx_chip_name = UNICHROME_CLE266)) {
+-		if (register_framebuffer(viafbinfo1) < 0)
+-			return -EINVAL;
++		rc = register_framebuffer(viafbinfo1);
++		if (rc)
++			goto out_dealloc_cmap;
+ 	}
+-	if (register_framebuffer(viafbinfo) < 0)
+-		return -EINVAL;
++	rc = register_framebuffer(viafbinfo);
++	if (rc)
++		goto out_fb1_unreg_lcd_cle266;
+ 
+ 	if (viafb_dual_fb && ((viafb_primary_dev != LCD_Device)
+ 			|| (viaparinfo->chip_info->gfx_chip_name ! 			UNICHROME_CLE266))) {
+-		if (register_framebuffer(viafbinfo1) < 0)
+-			return -EINVAL;
++		rc = register_framebuffer(viafbinfo1);
++		if (rc)
++			goto out_fb_unreg;
+ 	}
+ 	DEBUG_MSG(KERN_INFO "fb%d: %s frame buffer device %dx%d-%dbpp\n",
+ 		  viafbinfo->node, viafbinfo->fix.id, default_var.xres,
+@@ -1936,6 +1945,23 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 	viafb_init_proc(&viaparinfo->shared->proc_entry);
+ 	viafb_init_dac(IGA2);
+ 	return 0;
++
++out_fb_unreg:
++	unregister_framebuffer(viafbinfo);
++out_fb1_unreg_lcd_cle266:
++	if (viafb_dual_fb && (viafb_primary_dev = LCD_Device)
++	    && (viaparinfo->chip_info->gfx_chip_name = UNICHROME_CLE266))
++		unregister_framebuffer(viafbinfo1);
++out_dealloc_cmap:
++	fb_dealloc_cmap(&viafbinfo->cmap);
++out_fb1_release:
++	if (viafbinfo1)
++		framebuffer_release(viafbinfo1);
++out_delete_i2c:
++	viafb_delete_i2c_buss(viaparinfo);
++out_fb_release:
++	framebuffer_release(viafbinfo);
++	return rc;
  }
  
- void viafb_load_crtc_timing(struct display_timing device_timing,
-@@ -1713,6 +1710,7 @@ void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
- 	int index = 0;
- 	int h_addr, v_addr;
- 	u32 pll_D_N;
-+	u8 polarity = 0;
- 
- 	for (i = 0; i < video_mode->mode_array; i++) {
- 		index = i;
-@@ -1741,20 +1739,11 @@ void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
- 	v_addr = crt_reg.ver_addr;
- 
- 	/* update polarity for CRT timing */
--	if (crt_table[index].h_sync_polarity = NEGATIVE) {
--		if (crt_table[index].v_sync_polarity = NEGATIVE)
--			outb((inb(VIARMisc) & (~(BIT6 + BIT7))) |
--			     (BIT6 + BIT7), VIAWMisc);
--		else
--			outb((inb(VIARMisc) & (~(BIT6 + BIT7))) | (BIT6),
--			     VIAWMisc);
--	} else {
--		if (crt_table[index].v_sync_polarity = NEGATIVE)
--			outb((inb(VIARMisc) & (~(BIT6 + BIT7))) | (BIT7),
--			     VIAWMisc);
--		else
--			outb((inb(VIARMisc) & (~(BIT6 + BIT7))), VIAWMisc);
--	}
-+	if (crt_table[index].h_sync_polarity = NEGATIVE)
-+		polarity |= BIT6;
-+	if (crt_table[index].v_sync_polarity = NEGATIVE)
-+		polarity |= BIT7;
-+	via_write_misc_reg_mask(polarity, BIT6 | BIT7);
- 
- 	if (set_iga = IGA1) {
- 		viafb_unlock_crt();
-@@ -2123,7 +2112,7 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
- 
- 	/* Fill VPIT Parameters */
- 	/* Write Misc Register */
--	outb(VPIT.Misc, VIAWMisc);
-+	outb(VPIT.Misc, VIA_MISC_REG_WRITE);
- 
- 	/* Write Sequencer */
- 	for (i = 1; i <= StdSR; i++)
-diff --git a/drivers/video/via/share.h b/drivers/video/via/share.h
-index f974c73..861b414 100644
---- a/drivers/video/via/share.h
-+++ b/drivers/video/via/share.h
-@@ -45,8 +45,6 @@
- 
- /* standard VGA IO port
- */
--#define VIARMisc    0x3CC
--#define VIAWMisc    0x3C2
- #define VIAStatus   0x3DA
- #define VIACR       0x3D4
- #define VIASR       0x3C4
-diff --git a/drivers/video/via/via_io.h b/drivers/video/via/via_io.h
-index e1c1093..a3d2aca 100644
---- a/drivers/video/via/via_io.h
-+++ b/drivers/video/via/via_io.h
-@@ -29,6 +29,9 @@
- #include <linux/types.h>
- #include <linux/io.h>
- 
-+#define VIA_MISC_REG_READ	0x03CC
-+#define VIA_MISC_REG_WRITE	0x03C2
-+
- /*
-  * Indexed port operations.  Note that these are all multi-op
-  * functions; every invocation will be racy if you're not holding
-@@ -55,4 +58,10 @@ static inline void via_write_reg_mask(u16 port, u8 index, u8 data, u8 mask)
- 	outb((data & mask) | (old & ~mask), port + 1);
- }
- 
-+static inline void via_write_misc_reg_mask(u8 data, u8 mask)
-+{
-+	u8 old = inb(VIA_MISC_REG_READ);
-+	outb((data & mask) | (old & ~mask), VIA_MISC_REG_WRITE);
-+}
-+
- #endif /* __VIA_IO_H__ */
+ static void __devexit via_pci_remove(struct pci_dev *pdev)
 -- 
 1.7.0.1
 

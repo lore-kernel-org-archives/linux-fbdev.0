@@ -1,226 +1,167 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sat, 17 Apr 2010 19:44:52 +0000
-Subject: [PATCH 2/7] viafb: unify modesetting functions
-Message-Id: <1271533498-3376-2-git-send-email-FlorianSchandinat@gmx.de>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Sun, 18 Apr 2010 18:21:10 +0000
+Subject: [PATCH 08/11] viafb: Add 1200x900 DCON/LCD panel modes for OLPC XO-1.5
+Message-Id: <1271614873-5952-9-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1271533498-3376-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1271533498-3376-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <1271614873-5952-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1271614873-5952-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, corbet@lwn.net, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-viafb: unify modesetting functions
+From: Chris Ball <cjb@laptop.org>
 
-This patch unifies some cleaned up modesetting functions to prepare for
-moving them to an extra file. This includes make them use via_io and
-changing there names to reflect that they do not depend on anything
-framebuffer specific.
-
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+[jc: extensive merge conflict fixes]
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: ScottFang@viatech.com.cn
+Cc: JosephChan@via.com.tw
+Signed-off-by: Chris Ball <cjb@laptop.org>
 ---
- drivers/video/via/hw.c       |   66 +++++++++++++++++++++---------------------
- drivers/video/via/hw.h       |    8 ++--
- drivers/video/via/viafbdev.c |   17 ++++++-----
- 3 files changed, 46 insertions(+), 45 deletions(-)
+ drivers/video/via/hw.c      |    1 +
+ drivers/video/via/ioctl.h   |    2 +-
+ drivers/video/via/lcd.c     |    9 +++++++++
+ drivers/video/via/lcd.h     |    2 ++
+ drivers/video/via/share.h   |    7 +++++++
+ drivers/video/via/viamode.c |   14 ++++++++++++++
+ 6 files changed, 34 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 32742dd..6c6c140 100644
+index d893695..4aff0f7 100644
 --- a/drivers/video/via/hw.c
 +++ b/drivers/video/via/hw.c
-@@ -624,50 +624,50 @@ void viafb_set_iga_path(void)
- 	}
- }
+@@ -63,6 +63,7 @@ static struct pll_map pll_value[] = {
+ 	 CX700_52_977M,	VX855_52_977M},
+ 	{CLK_56_250M, CLE266_PLL_56_250M, K800_PLL_56_250M,
+ 	 CX700_56_250M, VX855_56_250M},
++	{CLK_57_275M, 0, 0, 0, VX855_57_275M},
+ 	{CLK_60_466M, CLE266_PLL_60_466M, K800_PLL_60_466M,
+ 	 CX700_60_466M, VX855_60_466M},
+ 	{CLK_61_500M, CLE266_PLL_61_500M, K800_PLL_61_500M,
+diff --git a/drivers/video/via/ioctl.h b/drivers/video/via/ioctl.h
+index de89980..c430fa2 100644
+--- a/drivers/video/via/ioctl.h
++++ b/drivers/video/via/ioctl.h
+@@ -75,7 +75,7 @@
+ /*SAMM operation flag*/
+ #define OP_SAMM            0x80
  
--void viafb_set_primary_address(u32 addr)
-+void via_set_primary_address(u32 addr)
- {
--	DEBUG_MSG(KERN_DEBUG "viafb_set_primary_address(0x%08X)\n", addr);
--	viafb_write_reg(CR0D, VIACR, addr & 0xFF);
--	viafb_write_reg(CR0C, VIACR, (addr >> 8) & 0xFF);
--	viafb_write_reg(CR34, VIACR, (addr >> 16) & 0xFF);
--	viafb_write_reg_mask(CR48, VIACR, (addr >> 24) & 0x1F, 0x1F);
-+	DEBUG_MSG(KERN_DEBUG "via_set_primary_address(0x%08X)\n", addr);
-+	via_write_reg(VIACR, 0x0D, addr & 0xFF);
-+	via_write_reg(VIACR, 0x0C, (addr >> 8) & 0xFF);
-+	via_write_reg(VIACR, 0x34, (addr >> 16) & 0xFF);
-+	via_write_reg_mask(VIACR, 0x48, (addr >> 24) & 0x1F, 0x1F);
- }
+-#define LCD_PANEL_ID_MAXIMUM	22
++#define LCD_PANEL_ID_MAXIMUM	23
  
--void viafb_set_secondary_address(u32 addr)
-+void via_set_secondary_address(u32 addr)
- {
--	DEBUG_MSG(KERN_DEBUG "viafb_set_secondary_address(0x%08X)\n", addr);
-+	DEBUG_MSG(KERN_DEBUG "via_set_secondary_address(0x%08X)\n", addr);
- 	/* secondary display supports only quadword aligned memory */
--	viafb_write_reg_mask(CR62, VIACR, (addr >> 2) & 0xFE, 0xFE);
--	viafb_write_reg(CR63, VIACR, (addr >> 10) & 0xFF);
--	viafb_write_reg(CR64, VIACR, (addr >> 18) & 0xFF);
--	viafb_write_reg_mask(CRA3, VIACR, (addr >> 26) & 0x07, 0x07);
-+	via_write_reg_mask(VIACR, 0x62, (addr >> 2) & 0xFE, 0xFE);
-+	via_write_reg(VIACR, 0x63, (addr >> 10) & 0xFF);
-+	via_write_reg(VIACR, 0x64, (addr >> 18) & 0xFF);
-+	via_write_reg_mask(VIACR, 0xA3, (addr >> 26) & 0x07, 0x07);
- }
- 
--void viafb_set_primary_pitch(u32 pitch)
-+void via_set_primary_pitch(u32 pitch)
- {
--	DEBUG_MSG(KERN_DEBUG "viafb_set_primary_pitch(0x%08X)\n", pitch);
-+	DEBUG_MSG(KERN_DEBUG "via_set_primary_pitch(0x%08X)\n", pitch);
- 	/* spec does not say that first adapter skips 3 bits but old
- 	 * code did it and seems to be reasonable in analogy to 2nd adapter
- 	 */
- 	pitch = pitch >> 3;
--	viafb_write_reg(0x13, VIACR, pitch & 0xFF);
--	viafb_write_reg_mask(0x35, VIACR, (pitch >> (8 - 5)) & 0xE0, 0xE0);
-+	via_write_reg(VIACR, 0x13, pitch & 0xFF);
-+	via_write_reg_mask(VIACR, 0x35, (pitch >> (8 - 5)) & 0xE0, 0xE0);
- }
- 
--void viafb_set_secondary_pitch(u32 pitch)
-+void via_set_secondary_pitch(u32 pitch)
- {
--	DEBUG_MSG(KERN_DEBUG "viafb_set_secondary_pitch(0x%08X)\n", pitch);
-+	DEBUG_MSG(KERN_DEBUG "via_set_secondary_pitch(0x%08X)\n", pitch);
- 	pitch = pitch >> 3;
--	viafb_write_reg(0x66, VIACR, pitch & 0xFF);
--	viafb_write_reg_mask(0x67, VIACR, (pitch >> 8) & 0x03, 0x03);
--	viafb_write_reg_mask(0x71, VIACR, (pitch >> (10 - 7)) & 0x80, 0x80);
-+	via_write_reg(VIACR, 0x66, pitch & 0xFF);
-+	via_write_reg_mask(VIACR, 0x67, (pitch >> 8) & 0x03, 0x03);
-+	via_write_reg_mask(VIACR, 0x71, (pitch >> (10 - 7)) & 0x80, 0x80);
- }
- 
--void viafb_set_primary_color_depth(u8 depth)
-+void via_set_primary_color_depth(u8 depth)
- {
- 	u8 value;
- 
--	DEBUG_MSG(KERN_DEBUG "viafb_set_primary_color_depth(%d)\n", depth);
-+	DEBUG_MSG(KERN_DEBUG "via_set_primary_color_depth(%d)\n", depth);
- 	switch (depth) {
- 	case 8:
- 		value = 0x00;
-@@ -685,19 +685,19 @@ void viafb_set_primary_color_depth(u8 depth)
- 		value = 0x08;
+ #define STATE_ON            0x1
+ #define STATE_OFF           0x0
+diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
+index 79c8c9d..b656e59 100644
+--- a/drivers/video/via/lcd.c
++++ b/drivers/video/via/lcd.c
+@@ -399,6 +399,15 @@ static void fp_id_to_vindex(int panel_id)
+ 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
+ 		viaparinfo->lvds_setting_info->LCDDithering = 1;
  		break;
++	case 0x17:
++		/* OLPC XO-1.5 panel */
++		viaparinfo->lvds_setting_info->lcd_panel_hres = 1200;
++		viaparinfo->lvds_setting_info->lcd_panel_vres = 900;
++		viaparinfo->lvds_setting_info->lcd_panel_id +			LCD_PANEL_IDD_1200X900;
++		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
++		viaparinfo->lvds_setting_info->LCDDithering = 0;
++		break;
  	default:
--		printk(KERN_WARNING "viafb_set_primary_color_depth: "
-+		printk(KERN_WARNING "via_set_primary_color_depth: "
- 			"Unsupported depth: %d\n", depth);
- 		return;
- 	}
+ 		viaparinfo->lvds_setting_info->lcd_panel_hres = 800;
+ 		viaparinfo->lvds_setting_info->lcd_panel_vres = 600;
+diff --git a/drivers/video/via/lcd.h b/drivers/video/via/lcd.h
+index 071f47c..9762ec6 100644
+--- a/drivers/video/via/lcd.h
++++ b/drivers/video/via/lcd.h
+@@ -60,6 +60,8 @@
+ #define     LCD_PANEL_IDB_1360X768     0x0B
+ /* Resolution: 480x640,  Channel: single, Dithering: Enable */
+ #define     LCD_PANEL_IDC_480X640      0x0C
++/* Resolution: 1200x900,  Channel: single, Dithering: Disable */
++#define     LCD_PANEL_IDD_1200X900      0x0D
  
--	viafb_write_reg_mask(0x15, VIASR, value, 0x1C);
-+	via_write_reg_mask(VIASR, 0x15, value, 0x1C);
- }
  
--void viafb_set_secondary_color_depth(u8 depth)
-+void via_set_secondary_color_depth(u8 depth)
- {
- 	u8 value;
+ extern int viafb_LCD2_ON;
+diff --git a/drivers/video/via/share.h b/drivers/video/via/share.h
+index d55aaa7..f974c73 100644
+--- a/drivers/video/via/share.h
++++ b/drivers/video/via/share.h
+@@ -570,6 +570,10 @@
+ #define M1200X720_R60_HSP       NEGATIVE
+ #define M1200X720_R60_VSP       POSITIVE
  
--	DEBUG_MSG(KERN_DEBUG "viafb_set_secondary_color_depth(%d)\n", depth);
-+	DEBUG_MSG(KERN_DEBUG "via_set_secondary_color_depth(%d)\n", depth);
- 	switch (depth) {
- 	case 8:
- 		value = 0x00;
-@@ -712,12 +712,12 @@ void viafb_set_secondary_color_depth(u8 depth)
- 		value = 0x80;
- 		break;
- 	default:
--		printk(KERN_WARNING "viafb_set_secondary_color_depth: "
-+		printk(KERN_WARNING "via_set_secondary_color_depth: "
- 			"Unsupported depth: %d\n", depth);
- 		return;
- 	}
++/* 1200x900@60 Sync Polarity (DCON) */
++#define M1200X900_R60_HSP       NEGATIVE
++#define M1200X900_R60_VSP       NEGATIVE
++
+ /* 1280x600@60 Sync Polarity (GTF Mode) */
+ #define M1280x600_R60_HSP       NEGATIVE
+ #define M1280x600_R60_VSP       POSITIVE
+@@ -651,6 +655,7 @@
+ #define CLK_52_406M     52406000
+ #define CLK_52_977M     52977000
+ #define CLK_56_250M     56250000
++#define CLK_57_275M     57275000
+ #define CLK_60_466M     60466000
+ #define CLK_61_500M     61500000
+ #define CLK_65_000M     65000000
+@@ -939,6 +944,7 @@
+ #define VX855_52_406M     0x00580C03
+ #define VX855_52_977M     0x00940C05
+ #define VX855_56_250M     0x009D0C05
++#define VX855_57_275M     0x009D8C85    /* Used by XO panel */
+ #define VX855_60_466M     0x00A90C05
+ #define VX855_61_500M     0x00AC0C05
+ #define VX855_65_000M     0x006D0C03
+@@ -1065,6 +1071,7 @@
+ #define RES_1600X1200_60HZ_PIXCLOCK  6172
+ #define RES_1600X1200_75HZ_PIXCLOCK  4938
+ #define RES_1280X720_60HZ_PIXCLOCK   13426
++#define RES_1200X900_60HZ_PIXCLOCK   17459
+ #define RES_1920X1080_60HZ_PIXCLOCK  5787
+ #define RES_1400X1050_60HZ_PIXCLOCK  8214
+ #define RES_1400X1050_75HZ_PIXCLOCK  6410
+diff --git a/drivers/video/via/viamode.c b/drivers/video/via/viamode.c
+index af50e24..6f3bcda 100644
+--- a/drivers/video/via/viamode.c
++++ b/drivers/video/via/viamode.c
+@@ -66,6 +66,7 @@ struct res_map_refresh res_map_refresh_tbl[] = {
+ 	{1088, 612, RES_1088X612_60HZ_PIXCLOCK, 60},
+ 	{1152, 720, RES_1152X720_60HZ_PIXCLOCK, 60},
+ 	{1200, 720, RES_1200X720_60HZ_PIXCLOCK, 60},
++	{1200, 900, RES_1200X900_60HZ_PIXCLOCK, 60},
+ 	{1280, 600, RES_1280X600_60HZ_PIXCLOCK, 60},
+ 	{1280, 720, RES_1280X720_50HZ_PIXCLOCK, 50},
+ 	{1280, 768, RES_1280X768_50HZ_PIXCLOCK, 50},
+@@ -759,6 +760,16 @@ struct crt_mode_table CRTM1200x720[] = {
+ 	 {1568, 1200, 1200, 368, 1256, 128, 746, 720, 720, 26, 721, 3} }
+ };
  
--	viafb_write_reg_mask(0x67, VIACR, value, 0xC0);
-+	via_write_reg_mask(VIACR, 0x67, value, 0xC0);
- }
++/* 1200x900 (DCON) */
++struct crt_mode_table DCON1200x900[] = {
++	/* r_rate,          vclk,               hsp,               vsp   */
++	{REFRESH_60, CLK_57_275M, M1200X900_R60_HSP, M1200X900_R60_VSP,
++	/* The correct htotal is 1240, but this doesn't raster on VX855. */
++	/* Via suggested changing to a multiple of 16, hence 1264.       */
++	/*  HT,   HA,  HBS, HBE,  HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
++	 {1264, 1200, 1200,  64, 1211,  32, 912, 900, 900,  12, 901, 10} }
++};
++
+ /* 1280x600 (GTF) */
+ struct crt_mode_table CRTM1280x600[] = {
+ 	/* r_rate,          vclk,              hsp,             vsp   */
+@@ -937,6 +948,9 @@ struct VideoModeTable viafb_modes[] = {
+ 	/* Display : 1200x720 (GTF) */
+ 	{CRTM1200x720, ARRAY_SIZE(CRTM1200x720)},
  
- static void set_color_register(u8 index, u8 red, u8 green, u8 blue)
-@@ -2255,11 +2255,11 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
- 		}
- 	}
++	/* Display : 1200x900 (DCON) */
++	{DCON1200x900, ARRAY_SIZE(DCON1200x900)},
++
+ 	/* Display : 1280x600 (GTF) */
+ 	{CRTM1280x600, ARRAY_SIZE(CRTM1280x600)},
  
--	viafb_set_primary_pitch(viafbinfo->fix.line_length);
--	viafb_set_secondary_pitch(viafb_dual_fb ? viafbinfo1->fix.line_length
-+	via_set_primary_pitch(viafbinfo->fix.line_length);
-+	via_set_secondary_pitch(viafb_dual_fb ? viafbinfo1->fix.line_length
- 		: viafbinfo->fix.line_length);
--	viafb_set_primary_color_depth(viaparinfo->depth);
--	viafb_set_secondary_color_depth(viafb_dual_fb ? viaparinfo1->depth
-+	via_set_primary_color_depth(viaparinfo->depth);
-+	via_set_secondary_color_depth(viafb_dual_fb ? viaparinfo1->depth
- 		: viaparinfo->depth);
- 	/* Update Refresh Rate Setting */
- 
-diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
-index f0c202d..cb63f22 100644
---- a/drivers/video/via/hw.h
-+++ b/drivers/video/via/hw.h
-@@ -912,10 +912,10 @@ void viafb_update_device_setting(int hres, int vres, int bpp,
- 
- int viafb_get_fb_size_from_pci(void);
- void viafb_set_iga_path(void);
--void viafb_set_primary_address(u32 addr);
--void viafb_set_secondary_address(u32 addr);
--void viafb_set_primary_pitch(u32 pitch);
--void viafb_set_secondary_pitch(u32 pitch);
-+void via_set_primary_address(u32 addr);
-+void via_set_secondary_address(u32 addr);
-+void via_set_primary_pitch(u32 pitch);
-+void via_set_secondary_pitch(u32 pitch);
- void viafb_set_primary_color_register(u8 index, u8 red, u8 green, u8 blue);
- void viafb_set_secondary_color_register(u8 index, u8 red, u8 green, u8 blue);
- void viafb_get_fb_info(unsigned int *fb_base, unsigned int *fb_len);
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 777b38a..c6c01ef 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -317,12 +317,12 @@ static int viafb_pan_display(struct fb_var_screeninfo *var,
- 
- 	DEBUG_MSG(KERN_DEBUG "viafb_pan_display, address = %d\n", vram_addr);
- 	if (!viafb_dual_fb) {
--		viafb_set_primary_address(vram_addr);
--		viafb_set_secondary_address(vram_addr);
-+		via_set_primary_address(vram_addr);
-+		via_set_secondary_address(vram_addr);
- 	} else if (viapar->iga_path = IGA1)
--		viafb_set_primary_address(vram_addr);
-+		via_set_primary_address(vram_addr);
- 	else
--		viafb_set_secondary_address(vram_addr);
-+		via_set_secondary_address(vram_addr);
- 
- 	return 0;
- }
-@@ -1018,8 +1018,8 @@ static void viafb_set_device(struct device_t active_dev)
- 		viafb_SAMM_ON = active_dev.samm;
- 	viafb_primary_dev = active_dev.primary_dev;
- 
--	viafb_set_primary_address(0);
--	viafb_set_secondary_address(viafb_SAMM_ON ? viafb_second_offset : 0);
-+	via_set_primary_address(0);
-+	via_set_secondary_address(viafb_SAMM_ON ? viafb_second_offset : 0);
- 	viafb_set_iga_path();
- }
- 
-@@ -1165,8 +1165,9 @@ static int apply_device_setting(struct viafb_ioctl_setting setting_info,
- 			if (viafb_SAMM_ON)
- 				viafb_primary_dev = setting_info.primary_device;
- 
--			viafb_set_primary_address(0);
--			viafb_set_secondary_address(viafb_SAMM_ON ? viafb_second_offset : 0);
-+			via_set_primary_address(0);
-+			via_set_secondary_address(viafb_SAMM_ON ?
-+				viafb_second_offset : 0);
- 			viafb_set_iga_path();
- 		}
- 		need_set_mode = 1;
 -- 
-1.6.3.2
+1.7.0.1
 

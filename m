@@ -1,46 +1,76 @@
-From: Anatolij Gustschin <agust@denx.de>
-Date: Thu, 29 Apr 2010 23:49:34 +0000
-Subject: [PATCH 1/5] fsl-diu-fb: fix issue with re-enabling DIU area descriptor on MPC5121
-Message-Id: <1272584978-19063-2-git-send-email-agust@denx.de>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Sun, 18 Apr 2010 18:21:08 +0000
+Subject: [PATCH 06/11] viafb: Determine type of 2D engine and store it in chip_info
+Message-Id: <1271614873-5952-7-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272584978-19063-1-git-send-email-agust@denx.de>
-In-Reply-To: <1272584978-19063-1-git-send-email-agust@denx.de>
+References: <1271614873-5952-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1271614873-5952-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@ozlabs.org
-Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de, devicetree-discuss@lists.ozlabs.org, yorksun@freescale.com
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-On MPC5121 re-configuring the DIU area descriptor by writing
-new descriptor address doesn't work. As a result, DIU continues
-to display using old area descriptor even if the new one has
-been set.
+From: Harald Welte <laforge@gnumonks.org>
 
-Disabling the DIU before setting the new descriptor and
-subsequently enabling it fixes the problem.
+This will help us for the upcoming support for 2D acceleration using
+the M1 engine.
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
+[jc: fixed merge conflicts]
+Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
 ---
- drivers/video/fsl-diu-fb.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ drivers/video/via/chip.h |    8 ++++++++
+ drivers/video/via/hw.c   |   15 +++++++++++++++
+ 2 files changed, 23 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 994358a..ee15a99 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -329,8 +329,11 @@ static int fsl_diu_enable_panel(struct fb_info *info)
- 	if (mfbi->type != MFB_TYPE_OFF) {
- 		switch (mfbi->index) {
- 		case 0:				/* plane 0 */
--			if (hw->desc[0] != ad->paddr)
-+			if (hw->desc[0] != ad->paddr) {
-+				out_be32(&dr.diu_reg->diu_mode, MFB_MODE0);
- 				out_be32(&hw->desc[0], ad->paddr);
-+				out_be32(&dr.diu_reg->diu_mode, MFB_MODE1);
-+			}
- 			break;
- 		case 1:				/* plane 1 AOI 0 */
- 			cmfbi = machine_data->fsl_diu_info[2]->par;
+diff --git a/drivers/video/via/chip.h b/drivers/video/via/chip.h
+index 8c06bd3..d9b6e06 100644
+--- a/drivers/video/via/chip.h
++++ b/drivers/video/via/chip.h
+@@ -121,9 +121,17 @@ struct lvds_chip_information {
+ 	int i2c_port;
+ };
+ 
++/* The type of 2D engine */
++enum via_2d_engine {
++	VIA_2D_ENG_H2,
++	VIA_2D_ENG_H5,
++	VIA_2D_ENG_M1,
++};
++
+ struct chip_information {
+ 	int gfx_chip_name;
+ 	int gfx_chip_revision;
++	enum via_2d_engine twod_engine;
+ 	struct tmds_chip_information tmds_chip_info;
+ 	struct lvds_chip_information lvds_chip_info;
+ 	struct lvds_chip_information lvds_chip_info2;
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 69acae1..d893695 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -2017,6 +2017,21 @@ static void init_gfx_chip_info(struct pci_dev *pdev,
+ 				CX700_REVISION_700;
+ 		}
+ 	}
++
++	/* Determine which 2D engine we have */
++	switch (viaparinfo->chip_info->gfx_chip_name) {
++	case UNICHROME_VX800:
++	case UNICHROME_VX855:
++		viaparinfo->chip_info->twod_engine = VIA_2D_ENG_M1;
++		break;
++	case UNICHROME_K8M890:
++	case UNICHROME_P4M900:
++		viaparinfo->chip_info->twod_engine = VIA_2D_ENG_H5;
++		break;
++	default:
++		viaparinfo->chip_info->twod_engine = VIA_2D_ENG_H2;
++		break;
++	}
+ }
+ 
+ static void init_tmds_chip_info(void)
 -- 
-1.6.3.3
+1.7.0.1
 

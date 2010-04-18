@@ -1,62 +1,51 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: Re: [PATCH 07/16] viafb: Add 1200x900 DCON/LCD panel modes for OLPC
- XO-1.5
-Date: Sun, 18 Apr 2010 20:24:36 +0200
-Message-ID: <4BCB4E64.4000407@gmx.de>
-References: <1270746946-12467-1-git-send-email-corbet@lwn.net>	<1270746946-12467-8-git-send-email-corbet@lwn.net>	<4BBF9BC2.9070502@gmx.de> <20100418113930.1ba08ee3@bike.lwn.net>
+From: Harald Welte <laforge@gnumonks.org>
+Subject: Re: [PATCH 05/16] viafb: Determine type of 2D engine and store it
+ in chip_info
+Date: Sun, 18 Apr 2010 20:00:24 +0200
+Message-ID: <20100418180024.GY18200@prithivi.gnumonks.org>
+References: <1270746946-12467-1-git-send-email-corbet@lwn.net>
+ <1270746946-12467-6-git-send-email-corbet@lwn.net>
+ <4BBE9CFC.2020804@gmx.de>
+ <20100409141127.42e4e1fa@bike.lwn.net>
+ <4BBF8F48.2070902@gmx.de>
+ <20100418113430.53760f99@bike.lwn.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20100418113930.1ba08ee3@bike.lwn.net>
+Content-Disposition: inline
+In-Reply-To: <20100418113430.53760f99@bike.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev-devel@lists.sourceforge.net
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-kernel@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Jonathan Corbet schrieb:
-> On Fri, 09 Apr 2010 23:27:30 +0200
-> Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
-> 
->> What will happen if someone with no VX855 will try to enter 1200x900 
->> mode? Probably the world won't be destroyed but I have a really ugly 
->> feeling that the driver is not well prepared for this situation. 
-> 
-> OK, I'm certainly exposing my relative lack of understanding of
-> framebuffer issues (I'm here to add a camera driver, remember? :),
+Hi!
 
-Well I wasn't a graphics guy and just wanted a working display driver.
+On Sun, Apr 18, 2010 at 11:34:30AM -0600, Jonathan Corbet wrote:
 
-> but...is this really something that older chipsets can't handle?  Or is
-> it just that nobody has had that size of panel before?
+> In the absence of that, the only course of action which makes sense is
+> to simply fail the initialization if an unknown chip type shows up
+> there.  That's easy, and I can do it.  But, given that this was a
+> "minor nit," can we leave it as-is for now?  There's a *lot* of things
+> to clean up in this driver, I'd like to make it better a step at a time
+> rather than trying to do the whole thing at once.
 
-It's not the chipsets that are incapable (AFAIK) it's just that the 
-patch is only adding the right PLL values for frequency generation for 
-VX855 and set the values for all other chipsets to 0. Yeah that means 
-this panel size wasn't supported before (by the driver). 0 is certainly 
-not what we want and I think about replacing this whole fixed table with 
-the formulas used in VIAs OpenSource X driver (although those are a bit 
-more complicated I expected when I looked at unichrome). However this 
-will certainly be a big change that needs a lot of thought and testing 
-so nothing that will happen very soon.
-I am just worried what will happen if one tries to set this mode with an 
-older chipset. I'm pretty sure that it won't work and won't fail gracefully.
+i agree with that step by step strategy.
 
->> Haven't 
->> tested yet as I'm waiting for the official forward port but I think it 
->> might be better to reschedule this patch for later or add some PLL 
->> values that are supposed to work (using/executing the formulas in the 
->> VIA open source X driver)
-> 
-> If it's really not acceptable, then it will stay out, but I would
-> rather get it merged.  I will leave it in the series for now; it can
-> come out later if need be.
+I always felt conservative about making too big changes.  After all, it is hard
+to find people who actually own and use all those various models of graphics
+chips, and even more so: who want to try + test recent mainline and check for
+regressions :(
 
-Yeah please leave it in the series for now. I'd just appreciate it very 
-much if one were to generate the missing values before this gets into 
-mainline....or replacing this hardcoded values.
+VIA's resources are extremely limited, and they can barely complete the work
+required for new products...  I know it's unfortunate, but VIA is a very small
+company.
 
-
-Thanks,
-
-Florian Tobias Schandinat
+Regards,
+	Harald
+-- 
+- Harald Welte <laforge@gnumonks.org>           http://laforge.gnumonks.org/
+============================================================================
+"Privacy in residential applications is a desirable marketing option."
+                                                  (ETSI EN 300 175-7 Ch. A6)

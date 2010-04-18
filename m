@@ -1,59 +1,64 @@
-From: "Hiremath, Vaibhav" <hvaibhav@ti.com>
-Date: Wed, 21 Apr 2010 13:36:17 +0000
-Subject: RE: [PATCH] fbdev: move FBIO_WAITFORVSYNC to linux/fb.h
-Message-Id: <19F8576C6E063C45BE387C64729E7394044E1EB423@dbde02.ent.ti.com>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Sun, 18 Apr 2010 18:21:11 +0000
+Subject: [PATCH 09/11] viafb: Do not probe for LVDS/TMDS on OLPC XO-1.5
+Message-Id: <1271614873-5952-10-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1271429829-23577-1-git-send-email-notasas@gmail.com>
-In-Reply-To: <1271429829-23577-1-git-send-email-notasas@gmail.com>
+References: <1271614873-5952-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1271614873-5952-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
+From: Chris Ball <cjb@laptop.org>
 
-> -----Original Message-----
-> From: James Simmons [mailto:jsimmons@infradead.org]
-> Sent: Wednesday, April 21, 2010 6:51 PM
-> To: Hiremath, Vaibhav
-> Cc: Andrew Morton; Grazvydas Ignotas; linux-fbdev@vger.kernel.org
-> Subject: RE: [PATCH] fbdev: move FBIO_WAITFORVSYNC to linux/fb.h
-> 
-> 
-> > > -----Original Message-----
-> > > From: Andrew Morton [mailto:akpm@linux-foundation.org]
-> > > Sent: Wednesday, April 21, 2010 4:25 AM
-> > > To: Hiremath, Vaibhav
-> > > Cc: Grazvydas Ignotas; linux-fbdev@vger.kernel.org
-> > > Subject: Re: [PATCH] fbdev: move FBIO_WAITFORVSYNC to linux/fb.h
-> > >
-> > > On Tue, 20 Apr 2010 14:35:10 +0530
-> > > "Hiremath, Vaibhav" <hvaibhav@ti.com> wrote:
-> > >
-> > > > ...
-> > > >
-> > > > > --- a/include/linux/fb.h
-> > > > > +++ b/include/linux/fb.h
-> > > > > @@ -23,6 +23,8 @@ struct dentry;
-> > > > >  #else
-> > > > >  #define FBIO_CURSOR            _IOWR('F', 0x08, struct fb_cursor)
-> > > > >  #endif
-> > > > > +#define FBIO_WAITFORVSYNC	_IOW('F', 0x20, __u32)
-> > > > > +
-> > > > [Hiremath, Vaibhav] Do not insert it in middle, lets follow the
-> sequence
-> > > and append it at last. Otherwise looks ok to me.
-> > >
-> > [Hiremath, Vaibhav] Andrew,
-> > If I understand correctly, the previous patch was not following the IOCTL
-> numbering sequence.
-> >
-> > Logically this IOCTL should get added as per their number sequence that is
-> at the end after FBIOGET_DISPINFO (0x4618).
-> 
-> Changing the IOCTL number for WAITFORSYNC would break several apps like
-> egl and directfb. I'm afraid we are stuff with that number.
-[Hiremath, Vaibhav] Yeah, I understand this, and thinking on the same line, I am not asking to change the ioctl no, it's only placing the declaration/definition in logical sequence.
+The i2c transactions involved in detecting LVDS (9 seconds) and TMDS
+(16 seconds) add an extra 25 seconds to viafb load time on the XO-1.5.
 
-Thanks,
-Vaibhav
+[jc: minor merge conflict fixed, removed ifdefs]
+Signed-off-by: Chris Ball <cjb@laptop.org>
+---
+ drivers/video/via/hw.c  |    7 +++++++
+ drivers/video/via/lcd.c |    7 +++++++
+ 2 files changed, 14 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 4aff0f7..bd5d5ce 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -2037,6 +2037,13 @@ static void init_gfx_chip_info(struct pci_dev *pdev,
+ 
+ static void init_tmds_chip_info(void)
+ {
++	/*
++	 * OLPC XO 1.5 systems are wired differently, so there is
++	 * no point in them here.
++	 */
++	if (machine_is_olpc())
++		return;
++
+ 	viafb_tmds_trasmitter_identify();
+ 
+ 	if (INTERFACE_NONE = viaparinfo->chip_info->tmds_chip_info.
+diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
+index b656e59..ce3f4b6 100644
+--- a/drivers/video/via/lcd.c
++++ b/drivers/video/via/lcd.c
+@@ -173,6 +173,13 @@ static bool lvds_identify_integratedlvds(void)
+ 
+ int viafb_lvds_trasmitter_identify(void)
+ {
++	/*
++	 * OLPC XO 1.5 systems are wired differently, so there is
++	 * no point in them here.
++	 */
++	if (machine_is_olpc())
++		return FAIL;
++
+ 	viaparinfo->shared->i2c_stuff.i2c_port = I2CPORTINDEX;
+ 	if (viafb_lvds_identify_vt1636()) {
+ 		viaparinfo->chip_info->lvds_chip_info.i2c_port = I2CPORTINDEX;
+-- 
+1.7.0.1
 

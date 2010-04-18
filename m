@@ -1,352 +1,150 @@
 From: Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 28 Apr 2010 22:17:27 +0000
-Subject: [PATCH 26/30] viafb: move some modesetting functions to a seperate file
-Message-Id: <1272493051-25380-27-git-send-email-corbet@lwn.net>
+Date: Sun, 18 Apr 2010 18:21:04 +0000
+Subject: [PATCH 02/11] viafb: use proper pci config API
+Message-Id: <1271614873-5952-3-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
-In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+References: <1271614873-5952-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1271614873-5952-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+From: Harald Welte <laforge@gnumonks.org>
 
-viafb: move some modesetting functions to a seperate file
+This patch alters viafb to use the proper Linux in-kernel API to access
+PCI configuration space, rather than poking at I/O ports by itself.
 
-This patch moves the modesetting functions which are already cleaned up
-to a seperate file.
-Just the beginning to bring some structure in this mess.
-
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: ScottFang@viatech.com.cn
+Cc: JosephChan@via.com.tw
+Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
 ---
- drivers/video/via/Makefile          |    3 +-
- drivers/video/via/hw.c              |   96 --------------------------
- drivers/video/via/hw.h              |    5 +-
- drivers/video/via/via_modesetting.c |  126 +++++++++++++++++++++++++++++++++++
- drivers/video/via/via_modesetting.h |   38 +++++++++++
- 5 files changed, 166 insertions(+), 102 deletions(-)
- create mode 100644 drivers/video/via/via_modesetting.c
- create mode 100644 drivers/video/via/via_modesetting.h
+ drivers/video/via/hw.c       |   62 +++++++++++++++++++++++++----------------
+ drivers/video/via/hw.h       |    4 +-
+ drivers/video/via/viafbdev.c |    4 +++
+ 3 files changed, 44 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/video/via/Makefile b/drivers/video/via/Makefile
-index 05401b6..0dfecd2 100644
---- a/drivers/video/via/Makefile
-+++ b/drivers/video/via/Makefile
-@@ -7,5 +7,4 @@ obj-$(CONFIG_FB_VIA_CAMERA) += via-camera.o
- 
- viafb-y	:=viafbdev.o hw.o via_i2c.o dvi.o lcd.o ioctl.o accel.o \
- 	via_utility.o vt1636.o global.o tblDPASetting.o viamode.o tbl1636.o \
--	via-core.o via-gpio.o
--
-+	via-core.o via-gpio.o via_modesetting.o
 diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 1628a5f..d474fbe 100644
+index b1e6dc9..69acae1 100644
 --- a/drivers/video/via/hw.c
 +++ b/drivers/video/via/hw.c
-@@ -624,102 +624,6 @@ void viafb_set_iga_path(void)
- 	}
+@@ -2474,24 +2474,37 @@ static void disable_second_display_channel(void)
+ 	viafb_write_reg_mask(CR6A, VIACR, BIT6, BIT6);
  }
  
--void via_set_primary_address(u32 addr)
--{
--	DEBUG_MSG(KERN_DEBUG "via_set_primary_address(0x%08X)\n", addr);
--	via_write_reg(VIACR, 0x0D, addr & 0xFF);
--	via_write_reg(VIACR, 0x0C, (addr >> 8) & 0xFF);
--	via_write_reg(VIACR, 0x34, (addr >> 16) & 0xFF);
--	via_write_reg_mask(VIACR, 0x48, (addr >> 24) & 0x1F, 0x1F);
--}
--
--void via_set_secondary_address(u32 addr)
--{
--	DEBUG_MSG(KERN_DEBUG "via_set_secondary_address(0x%08X)\n", addr);
--	/* secondary display supports only quadword aligned memory */
--	via_write_reg_mask(VIACR, 0x62, (addr >> 2) & 0xFE, 0xFE);
--	via_write_reg(VIACR, 0x63, (addr >> 10) & 0xFF);
--	via_write_reg(VIACR, 0x64, (addr >> 18) & 0xFF);
--	via_write_reg_mask(VIACR, 0xA3, (addr >> 26) & 0x07, 0x07);
--}
--
--void via_set_primary_pitch(u32 pitch)
--{
--	DEBUG_MSG(KERN_DEBUG "via_set_primary_pitch(0x%08X)\n", pitch);
--	/* spec does not say that first adapter skips 3 bits but old
--	 * code did it and seems to be reasonable in analogy to 2nd adapter
--	 */
--	pitch = pitch >> 3;
--	via_write_reg(VIACR, 0x13, pitch & 0xFF);
--	via_write_reg_mask(VIACR, 0x35, (pitch >> (8 - 5)) & 0xE0, 0xE0);
--}
--
--void via_set_secondary_pitch(u32 pitch)
--{
--	DEBUG_MSG(KERN_DEBUG "via_set_secondary_pitch(0x%08X)\n", pitch);
--	pitch = pitch >> 3;
--	via_write_reg(VIACR, 0x66, pitch & 0xFF);
--	via_write_reg_mask(VIACR, 0x67, (pitch >> 8) & 0x03, 0x03);
--	via_write_reg_mask(VIACR, 0x71, (pitch >> (10 - 7)) & 0x80, 0x80);
--}
--
--void via_set_primary_color_depth(u8 depth)
--{
--	u8 value;
--
--	DEBUG_MSG(KERN_DEBUG "via_set_primary_color_depth(%d)\n", depth);
--	switch (depth) {
--	case 8:
--		value = 0x00;
--		break;
--	case 15:
--		value = 0x04;
--		break;
--	case 16:
--		value = 0x14;
--		break;
--	case 24:
--		value = 0x0C;
--		break;
--	case 30:
--		value = 0x08;
--		break;
--	default:
--		printk(KERN_WARNING "via_set_primary_color_depth: "
--			"Unsupported depth: %d\n", depth);
--		return;
--	}
--
--	via_write_reg_mask(VIASR, 0x15, value, 0x1C);
--}
--
--void via_set_secondary_color_depth(u8 depth)
--{
--	u8 value;
--
--	DEBUG_MSG(KERN_DEBUG "via_set_secondary_color_depth(%d)\n", depth);
--	switch (depth) {
--	case 8:
--		value = 0x00;
--		break;
--	case 16:
--		value = 0x40;
--		break;
--	case 24:
--		value = 0xC0;
--		break;
--	case 30:
--		value = 0x80;
--		break;
--	default:
--		printk(KERN_WARNING "via_set_secondary_color_depth: "
--			"Unsupported depth: %d\n", depth);
--		return;
--	}
--
--	via_write_reg_mask(VIACR, 0x67, value, 0xC0);
--}
--
- static void set_color_register(u8 index, u8 red, u8 green, u8 blue)
++static u_int16_t via_function3[] = {
++	CLE266_FUNCTION3, KM400_FUNCTION3, CN400_FUNCTION3, CN700_FUNCTION3,
++	CX700_FUNCTION3, KM800_FUNCTION3, KM890_FUNCTION3, P4M890_FUNCTION3,
++	P4M900_FUNCTION3, VX800_FUNCTION3, VX855_FUNCTION3,
++};
++
++/* Get the BIOS-configured framebuffer size from PCI configuration space
++ * of function 3 in the respective chipset */
+ int viafb_get_fb_size_from_pci(void)
  {
- 	outb(0xFF, 0x3C6); /* bit mask of palette */
+-	unsigned long configid, deviceid, FBSize = 0;
+-	int VideoMemSize;
+-	int DeviceFound = false;
+-
+-	for (configid = 0x80000000; configid < 0x80010800; configid += 0x100) {
+-		outl(configid, (unsigned long)0xCF8);
+-		deviceid = (inl((unsigned long)0xCFC) >> 16) & 0xffff;
+-
+-		switch (deviceid) {
+-		case CLE266:
+-		case KM400:
+-			outl(configid + 0xE0, (unsigned long)0xCF8);
+-			FBSize = inl((unsigned long)0xCFC);
+-			DeviceFound = true;	/* Found device id */
+-			break;
++	int i;
++	u_int8_t offset = 0;
++	u_int32_t FBSize;
++	u_int32_t VideoMemSize;
++
++	/* search for the "FUNCTION3" device in this chipset */
++	for (i = 0; i < ARRAY_SIZE(via_function3); i++) {
++		struct pci_dev *pdev;
++
++		pdev = pci_get_device(PCI_VENDOR_ID_VIA, via_function3[i],
++				      NULL);
++		if (!pdev)
++			continue;
++
++		DEBUG_MSG(KERN_INFO "Device ID = %x\n", pdev->device);
+ 
++		switch (pdev->device) {
++		case CLE266_FUNCTION3:
++		case KM400_FUNCTION3:
++			offset = 0xE0;
++			break;
+ 		case CN400_FUNCTION3:
+ 		case CN700_FUNCTION3:
+ 		case CX700_FUNCTION3:
+@@ -2501,21 +2514,22 @@ int viafb_get_fb_size_from_pci(void)
+ 		case P4M900_FUNCTION3:
+ 		case VX800_FUNCTION3:
+ 		case VX855_FUNCTION3:
+-			/*case CN750_FUNCTION3: */
+-			outl(configid + 0xA0, (unsigned long)0xCF8);
+-			FBSize = inl((unsigned long)0xCFC);
+-			DeviceFound = true;	/* Found device id */
+-			break;
+-
+-		default:
++		/*case CN750_FUNCTION3: */
++			offset = 0xA0;
+ 			break;
+ 		}
+ 
+-		if (DeviceFound)
++		if (!offset)
+ 			break;
++
++		pci_read_config_dword(pdev, offset, &FBSize);
++		pci_dev_put(pdev);
+ 	}
+ 
+-	DEBUG_MSG(KERN_INFO "Device ID = %lx\n", deviceid);
++	if (!offset) {
++		printk(KERN_ERR "cannot determine framebuffer size\n");
++		return -EIO;
++	}
+ 
+ 	FBSize = FBSize & 0x00007000;
+ 	DEBUG_MSG(KERN_INFO "FB Size = %x\n", FBSize);
 diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
-index 641a5fa..a58701f 100644
+index 12ef32d..d6b25ac 100644
 --- a/drivers/video/via/hw.h
 +++ b/drivers/video/via/hw.h
-@@ -25,6 +25,7 @@
- #include "viamode.h"
- #include "global.h"
- #include "via_io.h"
-+#include "via_modesetting.h"
+@@ -823,8 +823,8 @@ struct iga2_crtc_timing {
+ };
  
- #define viafb_read_reg(p, i)			via_read_reg(p, i)
- #define viafb_write_reg(i, p, d)		via_write_reg(p, i, d)
-@@ -910,10 +911,6 @@ void viafb_update_device_setting(int hres, int vres, int bpp,
- 			   int vmode_refresh, int flag);
- 
- void viafb_set_iga_path(void);
--void via_set_primary_address(u32 addr);
--void via_set_secondary_address(u32 addr);
--void via_set_primary_pitch(u32 pitch);
--void via_set_secondary_pitch(u32 pitch);
- void viafb_set_primary_color_register(u8 index, u8 red, u8 green, u8 blue);
- void viafb_set_secondary_color_register(u8 index, u8 red, u8 green, u8 blue);
- void viafb_get_fb_info(unsigned int *fb_base, unsigned int *fb_len);
-diff --git a/drivers/video/via/via_modesetting.c b/drivers/video/via/via_modesetting.c
-new file mode 100644
-index 0000000..69ff285
---- /dev/null
-+++ b/drivers/video/via/via_modesetting.c
-@@ -0,0 +1,126 @@
-+/*
-+ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-+ * Copyright 2010 Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public
-+ * License as published by the Free Software Foundation;
-+ * either version 2, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-+ * the implied warranty of MERCHANTABILITY or FITNESS FOR
-+ * A PARTICULAR PURPOSE.See the GNU General Public License
-+ * for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+/*
-+ * basic modesetting functions
-+ */
-+
-+#include <linux/kernel.h>
-+#include "via_modesetting.h"
-+#include "via_io.h"
-+#include "share.h"
-+#include "debug.h"
-+
-+void via_set_primary_address(u32 addr)
-+{
-+	DEBUG_MSG(KERN_DEBUG "via_set_primary_address(0x%08X)\n", addr);
-+	via_write_reg(VIACR, 0x0D, addr & 0xFF);
-+	via_write_reg(VIACR, 0x0C, (addr >> 8) & 0xFF);
-+	via_write_reg(VIACR, 0x34, (addr >> 16) & 0xFF);
-+	via_write_reg_mask(VIACR, 0x48, (addr >> 24) & 0x1F, 0x1F);
-+}
-+
-+void via_set_secondary_address(u32 addr)
-+{
-+	DEBUG_MSG(KERN_DEBUG "via_set_secondary_address(0x%08X)\n", addr);
-+	/* secondary display supports only quadword aligned memory */
-+	via_write_reg_mask(VIACR, 0x62, (addr >> 2) & 0xFE, 0xFE);
-+	via_write_reg(VIACR, 0x63, (addr >> 10) & 0xFF);
-+	via_write_reg(VIACR, 0x64, (addr >> 18) & 0xFF);
-+	via_write_reg_mask(VIACR, 0xA3, (addr >> 26) & 0x07, 0x07);
-+}
-+
-+void via_set_primary_pitch(u32 pitch)
-+{
-+	DEBUG_MSG(KERN_DEBUG "via_set_primary_pitch(0x%08X)\n", pitch);
-+	/* spec does not say that first adapter skips 3 bits but old
-+	 * code did it and seems to be reasonable in analogy to 2nd adapter
-+	 */
-+	pitch = pitch >> 3;
-+	via_write_reg(VIACR, 0x13, pitch & 0xFF);
-+	via_write_reg_mask(VIACR, 0x35, (pitch >> (8 - 5)) & 0xE0, 0xE0);
-+}
-+
-+void via_set_secondary_pitch(u32 pitch)
-+{
-+	DEBUG_MSG(KERN_DEBUG "via_set_secondary_pitch(0x%08X)\n", pitch);
-+	pitch = pitch >> 3;
-+	via_write_reg(VIACR, 0x66, pitch & 0xFF);
-+	via_write_reg_mask(VIACR, 0x67, (pitch >> 8) & 0x03, 0x03);
-+	via_write_reg_mask(VIACR, 0x71, (pitch >> (10 - 7)) & 0x80, 0x80);
-+}
-+
-+void via_set_primary_color_depth(u8 depth)
-+{
-+	u8 value;
-+
-+	DEBUG_MSG(KERN_DEBUG "via_set_primary_color_depth(%d)\n", depth);
-+	switch (depth) {
-+	case 8:
-+		value = 0x00;
-+		break;
-+	case 15:
-+		value = 0x04;
-+		break;
-+	case 16:
-+		value = 0x14;
-+		break;
-+	case 24:
-+		value = 0x0C;
-+		break;
-+	case 30:
-+		value = 0x08;
-+		break;
-+	default:
-+		printk(KERN_WARNING "via_set_primary_color_depth: "
-+			"Unsupported depth: %d\n", depth);
-+		return;
+ /* device ID */
+-#define CLE266              0x3123
+-#define KM400               0x3205
++#define CLE266_FUNCTION3    0x3123
++#define KM400_FUNCTION3     0x3205
+ #define CN400_FUNCTION2     0x2259
+ #define CN400_FUNCTION3     0x3259
+ /* support VT3314 chipset */
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index b7018ef..8af405b 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1782,6 +1782,10 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 	viafb_init_chip_info(pdev, ent);
+ 	viaparinfo->fbmem = pci_resource_start(pdev, 0);
+ 	viaparinfo->memsize = viafb_get_fb_size_from_pci();
++	if (viaparinfo->memsize < 0) {
++		rc = viaparinfo->memsize;
++		goto out_delete_i2c;
 +	}
-+
-+	via_write_reg_mask(VIASR, 0x15, value, 0x1C);
-+}
-+
-+void via_set_secondary_color_depth(u8 depth)
-+{
-+	u8 value;
-+
-+	DEBUG_MSG(KERN_DEBUG "via_set_secondary_color_depth(%d)\n", depth);
-+	switch (depth) {
-+	case 8:
-+		value = 0x00;
-+		break;
-+	case 16:
-+		value = 0x40;
-+		break;
-+	case 24:
-+		value = 0xC0;
-+		break;
-+	case 30:
-+		value = 0x80;
-+		break;
-+	default:
-+		printk(KERN_WARNING "via_set_secondary_color_depth: "
-+			"Unsupported depth: %d\n", depth);
-+		return;
-+	}
-+
-+	via_write_reg_mask(VIACR, 0x67, value, 0xC0);
-+}
-diff --git a/drivers/video/via/via_modesetting.h b/drivers/video/via/via_modesetting.h
-new file mode 100644
-index 0000000..ae35cfd
---- /dev/null
-+++ b/drivers/video/via/via_modesetting.h
-@@ -0,0 +1,38 @@
-+/*
-+ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
-+ * Copyright 2010 Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public
-+ * License as published by the Free Software Foundation;
-+ * either version 2, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
-+ * the implied warranty of MERCHANTABILITY or FITNESS FOR
-+ * A PARTICULAR PURPOSE.See the GNU General Public License
-+ * for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc.,
-+ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+/*
-+ * basic modesetting functions
-+ */
-+
-+#ifndef __VIA_MODESETTING_H__
-+#define __VIA_MODESETTING_H__
-+
-+#include <linux/types.h>
-+
-+void via_set_primary_address(u32 addr);
-+void via_set_secondary_address(u32 addr);
-+void via_set_primary_pitch(u32 pitch);
-+void via_set_secondary_pitch(u32 pitch);
-+void via_set_primary_color_depth(u8 depth);
-+void via_set_secondary_color_depth(u8 depth);
-+
-+#endif /* __VIA_MODESETTING_H__ */
+ 	viaparinfo->fbmem_free = viaparinfo->memsize;
+ 	viaparinfo->fbmem_used = 0;
+ 	viafbinfo->screen_base = ioremap_nocache(viaparinfo->fbmem,
 -- 
 1.7.0.1
 

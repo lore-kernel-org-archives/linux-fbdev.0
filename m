@@ -1,423 +1,102 @@
-From: marcin.slusarz@gmail.com
-Date: Mon, 12 Apr 2010 22:12:09 +0000
-Subject: [PATCHv2 1/2] fbdev: allow passing more than one aperture for handoff
-Message-Id: <1271110330-3218-1-git-send-email-marcin.slusarz@gmail.com>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Sun, 18 Apr 2010 18:21:06 +0000
+Subject: [PATCH 04/11] viafb: Retain GEMODE reserved bits
+Message-Id: <1271614873-5952-5-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1271614873-5952-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1271614873-5952-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>
-Cc: nouveau@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Didier Spaier <didier.spaier@epsm.fr>, Eric Anholt <eric@anholt.net>, Ben Skeggs <bskeggs@redhat.com>, Thomas Hellstrom <thellstrom@vmware.com>, Dave Airlie <airlied@redhat.com>, Peter Jones <pjones@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-It simplifies nouveau code by removal of detection which
-region to pass to kick vesafb/efifb.
+Commit c3e25673843153ea75fda79a47cf12f10a25ca37 (viafb: 2D engine rewrite)
+changed the setting of the GEMODE register so that the reserved bits are no
+longer preserved.  Fix that; at the same time, move this code to its own
+function and restore the use of symbolic constants.
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Eric Anholt <eric@anholt.net>
-Cc: Ben Skeggs <bskeggs@redhat.com>
-Cc: Thomas Hellstrom <thellstrom@vmware.com>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Peter Jones <pjones@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: ScottFang@viatech.com.cn
+Cc: JosephChan@via.com.tw
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 ---
-v2 - rebase after drop of patch 1/3
----
- drivers/gpu/drm/i915/intel_fb.c         |   11 +++-
- drivers/gpu/drm/nouveau/nouveau_fbcon.c |   84 +++++++++---------------------
- drivers/gpu/drm/radeon/radeon_fb.c      |    9 +++-
- drivers/gpu/drm/vmwgfx/vmwgfx_fb.c      |   10 +++-
- drivers/video/efifb.c                   |   11 +++-
- drivers/video/fbmem.c                   |   29 ++++++++++-
- drivers/video/fbsysfs.c                 |    1 +
- drivers/video/offb.c                    |   28 ++++++----
- drivers/video/vesafb.c                  |   11 +++-
- include/linux/fb.h                      |   16 +++++-
- 10 files changed, 122 insertions(+), 88 deletions(-)
+ drivers/video/via/accel.c |   49 ++++++++++++++++++++++++++++++--------------
+ 1 files changed, 33 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/intel_fb.c b/drivers/gpu/drm/i915/intel_fb.c
-index 8cd791d..a9192ab 100644
---- a/drivers/gpu/drm/i915/intel_fb.c
-+++ b/drivers/gpu/drm/i915/intel_fb.c
-@@ -192,11 +192,16 @@ static int intelfb_create(struct drm_device *dev, uint32_t fb_width,
- 
- 
- 	/* setup aperture base/size for vesafb takeover */
--	info->aperture_base = dev->mode_config.fb_base;
-+	info->apertures = alloc_apertures(1);
-+	if (!info->apertures) {
-+		ret = -ENOMEM;
-+		goto out_unpin;
-+	}
-+	info->apertures->ranges[0].base = dev->mode_config.fb_base;
- 	if (IS_I9XX(dev))
--		info->aperture_size = pci_resource_len(dev->pdev, 2);
-+		info->apertures->ranges[0].size = pci_resource_len(dev->pdev, 2);
- 	else
--		info->aperture_size = pci_resource_len(dev->pdev, 0);
-+		info->apertures->ranges[0].size = pci_resource_len(dev->pdev, 0);
- 
- 	info->fix.smem_start = dev->mode_config.fb_base + obj_priv->gtt_offset;
- 	info->fix.smem_len = size;
-diff --git a/drivers/gpu/drm/nouveau/nouveau_fbcon.c b/drivers/gpu/drm/nouveau/nouveau_fbcon.c
-index 68cedd9..206368b 100644
---- a/drivers/gpu/drm/nouveau/nouveau_fbcon.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_fbcon.c
-@@ -161,44 +161,6 @@ static struct drm_fb_helper_funcs nouveau_fbcon_helper_funcs = {
- 	.gamma_get = nouveau_fbcon_gamma_get
- };
- 
--#if defined(__i386__) || defined(__x86_64__)
--static bool
--nouveau_fbcon_has_vesafb_or_efifb(struct drm_device *dev)
--{
--	struct pci_dev *pdev = dev->pdev;
--	int ramin;
--
--	if (screen_info.orig_video_isVGA != VIDEO_TYPE_VLFB &&
--	    screen_info.orig_video_isVGA != VIDEO_TYPE_EFI)
--		return false;
--
--	if (screen_info.lfb_base < pci_resource_start(pdev, 1))
--		goto not_fb;
--
--	if (screen_info.lfb_base + screen_info.lfb_size >-	    pci_resource_start(pdev, 1) + pci_resource_len(pdev, 1))
--		goto not_fb;
--
--	return true;
--not_fb:
--	ramin = 2;
--	if (pci_resource_len(pdev, ramin) = 0) {
--		ramin = 3;
--		if (pci_resource_len(pdev, ramin) = 0)
--			return false;
--	}
--
--	if (screen_info.lfb_base < pci_resource_start(pdev, ramin))
--		return false;
--
--	if (screen_info.lfb_base + screen_info.lfb_size >-	    pci_resource_start(pdev, ramin) + pci_resource_len(pdev, ramin))
--		return false;
--
--	return true;
--}
--#endif
--
- void
- nouveau_fbcon_zfill(struct drm_device *dev)
- {
-@@ -231,7 +193,9 @@ nouveau_fbcon_create(struct drm_device *dev, uint32_t fb_width,
- 	struct nouveau_framebuffer *nouveau_fb;
- 	struct nouveau_bo *nvbo;
- 	struct drm_mode_fb_cmd mode_cmd;
--	struct device *device = &dev->pdev->dev;
-+	struct pci_dev *pdev = dev->pdev;
-+	struct device *device = &pdev->dev;
-+	struct apertures_struct *aper;
- 	int size, ret;
- 
- 	mode_cmd.width = surface_width;
-@@ -314,28 +278,30 @@ nouveau_fbcon_create(struct drm_device *dev, uint32_t fb_width,
- 	drm_fb_helper_fill_var(info, fb, fb_width, fb_height);
- 
- 	/* FIXME: we really shouldn't expose mmio space at all */
--	info->fix.mmio_start = pci_resource_start(dev->pdev, 1);
--	info->fix.mmio_len = pci_resource_len(dev->pdev, 1);
-+	info->fix.mmio_start = pci_resource_start(pdev, 1);
-+	info->fix.mmio_len = pci_resource_len(pdev, 1);
- 
- 	/* Set aperture base/size for vesafb takeover */
--#if defined(__i386__) || defined(__x86_64__)
--	if (nouveau_fbcon_has_vesafb_or_efifb(dev)) {
--		/* Some NVIDIA VBIOS' are stupid and decide to put the
--		 * framebuffer in the middle of the PRAMIN BAR for
--		 * whatever reason.  We need to know the exact lfb_base
--		 * to get vesafb kicked off, and the only reliable way
--		 * we have left is to find out lfb_base the same way
--		 * vesafb did.
--		 */
--		info->aperture_base = screen_info.lfb_base;
--		info->aperture_size = screen_info.lfb_size;
--		if (screen_info.orig_video_isVGA = VIDEO_TYPE_VLFB)
--			info->aperture_size *= 65536;
--	} else
--#endif
--	{
--		info->aperture_base = info->fix.mmio_start;
--		info->aperture_size = info->fix.mmio_len;
-+	aper = info->apertures = alloc_apertures(3);
-+	if (!info->apertures) {
-+		ret = -ENOMEM;
-+		goto out_unref;
-+	}
-+
-+	aper->ranges[0].base = pci_resource_start(pdev, 1);
-+	aper->ranges[0].size = pci_resource_len(pdev, 1);
-+	aper->count = 1;
-+
-+	if (pci_resource_len(pdev, 2)) {
-+		aper->ranges[aper->count].base = pci_resource_start(pdev, 2);
-+		aper->ranges[aper->count].size = pci_resource_len(pdev, 2);
-+		aper->count++;
-+	}
-+
-+	if (pci_resource_len(pdev, 3)) {
-+		aper->ranges[aper->count].base = pci_resource_start(pdev, 3);
-+		aper->ranges[aper->count].size = pci_resource_len(pdev, 3);
-+		aper->count++;
- 	}
- 
- 	info->pixmap.size = 64*1024;
-diff --git a/drivers/gpu/drm/radeon/radeon_fb.c b/drivers/gpu/drm/radeon/radeon_fb.c
-index 8fccbf2..2b57cb4 100644
---- a/drivers/gpu/drm/radeon/radeon_fb.c
-+++ b/drivers/gpu/drm/radeon/radeon_fb.c
-@@ -263,8 +263,13 @@ int radeonfb_create(struct drm_device *dev,
- 	drm_fb_helper_fill_var(info, fb, fb_width, fb_height);
- 
- 	/* setup aperture base/size for vesafb takeover */
--	info->aperture_base = rdev->ddev->mode_config.fb_base;
--	info->aperture_size = rdev->mc.real_vram_size;
-+	info->apertures = alloc_apertures(1);
-+	if (!info->apertures) {
-+		ret = -ENOMEM;
-+		goto out_unref;
-+	}
-+	info->apertures->ranges[0].base = rdev->ddev->mode_config.fb_base;
-+	info->apertures->ranges[0].size = rdev->mc.real_vram_size;
- 
- 	info->fix.mmio_start = 0;
- 	info->fix.mmio_len = 0;
-diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c b/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c
-index a933670..0248c6b 100644
---- a/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c
-+++ b/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c
-@@ -559,8 +559,13 @@ int vmw_fb_init(struct vmw_private *vmw_priv)
- 	info->pixmap.scan_align = 1;
- #endif
- 
--	info->aperture_base = vmw_priv->vram_start;
--	info->aperture_size = vmw_priv->vram_size;
-+	info->apertures = alloc_apertures(1);
-+	if (!info->apertures) {
-+		ret = -ENOMEM;
-+		goto err_aper;
-+	}
-+	info->apertures->ranges[0].base = vmw_priv->vram_start;
-+	info->apertures->ranges[0].size = vmw_priv->vram_size;
- 
- 	/*
- 	 * Dirty & Deferred IO
-@@ -580,6 +585,7 @@ int vmw_fb_init(struct vmw_private *vmw_priv)
- 
- err_defio:
- 	fb_deferred_io_cleanup(info);
-+err_aper:
- 	ttm_bo_kunmap(&par->map);
- err_unref:
- 	ttm_bo_unref((struct ttm_buffer_object **)&par->vmw_bo);
-diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
-index 581d2db..3b98656 100644
---- a/drivers/video/efifb.c
-+++ b/drivers/video/efifb.c
-@@ -165,7 +165,7 @@ static void efifb_destroy(struct fb_info *info)
- {
- 	if (info->screen_base)
- 		iounmap(info->screen_base);
--	release_mem_region(info->aperture_base, info->aperture_size);
-+	release_mem_region(info->apertures->ranges[0].base, info->apertures->ranges[0].size);
- 	framebuffer_release(info);
- }
- 
-@@ -289,8 +289,13 @@ static int __devinit efifb_probe(struct platform_device *dev)
- 	info->pseudo_palette = info->par;
- 	info->par = NULL;
- 
--	info->aperture_base = efifb_fix.smem_start;
--	info->aperture_size = size_remap;
-+	info->apertures = alloc_apertures(1);
-+	if (!info->apertures) {
-+		err = -ENOMEM;
-+		goto err_release_fb;
-+	}
-+	info->apertures->ranges[0].base = efifb_fix.smem_start;
-+	info->apertures->ranges[0].size = size_remap;
- 
- 	info->screen_base = ioremap(efifb_fix.smem_start, efifb_fix.smem_len);
- 	if (!info->screen_base) {
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index a15b44e..03f2dc2 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1468,16 +1468,39 @@ static int fb_check_foreignness(struct fb_info *fi)
+diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
+index d5077df..a52147c 100644
+--- a/drivers/video/via/accel.c
++++ b/drivers/video/via/accel.c
+@@ -165,12 +165,42 @@ static int hw_bitblt_1(void __iomem *engine, u8 op, u32 width, u32 height,
  	return 0;
  }
  
--static bool fb_do_apertures_overlap(struct fb_info *gen, struct fb_info *hw)
-+static bool apertures_overlap(struct aperture *gen, struct aperture *hw)
- {
- 	/* is the generic aperture base the same as the HW one */
--	if (gen->aperture_base = hw->aperture_base)
-+	if (gen->base = hw->base)
- 		return true;
- 	/* is the generic aperture base inside the hw base->hw base+size */
--	if (gen->aperture_base > hw->aperture_base && gen->aperture_base <= hw->aperture_base + hw->aperture_size)
-+	if (gen->base > hw->base && gen->base <= hw->base + hw->size)
- 		return true;
- 	return false;
- }
-+
-+static bool fb_do_apertures_overlap(struct fb_info *gen, struct fb_info *hw)
++/*
++ * Figure out an appropriate bytes-per-pixel setting.
++ */
++static int viafb_set_bpp(void __iomem *engine, u8 bpp)
 +{
-+	int i, j;
-+	struct apertures_struct *hwa = hw->apertures;
-+	struct apertures_struct *gena = gen->apertures;
-+	if (!hwa || !gena)
-+		return false;
++	u32 gemode;
 +
-+	for (i = 0; i < hwa->count; ++i) {
-+		struct aperture *h = &hwa->ranges[i];
-+		for (j = 0; j < gena->count; ++j) {
-+			struct aperture *g = &gena->ranges[j];
-+			printk(KERN_DEBUG "checking generic (%llx %llx) vs hw (%llx %llx)\n",
-+				g->base, g->size, h->base, h->size);
-+			if (apertures_overlap(g, h))
-+				return true;
-+		}
++	/* Preserve the reserved bits */
++	/* Lowest 2 bits to zero gives us no rotation */
++	gemode = readl(engine + VIA_REG_GEMODE) & 0xfffffcfc;
++	switch (bpp) {
++	case 8:
++		gemode |= VIA_GEM_8bpp;
++		break;
++	case 16:
++		gemode |= VIA_GEM_16bpp;
++		break;
++	case 32:
++		gemode |= VIA_GEM_32bpp;
++		break;
++	default:
++		printk(KERN_WARNING "hw_bitblt_2: Unsupported bpp %d\n", bpp);
++		return -EINVAL;
 +	}
-+
-+	return false;
++	writel(gemode, engine + VIA_REG_GEMODE);
++	return 0;
 +}
 +
- /**
-  *	register_framebuffer - registers a frame buffer device
-  *	@fb_info: frame buffer info structure
-diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
-index d4a2c11..fd5519b 100644
---- a/drivers/video/fbsysfs.c
-+++ b/drivers/video/fbsysfs.c
-@@ -79,6 +79,7 @@ EXPORT_SYMBOL(framebuffer_alloc);
-  */
- void framebuffer_release(struct fb_info *info)
++
+ static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
+ 	u8 dst_bpp, u32 dst_addr, u32 dst_pitch, u32 dst_x, u32 dst_y,
+ 	u32 *src_mem, u32 src_addr, u32 src_pitch, u32 src_x, u32 src_y,
+ 	u32 fg_color, u32 bg_color, u8 fill_rop)
  {
-+	kfree(info->apertures);
- 	kfree(info);
- }
- EXPORT_SYMBOL(framebuffer_release);
-diff --git a/drivers/video/offb.c b/drivers/video/offb.c
-index b043ac8..3d202b2 100644
---- a/drivers/video/offb.c
-+++ b/drivers/video/offb.c
-@@ -286,7 +286,7 @@ static void offb_destroy(struct fb_info *info)
- {
- 	if (info->screen_base)
- 		iounmap(info->screen_base);
--	release_mem_region(info->aperture_base, info->aperture_size);
-+	release_mem_region(info->apertures->ranges[0].base, info->apertures->ranges[0].size);
- 	framebuffer_release(info);
- }
+ 	u32 ge_cmd = 0, tmp, i;
++	int ret;
  
-@@ -492,8 +492,11 @@ static void __init offb_init_fb(const char *name, const char *full_name,
- 	var->vmode = FB_VMODE_NONINTERLACED;
+ 	if (!op || op > 3) {
+ 		printk(KERN_WARNING "hw_bitblt_2: Invalid operation: %d\n", op);
+@@ -204,22 +234,9 @@ static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
+ 		}
+ 	}
  
- 	/* set offb aperture size for generic probing */
--	info->aperture_base = address;
--	info->aperture_size = fix->smem_len;
-+	info->apertures = alloc_apertures(1);
-+	if (!info->apertures)
-+		goto out_aper;
-+	info->apertures->ranges[0].base = address;
-+	info->apertures->ranges[0].size = fix->smem_len;
- 
- 	info->fbops = &offb_ops;
- 	info->screen_base = ioremap(address, fix->smem_len);
-@@ -502,17 +505,20 @@ static void __init offb_init_fb(const char *name, const char *full_name,
- 
- 	fb_alloc_cmap(&info->cmap, 256, 0);
- 
--	if (register_framebuffer(info) < 0) {
--		iounmap(par->cmap_adr);
--		par->cmap_adr = NULL;
--		iounmap(info->screen_base);
--		framebuffer_release(info);
--		release_mem_region(res_start, res_size);
--		return;
+-	switch (dst_bpp) {
+-	case 8:
+-		tmp = 0x00000000;
+-		break;
+-	case 16:
+-		tmp = 0x00000100;
+-		break;
+-	case 32:
+-		tmp = 0x00000300;
+-		break;
+-	default:
+-		printk(KERN_WARNING "hw_bitblt_2: Unsupported bpp %d\n",
+-			dst_bpp);
+-		return -EINVAL;
 -	}
-+	if (register_framebuffer(info) < 0)
-+		goto out_err;
+-	writel(tmp, engine + 0x04);
++	ret = viafb_set_bpp(engine, dst_bpp);
++	if (ret)
++		return ret;
  
- 	printk(KERN_INFO "fb%d: Open Firmware frame buffer device on %s\n",
- 	       info->node, full_name);
-+	return;
-+
-+out_err:
-+	iounmap(info->screen_base);
-+out_aper:
-+	iounmap(par->cmap_adr);
-+	par->cmap_adr = NULL;
-+	framebuffer_release(info);
-+	release_mem_region(res_start, res_size);
- }
- 
- 
-diff --git a/drivers/video/vesafb.c b/drivers/video/vesafb.c
-index ef4128c..5de9ee1 100644
---- a/drivers/video/vesafb.c
-+++ b/drivers/video/vesafb.c
-@@ -178,7 +178,7 @@ static void vesafb_destroy(struct fb_info *info)
- {
- 	if (info->screen_base)
- 		iounmap(info->screen_base);
--	release_mem_region(info->aperture_base, info->aperture_size);
-+	release_mem_region(info->apertures->ranges[0].base, info->apertures->ranges[0].size);
- 	framebuffer_release(info);
- }
- 
-@@ -296,8 +296,13 @@ static int __devinit vesafb_probe(struct platform_device *dev)
- 	info->par = NULL;
- 
- 	/* set vesafb aperture size for generic probing */
--	info->aperture_base = screen_info.lfb_base;
--	info->aperture_size = size_total;
-+	info->apertures = alloc_apertures(1);
-+	if (!info->apertures) {
-+		err = -ENOMEM;
-+		goto err;
-+	}
-+	info->apertures->ranges[0].base = screen_info.lfb_base;
-+	info->apertures->ranges[0].size = size_total;
- 
- 	info->screen_base = ioremap(vesafb_fix.smem_start, vesafb_fix.smem_len);
- 	if (!info->screen_base) {
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index c10163b..9605b81 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -862,10 +862,22 @@ struct fb_info {
- 	/* we need the PCI or similiar aperture base/size not
- 	   smem_start/size as smem_start may just be an object
- 	   allocated inside the aperture so may not actually overlap */
--	resource_size_t aperture_base;
--	resource_size_t aperture_size;
-+	struct apertures_struct {
-+		unsigned int count;
-+		struct aperture {
-+			resource_size_t base;
-+			resource_size_t size;
-+		} ranges[0];
-+	} *apertures;
- };
- 
-+static inline struct apertures_struct *alloc_apertures(unsigned int max_num) {
-+	struct apertures_struct *a = kzalloc(sizeof(struct apertures_struct)
-+			+ max_num * sizeof(struct aperture), GFP_KERNEL);
-+	a->count = max_num;
-+	return a;
-+}
-+
- #ifdef MODULE
- #define FBINFO_DEFAULT	FBINFO_MODULE
- #else
+ 	if (op = VIA_BITBLT_FILL)
+ 		tmp = 0;
 -- 
-1.7.0.4
+1.7.0.1
 

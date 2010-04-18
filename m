@@ -1,96 +1,185 @@
-From: Henrik Kretzschmar <henne@nachtwindheim.de>
-Date: Fri, 02 Apr 2010 11:59:33 +0000
-Subject: [PATCH v2 4/5] fbdev: section cleanup in vga16fb
-Message-Id: <1270209574-31890-4-git-send-email-henne@nachtwindheim.de>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Sun, 18 Apr 2010 18:21:09 +0000
+Subject: [PATCH 07/11] viafb: complete support for VX800/VX855 accelerated framebuffer
+Message-Id: <1271614873-5952-8-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1271614873-5952-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1271614873-5952-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-This patch cleans up the sections in the vga16fb driver, by moving:
+This patch is a painful merge of change
+a90bab567ece3e915d0ccd55ab00c9bb333fa8c0 (viafb: Add support for 2D
+accelerated framebuffer on VX800/VX855) in the OLPC tree, originally by
+Harald Welte.  Harald's changelog read:
 
-*	the variables vga16_defined and vga16fb
-	from .init.data to .devinit.data
+	The VX800/VX820 and the VX855/VX875 chipsets have a different 2D
+    	acceleration engine called "M1".  The M1 engine has some subtle
+    	(and some not-so-subtle) differences to the previous engines, so
+    	support for accelerated framebuffer on those chipsets was disabled
+    	so far.
 
-*	vga16fb_setup() from .text to .init.text
+This merge tries to preserve Harald's changes in the framework of the
+much-changed 2.6.34 viafb code.
 
-*	vga16fb_remove() from .text. to .devexit.text
-
-WARNING: drivers/video/built-in.o(.devinit.text+0x1a420): Section mismatch in re
-ference from the function vga16fb_probe() to the (unknown reference) .init.data:
-(unknown)
-The function __devinit vga16fb_probe() references
-a (unknown reference) __initdata (unknown).
-If (unknown) is only used by vga16fb_probe then
-annotate (unknown) with a matching annotation.
-
-WARNING: drivers/video/built-in.o(.devinit.text+0x1a437): Section mismatch in reference from the function vga16fb_probe() to the variable .init.data:vga16fb_defined
-The function __devinit vga16fb_probe() references
-a variable __initdata vga16fb_defined.
-If vga16fb_defined is only used by vga16fb_probe then
-annotate vga16fb_defined with a matching annotation.
-
-WARNING: drivers/video/built-in.o(.devinit.text+0x1a457): Section mismatch in reference from the function vga16fb_probe() to the variable .init.data:vga16fb_fix
-The function __devinit vga16fb_probe() references
-a variable __initdata vga16fb_fix.
-If vga16fb_fix is only used by vga16fb_probe then
-annotate vga16fb_fix with a matching annotation.
-
-Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: ScottFang@viatech.com.cn
+Cc: JosephChan@via.com.tw
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 ---
- drivers/video/vga16fb.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/video/via/accel.c |   42 +++++++++++++++++++++++++++++++++---------
+ drivers/video/via/accel.h |   40 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 73 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
-index 76d8dae..b06ea7c 100644
---- a/drivers/video/vga16fb.c
-+++ b/drivers/video/vga16fb.c
-@@ -66,7 +66,7 @@ struct vga16fb_par {
- 
- /* --------------------------------------------------------------------- */
- 
--static struct fb_var_screeninfo vga16fb_defined __initdata = {
-+static struct fb_var_screeninfo vga16fb_defined __devinitdata = {
- 	.xres		= 640,
- 	.yres		= 480,
- 	.xres_virtual	= 640,
-@@ -86,7 +86,7 @@ static struct fb_var_screeninfo vga16fb_defined __initdata = {
- };
- 
- /* name should not depend on EGA/VGA */
--static struct fb_fix_screeninfo vga16fb_fix __initdata = {
-+static struct fb_fix_screeninfo vga16fb_fix __devinitdata = {
- 	.id		= "VGA16 VGA",
- 	.smem_start	= VGA_FB_PHYS,
- 	.smem_len	= VGA_FB_PHYS_LEN,
-@@ -1279,7 +1279,7 @@ static struct fb_ops vga16fb_ops = {
- };
- 
- #ifndef MODULE
--static int vga16fb_setup(char *options)
-+static int __init vga16fb_setup(char *options)
+diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
+index 7c1d9c4..0d90c85 100644
+--- a/drivers/video/via/accel.c
++++ b/drivers/video/via/accel.c
+@@ -317,6 +317,7 @@ int viafb_init_engine(struct fb_info *info)
  {
- 	char *this_opt;
- 	
-@@ -1377,7 +1377,7 @@ static int __devinit vga16fb_probe(struct platform_device *dev)
- 	return ret;
- }
+ 	struct viafb_par *viapar = info->par;
+ 	void __iomem *engine;
++	int highest_reg, i;
+ 	u32 vq_start_addr, vq_end_addr, vq_start_low, vq_end_low, vq_high,
+ 		vq_len, chip_name = viapar->shared->chip_info.gfx_chip_name;
  
--static int vga16fb_remove(struct platform_device *dev)
-+static int __devexit vga16fb_remove(struct platform_device *dev)
+@@ -328,6 +329,18 @@ int viafb_init_engine(struct fb_info *info)
+ 		return -ENOMEM;
+ 	}
+ 
++	/* Initialize registers to reset the 2D engine */
++	switch (viapar->shared->chip_info.twod_engine) {
++	case VIA_2D_ENG_M1:
++		highest_reg = 0x5c;
++		break;
++	default:
++		highest_reg = 0x40;
++		break;
++	}
++	for (i = 0; i <= highest_reg; i += 4)
++		writel(0x0, engine + i);
++
+ 	switch (chip_name) {
+ 	case UNICHROME_CLE266:
+ 	case UNICHROME_K400:
+@@ -357,13 +370,12 @@ int viafb_init_engine(struct fb_info *info)
+ 	viapar->shared->vq_vram_addr = viapar->fbmem_free;
+ 	viapar->fbmem_used += VQ_SIZE;
+ 
+-	/* Init 2D engine reg to reset 2D engine */
+-	writel(0x0, engine + VIA_REG_KEYCONTROL);
+-
+ 	/* Init AGP and VQ regs */
+ 	switch (chip_name) {
+ 	case UNICHROME_K8M890:
+ 	case UNICHROME_P4M900:
++	case UNICHROME_VX800:
++	case UNICHROME_VX855:
+ 		writel(0x00100000, engine + VIA_REG_CR_TRANSET);
+ 		writel(0x680A0000, engine + VIA_REG_CR_TRANSPACE);
+ 		writel(0x02000000, engine + VIA_REG_CR_TRANSPACE);
+@@ -398,6 +410,8 @@ int viafb_init_engine(struct fb_info *info)
+ 	switch (chip_name) {
+ 	case UNICHROME_K8M890:
+ 	case UNICHROME_P4M900:
++	case UNICHROME_VX800:
++	case UNICHROME_VX855:
+ 		vq_start_low |= 0x20000000;
+ 		vq_end_low |= 0x20000000;
+ 		vq_high |= 0x20000000;
+@@ -475,15 +489,25 @@ void viafb_wait_engine_idle(struct fb_info *info)
  {
- 	struct fb_info *info = platform_get_drvdata(dev);
+ 	struct viafb_par *viapar = info->par;
+ 	int loop = 0;
++	u32 mask;
  
-@@ -1394,7 +1394,7 @@ static int vga16fb_remove(struct platform_device *dev)
+-	while (!(readl(viapar->shared->engine_mmio + VIA_REG_STATUS) &
+-			VIA_VR_QUEUE_BUSY) && (loop < MAXLOOP)) {
+-		loop++;
+-		cpu_relax();
++	switch (viapar->shared->chip_info.twod_engine) {
++	case VIA_2D_ENG_H5:
++	case VIA_2D_ENG_M1:
++		mask = VIA_CMD_RGTR_BUSY_M1 | VIA_2D_ENG_BUSY_M1 |
++			      VIA_3D_ENG_BUSY_M1;
++		break;
++	default:
++		while (!(readl(viapar->shared->engine_mmio + VIA_REG_STATUS) &
++				VIA_VR_QUEUE_BUSY) && (loop < MAXLOOP)) {
++			loop++;
++			cpu_relax();
++		}
++		mask = VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY;
++		break;
+ 	}
  
- static struct platform_driver vga16fb_driver = {
- 	.probe = vga16fb_probe,
--	.remove = vga16fb_remove,
-+	.remove = __devexit_p(vga16fb_remove),
- 	.driver = {
- 		.name = "vga16fb",
- 	},
+-	while ((readl(viapar->shared->engine_mmio + VIA_REG_STATUS) &
+-		    (VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY)) &&
++	while ((readl(viapar->shared->engine_mmio + VIA_REG_STATUS) & mask) &&
+ 		    (loop < MAXLOOP)) {
+ 		loop++;
+ 		cpu_relax();
+diff --git a/drivers/video/via/accel.h b/drivers/video/via/accel.h
+index 615c84a..2c122d2 100644
+--- a/drivers/video/via/accel.h
++++ b/drivers/video/via/accel.h
+@@ -67,6 +67,34 @@
+ /* from 0x100 to 0x1ff */
+ #define VIA_REG_COLORPAT        0x100
+ 
++/* defines for VIA 2D registers for vt3353/3409 (M1 engine)*/
++#define VIA_REG_GECMD_M1        0x000
++#define VIA_REG_GEMODE_M1       0x004
++#define VIA_REG_GESTATUS_M1     0x004       /* as same as VIA_REG_GEMODE */
++#define VIA_REG_PITCH_M1        0x008       /* pitch of src and dst */
++#define VIA_REG_DIMENSION_M1    0x00C       /* width and height */
++#define VIA_REG_DSTPOS_M1       0x010
++#define VIA_REG_LINE_XY_M1      0x010
++#define VIA_REG_DSTBASE_M1      0x014
++#define VIA_REG_SRCPOS_M1       0x018
++#define VIA_REG_LINE_K1K2_M1    0x018
++#define VIA_REG_SRCBASE_M1      0x01C
++#define VIA_REG_PATADDR_M1      0x020
++#define VIA_REG_MONOPAT0_M1     0x024
++#define VIA_REG_MONOPAT1_M1     0x028
++#define VIA_REG_OFFSET_M1       0x02C
++#define VIA_REG_LINE_ERROR_M1   0x02C
++#define VIA_REG_CLIPTL_M1       0x040       /* top and left of clipping */
++#define VIA_REG_CLIPBR_M1       0x044       /* bottom and right of clipping */
++#define VIA_REG_KEYCONTROL_M1   0x048       /* color key control */
++#define VIA_REG_FGCOLOR_M1      0x04C
++#define VIA_REG_DSTCOLORKEY_M1  0x04C       /* as same as VIA_REG_FG */
++#define VIA_REG_BGCOLOR_M1      0x050
++#define VIA_REG_SRCCOLORKEY_M1  0x050       /* as same as VIA_REG_BG */
++#define VIA_REG_MONOPATFGC_M1   0x058       /* Add BG color of Pattern. */
++#define VIA_REG_MONOPATBGC_M1   0x05C       /* Add FG color of Pattern. */
++#define VIA_REG_COLORPAT_M1     0x100       /* from 0x100 to 0x1ff */
++
+ /* VIA_REG_PITCH(0x38): Pitch Setting */
+ #define VIA_PITCH_ENABLE        0x80000000
+ 
+@@ -157,6 +185,18 @@
+ /* Virtual Queue is busy */
+ #define VIA_VR_QUEUE_BUSY       0x00020000
+ 
++/* VIA_REG_STATUS(0x400): Engine Status for H5 */
++#define VIA_CMD_RGTR_BUSY_H5   0x00000010  /* Command Regulator is busy */
++#define VIA_2D_ENG_BUSY_H5     0x00000002  /* 2D Engine is busy */
++#define VIA_3D_ENG_BUSY_H5     0x00001FE1  /* 3D Engine is busy */
++#define VIA_VR_QUEUE_BUSY_H5   0x00000004  /* Virtual Queue is busy */
++
++/* VIA_REG_STATUS(0x400): Engine Status for VT3353/3409 */
++#define VIA_CMD_RGTR_BUSY_M1   0x00000010  /* Command Regulator is busy */
++#define VIA_2D_ENG_BUSY_M1     0x00000002  /* 2D Engine is busy */
++#define VIA_3D_ENG_BUSY_M1     0x00001FE1  /* 3D Engine is busy */
++#define VIA_VR_QUEUE_BUSY_M1   0x00000004  /* Virtual Queue is busy */
++
+ #define MAXLOOP                 0xFFFFFF
+ 
+ #define VIA_BITBLT_COLOR	1
 -- 
-1.7.0
+1.7.0.1
 

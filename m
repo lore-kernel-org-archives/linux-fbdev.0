@@ -1,48 +1,77 @@
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Date: Sun, 11 Apr 2010 17:09:00 +0000
-Subject: Re: [PATCH 3/3] fbmem, drm/nouveau: kick firmware framebuffers as
-Message-Id: <20100411170900.GB4016@joi.lan>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Fri, 23 Apr 2010 21:28:00 +0000
+Subject: [RFC] Second OLPC Viafb series
+Message-Id: <1272058093-20914-1-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1270929334-3742-1-git-send-email-marcin.slusarz@gmail.com>
-	<1270929334-3742-3-git-send-email-marcin.slusarz@gmail.com>
-In-Reply-To: <1270929334-3742-3-git-send-email-marcin.slusarz@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>
-Cc: linux-fbdev@vger.kernel.org, Didier Spaier <didier.spaier@epsm.fr>, nouveau@lists.freedesktop.org, Peter Jones <pjones@redhat.com>, Ben Skeggs <bskeggs@redhat.com>, Dave Airlie <airlied@redhat.com>, Andrew Morton <akpm@linux-foundation.org>
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-On Sat, Apr 10, 2010 at 09:55:34PM +0200, marcin.slusarz@gmail.com wrote:
-> Currently vesafb/efifb/... is kicked when hardware driver is registering
-> framebuffer. To do it hardware must be fully functional, so there's a short
-> window between start of initialisation and framebuffer registration when
-> two drivers touch the hardware. Unfortunately sometimes it breaks nouveau
-> initialisation.
-> 
-> Fix it by kicking firmware driver(s) before we start touching the hardware.
-> 
-> Reported-by: Didier Spaier <didier.spaier@epsm.fr>
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> Cc: Ben Skeggs <bskeggs@redhat.com>
-> Cc: Dave Airlie <airlied@redhat.com>
-> Cc: Peter Jones <pjones@redhat.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> ---
+So this is the second series of viafb patches - the stuff that I was really
+working toward since the beginning.  They depend on the previously-posted
+first series.  What's added here is a big refactoring of the driver to
+split its functions apart and the addition of code for GPIO, interrupt,
+DMA, and camera management.
 
-With this little patch below:
-Tested-by: Didier Spaier <didier.spaier@epsm.fr>
+Florian, I incorporated your indexed port I/O patch, since it was an
+obvious improvement and I was reworking that stuff anyway.
 
----
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index f5297a0..42ae782 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1524,6 +1524,7 @@ void remove_conflicting_framebuffers(struct apertures_struct *a, const char *nam
- 		}
- 	}
- }
-+EXPORT_SYMBOL(remove_conflicting_framebuffers);
- 
- /**
-  *	register_framebuffer - registers a frame buffer device
+Note that the camera driver (the last in the series) is not yet ready for
+submission; I add it here for completeness.
+
+The full series of patches can be pulled from:
+
+	git://git.lwn.net/linux-2.6.git viafb-posted
+
+Some of this stuff is disruptive, and I only have one machine to test it
+all on, so I'd really appreciate it if folks with other types of hardware
+could try them out.
+
+Florian Tobias Schandinat (1):
+      viafb: package often used basic io functions
+
+Jonathan Corbet (12):
+      viafb: Move core stuff into via-core.c
+      viafb: Separate global and fb-specific data
+      viafb: add a driver for GPIO lines
+      viafb: Convert GPIO and i2c to the new indexed port ops
+      viafb: Turn GPIO and i2c into proper platform devices
+      via: Do not attempt I/O on inactive I2C adapters
+      viafb: Introduce viafb_find_i2c_adapter()
+      via: Rationalize vt1636 detection
+      viafb: Add a simple interrupt management infrastructure
+      viafb: Add a simple VX855 DMA engine driver
+      viafb: Reserve framebuffer memory for the upcoming camera driver
+      viafb: Add a driver for the video capture engine
+
+ drivers/video/Kconfig           |   12 
+ drivers/video/via/Makefile      |    7 
+ drivers/video/via/accel.c       |   30 
+ drivers/video/via/dvi.c         |    6 
+ drivers/video/via/global.c      |    2 
+ drivers/video/via/global.h      |    1 
+ drivers/video/via/hw.c          |  152 ----
+ drivers/video/via/hw.h          |   12 
+ drivers/video/via/lcd.c         |   12 
+ drivers/video/via/via-camera.c  | 1399 ++++++++++++++++++++++++++++++++++++++++
+ drivers/video/via/via-camera.h  |   93 ++
+ drivers/video/via/via-core.c    |  641 ++++++++++++++++++
+ drivers/video/via/via-core.h    |  173 ++++
+ drivers/video/via/via-gpio.c    |  289 ++++++++
+ drivers/video/via/via-gpio.h    |   12 
+ drivers/video/via/via_i2c.c     |  159 +++-
+ drivers/video/via/via_i2c.h     |   25 
+ drivers/video/via/via_io.h      |   58 +
+ drivers/video/via/viafbdev.c    |  101 --
+ drivers/video/via/viafbdev.h    |    9 
+ drivers/video/via/vt1636.c      |   22 
+ include/media/v4l2-chip-ident.h |    4 
+ 22 files changed, 2881 insertions(+), 338 deletions(-)
+
+Thanks,
+
+jon
+
 

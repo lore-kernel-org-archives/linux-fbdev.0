@@ -1,101 +1,101 @@
-From: Roger Quadros <roger.quadros@nokia.com>
-Date: Thu, 15 Apr 2010 12:06:21 +0000
-Subject: [PATCHv3 5/5] OMAP: RX51: Update board defconfig
-Message-Id: <1271333181-23609-6-git-send-email-roger.quadros@nokia.com>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Fri, 23 Apr 2010 21:28:07 +0000
+Subject: [PATCH 07/13] via: Do not attempt I/O on inactive I2C adapters
+Message-Id: <1272058093-20914-8-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1271333181-23609-1-git-send-email-roger.quadros@nokia.com>
- <1271333181-23609-2-git-send-email-roger.quadros@nokia.com>
- <1271333181-23609-3-git-send-email-roger.quadros@nokia.com>
- <1271333181-23609-4-git-send-email-roger.quadros@nokia.com>
- <1271333181-23609-5-git-send-email-roger.quadros@nokia.com>
-In-Reply-To: <1271333181-23609-5-git-send-email-roger.quadros@nokia.com>
+References: <1272058093-20914-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1272058093-20914-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com
-Cc: tony@atomide.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-From: Roger Quadros <roger.quadros@nokia.com>
+If an adapter has been configured for GPIO, we should not try to use it as
+an I2C port.  Also fixed a stupid bug which might, in some configurations,
+have resulted in a failure to set up ports.
 
-Add LCD, Boot-up logo, framebuffer console, Keypad
-and Power button support
-
-Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 ---
- arch/arm/configs/rx51_defconfig |   39 ++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 38 insertions(+), 1 deletions(-)
+ drivers/video/via/via_i2c.c |   16 +++++++++++-----
+ drivers/video/via/via_i2c.h |    1 +
+ 2 files changed, 12 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm/configs/rx51_defconfig b/arch/arm/configs/rx51_defconfig
-index 45135ff..e891af8 100644
---- a/arch/arm/configs/rx51_defconfig
-+++ b/arch/arm/configs/rx51_defconfig
-@@ -787,6 +787,7 @@ CONFIG_INPUT_KEYBOARD=y
- # CONFIG_KEYBOARD_NEWTON is not set
- # CONFIG_KEYBOARD_STOWAWAY is not set
- CONFIG_KEYBOARD_GPIO=m
-+CONFIG_KEYBOARD_TWL4030=y
- # CONFIG_INPUT_MOUSE is not set
- # CONFIG_INPUT_JOYSTICK is not set
- # CONFIG_INPUT_TABLET is not set
-@@ -812,6 +813,7 @@ CONFIG_INPUT_MISC=y
- # CONFIG_INPUT_POWERMATE is not set
- # CONFIG_INPUT_YEALINK is not set
- # CONFIG_INPUT_CM109 is not set
-+CONFIG_INPUT_TWL4030_PWRBUTTON=y
- CONFIG_INPUT_UINPUT=m
+diff --git a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
+index cabf574..dbb2392 100644
+--- a/drivers/video/via/via_i2c.c
++++ b/drivers/video/via/via_i2c.c
+@@ -117,6 +117,8 @@ int viafb_i2c_readbyte(u8 adap, u8 slave_addr, u8 index, u8 *pdata)
+ 	u8 mm1[] = {0x00};
+ 	struct i2c_msg msgs[2];
  
- #
-@@ -1113,7 +1115,40 @@ CONFIG_RADIO_ADAPTERS=y
- #
- # CONFIG_VGASTATE is not set
- # CONFIG_VIDEO_OUTPUT_CONTROL is not set
--# CONFIG_FB is not set
-+CONFIG_FB=y
-+CONFIG_FB_CFB_FILLRECT=y
-+CONFIG_FB_CFB_COPYAREA=y
-+CONFIG_FB_CFB_IMAGEBLIT=y
-+
-+# Frame buffer hardware drivers
-+#
-+CONFIG_OMAP2_VRAM=y
-+CONFIG_OMAP2_VRFB=y
-+CONFIG_OMAP2_DSS=y
-+CONFIG_OMAP2_VRAM_SIZE=0
-+# CONFIG_OMAP2_DSS_DEBUG_SUPPORT is not set
-+# CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS is not set
-+# CONFIG_OMAP2_DSS_DPI is not set
-+# CONFIG_OMAP2_DSS_RFBI is not set
-+# CONFIG_OMAP2_DSS_VENC is not set
-+CONFIG_OMAP2_DSS_SDI=y
-+# CONFIG_OMAP2_DSS_DSI is not set
-+# CONFIG_OMAP2_DSS_FAKE_VSYNC is not set
-+CONFIG_OMAP2_DSS_MIN_FCK_PER_PCK=0
-+CONFIG_FB_OMAP2=y
-+CONFIG_FB_OMAP2_DEBUG_SUPPORT=y
-+CONFIG_FB_OMAP2_NUM_FBS=3
-+
-+#
-+# OMAP2/3 Display Device Drivers
-+#
-+# CONFIG_PANEL_GENERIC is not set
-+# CONFIG_PANEL_SHARP_LS037V7DW01 is not set
-+# CONFIG_PANEL_SHARP_LQ043T1DG01 is not set
-+# CONFIG_PANEL_TOPPOLY_TDO35S is not set
-+# CONFIG_PANEL_TPO_TD043MTEA1 is not set
-+CONFIG_PANEL_ACX565AKM=y
-+
- # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++	if (!via_i2c_par[adap].is_active)
++		return -ENODEV;
+ 	*pdata = 0;
+ 	msgs[0].flags = 0;
+ 	msgs[1].flags = I2C_M_RD;
+@@ -132,6 +134,8 @@ int viafb_i2c_writebyte(u8 adap, u8 slave_addr, u8 index, u8 data)
+ 	u8 msg[2] = { index, data };
+ 	struct i2c_msg msgs;
  
- #
-@@ -1130,6 +1165,8 @@ CONFIG_DISPLAY_SUPPORT=y
- #
- # CONFIG_VGA_CONSOLE is not set
- CONFIG_DUMMY_CONSOLE=y
-+CONFIG_FRAMEBUFFER_CONSOLE=y
-+CONFIG_LOGO=y
- CONFIG_SOUND=y
- # CONFIG_SOUND_OSS_CORE is not set
- CONFIG_SND=y
++	if (!via_i2c_par[adap].is_active)
++		return -ENODEV;
+ 	msgs.flags = 0;
+ 	msgs.addr = slave_addr / 2;
+ 	msgs.len = 2;
+@@ -144,6 +148,8 @@ int viafb_i2c_readbytes(u8 adap, u8 slave_addr, u8 index, u8 *buff, int buff_len
+ 	u8 mm1[] = {0x00};
+ 	struct i2c_msg msgs[2];
+ 
++	if (!via_i2c_par[adap].is_active)
++		return -ENODEV;
+ 	msgs[0].flags = 0;
+ 	msgs[1].flags = I2C_M_RD;
+ 	msgs[0].addr = msgs[1].addr = slave_addr / 2;
+@@ -200,18 +206,18 @@ static int viafb_i2c_probe(struct platform_device *platdev)
+ 		struct via_port_cfg *adap_cfg = configs++;
+ 		struct via_i2c_stuff *i2c_stuff = &via_i2c_par[i];
+ 
++		i2c_stuff->is_active = 0;
+ 		if (adap_cfg->type = 0 || adap_cfg->mode != VIA_MODE_I2C)
+-			break;
+-
++			continue;
+ 		ret = create_i2c_bus(&i2c_stuff->adapter,
+ 				     &i2c_stuff->algo, adap_cfg,
+ 				NULL); /* FIXME: PCIDEV */
+ 		if (ret < 0) {
+ 			printk(KERN_ERR "viafb: cannot create i2c bus %u:%d\n",
+ 				i, ret);
+-			/* FIXME: properly release previous busses */
+-			return ret;
++			continue;  /* Still try to make the rest */
+ 		}
++		i2c_stuff->is_active = 1;
+ 	}
+ 
+ 	return 0;
+@@ -227,7 +233,7 @@ static int viafb_i2c_remove(struct platform_device *platdev)
+ 		 * Only remove those entries in the array that we've
+ 		 * actually used (and thus initialized algo_data)
+ 		 */
+-		if (i2c_stuff->adapter.algo_data = &i2c_stuff->algo)
++		if (i2c_stuff->is_active)
+ 			i2c_del_adapter(&i2c_stuff->adapter);
+ 	}
+ 	return 0;
+diff --git a/drivers/video/via/via_i2c.h b/drivers/video/via/via_i2c.h
+index 5f9db66..da3a96a 100644
+--- a/drivers/video/via/via_i2c.h
++++ b/drivers/video/via/via_i2c.h
+@@ -26,6 +26,7 @@
+ 
+ struct via_i2c_stuff {
+ 	u16 i2c_port;			/* GPIO or I2C port */
++	u16 is_active;			/* Being used as I2C? */
+ 	struct i2c_adapter adapter;
+ 	struct i2c_algo_bit_data algo;
+ };
 -- 
-1.6.0.4
+1.7.0.1
 

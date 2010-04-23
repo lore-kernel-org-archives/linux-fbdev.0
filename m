@@ -1,71 +1,60 @@
-From: Roger Quadros <roger.quadros@nokia.com>
-Date: Thu, 15 Apr 2010 12:06:19 +0000
-Subject: [PATCHv3 3/5] OMAP: RX51: Add Touch Controller in SPI board info
-Message-Id: <1271333181-23609-4-git-send-email-roger.quadros@nokia.com>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Fri, 23 Apr 2010 21:28:09 +0000
+Subject: [PATCH 09/13] via: Rationalize vt1636 detection
+Message-Id: <1272058093-20914-10-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1271333181-23609-1-git-send-email-roger.quadros@nokia.com>
- <1271333181-23609-2-git-send-email-roger.quadros@nokia.com>
- <1271333181-23609-3-git-send-email-roger.quadros@nokia.com>
-In-Reply-To: <1271333181-23609-3-git-send-email-roger.quadros@nokia.com>
+References: <1272058093-20914-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1272058093-20914-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com
-Cc: tony@atomide.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-From: Roger Quadros <roger.quadros@nokia.com>
+The code was ugly and didn't check whether i2c operations were succeeding;
+make it a little better.
 
-The Touch controller and LCD Panel share the same SPI bus 1.
-So, we need to define the touch controller in the SPI board info
-else, the SPI bus will be contended due to invalid state of
-Touch controller's Chip Select thus preventing the LCD panel
-from working.
-
-Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 ---
- arch/arm/mach-omap2/board-rx51-peripherals.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+ drivers/video/via/vt1636.c |   20 +++++++-------------
+ 1 files changed, 7 insertions(+), 13 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
-index 3ef805e..020f354 100644
---- a/arch/arm/mach-omap2/board-rx51-peripherals.c
-+++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
-@@ -46,6 +46,7 @@
- enum {
- 	RX51_SPI_WL1251,
- 	RX51_SPI_MIPID,		/* LCD panel */
-+	RX51_SPI_TSC2005,	/* Touch Controller */
- };
+diff --git a/drivers/video/via/vt1636.c b/drivers/video/via/vt1636.c
+index e9f3661..e5f8024 100644
+--- a/drivers/video/via/vt1636.c
++++ b/drivers/video/via/vt1636.c
+@@ -167,26 +167,20 @@ bool viafb_lvds_identify_vt1636(u8 i2c_adapter)
  
- static struct wl12xx_platform_data wl1251_pdata;
-@@ -60,6 +61,11 @@ static struct omap2_mcspi_device_config mipid_mcspi_config = {
- 	.single_channel	= 1,
- };
+ 	/* Sense VT1636 LVDS Transmiter */
+ 	viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr -	VT1636_LVDS_I2C_ADDR;
++		VT1636_LVDS_I2C_ADDR;
  
-+static struct omap2_mcspi_device_config tsc2005_mcspi_config = {
-+	.turbo_mode	= 0,
-+	.single_channel	= 1,
-+};
-+
- static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
- 	[RX51_SPI_WL1251] = {
- 		.modalias		= "wl1251",
-@@ -77,6 +83,15 @@ static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
- 		.max_speed_hz		= 6000000,
- 		.controller_data	= &mipid_mcspi_config,
- 	},
-+	[RX51_SPI_TSC2005] = {
-+		.modalias		= "tsc2005",
-+		.bus_num		= 1,
-+		.chip_select		= 0,
-+		/* .irq = OMAP_GPIO_IRQ(RX51_TSC2005_IRQ_GPIO),*/
-+		.max_speed_hz		= 6000000,
-+		.controller_data	= &tsc2005_mcspi_config,
-+		/* .platform_data = &tsc2005_config,*/
-+	},
- };
+ 	/* Check vendor ID first: */
+-	viafb_i2c_readbyte(i2c_adapter,
+-			   (u8) viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr,
+-			   0x00, &Buffer[0]);
+-	viafb_i2c_readbyte(i2c_adapter,
+-			   (u8) viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr,
+-			   0x01, &Buffer[1]);
++	if (viafb_i2c_readbyte(i2c_adapter, VT1636_LVDS_I2C_ADDR,
++					0x00, &Buffer[0]))
++		return false;
++	viafb_i2c_readbyte(i2c_adapter, VT1636_LVDS_I2C_ADDR, 0x01, &Buffer[1]);
  
- #if defined(CONFIG_KEYBOARD_GPIO) || defined(CONFIG_KEYBOARD_GPIO_MODULE)
+ 	if (!((Buffer[0] = 0x06) && (Buffer[1] = 0x11)))
+ 		return false;
+ 
+ 	/* Check Chip ID: */
+-	viafb_i2c_readbyte(i2c_adapter,
+-			   (u8) viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr,
+-			   0x02, &Buffer[0]);
+-	viafb_i2c_readbyte(i2c_adapter,
+-			   (u8) viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr,
+-			   0x03, &Buffer[1]);
++	viafb_i2c_readbyte(i2c_adapter, VT1636_LVDS_I2C_ADDR, 0x02, &Buffer[0]);
++	viafb_i2c_readbyte(i2c_adapter, VT1636_LVDS_I2C_ADDR, 0x03, &Buffer[1]);
+ 	if ((Buffer[0] = 0x45) && (Buffer[1] = 0x33)) {
+ 		viaparinfo->chip_info->lvds_chip_info.lvds_chip_name  			VT1636_LVDS;
 -- 
-1.6.0.4
+1.7.0.1
 

@@ -1,77 +1,75 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Fri, 23 Apr 2010 21:28:00 +0000
-Subject: [RFC] Second OLPC Viafb series
-Message-Id: <1272058093-20914-1-git-send-email-corbet@lwn.net>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 24 Apr 2010 15:07:48 +0000
+Subject: Re: [RFC] Second OLPC Viafb series
+Message-Id: <4BD30944.6060302@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1272058093-20914-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1272058093-20914-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn
 
-So this is the second series of viafb patches - the stuff that I was really
-working toward since the beginning.  They depend on the previously-posted
-first series.  What's added here is a big refactoring of the driver to
-split its functions apart and the addition of code for GPIO, interrupt,
-DMA, and camera management.
+Hi,
 
-Florian, I incorporated your indexed port I/O patch, since it was an
-obvious improvement and I was reworking that stuff anyway.
+Jonathan Corbet schrieb:
+> So this is the second series of viafb patches - the stuff that I was really
+> working toward since the beginning.  They depend on the previously-posted
+> first series.  What's added here is a big refactoring of the driver to
+> split its functions apart and the addition of code for GPIO, interrupt,
+> DMA, and camera management.
 
-Note that the camera driver (the last in the series) is not yet ready for
-submission; I add it here for completeness.
+this looks like a step in the right direction. But I have the feeling 
+that it needs a lot of work before I'd consider it useful for mainline.
 
-The full series of patches can be pulled from:
+> Florian, I incorporated your indexed port I/O patch, since it was an
+> obvious improvement and I was reworking that stuff anyway.
 
-	git://git.lwn.net/linux-2.6.git viafb-posted
+Thanks.
+Could you please also take the proc fix (6) in your upstream branch as 
+it is clearly a bugfix (and tainting the kernel is also something that 
+should be avoided)
 
-Some of this stuff is disruptive, and I only have one machine to test it
-all on, so I'd really appreciate it if folks with other types of hardware
-could try them out.
+> The full series of patches can be pulled from:
+> 
+> 	git://git.lwn.net/linux-2.6.git viafb-posted
 
-Florian Tobias Schandinat (1):
-      viafb: package often used basic io functions
+Probably I should use this the next time as this series again did not 
+cleanly apply so I just fired patch on it (which worked as it was mostly 
+due to a slight difference in our compile fixes).
 
-Jonathan Corbet (12):
-      viafb: Move core stuff into via-core.c
-      viafb: Separate global and fb-specific data
-      viafb: add a driver for GPIO lines
-      viafb: Convert GPIO and i2c to the new indexed port ops
-      viafb: Turn GPIO and i2c into proper platform devices
-      via: Do not attempt I/O on inactive I2C adapters
-      viafb: Introduce viafb_find_i2c_adapter()
-      via: Rationalize vt1636 detection
-      viafb: Add a simple interrupt management infrastructure
-      viafb: Add a simple VX855 DMA engine driver
-      viafb: Reserve framebuffer memory for the upcoming camera driver
-      viafb: Add a driver for the video capture engine
+So I wanted to runtime test it as you said that it might fix the 
+I2C/GPIO issue I debugged. I gave up for now after hitting the following 
+errors:
 
- drivers/video/Kconfig           |   12 
- drivers/video/via/Makefile      |    7 
- drivers/video/via/accel.c       |   30 
- drivers/video/via/dvi.c         |    6 
- drivers/video/via/global.c      |    2 
- drivers/video/via/global.h      |    1 
- drivers/video/via/hw.c          |  152 ----
- drivers/video/via/hw.h          |   12 
- drivers/video/via/lcd.c         |   12 
- drivers/video/via/via-camera.c  | 1399 ++++++++++++++++++++++++++++++++++++++++
- drivers/video/via/via-camera.h  |   93 ++
- drivers/video/via/via-core.c    |  641 ++++++++++++++++++
- drivers/video/via/via-core.h    |  173 ++++
- drivers/video/via/via-gpio.c    |  289 ++++++++
- drivers/video/via/via-gpio.h    |   12 
- drivers/video/via/via_i2c.c     |  159 +++-
- drivers/video/via/via_i2c.h     |   25 
- drivers/video/via/via_io.h      |   58 +
- drivers/video/via/viafbdev.c    |  101 --
- drivers/video/via/viafbdev.h    |    9 
- drivers/video/via/vt1636.c      |   22 
- include/media/v4l2-chip-ident.h |    4 
- 22 files changed, 2881 insertions(+), 338 deletions(-)
+drivers/video/via/via-gpio.c:74: error: field 'gpio_chip' has incomplete 
+type
+
+so we should either select GPIOLIB or add ifdef's to avoid the dependency?
+
+After that I hit
+
+drivers/video/via/via_i2c.o: In function `init_module':
+via_i2c.c:(.text+0x309): multiple definition of `init_module'
+drivers/video/via/viafbdev.o:viafbdev.c:(.init.text+0x0): first defined here
+drivers/video/via/via_i2c.o: In function `cleanup_module':
+via_i2c.c:(.text+0x10): multiple definition of `cleanup_module'
+drivers/video/via/viafbdev.o:viafbdev.c:(.exit.text+0x0): first defined here
+drivers/video/via/via-gpio.o: In function `init_module':
+via-gpio.c:(.text+0x1f6): multiple definition of `init_module'
+drivers/video/via/viafbdev.o:viafbdev.c:(.init.text+0x0): first defined here
+drivers/video/via/via-gpio.o: In function `cleanup_module':
+via-gpio.c:(.text+0x0): multiple definition of `cleanup_module'
+drivers/video/via/viafbdev.o:viafbdev.c:(.exit.text+0x0): first defined here
+
+Guess that means you should only have one module init/exit per module. 
+So either making via_i2c and via_gpio separate modules or calling these 
+functions directly from the init/exit functions.
+
+That's it for now as I'm really supposed to do some other stuff, too.
+
 
 Thanks,
 
-jon
-
-
+Florian Tobias Schandinat

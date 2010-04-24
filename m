@@ -1,51 +1,56 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Sat, 24 Apr 2010 13:33:59 +0000
+From: Harald Welte <laforge@gnumonks.org>
+Date: Sat, 24 Apr 2010 13:53:16 +0000
 Subject: Re: [PATCH 10/11] viafb: rework the I2C support in the VIA
-Message-Id: <20100424073359.349b4397@bike.lwn.net>
+Message-Id: <20100424135316.GR24811@prithivi.gnumonks.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1271614873-5952-1-git-send-email-corbet@lwn.net>
-	<1271614873-5952-11-git-send-email-corbet@lwn.net>
-	<4BD20D56.7080402@gmx.de>
-	<20100423155725.7d3b2d2d@bike.lwn.net>
-	<4BD221E7.7060705@gmx.de>
-	<20100423165256.654ca5eb@bike.lwn.net>
-	<4BD22B96.5020102@gmx.de>
-	<4BD2CC46.4060908@gmx.de>
-In-Reply-To: <4BD2CC46.4060908@gmx.de>
+ <1271614873-5952-11-git-send-email-corbet@lwn.net>
+ <4BD20D56.7080402@gmx.de>
+ <20100423155725.7d3b2d2d@bike.lwn.net>
+ <4BD221E7.7060705@gmx.de>
+ <20100423165256.654ca5eb@bike.lwn.net>
+ <4BD22B96.5020102@gmx.de>
+ <4BD2CC46.4060908@gmx.de>
+ <20100424073359.349b4397@bike.lwn.net>
+In-Reply-To: <20100424073359.349b4397@bike.lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-kernel@vger.kernel.org, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn
 
-On Sat, 24 Apr 2010 12:47:34 +0200
-Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
+Hi Jon,
 
-> I was able to narrow this issue down to the fourth bus. So with
-> if (i = 4)
-> 	continue;
-> in the bus creation loop I'm able to get a working framebuffer which 
-> does not have the issues mentioned. Any ideas what should be done now?
+On Sat, Apr 24, 2010 at 07:33:59AM -0600, Jonathan Corbet wrote:
 
-That is useful information indeed, thanks.
+> This patch creates an i2c bus on every port which could conceivably
+> have one.  That's rather different from the original code, which
+> created a single bus (in the kernel) then swapped it between ports 31
+> and 2c in weird ways.  In particular, it takes over ports which,
+> conceivably, somebody else could be using for GPIO.  So, perhaps, there
+> is some contention going on there.
+> 
+> If my hypothesis is correct, this problem will go away with the
+> application of the second series, which doesn't create i2c buses on
+> ports used for GPIO.  But the problem should be fixed here so we don't
+> have things broken in the middle.
+> 
+> Harald, does this reasoning make sense to you?  If so, what I should do
+> is bring forward just enough of the via-core code to be able to
+> configure which ports actually get i2c buses created on them.  Easily
+> done.
 
-This patch creates an i2c bus on every port which could conceivably
-have one.  That's rather different from the original code, which
-created a single bus (in the kernel) then swapped it between ports 31
-and 2c in weird ways.  In particular, it takes over ports which,
-conceivably, somebody else could be using for GPIO.  So, perhaps, there
-is some contention going on there.
+It makes a lot of sense.  When I added all possible I2C busses, this was merely
+the result of "let's try to make sure every possible configuration is
+supported" rather than some kind of neccessity.
 
-If my hypothesis is correct, this problem will go away with the
-application of the second series, which doesn't create i2c buses on
-ports used for GPIO.  But the problem should be fixed here so we don't
-have things broken in the middle.
+Simply converting the original two busses to the new code is definitely
+the way to go.  Maybe we'll keep the code for the other two around, but
+somehow keep them inactive and don't advertise them unless somebody explicitly
+does so?
 
-Harald, does this reasoning make sense to you?  If so, what I should do
-is bring forward just enough of the via-core code to be able to
-configure which ports actually get i2c buses created on them.  Easily
-done.
-
-Thanks,
-
-jon
+-- 
+- Harald Welte <laforge@gnumonks.org>           http://laforge.gnumonks.org/
+======================================
+"Privacy in residential applications is a desirable marketing option."
+                                                  (ETSI EN 300 175-7 Ch. A6)

@@ -1,56 +1,106 @@
-From: Harald Welte <laforge@gnumonks.org>
-Date: Sat, 24 Apr 2010 13:53:16 +0000
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Sun, 25 Apr 2010 14:38:58 +0000
 Subject: Re: [PATCH 10/11] viafb: rework the I2C support in the VIA
-Message-Id: <20100424135316.GR24811@prithivi.gnumonks.org>
+Message-Id: <20100425083858.269bf0d8@bike.lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1271614873-5952-1-git-send-email-corbet@lwn.net>
- <1271614873-5952-11-git-send-email-corbet@lwn.net>
- <4BD20D56.7080402@gmx.de>
- <20100423155725.7d3b2d2d@bike.lwn.net>
- <4BD221E7.7060705@gmx.de>
- <20100423165256.654ca5eb@bike.lwn.net>
- <4BD22B96.5020102@gmx.de>
- <4BD2CC46.4060908@gmx.de>
- <20100424073359.349b4397@bike.lwn.net>
-In-Reply-To: <20100424073359.349b4397@bike.lwn.net>
+	<1271614873-5952-11-git-send-email-corbet@lwn.net>
+	<4BD20D56.7080402@gmx.de>
+	<20100423155725.7d3b2d2d@bike.lwn.net>
+	<4BD221E7.7060705@gmx.de>
+	<20100423165256.654ca5eb@bike.lwn.net>
+	<4BD22B96.5020102@gmx.de>
+	<4BD2CC46.4060908@gmx.de>
+	<20100424073359.349b4397@bike.lwn.net>
+	<20100424135316.GR24811@prithivi.gnumonks.org>
+In-Reply-To: <20100424135316.GR24811@prithivi.gnumonks.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jonathan Corbet <corbet@lwn.net>
+To: Harald Welte <laforge@gnumonks.org>
 Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-kernel@vger.kernel.org, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn
 
-Hi Jon,
+On Sat, 24 Apr 2010 15:53:16 +0200
+Harald Welte <laforge@gnumonks.org> wrote:
 
-On Sat, Apr 24, 2010 at 07:33:59AM -0600, Jonathan Corbet wrote:
+> Simply converting the original two busses to the new code is definitely
+> the way to go.  Maybe we'll keep the code for the other two around, but
+> somehow keep them inactive and don't advertise them unless somebody explicitly
+> does so?
 
-> This patch creates an i2c bus on every port which could conceivably
-> have one.  That's rather different from the original code, which
-> created a single bus (in the kernel) then swapped it between ports 31
-> and 2c in weird ways.  In particular, it takes over ports which,
-> conceivably, somebody else could be using for GPIO.  So, perhaps, there
-> is some contention going on there.
-> 
-> If my hypothesis is correct, this problem will go away with the
-> application of the second series, which doesn't create i2c buses on
-> ports used for GPIO.  But the problem should be fixed here so we don't
-> have things broken in the middle.
-> 
-> Harald, does this reasoning make sense to you?  If so, what I should do
-> is bring forward just enough of the via-core code to be able to
-> configure which ports actually get i2c buses created on them.  Easily
-> done.
+OK, my proposal would be to add the following patch into the early part
+of the series; that will help to avoid the creation of confusion in the
+middle until the full i2c/gpio configuration code is in.
 
-It makes a lot of sense.  When I added all possible I2C busses, this was merely
-the result of "let's try to make sure every possible configuration is
-supported" rather than some kind of neccessity.
+Look good?
 
-Simply converting the original two busses to the new code is definitely
-the way to go.  Maybe we'll keep the code for the other two around, but
-somehow keep them inactive and don't advertise them unless somebody explicitly
-does so?
+Thanks,
 
+jon
+
+viafb: Only establish i2c busses on ports that always had them
+
+...otherwise it seems we run into conflicts with shadowy other users which
+don't expect to see i2c taking control of ports it never used to do
+anything with.
+
+Reported-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+---
+ drivers/video/via/via_i2c.c |   19 +++++++++++++------
+ drivers/video/via/via_i2c.h |    1 +
+ 2 files changed, 14 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
+index fe5535c..b5253e3 100644
+--- a/drivers/video/via/via_i2c.c
++++ b/drivers/video/via/via_i2c.c
+@@ -170,13 +170,18 @@ static int create_i2c_bus(struct i2c_adapter *adapter,
+ 	return i2c_bit_add_bus(adapter);
+ }
+ 
++/*
++ * By default, we only activate busses on ports 2c and 31 to avoid
++ * conflicts with other possible users; that default can be changed
++ * below.
++ */
+ static struct via_i2c_adap_cfg adap_configs[] = {
+-	[VIA_I2C_ADAP_26]	= { VIA_I2C_I2C,  VIASR, 0x26 },
+-	[VIA_I2C_ADAP_31]	= { VIA_I2C_I2C,  VIASR, 0x31 },
+-	[VIA_I2C_ADAP_25]	= { VIA_I2C_GPIO, VIASR, 0x25 },
+-	[VIA_I2C_ADAP_2C]	= { VIA_I2C_GPIO, VIASR, 0x2c },
+-	[VIA_I2C_ADAP_3D]	= { VIA_I2C_GPIO, VIASR, 0x3d },
+-	{ 0, 0, 0 }
++	[VIA_I2C_ADAP_26]	= { VIA_I2C_I2C,  VIASR, 0x26, 0 },
++	[VIA_I2C_ADAP_31]	= { VIA_I2C_I2C,  VIASR, 0x31, 1 },
++	[VIA_I2C_ADAP_25]	= { VIA_I2C_GPIO, VIASR, 0x25, 0 },
++	[VIA_I2C_ADAP_2C]	= { VIA_I2C_GPIO, VIASR, 0x2c, 1 },
++	[VIA_I2C_ADAP_3D]	= { VIA_I2C_GPIO, VIASR, 0x3d, 0 },
++	{ 0, 0, 0, 0 }
+ };
+ 
+ int viafb_create_i2c_busses(struct viafb_par *viapar)
+@@ -189,6 +194,8 @@ int viafb_create_i2c_busses(struct viafb_par *viapar)
+ 
+ 		if (adap_cfg->type = 0)
+ 			break;
++		if (!adap_cfg->is_active)
++			continue;
+ 
+ 		ret = create_i2c_bus(&i2c_stuff->adapter,
+ 				     &i2c_stuff->algo, adap_cfg,
+diff --git a/drivers/video/via/via_i2c.h b/drivers/video/via/via_i2c.h
+index 00ed978..73d682f 100644
+--- a/drivers/video/via/via_i2c.h
++++ b/drivers/video/via/via_i2c.h
+@@ -35,6 +35,7 @@ struct via_i2c_adap_cfg {
+ 	enum via_i2c_type	type;
+ 	u_int16_t		io_port;
+ 	u_int8_t		ioport_index;
++	u8			is_active;
+ };
+ 
+ struct via_i2c_stuff {
 -- 
-- Harald Welte <laforge@gnumonks.org>           http://laforge.gnumonks.org/
-======================================
-"Privacy in residential applications is a desirable marketing option."
-                                                  (ETSI EN 300 175-7 Ch. A6)
+1.7.0.1
+

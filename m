@@ -1,51 +1,53 @@
-From: Harald Welte <laforge@gnumonks.org>
-Subject: Re: [PATCH 05/16] viafb: Determine type of 2D engine and store it
- in chip_info
-Date: Sun, 18 Apr 2010 20:00:24 +0200
-Message-ID: <20100418180024.GY18200@prithivi.gnumonks.org>
-References: <1270746946-12467-1-git-send-email-corbet@lwn.net>
- <1270746946-12467-6-git-send-email-corbet@lwn.net>
- <4BBE9CFC.2020804@gmx.de>
- <20100409141127.42e4e1fa@bike.lwn.net>
- <4BBF8F48.2070902@gmx.de>
- <20100418113430.53760f99@bike.lwn.net>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] added S6E63M0 AMOLED LCD Panel driver.
+Date: Tue, 27 Apr 2010 12:05:16 -0700
+Message-ID: <20100427120516.c18b3bbb.akpm@linux-foundation.org>
+References: <90b950fc1003252024i5ba8989bg95f0a81e8e5e708e@mail.gmail.com>
+	<20100330160257.e5f978a9.akpm@linux-foundation.org>
+	<90b950fc1003301941r69dc5ce1ida64b590646049a7@mail.gmail.com>
+	<20100330195501.747515e9.akpm@linux-foundation.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20100418113430.53760f99@bike.lwn.net>
+In-Reply-To: <20100330195501.747515e9.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-kernel@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev-devel@lists.sourceforge.net
+To: InKi Dae <daeinki@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com
 
-Hi!
+On Tue, 30 Mar 2010 19:55:01 -0400
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-On Sun, Apr 18, 2010 at 11:34:30AM -0600, Jonathan Corbet wrote:
+> On Wed, 31 Mar 2010 11:41:54 +0900 InKi Dae <daeinki@gmail.com> wrote:
+> 
+> > Hi Andrew,
+> > 
+> > all the calls to s6e63m0_panel_send_sequence() would return -EINVAL.
+> > by api_async() of driver/spi/spi.c
+> 
+> No, spi_async() does
+> 
+> 	master->transfer(spi, message);
+> 
+> which can return at least EIO, EINPROGRESS, EINVAL or ETIMEDOUT.
+> 
+> > so I think that those return values aren't changed to other.
+> > 
+> > and final step is to check only whether the return value is 0 or not.
+> > if you still think that this code has minor problem or you want it to
+> > be corrected
+> > then I will patch this code to be corrected anytime.
+> 
+> It's a bug.
+> 
+> Also s6e63m0_power_on() is sloppy.  It again or's together disparate
+> errnos.  Then if _anything_ failed it returns hardwired -EIO, but it
+> should instead propagate the callee's errno back up to the caller.
+> 
+> And s6e63m0_power_on() can return -EFAULT in several places, which is
+> nonsensical.
+> 
+> None of this is very critical, just ... sloppy.
+> 
 
-> In the absence of that, the only course of action which makes sense is
-> to simply fail the initialization if an unknown chip type shows up
-> there.  That's easy, and I can do it.  But, given that this was a
-> "minor nit," can we leave it as-is for now?  There's a *lot* of things
-> to clean up in this driver, I'd like to make it better a step at a time
-> rather than trying to do the whole thing at once.
-
-i agree with that step by step strategy.
-
-I always felt conservative about making too big changes.  After all, it is hard
-to find people who actually own and use all those various models of graphics
-chips, and even more so: who want to try + test recent mainline and check for
-regressions :(
-
-VIA's resources are extremely limited, and they can barely complete the work
-required for new products...  I know it's unfortunate, but VIA is a very small
-company.
-
-Regards,
-	Harald
--- 
-- Harald Welte <laforge@gnumonks.org>           http://laforge.gnumonks.org/
-============================================================================
-"Privacy in residential applications is a desirable marketing option."
-                                                  (ETSI EN 300 175-7 Ch. A6)
+ping?

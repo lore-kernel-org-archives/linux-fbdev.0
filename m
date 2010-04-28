@@ -1,7 +1,7 @@
 From: Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 28 Apr 2010 22:17:05 +0000
-Subject: [PATCH 04/30] viafb: Retain GEMODE reserved bits
-Message-Id: <1272493051-25380-5-git-send-email-corbet@lwn.net>
+Date: Wed, 28 Apr 2010 22:17:16 +0000
+Subject: [PATCH 15/30] viafb: package often used basic io functions
+Message-Id: <1272493051-25380-16-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
 In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
@@ -11,92 +11,164 @@ Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
 Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Commit c3e25673843153ea75fda79a47cf12f10a25ca37 (viafb: 2D engine rewrite)
-changed the setting of the GEMODE register so that the reserved bits are no
-longer preserved.  Fix that; at the same time, move this code to its own
-function and restore the use of symbolic constants.
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: ScottFang@viatech.com.cn
-Cc: JosephChan@via.com.tw
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+This patch puts redesigned versions of the basic io functions that
+are used overall the driver in an extra header. It is prefixed with
+via_ as no framebuffer dependend stuff is in there. They were inlined
+as they are really simple which reduced the module size about 2.5%.
+The parameter order of read and write was fixed as it really doesn't
+make sense to change the order as they are parts of the same address
+and not source and destination.
+Wrapper which use the new functions were added to hw.h to replicate
+the old interface and avoid changing all old code.
+
+[jc: added one comment]
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/via/accel.c |   49 ++++++++++++++++++++++++++++++--------------
- 1 files changed, 33 insertions(+), 16 deletions(-)
+ drivers/video/via/hw.c     |   22 ----------------
+ drivers/video/via/hw.h     |    8 ++++--
+ drivers/video/via/via_io.h |   58 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 63 insertions(+), 25 deletions(-)
+ create mode 100644 drivers/video/via/via_io.h
 
-diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
-index d5077df..a52147c 100644
---- a/drivers/video/via/accel.c
-+++ b/drivers/video/via/accel.c
-@@ -165,12 +165,42 @@ static int hw_bitblt_1(void __iomem *engine, u8 op, u32 width, u32 height,
- 	return 0;
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index f2425ae..805151f 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -537,18 +537,6 @@ static void device_on(void);
+ static void enable_second_display_channel(void);
+ static void disable_second_display_channel(void);
+ 
+-void viafb_write_reg(u8 index, u16 io_port, u8 data)
+-{
+-	outb(index, io_port);
+-	outb(data, io_port + 1);
+-	/*DEBUG_MSG(KERN_INFO "\nIndex=%2d Value=%2d", index, data); */
+-}
+-u8 viafb_read_reg(int io_port, u8 index)
+-{
+-	outb(index, io_port);
+-	return inb(io_port + 1);
+-}
+-
+ void viafb_lock_crt(void)
+ {
+ 	viafb_write_reg_mask(CR11, VIACR, BIT7, BIT7);
+@@ -560,16 +548,6 @@ void viafb_unlock_crt(void)
+ 	viafb_write_reg_mask(CR47, VIACR, 0, BIT0);
  }
  
-+/*
-+ * Figure out an appropriate bytes-per-pixel setting.
-+ */
-+static int viafb_set_bpp(void __iomem *engine, u8 bpp)
-+{
-+	u32 gemode;
+-void viafb_write_reg_mask(u8 index, int io_port, u8 data, u8 mask)
+-{
+-	u8 tmp;
+-
+-	outb(index, io_port);
+-	tmp = inb(io_port + 1);
+-	outb((data & mask) | (tmp & (~mask)), io_port + 1);
+-	/*DEBUG_MSG(KERN_INFO "\nIndex=%2d Value=%2d", index, tmp); */
+-}
+-
+ void write_dac_reg(u8 index, u8 r, u8 g, u8 b)
+ {
+ 	outb(index, LUT_INDEX_WRITE);
+diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
+index d248f4d..23c3190 100644
+--- a/drivers/video/via/hw.h
++++ b/drivers/video/via/hw.h
+@@ -24,6 +24,11 @@
+ 
+ #include "viamode.h"
+ #include "global.h"
++#include "via_io.h"
 +
-+	/* Preserve the reserved bits */
-+	/* Lowest 2 bits to zero gives us no rotation */
-+	gemode = readl(engine + VIA_REG_GEMODE) & 0xfffffcfc;
-+	switch (bpp) {
-+	case 8:
-+		gemode |= VIA_GEM_8bpp;
-+		break;
-+	case 16:
-+		gemode |= VIA_GEM_16bpp;
-+		break;
-+	case 32:
-+		gemode |= VIA_GEM_32bpp;
-+		break;
-+	default:
-+		printk(KERN_WARNING "hw_bitblt_2: Unsupported bpp %d\n", bpp);
-+		return -EINVAL;
-+	}
-+	writel(gemode, engine + VIA_REG_GEMODE);
-+	return 0;
++#define viafb_read_reg(p, i)			via_read_reg(p, i)
++#define viafb_write_reg(i, p, d)		via_write_reg(p, i, d)
++#define viafb_write_reg_mask(i, p, d, m)	via_write_reg_mask(p, i, d, m)
+ 
+ /***************************************************
+ * Definition IGA1 Design Method of CRTC Registers *
+@@ -870,7 +875,6 @@ extern int viafb_LCD_ON;
+ extern int viafb_DVI_ON;
+ extern int viafb_hotplug;
+ 
+-void viafb_write_reg_mask(u8 index, int io_port, u8 data, u8 mask);
+ void viafb_set_output_path(int device, int set_iga,
+ 	int output_interface);
+ 
+@@ -885,8 +889,6 @@ void viafb_crt_disable(void);
+ void viafb_crt_enable(void);
+ void init_ad9389(void);
+ /* Access I/O Function */
+-void viafb_write_reg(u8 index, u16 io_port, u8 data);
+-u8 viafb_read_reg(int io_port, u8 index);
+ void viafb_lock_crt(void);
+ void viafb_unlock_crt(void);
+ void viafb_load_fetch_count_reg(int h_addr, int bpp_byte, int set_iga);
+diff --git a/drivers/video/via/via_io.h b/drivers/video/via/via_io.h
+new file mode 100644
+index 0000000..e1c1093
+--- /dev/null
++++ b/drivers/video/via/via_io.h
+@@ -0,0 +1,58 @@
++/*
++ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
++ * Copyright 2010 Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public
++ * License as published by the Free Software Foundation;
++ * either version 2, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
++ * the implied warranty of MERCHANTABILITY or FITNESS FOR
++ * A PARTICULAR PURPOSE.See the GNU General Public License
++ * for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc.,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++/*
++ * basic io functions
++ */
++
++#ifndef __VIA_IO_H__
++#define __VIA_IO_H__
++
++#include <linux/types.h>
++#include <linux/io.h>
++
++/*
++ * Indexed port operations.  Note that these are all multi-op
++ * functions; every invocation will be racy if you're not holding
++ * reg_lock.
++ */
++static inline u8 via_read_reg(u16 port, u8 index)
++{
++	outb(index, port);
++	return inb(port + 1);
 +}
 +
++static inline void via_write_reg(u16 port, u8 index, u8 data)
++{
++	outb(index, port);
++	outb(data, port + 1);
++}
 +
- static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
- 	u8 dst_bpp, u32 dst_addr, u32 dst_pitch, u32 dst_x, u32 dst_y,
- 	u32 *src_mem, u32 src_addr, u32 src_pitch, u32 src_x, u32 src_y,
- 	u32 fg_color, u32 bg_color, u8 fill_rop)
- {
- 	u32 ge_cmd = 0, tmp, i;
-+	int ret;
- 
- 	if (!op || op > 3) {
- 		printk(KERN_WARNING "hw_bitblt_2: Invalid operation: %d\n", op);
-@@ -204,22 +234,9 @@ static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
- 		}
- 	}
- 
--	switch (dst_bpp) {
--	case 8:
--		tmp = 0x00000000;
--		break;
--	case 16:
--		tmp = 0x00000100;
--		break;
--	case 32:
--		tmp = 0x00000300;
--		break;
--	default:
--		printk(KERN_WARNING "hw_bitblt_2: Unsupported bpp %d\n",
--			dst_bpp);
--		return -EINVAL;
--	}
--	writel(tmp, engine + 0x04);
-+	ret = viafb_set_bpp(engine, dst_bpp);
-+	if (ret)
-+		return ret;
- 
- 	if (op = VIA_BITBLT_FILL)
- 		tmp = 0;
++static inline void via_write_reg_mask(u16 port, u8 index, u8 data, u8 mask)
++{
++	u8 old;
++
++	outb(index, port);
++	old = inb(port + 1);
++	outb((data & mask) | (old & ~mask), port + 1);
++}
++
++#endif /* __VIA_IO_H__ */
 -- 
 1.7.0.1
 

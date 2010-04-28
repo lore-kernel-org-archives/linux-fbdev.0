@@ -1,7 +1,7 @@
 From: Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 28 Apr 2010 22:17:12 +0000
-Subject: [PATCH 11/30] viafb: Only establish i2c busses on ports that always had them
-Message-Id: <1272493051-25380-12-git-send-email-corbet@lwn.net>
+Date: Wed, 28 Apr 2010 22:17:21 +0000
+Subject: [PATCH 20/30] via: Rationalize vt1636 detection
+Message-Id: <1272493051-25380-21-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
 In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
@@ -11,67 +11,50 @@ Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
 Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-...otherwise it seems we run into conflicts with shadowy other users which
-don't expect to see i2c taking control of ports it never used to do
-anything with.
+The code was ugly and didn't check whether i2c operations were succeeding;
+make it a little better.
 
-Reported-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 ---
- drivers/video/via/via_i2c.c |   19 +++++++++++++------
- drivers/video/via/via_i2c.h |    1 +
- 2 files changed, 14 insertions(+), 6 deletions(-)
+ drivers/video/via/vt1636.c |   20 +++++++-------------
+ 1 files changed, 7 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
-index fe5535c..b5253e3 100644
---- a/drivers/video/via/via_i2c.c
-+++ b/drivers/video/via/via_i2c.c
-@@ -170,13 +170,18 @@ static int create_i2c_bus(struct i2c_adapter *adapter,
- 	return i2c_bit_add_bus(adapter);
- }
+diff --git a/drivers/video/via/vt1636.c b/drivers/video/via/vt1636.c
+index e9f3661..e5f8024 100644
+--- a/drivers/video/via/vt1636.c
++++ b/drivers/video/via/vt1636.c
+@@ -167,26 +167,20 @@ bool viafb_lvds_identify_vt1636(u8 i2c_adapter)
  
-+/*
-+ * By default, we only activate busses on ports 2c and 31 to avoid
-+ * conflicts with other possible users; that default can be changed
-+ * below.
-+ */
- static struct via_i2c_adap_cfg adap_configs[] = {
--	[VIA_I2C_ADAP_26]	= { VIA_I2C_I2C,  VIASR, 0x26 },
--	[VIA_I2C_ADAP_31]	= { VIA_I2C_I2C,  VIASR, 0x31 },
--	[VIA_I2C_ADAP_25]	= { VIA_I2C_GPIO, VIASR, 0x25 },
--	[VIA_I2C_ADAP_2C]	= { VIA_I2C_GPIO, VIASR, 0x2c },
--	[VIA_I2C_ADAP_3D]	= { VIA_I2C_GPIO, VIASR, 0x3d },
--	{ 0, 0, 0 }
-+	[VIA_I2C_ADAP_26]	= { VIA_I2C_I2C,  VIASR, 0x26, 0 },
-+	[VIA_I2C_ADAP_31]	= { VIA_I2C_I2C,  VIASR, 0x31, 1 },
-+	[VIA_I2C_ADAP_25]	= { VIA_I2C_GPIO, VIASR, 0x25, 0 },
-+	[VIA_I2C_ADAP_2C]	= { VIA_I2C_GPIO, VIASR, 0x2c, 1 },
-+	[VIA_I2C_ADAP_3D]	= { VIA_I2C_GPIO, VIASR, 0x3d, 0 },
-+	{ 0, 0, 0, 0 }
- };
+ 	/* Sense VT1636 LVDS Transmiter */
+ 	viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr -	VT1636_LVDS_I2C_ADDR;
++		VT1636_LVDS_I2C_ADDR;
  
- int viafb_create_i2c_busses(struct viafb_par *viapar)
-@@ -189,6 +194,8 @@ int viafb_create_i2c_busses(struct viafb_par *viapar)
+ 	/* Check vendor ID first: */
+-	viafb_i2c_readbyte(i2c_adapter,
+-			   (u8) viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr,
+-			   0x00, &Buffer[0]);
+-	viafb_i2c_readbyte(i2c_adapter,
+-			   (u8) viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr,
+-			   0x01, &Buffer[1]);
++	if (viafb_i2c_readbyte(i2c_adapter, VT1636_LVDS_I2C_ADDR,
++					0x00, &Buffer[0]))
++		return false;
++	viafb_i2c_readbyte(i2c_adapter, VT1636_LVDS_I2C_ADDR, 0x01, &Buffer[1]);
  
- 		if (adap_cfg->type = 0)
- 			break;
-+		if (!adap_cfg->is_active)
-+			continue;
+ 	if (!((Buffer[0] = 0x06) && (Buffer[1] = 0x11)))
+ 		return false;
  
- 		ret = create_i2c_bus(&i2c_stuff->adapter,
- 				     &i2c_stuff->algo, adap_cfg,
-diff --git a/drivers/video/via/via_i2c.h b/drivers/video/via/via_i2c.h
-index 00ed978..73d682f 100644
---- a/drivers/video/via/via_i2c.h
-+++ b/drivers/video/via/via_i2c.h
-@@ -35,6 +35,7 @@ struct via_i2c_adap_cfg {
- 	enum via_i2c_type	type;
- 	u_int16_t		io_port;
- 	u_int8_t		ioport_index;
-+	u8			is_active;
- };
- 
- struct via_i2c_stuff {
+ 	/* Check Chip ID: */
+-	viafb_i2c_readbyte(i2c_adapter,
+-			   (u8) viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr,
+-			   0x02, &Buffer[0]);
+-	viafb_i2c_readbyte(i2c_adapter,
+-			   (u8) viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr,
+-			   0x03, &Buffer[1]);
++	viafb_i2c_readbyte(i2c_adapter, VT1636_LVDS_I2C_ADDR, 0x02, &Buffer[0]);
++	viafb_i2c_readbyte(i2c_adapter, VT1636_LVDS_I2C_ADDR, 0x03, &Buffer[1]);
+ 	if ((Buffer[0] = 0x45) && (Buffer[1] = 0x33)) {
+ 		viaparinfo->chip_info->lvds_chip_info.lvds_chip_name  			VT1636_LVDS;
 -- 
 1.7.0.1
 

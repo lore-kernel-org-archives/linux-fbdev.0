@@ -1,154 +1,167 @@
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Date: Tue, 13 Apr 2010 19:50:04 +0000
-Subject: [PATCH] vga16fb, drm/nouveau: vga16fb->nouveau handoff
-Message-Id: <20100413195004.GA4402@joi.lan>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Wed, 28 Apr 2010 22:17:09 +0000
+Subject: [PATCH 08/30] viafb: Add 1200x900 DCON/LCD panel modes for OLPC XO-1.5
+Message-Id: <1272493051-25380-9-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1270929334-3742-1-git-send-email-marcin.slusarz@gmail.com>
-	<1271030068.3554.1.camel@localhost> <20100412113438.GB2789@joi.lan>
-	<1271104101.5726.3.camel@t60prh> <20100412213327.GA4463@joi.lan>
-In-Reply-To: <20100412213327.GA4463@joi.lan>
+References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Airlie <airlied@redhat.com>
-Cc: linux-fbdev@vger.kernel.org, nouveau@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Peter Jones <pjones@redhat.com>, Andrew Morton <akpm@linux-foundation.org>
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-On Mon, Apr 12, 2010 at 11:33:27PM +0200, Marcin Slusarz wrote:
-> > > > Have you got a pointer to a machine where it fails?
-> > > 
-> > > No, it failed with an artifical test while I was working on vga16fb handoff
-> > > (unfinished).
-> > 
-> > You won't be able to make this work for vga16fb from what I can see
-> > since it access 0xa000 directly, not via any of the defined apertures
-> > that vesafb/offb use. vga16fb will need a different approach I suspect.
-> 
-> Yeah, there's an idea to claim 0xa0000 as an aperture of vga16fb and then
-> do the same in KMS driver but only if it's the primary card. 
-> (You hinted to use SHADOW resource bit to check whether card is primary)
-> I think I'll try this approach soon.
+From: Chris Ball <cjb@laptop.org>
 
-Patch below works for me, but I couldn't test the case when nvidia card is secondary.
-
+[jc: extensive merge conflict fixes]
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: ScottFang@viatech.com.cn
+Cc: JosephChan@via.com.tw
+Signed-off-by: Chris Ball <cjb@laptop.org>
 ---
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Date: Tue, 13 Apr 2010 09:20:53 +0200
-Subject: [PATCH] vga16fb, drm/nouveau: vga16fb->nouveau handoff
+ drivers/video/via/hw.c      |    1 +
+ drivers/video/via/ioctl.h   |    2 +-
+ drivers/video/via/lcd.c     |    9 +++++++++
+ drivers/video/via/lcd.h     |    2 ++
+ drivers/video/via/share.h   |    7 +++++++
+ drivers/video/via/viamode.c |   14 ++++++++++++++
+ 6 files changed, 34 insertions(+), 1 deletions(-)
 
-let vga16fb claim 0xA0000+0x10000 region as its aperture;
-nouveau does not use it, so we need to lie to kick vga16fb,
-but only if it's driving the primary card (by checking
-IORESOURCE_ROM_SHADOW resource flag)
-
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
----
- drivers/gpu/drm/nouveau/nouveau_state.c |   11 ++++++++++-
- drivers/video/vga16fb.c                 |   26 +++++++++++++++++++-------
- 2 files changed, 29 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/gpu/drm/nouveau/nouveau_state.c b/drivers/gpu/drm/nouveau/nouveau_state.c
-index cfa3239..a101861 100644
---- a/drivers/gpu/drm/nouveau/nouveau_state.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_state.c
-@@ -636,10 +636,12 @@ static void nouveau_OF_copy_vbios_to_ramin(struct drm_device *dev)
- #endif
- }
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index ae664fb..2322612 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -62,6 +62,7 @@ static struct pll_map pll_value[] = {
+ 	 CX700_52_977M,	VX855_52_977M},
+ 	{CLK_56_250M, CLE266_PLL_56_250M, K800_PLL_56_250M,
+ 	 CX700_56_250M, VX855_56_250M},
++	{CLK_57_275M, 0, 0, 0, VX855_57_275M},
+ 	{CLK_60_466M, CLE266_PLL_60_466M, K800_PLL_60_466M,
+ 	 CX700_60_466M, VX855_60_466M},
+ 	{CLK_61_500M, CLE266_PLL_61_500M, K800_PLL_61_500M,
+diff --git a/drivers/video/via/ioctl.h b/drivers/video/via/ioctl.h
+index de89980..c430fa2 100644
+--- a/drivers/video/via/ioctl.h
++++ b/drivers/video/via/ioctl.h
+@@ -75,7 +75,7 @@
+ /*SAMM operation flag*/
+ #define OP_SAMM            0x80
  
-+#define VGA_FB_PHYS 0xA0000
-+#define VGA_FB_PHYS_LEN 65536
- static struct apertures_struct *nouveau_get_apertures(struct drm_device *dev)
- {
- 	struct pci_dev *pdev = dev->pdev;
--	struct apertures_struct *aper = alloc_apertures(3);
-+	struct apertures_struct *aper = alloc_apertures(4);
- 	if (!aper)
- 		return NULL;
+-#define LCD_PANEL_ID_MAXIMUM	22
++#define LCD_PANEL_ID_MAXIMUM	23
  
-@@ -658,6 +660,13 @@ static struct apertures_struct *nouveau_get_apertures(struct drm_device *dev)
- 		aper->ranges[aper->count].size = pci_resource_len(pdev, 3);
- 		aper->count++;
- 	}
-+	
-+	/* if it's the primary card, claim 0xa0000 as ours to kick vga16fb */
-+	if (pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW) {
-+		aper->ranges[aper->count].base = VGA_FB_PHYS;
-+		aper->ranges[aper->count].size = VGA_FB_PHYS_LEN;
-+		aper->count++;
-+	}
+ #define STATE_ON            0x1
+ #define STATE_OFF           0x0
+diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
+index 1b1ccdc..09020f0 100644
+--- a/drivers/video/via/lcd.c
++++ b/drivers/video/via/lcd.c
+@@ -398,6 +398,15 @@ static void fp_id_to_vindex(int panel_id)
+ 		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
+ 		viaparinfo->lvds_setting_info->LCDDithering = 1;
+ 		break;
++	case 0x17:
++		/* OLPC XO-1.5 panel */
++		viaparinfo->lvds_setting_info->lcd_panel_hres = 1200;
++		viaparinfo->lvds_setting_info->lcd_panel_vres = 900;
++		viaparinfo->lvds_setting_info->lcd_panel_id +			LCD_PANEL_IDD_1200X900;
++		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
++		viaparinfo->lvds_setting_info->LCDDithering = 0;
++		break;
+ 	default:
+ 		viaparinfo->lvds_setting_info->lcd_panel_hres = 800;
+ 		viaparinfo->lvds_setting_info->lcd_panel_vres = 600;
+diff --git a/drivers/video/via/lcd.h b/drivers/video/via/lcd.h
+index 071f47c..9762ec6 100644
+--- a/drivers/video/via/lcd.h
++++ b/drivers/video/via/lcd.h
+@@ -60,6 +60,8 @@
+ #define     LCD_PANEL_IDB_1360X768     0x0B
+ /* Resolution: 480x640,  Channel: single, Dithering: Enable */
+ #define     LCD_PANEL_IDC_480X640      0x0C
++/* Resolution: 1200x900,  Channel: single, Dithering: Disable */
++#define     LCD_PANEL_IDD_1200X900      0x0D
  
- 	return aper;
- }
-diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
-index 76d8dae..45d7a3d 100644
---- a/drivers/video/vga16fb.c
-+++ b/drivers/video/vga16fb.c
-@@ -1264,10 +1264,19 @@ static void vga16fb_imageblit(struct fb_info *info, const struct fb_image *image
- 		vga_imageblit_color(info, image);
- }
  
-+static void vga16fb_destroy(struct fb_info *info)
-+{
-+	iounmap(info->screen_base);
-+	fb_dealloc_cmap(&info->cmap);
-+	/* XXX unshare VGA regions */
-+	framebuffer_release(info);
-+}
+ extern int viafb_LCD2_ON;
+diff --git a/drivers/video/via/share.h b/drivers/video/via/share.h
+index d55aaa7..f974c73 100644
+--- a/drivers/video/via/share.h
++++ b/drivers/video/via/share.h
+@@ -570,6 +570,10 @@
+ #define M1200X720_R60_HSP       NEGATIVE
+ #define M1200X720_R60_VSP       POSITIVE
+ 
++/* 1200x900@60 Sync Polarity (DCON) */
++#define M1200X900_R60_HSP       NEGATIVE
++#define M1200X900_R60_VSP       NEGATIVE
 +
- static struct fb_ops vga16fb_ops = {
- 	.owner		= THIS_MODULE,
- 	.fb_open        = vga16fb_open,
- 	.fb_release     = vga16fb_release,
-+	.fb_destroy	= vga16fb_destroy,
- 	.fb_check_var	= vga16fb_check_var,
- 	.fb_set_par	= vga16fb_set_par,
- 	.fb_setcolreg 	= vga16fb_setcolreg,
-@@ -1307,6 +1316,11 @@ static int __devinit vga16fb_probe(struct platform_device *dev)
- 		ret = -ENOMEM;
- 		goto err_fb_alloc;
- 	}
-+	info->apertures = alloc_apertures(1);
-+	if (!info->apertures) {
-+		ret = -ENOMEM;
-+		goto err_ioremap;
-+	}
+ /* 1280x600@60 Sync Polarity (GTF Mode) */
+ #define M1280x600_R60_HSP       NEGATIVE
+ #define M1280x600_R60_VSP       POSITIVE
+@@ -651,6 +655,7 @@
+ #define CLK_52_406M     52406000
+ #define CLK_52_977M     52977000
+ #define CLK_56_250M     56250000
++#define CLK_57_275M     57275000
+ #define CLK_60_466M     60466000
+ #define CLK_61_500M     61500000
+ #define CLK_65_000M     65000000
+@@ -939,6 +944,7 @@
+ #define VX855_52_406M     0x00580C03
+ #define VX855_52_977M     0x00940C05
+ #define VX855_56_250M     0x009D0C05
++#define VX855_57_275M     0x009D8C85    /* Used by XO panel */
+ #define VX855_60_466M     0x00A90C05
+ #define VX855_61_500M     0x00AC0C05
+ #define VX855_65_000M     0x006D0C03
+@@ -1065,6 +1071,7 @@
+ #define RES_1600X1200_60HZ_PIXCLOCK  6172
+ #define RES_1600X1200_75HZ_PIXCLOCK  4938
+ #define RES_1280X720_60HZ_PIXCLOCK   13426
++#define RES_1200X900_60HZ_PIXCLOCK   17459
+ #define RES_1920X1080_60HZ_PIXCLOCK  5787
+ #define RES_1400X1050_60HZ_PIXCLOCK  8214
+ #define RES_1400X1050_75HZ_PIXCLOCK  6410
+diff --git a/drivers/video/via/viamode.c b/drivers/video/via/viamode.c
+index af50e24..6f3bcda 100644
+--- a/drivers/video/via/viamode.c
++++ b/drivers/video/via/viamode.c
+@@ -66,6 +66,7 @@ struct res_map_refresh res_map_refresh_tbl[] = {
+ 	{1088, 612, RES_1088X612_60HZ_PIXCLOCK, 60},
+ 	{1152, 720, RES_1152X720_60HZ_PIXCLOCK, 60},
+ 	{1200, 720, RES_1200X720_60HZ_PIXCLOCK, 60},
++	{1200, 900, RES_1200X900_60HZ_PIXCLOCK, 60},
+ 	{1280, 600, RES_1280X600_60HZ_PIXCLOCK, 60},
+ 	{1280, 720, RES_1280X720_50HZ_PIXCLOCK, 50},
+ 	{1280, 768, RES_1280X768_50HZ_PIXCLOCK, 50},
+@@ -759,6 +760,16 @@ struct crt_mode_table CRTM1200x720[] = {
+ 	 {1568, 1200, 1200, 368, 1256, 128, 746, 720, 720, 26, 721, 3} }
+ };
  
- 	/* XXX share VGA_FB_PHYS and I/O region with vgacon and others */
- 	info->screen_base = (void __iomem *)VGA_MAP_MEM(VGA_FB_PHYS, 0);
-@@ -1336,7 +1350,7 @@ static int __devinit vga16fb_probe(struct platform_device *dev)
- 	info->fix = vga16fb_fix;
- 	/* supports rectangles with widths of multiples of 8 */
- 	info->pixmap.blit_x = 1 << 7 | 1 << 15 | 1 << 23 | 1 << 31;
--	info->flags = FBINFO_FLAG_DEFAULT |
-+	info->flags = FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE |
- 		FBINFO_HWACCEL_YPAN;
- 
- 	i = (info->var.bits_per_pixel = 8) ? 256 : 16;
-@@ -1355,6 +1369,9 @@ static int __devinit vga16fb_probe(struct platform_device *dev)
- 
- 	vga16fb_update_fix(info);
- 
-+	info->apertures->ranges[0].base = VGA_FB_PHYS;
-+	info->apertures->ranges[0].size = VGA_FB_PHYS_LEN;
++/* 1200x900 (DCON) */
++struct crt_mode_table DCON1200x900[] = {
++	/* r_rate,          vclk,               hsp,               vsp   */
++	{REFRESH_60, CLK_57_275M, M1200X900_R60_HSP, M1200X900_R60_VSP,
++	/* The correct htotal is 1240, but this doesn't raster on VX855. */
++	/* Via suggested changing to a multiple of 16, hence 1264.       */
++	/*  HT,   HA,  HBS, HBE,  HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
++	 {1264, 1200, 1200,  64, 1211,  32, 912, 900, 900,  12, 901, 10} }
++};
 +
- 	if (register_framebuffer(info) < 0) {
- 		printk(KERN_ERR "vga16fb: unable to register framebuffer\n");
- 		ret = -EINVAL;
-@@ -1381,13 +1398,8 @@ static int vga16fb_remove(struct platform_device *dev)
- {
- 	struct fb_info *info = platform_get_drvdata(dev);
+ /* 1280x600 (GTF) */
+ struct crt_mode_table CRTM1280x600[] = {
+ 	/* r_rate,          vclk,              hsp,             vsp   */
+@@ -937,6 +948,9 @@ struct VideoModeTable viafb_modes[] = {
+ 	/* Display : 1200x720 (GTF) */
+ 	{CRTM1200x720, ARRAY_SIZE(CRTM1200x720)},
  
--	if (info) {
-+	if (info)
- 		unregister_framebuffer(info);
--		iounmap(info->screen_base);
--		fb_dealloc_cmap(&info->cmap);
--	/* XXX unshare VGA regions */
--		framebuffer_release(info);
--	}
++	/* Display : 1200x900 (DCON) */
++	{DCON1200x900, ARRAY_SIZE(DCON1200x900)},
++
+ 	/* Display : 1280x600 (GTF) */
+ 	{CRTM1280x600, ARRAY_SIZE(CRTM1280x600)},
  
- 	return 0;
- }
 -- 
-1.7.0.4
-
+1.7.0.1
 

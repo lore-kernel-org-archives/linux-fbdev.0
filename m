@@ -1,92 +1,121 @@
-From: InKi Dae <daeinki@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] added S6E63M0 AMOLED LCD Panel 
-	driver.
-Date: Wed, 31 Mar 2010 11:56:50 +0900
-Message-ID: <90b950fc1003301956mf8246f4sd060852dbead1407@mail.gmail.com>
-References: <90b950fc1003252024i5ba8989bg95f0a81e8e5e708e@mail.gmail.com>
-	 <20100330160257.e5f978a9.akpm@linux-foundation.org>
-	 <0D753D10438DA54287A00B027084269763691C3440@AUSP01VMBX24.collaborationhost.net>
-Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <0D753D10438DA54287A00B027084269763691C3440@AUSP01VMBX24.collaborationhost.net>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="iso-8859-1"
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Wed, 28 Apr 2010 22:17:01 +0000
+Subject: [RFC] Second OLPC Viafb series, v2
+Message-Id: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+List-Id: <linux-fbdev.vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Hi Hertley,
+This is the second posting of the second series of viafb patches.  What's
+added here is a big refactoring of the driver to split its functions apart
+and the addition of code for GPIO, interrupt, DMA, and camera management.
 
-it's a good way.
-this way is more clear and also Andrew's concern could be solved.
+The following changes have been made since the first version:
 
-I'd like to apply it to local repository and then I will send the patch
-in the near future.
+ - A couple of small fixes have been made to the first series.  The
+   OLPC-specific tests for i2c access have been removed since they broke
+   the linux-next build, and we don't try to do i2c on ports which have not
+   traditionally been used that way.  For that reason, I'm including that
+   initial series here; the whole set applies to 2.6.34-rc3.
 
-and Andrew, If you think that Hertley's way is clear then I would make
-the patch. maybe it would become second patch.
+ - The build problems encountered by Florian (GPIOLIB and module stuff)
+   have been fixed.  I have *not* made fb/i2c/gpio into separate modules at
+   this point, though that is the clear destination of this work.  That's a
+   bit messy and I didn't want to complicate these patches further; I will
+   do it in the future.
 
-Thank you.
+ - I merged in all of Florian's cleanup patches from a couple of weeks
+   ago.  I've not looked at the new suspend/resume patches yet.
 
-2010/3/31 H Hartley Sweeten <hartleys@visionengravers.com>:
-> On Tuesday, March 30, 2010 4:03 PM, Andrew Morton wrote:
->> On Fri, 26 Mar 2010 12:24:24 +0900
->> InKi Dae <daeinki@gmail.com> wrote:
->>
->>> +static int s6e63m0_ldi_init(struct s6e63m0 *lcd)
->>> +{
->>> + =A0 =A0int ret;
->>> +
->>> + =A0 =A0ret =3D s6e63m0_panel_send_sequence(lcd, SEQ_PANEL_CONDITI=
-ON_SET);
->>> + =A0 =A0ret |=3D s6e63m0_panel_send_sequence(lcd, SEQ_DISPLAY_COND=
-ITION_SET);
->>> + =A0 =A0ret |=3D s6e63m0_panel_send_sequence(lcd, SEQ_GAMMA_SETTIN=
-G);
->>> + =A0 =A0ret |=3D s6e63m0_panel_send_sequence(lcd, SEQ_ETC_CONDITIO=
-N_SET);
->>> + =A0 =A0ret |=3D s6e63m0_panel_send_sequence(lcd, SEQ_ACL_ON);
->>> + =A0 =A0ret |=3D s6e63m0_panel_send_sequence(lcd, SEQ_ELVSS_ON);
->>> +
->>> + =A0 =A0return ret;
->>> +}
->>
->> Well. =A0If one call to s6e63m0_panel_send_sequence() returns -ENOME=
-M and
->> another call returns -EIO (for example), this function will return s=
-ome
->> other, incorrect errno.
->>
->> Which is a rather minor problem, unless some caller is explicitly
->> looking for some particular error code, which doesn't happen often.
->
-> Why not handle the calls with a loop?
->
-> +static int s6e63m0_ldi_init(struct s6e63m0 *lcd)
-> +{
-> + =A0 =A0 =A0 const unsigned short *init_seq[] =3D {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 SEQ_PANEL_CONDITION_SET,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 SEQ_DISPLAY_CONDITION_SET,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 SEQ_GAMMA_SETTING,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 SEQ_ETC_CONDITION_SET,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 SEQ_ACL_ON,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 SEQ_ELVSS_ON,
-> + =A0 =A0 =A0 };
-> + =A0 =A0 =A0 int i, ret;
-> +
-> + =A0 =A0 =A0 for (i =3D 0; i < ARRAY_SIZE(init_seq); i++) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D s6e63m0_panel_send_sequence(lcd=
-, init_seq[i]);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (ret)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
-> + =A0 =A0 =A0 }
-> + =A0 =A0 =A0 return ret;
-> +}
->
-> Note that _s6e63m0_gamma_ctl has the same issue. =A0Actually, the who=
-le
-> driver has issues with returning errors properly.
->
-> Regards,
-> Hartley
+Note that the camera driver (the last in the series) is not yet ready for
+submission; I add it here for completeness.
+
+The full series of patches can be pulled from:
+
+	git://git.lwn.net/linux-2.6.git viafb-posted
+
+Some of this stuff is disruptive, and I only have one machine to test it
+all on, so I'd really appreciate it if folks with other types of hardware
+could try them out.
+
+Chris Ball (1):
+      viafb: Add 1200x900 DCON/LCD panel modes for OLPC XO-1.5
+
+Florian Tobias Schandinat (7):
+      viafb: package often used basic io functions
+      viafb: unify modesetting functions
+      viafb: move some modesetting functions to a seperate file
+      viafb: replace inb/outb
+      viafb: improve misc register handling
+      viafb: fix proc entry removal
+      viafb: make procfs entries optional
+
+Harald Welte (4):
+      viafb: Fix various resource leaks during module_init()
+      viafb: use proper pci config API
+      viafb: Determine type of 2D engine and store it in chip_info
+      viafb: rework the I2C support in the VIA framebuffer driver
+
+Jonathan Corbet (17):
+      viafb: Unmap the frame buffer on initialization error
+      viafb: Retain GEMODE reserved bits
+      viafb: Unify duplicated set_bpp() code
+      viafb: complete support for VX800/VX855 accelerated framebuffer
+      viafb: Only establish i2c busses on ports that always had them
+      viafb: Move core stuff into via-core.c
+      viafb: Separate global and fb-specific data
+      viafb: add a driver for GPIO lines
+      viafb: Convert GPIO and i2c to the new indexed port ops
+      viafb: Turn GPIO and i2c into proper platform devices
+      via: Do not attempt I/O on inactive I2C adapters
+      viafb: Introduce viafb_find_i2c_adapter()
+      via: Rationalize vt1636 detection
+      viafb: Add a simple interrupt management infrastructure
+      viafb: Add a simple VX855 DMA engine driver
+      viafb: Reserve framebuffer memory for the upcoming camera driver
+      viafb: Add a driver for the video capture engine
+
+Paul Fox (1):
+      suppress verbose debug messages: change printk() to DEBUG_MSG()
+
+ drivers/video/Kconfig               |   27 
+ drivers/video/via/Makefile          |    7 
+ drivers/video/via/accel.c           |  137 ++-
+ drivers/video/via/accel.h           |   40 +
+ drivers/video/via/chip.h            |    8 
+ drivers/video/via/dvi.c             |   37 
+ drivers/video/via/global.c          |    2 
+ drivers/video/via/global.h          |    1 
+ drivers/video/via/hw.c              |  308 +------
+ drivers/video/via/hw.h              |   21 
+ drivers/video/via/ioctl.h           |    2 
+ drivers/video/via/lcd.c             |   31 
+ drivers/video/via/lcd.h             |    2 
+ drivers/video/via/share.h           |    9 
+ drivers/video/via/via-camera.c      | 1399 ++++++++++++++++++++++++++++++++++++
+ drivers/video/via/via-camera.h      |   93 ++
+ drivers/video/via/via-core.c        |  652 ++++++++++++++++
+ drivers/video/via/via-core.h        |  173 ++++
+ drivers/video/via/via-gpio.c        |  287 +++++++
+ drivers/video/via/via-gpio.h        |   14 
+ drivers/video/via/via_i2c.c         |  230 ++++-
+ drivers/video/via/via_i2c.h         |   24 
+ drivers/video/via/via_io.h          |   67 +
+ drivers/video/via/via_modesetting.c |  126 +++
+ drivers/video/via/via_modesetting.h |   38 
+ drivers/video/via/viafbdev.c        |  179 ++--
+ drivers/video/via/viafbdev.h        |   14 
+ drivers/video/via/viamode.c         |   14 
+ drivers/video/via/vt1636.c          |   34 
+ drivers/video/via/vt1636.h          |    2 
+ include/media/v4l2-chip-ident.h     |    4 
+ 31 files changed, 3416 insertions(+), 566 deletions(-)
+
+Thanks,
+
+jon
+
+

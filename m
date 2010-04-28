@@ -1,265 +1,41 @@
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Date: Tue, 20 Apr 2010 19:54:41 +0000
-Subject: Re: [PATCH] vga16fb, drm: vga16fb->drm handoff
-Message-Id: <20100420195441.GA2915@joi.lan>
+From: Henrik Kretzschmar <henne@nachtwindheim.de>
+Date: Wed, 28 Apr 2010 10:25:02 +0000
+Subject: [PATCH 1/4] cocbalt_lcdfb: correct sections
+Message-Id: <1272450305-7284-1-git-send-email-henne@nachtwindheim.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1270929334-3742-1-git-send-email-marcin.slusarz@gmail.com>
-	<1271030068.3554.1.camel@localhost> <20100412113438.GB2789@joi.lan>
-	<1271104101.5726.3.camel@t60prh> <20100412213327.GA4463@joi.lan>
-	<20100413195004.GA4402@joi.lan> <20100418215751.GA2733@joi.lan>
-	<alpine.LFD.2.00.1004191716020.2733@casper.infradead.org>
-In-Reply-To: <alpine.LFD.2.00.1004191716020.2733@casper.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: linux-fbdev@vger.kernel.org, nouveau@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Peter Jones <pjones@redhat.com>, Dave Airlie <airlied@redhat.com>, Andrew Morton <akpm@linux-foundation.org>
+To: linux-fbdev@vger.kernel.org
+Cc: ralf@linux-mips.org, arnaud.patard@rtp-net.org, jayakumar.lkml@gmail.com, gregkh@suse.de, yuasa@linux-mips.org, lethal@linux-sh.org, akpm@linux-foundation.org, adobriyan@gmail.com, support@simtec.co.uk, ben@simtec.co.uk, linux@simtec.co.uk, jkosina@suse.cz, pjones@redhat.com, linux-kernel@vger.kernel.org, Henrik Kretzschmar <henne@nachtwindheim.de>
 
-On Mon, Apr 19, 2010 at 05:20:10PM +0100, James Simmons wrote:
-> 
-> > More generic approach below - it should work for all drm drivers.
-> > Unfortunately vga16fb handoff has 2 other issues:
-> > - It can be compiled as module, so it can be loaded after KMS driver (and
-> >   nothing prevents it right now)
-> > - vga16fb registration error path is iounmapping memory which was not
-> >   ioremapped.
-> > I'm going to fix it soon.
-> 
-> Nak. See comments below.
+Since the drivers probe call was changed from .init.text
+to .devinit.text in commit c2e13037e6794bd0d9de3f9ecabf5615f15c160b
+the fb_fix_screeninfo structure must be
+changed from .init.data to .devinit.data, too.
 
-Thanks for a review.
-  
-> > ---
-> > From: Marcin Slusarz <marcin.slusarz@gmail.com>
-> > Subject: [PATCH] vga16fb, drm: vga16fb->drm handoff
-> > 
-> > let vga16fb claim 0xA0000+0x10000 region as its aperture;
-> > drm drivers don't use it, so we have to detect it and kick
-> > vga16fb manually - but only if drm is driving the primary card
-> > (by checking IORESOURCE_ROM_SHADOW resource flag)
-> > 
-> > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> > ---
-> >  drivers/gpu/drm/i915/intel_fb.c         |    1 +
-> >  drivers/gpu/drm/nouveau/nouveau_fbcon.c |    1 +
-> >  drivers/gpu/drm/nouveau/nouveau_state.c |    3 ++-
-> >  drivers/gpu/drm/radeon/radeon_fb.c      |    1 +
-> >  drivers/gpu/drm/vmwgfx/vmwgfx_fb.c      |    1 +
-> >  drivers/video/fbmem.c                   |   19 ++++++++++++++++---
-> >  drivers/video/vga16fb.c                 |   26 +++++++++++++++++++-------
-> >  include/linux/fb.h                      |    4 +++-
-> >  8 files changed, 44 insertions(+), 12 deletions(-)
-> > 
-> > diff --git a/drivers/gpu/drm/i915/intel_fb.c b/drivers/gpu/drm/i915/intel_fb.c
-> > index 6dbc277..8e403be 100644
-> > --- a/drivers/gpu/drm/i915/intel_fb.c
-> > +++ b/drivers/gpu/drm/i915/intel_fb.c
-> > @@ -201,6 +201,7 @@ static int intelfb_create(struct drm_device *dev, uint32_t fb_width,
-> >  		info->apertures->ranges[0].size = pci_resource_len(dev->pdev, 2);
-> >  	else
-> >  		info->apertures->ranges[0].size = pci_resource_len(dev->pdev, 0);
-> > +	info->pcidev = dev->pdev;
-> 
-> No pci junk in struct fb_info. It needs to be bus independent.
-> 
-> > diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-> > index 7cfcd71..4628a59 100644
-> > --- a/drivers/video/fbmem.c
-> > +++ b/drivers/video/fbmem.c
-> > @@ -32,6 +32,7 @@
-> >  #include <linux/device.h>
-> >  #include <linux/efi.h>
-> >  #include <linux/fb.h>
-> > +#include <linux/pci.h>
-> 
-> Please remove pci header.
->   
-> >  #include <asm/fb.h>
-> >  
-> > @@ -1500,19 +1501,30 @@ static bool fb_do_apertures_overlap(struct apertures_struct *gena,
-> >  	return false;
-> >  }
-> >  
-> > -void remove_conflicting_framebuffers(struct apertures_struct *a, const char *name)
-> > +#define VGA_FB_PHYS 0xA0000
-> > +void remove_conflicting_framebuffers(struct apertures_struct *a,
-> > +				     const char *name, struct pci_dev *pcidev)
-> >  {
-> >  	int i;
-> > +	bool primary = false;
-> > +
-> > +	if (pcidev)
-> > +		primary = pcidev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
-> 
-> Not portable. Please use fb_is_primary_device(info) instead. It will also 
-> make your code cleaner.
-> 
-
-It simplified the code, but I still need to figure out whether the card is primary when going
-the early kick path (when I don't have struct fb_info yet) - the check is now in nouveau.
-
+Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
 ---
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [PATCH v2] vga16fb, drm: vga16fb->drm handoff
-
-let vga16fb claim 0xA0000+0x10000 region as its aperture;
-drm drivers don't use it, so we have to detect it and kick
-vga16fb manually - but only if drm is driving the primary card
-
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+It would be nice if someone with a MIPS gcc could test this patch and
+give me some feedback if it works the way it should, since atm I'm lacking
+a crosscompiler setup.
 ---
- drivers/gpu/drm/nouveau/nouveau_state.c |    7 ++++++-
- drivers/video/fbmem.c                   |   14 +++++++++++---
- drivers/video/vga16fb.c                 |   26 +++++++++++++++++++-------
- include/linux/fb.h                      |    3 ++-
- 4 files changed, 38 insertions(+), 12 deletions(-)
+ drivers/video/cobalt_lcdfb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/gpu/drm/nouveau/nouveau_state.c b/drivers/gpu/drm/nouveau/nouveau_state.c
-index 3efc339..4c193ed 100644
---- a/drivers/gpu/drm/nouveau/nouveau_state.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_state.c
-@@ -669,8 +669,13 @@ static int nouveau_remove_conflicting_drivers(struct drm_device *dev)
- 	dev_priv->apertures = nouveau_get_apertures(dev);
- 	if (!dev_priv->apertures)
- 		return -ENOMEM;
-+	bool primary = false;
-+
-+#ifdef CONFIG_X86
-+	primary = dev->pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
-+#endif
- 	
--	remove_conflicting_framebuffers(dev_priv->apertures, "nouveaufb");
-+	remove_conflicting_framebuffers(dev_priv->apertures, "nouveaufb", primary);
- 	return 0;
+diff --git a/drivers/video/cobalt_lcdfb.c b/drivers/video/cobalt_lcdfb.c
+index 5eb61b5..42fe155 100644
+--- a/drivers/video/cobalt_lcdfb.c
++++ b/drivers/video/cobalt_lcdfb.c
+@@ -123,7 +123,7 @@ static void lcd_clear(struct fb_info *info)
+ 	lcd_write_control(info, LCD_RESET);
  }
  
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 7cfcd71..6deb57c 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1500,19 +1500,26 @@ static bool fb_do_apertures_overlap(struct apertures_struct *gena,
- 	return false;
- }
- 
--void remove_conflicting_framebuffers(struct apertures_struct *a, const char *name)
-+#define VGA_FB_PHYS 0xA0000
-+void remove_conflicting_framebuffers(struct apertures_struct *a,
-+				     const char *name, bool primary)
- {
- 	int i;
- 
- 	/* check all firmware fbs and kick off if the base addr overlaps */
- 	for (i = 0 ; i < FB_MAX; i++) {
-+		struct apertures_struct *gen_aper;
- 		if (!registered_fb[i])
- 			continue;
- 
- 		if (!(registered_fb[i]->flags & FBINFO_MISC_FIRMWARE))
- 			continue;
-+		
-+		gen_aper = registered_fb[i]->apertures;
-+		if (fb_do_apertures_overlap(gen_aper, a) ||
-+			(primary && gen_aper && gen_aper->count &&
-+			 gen_aper->ranges[0].base = VGA_FB_PHYS)) {
- 
--		if (fb_do_apertures_overlap(registered_fb[i]->apertures, a)) {
- 			printk(KERN_ERR "fb: conflicting fb hw usage "
- 			       "%s vs %s - removing generic driver\n",
- 			       name, registered_fb[i]->fix.id);
-@@ -1545,7 +1552,8 @@ register_framebuffer(struct fb_info *fb_info)
- 	if (fb_check_foreignness(fb_info))
- 		return -ENOSYS;
- 
--	remove_conflicting_framebuffers(fb_info->apertures, fb_info->fix.id);
-+	remove_conflicting_framebuffers(fb_info->apertures, fb_info->fix.id,
-+					 fb_is_primary_device(fb_info));
- 
- 	num_registered_fb++;
- 	for (i = 0 ; i < FB_MAX; i++)
-diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
-index bf638a4..149c47a 100644
---- a/drivers/video/vga16fb.c
-+++ b/drivers/video/vga16fb.c
-@@ -1263,10 +1263,19 @@ static void vga16fb_imageblit(struct fb_info *info, const struct fb_image *image
- 		vga_imageblit_color(info, image);
- }
- 
-+static void vga16fb_destroy(struct fb_info *info)
-+{
-+	iounmap(info->screen_base);
-+	fb_dealloc_cmap(&info->cmap);
-+	/* XXX unshare VGA regions */
-+	framebuffer_release(info);
-+}
-+
- static struct fb_ops vga16fb_ops = {
- 	.owner		= THIS_MODULE,
- 	.fb_open        = vga16fb_open,
- 	.fb_release     = vga16fb_release,
-+	.fb_destroy	= vga16fb_destroy,
- 	.fb_check_var	= vga16fb_check_var,
- 	.fb_set_par	= vga16fb_set_par,
- 	.fb_setcolreg 	= vga16fb_setcolreg,
-@@ -1306,6 +1315,11 @@ static int __devinit vga16fb_probe(struct platform_device *dev)
- 		ret = -ENOMEM;
- 		goto err_fb_alloc;
- 	}
-+	info->apertures = alloc_apertures(1);
-+	if (!info->apertures) {
-+		ret = -ENOMEM;
-+		goto err_ioremap;
-+	}
- 
- 	/* XXX share VGA_FB_PHYS and I/O region with vgacon and others */
- 	info->screen_base = (void __iomem *)VGA_MAP_MEM(VGA_FB_PHYS, 0);
-@@ -1335,7 +1349,7 @@ static int __devinit vga16fb_probe(struct platform_device *dev)
- 	info->fix = vga16fb_fix;
- 	/* supports rectangles with widths of multiples of 8 */
- 	info->pixmap.blit_x = 1 << 7 | 1 << 15 | 1 << 23 | 1 << 31;
--	info->flags = FBINFO_FLAG_DEFAULT |
-+	info->flags = FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE |
- 		FBINFO_HWACCEL_YPAN;
- 
- 	i = (info->var.bits_per_pixel = 8) ? 256 : 16;
-@@ -1354,6 +1368,9 @@ static int __devinit vga16fb_probe(struct platform_device *dev)
- 
- 	vga16fb_update_fix(info);
- 
-+	info->apertures->ranges[0].base = VGA_FB_PHYS;
-+	info->apertures->ranges[0].size = VGA_FB_PHYS_LEN;
-+
- 	if (register_framebuffer(info) < 0) {
- 		printk(KERN_ERR "vga16fb: unable to register framebuffer\n");
- 		ret = -EINVAL;
-@@ -1380,13 +1397,8 @@ static int vga16fb_remove(struct platform_device *dev)
- {
- 	struct fb_info *info = platform_get_drvdata(dev);
- 
--	if (info) {
-+	if (info)
- 		unregister_framebuffer(info);
--		iounmap(info->screen_base);
--		fb_dealloc_cmap(&info->cmap);
--	/* XXX unshare VGA regions */
--		framebuffer_release(info);
--	}
- 
- 	return 0;
- }
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index f88e254..1296af4 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -971,7 +971,8 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
- /* drivers/video/fbmem.c */
- extern int register_framebuffer(struct fb_info *fb_info);
- extern int unregister_framebuffer(struct fb_info *fb_info);
--extern void remove_conflicting_framebuffers(struct apertures_struct *a, const char *name);
-+extern void remove_conflicting_framebuffers(struct apertures_struct *a,
-+				const char *name, bool primary);
- extern int fb_prepare_logo(struct fb_info *fb_info, int rotate);
- extern int fb_show_logo(struct fb_info *fb_info, int rotate);
- extern char* fb_get_buffer_offset(struct fb_info *info, struct fb_pixmap *buf, u32 size);
+-static struct fb_fix_screeninfo cobalt_lcdfb_fix __initdata = {
++static struct fb_fix_screeninfo cobalt_lcdfb_fix __devinitdata = {
+ 	.id		= "cobalt-lcd",
+ 	.type		= FB_TYPE_TEXT,
+ 	.type_aux	= FB_AUX_TEXT_MDA,
 -- 
-1.7.0.4
+1.7.0
 

@@ -1,71 +1,123 @@
-From: Roger Quadros <roger.quadros@nokia.com>
-Date: Thu, 08 Apr 2010 12:21:05 +0000
-Subject: [PATCHv2 3/5] OMAP: RX51: Add Touch Controller in SPI board info
-Message-Id: <1270729267-27553-4-git-send-email-roger.quadros@nokia.com>
+From: Henrik Kretzschmar <henne@nachtwindheim.de>
+Date: Wed, 28 Apr 2010 10:25:05 +0000
+Subject: [PATCH 4/4] sgivwfb: correct sections
+Message-Id: <1272450305-7284-4-git-send-email-henne@nachtwindheim.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1270729267-27553-1-git-send-email-roger.quadros@nokia.com>
- <1270729267-27553-2-git-send-email-roger.quadros@nokia.com>
- <1270729267-27553-3-git-send-email-roger.quadros@nokia.com>
-In-Reply-To: <1270729267-27553-3-git-send-email-roger.quadros@nokia.com>
+References: <1272450305-7284-1-git-send-email-henne@nachtwindheim.de>
+In-Reply-To: <1272450305-7284-1-git-send-email-henne@nachtwindheim.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com
-Cc: tony@atomide.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: ralf@linux-mips.org, arnaud.patard@rtp-net.org, jayakumar.lkml@gmail.com, gregkh@suse.de, yuasa@linux-mips.org, lethal@linux-sh.org, akpm@linux-foundation.org, adobriyan@gmail.com, support@simtec.co.uk, ben@simtec.co.uk, linux@simtec.co.uk, jkosina@suse.cz, pjones@redhat.com, linux-kernel@vger.kernel.org, Henrik Kretzschmar <henne@nachtwindheim.de>
 
-From: Roger Quadros <roger.quadros@nokia.com>
+Since the drivers probe call was changed from .init.text
+to .devinit.text in commit c2e13037e6794bd0d9de3f9ecabf5615f15c160b
+the fb_fix_screeninfo and fb_var_screeninfo structures must be
+changed from .init.data to .devinit.data, too.
 
-The Touch controller and LCD Panel share the same SPI bus 1.
-So, we need to define the touch controller in the SPI board info
-else, the SPI bus will be contended due to invalid state of
-Touch controller's Chip Select thus preventing the LCD panel
-from working.
+Also the drivers remove routine should be moved from .text to .devexit.text
 
-Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
+It removes these 7 section mismatch warnings from modpost:
+
+WARNING: vmlinux.o(.devinit.text+0x1e28): Section mismatch in reference from the function sgivwfb_probe() to the variable .init.data:sgivwfb_fix
+The function __devinit sgivwfb_probe() references
+a variable __initdata sgivwfb_fix.
+If sgivwfb_fix is only used by sgivwfb_probe then
+annotate sgivwfb_fix with a matching annotation.
+
+WARNING: vmlinux.o(.devinit.text+0x1e50): Section mismatch in reference from the function sgivwfb_probe() to the (unknown reference) .init.data:(unknown)
+The function __devinit sgivwfb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by sgivwfb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: vmlinux.o(.devinit.text+0x1e59): Section mismatch in reference from the function sgivwfb_probe() to the (unknown reference) .init.data:(unknown)
+The function __devinit sgivwfb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by sgivwfb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: vmlinux.o(.devinit.text+0x1e60): Section mismatch in reference from the function sgivwfb_probe() to the variable .init.data:sgivwfb_fix
+The function __devinit sgivwfb_probe() references
+a variable __initdata sgivwfb_fix.
+If sgivwfb_fix is only used by sgivwfb_probe then
+annotate sgivwfb_fix with a matching annotation.
+
+WARNING: vmlinux.o(.devinit.text+0x1e6a): Section mismatch in reference from the function sgivwfb_probe() to the (unknown reference) .init.data:(unknown)
+The function __devinit sgivwfb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by sgivwfb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: vmlinux.o(.devinit.text+0x1e7f): Section mismatch in reference from the function sgivwfb_probe() to the variable .init.data:sgivwfb_var1600sw
+The function __devinit sgivwfb_probe() references
+a variable __initdata sgivwfb_var1600sw.
+If sgivwfb_var1600sw is only used by sgivwfb_probe then
+annotate sgivwfb_var1600sw with a matching annotation.
+
+WARNING: vmlinux.o(.devinit.text+0x1e91): Section mismatch in reference from the function sgivwfb_probe() to the variable .init.data:sgivwfb_var
+The function __devinit sgivwfb_probe() references
+a variable __initdata sgivwfb_var.
+If sgivwfb_var is only used by sgivwfb_probe then
+annotate sgivwfb_var with a matching annotation.
+
+Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
 ---
- arch/arm/mach-omap2/board-rx51-peripherals.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+This patch is compile tested.
+---
+ drivers/video/sgivwfb.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
-index 3ef805e..020f354 100644
---- a/arch/arm/mach-omap2/board-rx51-peripherals.c
-+++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
-@@ -46,6 +46,7 @@
- enum {
- 	RX51_SPI_WL1251,
- 	RX51_SPI_MIPID,		/* LCD panel */
-+	RX51_SPI_TSC2005,	/* Touch Controller */
+diff --git a/drivers/video/sgivwfb.c b/drivers/video/sgivwfb.c
+index 7a3a5e2..53455f2 100644
+--- a/drivers/video/sgivwfb.c
++++ b/drivers/video/sgivwfb.c
+@@ -47,7 +47,7 @@ static int ywrap = 0;
+ 
+ static int flatpanel_id = -1;
+ 
+-static struct fb_fix_screeninfo sgivwfb_fix __initdata = {
++static struct fb_fix_screeninfo sgivwfb_fix __devinitdata = {
+ 	.id		= "SGI Vis WS FB",
+ 	.type		= FB_TYPE_PACKED_PIXELS,
+         .visual		= FB_VISUAL_PSEUDOCOLOR,
+@@ -57,7 +57,7 @@ static struct fb_fix_screeninfo sgivwfb_fix __initdata = {
+ 	.line_length	= 640,
  };
  
- static struct wl12xx_platform_data wl1251_pdata;
-@@ -60,6 +61,11 @@ static struct omap2_mcspi_device_config mipid_mcspi_config = {
- 	.single_channel	= 1,
+-static struct fb_var_screeninfo sgivwfb_var __initdata = {
++static struct fb_var_screeninfo sgivwfb_var __devinitdata = {
+ 	/* 640x480, 8 bpp */
+ 	.xres		= 640,
+ 	.yres		= 480,
+@@ -79,7 +79,7 @@ static struct fb_var_screeninfo sgivwfb_var __initdata = {
+ 	.vmode		= FB_VMODE_NONINTERLACED
  };
  
-+static struct omap2_mcspi_device_config tsc2005_mcspi_config = {
-+	.turbo_mode	= 0,
-+	.single_channel	= 1,
-+};
-+
- static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
- 	[RX51_SPI_WL1251] = {
- 		.modalias		= "wl1251",
-@@ -77,6 +83,15 @@ static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
- 		.max_speed_hz		= 6000000,
- 		.controller_data	= &mipid_mcspi_config,
+-static struct fb_var_screeninfo sgivwfb_var1600sw __initdata = {
++static struct fb_var_screeninfo sgivwfb_var1600sw __devinitdata = {
+ 	/* 1600x1024, 8 bpp */
+ 	.xres		= 1600,
+ 	.yres		= 1024,
+@@ -825,7 +825,7 @@ fail_ioremap_regs:
+ 	return -ENXIO;
+ }
+ 
+-static int sgivwfb_remove(struct platform_device *dev)
++static int __devexit sgivwfb_remove(struct platform_device *dev)
+ {
+ 	struct fb_info *info = platform_get_drvdata(dev);
+ 
+@@ -845,7 +845,7 @@ static int sgivwfb_remove(struct platform_device *dev)
+ 
+ static struct platform_driver sgivwfb_driver = {
+ 	.probe	= sgivwfb_probe,
+-	.remove	= sgivwfb_remove,
++	.remove	= __devexit_p(sgivwfb_remove),
+ 	.driver	= {
+ 		.name	= "sgivwfb",
  	},
-+	[RX51_SPI_TSC2005] = {
-+		.modalias		= "tsc2005",
-+		.bus_num		= 1,
-+		.chip_select		= 0,
-+		/* .irq = OMAP_GPIO_IRQ(RX51_TSC2005_IRQ_GPIO),*/
-+		.max_speed_hz		= 6000000,
-+		.controller_data	= &tsc2005_mcspi_config,
-+		/* .platform_data = &tsc2005_config,*/
-+	},
- };
- 
- #if defined(CONFIG_KEYBOARD_GPIO) || defined(CONFIG_KEYBOARD_GPIO_MODULE)
 -- 
-1.6.0.4
+1.7.0
 

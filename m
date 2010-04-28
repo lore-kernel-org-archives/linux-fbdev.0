@@ -1,129 +1,102 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Mon, 26 Apr 2010 18:09:47 +0000
-Subject: [PATCH 4/4] viafb: fix hardware acceleration for suspend & resume
-Message-Id: <1272305387-4872-5-git-send-email-FlorianSchandinat@gmx.de>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Wed, 28 Apr 2010 22:17:05 +0000
+Subject: [PATCH 04/30] viafb: Retain GEMODE reserved bits
+Message-Id: <1272493051-25380-5-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272305387-4872-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1272305387-4872-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, corbet@lwn.net, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-viafb: fix hardware acceleration for suspend & resume
+Commit c3e25673843153ea75fda79a47cf12f10a25ca37 (viafb: 2D engine rewrite)
+changed the setting of the GEMODE register so that the reserved bits are no
+longer preserved.  Fix that; at the same time, move this code to its own
+function and restore the use of symbolic constants.
 
-This patch splits the acceleration initialization in two parts:
-The first is only called during probe and is used to allocate
-resources. The second part is also called on resume to reinitalize
-the 2D engine. This should fix all acceleration issues after resume
-most notable an "invisible" cursor and as we do nothing special it is
-reasonable to assume that it works on all supported IGPs.
-
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: ScottFang@viatech.com.cn
+Cc: JosephChan@via.com.tw
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 ---
- drivers/video/via/accel.c    |   41 +++++++++++++++++++++++++----------------
- drivers/video/via/accel.h    |    1 +
- drivers/video/via/viafbdev.c |    1 +
- 3 files changed, 27 insertions(+), 16 deletions(-)
+ drivers/video/via/accel.c |   49 ++++++++++++++++++++++++++++++--------------
+ 1 files changed, 33 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
-index 0d90c85..726c153 100644
+index d5077df..a52147c 100644
 --- a/drivers/video/via/accel.c
 +++ b/drivers/video/via/accel.c
-@@ -317,9 +317,7 @@ int viafb_init_engine(struct fb_info *info)
- {
- 	struct viafb_par *viapar = info->par;
- 	void __iomem *engine;
--	int highest_reg, i;
--	u32 vq_start_addr, vq_end_addr, vq_start_low, vq_end_low, vq_high,
--		vq_len, chip_name = viapar->shared->chip_info.gfx_chip_name;
-+	u32 chip_name = viapar->shared->chip_info.gfx_chip_name;
+@@ -165,12 +165,42 @@ static int hw_bitblt_1(void __iomem *engine, u8 op, u32 width, u32 height,
+ 	return 0;
+ }
  
- 	engine = ioremap_nocache(info->fix.mmio_start, info->fix.mmio_len);
- 	viapar->shared->engine_mmio = engine;
-@@ -329,18 +327,6 @@ int viafb_init_engine(struct fb_info *info)
- 		return -ENOMEM;
- 	}
- 
--	/* Initialize registers to reset the 2D engine */
--	switch (viapar->shared->chip_info.twod_engine) {
--	case VIA_2D_ENG_M1:
--		highest_reg = 0x5c;
--		break;
--	default:
--		highest_reg = 0x40;
--		break;
--	}
--	for (i = 0; i <= highest_reg; i += 4)
--		writel(0x0, engine + i);
--
- 	switch (chip_name) {
- 	case UNICHROME_CLE266:
- 	case UNICHROME_K400:
-@@ -370,6 +356,29 @@ int viafb_init_engine(struct fb_info *info)
- 	viapar->shared->vq_vram_addr = viapar->fbmem_free;
- 	viapar->fbmem_used += VQ_SIZE;
- 
-+	viafb_start_engine(viapar);
++/*
++ * Figure out an appropriate bytes-per-pixel setting.
++ */
++static int viafb_set_bpp(void __iomem *engine, u8 bpp)
++{
++	u32 gemode;
++
++	/* Preserve the reserved bits */
++	/* Lowest 2 bits to zero gives us no rotation */
++	gemode = readl(engine + VIA_REG_GEMODE) & 0xfffffcfc;
++	switch (bpp) {
++	case 8:
++		gemode |= VIA_GEM_8bpp;
++		break;
++	case 16:
++		gemode |= VIA_GEM_16bpp;
++		break;
++	case 32:
++		gemode |= VIA_GEM_32bpp;
++		break;
++	default:
++		printk(KERN_WARNING "hw_bitblt_2: Unsupported bpp %d\n", bpp);
++		return -EINVAL;
++	}
++	writel(gemode, engine + VIA_REG_GEMODE);
 +	return 0;
 +}
 +
-+void viafb_start_engine(struct viafb_par *viapar)
-+{
-+	void __iomem *engine = viapar->shared->engine_mmio;
-+	int highest_reg, i;
-+	u32 vq_start_addr, vq_end_addr, vq_start_low, vq_end_low, vq_high,
-+		vq_len, chip_name = viapar->shared->chip_info.gfx_chip_name;
 +
-+	/* Initialize registers to reset the 2D engine */
-+	switch (viapar->shared->chip_info.twod_engine) {
-+	case VIA_2D_ENG_M1:
-+		highest_reg = 0x5c;
-+		break;
-+	default:
-+		highest_reg = 0x40;
-+		break;
-+	}
-+	for (i = 0; i <= highest_reg; i += 4)
-+		writel(0x0, engine + i);
-+
- 	/* Init AGP and VQ regs */
- 	switch (chip_name) {
- 	case UNICHROME_K8M890:
-@@ -457,7 +466,7 @@ int viafb_init_engine(struct fb_info *info)
- 	writel(0x0, engine + VIA_REG_CURSOR_ORG);
- 	writel(0x0, engine + VIA_REG_CURSOR_BG);
- 	writel(0x0, engine + VIA_REG_CURSOR_FG);
--	return 0;
-+	return;
- }
+ static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
+ 	u8 dst_bpp, u32 dst_addr, u32 dst_pitch, u32 dst_x, u32 dst_y,
+ 	u32 *src_mem, u32 src_addr, u32 src_pitch, u32 src_x, u32 src_y,
+ 	u32 fg_color, u32 bg_color, u8 fill_rop)
+ {
+ 	u32 ge_cmd = 0, tmp, i;
++	int ret;
  
- void viafb_show_hw_cursor(struct fb_info *info, int Status)
-diff --git a/drivers/video/via/accel.h b/drivers/video/via/accel.h
-index 2c122d2..5352f87 100644
---- a/drivers/video/via/accel.h
-+++ b/drivers/video/via/accel.h
-@@ -204,6 +204,7 @@
- #define VIA_BITBLT_FILL		3
+ 	if (!op || op > 3) {
+ 		printk(KERN_WARNING "hw_bitblt_2: Invalid operation: %d\n", op);
+@@ -204,22 +234,9 @@ static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
+ 		}
+ 	}
  
- int viafb_init_engine(struct fb_info *info);
-+void viafb_start_engine(struct viafb_par *viapar);
- void viafb_show_hw_cursor(struct fb_info *info, int Status);
- void viafb_wait_engine_idle(struct fb_info *info);
+-	switch (dst_bpp) {
+-	case 8:
+-		tmp = 0x00000000;
+-		break;
+-	case 16:
+-		tmp = 0x00000100;
+-		break;
+-	case 32:
+-		tmp = 0x00000300;
+-		break;
+-	default:
+-		printk(KERN_WARNING "hw_bitblt_2: Unsupported bpp %d\n",
+-			dst_bpp);
+-		return -EINVAL;
+-	}
+-	writel(tmp, engine + 0x04);
++	ret = viafb_set_bpp(engine, dst_bpp);
++	if (ret)
++		return ret;
  
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 86d3ded..bbf0f70 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -1759,6 +1759,7 @@ static int viafb_resume(struct pci_dev *pdev)
- 	if (pci_enable_device(pdev))
- 		goto fail;
- 	pci_set_master(pdev);
-+	viafb_start_engine(viafbinfo->par);
- 	viafb_set_par(viafbinfo);
- 	if (viafb_dual_fb)
- 		viafb_set_par(viafbinfo1);
+ 	if (op = VIA_BITBLT_FILL)
+ 		tmp = 0;
 -- 
-1.6.3.2
+1.7.0.1
 

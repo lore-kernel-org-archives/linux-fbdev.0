@@ -1,37 +1,50 @@
-From: Yoichi Yuasa <yuasa@linux-mips.org>
-Date: Sat, 03 Apr 2010 07:42:50 +0000
-Subject: cobalt_lcdfb: fix section mismatch cobalt_lcdfb_fix
-Message-Id: <20100403164250.0a1d59fe.yuasa@linux-mips.org>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Wed, 28 Apr 2010 22:17:04 +0000
+Subject: [PATCH 03/30] viafb: Unmap the frame buffer on initialization error
+Message-Id: <1272493051-25380-4-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-WARNING: drivers/video/built-in.o(.devinit.text+0x78): Section mismatch in reference from the function cobalt_lcdfb_probe() to the variable .init.data:cobalt_lcdfb_fix
-The function __devinit cobalt_lcdfb_probe() references
-a variable __initdata cobalt_lcdfb_fix.
-If cobalt_lcdfb_fix is only used by cobalt_lcdfb_probe then
-annotate cobalt_lcdfb_fix with a matching annotation.
+This was part of Harald's "make viafb a first-class citizen using
+pci_driver" patch, but somehow got dropped when that patch went into
+mainline.
 
-Signed-off-by: Yoichi Yuasa <yuasa@linux-mips.org>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: ScottFang@viatech.com.cn
+Cc: JosephChan@via.com.tw
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 ---
- drivers/video/cobalt_lcdfb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/via/viafbdev.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/cobalt_lcdfb.c b/drivers/video/cobalt_lcdfb.c
-index 5eb61b5..42fe155 100644
---- a/drivers/video/cobalt_lcdfb.c
-+++ b/drivers/video/cobalt_lcdfb.c
-@@ -123,7 +123,7 @@ static void lcd_clear(struct fb_info *info)
- 	lcd_write_control(info, LCD_RESET);
- }
- 
--static struct fb_fix_screeninfo cobalt_lcdfb_fix __initdata = {
-+static struct fb_fix_screeninfo cobalt_lcdfb_fix __devinitdata = {
- 	.id		= "cobalt-lcd",
- 	.type		= FB_TYPE_TEXT,
- 	.type_aux	= FB_AUX_TEXT_MDA,
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 8af405b..8955ab4 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1870,7 +1870,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 			printk(KERN_ERR
+ 			"allocate the second framebuffer struct error\n");
+ 			rc = -ENOMEM;
+-			goto out_delete_i2c;
++			goto out_unmap_screen;
+ 		}
+ 		viaparinfo1 = viafbinfo1->par;
+ 		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
+@@ -1961,6 +1961,8 @@ out_dealloc_cmap:
+ out_fb1_release:
+ 	if (viafbinfo1)
+ 		framebuffer_release(viafbinfo1);
++out_unmap_screen:
++	iounmap(viafbinfo->screen_base);
+ out_delete_i2c:
+ 	viafb_delete_i2c_buss(viaparinfo);
+ out_fb_release:
 -- 
-1.7.0.4
+1.7.0.1
 

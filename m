@@ -1,240 +1,150 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Thu, 15 Apr 2010 11:03:37 +0000
-Subject: Re: [PATCHv2] OMAP2: DSS: Add Innolux 7" display for DEVKIT8000
-Message-Id: <1271329417.2690.243.camel@tubuntu.research.nokia.com>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Wed, 28 Apr 2010 22:17:03 +0000
+Subject: [PATCH 02/30] viafb: use proper pci config API
+Message-Id: <1272493051-25380-3-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1270665212-24061-1-git-send-email-swirl@gmx.li>
-In-Reply-To: <1270665212-24061-1-git-send-email-swirl@gmx.li>
+References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "ext swirl@gmx.li" <swirl@gmx.li>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Vaibhav Hiremath <hvaibhav@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Thomas Weber <weber@corscience.de>
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Hi,
+From: Harald Welte <laforge@gnumonks.org>
 
-On Wed, 2010-04-07 at 20:33 +0200, ext swirl@gmx.li wrote:
-> From: Thomas Weber <swirl@gmx.li>
-> 
-> This patch adds the 7 inch display for the DEVKIT8000.
-> 
-> Thanks to Vaibhav Hiremath for comments.
-> 
-> Change log:
-> 	v2 
-> 	Kconfig option description changed.
-> 	Remove unneeded header file inclusion.
-> 	Remove gotos.
+This patch alters viafb to use the proper Linux in-kernel API to access
+PCI configuration space, rather than poking at I/O ports by itself.
 
-Don't add change logs or similar into commit message.
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: ScottFang@viatech.com.cn
+Cc: JosephChan@via.com.tw
+Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
+---
+ drivers/video/via/hw.c       |   62 +++++++++++++++++++++++++----------------
+ drivers/video/via/hw.h       |    4 +-
+ drivers/video/via/viafbdev.c |    4 +++
+ 3 files changed, 44 insertions(+), 26 deletions(-)
 
-> 
-> Signed-off-by: Thomas Weber <weber@corscience.de>
-> ---
-> 
->  drivers/video/omap2/displays/Kconfig               |    8 +-
->  drivers/video/omap2/displays/Makefile              |    1 +
->  .../video/omap2/displays/panel-innolux-at070tn83.c |  148 ++++++++++++++++++++
->  3 files changed, 156 insertions(+), 1 deletions(-)
->  create mode 100644 drivers/video/omap2/displays/panel-innolux-at070tn83.c
-> 
-> diff --git a/drivers/video/omap2/displays/Kconfig b/drivers/video/omap2/displays/Kconfig
-> index dfb57ee..9d9742e 100644
-> --- a/drivers/video/omap2/displays/Kconfig
-> +++ b/drivers/video/omap2/displays/Kconfig
-> @@ -5,7 +5,7 @@ config PANEL_GENERIC
->          tristate "Generic Panel"
->          help
->  	  Generic panel driver.
-> -	  Used for DVI output for Beagle and OMAP3 SDP.
-> +	  Used for OMAP3 DVI output.
-
-This change doesn't belong to this patch.
-
-Otherwise the patch looks ok. Can you send me a new one without the
-change above and without changelog lines in commit message, and I'll add
-it to my tree.
-
- Tomi
-
->  
->  config PANEL_SHARP_LS037V7DW01
->          tristate "Sharp LS037V7DW01 LCD Panel"
-> @@ -19,6 +19,12 @@ config PANEL_SHARP_LQ043T1DG01
->          help
->            LCD Panel used in TI's OMAP3517 EVM boards
->  
-> +config PANEL_INNOLUX_AT070TN83
-> +	tristate "Innolux AT070TN83 LCD Panel"
-> +	depends on OMAP2_DSS
-> +	help
-> +	 LCD Panel used in TimLL's Devkit8000
-> +
->  config PANEL_TAAL
->          tristate "Taal DSI Panel"
->          depends on OMAP2_DSS_DSI
-> diff --git a/drivers/video/omap2/displays/Makefile b/drivers/video/omap2/displays/Makefile
-> index e2bb321..fe3ae8d 100644
-> --- a/drivers/video/omap2/displays/Makefile
-> +++ b/drivers/video/omap2/displays/Makefile
-> @@ -5,3 +5,4 @@ obj-$(CONFIG_PANEL_SHARP_LQ043T1DG01) += panel-sharp-lq043t1dg01.o
->  obj-$(CONFIG_PANEL_TAAL) += panel-taal.o
->  obj-$(CONFIG_PANEL_TOPPOLY_TDO35S) += panel-toppoly-tdo35s.o
->  obj-$(CONFIG_PANEL_TPO_TD043MTEA1) += panel-tpo-td043mtea1.o
-> +obj-$(CONFIG_PANEL_INNOLUX_AT070TN83) += panel-innolux-at070tn83.o
-> diff --git a/drivers/video/omap2/displays/panel-innolux-at070tn83.c b/drivers/video/omap2/displays/panel-innolux-at070tn83.c
-> new file mode 100644
-> index 0000000..2005653
-> --- /dev/null
-> +++ b/drivers/video/omap2/displays/panel-innolux-at070tn83.c
-> @@ -0,0 +1,148 @@
-> +/*
-> + * LCD panel driver for Innolux AT70TN83
-> + *
-> + * Copyright (C) 2010 Thomas Weber <weber@corscience.de>
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License version 2 as published by
-> + * the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
-> + *
-> + * You should have received a copy of the GNU General Public License along with
-> + * this program.  If not, see <http://www.gnu.org/licenses/>.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/delay.h>
-> +#include <linux/device.h>
-> +#include <linux/err.h>
-> +
-> +#include <plat/display.h>
-> +
-> +static struct omap_video_timings innolux_at_timings = {
-> +	.x_res		= 800,
-> +	.y_res		= 480,
-> +
-> +	.pixel_clock	= 40000,
-> +
-> +	.hsw		= 48,
-> +	.hfp		= 1,
-> +	.hbp		= 1,
-> +
-> +	.vsw		= 3,
-> +	.vfp		= 12,
-> +	.vbp		= 25,
-> +};
-> +
-> +static int innolux_at_panel_power_on(struct omap_dss_device *dssdev)
-> +{
-> +	int r;
-> +
-> +	r = omapdss_dpi_display_enable(dssdev);
-> +	if (r)
-> +		return r;
-> +
-> +	if (dssdev->platform_enable) {
-> +		r = dssdev->platform_enable(dssdev);
-> +		if (r)
-> +			omapdss_dpi_display_disable(dssdev);
-> +	}
-> +	return r;
-> +}
-> +
-> +static void innolux_at_panel_power_off(struct omap_dss_device *dssdev)
-> +{
-> +	if (dssdev->platform_disable)
-> +		dssdev->platform_disable(dssdev);
-> +
-> +	omapdss_dpi_display_disable(dssdev);
-> +
-> +}
-> +
-> +static int innolux_at_panel_probe(struct omap_dss_device *dssdev)
-> +{
-> +	dssdev->panel.config = OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
-> +		OMAP_DSS_LCD_IHS;
-> +	dssdev->panel.acb = 0x28;
-> +	dssdev->panel.timings = innolux_at_timings;
-> +
-> +	return 0;
-> +}
-> +
-> +static void innolux_at_panel_remove(struct omap_dss_device *dssdev)
-> +{
-> +}
-> +
-> +static int innolux_at_panel_enable(struct omap_dss_device *dssdev)
-> +{
-> +	int r = 0;
-> +
-> +	r = innolux_at_panel_power_on(dssdev);
-> +	if (r)
-> +		return r;
-> +
-> +	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
-> +
-> +	return 0;
-> +}
-> +
-> +static void innolux_at_panel_disable(struct omap_dss_device *dssdev)
-> +{
-> +	innolux_at_panel_power_off(dssdev);
-> +
-> +	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
-> +}
-> +
-> +static int innolux_at_panel_suspend(struct omap_dss_device *dssdev)
-> +{
-> +	innolux_at_panel_power_off(dssdev);
-> +	dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED;
-> +	return 0;
-> +}
-> +
-> +static int innolux_at_panel_resume(struct omap_dss_device *dssdev)
-> +{
-> +	int r = 0;
-> +
-> +	r = innolux_at_panel_power_on(dssdev);
-> +
-> +	if (r)
-> +		return r;
-> +
-> +	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
-> +
-> +	return 0;
-> +}
-> +
-> +static struct omap_dss_driver innolux_at_driver = {
-> +	.probe		= innolux_at_panel_probe,
-> +	.remove		= innolux_at_panel_remove,
-> +
-> +	.enable		= innolux_at_panel_enable,
-> +	.disable	= innolux_at_panel_disable,
-> +	.suspend	= innolux_at_panel_suspend,
-> +	.resume		= innolux_at_panel_resume,
-> +
-> +	.driver         = {
-> +		.name   = "innolux_at_panel",
-> +		.owner  = THIS_MODULE,
-> +	},
-> +};
-> +
-> +static int __init innolux_at_panel_drv_init(void)
-> +{
-> +	return omap_dss_register_driver(&innolux_at_driver);
-> +}
-> +
-> +static void __exit innolux_at_panel_drv_exit(void)
-> +{
-> +	omap_dss_unregister_driver(&innolux_at_driver);
-> +}
-> +
-> +module_init(innolux_at_panel_drv_init);
-> +module_exit(innolux_at_panel_drv_exit);
-> +MODULE_LICENSE("GPL");
-
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index f2583b1..c94bcce 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -2473,24 +2473,37 @@ static void disable_second_display_channel(void)
+ 	viafb_write_reg_mask(CR6A, VIACR, BIT6, BIT6);
+ }
+ 
++static u_int16_t via_function3[] = {
++	CLE266_FUNCTION3, KM400_FUNCTION3, CN400_FUNCTION3, CN700_FUNCTION3,
++	CX700_FUNCTION3, KM800_FUNCTION3, KM890_FUNCTION3, P4M890_FUNCTION3,
++	P4M900_FUNCTION3, VX800_FUNCTION3, VX855_FUNCTION3,
++};
++
++/* Get the BIOS-configured framebuffer size from PCI configuration space
++ * of function 3 in the respective chipset */
+ int viafb_get_fb_size_from_pci(void)
+ {
+-	unsigned long configid, deviceid, FBSize = 0;
+-	int VideoMemSize;
+-	int DeviceFound = false;
+-
+-	for (configid = 0x80000000; configid < 0x80010800; configid += 0x100) {
+-		outl(configid, (unsigned long)0xCF8);
+-		deviceid = (inl((unsigned long)0xCFC) >> 16) & 0xffff;
+-
+-		switch (deviceid) {
+-		case CLE266:
+-		case KM400:
+-			outl(configid + 0xE0, (unsigned long)0xCF8);
+-			FBSize = inl((unsigned long)0xCFC);
+-			DeviceFound = true;	/* Found device id */
+-			break;
++	int i;
++	u_int8_t offset = 0;
++	u_int32_t FBSize;
++	u_int32_t VideoMemSize;
++
++	/* search for the "FUNCTION3" device in this chipset */
++	for (i = 0; i < ARRAY_SIZE(via_function3); i++) {
++		struct pci_dev *pdev;
++
++		pdev = pci_get_device(PCI_VENDOR_ID_VIA, via_function3[i],
++				      NULL);
++		if (!pdev)
++			continue;
++
++		DEBUG_MSG(KERN_INFO "Device ID = %x\n", pdev->device);
+ 
++		switch (pdev->device) {
++		case CLE266_FUNCTION3:
++		case KM400_FUNCTION3:
++			offset = 0xE0;
++			break;
+ 		case CN400_FUNCTION3:
+ 		case CN700_FUNCTION3:
+ 		case CX700_FUNCTION3:
+@@ -2500,21 +2513,22 @@ int viafb_get_fb_size_from_pci(void)
+ 		case P4M900_FUNCTION3:
+ 		case VX800_FUNCTION3:
+ 		case VX855_FUNCTION3:
+-			/*case CN750_FUNCTION3: */
+-			outl(configid + 0xA0, (unsigned long)0xCF8);
+-			FBSize = inl((unsigned long)0xCFC);
+-			DeviceFound = true;	/* Found device id */
+-			break;
+-
+-		default:
++		/*case CN750_FUNCTION3: */
++			offset = 0xA0;
+ 			break;
+ 		}
+ 
+-		if (DeviceFound)
++		if (!offset)
+ 			break;
++
++		pci_read_config_dword(pdev, offset, &FBSize);
++		pci_dev_put(pdev);
+ 	}
+ 
+-	DEBUG_MSG(KERN_INFO "Device ID = %lx\n", deviceid);
++	if (!offset) {
++		printk(KERN_ERR "cannot determine framebuffer size\n");
++		return -EIO;
++	}
+ 
+ 	FBSize = FBSize & 0x00007000;
+ 	DEBUG_MSG(KERN_INFO "FB Size = %x\n", FBSize);
+diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
+index 12ef32d..d6b25ac 100644
+--- a/drivers/video/via/hw.h
++++ b/drivers/video/via/hw.h
+@@ -823,8 +823,8 @@ struct iga2_crtc_timing {
+ };
+ 
+ /* device ID */
+-#define CLE266              0x3123
+-#define KM400               0x3205
++#define CLE266_FUNCTION3    0x3123
++#define KM400_FUNCTION3     0x3205
+ #define CN400_FUNCTION2     0x2259
+ #define CN400_FUNCTION3     0x3259
+ /* support VT3314 chipset */
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index b7018ef..8af405b 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1782,6 +1782,10 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 	viafb_init_chip_info(pdev, ent);
+ 	viaparinfo->fbmem = pci_resource_start(pdev, 0);
+ 	viaparinfo->memsize = viafb_get_fb_size_from_pci();
++	if (viaparinfo->memsize < 0) {
++		rc = viaparinfo->memsize;
++		goto out_delete_i2c;
++	}
+ 	viaparinfo->fbmem_free = viaparinfo->memsize;
+ 	viaparinfo->fbmem_used = 0;
+ 	viafbinfo->screen_base = ioremap_nocache(viaparinfo->fbmem,
+-- 
+1.7.0.1
 

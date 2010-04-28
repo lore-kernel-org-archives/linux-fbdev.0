@@ -1,153 +1,49 @@
 From: Jonathan Corbet <corbet@lwn.net>
-Date: Sun, 18 Apr 2010 18:21:03 +0000
-Subject: [PATCH 01/11] [FB] viafb: Fix various resource leaks during module_init()
-Message-Id: <1271614873-5952-2-git-send-email-corbet@lwn.net>
+Date: Wed, 28 Apr 2010 22:17:11 +0000
+Subject: [PATCH 10/30] suppress verbose debug messages: change printk() to DEBUG_MSG()
+Message-Id: <1272493051-25380-11-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1271614873-5952-1-git-send-email-corbet@lwn.net>
-In-Reply-To: <1271614873-5952-1-git-send-email-corbet@lwn.net>
+References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-From: Harald Welte <laforge@gnumonks.org>
+From: Paul Fox <pgf@laptop.org>
 
-The current code executed from module_init() in viafb does not have
-proper error checking and [partial] resoure release paths in case
-an error happens half way through driver initialization.
-
-This patch adresses the most obvious of those issues, such as a
-leftover i2c bus if module_init (and thus module load) fails.
-
-[jc: fixed merge conflicts]
-[jc: also restored -ENOMEM return on ioremap() fail]
-
+[jc: no signoff, added my own]
 Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Cc: ScottFang@viatech.com.cn
 Cc: JosephChan@via.com.tw
-Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 ---
- drivers/video/via/viafbdev.c |   52 +++++++++++++++++++++++++++++++----------
- 1 files changed, 39 insertions(+), 13 deletions(-)
+ drivers/video/via/via_i2c.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index ce7783b..b7018ef 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
-+ * Copyright 1998-2009 VIA Technologies, Inc. All Rights Reserved.
-  * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
+diff --git a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
+index 8f8e0bf..fe5535c 100644
+--- a/drivers/video/via/via_i2c.c
++++ b/drivers/video/via/via_i2c.c
+@@ -26,7 +26,7 @@ static void via_i2c_setscl(void *data, int state)
+ 	u8 val;
+ 	struct via_i2c_adap_cfg *adap_data = data;
  
-  * This program is free software; you can redistribute it and/or
-@@ -1737,6 +1737,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 	u32 default_xres, default_yres;
- 	struct VideoModeTable *vmode_entry;
- 	struct fb_var_screeninfo default_var;
-+	int rc;
- 	u32 viafb_par_length;
+-	printk(KERN_DEBUG "reading index 0x%02x from IO 0x%x\n",
++	DEBUG_MSG(KERN_DEBUG "reading index 0x%02x from IO 0x%x\n",
+ 		adap_data->ioport_index, adap_data->io_port);
+ 	val = viafb_read_reg(adap_data->io_port,
+ 			     adap_data->ioport_index) & 0xF0;
+@@ -140,7 +140,7 @@ static int create_i2c_bus(struct i2c_adapter *adapter,
+ 			  struct via_i2c_adap_cfg *adap_cfg,
+ 			  struct pci_dev *pdev)
+ {
+-	printk(KERN_DEBUG "viafb: creating bus adap=0x%p, algo_bit_data=0x%p, adap_cfg=0x%p\n", adapter, algo, adap_cfg);
++	DEBUG_MSG(KERN_DEBUG "viafb: creating bus adap=0x%p, algo_bit_data=0x%p, adap_cfg=0x%p\n", adapter, algo, adap_cfg);
  
- 	DEBUG_MSG(KERN_INFO "VIAFB PCI Probe!!\n");
-@@ -1751,7 +1752,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 		&pdev->dev);
- 	if (!viafbinfo) {
- 		printk(KERN_ERR"Could not allocate memory for viafb_info.\n");
--		return -ENODEV;
-+		return -ENOMEM;
- 	}
- 
- 	viaparinfo = (struct viafb_par *)viafbinfo->par;
-@@ -1774,7 +1775,9 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 		viafb_dual_fb = 0;
- 
- 	/* Set up I2C bus stuff */
--	viafb_create_i2c_bus(viaparinfo);
-+	rc = viafb_create_i2c_bus(viaparinfo);
-+	if (rc)
-+		goto out_fb_release;
- 
- 	viafb_init_chip_info(pdev, ent);
- 	viaparinfo->fbmem = pci_resource_start(pdev, 0);
-@@ -1785,7 +1788,8 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 		viaparinfo->memsize);
- 	if (!viafbinfo->screen_base) {
- 		printk(KERN_INFO "ioremap failed\n");
--		return -ENOMEM;
-+		rc = -ENOMEM;
-+		goto out_delete_i2c;
- 	}
- 
- 	viafbinfo->fix.mmio_start = pci_resource_start(pdev, 1);
-@@ -1861,8 +1865,8 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 		if (!viafbinfo1) {
- 			printk(KERN_ERR
- 			"allocate the second framebuffer struct error\n");
--			framebuffer_release(viafbinfo);
--			return -ENOMEM;
-+			rc = -ENOMEM;
-+			goto out_delete_i2c;
- 		}
- 		viaparinfo1 = viafbinfo1->par;
- 		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
-@@ -1913,21 +1917,26 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 	viaparinfo->depth = fb_get_color_depth(&viafbinfo->var,
- 		&viafbinfo->fix);
- 	default_var.activate = FB_ACTIVATE_NOW;
--	fb_alloc_cmap(&viafbinfo->cmap, 256, 0);
-+	rc = fb_alloc_cmap(&viafbinfo->cmap, 256, 0);
-+	if (rc)
-+		goto out_fb1_release;
- 
- 	if (viafb_dual_fb && (viafb_primary_dev = LCD_Device)
- 	    && (viaparinfo->chip_info->gfx_chip_name = UNICHROME_CLE266)) {
--		if (register_framebuffer(viafbinfo1) < 0)
--			return -EINVAL;
-+		rc = register_framebuffer(viafbinfo1);
-+		if (rc)
-+			goto out_dealloc_cmap;
- 	}
--	if (register_framebuffer(viafbinfo) < 0)
--		return -EINVAL;
-+	rc = register_framebuffer(viafbinfo);
-+	if (rc)
-+		goto out_fb1_unreg_lcd_cle266;
- 
- 	if (viafb_dual_fb && ((viafb_primary_dev != LCD_Device)
- 			|| (viaparinfo->chip_info->gfx_chip_name ! 			UNICHROME_CLE266))) {
--		if (register_framebuffer(viafbinfo1) < 0)
--			return -EINVAL;
-+		rc = register_framebuffer(viafbinfo1);
-+		if (rc)
-+			goto out_fb_unreg;
- 	}
- 	DEBUG_MSG(KERN_INFO "fb%d: %s frame buffer device %dx%d-%dbpp\n",
- 		  viafbinfo->node, viafbinfo->fix.id, default_var.xres,
-@@ -1936,6 +1945,23 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 	viafb_init_proc(&viaparinfo->shared->proc_entry);
- 	viafb_init_dac(IGA2);
- 	return 0;
-+
-+out_fb_unreg:
-+	unregister_framebuffer(viafbinfo);
-+out_fb1_unreg_lcd_cle266:
-+	if (viafb_dual_fb && (viafb_primary_dev = LCD_Device)
-+	    && (viaparinfo->chip_info->gfx_chip_name = UNICHROME_CLE266))
-+		unregister_framebuffer(viafbinfo1);
-+out_dealloc_cmap:
-+	fb_dealloc_cmap(&viafbinfo->cmap);
-+out_fb1_release:
-+	if (viafbinfo1)
-+		framebuffer_release(viafbinfo1);
-+out_delete_i2c:
-+	viafb_delete_i2c_buss(viaparinfo);
-+out_fb_release:
-+	framebuffer_release(viafbinfo);
-+	return rc;
- }
- 
- static void __devexit via_pci_remove(struct pci_dev *pdev)
+ 	algo->setsda = via_i2c_setsda;
+ 	algo->setscl = via_i2c_setscl;
 -- 
 1.7.0.1
 

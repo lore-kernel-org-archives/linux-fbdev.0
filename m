@@ -1,69 +1,79 @@
 From: Jonathan Corbet <corbet@lwn.net>
-Date: Sun, 18 Apr 2010 18:21:02 +0000
-Subject: [RFC] Initial OLPC Viafb merge (V2)
-Message-Id: <1271614873-5952-1-git-send-email-corbet@lwn.net>
+Date: Wed, 28 Apr 2010 22:17:28 +0000
+Subject: [PATCH 27/30] viafb: replace inb/outb
+Message-Id: <1272493051-25380-28-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-The following patches are the beginning of an effort to move work done for
-the OLPC XO 1.5 machine into the mainline.  What's here is basic support
-for the VX855 chipset, I2C, and the OLPC panel display.  What's coming in
-the future is a reworking of the viafb driver into something resembling a
-proper multifunction device, GPIO support, and camera support.  But I'd
-like to start here.
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-CHANGES FROM THE FIRST POSTING include fixes in response to a number of
-Florian's comments and the removal of the suspend/resume patches.  The
-patch series is also now based on 2.6.34-rc3.
+viafb: replace inb/outb
 
-If there's no objections, I'll start a tree and get it into linux-next in
-the near future, with an eye toward a 2.6.35 merge.
+This patch replaces occurences of inb/outb with via_write_reg and
+via_write_reg_mask where this is possible to improve code
+readability.
 
-Thanks,
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+---
+ drivers/video/via/hw.c |   22 +++++++---------------
+ 1 files changed, 7 insertions(+), 15 deletions(-)
 
-jon
-
-Chris Ball (2):
-      viafb: Add 1200x900 DCON/LCD panel modes for OLPC XO-1.5
-      viafb: Do not probe for LVDS/TMDS on OLPC XO-1.5
-
-Harald Welte (4):
-      [FB] viafb: Fix various resource leaks during module_init()
-      viafb: use proper pci config API
-      viafb: Determine type of 2D engine and store it in chip_info
-      viafb: rework the I2C support in the VIA framebuffer driver
-
-Jonathan Corbet (4):
-      viafb: Unmap the frame buffer on initialization error
-      viafb: Retain GEMODE reserved bits
-      viafb: Unify duplicated set_bpp() code
-      viafb: complete support for VX800/VX855 accelerated framebuffer
-
-Paul Fox (1):
-      suppress verbose debug messages:  change printk() to DEBUG_MSG()
-
- drivers/video/via/accel.c    |  111 +++++++++++++++++----------
- drivers/video/via/accel.h    |   40 ++++++++++
- drivers/video/via/chip.h     |    8 ++
- drivers/video/via/dvi.c      |   35 +++-----
- drivers/video/via/hw.c       |   85 +++++++++++++++------
- drivers/video/via/hw.h       |    4 -
- drivers/video/via/ioctl.h    |    2 
- drivers/video/via/lcd.c      |   35 ++++++--
- drivers/video/via/lcd.h      |    2 
- drivers/video/via/share.h    |    7 +
- drivers/video/via/via_i2c.c  |  171 ++++++++++++++++++++++++++-----------------
- drivers/video/via/via_i2c.h  |   43 +++++++---
- drivers/video/via/viafbdev.c |   60 +++++++++++----
- drivers/video/via/viafbdev.h |    4 -
- drivers/video/via/viamode.c  |   14 +++
- drivers/video/via/vt1636.c   |   36 ++++-----
- drivers/video/via/vt1636.h   |    2 
- 17 files changed, 446 insertions(+), 213 deletions(-)
-
-
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index d474fbe..b2bb24e 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -1008,16 +1008,12 @@ void viafb_load_reg(int timing_value, int viafb_load_reg_num,
+ void viafb_write_regx(struct io_reg RegTable[], int ItemNum)
+ {
+ 	int i;
+-	unsigned char RegTemp;
+ 
+ 	/*DEBUG_MSG(KERN_INFO "Table Size : %x!!\n",ItemNum ); */
+ 
+-	for (i = 0; i < ItemNum; i++) {
+-		outb(RegTable[i].index, RegTable[i].port);
+-		RegTemp = inb(RegTable[i].port + 1);
+-		RegTemp = (RegTemp & (~RegTable[i].mask)) | RegTable[i].value;
+-		outb(RegTemp, RegTable[i].port + 1);
+-	}
++	for (i = 0; i < ItemNum; i++)
++		via_write_reg_mask(RegTable[i].port, RegTable[i].index,
++			RegTable[i].value, RegTable[i].mask);
+ }
+ 
+ void viafb_load_fetch_count_reg(int h_addr, int bpp_byte, int set_iga)
+@@ -2130,10 +2126,8 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
+ 	outb(VPIT.Misc, VIAWMisc);
+ 
+ 	/* Write Sequencer */
+-	for (i = 1; i <= StdSR; i++) {
+-		outb(i, VIASR);
+-		outb(VPIT.SR[i - 1], VIASR + 1);
+-	}
++	for (i = 1; i <= StdSR; i++)
++		via_write_reg(VIASR, i, VPIT.SR[i - 1]);
+ 
+ 	viafb_write_reg_mask(0x15, VIASR, 0xA2, 0xA2);
+ 	viafb_set_iga_path();
+@@ -2142,10 +2136,8 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
+ 	viafb_fill_crtc_timing(crt_timing, vmode_tbl, video_bpp / 8, IGA1);
+ 
+ 	/* Write Graphic Controller */
+-	for (i = 0; i < StdGR; i++) {
+-		outb(i, VIAGR);
+-		outb(VPIT.GR[i], VIAGR + 1);
+-	}
++	for (i = 0; i < StdGR; i++)
++		via_write_reg(VIAGR, i, VPIT.GR[i]);
+ 
+ 	/* Write Attribute Controller */
+ 	for (i = 0; i < StdAR; i++) {
+-- 
+1.7.0.1
 

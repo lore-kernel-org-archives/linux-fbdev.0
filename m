@@ -1,60 +1,84 @@
 From: Jonathan Corbet <corbet@lwn.net>
-Date: Fri, 23 Apr 2010 21:28:08 +0000
-Subject: [PATCH 08/13] viafb: Introduce viafb_find_i2c_adapter()
-Message-Id: <1272058093-20914-9-git-send-email-corbet@lwn.net>
+Date: Wed, 28 Apr 2010 22:17:24 +0000
+Subject: [PATCH 23/30] viafb: Reserve framebuffer memory for the upcoming camera driver
+Message-Id: <1272493051-25380-24-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272058093-20914-1-git-send-email-corbet@lwn.net>
-In-Reply-To: <1272058093-20914-1-git-send-email-corbet@lwn.net>
+References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-The camera driver will need this to look up a specific adapter.
+The camera engine captures to framebuffer memory, so we need to set some
+aside for that purpose.  There is no proper memory allocator for fbmem;
+instead, accel.c just trims some space off the top.  Alas, without creating
+that proper memory allocator, the only way to make this work is to hack it
+into the same bit of code in accel.c.  The allocation must happen *after*
+the others (some code, including user-space XV stuff, makes assumptions on
+where the cursor space is), and before the rest of the framebuffer is set
+up.
 
 Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 ---
- drivers/video/via/via_i2c.c |   13 +++++++++++++
- drivers/video/via/via_i2c.h |    3 +--
- 2 files changed, 14 insertions(+), 2 deletions(-)
+ drivers/video/via/accel.c    |   16 ++++++++++++++++
+ drivers/video/via/via-core.h |   10 ++++++++++
+ 2 files changed, 26 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
-index dbb2392..ba29350 100644
---- a/drivers/video/via/via_i2c.c
-+++ b/drivers/video/via/via_i2c.c
-@@ -159,6 +159,19 @@ int viafb_i2c_readbytes(u8 adap, u8 slave_addr, u8 index, u8 *buff, int buff_len
- 	return i2c_transfer(&via_i2c_par[adap].adapter, msgs, 2);
- }
+diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
+index e777468..189aba4 100644
+--- a/drivers/video/via/accel.c
++++ b/drivers/video/via/accel.c
+@@ -370,6 +370,22 @@ int viafb_init_engine(struct fb_info *info)
+ 	viapar->shared->vq_vram_addr = viapar->fbmem_free;
+ 	viapar->fbmem_used += VQ_SIZE;
+ 
++#if defined(CONFIG_FB_VIA_CAMERA) || defined(CONFIG_FB_VIA_CAMERA_MODULE)
++	/*
++	 * Set aside a chunk of framebuffer memory for the camera
++	 * driver.  Someday this driver probably needs a proper allocator
++	 * for fbmem; for now, we just have to do this before the
++	 * framebuffer initializes itself.
++	 *
++	 * As for the size: the engine can handle three frames,
++	 * 16 bits deep, up to VGA resolution.
++	 */
++	viapar->shared->vdev->camera_fbmem_size = 3*VGA_HEIGHT*VGA_WIDTH*2;
++	viapar->fbmem_free -= viapar->shared->vdev->camera_fbmem_size;
++	viapar->fbmem_used += viapar->shared->vdev->camera_fbmem_size;
++	viapar->shared->vdev->camera_fbmem_offset = viapar->fbmem_free;
++#endif
++
+ 	/* Init AGP and VQ regs */
+ 	switch (chip_name) {
+ 	case UNICHROME_K8M890:
+diff --git a/drivers/video/via/via-core.h b/drivers/video/via/via-core.h
+index 3d03141..087c562 100644
+--- a/drivers/video/via/via-core.h
++++ b/drivers/video/via/via-core.h
+@@ -78,6 +78,10 @@ struct viafb_dev {
+ 	unsigned long fbmem_start;
+ 	long fbmem_len;
+ 	void __iomem *fbmem;
++#if defined(CONFIG_FB_VIA_CAMERA) || defined(CONFIG_FB_VIA_CAMERA_MODULE)
++	long camera_fbmem_offset;
++	long camera_fbmem_size;
++#endif
+ 	/*
+ 	 * The MMIO region for device registers.
+ 	 */
+@@ -160,4 +164,10 @@ int viafb_dma_copy_out_sg(unsigned int offset, struct scatterlist *sg, int nsg);
+ #define VDMA_DPRH0	0xe38
+ #define VDMA_PMR0	(0xe00 + 0x134) /* Pitch mode */
  
 +/*
-+ * Allow other viafb subdevices to look up a specific adapter
-+ * by port name.
++ * Useful stuff that probably belongs somewhere global.
 + */
-+struct i2c_adapter *viafb_find_i2c_adapter(enum viafb_i2c_adap which)
-+{
-+	struct via_i2c_stuff *stuff = &via_i2c_par[which];
++#define VGA_WIDTH	640
++#define VGA_HEIGHT	480
 +
-+	return &stuff->adapter;
-+}
-+EXPORT_SYMBOL_GPL(viafb_find_i2c_adapter);
-+
-+
- static int create_i2c_bus(struct i2c_adapter *adapter,
- 			  struct i2c_algo_bit_data *algo,
- 			  struct via_port_cfg *adap_cfg,
-diff --git a/drivers/video/via/via_i2c.h b/drivers/video/via/via_i2c.h
-index da3a96a..41f84ed 100644
---- a/drivers/video/via/via_i2c.h
-+++ b/drivers/video/via/via_i2c.h
-@@ -36,6 +36,5 @@ int viafb_i2c_readbyte(u8 adap, u8 slave_addr, u8 index, u8 *pdata);
- int viafb_i2c_writebyte(u8 adap, u8 slave_addr, u8 index, u8 data);
- int viafb_i2c_readbytes(u8 adap, u8 slave_addr, u8 index, u8 *buff, int buff_len);
- 
--struct viafb_par;
--struct i2c_adapter *viafb_find_adapter(enum viafb_i2c_adap which);
-+struct i2c_adapter *viafb_find_i2c_adapter(enum viafb_i2c_adap which);
- #endif /* __VIA_I2C_H__ */
+ #endif /* __VIA_CORE_H__ */
 -- 
 1.7.0.1
 

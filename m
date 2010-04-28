@@ -1,509 +1,185 @@
-From: Anatolij Gustschin <agust@denx.de>
-Date: Fri, 30 Apr 2010 10:40:15 +0000
-Subject: [PATCH v2 3/5] powerpc/mpc5121: shared DIU framebuffer support
-Message-Id: <1272624015-4356-1-git-send-email-agust@denx.de>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Wed, 28 Apr 2010 22:17:08 +0000
+Subject: [PATCH 07/30] viafb: complete support for VX800/VX855 accelerated framebuffer
+Message-Id: <1272493051-25380-8-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272584978-19063-4-git-send-email-agust@denx.de>
-In-Reply-To: <1272584978-19063-4-git-send-email-agust@denx.de>
+References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@ozlabs.org
-Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de, John Rigby <jrigby@gmail.com>, devicetree-discuss@lists.ozlabs.org, yorksun@freescale.com
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-MPC5121 DIU configuration/setup as initialized by the boot
-loader currently will get lost while booting Linux. As a
-result displaying the boot splash is not possible through
-the boot process.
+This patch is a painful merge of change
+a90bab567ece3e915d0ccd55ab00c9bb333fa8c0 (viafb: Add support for 2D
+accelerated framebuffer on VX800/VX855) in the OLPC tree, originally by
+Harald Welte.  Harald's changelog read:
 
-To prevent this we reserve configured DIU frame buffer
-address range while booting and preserve AOI descriptor
-and gamma table so that DIU continues displaying through
-the whole boot process. On first open from user space
-DIU frame buffer driver releases the reserved frame
-buffer area and continues to operate as usual.
+	The VX800/VX820 and the VX855/VX875 chipsets have a different 2D
+    	acceleration engine called "M1".  The M1 engine has some subtle
+    	(and some not-so-subtle) differences to the previous engines, so
+    	support for accelerated framebuffer on those chipsets was disabled
+    	so far.
 
-Signed-off-by: John Rigby <jrigby@gmail.com>
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Cc: Grant Likely <grant.likely@secretlab.ca>
+This merge tries to preserve Harald's changes in the framework of the
+much-changed 2.6.34 viafb code.
+
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: ScottFang@viatech.com.cn
+Cc: JosephChan@via.com.tw
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 ---
-v1 -> v2:
- - use struct for CCM register access, don't use offset macros,
-   so CCM struct definition is added now
- - use struct for DIU descriptors access
- - simplify code and correct variable types as suggested by Timur
+ drivers/video/via/accel.c |   42 +++++++++++++++++++++++++++++++++---------
+ drivers/video/via/accel.h |   40 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 73 insertions(+), 9 deletions(-)
 
- arch/powerpc/include/asm/mpc5121.h            |   32 +++
- arch/powerpc/platforms/512x/mpc5121_ads.c     |    7 +
- arch/powerpc/platforms/512x/mpc5121_generic.c |   12 +
- arch/powerpc/platforms/512x/mpc512x.h         |    2 +
- arch/powerpc/platforms/512x/mpc512x_shared.c  |  274 +++++++++++++++++++++++++
- arch/powerpc/sysdev/fsl_soc.h                 |    1 +
- drivers/video/fsl-diu-fb.c                    |   17 ++-
- 7 files changed, 343 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/mpc5121.h b/arch/powerpc/include/asm/mpc5121.h
-index e6a30bb..8c0ab2c 100644
---- a/arch/powerpc/include/asm/mpc5121.h
-+++ b/arch/powerpc/include/asm/mpc5121.h
-@@ -21,4 +21,36 @@ struct mpc512x_reset_module {
- 	u32	rcer;	/* Reset Control Enable Register */
- };
- 
-+/*
-+ * Clock Control Module
-+ */
-+struct mpc512x_ccm {
-+	u32	spmr;	/* System PLL Mode Register */
-+	u32	sccr1;	/* System Clock Control Register 1 */
-+	u32	sccr2;	/* System Clock Control Register 2 */
-+	u32	scfr1;	/* System Clock Frequency Register 1 */
-+	u32	scfr2;	/* System Clock Frequency Register 2 */
-+	u32	scfr2s;	/* System Clock Frequency Shadow Register 2 */
-+	u32	bcr;	/* Bread Crumb Register */
-+	u32	p0ccr;	/* PSC0 Clock Control Register */
-+	u32	p1ccr;	/* PSC1 CCR */
-+	u32	p2ccr;	/* PSC2 CCR */
-+	u32	p3ccr;	/* PSC3 CCR */
-+	u32	p4ccr;	/* PSC4 CCR */
-+	u32	p5ccr;	/* PSC5 CCR */
-+	u32	p6ccr;	/* PSC6 CCR */
-+	u32	p7ccr;	/* PSC7 CCR */
-+	u32	p8ccr;	/* PSC8 CCR */
-+	u32	p9ccr;	/* PSC9 CCR */
-+	u32	p10ccr;	/* PSC10 CCR */
-+	u32	p11ccr;	/* PSC11 CCR */
-+	u32	spccr;	/* SPDIF Clock Control Register */
-+	u32	cccr;	/* CFM Clock Control Register */
-+	u32	dccr;	/* DIU Clock Control Register */
-+	u32	m1ccr;	/* MSCAN1 CCR */
-+	u32	m2ccr;	/* MSCAN2 CCR */
-+	u32	m3ccr;	/* MSCAN3 CCR */
-+	u32	m4ccr;	/* MSCAN4 CCR */
-+	u8	res[0x98]; /* Reserved */
-+};
- #endif /* __ASM_POWERPC_MPC5121_H__ */
-diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
-index ee6ae12..082aa6f 100644
---- a/arch/powerpc/platforms/512x/mpc5121_ads.c
-+++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
-@@ -42,6 +42,7 @@ static void __init mpc5121_ads_setup_arch(void)
- 	for_each_compatible_node(np, "pci", "fsl,mpc5121-pci")
- 		mpc83xx_add_bridge(np);
- #endif
-+	mpc512x_setup_diu();
- }
- 
- static void __init mpc5121_ads_init_IRQ(void)
-@@ -60,11 +61,17 @@ static int __init mpc5121_ads_probe(void)
- 	return of_flat_dt_is_compatible(root, "fsl,mpc5121ads");
- }
- 
-+void __init mpc5121_ads_init_early(void)
-+{
-+	mpc512x_init_diu();
-+}
-+
- define_machine(mpc5121_ads) {
- 	.name			= "MPC5121 ADS",
- 	.probe			= mpc5121_ads_probe,
- 	.setup_arch		= mpc5121_ads_setup_arch,
- 	.init			= mpc512x_init,
-+	.init_early		= mpc512x_init_diu,
- 	.init_IRQ		= mpc5121_ads_init_IRQ,
- 	.get_irq		= ipic_get_irq,
- 	.calibrate_decr		= generic_calibrate_decr,
-diff --git a/arch/powerpc/platforms/512x/mpc5121_generic.c b/arch/powerpc/platforms/512x/mpc5121_generic.c
-index a6c0e3a..c5ecb3d 100644
---- a/arch/powerpc/platforms/512x/mpc5121_generic.c
-+++ b/arch/powerpc/platforms/512x/mpc5121_generic.c
-@@ -48,10 +48,22 @@ static int __init mpc5121_generic_probe(void)
- 	return board[i] != NULL;
- }
- 
-+void __init mpc512x_generic_init_early(void)
-+{
-+	mpc512x_init_diu();
-+}
-+
-+void __init mpc512x_generic_setup_arch(void)
-+{
-+	mpc512x_setup_diu();
-+}
-+
- define_machine(mpc5121_generic) {
- 	.name			= "MPC5121 generic",
- 	.probe			= mpc5121_generic_probe,
- 	.init			= mpc512x_init,
-+	.init_early		= mpc512x_generic_init_early,
-+	.setup_arch		= mpc512x_generic_setup_arch,
- 	.init_IRQ		= mpc512x_init_IRQ,
- 	.get_irq		= ipic_get_irq,
- 	.calibrate_decr		= generic_calibrate_decr,
-diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platforms/512x/mpc512x.h
-index b2daca0..1ab6d11 100644
---- a/arch/powerpc/platforms/512x/mpc512x.h
-+++ b/arch/powerpc/platforms/512x/mpc512x.h
-@@ -16,4 +16,6 @@ extern void __init mpc512x_init(void);
- extern int __init mpc5121_clk_init(void);
- void __init mpc512x_declare_of_platform_devices(void);
- extern void mpc512x_restart(char *cmd);
-+extern void mpc512x_init_diu(void);
-+extern void mpc512x_setup_diu(void);
- #endif				/* __MPC512X_H__ */
-diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
-index b7f518a..e5a8e8a 100644
---- a/arch/powerpc/platforms/512x/mpc512x_shared.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
-@@ -16,7 +16,11 @@
- #include <linux/io.h>
- #include <linux/irq.h>
- #include <linux/of_platform.h>
-+#include <linux/fsl-diu-fb.h>
-+#include <linux/bootmem.h>
-+#include <sysdev/fsl_soc.h>
- 
-+#include <asm/cacheflush.h>
- #include <asm/machdep.h>
- #include <asm/ipic.h>
- #include <asm/prom.h>
-@@ -53,6 +57,276 @@ void mpc512x_restart(char *cmd)
- 		;
- }
- 
-+struct fsl_diu_shared_fb {
-+	u8		gamma[0x300];	/* 32-bit aligned! */
-+	struct diu_ad	ad0;		/* 32-bit aligned! */
-+	phys_addr_t	fb_phys;
-+	size_t		fb_len;
-+	bool		in_use;
-+};
-+
-+unsigned int mpc512x_get_pixel_format(unsigned int bits_per_pixel,
-+				      int monitor_port)
-+{
-+	switch (bits_per_pixel) {
-+	case 32:
-+		return 0x88883316;
-+	case 24:
-+		return 0x88082219;
-+	case 16:
-+		return 0x65053118;
-+	}
-+	return 0x00000400;
-+}
-+
-+void mpc512x_set_gamma_table(int monitor_port, char *gamma_table_base)
-+{
-+}
-+
-+void mpc512x_set_monitor_port(int monitor_port)
-+{
-+}
-+
-+#define DIU_DIV_MASK	0x000000ff
-+void mpc512x_set_pixel_clock(unsigned int pixclock)
-+{
-+	unsigned long bestval, bestfreq, speed_ccb, busfreq;
-+	unsigned long minpixclock, maxpixclock, pixval;
-+	struct mpc512x_ccm __iomem *ccm;
-+	struct device_node *np;
-+	u32 temp;
-+	long err;
-+	int i;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-clock");
-+	if (!np) {
-+		pr_err("Can't find clock control module.\n");
-+		return;
-+	}
-+
-+	ccm = of_iomap(np, 0);
-+	of_node_put(np);
-+	if (!ccm) {
-+		pr_err("Can't map clock control module reg.\n");
-+		return;
-+	}
-+
-+	np = of_find_node_by_type(NULL, "cpu");
-+	if (np) {
-+		const unsigned int *prop +			of_get_property(np, "bus-frequency", NULL);
-+
-+		of_node_put(np);
-+		if (prop) {
-+			busfreq = *prop;
-+		} else {
-+			pr_err("Can't get bus-frequency property\n");
-+			return;
-+		}
-+	} else {
-+		pr_err("Can't find 'cpu' node.\n");
-+		return;
-+	}
-+
-+	/* Pixel Clock configuration */
-+	pr_debug("DIU: Bus Frequency = %lu\n", busfreq);
-+	speed_ccb = busfreq * 4;
-+
-+	/* Calculate the pixel clock with the smallest error */
-+	/* calculate the following in steps to avoid overflow */
-+	pr_debug("DIU pixclock in ps - %d\n", pixclock);
-+	temp = (1000000000 / pixclock) * 1000;
-+	pixclock = temp;
-+	pr_debug("DIU pixclock freq - %u\n", pixclock);
-+
-+	temp = temp / 20; /* pixclock * 0.05 */
-+	pr_debug("deviation = %d\n", temp);
-+	minpixclock = pixclock - temp;
-+	maxpixclock = pixclock + temp;
-+	pr_debug("DIU minpixclock - %lu\n", minpixclock);
-+	pr_debug("DIU maxpixclock - %lu\n", maxpixclock);
-+	pixval = speed_ccb/pixclock;
-+	pr_debug("DIU pixval = %lu\n", pixval);
-+
-+	err = 100000000;
-+	bestval = pixval;
-+	pr_debug("DIU bestval = %lu\n", bestval);
-+
-+	bestfreq = 0;
-+	for (i = -1; i <= 1; i++) {
-+		temp = speed_ccb / (pixval+i);
-+		pr_debug("DIU test pixval i=%d, pixval=%lu, temp freq. = %u\n",
-+			i, pixval, temp);
-+		if ((temp < minpixclock) || (temp > maxpixclock))
-+			pr_debug("DIU exceeds monitor range (%lu to %lu)\n",
-+				minpixclock, maxpixclock);
-+		else if (abs(temp - pixclock) < err) {
-+			pr_debug("Entered the else if block %d\n", i);
-+			err = abs(temp - pixclock);
-+			bestval = pixval + i;
-+			bestfreq = temp;
-+		}
-+	}
-+
-+	pr_debug("DIU chose = %lx\n", bestval);
-+	pr_debug("DIU error = %ld\n NomPixClk ", err);
-+	pr_debug("DIU: Best Freq = %lx\n", bestfreq);
-+	/* Modify DIU_DIV in CCM SCFR1 */
-+	temp = in_be32(&ccm->scfr1);
-+	pr_debug("DIU: Current value of SCFR1: 0x%08x\n", temp);
-+	temp &= ~DIU_DIV_MASK;
-+	temp |= (bestval & DIU_DIV_MASK);
-+	out_be32(&ccm->scfr1, temp);
-+	pr_debug("DIU: Modified value of SCFR1: 0x%08x\n", temp);
-+	iounmap(ccm);
-+}
-+
-+ssize_t mpc512x_show_monitor_port(int monitor_port, char *buf)
-+{
-+	return sprintf(buf, "0 - 5121 LCD\n");
-+}
-+
-+int mpc512x_set_sysfs_monitor_port(int val)
-+{
-+	return 0;
-+}
-+
-+static struct fsl_diu_shared_fb __attribute__ ((__aligned__(8))) diu_shared_fb;
-+
-+#if defined(CONFIG_FB_FSL_DIU) || \
-+    defined(CONFIG_FB_FSL_DIU_MODULE)
-+static inline void mpc512x_free_bootmem(struct page *page)
-+{
-+	__ClearPageReserved(page);
-+	BUG_ON(PageTail(page));
-+	BUG_ON(atomic_read(&page->_count) > 1);
-+	atomic_set(&page->_count, 1);
-+	__free_page(page);
-+	totalram_pages++;
-+}
-+
-+void mpc512x_release_bootmem(void)
-+{
-+	unsigned long addr = diu_shared_fb.fb_phys & PAGE_MASK;
-+	unsigned long size = diu_shared_fb.fb_len;
-+	unsigned long start, end;
-+
-+	if (diu_shared_fb.in_use) {
-+		start = PFN_UP(addr);
-+		end = PFN_DOWN(addr + size);
-+
-+		for (; start < end; start++)
-+			mpc512x_free_bootmem(pfn_to_page(start));
-+
-+		diu_shared_fb.in_use = false;
-+	}
-+	diu_ops.release_bootmem	= NULL;
-+}
-+#endif
-+
-+/*
-+ * Check if DIU was pre-initialized. If so, perform steps
-+ * needed to continue displaying through the whole boot process.
-+ * Move area descriptor and gamma table elsewhere, they are
-+ * destroyed by bootmem allocator otherwise. The frame buffer
-+ * address range will be reserved in setup_arch() after bootmem
-+ * allocator is up.
-+ */
-+void __init mpc512x_init_diu(void)
-+{
-+	struct device_node *np;
-+	struct diu __iomem *diu_reg;
-+	phys_addr_t desc;
-+	void __iomem *vaddr;
-+	unsigned long mode, pix_fmt, res, bpp;
-+	unsigned long dst;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-diu");
-+	if (!np) {
-+		pr_err("No DIU node\n");
-+		return;
-+	}
-+
-+	diu_reg = of_iomap(np, 0);
-+	of_node_put(np);
-+	if (!diu_reg) {
-+		pr_err("Can't map DIU\n");
-+		return;
-+	}
-+
-+	mode = in_be32(&diu_reg->diu_mode);
-+	if (mode != MFB_MODE1) {
-+		pr_info("%s: DIU OFF\n", __func__);
-+		goto out;
-+	}
-+
-+	desc = in_be32(&diu_reg->desc[0]);
-+	vaddr = ioremap(desc, sizeof(struct diu_ad));
-+	if (!vaddr) {
-+		pr_err("Can't map DIU area desc.\n");
-+		goto out;
-+	}
-+	memcpy(&diu_shared_fb.ad0, vaddr, sizeof(struct diu_ad));
-+	/* flush fb area descriptor */
-+	dst = (unsigned long)&diu_shared_fb.ad0;
-+	flush_dcache_range(dst, dst + sizeof(struct diu_ad) - 1);
-+
-+	res = in_be32(&diu_reg->disp_size);
-+	pix_fmt = in_le32(vaddr);
-+	bpp = ((pix_fmt >> 16) & 0x3) + 1;
-+	diu_shared_fb.fb_phys = in_le32(vaddr + 4);
-+	diu_shared_fb.fb_len = ((res & 0xfff0000) >> 16) * (res & 0xfff) * bpp;
-+	diu_shared_fb.in_use = true;
-+	iounmap(vaddr);
-+
-+	desc = in_be32(&diu_reg->gamma);
-+	vaddr = ioremap(desc, sizeof(diu_shared_fb.gamma));
-+	if (!vaddr) {
-+		pr_err("Can't map DIU area desc.\n");
-+		diu_shared_fb.in_use = false;
-+		goto out;
-+	}
-+	memcpy(&diu_shared_fb.gamma, vaddr, sizeof(diu_shared_fb.gamma));
-+	/* flush gamma table */
-+	dst = (unsigned long)&diu_shared_fb.gamma;
-+	flush_dcache_range(dst, dst + sizeof(diu_shared_fb.gamma) - 1);
-+
-+	iounmap(vaddr);
-+	out_be32(&diu_reg->gamma, virt_to_phys(&diu_shared_fb.gamma));
-+	out_be32(&diu_reg->desc[1], 0);
-+	out_be32(&diu_reg->desc[2], 0);
-+	out_be32(&diu_reg->desc[0], virt_to_phys(&diu_shared_fb.ad0));
-+
-+out:
-+	iounmap(diu_reg);
-+}
-+
-+void __init mpc512x_setup_diu(void)
-+{
-+	int ret;
-+
-+	if (diu_shared_fb.in_use) {
-+		ret = reserve_bootmem(diu_shared_fb.fb_phys,
-+				      diu_shared_fb.fb_len,
-+				      BOOTMEM_EXCLUSIVE);
-+		if (ret) {
-+			pr_err("%s: reserve bootmem failed\n", __func__);
-+			diu_shared_fb.in_use = false;
-+		}
-+	}
-+
-+#if defined(CONFIG_FB_FSL_DIU) || \
-+    defined(CONFIG_FB_FSL_DIU_MODULE)
-+	diu_ops.get_pixel_format	= mpc512x_get_pixel_format;
-+	diu_ops.set_gamma_table		= mpc512x_set_gamma_table;
-+	diu_ops.set_monitor_port	= mpc512x_set_monitor_port;
-+	diu_ops.set_pixel_clock		= mpc512x_set_pixel_clock;
-+	diu_ops.show_monitor_port	= mpc512x_show_monitor_port;
-+	diu_ops.set_sysfs_monitor_port	= mpc512x_set_sysfs_monitor_port;
-+	diu_ops.release_bootmem		= mpc512x_release_bootmem;
-+#endif
-+}
-+
- void __init mpc512x_init_IRQ(void)
+diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
+index 7c1d9c4..0d90c85 100644
+--- a/drivers/video/via/accel.c
++++ b/drivers/video/via/accel.c
+@@ -317,6 +317,7 @@ int viafb_init_engine(struct fb_info *info)
  {
- 	struct device_node *np;
-diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
-index 42381bb..5360948 100644
---- a/arch/powerpc/sysdev/fsl_soc.h
-+++ b/arch/powerpc/sysdev/fsl_soc.h
-@@ -30,6 +30,7 @@ struct platform_diu_data_ops {
- 	void (*set_pixel_clock) (unsigned int pixclock);
- 	ssize_t (*show_monitor_port) (int monitor_port, char *buf);
- 	int (*set_sysfs_monitor_port) (int val);
-+	void (*release_bootmem) (void);
- };
+ 	struct viafb_par *viapar = info->par;
+ 	void __iomem *engine;
++	int highest_reg, i;
+ 	u32 vq_start_addr, vq_end_addr, vq_start_low, vq_end_low, vq_high,
+ 		vq_len, chip_name = viapar->shared->chip_info.gfx_chip_name;
  
- extern struct platform_diu_data_ops diu_ops;
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 7acdc09..81dec09 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -1103,6 +1103,10 @@ static int fsl_diu_open(struct fb_info *info, int user)
- 	struct mfb_info *mfbi = info->par;
- 	int res = 0;
- 
-+	/* free boot splash memory on first /dev/fb0 open */
-+	if (!mfbi->index && diu_ops.release_bootmem)
-+		diu_ops.release_bootmem();
-+
- 	spin_lock(&diu_lock);
- 	mfbi->count++;
- 	if (mfbi->count = 1) {
-@@ -1430,6 +1434,7 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
- 	int ret, i, error = 0;
- 	struct resource res;
- 	struct fsl_diu_data *machine_data;
-+	int diu_mode;
- 
- 	machine_data = kzalloc(sizeof(struct fsl_diu_data), GFP_KERNEL);
- 	if (!machine_data)
-@@ -1466,7 +1471,9 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
- 		goto error2;
+@@ -328,6 +329,18 @@ int viafb_init_engine(struct fb_info *info)
+ 		return -ENOMEM;
  	}
  
--	out_be32(&dr.diu_reg->diu_mode, 0);		/* disable DIU anyway*/
-+	diu_mode = in_be32(&dr.diu_reg->diu_mode);
-+	if (diu_mode != MFB_MODE1)
-+		out_be32(&dr.diu_reg->diu_mode, 0);	/* disable DIU */
- 
- 	/* Get the IRQ of the DIU */
- 	machine_data->irq = irq_of_parse_and_map(np, 0);
-@@ -1514,7 +1521,13 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
- 	machine_data->dummy_ad->offset_xyd = 0;
- 	machine_data->dummy_ad->next_ad = 0;
- 
--	out_be32(&dr.diu_reg->desc[0], machine_data->dummy_ad->paddr);
-+	/*
-+	 * Let DIU display splash screen if it was pre-initialized
-+	 * by the bootloader, set dummy area descriptor otherwise.
-+	 */
-+	if (diu_mode != MFB_MODE1)
-+		out_be32(&dr.diu_reg->desc[0], machine_data->dummy_ad->paddr);
++	/* Initialize registers to reset the 2D engine */
++	switch (viapar->shared->chip_info.twod_engine) {
++	case VIA_2D_ENG_M1:
++		highest_reg = 0x5c;
++		break;
++	default:
++		highest_reg = 0x40;
++		break;
++	}
++	for (i = 0; i <= highest_reg; i += 4)
++		writel(0x0, engine + i);
 +
- 	out_be32(&dr.diu_reg->desc[1], machine_data->dummy_ad->paddr);
- 	out_be32(&dr.diu_reg->desc[2], machine_data->dummy_ad->paddr);
+ 	switch (chip_name) {
+ 	case UNICHROME_CLE266:
+ 	case UNICHROME_K400:
+@@ -357,13 +370,12 @@ int viafb_init_engine(struct fb_info *info)
+ 	viapar->shared->vq_vram_addr = viapar->fbmem_free;
+ 	viapar->fbmem_used += VQ_SIZE;
  
+-	/* Init 2D engine reg to reset 2D engine */
+-	writel(0x0, engine + VIA_REG_KEYCONTROL);
+-
+ 	/* Init AGP and VQ regs */
+ 	switch (chip_name) {
+ 	case UNICHROME_K8M890:
+ 	case UNICHROME_P4M900:
++	case UNICHROME_VX800:
++	case UNICHROME_VX855:
+ 		writel(0x00100000, engine + VIA_REG_CR_TRANSET);
+ 		writel(0x680A0000, engine + VIA_REG_CR_TRANSPACE);
+ 		writel(0x02000000, engine + VIA_REG_CR_TRANSPACE);
+@@ -398,6 +410,8 @@ int viafb_init_engine(struct fb_info *info)
+ 	switch (chip_name) {
+ 	case UNICHROME_K8M890:
+ 	case UNICHROME_P4M900:
++	case UNICHROME_VX800:
++	case UNICHROME_VX855:
+ 		vq_start_low |= 0x20000000;
+ 		vq_end_low |= 0x20000000;
+ 		vq_high |= 0x20000000;
+@@ -475,15 +489,25 @@ void viafb_wait_engine_idle(struct fb_info *info)
+ {
+ 	struct viafb_par *viapar = info->par;
+ 	int loop = 0;
++	u32 mask;
+ 
+-	while (!(readl(viapar->shared->engine_mmio + VIA_REG_STATUS) &
+-			VIA_VR_QUEUE_BUSY) && (loop < MAXLOOP)) {
+-		loop++;
+-		cpu_relax();
++	switch (viapar->shared->chip_info.twod_engine) {
++	case VIA_2D_ENG_H5:
++	case VIA_2D_ENG_M1:
++		mask = VIA_CMD_RGTR_BUSY_M1 | VIA_2D_ENG_BUSY_M1 |
++			      VIA_3D_ENG_BUSY_M1;
++		break;
++	default:
++		while (!(readl(viapar->shared->engine_mmio + VIA_REG_STATUS) &
++				VIA_VR_QUEUE_BUSY) && (loop < MAXLOOP)) {
++			loop++;
++			cpu_relax();
++		}
++		mask = VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY;
++		break;
+ 	}
+ 
+-	while ((readl(viapar->shared->engine_mmio + VIA_REG_STATUS) &
+-		    (VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY)) &&
++	while ((readl(viapar->shared->engine_mmio + VIA_REG_STATUS) & mask) &&
+ 		    (loop < MAXLOOP)) {
+ 		loop++;
+ 		cpu_relax();
+diff --git a/drivers/video/via/accel.h b/drivers/video/via/accel.h
+index 615c84a..2c122d2 100644
+--- a/drivers/video/via/accel.h
++++ b/drivers/video/via/accel.h
+@@ -67,6 +67,34 @@
+ /* from 0x100 to 0x1ff */
+ #define VIA_REG_COLORPAT        0x100
+ 
++/* defines for VIA 2D registers for vt3353/3409 (M1 engine)*/
++#define VIA_REG_GECMD_M1        0x000
++#define VIA_REG_GEMODE_M1       0x004
++#define VIA_REG_GESTATUS_M1     0x004       /* as same as VIA_REG_GEMODE */
++#define VIA_REG_PITCH_M1        0x008       /* pitch of src and dst */
++#define VIA_REG_DIMENSION_M1    0x00C       /* width and height */
++#define VIA_REG_DSTPOS_M1       0x010
++#define VIA_REG_LINE_XY_M1      0x010
++#define VIA_REG_DSTBASE_M1      0x014
++#define VIA_REG_SRCPOS_M1       0x018
++#define VIA_REG_LINE_K1K2_M1    0x018
++#define VIA_REG_SRCBASE_M1      0x01C
++#define VIA_REG_PATADDR_M1      0x020
++#define VIA_REG_MONOPAT0_M1     0x024
++#define VIA_REG_MONOPAT1_M1     0x028
++#define VIA_REG_OFFSET_M1       0x02C
++#define VIA_REG_LINE_ERROR_M1   0x02C
++#define VIA_REG_CLIPTL_M1       0x040       /* top and left of clipping */
++#define VIA_REG_CLIPBR_M1       0x044       /* bottom and right of clipping */
++#define VIA_REG_KEYCONTROL_M1   0x048       /* color key control */
++#define VIA_REG_FGCOLOR_M1      0x04C
++#define VIA_REG_DSTCOLORKEY_M1  0x04C       /* as same as VIA_REG_FG */
++#define VIA_REG_BGCOLOR_M1      0x050
++#define VIA_REG_SRCCOLORKEY_M1  0x050       /* as same as VIA_REG_BG */
++#define VIA_REG_MONOPATFGC_M1   0x058       /* Add BG color of Pattern. */
++#define VIA_REG_MONOPATBGC_M1   0x05C       /* Add FG color of Pattern. */
++#define VIA_REG_COLORPAT_M1     0x100       /* from 0x100 to 0x1ff */
++
+ /* VIA_REG_PITCH(0x38): Pitch Setting */
+ #define VIA_PITCH_ENABLE        0x80000000
+ 
+@@ -157,6 +185,18 @@
+ /* Virtual Queue is busy */
+ #define VIA_VR_QUEUE_BUSY       0x00020000
+ 
++/* VIA_REG_STATUS(0x400): Engine Status for H5 */
++#define VIA_CMD_RGTR_BUSY_H5   0x00000010  /* Command Regulator is busy */
++#define VIA_2D_ENG_BUSY_H5     0x00000002  /* 2D Engine is busy */
++#define VIA_3D_ENG_BUSY_H5     0x00001FE1  /* 3D Engine is busy */
++#define VIA_VR_QUEUE_BUSY_H5   0x00000004  /* Virtual Queue is busy */
++
++/* VIA_REG_STATUS(0x400): Engine Status for VT3353/3409 */
++#define VIA_CMD_RGTR_BUSY_M1   0x00000010  /* Command Regulator is busy */
++#define VIA_2D_ENG_BUSY_M1     0x00000002  /* 2D Engine is busy */
++#define VIA_3D_ENG_BUSY_M1     0x00001FE1  /* 3D Engine is busy */
++#define VIA_VR_QUEUE_BUSY_M1   0x00000004  /* Virtual Queue is busy */
++
+ #define MAXLOOP                 0xFFFFFF
+ 
+ #define VIA_BITBLT_COLOR	1
 -- 
-1.6.3.3
+1.7.0.1
 

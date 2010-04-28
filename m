@@ -1,74 +1,99 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Thu, 29 Apr 2010 15:42:53 +0000
-Subject: Re: [PATCH 00/21] OMAP: DSS2: Taal panel driver updates
-Message-Id: <20100429154252.GI7225@atomide.com>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Wed, 28 Apr 2010 22:17:19 +0000
+Subject: [PATCH 18/30] via: Do not attempt I/O on inactive I2C adapters
+Message-Id: <1272493051-25380-19-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1272457052.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <cover.1272457052.git.ext-jani.1.nikula@nokia.com>
+References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Cc: Tomi.Valkeinen@nokia.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-* Jani Nikula <ext-jani.1.nikula@nokia.com> [100429 05:28]:
-> Hi -
-> 
-> This set of patches, on top of [1], contains assorted fixes and cleanups to the
-> Taal panel driver (01-14), configures board/platform specific things in a new
-> Nokia DSI command mode panel specific struct instead of DSS structs (15-17), and
-> makes it feasible to add support for similar DSI command mode panels in the same
-> driver (18-21).
-> 
-> Tony, please note that patch 15 touches your turf.
+If an adapter has been configured for GPIO (or off), we should not try to
+use it as an I2C port.
 
-Ack, it should be OK to merge just fine through Tomi.
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+---
+ drivers/video/via/via_i2c.c |   14 ++++++++++----
+ drivers/video/via/via_i2c.h |    1 +
+ 2 files changed, 11 insertions(+), 4 deletions(-)
 
-Note that some of your patches are missing descriptions,
-please add those to the missing ones.
-
-Regards,
-
-Tony
-
+diff --git a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
+index 3ff60b2..c88450e 100644
+--- a/drivers/video/via/via_i2c.c
++++ b/drivers/video/via/via_i2c.c
+@@ -115,6 +115,8 @@ int viafb_i2c_readbyte(u8 adap, u8 slave_addr, u8 index, u8 *pdata)
+ 	u8 mm1[] = {0x00};
+ 	struct i2c_msg msgs[2];
  
-> [1] git://gitorious.org/linux-omap-dss2/linux.git
-> 
-> BR,
-> Jani.
-> 
-> 
-> Jani Nikula (20):
->   OMAP: DSS2: Taal: Add panel hardware reset
->   OMAP: DSS2: Taal: Add locks to protect taal data access
->   OMAP: DSS2: Taal: Cosmetic improvement to backlight properties
->     initialization
->   OMAP: DSS2: Taal: Remove platform enable/disable
->   OMAP: DSS2: Taal: Fix request_irq() error handling
->   OMAP: DSS2: Taal: Remove ESD work cancel from driver probe error
->     handling
->   OMAP: DSS2: Taal: Improve taal_power_on() error handling
->   OMAP: DSS2: Taal: Bail out from taal_run_test() if panel is not
->     enabled
->   OMAP: DSS2: Taal: Change DSI bus locking to avoid deadlock in ESD
->     work
->   OMAP: DSS2: Taal: Check taal_power_on() return value in taal_resume()
->   OMAP: DSS2: Taal: Change ESD work management
->   OMAP: DSS2: Taal: Change probe error handling labels
->   OMAP: DSS2: Taal: Add proper external TE support
->   OMAP: DSS2: Add Nokia DSI command mode panel configuration struct
->   OMAP: DSS2: Taal: Use Nokia DSI panel data
->   OMAP: DSS2: Taal: Configure ESD check in DSI panel data
->   OMAP: DSS2: Taal: Add panel specific configuration structure
->   OMAP: DSS2: Taal: Print panel name in addition to revision
->   OMAP: DSS2: Taal: Add regulator configuration support
->   OMAP: DSS2: Taal: CABC workaround is Taal specific
-> 
-> Valkeinen Tomi (Nokia-D/Helsinki) (1):
->   OMAP: DSS2: Taal: add locks to taal_bl_update_status
-> 
->  arch/arm/plat-omap/include/plat/nokia-dsi-panel.h |   31 ++
->  drivers/video/omap2/displays/panel-taal.c         |  538 ++++++++++++++++-----
->  2 files changed, 452 insertions(+), 117 deletions(-)
->  create mode 100644 arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
-> 
++	if (!via_i2c_par[adap].is_active)
++		return -ENODEV;
+ 	*pdata = 0;
+ 	msgs[0].flags = 0;
+ 	msgs[1].flags = I2C_M_RD;
+@@ -130,6 +132,8 @@ int viafb_i2c_writebyte(u8 adap, u8 slave_addr, u8 index, u8 data)
+ 	u8 msg[2] = { index, data };
+ 	struct i2c_msg msgs;
+ 
++	if (!via_i2c_par[adap].is_active)
++		return -ENODEV;
+ 	msgs.flags = 0;
+ 	msgs.addr = slave_addr / 2;
+ 	msgs.len = 2;
+@@ -142,6 +146,8 @@ int viafb_i2c_readbytes(u8 adap, u8 slave_addr, u8 index, u8 *buff, int buff_len
+ 	u8 mm1[] = {0x00};
+ 	struct i2c_msg msgs[2];
+ 
++	if (!via_i2c_par[adap].is_active)
++		return -ENODEV;
+ 	msgs[0].flags = 0;
+ 	msgs[1].flags = I2C_M_RD;
+ 	msgs[0].addr = msgs[1].addr = slave_addr / 2;
+@@ -198,18 +204,18 @@ static int viafb_i2c_probe(struct platform_device *platdev)
+ 		struct via_port_cfg *adap_cfg = configs++;
+ 		struct via_i2c_stuff *i2c_stuff = &via_i2c_par[i];
+ 
++		i2c_stuff->is_active = 0;
+ 		if (adap_cfg->type = 0 || adap_cfg->mode != VIA_MODE_I2C)
+ 			continue;
+-
+ 		ret = create_i2c_bus(&i2c_stuff->adapter,
+ 				     &i2c_stuff->algo, adap_cfg,
+ 				NULL); /* FIXME: PCIDEV */
+ 		if (ret < 0) {
+ 			printk(KERN_ERR "viafb: cannot create i2c bus %u:%d\n",
+ 				i, ret);
+-			/* FIXME: properly release previous busses */
+-			return ret;
++			continue;  /* Still try to make the rest */
+ 		}
++		i2c_stuff->is_active = 1;
+ 	}
+ 
+ 	return 0;
+@@ -225,7 +231,7 @@ static int viafb_i2c_remove(struct platform_device *platdev)
+ 		 * Only remove those entries in the array that we've
+ 		 * actually used (and thus initialized algo_data)
+ 		 */
+-		if (i2c_stuff->adapter.algo_data = &i2c_stuff->algo)
++		if (i2c_stuff->is_active)
+ 			i2c_del_adapter(&i2c_stuff->adapter);
+ 	}
+ 	return 0;
+diff --git a/drivers/video/via/via_i2c.h b/drivers/video/via/via_i2c.h
+index b2332cc..1d18e7d 100644
+--- a/drivers/video/via/via_i2c.h
++++ b/drivers/video/via/via_i2c.h
+@@ -26,6 +26,7 @@
+ 
+ struct via_i2c_stuff {
+ 	u16 i2c_port;			/* GPIO or I2C port */
++	u16 is_active;			/* Being used as I2C? */
+ 	struct i2c_adapter adapter;
+ 	struct i2c_algo_bit_data algo;
+ };
+-- 
+1.7.0.1
+

@@ -1,88 +1,40 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Thu, 29 Apr 2010 17:16:24 +0000
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Thu, 29 Apr 2010 19:06:38 +0000
 Subject: Re: [PATCH 24/30] viafb: Add a driver for the video capture engine
-Message-Id: <20100429191624.30cd67e0@neptune.home>
+Message-Id: <20100429130638.0abff0dc@tpl.lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
 	<1272493051-25380-25-git-send-email-corbet@lwn.net>
-In-Reply-To: <1272493051-25380-25-git-send-email-corbet@lwn.net>
+	<20100429191624.30cd67e0@neptune.home>
+In-Reply-To: <20100429191624.30cd67e0@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jonathan Corbet <corbet@lwn.net>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
 Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Hi Jonathan,
+On Thu, 29 Apr 2010 19:16:24 +0200
+Bruno Pr=C3=A9mont <bonbons@linux-vserver.org> wrote:
 
-Seems a bit confusing to me to have viafb-camera/ show up under the
-PCI device when built with !CONFIG_FB_VIA_CAMERA.
+> I think the extra 'viafb-camera' entry should be wrapped into a
+>=20
+> #if defined(CONFIG_FB_VIA_CAMERA) || defined(CONFIG_FB_VIA_CAMERA_MODULE)
 
-On Wed, 28 April 2010 Jonathan Corbet <corbet@lwn.net> wrote:
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 22c1662..a969f76 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -1516,12 +1516,21 @@ config FB_VIA
->  	  This is the frame buffer device driver for Graphics chips of VIA
->  	  UniChrome (Pro) Family (CLE266,PM800/CN400,P4M800CE/P4M800Pro/
->  	  CN700/VN800,CX700/VX700,P4M890) and Chrome9 Family (K8M890,CN896
-> - 	  /P4M900,VX800)
-> + 	  /P4M900,VX800,VX855)
->  	  Say Y if you have a VIA UniChrome graphics board.
->  
->  	  To compile this driver as a module, choose M here: the
->  	  module will be called viafb.
->  
-> +config FB_VIA_CAMERA
-> +	tristate "VIAFB camera controller support"
-> +	depends on FB_VIA
-> +	select VIDEOBUF_DMA_SG
-> +	help
-> +	   Driver support for the integrated camera controller in VIA
-> +	   Chrome9 chipsets.  Currently only tested on OLPC xo-1.5 systems
-> +	   with ov7670 sensors.
-> +
->  config FB_NEOMAGIC
->  	tristate "NeoMagic display support"
->  	depends on FB && PCI
-> diff --git a/drivers/video/via/Makefile b/drivers/video/via/Makefile
-> index 2751cb2..05401b6 100644
-> --- a/drivers/video/via/Makefile
-> +++ b/drivers/video/via/Makefile
-> @@ -3,6 +3,7 @@
->  #
->  
->  obj-$(CONFIG_FB_VIA) += viafb.o 
-> +obj-$(CONFIG_FB_VIA_CAMERA) += via-camera.o
->  
->  viafb-y	:=viafbdev.o hw.o via_i2c.o dvi.o lcd.o ioctl.o accel.o \
->  	via_utility.o vt1636.o global.o tblDPASetting.o viamode.o tbl1636.o \
+I think you're right, yes.  (As noted above, the camera driver isn't
+quite ready for merging yet - but I can't swear I would have caught
+this one, so I'm glad you did).
 
-<snip>
+> or probably better be dynamically added when camera module is loaded
+> and/or detects/probes the camera sub-device.
 
-> diff --git a/drivers/video/via/via-core.c b/drivers/video/via/via-core.c
-> index 83a8d34..58256d0 100644
-> --- a/drivers/video/via/via-core.c
-> +++ b/drivers/video/via/via-core.c
-> @@ -493,7 +493,10 @@ static struct viafb_subdev_info {
->  	},
->  	{
->  		.name = "viafb-i2c",
-> -	}
-> +	},
-> +	{
-> +		.name = "viafb-camera",
-> +	},
->  };
->  #define N_SUBDEVS ARRAY_SIZE(viafb_subdevs)
->  
+That's a little harder - the platform device is the means by which the
+camera and the core communicate.  I guess I could add a general "I'm a
+via-core subdev and I'm here now" exported function in the core, but
+I'm not sure that would be better than just having the platform dev be
+there.
 
-I think the extra 'viafb-camera' entry should be wrapped into a
-
-#if defined(CONFIG_FB_VIA_CAMERA) || defined(CONFIG_FB_VIA_CAMERA_MODULE)
-
-or probably better be dynamically added when camera module is loaded
-and/or detects/probes the camera sub-device.
+But it definitely shouldn't be around if the camera is configured out.
 
 Thanks,
-Bruno
+
+jon

@@ -1,75 +1,46 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Fri, 30 Apr 2010 21:39:46 +0000
-Subject: [RFC] Second OLPC Viafb series, v2.1
-Message-Id: <1272663589-4950-1-git-send-email-corbet@lwn.net>
+From: Anatolij Gustschin <agust@denx.de>
+Date: Thu, 29 Apr 2010 23:49:34 +0000
+Subject: [PATCH 1/5] fsl-diu-fb: fix issue with re-enabling DIU area descriptor on MPC5121
+Message-Id: <1272584978-19063-2-git-send-email-agust@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1272584978-19063-1-git-send-email-agust@denx.de>
+In-Reply-To: <1272584978-19063-1-git-send-email-agust@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, =?UTF-8?q?Bruno=20Pr=C3=A9mont?= <bonbons@linux-vserver.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linuxppc-dev@ozlabs.org
+Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de, devicetree-discuss@lists.ozlabs.org, yorksun@freescale.com
 
-Here's a small update to the second posting of the second OLPC viafb
-series.  It contains three new patches, all fixing issues pointed out by
-Bruno Pr=C3=A9mont.  I'm not going to spam everybody with the whole set aga=
-in;
-it can be pulled from:
+On MPC5121 re-configuring the DIU area descriptor by writing
+new descriptor address doesn't work. As a result, DIU continues
+to display using old area descriptor even if the new one has
+been set.
 
-	git://git.lwn.net/linux-2.6.git viafb-posted
+Disabling the DIU before setting the new descriptor and
+subsequently enabling it fixes the problem.
 
-Only the new patches will appear here.
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+---
+ drivers/video/fsl-diu-fb.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-The review so far is much appreciated - any other comments?  Is there
-anything arguing against moving everything (except the camera driver) into
-viafb-next, from which it will flow into linux-next?
-
-As a reminder, here's what's in the full series:
-
-Chris Ball (1):
-      viafb: Add 1200x900 DCON/LCD panel modes for OLPC XO-1.5
-
-Florian Tobias Schandinat (7):
-      viafb: package often used basic io functions
-      viafb: unify modesetting functions
-      viafb: move some modesetting functions to a seperate file
-      viafb: replace inb/outb
-      viafb: improve misc register handling
-      viafb: fix proc entry removal
-      viafb: make procfs entries optional
-
-Harald Welte (4):
-      viafb: Fix various resource leaks during module_init()
-      viafb: use proper pci config API
-      viafb: Determine type of 2D engine and store it in chip_info
-      viafb: rework the I2C support in the VIA framebuffer driver
-
-Jonathan Corbet (20):
-      viafb: Unmap the frame buffer on initialization error
-      viafb: Retain GEMODE reserved bits
-      viafb: Unify duplicated set_bpp() code
-      viafb: complete support for VX800/VX855 accelerated framebuffer
-      viafb: Only establish i2c busses on ports that always had them
-      viafb: Move core stuff into via-core.c
-      viafb: Separate global and fb-specific data
-      viafb: add a driver for GPIO lines
-      viafb: Convert GPIO and i2c to the new indexed port ops
-      viafb: Turn GPIO and i2c into proper platform devices
-      via: Do not attempt I/O on inactive I2C adapters
-      viafb: Introduce viafb_find_i2c_adapter()
-      via: Rationalize vt1636 detection
-      viafb: Add a simple interrupt management infrastructure
-      viafb: Add a simple VX855 DMA engine driver
-      viafb: Reserve framebuffer memory for the upcoming camera driver
-      viafb: Add a driver for the video capture engine
-      viafb: Do not remove gpiochip under spinlock
-      viafb: Fix initialization error paths
-      viafb: Don't build in camera-specific code without the camera
-
-Paul Fox (1):
-      suppress verbose debug messages: change printk() to DEBUG_MSG()
-
-Thanks,
-
-jon
-
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 994358a..ee15a99 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -329,8 +329,11 @@ static int fsl_diu_enable_panel(struct fb_info *info)
+ 	if (mfbi->type != MFB_TYPE_OFF) {
+ 		switch (mfbi->index) {
+ 		case 0:				/* plane 0 */
+-			if (hw->desc[0] != ad->paddr)
++			if (hw->desc[0] != ad->paddr) {
++				out_be32(&dr.diu_reg->diu_mode, MFB_MODE0);
+ 				out_be32(&hw->desc[0], ad->paddr);
++				out_be32(&dr.diu_reg->diu_mode, MFB_MODE1);
++			}
+ 			break;
+ 		case 1:				/* plane 1 AOI 0 */
+ 			cmfbi = machine_data->fsl_diu_info[2]->par;
+-- 
+1.6.3.3
 

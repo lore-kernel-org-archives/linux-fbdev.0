@@ -1,76 +1,120 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Sun, 18 Apr 2010 18:21:08 +0000
-Subject: [PATCH 06/11] viafb: Determine type of 2D engine and store it in chip_info
-Message-Id: <1271614873-5952-7-git-send-email-corbet@lwn.net>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 30 Apr 2010 16:07:00 +0000
+Subject: [PATCH 1/2] sh: fix a number of Oopses and leaks in SH framebuffer
+Message-Id: <Pine.LNX.4.64.1004301802370.4055@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1271614873-5952-1-git-send-email-corbet@lwn.net>
-In-Reply-To: <1271614873-5952-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-fbdev@vger.kernel.org
 
-From: Harald Welte <laforge@gnumonks.org>
+Fix a number of Oopses, memory leaks and unbalanced calls on error paths in
+sh_mobile_lcdcfb.c.
 
-This will help us for the upcoming support for 2D acceleration using
-the M1 engine.
-
-[jc: fixed merge conflicts]
-Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
- drivers/video/via/chip.h |    8 ++++++++
- drivers/video/via/hw.c   |   15 +++++++++++++++
- 2 files changed, 23 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/via/chip.h b/drivers/video/via/chip.h
-index 8c06bd3..d9b6e06 100644
---- a/drivers/video/via/chip.h
-+++ b/drivers/video/via/chip.h
-@@ -121,9 +121,17 @@ struct lvds_chip_information {
- 	int i2c_port;
- };
+Patches are not really related, but the second one applies on top of this 
+one.
+
+ drivers/video/sh_mobile_lcdcfb.c |   27 +++++++++++++--------------
+ 1 files changed, 13 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index bbd1dbf..e498fb5 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -694,6 +694,7 @@ static int sh_mobile_lcdc_setup_clocks(struct platform_device *pdev,
+ 	 * 1) Enable Runtime PM
+ 	 * 2) Force Runtime PM Resume since hardware is accessed from probe()
+ 	 */
++	priv->dev = &pdev->dev;
+ 	pm_runtime_enable(priv->dev);
+ 	pm_runtime_resume(priv->dev);
+ 	return 0;
+@@ -956,25 +957,24 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
  
-+/* The type of 2D engine */
-+enum via_2d_engine {
-+	VIA_2D_ENG_H2,
-+	VIA_2D_ENG_H5,
-+	VIA_2D_ENG_M1,
-+};
-+
- struct chip_information {
- 	int gfx_chip_name;
- 	int gfx_chip_revision;
-+	enum via_2d_engine twod_engine;
- 	struct tmds_chip_information tmds_chip_info;
- 	struct lvds_chip_information lvds_chip_info;
- 	struct lvds_chip_information lvds_chip_info2;
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 69acae1..d893695 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -2017,6 +2017,21 @@ static void init_gfx_chip_info(struct pci_dev *pdev,
- 				CX700_REVISION_700;
- 		}
+ 	if (!pdev->dev.platform_data) {
+ 		dev_err(&pdev->dev, "no platform data defined\n");
+-		error = -EINVAL;
+-		goto err0;
++		return -EINVAL;
  	}
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	i = platform_get_irq(pdev, 0);
+ 	if (!res || i < 0) {
+ 		dev_err(&pdev->dev, "cannot get platform resources\n");
+-		error = -ENOENT;
+-		goto err0;
++		return -ENOENT;
+ 	}
+ 
+ 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+ 	if (!priv) {
+ 		dev_err(&pdev->dev, "cannot allocate device data\n");
+-		error = -ENOMEM;
+-		goto err0;
++		return -ENOMEM;
+ 	}
+ 
++	platform_set_drvdata(pdev, priv);
 +
-+	/* Determine which 2D engine we have */
-+	switch (viaparinfo->chip_info->gfx_chip_name) {
-+	case UNICHROME_VX800:
-+	case UNICHROME_VX855:
-+		viaparinfo->chip_info->twod_engine = VIA_2D_ENG_M1;
-+		break;
-+	case UNICHROME_K8M890:
-+	case UNICHROME_P4M900:
-+		viaparinfo->chip_info->twod_engine = VIA_2D_ENG_H5;
-+		break;
-+	default:
-+		viaparinfo->chip_info->twod_engine = VIA_2D_ENG_H2;
-+		break;
-+	}
+ 	error = request_irq(i, sh_mobile_lcdc_irq, IRQF_DISABLED,
+ 			    dev_name(&pdev->dev), priv);
+ 	if (error) {
+@@ -983,8 +983,6 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	priv->irq = i;
+-	priv->dev = &pdev->dev;
+-	platform_set_drvdata(pdev, priv);
+ 	pdata = pdev->dev.platform_data;
+ 
+ 	j = 0;
+@@ -1098,9 +1096,9 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 		info = ch->info;
+ 
+ 		if (info->fbdefio) {
+-			priv->ch->sglist = vmalloc(sizeof(struct scatterlist) *
++			ch->sglist = vmalloc(sizeof(struct scatterlist) *
+ 					info->fix.smem_len >> PAGE_SHIFT);
+-			if (!priv->ch->sglist) {
++			if (!ch->sglist) {
+ 				dev_err(&pdev->dev, "cannot allocate sglist\n");
+ 				goto err1;
+ 			}
+@@ -1125,9 +1123,9 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	return 0;
+- err1:
++err1:
+ 	sh_mobile_lcdc_remove(pdev);
+- err0:
++
+ 	return error;
  }
  
- static void init_tmds_chip_info(void)
+@@ -1138,7 +1136,7 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
+ 	int i;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(priv->ch); i++)
+-		if (priv->ch[i].info->dev)
++		if (priv->ch[i].info && priv->ch[i].info->dev)
+ 			unregister_framebuffer(priv->ch[i].info);
+ 
+ 	sh_mobile_lcdc_stop(priv);
+@@ -1161,7 +1159,8 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
+ 	if (priv->dot_clk)
+ 		clk_put(priv->dot_clk);
+ 
+-	pm_runtime_disable(priv->dev);
++	if (priv->dev)
++		pm_runtime_disable(priv->dev);
+ 
+ 	if (priv->base)
+ 		iounmap(priv->base);
 -- 
-1.7.0.1
+1.6.2.4
 

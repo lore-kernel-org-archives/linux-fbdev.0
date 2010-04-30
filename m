@@ -1,867 +1,509 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Fri, 23 Apr 2010 21:28:02 +0000
-Subject: [PATCH 02/13] viafb: Separate global and fb-specific data
-Message-Id: <1272058093-20914-3-git-send-email-corbet@lwn.net>
+From: Anatolij Gustschin <agust@denx.de>
+Date: Fri, 30 Apr 2010 10:40:15 +0000
+Subject: [PATCH v2 3/5] powerpc/mpc5121: shared DIU framebuffer support
+Message-Id: <1272624015-4356-1-git-send-email-agust@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272058093-20914-1-git-send-email-corbet@lwn.net>
-In-Reply-To: <1272058093-20914-1-git-send-email-corbet@lwn.net>
+References: <1272584978-19063-4-git-send-email-agust@denx.de>
+In-Reply-To: <1272584978-19063-4-git-send-email-agust@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, Deepak Saxena <dsaxena@laptop.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linuxppc-dev@ozlabs.org
+Cc: linux-fbdev@vger.kernel.org, wd@denx.de, dzu@denx.de, John Rigby <jrigby@gmail.com>, devicetree-discuss@lists.ozlabs.org, yorksun@freescale.com
 
-This patch moves data of interest into a new viafb_dev structure which
-describes the device as a whole; the idea here is to create a separation
-between what all devices may need and what the framebuffer device in
-particular needs.
+MPC5121 DIU configuration/setup as initialized by the boot
+loader currently will get lost while booting Linux. As a
+result displaying the boot splash is not possible through
+the boot process.
 
-I've also made some small steps toward thinning out the global.h mess.
+To prevent this we reserve configured DIU frame buffer
+address range while booting and preserve AOI descriptor
+and gamma table so that DIU continues displaying through
+the whole boot process. On first open from user space
+DIU frame buffer driver releases the reserved frame
+buffer area and continues to operate as usual.
 
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+Signed-off-by: John Rigby <jrigby@gmail.com>
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Cc: Grant Likely <grant.likely@secretlab.ca>
 ---
- drivers/video/via/accel.c    |   14 ++--
- drivers/video/via/dvi.c      |    2 +
- drivers/video/via/global.h   |    2 -
- drivers/video/via/hw.c       |  130 ++----------------------------
- drivers/video/via/hw.h       |    4 +-
- drivers/video/via/lcd.c      |    2 +
- drivers/video/via/via-core.c |  185 +++++++++++++++++++++++++++++++++++++++++-
- drivers/video/via/via-core.h |   38 ++++++++-
- drivers/video/via/via_i2c.c  |    2 +
- drivers/video/via/viafbdev.c |   54 +++++-------
- drivers/video/via/viafbdev.h |   13 +---
- drivers/video/via/vt1636.c   |    2 +
- 12 files changed, 266 insertions(+), 182 deletions(-)
+v1 -> v2:
+ - use struct for CCM register access, don't use offset macros,
+   so CCM struct definition is added now
+ - use struct for DIU descriptors access
+ - simplify code and correct variable types as suggested by Timur
 
-diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
-index 0d90c85..e777468 100644
---- a/drivers/video/via/accel.c
-+++ b/drivers/video/via/accel.c
-@@ -18,6 +18,7 @@
-  * Foundation, Inc.,
-  * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-  */
-+#include "via-core.h"
- #include "global.h"
- 
- /*
-@@ -321,8 +322,7 @@ int viafb_init_engine(struct fb_info *info)
- 	u32 vq_start_addr, vq_end_addr, vq_start_low, vq_end_low, vq_high,
- 		vq_len, chip_name = viapar->shared->chip_info.gfx_chip_name;
- 
--	engine = ioremap_nocache(info->fix.mmio_start, info->fix.mmio_len);
--	viapar->shared->engine_mmio = engine;
-+	engine = viapar->shared->vdev->engine_mmio;
- 	if (!engine) {
- 		printk(KERN_WARNING "viafb_init_accel: ioremap failed, "
- 			"hardware acceleration disabled\n");
-@@ -465,7 +465,7 @@ void viafb_show_hw_cursor(struct fb_info *info, int Status)
- 	struct viafb_par *viapar = info->par;
- 	u32 temp, iga_path = viapar->iga_path;
- 
--	temp = readl(viapar->shared->engine_mmio + VIA_REG_CURSOR_MODE);
-+	temp = readl(viapar->shared->vdev->engine_mmio + VIA_REG_CURSOR_MODE);
- 	switch (Status) {
- 	case HW_Cursor_ON:
- 		temp |= 0x1;
-@@ -482,7 +482,7 @@ void viafb_show_hw_cursor(struct fb_info *info, int Status)
- 	default:
- 		temp &= 0x7FFFFFFF;
- 	}
--	writel(temp, viapar->shared->engine_mmio + VIA_REG_CURSOR_MODE);
-+	writel(temp, viapar->shared->vdev->engine_mmio + VIA_REG_CURSOR_MODE);
- }
- 
- void viafb_wait_engine_idle(struct fb_info *info)
-@@ -490,6 +490,7 @@ void viafb_wait_engine_idle(struct fb_info *info)
- 	struct viafb_par *viapar = info->par;
- 	int loop = 0;
- 	u32 mask;
-+	void __iomem *engine = viapar->shared->vdev->engine_mmio;
- 
- 	switch (viapar->shared->chip_info.twod_engine) {
- 	case VIA_2D_ENG_H5:
-@@ -498,7 +499,7 @@ void viafb_wait_engine_idle(struct fb_info *info)
- 			      VIA_3D_ENG_BUSY_M1;
- 		break;
- 	default:
--		while (!(readl(viapar->shared->engine_mmio + VIA_REG_STATUS) &
-+		while (!(readl(engine + VIA_REG_STATUS) &
- 				VIA_VR_QUEUE_BUSY) && (loop < MAXLOOP)) {
- 			loop++;
- 			cpu_relax();
-@@ -507,8 +508,7 @@ void viafb_wait_engine_idle(struct fb_info *info)
- 		break;
- 	}
- 
--	while ((readl(viapar->shared->engine_mmio + VIA_REG_STATUS) & mask) &&
--		    (loop < MAXLOOP)) {
-+	while ((readl(engine + VIA_REG_STATUS) & mask) && (loop < MAXLOOP)) {
- 		loop++;
- 		cpu_relax();
- 	}
-diff --git a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
-index e357c4d..6271b76 100644
---- a/drivers/video/via/dvi.c
-+++ b/drivers/video/via/dvi.c
-@@ -18,6 +18,8 @@
-  * Foundation, Inc.,
-  * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-  */
-+#include "via-core.h"
-+#include "via_i2c.h"
- #include "global.h"
- 
- static void tmds_register_write(int index, u8 data);
-diff --git a/drivers/video/via/global.h b/drivers/video/via/global.h
-index be48e73..28221a0 100644
---- a/drivers/video/via/global.h
-+++ b/drivers/video/via/global.h
-@@ -35,14 +35,12 @@
- 
- #include "debug.h"
- 
--#include "via-core.h"
- #include "viafbdev.h"
- #include "chip.h"
- #include "accel.h"
- #include "share.h"
- #include "dvi.h"
- #include "viamode.h"
--#include "via_i2c.h"
- #include "hw.h"
- 
- #include "lcd.h"
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 1e98951..ecbc4f4 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -19,6 +19,7 @@
-  * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-  */
- #include <asm/olpc.h>
-+#include "via-core.h"
- #include "global.h"
- 
- static struct pll_map pll_value[] = {
-@@ -526,8 +527,7 @@ static void dvi_patch_skew_dvp_low(void);
- static void set_dvi_output_path(int set_iga, int output_interface);
- static void set_lcd_output_path(int set_iga, int output_interface);
- static void load_fix_bit_crtc_reg(void);
--static void init_gfx_chip_info(struct pci_dev *pdev,
--				const struct pci_device_id *pdi);
-+static void init_gfx_chip_info(int chip_type);
- static void init_tmds_chip_info(void);
- static void init_lvds_chip_info(void);
- static void device_screen_off(void);
-@@ -1911,10 +1911,9 @@ void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
- 
- }
- 
--void viafb_init_chip_info(struct pci_dev *pdev,
--			  const struct pci_device_id *pdi)
-+void viafb_init_chip_info(int chip_type)
- {
--	init_gfx_chip_info(pdev, pdi);
-+	init_gfx_chip_info(chip_type);
- 	init_tmds_chip_info();
- 	init_lvds_chip_info();
- 
-@@ -1981,12 +1980,11 @@ void viafb_update_device_setting(int hres, int vres,
- 	}
- }
- 
--static void init_gfx_chip_info(struct pci_dev *pdev,
--			       const struct pci_device_id *pdi)
-+static void init_gfx_chip_info(int chip_type)
- {
- 	u8 tmp;
- 
--	viaparinfo->chip_info->gfx_chip_name = pdi->driver_data;
-+	viaparinfo->chip_info->gfx_chip_name = chip_type;
- 
- 	/* Check revision of CLE266 Chip */
- 	if (viaparinfo->chip_info->gfx_chip_name = UNICHROME_CLE266) {
-@@ -2496,122 +2494,6 @@ static void disable_second_display_channel(void)
- 	viafb_write_reg_mask(CR6A, VIACR, BIT6, BIT6);
- }
- 
--static u_int16_t via_function3[] = {
--	CLE266_FUNCTION3, KM400_FUNCTION3, CN400_FUNCTION3, CN700_FUNCTION3,
--	CX700_FUNCTION3, KM800_FUNCTION3, KM890_FUNCTION3, P4M890_FUNCTION3,
--	P4M900_FUNCTION3, VX800_FUNCTION3, VX855_FUNCTION3,
--};
--
--/* Get the BIOS-configured framebuffer size from PCI configuration space
-- * of function 3 in the respective chipset */
--int viafb_get_fb_size_from_pci(void)
--{
--	int i;
--	u_int8_t offset = 0;
--	u_int32_t FBSize;
--	u_int32_t VideoMemSize;
--
--	/* search for the "FUNCTION3" device in this chipset */
--	for (i = 0; i < ARRAY_SIZE(via_function3); i++) {
--		struct pci_dev *pdev;
--
--		pdev = pci_get_device(PCI_VENDOR_ID_VIA, via_function3[i],
--				      NULL);
--		if (!pdev)
--			continue;
--
--		DEBUG_MSG(KERN_INFO "Device ID = %x\n", pdev->device);
--
--		switch (pdev->device) {
--		case CLE266_FUNCTION3:
--		case KM400_FUNCTION3:
--			offset = 0xE0;
--			break;
--		case CN400_FUNCTION3:
--		case CN700_FUNCTION3:
--		case CX700_FUNCTION3:
--		case KM800_FUNCTION3:
--		case KM890_FUNCTION3:
--		case P4M890_FUNCTION3:
--		case P4M900_FUNCTION3:
--		case VX800_FUNCTION3:
--		case VX855_FUNCTION3:
--		/*case CN750_FUNCTION3: */
--			offset = 0xA0;
--			break;
--		}
--
--		if (!offset)
--			break;
--
--		pci_read_config_dword(pdev, offset, &FBSize);
--		pci_dev_put(pdev);
--	}
--
--	if (!offset) {
--		printk(KERN_ERR "cannot determine framebuffer size\n");
--		return -EIO;
--	}
--
--	FBSize = FBSize & 0x00007000;
--	DEBUG_MSG(KERN_INFO "FB Size = %x\n", FBSize);
--
--	if (viaparinfo->chip_info->gfx_chip_name < UNICHROME_CX700) {
--		switch (FBSize) {
--		case 0x00004000:
--			VideoMemSize = (16 << 20);	/*16M */
--			break;
--
--		case 0x00005000:
--			VideoMemSize = (32 << 20);	/*32M */
--			break;
--
--		case 0x00006000:
--			VideoMemSize = (64 << 20);	/*64M */
--			break;
--
--		default:
--			VideoMemSize = (32 << 20);	/*32M */
--			break;
--		}
--	} else {
--		switch (FBSize) {
--		case 0x00001000:
--			VideoMemSize = (8 << 20);	/*8M */
--			break;
--
--		case 0x00002000:
--			VideoMemSize = (16 << 20);	/*16M */
--			break;
--
--		case 0x00003000:
--			VideoMemSize = (32 << 20);	/*32M */
--			break;
--
--		case 0x00004000:
--			VideoMemSize = (64 << 20);	/*64M */
--			break;
--
--		case 0x00005000:
--			VideoMemSize = (128 << 20);	/*128M */
--			break;
--
--		case 0x00006000:
--			VideoMemSize = (256 << 20);	/*256M */
--			break;
--
--		case 0x00007000:	/* Only on VX855/875 */
--			VideoMemSize = (512 << 20);	/*512M */
--			break;
--
--		default:
--			VideoMemSize = (32 << 20);	/*32M */
--			break;
--		}
--	}
--
--	return VideoMemSize;
--}
- 
- void viafb_set_dpa_gfx(int output_interface, struct GFX_DPA_SETTING\
- 					*p_gfx_dpa_setting)
-diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
-index d6b25ac..d248f4d 100644
---- a/drivers/video/via/hw.h
-+++ b/drivers/video/via/hw.h
-@@ -900,15 +900,13 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
- 	struct VideoModeTable *vmode_tbl1, int video_bpp1);
- void viafb_fill_var_timing_info(struct fb_var_screeninfo *var, int refresh,
- 	struct VideoModeTable *vmode_tbl);
--void viafb_init_chip_info(struct pci_dev *pdev,
--			  const struct pci_device_id *pdi);
-+void viafb_init_chip_info(int chip_type);
- void viafb_init_dac(int set_iga);
- int viafb_get_pixclock(int hres, int vres, int vmode_refresh);
- int viafb_get_refresh(int hres, int vres, u32 float_refresh);
- void viafb_update_device_setting(int hres, int vres, int bpp,
- 			   int vmode_refresh, int flag);
- 
--int viafb_get_fb_size_from_pci(void);
- void viafb_set_iga_path(void);
- void viafb_set_primary_address(u32 addr);
- void viafb_set_secondary_address(u32 addr);
-diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
-index 063a853..e51bb56 100644
---- a/drivers/video/via/lcd.c
-+++ b/drivers/video/via/lcd.c
-@@ -19,6 +19,8 @@
-  * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-  */
- #include <asm/olpc.h>
-+#include "via-core.h"
-+#include "via_i2c.h"
- #include "global.h"
- #include "lcdtbl.h"
- 
-diff --git a/drivers/video/via/via-core.c b/drivers/video/via/via-core.c
-index 41e4df9..1e6789d 100644
---- a/drivers/video/via/via-core.c
-+++ b/drivers/video/via/via-core.c
-@@ -7,9 +7,12 @@
- /*
-  * Core code for the Via multifunction framebuffer device.
-  */
-+#include "via-core.h"
-+#include "via_i2c.h"
-+#include "global.h"
-+
- #include <linux/module.h>
- #include <linux/platform_device.h>
--#include "global.h"  	/* Includes everything under the sun */
- 
- /*
-  * The default port config.
-@@ -23,6 +26,169 @@ static struct via_port_cfg adap_configs[] = {
- 	{ 0, 0, 0, 0 }
+ arch/powerpc/include/asm/mpc5121.h            |   32 +++
+ arch/powerpc/platforms/512x/mpc5121_ads.c     |    7 +
+ arch/powerpc/platforms/512x/mpc5121_generic.c |   12 +
+ arch/powerpc/platforms/512x/mpc512x.h         |    2 +
+ arch/powerpc/platforms/512x/mpc512x_shared.c  |  274 +++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_soc.h                 |    1 +
+ drivers/video/fsl-diu-fb.c                    |   17 ++-
+ 7 files changed, 343 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/mpc5121.h b/arch/powerpc/include/asm/mpc5121.h
+index e6a30bb..8c0ab2c 100644
+--- a/arch/powerpc/include/asm/mpc5121.h
++++ b/arch/powerpc/include/asm/mpc5121.h
+@@ -21,4 +21,36 @@ struct mpc512x_reset_module {
+ 	u32	rcer;	/* Reset Control Enable Register */
  };
  
 +/*
-+ * We currently only support one viafb device (will there ever be
-+ * more than one?), so just declare it globally here.
++ * Clock Control Module
 + */
-+static struct viafb_dev global_dev;
-+
-+
-+/*
-+ * Figure out how big our framebuffer memory is.  Kind of ugly,
-+ * but evidently we can't trust the information found in the
-+ * fbdev configuration area.
-+ */
-+static u16 via_function3[] = {
-+	CLE266_FUNCTION3, KM400_FUNCTION3, CN400_FUNCTION3, CN700_FUNCTION3,
-+	CX700_FUNCTION3, KM800_FUNCTION3, KM890_FUNCTION3, P4M890_FUNCTION3,
-+	P4M900_FUNCTION3, VX800_FUNCTION3, VX855_FUNCTION3,
++struct mpc512x_ccm {
++	u32	spmr;	/* System PLL Mode Register */
++	u32	sccr1;	/* System Clock Control Register 1 */
++	u32	sccr2;	/* System Clock Control Register 2 */
++	u32	scfr1;	/* System Clock Frequency Register 1 */
++	u32	scfr2;	/* System Clock Frequency Register 2 */
++	u32	scfr2s;	/* System Clock Frequency Shadow Register 2 */
++	u32	bcr;	/* Bread Crumb Register */
++	u32	p0ccr;	/* PSC0 Clock Control Register */
++	u32	p1ccr;	/* PSC1 CCR */
++	u32	p2ccr;	/* PSC2 CCR */
++	u32	p3ccr;	/* PSC3 CCR */
++	u32	p4ccr;	/* PSC4 CCR */
++	u32	p5ccr;	/* PSC5 CCR */
++	u32	p6ccr;	/* PSC6 CCR */
++	u32	p7ccr;	/* PSC7 CCR */
++	u32	p8ccr;	/* PSC8 CCR */
++	u32	p9ccr;	/* PSC9 CCR */
++	u32	p10ccr;	/* PSC10 CCR */
++	u32	p11ccr;	/* PSC11 CCR */
++	u32	spccr;	/* SPDIF Clock Control Register */
++	u32	cccr;	/* CFM Clock Control Register */
++	u32	dccr;	/* DIU Clock Control Register */
++	u32	m1ccr;	/* MSCAN1 CCR */
++	u32	m2ccr;	/* MSCAN2 CCR */
++	u32	m3ccr;	/* MSCAN3 CCR */
++	u32	m4ccr;	/* MSCAN4 CCR */
++	u8	res[0x98]; /* Reserved */
 +};
-+
-+/* Get the BIOS-configured framebuffer size from PCI configuration space
-+ * of function 3 in the respective chipset */
-+static int viafb_get_fb_size_from_pci(int chip_type)
+ #endif /* __ASM_POWERPC_MPC5121_H__ */
+diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
+index ee6ae12..082aa6f 100644
+--- a/arch/powerpc/platforms/512x/mpc5121_ads.c
++++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
+@@ -42,6 +42,7 @@ static void __init mpc5121_ads_setup_arch(void)
+ 	for_each_compatible_node(np, "pci", "fsl,mpc5121-pci")
+ 		mpc83xx_add_bridge(np);
+ #endif
++	mpc512x_setup_diu();
+ }
+ 
+ static void __init mpc5121_ads_init_IRQ(void)
+@@ -60,11 +61,17 @@ static int __init mpc5121_ads_probe(void)
+ 	return of_flat_dt_is_compatible(root, "fsl,mpc5121ads");
+ }
+ 
++void __init mpc5121_ads_init_early(void)
 +{
-+	int i;
-+	u8 offset = 0;
-+	u32 FBSize;
-+	u32 VideoMemSize;
-+
-+	/* search for the "FUNCTION3" device in this chipset */
-+	for (i = 0; i < ARRAY_SIZE(via_function3); i++) {
-+		struct pci_dev *pdev;
-+
-+		pdev = pci_get_device(PCI_VENDOR_ID_VIA, via_function3[i],
-+				      NULL);
-+		if (!pdev)
-+			continue;
-+
-+		DEBUG_MSG(KERN_INFO "Device ID = %x\n", pdev->device);
-+
-+		switch (pdev->device) {
-+		case CLE266_FUNCTION3:
-+		case KM400_FUNCTION3:
-+			offset = 0xE0;
-+			break;
-+		case CN400_FUNCTION3:
-+		case CN700_FUNCTION3:
-+		case CX700_FUNCTION3:
-+		case KM800_FUNCTION3:
-+		case KM890_FUNCTION3:
-+		case P4M890_FUNCTION3:
-+		case P4M900_FUNCTION3:
-+		case VX800_FUNCTION3:
-+		case VX855_FUNCTION3:
-+		/*case CN750_FUNCTION3: */
-+			offset = 0xA0;
-+			break;
-+		}
-+
-+		if (!offset)
-+			break;
-+
-+		pci_read_config_dword(pdev, offset, &FBSize);
-+		pci_dev_put(pdev);
-+	}
-+
-+	if (!offset) {
-+		printk(KERN_ERR "cannot determine framebuffer size\n");
-+		return -EIO;
-+	}
-+
-+	FBSize = FBSize & 0x00007000;
-+	DEBUG_MSG(KERN_INFO "FB Size = %x\n", FBSize);
-+
-+	if (chip_type < UNICHROME_CX700) {
-+		switch (FBSize) {
-+		case 0x00004000:
-+			VideoMemSize = (16 << 20);	/*16M */
-+			break;
-+
-+		case 0x00005000:
-+			VideoMemSize = (32 << 20);	/*32M */
-+			break;
-+
-+		case 0x00006000:
-+			VideoMemSize = (64 << 20);	/*64M */
-+			break;
-+
-+		default:
-+			VideoMemSize = (32 << 20);	/*32M */
-+			break;
-+		}
-+	} else {
-+		switch (FBSize) {
-+		case 0x00001000:
-+			VideoMemSize = (8 << 20);	/*8M */
-+			break;
-+
-+		case 0x00002000:
-+			VideoMemSize = (16 << 20);	/*16M */
-+			break;
-+
-+		case 0x00003000:
-+			VideoMemSize = (32 << 20);	/*32M */
-+			break;
-+
-+		case 0x00004000:
-+			VideoMemSize = (64 << 20);	/*64M */
-+			break;
-+
-+		case 0x00005000:
-+			VideoMemSize = (128 << 20);	/*128M */
-+			break;
-+
-+		case 0x00006000:
-+			VideoMemSize = (256 << 20);	/*256M */
-+			break;
-+
-+		case 0x00007000:	/* Only on VX855/875 */
-+			VideoMemSize = (512 << 20);	/*512M */
-+			break;
-+
-+		default:
-+			VideoMemSize = (32 << 20);	/*32M */
-+			break;
-+		}
-+	}
-+
-+	return VideoMemSize;
++	mpc512x_init_diu();
 +}
 +
-+
-+/*
-+ * Figure out and map our MMIO regions.
-+ */
-+static int __devinit via_pci_setup_mmio(struct viafb_dev *vdev)
+ define_machine(mpc5121_ads) {
+ 	.name			= "MPC5121 ADS",
+ 	.probe			= mpc5121_ads_probe,
+ 	.setup_arch		= mpc5121_ads_setup_arch,
+ 	.init			= mpc512x_init,
++	.init_early		= mpc512x_init_diu,
+ 	.init_IRQ		= mpc5121_ads_init_IRQ,
+ 	.get_irq		= ipic_get_irq,
+ 	.calibrate_decr		= generic_calibrate_decr,
+diff --git a/arch/powerpc/platforms/512x/mpc5121_generic.c b/arch/powerpc/platforms/512x/mpc5121_generic.c
+index a6c0e3a..c5ecb3d 100644
+--- a/arch/powerpc/platforms/512x/mpc5121_generic.c
++++ b/arch/powerpc/platforms/512x/mpc5121_generic.c
+@@ -48,10 +48,22 @@ static int __init mpc5121_generic_probe(void)
+ 	return board[i] != NULL;
+ }
+ 
++void __init mpc512x_generic_init_early(void)
 +{
-+	/*
-+	 * Hook up to the device registers.
-+	 */
-+	vdev->engine_start = pci_resource_start(vdev->pdev, 1);
-+	vdev->engine_len = pci_resource_len(vdev->pdev, 1);
-+	/* If this fails, others will notice later */
-+	vdev->engine_mmio = ioremap_nocache(vdev->engine_start,
-+			vdev->engine_len);
++	mpc512x_init_diu();
++}
 +
-+	/*
-+	 * Likewise with I/O memory.
-+	 */
-+	vdev->fbmem_start = pci_resource_start(vdev->pdev, 0);
-+	vdev->fbmem_len = viafb_get_fb_size_from_pci(vdev->chip_type);
-+	if (vdev->fbmem_len < 0)
-+		return vdev->fbmem_len;
-+	vdev->fbmem = ioremap_nocache(vdev->fbmem_start, vdev->fbmem_len);
-+	if (vdev->fbmem = NULL)
-+		return -ENOMEM;
++void __init mpc512x_generic_setup_arch(void)
++{
++	mpc512x_setup_diu();
++}
++
+ define_machine(mpc5121_generic) {
+ 	.name			= "MPC5121 generic",
+ 	.probe			= mpc5121_generic_probe,
+ 	.init			= mpc512x_init,
++	.init_early		= mpc512x_generic_init_early,
++	.setup_arch		= mpc512x_generic_setup_arch,
+ 	.init_IRQ		= mpc512x_init_IRQ,
+ 	.get_irq		= ipic_get_irq,
+ 	.calibrate_decr		= generic_calibrate_decr,
+diff --git a/arch/powerpc/platforms/512x/mpc512x.h b/arch/powerpc/platforms/512x/mpc512x.h
+index b2daca0..1ab6d11 100644
+--- a/arch/powerpc/platforms/512x/mpc512x.h
++++ b/arch/powerpc/platforms/512x/mpc512x.h
+@@ -16,4 +16,6 @@ extern void __init mpc512x_init(void);
+ extern int __init mpc5121_clk_init(void);
+ void __init mpc512x_declare_of_platform_devices(void);
+ extern void mpc512x_restart(char *cmd);
++extern void mpc512x_init_diu(void);
++extern void mpc512x_setup_diu(void);
+ #endif				/* __MPC512X_H__ */
+diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
+index b7f518a..e5a8e8a 100644
+--- a/arch/powerpc/platforms/512x/mpc512x_shared.c
++++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
+@@ -16,7 +16,11 @@
+ #include <linux/io.h>
+ #include <linux/irq.h>
+ #include <linux/of_platform.h>
++#include <linux/fsl-diu-fb.h>
++#include <linux/bootmem.h>
++#include <sysdev/fsl_soc.h>
+ 
++#include <asm/cacheflush.h>
+ #include <asm/machdep.h>
+ #include <asm/ipic.h>
+ #include <asm/prom.h>
+@@ -53,6 +57,276 @@ void mpc512x_restart(char *cmd)
+ 		;
+ }
+ 
++struct fsl_diu_shared_fb {
++	u8		gamma[0x300];	/* 32-bit aligned! */
++	struct diu_ad	ad0;		/* 32-bit aligned! */
++	phys_addr_t	fb_phys;
++	size_t		fb_len;
++	bool		in_use;
++};
++
++unsigned int mpc512x_get_pixel_format(unsigned int bits_per_pixel,
++				      int monitor_port)
++{
++	switch (bits_per_pixel) {
++	case 32:
++		return 0x88883316;
++	case 24:
++		return 0x88082219;
++	case 16:
++		return 0x65053118;
++	}
++	return 0x00000400;
++}
++
++void mpc512x_set_gamma_table(int monitor_port, char *gamma_table_base)
++{
++}
++
++void mpc512x_set_monitor_port(int monitor_port)
++{
++}
++
++#define DIU_DIV_MASK	0x000000ff
++void mpc512x_set_pixel_clock(unsigned int pixclock)
++{
++	unsigned long bestval, bestfreq, speed_ccb, busfreq;
++	unsigned long minpixclock, maxpixclock, pixval;
++	struct mpc512x_ccm __iomem *ccm;
++	struct device_node *np;
++	u32 temp;
++	long err;
++	int i;
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-clock");
++	if (!np) {
++		pr_err("Can't find clock control module.\n");
++		return;
++	}
++
++	ccm = of_iomap(np, 0);
++	of_node_put(np);
++	if (!ccm) {
++		pr_err("Can't map clock control module reg.\n");
++		return;
++	}
++
++	np = of_find_node_by_type(NULL, "cpu");
++	if (np) {
++		const unsigned int *prop +			of_get_property(np, "bus-frequency", NULL);
++
++		of_node_put(np);
++		if (prop) {
++			busfreq = *prop;
++		} else {
++			pr_err("Can't get bus-frequency property\n");
++			return;
++		}
++	} else {
++		pr_err("Can't find 'cpu' node.\n");
++		return;
++	}
++
++	/* Pixel Clock configuration */
++	pr_debug("DIU: Bus Frequency = %lu\n", busfreq);
++	speed_ccb = busfreq * 4;
++
++	/* Calculate the pixel clock with the smallest error */
++	/* calculate the following in steps to avoid overflow */
++	pr_debug("DIU pixclock in ps - %d\n", pixclock);
++	temp = (1000000000 / pixclock) * 1000;
++	pixclock = temp;
++	pr_debug("DIU pixclock freq - %u\n", pixclock);
++
++	temp = temp / 20; /* pixclock * 0.05 */
++	pr_debug("deviation = %d\n", temp);
++	minpixclock = pixclock - temp;
++	maxpixclock = pixclock + temp;
++	pr_debug("DIU minpixclock - %lu\n", minpixclock);
++	pr_debug("DIU maxpixclock - %lu\n", maxpixclock);
++	pixval = speed_ccb/pixclock;
++	pr_debug("DIU pixval = %lu\n", pixval);
++
++	err = 100000000;
++	bestval = pixval;
++	pr_debug("DIU bestval = %lu\n", bestval);
++
++	bestfreq = 0;
++	for (i = -1; i <= 1; i++) {
++		temp = speed_ccb / (pixval+i);
++		pr_debug("DIU test pixval i=%d, pixval=%lu, temp freq. = %u\n",
++			i, pixval, temp);
++		if ((temp < minpixclock) || (temp > maxpixclock))
++			pr_debug("DIU exceeds monitor range (%lu to %lu)\n",
++				minpixclock, maxpixclock);
++		else if (abs(temp - pixclock) < err) {
++			pr_debug("Entered the else if block %d\n", i);
++			err = abs(temp - pixclock);
++			bestval = pixval + i;
++			bestfreq = temp;
++		}
++	}
++
++	pr_debug("DIU chose = %lx\n", bestval);
++	pr_debug("DIU error = %ld\n NomPixClk ", err);
++	pr_debug("DIU: Best Freq = %lx\n", bestfreq);
++	/* Modify DIU_DIV in CCM SCFR1 */
++	temp = in_be32(&ccm->scfr1);
++	pr_debug("DIU: Current value of SCFR1: 0x%08x\n", temp);
++	temp &= ~DIU_DIV_MASK;
++	temp |= (bestval & DIU_DIV_MASK);
++	out_be32(&ccm->scfr1, temp);
++	pr_debug("DIU: Modified value of SCFR1: 0x%08x\n", temp);
++	iounmap(ccm);
++}
++
++ssize_t mpc512x_show_monitor_port(int monitor_port, char *buf)
++{
++	return sprintf(buf, "0 - 5121 LCD\n");
++}
++
++int mpc512x_set_sysfs_monitor_port(int val)
++{
 +	return 0;
 +}
 +
-+static void __devexit via_pci_teardown_mmio(struct viafb_dev *vdev)
++static struct fsl_diu_shared_fb __attribute__ ((__aligned__(8))) diu_shared_fb;
++
++#if defined(CONFIG_FB_FSL_DIU) || \
++    defined(CONFIG_FB_FSL_DIU_MODULE)
++static inline void mpc512x_free_bootmem(struct page *page)
 +{
-+	iounmap(vdev->fbmem);
-+	iounmap(vdev->engine_mmio);
++	__ClearPageReserved(page);
++	BUG_ON(PageTail(page));
++	BUG_ON(atomic_read(&page->_count) > 1);
++	atomic_set(&page->_count, 1);
++	__free_page(page);
++	totalram_pages++;
 +}
 +
- 
- static int __devinit via_pci_probe(struct pci_dev *pdev,
- 		const struct pci_device_id *ent)
-@@ -33,9 +199,19 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 	if (ret)
- 		return ret;
- 	/*
-+	 * Global device initialization.
-+	 */
-+	memset(&global_dev, 0, sizeof(global_dev));
-+	global_dev.pdev = pdev;
-+	global_dev.chip_type = ent->driver_data;
-+	spin_lock_init(&global_dev.reg_lock);
-+	ret = via_pci_setup_mmio(&global_dev);
-+	if (ret)
-+		goto out_teardown;
-+	/*
- 	 * Set up subsidiary devices
- 	 */
--	ret = via_fb_pci_probe(pdev, ent);
-+	ret = via_fb_pci_probe(&global_dev);
- 	if (ret)
- 		return ret;
- 	/*
-@@ -48,12 +224,17 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 		return ret;
- 	}
- 	return 0;
++void mpc512x_release_bootmem(void)
++{
++	unsigned long addr = diu_shared_fb.fb_phys & PAGE_MASK;
++	unsigned long size = diu_shared_fb.fb_len;
++	unsigned long start, end;
 +
-+out_teardown:
-+	via_pci_teardown_mmio(&global_dev);
-+	return ret;
- }
- 
- static void __devexit via_pci_remove(struct pci_dev *pdev)
- {
- 	viafb_delete_i2c_busses();
- 	via_fb_pci_remove(pdev);
-+	via_pci_teardown_mmio(&global_dev);
- 	pci_disable_device(pdev);
- }
- 
-diff --git a/drivers/video/via/via-core.h b/drivers/video/via/via-core.h
-index 1c2fb06..d004290 100644
---- a/drivers/video/via/via-core.h
-+++ b/drivers/video/via/via-core.h
-@@ -22,6 +22,9 @@
- 
- #ifndef __VIA_CORE_H__
- #define __VIA_CORE_H__
-+#include <linux/spinlock.h>
-+#include <linux/pci.h>
++	if (diu_shared_fb.in_use) {
++		start = PFN_UP(addr);
++		end = PFN_DOWN(addr + size);
 +
- /*
-  * A description of each known serial I2C/GPIO port.
-  */
-@@ -49,7 +52,38 @@ enum viafb_i2c_adap {
- struct via_port_cfg {
- 	enum via_port_type	type;
- 	enum via_port_mode	mode;
--	u_int16_t		io_port;
--	u_int8_t		ioport_index;
-+	u16			io_port;
-+	u8			ioport_index;
- };
++		for (; start < end; start++)
++			mpc512x_free_bootmem(pfn_to_page(start));
++
++		diu_shared_fb.in_use = false;
++	}
++	diu_ops.release_bootmem	= NULL;
++}
++#endif
 +
 +/*
-+ * This is the global viafb "device" containing stuff needed by
-+ * all subdevs.
++ * Check if DIU was pre-initialized. If so, perform steps
++ * needed to continue displaying through the whole boot process.
++ * Move area descriptor and gamma table elsewhere, they are
++ * destroyed by bootmem allocator otherwise. The frame buffer
++ * address range will be reserved in setup_arch() after bootmem
++ * allocator is up.
 + */
-+struct viafb_dev {
-+	struct pci_dev *pdev;
-+	int chip_type;
-+	/*
-+	 * Spinlock for access to device registers.  Not yet
-+	 * globally used.
-+	 */
-+	spinlock_t reg_lock;
-+	/*
-+	 * The framebuffer MMIO region.  Little, if anything, touches
-+	 * this memory directly, and certainly nothing outside of the
-+	 * framebuffer device itself.  We *do* have to be able to allocate
-+	 * chunks of this memory for other devices, though.
-+	 */
-+	unsigned long fbmem_start;
-+	long fbmem_len;
-+	void __iomem *fbmem;
-+	/*
-+	 * The MMIO region for device registers.
-+	 */
-+	unsigned long engine_start;
-+	unsigned long engine_len;
-+	void __iomem *engine_mmio;
++void __init mpc512x_init_diu(void)
++{
++	struct device_node *np;
++	struct diu __iomem *diu_reg;
++	phys_addr_t desc;
++	void __iomem *vaddr;
++	unsigned long mode, pix_fmt, res, bpp;
++	unsigned long dst;
 +
-+};
++	np = of_find_compatible_node(NULL, NULL, "fsl,mpc5121-diu");
++	if (!np) {
++		pr_err("No DIU node\n");
++		return;
++	}
 +
- #endif /* __VIA_CORE_H__ */
-diff --git a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
-index 124c935..6cb94a8 100644
---- a/drivers/video/via/via_i2c.c
-+++ b/drivers/video/via/via_i2c.c
-@@ -19,6 +19,8 @@
-  * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-  */
- 
-+#include "via-core.h"
-+#include "via_i2c.h"
- #include "global.h"
- 
- /*
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index cd00c37..dc1b384 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -24,6 +24,7 @@
- #include <linux/stat.h>
- #define _MASTER_FILE
- 
-+#include "via-core.h"
- #include "global.h"
- 
- static char *viafb_name = "Via";
-@@ -220,7 +221,7 @@ static int viafb_check_var(struct fb_var_screeninfo *var,
- 	/* Adjust var according to our driver's own table */
- 	viafb_fill_var_timing_info(var, viafb_refresh, vmode_entry);
- 	if (info->var.accel_flags & FB_ACCELF_TEXT &&
--		!ppar->shared->engine_mmio)
-+		!ppar->shared->vdev->engine_mmio)
- 		info->var.accel_flags = 0;
- 
- 	return 0;
-@@ -695,7 +696,7 @@ static void viafb_fillrect(struct fb_info *info,
- 		rop = 0xF0;
- 
- 	DEBUG_MSG(KERN_DEBUG "viafb 2D engine: fillrect\n");
--	if (shared->hw_bitblt(shared->engine_mmio, VIA_BITBLT_FILL,
-+	if (shared->hw_bitblt(shared->vdev->engine_mmio, VIA_BITBLT_FILL,
- 		rect->width, rect->height, info->var.bits_per_pixel,
- 		viapar->vram_addr, info->fix.line_length, rect->dx, rect->dy,
- 		NULL, 0, 0, 0, 0, fg_color, 0, rop))
-@@ -717,7 +718,7 @@ static void viafb_copyarea(struct fb_info *info,
- 		return;
- 
- 	DEBUG_MSG(KERN_DEBUG "viafb 2D engine: copyarea\n");
--	if (shared->hw_bitblt(shared->engine_mmio, VIA_BITBLT_COLOR,
-+	if (shared->hw_bitblt(shared->vdev->engine_mmio, VIA_BITBLT_COLOR,
- 		area->width, area->height, info->var.bits_per_pixel,
- 		viapar->vram_addr, info->fix.line_length, area->dx, area->dy,
- 		NULL, viapar->vram_addr, info->fix.line_length,
-@@ -754,7 +755,7 @@ static void viafb_imageblit(struct fb_info *info,
- 		op = VIA_BITBLT_COLOR;
- 
- 	DEBUG_MSG(KERN_DEBUG "viafb 2D engine: imageblit\n");
--	if (shared->hw_bitblt(shared->engine_mmio, op,
-+	if (shared->hw_bitblt(shared->vdev->engine_mmio, op,
- 		image->width, image->height, info->var.bits_per_pixel,
- 		viapar->vram_addr, info->fix.line_length, image->dx, image->dy,
- 		(u32 *)image->data, 0, 0, 0, 0, fg_color, bg_color, 0))
-@@ -764,7 +765,7 @@ static void viafb_imageblit(struct fb_info *info,
- static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
++	diu_reg = of_iomap(np, 0);
++	of_node_put(np);
++	if (!diu_reg) {
++		pr_err("Can't map DIU\n");
++		return;
++	}
++
++	mode = in_be32(&diu_reg->diu_mode);
++	if (mode != MFB_MODE1) {
++		pr_info("%s: DIU OFF\n", __func__);
++		goto out;
++	}
++
++	desc = in_be32(&diu_reg->desc[0]);
++	vaddr = ioremap(desc, sizeof(struct diu_ad));
++	if (!vaddr) {
++		pr_err("Can't map DIU area desc.\n");
++		goto out;
++	}
++	memcpy(&diu_shared_fb.ad0, vaddr, sizeof(struct diu_ad));
++	/* flush fb area descriptor */
++	dst = (unsigned long)&diu_shared_fb.ad0;
++	flush_dcache_range(dst, dst + sizeof(struct diu_ad) - 1);
++
++	res = in_be32(&diu_reg->disp_size);
++	pix_fmt = in_le32(vaddr);
++	bpp = ((pix_fmt >> 16) & 0x3) + 1;
++	diu_shared_fb.fb_phys = in_le32(vaddr + 4);
++	diu_shared_fb.fb_len = ((res & 0xfff0000) >> 16) * (res & 0xfff) * bpp;
++	diu_shared_fb.in_use = true;
++	iounmap(vaddr);
++
++	desc = in_be32(&diu_reg->gamma);
++	vaddr = ioremap(desc, sizeof(diu_shared_fb.gamma));
++	if (!vaddr) {
++		pr_err("Can't map DIU area desc.\n");
++		diu_shared_fb.in_use = false;
++		goto out;
++	}
++	memcpy(&diu_shared_fb.gamma, vaddr, sizeof(diu_shared_fb.gamma));
++	/* flush gamma table */
++	dst = (unsigned long)&diu_shared_fb.gamma;
++	flush_dcache_range(dst, dst + sizeof(diu_shared_fb.gamma) - 1);
++
++	iounmap(vaddr);
++	out_be32(&diu_reg->gamma, virt_to_phys(&diu_shared_fb.gamma));
++	out_be32(&diu_reg->desc[1], 0);
++	out_be32(&diu_reg->desc[2], 0);
++	out_be32(&diu_reg->desc[0], virt_to_phys(&diu_shared_fb.ad0));
++
++out:
++	iounmap(diu_reg);
++}
++
++void __init mpc512x_setup_diu(void)
++{
++	int ret;
++
++	if (diu_shared_fb.in_use) {
++		ret = reserve_bootmem(diu_shared_fb.fb_phys,
++				      diu_shared_fb.fb_len,
++				      BOOTMEM_EXCLUSIVE);
++		if (ret) {
++			pr_err("%s: reserve bootmem failed\n", __func__);
++			diu_shared_fb.in_use = false;
++		}
++	}
++
++#if defined(CONFIG_FB_FSL_DIU) || \
++    defined(CONFIG_FB_FSL_DIU_MODULE)
++	diu_ops.get_pixel_format	= mpc512x_get_pixel_format;
++	diu_ops.set_gamma_table		= mpc512x_set_gamma_table;
++	diu_ops.set_monitor_port	= mpc512x_set_monitor_port;
++	diu_ops.set_pixel_clock		= mpc512x_set_pixel_clock;
++	diu_ops.show_monitor_port	= mpc512x_show_monitor_port;
++	diu_ops.set_sysfs_monitor_port	= mpc512x_set_sysfs_monitor_port;
++	diu_ops.release_bootmem		= mpc512x_release_bootmem;
++#endif
++}
++
+ void __init mpc512x_init_IRQ(void)
  {
- 	struct viafb_par *viapar = info->par;
--	void __iomem *engine = viapar->shared->engine_mmio;
-+	void __iomem *engine = viapar->shared->vdev->engine_mmio;
- 	u32 temp, xx, yy, bg_color = 0, fg_color = 0,
- 		chip_name = viapar->shared->chip_info.gfx_chip_name;
- 	int i, j = 0, cur_size = 64;
-@@ -1732,8 +1733,7 @@ static int parse_mode(const char *str, u32 *xres, u32 *yres)
- }
+ 	struct device_node *np;
+diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+index 42381bb..5360948 100644
+--- a/arch/powerpc/sysdev/fsl_soc.h
++++ b/arch/powerpc/sysdev/fsl_soc.h
+@@ -30,6 +30,7 @@ struct platform_diu_data_ops {
+ 	void (*set_pixel_clock) (unsigned int pixclock);
+ 	ssize_t (*show_monitor_port) (int monitor_port, char *buf);
+ 	int (*set_sysfs_monitor_port) (int val);
++	void (*release_bootmem) (void);
+ };
  
+ extern struct platform_diu_data_ops diu_ops;
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 7acdc09..81dec09 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -1103,6 +1103,10 @@ static int fsl_diu_open(struct fb_info *info, int user)
+ 	struct mfb_info *mfbi = info->par;
+ 	int res = 0;
  
--int __devinit via_fb_pci_probe(struct pci_dev *pdev,
--		const struct pci_device_id *ent)
-+int __devinit via_fb_pci_probe(struct viafb_dev *vdev)
- {
- 	u32 default_xres, default_yres;
- 	struct VideoModeTable *vmode_entry;
-@@ -1750,7 +1750,7 @@ int __devinit via_fb_pci_probe(struct pci_dev *pdev,
- 	*/
- 	viafbinfo = framebuffer_alloc(viafb_par_length +
- 		ALIGN(sizeof(struct viafb_shared), BITS_PER_LONG/8),
--		&pdev->dev);
-+		&vdev->pdev->dev);
- 	if (!viafbinfo) {
- 		printk(KERN_ERR"Could not allocate memory for viafb_info.\n");
- 		return -ENOMEM;
-@@ -1758,6 +1758,7 @@ int __devinit via_fb_pci_probe(struct pci_dev *pdev,
++	/* free boot splash memory on first /dev/fb0 open */
++	if (!mfbi->index && diu_ops.release_bootmem)
++		diu_ops.release_bootmem();
++
+ 	spin_lock(&diu_lock);
+ 	mfbi->count++;
+ 	if (mfbi->count = 1) {
+@@ -1430,6 +1434,7 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
+ 	int ret, i, error = 0;
+ 	struct resource res;
+ 	struct fsl_diu_data *machine_data;
++	int diu_mode;
  
- 	viaparinfo = (struct viafb_par *)viafbinfo->par;
- 	viaparinfo->shared = viafbinfo->par + viafb_par_length;
-+	viaparinfo->shared->vdev = vdev;
- 	viaparinfo->vram_addr = 0;
- 	viaparinfo->tmds_setting_info = &viaparinfo->shared->tmds_setting_info;
- 	viaparinfo->lvds_setting_info = &viaparinfo->shared->lvds_setting_info;
-@@ -1765,7 +1766,6 @@ int __devinit via_fb_pci_probe(struct pci_dev *pdev,
- 		&viaparinfo->shared->lvds_setting_info2;
- 	viaparinfo->crt_setting_info = &viaparinfo->shared->crt_setting_info;
- 	viaparinfo->chip_info = &viaparinfo->shared->chip_info;
--	spin_lock_init(&viaparinfo->reg_lock);
+ 	machine_data = kzalloc(sizeof(struct fsl_diu_data), GFP_KERNEL);
+ 	if (!machine_data)
+@@ -1466,7 +1471,9 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
+ 		goto error2;
+ 	}
  
- 	if (viafb_dual_fb)
- 		viafb_SAMM_ON = 1;
-@@ -1776,25 +1776,20 @@ int __devinit via_fb_pci_probe(struct pci_dev *pdev,
- 	if (!viafb_SAMM_ON)
- 		viafb_dual_fb = 0;
+-	out_be32(&dr.diu_reg->diu_mode, 0);		/* disable DIU anyway*/
++	diu_mode = in_be32(&dr.diu_reg->diu_mode);
++	if (diu_mode != MFB_MODE1)
++		out_be32(&dr.diu_reg->diu_mode, 0);	/* disable DIU */
  
--	viafb_init_chip_info(pdev, ent);
--	viaparinfo->fbmem = pci_resource_start(pdev, 0);
--	viaparinfo->memsize = viafb_get_fb_size_from_pci();
--	if (viaparinfo->memsize < 0) {
--		rc = viaparinfo->memsize;
--		goto out_fb_release;
--	}
-+	viafb_init_chip_info(vdev->chip_type);
+ 	/* Get the IRQ of the DIU */
+ 	machine_data->irq = irq_of_parse_and_map(np, 0);
+@@ -1514,7 +1521,13 @@ static int __devinit fsl_diu_probe(struct of_device *ofdev,
+ 	machine_data->dummy_ad->offset_xyd = 0;
+ 	machine_data->dummy_ad->next_ad = 0;
+ 
+-	out_be32(&dr.diu_reg->desc[0], machine_data->dummy_ad->paddr);
 +	/*
-+	 * The framebuffer will have been successfully mapped by
-+	 * the core (or we'd not be here), but we still need to
-+	 * set up our own accounting.
++	 * Let DIU display splash screen if it was pre-initialized
++	 * by the bootloader, set dummy area descriptor otherwise.
 +	 */
-+	viaparinfo->fbmem = vdev->fbmem_start;
-+	viaparinfo->memsize = vdev->fbmem_len;
- 	viaparinfo->fbmem_free = viaparinfo->memsize;
- 	viaparinfo->fbmem_used = 0;
--	viafbinfo->screen_base = ioremap_nocache(viaparinfo->fbmem,
--		viaparinfo->memsize);
--	if (!viafbinfo->screen_base) {
--		printk(KERN_ERR "ioremap of fbmem failed\n");
--		rc = -ENOMEM;
--		goto out_fb_release;
--	}
-+	viafbinfo->screen_base = vdev->fbmem;
++	if (diu_mode != MFB_MODE1)
++		out_be32(&dr.diu_reg->desc[0], machine_data->dummy_ad->paddr);
++
+ 	out_be32(&dr.diu_reg->desc[1], machine_data->dummy_ad->paddr);
+ 	out_be32(&dr.diu_reg->desc[2], machine_data->dummy_ad->paddr);
  
--	viafbinfo->fix.mmio_start = pci_resource_start(pdev, 1);
--	viafbinfo->fix.mmio_len = pci_resource_len(pdev, 1);
-+	viafbinfo->fix.mmio_start = vdev->engine_start;
-+	viafbinfo->fix.mmio_len = vdev->engine_len;
- 	viafbinfo->node = 0;
- 	viafbinfo->fbops = &viafb_ops;
- 	viafbinfo->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
-@@ -1862,12 +1857,13 @@ int __devinit via_fb_pci_probe(struct pci_dev *pdev,
- 	viafbinfo->var = default_var;
- 
- 	if (viafb_dual_fb) {
--		viafbinfo1 = framebuffer_alloc(viafb_par_length, &pdev->dev);
-+		viafbinfo1 = framebuffer_alloc(viafb_par_length,
-+				&vdev->pdev->dev);
- 		if (!viafbinfo1) {
- 			printk(KERN_ERR
- 			"allocate the second framebuffer struct error\n");
- 			rc = -ENOMEM;
--			goto out_unmap_screen;
-+			goto out_fb_release;
- 		}
- 		viaparinfo1 = viafbinfo1->par;
- 		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
-@@ -1958,8 +1954,6 @@ out_dealloc_cmap:
- out_fb1_release:
- 	if (viafbinfo1)
- 		framebuffer_release(viafbinfo1);
--out_unmap_screen:
--	iounmap(viafbinfo->screen_base);
- out_fb_release:
- 	framebuffer_release(viafbinfo);
- 	return rc;
-@@ -1972,8 +1966,6 @@ void __devexit via_fb_pci_remove(struct pci_dev *pdev)
- 	unregister_framebuffer(viafbinfo);
- 	if (viafb_dual_fb)
- 		unregister_framebuffer(viafbinfo1);
--	iounmap((void *)viafbinfo->screen_base);
--	iounmap(viaparinfo->shared->engine_mmio);
- 
- 	framebuffer_release(viafbinfo);
- 	if (viafb_dual_fb)
-diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
-index 1fe6c29..f567d54 100644
---- a/drivers/video/via/viafbdev.h
-+++ b/drivers/video/via/viafbdev.h
-@@ -30,7 +30,6 @@
- #include "share.h"
- #include "chip.h"
- #include "hw.h"
--#include "via_i2c.h"
- 
- #define VERSION_MAJOR       2
- #define VERSION_KERNEL      6	/* For kernel 2.6 */
-@@ -42,6 +41,7 @@
- 
- struct viafb_shared {
- 	struct proc_dir_entry *proc_entry;	/*viafb proc entry */
-+	struct viafb_dev *vdev;			/* Global dev info */
- 
- 	/* All the information will be needed to set engine */
- 	struct tmds_setting_information tmds_setting_info;
-@@ -51,7 +51,6 @@ struct viafb_shared {
- 	struct chip_information chip_info;
- 
- 	/* hardware acceleration stuff */
--	void __iomem *engine_mmio;
- 	u32 cursor_vram_addr;
- 	u32 vq_vram_addr;	/* virtual queue address in video ram */
- 	int (*hw_bitblt)(void __iomem *engine, u8 op, u32 width, u32 height,
-@@ -72,14 +71,6 @@ struct viafb_par {
- 
- 	struct viafb_shared *shared;
- 
--	/*
--	 * (jc) I believe one should use locking to protect against
--	 * concurrent access to the device ports and registers.  Thus,
--	 * this lock.  Use of it is *far* from universal, though...
--	 * someday...
--	 */
--	spinlock_t reg_lock;
--
- 	/* All the information will be needed to set engine */
- 	/* depreciated, use the ones in shared directly */
- 	struct tmds_setting_information *tmds_setting_info;
-@@ -107,6 +98,6 @@ u8 viafb_gpio_i2c_read_lvds(struct lvds_setting_information
- void viafb_gpio_i2c_write_mask_lvds(struct lvds_setting_information
- 			      *plvds_setting_info, struct lvds_chip_information
- 			      *plvds_chip_info, struct IODATA io_data);
--int via_fb_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
-+int via_fb_pci_probe(struct viafb_dev *vdev);
- void via_fb_pci_remove(struct pci_dev *pdev);
- #endif /* __VIAFBDEV_H__ */
-diff --git a/drivers/video/via/vt1636.c b/drivers/video/via/vt1636.c
-index 4589c6e..e9f3661 100644
---- a/drivers/video/via/vt1636.c
-+++ b/drivers/video/via/vt1636.c
-@@ -19,6 +19,8 @@
-  * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-  */
- 
-+#include "via-core.h"
-+#include "via_i2c.h"
- #include "global.h"
- 
- u8 viafb_gpio_i2c_read_lvds(struct lvds_setting_information
 -- 
-1.7.0.1
+1.6.3.3
 

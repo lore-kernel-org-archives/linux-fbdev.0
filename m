@@ -1,123 +1,107 @@
-From: Henrik Kretzschmar <henne@nachtwindheim.de>
-Date: Wed, 28 Apr 2010 10:25:05 +0000
-Subject: [PATCH 4/4] sgivwfb: correct sections
-Message-Id: <1272450305-7284-4-git-send-email-henne@nachtwindheim.de>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Fri, 30 Apr 2010 21:39:49 +0000
+Subject: [PATCH 3/3] viafb: Don't build in camera-specific code without the camera
+Message-Id: <1272663589-4950-4-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272450305-7284-1-git-send-email-henne@nachtwindheim.de>
-In-Reply-To: <1272450305-7284-1-git-send-email-henne@nachtwindheim.de>
+References: <1272663589-4950-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1272663589-4950-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: ralf@linux-mips.org, arnaud.patard@rtp-net.org, jayakumar.lkml@gmail.com, gregkh@suse.de, yuasa@linux-mips.org, lethal@linux-sh.org, akpm@linux-foundation.org, adobriyan@gmail.com, support@simtec.co.uk, ben@simtec.co.uk, linux@simtec.co.uk, jkosina@suse.cz, pjones@redhat.com, linux-kernel@vger.kernel.org, Henrik Kretzschmar <henne@nachtwindheim.de>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, =?UTF-8?q?Bruno=20Pr=C3=A9mont?= <bonbons@linux-vserver.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Since the drivers probe call was changed from .init.text
-to .devinit.text in commit c2e13037e6794bd0d9de3f9ecabf5615f15c160b
-the fb_fix_screeninfo and fb_var_screeninfo structures must be
-changed from .init.data to .devinit.data, too.
+Bruno noted that the camera subdev was being created even in the absence of
+the camera module; stop that.  While I was at it, I also put an #ifdef
+guard around the DMA code.  Viafb users have gotten along just fine without
+that functionality so far, and only the camera uses it, so there is no
+point in bloating the driver if the camera is not being built.
 
-Also the drivers remove routine should be moved from .text to .devexit.text
-
-It removes these 7 section mismatch warnings from modpost:
-
-WARNING: vmlinux.o(.devinit.text+0x1e28): Section mismatch in reference from the function sgivwfb_probe() to the variable .init.data:sgivwfb_fix
-The function __devinit sgivwfb_probe() references
-a variable __initdata sgivwfb_fix.
-If sgivwfb_fix is only used by sgivwfb_probe then
-annotate sgivwfb_fix with a matching annotation.
-
-WARNING: vmlinux.o(.devinit.text+0x1e50): Section mismatch in reference from the function sgivwfb_probe() to the (unknown reference) .init.data:(unknown)
-The function __devinit sgivwfb_probe() references
-a (unknown reference) __initdata (unknown).
-If (unknown) is only used by sgivwfb_probe then
-annotate (unknown) with a matching annotation.
-
-WARNING: vmlinux.o(.devinit.text+0x1e59): Section mismatch in reference from the function sgivwfb_probe() to the (unknown reference) .init.data:(unknown)
-The function __devinit sgivwfb_probe() references
-a (unknown reference) __initdata (unknown).
-If (unknown) is only used by sgivwfb_probe then
-annotate (unknown) with a matching annotation.
-
-WARNING: vmlinux.o(.devinit.text+0x1e60): Section mismatch in reference from the function sgivwfb_probe() to the variable .init.data:sgivwfb_fix
-The function __devinit sgivwfb_probe() references
-a variable __initdata sgivwfb_fix.
-If sgivwfb_fix is only used by sgivwfb_probe then
-annotate sgivwfb_fix with a matching annotation.
-
-WARNING: vmlinux.o(.devinit.text+0x1e6a): Section mismatch in reference from the function sgivwfb_probe() to the (unknown reference) .init.data:(unknown)
-The function __devinit sgivwfb_probe() references
-a (unknown reference) __initdata (unknown).
-If (unknown) is only used by sgivwfb_probe then
-annotate (unknown) with a matching annotation.
-
-WARNING: vmlinux.o(.devinit.text+0x1e7f): Section mismatch in reference from the function sgivwfb_probe() to the variable .init.data:sgivwfb_var1600sw
-The function __devinit sgivwfb_probe() references
-a variable __initdata sgivwfb_var1600sw.
-If sgivwfb_var1600sw is only used by sgivwfb_probe then
-annotate sgivwfb_var1600sw with a matching annotation.
-
-WARNING: vmlinux.o(.devinit.text+0x1e91): Section mismatch in reference from the function sgivwfb_probe() to the variable .init.data:sgivwfb_var
-The function __devinit sgivwfb_probe() references
-a variable __initdata sgivwfb_var.
-If sgivwfb_var is only used by sgivwfb_probe then
-annotate sgivwfb_var with a matching annotation.
-
-Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
+Reported-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 ---
-This patch is compile tested.
----
- drivers/video/sgivwfb.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/video/via/via-core.c |   12 ++++++++++--
+ drivers/video/via/via-core.h |    3 ++-
+ 2 files changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/sgivwfb.c b/drivers/video/sgivwfb.c
-index 7a3a5e2..53455f2 100644
---- a/drivers/video/sgivwfb.c
-+++ b/drivers/video/sgivwfb.c
-@@ -47,7 +47,7 @@ static int ywrap = 0;
- 
- static int flatpanel_id = -1;
- 
--static struct fb_fix_screeninfo sgivwfb_fix __initdata = {
-+static struct fb_fix_screeninfo sgivwfb_fix __devinitdata = {
- 	.id		= "SGI Vis WS FB",
- 	.type		= FB_TYPE_PACKED_PIXELS,
-         .visual		= FB_VISUAL_PSEUDOCOLOR,
-@@ -57,7 +57,7 @@ static struct fb_fix_screeninfo sgivwfb_fix __initdata = {
- 	.line_length	= 640,
- };
- 
--static struct fb_var_screeninfo sgivwfb_var __initdata = {
-+static struct fb_var_screeninfo sgivwfb_var __devinitdata = {
- 	/* 640x480, 8 bpp */
- 	.xres		= 640,
- 	.yres		= 480,
-@@ -79,7 +79,7 @@ static struct fb_var_screeninfo sgivwfb_var __initdata = {
- 	.vmode		= FB_VMODE_NONINTERLACED
- };
- 
--static struct fb_var_screeninfo sgivwfb_var1600sw __initdata = {
-+static struct fb_var_screeninfo sgivwfb_var1600sw __devinitdata = {
- 	/* 1600x1024, 8 bpp */
- 	.xres		= 1600,
- 	.yres		= 1024,
-@@ -825,7 +825,7 @@ fail_ioremap_regs:
- 	return -ENXIO;
+diff --git a/drivers/video/via/via-core.c b/drivers/video/via/via-core.c
+index 1c6835e..a084363 100644
+--- a/drivers/video/via/via-core.c
++++ b/drivers/video/via/via-core.c
+@@ -34,7 +34,6 @@ static struct via_port_cfg adap_configs[] =3D {
+  */
+ static struct viafb_dev global_dev;
+=20
+-
+ /*
+  * Basic register access; spinlock required.
+  */
+@@ -95,6 +94,13 @@ EXPORT_SYMBOL_GPL(viafb_irq_disable);
+=20
+ /* ---------------------------------------------------------------------- =
+*/
+ /*
++ * Currently, the camera driver is the only user of the DMA code, so we
++ * only compile it in if the camera driver is being built.  Chances are,
++ * most viafb systems will not need to have this extra code for a while.
++ * As soon as another user comes long, the ifdef can be removed.
++ */
++#if defined(CONFIG_FB_VIA_CAMERA) || defined(CONFIG_FB_VIA_CAMERA_MODULE)
++/*
+  * Access to the DMA engine.  This currently provides what the camera
+  * driver needs (i.e. outgoing only) but is easily expandable if need
+  * be.
+@@ -322,7 +328,7 @@ int viafb_dma_copy_out_sg(unsigned int offset, struct s=
+catterlist *sg, int nsg)
+ 	return 0;
  }
- 
--static int sgivwfb_remove(struct platform_device *dev)
-+static int __devexit sgivwfb_remove(struct platform_device *dev)
- {
- 	struct fb_info *info = platform_get_drvdata(dev);
- 
-@@ -845,7 +845,7 @@ static int sgivwfb_remove(struct platform_device *dev)
- 
- static struct platform_driver sgivwfb_driver = {
- 	.probe	= sgivwfb_probe,
--	.remove	= sgivwfb_remove,
-+	.remove	= __devexit_p(sgivwfb_remove),
- 	.driver	= {
- 		.name	= "sgivwfb",
+ EXPORT_SYMBOL_GPL(viafb_dma_copy_out_sg);
+-
++#endif /* CONFIG_FB_VIA_CAMERA */
+=20
+ /* ---------------------------------------------------------------------- =
+*/
+ /*
+@@ -508,9 +514,11 @@ static struct viafb_subdev_info {
+ 	{
+ 		.name =3D "viafb-i2c",
  	},
--- 
-1.7.0
++#if defined(CONFIG_FB_VIA_CAMERA) || defined(CONFIG_FB_VIA_CAMERA_MODULE)
+ 	{
+ 		.name =3D "viafb-camera",
+ 	},
++#endif
+ };
+ #define N_SUBDEVS ARRAY_SIZE(viafb_subdevs)
+=20
+diff --git a/drivers/video/via/via-core.h b/drivers/video/via/via-core.h
+index 087c562..ca52dfe 100644
+--- a/drivers/video/via/via-core.h
++++ b/drivers/video/via/via-core.h
+@@ -94,7 +94,6 @@ struct viafb_dev {
+ /*
+  * Interrupt management.
+  */
+-
+ void viafb_irq_enable(u32 mask);
+ void viafb_irq_disable(u32 mask);
+=20
+@@ -135,6 +134,7 @@ void viafb_irq_disable(u32 mask);
+ #define   VDE_I_LVDSSIEN  0x40000000  /* LVDS Sense enable */
+ #define   VDE_I_ENABLE	  0x80000000  /* Global interrupt enable */
+=20
++#if defined(CONFIG_FB_VIA_CAMERA) || defined(CONFIG_FB_VIA_CAMERA_MODULE)
+ /*
+  * DMA management.
+  */
+@@ -169,5 +169,6 @@ int viafb_dma_copy_out_sg(unsigned int offset, struct s=
+catterlist *sg, int nsg);
+  */
+ #define VGA_WIDTH	640
+ #define VGA_HEIGHT	480
++#endif /* CONFIG_FB_VIA_CAMERA */
+=20
+ #endif /* __VIA_CORE_H__ */
+--=20
+1.7.0.1
 

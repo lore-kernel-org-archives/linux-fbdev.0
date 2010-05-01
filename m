@@ -1,131 +1,76 @@
-From: InKi Dae <daeinki@gmail.com>
-Subject: Re: [PATCH] added S6E63M0 AMOLED LCD Panel driver.
-Date: Thu, 29 Apr 2010 12:30:17 +0900
-Message-ID: <l2n90b950fc1004282030j173e7c47ua21b92a56881f559@mail.gmail.com>
-References: <90b950fc1003252024i5ba8989bg95f0a81e8e5e708e@mail.gmail.com>
-	 <20100330160257.e5f978a9.akpm@linux-foundation.org>
-	 <90b950fc1003301941r69dc5ce1ida64b590646049a7@mail.gmail.com>
-	 <20100330195501.747515e9.akpm@linux-foundation.org>
-	 <20100427120516.c18b3bbb.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=000e0cd1a588e2847b048557be7d
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20100427120516.c18b3bbb.akpm@linux-foundation.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com
-
---000e0cd1a588e2847b048557be7d
-Content-Type: text/plain; charset=ISO-8859-1
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 01 May 2010 21:28:55 +0000
+Subject: Re: [RFC] Second OLPC Viafb series, v2
+Message-Id: <4BDC9D17.9080000@gmx.de>
+List-Id: <linux-fbdev.vger.kernel.org>
+References: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1272493051-25380-1-git-send-email-corbet@lwn.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn
 
-I'm sorry for being late.
+Jonathan Corbet schrieb:
+> The full series of patches can be pulled from:
+>=20
+> 	git://git.lwn.net/linux-2.6.git viafb-posted
 
-this is second patch that your concern is solved.
+Testing it (newest version) resulted in this bug during module unload
 
-Please review this patch.
+kernel BUG at mm/slub.c:2843!
+invalid opcode: 0000 [#1] PREEMPT
+last sysfs file: /sys/devices/virtual/vtconsole/vtcon1/bind
+Modules linked in: fbcon font bitblit softcursor viafb(-) fb=20
+i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect snd_hda_codec_realtek=20
+snd_hda_intel snd_hda_codec snd_hwdep snd_pcm mmc_block snd_timer=20
+rtl8187 snd eeprom_93cx6 via_sdmmc soundcore snd_page_alloc i2c_viapro=20
+ehci_hcd uhci_hcd mmc_core video output
 
-Thank you.
+Pid: 3225, comm: rmmod Not tainted 2.6.34-rc3 #2 IL1/
+EIP: 0060:[<c106f62d>] EFLAGS: 00010246 CPU: 0
+EIP is at kfree+0x35/0x79
+EAX: c180a400 EBX: db9d4f00 ECX: db20f000 EDX: 00000000
+ESI: dc998f58 EDI: db191250 EBP: db20fe70 ESP: db20fe64
+  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+Process rmmod (pid: 3225, ti=DB20f000 task=DB034370 task.ti=DB20f000)
+Stack:
+  db9d4f00 c13c43cc db191250 db20fe7c c11879db dbb92060 db20fe88 c11843d0
+<0> db9d4f10 db20fe9c c111f9d6 db9d4f2c c111f996 dc998424 db20feac c11204aa
+<0> db9d4f10 dc998424 db20feb8 c111f90b db9d4f00 db20fec0 c1183f60 db20fec8
+Call Trace:
+  [<c11879db>] ? platform_device_release+0x11/0x26
+  [<c11843d0>] ? device_release+0x35/0x5d
+  [<c111f9d6>] ? kobject_release+0x40/0x50
+  [<c111f996>] ? kobject_release+0x0/0x50
+  [<c11204aa>] ? kref_put+0x38/0x43
+  [<c111f90b>] ? kobject_put+0x37/0x3c
+  [<c1183f60>] ? put_device+0xf/0x11
+  [<c11879ff>] ? platform_device_put+0xf/0x11
+  [<c1187b4d>] ? platform_device_unregister+0x12/0x15
+  [<dc9937bd>] ? via_pci_remove+0x14/0x47 [viafb]
+  [<c112ed14>] ? pci_device_remove+0x19/0x39
+  [<c1186691>] ? __device_release_driver+0x58/0x8e
+  [<c1186741>] ? driver_detach+0x7a/0xa0
+  [<c1185c5d>] ? bus_remove_driver+0x6c/0x92
+  [<c1186b38>] ? driver_unregister+0x4d/0x54
+  [<c112eeee>] ? pci_unregister_driver+0x29/0x7c
+  [<dc993759>] ? via_core_exit+0x1c/0x1e [viafb]
+  [<c104189b>] ? sys_delete_module+0x180/0x1e4
+  [<c1062895>] ? remove_vma+0x41/0x47
+  [<c12b012b>] ? do_page_fault+0x312/0x340
+  [<c1002750>] ? sysenter_do_call+0x12/0x26
+Code: 53 76 64 8d 80 00 00 00 40 c1 e8 0c c1 e0 05 03 05 b0 c9 45 c1 66=20
+83 38 00 79 03 8b 40 0c 8b 10 84 d2 78 12 66 f7 c2 00 c0 75 04 <0f> 0b=20
+eb fe e8 35 65 fe ff eb 31 8b 55 04 8b 58 0c 9c 5f fa 8b
+EIP: [<c106f62d>] kfree+0x35/0x79 SS:ESP 0068:db20fe64
 
-Best Regards,
-InKi Dae.
+The only information I can supply so far is that it happened already=20
+while unregistering the first platform. The registration of it seemed to=20
+be successful. I did not yet dig deep enough into the subsystem to find=20
+the bug. Any ideas?
 
-2010/4/28 Andrew Morton <akpm@linux-foundation.org>:
-> On Tue, 30 Mar 2010 19:55:01 -0400
-> Andrew Morton <akpm@linux-foundation.org> wrote:
->
->> On Wed, 31 Mar 2010 11:41:54 +0900 InKi Dae <daeinki@gmail.com> wrote:
->>
->> > Hi Andrew,
->> >
->> > all the calls to s6e63m0_panel_send_sequence() would return -EINVAL.
->> > by api_async() of driver/spi/spi.c
->>
->> No, spi_async() does
->>
->> =A0 =A0 =A0 master->transfer(spi, message);
->>
->> which can return at least EIO, EINPROGRESS, EINVAL or ETIMEDOUT.
->>
->> > so I think that those return values aren't changed to other.
->> >
->> > and final step is to check only whether the return value is 0 or not.
->> > if you still think that this code has minor problem or you want it to
->> > be corrected
->> > then I will patch this code to be corrected anytime.
->>
->> It's a bug.
->>
->> Also s6e63m0_power_on() is sloppy. =A0It again or's together disparate
->> errnos. =A0Then if _anything_ failed it returns hardwired -EIO, but it
->> should instead propagate the callee's errno back up to the caller.
->>
->> And s6e63m0_power_on() can return -EFAULT in several places, which is
->> nonsensical.
->>
->> None of this is very critical, just ... sloppy.
->>
->
-> ping?
->
 
---000e0cd1a588e2847b048557be7d
-Content-Type: application/octet-stream; name="s6e63m0_second.patch"
-Content-Disposition: attachment; filename="s6e63m0_second.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g8l0m1m60
+Thanks,
 
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L3M2ZTYzbTAuYyBiL2RyaXZlcnMv
-dmlkZW8vYmFja2xpZ2h0L3M2ZTYzbTAuYwppbmRleCBlNDc5M2RmLi4yNTRhMDk5IDEwMDY0NAot
-LS0gYS9kcml2ZXJzL3ZpZGVvL2JhY2tsaWdodC9zNmU2M20wLmMKKysrIGIvZHJpdmVycy92aWRl
-by9iYWNrbGlnaHQvczZlNjNtMC5jCkBAIC00MjAsMTMgKzQyMCwyNSBAQCBzdGF0aWMgaW50IF9z
-NmU2M20wX2dhbW1hX2N0bChzdHJ1Y3QgczZlNjNtMCAqbGNkLCBjb25zdCB1bnNpZ25lZCBpbnQg
-KmdhbW1hKQogCiAJLyogZGlzYWJsZSBnYW1tYSB0YWJsZSB1cGRhdGluZy4gKi8KIAlyZXQgPSBz
-NmU2M20wX3NwaV93cml0ZShsY2QsIDB4ZmEsIDB4MDApOworCWlmIChyZXQpIHsKKwkJZGV2X2Vy
-cihsY2QtPmRldiwgImZhaWxlZCB0byBkaXNhYmxlIGdhbW1hIHRhYmxlIHVwZGF0aW5nLlxuIik7
-CisJCWdvdG8gZ2FtbWFfZXJyOworCX0KIAotCWZvciAoaSA9IDAgOyBpIDwgR0FNTUFfVEFCTEVf
-Q09VTlQ7IGkrKykKLQkJcmV0IHw9IHM2ZTYzbTBfc3BpX3dyaXRlKGxjZCwgREFUQV9PTkxZLCBn
-YW1tYVtpXSk7CisJZm9yIChpID0gMCA7IGkgPCBHQU1NQV9UQUJMRV9DT1VOVDsgaSsrKSB7CisJ
-CXJldCA9IHM2ZTYzbTBfc3BpX3dyaXRlKGxjZCwgREFUQV9PTkxZLCBnYW1tYVtpXSk7CisJCWlm
-IChyZXQpIHsKKwkJCWRldl9lcnIobGNkLT5kZXYsICJmYWlsZWQgdG8gc2V0IGdhbW1hIHRhYmxl
-LlxuIik7CisJCQlnb3RvIGdhbW1hX2VycjsKKwkJfQorCX0KIAogCS8qIHVwZGF0ZSBnYW1tYSB0
-YWJsZS4gKi8KLQlyZXQgfD0gczZlNjNtMF9zcGlfd3JpdGUobGNkLCAweGZhLCAweDAxKTsKKwly
-ZXQgPSBzNmU2M20wX3NwaV93cml0ZShsY2QsIDB4ZmEsIDB4MDEpOworCWlmIChyZXQpCisJCWRl
-dl9lcnIobGNkLT5kZXYsICJmYWlsZWQgdG8gdXBkYXRlIGdhbW1hIHRhYmxlLlxuIik7CiAKK2dh
-bW1hX2VycjoKIAlyZXR1cm4gcmV0OwogfQogCkBAIC00NDIsMjQgKzQ1NCwzOCBAQCBzdGF0aWMg
-aW50IHM2ZTYzbTBfZ2FtbWFfY3RsKHN0cnVjdCBzNmU2M20wICpsY2QsIGludCBnYW1tYSkKIAog
-c3RhdGljIGludCBzNmU2M20wX2xkaV9pbml0KHN0cnVjdCBzNmU2M20wICpsY2QpCiB7Ci0JaW50
-IHJldDsKKwlpbnQgcmV0LCBpOworCWNvbnN0IHVuc2lnbmVkIHNob3J0ICppbml0X3NlcVtdID0g
-eworCQlTRVFfUEFORUxfQ09ORElUSU9OX1NFVCwKKwkJU0VRX0RJU1BMQVlfQ09ORElUSU9OX1NF
-VCwKKwkJU0VRX0dBTU1BX1NFVFRJTkcsCisJCVNFUV9FVENfQ09ORElUSU9OX1NFVCwKKwkJU0VR
-X0FDTF9PTiwKKwkJU0VRX0VMVlNTX09OLAorCX07CiAKLQlyZXQgPSBzNmU2M20wX3BhbmVsX3Nl
-bmRfc2VxdWVuY2UobGNkLCBTRVFfUEFORUxfQ09ORElUSU9OX1NFVCk7Ci0JcmV0IHw9IHM2ZTYz
-bTBfcGFuZWxfc2VuZF9zZXF1ZW5jZShsY2QsIFNFUV9ESVNQTEFZX0NPTkRJVElPTl9TRVQpOwot
-CXJldCB8PSBzNmU2M20wX3BhbmVsX3NlbmRfc2VxdWVuY2UobGNkLCBTRVFfR0FNTUFfU0VUVElO
-Ryk7Ci0JcmV0IHw9IHM2ZTYzbTBfcGFuZWxfc2VuZF9zZXF1ZW5jZShsY2QsIFNFUV9FVENfQ09O
-RElUSU9OX1NFVCk7Ci0JcmV0IHw9IHM2ZTYzbTBfcGFuZWxfc2VuZF9zZXF1ZW5jZShsY2QsIFNF
-UV9BQ0xfT04pOwotCXJldCB8PSBzNmU2M20wX3BhbmVsX3NlbmRfc2VxdWVuY2UobGNkLCBTRVFf
-RUxWU1NfT04pOworCWZvciAoaSA9IDA7IGkgPCBBUlJBWV9TSVpFKGluaXRfc2VxKTsgaSsrKSB7
-CisJCXJldCA9IHM2ZTYzbTBfcGFuZWxfc2VuZF9zZXF1ZW5jZShsY2QsIGluaXRfc2VxW2ldKTsK
-KwkJaWYgKHJldCkKKwkJCWJyZWFrOworCX0KIAogCXJldHVybiByZXQ7CiB9CiAKIHN0YXRpYyBp
-bnQgczZlNjNtMF9sZGlfZW5hYmxlKHN0cnVjdCBzNmU2M20wICpsY2QpCiB7Ci0JaW50IHJldCA9
-IDA7CisJaW50IHJldCA9IDAsIGk7CisJY29uc3QgdW5zaWduZWQgc2hvcnQgKmVuYWJsZV9zZXFb
-XSA9IHsKKwkJU0VRX1NUQU5EX0JZX09GRiwKKwkJU0VRX0RJU1BMQVlfT04sCisJfTsKIAotCXJl
-dCA9IHM2ZTYzbTBfcGFuZWxfc2VuZF9zZXF1ZW5jZShsY2QsIFNFUV9TVEFORF9CWV9PRkYpOwot
-CXJldCA9IHM2ZTYzbTBfcGFuZWxfc2VuZF9zZXF1ZW5jZShsY2QsIFNFUV9ESVNQTEFZX09OKTsK
-Kwlmb3IgKGkgPSAwOyBpIDwgQVJSQVlfU0laRShlbmFibGVfc2VxKTsgaSsrKSB7CisJCXJldCA9
-IHM2ZTYzbTBfcGFuZWxfc2VuZF9zZXF1ZW5jZShsY2QsIGVuYWJsZV9zZXFbaV0pOworCQlpZiAo
-cmV0KQorCQkJYnJlYWs7CisJfQogCiAJcmV0dXJuIHJldDsKIH0KQEAgLTUwOCwxMiArNTM0LDIy
-IEBAIHN0YXRpYyBpbnQgczZlNjNtMF9wb3dlcl9vbihzdHJ1Y3QgczZlNjNtMCAqbGNkKQogCX0K
-IAogCXJldCA9IHM2ZTYzbTBfbGRpX2luaXQobGNkKTsKLQlyZXQgfD0gczZlNjNtMF9sZGlfZW5h
-YmxlKGxjZCk7CisJaWYgKHJldCkgeworCQlkZXZfZXJyKGxjZC0+ZGV2LCAiZmFpbGVkIHRvIGlu
-aXRpYWxpemUgbGRpLlxuIik7CisJCXJldHVybiByZXQ7CisJfQorCisJcmV0ID0gczZlNjNtMF9s
-ZGlfZW5hYmxlKGxjZCk7CisJaWYgKHJldCkgeworCQlkZXZfZXJyKGxjZC0+ZGV2LCAiZmFpbGVk
-IHRvIGVuYWJsZSBsZGkuXG4iKTsKKwkJcmV0dXJuIHJldDsKKwl9CisKIAkvKiBzZXQgYnJpZ2h0
-bmVzcyB0byBjdXJyZW50IHZhbHVlIGFmdGVyIHBvd2VyIG9uIG9yIHJlc3VtZS4gKi8KLQlyZXQg
-fD0gczZlNjNtMF9nYW1tYV9jdGwobGNkLCBiZC0+cHJvcHMuYnJpZ2h0bmVzcyk7CisJcmV0ID0g
-czZlNjNtMF9nYW1tYV9jdGwobGNkLCBiZC0+cHJvcHMuYnJpZ2h0bmVzcyk7CiAJaWYgKHJldCkg
-ewogCQlkZXZfZXJyKGxjZC0+ZGV2LCAibGNkIGdhbW1hIHNldHRpbmcgZmFpbGVkLlxuIik7Ci0J
-CXJldHVybiAtRUlPOworCQlyZXR1cm4gcmV0OwogCX0KIAogCXJldHVybiAwOwo=
---000e0cd1a588e2847b048557be7d--
+Florian Tobias Schandinat

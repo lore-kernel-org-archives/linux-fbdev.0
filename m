@@ -1,103 +1,34 @@
-From: Albert Herranz <albert_herranz@yahoo.es>
-Date: Tue, 25 May 2010 22:16:59 +0000
-Subject: [RFT PATCH 1/2] Revert "fb_defio: fix for non-dirty ptes"
-Message-Id: <1274825820-10246-1-git-send-email-albert_herranz@yahoo.es>
+From: Pettiway Hatchette <swellhead@komfort-plus.cz>
+Date: Sat, 01 May 2010 17:33:26 +0000
+Subject: reed with him. The
+Message-Id: <4BDC64D4.5040104@clavellinas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: npiggin@suse.de, jayakumar.lkml@gmail.com, akpm@linux-foundation.org, torvalds@linux-foundation.org, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.orgl
-Cc: Albert Herranz <albert_herranz@yahoo.es>
+To: linux-fbdev@vger.kernel.org
 
-This reverts commit 49bbd815fd8ba26d0354900b783b767c7f47c816.
-Although the fix provided is correct, it's been suggested to avoid the
-underlying race in the same way as it is currently done in filesystems
-like NFS, for maintainability.
-
-A following patch "fb_defio: redo fix for non-dirty ptes" will provide
-such an alternate fix.
-
-LKML-Reference: <20100525160149.GE20853@laptop>
-Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
----
- drivers/video/fb_defio.c |   40 ++++++++--------------------------------
- 1 files changed, 8 insertions(+), 32 deletions(-)
-
-diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
-index 6e10a3a..0e4dcdb 100644
---- a/drivers/video/fb_defio.c
-+++ b/drivers/video/fb_defio.c
-@@ -155,41 +155,25 @@ static void fb_deferred_io_work(struct work_struct *work)
- {
- 	struct fb_info *info = container_of(work, struct fb_info,
- 						deferred_work.work);
-+	struct list_head *node, *next;
-+	struct page *cur;
- 	struct fb_deferred_io *fbdefio = info->fbdefio;
--	struct page *page, *tmp_page;
--	struct list_head *node, *tmp_node;
--	struct list_head non_dirty;
--
--	INIT_LIST_HEAD(&non_dirty);
- 
- 	/* here we mkclean the pages, then do all deferred IO */
- 	mutex_lock(&fbdefio->lock);
--	list_for_each_entry_safe(page, tmp_page, &fbdefio->pagelist, lru) {
--		lock_page(page);
--		/*
--		 * The workqueue callback can be triggered after a
--		 * ->page_mkwrite() call but before the PTE has been marked
--		 * dirty. In this case page_mkclean() won't "rearm" the page.
--		 *
--		 * To avoid this, remove those "non-dirty" pages from the
--		 * pagelist before calling the driver's callback, then add
--		 * them back to get processed on the next work iteration.
--		 * At that time, their PTEs will hopefully be dirty for real.
--		 */
--		if (!page_mkclean(page))
--			list_move_tail(&page->lru, &non_dirty);
--		unlock_page(page);
-+	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
-+		lock_page(cur);
-+		page_mkclean(cur);
-+		unlock_page(cur);
- 	}
- 
- 	/* driver's callback with pagelist */
- 	fbdefio->deferred_io(info, &fbdefio->pagelist);
- 
--	/* clear the list... */
--	list_for_each_safe(node, tmp_node, &fbdefio->pagelist) {
-+	/* clear the list */
-+	list_for_each_safe(node, next, &fbdefio->pagelist) {
- 		list_del(node);
- 	}
--	/* ... and add back the "non-dirty" pages to the list */
--	list_splice_tail(&non_dirty, &fbdefio->pagelist);
- 	mutex_unlock(&fbdefio->lock);
- }
- 
-@@ -218,20 +202,12 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_open);
- void fb_deferred_io_cleanup(struct fb_info *info)
- {
- 	struct fb_deferred_io *fbdefio = info->fbdefio;
--	struct list_head *node, *tmp_node;
- 	struct page *page;
- 	int i;
- 
- 	BUG_ON(!fbdefio);
- 	flush_delayed_work(&info->deferred_work);
- 
--	/*  the list may have still some non-dirty pages at this point */
--	mutex_lock(&fbdefio->lock);
--	list_for_each_safe(node, tmp_node, &fbdefio->pagelist) {
--		list_del(node);
--	}
--	mutex_unlock(&fbdefio->lock);
--
- 	/* clear out the mapping that we setup */
- 	for (i = 0 ; i < info->fix.smem_len; i += PAGE_SIZE) {
- 		page = fb_deferred_io_page(info, i);
--- 
-1.7.0.4
-
+e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcZGVmZjBcZGVmbGFuZzEwMzN7XCpcZ2VuZXJhdG9y
+IE1zZnRlZGl0IDMuMjEuOC44NTE5O317XGZvbnR0Ymx7XGYwXGZuaWxcZmNoYXJzZXQwIENh
+bGlicmk7fX0NCntcKlxnZW5lcmF0b3IgTXNmdGVkaXQgMy4yMS44Ljg1MTk7fXtcY29sb3J0
+YmwgO1xyZWQwXGdyZWVuMFxibHVlMjU1O1xyZWQxOTJcZ3JlZW44MFxibHVlNzc7XHJlZDBc
+Z3JlZW4xNzZcYmx1ZTgwO1xyZWQyMDRcZ3JlZW4xODBcYmx1ZTA7XHJlZDI1NVxncmVlbjBc
+Ymx1ZTA7XHJlZDIyM1xncmVlbjIwNlxibHVlNDtccmVkMTU1XGdyZWVuMFxibHVlMjExO1xy
+ZWQ3OVxncmVlbjEyOVxibHVlMTg5O1xyZWQxNjVcZ3JlZW4xNjVcYmx1ZTE2NTtccmVkMTI4
+XGdyZWVuMTU4XGJsdWUxOTQ7XHJlZDI0N1xncmVlbjE1MFxibHVlNzA7XHJlZDBcZ3JlZW43
+N1xibHVlMTg3O1xyZWQ3NVxncmVlbjE3MlxibHVlMTk4O1xyZWQyMjFcZ3JlZW4xMzJcYmx1
+ZTEzMjtccmVkNTFcZ3JlZW41MVxibHVlNTE7XHJlZDE1OFxncmVlbjEyNFxibHVlMTI0O1xy
+ZWQxNTVcZ3JlZW4xODdcYmx1ZTg5O30NCntcKlxnZW5lcmF0b3IgTXNmdGVkaXQgMy4yMS44
+Ljg1MTk7fVx2aWV3a2luZDRcdWMxXHBhcmRcc2EyMDBcc2wyNzZcc2xtdWx0MVxsYW5nOVxm
+MFxmczMye1xmaWVsZHtcKlxmbGRpbnN0e0hZUEVSTElOSyAiaHR0cDovL3d3dy54YTY2LnJ1
+In19e1xmbGRyc2x0e1x1bFxjZjEgaHR0cDovL3d3dy54YTY2LnJ1fX19XGYwXGNmMVxiXGZz
+MzIgIC0gT3JkZXIgdGhlIGNoZWFwZXN0IG1lZGljYXRpb25zIG5vdyFccGFyDQpWaWFncmEg
+XGNmNCBDaWFsaXMgXGNmMyBWaWFncmEgUHJvZmVzc2lvbmFsIFxjZjUgQ2lhbGlzIFByb2Zl
+c3Npb25hbCBcY2Y2IFZpYWdyYSBTdXBlciBBY3RpdmUrIFxjZjMgQ2lhbGlzIFN1cGVyIEFj
+dGl2ZSsgXGNmNyBMZXZpdHJhXGNmMCAgXGNmOCBWaWFncmEgU29mdCBUYWJzIFxjZjkgQ2lh
+bGlzIFNvZnQgVGFic1xjZjEwICBcY2YxMSBMZXZpdHJhIFByb2Zlc3Npb25hbCBcY2Y0IEZl
+bWFsZSBWaWFncmEgXGNmMTIgUHJvcGVjaWEgXGNmNyBBY29tcGxpYSBcY2Y2IFhlbmljYWxc
+Y2YwICBcY2Y1IEJyYW5kIExldml0cmEgXGNmMTMgRmVtYWxlIENpYWxpcyBcY2YxNCBMZXZp
+dHJhIFN1cGVyIEFjdGl2ZSsgXGNmMTUgVGFtaWZsdVxjZjAgIFxjZjcgVlBYTFxjZjAgIFxj
+ZjE2IFZpYWdyYSBTb2Z0IEZsYXZvdXJlZCBcY2Y1IEJyYW5kIFZpYWdyYSBcY2YxNyBCcmFu
+ZCBDaWFsaXNcY2YwDQp7XCpcZ2VuZXJhdG9yIE1zZnRlZGl0IDMuMjEuOC44NTE5O319

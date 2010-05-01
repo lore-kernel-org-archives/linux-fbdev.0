@@ -1,47 +1,22 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Mon, 10 May 2010 17:14:43 +0000
-Subject: Re: [PATCH] DSS2 Include VRFB into omap2-3build only
-Message-Id: <20100510171443.GE16460@atomide.com>
+From: Magnus Damm <magnus.damm@gmail.com>
+Date: Sat, 01 May 2010 12:08:21 +0000
+Subject: Re: [PATCH 2/2] sh: make interrupt resource optional in SH
+Message-Id: <v2laec7e5c31005010508ke98e31f4pe8d61600035fb12f@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1273474110-22451-1-git-send-email-svadivu@ti.com>
- <1A2F53DA-903A-4667-A27F-492A3499F7ED@student.utwente.nl>
- <FCCFB4CDC6E5564B9182F639FC356087030428879D@dbde02.ent.ti.com>
- <73F3CED4-60D5-4351-A921-335110542B6F@dominion.thruhere.net>
- <FCCFB4CDC6E5564B9182F639FC356087030428879F@dbde02.ent.ti.com>
- <4BE7ECE4.5070608@gmail.com>
- <4BE8063B.1080709@ti.com>
-In-Reply-To: <4BE8063B.1080709@ti.com>
+References: <Pine.LNX.4.64.1004301805371.4055@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1004301805371.4055@axis700.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nishanth Menon <nm@ti.com>
-Cc: Nishanth Menon <menon.nishanth@gmail.com>, "Guruswamy, Senthilvadivu" <svadivu@ti.com>, Koen Kooi <koen@dominion.thruhere.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "tomi.valkeinen@nokia.com" <tomi.valkeinen@nokia.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-* Nishanth Menon <nm@ti.com> [100510 06:07]:
-> On 05/10/2010 06:24 AM, Nishanth Menon wrote:
-> >On 05/10/2010 03:26 AM, Guruswamy, Senthilvadivu wrote:
-> >>Tiler support is not yet in OMAP builds. So multi-omap build will NOT break, but would exclude VRFB feature in the build.
-> >in which case, is'nt this patch redundant :) ?
-> >
-> >joking apart, would'nt a set of function pointers be better - the
-> >function pointers could be runtime initialized. the rotational functions
-> >for Tiler OR vrfb could be used?
-> 
-> just an addon -> I can see one more potential user of the FEATURES
-> framework like dma descriptor feature.. what kind of rotator do we
-> have? vrfb Vs tiler..
+On Sat, May 1, 2010 at 1:07 AM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> The SH LCDC driver can also function without the IRQ, in which case the
+> FBIO_WAITFORVSYNC ioctl() cannot be supported. Enable such a mode.
+>
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
-Guys, let's make one thing clear: We want to make sure things compile
-and boot with the omap3_defconfig for all mach-omap2 machines.
+Why? Doesn't the LCDC hardware block always come with an IRQ line?
 
-This means we must be able to compile in all the drivers (and panels)
-without breaking other configurations. This is the standard Linux
-behaviour. Any patches that break this will not get merged.
-
-Also, please follow the mailing list etiquette, no more top posting:
-
-http://www.elinux.org/Netiquette
-
-Regards,
-
-Tony
+/ magnus

@@ -1,118 +1,74 @@
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Wed, 05 May 2010 14:27:33 +0000
-Subject: [PATCH v3 13/21] OMAP: DSS2: Taal: Change probe error handling labels
-Message-Id: <a4e7d90e0f036e227a29d94e28b7036c2f9d419b.1273067195.git.ext-jani.1.nikula@nokia.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 02 May 2010 15:17:33 +0000
+Subject: [PATCH 3/4] viafb: make suspend and resume work (on all machines?)
+Message-Id: <1272813454-3229-4-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
- <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <6b813e9f0008e23e7981f6ca35501f56c292858a.1273067195.git.ext-jani.1.nikula@nokia.com>
- <b32669a58d60491c3be4f7e52a52c27406cec877.1273067195.git.ext-jani.1.nikula@nokia.com>
- <94d9d7bebbf7588bd77b65e6a46044240140a350.1273067195.git.ext-jani.1.nikula@nokia.com>
- <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
- <16a98ca1b45ba9b9bb30f23d242449c1d440df07.1273067195.git.ext-jani.1.nikula@nokia.com>
- <aa1e310d0d385db39b5d53ba4d3dcf02b7e2f47f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <0cfff2a3cbb4231b41b382caf8aab7c52f47b0d5.1273067195.git.ext-jani.1.nikula@nokia.com>
- <adb61d94ee2a25284f6bd3f55ec4213501cbe8e3.1273067195.git.ext-jani.1.nikula@nokia.com>
- <4cb510ffbc3216e2a7dac16edaff5fb1980b3315.1273067195.git.ext-jani.1.nikula@nokia.com>
- <8665676eca5bbd3be35b63f7110f629e94a6babe.1273067195.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <8665676eca5bbd3be35b63f7110f629e94a6babe.1273067195.git.ext-jani.1.nikula@nokia.com>
+References: <1272813454-3229-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1272813454-3229-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com, tony@atomide.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, corbet@lwn.net, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+viafb: make suspend and resume work (on all machines?)
 
-Switch from numbered to named labels to make it easier to add new
-labels for error handling.
+This patch removes the dangerous suspend and resume code that was
+developed for VX855 only. After this the framebuffer is expected to
+cause no longer serious (freezing) issues on any machines.
+However the hardware acceleration is broken now so only doing resume
+with unaccelerated framebuffers is save. This did not work previously
+as the 2D engine is not mapped if the framebuffer is not accelerated.
+The acceleration issue will be addressed later.
 
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/omap2/displays/panel-taal.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
+ drivers/video/via/viafbdev.c |   10 ----------
+ drivers/video/via/viafbdev.h |    3 ---
+ 2 files changed, 0 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index fa4c67b..e32424c 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -539,7 +539,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 	td = kzalloc(sizeof(*td), GFP_KERNEL);
- 	if (!td) {
- 		r = -ENOMEM;
--		goto err0;
-+		goto err;
- 	}
- 	td->dssdev = dssdev;
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index b4baed6..b5099b9 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1746,11 +1746,6 @@ int viafb_suspend(struct pci_dev *pdev, pm_message_t state)
+ {
+ 	if (state.event = PM_EVENT_SUSPEND) {
+ 		acquire_console_sem();
+-
+-		memcpy_fromio(viaparinfo->shared->saved_regs,
+-			      viaparinfo->shared->vdev->engine_mmio + 0x100,
+-			      0xff * sizeof(u32));
+-
+ 		fb_set_suspend(viafbinfo, 1);
  
-@@ -549,7 +549,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 	if (td->esd_wq = NULL) {
- 		dev_err(&dssdev->dev, "can't create ESD workqueue\n");
- 		r = -ENOMEM;
--		goto err1;
-+		goto err_wq;
- 	}
- 	INIT_DELAYED_WORK_DEFERRABLE(&td->esd_work, taal_esd_work);
+ 		viafb_sync(viafbinfo);
+@@ -1772,11 +1767,6 @@ int viafb_resume(struct pci_dev *pdev)
+ 	if (pci_enable_device(pdev))
+ 		goto fail;
+ 	pci_set_master(pdev);
+-
+-	memcpy_toio(viaparinfo->shared->vdev->engine_mmio + 0x100,
+-		    viaparinfo->shared->saved_regs,
+-		    0x100 * sizeof(u32));
+-
+ 	viafb_set_par(viafbinfo);
+ 	if (viafb_dual_fb)
+ 		viafb_set_par(viafbinfo1);
+diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
+index 3bcae0a..be2fad6 100644
+--- a/drivers/video/via/viafbdev.h
++++ b/drivers/video/via/viafbdev.h
+@@ -57,9 +57,6 @@ struct viafb_shared {
+ 		u8 dst_bpp, u32 dst_addr, u32 dst_pitch, u32 dst_x, u32 dst_y,
+ 		u32 *src_mem, u32 src_addr, u32 src_pitch, u32 src_x, u32 src_y,
+ 		u32 fg_color, u32 bg_color, u8 fill_rop);
+-
+-	/* For suspend/resume */
+-	u32 saved_regs[0x100];
+ };
  
-@@ -571,7 +571,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 					  &taal_bl_ops, &props);
- 	if (IS_ERR(bldev)) {
- 		r = PTR_ERR(bldev);
--		goto err2;
-+		goto err_bl;
- 	}
- 
- 	td->bldev = bldev;
-@@ -591,7 +591,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 		r = gpio_request(gpio, "taal irq");
- 		if (r) {
- 			dev_err(&dssdev->dev, "GPIO request failed\n");
--			goto err3;
-+			goto err_gpio;
- 		}
- 
- 		gpio_direction_input(gpio);
-@@ -603,7 +603,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 		if (r) {
- 			dev_err(&dssdev->dev, "IRQ request failed\n");
- 			gpio_free(gpio);
--			goto err4;
-+			goto err_irq;
- 		}
- 
- 		init_completion(&td->te_completion);
-@@ -614,23 +614,23 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 	r = sysfs_create_group(&dssdev->dev.kobj, &taal_attr_group);
- 	if (r) {
- 		dev_err(&dssdev->dev, "failed to create sysfs files\n");
--		goto err5;
-+		goto err_sysfs;
- 	}
- 
- 	return 0;
--err5:
-+err_sysfs:
- 	if (td->use_ext_te)
- 		free_irq(gpio_to_irq(dssdev->phy.dsi.ext_te_gpio), dssdev);
--err4:
-+err_irq:
- 	if (td->use_ext_te)
- 		gpio_free(dssdev->phy.dsi.ext_te_gpio);
--err3:
-+err_gpio:
- 	backlight_device_unregister(bldev);
--err2:
-+err_bl:
- 	destroy_workqueue(td->esd_wq);
--err1:
-+err_wq:
- 	kfree(td);
--err0:
-+err:
- 	return r;
- }
- 
+ struct viafb_par {
 -- 
-1.6.5.2
+1.6.3.2
 

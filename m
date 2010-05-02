@@ -1,249 +1,130 @@
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Wed, 05 May 2010 14:27:38 +0000
-Subject: [PATCH v3 18/21] OMAP: DSS2: Taal: Add panel specific configuration structure
-Message-Id: <e149b5cf7d3dbed1961e06dc82291412e3223101.1273067195.git.ext-jani.1.nikula@nokia.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 02 May 2010 15:17:34 +0000
+Subject: [PATCH 4/4] viafb: fix hardware acceleration for suspend & resume
+Message-Id: <1272813454-3229-5-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
- <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <6b813e9f0008e23e7981f6ca35501f56c292858a.1273067195.git.ext-jani.1.nikula@nokia.com>
- <b32669a58d60491c3be4f7e52a52c27406cec877.1273067195.git.ext-jani.1.nikula@nokia.com>
- <94d9d7bebbf7588bd77b65e6a46044240140a350.1273067195.git.ext-jani.1.nikula@nokia.com>
- <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
- <16a98ca1b45ba9b9bb30f23d242449c1d440df07.1273067195.git.ext-jani.1.nikula@nokia.com>
- <aa1e310d0d385db39b5d53ba4d3dcf02b7e2f47f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <0cfff2a3cbb4231b41b382caf8aab7c52f47b0d5.1273067195.git.ext-jani.1.nikula@nokia.com>
- <adb61d94ee2a25284f6bd3f55ec4213501cbe8e3.1273067195.git.ext-jani.1.nikula@nokia.com>
- <4cb510ffbc3216e2a7dac16edaff5fb1980b3315.1273067195.git.ext-jani.1.nikula@nokia.com>
- <8665676eca5bbd3be35b63f7110f629e94a6babe.1273067195.git.ext-jani.1.nikula@nokia.com>
- <a4e7d90e0f036e227a29d94e28b7036c2f9d419b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <ca7ff2e5a165ca8488190520f1f75e6e37642d3b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <4f2a95d67d2b8004f4a2055681690920ebeb8e8f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <690ef5c45aee3fb87a40fa03039356f8238925dc.1273067195.git.ext-jani.1.nikula@nokia.com>
- <025c12267d4bd88e1f59d9e13aafec247fe3c730.1273067195.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <025c12267d4bd88e1f59d9e13aafec247fe3c730.1273067195.git.ext-jani.1.nikula@nokia.com>
+References: <1272813454-3229-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1272813454-3229-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com, tony@atomide.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, corbet@lwn.net, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+viafb: fix hardware acceleration for suspend & resume
 
-Add a structure for panel specific configration to be able to support
-more than one panel in the future.
+This patch splits the acceleration initialization in two parts:
+The first is only called during probe and is used to allocate
+resources. The second part is also called on resume to reinitalize
+the 2D engine. This should fix all acceleration issues after resume
+most notable an "invisible" cursor and as we do nothing special it is
+reasonable to assume that it works on all supported IGPs.
 
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/omap2/displays/panel-taal.c |  108 +++++++++++++++++++++++------
- 1 files changed, 87 insertions(+), 21 deletions(-)
+ drivers/video/via/accel.c    |   41 +++++++++++++++++++++++++----------------
+ drivers/video/via/accel.h    |    1 +
+ drivers/video/via/viafbdev.c |    2 ++
+ 3 files changed, 28 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 9502a4d..9f40f32 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -68,6 +68,58 @@ static irqreturn_t taal_te_isr(int irq, void *data);
- static void taal_te_timeout_work_callback(struct work_struct *work);
- static int _taal_enable_te(struct omap_dss_device *dssdev, bool enable);
- 
-+/**
-+ * struct panel_config - panel configuration
-+ * @name: panel name
-+ * @type: panel type
-+ * @timings: panel resolution
-+ * @sleep: various panel specific delays, passed to msleep() if non-zero
-+ * @reset_sequence: reset sequence timings, passed to udelay() if non-zero
-+ */
-+struct panel_config {
-+	const char *name;
-+	int type;
-+
-+	struct omap_video_timings timings;
-+
-+	struct {
-+		unsigned int sleep_in;
-+		unsigned int sleep_out;
-+		unsigned int hw_reset;
-+		unsigned int enable_te;
-+	} sleep;
-+
-+	struct {
-+		unsigned int high;
-+		unsigned int low;
-+	} reset_sequence;
-+};
-+
-+enum {
-+	PANEL_TAAL,
-+};
-+
-+static struct panel_config panel_configs[] = {
-+	{
-+		.name		= "taal",
-+		.type		= PANEL_TAAL,
-+		.timings	= {
-+			.x_res		= 864,
-+			.y_res		= 480,
-+		},
-+		.sleep		= {
-+			.sleep_in	= 5,
-+			.sleep_out	= 5,
-+			.hw_reset	= 5,
-+			.enable_te	= 100, /* possible panel bug */
-+		},
-+		.reset_sequence	= {
-+			.high		= 10,
-+			.low		= 10,
-+		},
-+	},
-+};
-+
- struct taal_data {
- 	struct mutex lock;
- 
-@@ -104,6 +156,8 @@ struct taal_data {
- 
- 	struct workqueue_struct *esd_wq;
- 	struct delayed_work esd_work;
-+
-+	struct panel_config *panel_config;
- };
- 
- static inline struct nokia_dsi_panel_data
-@@ -173,7 +227,8 @@ static int taal_sleep_in(struct taal_data *td)
- 
- 	hw_guard_start(td, 120);
- 
--	msleep(5);
-+	if (td->panel_config->sleep.sleep_in)
-+		msleep(td->panel_config->sleep.sleep_in);
- 
- 	return 0;
- }
-@@ -190,7 +245,8 @@ static int taal_sleep_out(struct taal_data *td)
- 
- 	hw_guard_start(td, 120);
- 
--	msleep(5);
-+	if (td->panel_config->sleep.sleep_out)
-+		msleep(td->panel_config->sleep.sleep_out);
- 
- 	return 0;
- }
-@@ -509,20 +565,24 @@ static struct attribute_group taal_attr_group = {
- 
- static void taal_hw_reset(struct omap_dss_device *dssdev)
+diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
+index 189aba4..49c27b5 100644
+--- a/drivers/video/via/accel.c
++++ b/drivers/video/via/accel.c
+@@ -318,9 +318,7 @@ int viafb_init_engine(struct fb_info *info)
  {
-+	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
- 	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
+ 	struct viafb_par *viapar = info->par;
+ 	void __iomem *engine;
+-	int highest_reg, i;
+-	u32 vq_start_addr, vq_end_addr, vq_start_low, vq_end_low, vq_high,
+-		vq_len, chip_name = viapar->shared->chip_info.gfx_chip_name;
++	u32 chip_name = viapar->shared->chip_info.gfx_chip_name;
  
- 	if (panel_data->reset_gpio = -1)
- 		return;
+ 	engine = viapar->shared->vdev->engine_mmio;
+ 	if (!engine) {
+@@ -329,18 +327,6 @@ int viafb_init_engine(struct fb_info *info)
+ 		return -ENOMEM;
+ 	}
  
- 	gpio_set_value(panel_data->reset_gpio, 1);
--	udelay(10);
-+	if (td->panel_config->reset_sequence.high)
-+		udelay(td->panel_config->reset_sequence.high);
- 	/* reset the panel */
- 	gpio_set_value(panel_data->reset_gpio, 0);
--	/* assert reset for at least 10us */
--	udelay(10);
-+	/* assert reset */
-+	if (td->panel_config->reset_sequence.low)
-+		udelay(td->panel_config->reset_sequence.low);
- 	gpio_set_value(panel_data->reset_gpio, 1);
--	/* wait 5ms after releasing reset */
--	msleep(5);
-+	/* wait after releasing reset */
-+	if (td->panel_config->sleep.hw_reset)
-+		msleep(td->panel_config->sleep.hw_reset);
+-	/* Initialize registers to reset the 2D engine */
+-	switch (viapar->shared->chip_info.twod_engine) {
+-	case VIA_2D_ENG_M1:
+-		highest_reg = 0x5c;
+-		break;
+-	default:
+-		highest_reg = 0x40;
+-		break;
+-	}
+-	for (i = 0; i <= highest_reg; i += 4)
+-		writel(0x0, engine + i);
+-
+ 	switch (chip_name) {
+ 	case UNICHROME_CLE266:
+ 	case UNICHROME_K400:
+@@ -386,6 +372,29 @@ int viafb_init_engine(struct fb_info *info)
+ 	viapar->shared->vdev->camera_fbmem_offset = viapar->fbmem_free;
+ #endif
+ 
++	viafb_start_engine(viapar);
++	return 0;
++}
++
++void viafb_start_engine(struct viafb_par *viapar)
++{
++	void __iomem *engine = viapar->shared->vdev->engine_mmio;
++	int highest_reg, i;
++	u32 vq_start_addr, vq_end_addr, vq_start_low, vq_end_low, vq_high,
++		vq_len, chip_name = viapar->shared->chip_info.gfx_chip_name;
++
++	/* Initialize registers to reset the 2D engine */
++	switch (viapar->shared->chip_info.twod_engine) {
++	case VIA_2D_ENG_M1:
++		highest_reg = 0x5c;
++		break;
++	default:
++		highest_reg = 0x40;
++		break;
++	}
++	for (i = 0; i <= highest_reg; i += 4)
++		writel(0x0, engine + i);
++
+ 	/* Init AGP and VQ regs */
+ 	switch (chip_name) {
+ 	case UNICHROME_K8M890:
+@@ -473,7 +482,7 @@ int viafb_init_engine(struct fb_info *info)
+ 	writel(0x0, engine + VIA_REG_CURSOR_ORG);
+ 	writel(0x0, engine + VIA_REG_CURSOR_BG);
+ 	writel(0x0, engine + VIA_REG_CURSOR_FG);
+-	return 0;
++	return;
  }
  
- static int taal_probe(struct omap_dss_device *dssdev)
-@@ -531,12 +591,8 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 	struct taal_data *td;
- 	struct backlight_device *bldev;
- 	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
--	int r;
--
--	const struct omap_video_timings taal_panel_timings = {
--		.x_res		= 864,
--		.y_res		= 480,
--	};
-+	struct panel_config *panel_config = NULL;
-+	int r, i;
+ void viafb_show_hw_cursor(struct fb_info *info, int Status)
+diff --git a/drivers/video/via/accel.h b/drivers/video/via/accel.h
+index 2c122d2..5352f87 100644
+--- a/drivers/video/via/accel.h
++++ b/drivers/video/via/accel.h
+@@ -204,6 +204,7 @@
+ #define VIA_BITBLT_FILL		3
  
- 	dev_dbg(&dssdev->dev, "probe\n");
+ int viafb_init_engine(struct fb_info *info);
++void viafb_start_engine(struct viafb_par *viapar);
+ void viafb_show_hw_cursor(struct fb_info *info, int Status);
+ void viafb_wait_engine_idle(struct fb_info *info);
  
-@@ -545,8 +601,20 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 		goto err;
- 	}
- 
-+	for (i = 0; i < ARRAY_SIZE(panel_configs); i++) {
-+		if (strcmp(panel_data->name, panel_configs[i].name) = 0) {
-+			panel_config = &panel_configs[i];
-+			break;
-+		}
-+	}
-+
-+	if (!panel_config) {
-+		r = -EINVAL;
-+		goto err;
-+	}
-+
- 	dssdev->panel.config = OMAP_DSS_LCD_TFT;
--	dssdev->panel.timings = taal_panel_timings;
-+	dssdev->panel.timings = panel_config->timings;
- 	dssdev->ctrl.pixel_size = 24;
- 
- 	td = kzalloc(sizeof(*td), GFP_KERNEL);
-@@ -555,6 +623,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 		goto err;
- 	}
- 	td->dssdev = dssdev;
-+	td->panel_config = panel_config;
- 
- 	mutex_init(&td->lock);
- 
-@@ -686,9 +755,6 @@ static int taal_power_on(struct omap_dss_device *dssdev)
- 	u8 id1, id2, id3;
- 	int r;
- 
--	/* it seems we have to wait a bit until taal is ready */
--	msleep(5);
--
- 	r = omapdss_dsi_display_enable(dssdev);
- 	if (r) {
- 		dev_err(&dssdev->dev, "failed to enable DSI\n");
-@@ -774,7 +840,7 @@ static void taal_power_off(struct omap_dss_device *dssdev)
- 	r = taal_dcs_write_0(DCS_DISPLAY_OFF);
- 	if (!r) {
- 		r = taal_sleep_in(td);
--		/* wait a bit so that the message goes through */
-+		/* HACK: wait a bit so that the message goes through */
- 		msleep(10);
- 	}
- 
-@@ -1036,6 +1102,7 @@ static int taal_sync(struct omap_dss_device *dssdev)
- 
- static int _taal_enable_te(struct omap_dss_device *dssdev, bool enable)
- {
-+	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
- 	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
- 	int r;
- 
-@@ -1047,9 +1114,8 @@ static int _taal_enable_te(struct omap_dss_device *dssdev, bool enable)
- 	if (!panel_data->use_ext_te)
- 		omapdss_dsi_enable_te(dssdev, enable);
- 
--	/* XXX for some reason, DSI TE breaks if we don't wait here.
--	 * Panel bug? Needs more studying */
--	msleep(100);
-+	if (td->panel_config->sleep.enable_te)
-+		msleep(td->panel_config->sleep.enable_te);
- 
- 	return r;
- }
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index b5099b9..aaf572a 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1767,6 +1767,8 @@ int viafb_resume(struct pci_dev *pdev)
+ 	if (pci_enable_device(pdev))
+ 		goto fail;
+ 	pci_set_master(pdev);
++	if (viaparinfo->shared->vdev->engine_mmio)
++		viafb_start_engine(viaparinfo);
+ 	viafb_set_par(viafbinfo);
+ 	if (viafb_dual_fb)
+ 		viafb_set_par(viafbinfo1);
 -- 
-1.6.5.2
+1.6.3.2
 

@@ -1,252 +1,127 @@
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Wed, 05 May 2010 14:27:36 +0000
-Subject: [PATCH v3 16/21] OMAP: DSS2: Taal: Use Nokia DSI panel data
-Message-Id: <690ef5c45aee3fb87a40fa03039356f8238925dc.1273067195.git.ext-jani.1.nikula@nokia.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 02 May 2010 15:17:31 +0000
+Subject: [PATCH 1/4] Minimal support for viafb suspend/resume
+Message-Id: <1272813454-3229-2-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
- <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <6b813e9f0008e23e7981f6ca35501f56c292858a.1273067195.git.ext-jani.1.nikula@nokia.com>
- <b32669a58d60491c3be4f7e52a52c27406cec877.1273067195.git.ext-jani.1.nikula@nokia.com>
- <94d9d7bebbf7588bd77b65e6a46044240140a350.1273067195.git.ext-jani.1.nikula@nokia.com>
- <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
- <16a98ca1b45ba9b9bb30f23d242449c1d440df07.1273067195.git.ext-jani.1.nikula@nokia.com>
- <aa1e310d0d385db39b5d53ba4d3dcf02b7e2f47f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <0cfff2a3cbb4231b41b382caf8aab7c52f47b0d5.1273067195.git.ext-jani.1.nikula@nokia.com>
- <adb61d94ee2a25284f6bd3f55ec4213501cbe8e3.1273067195.git.ext-jani.1.nikula@nokia.com>
- <4cb510ffbc3216e2a7dac16edaff5fb1980b3315.1273067195.git.ext-jani.1.nikula@nokia.com>
- <8665676eca5bbd3be35b63f7110f629e94a6babe.1273067195.git.ext-jani.1.nikula@nokia.com>
- <a4e7d90e0f036e227a29d94e28b7036c2f9d419b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <ca7ff2e5a165ca8488190520f1f75e6e37642d3b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <4f2a95d67d2b8004f4a2055681690920ebeb8e8f.1273067195.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <4f2a95d67d2b8004f4a2055681690920ebeb8e8f.1273067195.git.ext-jani.1.nikula@nokia.com>
+References: <1272813454-3229-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1272813454-3229-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com, tony@atomide.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, corbet@lwn.net, Deepak Saxena <dsaxena@laptop.org>
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+From: Deepak Saxena <dsaxena@laptop.org>
 
-Get board specific information from the Nokia DSI panel data structure
-instead of the DSS.
+This patch adds minimal support for suspend/resume of the
+VIA framebuffer device. It requires a version of OFW
+that restores the video mode.
 
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+This patch is OLPC-specific as the proper upstream solution
+is to move the VIA video path to using the kernel modesetting
+infrastructure and doing a proper save/restore in the kernel.
+
+[jc: extensive changes for 2.6.34 merge]
+Signed-off-by: Deepak Saxena <dsaxena@laptop.org>
 ---
- drivers/video/omap2/displays/panel-taal.c |   59 ++++++++++++++++++----------
- 1 files changed, 38 insertions(+), 21 deletions(-)
+ drivers/video/via/via-core.c |    4 +++
+ drivers/video/via/viafbdev.c |   46 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/video/via/viafbdev.h |    5 ++++
+ 3 files changed, 55 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 0c259ab..538829b 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -33,6 +33,7 @@
- #include <linux/mutex.h>
- 
- #include <plat/display.h>
-+#include <plat/nokia-dsi-panel.h>
- 
- /* DSI Virtual channel. Hardcoded for now. */
- #define TCH 0
-@@ -85,7 +86,6 @@ struct taal_data {
- 	bool mirror;
- 
- 	bool te_enabled;
--	bool use_ext_te;
- 
- 	atomic_t do_update;
- 	struct {
-@@ -107,6 +107,12 @@ struct taal_data {
- 	struct delayed_work esd_work;
+diff --git a/drivers/video/via/via-core.c b/drivers/video/via/via-core.c
+index a084363..b9ad283 100644
+--- a/drivers/video/via/via-core.c
++++ b/drivers/video/via/via-core.c
+@@ -647,6 +647,10 @@ static struct pci_driver via_driver = {
+ 	.id_table	= via_pci_table,
+ 	.probe		= via_pci_probe,
+ 	.remove		= __devexit_p(via_pci_remove),
++#ifdef CONFIG_PM
++	.suspend	= viafb_suspend,
++	.resume		= viafb_resume,
++#endif
  };
  
-+static inline struct nokia_dsi_panel_data
-+*get_panel_data(const struct omap_dss_device *dssdev)
-+{
-+	return (struct nokia_dsi_panel_data *) dssdev->data;
-+}
-+
- static void taal_esd_work(struct work_struct *work);
- 
- static void hw_guard_start(struct taal_data *td, int guard_msec)
-@@ -288,6 +294,7 @@ static int taal_bl_update_status(struct backlight_device *dev)
- {
- 	struct omap_dss_device *dssdev = dev_get_drvdata(&dev->dev);
- 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
-+	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
- 	int r;
- 	int level;
- 
-@@ -310,10 +317,10 @@ static int taal_bl_update_status(struct backlight_device *dev)
- 			r = 0;
- 		}
- 	} else {
--		if (!dssdev->set_backlight)
-+		if (!panel_data->set_backlight)
- 			r = -EINVAL;
- 		else
--			r = dssdev->set_backlight(dssdev, level);
-+			r = panel_data->set_backlight(dssdev, level);
- 	}
- 
- 	mutex_unlock(&td->lock);
-@@ -503,16 +510,18 @@ static struct attribute_group taal_attr_group = {
- 
- static void taal_hw_reset(struct omap_dss_device *dssdev)
- {
--	if (dssdev->reset_gpio = -1)
-+	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
-+
-+	if (panel_data->reset_gpio = -1)
- 		return;
- 
--	gpio_set_value(dssdev->reset_gpio, 1);
-+	gpio_set_value(panel_data->reset_gpio, 1);
- 	udelay(10);
- 	/* reset the panel */
--	gpio_set_value(dssdev->reset_gpio, 0);
-+	gpio_set_value(panel_data->reset_gpio, 0);
- 	/* assert reset for at least 10us */
- 	udelay(10);
--	gpio_set_value(dssdev->reset_gpio, 1);
-+	gpio_set_value(panel_data->reset_gpio, 1);
- 	/* wait 5ms after releasing reset */
- 	msleep(5);
+ static int __init via_core_init(void)
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 3d03318..1b435b3 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1741,6 +1741,52 @@ static int parse_mode(const char *str, u32 *xres, u32 *yres)
  }
-@@ -522,6 +531,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 	struct backlight_properties props;
- 	struct taal_data *td;
- 	struct backlight_device *bldev;
-+	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
- 	int r;
  
- 	const struct omap_video_timings taal_panel_timings = {
-@@ -531,6 +541,11 @@ static int taal_probe(struct omap_dss_device *dssdev)
  
- 	dev_dbg(&dssdev->dev, "probe\n");
- 
-+	if (!panel_data || !panel_data->name) {
-+		r = -EINVAL;
-+		goto err;
++#ifdef CONFIG_PM
++int viafb_suspend(struct pci_dev *pdev, pm_message_t state)
++{
++	if (state.event = PM_EVENT_SUSPEND) {
++		acquire_console_sem();
++
++		memcpy_fromio(viaparinfo->shared->saved_regs,
++			      viaparinfo->shared->vdev->engine_mmio + 0x100,
++			      0xff * sizeof(u32));
++
++		fb_set_suspend(viafbinfo, 1);
++
++		viafb_sync(viafbinfo);
++
++		pci_save_state(pdev);
++		pci_disable_device(pdev);
++		pci_set_power_state(pdev, pci_choose_state(pdev, state));
++		release_console_sem();
 +	}
 +
- 	dssdev->panel.config = OMAP_DSS_LCD_TFT;
- 	dssdev->panel.timings = taal_panel_timings;
- 	dssdev->ctrl.pixel_size = 24;
-@@ -561,7 +576,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 	/* if no platform set_backlight() defined, presume DSI backlight
- 	 * control */
- 	memset(&props, 0, sizeof(props));
--	if (!dssdev->set_backlight)
-+	if (!panel_data->set_backlight)
- 		td->use_dsi_bl = true;
- 
- 	if (td->use_dsi_bl)
-@@ -586,8 +601,8 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 
- 	taal_bl_update_status(bldev);
- 
--	if (dssdev->phy.dsi.ext_te) {
--		int gpio = dssdev->phy.dsi.ext_te_gpio;
-+	if (panel_data->use_ext_te) {
-+		int gpio = panel_data->ext_te_gpio;
- 
- 		r = gpio_request(gpio, "taal irq");
- 		if (r) {
-@@ -610,8 +625,6 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 		INIT_DELAYED_WORK_DEFERRABLE(&td->te_timeout_work,
- 					taal_te_timeout_work_callback);
- 
--		td->use_ext_te = true;
--
- 		dev_dbg(&dssdev->dev, "Using GPIO TE\n");
- 	}
- 
-@@ -623,11 +636,11 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 
- 	return 0;
- err_sysfs:
--	if (td->use_ext_te)
--		free_irq(gpio_to_irq(dssdev->phy.dsi.ext_te_gpio), dssdev);
-+	if (panel_data->use_ext_te)
-+		free_irq(gpio_to_irq(panel_data->ext_te_gpio), dssdev);
- err_irq:
--	if (td->use_ext_te)
--		gpio_free(dssdev->phy.dsi.ext_te_gpio);
-+	if (panel_data->use_ext_te)
-+		gpio_free(panel_data->ext_te_gpio);
- err_gpio:
- 	backlight_device_unregister(bldev);
- err_bl:
-@@ -641,14 +654,15 @@ err:
- static void taal_remove(struct omap_dss_device *dssdev)
++	return 0;
++}
++
++int viafb_resume(struct pci_dev *pdev)
++{
++	acquire_console_sem();
++	pci_set_power_state(pdev, PCI_D0);
++	pci_restore_state(pdev);
++	if (pci_enable_device(pdev))
++		goto fail;
++	pci_set_master(pdev);
++
++	memcpy_toio(viaparinfo->shared->vdev->engine_mmio + 0x100,
++		    viaparinfo->shared->saved_regs,
++		    0x100 * sizeof(u32));
++
++	fb_set_suspend(viafbinfo, 0);
++
++fail:
++	release_console_sem();
++	return 0;
++}
++
++#endif
++
++
+ int __devinit via_fb_pci_probe(struct viafb_dev *vdev)
  {
- 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
-+	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
- 	struct backlight_device *bldev;
+ 	u32 default_xres, default_yres;
+diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
+index 52a35fa..3bcae0a 100644
+--- a/drivers/video/via/viafbdev.h
++++ b/drivers/video/via/viafbdev.h
+@@ -57,6 +57,9 @@ struct viafb_shared {
+ 		u8 dst_bpp, u32 dst_addr, u32 dst_pitch, u32 dst_x, u32 dst_y,
+ 		u32 *src_mem, u32 src_addr, u32 src_pitch, u32 src_x, u32 src_y,
+ 		u32 fg_color, u32 bg_color, u8 fill_rop);
++
++	/* For suspend/resume */
++	u32 saved_regs[0x100];
+ };
  
- 	dev_dbg(&dssdev->dev, "remove\n");
- 
- 	sysfs_remove_group(&dssdev->dev.kobj, &taal_attr_group);
- 
--	if (td->use_ext_te) {
--		int gpio = dssdev->phy.dsi.ext_te_gpio;
-+	if (panel_data->use_ext_te) {
-+		int gpio = panel_data->ext_te_gpio;
- 		free_irq(gpio_to_irq(gpio), dssdev);
- 		gpio_free(gpio);
- 	}
-@@ -958,6 +972,7 @@ static int taal_update(struct omap_dss_device *dssdev,
- 				    u16 x, u16 y, u16 w, u16 h)
- {
- 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
-+	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
- 	int r;
- 
- 	dev_dbg(&dssdev->dev, "update %d, %d, %d x %d\n", x, y, w, h);
-@@ -978,7 +993,7 @@ static int taal_update(struct omap_dss_device *dssdev,
- 	if (r)
- 		goto err;
- 
--	if (td->te_enabled && td->use_ext_te) {
-+	if (td->te_enabled && panel_data->use_ext_te) {
- 		td->update_region.x = x;
- 		td->update_region.y = y;
- 		td->update_region.w = w;
-@@ -1021,6 +1036,7 @@ static int taal_sync(struct omap_dss_device *dssdev)
- 
- static int _taal_enable_te(struct omap_dss_device *dssdev, bool enable)
- {
-+	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
- 	int r;
- 
- 	if (enable)
-@@ -1028,7 +1044,7 @@ static int _taal_enable_te(struct omap_dss_device *dssdev, bool enable)
- 	else
- 		r = taal_dcs_write_0(DCS_TEAR_OFF);
- 
--	if (!td->use_ext_te)
-+	if (!panel_data->use_ext_te)
- 		omapdss_dsi_enable_te(dssdev, enable);
- 
- 	/* XXX for some reason, DSI TE breaks if we don't wait here.
-@@ -1272,6 +1288,7 @@ static void taal_esd_work(struct work_struct *work)
- 	struct taal_data *td = container_of(work, struct taal_data,
- 			esd_work.work);
- 	struct omap_dss_device *dssdev = td->dssdev;
-+	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
- 	u8 state1, state2;
- 	int r;
- 
-@@ -1312,7 +1329,7 @@ static void taal_esd_work(struct work_struct *work)
- 	}
- 	/* Self-diagnostics result is also shown on TE GPIO line. We need
- 	 * to re-enable TE after self diagnostics */
--	if (td->use_ext_te && td->te_enabled) {
-+	if (td->te_enabled && panel_data->use_ext_te) {
- 		r = taal_dcs_write_1(DCS_TEAR_ON, 0);
- 		if (r)
- 			goto err;
+ struct viafb_par {
+@@ -103,4 +106,6 @@ void via_fb_pci_remove(struct pci_dev *pdev);
+ /* Temporary */
+ int viafb_init(void);
+ void viafb_exit(void);
++int viafb_suspend(struct pci_dev *pdev, pm_message_t state);
++int viafb_resume(struct pci_dev *pdev);
+ #endif /* __VIAFBDEV_H__ */
 -- 
-1.6.5.2
+1.6.3.2
 

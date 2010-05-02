@@ -1,62 +1,35 @@
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Mon, 03 May 2010 06:18:20 +0000
-Subject: [PATCH v2 00/21] OMAP: DSS2: Taal panel driver updates
-Message-Id: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
+From: Coate Vilandre <kismet@slawekgruca.com>
+Date: Sun, 02 May 2010 19:03:32 +0000
+Subject: of devotion whic
+Message-Id: <4BDDCB88.2060507@mirisan.by>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com, tony@atomide.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
+To: linux-fbdev@vger.kernel.org
 
-Hi -
-
-This set of patches, on top of [1], contains assorted fixes and cleanups to the
-Taal panel driver (01-14), configures board/platform specific things in a new
-Nokia DSI command mode panel specific struct instead of DSS structs (15-17), and
-makes it feasible to add support for similar DSI command mode panels in the same
-driver (18-21).
-
-v2: No functional changes since v1, just filled in some missing commit messages
-(thanks Tony for your feedback!)
-
-[1] git://gitorious.org/linux-omap-dss2/linux.git
-
-BR,
-Jani.
-
-
-Jani Nikula (20):
-  OMAP: DSS2: Taal: Add panel hardware reset
-  OMAP: DSS2: Taal: Add locks to protect taal data access
-  OMAP: DSS2: Taal: Cosmetic improvement to backlight properties
-    initialization
-  OMAP: DSS2: Taal: Remove platform enable/disable
-  OMAP: DSS2: Taal: Fix request_irq() error handling
-  OMAP: DSS2: Taal: Remove ESD work cancel from driver probe error
-    handling
-  OMAP: DSS2: Taal: Improve taal_power_on() error handling
-  OMAP: DSS2: Taal: Bail out from taal_run_test() if panel is not
-    enabled
-  OMAP: DSS2: Taal: Change DSI bus locking to avoid deadlock in ESD
-    work
-  OMAP: DSS2: Taal: Check taal_power_on() return value in taal_resume()
-  OMAP: DSS2: Taal: Change ESD work management
-  OMAP: DSS2: Taal: Change probe error handling labels
-  OMAP: DSS2: Taal: Add proper external TE support
-  OMAP: DSS2: Add Nokia DSI command mode panel configuration struct
-  OMAP: DSS2: Taal: Use Nokia DSI panel data
-  OMAP: DSS2: Taal: Configure ESD check in DSI panel data
-  OMAP: DSS2: Taal: Add panel specific configuration structure
-  OMAP: DSS2: Taal: Print panel name in addition to revision
-  OMAP: DSS2: Taal: Add regulator configuration support
-  OMAP: DSS2: Taal: CABC workaround is Taal specific
-
-Valkeinen Tomi (Nokia-D/Helsinki) (1):
-  OMAP: DSS2: Taal: add locks to taal_bl_update_status
-
- arch/arm/plat-omap/include/plat/nokia-dsi-panel.h |   31 ++
- drivers/video/omap2/displays/panel-taal.c         |  538 ++++++++++++++++-----
- 2 files changed, 452 insertions(+), 117 deletions(-)
- create mode 100644 arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
-
+e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcZGVmZjBcZGVmbGFuZzEwMzN7XCpcZ2VuZXJhdG9y
+IE1zZnRlZGl0IDMuMjIuMzAuNjc1Mzt9e1xmb250dGJse1xmMFxmbmlsXGZjaGFyc2V0MCBD
+YWxpYnJpO319DQp7XCpcZ2VuZXJhdG9yIE1zZnRlZGl0IDMuMjIuMzAuNjc1Mzt9e1xjb2xv
+cnRibCA7XHJlZDBcZ3JlZW4wXGJsdWUyNTU7XHJlZDE5MlxncmVlbjgwXGJsdWU3NztccmVk
+MFxncmVlbjE3NlxibHVlODA7XHJlZDIwNFxncmVlbjE4MFxibHVlMDtccmVkMjU1XGdyZWVu
+MFxibHVlMDtccmVkMjIzXGdyZWVuMjA2XGJsdWU0O1xyZWQxNTVcZ3JlZW4wXGJsdWUyMTE7
+XHJlZDc5XGdyZWVuMTI5XGJsdWUxODk7XHJlZDE2NVxncmVlbjE2NVxibHVlMTY1O1xyZWQx
+MjhcZ3JlZW4xNThcYmx1ZTE5NDtccmVkMjQ3XGdyZWVuMTUwXGJsdWU3MDtccmVkMFxncmVl
+bjc3XGJsdWUxODc7XHJlZDc1XGdyZWVuMTcyXGJsdWUxOTg7XHJlZDIyMVxncmVlbjEzMlxi
+bHVlMTMyO1xyZWQ1MVxncmVlbjUxXGJsdWU1MTtccmVkMTU4XGdyZWVuMTI0XGJsdWUxMjQ7
+XHJlZDE1NVxncmVlbjE4N1xibHVlODk7fQ0Ke1wqXGdlbmVyYXRvciBNc2Z0ZWRpdCAzLjIy
+LjMwLjY3NTM7fVx2aWV3a2luZDRcdWMxXHBhcmRcc2EyMDBcc2wyNzZcc2xtdWx0MVxsYW5n
+OVxmMFxmczMye1xmaWVsZHtcKlxmbGRpbnN0e0hZUEVSTElOSyAiaHtcKlxkZCAzLjIyLjMw
+LjY3NTM7fXR0cDovL3d3dy54YTY2LnJ1In19e1xmbGRyc2x0e1x1bFxjZjEgaHR0cDovL3d3
+dy54YTY2LnJ1fX19XGYwXGNmMVxiXGZzMzIgIC0gT3JkZXIgdGhlIGNoZWFwZXN0IG1lZGlj
+YXRpb25zIG5vdyFccGFyDQpWaWFncmEgXGNmNCBDaWFsaXMgXGNmMyBWaWFncmEgUHJvZmVz
+c2lvbmFsIFxjZjUgQ2lhbGlzIFByb2Zlc3Npb25hbCBcY2Y2IFZpYWdyYSBTdXBlciBBY3Rp
+dmUrIFxjZjMgQ2lhbGlzIFN1cGVyIEFjdGl2ZSsgXGNmNyBMZXZpdHJhXGNmMCAgXGNmOCBW
+aWFncmEgU29mdCBUYWJzIFxjZjkgQ2lhbGlzIFNvZnQgVGFic1xjZjEwICBcY2YxMSBMZXZp
+dHJhIFByb2Zlc3Npb25hbCBcY2Y0IEZlbWFsZSBWaWFncmEgXGNmMTIgUHJvcGVjaWEgXGNm
+NyBBY29tcGxpYSBcY2Y2IFhlbmljYWxcY2YwICBcY2Y1IEJyYW5kIExldml0cmEgXGNmMTMg
+RmVtYWxlIENpYWxpcyBcY2YxNCBMZXZpdHJhIFN1cGVyIEFjdGl2ZSsgXGNmMTUgVGFtaWZs
+dVxjZjAgIFxjZjcgVlBYTFxjZjAgIFxjZjE2IFZpYWdyYSBTb2Z0IEZsYXZvdXJlZCBcY2Y1
+IEJyYW5kIFZpYWdyYSBcY2YxNyBCcmFuZCBDaWFsaXNcY2YwDQp7XCpcZ2VuZXJhdG9yIE1z
+ZnRlZGl0IDMuMjIuMzAuNjc1Mzt9fQ=

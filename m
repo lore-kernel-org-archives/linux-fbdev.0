@@ -1,64 +1,82 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Thu, 20 May 2010 14:20:59 +0000
-Subject: Re: [PATCH 1/4] fbdev: add a MIPI DSI header
-Message-Id: <1274365259.4246.52.camel@tubuntu.research.nokia.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 02 May 2010 01:18:53 +0000
+Subject: Re: [PATCH 24/30] viafb: Add a driver for the video capture engine
+Message-Id: <4BDCD2FD.8090104@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1005071054510.4777@axis700.grange>
-	 <Pine.LNX.4.64.1005071102440.4777@axis700.grange>
-	 <1274255350.2307.159.camel@tubuntu.research.nokia.com>
-	 <Pine.LNX.4.64.1005190955500.3099@axis700.grange>
-	 <1274257308.2307.168.camel@tubuntu.research.nokia.com>
-	 <Pine.LNX.4.64.1005200939030.26000@axis700.grange>
-	 <1274344369.4246.28.camel@tubuntu.research.nokia.com>
-	 <Pine.LNX.4.64.1005201251350.26000@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1005201251350.26000@axis700.grange>
+References: <1272493051-25380-1-git-send-email-corbet@lwn.net> <1272493051-25380-25-git-send-email-corbet@lwn.net>
+In-Reply-To: <1272493051-25380-25-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: ext Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "Syrjala Ville (Nokia-D/Helsinki)" <ville.syrjala@nokia.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn
 
-On Thu, 2010-05-20 at 13:03 +0200, ext Guennadi Liakhovetski wrote:
+Jonathan Corbet schrieb:
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index 22c1662..a969f76 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -1516,12 +1516,21 @@ config FB_VIA
+>  	  This is the frame buffer device driver for Graphics chips of VIA
+>  	  UniChrome (Pro) Family (CLE266,PM800/CN400,P4M800CE/P4M800Pro/
+>  	  CN700/VN800,CX700/VX700,P4M890) and Chrome9 Family (K8M890,CN896
+> - 	  /P4M900,VX800)
+> + 	  /P4M900,VX800,VX855)
+>  	  Say Y if you have a VIA UniChrome graphics board.
+>  
+>  	  To compile this driver as a module, choose M here: the
+>  	  module will be called viafb.
+>  
+> +config FB_VIA_CAMERA
+> +	tristate "VIAFB camera controller support"
+> +	depends on FB_VIA
+> +	select VIDEOBUF_DMA_SG
+> +	help
+> +	   Driver support for the integrated camera controller in VIA
+> +	   Chrome9 chipsets.  Currently only tested on OLPC xo-1.5 systems
+> +	   with ov7670 sensors.
+> +
 
-> Yes, I'd use u8 too, because the specs define "transaction types" to take 
-> 6 bits and "DCS commands" to be 8-bit ints. But, you know, doesn't our 
-> case fall under case (b) of Chapter 5 "Typedefs" of CodingStyle?:) I mean, 
+Probably this is not the right place for this config option. Even if it 
+currently depends on the framebuffer having it there is just confusing. 
+Additionally you should depend/select some V4L stuff to make the 
+following compile errors go away:
 
-CodingStyle says: "if there is a clear reason for why it under certain
-circumstances might be an "unsigned int" and under other configurations
-might be "unsigned long", then by all means go ahead and use a typedef."
+ERROR: "video_ioctl2" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "video_device_release_empty" [drivers/video/via/via-camera.ko] 
+undefined!
+ERROR: "video_register_device" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "v4l2_i2c_new_subdev_cfg" [drivers/video/via/via-camera.ko] 
+undefined!
+ERROR: "v4l2_device_register" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "videobuf_read_stream" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "videobuf_mmap_free" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "videobuf_stop" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "videobuf_streamoff" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "videobuf_poll_stream" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "videobuf_mmap_mapper" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "video_devdata" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "videobuf_iolock" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "videobuf_reqbufs" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "videobuf_querybuf" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "videobuf_qbuf" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "videobuf_dqbuf" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "videobuf_streamon" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "v4l2_chip_match_host" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "v4l2_device_unregister" [drivers/video/via/via-camera.ko] undefined!
+ERROR: "video_unregister_device" [drivers/video/via/via-camera.ko] 
+undefined!
+ERROR: "videobuf_alloc" [drivers/media/video/videobuf-dma-sg.ko] undefined!
+ERROR: "videobuf_queue_core_init" 
+[drivers/media/video/videobuf-dma-sg.ko] undefined!
 
-In our case the DSI transactions and DCS commands are always 6 and 8
-bits, so I don't think it applies.
-
-And the transaction datatypes and DCS commands are really just payload
-sent to the peripheral, and the peripheral can do anything it wants with
-those.
-
-> wouldn't it make sense to create two typedefs for these to add some 
-
-But wouldn't a typedef basically lock the possible transactions or DCS
-commands that you can give to the functions? And that was the original
-problem also.
-
-> type-safety? In fact, transaction types cannot be user-defined / 
-> proprietary, right? So, for that an enum would work. It's only DCS 
-
-Why they cannot be? I don't see any technical problem there, at least.
-And while I don't have any current use to extend transactions, I
-wouldn't want to limit it for any possible future use either.
-
-> But you only need specific panel drivers if you want to support their 
-> proprietary commands? Otherwise you only need a set of parameters - 
-> timeing requirements etc. - which you can perfectly just pass in platform 
-> data?
-
-That's true. I guess you've gotten it easy, if you only have DSI video
-mode panels that do not need any special care =). Command mode panels
-are usually slightly more complex, and especially early prototypes of
-the panels can require quite a lot of trickery. And then there are DSI
-hubs, which make DSI command mode panels look trivial...
-
- Tomi
+Otherwise you can count this patch series as
+Acked-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Although it is still far away from destination and has its issues but 
+it's a step forward and delaying it would be probably just frustrating 
+for both of us.
 
 
+Thanks,
+
+Florian Tobias Schandinat

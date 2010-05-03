@@ -1,38 +1,69 @@
-From: Frank Pan <frankpzh@gmail.com>
-Date: Thu, 20 May 2010 01:56:25 +0000
-Subject: Comments of fbcon_cw.c made a mistake
-Message-Id: <AANLkTilhnzVtLsWqyllH5vhFIwDaUKllnkfxSyqKC6hv@mail.gmail.com>
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Date: Mon, 03 May 2010 06:18:22 +0000
+Subject: [PATCH v2 02/21] OMAP: DSS2: Taal: add locks to taal_bl_update_status
+Message-Id: <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi.Valkeinen@nokia.com, tony@atomide.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
 
-Greetings.
+From: Valkeinen Tomi (Nokia-D/Helsinki) <Tomi.Valkeinen@nokia.com>
 
-Recently I'm reading linux kernel and I've found this tiny problem.
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-=A0 =A0 The comment at top of fbcon_cw.c annonced it is fbcon_ud.c.
+taal_bl_update_status was missing locks to protect taal_data. This caused
+a kernel crash randomly, as the code attempted to set the brightness while
+the OMAP's DSI block was actually disabled.
 
-I'm strongly interested in linux kernel and wish to learn the
-community. Although this problem is really not a big deal, but maybe
-it's a good start, good chance to learn.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ drivers/video/omap2/displays/panel-taal.c |   18 ++++++++++--------
+ 1 files changed, 10 insertions(+), 8 deletions(-)
 
-If I did anything unregular, please tell me. Thank you.
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 43fce5f..5f5afba 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -290,24 +290,26 @@ static int taal_bl_update_status(struct backlight_device *dev)
+ 
+ 	dev_dbg(&dssdev->dev, "update brightness to %d\n", level);
+ 
++	mutex_lock(&td->lock);
++
+ 	if (td->use_dsi_bl) {
+ 		if (td->enabled) {
+ 			dsi_bus_lock();
+ 			r = taal_dcs_write_1(DCS_BRIGHTNESS, level);
+ 			dsi_bus_unlock();
+-			if (r)
+-				return r;
++		} else {
++			r = 0;
+ 		}
+ 	} else {
+ 		if (!dssdev->set_backlight)
+-			return -EINVAL;
+-
+-		r = dssdev->set_backlight(dssdev, level);
+-		if (r)
+-			return r;
++			r = -EINVAL;
++		else
++			r = dssdev->set_backlight(dssdev, level);
+ 	}
+ 
+-	return 0;
++	mutex_unlock(&td->lock);
++
++	return r;
+ }
+ 
+ static int taal_bl_get_intensity(struct backlight_device *dev)
+-- 
+1.6.5.2
 
-Here is my patch:
-
-diff --git a/drivers/video/console/fbcon_cw.c b/drivers/video/console/fbcon=
-_cw.c
-index 126110f..2f51a51 100644
---- a/drivers/video/console/fbcon_cw.c
-+++ b/drivers/video/console/fbcon_cw.c
-@@ -1,5 +1,5 @@
-/*
-- * =A0linux/drivers/video/console/fbcon_ud.c -- Software Rotation - 90 deg=
-rees
-+ * =A0linux/drivers/video/console/fbcon_cw.c -- Software Rotation - 90 deg=
-rees
-=A0*
-=A0* =A0 =A0 =A0Copyright (C) 2005 Antonino Daplas <adaplas @pol.net>
-=A0*

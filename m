@@ -1,88 +1,79 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Tue, 18 May 2010 12:34:56 +0000
-Subject: [PATCH 05/23] OMAP: DSS2: Use vdds_sdi regulator supply in SDI
-Message-Id: <1274186114-26951-6-git-send-email-tomi.valkeinen@nokia.com>
+From: Jani Nikula <ext-jani.1.nikula@Nokia.com>
+Date: Mon, 03 May 2010 06:18:35 +0000
+Subject: [PATCH v2 15/21] OMAP: DSS2: Add Nokia DSI command mode panel configuration struct
+Message-Id: <df2ca92a00d718b95aa6a7875a4199882c86f513.1272621452.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <db2b972d4fa08c2f5b3cd06392ef62415890a188.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b57a3f4ccf68e8c8faf332a25b699b92a5604509.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <7a01973540a3afa79701ee08a3d8732db4687d5b.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b88fcf26f978d38a25000c2f472a4ad8f79ac285.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <ba3a895d56c242fe4edbcfc4abd3c608da3db77a.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <1a68710812da041ef583944411a1b7027d216c96.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <85172e14c23339065e319230f9707353409a901e.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <6e9febe4d2179309dcf93b7a8e897890c871f086.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <ad1917b1c316a85051c4a908705d403956ca1720.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <4004b06a47d3c1d20d6d8a30ddccdf536faeb5a0.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b88e1b382ddf14870c7a44e7ca620ad84d883b50.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <5a5dc1e253df571477551b8f63560ad9d1a3ab2b.1272621452.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <5a5dc1e253df571477551b8f63560ad9d1a3ab2b.1272621452.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Tomi.Valkeinen@Nokia.com, tony@atomide.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@Nokia.com
 
-From: Roger Quadros <roger.quadros@nokia.com>
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-This patch enables the use of vdds_sdi regulator in SDI subsystem.
-We can disable the vdds_sdi voltage when not in use to save
-power.
+Introduce a configuration struct for platform/board specific information
+of Nokia DSI command mode panels, to be used in addition to struct
+omap_dss_device (passed via the 'void *data' member).
 
-Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
 ---
- drivers/video/omap2/dss/sdi.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+ arch/arm/plat-omap/include/plat/nokia-dsi-panel.h |   31 +++++++++++++++++++++
+ 1 files changed, 31 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
 
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index 3de3c1e..ee07a3c 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -23,13 +23,16 @@
- #include <linux/clk.h>
- #include <linux/delay.h>
- #include <linux/err.h>
-+#include <linux/regulator/consumer.h>
- 
- #include <plat/display.h>
-+#include <plat/cpu.h>
- #include "dss.h"
- 
- static struct {
- 	bool skip_init;
- 	bool update_enabled;
-+	struct regulator *vdds_sdi_reg;
- } sdi;
- 
- static void sdi_basic_init(void)
-@@ -57,6 +60,10 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- 		goto err0;
- 	}
- 
-+	r = regulator_enable(sdi.vdds_sdi_reg);
-+	if (r)
-+		goto err1;
+diff --git a/arch/arm/plat-omap/include/plat/nokia-dsi-panel.h b/arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
+new file mode 100644
+index 0000000..01ab657
+--- /dev/null
++++ b/arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
+@@ -0,0 +1,31 @@
++#ifndef __ARCH_ARM_PLAT_OMAP_NOKIA_DSI_PANEL_H
++#define __ARCH_ARM_PLAT_OMAP_NOKIA_DSI_PANEL_H
 +
- 	/* In case of skip_init sdi_init has already enabled the clocks */
- 	if (!sdi.skip_init)
- 		dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK1);
-@@ -120,6 +127,7 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- 	return 0;
- err2:
- 	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
-+	regulator_disable(sdi.vdds_sdi_reg);
- err1:
- 	omap_dss_stop_device(dssdev);
- err0:
-@@ -135,6 +143,8 @@ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev)
- 
- 	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
- 
-+	regulator_disable(sdi.vdds_sdi_reg);
++#include "display.h"
 +
- 	omap_dss_stop_device(dssdev);
- }
- EXPORT_SYMBOL(omapdss_sdi_display_disable);
-@@ -151,6 +161,11 @@ int sdi_init(bool skip_init)
- 	/* we store this for first display enable, then clear it */
- 	sdi.skip_init = skip_init;
- 
-+	sdi.vdds_sdi_reg = dss_get_vdds_sdi();
-+	if (IS_ERR(sdi.vdds_sdi_reg)) {
-+		DSSERR("can't get VDDS_SDI regulator\n");
-+		return PTR_ERR(sdi.vdds_sdi_reg);
-+	}
- 	/*
- 	 * Enable clocks already here, otherwise there would be a toggle
- 	 * of them until sdi_display_enable is called.
++/**
++ * struct nokia_dsi_panel_data - Nokia DSI panel driver configuration
++ * @name: panel name
++ * @use_ext_te: use external TE
++ * @ext_te_gpio: external TE GPIO
++ * @use_esd_check: perform ESD checks
++ * @max_backlight_level: maximum backlight level
++ * @set_backlight: pointer to backlight set function
++ * @get_backlight: pointer to backlight get function
++ */
++struct nokia_dsi_panel_data {
++	const char *name;
++
++	int reset_gpio;
++
++	bool use_ext_te;
++	int ext_te_gpio;
++
++	bool use_esd_check;
++
++	int max_backlight_level;
++	int (*set_backlight)(struct omap_dss_device *dssdev, int level);
++	int (*get_backlight)(struct omap_dss_device *dssdev);
++};
++
++#endif /* __ARCH_ARM_PLAT_OMAP_NOKIA_DSI_PANEL_H */
 -- 
-1.7.0.4
+1.6.5.2
 

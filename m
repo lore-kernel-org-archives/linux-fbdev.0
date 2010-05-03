@@ -1,85 +1,62 @@
 From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Wed, 05 May 2010 14:27:23 +0000
-Subject: [PATCH v3 03/21] OMAP: DSS2: Taal: Add locks to protect taal data access
-Message-Id: <6b813e9f0008e23e7981f6ca35501f56c292858a.1273067195.git.ext-jani.1.nikula@nokia.com>
+Date: Mon, 03 May 2010 06:18:20 +0000
+Subject: [PATCH v2 00/21] OMAP: DSS2: Taal panel driver updates
+Message-Id: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
- <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Tomi.Valkeinen@nokia.com, tony@atomide.com
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Hi -
 
-Avoid potential race conditions in sysfs access to taal data.
+This set of patches, on top of [1], contains assorted fixes and cleanups to the
+Taal panel driver (01-14), configures board/platform specific things in a new
+Nokia DSI command mode panel specific struct instead of DSS structs (15-17), and
+makes it feasible to add support for similar DSI command mode panels in the same
+driver (18-21).
 
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
----
- drivers/video/omap2/displays/panel-taal.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+v2: No functional changes since v1, just filled in some missing commit messages
+(thanks Tony for your feedback!)
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 8fbb94e..0eed328 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -364,6 +364,8 @@ static ssize_t taal_num_errors_show(struct device *dev,
- 	u8 errors;
- 	int r;
- 
-+	mutex_lock(&td->lock);
-+
- 	if (td->enabled) {
- 		dsi_bus_lock();
- 		r = taal_dcs_read_1(DCS_READ_NUM_ERRORS, &errors);
-@@ -372,6 +374,8 @@ static ssize_t taal_num_errors_show(struct device *dev,
- 		r = -ENODEV;
- 	}
- 
-+	mutex_unlock(&td->lock);
-+
- 	if (r)
- 		return r;
- 
-@@ -386,6 +390,8 @@ static ssize_t taal_hw_revision_show(struct device *dev,
- 	u8 id1, id2, id3;
- 	int r;
- 
-+	mutex_lock(&td->lock);
-+
- 	if (td->enabled) {
- 		dsi_bus_lock();
- 		r = taal_get_id(&id1, &id2, &id3);
-@@ -394,6 +400,8 @@ static ssize_t taal_hw_revision_show(struct device *dev,
- 		r = -ENODEV;
- 	}
- 
-+	mutex_unlock(&td->lock);
-+
- 	if (r)
- 		return r;
- 
-@@ -443,6 +451,8 @@ static ssize_t store_cabc_mode(struct device *dev,
- 	if (i = ARRAY_SIZE(cabc_modes))
- 		return -EINVAL;
- 
-+	mutex_lock(&td->lock);
-+
- 	if (td->enabled) {
- 		dsi_bus_lock();
- 		if (!td->cabc_broken)
-@@ -452,6 +462,8 @@ static ssize_t store_cabc_mode(struct device *dev,
- 
- 	td->cabc_mode = i;
- 
-+	mutex_unlock(&td->lock);
-+
- 	return count;
- }
- 
--- 
-1.6.5.2
+[1] git://gitorious.org/linux-omap-dss2/linux.git
+
+BR,
+Jani.
+
+
+Jani Nikula (20):
+  OMAP: DSS2: Taal: Add panel hardware reset
+  OMAP: DSS2: Taal: Add locks to protect taal data access
+  OMAP: DSS2: Taal: Cosmetic improvement to backlight properties
+    initialization
+  OMAP: DSS2: Taal: Remove platform enable/disable
+  OMAP: DSS2: Taal: Fix request_irq() error handling
+  OMAP: DSS2: Taal: Remove ESD work cancel from driver probe error
+    handling
+  OMAP: DSS2: Taal: Improve taal_power_on() error handling
+  OMAP: DSS2: Taal: Bail out from taal_run_test() if panel is not
+    enabled
+  OMAP: DSS2: Taal: Change DSI bus locking to avoid deadlock in ESD
+    work
+  OMAP: DSS2: Taal: Check taal_power_on() return value in taal_resume()
+  OMAP: DSS2: Taal: Change ESD work management
+  OMAP: DSS2: Taal: Change probe error handling labels
+  OMAP: DSS2: Taal: Add proper external TE support
+  OMAP: DSS2: Add Nokia DSI command mode panel configuration struct
+  OMAP: DSS2: Taal: Use Nokia DSI panel data
+  OMAP: DSS2: Taal: Configure ESD check in DSI panel data
+  OMAP: DSS2: Taal: Add panel specific configuration structure
+  OMAP: DSS2: Taal: Print panel name in addition to revision
+  OMAP: DSS2: Taal: Add regulator configuration support
+  OMAP: DSS2: Taal: CABC workaround is Taal specific
+
+Valkeinen Tomi (Nokia-D/Helsinki) (1):
+  OMAP: DSS2: Taal: add locks to taal_bl_update_status
+
+ arch/arm/plat-omap/include/plat/nokia-dsi-panel.h |   31 ++
+ drivers/video/omap2/displays/panel-taal.c         |  538 ++++++++++++++++-----
+ 2 files changed, 452 insertions(+), 117 deletions(-)
+ create mode 100644 arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
 

@@ -1,182 +1,252 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Tue, 18 May 2010 12:35:12 +0000
-Subject: [PATCH 21/23] board-omap3-beagle: add DSS2 support
-Message-Id: <1274186114-26951-22-git-send-email-tomi.valkeinen@nokia.com>
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Date: Mon, 03 May 2010 06:18:36 +0000
+Subject: [PATCH v2 16/21] OMAP: DSS2: Taal: Use Nokia DSI panel data
+Message-Id: <d76f00a4c763b84d7511a9f0c98eb7117e9e6a3e.1272621452.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <db2b972d4fa08c2f5b3cd06392ef62415890a188.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b57a3f4ccf68e8c8faf332a25b699b92a5604509.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <7a01973540a3afa79701ee08a3d8732db4687d5b.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b88fcf26f978d38a25000c2f472a4ad8f79ac285.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <ba3a895d56c242fe4edbcfc4abd3c608da3db77a.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <1a68710812da041ef583944411a1b7027d216c96.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <85172e14c23339065e319230f9707353409a901e.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <6e9febe4d2179309dcf93b7a8e897890c871f086.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <ad1917b1c316a85051c4a908705d403956ca1720.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <4004b06a47d3c1d20d6d8a30ddccdf536faeb5a0.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b88e1b382ddf14870c7a44e7ca620ad84d883b50.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <5a5dc1e253df571477551b8f63560ad9d1a3ab2b.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <df2ca92a00d718b95aa6a7875a4199882c86f513.1272621452.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <df2ca92a00d718b95aa6a7875a4199882c86f513.1272621452.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Tomi.Valkeinen@nokia.com, tony@atomide.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
 
-From: Koen Kooi <koen.kooi@gmail.com>
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-This patch adds DSS2 support to the beagleboard boardfile. DVI and
-TV-out are supported.
+Get board specific information from the Nokia DSI panel data structure
+instead of the DSS.
 
-Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
 ---
- arch/arm/mach-omap2/board-omap3beagle.c |  101 +++++++++++++++++++++++--------
- 1 files changed, 75 insertions(+), 26 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |   59 ++++++++++++++++++----------
+ 1 files changed, 38 insertions(+), 21 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-index 962d377..69b154c 100644
---- a/arch/arm/mach-omap2/board-omap3beagle.c
-+++ b/arch/arm/mach-omap2/board-omap3beagle.c
-@@ -39,6 +39,7 @@
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index c326e51..b68976b 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -33,6 +33,7 @@
+ #include <linux/mutex.h>
  
- #include <plat/board.h>
- #include <plat/common.h>
-+#include <plat/display.h>
- #include <plat/gpmc.h>
- #include <plat/nand.h>
- #include <plat/usb.h>
-@@ -106,6 +107,77 @@ static struct platform_device omap3beagle_nand_device = {
- 	.resource	= &omap3beagle_nand_resource,
+ #include <plat/display.h>
++#include <plat/nokia-dsi-panel.h>
+ 
+ /* DSI Virtual channel. Hardcoded for now. */
+ #define TCH 0
+@@ -85,7 +86,6 @@ struct taal_data {
+ 	bool mirror;
+ 
+ 	bool te_enabled;
+-	bool use_ext_te;
+ 
+ 	atomic_t do_update;
+ 	struct {
+@@ -107,6 +107,12 @@ struct taal_data {
+ 	struct delayed_work esd_work;
  };
  
-+/* DSS */
-+
-+static int beagle_enable_dvi(struct omap_dss_device *dssdev)
++static inline struct nokia_dsi_panel_data
++*get_panel_data(const struct omap_dss_device *dssdev)
 +{
-+	if (gpio_is_valid(dssdev->reset_gpio))
-+		gpio_set_value(dssdev->reset_gpio, 1);
-+
-+	return 0;
++	return (struct nokia_dsi_panel_data *) dssdev->data;
 +}
 +
-+static void beagle_disable_dvi(struct omap_dss_device *dssdev)
-+{
-+	if (gpio_is_valid(dssdev->reset_gpio))
-+		gpio_set_value(dssdev->reset_gpio, 0);
-+}
+ static void taal_esd_work(struct work_struct *work);
+ 
+ static void hw_guard_start(struct taal_data *td, int guard_msec)
+@@ -288,6 +294,7 @@ static int taal_bl_update_status(struct backlight_device *dev)
+ {
+ 	struct omap_dss_device *dssdev = dev_get_drvdata(&dev->dev);
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
+ 	int r;
+ 	int level;
+ 
+@@ -310,10 +317,10 @@ static int taal_bl_update_status(struct backlight_device *dev)
+ 			r = 0;
+ 		}
+ 	} else {
+-		if (!dssdev->set_backlight)
++		if (!panel_data->set_backlight)
+ 			r = -EINVAL;
+ 		else
+-			r = dssdev->set_backlight(dssdev, level);
++			r = panel_data->set_backlight(dssdev, level);
+ 	}
+ 
+ 	mutex_unlock(&td->lock);
+@@ -503,16 +510,18 @@ static struct attribute_group taal_attr_group = {
+ 
+ static void taal_hw_reset(struct omap_dss_device *dssdev)
+ {
+-	if (dssdev->reset_gpio = -1)
++	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
 +
-+static struct omap_dss_device beagle_dvi_device = {
-+	.type = OMAP_DISPLAY_TYPE_DPI,
-+	.name = "dvi",
-+	.driver_name = "generic_panel",
-+	.phy.dpi.data_lines = 24,
-+	.reset_gpio = 170,
-+	.platform_enable = beagle_enable_dvi,
-+	.platform_disable = beagle_disable_dvi,
-+};
-+
-+static struct omap_dss_device beagle_tv_device = {
-+	.name = "tv",
-+	.driver_name = "venc",
-+	.type = OMAP_DISPLAY_TYPE_VENC,
-+	.phy.venc.type = OMAP_DSS_VENC_TYPE_SVIDEO,
-+};
-+
-+static struct omap_dss_device *beagle_dss_devices[] = {
-+	&beagle_dvi_device,
-+	&beagle_tv_device,
-+};
-+
-+static struct omap_dss_board_info beagle_dss_data = {
-+	.num_devices = ARRAY_SIZE(beagle_dss_devices),
-+	.devices = beagle_dss_devices,
-+	.default_device = &beagle_dvi_device,
-+};
-+
-+static struct platform_device beagle_dss_device = {
-+	.name          = "omapdss",
-+	.id            = -1,
-+	.dev            = {
-+		.platform_data = &beagle_dss_data,
-+	},
-+};
-+
-+static struct regulator_consumer_supply beagle_vdac_supply +	REGULATOR_SUPPLY("vdda_dac", "omapdss");
-+
-+static struct regulator_consumer_supply beagle_vdvi_supply +	REGULATOR_SUPPLY("vdds_dsi", "omapdss");
-+
-+static void __init beagle_display_init(void)
-+{
-+	int r;
-+
-+	r = gpio_request(beagle_dvi_device.reset_gpio, "DVI reset");
-+	if (r < 0) {
-+		printk(KERN_ERR "Unable to get DVI reset GPIO\n");
-+		return;
++	if (panel_data->reset_gpio = -1)
+ 		return;
+ 
+-	gpio_set_value(dssdev->reset_gpio, 1);
++	gpio_set_value(panel_data->reset_gpio, 1);
+ 	udelay(10);
+ 	/* reset the panel */
+-	gpio_set_value(dssdev->reset_gpio, 0);
++	gpio_set_value(panel_data->reset_gpio, 0);
+ 	/* assert reset for at least 10us */
+ 	udelay(10);
+-	gpio_set_value(dssdev->reset_gpio, 1);
++	gpio_set_value(panel_data->reset_gpio, 1);
+ 	/* wait 5ms after releasing reset */
+ 	msleep(5);
+ }
+@@ -522,6 +531,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 	struct backlight_properties props;
+ 	struct taal_data *td;
+ 	struct backlight_device *bldev;
++	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
+ 	int r;
+ 
+ 	const struct omap_video_timings taal_panel_timings = {
+@@ -531,6 +541,11 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 
+ 	dev_dbg(&dssdev->dev, "probe\n");
+ 
++	if (!panel_data || !panel_data->name) {
++		r = -EINVAL;
++		goto err;
 +	}
 +
-+	gpio_direction_output(beagle_dvi_device.reset_gpio, 0);
-+}
-+
- #include "sdram-micron-mt46h32m32lf-6.h"
+ 	dssdev->panel.config = OMAP_DSS_LCD_TFT;
+ 	dssdev->panel.timings = taal_panel_timings;
+ 	dssdev->ctrl.pixel_size = 24;
+@@ -559,7 +574,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 	/* if no platform set_backlight() defined, presume DSI backlight
+ 	 * control */
+ 	memset(&props, 0, sizeof(props));
+-	if (!dssdev->set_backlight)
++	if (!panel_data->set_backlight)
+ 		td->use_dsi_bl = true;
  
- static struct omap2_hsmmc_info mmc[] = {
-@@ -117,15 +189,6 @@ static struct omap2_hsmmc_info mmc[] = {
- 	{}	/* Terminator */
- };
+ 	if (td->use_dsi_bl)
+@@ -584,8 +599,8 @@ static int taal_probe(struct omap_dss_device *dssdev)
  
--static struct platform_device omap3_beagle_lcd_device = {
--	.name		= "omap3beagle_lcd",
--	.id		= -1,
--};
--
--static struct omap_lcd_config omap3_beagle_lcd_config __initdata = {
--	.ctrl_name	= "internal",
--};
--
- static struct regulator_consumer_supply beagle_vmmc1_supply = {
- 	.supply			= "vmmc",
- };
-@@ -181,16 +244,6 @@ static struct twl4030_gpio_platform_data beagle_gpio_data = {
- 	.setup		= beagle_twl_gpio_setup,
- };
+ 	taal_bl_update_status(bldev);
  
--static struct regulator_consumer_supply beagle_vdac_supply = {
--	.supply		= "vdac",
--	.dev		= &omap3_beagle_lcd_device.dev,
--};
--
--static struct regulator_consumer_supply beagle_vdvi_supply = {
--	.supply		= "vdvi",
--	.dev		= &omap3_beagle_lcd_device.dev,
--};
--
- /* VMMC1 for MMC1 pins CMD, CLK, DAT0..DAT3 (20 mA, plus card = max 220 mA) */
- static struct regulator_init_data beagle_vmmc1 = {
- 	.constraints = {
-@@ -349,14 +402,8 @@ static struct platform_device keys_gpio = {
- 	},
- };
+-	if (dssdev->phy.dsi.ext_te) {
+-		int gpio = dssdev->phy.dsi.ext_te_gpio;
++	if (panel_data->use_ext_te) {
++		int gpio = panel_data->ext_te_gpio;
  
--static struct omap_board_config_kernel omap3_beagle_config[] __initdata = {
--	{ OMAP_TAG_LCD,		&omap3_beagle_lcd_config },
--};
+ 		r = gpio_request(gpio, "taal irq");
+ 		if (r) {
+@@ -608,8 +623,6 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 		INIT_DELAYED_WORK_DEFERRABLE(&td->te_timeout_work,
+ 					taal_te_timeout_work_callback);
+ 
+-		td->use_ext_te = true;
 -
- static void __init omap3_beagle_init_irq(void)
+ 		dev_dbg(&dssdev->dev, "Using GPIO TE\n");
+ 	}
+ 
+@@ -624,11 +637,11 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 
+ 	return 0;
+ err_sysfs:
+-	if (td->use_ext_te)
+-		free_irq(gpio_to_irq(dssdev->phy.dsi.ext_te_gpio), dssdev);
++	if (panel_data->use_ext_te)
++		free_irq(gpio_to_irq(panel_data->ext_te_gpio), dssdev);
+ err_irq:
+-	if (td->use_ext_te)
+-		gpio_free(dssdev->phy.dsi.ext_te_gpio);
++	if (panel_data->use_ext_te)
++		gpio_free(panel_data->ext_te_gpio);
+ err_gpio:
+ 	backlight_device_unregister(bldev);
+ err_bl:
+@@ -642,14 +655,15 @@ err:
+ static void taal_remove(struct omap_dss_device *dssdev)
  {
--	omap_board_config = omap3_beagle_config;
--	omap_board_config_size = ARRAY_SIZE(omap3_beagle_config);
- 	omap2_init_common_hw(mt46h32m32lf6_sdrc_params,
- 			     mt46h32m32lf6_sdrc_params);
- 	omap_init_irq();
-@@ -367,9 +414,9 @@ static void __init omap3_beagle_init_irq(void)
- }
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
+ 	struct backlight_device *bldev;
  
- static struct platform_device *omap3_beagle_devices[] __initdata = {
--	&omap3_beagle_lcd_device,
- 	&leds_gpio,
- 	&keys_gpio,
-+	&beagle_dss_device,
- };
+ 	dev_dbg(&dssdev->dev, "remove\n");
  
- static void __init omap3beagle_flash_init(void)
-@@ -456,6 +503,8 @@ static void __init omap3_beagle_init(void)
- 	/* Ensure SDRC pins are mux'd for self-refresh */
- 	omap_mux_init_signal("sdrc_cke0", OMAP_PIN_OUTPUT);
- 	omap_mux_init_signal("sdrc_cke1", OMAP_PIN_OUTPUT);
-+
-+	beagle_display_init();
- }
+ 	sysfs_remove_group(&dssdev->dev.kobj, &taal_attr_group);
  
- static void __init omap3_beagle_map_io(void)
+-	if (td->use_ext_te) {
+-		int gpio = dssdev->phy.dsi.ext_te_gpio;
++	if (panel_data->use_ext_te) {
++		int gpio = panel_data->ext_te_gpio;
+ 		free_irq(gpio_to_irq(gpio), dssdev);
+ 		gpio_free(gpio);
+ 	}
+@@ -959,6 +973,7 @@ static int taal_update(struct omap_dss_device *dssdev,
+ 				    u16 x, u16 y, u16 w, u16 h)
+ {
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
+ 	int r;
+ 
+ 	dev_dbg(&dssdev->dev, "update %d, %d, %d x %d\n", x, y, w, h);
+@@ -979,7 +994,7 @@ static int taal_update(struct omap_dss_device *dssdev,
+ 	if (r)
+ 		goto err;
+ 
+-	if (td->te_enabled && td->use_ext_te) {
++	if (td->te_enabled && panel_data->use_ext_te) {
+ 		td->update_region.x = x;
+ 		td->update_region.y = y;
+ 		td->update_region.w = w;
+@@ -1023,6 +1038,7 @@ static int taal_sync(struct omap_dss_device *dssdev)
+ static int _taal_enable_te(struct omap_dss_device *dssdev, bool enable)
+ {
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
+ 	int r;
+ 
+ 	td->te_enabled = enable;
+@@ -1032,7 +1048,7 @@ static int _taal_enable_te(struct omap_dss_device *dssdev, bool enable)
+ 	else
+ 		r = taal_dcs_write_0(DCS_TEAR_OFF);
+ 
+-	if (!td->use_ext_te)
++	if (!panel_data->use_ext_te)
+ 		omapdss_dsi_enable_te(dssdev, enable);
+ 
+ 	/* XXX for some reason, DSI TE breaks if we don't wait here.
+@@ -1265,6 +1281,7 @@ static void taal_esd_work(struct work_struct *work)
+ 	struct taal_data *td = container_of(work, struct taal_data,
+ 			esd_work.work);
+ 	struct omap_dss_device *dssdev = td->dssdev;
++	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
+ 	u8 state1, state2;
+ 	int r;
+ 
+@@ -1305,7 +1322,7 @@ static void taal_esd_work(struct work_struct *work)
+ 	}
+ 	/* Self-diagnostics result is also shown on TE GPIO line. We need
+ 	 * to re-enable TE after self diagnostics */
+-	if (td->use_ext_te && td->te_enabled) {
++	if (td->te_enabled && panel_data->use_ext_te) {
+ 		r = taal_dcs_write_1(DCS_TEAR_ON, 0);
+ 		if (r)
+ 			goto err;
 -- 
-1.7.0.4
+1.6.5.2
 

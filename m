@@ -1,92 +1,85 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Tue, 18 May 2010 12:34:57 +0000
-Subject: [PATCH 06/23] OMAP: DSS2: fix lock_fb_info() and omapfb_lock() locking order
-Message-Id: <1274186114-26951-7-git-send-email-tomi.valkeinen@nokia.com>
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Date: Mon, 03 May 2010 06:18:23 +0000
+Subject: [PATCH v2 03/21] OMAP: DSS2: Taal: Add locks to protect taal data access
+Message-Id: <db2b972d4fa08c2f5b3cd06392ef62415890a188.1272621452.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Tomi.Valkeinen@nokia.com, tony@atomide.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
 
 From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-Framebuffer ioctl processing forces lock_fb_info() -> omapfb_lock()
-locking order. Follow that order to avoid possible circular locking
-dependency, detected by lockdep.
+Avoid potential race conditions in sysfs access to taal data.
 
 Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/omap2/omapfb/omapfb-ioctl.c |    4 ++--
- drivers/video/omap2/omapfb/omapfb-sysfs.c |    8 ++++----
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
-index 1ffa760..2c0f01c 100644
---- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
-+++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
-@@ -183,13 +183,13 @@ int omapfb_update_window(struct fb_info *fbi,
- 	struct omapfb2_device *fbdev = ofbi->fbdev;
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 5f5afba..f542607 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -364,6 +364,8 @@ static ssize_t taal_num_errors_show(struct device *dev,
+ 	u8 errors;
  	int r;
  
--	omapfb_lock(fbdev);
- 	lock_fb_info(fbi);
-+	omapfb_lock(fbdev);
++	mutex_lock(&td->lock);
++
+ 	if (td->enabled) {
+ 		dsi_bus_lock();
+ 		r = taal_dcs_read_1(DCS_READ_NUM_ERRORS, &errors);
+@@ -372,6 +374,8 @@ static ssize_t taal_num_errors_show(struct device *dev,
+ 		r = -ENODEV;
+ 	}
  
- 	r = omapfb_update_window_nolock(fbi, x, y, w, h);
++	mutex_unlock(&td->lock);
++
+ 	if (r)
+ 		return r;
  
--	unlock_fb_info(fbi);
- 	omapfb_unlock(fbdev);
-+	unlock_fb_info(fbi);
+@@ -386,6 +390,8 @@ static ssize_t taal_hw_revision_show(struct device *dev,
+ 	u8 id1, id2, id3;
+ 	int r;
  
- 	return r;
++	mutex_lock(&td->lock);
++
+ 	if (td->enabled) {
+ 		dsi_bus_lock();
+ 		r = taal_get_id(&id1, &id2, &id3);
+@@ -394,6 +400,8 @@ static ssize_t taal_hw_revision_show(struct device *dev,
+ 		r = -ENODEV;
+ 	}
+ 
++	mutex_unlock(&td->lock);
++
+ 	if (r)
+ 		return r;
+ 
+@@ -443,6 +451,8 @@ static ssize_t store_cabc_mode(struct device *dev,
+ 	if (i = ARRAY_SIZE(cabc_modes))
+ 		return -EINVAL;
+ 
++	mutex_lock(&td->lock);
++
+ 	if (td->enabled) {
+ 		dsi_bus_lock();
+ 		if (!td->cabc_broken)
+@@ -452,6 +462,8 @@ static ssize_t store_cabc_mode(struct device *dev,
+ 
+ 	td->cabc_mode = i;
+ 
++	mutex_unlock(&td->lock);
++
+ 	return count;
  }
-diff --git a/drivers/video/omap2/omapfb/omapfb-sysfs.c b/drivers/video/omap2/omapfb/omapfb-sysfs.c
-index 62bb88f..e104450 100644
---- a/drivers/video/omap2/omapfb/omapfb-sysfs.c
-+++ b/drivers/video/omap2/omapfb/omapfb-sysfs.c
-@@ -137,8 +137,8 @@ static ssize_t show_overlays(struct device *dev,
- 	ssize_t l = 0;
- 	int t;
  
--	omapfb_lock(fbdev);
- 	lock_fb_info(fbi);
-+	omapfb_lock(fbdev);
- 
- 	for (t = 0; t < ofbi->num_overlays; t++) {
- 		struct omap_overlay *ovl = ofbi->overlays[t];
-@@ -154,8 +154,8 @@ static ssize_t show_overlays(struct device *dev,
- 
- 	l += snprintf(buf + l, PAGE_SIZE - l, "\n");
- 
--	unlock_fb_info(fbi);
- 	omapfb_unlock(fbdev);
-+	unlock_fb_info(fbi);
- 
- 	return l;
- }
-@@ -195,8 +195,8 @@ static ssize_t store_overlays(struct device *dev, struct device_attribute *attr,
- 	if (buf[len - 1] = '\n')
- 		len = len - 1;
- 
--	omapfb_lock(fbdev);
- 	lock_fb_info(fbi);
-+	omapfb_lock(fbdev);
- 
- 	if (len > 0) {
- 		char *p = (char *)buf;
-@@ -303,8 +303,8 @@ static ssize_t store_overlays(struct device *dev, struct device_attribute *attr,
- 
- 	r = count;
- out:
--	unlock_fb_info(fbi);
- 	omapfb_unlock(fbdev);
-+	unlock_fb_info(fbi);
- 
- 	return r;
- }
 -- 
-1.7.0.4
+1.6.5.2
 

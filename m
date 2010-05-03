@@ -1,21 +1,15 @@
 From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Wed, 05 May 2010 14:27:32 +0000
-Subject: [PATCH v3 12/21] OMAP: DSS2: Taal: Change ESD work management
-Message-Id: <8665676eca5bbd3be35b63f7110f629e94a6babe.1273067195.git.ext-jani.1.nikula@nokia.com>
+Date: Mon, 03 May 2010 06:18:26 +0000
+Subject: [PATCH v2 06/21] OMAP: DSS2: Taal: Fix request_irq() error handling
+Message-Id: <b88fcf26f978d38a25000c2f472a4ad8f79ac285.1272621452.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
- <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <6b813e9f0008e23e7981f6ca35501f56c292858a.1273067195.git.ext-jani.1.nikula@nokia.com>
- <b32669a58d60491c3be4f7e52a52c27406cec877.1273067195.git.ext-jani.1.nikula@nokia.com>
- <94d9d7bebbf7588bd77b65e6a46044240140a350.1273067195.git.ext-jani.1.nikula@nokia.com>
- <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
- <16a98ca1b45ba9b9bb30f23d242449c1d440df07.1273067195.git.ext-jani.1.nikula@nokia.com>
- <aa1e310d0d385db39b5d53ba4d3dcf02b7e2f47f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <0cfff2a3cbb4231b41b382caf8aab7c52f47b0d5.1273067195.git.ext-jani.1.nikula@nokia.com>
- <adb61d94ee2a25284f6bd3f55ec4213501cbe8e3.1273067195.git.ext-jani.1.nikula@nokia.com>
- <4cb510ffbc3216e2a7dac16edaff5fb1980b3315.1273067195.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <4cb510ffbc3216e2a7dac16edaff5fb1980b3315.1273067195.git.ext-jani.1.nikula@nokia.com>
+References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <db2b972d4fa08c2f5b3cd06392ef62415890a188.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b57a3f4ccf68e8c8faf332a25b699b92a5604509.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <7a01973540a3afa79701ee08a3d8732db4687d5b.1272621452.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <7a01973540a3afa79701ee08a3d8732db4687d5b.1272621452.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -24,94 +18,51 @@ Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@n
 
 From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-Move ESD work queuing and cancelling out of taal_power_on/off() to avoid
-problems related to taal_esd_work() calling the power on/off functions.
+Separate gpio_request() and request_irq() error handling.
 
 Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
 ---
- drivers/video/omap2/displays/panel-taal.c |   25 ++++++++++++++++---------
- 1 files changed, 16 insertions(+), 9 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 7b5f845..fa4c67b 100644
+index 3729ec2..98f882a 100644
 --- a/drivers/video/omap2/displays/panel-taal.c
 +++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -654,7 +654,7 @@ static void taal_remove(struct omap_dss_device *dssdev)
- 	taal_bl_update_status(bldev);
- 	backlight_device_unregister(bldev);
+@@ -601,7 +601,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 		if (r) {
+ 			dev_err(&dssdev->dev, "IRQ request failed\n");
+ 			gpio_free(gpio);
+-			goto err3;
++			goto err4;
+ 		}
  
--	cancel_delayed_work_sync(&td->esd_work);
-+	cancel_delayed_work(&td->esd_work);
- 	destroy_workqueue(td->esd_wq);
- 
- 	/* reset, to be sure that the panel is in a valid state */
-@@ -725,10 +725,6 @@ static int taal_power_on(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err;
- 
--#ifdef TAAL_USE_ESD_CHECK
--	queue_delayed_work(td->esd_wq, &td->esd_work, TAAL_ESD_CHECK_PERIOD);
--#endif
--
- 	td->enabled = 1;
- 
- 	if (!td->intro_printed) {
-@@ -758,8 +754,6 @@ static void taal_power_off(struct omap_dss_device *dssdev)
- 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
- 	int r;
- 
--	cancel_delayed_work(&td->esd_work);
--
- 	r = taal_dcs_write_0(DCS_DISPLAY_OFF);
- 	if (!r) {
- 		r = taal_sleep_in(td);
-@@ -801,6 +795,10 @@ static int taal_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err;
- 
-+#ifdef TAAL_USE_ESD_CHECK
-+	queue_delayed_work(td->esd_wq, &td->esd_work, TAAL_ESD_CHECK_PERIOD);
-+#endif
-+
- 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
- 
- 	mutex_unlock(&td->lock);
-@@ -820,6 +818,8 @@ static void taal_disable(struct omap_dss_device *dssdev)
- 
- 	mutex_lock(&td->lock);
- 
-+	cancel_delayed_work(&td->esd_work);
-+
- 	dsi_bus_lock();
- 
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
-@@ -846,6 +846,8 @@ static int taal_suspend(struct omap_dss_device *dssdev)
- 		goto err;
+ 		init_completion(&td->te_completion);
+@@ -612,18 +612,18 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 	r = sysfs_create_group(&dssdev->dev.kobj, &taal_attr_group);
+ 	if (r) {
+ 		dev_err(&dssdev->dev, "failed to create sysfs files\n");
+-		goto err4;
++		goto err5;
  	}
  
-+	cancel_delayed_work(&td->esd_work);
-+
- 	dsi_bus_lock();
+ 	taal_hw_reset(dssdev);
  
- 	taal_power_off(dssdev);
-@@ -882,10 +884,15 @@ static int taal_resume(struct omap_dss_device *dssdev)
- 
- 	dsi_bus_unlock();
- 
--	if (r)
-+	if (r) {
- 		dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
--	else
-+	} else {
- 		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
-+#ifdef TAAL_USE_ESD_CHECK
-+		queue_delayed_work(td->esd_wq, &td->esd_work,
-+				TAAL_ESD_CHECK_PERIOD);
-+#endif
-+	}
- 
- 	mutex_unlock(&td->lock);
- 
+ 	return 0;
++err5:
++	if (td->use_ext_te)
++		free_irq(gpio_to_irq(dssdev->phy.dsi.ext_te_gpio), dssdev);
+ err4:
+-	if (td->use_ext_te) {
+-		int gpio = dssdev->phy.dsi.ext_te_gpio;
+-		free_irq(gpio_to_irq(gpio), dssdev);
+-		gpio_free(gpio);
+-	}
++	if (td->use_ext_te)
++		gpio_free(dssdev->phy.dsi.ext_te_gpio);
+ err3:
+ 	backlight_device_unregister(bldev);
+ err2:
 -- 
 1.6.5.2
 

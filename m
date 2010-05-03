@@ -1,23 +1,10 @@
 From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Mon, 03 May 2010 06:18:34 +0000
-Subject: [PATCH v2 14/21] OMAP: DSS2: Taal: Add proper external TE support
-Message-Id: <5a5dc1e253df571477551b8f63560ad9d1a3ab2b.1272621452.git.ext-jani.1.nikula@nokia.com>
+Date: Mon, 03 May 2010 06:18:21 +0000
+Subject: [PATCH v2 01/21] OMAP: DSS2: Taal: Add panel hardware reset
+Message-Id: <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
- <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
- <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
- <db2b972d4fa08c2f5b3cd06392ef62415890a188.1272621452.git.ext-jani.1.nikula@nokia.com>
- <b57a3f4ccf68e8c8faf332a25b699b92a5604509.1272621452.git.ext-jani.1.nikula@nokia.com>
- <7a01973540a3afa79701ee08a3d8732db4687d5b.1272621452.git.ext-jani.1.nikula@nokia.com>
- <b88fcf26f978d38a25000c2f472a4ad8f79ac285.1272621452.git.ext-jani.1.nikula@nokia.com>
- <ba3a895d56c242fe4edbcfc4abd3c608da3db77a.1272621452.git.ext-jani.1.nikula@nokia.com>
- <1a68710812da041ef583944411a1b7027d216c96.1272621452.git.ext-jani.1.nikula@nokia.com>
- <85172e14c23339065e319230f9707353409a901e.1272621452.git.ext-jani.1.nikula@nokia.com>
- <6e9febe4d2179309dcf93b7a8e897890c871f086.1272621452.git.ext-jani.1.nikula@nokia.com>
- <ad1917b1c316a85051c4a908705d403956ca1720.1272621452.git.ext-jani.1.nikula@nokia.com>
- <4004b06a47d3c1d20d6d8a30ddccdf536faeb5a0.1272621452.git.ext-jani.1.nikula@nokia.com>
- <b88e1b382ddf14870c7a44e7ca620ad84d883b50.1272621452.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <b88e1b382ddf14870c7a44e7ca620ad84d883b50.1272621452.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -26,183 +13,117 @@ Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@n
 
 From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-Add gpio irq based external TE support with timeout.
+Issue a proper reset pulse on the reset line instead of just doing power
+on/off.
 
 Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
 ---
- drivers/video/omap2/displays/panel-taal.c |   94 +++++++++++++++++++++++------
- 1 files changed, 76 insertions(+), 18 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |   44 ++++++++++++++++++++++++++--
+ 1 files changed, 40 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 0f62c96..c326e51 100644
+index aaf5d30..43fce5f 100644
 --- a/drivers/video/omap2/displays/panel-taal.c
 +++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -28,7 +28,6 @@
- #include <linux/fb.h>
- #include <linux/interrupt.h>
- #include <linux/gpio.h>
--#include <linux/completion.h>
- #include <linux/workqueue.h>
- #include <linux/slab.h>
- #include <linux/mutex.h>
-@@ -65,6 +64,8 @@
- /* #define TAAL_USE_ESD_CHECK */
- #define TAAL_ESD_CHECK_PERIOD	msecs_to_jiffies(5000)
+@@ -488,6 +488,22 @@ static struct attribute_group taal_attr_group = {
+ 	.attrs = taal_attrs,
+ };
  
-+static irqreturn_t taal_te_isr(int irq, void *data);
-+static void taal_te_timeout_work_callback(struct work_struct *work);
- static int _taal_enable_te(struct omap_dss_device *dssdev, bool enable);
- 
- struct taal_data {
-@@ -85,7 +86,15 @@ struct taal_data {
- 
- 	bool te_enabled;
- 	bool use_ext_te;
--	struct completion te_completion;
++static void taal_hw_reset(struct omap_dss_device *dssdev)
++{
++	if (dssdev->reset_gpio = -1)
++		return;
 +
-+	atomic_t do_update;
-+	struct {
-+		u16 x;
-+		u16 y;
-+		u16 w;
-+		u16 h;
-+	} update_region;
-+	struct delayed_work te_timeout_work;
- 
- 	bool use_dsi_bl;
- 
-@@ -346,16 +355,6 @@ static void taal_get_resolution(struct omap_dss_device *dssdev,
++	gpio_set_value(dssdev->reset_gpio, 1);
++	udelay(10);
++	/* reset the panel */
++	gpio_set_value(dssdev->reset_gpio, 0);
++	/* assert reset for at least 10us */
++	udelay(10);
++	gpio_set_value(dssdev->reset_gpio, 1);
++	/* wait 5ms after releasing reset */
++	msleep(5);
++}
++
+ static int taal_probe(struct omap_dss_device *dssdev)
+ {
+ 	struct backlight_properties props;
+@@ -585,6 +601,8 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 		goto err4;
  	}
+ 
++	taal_hw_reset(dssdev);
++
+ 	return 0;
+ err4:
+ 	if (td->use_ext_te) {
+@@ -626,6 +644,9 @@ static void taal_remove(struct omap_dss_device *dssdev)
+ 	cancel_delayed_work_sync(&td->esd_work);
+ 	destroy_workqueue(td->esd_wq);
+ 
++	/* reset, to be sure that the panel is in a valid state */
++	taal_hw_reset(dssdev);
++
+ 	kfree(td);
  }
  
--static irqreturn_t taal_te_isr(int irq, void *data)
--{
--	struct omap_dss_device *dssdev = data;
--	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
--
--	complete_all(&td->te_completion);
--
--	return IRQ_HANDLED;
--}
--
- static ssize_t taal_num_errors_show(struct device *dev,
- 		struct device_attribute *attr, char *buf)
- {
-@@ -545,6 +544,8 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 
- 	mutex_init(&td->lock);
- 
-+	atomic_set(&td->do_update, 0);
-+
- 	td->esd_wq = create_singlethread_workqueue("taal_esd");
- 	if (td->esd_wq = NULL) {
- 		dev_err(&dssdev->dev, "can't create ESD workqueue\n");
-@@ -604,9 +605,12 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 			goto err_irq;
- 		}
- 
--		init_completion(&td->te_completion);
-+		INIT_DELAYED_WORK_DEFERRABLE(&td->te_timeout_work,
-+					taal_te_timeout_work_callback);
- 
- 		td->use_ext_te = true;
-+
-+		dev_dbg(&dssdev->dev, "Using GPIO TE\n");
+@@ -652,6 +673,8 @@ static int taal_power_on(struct omap_dss_device *dssdev)
+ 		goto err0;
  	}
  
- 	r = sysfs_create_group(&dssdev->dev.kobj, &taal_attr_group);
-@@ -615,6 +619,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 		goto err_sysfs;
- 	}
- 
++	taal_hw_reset(dssdev);
 +
- 	taal_hw_reset(dssdev);
+ 	omapdss_dsi_vc_enable_hs(TCH, false);
+ 
+ 	r = taal_sleep_out(td);
+@@ -702,6 +725,10 @@ static int taal_power_on(struct omap_dss_device *dssdev)
  
  	return 0;
-@@ -909,6 +914,47 @@ static void taal_framedone_cb(int err, void *data)
+ err:
++	dev_err(&dssdev->dev, "error while enabling panel, issuing HW reset\n");
++
++	taal_hw_reset(dssdev);
++
+ 	omapdss_dsi_display_disable(dssdev);
+ err0:
  	dsi_bus_unlock();
- }
- 
-+static irqreturn_t taal_te_isr(int irq, void *data)
-+{
-+	struct omap_dss_device *dssdev = data;
-+	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
-+	int old;
-+	int r;
-+
-+	old = atomic_cmpxchg(&td->do_update, 1, 0);
-+
-+	if (old) {
-+		cancel_delayed_work(&td->te_timeout_work);
-+
-+		r = omap_dsi_update(dssdev, TCH,
-+				td->update_region.x,
-+				td->update_region.y,
-+				td->update_region.w,
-+				td->update_region.h,
-+				taal_framedone_cb, dssdev);
-+		if (r)
-+			goto err;
-+	}
-+
-+	return IRQ_HANDLED;
-+err:
-+	dev_err(&dssdev->dev, "start update failed\n");
-+	dsi_bus_unlock();
-+	return IRQ_HANDLED;
-+}
-+
-+static void taal_te_timeout_work_callback(struct work_struct *work)
-+{
-+	struct taal_data *td = container_of(work, struct taal_data,
-+					te_timeout_work.work);
-+	struct omap_dss_device *dssdev = td->dssdev;
-+
-+	dev_err(&dssdev->dev, "TE not received for 250ms!\n");
-+
-+	atomic_set(&td->do_update, 0);
-+	dsi_bus_unlock();
-+}
-+
- static int taal_update(struct omap_dss_device *dssdev,
- 				    u16 x, u16 y, u16 w, u16 h)
+@@ -714,16 +741,24 @@ err0:
+ static void taal_power_off(struct omap_dss_device *dssdev)
  {
-@@ -933,10 +979,21 @@ static int taal_update(struct omap_dss_device *dssdev,
- 	if (r)
- 		goto err;
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++	int r;
  
--	r = omap_dsi_update(dssdev, TCH, x, y, w, h,
--			taal_framedone_cb, dssdev);
--	if (r)
--		goto err;
-+	if (td->te_enabled && td->use_ext_te) {
-+		td->update_region.x = x;
-+		td->update_region.y = y;
-+		td->update_region.w = w;
-+		td->update_region.h = h;
-+		barrier();
-+		schedule_delayed_work(&td->te_timeout_work,
-+				msecs_to_jiffies(250));
-+		atomic_set(&td->do_update, 1);
-+	} else {
-+		r = omap_dsi_update(dssdev, TCH, x, y, w, h,
-+				taal_framedone_cb, dssdev);
-+		if (r)
-+			goto err;
+ 	dsi_bus_lock();
+ 
+ 	cancel_delayed_work(&td->esd_work);
+ 
+-	taal_dcs_write_0(DCS_DISPLAY_OFF);
+-	taal_sleep_in(td);
++	r = taal_dcs_write_0(DCS_DISPLAY_OFF);
++	if (!r) {
++		r = taal_sleep_in(td);
++		/* wait a bit so that the message goes through */
++		msleep(10);
 +	}
  
- 	/* note: no bus_unlock here. unlock is in framedone_cb */
- 	mutex_unlock(&td->lock);
-@@ -975,7 +1032,8 @@ static int _taal_enable_te(struct omap_dss_device *dssdev, bool enable)
- 	else
- 		r = taal_dcs_write_0(DCS_TEAR_OFF);
+-	/* wait a bit so that the message goes through */
+-	msleep(10);
++	if (r) {
++		dev_err(&dssdev->dev,
++				"error disabling panel, issuing HW reset\n");
++		taal_hw_reset(dssdev);
++	}
  
--	omapdss_dsi_enable_te(dssdev, enable);
-+	if (!td->use_ext_te)
-+		omapdss_dsi_enable_te(dssdev, enable);
+ 	omapdss_dsi_display_disable(dssdev);
  
- 	/* XXX for some reason, DSI TE breaks if we don't wait here.
- 	 * Panel bug? Needs more studying */
+@@ -1184,6 +1219,7 @@ err:
+ 	dev_err(&dssdev->dev, "performing LCD reset\n");
+ 
+ 	taal_power_off(dssdev);
++	taal_hw_reset(dssdev);
+ 	taal_power_on(dssdev);
+ 
+ 	dsi_bus_unlock();
 -- 
 1.6.5.2
 

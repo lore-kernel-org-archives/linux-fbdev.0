@@ -1,58 +1,137 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Tue, 18 May 2010 12:34:55 +0000
-Subject: [PATCH 04/23] OMAP: DSS2: Remove redundant enable/disable calls from SDI
-Message-Id: <1274186114-26951-5-git-send-email-tomi.valkeinen@nokia.com>
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Date: Mon, 03 May 2010 06:18:30 +0000
+Subject: [PATCH v2 10/21] OMAP: DSS2: Taal: Change DSI bus locking to avoid deadlock in ESD work
+Message-Id: <6e9febe4d2179309dcf93b7a8e897890c871f086.1272621452.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <db2b972d4fa08c2f5b3cd06392ef62415890a188.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b57a3f4ccf68e8c8faf332a25b699b92a5604509.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <7a01973540a3afa79701ee08a3d8732db4687d5b.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b88fcf26f978d38a25000c2f472a4ad8f79ac285.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <ba3a895d56c242fe4edbcfc4abd3c608da3db77a.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <1a68710812da041ef583944411a1b7027d216c96.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <85172e14c23339065e319230f9707353409a901e.1272621452.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <85172e14c23339065e319230f9707353409a901e.1272621452.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Tomi.Valkeinen@nokia.com, tony@atomide.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
 
-From: Roger Quadros <roger.quadros@nokia.com>
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-Panel enable/disable is now done via the panel driver, so we should not
-call the panel driver again
+Move dsi_bus_lock/unlock() out of taal_power_on/off() to avoid deadlock
+in taal_esd_work().
 
-Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
 ---
- drivers/video/omap2/dss/sdi.c |   11 -----------
- 1 files changed, 0 insertions(+), 11 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |   29 +++++++++++++++++++----------
+ 1 files changed, 19 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index 12eb404..3de3c1e 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -115,17 +115,9 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 6abb080..8dc8199 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -672,8 +672,6 @@ static int taal_power_on(struct omap_dss_device *dssdev)
+ 	/* it seems we have to wait a bit until taal is ready */
+ 	msleep(5);
  
- 	dssdev->manager->enable(dssdev->manager);
- 
--	if (dssdev->driver->enable) {
--		r = dssdev->driver->enable(dssdev);
--		if (r)
--			goto err3;
--	}
+-	dsi_bus_lock();
 -
- 	sdi.skip_init = 0;
+ 	r = omapdss_dsi_display_enable(dssdev);
+ 	if (r) {
+ 		dev_err(&dssdev->dev, "failed to enable DSI\n");
+@@ -744,8 +742,6 @@ static int taal_power_on(struct omap_dss_device *dssdev)
  
+ 	omapdss_dsi_vc_enable_hs(TCH, true);
+ 
+-	dsi_bus_unlock();
+-
  	return 0;
--err3:
--	dssdev->manager->disable(dssdev->manager);
- err2:
- 	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
- err1:
-@@ -137,9 +129,6 @@ EXPORT_SYMBOL(omapdss_sdi_display_enable);
+ err:
+ 	dev_err(&dssdev->dev, "error while enabling panel, issuing HW reset\n");
+@@ -754,8 +750,6 @@ err:
  
- void omapdss_sdi_display_disable(struct omap_dss_device *dssdev)
- {
--	if (dssdev->driver->disable)
--		dssdev->driver->disable(dssdev);
+ 	omapdss_dsi_display_disable(dssdev);
+ err0:
+-	dsi_bus_unlock();
 -
- 	dssdev->manager->disable(dssdev->manager);
+ 	return r;
+ }
  
- 	dss_sdi_disable();
+@@ -764,8 +758,6 @@ static void taal_power_off(struct omap_dss_device *dssdev)
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+ 	int r;
+ 
+-	dsi_bus_lock();
+-
+ 	cancel_delayed_work(&td->esd_work);
+ 
+ 	r = taal_dcs_write_0(DCS_DISPLAY_OFF);
+@@ -784,8 +776,6 @@ static void taal_power_off(struct omap_dss_device *dssdev)
+ 	omapdss_dsi_display_disable(dssdev);
+ 
+ 	td->enabled = 0;
+-
+-	dsi_bus_unlock();
+ }
+ 
+ static int taal_enable(struct omap_dss_device *dssdev)
+@@ -802,7 +792,12 @@ static int taal_enable(struct omap_dss_device *dssdev)
+ 		goto err;
+ 	}
+ 
++	dsi_bus_lock();
++
+ 	r = taal_power_on(dssdev);
++
++	dsi_bus_unlock();
++
+ 	if (r)
+ 		goto err;
+ 
+@@ -825,9 +820,13 @@ static void taal_disable(struct omap_dss_device *dssdev)
+ 
+ 	mutex_lock(&td->lock);
+ 
++	dsi_bus_lock();
++
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
+ 		taal_power_off(dssdev);
+ 
++	dsi_bus_unlock();
++
+ 	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
+ 
+ 	mutex_unlock(&td->lock);
+@@ -847,7 +846,12 @@ static int taal_suspend(struct omap_dss_device *dssdev)
+ 		goto err;
+ 	}
+ 
++	dsi_bus_lock();
++
+ 	taal_power_off(dssdev);
++
++	dsi_bus_unlock();
++
+ 	dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED;
+ 
+ 	mutex_unlock(&td->lock);
+@@ -872,7 +876,12 @@ static int taal_resume(struct omap_dss_device *dssdev)
+ 		goto err;
+ 	}
+ 
++	dsi_bus_lock();
++
+ 	r = taal_power_on(dssdev);
++
++	dsi_bus_unlock();
++
+ 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
+ 
+ 	mutex_unlock(&td->lock);
 -- 
-1.7.0.4
+1.6.5.2
 

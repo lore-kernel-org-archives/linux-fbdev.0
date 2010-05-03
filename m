@@ -1,35 +1,96 @@
-From: Coate Vilandre <kismet@slawekgruca.com>
-Date: Sun, 02 May 2010 19:03:32 +0000
-Subject: of devotion whic
-Message-Id: <4BDDCB88.2060507@mirisan.by>
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Date: Mon, 03 May 2010 06:18:37 +0000
+Subject: [PATCH v2 17/21] OMAP: DSS2: Taal: Configure ESD check in DSI panel data
+Message-Id: <261f7b2c8cf1120e05d9664137e22ed237657c60.1272621452.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <db2b972d4fa08c2f5b3cd06392ef62415890a188.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b57a3f4ccf68e8c8faf332a25b699b92a5604509.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <7a01973540a3afa79701ee08a3d8732db4687d5b.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b88fcf26f978d38a25000c2f472a4ad8f79ac285.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <ba3a895d56c242fe4edbcfc4abd3c608da3db77a.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <1a68710812da041ef583944411a1b7027d216c96.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <85172e14c23339065e319230f9707353409a901e.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <6e9febe4d2179309dcf93b7a8e897890c871f086.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <ad1917b1c316a85051c4a908705d403956ca1720.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <4004b06a47d3c1d20d6d8a30ddccdf536faeb5a0.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b88e1b382ddf14870c7a44e7ca620ad84d883b50.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <5a5dc1e253df571477551b8f63560ad9d1a3ab2b.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <df2ca92a00d718b95aa6a7875a4199882c86f513.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <d76f00a4c763b84d7511a9f0c98eb7117e9e6a3e.1272621452.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <d76f00a4c763b84d7511a9f0c98eb7117e9e6a3e.1272621452.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Tomi.Valkeinen@nokia.com, tony@atomide.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
 
-e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcZGVmZjBcZGVmbGFuZzEwMzN7XCpcZ2VuZXJhdG9y
-IE1zZnRlZGl0IDMuMjIuMzAuNjc1Mzt9e1xmb250dGJse1xmMFxmbmlsXGZjaGFyc2V0MCBD
-YWxpYnJpO319DQp7XCpcZ2VuZXJhdG9yIE1zZnRlZGl0IDMuMjIuMzAuNjc1Mzt9e1xjb2xv
-cnRibCA7XHJlZDBcZ3JlZW4wXGJsdWUyNTU7XHJlZDE5MlxncmVlbjgwXGJsdWU3NztccmVk
-MFxncmVlbjE3NlxibHVlODA7XHJlZDIwNFxncmVlbjE4MFxibHVlMDtccmVkMjU1XGdyZWVu
-MFxibHVlMDtccmVkMjIzXGdyZWVuMjA2XGJsdWU0O1xyZWQxNTVcZ3JlZW4wXGJsdWUyMTE7
-XHJlZDc5XGdyZWVuMTI5XGJsdWUxODk7XHJlZDE2NVxncmVlbjE2NVxibHVlMTY1O1xyZWQx
-MjhcZ3JlZW4xNThcYmx1ZTE5NDtccmVkMjQ3XGdyZWVuMTUwXGJsdWU3MDtccmVkMFxncmVl
-bjc3XGJsdWUxODc7XHJlZDc1XGdyZWVuMTcyXGJsdWUxOTg7XHJlZDIyMVxncmVlbjEzMlxi
-bHVlMTMyO1xyZWQ1MVxncmVlbjUxXGJsdWU1MTtccmVkMTU4XGdyZWVuMTI0XGJsdWUxMjQ7
-XHJlZDE1NVxncmVlbjE4N1xibHVlODk7fQ0Ke1wqXGdlbmVyYXRvciBNc2Z0ZWRpdCAzLjIy
-LjMwLjY3NTM7fVx2aWV3a2luZDRcdWMxXHBhcmRcc2EyMDBcc2wyNzZcc2xtdWx0MVxsYW5n
-OVxmMFxmczMye1xmaWVsZHtcKlxmbGRpbnN0e0hZUEVSTElOSyAiaHtcKlxkZCAzLjIyLjMw
-LjY3NTM7fXR0cDovL3d3dy54YTY2LnJ1In19e1xmbGRyc2x0e1x1bFxjZjEgaHR0cDovL3d3
-dy54YTY2LnJ1fX19XGYwXGNmMVxiXGZzMzIgIC0gT3JkZXIgdGhlIGNoZWFwZXN0IG1lZGlj
-YXRpb25zIG5vdyFccGFyDQpWaWFncmEgXGNmNCBDaWFsaXMgXGNmMyBWaWFncmEgUHJvZmVz
-c2lvbmFsIFxjZjUgQ2lhbGlzIFByb2Zlc3Npb25hbCBcY2Y2IFZpYWdyYSBTdXBlciBBY3Rp
-dmUrIFxjZjMgQ2lhbGlzIFN1cGVyIEFjdGl2ZSsgXGNmNyBMZXZpdHJhXGNmMCAgXGNmOCBW
-aWFncmEgU29mdCBUYWJzIFxjZjkgQ2lhbGlzIFNvZnQgVGFic1xjZjEwICBcY2YxMSBMZXZp
-dHJhIFByb2Zlc3Npb25hbCBcY2Y0IEZlbWFsZSBWaWFncmEgXGNmMTIgUHJvcGVjaWEgXGNm
-NyBBY29tcGxpYSBcY2Y2IFhlbmljYWxcY2YwICBcY2Y1IEJyYW5kIExldml0cmEgXGNmMTMg
-RmVtYWxlIENpYWxpcyBcY2YxNCBMZXZpdHJhIFN1cGVyIEFjdGl2ZSsgXGNmMTUgVGFtaWZs
-dVxjZjAgIFxjZjcgVlBYTFxjZjAgIFxjZjE2IFZpYWdyYSBTb2Z0IEZsYXZvdXJlZCBcY2Y1
-IEJyYW5kIFZpYWdyYSBcY2YxNyBCcmFuZCBDaWFsaXNcY2YwDQp7XCpcZ2VuZXJhdG9yIE1z
-ZnRlZGl0IDMuMjIuMzAuNjc1Mzt9fQ=
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+
+Make ESD check usage configurable in DSI panel data, as opposed to a
+
+Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+---
+ drivers/video/omap2/displays/panel-taal.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index b68976b..f5a1422 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -62,7 +62,6 @@
+ #define DCS_GET_ID2		0xdb
+ #define DCS_GET_ID3		0xdc
+ 
+-/* #define TAAL_USE_ESD_CHECK */
+ #define TAAL_ESD_CHECK_PERIOD	msecs_to_jiffies(5000)
+ 
+ static irqreturn_t taal_te_isr(int irq, void *data);
+@@ -794,6 +793,7 @@ static void taal_power_off(struct omap_dss_device *dssdev)
+ static int taal_enable(struct omap_dss_device *dssdev)
+ {
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
+ 	int r;
+ 
+ 	dev_dbg(&dssdev->dev, "enable\n");
+@@ -814,9 +814,9 @@ static int taal_enable(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err;
+ 
+-#ifdef TAAL_USE_ESD_CHECK
+-	queue_delayed_work(td->esd_wq, &td->esd_work, TAAL_ESD_CHECK_PERIOD);
+-#endif
++	if (panel_data->use_esd_check)
++		queue_delayed_work(td->esd_wq, &td->esd_work,
++				TAAL_ESD_CHECK_PERIOD);
+ 
+ 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
+ 
+@@ -886,6 +886,7 @@ err:
+ static int taal_resume(struct omap_dss_device *dssdev)
+ {
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
+ 	int r;
+ 
+ 	dev_dbg(&dssdev->dev, "resume\n");
+@@ -907,10 +908,9 @@ static int taal_resume(struct omap_dss_device *dssdev)
+ 		dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
+ 	} else {
+ 		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
+-#ifdef TAAL_USE_ESD_CHECK
+-		queue_delayed_work(td->esd_wq, &td->esd_work,
+-				TAAL_ESD_CHECK_PERIOD);
+-#endif
++		if (panel_data->use_esd_check)
++			queue_delayed_work(td->esd_wq, &td->esd_work,
++					TAAL_ESD_CHECK_PERIOD);
+ 	}
+ 
+ 	mutex_unlock(&td->lock);
+-- 
+1.6.5.2
+

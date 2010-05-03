@@ -1,26 +1,28 @@
 From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Wed, 05 May 2010 14:27:37 +0000
-Subject: [PATCH v3 17/21] OMAP: DSS2: Taal: Configure ESD check in DSI panel data
-Message-Id: <025c12267d4bd88e1f59d9e13aafec247fe3c730.1273067195.git.ext-jani.1.nikula@nokia.com>
+Date: Mon, 03 May 2010 06:18:39 +0000
+Subject: [PATCH v2 19/21] OMAP: DSS2: Taal: Print panel name in addition to revision
+Message-Id: <f2fff5b0fb2c3d2d0968a0c6c73ec2836c4ef0eb.1272621452.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
- <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <6b813e9f0008e23e7981f6ca35501f56c292858a.1273067195.git.ext-jani.1.nikula@nokia.com>
- <b32669a58d60491c3be4f7e52a52c27406cec877.1273067195.git.ext-jani.1.nikula@nokia.com>
- <94d9d7bebbf7588bd77b65e6a46044240140a350.1273067195.git.ext-jani.1.nikula@nokia.com>
- <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
- <16a98ca1b45ba9b9bb30f23d242449c1d440df07.1273067195.git.ext-jani.1.nikula@nokia.com>
- <aa1e310d0d385db39b5d53ba4d3dcf02b7e2f47f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <0cfff2a3cbb4231b41b382caf8aab7c52f47b0d5.1273067195.git.ext-jani.1.nikula@nokia.com>
- <adb61d94ee2a25284f6bd3f55ec4213501cbe8e3.1273067195.git.ext-jani.1.nikula@nokia.com>
- <4cb510ffbc3216e2a7dac16edaff5fb1980b3315.1273067195.git.ext-jani.1.nikula@nokia.com>
- <8665676eca5bbd3be35b63f7110f629e94a6babe.1273067195.git.ext-jani.1.nikula@nokia.com>
- <a4e7d90e0f036e227a29d94e28b7036c2f9d419b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <ca7ff2e5a165ca8488190520f1f75e6e37642d3b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <4f2a95d67d2b8004f4a2055681690920ebeb8e8f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <690ef5c45aee3fb87a40fa03039356f8238925dc.1273067195.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <690ef5c45aee3fb87a40fa03039356f8238925dc.1273067195.git.ext-jani.1.nikula@nokia.com>
+References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <db2b972d4fa08c2f5b3cd06392ef62415890a188.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b57a3f4ccf68e8c8faf332a25b699b92a5604509.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <7a01973540a3afa79701ee08a3d8732db4687d5b.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b88fcf26f978d38a25000c2f472a4ad8f79ac285.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <ba3a895d56c242fe4edbcfc4abd3c608da3db77a.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <1a68710812da041ef583944411a1b7027d216c96.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <85172e14c23339065e319230f9707353409a901e.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <6e9febe4d2179309dcf93b7a8e897890c871f086.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <ad1917b1c316a85051c4a908705d403956ca1720.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <4004b06a47d3c1d20d6d8a30ddccdf536faeb5a0.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b88e1b382ddf14870c7a44e7ca620ad84d883b50.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <5a5dc1e253df571477551b8f63560ad9d1a3ab2b.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <df2ca92a00d718b95aa6a7875a4199882c86f513.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <d76f00a4c763b84d7511a9f0c98eb7117e9e6a3e.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <261f7b2c8cf1120e05d9664137e22ed237657c60.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <453fa1efec72cc2a4c029b6791c373a4a2e7ad7d.1272621452.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <453fa1efec72cc2a4c029b6791c373a4a2e7ad7d.1272621452.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -29,68 +31,29 @@ Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@n
 
 From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-Make ESD check usage configurable in DSI panel data, as opposed to a
+The driver will support other panels in addition to Taal, print also the
+name.
 
 Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
 ---
- drivers/video/omap2/displays/panel-taal.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 538829b..9502a4d 100644
+index 508207c..e209713 100644
 --- a/drivers/video/omap2/displays/panel-taal.c
 +++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -62,7 +62,6 @@
- #define DCS_GET_ID2		0xdb
- #define DCS_GET_ID3		0xdc
+@@ -812,8 +812,8 @@ static int taal_power_on(struct omap_dss_device *dssdev)
+ 	td->enabled = 1;
  
--/* #define TAAL_USE_ESD_CHECK */
- #define TAAL_ESD_CHECK_PERIOD	msecs_to_jiffies(5000)
- 
- static irqreturn_t taal_te_isr(int irq, void *data);
-@@ -793,6 +792,7 @@ static void taal_power_off(struct omap_dss_device *dssdev)
- static int taal_enable(struct omap_dss_device *dssdev)
- {
- 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
-+	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
- 	int r;
- 
- 	dev_dbg(&dssdev->dev, "enable\n");
-@@ -813,9 +813,9 @@ static int taal_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err;
- 
--#ifdef TAAL_USE_ESD_CHECK
--	queue_delayed_work(td->esd_wq, &td->esd_work, TAAL_ESD_CHECK_PERIOD);
--#endif
-+	if (panel_data->use_esd_check)
-+		queue_delayed_work(td->esd_wq, &td->esd_work,
-+				TAAL_ESD_CHECK_PERIOD);
- 
- 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
- 
-@@ -885,6 +885,7 @@ err:
- static int taal_resume(struct omap_dss_device *dssdev)
- {
- 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
-+	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
- 	int r;
- 
- 	dev_dbg(&dssdev->dev, "resume\n");
-@@ -906,10 +907,9 @@ static int taal_resume(struct omap_dss_device *dssdev)
- 		dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
- 	} else {
- 		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
--#ifdef TAAL_USE_ESD_CHECK
--		queue_delayed_work(td->esd_wq, &td->esd_work,
--				TAAL_ESD_CHECK_PERIOD);
--#endif
-+		if (panel_data->use_esd_check)
-+			queue_delayed_work(td->esd_wq, &td->esd_work,
-+					TAAL_ESD_CHECK_PERIOD);
- 	}
- 
- 	mutex_unlock(&td->lock);
+ 	if (!td->intro_printed) {
+-		dev_info(&dssdev->dev, "revision %02x.%02x.%02x\n",
+-				id1, id2, id3);
++		dev_info(&dssdev->dev, "%s panel revision %02x.%02x.%02x\n",
++			td->panel_config->name, id1, id2, id3);
+ 		if (td->cabc_broken)
+ 			dev_info(&dssdev->dev,
+ 					"old Taal version, CABC disabled\n");
 -- 
 1.6.5.2
 

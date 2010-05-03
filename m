@@ -1,66 +1,117 @@
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Wed, 05 May 2010 14:27:26 +0000
-Subject: [PATCH v3 06/21] OMAP: DSS2: Taal: Fix request_irq() error handling
-Message-Id: <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
+From: Jani Nikula <ext-jani.1.nikula@Nokia.com>
+Date: Mon, 03 May 2010 06:18:32 +0000
+Subject: [PATCH v2 12/21] OMAP: DSS2: Taal: Change ESD work management
+Message-Id: <4004b06a47d3c1d20d6d8a30ddccdf536faeb5a0.1272621452.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
- <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <6b813e9f0008e23e7981f6ca35501f56c292858a.1273067195.git.ext-jani.1.nikula@nokia.com>
- <b32669a58d60491c3be4f7e52a52c27406cec877.1273067195.git.ext-jani.1.nikula@nokia.com>
- <94d9d7bebbf7588bd77b65e6a46044240140a350.1273067195.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <94d9d7bebbf7588bd77b65e6a46044240140a350.1273067195.git.ext-jani.1.nikula@nokia.com>
+References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <db2b972d4fa08c2f5b3cd06392ef62415890a188.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b57a3f4ccf68e8c8faf332a25b699b92a5604509.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <7a01973540a3afa79701ee08a3d8732db4687d5b.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <b88fcf26f978d38a25000c2f472a4ad8f79ac285.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <ba3a895d56c242fe4edbcfc4abd3c608da3db77a.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <1a68710812da041ef583944411a1b7027d216c96.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <85172e14c23339065e319230f9707353409a901e.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <6e9febe4d2179309dcf93b7a8e897890c871f086.1272621452.git.ext-jani.1.nikula@nokia.com>
+ <ad1917b1c316a85051c4a908705d403956ca1720.1272621452.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <ad1917b1c316a85051c4a908705d403956ca1720.1272621452.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com, tony@atomide.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
+To: Tomi.Valkeinen@Nokia.com, tony@atomide.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@Nokia.com
 
 From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-Separate gpio_request() and request_irq() error handling.
+Move ESD work queuing and cancelling out of taal_power_on/off() to avoid
+problems related to taal_esd_work() calling the power on/off functions.
 
 Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
 ---
- drivers/video/omap2/displays/panel-taal.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |   25 ++++++++++++++++---------
+ 1 files changed, 16 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index b7d1275..788aa91 100644
+index 32e94bf..5b6c945 100644
 --- a/drivers/video/omap2/displays/panel-taal.c
 +++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -603,7 +603,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 		if (r) {
- 			dev_err(&dssdev->dev, "IRQ request failed\n");
- 			gpio_free(gpio);
--			goto err3;
-+			goto err4;
- 		}
+@@ -654,7 +654,7 @@ static void taal_remove(struct omap_dss_device *dssdev)
+ 	taal_bl_update_status(bldev);
+ 	backlight_device_unregister(bldev);
  
- 		init_completion(&td->te_completion);
-@@ -614,16 +614,16 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 	r = sysfs_create_group(&dssdev->dev.kobj, &taal_attr_group);
- 	if (r) {
- 		dev_err(&dssdev->dev, "failed to create sysfs files\n");
--		goto err4;
-+		goto err5;
+-	cancel_delayed_work_sync(&td->esd_work);
++	cancel_delayed_work(&td->esd_work);
+ 	destroy_workqueue(td->esd_wq);
+ 
+ 	/* reset, to be sure that the panel is in a valid state */
+@@ -725,10 +725,6 @@ static int taal_power_on(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err;
+ 
+-#ifdef TAAL_USE_ESD_CHECK
+-	queue_delayed_work(td->esd_wq, &td->esd_work, TAAL_ESD_CHECK_PERIOD);
+-#endif
+-
+ 	td->enabled = 1;
+ 
+ 	if (!td->intro_printed) {
+@@ -758,8 +754,6 @@ static void taal_power_off(struct omap_dss_device *dssdev)
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+ 	int r;
+ 
+-	cancel_delayed_work(&td->esd_work);
+-
+ 	r = taal_dcs_write_0(DCS_DISPLAY_OFF);
+ 	if (!r) {
+ 		r = taal_sleep_in(td);
+@@ -801,6 +795,10 @@ static int taal_enable(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err;
+ 
++#ifdef TAAL_USE_ESD_CHECK
++	queue_delayed_work(td->esd_wq, &td->esd_work, TAAL_ESD_CHECK_PERIOD);
++#endif
++
+ 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
+ 
+ 	mutex_unlock(&td->lock);
+@@ -820,6 +818,8 @@ static void taal_disable(struct omap_dss_device *dssdev)
+ 
+ 	mutex_lock(&td->lock);
+ 
++	cancel_delayed_work(&td->esd_work);
++
+ 	dsi_bus_lock();
+ 
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
+@@ -846,6 +846,8 @@ static int taal_suspend(struct omap_dss_device *dssdev)
+ 		goto err;
  	}
  
- 	return 0;
-+err5:
-+	if (td->use_ext_te)
-+		free_irq(gpio_to_irq(dssdev->phy.dsi.ext_te_gpio), dssdev);
- err4:
--	if (td->use_ext_te) {
--		int gpio = dssdev->phy.dsi.ext_te_gpio;
--		free_irq(gpio_to_irq(gpio), dssdev);
--		gpio_free(gpio);
--	}
-+	if (td->use_ext_te)
-+		gpio_free(dssdev->phy.dsi.ext_te_gpio);
- err3:
- 	backlight_device_unregister(bldev);
- err2:
++	cancel_delayed_work(&td->esd_work);
++
+ 	dsi_bus_lock();
+ 
+ 	taal_power_off(dssdev);
+@@ -882,10 +884,15 @@ static int taal_resume(struct omap_dss_device *dssdev)
+ 
+ 	dsi_bus_unlock();
+ 
+-	if (r)
++	if (r) {
+ 		dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
+-	else
++	} else {
+ 		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
++#ifdef TAAL_USE_ESD_CHECK
++		queue_delayed_work(td->esd_wq, &td->esd_work,
++				TAAL_ESD_CHECK_PERIOD);
++#endif
++	}
+ 
+ 	mutex_unlock(&td->lock);
+ 
 -- 
 1.6.5.2
 

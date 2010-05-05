@@ -1,48 +1,117 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Fri, 07 May 2010 10:05:25 +0000
-Subject: [PATCH 2.5/4] ARM: add LCDC and MIPI DSI-Tx clock definitions to
-Message-Id: <Pine.LNX.4.64.1005071200310.4777@axis700.grange>
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Date: Wed, 05 May 2010 14:27:32 +0000
+Subject: [PATCH v3 12/21] OMAP: DSS2: Taal: Change ESD work management
+Message-Id: <8665676eca5bbd3be35b63f7110f629e94a6babe.1273067195.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1005071054510.4777@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1005071054510.4777@axis700.grange>
+References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <6b813e9f0008e23e7981f6ca35501f56c292858a.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <b32669a58d60491c3be4f7e52a52c27406cec877.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <94d9d7bebbf7588bd77b65e6a46044240140a350.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <16a98ca1b45ba9b9bb30f23d242449c1d440df07.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <aa1e310d0d385db39b5d53ba4d3dcf02b7e2f47f.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <0cfff2a3cbb4231b41b382caf8aab7c52f47b0d5.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <adb61d94ee2a25284f6bd3f55ec4213501cbe8e3.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <4cb510ffbc3216e2a7dac16edaff5fb1980b3315.1273067195.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <4cb510ffbc3216e2a7dac16edaff5fb1980b3315.1273067195.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>
-Cc: Magnus Damm <magnus.damm@gmail.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: Tomi.Valkeinen@nokia.com, tony@atomide.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
 
-Define clock objects for switching on and off clocks for LCDC0, LCDC1 and MIPI
-DSI-Tx.
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Move ESD work queuing and cancelling out of taal_power_on/off() to avoid
+problems related to taal_esd_work() calling the power on/off functions.
+
+Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
 ---
+ drivers/video/omap2/displays/panel-taal.c |   25 ++++++++++++++++---------
+ 1 files changed, 16 insertions(+), 9 deletions(-)
 
-Sorry, one more patch to add to the patch-series. In fact nothing breaks 
-if you apply this patch before or after the whole series, so, no 
-regressions, but to get LCD to actually work you also need this one;) And 
-best put it between patches 2 and 3 of the series - that's where 2.5 comes 
-from.
-
- arch/arm/mach-shmobile/clock-sh7372.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/arch/arm/mach-shmobile/clock-sh7372.c b/arch/arm/mach-shmobile/clock-sh7372.c
-index abbc380..66ee47a 100644
---- a/arch/arm/mach-shmobile/clock-sh7372.c
-+++ b/arch/arm/mach-shmobile/clock-sh7372.c
-@@ -264,8 +264,12 @@ struct clk div6_clks[] = {
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 7b5f845..fa4c67b 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -654,7 +654,7 @@ static void taal_remove(struct omap_dss_device *dssdev)
+ 	taal_bl_update_status(bldev);
+ 	backlight_device_unregister(bldev);
  
- #define R_CLK (&r_clk)
- #define HP_CLK (&div4_clks[DIV4_HP])
-+#define B_CLK (&div4_clks[DIV4_B])
+-	cancel_delayed_work_sync(&td->esd_work);
++	cancel_delayed_work(&td->esd_work);
+ 	destroy_workqueue(td->esd_wq);
  
- static struct clk mstp_clks[] = {
-+	MSTP("lcdc0", B_CLK, SMSTPCR1, 0, 0),
-+	MSTP("lcdc1", B_CLK, SMSTPCR1, 17, 0),
-+	MSTP("dsitx", B_CLK, SMSTPCR1, 18, 0),
- 	MSTP("sdhi0", HP_CLK, SMSTPCR3, 14, 0),
- 	MSTP("sdhi1", HP_CLK, SMSTPCR3, 13, 0),
- 	MSTP("keysc0", R_CLK, SMSTPCR4, 3, 0),
+ 	/* reset, to be sure that the panel is in a valid state */
+@@ -725,10 +725,6 @@ static int taal_power_on(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err;
+ 
+-#ifdef TAAL_USE_ESD_CHECK
+-	queue_delayed_work(td->esd_wq, &td->esd_work, TAAL_ESD_CHECK_PERIOD);
+-#endif
+-
+ 	td->enabled = 1;
+ 
+ 	if (!td->intro_printed) {
+@@ -758,8 +754,6 @@ static void taal_power_off(struct omap_dss_device *dssdev)
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+ 	int r;
+ 
+-	cancel_delayed_work(&td->esd_work);
+-
+ 	r = taal_dcs_write_0(DCS_DISPLAY_OFF);
+ 	if (!r) {
+ 		r = taal_sleep_in(td);
+@@ -801,6 +795,10 @@ static int taal_enable(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err;
+ 
++#ifdef TAAL_USE_ESD_CHECK
++	queue_delayed_work(td->esd_wq, &td->esd_work, TAAL_ESD_CHECK_PERIOD);
++#endif
++
+ 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
+ 
+ 	mutex_unlock(&td->lock);
+@@ -820,6 +818,8 @@ static void taal_disable(struct omap_dss_device *dssdev)
+ 
+ 	mutex_lock(&td->lock);
+ 
++	cancel_delayed_work(&td->esd_work);
++
+ 	dsi_bus_lock();
+ 
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
+@@ -846,6 +846,8 @@ static int taal_suspend(struct omap_dss_device *dssdev)
+ 		goto err;
+ 	}
+ 
++	cancel_delayed_work(&td->esd_work);
++
+ 	dsi_bus_lock();
+ 
+ 	taal_power_off(dssdev);
+@@ -882,10 +884,15 @@ static int taal_resume(struct omap_dss_device *dssdev)
+ 
+ 	dsi_bus_unlock();
+ 
+-	if (r)
++	if (r) {
+ 		dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
+-	else
++	} else {
+ 		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
++#ifdef TAAL_USE_ESD_CHECK
++		queue_delayed_work(td->esd_wq, &td->esd_work,
++				TAAL_ESD_CHECK_PERIOD);
++#endif
++	}
+ 
+ 	mutex_unlock(&td->lock);
+ 
 -- 
-1.6.2.4
+1.6.5.2
 

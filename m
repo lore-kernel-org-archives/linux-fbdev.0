@@ -1,42 +1,77 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Tue, 18 May 2010 12:35:00 +0000
-Subject: [PATCH 09/23] OMAP: DSS2: Fix device disable when driver is not loaded
-Message-Id: <1274186114-26951-10-git-send-email-tomi.valkeinen@nokia.com>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Wed, 05 May 2010 22:34:39 +0000
+Subject: [RFC] Third OLPC viafb patch series (camera driver)
+Message-Id: <1273098884-21848-1-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, =?UTF-8?q?Bruno=20Pr=C3=A9mont?= <bonbons@linux-vserver.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-media@vger.kernel.org
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+This is, perhaps, the last set of viafb patches I'll send around before the
+merge window.  This series completes the task of adding the via-camera
+driver - in the correct spot, this time.  To that end, it has to reorganize
+the viafb header files a bit.
 
-Only call driver disable when device isn't already disabled, which also
-handles the driver not loaded case.
+V4L2 folks: only the final patch in this series really needs your
+attention.  Note that it has no hope of appying or working without a long
+series of predecessor patches; the full set, prior to this series, is
+currently in linux-next.  If the driver is acceptable to you, I'd prefer to
+merge it through my viafb tree to be sure all the prerequisites land in
+mainline at the right time.
 
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
----
- drivers/video/omap2/dss/display.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+As usual, this series can be found at:
 
-diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
-index 7138963..ef8c852 100644
---- a/drivers/video/omap2/dss/display.c
-+++ b/drivers/video/omap2/dss/display.c
-@@ -545,7 +545,10 @@ int dss_resume_all_devices(void)
- static int dss_disable_device(struct device *dev, void *data)
- {
- 	struct omap_dss_device *dssdev = to_dss_device(dev);
--	dssdev->driver->disable(dssdev);
-+
-+	if (dssdev->state != OMAP_DSS_DISPLAY_DISABLED)
-+		dssdev->driver->disable(dssdev);
-+
- 	return 0;
- }
- 
--- 
-1.7.0.4
+	git://git.lwn.net/linux-2.6.git viafb-posted
+
+The camera driver has been cleaned up a bit since the last time around.
+But the main thing I had to do was to make some of the header files
+globally visible so I could put the camera driver with the rest of the V4L2
+crowd.  This will also let us move the core, i2c, and gpio drivers to
+drivers/mfd, should we want to in the future.
+
+There shouldn't be any functionality changes beyond the new driver.
+
+Comments?
+
+Thanks,
+
+jon
+
+Jonathan Corbet (5):
+      viafb: fold via_io.h into via-core.h
+      viafb: get rid of i2c debug cruft
+      viafb: Eliminate some global.h references
+      viafb: move some include files to include/linux
+      Add the viafb video capture driver
+
+ b/drivers/media/video/Kconfig         |   10 
+ b/drivers/media/video/Makefile        |    2 
+ b/drivers/media/video/via-camera.c    | 1368 ++++++++++++++++++++++++++++++++++
+ b/drivers/media/video/via-camera.h    |   93 ++
+ b/drivers/video/via/accel.c           |    4 
+ b/drivers/video/via/dvi.c             |    4 
+ b/drivers/video/via/hw.c              |    3 
+ b/drivers/video/via/hw.h              |    1 
+ b/drivers/video/via/lcd.c             |    4 
+ b/drivers/video/via/share.h           |   11 
+ b/drivers/video/via/via-core.c        |   22 
+ b/drivers/video/via/via-gpio.c        |    5 
+ b/drivers/video/via/via_i2c.c         |   14 
+ b/drivers/video/via/via_modesetting.c |    2 
+ b/drivers/video/via/via_utility.c     |    1 
+ b/drivers/video/via/viafbdev.c        |    4 
+ b/drivers/video/via/viamode.c         |    1 
+ b/drivers/video/via/vt1636.c          |    4 
+ b/include/linux/via-core.h            |  221 +++++
+ b/include/linux/via-gpio.h            |   14 
+ b/include/linux/via_i2c.h             |   42 +
+ b/include/media/v4l2-chip-ident.h     |    4 
+ drivers/video/via/via-core.h          |  173 ----
+ drivers/video/via/via-gpio.h          |   14 
+ drivers/video/via/via_i2c.h           |   42 -
+ drivers/video/via/via_io.h            |   67 -
+ 26 files changed, 1798 insertions(+), 332 deletions(-)
+
 

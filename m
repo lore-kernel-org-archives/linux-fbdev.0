@@ -1,12 +1,22 @@
 From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Mon, 03 May 2010 06:18:23 +0000
-Subject: [PATCH v2 03/21] OMAP: DSS2: Taal: Add locks to protect taal data access
-Message-Id: <db2b972d4fa08c2f5b3cd06392ef62415890a188.1272621452.git.ext-jani.1.nikula@nokia.com>
+Date: Wed, 05 May 2010 14:27:33 +0000
+Subject: [PATCH v3 13/21] OMAP: DSS2: Taal: Change probe error handling labels
+Message-Id: <a4e7d90e0f036e227a29d94e28b7036c2f9d419b.1273067195.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
- <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
- <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
+References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <6b813e9f0008e23e7981f6ca35501f56c292858a.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <b32669a58d60491c3be4f7e52a52c27406cec877.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <94d9d7bebbf7588bd77b65e6a46044240140a350.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <16a98ca1b45ba9b9bb30f23d242449c1d440df07.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <aa1e310d0d385db39b5d53ba4d3dcf02b7e2f47f.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <0cfff2a3cbb4231b41b382caf8aab7c52f47b0d5.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <adb61d94ee2a25284f6bd3f55ec4213501cbe8e3.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <4cb510ffbc3216e2a7dac16edaff5fb1980b3315.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <8665676eca5bbd3be35b63f7110f629e94a6babe.1273067195.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <8665676eca5bbd3be35b63f7110f629e94a6babe.1273067195.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,69 +25,92 @@ Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@n
 
 From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-Avoid potential race conditions in sysfs access to taal data.
+Switch from numbered to named labels to make it easier to add new
+labels for error handling.
 
 Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
 ---
- drivers/video/omap2/displays/panel-taal.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 5f5afba..f542607 100644
+index fa4c67b..e32424c 100644
 --- a/drivers/video/omap2/displays/panel-taal.c
 +++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -364,6 +364,8 @@ static ssize_t taal_num_errors_show(struct device *dev,
- 	u8 errors;
- 	int r;
+@@ -539,7 +539,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 	td = kzalloc(sizeof(*td), GFP_KERNEL);
+ 	if (!td) {
+ 		r = -ENOMEM;
+-		goto err0;
++		goto err;
+ 	}
+ 	td->dssdev = dssdev;
  
-+	mutex_lock(&td->lock);
-+
- 	if (td->enabled) {
- 		dsi_bus_lock();
- 		r = taal_dcs_read_1(DCS_READ_NUM_ERRORS, &errors);
-@@ -372,6 +374,8 @@ static ssize_t taal_num_errors_show(struct device *dev,
- 		r = -ENODEV;
+@@ -549,7 +549,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 	if (td->esd_wq = NULL) {
+ 		dev_err(&dssdev->dev, "can't create ESD workqueue\n");
+ 		r = -ENOMEM;
+-		goto err1;
++		goto err_wq;
+ 	}
+ 	INIT_DELAYED_WORK_DEFERRABLE(&td->esd_work, taal_esd_work);
+ 
+@@ -571,7 +571,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 					  &taal_bl_ops, &props);
+ 	if (IS_ERR(bldev)) {
+ 		r = PTR_ERR(bldev);
+-		goto err2;
++		goto err_bl;
  	}
  
-+	mutex_unlock(&td->lock);
-+
- 	if (r)
- 		return r;
+ 	td->bldev = bldev;
+@@ -591,7 +591,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 		r = gpio_request(gpio, "taal irq");
+ 		if (r) {
+ 			dev_err(&dssdev->dev, "GPIO request failed\n");
+-			goto err3;
++			goto err_gpio;
+ 		}
  
-@@ -386,6 +390,8 @@ static ssize_t taal_hw_revision_show(struct device *dev,
- 	u8 id1, id2, id3;
- 	int r;
+ 		gpio_direction_input(gpio);
+@@ -603,7 +603,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 		if (r) {
+ 			dev_err(&dssdev->dev, "IRQ request failed\n");
+ 			gpio_free(gpio);
+-			goto err4;
++			goto err_irq;
+ 		}
  
-+	mutex_lock(&td->lock);
-+
- 	if (td->enabled) {
- 		dsi_bus_lock();
- 		r = taal_get_id(&id1, &id2, &id3);
-@@ -394,6 +400,8 @@ static ssize_t taal_hw_revision_show(struct device *dev,
- 		r = -ENODEV;
+ 		init_completion(&td->te_completion);
+@@ -614,23 +614,23 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 	r = sysfs_create_group(&dssdev->dev.kobj, &taal_attr_group);
+ 	if (r) {
+ 		dev_err(&dssdev->dev, "failed to create sysfs files\n");
+-		goto err5;
++		goto err_sysfs;
  	}
  
-+	mutex_unlock(&td->lock);
-+
- 	if (r)
- 		return r;
- 
-@@ -443,6 +451,8 @@ static ssize_t store_cabc_mode(struct device *dev,
- 	if (i = ARRAY_SIZE(cabc_modes))
- 		return -EINVAL;
- 
-+	mutex_lock(&td->lock);
-+
- 	if (td->enabled) {
- 		dsi_bus_lock();
- 		if (!td->cabc_broken)
-@@ -452,6 +462,8 @@ static ssize_t store_cabc_mode(struct device *dev,
- 
- 	td->cabc_mode = i;
- 
-+	mutex_unlock(&td->lock);
-+
- 	return count;
+ 	return 0;
+-err5:
++err_sysfs:
+ 	if (td->use_ext_te)
+ 		free_irq(gpio_to_irq(dssdev->phy.dsi.ext_te_gpio), dssdev);
+-err4:
++err_irq:
+ 	if (td->use_ext_te)
+ 		gpio_free(dssdev->phy.dsi.ext_te_gpio);
+-err3:
++err_gpio:
+ 	backlight_device_unregister(bldev);
+-err2:
++err_bl:
+ 	destroy_workqueue(td->esd_wq);
+-err1:
++err_wq:
+ 	kfree(td);
+-err0:
++err:
+ 	return r;
  }
  
 -- 

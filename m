@@ -1,32 +1,79 @@
-From: Albert Herranz <albert_herranz@yahoo.es>
-Date: Tue, 25 May 2010 22:13:49 +0000
-Subject: Re: [Bulk] Re: page_mkwrite vs pte dirty race in fb_defio
-Message-Id: <4BFC4B9D.1080902@yahoo.es>
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Date: Wed, 05 May 2010 14:27:35 +0000
+Subject: [PATCH v3 15/21] OMAP: DSS2: Add Nokia DSI command mode panel configuration struct
+Message-Id: <4f2a95d67d2b8004f4a2055681690920ebeb8e8f.1273067195.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100525160149.GE20853@laptop> <4BFC1657.5000707@yahoo.es> <20100525184700.GJ20853@laptop>
-In-Reply-To: <20100525184700.GJ20853@laptop>
+References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <6b813e9f0008e23e7981f6ca35501f56c292858a.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <b32669a58d60491c3be4f7e52a52c27406cec877.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <94d9d7bebbf7588bd77b65e6a46044240140a350.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <16a98ca1b45ba9b9bb30f23d242449c1d440df07.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <aa1e310d0d385db39b5d53ba4d3dcf02b7e2f47f.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <0cfff2a3cbb4231b41b382caf8aab7c52f47b0d5.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <adb61d94ee2a25284f6bd3f55ec4213501cbe8e3.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <4cb510ffbc3216e2a7dac16edaff5fb1980b3315.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <8665676eca5bbd3be35b63f7110f629e94a6babe.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <a4e7d90e0f036e227a29d94e28b7036c2f9d419b.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <ca7ff2e5a165ca8488190520f1f75e6e37642d3b.1273067195.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <ca7ff2e5a165ca8488190520f1f75e6e37642d3b.1273067195.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nick Piggin <npiggin@suse.de>
-Cc: aya Kumar <jayakumar.lkml@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Tomi.Valkeinen@nokia.com, tony@atomide.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
 
-On 05/25/2010 08:47 PM, Nick Piggin wrote:
->>> I hope that should provide a more elegant solution to your problem. I
->>> would really like you to take a look at that, because we already have
->>> filesystem code (NFS) relying on it, and more code we have relying on
->>> this synchronization, the more chance we would find a subtle problem
->>> with it (also it should be just nicer).
->>
->> So if I undestand it correctly, using the "new" calling convention I should just lock the page on fb_deferred_io_mkwrite() and return VM_FAULT_LOCKED to fix the described race for fb_defio.
-> 
-> As far as I can see from quick reading of the fb_defio code, yes
-> that should solve it (provided you lock the page inside the mutex,
-> of course).
-> 
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-Ok, thanks. I'm posting a new version as RFT.
+Introduce a configuration struct for platform/board specific information
+of Nokia DSI command mode panels, to be used in addition to struct
+omap_dss_device (passed via the 'void *data' member).
 
-Cheers,
-Albert
+Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+---
+ arch/arm/plat-omap/include/plat/nokia-dsi-panel.h |   31 +++++++++++++++++++++
+ 1 files changed, 31 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
+
+diff --git a/arch/arm/plat-omap/include/plat/nokia-dsi-panel.h b/arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
+new file mode 100644
+index 0000000..01ab657
+--- /dev/null
++++ b/arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
+@@ -0,0 +1,31 @@
++#ifndef __ARCH_ARM_PLAT_OMAP_NOKIA_DSI_PANEL_H
++#define __ARCH_ARM_PLAT_OMAP_NOKIA_DSI_PANEL_H
++
++#include "display.h"
++
++/**
++ * struct nokia_dsi_panel_data - Nokia DSI panel driver configuration
++ * @name: panel name
++ * @use_ext_te: use external TE
++ * @ext_te_gpio: external TE GPIO
++ * @use_esd_check: perform ESD checks
++ * @max_backlight_level: maximum backlight level
++ * @set_backlight: pointer to backlight set function
++ * @get_backlight: pointer to backlight get function
++ */
++struct nokia_dsi_panel_data {
++	const char *name;
++
++	int reset_gpio;
++
++	bool use_ext_te;
++	int ext_te_gpio;
++
++	bool use_esd_check;
++
++	int max_backlight_level;
++	int (*set_backlight)(struct omap_dss_device *dssdev, int level);
++	int (*get_backlight)(struct omap_dss_device *dssdev);
++};
++
++#endif /* __ARCH_ARM_PLAT_OMAP_NOKIA_DSI_PANEL_H */
+-- 
+1.6.5.2
 

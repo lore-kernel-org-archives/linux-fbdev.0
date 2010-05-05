@@ -1,137 +1,69 @@
 From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Mon, 03 May 2010 06:18:30 +0000
-Subject: [PATCH v2 10/21] OMAP: DSS2: Taal: Change DSI bus locking to avoid deadlock in ESD work
-Message-Id: <6e9febe4d2179309dcf93b7a8e897890c871f086.1272621452.git.ext-jani.1.nikula@nokia.com>
+Date: Wed, 05 May 2010 14:27:22 +0000
+Subject: [PATCH v3 02/21] OMAP: DSS2: Taal: add locks to taal_bl_update_status
+Message-Id: <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
- <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
- <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
- <db2b972d4fa08c2f5b3cd06392ef62415890a188.1272621452.git.ext-jani.1.nikula@nokia.com>
- <b57a3f4ccf68e8c8faf332a25b699b92a5604509.1272621452.git.ext-jani.1.nikula@nokia.com>
- <7a01973540a3afa79701ee08a3d8732db4687d5b.1272621452.git.ext-jani.1.nikula@nokia.com>
- <b88fcf26f978d38a25000c2f472a4ad8f79ac285.1272621452.git.ext-jani.1.nikula@nokia.com>
- <ba3a895d56c242fe4edbcfc4abd3c608da3db77a.1272621452.git.ext-jani.1.nikula@nokia.com>
- <1a68710812da041ef583944411a1b7027d216c96.1272621452.git.ext-jani.1.nikula@nokia.com>
- <85172e14c23339065e319230f9707353409a901e.1272621452.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <85172e14c23339065e319230f9707353409a901e.1272621452.git.ext-jani.1.nikula@nokia.com>
+References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Tomi.Valkeinen@nokia.com, tony@atomide.com
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+From: Valkeinen Tomi (Nokia-D/Helsinki) <Tomi.Valkeinen@nokia.com>
 
-Move dsi_bus_lock/unlock() out of taal_power_on/off() to avoid deadlock
-in taal_esd_work().
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+taal_bl_update_status was missing locks to protect taal_data. This caused
+a kernel crash randomly, as the code attempted to set the brightness while
+the OMAP's DSI block was actually disabled.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/omap2/displays/panel-taal.c |   29 +++++++++++++++++++----------
- 1 files changed, 19 insertions(+), 10 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |   18 ++++++++++--------
+ 1 files changed, 10 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 6abb080..8dc8199 100644
+index 181dfe4..8fbb94e 100644
 --- a/drivers/video/omap2/displays/panel-taal.c
 +++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -672,8 +672,6 @@ static int taal_power_on(struct omap_dss_device *dssdev)
- 	/* it seems we have to wait a bit until taal is ready */
- 	msleep(5);
+@@ -290,24 +290,26 @@ static int taal_bl_update_status(struct backlight_device *dev)
  
--	dsi_bus_lock();
+ 	dev_dbg(&dssdev->dev, "update brightness to %d\n", level);
+ 
++	mutex_lock(&td->lock);
++
+ 	if (td->use_dsi_bl) {
+ 		if (td->enabled) {
+ 			dsi_bus_lock();
+ 			r = taal_dcs_write_1(DCS_BRIGHTNESS, level);
+ 			dsi_bus_unlock();
+-			if (r)
+-				return r;
++		} else {
++			r = 0;
+ 		}
+ 	} else {
+ 		if (!dssdev->set_backlight)
+-			return -EINVAL;
 -
- 	r = omapdss_dsi_display_enable(dssdev);
- 	if (r) {
- 		dev_err(&dssdev->dev, "failed to enable DSI\n");
-@@ -744,8 +742,6 @@ static int taal_power_on(struct omap_dss_device *dssdev)
+-		r = dssdev->set_backlight(dssdev, level);
+-		if (r)
+-			return r;
++			r = -EINVAL;
++		else
++			r = dssdev->set_backlight(dssdev, level);
+ 	}
  
- 	omapdss_dsi_vc_enable_hs(TCH, true);
- 
--	dsi_bus_unlock();
--
- 	return 0;
- err:
- 	dev_err(&dssdev->dev, "error while enabling panel, issuing HW reset\n");
-@@ -754,8 +750,6 @@ err:
- 
- 	omapdss_dsi_display_disable(dssdev);
- err0:
--	dsi_bus_unlock();
--
- 	return r;
+-	return 0;
++	mutex_unlock(&td->lock);
++
++	return r;
  }
  
-@@ -764,8 +758,6 @@ static void taal_power_off(struct omap_dss_device *dssdev)
- 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
- 	int r;
- 
--	dsi_bus_lock();
--
- 	cancel_delayed_work(&td->esd_work);
- 
- 	r = taal_dcs_write_0(DCS_DISPLAY_OFF);
-@@ -784,8 +776,6 @@ static void taal_power_off(struct omap_dss_device *dssdev)
- 	omapdss_dsi_display_disable(dssdev);
- 
- 	td->enabled = 0;
--
--	dsi_bus_unlock();
- }
- 
- static int taal_enable(struct omap_dss_device *dssdev)
-@@ -802,7 +792,12 @@ static int taal_enable(struct omap_dss_device *dssdev)
- 		goto err;
- 	}
- 
-+	dsi_bus_lock();
-+
- 	r = taal_power_on(dssdev);
-+
-+	dsi_bus_unlock();
-+
- 	if (r)
- 		goto err;
- 
-@@ -825,9 +820,13 @@ static void taal_disable(struct omap_dss_device *dssdev)
- 
- 	mutex_lock(&td->lock);
- 
-+	dsi_bus_lock();
-+
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
- 		taal_power_off(dssdev);
- 
-+	dsi_bus_unlock();
-+
- 	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
- 
- 	mutex_unlock(&td->lock);
-@@ -847,7 +846,12 @@ static int taal_suspend(struct omap_dss_device *dssdev)
- 		goto err;
- 	}
- 
-+	dsi_bus_lock();
-+
- 	taal_power_off(dssdev);
-+
-+	dsi_bus_unlock();
-+
- 	dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED;
- 
- 	mutex_unlock(&td->lock);
-@@ -872,7 +876,12 @@ static int taal_resume(struct omap_dss_device *dssdev)
- 		goto err;
- 	}
- 
-+	dsi_bus_lock();
-+
- 	r = taal_power_on(dssdev);
-+
-+	dsi_bus_unlock();
-+
- 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
- 
- 	mutex_unlock(&td->lock);
+ static int taal_bl_get_intensity(struct backlight_device *dev)
 -- 
 1.6.5.2
 

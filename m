@@ -1,152 +1,43 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Tue, 18 May 2010 12:35:04 +0000
-Subject: [PATCH 13/23] OMAP: LCD LS037V7DW01: Add Backlight driver support
-Message-Id: <1274186114-26951-14-git-send-email-tomi.valkeinen@nokia.com>
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Date: Wed, 05 May 2010 14:27:27 +0000
+Subject: [PATCH v3 07/21] OMAP: DSS2: Taal: Remove ESD work cancel from driver probe error handling
+Message-Id: <16a98ca1b45ba9b9bb30f23d242449c1d440df07.1273067195.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <6b813e9f0008e23e7981f6ca35501f56c292858a.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <b32669a58d60491c3be4f7e52a52c27406cec877.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <94d9d7bebbf7588bd77b65e6a46044240140a350.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Tomi.Valkeinen@nokia.com, tony@atomide.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
 
-From: Vaibhav Hiremath <hvaibhav@ti.com>
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-Tested on OMAP3EVM for OMAP3530 and AM/DM 3730.
+ESD work is never queued in probe, no need to cancel it on probe error.
 
-Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
-[tomi.valkeinen@nokia.com: added slab.h include]
-[tomi.valkeinen@nokia.com: added dependency to BACKLIGHT_CLASS_DEVICE]
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
 ---
- drivers/video/omap2/displays/Kconfig               |    1 +
- .../video/omap2/displays/panel-sharp-ls037v7dw01.c |   78 ++++++++++++++++++++
- 2 files changed, 79 insertions(+), 0 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/Kconfig b/drivers/video/omap2/displays/Kconfig
-index dfb57ee..ea8ccd3 100644
---- a/drivers/video/omap2/displays/Kconfig
-+++ b/drivers/video/omap2/displays/Kconfig
-@@ -10,6 +10,7 @@ config PANEL_GENERIC
- config PANEL_SHARP_LS037V7DW01
-         tristate "Sharp LS037V7DW01 LCD Panel"
-         depends on OMAP2_DSS
-+        select BACKLIGHT_CLASS_DEVICE
-         help
-           LCD Panel used in TI's SDP3430 and EVM boards
- 
-diff --git a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
-index 8d51a5e..7d9eb2b 100644
---- a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
-+++ b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
-@@ -20,10 +20,17 @@
- #include <linux/module.h>
- #include <linux/delay.h>
- #include <linux/device.h>
-+#include <linux/backlight.h>
-+#include <linux/fb.h>
- #include <linux/err.h>
-+#include <linux/slab.h>
- 
- #include <plat/display.h>
- 
-+struct sharp_data {
-+	struct backlight_device *bl;
-+};
-+
- static struct omap_video_timings sharp_ls_timings = {
- 	.x_res = 480,
- 	.y_res = 640,
-@@ -39,18 +46,89 @@ static struct omap_video_timings sharp_ls_timings = {
- 	.vbp		= 1,
- };
- 
-+static int sharp_ls_bl_update_status(struct backlight_device *bl)
-+{
-+	struct omap_dss_device *dssdev = dev_get_drvdata(&bl->dev);
-+	int level;
-+
-+	if (!dssdev->set_backlight)
-+		return -EINVAL;
-+
-+	if (bl->props.fb_blank = FB_BLANK_UNBLANK &&
-+			bl->props.power = FB_BLANK_UNBLANK)
-+		level = bl->props.brightness;
-+	else
-+		level = 0;
-+
-+	return dssdev->set_backlight(dssdev, level);
-+}
-+
-+static int sharp_ls_bl_get_brightness(struct backlight_device *bl)
-+{
-+	if (bl->props.fb_blank = FB_BLANK_UNBLANK &&
-+			bl->props.power = FB_BLANK_UNBLANK)
-+		return bl->props.brightness;
-+
-+	return 0;
-+}
-+
-+static const struct backlight_ops sharp_ls_bl_ops = {
-+	.get_brightness = sharp_ls_bl_get_brightness,
-+	.update_status  = sharp_ls_bl_update_status,
-+};
-+
-+
-+
- static int sharp_ls_panel_probe(struct omap_dss_device *dssdev)
- {
-+	struct backlight_properties props;
-+	struct backlight_device *bl;
-+	struct sharp_data *sd;
-+	int r;
-+
- 	dssdev->panel.config = OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
- 		OMAP_DSS_LCD_IHS;
- 	dssdev->panel.acb = 0x28;
- 	dssdev->panel.timings = sharp_ls_timings;
- 
-+	sd = kzalloc(sizeof(*sd), GFP_KERNEL);
-+	if (!sd)
-+		return -ENOMEM;
-+
-+	dev_set_drvdata(&dssdev->dev, sd);
-+
-+	memset(&props, 0, sizeof(struct backlight_properties));
-+	props.max_brightness = dssdev->max_backlight_level;
-+
-+	bl = backlight_device_register("sharp-ls", &dssdev->dev, dssdev,
-+			&sharp_ls_bl_ops, &props);
-+	if (IS_ERR(bl)) {
-+		r = PTR_ERR(bl);
-+		kfree(sd);
-+		return r;
-+	}
-+	sd->bl = bl;
-+
-+	bl->props.fb_blank = FB_BLANK_UNBLANK;
-+	bl->props.power = FB_BLANK_UNBLANK;
-+	bl->props.brightness = dssdev->max_backlight_level;
-+	r = sharp_ls_bl_update_status(bl);
-+	if (r < 0)
-+		dev_err(&dssdev->dev, "failed to set lcd brightness\n");
-+
- 	return 0;
- }
- 
- static void sharp_ls_panel_remove(struct omap_dss_device *dssdev)
- {
-+	struct sharp_data *sd = dev_get_drvdata(&dssdev->dev);
-+	struct backlight_device *bl = sd->bl;
-+
-+	bl->props.power = FB_BLANK_POWERDOWN;
-+	sharp_ls_bl_update_status(bl);
-+	backlight_device_unregister(bl);
-+
-+	kfree(sd);
- }
- 
- static int sharp_ls_power_on(struct omap_dss_device *dssdev)
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 788aa91..d0701e2 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -627,7 +627,6 @@ err4:
+ err3:
+ 	backlight_device_unregister(bldev);
+ err2:
+-	cancel_delayed_work_sync(&td->esd_work);
+ 	destroy_workqueue(td->esd_wq);
+ err1:
+ 	kfree(td);
 -- 
-1.7.0.4
+1.6.5.2
 

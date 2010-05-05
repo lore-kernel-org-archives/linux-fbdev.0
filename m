@@ -1,69 +1,54 @@
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Wed, 05 May 2010 14:27:20 +0000
-Subject: [PATCH v3 00/21] OMAP: DSS2: Taal panel driver updates
-Message-Id: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Wed, 05 May 2010 22:34:42 +0000
+Subject: [PATCH 3/5] viafb: Eliminate some global.h references
+Message-Id: <1273098884-21848-4-git-send-email-corbet@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1273098884-21848-1-git-send-email-corbet@lwn.net>
+In-Reply-To: <1273098884-21848-1-git-send-email-corbet@lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com, tony@atomide.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, =?UTF-8?q?Bruno=20Pr=C3=A9mont?= <bonbons@linux-vserver.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-media@vger.kernel.org
 
-Hi -
+The various subdev drivers (other than the framebuffer itself) no longer
+need this file.
 
-This set of patches, on top of [1], contains assorted fixes and cleanups to the
-Taal panel driver (01-14), configures board/platform specific things in a new
-Nokia DSI command mode panel specific struct instead of DSS structs (15-17), and
-makes it feasible to add support for similar DSI command mode panels in the same
-driver (18-21).
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+---
+ drivers/video/via/via-gpio.c |    1 -
+ drivers/video/via/via_i2c.c  |    4 +++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-v3: 
-- patch 01: move taal_hw_reset() earlier than request_irq() in probe to be ready
-  to handle the irqs
-- patch 07: add panel enabled check also to taal_enable_te(), not just
-  taal_run_test()
-
-v2:
-- No functional changes since v1, just filled in some missing commit messages
-  (thanks Tony for your feedback!)
-
-[1] git://gitorious.org/linux-omap-dss2/linux.git
-
-BR,
-Jani.
-
-
-Jani Nikula (20):
-  OMAP: DSS2: Taal: Add panel hardware reset
-  OMAP: DSS2: Taal: Add locks to protect taal data access
-  OMAP: DSS2: Taal: Cosmetic improvement to backlight properties
-    initialization
-  OMAP: DSS2: Taal: Remove platform enable/disable
-  OMAP: DSS2: Taal: Fix request_irq() error handling
-  OMAP: DSS2: Taal: Remove ESD work cancel from driver probe error
-    handling
-  OMAP: DSS2: Taal: Improve taal_power_on() error handling
-  OMAP: DSS2: Taal: Ensure panel is enabled in enable_te() and
-    run_test()
-  OMAP: DSS2: Taal: Change DSI bus locking to avoid deadlock in ESD
-    work
-  OMAP: DSS2: Taal: Check taal_power_on() return value in taal_resume()
-  OMAP: DSS2: Taal: Change ESD work management
-  OMAP: DSS2: Taal: Change probe error handling labels
-  OMAP: DSS2: Taal: Add proper external TE support
-  OMAP: DSS2: Add Nokia DSI command mode panel configuration struct
-  OMAP: DSS2: Taal: Use Nokia DSI panel data
-  OMAP: DSS2: Taal: Configure ESD check in DSI panel data
-  OMAP: DSS2: Taal: Add panel specific configuration structure
-  OMAP: DSS2: Taal: Print panel name in addition to revision
-  OMAP: DSS2: Taal: Add regulator configuration support
-  OMAP: DSS2: Taal: CABC workaround is Taal specific
-
-Valkeinen Tomi (Nokia-D/Helsinki) (1):
-  OMAP: DSS2: Taal: add locks to taal_bl_update_status
-
- arch/arm/plat-omap/include/plat/nokia-dsi-panel.h |   31 ++
- drivers/video/omap2/displays/panel-taal.c         |  552 ++++++++++++++++-----
- 2 files changed, 463 insertions(+), 120 deletions(-)
- create mode 100644 arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
+diff --git a/drivers/video/via/via-gpio.c b/drivers/video/via/via-gpio.c
+index 63cb7ac..67d699c 100644
+--- a/drivers/video/via/via-gpio.c
++++ b/drivers/video/via/via-gpio.c
+@@ -10,7 +10,6 @@
+ #include <linux/platform_device.h>
+ #include "via-core.h"
+ #include "via-gpio.h"
+-#include "global.h"
+ 
+ /*
+  * The ports we know about.  Note that the port-25 gpios are not
+diff --git a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
+index 84ec2d6..2291765 100644
+--- a/drivers/video/via/via_i2c.c
++++ b/drivers/video/via/via_i2c.c
+@@ -20,9 +20,11 @@
+  */
+ 
+ #include <linux/platform_device.h>
++#include <linux/delay.h>
++#include <linux/spinlock.h>
++#include <linux/module.h>
+ #include "via-core.h"
+ #include "via_i2c.h"
+-#include "global.h"
+ 
+ /*
+  * There can only be one set of these, so there's no point in having
+-- 
+1.7.0.1
 

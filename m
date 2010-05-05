@@ -1,54 +1,59 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 05 May 2010 22:34:42 +0000
-Subject: [PATCH 3/5] viafb: Eliminate some global.h references
-Message-Id: <1273098884-21848-4-git-send-email-corbet@lwn.net>
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Date: Wed, 05 May 2010 14:27:39 +0000
+Subject: [PATCH v3 19/21] OMAP: DSS2: Taal: Print panel name in addition to revision
+Message-Id: <5e7384699d72bad3865dc9604b18ad05775bfb27.1273067195.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1273098884-21848-1-git-send-email-corbet@lwn.net>
-In-Reply-To: <1273098884-21848-1-git-send-email-corbet@lwn.net>
+References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <6b813e9f0008e23e7981f6ca35501f56c292858a.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <b32669a58d60491c3be4f7e52a52c27406cec877.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <94d9d7bebbf7588bd77b65e6a46044240140a350.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <16a98ca1b45ba9b9bb30f23d242449c1d440df07.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <aa1e310d0d385db39b5d53ba4d3dcf02b7e2f47f.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <0cfff2a3cbb4231b41b382caf8aab7c52f47b0d5.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <adb61d94ee2a25284f6bd3f55ec4213501cbe8e3.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <4cb510ffbc3216e2a7dac16edaff5fb1980b3315.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <8665676eca5bbd3be35b63f7110f629e94a6babe.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <a4e7d90e0f036e227a29d94e28b7036c2f9d419b.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <ca7ff2e5a165ca8488190520f1f75e6e37642d3b.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <4f2a95d67d2b8004f4a2055681690920ebeb8e8f.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <690ef5c45aee3fb87a40fa03039356f8238925dc.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <025c12267d4bd88e1f59d9e13aafec247fe3c730.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <e149b5cf7d3dbed1961e06dc82291412e3223101.1273067195.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <e149b5cf7d3dbed1961e06dc82291412e3223101.1273067195.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, =?UTF-8?q?Bruno=20Pr=C3=A9mont?= <bonbons@linux-vserver.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-media@vger.kernel.org
+To: Tomi.Valkeinen@nokia.com, tony@atomide.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
 
-The various subdev drivers (other than the framebuffer itself) no longer
-need this file.
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+The driver will support other panels in addition to Taal, print also the
+name.
+
+Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
 ---
- drivers/video/via/via-gpio.c |    1 -
- drivers/video/via/via_i2c.c  |    4 +++-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/via/via-gpio.c b/drivers/video/via/via-gpio.c
-index 63cb7ac..67d699c 100644
---- a/drivers/video/via/via-gpio.c
-+++ b/drivers/video/via/via-gpio.c
-@@ -10,7 +10,6 @@
- #include <linux/platform_device.h>
- #include "via-core.h"
- #include "via-gpio.h"
--#include "global.h"
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 9f40f32..b73cd12 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -811,8 +811,8 @@ static int taal_power_on(struct omap_dss_device *dssdev)
+ 	td->enabled = 1;
  
- /*
-  * The ports we know about.  Note that the port-25 gpios are not
-diff --git a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
-index 84ec2d6..2291765 100644
---- a/drivers/video/via/via_i2c.c
-+++ b/drivers/video/via/via_i2c.c
-@@ -20,9 +20,11 @@
-  */
- 
- #include <linux/platform_device.h>
-+#include <linux/delay.h>
-+#include <linux/spinlock.h>
-+#include <linux/module.h>
- #include "via-core.h"
- #include "via_i2c.h"
--#include "global.h"
- 
- /*
-  * There can only be one set of these, so there's no point in having
+ 	if (!td->intro_printed) {
+-		dev_info(&dssdev->dev, "revision %02x.%02x.%02x\n",
+-				id1, id2, id3);
++		dev_info(&dssdev->dev, "%s panel revision %02x.%02x.%02x\n",
++			td->panel_config->name, id1, id2, id3);
+ 		if (td->cabc_broken)
+ 			dev_info(&dssdev->dev,
+ 					"old Taal version, CABC disabled\n");
 -- 
-1.7.0.1
+1.6.5.2
 

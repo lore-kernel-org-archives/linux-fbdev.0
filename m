@@ -1,120 +1,61 @@
-From: Ben Dooks <ben-linux@fluff.org>
-Date: Tue, 18 May 2010 10:54:05 +0000
-Subject: [PATCH 5/5] s3c-fb: Integrate palette setup code into main driver
-Message-Id: <1274180045-14645-6-git-send-email-ben-linux@fluff.org>
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Date: Wed, 05 May 2010 14:27:41 +0000
+Subject: [PATCH v3 21/21] OMAP: DSS2: Taal: CABC workaround is Taal specific
+Message-Id: <04807eb255f204f61884b06cde6819e0a087ea33.1273067195.git.ext-jani.1.nikula@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1274180045-14645-1-git-send-email-ben-linux@fluff.org>
-In-Reply-To: <1274180045-14645-1-git-send-email-ben-linux@fluff.org>
+References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <6b813e9f0008e23e7981f6ca35501f56c292858a.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <b32669a58d60491c3be4f7e52a52c27406cec877.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <94d9d7bebbf7588bd77b65e6a46044240140a350.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <16a98ca1b45ba9b9bb30f23d242449c1d440df07.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <aa1e310d0d385db39b5d53ba4d3dcf02b7e2f47f.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <0cfff2a3cbb4231b41b382caf8aab7c52f47b0d5.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <adb61d94ee2a25284f6bd3f55ec4213501cbe8e3.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <4cb510ffbc3216e2a7dac16edaff5fb1980b3315.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <8665676eca5bbd3be35b63f7110f629e94a6babe.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <a4e7d90e0f036e227a29d94e28b7036c2f9d419b.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <ca7ff2e5a165ca8488190520f1f75e6e37642d3b.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <4f2a95d67d2b8004f4a2055681690920ebeb8e8f.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <690ef5c45aee3fb87a40fa03039356f8238925dc.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <025c12267d4bd88e1f59d9e13aafec247fe3c730.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <e149b5cf7d3dbed1961e06dc82291412e3223101.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <5e7384699d72bad3865dc9604b18ad05775bfb27.1273067195.git.ext-jani.1.nikula@nokia.com>
+ <1b93af2daf403f2fe822469b71c12ea7eb1cc68a.1273067195.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <1b93af2daf403f2fe822469b71c12ea7eb1cc68a.1273067195.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Tomi.Valkeinen@nokia.com, tony@atomide.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
 
-Remove the palette setup code from the header files and
-put it into the main driver.
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+Prepare for supporting panels other than Taal in this driver.
+
+Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
 ---
- arch/arm/plat-samsung/include/plat/regs-fb-v4.h |   34 -----------------------
- drivers/video/s3c-fb.c                          |   33 +++++++++++++++++++++-
- 2 files changed, 32 insertions(+), 35 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/plat-samsung/include/plat/regs-fb-v4.h b/arch/arm/plat-samsung/include/plat/regs-fb-v4.h
-index 8352f5d..4c3647f 100644
---- a/arch/arm/plat-samsung/include/plat/regs-fb-v4.h
-+++ b/arch/arm/plat-samsung/include/plat/regs-fb-v4.h
-@@ -137,40 +137,6 @@
- #define WPALCON_W2PAL_16BPP_A555		(1 << 6)
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 617723b..981e38d 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -856,8 +856,9 @@ static int taal_power_on(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err;
  
+-	/* on early revisions CABC is broken */
+-	if (id2 = 0x00 || id2 = 0xff || id2 = 0x81)
++	/* on early Taal revisions CABC is broken */
++	if (td->panel_config->type = PANEL_TAAL &&
++		(id2 = 0x00 || id2 = 0xff || id2 = 0x81))
+ 		td->cabc_broken = true;
  
--/* system specific implementation code for palette sizes, and other
-- * information that changes depending on which architecture is being
-- * compiled.
--*/
--
--struct s3c_fb_palette {
--	struct fb_bitfield	r;
--	struct fb_bitfield	g;
--	struct fb_bitfield	b;
--	struct fb_bitfield	a;
--};
--
--static inline void s3c_fb_init_palette(unsigned int window,
--				       struct s3c_fb_palette *palette)
--{
--	if (window < 2) {
--		/* Windows 0/1 are 8/8/8 or A/8/8/8 */
--		palette->r.offset = 16;
--		palette->r.length = 8;
--		palette->g.offset = 8;
--		palette->g.length = 8;
--		palette->b.offset = 0;
--		palette->b.length = 8;
--	} else {
--		/* currently we assume RGB 5/6/5 */
--		palette->r.offset = 11;
--		palette->r.length = 5;
--		palette->g.offset = 5;
--		palette->g.length = 6;
--		palette->b.offset = 0;
--		palette->b.length = 5;
--	}
--}
--
- /* Notes on per-window bpp settings
-  *
-  * Value	Win0	 Win1	  Win2	   Win3	    Win 4
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 8b49ea7..b9907b9 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -116,6 +116,20 @@ struct s3c_fb_driverdata {
- };
- 
- /**
-+ * struct s3c_fb_palette - palette information
-+ * @r: Red bitfield.
-+ * @g: Green bitfield.
-+ * @b: Blue bitfield.
-+ * @a: Alpha bitfield.
-+ */
-+struct s3c_fb_palette {
-+	struct fb_bitfield	r;
-+	struct fb_bitfield	g;
-+	struct fb_bitfield	b;
-+	struct fb_bitfield	a;
-+};
-+
-+/**
-  * struct s3c_fb_win - per window private data for each framebuffer.
-  * @windata: The platform data supplied for the window configuration.
-  * @parent: The hardware that this window is part of.
-@@ -865,7 +879,24 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
- 	}
- 
- 	/* setup the r/b/g positions for the window's palette */
--	s3c_fb_init_palette(win_no, &win->palette);
-+	if (win->variant.palette_16bpp) {
-+		/* Set RGB 5:6:5 as default */
-+		win->palette.r.offset = 11;
-+		win->palette.r.length = 5;
-+		win->palette.g.offset = 5;
-+		win->palette.g.length = 6;
-+		win->palette.b.offset = 0;
-+		win->palette.b.length = 5;
-+
-+	} else {
-+		/* Set 8bpp or 8bpp and 1bit alpha */
-+		win->palette.r.offset = 16;
-+		win->palette.r.length = 8;
-+		win->palette.g.offset = 8;
-+		win->palette.g.length = 8;
-+		win->palette.b.offset = 0;
-+		win->palette.b.length = 8;
-+	}
- 
- 	/* setup the initial video mode from the window */
- 	fb_videomode_to_var(&fbinfo->var, initmode);
+ 	r = taal_dcs_write_1(DCS_BRIGHTNESS, 0xff);
 -- 
-1.6.3.3
+1.6.5.2
 

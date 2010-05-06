@@ -1,62 +1,68 @@
-From: Ben Dooks <ben@simtec.co.uk>
-Date: Sun, 30 May 2010 06:01:32 +0000
-Subject: Re: [PATCH 2/2] sm501fb.c: support mmap on PPC440SPe/PPC440EPx
-Message-Id: <4C01FF3C.2020707@simtec.co.uk>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Date: Thu, 06 May 2010 18:27:26 +0000
+Subject: Re: [PATCHv3 1/5] OMAP: RX51: Add LCD Panel support
+Message-Id: <87hbmkvqb5.fsf@deeprootsystems.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1274867863-4238-2-git-send-email-agust@denx.de>
-In-Reply-To: <1274867863-4238-2-git-send-email-agust@denx.de>
+References: <1271333181-23609-1-git-send-email-roger.quadros@nokia.com>
+	<1271333181-23609-2-git-send-email-roger.quadros@nokia.com>
+In-Reply-To: <1271333181-23609-2-git-send-email-roger.quadros@nokia.com> (Roger Quadros's message of "Thu\, 15 Apr 2010 15\:06\:17 +0300")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Roger Quadros <roger.quadros@nokia.com>
+Cc: Tomi.Valkeinen@nokia.com, tony@atomide.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On 29/05/10 08:48, Andrew Morton wrote:
-> On Wed, 26 May 2010 15:50:28 +0200
-> Anatolij Gustschin <agust@denx.de> wrote:
-> 
->> On Wed, 26 May 2010 20:13:16 +0900
->> Ben Dooks <ben@simtec.co.uk> wrote:
->>
->>> On 26/05/10 18:57, Anatolij Gustschin wrote:
->>>> Add driver specific mmap function to be able to mmap
->>>> frame buffer on PPC440SPe/PPC440EPx platforms. This
->>>> is needed because mmaping of the 36-bit physical
->>>> address of the frame buffer or MMIO is not supported
->>>> in generic fb_mmap().
->>>
->>> Surely this is something we should be fixing in the
->>> main fb layer?
->>
->> We need to store phys addresses > 32-bit somewhere. Changing
->> smem_start and mmio_start of the struct fb_fix_screeninfo to
->> unsigned long long would break user space compatibility.
-> 
-> gaaah, that was a big screwup.  What are we doing passing these
-> addresses to and from userspace?
-> 
->> How about adding smem_start_high and mmio_start_high to the
->> struct fb_fix_screeninfo for the purpose of storing upper
->> address bits?
-> 
-> Bit ugly.  fb_fix_screeninfo32 is presently treated as "thing for
-> communicating with userspace" as well as "thing for kernel runtime
-> use".  We could separate these functions, and treat fb_fix_screeninfo32
-> as purely a userspace communication format.  Copy the fields in and out
-> when we talk to userspace.  Obviously the simpler implementation would
-> be to create a new fb_fix_screeninfo32_user.  And change the
-> fb_fix_screeninfo32 fields to dma_addr_t or whatever.
+Roger Quadros <roger.quadros@nokia.com> writes:
 
-Something like that, we could add a call to get an u64
-smem_start if people really need that in userspace.
+> From: Roger Quadros <roger.quadros@nokia.com>
+>
+> Adds basic support for LCD Panel on Nokia N900
+>
+> Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
 
-I'd rather see a solution that works for all drivers
-than fixing up individual drivers.
+Just noticed a compile problem here...
 
-If people don't want to spend too much time fixing
-drivers, we could simply deprecate smem_start and
-mmio_start from the in-kernel one and move it outside
-to avoid a pile of selective copying of stuff across
-ioctl() calls.
+[...]
 
--- 
-Ben
+> diff --git a/arch/arm/mach-omap2/board-rx51-video.c b/arch/arm/mach-omap2/board-rx51-video.c
+
+[...]
+
+> +void __init rx51_video_mem_init(void)
+> +{
+> +	/*
+> +	 * GFX 864x480x32bpp
+> +	 * VID1/2 1280x720x32bpp double buffered
+> +	 */
+> +	omap_vram_set_sdram_vram(PAGE_ALIGN(864 * 480 * 4) +
+> +			2 * PAGE_ALIGN(1280 * 720 * 4 * 2), 0);
+> +}
+> +
+> +#endif /* defined(CONFIG_FB_OMAP2) || defined(CONFIG_FB_OMAP2_MODULE) */
+
+This function is available conditionally based on the #ifdefs, but...
+
+> diff --git a/arch/arm/mach-omap2/board-rx51.c b/arch/arm/mach-omap2/board-rx51.c
+> index b155c36..1b86b5b 100644
+> --- a/arch/arm/mach-omap2/board-rx51.c
+> +++ b/arch/arm/mach-omap2/board-rx51.c
+> @@ -36,6 +36,7 @@
+>  #define RX51_GPIO_SLEEP_IND 162
+>  
+>  struct omap_sdrc_params *rx51_get_sdram_timings(void);
+> +extern void rx51_video_mem_init(void);
+>  
+>  static struct gpio_led gpio_leds[] = {
+>  	{
+> @@ -143,6 +144,7 @@ static void __init rx51_init(void)
+>  static void __init rx51_map_io(void)
+>  {
+>  	omap2_set_globals_343x();
+> +	rx51_video_mem_init();
+
+... here it is always called, giving a compiler error when building
+without FB support.
+
+Kevin
+
+

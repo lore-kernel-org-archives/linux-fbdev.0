@@ -1,150 +1,30 @@
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Subject: [PATCH 2/2] OMAP: DSS2: Fix omap_dss_probe() error path
-Date: Thu,  6 May 2010 14:59:03 +0300
-Message-ID: <2af519336cb42682d13d46baf0b770edcada3dac.1273146322.git.ext-jani.1.nikula@nokia.com>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH 1/2] OMAP: DSS2: omap_dss_probe() conditional compilation cleanup
+Date: Thu, 06 May 2010 11:52:51 -0700
+Message-ID: <874oikvp4s.fsf@deeprootsystems.com>
 References: <cover.1273146321.git.ext-jani.1.nikula@nokia.com>
- <bce34ed2a9f7206ddeedb2921807c7602cfcaaaa.1273146322.git.ext-jani.1.nikula@nokia.com>
+	<cover.1273146321.git.ext-jani.1.nikula@nokia.com>
+	<bce34ed2a9f7206ddeedb2921807c7602cfcaaaa.1273146322.git.ext-jani.1.nikula@nokia.com>
+Mime-Version: 1.0
 Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <bce34ed2a9f7206ddeedb2921807c7602cfcaaaa.1273146322.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <cover.1273146321.git.ext-jani.1.nikula@nokia.com>
-References: <cover.1273146321.git.ext-jani.1.nikula@nokia.com>
+In-Reply-To: <bce34ed2a9f7206ddeedb2921807c7602cfcaaaa.1273146322.git.ext-jani.1.nikula@nokia.com> (Jani Nikula's message of "Thu\,  6 May 2010 14\:59\:02 +0300")
 Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com, khilman@deeprootsystems.com
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org, ext-jani.1.nikula@nokia.com
+To: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Cc: Tomi.Valkeinen@nokia.com, linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Jani Nikula <ext-jani.1.nikula@nokia.com> writes:
 
-Perform graceful cleanup on errors instead of just bailing out.
+> From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+>
+> Move a number of #ifdefs from code into dss.h and elsewhere, and
+> conditionally define no-op static inline functions, cleaning up the
+> code. This style is according to Documentation/SubmittingPatches.
+>
+> Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
----
- drivers/video/omap2/dss/core.c |   54 ++++++++++++++++++++++++++++++---------
- 1 files changed, 41 insertions(+), 13 deletions(-)
+Indeed, this helps readability greatly.
 
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index 92ee067..b3a498f 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -507,7 +507,7 @@ static int omap_dss_probe(struct platform_device *pdev)
- 
- 	r = dss_get_clocks();
- 	if (r)
--		goto fail0;
-+		goto err_clocks;
- 
- 	dss_clk_enable_all_no_ctx();
- 
-@@ -523,57 +523,64 @@ static int omap_dss_probe(struct platform_device *pdev)
- 	r = dss_init(skip_init);
- 	if (r) {
- 		DSSERR("Failed to initialize DSS\n");
--		goto fail0;
-+		goto err_dss;
- 	}
- 
- 	r = rfbi_init();
- 	if (r) {
- 		DSSERR("Failed to initialize rfbi\n");
--		goto fail0;
-+		goto err_rfbi;
- 	}
- 
- 	r = dpi_init(pdev);
- 	if (r) {
- 		DSSERR("Failed to initialize dpi\n");
--		goto fail0;
-+		goto err_dpi;
- 	}
- 
- 	r = dispc_init();
- 	if (r) {
- 		DSSERR("Failed to initialize dispc\n");
--		goto fail0;
-+		goto err_dispc;
- 	}
- 
- 	r = venc_init(pdev);
- 	if (r) {
- 		DSSERR("Failed to initialize venc\n");
--		goto fail0;
-+		goto err_venc;
- 	}
- 
- 	if (cpu_is_omap34xx()) {
- 		r = sdi_init(skip_init);
- 		if (r) {
- 			DSSERR("Failed to initialize SDI\n");
--			goto fail0;
-+			goto err_sdi;
- 		}
- 
- 		r = dsi_init(pdev);
- 		if (r) {
- 			DSSERR("Failed to initialize DSI\n");
--			goto fail0;
-+			goto err_dsi;
- 		}
- 	}
- 
- 	r = dss_initialize_debugfs();
- 	if (r)
--		goto fail0;
-+		goto err_debugfs;
- 
- 	for (i = 0; i < pdata->num_devices; ++i) {
- 		struct omap_dss_device *dssdev = pdata->devices[i];
- 
- 		r = omap_dss_register_device(dssdev);
--		if (r)
--			DSSERR("device reg failed %d\n", i);
-+		if (r) {
-+			DSSERR("device %d %s register failed %d\n", i,
-+				dssdev->name ?: "unnamed", r);
-+
-+			while (--i >= 0)
-+				omap_dss_unregister_device(pdata->devices[i]);
-+
-+			goto err_register;
-+		}
- 
- 		if (def_disp_name && strcmp(def_disp_name, dssdev->name) == 0)
- 			pdata->default_device = dssdev;
-@@ -583,8 +590,29 @@ static int omap_dss_probe(struct platform_device *pdev)
- 
- 	return 0;
- 
--	/* XXX fail correctly */
--fail0:
-+err_register:
-+	dss_uninitialize_debugfs();
-+err_debugfs:
-+	if (cpu_is_omap34xx())
-+		dsi_exit();
-+err_dsi:
-+	if (cpu_is_omap34xx())
-+		sdi_exit();
-+err_sdi:
-+	venc_exit();
-+err_venc:
-+	dispc_exit();
-+err_dispc:
-+	dpi_exit();
-+err_dpi:
-+	rfbi_exit();
-+err_rfbi:
-+	dss_exit();
-+err_dss:
-+	dss_clk_disable_all_no_ctx();
-+	dss_put_clocks();
-+err_clocks:
-+
- 	return r;
- }
- 
--- 
-1.6.5.2
-
+Acked-by: Kevin Hilman <khilman@deeprootsystems.com>

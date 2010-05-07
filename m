@@ -1,21 +1,80 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Sun, 23 May 2010 14:24:11 +0000
-Subject: Re: [PATCH 5/5 v3] ARM: mach-shmobile: add framebuffer support for ap4evb
-Message-Id: <20100523142411.GA16229@linux-sh.org>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 07 May 2010 10:49:41 +0000
+Subject: [PATCH 1.5/4] sh: add a YUV422 output data format, that is also
+Message-Id: <Pine.LNX.4.64.1005071246500.4777@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1005201829260.26000@axis700.grange> <Pine.LNX.4.64.1005211712130.8450@axis700.grange> <Pine.LNX.4.64.1005231602040.3571@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1005231602040.3571@axis700.grange>
+References: <Pine.LNX.4.64.1005071054510.4777@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1005071054510.4777@axis700.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>, "linux-fbdev, @vger.kernel.org" <linux-fbdev@vger.kernel.org>, "lin, ux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "Syrjala Ville (Nokia-D/Helsinki)" <ville.syrjala@nokia.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>
+Cc: Magnus Damm <magnus.damm@gmail.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-On Sun, May 23, 2010 at 04:04:03PM +0200, Guennadi Liakhovetski wrote:
-> ap4evb uses an LCD, connected to the SoC over the MIPI bus. This patch adds
-> platform data to configure this display and a static clock activation.
-> 
-> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> Tested-by: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+The LCDC block is allowed to use one of the two output data formats, when used
+with MIPI DSI: RGB24 and YUV422. YUV422 is not currently handled by the LCDC
+driver, but we have to add a define for it for MIPI. Fix indentation while 
+at it.
 
-Please just repost the entire series with the updates.
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
+
+Hm, this one is actually worse, it actually has to go in before patch 2/4. 
+Sorry again.
+
+ include/video/sh_mobile_lcdc.h |   39 +++++++++++++++++++++------------------
+ 1 files changed, 21 insertions(+), 18 deletions(-)
+
+diff --git a/include/video/sh_mobile_lcdc.h b/include/video/sh_mobile_lcdc.h
+index 2cc893f..5eaea78 100644
+--- a/include/video/sh_mobile_lcdc.h
++++ b/include/video/sh_mobile_lcdc.h
+@@ -3,24 +3,27 @@
+ 
+ #include <linux/fb.h>
+ 
+-enum { RGB8,   /* 24bpp, 8:8:8 */
+-       RGB9,   /* 18bpp, 9:9 */
+-       RGB12A, /* 24bpp, 12:12 */
+-       RGB12B, /* 12bpp */
+-       RGB16,  /* 16bpp */
+-       RGB18,  /* 18bpp */
+-       RGB24,  /* 24bpp */
+-       SYS8A,  /* 24bpp, 8:8:8 */
+-       SYS8B,  /* 18bpp, 8:8:2 */
+-       SYS8C,  /* 18bpp, 2:8:8 */
+-       SYS8D,  /* 16bpp, 8:8 */
+-       SYS9,   /* 18bpp, 9:9 */
+-       SYS12,  /* 24bpp, 12:12 */
+-       SYS16A, /* 16bpp */
+-       SYS16B, /* 18bpp, 16:2 */
+-       SYS16C, /* 18bpp, 2:16 */
+-       SYS18,  /* 18bpp */
+-       SYS24 };/* 24bpp */
++enum {
++	RGB8,   /* 24bpp, 8:8:8 */
++	RGB9,   /* 18bpp, 9:9 */
++	RGB12A, /* 24bpp, 12:12 */
++	RGB12B, /* 12bpp */
++	RGB16,  /* 16bpp */
++	RGB18,  /* 18bpp */
++	RGB24,  /* 24bpp */
++	YUV422, /* 16bpp */
++	SYS8A,  /* 24bpp, 8:8:8 */
++	SYS8B,  /* 18bpp, 8:8:2 */
++	SYS8C,  /* 18bpp, 2:8:8 */
++	SYS8D,  /* 16bpp, 8:8 */
++	SYS9,   /* 18bpp, 9:9 */
++	SYS12,  /* 24bpp, 12:12 */
++	SYS16A, /* 16bpp */
++	SYS16B, /* 18bpp, 16:2 */
++	SYS16C, /* 18bpp, 2:16 */
++	SYS18,  /* 18bpp */
++	SYS24,  /* 24bpp */
++};
+ 
+ enum { LCDC_CHAN_DISABLED = 0,
+        LCDC_CHAN_MAINLCD,
+-- 
+1.6.2.4
+

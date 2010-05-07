@@ -1,61 +1,21 @@
-From: Julia Lawall <julia@diku.dk>
-Date: Wed, 26 May 2010 15:57:41 +0000
-Subject: [PATCH 12/17] drivers/video/omap2/displays: Add missing mutex_unlock
-Message-Id: <Pine.LNX.4.64.1005261757240.23743@ask.diku.dk>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 07 May 2010 09:07:14 +0000
+Subject: [PATCH 0/4] MIPI DSI support for SH-mobile, common header, switch
+Message-Id: <Pine.LNX.4.64.1005071054510.4777@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>
+Cc: Magnus Damm <magnus.damm@gmail.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-From: Julia Lawall <julia@diku.dk>
+This patch series adds support for the MIPI DSI unit on sh-mobile SoCs, to 
+eliminate redundancy a common mipi_dsi.h header is added. The SH-mobile 
+part depends on pending clock and INTC patches by Magnus.
 
-Add a mutex_unlock missing on the error paths.  The use of the mutex is
-balanced elsewhere in the file.
-
-The semantic match that finds this problem is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@@
-expression E1;
-@@
-
-* mutex_lock(E1,...);
-  <+... when != E1
-  if (...) {
-    ... when != E1
-*   return ...;
-  }
-  ...+>
-* mutex_unlock(E1,...);
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
+Thanks
+Guennadi
 ---
- drivers/video/omap2/displays/panel-acx565akm.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/omap2/displays/panel-acx565akm.c b/drivers/video/omap2/displays/panel-acx565akm.c
-index 1f8eb70..07fbb8a 100644
---- a/drivers/video/omap2/displays/panel-acx565akm.c
-+++ b/drivers/video/omap2/displays/panel-acx565akm.c
-@@ -592,7 +592,7 @@ static int acx_panel_power_on(struct omap_dss_device *dssdev)
- 	r = omapdss_sdi_display_enable(dssdev);
- 	if (r) {
- 		pr_err("%s sdi enable failed\n", __func__);
--		return r;
-+		goto fail_unlock;
- 	}
- 
- 	/*FIXME tweak me */
-@@ -633,6 +633,8 @@ static int acx_panel_power_on(struct omap_dss_device *dssdev)
- 	return acx565akm_bl_update_status(md->bl_dev);
- fail:
- 	omapdss_sdi_display_disable(dssdev);
-+fail_unlock:
-+	mutex_unlock(&md->mutex);
- 	return r;
- }
- 
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/

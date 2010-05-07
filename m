@@ -1,102 +1,200 @@
-From: Albert Herranz <albert_herranz@yahoo.es>
-Date: Wed, 19 May 2010 16:43:52 +0000
-Subject: Re: [PATCH] fb_defio: fix for non-dirty ptes
-Message-Id: <4BF41548.7010806@yahoo.es>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 07 May 2010 09:07:27 +0000
+Subject: [PATCH 3/4] ARM: add framebuffer support for ap4evb
+Message-Id: <Pine.LNX.4.64.1005071105140.4777@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1273697505-23421-1-git-send-email-albert_herranz@yahoo.es>
-In-Reply-To: <1273697505-23421-1-git-send-email-albert_herranz@yahoo.es>
+References: <Pine.LNX.4.64.1005071054510.4777@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1005071054510.4777@axis700.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>
+Cc: Magnus Damm <magnus.damm@gmail.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-Hi,
+ap4evb uses an LCD, connected to the SoC over the MIPI bus. This patch adds
+platform data to configure this display and a static clock activation.
 
-[CC'ing linux-fbdev]
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
 
-On 05/19/2010 03:36 PM, Jenkins, Clive wrote:
-> Hi Albert
-> 
-> I recently added deferred I/O to my framebuffer driver, and encountered
-> the problem of pages getting stuck in a dirty state. A few days later
-> your patch came out, and the problem appeared to be solved. However, I
-> still get the problem when doing intensive writing to the FB, using the
-> attached program fb_anim that I hacked up.
-> 
-> After copying a test image to the FB, I have been using the command
-> with these arguments:
-> 
->  fb_anim -x 13500000 400 480 -1 4 0
-> 
-> on a 800x480x16-bit FB, which does this:-
-> 
->   set initial POSITION to centre screen
-> loop:
->   draw a 400x480 rectangle at POSITION by XORing every pixel with -1
->   wait 13.5ms
->   wait 13.5ms
->   draw a 400x480 rectangle at POSITION by XOR (restore)
->   move POSITION by (4,0)
->   if not SIGINT goto loop
-> 
-> Note that my frame refresh perios is 13.5ms, so the rectangle moves 4
-> pixels to the right every 2 frames.
-> 
-> If I then kill it with ^C, some or all of the rectangle remains XORed
-> on the LCD screen, although the data in /dev/fb0 has been restored.
-> If I then write a single pixel using
-> 
->  echo a >/dev/fb0
-> 
-> the first page (2.56 lines of pixels) gets restored on the LCD. If I
-> do
-> 
->  cp /dev/fb0 t
->  cp t /dev/fb0 
-> 
-> the entire image is restored.
-> 
+Nothing OMAP-relevant here, just for completeness.
 
-From your description, it may be that the very last deferred io work iteration doesn't take place when your application exits.
-This could happen if fb_deferred_io_cleanup() is called when the framebuffer device is closed. Currently, fb_deferred_io_cleanup() doesn't guarantee that a pending deferred io work takes place (the function cancels any pending deferred io work, and the work may get executed or not).
+ arch/arm/mach-shmobile/Kconfig        |    1 +
+ arch/arm/mach-shmobile/board-ap4evb.c |  121 +++++++++++++++++++++++++++++++++
+ 2 files changed, 122 insertions(+), 0 deletions(-)
 
-Does your framebuffer driver has a fb_release hook? And do you call fb_deferred_io_cleanup() from there?
-If that's the case, does this patch solve the problem?
-
-diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
---- a/drivers/video/fb_defio.c
-+++ b/drivers/video/fb_defio.c
-@@ -223,8 +223,7 @@ void fb_deferred_io_cleanup(struct fb_info *info)
- 	int i;
+diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
+index 9003ea9..e216132 100644
+--- a/arch/arm/mach-shmobile/Kconfig
++++ b/arch/arm/mach-shmobile/Kconfig
+@@ -42,6 +42,7 @@ config MACH_AP4EVB
+ 	bool "AP4EVB board"
+ 	depends on ARCH_SH7372
+ 	select ARCH_REQUIRE_GPIOLIB
++	select SH_LCD_MIPI_DSI
  
- 	BUG_ON(!fbdefio);
--	cancel_delayed_work(&info->deferred_work);
--	flush_scheduled_work();
-+	flush_delayed_work(&info->deferred_work);
+ comment "SH-Mobile System Configuration"
  
- 	/*  the list may have still some non-dirty pages at this point */
- 	mutex_lock(&fbdefio->lock);
+diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
+index d2bb7b0..e3f5375 100644
+--- a/arch/arm/mach-shmobile/board-ap4evb.c
++++ b/arch/arm/mach-shmobile/board-ap4evb.c
+@@ -17,6 +17,7 @@
+  * along with this program; if not, write to the Free Software
+  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  */
++#include <linux/clk.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+@@ -32,8 +33,14 @@
+ #include <linux/gpio.h>
+ #include <linux/input.h>
+ #include <linux/input/sh_keysc.h>
++
++#include <video/sh_mobile_lcdc.h>
++#include <video/sh_mipi_dsi.h>
++
+ #include <mach/common.h>
++#include <mach/irqs.h>
+ #include <mach/sh7372.h>
++
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+ #include <asm/mach/map.h>
+@@ -237,11 +244,86 @@ static struct platform_device sdhi0_device = {
+ 	},
+ };
+ 
++static struct sh_mobile_lcdc_info sh_mobile_lcdc_info = {
++	.clock_source = LCDC_CLK_PERIPHERAL, /* One of interface clocks */
++	.ch[0] = {
++		.chan = LCDC_CHAN_MAINLCD,
++		.bpp = 16,
++		.interface_type = RGB24,
++		.clock_divider = 1,
++		.flags = LCDC_FLAGS_DWPOL,
++		.lcd_cfg = {
++			.name = "R63302(QHD)",
++			.xres = 544,
++			.yres = 961,
++			.left_margin = 72,
++			.right_margin = 1080,
++			.hsync_len = 16,
++			.upper_margin = 8,
++			.lower_margin = 8,
++			.vsync_len = 2,
++			.sync = FB_SYNC_VERT_HIGH_ACT | FB_SYNC_HOR_HIGH_ACT,
++		},
++		.lcd_size_cfg = {
++			.width = 44,
++			.height = 79,
++		},
++	}
++};
++
++static struct resource lcdc_resources[] = {
++	[0] = {
++		.name	= "LCDC",
++		.start	= 0xfe940000, /* P4-only space */
++		.end	= 0xfe943fff,
++		.flags	= IORESOURCE_MEM,
++	},
++	[1] = {
++		.start	= evt2irq(0x580),
++		.flags	= IORESOURCE_IRQ,
++	},
++};
++
++static struct platform_device lcdc_device = {
++	.name		= "sh_mobile_lcdc_fb",
++	.num_resources	= ARRAY_SIZE(lcdc_resources),
++	.resource	= lcdc_resources,
++	.dev	= {
++		.platform_data	= &sh_mobile_lcdc_info,
++		.coherent_dma_mask = ~0,
++	},
++};
++
++static struct resource mipidsi0_resources[] = {
++	[0] = {
++		.start  = 0xffc60000,
++		.end    = 0xffc68fff,
++		.flags  = IORESOURCE_MEM,
++	},
++};
++
++static struct sh_mipi_dsi_info mipidsi0_info = {
++	.data_format	= MIPI_RGB888,
++	.lcd_chan	= &sh_mobile_lcdc_info.ch[0],
++};
++
++static struct platform_device mipidsi0_device = {
++	.name           = "sh-mipi-dsi",
++	.num_resources  = ARRAY_SIZE(mipidsi0_resources),
++	.resource       = mipidsi0_resources,
++	.id             = 0,
++	.dev	= {
++		.platform_data	= &mipidsi0_info,
++	},
++};
++
+ static struct platform_device *ap4evb_devices[] __initdata = {
+ 	&nor_flash_device,
+ 	&smc911x_device,
+ 	&keysc_device,
+ 	&sdhi0_device,
++	&lcdc_device,
++	&mipidsi0_device,
+ };
+ 
+ static struct map_desc ap4evb_io_desc[] __initdata = {
+@@ -265,6 +347,45 @@ static void __init ap4evb_map_io(void)
+ 	shmobile_setup_console();
+ }
+ 
++/* This function will disappear when we switch to (runtime) PM */
++static int __init ap4evb_init_display_clk(void)
++{
++	struct clk *lcdc_clk;
++	struct clk *dsitx_clk;
++	int ret;
++
++	lcdc_clk = clk_get(&lcdc_device.dev, "lcdc0");
++	if (IS_ERR(lcdc_clk))
++		return PTR_ERR(lcdc_clk);
++
++	dsitx_clk = clk_get(&mipidsi0_device.dev, "dsitx");
++	if (IS_ERR(dsitx_clk)) {
++		ret = PTR_ERR(dsitx_clk);
++		goto eclkdsitxget;
++	}
++
++	ret = clk_enable(lcdc_clk);
++	if (ret < 0)
++		goto eclklcdcon;
++
++	ret = clk_enable(dsitx_clk);
++	if (ret < 0)
++		goto eclkdsitxon;
++
++	return 0;
++
++eclkdsitxon:
++	clk_disable(lcdc_clk);
++eclklcdcon:
++	clk_put(dsitx_clk);
++eclkdsitxget:
++	clk_put(lcdc_clk);
++
++	return ret;
++}
++
++device_initcall(ap4evb_init_display_clk);
++
+ static void __init ap4evb_init(void)
+ {
+ 	sh7372_pinmux_init();
+-- 
+1.6.2.4
 
-> I wondered if you could duplicate my findings on whatever platform(s)
-> you have. I am using a Freescale MPC8536 (e500v2 core) with a custom
-> ASIC (PCI device) containing an LCD controller which has graphics RAM
-> attached. [Writing from the CPU through the ASIC into graphics RAM is
-> slow, hence the need for FB in system RAM, and defio to graphics RAM
-> being done using the 8536's DMA engine, which does efficient burst
-> writes.]  I am using a 2.6.27 kernel with your patch applied, HZ%0,
-> defio_delay=1 jiffy (4ms). After applying your patch, my normal
-> application software worked normally, but my test program still had
-> the problem, as described above.
-> 
-
-I'm working with a Nintendo Wii which has a non-standard framebuffer format (4:2:2 YCbCr). I'm using fb deferred io to provide a RGB framebuffer abstraction for applications to run unmodified (at the expense of some performance penalty).
-
-I haven't experienced your problem, but I do not call fb_deferred_io_cleanup() until the driver remove hook. And I also use some fb hooks (fillrect, copyarea, imageblit, write) which fbcon uses to update the framebuffer.
-
-> I would be grateful for any help solving this problem.
-> 
-> Thanks,
-> Clive
-
-Cheers,
-Albert

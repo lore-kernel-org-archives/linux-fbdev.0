@@ -1,39 +1,28 @@
 From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Subject: [PATCH v2 0/2] OMAP: DSS2: Fix DSS core init fail path
-Date: Fri,  7 May 2010 12:58:40 +0300
-Message-ID: <cover.1273222740.git.ext-jani.1.nikula@nokia.com>
-References: <1273219659.1978.144.camel@tubuntu.research.nokia.com>
+Subject: Re: [PATCH 2/2] OMAP: DSS2: Fix omap_dss_probe() error path
+Date: Fri, 7 May 2010 15:12:18 +0300 (EEST)
+Message-ID: <alpine.DEB.2.00.1005071511010.24263@wnav-qrfxgbc>
+References: <cover.1273146321.git.ext-jani.1.nikula@nokia.com> <bce34ed2a9f7206ddeedb2921807c7602cfcaaaa.1273146322.git.ext-jani.1.nikula@nokia.com> <cover.1273146321.git.ext-jani.1.nikula@nokia.com> <2af519336cb42682d13d46baf0b770edcada3dac.1273146322.git.ext-jani.1.nikula@nokia.com>
+ <87wrvguahb.fsf@deeprootsystems.com>
+Mime-Version: 1.0
 Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <1273219659.1978.144.camel@tubuntu.research.nokia.com>
+In-Reply-To: <87wrvguahb.fsf@deeprootsystems.com>
 Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"; format="flowed"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com, khilman@deeprootsystems.com
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org, ext-jani.1.nikula@nokia.com
+To: ext Kevin Hilman <khilman@deeprootsystems.com>
+Cc: "Valkeinen Tomi (Nokia-D/Helsinki)" <Tomi.Valkeinen@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 
-Hi -
 
-These patches fix the broken DSS omap_dss_probe() fail path, reported by Kevin
-Hilman [1].
 
-v2:
- - rebased against [2]
+On Thu, 6 May 2010, ext Kevin Hilman wrote:
 
-[1] http://www.mail-archive.com/linux-omap@vger.kernel.org/msg27112.html
-[2] git://gitorious.org/linux-omap-dss2/linux.git
+> Tested on my n900, and with failed init, clocks are turned off
+> and doesn't prevent suspend.
 
+Many thanks for testing this, Kevin!
 
 BR,
 Jani.
-
-
-Jani Nikula (2):
-  OMAP: DSS2: omap_dss_probe() conditional compilation cleanup
-  OMAP: DSS2: Fix omap_dss_probe() error path
-
- drivers/video/omap2/dss/core.c |   89 +++++++++++++++++++++++----------------
- drivers/video/omap2/dss/dss.h  |   50 ++++++++++++++++++++++
- 2 files changed, 102 insertions(+), 37 deletions(-)
 

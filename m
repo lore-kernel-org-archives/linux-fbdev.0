@@ -1,37 +1,65 @@
-From: Ben Dooks <ben-linux@fluff.org>
-Date: Tue, 18 May 2010 10:54:01 +0000
-Subject: [PATCH 1/5] s3c-fb: Change to depending on CONFIG_S3C_FB_DEV
-Message-Id: <1274180045-14645-2-git-send-email-ben-linux@fluff.org>
+From: Mike Frysinger <vapier@gentoo.org>
+Date: Sun, 09 May 2010 10:59:56 +0000
+Subject: [PATCH] fbdev: bfin-t350mcqb-fb: fix fbmem allocation with blanking lines
+Message-Id: <1273402965-2995-1-git-send-email-vapier@gentoo.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1274180045-14645-1-git-send-email-ben-linux@fluff.org>
-In-Reply-To: <1274180045-14645-1-git-send-email-ben-linux@fluff.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org, Michael Hennerich <michael.hennerich@analog.com>
 
-As suggested by Marek Szyprowski, we should make the driver depend on
-the configuration currently being used to build the platform device
-into the kernel.
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+The current allocation does not include the memory required for blanking
+lines.  So avoid memory corruption when multiple devices are using the DMA
+memory near each other.
+
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- drivers/video/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/bfin-t350mcqb-fb.c |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 6e16244..a358989 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -1914,7 +1914,7 @@ config FB_TMIO_ACCELL
+diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
+index 44e49c2..c2ec3dc 100644
+--- a/drivers/video/bfin-t350mcqb-fb.c
++++ b/drivers/video/bfin-t350mcqb-fb.c
+@@ -488,9 +488,9 @@ static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
+ 	fbinfo->fbops = &bfin_t350mcqb_fb_ops;
+ 	fbinfo->flags = FBINFO_FLAG_DEFAULT;
  
- config FB_S3C
- 	tristate "Samsung S3C framebuffer support"
--	depends on FB && ARCH_S3C64XX
-+	depends on FB && S3C_DEV_FB
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
+-	info->fb_buffer -	    dma_alloc_coherent(NULL, fbinfo->fix.smem_len, &info->dma_handle,
+-			       GFP_KERNEL);
++	info->fb_buffer = dma_alloc_coherent(NULL, fbinfo->fix.smem_len +
++				ACTIVE_VIDEO_MEM_OFFSET,
++				&info->dma_handle, GFP_KERNEL);
+ 
+ 	if (NULL = info->fb_buffer) {
+ 		printk(KERN_ERR DRIVER_NAME
+@@ -568,8 +568,8 @@ out7:
+ out6:
+ 	fb_dealloc_cmap(&fbinfo->cmap);
+ out4:
+-	dma_free_coherent(NULL, fbinfo->fix.smem_len, info->fb_buffer,
+-			  info->dma_handle);
++	dma_free_coherent(NULL, fbinfo->fix.smem_len + ACTIVE_VIDEO_MEM_OFFSET,
++			 info->fb_buffer, info->dma_handle);
+ out3:
+ 	framebuffer_release(fbinfo);
+ out2:
+@@ -592,8 +592,9 @@ static int __devexit bfin_t350mcqb_remove(struct platform_device *pdev)
+ 	free_irq(info->irq, info);
+ 
+ 	if (info->fb_buffer != NULL)
+-		dma_free_coherent(NULL, fbinfo->fix.smem_len, info->fb_buffer,
+-				  info->dma_handle);
++		dma_free_coherent(NULL, fbinfo->fix.smem_len +
++			ACTIVE_VIDEO_MEM_OFFSET, info->fb_buffer,
++			info->dma_handle);
+ 
+ 	fb_dealloc_cmap(&fbinfo->cmap);
+ 
 -- 
-1.6.3.3
+1.7.1
 

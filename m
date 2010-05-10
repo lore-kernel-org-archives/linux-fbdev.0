@@ -1,91 +1,77 @@
-From: Damian <dhobsong@igel.co.jp>
-Date: Wed, 19 May 2010 04:44:32 +0000
-Subject: Re: [PATCH 1.5/4] sh: add a YUV422 output data format, that is also
-Message-Id: <4BF36CB0.1070107@igel.co.jp>
+From: "Guruswamy, Senthilvadivu" <svadivu@ti.com>
+Date: Mon, 10 May 2010 08:38:02 +0000
+Subject: RE: [PATCH] DSS2 Include VRFB into omap2-3build only
+Message-Id: <FCCFB4CDC6E5564B9182F639FC356087030428879F@dbde02.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1005071054510.4777@axis700.grange> <Pine.LNX.4.64.1005071246500.4777@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1005071246500.4777@axis700.grange>
+References: <1273474110-22451-1-git-send-email-svadivu@ti.com>
+ <1A2F53DA-903A-4667-A27F-492A3499F7ED@student.utwente.nl>
+ <FCCFB4CDC6E5564B9182F639FC356087030428879D@dbde02.ent.ti.com>
+ <73F3CED4-60D5-4351-A921-335110542B6F@dominion.thruhere.net>
+In-Reply-To: <73F3CED4-60D5-4351-A921-335110542B6F@dominion.thruhere.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: Koen Kooi <koen@dominion.thruhere.net>
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "tony@atomide.com" <tony@atomide.com>, "tomi.valkeinen@nokia.com" <tomi.valkeinen@nokia.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-(4:59), Guennadi Liakhovetski wrote:
-> The LCDC block is allowed to use one of the two output data formats, when used
-> with MIPI DSI: RGB24 and YUV422. YUV422 is not currently handled by the LCDC
-> driver, but we have to add a define for it for MIPI. Fix indentation while
-> at it.
-> 
-> Signed-off-by: Guennadi Liakhovetski<g.liakhovetski@gmx.de>
-> ---
-> 
-> Hm, this one is actually worse, it actually has to go in before patch 2/4.
-> Sorry again.
->
-Console framebuffer tested on sh-2.6 tree and sh/dmaengine branch with
-the necessary clock and intc patches applied.
-Boot logo and framebuffer console displayed with no problems or unusual
-effects.
+Tiler support is not yet in OMAP builds. So multi-omap build will NOT break, but would exclude VRFB feature in the build.
 
-Tested-by: Damian Hobson-Garcia <dhobsong@igel.co.jp>
-
->   include/video/sh_mobile_lcdc.h |   39 +++++++++++++++++++++------------------
->   1 files changed, 21 insertions(+), 18 deletions(-)
+> -----Original Message-----
+> From: Koen Kooi [mailto:koen@dominion.thruhere.net] 
+> Sent: Monday, May 10, 2010 1:33 PM
+> To: Guruswamy, Senthilvadivu
+> Cc: linux-omap@vger.kernel.org; 
+> linux-fbdev-devel@lists.sourceforge.net; tony@atomide.com; 
+> tomi.valkeinen@nokia.com; Hiremath, Vaibhav
+> Subject: Re: [PATCH] DSS2 Include VRFB into omap2-3build only
 > 
-> diff --git a/include/video/sh_mobile_lcdc.h b/include/video/sh_mobile_lcdc.h
-> index 2cc893f..5eaea78 100644
-> --- a/include/video/sh_mobile_lcdc.h
-> +++ b/include/video/sh_mobile_lcdc.h
-> @@ -3,24 +3,27 @@
 > 
->   #include<linux/fb.h>
+> Op 10 mei 2010, om 10:01 heeft Guruswamy, Senthilvadivu het 
+> volgende geschreven:
 > 
-> -enum { RGB8,   /* 24bpp, 8:8:8 */
-> -       RGB9,   /* 18bpp, 9:9 */
-> -       RGB12A, /* 24bpp, 12:12 */
-> -       RGB12B, /* 12bpp */
-> -       RGB16,  /* 16bpp */
-> -       RGB18,  /* 18bpp */
-> -       RGB24,  /* 24bpp */
-> -       SYS8A,  /* 24bpp, 8:8:8 */
-> -       SYS8B,  /* 18bpp, 8:8:2 */
-> -       SYS8C,  /* 18bpp, 2:8:8 */
-> -       SYS8D,  /* 16bpp, 8:8 */
-> -       SYS9,   /* 18bpp, 9:9 */
-> -       SYS12,  /* 24bpp, 12:12 */
-> -       SYS16A, /* 16bpp */
-> -       SYS16B, /* 18bpp, 16:2 */
-> -       SYS16C, /* 18bpp, 2:16 */
-> -       SYS18,  /* 18bpp */
-> -       SYS24 };/* 24bpp */
-> +enum {
-> +	RGB8,   /* 24bpp, 8:8:8 */
-> +	RGB9,   /* 18bpp, 9:9 */
-> +	RGB12A, /* 24bpp, 12:12 */
-> +	RGB12B, /* 12bpp */
-> +	RGB16,  /* 16bpp */
-> +	RGB18,  /* 18bpp */
-> +	RGB24,  /* 24bpp */
-> +	YUV422, /* 16bpp */
-> +	SYS8A,  /* 24bpp, 8:8:8 */
-> +	SYS8B,  /* 18bpp, 8:8:2 */
-> +	SYS8C,  /* 18bpp, 2:8:8 */
-> +	SYS8D,  /* 16bpp, 8:8 */
-> +	SYS9,   /* 18bpp, 9:9 */
-> +	SYS12,  /* 24bpp, 12:12 */
-> +	SYS16A, /* 16bpp */
-> +	SYS16B, /* 18bpp, 16:2 */
-> +	SYS16C, /* 18bpp, 2:16 */
-> +	SYS18,  /* 18bpp */
-> +	SYS24,  /* 24bpp */
-> +};
+> > Building a multi-omap kernel is not impacted as long as the 
+> display is not choosen in the build.  Usually display is 
+> chosen from the board file.
 > 
->   enum { LCDC_CHAN_DISABLED = 0,
->          LCDC_CHAN_MAINLCD,
-
-
--- 
-Damian Hobson-Garcia
-IGEL Co.,Ltd
-http://www.igel.co.jp
+> So you are saying it *IS* broken when wanting vrfb on omap3 
+> and tiler on omap4, right?
+> 
+> 
+> 
+> > 
+> >> -----Original Message-----
+> >> From: Koen Kooi [mailto:koen@dominion.thruhere.net] 
+> >> Sent: Monday, May 10, 2010 1:10 PM
+> >> To: Guruswamy, Senthilvadivu
+> >> Cc: linux-omap@vger.kernel.org; 
+> >> linux-fbdev-devel@lists.sourceforge.net; tony@atomide.com; 
+> >> tomi.valkeinen@nokia.com; Hiremath, Vaibhav
+> >> Subject: Re: [PATCH] DSS2 Include VRFB into omap2-3build only
+> >> 
+> >> 
+> >> Op 10 mei 2010, om 08:48 heeft Senthilvadivu Guruswamy het 
+> >> volgende geschreven:
+> >> 
+> >>> Exclude VRFB from OMAP4 onwards and include only for
+> >>> OMAP2 and OMAP3 builds.  In OMAP4 VRFB HW IP is replaced
+> >>> with a new HW IP "TILER"
+> >>> 
+> >>> --- a/drivers/video/omap2/Kconfig
+> >>> +++ b/drivers/video/omap2/Kconfig
+> >>> @@ -3,6 +3,10 @@ config OMAP2_VRAM
+> >>> 
+> >>> config OMAP2_VRFB
+> >>> 	bool
+> >>> +	depends on FB_OMAP2 && (!ARCH_OMAP4)
+> >>> +	default y if (ARCH_OMAP2 || ARCH_OMAP3)
+> >>> +	help
+> >>> +	  OMAP VRFB buffer support is efficient for rotation
+> >> 
+> >> How does this work for multi-omap kernels, e.g. building a 
+> >> kernel with beagle and panda support?
+> >> 
+> >> regards,
+> >> 
+> >> Koen
+> 
+> 

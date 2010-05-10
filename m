@@ -1,60 +1,60 @@
-From: Koen Kooi <koen@dominion.thruhere.net>
-Subject: Re: [PATCH] DSS2 Include VRFB into omap2-3build only
-Date: Mon, 10 May 2010 10:03:12 +0200
-Message-ID: <73F3CED4-60D5-4351-A921-335110542B6F@dominion.thruhere.net>
-References: <1273474110-22451-1-git-send-email-svadivu@ti.com> <1A2F53DA-903A-4667-A27F-492A3499F7ED@student.utwente.nl> <FCCFB4CDC6E5564B9182F639FC356087030428879D@dbde02.ent.ti.com>
-Mime-Version: 1.0 (Apple Message framework v1078)
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <FCCFB4CDC6E5564B9182F639FC356087030428879D@dbde02.ent.ti.com>
-Sender: linux-omap-owner@vger.kernel.org
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] s3c-fb: added patch series for s5pv210 and some
+ features.
+Date: Mon, 10 May 2010 17:22:54 -0400
+Message-ID: <20100510172254.1f28f07c.akpm@linux-foundation.org>
+References: <m2g90b950fc1005070059k99d138efr4bfa7de44c58fdd0@mail.gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <m2g90b950fc1005070059k99d138efr4bfa7de44c58fdd0@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: "Guruswamy, Senthilvadivu" <svadivu@ti.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "tony@atomide.com" <tony@atomide.com>, "tomi.valkeinen@nokia.com" <tomi.valkeinen@nokia.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>
+To: InKi Dae <daeinki@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, Ben Dooks <ben-linux@fluff.org>
 
+On Fri, 7 May 2010 16:59:56 +0900 InKi Dae <daeinki@gmail.com> wrote:
 
-Op 10 mei 2010, om 10:01 heeft Guruswamy, Senthilvadivu het volgende geschreven:
-
-> Building a multi-omap kernel is not impacted as long as the display is not choosen in the build.  Usually display is chosen from the board file.
-
-So you are saying it *IS* broken when wanting vrfb on omap3 and tiler on omap4, right?
-
-
-
+> this includes three patch series and divides previous patch
+> into smaller part.
 > 
->> -----Original Message-----
->> From: Koen Kooi [mailto:koen@dominion.thruhere.net] 
->> Sent: Monday, May 10, 2010 1:10 PM
->> To: Guruswamy, Senthilvadivu
->> Cc: linux-omap@vger.kernel.org; 
->> linux-fbdev-devel@lists.sourceforge.net; tony@atomide.com; 
->> tomi.valkeinen@nokia.com; Hiremath, Vaibhav
->> Subject: Re: [PATCH] DSS2 Include VRFB into omap2-3build only
->> 
->> 
->> Op 10 mei 2010, om 08:48 heeft Senthilvadivu Guruswamy het 
->> volgende geschreven:
->> 
->>> Exclude VRFB from OMAP4 onwards and include only for
->>> OMAP2 and OMAP3 builds.  In OMAP4 VRFB HW IP is replaced
->>> with a new HW IP "TILER"
->>> 
->>> --- a/drivers/video/omap2/Kconfig
->>> +++ b/drivers/video/omap2/Kconfig
->>> @@ -3,6 +3,10 @@ config OMAP2_VRAM
->>> 
->>> config OMAP2_VRFB
->>> 	bool
->>> +	depends on FB_OMAP2 && (!ARCH_OMAP4)
->>> +	default y if (ARCH_OMAP2 || ARCH_OMAP3)
->>> +	help
->>> +	  OMAP VRFB buffer support is efficient for rotation
->> 
->> How does this work for multi-omap kernels, e.g. building a 
->> kernel with beagle and panda support?
->> 
->> regards,
->> 
->> Koen
+> so Andrew, please remove my previous patch,
+> s3c-fb-add-s5pv210-support-and-some-features.patch from mm tree.
+> 
+> patch contents are as following.
+> 
+> 1. s3c_fb_1_3.patch
+>   - as patch for supporting s5pv210, CH_ENABLE bit of SHAD
+>     register should be enabled to enable window layer on s5pv210.
+> 
+> 2. s3c_fb_2_3.patch
+>    - s5pv210 has five window layers (window0 ~ 4), among them,
+>      window0 ~ 2 could be used for local path with fimc(capture device)
+>      and fimd writeback feature so this patch makes default window
+>      layer for UI to be set at machine code.
+> 
+> 3. s3c_fb_3_3.patch
+>    - it has been working fine at 16bpp but in case of pixel format
+>      more then 24bpp it would occur distortedness situation
+>      on that mode. so this patch set the word swap control bit of
+>      WINCONx to 1 as default value. but it should be set to 0
+>      in case that each ENLOCAL bit of WINCON0 ~ 2 registers
+>      is enabled. this issue would be solved with local path feature soon.
 
+I prefer not to receive patches this way, sorry.  I will need to detach
+the attachments, copy-n-paste the changelogs and signoffs and then
+invent meaningful English-language titles for each patch.
+
+The problem is the last part.  The titles I choose may be
+inappropriate, and if anyone in a year's time tries to find the history
+of a patch by googling for the title, they may not be able to find this
+email thread.  A well-chosen title becomes a nice search key for looking
+up the patch in reviewion control systems and on the 'net.
+
+There are reasons for the conventions, so please let's be conventional.
+Send it as three sequences-numbered emails, one with a carefully chosen
+title/Subject: and each one with its own changelog, signoffs, etc.
+
+Also, if you _must_ use attachments, please use text/plain mimetypes,
+thanks.

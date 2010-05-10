@@ -1,28 +1,86 @@
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Subject: Re: [PATCH 2/2] OMAP: DSS2: Fix omap_dss_probe() error path
-Date: Fri, 7 May 2010 15:12:18 +0300 (EEST)
-Message-ID: <alpine.DEB.2.00.1005071511010.24263@wnav-qrfxgbc>
-References: <cover.1273146321.git.ext-jani.1.nikula@nokia.com> <bce34ed2a9f7206ddeedb2921807c7602cfcaaaa.1273146322.git.ext-jani.1.nikula@nokia.com> <cover.1273146321.git.ext-jani.1.nikula@nokia.com> <2af519336cb42682d13d46baf0b770edcada3dac.1273146322.git.ext-jani.1.nikula@nokia.com>
- <87wrvguahb.fsf@deeprootsystems.com>
-Mime-Version: 1.0
+From: Senthilvadivu Guruswamy <svadivu@ti.com>
+Subject: [PATCH] DSS2 Include VRFB into omap2-3build only
+Date: Mon, 10 May 2010 12:18:30 +0530
+Message-ID: <1273474110-22451-1-git-send-email-svadivu@ti.com>
 Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <87wrvguahb.fsf@deeprootsystems.com>
 Sender: linux-omap-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: TEXT/PLAIN; charset="us-ascii"; format="flowed"
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: ext Kevin Hilman <khilman@deeprootsystems.com>
-Cc: "Valkeinen Tomi (Nokia-D/Helsinki)" <Tomi.Valkeinen@nokia.com>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: linux-omap@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, tony@atomide.com, tomi.valkeinen@nokia.com, v-hiremath@ti.com
+Cc: Senthilvadivu Guruswamy <svadivu@ti.com>
 
+Exclude VRFB from OMAP4 onwards and include only for
+OMAP2 and OMAP3 builds.  In OMAP4 VRFB HW IP is replaced
+with a new HW IP "TILER"
 
+Signed-off-by: Senthilvadivu Guruswamy <svadivu@ti.com>
+---
+ arch/arm/plat-omap/include/plat/vrfb.h |   16 ++++++++++++++++
+ drivers/video/omap2/Kconfig            |    4 ++++
+ drivers/video/omap2/omapfb/Kconfig     |    1 -
+ 3 files changed, 20 insertions(+), 1 deletions(-)
 
-On Thu, 6 May 2010, ext Kevin Hilman wrote:
-
-> Tested on my n900, and with failed init, clocks are turned off
-> and doesn't prevent suspend.
-
-Many thanks for testing this, Kevin!
-
-BR,
-Jani.
+diff --git a/arch/arm/plat-omap/include/plat/vrfb.h b/arch/arm/plat-omap/include/plat/vrfb.h
+index d8a03ce..3792bde 100644
+--- a/arch/arm/plat-omap/include/plat/vrfb.h
++++ b/arch/arm/plat-omap/include/plat/vrfb.h
+@@ -35,6 +35,7 @@ struct vrfb {
+ 	bool yuv_mode;
+ };
+ 
++#ifdef CONFIG_OMAP2_VRFB
+ extern int omap_vrfb_request_ctx(struct vrfb *vrfb);
+ extern void omap_vrfb_release_ctx(struct vrfb *vrfb);
+ extern void omap_vrfb_adjust_size(u16 *width, u16 *height,
+@@ -47,4 +48,19 @@ extern void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
+ extern int omap_vrfb_map_angle(struct vrfb *vrfb, u16 height, u8 rot);
+ extern void omap_vrfb_restore_context(void);
+ 
++#else
++static inline int omap_vrfb_request_ctx(struct vrfb *vrfb) { return 0; }
++static inline void omap_vrfb_release_ctx(struct vrfb *vrfb) {}
++static inline void omap_vrfb_adjust_size(u16 *width, u16 *height,
++		u8 bytespp) {}
++static inline u32 omap_vrfb_min_phys_size(u16 width, u16 height, u8 bytespp)
++		{ return 0; }
++static inline u16 omap_vrfb_max_height(u32 phys_size, u16 width, u8 bytespp)
++		{ return 0; }
++static inline void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
++		u16 width, u16 height, unsigned bytespp, bool yuv_mode) {}
++static inline int omap_vrfb_map_angle(struct vrfb *vrfb, u16 height, u8 rot)
++		{ return 0; }
++static inline void omap_vrfb_restore_context(void) {}
++#endif
+ #endif /* __VRFB_H */
+diff --git a/drivers/video/omap2/Kconfig b/drivers/video/omap2/Kconfig
+index d877c36..253376a 100644
+--- a/drivers/video/omap2/Kconfig
++++ b/drivers/video/omap2/Kconfig
+@@ -3,6 +3,10 @@ config OMAP2_VRAM
+ 
+ config OMAP2_VRFB
+ 	bool
++	depends on FB_OMAP2 && (!ARCH_OMAP4)
++	default y if (ARCH_OMAP2 || ARCH_OMAP3)
++	help
++	  OMAP VRFB buffer support is efficient for rotation
+ 
+ source "drivers/video/omap2/dss/Kconfig"
+ source "drivers/video/omap2/omapfb/Kconfig"
+diff --git a/drivers/video/omap2/omapfb/Kconfig b/drivers/video/omap2/omapfb/Kconfig
+index 43496d6..fee537e 100644
+--- a/drivers/video/omap2/omapfb/Kconfig
++++ b/drivers/video/omap2/omapfb/Kconfig
+@@ -3,7 +3,6 @@ menuconfig FB_OMAP2
+         depends on FB && OMAP2_DSS
+ 
+ 	select OMAP2_VRAM
+-	select OMAP2_VRFB
+         select FB_CFB_FILLRECT
+         select FB_CFB_COPYAREA
+         select FB_CFB_IMAGEBLIT
+-- 
+1.5.4.7
 

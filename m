@@ -1,33 +1,50 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Tue, 18 May 2010 12:35:03 +0000
-Subject: [PATCH 12/23] OMAP: DSS2: Taal: Fix DSI bus locking problem
-Message-Id: <1274186114-26951-13-git-send-email-tomi.valkeinen@nokia.com>
+From: Julia Lawall <julia@diku.dk>
+Date: Thu, 13 May 2010 20:07:11 +0000
+Subject: [PATCH 18/20] drivers/video/matrox: Use kzalloc
+Message-Id: <Pine.LNX.4.64.1005132206530.6282@ask.diku.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Petr Vandrovec <vandrove@vc.cvut.cz>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-RnJvbTogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQG5va2lhLmNvbT4KCklmIG9tYXBk
-c3NfZHNpX2Rpc3BsYXlfZW5hYmxlKCkgZmFpbGVkIHRoZSBEU0kgYnVzIHdhcyBsZWZ0IGxvY2tl
-ZC4gQWxzbwppZiB0aGUgb3BlcmF0aW9uIGZhaWxlZCBsYXRlciBvbWFwZHNzX2RzaV9kaXNwbGF5
-X2Rpc2FibGUoKSB3b3VsZCBnZXQKY2FsbGVkIHdpdGhvdXQgaG9sZGluZyB0aGUgYnVzIGxvY2su
-CgpTaWduZWQtb2ZmLWJ5OiBWaWxsZSBTeXJqw6Rsw6QgPHZpbGxlLnN5cmphbGFAbm9raWEuY29t
-PgpTaWduZWQtb2ZmLWJ5OiBUb21pIFZhbGtlaW5lbiA8dG9taS52YWxrZWluZW5Abm9raWEuY29t
-PgotLS0KIGRyaXZlcnMvdmlkZW8vb21hcDIvZGlzcGxheXMvcGFuZWwtdGFhbC5jIHwgICAgMyAr
-LS0KIDEgZmlsZXMgY2hhbmdlZCwgMSBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQoKZGlm
-ZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vb21hcDIvZGlzcGxheXMvcGFuZWwtdGFhbC5jIGIvZHJp
-dmVycy92aWRlby9vbWFwMi9kaXNwbGF5cy9wYW5lbC10YWFsLmMKaW5kZXggMTc5OTA5Ni4uYWFm
-NWQzMCAxMDA2NDQKLS0tIGEvZHJpdmVycy92aWRlby9vbWFwMi9kaXNwbGF5cy9wYW5lbC10YWFs
-LmMKKysrIGIvZHJpdmVycy92aWRlby9vbWFwMi9kaXNwbGF5cy9wYW5lbC10YWFsLmMKQEAgLTcw
-MiwxMCArNzAyLDkgQEAgc3RhdGljIGludCB0YWFsX3Bvd2VyX29uKHN0cnVjdCBvbWFwX2Rzc19k
-ZXZpY2UgKmRzc2RldikKIAogCXJldHVybiAwOwogZXJyOgotCWRzaV9idXNfdW5sb2NrKCk7Ci0K
-IAlvbWFwZHNzX2RzaV9kaXNwbGF5X2Rpc2FibGUoZHNzZGV2KTsKIGVycjA6CisJZHNpX2J1c191
-bmxvY2soKTsKIAlpZiAoZHNzZGV2LT5wbGF0Zm9ybV9kaXNhYmxlKQogCQlkc3NkZXYtPnBsYXRm
-b3JtX2Rpc2FibGUoZHNzZGV2KTsKIAotLSAKMS43LjAuNAoKLS0KVG8gdW5zdWJzY3JpYmUgZnJv
-bSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LWZiZGV2IiBpbgp0
-aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZwpNb3JlIG1h
-am9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0
-bWw=
+From: Julia Lawall <julia@diku.dk>
+
+Use kzalloc rather than the combination of kmalloc and memset.
+
+The semantic patch that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
+
+// <smpl>
+@@
+expression x,size,flags;
+statement S;
+@@
+
+-x = kmalloc(size,flags);
++x = kzalloc(size,flags);
+ if (x = NULL) S
+-memset(x, 0, size);
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/video/matrox/matroxfb_base.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff -u -p a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
+--- a/drivers/video/matrox/matroxfb_base.c
++++ b/drivers/video/matrox/matroxfb_base.c
+@@ -2040,10 +2040,9 @@ static int matroxfb_probe(struct pci_dev
+ 		return -1;
+ 	}
+ 
+-	minfo = kmalloc(sizeof(*minfo), GFP_KERNEL);
++	minfo = kzalloc(sizeof(*minfo), GFP_KERNEL);
+ 	if (!minfo)
+ 		return -1;
+-	memset(minfo, 0, sizeof(*minfo));
+ 
+ 	minfo->pcidev = pdev;
+ 	minfo->dead = 0;

@@ -1,44 +1,39 @@
-From: Pawel Osciak <p.osciak@samsung.com>
-Date: Mon, 31 May 2010 09:08:51 +0000
-Subject: [PATCH 2/6] s3c-fb: Correct FRAMESEL1 bitfield defines for VIDINTCON0
-Message-Id: <1275296935-2693-3-git-send-email-p.osciak@samsung.com>
+From: Senthilvadivu Guruswamy <svadivu@ti.com>
+Date: Thu, 13 May 2010 15:32:26 +0000
+Subject: [PATCH v2 0/2] DSS2:Allow FB to build without VRFB
+Message-Id: <1273764028-25822-1-git-send-email-svadivu@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
-In-Reply-To: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, tony@atomide.com, tomi.valkeinen@nokia.com, hvaibhav@ti.com
+Cc: Senthilvadivu Guruswamy <svadivu@ti.com>
 
-FRAMESEL1 bitfield starts on 13th bit, not on 14th.
+From: Senthilvadivu Guruswamy  <svadivu@ti.com>
 
-Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- arch/arm/plat-samsung/include/plat/regs-fb.h |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+Hi all,
 
-diff --git a/arch/arm/plat-samsung/include/plat/regs-fb.h b/arch/arm/plat-samsung/include/plat/regs-fb.h
-index f4259e5..ac10013 100644
---- a/arch/arm/plat-samsung/include/plat/regs-fb.h
-+++ b/arch/arm/plat-samsung/include/plat/regs-fb.h
-@@ -292,11 +292,11 @@
- #define VIDINTCON0_FRAMESEL0_ACTIVE		(0x2 << 15)
- #define VIDINTCON0_FRAMESEL0_FRONTPORCH		(0x3 << 15)
- 
--#define VIDINTCON0_FRAMESEL1			(1 << 14)
--#define VIDINTCON0_FRAMESEL1_NONE		(0x0 << 14)
--#define VIDINTCON0_FRAMESEL1_BACKPORCH		(0x1 << 14)
--#define VIDINTCON0_FRAMESEL1_VSYNC		(0x2 << 14)
--#define VIDINTCON0_FRAMESEL1_FRONTPORCH		(0x3 << 14)
-+#define VIDINTCON0_FRAMESEL1			(1 << 13)
-+#define VIDINTCON0_FRAMESEL1_NONE		(0x0 << 13)
-+#define VIDINTCON0_FRAMESEL1_BACKPORCH		(0x1 << 13)
-+#define VIDINTCON0_FRAMESEL1_VSYNC		(0x2 << 13)
-+#define VIDINTCON0_FRAMESEL1_FRONTPORCH		(0x3 << 13)
- 
- #define VIDINTCON0_INT_FRAME			(1 << 12)
- #define VIDINTCON0_FIFIOSEL_MASK		(0x7f << 5)
--- 
-1.7.0.4
+This patch series replaces the patch 
+"DSS2 Include VRFB into omap2-3build only"
+Thanks for the review comments. 
 
+The intent of this series is to split the patch into 2 logical
+patches and also to incorporate the comments on multi-omap build.
+
+In this series, Kconfig is changed to have 
+OMAP2_VRFB depend on ARCH_OMAP2 and ARCH_OMAP3.
+This change takes care of the multi-omap builds. 
+
+This patch would allow successful build of omap_4430sdp_defconfig 
+when OMAP2_DSS and FB_OMAP2 is enabled from menuconfig.
+
+For verification: Generated the .config on omap3_defconfig with DSS
+and FB enabled. Generated .config is same with and without the patch.
+
+List of Changed Files:
+arch/arm/plat-omap/include/plat/vrfb.h
+drivers/video/omap2/Kconfig
+drivers/video/omap2/omapfb/Kconfig
+
+Thanks,
+Senthil

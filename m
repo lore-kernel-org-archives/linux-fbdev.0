@@ -1,50 +1,55 @@
-From: Julia Lawall <julia@diku.dk>
-Date: Thu, 13 May 2010 20:07:11 +0000
-Subject: [PATCH 18/20] drivers/video/matrox: Use kzalloc
-Message-Id: <Pine.LNX.4.64.1005132206530.6282@ask.diku.dk>
+From: Senthilvadivu Guruswamy <svadivu@ti.com>
+Date: Thu, 13 May 2010 15:32:28 +0000
+Subject: [PATCH v2 2/2] DSS2: make VRFB depends on OMAP2,3
+Message-Id: <1273764028-25822-3-git-send-email-svadivu@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1273764028-25822-1-git-send-email-svadivu@ti.com>
+ <1273764028-25822-2-git-send-email-svadivu@ti.com>
+In-Reply-To: <1273764028-25822-2-git-send-email-svadivu@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Petr Vandrovec <vandrove@vc.cvut.cz>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, tony@atomide.com, tomi.valkeinen@nokia.com, hvaibhav@ti.com
+Cc: Senthilvadivu Guruswamy <svadivu@ti.com>
 
-From: Julia Lawall <julia@diku.dk>
+config VRFB should depend on ARCH_OMAP2 or ARCH_OMAP3.
 
-Use kzalloc rather than the combination of kmalloc and memset.
+Changes from v1:
+	- Addressed multi-omap build issue
 
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@@
-expression x,size,flags;
-statement S;
-@@
-
--x = kmalloc(size,flags);
-+x = kzalloc(size,flags);
- if (x = NULL) S
--memset(x, 0, size);
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
+Signed-off-by: Senthilvadivu Guruswamy <svadivu@ti.com>
 ---
- drivers/video/matrox/matroxfb_base.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/omap2/Kconfig            |    4 ++++
+ drivers/video/omap2/omapfb/Kconfig     |    1 -
+ 2 files changed,  4 insertions(+), 1 deletions(-)
 
-diff -u -p a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
---- a/drivers/video/matrox/matroxfb_base.c
-+++ b/drivers/video/matrox/matroxfb_base.c
-@@ -2040,10 +2040,9 @@ static int matroxfb_probe(struct pci_dev
- 		return -1;
- 	}
+diff --git a/drivers/video/omap2/Kconfig b/drivers/video/omap2/Kconfig
+index d877c36..18bb835 100644
+--- a/drivers/video/omap2/Kconfig
++++ b/drivers/video/omap2/Kconfig
+@@ -3,6 +3,10 @@ config OMAP2_VRAM
  
--	minfo = kmalloc(sizeof(*minfo), GFP_KERNEL);
-+	minfo = kzalloc(sizeof(*minfo), GFP_KERNEL);
- 	if (!minfo)
- 		return -1;
--	memset(minfo, 0, sizeof(*minfo));
+ config OMAP2_VRFB
+ 	bool
++	depends on ARCH_OMAP2 || ARCH_OMAP3
++	default y if FB_OMAP2
++	help
++	  OMAP VRFB buffer support is efficient for rotation
  
- 	minfo->pcidev = pdev;
- 	minfo->dead = 0;
+ source "drivers/video/omap2/dss/Kconfig"
+ source "drivers/video/omap2/omapfb/Kconfig"
+diff --git a/drivers/video/omap2/omapfb/Kconfig b/drivers/video/omap2/omapfb/Kconfig
+index a3ed15c..f186c2b 100644
+--- a/drivers/video/omap2/omapfb/Kconfig
++++ b/drivers/video/omap2/omapfb/Kconfig
+@@ -3,7 +3,6 @@ menuconfig FB_OMAP2
+         depends on FB && OMAP2_DSS
+ 
+ 	select OMAP2_VRAM
+-	select OMAP2_VRFB
+         select FB_CFB_FILLRECT
+         select FB_CFB_COPYAREA
+         select FB_CFB_IMAGEBLIT
+-- 
+1.5.4.7
+

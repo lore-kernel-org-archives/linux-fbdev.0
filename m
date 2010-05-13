@@ -1,60 +1,60 @@
-From: "Guruswamy, Senthilvadivu" <svadivu@ti.com>
-Date: Mon, 17 May 2010 05:50:10 +0000
-Subject: RE: [PATCH v2 0/2] DSS2:Allow FB to build without VRFB
-Message-Id: <FCCFB4CDC6E5564B9182F639FC35608703042887E2@dbde02.ent.ti.com>
+From: Nishanth Menon <nm@ti.com>
+Date: Thu, 13 May 2010 15:30:13 +0000
+Subject: Re: [PATCH v2 1/2] DSS2: Allow FB_OMAP2 to build without VRFB
+Message-Id: <4BEC1B05.3040500@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1273764028-25822-1-git-send-email-svadivu@ti.com>
-	 <1273821814.2814.63.camel@tubuntu.research.nokia.com>
-	 <FCCFB4CDC6E5564B9182F639FC35608703042887DB@dbde02.ent.ti.com>
- <1273842100.2814.85.camel@tubuntu.research.nokia.com>
-In-Reply-To: <1273842100.2814.85.camel@tubuntu.research.nokia.com>
+References: <1273764028-25822-1-git-send-email-svadivu@ti.com> <1273764028-25822-2-git-send-email-svadivu@ti.com>
+In-Reply-To: <1273764028-25822-2-git-send-email-svadivu@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "tony@atomide.com" <tony@atomide.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Senthilvadivu Guruswamy <svadivu@ti.com>
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "tony@atomide.com" <tony@atomide.com>, "tomi.valkeinen@nokia.com" <tomi.valkeinen@nokia.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>
 
-IAoKPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+IEZyb206IFRvbWkgVmFsa2VpbmVuIFtt
-YWlsdG86dG9taS52YWxrZWluZW5Abm9raWEuY29tXSAKPiBTZW50OiBGcmlkYXksIE1heSAxNCwg
-MjAxMCA2OjMyIFBNCj4gVG86IEd1cnVzd2FteSwgU2VudGhpbHZhZGl2dQo+IENjOiBsaW51eC1v
-bWFwQHZnZXIua2VybmVsLm9yZzsgbGludXgtZmJkZXZAdmdlci5rZXJuZWwub3JnOyAKPiB0b255
-QGF0b21pZGUuY29tOyBIaXJlbWF0aCwgVmFpYmhhdgo+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggdjIg
-MC8yXSBEU1MyOkFsbG93IEZCIHRvIGJ1aWxkIHdpdGhvdXQgVlJGQgo+IAo+IE9uIEZyaSwgMjAx
-MC0wNS0xNCBhdCAxMjowMyArMDIwMCwgZXh0IEd1cnVzd2FteSwgU2VudGhpbHZhZGl2dSB3cm90
-ZToKPiA+IAo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+ID4gPiBGcm9tOiBUb21p
-IFZhbGtlaW5lbiBbbWFpbHRvOnRvbWkudmFsa2VpbmVuQG5va2lhLmNvbV0gCj4gPiA+IFNlbnQ6
-IEZyaWRheSwgTWF5IDE0LCAyMDEwIDEyOjU0IFBNCj4gPiA+IFRvOiBHdXJ1c3dhbXksIFNlbnRo
-aWx2YWRpdnUKPiA+ID4gQ2M6IGxpbnV4LW9tYXBAdmdlci5rZXJuZWwub3JnOyBsaW51eC1mYmRl
-dkB2Z2VyLmtlcm5lbC5vcmc7IAo+ID4gPiB0b255QGF0b21pZGUuY29tOyBIaXJlbWF0aCwgVmFp
-Ymhhdgo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIHYyIDAvMl0gRFNTMjpBbGxvdyBGQiB0byBi
-dWlsZCB3aXRob3V0IFZSRkIKPiAKPiA8c25pcD4KPiAKPiA+ID4gVGhlIHBhdGNoIHNldCBtYWtl
-cyBWUkZCIG9wdGlvbmFsLiBXaGF0IGhhcHBlbnMgaWYgVlJGQiAKPiBpcyB0dXJuZWQgb2ZmLAo+
-ID4gPiBhbmQgdGhlIHVzZXIgdXNlcyBWUkZCIGZvciBhIGZyYW1lYnVmZmVyPwo+ID4gW1NlbnRo
-aWxdIFRoaXMgcGF0Y2gga2VlcHMgVlJGQj15IGZvciBBUkNIX09NQVAyIGFuZCBBUkNIX09NQVAz
-Lgo+ID4gVXNlciB3b3VsZCBoYXZlIGdvdCBhbiBvcHRpb24gdG8gdHVybiBpdCBPRkYgaWYgaXQg
-aGFkIGFwcGVhcmVkIGluIAo+ID4gdGhlIG1lbnVjb25maWcgc2VsZWN0aW9ucy4gIEkgZGlkIG5v
-dCBnaXZlIHRoYXQgb3B0aW9uIGluIAo+IG1lbnVjb25maWcgCj4gPiBleHBsaWNpdGx5LiAKPiA+
-IGllICBjb25maWcgT01BUDJfVlJGQgo+ID4gCWJvb2wgPE5vIG5hbWUgZ2l2ZW4gaGVyZT4KPiA+
-IAo+ID4gU3VwcG9zZSBvbiBhIGJ1aWxkIHRoZSB1c2VyIGRlbGliZXJhdGVseSBnaXZlcyAKPiAi
-Q09ORklHX09NQVAyX1ZSRkIgbm90IHNldCIsCj4gPiB0aGVuIFZSRkIgZnVuY3Rpb25zIGFyZSBt
-YWRlIGFzIGVtcHR5IGZ1bmN0aW9ucyBieSB0aGUgY29tcGlsZXIuCj4gPiAKPiA+IFRoaXMgaXMg
-ZmluZSBhcyBsb25nIGFzIHRoZSB1c2VyIGRvZXMgbm90IHNheSBvbWFwZmIudnJmYj0xLgo+ID4g
-Cj4gPiBCdXQgaWYgdGhlIHVzZXIgc2V0cyBvbWFwZmIudnJmYj0xLCB0aGVuIGl0IGlzIGEgd3Jv
-bmcgCj4gdXNhZ2Ugb2YgdGhlIGJvb3RhcmdzCj4gPiBhcyBoZSBoYXMgYWxyZWFkeSBkZWxpYmVy
-YXRlbHkgY2hhbmdlZCB0aGUgZGVmY29uZmlnIHRvIHNheSAKPiAiVlJGQiBub3Qgc2V0Ii4KPiA+
-IAo+ID4gVGhlIHJlc3VsdCBvZiBoaXMgZXhwZXJpbWVudDogTm8gYm9vdHVwIG9uIHRoZSBib2Fy
-ZCBhcyB0aGUgCj4gdmFkZHIgb2YgVlJGQiAKPiA+IGlzIHBvcHVsYXRlZCBub3Igb2YgdGhlIG5v
-cm1hbCBSQU0gYnVmZmVyLgo+IAo+IFRoZSBrZXJuZWwgc2hvdWxkIGJlIGFibGUgdG8gY29wZSB3
-aXRoIHRoYXQuIFdoaWxlIGdpdmluZyB3cm9uZyBib290Cj4gYXJndW1lbnRzIHRvIHRoZSBrZXJu
-ZWwgY2F1c2luZyBpdCB0byBub3QgYm9vdCBpcyBiYWQsIGl0IGNvdWxkIGJlCj4gc29tZXdoYXQg
-YWNjZXB0YWJsZS4gQnV0IGlmIHRoZSB1c2VyIGNoYW5nZXMgdGhlIHJvdGF0aW9uIAo+IHR5cGUg
-dmlhIHN5c2ZzCj4gZmlsZSwgYW5kIHRoZSBrZXJuZWwgY3Jhc2hlcyAod2hpY2ggaXMgd2hhdCBJ
-IGZlYXIgd2lsbCBoYXBwZW4pLCBpdCdzCj4gdG90YWxseSB1bmFjY2VwdGFibGUuCj4gCj4gSWYg
-aXQncyBwb3NzaWJsZSB0byB0dXJuIFZSRkIgb2ZmLCB0aGVuIHRoZSBjb2RlIHNob3VsZCAKPiBo
-YW5kbGUgdGhlIGNhc2UKPiB3aGVyZSBWUkZCIGlzIG5vdCB0aGVyZS4gTWVhbmluZywgcmV0dXJu
-aW5nIGVycm9yIHZhbHVlcyBvciAKPiBzb21laG93IGVsc2UKPiBmYWlsaW5nIGdyYWNlZnVsbHks
-IGFuZCBpbmZvcm1pbmcgdGhlIHVzZXIgb2Ygd3JvbmcgYXJndW1lbnRzLgo+CltTZW50aGlsXSBZ
-ZXMsIEkgY291bGQgcHJvdmlkZSBhIGNoZWNrIGluIHRoZSBkcml2ZXIgZm9yIHdyb25nIGFyZ3Vt
-ZW50cy4KPiAgVG9taQo+IAo+IAo+IP/06Lp7Lm7HK4m3n66JrYYrJYrL/7Hp3bYXpYp3/7p7Lm7H
-K4m3pYp7sf323Xr/4p7YXm6HcqH2pnrLGoHraJmo6K3aJqP74Hq/5Hq53pf6K4DKK3pmo6K3aJqI
-p36GrYbbaf//74Hq/5Hq53pf6K4P5mo6K3aJqP4p36P4bQo=
+Senthilvadivu Guruswamy had written, on 05/13/2010 10:20 AM, the following:
+> FB_OMAP2 can work without VRFB, but currently does not build. Fix this.
+> 
+> Signed-off-by: Senthilvadivu Guruswamy <svadivu@ti.com>
+> ---
+>  arch/arm/plat-omap/include/plat/vrfb.h |   16 ++++++++++++++++
+>  1 file changed, 16 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/arm/plat-omap/include/plat/vrfb.h b/arch/arm/plat-omap/include/plat/vrfb.h
+> index d8a03ce..3792bde 100644
+> --- a/arch/arm/plat-omap/include/plat/vrfb.h
+> +++ b/arch/arm/plat-omap/include/plat/vrfb.h
+> @@ -35,6 +35,7 @@ struct vrfb {
+>  	bool yuv_mode;
+>  };
+>  
+> +#ifdef CONFIG_OMAP2_VRFB
+>  extern int omap_vrfb_request_ctx(struct vrfb *vrfb);
+>  extern void omap_vrfb_release_ctx(struct vrfb *vrfb);
+>  extern void omap_vrfb_adjust_size(u16 *width, u16 *height,
+> @@ -47,4 +48,19 @@ extern void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
+>  extern int omap_vrfb_map_angle(struct vrfb *vrfb, u16 height, u8 rot);
+>  extern void omap_vrfb_restore_context(void);
+>  
+> +#else
+> +static inline int omap_vrfb_request_ctx(struct vrfb *vrfb) { return 0; }
+> +static inline void omap_vrfb_release_ctx(struct vrfb *vrfb) {}
+> +static inline void omap_vrfb_adjust_size(u16 *width, u16 *height,
+> +		u8 bytespp) {}
+> +static inline u32 omap_vrfb_min_phys_size(u16 width, u16 height, u8 bytespp)
+> +		{ return 0; }
+> +static inline u16 omap_vrfb_max_height(u32 phys_size, u16 width, u8 bytespp)
+> +		{ return 0; }
+> +static inline void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
+> +		u16 width, u16 height, unsigned bytespp, bool yuv_mode) {}
+> +static inline int omap_vrfb_map_angle(struct vrfb *vrfb, u16 height, u8 rot)
+> +		{ return 0; }
+> +static inline void omap_vrfb_restore_context(void) {}
+> +#endif
+>  #endif /* __VRFB_H */
+
+the core of the problem not solved: How do we handle the same kernel 
+bootup on OMAP3(vrfb) and OMAP4(tiler) if it is compile time decided?
+
+-- 
+Regards,
+Nishanth Menon

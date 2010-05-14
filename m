@@ -1,45 +1,60 @@
-From: Nishanth Menon <nm@ti.com>
-Date: Thu, 13 May 2010 16:15:09 +0000
-Subject: Re: [PATCH v2 1/2] DSS2: Allow FB_OMAP2 to build without VRFB
-Message-Id: <4BEC258D.7030104@ti.com>
+From: "Guruswamy, Senthilvadivu" <svadivu@ti.com>
+Date: Fri, 14 May 2010 05:36:46 +0000
+Subject: RE: [PATCH v2 1/2] DSS2: Allow FB_OMAP2 to build without VRFB
+Message-Id: <FCCFB4CDC6E5564B9182F639FC35608703042887CF@dbde02.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1273764028-25822-1-git-send-email-svadivu@ti.com> <1273764028-25822-2-git-send-email-svadivu@ti.com> <EBB422FB-C763-4EBE-AAD3-02AE86D4FF05@student.utwente.nl>
-In-Reply-To: <EBB422FB-C763-4EBE-AAD3-02AE86D4FF05@student.utwente.nl>
+References: <1273764028-25822-1-git-send-email-svadivu@ti.com>
+ <1273764028-25822-2-git-send-email-svadivu@ti.com> <4BEC1B05.3040500@ti.com>
+In-Reply-To: <4BEC1B05.3040500@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Koen Kooi <koen@dominion.thruhere.net>
-Cc: "Guruswamy, Senthilvadivu" <svadivu@ti.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "tony@atomide.com" <tony@atomide.com>, "tomi.valkeinen@nokia.com" <tomi.valkeinen@nokia.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>
+To: "Menon, Nishanth" <nm@ti.com>
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "tony@atomide.com" <tony@atomide.com>, "tomi.valkeinen@nokia.com" <tomi.valkeinen@nokia.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>
 
-Koen Kooi had written, on 05/13/2010 11:00 AM, the following:
-> Op 13 mei 2010, om 17:20 heeft Senthilvadivu Guruswamy het volgende geschreven:
-> 
->> FB_OMAP2 can work without VRFB, but currently does not build. Fix this.
->>
->> Signed-off-by: Senthilvadivu Guruswamy <svadivu@ti.com>
->> ---
->> arch/arm/plat-omap/include/plat/vrfb.h |   16 ++++++++++++++++
->> 1 file changed, 16 insertions(+), 0 deletions(-)
->>
->> diff --git a/arch/arm/plat-omap/include/plat/vrfb.h b/arch/arm/plat-omap/include/plat/vrfb.h
->> index d8a03ce..3792bde 100644
->> --- a/arch/arm/plat-omap/include/plat/vrfb.h
->> +++ b/arch/arm/plat-omap/include/plat/vrfb.h
->> @@ -35,6 +35,7 @@ struct vrfb {
->> 	bool yuv_mode;
->> };
->>
->> +#ifdef CONFIG_OMAP2_VRFB
-> 
-> That is still a compiletime option, not a runtime check. You need something like if(is_omap3()), not #ifdef 
-> 
-having VRFB or tiler is a SOC feature - ideal detection should be in 
-id.c using the FEATURES framework.
+ 
 
-and the actual rotation handling should be handled with function 
-pointers to use VRFB apis OR use tiler APIs (once it is available) to 
-runtime use the right rotation/other features functions runtime..
+> -----Original Message-----
+> From: Menon, Nishanth 
+> Sent: Thursday, May 13, 2010 9:00 PM
+> To: Guruswamy, Senthilvadivu
+> Cc: linux-omap@vger.kernel.org; linux-fbdev@vger.kernel.org; 
+> tony@atomide.com; tomi.valkeinen@nokia.com; Hiremath, Vaibhav
+> Subject: Re: [PATCH v2 1/2] DSS2: Allow FB_OMAP2 to build without VRFB
+> 
+> Senthilvadivu Guruswamy had written, on 05/13/2010 10:20 AM, 
+> the following:
+> > FB_OMAP2 can work without VRFB, but currently does not 
+> build. Fix this.
+> > 
+> > Signed-off-by: Senthilvadivu Guruswamy <svadivu@ti.com>
+> >  
+> > +#ifdef CONFIG_OMAP2_VRFB
+> >  extern int omap_vrfb_request_ctx(struct vrfb *vrfb);
+> > +#else
+> > +static inline int omap_vrfb_request_ctx(struct vrfb *vrfb) 
+> { return 0; }
+> > +static inline void omap_vrfb_release_ctx(struct vrfb *vrfb) {}
+> 
+> the core of the problem not solved: How do we handle the same kernel 
+> bootup on OMAP3(vrfb) and OMAP4(tiler) if it is compile time decided?
+> 
+[Senthil] Compile time decision would come into picture only for 
+build with omap_4430sdp_defconfig.  Kernel is built with 
+omap3_defconfig will have CONFIG_OMAP2_VRFB=y in it. 
+In runtime,  VRFB APIs will not get called in OMAP4 since these 
+calls are already within runtime check "if(rotation.type = VRFB)".
 
--- 
+This patch is for omap_4430sdp_defconfig to build.
+Reason:
+VRFB functions make calls to "sms_..." functions in sdrc.c
+which is applicable to omap2-3-common and gets compiled only with 
+ARCH_OMAP2, ARCH_OMAP3. omap_4430sdp_defconfig has only ARCH_OMAP4 
+defined in it, so sdrc.c is not included in the build leading 
+to unresolved symbols "sms...".  So empty the VRFB functions for
+non omap2-3 builds.
+
+
+
 Regards,
-Nishanth Menon
+Senthil

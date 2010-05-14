@@ -1,48 +1,56 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Fri, 14 May 2010 07:23:34 +0000
-Subject: Re: [PATCH v2 0/2] DSS2:Allow FB to build without VRFB
-Message-Id: <1273821814.2814.63.camel@tubuntu.research.nokia.com>
+From: "Guruswamy, Senthilvadivu" <svadivu@ti.com>
+Date: Fri, 14 May 2010 10:15:24 +0000
+Subject: RE: [PATCH v2 0/2] DSS2:Allow FB to build without VRFB
+Message-Id: <FCCFB4CDC6E5564B9182F639FC35608703042887DB@dbde02.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1273764028-25822-1-git-send-email-svadivu@ti.com>
-In-Reply-To: <1273764028-25822-1-git-send-email-svadivu@ti.com>
+ <1273821814.2814.63.camel@tubuntu.research.nokia.com>
+In-Reply-To: <1273821814.2814.63.camel@tubuntu.research.nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: ext Senthilvadivu Guruswamy <svadivu@ti.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "tony@atomide.com" <tony@atomide.com>, "hvaibhav@ti.com" <hvaibhav@ti.com>
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "tony@atomide.com" <tony@atomide.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>
 
-Hi,
-
-On Thu, 2010-05-13 at 17:20 +0200, ext Senthilvadivu Guruswamy wrote:
-> From: Senthilvadivu Guruswamy  <svadivu@ti.com>
-> 
-> Hi all,
-> 
-> This patch series replaces the patch 
-> "DSS2 Include VRFB into omap2-3build only"
-> Thanks for the review comments. 
-> 
-> The intent of this series is to split the patch into 2 logical
-> patches and also to incorporate the comments on multi-omap build.
-> 
-> In this series, Kconfig is changed to have 
-> OMAP2_VRFB depend on ARCH_OMAP2 and ARCH_OMAP3.
-> This change takes care of the multi-omap builds. 
-> 
-> This patch would allow successful build of omap_4430sdp_defconfig 
-> when OMAP2_DSS and FB_OMAP2 is enabled from menuconfig.
-> 
-> For verification: Generated the .config on omap3_defconfig with DSS
-> and FB enabled. Generated .config is same with and without the patch.
-> 
-> List of Changed Files:
-> arch/arm/plat-omap/include/plat/vrfb.h
-> drivers/video/omap2/Kconfig
-> drivers/video/omap2/omapfb/Kconfig
-
-The patch set makes VRFB optional. What happens if VRFB is turned off,
-and the user uses VRFB for a framebuffer?
-
- Tomi
-
-
+IAoKPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+IEZyb206IFRvbWkgVmFsa2VpbmVuIFtt
+YWlsdG86dG9taS52YWxrZWluZW5Abm9raWEuY29tXSAKPiBTZW50OiBGcmlkYXksIE1heSAxNCwg
+MjAxMCAxMjo1NCBQTQo+IFRvOiBHdXJ1c3dhbXksIFNlbnRoaWx2YWRpdnUKPiBDYzogbGludXgt
+b21hcEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZzsgCj4gdG9u
+eUBhdG9taWRlLmNvbTsgSGlyZW1hdGgsIFZhaWJoYXYKPiBTdWJqZWN0OiBSZTogW1BBVENIIHYy
+IDAvMl0gRFNTMjpBbGxvdyBGQiB0byBidWlsZCB3aXRob3V0IFZSRkIKPiAKPiBIaSwKPiAKPiBP
+biBUaHUsIDIwMTAtMDUtMTMgYXQgMTc6MjAgKzAyMDAsIGV4dCBTZW50aGlsdmFkaXZ1IEd1cnVz
+d2FteSB3cm90ZToKPiA+IEZyb206IFNlbnRoaWx2YWRpdnUgR3VydXN3YW15ICA8c3ZhZGl2dUB0
+aS5jb20+Cj4gPiAKPiA+IEhpIGFsbCwKPiA+IAo+ID4gVGhpcyBwYXRjaCBzZXJpZXMgcmVwbGFj
+ZXMgdGhlIHBhdGNoIAo+ID4gIkRTUzIgSW5jbHVkZSBWUkZCIGludG8gb21hcDItM2J1aWxkIG9u
+bHkiCj4gPiBUaGFua3MgZm9yIHRoZSByZXZpZXcgY29tbWVudHMuIAo+ID4gCj4gPiBUaGUgaW50
+ZW50IG9mIHRoaXMgc2VyaWVzIGlzIHRvIHNwbGl0IHRoZSBwYXRjaCBpbnRvIDIgbG9naWNhbAo+
+ID4gcGF0Y2hlcyBhbmQgYWxzbyB0byBpbmNvcnBvcmF0ZSB0aGUgY29tbWVudHMgb24gbXVsdGkt
+b21hcCBidWlsZC4KPiA+IAo+ID4gSW4gdGhpcyBzZXJpZXMsIEtjb25maWcgaXMgY2hhbmdlZCB0
+byBoYXZlIAo+ID4gT01BUDJfVlJGQiBkZXBlbmQgb24gQVJDSF9PTUFQMiBhbmQgQVJDSF9PTUFQ
+My4KPiA+IFRoaXMgY2hhbmdlIHRha2VzIGNhcmUgb2YgdGhlIG11bHRpLW9tYXAgYnVpbGRzLiAK
+PiA+IAo+ID4gVGhpcyBwYXRjaCB3b3VsZCBhbGxvdyBzdWNjZXNzZnVsIGJ1aWxkIG9mIG9tYXBf
+NDQzMHNkcF9kZWZjb25maWcgCj4gPiB3aGVuIE9NQVAyX0RTUyBhbmQgRkJfT01BUDIgaXMgZW5h
+YmxlZCBmcm9tIG1lbnVjb25maWcuCj4gPiAKPiA+IEZvciB2ZXJpZmljYXRpb246IEdlbmVyYXRl
+ZCB0aGUgLmNvbmZpZyBvbiBvbWFwM19kZWZjb25maWcgd2l0aCBEU1MKPiA+IGFuZCBGQiBlbmFi
+bGVkLiBHZW5lcmF0ZWQgLmNvbmZpZyBpcyBzYW1lIHdpdGggYW5kIHdpdGhvdXQgCj4gdGhlIHBh
+dGNoLgo+ID4gCj4gPiBMaXN0IG9mIENoYW5nZWQgRmlsZXM6Cj4gPiBhcmNoL2FybS9wbGF0LW9t
+YXAvaW5jbHVkZS9wbGF0L3ZyZmIuaAo+ID4gZHJpdmVycy92aWRlby9vbWFwMi9LY29uZmlnCj4g
+PiBkcml2ZXJzL3ZpZGVvL29tYXAyL29tYXBmYi9LY29uZmlnCj4gCj4gVGhlIHBhdGNoIHNldCBt
+YWtlcyBWUkZCIG9wdGlvbmFsLiBXaGF0IGhhcHBlbnMgaWYgVlJGQiBpcyB0dXJuZWQgb2ZmLAo+
+IGFuZCB0aGUgdXNlciB1c2VzIFZSRkIgZm9yIGEgZnJhbWVidWZmZXI/CltTZW50aGlsXSBUaGlz
+IHBhdGNoIGtlZXBzIFZSRkI9eSBmb3IgQVJDSF9PTUFQMiBhbmQgQVJDSF9PTUFQMy4KVXNlciB3
+b3VsZCBoYXZlIGdvdCBhbiBvcHRpb24gdG8gdHVybiBpdCBPRkYgaWYgaXQgaGFkIGFwcGVhcmVk
+IGluIAp0aGUgbWVudWNvbmZpZyBzZWxlY3Rpb25zLiAgSSBkaWQgbm90IGdpdmUgdGhhdCBvcHRp
+b24gaW4gbWVudWNvbmZpZyAKZXhwbGljaXRseS4gCmllICBjb25maWcgT01BUDJfVlJGQgoJYm9v
+bCA8Tm8gbmFtZSBnaXZlbiBoZXJlPgoKU3VwcG9zZSBvbiBhIGJ1aWxkIHRoZSB1c2VyIGRlbGli
+ZXJhdGVseSBnaXZlcyAiQ09ORklHX09NQVAyX1ZSRkIgbm90IHNldCIsCnRoZW4gVlJGQiBmdW5j
+dGlvbnMgYXJlIG1hZGUgYXMgZW1wdHkgZnVuY3Rpb25zIGJ5IHRoZSBjb21waWxlci4KClRoaXMg
+aXMgZmluZSBhcyBsb25nIGFzIHRoZSB1c2VyIGRvZXMgbm90IHNheSBvbWFwZmIudnJmYj0xLgoK
+QnV0IGlmIHRoZSB1c2VyIHNldHMgb21hcGZiLnZyZmI9MSwgdGhlbiBpdCBpcyBhIHdyb25nIHVz
+YWdlIG9mIHRoZSBib290YXJncwphcyBoZSBoYXMgYWxyZWFkeSBkZWxpYmVyYXRlbHkgY2hhbmdl
+ZCB0aGUgZGVmY29uZmlnIHRvIHNheSAiVlJGQiBub3Qgc2V0Ii4KClRoZSByZXN1bHQgb2YgaGlz
+IGV4cGVyaW1lbnQ6IE5vIGJvb3R1cCBvbiB0aGUgYm9hcmQgYXMgdGhlIHZhZGRyIG9mIFZSRkIg
+CmlzIHBvcHVsYXRlZCBub3Igb2YgdGhlIG5vcm1hbCBSQU0gYnVmZmVyLgoKPiAgVG9taQo+IAo+
+IAo+IP/06Lp7Lm7HK4m3n66JrYYrJYrL/7Hp3bYXpYp3/7p7Lm7HK4m3pYp7sf323Xr/4p7YXm6H
+cqH2pnrLGoHraJmo6K3aJqP74Hq/5Hq53pf6K4DKK3pmo6K3aJqIp36GrYbbaf//74Hq/5Hq53pf
+6K4P5mo6K3aJqP4p36P4bQo=

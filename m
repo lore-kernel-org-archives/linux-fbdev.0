@@ -1,83 +1,60 @@
-From: Koen Kooi <koen@dominion.thruhere.net>
-Date: Fri, 14 May 2010 10:39:16 +0000
-Subject: Re: [PATCH v2 0/2] DSS2:Allow FB to build without VRFB
-Message-Id: <AA4B1310-2BA5-411E-A7EA-AAE03F41CCF3@student.utwente.nl>
+From: "Guruswamy, Senthilvadivu" <svadivu@ti.com>
+Date: Mon, 17 May 2010 05:50:10 +0000
+Subject: RE: [PATCH v2 0/2] DSS2:Allow FB to build without VRFB
+Message-Id: <FCCFB4CDC6E5564B9182F639FC35608703042887E2@dbde02.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1273764028-25822-1-git-send-email-svadivu@ti.com> <1273821814.2814.63.camel@tubuntu.research.nokia.com> <FCCFB4CDC6E5564B9182F639FC35608703042887DB@dbde02.ent.ti.com>
-In-Reply-To: <FCCFB4CDC6E5564B9182F639FC35608703042887DB@dbde02.ent.ti.com>
+References: <1273764028-25822-1-git-send-email-svadivu@ti.com>
+	 <1273821814.2814.63.camel@tubuntu.research.nokia.com>
+	 <FCCFB4CDC6E5564B9182F639FC35608703042887DB@dbde02.ent.ti.com>
+ <1273842100.2814.85.camel@tubuntu.research.nokia.com>
+In-Reply-To: <1273842100.2814.85.camel@tubuntu.research.nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Guruswamy, Senthilvadivu" <svadivu@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "tony@atomide.com" <tony@atomide.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "tony@atomide.com" <tony@atomide.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>
 
-
-Op 14 mei 2010, om 12:03 heeft Guruswamy, Senthilvadivu het volgende geschreven:
-
-> 
-> 
->> -----Original Message-----
->> From: Tomi Valkeinen [mailto:tomi.valkeinen@nokia.com] 
->> Sent: Friday, May 14, 2010 12:54 PM
->> To: Guruswamy, Senthilvadivu
->> Cc: linux-omap@vger.kernel.org; linux-fbdev@vger.kernel.org; 
->> tony@atomide.com; Hiremath, Vaibhav
->> Subject: Re: [PATCH v2 0/2] DSS2:Allow FB to build without VRFB
->> 
->> Hi,
->> 
->> On Thu, 2010-05-13 at 17:20 +0200, ext Senthilvadivu Guruswamy wrote:
->>> From: Senthilvadivu Guruswamy  <svadivu@ti.com>
->>> 
->>> Hi all,
->>> 
->>> This patch series replaces the patch 
->>> "DSS2 Include VRFB into omap2-3build only"
->>> Thanks for the review comments. 
->>> 
->>> The intent of this series is to split the patch into 2 logical
->>> patches and also to incorporate the comments on multi-omap build.
->>> 
->>> In this series, Kconfig is changed to have 
->>> OMAP2_VRFB depend on ARCH_OMAP2 and ARCH_OMAP3.
->>> This change takes care of the multi-omap builds. 
->>> 
->>> This patch would allow successful build of omap_4430sdp_defconfig 
->>> when OMAP2_DSS and FB_OMAP2 is enabled from menuconfig.
->>> 
->>> For verification: Generated the .config on omap3_defconfig with DSS
->>> and FB enabled. Generated .config is same with and without 
->> the patch.
->>> 
->>> List of Changed Files:
->>> arch/arm/plat-omap/include/plat/vrfb.h
->>> drivers/video/omap2/Kconfig
->>> drivers/video/omap2/omapfb/Kconfig
->> 
->> The patch set makes VRFB optional. What happens if VRFB is turned off,
->> and the user uses VRFB for a framebuffer?
-> [Senthil] This patch keeps VRFB=y for ARCH_OMAP2 and ARCH_OMAP3.
-> User would have got an option to turn it OFF if it had appeared in 
-> the menuconfig selections.  I did not give that option in menuconfig 
-> explicitly. 
-> ie  config OMAP2_VRFB
-> 	bool <No name given here>
-> 
-> Suppose on a build the user deliberately gives "CONFIG_OMAP2_VRFB not set",
-> then VRFB functions are made as empty functions by the compiler.
-> 
-> This is fine as long as the user does not say omapfb.vrfb=1.
-> 
-> But if the user sets omapfb.vrfb=1, then it is a wrong usage of the bootargs
-> as he has already deliberately changed the defconfig to say "VRFB not set".
-> 
-> The result of his experiment: No bootup on the board as the vaddr of VRFB 
-> is populated nor of the normal RAM buffer.
-
-And that is unacceptable when working with customers (or users in the open source world).  Instead of the kernel hacker spending an hour or 2 on a proper solution we now need to waste a whole lot more time supporting customers who pass vrfb in bootargs without knowing that it's turned off in the kernel.
-
-I suspect my viewpoint is skewed since I work in the field with customers, instead of in the factory doing kernel work (to use TI parlance).
-
-regards,
-
-Koen
+IAoKPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+IEZyb206IFRvbWkgVmFsa2VpbmVuIFtt
+YWlsdG86dG9taS52YWxrZWluZW5Abm9raWEuY29tXSAKPiBTZW50OiBGcmlkYXksIE1heSAxNCwg
+MjAxMCA2OjMyIFBNCj4gVG86IEd1cnVzd2FteSwgU2VudGhpbHZhZGl2dQo+IENjOiBsaW51eC1v
+bWFwQHZnZXIua2VybmVsLm9yZzsgbGludXgtZmJkZXZAdmdlci5rZXJuZWwub3JnOyAKPiB0b255
+QGF0b21pZGUuY29tOyBIaXJlbWF0aCwgVmFpYmhhdgo+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggdjIg
+MC8yXSBEU1MyOkFsbG93IEZCIHRvIGJ1aWxkIHdpdGhvdXQgVlJGQgo+IAo+IE9uIEZyaSwgMjAx
+MC0wNS0xNCBhdCAxMjowMyArMDIwMCwgZXh0IEd1cnVzd2FteSwgU2VudGhpbHZhZGl2dSB3cm90
+ZToKPiA+IAo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+ID4gPiBGcm9tOiBUb21p
+IFZhbGtlaW5lbiBbbWFpbHRvOnRvbWkudmFsa2VpbmVuQG5va2lhLmNvbV0gCj4gPiA+IFNlbnQ6
+IEZyaWRheSwgTWF5IDE0LCAyMDEwIDEyOjU0IFBNCj4gPiA+IFRvOiBHdXJ1c3dhbXksIFNlbnRo
+aWx2YWRpdnUKPiA+ID4gQ2M6IGxpbnV4LW9tYXBAdmdlci5rZXJuZWwub3JnOyBsaW51eC1mYmRl
+dkB2Z2VyLmtlcm5lbC5vcmc7IAo+ID4gPiB0b255QGF0b21pZGUuY29tOyBIaXJlbWF0aCwgVmFp
+Ymhhdgo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIHYyIDAvMl0gRFNTMjpBbGxvdyBGQiB0byBi
+dWlsZCB3aXRob3V0IFZSRkIKPiAKPiA8c25pcD4KPiAKPiA+ID4gVGhlIHBhdGNoIHNldCBtYWtl
+cyBWUkZCIG9wdGlvbmFsLiBXaGF0IGhhcHBlbnMgaWYgVlJGQiAKPiBpcyB0dXJuZWQgb2ZmLAo+
+ID4gPiBhbmQgdGhlIHVzZXIgdXNlcyBWUkZCIGZvciBhIGZyYW1lYnVmZmVyPwo+ID4gW1NlbnRo
+aWxdIFRoaXMgcGF0Y2gga2VlcHMgVlJGQj15IGZvciBBUkNIX09NQVAyIGFuZCBBUkNIX09NQVAz
+Lgo+ID4gVXNlciB3b3VsZCBoYXZlIGdvdCBhbiBvcHRpb24gdG8gdHVybiBpdCBPRkYgaWYgaXQg
+aGFkIGFwcGVhcmVkIGluIAo+ID4gdGhlIG1lbnVjb25maWcgc2VsZWN0aW9ucy4gIEkgZGlkIG5v
+dCBnaXZlIHRoYXQgb3B0aW9uIGluIAo+IG1lbnVjb25maWcgCj4gPiBleHBsaWNpdGx5LiAKPiA+
+IGllICBjb25maWcgT01BUDJfVlJGQgo+ID4gCWJvb2wgPE5vIG5hbWUgZ2l2ZW4gaGVyZT4KPiA+
+IAo+ID4gU3VwcG9zZSBvbiBhIGJ1aWxkIHRoZSB1c2VyIGRlbGliZXJhdGVseSBnaXZlcyAKPiAi
+Q09ORklHX09NQVAyX1ZSRkIgbm90IHNldCIsCj4gPiB0aGVuIFZSRkIgZnVuY3Rpb25zIGFyZSBt
+YWRlIGFzIGVtcHR5IGZ1bmN0aW9ucyBieSB0aGUgY29tcGlsZXIuCj4gPiAKPiA+IFRoaXMgaXMg
+ZmluZSBhcyBsb25nIGFzIHRoZSB1c2VyIGRvZXMgbm90IHNheSBvbWFwZmIudnJmYj0xLgo+ID4g
+Cj4gPiBCdXQgaWYgdGhlIHVzZXIgc2V0cyBvbWFwZmIudnJmYj0xLCB0aGVuIGl0IGlzIGEgd3Jv
+bmcgCj4gdXNhZ2Ugb2YgdGhlIGJvb3RhcmdzCj4gPiBhcyBoZSBoYXMgYWxyZWFkeSBkZWxpYmVy
+YXRlbHkgY2hhbmdlZCB0aGUgZGVmY29uZmlnIHRvIHNheSAKPiAiVlJGQiBub3Qgc2V0Ii4KPiA+
+IAo+ID4gVGhlIHJlc3VsdCBvZiBoaXMgZXhwZXJpbWVudDogTm8gYm9vdHVwIG9uIHRoZSBib2Fy
+ZCBhcyB0aGUgCj4gdmFkZHIgb2YgVlJGQiAKPiA+IGlzIHBvcHVsYXRlZCBub3Igb2YgdGhlIG5v
+cm1hbCBSQU0gYnVmZmVyLgo+IAo+IFRoZSBrZXJuZWwgc2hvdWxkIGJlIGFibGUgdG8gY29wZSB3
+aXRoIHRoYXQuIFdoaWxlIGdpdmluZyB3cm9uZyBib290Cj4gYXJndW1lbnRzIHRvIHRoZSBrZXJu
+ZWwgY2F1c2luZyBpdCB0byBub3QgYm9vdCBpcyBiYWQsIGl0IGNvdWxkIGJlCj4gc29tZXdoYXQg
+YWNjZXB0YWJsZS4gQnV0IGlmIHRoZSB1c2VyIGNoYW5nZXMgdGhlIHJvdGF0aW9uIAo+IHR5cGUg
+dmlhIHN5c2ZzCj4gZmlsZSwgYW5kIHRoZSBrZXJuZWwgY3Jhc2hlcyAod2hpY2ggaXMgd2hhdCBJ
+IGZlYXIgd2lsbCBoYXBwZW4pLCBpdCdzCj4gdG90YWxseSB1bmFjY2VwdGFibGUuCj4gCj4gSWYg
+aXQncyBwb3NzaWJsZSB0byB0dXJuIFZSRkIgb2ZmLCB0aGVuIHRoZSBjb2RlIHNob3VsZCAKPiBo
+YW5kbGUgdGhlIGNhc2UKPiB3aGVyZSBWUkZCIGlzIG5vdCB0aGVyZS4gTWVhbmluZywgcmV0dXJu
+aW5nIGVycm9yIHZhbHVlcyBvciAKPiBzb21laG93IGVsc2UKPiBmYWlsaW5nIGdyYWNlZnVsbHks
+IGFuZCBpbmZvcm1pbmcgdGhlIHVzZXIgb2Ygd3JvbmcgYXJndW1lbnRzLgo+CltTZW50aGlsXSBZ
+ZXMsIEkgY291bGQgcHJvdmlkZSBhIGNoZWNrIGluIHRoZSBkcml2ZXIgZm9yIHdyb25nIGFyZ3Vt
+ZW50cy4KPiAgVG9taQo+IAo+IAo+IP/06Lp7Lm7HK4m3n66JrYYrJYrL/7Hp3bYXpYp3/7p7Lm7H
+K4m3pYp7sf323Xr/4p7YXm6HcqH2pnrLGoHraJmo6K3aJqP74Hq/5Hq53pf6K4DKK3pmo6K3aJqI
+p36GrYbbaf//74Hq/5Hq53pf6K4P5mo6K3aJqP4p36P4bQo=

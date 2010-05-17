@@ -1,50 +1,78 @@
-From: Roger Quadros <roger.quadros@nokia.com>
-Date: Thu, 13 May 2010 07:35:02 +0000
-Subject: Re: Buildfailure for omap3_defconfig due to patch OMAP: RX51: Add
-Message-Id: <4BEBABA6.6040907@nokia.com>
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Date: Mon, 17 May 2010 01:20:13 +0000
+Subject: [RFC][RFT][PATCH] OMAPFB: LCDC: change update_mode to DISABLED when going suspend
+Message-Id: <201005170320.29580.jkrzyszt@tis.icnet.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201005122331.51347.PeterHuewe@gmx.de>
-In-Reply-To: <201005122331.51347.PeterHuewe@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: =?ISO-8859-1?Q?ext_Peter_H=FCwe?= <PeterHuewe@gmx.de>
-Cc: "Valkeinen Tomi (Nokia-D/Helsinki)" <Tomi.Valkeinen@nokia.com>, "tony@atomide.com" <tony@atomide.com>, "khilman@deeprootsystems.com" <khilman@deeprootsystems.com>, "paul@pwsan.com" <paul@pwsan.com>, "jpihet@mvista.com" <jpihet@mvista.com>, "kalle.valo@iki.fi" <kalle.valo@iki.fi>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Cc: linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-Hi Peter,
+I was observing the following error messages on my OMAP1 based Amstrad Delta 
+board when first changing from text to graphics mode or vice versa after the 
+LCD display had been blanked:
+	omapfb omapfb: timeout waiting for FRAME DONE
+with a followup error message while unblanking it back:
+	omapfb omapfb: resetting (status 0xffffffb2,reset count 1)
+As a visible result, image pixels happened to be shifted by a few bits, 
+giving wrong colors.
 
-ext Peter H=FCwe wrote:
-> Hi Roger,
->=20
-> I just wanted to inform you that your Patch
-> OMAP: RX51: Add LCD Panel support (b499d77834ae292465f8d06bb0a88f1a647dfa=
-1a)=20
-> introduces a build failure for the omap3_defconfig.
->=20
-> You can see the error message here:
-> http://kisskb.ellerman.id.au/kisskb/buildresult/2601981/
->=20
-> This is due to the fact that omap3_defconfig has
-> CONFIG_MACH_NOKIA_RX51=3Dy
-> set which enables the compilation of arch/arm/mach-omap2/board-rx51.c
->=20
-> board-rx51.c calls rx51_video_mem_init in arch/arm/mach-omap2/board-rx51-
-> video.c which is guarded by=20
-> #if defined(CONFIG_FB_OMAP2) || defined(CONFIG_FB_OMAP2_MODULE)
->=20
-> Unfortunately none if them is set in the omap3_defconfig.
->=20
-> Would be nice if you could fix this :)
->=20
-Thanks for pointing this out. Kevin Hilman had already informed me of this =
-earlier.
+Examining the code, I found that this problem occures when an OMAP1 internal 
+LCD controller is disabled from omap_lcdc_suspend() and then a subsequent 
+omap_lcdc_setup_plane() calls disable_controller() again. This potentially 
+error provoking behaviour is triggered by the lcdc.update_mode flag being kept 
+at OMAP_AUTO_UPDATE, regardless of the controller and panel being suspended. 
 
-The patch with the fix is here
-https://patchwork.kernel.org/patch/98092/
+This patch tries to correct the problem by replacing both omap_lcdc_suspend() 
+and omap_lcdc_resume() function bodies with single calls to 
+omap_lcdc_set_update_mode() with a respective OMAP_UPDATE_DISABLE or 
+OMAP_AUTO_UPDATE argument. As a result, exactly the same lower level 
+operations are performed, with addition of changing the lcdc.update_mode flag 
+to a value better suited for the controller state. This prevents any further 
+calls to disable_controller() from omap_lcdc_setup_plane() while the display 
+is suspended.
 
-Tomi has picked up the fixed patch in his tree in the for-next branch
-http://gitorious.org/linux-omap-dss2/linux/commit/9585a7e56c51d224830adb29b=
-1843310a87cd034
+Created against linux-2.6.34-rc7.
+Tested on Amstrad Delta.
 
-regards,
--roger
+Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+---
+Hi,
+
+Those of you having access to other display equipped OMAP1 boards, could you 
+please test if this patch doesn't break anything?
+
+Thanks,
+Janusz
+
+ drivers/video/omap/lcdc.c |   14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
+
+--- git/drivers/video/omap/lcdc.c.orig	2010-05-16 21:39:20.000000000 +0200
++++ git/drivers/video/omap/lcdc.c	2010-05-17 00:00:43.000000000 +0200
+@@ -572,22 +572,12 @@ static enum omapfb_update_mode omap_lcdc
+ /* PM code called only in internal controller mode */
+ static void omap_lcdc_suspend(void)
+ {
+-	if (lcdc.update_mode = OMAPFB_AUTO_UPDATE) {
+-		disable_controller();
+-		omap_stop_lcd_dma();
+-	}
++	omap_lcdc_set_update_mode(OMAPFB_UPDATE_DISABLED);
+ }
+ 
+ static void omap_lcdc_resume(void)
+ {
+-	if (lcdc.update_mode = OMAPFB_AUTO_UPDATE) {
+-		setup_regs();
+-		load_palette();
+-		setup_lcd_dma();
+-		set_load_mode(OMAP_LCDC_LOAD_FRAME);
+-		enable_irqs(OMAP_LCDC_IRQ_DONE);
+-		enable_controller();
+-	}
++	omap_lcdc_set_update_mode(OMAPFB_AUTO_UPDATE);
+ }
+ 
+ static void omap_lcdc_get_caps(int plane, struct omapfb_caps *caps)

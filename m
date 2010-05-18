@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Tue, 18 May 2010 12:34:54 +0000
-Subject: [PATCH 03/23] OMAP: DSS2: Add Kconfig option for DPI display type
-Message-Id: <1274186114-26951-4-git-send-email-tomi.valkeinen@nokia.com>
+Date: Tue, 18 May 2010 12:35:04 +0000
+Subject: [PATCH 13/23] OMAP: LCD LS037V7DW01: Add Backlight driver support
+Message-Id: <1274186114-26951-14-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
@@ -10,102 +10,143 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Roger Quadros <roger.quadros@nokia.com>
+From: Vaibhav Hiremath <hvaibhav@ti.com>
 
-This allows us to disable DPI on systems that do not have it
+Tested on OMAP3EVM for OMAP3530 and AM/DM 3730.
 
-Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+[tomi.valkeinen@nokia.com: added slab.h include]
+[tomi.valkeinen@nokia.com: added dependency to BACKLIGHT_CLASS_DEVICE]
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/omap2/dss/Kconfig   |    6 ++++++
- drivers/video/omap2/dss/Makefile  |    3 ++-
- drivers/video/omap2/dss/core.c    |    4 ++++
- drivers/video/omap2/dss/display.c |    4 ++++
- 4 files changed, 16 insertions(+), 1 deletions(-)
+ drivers/video/omap2/displays/Kconfig               |    1 +
+ .../video/omap2/displays/panel-sharp-ls037v7dw01.c |   78 ++++++++++++++++++++
+ 2 files changed, 79 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/Kconfig b/drivers/video/omap2/dss/Kconfig
-index 87afb81..43b6440 100644
---- a/drivers/video/omap2/dss/Kconfig
-+++ b/drivers/video/omap2/dss/Kconfig
-@@ -36,6 +36,12 @@ config OMAP2_DSS_COLLECT_IRQ_STATS
- 	  <debugfs>/omapdss/dispc_irq for DISPC interrupts, and
- 	  <debugfs>/omapdss/dsi_irq for DSI interrupts.
+diff --git a/drivers/video/omap2/displays/Kconfig b/drivers/video/omap2/displays/Kconfig
+index dfb57ee..ea8ccd3 100644
+--- a/drivers/video/omap2/displays/Kconfig
++++ b/drivers/video/omap2/displays/Kconfig
+@@ -10,6 +10,7 @@ config PANEL_GENERIC
+ config PANEL_SHARP_LS037V7DW01
+         tristate "Sharp LS037V7DW01 LCD Panel"
+         depends on OMAP2_DSS
++        select BACKLIGHT_CLASS_DEVICE
+         help
+           LCD Panel used in TI's SDP3430 and EVM boards
  
-+config OMAP2_DSS_DPI
-+	bool "DPI support"
-+	default y
-+	help
-+	  DPI Interface. This is the Parallel Display Interface.
+diff --git a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
+index 8d51a5e..7d9eb2b 100644
+--- a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
++++ b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
+@@ -20,10 +20,17 @@
+ #include <linux/module.h>
+ #include <linux/delay.h>
+ #include <linux/device.h>
++#include <linux/backlight.h>
++#include <linux/fb.h>
+ #include <linux/err.h>
++#include <linux/slab.h>
+ 
+ #include <plat/display.h>
+ 
++struct sharp_data {
++	struct backlight_device *bl;
++};
 +
- config OMAP2_DSS_RFBI
- 	bool "RFBI support"
-         default n
-diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
-index 980c72c..d71b5d9 100644
---- a/drivers/video/omap2/dss/Makefile
-+++ b/drivers/video/omap2/dss/Makefile
-@@ -1,5 +1,6 @@
- obj-$(CONFIG_OMAP2_DSS) += omapdss.o
--omapdss-y := core.o dss.o dispc.o dpi.o display.o manager.o overlay.o
-+omapdss-y := core.o dss.o dispc.o display.o manager.o overlay.o
-+omapdss-$(CONFIG_OMAP2_DSS_DPI) += dpi.o
- omapdss-$(CONFIG_OMAP2_DSS_RFBI) += rfbi.o
- omapdss-$(CONFIG_OMAP2_DSS_VENC) += venc.o
- omapdss-$(CONFIG_OMAP2_DSS_SDI) += sdi.o
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index 7ebe50b..6d54467 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -526,11 +526,13 @@ static int omap_dss_probe(struct platform_device *pdev)
- 	}
- #endif
+ static struct omap_video_timings sharp_ls_timings = {
+ 	.x_res = 480,
+ 	.y_res = 640,
+@@ -39,18 +46,89 @@ static struct omap_video_timings sharp_ls_timings = {
+ 	.vbp		= 1,
+ };
  
-+#ifdef CONFIG_OMAP2_DSS_DPI
- 	r = dpi_init(pdev);
- 	if (r) {
- 		DSSERR("Failed to initialize dpi\n");
- 		goto fail0;
- 	}
-+#endif
++static int sharp_ls_bl_update_status(struct backlight_device *bl)
++{
++	struct omap_dss_device *dssdev = dev_get_drvdata(&bl->dev);
++	int level;
++
++	if (!dssdev->set_backlight)
++		return -EINVAL;
++
++	if (bl->props.fb_blank = FB_BLANK_UNBLANK &&
++			bl->props.power = FB_BLANK_UNBLANK)
++		level = bl->props.brightness;
++	else
++		level = 0;
++
++	return dssdev->set_backlight(dssdev, level);
++}
++
++static int sharp_ls_bl_get_brightness(struct backlight_device *bl)
++{
++	if (bl->props.fb_blank = FB_BLANK_UNBLANK &&
++			bl->props.power = FB_BLANK_UNBLANK)
++		return bl->props.brightness;
++
++	return 0;
++}
++
++static const struct backlight_ops sharp_ls_bl_ops = {
++	.get_brightness = sharp_ls_bl_get_brightness,
++	.update_status  = sharp_ls_bl_update_status,
++};
++
++
++
+ static int sharp_ls_panel_probe(struct omap_dss_device *dssdev)
+ {
++	struct backlight_properties props;
++	struct backlight_device *bl;
++	struct sharp_data *sd;
++	int r;
++
+ 	dssdev->panel.config = OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
+ 		OMAP_DSS_LCD_IHS;
+ 	dssdev->panel.acb = 0x28;
+ 	dssdev->panel.timings = sharp_ls_timings;
  
- 	r = dispc_init();
- 	if (r) {
-@@ -601,7 +603,9 @@ static int omap_dss_remove(struct platform_device *pdev)
- 	venc_exit();
- #endif
- 	dispc_exit();
-+#ifdef CONFIG_OMAP2_DSS_DPI
- 	dpi_exit();
-+#endif
- #ifdef CONFIG_OMAP2_DSS_RFBI
- 	rfbi_exit();
- #endif
-diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
-index 6a74ea1..7138963 100644
---- a/drivers/video/omap2/dss/display.c
-+++ b/drivers/video/omap2/dss/display.c
-@@ -392,7 +392,9 @@ void dss_init_device(struct platform_device *pdev,
- 	int r;
++	sd = kzalloc(sizeof(*sd), GFP_KERNEL);
++	if (!sd)
++		return -ENOMEM;
++
++	dev_set_drvdata(&dssdev->dev, sd);
++
++	memset(&props, 0, sizeof(struct backlight_properties));
++	props.max_brightness = dssdev->max_backlight_level;
++
++	bl = backlight_device_register("sharp-ls", &dssdev->dev, dssdev,
++			&sharp_ls_bl_ops, &props);
++	if (IS_ERR(bl)) {
++		r = PTR_ERR(bl);
++		kfree(sd);
++		return r;
++	}
++	sd->bl = bl;
++
++	bl->props.fb_blank = FB_BLANK_UNBLANK;
++	bl->props.power = FB_BLANK_UNBLANK;
++	bl->props.brightness = dssdev->max_backlight_level;
++	r = sharp_ls_bl_update_status(bl);
++	if (r < 0)
++		dev_err(&dssdev->dev, "failed to set lcd brightness\n");
++
+ 	return 0;
+ }
  
- 	switch (dssdev->type) {
-+#ifdef CONFIG_OMAP2_DSS_DPI
- 	case OMAP_DISPLAY_TYPE_DPI:
-+#endif
- #ifdef CONFIG_OMAP2_DSS_RFBI
- 	case OMAP_DISPLAY_TYPE_DBI:
- #endif
-@@ -413,9 +415,11 @@ void dss_init_device(struct platform_device *pdev,
- 	}
+ static void sharp_ls_panel_remove(struct omap_dss_device *dssdev)
+ {
++	struct sharp_data *sd = dev_get_drvdata(&dssdev->dev);
++	struct backlight_device *bl = sd->bl;
++
++	bl->props.power = FB_BLANK_POWERDOWN;
++	sharp_ls_bl_update_status(bl);
++	backlight_device_unregister(bl);
++
++	kfree(sd);
+ }
  
- 	switch (dssdev->type) {
-+#ifdef CONFIG_OMAP2_DSS_DPI
- 	case OMAP_DISPLAY_TYPE_DPI:
- 		r = dpi_init_display(dssdev);
- 		break;
-+#endif
- #ifdef CONFIG_OMAP2_DSS_RFBI
- 	case OMAP_DISPLAY_TYPE_DBI:
- 		r = rfbi_init_display(dssdev);
+ static int sharp_ls_power_on(struct omap_dss_device *dssdev)
 -- 
 1.7.0.4
 

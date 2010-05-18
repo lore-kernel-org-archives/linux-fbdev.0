@@ -1,79 +1,84 @@
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Wed, 05 May 2010 14:27:35 +0000
-Subject: [PATCH v3 15/21] OMAP: DSS2: Add Nokia DSI command mode panel configuration struct
-Message-Id: <4f2a95d67d2b8004f4a2055681690920ebeb8e8f.1273067195.git.ext-jani.1.nikula@nokia.com>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Tue, 18 May 2010 12:34:51 +0000
+Subject: [PATCH 00/23] OMAP DSS patches for 2.6.35 merge window
+Message-Id: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
- <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <6b813e9f0008e23e7981f6ca35501f56c292858a.1273067195.git.ext-jani.1.nikula@nokia.com>
- <b32669a58d60491c3be4f7e52a52c27406cec877.1273067195.git.ext-jani.1.nikula@nokia.com>
- <94d9d7bebbf7588bd77b65e6a46044240140a350.1273067195.git.ext-jani.1.nikula@nokia.com>
- <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
- <16a98ca1b45ba9b9bb30f23d242449c1d440df07.1273067195.git.ext-jani.1.nikula@nokia.com>
- <aa1e310d0d385db39b5d53ba4d3dcf02b7e2f47f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <0cfff2a3cbb4231b41b382caf8aab7c52f47b0d5.1273067195.git.ext-jani.1.nikula@nokia.com>
- <adb61d94ee2a25284f6bd3f55ec4213501cbe8e3.1273067195.git.ext-jani.1.nikula@nokia.com>
- <4cb510ffbc3216e2a7dac16edaff5fb1980b3315.1273067195.git.ext-jani.1.nikula@nokia.com>
- <8665676eca5bbd3be35b63f7110f629e94a6babe.1273067195.git.ext-jani.1.nikula@nokia.com>
- <a4e7d90e0f036e227a29d94e28b7036c2f9d419b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <ca7ff2e5a165ca8488190520f1f75e6e37642d3b.1273067195.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <ca7ff2e5a165ca8488190520f1f75e6e37642d3b.1273067195.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com, tony@atomide.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-arm-kernel@lists.infradead.org
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Here are OMAP DSS patches for 2.6.35 merge window. They have been previously
+reviewed on linux-omap and fbdev lists.
 
-Introduce a configuration struct for platform/board specific information
-of Nokia DSI command mode panels, to be used in addition to struct
-omap_dss_device (passed via the 'void *data' member).
+ Tomi
 
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
----
- arch/arm/plat-omap/include/plat/nokia-dsi-panel.h |   31 +++++++++++++++++++++
- 1 files changed, 31 insertions(+), 0 deletions(-)
- create mode 100644 arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
+Carlos Lopez (1):
+  OMAP2: DSS: Add missing line for update bg color
 
-diff --git a/arch/arm/plat-omap/include/plat/nokia-dsi-panel.h b/arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
-new file mode 100644
-index 0000000..01ab657
---- /dev/null
-+++ b/arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
-@@ -0,0 +1,31 @@
-+#ifndef __ARCH_ARM_PLAT_OMAP_NOKIA_DSI_PANEL_H
-+#define __ARCH_ARM_PLAT_OMAP_NOKIA_DSI_PANEL_H
-+
-+#include "display.h"
-+
-+/**
-+ * struct nokia_dsi_panel_data - Nokia DSI panel driver configuration
-+ * @name: panel name
-+ * @use_ext_te: use external TE
-+ * @ext_te_gpio: external TE GPIO
-+ * @use_esd_check: perform ESD checks
-+ * @max_backlight_level: maximum backlight level
-+ * @set_backlight: pointer to backlight set function
-+ * @get_backlight: pointer to backlight get function
-+ */
-+struct nokia_dsi_panel_data {
-+	const char *name;
-+
-+	int reset_gpio;
-+
-+	bool use_ext_te;
-+	int ext_te_gpio;
-+
-+	bool use_esd_check;
-+
-+	int max_backlight_level;
-+	int (*set_backlight)(struct omap_dss_device *dssdev, int level);
-+	int (*get_backlight)(struct omap_dss_device *dssdev);
-+};
-+
-+#endif /* __ARCH_ARM_PLAT_OMAP_NOKIA_DSI_PANEL_H */
--- 
-1.6.5.2
+Grazvydas Ignotas (1):
+  OMAP: DSS2: TPO-TD03MTEA1: fix Kconfig dependency
+
+Jani Nikula (6):
+  OMAP: DSS2: fix lock_fb_info() and omapfb_lock() locking order
+  OMAP: DSS2: check lock_fb_info() return value
+  OMAP: DSS2: VENC: don't call platform_enable/disable() twice
+  OMAP: DSS2: Fix device disable when driver is not loaded
+  OMAP: DSS2: omap_dss_probe() conditional compilation cleanup
+  OMAP: DSS2: Fix omap_dss_probe() error path
+
+Kishore Y (1):
+  OMAP3630: DSS2: Updating MAX divider value
+
+Koen Kooi (1):
+  board-omap3-beagle: add DSS2 support
+
+Roger Quadros (7):
+  OMAP: DSS2: Add Kconfig option for DPI display type
+  OMAP: DSS2: Remove redundant enable/disable calls from SDI
+  OMAP: DSS2: Use vdds_sdi regulator supply in SDI
+  OMAP: RX51: Add LCD Panel support
+  OMAP: RX51: Add Touch Controller in SPI board info
+  OMAP: DSS2: Add ACX565AKM Panel Driver
+  OMAP: RX51: Update board defconfig
+
+Tomi Valkeinen (2):
+  OMAP: DSS2: Make partial update width even
+  OMAP: DSS2: Taal: add mutex to protect panel data
+
+Vaibhav Hiremath (3):
+  OMAP: Enable DSS2 in OMAP3EVM defconfig
+  OMAP: AM3517: Enable DSS2 in AM3517EVM defconfig
+  OMAP: LCD LS037V7DW01: Add Backlight driver support
+
+Ville Syrjälä (1):
+  OMAP: DSS2: Taal: Fix DSI bus locking problem
+
+ arch/arm/configs/am3517_evm_defconfig              |   52 ++-
+ arch/arm/configs/omap3_evm_defconfig               |   51 ++-
+ arch/arm/configs/rx51_defconfig                    |   39 +-
+ arch/arm/mach-omap2/Makefile                       |    1 +
+ arch/arm/mach-omap2/board-omap3beagle.c            |  101 ++-
+ arch/arm/mach-omap2/board-rx51-peripherals.c       |   28 +
+ arch/arm/mach-omap2/board-rx51-video.c             |  109 +++
+ arch/arm/mach-omap2/board-rx51.c                   |    2 +
+ drivers/video/omap2/displays/Kconfig               |    9 +-
+ drivers/video/omap2/displays/Makefile              |    1 +
+ drivers/video/omap2/displays/panel-acx565akm.c     |  819 ++++++++++++++++++++
+ .../video/omap2/displays/panel-sharp-ls037v7dw01.c |   78 ++
+ drivers/video/omap2/displays/panel-taal.c          |  143 +++-
+ drivers/video/omap2/dss/Kconfig                    |    6 +
+ drivers/video/omap2/dss/Makefile                   |    3 +-
+ drivers/video/omap2/dss/core.c                     |   85 ++-
+ drivers/video/omap2/dss/display.c                  |    9 +-
+ drivers/video/omap2/dss/dss.c                      |   24 +-
+ drivers/video/omap2/dss/dss.h                      |   50 ++
+ drivers/video/omap2/dss/manager.c                  |   21 +
+ drivers/video/omap2/dss/sdi.c                      |   26 +-
+ drivers/video/omap2/dss/venc.c                     |   15 +-
+ drivers/video/omap2/omapfb/omapfb-ioctl.c          |    5 +-
+ drivers/video/omap2/omapfb/omapfb-sysfs.c          |   25 +-
+ 24 files changed, 1573 insertions(+), 129 deletions(-)
+ create mode 100644 arch/arm/mach-omap2/board-rx51-video.c
+ create mode 100644 drivers/video/omap2/displays/panel-acx565akm.c
 

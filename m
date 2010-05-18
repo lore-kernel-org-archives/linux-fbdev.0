@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Tue, 18 May 2010 12:34:52 +0000
-Subject: [PATCH 01/23] OMAP: Enable DSS2 in OMAP3EVM defconfig
-Message-Id: <1274186114-26951-2-git-send-email-tomi.valkeinen@nokia.com>
+Date: Tue, 18 May 2010 12:35:07 +0000
+Subject: [PATCH 16/23] OMAP: RX51: Add Touch Controller in SPI board info
+Message-Id: <1274186114-26951-17-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
@@ -10,77 +10,60 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Vaibhav Hiremath <hvaibhav@ti.com>
+From: Roger Quadros <roger.quadros@nokia.com>
 
-Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
-[tomi.valkeinen@nokia.com: removed the board file changes]
+The Touch controller and LCD Panel share the same SPI bus 1.
+So, we need to define the touch controller in the SPI board info
+else, the SPI bus will be contended due to invalid state of
+Touch controller's Chip Select thus preventing the LCD panel
+from working.
+
+Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- arch/arm/configs/omap3_evm_defconfig |   51 +++++++++++++++++++++++++++++++++-
- 1 files changed, 50 insertions(+), 1 deletions(-)
+ arch/arm/mach-omap2/board-rx51-peripherals.c |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/configs/omap3_evm_defconfig b/arch/arm/configs/omap3_evm_defconfig
-index a6dd6d1..b02e371 100644
---- a/arch/arm/configs/omap3_evm_defconfig
-+++ b/arch/arm/configs/omap3_evm_defconfig
-@@ -911,7 +911,56 @@ CONFIG_DAB=y
- #
- # CONFIG_VGASTATE is not set
- CONFIG_VIDEO_OUTPUT_CONTROL=m
--# CONFIG_FB is not set
-+CONFIG_FB=y
-+# CONFIG_FIRMWARE_EDID is not set
-+# CONFIG_FB_DDC is not set
-+# CONFIG_FB_BOOT_VESA_SUPPORT is not set
-+CONFIG_FB_CFB_FILLRECT=y
-+CONFIG_FB_CFB_COPYAREA=y
-+CONFIG_FB_CFB_IMAGEBLIT=y
-+# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
-+# CONFIG_FB_SYS_FILLRECT is not set
-+# CONFIG_FB_SYS_COPYAREA is not set
-+# CONFIG_FB_SYS_IMAGEBLIT is not set
-+# CONFIG_FB_FOREIGN_ENDIAN is not set
-+# CONFIG_FB_SYS_FOPS is not set
-+# CONFIG_FB_SVGALIB is not set
-+# CONFIG_FB_MACMODES is not set
-+# CONFIG_FB_BACKLIGHT is not set
-+# CONFIG_FB_MODE_HELPERS is not set
-+# CONFIG_FB_TILEBLITTING is not set
-+
-+#
-+# Frame buffer hardware drivers
-+#
-+# CONFIG_FB_S1D13XXX is not set
-+# CONFIG_FB_VIRTUAL is not set
-+# CONFIG_FB_METRONOME is not set
-+# CONFIG_FB_MB862XX is not set
-+# CONFIG_FB_BROADSHEET is not set
-+# CONFIG_FB_OMAP_BOOTLOADER_INIT is not set
-+CONFIG_OMAP2_VRAM=y
-+CONFIG_OMAP2_VRFB=y
-+CONFIG_OMAP2_DSS=y
-+CONFIG_OMAP2_VRAM_SIZE=4
-+# CONFIG_OMAP2_DSS_DEBUG_SUPPORT is not set
-+# CONFIG_OMAP2_DSS_RFBI is not set
-+CONFIG_OMAP2_DSS_VENC=y
-+# CONFIG_OMAP2_DSS_SDI is not set
-+# CONFIG_OMAP2_DSS_DSI is not set
-+# CONFIG_OMAP2_DSS_FAKE_VSYNC is not set
-+CONFIG_OMAP2_DSS_MIN_FCK_PER_PCK=4
-+CONFIG_FB_OMAP2=y
-+# CONFIG_FB_OMAP2_DEBUG_SUPPORT is not set
-+# CONFIG_FB_OMAP2_FORCE_AUTO_UPDATE is not set
-+CONFIG_FB_OMAP2_NUM_FBS=3
-+
-+#
-+# OMAP2/3 Display Device Drivers
-+#
-+CONFIG_PANEL_GENERIC=y
-+# CONFIG_PANEL_SAMSUNG_LTE430WQ_F0C is not set
-+CONFIG_PANEL_SHARP_LS037V7DW01=y
- # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
+index f404537..d27a4ef 100644
+--- a/arch/arm/mach-omap2/board-rx51-peripherals.c
++++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
+@@ -46,6 +46,7 @@
+ enum {
+ 	RX51_SPI_WL1251,
+ 	RX51_SPI_MIPID,		/* LCD panel */
++	RX51_SPI_TSC2005,	/* Touch Controller */
+ };
  
- #
+ static struct wl12xx_platform_data wl1251_pdata;
+@@ -60,6 +61,11 @@ static struct omap2_mcspi_device_config mipid_mcspi_config = {
+ 	.single_channel	= 1,
+ };
+ 
++static struct omap2_mcspi_device_config tsc2005_mcspi_config = {
++	.turbo_mode	= 0,
++	.single_channel	= 1,
++};
++
+ static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
+ 	[RX51_SPI_WL1251] = {
+ 		.modalias		= "wl1251",
+@@ -77,6 +83,15 @@ static struct spi_board_info rx51_peripherals_spi_board_info[] __initdata = {
+ 		.max_speed_hz		= 6000000,
+ 		.controller_data	= &mipid_mcspi_config,
+ 	},
++	[RX51_SPI_TSC2005] = {
++		.modalias		= "tsc2005",
++		.bus_num		= 1,
++		.chip_select		= 0,
++		/* .irq = OMAP_GPIO_IRQ(RX51_TSC2005_IRQ_GPIO),*/
++		.max_speed_hz		= 6000000,
++		.controller_data	= &tsc2005_mcspi_config,
++		/* .platform_data = &tsc2005_config,*/
++	},
+ };
+ 
+ #if defined(CONFIG_KEYBOARD_GPIO) || defined(CONFIG_KEYBOARD_GPIO_MODULE)
 -- 
 1.7.0.4
 

@@ -1,78 +1,146 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Fri, 21 May 2010 15:15:41 +0000
-Subject: [PATCH 3/5] sh: add a YUV422 output data format, that is also
-Message-Id: <Pine.LNX.4.64.1005211703140.8450@axis700.grange>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Tue, 18 May 2010 12:35:14 +0000
+Subject: [PATCH 23/23] OMAP: DSS2: Fix omap_dss_probe() error path
+Message-Id: <1274186114-26951-24-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1005201829260.26000@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1005201829260.26000@axis700.grange>
+References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>
-Cc: Magnus Damm <magnus.damm@gmail.com>, "linux-fbdev, @vger.kernel.org" <linux-fbdev@vger.kernel.org>, "lin, ux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "Syrjala Ville (Nokia-D/Helsinki)" <ville.syrjala@nokia.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: linux-arm-kernel@lists.infradead.org
 
-The LCDC block is allowed to use one of the two output data formats, when used
-with MIPI DSI: RGB24 and YUV422. YUV422 is not currently handled by the LCDC
-driver, but we have to add a define for it for MIPI.
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Perform graceful cleanup on errors instead of just bailing out.
+
+Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Tested-by: Kevin Hilman <khilman@deeprootsystems.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
+ drivers/video/omap2/dss/core.c |   54 ++++++++++++++++++++++++++++++---------
+ 1 files changed, 41 insertions(+), 13 deletions(-)
 
-Unchanged from v1.
-
- include/video/sh_mobile_lcdc.h |   39 +++++++++++++++++++++------------------
- 1 files changed, 21 insertions(+), 18 deletions(-)
-
-diff --git a/include/video/sh_mobile_lcdc.h b/include/video/sh_mobile_lcdc.h
-index 2cc893f..5eaea78 100644
---- a/include/video/sh_mobile_lcdc.h
-+++ b/include/video/sh_mobile_lcdc.h
-@@ -3,24 +3,27 @@
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 92ee067..b3a498f 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -507,7 +507,7 @@ static int omap_dss_probe(struct platform_device *pdev)
  
- #include <linux/fb.h>
+ 	r = dss_get_clocks();
+ 	if (r)
+-		goto fail0;
++		goto err_clocks;
  
--enum { RGB8,   /* 24bpp, 8:8:8 */
--       RGB9,   /* 18bpp, 9:9 */
--       RGB12A, /* 24bpp, 12:12 */
--       RGB12B, /* 12bpp */
--       RGB16,  /* 16bpp */
--       RGB18,  /* 18bpp */
--       RGB24,  /* 24bpp */
--       SYS8A,  /* 24bpp, 8:8:8 */
--       SYS8B,  /* 18bpp, 8:8:2 */
--       SYS8C,  /* 18bpp, 2:8:8 */
--       SYS8D,  /* 16bpp, 8:8 */
--       SYS9,   /* 18bpp, 9:9 */
--       SYS12,  /* 24bpp, 12:12 */
--       SYS16A, /* 16bpp */
--       SYS16B, /* 18bpp, 16:2 */
--       SYS16C, /* 18bpp, 2:16 */
--       SYS18,  /* 18bpp */
--       SYS24 };/* 24bpp */
-+enum {
-+	RGB8,   /* 24bpp, 8:8:8 */
-+	RGB9,   /* 18bpp, 9:9 */
-+	RGB12A, /* 24bpp, 12:12 */
-+	RGB12B, /* 12bpp */
-+	RGB16,  /* 16bpp */
-+	RGB18,  /* 18bpp */
-+	RGB24,  /* 24bpp */
-+	YUV422, /* 16bpp */
-+	SYS8A,  /* 24bpp, 8:8:8 */
-+	SYS8B,  /* 18bpp, 8:8:2 */
-+	SYS8C,  /* 18bpp, 2:8:8 */
-+	SYS8D,  /* 16bpp, 8:8 */
-+	SYS9,   /* 18bpp, 9:9 */
-+	SYS12,  /* 24bpp, 12:12 */
-+	SYS16A, /* 16bpp */
-+	SYS16B, /* 18bpp, 16:2 */
-+	SYS16C, /* 18bpp, 2:16 */
-+	SYS18,  /* 18bpp */
-+	SYS24,  /* 24bpp */
-+};
+ 	dss_clk_enable_all_no_ctx();
  
- enum { LCDC_CHAN_DISABLED = 0,
-        LCDC_CHAN_MAINLCD,
+@@ -523,57 +523,64 @@ static int omap_dss_probe(struct platform_device *pdev)
+ 	r = dss_init(skip_init);
+ 	if (r) {
+ 		DSSERR("Failed to initialize DSS\n");
+-		goto fail0;
++		goto err_dss;
+ 	}
+ 
+ 	r = rfbi_init();
+ 	if (r) {
+ 		DSSERR("Failed to initialize rfbi\n");
+-		goto fail0;
++		goto err_rfbi;
+ 	}
+ 
+ 	r = dpi_init(pdev);
+ 	if (r) {
+ 		DSSERR("Failed to initialize dpi\n");
+-		goto fail0;
++		goto err_dpi;
+ 	}
+ 
+ 	r = dispc_init();
+ 	if (r) {
+ 		DSSERR("Failed to initialize dispc\n");
+-		goto fail0;
++		goto err_dispc;
+ 	}
+ 
+ 	r = venc_init(pdev);
+ 	if (r) {
+ 		DSSERR("Failed to initialize venc\n");
+-		goto fail0;
++		goto err_venc;
+ 	}
+ 
+ 	if (cpu_is_omap34xx()) {
+ 		r = sdi_init(skip_init);
+ 		if (r) {
+ 			DSSERR("Failed to initialize SDI\n");
+-			goto fail0;
++			goto err_sdi;
+ 		}
+ 
+ 		r = dsi_init(pdev);
+ 		if (r) {
+ 			DSSERR("Failed to initialize DSI\n");
+-			goto fail0;
++			goto err_dsi;
+ 		}
+ 	}
+ 
+ 	r = dss_initialize_debugfs();
+ 	if (r)
+-		goto fail0;
++		goto err_debugfs;
+ 
+ 	for (i = 0; i < pdata->num_devices; ++i) {
+ 		struct omap_dss_device *dssdev = pdata->devices[i];
+ 
+ 		r = omap_dss_register_device(dssdev);
+-		if (r)
+-			DSSERR("device reg failed %d\n", i);
++		if (r) {
++			DSSERR("device %d %s register failed %d\n", i,
++				dssdev->name ?: "unnamed", r);
++
++			while (--i >= 0)
++				omap_dss_unregister_device(pdata->devices[i]);
++
++			goto err_register;
++		}
+ 
+ 		if (def_disp_name && strcmp(def_disp_name, dssdev->name) = 0)
+ 			pdata->default_device = dssdev;
+@@ -583,8 +590,29 @@ static int omap_dss_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
+-	/* XXX fail correctly */
+-fail0:
++err_register:
++	dss_uninitialize_debugfs();
++err_debugfs:
++	if (cpu_is_omap34xx())
++		dsi_exit();
++err_dsi:
++	if (cpu_is_omap34xx())
++		sdi_exit();
++err_sdi:
++	venc_exit();
++err_venc:
++	dispc_exit();
++err_dispc:
++	dpi_exit();
++err_dpi:
++	rfbi_exit();
++err_rfbi:
++	dss_exit();
++err_dss:
++	dss_clk_disable_all_no_ctx();
++	dss_put_clocks();
++err_clocks:
++
+ 	return r;
+ }
+ 
 -- 
-1.6.2.4
+1.7.0.4
 

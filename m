@@ -1,110 +1,68 @@
-From: Albert Herranz <albert_herranz@yahoo.es>
-Date: Thu, 13 May 2010 19:36:27 +0000
-Subject: [PATCH RESEND] fb_defio: fix for non-dirty ptes
-Message-Id: <1273779387-14766-1-git-send-email-albert_herranz@yahoo.es>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Tue, 18 May 2010 12:34:59 +0000
+Subject: [PATCH 08/23] OMAP: DSS2: VENC: don't call platform_enable/disable() twice
+Message-Id: <1274186114-26951-9-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-This patch fixes a problem observed while using fb_defio with a short
-delay on a PowerPC platform.
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-It is possible that page_mkclean() is invoked in the deferred io work
-function _before_ a PTE has been marked dirty. In this case, the page
-is removed from the defio pagelist but page_mkclean() does not
-write-protect the page again. The end result is that defio ignores all
-subsequent writes to the page and the corresponding portions of the
-framebuffer never get updated.
+platform_enable/disable() is already called in venc_power_on/off(), so
+don't do it again in venc_panel_enable/disable().
 
-The fix consists in keeping track of the pages with non-dirty PTEs,
-re-checking them again on the next deferred io work iteration.
-Note that those pages are not passed to the defio callback as they are
-not written by userspace yet.
-
-Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
-Acked-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/fb_defio.c |   40 ++++++++++++++++++++++++++++++++--------
- 1 files changed, 32 insertions(+), 8 deletions(-)
+ drivers/video/omap2/dss/venc.c |   15 +--------------
+ 1 files changed, 1 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
-index 6113c47..1105a59 100644
---- a/drivers/video/fb_defio.c
-+++ b/drivers/video/fb_defio.c
-@@ -155,25 +155,41 @@ static void fb_deferred_io_work(struct work_struct *work)
- {
- 	struct fb_info *info = container_of(work, struct fb_info,
- 						deferred_work.work);
--	struct list_head *node, *next;
--	struct page *cur;
- 	struct fb_deferred_io *fbdefio = info->fbdefio;
-+	struct page *page, *tmp_page;
-+	struct list_head *node, *tmp_node;
-+	struct list_head non_dirty;
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index f0ba573..eff3505 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -479,12 +479,6 @@ static int venc_panel_enable(struct omap_dss_device *dssdev)
+ 		goto err1;
+ 	}
+ 
+-	if (dssdev->platform_enable) {
+-		r = dssdev->platform_enable(dssdev);
+-		if (r)
+-			goto err2;
+-	}
+-
+ 	venc_power_on(dssdev);
+ 
+ 	venc.wss_data = 0;
+@@ -494,13 +488,9 @@ static int venc_panel_enable(struct omap_dss_device *dssdev)
+ 	/* wait couple of vsyncs until enabling the LCD */
+ 	msleep(50);
+ 
+-	mutex_unlock(&venc.venc_lock);
+-
+-	return r;
+-err2:
+-	venc_power_off(dssdev);
+ err1:
+ 	mutex_unlock(&venc.venc_lock);
 +
-+	INIT_LIST_HEAD(&non_dirty);
- 
- 	/* here we mkclean the pages, then do all deferred IO */
- 	mutex_lock(&fbdefio->lock);
--	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
--		lock_page(cur);
--		page_mkclean(cur);
--		unlock_page(cur);
-+	list_for_each_entry_safe(page, tmp_page, &fbdefio->pagelist, lru) {
-+		lock_page(page);
-+		/*
-+		 * The workqueue callback can be triggered after a
-+		 * ->page_mkwrite() call but before the PTE has been marked
-+		 * dirty. In this case page_mkclean() won't "rearm" the page.
-+		 *
-+		 * To avoid this, remove those "non-dirty" pages from the
-+		 * pagelist before calling the driver's callback, then add
-+		 * them back to get processed on the next work iteration.
-+		 * At that time, their PTEs will hopefully be dirty for real.
-+		 */
-+		if (!page_mkclean(page))
-+			list_move_tail(&page->lru, &non_dirty);
-+		unlock_page(page);
- 	}
- 
- 	/* driver's callback with pagelist */
- 	fbdefio->deferred_io(info, &fbdefio->pagelist);
- 
--	/* clear the list */
--	list_for_each_safe(node, next, &fbdefio->pagelist) {
-+	/* clear the list... */
-+	list_for_each_safe(node, tmp_node, &fbdefio->pagelist) {
- 		list_del(node);
- 	}
-+	/* ... and add back the "non-dirty" pages to the list */
-+	list_splice_tail(&non_dirty, &fbdefio->pagelist);
- 	mutex_unlock(&fbdefio->lock);
+ 	return r;
  }
  
-@@ -202,6 +218,7 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_open);
- void fb_deferred_io_cleanup(struct fb_info *info)
- {
- 	struct fb_deferred_io *fbdefio = info->fbdefio;
-+	struct list_head *node, *tmp_node;
- 	struct page *page;
- 	int i;
+@@ -524,9 +514,6 @@ static void venc_panel_disable(struct omap_dss_device *dssdev)
+ 	/* wait at least 5 vsyncs after disabling the LCD */
+ 	msleep(100);
  
-@@ -209,6 +226,13 @@ void fb_deferred_io_cleanup(struct fb_info *info)
- 	cancel_delayed_work(&info->deferred_work);
- 	flush_scheduled_work();
- 
-+	/*  the list may have still some non-dirty pages at this point */
-+	mutex_lock(&fbdefio->lock);
-+	list_for_each_safe(node, tmp_node, &fbdefio->pagelist) {
-+		list_del(node);
-+	}
-+	mutex_unlock(&fbdefio->lock);
-+
- 	/* clear out the mapping that we setup */
- 	for (i = 0 ; i < info->fix.smem_len; i += PAGE_SIZE) {
- 		page = fb_deferred_io_page(info, i);
+-	if (dssdev->platform_disable)
+-		dssdev->platform_disable(dssdev);
+-
+ 	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
+ end:
+ 	mutex_unlock(&venc.venc_lock);
 -- 
-1.6.3.3
+1.7.0.4
 

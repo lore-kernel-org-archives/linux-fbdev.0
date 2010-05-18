@@ -1,76 +1,111 @@
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Wed, 05 May 2010 14:27:28 +0000
-Subject: [PATCH v3 08/21] OMAP: DSS2: Taal: Improve taal_power_on() error handling
-Message-Id: <aa1e310d0d385db39b5d53ba4d3dcf02b7e2f47f.1273067195.git.ext-jani.1.nikula@nokia.com>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Tue, 18 May 2010 12:34:54 +0000
+Subject: [PATCH 03/23] OMAP: DSS2: Add Kconfig option for DPI display type
+Message-Id: <1274186114-26951-4-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
- <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <6b813e9f0008e23e7981f6ca35501f56c292858a.1273067195.git.ext-jani.1.nikula@nokia.com>
- <b32669a58d60491c3be4f7e52a52c27406cec877.1273067195.git.ext-jani.1.nikula@nokia.com>
- <94d9d7bebbf7588bd77b65e6a46044240140a350.1273067195.git.ext-jani.1.nikula@nokia.com>
- <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
- <16a98ca1b45ba9b9bb30f23d242449c1d440df07.1273067195.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <16a98ca1b45ba9b9bb30f23d242449c1d440df07.1273067195.git.ext-jani.1.nikula@nokia.com>
+References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com, tony@atomide.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
+To: linux-arm-kernel@lists.infradead.org
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+From: Roger Quadros <roger.quadros@nokia.com>
 
-Check return values and bail out on errors.
+This allows us to disable DPI on systems that do not have it
 
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/omap2/displays/panel-taal.c |   30 ++++++++++++++++++++++------
- 1 files changed, 23 insertions(+), 7 deletions(-)
+ drivers/video/omap2/dss/Kconfig   |    6 ++++++
+ drivers/video/omap2/dss/Makefile  |    3 ++-
+ drivers/video/omap2/dss/core.c    |    4 ++++
+ drivers/video/omap2/dss/display.c |    4 ++++
+ 4 files changed, 16 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index d0701e2..a093eda 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -696,16 +696,32 @@ static int taal_power_on(struct omap_dss_device *dssdev)
- 	if (id2 = 0x00 || id2 = 0xff || id2 = 0x81)
- 		td->cabc_broken = true;
+diff --git a/drivers/video/omap2/dss/Kconfig b/drivers/video/omap2/dss/Kconfig
+index 87afb81..43b6440 100644
+--- a/drivers/video/omap2/dss/Kconfig
++++ b/drivers/video/omap2/dss/Kconfig
+@@ -36,6 +36,12 @@ config OMAP2_DSS_COLLECT_IRQ_STATS
+ 	  <debugfs>/omapdss/dispc_irq for DISPC interrupts, and
+ 	  <debugfs>/omapdss/dsi_irq for DSI interrupts.
  
--	taal_dcs_write_1(DCS_BRIGHTNESS, 0xff);
--	taal_dcs_write_1(DCS_CTRL_DISPLAY, (1<<2) | (1<<5)); /* BL | BCTRL */
-+	r = taal_dcs_write_1(DCS_BRIGHTNESS, 0xff);
-+	if (r)
-+		goto err;
- 
--	taal_dcs_write_1(DCS_PIXEL_FORMAT, 0x7); /* 24bit/pixel */
-+	r = taal_dcs_write_1(DCS_CTRL_DISPLAY,
-+			(1<<2) | (1<<5));	/* BL | BCTRL */
-+	if (r)
-+		goto err;
- 
--	taal_set_addr_mode(td->rotate, td->mirror);
--	if (!td->cabc_broken)
--		taal_dcs_write_1(DCS_WRITE_CABC, td->cabc_mode);
-+	r = taal_dcs_write_1(DCS_PIXEL_FORMAT, 0x7); /* 24bit/pixel */
-+	if (r)
-+		goto err;
- 
--	taal_dcs_write_0(DCS_DISPLAY_ON);
-+	r = taal_set_addr_mode(td->rotate, td->mirror);
-+	if (r)
-+		goto err;
++config OMAP2_DSS_DPI
++	bool "DPI support"
++	default y
++	help
++	  DPI Interface. This is the Parallel Display Interface.
 +
-+	if (!td->cabc_broken) {
-+		r = taal_dcs_write_1(DCS_WRITE_CABC, td->cabc_mode);
-+		if (r)
-+			goto err;
-+	}
-+
-+	r = taal_dcs_write_0(DCS_DISPLAY_ON);
-+	if (r)
-+		goto err;
+ config OMAP2_DSS_RFBI
+ 	bool "RFBI support"
+         default n
+diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
+index 980c72c..d71b5d9 100644
+--- a/drivers/video/omap2/dss/Makefile
++++ b/drivers/video/omap2/dss/Makefile
+@@ -1,5 +1,6 @@
+ obj-$(CONFIG_OMAP2_DSS) += omapdss.o
+-omapdss-y := core.o dss.o dispc.o dpi.o display.o manager.o overlay.o
++omapdss-y := core.o dss.o dispc.o display.o manager.o overlay.o
++omapdss-$(CONFIG_OMAP2_DSS_DPI) += dpi.o
+ omapdss-$(CONFIG_OMAP2_DSS_RFBI) += rfbi.o
+ omapdss-$(CONFIG_OMAP2_DSS_VENC) += venc.o
+ omapdss-$(CONFIG_OMAP2_DSS_SDI) += sdi.o
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 7ebe50b..6d54467 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -526,11 +526,13 @@ static int omap_dss_probe(struct platform_device *pdev)
+ 	}
+ #endif
  
- 	r = _taal_enable_te(dssdev, td->te_enabled);
- 	if (r)
++#ifdef CONFIG_OMAP2_DSS_DPI
+ 	r = dpi_init(pdev);
+ 	if (r) {
+ 		DSSERR("Failed to initialize dpi\n");
+ 		goto fail0;
+ 	}
++#endif
+ 
+ 	r = dispc_init();
+ 	if (r) {
+@@ -601,7 +603,9 @@ static int omap_dss_remove(struct platform_device *pdev)
+ 	venc_exit();
+ #endif
+ 	dispc_exit();
++#ifdef CONFIG_OMAP2_DSS_DPI
+ 	dpi_exit();
++#endif
+ #ifdef CONFIG_OMAP2_DSS_RFBI
+ 	rfbi_exit();
+ #endif
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index 6a74ea1..7138963 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -392,7 +392,9 @@ void dss_init_device(struct platform_device *pdev,
+ 	int r;
+ 
+ 	switch (dssdev->type) {
++#ifdef CONFIG_OMAP2_DSS_DPI
+ 	case OMAP_DISPLAY_TYPE_DPI:
++#endif
+ #ifdef CONFIG_OMAP2_DSS_RFBI
+ 	case OMAP_DISPLAY_TYPE_DBI:
+ #endif
+@@ -413,9 +415,11 @@ void dss_init_device(struct platform_device *pdev,
+ 	}
+ 
+ 	switch (dssdev->type) {
++#ifdef CONFIG_OMAP2_DSS_DPI
+ 	case OMAP_DISPLAY_TYPE_DPI:
+ 		r = dpi_init_display(dssdev);
+ 		break;
++#endif
+ #ifdef CONFIG_OMAP2_DSS_RFBI
+ 	case OMAP_DISPLAY_TYPE_DBI:
+ 		r = rfbi_init_display(dssdev);
 -- 
-1.6.5.2
+1.7.0.4
 

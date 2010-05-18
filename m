@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Tue, 18 May 2010 12:34:59 +0000
-Subject: [PATCH 08/23] OMAP: DSS2: VENC: don't call platform_enable/disable() twice
-Message-Id: <1274186114-26951-9-git-send-email-tomi.valkeinen@nokia.com>
+Date: Tue, 18 May 2010 12:35:10 +0000
+Subject: [PATCH 19/23] OMAP3630: DSS2: Updating MAX divider value
+Message-Id: <1274186114-26951-20-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
@@ -10,59 +10,79 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+From: Kishore Y <kishore.y@ti.com>
 
-platform_enable/disable() is already called in venc_power_on/off(), so
-don't do it again in venc_panel_enable/disable().
+In DPLL4 M3, M4, M5 and M6 field width has been increased by 1 bit in 3630.
+So the max divider value that can be achived will be 32 and not 16.
+In 3630 the functional clock is x1 of DPLL4 and not x2. Hence multiplier 2
+is removed.
 
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Signed-off-by: Sudeep Basavaraj <sudeep.basavaraj@ti.com>
+Signed-off-by: Mukund Mittal <mmittal@ti.com>
+Signed-off-by: Kishore Y <kishore.y@ti.com>
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/omap2/dss/venc.c |   15 +--------------
- 1 files changed, 1 insertions(+), 14 deletions(-)
+ drivers/video/omap2/dss/dss.c |   24 +++++++++++++++++++-----
+ 1 files changed, 19 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index f0ba573..eff3505 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -479,12 +479,6 @@ static int venc_panel_enable(struct omap_dss_device *dssdev)
- 		goto err1;
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 5434418..24b1825 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -223,7 +223,13 @@ void dss_dump_clocks(struct seq_file *s)
+ 
+ 	seq_printf(s, "dpll4_ck %lu\n", dpll4_ck_rate);
+ 
+-	seq_printf(s, "dss1_alwon_fclk = %lu / %lu * 2 = %lu\n",
++	if (cpu_is_omap3630())
++		seq_printf(s, "dss1_alwon_fclk = %lu / %lu  = %lu\n",
++			dpll4_ck_rate,
++			dpll4_ck_rate / dpll4_m4_ck_rate,
++			dss_clk_get_rate(DSS_CLK_FCK1));
++	else
++		seq_printf(s, "dss1_alwon_fclk = %lu / %lu * 2 = %lu\n",
+ 			dpll4_ck_rate,
+ 			dpll4_ck_rate / dpll4_m4_ck_rate,
+ 			dss_clk_get_rate(DSS_CLK_FCK1));
+@@ -293,7 +299,8 @@ int dss_calc_clock_rates(struct dss_clock_info *cinfo)
+ {
+ 	unsigned long prate;
+ 
+-	if (cinfo->fck_div > 16 || cinfo->fck_div = 0)
++	if (cinfo->fck_div > (cpu_is_omap3630() ? 32 : 16) ||
++						cinfo->fck_div = 0)
+ 		return -EINVAL;
+ 
+ 	prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
+@@ -329,7 +336,10 @@ int dss_get_clock_div(struct dss_clock_info *cinfo)
+ 	if (cpu_is_omap34xx()) {
+ 		unsigned long prate;
+ 		prate = clk_get_rate(clk_get_parent(dss.dpll4_m4_ck));
+-		cinfo->fck_div = prate / (cinfo->fck / 2);
++		if (cpu_is_omap3630())
++			cinfo->fck_div = prate / (cinfo->fck);
++		else
++			cinfo->fck_div = prate / (cinfo->fck / 2);
+ 	} else {
+ 		cinfo->fck_div = 0;
  	}
+@@ -402,10 +412,14 @@ retry:
  
--	if (dssdev->platform_enable) {
--		r = dssdev->platform_enable(dssdev);
--		if (r)
--			goto err2;
--	}
--
- 	venc_power_on(dssdev);
+ 		goto found;
+ 	} else if (cpu_is_omap34xx()) {
+-		for (fck_div = 16; fck_div > 0; --fck_div) {
++		for (fck_div = (cpu_is_omap3630() ? 32 : 16);
++					fck_div > 0; --fck_div) {
+ 			struct dispc_clock_info cur_dispc;
  
- 	venc.wss_data = 0;
-@@ -494,13 +488,9 @@ static int venc_panel_enable(struct omap_dss_device *dssdev)
- 	/* wait couple of vsyncs until enabling the LCD */
- 	msleep(50);
+-			fck = prate / fck_div * 2;
++			if (cpu_is_omap3630())
++				fck = prate / fck_div;
++			else
++				fck = prate / fck_div * 2;
  
--	mutex_unlock(&venc.venc_lock);
--
--	return r;
--err2:
--	venc_power_off(dssdev);
- err1:
- 	mutex_unlock(&venc.venc_lock);
-+
- 	return r;
- }
- 
-@@ -524,9 +514,6 @@ static void venc_panel_disable(struct omap_dss_device *dssdev)
- 	/* wait at least 5 vsyncs after disabling the LCD */
- 	msleep(100);
- 
--	if (dssdev->platform_disable)
--		dssdev->platform_disable(dssdev);
--
- 	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
- end:
- 	mutex_unlock(&venc.venc_lock);
+ 			if (fck > DISPC_MAX_FCK)
+ 				continue;
 -- 
 1.7.0.4
 

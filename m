@@ -1,61 +1,88 @@
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Mon, 03 May 2010 06:18:41 +0000
-Subject: [PATCH v2 21/21] OMAP: DSS2: Taal: CABC workaround is Taal specific
-Message-Id: <ca87f88c0ea6b99900189bf24c7a23b2873bb328.1272621452.git.ext-jani.1.nikula@nokia.com>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Tue, 18 May 2010 12:34:56 +0000
+Subject: [PATCH 05/23] OMAP: DSS2: Use vdds_sdi regulator supply in SDI
+Message-Id: <1274186114-26951-6-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
- <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
- <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
- <db2b972d4fa08c2f5b3cd06392ef62415890a188.1272621452.git.ext-jani.1.nikula@nokia.com>
- <b57a3f4ccf68e8c8faf332a25b699b92a5604509.1272621452.git.ext-jani.1.nikula@nokia.com>
- <7a01973540a3afa79701ee08a3d8732db4687d5b.1272621452.git.ext-jani.1.nikula@nokia.com>
- <b88fcf26f978d38a25000c2f472a4ad8f79ac285.1272621452.git.ext-jani.1.nikula@nokia.com>
- <ba3a895d56c242fe4edbcfc4abd3c608da3db77a.1272621452.git.ext-jani.1.nikula@nokia.com>
- <1a68710812da041ef583944411a1b7027d216c96.1272621452.git.ext-jani.1.nikula@nokia.com>
- <85172e14c23339065e319230f9707353409a901e.1272621452.git.ext-jani.1.nikula@nokia.com>
- <6e9febe4d2179309dcf93b7a8e897890c871f086.1272621452.git.ext-jani.1.nikula@nokia.com>
- <ad1917b1c316a85051c4a908705d403956ca1720.1272621452.git.ext-jani.1.nikula@nokia.com>
- <4004b06a47d3c1d20d6d8a30ddccdf536faeb5a0.1272621452.git.ext-jani.1.nikula@nokia.com>
- <b88e1b382ddf14870c7a44e7ca620ad84d883b50.1272621452.git.ext-jani.1.nikula@nokia.com>
- <5a5dc1e253df571477551b8f63560ad9d1a3ab2b.1272621452.git.ext-jani.1.nikula@nokia.com>
- <df2ca92a00d718b95aa6a7875a4199882c86f513.1272621452.git.ext-jani.1.nikula@nokia.com>
- <d76f00a4c763b84d7511a9f0c98eb7117e9e6a3e.1272621452.git.ext-jani.1.nikula@nokia.com>
- <261f7b2c8cf1120e05d9664137e22ed237657c60.1272621452.git.ext-jani.1.nikula@nokia.com>
- <453fa1efec72cc2a4c029b6791c373a4a2e7ad7d.1272621452.git.ext-jani.1.nikula@nokia.com>
- <f2fff5b0fb2c3d2d0968a0c6c73ec2836c4ef0eb.1272621452.git.ext-jani.1.nikula@nokia.com>
- <ca115745068df8138dcc09052fb0e6868986fabe.1272621452.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <ca115745068df8138dcc09052fb0e6868986fabe.1272621452.git.ext-jani.1.nikula@nokia.com>
+References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com, tony@atomide.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
+To: linux-arm-kernel@lists.infradead.org
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+From: Roger Quadros <roger.quadros@nokia.com>
 
-Prepare for supporting panels other than Taal in this driver.
+This patch enables the use of vdds_sdi regulator in SDI subsystem.
+We can disable the vdds_sdi voltage when not in use to save
+power.
 
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/omap2/displays/panel-taal.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/sdi.c |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 07832c4..cc5f569 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -857,8 +857,9 @@ static int taal_power_on(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err;
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 3de3c1e..ee07a3c 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -23,13 +23,16 @@
+ #include <linux/clk.h>
+ #include <linux/delay.h>
+ #include <linux/err.h>
++#include <linux/regulator/consumer.h>
  
--	/* on early revisions CABC is broken */
--	if (id2 = 0x00 || id2 = 0xff || id2 = 0x81)
-+	/* on early Taal revisions CABC is broken */
-+	if (td->panel_config->type = PANEL_TAAL &&
-+		(id2 = 0x00 || id2 = 0xff || id2 = 0x81))
- 		td->cabc_broken = true;
+ #include <plat/display.h>
++#include <plat/cpu.h>
+ #include "dss.h"
  
- 	r = taal_dcs_write_1(DCS_BRIGHTNESS, 0xff);
+ static struct {
+ 	bool skip_init;
+ 	bool update_enabled;
++	struct regulator *vdds_sdi_reg;
+ } sdi;
+ 
+ static void sdi_basic_init(void)
+@@ -57,6 +60,10 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+ 		goto err0;
+ 	}
+ 
++	r = regulator_enable(sdi.vdds_sdi_reg);
++	if (r)
++		goto err1;
++
+ 	/* In case of skip_init sdi_init has already enabled the clocks */
+ 	if (!sdi.skip_init)
+ 		dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK1);
+@@ -120,6 +127,7 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+ 	return 0;
+ err2:
+ 	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
++	regulator_disable(sdi.vdds_sdi_reg);
+ err1:
+ 	omap_dss_stop_device(dssdev);
+ err0:
+@@ -135,6 +143,8 @@ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev)
+ 
+ 	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
+ 
++	regulator_disable(sdi.vdds_sdi_reg);
++
+ 	omap_dss_stop_device(dssdev);
+ }
+ EXPORT_SYMBOL(omapdss_sdi_display_disable);
+@@ -151,6 +161,11 @@ int sdi_init(bool skip_init)
+ 	/* we store this for first display enable, then clear it */
+ 	sdi.skip_init = skip_init;
+ 
++	sdi.vdds_sdi_reg = dss_get_vdds_sdi();
++	if (IS_ERR(sdi.vdds_sdi_reg)) {
++		DSSERR("can't get VDDS_SDI regulator\n");
++		return PTR_ERR(sdi.vdds_sdi_reg);
++	}
+ 	/*
+ 	 * Enable clocks already here, otherwise there would be a toggle
+ 	 * of them until sdi_display_enable is called.
 -- 
-1.6.5.2
+1.7.0.4
 

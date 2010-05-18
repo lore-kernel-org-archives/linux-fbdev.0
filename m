@@ -1,43 +1,66 @@
-From: Jani Nikula <ext-jani.1.nikula@Nokia.com>
-Date: Mon, 03 May 2010 06:18:27 +0000
-Subject: [PATCH v2 07/21] OMAP: DSS2: Taal: Remove ESD work cancel from driver probe error handling
-Message-Id: <ba3a895d56c242fe4edbcfc4abd3c608da3db77a.1272621452.git.ext-jani.1.nikula@nokia.com>
+From: Ben Dooks <ben-linux@fluff.org>
+Date: Tue, 18 May 2010 10:54:02 +0000
+Subject: [PATCH 2/5] s3c-fb: only init window colour key controls for windows with blending
+Message-Id: <1274180045-14645-3-git-send-email-ben-linux@fluff.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
- <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
- <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
- <db2b972d4fa08c2f5b3cd06392ef62415890a188.1272621452.git.ext-jani.1.nikula@nokia.com>
- <b57a3f4ccf68e8c8faf332a25b699b92a5604509.1272621452.git.ext-jani.1.nikula@nokia.com>
- <7a01973540a3afa79701ee08a3d8732db4687d5b.1272621452.git.ext-jani.1.nikula@nokia.com>
- <b88fcf26f978d38a25000c2f472a4ad8f79ac285.1272621452.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <b88fcf26f978d38a25000c2f472a4ad8f79ac285.1272621452.git.ext-jani.1.nikula@nokia.com>
+References: <1274180045-14645-1-git-send-email-ben-linux@fluff.org>
+In-Reply-To: <1274180045-14645-1-git-send-email-ben-linux@fluff.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@Nokia.com, tony@atomide.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@Nokia.com
+To: linux-arm-kernel@lists.infradead.org
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+The driver clears all windows, but also sets the windows' colour key
+controls at the same time. However, the last window does not have these
+registers as it is always blended into the previous window.
 
-ESD work is never queued in probe, no need to cancel it on probe error.
+Move the colour key initialisation into the probe, and run it for only
+nr_win-1 windows.
 
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 ---
- drivers/video/omap2/displays/panel-taal.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ drivers/video/s3c-fb.c |   14 +++++++++++---
+ 1 files changed, 11 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 98f882a..3f4687a 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -627,7 +627,6 @@ err4:
- err3:
- 	backlight_device_unregister(bldev);
- err2:
--	cancel_delayed_work_sync(&td->esd_work);
- 	destroy_workqueue(td->esd_wq);
- err1:
- 	kfree(td);
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 9682ecc..2403ed3 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -844,9 +844,6 @@ static void s3c_fb_clear_win(struct s3c_fb *sfb, int win)
+ 	void __iomem *regs = sfb->regs;
+ 
+ 	writel(0, regs + WINCON(win));
+-	writel(0xffffff, regs + WxKEYCONy(win, 0));
+-	writel(0xffffff, regs + WxKEYCONy(win, 1));
+-
+ 	writel(0, regs + VIDOSD_A(win));
+ 	writel(0, regs + VIDOSD_B(win));
+ 	writel(0, regs + VIDOSD_C(win));
+@@ -919,6 +916,12 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 	for (win = 0; win < S3C_FB_MAX_WIN; win++)
+ 		s3c_fb_clear_win(sfb, win);
+ 
++	/* initialise colour key controls */
++	for (win = 0; win < (S3C_FB_MAX_WIN - 1); win++) {
++		writel(0xffffff, sfb->regs + WxKEYCONy(win, 0));
++		writel(0xffffff, sfb->regs + WxKEYCONy(win, 1));
++	}
++
+ 	/* we have the register setup, start allocating framebuffers */
+ 
+ 	for (win = 0; win < S3C_FB_MAX_WIN; win++) {
+@@ -1019,6 +1022,11 @@ static int s3c_fb_resume(struct platform_device *pdev)
+ 	for (win_no = 0; win_no < S3C_FB_MAX_WIN; win_no++)
+ 		s3c_fb_clear_win(sfb, win_no);
+ 
++	for (win_no = 0; win_no < S3C_FB_MAX_WIN - 1; win_no++) {
++		writel(0xffffff, sfb->regs + WxKEYCONy(win_no, 1));
++		writel(0xffffff, sfb->regs + WxKEYCONy(win_no, 1));
++	}
++
+ 	/* restore framebuffers */
+ 	for (win_no = 0; win_no < S3C_FB_MAX_WIN; win_no++) {
+ 		win = sfb->windows[win_no];
 -- 
-1.6.5.2
+1.6.3.3
 

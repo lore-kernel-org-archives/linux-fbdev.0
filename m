@@ -1,110 +1,182 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Tue, 18 May 2010 00:18:04 +0000
-Subject: [PULL] viafb
-Message-Id: <20100517181804.7a4c1517@bike.lwn.net>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Tue, 18 May 2010 12:35:12 +0000
+Subject: [PATCH 21/23] board-omap3-beagle: add DSS2 support
+Message-Id: <1274186114-26951-22-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Hi, Linus,
+From: Koen Kooi <koen.kooi@gmail.com>
 
-Here's a big set of changes to the viafb framebuffer code.  The end
-goal of this work - besides massively cleaning up the code - is to
-support the video capture driver as used by the OLPC XO 1.5 machine.
-The actual capture driver isn't here - the V4L2 folks haven't had a
-chance to review it yet - but everything leading up to that point is.
+This patch adds DSS2 support to the beagleboard boardfile. DVI and
+TV-out are supported.
 
-These patches have been through a few rounds of review and have been in
-linux-next for a couple weeks now.
+Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ arch/arm/mach-omap2/board-omap3beagle.c |  101 +++++++++++++++++++++++--------
+ 1 files changed, 75 insertions(+), 26 deletions(-)
 
-It's all at:
+diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
+index 962d377..69b154c 100644
+--- a/arch/arm/mach-omap2/board-omap3beagle.c
++++ b/arch/arm/mach-omap2/board-omap3beagle.c
+@@ -39,6 +39,7 @@
+ 
+ #include <plat/board.h>
+ #include <plat/common.h>
++#include <plat/display.h>
+ #include <plat/gpmc.h>
+ #include <plat/nand.h>
+ #include <plat/usb.h>
+@@ -106,6 +107,77 @@ static struct platform_device omap3beagle_nand_device = {
+ 	.resource	= &omap3beagle_nand_resource,
+ };
+ 
++/* DSS */
++
++static int beagle_enable_dvi(struct omap_dss_device *dssdev)
++{
++	if (gpio_is_valid(dssdev->reset_gpio))
++		gpio_set_value(dssdev->reset_gpio, 1);
++
++	return 0;
++}
++
++static void beagle_disable_dvi(struct omap_dss_device *dssdev)
++{
++	if (gpio_is_valid(dssdev->reset_gpio))
++		gpio_set_value(dssdev->reset_gpio, 0);
++}
++
++static struct omap_dss_device beagle_dvi_device = {
++	.type = OMAP_DISPLAY_TYPE_DPI,
++	.name = "dvi",
++	.driver_name = "generic_panel",
++	.phy.dpi.data_lines = 24,
++	.reset_gpio = 170,
++	.platform_enable = beagle_enable_dvi,
++	.platform_disable = beagle_disable_dvi,
++};
++
++static struct omap_dss_device beagle_tv_device = {
++	.name = "tv",
++	.driver_name = "venc",
++	.type = OMAP_DISPLAY_TYPE_VENC,
++	.phy.venc.type = OMAP_DSS_VENC_TYPE_SVIDEO,
++};
++
++static struct omap_dss_device *beagle_dss_devices[] = {
++	&beagle_dvi_device,
++	&beagle_tv_device,
++};
++
++static struct omap_dss_board_info beagle_dss_data = {
++	.num_devices = ARRAY_SIZE(beagle_dss_devices),
++	.devices = beagle_dss_devices,
++	.default_device = &beagle_dvi_device,
++};
++
++static struct platform_device beagle_dss_device = {
++	.name          = "omapdss",
++	.id            = -1,
++	.dev            = {
++		.platform_data = &beagle_dss_data,
++	},
++};
++
++static struct regulator_consumer_supply beagle_vdac_supply +	REGULATOR_SUPPLY("vdda_dac", "omapdss");
++
++static struct regulator_consumer_supply beagle_vdvi_supply +	REGULATOR_SUPPLY("vdds_dsi", "omapdss");
++
++static void __init beagle_display_init(void)
++{
++	int r;
++
++	r = gpio_request(beagle_dvi_device.reset_gpio, "DVI reset");
++	if (r < 0) {
++		printk(KERN_ERR "Unable to get DVI reset GPIO\n");
++		return;
++	}
++
++	gpio_direction_output(beagle_dvi_device.reset_gpio, 0);
++}
++
+ #include "sdram-micron-mt46h32m32lf-6.h"
+ 
+ static struct omap2_hsmmc_info mmc[] = {
+@@ -117,15 +189,6 @@ static struct omap2_hsmmc_info mmc[] = {
+ 	{}	/* Terminator */
+ };
+ 
+-static struct platform_device omap3_beagle_lcd_device = {
+-	.name		= "omap3beagle_lcd",
+-	.id		= -1,
+-};
+-
+-static struct omap_lcd_config omap3_beagle_lcd_config __initdata = {
+-	.ctrl_name	= "internal",
+-};
+-
+ static struct regulator_consumer_supply beagle_vmmc1_supply = {
+ 	.supply			= "vmmc",
+ };
+@@ -181,16 +244,6 @@ static struct twl4030_gpio_platform_data beagle_gpio_data = {
+ 	.setup		= beagle_twl_gpio_setup,
+ };
+ 
+-static struct regulator_consumer_supply beagle_vdac_supply = {
+-	.supply		= "vdac",
+-	.dev		= &omap3_beagle_lcd_device.dev,
+-};
+-
+-static struct regulator_consumer_supply beagle_vdvi_supply = {
+-	.supply		= "vdvi",
+-	.dev		= &omap3_beagle_lcd_device.dev,
+-};
+-
+ /* VMMC1 for MMC1 pins CMD, CLK, DAT0..DAT3 (20 mA, plus card = max 220 mA) */
+ static struct regulator_init_data beagle_vmmc1 = {
+ 	.constraints = {
+@@ -349,14 +402,8 @@ static struct platform_device keys_gpio = {
+ 	},
+ };
+ 
+-static struct omap_board_config_kernel omap3_beagle_config[] __initdata = {
+-	{ OMAP_TAG_LCD,		&omap3_beagle_lcd_config },
+-};
+-
+ static void __init omap3_beagle_init_irq(void)
+ {
+-	omap_board_config = omap3_beagle_config;
+-	omap_board_config_size = ARRAY_SIZE(omap3_beagle_config);
+ 	omap2_init_common_hw(mt46h32m32lf6_sdrc_params,
+ 			     mt46h32m32lf6_sdrc_params);
+ 	omap_init_irq();
+@@ -367,9 +414,9 @@ static void __init omap3_beagle_init_irq(void)
+ }
+ 
+ static struct platform_device *omap3_beagle_devices[] __initdata = {
+-	&omap3_beagle_lcd_device,
+ 	&leds_gpio,
+ 	&keys_gpio,
++	&beagle_dss_device,
+ };
+ 
+ static void __init omap3beagle_flash_init(void)
+@@ -456,6 +503,8 @@ static void __init omap3_beagle_init(void)
+ 	/* Ensure SDRC pins are mux'd for self-refresh */
+ 	omap_mux_init_signal("sdrc_cke0", OMAP_PIN_OUTPUT);
+ 	omap_mux_init_signal("sdrc_cke1", OMAP_PIN_OUTPUT);
++
++	beagle_display_init();
+ }
+ 
+ static void __init omap3_beagle_map_io(void)
+-- 
+1.7.0.4
 
-  git://git.lwn.net/linux-2.6.git viafb-next
-
-Thanks,
-
-jon
-
-Chris Ball (1):
-      viafb: Add 1200x900 DCON/LCD panel modes for OLPC XO-1.5
-
-Florian Tobias Schandinat (7):
-      viafb: package often used basic io functions
-      viafb: unify modesetting functions
-      viafb: move some modesetting functions to a seperate file
-      viafb: replace inb/outb
-      viafb: improve misc register handling
-      viafb: fix proc entry removal
-      viafb: make procfs entries optional
-
-Harald Welte (4):
-      viafb: Fix various resource leaks during module_init()
-      viafb: use proper pci config API
-      viafb: Determine type of 2D engine and store it in chip_info
-      viafb: rework the I2C support in the VIA framebuffer driver
-
-Jonathan Corbet (22):
-      viafb: Unmap the frame buffer on initialization error
-      viafb: Retain GEMODE reserved bits
-      viafb: Unify duplicated set_bpp() code
-      viafb: complete support for VX800/VX855 accelerated framebuffer
-      viafb: Only establish i2c busses on ports that always had them
-      viafb: Move core stuff into via-core.c
-      viafb: Separate global and fb-specific data
-      viafb: add a driver for GPIO lines
-      viafb: Convert GPIO and i2c to the new indexed port ops
-      viafb: Turn GPIO and i2c into proper platform devices
-      via: Do not attempt I/O on inactive I2C adapters
-      viafb: Introduce viafb_find_i2c_adapter()
-      via: Rationalize vt1636 detection
-      viafb: Add a simple interrupt management infrastructure
-      viafb: Add a simple VX855 DMA engine driver
-      viafb: Reserve framebuffer memory for the upcoming camera driver
-      viafb: Do not remove gpiochip under spinlock
-      viafb: Fix initialization error paths
-      viafb: fold via_io.h into via-core.h
-      viafb: get rid of i2c debug cruft
-      viafb: Eliminate some global.h references
-      viafb: move some include files to include/linux
-
-Paul Fox (1):
-      suppress verbose debug messages: change printk() to DEBUG_MSG()
-
- drivers/video/Kconfig                              |   16 +
- drivers/video/via/Makefile                         |    4 +-
- drivers/video/via/accel.c                          |  137 +++--
- drivers/video/via/accel.h                          |   40 ++
- drivers/video/via/chip.h                           |    8 +
- drivers/video/via/dvi.c                            |   37 +-
- drivers/video/via/global.h                         |    1 -
- drivers/video/via/hw.c                             |  307 ++--------
- drivers/video/via/hw.h                             |   20 +-
- drivers/video/via/ioctl.h                          |    2 +-
- drivers/video/via/lcd.c                            |   31 +-
- drivers/video/via/lcd.h                            |    2 +
- drivers/video/via/share.h                          |   20 +-
- drivers/video/via/via-core.c                       |  668 ++++++++++++++++++++
- drivers/video/via/via-gpio.c                       |  285 +++++++++
- drivers/video/via/via_i2c.c                        |  232 +++++--
- drivers/video/via/via_modesetting.c                |  126 ++++
- drivers/video/via/{via_i2c.h => via_modesetting.h} |   42 +-
- drivers/video/via/via_utility.c                    |    1 +
- drivers/video/via/viafbdev.c                       |  181 +++---
- drivers/video/via/viafbdev.h                       |   14 +-
- drivers/video/via/viamode.c                        |   15 +
- drivers/video/via/vt1636.c                         |   34 +-
- drivers/video/via/vt1636.h                         |    2 +-
- include/linux/via-core.h                           |  219 +++++++
- include/linux/via-gpio.h                           |   14 +
- {drivers/video/via => include/linux}/via_i2c.h     |   24 +-
- 27 files changed, 1884 insertions(+), 598 deletions(-)
- create mode 100644 drivers/video/via/via-core.c
- create mode 100644 drivers/video/via/via-gpio.c
- create mode 100644 drivers/video/via/via_modesetting.c
- copy drivers/video/via/{via_i2c.h => via_modesetting.h} (53%)
- create mode 100644 include/linux/via-core.h
- create mode 100644 include/linux/via-gpio.h
- rename {drivers/video/via => include/linux}/via_i2c.h (65%)

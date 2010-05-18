@@ -1,34 +1,87 @@
-From: Pettiway Hatchette <swellhead@komfort-plus.cz>
-Date: Sat, 01 May 2010 17:33:26 +0000
-Subject: reed with him. The
-Message-Id: <4BDC64D4.5040104@clavellinas.com>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Tue, 18 May 2010 12:34:53 +0000
+Subject: [PATCH 02/23] OMAP: AM3517: Enable DSS2 in AM3517EVM defconfig
+Message-Id: <1274186114-26951-3-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcZGVmZjBcZGVmbGFuZzEwMzN7XCpcZ2VuZXJhdG9y
-IE1zZnRlZGl0IDMuMjEuOC44NTE5O317XGZvbnR0Ymx7XGYwXGZuaWxcZmNoYXJzZXQwIENh
-bGlicmk7fX0NCntcKlxnZW5lcmF0b3IgTXNmdGVkaXQgMy4yMS44Ljg1MTk7fXtcY29sb3J0
-YmwgO1xyZWQwXGdyZWVuMFxibHVlMjU1O1xyZWQxOTJcZ3JlZW44MFxibHVlNzc7XHJlZDBc
-Z3JlZW4xNzZcYmx1ZTgwO1xyZWQyMDRcZ3JlZW4xODBcYmx1ZTA7XHJlZDI1NVxncmVlbjBc
-Ymx1ZTA7XHJlZDIyM1xncmVlbjIwNlxibHVlNDtccmVkMTU1XGdyZWVuMFxibHVlMjExO1xy
-ZWQ3OVxncmVlbjEyOVxibHVlMTg5O1xyZWQxNjVcZ3JlZW4xNjVcYmx1ZTE2NTtccmVkMTI4
-XGdyZWVuMTU4XGJsdWUxOTQ7XHJlZDI0N1xncmVlbjE1MFxibHVlNzA7XHJlZDBcZ3JlZW43
-N1xibHVlMTg3O1xyZWQ3NVxncmVlbjE3MlxibHVlMTk4O1xyZWQyMjFcZ3JlZW4xMzJcYmx1
-ZTEzMjtccmVkNTFcZ3JlZW41MVxibHVlNTE7XHJlZDE1OFxncmVlbjEyNFxibHVlMTI0O1xy
-ZWQxNTVcZ3JlZW4xODdcYmx1ZTg5O30NCntcKlxnZW5lcmF0b3IgTXNmdGVkaXQgMy4yMS44
-Ljg1MTk7fVx2aWV3a2luZDRcdWMxXHBhcmRcc2EyMDBcc2wyNzZcc2xtdWx0MVxsYW5nOVxm
-MFxmczMye1xmaWVsZHtcKlxmbGRpbnN0e0hZUEVSTElOSyAiaHR0cDovL3d3dy54YTY2LnJ1
-In19e1xmbGRyc2x0e1x1bFxjZjEgaHR0cDovL3d3dy54YTY2LnJ1fX19XGYwXGNmMVxiXGZz
-MzIgIC0gT3JkZXIgdGhlIGNoZWFwZXN0IG1lZGljYXRpb25zIG5vdyFccGFyDQpWaWFncmEg
-XGNmNCBDaWFsaXMgXGNmMyBWaWFncmEgUHJvZmVzc2lvbmFsIFxjZjUgQ2lhbGlzIFByb2Zl
-c3Npb25hbCBcY2Y2IFZpYWdyYSBTdXBlciBBY3RpdmUrIFxjZjMgQ2lhbGlzIFN1cGVyIEFj
-dGl2ZSsgXGNmNyBMZXZpdHJhXGNmMCAgXGNmOCBWaWFncmEgU29mdCBUYWJzIFxjZjkgQ2lh
-bGlzIFNvZnQgVGFic1xjZjEwICBcY2YxMSBMZXZpdHJhIFByb2Zlc3Npb25hbCBcY2Y0IEZl
-bWFsZSBWaWFncmEgXGNmMTIgUHJvcGVjaWEgXGNmNyBBY29tcGxpYSBcY2Y2IFhlbmljYWxc
-Y2YwICBcY2Y1IEJyYW5kIExldml0cmEgXGNmMTMgRmVtYWxlIENpYWxpcyBcY2YxNCBMZXZp
-dHJhIFN1cGVyIEFjdGl2ZSsgXGNmMTUgVGFtaWZsdVxjZjAgIFxjZjcgVlBYTFxjZjAgIFxj
-ZjE2IFZpYWdyYSBTb2Z0IEZsYXZvdXJlZCBcY2Y1IEJyYW5kIFZpYWdyYSBcY2YxNyBCcmFu
-ZCBDaWFsaXNcY2YwDQp7XCpcZ2VuZXJhdG9yIE1zZnRlZGl0IDMuMjEuOC44NTE5O319
+From: Vaibhav Hiremath <hvaibhav@ti.com>
+
+Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
+[tomi.valkeinen@nokia.com: removed the board file changes]
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ arch/arm/configs/am3517_evm_defconfig |   52 ++++++++++++++++++++++++++++++++-
+ 1 files changed, 51 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/configs/am3517_evm_defconfig b/arch/arm/configs/am3517_evm_defconfig
+index 66a10b5..214ef42 100644
+--- a/arch/arm/configs/am3517_evm_defconfig
++++ b/arch/arm/configs/am3517_evm_defconfig
+@@ -692,7 +692,57 @@ CONFIG_SSB_POSSIBLE=y
+ #
+ # CONFIG_VGASTATE is not set
+ # CONFIG_VIDEO_OUTPUT_CONTROL is not set
+-# CONFIG_FB is not set
++CONFIG_FB=y
++# CONFIG_FIRMWARE_EDID is not set
++# CONFIG_FB_DDC is not set
++# CONFIG_FB_BOOT_VESA_SUPPORT is not set
++CONFIG_FB_CFB_FILLRECT=y
++CONFIG_FB_CFB_COPYAREA=y
++CONFIG_FB_CFB_IMAGEBLIT=y
++# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
++# CONFIG_FB_SYS_FILLRECT is not set
++# CONFIG_FB_SYS_COPYAREA is not set
++# CONFIG_FB_SYS_IMAGEBLIT is not set
++# CONFIG_FB_FOREIGN_ENDIAN is not set
++# CONFIG_FB_SYS_FOPS is not set
++# CONFIG_FB_SVGALIB is not set
++# CONFIG_FB_MACMODES is not set
++# CONFIG_FB_BACKLIGHT is not set
++# CONFIG_FB_MODE_HELPERS is not set
++# CONFIG_FB_TILEBLITTING is not set
++
++#
++# Frame buffer hardware drivers
++#
++# CONFIG_FB_ARMCLCD is not set
++# CONFIG_FB_S1D13XXX is not set
++# CONFIG_FB_VIRTUAL is not set
++# CONFIG_FB_METRONOME is not set
++# CONFIG_FB_MB862XX is not set
++# CONFIG_FB_BROADSHEET is not set
++# CONFIG_FB_OMAP_BOOTLOADER_INIT is not set
++CONFIG_OMAP2_VRAM=y
++CONFIG_OMAP2_VRFB=y
++CONFIG_OMAP2_DSS=y
++CONFIG_OMAP2_VRAM_SIZE=4
++CONFIG_OMAP2_DSS_DEBUG_SUPPORT=y
++# CONFIG_OMAP2_DSS_RFBI is not set
++CONFIG_OMAP2_DSS_VENC=y
++# CONFIG_OMAP2_DSS_SDI is not set
++# CONFIG_OMAP2_DSS_DSI is not set
++# CONFIG_OMAP2_DSS_FAKE_VSYNC is not set
++CONFIG_OMAP2_DSS_MIN_FCK_PER_PCK=4
++CONFIG_FB_OMAP2=y
++CONFIG_FB_OMAP2_DEBUG_SUPPORT=y
++# CONFIG_FB_OMAP2_FORCE_AUTO_UPDATE is not set
++CONFIG_FB_OMAP2_NUM_FBS=3
++
++#
++# OMAP2/3 Display Device Drivers
++#
++CONFIG_PANEL_GENERIC=y
++# CONFIG_PANEL_SHARP_LS037V7DW01 is not set
++CONFIG_PANEL_SHARP_LQ043T1DG01=y
+ # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+ 
+ #
+-- 
+1.7.0.4
+

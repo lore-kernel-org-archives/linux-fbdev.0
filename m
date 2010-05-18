@@ -1,49 +1,58 @@
-From: Andrea Gelmini <andrea.gelmini@gelma.net>
-Date: Sun, 23 May 2010 19:56:05 +0000
-Subject: [PATCH 037/199] Documentation/fb/tgafb.txt: Checkpatch cleanup
-Message-Id: <1274644605-25181-9-git-send-email-andrea.gelmini@gelma.net>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Tue, 18 May 2010 12:34:55 +0000
+Subject: [PATCH 04/23] OMAP: DSS2: Remove redundant enable/disable calls from SDI
+Message-Id: <1274186114-26951-5-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Documentation/fb/tgafb.txt:21: ERROR: trailing whitespace
-Documentation/fb/tgafb.txt:47: ERROR: trailing whitespace
-Documentation/fb/tgafb.txt:51: ERROR: trailing whitespace
+From: Roger Quadros <roger.quadros@nokia.com>
 
-Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
+Panel enable/disable is now done via the panel driver, so we should not
+call the panel driver again
+
+Signed-off-by: Roger Quadros <roger.quadros@nokia.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- Documentation/fb/tgafb.txt |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/omap2/dss/sdi.c |   11 -----------
+ 1 files changed, 0 insertions(+), 11 deletions(-)
 
-diff --git a/Documentation/fb/tgafb.txt b/Documentation/fb/tgafb.txt
-index 250083a..1328385 100644
---- a/Documentation/fb/tgafb.txt
-+++ b/Documentation/fb/tgafb.txt
-@@ -18,7 +18,7 @@ Jay Estabrook.
- Major new features since Linux 2.0.x:
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 12eb404..3de3c1e 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -115,17 +115,9 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
  
-  * Support for multiple resolutions
-- * Support for fixed-frequency and other oddball monitors 
-+ * Support for fixed-frequency and other oddball monitors
-    (by allowing the video mode to be set at boot time)
+ 	dssdev->manager->enable(dssdev->manager);
  
- User-visible changes since Linux 2.2.x:
-@@ -44,11 +44,11 @@ font:X    - default font to use. All fonts are supported, including the
-             SUN12x22 font which is very nice at high resolutions.
+-	if (dssdev->driver->enable) {
+-		r = dssdev->driver->enable(dssdev);
+-		if (r)
+-			goto err3;
+-	}
+-
+ 	sdi.skip_init = 0;
  
- mode:X    - default video mode. The following video modes are supported:
--            640x480-60, 800x600-56, 640x480-72, 800x600-60, 800x600-72, 
-+            640x480-60, 800x600-56, 640x480-72, 800x600-60, 800x600-72,
- 	    1024x768-60, 1152x864-60, 1024x768-70, 1024x768-76,
- 	    1152x864-70, 1280x1024-61, 1024x768-85, 1280x1024-70,
- 	    1152x864-84, 1280x1024-76, 1280x1024-85
-- 
-+
+ 	return 0;
+-err3:
+-	dssdev->manager->disable(dssdev->manager);
+ err2:
+ 	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
+ err1:
+@@ -137,9 +129,6 @@ EXPORT_SYMBOL(omapdss_sdi_display_enable);
  
- Known Issues
- ======
+ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev)
+ {
+-	if (dssdev->driver->disable)
+-		dssdev->driver->disable(dssdev);
+-
+ 	dssdev->manager->disable(dssdev->manager);
+ 
+ 	dss_sdi_disable();
 -- 
-1.7.1.251.gf80a2
+1.7.0.4
 

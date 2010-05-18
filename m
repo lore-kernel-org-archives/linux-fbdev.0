@@ -1,180 +1,404 @@
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Date: Sun, 16 May 2010 15:33:09 +0000
-Subject: [PATCH v2 3/3] vga16fb, drm: vga16fb->drm handoff
-Message-Id: <20100516153309.GC2793@joi.lan>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Tue, 18 May 2010 12:35:02 +0000
+Subject: [PATCH 11/23] OMAP: DSS2: Taal: add mutex to protect panel data
+Message-Id: <1274186114-26951-12-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Simmons <jsimmons@infradead.org>, Ben Skeggs <bskeggs@redhat.com>, Dave Airlie <airlied@redhat.com>, linux-fbdev@vger.kernel.org, nouveau@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Peter Jones <pjones@redhat.com>
+To: linux-arm-kernel@lists.infradead.org
 
-let vga16fb claim 0xA0000+0x10000 region as its aperture;
-drm drivers don't use it, so we have to detect it and kick
-vga16fb manually - but only if drm is driving the primary card
-
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: James Simmons <jsimmons@infradead.org>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: Ben Skeggs <bskeggs@redhat.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
-no changes since last submission
----
- drivers/gpu/drm/nouveau/nouveau_state.c |    7 ++++++-
- drivers/video/fbmem.c                   |   14 +++++++++++---
- drivers/video/vga16fb.c                 |   26 +++++++++++++++++++-------
- include/linux/fb.h                      |    3 ++-
- 4 files changed, 38 insertions(+), 12 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |  140 ++++++++++++++++++++++++-----
+ 1 files changed, 119 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/gpu/drm/nouveau/nouveau_state.c b/drivers/gpu/drm/nouveau/nouveau_state.c
-index 3efc339..83c6c6b 100644
---- a/drivers/gpu/drm/nouveau/nouveau_state.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_state.c
-@@ -666,11 +666,16 @@ static struct apertures_struct *nouveau_get_apertures(struct drm_device *dev)
- static int nouveau_remove_conflicting_drivers(struct drm_device *dev)
- {
- 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-+	bool primary = false;
- 	dev_priv->apertures = nouveau_get_apertures(dev);
- 	if (!dev_priv->apertures)
- 		return -ENOMEM;
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 4f3988a..1799096 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -31,6 +31,7 @@
+ #include <linux/completion.h>
+ #include <linux/workqueue.h>
+ #include <linux/slab.h>
++#include <linux/mutex.h>
+ 
+ #include <plat/display.h>
+ 
+@@ -67,6 +68,8 @@
+ static int _taal_enable_te(struct omap_dss_device *dssdev, bool enable);
+ 
+ struct taal_data {
++	struct mutex lock;
 +
-+#ifdef CONFIG_X86
-+	primary = dev->pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
-+#endif
- 	
--	remove_conflicting_framebuffers(dev_priv->apertures, "nouveaufb");
-+	remove_conflicting_framebuffers(dev_priv->apertures, "nouveaufb", primary);
- 	return 0;
- }
+ 	struct backlight_device *bldev;
  
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 7cfcd71..6deb57c 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1500,19 +1500,26 @@ static bool fb_do_apertures_overlap(struct apertures_struct *gena,
- 	return false;
- }
- 
--void remove_conflicting_framebuffers(struct apertures_struct *a, const char *name)
-+#define VGA_FB_PHYS 0xA0000
-+void remove_conflicting_framebuffers(struct apertures_struct *a,
-+				     const char *name, bool primary)
- {
- 	int i;
- 
- 	/* check all firmware fbs and kick off if the base addr overlaps */
- 	for (i = 0 ; i < FB_MAX; i++) {
-+		struct apertures_struct *gen_aper;
- 		if (!registered_fb[i])
- 			continue;
- 
- 		if (!(registered_fb[i]->flags & FBINFO_MISC_FIRMWARE))
- 			continue;
-+		
-+		gen_aper = registered_fb[i]->apertures;
-+		if (fb_do_apertures_overlap(gen_aper, a) ||
-+			(primary && gen_aper && gen_aper->count &&
-+			 gen_aper->ranges[0].base = VGA_FB_PHYS)) {
- 
--		if (fb_do_apertures_overlap(registered_fb[i]->apertures, a)) {
- 			printk(KERN_ERR "fb: conflicting fb hw usage "
- 			       "%s vs %s - removing generic driver\n",
- 			       name, registered_fb[i]->fix.id);
-@@ -1545,7 +1552,8 @@ register_framebuffer(struct fb_info *fb_info)
- 	if (fb_check_foreignness(fb_info))
- 		return -ENOSYS;
- 
--	remove_conflicting_framebuffers(fb_info->apertures, fb_info->fix.id);
-+	remove_conflicting_framebuffers(fb_info->apertures, fb_info->fix.id,
-+					 fb_is_primary_device(fb_info));
- 
- 	num_registered_fb++;
- 	for (i = 0 ; i < FB_MAX; i++)
-diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
-index bf638a4..149c47a 100644
---- a/drivers/video/vga16fb.c
-+++ b/drivers/video/vga16fb.c
-@@ -1263,10 +1263,19 @@ static void vga16fb_imageblit(struct fb_info *info, const struct fb_image *image
- 		vga_imageblit_color(info, image);
- }
- 
-+static void vga16fb_destroy(struct fb_info *info)
-+{
-+	iounmap(info->screen_base);
-+	fb_dealloc_cmap(&info->cmap);
-+	/* XXX unshare VGA regions */
-+	framebuffer_release(info);
-+}
-+
- static struct fb_ops vga16fb_ops = {
- 	.owner		= THIS_MODULE,
- 	.fb_open        = vga16fb_open,
- 	.fb_release     = vga16fb_release,
-+	.fb_destroy	= vga16fb_destroy,
- 	.fb_check_var	= vga16fb_check_var,
- 	.fb_set_par	= vga16fb_set_par,
- 	.fb_setcolreg 	= vga16fb_setcolreg,
-@@ -1306,6 +1315,11 @@ static int __devinit vga16fb_probe(struct platform_device *dev)
- 		ret = -ENOMEM;
- 		goto err_fb_alloc;
+ 	unsigned long	hw_guard_end;	/* next value of jiffies when we can
+@@ -510,6 +513,8 @@ static int taal_probe(struct omap_dss_device *dssdev)
  	}
-+	info->apertures = alloc_apertures(1);
-+	if (!info->apertures) {
-+		ret = -ENOMEM;
-+		goto err_ioremap;
+ 	td->dssdev = dssdev;
+ 
++	mutex_init(&td->lock);
++
+ 	td->esd_wq = create_singlethread_workqueue("taal_esd");
+ 	if (td->esd_wq = NULL) {
+ 		dev_err(&dssdev->dev, "can't create ESD workqueue\n");
+@@ -733,54 +738,96 @@ static void taal_power_off(struct omap_dss_device *dssdev)
+ 
+ static int taal_enable(struct omap_dss_device *dssdev)
+ {
++	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+ 	int r;
++
+ 	dev_dbg(&dssdev->dev, "enable\n");
+ 
+-	if (dssdev->state != OMAP_DSS_DISPLAY_DISABLED)
+-		return -EINVAL;
++	mutex_lock(&td->lock);
++
++	if (dssdev->state != OMAP_DSS_DISPLAY_DISABLED) {
++		r = -EINVAL;
++		goto err;
 +	}
  
- 	/* XXX share VGA_FB_PHYS and I/O region with vgacon and others */
- 	info->screen_base = (void __iomem *)VGA_MAP_MEM(VGA_FB_PHYS, 0);
-@@ -1335,7 +1349,7 @@ static int __devinit vga16fb_probe(struct platform_device *dev)
- 	info->fix = vga16fb_fix;
- 	/* supports rectangles with widths of multiples of 8 */
- 	info->pixmap.blit_x = 1 << 7 | 1 << 15 | 1 << 23 | 1 << 31;
--	info->flags = FBINFO_FLAG_DEFAULT |
-+	info->flags = FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE |
- 		FBINFO_HWACCEL_YPAN;
+ 	r = taal_power_on(dssdev);
+ 	if (r)
+-		return r;
++		goto err;
  
- 	i = (info->var.bits_per_pixel = 8) ? 256 : 16;
-@@ -1354,6 +1368,9 @@ static int __devinit vga16fb_probe(struct platform_device *dev)
+ 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
  
- 	vga16fb_update_fix(info);
- 
-+	info->apertures->ranges[0].base = VGA_FB_PHYS;
-+	info->apertures->ranges[0].size = VGA_FB_PHYS_LEN;
++	mutex_unlock(&td->lock);
 +
- 	if (register_framebuffer(info) < 0) {
- 		printk(KERN_ERR "vga16fb: unable to register framebuffer\n");
- 		ret = -EINVAL;
-@@ -1380,13 +1397,8 @@ static int vga16fb_remove(struct platform_device *dev)
- {
- 	struct fb_info *info = platform_get_drvdata(dev);
- 
--	if (info) {
-+	if (info)
- 		unregister_framebuffer(info);
--		iounmap(info->screen_base);
--		fb_dealloc_cmap(&info->cmap);
--	/* XXX unshare VGA regions */
--		framebuffer_release(info);
--	}
- 
- 	return 0;
++	return 0;
++err:
++	dev_dbg(&dssdev->dev, "enable failed\n");
++	mutex_unlock(&td->lock);
+ 	return r;
  }
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index f88e254..1296af4 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -971,7 +971,8 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
- /* drivers/video/fbmem.c */
- extern int register_framebuffer(struct fb_info *fb_info);
- extern int unregister_framebuffer(struct fb_info *fb_info);
--extern void remove_conflicting_framebuffers(struct apertures_struct *a, const char *name);
-+extern void remove_conflicting_framebuffers(struct apertures_struct *a,
-+				const char *name, bool primary);
- extern int fb_prepare_logo(struct fb_info *fb_info, int rotate);
- extern int fb_show_logo(struct fb_info *fb_info, int rotate);
- extern char* fb_get_buffer_offset(struct fb_info *info, struct fb_pixmap *buf, u32 size);
+ 
+ static void taal_disable(struct omap_dss_device *dssdev)
+ {
++	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++
+ 	dev_dbg(&dssdev->dev, "disable\n");
+ 
++	mutex_lock(&td->lock);
++
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
+ 		taal_power_off(dssdev);
+ 
+ 	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
++
++	mutex_unlock(&td->lock);
+ }
+ 
+ static int taal_suspend(struct omap_dss_device *dssdev)
+ {
++	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++	int r;
++
+ 	dev_dbg(&dssdev->dev, "suspend\n");
+ 
+-	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
+-		return -EINVAL;
++	mutex_lock(&td->lock);
++
++	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE) {
++		r = -EINVAL;
++		goto err;
++	}
+ 
+ 	taal_power_off(dssdev);
+ 	dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED;
+ 
++	mutex_unlock(&td->lock);
++
+ 	return 0;
++err:
++	mutex_unlock(&td->lock);
++	return r;
+ }
+ 
+ static int taal_resume(struct omap_dss_device *dssdev)
+ {
++	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+ 	int r;
++
+ 	dev_dbg(&dssdev->dev, "resume\n");
+ 
+-	if (dssdev->state != OMAP_DSS_DISPLAY_SUSPENDED)
+-		return -EINVAL;
++	mutex_lock(&td->lock);
++
++	if (dssdev->state != OMAP_DSS_DISPLAY_SUSPENDED) {
++		r = -EINVAL;
++		goto err;
++	}
+ 
+ 	r = taal_power_on(dssdev);
+ 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
++
++	mutex_unlock(&td->lock);
++
++	return r;
++err:
++	mutex_unlock(&td->lock);
+ 	return r;
+ }
+ 
+@@ -799,6 +846,7 @@ static int taal_update(struct omap_dss_device *dssdev,
+ 
+ 	dev_dbg(&dssdev->dev, "update %d, %d, %d x %d\n", x, y, w, h);
+ 
++	mutex_lock(&td->lock);
+ 	dsi_bus_lock();
+ 
+ 	if (!td->enabled) {
+@@ -820,18 +868,24 @@ static int taal_update(struct omap_dss_device *dssdev,
+ 		goto err;
+ 
+ 	/* note: no bus_unlock here. unlock is in framedone_cb */
++	mutex_unlock(&td->lock);
+ 	return 0;
+ err:
+ 	dsi_bus_unlock();
++	mutex_unlock(&td->lock);
+ 	return r;
+ }
+ 
+ static int taal_sync(struct omap_dss_device *dssdev)
+ {
++	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++
+ 	dev_dbg(&dssdev->dev, "sync\n");
+ 
++	mutex_lock(&td->lock);
+ 	dsi_bus_lock();
+ 	dsi_bus_unlock();
++	mutex_unlock(&td->lock);
+ 
+ 	dev_dbg(&dssdev->dev, "sync done\n");
+ 
+@@ -861,13 +915,16 @@ static int _taal_enable_te(struct omap_dss_device *dssdev, bool enable)
+ 
+ static int taal_enable_te(struct omap_dss_device *dssdev, bool enable)
+ {
++	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+ 	int r;
+ 
++	mutex_lock(&td->lock);
+ 	dsi_bus_lock();
+ 
+ 	r = _taal_enable_te(dssdev, enable);
+ 
+ 	dsi_bus_unlock();
++	mutex_unlock(&td->lock);
+ 
+ 	return r;
+ }
+@@ -875,7 +932,13 @@ static int taal_enable_te(struct omap_dss_device *dssdev, bool enable)
+ static int taal_get_te(struct omap_dss_device *dssdev)
+ {
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+-	return td->te_enabled;
++	int r;
++
++	mutex_lock(&td->lock);
++	r = td->te_enabled;
++	mutex_unlock(&td->lock);
++
++	return r;
+ }
+ 
+ static int taal_rotate(struct omap_dss_device *dssdev, u8 rotate)
+@@ -885,6 +948,7 @@ static int taal_rotate(struct omap_dss_device *dssdev, u8 rotate)
+ 
+ 	dev_dbg(&dssdev->dev, "rotate %d\n", rotate);
+ 
++	mutex_lock(&td->lock);
+ 	dsi_bus_lock();
+ 
+ 	if (td->enabled) {
+@@ -896,16 +960,24 @@ static int taal_rotate(struct omap_dss_device *dssdev, u8 rotate)
+ 	td->rotate = rotate;
+ 
+ 	dsi_bus_unlock();
++	mutex_unlock(&td->lock);
+ 	return 0;
+ err:
+ 	dsi_bus_unlock();
++	mutex_unlock(&td->lock);
+ 	return r;
+ }
+ 
+ static u8 taal_get_rotate(struct omap_dss_device *dssdev)
+ {
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+-	return td->rotate;
++	int r;
++
++	mutex_lock(&td->lock);
++	r = td->rotate;
++	mutex_unlock(&td->lock);
++
++	return r;
+ }
+ 
+ static int taal_mirror(struct omap_dss_device *dssdev, bool enable)
+@@ -915,6 +987,7 @@ static int taal_mirror(struct omap_dss_device *dssdev, bool enable)
+ 
+ 	dev_dbg(&dssdev->dev, "mirror %d\n", enable);
+ 
++	mutex_lock(&td->lock);
+ 	dsi_bus_lock();
+ 	if (td->enabled) {
+ 		r = taal_set_addr_mode(td->rotate, enable);
+@@ -925,23 +998,33 @@ static int taal_mirror(struct omap_dss_device *dssdev, bool enable)
+ 	td->mirror = enable;
+ 
+ 	dsi_bus_unlock();
++	mutex_unlock(&td->lock);
+ 	return 0;
+ err:
+ 	dsi_bus_unlock();
++	mutex_unlock(&td->lock);
+ 	return r;
+ }
+ 
+ static bool taal_get_mirror(struct omap_dss_device *dssdev)
+ {
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+-	return td->mirror;
++	int r;
++
++	mutex_lock(&td->lock);
++	r = td->mirror;
++	mutex_unlock(&td->lock);
++
++	return r;
+ }
+ 
+ static int taal_run_test(struct omap_dss_device *dssdev, int test_num)
+ {
++	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+ 	u8 id1, id2, id3;
+ 	int r;
+ 
++	mutex_lock(&td->lock);
+ 	dsi_bus_lock();
+ 
+ 	r = taal_dcs_read_1(DCS_GET_ID1, &id1);
+@@ -955,9 +1038,11 @@ static int taal_run_test(struct omap_dss_device *dssdev, int test_num)
+ 		goto err;
+ 
+ 	dsi_bus_unlock();
++	mutex_unlock(&td->lock);
+ 	return 0;
+ err:
+ 	dsi_bus_unlock();
++	mutex_unlock(&td->lock);
+ 	return r;
+ }
+ 
+@@ -971,12 +1056,16 @@ static int taal_memory_read(struct omap_dss_device *dssdev,
+ 	unsigned buf_used = 0;
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+ 
+-	if (!td->enabled)
+-		return -ENODEV;
+-
+ 	if (size < w * h * 3)
+ 		return -ENOMEM;
+ 
++	mutex_lock(&td->lock);
++
++	if (!td->enabled) {
++		r = -ENODEV;
++		goto err1;
++	}
++
+ 	size = min(w * h * 3,
+ 			dssdev->panel.timings.x_res *
+ 			dssdev->panel.timings.y_res * 3);
+@@ -995,7 +1084,7 @@ static int taal_memory_read(struct omap_dss_device *dssdev,
+ 
+ 	r = dsi_vc_set_max_rx_packet_size(TCH, plen);
+ 	if (r)
+-		goto err0;
++		goto err2;
+ 
+ 	while (buf_used < size) {
+ 		u8 dcs_cmd = first ? 0x2e : 0x3e;
+@@ -1006,7 +1095,7 @@ static int taal_memory_read(struct omap_dss_device *dssdev,
+ 
+ 		if (r < 0) {
+ 			dev_err(&dssdev->dev, "read error\n");
+-			goto err;
++			goto err3;
+ 		}
+ 
+ 		buf_used += r;
+@@ -1020,16 +1109,18 @@ static int taal_memory_read(struct omap_dss_device *dssdev,
+ 			dev_err(&dssdev->dev, "signal pending, "
+ 					"aborting memory read\n");
+ 			r = -ERESTARTSYS;
+-			goto err;
++			goto err3;
+ 		}
+ 	}
+ 
+ 	r = buf_used;
+ 
+-err:
++err3:
+ 	dsi_vc_set_max_rx_packet_size(TCH, 1);
+-err0:
++err2:
+ 	dsi_bus_unlock();
++err1:
++	mutex_unlock(&td->lock);
+ 	return r;
+ }
+ 
+@@ -1041,8 +1132,12 @@ static void taal_esd_work(struct work_struct *work)
+ 	u8 state1, state2;
+ 	int r;
+ 
+-	if (!td->enabled)
++	mutex_lock(&td->lock);
++
++	if (!td->enabled) {
++		mutex_unlock(&td->lock);
+ 		return;
++	}
+ 
+ 	dsi_bus_lock();
+ 
+@@ -1084,16 +1179,19 @@ static void taal_esd_work(struct work_struct *work)
+ 
+ 	queue_delayed_work(td->esd_wq, &td->esd_work, TAAL_ESD_CHECK_PERIOD);
+ 
++	mutex_unlock(&td->lock);
+ 	return;
+ err:
+ 	dev_err(&dssdev->dev, "performing LCD reset\n");
+ 
+-	taal_disable(dssdev);
+-	taal_enable(dssdev);
++	taal_power_off(dssdev);
++	taal_power_on(dssdev);
+ 
+ 	dsi_bus_unlock();
+ 
+ 	queue_delayed_work(td->esd_wq, &td->esd_work, TAAL_ESD_CHECK_PERIOD);
++
++	mutex_unlock(&td->lock);
+ }
+ 
+ static int taal_set_update_mode(struct omap_dss_device *dssdev,
 -- 
-1.7.1
+1.7.0.4
 

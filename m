@@ -1,45 +1,526 @@
-From: Pawel Osciak <p.osciak@samsung.com>
-Date: Mon, 31 May 2010 09:08:53 +0000
-Subject: [PATCH 4/6] s3c-fb: Separate S5PC100 and S5PV210 framebuffer driver
-Message-Id: <1275296935-2693-5-git-send-email-p.osciak@samsung.com>
+From: Ben Dooks <ben-linux@fluff.org>
+Date: Tue, 18 May 2010 10:54:03 +0000
+Subject: [PATCH 3/5] s3c-fb: Initial move to unifying the header files
+Message-Id: <1274180045-14645-4-git-send-email-ben-linux@fluff.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
-In-Reply-To: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
+References: <1274180045-14645-1-git-send-email-ben-linux@fluff.org>
+In-Reply-To: <1274180045-14645-1-git-send-email-ben-linux@fluff.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-S5PC100 and S5PV210 framebuffer devices differ slightly in terms of
-available registers and their driver data structures have to be separate.
+Remove the various header files that configure this driver and use the
+platform device name to select the correct configuration at probe time.
 
-Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Currently this does not remove the header files, only updates the driver
+and the relevant platform files.
+
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 ---
- drivers/video/s3c-fb.c |   37 ++++++++++++++++++++++++++++++++++---
- 1 files changed, 34 insertions(+), 3 deletions(-)
+ arch/arm/mach-s3c64xx/include/mach/regs-fb.h    |   20 ---
+ arch/arm/mach-s5pc100/include/mach/regs-fb.h    |   34 ----
+ arch/arm/plat-samsung/include/plat/regs-fb-v4.h |   36 ----
+ drivers/video/s3c-fb.c                          |  208 ++++++++++++++++++++---
+ 4 files changed, 180 insertions(+), 118 deletions(-)
 
+diff --git a/arch/arm/mach-s3c64xx/include/mach/regs-fb.h b/arch/arm/mach-s3c64xx/include/mach/regs-fb.h
+index f566115..a06ee0a 100644
+--- a/arch/arm/mach-s3c64xx/include/mach/regs-fb.h
++++ b/arch/arm/mach-s3c64xx/include/mach/regs-fb.h
+@@ -18,24 +18,4 @@
+ 
+ #include <plat/regs-fb-v4.h>
+ 
+-/* Palette registers */
+-#define WIN2_PAL(_entry)			(0x300 + ((_entry) * 2))
+-#define WIN3_PAL(_entry)			(0x320 + ((_entry) * 2))
+-#define WIN4_PAL(_entry)			(0x340 + ((_entry) * 2))
+-#define WIN0_PAL(_entry)			(0x400 + ((_entry) * 4))
+-#define WIN1_PAL(_entry)			(0x800 + ((_entry) * 4))
+-
+-static inline unsigned int s3c_fb_pal_reg(unsigned int window, int reg)
+-{
+-	switch (window) {
+-	case 0: return WIN0_PAL(reg);
+-	case 1: return WIN1_PAL(reg);
+-	case 2: return WIN2_PAL(reg);
+-	case 3: return WIN3_PAL(reg);
+-	case 4: return WIN4_PAL(reg);
+-	}
+-
+-	BUG();
+-}
+-
+ #endif /* __ASM_ARCH_MACH_REGS_FB_H */
+diff --git a/arch/arm/mach-s5pc100/include/mach/regs-fb.h b/arch/arm/mach-s5pc100/include/mach/regs-fb.h
+index 1732cd2..4be4cc9 100644
+--- a/arch/arm/mach-s5pc100/include/mach/regs-fb.h
++++ b/arch/arm/mach-s5pc100/include/mach/regs-fb.h
+@@ -100,40 +100,6 @@
+ #define BLENDCON					(0x260)
+ #define BLENDCON_8BIT_ALPHA				(1 << 0)
+ 
+-/* Per-window palette base addresses (start of palette memory).
+- * Each window palette area consists of 256 32-bit entries.
+- * START is the first address (entry 0th), END is the address of 255th entry.
+- */
+-#define WIN0_PAL_BASE					(0x2400)
+-#define WIN0_PAL_END					(0x27fc)
+-#define WIN1_PAL_BASE					(0x2800)
+-#define WIN1_PAL_END					(0x2bfc)
+-#define WIN2_PAL_BASE					(0x2c00)
+-#define WIN2_PAL_END					(0x2ffc)
+-#define WIN3_PAL_BASE					(0x3000)
+-#define WIN3_PAL_END					(0x33fc)
+-#define WIN4_PAL_BASE					(0x3400)
+-#define WIN4_PAL_END					(0x37fc)
+-
+-#define WIN0_PAL(_entry)			(WIN0_PAL_BASE + ((_entry) * 4))
+-#define WIN1_PAL(_entry)			(WIN1_PAL_BASE + ((_entry) * 4))
+-#define WIN2_PAL(_entry)			(WIN2_PAL_BASE + ((_entry) * 4))
+-#define WIN3_PAL(_entry)			(WIN3_PAL_BASE + ((_entry) * 4))
+-#define WIN4_PAL(_entry)			(WIN4_PAL_BASE + ((_entry) * 4))
+-
+-static inline unsigned int s3c_fb_pal_reg(unsigned int window, int reg)
+-{
+-	switch (window) {
+-	case 0: return WIN0_PAL(reg);
+-	case 1: return WIN1_PAL(reg);
+-	case 2: return WIN2_PAL(reg);
+-	case 3: return WIN3_PAL(reg);
+-	case 4: return WIN4_PAL(reg);
+-	}
+-
+-	BUG();
+-}
+-
+ 
+ #endif /* __ASM_ARCH_REGS_FB_H */
+ 
+diff --git a/arch/arm/plat-samsung/include/plat/regs-fb-v4.h b/arch/arm/plat-samsung/include/plat/regs-fb-v4.h
+index 0f43599..0477e8a 100644
+--- a/arch/arm/plat-samsung/include/plat/regs-fb-v4.h
++++ b/arch/arm/plat-samsung/include/plat/regs-fb-v4.h
+@@ -148,42 +148,6 @@
+  * compiled.
+ */
+ 
+-/* return true if window _win has OSD register D */
+-#define s3c_fb_has_osd_d(_win) ((_win) != 4 && (_win) != 0)
+-
+-static inline unsigned int s3c_fb_win_pal_size(unsigned int win)
+-{
+-	if (win < 2)
+-		return 256;
+-	if (win < 4)
+-		return 16;
+-	if (win = 4)
+-		return 4;
+-
+-	BUG();	/* shouldn't get here */
+-}
+-
+-static inline int s3c_fb_validate_win_bpp(unsigned int win, unsigned int bpp)
+-{
+-	/* all windows can do 1/2 bpp */
+-
+-	if ((bpp = 25 || bpp = 19) && win = 0)
+-		return 0;	/* win 0 does not have 19 or 25bpp modes */
+-
+-	if (bpp = 4 && win = 4)
+-		return 0;
+-
+-	if (bpp = 8 && (win >= 3))
+-		return 0;	/* win 3/4 cannot do 8bpp in any mode */
+-
+-	return 1;
+-}
+-
+-static inline int s3c_fb_pal_is16(unsigned int window)
+-{
+-	return window > 1;
+-}
+-
+ struct s3c_fb_palette {
+ 	struct fb_bitfield	r;
+ 	struct fb_bitfield	g;
 diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index d998324..59ac76a 100644
+index 2403ed3..2c2de49 100644
 --- a/drivers/video/s3c-fb.c
 +++ b/drivers/video/s3c-fb.c
-@@ -1251,7 +1251,35 @@ static struct s3c_fb_driverdata s3c_fb_data_64xx __devinitdata = {
- 	.win[4]	= &s3c_fb_data_64xx_wins[4],
+@@ -1,7 +1,7 @@
+ /* linux/drivers/video/s3c-fb.c
+  *
+  * Copyright 2008 Openmoko Inc.
+- * Copyright 2008 Simtec Electronics
++ * Copyright 2008-2010 Simtec Electronics
+  *      Ben Dooks <ben@simtec.co.uk>
+  *      http://armlinux.simtec.co.uk/
+  *
+@@ -36,9 +36,9 @@
+  * output timings and as the control for the output power-down state.
+ */
+ 
+-/* note, some of the functions that get called are derived from including
+- * <mach/regs-fb.h> as they are specific to the architecture that the code
+- * is being built for.
++/* note, the previous use of <mach/regs-fb.h> to get platform specific data
++ * has been replaced by using the platform device name to pick the correct
++ * configuration data for the system.
+ */
+ 
+ #ifdef CONFIG_FB_S3C_DEBUG_REGWRITE
+@@ -50,11 +50,52 @@
+ 
+ struct s3c_fb;
+ 
++#define VALID_BPP(x) (1 << ((x) - 1))
++
++/**
++ * struct s3c_fb_variant - fb variant information
++ * @nr_windows: The number of windows.
++ * @palette: Address of palette memory, or 0 if none.
++ */
++struct s3c_fb_variant {
++	unsigned short	nr_windows;
++	unsigned short	palette[S3C_FB_MAX_WIN];
++};
++
++/**
++ * struct s3c_fb_win_variant
++ * @has_osd_c: Set if has OSD C register.
++ * @has_osd_d: Set if has OSD D register.
++ * @palette_sz: Size of palette in entries.
++ * @palette_16bpp: Set if palette is 16bits wide.
++ * @valid_bpp: 1 bit per BPP setting to show valid bits-per-pixel.
++ *
++ * valid_bpp bit x is set if (x+1)BPP is supported.
++ */
++struct s3c_fb_win_variant {
++	unsigned int	has_osd_c:1;
++	unsigned int	has_osd_d:1;
++	unsigned int	palette_16bpp:1;
++	unsigned short	palette_sz;
++	u32		valid_bpp;
++};
++
++/**
++ * struct s3c_fb_driverdata - per-device type driver data for init time.
++ * @variant: The variant information for this driver.
++ * @win: The window information for each window.
++ */
++struct s3c_fb_driverdata {
++	struct s3c_fb_variant	variant;
++	struct s3c_fb_win_variant *win[S3C_FB_MAX_WIN];
++};
++
+ /**
+  * struct s3c_fb_win - per window private data for each framebuffer.
+  * @windata: The platform data supplied for the window configuration.
+  * @parent: The hardware that this window is part of.
+  * @fbinfo: Pointer pack to the framebuffer info for this window.
++ * @varint: The variant information for this window.
+  * @palette_buffer: Buffer/cache to hold palette entries.
+  * @pseudo_palette: For use in TRUECOLOUR modes for entries 0..15/
+  * @index: The window number of this window.
+@@ -65,6 +106,7 @@ struct s3c_fb_win {
+ 	struct s3c_fb		*parent;
+ 	struct fb_info		*fbinfo;
+ 	struct s3c_fb_palette	 palette;
++	struct s3c_fb_win_variant variant;
+ 
+ 	u32			*palette_buffer;
+ 	u32			 pseudo_palette[16];
+@@ -77,6 +119,7 @@ struct s3c_fb_win {
+  * @regs_res: The resource we claimed for the IO registers.
+  * @bus_clk: The clk (hclk) feeding our interface and possibly pixclk.
+  * @regs: The mapped hardware registers.
++ * @variant: Variant information for this hardware.
+  * @enabled: A bitmask of enabled hardware windows.
+  * @pdata: The platform configuration data passed with the device.
+  * @windows: The hardware windows that have been claimed.
+@@ -86,6 +129,7 @@ struct s3c_fb {
+ 	struct resource		*regs_res;
+ 	struct clk		*bus_clk;
+ 	void __iomem		*regs;
++	struct s3c_fb_variant	 variant;
+ 
+ 	unsigned char		 enabled;
+ 
+@@ -94,15 +138,13 @@ struct s3c_fb {
  };
  
--static struct s3c_fb_driverdata s3c_fb_data_s5p __devinitdata = {
-+static struct s3c_fb_driverdata s3c_fb_data_s5pc100 __devinitdata = {
+ /**
+- * s3c_fb_win_has_palette() - determine if a mode has a palette
+- * @win: The window number being queried.
+- * @bpp: The number of bits per pixel to test.
+- *
+- * Work out if the given window supports palletised data at the specified bpp.
++ * s3c_fb_validate_win_bpp - validate the bits-per-pixel for this mode.
++ * @win: The device window.
++ * @bpp: The bit depth.
+  */
+-static int s3c_fb_win_has_palette(unsigned int win, unsigned int bpp)
++static bool s3c_fb_validate_win_bpp(struct s3c_fb_win *win, unsigned int bpp)
+ {
+-	return s3c_fb_win_pal_size(win) <= (1 << bpp);
++	return win->variant.valid_bpp & VALID_BPP(bpp);
+ }
+ 
+ /**
+@@ -125,7 +167,7 @@ static int s3c_fb_check_var(struct fb_var_screeninfo *var,
+ 	var->xres_virtual = max((unsigned int)windata->virtual_x, var->xres);
+ 	var->yres_virtual = max((unsigned int)windata->virtual_y, var->yres);
+ 
+-	if (!s3c_fb_validate_win_bpp(win->index, var->bits_per_pixel)) {
++	if (!s3c_fb_validate_win_bpp(win, var->bits_per_pixel)) {
+ 		dev_dbg(sfb->dev, "win %d: unsupported bpp %d\n",
+ 			win->index, var->bits_per_pixel);
+ 		return -EINVAL;
+@@ -140,7 +182,7 @@ static int s3c_fb_check_var(struct fb_var_screeninfo *var,
+ 	case 2:
+ 	case 4:
+ 	case 8:
+-		if (!s3c_fb_win_has_palette(win->index, var->bits_per_pixel)) {
++		if (sfb->variant.palette[win->index] != 0) {
+ 			/* non palletised, A:1,R:2,G:3,B:2 mode */
+ 			var->red.offset		= 4;
+ 			var->green.offset	= 2;
+@@ -282,7 +324,7 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 		info->fix.visual = FB_VISUAL_TRUECOLOR;
+ 		break;
+ 	case 8:
+-		if (s3c_fb_win_has_palette(win_no, 8))
++		if (win->variant.palette_sz >= 256)
+ 			info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
+ 		else
+ 			info->fix.visual = FB_VISUAL_TRUECOLOR;
+@@ -364,7 +406,7 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 		VIDISD14C_ALPHA1_G(0xf) |
+ 		VIDISD14C_ALPHA1_B(0xf);
+ 
+-	if (s3c_fb_has_osd_d(win_no)) {
++	if (win->variant.has_osd_d) {
+ 		writel(data, regs + VIDOSD_D(win_no));
+ 		writel(osdc_data, regs + VIDOSD_C(win_no));
+ 	} else
+@@ -470,7 +512,7 @@ static void s3c_fb_update_palette(struct s3c_fb *sfb,
+ 	void __iomem *palreg;
+ 	u32 palcon;
+ 
+-	palreg = sfb->regs + s3c_fb_pal_reg(win->index, reg);
++	palreg = sfb->regs + sfb->variant.palette[win->index];
+ 
+ 	dev_dbg(sfb->dev, "%s: win %d, reg %d (%p): %08x\n",
+ 		__func__, win->index, reg, palreg, value);
+@@ -480,10 +522,10 @@ static void s3c_fb_update_palette(struct s3c_fb *sfb,
+ 	palcon = readl(sfb->regs + WPALCON);
+ 	writel(palcon | WPALCON_PAL_UPDATE, sfb->regs + WPALCON);
+ 
+-	if (s3c_fb_pal_is16(win->index))
+-		writew(value, palreg);
++	if (win->variant.palette_16bpp)
++		writew(value, palreg + (reg * 2));
+ 	else
+-		writel(value, palreg);
++		writel(value, palreg + (reg * 4));
+ 
+ 	writel(palcon, sfb->regs + WPALCON);
+ }
+@@ -532,7 +574,7 @@ static int s3c_fb_setcolreg(unsigned regno,
+ 		break;
+ 
+ 	case FB_VISUAL_PSEUDOCOLOR:
+-		if (regno < s3c_fb_win_pal_size(win->index)) {
++		if (regno < win->variant.palette_sz) {
+ 			val  = chan_to_field(red, &win->palette.r);
+ 			val |= chan_to_field(green, &win->palette.g);
+ 			val |= chan_to_field(blue, &win->palette.b);
+@@ -735,12 +777,14 @@ static void s3c_fb_release_win(struct s3c_fb *sfb, struct s3c_fb_win *win)
+ /**
+  * s3c_fb_probe_win() - register an hardware window
+  * @sfb: The base resources for the hardware
++ * @variant: The variant information for this window.
+  * @res: Pointer to where to place the resultant window.
+  *
+  * Allocate and do the basic initialisation for one of the hardware's graphics
+  * windows.
+  */
+ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
++				      struct s3c_fb_win_variant *variant,
+ 				      struct s3c_fb_win **res)
+ {
+ 	struct fb_var_screeninfo *var;
+@@ -753,7 +797,7 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 
+ 	dev_dbg(sfb->dev, "probing window %d\n", win_no);
+ 
+-	palette_size = s3c_fb_win_pal_size(win_no);
++	palette_size = variant->palette_sz * 4;
+ 
+ 	fbinfo = framebuffer_alloc(sizeof(struct s3c_fb_win) +
+ 				   palette_size * sizeof(u32), sfb->dev);
+@@ -771,6 +815,7 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 
+ 	win = fbinfo->par;
+ 	var = &fbinfo->var;
++	win->variant = *variant;
+ 	win->fbinfo = fbinfo;
+ 	win->parent = sfb;
+ 	win->windata = windata;
+@@ -808,7 +853,7 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 
+ 	/* create initial colour map */
+ 
+-	ret = fb_alloc_cmap(&fbinfo->cmap, s3c_fb_win_pal_size(win_no), 1);
++	ret = fb_alloc_cmap(&fbinfo->cmap, win->variant.palette_sz, 1);
+ 	if (ret = 0)
+ 		fb_set_cmap(&fbinfo->cmap, fbinfo);
+ 	else
+@@ -851,6 +896,7 @@ static void s3c_fb_clear_win(struct s3c_fb *sfb, int win)
+ 
+ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ {
++	struct s3c_fb_driverdata *fbdrv;
+ 	struct device *dev = &pdev->dev;
+ 	struct s3c_fb_platdata *pd;
+ 	struct s3c_fb *sfb;
+@@ -858,6 +904,13 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 	int win;
+ 	int ret = 0;
+ 
++	fbdrv = (struct s3c_fb_driverdata *)platform_get_device_id(pdev)->driver_data;
++
++	if (fbdrv->variant.nr_windows > S3C_FB_MAX_WIN) {
++		dev_err(dev, "too many windows, cannot attach\n");
++		return -EINVAL;
++	}
++
+ 	pd = pdev->dev.platform_data;
+ 	if (!pd) {
+ 		dev_err(dev, "no platform data specified\n");
+@@ -872,6 +925,7 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 
+ 	sfb->dev = dev;
+ 	sfb->pdata = pd;
++	sfb->variant = fbdrv->variant;
+ 
+ 	sfb->bus_clk = clk_get(dev, "lcd");
+ 	if (IS_ERR(sfb->bus_clk)) {
+@@ -913,22 +967,23 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 
+ 	/* zero all windows before we do anything */
+ 
+-	for (win = 0; win < S3C_FB_MAX_WIN; win++)
++	for (win = 0; win < fbdrv->variant.nr_windows; win++)
+ 		s3c_fb_clear_win(sfb, win);
+ 
+ 	/* initialise colour key controls */
+-	for (win = 0; win < (S3C_FB_MAX_WIN - 1); win++) {
++	for (win = 0; win < (fbdrv->variant.nr_windows - 1); win++) {
+ 		writel(0xffffff, sfb->regs + WxKEYCONy(win, 0));
+ 		writel(0xffffff, sfb->regs + WxKEYCONy(win, 1));
+ 	}
+ 
+ 	/* we have the register setup, start allocating framebuffers */
+ 
+-	for (win = 0; win < S3C_FB_MAX_WIN; win++) {
++	for (win = 0; win < fbdrv->variant.nr_windows; win++) {
+ 		if (!pd->win[win])
+ 			continue;
+ 
+-		ret = s3c_fb_probe_win(sfb, win, &sfb->windows[win]);
++		ret = s3c_fb_probe_win(sfb, win, fbdrv->win[win],
++				       &sfb->windows[win]);
+ 		if (ret < 0) {
+ 			dev_err(dev, "failed to create window %d\n", win);
+ 			for (; win >= 0; win--)
+@@ -1019,10 +1074,10 @@ static int s3c_fb_resume(struct platform_device *pdev)
+ 	writel(pd->vidcon1, sfb->regs + VIDCON1);
+ 
+ 	/* zero all windows before we do anything */
+-	for (win_no = 0; win_no < S3C_FB_MAX_WIN; win_no++)
++	for (win_no = 0; win_no < sfb->variant.nr_windows; win_no++)
+ 		s3c_fb_clear_win(sfb, win_no);
+ 
+-	for (win_no = 0; win_no < S3C_FB_MAX_WIN - 1; win_no++) {
++	for (win_no = 0; win_no < sfb->variant.nr_windows - 1; win_no++) {
+ 		writel(0xffffff, sfb->regs + WxKEYCONy(win_no, 1));
+ 		writel(0xffffff, sfb->regs + WxKEYCONy(win_no, 1));
+ 	}
+@@ -1044,11 +1099,108 @@ static int s3c_fb_resume(struct platform_device *pdev)
+ #define s3c_fb_resume  NULL
+ #endif
+ 
++
++#define VALID_BPP124 (VALID_BPP(1) | VALID_BPP(2) | VALID_BPP(4))
++#define VALID_BPP1248 (VALID_BPP124 | VALID_BPP(8))
++
++static struct s3c_fb_win_variant s3c_fb_data_64xx_wins[] __devinitdata = {
++	[0] = {
++		.has_osd_c	= 1,
++		.palette_sz	= 256,
++		.valid_bpp	= VALID_BPP1248 | VALID_BPP(16) | VALID_BPP(24),
++	},
++	[1] = {
++		.has_osd_c	= 1,
++		.has_osd_d	= 1,
++		.palette_sz	= 256,
++		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(16) |
++				   VALID_BPP(18) | VALID_BPP(19) |
++				   VALID_BPP(24) | VALID_BPP(25)),
++	},
++	[2] = {
++		.has_osd_c	= 1,
++		.has_osd_d	= 1,
++		.palette_sz	= 16,
++		.palette_16bpp	= 1,
++		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(16) |
++				   VALID_BPP(18) | VALID_BPP(19) |
++				   VALID_BPP(24) | VALID_BPP(25)),
++	},
++	[3] = {
++		.has_osd_c	= 1,
++		.has_osd_d	= 1,
++		.palette_sz	= 16,
++		.palette_16bpp	= 1,
++		.valid_bpp	= (VALID_BPP124  | VALID_BPP(16) |
++				   VALID_BPP(18) | VALID_BPP(19) |
++				   VALID_BPP(24) | VALID_BPP(25)),
++	},
++	[4] = {
++		.has_osd_c	= 1,
++		.palette_sz	= 4,
++		.palette_16bpp	= 1,
++		.valid_bpp	= (VALID_BPP(1) | VALID_BPP(2) |
++				   VALID_BPP(16) | VALID_BPP(18) |
++				   VALID_BPP(24) | VALID_BPP(25)),
++	},
++};
++
++static struct s3c_fb_driverdata s3c_fb_data_64xx __devinitdata = {
 +	.variant = {
 +		.nr_windows	= 5,
-+		.vidtcon	= VIDTCON0,
-+		.wincon		= WINCON(0),
-+		.winmap		= WINxMAP(0),
-+		.keycon		= WKEYCON,
-+		.osd		= VIDOSD_BASE,
-+		.osd_stride	= 16,
-+		.buf_start	= VIDW_BUF_START(0),
-+		.buf_size	= VIDW_BUF_SIZE(0),
-+		.buf_end	= VIDW_BUF_END(0),
++
++		.palette = {
++			[0] = 0x400,
++			[1] = 0x800,
++			[2] = 0x300,
++			[3] = 0x320,
++			[4] = 0x340,
++		},
++	},
++	.win[0]	= &s3c_fb_data_64xx_wins[0],
++	.win[1]	= &s3c_fb_data_64xx_wins[1],
++	.win[2]	= &s3c_fb_data_64xx_wins[2],
++	.win[3]	= &s3c_fb_data_64xx_wins[3],
++	.win[4]	= &s3c_fb_data_64xx_wins[4],
++};
++
++static struct s3c_fb_driverdata s3c_fb_data_s5p __devinitdata = {
++	.variant = {
++		.nr_windows	= 5,
 +
 +		.palette = {
 +			[0] = 0x2400,
@@ -56,24 +537,27 @@ index d998324..59ac76a 100644
 +	.win[4]	= &s3c_fb_data_64xx_wins[4],
 +};
 +
-+static struct s3c_fb_driverdata s3c_fb_data_s5pv210 __devinitdata = {
- 	.variant = {
- 		.nr_windows	= 5,
- 		.vidtcon	= VIDTCON0,
-@@ -1319,8 +1347,11 @@ static struct platform_device_id s3c_fb_driver_ids[] = {
- 		.name		= "s3c-fb",
- 		.driver_data	= (unsigned long)&s3c_fb_data_64xx,
- 	}, {
--		.name		= "s5p-fb",
--		.driver_data	= (unsigned long)&s3c_fb_data_s5p,
-+		.name		= "s5pc100-fb",
-+		.driver_data	= (unsigned long)&s3c_fb_data_s5pc100,
++static struct platform_device_id s3c_fb_driver_ids[] = {
++	{
++		.name		= "s3c-fb",
++		.driver_data	= (unsigned long)&s3c_fb_data_64xx,
 +	}, {
-+		.name		= "s5pv210-fb",
-+		.driver_data	= (unsigned long)&s3c_fb_data_s5pv210,
- 	}, {
- 		.name		= "s3c2443-fb",
- 		.driver_data	= (unsigned long)&s3c_fb_data_s3c2443,
++		.name		= "s5p-fb",
++		.driver_data	= (unsigned long)&s3c_fb_data_s5p,
++	},
++	{},
++};
++MODULE_DEVICE_TABLE(platform, s3c_fb_driver_ids);
++
+ static struct platform_driver s3c_fb_driver = {
+ 	.probe		= s3c_fb_probe,
+ 	.remove		= __devexit_p(s3c_fb_remove),
+ 	.suspend	= s3c_fb_suspend,
+ 	.resume		= s3c_fb_resume,
++	.id_table	= s3c_fb_driver_ids,
+ 	.driver		= {
+ 		.name	= "s3c-fb",
+ 		.owner	= THIS_MODULE,
 -- 
-1.7.0.4
+1.6.3.3
 

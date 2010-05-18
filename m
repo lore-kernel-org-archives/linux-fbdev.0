@@ -1,71 +1,74 @@
-From: Pawel Osciak <p.osciak@samsung.com>
-Date: Mon, 31 May 2010 09:08:50 +0000
-Subject: [PATCH 1/6] s3c-fb: Fix various null references on framebuffer memory
-Message-Id: <1275296935-2693-2-git-send-email-p.osciak@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Tue, 18 May 2010 12:35:01 +0000
+Subject: [PATCH 10/23] OMAP: DSS2: Make partial update width even
+Message-Id: <1274186114-26951-11-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
-In-Reply-To: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
+References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: linux-arm-kernel@lists.infradead.org
 
-The following problems were found in the above situation:
+There are some strange problems with DSI and updates with odd widths. One
+particular problem is that HS TX timeout triggers easily with updates with
+odd widths.
 
-sfb->windows[win] was being assigned at the end of s3c_fb_probe_win only.
-This resulted in passing a NULL to s3c_fb_release_win if probe_win returned
-early and a memory leak.
+This patch makes the updates widths even, circumventing the problem. There
+should be no ill side effects with increasing the update area slightly to
+make the width even.
 
-dma_free_writecombine does not allow its third argument to be NULL.
-
-fb_dealloc_cmap does not verify whether its argument is not NULL.
-
-Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Ville Syrjälä <ville.syrjala@nokia.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/s3c-fb.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ drivers/video/omap2/dss/manager.c |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index b00c064..d998324 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -804,7 +804,8 @@ static void s3c_fb_free_memory(struct s3c_fb *sfb, struct s3c_fb_win *win)
- {
- 	struct fb_info *fbi = win->fbinfo;
- 
--	dma_free_writecombine(sfb->dev, PAGE_ALIGN(fbi->fix.smem_len),
-+	if (fbi->screen_base)
-+		dma_free_writecombine(sfb->dev, PAGE_ALIGN(fbi->fix.smem_len),
- 			      fbi->screen_base, fbi->fix.smem_start);
+diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+index 0820986..32ec2ff 100644
+--- a/drivers/video/omap2/dss/manager.c
++++ b/drivers/video/omap2/dss/manager.c
+@@ -940,6 +940,22 @@ static int configure_dispc(void)
+ 	return r;
  }
  
-@@ -819,7 +820,8 @@ static void s3c_fb_release_win(struct s3c_fb *sfb, struct s3c_fb_win *win)
- {
- 	if (win->fbinfo) {
- 		unregister_framebuffer(win->fbinfo);
--		fb_dealloc_cmap(&win->fbinfo->cmap);
-+		if (&win->fbinfo->cmap)
-+			fb_dealloc_cmap(&win->fbinfo->cmap);
- 		s3c_fb_free_memory(sfb, win);
- 		framebuffer_release(win->fbinfo);
++/* Make the coordinates even. There are some strange problems with OMAP and
++ * partial DSI update when the update widths are odd. */
++static void make_even(u16 *x, u16 *w)
++{
++	u16 x1, x2;
++
++	x1 = *x;
++	x2 = *x + *w;
++
++	x1 &= ~1;
++	x2 = ALIGN(x2, 2);
++
++	*x = x1;
++	*w = x2 - x1;
++}
++
+ /* Configure dispc for partial update. Return possibly modified update
+  * area */
+ void dss_setup_partial_planes(struct omap_dss_device *dssdev,
+@@ -968,6 +984,8 @@ void dss_setup_partial_planes(struct omap_dss_device *dssdev,
+ 		return;
  	}
-@@ -865,6 +867,7 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
- 	WARN_ON(windata->win_mode.yres = 0);
  
- 	win = fbinfo->par;
-+	*res = win;
- 	var = &fbinfo->var;
- 	win->variant = *variant;
- 	win->fbinfo = fbinfo;
-@@ -939,7 +942,6 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
- 		return ret;
++	make_even(&x, &w);
++
+ 	spin_lock_irqsave(&dss_cache.lock, flags);
+ 
+ 	/* We need to show the whole overlay if it is scaled. So look for
+@@ -1029,6 +1047,8 @@ void dss_setup_partial_planes(struct omap_dss_device *dssdev,
+ 		w = x2 - x1;
+ 		h = y2 - y1;
+ 
++		make_even(&x, &w);
++
+ 		DSSDBG("changing upd area due to ovl(%d) scaling %d,%d %dx%d\n",
+ 				i, x, y, w, h);
  	}
- 
--	*res = win;
- 	dev_info(sfb->dev, "window %d: fb %s\n", win_no, fbinfo->fix.id);
- 
- 	return 0;
 -- 
 1.7.0.4
 

@@ -1,43 +1,115 @@
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Wed, 05 May 2010 14:27:27 +0000
-Subject: [PATCH v3 07/21] OMAP: DSS2: Taal: Remove ESD work cancel from driver probe error handling
-Message-Id: <16a98ca1b45ba9b9bb30f23d242449c1d440df07.1273067195.git.ext-jani.1.nikula@nokia.com>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Tue, 18 May 2010 12:34:58 +0000
+Subject: [PATCH 07/23] OMAP: DSS2: check lock_fb_info() return value
+Message-Id: <1274186114-26951-8-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
- <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
- <1dfb7728d4d3ba8ceff808563e5a9f4c40aa3e9f.1273067195.git.ext-jani.1.nikula@nokia.com>
- <6b813e9f0008e23e7981f6ca35501f56c292858a.1273067195.git.ext-jani.1.nikula@nokia.com>
- <b32669a58d60491c3be4f7e52a52c27406cec877.1273067195.git.ext-jani.1.nikula@nokia.com>
- <94d9d7bebbf7588bd77b65e6a46044240140a350.1273067195.git.ext-jani.1.nikula@nokia.com>
- <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <61a89461654fe44174902f6e29b8acded7529b67.1273067195.git.ext-jani.1.nikula@nokia.com>
+References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com, tony@atomide.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
+To: linux-arm-kernel@lists.infradead.org
 
 From: Jani Nikula <ext-jani.1.nikula@nokia.com>
 
-ESD work is never queued in probe, no need to cancel it on probe error.
+Give up if lock_fb_info() fails, following the same convention as other
+lock_fb_info() users.
 
 Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- drivers/video/omap2/displays/panel-taal.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ drivers/video/omap2/omapfb/omapfb-ioctl.c |    3 ++-
+ drivers/video/omap2/omapfb/omapfb-sysfs.c |   21 ++++++++++++++-------
+ 2 files changed, 16 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 788aa91..d0701e2 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -627,7 +627,6 @@ err4:
- err3:
- 	backlight_device_unregister(bldev);
- err2:
--	cancel_delayed_work_sync(&td->esd_work);
- 	destroy_workqueue(td->esd_wq);
- err1:
- 	kfree(td);
+diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+index 2c0f01c..9c73618 100644
+--- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
++++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+@@ -183,7 +183,8 @@ int omapfb_update_window(struct fb_info *fbi,
+ 	struct omapfb2_device *fbdev = ofbi->fbdev;
+ 	int r;
+ 
+-	lock_fb_info(fbi);
++	if (!lock_fb_info(fbi))
++		return -ENODEV;
+ 	omapfb_lock(fbdev);
+ 
+ 	r = omapfb_update_window_nolock(fbi, x, y, w, h);
+diff --git a/drivers/video/omap2/omapfb/omapfb-sysfs.c b/drivers/video/omap2/omapfb/omapfb-sysfs.c
+index e104450..5179219 100644
+--- a/drivers/video/omap2/omapfb/omapfb-sysfs.c
++++ b/drivers/video/omap2/omapfb/omapfb-sysfs.c
+@@ -57,7 +57,8 @@ static ssize_t store_rotate_type(struct device *dev,
+ 	if (rot_type != OMAP_DSS_ROT_DMA && rot_type != OMAP_DSS_ROT_VRFB)
+ 		return -EINVAL;
+ 
+-	lock_fb_info(fbi);
++	if (!lock_fb_info(fbi))
++		return -ENODEV;
+ 
+ 	r = 0;
+ 	if (rot_type = ofbi->rotation_type)
+@@ -105,7 +106,8 @@ static ssize_t store_mirror(struct device *dev,
+ 	if (mirror != 0 && mirror != 1)
+ 		return -EINVAL;
+ 
+-	lock_fb_info(fbi);
++	if (!lock_fb_info(fbi))
++		return -ENODEV;
+ 
+ 	ofbi->mirror = mirror;
+ 
+@@ -137,7 +139,8 @@ static ssize_t show_overlays(struct device *dev,
+ 	ssize_t l = 0;
+ 	int t;
+ 
+-	lock_fb_info(fbi);
++	if (!lock_fb_info(fbi))
++		return -ENODEV;
+ 	omapfb_lock(fbdev);
+ 
+ 	for (t = 0; t < ofbi->num_overlays; t++) {
+@@ -195,7 +198,8 @@ static ssize_t store_overlays(struct device *dev, struct device_attribute *attr,
+ 	if (buf[len - 1] = '\n')
+ 		len = len - 1;
+ 
+-	lock_fb_info(fbi);
++	if (!lock_fb_info(fbi))
++		return -ENODEV;
+ 	omapfb_lock(fbdev);
+ 
+ 	if (len > 0) {
+@@ -317,7 +321,8 @@ static ssize_t show_overlays_rotate(struct device *dev,
+ 	ssize_t l = 0;
+ 	int t;
+ 
+-	lock_fb_info(fbi);
++	if (!lock_fb_info(fbi))
++		return -ENODEV;
+ 
+ 	for (t = 0; t < ofbi->num_overlays; t++) {
+ 		l += snprintf(buf + l, PAGE_SIZE - l, "%s%d",
+@@ -345,7 +350,8 @@ static ssize_t store_overlays_rotate(struct device *dev,
+ 	if (buf[len - 1] = '\n')
+ 		len = len - 1;
+ 
+-	lock_fb_info(fbi);
++	if (!lock_fb_info(fbi))
++		return -ENODEV;
+ 
+ 	if (len > 0) {
+ 		char *p = (char *)buf;
+@@ -416,7 +422,8 @@ static ssize_t store_size(struct device *dev, struct device_attribute *attr,
+ 
+ 	size = PAGE_ALIGN(simple_strtoul(buf, NULL, 0));
+ 
+-	lock_fb_info(fbi);
++	if (!lock_fb_info(fbi))
++		return -ENODEV;
+ 
+ 	for (i = 0; i < ofbi->num_overlays; i++) {
+ 		if (ofbi->overlays[i]->info.enabled) {
 -- 
-1.6.5.2
+1.7.0.4
 

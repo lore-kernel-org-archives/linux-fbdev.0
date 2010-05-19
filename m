@@ -1,37 +1,49 @@
-From: Ben Dooks <ben-linux@fluff.org>
-Date: Wed, 19 May 2010 01:57:00 +0000
+From: Yauhen Kharuzhy <jekhor@gmail.com>
+Date: Wed, 19 May 2010 06:25:02 +0000
 Subject: Re: s3c-fb updates
-Message-Id: <20100519015700.GE4720@trinity.fluff.org>
+Message-Id: <20100519062501.GA1429@jeknote.loshitsa1.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1274180045-14645-1-git-send-email-ben-linux@fluff.org>
 	<AANLkTinXI9Fgqk8juRNpAA4nxsDnL82CMXwYThZo6y1l@mail.gmail.com>
 	<20100519004519.GB4720@trinity.fluff.org>
-	<AANLkTil9VFeNtsYGgUljdMo4x4McC7CA9HEcwycyXlWP@mail.gmail.com>
-In-Reply-To: <AANLkTil9VFeNtsYGgUljdMo4x4McC7CA9HEcwycyXlWP@mail.gmail.com>
+In-Reply-To: <20100519004519.GB4720@trinity.fluff.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, May 19, 2010 at 10:53:09AM +0900, InKi Dae wrote:
-> Hi, Ben
+On Wed, May 19, 2010 at 01:45:19AM +0100, Ben Dooks wrote:
+> On Tue, May 18, 2010 at 11:35:00PM +0900, Kyungmin Park wrote:
+> > Hi,
+> > 
+> > On Tue, May 18, 2010 at 7:54 PM, Ben Dooks <ben-linux@fluff.org> wrote:
+> > > Updates for the s3c-fb to improbe the build and update support
+> > > for s5pv210 and s3c2416 devices.
+> > >
+> > > The dependency on Inki Dae's patches have been removed since they've
+> > > not been reposted, and at-least one causes build failures.
+> > 
+> > Ben please check your mailbox again. He sent it after your reply.
 > 
-> I sent patch series corrected as Andrew requested yesterday.
-> I was busy so I conformed your answer late.
+> no, what he sent was three patch files attached to a mail[1] which
+> Andrew Morton replied to saying that these needed to be sent as proper
+> patches with descriptions and other such things that patches have.
+>  
+> > Anyway, how do you integrate the FIMD and FIMC features in current
+> > driver? Any plans?
 > 
-> Sorry but please review my patch series again.
-
-I've merged the 24/32BPP fix onto my tree and the window selection,
-the S5PV210 shadowcon stuff is pending partly due to the fact it breaks
-the build on the old hardware and secondly I'd like to put that after
-the current work on multi-hardware support that was done for the s3c2443.
-
-I've updated git.fluff.org's dev/s3c-fb branch which these and rebased
-it onto the first pull set for mainline.
+> I've been discussiong things with the engineers here. However, the first
+> thing is to get the driver closer aligned to the one that Sys.LSI have
+> been shipping, which means getting some missing features sorted out.
+> 
+> By the way, which is the FIMC block? I've not seen any documentation
+> referencing this as an block in the SoC.
+FIMC is a camera interface block. It can output video stream directly to
+display controller FIFO.
 
 -- 
-Ben
+Yauhen Kharuzhy		jekhor _at_ gmail.com
+			JID: jek@jabber.ru
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
-
+A: No
+Q: Should I quote below my post?

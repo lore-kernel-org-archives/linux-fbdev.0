@@ -1,7 +1,7 @@
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Thu, 20 May 2010 09:02:55 +0000
+Date: Thu, 20 May 2010 11:03:45 +0000
 Subject: Re: [PATCH 1/4] fbdev: add a MIPI DSI header
-Message-Id: <Pine.LNX.4.64.1005201058250.26000@axis700.grange>
+Message-Id: <Pine.LNX.4.64.1005201251350.26000@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <Pine.LNX.4.64.1005071054510.4777@axis700.grange>
  <Pine.LNX.4.64.1005071102440.4777@axis700.grange>
@@ -9,35 +9,94 @@ References: <Pine.LNX.4.64.1005071054510.4777@axis700.grange>
  <Pine.LNX.4.64.1005190955500.3099@axis700.grange>
  <1274257308.2307.168.camel@tubuntu.research.nokia.com>
  <Pine.LNX.4.64.1005200939030.26000@axis700.grange>
- <1274344369.4246.28.camel@tubuntu.research.nokia.com> <20100520085405.GA14584@gandalf>
-In-Reply-To: <20100520085405.GA14584@gandalf>
+ <1274344369.4246.28.camel@tubuntu.research.nokia.com>
+In-Reply-To: <1274344369.4246.28.camel@tubuntu.research.nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Felipe Balbi <me@felipebalbi.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "Syrjala Ville (Nokia-D/Helsinki)" <ville.syrjala@nokia.com>
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "Syrjala Ville (Nokia-D/Helsinki)" <ville.syrjala@nokia.com>
 
-On Thu, 20 May 2010, Felipe Balbi wrote:
+On Thu, 20 May 2010, Tomi Valkeinen wrote:
 
-> On Thu, May 20, 2010 at 11:32:49AM +0300, Tomi Valkeinen wrote:
-> > On Thu, 2010-05-20 at 10:07 +0200, ext Guennadi Liakhovetski wrote:
-> > 
-> > > Yes, right, I should have said "they are related";) How about calling the 
-> > > header mipi_display.h? This would then unite DSI, DCS, DBI and DPI? 
-> > > Creating a separate header for each of these standards seems like an 
-> > > overkill to me. We could then put MIPI CSI and CPI standards in an 
-> > > include/media/mipi_camera.h. Not sure where to put various other MIPI 
-> > > standards, I guess, we'll have to think about it as a need arises.
-> > 
-> > mipi_display.h sounds good to me.
+> On Thu, 2010-05-20 at 10:07 +0200, ext Guennadi Liakhovetski wrote:
 > 
-> if there are extra mipi standards which should be taken care of, why
-> not include/linux/mipi/[display.h camera.h other1.h other2.h...] ?
+> > Yes, right, I should have said "they are related";) How about calling the 
+> > header mipi_display.h? This would then unite DSI, DCS, DBI and DPI? 
+> > Creating a separate header for each of these standards seems like an 
+> > overkill to me. We could then put MIPI CSI and CPI standards in an 
+> > include/media/mipi_camera.h. Not sure where to put various other MIPI 
+> > standards, I guess, we'll have to think about it as a need arises.
+> 
+> mipi_display.h sounds good to me.
+> 
+> > > Well, true, this is not a clear thing. MIPI DSI spec talks about "turn
+> > > on peripheral command". But the numbers are DSI data types, according to
+> > > the spec, and not all of them are commands.
+> > 
+> > Ok, how about "telegram types" then?
+> 
+> I wouldn't invent a new word for this =). The DSI spec talks about
+> commands, data types and transactions, I think we should pick one of
+> them.
+> 
+> Perhaps this is already approaching nitpicking, but:
+> 
+> As only some of the commands/datatypes/transactions are commands, I
+> think that's not proper word. All of them have a data type number, and I
+> guess they all are transactions. So "Turn On Peripheral Command" is a
+> transaction, and its data type is 0x32.
 
-I thought about this too, but I prefer to separate them thematically: 
-put display standards under video/, camera under media/ etc. This way 
-including these headers from respective drivers and platform code would 
-look more naturally, IMHO.
+Yes, transaction looks good to me.
+
+> I guess if the enum is named, it should then be mipi_dsi_transaction.
+> 
+> But then, which one of these would be more correct:
+> 
+> dsi_send(enum mipi_dsi_transaction transaction)
+> dsi_send(u8 datatype)
+> 
+> As I said previously, I haven't seen any panel using custom datatypes,
+> but I wouldn't be surprised if some panel does. In that sense I would go
+> for using u8, and then perhaps leaving the enum unnamed.
+> 
+> What do you think?
+
+Yes, I'd use u8 too, because the specs define "transaction types" to take 
+6 bits and "DCS commands" to be 8-bit ints. But, you know, doesn't our 
+case fall under case (b) of Chapter 5 "Typedefs" of CodingStyle?:) I mean, 
+wouldn't it make sense to create two typedefs for these to add some 
+type-safety? In fact, transaction types cannot be user-defined / 
+proprietary, right? So, for that an enum would work. It's only DCS 
+commands that allow extensions. But making transaction type an enum and 
+command a typedef would be ugly, and making a typedef for an enum is 
+frowned upon too...
+
+> > As others voted for unnamed enums, how about using them?
+> 
+> Sounds good.
+> 
+> > Concerning omap2 display drivers, AFAICS the only thing we want to change 
+> > there is to switch them too to using the common header and telegram type 
+> 
+> Yep, I think that's the only change for now.
+> 
+> > and command names? So far I don't see a need for a generic MIPI (display) 
+> > subsystem in the kernel with an own bus type, API etc. We could of course 
+> > create a simpe bus with callbacks for sending short and long packets and 
+> > reading data back, but do we really need it ATM?
+> 
+> This is something I've been thinking about for some time. I even made
+> some prototypes for it, but I didn't have time to go forward with it.
+> 
+> It would of course be nice to use the same panel driver on different
+> boards, so I think this is definitely something to think about in the
+> future.
+
+But you only need specific panel drivers if you want to support their 
+proprietary commands? Otherwise you only need a set of parameters - 
+timeing requirements etc. - which you can perfectly just pass in platform 
+data?
 
 Thanks
 Guennadi

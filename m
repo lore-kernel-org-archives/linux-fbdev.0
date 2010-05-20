@@ -1,118 +1,166 @@
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 19 May 2010 21:19:57 +0000
-Subject: Re: [PATCH 1/3] video: add support for getting video mode from device
-Message-Id: <AANLkTim4JddVZK99zb53iCKNLWSGLxfAX-d0yRS39yYc@mail.gmail.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Thu, 20 May 2010 16:31:56 +0000
+Subject: [PATCH 1/4 v3] fbdev: add a MIPI DSI header
+Message-Id: <Pine.LNX.4.64.1005201829260.26000@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <fa686aa41002161006l3b301febt94fe990df4bddfe9@mail.gmail.com>
-	<1267307902-31939-2-git-send-email-agust@denx.de>
-	<fa686aa41002272230s7f900c0fv1aabf0e26ccbf84c@mail.gmail.com>
-	<4B8A2CD7.7070305@firmworks.com> <1267415120.23523.1898.camel@pasglop>
-	<20100428154303.45d1ce87@wker>
-In-Reply-To: <20100428154303.45d1ce87@wker>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Anatolij Gustschin <agust-ynQEQJNshbs@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, wd-ynQEQJNshbs@public.gmane.org, dzu-ynQEQJNshbs@public.gmane.org, devicetree-discuss <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, linuxppc-dev-mnsaURCQ41sdnm+yROfE0A@public.gmane.org, yorksun-KZfg59tc24xl57MIdRCFDg@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>
+Cc: Magnus Damm <magnus.damm@gmail.com>, "linux-fbdev, @vger.kernel.org" <linux-fbdev@vger.kernel.org>, "lin, ux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "Syrjala Ville (Nokia-D/Helsinki)" <ville.syrjala@nokia.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-On Wed, Apr 28, 2010 at 7:43 AM, Anatolij Gustschin <agust@denx.de> wrote:
-> On Mon, 01 Mar 2010 14:45:20 +1100
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
->> On Sat, 2010-02-27 at 22:44 -1000, Mitch Bradley wrote:
->>
->> > As it turns out, I'm doing exactly that - exporting verbatim EDID
->> > data
->> > as the value of the "edid" property - for the display node on the Via
->> > version of the OLPC machine. =A0The kernel driver uses it instead of
->> > trying to obtain the EDID data from the monitor, because the builtin
->> > OLPC display cannot supply EDID data through the usual hardware
->> > interfaces.
->>
->> This is actually a common practice (though EDID is most often in
->> uppercase) on Apple hardware too. It has issues though in the sense that
->> it doesn't carry proper connector information and falls over in many
->> multi-head cases.
->>
->> I think passing the EDID data, when available, is thus the right thing
->> to do indeed, however that doesn't solve two problems:
->>
->> =A0- Where to put that property ? This is a complicated problem and we
->> might argue on a binding for weeks because video cards typically support
->> multiple outputs, etc. etc... I think the best for now is to stick as
->> closely as possible to the existing OF fb binding, and have "display"
->> nodes for each output, which can eventually contain an EDID. We might
->> also want to add a string that indicate the connector type. Specific
->> drivers might want to define additional properties here where it makes
->> sense such as binding of those outputs to CRTCs or such, up to you.
->
-> Putting EDID to display node would be really sufficient for LCDs in
-> our case. Other systems might define this additional connector type
-> property.
->
->>
->> =A0- We -also- want a way to specify the "default" mode as set by the
->> firmware, at least on some devices. The EDID gives capabilities, and
->> often for LCDs also the "preferred" mode which is almost always the
->> "default" mode ... but could be different. In order to avoid "flicking",
->> the driver might wants to know what is the currently programmed mode.
->> For that, having split out properties makes sense, though I would like
->> to either prefix them all with "mode," or stick them in a sub-node of
->> the display@.
->
-> I would propose defining following properties in the case the
-> programmed mode is different from "default" mode:
->
-> display@...{
-> =A0 =A0 =A0 =A0compatible =3D "<vendor>,<model>"
-> =A0 =A0 =A0 =A0EDID =3D [edid-data];
->
-> =A0 =A0 =A0 =A0current-mode {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pixel_clock =3D <value>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0horizontal_active =3D <value>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0horizontal_blank =3D <value>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0vertical_active =3D <value>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0vertical_blank =3D <value>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0horizontal_active =3D <value>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0hsync_offset =3D <value>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0hsync_pulse_width =3D <value>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0vsync_offset =3D <value>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0vsync_pulse_width =3D <value>;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0hsync_positive;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0vsync_positive;
-> =A0 =A0 =A0 =A0}
-> };
->
-> The firmware can set the "default" mode using the EDID's preferred
-> Detailed Timing Descriptor data. If on some devices it sets another
-> mode than the preferred mode, then the firmware can insert a
-> "current-mode" sub-node with currently programmed mode. The driver
-> can check for this sub-node and use it's data and if it isn't present,
-> it can use the preferred timing data from EDID. The names of the
-> properties here are actually what Detailed Timing Descriptor in EDID
-> specifies. What do you think?
+This header adds defines for MIPI DSI and DCS commands and data formats. See
+http://www.mipi.org/ for details.
 
-If you really want to do that, then I think it is okay.  I really
-don't know enough about the problem space to say whether or not that
-particular description is a good binding or not, but regardless it
-should be a video-controller-specific binding.  The name of the node
-should probably be prefixed with "<manufacturer>," and it should be
-documented along with the display controller's device tree binding.
-If another controller wants/needs a different binding format (for the
-current mode), then that is fine too (unless you can make a really
-good argument that this current-mode binding is perfect and no other
-layout should ever be required).  :-)
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
 
-Cheers,
-g.
+v2 -> v3:
 
->
-> Thanks,
-> Anatolij
->
+1. added peripheral-to-processor transaction types
 
+v1 -> v2:
 
+1. renamed mpi_dsi.h to mipi_display.h
+2. improved introductory comment
+3. changed < 10 enum values to match others as "0x0N"
+4. changed "command" to "transaction"
+5. added a couple of missing transaction types
+6. enums are now unnamed
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/include/video/mipi_display.h b/include/video/mipi_display.h
+new file mode 100644
+index 0000000..ddcc8ca
+--- /dev/null
++++ b/include/video/mipi_display.h
+@@ -0,0 +1,130 @@
++/*
++ * Defines for Mobile Industry Processor Interface (MIPI(R))
++ * Display Working Group standards: DSI, DCS, DBI, DPI
++ *
++ * Copyright (C) 2010 Guennadi Liakhovetski <g.liakhovetski@gmx.de>
++ * Copyright (C) 2006 Nokia Corporation
++ * Author: Imre Deak <imre.deak@nokia.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#ifndef MIPI_DISPLAY_H
++#define MIPI_DISPLAY_H
++
++/* MIPI DSI Processor-to-Peripheral transaction types */
++enum {
++	MIPI_DSI_V_SYNC_START				= 0x01,
++	MIPI_DSI_V_SYNC_END				= 0x11,
++	MIPI_DSI_H_SYNC_START				= 0x21,
++	MIPI_DSI_H_SYNC_END				= 0x31,
++
++	MIPI_DSI_COLOR_MODE_OFF				= 0x02,
++	MIPI_DSI_COLOR_MODE_ON				= 0x12,
++	MIPI_DSI_SHUTDOWN_PERIPHERAL			= 0x22,
++	MIPI_DSI_TURN_ON_PERIPHERAL			= 0x32,
++
++	MIPI_DSI_GENERIC_SHORT_WRITE_0_PARAM		= 0x03,
++	MIPI_DSI_GENERIC_SHORT_WRITE_1_PARAM		= 0x13,
++	MIPI_DSI_GENERIC_SHORT_WRITE_2_PARAM		= 0x23,
++
++	MIPI_DSI_GENERIC_READ_REQUEST_0_PARAM		= 0x04,
++	MIPI_DSI_GENERIC_READ_REQUEST_1_PARAM		= 0x14,
++	MIPI_DSI_GENERIC_READ_REQUEST_2_PARAM		= 0x24,
++
++	MIPI_DSI_DCS_SHORT_WRITE			= 0x05,
++	MIPI_DSI_DCS_SHORT_WRITE_PARAM			= 0x15,
++
++	MIPI_DSI_DCS_READ				= 0x06,
++
++	MIPI_DSI_SET_MAXIMUM_RETURN_PACKET_SIZE		= 0x37,
++
++	MIPI_DSI_END_OF_TRANSMISSION			= 0x08,
++
++	MIPI_DSI_NULL_PACKET				= 0x09,
++	MIPI_DSI_BLANKING_PACKET			= 0x19,
++	MIPI_DSI_GENERIC_LONG_WRITE			= 0x29,
++	MIPI_DSI_DCS_LONG_WRITE				= 0x39,
++
++	MIPI_DSI_LOOSELY_PACKED_PIXEL_STREAM_YCBCR20	= 0x0c,
++	MIPI_DSI_PACKED_PIXEL_STREAM_YCBCR24		= 0x1c,
++	MIPI_DSI_PACKED_PIXEL_STREAM_YCBCR16		= 0x2c,
++
++	MIPI_DSI_PACKED_PIXEL_STREAM_30			= 0x0d,
++	MIPI_DSI_PACKED_PIXEL_STREAM_36			= 0x1d,
++	MIPI_DSI_PACKED_PIXEL_STREAM_YCBCR12		= 0x3d,
++
++	MIPI_DSI_PACKED_PIXEL_STREAM_16			= 0x0e,
++	MIPI_DSI_PACKED_PIXEL_STREAM_18			= 0x1e,
++	MIPI_DSI_PIXEL_STREAM_3BYTE_18			= 0x2e,
++	MIPI_DSI_PACKED_PIXEL_STREAM_24			= 0x3e,
++};
++
++/* MIPI DSI Peripheral-to-Processor transaction types */
++enum {
++	MIPI_DSI_RX_ACKNOWLEDGE_AND_ERROR_REPORT	= 0x02,
++	MIPI_DSI_RX_END_OF_TRANSMISSION			= 0x08,
++	MIPI_DSI_RX_GENERIC_SHORT_READ_RESPONSE_1BYTE	= 0x11,
++	MIPI_DSI_RX_GENERIC_SHORT_READ_RESPONSE_2BYTE	= 0x12,
++	MIPI_DSI_RX_GENERIC_LONG_READ_RESPONSE		= 0x1a,
++	MIPI_DSI_RX_DCS_LONG_READ_RESPONSE		= 0x1c,
++	MIPI_DSI_RX_DCS_SHORT_READ_RESPONSE_1BYTE	= 0x21,
++	MIPI_DSI_RX_DCS_SHORT_READ_RESPONSE_2BYTE	= 0x22,
++};
++
++/* MIPI DCS commands */
++enum {
++	MIPI_DCS_NOP			= 0x00,
++	MIPI_DCS_SOFT_RESET		= 0x01,
++	MIPI_DCS_GET_DISPLAY_ID		= 0x04,
++	MIPI_DCS_GET_RED_CHANNEL	= 0x06,
++	MIPI_DCS_GET_GREEN_CHANNEL	= 0x07,
++	MIPI_DCS_GET_BLUE_CHANNEL	= 0x08,
++	MIPI_DCS_GET_DISPLAY_STATUS	= 0x09,
++	MIPI_DCS_GET_POWER_MODE		= 0x0A,
++	MIPI_DCS_GET_ADDRESS_MODE	= 0x0B,
++	MIPI_DCS_GET_PIXEL_FORMAT	= 0x0C,
++	MIPI_DCS_GET_DISPLAY_MODE	= 0x0D,
++	MIPI_DCS_GET_SIGNAL_MODE	= 0x0E,
++	MIPI_DCS_GET_DIAGNOSTIC_RESULT	= 0x0F,
++	MIPI_DCS_ENTER_SLEEP_MODE	= 0x10,
++	MIPI_DCS_EXIT_SLEEP_MODE	= 0x11,
++	MIPI_DCS_ENTER_PARTIAL_MODE	= 0x12,
++	MIPI_DCS_ENTER_NORMAL_MODE	= 0x13,
++	MIPI_DCS_EXIT_INVERT_MODE	= 0x20,
++	MIPI_DCS_ENTER_INVERT_MODE	= 0x21,
++	MIPI_DCS_SET_GAMMA_CURVE	= 0x26,
++	MIPI_DCS_SET_DISPLAY_OFF	= 0x28,
++	MIPI_DCS_SET_DISPLAY_ON		= 0x29,
++	MIPI_DCS_SET_COLUMN_ADDRESS	= 0x2A,
++	MIPI_DCS_SET_PAGE_ADDRESS	= 0x2B,
++	MIPI_DCS_WRITE_MEMORY_START	= 0x2C,
++	MIPI_DCS_WRITE_LUT		= 0x2D,
++	MIPI_DCS_READ_MEMORY_START	= 0x2E,
++	MIPI_DCS_SET_PARTIAL_AREA	= 0x30,
++	MIPI_DCS_SET_SCROLL_AREA	= 0x33,
++	MIPI_DCS_SET_TEAR_OFF		= 0x34,
++	MIPI_DCS_SET_TEAR_ON		= 0x35,
++	MIPI_DCS_SET_ADDRESS_MODE	= 0x36,
++	MIPI_DCS_SET_SCROLL_START	= 0x37,
++	MIPI_DCS_EXIT_IDLE_MODE		= 0x38,
++	MIPI_DCS_ENTER_IDLE_MODE	= 0x39,
++	MIPI_DCS_SET_PIXEL_FORMAT	= 0x3A,
++	MIPI_DCS_WRITE_MEMORY_CONTINUE	= 0x3C,
++	MIPI_DCS_READ_MEMORY_CONTINUE	= 0x3E,
++	MIPI_DCS_SET_TEAR_SCANLINE	= 0x44,
++	MIPI_DCS_GET_SCANLINE		= 0x45,
++	MIPI_DCS_READ_DDB_START		= 0xA1,
++	MIPI_DCS_READ_DDB_CONTINUE	= 0xA8,
++};
++
++/* MIPI DCS pixel formats */
++#define MIPI_DCS_PIXEL_FMT_24BIT	7
++#define MIPI_DCS_PIXEL_FMT_18BIT	6
++#define MIPI_DCS_PIXEL_FMT_16BIT	5
++#define MIPI_DCS_PIXEL_FMT_12BIT	3
++#define MIPI_DCS_PIXEL_FMT_8BIT		2
++#define MIPI_DCS_PIXEL_FMT_3BIT		1
++
++#endif

@@ -1,120 +1,47 @@
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Mon, 03 May 2010 06:18:33 +0000
-Subject: [PATCH v2 13/21] OMAP: DSS2: Taal: Change probe error handling labels
-Message-Id: <b88e1b382ddf14870c7a44e7ca620ad84d883b50.1272621452.git.ext-jani.1.nikula@nokia.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 21 May 2010 15:15:38 +0000
+Subject: [PATCH 2/5] ARM: add LCDC and MIPI DSI-Tx clock definitions to sh7372
+Message-Id: <Pine.LNX.4.64.1005211700420.8450@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
- <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
- <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
- <db2b972d4fa08c2f5b3cd06392ef62415890a188.1272621452.git.ext-jani.1.nikula@nokia.com>
- <b57a3f4ccf68e8c8faf332a25b699b92a5604509.1272621452.git.ext-jani.1.nikula@nokia.com>
- <7a01973540a3afa79701ee08a3d8732db4687d5b.1272621452.git.ext-jani.1.nikula@nokia.com>
- <b88fcf26f978d38a25000c2f472a4ad8f79ac285.1272621452.git.ext-jani.1.nikula@nokia.com>
- <ba3a895d56c242fe4edbcfc4abd3c608da3db77a.1272621452.git.ext-jani.1.nikula@nokia.com>
- <1a68710812da041ef583944411a1b7027d216c96.1272621452.git.ext-jani.1.nikula@nokia.com>
- <85172e14c23339065e319230f9707353409a901e.1272621452.git.ext-jani.1.nikula@nokia.com>
- <6e9febe4d2179309dcf93b7a8e897890c871f086.1272621452.git.ext-jani.1.nikula@nokia.com>
- <ad1917b1c316a85051c4a908705d403956ca1720.1272621452.git.ext-jani.1.nikula@nokia.com>
- <4004b06a47d3c1d20d6d8a30ddccdf536faeb5a0.1272621452.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <4004b06a47d3c1d20d6d8a30ddccdf536faeb5a0.1272621452.git.ext-jani.1.nikula@nokia.com>
+References: <Pine.LNX.4.64.1005201829260.26000@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1005201829260.26000@axis700.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com, tony@atomide.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
+To: "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>
+Cc: Magnus Damm <magnus.damm@gmail.com>, "linux-fbdev, @vger.kernel.org" <linux-fbdev@vger.kernel.org>, "lin, ux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "Syrjala Ville (Nokia-D/Helsinki)" <ville.syrjala@nokia.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Define clock objects for switching on and off clocks for LCDC0, LCDC1 and MIPI
+DSI-Tx.
 
-Switch from numbered to named labels to make it easier to add new
-labels for error handling.
-
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
- drivers/video/omap2/displays/panel-taal.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 5b6c945..0f62c96 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -539,7 +539,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 	td = kzalloc(sizeof(*td), GFP_KERNEL);
- 	if (!td) {
- 		r = -ENOMEM;
--		goto err0;
-+		goto err;
- 	}
- 	td->dssdev = dssdev;
+Now that the "fbdev: add a MIPI DSI header" patch has been acked, we can 
+add the rest of the patches in this series, which can completely be pulled 
+via the genesis tree. Paul, please apply. This patch is unchanged from its 
+original version.
+
+ arch/arm/mach-shmobile/clock-sh7372.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-shmobile/clock-sh7372.c b/arch/arm/mach-shmobile/clock-sh7372.c
+index abbc380..66ee47a 100644
+--- a/arch/arm/mach-shmobile/clock-sh7372.c
++++ b/arch/arm/mach-shmobile/clock-sh7372.c
+@@ -264,8 +264,12 @@ struct clk div6_clks[] = {
  
-@@ -549,7 +549,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 	if (td->esd_wq = NULL) {
- 		dev_err(&dssdev->dev, "can't create ESD workqueue\n");
- 		r = -ENOMEM;
--		goto err1;
-+		goto err_wq;
- 	}
- 	INIT_DELAYED_WORK_DEFERRABLE(&td->esd_work, taal_esd_work);
+ #define R_CLK (&r_clk)
+ #define HP_CLK (&div4_clks[DIV4_HP])
++#define B_CLK (&div4_clks[DIV4_B])
  
-@@ -569,7 +569,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 					  &taal_bl_ops, &props);
- 	if (IS_ERR(bldev)) {
- 		r = PTR_ERR(bldev);
--		goto err2;
-+		goto err_bl;
- 	}
- 
- 	td->bldev = bldev;
-@@ -589,7 +589,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 		r = gpio_request(gpio, "taal irq");
- 		if (r) {
- 			dev_err(&dssdev->dev, "GPIO request failed\n");
--			goto err3;
-+			goto err_gpio;
- 		}
- 
- 		gpio_direction_input(gpio);
-@@ -601,7 +601,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 		if (r) {
- 			dev_err(&dssdev->dev, "IRQ request failed\n");
- 			gpio_free(gpio);
--			goto err4;
-+			goto err_irq;
- 		}
- 
- 		init_completion(&td->te_completion);
-@@ -612,25 +612,25 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 	r = sysfs_create_group(&dssdev->dev.kobj, &taal_attr_group);
- 	if (r) {
- 		dev_err(&dssdev->dev, "failed to create sysfs files\n");
--		goto err5;
-+		goto err_sysfs;
- 	}
- 
- 	taal_hw_reset(dssdev);
- 
- 	return 0;
--err5:
-+err_sysfs:
- 	if (td->use_ext_te)
- 		free_irq(gpio_to_irq(dssdev->phy.dsi.ext_te_gpio), dssdev);
--err4:
-+err_irq:
- 	if (td->use_ext_te)
- 		gpio_free(dssdev->phy.dsi.ext_te_gpio);
--err3:
-+err_gpio:
- 	backlight_device_unregister(bldev);
--err2:
-+err_bl:
- 	destroy_workqueue(td->esd_wq);
--err1:
-+err_wq:
- 	kfree(td);
--err0:
-+err:
- 	return r;
- }
- 
+ static struct clk mstp_clks[] = {
++	MSTP("lcdc0", B_CLK, SMSTPCR1, 0, 0),
++	MSTP("lcdc1", B_CLK, SMSTPCR1, 17, 0),
++	MSTP("dsitx", B_CLK, SMSTPCR1, 18, 0),
+ 	MSTP("sdhi0", HP_CLK, SMSTPCR3, 14, 0),
+ 	MSTP("sdhi1", HP_CLK, SMSTPCR3, 13, 0),
+ 	MSTP("keysc0", R_CLK, SMSTPCR4, 3, 0),
 -- 
-1.6.5.2
+1.6.2.4
 

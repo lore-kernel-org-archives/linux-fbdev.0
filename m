@@ -1,230 +1,627 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Sun, 23 May 2010 10:00:04 +0000
-Subject: [PATCH] [resend] s3fb: add support for S3 Trio3D/1X/2X
-Message-Id: <201005231200.08299.linux@rainbow-software.org>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 21 May 2010 15:15:46 +0000
+Subject: [PATCH 4/5 v2] sh-mobile: add support for displays, connected over
+Message-Id: <Pine.LNX.4.64.1005211707290.8450@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <Pine.LNX.4.64.1005201829260.26000@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1005201829260.26000@axis700.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ondrej Zajicek <santiago@crfreenet.org>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>
+Cc: Magnus Damm <magnus.damm@gmail.com>, "linux-fbdev, @vger.kernel.org" <linux-fbdev@vger.kernel.org>, "lin, ux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "Syrjala Ville (Nokia-D/Helsinki)" <ville.syrjala@nokia.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-Add support for S3 Trio3D/1X (86C360) and S3 Trio3D/2X (86C362 and 86C368)
-cards to s3fb driver. Tested with 86C362 AGP and 86C368 PCI&AGP.
+Some SH-mobile SoCs have a MIPI DSI controller, that can be used to connect
+MIPI displays to LCDC. This patch adds a platform driver for SH-mobile MIPI DSI
+unit. It uses existing hooks in the sh_mobile_lcdcfb.c driver for display
+activation and deactivation.
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
 
---- linux-source-2.6.33-orig/drivers/video/s3fb.c	2010-02-24 19:52:17.000000000 +0100
-+++ linux-source-2.6.33/drivers/video/s3fb.c	2010-05-15 19:49:31.000000000 +0200
-@@ -72,7 +72,8 @@ static const char * const s3_names[] = {
- 			"S3 Trio64UV+", "S3 Trio64V2/DX", "S3 Trio64V2/GX",
- 			"S3 Plato/PX", "S3 Aurora64VP", "S3 Virge",
- 			"S3 Virge/VX", "S3 Virge/DX", "S3 Virge/GX",
--			"S3 Virge/GX2", "S3 Virge/GX2P", "S3 Virge/GX2P"};
-+			"S3 Virge/GX2", "S3 Virge/GX2P", "S3 Virge/GX2P",
-+			"S3 Trio3D/1X", "S3 Trio3D/2X", "S3 Trio3D/2X"};
+v1 -> v2:
+
+1. header renamed to mipi_display
+2. commands and transaction types are now u8 instead of enums
+3. reduce PLL clock multplier from 23 down to 13
+
+ drivers/video/Kconfig       |    8 +
+ drivers/video/Makefile      |    1 +
+ drivers/video/sh_mipi_dsi.c |  504 +++++++++++++++++++++++++++++++++++++++++++
+ include/video/sh_mipi_dsi.h |   35 +++
+ 4 files changed, 548 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/sh_mipi_dsi.c
+ create mode 100644 include/video/sh_mipi_dsi.h
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 6e16244..773c4a6 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1879,6 +1879,13 @@ config FB_W100
  
- #define CHIP_UNKNOWN		0x00
- #define CHIP_732_TRIO32		0x01
-@@ -90,10 +91,14 @@ static const char * const s3_names[] = {
- #define CHIP_356_VIRGE_GX2	0x0D
- #define CHIP_357_VIRGE_GX2P	0x0E
- #define CHIP_359_VIRGE_GX2P	0x0F
-+#define CHIP_360_TRIO3D_1X	0x10
-+#define CHIP_362_TRIO3D_2X	0x11
-+#define CHIP_368_TRIO3D_2X	0x12
+ 	  If unsure, say N.
  
- #define CHIP_XXX_TRIO		0x80
- #define CHIP_XXX_TRIO64V2_DXGX	0x81
- #define CHIP_XXX_VIRGE_DXGX	0x82
-+#define CHIP_36X_TRIO3D_1X_2X	0x83
++config SH_MIPI_DSI
++	tristate
++	depends on (SUPERH || ARCH_SHMOBILE) && HAVE_CLK
++
++config SH_LCD_MIPI_DSI
++	bool
++
+ config FB_SH_MOBILE_LCDC
+ 	tristate "SuperH Mobile LCDC framebuffer support"
+ 	depends on FB && (SUPERH || ARCH_SHMOBILE) && HAVE_CLK
+@@ -1887,6 +1894,7 @@ config FB_SH_MOBILE_LCDC
+ 	select FB_SYS_IMAGEBLIT
+ 	select FB_SYS_FOPS
+ 	select FB_DEFERRED_IO
++	select SH_MIPI_DSI if SH_LCD_MIPI_DSI
+ 	---help---
+ 	  Frame buffer driver for the on-chip SH-Mobile LCD controller.
  
- #define CHIP_UNDECIDED_FLAG	0x80
- #define CHIP_MASK		0xFF
-@@ -325,6 +330,7 @@ static void s3fb_fillrect(struct fb_info
- 
- static void s3_set_pixclock(struct fb_info *info, u32 pixclock)
- {
-+	struct s3fb_info *par = info->par;
- 	u16 m, n, r;
- 	u8 regval;
- 	int rv;
-@@ -340,7 +346,13 @@ static void s3_set_pixclock(struct fb_in
- 	vga_w(NULL, VGA_MIS_W, regval | VGA_MIS_ENB_PLL_LOAD);
- 
- 	/* Set S3 clock registers */
--	vga_wseq(NULL, 0x12, ((n - 2) | (r << 5)));
-+	if (par->chip = CHIP_360_TRIO3D_1X ||
-+	    par->chip = CHIP_362_TRIO3D_2X ||
-+	    par->chip = CHIP_368_TRIO3D_2X) {
-+		vga_wseq(NULL, 0x12, (n - 2) | ((r & 3) << 6));	/* n and two bits of r */
-+		vga_wseq(NULL, 0x29, r >> 2); /* remaining highest bit of r */
-+	} else
-+		vga_wseq(NULL, 0x12, (n - 2) | (r << 5));
- 	vga_wseq(NULL, 0x13, m - 2);
- 
- 	udelay(1000);
-@@ -457,7 +469,7 @@ static int s3fb_check_var(struct fb_var_
- static int s3fb_set_par(struct fb_info *info)
- {
- 	struct s3fb_info *par = info->par;
--	u32 value, mode, hmul, offset_value, screen_size, multiplex;
-+	u32 value, mode, hmul, offset_value, screen_size, multiplex, dbytes;
- 	u32 bpp = info->var.bits_per_pixel;
- 
- 	if (bpp != 0) {
-@@ -519,7 +531,7 @@ static int s3fb_set_par(struct fb_info *
- 	svga_wcrt_mask(0x33, 0x00, 0x08); /* no DDR ?	*/
- 	svga_wcrt_mask(0x43, 0x00, 0x01); /* no DDR ?	*/
- 
--	svga_wcrt_mask(0x5D, 0x00, 0x28); // Clear strange HSlen bits
-+	svga_wcrt_mask(0x5D, 0x00, 0x28); /* Clear strange HSlen bits */
- 
- /*	svga_wcrt_mask(0x58, 0x03, 0x03); */
- 
-@@ -531,10 +543,14 @@ static int s3fb_set_par(struct fb_info *
- 	pr_debug("fb%d: offset register       : %d\n", info->node, offset_value);
- 	svga_wcrt_multi(s3_offset_regs, offset_value);
- 
--	vga_wcrt(NULL, 0x54, 0x18); /* M parameter */
--	vga_wcrt(NULL, 0x60, 0xff); /* N parameter */
--	vga_wcrt(NULL, 0x61, 0xff); /* L parameter */
--	vga_wcrt(NULL, 0x62, 0xff); /* L parameter */
-+	if (par->chip != CHIP_360_TRIO3D_1X &&
-+	    par->chip != CHIP_362_TRIO3D_2X &&
-+	    par->chip != CHIP_368_TRIO3D_2X) {
-+		vga_wcrt(NULL, 0x54, 0x18); /* M parameter */
-+		vga_wcrt(NULL, 0x60, 0xff); /* N parameter */
-+		vga_wcrt(NULL, 0x61, 0xff); /* L parameter */
-+		vga_wcrt(NULL, 0x62, 0xff); /* L parameter */
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index ddc2af2..3c3bf86 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -123,6 +123,7 @@ obj-$(CONFIG_FB_IBM_GXT4500)	  += gxt4500.o
+ obj-$(CONFIG_FB_PS3)		  += ps3fb.o
+ obj-$(CONFIG_FB_SM501)            += sm501fb.o
+ obj-$(CONFIG_FB_XILINX)           += xilinxfb.o
++obj-$(CONFIG_SH_MIPI_DSI)	  += sh_mipi_dsi.o
+ obj-$(CONFIG_FB_SH_MOBILE_LCDC)	  += sh_mobile_lcdcfb.o
+ obj-$(CONFIG_FB_OMAP)             += omap/
+ obj-y                             += omap2/
+diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
+new file mode 100644
+index 0000000..ac4cae5
+--- /dev/null
++++ b/drivers/video/sh_mipi_dsi.c
+@@ -0,0 +1,504 @@
++/*
++ * Renesas SH-mobile MIPI DSI support
++ *
++ * Copyright (C) 2010 Guennadi Liakhovetski <g.liakhovetski@gmx.de>
++ *
++ * This is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/clk.h>
++#include <linux/delay.h>
++#include <linux/init.h>
++#include <linux/io.h>
++#include <linux/platform_device.h>
++#include <linux/string.h>
++#include <linux/types.h>
++
++#include <video/mipi_display.h>
++#include <video/sh_mipi_dsi.h>
++#include <video/sh_mobile_lcdc.h>
++
++#define CMTSRTCTR	0x80d0
++#define CMTSRTREQ	0x8070
++
++#define DSIINTE		0x0060
++
++/* E.g., sh7372 has 2 MIPI-DSIs - one for each LCDC */
++#define MAX_SH_MIPI_DSI 2
++
++struct sh_mipi {
++	void __iomem	*base;
++	struct clk	*dsit_clk;
++	struct clk	*dsip_clk;
++};
++
++static struct sh_mipi *mipi_dsi[MAX_SH_MIPI_DSI];
++
++/* Protect the above array */
++static DEFINE_MUTEX(array_lock);
++
++static struct sh_mipi *sh_mipi_by_handle(int handle)
++{
++	if (handle >= ARRAY_SIZE(mipi_dsi) || handle < 0)
++		return NULL;
++
++	return mipi_dsi[handle];
++}
++
++static int sh_mipi_send_short(struct sh_mipi *mipi, u8 dsi_cmd,
++			      u8 cmd, u8 param)
++{
++	u32 data = (dsi_cmd << 24) | (cmd << 16) | (param << 8);
++	int cnt = 100;
++
++	/* transmit a short packet to LCD panel */
++	iowrite32(1 | data, mipi->base + 0x80d0); /* CMTSRTCTR */
++	iowrite32(1, mipi->base + 0x8070); /* CMTSRTREQ */
++
++	while ((ioread32(mipi->base + 0x8070) & 1) && --cnt)
++		udelay(1);
++
++	return cnt ? 0 : -ETIMEDOUT;
++}
++
++#define LCD_CHAN2MIPI(c) ((c) < LCDC_CHAN_MAINLCD || (c) > LCDC_CHAN_SUBLCD ? \
++				-EINVAL : (c) - 1)
++
++static int sh_mipi_dcs(int handle, u8 cmd)
++{
++	struct sh_mipi *mipi = sh_mipi_by_handle(LCD_CHAN2MIPI(handle));
++	if (!mipi)
++		return -ENODEV;
++	return sh_mipi_send_short(mipi, MIPI_DSI_DCS_SHORT_WRITE, cmd, 0);
++}
++
++static int sh_mipi_dcs_param(int handle, u8 cmd, u8 param)
++{
++	struct sh_mipi *mipi = sh_mipi_by_handle(LCD_CHAN2MIPI(handle));
++	if (!mipi)
++		return -ENODEV;
++	return sh_mipi_send_short(mipi, MIPI_DSI_DCS_SHORT_WRITE_PARAM, cmd,
++				  param);
++}
++
++static void sh_mipi_dsi_enable(struct sh_mipi *mipi, bool enable)
++{
++	/*
++	 * enable LCDC data tx, transition to LPS after completion of each HS
++	 * packet
++	 */
++	iowrite32(0x00000002 | enable, mipi->base + 0x8000); /* DTCTR */
++}
++
++static void sh_mipi_shutdown(struct platform_device *pdev)
++{
++	struct sh_mipi *mipi = platform_get_drvdata(pdev);
++
++	sh_mipi_dsi_enable(mipi, false);
++}
++
++static void mipi_display_on(void *arg)
++{
++	struct sh_mipi *mipi = arg;
++
++	sh_mipi_dsi_enable(mipi, true);
++}
++
++static void mipi_display_off(void *arg)
++{
++	struct sh_mipi *mipi = arg;
++
++	sh_mipi_dsi_enable(mipi, false);
++}
++
++static int __init sh_mipi_setup(struct sh_mipi *mipi,
++				struct sh_mipi_dsi_info *pdata)
++{
++	void __iomem *base = mipi->base;
++	struct sh_mobile_lcdc_chan_cfg *ch = pdata->lcd_chan;
++	u32 pctype, datatype, pixfmt;
++	u32 linelength;
++	bool yuv;
++
++	/* Select data format */
++	switch (pdata->data_format) {
++	case MIPI_RGB888:
++		pctype = 0;
++		datatype = MIPI_DSI_PACKED_PIXEL_STREAM_24;
++		pixfmt = MIPI_DCS_PIXEL_FMT_24BIT;
++		linelength = ch->lcd_cfg.xres * 3;
++		yuv = false;
++		break;
++	case MIPI_RGB565:
++		pctype = 1;
++		datatype = MIPI_DSI_PACKED_PIXEL_STREAM_16;
++		pixfmt = MIPI_DCS_PIXEL_FMT_16BIT;
++		linelength = ch->lcd_cfg.xres * 2;
++		yuv = false;
++		break;
++	case MIPI_RGB666_LP:
++		pctype = 2;
++		datatype = MIPI_DSI_PIXEL_STREAM_3BYTE_18;
++		pixfmt = MIPI_DCS_PIXEL_FMT_24BIT;
++		linelength = ch->lcd_cfg.xres * 3;
++		yuv = false;
++		break;
++	case MIPI_RGB666:
++		pctype = 3;
++		datatype = MIPI_DSI_PACKED_PIXEL_STREAM_18;
++		pixfmt = MIPI_DCS_PIXEL_FMT_18BIT;
++		linelength = (ch->lcd_cfg.xres * 18 + 7) / 8;
++		yuv = false;
++		break;
++	case MIPI_BGR888:
++		pctype = 8;
++		datatype = MIPI_DSI_PACKED_PIXEL_STREAM_24;
++		pixfmt = MIPI_DCS_PIXEL_FMT_24BIT;
++		linelength = ch->lcd_cfg.xres * 3;
++		yuv = false;
++		break;
++	case MIPI_BGR565:
++		pctype = 9;
++		datatype = MIPI_DSI_PACKED_PIXEL_STREAM_16;
++		pixfmt = MIPI_DCS_PIXEL_FMT_16BIT;
++		linelength = ch->lcd_cfg.xres * 2;
++		yuv = false;
++		break;
++	case MIPI_BGR666_LP:
++		pctype = 0xa;
++		datatype = MIPI_DSI_PIXEL_STREAM_3BYTE_18;
++		pixfmt = MIPI_DCS_PIXEL_FMT_24BIT;
++		linelength = ch->lcd_cfg.xres * 3;
++		yuv = false;
++		break;
++	case MIPI_BGR666:
++		pctype = 0xb;
++		datatype = MIPI_DSI_PACKED_PIXEL_STREAM_18;
++		pixfmt = MIPI_DCS_PIXEL_FMT_18BIT;
++		linelength = (ch->lcd_cfg.xres * 18 + 7) / 8;
++		yuv = false;
++		break;
++	case MIPI_YUYV:
++		pctype = 4;
++		datatype = MIPI_DSI_PACKED_PIXEL_STREAM_YCBCR16;
++		pixfmt = MIPI_DCS_PIXEL_FMT_16BIT;
++		linelength = ch->lcd_cfg.xres * 2;
++		yuv = true;
++		break;
++	case MIPI_UYVY:
++		pctype = 5;
++		datatype = MIPI_DSI_PACKED_PIXEL_STREAM_YCBCR16;
++		pixfmt = MIPI_DCS_PIXEL_FMT_16BIT;
++		linelength = ch->lcd_cfg.xres * 2;
++		yuv = true;
++		break;
++	case MIPI_YUV420_L:
++		pctype = 6;
++		datatype = MIPI_DSI_PACKED_PIXEL_STREAM_YCBCR12;
++		pixfmt = MIPI_DCS_PIXEL_FMT_12BIT;
++		linelength = (ch->lcd_cfg.xres * 12 + 7) / 8;
++		yuv = true;
++		break;
++	case MIPI_YUV420:
++		pctype = 7;
++		datatype = MIPI_DSI_PACKED_PIXEL_STREAM_YCBCR12;
++		pixfmt = MIPI_DCS_PIXEL_FMT_12BIT;
++		/* Length of U/V line */
++		linelength = (ch->lcd_cfg.xres + 1) / 2;
++		yuv = true;
++		break;
++	default:
++		return -EINVAL;
 +	}
- 
- 	vga_wcrt(NULL, 0x3A, 0x35);
- 	svga_wattr(0x33, 0x00);
-@@ -571,6 +587,16 @@ static int s3fb_set_par(struct fb_info *
- 		vga_wcrt(NULL, 0x66, 0x90);
- 	}
- 
-+	if (par->chip = CHIP_360_TRIO3D_1X ||
-+	    par->chip = CHIP_362_TRIO3D_2X ||
-+	    par->chip = CHIP_368_TRIO3D_2X) {
-+		dbytes = info->var.xres * ((bpp+7)/8);
-+		vga_wcrt(NULL, 0x91, (dbytes + 7) / 8);
-+		vga_wcrt(NULL, 0x90, (((dbytes + 7) / 8) >> 8) | 0x80);
 +
-+		vga_wcrt(NULL, 0x66, 0x81);
++	if ((yuv && ch->interface_type != YUV422) ||
++	    (!yuv && ch->interface_type != RGB24))
++		return -EINVAL;
++
++	/* reset DSI link */
++	iowrite32(0x00000001, base); /* SYSCTRL */
++	/* Hold reset for 100 cycles of the slowest of bus, HS byte and LP clock */
++	udelay(50);
++	iowrite32(0x00000000, base); /* SYSCTRL */
++
++	/* setup DSI link */
++
++	/*
++	 * Default = ULPS enable |
++	 *	Contention detection enabled |
++	 *	EoT packet transmission enable |
++	 *	CRC check enable |
++	 *	ECC check enable
++	 * additionally enable first two lanes
++	 */
++	iowrite32(0x00003703, base + 0x04); /* SYSCONF */
++	/*
++	 * T_wakeup = 0x7000
++	 * T_hs-trail = 3
++	 * T_hs-prepare = 3
++	 * T_clk-trail = 3
++	 * T_clk-prepare = 2
++	 */
++	iowrite32(0x70003332, base + 0x08); /* TIMSET */
++	/* no responses requested */
++	iowrite32(0x00000000, base + 0x18); /* RESREQSET0 */
++	/* request response to packets of type 0x28 */
++	iowrite32(0x00000100, base + 0x1c); /* RESREQSET1 */
++	/* High-speed transmission timeout, default 0xffffffff */
++	iowrite32(0x0fffffff, base + 0x20); /* HSTTOVSET */
++	/* LP reception timeout, default 0xffffffff */
++	iowrite32(0x0fffffff, base + 0x24); /* LPRTOVSET */
++	/* Turn-around timeout, default 0xffffffff */
++	iowrite32(0x0fffffff, base + 0x28); /* TATOVSET */
++	/* Peripheral reset timeout, default 0xffffffff */
++	iowrite32(0x0fffffff, base + 0x2c); /* PRTOVSET */
++	/* Enable timeout counters */
++	iowrite32(0x00000f00, base + 0x30); /* DSICTRL */
++	/* Interrupts not used, disable all */
++	iowrite32(0, base + DSIINTE);
++	/* DSI-Tx bias on */
++	iowrite32(0x00000001, base + 0x70); /* PHYCTRL */
++	udelay(200);
++	/* Deassert resets, power on, set multiplier */
++	iowrite32(0x03070601, base + 0x70); /* PHYCTRL */
++
++	/* setup l-bridge */
++
++	/*
++	 * Enable transmission of all packets,
++	 * transmit LPS after each HS packet completion
++	 */
++	iowrite32(0x00000006, base + 0x8000); /* DTCTR */
++	/* VSYNC width = 2 (<< 17) */
++	iowrite32(0x00040000 | (pctype << 12) | datatype, base + 0x8020); /* VMCTR1 */
++	/*
++	 * Non-burst mode with sync pulses: VSE and HSE are output,
++	 * HSA period allowed, no commands in LP
++	 */
++	iowrite32(0x00e00000, base + 0x8024); /* VMCTR2 */
++	/*
++	 * 0x660 = 1632 bytes per line (RGB24, 544 pixels: see
++	 * sh_mobile_lcdc_info.ch[0].lcd_cfg.xres), HSALEN = 1 - default
++	 * (unused, since VMCTR2[HSABM] = 0)
++	 */
++	iowrite32(1 | (linelength << 16), base + 0x8028); /* VMLEN1 */
++
++	msleep(5);
++
++	/* setup LCD panel */
++
++	/* cf. drivers/video/omap/lcd_mipid.c */
++	sh_mipi_dcs(ch->chan, MIPI_DCS_EXIT_SLEEP_MODE);
++	msleep(120);
++	/*
++	 * [7] - Page Address Mode
++	 * [6] - Column Address Mode
++	 * [5] - Page / Column Address Mode
++	 * [4] - Display Device Line Refresh Order
++	 * [3] - RGB/BGR Order
++	 * [2] - Display Data Latch Data Order
++	 * [1] - Flip Horizontal
++	 * [0] - Flip Vertical
++	 */
++	sh_mipi_dcs_param(ch->chan, MIPI_DCS_SET_ADDRESS_MODE, 0x00);
++	/* cf. set_data_lines() */
++	sh_mipi_dcs_param(ch->chan, MIPI_DCS_SET_PIXEL_FORMAT,
++			  pixfmt << 4);
++	sh_mipi_dcs(ch->chan, MIPI_DCS_SET_DISPLAY_ON);
++
++	return 0;
++}
++
++static int __init sh_mipi_probe(struct platform_device *pdev)
++{
++	struct sh_mipi *mipi;
++	struct sh_mipi_dsi_info *pdata = pdev->dev.platform_data;
++	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	unsigned long rate, f_current;
++	int idx = pdev->id, ret;
++	char dsip_clk[] = "dsi.p_clk";
++
++	if (!res || idx >= ARRAY_SIZE(mipi_dsi) || !pdata)
++		return -ENODEV;
++
++	mutex_lock(&array_lock);
++	if (idx < 0)
++		for (idx = 0; idx < ARRAY_SIZE(mipi_dsi) && mipi_dsi[idx]; idx++)
++			;
++
++	if (idx = ARRAY_SIZE(mipi_dsi)) {
++		ret = -EBUSY;
++		goto efindslot;
 +	}
 +
- 	svga_wcrt_mask(0x31, 0x00, 0x40);
- 	multiplex = 0;
- 	hmul = 1;
-@@ -616,11 +642,13 @@ static int s3fb_set_par(struct fb_info *
- 		break;
- 	case 3:
- 		pr_debug("fb%d: 8 bit pseudocolor\n", info->node);
--		if (info->var.pixclock > 20000) {
--			svga_wcrt_mask(0x50, 0x00, 0x30);
-+		svga_wcrt_mask(0x50, 0x00, 0x30);
-+		if (info->var.pixclock > 20000 ||
-+		    par->chip = CHIP_360_TRIO3D_1X ||
-+		    par->chip = CHIP_362_TRIO3D_2X ||
-+		    par->chip = CHIP_368_TRIO3D_2X)
- 			svga_wcrt_mask(0x67, 0x00, 0xF0);
--		} else {
--			svga_wcrt_mask(0x50, 0x00, 0x30);
-+		else {
- 			svga_wcrt_mask(0x67, 0x10, 0xF0);
- 			multiplex = 1;
- 		}
-@@ -635,7 +663,10 @@ static int s3fb_set_par(struct fb_info *
- 		} else {
- 			svga_wcrt_mask(0x50, 0x10, 0x30);
- 			svga_wcrt_mask(0x67, 0x30, 0xF0);
--			hmul = 2;
-+			if (par->chip != CHIP_360_TRIO3D_1X &&
-+			    par->chip != CHIP_362_TRIO3D_2X &&
-+			    par->chip != CHIP_368_TRIO3D_2X)
-+				hmul = 2;
- 		}
- 		break;
- 	case 5:
-@@ -648,7 +679,10 @@ static int s3fb_set_par(struct fb_info *
- 		} else {
- 			svga_wcrt_mask(0x50, 0x10, 0x30);
- 			svga_wcrt_mask(0x67, 0x50, 0xF0);
--			hmul = 2;
-+			if (par->chip != CHIP_360_TRIO3D_1X &&
-+			    par->chip != CHIP_362_TRIO3D_2X &&
-+			    par->chip != CHIP_368_TRIO3D_2X)
-+				hmul = 2;
- 		}
- 		break;
- 	case 6:
-@@ -867,6 +901,17 @@ static int __devinit s3_identification(i
- 			return CHIP_385_VIRGE_GX;
- 	}
- 
-+	if (chip = CHIP_36X_TRIO3D_1X_2X) {
-+		switch(vga_rcrt(NULL, 0x2f)) {
-+		case 0x00:
-+			return CHIP_360_TRIO3D_1X;
-+		case 0x01:
-+			return CHIP_362_TRIO3D_2X;
-+		case 0x02:
-+			return CHIP_368_TRIO3D_2X;
-+		}
++	mipi = kzalloc(sizeof(*mipi), GFP_KERNEL);
++	if (!mipi) {
++		ret = -ENOMEM;
++		goto ealloc;
 +	}
 +
- 	return CHIP_UNKNOWN;
- }
- 
-@@ -931,17 +976,32 @@ static int __devinit s3_pci_probe(struct
- 	vga_wcrt(NULL, 0x38, 0x48);
- 	vga_wcrt(NULL, 0x39, 0xA5);
- 
--	/* Find how many physical memory there is on card */
--	/* 0x36 register is accessible even if other registers are locked */
--	regval = vga_rcrt(NULL, 0x36);
--	info->screen_size = s3_memsizes[regval >> 5] << 10;
--	info->fix.smem_len = info->screen_size;
--
-+	/* Identify chip type */
- 	par->chip = id->driver_data & CHIP_MASK;
- 	par->rev = vga_rcrt(NULL, 0x2f);
- 	if (par->chip & CHIP_UNDECIDED_FLAG)
- 		par->chip = s3_identification(par->chip);
- 
-+	/* Find how many physical memory there is on card */
-+	/* 0x36 register is accessible even if other registers are locked */
-+	regval = vga_rcrt(NULL, 0x36);
-+	if (par->chip = CHIP_360_TRIO3D_1X ||
-+	    par->chip = CHIP_362_TRIO3D_2X ||
-+	    par->chip = CHIP_368_TRIO3D_2X) {
-+		switch((regval & 0xE0) >> 5) {
-+		case 0: /* 8MB -- only 4MB usable for display */
-+		case 1: /* 4MB with 32-bit bus */
-+		case 2:	/* 4MB */
-+			info->screen_size = 4 << 20;
-+			break;
-+		case 6: /* 2MB */
-+			info->screen_size = 2 << 20;
-+			break;
-+		}
-+	} else
-+		info->screen_size = s3_memsizes[regval >> 5] << 10;
-+	info->fix.smem_len = info->screen_size;
++	if (!request_mem_region(res->start, resource_size(res), pdev->name)) {
++		dev_err(&pdev->dev, "MIPI register region already claimed\n");
++		ret = -EBUSY;
++		goto ereqreg;
++	}
 +
- 	/* Find MCLK frequency */
- 	regval = vga_rseq(NULL, 0x10);
- 	par->mclk_freq = ((vga_rseq(NULL, 0x11) + 2) * 14318) / ((regval & 0x1F)  + 2);
-@@ -1132,6 +1192,7 @@ static struct pci_device_id s3_devices[]
- 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A10), .driver_data = CHIP_356_VIRGE_GX2},
- 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A11), .driver_data = CHIP_357_VIRGE_GX2P},
- 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A12), .driver_data = CHIP_359_VIRGE_GX2P},
-+	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A13), .driver_data = CHIP_36X_TRIO3D_1X_2X},
- 
- 	{0, 0, 0, 0, 0, 0, 0}
- };
-
++	mipi->base = ioremap(res->start, resource_size(res));
++	if (!mipi->base) {
++		ret = -ENOMEM;
++		goto emap;
++	}
++
++	mipi->dsit_clk = clk_get(&pdev->dev, "dsit_clk");
++	if (IS_ERR(mipi->dsit_clk)) {
++		ret = PTR_ERR(mipi->dsit_clk);
++		goto eclktget;
++	}
++
++	f_current = clk_get_rate(mipi->dsit_clk);
++	/* 80MHz required by the datasheet */
++	rate = clk_round_rate(mipi->dsit_clk, 80000000);
++	if (rate > 0 && rate != f_current)
++		ret = clk_set_rate(mipi->dsit_clk, rate);
++	else
++		ret = rate;
++	if (ret < 0)
++		goto esettrate;
++
++	dev_dbg(&pdev->dev, "DSI-T clk %lu -> %lu\n", f_current, rate);
++
++	sprintf(dsip_clk, "dsi%1.1dp_clk", idx);
++	mipi->dsip_clk = clk_get(&pdev->dev, dsip_clk);
++	if (IS_ERR(mipi->dsip_clk)) {
++		ret = PTR_ERR(mipi->dsip_clk);
++		goto eclkpget;
++	}
++
++	f_current = clk_get_rate(mipi->dsip_clk);
++	/* Between 10 and 50MHz */
++	rate = clk_round_rate(mipi->dsip_clk, 24000000);
++	if (rate > 0 && rate != f_current)
++		ret = clk_set_rate(mipi->dsip_clk, rate);
++	else
++		ret = rate;
++	if (ret < 0)
++		goto esetprate;
++
++	dev_dbg(&pdev->dev, "DSI-P clk %lu -> %lu\n", f_current, rate);
++
++	msleep(10);
++
++	ret = clk_enable(mipi->dsit_clk);
++	if (ret < 0)
++		goto eclkton;
++
++	ret = clk_enable(mipi->dsip_clk);
++	if (ret < 0)
++		goto eclkpon;
++
++	mipi_dsi[idx] = mipi;
++
++	ret = sh_mipi_setup(mipi, pdata);
++	if (ret < 0)
++		goto emipisetup;
++
++	mutex_unlock(&array_lock);
++	platform_set_drvdata(pdev, mipi);
++
++	/* Set up LCDC callbacks */
++	pdata->lcd_chan->board_cfg.board_data = mipi;
++	pdata->lcd_chan->board_cfg.display_on = mipi_display_on;
++	pdata->lcd_chan->board_cfg.display_off = mipi_display_off;
++
++	return 0;
++
++emipisetup:
++	mipi_dsi[idx] = NULL;
++	clk_disable(mipi->dsip_clk);
++eclkpon:
++	clk_disable(mipi->dsit_clk);
++eclkton:
++esetprate:
++	clk_put(mipi->dsip_clk);
++eclkpget:
++esettrate:
++	clk_put(mipi->dsit_clk);
++eclktget:
++	iounmap(mipi->base);
++emap:
++	release_mem_region(res->start, resource_size(res));
++ereqreg:
++	kfree(mipi);
++ealloc:
++efindslot:
++	mutex_unlock(&array_lock);
++
++	return ret;
++}
++
++static int __exit sh_mipi_remove(struct platform_device *pdev)
++{
++	struct sh_mipi_dsi_info *pdata = pdev->dev.platform_data;
++	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	struct sh_mipi *mipi = platform_get_drvdata(pdev);
++	int i, ret;
++
++	mutex_lock(&array_lock);
++
++	for (i = 0; i < ARRAY_SIZE(mipi_dsi) && mipi_dsi[i] != mipi; i++)
++		;
++
++	if (i = ARRAY_SIZE(mipi_dsi)) {
++		ret = -EINVAL;
++	} else {
++		ret = 0;
++		mipi_dsi[i] = NULL;
++	}
++
++	mutex_unlock(&array_lock);
++
++	if (ret < 0)
++		return ret;
++
++	pdata->lcd_chan->board_cfg.display_on = NULL;
++	pdata->lcd_chan->board_cfg.display_off = NULL;
++	pdata->lcd_chan->board_cfg.board_data = NULL;
++
++	clk_disable(mipi->dsip_clk);
++	clk_disable(mipi->dsit_clk);
++	clk_put(mipi->dsit_clk);
++	clk_put(mipi->dsip_clk);
++	iounmap(mipi->base);
++	if (res)
++		release_mem_region(res->start, resource_size(res));
++	platform_set_drvdata(pdev, NULL);
++	kfree(mipi);
++
++	return 0;
++}
++
++static struct platform_driver sh_mipi_driver = {
++	.remove		= __exit_p(sh_mipi_remove),
++	.shutdown	= sh_mipi_shutdown,
++	.driver = {
++		.name	= "sh-mipi-dsi",
++	},
++};
++
++static int __init sh_mipi_init(void)
++{
++	return platform_driver_probe(&sh_mipi_driver, sh_mipi_probe);
++}
++module_init(sh_mipi_init);
++
++static void __exit sh_mipi_exit(void)
++{
++	platform_driver_unregister(&sh_mipi_driver);
++}
++module_exit(sh_mipi_exit);
++
++MODULE_AUTHOR("Guennadi Liakhovetski <g.liakhovetski@gmx.de>");
++MODULE_DESCRIPTION("SuperH / ARM-shmobile MIPI DSI driver");
++MODULE_LICENSE("GPL v2");
+diff --git a/include/video/sh_mipi_dsi.h b/include/video/sh_mipi_dsi.h
+new file mode 100644
+index 0000000..18bca08
+--- /dev/null
++++ b/include/video/sh_mipi_dsi.h
+@@ -0,0 +1,35 @@
++/*
++ * Public SH-mobile MIPI DSI header
++ *
++ * Copyright (C) 2010 Guennadi Liakhovetski <g.liakhovetski@gmx.de>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#ifndef VIDEO_SH_MIPI_DSI_H
++#define VIDEO_SH_MIPI_DSI_H
++
++enum sh_mipi_dsi_data_fmt {
++	MIPI_RGB888,
++	MIPI_RGB565,
++	MIPI_RGB666_LP,
++	MIPI_RGB666,
++	MIPI_BGR888,
++	MIPI_BGR565,
++	MIPI_BGR666_LP,
++	MIPI_BGR666,
++	MIPI_YUYV,
++	MIPI_UYVY,
++	MIPI_YUV420_L,
++	MIPI_YUV420,
++};
++
++struct sh_mobile_lcdc_chan_cfg;
++
++struct sh_mipi_dsi_info {
++	enum sh_mipi_dsi_data_fmt	data_format;
++	struct sh_mobile_lcdc_chan_cfg	*lcd_chan;
++};
++
++#endif
 -- 
-Ondrej Zary
+1.6.2.4
+

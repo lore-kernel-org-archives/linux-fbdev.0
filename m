@@ -1,66 +1,38 @@
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Mon, 03 May 2010 06:18:25 +0000
-Subject: [PATCH v2 05/21] OMAP: DSS2: Taal: Remove platform enable/disable
-Message-Id: <7a01973540a3afa79701ee08a3d8732db4687d5b.1272621452.git.ext-jani.1.nikula@nokia.com>
+From: Bernie Thompson <bernie@plugable.com>
+Date: Fri, 21 May 2010 18:59:21 +0000
+Subject: Adding X damage support to xf86-video-fbdev and standardizing ioctl
+Message-Id: <AANLkTil4329qzpdruGtyBHNn4PrglyO7PUC04UNNxlZ8@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
- <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
- <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
- <db2b972d4fa08c2f5b3cd06392ef62415890a188.1272621452.git.ext-jani.1.nikula@nokia.com>
- <b57a3f4ccf68e8c8faf332a25b699b92a5604509.1272621452.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <b57a3f4ccf68e8c8faf332a25b699b92a5604509.1272621452.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com, tony@atomide.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
+To: linux-fbdev@vger.kernel.org
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+For virtual framebuffers that need to shuffle pixels over a bus or
+network, to be efficient they need to get notification of what pixels
+are changing in the case of a memory mapped framebuffer.
 
-After the addition of proper hardware reset, taal_hw_reset(), there's no
-need for an additional platform enable/disable. Remove them.
+This has come up before (Jaya/others have thought and talked about
+this), and here's another example implementation (for DisplayLink USB
+devices):
 
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
----
- drivers/video/omap2/displays/panel-taal.c |   11 -----------
- 1 files changed, 0 insertions(+), 11 deletions(-)
+http://plugable.com/2010/05/21/linux-support-for-higher-res-monitors-on-lower-res-displaylink-devices/
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 2a48ade..3729ec2 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -670,12 +670,6 @@ static int taal_power_on(struct omap_dss_device *dssdev)
- 	u8 id1, id2, id3;
- 	int r;
- 
--	if (dssdev->platform_enable) {
--		r = dssdev->platform_enable(dssdev);
--		if (r)
--			return r;
--	}
--
- 	/* it seems we have to wait a bit until taal is ready */
- 	msleep(5);
- 
-@@ -746,8 +740,6 @@ err:
- 	omapdss_dsi_display_disable(dssdev);
- err0:
- 	dsi_bus_unlock();
--	if (dssdev->platform_disable)
--		dssdev->platform_disable(dssdev);
- 
- 	return r;
- }
-@@ -776,9 +768,6 @@ static void taal_power_off(struct omap_dss_device *dssdev)
- 
- 	omapdss_dsi_display_disable(dssdev);
- 
--	if (dssdev->platform_disable)
--		dssdev->platform_disable(dssdev);
--
- 	td->enabled = 0;
- 
- 	dsi_bus_unlock();
--- 
-1.6.5.2
+This uses a hacked ioctl.  But there's a commented out proposal in
+there for cleaning it up.
 
+It would be great to standardize the interface for passing damage
+notifications (from X or other) down to kernel.  Some open questions:
+
+* Which ioctl ordinal could be reserved for this (maybe 'F' 0x1A?)
+* What struct (just a single rect as above, or pass X damage struct
+down directly?)
+* User-configured (with X option as with implementation above), or
+auto-negotiated between kernel and user?
+
+Any thoughts or comments on this, and the feasibility of eventually
+getting this into fbdev (and xf86-video-fbdev) are welcome.
+
+Best wishes,
+Bernie
+http://plugable.com/

@@ -1,127 +1,203 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 02 May 2010 15:17:31 +0000
-Subject: [PATCH 1/4] Minimal support for viafb suspend/resume
-Message-Id: <1272813454-3229-2-git-send-email-FlorianSchandinat@gmx.de>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 21 May 2010 15:15:49 +0000
+Subject: [PATCH 5/5 v2] ARM: add framebuffer support for ap4evb
+Message-Id: <Pine.LNX.4.64.1005211712130.8450@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272813454-3229-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1272813454-3229-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <Pine.LNX.4.64.1005201829260.26000@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1005201829260.26000@axis700.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, corbet@lwn.net, Deepak Saxena <dsaxena@laptop.org>
+To: "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>
+Cc: Magnus Damm <magnus.damm@gmail.com>, "linux-fbdev, @vger.kernel.org" <linux-fbdev@vger.kernel.org>, "lin, ux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "Syrjala Ville (Nokia-D/Helsinki)" <ville.syrjala@nokia.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-From: Deepak Saxena <dsaxena@laptop.org>
+ap4evb uses an LCD, connected to the SoC over the MIPI bus. This patch adds
+platform data to configure this display and a static clock activation.
 
-This patch adds minimal support for suspend/resume of the
-VIA framebuffer device. It requires a version of OFW
-that restores the video mode.
-
-This patch is OLPC-specific as the proper upstream solution
-is to move the VIA video path to using the kernel modesetting
-infrastructure and doing a proper save/restore in the kernel.
-
-[jc: extensive changes for 2.6.34 merge]
-Signed-off-by: Deepak Saxena <dsaxena@laptop.org>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
- drivers/video/via/via-core.c |    4 +++
- drivers/video/via/viafbdev.c |   46 ++++++++++++++++++++++++++++++++++++++++++
- drivers/video/via/viafbdev.h |    5 ++++
- 3 files changed, 55 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/via/via-core.c b/drivers/video/via/via-core.c
-index a084363..b9ad283 100644
---- a/drivers/video/via/via-core.c
-+++ b/drivers/video/via/via-core.c
-@@ -647,6 +647,10 @@ static struct pci_driver via_driver = {
- 	.id_table	= via_pci_table,
- 	.probe		= via_pci_probe,
- 	.remove		= __devexit_p(via_pci_remove),
-+#ifdef CONFIG_PM
-+	.suspend	= viafb_suspend,
-+	.resume		= viafb_resume,
-+#endif
+v1 -> v2:
+
+1. right margin reduced from 1080 points down to 600 points. This 
+configures the blanking time, required for the LCD.
+
+ arch/arm/mach-shmobile/Kconfig        |    1 +
+ arch/arm/mach-shmobile/board-ap4evb.c |  121 +++++++++++++++++++++++++++++++++
+ 2 files changed, 122 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
+index 9003ea9..e216132 100644
+--- a/arch/arm/mach-shmobile/Kconfig
++++ b/arch/arm/mach-shmobile/Kconfig
+@@ -42,6 +42,7 @@ config MACH_AP4EVB
+ 	bool "AP4EVB board"
+ 	depends on ARCH_SH7372
+ 	select ARCH_REQUIRE_GPIOLIB
++	select SH_LCD_MIPI_DSI
+ 
+ comment "SH-Mobile System Configuration"
+ 
+diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
+index d2bb7b0..e4ca9a9 100644
+--- a/arch/arm/mach-shmobile/board-ap4evb.c
++++ b/arch/arm/mach-shmobile/board-ap4evb.c
+@@ -17,6 +17,7 @@
+  * along with this program; if not, write to the Free Software
+  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  */
++#include <linux/clk.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+@@ -32,8 +33,14 @@
+ #include <linux/gpio.h>
+ #include <linux/input.h>
+ #include <linux/input/sh_keysc.h>
++
++#include <video/sh_mobile_lcdc.h>
++#include <video/sh_mipi_dsi.h>
++
+ #include <mach/common.h>
++#include <mach/irqs.h>
+ #include <mach/sh7372.h>
++
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+ #include <asm/mach/map.h>
+@@ -237,11 +244,86 @@ static struct platform_device sdhi0_device = {
+ 	},
  };
  
- static int __init via_core_init(void)
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 3d03318..1b435b3 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -1741,6 +1741,52 @@ static int parse_mode(const char *str, u32 *xres, u32 *yres)
++static struct sh_mobile_lcdc_info sh_mobile_lcdc_info = {
++	.clock_source = LCDC_CLK_PERIPHERAL, /* One of interface clocks */
++	.ch[0] = {
++		.chan = LCDC_CHAN_MAINLCD,
++		.bpp = 16,
++		.interface_type = RGB24,
++		.clock_divider = 1,
++		.flags = LCDC_FLAGS_DWPOL,
++		.lcd_cfg = {
++			.name = "R63302(QHD)",
++			.xres = 544,
++			.yres = 961,
++			.left_margin = 72,
++			.right_margin = 600,
++			.hsync_len = 16,
++			.upper_margin = 8,
++			.lower_margin = 8,
++			.vsync_len = 2,
++			.sync = FB_SYNC_VERT_HIGH_ACT | FB_SYNC_HOR_HIGH_ACT,
++		},
++		.lcd_size_cfg = {
++			.width = 44,
++			.height = 79,
++		},
++	}
++};
++
++static struct resource lcdc_resources[] = {
++	[0] = {
++		.name	= "LCDC",
++		.start	= 0xfe940000, /* P4-only space */
++		.end	= 0xfe943fff,
++		.flags	= IORESOURCE_MEM,
++	},
++	[1] = {
++		.start	= intcs_evt2irq(0x580),
++		.flags	= IORESOURCE_IRQ,
++	},
++};
++
++static struct platform_device lcdc_device = {
++	.name		= "sh_mobile_lcdc_fb",
++	.num_resources	= ARRAY_SIZE(lcdc_resources),
++	.resource	= lcdc_resources,
++	.dev	= {
++		.platform_data	= &sh_mobile_lcdc_info,
++		.coherent_dma_mask = ~0,
++	},
++};
++
++static struct resource mipidsi0_resources[] = {
++	[0] = {
++		.start  = 0xffc60000,
++		.end    = 0xffc68fff,
++		.flags  = IORESOURCE_MEM,
++	},
++};
++
++static struct sh_mipi_dsi_info mipidsi0_info = {
++	.data_format	= MIPI_RGB888,
++	.lcd_chan	= &sh_mobile_lcdc_info.ch[0],
++};
++
++static struct platform_device mipidsi0_device = {
++	.name           = "sh-mipi-dsi",
++	.num_resources  = ARRAY_SIZE(mipidsi0_resources),
++	.resource       = mipidsi0_resources,
++	.id             = 0,
++	.dev	= {
++		.platform_data	= &mipidsi0_info,
++	},
++};
++
+ static struct platform_device *ap4evb_devices[] __initdata = {
+ 	&nor_flash_device,
+ 	&smc911x_device,
+ 	&keysc_device,
+ 	&sdhi0_device,
++	&lcdc_device,
++	&mipidsi0_device,
+ };
+ 
+ static struct map_desc ap4evb_io_desc[] __initdata = {
+@@ -265,6 +347,45 @@ static void __init ap4evb_map_io(void)
+ 	shmobile_setup_console();
  }
  
- 
-+#ifdef CONFIG_PM
-+int viafb_suspend(struct pci_dev *pdev, pm_message_t state)
++/* This function will disappear when we switch to (runtime) PM */
++static int __init ap4evb_init_display_clk(void)
 +{
-+	if (state.event = PM_EVENT_SUSPEND) {
-+		acquire_console_sem();
++	struct clk *lcdc_clk;
++	struct clk *dsitx_clk;
++	int ret;
 +
-+		memcpy_fromio(viaparinfo->shared->saved_regs,
-+			      viaparinfo->shared->vdev->engine_mmio + 0x100,
-+			      0xff * sizeof(u32));
++	lcdc_clk = clk_get(&lcdc_device.dev, "lcdc0");
++	if (IS_ERR(lcdc_clk))
++		return PTR_ERR(lcdc_clk);
 +
-+		fb_set_suspend(viafbinfo, 1);
-+
-+		viafb_sync(viafbinfo);
-+
-+		pci_save_state(pdev);
-+		pci_disable_device(pdev);
-+		pci_set_power_state(pdev, pci_choose_state(pdev, state));
-+		release_console_sem();
++	dsitx_clk = clk_get(&mipidsi0_device.dev, "dsitx");
++	if (IS_ERR(dsitx_clk)) {
++		ret = PTR_ERR(dsitx_clk);
++		goto eclkdsitxget;
 +	}
 +
++	ret = clk_enable(lcdc_clk);
++	if (ret < 0)
++		goto eclklcdcon;
++
++	ret = clk_enable(dsitx_clk);
++	if (ret < 0)
++		goto eclkdsitxon;
++
 +	return 0;
++
++eclkdsitxon:
++	clk_disable(lcdc_clk);
++eclklcdcon:
++	clk_put(dsitx_clk);
++eclkdsitxget:
++	clk_put(lcdc_clk);
++
++	return ret;
 +}
 +
-+int viafb_resume(struct pci_dev *pdev)
-+{
-+	acquire_console_sem();
-+	pci_set_power_state(pdev, PCI_D0);
-+	pci_restore_state(pdev);
-+	if (pci_enable_device(pdev))
-+		goto fail;
-+	pci_set_master(pdev);
++device_initcall(ap4evb_init_display_clk);
 +
-+	memcpy_toio(viaparinfo->shared->vdev->engine_mmio + 0x100,
-+		    viaparinfo->shared->saved_regs,
-+		    0x100 * sizeof(u32));
-+
-+	fb_set_suspend(viafbinfo, 0);
-+
-+fail:
-+	release_console_sem();
-+	return 0;
-+}
-+
-+#endif
-+
-+
- int __devinit via_fb_pci_probe(struct viafb_dev *vdev)
+ static void __init ap4evb_init(void)
  {
- 	u32 default_xres, default_yres;
-diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
-index 52a35fa..3bcae0a 100644
---- a/drivers/video/via/viafbdev.h
-+++ b/drivers/video/via/viafbdev.h
-@@ -57,6 +57,9 @@ struct viafb_shared {
- 		u8 dst_bpp, u32 dst_addr, u32 dst_pitch, u32 dst_x, u32 dst_y,
- 		u32 *src_mem, u32 src_addr, u32 src_pitch, u32 src_x, u32 src_y,
- 		u32 fg_color, u32 bg_color, u8 fill_rop);
-+
-+	/* For suspend/resume */
-+	u32 saved_regs[0x100];
- };
- 
- struct viafb_par {
-@@ -103,4 +106,6 @@ void via_fb_pci_remove(struct pci_dev *pdev);
- /* Temporary */
- int viafb_init(void);
- void viafb_exit(void);
-+int viafb_suspend(struct pci_dev *pdev, pm_message_t state);
-+int viafb_resume(struct pci_dev *pdev);
- #endif /* __VIAFBDEV_H__ */
+ 	sh7372_pinmux_init();
 -- 
-1.6.3.2
+1.6.2.4
 

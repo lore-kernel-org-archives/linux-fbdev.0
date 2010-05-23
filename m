@@ -1,115 +1,60 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Tue, 18 May 2010 12:34:58 +0000
-Subject: [PATCH 07/23] OMAP: DSS2: check lock_fb_info() return value
-Message-Id: <1274186114-26951-8-git-send-email-tomi.valkeinen@nokia.com>
+From: Mike Frysinger <vapier@gentoo.org>
+Date: Sun, 23 May 2010 07:15:58 +0000
+Subject: [PATCH] fbdev: bf54x-lq043fb: fix unused warnings with backlight code
+Message-Id: <1274598958-12892-1-git-send-email-vapier@gentoo.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Cc: uclinux-dist-devel@blackfin.uclinux.org
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+The current backlight code is stubbed out, so the new props changes added
+some warnings:
+drivers/video/bf54x-lq043fb.c: In function 'bfin_bf54x_probe':
+drivers/video/bf54x-lq043fb.c:666: warning: label 'out9' defined but not used
+drivers/video/bf54x-lq043fb.c:504: warning: unused variable 'props'
 
-Give up if lock_fb_info() fails, following the same convention as other
-lock_fb_info() users.
+Fix em !
 
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- drivers/video/omap2/omapfb/omapfb-ioctl.c |    3 ++-
- drivers/video/omap2/omapfb/omapfb-sysfs.c |   21 ++++++++++++++-------
- 2 files changed, 16 insertions(+), 8 deletions(-)
+ drivers/video/bf54x-lq043fb.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
-index 2c0f01c..9c73618 100644
---- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
-+++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
-@@ -183,7 +183,8 @@ int omapfb_update_window(struct fb_info *fbi,
- 	struct omapfb2_device *fbdev = ofbi->fbdev;
- 	int r;
+diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
+index 23b2a8c..b020ba7 100644
+--- a/drivers/video/bf54x-lq043fb.c
++++ b/drivers/video/bf54x-lq043fb.c
+@@ -501,7 +501,9 @@ static irqreturn_t bfin_bf54x_irq_error(int irq, void *dev_id)
  
--	lock_fb_info(fbi);
-+	if (!lock_fb_info(fbi))
-+		return -ENODEV;
- 	omapfb_lock(fbdev);
+ static int __devinit bfin_bf54x_probe(struct platform_device *pdev)
+ {
++#ifndef NO_BL_SUPPORT
+ 	struct backlight_properties props;
++#endif
+ 	struct bfin_bf54xfb_info *info;
+ 	struct fb_info *fbinfo;
+ 	int ret;
+@@ -654,7 +656,8 @@ static int __devinit bfin_bf54x_probe(struct platform_device *pdev)
+ 		printk(KERN_ERR DRIVER_NAME
+ 			": unable to register backlight.\n");
+ 		ret = -EINVAL;
+-		goto out9;
++		unregister_framebuffer(fbinfo);
++		goto out8;
+ 	}
  
- 	r = omapfb_update_window_nolock(fbi, x, y, w, h);
-diff --git a/drivers/video/omap2/omapfb/omapfb-sysfs.c b/drivers/video/omap2/omapfb/omapfb-sysfs.c
-index e104450..5179219 100644
---- a/drivers/video/omap2/omapfb/omapfb-sysfs.c
-+++ b/drivers/video/omap2/omapfb/omapfb-sysfs.c
-@@ -57,7 +57,8 @@ static ssize_t store_rotate_type(struct device *dev,
- 	if (rot_type != OMAP_DSS_ROT_DMA && rot_type != OMAP_DSS_ROT_VRFB)
- 		return -EINVAL;
+ 	lcd_dev = lcd_device_register(DRIVER_NAME, &pdev->dev, NULL, &bfin_lcd_ops);
+@@ -663,8 +666,6 @@ static int __devinit bfin_bf54x_probe(struct platform_device *pdev)
  
--	lock_fb_info(fbi);
-+	if (!lock_fb_info(fbi))
-+		return -ENODEV;
+ 	return 0;
  
- 	r = 0;
- 	if (rot_type = ofbi->rotation_type)
-@@ -105,7 +106,8 @@ static ssize_t store_mirror(struct device *dev,
- 	if (mirror != 0 && mirror != 1)
- 		return -EINVAL;
- 
--	lock_fb_info(fbi);
-+	if (!lock_fb_info(fbi))
-+		return -ENODEV;
- 
- 	ofbi->mirror = mirror;
- 
-@@ -137,7 +139,8 @@ static ssize_t show_overlays(struct device *dev,
- 	ssize_t l = 0;
- 	int t;
- 
--	lock_fb_info(fbi);
-+	if (!lock_fb_info(fbi))
-+		return -ENODEV;
- 	omapfb_lock(fbdev);
- 
- 	for (t = 0; t < ofbi->num_overlays; t++) {
-@@ -195,7 +198,8 @@ static ssize_t store_overlays(struct device *dev, struct device_attribute *attr,
- 	if (buf[len - 1] = '\n')
- 		len = len - 1;
- 
--	lock_fb_info(fbi);
-+	if (!lock_fb_info(fbi))
-+		return -ENODEV;
- 	omapfb_lock(fbdev);
- 
- 	if (len > 0) {
-@@ -317,7 +321,8 @@ static ssize_t show_overlays_rotate(struct device *dev,
- 	ssize_t l = 0;
- 	int t;
- 
--	lock_fb_info(fbi);
-+	if (!lock_fb_info(fbi))
-+		return -ENODEV;
- 
- 	for (t = 0; t < ofbi->num_overlays; t++) {
- 		l += snprintf(buf + l, PAGE_SIZE - l, "%s%d",
-@@ -345,7 +350,8 @@ static ssize_t store_overlays_rotate(struct device *dev,
- 	if (buf[len - 1] = '\n')
- 		len = len - 1;
- 
--	lock_fb_info(fbi);
-+	if (!lock_fb_info(fbi))
-+		return -ENODEV;
- 
- 	if (len > 0) {
- 		char *p = (char *)buf;
-@@ -416,7 +422,8 @@ static ssize_t store_size(struct device *dev, struct device_attribute *attr,
- 
- 	size = PAGE_ALIGN(simple_strtoul(buf, NULL, 0));
- 
--	lock_fb_info(fbi);
-+	if (!lock_fb_info(fbi))
-+		return -ENODEV;
- 
- 	for (i = 0; i < ofbi->num_overlays; i++) {
- 		if (ofbi->overlays[i]->info.enabled) {
+-out9:
+-	unregister_framebuffer(fbinfo);
+ out8:
+ 	free_irq(info->irq, info);
+ out7:
 -- 
-1.7.0.4
+1.7.1
 

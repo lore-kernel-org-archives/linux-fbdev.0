@@ -1,77 +1,230 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 05 May 2010 22:34:39 +0000
-Subject: [RFC] Third OLPC viafb patch series (camera driver)
-Message-Id: <1273098884-21848-1-git-send-email-corbet@lwn.net>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Sun, 23 May 2010 10:00:04 +0000
+Subject: [PATCH] [resend] s3fb: add support for S3 Trio3D/1X/2X
+Message-Id: <201005231200.08299.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, =?UTF-8?q?Bruno=20Pr=C3=A9mont?= <bonbons@linux-vserver.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-media@vger.kernel.org
+To: Ondrej Zajicek <santiago@crfreenet.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-This is, perhaps, the last set of viafb patches I'll send around before the
-merge window.  This series completes the task of adding the via-camera
-driver - in the correct spot, this time.  To that end, it has to reorganize
-the viafb header files a bit.
+Add support for S3 Trio3D/1X (86C360) and S3 Trio3D/2X (86C362 and 86C368)
+cards to s3fb driver. Tested with 86C362 AGP and 86C368 PCI&AGP.
 
-V4L2 folks: only the final patch in this series really needs your
-attention.  Note that it has no hope of appying or working without a long
-series of predecessor patches; the full set, prior to this series, is
-currently in linux-next.  If the driver is acceptable to you, I'd prefer to
-merge it through my viafb tree to be sure all the prerequisites land in
-mainline at the right time.
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
-As usual, this series can be found at:
+--- linux-source-2.6.33-orig/drivers/video/s3fb.c	2010-02-24 19:52:17.000000000 +0100
++++ linux-source-2.6.33/drivers/video/s3fb.c	2010-05-15 19:49:31.000000000 +0200
+@@ -72,7 +72,8 @@ static const char * const s3_names[] = {
+ 			"S3 Trio64UV+", "S3 Trio64V2/DX", "S3 Trio64V2/GX",
+ 			"S3 Plato/PX", "S3 Aurora64VP", "S3 Virge",
+ 			"S3 Virge/VX", "S3 Virge/DX", "S3 Virge/GX",
+-			"S3 Virge/GX2", "S3 Virge/GX2P", "S3 Virge/GX2P"};
++			"S3 Virge/GX2", "S3 Virge/GX2P", "S3 Virge/GX2P",
++			"S3 Trio3D/1X", "S3 Trio3D/2X", "S3 Trio3D/2X"};
+ 
+ #define CHIP_UNKNOWN		0x00
+ #define CHIP_732_TRIO32		0x01
+@@ -90,10 +91,14 @@ static const char * const s3_names[] = {
+ #define CHIP_356_VIRGE_GX2	0x0D
+ #define CHIP_357_VIRGE_GX2P	0x0E
+ #define CHIP_359_VIRGE_GX2P	0x0F
++#define CHIP_360_TRIO3D_1X	0x10
++#define CHIP_362_TRIO3D_2X	0x11
++#define CHIP_368_TRIO3D_2X	0x12
+ 
+ #define CHIP_XXX_TRIO		0x80
+ #define CHIP_XXX_TRIO64V2_DXGX	0x81
+ #define CHIP_XXX_VIRGE_DXGX	0x82
++#define CHIP_36X_TRIO3D_1X_2X	0x83
+ 
+ #define CHIP_UNDECIDED_FLAG	0x80
+ #define CHIP_MASK		0xFF
+@@ -325,6 +330,7 @@ static void s3fb_fillrect(struct fb_info
+ 
+ static void s3_set_pixclock(struct fb_info *info, u32 pixclock)
+ {
++	struct s3fb_info *par = info->par;
+ 	u16 m, n, r;
+ 	u8 regval;
+ 	int rv;
+@@ -340,7 +346,13 @@ static void s3_set_pixclock(struct fb_in
+ 	vga_w(NULL, VGA_MIS_W, regval | VGA_MIS_ENB_PLL_LOAD);
+ 
+ 	/* Set S3 clock registers */
+-	vga_wseq(NULL, 0x12, ((n - 2) | (r << 5)));
++	if (par->chip = CHIP_360_TRIO3D_1X ||
++	    par->chip = CHIP_362_TRIO3D_2X ||
++	    par->chip = CHIP_368_TRIO3D_2X) {
++		vga_wseq(NULL, 0x12, (n - 2) | ((r & 3) << 6));	/* n and two bits of r */
++		vga_wseq(NULL, 0x29, r >> 2); /* remaining highest bit of r */
++	} else
++		vga_wseq(NULL, 0x12, (n - 2) | (r << 5));
+ 	vga_wseq(NULL, 0x13, m - 2);
+ 
+ 	udelay(1000);
+@@ -457,7 +469,7 @@ static int s3fb_check_var(struct fb_var_
+ static int s3fb_set_par(struct fb_info *info)
+ {
+ 	struct s3fb_info *par = info->par;
+-	u32 value, mode, hmul, offset_value, screen_size, multiplex;
++	u32 value, mode, hmul, offset_value, screen_size, multiplex, dbytes;
+ 	u32 bpp = info->var.bits_per_pixel;
+ 
+ 	if (bpp != 0) {
+@@ -519,7 +531,7 @@ static int s3fb_set_par(struct fb_info *
+ 	svga_wcrt_mask(0x33, 0x00, 0x08); /* no DDR ?	*/
+ 	svga_wcrt_mask(0x43, 0x00, 0x01); /* no DDR ?	*/
+ 
+-	svga_wcrt_mask(0x5D, 0x00, 0x28); // Clear strange HSlen bits
++	svga_wcrt_mask(0x5D, 0x00, 0x28); /* Clear strange HSlen bits */
+ 
+ /*	svga_wcrt_mask(0x58, 0x03, 0x03); */
+ 
+@@ -531,10 +543,14 @@ static int s3fb_set_par(struct fb_info *
+ 	pr_debug("fb%d: offset register       : %d\n", info->node, offset_value);
+ 	svga_wcrt_multi(s3_offset_regs, offset_value);
+ 
+-	vga_wcrt(NULL, 0x54, 0x18); /* M parameter */
+-	vga_wcrt(NULL, 0x60, 0xff); /* N parameter */
+-	vga_wcrt(NULL, 0x61, 0xff); /* L parameter */
+-	vga_wcrt(NULL, 0x62, 0xff); /* L parameter */
++	if (par->chip != CHIP_360_TRIO3D_1X &&
++	    par->chip != CHIP_362_TRIO3D_2X &&
++	    par->chip != CHIP_368_TRIO3D_2X) {
++		vga_wcrt(NULL, 0x54, 0x18); /* M parameter */
++		vga_wcrt(NULL, 0x60, 0xff); /* N parameter */
++		vga_wcrt(NULL, 0x61, 0xff); /* L parameter */
++		vga_wcrt(NULL, 0x62, 0xff); /* L parameter */
++	}
+ 
+ 	vga_wcrt(NULL, 0x3A, 0x35);
+ 	svga_wattr(0x33, 0x00);
+@@ -571,6 +587,16 @@ static int s3fb_set_par(struct fb_info *
+ 		vga_wcrt(NULL, 0x66, 0x90);
+ 	}
+ 
++	if (par->chip = CHIP_360_TRIO3D_1X ||
++	    par->chip = CHIP_362_TRIO3D_2X ||
++	    par->chip = CHIP_368_TRIO3D_2X) {
++		dbytes = info->var.xres * ((bpp+7)/8);
++		vga_wcrt(NULL, 0x91, (dbytes + 7) / 8);
++		vga_wcrt(NULL, 0x90, (((dbytes + 7) / 8) >> 8) | 0x80);
++
++		vga_wcrt(NULL, 0x66, 0x81);
++	}
++
+ 	svga_wcrt_mask(0x31, 0x00, 0x40);
+ 	multiplex = 0;
+ 	hmul = 1;
+@@ -616,11 +642,13 @@ static int s3fb_set_par(struct fb_info *
+ 		break;
+ 	case 3:
+ 		pr_debug("fb%d: 8 bit pseudocolor\n", info->node);
+-		if (info->var.pixclock > 20000) {
+-			svga_wcrt_mask(0x50, 0x00, 0x30);
++		svga_wcrt_mask(0x50, 0x00, 0x30);
++		if (info->var.pixclock > 20000 ||
++		    par->chip = CHIP_360_TRIO3D_1X ||
++		    par->chip = CHIP_362_TRIO3D_2X ||
++		    par->chip = CHIP_368_TRIO3D_2X)
+ 			svga_wcrt_mask(0x67, 0x00, 0xF0);
+-		} else {
+-			svga_wcrt_mask(0x50, 0x00, 0x30);
++		else {
+ 			svga_wcrt_mask(0x67, 0x10, 0xF0);
+ 			multiplex = 1;
+ 		}
+@@ -635,7 +663,10 @@ static int s3fb_set_par(struct fb_info *
+ 		} else {
+ 			svga_wcrt_mask(0x50, 0x10, 0x30);
+ 			svga_wcrt_mask(0x67, 0x30, 0xF0);
+-			hmul = 2;
++			if (par->chip != CHIP_360_TRIO3D_1X &&
++			    par->chip != CHIP_362_TRIO3D_2X &&
++			    par->chip != CHIP_368_TRIO3D_2X)
++				hmul = 2;
+ 		}
+ 		break;
+ 	case 5:
+@@ -648,7 +679,10 @@ static int s3fb_set_par(struct fb_info *
+ 		} else {
+ 			svga_wcrt_mask(0x50, 0x10, 0x30);
+ 			svga_wcrt_mask(0x67, 0x50, 0xF0);
+-			hmul = 2;
++			if (par->chip != CHIP_360_TRIO3D_1X &&
++			    par->chip != CHIP_362_TRIO3D_2X &&
++			    par->chip != CHIP_368_TRIO3D_2X)
++				hmul = 2;
+ 		}
+ 		break;
+ 	case 6:
+@@ -867,6 +901,17 @@ static int __devinit s3_identification(i
+ 			return CHIP_385_VIRGE_GX;
+ 	}
+ 
++	if (chip = CHIP_36X_TRIO3D_1X_2X) {
++		switch(vga_rcrt(NULL, 0x2f)) {
++		case 0x00:
++			return CHIP_360_TRIO3D_1X;
++		case 0x01:
++			return CHIP_362_TRIO3D_2X;
++		case 0x02:
++			return CHIP_368_TRIO3D_2X;
++		}
++	}
++
+ 	return CHIP_UNKNOWN;
+ }
+ 
+@@ -931,17 +976,32 @@ static int __devinit s3_pci_probe(struct
+ 	vga_wcrt(NULL, 0x38, 0x48);
+ 	vga_wcrt(NULL, 0x39, 0xA5);
+ 
+-	/* Find how many physical memory there is on card */
+-	/* 0x36 register is accessible even if other registers are locked */
+-	regval = vga_rcrt(NULL, 0x36);
+-	info->screen_size = s3_memsizes[regval >> 5] << 10;
+-	info->fix.smem_len = info->screen_size;
+-
++	/* Identify chip type */
+ 	par->chip = id->driver_data & CHIP_MASK;
+ 	par->rev = vga_rcrt(NULL, 0x2f);
+ 	if (par->chip & CHIP_UNDECIDED_FLAG)
+ 		par->chip = s3_identification(par->chip);
+ 
++	/* Find how many physical memory there is on card */
++	/* 0x36 register is accessible even if other registers are locked */
++	regval = vga_rcrt(NULL, 0x36);
++	if (par->chip = CHIP_360_TRIO3D_1X ||
++	    par->chip = CHIP_362_TRIO3D_2X ||
++	    par->chip = CHIP_368_TRIO3D_2X) {
++		switch((regval & 0xE0) >> 5) {
++		case 0: /* 8MB -- only 4MB usable for display */
++		case 1: /* 4MB with 32-bit bus */
++		case 2:	/* 4MB */
++			info->screen_size = 4 << 20;
++			break;
++		case 6: /* 2MB */
++			info->screen_size = 2 << 20;
++			break;
++		}
++	} else
++		info->screen_size = s3_memsizes[regval >> 5] << 10;
++	info->fix.smem_len = info->screen_size;
++
+ 	/* Find MCLK frequency */
+ 	regval = vga_rseq(NULL, 0x10);
+ 	par->mclk_freq = ((vga_rseq(NULL, 0x11) + 2) * 14318) / ((regval & 0x1F)  + 2);
+@@ -1132,6 +1192,7 @@ static struct pci_device_id s3_devices[]
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A10), .driver_data = CHIP_356_VIRGE_GX2},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A11), .driver_data = CHIP_357_VIRGE_GX2P},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A12), .driver_data = CHIP_359_VIRGE_GX2P},
++	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A13), .driver_data = CHIP_36X_TRIO3D_1X_2X},
+ 
+ 	{0, 0, 0, 0, 0, 0, 0}
+ };
 
-	git://git.lwn.net/linux-2.6.git viafb-posted
-
-The camera driver has been cleaned up a bit since the last time around.
-But the main thing I had to do was to make some of the header files
-globally visible so I could put the camera driver with the rest of the V4L2
-crowd.  This will also let us move the core, i2c, and gpio drivers to
-drivers/mfd, should we want to in the future.
-
-There shouldn't be any functionality changes beyond the new driver.
-
-Comments?
-
-Thanks,
-
-jon
-
-Jonathan Corbet (5):
-      viafb: fold via_io.h into via-core.h
-      viafb: get rid of i2c debug cruft
-      viafb: Eliminate some global.h references
-      viafb: move some include files to include/linux
-      Add the viafb video capture driver
-
- b/drivers/media/video/Kconfig         |   10 
- b/drivers/media/video/Makefile        |    2 
- b/drivers/media/video/via-camera.c    | 1368 ++++++++++++++++++++++++++++++++++
- b/drivers/media/video/via-camera.h    |   93 ++
- b/drivers/video/via/accel.c           |    4 
- b/drivers/video/via/dvi.c             |    4 
- b/drivers/video/via/hw.c              |    3 
- b/drivers/video/via/hw.h              |    1 
- b/drivers/video/via/lcd.c             |    4 
- b/drivers/video/via/share.h           |   11 
- b/drivers/video/via/via-core.c        |   22 
- b/drivers/video/via/via-gpio.c        |    5 
- b/drivers/video/via/via_i2c.c         |   14 
- b/drivers/video/via/via_modesetting.c |    2 
- b/drivers/video/via/via_utility.c     |    1 
- b/drivers/video/via/viafbdev.c        |    4 
- b/drivers/video/via/viamode.c         |    1 
- b/drivers/video/via/vt1636.c          |    4 
- b/include/linux/via-core.h            |  221 +++++
- b/include/linux/via-gpio.h            |   14 
- b/include/linux/via_i2c.h             |   42 +
- b/include/media/v4l2-chip-ident.h     |    4 
- drivers/video/via/via-core.h          |  173 ----
- drivers/video/via/via-gpio.h          |   14 
- drivers/video/via/via_i2c.h           |   42 -
- drivers/video/via/via_io.h            |   67 -
- 26 files changed, 1798 insertions(+), 332 deletions(-)
-
-
+-- 
+Ondrej Zary

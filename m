@@ -1,40 +1,55 @@
-From: Pawel Osciak <p.osciak@samsung.com>
-Date: Mon, 31 May 2010 09:08:49 +0000
-Subject: [PATCH 0/6] Various s3c-fb updates
-Message-Id: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
+From: Mike Frysinger <vapier@gentoo.org>
+Date: Sun, 23 May 2010 07:15:23 +0000
+Subject: [PATCH] fbdev: bfin-t350mcqb-fb: avoid unused warnings in backlight code
+Message-Id: <1274598923-12688-1-git-send-email-vapier@gentoo.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Cc: uclinux-dist-devel@blackfin.uclinux.org
 
-Hello,
+The current backlight code is stubbed out, so the new props changes added
+some warnings about unused label/prop.
 
-This series is rebased onto Ben Dook's framebuffer branch available at:
-git://git.fluff.org/bjdooks/linux.git dev/s3c-fb
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ drivers/video/bfin-t350mcqb-fb.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-The main changes are the addition of an ability to wait for VSYNC and
-display panning.
+diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
+index c2ec3dc..7a50272 100644
+--- a/drivers/video/bfin-t350mcqb-fb.c
++++ b/drivers/video/bfin-t350mcqb-fb.c
+@@ -420,7 +420,9 @@ static irqreturn_t bfin_t350mcqb_irq_error(int irq, void *dev_id)
+ 
+ static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
+ {
++#ifndef NO_BL_SUPPORT
+ 	struct backlight_properties props;
++#endif
+ 	struct bfin_t350mcqbfb_info *info;
+ 	struct fb_info *fbinfo;
+ 	int ret;
+@@ -550,7 +552,8 @@ static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
+ 		printk(KERN_ERR DRIVER_NAME
+ 			": unable to register backlight.\n");
+ 		ret = -EINVAL;
+-		goto out9;
++		unregister_framebuffer(fbinfo);
++		goto out8;
+ 	}
+ 
+ 	lcd_dev = lcd_device_register(DRIVER_NAME, NULL, &bfin_lcd_ops);
+@@ -559,8 +562,6 @@ static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
+-out9:
+-	unregister_framebuffer(fbinfo);
+ out8:
+ 	free_irq(info->irq, info);
+ out7:
+-- 
+1.7.1
 
-The first patch attempts to fix some NULL pointer dereferences in case
-of a failed framebuffer memory allocation attempt. This is a quick
-fix, so please treat it more as an indication of what may be wrong
-with the code in the probe function and not as something to merge.
-
-Patches 3-4 add "new style" device name initialization for various
-S3C/S5P devices. The 4th patch also separates S5PC100 and S5PV210 as
-their framebuffer registers sets differ.
-
-
-[PATCH 1/6] s3c-fb: Fix various null references on framebuffer memory alloc failure
-[PATCH 2/6] s3c-fb: Correct FRAMESEL1 bitfield defines for VIDINTCON0 register
-[PATCH 3/6] s3c-fb: Add device name initialization.
-[PATCH 4/6] s3c-fb: Separate S5PC100 and S5PV210 framebuffer driver data structures
-[PATCH 5/6] s3c-fb: Add support for display panning
-[PATCH 6/6] s3c-fb: Add wait for VSYNC ioctl
-
-Best regards
---
-Pawel Osciak
-Linux Platform Group
-Samsung Poland R&D Center

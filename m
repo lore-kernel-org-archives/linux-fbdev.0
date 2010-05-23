@@ -1,129 +1,75 @@
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Date: Wed, 05 May 2010 14:27:21 +0000
-Subject: [PATCH v3 01/21] OMAP: DSS2: Taal: Add panel hardware reset
-Message-Id: <e28a022b7d3a53dbdf3f1329119b1de300d08c6b.1273067195.git.ext-jani.1.nikula@nokia.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Sun, 23 May 2010 13:55:34 +0000
+Subject: [PATCH 2/5 v2] ARM: mach-shmobile: add LCDC and MIPI DSI-Tx clock
+Message-Id: <Pine.LNX.4.64.1005231551420.3571@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <cover.1273067195.git.ext-jani.1.nikula@nokia.com>
+References: <Pine.LNX.4.64.1005201829260.26000@axis700.grange>
+ <Pine.LNX.4.64.1005211700420.8450@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1005211700420.8450@axis700.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@nokia.com, tony@atomide.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@nokia.com
+To: "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>
+Cc: Magnus Damm <magnus.damm@gmail.com>, "linux-fbdev, @vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "Syrjala Ville (Nokia-D/Helsinki)" <ville.syrjala@nokia.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>, Paul Mundt <lethal@linux-sh.org>
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Define clock objects for switching on and off clocks for LCDC0, LCDC1 and MIPI
+DSI-Tx.
 
-Issue a proper reset pulse on the reset line instead of just doing power
-on/off.
-
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
- drivers/video/omap2/displays/panel-taal.c |   44 ++++++++++++++++++++++++++--
- 1 files changed, 40 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index aaf5d30..181dfe4 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -488,6 +488,22 @@ static struct attribute_group taal_attr_group = {
- 	.attrs = taal_attrs,
+v1 -> v2:
+
+1. reimplemented based on the arm-shmobile clocking scheme v2. Please, 
+verify, that this is ok now, also that the naming choise is suitable.
+
+2. adjusted the subject line
+
+ arch/arm/mach-shmobile/clock-sh7372.c |   11 ++++++++++-
+ 1 files changed, 10 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/mach-shmobile/clock-sh7372.c b/arch/arm/mach-shmobile/clock-sh7372.c
+index ac46b4b..d6414ad 100644
+--- a/arch/arm/mach-shmobile/clock-sh7372.c
++++ b/arch/arm/mach-shmobile/clock-sh7372.c
+@@ -241,7 +241,10 @@ struct clk div6_clks[DIV6_NR] = {
  };
  
-+static void taal_hw_reset(struct omap_dss_device *dssdev)
-+{
-+	if (dssdev->reset_gpio = -1)
-+		return;
-+
-+	gpio_set_value(dssdev->reset_gpio, 1);
-+	udelay(10);
-+	/* reset the panel */
-+	gpio_set_value(dssdev->reset_gpio, 0);
-+	/* assert reset for at least 10us */
-+	udelay(10);
-+	gpio_set_value(dssdev->reset_gpio, 1);
-+	/* wait 5ms after releasing reset */
-+	msleep(5);
-+}
-+
- static int taal_probe(struct omap_dss_device *dssdev)
- {
- 	struct backlight_properties props;
-@@ -525,6 +541,8 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 
- 	dev_set_drvdata(&dssdev->dev, td);
- 
-+	taal_hw_reset(dssdev);
-+
- 	/* if no platform set_backlight() defined, presume DSI backlight
- 	 * control */
- 	memset(&props, 0, sizeof(struct backlight_properties));
-@@ -626,6 +644,9 @@ static void taal_remove(struct omap_dss_device *dssdev)
- 	cancel_delayed_work_sync(&td->esd_work);
- 	destroy_workqueue(td->esd_wq);
- 
-+	/* reset, to be sure that the panel is in a valid state */
-+	taal_hw_reset(dssdev);
-+
- 	kfree(td);
- }
- 
-@@ -652,6 +673,8 @@ static int taal_power_on(struct omap_dss_device *dssdev)
- 		goto err0;
- 	}
- 
-+	taal_hw_reset(dssdev);
-+
- 	omapdss_dsi_vc_enable_hs(TCH, false);
- 
- 	r = taal_sleep_out(td);
-@@ -702,6 +725,10 @@ static int taal_power_on(struct omap_dss_device *dssdev)
- 
- 	return 0;
- err:
-+	dev_err(&dssdev->dev, "error while enabling panel, issuing HW reset\n");
-+
-+	taal_hw_reset(dssdev);
-+
- 	omapdss_dsi_display_disable(dssdev);
- err0:
- 	dsi_bus_unlock();
-@@ -714,16 +741,24 @@ err0:
- static void taal_power_off(struct omap_dss_device *dssdev)
- {
- 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
-+	int r;
- 
- 	dsi_bus_lock();
- 
- 	cancel_delayed_work(&td->esd_work);
- 
--	taal_dcs_write_0(DCS_DISPLAY_OFF);
--	taal_sleep_in(td);
-+	r = taal_dcs_write_0(DCS_DISPLAY_OFF);
-+	if (!r) {
-+		r = taal_sleep_in(td);
-+		/* wait a bit so that the message goes through */
-+		msleep(10);
-+	}
- 
--	/* wait a bit so that the message goes through */
--	msleep(10);
-+	if (r) {
-+		dev_err(&dssdev->dev,
-+				"error disabling panel, issuing HW reset\n");
-+		taal_hw_reset(dssdev);
-+	}
- 
- 	omapdss_dsi_display_disable(dssdev);
- 
-@@ -1184,6 +1219,7 @@ err:
- 	dev_err(&dssdev->dev, "performing LCD reset\n");
- 
- 	taal_power_off(dssdev);
-+	taal_hw_reset(dssdev);
- 	taal_power_on(dssdev);
- 
- 	dsi_bus_unlock();
+ enum { MSTP001,
+-       MSTP131, MSTP130, MSTP129, MSTP128, MSTP116, MSTP106, MSTP101,
++       MSTP131, MSTP130,
++       MSTP129, MSTP128,
++       MSTP118, MSTP117, MSTP116,
++       MSTP106, MSTP101, MSTP100,
+        MSTP223,
+        MSTP207, MSTP206, MSTP204, MSTP203, MSTP202, MSTP201, MSTP200,
+        MSTP329, MSTP323, MSTP322, MSTP314, MSTP313,
+@@ -257,9 +260,12 @@ static struct clk mstp_clks[MSTP_NR] = {
+ 	[MSTP130] = MSTP(&div4_clks[DIV4_B], SMSTPCR1, 30, 0), /* VEU2 */
+ 	[MSTP129] = MSTP(&div4_clks[DIV4_B], SMSTPCR1, 29, 0), /* VEU1 */
+ 	[MSTP128] = MSTP(&div4_clks[DIV4_B], SMSTPCR1, 28, 0), /* VEU0 */
++	[MSTP118] = MSTP(&div6_clks[DIV4_B], SMSTPCR1, 18, 0), /* DSITX */
++	[MSTP117] = MSTP(&div6_clks[DIV4_B], SMSTPCR1, 17, 0), /* LCDC1 */
+ 	[MSTP116] = MSTP(&div6_clks[DIV6_SUB], SMSTPCR1, 16, 0), /* IIC0 */
+ 	[MSTP106] = MSTP(&div4_clks[DIV4_B], SMSTPCR1, 6, 0), /* JPU */
+ 	[MSTP101] = MSTP(&div4_clks[DIV4_M1], SMSTPCR1, 1, 0), /* VPU */
++	[MSTP100] = MSTP(&div4_clks[DIV4_B], SMSTPCR1, 0, 0), /* LCDC0 */
+ 	[MSTP223] = MSTP(&div6_clks[DIV6_SPU], SMSTPCR2, 23, 0), /* SPU2 */
+ 	[MSTP207] = MSTP(&div6_clks[DIV6_SUB], SMSTPCR2, 7, 0), /* SCIFA5 */
+ 	[MSTP206] = MSTP(&div6_clks[DIV6_SUB], SMSTPCR2, 6, 0), /* SCIFB */
+@@ -335,9 +341,12 @@ static struct clk_lookup lookups[] = {
+ 	CLKDEV_DEV_ID("uio_pdrv_genirq.2", &mstp_clks[MSTP130]), /* VEU2 */
+ 	CLKDEV_DEV_ID("uio_pdrv_genirq.1", &mstp_clks[MSTP129]), /* VEU1 */
+ 	CLKDEV_DEV_ID("uio_pdrv_genirq.0", &mstp_clks[MSTP128]), /* VEU0 */
++	CLKDEV_DEV_ID("sh-mipi-dsi.0", &mstp_clks[MSTP118]), /* DSITX */
++	CLKDEV_DEV_ID("sh_mobile_lcdc_fb.1", &mstp_clks[MSTP117]), /* LCDC1 */
+ 	CLKDEV_DEV_ID("i2c-sh_mobile.0", &mstp_clks[MSTP116]), /* IIC0 */
+ 	CLKDEV_DEV_ID("uio_pdrv_genirq.5", &mstp_clks[MSTP106]), /* JPU */
+ 	CLKDEV_DEV_ID("uio_pdrv_genirq.0", &mstp_clks[MSTP101]), /* VPU */
++	CLKDEV_DEV_ID("sh_mobile_lcdc_fb.0", &mstp_clks[MSTP100]), /* LCDC0 */
+ 	CLKDEV_DEV_ID("uio_pdrv_genirq.6", &mstp_clks[MSTP223]), /* SPU2DSP0 */
+ 	CLKDEV_DEV_ID("uio_pdrv_genirq.7", &mstp_clks[MSTP223]), /* SPU2DSP1 */
+ 	CLKDEV_DEV_ID("sh-sci.5", &mstp_clks[MSTP207]), /* SCIFA5 */
 -- 
-1.6.5.2
+1.6.2.4
 

@@ -1,37 +1,49 @@
-From: Baruch Siach <baruch@tkos.co.il>
-Date: Thu, 27 May 2010 04:03:29 +0000
-Subject: Re: [PATCH] fbdev: fix frame buffer devices menu
-Message-Id: <20100527040329.GA14841@jasper.tkos.co.il>
+From: Albert Herranz <albert_herranz@yahoo.es>
+Date: Tue, 25 May 2010 18:26:31 +0000
+Subject: Re: page_mkwrite vs pte dirty race in fb_defio
+Message-Id: <4BFC1657.5000707@yahoo.es>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1274896477-6832-1-git-send-email-cascardo@holoscopio.com>
-In-Reply-To: <1274896477-6832-1-git-send-email-cascardo@holoscopio.com>
+References: <20100525160149.GE20853@laptop>
+In-Reply-To: <20100525160149.GE20853@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Sascha Hauer <s.hauer@pengutronix.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Nick Piggin <npiggin@suse.de>
+Cc: aya Kumar <jayakumar.lkml@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Wed, May 26, 2010 at 02:54:37PM -0300, Thadeu Lima de Souza Cascardo wro=
-te:
-> Commit f601441916d1e19291d0b4f044b4a7551e2924d0 has inserted the symbol
-> HAVE_FB_IMX, which does not depend on FB after the menuconfig FB. This
-> breaks the menu, presenting most of the drivers outside of it, when
-> using menuconfig.
->=20
-> Moving the symbol to the start of the file, just like HAVE_FB_ATMEL,
-> fixes the problem without breaking it for iMX25 configurations (tested
-> with ARCH=3Darm, no build).
->=20
-> Cc: Baruch Siach <baruch@tkos.co.il>
-> Cc: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-> Cc: Sascha Hauer <s.hauer@pengutronix.de>
-> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Hi,
 
-Acked-by: Baruch Siach <baruch@tkos.co.il>
+On 05/25/2010 06:01 PM, Nick Piggin wrote:
+> Hi,
+> 
+> I couldn't find where this patch (49bbd815fd8) was discussed, so I'll
+> make my own thread. Adding a few lists to cc because it might be of
+> interest to driver and filesystem writers.
+> 
 
-baruch
+The original thread can be found here:
+http://marc.info/?l=linux-fbdev&m7369791432181
 
---=20
-                                                     ~. .~   Tk Open Systems
-=3D}------------------------------------------------ooO--U--Ooo------------=
-{   - baruch@tkos.co.il - tel: +972.2.679.5364, http://www.tkos.co.il -
+> The old ->page_mkwrite calling convention was causing problems exactly
+> because of this race, and we solved it by allowing page_mkwrite to
+> return with the page locked, and the lock will be held until the
+> pte is marked dirty. See commit b827e496c893de0c0f142abfaeb8730a2fd6b37f.
+> 
+
+Ah, didn't know about that. Thanks for the pointer.
+
+> I hope that should provide a more elegant solution to your problem. I
+> would really like you to take a look at that, because we already have
+> filesystem code (NFS) relying on it, and more code we have relying on
+> this synchronization, the more chance we would find a subtle problem
+> with it (also it should be just nicer).
+> 
+
+So if I undestand it correctly, using the "new" calling convention I should just lock the page on fb_deferred_io_mkwrite() and return VM_FAULT_LOCKED to fix the described race for fb_defio.
+
+> Thanks,
+> Nick
+> 
+
+Thanks,
+Albert

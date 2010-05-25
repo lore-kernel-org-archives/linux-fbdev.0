@@ -1,59 +1,57 @@
-From: Pawel Osciak <p.osciak@samsung.com>
-Date: Thu, 27 May 2010 11:43:06 +0000
-Subject: RE: Tentative agenda for Helsinki mini-summit
-Message-Id: <005f01cafd91$c5f25a00$51d70e00$%osciak@samsung.com>
+From: Albert Herranz <albert_herranz@yahoo.es>
+Date: Tue, 25 May 2010 22:17:00 +0000
+Subject: [RFT PATCH 2/2] fb_defio: redo fix for non-dirty ptes
+Message-Id: <1274825820-10246-2-git-send-email-albert_herranz@yahoo.es>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201005231236.49048.hverkuil@xs4all.nl>
- <Pine.LNX.4.64.1005231929091.3571@axis700.grange>
- <005201cafd82$557b24f0$00716ed0$%osciak@samsung.com>
- <Pine.LNX.4.64.1005271158550.2293@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1005271158550.2293@axis700.grange>
+References: <1274825820-10246-1-git-send-email-albert_herranz@yahoo.es>
+In-Reply-To: <1274825820-10246-1-git-send-email-albert_herranz@yahoo.es>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Guennadi Liakhovetski' <g.liakhovetski@gmx.de>
-Cc: 'Hans Verkuil' <hverkuil@xs4all.nl>, 'Linux Media Mailing List' <linux-media@vger.kernel.org>, "'Zhong, Jeff'" <hzhong@quicinc.com>, 'Laurent Pinchart' <laurent.pinchart@ideasonboard.com>, "'Zhang, Xiaolin'" <xiaolin.zhang@intel.com>, 'Sergio Rodriguez' <saaguirre@ti.com>, 'Vaibhav Hiremath' <hvaibhav@ti.com>, 'Hans de Goede' <hdegoede@redhat.com>, 'Mauro Carvalho Chehab' <mchehab@redhat.com>, 'Kamil Debski' <k.debski@samsung.com>, linux-fbdev@vger.kernel.org
+To: npiggin@suse.de, jayakumar.lkml@gmail.com, akpm@linux-foundation.org, torvalds@linux-foundation.org, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.orgl
+Cc: Albert Herranz <albert_herranz@yahoo.es>
 
->Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
->On Thu, 27 May 2010, Pawel Osciak wrote:
->
->> Hi,
->>
->> >Guennadi Liakhovetski wrote:
->> >
->> >No idea whether this is a worthy and suitable topic for this meeting, but:
->> >
->> >V4L(2) video output vs. framebuffer.
->> >
->> >How about a v4l2-output - fbdev translation layer? You write a v4l2-output
->> >driver and get a framebuffer device free of charge... TBH, I haven't given
->> >this too much of a thought, but so far I don't see anything that would
->> >make this impossible in principle. The video buffer management is quite
->> >different between the two systems, but maybe we can teach video-output
->> >drivers to work with just one buffer too? Anyway, feel free to tell me why
->> >this is an absolutely impossible / impractical idea;)
->>
->> We also use v4l2-outputs for our display interfaces and for that we have
->> v4l2-subdevices in a framebuffer driver. Although we have had no need for
->> such a translation layer per se up to now, the idea seems interesting.
->
->Interesting, but sorry, don't quite understand "we use v4l2-outputs" and
->"in a framebuffer driver" - so, is it a framebuffer (/dev/fbX) or a v4l2
->output device driver or both? Which driver is this? Is it already in the
->mainline?
->
+As pointed by Nick Piggin, ->page_mkwrite provides a way to keep a page
+locked until the associated PTE is marked dirty.
 
-It's the (mostly) standard s3c-fb driver with a v4l2-subdev video interface
-added. A separate v4l2 output device driver uses that interface to communicate
-with the framebuffer driver, as some setup is required on both parts.
+Re-implement the fix by using this mechanism.
 
-Those operations cannot be performed from userspace as they have to be
-synchronized in interrupts.
+LKML-Reference: <20100525160149.GE20853@laptop>
+Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
+---
+ drivers/video/fb_defio.c |   12 +++++++++++-
+ 1 files changed, 11 insertions(+), 1 deletions(-)
 
-Best regards
---
-Pawel Osciak
-Linux Platform Group
-Samsung Poland R&D Center
-
+diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
+index 0e4dcdb..a3e8cc7 100644
+--- a/drivers/video/fb_defio.c
++++ b/drivers/video/fb_defio.c
+@@ -100,6 +100,16 @@ static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
+ 	/* protect against the workqueue changing the page list */
+ 	mutex_lock(&fbdefio->lock);
+ 
++	/*
++	 * We want the page to remain locked from ->page_mkwrite until
++	 * the PTE is marked dirty to avoid page_mkclean() being called
++	 * before the PTE is updated, which would leave the page ignored
++	 * by defio.
++	 * Do this by locking the page here and informing the caller
++	 * about it with VM_FAULT_LOCKED.
++	 */
++	lock_page(page);
++
+ 	/* we loop through the pagelist before adding in order
+ 	to keep the pagelist sorted */
+ 	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
+@@ -121,7 +131,7 @@ page_already_added:
+ 
+ 	/* come back after delay to process the deferred IO */
+ 	schedule_delayed_work(&info->deferred_work, fbdefio->delay);
+-	return 0;
++	return VM_FAULT_LOCKED;
+ }
+ 
+ static const struct vm_operations_struct fb_deferred_io_vm_ops = {
+-- 
+1.7.0.4
 

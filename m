@@ -1,117 +1,103 @@
-From: Jani Nikula <ext-jani.1.nikula@Nokia.com>
-Date: Mon, 03 May 2010 06:18:32 +0000
-Subject: [PATCH v2 12/21] OMAP: DSS2: Taal: Change ESD work management
-Message-Id: <4004b06a47d3c1d20d6d8a30ddccdf536faeb5a0.1272621452.git.ext-jani.1.nikula@nokia.com>
+From: Albert Herranz <albert_herranz@yahoo.es>
+Date: Tue, 25 May 2010 22:16:59 +0000
+Subject: [RFT PATCH 1/2] Revert "fb_defio: fix for non-dirty ptes"
+Message-Id: <1274825820-10246-1-git-send-email-albert_herranz@yahoo.es>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1272621452.git.ext-jani.1.nikula@nokia.com>
- <1ef57e99d69aaf89b8e61074aa8ce2e5f6632d28.1272621452.git.ext-jani.1.nikula@nokia.com>
- <c95257e8042f471c55a38133020d1d63e22161f3.1272621452.git.ext-jani.1.nikula@nokia.com>
- <db2b972d4fa08c2f5b3cd06392ef62415890a188.1272621452.git.ext-jani.1.nikula@nokia.com>
- <b57a3f4ccf68e8c8faf332a25b699b92a5604509.1272621452.git.ext-jani.1.nikula@nokia.com>
- <7a01973540a3afa79701ee08a3d8732db4687d5b.1272621452.git.ext-jani.1.nikula@nokia.com>
- <b88fcf26f978d38a25000c2f472a4ad8f79ac285.1272621452.git.ext-jani.1.nikula@nokia.com>
- <ba3a895d56c242fe4edbcfc4abd3c608da3db77a.1272621452.git.ext-jani.1.nikula@nokia.com>
- <1a68710812da041ef583944411a1b7027d216c96.1272621452.git.ext-jani.1.nikula@nokia.com>
- <85172e14c23339065e319230f9707353409a901e.1272621452.git.ext-jani.1.nikula@nokia.com>
- <6e9febe4d2179309dcf93b7a8e897890c871f086.1272621452.git.ext-jani.1.nikula@nokia.com>
- <ad1917b1c316a85051c4a908705d403956ca1720.1272621452.git.ext-jani.1.nikula@nokia.com>
-In-Reply-To: <ad1917b1c316a85051c4a908705d403956ca1720.1272621452.git.ext-jani.1.nikula@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi.Valkeinen@Nokia.com, tony@atomide.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, ext-jani.1.nikula@Nokia.com
+To: npiggin@suse.de, jayakumar.lkml@gmail.com, akpm@linux-foundation.org, torvalds@linux-foundation.org, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.orgl
+Cc: Albert Herranz <albert_herranz@yahoo.es>
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+This reverts commit 49bbd815fd8ba26d0354900b783b767c7f47c816.
+Although the fix provided is correct, it's been suggested to avoid the
+underlying race in the same way as it is currently done in filesystems
+like NFS, for maintainability.
 
-Move ESD work queuing and cancelling out of taal_power_on/off() to avoid
-problems related to taal_esd_work() calling the power on/off functions.
+A following patch "fb_defio: redo fix for non-dirty ptes" will provide
+such an alternate fix.
 
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+LKML-Reference: <20100525160149.GE20853@laptop>
+Signed-off-by: Albert Herranz <albert_herranz@yahoo.es>
 ---
- drivers/video/omap2/displays/panel-taal.c |   25 ++++++++++++++++---------
- 1 files changed, 16 insertions(+), 9 deletions(-)
+ drivers/video/fb_defio.c |   40 ++++++++--------------------------------
+ 1 files changed, 8 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 32e94bf..5b6c945 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -654,7 +654,7 @@ static void taal_remove(struct omap_dss_device *dssdev)
- 	taal_bl_update_status(bldev);
- 	backlight_device_unregister(bldev);
- 
--	cancel_delayed_work_sync(&td->esd_work);
-+	cancel_delayed_work(&td->esd_work);
- 	destroy_workqueue(td->esd_wq);
- 
- 	/* reset, to be sure that the panel is in a valid state */
-@@ -725,10 +725,6 @@ static int taal_power_on(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err;
- 
--#ifdef TAAL_USE_ESD_CHECK
--	queue_delayed_work(td->esd_wq, &td->esd_work, TAAL_ESD_CHECK_PERIOD);
--#endif
+diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
+index 6e10a3a..0e4dcdb 100644
+--- a/drivers/video/fb_defio.c
++++ b/drivers/video/fb_defio.c
+@@ -155,41 +155,25 @@ static void fb_deferred_io_work(struct work_struct *work)
+ {
+ 	struct fb_info *info = container_of(work, struct fb_info,
+ 						deferred_work.work);
++	struct list_head *node, *next;
++	struct page *cur;
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
+-	struct page *page, *tmp_page;
+-	struct list_head *node, *tmp_node;
+-	struct list_head non_dirty;
 -
- 	td->enabled = 1;
+-	INIT_LIST_HEAD(&non_dirty);
  
- 	if (!td->intro_printed) {
-@@ -758,8 +754,6 @@ static void taal_power_off(struct omap_dss_device *dssdev)
- 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
- 	int r;
- 
--	cancel_delayed_work(&td->esd_work);
--
- 	r = taal_dcs_write_0(DCS_DISPLAY_OFF);
- 	if (!r) {
- 		r = taal_sleep_in(td);
-@@ -801,6 +795,10 @@ static int taal_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err;
- 
-+#ifdef TAAL_USE_ESD_CHECK
-+	queue_delayed_work(td->esd_wq, &td->esd_work, TAAL_ESD_CHECK_PERIOD);
-+#endif
-+
- 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
- 
- 	mutex_unlock(&td->lock);
-@@ -820,6 +818,8 @@ static void taal_disable(struct omap_dss_device *dssdev)
- 
- 	mutex_lock(&td->lock);
- 
-+	cancel_delayed_work(&td->esd_work);
-+
- 	dsi_bus_lock();
- 
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
-@@ -846,6 +846,8 @@ static int taal_suspend(struct omap_dss_device *dssdev)
- 		goto err;
+ 	/* here we mkclean the pages, then do all deferred IO */
+ 	mutex_lock(&fbdefio->lock);
+-	list_for_each_entry_safe(page, tmp_page, &fbdefio->pagelist, lru) {
+-		lock_page(page);
+-		/*
+-		 * The workqueue callback can be triggered after a
+-		 * ->page_mkwrite() call but before the PTE has been marked
+-		 * dirty. In this case page_mkclean() won't "rearm" the page.
+-		 *
+-		 * To avoid this, remove those "non-dirty" pages from the
+-		 * pagelist before calling the driver's callback, then add
+-		 * them back to get processed on the next work iteration.
+-		 * At that time, their PTEs will hopefully be dirty for real.
+-		 */
+-		if (!page_mkclean(page))
+-			list_move_tail(&page->lru, &non_dirty);
+-		unlock_page(page);
++	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
++		lock_page(cur);
++		page_mkclean(cur);
++		unlock_page(cur);
  	}
  
-+	cancel_delayed_work(&td->esd_work);
-+
- 	dsi_bus_lock();
+ 	/* driver's callback with pagelist */
+ 	fbdefio->deferred_io(info, &fbdefio->pagelist);
  
- 	taal_power_off(dssdev);
-@@ -882,10 +884,15 @@ static int taal_resume(struct omap_dss_device *dssdev)
+-	/* clear the list... */
+-	list_for_each_safe(node, tmp_node, &fbdefio->pagelist) {
++	/* clear the list */
++	list_for_each_safe(node, next, &fbdefio->pagelist) {
+ 		list_del(node);
+ 	}
+-	/* ... and add back the "non-dirty" pages to the list */
+-	list_splice_tail(&non_dirty, &fbdefio->pagelist);
+ 	mutex_unlock(&fbdefio->lock);
+ }
  
- 	dsi_bus_unlock();
+@@ -218,20 +202,12 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_open);
+ void fb_deferred_io_cleanup(struct fb_info *info)
+ {
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
+-	struct list_head *node, *tmp_node;
+ 	struct page *page;
+ 	int i;
  
--	if (r)
-+	if (r) {
- 		dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
--	else
-+	} else {
- 		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
-+#ifdef TAAL_USE_ESD_CHECK
-+		queue_delayed_work(td->esd_wq, &td->esd_work,
-+				TAAL_ESD_CHECK_PERIOD);
-+#endif
-+	}
+ 	BUG_ON(!fbdefio);
+ 	flush_delayed_work(&info->deferred_work);
  
- 	mutex_unlock(&td->lock);
- 
+-	/*  the list may have still some non-dirty pages at this point */
+-	mutex_lock(&fbdefio->lock);
+-	list_for_each_safe(node, tmp_node, &fbdefio->pagelist) {
+-		list_del(node);
+-	}
+-	mutex_unlock(&fbdefio->lock);
+-
+ 	/* clear out the mapping that we setup */
+ 	for (i = 0 ; i < info->fix.smem_len; i += PAGE_SIZE) {
+ 		page = fb_deferred_io_page(info, i);
 -- 
-1.6.5.2
+1.7.0.4
 

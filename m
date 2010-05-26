@@ -1,58 +1,103 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Mon, 10 May 2010 06:00:47 +0000
-Subject: Re: Deadlock between fbcon and fb_defio?
-Message-Id: <20100510080047.5adade6f@pluto.restena.lu>
+From: Anatolij Gustschin <agust@denx.de>
+Date: Wed, 26 May 2010 09:57:43 +0000
+Subject: [PATCH 2/2] sm501fb.c: support mmap on PPC440SPe/PPC440EPx
+Message-Id: <1274867863-4238-2-git-send-email-agust@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100509184911.3f136b77@neptune.home>
-	<AANLkTik0EkPYKdnhrpF7yK6eXIrHMsNYrzSC6tyeBR0P@mail.gmail.com>
-In-Reply-To: <AANLkTik0EkPYKdnhrpF7yK6eXIrHMsNYrzSC6tyeBR0P@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-Hi Jaya,
+Add driver specific mmap function to be able to mmap
+frame buffer on PPC440SPe/PPC440EPx platforms. This
+is needed because mmaping of the 36-bit physical
+address of the frame buffer or MMIO is not supported
+in generic fb_mmap().
 
-On Mon, 10 May 2010 08:00:51 Jaya Kumar wrote:
-> On Mon, May 10, 2010 at 12:49 AM, Bruno Pr=C3=A9mont
-> <bonbons@linux-vserver.org> wrote:
-> >
-> > Fix crash if we are the first framebuffer loaded as in that case
-> > fbcon wants to flush framebuffer at the end of fb registration,
-> > before we have setup fb_defio.
->=20
-> Bruno,
->=20
-> Please help me understand, how does this scenario occur? I'm
-> interpreting what you've written above to mean that fbcon is accessing
-> the framebuffer before you've called defio_init()? Is that correct?
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Cc: Ben Dooks <ben@simtec.co.uk>
+Cc: Simtec Linux Team <linux@simtec.co.uk>
+---
+ drivers/video/sm501fb.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 52 insertions(+), 0 deletions(-)
 
-That was the original state as I called defio_init after
-register_framebuffer() and defio_cleanup() before
-unregister_framebuffer(), the opposite to the typical sequence you
-detail below. Fixed by the patch.
+diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
+index 0b59112..9cdc298 100644
+--- a/drivers/video/sm501fb.c
++++ b/drivers/video/sm501fb.c
+@@ -1426,6 +1426,52 @@ static void sm501fb_fillrect(struct fb_info *info, const struct fb_fillrect *rec
+ 	writel(0x800100cc, fbi->regs2d + SM501_2D_CONTROL);
+ }
+ 
++#if defined(CONFIG_440EPX) || defined(CONFIG_440SPe)
++static int sm501fb_mmap(struct fb_info *info,
++			struct vm_area_struct *vma)
++{
++	struct sm501fb_par *par = info->par;
++	struct sm501fb_info *fbi = par->info;
++	unsigned long long start;
++	unsigned long len, off, map_off;
++
++	off = vma->vm_pgoff << PAGE_SHIFT;
++	/*
++	 * Get 36-bit base address of the frame buffer memory.
++	 * Since it was previously truncated while assigning to
++	 * fix.smem_start, we retrieve correct address here.
++	 */
++	start = (fbi->fbmem_res->start & 0xf00000000ULL) +
++		info->fix.smem_start;
++	len = PAGE_ALIGN((start & ~PAGE_MASK) + info->fix.smem_len);
++
++	if (off >= len) {
++		/* memory mapped io */
++		off -= len;
++		if (info->var.accel_flags)
++			return -EINVAL;
++		start = fbi->regs_res->start;
++		len = PAGE_ALIGN((start & ~PAGE_MASK) +
++				 resource_size(fbi->regs_res));
++	}
++
++	start &= PAGE_MASK;
++	if ((vma->vm_end - vma->vm_start + off) > len)
++		return -EINVAL;
++
++	map_off = (unsigned long)((off + start) >> PAGE_SHIFT);
++	vma->vm_pgoff = map_off;
++
++	vma->vm_flags |= VM_IO | VM_RESERVED;
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
++	if (io_remap_pfn_range(vma, vma->vm_start, map_off,
++			       vma->vm_end - vma->vm_start,
++			       vma->vm_page_prot))
++		return -EAGAIN;
++
++	return 0;
++}
++#endif
+ 
+ static struct fb_ops sm501fb_ops_crt = {
+ 	.owner		= THIS_MODULE,
+@@ -1439,6 +1485,9 @@ static struct fb_ops sm501fb_ops_crt = {
+ 	.fb_copyarea	= sm501fb_copyarea,
+ 	.fb_imageblit	= cfb_imageblit,
+ 	.fb_sync	= sm501fb_sync,
++#if defined(CONFIG_440EPX) || defined(CONFIG_440SPe)
++	.fb_mmap	= sm501fb_mmap,
++#endif
+ };
+ 
+ static struct fb_ops sm501fb_ops_pnl = {
+@@ -1453,6 +1502,9 @@ static struct fb_ops sm501fb_ops_pnl = {
+ 	.fb_copyarea	= sm501fb_copyarea,
+ 	.fb_imageblit	= cfb_imageblit,
+ 	.fb_sync	= sm501fb_sync,
++#if defined(CONFIG_440EPX) || defined(CONFIG_440SPe)
++	.fb_mmap	= sm501fb_mmap,
++#endif
+ };
+ 
+ /* sm501_init_cursor
+-- 
+1.6.2.5
 
-My deadlock issue, after applying the patch, is during set_par() when I
-replace the framebuffer and wish defio to start using the new page(s)
-instead of the old one(s).
-
-I want to make sure that I won't be accessing the old framebuffer after
-freeing it and also that defio monitors the new framebuffer.
-
-For that reason I defio_cleanup(), replace framebuffer, defio_init().
-All of this happens while do_fb_ioctl() holds lock on fb_info and
-console_sem.
-
-Thanks,
-Bruno
-
-> The typical defio use sequence is: defio_init(),
-> register_framebuffer() and the typical remove sequence is in the
-> reverse order unregister_framebuffer(), defio_cleanup(). So, I don't
-> see how fbcon is accessing the framebuffer either before
-> register_framebuffer() completes (at which point defio init is already
-> done) or after unregister_framebuffer() completes.
->=20
-> Thanks,
-> jaya

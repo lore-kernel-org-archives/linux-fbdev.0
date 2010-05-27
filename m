@@ -1,65 +1,82 @@
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Date: Thu, 27 May 2010 11:05:34 +0000
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Thu, 27 May 2010 12:48:54 +0000
 Subject: Re: Idea of a v4l -> fb interface driver
-Message-Id: <AANLkTik0DHDhmr78xOG2cTUgrTWZKzYDwBl27TXHgcGp@mail.gmail.com>
+Message-Id: <Pine.LNX.4.64.1005271338370.2293@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <Pine.LNX.4.64.1005261559390.22516@axis700.grange>
-	<AANLkTilnb20a4KO1NmK_y148HE_4b6ka14hUJY5o93QT@mail.gmail.com>
-	<Pine.LNX.4.64.1005270809110.2293@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1005270809110.2293@axis700.grange>
+ <AANLkTilnb20a4KO1NmK_y148HE_4b6ka14hUJY5o93QT@mail.gmail.com>
+ <Pine.LNX.4.64.1005270809110.2293@axis700.grange>
+ <AANLkTik0DHDhmr78xOG2cTUgrTWZKzYDwBl27TXHgcGp@mail.gmail.com>
+In-Reply-To: <AANLkTik0DHDhmr78xOG2cTUgrTWZKzYDwBl27TXHgcGp@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
 Cc: linux-fbdev@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>
 
-On Thu, May 27, 2010 at 2:56 PM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> (adding V4L ML to CC and preserving the complete reply for V4L readers)
->
-> On Thu, 27 May 2010, Jaya Kumar wrote:
->
->> On Wed, May 26, 2010 at 10:09 PM, Guennadi Liakhovetski
->> <g.liakhovetski@gmx.de> wrote:
-> Ok, let me explain what exactly I meant. Above I referred to "display
-> drivers," which is not the same as a "framebuffer controller driver" or
-> whatever you would call it. By framebuffer controller driver I mean a
-> driver for the actual graphics engine on a certain graphics card or an
-> SoC. This is the part, that reads data from the actual framebuffer and
-> outputs it to some hardware interface to a display device. Now this
-> interface can be a VGA or a DVI connector, it can be one of several bus
-> types, used with various LCD displays. In many cases this is all you have
-> to do to get the output to your display. But in some cases the actual
-> display on the other side of this bus also requires a driver. That can be
-> some kind of a smart display, it can be a panel with an attached display
-> controller, that must be at least configured, say, over SPI, it can be a
-> display, attached to the host over the MIPI DSI bus, and implementing some
-> proprietary commands. In each of these cases you will have to write a
-> display driver for this specific display or controller type, and your
-> framebuffer driver will have to interface with that display driver. Now,
-> obviously, those displays can be connected to a variety of host systems,
-> in which case you will want to reuse that display driver. This means,
-> there has to be a standard fb-driver - display-driver API. AFAICS, this is
-> currently not implemented in fbdev, please, correct me if I am wrong.
+On Thu, 27 May 2010, Jaya Kumar wrote:
 
-Thanks Guennadi, your clarification is useful. Yes, you are correct.
-There is no general fbdev API provided so that a host controller
-driver and a independent display panel driver can interface in a clean
-abstracted way.
+> You've raised the MIPI-DSI issue. It is a good area to focus the
+> discussion on for fbdev minded people and one that needs to be
+> resolved soon so that we don't get dozens of host controller specific
+> mipi display panel drivers. I had seen that omap2 fbdev has a portion
+> of the MIPI-DSI command set exposed to their various display panel
+> drivers which then hands off these commands to the omap specific
+> lcd_mipid.c which uses spi. I see you've also implemented a similar
+> concept in sh-mobile. When I saw the multiple display panel drivers
+> showing up in omap, I raised a concern with Tomi and I think there was
+> an intent to try to improve the abstraction. I'm not sure how far that
+> has progressed. Are you saying v4l would help us in that area? I'm not
+> yet able to follow the details of how using v4l would help address the
+> need for mipi-dsi abstraction. Could you elaborate on that?
 
-You've raised the MIPI-DSI issue. It is a good area to focus the
-discussion on for fbdev minded people and one that needs to be
-resolved soon so that we don't get dozens of host controller specific
-mipi display panel drivers. I had seen that omap2 fbdev has a portion
-of the MIPI-DSI command set exposed to their various display panel
-drivers which then hands off these commands to the omap specific
-lcd_mipid.c which uses spi. I see you've also implemented a similar
-concept in sh-mobile. When I saw the multiple display panel drivers
-showing up in omap, I raised a concern with Tomi and I think there was
-an intent to try to improve the abstraction. I'm not sure how far that
-has progressed. Are you saying v4l would help us in that area? I'm not
-yet able to follow the details of how using v4l would help address the
-need for mipi-dsi abstraction. Could you elaborate on that?
+Well, I thought about an abstract driver for MIPI DSI... But, there is not 
+really much there, that you can abstract. I've created a generic 
+mipi_display.h header, that contains defines for display related (DSI, 
+DCS) commands and transaction types. Once this header is in the mainline, 
+we plan to convert OMAP drivers to it too. To talk to MIPI displays you 
+need a capability to send and receive generic short and long telegrams, 
+so, providing higher level functions like get_display_id() or 
+soft_reset(), probably, wouldn't make sense. What you do need a proper API 
+for is, when you start supporting proprietary display-specific commands 
+and want to reuse those display drivers with different MIPI DSI hosts. For 
+that we will want a generic API like .send_short_command(), 
+.send_short_command_param(), etc.
 
-Thanks,
-jaya
+As for using v4l2 for MIPI displays - well, I am not sure it makes sense 
+at all. This could make sense if, e.g., you were writing a driver for a 
+graphics controller, capable to talk to various PHYs over a fixed bus 
+(which is actually also the case with the sh-mobile LCDC), then you could 
+design it, using V4L2, in the following way:
+
+/dev/videoX                /dev/fbX
+   |                           |
+   |   /- - fbdev translate - -/
+   v   v
+v4l2 output device driver
+       |
+       v
+   v4l2-subdev API
+    |    ...    |
+    v           v
+MIPI PHY ...  parallel PHY
+ driver  ...    driver
+    |
+    v
+ MIPI bus
+abstraction
+    |
+    v
+MIPI display
+  driver
+
+So, you would use the v4l2-subdev API to abstract various PHY drivers. The 
+/dev/fbX link above would, certainly, only exist if we implement the 
+v4l2-output - fbdev translation driver.
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/

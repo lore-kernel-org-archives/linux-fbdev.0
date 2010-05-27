@@ -1,84 +1,349 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Tue, 18 May 2010 12:34:51 +0000
-Subject: [PATCH 00/23] OMAP DSS patches for 2.6.35 merge window
-Message-Id: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+From: =?KOI8-R?B?4czFy9PBzsTSIOTP0snG?= <dorif11@gmail.com>
+Date: Thu, 27 May 2010 17:52:37 +0000
+Subject: efifb warnings.
+Message-Id: <AANLkTimf9o3cIQHmf7pRHb29oH4X24I6V4RmEwG6Ciw9@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-Here are OMAP DSS patches for 2.6.35 merge window. They have been previously
-reviewed on linux-omap and fbdev lists.
+Hello! I tried to compile kernel v.2.6.34-12 and got these messages:
+WARNING: drivers/video/built-in.o(.devinit.text+0xda1): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
 
- Tomi
+WARNING: drivers/video/built-in.o(.devinit.text+0xdae): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
 
-Carlos Lopez (1):
-  OMAP2: DSS: Add missing line for update bg color
+WARNING: drivers/video/built-in.o(.devinit.text+0xdb5): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_fix
+The function __devinit efifb_probe() references
+a variable __initdata efifb_fix.
+If efifb_fix is only used by efifb_probe then
+annotate efifb_fix with a matching annotation.
 
-Grazvydas Ignotas (1):
-  OMAP: DSS2: TPO-TD03MTEA1: fix Kconfig dependency
+WARNING: drivers/video/built-in.o(.devinit.text+0xdbb): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_defined
+The function __devinit efifb_probe() references
+a variable __initdata efifb_defined.
+If efifb_defined is only used by efifb_probe then
+annotate efifb_defined with a matching annotation.
 
-Jani Nikula (6):
-  OMAP: DSS2: fix lock_fb_info() and omapfb_lock() locking order
-  OMAP: DSS2: check lock_fb_info() return value
-  OMAP: DSS2: VENC: don't call platform_enable/disable() twice
-  OMAP: DSS2: Fix device disable when driver is not loaded
-  OMAP: DSS2: omap_dss_probe() conditional compilation cleanup
-  OMAP: DSS2: Fix omap_dss_probe() error path
+WARNING: drivers/video/built-in.o(.devinit.text+0xdcb): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_defined
+The function __devinit efifb_probe() references
+a variable __initdata efifb_defined.
+If efifb_defined is only used by efifb_probe then
+annotate efifb_defined with a matching annotation.
 
-Kishore Y (1):
-  OMAP3630: DSS2: Updating MAX divider value
+WARNING: drivers/video/built-in.o(.devinit.text+0xe0c): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
 
-Koen Kooi (1):
-  board-omap3-beagle: add DSS2 support
+WARNING: drivers/video/built-in.o(.devinit.text+0xe23): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_fix
+The function __devinit efifb_probe() references
+a variable __initdata efifb_fix.
+If efifb_fix is only used by efifb_probe then
+annotate efifb_fix with a matching annotation.
 
-Roger Quadros (7):
-  OMAP: DSS2: Add Kconfig option for DPI display type
-  OMAP: DSS2: Remove redundant enable/disable calls from SDI
-  OMAP: DSS2: Use vdds_sdi regulator supply in SDI
-  OMAP: RX51: Add LCD Panel support
-  OMAP: RX51: Add Touch Controller in SPI board info
-  OMAP: DSS2: Add ACX565AKM Panel Driver
-  OMAP: RX51: Update board defconfig
+WARNING: drivers/video/built-in.o(.devinit.text+0xf03): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_fix
+The function __devinit efifb_probe() references
+a variable __initdata efifb_fix.
+If efifb_fix is only used by efifb_probe then
+annotate efifb_fix with a matching annotation.
 
-Tomi Valkeinen (2):
-  OMAP: DSS2: Make partial update width even
-  OMAP: DSS2: Taal: add mutex to protect panel data
+WARNING: drivers/video/built-in.o(.devinit.text+0xf18): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
 
-Vaibhav Hiremath (3):
-  OMAP: Enable DSS2 in OMAP3EVM defconfig
-  OMAP: AM3517: Enable DSS2 in AM3517EVM defconfig
-  OMAP: LCD LS037V7DW01: Add Backlight driver support
+WARNING: drivers/video/built-in.o(.devinit.text+0xf30): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_fix
+The function __devinit efifb_probe() references
+a variable __initdata efifb_fix.
+If efifb_fix is only used by efifb_probe then
+annotate efifb_fix with a matching annotation.
 
-Ville Syrjälä (1):
-  OMAP: DSS2: Taal: Fix DSI bus locking problem
+WARNING: drivers/video/built-in.o(.devinit.text+0xf36): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
 
- arch/arm/configs/am3517_evm_defconfig              |   52 ++-
- arch/arm/configs/omap3_evm_defconfig               |   51 ++-
- arch/arm/configs/rx51_defconfig                    |   39 +-
- arch/arm/mach-omap2/Makefile                       |    1 +
- arch/arm/mach-omap2/board-omap3beagle.c            |  101 ++-
- arch/arm/mach-omap2/board-rx51-peripherals.c       |   28 +
- arch/arm/mach-omap2/board-rx51-video.c             |  109 +++
- arch/arm/mach-omap2/board-rx51.c                   |    2 +
- drivers/video/omap2/displays/Kconfig               |    9 +-
- drivers/video/omap2/displays/Makefile              |    1 +
- drivers/video/omap2/displays/panel-acx565akm.c     |  819 ++++++++++++++++++++
- .../video/omap2/displays/panel-sharp-ls037v7dw01.c |   78 ++
- drivers/video/omap2/displays/panel-taal.c          |  143 +++-
- drivers/video/omap2/dss/Kconfig                    |    6 +
- drivers/video/omap2/dss/Makefile                   |    3 +-
- drivers/video/omap2/dss/core.c                     |   85 ++-
- drivers/video/omap2/dss/display.c                  |    9 +-
- drivers/video/omap2/dss/dss.c                      |   24 +-
- drivers/video/omap2/dss/dss.h                      |   50 ++
- drivers/video/omap2/dss/manager.c                  |   21 +
- drivers/video/omap2/dss/sdi.c                      |   26 +-
- drivers/video/omap2/dss/venc.c                     |   15 +-
- drivers/video/omap2/omapfb/omapfb-ioctl.c          |    5 +-
- drivers/video/omap2/omapfb/omapfb-sysfs.c          |   25 +-
- 24 files changed, 1573 insertions(+), 129 deletions(-)
- create mode 100644 arch/arm/mach-omap2/board-rx51-video.c
- create mode 100644 drivers/video/omap2/displays/panel-acx565akm.c
+WARNING: drivers/video/built-in.o(.devinit.text+0xf54): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_fix
+The function __devinit efifb_probe() references
+a variable __initdata efifb_fix.
+If efifb_fix is only used by efifb_probe then
+annotate efifb_fix with a matching annotation.
 
+WARNING: drivers/video/built-in.o(.devinit.text+0xf73): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_defined
+The function __devinit efifb_probe() references
+a variable __initdata efifb_defined.
+If efifb_defined is only used by efifb_probe then
+annotate efifb_defined with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0xf87): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0xf94): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0xf9a): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_defined
+The function __devinit efifb_probe() references
+a variable __initdata efifb_defined.
+If efifb_defined is only used by efifb_probe then
+annotate efifb_defined with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0xfa2): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_defined
+The function __devinit efifb_probe() references
+a variable __initdata efifb_defined.
+If efifb_defined is only used by efifb_probe then
+annotate efifb_defined with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0xfad): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_defined
+The function __devinit efifb_probe() references
+a variable __initdata efifb_defined.
+If efifb_defined is only used by efifb_probe then
+annotate efifb_defined with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0xfbc): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_defined
+The function __devinit efifb_probe() references
+a variable __initdata efifb_defined.
+If efifb_defined is only used by efifb_probe then
+annotate efifb_defined with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0xfc2): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0xfc8): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0xfce): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_defined
+The function __devinit efifb_probe() references
+a variable __initdata efifb_defined.
+If efifb_defined is only used by efifb_probe then
+annotate efifb_defined with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0xfdb): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_defined
+The function __devinit efifb_probe() references
+a variable __initdata efifb_defined.
+If efifb_defined is only used by efifb_probe then
+annotate efifb_defined with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x1008): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_defined
+The function __devinit efifb_probe() references
+a variable __initdata efifb_defined.
+If efifb_defined is only used by efifb_probe then
+annotate efifb_defined with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x101b): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_defined
+The function __devinit efifb_probe() references
+a variable __initdata efifb_defined.
+If efifb_defined is only used by efifb_probe then
+annotate efifb_defined with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x1023): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x1029): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x1045): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x104c): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x1053): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x105a): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x106b): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_defined
+The function __devinit efifb_probe() references
+a variable __initdata efifb_defined.
+If efifb_defined is only used by efifb_probe then
+annotate efifb_defined with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x1078): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x107e): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x1084): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_defined
+The function __devinit efifb_probe() references
+a variable __initdata efifb_defined.
+If efifb_defined is only used by efifb_probe then
+annotate efifb_defined with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x1092): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x1098): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x10a5): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x10b6): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x10bf): Section
+mismatch in reference from the function efifb_probe() to the (unknown
+reference) .init.data:(unknown)
+The function __devinit efifb_probe() references
+a (unknown reference) __initdata (unknown).
+If (unknown) is only used by efifb_probe then
+annotate (unknown) with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x10e8): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_fix
+The function __devinit efifb_probe() references
+a variable __initdata efifb_fix.
+If efifb_fix is only used by efifb_probe then
+annotate efifb_fix with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x1183): Section
+mismatch in reference from the function efifb_probe() to the variable
+.init.data:efifb_fix
+The function __devinit efifb_probe() references
+a variable __initdata efifb_fix.
+If efifb_fix is only used by efifb_probe then
+annotate efifb_fix with a matching annotation.
+
+I hope, it'll be corrected soon. My system: Fedora 13 x86_64, gcc 4.4.4
+P.S.:Was my message useful

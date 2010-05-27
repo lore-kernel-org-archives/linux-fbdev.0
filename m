@@ -1,59 +1,54 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sat, 01 May 2010 15:29:40 +0000
-Subject: Re: [PATCH 12/30] viafb: Move core stuff into via-core.c
-Message-Id: <4BDC48E4.8000202@gmx.de>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Thu, 27 May 2010 10:02:44 +0000
+Subject: RE: Tentative agenda for Helsinki mini-summit
+Message-Id: <Pine.LNX.4.64.1005271158550.2293@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272493051-25380-1-git-send-email-corbet@lwn.net>	<1272493051-25380-13-git-send-email-corbet@lwn.net>	<4BDC4286.4070703@gmx.de> <20100501090827.72e9da71@bike.lwn.net>
-In-Reply-To: <20100501090827.72e9da71@bike.lwn.net>
+References: <201005231236.49048.hverkuil@xs4all.nl>
+ <Pine.LNX.4.64.1005231929091.3571@axis700.grange>
+ <005201cafd82$557b24f0$00716ed0$%osciak@samsung.com>
+In-Reply-To: <005201cafd82$557b24f0$00716ed0$%osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>, linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn
+To: Pawel Osciak <p.osciak@samsung.com>
+Cc: 'Hans Verkuil' <hverkuil@xs4all.nl>, 'Linux Media Mailing List' <linux-media@vger.kernel.org>, "'Zhong, Jeff'" <hzhong@quicinc.com>, 'Laurent Pinchart' <laurent.pinchart@ideasonboard.com>, "'Zhang, Xiaolin'" <xiaolin.zhang@intel.com>, 'Sergio Rodriguez' <saaguirre@ti.com>, 'Vaibhav Hiremath' <hvaibhav@ti.com>, 'Hans de Goede' <hdegoede@redhat.com>, 'Mauro Carvalho Chehab' <mchehab@redhat.com>, 'Kamil Debski' <k.debski@samsung.com>, linux-fbdev@vger.kernel.org
 
-Jonathan Corbet schrieb:
-> On Sat, 01 May 2010 17:02:30 +0200
-> Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
+On Thu, 27 May 2010, Pawel Osciak wrote:
+
+> Hi,
 > 
->>>  struct fb_info *viafbinfo;
->>> +EXPORT_SYMBOL_GPL(viafbinfo);
->>>  struct fb_info *viafbinfo1;
->>>  struct viafb_par *viaparinfo;
->>> +EXPORT_SYMBOL_GPL(viaparinfo);
->>>  struct viafb_par *viaparinfo1;  
->> Ugh, I really hope you introduce those only as temporary exports until 
->> the split is finished. It's ugly enough that viafb uses these internally 
->> as global variables which will vanish in some time but for a 
->> multifunction driver having those sounds even more ridiculous. If we 
->> agree that it's only a temporary solution I'll take this bitter pill.
+> >Guennadi Liakhovetski wrote:
+> >
+> >No idea whether this is a worthy and suitable topic for this meeting, but:
+> >
+> >V4L(2) video output vs. framebuffer.
+> >
+> >How about a v4l2-output - fbdev translation layer? You write a v4l2-output
+> >driver and get a framebuffer device free of charge... TBH, I haven't given
+> >this too much of a thought, but so far I don't see anything that would
+> >make this impossible in principle. The video buffer management is quite
+> >different between the two systems, but maybe we can teach video-output
+> >drivers to work with just one buffer too? Anyway, feel free to tell me why
+> >this is an absolutely impossible / impractical idea;)
 > 
-> No we don't agree...  what we're seeing here is some history that I did
-> not succeed in getting rid of entirely.  Those exports have no reason
-> to exist anymore and shouldn't have slipped through into that patch.  I
-> will most certainly make them go away.
+> We also use v4l2-outputs for our display interfaces and for that we have
+> v4l2-subdevices in a framebuffer driver. Although we have had no need for
+> such a translation layer per se up to now, the idea seems interesting.
 
-That's even better.
+Interesting, but sorry, don't quite understand "we use v4l2-outputs" and 
+"in a framebuffer driver" - so, is it a framebuffer (/dev/fbX) or a v4l2 
+output device driver or both? Which driver is this? Is it already in the 
+mainline?
 
->>> @@ -1764,6 +1765,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
->>>  		&viaparinfo->shared->lvds_setting_info2;
->>>  	viaparinfo->crt_setting_info = &viaparinfo->shared->crt_setting_info;
->>>  	viaparinfo->chip_info = &viaparinfo->shared->chip_info;
->>> +	spin_lock_init(&viaparinfo->reg_lock);  
->> I think the initialization of the lock that is made for synchronization 
->> of hardware access should be in the via-core.c you just introduce. (and 
->>   the lock itself in a structure or something outside the framebuffer 
->> flow). Just saw that you did so in your next patch, so there is no 
->> reason to needlessly introduce the spinlock now.
-> 
-> As you note, it's only there for one step in the series, and no
-> electrons are harmed in the process.  Is this really worth the trouble
-> of changing?
+> I would definitely be interested in a general discussion about framebuffer
+> driver - v4l2 output device interoperability though and can share our
+> experience in this field.
 
-Well I only noticed it just before sending. Not needlessly changing code 
-would make the patches simpler but as I know now what is going on I 
-don't insist on changing it.
+Yes, please, do, it would be very much appreciated!
 
-
-Thanks,
-
-Florian Tobias Schandinat
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/

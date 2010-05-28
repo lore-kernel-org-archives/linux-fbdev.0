@@ -1,37 +1,82 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Fri, 28 May 2010 10:07:58 +0000
+From: Alex Deucher <alexdeucher@gmail.com>
+Date: Fri, 28 May 2010 17:47:55 +0000
 Subject: Re: Idea of a v4l -> fb interface driver
-Message-Id: <Pine.LNX.4.64.1005280851000.32352@axis700.grange>
+Message-Id: <AANLkTikTBFPxbl5p9kI65bHt2UJZ5j0DAxFwJ6rzD77L@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <Pine.LNX.4.64.1005261559390.22516@axis700.grange>
- <AANLkTilnb20a4KO1NmK_y148HE_4b6ka14hUJY5o93QT@mail.gmail.com>
- <Pine.LNX.4.64.1005270809110.2293@axis700.grange> <4BFED8B0.8010504@ti.com>
-In-Reply-To: <4BFED8B0.8010504@ti.com>
+	<AANLkTilnb20a4KO1NmK_y148HE_4b6ka14hUJY5o93QT@mail.gmail.com>
+	<Pine.LNX.4.64.1005270809110.2293@axis700.grange>
+	<AANLkTin_ia3Ym3z7FOu40voZkjCeMqSDZjuE_1aBjwOW@mail.gmail.com>
+	<Pine.LNX.4.64.1005272216380.1703@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1005272216380.1703@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Rob Clark <rob@ti.com>
-Cc: linux-fbdev@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>
 
-(re-adding lists to CC)
+On Fri, May 28, 2010 at 4:21 AM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> On Thu, 27 May 2010, Alex Deucher wrote:
+>
+>> On Thu, May 27, 2010 at 2:56 AM, Guennadi Liakhovetski <g.liakhovetski@g=
+mx.de> wrote:
+>
+> ...
+>
+>> > Ok, let me explain what exactly I meant. Above I referred to "display
+>> > drivers," which is not the same as a "framebuffer controller driver" or
+>> > whatever you would call it. By framebuffer controller driver I mean a
+>> > driver for the actual graphics engine on a certain graphics card or an
+>> > SoC. This is the part, that reads data from the actual framebuffer and
+>> > outputs it to some hardware interface to a display device. Now this
+>> > interface can be a VGA or a DVI connector, it can be one of several bus
+>> > types, used with various LCD displays. In many cases this is all you h=
+ave
+>> > to do to get the output to your display. But in some cases the actual
+>> > display on the other side of this bus also requires a driver. That can=
+ be
+>> > some kind of a smart display, it can be a panel with an attached displ=
+ay
+>> > controller, that must be at least configured, say, over SPI, it can be=
+ a
+>> > display, attached to the host over the MIPI DSI bus, and implementing =
+some
+>> > proprietary commands. In each of these cases you will have to write a
+>> > display driver for this specific display or controller type, and your
+>> > framebuffer driver will have to interface with that display driver. No=
+w,
+>> > obviously, those displays can be connected to a variety of host system=
+s,
+>> > in which case you will want to reuse that display driver. This means,
+>> > there has to be a standard fb-driver - display-driver API. AFAICS, thi=
+s is
+>> > currently not implemented in fbdev, please, correct me if I am wrong.
+>>
+>>
+>> Another API to consider in the drm kms (kernel modesetting) interface.
+>> =A0The kms API deals properly with advanced display hardware and
+>> properly handles crtcs, encoders, and connectors. =A0It also provides
+>> fbdev api emulation.
+>
+> Well, is KMS planned as a replacement for both fbdev and user-space
+> graphics drivers? I mean, if you'd be writing a new fb driver for a
+> relatively simple embedded SoC, would KMS apriori be a preferred API?
 
-On Thu, 27 May 2010, Rob Clark wrote:
+It's become the defacto standard for X and things like EGL are being
+built onto of the API.  As for the kms vs fbdev, kms provides a nice
+API for complex display setups with multiple display controllers and
+connectors while fbdev assumes one monitor/connector/encoder per
+device.  The fbdev and console stuff has yet to take advantage of this
+flexibility, I'm not sure what will happen there.  fbdev emulation is
+provided by kms, but it has to hide the complexity of the attached
+displays.  For an soc with a single encoder and display, there's
+probably not much advantage over fbdev, but if you have an soc that
+can do TMDS and LVDS and possibly analog tv out, it gets more
+interesting.
 
-> Hi Guennadi,
-> 
-> Sounds like an interesting idea... but how about the inverse?  A v4l2
-> interface on top of fbdev.  If v4l2 was more widely available as an output
-> device, perhaps more userspace software would utilize it.
+drm has historically been tied to pci, but Jordan Crouse recently
+posted changes to support platform devices:
+http://lists.freedesktop.org/archives/dri-devel/2010-May/000887.html
 
-Don't see any advantage in doing this apart from "attracting user-space 
-developers to develop for v4l2 output interface," which doesn't seem like 
-a worthy goal in itself. Whereas with my translation you get access to 
-existing user-space applications and to a powerful in-kernel API, and 
-achieve a better interoperability with video-input streams.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+Alex

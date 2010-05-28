@@ -1,82 +1,70 @@
-From: Alex Deucher <alexdeucher@gmail.com>
-Date: Fri, 28 May 2010 17:47:55 +0000
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Fri, 28 May 2010 19:15:15 +0000
 Subject: Re: Idea of a v4l -> fb interface driver
-Message-Id: <AANLkTikTBFPxbl5p9kI65bHt2UJZ5j0DAxFwJ6rzD77L@mail.gmail.com>
+Message-Id: <4C001643.2070802@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1005261559390.22516@axis700.grange>
-	<AANLkTilnb20a4KO1NmK_y148HE_4b6ka14hUJY5o93QT@mail.gmail.com>
-	<Pine.LNX.4.64.1005270809110.2293@axis700.grange>
-	<AANLkTin_ia3Ym3z7FOu40voZkjCeMqSDZjuE_1aBjwOW@mail.gmail.com>
-	<Pine.LNX.4.64.1005272216380.1703@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1005272216380.1703@axis700.grange>
+References: <Pine.LNX.4.64.1005261559390.22516@axis700.grange>	<AANLkTilnb20a4KO1NmK_y148HE_4b6ka14hUJY5o93QT@mail.gmail.com>	<Pine.LNX.4.64.1005270809110.2293@axis700.grange>	<AANLkTin_ia3Ym3z7FOu40voZkjCeMqSDZjuE_1aBjwOW@mail.gmail.com>	<Pine.LNX.4.64.1005272216380.1703@axis700.grange> <AANLkTikTBFPxbl5p9kI65bHt2UJZ5j0DAxFwJ6rzD77L@mail.gmail.com>
+In-Reply-To: <AANLkTikTBFPxbl5p9kI65bHt2UJZ5j0DAxFwJ6rzD77L@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Alex Deucher <alexdeucher@gmail.com>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>
 
-On Fri, May 28, 2010 at 4:21 AM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> On Thu, 27 May 2010, Alex Deucher wrote:
->
->> On Thu, May 27, 2010 at 2:56 AM, Guennadi Liakhovetski <g.liakhovetski@g=
-mx.de> wrote:
->
-> ...
->
->> > Ok, let me explain what exactly I meant. Above I referred to "display
->> > drivers," which is not the same as a "framebuffer controller driver" or
->> > whatever you would call it. By framebuffer controller driver I mean a
->> > driver for the actual graphics engine on a certain graphics card or an
->> > SoC. This is the part, that reads data from the actual framebuffer and
->> > outputs it to some hardware interface to a display device. Now this
->> > interface can be a VGA or a DVI connector, it can be one of several bus
->> > types, used with various LCD displays. In many cases this is all you h=
-ave
->> > to do to get the output to your display. But in some cases the actual
->> > display on the other side of this bus also requires a driver. That can=
- be
->> > some kind of a smart display, it can be a panel with an attached displ=
-ay
->> > controller, that must be at least configured, say, over SPI, it can be=
- a
->> > display, attached to the host over the MIPI DSI bus, and implementing =
-some
->> > proprietary commands. In each of these cases you will have to write a
->> > display driver for this specific display or controller type, and your
->> > framebuffer driver will have to interface with that display driver. No=
-w,
->> > obviously, those displays can be connected to a variety of host system=
-s,
->> > in which case you will want to reuse that display driver. This means,
->> > there has to be a standard fb-driver - display-driver API. AFAICS, thi=
-s is
->> > currently not implemented in fbdev, please, correct me if I am wrong.
+Alex Deucher schrieb:
+> On Fri, May 28, 2010 at 4:21 AM, Guennadi Liakhovetski
+> <g.liakhovetski@gmx.de> wrote:
+>> On Thu, 27 May 2010, Alex Deucher wrote:
 >>
->>
->> Another API to consider in the drm kms (kernel modesetting) interface.
->> =A0The kms API deals properly with advanced display hardware and
->> properly handles crtcs, encoders, and connectors. =A0It also provides
->> fbdev api emulation.
->
-> Well, is KMS planned as a replacement for both fbdev and user-space
-> graphics drivers? I mean, if you'd be writing a new fb driver for a
-> relatively simple embedded SoC, would KMS apriori be a preferred API?
+>>>
+>>> Another API to consider in the drm kms (kernel modesetting) interface.
+>>>  The kms API deals properly with advanced display hardware and
+>>> properly handles crtcs, encoders, and connectors.  It also provides
+>>> fbdev api emulation.
+>> Well, is KMS planned as a replacement for both fbdev and user-space
+>> graphics drivers? I mean, if you'd be writing a new fb driver for a
+>> relatively simple embedded SoC, would KMS apriori be a preferred API?
+> 
+> It's become the defacto standard for X and things like EGL are being
+> built onto of the API.  As for the kms vs fbdev, kms provides a nice
+> API for complex display setups with multiple display controllers and
+> connectors while fbdev assumes one monitor/connector/encoder per
+> device.  The fbdev and console stuff has yet to take advantage of this
+> flexibility, I'm not sure what will happen there.  fbdev emulation is
+> provided by kms, but it has to hide the complexity of the attached
+> displays.  For an soc with a single encoder and display, there's
+> probably not much advantage over fbdev, but if you have an soc that
+> can do TMDS and LVDS and possibly analog tv out, it gets more
+> interesting.
 
-It's become the defacto standard for X and things like EGL are being
-built onto of the API.  As for the kms vs fbdev, kms provides a nice
-API for complex display setups with multiple display controllers and
-connectors while fbdev assumes one monitor/connector/encoder per
-device.  The fbdev and console stuff has yet to take advantage of this
-flexibility, I'm not sure what will happen there.  fbdev emulation is
-provided by kms, but it has to hide the complexity of the attached
-displays.  For an soc with a single encoder and display, there's
-probably not much advantage over fbdev, but if you have an soc that
-can do TMDS and LVDS and possibly analog tv out, it gets more
-interesting.
+Well hiding complexity is actually the job of an API. I don't see any 
+need for major changes in fbdev for complex display setups. In most 
+cases as a userspace application you really don't want to be bothered 
+how many different output devices you have and control each 
+individually, you just want an area to draw and to know/control what 
+area the user is expected to see and that's already provided in fbdev.
+If the user wants the same content on multiple outputs just configure 
+the driver to do so.
+If he wants different (independent) content on each output, just provide 
+multiple /dev/fbX devices. I admit that we could use a controlling 
+interface here that decides which user (application) might draw at a 
+time to the interface which they currently only do if they are the 
+active VT.
+If you want 2 or more outputs to be merged as one just configure this in 
+the driver.
+The only thing that is impossible to do in fbdev is controlling 2 or 
+more independent display outputs that access the same buffer. But that's 
+not an issue I think.
+The things above only could use a unification of how to set them up on 
+module load time (as only limited runtime changes are permited given 
+that we must always be able to support a mode that we once entered 
+during runtime).
 
-drm has historically been tied to pci, but Jordan Crouse recently
-posted changes to support platform devices:
-http://lists.freedesktop.org/archives/dri-devel/2010-May/000887.html
+The thing that's really missing in fbdev is a way to allow hardware 
+acceleration for userspace.
 
-Alex
+
+Regards,
+
+Florian Tobias Schandinat
+

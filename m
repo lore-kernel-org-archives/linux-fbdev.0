@@ -1,67 +1,62 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Fri, 28 May 2010 19:58:58 +0000
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Date: Fri, 28 May 2010 20:06:04 +0000
 Subject: Re: Idea of a v4l -> fb interface driver
-Message-Id: <4C002082.6030006@gmx.de>
+Message-Id: <20100528200604.GA10135@sci.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1005261559390.22516@axis700.grange> <AANLkTilnb20a4KO1NmK_y148HE_4b6ka14hUJY5o93QT@mail.gmail.com> <Pine.LNX.4.64.1005270809110.2293@axis700.grange> <AANLkTin_ia3Ym3z7FOu40voZkjCeMqSDZjuE_1aBjwOW@mail.gmail.com> <Pine.LNX.4.64.1005272216380.1703@axis700.grange> <AANLkTikTBFPxbl5p9kI65bHt2UJZ5j0DAxFwJ6rzD77L@mail.gmail.com> <4C001643.2070802@gmx.de> <Pine.LNX.4.64.1005282124060.27251@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1005282124060.27251@axis700.grange>
+References: <Pine.LNX.4.64.1005261559390.22516@axis700.grange>
+ <AANLkTilnb20a4KO1NmK_y148HE_4b6ka14hUJY5o93QT@mail.gmail.com>
+ <Pine.LNX.4.64.1005270809110.2293@axis700.grange>
+ <AANLkTin_ia3Ym3z7FOu40voZkjCeMqSDZjuE_1aBjwOW@mail.gmail.com>
+ <Pine.LNX.4.64.1005272216380.1703@axis700.grange>
+ <AANLkTikTBFPxbl5p9kI65bHt2UJZ5j0DAxFwJ6rzD77L@mail.gmail.com>
+ <4C001643.2070802@gmx.de>
+ <AANLkTimHM66vREdBf60D1jrgvFLDOjf3f3KcHjy6cYSR@mail.gmail.com>
+In-Reply-To: <AANLkTimHM66vREdBf60D1jrgvFLDOjf3f3KcHjy6cYSR@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Alex Deucher <alexdeucher@gmail.com>, Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Alex Deucher <alexdeucher@gmail.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>
 
-Guennadi Liakhovetski schrieb:
-> On Fri, 28 May 2010, Florian Tobias Schandinat wrote:
-> 
->> Well hiding complexity is actually the job of an API. I don't see any need for
->> major changes in fbdev for complex display setups. In most cases as a
->> userspace application you really don't want to be bothered how many different
->> output devices you have and control each individually, you just want an area
->> to draw and to know/control what area the user is expected to see and that's
->> already provided in fbdev.
->> If the user wants the same content on multiple outputs just configure the
->> driver to do so.
->> If he wants different (independent) content on each output, just provide
->> multiple /dev/fbX devices. I admit that we could use a controlling interface
->> here that decides which user (application) might draw at a time to the
->> interface which they currently only do if they are the active VT.
->> If you want 2 or more outputs to be merged as one just configure this in the
->> driver.
->> The only thing that is impossible to do in fbdev is controlling 2 or more
->> independent display outputs that access the same buffer. But that's not an
->> issue I think.
->> The things above only could use a unification of how to set them up on module
->> load time (as only limited runtime changes are permited given that we must
->> always be able to support a mode that we once entered during runtime).
->>
->> The thing that's really missing in fbdev is a way to allow hardware
->> acceleration for userspace.
-> 
-> How about a "simple" use-case, that I asked about in another my mail: how 
-> do you inform fbdev users, if a (DVI) display has been disconnected and 
-> another one with a different resolution has been connected?
+On Fri, May 28, 2010 at 03:41:46PM -0400, Alex Deucher wrote:
+> On Fri, May 28, 2010 at 3:15 PM, Florian Tobias Schandinat
+> > If he wants different (independent) content on each output, just provide
+> > multiple /dev/fbX devices. I admit that we could use a controlling inte=
+rface
+> > here that decides which user (application) might draw at a time to the
+> > interface which they currently only do if they are the active VT.
+> > If you want 2 or more outputs to be merged as one just configure this i=
+n the
+> > driver.
+> > The only thing that is impossible to do in fbdev is controlling 2 or mo=
+re
+> > independent display outputs that access the same buffer. But that's not=
+ an
+> > issue I think.
+> > The things above only could use a unification of how to set them up on
+> > module load time (as only limited runtime changes are permited given th=
+at we
+> > must always be able to support a mode that we once entered during runti=
+me).
+> >
+>=20
+> What about changing outputs on the fly (turn off VGA, turn on DVI,
+> switch between multi-head and single-head, etc) or encoders shared
+> between multiple connectors (think a single dac shared between a VGA
+> and a TV port); how do you expose them easily as separate fbdevs?
+> Lots of stuff is doable with fbdev, but it's nicer with kms.
 
-Yes that's a problem. The thing is that the virtual terminal requires us 
-to always be able to switch to a resolution we once supported. Probably 
-what I would do in such a case is switching the screen off and let the 
-user figure out that he has done something "wrong". As we don't really 
-know our users (applications) there is not much we can do but wait for 
-the next check_var to solve this. So yes things that force us to be 
-incompatible with our previous behaviour can do some harm if the user is 
-not aware of it.
+But actually getting your data onto the screen is a lot easier with
+fbdev. There's no standard API in drm to actually allocate the
+framebuffer and manipulate it. You always need a user space driver
+to go along with the kernel bits.
 
-Note 1: Interesting that you mentioned viafb, the driver that is 
-currently nearly completely incapable to determine any output device 
-limitations.
+I'm not saying fbdev is better than drm/kms but at least it can be
+used to write simple applications that work across different
+hardware. Perhaps that's something that should be addressed in the
+drm API.
 
-Note 2: set_par returns a value but that's rather a mistake and we can't 
-rely anyone to react on a sane way on error. check_var is the only place 
-where framebuffers can say that they don't support something after this 
-they have to support it regardless of any external events.
-
-
-Thanks,
-
-Florian Tobias Schandinat
-
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/

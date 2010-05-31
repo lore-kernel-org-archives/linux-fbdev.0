@@ -1,52 +1,44 @@
-From: Nick Piggin <npiggin@suse.de>
-Date: Tue, 25 May 2010 18:47:00 +0000
-Subject: Re: page_mkwrite vs pte dirty race in fb_defio
-Message-Id: <20100525184700.GJ20853@laptop>
+From: Pawel Osciak <p.osciak@samsung.com>
+Date: Mon, 31 May 2010 09:08:51 +0000
+Subject: [PATCH 2/6] s3c-fb: Correct FRAMESEL1 bitfield defines for VIDINTCON0
+Message-Id: <1275296935-2693-3-git-send-email-p.osciak@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100525160149.GE20853@laptop>
- <4BFC1657.5000707@yahoo.es>
-In-Reply-To: <4BFC1657.5000707@yahoo.es>
+References: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
+In-Reply-To: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Albert Herranz <albert_herranz@yahoo.es>
-Cc: aya Kumar <jayakumar.lkml@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-mm@kvack.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Tue, May 25, 2010 at 08:26:31PM +0200, Albert Herranz wrote:
-> Hi,
-> 
-> On 05/25/2010 06:01 PM, Nick Piggin wrote:
-> > Hi,
-> > 
-> > I couldn't find where this patch (49bbd815fd8) was discussed, so I'll
-> > make my own thread. Adding a few lists to cc because it might be of
-> > interest to driver and filesystem writers.
-> > 
-> 
-> The original thread can be found here:
-> http://marc.info/?l=linux-fbdev&m7369791432181
+FRAMESEL1 bitfield starts on 13th bit, not on 14th.
 
-Thanks.
+Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ arch/arm/plat-samsung/include/plat/regs-fb.h |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
+diff --git a/arch/arm/plat-samsung/include/plat/regs-fb.h b/arch/arm/plat-samsung/include/plat/regs-fb.h
+index f4259e5..ac10013 100644
+--- a/arch/arm/plat-samsung/include/plat/regs-fb.h
++++ b/arch/arm/plat-samsung/include/plat/regs-fb.h
+@@ -292,11 +292,11 @@
+ #define VIDINTCON0_FRAMESEL0_ACTIVE		(0x2 << 15)
+ #define VIDINTCON0_FRAMESEL0_FRONTPORCH		(0x3 << 15)
  
-> > The old ->page_mkwrite calling convention was causing problems exactly
-> > because of this race, and we solved it by allowing page_mkwrite to
-> > return with the page locked, and the lock will be held until the
-> > pte is marked dirty. See commit b827e496c893de0c0f142abfaeb8730a2fd6b37f.
-> > 
-> 
-> Ah, didn't know about that. Thanks for the pointer.
-> 
-> > I hope that should provide a more elegant solution to your problem. I
-> > would really like you to take a look at that, because we already have
-> > filesystem code (NFS) relying on it, and more code we have relying on
-> > this synchronization, the more chance we would find a subtle problem
-> > with it (also it should be just nicer).
-> > 
-> 
-> So if I undestand it correctly, using the "new" calling convention I should just lock the page on fb_deferred_io_mkwrite() and return VM_FAULT_LOCKED to fix the described race for fb_defio.
-
-As far as I can see from quick reading of the fb_defio code, yes
-that should solve it (provided you lock the page inside the mutex,
-of course).
+-#define VIDINTCON0_FRAMESEL1			(1 << 14)
+-#define VIDINTCON0_FRAMESEL1_NONE		(0x0 << 14)
+-#define VIDINTCON0_FRAMESEL1_BACKPORCH		(0x1 << 14)
+-#define VIDINTCON0_FRAMESEL1_VSYNC		(0x2 << 14)
+-#define VIDINTCON0_FRAMESEL1_FRONTPORCH		(0x3 << 14)
++#define VIDINTCON0_FRAMESEL1			(1 << 13)
++#define VIDINTCON0_FRAMESEL1_NONE		(0x0 << 13)
++#define VIDINTCON0_FRAMESEL1_BACKPORCH		(0x1 << 13)
++#define VIDINTCON0_FRAMESEL1_VSYNC		(0x2 << 13)
++#define VIDINTCON0_FRAMESEL1_FRONTPORCH		(0x3 << 13)
+ 
+ #define VIDINTCON0_INT_FRAME			(1 << 12)
+ #define VIDINTCON0_FIFIOSEL_MASK		(0x7f << 5)
+-- 
+1.7.0.4
 

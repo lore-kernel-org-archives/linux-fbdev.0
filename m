@@ -1,87 +1,169 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Tue, 18 May 2010 12:34:53 +0000
-Subject: [PATCH 02/23] OMAP: AM3517: Enable DSS2 in AM3517EVM defconfig
-Message-Id: <1274186114-26951-3-git-send-email-tomi.valkeinen@nokia.com>
+From: Pawel Osciak <p.osciak@samsung.com>
+Date: Mon, 31 May 2010 09:08:52 +0000
+Subject: [PATCH 3/6] s3c-fb: Add device name initialization.
+Message-Id: <1275296935-2693-4-git-send-email-p.osciak@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1274186114-26951-1-git-send-email-tomi.valkeinen@nokia.com>
+References: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
+In-Reply-To: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Vaibhav Hiremath <hvaibhav@ti.com>
+Add framebuffer device name initialization calls for S3C2443, S3C64xx
+and S5P machines.
 
-Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
-[tomi.valkeinen@nokia.com: removed the board file changes]
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- arch/arm/configs/am3517_evm_defconfig |   52 ++++++++++++++++++++++++++++++++-
- 1 files changed, 51 insertions(+), 1 deletions(-)
+ arch/arm/mach-s3c2443/s3c2443.c              |    2 +
+ arch/arm/mach-s3c64xx/s3c6400.c              |    3 ++
+ arch/arm/mach-s3c64xx/s3c6410.c              |    3 ++
+ arch/arm/mach-s5pc100/cpu.c                  |    3 ++
+ arch/arm/mach-s5pv210/cpu.c                  |    3 ++
+ arch/arm/plat-samsung/include/plat/fb-core.h |   29 ++++++++++++++++++++++++++
+ 6 files changed, 43 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/plat-samsung/include/plat/fb-core.h
 
-diff --git a/arch/arm/configs/am3517_evm_defconfig b/arch/arm/configs/am3517_evm_defconfig
-index 66a10b5..214ef42 100644
---- a/arch/arm/configs/am3517_evm_defconfig
-+++ b/arch/arm/configs/am3517_evm_defconfig
-@@ -692,7 +692,57 @@ CONFIG_SSB_POSSIBLE=y
- #
- # CONFIG_VGASTATE is not set
- # CONFIG_VIDEO_OUTPUT_CONTROL is not set
--# CONFIG_FB is not set
-+CONFIG_FB=y
-+# CONFIG_FIRMWARE_EDID is not set
-+# CONFIG_FB_DDC is not set
-+# CONFIG_FB_BOOT_VESA_SUPPORT is not set
-+CONFIG_FB_CFB_FILLRECT=y
-+CONFIG_FB_CFB_COPYAREA=y
-+CONFIG_FB_CFB_IMAGEBLIT=y
-+# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
-+# CONFIG_FB_SYS_FILLRECT is not set
-+# CONFIG_FB_SYS_COPYAREA is not set
-+# CONFIG_FB_SYS_IMAGEBLIT is not set
-+# CONFIG_FB_FOREIGN_ENDIAN is not set
-+# CONFIG_FB_SYS_FOPS is not set
-+# CONFIG_FB_SVGALIB is not set
-+# CONFIG_FB_MACMODES is not set
-+# CONFIG_FB_BACKLIGHT is not set
-+# CONFIG_FB_MODE_HELPERS is not set
-+# CONFIG_FB_TILEBLITTING is not set
-+
-+#
-+# Frame buffer hardware drivers
-+#
-+# CONFIG_FB_ARMCLCD is not set
-+# CONFIG_FB_S1D13XXX is not set
-+# CONFIG_FB_VIRTUAL is not set
-+# CONFIG_FB_METRONOME is not set
-+# CONFIG_FB_MB862XX is not set
-+# CONFIG_FB_BROADSHEET is not set
-+# CONFIG_FB_OMAP_BOOTLOADER_INIT is not set
-+CONFIG_OMAP2_VRAM=y
-+CONFIG_OMAP2_VRFB=y
-+CONFIG_OMAP2_DSS=y
-+CONFIG_OMAP2_VRAM_SIZE=4
-+CONFIG_OMAP2_DSS_DEBUG_SUPPORT=y
-+# CONFIG_OMAP2_DSS_RFBI is not set
-+CONFIG_OMAP2_DSS_VENC=y
-+# CONFIG_OMAP2_DSS_SDI is not set
-+# CONFIG_OMAP2_DSS_DSI is not set
-+# CONFIG_OMAP2_DSS_FAKE_VSYNC is not set
-+CONFIG_OMAP2_DSS_MIN_FCK_PER_PCK=4
-+CONFIG_FB_OMAP2=y
-+CONFIG_FB_OMAP2_DEBUG_SUPPORT=y
-+# CONFIG_FB_OMAP2_FORCE_AUTO_UPDATE is not set
-+CONFIG_FB_OMAP2_NUM_FBS=3
-+
-+#
-+# OMAP2/3 Display Device Drivers
-+#
-+CONFIG_PANEL_GENERIC=y
-+# CONFIG_PANEL_SHARP_LS037V7DW01 is not set
-+CONFIG_PANEL_SHARP_LQ043T1DG01=y
- # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+diff --git a/arch/arm/mach-s3c2443/s3c2443.c b/arch/arm/mach-s3c2443/s3c2443.c
+index ce2ec32..839b6b2 100644
+--- a/arch/arm/mach-s3c2443/s3c2443.c
++++ b/arch/arm/mach-s3c2443/s3c2443.c
+@@ -35,6 +35,7 @@
+ #include <plat/s3c2443.h>
+ #include <plat/devs.h>
+ #include <plat/cpu.h>
++#include <plat/fb-core.h>
  
- #
+ static struct map_desc s3c2443_iodesc[] __initdata = {
+ 	IODESC_ENT(WATCHDOG),
+@@ -62,6 +63,7 @@ int __init s3c2443_init(void)
+ 	s3c24xx_reset_hook = s3c2443_hard_reset;
+ 
+ 	s3c_device_nand.name = "s3c2412-nand";
++	s3c_fb_setname("s3c2443-fb");
+ 
+ 	/* change WDT IRQ number */
+ 	s3c_device_wdt.resource[1].start = IRQ_S3C2443_WDT;
+diff --git a/arch/arm/mach-s3c64xx/s3c6400.c b/arch/arm/mach-s3c64xx/s3c6400.c
+index 5e93fe3..f4a9e07 100644
+--- a/arch/arm/mach-s3c64xx/s3c6400.c
++++ b/arch/arm/mach-s3c64xx/s3c6400.c
+@@ -38,6 +38,7 @@
+ #include <plat/sdhci.h>
+ #include <plat/iic-core.h>
+ #include <plat/onenand-core.h>
++#include <plat/fb-core.h>
+ #include <mach/s3c6400.h>
+ 
+ void __init s3c6400_map_io(void)
+@@ -55,6 +56,8 @@ void __init s3c6400_map_io(void)
+ 
+ 	s3c_onenand_setname("s3c6400-onenand");
+ 	s3c64xx_onenand1_setname("s3c6400-onenand");
++
++	s3c_fb_setname("s3c-fb");
+ }
+ 
+ void __init s3c6400_init_clocks(int xtal)
+diff --git a/arch/arm/mach-s3c64xx/s3c6410.c b/arch/arm/mach-s3c64xx/s3c6410.c
+index 014401c..b2acb60 100644
+--- a/arch/arm/mach-s3c64xx/s3c6410.c
++++ b/arch/arm/mach-s3c64xx/s3c6410.c
+@@ -40,6 +40,7 @@
+ #include <plat/iic-core.h>
+ #include <plat/adc.h>
+ #include <plat/onenand-core.h>
++#include <plat/fb-core.h>
+ #include <mach/s3c6400.h>
+ #include <mach/s3c6410.h>
+ 
+@@ -58,6 +59,8 @@ void __init s3c6410_map_io(void)
+ 	s3c_device_nand.name = "s3c6400-nand";
+ 	s3c_onenand_setname("s3c6410-onenand");
+ 	s3c64xx_onenand1_setname("s3c6410-onenand");
++
++	s3c_fb_setname("s3c-fb");
+ }
+ 
+ void __init s3c6410_init_clocks(int xtal)
+diff --git a/arch/arm/mach-s5pc100/cpu.c b/arch/arm/mach-s5pc100/cpu.c
+index 7b5bdbc..d10276a 100644
+--- a/arch/arm/mach-s5pc100/cpu.c
++++ b/arch/arm/mach-s5pc100/cpu.c
+@@ -41,6 +41,7 @@
+ #include <plat/iic-core.h>
+ #include <plat/sdhci.h>
+ #include <plat/onenand-core.h>
++#include <plat/fb-core.h>
+ 
+ #include <plat/s5pc100.h>
+ 
+@@ -92,6 +93,8 @@ void __init s5pc100_map_io(void)
+ 	s3c_i2c1_setname("s3c2440-i2c");
+ 
+ 	s3c_onenand_setname("s5pc100-onenand");
++
++	s3c_fb_setname("s5pc100-fb");
+ }
+ 
+ void __init s5pc100_init_clocks(int xtal)
+diff --git a/arch/arm/mach-s5pv210/cpu.c b/arch/arm/mach-s5pv210/cpu.c
+index 411a4a9..4d3580a 100644
+--- a/arch/arm/mach-s5pv210/cpu.c
++++ b/arch/arm/mach-s5pv210/cpu.c
+@@ -34,6 +34,7 @@
+ #include <plat/s5pv210.h>
+ #include <plat/iic-core.h>
+ #include <plat/sdhci.h>
++#include <plat/fb-core.h>
+ 
+ /* Initial IO mappings */
+ 
+@@ -91,6 +92,8 @@ void __init s5pv210_map_io(void)
+ 	s3c_i2c0_setname("s3c2440-i2c");
+ 	s3c_i2c1_setname("s3c2440-i2c");
+ 	s3c_i2c2_setname("s3c2440-i2c");
++
++	s3c_fb_setname("s5pv210-fb");
+ }
+ 
+ void __init s5pv210_init_clocks(int xtal)
+diff --git a/arch/arm/plat-samsung/include/plat/fb-core.h b/arch/arm/plat-samsung/include/plat/fb-core.h
+new file mode 100644
+index 0000000..bca383e
+--- /dev/null
++++ b/arch/arm/plat-samsung/include/plat/fb-core.h
+@@ -0,0 +1,29 @@
++/*
++ * arch/arm/plat-samsung/include/plat/fb-core.h
++ *
++ * Copyright 2010 Samsung Electronics Co., Ltd.
++ *	Pawel Osciak <p.osciak@samsung.com>
++ *
++ * Samsung framebuffer driver core functions
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#ifndef __ASM_PLAT_FB_CORE_H
++#define __ASM_PLAT_FB_CORE_H __FILE__
++
++/*
++ * These functions are only for use with the core support code, such as
++ * the CPU-specific initialization code.
++ */
++
++/* Re-define device name depending on support. */
++static inline void s3c_fb_setname(char *name)
++{
++#ifdef CONFIG_S3C_DEV_FB
++	s3c_device_fb.name = name;
++#endif
++}
++
++#endif /* __ASM_PLAT_FB_CORE_H */
 -- 
 1.7.0.4
 

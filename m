@@ -1,44 +1,71 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 02 May 2010 15:17:32 +0000
-Subject: [PATCH 2/4] viafb: restore display on resume
-Message-Id: <1272813454-3229-3-git-send-email-FlorianSchandinat@gmx.de>
+From: Pawel Osciak <p.osciak@samsung.com>
+Date: Mon, 31 May 2010 09:08:50 +0000
+Subject: [PATCH 1/6] s3c-fb: Fix various null references on framebuffer memory
+Message-Id: <1275296935-2693-2-git-send-email-p.osciak@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272813454-3229-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1272813454-3229-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
+In-Reply-To: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, JosephChan@via.com.tw, ScottFang@viatech.com.cn, corbet@lwn.net, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-arm-kernel@lists.infradead.org
 
-viafb: restore display on resume
+The following problems were found in the above situation:
 
-This patch makes viafb restore the display on resume by calling
-viafb_set_par. Resumeing has still its issues:
-- will probably freeze most machines (for me on VX800 reliable on the
-  second resume)
-- under some configurations the screen appears on the wrong output
-  device (reason unknown)
+sfb->windows[win] was being assigned at the end of s3c_fb_probe_win only.
+This resulted in passing a NULL to s3c_fb_release_win if probe_win returned
+early and a memory leak.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+dma_free_writecombine does not allow its third argument to be NULL.
+
+fb_dealloc_cmap does not verify whether its argument is not NULL.
+
+Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/video/via/viafbdev.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ drivers/video/s3c-fb.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 1b435b3..b4baed6 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -1777,6 +1777,9 @@ int viafb_resume(struct pci_dev *pdev)
- 		    viaparinfo->shared->saved_regs,
- 		    0x100 * sizeof(u32));
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index b00c064..d998324 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -804,7 +804,8 @@ static void s3c_fb_free_memory(struct s3c_fb *sfb, struct s3c_fb_win *win)
+ {
+ 	struct fb_info *fbi = win->fbinfo;
  
-+	viafb_set_par(viafbinfo);
-+	if (viafb_dual_fb)
-+		viafb_set_par(viafbinfo1);
- 	fb_set_suspend(viafbinfo, 0);
+-	dma_free_writecombine(sfb->dev, PAGE_ALIGN(fbi->fix.smem_len),
++	if (fbi->screen_base)
++		dma_free_writecombine(sfb->dev, PAGE_ALIGN(fbi->fix.smem_len),
+ 			      fbi->screen_base, fbi->fix.smem_start);
+ }
  
- fail:
+@@ -819,7 +820,8 @@ static void s3c_fb_release_win(struct s3c_fb *sfb, struct s3c_fb_win *win)
+ {
+ 	if (win->fbinfo) {
+ 		unregister_framebuffer(win->fbinfo);
+-		fb_dealloc_cmap(&win->fbinfo->cmap);
++		if (&win->fbinfo->cmap)
++			fb_dealloc_cmap(&win->fbinfo->cmap);
+ 		s3c_fb_free_memory(sfb, win);
+ 		framebuffer_release(win->fbinfo);
+ 	}
+@@ -865,6 +867,7 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 	WARN_ON(windata->win_mode.yres = 0);
+ 
+ 	win = fbinfo->par;
++	*res = win;
+ 	var = &fbinfo->var;
+ 	win->variant = *variant;
+ 	win->fbinfo = fbinfo;
+@@ -939,7 +942,6 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 		return ret;
+ 	}
+ 
+-	*res = win;
+ 	dev_info(sfb->dev, "window %d: fb %s\n", win_no, fbinfo->fix.id);
+ 
+ 	return 0;
 -- 
-1.6.3.2
+1.7.0.4
 

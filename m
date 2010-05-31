@@ -1,55 +1,169 @@
-From: Mike Frysinger <vapier@gentoo.org>
-Date: Sun, 23 May 2010 07:15:23 +0000
-Subject: [PATCH] fbdev: bfin-t350mcqb-fb: avoid unused warnings in backlight code
-Message-Id: <1274598923-12688-1-git-send-email-vapier@gentoo.org>
+From: Pawel Osciak <p.osciak@samsung.com>
+Date: Mon, 31 May 2010 09:08:54 +0000
+Subject: [PATCH 5/6] s3c-fb: Add support for display panning
+Message-Id: <1275296935-2693-6-git-send-email-p.osciak@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
+In-Reply-To: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Cc: uclinux-dist-devel@blackfin.uclinux.org
+To: linux-arm-kernel@lists.infradead.org
 
-The current backlight code is stubbed out, so the new props changes added
-some warnings about unused label/prop.
+Supports all bpp modes.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+The PRTCON register is used to disable in-hardware updates of registers
+that store start and end addresses of framebuffer memory. This prevents
+display corruption in case we do not make it before VSYNC with updating
+them atomically. With this feature there is no need to wait for a VSYNC
+interrupt before each such update.
+
+Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/video/bfin-t350mcqb-fb.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ arch/arm/plat-samsung/include/plat/regs-fb.h |    5 ++
+ drivers/video/s3c-fb.c                       |   71 ++++++++++++++++++++++++++
+ 2 files changed, 76 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
-index c2ec3dc..7a50272 100644
---- a/drivers/video/bfin-t350mcqb-fb.c
-+++ b/drivers/video/bfin-t350mcqb-fb.c
-@@ -420,7 +420,9 @@ static irqreturn_t bfin_t350mcqb_irq_error(int irq, void *dev_id)
+diff --git a/arch/arm/plat-samsung/include/plat/regs-fb.h b/arch/arm/plat-samsung/include/plat/regs-fb.h
+index ac10013..f454e32 100644
+--- a/arch/arm/plat-samsung/include/plat/regs-fb.h
++++ b/arch/arm/plat-samsung/include/plat/regs-fb.h
+@@ -112,6 +112,11 @@
+ #define VIDCON2_ORGYCbCr			(1 << 8)
+ #define VIDCON2_YUVORDCrCb			(1 << 7)
  
- static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
- {
-+#ifndef NO_BL_SUPPORT
- 	struct backlight_properties props;
-+#endif
- 	struct bfin_t350mcqbfb_info *info;
- 	struct fb_info *fbinfo;
- 	int ret;
-@@ -550,7 +552,8 @@ static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
- 		printk(KERN_ERR DRIVER_NAME
- 			": unable to register backlight.\n");
- 		ret = -EINVAL;
--		goto out9;
-+		unregister_framebuffer(fbinfo);
-+		goto out8;
- 	}
++/* PRTCON (S3C6410, S5PC100) */
++
++#define PRTCON					(0x0c)
++#define PRTCON_PROTECT				(1 << 11)
++
+ /* VIDTCON0 */
  
- 	lcd_dev = lcd_device_register(DRIVER_NAME, NULL, &bfin_lcd_ops);
-@@ -559,8 +562,6 @@ static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
+ #define VIDTCON0_VBPDE_MASK			(0xff << 24)
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 59ac76a..4f3680d 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -71,6 +71,7 @@ struct s3c_fb;
+  * @buf_end: Offset of buffer end registers.
+  * @osd: The base for the OSD registers.
+  * @palette: Address of palette memory, or 0 if none.
++ * @has_prtcon: Set if has PRTCON register.
+  */
+ struct s3c_fb_variant {
+ 	unsigned int	is_2443:1;
+@@ -85,6 +86,8 @@ struct s3c_fb_variant {
+ 	unsigned short	osd;
+ 	unsigned short	osd_stride;
+ 	unsigned short	palette[S3C_FB_MAX_WIN];
++
++	unsigned int	has_prtcon:1;
+ };
  
+ /**
+@@ -379,6 +382,9 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 
+ 	info->fix.line_length = (var->xres_virtual * var->bits_per_pixel) / 8;
+ 
++	info->fix.xpanstep = info->var.xres_virtual > info->var.xres ? 1 : 0;
++	info->fix.ypanstep = info->var.yres_virtual > info->var.yres ? 1 : 0;
++
+ 	/* disable the window whilst we update it */
+ 	writel(0, regs + WINCON(win_no));
+ 
+@@ -735,6 +741,66 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
  	return 0;
+ }
  
--out9:
--	unregister_framebuffer(fbinfo);
- out8:
- 	free_irq(info->irq, info);
- out7:
++/**
++ * s3c_fb_pan_display() - Pan the display.
++ *
++ * Note that the offsets can be written to the device at any time, as their
++ * values are latched at each vsync automatically. This also means that only
++ * the last call to this function will have any effect on next vsync, but
++ * there is no need to sleep waiting for it to prevent tearing.
++ *
++ * @var: The screen information to verify.
++ * @info: The framebuffer device.
++ */
++static int s3c_fb_pan_display(struct fb_var_screeninfo *var,
++			      struct fb_info *info)
++{
++	struct s3c_fb_win *win	= info->par;
++	struct s3c_fb *sfb	= win->parent;
++	void __iomem *buf	= sfb->regs + win->index * 8;
++	unsigned int start_byte_offset, end_byte_offset;
++
++	/* Offset in bytes to the start of the displayed area */
++	start_byte_offset = var->yoffset * info->fix.line_length;
++	/* X offset depends on the current bpp */
++	if (info->var.bits_per_pixel >= 8) {
++		start_byte_offset ++			var->xoffset * (info->var.bits_per_pixel >> 3);
++	} else {
++		switch (info->var.bits_per_pixel) {
++		case 4:
++			start_byte_offset += var->xoffset >> 1;
++			break;
++		case 2:
++			start_byte_offset += var->xoffset >> 2;
++			break;
++		case 1:
++			start_byte_offset += var->xoffset >> 3;
++			break;
++		default:
++			dev_err(sfb->dev, "invalid bpp\n");
++			return -EINVAL;
++		}
++	}
++	/* Offset in bytes to the end of the displayed area */
++	end_byte_offset = start_byte_offset + var->yres * info->fix.line_length;
++
++	/* Temporarily turn off per-vsync update from shadow registers until
++	 * both start and end addresses are updated to prevent corruption */
++	if (sfb->variant.has_prtcon)
++		writel(PRTCON_PROTECT, sfb->regs + PRTCON);
++
++	writel(info->fix.smem_start + start_byte_offset,
++		buf + sfb->variant.buf_start);
++	writel(info->fix.smem_start + end_byte_offset,
++		buf + sfb->variant.buf_end);
++
++	if (sfb->variant.has_prtcon)
++		writel(0, sfb->regs + PRTCON);
++
++	return 0;
++}
++
+ static struct fb_ops s3c_fb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_check_var	= s3c_fb_check_var,
+@@ -744,6 +810,7 @@ static struct fb_ops s3c_fb_ops = {
+ 	.fb_fillrect	= cfb_fillrect,
+ 	.fb_copyarea	= cfb_copyarea,
+ 	.fb_imageblit	= cfb_imageblit,
++	.fb_pan_display	= s3c_fb_pan_display,
+ };
+ 
+ /**
+@@ -1243,6 +1310,8 @@ static struct s3c_fb_driverdata s3c_fb_data_64xx __devinitdata = {
+ 			[3] = 0x320,
+ 			[4] = 0x340,
+ 		},
++
++		.has_prtcon	= 1,
+ 	},
+ 	.win[0]	= &s3c_fb_data_64xx_wins[0],
+ 	.win[1]	= &s3c_fb_data_64xx_wins[1],
+@@ -1271,6 +1340,8 @@ static struct s3c_fb_driverdata s3c_fb_data_s5pc100 __devinitdata = {
+ 			[3] = 0x3000,
+ 			[4] = 0x3400,
+ 		},
++
++		.has_prtcon	= 1,
+ 	},
+ 	.win[0]	= &s3c_fb_data_64xx_wins[0],
+ 	.win[1]	= &s3c_fb_data_64xx_wins[1],
 -- 
-1.7.1
+1.7.0.4
 

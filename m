@@ -1,31 +1,57 @@
-From: Pawel Osciak <p.osciak@samsung.com>
-Date: Tue, 01 Jun 2010 06:49:07 +0000
-Subject: RE: [PATCH 2/6] s3c-fb: Correct FRAMESEL1 bitfield defines for
-Message-Id: <000e01cb0156$886ed050$994c70f0$%osciak@samsung.com>
+From: "Guruswamy, Senthilvadivu" <svadivu@ti.com>
+Date: Thu, 03 Jun 2010 08:43:02 +0000
+Subject: RE: [PATCH v2 0/2] DSS2:Allow FB to build without VRFB
+Message-Id: <FCCFB4CDC6E5564B9182F639FC35608703042888AD@dbde02.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
-	<1275296935-2693-3-git-send-email-p.osciak@samsung.com>
-	<20100601041713.GC30276@trinity.fluff.org>
-In-Reply-To: <20100601041713.GC30276@trinity.fluff.org>
+References: <1273764028-25822-1-git-send-email-svadivu@ti.com>
+	 <1273821814.2814.63.camel@tubuntu.research.nokia.com>
+	 <FCCFB4CDC6E5564B9182F639FC35608703042887DB@dbde02.ent.ti.com>
+ <1273842100.2814.85.camel@tubuntu.research.nokia.com>
+ <FCCFB4CDC6E5564B9182F639FC35608703042887E2@dbde02.ent.ti.com>
+In-Reply-To: <FCCFB4CDC6E5564B9182F639FC35608703042887E2@dbde02.ent.ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: "Guruswamy, Senthilvadivu" <svadivu@ti.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "tony@atomide.com" <tony@atomide.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>
 
->Ben Dooks <ben@trinity.fluff.org> wrote:
->
->On Mon, May 31, 2010 at 11:08:51AM +0200, Pawel Osciak wrote:
->> FRAMESEL1 bitfield starts on 13th bit, not on 14th.
->
->is this true for all variants that have FRAMESEL1?
-
-That's at least the case for all the chips I have docs for:
-6400, 6410, S5PC100 and V210...
-
-Best regards
---
-Pawel Osciak
-Linux Platform Group
-Samsung Poland R&D Center
-
-
+VG9taSwKIAoKPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+IEZyb206IGxpbnV4LWZiZGV2
+LW93bmVyQHZnZXIua2VybmVsLm9yZyAKPiBbbWFpbHRvOmxpbnV4LWZiZGV2LW93bmVyQHZnZXIu
+a2VybmVsLm9yZ10gT24gQmVoYWxmIE9mIAo+IEd1cnVzd2FteSwgU2VudGhpbHZhZGl2dQo+IFNl
+bnQ6IE1vbmRheSwgTWF5IDE3LCAyMDEwIDExOjIwIEFNCj4gVG86IFRvbWkgVmFsa2VpbmVuCj4g
+Q2M6IGxpbnV4LW9tYXBAdmdlci5rZXJuZWwub3JnOyBsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5v
+cmc7IAo+IHRvbnlAYXRvbWlkZS5jb207IEhpcmVtYXRoLCBWYWliaGF2Cj4gU3ViamVjdDogUkU6
+IFtQQVRDSCB2MiAwLzJdIERTUzI6QWxsb3cgRkIgdG8gYnVpbGQgd2l0aG91dCBWUkZCCj4gCj4g
+IAo+IAo+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0KPiA+IEZyb206IFRvbWkgVmFsa2Vp
+bmVuIFttYWlsdG86dG9taS52YWxrZWluZW5Abm9raWEuY29tXSAKPiA+IFNlbnQ6IEZyaWRheSwg
+TWF5IDE0LCAyMDEwIDY6MzIgUE0KPiA+IFRvOiBHdXJ1c3dhbXksIFNlbnRoaWx2YWRpdnUKPiA+
+IENjOiBsaW51eC1vbWFwQHZnZXIua2VybmVsLm9yZzsgbGludXgtZmJkZXZAdmdlci5rZXJuZWwu
+b3JnOyAKPiA+IHRvbnlAYXRvbWlkZS5jb207IEhpcmVtYXRoLCBWYWliaGF2Cj4gPiBTdWJqZWN0
+OiBSRTogW1BBVENIIHYyIDAvMl0gRFNTMjpBbGxvdyBGQiB0byBidWlsZCB3aXRob3V0IFZSRkIK
+PiA+IAo+ID4gT24gRnJpLCAyMDEwLTA1LTE0IGF0IDEyOjAzICswMjAwLCBleHQgR3VydXN3YW15
+LCAKPiBTZW50aGlsdmFkaXZ1IHdyb3RlOgo+ID4gPiAKPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1l
+c3NhZ2UtLS0tLQo+ID4gPiA+IEZyb206IFRvbWkgVmFsa2VpbmVuIFttYWlsdG86dG9taS52YWxr
+ZWluZW5Abm9raWEuY29tXSAKPiA+ID4gPiBTZW50OiBGcmlkYXksIE1heSAxNCwgMjAxMCAxMjo1
+NCBQTQo+ID4gPiA+IFRvOiBHdXJ1c3dhbXksIFNlbnRoaWx2YWRpdnUKPiA+ID4gPiBDYzogbGlu
+dXgtb21hcEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZzsgCj4g
+PiA+ID4gdG9ueUBhdG9taWRlLmNvbTsgSGlyZW1hdGgsIFZhaWJoYXYKPiA+ID4gPiBTdWJqZWN0
+OiBSZTogW1BBVENIIHYyIDAvMl0gRFNTMjpBbGxvdyBGQiB0byBidWlsZCB3aXRob3V0IFZSRkIK
+PiA+IAo+ID4gPHNuaXA+Cj4gPiAKPiA+IAo+ID4gSWYgaXQncyBwb3NzaWJsZSB0byB0dXJuIFZS
+RkIgb2ZmLCB0aGVuIHRoZSBjb2RlIHNob3VsZCAKPiA+IGhhbmRsZSB0aGUgY2FzZQo+ID4gd2hl
+cmUgVlJGQiBpcyBub3QgdGhlcmUuIE1lYW5pbmcsIHJldHVybmluZyBlcnJvciB2YWx1ZXMgb3Ig
+Cj4gPiBzb21laG93IGVsc2UKPiA+IGZhaWxpbmcgZ3JhY2VmdWxseSwgYW5kIGluZm9ybWluZyB0
+aGUgdXNlciBvZiB3cm9uZyBhcmd1bWVudHMuCj4gPgo+IFtTZW50aGlsXSBZZXMsIEkgY291bGQg
+cHJvdmlkZSBhIGNoZWNrIGluIHRoZSBkcml2ZXIgZm9yIAo+IHdyb25nIGFyZ3VtZW50cy4KW1Nl
+bnRoaWxdICBJIGhhdmUgMiBvcHRpb25zIHRvIG1ha2UgdGhpcyBjaGVjay4gIEkgYW0gbm93IGV2
+YWx1YXRpbmcKdGhlIE9NQVBfSEFTX0ZFQVRVUkUgcGF0Y2ggZnJvbSBOaXNoYW50IHRvIHNlZSBp
+ZiBpdCBjb3VsZCBiZSB1c2VkIAp0byBleHRlbmQgZm9yIFZSRkIgYmVmb3JlIEkgc2VuZCB0aGlz
+IHBhdGNoLgoKT3B0aW9uIDE6CkluIG9tYXBmYi1tYWluLmMgLSBpbiBvbWFwZmJfcHJvYmUoKQoK
+LyogUGF0Y2hlcyByZXF1aXJlZCBvbiB0b3Agb2YgTmlzaGFudCBNZW5vbidzIEhBU19GRUFUVVJF
+ICovCmlmIChkZWZfdnJmYiAmJiAhT01BUF9IQVNfRkVBVFVSRShWUkZCKSkgeyAKCWRlZl92cmZi
+ID0gMDsKCXByaW50ayh3YXJuaW5nKTsKfQpBbmQgT01BUF9IQVNfRkVBVFVSRShWUkZCKSBpbiBp
+ZC5jCgpPcHRpb24gMjoKLypUT0RPIDogUmVwbGFjZSBjcHUgY2hlY2sgd2l0aCBPTUFQX0hBU19G
+RUFUVVJFICovCmlmICggZGVmX3ZyZmIgJiYgISAoY3B1X2lzX29tYXAyNHh4IHx8IGNwdV9pc19v
+bWFwMzR4eCkgKSB7IAoJZGVmX3ZyZmIgPSAwOwoJcHJpbnRrKHdhcm5pbmcpOwp9CgpSZWdhcmRz
+LApTZW50aGls//Tounsubscribefromthislisv/sendthelinf/unsubscribelinux/fbdev/i
+nthebodyofamessagetomajordomo/vger/kernel/orgMoremajordomoinfoathttp///vger/
+kernel/org/majordomo/info/htCg==

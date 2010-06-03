@@ -1,62 +1,106 @@
-From: Pawel Osciak <p.osciak@samsung.com>
-Date: Mon, 28 Jun 2010 08:08:56 +0000
-Subject: [PATCH v3 10/12] s3c-fb: Protect window-specific registers during
-Message-Id: <1277712538-23188-11-git-send-email-p.osciak@samsung.com>
+From: Andres Salomon <dilinger@queued.net>
+Date: Thu, 03 Jun 2010 13:54:30 +0000
+Subject: [PATCH 3/4] gxfb: fix incorrect __init annotation
+Message-Id: <20100603095430.64938042@dev.queued.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1277712538-23188-1-git-send-email-p.osciak@samsung.com>
-In-Reply-To: <1277712538-23188-1-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-geode@lists.infradead.org, linux-fbdev@vger.kernel.org
 
-Newer hardware (S3C6410, S5P) have the ability to block updates from shadow
-registers during reconfiguration. Add protect calls for set_par and clear
-protection when resetting.
 
-Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+WARNING: vmlinux.o(.data+0x195d8): Section mismatch in reference from the variable gxfb_driver to the function .init.text:gxfb_probe()
+The variable gxfb_driver references
+the function __init gxfb_probe()
+
+This changes gxfb_probe and friends to use __devinit, and also adds __devexit
+to gxfb_remove.
+
+Signed-off-by: Andres Salomon <dilinger@queued.net>
 ---
- drivers/video/s3c-fb.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ drivers/video/geode/gxfb_core.c |   20 ++++++++++++--------
+ 1 files changed, 12 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 3b2c7fe..d461f1d 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -451,6 +451,8 @@ static int s3c_fb_set_par(struct fb_info *info)
+diff --git a/drivers/video/geode/gxfb_core.c b/drivers/video/geode/gxfb_core.c
+index 76e7dac..70b1d9d 100644
+--- a/drivers/video/geode/gxfb_core.c
++++ b/drivers/video/geode/gxfb_core.c
+@@ -40,7 +40,7 @@ static int vram;
+ static int vt_switch;
  
- 	dev_dbg(sfb->dev, "setting framebuffer parameters\n");
+ /* Modes relevant to the GX (taken from modedb.c) */
+-static struct fb_videomode gx_modedb[] __initdata = {
++static struct fb_videomode gx_modedb[] __devinitdata = {
+ 	/* 640x480-60 VESA */
+ 	{ NULL, 60, 640, 480, 39682,  48, 16, 33, 10, 96, 2,
+ 	  0, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
+@@ -110,14 +110,15 @@ static struct fb_videomode gx_modedb[] __initdata = {
+ #ifdef CONFIG_OLPC
+ #include <asm/olpc.h>
  
-+	shadow_protect_win(win, 1);
-+
- 	switch (var->bits_per_pixel) {
- 	case 32:
- 	case 24:
-@@ -633,6 +635,8 @@ static int s3c_fb_set_par(struct fb_info *info)
- 	writel(data, regs + sfb->variant.wincon + (win_no * 4));
- 	writel(0x0, regs + sfb->variant.winmap + (win_no * 4));
+-static struct fb_videomode gx_dcon_modedb[] __initdata = {
++static struct fb_videomode gx_dcon_modedb[] __devinitdata = {
+ 	/* The only mode the DCON has is 1200x900 */
+ 	{ NULL, 50, 1200, 900, 17460, 24, 8, 4, 5, 8, 3,
+ 	  FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+ 	  FB_VMODE_NONINTERLACED, 0 }
+ };
  
-+	shadow_protect_win(win, 0);
-+
- 	return 0;
- }
- 
-@@ -1232,11 +1236,14 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
- static void s3c_fb_clear_win(struct s3c_fb *sfb, int win)
+-static void __init get_modedb(struct fb_videomode **modedb, unsigned int *size)
++static void __devinit get_modedb(struct fb_videomode **modedb,
++		unsigned int *size)
  {
- 	void __iomem *regs = sfb->regs;
-+	u32 reg;
- 
- 	writel(0, regs + sfb->variant.wincon + (win * 4));
- 	writel(0, regs + VIDOSD_A(win, sfb->variant));
- 	writel(0, regs + VIDOSD_B(win, sfb->variant));
- 	writel(0, regs + VIDOSD_C(win, sfb->variant));
-+	reg = readl(regs + SHADOWCON);
-+	writel(reg & ~SHADOWCON_WINx_PROTECT(win), regs + SHADOWCON);
+ 	if (olpc_has_dcon()) {
+ 		*modedb = (struct fb_videomode *) gx_dcon_modedb;
+@@ -129,7 +130,8 @@ static void __init get_modedb(struct fb_videomode **modedb, unsigned int *size)
  }
  
- static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ #else
+-static void __init get_modedb(struct fb_videomode **modedb, unsigned int *size)
++static void __devinit get_modedb(struct fb_videomode **modedb,
++		unsigned int *size)
+ {
+ 	*modedb = (struct fb_videomode *) gx_modedb;
+ 	*size = ARRAY_SIZE(gx_modedb);
+@@ -226,7 +228,8 @@ static int gxfb_blank(int blank_mode, struct fb_info *info)
+ 	return gx_blank_display(info, blank_mode);
+ }
+ 
+-static int __init gxfb_map_video_memory(struct fb_info *info, struct pci_dev *dev)
++static int __devinit gxfb_map_video_memory(struct fb_info *info,
++		struct pci_dev *dev)
+ {
+ 	struct gxfb_par *par = info->par;
+ 	int ret;
+@@ -290,7 +293,7 @@ static struct fb_ops gxfb_ops = {
+ 	.fb_imageblit	= cfb_imageblit,
+ };
+ 
+-static struct fb_info * __init gxfb_init_fbinfo(struct device *dev)
++static struct fb_info *__devinit gxfb_init_fbinfo(struct device *dev)
+ {
+ 	struct gxfb_par *par;
+ 	struct fb_info *info;
+@@ -371,7 +374,8 @@ static int gxfb_resume(struct pci_dev *pdev)
+ }
+ #endif
+ 
+-static int __init gxfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
++static int __devinit gxfb_probe(struct pci_dev *pdev,
++		const struct pci_device_id *id)
+ {
+ 	struct gxfb_par *par;
+ 	struct fb_info *info;
+@@ -451,7 +455,7 @@ static int __init gxfb_probe(struct pci_dev *pdev, const struct pci_device_id *i
+ 	return ret;
+ }
+ 
+-static void gxfb_remove(struct pci_dev *pdev)
++static void __devexit gxfb_remove(struct pci_dev *pdev)
+ {
+ 	struct fb_info *info = pci_get_drvdata(pdev);
+ 	struct gxfb_par *par = info->par;
 -- 
-1.7.1.569.g6f426
+1.5.6.5
 

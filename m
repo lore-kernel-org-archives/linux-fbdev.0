@@ -1,74 +1,81 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Wed, 30 Jun 2010 20:36:31 +0000
-Subject: [PATCH 1/4 - adjusted changelog] HID: picolcd: fix deferred_io
-Message-Id: <20100630223631.49ab1c85@neptune.home>
+From: Luotao Fu <l.fu@pengutronix.de>
+Date: Thu, 03 Jun 2010 10:34:48 +0000
+Subject: [PATCH] imxfb: add flag to avoid disabling clk multiple times
+Message-Id: <1275561288-20661-1-git-send-email-l.fu@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100509184911.3f136b77@neptune.home>
-	<AANLkTik0EkPYKdnhrpF7yK6eXIrHMsNYrzSC6tyeBR0P@mail.gmail.com>
-	<20100510080047.5adade6f@pluto.restena.lu>
-	<20100526215829.28a4aa47@neptune.home>
-	<20100530130945.5c03797f@neptune.home>
-	<20100623123225.4c16e653@neptune.home>
-	<alpine.LNX.2.00.1006241053360.13809@pobox.suse.cz>
-	<20100628222641.489c955a@neptune.home>
-	<20100628222920.1127f8eb@neptune.home>
-	<AANLkTingjmM4OmkdXl9IOUe5zsj0QxTdix1h34pVHWGl@mail.gmail.com>
-	<20100630075657.47a325a6@pluto.restena.lu>
-In-Reply-To: <20100630075657.47a325a6@pluto.restena.lu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-Adjust ordering if framebuffer (un)registration and defio init/cleanup
-to match the correct order (init defio, register FB ... unregister FB,
-cleanup defio)
+while the imxfb driver blanks the screen. The clock supply to the framebuffer
+controller is disabled. The same callback to disable the fb is, however, also
+used the remove and shutdown hooks of the imxfb platform driver. This means that
+the imxfb driver can run into a WARN in clock_disable while unloading or
+rebooting, if the screen is blanked previously, since the same clock will be
+than eventually disabled multiple times.  This patch adds a flag to make sure
+that the clock will only be disabled, if it was not already disabled before.
 
-Acked-by: Jaya Kumar <jayakumar.lkml@gmail.com>
-Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
+The remove or shutdown callbacks in the imxfb platform driver call
+imxfb_disable_controller to disable the hardware,
+
+Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
 ---
-I consider Jaya's reply as an ack to the patch.
+ drivers/video/imxfb.c |   13 +++++++++++--
+ 1 files changed, 11 insertions(+), 2 deletions(-)
 
-
- drivers/hid/hid-picolcd.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/hid/hid-picolcd.c b/drivers/hid/hid-picolcd.c
-index 95253b3..883d720 100644
---- a/drivers/hid/hid-picolcd.c
-+++ b/drivers/hid/hid-picolcd.c
-@@ -707,18 +707,19 @@ static int picolcd_init_framebuffer(struct picolcd_da=
-ta *data)
- 		dev_err(dev, "failed to create sysfs attributes\n");
- 		goto err_cleanup;
- 	}
-+	fb_deferred_io_init(info);
- 	data->fb_info    =3D info;
- 	error =3D register_framebuffer(info);
- 	if (error) {
- 		dev_err(dev, "failed to register framebuffer\n");
- 		goto err_sysfs;
- 	}
--	fb_deferred_io_init(info);
- 	/* schedule first output of framebuffer */
- 	schedule_delayed_work(&info->deferred_work, 0);
- 	return 0;
-=20
- err_sysfs:
-+	fb_deferred_io_cleanup(info);
- 	device_remove_file(dev, &dev_attr_fb_update_rate);
- err_cleanup:
- 	data->fb_vbitmap =3D NULL;
-@@ -747,7 +748,6 @@ static void picolcd_exit_framebuffer(struct picolcd_dat=
-a *data)
- 	data->fb_bpp     =3D 0;
- 	data->fb_info    =3D NULL;
- 	device_remove_file(&data->hdev->dev, &dev_attr_fb_update_rate);
--	fb_deferred_io_cleanup(info);
- 	unregister_framebuffer(info);
- 	vfree(fb_bitmap);
- 	kfree(fb_vbitmap);
---=20
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index 17c6b5f..6ef9817 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -35,6 +35,7 @@
+ 
+ #include <mach/imxfb.h>
+ #include <mach/hardware.h>
++#include <mach/clock.h>
+ 
+ /*
+  * Complain if VAR is out of range.
+@@ -176,6 +177,7 @@ struct imxfb_info {
+ 
+ 	struct imx_fb_videomode *mode;
+ 	int			num_modes;
++	bool			fbclk_disabled;
+ 
+ 	void (*lcd_power)(int);
+ 	void (*backlight_power)(int);
+@@ -466,6 +468,7 @@ static void imxfb_enable_controller(struct imxfb_info *fbi)
+ 	writel(RMCR_LCDC_EN, fbi->regs + LCDC_RMCR);
+ 
+ 	clk_enable(fbi->clk);
++	fbi->fbclk_disabled = 0;
+ 
+ 	if (fbi->backlight_power)
+ 		fbi->backlight_power(1);
+@@ -482,7 +485,10 @@ static void imxfb_disable_controller(struct imxfb_info *fbi)
+ 	if (fbi->lcd_power)
+ 		fbi->lcd_power(0);
+ 
+-	clk_disable(fbi->clk);
++	if (!fbi->fbclk_disabled) {
++		fbi->fbclk_disabled = 1;
++		clk_disable(fbi->clk);
++	}
+ 
+ 	writel(0, fbi->regs + LCDC_RMCR);
+ }
+@@ -863,7 +869,10 @@ static int __devexit imxfb_remove(struct platform_device *pdev)
+ 
+ 	iounmap(fbi->regs);
+ 	release_mem_region(res->start, resource_size(res));
+-	clk_disable(fbi->clk);
++
++	if (!fbi->fbclk_disabled)
++		clk_disable(fbi->clk);
++
+ 	clk_put(fbi->clk);
+ 
+ 	platform_set_drvdata(pdev, NULL);
+-- 
 1.7.1
 

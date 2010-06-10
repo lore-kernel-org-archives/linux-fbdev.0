@@ -1,35 +1,56 @@
-From: Xiangfu Liu <xiangfu.z@gmail.com>
-Date: Mon, 21 Jun 2010 02:56:10 +0000
-Subject: Re: [PATCH v2 00/26] Add support for the Ingenic JZ4740 System-on-a-Chip
-Message-Id: <4C1ED4CA.9030906@gmail.com>
+From: Guruswamy Senthilvadivu <svadivu@ti.com>
+Date: Thu, 10 Jun 2010 11:35:56 +0000
+Subject: [PATCH v3 2/3] DSS2: make VRFB depends on OMAP2,3
+Message-Id: <1276169037-2598-2-git-send-email-svadivu@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1276924111-11158-1-git-send-email-lars@metafoo.de> <20100620092610.GA4950@alpha.franken.de>
-In-Reply-To: <20100620092610.GA4950@alpha.franken.de>
+References: <1276169037-2598-1-git-send-email-svadivu@ti.com>
+In-Reply-To: <1276169037-2598-1-git-send-email-svadivu@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: Lars-Peter Clausen <lars@metafoo.de>, Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, Andrew Morton <akpm@linux-foundation.org>, Anton Vorontsov <cbouatmailru@gmail.com>, David Brownell <dbrownell@users.sourceforge.net>, David Woodhouse <dwmw2@infradead.org>, Greg Kroah-Hartman <gregkh@suse.de>, Liam Girdwood <lrg@slimlogic.co.uk>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Paul Gortmaker <p_gortmaker@yahoo.com>, Samuel Ortiz <sameo@linux.intel.com>, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-usb@vger.kernel.org, lm-sensors@lm-sensors.org, rtc-linux@googlegroups.com
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, tony@atomide.com, tomi.valkeinen@nokia.com, hvaibhav@ti.com
+Cc: Senthilvadivu Guruswamy <svadivu@ti.com>
 
-On 06/20/2010 05:26 PM, Thomas Bogendoerfer wrote:
-> great stuff. I have a JZ4730 based netbook, for which I started magling
-> the provided sources quite some time ago, but I didn't reach the
-> point of submitting patches... there are a lot of common stuff between
-> JZ4730 and JZ4740 so IMHO it would be a good thing not to nail
-> everthing to JZ4740 namewise. It might also a good idea to select
-> something like arch/mips/jzrisc as base directory, put the
+From: Senthilvadivu Guruswamy <svadivu@ti.com>
 
-Hi Thomas
+config VRFB should depend on ARCH_OMAP2 or ARCH_OMAP3.
 
-I would advice "xburst" instead jzrisc. because the Ingenic call
-their cpu "XBurst" series. like: XBurst JZ4740, XBurst JZ4750 ...
+Changes from v1:
+	- Addressed multi-omap build issue
 
+Signed-off-by: Senthilvadivu Guruswamy <svadivu@ti.com>
+---
+ drivers/video/omap2/Kconfig            |    4 ++++
+ drivers/video/omap2/omapfb/Kconfig     |    1 -
+ 2 files changed,  4 insertions(+), 1 deletions(-)
 
-> factored out code there and add JZ4730/JZ4740 in either seperate
-> files or directories.
-
-
+diff --git a/drivers/video/omap2/Kconfig b/drivers/video/omap2/Kconfig
+index d877c36..18bb835 100644
+--- a/drivers/video/omap2/Kconfig
++++ b/drivers/video/omap2/Kconfig
+@@ -3,6 +3,10 @@ config OMAP2_VRAM
+ 
+ config OMAP2_VRFB
+ 	bool
++	depends on ARCH_OMAP2 || ARCH_OMAP3
++	default y if FB_OMAP2
++	help
++	  OMAP VRFB buffer support is efficient for rotation
+ 
+ source "drivers/video/omap2/dss/Kconfig"
+ source "drivers/video/omap2/omapfb/Kconfig"
+diff --git a/drivers/video/omap2/omapfb/Kconfig b/drivers/video/omap2/omapfb/Kconfig
+index a3ed15c..f186c2b 100644
+--- a/drivers/video/omap2/omapfb/Kconfig
++++ b/drivers/video/omap2/omapfb/Kconfig
+@@ -3,7 +3,6 @@ menuconfig FB_OMAP2
+         depends on FB && OMAP2_DSS
+ 
+ 	select OMAP2_VRAM
+-	select OMAP2_VRFB
+         select FB_CFB_FILLRECT
+         select FB_CFB_COPYAREA
+         select FB_CFB_IMAGEBLIT
 -- 
-Best Regards
-Xiangfu Liu
-http://www.openmobilefree.net
+1.5.4.7
+

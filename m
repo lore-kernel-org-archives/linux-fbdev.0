@@ -1,39 +1,71 @@
-From: Anatolij Gustschin <agust@denx.de>
-Date: Tue, 01 Jun 2010 09:38:01 +0000
-Subject: Re: [PATCH 0/5] Rework MPC5121 DIU support (for 2.6.35)
-Message-Id: <20100601113801.5b0ff773@wker>
+From: Maurus Cuelenaere <mcuelenaere@gmail.com>
+Date: Mon, 14 Jun 2010 11:31:16 +0000
+Subject: S3C FB pixclock calculation
+Message-Id: <4C161304.70903@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272584978-19063-1-git-send-email-agust@denx.de>
-	<y2med82fe3e1004291839m92dea081o6a46dc307e07c4ad@mail.gmail.com>
-In-Reply-To: <y2med82fe3e1004291839m92dea081o6a46dc307e07c4ad-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Timur Tabi <timur.tabi-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, wd-ynQEQJNshbs@public.gmane.org, dzu-ynQEQJNshbs@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linuxppc-dev-mnsaURCQ41sdnm+yROfE0A@public.gmane.org, yorksun-KZfg59tc24xl57MIdRCFDg@public.gmane.org
+To: linux-arm-kernel@lists.infradead.org
 
-Hi Timur,
+Hi,
 
-On Thu, 29 Apr 2010 20:39:02 -0500
-Timur Tabi <timur.tabi@gmail.com> wrote:
+one thing that has bothered me for some time is the fb pixclock value: this
+seems rather arbitrary and undocumented (couldn't find it in the datasheets).
 
-> On Thu, Apr 29, 2010 at 6:49 PM, Anatolij Gustschin <agust@denx.de> wrote:
-> > This patch series rework DIU support patches submitted
-> > previously. Comments to the previos patch series have
-> > been addressed, not related changes are dropped and some
-> > changes are split out to separate patches to simplify
-> > review. Furthermore a patch has been added to support
-> > setting display mode using EDID block in the device tree.
-> 
-> Have you tested these changes on an MPC8610 HPCD?  If not, do you
-> think your changes will break that platform?
-> 
-> I have an 8610 in-house, but I'm currently working on another issue on
-> that board, so I can't test these patches for you just yet.
+Though I did find an "algorithm", which I've used in the SmartQ machs for the
+calculation of this value (I can't remember where I found it, I think it was in
+the original SmartQ kernels).
 
-Could you please test these patches on MPC8610 HPCD? I think these
-changes won't break that platform. The patches apply cleanly on
-2.6.35-rc1.
+So I made this small patch which does the calculation in the s3c fb driver
+itself when the pixclock pdata hasn't been set (see below).
 
-Thanks,
-Anatolij
+I've checked this against the SMDK6410 value (and ANW6410 and HMT, which are
+identical) and it seems to match so I *think* this is correct, but as it's
+undocumented I'm not sure.
+
+Is anyone able to tell me whether I'm correct? (if so, I'll clean up this patch
+and send it for inclusion)
+
+--
+Maurus Cuelenaere
+
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 9682ecc..17d882f 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -235,6 +235,22 @@ static int s3c_fb_calc_pixclk(struct s3c_fb *sfb, unsigned int pixclk)
+ 	return result;
+ }
+
++static void s3c_fb_missing_pixclock(struct fb_videomode *mode)
++{
++	u64 pixclk = 1000000000000ULL;
++	u32 div;
++
++	div  = mode->left_margin + mode->hsync_len + mode->right_margin +
++	       mode->xres;
++	div *= mode->upper_margin + mode->vsync_len + mode->lower_margin +
++	       mode->yres;
++	div *= mode->refresh ? : 80;
++
++	do_div(pixclk, div);
++
++	mode->pixclock = pixclk;
++}
++
+ /**
+  * s3c_fb_align_word() - align pixel count to word boundary
+  * @bpp: The number of bits per pixel
+@@ -925,6 +941,9 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 		if (!pd->win[win])
+ 			continue;
+
++		if (!pd->win[win]->win_mode.pixclock)
++			s3c_fb_missing_pixclock(&pd->win[win]->win_mode);
++
+ 		ret = s3c_fb_probe_win(sfb, win, &sfb->windows[win]);
+ 		if (ret < 0) {
+ 			dev_err(dev, "failed to create window %d\n", win);
+
+

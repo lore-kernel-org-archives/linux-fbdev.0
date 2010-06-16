@@ -1,38 +1,71 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Date: Wed, 16 Jun 2010 09:34:50 +0000
-Subject: [PATCH 7/9] s3c-fb: window 3 of 64xx+ does not have an osd_d register
-Message-Id: <1276680892-14760-8-git-send-email-m.szyprowski@samsung.com>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Date: Wed, 16 Jun 2010 10:11:58 +0000
+Subject: [PATCH 2/7] ARM: Samsung: Add platform definitions for local FIMC/FIMD
+Message-Id: <1276683123-30224-3-git-send-email-s.nawrocki@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
-In-Reply-To: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
+References: <1276683123-30224-1-git-send-email-s.nawrocki@samsung.com>
+In-Reply-To: <1276683123-30224-1-git-send-email-s.nawrocki@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Pawel Osciak <p.osciak@samsung.com>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
 
-Fix incorrectly defined OSD_D register for S3C64xx SoCs.
+Add a common s3c_fifo_link structure that describes a local path link
+between 2 multimedia devices (like FIMC and FrameBuffer).
 
-Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
 ---
- drivers/video/s3c-fb.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ arch/arm/plat-samsung/include/plat/fifo.h |   37 +++++++++++++++++++++++++++++
+ 1 files changed, 37 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/plat-samsung/include/plat/fifo.h
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 6131ebb..0a93fca 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -1437,7 +1437,6 @@ static struct s3c_fb_win_variant s3c_fb_data_64xx_wins[] __devinitdata = {
- 	},
- 	[3] = {
- 		.has_osd_c	= 1,
--		.has_osd_d	= 1,
- 		.palette_sz	= 16,
- 		.palette_16bpp	= 1,
- 		.valid_bpp	= (VALID_BPP124  | VALID_BPP(16) |
+diff --git a/arch/arm/plat-samsung/include/plat/fifo.h b/arch/arm/plat-samsung/include/plat/fifo.h
+new file mode 100644
+index 0000000..84d242b
+--- /dev/null
++++ b/arch/arm/plat-samsung/include/plat/fifo.h
+@@ -0,0 +1,37 @@
++/*
++ * Copyright (c) 2010 Samsung Electronics
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef FIFO_H_
++#define FIFO_H_
++
++#include <linux/device.h>
++#include <media/v4l2-subdev.h>
++
++/*
++ * The multimedia devices contained in Samsung S3C/S5P SoC series
++ * like framebuffer, camera interface or tv scaler can transfer data
++ * directly between each other through hardware fifo channels.
++ * s3c_fifo_link data structure is an abstraction for such links,
++ * it allows to define V4L2 device drivers hierarchy according to
++ * the hardware structure. Fifo links are mostly unidirectional, exclusive
++ * data buses. To control data transfer in fifo mode synchronization is
++ * is required between drivers at both ends of the fifo channel
++ * (master_dev, slave_dev). s3c_fifo_link:sub_dev is intended  to export
++ * in a consistent way all the functionality of the slave device required
++ * at master device driver to enable transfer through fifo channel.
++ * master_dev and slave_dev is to be setup by the platform code whilst
++ * sub_dev entry will mostly be initlized during slave_dev probe().
++ */
++struct s3c_fifo_link {
++	struct device		*master_dev;
++	struct device		*slave_dev;
++	struct v4l2_subdev	*sub_dev;
++};
++
++#endif /* FIFO_H_ */
++
 -- 
-1.7.1.240.g225c
+1.7.0.4
 

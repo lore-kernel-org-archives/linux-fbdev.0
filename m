@@ -1,170 +1,158 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Date: Wed, 16 Jun 2010 09:34:52 +0000
-Subject: [PATCH 9/9] s3c-fb: Correct window osd size and alpha register handling
-Message-Id: <1276680892-14760-10-git-send-email-m.szyprowski@samsung.com>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Date: Wed, 16 Jun 2010 10:12:01 +0000
+Subject: [PATCH 5/7] ARM: S5PV210: Add fifo link definitions for fimc and
+Message-Id: <1276683123-30224-6-git-send-email-s.nawrocki@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
-In-Reply-To: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
+References: <1276683123-30224-1-git-send-email-s.nawrocki@samsung.com>
+In-Reply-To: <1276683123-30224-1-git-send-email-s.nawrocki@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Pawel Osciak <p.osciak@samsung.com>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
 
-S3C64xx and S5P OSD registers for OSD size and alpha are as follows:
-VIDOSDC: win 0 - size, win 1-4: alpha
-VIDOSDD: win 1-2 - size; not present for windows 0, 3 and 4
+Add definition of local paths that are available on Sasmung S5PV210
+SoCs.
 
-Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
 ---
- drivers/video/s3c-fb.c |   58 ++++++++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 51 insertions(+), 7 deletions(-)
+ arch/arm/mach-s5pv210/setup-fimc0.c       |   23 +++++++++++++++++++++++
+ arch/arm/mach-s5pv210/setup-fimc1.c       |   23 +++++++++++++++++++++++
+ arch/arm/mach-s5pv210/setup-fimc2.c       |   23 +++++++++++++++++++++++
+ arch/arm/plat-samsung/include/plat/fimc.h |    4 ++++
+ 4 files changed, 73 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 5e14f0a..f098bd1 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -64,6 +64,9 @@ struct s3c_fb;
- #define VIDOSD_B(win, variant) (OSD_BASE(win, variant) + 0x04)
- #define VIDOSD_C(win, variant) (OSD_BASE(win, variant) + 0x08)
- #define VIDOSD_D(win, variant) (OSD_BASE(win, variant) + 0x0C)
-+#define VIDOSD_SIZE(win, variant, win_variant) \
-+	(OSD_BASE(win, variant) + (win_variant).osd_size_off)
-+#define VIDOSD_ALPHA(win, variant, win_variant) VIDOSD_C(win, variant)
+diff --git a/arch/arm/mach-s5pv210/setup-fimc0.c b/arch/arm/mach-s5pv210/setup-fimc0.c
+index 94205f5..fab6e52 100644
+--- a/arch/arm/mach-s5pv210/setup-fimc0.c
++++ b/arch/arm/mach-s5pv210/setup-fimc0.c
+@@ -10,6 +10,10 @@
+  */
  
- /**
-  * struct s3c_fb_variant - fb variant information
-@@ -112,7 +115,10 @@ struct s3c_fb_variant {
- struct s3c_fb_win_variant {
- 	unsigned int	has_osd_c:1;
- 	unsigned int	has_osd_d:1;
-+	unsigned int	has_osd_size:1;
-+	unsigned int	has_osd_alpha:1;
- 	unsigned int	palette_16bpp:1;
-+	unsigned short	osd_size_off;
- 	unsigned short	palette_sz;
- 	u32		valid_bpp;
+ #include <plat/fimc.h>
++#include <plat/fifo.h>
++#include <linux/fb.h>
++#include <plat/fb.h>
++#include <plat/devs.h>
+ 
+ struct samsung_plat_fimc s5p_fimc0_default_data __initdata = {
+ 	.capability	= S5P_FIMC_IN_ROT | S5P_FIMC_OUT_ROT,
+@@ -23,3 +27,22 @@ struct samsung_plat_fimc s5p_fimc0_default_data __initdata = {
+ 	.out_rot_en_w	= 1920,
+ 	.out_rot_dis_w	= 4224
  };
-@@ -365,6 +371,36 @@ static int s3c_fb_align_word(unsigned int bpp, unsigned int pix)
- }
- 
- /**
-+ * vidosd_set_size() - set OSD size for a window
-+ *
-+ * @win: the window to set OSD size for
-+ * @size: OSD size register value
-+ */
-+static void vidosd_set_size(struct s3c_fb_win *win, u32 size)
++
++static struct s3c_fifo_link s5pv210_fimc0_win0_link = {
++	.master_dev	= &s5p_device_fimc0.dev,
++	.slave_dev	= &s3c_device_fb.dev,
++};
++
++void __init s5pv210_setup_fimc0_fb_link(void)
 +{
-+	struct s3c_fb *sfb = win->parent;
++	struct s3c_fb_platdata *fb_pd;
++	struct samsung_plat_fimc *fimc_pd;
 +
-+	if (win->variant.has_osd_size)
-+		writel(size, sfb->regs + VIDOSD_SIZE(win->index, sfb->variant,
-+							win->variant));
++	fimc_pd = s5p_device_fimc0.dev.platform_data;
++	fb_pd = s3c_device_fb.dev.platform_data;
++
++	if (fimc_pd && fb_pd && fb_pd->win[0]) {
++		fb_pd->win[0]->fifo_sources[0] = &s5pv210_fimc0_win0_link;
++		fimc_pd->fifo_targets[0] = &s5pv210_fimc0_win0_link;
++	}
 +}
+diff --git a/arch/arm/mach-s5pv210/setup-fimc1.c b/arch/arm/mach-s5pv210/setup-fimc1.c
+index bfaffe9..2a6e930 100644
+--- a/arch/arm/mach-s5pv210/setup-fimc1.c
++++ b/arch/arm/mach-s5pv210/setup-fimc1.c
+@@ -10,6 +10,10 @@
+  */
+ 
+ #include <plat/fimc.h>
++#include <plat/fifo.h>
++#include <linux/fb.h>
++#include <plat/fb.h>
++#include <plat/devs.h>
+ 
+ struct samsung_plat_fimc s5p_fimc1_default_data __initdata = {
+ 	.capability	= S5P_FIMC_IN_ROT | S5P_FIMC_OUT_ROT,
+@@ -23,3 +27,22 @@ struct samsung_plat_fimc s5p_fimc1_default_data __initdata = {
+ 	.out_rot_en_w	= 1920,
+ 	.out_rot_dis_w	= 4224
+ };
 +
-+/**
-+ * vidosd_set_alpha() - set alpha transparency for a window
-+ *
-+ * @win: the window to set OSD size for
-+ * @alpha: alpha register value
-+ */
-+static void vidosd_set_alpha(struct s3c_fb_win *win, u32 alpha)
++static struct s3c_fifo_link s5pv210_fimc1_win1_link = {
++	.master_dev	= &s5p_device_fimc1.dev,
++	.slave_dev	= &s3c_device_fb.dev,
++};
++
++void __init s5pv210_setup_fimc1_fb_link(void)
 +{
-+	struct s3c_fb *sfb = win->parent;
++	struct s3c_fb_platdata *fb_pd;
++	struct samsung_plat_fimc *fimc_pd;
 +
-+	if (win->variant.has_osd_alpha)
-+		writel(alpha, sfb->regs + VIDOSD_ALPHA(win->index,
-+						sfb->variant, win->variant));
++	fimc_pd = s5p_device_fimc1.dev.platform_data;
++	fb_pd = s3c_device_fb.dev.platform_data;
++
++	if (fimc_pd && fb_pd && fb_pd->win[1]) {
++		fb_pd->win[1]->fifo_sources[0] = &s5pv210_fimc1_win1_link;
++		fimc_pd->fifo_targets[0] = &s5pv210_fimc1_win1_link;
++	}
 +}
+diff --git a/arch/arm/mach-s5pv210/setup-fimc2.c b/arch/arm/mach-s5pv210/setup-fimc2.c
+index a53a382..79b61b0 100644
+--- a/arch/arm/mach-s5pv210/setup-fimc2.c
++++ b/arch/arm/mach-s5pv210/setup-fimc2.c
+@@ -10,6 +10,10 @@
+  */
+ 
+ #include <plat/fimc.h>
++#include <plat/fifo.h>
++#include <linux/fb.h>
++#include <plat/fb.h>
++#include <plat/devs.h>
+ 
+ struct samsung_plat_fimc s5p_fimc2_default_data __initdata = {
+ 	.capability	= S5P_FIMC_IN_ROT | S5P_FIMC_OUT_ROT,
+@@ -23,3 +27,22 @@ struct samsung_plat_fimc s5p_fimc2_default_data __initdata = {
+ 	.out_rot_en_w	= 1280,
+ 	.out_rot_dis_w	= 1920
+ };
 +
-+/**
-  * s3c_fb_set_par() - framebuffer request to set new framebuffer state.
-  * @info: The framebuffer to change.
-  *
-@@ -378,7 +414,7 @@ static int s3c_fb_set_par(struct fb_info *info)
- 	void __iomem *regs = sfb->regs;
- 	void __iomem *buf = regs;
- 	int win_no = win->index;
--	u32 osdc_data = 0;
-+	u32 alpha = 0;
- 	u32 data;
- 	u32 pagewidth;
- 	int clkdiv;
-@@ -481,15 +517,12 @@ static int s3c_fb_set_par(struct fb_info *info)
++static struct s3c_fifo_link s5pv210_fimc2_win2_link = {
++	.master_dev	= &s5p_device_fimc2.dev,
++	.slave_dev	= &s3c_device_fb.dev,
++};
++
++void __init s5pv210_setup_fimc2_fb_link(void)
++{
++	struct s3c_fb_platdata *fb_pd;
++	struct samsung_plat_fimc *fimc_pd;
++
++	fimc_pd = s5p_device_fimc2.dev.platform_data;
++	fb_pd = s3c_device_fb.dev.platform_data;
++
++	if (fimc_pd && fb_pd && fb_pd->win[2]) {
++		fb_pd->win[2]->fifo_sources[0] = &s5pv210_fimc2_win2_link;
++		fimc_pd->fifo_targets[0] = &s5pv210_fimc2_win2_link;
++	}
++}
+diff --git a/arch/arm/plat-samsung/include/plat/fimc.h b/arch/arm/plat-samsung/include/plat/fimc.h
+index bc6799e..8f95fc0 100644
+--- a/arch/arm/plat-samsung/include/plat/fimc.h
++++ b/arch/arm/plat-samsung/include/plat/fimc.h
+@@ -54,5 +54,9 @@ extern void s5p_fimc0_set_platdata(struct samsung_plat_fimc *fimc);
+ extern void s5p_fimc1_set_platdata(struct samsung_plat_fimc *fimc);
+ extern void s5p_fimc2_set_platdata(struct samsung_plat_fimc *fimc);
  
- 	data = var->xres * var->yres;
++extern void __init s5pv210_setup_fimc0_fb_link(void);
++extern void __init s5pv210_setup_fimc1_fb_link(void);
++extern void __init s5pv210_setup_fimc2_fb_link(void);
++
+ #endif /* FIMC_H_ */
  
--	osdc_data = VIDISD14C_ALPHA1_R(0xf) |
-+	alpha = VIDISD14C_ALPHA1_R(0xf) |
- 		VIDISD14C_ALPHA1_G(0xf) |
- 		VIDISD14C_ALPHA1_B(0xf);
- 
--	if (win->variant.has_osd_d) {
--		writel(data, regs + VIDOSD_D(win_no, sfb->variant));
--		writel(osdc_data, regs + VIDOSD_C(win_no, sfb->variant));
--	} else
--		writel(data, regs + VIDOSD_C(win_no, sfb->variant));
-+	vidosd_set_alpha(win, alpha);
-+	vidosd_set_size(win, data);
- 
- 	data = WINCONx_ENWIN;
- 
-@@ -1452,12 +1485,17 @@ static int s3c_fb_resume(struct platform_device *pdev)
- static struct s3c_fb_win_variant s3c_fb_data_64xx_wins[] __devinitdata = {
- 	[0] = {
- 		.has_osd_c	= 1,
-+		.has_osd_size	= 1,
-+		.osd_size_off	= 0x8,
- 		.palette_sz	= 256,
- 		.valid_bpp	= VALID_BPP1248 | VALID_BPP(16) | VALID_BPP(24),
- 	},
- 	[1] = {
- 		.has_osd_c	= 1,
- 		.has_osd_d	= 1,
-+		.has_osd_size	= 1,
-+		.osd_size_off	= 0x12,
-+		.has_osd_alpha	= 1,
- 		.palette_sz	= 256,
- 		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(16) |
- 				   VALID_BPP(18) | VALID_BPP(19) |
-@@ -1466,6 +1504,9 @@ static struct s3c_fb_win_variant s3c_fb_data_64xx_wins[] __devinitdata = {
- 	[2] = {
- 		.has_osd_c	= 1,
- 		.has_osd_d	= 1,
-+		.has_osd_size	= 1,
-+		.osd_size_off	= 0x12,
-+		.has_osd_alpha	= 1,
- 		.palette_sz	= 16,
- 		.palette_16bpp	= 1,
- 		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(16) |
-@@ -1474,6 +1515,7 @@ static struct s3c_fb_win_variant s3c_fb_data_64xx_wins[] __devinitdata = {
- 	},
- 	[3] = {
- 		.has_osd_c	= 1,
-+		.has_osd_alpha	= 1,
- 		.palette_sz	= 16,
- 		.palette_16bpp	= 1,
- 		.valid_bpp	= (VALID_BPP124  | VALID_BPP(16) |
-@@ -1482,6 +1524,7 @@ static struct s3c_fb_win_variant s3c_fb_data_64xx_wins[] __devinitdata = {
- 	},
- 	[4] = {
- 		.has_osd_c	= 1,
-+		.has_osd_alpha	= 1,
- 		.palette_sz	= 4,
- 		.palette_16bpp	= 1,
- 		.valid_bpp	= (VALID_BPP(1) | VALID_BPP(2) |
-@@ -1607,6 +1650,7 @@ static struct s3c_fb_driverdata s3c_fb_data_s3c2443 __devinitdata = {
- 	},
- 	.win[1] = &(struct s3c_fb_win_variant) {
- 		.has_osd_c	= 1,
-+		.has_osd_alpha	= 1,
- 		.palette_sz	= 256,
- 		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(16) |
- 				   VALID_BPP(18) | VALID_BPP(19) |
 -- 
-1.7.1.240.g225c
+1.7.0.4
 

@@ -1,106 +1,132 @@
-From: Andres Salomon <dilinger@queued.net>
-Date: Thu, 03 Jun 2010 13:54:30 +0000
-Subject: [PATCH 3/4] gxfb: fix incorrect __init annotation
-Message-Id: <20100603095430.64938042@dev.queued.net>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Date: Wed, 16 Jun 2010 10:12:02 +0000
+Subject: [PATCH 6/7] ARM: S5PV210: enable FIMC on Aquila
+Message-Id: <1276683123-30224-7-git-send-email-s.nawrocki@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1276683123-30224-1-git-send-email-s.nawrocki@samsung.com>
+In-Reply-To: <1276683123-30224-1-git-send-email-s.nawrocki@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-geode@lists.infradead.org, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
+Add support for FIMC on Samsung Aquila board. Enable support for local
+path mode between fimc and frame buffer.
 
-WARNING: vmlinux.o(.data+0x195d8): Section mismatch in reference from the variable gxfb_driver to the function .init.text:gxfb_probe()
-The variable gxfb_driver references
-the function __init gxfb_probe()
-
-This changes gxfb_probe and friends to use __devinit, and also adds __devexit
-to gxfb_remove.
-
-Signed-off-by: Andres Salomon <dilinger@queued.net>
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 ---
- drivers/video/geode/gxfb_core.c |   20 ++++++++++++--------
- 1 files changed, 12 insertions(+), 8 deletions(-)
+ arch/arm/mach-s5pv210/Kconfig       |    6 ++++
+ arch/arm/mach-s5pv210/mach-aquila.c |   51 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 57 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/geode/gxfb_core.c b/drivers/video/geode/gxfb_core.c
-index 76e7dac..70b1d9d 100644
---- a/drivers/video/geode/gxfb_core.c
-+++ b/drivers/video/geode/gxfb_core.c
-@@ -40,7 +40,7 @@ static int vram;
- static int vt_switch;
+diff --git a/arch/arm/mach-s5pv210/Kconfig b/arch/arm/mach-s5pv210/Kconfig
+index 7cbba86..65635ef 100644
+--- a/arch/arm/mach-s5pv210/Kconfig
++++ b/arch/arm/mach-s5pv210/Kconfig
+@@ -66,6 +66,12 @@ config MACH_AQUILA
+ 	select ARCH_SPARSEMEM_ENABLE
+ 	select S5PV210_SETUP_FB_24BPP
+ 	select S3C_DEV_FB
++	select S5P_DEV_FIMC0
++	select S5PV210_SETUP_FIMC0
++	select S5P_DEV_FIMC1
++	select S5PV210_SETUP_FIMC1
++	select S5P_DEV_FIMC2
++	select S5PV210_SETUP_FIMC2
+ 	help
+ 	  Machine support for the Samsung Aquila target based on S5PC110 SoC
  
- /* Modes relevant to the GX (taken from modedb.c) */
--static struct fb_videomode gx_modedb[] __initdata = {
-+static struct fb_videomode gx_modedb[] __devinitdata = {
- 	/* 640x480-60 VESA */
- 	{ NULL, 60, 640, 480, 39682,  48, 16, 33, 10, 96, 2,
- 	  0, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
-@@ -110,14 +110,15 @@ static struct fb_videomode gx_modedb[] __initdata = {
- #ifdef CONFIG_OLPC
- #include <asm/olpc.h>
+diff --git a/arch/arm/mach-s5pv210/mach-aquila.c b/arch/arm/mach-s5pv210/mach-aquila.c
+index 10bc76e..8af0db8 100644
+--- a/arch/arm/mach-s5pv210/mach-aquila.c
++++ b/arch/arm/mach-s5pv210/mach-aquila.c
+@@ -13,6 +13,7 @@
+ #include <linux/init.h>
+ #include <linux/serial_core.h>
+ #include <linux/fb.h>
++#include <linux/clk.h>
  
--static struct fb_videomode gx_dcon_modedb[] __initdata = {
-+static struct fb_videomode gx_dcon_modedb[] __devinitdata = {
- 	/* The only mode the DCON has is 1200x900 */
- 	{ NULL, 50, 1200, 900, 17460, 24, 8, 4, 5, 8, 3,
- 	  FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
- 	  FB_VMODE_NONINTERLACED, 0 }
+ #include <asm/mach/arch.h>
+ #include <asm/mach/map.h>
+@@ -28,6 +29,8 @@
+ #include <plat/devs.h>
+ #include <plat/cpu.h>
+ #include <plat/fb.h>
++#include <plat/fimc.h>
++#include <plat/fifo.h>
+ 
+ /* Following are default values for UCON, ULCON and UFCON UART registers */
+ #define S5PV210_UCON_DEFAULT	(S3C2410_UCON_TXILEVEL |	\
+@@ -116,8 +119,44 @@ static struct s3c_fb_platdata aquila_lcd_pdata __initdata = {
+ 	.setup_gpio	= s5pv210_fb_gpio_setup_24bpp,
  };
  
--static void __init get_modedb(struct fb_videomode **modedb, unsigned int *size)
-+static void __devinit get_modedb(struct fb_videomode **modedb,
-+		unsigned int *size)
- {
- 	if (olpc_has_dcon()) {
- 		*modedb = (struct fb_videomode *) gx_dcon_modedb;
-@@ -129,7 +130,8 @@ static void __init get_modedb(struct fb_videomode **modedb, unsigned int *size)
- }
- 
- #else
--static void __init get_modedb(struct fb_videomode **modedb, unsigned int *size)
-+static void __devinit get_modedb(struct fb_videomode **modedb,
-+		unsigned int *size)
- {
- 	*modedb = (struct fb_videomode *) gx_modedb;
- 	*size = ARRAY_SIZE(gx_modedb);
-@@ -226,7 +228,8 @@ static int gxfb_blank(int blank_mode, struct fb_info *info)
- 	return gx_blank_display(info, blank_mode);
- }
- 
--static int __init gxfb_map_video_memory(struct fb_info *info, struct pci_dev *dev)
-+static int __devinit gxfb_map_video_memory(struct fb_info *info,
-+		struct pci_dev *dev)
- {
- 	struct gxfb_par *par = info->par;
- 	int ret;
-@@ -290,7 +293,7 @@ static struct fb_ops gxfb_ops = {
- 	.fb_imageblit	= cfb_imageblit,
++static void __init aquila_fimc_clk_init(void)
++{
++	int i;
++	struct clk *clk_fimc, *parent;
++	struct s5p_platform_fimc *pldata;
++
++	struct device *fimc_devs[] = {
++		&s5p_device_fimc0.dev,
++		&s5p_device_fimc1.dev,
++		&s5p_device_fimc2.dev
++	};
++
++	parent = clk_get(NULL, "mout_epll");
++	if (IS_ERR(parent))
++		return;
++
++	for (i = 0; i < ARRAY_SIZE(fimc_devs); i++) {
++		if (fimc_devs[i]) {
++			clk_fimc = clk_get(fimc_devs[i], "sclk_fimc");
++
++			if (IS_ERR(clk_fimc))
++				continue;
++
++			clk_set_parent(clk_fimc, parent);
++			pldata = fimc_devs[i]->platform_data;
++			if (pldata)
++				clk_set_rate(clk_fimc, 133000000);
++			clk_enable(clk_fimc);
++		}
++	}
++	clk_put(parent);
++}
++
+ static struct platform_device *aquila_devices[] __initdata = {
+ 	&s3c_device_fb,
++	&s5p_device_fimc0,
++	&s5p_device_fimc1,
++	&s5p_device_fimc2,
  };
  
--static struct fb_info * __init gxfb_init_fbinfo(struct device *dev)
-+static struct fb_info *__devinit gxfb_init_fbinfo(struct device *dev)
- {
- 	struct gxfb_par *par;
- 	struct fb_info *info;
-@@ -371,7 +374,8 @@ static int gxfb_resume(struct pci_dev *pdev)
- }
- #endif
+ static void __init aquila_map_io(void)
+@@ -129,10 +168,22 @@ static void __init aquila_map_io(void)
  
--static int __init gxfb_probe(struct pci_dev *pdev, const struct pci_device_id *id)
-+static int __devinit gxfb_probe(struct pci_dev *pdev,
-+		const struct pci_device_id *id)
+ static void __init aquila_machine_init(void)
  {
- 	struct gxfb_par *par;
- 	struct fb_info *info;
-@@ -451,7 +455,7 @@ static int __init gxfb_probe(struct pci_dev *pdev, const struct pci_device_id *i
- 	return ret;
++	/* FIMC */
++	s5p_fimc0_set_platdata(NULL);
++	s5p_fimc1_set_platdata(NULL);
++	s5p_fimc2_set_platdata(NULL);
++
+ 	/* FB */
+ 	s3c_fb_set_platdata(&aquila_lcd_pdata);
+ 
++	/* FIMC->FB fifo links */
++	s5pv210_setup_fimc0_fb_link();
++	s5pv210_setup_fimc1_fb_link();
++	s5pv210_setup_fimc2_fb_link();
++
+ 	platform_add_devices(aquila_devices, ARRAY_SIZE(aquila_devices));
++
++	aquila_fimc_clk_init();
  }
  
--static void gxfb_remove(struct pci_dev *pdev)
-+static void __devexit gxfb_remove(struct pci_dev *pdev)
- {
- 	struct fb_info *info = pci_get_drvdata(pdev);
- 	struct gxfb_par *par = info->par;
+ MACHINE_START(AQUILA, "Aquila")
 -- 
-1.5.6.5
+1.7.0.4
 

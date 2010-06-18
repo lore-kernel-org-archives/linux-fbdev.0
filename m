@@ -1,76 +1,29 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Date: Wed, 16 Jun 2010 10:12:03 +0000
-Subject: [PATCH 7/7] ARM: S5PC100: enable FIMC on SMDKC100
-Message-Id: <1276683123-30224-8-git-send-email-s.nawrocki@samsung.com>
+From: Arvid Picciani <aep@exys.org>
+Date: Fri, 18 Jun 2010 02:59:58 +0000
+Subject: Relation of FBDev and DRM/KMS
+Message-Id: <87sk4l82q9.fsf@exys.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1276683123-30224-1-git-send-email-s.nawrocki@samsung.com>
-In-Reply-To: <1276683123-30224-1-git-send-email-s.nawrocki@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Add support for FIMC on Samsung SMDKC100 board.
-
-Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
----
- arch/arm/mach-s5pc100/Kconfig         |    6 ++++++
- arch/arm/mach-s5pc100/mach-smdkc100.c |    9 +++++++++
- 2 files changed, 15 insertions(+), 0 deletions(-)
-
-diff --git a/arch/arm/mach-s5pc100/Kconfig b/arch/arm/mach-s5pc100/Kconfig
-index 81a06a3..2ead495 100644
---- a/arch/arm/mach-s5pc100/Kconfig
-+++ b/arch/arm/mach-s5pc100/Kconfig
-@@ -62,6 +62,12 @@ config MACH_SMDKC100
- 	select S5PC100_SETUP_FB_24BPP
- 	select S5PC100_SETUP_I2C1
- 	select S5PC100_SETUP_SDHCI
-+	select S5P_DEV_FIMC0
-+	select S5PC100_SETUP_FIMC0
-+	select S5P_DEV_FIMC1
-+	select S5PC100_SETUP_FIMC1
-+	select S5P_DEV_FIMC2
-+	select S5PC100_SETUP_FIMC2
- 	help
- 	  Machine support for the Samsung SMDKC100
- 
-diff --git a/arch/arm/mach-s5pc100/mach-smdkc100.c b/arch/arm/mach-s5pc100/mach-smdkc100.c
-index af22f82..425b1c5 100644
---- a/arch/arm/mach-s5pc100/mach-smdkc100.c
-+++ b/arch/arm/mach-s5pc100/mach-smdkc100.c
-@@ -42,6 +42,7 @@
- #include <plat/s5pc100.h>
- #include <plat/fb.h>
- #include <plat/iic.h>
-+#include <plat/fimc.h>
- 
- /* Following are default values for UCON, ULCON and UFCON UART registers */
- #define S5PC100_UCON_DEFAULT	(S3C2410_UCON_TXILEVEL |	\
-@@ -159,6 +160,9 @@ static struct platform_device *smdkc100_devices[] __initdata = {
- 	&smdkc100_lcd_powerdev,
- 	&s5pc100_device_iis0,
- 	&s5pc100_device_ac97,
-+	&s5p_device_fimc0,
-+	&s5p_device_fimc1,
-+	&s5p_device_fimc2,
- };
- 
- static void __init smdkc100_map_io(void)
-@@ -178,6 +182,11 @@ static void __init smdkc100_machine_init(void)
- 
- 	s3c_fb_set_platdata(&smdkc100_lcd_pdata);
- 
-+	/* FIMC */
-+	s5p_fimc0_set_platdata(NULL);
-+	s5p_fimc1_set_platdata(NULL);
-+	s5p_fimc2_set_platdata(NULL);
-+
- 	/* LCD init */
- 	gpio_request(S5PC100_GPD(0), "GPD");
- 	gpio_request(S5PC100_GPH0(6), "GPH0");
--- 
-1.7.0.4
-
+Hi, 
+I'm trying to crowbar some extra VMemory into fbdev devices to abuse
+them in a similar fashion to what DRM does. I'm trying to avoid DRM for
+various reasons, but it seems all of the new stuff _only_ goes in DRM.
+Specifically, the intel/nvidia drivers seems to be only useful in 
+combination with DRM. I need KMS for laziness, but that needs  DRM? 
+No way to get kms without running DRM?
+If i have to run DRM, is there any Documentation that explains the
+relation to fbdev? Eyeballing around in the intel code tells me, the
+framebuffer is actually a DRM gem thingy. Can i sort of blit other DRM
+gems onto a framebuffer?
+If i can avoid DRM, any idea how i could allocate small VMem areas from 
+userspace  on demand? FB seems to have no api for that at all. 
+All we have is a  single large VMem area to pixel manipulate.
+Unless i totally missread that code. I am guessing, i could archive what
+i want by adding some extra ioctls, but i dont see where, since the device 
+is abstracted away from the drivers.
+--
+Arvid

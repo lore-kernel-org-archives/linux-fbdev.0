@@ -1,83 +1,34 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Wed, 30 Jun 2010 06:33:53 +0000
-Subject: [PATCH] ARM: Disable VGA console for ARM in most cases (Re: [PATCH
-Message-Id: <20100630063352.GR2822@atomide.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="S1BNGpv0yoYahz37"
+From: Kyungmin Park <kmpark@infradead.org>
+Date: Sat, 19 Jun 2010 04:03:46 +0000
+Subject: Pending patches for s5p series
+Message-Id: <AANLkTik0r1MXwJ7Htfreh6MSPDWjqiGstiMDLNjFhtBP@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100629113229.16008.2931.stgit@baageli.muru.com>
-	<20100629114720.16008.84291.stgit@baageli.muru.com>
-	<20100629120724.GA23884@oksana.dev.rtsoft.ru>
-	<20100629142144.GN2822@atomide.com>
-In-Reply-To: <20100629142144.GN2822@atomide.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
+Hi,
 
---S1BNGpv0yoYahz37
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Pending or no comments at these patches.
 
-* Tony Lindgren <tony@atomide.com> [100629 17:15]:
-> * Anton Vorontsov <cbouatmailru@gmail.com> [100629 15:04]:
-> > On Tue, Jun 29, 2010 at 02:47:20PM +0300, Tony Lindgren wrote:
-> > > Otherwise we have to disable it manually to avoid compile errors.
-> > > 
-> > > Cc: linux-fbdev@vger.kernel.org
-> > > Signed-off-by: Tony Lindgren <tony@atomide.com>
-> > 
-> > We'll need this for mach-cns3xxx too. And doing that change for
-> > every ARM subarch is going to produce lots of rejects.
-> > 
-> > I'd suggest to disable (or make it 'default n') for all ARMs,
-> > except these:
-> > 
-> > $ git grep VGA_CONSOLE= arch/arm/configs/
-> > arch/arm/configs/footbridge_defconfig:CONFIG_VGA_CONSOLE=y
-> > arch/arm/configs/integrator_defconfig:CONFIG_VGA_CONSOLE=y
-> > arch/arm/configs/netwinder_defconfig:CONFIG_VGA_CONSOLE=y
-> 
-> Good idea, will post a modified patch tomorrow.
+1. [PATCH/RFC] Samsung multimedia (FIMC and FB) drivers proposal
+http://marc.info/?l=linux-arm-kernel&m7668321706310&w=2
 
-Here's this one updated.
+2. [PATCH v2] Various s3c-fb updates
+http://marc.info/?l=linux-arm-kernel&m7668095702084&w=2
 
-Tony
+3. [PATCH v2] SDHCI-S3C fixes and enhancements (driver specific code)
+http://marc.info/?l=linux-arm-kernel&m7667104617587&w=2
 
---S1BNGpv0yoYahz37
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: inline; filename="kconfig-disable-vgacon.patch"
+4. [RFC/PATCH 0/9] Samsung crypto engine
+http://marc.info/?l=linux-arm-kernel&m7628580015805&w=2
 
-From: Tony Lindgren <tony@atomide.com>
-Date: Wed, 30 Jun 2010 09:08:23 +0300
-Subject: [PATCH] ARM: Disable VGA console for ARM in most cases
+5. [PATCH v2 0/4] ARM: S5P: Support gpio interrupts
+http://marc.info/?l=linux-arm-kernel&m7624524906617&w=2
 
-Otherwise we have to disable it manually to avoid compile errors.
+6. [PATCH v4 0/3] Add samsung keypad
+http://marc.info/?l=linux-arm-kernel&m7624378103808&w=2
 
-Now it's only enabled only for the selected machines as suggested
-by Anton Vorontsov <cbouatmailru@gmail.com>:
-
-$ git grep VGA_CONSOLE= arch/arm/configs/
-arch/arm/configs/footbridge_defconfig:CONFIG_VGA_CONSOLE=y
-arch/arm/configs/integrator_defconfig:CONFIG_VGA_CONSOLE=y
-arch/arm/configs/netwinder_defconfig:CONFIG_VGA_CONSOLE=y
-
-Note that the Kconfig entry no longer needs separate entries
-for ARCH_ACORN, ARCH_EBSA110 ARCH_VERSATILE.
-
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Tony Lindgren <tony@atomide.com>
-
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index 8e8f18d..5a35f22 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -6,7 +6,7 @@ menu "Console display driver support"
- 
- config VGA_CONSOLE
- 	bool "VGA text console" if EMBEDDED || !X86
--	depends on !ARCH_ACORN && !ARCH_EBSA110 && !4xx && !8xx && !SPARC && !M68K && !PARISC && !FRV && !ARCH_VERSATILE && !SUPERH && !BLACKFIN && !AVR32 && !MN10300
-+	depends on !4xx && !8xx && !SPARC && !M68K && !PARISC && !FRV && !SUPERH && !BLACKFIN && !AVR32 && !MN10300 && (!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER)
- 	default y
- 	help
- 	  Saying Y here will allow you to use Linux in text mode through a
-
---S1BNGpv0yoYahz37--
+Thank you,
+Kyungmin Park

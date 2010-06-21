@@ -1,62 +1,31 @@
-From: "Guruswamy, Senthilvadivu" <svadivu@ti.com>
-Date: Mon, 21 Jun 2010 09:29:35 +0000
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Mon, 21 Jun 2010 11:32:26 +0000
 Subject: RE: [PATCH v3 2/3] OMAP: DSS2: OMAPFB: make VRFB depends on OMAP2,3
-Message-Id: <FCCFB4CDC6E5564B9182F639FC3560870304288920@dbde02.ent.ti.com>
+Message-Id: <1277119946.2526.42.camel@tubuntu.research.nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1276778702-15280-1-git-send-email-svadivu@ti.com>
 	 <1276778702-15280-2-git-send-email-svadivu@ti.com>
 	 <1276778702-15280-3-git-send-email-svadivu@ti.com>
- <1277110241.2526.31.camel@tubuntu.research.nokia.com>
-In-Reply-To: <1277110241.2526.31.camel@tubuntu.research.nokia.com>
+	 <1277110241.2526.31.camel@tubuntu.research.nokia.com>
+	 <FCCFB4CDC6E5564B9182F639FC3560870304288920@dbde02.ent.ti.com>
+In-Reply-To: <FCCFB4CDC6E5564B9182F639FC3560870304288920@dbde02.ent.ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "ext Guruswamy, Senthilvadivu" <svadivu@ti.com>
 Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "tony@atomide.com" <tony@atomide.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-IAoKPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+IEZyb206IFRvbWkgVmFsa2VpbmVuIFtt
-YWlsdG86dG9taS52YWxrZWluZW5Abm9raWEuY29tXSAKPiBTZW50OiBNb25kYXksIEp1bmUgMjEs
-IDIwMTAgMjoyMSBQTQo+IFRvOiBHdXJ1c3dhbXksIFNlbnRoaWx2YWRpdnUKPiBDYzogbGludXgt
-b21hcEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWRldkB2Z2VyLmtlcm5lbC5vcmc7IAo+IHRvbnlA
-YXRvbWlkZS5jb207IEhpcmVtYXRoLCBWYWliaGF2Cj4gU3ViamVjdDogUmU6IFtQQVRDSCB2MyAy
-LzNdIE9NQVA6IERTUzI6IE9NQVBGQjogbWFrZSBWUkZCIAo+IGRlcGVuZHMgb24gT01BUDIsMwo+
-IAo+IE9uIFRodSwgMjAxMC0wNi0xNyBhdCAxNDo0NSArMDIwMCwgZXh0IEd1cnVzd2FteSBTZW50
-aGlsdmFkaXZ1IHdyb3RlOgo+ID4gRnJvbTogU2VudGhpbHZhZGl2dSBHdXJ1c3dhbXkgPHN2YWRp
-dnVAdGkuY29tPgo+ID4gCj4gPiBjb25maWcgVlJGQiBzaG91bGQgZGVwZW5kIG9uIEFSQ0hfT01B
-UDIgb3IgQVJDSF9PTUFQMy4KPiA+IAo+ID4gU2lnbmVkLW9mZi1ieTogU2VudGhpbHZhZGl2dSBH
-dXJ1c3dhbXkgPHN2YWRpdnVAdGkuY29tPgo+ID4gLS0tCj4gPiAgZHJpdmVycy92aWRlby9vbWFw
-Mi9LY29uZmlnICAgICAgICAgICAgfCAgICA0ICsrKysKPiA+ICBkcml2ZXJzL3ZpZGVvL29tYXAy
-L29tYXBmYi9LY29uZmlnICAgICB8ICAgIDEgLQo+ID4gIDIgZmlsZXMgY2hhbmdlZCwgIDQgaW5z
-ZXJ0aW9ucygrKSwgMSBkZWxldGlvbnMoLSkKPiA+IAo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-dmlkZW8vb21hcDIvS2NvbmZpZyAKPiBiL2RyaXZlcnMvdmlkZW8vb21hcDIvS2NvbmZpZwo+ID4g
-aW5kZXggZDg3N2MzNi4uMThiYjgzNSAxMDA2NDQKPiA+IC0tLSBhL2RyaXZlcnMvdmlkZW8vb21h
-cDIvS2NvbmZpZwo+ID4gKysrIGIvZHJpdmVycy92aWRlby9vbWFwMi9LY29uZmlnCj4gPiBAQCAt
-Myw2ICszLDEwIEBAIGNvbmZpZyBPTUFQMl9WUkFNCj4gPiAgCj4gPiAgY29uZmlnIE9NQVAyX1ZS
-RkIKPiA+ICAJYm9vbAo+ID4gKwlkZXBlbmRzIG9uIEFSQ0hfT01BUDIgfHwgQVJDSF9PTUFQMwo+
-ID4gKwlkZWZhdWx0IHkgaWYgRkJfT01BUDIKPiA+ICsJaGVscAo+ID4gKwkgIE9NQVAgVlJGQiBi
-dWZmZXIgc3VwcG9ydCBpcyBlZmZpY2llbnQgZm9yIHJvdGF0aW9uCj4gPiAgCj4gPiAgc291cmNl
-ICJkcml2ZXJzL3ZpZGVvL29tYXAyL2Rzcy9LY29uZmlnIgo+ID4gIHNvdXJjZSAiZHJpdmVycy92
-aWRlby9vbWFwMi9vbWFwZmIvS2NvbmZpZyIKPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVv
-L29tYXAyL29tYXBmYi9LY29uZmlnIAo+IGIvZHJpdmVycy92aWRlby9vbWFwMi9vbWFwZmIvS2Nv
-bmZpZwo+ID4gaW5kZXggYTNlZDE1Yy4uZjE4NmMyYiAxMDA2NDQKPiA+IC0tLSBhL2RyaXZlcnMv
-dmlkZW8vb21hcDIvb21hcGZiL0tjb25maWcKPiA+ICsrKyBiL2RyaXZlcnMvdmlkZW8vb21hcDIv
-b21hcGZiL0tjb25maWcKPiA+IEBAIC0zLDcgKzMsNiBAQCBtZW51Y29uZmlnIEZCX09NQVAyCj4g
-PiAgICAgICAgICBkZXBlbmRzIG9uIEZCICYmIE9NQVAyX0RTUwo+ID4gIAo+ID4gIAlzZWxlY3Qg
-T01BUDJfVlJBTQo+ID4gLQlzZWxlY3QgT01BUDJfVlJGQgo+ID4gICAgICAgICAgc2VsZWN0IEZC
-X0NGQl9GSUxMUkVDVAo+ID4gICAgICAgICAgc2VsZWN0IEZCX0NGQl9DT1BZQVJFQQo+ID4gICAg
-ICAgICAgc2VsZWN0IEZCX0NGQl9JTUFHRUJMSVQKPiAKPiBUaGlzIGlzIHNlY29uZCBwYXRjaCBz
-ZXQgbWFya2VkIGFzIHYzLiBQbGVhc2UgdXBkYXRlIHRoZSB2ZXJzaW9uIGZvcgo+IGV2ZXJ5IHBh
-dGNoIHNldC4KW1NlbnRoaWxdICBXaXRoIHRoaXMgY29tbWVudCB0aGUgcGF0Y2ggd291bGQgcmVh
-bGx5IGJlY29tZSB2My4gIApEbyB5b3UgbWVhbiB0byBzYXkgdGhhdCB0aGUgMS8zIHNob3VsZCBi
-ZSBvZiB2MSwgYW5kIDIvMyBvZiB2MyBhbmQgMy8zIG9mIG5vIHZlcnNpb24gbnVtYmVyPwpJIHRo
-b3VnaCBJIHNob3VsZCBhcHBseSB0aGUgbGF0ZXN0IHZlcnNpb24gdG8gdGhlIHdob2xlIHBhdGNo
-ZXMgaW4gdGhlIHNlcmllcy4KCj4gSSB0aGluayB0aGUgY29uZmlnIHNlbGVjdGlvbiBpcyBub3cg
-YSBiaXQgY29uZnVzaW5nLiBJIHRoaW5rIGl0IHNob3VsZAo+IGVpdGhlciBiZToKPiAKPiBUaGUg
-b21hcDIvS2NvbmZpZyBsZWZ0IGFzIGl0IGlzLCBhbmQgb21hcGZiL0tjb25maWcgY2hhbmdlZCB0
-bzoKPiBzZWxlY3QgT01BUDJfVlJGQiBpZiBBUkNIX09NQVAyIHx8IEFSQ0hfT01BUDMKW1NlbnRo
-aWxdICBJIHdvdWxkIGNob29zZSB0aGlzIHRvIGF2b2lkIGFub3RoZXIgdXNlciBzZWxlY3Rpb24g
-aW4gbWVudWNvbmZpZy4KU2VsZWN0aW5nIGNvbmRpdGlvbmFsbHkgd291bGQgYmUgb2YgbWluaW1h
-bCBjaGFuZ2UgdGhhbiB0aGUgcHJlc2VudCBwYXRjaC4KPiBvcgo+IAo+IExldCB0aGUgdXNlciBz
-ZWxlY3QgVlJGQi4KPiAKPiAgVG9taQo+IAo+IAo+IP/06Lp7Lm7HK4m3n66JrYYrJYrL/7Hp3bYX
-pYp3/7p7Lm7HK4m3pYp7sf323Xr/4p7YXm6HcqH2pnrLGoHraJmo6K3aJqP74Hq/5Hq53pf6K4DK
-K3pmo6K3aJqIp36GrYbbaf//74Hq/5Hq53pf6K4P5mo6K3aJqP4p36P4bQo=
+On Mon, 2010-06-21 at 11:17 +0200, ext Guruswamy, Senthilvadivu wrote:
+
+> > This is second patch set marked as v3. Please update the version for
+> > every patch set.
+> [Senthil]  With this comment the patch would really become v3.  
+> Do you mean to say that the 1/3 should be of v1, and 2/3 of v3 and 3/3 of no version number?
+> I though I should apply the latest version to the whole patches in the series.
+
+I mean that you sent a v3 patch set at 10th of june, and again a
+different v3 patch set at 17th of june.
+
+ Tomi
+
+

@@ -1,45 +1,57 @@
-From: Denys Vlasenko <vda.linux@googlemail.com>
-Date: Thu, 24 Jun 2010 14:16:37 +0000
-Subject: [PATCH] video: simplify strlen()==0 check in fb_get_options()
-Message-Id: <1277396186-11921-1-git-send-email-vda.linux@googlemail.com>
+From: Grazvydas Ignotas <notasas@gmail.com>
+Date: Mon, 21 Jun 2010 13:38:28 +0000
+Subject: Re: [PATCH] OMAP: DSS: Fix for dsi_pll to dpll4 clk switch
+Message-Id: <AANLkTim28bTkt71iKyydzg2RkusPQh8sTD_qrTun1aOf@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <FF55437E1F14DA4BAEB721A458B6701706BDA5E730@dbde02.ent.ti.com>
+In-Reply-To: <FF55437E1F14DA4BAEB721A458B6701706BDA5E730@dbde02.ent.ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, James Simmons <jsimmons@infradead.org>, linux-fbdev@vger.kernel.org, Denys Vlasenko <vda.linux@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: "Nagarajan, Rajkumar" <x0133774@ti.com>
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@nokia.com>, linux-fbdev@vger.kernel.org
 
-Replaced !strlen(str) check with !str[0]. Removed the variable
-which was used solely to store strlen result.
+when sending DSS patches, CC Tomi and fbdev.
 
-Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
----
- drivers/video/fbmem.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 731fce6..a8500c6 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1786,7 +1786,7 @@ static int ofonly __read_mostly;
- int fb_get_options(char *name, char **option)
- {
- 	char *opt, *options = NULL;
--	int opt_len, retval = 0;
-+	int retval = 0;
- 	int name_len = strlen(name), i;
- 
- 	if (name_len && ofonly && strncmp(name, "offb", 4))
-@@ -1796,8 +1796,7 @@ int fb_get_options(char *name, char **option)
- 		for (i = 0; i < FB_MAX; i++) {
- 			if (video_options[i] = NULL)
- 				continue;
--			opt_len = strlen(video_options[i]);
--			if (!opt_len)
-+			if (!video_options[i][0])
- 				continue;
- 			opt = video_options[i];
- 			if (!strncmp(name, opt, name_len) &&
--- 
-1.6.2.5
-
+On Thu, Jun 17, 2010 at 8:12 AM, Nagarajan, Rajkumar <x0133774@ti.com> wrot=
+e:
+>
+> When switching between clocks, The new functional clock is
+> effective when the next vertical blanking interval occurs.
+> GOLCD bit has to be set for the new clock to take effect.
+>
+> Signed-off-by: Kishore Y <kishore.y@ti.com>
+> Signed-off-by: Mukund Mittal <mmittal@ti.com>
+> Signed-off-by: Rajkumar N <rajkumar.nagarajan@ti.com>
+> ---
+> =A0drivers/video/omap2/dss/dpi.c | =A0 =A05 +++++
+> =A01 files changed, 5 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+> index 960e977..5d778d6 100644
+> --- a/drivers/video/omap2/dss/dpi.c
+> +++ b/drivers/video/omap2/dss/dpi.c
+> @@ -214,10 +214,15 @@ void omapdss_dpi_display_disable(struct omap_dss_de=
+vice *dssdev)
+>
+> =A0#ifdef CONFIG_OMAP2_DSS_USE_DSI_PLL
+> =A0 =A0 =A0 =A0dss_select_dispc_clk_source(DSS_SRC_DSS1_ALWON_FCLK);
+> + =A0 =A0 =A0 dispc_go(OMAP_DSS_CHANNEL_LCD);
+> + =A0 =A0 =A0 while =A0 (dispc_go_busy(OMAP_DSS_CHANNEL_LCD))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ;
+> =A0 =A0 =A0 =A0dsi_pll_uninit();
+> =A0 =A0 =A0 =A0dss_clk_disable(DSS_CLK_FCK2);
+> =A0#endif
+>
+> + =A0 =A0 =A0 dispc_enable_channel(OMAP_DSS_CHANNEL_LCD, 0);
+> +
+> =A0 =A0 =A0 =A0dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
+>
+> =A0 =A0 =A0 =A0if (cpu_is_omap34xx())
+> --
+> 1.5.4.3
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+>

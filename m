@@ -1,35 +1,46 @@
-From: Denys Vlasenko <vda.linux@googlemail.com>
-Date: Tue, 22 Jun 2010 19:05:56 +0000
-Subject: [PATCH] fbcon: deinline large static function get_color()
-Message-Id: <1277233556-14827-1-git-send-email-vda.linux@googlemail.com>
+From: James Simmons <jsimmons@infradead.org>
+Date: Wed, 23 Jun 2010 15:58:43 +0000
+Subject: Re: [PATCH] fbcon: deinline large static function get_color()
+Message-Id: <alpine.LFD.2.00.1006231658320.7462@casper.infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1277233556-14827-1-git-send-email-vda.linux@googlemail.com>
+In-Reply-To: <1277233556-14827-1-git-send-email-vda.linux@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, Denys Vlasenko <vda.linux@googlemail.com>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: linux-fbdev@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
 
-This function's body is good two screenfuls and it has six callsites.
-No apparent reason why it is marked "iniline".
 
-Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
----
- drivers/video/console/fbcon.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> This function's body is good two screenfuls and it has six callsites.
+> No apparent reason why it is marked "iniline".
+> 
+> Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index b0a3fa0..24983e4 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -286,7 +286,7 @@ static inline int fbcon_is_inactive(struct vc_data *vc, struct fb_info *info)
- 		vc->vc_mode != KD_TEXT || ops->graphics);
- }
- 
--static inline int get_color(struct vc_data *vc, struct fb_info *info,
-+static int get_color(struct vc_data *vc, struct fb_info *info,
- 	      u16 c, int is_fg)
- {
- 	int depth = fb_get_color_depth(&info->var, &info->fix);
--- 
-1.6.2.5
+Signed-off-by: James Simmons <jsimmons@infradead.org>
 
+> ---
+>  drivers/video/console/fbcon.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+> index b0a3fa0..24983e4 100644
+> --- a/drivers/video/console/fbcon.c
+> +++ b/drivers/video/console/fbcon.c
+> @@ -286,7 +286,7 @@ static inline int fbcon_is_inactive(struct vc_data *vc, struct fb_info *info)
+>  		vc->vc_mode != KD_TEXT || ops->graphics);
+>  }
+>  
+> -static inline int get_color(struct vc_data *vc, struct fb_info *info,
+> +static int get_color(struct vc_data *vc, struct fb_info *info,
+>  	      u16 c, int is_fg)
+>  {
+>  	int depth = fb_get_color_depth(&info->var, &info->fix);
+> -- 
+> 1.6.2.5
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 

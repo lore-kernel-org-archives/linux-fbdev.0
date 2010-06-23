@@ -1,64 +1,78 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Wed, 23 Jun 2010 20:36:37 +0000
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Date: Wed, 23 Jun 2010 20:40:24 +0000
 Subject: Re: [PATCH] vt/console: try harder to print output when panicing
-Message-Id: <20100623133637.fbb318e2.akpm@linux-foundation.org>
+Message-Id: <20100623134024.713e0714@virtuousgeek.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1277262779-19338-1-git-send-email-airlied@gmail.com>
 	<20100623125605.5f56f6ba.akpm@linux-foundation.org>
 	<20100623130547.296e00a7@virtuousgeek.org>
-In-Reply-To: <20100623130547.296e00a7@virtuousgeek.org>
+	<20100623133637.fbb318e2.akpm@linux-foundation.org>
+In-Reply-To: <20100623133637.fbb318e2.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Dave Airlie <airlied@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
 
-On Wed, 23 Jun 2010 13:05:47 -0700
-Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+On Wed, 23 Jun 2010 13:36:37 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Wed, 23 Jun 2010 12:56:05 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 23 Jun 2010 13:05:47 -0700
+> Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 > 
-> > On Wed, 23 Jun 2010 13:12:59 +1000
-> > Dave Airlie <airlied@gmail.com> wrote:
+> > On Wed, 23 Jun 2010 12:56:05 -0700
+> > Andrew Morton <akpm@linux-foundation.org> wrote:
 > > 
-> > > Jesse's initial patch commit said:
+> > > On Wed, 23 Jun 2010 13:12:59 +1000
+> > > Dave Airlie <airlied@gmail.com> wrote:
 > > > 
-> > > "At panic time (i.e. when oops_in_progress is set) we should try a bit
-> > > harder to update the screen and make sure output gets to the VT, since
-> > > some drivers are capable of flipping back to it.
+> > > > Jesse's initial patch commit said:
+> > > > 
+> > > > "At panic time (i.e. when oops_in_progress is set) we should try a bit
+> > > > harder to update the screen and make sure output gets to the VT, since
+> > > > some drivers are capable of flipping back to it.
+> > > > 
+> > > > So make sure we try to unblank and update the display if called from a
+> > > > panic context."
+> > > > 
+> > > > I've enhanced this to add a flag to the vc that console layer can set
+> > > > to indicate they want this behaviour to occur. This also adds support
+> > > > to fbcon for that flag and adds an fb flag for drivers to indicate
+> > > > they want to use the support. It enables this for KMS drivers.
 > > > 
-> > > So make sure we try to unblank and update the display if called from a
-> > > panic context."
+> > > Interesting.  Getting real oops traces from machines running X will
+> > > make Rusty happy, and that's what we're all here for.
 > > > 
-> > > I've enhanced this to add a flag to the vc that console layer can set
-> > > to indicate they want this behaviour to occur. This also adds support
-> > > to fbcon for that flag and adds an fb flag for drivers to indicate
-> > > they want to use the support. It enables this for KMS drivers.
+> > > How well does this all work?  How reliable is it?  What's the success rate?
+> > > 
+> > > 
+> > > 
+> > > What's the downside here?  After all, not all oopses are catastrophic -
+> > > sometimes the machine will go blurt and keep running so the user can
+> > > take a look in the logs then perform an orderly reboot, etc.  As I
+> > > understand it, those non-catastrophic oopses will now flip the machine
+> > > from X and into the vt display, yes?  Can the user get it back to X
+> > > mode?
 > > 
-> > Interesting.  Getting real oops traces from machines running X will
-> > make Rusty happy, and that's what we're all here for.
-> > 
-> > How well does this all work?  How reliable is it?  What's the success rate?
-> > 
-> > 
-> > 
-> > What's the downside here?  After all, not all oopses are catastrophic -
-> > sometimes the machine will go blurt and keep running so the user can
-> > take a look in the logs then perform an orderly reboot, etc.  As I
-> > understand it, those non-catastrophic oopses will now flip the machine
-> > from X and into the vt display, yes?  Can the user get it back to X
-> > mode?
+> > No, we'll only flip from the panic notifier chain.
 > 
-> No, we'll only flip from the panic notifier chain.
+> So we still don't get to see the output from BUGs and random oopses?  I
+> don't think panics are all that common.
 
-So we still don't get to see the output from BUGs and random oopses?  I
-don't think panics are all that common.
+No, BUG() ends up in panic iirc by doing an bad pointer ref which
+should fault and panic. Random oopses won't show up though (but they're
+not supposed to be fatal and can be seen in the log).
 
-So am I correct in believing that if a user is getting invisible-oopses
-then he can set /proc/sys/kernel/panic_on_oops, and then the oops
-should be visible?
+> So am I correct in believing that if a user is getting invisible-oopses
+> then he can set /proc/sys/kernel/panic_on_oops, and then the oops
+> should be visible?
 
-(Shouldn't all this stuff be explained in the changlog?)
+Yep.
 
+> (Shouldn't all this stuff be explained in the changlog?)
 
+Maybe?  Linux oops/panic handling is pretty ad-hoc, a separate document
+would probably be best.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center

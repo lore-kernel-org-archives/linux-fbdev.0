@@ -1,189 +1,59 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Wed, 30 Jun 2010 09:55:47 +0000
-Subject: [PATCH 6/6] ARM: mach-shmobile: add HDMI support to the ap4evb board
-Message-Id: <Pine.LNX.4.64.1006301152570.17489@axis700.grange>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Wed, 23 Jun 2010 10:23:44 +0000
+Subject: Re: [PATCH] hid Logitech G13 Driver 0.0.5
+Message-Id: <20100623122344.372e5f75@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <alpine.LNX.2.00.1006211442350.13809@pobox.suse.cz>
+	<d1cda632f4cdb650a68119903473fbb4.squirrel@intranet.cs.nmsu.edu>
+In-Reply-To: <d1cda632f4cdb650a68119903473fbb4.squirrel@intranet.cs.nmsu.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+Cc: Jiri Kosina <jkosina@suse.cz>, Marek Vasut <marek.vasut@gmail.com>, Pavel Machek <pavel@ucw.cz>, Jaya Kumar <jayakumar.lkml@gmail.com>, linux-kernel@vger.kernel.org, felipe.balbi@nokia.com, linux-usb@vger.kernel.org, oliver@neukum.org, linux-input@vger.kernel.org, dmitry.torokhov@gmail.com, npavel@ituner.com, tomi.valkeinen@nokia.com, tony@atomide.com, florianschandinat@gmx.de, krzysztof.h1@wp.pl, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org
 
-Support HDMI in 720p mode.
+Hi Rick,
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
----
- arch/arm/mach-shmobile/board-ap4evb.c |  128 ++++++++++++++++++++++++++++++++-
- 1 files changed, 127 insertions(+), 1 deletions(-)
+Please check how your driver behaves if the framebuffer is still in use
+(open and/or mmapped) by some userspace process when you unplug the
+keyboard.
 
-diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
-index 5d24d4e..4f4d8c4 100644
---- a/arch/arm/mach-shmobile/board-ap4evb.c
-+++ b/arch/arm/mach-shmobile/board-ap4evb.c
-@@ -44,6 +44,7 @@
- 
- #include <sound/sh_fsi.h>
- 
-+#include <video/sh_mobile_hdmi.h>
- #include <video/sh_mobile_lcdc.h>
- #include <video/sh_mipi_dsi.h>
- 
-@@ -529,6 +530,90 @@ static struct platform_device fsi_device = {
- 	},
- };
- 
-+static struct sh_mobile_lcdc_info sh_mobile_lcdc1_info = {
-+	.clock_source = LCDC_CLK_EXTERNAL,
-+	.ch[0] = {
-+		.chan = LCDC_CHAN_MAINLCD,
-+		.bpp = 16,
-+		.interface_type = RGB24,
-+		.clock_divider = 1,
-+		.flags = LCDC_FLAGS_DWPOL | LCDC_FLAGS_HDMI,
-+		.lcd_cfg = {
-+			.name = "HDMI",
-+			/* So far only 720p is supported */
-+			.xres = 1280,
-+			.yres = 720,
-+			/*
-+			 * If left and right margins are not multiples of 8,
-+			 * LDHAJR will be adjusted accordingly by the LCDC
-+			 * driver. Until we start using EDID, these values
-+			 * might have to be adjusted for different monitors.
-+			 */
-+			.left_margin = 200,
-+			.right_margin = 88,
-+			.hsync_len = 48,
-+			.upper_margin = 20,
-+			.lower_margin = 5,
-+			.vsync_len = 5,
-+			.pixclock = 13468,
-+			.sync = FB_SYNC_VERT_HIGH_ACT | FB_SYNC_HOR_HIGH_ACT,
-+		},
-+	}
-+};
-+
-+static struct resource lcdc1_resources[] = {
-+	[0] = {
-+		.name	= "LCDC1",
-+		.start	= 0xfe944000,
-+		.end	= 0xfe947fff,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= intcs_evt2irq(0x17a0),
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device lcdc1_device = {
-+	.name		= "sh_mobile_lcdc_fb",
-+	.num_resources	= ARRAY_SIZE(lcdc1_resources),
-+	.resource	= lcdc1_resources,
-+	.id             = 1,
-+	.dev	= {
-+		.platform_data	= &sh_mobile_lcdc1_info,
-+		.coherent_dma_mask = ~0,
-+	},
-+};
-+
-+static struct sh_mobile_hdmi_info hdmi_info = {
-+	.lcd_chan = &sh_mobile_lcdc1_info.ch[0],
-+	.lcd_dev = &lcdc1_device.dev,
-+};
-+
-+static struct resource hdmi_resources[] = {
-+	[0] = {
-+		.name	= "HDMI",
-+		.start	= 0xe6be0000,
-+		.end	= 0xe6be00ff,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		/* There's also an HDMI interrupt on INTCS @ 0x18e0 */
-+		.start	= evt2irq(0x17e0),
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device hdmi_device = {
-+	.name		= "sh-mobile-hdmi",
-+	.num_resources	= ARRAY_SIZE(hdmi_resources),
-+	.resource	= hdmi_resources,
-+	.id             = -1,
-+	.dev	= {
-+		.platform_data	= &hdmi_info,
-+	},
-+};
-+
- static struct platform_device *ap4evb_devices[] __initdata = {
- 	&nor_flash_device,
- 	&smc911x_device,
-@@ -539,7 +624,9 @@ static struct platform_device *ap4evb_devices[] __initdata = {
- 	&lcdc_device,
- 	&mipidsi0_device,
- 	&fsi_device,
--	&sh_mmcif_device
-+	&sh_mmcif_device,
-+	&lcdc1_device,
-+	&hdmi_device,
- };
- 
- /* TouchScreen (Needs SW3 set to OFF) */
-@@ -645,8 +732,36 @@ static void __init gpio_no_direction(u32 addr)
- #define GPIO_PORT9CR	0xE6051009
- #define GPIO_PORT10CR	0xE605100A
- 
-+static int __init hdmi_init_pm_clock(void)
-+{
-+	struct clk *hdmi_pm = clk_get(NULL, "sh-hdmi.0"),
-+		*lcdc1_pm = clk_get(&lcdc1_device.dev, "sh_mobile_lcdc_fb.1");
-+	int ret;
-+
-+	if (!IS_ERR(hdmi_pm)) {
-+		ret = clk_enable(hdmi_pm);
-+		if (ret < 0)
-+			pr_err("Cannot enable clock: %d\n", ret);
-+	} else {
-+		pr_err("Cannot get HDMI PM: %ld\n", PTR_ERR(hdmi_pm));
-+	}
-+
-+	if (!IS_ERR(lcdc1_pm)) {
-+		ret = clk_enable(lcdc1_pm);
-+		if (ret < 0)
-+			pr_err("Cannot enable clock: %d\n", ret);
-+	} else {
-+		pr_err("Cannot get LCDC1 PM: %ld\n", PTR_ERR(lcdc1_pm));
-+	}
-+
-+	return 0;
-+}
-+
-+device_initcall(hdmi_init_pm_clock);
-+
- static void __init ap4evb_init(void)
- {
-+	u32 srcr4;
- 	struct clk *clk;
- 
- 	sh7372_pinmux_init();
-@@ -787,6 +902,17 @@ static void __init ap4evb_init(void)
- 
- 	sh7372_add_standard_devices();
- 
-+	/* HDMI */
-+	gpio_request(GPIO_FN_HDMI_HPD, NULL);
-+	gpio_request(GPIO_FN_HDMI_CEC, NULL);
-+
-+	/* Reset HDMI, must be held at least one EXTALR (32768Hz) period */
-+#define SRCR4 0xe61580bc
-+	srcr4 = __raw_readl(SRCR4);
-+	__raw_writel(srcr4 | (1 << 13), SRCR4);
-+	udelay(50);
-+	__raw_writel(srcr4 & ~(1 << 13), SRCR4);
-+
- 	platform_add_devices(ap4evb_devices, ARRAY_SIZE(ap4evb_devices));
- }
- 
--- 
-1.6.2.4
+Probably you will get hit be the same complaints from kernel I was seeing
+with PicoLCD driver (see my patch http://lkml.org/lkml/2010/5/30/15 that
+is expected to fix it on PicoLCD side, the refcounting part of the patch)
 
+Bruno
+
+
+On Tue, 22 June 2010 "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu> wrote:
+> I've been waiting to resubmit until I get some of the userspace libraries
+> and utilities a little more mature. There were some things I was exposing
+> to sysfs that I didn't absolutely need, and some others that I needed to
+> add.
+> 
+> The cairo and papyrus libraries are (preliminarily) fully working. Once I
+> make sure I have everything the daemon will need I'll resubmit the driver,
+> and once that is done I was planning on submitting the libs/utils to
+> Fedora.
+> 
+> For now, I've been dropping Fedora 12/13 patches and kernel SRPMS here:
+> http://miskatonic.cs.nmsu.edu/g13/
+> 
+> And the userspace libraries/utilities are at:
+> http://g13.sourceforge.net
+> 
+> As for the g13fb on the G15... I would imagine it could be done, but I
+> don't have a G15 so I can't say for sure.
+> 
+> If I had to guess I think you'll have to take the core functionality of
+> the keyboard driver and extend it with the fb code in the _same_ driver if
+> the keyboard and display use a similar design to the G13.
+> 
+> The G13 uses the same endpoint for both keyboard input and display
+> messages, and since a USB endpoint can't be shared across drivers both
+> will have to reside in the same driver.
+> 
+> --
+> 
+> Rick
+> 

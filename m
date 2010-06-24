@@ -1,57 +1,80 @@
-From: Grazvydas Ignotas <notasas@gmail.com>
-Date: Mon, 21 Jun 2010 13:38:28 +0000
-Subject: Re: [PATCH] OMAP: DSS: Fix for dsi_pll to dpll4 clk switch
-Message-Id: <AANLkTim28bTkt71iKyydzg2RkusPQh8sTD_qrTun1aOf@mail.gmail.com>
+From: Denys Vlasenko <vda.linux@googlemail.com>
+Date: Thu, 24 Jun 2010 03:21:46 +0000
+Subject: [PATCH] fbcon: deinline four foo_update_attr() functions
+Message-Id: <1277349706-5195-1-git-send-email-vda.linux@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <FF55437E1F14DA4BAEB721A458B6701706BDA5E730@dbde02.ent.ti.com>
-In-Reply-To: <FF55437E1F14DA4BAEB721A458B6701706BDA5E730@dbde02.ent.ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: "Nagarajan, Rajkumar" <x0133774@ti.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@nokia.com>, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, James Simmons <jsimmons@infradead.org>, linux-fbdev@vger.kernel.org, Denys Vlasenko <vda.linux@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
 
-when sending DSS patches, CC Tomi and fbdev.
+This patch deinlines four similar functions, foo_update_attr(),
+in four fbcon-related files.
+These functions contain loops, two of theam have _hested_ loops,
+and they have more than one callsite each.
+I think they should not be inlined.
 
-On Thu, Jun 17, 2010 at 8:12 AM, Nagarajan, Rajkumar <x0133774@ti.com> wrot=
-e:
->
-> When switching between clocks, The new functional clock is
-> effective when the next vertical blanking interval occurs.
-> GOLCD bit has to be set for the new clock to take effect.
->
-> Signed-off-by: Kishore Y <kishore.y@ti.com>
-> Signed-off-by: Mukund Mittal <mmittal@ti.com>
-> Signed-off-by: Rajkumar N <rajkumar.nagarajan@ti.com>
-> ---
-> =A0drivers/video/omap2/dss/dpi.c | =A0 =A05 +++++
-> =A01 files changed, 5 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-> index 960e977..5d778d6 100644
-> --- a/drivers/video/omap2/dss/dpi.c
-> +++ b/drivers/video/omap2/dss/dpi.c
-> @@ -214,10 +214,15 @@ void omapdss_dpi_display_disable(struct omap_dss_de=
-vice *dssdev)
->
-> =A0#ifdef CONFIG_OMAP2_DSS_USE_DSI_PLL
-> =A0 =A0 =A0 =A0dss_select_dispc_clk_source(DSS_SRC_DSS1_ALWON_FCLK);
-> + =A0 =A0 =A0 dispc_go(OMAP_DSS_CHANNEL_LCD);
-> + =A0 =A0 =A0 while =A0 (dispc_go_busy(OMAP_DSS_CHANNEL_LCD))
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ;
-> =A0 =A0 =A0 =A0dsi_pll_uninit();
-> =A0 =A0 =A0 =A0dss_clk_disable(DSS_CLK_FCK2);
-> =A0#endif
->
-> + =A0 =A0 =A0 dispc_enable_channel(OMAP_DSS_CHANNEL_LCD, 0);
-> +
-> =A0 =A0 =A0 =A0dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
->
-> =A0 =A0 =A0 =A0if (cpu_is_omap34xx())
-> --
-> 1.5.4.3
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
->
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ drivers/video/console/bitblit.c   |    2 +-
+ drivers/video/console/fbcon_ccw.c |    2 +-
+ drivers/video/console/fbcon_cw.c  |    2 +-
+ drivers/video/console/fbcon_ud.c  |    2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/console/bitblit.c b/drivers/video/console/bitblit.c
+index af88651..28b1a83 100644
+--- a/drivers/video/console/bitblit.c
++++ b/drivers/video/console/bitblit.c
+@@ -22,7 +22,7 @@
+ /*
+  * Accelerated handlers.
+  */
+-static inline void update_attr(u8 *dst, u8 *src, int attribute,
++static void update_attr(u8 *dst, u8 *src, int attribute,
+ 			       struct vc_data *vc)
+ {
+ 	int i, offset = (vc->vc_font.height < 10) ? 1 : 2;
+diff --git a/drivers/video/console/fbcon_ccw.c b/drivers/video/console/fbcon_ccw.c
+index d135671..41b32ae 100644
+--- a/drivers/video/console/fbcon_ccw.c
++++ b/drivers/video/console/fbcon_ccw.c
+@@ -22,7 +22,7 @@
+  * Rotation 270 degrees
+  */
+ 
+-static inline void ccw_update_attr(u8 *dst, u8 *src, int attribute,
++static void ccw_update_attr(u8 *dst, u8 *src, int attribute,
+ 				  struct vc_data *vc)
+ {
+ 	int i, j, offset = (vc->vc_font.height < 10) ? 1 : 2;
+diff --git a/drivers/video/console/fbcon_cw.c b/drivers/video/console/fbcon_cw.c
+index 126110f..6a73782 100644
+--- a/drivers/video/console/fbcon_cw.c
++++ b/drivers/video/console/fbcon_cw.c
+@@ -22,7 +22,7 @@
+  * Rotation 90 degrees
+  */
+ 
+-static inline void cw_update_attr(u8 *dst, u8 *src, int attribute,
++static void cw_update_attr(u8 *dst, u8 *src, int attribute,
+ 				  struct vc_data *vc)
+ {
+ 	int i, j, offset = (vc->vc_font.height < 10) ? 1 : 2;
+diff --git a/drivers/video/console/fbcon_ud.c b/drivers/video/console/fbcon_ud.c
+index 93a3e73..ff0872c 100644
+--- a/drivers/video/console/fbcon_ud.c
++++ b/drivers/video/console/fbcon_ud.c
+@@ -22,7 +22,7 @@
+  * Rotation 180 degrees
+  */
+ 
+-static inline void ud_update_attr(u8 *dst, u8 *src, int attribute,
++static void ud_update_attr(u8 *dst, u8 *src, int attribute,
+ 				  struct vc_data *vc)
+ {
+ 	int i, offset = (vc->vc_font.height < 10) ? 1 : 2;
+-- 
+1.6.2.5
+

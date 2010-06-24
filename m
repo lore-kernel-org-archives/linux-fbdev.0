@@ -1,55 +1,43 @@
-From: "Guruswamy, Senthilvadivu" <svadivu@ti.com>
-Subject: RE: [PATCH] DSS2 Include VRFB into omap2-3build only
-Date: Mon, 21 Jun 2010 14:20:17 +0530
-Message-ID: <FCCFB4CDC6E5564B9182F639FC356087030428891E@dbde02.ent.ti.com>
-References: <1273474110-22451-1-git-send-email-svadivu@ti.com>
-	 <1A2F53DA-903A-4667-A27F-492A3499F7ED@student.utwente.nl>
-	 <FCCFB4CDC6E5564B9182F639FC356087030428879D@dbde02.ent.ti.com>
-	 <73F3CED4-60D5-4351-A921-335110542B6F@dominion.thruhere.net>
-	 <A24693684029E5489D1D202277BE894456043018@dlee02.ent.ti.com>
- <1277109506.2526.19.camel@tubuntu.research.nokia.com>
+From: Wan ZongShun <mcuos.com@gmail.com>
+Subject: [PATCH] NUC900/lcd: patch to fix nuc900 lcd build error
+Date: Thu, 24 Jun 2010 13:30:39 +0800
+Message-ID: <4C22ED7F.8050706@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <1277109506.2526.19.camel@tubuntu.research.nokia.com>
-Content-Language: en-US
-Sender: linux-omap-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <fbdev-devel.lists.sourceforge.net>
-Content-Type: text/plain; charset="windows-1254"
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>, "Aguirre, Sergio" <saaguirre@ti.com>
-Cc: Koen Kooi <koen@dominion.thruhere.net>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, "tony@atomide.com" <tony@atomide.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Qiang Wang <rurality.wq@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
 
-IA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFRvbWkgVmFsa2VpbmVu
-IFttYWlsdG86dG9taS52YWxrZWluZW5Abm9raWEuY29tXSANCj4gU2VudDogTW9uZGF5LCBKdW5l
-IDIxLCAyMDEwIDI6MDggUE0NCj4gVG86IEFndWlycmUsIFNlcmdpbw0KPiBDYzogS29lbiBLb29p
-OyBHdXJ1c3dhbXksIFNlbnRoaWx2YWRpdnU7IA0KPiBsaW51eC1vbWFwQHZnZXIua2VybmVsLm9y
-ZzsgDQo+IGxpbnV4LWZiZGV2LWRldmVsQGxpc3RzLnNvdXJjZWZvcmdlLm5ldDsgdG9ueUBhdG9t
-aWRlLmNvbTsgDQo+IEhpcmVtYXRoLCBWYWliaGF2DQo+IFN1YmplY3Q6IFJFOiBbUEFUQ0hdIERT
-UzIgSW5jbHVkZSBWUkZCIGludG8gb21hcDItM2J1aWxkIG9ubHkNCj4gDQo+IE9uIEZyaSwgMjAx
-MC0wNi0xOCBhdCAxODo1NyArMDIwMCwgZXh0IEFndWlycmUsIFNlcmdpbyB3cm90ZToNCj4gPiBT
-ZW50aGlsLA0KPiA+IA0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZy
-b206IGxpbnV4LW9tYXAtb3duZXJAdmdlci5rZXJuZWwub3JnIFttYWlsdG86bGludXgtb21hcC0N
-Cj4gPiA+IG93bmVyQHZnZXIua2VybmVsLm9yZ10gT24gQmVoYWxmIE9mIEtvZW4gS29vaQ0KPiA+
-ID4gU2VudDogTW9uZGF5LCBNYXkgMTAsIDIwMTAgMzowMyBBTQ0KPiA+ID4gVG86IEd1cnVzd2Ft
-eSwgU2VudGhpbHZhZGl2dQ0KPiA+ID4gQ2M6IGxpbnV4LW9tYXBAdmdlci5rZXJuZWwub3JnOyAN
-Cj4gbGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Ow0KPiA+ID4gdG9ueUBh
-dG9taWRlLmNvbTsgdG9taS52YWxrZWluZW5Abm9raWEuY29tOyBIaXJlbWF0aCwgVmFpYmhhdg0K
-PiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSF0gRFNTMiBJbmNsdWRlIFZSRkIgaW50byBvbWFwMi0z
-YnVpbGQgb25seQ0KPiA+ID4gDQo+ID4gPiANCj4gPiA+IE9wIDEwIG1laSAyMDEwLCBvbSAxMDow
-MSBoZWVmdCBHdXJ1c3dhbXksIFNlbnRoaWx2YWRpdnUgDQo+IGhldCB2b2xnZW5kZQ0KPiA+ID4g
-Z2VzY2hyZXZlbjoNCj4gPiA+IA0KPiA+ID4gPiBCdWlsZGluZyBhIG11bHRpLW9tYXAga2VybmVs
-IGlzIG5vdCBpbXBhY3RlZCBhcyBsb25nIGFzIA0KPiB0aGUgZGlzcGxheSBpcw0KPiA+ID4gbm90
-IGNob29zZW4gaW4gdGhlIGJ1aWxkLiAgVXN1YWxseSBkaXNwbGF5IGlzIGNob3NlbiBmcm9tIA0K
-PiB0aGUgYm9hcmQgZmlsZS4NCj4gPiANCj4gPiBJdCBfc2hvdWxkXyBiZSBwb3NzaWJsZSB0byBi
-dWlsZCBEU1MyLCBWUkZCIEFORCBUaWxlciBjb2RlIA0KPiBhdCB0aGUgc2FtZSB0aW1lDQo+ID4g
-Zm9yIGEgbXVsdGktb21hcCBidWlsZCwgYW5kIGJlIGV4ZWN1dGVkIHNlbGVjdGl2ZWx5LCANCj4g
-ZGVwZW5kaW5nIG9uIHlvdXINCj4gPiBzaWxpY29uIGRldGVjdGlvbiBhbmQgYm9hcmQgY29kZSBl
-eGVjdXRpb24uDQo+ID4gDQo+ID4gSWYgeW91IG5lZWQgdG8gZGVzZWxlY3QgaXQgdG8gc3VjY2Vl
-ZCwgdGhlbiBpdCdzIGJyb2tlbiBmb3IgDQo+IG11bHRpLW9tYXANCj4gPiBidWlsZHMuIFRoYXQn
-cyB0aGUgY29yZSBwcm9ibGVtIGFuZCBpdCBoYXNuJ3QgYmVlbiANCj4gYWRkcmVzc2VkIHVudGls
-IGRhdGUuDQo+IA0KPiBJIHRoaW5rIHRoZSB2MyBwYXRjaCBzZXQgZG9lcyBpdCBjb3JyZWN0bHku
-IEl0IGFsbG93cyBWUkZCIHRvIGJlIGJ1aWx0DQo+IG9ubHkgaWYgQVJDSF9PTUFQMiB8fCBBUkNI
-X09NQVAzLCBidXQgZG9lcyBub3QgdHVybiBWUkZCIG9mZiBvbg0KPiBBUkNIX09NQVA0Lg0KW1Nl
-bnRoaWxdICBTZXJnaW8sIHRoZSB2MyBwYXRjaCBhbGxvd3MgVlJGQiBpbiBtdWx0aS1vbWFwIGJ1
-aWxkLiAgUnVudGltZQ0KVlJGQiB1c2FnZSBpcyBub3QgYWxsb3dlZCBvbiBvbWFwNCBkZXZpY2Ug
-YW5kIGlzIGFsbG93ZWQgZm9yIG9tYXAyLDMuDQpSZWZlciB0byB2MyBwYXRjaCAzLzMu
+Hi Andrew,
+
+This patch is to fix nuc900 lcd build error.
+Since the 'nuc900_driver_clksrc_div()' API can not be
+merged into mainline successfully, so I remove this clock
+source selection hook in this driver. That means nuc900
+lcd driver has to select default clock source from external
+crystal now.
+
+Thanks!
+
+Signed-off-by: Wan ZongShun <mcuos.com@gmail.com>
+---
+ drivers/video/nuc900fb.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/nuc900fb.c b/drivers/video/nuc900fb.c
+index d4cde79..81687ed 100644
+--- a/drivers/video/nuc900fb.c
++++ b/drivers/video/nuc900fb.c
+@@ -596,8 +596,6 @@ static int __devinit nuc900fb_probe(struct platform_device *pdev)
+ 		goto release_regs;
+ 	}
+
+-	nuc900_driver_clksrc_div(&pdev->dev, "ext", 0x2);
+-
+ 	fbi->clk = clk_get(&pdev->dev, NULL);
+ 	if (!fbi->clk || IS_ERR(fbi->clk)) {
+ 		printk(KERN_ERR "nuc900-lcd:failed to get lcd clock source\n");
+-- 
+1.6.3.3

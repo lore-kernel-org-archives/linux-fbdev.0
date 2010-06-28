@@ -1,39 +1,71 @@
-From: Anatolij Gustschin <agust@denx.de>
-Date: Tue, 22 Jun 2010 22:03:23 +0000
-Subject: Re: [PATCH 0/5] Rework MPC5121 DIU support (for 2.6.35)
-Message-Id: <20100623000323.41b953db@wker>
+From: Pawel Osciak <p.osciak@samsung.com>
+Date: Mon, 28 Jun 2010 08:08:47 +0000
+Subject: [PATCH v3 01/12] s3c-fb: Fix various null references on framebuffer
+Message-Id: <1277712538-23188-2-git-send-email-p.osciak@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1272584978-19063-1-git-send-email-agust@denx.de>
-	<AANLkTil0-hijJOvosWUEArVUOLDb_kLWIhfflj2C9pIK@mail.gmail.com>
-In-Reply-To: <AANLkTil0-hijJOvosWUEArVUOLDb_kLWIhfflj2C9pIK-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+References: <1277712538-23188-1-git-send-email-p.osciak@samsung.com>
+In-Reply-To: <1277712538-23188-1-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Timur Tabi <timur-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, wd-ynQEQJNshbs@public.gmane.org, dzu-ynQEQJNshbs@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linuxppc-dev-mnsaURCQ41sdnm+yROfE0A@public.gmane.org, yorksun-KZfg59tc24xl57MIdRCFDg@public.gmane.org
+To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+The following problems were found in the above situation:
 
-On Tue, 22 Jun 2010 11:29:50 -0500
-Timur Tabi <timur@freescale.com> wrote:
+sfb->windows[win] was being assigned at the end of s3c_fb_probe_win only.
+This resulted in passing a NULL to s3c_fb_release_win if probe_win returned
+early and a memory leak.
 
-> On Thu, Apr 29, 2010 at 6:49 PM, Anatolij Gustschin <agust@denx.de> wrote:
-> > This patch series rework DIU support patches submitted
-> > previously. Comments to the previos patch series have
-> > been addressed, not related changes are dropped and some
-> > changes are split out to separate patches to simplify
-> > review. Furthermore a patch has been added to support
-> > setting display mode using EDID block in the device tree.
-> 
-> All five patches:
-> 
-> Acked-by: Timur Tabi <timur@freescale.com>
-> 
-> Tested on an MPC8610 HPCD.
+dma_free_writecombine does not allow its third argument to be NULL.
 
-Thanks for testing!
+fb_dealloc_cmap does not verify whether its argument is not NULL.
 
-Grant, could you please queue these patches for 2.6.36?
+Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ drivers/video/s3c-fb.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-Thanks,
-Anatolij
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index b00c064..d998324 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -804,7 +804,8 @@ static void s3c_fb_free_memory(struct s3c_fb *sfb, struct s3c_fb_win *win)
+ {
+ 	struct fb_info *fbi = win->fbinfo;
+ 
+-	dma_free_writecombine(sfb->dev, PAGE_ALIGN(fbi->fix.smem_len),
++	if (fbi->screen_base)
++		dma_free_writecombine(sfb->dev, PAGE_ALIGN(fbi->fix.smem_len),
+ 			      fbi->screen_base, fbi->fix.smem_start);
+ }
+ 
+@@ -819,7 +820,8 @@ static void s3c_fb_release_win(struct s3c_fb *sfb, struct s3c_fb_win *win)
+ {
+ 	if (win->fbinfo) {
+ 		unregister_framebuffer(win->fbinfo);
+-		fb_dealloc_cmap(&win->fbinfo->cmap);
++		if (&win->fbinfo->cmap)
++			fb_dealloc_cmap(&win->fbinfo->cmap);
+ 		s3c_fb_free_memory(sfb, win);
+ 		framebuffer_release(win->fbinfo);
+ 	}
+@@ -865,6 +867,7 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 	WARN_ON(windata->win_mode.yres = 0);
+ 
+ 	win = fbinfo->par;
++	*res = win;
+ 	var = &fbinfo->var;
+ 	win->variant = *variant;
+ 	win->fbinfo = fbinfo;
+@@ -939,7 +942,6 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 		return ret;
+ 	}
+ 
+-	*res = win;
+ 	dev_info(sfb->dev, "window %d: fb %s\n", win_no, fbinfo->fix.id);
+ 
+ 	return 0;
+-- 
+1.7.1.569.g6f426
+

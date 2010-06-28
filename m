@@ -1,31 +1,33 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Mon, 21 Jun 2010 11:32:26 +0000
-Subject: RE: [PATCH v3 2/3] OMAP: DSS2: OMAPFB: make VRFB depends on OMAP2,3
-Message-Id: <1277119946.2526.42.camel@tubuntu.research.nokia.com>
+From: Pawel Osciak <p.osciak@samsung.com>
+Date: Mon, 28 Jun 2010 08:08:53 +0000
+Subject: [PATCH v3 07/12] s3c-fb: window 3 of 64xx+ does not have an osd_d
+Message-Id: <1277712538-23188-8-git-send-email-p.osciak@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1276778702-15280-1-git-send-email-svadivu@ti.com>
-	 <1276778702-15280-2-git-send-email-svadivu@ti.com>
-	 <1276778702-15280-3-git-send-email-svadivu@ti.com>
-	 <1277110241.2526.31.camel@tubuntu.research.nokia.com>
-	 <FCCFB4CDC6E5564B9182F639FC3560870304288920@dbde02.ent.ti.com>
-In-Reply-To: <FCCFB4CDC6E5564B9182F639FC3560870304288920@dbde02.ent.ti.com>
+References: <1277712538-23188-1-git-send-email-p.osciak@samsung.com>
+In-Reply-To: <1277712538-23188-1-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "ext Guruswamy, Senthilvadivu" <svadivu@ti.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "tony@atomide.com" <tony@atomide.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-On Mon, 2010-06-21 at 11:17 +0200, ext Guruswamy, Senthilvadivu wrote:
+Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ drivers/video/s3c-fb.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-> > This is second patch set marked as v3. Please update the version for
-> > every patch set.
-> [Senthil]  With this comment the patch would really become v3.  
-> Do you mean to say that the 1/3 should be of v1, and 2/3 of v3 and 3/3 of no version number?
-> I though I should apply the latest version to the whole patches in the series.
-
-I mean that you sent a v3 patch set at 10th of june, and again a
-different v3 patch set at 17th of june.
-
- Tomi
-
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 6131ebb..0a93fca 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -1437,7 +1437,6 @@ static struct s3c_fb_win_variant s3c_fb_data_64xx_wins[] __devinitdata = {
+ 	},
+ 	[3] = {
+ 		.has_osd_c	= 1,
+-		.has_osd_d	= 1,
+ 		.palette_sz	= 16,
+ 		.palette_16bpp	= 1,
+ 		.valid_bpp	= (VALID_BPP124  | VALID_BPP(16) |
+-- 
+1.7.1.569.g6f426
 

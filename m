@@ -1,286 +1,123 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@nokia.com>
-Date: Wed, 23 Jun 2010 08:50:35 +0000
-Subject: Re: [PATCH] OMAP: DSS2: DMA optimization using scaler line buffers
-Message-Id: <20100623085035.GP9381@nokia.com>
+From: Pawel Osciak <p.osciak@samsung.com>
+Date: Mon, 28 Jun 2010 08:08:54 +0000
+Subject: [PATCH v3 08/12] s3c-fb: Add SHADOWCON shadow register locking support
+Message-Id: <1277712538-23188-9-git-send-email-p.osciak@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <FF55437E1F14DA4BAEB721A458B6701706BDA5F45D@dbde02.ent.ti.com>
-In-Reply-To: <FF55437E1F14DA4BAEB721A458B6701706BDA5F45D@dbde02.ent.ti.com>
+References: <1277712538-23188-1-git-send-email-p.osciak@samsung.com>
+In-Reply-To: <1277712538-23188-1-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: "ext Nagarajan, Rajkumar" <x0133774@ti.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "Valkeinen Tomi (Nokia-D/Helsinki)" <Tomi.Valkeinen@nokia.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Jun 23, 2010 at 07:18:00AM +0200, ext Nagarajan, Rajkumar wrote:
->=20
-> DISPC DMA optimization has been enabled and vrfb calls changed as require=
-d.
-> Optimization reduces the memory traffic (DDR memory) when rotation is set
-> to 90- and 270- degree and SMS-VRFB rotation engine is used.
->=20
-> With this change,
-> L3 interconnect traffic is reduced by a factor 2x for YUV422 & UYVY
-> DDR memory traffic is reduced by a factor 2x for YUV422 & UYVY.
->=20
-> Signed-off-by: Mukund Mittal <mmittal@ti.com>
-> Signed-off-by: Kishore Y <kishore.y@ti.com>
-> Signed-off-by: Rajkumar N <rajkumar.nagarajan@ti.com>
-> ---
->  arch/arm/plat-omap/include/plat/vrfb.h   |    6 +++-
->  drivers/media/video/omap/omap_vout.c     |    2 +-
->  drivers/video/omap2/dss/dispc.c          |   39 +++++++++++++++++++++++-=
-------
->  drivers/video/omap2/omapfb/omapfb-main.c |    2 +-
->  drivers/video/omap2/vrfb.c               |   18 ++++++++++---
->  5 files changed, 50 insertions(+), 17 deletions(-)
->=20
-> diff --git a/arch/arm/plat-omap/include/plat/vrfb.h b/arch/arm/plat-omap/=
-include/plat/vrfb.h
-> index d8a03ce..fba9ecd 100644
-> --- a/arch/arm/plat-omap/include/plat/vrfb.h
-> +++ b/arch/arm/plat-omap/include/plat/vrfb.h
-> @@ -23,6 +23,8 @@
-> =20
->  #define OMAP_VRFB_LINE_LEN 2048
-> =20
-> +#include <plat/display.h>
-> +
->  struct vrfb {
->  	u8 context;
->  	void __iomem *vaddr[4];
-> @@ -42,8 +44,8 @@ extern void omap_vrfb_adjust_size(u16 *width, u16 *heig=
-ht,
->  extern u32 omap_vrfb_min_phys_size(u16 width, u16 height, u8 bytespp);
->  extern u16 omap_vrfb_max_height(u32 phys_size, u16 width, u8 bytespp);
->  extern void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
-> -		u16 width, u16 height,
-> -		unsigned bytespp, bool yuv_mode);
-> +		u16 width, u16 height, unsigned bytespp,
-> +		enum omap_color_mode color_mode, int rotation);
->  extern int omap_vrfb_map_angle(struct vrfb *vrfb, u16 height, u8 rot);
->  extern void omap_vrfb_restore_context(void);
-> =20
-> diff --git a/drivers/media/video/omap/omap_vout.c b/drivers/media/video/o=
-map/omap_vout.c
-> index b74884b..b3f94ca 100644
-> --- a/drivers/media/video/omap/omap_vout.c
-> +++ b/drivers/media/video/omap/omap_vout.c
-> @@ -465,7 +465,7 @@ static int omap_vout_vrfb_buffer_setup(struct omap_vo=
-ut_device *vout,
->  	for (i =3D 0; i < *count; i++)
->  		omap_vrfb_setup(&vout->vrfb_context[i],
->  				vout->smsshado_phy_addr[i], vout->pix.width,
-> -				vout->pix.height, vout->bpp, yuv_mode);
-> +				vout->pix.height, vout->bpp, vout->dss_mode, vout->rotation);
-> =20
->  	return 0;
->  }
-> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/di=
-spc.c
-> index e777e35..cb8eba4 100644
-> --- a/drivers/video/omap2/dss/dispc.c
-> +++ b/drivers/video/omap2/dss/dispc.c
-> @@ -1059,12 +1059,16 @@ static void _dispc_set_vid_accu1(enum omap_plane =
-plane, int haccu, int vaccu)
->  	dispc_write_reg(ac1_reg[plane-1], val);
->  }
-> =20
-> +static void _dispc_set_vdma_attrs(enum omap_plane plane, bool enable)
-> +{
-> +       REG_FLD_MOD(dispc_reg_att[plane], enable ? 1 : 0, 20, 20);
-> +}
-> =20
->  static void _dispc_set_scaling(enum omap_plane plane,
->  		u16 orig_width, u16 orig_height,
->  		u16 out_width, u16 out_height,
->  		bool ilace, bool five_taps,
-> -		bool fieldmode)
-> +		bool fieldmode, bool vdma)
->  {
->  	int fir_hinc;
->  	int fir_vinc;
-> @@ -1080,12 +1084,12 @@ static void _dispc_set_scaling(enum omap_plane pl=
-ane,
-> =20
->  	_dispc_set_scale_coef(plane, hscaleup, vscaleup, five_taps);
-> =20
-> -	if (!orig_width || orig_width =3D out_width)
-> +	if (!orig_width || (!vdma && (orig_width =3D out_width)))
->  		fir_hinc =3D 0;
->  	else
->  		fir_hinc =3D 1024 * orig_width / out_width;
-> =20
-> -	if (!orig_height || orig_height =3D out_height)
-> +	if (!orig_height || (!vdma && (orig_height =3D out_height)))
->  		fir_vinc =3D 0;
->  	else
->  		fir_vinc =3D 1024 * orig_height / out_height;
-> @@ -1164,10 +1168,6 @@ static void _dispc_set_rotation_attrs(enum omap_pl=
-ane plane, u8 rotation,
-> =20
->  		REG_FLD_MOD(dispc_reg_att[plane], vidrot, 13, 12);
-> =20
-> -		if (rotation =3D OMAP_DSS_ROT_90 || rotation =3D OMAP_DSS_ROT_270)
-> -			REG_FLD_MOD(dispc_reg_att[plane], 0x1, 18, 18);
-> -		else
-> -			REG_FLD_MOD(dispc_reg_att[plane], 0x0, 18, 18);
+S5PV210 allows per-window locking of register value updates from shadow
+registers.
 
-So VIDROWREPEAT is supposed to be off when vid DMA optimization is on?
-There's no mention of that in the TRM.
+Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ arch/arm/plat-samsung/include/plat/regs-fb.h |    3 ++
+ drivers/video/s3c-fb.c                       |   39 +++++++++++++++++++++++--
+ 2 files changed, 38 insertions(+), 4 deletions(-)
 
->  	} else {
->  		REG_FLD_MOD(dispc_reg_att[plane], 0, 13, 12);
->  		REG_FLD_MOD(dispc_reg_att[plane], 0, 18, 18);
-> @@ -1504,6 +1504,17 @@ static unsigned long calc_fclk(u16 width, u16 heig=
-ht,
->  	return dispc_pclk_rate() * vf * hf;
->  }
-> =20
-> +static int dispc_is_vdma_req(u8 rotation, enum omap_color_mode color_mod=
-e)
-> +{
-> +/* TODO: VDMA support for RGB16 mode */
-> +	if (cpu_is_omap3630())
+diff --git a/arch/arm/plat-samsung/include/plat/regs-fb.h b/arch/arm/plat-samsung/include/plat/regs-fb.h
+index 5bcdd09..da54b64 100644
+--- a/arch/arm/plat-samsung/include/plat/regs-fb.h
++++ b/arch/arm/plat-samsung/include/plat/regs-fb.h
+@@ -218,6 +218,9 @@
+ #define WINCON1_BPPMODE_25BPP_A1888		(0xd << 2)
+ #define WINCON1_BPPMODE_28BPP_A4888		(0xd << 2)
+ 
++/* S5PV210 */
++#define SHADOWCON				(0x34)
++#define SHADOWCON_WINx_PROTECT(_win)		(1 << (10 + _win))
+ 
+ #define VIDOSDxA_TOPLEFT_X_MASK			(0x7ff << 11)
+ #define VIDOSDxA_TOPLEFT_X_SHIFT		(11)
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 0a93fca..94423c5 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -79,6 +79,7 @@ struct s3c_fb;
+  * @osd: The base for the OSD registers.
+  * @palette: Address of palette memory, or 0 if none.
+  * @has_prtcon: Set if has PRTCON register.
++ * @has_shadowcon: Set if has SHADOWCON register.
+  */
+ struct s3c_fb_variant {
+ 	unsigned int	is_2443:1;
+@@ -95,6 +96,7 @@ struct s3c_fb_variant {
+ 	unsigned short	palette[S3C_FB_MAX_WIN];
+ 
+ 	unsigned int	has_prtcon:1;
++	unsigned int	has_shadowcon:1;
+ };
+ 
+ /**
+@@ -363,6 +365,36 @@ static int s3c_fb_align_word(unsigned int bpp, unsigned int pix)
+ }
+ 
+ /**
++ * shadow_protect_win() - disable updating values from shadow registers at vsync
++ *
++ * @win: window to protect registers for
++ * @protect: 1 to protect (disable updates)
++ */
++static void shadow_protect_win(struct s3c_fb_win *win, int protect)
++{
++	struct s3c_fb *sfb = win->parent;
++	u32 reg;
++
++	if (protect) {
++		if (sfb->variant.has_prtcon) {
++			writel(PRTCON_PROTECT, sfb->regs + PRTCON);
++		} else if (sfb->variant.has_shadowcon) {
++			reg = readl(sfb->regs + SHADOWCON);
++			writel(reg | SHADOWCON_WINx_PROTECT(win->index),
++				sfb->regs + SHADOWCON);
++		}
++	} else {
++		if (sfb->variant.has_prtcon) {
++			writel(0, sfb->regs + PRTCON);
++		} else if (sfb->variant.has_shadowcon) {
++			reg = readl(sfb->regs + SHADOWCON);
++			writel(reg & ~SHADOWCON_WINx_PROTECT(win->index),
++				sfb->regs + SHADOWCON);
++		}
++	}
++}
++
++/**
+  * s3c_fb_set_par() - framebuffer request to set new framebuffer state.
+  * @info: The framebuffer to change.
+  *
+@@ -811,16 +843,14 @@ static int s3c_fb_pan_display(struct fb_var_screeninfo *var,
+ 
+ 	/* Temporarily turn off per-vsync update from shadow registers until
+ 	 * both start and end addresses are updated to prevent corruption */
+-	if (sfb->variant.has_prtcon)
+-		writel(PRTCON_PROTECT, sfb->regs + PRTCON);
++	shadow_protect_win(win, 1);
+ 
+ 	writel(info->fix.smem_start + start_byte_offset,
+ 		buf + sfb->variant.buf_start);
+ 	writel(info->fix.smem_start + end_byte_offset,
+ 		buf + sfb->variant.buf_end);
+ 
+-	if (sfb->variant.has_prtcon)
+-		writel(0, sfb->regs + PRTCON);
++	shadow_protect_win(win, 0);
+ 
+ 	return 0;
+ }
+@@ -1534,6 +1564,7 @@ static struct s3c_fb_driverdata s3c_fb_data_s5pv210 __devinitdata = {
+ 			[4] = 0x3400,
+ 		},
+ 
++		.has_shadowcon	= 1,
+ 	},
+ 	.win[0]	= &s3c_fb_data_64xx_wins[0],
+ 	.win[1]	= &s3c_fb_data_64xx_wins[1],
+-- 
+1.7.1.569.g6f426
 
-Is video DMA optimization broken on 34xx? I tried to enable it on a 3430
-at some point but didn't see any obvious improvement. However the 34xx
-TRM didn't say anything about 5-tap so perhaps it just didn't actually
-do anything.
-
-> +		if ((color_mode =3D OMAP_DSS_COLOR_YUV2) ||
-> +			(color_mode =3D OMAP_DSS_COLOR_UYVY))
-> +			if ((rotation =3D 1) || (rotation =3D 3))
-> +				return true;
-> +	return false;
-> +}
-> +
->  void dispc_set_channel_out(enum omap_plane plane, enum omap_channel chan=
-nel_out)
->  {
->  	enable_clocks(1);
-> @@ -1623,6 +1634,8 @@ static int _dispc_setup_plane(enum omap_plane plane,
->  			if (cpu_is_omap34xx() && height > out_height &&
->  					fclk > dispc_fclk_rate())
->  				five_taps =3D true;
-> +			if (dispc_is_vdma_req(rotation, color_mode))
-> +				five_taps =3D true;
-
-Maybe it would make sense to change the code back to trying 5-tap first
-and fall back to 3-tap if the required clock is too high?
-
->  		}
-> =20
->  		if (width > (2048 >> five_taps)) {
-> @@ -1694,9 +1707,17 @@ static int _dispc_setup_plane(enum omap_plane plan=
-e,
->  	_dispc_set_pic_size(plane, width, height);
-> =20
->  	if (plane !=3D OMAP_DSS_GFX) {
-> -		_dispc_set_scaling(plane, width, height,
-> +		if (dispc_is_vdma_req(rotation, color_mode)) {
-> +			_dispc_set_scaling(plane, width, height,
->  				   out_width, out_height,
-> -				   ilace, five_taps, fieldmode);
-> +				   ilace, five_taps, fieldmode, 1);
-> +			_dispc_set_vdma_attrs(plane, 1);
-> +		} else {
-> +			_dispc_set_scaling(plane, width, height,
-> +				   out_width, out_height,
-> +				   ilace, five_taps, fieldmode, 0);
-> +			_dispc_set_vdma_attrs(plane, 0);
-> +		}
-
-Less copy-pasting:
-
-bool vdma =3D dispc_is_vdma_req();
-
-_dispc_set_scaling(..., vdma);
-_dispc_set_vdma_attrs(..., vdma);
-
-
->  		_dispc_set_vid_size(plane, out_width, out_height);
->  		_dispc_set_vid_color_conv(plane, cconv);
->  	}
-> diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/oma=
-p2/omapfb/omapfb-main.c
-> index 73ecc9f..33fd427 100644
-> --- a/drivers/video/omap2/omapfb/omapfb-main.c
-> +++ b/drivers/video/omap2/omapfb/omapfb-main.c
-> @@ -552,7 +552,7 @@ static int setup_vrfb_rotation(struct fb_info *fbi)
->  	omap_vrfb_setup(&rg->vrfb, rg->paddr,
->  			var->xres_virtual,
->  			var->yres_virtual,
-> -			bytespp, yuv_mode);
-> +			bytespp, mode, 0);
-> =20
->  	/* Now one can ioremap the 0 angle view */
->  	r =3D omap_vrfb_map_angle(vrfb, var->yres_virtual, 0);
-> diff --git a/drivers/video/omap2/vrfb.c b/drivers/video/omap2/vrfb.c
-> index fd22716..38d03d1 100644
-> --- a/drivers/video/omap2/vrfb.c
-> +++ b/drivers/video/omap2/vrfb.c
-> @@ -157,7 +157,7 @@ EXPORT_SYMBOL(omap_vrfb_max_height);
-> =20
->  void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
->  		u16 width, u16 height,
-> -		unsigned bytespp, bool yuv_mode)
-> +		unsigned bytespp, enum omap_color_mode color_mode, int rotation)
->  {
->  	unsigned pixel_size_exp;
->  	u16 vrfb_width;
-> @@ -167,11 +167,12 @@ void omap_vrfb_setup(struct vrfb *vrfb, unsigned lo=
-ng paddr,
->  	u32 control;
-> =20
->  	DBG("omapfb_set_vrfb(%d, %lx, %dx%d, %d, %d)\n", ctx, paddr,
-> -			width, height, bytespp, yuv_mode);
-> +			width, height, bytespp, color_mode);
-> =20
->  	/* For YUV2 and UYVY modes VRFB needs to handle pixels a bit
->  	 * differently. See TRM. */
-> -	if (yuv_mode) {
-> +	if (color_mode =3D OMAP_DSS_COLOR_YUV2 ||
-> +			color_mode =3D OMAP_DSS_COLOR_UYVY) {
->  		bytespp *=3D 2;
->  		width /=3D 2;
->  	}
-> @@ -183,6 +184,13 @@ void omap_vrfb_setup(struct vrfb *vrfb, unsigned lon=
-g paddr,
->  	else
->  		BUG();
-> =20
-> +	/* for vdma */
-> +	/* TODO: VDMA support for RGB16 mode */
-> +	if (cpu_is_omap3630())
-> +		if (color_mode =3D OMAP_DSS_COLOR_YUV2)
-> +			if ((rotation =3D 1) || (rotation =3D 3))
-> +				pixel_size_exp =3D 2;
-> +
-
-where did UYVY go? Also what's this supposed to do? pixel_size_exp will
-be to 2 for YUV anyway.
-
->  	vrfb_width =3D ALIGN(width * bytespp, VRFB_PAGE_WIDTH) / bytespp;
->  	vrfb_height =3D ALIGN(height, VRFB_PAGE_HEIGHT);
-> =20
-> @@ -211,7 +219,9 @@ void omap_vrfb_setup(struct vrfb *vrfb, unsigned long=
- paddr,
->  	vrfb->xoffset =3D vrfb_width - width;
->  	vrfb->yoffset =3D vrfb_height - height;
->  	vrfb->bytespp =3D bytespp;
-> -	vrfb->yuv_mode =3D yuv_mode;
-> +	if (color_mode =3D OMAP_DSS_COLOR_YUV2 ||
-> +			color_mode =3D OMAP_DSS_COLOR_UYVY)
-> +		vrfb->yuv_mode =3D true;
->  }
->  EXPORT_SYMBOL(omap_vrfb_setup);
-> =20
-> --=20
-> 1.5.4.3
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
---=20
-Ville Syrj=E4l=E4

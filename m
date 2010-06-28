@@ -1,24 +1,28 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Mon, 28 Jun 2010 08:52:29 +0000
-Subject: Re: [PATCH] OMAP:DSS: Enable TV Detection support
-Message-Id: <1277715149.2474.35.camel@tubuntu.research.nokia.com>
+From: "Hiremath, Vaibhav" <hvaibhav@ti.com>
+Date: Mon, 28 Jun 2010 09:53:07 +0000
+Subject: RE: [PATCH] OMAP:DSS: Enable TV Detection support
+Message-Id: <19F8576C6E063C45BE387C64729E7394044E9E3F0E@dbde02.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <FF55437E1F14DA4BAEB721A458B6701706BDB39F8D@dbde02.ent.ti.com>
 In-Reply-To: <FF55437E1F14DA4BAEB721A458B6701706BDB39F8D@dbde02.ent.ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "ext Nagarajan, Rajkumar" <x0133774@ti.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: "Nagarajan, Rajkumar" <x0133774@ti.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Cc: "tomi.valkeinen@nokia.com" <tomi.valkeinen@nokia.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-Hi,
 
-On Sat, 2010-06-26 at 13:09 +0200, ext Nagarajan, Rajkumar wrote:
+> -----Original Message-----
+> From: linux-fbdev-owner@vger.kernel.org [mailto:linux-fbdev-
+> owner@vger.kernel.org] On Behalf Of Nagarajan, Rajkumar
+> Sent: Saturday, June 26, 2010 4:40 PM
+> To: linux-omap@vger.kernel.org
+> Cc: tomi.valkeinen@nokia.com; linux-fbdev@vger.kernel.org
+> Subject: [PATCH] OMAP:DSS: Enable TV Detection support
+> 
+> 
 > Enabled TVDET and created a sysfs entry for TV Detection
-
-You could be a bit more verbose. Also, use the same patch subject as
-other patches, "OMAP: DSS2: <subsys>:..."
-
+> 
 > To detect if tv set is connected run this command
 > cat /sys/devices/platform/omapdss/display1/device_state
 > 1: TV set connected
@@ -31,37 +35,33 @@ other patches, "OMAP: DSS2: <subsys>:..."
 > ---
 >  arch/arm/plat-omap/include/plat/display.h |    2 +
 >  drivers/video/omap2/dss/display.c         |   23 +++++++++++++
->  drivers/video/omap2/dss/venc.c            |   52 +++++++++++++++++++++++++++++
+>  drivers/video/omap2/dss/venc.c            |   52
+> +++++++++++++++++++++++++++++
 >  3 files changed, 77 insertions(+), 0 deletions(-)
 > 
-> diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
+> diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-
+> omap/include/plat/display.h
 > index 7842efa..522240b 100644
 > --- a/arch/arm/plat-omap/include/plat/display.h
 > +++ b/arch/arm/plat-omap/include/plat/display.h
 > @@ -464,6 +464,8 @@ struct omap_dss_device {
->  
+> 
 >  	enum omap_dss_display_state state;
->  
+> 
 > +	u32 (*get_device_state)(struct omap_dss_device *dssdev);
-
-device_state is quite vague name. The feature is only about TV cable
-detection, isn't it?
-
-And actually, I don't think this function pointer is needed at all. venc
-driver should just add a sysfs entry and handle it privately. There's no
-need to add a common sysfs entry for all devices.
-
+> +
 >  	/* platform specific  */
 >  	int (*platform_enable)(struct omap_dss_device *dssdev);
 >  	void (*platform_disable)(struct omap_dss_device *dssdev);
-> diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+> diff --git a/drivers/video/omap2/dss/display.c
+> b/drivers/video/omap2/dss/display.c
 > index ef8c852..2b937fe 100644
 > --- a/drivers/video/omap2/dss/display.c
 > +++ b/drivers/video/omap2/dss/display.c
 > @@ -278,6 +278,26 @@ static ssize_t display_wss_store(struct device *dev,
 >  	return size;
 >  }
->  
+> 
 > +static ssize_t device_state_show(struct device *dev,
 > +		struct device_attribute *attr, char *buf)
 > +{
@@ -81,6 +81,8 @@ need to add a common sysfs entry for all devices.
 > +{
 > +	return size;
 > +}
+[Hiremath, Vaibhav] Can we make this entry READONLY? I think then we can get rid of write function all together, right?
+
 > +
 >  static DEVICE_ATTR(enabled, S_IRUGO|S_IWUSR,
 >  		display_enabled_show, display_enabled_store);
@@ -93,15 +95,15 @@ need to add a common sysfs entry for all devices.
 > +		device_state_show, device_state_store);
 >  static DEVICE_ATTR(wss, S_IRUGO|S_IWUSR,
 >  		display_wss_show, display_wss_store);
->  
-> @@ -301,6 +323,7 @@ static struct device_attribute *display_sysfs_attrs[] = {
+> 
+> @@ -301,6 +323,7 @@ static struct device_attribute *display_sysfs_attrs[] > {
 >  	&dev_attr_rotate,
 >  	&dev_attr_mirror,
 >  	&dev_attr_wss,
 > +	&dev_attr_device_state,
 >  	NULL
 >  };
->  
+> 
 > diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
 > index eff3505..3b5093b 100644
 > --- a/drivers/video/omap2/dss/venc.c
@@ -111,28 +113,23 @@ need to add a common sysfs entry for all devices.
 >  #include <linux/platform_device.h>
 >  #include <linux/regulator/consumer.h>
 > +#include <linux/gpio.h>
->  
+> 
 >  #include <plat/display.h>
 >  #include <plat/cpu.h>
->  
+> 
 >  #include "dss.h"
->  
+> 
 > +#define TV_INT_GPIO			33
-
-Is TV INT GPIO hardcoded to 33 on all OMAP versions and boards?
-
-> +#define TV_DETECT_DELAY			40 /*Delay for TV detection logic*/
-
-Use space after /* and before */. It'd be good to tell the units of the
-delay. Is 40ms defined in the TRM as the only proper delay?
-
+> +#define TV_DETECT_DELAY			40 /*Delay for TV detection
+> logic*/
 >  #define VENC_BASE	0x48050C00
->  
+> 
 >  /* Venc registers */
-> @@ -612,6 +615,46 @@ static int venc_set_wss(struct omap_dss_device *dssdev,	u32 wss)
+> @@ -612,6 +615,46 @@ static int venc_set_wss(struct omap_dss_device *dssdev,
+> 	u32 wss)
 >  	return 0;
 >  }
->  
+> 
 > +/**
 > + * Enables TVDET pulse generation
 > + */
@@ -161,6 +158,26 @@ delay. Is 40ms defined in the TRM as the only proper delay?
 > +       venc_write_reg(VENC_GEN_CTRL, l);
 > +}
 > +
+ [Hiremath, Vaibhav] We can have only one function, something like,
+
+static void venc_tv_detect(int/bool enable)
+{
+       u32 l;
+
+      l = venc_read_reg(VENC_GEN_CTRL);
+	if (enable) {
+      	 /* TVDET Active High Setting */
+	      l |= FLD_VAL(1, 16, 16);
+	      /* Enable TVDET pulse generation */
+	      l |= FLD_VAL(1, 0, 0);
+	} else {
+      	/* Disable TVDET pulse generation */
+	     l |= FLD_VAL(0, 0, 0);
+	}
+
+      venc_write_reg(VENC_GEN_CTRL, l);
+}
+
 > +static u32 venc_detect_device(struct omap_dss_device *dssdev)
 > +{
 > +       u32 tv_state;
@@ -170,6 +187,11 @@ delay. Is 40ms defined in the TRM as the only proper delay?
 > +       tv_state = gpio_get_value(TV_INT_GPIO);
 > +       venc_disable_tv_detect();
 > +
+[Hiremath, Vaibhav] You need to pass either 0/1 here if you implement above method.
+
+Thanks,
+Vaibhav
+
 > +       return tv_state;
 > +}
 > +
@@ -181,17 +203,14 @@ delay. Is 40ms defined in the TRM as the only proper delay?
 >  {
 >  	u8 rev_id;
 > +	int ret;
->  
+> 
 >  	mutex_init(&venc.venc_lock);
->  
+> 
 > @@ -671,7 +715,14 @@ int venc_init(struct platform_device *pdev)
->  
+> 
 >  	venc_enable_clocks(0);
->  
+> 
 > +	ret = gpio_request(TV_INT_GPIO, "tv_detect");
-
-What if GPIO 33 is used for something else by some boards?
-
 > +	if (ret)
 > +		pr_err("Failed to get TV_INT_GPIO gpio_33.\n");
 > +	else
@@ -199,9 +218,20 @@ What if GPIO 33 is used for something else by some boards?
 > +
 >  	return omap_dss_register_driver(&venc_driver);
 > +
-
-Extra linefeed.
-
- Tomi
-
-
+>  }
+> 
+>  void venc_exit(void)
+> @@ -684,6 +735,7 @@ void venc_exit(void)
+>  int venc_init_display(struct omap_dss_device *dssdev)
+>  {
+>  	DSSDBG("init_display\n");
+> +	dssdev->get_device_state = venc_detect_device;
+> 
+>  	return 0;
+>  }
+> --
+> 1.5.4.3
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html

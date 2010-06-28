@@ -1,74 +1,62 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Date: Wed, 16 Jun 2010 09:34:44 +0000
-Subject: [PATCH 1/9] s3c-fb: Fix various null references on framebuffer memory
-Message-Id: <1276680892-14760-2-git-send-email-m.szyprowski@samsung.com>
+From: Pawel Osciak <p.osciak@samsung.com>
+Date: Mon, 28 Jun 2010 08:08:56 +0000
+Subject: [PATCH v3 10/12] s3c-fb: Protect window-specific registers during
+Message-Id: <1277712538-23188-11-git-send-email-p.osciak@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
-In-Reply-To: <1275296935-2693-1-git-send-email-p.osciak@samsung.com>
+References: <1277712538-23188-1-git-send-email-p.osciak@samsung.com>
+In-Reply-To: <1277712538-23188-1-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Pawel Osciak <p.osciak@samsung.com>
-
-The following problems were found in the above situation:
-
-sfb->windows[win] was being assigned at the end of s3c_fb_probe_win only.
-This resulted in passing a NULL to s3c_fb_release_win if probe_win returned
-early and a memory leak.
-
-dma_free_writecombine does not allow its third argument to be NULL.
-
-fb_dealloc_cmap does not verify whether its argument is not NULL.
+Newer hardware (S3C6410, S5P) have the ability to block updates from shadow
+registers during reconfiguration. Add protect calls for set_par and clear
+protection when resetting.
 
 Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 ---
- drivers/video/s3c-fb.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ drivers/video/s3c-fb.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index b00c064..d998324 100644
+index 3b2c7fe..d461f1d 100644
 --- a/drivers/video/s3c-fb.c
 +++ b/drivers/video/s3c-fb.c
-@@ -804,7 +804,8 @@ static void s3c_fb_free_memory(struct s3c_fb *sfb, struct s3c_fb_win *win)
- {
- 	struct fb_info *fbi = win->fbinfo;
+@@ -451,6 +451,8 @@ static int s3c_fb_set_par(struct fb_info *info)
  
--	dma_free_writecombine(sfb->dev, PAGE_ALIGN(fbi->fix.smem_len),
-+	if (fbi->screen_base)
-+		dma_free_writecombine(sfb->dev, PAGE_ALIGN(fbi->fix.smem_len),
- 			      fbi->screen_base, fbi->fix.smem_start);
+ 	dev_dbg(sfb->dev, "setting framebuffer parameters\n");
+ 
++	shadow_protect_win(win, 1);
++
+ 	switch (var->bits_per_pixel) {
+ 	case 32:
+ 	case 24:
+@@ -633,6 +635,8 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 	writel(data, regs + sfb->variant.wincon + (win_no * 4));
+ 	writel(0x0, regs + sfb->variant.winmap + (win_no * 4));
+ 
++	shadow_protect_win(win, 0);
++
+ 	return 0;
  }
  
-@@ -819,7 +820,8 @@ static void s3c_fb_release_win(struct s3c_fb *sfb, struct s3c_fb_win *win)
+@@ -1232,11 +1236,14 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ static void s3c_fb_clear_win(struct s3c_fb *sfb, int win)
  {
- 	if (win->fbinfo) {
- 		unregister_framebuffer(win->fbinfo);
--		fb_dealloc_cmap(&win->fbinfo->cmap);
-+		if (&win->fbinfo->cmap)
-+			fb_dealloc_cmap(&win->fbinfo->cmap);
- 		s3c_fb_free_memory(sfb, win);
- 		framebuffer_release(win->fbinfo);
- 	}
-@@ -865,6 +867,7 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
- 	WARN_ON(windata->win_mode.yres = 0);
+ 	void __iomem *regs = sfb->regs;
++	u32 reg;
  
- 	win = fbinfo->par;
-+	*res = win;
- 	var = &fbinfo->var;
- 	win->variant = *variant;
- 	win->fbinfo = fbinfo;
-@@ -939,7 +942,6 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
- 		return ret;
- 	}
+ 	writel(0, regs + sfb->variant.wincon + (win * 4));
+ 	writel(0, regs + VIDOSD_A(win, sfb->variant));
+ 	writel(0, regs + VIDOSD_B(win, sfb->variant));
+ 	writel(0, regs + VIDOSD_C(win, sfb->variant));
++	reg = readl(regs + SHADOWCON);
++	writel(reg & ~SHADOWCON_WINx_PROTECT(win), regs + SHADOWCON);
+ }
  
--	*res = win;
- 	dev_info(sfb->dev, "window %d: fb %s\n", win_no, fbinfo->fix.id);
- 
- 	return 0;
+ static int __devinit s3c_fb_probe(struct platform_device *pdev)
 -- 
-1.7.1.240.g225c
+1.7.1.569.g6f426
 

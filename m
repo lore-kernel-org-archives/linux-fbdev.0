@@ -1,43 +1,45 @@
-From: Wan ZongShun <mcuos.com@gmail.com>
-Subject: [PATCH] NUC900/lcd: patch to fix nuc900 lcd build error
-Date: Thu, 24 Jun 2010 13:30:39 +0800
-Message-ID: <4C22ED7F.8050706@gmail.com>
+From: InKi Dae <inki.dae@samsung.com>
+Subject: [PATCH 0/3] ARM: S5PV210: Add MIPI-DSI support.
+Date: Tue, 29 Jun 2010 17:31:46 +0900
+Message-ID: <4C29AF72.6090200@samsung.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <fbdev-devel.lists.sourceforge.net>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Qiang Wang <rurality.wq@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org, linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org, Ben Dooks <ben-linux@fluff.org>, kmpark@infradead.org
 
-Hi Andrew,
+Hello all,
 
-This patch is to fix nuc900 lcd build error.
-Since the 'nuc900_driver_clksrc_div()' API can not be
-merged into mainline successfully, so I remove this clock
-source selection hook in this driver. That means nuc900
-lcd driver has to select default clock source from external
-crystal now.
+This patch is for MIPI-DSI controller based on S5PV210 (or S5PC110).
 
-Thanks!
+LCD Panel can use following interfaces,
+- RGB or CPU Interface.
+- RGB or CPU Interface based on MIPI-DSI.
 
-Signed-off-by: Wan ZongShun <mcuos.com@gmail.com>
----
- drivers/video/nuc900fb.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+In case of small size lcd panel, it was ok only rgb or cpu interface not
+using mipi controller.
+But big size panel(more then 480x800) needs MIPI-DSI Interface or other
+hardwares like LVDS
+To transfer image data to lcd panel fine.
 
-diff --git a/drivers/video/nuc900fb.c b/drivers/video/nuc900fb.c
-index d4cde79..81687ed 100644
---- a/drivers/video/nuc900fb.c
-+++ b/drivers/video/nuc900fb.c
-@@ -596,8 +596,6 @@ static int __devinit nuc900fb_probe(struct platform_device *pdev)
- 		goto release_regs;
- 	}
+I tested this patch on cpu interface based on MIPI so for this patch,
+Some mainline codes should be modified and also considered RGB interface.
 
--	nuc900_driver_clksrc_div(&pdev->dev, "ext", 0x2);
--
- 	fbi->clk = clk_get(&pdev->dev, NULL);
- 	if (!fbi->clk || IS_ERR(fbi->clk)) {
- 		printk(KERN_ERR "nuc900-lcd:failed to get lcd clock source\n");
--- 
-1.6.3.3
+This patch set consists of the following patches,
+
+[PATCH 1/3] FB: Add some members for CPU Interface.
+[PATCH 2/3] S5PV210: FB: Add MIPI-DSI and CPU Interface features.
+[PATCH 3/3] S5PV210: Add MIPI-DSI Driver.
+
+Best regards,
+InKi Dae

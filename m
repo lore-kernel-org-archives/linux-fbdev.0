@@ -1,55 +1,56 @@
-From: Guruswamy Senthilvadivu <svadivu@ti.com>
-Date: Thu, 10 Jun 2010 11:35:55 +0000
-Subject: [PATCH v3 1/3] DSS2: Allow FB_OMAP2 to build without VRFB
-Message-Id: <1276169037-2598-1-git-send-email-svadivu@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Wed, 30 Jun 2010 08:50:44 +0000
+Subject: Re: [PATCH] OMAP2:OMAPFB: Fix error path
+Message-Id: <1277887844.2474.122.camel@tubuntu.research.nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <AANLkTilje0umiNM2Tn7p2S5xhfEbEhtj6pIuSBMKvShi@mail.gmail.com>
+In-Reply-To: <AANLkTilje0umiNM2Tn7p2S5xhfEbEhtj6pIuSBMKvShi@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, tony@atomide.com, tomi.valkeinen@nokia.com, hvaibhav@ti.com
-Cc: Senthilvadivu Guruswamy <svadivu@ti.com>
+To: ext Afzal Mohammed <lazfamam@gmail.com>
+Cc: "Syrjala Ville (Nokia-D/Helsinki)" <ville.syrjala@nokia.com>, "tj@kernel.org" <tj@kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-From: Senthilvadivu Guruswamy <svadivu@ti.com>
+Hi,
 
-FB_OMAP2 can work without VRFB, but currently does not build. Fix this.
+Please send the patch as plaintext, without any HTML content.
 
-Signed-off-by: Senthilvadivu Guruswamy <svadivu@ti.com>
----
- arch/arm/plat-omap/include/plat/vrfb.h |   16 ++++++++++++++++
- 1 file changed, 16 insertions(+), 0 deletions(-)
+Also, use the same patch subject as other patches for omapfb, in this
+case "OMAP: DSS2: OMAPFB: ...", and include a bit more verbose
+description.
 
-diff --git a/arch/arm/plat-omap/include/plat/vrfb.h b/arch/arm/plat-omap/include/plat/vrfb.h
-index d8a03ce..3792bde 100644
---- a/arch/arm/plat-omap/include/plat/vrfb.h
-+++ b/arch/arm/plat-omap/include/plat/vrfb.h
-@@ -35,6 +35,7 @@ struct vrfb {
- 	bool yuv_mode;
- };
- 
-+#ifdef CONFIG_OMAP2_VRFB
- extern int omap_vrfb_request_ctx(struct vrfb *vrfb);
- extern void omap_vrfb_release_ctx(struct vrfb *vrfb);
- extern void omap_vrfb_adjust_size(u16 *width, u16 *height,
-@@ -47,4 +48,19 @@ extern void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
- extern int omap_vrfb_map_angle(struct vrfb *vrfb, u16 height, u8 rot);
- extern void omap_vrfb_restore_context(void);
- 
-+#else
-+static inline int omap_vrfb_request_ctx(struct vrfb *vrfb) { return 0; }
-+static inline void omap_vrfb_release_ctx(struct vrfb *vrfb) {}
-+static inline void omap_vrfb_adjust_size(u16 *width, u16 *height,
-+		u8 bytespp) {}
-+static inline u32 omap_vrfb_min_phys_size(u16 width, u16 height, u8 bytespp)
-+		{ return 0; }
-+static inline u16 omap_vrfb_max_height(u32 phys_size, u16 width, u8 bytespp)
-+		{ return 0; }
-+static inline void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
-+		u16 width, u16 height, unsigned bytespp, bool yuv_mode) {}
-+static inline int omap_vrfb_map_angle(struct vrfb *vrfb, u16 height, u8 rot)
-+		{ return 0; }
-+static inline void omap_vrfb_restore_context(void) {}
-+#endif
- #endif /* __VRFB_H */
--- 
-1.5.4.7
+ Tomi
+
+
+On Tue, 2010-06-29 at 22:29 +0200, ext Afzal Mohammed wrote:
+> 
+> 
+> sysfs file removed in error path of omapfb_create_framebuffers()
+> 
+> 
+> Signed-off-by: Afzal Mohammed <lazfamam@gmail.com>
+> ---
+>  drivers/video/omap2/omapfb/omapfb-main.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> 
+> diff --git a/drivers/video/omap2/omapfb/omapfb-main.c
+> b/drivers/video/omap2/omapfb/omapfb-main.c
+> index 4b4506d..2319b81 100644
+> --- a/drivers/video/omap2/omapfb/omapfb-main.c
+> +++ b/drivers/video/omap2/omapfb/omapfb-main.c
+> @@ -1945,6 +1945,7 @@ static int omapfb_create_framebuffers(struct
+> omapfb2_device *fbdev)
+>   r = omapfb_overlay_enable(ovl, 1);
+>  
+>   if (r) {
+> + omapfb_remove_sysfs(fbdev);
+>   dev_err(fbdev->dev,
+>   "failed to enable overlay\n");
+>   return r;
+> -- 
+> 1.7.0.4
+> 
+> 
+
 

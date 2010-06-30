@@ -1,28 +1,35 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Thu, 24 Jun 2010 20:17:21 +0000
-Subject: Re: [PATCH] fbdev: section cleanup in viafb driver
-Message-Id: <20100624141721.7fb644d7@bike.lwn.net>
+From: Afzal Mohammed <lazfamam@gmail.com>
+Date: Wed, 30 Jun 2010 14:27:27 +0000
+Subject: [PATCH] OMAP:DSS2:OMAPFB: Fix probe error path
+Message-Id: <1277907327-3443-1-git-send-email-lazfamam@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1276768884-19958-1-git-send-email-henne@nachtwindheim.de>
-In-Reply-To: <1276768884-19958-1-git-send-email-henne@nachtwindheim.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Henrik Kretzschmar <henne@nachtwindheim.de>
-Cc: JosephChan@via.com.tw, ScottFang@viatech.com.cn, FlorianSchandinat@gmx.de, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: tomi.valkeinen@nokia.com
+Cc: ville.syrjala@nokia.com, tj@kernel.org, lazfamam@gmail.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, 17 Jun 2010 12:01:24 +0200
-Henrik Kretzschmar <henne@nachtwindheim.de> wrote:
+If enabling fb0 fails in omapfb_create_framebuffers(), remove
+sysfs file before returning to probe. This is required to complete
+the cleanup in the above mentioned error case.
 
-> This patch moves two functions from .devexit to .text,
-> which are called on the probe error path.
-> Also a function which is called by probe is moved
-> from .text to .devinit.
+Signed-off-by: Afzal Mohammed <lazfamam@gmail.com>
+---
+ drivers/video/omap2/omapfb/omapfb-main.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Sorry, it took me a while to take a look at this.  The changes make
-sense, thanks.  I have a few viafb bits and pieces, will collect them
-into my tree shortly.
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 4b4506d..2319b81 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -1945,6 +1945,7 @@ static int omapfb_create_framebuffers(struct omapfb2_device *fbdev)
+ 			r = omapfb_overlay_enable(ovl, 1);
+ 
+ 			if (r) {
++				omapfb_remove_sysfs(fbdev);
+ 				dev_err(fbdev->dev,
+ 						"failed to enable overlay\n");
+ 				return r;
+-- 
+1.7.0.4
 
-Thanks,
-
-jon

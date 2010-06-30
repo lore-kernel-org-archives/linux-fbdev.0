@@ -1,123 +1,189 @@
-From: Baruch Siach <baruch@tkos.co.il>
-Date: Wed, 02 Jun 2010 04:34:47 +0000
-Subject: Re: [PATCH] fbdev: fix frame buffer devices menu
-Message-Id: <20100602043447.GA12190@jasper.tkos.co.il>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Wed, 30 Jun 2010 09:55:47 +0000
+Subject: [PATCH 6/6] ARM: mach-shmobile: add HDMI support to the ap4evb board
+Message-Id: <Pine.LNX.4.64.1006301152570.17489@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1274896477-6832-1-git-send-email-cascardo@holoscopio.com>
- <20100527040329.GA14841@jasper.tkos.co.il>
- <20100601142806.03c50a49.akpm@linux-foundation.org>
-In-Reply-To: <20100601142806.03c50a49.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Sascha Hauer <s.hauer@pengutronix.de>
+To: linux-fbdev@vger.kernel.org
 
-Hi Andrew,
+Support HDMI in 720p mode.
 
-On Tue, Jun 01, 2010 at 02:28:06PM -0700, Andrew Morton wrote:
-> On Thu, 27 May 2010 07:03:29 +0300
-> Baruch Siach <baruch@tkos.co.il> wrote:
-> 
-> > On Wed, May 26, 2010 at 02:54:37PM -0300, Thadeu Lima de Souza Cascardo wrote:
-> > > Commit f601441916d1e19291d0b4f044b4a7551e2924d0 has inserted the symbol
-> > > HAVE_FB_IMX, which does not depend on FB after the menuconfig FB. This
-> > > breaks the menu, presenting most of the drivers outside of it, when
-> > > using menuconfig.
-> > > 
-> > > Moving the symbol to the start of the file, just like HAVE_FB_ATMEL,
-> > > fixes the problem without breaking it for iMX25 configurations (tested
-> > > with ARCH=arm, no build).
-> > > 
-> > > Cc: Baruch Siach <baruch@tkos.co.il>
-> > > Cc: Uwe Kleine-K__nig <u.kleine-koenig@pengutronix.de>
-> > > Cc: Sascha Hauer <s.hauer@pengutronix.de>
-> > > Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> > 
-> > Acked-by: Baruch Siach <baruch@tkos.co.il>
-> > 
-> 
-> OK, I've been sitting on the below patch
-> (fbdev-fix-kconfig-breakage-in-drivers-video.patch) for months, waiting
-> for Krzysztof to respond to some comment which Baruch made, but
-> Krzysztof seems to have gone quiet.
-> 
-> Could you guys please compare Thadeu's patch with the below and work
-> out which is preferable and whether the new patch has the same coverage
-> as the old one, etc?
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
+ arch/arm/mach-shmobile/board-ap4evb.c |  128 ++++++++++++++++++++++++++++++++-
+ 1 files changed, 127 insertions(+), 1 deletions(-)
 
-Krzysztof's patch breaks the fb support for the MX25 platform, so I prefer 
-Thadeu's approach. I have no objection to the
-
-s/(FB = y) && (SPARC && FB_SBUS)/FB_SBUS/
-
-thing, though.
-
-baruch
-
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> There are two new options inside the CONFIG_FB section which do not depend
-> on the CONFIG_FB.  This break Kconfig menu layout.
-> 
-> Fix it and reduce few conditions for sparc frame buffers as the FB_SBUS =
-> ((FB = y) && SPARC).
-> 
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> Acked-by: David S. Miller <davem@davemloft.net>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  drivers/video/Kconfig |   11 ++++-------
->  1 file changed, 4 insertions(+), 7 deletions(-)
-> 
-> diff -puN drivers/video/Kconfig~fbdev-fix-kconfig-breakage-in-drivers-video drivers/video/Kconfig
-> --- a/drivers/video/Kconfig~fbdev-fix-kconfig-breakage-in-drivers-video
-> +++ a/drivers/video/Kconfig
-> @@ -400,12 +400,9 @@ config FB_SA1100
->  	  If you plan to use the LCD display with your SA-1100 system, say
->  	  Y here.
->  
-> -config HAVE_FB_IMX
-> -	bool
-> -
->  config FB_IMX
->  	tristate "Motorola i.MX LCD support"
-> -	depends on FB && (HAVE_FB_IMX || ARCH_MX1 || ARCH_MX2)
-> +	depends on FB && (ARCH_MX1 || ARCH_MX2)
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> @@ -802,7 +799,7 @@ config FB_SBUS
->  
->  config FB_BW2
->  	bool "BWtwo support"
-> -	depends on (FB = y) && (SPARC && FB_SBUS)
-> +	depends on FB_SBUS
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> @@ -811,7 +808,7 @@ config FB_BW2
->  
->  config FB_CG3
->  	bool "CGthree support"
-> -	depends on (FB = y) && (SPARC && FB_SBUS)
-> +	depends on FB_SBUS
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> @@ -820,7 +817,7 @@ config FB_CG3
->  
->  config FB_CG6
->  	bool "CGsix (GX,TurboGX) support"
-> -	depends on (FB = y) && (SPARC && FB_SBUS)
-> +	depends on FB_SBUS
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
->  	help
-> _
-> 
-
+diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
+index 5d24d4e..4f4d8c4 100644
+--- a/arch/arm/mach-shmobile/board-ap4evb.c
++++ b/arch/arm/mach-shmobile/board-ap4evb.c
+@@ -44,6 +44,7 @@
+ 
+ #include <sound/sh_fsi.h>
+ 
++#include <video/sh_mobile_hdmi.h>
+ #include <video/sh_mobile_lcdc.h>
+ #include <video/sh_mipi_dsi.h>
+ 
+@@ -529,6 +530,90 @@ static struct platform_device fsi_device = {
+ 	},
+ };
+ 
++static struct sh_mobile_lcdc_info sh_mobile_lcdc1_info = {
++	.clock_source = LCDC_CLK_EXTERNAL,
++	.ch[0] = {
++		.chan = LCDC_CHAN_MAINLCD,
++		.bpp = 16,
++		.interface_type = RGB24,
++		.clock_divider = 1,
++		.flags = LCDC_FLAGS_DWPOL | LCDC_FLAGS_HDMI,
++		.lcd_cfg = {
++			.name = "HDMI",
++			/* So far only 720p is supported */
++			.xres = 1280,
++			.yres = 720,
++			/*
++			 * If left and right margins are not multiples of 8,
++			 * LDHAJR will be adjusted accordingly by the LCDC
++			 * driver. Until we start using EDID, these values
++			 * might have to be adjusted for different monitors.
++			 */
++			.left_margin = 200,
++			.right_margin = 88,
++			.hsync_len = 48,
++			.upper_margin = 20,
++			.lower_margin = 5,
++			.vsync_len = 5,
++			.pixclock = 13468,
++			.sync = FB_SYNC_VERT_HIGH_ACT | FB_SYNC_HOR_HIGH_ACT,
++		},
++	}
++};
++
++static struct resource lcdc1_resources[] = {
++	[0] = {
++		.name	= "LCDC1",
++		.start	= 0xfe944000,
++		.end	= 0xfe947fff,
++		.flags	= IORESOURCE_MEM,
++	},
++	[1] = {
++		.start	= intcs_evt2irq(0x17a0),
++		.flags	= IORESOURCE_IRQ,
++	},
++};
++
++static struct platform_device lcdc1_device = {
++	.name		= "sh_mobile_lcdc_fb",
++	.num_resources	= ARRAY_SIZE(lcdc1_resources),
++	.resource	= lcdc1_resources,
++	.id             = 1,
++	.dev	= {
++		.platform_data	= &sh_mobile_lcdc1_info,
++		.coherent_dma_mask = ~0,
++	},
++};
++
++static struct sh_mobile_hdmi_info hdmi_info = {
++	.lcd_chan = &sh_mobile_lcdc1_info.ch[0],
++	.lcd_dev = &lcdc1_device.dev,
++};
++
++static struct resource hdmi_resources[] = {
++	[0] = {
++		.name	= "HDMI",
++		.start	= 0xe6be0000,
++		.end	= 0xe6be00ff,
++		.flags	= IORESOURCE_MEM,
++	},
++	[1] = {
++		/* There's also an HDMI interrupt on INTCS @ 0x18e0 */
++		.start	= evt2irq(0x17e0),
++		.flags	= IORESOURCE_IRQ,
++	},
++};
++
++static struct platform_device hdmi_device = {
++	.name		= "sh-mobile-hdmi",
++	.num_resources	= ARRAY_SIZE(hdmi_resources),
++	.resource	= hdmi_resources,
++	.id             = -1,
++	.dev	= {
++		.platform_data	= &hdmi_info,
++	},
++};
++
+ static struct platform_device *ap4evb_devices[] __initdata = {
+ 	&nor_flash_device,
+ 	&smc911x_device,
+@@ -539,7 +624,9 @@ static struct platform_device *ap4evb_devices[] __initdata = {
+ 	&lcdc_device,
+ 	&mipidsi0_device,
+ 	&fsi_device,
+-	&sh_mmcif_device
++	&sh_mmcif_device,
++	&lcdc1_device,
++	&hdmi_device,
+ };
+ 
+ /* TouchScreen (Needs SW3 set to OFF) */
+@@ -645,8 +732,36 @@ static void __init gpio_no_direction(u32 addr)
+ #define GPIO_PORT9CR	0xE6051009
+ #define GPIO_PORT10CR	0xE605100A
+ 
++static int __init hdmi_init_pm_clock(void)
++{
++	struct clk *hdmi_pm = clk_get(NULL, "sh-hdmi.0"),
++		*lcdc1_pm = clk_get(&lcdc1_device.dev, "sh_mobile_lcdc_fb.1");
++	int ret;
++
++	if (!IS_ERR(hdmi_pm)) {
++		ret = clk_enable(hdmi_pm);
++		if (ret < 0)
++			pr_err("Cannot enable clock: %d\n", ret);
++	} else {
++		pr_err("Cannot get HDMI PM: %ld\n", PTR_ERR(hdmi_pm));
++	}
++
++	if (!IS_ERR(lcdc1_pm)) {
++		ret = clk_enable(lcdc1_pm);
++		if (ret < 0)
++			pr_err("Cannot enable clock: %d\n", ret);
++	} else {
++		pr_err("Cannot get LCDC1 PM: %ld\n", PTR_ERR(lcdc1_pm));
++	}
++
++	return 0;
++}
++
++device_initcall(hdmi_init_pm_clock);
++
+ static void __init ap4evb_init(void)
+ {
++	u32 srcr4;
+ 	struct clk *clk;
+ 
+ 	sh7372_pinmux_init();
+@@ -787,6 +902,17 @@ static void __init ap4evb_init(void)
+ 
+ 	sh7372_add_standard_devices();
+ 
++	/* HDMI */
++	gpio_request(GPIO_FN_HDMI_HPD, NULL);
++	gpio_request(GPIO_FN_HDMI_CEC, NULL);
++
++	/* Reset HDMI, must be held at least one EXTALR (32768Hz) period */
++#define SRCR4 0xe61580bc
++	srcr4 = __raw_readl(SRCR4);
++	__raw_writel(srcr4 | (1 << 13), SRCR4);
++	udelay(50);
++	__raw_writel(srcr4 & ~(1 << 13), SRCR4);
++
+ 	platform_add_devices(ap4evb_devices, ARRAY_SIZE(ap4evb_devices));
+ }
+ 
 -- 
-                                                     ~. .~   Tk Open Systems
-=}------------------------------------------------ooO--U--Ooo------------{   - baruch@tkos.co.il - tel: +972.2.679.5364, http://www.tkos.co.il -
+1.6.2.4
+

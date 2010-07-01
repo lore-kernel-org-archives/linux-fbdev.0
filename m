@@ -1,20 +1,57 @@
 From: Afzal Mohammed <lazfamam@gmail.com>
-Date: Thu, 01 Jul 2010 13:52:00 +0000
+Date: Thu, 01 Jul 2010 13:52:01 +0000
 Subject: [PATCH] OMAP:DSS2:OMAPFB: Fix probe error path
-Message-Id: <1277991601-16528-1-git-send-email-lazfamam@gmail.com>
+Message-Id: <1277991601-16528-2-git-send-email-lazfamam@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1277907327-3443-1-git-send-email-lazfamam@gmail.com>
-In-Reply-To: <1277907327-3443-1-git-send-email-lazfamam@gmail.com>
+References: <1277991601-16528-1-git-send-email-lazfamam@gmail.com>
+In-Reply-To: <1277991601-16528-1-git-send-email-lazfamam@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@nokia.com
 Cc: ville.syrjala@nokia.com, tj@kernel.org, lazfamam@gmail.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Tomi,
+Move sysfs entry creation to omapfb_probe() from omapfb_create_framebuffers().
+This will make sure that sysfs entry is not left behind in case of unsuccessful
+probe due to failure in enabling fb0 of omapfb_create_framebuffers().
 
-Is this change ok instead of having sysfs entry removal in omapfb_free_resources() ?
-Hope this change makes probe look more of a remove mirror.
+Signed-off-by: Afzal Mohammed <lazfamam@gmail.com>
+---
+ drivers/video/omap2/omapfb/omapfb-main.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-Regards
-Afzal
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 4b4506d..710e117 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -1928,13 +1928,6 @@ static int omapfb_create_framebuffers(struct omapfb2_device *fbdev)
+ 		}
+ 	}
+ 
+-	DBG("create sysfs for fbs\n");
+-	r = omapfb_create_sysfs(fbdev);
+-	if (r) {
+-		dev_err(fbdev->dev, "failed to create sysfs entries\n");
+-		return r;
+-	}
+-
+ 	/* Enable fb0 */
+ 	if (fbdev->num_fbs > 0) {
+ 		struct omapfb_info *ofbi = FB2OFB(fbdev->fbs[0]);
+@@ -2220,6 +2213,13 @@ static int omapfb_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
++	DBG("create sysfs for fbs\n");
++	r = omapfb_create_sysfs(fbdev);
++	if (r) {
++		dev_err(fbdev->dev, "failed to create sysfs entries\n");
++		goto cleanup;
++	}
++
+ 	return 0;
+ 
+ cleanup:
+-- 
+1.7.0.4
+

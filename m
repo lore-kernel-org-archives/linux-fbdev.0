@@ -1,123 +1,107 @@
-From: Pawel Osciak <p.osciak@samsung.com>
-Date: Fri, 09 Jul 2010 08:49:55 +0000
-Subject: [PATCH 07/19] s3c-fb: Integrate palette setup code into main driver
-Message-Id: <1278665407-18002-8-git-send-email-p.osciak@samsung.com>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Date: Thu, 01 Jul 2010 08:33:58 +0000
+Subject: Re: [PATCH] imxfb: add the possibility to control PWMR
+Message-Id: <20100701083358.GC12115@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
-In-Reply-To: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
+References: <1277452400-6032-1-git-send-email-eric@eukrea.com>
+In-Reply-To: <1277452400-6032-1-git-send-email-eric@eukrea.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-arm-kernel@lists.infradead.org
 
-From: Ben Dooks <ben-linux@fluff.org>
+Hi Eric,
 
-Remove the palette setup code from the header files and
-put it into the main driver.
+I think the right way to do this is via backlight_device_register().
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
----
- arch/arm/plat-samsung/include/plat/regs-fb-v4.h |   34 -----------------------
- drivers/video/s3c-fb.c                          |   33 +++++++++++++++++++++-
- 2 files changed, 32 insertions(+), 35 deletions(-)
+Sascha
 
-diff --git a/arch/arm/plat-samsung/include/plat/regs-fb-v4.h b/arch/arm/plat-samsung/include/plat/regs-fb-v4.h
-index 8352f5dc..4c3647f 100644
---- a/arch/arm/plat-samsung/include/plat/regs-fb-v4.h
-+++ b/arch/arm/plat-samsung/include/plat/regs-fb-v4.h
-@@ -137,40 +137,6 @@
- #define WPALCON_W2PAL_16BPP_A555		(1 << 6)
- 
- 
--/* system specific implementation code for palette sizes, and other
-- * information that changes depending on which architecture is being
-- * compiled.
--*/
--
--struct s3c_fb_palette {
--	struct fb_bitfield	r;
--	struct fb_bitfield	g;
--	struct fb_bitfield	b;
--	struct fb_bitfield	a;
--};
--
--static inline void s3c_fb_init_palette(unsigned int window,
--				       struct s3c_fb_palette *palette)
--{
--	if (window < 2) {
--		/* Windows 0/1 are 8/8/8 or A/8/8/8 */
--		palette->r.offset = 16;
--		palette->r.length = 8;
--		palette->g.offset = 8;
--		palette->g.length = 8;
--		palette->b.offset = 0;
--		palette->b.length = 8;
--	} else {
--		/* currently we assume RGB 5/6/5 */
--		palette->r.offset = 11;
--		palette->r.length = 5;
--		palette->g.offset = 5;
--		palette->g.length = 6;
--		palette->b.offset = 0;
--		palette->b.length = 5;
--	}
--}
--
- /* Notes on per-window bpp settings
-  *
-  * Value	Win0	 Win1	  Win2	   Win3	    Win 4
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 5c7ac01..b00c064 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -116,6 +116,20 @@ struct s3c_fb_driverdata {
- };
- 
- /**
-+ * struct s3c_fb_palette - palette information
-+ * @r: Red bitfield.
-+ * @g: Green bitfield.
-+ * @b: Blue bitfield.
-+ * @a: Alpha bitfield.
-+ */
-+struct s3c_fb_palette {
-+	struct fb_bitfield	r;
-+	struct fb_bitfield	g;
-+	struct fb_bitfield	b;
-+	struct fb_bitfield	a;
-+};
-+
-+/**
-  * struct s3c_fb_win - per window private data for each framebuffer.
-  * @windata: The platform data supplied for the window configuration.
-  * @parent: The hardware that this window is part of.
-@@ -866,7 +880,24 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
- 	}
- 
- 	/* setup the r/b/g positions for the window's palette */
--	s3c_fb_init_palette(win_no, &win->palette);
-+	if (win->variant.palette_16bpp) {
-+		/* Set RGB 5:6:5 as default */
-+		win->palette.r.offset = 11;
-+		win->palette.r.length = 5;
-+		win->palette.g.offset = 5;
-+		win->palette.g.length = 6;
-+		win->palette.b.offset = 0;
-+		win->palette.b.length = 5;
-+
-+	} else {
-+		/* Set 8bpp or 8bpp and 1bit alpha */
-+		win->palette.r.offset = 16;
-+		win->palette.r.length = 8;
-+		win->palette.g.offset = 8;
-+		win->palette.g.length = 8;
-+		win->palette.b.offset = 0;
-+		win->palette.b.length = 8;
-+	}
- 
- 	/* setup the initial video mode from the window */
- 	fb_videomode_to_var(&fbinfo->var, initmode);
--- 
-1.7.1.569.g6f426
+On Fri, Jun 25, 2010 at 09:53:20AM +0200, Eric B=E9nard wrote:
+> this adds the possibility to enable/disable the backlight through
+> the PWMR register, as offered in mx3fb.
+>=20
+> Signed-off-by: Eric B=E9nard <eric@eukrea.com>
+> ---
+>  arch/arm/plat-mxc/include/mach/imxfb.h |    1 +
+>  drivers/video/imxfb.c                  |   14 ++++++++++++++
+>  2 files changed, 15 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/arch/arm/plat-mxc/include/mach/imxfb.h b/arch/arm/plat-mxc/i=
+nclude/mach/imxfb.h
+> index 5263506..3c24778 100644
+> --- a/arch/arm/plat-mxc/include/mach/imxfb.h
+> +++ b/arch/arm/plat-mxc/include/mach/imxfb.h
+> @@ -67,6 +67,7 @@ struct imx_fb_platform_data {
+>  	u_int		pwmr;
+>  	u_int		lscr1;
+>  	u_int		dmacr;
+> +	u_int		backlight_level;
+> =20
+>  	u_char * fixed_screen_cpu;
+>  	dma_addr_t fixed_screen_dma;
+> diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+> index b4b6dec..9451200 100644
+> --- a/drivers/video/imxfb.c
+> +++ b/drivers/video/imxfb.c
+> @@ -169,6 +169,7 @@ struct imxfb_info {
+>  	u_int			pwmr;
+>  	u_int			lscr1;
+>  	u_int			dmacr;
+> +	u_int			backlight_level;
+>  	u_int			cmap_inverse:1,
+>  				cmap_static:1,
+>  				unused:30;
+> @@ -302,6 +303,14 @@ static int imxfb_setcolreg(u_int regno, u_int red, u=
+_int green, u_int blue,
+>  	return ret;
+>  }
+> =20
+> +static void imx_fb_set_brightness(struct imxfb_info *fbi, uint8_t value)
+> +{
+> +	pr_debug("%s: value =3D %d\n", __func__, value);
+> +	/* This might be board-specific */
+> +	writel((fbi->pwmr & ~0xFF) | value, fbi->regs + LCDC_PWMR);
+> +	return;
+> +}
+> +
+>  static const struct imx_fb_videomode *imxfb_find_mode(struct imxfb_info =
+*fbi)
+>  {
+>  	struct imx_fb_videomode *m;
+> @@ -470,12 +479,16 @@ static void imxfb_enable_controller(struct imxfb_in=
+fo *fbi)
+>  		fbi->backlight_power(1);
+>  	if (fbi->lcd_power)
+>  		fbi->lcd_power(1);
+> +	if (fbi->backlight_level)
+> +		imx_fb_set_brightness(fbi, fbi->backlight_level);
+>  }
+> =20
+>  static void imxfb_disable_controller(struct imxfb_info *fbi)
+>  {
+>  	pr_debug("Disabling LCD controller\n");
+> =20
+> +	if (fbi->backlight_level)
+> +		imx_fb_set_brightness(fbi, 0);
+>  	if (fbi->backlight_power)
+>  		fbi->backlight_power(0);
+>  	if (fbi->lcd_power)
+> @@ -660,6 +673,7 @@ static int __init imxfb_init_fbinfo(struct platform_d=
+evice *pdev)
+>  	fbi->pwmr			=3D pdata->pwmr;
+>  	fbi->lcd_power			=3D pdata->lcd_power;
+>  	fbi->backlight_power		=3D pdata->backlight_power;
+> +	fbi->backlight_level		=3D pdata->backlight_level;
+> =20
+>  	for (i =3D 0, m =3D &pdata->mode[0]; i < pdata->num_modes; i++, m++)
+>  		info->fix.smem_len =3D max_t(size_t, info->fix.smem_len,
+> --=20
+> 1.6.3.3
+>=20
+>=20
 
+--=20
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

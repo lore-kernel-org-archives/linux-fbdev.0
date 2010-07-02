@@ -1,25 +1,75 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Date: Tue, 27 Jul 2010 08:30:31 +0000
-Subject: Re: [PATCH 5/6 v3] fbdev: sh-mobile: HDMI support for SH-Mobile SoCs
-Message-Id: <AANLkTimRvT4B3F-6oV5emPtoPNsMwWEmp2yMEQRr9w63@mail.gmail.com>
+From: Ben Dooks <ben@simtec.co.uk>
+Date: Fri, 02 Jul 2010 09:51:30 +0000
+Subject: Re: [PATCH v3 01/12] s3c-fb: Fix various null references on framebuffer
+Message-Id: <4C2DB6A2.2040005@simtec.co.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1007211156030.16933@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1007211156030.16933@axis700.grange>
+References: <1277712538-23188-1-git-send-email-p.osciak@samsung.com>
+	<1277712538-23188-2-git-send-email-p.osciak@samsung.com>
+In-Reply-To: <1277712538-23188-2-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Jul 21, 2010 at 7:13 PM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> Some SH-Mobile SoCs have an HDMI controller and a PHY, attached to one of their
-> LCDC interfaces. This patch adds a preliminary static support for such
-> controllers, this means, that only the 720p mode is handled ATM. Support for
-> more modes and a dynamic switching between them will be added by a follow up
-> patch.
->
-> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+On 28/06/10 09:08, Pawel Osciak wrote:
+> The following problems were found in the above situation:
+> 
+> sfb->windows[win] was being assigned at the end of s3c_fb_probe_win only.
+> This resulted in passing a NULL to s3c_fb_release_win if probe_win returned
+> early and a memory leak.
+> 
+> dma_free_writecombine does not allow its third argument to be NULL.
+> 
+> fb_dealloc_cmap does not verify whether its argument is not NULL.
+> 
+> Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> ---
+>  drivers/video/s3c-fb.c |    8 +++++---
+>  1 files changed, 5 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+> index b00c064..d998324 100644
+> --- a/drivers/video/s3c-fb.c
+> +++ b/drivers/video/s3c-fb.c
+> @@ -804,7 +804,8 @@ static void s3c_fb_free_memory(struct s3c_fb *sfb, struct s3c_fb_win *win)
+>  {
+>  	struct fb_info *fbi = win->fbinfo;
+>  
+> -	dma_free_writecombine(sfb->dev, PAGE_ALIGN(fbi->fix.smem_len),
+> +	if (fbi->screen_base)
+> +		dma_free_writecombine(sfb->dev, PAGE_ALIGN(fbi->fix.smem_len),
+>  			      fbi->screen_base, fbi->fix.smem_start);
+>  }
+>  
+> @@ -819,7 +820,8 @@ static void s3c_fb_release_win(struct s3c_fb *sfb, struct s3c_fb_win *win)
+>  {
+>  	if (win->fbinfo) {
+>  		unregister_framebuffer(win->fbinfo);
+> -		fb_dealloc_cmap(&win->fbinfo->cmap);
+> +		if (&win->fbinfo->cmap)
+> +			fb_dealloc_cmap(&win->fbinfo->cmap);
 
-[v3]
+did you really mean &win->fbinfo->cmap? surely that will end up
+always evaluating to true?
 
-Acked-by: Magnus Damm <damm@opensource.se>
+>  		s3c_fb_free_memory(sfb, win);
+>  		framebuffer_release(win->fbinfo);
+>  	}
+> @@ -865,6 +867,7 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+>  	WARN_ON(windata->win_mode.yres = 0);
+>  
+>  	win = fbinfo->par;
+> +	*res = win;
+>  	var = &fbinfo->var;
+>  	win->variant = *variant;
+>  	win->fbinfo = fbinfo;
+> @@ -939,7 +942,6 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+>  		return ret;
+>  	}
+>  
+> -	*res = win;
+>  	dev_info(sfb->dev, "window %d: fb %s\n", win_no, fbinfo->fix.id);
+>  
+>  	return 0;
+

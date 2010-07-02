@@ -1,33 +1,41 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Fri, 02 Jul 2010 07:30:01 +0000
-Subject: Re: [PATCH 1/3] FB: Add some members for CPU Interface.
-Message-Id: <20100702073001.GA25492@n2100.arm.linux.org.uk>
+From: In-Ki Dae <inki.dae@samsung.com>
+Date: Fri, 02 Jul 2010 07:50:53 +0000
+Subject: Re: Re: [PATCH 1/3] FB: Add some members for CPU Interface.
+Message-Id: <25797910.38561278057053699.JavaMail.weblogic@epml17>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4C29CFBD.3040205@samsung.com>
-	<AANLkTilgB3s8hy5Qg7IYpyBzwHCgK_GswVZqpxhryU5L@mail.gmail.com>
+References: <AANLkTilgB3s8hy5Qg7IYpyBzwHCgK_GswVZqpxhryU5L@mail.gmail.com>
 In-Reply-To: <AANLkTilgB3s8hy5Qg7IYpyBzwHCgK_GswVZqpxhryU5L@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Jun 30, 2010 at 08:02:31AM +0800, Jaya Kumar wrote:
-> > diff --git a/include/linux/fb.h b/include/linux/fb.h
-> > index 907ace3..73381c3 100644
-> > --- a/include/linux/fb.h
-> > +++ b/include/linux/fb.h
-> > @@ -269,6 +269,12 @@ struct fb_var_screeninfo {
-> >  	__u32 vmode;			/* see FB_VMODE_*		*/
-> >  	__u32 rotate;			/* angle we rotate counter clockwise */
-> >  	__u32 reserved[5];		/* Reserved for future compatibility */
-> > +
-> > +	/* For cpu interface timing. */
-> > +	__u32 cs_setup;
-> > +	__u32 wr_setup;
-> > +	__u32 wr_act;
-> > +	__u32 wr_hold;
-
-This changes the framebuffer userspace API, making it incompatible with
-existing users.  What this means is that stuff using the framebuffer API
-in userspace has to be upgraded/downgraded in lock-step with this change
-- which is not a good idea.
+T2ssIEkgdW5kZXJzdG9vZC4KCkkgdGhpbmsgdGhpcyBpc3N1ZSBpbmNvbXBhdGlibGUgd2l0aCBl
+eGlzdGluZyB1c2VycyBpcyBiZWNhdXNlIHVzZXJzcGFjZSBBUEkgZGlkbid0IGNvbnNpZGVyIGNw
+dSBtb2RlIGJlZm9yZS4KYW55d2F5LCBJIHdpbGwgY29ycmVjdCBteSBwYXRjaCBhcyB5b3VyIGNv
+bW1lbnRzIGFuZCBzZW5kIGl0IGFnYWluLgpQZXJoYXBzLCBjcHUgdGltaW5nIHZhcmlhYmxlcyB3
+b3VsZCBiZSBtb3ZlZCB0byBwbGF0Zm9ybSBmaWxlLgoKdGhhbmsgeW91LgoKLS0tLS0tLSBPcmln
+aW5hbCBNZXNzYWdlIC0tLS0tLS0KU2VuZGVyIDogUnVzc2VsbCBLaW5nIC0gQVJNIExpbnV4PGxp
+bnV4QGFybS5saW51eC5vcmcudWs+IApEYXRlICAgOiAyMDEwLTA3LTAyIDE2OjMwIChHTVQrMDk6
+MDApClRpdGxlICA6IFJlOiBbUEFUQ0ggMS8zXSBGQjogQWRkIHNvbWUgbWVtYmVycyBmb3IgQ1BV
+IEludGVyZmFjZS4KCk9uIFdlZCwgSnVuIDMwLCAyMDEwIGF0IDA4OjAyOjMxQU0gKzA4MDAsIEph
+eWEgS3VtYXIgd3JvdGU6Cj4gPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9mYi5oIGIvaW5j
+bHVkZS9saW51eC9mYi5oCj4gPiBpbmRleCA5MDdhY2UzLi43MzM4MWMzIDEwMDY0NAo+ID4gLS0t
+IGEvaW5jbHVkZS9saW51eC9mYi5oCj4gPiArKysgYi9pbmNsdWRlL2xpbnV4L2ZiLmgKPiA+IEBA
+IC0yNjksNiArMjY5LDEyIEBAIHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbyB7Cj4gPiAgCV9fdTMy
+IHZtb2RlOwkJCS8qIHNlZSBGQl9WTU9ERV8qCQkqLwo+ID4gIAlfX3UzMiByb3RhdGU7CQkJLyog
+YW5nbGUgd2Ugcm90YXRlIGNvdW50ZXIgY2xvY2t3aXNlICovCj4gPiAgCV9fdTMyIHJlc2VydmVk
+WzVdOwkJLyogUmVzZXJ2ZWQgZm9yIGZ1dHVyZSBjb21wYXRpYmlsaXR5ICovCj4gPiArCj4gPiAr
+CS8qIEZvciBjcHUgaW50ZXJmYWNlIHRpbWluZy4gKi8KPiA+ICsJX191MzIgY3Nfc2V0dXA7Cj4g
+PiArCV9fdTMyIHdyX3NldHVwOwo+ID4gKwlfX3UzMiB3cl9hY3Q7Cj4gPiArCV9fdTMyIHdyX2hv
+bGQ7CgpUaGlzIGNoYW5nZXMgdGhlIGZyYW1lYnVmZmVyIHVzZXJzcGFjZSBBUEksIG1ha2luZyBp
+dCBpbmNvbXBhdGlibGUgd2l0aApleGlzdGluZyB1c2Vycy4gIFdoYXQgdGhpcyBtZWFucyBpcyB0
+aGF0IHN0dWZmIHVzaW5nIHRoZSBmcmFtZWJ1ZmZlciBBUEkKaW4gdXNlcnNwYWNlIGhhcyB0byBi
+ZSB1cGdyYWRlZC9kb3duZ3JhZGVkIGluIGxvY2stc3RlcCB3aXRoIHRoaXMgY2hhbmdlCi0gd2hp
+Y2ggaXMgbm90IGEgZ29vZCBpZGVhLgotLQpUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDog
+c2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtZmJkZXYiIGluCnRoZSBib2R5IG9mIGEg
+bWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnCk1vcmUgbWFqb3Jkb21vIGluZm8g
+YXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbAoKCgr/9Oi6ey5u
+xyuJt5+uia2GKyWKy/+x6d22F6WKd/+6ey5uxyuJt6WKe7H99t16/+Ke2F5uh3Kh9qZ6yxqB62iZ
+qOit2iaj++B6v+R6ud6X+iuAyit6ZqOit2iaiKd+hq2G22n//++B6v+R6ud6X+iuD+ZqOit2iaj+
+Kd+j+G0K

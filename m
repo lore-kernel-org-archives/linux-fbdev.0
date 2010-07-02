@@ -1,39 +1,19 @@
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Date: Sun, 25 Jul 2010 11:54:24 +0000
-Subject: Re: [Nouveau] [PATCH v2] vga16fb: refuse to load in face of other
-Message-Id: <20100725115424.GA2837@joi.lan>
+From: Ben Dooks <ben@simtec.co.uk>
+Date: Fri, 02 Jul 2010 11:12:06 +0000
+Subject: Re: [PATCH v3 03/12] s3c-fb: Separate S5PC100 and S5PV210 framebuffer
+Message-Id: <4C2DC986.7040705@simtec.co.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100720191923.GA11056@joi.lan>
- <20100722172039.e935c67d.akpm@linux-foundation.org>
- <20100723131034.GA6618@joi.lan>
- <AANLkTimQZ6_+o=3pGa6hGbeFU99RMPFRmO+ndMZDHZMS@mail.gmail.com>
-In-Reply-To: <AANLkTimQZ6_+o=3pGa6hGbeFU99RMPFRmO+ndMZDHZMS@mail.gmail.com>
+References: <1277712538-23188-1-git-send-email-p.osciak@samsung.com>
+	<1277712538-23188-4-git-send-email-p.osciak@samsung.com>
+In-Reply-To: <1277712538-23188-4-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Airlie <airlied@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, nouveau@lists.freedesktop.org, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-On Sun, Jul 25, 2010 at 06:42:48PM +1000, Dave Airlie wrote:
-> On Fri, Jul 23, 2010 at 11:10 PM, Marcin Slusarz
-> <marcin.slusarz@gmail.com> wrote:
-> > On Thu, Jul 22, 2010 at 05:20:39PM -0700, Andrew Morton wrote:
-> >> On Tue, 20 Jul 2010 21:19:23 +0200
-> >> Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
-> >>
-> >> > We don't want vga16fb to mess with hardware initialized by other driver.
-> >> > Detect it and refuse to load.
-> >> > It fixes nouveau interrupt storm on some machines.
-> 
-> Can't we keep this all inside vga16fb? 
+On 28/06/10 09:08, Pawel Osciak wrote:
+> S5PC100 and S5PV210 framebuffer devices differ slightly in terms of
+> available registers and their driver data structures have to be separate.
 
-That's what v1 did (*), but Andrew didn't like it.
-
-> just have it walk PCI tree
-> looking for a primary VGA card, and if it has a driver bound, just
-> refuse to bind.
-> 
-> Dave.
-
-(*) http://lkml.org/lkml/2010/7/20/244
+Would have been nice to note which ones changes, otherwise ok.
 

@@ -1,14 +1,13 @@
-From: In-Ki Dae <inki.dae@samsung.com>
-Subject: Re: Re: [PATCH 1/3] FB: Add some members for CPU Interface.
-Date: Fri, 02 Jul 2010 02:35:26 +0000 (GMT)
-Message-ID: <30082026.20641278038126412.JavaMail.weblogic@epml12>
-Reply-To: inki.dae@samsung.com
+From: InKi Dae <inki.dae@samsung.com>
+Subject: [PATCH 0/2] ARM: S5PV210: Add MIPI-DSI support.
+Date: Fri, 02 Jul 2010 17:47:58 +0900
+Message-ID: <4C2DA7BE.6070701@samsung.com>
+References: <4C29AF72.6090200@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-return: prohibited
-MIME-version: 1.0
+In-reply-to: <4C29AF72.6090200@samsung.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
 	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
@@ -19,38 +18,26 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: linux-arm-kernel-bounces@lists.infradead.org
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "kmpark@infradead.org" <kmpark@infradead.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, Ben Dooks <ben-linux@fluff.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: linux-arm-kernel@lists.infradead.org, linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org, Ben Dooks <ben-linux@fluff.org>, kmpark@infradead.org
 
-Ok, andrew
+Hello all,
 
-I will add descriptions to these variables also apply commends of other developers.
+This patch is for MIPI-DSI controller based on S5PV210 (or S5PC110), and solved the problem, added cpu timing variables to fb_varscreen_info and Andrew Morton, Russell King and Jaya Kumar pointed out.
+so I'm sending these patch series again.
 
-Thank you.
-------- Original Message -------
-Sender : Andrew Morton<akpm@linux-foundation.org> 
-Date   : 2010-07-02 10:46 (GMT+09:00)
-Title  : Re: [PATCH 1/3] FB: Add some members for CPU Interface.
+LCD Panel can use following interfaces,
+- RGB or CPU Interface.
+- RGB or CPU Interface based on MIPI-DSI.
 
-On Fri, 02 Jul 2010 01:21:12 +0000 (GMT) In-Ki Dae <inki.dae@samsung.com> wrote:
+in case of small size lcd panel, it was ok only rgb or cpu interface not using mipi controller.
+but big size panel(more then 480x800) needs MIPI-DSI Interface or other hardwares like LVDS To transfer image data to lcd panel fine.
 
-> Hi, Andrew,
-> 
-> cpu timing variables could be used generically.
-> now fb.h and modedb.c file have been considered only for video mode.
-> but the way of transfering screen data includes also command mode(cpu mode or i80 mode)
-> so I thought it should be added things for it to fb_varscreeninfo struct.
-> 
-> Could you please tell me why cpu timing variables are specific to s3c-fb?
+I tested this patch on cpu interface based on MIPI so for this patch, Some mainline codes should be modified and also considered RGB interface.
 
-I dunno - I was just looking at the code.
+This patch set consists of the following patches,
 
-I don't even know what "cpu timing variables" _are_, in the context of
-video drivers.  Look at this:
+[PATCH 1/2] S5PV210: FB: Add MIPI-DSI and CPU Interface features.
+[PATCH 1/2] S5PV210: Add MIPI-DSI Driver.
 
-> > CPU interface needs cs, wr setup, wr act and hold delay.
-> > I added some members for them to common framework.
-
-It's gobbledigook!  Please, write patch descriptions which help poor
-dumb people who don't have detailed knowledge of the particular
-hardware understand your patch?
+Best regards,
+InKi Dae

@@ -1,51 +1,88 @@
-From: "Dr. Ing. Dieter Jurzitza" <dieter.jurzitza@t-online.de>
-Date: Sat, 10 Jul 2010 13:42:38 +0000
-Subject: Re: kernel mode setting / how to configure the console's resolution X x Y with KMS active
-Message-Id: <201007101542.38581.dieter.jurzitza@t-online.de>
+From: Magnus Damm <magnus.damm@gmail.com>
+Date: Fri, 02 Jul 2010 08:21:30 +0000
+Subject: Re: [PATCH 3/6] ARM: mach-shmobile: extend clock definitions on
+Message-Id: <AANLkTil3HzGf35mFzOUsuOCguuktvf-Z9Pu5zi_U5yeN@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201007100103.55941.dieter.jurzitza@t-online.de>
-In-Reply-To: <201007100103.55941.dieter.jurzitza@t-online.de>
+References: <Pine.LNX.4.64.1006301137290.17489@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1006301137290.17489@axis700.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-Hi Dave,
-thank you very much for this hint - video=3D<something> does the trick. I o=
-nly=20
-wonder why the old entries (that IMHO were meant to do the same,=20
-vga=3D<something>, i. e. vga=3D0x324) don't work any more. I wouln't have s=
-earched=20
-for this, as I was accustomed to vga=3D<something> what actually does not w=
-ork=20
-any more.
+On Wed, Jun 30, 2010 at 6:55 PM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> Add definitions for DV_CLKI and HDMI clocks, extend support for PLLC2 and=
+ some
+> other clocks.
+>
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
-And, by the way, the only tiny drawback I noted is the fact that the splash=
-=20
-has disappeared. But this is by far not as bad as a useless console ..... :=
--)
+Hi Guennadi,
 
-Thanks again,
-take care
+Thanks for your work on this.
 
+> diff --git a/arch/arm/mach-shmobile/clock-sh7372.c b/arch/arm/mach-shmobi=
+le/clock-sh7372.c
+> index 26521a7..21cb629 100644
+> --- a/arch/arm/mach-shmobile/clock-sh7372.c
+> +++ b/arch/arm/mach-shmobile/clock-sh7372.c
+> @@ -50,6 +50,12 @@
+> =A0#define SMSTPCR3 =A0 =A0 =A0 0xe615013c
+> =A0#define SMSTPCR4 =A0 =A0 =A0 0xe6150140
+>
+> +/* Fixed 27 MHz video clock from DV_CLKI pin */
+> +static struct clk dv_clki_clk =3D {
+> + =A0 =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =3D "dv_clki",
+> + =A0 =A0 =A0 .rate =A0 =A0 =A0 =A0 =A0 =3D 27000000,
+> +};
 
+Hm, 27MHz is a board property, not a cpu property.
 
+Also, you don't want to use "name" in struct clk. clkdev is used for
+lookup these days.
+> =A0/* PLLC2 */
+> +
+> +/* Indices are important - they are the actual src selecting values */
+> +static struct clk *pllc2_parent[] =3D {
+> + =A0 =A0 =A0 [0] =3D &extal1_div2_clk,
+> + =A0 =A0 =A0 [1] =3D &extal2_div2_clk,
+> + =A0 =A0 =A0 [2] =3D &dv_clki_div2_clk,
+> + =A0 =A0 =A0 [3] =3D NULL, =A0 =A0 /* extal2_div4 not implemented yet*/
+> +};
 
-Dieter Jurzitza
+Why not implemented yet?
 
---=20
------------------------------------------------------------
+> + =A0 =A0 =A0 /*
+> + =A0 =A0 =A0 =A0* TODO: If the PLL is off, mult should be =3D 1, but the=
+ clock must be
+> + =A0 =A0 =A0 =A0* stopped during re-parenting, a better solution to this=
+ conflict
+> + =A0 =A0 =A0 =A0* should be found.
+> + =A0 =A0 =A0 =A0*/
+> + =A0 =A0 =A0 mult =3D (((__raw_readl(PLLC2CR) >> 24) & 0x3f) + 1) * 2;
 
-                               |
-                                \
-                 /\_/\           |
-                | ~x~ |/-----\   /
-                 \   /-       \_/
-  ^^__   _        /  _  ____   /
- <=B0=B0__ \- \_/     |  |/    |  |
-  ||  ||         _| _|    _| _|
+Yes, this needs to be fixed.
 
-if you really want to see the pictures above - use some font
-with constant spacing like courier! :-)
------------------------------------------------------------
+> +enum { DIV6_HDMI, DIV6_REPARENT_NR };
+> +
+> +/* Indices are important - they are the actual src selecting values */
+> +static struct clk *hdmi_parent[] =3D {
+> + =A0 =A0 =A0 [0] =3D &pllc1_div2_clk,
+> + =A0 =A0 =A0 [1] =3D &pllc2_clk,
+> + =A0 =A0 =A0 [2] =3D &dv_clki_clk,
+> + =A0 =A0 =A0 [3] =3D NULL, =A0 =A0 /* pllc2_div4 not implemented yet */
+> +};
+> +
+> +static struct clk div6_reparent_clks[DIV6_REPARENT_NR] =3D {
+> + =A0 =A0 =A0 [DIV6_HDMI] =3D SH_CLK_DIV6_EXT(&pllc1_div2_clk, HDMICKCR, =
+0,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ hdmi_parent, ARRAY_SIZE(hdmi_parent), 6, 2),
+> +};
 
+This part looks nice and clean IMO. Thanks!
+
+Cheers,
+
+/ magnus

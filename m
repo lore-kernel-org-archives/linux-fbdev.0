@@ -1,67 +1,78 @@
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Date: Thu, 01 Jul 2010 23:47:29 +0000
-Subject: Re: [PATCH 1/3] FB: Add some members for CPU Interface.
-Message-Id: <AANLkTilwTdyKptIWPsnZF4kXAERCsQb2f6Ymyrkz_v5q@mail.gmail.com>
+From: In-Ki Dae <inki.dae@samsung.com>
+Date: Fri, 02 Jul 2010 01:51:08 +0000
+Subject: Re: Re: [PATCH 1/3] FB: Add some members for CPU Interface.
+Message-Id: <24832988.17421278035467971.JavaMail.weblogic@epml12>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4C29CFBD.3040205@samsung.com>
-	<AANLkTilgB3s8hy5Qg7IYpyBzwHCgK_GswVZqpxhryU5L@mail.gmail.com>
-	<AANLkTikxu_p-F4iJnwiY7GvP0Zkf-WsZEAeLzfJuljlB@mail.gmail.com>
-In-Reply-To: <AANLkTikxu_p-F4iJnwiY7GvP0Zkf-WsZEAeLzfJuljlB@mail.gmail.com>
+References: <AANLkTilgB3s8hy5Qg7IYpyBzwHCgK_GswVZqpxhryU5L@mail.gmail.com>
+In-Reply-To: <AANLkTilgB3s8hy5Qg7IYpyBzwHCgK_GswVZqpxhryU5L@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
 To: linux-arm-kernel@lists.infradead.org
 
-Hi InKi,
-
-Thanks for your reply.
-
-On Wed, Jun 30, 2010 at 12:36 PM, InKi Dae <daeinki@gmail.com> wrote:
-> Hi Jaya,
->
-> 2010/6/30 Jaya Kumar <jayakumar.lkml@gmail.com>:
->> 2010/6/29 InKi Dae <inki.dae@samsung.com>:
->>> CPU interface needs cs, wr setup, wr act and hold delay.
->>> I added some members for them to common framework.
->>
->> Hi InKi Dae,
->>
->> The patch looks interesting. Could you help us understand more about
->> it from a big picture perspective? ie: how is this "cpu interface"
->> used? I think fb_var_screeninfo is intended to be a very generic data
->> structure and since it is exposed to userspace we should be cautious
->> about what we add to it. I didn't understand the purpose of exposing
->> cs, wr setup, wr act and hold delay to userspace.
->
-> in case of lcd panel with cpu interface, it could get screen data
-> through arm core
-> or display controller supporting cpu interface mode.
-> display controller of s5pv210 chip can create cpu interface signal according to
-> cs, wr setup, wr act and hold time setting.
-> the reason I added cpu timing variables to fb_var_screeninfo is for using common
-> framework when setting them to the display controller as cpu timing info.
-> please, see [PATCH 2/3], s3c_fb_set_timing function part.
->
-> and cpu timing could be adjusted by user through fb_var_screeninfo,
-> for this, suitable checking should be considered at machine specific
-> fb_check_var func.
-> also you can see that through [PATCH 2/3], s3c_fb_check_var.
-
-I'm still having difficulty understanding this. I guess what I am
-asking is why do these new variables "cs, wr setup, wr act and hold
-time setting", have to be in fb_var_screeninfo which is a generic
-platform/implementation independent structure exposed to userspace? If
-I've understood things correctly, the variables themselves, eg: wr
-setup seem to be specific to this implementation rather than being
-generic like the other members of fb_var_sreeninfo. Have you
-considered an alternative way by which you can achieve the desired
-functionality. Also, I'm confused when you say "cpu timing" could be
-adjusted by user through fb_var_screeninfo. Could you elaborate on
-that?
-
-I haven't read through the remaining part of the message about
-mipi-dsi issues, I'm hoping developers who have implemented the other
-MIPI-DSI implementations in fbdev could chime in.
-
-Thanks,
-jaya
+SGksIEpheWEsCgo+SSdtIGNvbmZ1c2VkIHdoZW4geW91IHNheSAiY3B1IHRpbWluZyIgY291bGQg
+YmUKPmFkanVzdGVkIGJ5IHVzZXIgdGhyb3VnaCBmYl92YXJfc2NyZWVuaW5mby4gQ291bGQgeW91
+IGVsYWJvcmF0ZSBvbgo+dGhhdD8KCm15IHNheWluZyBpcyB0aGUgY2FzZSB0aGF0IGRpc3BsYXkg
+Y29udHJvbGxlciBjcmVhdGVzIGNwdSB0aW1pbmcuCmRpc3BsYXkgY29udHJvbGxlciB3aXRoIGNw
+dSBtb2RlIHdvdWxkIGNyZWF0ZSBjcHUgdGltaW5nIHNpZ25hbHMKYWNjb3JkaW5nIHRvIGNwdSB0
+aW1pbmcgdmFyaWFibGVzLgoKdGhlIHJlYXNvbiwgdXNpbmcgY3B1IGludGVyZmFjZSwgaXMgYmVj
+YXVzZSBpdCBjb3VsZCByZWR1Y2UgcG93ZXIgY29uc3VtcHRpb24uCmluIGNhc2Ugb2YgcmdiIGlu
+dGVyZmFjZSwgc2NyZWVuIGRhdGEgd2l0aCA2MGZwcyBhcmUgdHJhbnNmZXJyZWQgdG8gbGNkIHBh
+bmVsIGF1dG9tYXRpY2FsbHkKYWNjb3JkaW5nIHRvIHJnYiBzaWduYWxzLgpidXQgY3B1IGludGVy
+ZmFjZSBpcyB0cmFuc2ZlcnJlZCBvbmx5IHdoZW4gdHJpZ2dlcnJlZCwgb2YgY291cnNlIHRoZSB3
+YXkgb2YgdHJpZ2dlcmluZyBjb3VsZApiZSBkaWZmZXJlbnQgYWNjb3JkaW5nIHRvIHBsYXRmb3Jt
+LiAoYWxzbyBhZGp1c3RpbmcgY3B1IHRpbWluZyBkZWxheSkKZXgpIGlmIHRoZXJlIGlzIHN0b3Ag
+c2NyZWVuLCBpdCBkb2Vzbid0IG5lZWQgdG8gdHJpZ2dlciBhbmQKICAgICAgaWYgc2xvdyBtb3Zp
+bmcsIGl0IGNvdWxkIGluY3JlYXNlIGNwdSB0aW1pbmcgZGVsYXkuCgphcyBJIHNhaWQgdG8gQW5k
+cmF3IGJlZm9yZSwgY3B1IHRpbWluZyB2YXJpYWJsZXMgY291bGQgYmUgdXNlZCBnZXJuZXJpY2Fs
+bHkuCmJlY2F1c2UgbGNkIHBhbmVsIGluY2x1ZGVzIGNwdSBtb2RlIGFsc28uCmJ1dCBsaW51eCBm
+cmFtZWJ1ZmZlciBmcmFtZXdvcmsgZGlkbid0IGNvbnNpZGVyIGNwdSBtb2RlLgoKaWYgdGhlcmUg
+aXMgc29tZSBwYXJ0IEkgZG9uJ3Qga25vdywgcGxlYXNlIGdpdmUgbWUgc29tZSBhZHZpY2VzLgpJ
+IGNvdWxkIG1vZGlmeSBteSBwYXRjaHMgYW55dGltZS4KCnRoYW5rIHlvdS4KCi0tLS0tLS0gT3Jp
+Z2luYWwgTWVzc2FnZSAtLS0tLS0tClNlbmRlciA6IEpheWEgS3VtYXI8amF5YWt1bWFyLmxrbWxA
+Z21haWwuY29tPiAKRGF0ZSAgIDogMjAxMC0wNy0wMiAwODo0NyAoR01UKzA5OjAwKQpUaXRsZSAg
+OiBSZTogW1BBVENIIDEvM10gRkI6IEFkZCBzb21lIG1lbWJlcnMgZm9yIENQVSBJbnRlcmZhY2Uu
+CgpIaSBJbktpLAoKVGhhbmtzIGZvciB5b3VyIHJlcGx5LgoKT24gV2VkLCBKdW4gMzAsIDIwMTAg
+YXQgMTI6MzYgUE0sIEluS2kgRGFlIDxkYWVpbmtpQGdtYWlsLmNvbT4gd3JvdGU6Cj4gSGkgSmF5
+YSwKPgo+IDIwMTAvNi8zMCBKYXlhIEt1bWFyIDxqYXlha3VtYXIubGttbEBnbWFpbC5jb20+Ogo+
+PiAyMDEwLzYvMjkgSW5LaSBEYWUgPGlua2kuZGFlQHNhbXN1bmcuY29tPjoKPj4+IENQVSBpbnRl
+cmZhY2UgbmVlZHMgY3MsIHdyIHNldHVwLCB3ciBhY3QgYW5kIGhvbGQgZGVsYXkuCj4+PiBJIGFk
+ZGVkIHNvbWUgbWVtYmVycyBmb3IgdGhlbSB0byBjb21tb24gZnJhbWV3b3JrLgo+Pgo+PiBIaSBJ
+bktpIERhZSwKPj4KPj4gVGhlIHBhdGNoIGxvb2tzIGludGVyZXN0aW5nLiBDb3VsZCB5b3UgaGVs
+cCB1cyB1bmRlcnN0YW5kIG1vcmUgYWJvdXQKPj4gaXQgZnJvbSBhIGJpZyBwaWN0dXJlIHBlcnNw
+ZWN0aXZlPyBpZTogaG93IGlzIHRoaXMgImNwdSBpbnRlcmZhY2UiCj4+IHVzZWQ/IEkgdGhpbmsg
+ZmJfdmFyX3NjcmVlbmluZm8gaXMgaW50ZW5kZWQgdG8gYmUgYSB2ZXJ5IGdlbmVyaWMgZGF0YQo+
+PiBzdHJ1Y3R1cmUgYW5kIHNpbmNlIGl0IGlzIGV4cG9zZWQgdG8gdXNlcnNwYWNlIHdlIHNob3Vs
+ZCBiZSBjYXV0aW91cwo+PiBhYm91dCB3aGF0IHdlIGFkZCB0byBpdC4gSSBkaWRuJ3QgdW5kZXJz
+dGFuZCB0aGUgcHVycG9zZSBvZiBleHBvc2luZwo+PiBjcywgd3Igc2V0dXAsIHdyIGFjdCBhbmQg
+aG9sZCBkZWxheSB0byB1c2Vyc3BhY2UuCj4KPiBpbiBjYXNlIG9mIGxjZCBwYW5lbCB3aXRoIGNw
+dSBpbnRlcmZhY2UsIGl0IGNvdWxkIGdldCBzY3JlZW4gZGF0YQo+IHRocm91Z2ggYXJtIGNvcmUK
+PiBvciBkaXNwbGF5IGNvbnRyb2xsZXIgc3VwcG9ydGluZyBjcHUgaW50ZXJmYWNlIG1vZGUuCj4g
+ZGlzcGxheSBjb250cm9sbGVyIG9mIHM1cHYyMTAgY2hpcCBjYW4gY3JlYXRlIGNwdSBpbnRlcmZh
+Y2Ugc2lnbmFsIGFjY29yZGluZyB0bwo+IGNzLCB3ciBzZXR1cCwgd3IgYWN0IGFuZCBob2xkIHRp
+bWUgc2V0dGluZy4KPiB0aGUgcmVhc29uIEkgYWRkZWQgY3B1IHRpbWluZyB2YXJpYWJsZXMgdG8g
+ZmJfdmFyX3NjcmVlbmluZm8gaXMgZm9yIHVzaW5nIGNvbW1vbgo+IGZyYW1ld29yayB3aGVuIHNl
+dHRpbmcgdGhlbSB0byB0aGUgZGlzcGxheSBjb250cm9sbGVyIGFzIGNwdSB0aW1pbmcgaW5mby4K
+PiBwbGVhc2UsIHNlZSBbUEFUQ0ggMi8zXSwgczNjX2ZiX3NldF90aW1pbmcgZnVuY3Rpb24gcGFy
+dC4KPgo+IGFuZCBjcHUgdGltaW5nIGNvdWxkIGJlIGFkanVzdGVkIGJ5IHVzZXIgdGhyb3VnaCBm
+Yl92YXJfc2NyZWVuaW5mbywKPiBmb3IgdGhpcywgc3VpdGFibGUgY2hlY2tpbmcgc2hvdWxkIGJl
+IGNvbnNpZGVyZWQgYXQgbWFjaGluZSBzcGVjaWZpYwo+IGZiX2NoZWNrX3ZhciBmdW5jLgo+IGFs
+c28geW91IGNhbiBzZWUgdGhhdCB0aHJvdWdoIFtQQVRDSCAyLzNdLCBzM2NfZmJfY2hlY2tfdmFy
+LgoKSSdtIHN0aWxsIGhhdmluZyBkaWZmaWN1bHR5IHVuZGVyc3RhbmRpbmcgdGhpcy4gSSBndWVz
+cyB3aGF0IEkgYW0KYXNraW5nIGlzIHdoeSBkbyB0aGVzZSBuZXcgdmFyaWFibGVzICJjcywgd3Ig
+c2V0dXAsIHdyIGFjdCBhbmQgaG9sZAp0aW1lIHNldHRpbmciLCBoYXZlIHRvIGJlIGluIGZiX3Zh
+cl9zY3JlZW5pbmZvIHdoaWNoIGlzIGEgZ2VuZXJpYwpwbGF0Zm9ybS9pbXBsZW1lbnRhdGlvbiBp
+bmRlcGVuZGVudCBzdHJ1Y3R1cmUgZXhwb3NlZCB0byB1c2Vyc3BhY2U/IElmCkkndmUgdW5kZXJz
+dG9vZCB0aGluZ3MgY29ycmVjdGx5LCB0aGUgdmFyaWFibGVzIHRoZW1zZWx2ZXMsIGVnOiB3cgpz
+ZXR1cCBzZWVtIHRvIGJlIHNwZWNpZmljIHRvIHRoaXMgaW1wbGVtZW50YXRpb24gcmF0aGVyIHRo
+YW4gYmVpbmcKZ2VuZXJpYyBsaWtlIHRoZSBvdGhlciBtZW1iZXJzIG9mIGZiX3Zhcl9zcmVlbmlu
+Zm8uIEhhdmUgeW91CmNvbnNpZGVyZWQgYW4gYWx0ZXJuYXRpdmUgd2F5IGJ5IHdoaWNoIHlvdSBj
+YW4gYWNoaWV2ZSB0aGUgZGVzaXJlZApmdW5jdGlvbmFsaXR5LiBBbHNvLCBJJ20gY29uZnVzZWQg
+d2hlbiB5b3Ugc2F5ICJjcHUgdGltaW5nIiBjb3VsZCBiZQphZGp1c3RlZCBieSB1c2VyIHRocm91
+Z2ggZmJfdmFyX3NjcmVlbmluZm8uIENvdWxkIHlvdSBlbGFib3JhdGUgb24KdGhhdD8KCkkgaGF2
+ZW4ndCByZWFkIHRocm91Z2ggdGhlIHJlbWFpbmluZyBwYXJ0IG9mIHRoZSBtZXNzYWdlIGFib3V0
+Cm1pcGktZHNpIGlzc3VlcywgSSdtIGhvcGluZyBkZXZlbG9wZXJzIHdobyBoYXZlIGltcGxlbWVu
+dGVkIHRoZSBvdGhlcgpNSVBJLURTSSBpbXBsZW1lbnRhdGlvbnMgaW4gZmJkZXYgY291bGQgY2hp
+bWUgaW4uCgpUaGFua3MsCmpheWEKCgoK//Tounsubscribefromthislisv/sendthelinf/unsu
+bscribelinux/fbdev/inthebodyofamessagetomajordomo/vger/kernel/orgMoremajordo
+moinfoathttp///vger/kernel/org/majordomo/info/htCg==

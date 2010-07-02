@@ -1,80 +1,74 @@
-From: Pawel Osciak <p.osciak@samsung.com>
-Date: Fri, 09 Jul 2010 11:55:38 +0000
-Subject: RE: [PATCH 01/19] s3c-fb: Change to depending on CONFIG_S3C_FB_DEV
-Message-Id: <002801cb1f5d$a5c5e2e0$f151a8a0$%osciak@samsung.com>
+From: Ben Dooks <ben@simtec.co.uk>
+Date: Fri, 02 Jul 2010 13:11:35 +0000
+Subject: Re: [PATCH v3 08/12] s3c-fb: Add SHADOWCON shadow register locking
+Message-Id: <4C2DE587.6000306@simtec.co.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
-	<1278665407-18002-2-git-send-email-p.osciak@samsung.com>
-	<028801cb1f5a$8fe5c970$afb15c50$%kim@samsung.com>
-In-Reply-To: <028801cb1f5a$8fe5c970$afb15c50$%kim@samsung.com>
+References: <1277712538-23188-1-git-send-email-p.osciak@samsung.com>
+	<1277712538-23188-9-git-send-email-p.osciak@samsung.com>
+In-Reply-To: <1277712538-23188-9-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
->Kukjin Kim <kgene.kim@samsung.com>:
->Pawel Osciak wrote:
->>
->> From: Ben Dooks <ben-linux@fluff.org>
->>
->> As suggested by Marek Szyprowski, we should make the driver depend on
->> the configuration currently being used to build the platform device
->> into the kernel.
->>
->> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
->> Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
->
->Actually, already submitted by Ben Dooks.
->http://lists.infradead.org/pipermail/linux-arm-kernel/2010-May/015616.html
->
->So...I'm not sure adding your signedoff and re-submitting are right.
->
->In my opinion, it's enough to add comments which includes information about
->that without re-submitting.
->
+On 28/06/10 09:08, Pawel Osciak wrote:
+> S5PV210 allows per-window locking of register value updates from shadow
+> registers.
+> 
+> Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> ---
+>  arch/arm/plat-samsung/include/plat/regs-fb.h |    3 ++
+>  drivers/video/s3c-fb.c                       |   39 +++++++++++++++++++++++--
+>  2 files changed, 38 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/arm/plat-samsung/include/plat/regs-fb.h b/arch/arm/plat-samsung/include/plat/regs-fb.h
+> index 5bcdd09..da54b64 100644
+> --- a/arch/arm/plat-samsung/include/plat/regs-fb.h
+> +++ b/arch/arm/plat-samsung/include/plat/regs-fb.h
+> @@ -218,6 +218,9 @@
+>  #define WINCON1_BPPMODE_25BPP_A1888		(0xd << 2)
+>  #define WINCON1_BPPMODE_28BPP_A4888		(0xd << 2)
+>  
+> +/* S5PV210 */
+> +#define SHADOWCON				(0x34)
+> +#define SHADOWCON_WINx_PROTECT(_win)		(1 << (10 + _win))
 
-Adding signoffs is a normal procedure when submitting somebody else's patches
-with their permission. The problem here is that I wasn't aware of them being
-already posted, there must've been a miscommunication between me and Ben when
-I asked him if it was ok to submit his patches along with mine.
-Sorry Ben!
+you should have () around the _win arg.
 
-Anyway, thank you for pointing this out.  Of course, my sign-offs can be
-removed from the first 7 patches.
+>  
+>  #define VIDOSDxA_TOPLEFT_X_MASK			(0x7ff << 11)
+>  #define VIDOSDxA_TOPLEFT_X_SHIFT		(11)
+> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+> index 0a93fca..94423c5 100644
+> --- a/drivers/video/s3c-fb.c
+> +++ b/drivers/video/s3c-fb.c
+> @@ -79,6 +79,7 @@ struct s3c_fb;
+>   * @osd: The base for the OSD registers.
+>   * @palette: Address of palette memory, or 0 if none.
+>   * @has_prtcon: Set if has PRTCON register.
+> + * @has_shadowcon: Set if has SHADOWCON register.
+>   */
+>  struct s3c_fb_variant {
+>  	unsigned int	is_2443:1;
+> @@ -95,6 +96,7 @@ struct s3c_fb_variant {
+>  	unsigned short	palette[S3C_FB_MAX_WIN];
+>  
+>  	unsigned int	has_prtcon:1;
+> +	unsigned int	has_shadowcon:1;
+>  };
+>  
+>  /**
+> @@ -363,6 +365,36 @@ static int s3c_fb_align_word(unsigned int bpp, unsigned int pix)
+>  }
+>  
+>  /**
+> + * shadow_protect_win() - disable updating values from shadow registers at vsync
+> + *
+> + * @win: window to protect registers for
+> + * @protect: 1 to protect (disable updates)
+> + */
+> +static void shadow_protect_win(struct s3c_fb_win *win, int protect)
 
-
-Best regards
---
-Pawel Osciak
-Linux Platform Group
-Samsung Poland R&D Center
-
-
->> ---
->>  drivers/video/Kconfig |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
->> index 3d94a14..858f1ca 100644
->> --- a/drivers/video/Kconfig
->> +++ b/drivers/video/Kconfig
->> @@ -1930,7 +1930,7 @@ config FB_TMIO_ACCELL
->>
->>  config FB_S3C
->>  	tristate "Samsung S3C framebuffer support"
->> -	depends on FB && ARCH_S3C64XX
->> +	depends on FB && S3C_DEV_FB
->>  	select FB_CFB_FILLRECT
->>  	select FB_CFB_COPYAREA
->>  	select FB_CFB_IMAGEBLIT
->> --
->
->Thanks.
->
->Best regards,
->Kgene.
->--
->Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
->SW Solution Development Team, Samsung Electronics Co., Ltd.
-
+technically, protect should be of type 'bool'/
 

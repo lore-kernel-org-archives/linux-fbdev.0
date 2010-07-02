@@ -1,63 +1,67 @@
-From: Anatolij Gustschin <agust@denx.de>
-Date: Fri, 23 Jul 2010 14:00:38 +0000
-Subject: [PATCH v4 4/5] powerpc: doc/dts-bindings: update doc of FSL DIU bindings
-Message-Id: <1279893639-24333-5-git-send-email-agust@denx.de>
+From: Magnus Damm <magnus.damm@gmail.com>
+Date: Fri, 02 Jul 2010 08:17:09 +0000
+Subject: Re: [PATCH 2/6] sh: add a reparent function to DIV6 clocks
+Message-Id: <AANLkTimOUjFadAxidYGQ2UyL6kewKXOdb1iX3jJHvh7K@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1279893639-24333-1-git-send-email-agust@denx.de>
-In-Reply-To: <1279893639-24333-1-git-send-email-agust@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@ozlabs.org
-Cc: linux-fbdev@vger.kernel.org, Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>, devicetree-discuss@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-Update compatible and interrupt properties description.
-Furthermore an example for the MPC5121 has been added.
+On Wed, Jun 30, 2010 at 6:55 PM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> Add support for reparenting of div6 clocks on SuperH and SH-Mobile SoCs.
+>
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> ---
+> =A0drivers/sh/clk-cpg.c =A0 | =A0 58 ++++++++++++++++++++++++++++++++++++=
+++++++++++-
+> =A0include/linux/sh_clk.h | =A0 19 +++++++++++----
+> =A02 files changed, 70 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/sh/clk-cpg.c b/drivers/sh/clk-cpg.c
+> index f5c80ba..7e247ae 100644
+> --- a/drivers/sh/clk-cpg.c
+> +++ b/drivers/sh/clk-cpg.c
+> @@ -68,6 +68,39 @@ static unsigned long sh_clk_div6_recalc(struct clk *cl=
+k)
+> =A0 =A0 =A0 =A0return clk->freq_table[idx].frequency;
+> =A0}
+>
+> +static int sh_clk_div6_set_parent(struct clk *clk, struct clk *parent)
+> +{
+> + =A0 =A0 =A0 struct clk_div_mult_table *table =3D &sh_clk_div6_table;
+> + =A0 =A0 =A0 u32 value;
+> + =A0 =A0 =A0 int ret, i;
+> +
+> + =A0 =A0 =A0 if (!clk->parent_table || !clk->parent_num)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
+> +
+> + =A0 =A0 =A0 /* Search the parent */
+> + =A0 =A0 =A0 for (i =3D 0; i < clk->parent_num; i++)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (clk->parent_table[i] =3D parent)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
+> +
+> + =A0 =A0 =A0 if (i =3D clk->parent_num)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+> +
+> + =A0 =A0 =A0 ret =3D clk_reparent(clk, parent);
+> + =A0 =A0 =A0 if (ret < 0)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return ret;
+> +
+> + =A0 =A0 =A0 value =3D __raw_readl(clk->enable_reg) &
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ~(((1 << clk->src_width) - 1) << clk->src_s=
+hift);
+> +
+> + =A0 =A0 =A0 __raw_writel(value | (i << clk->src_shift), clk->enable_reg=
+);
+> +
+> + =A0 =A0 =A0 /* Rebiuld the frequency table */
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Acked-by: Timur Tabi <timur@freescale.com>
-Cc: devicetree-discuss@lists.ozlabs.org
----
-v4:
- - added ack tag
+Nit: Typo in the comment above.
 
-v2 and v3:
- - no changes since v1
+Looks ok apart from that.
 
- Documentation/powerpc/dts-bindings/fsl/diu.txt |   14 ++++++++++++--
- 1 files changed, 12 insertions(+), 2 deletions(-)
+Cheers,
 
-diff --git a/Documentation/powerpc/dts-bindings/fsl/diu.txt b/Documentation/powerpc/dts-bindings/fsl/diu.txt
-index deb35de..326cddf 100644
---- a/Documentation/powerpc/dts-bindings/fsl/diu.txt
-+++ b/Documentation/powerpc/dts-bindings/fsl/diu.txt
-@@ -4,10 +4,12 @@ The Freescale DIU is a LCD controller, with proper hardware, it can also
- drive DVI monitors.
- 
- Required properties:
--- compatible : should be "fsl-diu".
-+- compatible : should be "fsl,diu" or "fsl,mpc5121-diu".
- - reg : should contain at least address and length of the DIU register
-   set.
--- Interrupts : one DIU interrupt should be describe here.
-+- interrupts : one DIU interrupt should be described here.
-+- interrupt-parent : the phandle for the interrupt controller that
-+  services interrupts for this device.
- 
- Example (MPC8610HPCD):
- 	display@2c000 {
-@@ -16,3 +18,11 @@ Example (MPC8610HPCD):
- 		interrupts = <72 2>;
- 		interrupt-parent = <&mpic>;
- 	};
-+
-+Example for MPC5121:
-+	display@2100 {
-+		compatible = "fsl,mpc5121-diu";
-+		reg = <0x2100 0x100>;
-+		interrupts = <64 0x8>;
-+		interrupt-parent = <&ipic>;
-+	};
--- 
-1.7.0.4
-
+/ magnus

@@ -1,14 +1,14 @@
-From: Pawel Osciak <p.osciak@samsung.com>
-Subject: RE: [PATCH 1/3] FB: Add some members for CPU Interface.
-Date: Mon, 05 Jul 2010 10:42:52 +0200
-Message-ID: <003e01cb1c1e$0e59bdb0$2b0d3910$%osciak@samsung.com>
-References: <4C29CFBD.3040205@samsung.com>
+From: In-Ki Dae <inki.dae@samsung.com>
+Subject: Re: Re: [PATCH v1 2/2] S5PV210: Add MIPI-DSI Driver.
+Date: Mon, 05 Jul 2010 01:08:07 +0000 (GMT)
+Message-ID: <1292245.80511278292086837.JavaMail.weblogic@epml01>
+Reply-To: inki.dae@samsung.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <4C29CFBD.3040205@samsung.com>
-Content-language: pl
+Content-return: prohibited
+MIME-version: 1.0
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
 	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
@@ -19,20 +19,94 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: linux-arm-kernel-bounces@lists.infradead.org
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: 'InKi Dae' <inki.dae@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-fbdev-devel@lists.sourceforge.net, akpm@linux-foundation.org, 'Ben Dooks' <ben-linux@fluff.org>
-Cc: kmpark@infradead.org
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: "kmpark@infradead.org" <kmpark@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, Ben Dooks <ben-linux@fluff.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-InKi Dae wrote:
->Signed-off-by: InKi Dae &lt;<a href="mailto:p.osciak@samsung.com">inki.dae@samsung.com</a>&gt;<br>
->Signed-off-by: Kyungmin Park &lt;<a
->href="mailto:kyungmin.park@samsung.com">kyungmin.park@samsung.com</a>&gt;<br>
+Hi, Guennadi,
 
-Hi InKi,
+You mean is that it uses include/video/mipi_display.h file instead of plat/dsim.h?
+I cann't find mipi_display.h in mainline kernel.
 
-please do not include my e-mail address like this. I had absolutely nothing to do with this patch series whatsoever.
+otherwise, it creates generic parts of my dsim.h header file as mipi_display.h and
+use that header file?
 
-Best regards
---
-Pawel Osciak
-Linux Platform Group
-Samsung Poland R&D Center
+Please, give me more detailed.
+
+Thank you.
+
+------- Original Message -------
+Sender : Guennadi Liakhovetski<g.liakhovetski@gmx.de> 
+Date   : 2010-07-05 04:33 (GMT+09:00)
+Title  : Re: [PATCH v1 2/2] S5PV210: Add MIPI-DSI Driver.
+
+On Sat, 3 Jul 2010, InKi Dae wrote:
+
+> this patch addes MIPI-DSI Driver.
+> 
+> to use this driver, some structures below should be added to machine
+> specific file.
+> 
+> struct dsim_config
+> - define clock info, data lane count and video mode info for MIPI-DSI
+> Controller.
+> 
+> struct dsim_lcd_config
+> - define interface mode, channel ID, Pixel format and so on.
+> 
+> struct s5p_platform_dsim
+> - define callbacks for initializing D-PHY, MIPI reset and trigger
+> releated interfaces of s3c-fb.c file.
+> 
+> struct mipi_ddi_platform_data
+> - define following callbacks.
+> - a function for transferring and receiving command data to mipi based
+> lcd panel.
+> - a function for getting framedone status of mipi-dsi controller.
+> - a function for clearing framedone interrupt of mipi-dsi controller.
+> - a function for checking i80 framedone status of display controller.(fimd)
+> - a function for triggering to display controller.(fimd)
+> 
+> Signed-off-by: InKi Dae <inki.dae@samsung.com <mailto:p.osciak@samsung.com>>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com
+> <mailto:kyungmin.park@samsung.com>>
+> ---
+> 
+> diff --git a/arch/arm/plat-samsung/include/plat/dsim.h b/arch/arm/plat-samsung/include/plat/dsim.h
+> new file mode 100644
+> index 0000000..49d8946
+> --- /dev/null
+> +++ b/arch/arm/plat-samsung/include/plat/dsim.h
+> @@ -0,0 +1,493 @@
+
+[snip]
+
+> +enum dsim_fifo_state {
+> +	DSIM_RX_DATA_FULL = (1 << 25),
+> +	DSIM_RX_DATA_EMPTY = (1 << 24),
+> +	SFR_HEADER_FULL = (1 << 23),
+> +	SFR_HEADER_EMPTY = (1 << 22),
+> +	SFR_PAYLOAD_FULL = (1 << 21),
+> +	SFR_PAYLOAD_EMPTY = (1 << 20),
+> +	I80_HEADER_FULL = (1 << 19),
+> +	I80_HEADER_EMPTY = (1 << 18),
+> +	I80_PALOAD_FULL = (1 << 17),
+> +	I80_PALOAD_EMPTY = (1 << 16),
+> +	SUB_DISP_HEADER_FULL = (1 << 15),
+> +	SUB_DISP_HEADER_EMPTY = (1 << 14),
+> +	SUB_DISP_PAYLOAD_FULL = (1 << 13),
+> +	SUB_DISP_PAYLOAD_EMPTY = (1 << 12),
+> +	MAIN_DISP_HEADER_FULL = (1 << 11),
+> +	MAIN_DISP_HEADER_EMPTY = (1 << 10),
+> +	MAIN_DISP_PAYLOAD_FULL = (1 << 9),
+> +	MAIN_DISP_PAYLOAD_EMPTY = (1 << 8),
+> +};
+
+Please use include/video/mipi_display.h for these transaction types and, 
+possibly, for other generic MIPI DSI defines.
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/

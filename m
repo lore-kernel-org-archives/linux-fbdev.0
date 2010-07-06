@@ -1,41 +1,105 @@
-From: In-Ki Dae <inki.dae@samsung.com>
-Date: Fri, 02 Jul 2010 07:50:53 +0000
-Subject: Re: Re: [PATCH 1/3] FB: Add some members for CPU Interface.
-Message-Id: <25797910.38561278057053699.JavaMail.weblogic@epml17>
+From: James Simmons <jsimmons@infradead.org>
+Date: Tue, 06 Jul 2010 15:30:29 +0000
+Subject: [PATCH 1/3] FB: Add some members for CPU Interface.
+Message-Id: <alpine.LFD.2.00.1007061630020.3285@casper.infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <AANLkTilgB3s8hy5Qg7IYpyBzwHCgK_GswVZqpxhryU5L@mail.gmail.com>
 In-Reply-To: <AANLkTilgB3s8hy5Qg7IYpyBzwHCgK_GswVZqpxhryU5L@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-T2ssIEkgdW5kZXJzdG9vZC4KCkkgdGhpbmsgdGhpcyBpc3N1ZSBpbmNvbXBhdGlibGUgd2l0aCBl
-eGlzdGluZyB1c2VycyBpcyBiZWNhdXNlIHVzZXJzcGFjZSBBUEkgZGlkbid0IGNvbnNpZGVyIGNw
-dSBtb2RlIGJlZm9yZS4KYW55d2F5LCBJIHdpbGwgY29ycmVjdCBteSBwYXRjaCBhcyB5b3VyIGNv
-bW1lbnRzIGFuZCBzZW5kIGl0IGFnYWluLgpQZXJoYXBzLCBjcHUgdGltaW5nIHZhcmlhYmxlcyB3
-b3VsZCBiZSBtb3ZlZCB0byBwbGF0Zm9ybSBmaWxlLgoKdGhhbmsgeW91LgoKLS0tLS0tLSBPcmln
-aW5hbCBNZXNzYWdlIC0tLS0tLS0KU2VuZGVyIDogUnVzc2VsbCBLaW5nIC0gQVJNIExpbnV4PGxp
-bnV4QGFybS5saW51eC5vcmcudWs+IApEYXRlICAgOiAyMDEwLTA3LTAyIDE2OjMwIChHTVQrMDk6
-MDApClRpdGxlICA6IFJlOiBbUEFUQ0ggMS8zXSBGQjogQWRkIHNvbWUgbWVtYmVycyBmb3IgQ1BV
-IEludGVyZmFjZS4KCk9uIFdlZCwgSnVuIDMwLCAyMDEwIGF0IDA4OjAyOjMxQU0gKzA4MDAsIEph
-eWEgS3VtYXIgd3JvdGU6Cj4gPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9mYi5oIGIvaW5j
-bHVkZS9saW51eC9mYi5oCj4gPiBpbmRleCA5MDdhY2UzLi43MzM4MWMzIDEwMDY0NAo+ID4gLS0t
-IGEvaW5jbHVkZS9saW51eC9mYi5oCj4gPiArKysgYi9pbmNsdWRlL2xpbnV4L2ZiLmgKPiA+IEBA
-IC0yNjksNiArMjY5LDEyIEBAIHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbyB7Cj4gPiAgCV9fdTMy
-IHZtb2RlOwkJCS8qIHNlZSBGQl9WTU9ERV8qCQkqLwo+ID4gIAlfX3UzMiByb3RhdGU7CQkJLyog
-YW5nbGUgd2Ugcm90YXRlIGNvdW50ZXIgY2xvY2t3aXNlICovCj4gPiAgCV9fdTMyIHJlc2VydmVk
-WzVdOwkJLyogUmVzZXJ2ZWQgZm9yIGZ1dHVyZSBjb21wYXRpYmlsaXR5ICovCj4gPiArCj4gPiAr
-CS8qIEZvciBjcHUgaW50ZXJmYWNlIHRpbWluZy4gKi8KPiA+ICsJX191MzIgY3Nfc2V0dXA7Cj4g
-PiArCV9fdTMyIHdyX3NldHVwOwo+ID4gKwlfX3UzMiB3cl9hY3Q7Cj4gPiArCV9fdTMyIHdyX2hv
-bGQ7CgpUaGlzIGNoYW5nZXMgdGhlIGZyYW1lYnVmZmVyIHVzZXJzcGFjZSBBUEksIG1ha2luZyBp
-dCBpbmNvbXBhdGlibGUgd2l0aApleGlzdGluZyB1c2Vycy4gIFdoYXQgdGhpcyBtZWFucyBpcyB0
-aGF0IHN0dWZmIHVzaW5nIHRoZSBmcmFtZWJ1ZmZlciBBUEkKaW4gdXNlcnNwYWNlIGhhcyB0byBi
-ZSB1cGdyYWRlZC9kb3duZ3JhZGVkIGluIGxvY2stc3RlcCB3aXRoIHRoaXMgY2hhbmdlCi0gd2hp
-Y2ggaXMgbm90IGEgZ29vZCBpZGVhLgotLQpUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDog
-c2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtZmJkZXYiIGluCnRoZSBib2R5IG9mIGEg
-bWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnCk1vcmUgbWFqb3Jkb21vIGluZm8g
-YXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbAoKCgr/9Oi6ey5u
-xyuJt5+uia2GKyWKy/+x6d22F6WKd/+6ey5uxyuJt6WKe7H99t16/+Ke2F5uh3Kh9qZ6yxqB62iZ
-qOit2iaj++B6v+R6ud6X+iuAyit6ZqOit2iaiKd+hq2G22n//++B6v+R6ud6X+iuD+ZqOit2iaj+
-Kd+j+G0K
+
+CPU interface needs cs, wr setup, wr act and hold delay.
+I added some members for them to common framework.
+
+Signed-off-by: InKi Dae <inki.dae@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+
+index 0a4dbdc..74122d1 100644
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -759,6 +759,27 @@ void fb_videomode_to_var(struct fb_var_screeninfo *var,
+ }
+ 
+ /**
++ * fb_cpumode_to_var - convert fb_cpumode to fb_var_screeninfo
++ * @var: pointer to struct fb_var_screeninfo
++ * @mode: pointer to struct fb_cpumode
++ */
++void fb_cmdmode_to_var(struct fb_var_screeninfo *var,
++			 const struct fb_cmdmode *mode)
++{
++	var->xres = mode->xres;
++	var->yres = mode->yres;
++	var->xres_virtual = mode->xres;
++	var->yres_virtual = mode->yres;
++	var->xoffset = 0;
++	var->yoffset = 0;
++	var->pixclock = mode->pixclock;
++	var->cs_setup = mode->cs_setup;
++	var->wr_setup = mode->wr_setup;
++	var->wr_act = mode->wr_act;
++	var->wr_hold = mode->wr_hold;
++}
++
++/**
+  * fb_mode_is_equal - compare 2 videomodes
+  * @mode1: first videomode
+  * @mode2: second videomode
+@@ -1048,6 +1069,7 @@ finished:
+ EXPORT_SYMBOL(fb_find_best_display);
+ 
+ EXPORT_SYMBOL(fb_videomode_to_var);
++EXPORT_SYMBOL(fb_cmdmode_to_var);
+ EXPORT_SYMBOL(fb_var_to_videomode);
+ EXPORT_SYMBOL(fb_mode_is_equal);
+ EXPORT_SYMBOL(fb_add_videomode);
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 907ace3..73381c3 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -269,6 +269,12 @@ struct fb_var_screeninfo {
+ 	__u32 vmode;			/* see FB_VMODE_*		*/
+ 	__u32 rotate;			/* angle we rotate counter clockwise */
+ 	__u32 reserved[5];		/* Reserved for future compatibility */
++
++	/* For cpu interface timing. */
++	__u32 cs_setup;
++	__u32 wr_setup;
++	__u32 wr_act;
++	__u32 wr_hold;
+ };
+ 
+ struct fb_cmap {
+@@ -1117,11 +1123,24 @@ struct fb_videomode {
+ 	u32 lower_margin;
+ 	u32 hsync_len;
+ 	u32 vsync_len;
++	u32 cmd_allow_len;
+ 	u32 sync;
+ 	u32 vmode;
+ 	u32 flag;
+ };
+ 
++struct fb_cmdmode {
++	const char *name;	/* optional */
++	u32 refresh;		/* optional */
++	u32 xres;
++	u32 yres;
++	u32 pixclock;
++	u32 cs_setup;
++	u32 wr_setup;
++	u32 wr_act;
++	u32 wr_hold;
++};
++
+ extern const char *fb_mode_option;
+ extern const struct fb_videomode vesa_modes[];
+ 
+
+

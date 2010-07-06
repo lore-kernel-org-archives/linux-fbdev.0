@@ -1,7 +1,7 @@
 From: James Simmons <jsimmons@infradead.org>
-Date: Tue, 06 Jul 2010 15:34:16 +0000
+Date: Tue, 06 Jul 2010 15:35:44 +0000
 Subject: [PATCH 3/3] S5PV210: Add MIPI-DSI Driver.
-Message-Id: <alpine.LFD.2.00.1007061633430.3285@casper.infradead.org>
+Message-Id: <alpine.LFD.2.00.1007061635130.3285@casper.infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <alpine.LFD.2.00.1007061631580.3285@casper.infradead.org>
 In-Reply-To: <alpine.LFD.2.00.1007061631580.3285@casper.infradead.org>
@@ -3104,7 +3104,4 @@ index 0000000..ff950ba
 ;
 +
 +#endif /* _S5P_DSIM_LOWLEVEL_H */
-
-
-
 

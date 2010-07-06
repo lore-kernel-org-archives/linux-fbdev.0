@@ -1,7 +1,7 @@
 From: James Simmons <jsimmons@infradead.org>
-Date: Tue, 06 Jul 2010 15:30:29 +0000
+Date: Tue, 06 Jul 2010 15:33:34 +0000
 Subject: [PATCH 1/3] FB: Add some members for CPU Interface.
-Message-Id: <alpine.LFD.2.00.1007061630020.3285@casper.infradead.org>
+Message-Id: <alpine.LFD.2.00.1007061632560.3285@casper.infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <AANLkTilgB3s8hy5Qg7IYpyBzwHCgK_GswVZqpxhryU5L@mail.gmail.com>
 In-Reply-To: <AANLkTilgB3s8hy5Qg7IYpyBzwHCgK_GswVZqpxhryU5L@mail.gmail.com>
@@ -101,5 +101,7 @@ index 907ace3..73381c3 100644
  extern const char *fb_mode_option;
  extern const struct fb_videomode vesa_modes[];
  
+
+
 
 

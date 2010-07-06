@@ -1,16 +1,18 @@
 From: James Simmons <jsimmons@infradead.org>
-Date: Tue, 06 Jul 2010 15:31:47 +0000
+Date: Tue, 06 Jul 2010 15:36:14 +0000
 Subject: [PATCH 2/3] S5PV210: FB: Add MIPI-DSI and CPU Interface features.
-Message-Id: <alpine.LFD.2.00.1007061631210.3285@casper.infradead.org>
+Message-Id: <alpine.LFD.2.00.1007061635530.3285@casper.infradead.org>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="1985284609-990659790-1278430308=:3285"
+Content-Type: multipart/mixed; boundary="1985284609-453043563-1278430594=:3285"
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <alpine.LFD.2.00.1007061631210.3285@casper.infradead.org>
+In-Reply-To: <alpine.LFD.2.00.1007061631210.3285@casper.infradead.org>
 To: linux-fbdev@vger.kernel.org
 
   This message is in MIME format.  The first part should be readable text,
   while the remaining parts are likely unreadable without MIME-aware tools.
 
---1985284609-990659790-1278430308=:3285
+--1985284609-453043563-1278430594=:3285
 Content-Type: TEXT/PLAIN; charset="iso-8859-15"
 Content-Transfer-Encoding: quoted-printable
 
@@ -345,5 +347,4 @@ nsigned int win_no,
  	ret =3D s3c_fb_check_var(&fbinfo->var, fbinfo);
 
 
-
---1985284609-990659790-1278430308=:3285--
+--1985284609-453043563-1278430594=:3285--

@@ -1,95 +1,43 @@
-From: Pawel Osciak <p.osciak@samsung.com>
-Date: Fri, 09 Jul 2010 08:50:06 +0000
-Subject: [PATCH 18/19] s3c-fb: fix section mismatch
-Message-Id: <1278665407-18002-19-git-send-email-p.osciak@samsung.com>
+From: InKi Dae <inki.dae@samsung.com>
+Date: Wed, 07 Jul 2010 06:34:37 +0000
+Subject: [PATCH v2 0/2] ARM: S5PV210: Add MIPI-DSI support.
+Message-Id: <4C341FFD.6010405@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
-In-Reply-To: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Marek Szyprowski <m.szyprowski@samsung.com>
+Hello all,
 
-This patch fixes the following section mismatch errors:
+This patch is for MIPI-DSI controller based on S5PV210 (or S5PC110).
 
-WARNING: vmlinux.o(.data+0x20b40): Section mismatch in reference from the variable s3c_fb_driver_ids to the (unknown reference) .devinit.data:(unknown)
-The variable s3c_fb_driver_ids references
-the (unknown reference) __devinitdata (unknown)
-If the reference is valid then annotate the
-variable with __init* or __refdata (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+this version corrects some problems Ben pointed out.
 
-WARNING: vmlinux.o(.data+0x20b58): Section mismatch in reference from the variable s3c_fb_driver_ids to the (unknown reference) .devinit.data:(unknown)
-The variable s3c_fb_driver_ids references
-the (unknown reference) __devinitdata (unknown)
-If the reference is valid then annotate the
-variable with __init* or __refdata (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+v1 patch includes below contents.
+- set callbacks to MIPI Client driver at mipi_ddi_platform_data declaration.
+- use MIPI regulator names set at s5p_platform_dsim declaration to get regulators for them.
+- use a table to get freq_band value.
+- code clean and fix minor bugs.
 
-WARNING: vmlinux.o(.data+0x20b70): Section mismatch in reference from the variable s3c_fb_driver_ids to the (unknown reference) .devinit.data:(unknown)
-The variable s3c_fb_driver_ids references
-the (unknown reference) __devinitdata (unknown)
-If the reference is valid then annotate the
-variable with __init* or __refdata (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+v2 patch includes below contents.
+- use generic header(include/video/mipi_display.h) for MIPI-DSI commands.
+- remove lcd panel specific definitions from dsim.h.
 
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- drivers/video/s3c-fb.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+LCD Panel can use following interfaces,
+- RGB or CPU Interface.
+- RGB or CPU Interface based on MIPI-DSI.
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index b10d16d..a95314d 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -1478,7 +1478,7 @@ static int s3c_fb_resume(struct platform_device *pdev)
- #define VALID_BPP124 (VALID_BPP(1) | VALID_BPP(2) | VALID_BPP(4))
- #define VALID_BPP1248 (VALID_BPP124 | VALID_BPP(8))
- 
--static struct s3c_fb_win_variant s3c_fb_data_64xx_wins[] __devinitdata = {
-+static struct s3c_fb_win_variant s3c_fb_data_64xx_wins[] = {
- 	[0] = {
- 		.has_osd_c	= 1,
- 		.osd_size_off	= 0x8,
-@@ -1526,7 +1526,7 @@ static struct s3c_fb_win_variant s3c_fb_data_64xx_wins[] __devinitdata = {
- 	},
- };
- 
--static struct s3c_fb_driverdata s3c_fb_data_64xx __devinitdata = {
-+static struct s3c_fb_driverdata s3c_fb_data_64xx = {
- 	.variant = {
- 		.nr_windows	= 5,
- 		.vidtcon	= VIDTCON0,
-@@ -1556,7 +1556,7 @@ static struct s3c_fb_driverdata s3c_fb_data_64xx __devinitdata = {
- 	.win[4]	= &s3c_fb_data_64xx_wins[4],
- };
- 
--static struct s3c_fb_driverdata s3c_fb_data_s5pc100 __devinitdata = {
-+static struct s3c_fb_driverdata s3c_fb_data_s5pc100 = {
- 	.variant = {
- 		.nr_windows	= 5,
- 		.vidtcon	= VIDTCON0,
-@@ -1586,7 +1586,7 @@ static struct s3c_fb_driverdata s3c_fb_data_s5pc100 __devinitdata = {
- 	.win[4]	= &s3c_fb_data_64xx_wins[4],
- };
- 
--static struct s3c_fb_driverdata s3c_fb_data_s5pv210 __devinitdata = {
-+static struct s3c_fb_driverdata s3c_fb_data_s5pv210 = {
- 	.variant = {
- 		.nr_windows	= 5,
- 		.vidtcon	= VIDTCON0,
-@@ -1617,7 +1617,7 @@ static struct s3c_fb_driverdata s3c_fb_data_s5pv210 __devinitdata = {
- };
- 
- /* S3C2443/S3C2416 style hardware */
--static struct s3c_fb_driverdata s3c_fb_data_s3c2443 __devinitdata = {
-+static struct s3c_fb_driverdata s3c_fb_data_s3c2443 = {
- 	.variant = {
- 		.nr_windows	= 2,
- 		.is_2443	= 1,
--- 
-1.7.1.569.g6f426
+in case of cell phone device, small size lcd panel(less then 480x800) was ok only rgb or cpu interface not using mipi controller.
+but big size panel(bigger then 480x800) needs MIPI-DSI Interface or other hardwares like LVDS to transfer image data to lcd panel fine.
+
+I tested this patch on cpu interface based on MIPI-DSI and also considered RGB interface.
+
+This patch set consists of the following patches,
+
+[PATCH v2 1/2] S5PV210: FB: Add MIPI-DSI and CPU Interface features.
+[PATCH v2 2/2] S5PV210: Add MIPI-DSI Driver.
+
+Best regards,
+InKi Dae
 

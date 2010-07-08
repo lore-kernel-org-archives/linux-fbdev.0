@@ -1,52 +1,44 @@
-From: James Simmons <jsimmons@infradead.org>
-Date: Wed, 07 Jul 2010 11:37:33 +0000
-Subject: Re: [PATCH 1/3] FB: Add some members for CPU Interface.
-Message-Id: <alpine.LFD.2.00.1007071236300.19507@casper.infradead.org>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="1985284609-83660284-1278502653=:19507"
+From: In-Ki Dae <inki.dae@samsung.com>
+Date: Thu, 08 Jul 2010 00:52:54 +0000
+Subject: Re: Re: [PATCH 1/3] FB: Add some members for CPU Interface.
+Message-Id: <9947337.222131278550374411.JavaMail.weblogic@epml01>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <AANLkTilgB3s8hy5Qg7IYpyBzwHCgK_GswVZqpxhryU5L@mail.gmail.com>
 In-Reply-To: <AANLkTilgB3s8hy5Qg7IYpyBzwHCgK_GswVZqpxhryU5L@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
 To: linux-fbdev@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---1985284609-83660284-1278502653=:19507
-Content-Type: TEXT/PLAIN; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-
-
-On Tue, 6 Jul 2010, Geert Uytterhoeven wrote:
-
-> On Tue, Jul 6, 2010 at 17:30, James Simmons <jsimmons@infradead.org> wrote:
-> >
-> > CPU interface needs cs, wr setup, wr act and hold delay.
-> > I added some members for them to common framework.
-> >
-> > Signed-off-by: InKi Dae <inki.dae@samsung.com>
-> > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> > ---
-> >
-> > diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-> >
-> > index 0a4dbdc..74122d1 100644
-> > --- a/drivers/video/modedb.c
-> > +++ b/drivers/video/modedb.c
-> > @@ -759,6 +759,27 @@ void fb_videomode_to_var(struct fb_var_screeninfo *var,
-> >  }
-> >
-> >  /**
-> > + * fb_cpumode_to_var - convert fb_cpumode to fb_var_screeninfo
->          ^^^
-> > + * @var: pointer to struct fb_var_screeninfo
-> > + * @mode: pointer to struct fb_cpumode
-> > + */
-> > +void fb_cmdmode_to_var(struct fb_var_screeninfo *var,
->            ^^^
-> 
-> cpu vs cmd?
-> 
-
-Forward comment to original author.
---1985284609-83660284-1278502653=:19507--
+SGksIEdlZXJ0CgpjcHUgYW5kIGNvbW1hbmQgbW9kZSBhcmUgc2FtZSBtZWFuLgphbmQgZmJfY21k
+bW9kZV90b192YXIgZnVuYyBoYWQgYmVlbiByZW1vdmVkIGZyb20gbXkgcHJldmlvdXMgcGF0Y2gu
+CnBsZWFzZSwgc2VlIHBhdGNoIHYyLgoKdGhhbmsgeW91LgoKLS0tLS0tLSBPcmlnaW5hbCBNZXNz
+YWdlIC0tLS0tLS0KU2VuZGVyIDogR2VlcnQgVXl0dGVyaG9ldmVuPGdlZXJ0QGxpbnV4LW02OGsu
+b3JnPiAKRGF0ZSAgIDogMjAxMC0wNy0wNyAwNToyMyAoR01UKzA5OjAwKQpUaXRsZSAgOiBSZTog
+W1BBVENIIDEvM10gRkI6IEFkZCBzb21lIG1lbWJlcnMgZm9yIENQVSBJbnRlcmZhY2UuCgpPbiBU
+dWUsIEp1bCA2LCAyMDEwIGF0IDE3OjMwLCBKYW1lcyBTaW1tb25zIDxqc2ltbW9uc0BpbmZyYWRl
+YWQub3JnPiB3cm90ZToKPgo+IENQVSBpbnRlcmZhY2UgbmVlZHMgY3MsIHdyIHNldHVwLCB3ciBh
+Y3QgYW5kIGhvbGQgZGVsYXkuCj4gSSBhZGRlZCBzb21lIG1lbWJlcnMgZm9yIHRoZW0gdG8gY29t
+bW9uIGZyYW1ld29yay4KPgo+IFNpZ25lZC1vZmYtYnk6IEluS2kgRGFlIDxpbmtpLmRhZUBzYW1z
+dW5nLmNvbT4KPiBTaWduZWQtb2ZmLWJ5OiBLeXVuZ21pbiBQYXJrIDxreXVuZ21pbi5wYXJrQHNh
+bXN1bmcuY29tPgo+IC0tLQo+Cj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vbW9kZWRiLmMg
+Yi9kcml2ZXJzL3ZpZGVvL21vZGVkYi5jCj4KPiBpbmRleCAwYTRkYmRjLi43NDEyMmQxIDEwMDY0
+NAo+IC0tLSBhL2RyaXZlcnMvdmlkZW8vbW9kZWRiLmMKPiArKysgYi9kcml2ZXJzL3ZpZGVvL21v
+ZGVkYi5jCj4gQEAgLTc1OSw2ICs3NTksMjcgQEAgdm9pZCBmYl92aWRlb21vZGVfdG9fdmFyKHN0
+cnVjdCBmYl92YXJfc2NyZWVuaW5mbyAqdmFyLAo+ICB9Cj4KPiAgLyoqCj4gKyAqIGZiX2NwdW1v
+ZGVfdG9fdmFyIC0gY29udmVydCBmYl9jcHVtb2RlIHRvIGZiX3Zhcl9zY3JlZW5pbmZvCiAgICAg
+ICAgIF5eXgo+ICsgKiBAdmFyOiBwb2ludGVyIHRvIHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbwo+
+ICsgKiBAbW9kZTogcG9pbnRlciB0byBzdHJ1Y3QgZmJfY3B1bW9kZQo+ICsgKi8KPiArdm9pZCBm
+Yl9jbWRtb2RlX3RvX3ZhcihzdHJ1Y3QgZmJfdmFyX3NjcmVlbmluZm8gKnZhciwKICAgICAgICAg
+ICBeXl4KCmNwdSB2cyBjbWQ/CgpHcntvZXRqZSxlZXRpbmd9cywKCgkJCQkJCUdlZXJ0CgotLQpH
+ZWVydCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUncyBsb3RzIG9mIExpbnV4IGJleW9uZCBpYTMyIC0t
+IGdlZXJ0QGxpbnV4LW02OGsub3JnCgpJbiBwZXJzb25hbCBjb252ZXJzYXRpb25zIHdpdGggdGVj
+aG5pY2FsIHBlb3BsZSwgSSBjYWxsIG15c2VsZiBhIGhhY2tlci4gQnV0CndoZW4gSSdtIHRhbGtp
+bmcgdG8gam91cm5hbGlzdHMgSSBqdXN0IHNheSAicHJvZ3JhbW1lciIgb3Igc29tZXRoaW5nIGxp
+a2UgdGhhdC4KCQkJCQkJCSAgICAtLSBMaW51cyBUb3J2YWxkcwotLQpUbyB1bnN1YnNjcmliZSBm
+cm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtZmJkZXYiIGlu
+CnRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnCk1vcmUg
+bWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8u
+aHRtbAoKCgr/9Oi6ey5uxyuJt5+uia2GKyWKy/+x6d22F6WKd/+6ey5uxyuJt6WKe7H99t16/+Ke
+2F5uh3Kh9qZ6yxqB62iZqOit2iaj++B6v+R6ud6X+iuAyit6ZqOit2iaiKd+hq2G22n//++B6v+R
+6ud6X+iuD+ZqOit2iaj+Kd+j+G0K

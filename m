@@ -1,49 +1,43 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Fri, 23 Jul 2010 15:39:23 +0000
-Subject: [PATCH 08/11] viafb: update fix before calculating depth
-Message-Id: <1279899566-4359-9-git-send-email-FlorianSchandinat@gmx.de>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Thu, 08 Jul 2010 14:12:52 +0000
+Subject: [PATCH 1/6 v2] sh: add a list of parent configurations to struct
+Message-Id: <Pine.LNX.4.64.1007081427020.32100@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1279899566-4359-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1279899566-4359-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>
 
-viafb: update fix before calculating depth
+Many system clocks can select a parent by writing a value to a specific field
+in the configuration register. Add a list of parents and location and width of
+the source selection field in the clock configuration register to struct clk to
+assist in clk_set_parent() implementation.
 
-As the depth calculation depends on information in fix it is saner to
-do the update first.
-No runtime change expected as the value visual in fix used never
-changes to MONO.
-
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Joseph Chan <JosephChan@via.com.tw>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Acked-by: Magnus Damm <damm@opensource.se>
 ---
- drivers/video/via/viafbdev.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 1082541..ab39552 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -234,6 +234,7 @@ static int viafb_set_par(struct fb_info *info)
- 	struct VideoModeTable *vmode_entry, *vmode_entry1 = NULL;
- 	DEBUG_MSG(KERN_INFO "viafb_set_par!\n");
+v2:
+No change since v1
+
+ include/linux/sh_clk.h |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/sh_clk.h b/include/linux/sh_clk.h
+index 1636d1e..08a07b9 100644
+--- a/include/linux/sh_clk.h
++++ b/include/linux/sh_clk.h
+@@ -25,6 +25,10 @@ struct clk {
+ 	int			id;
  
-+	viafb_update_fix(info);
- 	viapar->depth = fb_get_color_depth(&info->var, &info->fix);
- 	viafb_update_device_setting(viafbinfo->var.xres, viafbinfo->var.yres,
- 		viafbinfo->var.bits_per_pixel, viafb_refresh, 0);
-@@ -257,7 +258,6 @@ static int viafb_set_par(struct fb_info *info)
- 	}
+ 	struct clk		*parent;
++	struct clk		**parent_table;	/* list of parents to */
++	unsigned short		parent_num;	/* choose between */
++	unsigned char		src_shift;	/* source clock field in the */
++	unsigned char		src_width;	/* configuration register */
+ 	struct clk_ops		*ops;
  
- 	if (vmode_entry) {
--		viafb_update_fix(info);
- 		if (viafb_dual_fb && viapar->iga_path = IGA2)
- 			viafb_bpp1 = info->var.bits_per_pixel;
- 		else
+ 	struct list_head	children;
 -- 
-1.6.3.2
+1.6.2.4
 

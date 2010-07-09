@@ -1,40 +1,71 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Sat, 31 Jul 2010 20:55:38 +0000
-Subject: [PATCH 2/3] cyber2000fb: add mode_option parameter
-Message-Id: <201007312255.40036.linux@rainbow-software.org>
+From: Pawel Osciak <p.osciak@samsung.com>
+Date: Fri, 09 Jul 2010 08:49:56 +0000
+Subject: [PATCH 08/19] s3c-fb: Fix various null references on framebuffer
+Message-Id: <1278665407-18002-9-git-send-email-p.osciak@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
+In-Reply-To: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <linux@arm.linux.org.uk>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Add mode_option parameter to specify the default video mode.
+The following problems were found in the above situation:
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+sfb->windows[win] was being assigned at the end of s3c_fb_probe_win only.
+This resulted in passing a NULL to s3c_fb_release_win if probe_win returned
+early and a memory leak.
 
---- linux-2.6.35-rc3-/drivers/video/cyber2000fb.c	2010-07-25 21:28:33.000000000 +0200
-+++ linux-2.6.35-rc3/drivers/video/cyber2000fb.c	2010-07-25 20:36:49.000000000 +0200
-@@ -94,6 +94,10 @@ static char *default_font = "Acorn8x8";
- module_param(default_font, charp, 0);
- MODULE_PARM_DESC(default_font, "Default font name");
+dma_free_writecombine does not allow its third argument to be NULL.
+
+fb_dealloc_cmap does not verify whether its argument is not NULL.
+
+Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ drivers/video/s3c-fb.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index b00c064..77f5765 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -804,7 +804,8 @@ static void s3c_fb_free_memory(struct s3c_fb *sfb, struct s3c_fb_win *win)
+ {
+ 	struct fb_info *fbi = win->fbinfo;
  
-+static char *mode_option __devinitdata = "640x480-8@60";
-+module_param(mode_option, charp, 0444);
-+MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
-+
- /*
-  * Our access methods.
-  */
-@@ -1368,7 +1372,7 @@ static int __devinit cyberpro_common_pro
- 	cfb->fb.screen_base    = cfb->region;
+-	dma_free_writecombine(sfb->dev, PAGE_ALIGN(fbi->fix.smem_len),
++	if (fbi->screen_base)
++		dma_free_writecombine(sfb->dev, PAGE_ALIGN(fbi->fix.smem_len),
+ 			      fbi->screen_base, fbi->fix.smem_start);
+ }
  
- 	err = -EINVAL;
--	if (!fb_find_mode(&cfb->fb.var, &cfb->fb, NULL, NULL, 0,
-+	if (!fb_find_mode(&cfb->fb.var, &cfb->fb, mode_option, NULL, 0,
- 			  &cyber2000fb_default_mode, 8)) {
- 		printk(KERN_ERR "%s: no valid mode found\n", cfb->fb.fix.id);
- 		goto failed;
-
+@@ -819,7 +820,8 @@ static void s3c_fb_release_win(struct s3c_fb *sfb, struct s3c_fb_win *win)
+ {
+ 	if (win->fbinfo) {
+ 		unregister_framebuffer(win->fbinfo);
+-		fb_dealloc_cmap(&win->fbinfo->cmap);
++		if (win->fbinfo->cmap.len)
++			fb_dealloc_cmap(&win->fbinfo->cmap);
+ 		s3c_fb_free_memory(sfb, win);
+ 		framebuffer_release(win->fbinfo);
+ 	}
+@@ -865,6 +867,7 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 	WARN_ON(windata->win_mode.yres = 0);
+ 
+ 	win = fbinfo->par;
++	*res = win;
+ 	var = &fbinfo->var;
+ 	win->variant = *variant;
+ 	win->fbinfo = fbinfo;
+@@ -939,7 +942,6 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 		return ret;
+ 	}
+ 
+-	*res = win;
+ 	dev_info(sfb->dev, "window %d: fb %s\n", win_no, fbinfo->fix.id);
+ 
+ 	return 0;
 -- 
-Ondrej Zary
+1.7.1.569.g6f426
+

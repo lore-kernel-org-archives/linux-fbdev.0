@@ -1,147 +1,291 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Thu, 08 Jul 2010 14:12:56 +0000
-Subject: [PATCH 2/6 v2] sh: add a reparent function to DIV6 clocks
-Message-Id: <Pine.LNX.4.64.1007081530430.32100@axis700.grange>
+From: Pawel Osciak <p.osciak@samsung.com>
+Date: Fri, 09 Jul 2010 08:50:01 +0000
+Subject: [PATCH 13/19] s3c-fb: Add wait for VSYNC ioctl
+Message-Id: <1278665407-18002-14-git-send-email-p.osciak@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
+In-Reply-To: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Add support for reparenting of div6 clocks on SuperH and SH-Mobile SoCs.
+Add VSYNC interrupt support and an ioctl that allows waiting for it.
+Interrupts are turned on only when needed.
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
+ arch/arm/plat-samsung/include/plat/regs-fb.h |    1 +
+ drivers/video/s3c-fb.c                       |  166 +++++++++++++++++++++++++-
+ 2 files changed, 166 insertions(+), 1 deletions(-)
 
-v2:
-Fixed a typo, noticed by Magnus.
-
- drivers/sh/clk-cpg.c   |   58 ++++++++++++++++++++++++++++++++++++++++++++++-
- include/linux/sh_clk.h |   19 +++++++++++----
- 2 files changed, 70 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/sh/clk-cpg.c b/drivers/sh/clk-cpg.c
-index f5c80ba..8c024b9 100644
---- a/drivers/sh/clk-cpg.c
-+++ b/drivers/sh/clk-cpg.c
-@@ -68,6 +68,39 @@ static unsigned long sh_clk_div6_recalc(struct clk *clk)
- 	return clk->freq_table[idx].frequency;
+diff --git a/arch/arm/plat-samsung/include/plat/regs-fb.h b/arch/arm/plat-samsung/include/plat/regs-fb.h
+index dbb6c0a..564594e 100644
+--- a/arch/arm/plat-samsung/include/plat/regs-fb.h
++++ b/arch/arm/plat-samsung/include/plat/regs-fb.h
+@@ -300,6 +300,7 @@
+ #define VIDINTCON0_FRAMESEL0_FRONTPORCH		(0x3 << 15)
+ 
+ #define VIDINTCON0_FRAMESEL1			(1 << 13)
++#define VIDINTCON0_FRAMESEL1_MASK		(0x3 << 13)
+ #define VIDINTCON0_FRAMESEL1_NONE		(0x0 << 13)
+ #define VIDINTCON0_FRAMESEL1_BACKPORCH		(0x1 << 13)
+ #define VIDINTCON0_FRAMESEL1_VSYNC		(0x2 << 13)
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index de427d9..2e82adf 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -21,6 +21,8 @@
+ #include <linux/clk.h>
+ #include <linux/fb.h>
+ #include <linux/io.h>
++#include <linux/uaccess.h>
++#include <linux/interrupt.h>
+ 
+ #include <mach/map.h>
+ #include <plat/regs-fb-v4.h>
+@@ -48,6 +50,11 @@
+ 	__raw_writel(v, r); } while(0)
+ #endif /* FB_S3C_DEBUG_REGWRITE */
+ 
++/* irq_flags bits */
++#define S3C_FB_VSYNC_IRQ_EN	0
++
++#define VSYNC_TIMEOUT_MSEC 50
++
+ struct s3c_fb;
+ 
+ #define VALID_BPP(x) (1 << ((x) - 1))
+@@ -156,6 +163,16 @@ struct s3c_fb_win {
+ };
+ 
+ /**
++ * struct s3c_fb_vsync - vsync information
++ * @wait:	a queue for processes waiting for vsync
++ * @count:	vsync interrupt count
++ */
++struct s3c_fb_vsync {
++	wait_queue_head_t	wait;
++	unsigned int		count;
++};
++
++/**
+  * struct s3c_fb - overall hardware state of the hardware
+  * @dev: The device that we bound to, for printing, etc.
+  * @regs_res: The resource we claimed for the IO registers.
+@@ -165,6 +182,9 @@ struct s3c_fb_win {
+  * @enabled: A bitmask of enabled hardware windows.
+  * @pdata: The platform configuration data passed with the device.
+  * @windows: The hardware windows that have been claimed.
++ * @irq_no: IRQ line number
++ * @irq_flags: irq flags
++ * @vsync_info: VSYNC-related information (count, queues...)
+  */
+ struct s3c_fb {
+ 	struct device		*dev;
+@@ -177,6 +197,10 @@ struct s3c_fb {
+ 
+ 	struct s3c_fb_platdata	*pdata;
+ 	struct s3c_fb_win	*windows[S3C_FB_MAX_WIN];
++
++	int			 irq_no;
++	unsigned long		 irq_flags;
++	struct s3c_fb_vsync	 vsync_info;
+ };
+ 
+ /**
+@@ -798,6 +822,124 @@ static int s3c_fb_pan_display(struct fb_var_screeninfo *var,
+ 	return 0;
  }
  
-+static int sh_clk_div6_set_parent(struct clk *clk, struct clk *parent)
++/**
++ * s3c_fb_enable_irq() - enable framebuffer interrupts
++ * @sfb: main hardware state
++ */
++static void s3c_fb_enable_irq(struct s3c_fb *sfb)
 +{
-+	struct clk_div_mult_table *table = &sh_clk_div6_table;
-+	u32 value;
-+	int ret, i;
++	void __iomem *regs = sfb->regs;
++	u32 irq_ctrl_reg;
 +
-+	if (!clk->parent_table || !clk->parent_num)
-+		return -EINVAL;
++	if (!test_and_set_bit(S3C_FB_VSYNC_IRQ_EN, &sfb->irq_flags)) {
++		/* IRQ disabled, enable it */
++		irq_ctrl_reg = readl(regs + VIDINTCON0);
 +
-+	/* Search the parent */
-+	for (i = 0; i < clk->parent_num; i++)
-+		if (clk->parent_table[i] = parent)
-+			break;
++		irq_ctrl_reg |= VIDINTCON0_INT_ENABLE;
++		irq_ctrl_reg |= VIDINTCON0_INT_FRAME;
 +
-+	if (i = clk->parent_num)
++		irq_ctrl_reg &= ~VIDINTCON0_FRAMESEL0_MASK;
++		irq_ctrl_reg |= VIDINTCON0_FRAMESEL0_VSYNC;
++		irq_ctrl_reg &= ~VIDINTCON0_FRAMESEL1_MASK;
++		irq_ctrl_reg |= VIDINTCON0_FRAMESEL1_NONE;
++
++		writel(irq_ctrl_reg, regs + VIDINTCON0);
++	}
++}
++
++/**
++ * s3c_fb_disable_irq() - disable framebuffer interrupts
++ * @sfb: main hardware state
++ */
++static void s3c_fb_disable_irq(struct s3c_fb *sfb)
++{
++	void __iomem *regs = sfb->regs;
++	u32 irq_ctrl_reg;
++
++	if (test_and_clear_bit(S3C_FB_VSYNC_IRQ_EN, &sfb->irq_flags)) {
++		/* IRQ enabled, disable it */
++		irq_ctrl_reg = readl(regs + VIDINTCON0);
++
++		irq_ctrl_reg &= ~VIDINTCON0_INT_FRAME;
++		irq_ctrl_reg &= ~VIDINTCON0_INT_ENABLE;
++
++		writel(irq_ctrl_reg, regs + VIDINTCON0);
++	}
++}
++
++static irqreturn_t s3c_fb_irq(int irq, void *dev_id)
++{
++	struct s3c_fb *sfb = dev_id;
++	void __iomem  *regs = sfb->regs;
++	u32 irq_sts_reg;
++
++	irq_sts_reg = readl(regs + VIDINTCON1);
++
++	if (irq_sts_reg & VIDINTCON1_INT_FRAME) {
++
++		/* VSYNC interrupt, accept it */
++		writel(VIDINTCON1_INT_FRAME, regs + VIDINTCON1);
++
++		sfb->vsync_info.count++;
++		wake_up_interruptible(&sfb->vsync_info.wait);
++	}
++
++	/* We only support waiting for VSYNC for now, so it's safe
++	 * to always disable irqs here.
++	 */
++	s3c_fb_disable_irq(sfb);
++
++	return IRQ_HANDLED;
++}
++
++/**
++ * s3c_fb_wait_for_vsync() - sleep until next VSYNC interrupt or timeout
++ * @sfb: main hardware state
++ * @crtc: head index.
++ */
++static int s3c_fb_wait_for_vsync(struct s3c_fb *sfb, u32 crtc)
++{
++	unsigned long count;
++	int ret;
++
++	if (crtc != 0)
 +		return -ENODEV;
 +
-+	ret = clk_reparent(clk, parent);
-+	if (ret < 0)
-+		return ret;
-+
-+	value = __raw_readl(clk->enable_reg) &
-+		~(((1 << clk->src_width) - 1) << clk->src_shift);
-+
-+	__raw_writel(value | (i << clk->src_shift), clk->enable_reg);
-+
-+	/* Rebuild the frequency table */
-+	clk_rate_table_build(clk, clk->freq_table, table->nr_divisors,
-+			     table, &clk->arch_flags);
++	count = sfb->vsync_info.count;
++	s3c_fb_enable_irq(sfb);
++	ret = wait_event_interruptible_timeout(sfb->vsync_info.wait,
++				       count != sfb->vsync_info.count,
++				       msecs_to_jiffies(VSYNC_TIMEOUT_MSEC));
++	if (ret = 0)
++		return -ETIMEDOUT;
 +
 +	return 0;
 +}
 +
- static int sh_clk_div6_set_rate(struct clk *clk,
- 				unsigned long rate, int algo_id)
- {
-@@ -117,7 +150,17 @@ static struct clk_ops sh_clk_div6_clk_ops = {
- 	.disable	= sh_clk_div6_disable,
++static int s3c_fb_ioctl(struct fb_info *info, unsigned int cmd,
++			unsigned long arg)
++{
++	struct s3c_fb_win *win = info->par;
++	struct s3c_fb *sfb = win->parent;
++	int ret;
++	u32 crtc;
++
++	switch (cmd) {
++	case FBIO_WAITFORVSYNC:
++		if (get_user(crtc, (u32 __user *)arg)) {
++			ret = -EFAULT;
++			break;
++		}
++
++		ret = s3c_fb_wait_for_vsync(sfb, crtc);
++		break;
++	default:
++		ret = -ENOTTY;
++	}
++
++	return ret;
++}
++
+ static struct fb_ops s3c_fb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_check_var	= s3c_fb_check_var,
+@@ -808,6 +950,7 @@ static struct fb_ops s3c_fb_ops = {
+ 	.fb_copyarea	= cfb_copyarea,
+ 	.fb_imageblit	= cfb_imageblit,
+ 	.fb_pan_display	= s3c_fb_pan_display,
++	.fb_ioctl	= s3c_fb_ioctl,
  };
  
--int __init sh_clk_div6_register(struct clk *clks, int nr)
-+static struct clk_ops sh_clk_div6_reparent_clk_ops = {
-+	.recalc		= sh_clk_div6_recalc,
-+	.round_rate	= sh_clk_div_round_rate,
-+	.set_rate	= sh_clk_div6_set_rate,
-+	.enable		= sh_clk_div6_enable,
-+	.disable	= sh_clk_div6_disable,
-+	.set_parent	= sh_clk_div6_set_parent,
-+};
+ /**
+@@ -914,6 +1057,8 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 
+ 	dev_dbg(sfb->dev, "probing window %d, variant %p\n", win_no, variant);
+ 
++	init_waitqueue_head(&sfb->vsync_info.wait);
 +
-+static int __init sh_clk_div6_register_ops(struct clk *clks, int nr,
-+					   struct clk_ops *ops)
- {
- 	struct clk *clkp;
- 	void *freq_table;
-@@ -136,7 +179,7 @@ int __init sh_clk_div6_register(struct clk *clks, int nr)
- 	for (k = 0; !ret && (k < nr); k++) {
- 		clkp = clks + k;
+ 	palette_size = variant->palette_sz * 4;
  
--		clkp->ops = &sh_clk_div6_clk_ops;
-+		clkp->ops = ops;
- 		clkp->id = -1;
- 		clkp->freq_table = freq_table + (k * freq_table_size);
- 		clkp->freq_table[nr_divs].frequency = CPUFREQ_TABLE_END;
-@@ -147,6 +190,17 @@ int __init sh_clk_div6_register(struct clk *clks, int nr)
- 	return ret;
- }
+ 	fbinfo = framebuffer_alloc(sizeof(struct s3c_fb_win) +
+@@ -1093,6 +1238,20 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 		goto err_req_region;
+ 	}
  
-+int __init sh_clk_div6_register(struct clk *clks, int nr)
-+{
-+	return sh_clk_div6_register_ops(clks, nr, &sh_clk_div6_clk_ops);
-+}
++	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
++	if (!res) {
++		dev_err(dev, "failed to acquire irq resource\n");
++		ret = -ENOENT;
++		goto err_ioremap;
++	}
++	sfb->irq_no = res->start;
++	ret = request_irq(sfb->irq_no, s3c_fb_irq,
++			  0, "s3c_fb", sfb);
++	if (ret) {
++		dev_err(dev, "irq request failed\n");
++		goto err_ioremap;
++	}
 +
-+int __init sh_clk_div6_reparent_register(struct clk *clks, int nr)
-+{
-+	return sh_clk_div6_register_ops(clks, nr,
-+					&sh_clk_div6_reparent_clk_ops);
-+}
+ 	dev_dbg(dev, "got resources (regs %p), probing windows\n", sfb->regs);
+ 
+ 	/* setup gpio and output polarity controls */
+@@ -1127,7 +1286,7 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 			dev_err(dev, "failed to create window %d\n", win);
+ 			for (; win >= 0; win--)
+ 				s3c_fb_release_win(sfb, sfb->windows[win]);
+-			goto err_ioremap;
++			goto err_irq;
+ 		}
+ 	}
+ 
+@@ -1135,6 +1294,9 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
++err_irq:
++	free_irq(sfb->irq_no, sfb);
 +
- static unsigned long sh_clk_div4_recalc(struct clk *clk)
- {
- 	struct clk_div4_table *d4t = clk->priv;
-diff --git a/include/linux/sh_clk.h b/include/linux/sh_clk.h
-index 08a07b9..875ce50 100644
---- a/include/linux/sh_clk.h
-+++ b/include/linux/sh_clk.h
-@@ -142,13 +142,22 @@ int sh_clk_div4_enable_register(struct clk *clks, int nr,
- int sh_clk_div4_reparent_register(struct clk *clks, int nr,
- 			 struct clk_div4_table *table);
+ err_ioremap:
+ 	iounmap(sfb->regs);
  
--#define SH_CLK_DIV6(_parent, _reg, _flags)	\
--{						\
--	.parent = _parent,			\
--	.enable_reg = (void __iomem *)_reg,	\
--	.flags = _flags,			\
-+#define SH_CLK_DIV6_EXT(_parent, _reg, _flags, _parents,	\
-+			_num_parents, _src_shift, _src_width)	\
-+{								\
-+	.parent = _parent,					\
-+	.enable_reg = (void __iomem *)_reg,			\
-+	.flags = _flags,					\
-+	.parent_table = _parents,				\
-+	.parent_num = _num_parents,				\
-+	.src_shift = _src_shift,				\
-+	.src_width = _src_width,				\
- }
+@@ -1167,6 +1329,8 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
+ 		if (sfb->windows[win])
+ 			s3c_fb_release_win(sfb, sfb->windows[win]);
  
-+#define SH_CLK_DIV6(_parent, _reg, _flags)			\
-+	SH_CLK_DIV6_EXT(_parent, _reg, _flags, NULL, 0, 0, 0)
++	free_irq(sfb->irq_no, sfb);
 +
- int sh_clk_div6_register(struct clk *clks, int nr);
-+int sh_clk_div6_reparent_register(struct clk *clks, int nr);
+ 	iounmap(sfb->regs);
  
- #endif /* __SH_CLOCK_H */
+ 	clk_disable(sfb->bus_clk);
 -- 
-1.6.2.4
+1.7.1.569.g6f426
 

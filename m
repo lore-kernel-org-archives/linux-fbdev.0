@@ -1,27 +1,75 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Wed, 28 Jul 2010 19:59:16 +0000
-Subject: cyber2000fb - 24bpp and 32bpp modes not working
-Message-Id: <201007282159.19583.linux@rainbow-software.org>
+From: Pawel Osciak <p.osciak@samsung.com>
+Date: Fri, 09 Jul 2010 08:50:07 +0000
+Subject: [PATCH 19/19] s3c-fb: Add support for DMA channel control on S5PV210
+Message-Id: <1278665407-18002-20-git-send-email-p.osciak@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
+In-Reply-To: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <linux@arm.linux.org.uk>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Hello,
-some more CyberPro 2000 testing shows that 24bpp and 32bpp modes don't work. 
-8bpp and 16bpp modes work fine.
+S5PV210 SoCs allow enabling/disabling DMA channels per window. For a window
+to display data from framebuffer memory, its channel has to be enabled.
 
-The mode appears to be set correctly (monitor OSD shows correct resolution and 
-frequency) but console remains blank (even no cursor).
+Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ arch/arm/plat-samsung/include/plat/regs-fb.h |    4 ++++
+ drivers/video/s3c-fb.c                       |   15 +++++++++++++++
+ 2 files changed, 19 insertions(+), 0 deletions(-)
 
-Xorg with fbdev in 24bpp mode displays mouse cursor, then gdm background and 
-gdm login window and immediately segfaults. Xorg with fbdev in 32bpp mode 
-works.
-
-So the framebuffer works (24bpp crash might be Xorg bug) but maybe the console 
-output is not written to the correct place?
-
+diff --git a/arch/arm/plat-samsung/include/plat/regs-fb.h b/arch/arm/plat-samsung/include/plat/regs-fb.h
+index 4359918..8f39aa5 100644
+--- a/arch/arm/plat-samsung/include/plat/regs-fb.h
++++ b/arch/arm/plat-samsung/include/plat/regs-fb.h
+@@ -223,6 +223,10 @@
+ /* S5PV210 */
+ #define SHADOWCON				(0x34)
+ #define SHADOWCON_WINx_PROTECT(_win)		(1 << (10 + (_win)))
++/* DMA channels (all windows) */
++#define SHADOWCON_CHx_ENABLE(_win)		(1 << (_win))
++/* Local input channels (windows 0-2) */
++#define SHADOWCON_CHx_LOCAL_ENABLE(_win)	(1 << (5 + (_win)))
+ 
+ #define VIDOSDxA_TOPLEFT_X_MASK			(0x7ff << 11)
+ #define VIDOSDxA_TOPLEFT_X_SHIFT		(11)
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index a95314d..8ea974d 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -634,6 +634,13 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 	writel(data, regs + sfb->variant.wincon + (win_no * 4));
+ 	writel(0x0, regs + sfb->variant.winmap + (win_no * 4));
+ 
++	/* Enable DMA channel for this window */
++	if (sfb->variant.has_shadowcon) {
++		data = readl(sfb->regs + SHADOWCON);
++		data |= SHADOWCON_CHx_ENABLE(win_no);
++		writel(data, sfb->regs + SHADOWCON);
++	}
++
+ 	shadow_protect_win(win, 0);
+ 
+ 	return 0;
+@@ -1091,7 +1098,15 @@ static void s3c_fb_free_memory(struct s3c_fb *sfb, struct s3c_fb_win *win)
+  */
+ static void s3c_fb_release_win(struct s3c_fb *sfb, struct s3c_fb_win *win)
+ {
++	u32 data;
++
+ 	if (win->fbinfo) {
++		if (sfb->variant.has_shadowcon) {
++			data = readl(sfb->regs + SHADOWCON);
++			data &= ~SHADOWCON_CHx_ENABLE(win->index);
++			data &= ~SHADOWCON_CHx_LOCAL_ENABLE(win->index);
++			writel(data, sfb->regs + SHADOWCON);
++		}
+ 		unregister_framebuffer(win->fbinfo);
+ 		if (win->fbinfo->cmap.len)
+ 			fb_dealloc_cmap(&win->fbinfo->cmap);
 -- 
-Ondrej Zary
+1.7.1.569.g6f426
+

@@ -1,43 +1,62 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Wed, 21 Jul 2010 10:13:06 +0000
-Subject: [PATCH 1/6 v3] sh: add a list of parent configurations to struct
-Message-Id: <Pine.LNX.4.64.1007211149030.16933@axis700.grange>
+From: Pawel Osciak <p.osciak@samsung.com>
+Date: Fri, 09 Jul 2010 08:50:05 +0000
+Subject: [PATCH 17/19] s3c-fb: Protect window-specific registers during updates
+Message-Id: <1278665407-18002-18-git-send-email-p.osciak@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
+In-Reply-To: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Many system clocks can select a parent by writing a value to a specific field
-in the configuration register. Add a list of parents and location and width of
-the source selection field in the clock configuration register to struct clk to
-assist in clk_set_parent() implementation.
+Newer hardware (S3C6410, S5P) have the ability to block updates from shadow
+registers during reconfiguration. Add protect calls for set_par and clear
+protection when resetting.
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Acked-by: Magnus Damm <damm@opensource.se>
+Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
+ drivers/video/s3c-fb.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-v3, v2:
-No change since v1
-
- include/linux/sh_clk.h |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/sh_clk.h b/include/linux/sh_clk.h
-index 1636d1e..08a07b9 100644
---- a/include/linux/sh_clk.h
-+++ b/include/linux/sh_clk.h
-@@ -25,6 +25,10 @@ struct clk {
- 	int			id;
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 2173869..b10d16d 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -450,6 +450,8 @@ static int s3c_fb_set_par(struct fb_info *info)
  
- 	struct clk		*parent;
-+	struct clk		**parent_table;	/* list of parents to */
-+	unsigned short		parent_num;	/* choose between */
-+	unsigned char		src_shift;	/* source clock field in the */
-+	unsigned char		src_width;	/* configuration register */
- 	struct clk_ops		*ops;
+ 	dev_dbg(sfb->dev, "setting framebuffer parameters\n");
  
- 	struct list_head	children;
++	shadow_protect_win(win, 1);
++
+ 	switch (var->bits_per_pixel) {
+ 	case 32:
+ 	case 24:
+@@ -632,6 +634,8 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 	writel(data, regs + sfb->variant.wincon + (win_no * 4));
+ 	writel(0x0, regs + sfb->variant.winmap + (win_no * 4));
+ 
++	shadow_protect_win(win, 0);
++
+ 	return 0;
+ }
+ 
+@@ -1228,11 +1232,14 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ static void s3c_fb_clear_win(struct s3c_fb *sfb, int win)
+ {
+ 	void __iomem *regs = sfb->regs;
++	u32 reg;
+ 
+ 	writel(0, regs + sfb->variant.wincon + (win * 4));
+ 	writel(0, regs + VIDOSD_A(win, sfb->variant));
+ 	writel(0, regs + VIDOSD_B(win, sfb->variant));
+ 	writel(0, regs + VIDOSD_C(win, sfb->variant));
++	reg = readl(regs + SHADOWCON);
++	writel(reg & ~SHADOWCON_WINx_PROTECT(win), regs + SHADOWCON);
+ }
+ 
+ static int __devinit s3c_fb_probe(struct platform_device *pdev)
 -- 
-1.6.2.4
+1.7.1.569.g6f426
 

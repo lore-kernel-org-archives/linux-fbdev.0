@@ -1,35 +1,123 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Sun, 25 Jul 2010 16:52:30 +0000
-Subject: [PATCH] cyber2000fb: fix machine hang on module load
-Message-Id: <201007251852.32397.linux@rainbow-software.org>
+From: Pawel Osciak <p.osciak@samsung.com>
+Date: Fri, 09 Jul 2010 08:49:55 +0000
+Subject: [PATCH 07/19] s3c-fb: Integrate palette setup code into main driver
+Message-Id: <1278665407-18002-8-git-send-email-p.osciak@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
+In-Reply-To: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <linux@arm.linux.org.uk>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Hello,
-I was testing two CyberPro 2000 based PCI cards on x86 and the machine always
-hanged completely when the cyber2000fb module was loaded. It seems that the
-card hangs when some registers are accessed too quickly after writing RAMDAC
-control register. With this patch, both card work.
+From: Ben Dooks <ben-linux@fluff.org>
 
-Add delay after RAMDAC control register write to prevent hangs on module load.
+Remove the palette setup code from the header files and
+put it into the main driver.
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
+---
+ arch/arm/plat-samsung/include/plat/regs-fb-v4.h |   34 -----------------------
+ drivers/video/s3c-fb.c                          |   33 +++++++++++++++++++++-
+ 2 files changed, 32 insertions(+), 35 deletions(-)
 
---- linux-2.6.35-rc2/drivers/video/cyber2000fb.c	2010-06-06 05:43:24.000000000 +0200
-+++ linux-2.6.35-rc3/drivers/video/cyber2000fb.c	2010-07-25 18:20:47.000000000 +0200
-@@ -436,6 +436,7 @@ static void cyber2000fb_write_ramdac_ctr
- 	cyber2000fb_writeb(i | 4, 0x3cf, cfb);
- 	cyber2000fb_writeb(val, 0x3c6, cfb);
- 	cyber2000fb_writeb(i, 0x3cf, cfb);
-+	udelay(1);
- }
+diff --git a/arch/arm/plat-samsung/include/plat/regs-fb-v4.h b/arch/arm/plat-samsung/include/plat/regs-fb-v4.h
+index 8352f5dc..4c3647f 100644
+--- a/arch/arm/plat-samsung/include/plat/regs-fb-v4.h
++++ b/arch/arm/plat-samsung/include/plat/regs-fb-v4.h
+@@ -137,40 +137,6 @@
+ #define WPALCON_W2PAL_16BPP_A555		(1 << 6)
  
- static void cyber2000fb_set_timing(struct cfb_info *cfb, struct par_info *hw)
-
-
+ 
+-/* system specific implementation code for palette sizes, and other
+- * information that changes depending on which architecture is being
+- * compiled.
+-*/
+-
+-struct s3c_fb_palette {
+-	struct fb_bitfield	r;
+-	struct fb_bitfield	g;
+-	struct fb_bitfield	b;
+-	struct fb_bitfield	a;
+-};
+-
+-static inline void s3c_fb_init_palette(unsigned int window,
+-				       struct s3c_fb_palette *palette)
+-{
+-	if (window < 2) {
+-		/* Windows 0/1 are 8/8/8 or A/8/8/8 */
+-		palette->r.offset = 16;
+-		palette->r.length = 8;
+-		palette->g.offset = 8;
+-		palette->g.length = 8;
+-		palette->b.offset = 0;
+-		palette->b.length = 8;
+-	} else {
+-		/* currently we assume RGB 5/6/5 */
+-		palette->r.offset = 11;
+-		palette->r.length = 5;
+-		palette->g.offset = 5;
+-		palette->g.length = 6;
+-		palette->b.offset = 0;
+-		palette->b.length = 5;
+-	}
+-}
+-
+ /* Notes on per-window bpp settings
+  *
+  * Value	Win0	 Win1	  Win2	   Win3	    Win 4
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 5c7ac01..b00c064 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -116,6 +116,20 @@ struct s3c_fb_driverdata {
+ };
+ 
+ /**
++ * struct s3c_fb_palette - palette information
++ * @r: Red bitfield.
++ * @g: Green bitfield.
++ * @b: Blue bitfield.
++ * @a: Alpha bitfield.
++ */
++struct s3c_fb_palette {
++	struct fb_bitfield	r;
++	struct fb_bitfield	g;
++	struct fb_bitfield	b;
++	struct fb_bitfield	a;
++};
++
++/**
+  * struct s3c_fb_win - per window private data for each framebuffer.
+  * @windata: The platform data supplied for the window configuration.
+  * @parent: The hardware that this window is part of.
+@@ -866,7 +880,24 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+ 	}
+ 
+ 	/* setup the r/b/g positions for the window's palette */
+-	s3c_fb_init_palette(win_no, &win->palette);
++	if (win->variant.palette_16bpp) {
++		/* Set RGB 5:6:5 as default */
++		win->palette.r.offset = 11;
++		win->palette.r.length = 5;
++		win->palette.g.offset = 5;
++		win->palette.g.length = 6;
++		win->palette.b.offset = 0;
++		win->palette.b.length = 5;
++
++	} else {
++		/* Set 8bpp or 8bpp and 1bit alpha */
++		win->palette.r.offset = 16;
++		win->palette.r.length = 8;
++		win->palette.g.offset = 8;
++		win->palette.g.length = 8;
++		win->palette.b.offset = 0;
++		win->palette.b.length = 8;
++	}
+ 
+ 	/* setup the initial video mode from the window */
+ 	fb_videomode_to_var(&fbinfo->var, initmode);
 -- 
-Ondrej Zary
+1.7.1.569.g6f426
+

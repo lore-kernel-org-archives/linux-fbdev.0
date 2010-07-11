@@ -1,52 +1,31 @@
-From: Igor Grinberg <grinberg@compulab.co.il>
-Date: Mon, 26 Jul 2010 09:04:33 +0000
-Subject: Re: [PATCH] [ARM] omap/board-cm-t35: fix visual artefacts
-Message-Id: <4C4D4FA1.4040609@compulab.co.il>
+From: Jiri Kosina <jkosina@suse.cz>
+Date: Sun, 11 Jul 2010 20:58:37 +0000
+Subject: Re: [PATCH 1/4 - adjusted changelog] HID: picolcd: fix deferred_io
+Message-Id: <alpine.LNX.2.00.1007112258270.4741@pobox.suse.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1278931429-20018-1-git-send-email-grinberg@compulab.co.il>
-In-Reply-To: <1278931429-20018-1-git-send-email-grinberg@compulab.co.il>
+References: <20100509184911.3f136b77@neptune.home> <AANLkTik0EkPYKdnhrpF7yK6eXIrHMsNYrzSC6tyeBR0P@mail.gmail.com> <20100510080047.5adade6f@pluto.restena.lu> <20100526215829.28a4aa47@neptune.home> <20100530130945.5c03797f@neptune.home> <20100623123225.4c16e653@neptune.home>
+ <alpine.LNX.2.00.1006241053360.13809@pobox.suse.cz> <20100628222641.489c955a@neptune.home> <20100628222920.1127f8eb@neptune.home> <AANLkTingjmM4OmkdXl9IOUe5zsj0QxTdix1h34pVHWGl@mail.gmail.com> <20100630075657.47a325a6@pluto.restena.lu>
+ <20100630223631.49ab1c85@neptune.home>
+In-Reply-To: <20100630223631.49ab1c85@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Igor Grinberg <grinberg@compulab.co.il>
-Cc: Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Mike Rapoport <mike@compulab.co.il>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
+Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
->
-> CM-T35 DVI transmitter sampling the data on the raising edge of the
-> pixel clock, therefore the data strobe should happen on the falling
-> edge.
->
-> Signed-off-by: Igor Grinberg <grinberg@compulab.co.il>
-> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
->   
+On Wed, 30 Jun 2010, Bruno Prémont wrote:
 
-NAK, this only fixes the pixel clock sampling on the second
-call to the platform enable function, because the
-dss configuration is done before the first call.
-
-I will send another patch for this.
-Sorry for misleading.
-
+> Adjust ordering if framebuffer (un)registration and defio init/cleanup
+> to match the correct order (init defio, register FB ... unregister FB,
+> cleanup defio)
+> 
+> Acked-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+> Signed-off-by: Bruno Prémont <bonbons@linux-vserver.org>
 > ---
->  arch/arm/mach-omap2/board-cm-t35.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/arm/mach-omap2/board-cm-t35.c b/arch/arm/mach-omap2/board-cm-t35.c
-> index e679a2c..015ebf8 100644
-> --- a/arch/arm/mach-omap2/board-cm-t35.c
-> +++ b/arch/arm/mach-omap2/board-cm-t35.c
-> @@ -349,6 +349,8 @@ static int cm_t35_panel_enable_dvi(struct omap_dss_device *dssdev)
->  		return -EINVAL;
->  	}
->  
-> +	dssdev->panel.config |= OMAP_DSS_LCD_IPC | OMAP_DSS_LCD_ONOFF;
-> +
->  	gpio_set_value(dvi_en_gpio, 0);
->  	dvi_enabled = 1;
->  
->   
+> I consider Jaya's reply as an ack to the patch.
+
+Applied, thanks Bruno.
 
 -- 
-Regards,
-Igor.
-
+Jiri Kosina
+SUSE Labs, Novell Inc.

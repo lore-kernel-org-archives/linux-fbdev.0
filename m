@@ -1,42 +1,20 @@
-From: Ben Hutchings <ben@decadent.org.uk>
-Date: Tue, 13 Jul 2010 23:30:45 +0000
-Subject: [PATCH] viafb: Add transitive dependencies via gpiolib
-Message-Id: <1279063845.6139.129.camel@localhost>
+From: Dave Airlie <airlied@gmail.com>
+Date: Tue, 13 Jul 2010 23:35:49 +0000
+Subject: Re: [PATCH] viafb: Add transitive dependencies via gpiolib
+Message-Id: <AANLkTik8N3lo2FtIv6PrNH1ObvpvCeMDaPeUS_cF_Sk4@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1279063845.6139.129.camel@localhost>
+In-Reply-To: <1279063845.6139.129.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-FB_VIA now selects GPIOLIB, but that is not available on all
-architectures.  Change FB_VIA dependencies to include GPIOLIB
-dependencies.
+On Wed, Jul 14, 2010 at 9:30 AM, Ben Hutchings <ben@decadent.org.uk> wrote:
+> FB_VIA now selects GPIOLIB, but that is not available on all
+> architectures. =A0Change FB_VIA dependencies to include GPIOLIB
+> dependencies.
 
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
----
-I think the better solution is to make GPIOLIB available for all
-platforms, but this will deal with the problem in the short term (i.e.
-for 2.6.35).
+If you can find a via chipset on anything not x86 I'd be impressed.
 
-Ben.
-
- drivers/video/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 3d94a14..bc4534d 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -1505,7 +1505,7 @@ config FB_SIS_315
- 
- config FB_VIA
-        tristate "VIA UniChrome (Pro) and Chrome9 display support"
--       depends on FB && PCI
-+       depends on FB && PCI && (ARCH_WANT_OPTIONAL_GPIOLIB || ARCH_REQUIRE_GPIOLIB)
-        select FB_CFB_FILLRECT
-        select FB_CFB_COPYAREA
-        select FB_CFB_IMAGEBLIT
--- 
-1.7.1
-
-
+Dave.

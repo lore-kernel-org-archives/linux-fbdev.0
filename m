@@ -1,44 +1,71 @@
-From: In-Ki Dae <inki.dae@samsung.com>
-Date: Thu, 08 Jul 2010 00:52:54 +0000
-Subject: Re: Re: [PATCH 1/3] FB: Add some members for CPU Interface.
-Message-Id: <9947337.222131278550374411.JavaMail.weblogic@epml01>
+From: Maurus Cuelenaere <mcuelenaere@gmail.com>
+Date: Tue, 13 Jul 2010 00:05:45 +0000
+Subject: [PATCH v2] s3c-fb: Automatically calculate pixel clock when none is given
+Message-Id: <4c3baddb.d37b0e0a.67e4.ffffcb55@mx.google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <AANLkTilgB3s8hy5Qg7IYpyBzwHCgK_GswVZqpxhryU5L@mail.gmail.com>
-In-Reply-To: <AANLkTilgB3s8hy5Qg7IYpyBzwHCgK_GswVZqpxhryU5L@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-samsung-soc@vger.kernel.org, akpm@linux-foundation.org, ben-linux@fluff.org
 
-SGksIEdlZXJ0CgpjcHUgYW5kIGNvbW1hbmQgbW9kZSBhcmUgc2FtZSBtZWFuLgphbmQgZmJfY21k
-bW9kZV90b192YXIgZnVuYyBoYWQgYmVlbiByZW1vdmVkIGZyb20gbXkgcHJldmlvdXMgcGF0Y2gu
-CnBsZWFzZSwgc2VlIHBhdGNoIHYyLgoKdGhhbmsgeW91LgoKLS0tLS0tLSBPcmlnaW5hbCBNZXNz
-YWdlIC0tLS0tLS0KU2VuZGVyIDogR2VlcnQgVXl0dGVyaG9ldmVuPGdlZXJ0QGxpbnV4LW02OGsu
-b3JnPiAKRGF0ZSAgIDogMjAxMC0wNy0wNyAwNToyMyAoR01UKzA5OjAwKQpUaXRsZSAgOiBSZTog
-W1BBVENIIDEvM10gRkI6IEFkZCBzb21lIG1lbWJlcnMgZm9yIENQVSBJbnRlcmZhY2UuCgpPbiBU
-dWUsIEp1bCA2LCAyMDEwIGF0IDE3OjMwLCBKYW1lcyBTaW1tb25zIDxqc2ltbW9uc0BpbmZyYWRl
-YWQub3JnPiB3cm90ZToKPgo+IENQVSBpbnRlcmZhY2UgbmVlZHMgY3MsIHdyIHNldHVwLCB3ciBh
-Y3QgYW5kIGhvbGQgZGVsYXkuCj4gSSBhZGRlZCBzb21lIG1lbWJlcnMgZm9yIHRoZW0gdG8gY29t
-bW9uIGZyYW1ld29yay4KPgo+IFNpZ25lZC1vZmYtYnk6IEluS2kgRGFlIDxpbmtpLmRhZUBzYW1z
-dW5nLmNvbT4KPiBTaWduZWQtb2ZmLWJ5OiBLeXVuZ21pbiBQYXJrIDxreXVuZ21pbi5wYXJrQHNh
-bXN1bmcuY29tPgo+IC0tLQo+Cj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vbW9kZWRiLmMg
-Yi9kcml2ZXJzL3ZpZGVvL21vZGVkYi5jCj4KPiBpbmRleCAwYTRkYmRjLi43NDEyMmQxIDEwMDY0
-NAo+IC0tLSBhL2RyaXZlcnMvdmlkZW8vbW9kZWRiLmMKPiArKysgYi9kcml2ZXJzL3ZpZGVvL21v
-ZGVkYi5jCj4gQEAgLTc1OSw2ICs3NTksMjcgQEAgdm9pZCBmYl92aWRlb21vZGVfdG9fdmFyKHN0
-cnVjdCBmYl92YXJfc2NyZWVuaW5mbyAqdmFyLAo+ICB9Cj4KPiAgLyoqCj4gKyAqIGZiX2NwdW1v
-ZGVfdG9fdmFyIC0gY29udmVydCBmYl9jcHVtb2RlIHRvIGZiX3Zhcl9zY3JlZW5pbmZvCiAgICAg
-ICAgIF5eXgo+ICsgKiBAdmFyOiBwb2ludGVyIHRvIHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbwo+
-ICsgKiBAbW9kZTogcG9pbnRlciB0byBzdHJ1Y3QgZmJfY3B1bW9kZQo+ICsgKi8KPiArdm9pZCBm
-Yl9jbWRtb2RlX3RvX3ZhcihzdHJ1Y3QgZmJfdmFyX3NjcmVlbmluZm8gKnZhciwKICAgICAgICAg
-ICBeXl4KCmNwdSB2cyBjbWQ/CgpHcntvZXRqZSxlZXRpbmd9cywKCgkJCQkJCUdlZXJ0CgotLQpH
-ZWVydCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUncyBsb3RzIG9mIExpbnV4IGJleW9uZCBpYTMyIC0t
-IGdlZXJ0QGxpbnV4LW02OGsub3JnCgpJbiBwZXJzb25hbCBjb252ZXJzYXRpb25zIHdpdGggdGVj
-aG5pY2FsIHBlb3BsZSwgSSBjYWxsIG15c2VsZiBhIGhhY2tlci4gQnV0CndoZW4gSSdtIHRhbGtp
-bmcgdG8gam91cm5hbGlzdHMgSSBqdXN0IHNheSAicHJvZ3JhbW1lciIgb3Igc29tZXRoaW5nIGxp
-a2UgdGhhdC4KCQkJCQkJCSAgICAtLSBMaW51cyBUb3J2YWxkcwotLQpUbyB1bnN1YnNjcmliZSBm
-cm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtZmJkZXYiIGlu
-CnRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnCk1vcmUg
-bWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8u
-aHRtbAoKCgr/9Oi6ey5uxyuJt5+uia2GKyWKy/+x6d22F6WKd/+6ey5uxyuJt6WKe7H99t16/+Ke
-2F5uh3Kh9qZ6yxqB62iZqOit2iaj++B6v+R6ud6X+iuAyit6ZqOit2iaiKd+hq2G22n//++B6v+R
-6ud6X+iuD+ZqOit2iaj+Kd+j+G0K
+This patch adds a simple algorithm which calculates the pixel clock based on the
+video mode parameters. This is only done when no pixel clock is supplied through
+the platform data.
+
+Signed-off-by: Maurus Cuelenaere <mcuelenaere@gmail.com>
+---
+
+Changes since v1:
+Re-posted this to the correct fbdev mailing list.
+
+---
+ drivers/video/s3c-fb.c |   25 +++++++++++++++++++++++++
+ 1 files changed, 25 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 9682ecc..e4715eb 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -654,6 +654,28 @@ static struct fb_ops s3c_fb_ops = {
+ };
+ 
+ /**
++ * s3c_fb_missing_pixclock() - calculates pixel clock
++ * @mode: The video mode to change.
++ *
++ * Calculate the pixel clock when none has been given through platform data.
++ */
++static void __devinit s3c_fb_missing_pixclock(struct fb_videomode *mode)
++{
++	u64 pixclk = 1000000000000ULL;
++	u32 div;
++
++	div  = mode->left_margin + mode->hsync_len + mode->right_margin +
++	       mode->xres;
++	div *= mode->upper_margin + mode->vsync_len + mode->lower_margin +
++	       mode->yres;
++	div *= mode->refresh ? : 60;
++
++	do_div(pixclk, div);
++
++	mode->pixclock = pixclk;
++}
++
++/**
+  * s3c_fb_alloc_memory() - allocate display memory for framebuffer window
+  * @sfb: The base resources for the hardware.
+  * @win: The window to initialise memory for.
+@@ -925,6 +947,9 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 		if (!pd->win[win])
+ 			continue;
+ 
++		if (!pd->win[win]->win_mode.pixclock)
++			s3c_fb_missing_pixclock(&pd->win[win]->win_mode);
++
+ 		ret = s3c_fb_probe_win(sfb, win, &sfb->windows[win]);
+ 		if (ret < 0) {
+ 			dev_err(dev, "failed to create window %d\n", win);
+-- 
+1.7.0.4
+

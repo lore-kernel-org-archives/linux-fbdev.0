@@ -1,112 +1,67 @@
-From: In-Ki Dae <inki.dae@samsung.com>
-Subject: Re: Re: [PATCH v1 2/2] S5PV210: Add MIPI-DSI Driver.
-Date: Mon, 05 Jul 2010 01:08:07 +0000 (GMT)
-Message-ID: <1292245.80511278292086837.JavaMail.weblogic@epml01>
-Reply-To: inki.dae@samsung.com
-Mime-Version: 1.0
+From: Maurus Cuelenaere <mcuelenaere@gmail.com>
+Subject: [PATCH] s3c-fb: Automatically calculate pixel clock when none is given
+Date: Tue, 13 Jul 2010 02:03:54 +0200
+Message-ID: <4c3bad6b.487e0e0a.688b.ffffd045@mx.google.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-return: prohibited
-MIME-version: 1.0
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
-	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
-	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: "kmpark@infradead.org" <kmpark@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>, Ben Dooks <ben-linux@fluff.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-samsung-soc@vger.kernel.org, akpm@linux-foundation.org, ben-linux@fluff.org
 
-Hi, Guennadi,
+This patch adds a simple algorithm which calculates the pixel clock based on the
+video mode parameters. This is only done when no pixel clock is supplied through
+the platform data.
 
-You mean is that it uses include/video/mipi_display.h file instead of plat/dsim.h?
-I cann't find mipi_display.h in mainline kernel.
-
-otherwise, it creates generic parts of my dsim.h header file as mipi_display.h and
-use that header file?
-
-Please, give me more detailed.
-
-Thank you.
-
-------- Original Message -------
-Sender : Guennadi Liakhovetski<g.liakhovetski@gmx.de> 
-Date   : 2010-07-05 04:33 (GMT+09:00)
-Title  : Re: [PATCH v1 2/2] S5PV210: Add MIPI-DSI Driver.
-
-On Sat, 3 Jul 2010, InKi Dae wrote:
-
-> this patch addes MIPI-DSI Driver.
-> 
-> to use this driver, some structures below should be added to machine
-> specific file.
-> 
-> struct dsim_config
-> - define clock info, data lane count and video mode info for MIPI-DSI
-> Controller.
-> 
-> struct dsim_lcd_config
-> - define interface mode, channel ID, Pixel format and so on.
-> 
-> struct s5p_platform_dsim
-> - define callbacks for initializing D-PHY, MIPI reset and trigger
-> releated interfaces of s3c-fb.c file.
-> 
-> struct mipi_ddi_platform_data
-> - define following callbacks.
-> - a function for transferring and receiving command data to mipi based
-> lcd panel.
-> - a function for getting framedone status of mipi-dsi controller.
-> - a function for clearing framedone interrupt of mipi-dsi controller.
-> - a function for checking i80 framedone status of display controller.(fimd)
-> - a function for triggering to display controller.(fimd)
-> 
-> Signed-off-by: InKi Dae <inki.dae@samsung.com <mailto:p.osciak@samsung.com>>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com
-> <mailto:kyungmin.park@samsung.com>>
-> ---
-> 
-> diff --git a/arch/arm/plat-samsung/include/plat/dsim.h b/arch/arm/plat-samsung/include/plat/dsim.h
-> new file mode 100644
-> index 0000000..49d8946
-> --- /dev/null
-> +++ b/arch/arm/plat-samsung/include/plat/dsim.h
-> @@ -0,0 +1,493 @@
-
-[snip]
-
-> +enum dsim_fifo_state {
-> +	DSIM_RX_DATA_FULL = (1 << 25),
-> +	DSIM_RX_DATA_EMPTY = (1 << 24),
-> +	SFR_HEADER_FULL = (1 << 23),
-> +	SFR_HEADER_EMPTY = (1 << 22),
-> +	SFR_PAYLOAD_FULL = (1 << 21),
-> +	SFR_PAYLOAD_EMPTY = (1 << 20),
-> +	I80_HEADER_FULL = (1 << 19),
-> +	I80_HEADER_EMPTY = (1 << 18),
-> +	I80_PALOAD_FULL = (1 << 17),
-> +	I80_PALOAD_EMPTY = (1 << 16),
-> +	SUB_DISP_HEADER_FULL = (1 << 15),
-> +	SUB_DISP_HEADER_EMPTY = (1 << 14),
-> +	SUB_DISP_PAYLOAD_FULL = (1 << 13),
-> +	SUB_DISP_PAYLOAD_EMPTY = (1 << 12),
-> +	MAIN_DISP_HEADER_FULL = (1 << 11),
-> +	MAIN_DISP_HEADER_EMPTY = (1 << 10),
-> +	MAIN_DISP_PAYLOAD_FULL = (1 << 9),
-> +	MAIN_DISP_PAYLOAD_EMPTY = (1 << 8),
-> +};
-
-Please use include/video/mipi_display.h for these transaction types and, 
-possibly, for other generic MIPI DSI defines.
-
-Thanks
-Guennadi
+Signed-off-by: Maurus Cuelenaere <mcuelenaere@gmail.com>
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+ drivers/video/s3c-fb.c |   25 +++++++++++++++++++++++++
+ 1 files changed, 25 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 9682ecc..e4715eb 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -654,6 +654,28 @@ static struct fb_ops s3c_fb_ops = {
+ };
+ 
+ /**
++ * s3c_fb_missing_pixclock() - calculates pixel clock
++ * @mode: The video mode to change.
++ *
++ * Calculate the pixel clock when none has been given through platform data.
++ */
++static void __devinit s3c_fb_missing_pixclock(struct fb_videomode *mode)
++{
++	u64 pixclk = 1000000000000ULL;
++	u32 div;
++
++	div  = mode->left_margin + mode->hsync_len + mode->right_margin +
++	       mode->xres;
++	div *= mode->upper_margin + mode->vsync_len + mode->lower_margin +
++	       mode->yres;
++	div *= mode->refresh ? : 60;
++
++	do_div(pixclk, div);
++
++	mode->pixclock = pixclk;
++}
++
++/**
+  * s3c_fb_alloc_memory() - allocate display memory for framebuffer window
+  * @sfb: The base resources for the hardware.
+  * @win: The window to initialise memory for.
+@@ -925,6 +947,9 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 		if (!pd->win[win])
+ 			continue;
+ 
++		if (!pd->win[win]->win_mode.pixclock)
++			s3c_fb_missing_pixclock(&pd->win[win]->win_mode);
++
+ 		ret = s3c_fb_probe_win(sfb, win, &sfb->windows[win]);
+ 		if (ret < 0) {
+ 			dev_err(dev, "failed to create window %d\n", win);
+-- 
+1.7.0.4

@@ -1,31 +1,35 @@
-From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Date: Tue, 27 Jul 2010 07:20:46 +0000
-Subject: Re: [PATCH 0/6 v3] fbdev: sh-mobile: HDMI support for SH-Mobile SoCs
-Message-Id: <w3phbjl4chc.wl%kuninori.morimoto.gx@renesas.com>
+From: Ben Hutchings <ben@decadent.org.uk>
+Date: Mon, 19 Jul 2010 23:40:16 +0000
+Subject: [PATCH] viafb: Depends on X86
+Message-Id: <1279582816.4883.214.camel@localhost>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1007211145420.16933@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1007211145420.16933@axis700.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
+VIA UniChrome and Chrome9 GPUs only exist as Integrated Graphics
+Processors in x86 chipsets.
 
-> This patch set adds a static HDMI support to SH-Mobile SoCs, specifically, 
-> to sh7372 (ap4evb) in this version. "Static" means only 720p is supported 
-> ATM. Also hotplug support is implemented without changing the framebuffer 
-> geometry. Dynamic geometry reconfiguration is planned for a future patch.
-> 
-> This series now depends on an arm-shmobile runtime PM RFC patch from 
-> Magnus with my incremental patch to it [1].
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+---
+ drivers/video/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I tested these Guennadi's HDMI patches + Maguns's V2 PM patch
-on genesis tree.
-It works well for me !!
-
-Tested-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-
-Best regards
---
-Kuninori Morimoto
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 3d94a14..162a0b7 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1505,7 +1505,7 @@ config FB_SIS_315
  
+ config FB_VIA
+        tristate "VIA UniChrome (Pro) and Chrome9 display support"
+-       depends on FB && PCI
++       depends on FB && PCI && X86
+        select FB_CFB_FILLRECT
+        select FB_CFB_COPYAREA
+        select FB_CFB_IMAGEBLIT
+-- 
+1.7.1
+
+

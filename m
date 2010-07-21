@@ -1,7 +1,7 @@
 From: Igor Grinberg <grinberg@compulab.co.il>
-Date: Sun, 18 Jul 2010 10:11:27 +0000
+Date: Wed, 21 Jul 2010 14:36:11 +0000
 Subject: Re: [PATCH] [ARM] video/omap2/tdo35s: fix visual artefacts
-Message-Id: <4C42D34F.4000602@compulab.co.il>
+Message-Id: <4C4705DB.4000402@compulab.co.il>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1278931370-19912-1-git-send-email-grinberg@compulab.co.il>
 In-Reply-To: <1278931370-19912-1-git-send-email-grinberg@compulab.co.il>
@@ -11,10 +11,7 @@ Content-Transfer-Encoding: 7bit
 To: Igor Grinberg <grinberg@compulab.co.il>
 Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>, Tony Lindgren <tony@atomide.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Mike Rapoport <mike@compulab.co.il>
 
-Tomi,
-
-Any comments?
-
+ping!
 > TDO35S samples the data on the falling adge of the pixel clock,
 > therefore the data strobe should be on the raising edge.
 >

@@ -1,127 +1,49 @@
-From: Igor Grinberg <grinberg@compulab.co.il>
-Date: Tue, 27 Jul 2010 13:59:08 +0000
-Subject: Re: [PATCH 1/2] OMAP: DSS2: enable generic panel configuration modification
-Message-Id: <4C4EE62C.9010701@compulab.co.il>
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Date: Thu, 22 Jul 2010 21:31:28 +0000
+Subject: fbmem: VM_IO set, but not propagated.
+Message-Id: <20100722213128.GA27012@phenom.dumpdata.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1280140468-8183-1-git-send-email-grinberg@compulab.co.il> <1280217649.2427.68.camel@tubuntu.research.nokia.com>
-In-Reply-To: <1280217649.2427.68.camel@tubuntu.research.nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: Tony Lindgren <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Mike Rapoport <mike@compulab.co.il>
+To: linux-fbdev@vger.kernel.org
 
-On 07/27/10 11:00, Tomi Valkeinen wrote:
-> On Mon, 2010-07-26 at 12:34 +0200, ext Igor Grinberg wrote:
->   
->> This patch enables platforms to modify the dss device configuration
->> of the generic panel.
->>
->> Signed-off-by: Igor Grinberg <grinberg@compulab.co.il>
->> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
->> ---
->>  drivers/video/omap2/displays/panel-generic.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/video/omap2/displays/panel-generic.c b/drivers/video/omap2/displays/panel-generic.c
->> index 300eff5..ad80dd0 100644
->> --- a/drivers/video/omap2/displays/panel-generic.c
->> +++ b/drivers/video/omap2/displays/panel-generic.c
->> @@ -66,7 +66,7 @@ static void generic_panel_power_off(struct omap_dss_device *dssdev)
->>  
->>  static int generic_panel_probe(struct omap_dss_device *dssdev)
->>  {
->> -	dssdev->panel.config = OMAP_DSS_LCD_TFT;
->> +	dssdev->panel.config |= OMAP_DSS_LCD_TFT;
->>  	dssdev->panel.timings = generic_panel_timings;
->>  
->>  	return 0;
->>     
->
-> I don't like this. Panel driver should be the one which decides the
-> config.
->   
+Hey,
 
-I agree with this in most cases, but not always.
-There are certain transmitters (like TI TFP410 dvi transmitter found
-on cm-t35 and other boards) that can have some of their parameters
-defined by hardware (strapped), so only the platform knows the correct
-values for them.
-One of such parameters is the edge of the clock sampling.
+This bug was found when Linux kernel was running under Xen.
+In that scenario, any page that has VM_IO flag to it, means that it
+MUST be a MMIO/VRAM backend memory , _not_ System RAM. That is what the
+fbmem.c does: sets VM_IO, ioremaps the region - everything is peachy.
 
-> I think a better solution is to make panel-generic configurable, which
-> has been discussed a bit some time ago on l-o.
->   
+Well, not exactly. The vm_page_prot does not get the relevant
+PTE flags set (_PAGE_IOMAP) which under Xen is a death-kneel to pages
+that are referencing real physical devices but don't have that flag set.
 
-No doubt about that :)
+Here is the patch:
 
-> Briefly:
->
-> - Add a struct for the configuration variables (a bit like
-> arch/arm/plat-omap/include/plat/nokia-dsi-panel.h).
->
-> - Fill the struct in the board file, and pass it to the panel driver via
-> omap_dss_device->data pointer.
->
-> - The panel driver get the struct and uses it to do whatever
-> configuration it needs.
->   
+Author: Daniel De Graaf <dgdegra@tycho.nsa.gov>
+Date:   Wed Jul 21 16:52:46 2010 -0400
 
-This is more or less what I've been thinking of, but with slight addition:
-the panel driver should have a defaults for all the parameters,
-so there will be no need to provide the whole parameters list,
-just the ones that are different.
+    fb: propagate VM_IO to VMA.
+    
+    When we setup up the VMA flags for the mmap flag and we end up using
+    the fallback mmap functionality we set the vma->vm_flags |= VM_IO.
+    However we neglect to propagate the flag to the vma->vm_page_prot.
+    
+    This patch fixes this.
+    
+    Tested-by: Eamon Walsh <ewalsh@tycho.nsa.gov>
+    Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 
-> I think there are two ways to implement this:
->
-> 1) Have lots of fields in the struct, including video timings and video
-> signaling information, and the driver uses these directly.
->   
-
-This seems like a good choice for better flexibility and
-provides an easy way of dealing with the issues, I've described above.
-
-> 2) Have a panel name in the struct, and the panel driver contains a
-> static list of panels, including configurations for those panels, and
-> the driver selects the configuration based on the panel name given from
-> the board file. (like drivers/video/omap2/displays/panel-taal.c does,
-> except there's currently only one panel defined).
->   
-
-This approach does not deal with the dvi transmitters issue above,
-unless there will be possibility to define some kind of platform data.
-Also, if we have a static list of panels with their configurations,
-there could be panels with (almost) the same parameters defined
-for a couple of times.
-
-> While 1. gives perhaps slightly easier configuration, as you just edit
-> the board file, I'd go for 2. because the required configuration is
-> really defined by the panel/chip being used, and so the board file
-> should just state which panel/chip we have, and the driver handles the
-> rest.
-
-Well, unfortunately, it is not :(
-
->  And 2. makes it also easier to use the same panel/chip on multiple
-> boards.
->
-> Implementing this would allow us to remove some panel drivers which
-> currently are 99% copies of each other.
->
->  Tomi
->
->   
-
-My idea is:
-generic driver will have built-in defaults, that can
-(but not necessarily will) be overridden by platform (or other) code
-on a parameter basis.
-This will allow other panels (like tdo35s) reuse the generic driver
-without the need for their special driver.
-
-What do you think of it?
-
--- 
-Regards,
-Igor.
-
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 99bbd28..057433a 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1362,6 +1362,7 @@ fb_mmap(struct file *file, struct vm_area_struct * vma)
+ 	vma->vm_pgoff = off >> PAGE_SHIFT;
+ 	/* This is an IO map - tell maydump to skip this VMA */
+ 	vma->vm_flags |= VM_IO | VM_RESERVED;
++	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
+ 	fb_pgprotect(file, vma, off);
+ 	if (io_remap_pfn_range(vma, vma->vm_start, off >> PAGE_SHIFT,
+ 			     vma->vm_end - vma->vm_start, vma->vm_page_prot))

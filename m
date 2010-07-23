@@ -1,75 +1,63 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Fri, 23 Jul 2010 15:54:50 +0000
-Subject: [PATCH 10/11] viafb: probe cleanups
-Message-Id: <1279900490-4488-1-git-send-email-FlorianSchandinat@gmx.de>
+From: Anatolij Gustschin <agust@denx.de>
+Date: Fri, 23 Jul 2010 14:00:38 +0000
+Subject: [PATCH v4 4/5] powerpc: doc/dts-bindings: update doc of FSL DIU bindings
+Message-Id: <1279893639-24333-5-git-send-email-agust@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1279899566-4359-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1279899566-4359-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <1279893639-24333-1-git-send-email-agust@denx.de>
+In-Reply-To: <1279893639-24333-1-git-send-email-agust@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>
+To: linuxppc-dev@ozlabs.org
+Cc: linux-fbdev@vger.kernel.org, Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>, devicetree-discuss@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>
 
-viafb: probe cleanups
+Update compatible and interrupt properties description.
+Furthermore an example for the MPC5121 has been added.
 
-Removal of strange special cases that must not exist as well as a
-useless check.
-
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Joseph Chan <JosephChan@via.com.tw>
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Acked-by: Timur Tabi <timur@freescale.com>
+Cc: devicetree-discuss@lists.ozlabs.org
 ---
- drivers/video/via/viafbdev.c |   27 +++------------------------
- 1 files changed, 3 insertions(+), 24 deletions(-)
+v4:
+ - added ack tag
 
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 1128d51..0f56eb2 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -1525,10 +1525,6 @@ int __devinit via_fb_pci_probe(struct viafb_dev *vdev)
- 	parse_lcd_port();
- 	parse_dvi_port();
+v2 and v3:
+ - no changes since v1
+
+ Documentation/powerpc/dts-bindings/fsl/diu.txt |   14 ++++++++++++--
+ 1 files changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/powerpc/dts-bindings/fsl/diu.txt b/Documentation/powerpc/dts-bindings/fsl/diu.txt
+index deb35de..326cddf 100644
+--- a/Documentation/powerpc/dts-bindings/fsl/diu.txt
++++ b/Documentation/powerpc/dts-bindings/fsl/diu.txt
+@@ -4,10 +4,12 @@ The Freescale DIU is a LCD controller, with proper hardware, it can also
+ drive DVI monitors.
  
--	/* for dual-fb must viafb_SAMM_ON=1 and viafb_dual_fb=1 */
--	if (!viafb_SAMM_ON)
--		viafb_dual_fb = 0;
--
- 	viafb_init_chip_info(vdev->chip_type);
- 	/*
- 	 * The framebuffer will have been successfully mapped by
-@@ -1572,30 +1568,13 @@ int __devinit via_fb_pci_probe(struct viafb_dev *vdev)
- 		parse_mode(viafb_mode1, &viafb_second_xres,
- 			&viafb_second_yres);
+ Required properties:
+-- compatible : should be "fsl-diu".
++- compatible : should be "fsl,diu" or "fsl,mpc5121-diu".
+ - reg : should contain at least address and length of the DIU register
+   set.
+-- Interrupts : one DIU interrupt should be describe here.
++- interrupts : one DIU interrupt should be described here.
++- interrupt-parent : the phandle for the interrupt controller that
++  services interrupts for this device.
  
--		if (0 = viafb_second_virtual_xres) {
--			switch (viafb_second_xres) {
--			case 1400:
--				viafb_second_virtual_xres = 1408;
--				break;
--			default:
--				viafb_second_virtual_xres = viafb_second_xres;
--				break;
--			}
--		}
--		if (0 = viafb_second_virtual_yres)
--			viafb_second_virtual_yres = viafb_second_yres;
-+		viafb_second_virtual_xres = viafb_second_xres;
-+		viafb_second_virtual_yres = viafb_second_yres;
- 	}
- 
- 	default_var.xres = default_xres;
- 	default_var.yres = default_yres;
--	switch (default_xres) {
--	case 1400:
--		default_var.xres_virtual = 1408;
--		break;
--	default:
--		default_var.xres_virtual = default_xres;
--		break;
--	}
-+	default_var.xres_virtual = default_xres;
- 	default_var.yres_virtual = default_yres;
- 	default_var.bits_per_pixel = viafb_bpp;
- 	default_var.pixclock -- 
-1.6.3.2
+ Example (MPC8610HPCD):
+ 	display@2c000 {
+@@ -16,3 +18,11 @@ Example (MPC8610HPCD):
+ 		interrupts = <72 2>;
+ 		interrupt-parent = <&mpic>;
+ 	};
++
++Example for MPC5121:
++	display@2100 {
++		compatible = "fsl,mpc5121-diu";
++		reg = <0x2100 0x100>;
++		interrupts = <64 0x8>;
++		interrupt-parent = <&ipic>;
++	};
+-- 
+1.7.0.4
 

@@ -1,71 +1,51 @@
-From: Pawel Osciak <p.osciak@samsung.com>
-Date: Fri, 09 Jul 2010 08:49:56 +0000
-Subject: [PATCH 08/19] s3c-fb: Fix various null references on framebuffer
-Message-Id: <1278665407-18002-9-git-send-email-p.osciak@samsung.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Fri, 23 Jul 2010 15:39:19 +0000
+Subject: [PATCH 04/11] viafb: add lcd scaling support for some IGPs
+Message-Id: <1279899566-4359-5-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
-In-Reply-To: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
+References: <1279899566-4359-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1279899566-4359-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>
 
-The following problems were found in the above situation:
+viafb: add lcd scaling support for some IGPs
 
-sfb->windows[win] was being assigned at the end of s3c_fb_probe_win only.
-This resulted in passing a NULL to s3c_fb_release_win if probe_win returned
-early and a memory leak.
+These IGPs should also support lcd scaling but likely this switch was
+missed when adding support for them. Fix it, allowing lcd scaling on
+CN750, VX800 and VX855. At least this improves the situation for
+VX855. (there seems to be another scaling unrelated bug somewhere)
 
-dma_free_writecombine does not allow its third argument to be NULL.
-
-fb_dealloc_cmap does not verify whether its argument is not NULL.
-
-Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Joseph Chan <JosephChan@via.com.tw>
 ---
- drivers/video/s3c-fb.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ drivers/video/via/lcd.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index b00c064..77f5765 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -804,7 +804,8 @@ static void s3c_fb_free_memory(struct s3c_fb *sfb, struct s3c_fb_win *win)
- {
- 	struct fb_info *fbi = win->fbinfo;
- 
--	dma_free_writecombine(sfb->dev, PAGE_ALIGN(fbi->fix.smem_len),
-+	if (fbi->screen_base)
-+		dma_free_writecombine(sfb->dev, PAGE_ALIGN(fbi->fix.smem_len),
- 			      fbi->screen_base, fbi->fix.smem_start);
- }
- 
-@@ -819,7 +820,8 @@ static void s3c_fb_release_win(struct s3c_fb *sfb, struct s3c_fb_win *win)
- {
- 	if (win->fbinfo) {
- 		unregister_framebuffer(win->fbinfo);
--		fb_dealloc_cmap(&win->fbinfo->cmap);
-+		if (win->fbinfo->cmap.len)
-+			fb_dealloc_cmap(&win->fbinfo->cmap);
- 		s3c_fb_free_memory(sfb, win);
- 		framebuffer_release(win->fbinfo);
- 	}
-@@ -865,6 +867,7 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
- 	WARN_ON(windata->win_mode.yres = 0);
- 
- 	win = fbinfo->par;
-+	*res = win;
- 	var = &fbinfo->var;
- 	win->variant = *variant;
- 	win->fbinfo = fbinfo;
-@@ -939,7 +942,6 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
- 		return ret;
- 	}
- 
--	*res = win;
- 	dev_info(sfb->dev, "window %d: fb %s\n", win_no, fbinfo->fix.id);
- 
- 	return 0;
+diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
+index 55cb4ec..568d15b 100644
+--- a/drivers/video/via/lcd.c
++++ b/drivers/video/via/lcd.c
+@@ -458,6 +458,9 @@ static void load_lcd_scaling(int set_hres, int set_vres, int panel_hres,
+ 		case UNICHROME_K8M890:
+ 		case UNICHROME_P4M890:
+ 		case UNICHROME_P4M900:
++		case UNICHROME_CN750:
++		case UNICHROME_VX800:
++		case UNICHROME_VX855:
+ 			reg_value  			    K800_LCD_HOR_SCF_FORMULA(set_hres, panel_hres);
+ 			/* Horizontal scaling enabled */
+@@ -498,6 +501,9 @@ static void load_lcd_scaling(int set_hres, int set_vres, int panel_hres,
+ 		case UNICHROME_K8M890:
+ 		case UNICHROME_P4M890:
+ 		case UNICHROME_P4M900:
++		case UNICHROME_CN750:
++		case UNICHROME_VX800:
++		case UNICHROME_VX855:
+ 			reg_value  			    K800_LCD_VER_SCF_FORMULA(set_vres, panel_vres);
+ 			/* Vertical scaling enabled */
 -- 
-1.7.1.569.g6f426
+1.6.3.2
 

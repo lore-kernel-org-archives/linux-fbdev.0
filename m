@@ -1,147 +1,51 @@
-From: Pawel Osciak <p.osciak@samsung.com>
-Date: Fri, 09 Jul 2010 08:49:59 +0000
-Subject: [PATCH 11/19] s3c-fb: Add device name initialization
-Message-Id: <1278665407-18002-12-git-send-email-p.osciak@samsung.com>
+From: Anatolij Gustschin <agust@denx.de>
+Date: Fri, 23 Jul 2010 14:00:36 +0000
+Subject: [PATCH v4 2/5] fsl-diu-fb: move fsl-diu-fb.h to include/linux
+Message-Id: <1279893639-24333-3-git-send-email-agust@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
-In-Reply-To: <1278665407-18002-1-git-send-email-p.osciak@samsung.com>
+References: <1279893639-24333-1-git-send-email-agust@denx.de>
+In-Reply-To: <1279893639-24333-1-git-send-email-agust@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linuxppc-dev@ozlabs.org
+Cc: linux-fbdev@vger.kernel.org, Wolfgang Denk <wd@denx.de>, Detlev Zundel <dzu@denx.de>, devicetree-discuss@lists.ozlabs.org, Anatolij Gustschin <agust@denx.de>
 
-Add framebuffer device name initialization calls for S3C2443, S3C64xx
-and S5P machines.
+Some DIU structures will be used in platform code in
+subsequent MPC5121 DIU patch, so we move this header
+to be able to include it elsewhere.
 
-Signed-off-by: Pawel Osciak <p.osciak@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Acked-by: Timur Tabi <timur@freescale.com>
 ---
- arch/arm/mach-s3c2416/s3c2416.c              |    3 +-
- arch/arm/mach-s3c2443/s3c2443.c              |    2 +
- arch/arm/mach-s5pc100/cpu.c                  |    3 ++
- arch/arm/mach-s5pv210/cpu.c                  |    3 ++
- arch/arm/plat-samsung/include/plat/fb-core.h |   29 ++++++++++++++++++++++++++
- 5 files changed, 39 insertions(+), 1 deletions(-)
- create mode 100644 arch/arm/plat-samsung/include/plat/fb-core.h
+v4:
+ - added ack tag
 
-diff --git a/arch/arm/mach-s3c2416/s3c2416.c b/arch/arm/mach-s3c2416/s3c2416.c
-index 35dabcc..bc30245 100644
---- a/arch/arm/mach-s3c2416/s3c2416.c
-+++ b/arch/arm/mach-s3c2416/s3c2416.c
-@@ -55,6 +55,7 @@
- #include <plat/cpu.h>
+v3:
+ - no changes since v1
+
+ drivers/video/fsl-diu-fb.c                    |    2 +-
+ {drivers/video => include/linux}/fsl-diu-fb.h |    0
+ 2 files changed, 1 insertions(+), 1 deletions(-)
+ rename {drivers/video => include/linux}/fsl-diu-fb.h (100%)
+
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 9b8c991..48905d5 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -34,7 +34,7 @@
+ #include <linux/of_platform.h>
  
- #include <plat/iic-core.h>
-+#include <plat/fb-core.h>
+ #include <sysdev/fsl_soc.h>
+-#include "fsl-diu-fb.h"
++#include <linux/fsl-diu-fb.h>
  
- static struct map_desc s3c2416_iodesc[] __initdata = {
- 	IODESC_ENT(WATCHDOG),
-@@ -90,7 +91,7 @@ int __init s3c2416_init(void)
- 	s3c_i2c0_setname("s3c2440-i2c");
- 	s3c_i2c1_setname("s3c2440-i2c");
- 
--	s3c_device_fb.name = "s3c2443-fb";
-+	s3c_fb_setname("s3c2443-fb");
- 
- 	return sysdev_register(&s3c2416_sysdev);
- }
-diff --git a/arch/arm/mach-s3c2443/s3c2443.c b/arch/arm/mach-s3c2443/s3c2443.c
-index ce2ec32..839b6b2 100644
---- a/arch/arm/mach-s3c2443/s3c2443.c
-+++ b/arch/arm/mach-s3c2443/s3c2443.c
-@@ -35,6 +35,7 @@
- #include <plat/s3c2443.h>
- #include <plat/devs.h>
- #include <plat/cpu.h>
-+#include <plat/fb-core.h>
- 
- static struct map_desc s3c2443_iodesc[] __initdata = {
- 	IODESC_ENT(WATCHDOG),
-@@ -62,6 +63,7 @@ int __init s3c2443_init(void)
- 	s3c24xx_reset_hook = s3c2443_hard_reset;
- 
- 	s3c_device_nand.name = "s3c2412-nand";
-+	s3c_fb_setname("s3c2443-fb");
- 
- 	/* change WDT IRQ number */
- 	s3c_device_wdt.resource[1].start = IRQ_S3C2443_WDT;
-diff --git a/arch/arm/mach-s5pc100/cpu.c b/arch/arm/mach-s5pc100/cpu.c
-index 7b5bdbc..d10276a 100644
---- a/arch/arm/mach-s5pc100/cpu.c
-+++ b/arch/arm/mach-s5pc100/cpu.c
-@@ -41,6 +41,7 @@
- #include <plat/iic-core.h>
- #include <plat/sdhci.h>
- #include <plat/onenand-core.h>
-+#include <plat/fb-core.h>
- 
- #include <plat/s5pc100.h>
- 
-@@ -92,6 +93,8 @@ void __init s5pc100_map_io(void)
- 	s3c_i2c1_setname("s3c2440-i2c");
- 
- 	s3c_onenand_setname("s5pc100-onenand");
-+
-+	s3c_fb_setname("s5pc100-fb");
- }
- 
- void __init s5pc100_init_clocks(int xtal)
-diff --git a/arch/arm/mach-s5pv210/cpu.c b/arch/arm/mach-s5pv210/cpu.c
-index 411a4a9..4d3580a 100644
---- a/arch/arm/mach-s5pv210/cpu.c
-+++ b/arch/arm/mach-s5pv210/cpu.c
-@@ -34,6 +34,7 @@
- #include <plat/s5pv210.h>
- #include <plat/iic-core.h>
- #include <plat/sdhci.h>
-+#include <plat/fb-core.h>
- 
- /* Initial IO mappings */
- 
-@@ -91,6 +92,8 @@ void __init s5pv210_map_io(void)
- 	s3c_i2c0_setname("s3c2440-i2c");
- 	s3c_i2c1_setname("s3c2440-i2c");
- 	s3c_i2c2_setname("s3c2440-i2c");
-+
-+	s3c_fb_setname("s5pv210-fb");
- }
- 
- void __init s5pv210_init_clocks(int xtal)
-diff --git a/arch/arm/plat-samsung/include/plat/fb-core.h b/arch/arm/plat-samsung/include/plat/fb-core.h
-new file mode 100644
-index 0000000..bca383e
---- /dev/null
-+++ b/arch/arm/plat-samsung/include/plat/fb-core.h
-@@ -0,0 +1,29 @@
-+/*
-+ * arch/arm/plat-samsung/include/plat/fb-core.h
-+ *
-+ * Copyright 2010 Samsung Electronics Co., Ltd.
-+ *	Pawel Osciak <p.osciak@samsung.com>
-+ *
-+ * Samsung framebuffer driver core functions
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+#ifndef __ASM_PLAT_FB_CORE_H
-+#define __ASM_PLAT_FB_CORE_H __FILE__
-+
-+/*
-+ * These functions are only for use with the core support code, such as
-+ * the CPU-specific initialization code.
-+ */
-+
-+/* Re-define device name depending on support. */
-+static inline void s3c_fb_setname(char *name)
-+{
-+#ifdef CONFIG_S3C_DEV_FB
-+	s3c_device_fb.name = name;
-+#endif
-+}
-+
-+#endif /* __ASM_PLAT_FB_CORE_H */
+ /*
+  * These parameters give default parameters
+diff --git a/drivers/video/fsl-diu-fb.h b/include/linux/fsl-diu-fb.h
+similarity index 100%
+rename from drivers/video/fsl-diu-fb.h
+rename to include/linux/fsl-diu-fb.h
 -- 
-1.7.1.569.g6f426
+1.7.0.4
 

@@ -1,59 +1,30 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Date: Tue, 06 Jul 2010 09:46:50 +0000
-Subject: Re: [PATCH 3/6] ARM: mach-shmobile: extend clock definitions on
-Message-Id: <AANLkTimntNMLkSaiq5EErvTpF8I3yeKYRE8guPt9iozX@mail.gmail.com>
+From: Dave Airlie <airlied@gmail.com>
+Date: Sun, 25 Jul 2010 08:42:48 +0000
+Subject: Re: [Nouveau] [PATCH v2] vga16fb: refuse to load in face of other
+Message-Id: <AANLkTimQZ6_+o=3pGa6hGbeFU99RMPFRmO+ndMZDHZMS@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1006301137290.17489@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1006301137290.17489@axis700.grange>
+References: <20100720191923.GA11056@joi.lan>
+	<20100722172039.e935c67d.akpm@linux-foundation.org>
+	<20100723131034.GA6618@joi.lan>
+In-Reply-To: <20100723131034.GA6618@joi.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, nouveau@lists.freedesktop.org, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-2010/7/6 Guennadi Liakhovetski <g.liakhovetski@gmx.de>:
-> On Mon, 5 Jul 2010, Magnus Damm wrote:
->> On Fri, Jul 2, 2010 at 9:33 PM, Guennadi Liakhovetski
->> <g.liakhovetski@gmx.de> wrote:
->> > On Fri, 2 Jul 2010, Magnus Damm wrote:
->> >> On Wed, Jun 30, 2010 at 6:55 PM, Guennadi Liakhovetski
->> >> <g.liakhovetski@gmx.de> wrote:
->> >> > Add definitions for DV_CLKI and HDMI clocks, extend support for PLL=
-C2 and some
->> >> > other clocks.
->> >> >
->> >> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-
->> >> > + =A0 =A0 =A0 /*
->> >> > + =A0 =A0 =A0 =A0* TODO: If the PLL is off, mult should be =3D 1, b=
-ut the clock must be
->> >> > + =A0 =A0 =A0 =A0* stopped during re-parenting, a better solution t=
-o this conflict
->> >> > + =A0 =A0 =A0 =A0* should be found.
->> >> > + =A0 =A0 =A0 =A0*/
->> >> > + =A0 =A0 =A0 mult =3D (((__raw_readl(PLLC2CR) >> 24) & 0x3f) + 1) =
-* 2;
->> >>
->> >> Yes, this needs to be fixed.
->> >
->> > You mean now or in the future? If now - I don't see a reasonable fix so
->> > far... Do you?
+On Fri, Jul 23, 2010 at 11:10 PM, Marcin Slusarz
+<marcin.slusarz@gmail.com> wrote:
+> On Thu, Jul 22, 2010 at 05:20:39PM -0700, Andrew Morton wrote:
+>> On Tue, 20 Jul 2010 21:19:23 +0200
+>> Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
 >>
->> I'm not sure which way is the best, but I think this patch breaks the
->> case when the PLL is turned off.
->
-> Ok, I can re-add the test and just add a line
->
-> =9A =9A =9A =9A =9A =9A =9A =9Aclk->rate =3D pllc2_recalc(clk);
->
-> in pllc2_enable()? This even makes sense in a way - if we know, that
-> after enabling the ->rate can get out of sync with the actual frequency...
-> I'll prepare an updated patch to make it easier to see.
+>> > We don't want vga16fb to mess with hardware initialized by other driver.
+>> > Detect it and refuse to load.
+>> > It fixes nouveau interrupt storm on some machines.
 
-After looking into the pllc2 part of the data sheet it looks more like
-it should be exported like a clock that cannot be disabled. So
-basically, extend the frequency table to include one more frequency
-and handle the pll-off case as a 1:1 mapping.
+Can't we keep this all inside vga16fb? just have it walk PCI tree
+looking for a primary VGA card, and if it has a driver bound, just
+refuse to bind.
 
-Cheers,
-
-/ magnus
+Dave.

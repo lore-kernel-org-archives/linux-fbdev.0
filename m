@@ -1,41 +1,23 @@
-From: Maurus Cuelenaere <mcuelenaere@gmail.com>
-Date: Wed, 21 Jul 2010 22:40:58 +0000
-Subject: [PATCH] OMAP2: OMAPFB: Fix invalid bpp for PAL and NTSC modes
-Message-Id: <4c477948.cf7d0e0a.2929.ffffaefe@mx.google.com>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Mon, 26 Jul 2010 08:21:24 +0000
+Subject: Re: [PATCH] OMAP2: OMAPFB: Fix invalid bpp for PAL and NTSC modes
+Message-Id: <1280132484.2427.14.camel@tubuntu.research.nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <4c477948.cf7d0e0a.2929.ffffaefe@mx.google.com>
+In-Reply-To: <4c477948.cf7d0e0a.2929.ffffaefe@mx.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, tomi.valkeinen@nokia.com
-Cc: ville.syrjala@nokia.com, tj@kernel.org
+To: ext Maurus Cuelenaere <mcuelenaere@gmail.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "Syrjala Ville (Nokia-MS/Helsinki)" <ville.syrjala@nokia.com>, "tj@kernel.org" <tj@kernel.org>
 
-omapfb_mode_to_timings() sets the bpp to 0 when bootarg omapfb.mode is set to
-either "pal" or "ntsc". This patch corrects this by setting the bpp to 24, as
-would be done if omapdss_default_get_recommended_bpp() would be called
+On Thu, 2010-07-22 at 00:40 +0200, ext Maurus Cuelenaere wrote:
+> omapfb_mode_to_timings() sets the bpp to 0 when bootarg omapfb.mode is set to
+> either "pal" or "ntsc". This patch corrects this by setting the bpp to 24, as
+> would be done if omapdss_default_get_recommended_bpp() would be called
 
-Signed-off-by: Maurus Cuelenaere <mcuelenaere@gmail.com>
----
- drivers/video/omap2/omapfb/omapfb-main.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Thanks, applied to my tree.
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 4b4506d..500458e 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -1968,11 +1968,11 @@ static int omapfb_mode_to_timings(const char *mode_str,
- #ifdef CONFIG_OMAP2_DSS_VENC
- 	if (strcmp(mode_str, "pal") = 0) {
- 		*timings = omap_dss_pal_timings;
--		*bpp = 0;
-+		*bpp = 24;
- 		return 0;
- 	} else if (strcmp(mode_str, "ntsc") = 0) {
- 		*timings = omap_dss_ntsc_timings;
--		*bpp = 0;
-+		*bpp = 24;
- 		return 0;
- 	}
- #endif
--- 
-1.7.0.4
+ Tomi
+
 

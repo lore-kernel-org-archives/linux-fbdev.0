@@ -1,32 +1,57 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Mon, 26 Jul 2010 08:03:25 +0000
+From: Igor Grinberg <grinberg@compulab.co.il>
+Date: Mon, 26 Jul 2010 08:34:00 +0000
 Subject: Re: [PATCH] [ARM] video/omap2/tdo35s: fix visual artefacts
-Message-Id: <1280131405.2427.11.camel@tubuntu.research.nokia.com>
+Message-Id: <4C4D4878.9050703@compulab.co.il>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1278931370-19912-1-git-send-email-grinberg@compulab.co.il>
-	 <4C4705DB.4000402@compulab.co.il>
-In-Reply-To: <4C4705DB.4000402@compulab.co.il>
+References: <1278931370-19912-1-git-send-email-grinberg@compulab.co.il>	 <4C4705DB.4000402@compulab.co.il> <1280131405.2427.11.camel@tubuntu.research.nokia.com>
+In-Reply-To: <1280131405.2427.11.camel@tubuntu.research.nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: ext Igor Grinberg <grinberg@compulab.co.il>
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 Cc: Tony Lindgren <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Mike Rapoport <mike@compulab.co.il>
 
-On Wed, 2010-07-21 at 16:36 +0200, ext Igor Grinberg wrote:
-> ping!
+>
+> On Wed, 2010-07-21 at 16:36 +0200, ext Igor Grinberg wrote:
+>   
+>> ping!
+>>     
+> Man has to have his vacation!
+>
+>   
 
-Man has to have his vacation!
+Well, sorry for that...
+I had no idea you are on vacation, but I hope you had a good one :)
 
-> > TDO35S samples the data on the falling adge of the pixel clock,
-> > therefore the data strobe should be on the raising edge.
+>>> TDO35S samples the data on the falling adge of the pixel clock,
+>>> therefore the data strobe should be on the raising edge.
+>>>       
+> Looks fine to me, except I'd like the patch subject to be in line with
+> the other patches (ie. prefixed by OMAP: DSS2: ...), and I think it
+> should describe the change more precisely, perhaps something like "fix
+> the video signal".
+>
+>   
 
-Looks fine to me, except I'd like the patch subject to be in line with
-the other patches (ie. prefixed by OMAP: DSS2: ...), and I think it
-should describe the change more precisely, perhaps something like "fix
-the video signal".
+I'm still new to omap and mostly worked on pxa's till now,
+so I brought the subject from there...
 
-I can make those changes as I apply it to my tree, if it's ok to you.
+> I can make those changes as I apply it to my tree, if it's ok to you.
+>   
 
- Tomi
+It is completely fine with me :)
 
+>  Tomi
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>   
+
+-- 
+Regards,
+Igor.
 

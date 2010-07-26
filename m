@@ -1,135 +1,38 @@
-From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Date: Mon, 19 Jul 2010 20:05:49 +0000
-Subject: [PATCH] LEDS: Add output invertion option to backlight trigger
-Message-Id: <201007192205.50877.jkrzyszt@tis.icnet.pl>
+From: Igor Grinberg <grinberg@compulab.co.il>
+Date: Mon, 26 Jul 2010 10:34:28 +0000
+Subject: [PATCH 2/2] [ARM] omap: cm-t35: fix video signal on DVI panels
+Message-Id: <1280140468-8183-2-git-send-email-grinberg@compulab.co.il>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1280140468-8183-1-git-send-email-grinberg@compulab.co.il>
+In-Reply-To: <1280140468-8183-1-git-send-email-grinberg@compulab.co.il>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-kernel@vger.kernel.org, e3-hacking@earth.li
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>, Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Igor Grinberg <grinberg@compulab.co.il>, Mike Rapoport <mike@compulab.co.il>
 
-This patch extends the LED backlight tirgger driver with an option that allows 
-for inverting the trigger output polarity.
+CM-T35 DVI transmitter sampling the data on the raising edge of the
+pixel clock, therefore the data strobe should happen on the falling
+edge.
 
-Whith the invertion option provided, I (ab)use the backlight trigger for 
-driving a led that indicates LCD display blank condtition on my Amstrad Delta 
-videophone. Since the machine has no dedicated power LED, it was not possible 
-to distinguish if its display was blanked or it was turned off, without 
-touching it.
-
-The invert sysfs control is modeled after a similiar function provided by the 
-gpio trigger driver.
-
-Created and tested against linux-2.6.35-rc3 on Amstrad Delta.
-
-Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Signed-off-by: Igor Grinberg <grinberg@compulab.co.il>
+Signed-off-by: Mike Rapoport <mike@compulab.co.il>
 ---
-diff -uprN git/drivers/leds/ledtrig-backlight.c 
-git/drivers/leds/ledtrig-backlight.c
---- git/drivers/leds/ledtrig-backlight.c	2010-06-15 18:01:50.000000000 +0200
-+++ git/drivers/leds/ledtrig-backlight.c	2010-06-23 02:48:44.000000000 +0200
-@@ -26,6 +26,7 @@ struct bl_trig_notifier {
- 	int brightness;
- 	int old_status;
- 	struct notifier_block notifier;
-+	unsigned invert;
+ arch/arm/mach-omap2/board-cm-t35.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-cm-t35.c b/arch/arm/mach-omap2/board-cm-t35.c
+index e679a2c..1b636f8 100644
+--- a/arch/arm/mach-omap2/board-cm-t35.c
++++ b/arch/arm/mach-omap2/board-cm-t35.c
+@@ -384,6 +384,7 @@ static struct omap_dss_device cm_t35_dvi_device = {
+ 	.driver_name		= "generic_panel",
+ 	.type			= OMAP_DISPLAY_TYPE_DPI,
+ 	.phy.dpi.data_lines	= 24,
++	.panel.config		= OMAP_DSS_LCD_IPC | OMAP_DSS_LCD_ONOFF,
+ 	.platform_enable	= cm_t35_panel_enable_dvi,
+ 	.platform_disable	= cm_t35_panel_disable_dvi,
  };
- 
- static int fb_notifier_callback(struct notifier_block *p,
-@@ -39,13 +40,15 @@ static int fb_notifier_callback(struct n
- 
- 	switch (event) {
- 	case FB_EVENT_BLANK :
--		if (*blank && n->old_status = UNBLANK) {
-+		if ((!n->invert && *blank && n->old_status = UNBLANK) ||
-+			    (n->invert && !*blank && n->old_status = BLANK)) {
- 			n->brightness = led->brightness;
- 			led_set_brightness(led, LED_OFF);
--			n->old_status = BLANK;
--		} else if (!*blank && n->old_status = BLANK) {
-+			n->old_status = n->invert ? UNBLANK : BLANK;
-+		} else if ((!n->invert && !*blank && n->old_status = BLANK) ||
-+			    (n->invert && *blank && n->old_status = UNBLANK)) {
- 			led_set_brightness(led, n->brightness);
--			n->old_status = UNBLANK;
-+			n->old_status = n->invert ? BLANK : UNBLANK;
- 		}
- 		break;
- 	}
-@@ -53,6 +56,43 @@ static int fb_notifier_callback(struct n
- 	return 0;
- }
- 
-+static ssize_t bl_trig_invert_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct led_classdev *led = dev_get_drvdata(dev);
-+	struct bl_trig_notifier *n = led->trigger_data;
-+
-+	return sprintf(buf, "%s\n", n->invert ? "yes" : "no");
-+}
-+
-+static ssize_t bl_trig_invert_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t num)
-+{
-+	struct led_classdev *led = dev_get_drvdata(dev);
-+	struct bl_trig_notifier *n = led->trigger_data;
-+	unsigned invert;
-+	int ret;
-+
-+	ret = sscanf(buf, "%u", &invert);
-+	if (ret < 1) {
-+		dev_err(dev, "invalid value\n");
-+		return -EINVAL;
-+	}
-+
-+	n->invert = !!invert;
-+
-+	/* After inverting, we need to update the LED. */
-+	if ((!n->invert && n->old_status = UNBLANK) ||
-+			(n->invert && n->old_status = BLANK))
-+		led_set_brightness(led, n->brightness);
-+	else if ((!n->invert && n->old_status = BLANK) ||
-+			(n->invert && n->old_status = UNBLANK))
-+		led_set_brightness(led, LED_OFF);
-+
-+	return num;
-+}
-+static DEVICE_ATTR(invert, 0644, bl_trig_invert_show, bl_trig_invert_store);
-+
- static void bl_trig_activate(struct led_classdev *led)
- {
- 	int ret;
-@@ -66,6 +106,10 @@ static void bl_trig_activate(struct led_
- 		return;
- 	}
- 
-+	ret = device_create_file(led->dev, &dev_attr_invert);
-+	if (ret)
-+		goto err_invert;
-+
- 	n->led = led;
- 	n->brightness = led->brightness;
- 	n->old_status = UNBLANK;
-@@ -74,6 +118,12 @@ static void bl_trig_activate(struct led_
- 	ret = fb_register_client(&n->notifier);
- 	if (ret)
- 		dev_err(led->dev, "unable to register backlight trigger\n");
-+
-+	return;
-+
-+err_invert:
-+	led->trigger_data = NULL;
-+	kfree(n);
- }
- 
- static void bl_trig_deactivate(struct led_classdev *led)
-@@ -82,6 +132,7 @@ static void bl_trig_deactivate(struct le
- 		(struct bl_trig_notifier *) led->trigger_data;
- 
- 	if (n) {
-+		device_remove_file(led->dev, &dev_attr_invert);
- 		fb_unregister_client(&n->notifier);
- 		kfree(n);
- 	}
+-- 
+1.7.1
+

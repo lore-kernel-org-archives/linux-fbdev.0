@@ -1,22 +1,36 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Date: Tue, 27 Jul 2010 08:26:40 +0000
-Subject: Re: [PATCH 3/6 v3] ARM: mach-shmobile: extend clock definitions on
-Message-Id: <AANLkTi=fRzb_+Tk580X-y_frK8VJTRr-Y_=x4rx5r-_D@mail.gmail.com>
+From: Igor Grinberg <grinberg@compulab.co.il>
+Date: Mon, 26 Jul 2010 10:34:27 +0000
+Subject: [PATCH 1/2] OMAP: DSS2: enable generic panel configuration modification
+Message-Id: <1280140468-8183-1-git-send-email-grinberg@compulab.co.il>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1007211151550.16933@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1007211151550.16933@axis700.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>, Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Igor Grinberg <grinberg@compulab.co.il>, Mike Rapoport <mike@compulab.co.il>
 
-On Wed, Jul 21, 2010 at 7:13 PM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> Add definitions for DV_CLKI and HDMI clocks, extend support for PLLC2 and some
-> other clocks.
->
-> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+This patch enables platforms to modify the dss device configuration
+of the generic panel.
 
-[v3]
+Signed-off-by: Igor Grinberg <grinberg@compulab.co.il>
+Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+---
+ drivers/video/omap2/displays/panel-generic.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Acked-by: Magnus Damm <damm@opensource.se>
+diff --git a/drivers/video/omap2/displays/panel-generic.c b/drivers/video/omap2/displays/panel-generic.c
+index 300eff5..ad80dd0 100644
+--- a/drivers/video/omap2/displays/panel-generic.c
++++ b/drivers/video/omap2/displays/panel-generic.c
+@@ -66,7 +66,7 @@ static void generic_panel_power_off(struct omap_dss_device *dssdev)
+ 
+ static int generic_panel_probe(struct omap_dss_device *dssdev)
+ {
+-	dssdev->panel.config = OMAP_DSS_LCD_TFT;
++	dssdev->panel.config |= OMAP_DSS_LCD_TFT;
+ 	dssdev->panel.timings = generic_panel_timings;
+ 
+ 	return 0;
+-- 
+1.7.1
+

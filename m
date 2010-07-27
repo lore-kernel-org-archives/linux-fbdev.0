@@ -1,27 +1,40 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Mon, 19 Jul 2010 22:34:58 +0000
-Subject: Re: [PATCH] viafb: Add transitive dependencies via gpiolib
-Message-Id: <20100719163458.297e1b01@bike.lwn.net>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Tue, 27 Jul 2010 13:29:41 +0000
+Subject: [PATCH] [resend] cyber2000fb: add mode_option parameter
+Message-Id: <201007271529.42838.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1279063845.6139.129.camel@localhost>
-In-Reply-To: <1279063845.6139.129.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Russell King <linux@arm.linux.org.uk>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-[Been on vacation, behind on a number of things...]
+Add mode_option parameter to specify the default video mode.
 
-On Wed, 14 Jul 2010 09:35:49 +1000
-Dave Airlie <airlied@gmail.com> wrote:
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
-> > FB_VIA now selects GPIOLIB, but that is not available on all
-> > architectures. =A0Change FB_VIA dependencies to include GPIOLIB
-> > dependencies. =20
->=20
-> If you can find a via chipset on anything not x86 I'd be impressed.
+--- linux-2.6.35-rc3-/drivers/video/cyber2000fb.c	2010-07-25 21:28:33.000000000 +0200
++++ linux-2.6.35-rc3/drivers/video/cyber2000fb.c	2010-07-25 20:36:49.000000000 +0200
+@@ -94,6 +94,10 @@ static char *default_font = "Acorn8x8";
+ module_param(default_font, charp, 0);
+ MODULE_PARM_DESC(default_font, "Default font name");
+ 
++static char *mode_option __devinitdata = "640x480-8@60";
++module_param(mode_option, charp, 0444);
++MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
++
+ /*
+  * Our access methods.
+  */
+@@ -1368,7 +1372,7 @@ static int __devinit cyberpro_common_pro
+ 	cfb->fb.screen_base    = cfb->region;
+ 
+ 	err = -EINVAL;
+-	if (!fb_find_mode(&cfb->fb.var, &cfb->fb, NULL, NULL, 0,
++	if (!fb_find_mode(&cfb->fb.var, &cfb->fb, mode_option, NULL, 0,
+ 			  &cyber2000fb_default_mode, 8)) {
+ 		printk(KERN_ERR "%s: no valid mode found\n", cfb->fb.fix.id);
+ 		goto failed;
 
-Agreed.  The right fix is almost certainly to just have FB_VIA depend
-on X86.
-
-jon
+-- 
+Ondrej Zary

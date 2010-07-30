@@ -1,33 +1,61 @@
-From: "Menon, Nishanth" <nm@ti.com>
-Date: Fri, 30 Jul 2010 11:09:27 +0000
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Fri, 30 Jul 2010 11:17:59 +0000
 Subject: Re: OMAP DSS2 coming out of OFF mode without restoring context
-Message-Id: <1280488167.6035.5.camel@Nokia-N900>
+Message-Id: <1280488679.2427.121.camel@tubuntu.research.nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <AANLkTimpATpjeaq5OYf_5zy-o1ho2UxppjF6+Re9QqUb@mail.gmail.com>
-In-Reply-To: <AANLkTimpATpjeaq5OYf_5zy-o1ho2UxppjF6+Re9QqUb@mail.gmail.com>
+References: <1280488167.6035.5.camel@Nokia-N900>
+In-Reply-To: <1280488167.6035.5.camel@Nokia-N900>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: Tomi Valkeinen <tomi.valkeinen@Nokia.com>, ext Laine Walker-Avina <lwalkera@pasco.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Menon, Nishanth" <nm@ti.com>
+Cc: ext Laine Walker-Avina <lwalkera@pasco.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-Ci0tLS0tIE9yaWdpbmFsIG1lc3NhZ2UgLS0tLS0KPiBIaSwKPiAKPiBPbiBUaHUsIDIwMTAtMDct
-MjkgYXQgMjM6MjkgKzAyMDAsIGV4dCBMYWluZSBXYWxrZXItQXZpbmEgd3JvdGU6Cj4gPiBIaSwK
-PiA+IAo+ID4gSSdtIGhhdmluZyBhIHByb2JsZW0gd2hlcmUgdGhlIERTUyBkcml2ZXIgaXNuJ3Qg
-cmVzdG9yaW5nIHRoZQo+ID4gZnJhbWVidWZmZXIgcGFyYW1ldGVycyBhZnRlciBnb2luZyBpbiBh
-bmQgb3V0IG9mIGJsYW5raW5nIHdpdGggT0ZGCj4gPiBtb2RlIGVuYWJsZWQuIFRoZSBwcm9ibGVt
-IGFwcGVhcnMgdG8gYmUgaW4gZHNzX2dldF9jdHhfaWQoKSBpbiB0aGF0Cj4gPiBwZGF0YS0+Z2V0
-X2xhc3Rfb2ZmX29uX3RyYW5zYWN0aW9uX2lkIGlzIDAuIENvbW1lbnRpbmcgb3V0IHRoZSBjYWxs
-IHRvCj4gPiBkc3NfbmVlZF9jdHhfcmVzdG9yZSgpIGluIGRzc19jbGtfZW5hYmxlKCkgYXBwZWFy
-cyB0byBkbyB0aGUgcmlnaHQKPiA+IHRoaW5nLiBJJ20gdXNpbmcgdGhlIGN1cnJlbnQgbWFzdGVy
-IGJyYW5jaCBvZiBsaW51eC1vbWFwLgo+IAo+IFlvdSBuZWVkIHRvIGZpbGwgdGhlIGZ1bmMgcG9p
-bnRlciBpbiB0aGUgYm9hcmQgZmlsZToKPiAKPiBzdGF0aWMgc3RydWN0IG9tYXBfZHNzX2JvYXJk
-X2luZm8geHh4X2Rzc19kYXRhID0gewo+wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgIC5nZXRfbGFz
-dF9vZmZfb25fdHJhbnNhY3Rpb25faWQgPiBvbWFwX3BtX2dldF9kZXZfY29udGV4dF9sb3NzX2Nv
-dW50LAo+IApub25lIG9mIGwtbyBib2FyZCBmaWxlcyBzZWVtIHRvIGRvIHRoaXMuIEkgZ3Vlc3MK
-d2l0aCBvZmYgY2FwYWJsZSBtYXN0ZXIsIHdlIG5lZWQgdGhpcyB0byBiZSAKZGVmYXVsdGVkIHVu
-ZGVyIENPTkZJR19QTSB3aXRoaW4gZHNzL2NvcmUgaXRzZWxmPwpJIG1lYW4gdGhlIGRlZmF1bHRz
-IHByZXZlbnQgZGlzcGxheSBmdW5jdGlvbgphdCBvZmYsIHNvIHdoeSBhc2sgYWxsIGJvYXJkcyB0
-byBmaWxsIGl0IHVwPwoKUmVnYXJkcywKTmlzaGFudGggTWVub24K//Tounsubscribefromthisl
-isv/sendthelinf/unsubscribelinux/fbdev/inthebodyofamessagetomajordomo/vger/k
-ernel/orgMoremajordomoinfoathttp///vger/kernel/org/majordomo/info/htCg==
+On Fri, 2010-07-30 at 13:09 +0200, ext Menon, Nishanth wrote:
+> ----- Original message -----
+> > Hi,
+> > 
+> > On Thu, 2010-07-29 at 23:29 +0200, ext Laine Walker-Avina wrote:
+> > > Hi,
+> > > 
+> > > I'm having a problem where the DSS driver isn't restoring the
+> > > framebuffer parameters after going in and out of blanking with OFF
+> > > mode enabled. The problem appears to be in dss_get_ctx_id() in that
+> > > pdata->get_last_off_on_transaction_id is 0. Commenting out the call to
+> > > dss_need_ctx_restore() in dss_clk_enable() appears to do the right
+> > > thing. I'm using the current master branch of linux-omap.
+> > 
+> > You need to fill the func pointer in the board file:
+> > 
+> > static struct omap_dss_board_info xxx_dss_data = {
+> >                 .get_last_off_on_transaction_id > > omap_pm_get_dev_context_loss_count,
+> > 
+> none of l-o board files seem to do this. I guess
+> with off capable master, we need this to be 
+> defaulted under CONFIG_PM within dss/core itself?
+> I mean the defaults prevent display function
+> at off, so why ask all boards to fill it up?
+
+If the PM stuff in linux tree starts to be in working order, then yes,
+we need some better solution.
+
+I'm not quite sure what the options are, but I was told that the correct
+way to get context loss count is as above, fill the platform_data in the
+board file with a pointer to omap_pm_get_dev_context_loss_count().
+
+So if that is still the proper way, then we need a "DSS platform
+initialization" function that the board files can call, which then fills
+the platform_data with correct data.
+
+But this will still require modifying every board file that uses DSS.
+Then again, every board file needs anyway DSS code, so perhaps that's
+not such a big issue.
+
+For this particular case there's not much benefit having a separate
+initialization function. On the contrary, it'll just have more code
+lines. But I think there will be some more platform DSS stuff (like
+pinmuxing) which can then use the same mechanism.
+
+ Tomi
+
+

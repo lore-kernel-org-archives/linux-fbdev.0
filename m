@@ -1,33 +1,33 @@
-From: Tomi Valkeinen <tomi.valkeinen@Nokia.com>
-Date: Fri, 30 Jul 2010 06:57:59 +0000
+From: "Menon, Nishanth" <nm@ti.com>
+Date: Fri, 30 Jul 2010 11:09:27 +0000
 Subject: Re: OMAP DSS2 coming out of OFF mode without restoring context
-Message-Id: <1280473079.2427.114.camel@tubuntu.research.nokia.com>
+Message-Id: <1280488167.6035.5.camel@Nokia-N900>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <AANLkTimpATpjeaq5OYf_5zy-o1ho2UxppjF6+Re9QqUb@mail.gmail.com>
 In-Reply-To: <AANLkTimpATpjeaq5OYf_5zy-o1ho2UxppjF6+Re9QqUb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: ext Laine Walker-Avina <lwalkera@pasco.com>
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: Tomi Valkeinen <tomi.valkeinen@Nokia.com>, ext Laine Walker-Avina <lwalkera@pasco.com>
 Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-Hi,
-
-On Thu, 2010-07-29 at 23:29 +0200, ext Laine Walker-Avina wrote:
-> Hi,
-> 
-> I'm having a problem where the DSS driver isn't restoring the
-> framebuffer parameters after going in and out of blanking with OFF
-> mode enabled. The problem appears to be in dss_get_ctx_id() in that
-> pdata->get_last_off_on_transaction_id is 0. Commenting out the call to
-> dss_need_ctx_restore() in dss_clk_enable() appears to do the right
-> thing. I'm using the current master branch of linux-omap.
-
-You need to fill the func pointer in the board file:
-
-static struct omap_dss_board_info xxx_dss_data = {
-	.get_last_off_on_transaction_id = omap_pm_get_dev_context_loss_count,
-
- Tomi
-
-
+Ci0tLS0tIE9yaWdpbmFsIG1lc3NhZ2UgLS0tLS0KPiBIaSwKPiAKPiBPbiBUaHUsIDIwMTAtMDct
+MjkgYXQgMjM6MjkgKzAyMDAsIGV4dCBMYWluZSBXYWxrZXItQXZpbmEgd3JvdGU6Cj4gPiBIaSwK
+PiA+IAo+ID4gSSdtIGhhdmluZyBhIHByb2JsZW0gd2hlcmUgdGhlIERTUyBkcml2ZXIgaXNuJ3Qg
+cmVzdG9yaW5nIHRoZQo+ID4gZnJhbWVidWZmZXIgcGFyYW1ldGVycyBhZnRlciBnb2luZyBpbiBh
+bmQgb3V0IG9mIGJsYW5raW5nIHdpdGggT0ZGCj4gPiBtb2RlIGVuYWJsZWQuIFRoZSBwcm9ibGVt
+IGFwcGVhcnMgdG8gYmUgaW4gZHNzX2dldF9jdHhfaWQoKSBpbiB0aGF0Cj4gPiBwZGF0YS0+Z2V0
+X2xhc3Rfb2ZmX29uX3RyYW5zYWN0aW9uX2lkIGlzIDAuIENvbW1lbnRpbmcgb3V0IHRoZSBjYWxs
+IHRvCj4gPiBkc3NfbmVlZF9jdHhfcmVzdG9yZSgpIGluIGRzc19jbGtfZW5hYmxlKCkgYXBwZWFy
+cyB0byBkbyB0aGUgcmlnaHQKPiA+IHRoaW5nLiBJJ20gdXNpbmcgdGhlIGN1cnJlbnQgbWFzdGVy
+IGJyYW5jaCBvZiBsaW51eC1vbWFwLgo+IAo+IFlvdSBuZWVkIHRvIGZpbGwgdGhlIGZ1bmMgcG9p
+bnRlciBpbiB0aGUgYm9hcmQgZmlsZToKPiAKPiBzdGF0aWMgc3RydWN0IG9tYXBfZHNzX2JvYXJk
+X2luZm8geHh4X2Rzc19kYXRhID0gewo+wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgIC5nZXRfbGFz
+dF9vZmZfb25fdHJhbnNhY3Rpb25faWQgPiBvbWFwX3BtX2dldF9kZXZfY29udGV4dF9sb3NzX2Nv
+dW50LAo+IApub25lIG9mIGwtbyBib2FyZCBmaWxlcyBzZWVtIHRvIGRvIHRoaXMuIEkgZ3Vlc3MK
+d2l0aCBvZmYgY2FwYWJsZSBtYXN0ZXIsIHdlIG5lZWQgdGhpcyB0byBiZSAKZGVmYXVsdGVkIHVu
+ZGVyIENPTkZJR19QTSB3aXRoaW4gZHNzL2NvcmUgaXRzZWxmPwpJIG1lYW4gdGhlIGRlZmF1bHRz
+IHByZXZlbnQgZGlzcGxheSBmdW5jdGlvbgphdCBvZmYsIHNvIHdoeSBhc2sgYWxsIGJvYXJkcyB0
+byBmaWxsIGl0IHVwPwoKUmVnYXJkcywKTmlzaGFudGggTWVub24K//Tounsubscribefromthisl
+isv/sendthelinf/unsubscribelinux/fbdev/inthebodyofamessagetomajordomo/vger/k
+ernel/orgMoremajordomoinfoathttp///vger/kernel/org/majordomo/info/htCg==

@@ -1,27 +1,40 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Thu, 08 Jul 2010 14:12:47 +0000
-Subject: [PATCH 0/6 v2] fbdev: sh-mobile: HDMI support for SH-Mobile SoCs
-Message-Id: <Pine.LNX.4.64.1007081417340.32100@axis700.grange>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Sat, 31 Jul 2010 20:55:38 +0000
+Subject: [PATCH 2/3] cyber2000fb: add mode_option parameter
+Message-Id: <201007312255.40036.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Russell King <linux@arm.linux.org.uk>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-This patch set adds a static HDMI support to SH-Mobile SoCs, specifically, 
-to sh7372 (ap4evb) in this version. "Static" means only 720p is supported 
-ATM. Also hotplug support is implemented without changing the framebuffer 
-geometry. Dynamic geometry reconfiguration is planned for a future patch.
+Add mode_option parameter to specify the default video mode.
 
-This series now depends on an arm-shmobile runtime PM RFC patch from 
-Magnus with my incremental patch to it [1].
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
-Thanks
-Guennadi
+--- linux-2.6.35-rc3-/drivers/video/cyber2000fb.c	2010-07-25 21:28:33.000000000 +0200
++++ linux-2.6.35-rc3/drivers/video/cyber2000fb.c	2010-07-25 20:36:49.000000000 +0200
+@@ -94,6 +94,10 @@ static char *default_font = "Acorn8x8";
+ module_param(default_font, charp, 0);
+ MODULE_PARM_DESC(default_font, "Default font name");
+ 
++static char *mode_option __devinitdata = "640x480-8@60";
++module_param(mode_option, charp, 0444);
++MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
++
+ /*
+  * Our access methods.
+  */
+@@ -1368,7 +1372,7 @@ static int __devinit cyberpro_common_pro
+ 	cfb->fb.screen_base    = cfb->region;
+ 
+ 	err = -EINVAL;
+-	if (!fb_find_mode(&cfb->fb.var, &cfb->fb, NULL, NULL, 0,
++	if (!fb_find_mode(&cfb->fb.var, &cfb->fb, mode_option, NULL, 0,
+ 			  &cyber2000fb_default_mode, 8)) {
+ 		printk(KERN_ERR "%s: no valid mode found\n", cfb->fb.fix.id);
+ 		goto failed;
 
-[1] http://thread.gmane.org/gmane.linux.ports.sh.devel/8457
-
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+-- 
+Ondrej Zary

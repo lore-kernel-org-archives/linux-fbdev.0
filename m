@@ -1,58 +1,143 @@
-From: Ondrej Zajicek <santiago@crfreenet.org>
-Date: Sat, 14 Aug 2010 11:58:42 +0000
-Subject: Re: [PATCH v2] s3fb: add DDC support
-Message-Id: <20100814115842.GA29442@localhost>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="9jxsPFA5p3P2qPhR"
+From: Igor Grinberg <grinberg@compulab.co.il>
+Date: Tue, 03 Aug 2010 06:45:21 +0000
+Subject: Re: [PATCH 1/2] OMAP: DSS2: enable generic panel configuration modification
+Message-Id: <4C57BB01.6000004@compulab.co.il>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201008112218.11535.linux@rainbow-software.org> <20100812131421.bb2839f8.akpm@linux-foundation.org> <201008131836.18835.linux@rainbow-software.org>
-In-Reply-To: <201008131836.18835.linux@rainbow-software.org>
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+References: <1280140468-8183-1-git-send-email-grinberg@compulab.co.il> <1280217649.2427.68.camel@tubuntu.research.nokia.com> <4C4EE62C.9010701@compulab.co.il>
+In-Reply-To: <4C4EE62C.9010701@compulab.co.il>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: Tony Lindgren <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Mike Rapoport <mike@compulab.co.il>
+
+Tomi,
+
+Any thoughts?
 
 
---9jxsPFA5p3P2qPhR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 07/27/10 16:59, Igor Grinberg wrote:
+> On 07/27/10 11:00, Tomi Valkeinen wrote:
+>   
+>> On Mon, 2010-07-26 at 12:34 +0200, ext Igor Grinberg wrote:
+>>   
+>>     
+>>> This patch enables platforms to modify the dss device configuration
+>>> of the generic panel.
+>>>
+>>> Signed-off-by: Igor Grinberg <grinberg@compulab.co.il>
+>>> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+>>> ---
+>>>  drivers/video/omap2/displays/panel-generic.c |    2 +-
+>>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>>
+>>> diff --git a/drivers/video/omap2/displays/panel-generic.c b/drivers/video/omap2/displays/panel-generic.c
+>>> index 300eff5..ad80dd0 100644
+>>> --- a/drivers/video/omap2/displays/panel-generic.c
+>>> +++ b/drivers/video/omap2/displays/panel-generic.c
+>>> @@ -66,7 +66,7 @@ static void generic_panel_power_off(struct omap_dss_device *dssdev)
+>>>  
+>>>  static int generic_panel_probe(struct omap_dss_device *dssdev)
+>>>  {
+>>> -	dssdev->panel.config = OMAP_DSS_LCD_TFT;
+>>> +	dssdev->panel.config |= OMAP_DSS_LCD_TFT;
+>>>  	dssdev->panel.timings = generic_panel_timings;
+>>>  
+>>>  	return 0;
+>>>     
+>>>       
+>> I don't like this. Panel driver should be the one which decides the
+>> config.
+>>   
+>>     
+> I agree with this in most cases, but not always.
+> There are certain transmitters (like TI TFP410 dvi transmitter found
+> on cm-t35 and other boards) that can have some of their parameters
+> defined by hardware (strapped), so only the platform knows the correct
+> values for them.
+> One of such parameters is the edge of the clock sampling.
+>
+>   
+>> I think a better solution is to make panel-generic configurable, which
+>> has been discussed a bit some time ago on l-o.
+>>   
+>>     
+> No doubt about that :)
+>
+>   
+>> Briefly:
+>>
+>> - Add a struct for the configuration variables (a bit like
+>> arch/arm/plat-omap/include/plat/nokia-dsi-panel.h).
+>>
+>> - Fill the struct in the board file, and pass it to the panel driver via
+>> omap_dss_device->data pointer.
+>>
+>> - The panel driver get the struct and uses it to do whatever
+>> configuration it needs.
+>>   
+>>     
+> This is more or less what I've been thinking of, but with slight addition:
+> the panel driver should have a defaults for all the parameters,
+> so there will be no need to provide the whole parameters list,
+> just the ones that are different.
+>
+>   
+>> I think there are two ways to implement this:
+>>
+>> 1) Have lots of fields in the struct, including video timings and video
+>> signaling information, and the driver uses these directly.
+>>   
+>>     
+> This seems like a good choice for better flexibility and
+> provides an easy way of dealing with the issues, I've described above.
+>
+>   
+>> 2) Have a panel name in the struct, and the panel driver contains a
+>> static list of panels, including configurations for those panels, and
+>> the driver selects the configuration based on the panel name given from
+>> the board file. (like drivers/video/omap2/displays/panel-taal.c does,
+>> except there's currently only one panel defined).
+>>   
+>>     
+> This approach does not deal with the dvi transmitters issue above,
+> unless there will be possibility to define some kind of platform data.
+> Also, if we have a static list of panels with their configurations,
+> there could be panels with (almost) the same parameters defined
+> for a couple of times.
+>
+>   
+>> While 1. gives perhaps slightly easier configuration, as you just edit
+>> the board file, I'd go for 2. because the required configuration is
+>> really defined by the panel/chip being used, and so the board file
+>> should just state which panel/chip we have, and the driver handles the
+>> rest.
+>>     
+> Well, unfortunately, it is not :(
+>
+>   
+>>  And 2. makes it also easier to use the same panel/chip on multiple
+>> boards.
+>>
+>> Implementing this would allow us to remove some panel drivers which
+>> currently are 99% copies of each other.
+>>
+>>  Tomi
+>>
+>>   
+>>     
+> My idea is:
+> generic driver will have built-in defaults, that can
+> (but not necessarily will) be overridden by platform (or other) code
+> on a parameter basis.
+> This will allow other panels (like tdo35s) reuse the generic driver
+> without the need for their special driver.
+>
+> What do you think of it?
+>
+>   
 
-On Fri, Aug 13, 2010 at 06:36:16PM +0200, Ondrej Zary wrote:
-> Add I2C support for the DDC bus to s3fb driver. This is only bus support,
-> driver does not use EDID.
->=20
-> Tested on Trio64V+, Trio64V2/DX, Virge (2 cards), Virge/DX (4 cards) and
-> Trio3D/2X (3 cards) with i2cdetect and decode-edid.
->=20
-> Will probably not work on Trio32 - my 2 cards have DDC support in BIOS th=
-at
-> looks different from the other cards but the DDC pins on the VGA connector
-> are not connected.
->=20
-> Virge/GX, Virge/GX2 and Virge/VX are untested.
->=20
->=20
-> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+-- 
+Regards,
+Igor.
 
-Acked-by: Ondrej Zajicek <santiago@crfreenet.org>
-
---=20
-Elen sila lumenn' omentielvo
-
-Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
-
---9jxsPFA5p3P2qPhR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkxmhPIACgkQw1GB2RHercMvbACcCWWRfqzN+fDq6DEQBKYxkzgU
-edAAni3kalU4CkeN4i+wUtOssHiRSi0X
-=eNKd
------END PGP SIGNATURE-----
-
---9jxsPFA5p3P2qPhR--

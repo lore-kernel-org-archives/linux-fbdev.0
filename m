@@ -1,28 +1,31 @@
-From: Justin Mattock <justinmattock@gmail.com>
-Date: Wed, 25 Aug 2010 21:12:50 +0000
-Subject: vesafb not loading during boot and lilo gives no video modes
-Message-Id: <AANLkTikw9y5sTHNfCq0qGfn_nyRpvQAm6Ezusneq5Umz@mail.gmail.com>
+From: Alex Buell <alex.buell@munted.org.uk>
+Date: Mon, 09 Aug 2010 13:15:27 +0000
+Subject: Framebuffer HOWTO 1.3 released today!
+Message-Id: <1281359727.29955.22.camel@lithium>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, lilo-devel@lists.debian.org
 
-hello,
-Ive been building a clfs system, and have been racking my brain around
-as to why vesafb is not loading at boot.. using any option in
-lilo.conf
-(vga=3Dnormal,893,ask) gives nothing but the no modes found.
+After ten years' hiatus, I have converted the original Framebuffer HOWTO
+document from LinuxDoc to DocBook xml. It is now up on my programming
+page at http://www.munted.org.uk/programming/
 
-under dmesg on the machine that doesn't work I see
-[    0.000000] Console: colour EGA 80x25
+A copy has also gone to the Linux Documentation Project website and
+replaces all previous versions.
 
-and on the good machine(same setup older packages)I see
-[    0.000000] Console: colour dummy device 80x25
+Enjoy!
 
-is there something Im missing in userspace to cause lilo to not
-respond to vga=893, ask, normal but only go to EGA?
+I am now about to start writing release 2.0 of this document with
+updated details. I know that between kernel 2.2.x and 2.6.x there was a
+huge amount of changes made on the framebuffers. In order to bring up to
+date I need to know about changes and updates that were made between
+2001 to 2010. 
 
---=20
-Justin P. Mattock
+All comments welcome!
+-- 
+http://www.munted.org.uk
+
+One very high maintenance cat living here.
+

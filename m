@@ -1,299 +1,231 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 11 Aug 2010 23:56:06 +0000
-Subject: [[PATCH 06/11]] viafb: rework output device routing
-Message-Id: <1281571590-8866-1-git-send-email-FlorianSchandinat@gmx.de>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Wed, 11 Aug 2010 19:48:03 +0000
+Subject: [PATCH 3/3 v3] [resend] cyber2000fb: add I2C support
+Message-Id: <201008112148.06092.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1281570580-8253-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1281570580-8253-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-viafb: rework output device routing
+Add I2C support for the DDC bus to cyber2000fb driver. This is only bus
+support, driver does not use EDID.
+Tested on two different CyberPro 2000 cards with i2cdetect and decode-edid.
 
-This patch rips the device routing out of the 3 main functions to
-separate functions to make them available for transition to a better
-controlling scheme.
-
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Joseph Chan <JosephChan@via.com.tw>
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 ---
- drivers/video/via/hw.c |  183 +++++++++++++++++++++++++-----------------------
- 1 files changed, 94 insertions(+), 89 deletions(-)
+This is v3 with spinlock instead of mutex (I don't know what's better here -
+but both mode switch and DDC are not performance critical so it probably does
+not matter) and all new things properly named ddc.
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 1ce2c21..2f7f640 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -860,18 +860,78 @@ void viafb_set_output_path(int device, int set_iga, int output_interface)
- 		enable_second_display_channel();
+diff -urp linux-2.6.35-rc3-/drivers/video/cyber2000fb.c linux-2.6.35-rc3/drivers/video/cyber2000fb.c
+--- linux-2.6.35-rc3-/drivers/video/cyber2000fb.c	2010-07-31 21:58:35.000000000 +0200
++++ linux-2.6.35-rc3/drivers/video/cyber2000fb.c	2010-08-01 11:53:32.000000000 +0200
+@@ -48,6 +48,10 @@
+ #include <linux/init.h>
+ #include <linux/io.h>
+ 
++#include <linux/i2c.h>
++#include <linux/i2c-id.h>
++#include <linux/i2c-algo-bit.h>
++
+ #include <asm/pgtable.h>
+ #include <asm/system.h>
+ 
+@@ -88,6 +92,12 @@ struct cfb_info {
+ 	u_char			ramdac_powerdown;
+ 
+ 	u32			pseudo_palette[16];
++#ifdef CONFIG_FB_CYBER2000_DDC
++	bool			ddc_registered;
++	struct i2c_adapter	ddc_adapter;
++	struct i2c_algo_bit_data	ddc_algo;
++	spinlock_t		reg_b0_lock;
++#endif
+ };
+ 
+ static char *default_font = "Acorn8x8";
+@@ -498,6 +508,9 @@ static void cyber2000fb_set_timing(struc
+ 	cyber2000_attrw(0x14, 0x00, cfb);
+ 
+ 	/* PLL registers */
++#ifdef CONFIG_FB_CYBER2000_DDC
++	spin_lock(&cfb->reg_b0_lock);
++#endif
+ 	cyber2000_grphw(EXT_DCLK_MULT, hw->clock_mult, cfb);
+ 	cyber2000_grphw(EXT_DCLK_DIV, hw->clock_div, cfb);
+ 	cyber2000_grphw(EXT_MCLK_MULT, cfb->mclk_mult, cfb);
+@@ -505,6 +518,9 @@ static void cyber2000fb_set_timing(struc
+ 	cyber2000_grphw(0x90, 0x01, cfb);
+ 	cyber2000_grphw(0xb9, 0x80, cfb);
+ 	cyber2000_grphw(0xb9, 0x00, cfb);
++#ifdef CONFIG_FB_CYBER2000_DDC
++	spin_unlock(&cfb->reg_b0_lock);
++#endif
+ 
+ 	cfb->ramdac_ctrl = hw->ramdac;
+ 	cyber2000fb_write_ramdac_ctrl(cfb);
+@@ -1145,6 +1161,105 @@ void cyber2000fb_detach(int idx)
+ }
+ EXPORT_SYMBOL(cyber2000fb_detach);
+ 
++#ifdef CONFIG_FB_CYBER2000_DDC
++
++#define DDC_REG		0xb0
++#define DDC_SCL_OUT	(1 << 0)
++#define DDC_SDA_OUT	(1 << 4)
++#define DDC_SCL_IN	(1 << 2)
++#define DDC_SDA_IN	(1 << 6)
++
++static void cyber2000fb_enable_ddc(struct cfb_info *cfb)
++{
++	spin_lock(&cfb->reg_b0_lock);
++	cyber2000fb_writew(0x1bf, 0x3ce, cfb);
++}
++
++static void cyber2000fb_disable_ddc(struct cfb_info *cfb)
++{
++	cyber2000fb_writew(0x0bf, 0x3ce, cfb);
++	spin_unlock(&cfb->reg_b0_lock);
++}
++
++
++static void cyber2000fb_ddc_setscl(void *data, int val)
++{
++	struct cfb_info *cfb = data;
++	unsigned char reg;
++
++	cyber2000fb_enable_ddc(cfb);
++	reg = cyber2000_grphr(DDC_REG, cfb);
++	if (!val)	/* bit is inverted */
++		reg |= DDC_SCL_OUT;
++	else
++		reg &= ~DDC_SCL_OUT;
++	cyber2000_grphw(DDC_REG, reg, cfb);
++	cyber2000fb_disable_ddc(cfb);
++}
++
++static void cyber2000fb_ddc_setsda(void *data, int val)
++{
++	struct cfb_info *cfb = data;
++	unsigned char reg;
++
++	cyber2000fb_enable_ddc(cfb);
++	reg = cyber2000_grphr(DDC_REG, cfb);
++	if (!val)	/* bit is inverted */
++		reg |= DDC_SDA_OUT;
++	else
++		reg &= ~DDC_SDA_OUT;
++	cyber2000_grphw(DDC_REG, reg, cfb);
++	cyber2000fb_disable_ddc(cfb);
++}
++
++static int cyber2000fb_ddc_getscl(void *data)
++{
++	struct cfb_info *cfb = data;
++	int retval;
++
++	cyber2000fb_enable_ddc(cfb);
++	retval = !!(cyber2000_grphr(DDC_REG, cfb) & DDC_SCL_IN);
++	cyber2000fb_disable_ddc(cfb);
++
++	return retval;
++}
++
++static int cyber2000fb_ddc_getsda(void *data)
++{
++	struct cfb_info *cfb = data;
++	int retval;
++
++	cyber2000fb_enable_ddc(cfb);
++	retval = !!(cyber2000_grphr(DDC_REG, cfb) & DDC_SDA_IN);
++	cyber2000fb_disable_ddc(cfb);
++
++	return retval;
++}
++
++static int __devinit cyber2000fb_setup_ddc_bus(struct cfb_info *cfb)
++{
++	spin_lock_init(&cfb->reg_b0_lock);
++
++	strlcpy(cfb->ddc_adapter.name, cfb->fb.fix.id,
++		sizeof(cfb->ddc_adapter.name));
++	cfb->ddc_adapter.owner		= THIS_MODULE;
++	cfb->ddc_adapter.class		= I2C_CLASS_DDC;
++	cfb->ddc_adapter.algo_data	= &cfb->ddc_algo;
++	cfb->ddc_adapter.dev.parent	= &cfb->dev->dev;
++	cfb->ddc_algo.setsda		= cyber2000fb_ddc_setsda;
++	cfb->ddc_algo.setscl		= cyber2000fb_ddc_setscl;
++	cfb->ddc_algo.getsda		= cyber2000fb_ddc_getsda;
++	cfb->ddc_algo.getscl		= cyber2000fb_ddc_getscl;
++	cfb->ddc_algo.udelay		= 10;
++	cfb->ddc_algo.timeout		= 20;
++	cfb->ddc_algo.data		= cfb;
++
++	i2c_set_adapdata(&cfb->ddc_adapter, cfb);
++
++	return i2c_bit_add_bus(&cfb->ddc_adapter);
++}
++#endif /* CONFIG_FB_CYBER2000_DDC */
++
+ /*
+  * These parameters give
+  * 640x480, hsync 31.5kHz, vsync 60Hz
+@@ -1373,6 +1488,11 @@ static int __devinit cyberpro_common_pro
+ 	cfb->fb.fix.mmio_len   = MMIO_SIZE;
+ 	cfb->fb.screen_base    = cfb->region;
+ 
++#ifdef CONFIG_FB_CYBER2000_DDC
++	if (cyber2000fb_setup_ddc_bus(cfb) = 0)
++		cfb->ddc_registered = true;
++#endif
++
+ 	err = -EINVAL;
+ 	if (!fb_find_mode(&cfb->fb.var, &cfb->fb, mode_option, NULL, 0,
+ 			  &cyber2000fb_default_mode, 8)) {
+@@ -1410,6 +1530,10 @@ static int __devinit cyberpro_common_pro
+ 	err = register_framebuffer(&cfb->fb);
+ 
+ failed:
++#ifdef CONFIG_FB_CYBER2000_DDC
++	if (err && cfb->ddc_registered)
++		i2c_del_adapter(&cfb->ddc_adapter);
++#endif
+ 	return err;
  }
  
--static void set_crt_output_path(int set_iga)
-+static void set_source_common(u8 index, u8 offset, u8 iga)
- {
--	viafb_write_reg_mask(CR36, VIACR, 0x00, BIT4 + BIT5);
-+	u8 value, mask = 1 << offset;
+@@ -1661,6 +1785,10 @@ static void __devexit cyberpro_pci_remov
+ 			printk(KERN_WARNING "%s: danger Will Robinson, "
+ 				"danger danger!  Oopsen imminent!\n",
+ 				cfb->fb.fix.id);
++#ifdef CONFIG_FB_CYBER2000_DDC
++		if (cfb->ddc_registered)
++			i2c_del_adapter(&cfb->ddc_adapter);
++#endif
+ 		iounmap(cfb->region);
+ 		cyberpro_free_fb_info(cfb);
  
--	switch (set_iga) {
-+	switch (iga) {
-+	case IGA1:
-+		value = 0x00;
-+		break;
-+	case IGA2:
-+		value = mask;
-+		break;
-+	default:
-+		printk(KERN_WARNING "viafb: Unsupported source: %d\n", iga);
-+		return;
-+	}
+diff -urp linux-2.6.35-rc3-/drivers/video/Kconfig linux-2.6.35-rc3/drivers/video/Kconfig
+--- linux-2.6.35-rc3-/drivers/video/Kconfig	2010-07-31 22:00:23.000000000 +0200
++++ linux-2.6.35-rc3/drivers/video/Kconfig	2010-08-01 11:48:32.000000000 +0200
+@@ -422,6 +422,15 @@ config FB_CYBER2000
+ 	  Say Y if you have a NetWinder or a graphics card containing this
+ 	  device, otherwise say N.
+ 
++config FB_CYBER2000_DDC
++	bool "DDC for CyberPro support"
++	depends on FB_CYBER2000
++	select FB_DDC
++	default y
++	help
++	  Say Y here if you want DDC support for your CyberPro graphics
++	  card. This is only I2C bus support, driver does not use EDID.
 +
-+	via_write_reg_mask(VIACR, index, value, mask);
-+}
-+
-+static void set_crt_source(u8 iga)
-+{
-+	u8 value;
-+
-+	switch (iga) {
- 	case IGA1:
--		viafb_write_reg_mask(SR16, VIASR, 0x00, BIT6);
-+		value = 0x00;
- 		break;
- 	case IGA2:
--		viafb_write_reg_mask(SR16, VIASR, 0x40, BIT6);
-+		value = 0x40;
- 		break;
-+	default:
-+		printk(KERN_WARNING "viafb: Unsupported source: %d\n", iga);
-+		return;
- 	}
-+
-+	via_write_reg_mask(VIASR, 0x16, value, 0x40);
-+}
-+
-+static inline void set_6C_source(u8 iga)
-+{
-+	set_source_common(0x6C, 7, iga);
-+}
-+
-+static inline void set_93_source(u8 iga)
-+{
-+	set_source_common(0x93, 7, iga);
-+}
-+
-+static inline void set_96_source(u8 iga)
-+{
-+	set_source_common(0x96, 4, iga);
-+}
-+
-+static inline void set_dvp1_source(u8 iga)
-+{
-+	set_source_common(0x9B, 4, iga);
-+}
-+
-+static inline void set_lvds1_source(u8 iga)
-+{
-+	set_source_common(0x99, 4, iga);
-+}
-+
-+static inline void set_lvds2_source(u8 iga)
-+{
-+	set_source_common(0x97, 4, iga);
-+}
-+
-+static void set_crt_output_path(int set_iga)
-+{
-+	viafb_write_reg_mask(CR36, VIACR, 0x00, BIT4 + BIT5);
-+	set_crt_source(set_iga);
- }
- 
- static void dvi_patch_skew_dvp0(void)
-@@ -944,76 +1004,45 @@ static void set_dvi_output_path(int set_iga, int output_interface)
- {
- 	switch (output_interface) {
- 	case INTERFACE_DVP0:
-+		set_96_source(set_iga);
-+		set_6C_source(set_iga);
- 		viafb_write_reg_mask(CR6B, VIACR, 0x01, BIT0);
--
--		if (set_iga = IGA1) {
--			viafb_write_reg_mask(CR96, VIACR, 0x00, BIT4);
--			viafb_write_reg_mask(CR6C, VIACR, 0x21, BIT0 +
--				BIT5 + BIT7);
--		} else {
--			viafb_write_reg_mask(CR96, VIACR, 0x10, BIT4);
--			viafb_write_reg_mask(CR6C, VIACR, 0xA1, BIT0 +
--				BIT5 + BIT7);
--		}
--
-+		viafb_write_reg_mask(CR6C, VIACR, 0x21, BIT0 + BIT5);
- 		viafb_write_reg_mask(SR1E, VIASR, 0xC0, BIT7 + BIT6);
--
- 		dvi_patch_skew_dvp0();
- 		break;
- 
- 	case INTERFACE_DVP1:
- 		if (viaparinfo->chip_info->gfx_chip_name = UNICHROME_CLE266) {
--			if (set_iga = IGA1)
--				viafb_write_reg_mask(CR93, VIACR, 0x21,
--					       BIT0 + BIT5 + BIT7);
--			else
--				viafb_write_reg_mask(CR93, VIACR, 0xA1,
--					       BIT0 + BIT5 + BIT7);
-+			set_93_source(set_iga);
-+			viafb_write_reg_mask(CR93, VIACR, 0x21, BIT0 + BIT5);
- 		} else {
--			if (set_iga = IGA1)
--				viafb_write_reg_mask(CR9B, VIACR, 0x00, BIT4);
--			else
--				viafb_write_reg_mask(CR9B, VIACR, 0x10, BIT4);
-+			set_dvp1_source(set_iga);
- 		}
- 
- 		viafb_write_reg_mask(SR1E, VIASR, 0x30, BIT4 + BIT5);
- 		break;
- 	case INTERFACE_DFP_HIGH:
- 		if (viaparinfo->chip_info->gfx_chip_name != UNICHROME_CLE266) {
--			if (set_iga = IGA1) {
--				viafb_write_reg_mask(CR96, VIACR, 0x00, BIT4);
--				viafb_write_reg_mask(CR97, VIACR, 0x03,
--					       BIT0 + BIT1 + BIT4);
--			} else {
--				viafb_write_reg_mask(CR96, VIACR, 0x10, BIT4);
--				viafb_write_reg_mask(CR97, VIACR, 0x13,
--					       BIT0 + BIT1 + BIT4);
--			}
-+			via_write_reg_mask(VIACR, CR97, 0x03, 0x03);
-+			set_lvds2_source(set_iga);
-+			set_96_source(set_iga);
- 		}
-+
- 		viafb_write_reg_mask(SR2A, VIASR, 0x0C, BIT2 + BIT3);
- 		break;
- 
- 	case INTERFACE_DFP_LOW:
- 		if (viaparinfo->chip_info->gfx_chip_name = UNICHROME_CLE266)
- 			break;
--
--		if (set_iga = IGA1) {
--			viafb_write_reg_mask(CR99, VIACR, 0x00, BIT4);
--			viafb_write_reg_mask(CR9B, VIACR, 0x00, BIT4);
--		} else {
--			viafb_write_reg_mask(CR99, VIACR, 0x10, BIT4);
--			viafb_write_reg_mask(CR9B, VIACR, 0x10, BIT4);
--		}
--
-+		set_dvp1_source(set_iga);
-+		set_lvds1_source(set_iga);
- 		viafb_write_reg_mask(SR2A, VIASR, 0x03, BIT0 + BIT1);
- 		dvi_patch_skew_dvp_low();
- 		break;
- 
- 	case INTERFACE_TMDS:
--		if (set_iga = IGA1)
--			viafb_write_reg_mask(CR99, VIACR, 0x00, BIT4);
--		else
--			viafb_write_reg_mask(CR99, VIACR, 0x10, BIT4);
-+		set_lvds1_source(set_iga);
- 		break;
- 	}
- 
-@@ -1031,45 +1060,31 @@ static void set_lcd_output_path(int set_iga, int output_interface)
- 
- 	viafb_write_reg_mask(CR6B, VIACR, 0x00, BIT3);
- 	viafb_write_reg_mask(CR6A, VIACR, 0x08, BIT3);
--
- 	switch (output_interface) {
- 	case INTERFACE_DVP0:
--		if (set_iga = IGA1) {
--			viafb_write_reg_mask(CR96, VIACR, 0x00, BIT4);
--		} else {
-+		set_96_source(set_iga);
-+		if (set_iga = IGA2)
- 			viafb_write_reg(CR91, VIACR, 0x00);
--			viafb_write_reg_mask(CR96, VIACR, 0x10, BIT4);
--		}
- 		break;
- 
- 	case INTERFACE_DVP1:
--		if (set_iga = IGA1)
--			viafb_write_reg_mask(CR9B, VIACR, 0x00, BIT4);
--		else {
-+		set_dvp1_source(set_iga);
-+		if (set_iga = IGA2)
- 			viafb_write_reg(CR91, VIACR, 0x00);
--			viafb_write_reg_mask(CR9B, VIACR, 0x10, BIT4);
--		}
- 		break;
- 
- 	case INTERFACE_DFP_HIGH:
--		if (set_iga = IGA1)
--			viafb_write_reg_mask(CR97, VIACR, 0x00, BIT4);
--		else {
-+		set_lvds2_source(set_iga);
-+		set_96_source(set_iga);
-+		if (set_iga = IGA2)
- 			viafb_write_reg(CR91, VIACR, 0x00);
--			viafb_write_reg_mask(CR97, VIACR, 0x10, BIT4);
--			viafb_write_reg_mask(CR96, VIACR, 0x10, BIT4);
--		}
- 		break;
- 
- 	case INTERFACE_DFP_LOW:
--		if (set_iga = IGA1)
--			viafb_write_reg_mask(CR99, VIACR, 0x00, BIT4);
--		else {
-+		set_lvds1_source(set_iga);
-+		set_dvp1_source(set_iga);
-+		if (set_iga = IGA2)
- 			viafb_write_reg(CR91, VIACR, 0x00);
--			viafb_write_reg_mask(CR99, VIACR, 0x10, BIT4);
--			viafb_write_reg_mask(CR9B, VIACR, 0x10, BIT4);
--		}
--
- 		break;
- 
- 	case INTERFACE_DFP:
-@@ -1078,30 +1093,20 @@ static void set_lcd_output_path(int set_iga, int output_interface)
- 		    viaparinfo->chip_info->gfx_chip_name))
- 			viafb_write_reg_mask(CR97, VIACR, 0x84,
- 				       BIT7 + BIT2 + BIT1 + BIT0);
--		if (set_iga = IGA1) {
--			viafb_write_reg_mask(CR97, VIACR, 0x00, BIT4);
--			viafb_write_reg_mask(CR99, VIACR, 0x00, BIT4);
--		} else {
-+
-+		set_lvds1_source(set_iga);
-+		set_lvds2_source(set_iga);
-+		if (set_iga = IGA2)
- 			viafb_write_reg(CR91, VIACR, 0x00);
--			viafb_write_reg_mask(CR97, VIACR, 0x10, BIT4);
--			viafb_write_reg_mask(CR99, VIACR, 0x10, BIT4);
--		}
- 		break;
- 
- 	case INTERFACE_LVDS0:
- 	case INTERFACE_LVDS0LVDS1:
--		if (set_iga = IGA1)
--			viafb_write_reg_mask(CR99, VIACR, 0x00, BIT4);
--		else
--			viafb_write_reg_mask(CR99, VIACR, 0x10, BIT4);
--
-+		set_lvds1_source(set_iga);
- 		break;
- 
- 	case INTERFACE_LVDS1:
--		if (set_iga = IGA1)
--			viafb_write_reg_mask(CR97, VIACR, 0x00, BIT4);
--		else
--			viafb_write_reg_mask(CR97, VIACR, 0x10, BIT4);
-+		set_lvds2_source(set_iga);
- 		break;
- 	}
- }
+ config FB_APOLLO
+ 	bool
+ 	depends on (FB = y) && APOLLO
+
+
 -- 
-1.6.3.2
-
+Ondrej Zary

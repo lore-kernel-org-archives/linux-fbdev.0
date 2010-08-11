@@ -1,104 +1,49 @@
-From: Erik Gilling <konkers@android.com>
-Date: Tue, 17 Aug 2010 23:23:09 +0000
-Subject: [PATCH] video: add fb_edid_add_monspecs for parsing extended edid information
-Message-Id: <1282087389-2590-1-git-send-email-konkers@android.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Wed, 11 Aug 2010 23:49:29 +0000
+Subject: viafb output device rework - part 1
+Message-Id: <1281570580-8253-1-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 
-Modern monitors/tvs have more extended EDID information blocks which can
-contain extra detailed modes.  This adds a fb_edid_add_monspecs function
-which drivers can use to parse those additions blocks.
+Hi,
 
-Signed-off-by: Erik Gilling <konkers@android.com>
----
- drivers/video/fbmon.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fb.h    |    2 +
- 2 files changed, 59 insertions(+), 0 deletions(-)
+the objection of this patch series is to clean the output device 
+handling up. The end result should be saner code (not setting devices 
+that do not exist) as well as more powerfull control over existing 
+devices and easier addition of new devices.
+This is the first part doing some structural changes and using those to 
+switch which of the 2 display data sources (IGA1 or IGA2) is used.
+Things that are still missing and (hopefully) will come in follow up 
+series are device enable/disable following the same design and exporting 
+this flexability in an easy to use way to userspace.
 
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index 563a98b..a0b5a93 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -973,6 +973,63 @@ void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
- 	DPRINTK("====================\n");
- }
- 
-+void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
-+{
-+	unsigned char *block;
-+	struct fb_videomode *mode, *m;
-+	int num = 0, i, first = 1;
-+
-+	if (edid = NULL)
-+		return;
-+
-+	if (!edid_checksum(edid))
-+		return;
-+
-+	if (edid[0] != 0x2)
-+		return;
-+
-+	mode = kzalloc(50 * sizeof(struct fb_videomode), GFP_KERNEL);
-+	if (mode = NULL)
-+		return;
-+
-+	block = edid + edid[0x2];
-+
-+	DPRINTK("  Extended Detailed Timings\n");
-+
-+	for (i = 0; i < (128 - edid[0x2]) / DETAILED_TIMING_DESCRIPTION_SIZE;
-+	     i++, block += DETAILED_TIMING_DESCRIPTION_SIZE) {
-+		if (!(block[0] = 0x00 && block[1] = 0x00)) {
-+			get_detailed_timing(block, &mode[num]);
-+			if (first) {
-+			        mode[num].flag |= FB_MODE_IS_FIRST;
-+				first = 0;
-+			}
-+			num++;
-+		}
-+	}
-+
-+	/* Yikes, EDID data is totally useless */
-+	if (!num) {
-+		kfree(mode);
-+		return;
-+	}
-+
-+	m = kzalloc((specs->modedb_len + num) *
-+		       sizeof(struct fb_videomode), GFP_KERNEL);
-+
-+	if (!m) {
-+		kfree(mode);
-+		return;
-+	}
-+
-+	memmove(m, specs->modedb, specs->modedb_len * sizeof(struct fb_videomode));
-+	memmove(m + specs->modedb_len, mode, num * sizeof(struct fb_videomode));
-+	kfree(mode);
-+	kfree(specs->modedb);
-+	specs->modedb = m;
-+	specs->modedb_len = specs->modedb_len + num;
-+}
-+
- /*
-  * VESA Generalized Timing Formula (GTF)
-  */
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index e7445df..813e22a 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -1069,6 +1069,8 @@ extern int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var);
- extern const unsigned char *fb_firmware_edid(struct device *device);
- extern void fb_edid_to_monspecs(unsigned char *edid,
- 				struct fb_monspecs *specs);
-+extern void fb_edid_add_monspecs(unsigned char *edid,
-+				 struct fb_monspecs *specs);
- extern void fb_destroy_modedb(struct fb_videomode *modedb);
- extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
- extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
--- 
-1.6.5.6
+These patches can also be found at
+	git://github.com/schandinat/linux-2.6.git viafb-s2v1
+
+Some tests were performed on CLE266, VX800 and VX855.
+
+Any opinions/suggestions?
+
+
+Regards,
+
+Florian Tobias Schandinat
+
+
+Florian Tobias Schandinat (11):
+      viafb: reset correct PLL
+      viafb: remove lcdtbl.h
+      viafb: remove stub
+      viafb: unify output path configuration
+      viafb: enable second display channel at central place
+      viafb: rework output device routing
+      viafb: propagate __init and __devinit
+      viafb: reduce viafb_set_iga_path usage
+      viafb: add new output device management
+      viafb: use new device routing
+      viafb: merge the remaining output path with enable functions
 

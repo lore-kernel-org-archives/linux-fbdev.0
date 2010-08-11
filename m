@@ -1,29 +1,68 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Mon, 23 Aug 2010 12:42:33 +0000
-Subject: Re: [PATCH 1/2] drivers/video: Removing dead FB_VIA_CAMERA config
-Message-Id: <20100823064233.51889684@bike.lwn.net>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Wed, 11 Aug 2010 23:49:32 +0000
+Subject: [PATCH 03/11] viafb: remove stub
+Message-Id: <1281570580-8253-4-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1282554255.git.qy03fugy@stud.informatik.uni-erlangen.de>
-	<896537c6f9bd2e4babcb9ff4681bb4db72daf544.1282554255.git.qy03fugy@stud.informatik.uni-erlangen.de>
-In-Reply-To: <896537c6f9bd2e4babcb9ff4681bb4db72daf544.1282554255.git.qy03fugy@stud.informatik.uni-erlangen.de>
+References: <1281570580-8253-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1281570580-8253-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de>
-Cc: Joseph Chan <JosephChan@via.com.tw>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Andrew Morton <akpm@linux-foundation.org>, Erik-Jan Post <ej.lfs@xs4all.nl>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, vamos-dev@i4.informatik.uni-erlangen.de
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>
 
-On Mon, 23 Aug 2010 11:59:41 +0200
-Christian Dietrich <qy03fugy@stud.informatik.uni-erlangen.de> wrote:
+viafb: remove stub
 
-> CONFIG_FB_VIA_CAMERA doesn't exist in Kconfig, therefore removing
-> all references to it from the source.
+This is a nop so removing it is safe.
 
-The driver using this option has been posted to the lists a few times.
-I have been unforgivably slow in dealing with some review comments, and
-so missed the 2.6.36 merge window.  I don't plan to let that happen
-again, though.  So my preference would be to leave this code in place;
-if it goes away, I'll just have to put it back.
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Joseph Chan <JosephChan@via.com.tw>
+---
+ drivers/video/via/hw.c |   17 -----------------
+ 1 files changed, 0 insertions(+), 17 deletions(-)
 
-Thanks,
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 53b0651..63b6722 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -720,7 +720,6 @@ static struct rgbLUT palLUT_table[] = {
+ 
+ static void set_crt_output_path(int set_iga);
+ static void dvi_patch_skew_dvp0(void);
+-static void dvi_patch_skew_dvp1(void);
+ static void dvi_patch_skew_dvp_low(void);
+ static void set_dvi_output_path(int set_iga, int output_interface);
+ static void set_lcd_output_path(int set_iga, int output_interface);
+@@ -910,21 +909,6 @@ static void dvi_patch_skew_dvp0(void)
+ 	}
+ }
+ 
+-static void dvi_patch_skew_dvp1(void)
+-{
+-	switch (viaparinfo->chip_info->gfx_chip_name) {
+-	case UNICHROME_CX700:
+-		{
+-			break;
+-		}
+-
+-	default:
+-		{
+-			break;
+-		}
+-	}
+-}
+-
+ static void dvi_patch_skew_dvp_low(void)
+ {
+ 	switch (viaparinfo->chip_info->gfx_chip_name) {
+@@ -992,7 +976,6 @@ static void set_dvi_output_path(int set_iga, int output_interface)
+ 		}
+ 
+ 		viafb_write_reg_mask(SR1E, VIASR, 0x30, BIT4 + BIT5);
+-		dvi_patch_skew_dvp1();
+ 		break;
+ 	case INTERFACE_DFP_HIGH:
+ 		if (viaparinfo->chip_info->gfx_chip_name != UNICHROME_CLE266) {
+-- 
+1.6.3.2
 
-jon

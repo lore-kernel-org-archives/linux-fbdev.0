@@ -1,7 +1,7 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 11 Aug 2010 23:57:19 +0000
-Subject: [[PATCH 07/11]] viafb: propagate __init and __devinit
-Message-Id: <1281571673-8903-1-git-send-email-FlorianSchandinat@gmx.de>
+Date: Thu, 12 Aug 2010 00:10:06 +0000
+Subject: [[PATCH 09/11]] viafb: add new output device management
+Message-Id: <1281571806-9013-1-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1281570580-8253-1-git-send-email-FlorianSchandinat@gmx.de>
 In-Reply-To: <1281570580-8253-1-git-send-email-FlorianSchandinat@gmx.de>
@@ -11,290 +11,179 @@ Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>
 
-viafb: propagate __init and __devinit
+viafb: add new output device management
 
-There are a lot of init functions which are not marked as such.
-Fix this.
+This patch adds a new output device management that stores for each
+IGA which output devices are routed to it and a compatiblity layer
+that converts the old per-output device values in the new format.
+Bounding the output devices to each IGA is a central idea of the
+cleanup. Doing it this way should be easier and make much more sense
+than the old format which happily mixed different output devices
+together and did not even take into account that some devices are no
+longer available on newer chipsets.
 
 Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Cc: Joseph Chan <JosephChan@via.com.tw>
 ---
- drivers/video/via/dvi.c      |   24 ++++++++++++++----------
- drivers/video/via/dvi.h      |    4 ++--
- drivers/video/via/hw.c       |   16 ++++++++--------
- drivers/video/via/hw.h       |    4 ++--
- drivers/video/via/lcd.c      |   10 +++++-----
- drivers/video/via/lcd.h      |    6 +++---
- drivers/video/via/viafbdev.c |    8 ++++----
- 7 files changed, 38 insertions(+), 34 deletions(-)
+ drivers/video/via/hw.c       |  102 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/video/via/hw.h       |    9 ++++
+ drivers/video/via/viafbdev.h |    3 +
+ 3 files changed, 114 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
-index 92a2027..ab6145d 100644
---- a/drivers/video/via/dvi.c
-+++ b/drivers/video/via/dvi.c
-@@ -25,10 +25,12 @@
- static void tmds_register_write(int index, u8 data);
- static int tmds_register_read(int index);
- static int tmds_register_read_bytes(int index, u8 *buff, int buff_len);
--static void dvi_get_panel_size_from_DDCv1(struct tmds_chip_information
--	*tmds_chip, struct tmds_setting_information *tmds_setting);
--static void dvi_get_panel_size_from_DDCv2(struct tmds_chip_information
--	*tmds_chip, struct tmds_setting_information *tmds_setting);
-+static void __devinit dvi_get_panel_size_from_DDCv1(
-+	struct tmds_chip_information *tmds_chip,
-+	struct tmds_setting_information *tmds_setting);
-+static void __devinit dvi_get_panel_size_from_DDCv2(
-+	struct tmds_chip_information *tmds_chip,
-+	struct tmds_setting_information *tmds_setting);
- static int viafb_dvi_query_EDID(void);
- 
- static int check_tmds_chip(int device_id_subaddr, int device_id)
-@@ -39,7 +41,7 @@ static int check_tmds_chip(int device_id_subaddr, int device_id)
- 		return FAIL;
- }
- 
--void viafb_init_dvi_size(struct tmds_chip_information *tmds_chip,
-+void __devinit viafb_init_dvi_size(struct tmds_chip_information *tmds_chip,
- 	struct tmds_setting_information *tmds_setting)
- {
- 	DEBUG_MSG(KERN_INFO "viafb_init_dvi_size()\n");
-@@ -60,7 +62,7 @@ void viafb_init_dvi_size(struct tmds_chip_information *tmds_chip,
- 	return;
- }
- 
--int viafb_tmds_trasmitter_identify(void)
-+int __devinit viafb_tmds_trasmitter_identify(void)
- {
- 	unsigned char sr2a = 0, sr1e = 0, sr3e = 0;
- 
-@@ -311,8 +313,9 @@ static int viafb_dvi_query_EDID(void)
- }
- 
- /* Get Panel Size Using EDID1 Table */
--static void dvi_get_panel_size_from_DDCv1(struct tmds_chip_information
--	*tmds_chip, struct tmds_setting_information *tmds_setting)
-+static void __devinit dvi_get_panel_size_from_DDCv1(
-+	struct tmds_chip_information *tmds_chip,
-+	struct tmds_setting_information *tmds_setting)
- {
- 	int i, max_h = 0, tmp, restore;
- 	unsigned char rData;
-@@ -416,8 +419,9 @@ static void dvi_get_panel_size_from_DDCv1(struct tmds_chip_information
- }
- 
- /* Get Panel Size Using EDID2 Table */
--static void dvi_get_panel_size_from_DDCv2(struct tmds_chip_information
--	*tmds_chip, struct tmds_setting_information *tmds_setting)
-+static void __devinit dvi_get_panel_size_from_DDCv2(
-+	struct tmds_chip_information *tmds_chip,
-+	struct tmds_setting_information *tmds_setting)
- {
- 	int restore;
- 	unsigned char R_Buffer[2];
-diff --git a/drivers/video/via/dvi.h b/drivers/video/via/dvi.h
-index 0dffcfd..2c525c0 100644
---- a/drivers/video/via/dvi.h
-+++ b/drivers/video/via/dvi.h
-@@ -56,8 +56,8 @@
- int viafb_dvi_sense(void);
- void viafb_dvi_disable(void);
- void viafb_dvi_enable(void);
--int viafb_tmds_trasmitter_identify(void);
--void viafb_init_dvi_size(struct tmds_chip_information *tmds_chip,
-+int __devinit viafb_tmds_trasmitter_identify(void);
-+void __devinit viafb_init_dvi_size(struct tmds_chip_information *tmds_chip,
- 	struct tmds_setting_information *tmds_setting);
- void viafb_dvi_set_mode(struct VideoModeTable *videoMode, int mode_bpp,
- 	int set_iga);
 diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 2f7f640..4407943 100644
+index 638cf96..30cc2f0 100644
 --- a/drivers/video/via/hw.c
 +++ b/drivers/video/via/hw.c
-@@ -724,9 +724,9 @@ static void dvi_patch_skew_dvp_low(void);
- static void set_dvi_output_path(int set_iga, int output_interface);
- static void set_lcd_output_path(int set_iga, int output_interface);
- static void load_fix_bit_crtc_reg(void);
--static void init_gfx_chip_info(int chip_type);
--static void init_tmds_chip_info(void);
--static void init_lvds_chip_info(void);
-+static void __devinit init_gfx_chip_info(int chip_type);
-+static void __devinit init_tmds_chip_info(void);
-+static void __devinit init_lvds_chip_info(void);
- static void device_screen_off(void);
- static void device_screen_on(void);
- static void set_display_channel(void);
-@@ -1980,7 +1980,7 @@ void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
- 
+@@ -753,6 +753,66 @@ void write_dac_reg(u8 index, u8 r, u8 g, u8 b)
+ 	outb(b, LUT_DATA);
  }
  
--void viafb_init_chip_info(int chip_type)
-+void __devinit viafb_init_chip_info(int chip_type)
++static u32 get_dvi_devices(int output_interface)
++{
++	switch (output_interface) {
++	case INTERFACE_DVP0:
++		return VIA_96 | VIA_6C;
++
++	case INTERFACE_DVP1:
++		if (viaparinfo->chip_info->gfx_chip_name = UNICHROME_CLE266)
++			return VIA_93;
++		else
++			return VIA_DVP1;
++
++	case INTERFACE_DFP_HIGH:
++		if (viaparinfo->chip_info->gfx_chip_name = UNICHROME_CLE266)
++			return 0;
++		else
++			return VIA_LVDS2 | VIA_96;
++
++	case INTERFACE_DFP_LOW:
++		if (viaparinfo->chip_info->gfx_chip_name = UNICHROME_CLE266)
++			return 0;
++		else
++			return VIA_DVP1 | VIA_LVDS1;
++
++	case INTERFACE_TMDS:
++		return VIA_LVDS1;
++	}
++
++	return 0;
++}
++
++static u32 get_lcd_devices(int output_interface)
++{
++	switch (output_interface) {
++	case INTERFACE_DVP0:
++		return VIA_96;
++
++	case INTERFACE_DVP1:
++		return VIA_DVP1;
++
++	case INTERFACE_DFP_HIGH:
++		return VIA_LVDS2 | VIA_96;
++
++	case INTERFACE_DFP_LOW:
++		return VIA_LVDS1 | VIA_DVP1;
++
++	case INTERFACE_DFP:
++		return VIA_LVDS1 | VIA_LVDS2;
++
++	case INTERFACE_LVDS0:
++	case INTERFACE_LVDS0LVDS1:
++		return VIA_LVDS1;
++
++	case INTERFACE_LVDS1:
++		return VIA_LVDS2;
++	}
++
++	return 0;
++}
++
+ /*Set IGA path for each device*/
+ void viafb_set_iga_path(void)
  {
- 	init_gfx_chip_info(chip_type);
- 	init_tmds_chip_info();
-@@ -2047,7 +2047,7 @@ void viafb_update_device_setting(int hres, int vres,
+@@ -819,6 +879,48 @@ void viafb_set_iga_path(void)
+ 			viaparinfo->tmds_setting_info->iga_path = IGA1;
+ 		}
  	}
++
++	viaparinfo->shared->iga1_devices = 0;
++	viaparinfo->shared->iga2_devices = 0;
++	if (viafb_CRT_ON) {
++		if (viaparinfo->crt_setting_info->iga_path = IGA1)
++			viaparinfo->shared->iga1_devices |= VIA_CRT;
++		else
++			viaparinfo->shared->iga2_devices |= VIA_CRT;
++	}
++
++	if (viafb_DVI_ON) {
++		if (viaparinfo->tmds_setting_info->iga_path = IGA1)
++			viaparinfo->shared->iga1_devices |= get_dvi_devices(
++				viaparinfo->chip_info->
++				tmds_chip_info.output_interface);
++		else
++			viaparinfo->shared->iga2_devices |= get_dvi_devices(
++				viaparinfo->chip_info->
++				tmds_chip_info.output_interface);
++	}
++
++	if (viafb_LCD_ON) {
++		if (viaparinfo->lvds_setting_info->iga_path = IGA1)
++			viaparinfo->shared->iga1_devices |= get_lcd_devices(
++				viaparinfo->chip_info->
++				lvds_chip_info.output_interface);
++		else
++			viaparinfo->shared->iga2_devices |= get_lcd_devices(
++				viaparinfo->chip_info->
++				lvds_chip_info.output_interface);
++	}
++
++	if (viafb_LCD2_ON) {
++		if (viaparinfo->lvds_setting_info2->iga_path = IGA1)
++			viaparinfo->shared->iga1_devices |= get_lcd_devices(
++				viaparinfo->chip_info->
++				lvds_chip_info2.output_interface);
++		else
++			viaparinfo->shared->iga2_devices |= get_lcd_devices(
++				viaparinfo->chip_info->
++				lvds_chip_info2.output_interface);
++	}
  }
  
--static void init_gfx_chip_info(int chip_type)
-+static void __devinit init_gfx_chip_info(int chip_type)
- {
- 	u8 tmp;
- 
-@@ -2099,7 +2099,7 @@ static void init_gfx_chip_info(int chip_type)
- 	}
- }
- 
--static void init_tmds_chip_info(void)
-+static void __devinit init_tmds_chip_info(void)
- {
- 	viafb_tmds_trasmitter_identify();
- 
-@@ -2144,7 +2144,7 @@ static void init_tmds_chip_info(void)
- 		&viaparinfo->shared->tmds_setting_info);
- }
- 
--static void init_lvds_chip_info(void)
-+static void __devinit init_lvds_chip_info(void)
- {
- 	viafb_lvds_trasmitter_identify();
- 	viafb_init_lcd_size();
-@@ -2178,7 +2178,7 @@ static void init_lvds_chip_info(void)
- 		  viaparinfo->chip_info->lvds_chip_info.output_interface);
- }
- 
--void viafb_init_dac(int set_iga)
-+void __devinit viafb_init_dac(int set_iga)
- {
- 	int i;
- 	u8 tmp;
+ static void set_color_register(u8 index, u8 red, u8 green, u8 blue)
 diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
-index c443998..39f3a69 100644
+index 39f3a69..c52a1d5 100644
 --- a/drivers/video/via/hw.h
 +++ b/drivers/video/via/hw.h
-@@ -908,8 +908,8 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
- 	struct VideoModeTable *vmode_tbl1, int video_bpp1);
- void viafb_fill_var_timing_info(struct fb_var_screeninfo *var, int refresh,
- 	struct VideoModeTable *vmode_tbl);
--void viafb_init_chip_info(int chip_type);
--void viafb_init_dac(int set_iga);
-+void __devinit viafb_init_chip_info(int chip_type);
-+void __devinit viafb_init_dac(int set_iga);
- int viafb_get_pixclock(int hres, int vres, int vmode_refresh);
- int viafb_get_refresh(int hres, int vres, u32 float_refresh);
- void viafb_update_device_setting(int hres, int vres, int bpp,
-diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
-index e48117e..c7de164 100644
---- a/drivers/video/via/lcd.c
-+++ b/drivers/video/via/lcd.c
-@@ -48,7 +48,7 @@ static struct _lcd_scaling_factor lcd_scaling_factor_CLE = {
+@@ -30,6 +30,15 @@
+ #define viafb_write_reg(i, p, d)		via_write_reg(p, i, d)
+ #define viafb_write_reg_mask(i, p, d, m)	via_write_reg_mask(p, i, d, m)
  
- static int check_lvds_chip(int device_id_subaddr, int device_id);
- static bool lvds_identify_integratedlvds(void);
--static void fp_id_to_vindex(int panel_id);
-+static void __devinit fp_id_to_vindex(int panel_id);
- static int lvds_register_read(int index);
- static void load_lcd_scaling(int set_hres, int set_vres, int panel_hres,
- 		      int panel_vres);
-@@ -90,7 +90,7 @@ static int check_lvds_chip(int device_id_subaddr, int device_id)
- 		return FAIL;
- }
++/* VIA output devices */
++#define VIA_6C		0x00000001
++#define VIA_93		0x00000002
++#define VIA_96		0x00000004
++#define VIA_CRT		0x00000010
++#define VIA_DVP1	0x00000020
++#define VIA_LVDS1	0x00000040
++#define VIA_LVDS2	0x00000080
++
+ /***************************************************
+ * Definition IGA1 Design Method of CRTC Registers *
+ ****************************************************/
+diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
+index 52a35fa..945a47a 100644
+--- a/drivers/video/via/viafbdev.h
++++ b/drivers/video/via/viafbdev.h
+@@ -40,6 +40,9 @@
+ #define VIAFB_NUM_I2C		5
  
--void viafb_init_lcd_size(void)
-+void __devinit viafb_init_lcd_size(void)
- {
- 	DEBUG_MSG(KERN_INFO "viafb_init_lcd_size()\n");
+ struct viafb_shared {
++	u32 iga1_devices;
++	u32 iga2_devices;
++
+ 	struct proc_dir_entry *proc_entry;	/*viafb proc entry */
+ 	struct viafb_dev *vdev;			/* Global dev info */
  
-@@ -150,7 +150,7 @@ static bool lvds_identify_integratedlvds(void)
- 	return true;
- }
- 
--int viafb_lvds_trasmitter_identify(void)
-+int __devinit viafb_lvds_trasmitter_identify(void)
- {
- 	if (viafb_lvds_identify_vt1636(VIA_PORT_31)) {
- 		viaparinfo->chip_info->lvds_chip_info.i2c_port = VIA_PORT_31;
-@@ -191,7 +191,7 @@ int viafb_lvds_trasmitter_identify(void)
- 	return FAIL;
- }
- 
--static void fp_id_to_vindex(int panel_id)
-+static void __devinit fp_id_to_vindex(int panel_id)
- {
- 	DEBUG_MSG(KERN_INFO "fp_get_panel_id()\n");
- 
-@@ -996,7 +996,7 @@ static void check_diport_of_integrated_lvds(
- 		  plvds_chip_info->output_interface);
- }
- 
--void viafb_init_lvds_output_interface(struct lvds_chip_information
-+void __devinit viafb_init_lvds_output_interface(struct lvds_chip_information
- 				*plvds_chip_info,
- 				struct lvds_setting_information
- 				*plvds_setting_info)
-diff --git a/drivers/video/via/lcd.h b/drivers/video/via/lcd.h
-index b348efc..c7909fe 100644
---- a/drivers/video/via/lcd.h
-+++ b/drivers/video/via/lcd.h
-@@ -71,15 +71,15 @@ void viafb_enable_lvds_vt1636(struct lvds_setting_information
- 			struct lvds_chip_information *plvds_chip_info);
- void viafb_lcd_disable(void);
- void viafb_lcd_enable(void);
--void viafb_init_lcd_size(void);
--void viafb_init_lvds_output_interface(struct lvds_chip_information
-+void __devinit viafb_init_lcd_size(void);
-+void __devinit viafb_init_lvds_output_interface(struct lvds_chip_information
- 				*plvds_chip_info,
- 				struct lvds_setting_information
- 				*plvds_setting_info);
- void viafb_lcd_set_mode(struct crt_mode_table *mode_crt_table,
- 		  struct lvds_setting_information *plvds_setting_info,
- 		  struct lvds_chip_information *plvds_chip_info);
--int viafb_lvds_trasmitter_identify(void);
-+int __devinit viafb_lvds_trasmitter_identify(void);
- void viafb_init_lvds_output_interface(struct lvds_chip_information
- 				*plvds_chip_info,
- 				struct lvds_setting_information
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index bdd0e41..5a947b0 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -961,7 +961,7 @@ static void retrieve_device_setting(struct viafb_ioctl_setting
- 	setting_info->lcd_attributes.lcd_mode = viafb_lcd_mode;
- }
- 
--static int parse_active_dev(void)
-+static int __init parse_active_dev(void)
- {
- 	viafb_CRT_ON = STATE_OFF;
- 	viafb_DVI_ON = STATE_OFF;
-@@ -1031,7 +1031,7 @@ static int parse_active_dev(void)
- 	return 0;
- }
- 
--static int parse_port(char *opt_str, int *output_interface)
-+static int __devinit parse_port(char *opt_str, int *output_interface)
- {
- 	if (!strncmp(opt_str, "DVP0", 4))
- 		*output_interface = INTERFACE_DVP0;
-@@ -1048,7 +1048,7 @@ static int parse_port(char *opt_str, int *output_interface)
- 	return 0;
- }
- 
--static void parse_lcd_port(void)
-+static void __devinit parse_lcd_port(void)
- {
- 	parse_port(viafb_lcd_port, &viaparinfo->chip_info->lvds_chip_info.
- 		output_interface);
-@@ -1061,7 +1061,7 @@ static void parse_lcd_port(void)
- 		  output_interface);
- }
- 
--static void parse_dvi_port(void)
-+static void __devinit parse_dvi_port(void)
- {
- 	parse_port(viafb_dvi_port, &viaparinfo->chip_info->tmds_chip_info.
- 		output_interface);
 -- 
 1.6.3.2
 

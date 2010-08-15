@@ -1,68 +1,47 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 11 Aug 2010 23:49:32 +0000
-Subject: [PATCH 03/11] viafb: remove stub
-Message-Id: <1281570580-8253-4-git-send-email-FlorianSchandinat@gmx.de>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Sun, 15 Aug 2010 19:51:11 +0000
+Subject: [PATCH] cyber2000fb: palette corruption at higher clocks
+Message-Id: <201008152151.14175.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1281570580-8253-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1281570580-8253-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-viafb: remove stub
+Hello,
+I'm implementing EDID support for cyber2000fb and found a weird bug in
+cyber2000fb driver. My monitor EDID reports 1280x1024@75Hz as best mode. When
+this mode is set, console palette is not set properly - sometimes the
+background is white, sometimes yellow and text colors are also messed up.
+This does not happen at 1280x1024@60Hz.
 
-This is a nop so removing it is safe.
+When I run "reset", it fixes the palette. But when I run it immediately after
+loading the driver (i.e. "modprobe cyber2000fb mode_option80x1024-8@75 &&
+reset"), it does not help. "sleep 0.6" needs to be added before "reset" to
+make it work.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Joseph Chan <JosephChan@via.com.tw>
----
- drivers/video/via/hw.c |   17 -----------------
- 1 files changed, 0 insertions(+), 17 deletions(-)
+It seems that the HW needs some time before setting the palette - maybe the
+PLL needs more time to lock at higher speeds? Does anyone have some HW docs
+to check this? This patch fixes the problem but without knowing what register
+to check for PLL lock(?), the delay might be excessive.
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 53b0651..63b6722 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -720,7 +720,6 @@ static struct rgbLUT palLUT_table[] = {
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+
+--- linux-2.6.35-rc3-/drivers/video/cyber2000fb.c	2010-08-15 21:13:39.000000000 +0200
++++ linux-2.6.35-rc3/drivers/video/cyber2000fb.c	2010-08-15 21:25:20.000000000 +0200
+@@ -506,6 +506,9 @@ static void cyber2000fb_set_timing(struc
+ 	cyber2000_grphw(0xb9, 0x80, cfb);
+ 	cyber2000_grphw(0xb9, 0x00, cfb);
  
- static void set_crt_output_path(int set_iga);
- static void dvi_patch_skew_dvp0(void);
--static void dvi_patch_skew_dvp1(void);
- static void dvi_patch_skew_dvp_low(void);
- static void set_dvi_output_path(int set_iga, int output_interface);
- static void set_lcd_output_path(int set_iga, int output_interface);
-@@ -910,21 +909,6 @@ static void dvi_patch_skew_dvp0(void)
- 	}
- }
++	/* wait (for the PLL?) to avoid palette corruption at higher clocks */
++	msleep(1000);
++
+ 	cfb->ramdac_ctrl = hw->ramdac;
+ 	cyber2000fb_write_ramdac_ctrl(cfb);
  
--static void dvi_patch_skew_dvp1(void)
--{
--	switch (viaparinfo->chip_info->gfx_chip_name) {
--	case UNICHROME_CX700:
--		{
--			break;
--		}
--
--	default:
--		{
--			break;
--		}
--	}
--}
--
- static void dvi_patch_skew_dvp_low(void)
- {
- 	switch (viaparinfo->chip_info->gfx_chip_name) {
-@@ -992,7 +976,6 @@ static void set_dvi_output_path(int set_iga, int output_interface)
- 		}
- 
- 		viafb_write_reg_mask(SR1E, VIASR, 0x30, BIT4 + BIT5);
--		dvi_patch_skew_dvp1();
- 		break;
- 	case INTERFACE_DFP_HIGH:
- 		if (viaparinfo->chip_info->gfx_chip_name != UNICHROME_CLE266) {
+
+
+
 -- 
-1.6.3.2
-
+Ondrej Zary

@@ -1,35 +1,39 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Thu, 12 Aug 2010 20:14:21 +0000
-Subject: Re: [PATCH] s3fb: add DDC support
-Message-Id: <20100812131421.bb2839f8.akpm@linux-foundation.org>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Mon, 16 Aug 2010 20:09:54 +0000
+Subject: [PATCH] [RFC] cyber2000fb: avoid palette corruption at higher clocks
+Message-Id: <201008162209.56902.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201008112218.11535.linux@rainbow-software.org>
-In-Reply-To: <201008112218.11535.linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: Ondrej Zajicek <santiago@crfreenet.org>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-On Wed, 11 Aug 2010 22:18:09 +0200
-Ondrej Zary <linux@rainbow-software.org> wrote:
+When 1280x1024@75Hz mode is set, console palette is not set properly -
+sometimes the background is white, sometimes yellow and text colors are also
+messed up. This does not happen at 1280x1024@60Hz and below.
 
-> Add I2C support for the DDC bus to s3fb driver. This is only bus support,
-> driver does not use EDID.
-> 
-> Tested on Trio64V+, Trio64V2/DX, Virge (2 cards), Virge/DX (4 cards) and
-> Trio3D/2X (3 cards) with i2cdetect and decode-edid.
-> 
-> Will probably not work on Trio32 - my 2 cards have DDC support in BIOS that
-> looks different from the other cards but the DDC pins on the VGA connector
-> are not connected.
-> 
-> Virge/GX, Virge/GX2 and Virge/VX are untested.
-> 
-> ...
->
-> +#ifdef CONFIG_FB_S3_DDC
+It seems that the HW needs some time before setting the palette - maybe the
+PLL needs more time to lock at higher speeds. This patch fixes the problem but
+without knowing what register to check for PLL lock(?), the delay might be
+excessive.
 
-Now please send us the drivers/video/Kconfig hunk as well ;)
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
-FB_S3_DDC might need to depend on I2C.
+--- linux-2.6.35-rc3-/drivers/video/cyber2000fb.c	2010-08-15 21:13:39.000000000 +0200
++++ linux-2.6.35-rc3/drivers/video/cyber2000fb.c	2010-08-15 21:25:20.000000000 +0200
+@@ -506,6 +506,9 @@ static void cyber2000fb_set_timing(struc
+ 	cyber2000_grphw(0xb9, 0x80, cfb);
+ 	cyber2000_grphw(0xb9, 0x00, cfb);
+ 
++	/* wait (for the PLL?) to avoid palette corruption at higher clocks */
++	msleep(1000);
++
+ 	cfb->ramdac_ctrl = hw->ramdac;
+ 	cyber2000fb_write_ramdac_ctrl(cfb);
+ 
+
+
+
+-- 
+Ondrej Zary

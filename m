@@ -1,64 +1,104 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 12 Aug 2010 00:08:42 +0000
-Subject: [[PATCH 08/11]] viafb: reduce viafb_set_iga_path usage
-Message-Id: <1281571722-8940-1-git-send-email-FlorianSchandinat@gmx.de>
+From: Erik Gilling <konkers@android.com>
+Date: Tue, 17 Aug 2010 23:23:09 +0000
+Subject: [PATCH] video: add fb_edid_add_monspecs for parsing extended edid information
+Message-Id: <1282087389-2590-1-git-send-email-konkers@android.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1281570580-8253-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1281570580-8253-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>
 
-viafb: reduce viafb_set_iga_path usage
+Modern monitors/tvs have more extended EDID information blocks which can
+contain extra detailed modes.  This adds a fb_edid_add_monspecs function
+which drivers can use to parse those additions blocks.
 
-The result of viafb_set_iga_path can change after init only in the
-hotplug ioctl. So we can move it there rather than doing it always
-when a new mode is set. The setup during init is done via a call
-from the init chip funtion.
-This change enables a stable mapping between the old device scheme
-and a new more powerfull one.
-
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Joseph Chan <JosephChan@via.com.tw>
+Signed-off-by: Erik Gilling <konkers@android.com>
 ---
- drivers/video/via/hw.c    |    1 -
- drivers/video/via/ioctl.c |    2 ++
- 2 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/video/fbmon.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h    |    2 +
+ 2 files changed, 59 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 4407943..638cf96 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -2313,7 +2313,6 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
- 		via_write_reg(VIASR, i, VPIT.SR[i - 1]);
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 563a98b..a0b5a93 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -973,6 +973,63 @@ void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
+ 	DPRINTK("====================\n");
+ }
  
- 	viafb_write_reg_mask(0x15, VIASR, 0xA2, 0xA2);
--	viafb_set_iga_path();
- 
- 	/* Write CRTC */
- 	viafb_fill_crtc_timing(crt_timing, vmode_tbl, video_bpp / 8, IGA1);
-diff --git a/drivers/video/via/ioctl.c b/drivers/video/via/ioctl.c
-index da03c07..455b39f 100644
---- a/drivers/video/via/ioctl.c
-+++ b/drivers/video/via/ioctl.c
-@@ -92,6 +92,7 @@ int viafb_ioctl_hotplug(int hres, int vres, int bpp)
- 				viafb_CRT_ON = 0;
- 				viafb_LCD_ON = 0;
- 				viafb_DeviceStatus = DVI_Device;
-+				viafb_set_iga_path();
- 				return viafb_DeviceStatus;
- 			}
- 			status = 1;
-@@ -105,6 +106,7 @@ int viafb_ioctl_hotplug(int hres, int vres, int bpp)
- 		viafb_LCD_ON = 0;
- 
- 		viafb_DeviceStatus = CRT_Device;
-+		viafb_set_iga_path();
- 		return viafb_DeviceStatus;
- 	}
- 
++void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
++{
++	unsigned char *block;
++	struct fb_videomode *mode, *m;
++	int num = 0, i, first = 1;
++
++	if (edid = NULL)
++		return;
++
++	if (!edid_checksum(edid))
++		return;
++
++	if (edid[0] != 0x2)
++		return;
++
++	mode = kzalloc(50 * sizeof(struct fb_videomode), GFP_KERNEL);
++	if (mode = NULL)
++		return;
++
++	block = edid + edid[0x2];
++
++	DPRINTK("  Extended Detailed Timings\n");
++
++	for (i = 0; i < (128 - edid[0x2]) / DETAILED_TIMING_DESCRIPTION_SIZE;
++	     i++, block += DETAILED_TIMING_DESCRIPTION_SIZE) {
++		if (!(block[0] = 0x00 && block[1] = 0x00)) {
++			get_detailed_timing(block, &mode[num]);
++			if (first) {
++			        mode[num].flag |= FB_MODE_IS_FIRST;
++				first = 0;
++			}
++			num++;
++		}
++	}
++
++	/* Yikes, EDID data is totally useless */
++	if (!num) {
++		kfree(mode);
++		return;
++	}
++
++	m = kzalloc((specs->modedb_len + num) *
++		       sizeof(struct fb_videomode), GFP_KERNEL);
++
++	if (!m) {
++		kfree(mode);
++		return;
++	}
++
++	memmove(m, specs->modedb, specs->modedb_len * sizeof(struct fb_videomode));
++	memmove(m + specs->modedb_len, mode, num * sizeof(struct fb_videomode));
++	kfree(mode);
++	kfree(specs->modedb);
++	specs->modedb = m;
++	specs->modedb_len = specs->modedb_len + num;
++}
++
+ /*
+  * VESA Generalized Timing Formula (GTF)
+  */
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index e7445df..813e22a 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -1069,6 +1069,8 @@ extern int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var);
+ extern const unsigned char *fb_firmware_edid(struct device *device);
+ extern void fb_edid_to_monspecs(unsigned char *edid,
+ 				struct fb_monspecs *specs);
++extern void fb_edid_add_monspecs(unsigned char *edid,
++				 struct fb_monspecs *specs);
+ extern void fb_destroy_modedb(struct fb_videomode *modedb);
+ extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
+ extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
 -- 
-1.6.3.2
+1.6.5.6
 

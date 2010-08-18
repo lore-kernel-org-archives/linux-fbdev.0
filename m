@@ -1,34 +1,40 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Wed, 11 Aug 2010 21:16:48 +0000
-Subject: Re: [PATCH] matroxfb: fix incorrect use of memcpy_toio()
-Message-Id: <201008112316.52063.linux@rainbow-software.org>
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+Date: Wed, 18 Aug 2010 18:46:37 +0000
+Subject: [REGRESSION] [2.6.36-rc1] [DRM INTEL] [drm:intel_calculate_wm] *ERROR* Insufficient FIFO for plane,
+Message-Id: <201008182046.37732.maciej.rutecki@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201008112227.44990.linux@rainbow-software.org> <20100811134136.c53f8eba.akpm@linux-foundation.org>
-In-Reply-To: <20100811134136.c53f8eba.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, Jean Delvare <khali@linux-fr.org>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, airlied@linux.ie
 
-On Wednesday 11 August 2010 22:41:36 Andrew Morton wrote:
-> On Wed, 11 Aug 2010 22:27:42 +0200
->
-> Ondrej Zary <linux@rainbow-software.org> wrote:
-> > Fix incorrect use of memcpy_toio() in matroxfb that broke in 2.6.34 on
-> > x86.
->
-> Thanks.
->
-> What was incorrect about it?  And what is the user-visible effect of
-> this regression?
+Last known good: 2.6.35
+Failing kernel: 2.6.36-rc1
 
-Screen is completely corrupted since 2.6.34. Bisection revealed that it's 
-caused by commit 6175ddf06b6172046a329e3abfd9c901a43efd2e. H. Peter Anvin 
-explained that memcpy_toio() does not copy data in 32bit chunks anymore on 
-x86.
+During boot kernel display this message:
+[    0.831906] [drm:intel_calculate_wm] *ERROR* Insufficient FIFO for plane, 
+expect flickering: entries required = 36, available = 28.
+[    0.895058] [drm:intel_calculate_wm] *ERROR* Insufficient FIFO for plane, 
+expect flickering: entries required = 36, available = 28.
+[    0.895066] [drm:intel_calculate_wm] *ERROR* Insufficient FIFO for plane, 
+expect flickering: entries required = 36, available = 28.
+[    0.895287] [drm:intel_calculate_wm] *ERROR* Insufficient FIFO for plane, 
+expect flickering: entries required = 36, available = 28.
+[    0.916426] [drm:intel_calculate_wm] *ERROR* Insufficient FIFO for plane, 
+expect flickering: entries required = 36, available = 28.
 
-See: http://lkml.org/lkml/2010/8/2/409
 
+Systems seems work OK, but in 2.6.35 I don't have this message. On another 
+system with 2.6.36-rc1 kernel I have the same message.
+
+lspci:
+http://unixy.pl/maciek/download/kernel/2.6.36-rc1/zlom/lspci.txt
+.config:
+http://unixy.pl/maciek/download/kernel/2.6.36-rc1/zlom/config-2.6.36-rc1
+dmesg:
+http://unixy.pl/maciek/download/kernel/2.6.36-rc1/zlom/dmesg-2.6.36-rc1.txt
+
+Regards
 -- 
-Ondrej Zary
+Maciej Rutecki
+http://www.maciek.unixy.pl

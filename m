@@ -1,46 +1,49 @@
 From: Ondrej Zary <linux@rainbow-software.org>
-Date: Sun, 15 Aug 2010 19:51:11 +0000
-Subject: [PATCH] cyber2000fb: palette corruption at higher clocks
-Message-Id: <201008152151.14175.linux@rainbow-software.org>
+Date: Tue, 31 Aug 2010 18:09:17 +0000
+Subject: [PATCH] [resend] savagefb: fix DDC for Savage 4
+Message-Id: <201008312009.18904.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Antonino Daplas <adaplas@gmail.com>
 Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
 Hello,
-I'm implementing EDID support for cyber2000fb and found a weird bug in
-cyber2000fb driver. My monitor EDID reports 1280x1024@75Hz as best mode. When
-this mode is set, console palette is not set properly - sometimes the
-background is white, sometimes yellow and text colors are also messed up.
-This does not happen at 1280x1024@60Hz.
 
-When I run "reset", it fixes the palette. But when I run it immediately after
-loading the driver (i.e. "modprobe cyber2000fb mode_option80x1024-8@75 &&
-reset"), it does not help. "sleep 0.6" needs to be added before "reset" to
-make it work.
+I tested savagefb on 3 different Savage 4 cards:
+Diamond Stealth III S520
+Number Nine SR9
+Datapath Horizon 2S (two savage chips on a PCI card)
 
-It seems that the HW needs some time before setting the palette - maybe the
-PLL needs more time to lock at higher speeds? Does anyone have some HW docs
-to check this? This patch fixes the problem but without knowing what register
-to check for PLL lock(?), the delay might be excessive.
+it worked except the DDC which did not work on any of them.
+
+Looking at the BIOS code, it does not use MMIO register 0xff20 but CRT
+register 0xa0 or 0xb1 - depending on the chip revision and something in
+register 0xa6. With this patch, DDC works fine on all 3 cards (even on the
+second head of Horizon 2S - although it does not display anything as it's
+misconfigured because of missing BIOS).
 
 Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
---- linux-2.6.35-rc3-/drivers/video/cyber2000fb.c	2010-08-15 21:13:39.000000000 +0200
-+++ linux-2.6.35-rc3/drivers/video/cyber2000fb.c	2010-08-15 21:25:20.000000000 +0200
-@@ -506,6 +506,9 @@ static void cyber2000fb_set_timing(struc
- 	cyber2000_grphw(0xb9, 0x80, cfb);
- 	cyber2000_grphw(0xb9, 0x00, cfb);
- 
-+	/* wait (for the PLL?) to avoid palette corruption at higher clocks */
-+	msleep(1000);
-+
- 	cfb->ramdac_ctrl = hw->ramdac;
- 	cyber2000fb_write_ramdac_ctrl(cfb);
- 
-
+--- linux-2.6.35-rc2/drivers/video/savage/savagefb-i2c.c	2010-06-06 05:43:24.000000000 +0200
++++ linux-2.6.35-rc3/drivers/video/savage/savagefb-i2c.c	2010-08-28 23:54:10.000000000 +0200
+@@ -181,6 +181,15 @@
+ 		par->chan.algo.getscl = prosavage_gpio_getscl;
+ 		break;
+ 	case FB_ACCEL_SAVAGE4:
++		par->chan.reg = CR_SERIAL1;
++		if (par->pcidev->revision > 1 && !(VGArCR(0xa6, par) & 0x40))
++			par->chan.reg = CR_SERIAL2;
++		par->chan.ioaddr      = par->mmio.vbase;
++		par->chan.algo.setsda = prosavage_gpio_setsda;
++		par->chan.algo.setscl = prosavage_gpio_setscl;
++		par->chan.algo.getsda = prosavage_gpio_getsda;
++		par->chan.algo.getscl = prosavage_gpio_getscl;
++		break;
+ 	case FB_ACCEL_SAVAGE2000:
+ 		par->chan.reg         = 0xff20;
+ 		par->chan.ioaddr      = par->mmio.vbase;
 
 
 -- 

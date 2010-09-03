@@ -1,49 +1,85 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 19 Sep 2010 07:33:48 +0000
-Subject: [PATCH 07/12] viafb: reduce I2C timeout and delay
-Message-Id: <bc04fc99ee764b565490e48226899ce0567189e3.1284879532.git.FlorianSchandinat@gmx.de>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 03 Sep 2010 07:20:42 +0000
+Subject: [PATCH 15/15] ARM: mach-shmobile: add two more video modes for HDMI
+Message-Id: <Pine.LNX.4.64.1009030917340.2883@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <171e0fb74a34b069c0c12aa90c56d5e5da5489c6.1284879532.git.FlorianSchandinat@gmx.de>
-In-Reply-To: <171e0fb74a34b069c0c12aa90c56d5e5da5489c6.1284879532.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>, Jonathan Corbet <corbet@lwn.net>
 
-viafb: reduce I2C timeout and delay
+Add video modes for 480p and SXGA (1280x1024).
 
-This patch reduces the value for I2C timeout and udelay.
-The udelay was reduced to 10 (old: 40) which is still very high as for
-standard-mode I2C even 5 should work. This gives a speedup of factor 4
-when talking to I2C devices.
-The timeout was reduced to 2 (old: 20) which is taken from the radeon
-driver so it should work as well. This gives a speedup of factor 10 when
-detecting that there is no I2C device we want to talk to.
-This causes a huge improvement of device initialization time.
-
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Joseph Chan <JosephChan@via.com.tw>
-Cc: Jonathan Corbet <corbet@lwn.net>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
- drivers/video/via/via_i2c.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/mach-shmobile/board-ap4evb.c |   41 ++++++++++++++++++++++++++++-----
+ 1 files changed, 35 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
-index 021112e..3844b55 100644
---- a/drivers/video/via/via_i2c.c
-+++ b/drivers/video/via/via_i2c.c
-@@ -202,8 +202,8 @@ static int create_i2c_bus(struct i2c_adapter *adapter,
- 	algo->setscl = via_i2c_setscl;
- 	algo->getsda = via_i2c_getsda;
- 	algo->getscl = via_i2c_getscl;
--	algo->udelay = 40;
--	algo->timeout = 20;
-+	algo->udelay = 10;
-+	algo->timeout = 2;
- 	algo->data = adap_cfg;
+diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
+index 0a7bab2..eca4703 100644
+--- a/arch/arm/mach-shmobile/board-ap4evb.c
++++ b/arch/arm/mach-shmobile/board-ap4evb.c
+@@ -599,18 +599,18 @@ static struct platform_device fsi_device = {
+ 	},
+ };
  
- 	sprintf(adapter->name, "viafb i2c io_port idx 0x%02x",
++/*
++ * If left and right margins are not multiples of 8,
++ * LDHAJR will be adjusted accordingly by the LCDC
++ * driver. Until we start using EDID, these values
++ * might have to be adjusted for different monitors.
++ */
+ const static struct fb_videomode ap4evb_hdmi_modes[] = {
+ 	{
+ 		.name = "HDMI 720p",
+ 		.xres = 1280,
+ 		.yres = 720,
+ 
+-		/*
+-		 * If left and right margins are not multiples of 8,
+-		 * LDHAJR will be adjusted accordingly by the LCDC
+-		 * driver. Until we start using EDID, these values
+-		 * might have to be adjusted for different monitors.
+-		 */
+ 		.left_margin = 200,
+ 		.right_margin = 88,
+ 		.hsync_len = 48,
+@@ -621,6 +621,35 @@ const static struct fb_videomode ap4evb_hdmi_modes[] = {
+ 
+ 		.pixclock = 13468,
+ 		.sync = FB_SYNC_VERT_HIGH_ACT | FB_SYNC_HOR_HIGH_ACT,
++	}, {
++		.name = "1280x1024",
++		.xres = 1280,
++		.yres = 1024,
++
++		.left_margin = 144,
++		.right_margin = 48,
++		.hsync_len = 64,
++
++		.upper_margin = 35,
++		.lower_margin = 5,
++		.vsync_len = 3,
++
++		.pixclock = 9800,
++		.sync = FB_SYNC_VERT_HIGH_ACT | FB_SYNC_HOR_HIGH_ACT,
++	}, {
++		.name = "HDMI 480p",
++		.xres = 720,
++		.yres = 480,
++
++		.left_margin = 36,
++		.right_margin = 18,
++		.hsync_len = 68,
++
++		.upper_margin = 36,
++		.lower_margin = 3,
++		.vsync_len = 6,
++		.pixclock = 37037,
++		.sync = FB_SYNC_VERT_HIGH_ACT | FB_SYNC_HOR_HIGH_ACT,
+ 	},
+ };
+ 
 -- 
-1.6.3.2
+1.7.1
 

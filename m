@@ -1,97 +1,161 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 19 Sep 2010 07:33:49 +0000
-Subject: [PATCH 08/12] viafb: add function to change sync polarity per device
-Message-Id: <00ad35ddf5af3070a8c4cd031bc93d560259ee00.1284879532.git.FlorianSchandinat@gmx.de>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 03 Sep 2010 07:20:00 +0000
+Subject: [PATCH 04/15] fbdev: sh_mobile_lcdcfb: minor simplifications and
+Message-Id: <Pine.LNX.4.64.1009030911520.2883@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <171e0fb74a34b069c0c12aa90c56d5e5da5489c6.1284879532.git.FlorianSchandinat@gmx.de>
-In-Reply-To: <171e0fb74a34b069c0c12aa90c56d5e5da5489c6.1284879532.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>
 
-viafb: add function to change sync polarity per device
+Remove an unused variable and simplify several pointer dereferences.
 
-At the moment only the sync polarity for CRT is handled but there are
-also bits for controlling the sync polarity for other output devices.
-Add a function to change those similar to the other output device
-functions.
-There is no runtime change yet as the code still handles only CRT.
-
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Joseph Chan <JosephChan@via.com.tw>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
- drivers/video/via/hw.c |   24 +++++++++++++++++++++---
- drivers/video/via/hw.h |    5 +++++
- 2 files changed, 26 insertions(+), 3 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |   51 +++++++++++++++++++------------------
+ 1 files changed, 26 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 132d811..d6bbb0a 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -1151,6 +1151,24 @@ void via_set_state(u32 devices, u8 state)
- 		set_lvds2_state(state);
- }
- 
-+void via_set_sync_polarity(u32 devices, u8 polarity)
-+{
-+	if (polarity & ~(VIA_HSYNC_NEGATIVE | VIA_VSYNC_NEGATIVE)) {
-+		printk(KERN_WARNING "viafb: Unsupported polarity: %d\n",
-+			polarity);
-+		return;
-+	}
-+
-+	if (devices & VIA_CRT)
-+		via_write_misc_reg_mask(polarity << 6, 0xC0);
-+	if (devices & VIA_DVP1)
-+		via_write_reg_mask(VIACR, 0x9B, polarity << 5, 0x60);
-+	if (devices & VIA_LVDS1)
-+		via_write_reg_mask(VIACR, 0x99, polarity << 5, 0x60);
-+	if (devices & VIA_LVDS2)
-+		via_write_reg_mask(VIACR, 0x97, polarity << 5, 0x60);
-+}
-+
- u32 via_parse_odev(char *input, char **end)
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 295bf4b..e4f6012 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -460,7 +460,6 @@ static void sh_mobile_lcdc_geometry(struct sh_mobile_lcdc_chan *ch)
+ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
  {
- 	char *ptr = input;
-@@ -2026,10 +2044,10 @@ void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
+ 	struct sh_mobile_lcdc_chan *ch;
+-	struct fb_videomode *lcd_cfg;
+ 	struct sh_mobile_lcdc_board_cfg	*board_cfg;
+ 	unsigned long tmp;
+ 	int k, m;
+@@ -518,7 +517,6 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
  
- 	/* update polarity for CRT timing */
- 	if (crt_table[index].h_sync_polarity = NEGATIVE)
--		polarity |= BIT6;
-+		polarity |= VIA_HSYNC_NEGATIVE;
- 	if (crt_table[index].v_sync_polarity = NEGATIVE)
--		polarity |= BIT7;
--	via_write_misc_reg_mask(polarity, BIT6 | BIT7);
-+		polarity |= VIA_VSYNC_NEGATIVE;
-+	via_set_sync_polarity(VIA_CRT, polarity);
+ 	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
+ 		ch = &priv->ch[k];
+-		lcd_cfg = &ch->cfg.lcd_cfg;
  
- 	if (set_iga = IGA1) {
- 		viafb_unlock_crt();
-diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
-index b067cbb..ad6f9b1 100644
---- a/drivers/video/via/hw.h
-+++ b/drivers/video/via/hw.h
-@@ -47,6 +47,10 @@
- #define VIA_STATE_SUSPEND	2
- #define VIA_STATE_OFF		3
+ 		if (!ch->enabled)
+ 			continue;
+@@ -1018,14 +1016,14 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ {
+ 	struct fb_info *info;
+ 	struct sh_mobile_lcdc_priv *priv;
+-	struct sh_mobile_lcdc_info *pdata;
++	struct sh_mobile_lcdc_info *pdata = pdev->dev.platform_data;
+ 	struct sh_mobile_lcdc_chan_cfg *cfg;
+ 	struct resource *res;
+ 	int error;
+ 	void *buf;
+ 	int i, j;
  
-+/* VIA output device sync polarity */
-+#define VIA_HSYNC_NEGATIVE	0x01
-+#define VIA_VSYNC_NEGATIVE	0x02
+-	if (!pdev->dev.platform_data) {
++	if (!pdata) {
+ 		dev_err(&pdev->dev, "no platform data defined\n");
+ 		return -EINVAL;
+ 	}
+@@ -1053,32 +1051,33 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	priv->irq = i;
+-	pdata = pdev->dev.platform_data;
+ 	atomic_set(&priv->hw_usecnt, -1);
+ 
+ 	j = 0;
+ 	for (i = 0; i < ARRAY_SIZE(pdata->ch); i++) {
+-		priv->ch[j].lcdc = priv;
+-		memcpy(&priv->ch[j].cfg, &pdata->ch[i], sizeof(pdata->ch[i]));
++		struct sh_mobile_lcdc_chan *ch = priv->ch + j;
+ 
+-		error = sh_mobile_lcdc_check_interface(&priv->ch[j]);
++		ch->lcdc = priv;
++		memcpy(&ch->cfg, &pdata->ch[i], sizeof(pdata->ch[i]));
 +
- /***************************************************
- * Definition IGA1 Design Method of CRTC Registers *
- ****************************************************/
-@@ -912,6 +916,7 @@ void viafb_load_reg(int timing_value, int viafb_load_reg_num,
- 	      int io_type);
- void via_set_source(u32 devices, u8 iga);
- void via_set_state(u32 devices, u8 state);
-+void via_set_sync_polarity(u32 devices, u8 polarity);
- u32 via_parse_odev(char *input, char **end);
- void via_odev_to_seq(struct seq_file *m, u32 odev);
- void init_ad9389(void);
++		error = sh_mobile_lcdc_check_interface(ch);
+ 		if (error) {
+ 			dev_err(&pdev->dev, "unsupported interface type\n");
+ 			goto err1;
+ 		}
+-		init_waitqueue_head(&priv->ch[j].frame_end_wait);
+-		init_completion(&priv->ch[j].vsync_completion);
+-		priv->ch[j].pan_offset = 0;
++		init_waitqueue_head(&ch->frame_end_wait);
++		init_completion(&ch->vsync_completion);
++		ch->pan_offset = 0;
+ 
+ 		switch (pdata->ch[i].chan) {
+ 		case LCDC_CHAN_MAINLCD:
+-			priv->ch[j].enabled = 1 << 1;
+-			priv->ch[j].reg_offs = lcdc_offs_mainlcd;
++			ch->enabled = 1 << 1;
++			ch->reg_offs = lcdc_offs_mainlcd;
+ 			j++;
+ 			break;
+ 		case LCDC_CHAN_SUBLCD:
+-			priv->ch[j].enabled = 1 << 2;
+-			priv->ch[j].reg_offs = lcdc_offs_sublcd;
++			ch->enabled = 1 << 2;
++			ch->reg_offs = lcdc_offs_sublcd;
+ 			j++;
+ 			break;
+ 		}
+@@ -1102,17 +1101,19 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 
+ 	for (i = 0; i < j; i++) {
+ 		struct fb_var_screeninfo *var;
+-		struct fb_videomode *lcd_cfg;
+-		cfg = &priv->ch[i].cfg;
++		const struct fb_videomode *lcd_cfg;
++		struct sh_mobile_lcdc_chan *ch = priv->ch + i;
++
++		cfg = &ch->cfg;
+ 
+-		priv->ch[i].info = framebuffer_alloc(0, &pdev->dev);
+-		if (!priv->ch[i].info) {
++		ch->info = framebuffer_alloc(0, &pdev->dev);
++		if (!ch->info) {
+ 			dev_err(&pdev->dev, "unable to allocate fb_info\n");
+ 			error = -ENOMEM;
+ 			break;
+ 		}
+ 
+-		info = priv->ch[i].info;
++		info = ch->info;
+ 		var = &info->var;
+ 		lcd_cfg = &cfg->lcd_cfg;
+ 		info->fbops = &sh_mobile_lcdc_ops;
+@@ -1130,28 +1131,28 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 			var->yres_virtual;
+ 
+ 		buf = dma_alloc_coherent(&pdev->dev, info->fix.smem_len,
+-					 &priv->ch[i].dma_handle, GFP_KERNEL);
++					 &ch->dma_handle, GFP_KERNEL);
+ 		if (!buf) {
+ 			dev_err(&pdev->dev, "unable to allocate buffer\n");
+ 			error = -ENOMEM;
+ 			break;
+ 		}
+ 
+-		info->pseudo_palette = &priv->ch[i].pseudo_palette;
++		info->pseudo_palette = &ch->pseudo_palette;
+ 		info->flags = FBINFO_FLAG_DEFAULT;
+ 
+ 		error = fb_alloc_cmap(&info->cmap, PALETTE_NR, 0);
+ 		if (error < 0) {
+ 			dev_err(&pdev->dev, "unable to allocate cmap\n");
+ 			dma_free_coherent(&pdev->dev, info->fix.smem_len,
+-					  buf, priv->ch[i].dma_handle);
++					  buf, ch->dma_handle);
+ 			break;
+ 		}
+ 
+-		info->fix.smem_start = priv->ch[i].dma_handle;
++		info->fix.smem_start = ch->dma_handle;
+ 		info->screen_base = buf;
+ 		info->device = &pdev->dev;
+-		info->par = &priv->ch[i];
++		info->par = ch;
+ 	}
+ 
+ 	if (error)
 -- 
-1.6.3.2
+1.7.1
 

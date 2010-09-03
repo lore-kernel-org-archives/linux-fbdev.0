@@ -1,368 +1,402 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 19 Sep 2010 07:26:06 +0000
-Subject: [PATCH 01/12] viafb: add interface for output device configuration
-Message-Id: <84e3266c11318f2240e7de7868a14aa1119c613c.1284879532.git.FlorianSchandinat@gmx.de>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 03 Sep 2010 07:20:39 +0000
+Subject: [PATCH 14/15] fbdev: sh_mobile_hdmi: support hot-plugging of different
+Message-Id: <Pine.LNX.4.64.1009030916560.2883@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1284879532.git.FlorianSchandinat@gmx.de>
-In-Reply-To: <cover.1284879532.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>, Jonathan Corbet <corbet@lwn.net>, Andrew Morton <akpm@linux-foundation.org>
 
-viafb: add interface for output device configuration
+With this patch hot-plugging of an HDMI or a DVI monitor can select a different
+video mode and reconfigure the LCDC and HDMI controllers accordingly. Due to a
+lack of a standard API to inform framebuffer users of a changed video mode, the
+framebuffer configuration is preserved regardless of a specific mode, selected
+for the monitor. As described in a previous patch, this leads to smaller
+framebuffers being displayed on larger monitors or a part of a larger
+framebuffer being displayed on a smaller resolution monitor.
 
-This patch extends the proc entry to contain a possibility to view and
-change the output devices for each IGA. This is useful for debugging
-output problems as it provides a reliable way to query which low level
-devices are active after VIAs output device configuration nightmare
-happended. It's as well suitable for daily use as one can change the
-output configuration on the fly for example to connect a projector.
-At the moment it's still unstable. The reason is that we have to handle
-a bunch of undocumented output devices (those without a proper name) and
-that this patch is the first step to collect and verify the needed
-information. Basically the only configuration change that is expected to
-work at the moment is switching output devices between IGA1 and IGA2.
-
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Joseph Chan <JosephChan@via.com.tw>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
- drivers/video/via/hw.c       |   53 ++++++++++++++
- drivers/video/via/hw.h       |   10 +++
- drivers/video/via/viafbdev.c |  161 +++++++++++++++++++++++++++++++++++++-----
- drivers/video/via/viafbdev.h |    2 +
- 4 files changed, 209 insertions(+), 17 deletions(-)
+ drivers/video/sh_mobile_hdmi.c   |  203 ++++++++++++++++++++++++++++++-------
+ drivers/video/sh_mobile_lcdcfb.c |   31 +-----
+ 2 files changed, 170 insertions(+), 64 deletions(-)
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 0330323..e65edce 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -718,6 +718,16 @@ static struct rgbLUT palLUT_table[] = {
- 								     0x00}
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index e1d70e2..a6143ef 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -214,6 +214,7 @@ struct sh_hdmi {
+ 	struct mutex mutex;		/* Protect the info pointer */
+ 	struct delayed_work edid_work;
+ 	struct fb_var_screeninfo var;
++	struct fb_monspecs monspec;
  };
  
-+static struct via_device_mapping device_mapping[] = {
-+	{VIA_6C, "6C"},
-+	{VIA_93, "93"},
-+	{VIA_96, "96"},
-+	{VIA_CRT, "CRT"},
-+	{VIA_DVP1, "DVP1"},
-+	{VIA_LVDS1, "LVDS1"},
-+	{VIA_LVDS2, "LVDS2"}
-+};
-+
- static void load_fix_bit_crtc_reg(void);
- static void __devinit init_gfx_chip_info(int chip_type);
- static void __devinit init_tmds_chip_info(void);
-@@ -1026,6 +1036,49 @@ void via_set_source(u32 devices, u8 iga)
- 		set_lvds2_source(iga);
+ static void hdmi_write(struct sh_hdmi *hdmi, u8 data, u8 reg)
+@@ -716,11 +717,12 @@ static void sh_hdmi_configure(struct sh_hdmi *hdmi)
+ 	hdmi_write(hdmi, 0x40, HDMI_SYSTEM_CTRL);
  }
  
-+u32 via_parse_odev(char *input, char **end)
-+{
-+	char *ptr = input;
-+	u32 odev = 0;
-+	bool next = true;
-+	int i, len;
+-static void sh_hdmi_read_edid(struct sh_hdmi *hdmi)
++static int sh_hdmi_read_edid(struct sh_hdmi *hdmi)
+ {
+ 	struct fb_var_screeninfo tmpvar;
+ 	/* TODO: When we are ready to use EDID, use this to fill &hdmi->var */
+ 	struct fb_var_screeninfo *var = &tmpvar;
++	const struct fb_videomode *mode, *found = NULL;
+ 	int i;
+ 	u8 edid[128];
+ 
+@@ -740,20 +742,84 @@ static void sh_hdmi_read_edid(struct sh_hdmi *hdmi)
+ #ifdef DEBUG
+ 	printk(KERN_CONT "\n");
+ #endif
+-	fb_parse_edid(edid, var);
+-	dev_dbg(hdmi->dev, "%u-%u-%u-%u x %u-%u-%u-%u @ %lu kHz monitor detected\n",
+-		var->left_margin, var->xres, var->right_margin, var->hsync_len,
+-		var->upper_margin, var->yres, var->lower_margin, var->vsync_len,
+-		PICOS2KHZ(var->pixclock));
+-
+-	if ((hdmi->var.xres = 720 && hdmi->var.yres = 480) ||
+-	    (hdmi->var.xres = 1280 && hdmi->var.yres = 720) ||
+-	    (hdmi->var.xres = 1920 && hdmi->var.yres = 1080))
 +
-+	while (next) {
-+		next = false;
-+		for (i = 0; i < ARRAY_SIZE(device_mapping); i++) {
-+			len = strlen(device_mapping[i].name);
-+			if (!strncmp(ptr, device_mapping[i].name, len)) {
-+				odev |= device_mapping[i].device;
-+				ptr += len;
-+				if (*ptr = ',') {
-+					ptr++;
-+					next = true;
++	fb_edid_to_monspecs(edid, &hdmi->monspec);
++
++	/* First look for an exact match */
++	for (i = 0, mode = hdmi->monspec.modedb; i < hdmi->monspec.modedb_len;
++	     i++, mode++) {
++		dev_dbg(hdmi->dev, "%u-%u-%u-%u x %u-%u-%u-%u @ %lu kHz monitor detected\n",
++			mode->left_margin, mode->xres,
++			mode->right_margin, mode->hsync_len,
++			mode->upper_margin, mode->yres,
++			mode->lower_margin, mode->vsync_len,
++			PICOS2KHZ(mode->pixclock));
++		if (!found && hdmi->info) {
++			fb_videomode_to_var(var, mode);
++			found = fb_match_mode(var, &hdmi->info->modelist);
++			/*
++			 * If an exact match found, we're good to bail out, but
++			 * continue to print out all modes
++			 */
++		}
++	}
++
++	/*
++	 * The monitor might also work with a mode, that is smaller, than one of
++	 * its modes, use the first (default) one for this
++	 */
++	if (!found && hdmi->info && hdmi->monspec.modedb_len) {
++		struct fb_modelist *modelist;
++		unsigned int min_err = UINT_MAX, err;
++		const struct fb_videomode *mon_mode = hdmi->monspec.modedb;
++
++		list_for_each_entry(modelist, &hdmi->info->modelist, list) {
++			mode = &modelist->mode;
++			dev_dbg(hdmi->dev, "matching %ux%u to %ux%u\n", mode->xres, mode->yres,
++				 mon_mode->xres, mon_mode->yres);
++			if (mode->xres <= mon_mode->xres && mode->yres <= mon_mode->yres) {
++				err = mon_mode->xres - mode->xres + mon_mode->yres - mode->yres;
++				if (!err) {
++					found = mode;
++					break;
++				}
++				if (err < min_err) {
++					found = mode;
++					min_err = err;
 +				}
 +			}
 +		}
 +	}
 +
-+	*end = ptr;
-+	return odev;
-+}
++	/* Nothing suitable specified by the platform: use monitor's first mode */
++	if (!found && hdmi->monspec.modedb_len)
++		found = hdmi->monspec.modedb;
 +
-+void via_odev_to_seq(struct seq_file *m, u32 odev)
-+{
-+	int i, count = 0;
-+
-+	for (i = 0; i < ARRAY_SIZE(device_mapping); i++) {
-+		if (odev & device_mapping[i].device) {
-+			if (count > 0)
-+				seq_putc(m, ',');
-+
-+			seq_puts(m, device_mapping[i].name);
-+			count++;
-+		}
++	/* No valid timing info in EDID - last resort: use platform default mode */
++	if (!found && hdmi->info) {
++		struct fb_modelist *modelist = list_entry(hdmi->info->modelist.next,
++							  struct fb_modelist, list);
++		found = &modelist->mode;
 +	}
 +
-+	seq_putc(m, '\n');
-+}
++	/* No cookie today */
++	if (!found)
++		return -ENXIO;
 +
- static void load_fix_bit_crtc_reg(void)
- {
- 	/* always set to 1 */
-diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
-index 45dee39..657dbd6 100644
---- a/drivers/video/via/hw.h
-+++ b/drivers/video/via/hw.h
-@@ -22,6 +22,8 @@
- #ifndef __HW_H__
- #define __HW_H__
++	dev_dbg(hdmi->dev, "best \"%s\" %ux%u@%ups\n", found->name,
++		found->xres, found->yres, found->pixclock);
++
++	if ((found->xres = 720 && found->yres = 480) ||
++	    (found->xres = 1280 && found->yres = 720) ||
++	    (found->xres = 1920 && found->yres = 1080))
+ 		hdmi->preprogrammed_mode = true;
+ 	else
+ 		hdmi->preprogrammed_mode = false;
  
-+#include <linux/seq_file.h>
++	fb_videomode_to_var(&hdmi->var, found);
+ 	sh_hdmi_external_video_param(hdmi);
 +
- #include "viamode.h"
- #include "global.h"
- #include "via_modesetting.h"
-@@ -882,6 +884,11 @@ struct pci_device_id_info {
- 	u32 chip_index;
- };
- 
-+struct via_device_mapping {
-+	u32 device;
-+	const char *name;
-+};
-+
- extern unsigned int viafb_second_virtual_xres;
- extern int viafb_SAMM_ON;
- extern int viafb_dual_fb;
-@@ -899,6 +906,9 @@ void viafb_load_reg(int timing_value, int viafb_load_reg_num,
- 	      int io_type);
- void viafb_crt_disable(void);
- void viafb_crt_enable(void);
-+void via_set_source(u32 devices, u8 iga);
-+u32 via_parse_odev(char *input, char **end);
-+void via_odev_to_seq(struct seq_file *m, u32 odev);
- void init_ad9389(void);
- /* Access I/O Function */
- void viafb_lock_crt(void);
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 5a947b0..5864092 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -1431,26 +1431,158 @@ static const struct file_operations viafb_vt1636_proc_fops = {
- 	.write		= viafb_vt1636_proc_write,
- };
- 
--static void viafb_init_proc(struct proc_dir_entry **viafb_entry)
-+#endif /* CONFIG_FB_VIA_DIRECT_PROCFS */
-+
-+static ssize_t odev_update(const char __user *buffer, size_t count, u32 *odev)
-+{
-+	char buf[64], *ptr = buf;
-+	u32 devices;
-+	bool add, sub;
-+
-+	if (count < 1 || count > 63)
-+		return -EINVAL;
-+	if (copy_from_user(&buf[0], buffer, count))
-+		return -EFAULT;
-+	buf[count] = '\0';
-+	add = buf[0] = '+';
-+	sub = buf[0] = '-';
-+	if (add || sub)
-+		ptr++;
-+	devices = via_parse_odev(ptr, &ptr);
-+	if (*ptr = '\n')
-+		ptr++;
-+	if (*ptr != 0)
-+		return -EINVAL;
-+	if (add)
-+		*odev |= devices;
-+	else if (sub)
-+		*odev &= ~devices;
-+	else
-+		*odev = devices;
-+	return count;
-+}
-+
-+static int viafb_iga1_odev_proc_show(struct seq_file *m, void *v)
-+{
-+	via_odev_to_seq(m, viaparinfo->shared->iga1_devices);
 +	return 0;
+ }
+ 
+ static irqreturn_t sh_hdmi_hotplug(int irq, void *dev_id)
+@@ -876,12 +942,73 @@ static void sh_hdmi_display_off(void *arg)
+ 	hdmi_write(hdmi, 0x10, HDMI_SYSTEM_CTRL);
+ }
+ 
++static bool sh_hdmi_must_reconfigure(struct sh_hdmi *hdmi)
++{
++	struct fb_info *info = hdmi->info;
++	struct sh_mobile_lcdc_chan *ch = info->par;
++	struct fb_var_screeninfo *new_var = &hdmi->var, *old_var = &ch->display_var;
++	struct fb_videomode mode1, mode2;
++
++	fb_var_to_videomode(&mode1, old_var);
++	fb_var_to_videomode(&mode2, new_var);
++
++	dev_dbg(info->dev, "Old %ux%u, new %ux%u\n",
++		mode1.xres, mode1.yres, mode2.xres, mode2.yres);
++
++	if (fb_mode_is_equal(&mode1, &mode2))
++		return false;
++
++	dev_dbg(info->dev, "Switching %u -> %u lines\n",
++		mode1.yres, mode2.yres);
++	*old_var = *new_var;
++
++	return true;
 +}
 +
-+static int viafb_iga1_odev_proc_open(struct inode *inode, struct file *file)
++/**
++ * sh_hdmi_clk_configure() - set HDMI clock frequency and enable the clock
++ * @hdmi:	driver context
++ * @pixclock:	pixel clock period in picoseconds
++ * return:	configured positive rate if successful
++ *		0 if couldn't set the rate, but managed to enable the clock
++ *		negative error, if couldn't enable the clock
++ */
++static long sh_hdmi_clk_configure(struct sh_hdmi *hdmi, unsigned long pixclock)
++{
++	long rate;
++	int ret;
++
++	rate = PICOS2KHZ(pixclock) * 1000;
++	rate = clk_round_rate(hdmi->hdmi_clk, rate);
++	if (rate > 0) {
++		ret = clk_set_rate(hdmi->hdmi_clk, rate);
++		if (ret < 0) {
++			dev_warn(hdmi->dev, "Cannot set rate %ld: %d\n", rate, ret);
++			rate = 0;
++		} else {
++			dev_dbg(hdmi->dev, "HDMI set frequency %lu\n", rate);
++		}
++	} else {
++		rate = 0;
++		dev_warn(hdmi->dev, "Cannot get suitable rate: %ld\n", rate);
++	}
++
++	ret = clk_enable(hdmi->hdmi_clk);
++	if (ret < 0) {
++		dev_err(hdmi->dev, "Cannot enable clock: %d\n", ret);
++		return ret;
++	}
++
++	return rate;
++}
++
+ /* Hotplug interrupt occurred, read EDID */
+ static void sh_hdmi_edid_work_fn(struct work_struct *work)
  {
--	*viafb_entry = proc_mkdir("viafb", NULL);
--	if (*viafb_entry) {
--		proc_create("dvp0", 0, *viafb_entry, &viafb_dvp0_proc_fops);
--		proc_create("dvp1", 0, *viafb_entry, &viafb_dvp1_proc_fops);
--		proc_create("dfph", 0, *viafb_entry, &viafb_dfph_proc_fops);
--		proc_create("dfpl", 0, *viafb_entry, &viafb_dfpl_proc_fops);
-+	return single_open(file, viafb_iga1_odev_proc_show, NULL);
-+}
+ 	struct sh_hdmi *hdmi = container_of(work, struct sh_hdmi, edid_work.work);
+ 	struct sh_mobile_hdmi_info *pdata = hdmi->dev->platform_data;
+ 	struct sh_mobile_lcdc_chan *ch;
++	int ret;
+ 
+ 	dev_dbg(hdmi->dev, "%s(%p): begin, hotplug status %d\n", __func__,
+ 		pdata->lcd_dev, hdmi->hp_state);
+@@ -892,9 +1019,19 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 	mutex_lock(&hdmi->mutex);
+ 
+ 	if (hdmi->hp_state = HDMI_HOTPLUG_EDID_DONE) {
+-		pm_runtime_get_sync(hdmi->dev);
+ 		/* A device has been plugged in */
+-		sh_hdmi_read_edid(hdmi);
++		pm_runtime_get_sync(hdmi->dev);
 +
-+static ssize_t viafb_iga1_odev_proc_write(struct file *file,
-+	const char __user *buffer, size_t count, loff_t *pos)
-+{
-+	u32 dev_on, dev_off, dev_old, dev_new;
-+	ssize_t res;
++		ret = sh_hdmi_read_edid(hdmi);
++		if (ret < 0)
++			goto out;
 +
-+	dev_old = dev_new = viaparinfo->shared->iga1_devices;
-+	res = odev_update(buffer, count, &dev_new);
-+	if (res != count)
-+		return res;
-+	dev_off = dev_old & ~dev_new;
-+	dev_on = dev_new & ~dev_old;
-+	viaparinfo->shared->iga1_devices = dev_new;
-+	viaparinfo->shared->iga2_devices &= ~dev_new;
-+	via_set_source(dev_new, IGA1);
-+	return res;
-+}
++		/* Reconfigure the clock */
++		clk_disable(hdmi->hdmi_clk);
++		ret = sh_hdmi_clk_configure(hdmi, hdmi->var.pixclock);
++		if (ret < 0)
++			goto out;
 +
-+static const struct file_operations viafb_iga1_odev_proc_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= viafb_iga1_odev_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+	.write		= viafb_iga1_odev_proc_write,
-+};
-+
-+static int viafb_iga2_odev_proc_show(struct seq_file *m, void *v)
-+{
-+	via_odev_to_seq(m, viaparinfo->shared->iga2_devices);
-+	return 0;
-+}
-+
-+static int viafb_iga2_odev_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, viafb_iga2_odev_proc_show, NULL);
-+}
-+
-+static ssize_t viafb_iga2_odev_proc_write(struct file *file,
-+	const char __user *buffer, size_t count, loff_t *pos)
-+{
-+	u32 dev_on, dev_off, dev_old, dev_new;
-+	ssize_t res;
-+
-+	dev_old = dev_new = viaparinfo->shared->iga2_devices;
-+	res = odev_update(buffer, count, &dev_new);
-+	if (res != count)
-+		return res;
-+	dev_off = dev_old & ~dev_new;
-+	dev_on = dev_new & ~dev_old;
-+	viaparinfo->shared->iga2_devices = dev_new;
-+	viaparinfo->shared->iga1_devices &= ~dev_new;
-+	via_set_source(dev_new, IGA2);
-+	return res;
-+}
-+
-+static const struct file_operations viafb_iga2_odev_proc_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= viafb_iga2_odev_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+	.write		= viafb_iga2_odev_proc_write,
-+};
-+
-+static void viafb_init_proc(struct viafb_shared *shared)
-+{
-+	struct proc_dir_entry *iga1_entry, *iga2_entry,
-+		*viafb_entry = proc_mkdir("viafb", NULL);
-+
-+	shared->proc_entry = viafb_entry;
-+	if (viafb_entry) {
-+#ifdef CONFIG_FB_VIA_DIRECT_PROCFS
-+		proc_create("dvp0", 0, viafb_entry, &viafb_dvp0_proc_fops);
-+		proc_create("dvp1", 0, viafb_entry, &viafb_dvp1_proc_fops);
-+		proc_create("dfph", 0, viafb_entry, &viafb_dfph_proc_fops);
-+		proc_create("dfpl", 0, viafb_entry, &viafb_dfpl_proc_fops);
- 		if (VT1636_LVDS = viaparinfo->chip_info->lvds_chip_info.
- 			lvds_chip_name || VT1636_LVDS =
- 		    viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name) {
- 			proc_create("vt1636", 0, *viafb_entry, &viafb_vt1636_proc_fops);
+ 		msleep(10);
+ 		sh_hdmi_configure(hdmi);
+ 		/* Switched to another (d) power-save mode */
+@@ -908,18 +1045,24 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 		acquire_console_sem();
+ 
+ 		/* HDMI plug in */
+-		ch->display_var = hdmi->var;
+-		if (hdmi->info->state != FBINFO_STATE_RUNNING) {
+-			fb_set_suspend(hdmi->info, 0);
+-		} else {
++		if (!sh_hdmi_must_reconfigure(hdmi) &&
++		    hdmi->info->state = FBINFO_STATE_RUNNING) {
++			/*
++			 * First activation with the default monitor - just turn
++			 * on, if we run a resume here, the logo disappears
++			 */
+ 			if (lock_fb_info(hdmi->info)) {
+ 				sh_hdmi_display_on(hdmi, hdmi->info);
+ 				unlock_fb_info(hdmi->info);
+ 			}
++		} else {
++			/* New monitor or have to wake up */
++			fb_set_suspend(hdmi->info, 0);
  		}
-+#endif /* CONFIG_FB_VIA_DIRECT_PROCFS */
  
-+		iga1_entry = proc_mkdir("iga1", viafb_entry);
-+		shared->iga1_proc_entry = iga1_entry;
-+		proc_create("output_devices", 0, iga1_entry,
-+			&viafb_iga1_odev_proc_fops);
-+		iga2_entry = proc_mkdir("iga2", viafb_entry);
-+		shared->iga2_proc_entry = iga2_entry;
-+		proc_create("output_devices", 0, iga2_entry,
-+			&viafb_iga2_odev_proc_fops);
+ 		release_console_sem();
+ 	} else {
++		ret = 0;
+ 		if (!hdmi->info)
+ 			goto out;
+ 
+@@ -930,9 +1073,12 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 
+ 		release_console_sem();
+ 		pm_runtime_put(hdmi->dev);
++		fb_destroy_modedb(hdmi->monspec.modedb);
  	}
- }
--static void viafb_remove_proc(struct proc_dir_entry *viafb_entry)
-+static void viafb_remove_proc(struct viafb_shared *shared)
- {
--	struct chip_information *chip_info = &viaparinfo->shared->chip_info;
-+	struct chip_information *chip_info = &shared->chip_info;
-+	struct proc_dir_entry *viafb_entry = shared->proc_entry,
-+		*iga1_entry = shared->iga1_proc_entry,
-+		*iga2_entry = shared->iga2_proc_entry;
  
-+	if (!viafb_entry)
-+		return;
-+
-+	remove_proc_entry("output_devices", iga2_entry);
-+	remove_proc_entry("iga2", viafb_entry);
-+	remove_proc_entry("output_devices", iga1_entry);
-+	remove_proc_entry("iga1", viafb_entry);
-+
-+#ifdef CONFIG_FB_VIA_DIRECT_PROCFS
- 	remove_proc_entry("dvp0", viafb_entry);/* parent dir */
- 	remove_proc_entry("dvp1", viafb_entry);
- 	remove_proc_entry("dfph", viafb_entry);
-@@ -1458,12 +1590,11 @@ static void viafb_remove_proc(struct proc_dir_entry *viafb_entry)
- 	if (chip_info->lvds_chip_info.lvds_chip_name = VT1636_LVDS
- 		|| chip_info->lvds_chip_info2.lvds_chip_name = VT1636_LVDS)
- 		remove_proc_entry("vt1636", viafb_entry);
-+#endif /* CONFIG_FB_VIA_DIRECT_PROCFS */
+ out:
++	if (ret < 0)
++		hdmi->hp_state = HDMI_HOTPLUG_DISCONNECTED;
+ 	mutex_unlock(&hdmi->mutex);
  
- 	remove_proc_entry("viafb", NULL);
- }
+ 	dev_dbg(hdmi->dev, "%s(%p): end\n", __func__, pdata->lcd_dev);
+@@ -1011,31 +1157,13 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
+ 		goto egetclk;
+ 	}
  
--#endif /* CONFIG_FB_VIA_DIRECT_PROCFS */
+-	/* TODO: reconfigure the clock on monitor plug in */
+-	rate = PICOS2KHZ(pdata->lcd_chan->lcd_cfg[0].pixclock) * 1000;
 -
- static int parse_mode(const char *str, u32 *xres, u32 *yres)
- {
- 	char *ptr;
-@@ -1671,9 +1802,7 @@ int __devinit via_fb_pci_probe(struct viafb_dev *vdev)
- 		  viafbinfo->node, viafbinfo->fix.id, default_var.xres,
- 		  default_var.yres, default_var.bits_per_pixel);
+-	rate = clk_round_rate(hdmi->hdmi_clk, rate);
++	rate = sh_hdmi_clk_configure(hdmi, pdata->lcd_chan->lcd_cfg[0].pixclock);
+ 	if (rate < 0) {
+ 		ret = rate;
+-		dev_err(&pdev->dev, "Cannot get suitable rate: %ld\n", rate);
+-		goto erate;
+-	}
+-
+-	ret = clk_set_rate(hdmi->hdmi_clk, rate);
+-	if (ret < 0) {
+-		dev_err(&pdev->dev, "Cannot set rate %ld: %d\n", rate, ret);
+ 		goto erate;
+ 	}
  
--#ifdef CONFIG_FB_VIA_DIRECT_PROCFS
--	viafb_init_proc(&viaparinfo->shared->proc_entry);
+-	dev_dbg(hdmi->dev, "HDMI set frequency %lu\n", rate);
+-
+-	ret = clk_enable(hdmi->hdmi_clk);
+-	if (ret < 0) {
+-		dev_err(&pdev->dev, "Cannot enable clock: %d\n", ret);
+-		goto eclkenable;
+-	}
+-
+-	dev_info(&pdev->dev, "Enabled HDMI clock at %luHz\n", rate);
++	dev_dbg(&pdev->dev, "Enabled HDMI clock at %luHz\n", rate);
+ 
+ 	if (!request_mem_region(res->start, resource_size(res), dev_name(&pdev->dev))) {
+ 		dev_err(&pdev->dev, "HDMI register region already claimed\n");
+@@ -1052,11 +1180,9 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, hdmi);
+ 
+-#if 1
+ 	/* Product and revision IDs are 0 in sh-mobile version */
+ 	dev_info(&pdev->dev, "Detected HDMI controller 0x%x:0x%x\n",
+ 		 hdmi_read(hdmi, HDMI_PRODUCT_ID), hdmi_read(hdmi, HDMI_REVISION_ID));
 -#endif
-+	viafb_init_proc(viaparinfo->shared);
- 	viafb_init_dac(IGA2);
- 	return 0;
  
-@@ -1700,9 +1829,7 @@ void __devexit via_fb_pci_remove(struct pci_dev *pdev)
- 	unregister_framebuffer(viafbinfo);
- 	if (viafb_dual_fb)
- 		unregister_framebuffer(viafbinfo1);
--#ifdef CONFIG_FB_VIA_DIRECT_PROCFS
--	viafb_remove_proc(viaparinfo->shared->proc_entry);
--#endif
-+	viafb_remove_proc(viaparinfo->shared);
- 	framebuffer_release(viafbinfo);
- 	if (viafb_dual_fb)
- 		framebuffer_release(viafbinfo1);
-diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
-index 945a47a..d66f963 100644
---- a/drivers/video/via/viafbdev.h
-+++ b/drivers/video/via/viafbdev.h
-@@ -44,6 +44,8 @@ struct viafb_shared {
- 	u32 iga2_devices;
+ 	/* Set up LCDC callbacks */
+ 	board_cfg = &pdata->lcd_chan->board_cfg;
+@@ -1086,7 +1212,6 @@ emap:
+ 	release_mem_region(res->start, resource_size(res));
+ ereqreg:
+ 	clk_disable(hdmi->hdmi_clk);
+-eclkenable:
+ erate:
+ 	clk_put(hdmi->hdmi_clk);
+ egetclk:
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 946a810..b4a8786 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -944,6 +944,7 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
+ 	struct sh_mobile_lcdc_chan *ch = info->par;
+ 	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
+ 	struct fb_var_screeninfo *var;
++	int ret;
  
- 	struct proc_dir_entry *proc_entry;	/*viafb proc entry */
-+	struct proc_dir_entry *iga1_proc_entry;
-+	struct proc_dir_entry *iga2_proc_entry;
- 	struct viafb_dev *vdev;			/* Global dev info */
+ 	if (&ch->lcdc->notifier != nb)
+ 		return NOTIFY_DONE;
+@@ -958,6 +959,7 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
+ 			module_put(board_cfg->owner);
+ 		}
+ 		pm_runtime_put(info->device);
++		sh_mobile_lcdc_stop(ch->lcdc);
+ 		break;
+ 	case FB_EVENT_RESUME:
+ 		var = &info->var;
+@@ -968,31 +970,9 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
+ 			module_put(board_cfg->owner);
+ 		}
  
- 	/* All the information will be needed to set engine */
+-		/* Check if the new display is not in our modelist */
+-		if (ch->info->modelist.next &&
+-		    !fb_match_mode(var, &ch->info->modelist)) {
+-			struct fb_videomode mode;
+-			int ret;
+-
+-			/* Can we handle this display? */
+-			if (var->xres > ch->cfg.lcd_cfg[0].xres ||
+-			    var->yres > ch->cfg.lcd_cfg[0].yres)
+-				/*
+-				 * LCDC resume failed, no need to continue with
+-				 * the notifier chain
+-				 */
+-				return notifier_from_errno(-ENOMEM);
+-
+-			/* Add to the modelist */
+-			fb_var_to_videomode(&mode, var);
+-			ret = fb_add_videomode(&mode, &ch->info->modelist);
+-			if (ret < 0)
+-				return notifier_from_errno(ret);
+-		}
+-
+-		pm_runtime_get_sync(info->device);
+-
+-		sh_mobile_lcdc_geometry(ch);
++		ret = sh_mobile_lcdc_start(ch->lcdc);
++		if (!ret)
++			pm_runtime_get_sync(info->device);
+ 	}
+ 
+ 	return NOTIFY_OK;
+@@ -1181,6 +1161,7 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 			}
+ 		}
+ 
++		fb_videomode_to_modelist(ch->cfg.lcd_cfg, ch->cfg.num_cfg, &info->modelist);
+ 		error = register_framebuffer(info);
+ 		if (error < 0)
+ 			goto err1;
 -- 
-1.6.3.2
+1.7.1
 

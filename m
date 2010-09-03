@@ -1,55 +1,36 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Wed, 22 Sep 2010 19:35:41 +0000
-Subject: Re: [Patch, RFC] Make struct fb_info ref-counted with kref
-Message-Id: <20100922213541.09452849@neptune.home>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 03 Sep 2010 07:19:45 +0000
+Subject: [PATCH 00/15] ARM: mach-shmobile: HDMI hot-plug and improvements
+Message-Id: <Pine.LNX.4.64.1009030856020.2883@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100919172833.14bf291e@neptune.home>
-	<4C963E99.9080207@gmx.de>
-	<20100919190240.65762511@neptune.home>
-	<4C97B079.8050707@gmx.de>
-	<20100920213258.1218b284@neptune.home>
-	<4C97BF40.6030708@gmx.de>
-	<20100920223608.19b4d177@neptune.home>
-	<4C97E00B.6090103@gmx.de>
-	<20100921075610.1c016c12@pluto.restena.lu>
-	<4C985309.5020205@gmx.de>
-	<20100921090255.410da2d7@pluto.restena.lu>
-	<alpine.LFD.2.00.1009221829590.25874@casper.infradead.org>
-	<20100922203927.6ff60f7b@neptune.home>
-	<alpine.LFD.2.00.1009222013390.25874@casper.infradead.org>
-In-Reply-To: <alpine.LFD.2.00.1009222013390.25874@casper.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Bernie Thompson <bernie@plugable.com>
+To: linux-fbdev@vger.kernel.org
 
-On Wed, 22 September 2010 James Simmons <jsimmons@infradead.org> wrote:
-> > > I have a tree at
-> > > 
-> > > http://git.infradead.org/users/jsimmons/linuxconsole-2.6.git
-> > > 
-> > > but currently fbcon is broken so I'm tracing down the problem.
-> > 
-> > Thanks for the reference to your tree!
-> > 
-> > What's you opinion regarding my changes to fbcon in my RFC patch?
-> > Are they ok or would you prefer having fbcon changed to stop peeking
-> > at registered_fb list and just operate directly on fb_info everywhere
-> > it needs it? (that is let con2fb_map[] point to fb_info instead of
-> > indexes into registered_fb? (I have a preference for the second one
-> > and will try it out)
-> 
-> I'm aiming to kill off registered_fb. I agree that fb_info should be used 
-> directly and we can avoid the ref-count. As for con2fb_map that is a 
-> little more complex. 
+The main purpose of this patch set is supporting dynamic framebuffer 
+reconfiguration upon monitor hot-plug. The good thing is - it works. The 
+not so good thing is - only to the extent, that the current fbdev API 
+allows. Specifically, there is currently no possibility under the fbdev 
+API to inform framebuffer users about a changed framebuffer configuration, 
+as can easily be the case, when a new monitor has been plugged in. It is, 
+however, possible to inform in-kernel framebuffer users, e.g., the fbcon 
+console, about such a change, using framebuffer notifications. This patch 
+series implements support for monitor hot-plug on the hardware level, 
+i.e., the LCD and HDMI controllers get reconfigured for a new device. The 
+user configuration remains untouched. With this approach with a new 
+monitor plugged in, the user either gets to see the upper left corner of 
+the framebuffer image, or the whole framebuffer will be displayed in the 
+upper left corner of the display.
 
-Refcounting can't be fully avoided on fb side but certainly can be on
-(most of) fbcon side (except around fbcon's calls to fbops.fb_open and
-fbops.fb_release).
+The patch series also contains a number of improvements to both the lcdc 
+and hdmi SH-Mobile drivers.
 
-Will attempt the fbcon change as a separate patch my ref-counted fb_info
-patch will depend on. (will probably happen during week-end)
+Based on the current (commit 410d878b) genesis-2.6/master tree.
 
-Thanks,
-Bruno
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/

@@ -1,73 +1,136 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 19 Sep 2010 07:26:05 +0000
-Subject: [PATCH 00/12] viafb output device rework - part 2
-Message-Id: <cover.1284879532.git.FlorianSchandinat@gmx.de>
+From: Peter Jones <pjones@redhat.com>
+Date: Thu, 09 Sep 2010 19:16:49 +0000
+Subject: [PATCH 2/2] efifb: support the EFI framebuffer on more Apple hardware
+Message-Id: <1284059809-9973-2-git-send-email-pjones@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1284059809-9973-1-git-send-email-pjones@redhat.com>
+In-Reply-To: <1284059809-9973-1-git-send-email-pjones@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Luke Macken <lmacken@redhat.com>, Peter Jones <pjones@redhat.com>
 
-Hi,
+From: Luke Macken <lmacken@redhat.com>
 
-this part of the patch series has finally a huge impact on the user
-experience:
+This patch enables the EFI framebuffer on 14 more Macs, including the
+iMac11,1 iMac10,1 iMac8,1 Macmini3,1 Macmini4,1 MacBook5,1 MacBook6,1
+MacBook7,1 MacBookPro2,2 MacBookPro5,2 MacBookPro5,3 MacBookPro6,1
+MacBookPro6,2 and MacBookPro7,1
 
-- A new/extended interface in proc allows enabling/disabling of output
-  devices during runtime
+Information gathered from various user submissions.
 
-- The device initialization time is significant shorter after reducing
-  I2C timing values to a sane limit
+    https://bugzilla.redhat.com/show_bug.cgi?idR8232
+    http://ubuntuforums.org/showthread.php?t57326
 
-- A regression is fixed that prevented detection of VT1636 chips and
-  therefore broke the framebuffer in such configurations
+Signed-off-by: Luke Macken <lmacken@redhat.com>
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ drivers/video/efifb.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 42 insertions(+), 0 deletions(-)
 
-But it contains also a lot of changes in the background that will
-(hopefully) lead to a better future.
-
-The complete patch series until now can also be found at
-	git://github.com/schandinat/linux-2.6.git viafb-s3v1
-
-As usual, some tests were performed on CLE266, VX800 and VX855.
-
-Any opinions/suggestions?
-
-
-Have fun,
-
-Florian Tobias Schandinat
-
-
-Florian Tobias Schandinat (12):
-  viafb: add interface for output device configuration
-  viafb: limit LCD code impact
-  viafb: introduce per output device power management
-  viafb: vt1636 cleanup
-  viafb: fix i2c_transfer error handling
-  viafb: enable I2C for CRT
-  viafb: reduce I2C timeout and delay
-  viafb: add function to change sync polarity per device
-  viafb: set sync polarity for all output devices
-  viafb: add a mapping of supported output devices
-  viafb: rename output devices
-  viafb: add documentation for proc interface
-
- Documentation/fb/viafb.txt   |   48 ++++++++
- drivers/video/via/Makefile   |    2 +-
- drivers/video/via/dvi.c      |   25 +----
- drivers/video/via/global.h   |    1 -
- drivers/video/via/hw.c       |  265 ++++++++++++++++++++++++++++++++++++------
- drivers/video/via/hw.h       |   30 ++++-
- drivers/video/via/lcd.c      |   41 -------
- drivers/video/via/tbl1636.c  |   71 -----------
- drivers/video/via/tbl1636.h  |   34 ------
- drivers/video/via/via-core.c |    2 +-
- drivers/video/via/via_i2c.c  |   31 ++++-
- drivers/video/via/viafbdev.c |  225 ++++++++++++++++++++++++++++++++----
- drivers/video/via/viafbdev.h |    2 +
- drivers/video/via/vt1636.c   |  121 +++++++-------------
- 14 files changed, 576 insertions(+), 322 deletions(-)
- delete mode 100644 drivers/video/via/tbl1636.c
- delete mode 100644 drivers/video/via/tbl1636.h
+diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
+index c082b61..254b282 100644
+--- a/drivers/video/efifb.c
++++ b/drivers/video/efifb.c
+@@ -39,17 +39,31 @@ enum {
+ 	M_I20,		/* 20-Inch iMac */
+ 	M_I20_SR,	/* 20-Inch iMac (Santa Rosa) */
+ 	M_I24,		/* 24-Inch iMac */
++	M_I24_8_1,	/* 24-Inch iMac, 8,1th gen */
++	M_I24_10_1,	/* 24-Inch iMac, 10,1th gen */
++	M_I27_11_1,	/* 27-Inch iMac, 11,1th gen */
+ 	M_MINI,		/* Mac Mini */
++	M_MINI_3_1,	/* Mac Mini, 3,1th gen */
++	M_MINI_4_1,	/* Mac Mini, 4,1th gen */
+ 	M_MB,		/* MacBook */
+ 	M_MB_2,		/* MacBook, 2nd rev. */
+ 	M_MB_3,		/* MacBook, 3rd rev. */
++	M_MB_5_1,	/* MacBook, 5th rev. */
++	M_MB_6_1,	/* MacBook, 6th rev. */
++	M_MB_7_1,	/* MacBook, 7th rev. */
+ 	M_MB_SR,	/* MacBook, 2nd gen, (Santa Rosa) */
+ 	M_MBA,		/* MacBook Air */
+ 	M_MBP,		/* MacBook Pro */
+ 	M_MBP_2,	/* MacBook Pro 2nd gen */
++	M_MBP_2_2,	/* MacBook Pro 2,2nd gen */
+ 	M_MBP_SR,	/* MacBook Pro (Santa Rosa) */
+ 	M_MBP_4,	/* MacBook Pro, 4th gen */
+ 	M_MBP_5_1,    /* MacBook Pro, 5,1th gen */
++	M_MBP_5_2,	/* MacBook Pro, 5,2th gen */
++	M_MBP_5_3,	/* MacBook Pro, 5,3rd gen */
++	M_MBP_6_1,	/* MacBook Pro, 6,1th gen */
++	M_MBP_6_2,	/* MacBook Pro, 6,2th gen */
++	M_MBP_7_1,	/* MacBook Pro, 7,1th gen */
+ 	M_UNKNOWN	/* placeholder */
+ };
+ 
+@@ -64,14 +78,28 @@ static struct efifb_dmi_info {
+ 	[M_I20] = { "i20", 0x80010000, 1728 * 4, 1680, 1050 }, /* guess */
+ 	[M_I20_SR] = { "imac7", 0x40010000, 1728 * 4, 1680, 1050 },
+ 	[M_I24] = { "i24", 0x80010000, 2048 * 4, 1920, 1200 }, /* guess */
++	[M_I24_8_1] = { "imac8", 0xc0060000, 2048 * 4, 1920, 1200 },
++	[M_I24_10_1] = { "imac10", 0xc0010000, 2048 * 4, 1920, 1080 },
++	[M_I27_11_1] = { "imac11", 0xc0010000, 2560 * 4, 2560, 1440 },
+ 	[M_MINI]= { "mini", 0x80000000, 2048 * 4, 1024, 768 },
++	[M_MINI_3_1]= { "mini31", 0x40010000, 1024 * 4, 1024, 768 },
++	[M_MINI_4_1]= { "mini41", 0xc0010000, 2048 * 4, 1920, 1200 },
+ 	[M_MB] = { "macbook", 0x80000000, 2048 * 4, 1280, 800 },
++	[M_MB_5_1] = { "macbook51", 0x80010000, 2048 * 4, 1280, 800 },
++	[M_MB_6_1] = { "macbook61", 0x80010000, 2048 * 4, 1280, 800 },
++	[M_MB_7_1] = { "macbook71", 0x80010000, 2048 * 4, 1280, 800 },
+ 	[M_MBA] = { "mba", 0x80000000, 2048 * 4, 1280, 800 },
+ 	[M_MBP] = { "mbp", 0x80010000, 1472 * 4, 1440, 900 },
+ 	[M_MBP_2] = { "mbp2", 0, 0, 0, 0 }, /* placeholder */
++	[M_MBP_2_2] = { "mbp22", 0x80010000, 1472 * 4, 1440, 900 },
+ 	[M_MBP_SR] = { "mbp3", 0x80030000, 2048 * 4, 1440, 900 },
+ 	[M_MBP_4] = { "mbp4", 0xc0060000, 2048 * 4, 1920, 1200 },
+ 	[M_MBP_5_1] = { "mbp51", 0xc0010000, 2048 * 4, 1440, 900 },
++	[M_MBP_5_2] = { "mbp52", 0xc0010000, 2048 * 4, 1920, 1200 },
++	[M_MBP_5_3] = { "mbp53", 0xd0010000, 2048 * 4, 1440, 900 },
++	[M_MBP_6_1] = { "mbp61", 0x90030000, 2048 * 4, 1920, 1200 },
++	[M_MBP_6_2] = { "mbp62", 0x90030000, 2048 * 4, 1680, 1050 },
++	[M_MBP_7_1] = { "mbp71", 0xc0010000, 2048 * 4, 1280, 800 },
+ 	[M_UNKNOWN] = { NULL, 0, 0, 0, 0 }
+ };
+ 
+@@ -92,7 +120,12 @@ static const struct dmi_system_id dmi_system_table[] __initconst = {
+ 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "iMac6,1", M_I24),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "iMac6,1", M_I24),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "iMac7,1", M_I20_SR),
++	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "iMac8,1", M_I24_8_1),
++	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "iMac10,1", M_I24_10_1),
++	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "iMac11,1", M_I27_11_1),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "Macmini1,1", M_MINI),
++	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "Macmini3,1", M_MINI_3_1),
++	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "Macmini4,1", M_MINI_4_1),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "MacBook1,1", M_MB),
+ 	/* At least one of these two will be right; maybe both? */
+ 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "MacBook2,1", M_MB),
+@@ -101,14 +134,23 @@ static const struct dmi_system_id dmi_system_table[] __initconst = {
+ 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "MacBook3,1", M_MB),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBook3,1", M_MB),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBook4,1", M_MB),
++	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBook5,1", M_MB_5_1),
++	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBook6,1", M_MB_6_1),
++	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBook7,1", M_MB_7_1),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBookAir1,1", M_MBA),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "MacBookPro1,1", M_MBP),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "MacBookPro2,1", M_MBP_2),
++	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "MacBookPro2,2", M_MBP_2_2),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBookPro2,1", M_MBP_2),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "MacBookPro3,1", M_MBP_SR),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBookPro3,1", M_MBP_SR),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBookPro4,1", M_MBP_4),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBookPro5,1", M_MBP_5_1),
++	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBookPro5,2", M_MBP_5_2),
++	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBookPro5,3", M_MBP_5_3),
++	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBookPro6,1", M_MBP_6_1),
++	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBookPro6,2", M_MBP_6_2),
++	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBookPro7,1", M_MBP_7_1),
+ 	{},
+ };
+ 
+-- 
+1.7.2.2
 

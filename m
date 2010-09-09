@@ -1,102 +1,58 @@
-From: James Simmons <jsimmons@infradead.org>
-Date: Wed, 15 Sep 2010 19:02:27 +0000
-Subject: Re: [PATCH 21/25] drivers/video: Use static const char arrays
-Message-Id: <alpine.LFD.2.00.1009152002090.7965@casper.infradead.org>
+From: James Hogan <james@albanarts.com>
+Date: Thu, 09 Sep 2010 22:38:43 +0000
+Subject: fb_write unaligned writes
+Message-Id: <201009092338.59880.james@albanarts.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="nextPart6423560.VPvvt7sj25"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1284406638.git.joe@perches.com> <2435a9f5831685e3b7f06b93799a8836f4bfef61.1284406639.git.joe@perches.com>
-In-Reply-To: <2435a9f5831685e3b7f06b93799a8836f4bfef61.1284406639.git.joe@perches.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Winischhofer <thomas@winischhofer.net>, Joseph Chan <JosephChan@via.com.tw>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
+--nextPart6423560.VPvvt7sj25
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-> Signed-off-by: Joe Perches <joe@perches.com>
+Hi,
 
-Acked-by: James Simmons <jsimmons@infradead.org>
+I came across a problem in fb_write (drivers/video/fbmem.c) which doesn't m=
+ake=20
+any effort to avoid unaligned writes. It copies up to a page at a time from=
+=20
+userspace into a buffer, then fb_writel's as much as possible from the buff=
+er=20
+into the framebuffer, then fb_writeb's any remaining bytes. However on=20
+architectures which don't perform unaligned writes this can cause a bus err=
+or=20
+or silently fail when it tries to fb_writel to an unaligned framebuffer=20
+position.
 
-> ---
->  drivers/video/sh_mipi_dsi.c  |    4 ++--
->  drivers/video/sis/sis_main.c |   10 +++++-----
->  drivers/video/via/viafbdev.c |    2 +-
->  3 files changed, 8 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
-> index 5699ce0..4a8501b 100644
-> --- a/drivers/video/sh_mipi_dsi.c
-> +++ b/drivers/video/sh_mipi_dsi.c
-> @@ -319,7 +319,7 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
->  	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->  	unsigned long rate, f_current;
->  	int idx = pdev->id, ret;
-> -	char dsip_clk[] = "dsi.p_clk";
-> +	char dsip_clk[sizeof("dsiXp_clk")];
->  
->  	if (!res || idx >= ARRAY_SIZE(mipi_dsi) || !pdata)
->  		return -ENODEV;
-> @@ -370,7 +370,7 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
->  
->  	dev_dbg(&pdev->dev, "DSI-T clk %lu -> %lu\n", f_current, rate);
->  
-> -	sprintf(dsip_clk, "dsi%1.1dp_clk", idx);
-> +	sprintf(dsip_clk, "dsi%cp_clk", idx + '0');
->  	mipi->dsip_clk = clk_get(&pdev->dev, dsip_clk);
->  	if (IS_ERR(mipi->dsip_clk)) {
->  		ret = PTR_ERR(mipi->dsip_clk);
-> diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
-> index 559bf17..4be65d1 100644
-> --- a/drivers/video/sis/sis_main.c
-> +++ b/drivers/video/sis/sis_main.c
-> @@ -2387,8 +2387,8 @@ SiS_Sense30x(struct sis_video_info *ivideo)
->      u16 cvbs=0, cvbs_c=0;
->      u16 vga2=0, vga2_c=0;
->      int myflag, result;
-> -    char stdstr[] = "sisfb: Detected";
-> -    char tvstr[]  = "TV connected to";
-> +    static const char stdstr[] = "sisfb: Detected";
-> +    static const char tvstr[] = "TV connected to";
->  
->      if(ivideo->vbflags2 & VB2_301) {
->         svhs = 0x00b9; cvbs = 0x00b3; vga2 = 0x00d1;
-> @@ -2525,7 +2525,7 @@ SiS_SenseCh(struct sis_video_info *ivideo)
->  {
->  #if defined(CONFIG_FB_SIS_300) || defined(CONFIG_FB_SIS_315)
->      u8 temp1, temp2;
-> -    char stdstr[] = "sisfb: Chrontel: Detected TV connected to";
-> +    static const char stdstr[] = "sisfb: Chrontel: Detected TV connected to";
->  #endif
->  #ifdef CONFIG_FB_SIS_300
->      unsigned char test[3];
-> @@ -2648,8 +2648,8 @@ SiS_SenseCh(struct sis_video_info *ivideo)
->  static void __devinit
->  sisfb_get_VB_type(struct sis_video_info *ivideo)
->  {
-> -	char stdstr[]    = "sisfb: Detected";
-> -	char bridgestr[] = "video bridge";
-> +	static const char stdstr[] = "sisfb: Detected";
-> +	static const char bridgestr[] = "video bridge";
->  	u8 vb_chipid;
->  	u8 reg;
->  
-> diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-> index 5a947b0..394ef48 100644
-> --- a/drivers/video/via/viafbdev.c
-> +++ b/drivers/video/via/viafbdev.c
-> @@ -367,7 +367,7 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
->  	} u;
->  	u32 state_info = 0;
->  	u32 *viafb_gamma_table;
-> -	char driver_name[] = "viafb";
-> +	static const char driver_name[] = "viafb";
->  
->  	u32 __user *argp = (u32 __user *) arg;
->  	u32 gpu32;
-> -- 
-> 1.7.3.rc1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+My question is how best should this be fixed? I know I could avoid writing=
+=20
+more than 3 bytes to an unaligned framebuffer offset, but the standard writ=
+e=20
+syscall should be able to handle this, and Documentation/unaligned-memory-
+access.txt makes it clear that unaligned accesses are to be avoided and wit=
+h=20
+good reason.
+
+Is it possible to just copy_from_user straight into the framebuffer, or sho=
+uld=20
+I define an fb_memcpy to go with the other definitions around line 925 of=20
+include/linux/fb.h, or something else?
+
+Thanks
+James
+
+--nextPart6423560.VPvvt7sj25
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.14 (GNU/Linux)
+
+iEYEABECAAYFAkyJYgMACgkQ4hGc8zKz77AnCQCeIXxFe4ECeKxiyJC3066b2C3f
+PXcAn3ZXIV/OCX6UGiPB6poQ3vJNeZ85
+=zW/Q
+-----END PGP SIGNATURE-----
+
+--nextPart6423560.VPvvt7sj25--

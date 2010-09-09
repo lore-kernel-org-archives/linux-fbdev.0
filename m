@@ -1,88 +1,42 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Tue, 07 Sep 2010 23:20:29 +0000
-Subject: Re: [RFC] viafb: add interface for output device configuration
-Message-Id: <4C86C8BD.2080703@gmx.de>
+From: Randy Dunlap <rdunlap@xenotime.net>
+Date: Thu, 09 Sep 2010 22:54:36 +0000
+Subject: Re: Framebuffer HOWTO 1.3 released
+Message-Id: <20100909155436.2b1bff1f.rdunlap@xenotime.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1283813290-3384-1-git-send-email-FlorianSchandinat@gmx.de> <20100907155301.d97c85c7.akpm@linux-foundation.org>
-In-Reply-To: <20100907155301.d97c85c7.akpm@linux-foundation.org>
+References: <20090208090844.7a27d740@lithium.local.net>
+In-Reply-To: <20090208090844.7a27d740@lithium.local.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Joseph Chan <JosephChan@via.com.tw>, Jonathan Corbet <corbet@lwn.net>
+To: Alex Buell <alex.buell@munted.org.uk>, linux-fbdev@vger.kernel.org
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Andrew Morton schrieb:
-> On Mon,  6 Sep 2010 22:48:10 +0000
-> Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
-> 
->> viafb: add interface for output device configuration
->>
->> This patch extends the proc entry to contain a possibility to view and
->> change the output devices for each IGA. This is useful for debugging
->> output problems as it provides a reliable way to query which low level
->> devices are active after VIAs output device configuration nightmare
->> happended. It's as well suitable for daily use as one can change the
->> output configuration on the fly for example to connect a projector.
->> At the moment it's still unstable. The reason is that we have to handle
->> a bunch of undocumented output devices (those without a proper name) and
->> that this patch is the first step to collect and verify the needed
->> information. Basically the only configuration change that is expected to
->> work at the moment is switching output devices between IGA1 and IGA2.
->>
->> ...
->>  
->> +u32 via_parse_odev(char *input, char **end)
->> +{
->> +	char *ptr = input;
->> +	u32 odev = 0;
->> +	bool next = true;
->> +	int i, len;
->> +
->> +	while (next) {
->> +		next = false;
->> +		for (i = 0; i < ARRAY_SIZE(device_mapping); i++) {
->> +			len = strlen(device_mapping[i].name);
->> +			if (!strncmp(ptr, device_mapping[i].name, len)) {
->> +				odev |= device_mapping[i].device;
->> +				ptr += len;
->> +				if (*ptr = ',') {
->> +					ptr++;
->> +					next = true;
->> +				}
->> +			}
->> +		}
->> +	}
->> +
->> +	*end = ptr;
->> +	return odev;
->> +}
-> 
-> So people must decrypt the above code
-> 
->> +		iga1_entry = proc_mkdir("iga1", viafb_entry);
->> +		shared->iga1_proc_entry = iga1_entry;
->> +		proc_create("output_devices", 0, iga1_entry,
->> +			&viafb_iga1_odev_proc_fops);
->> +		iga2_entry = proc_mkdir("iga2", viafb_entry);
->> +		shared->iga2_proc_entry = iga2_entry;
->> +		proc_create("output_devices", 0, iga2_entry,
->> +			&viafb_iga2_odev_proc_fops);
->>  	}
-> 
-> to work out what to write into these?
-> 
-> Can we have a wee bit of documetnation, please?  At least in the
-> changelog, but Documentation/fb/viafb.txt would be a better place.
+On Sun, 8 Feb 2009 09:08:44 +0000 Alex Buell wrote:
 
-Of course. I just wanted to make sure that the interface is sane and reasonable 
-and improve the code to do the right thing at least in most of the cases before 
-writing proper documentation for it. I hope that I can achieve the first with 
-this e-mail and for the later I just prepared a patch which I'm testing at the 
-moment. If there are no objections against this interface I hope I can send a 
-complete patch series including this patch, major improvements and documentation 
-within a week.
+> Hi,
+> 
+> I've dug out my original Framebuffer HOWTO sgml document written during
+> the late 1990s, and have updated it with current e-mail address. You
+> can grab it from here:
+> http://www.munted.org.uk/programming/Framebuffer-HOWTO-1.3.html
+
+Hi Alex,
+
+cc-ing linux-fbdev@vger.kernel.org for posterity.
+
+That file (*.html) above is actually a tar.gz file.
+Could you rename it so that tools actually work with it?
+
+or better yet, could you put the html files on a (or your) server
+for viewing?
+
+Thanks.
+
+> This document dates back to the 2.2.x kernel days, but I have plans to
+> bring it fully up to date. If anyone is interested in helping out with
+> this, please drop me an e-mail. 
 
 
-Thanks,
-
-Florian Tobias Schandinat
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***

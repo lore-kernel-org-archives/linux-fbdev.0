@@ -1,89 +1,138 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 19 Sep 2010 07:39:57 +0000
-Subject: [PATCH 12/12] viafb: add documentation for proc interface
-Message-Id: <7cc0ccf5d629b9788f86d1e745ac532d5847e2dd.1284879533.git.FlorianSchandinat@gmx.de>
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Date: Sat, 11 Sep 2010 01:38:39 +0000
+Subject: [RESEND][PATCH] LEDS: Add output invertion option to backlight trigger
+Message-Id: <201009110338.40879.jkrzyszt@tis.icnet.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <a20caff43626418b91187e476905ebc7cd974701.1284879533.git.FlorianSchandinat@gmx.de>
-In-Reply-To: <a20caff43626418b91187e476905ebc7cd974701.1284879533.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>, Jonathan Corbet <corbet@lwn.net>, Andrew Morton <akpm@linux-foundation.org>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-kernel@vger.kernel.org, e3-hacking@earth.li
 
-viafb: add documentation for proc interface
+This patch extends the LED backlight tirgger driver with an option that allows 
+for inverting the trigger output polarity.
 
-This patch adds documentation for the new proc interface that allows
-modification of the output device configuration. Should be stable and
-useful enough now for daily use.
+Whith the invertion option provided, I (ab)use the backlight trigger for 
+driving a led that indicates LCD display blank condtition on my Amstrad Delta 
+videophone. Since the machine has no dedicated power LED, it was not possible 
+to distinguish if its display was blanked or it was turned off, without 
+touching it.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Joseph Chan <JosephChan@via.com.tw>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+The invert sysfs control is modeled after a similiar function provided by the 
+gpio trigger driver.
+
+Created and tested against linux-2.6.35-rc3 on Amstrad Delta.
+Re-tested against linux-2.6.36-rc3.
+
+Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
 ---
- Documentation/fb/viafb.txt |   48 ++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 48 insertions(+), 0 deletions(-)
+ drivers/leds/ledtrig-backlight.c |   59 ++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 55 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/fb/viafb.txt b/Documentation/fb/viafb.txt
-index f3e046a..1a2e8aa 100644
---- a/Documentation/fb/viafb.txt
-+++ b/Documentation/fb/viafb.txt
-@@ -197,6 +197,54 @@ Notes:
-        example,
-            # fbset -depth 16
+diff -uprN git/drivers/leds/ledtrig-backlight.c git/drivers/leds/ledtrig-backlight.c
+--- git/drivers/leds/ledtrig-backlight.c	2010-06-15 18:01:50.000000000 +0200
++++ git/drivers/leds/ledtrig-backlight.c	2010-06-23 02:48:44.000000000 +0200
+@@ -26,6 +26,7 @@ struct bl_trig_notifier {
+ 	int brightness;
+ 	int old_status;
+ 	struct notifier_block notifier;
++	unsigned invert;
+ };
  
+ static int fb_notifier_callback(struct notifier_block *p,
+@@ -39,13 +40,15 @@ static int fb_notifier_callback(struct n
+ 
+ 	switch (event) {
+ 	case FB_EVENT_BLANK :
+-		if (*blank && n->old_status = UNBLANK) {
++		if ((!n->invert && *blank && n->old_status = UNBLANK) ||
++			    (n->invert && !*blank && n->old_status = BLANK)) {
+ 			n->brightness = led->brightness;
+ 			led_set_brightness(led, LED_OFF);
+-			n->old_status = BLANK;
+-		} else if (!*blank && n->old_status = BLANK) {
++			n->old_status = n->invert ? UNBLANK : BLANK;
++		} else if ((!n->invert && !*blank && n->old_status = BLANK) ||
++			    (n->invert && *blank && n->old_status = UNBLANK)) {
+ 			led_set_brightness(led, n->brightness);
+-			n->old_status = UNBLANK;
++			n->old_status = n->invert ? BLANK : UNBLANK;
+ 		}
+ 		break;
+ 	}
+@@ -53,6 +56,43 @@ static int fb_notifier_callback(struct n
+ 	return 0;
+ }
+ 
++static ssize_t bl_trig_invert_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct led_classdev *led = dev_get_drvdata(dev);
++	struct bl_trig_notifier *n = led->trigger_data;
 +
-+[Configure viafb via /proc]
-+---------------------------
-+    The following files exist in /proc/viafb
++	return sprintf(buf, "%s\n", n->invert ? "yes" : "no");
++}
 +
-+    supported_output_devices
++static ssize_t bl_trig_invert_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t num)
++{
++	struct led_classdev *led = dev_get_drvdata(dev);
++	struct bl_trig_notifier *n = led->trigger_data;
++	unsigned invert;
++	int ret;
 +
-+        This read-only file contains a full ',' seperated list containing all
-+        output devices that could be available on your platform. It is likely
-+        that not all of those have a connector on your hardware but it should
-+        provide a good starting point to figure out which of those names match
-+        a real connector.
-+        Example:
-+        # cat /proc/viafb/supported_output_devices
++	ret = sscanf(buf, "%u", &invert);
++	if (ret < 1) {
++		dev_err(dev, "invalid value\n");
++		return -EINVAL;
++	}
 +
-+    iga1/output_devices
-+    iga2/output_devices
++	n->invert = !!invert;
 +
-+        These two files are readable and writable. iga1 and iga2 are the two
-+        independent units that produce the screen image. Those images can be
-+        forwarded to one or more output devices. Reading those files is a way
-+        to query which output devices are currently used by an iga.
-+        Example:
-+        # cat /proc/viafb/iga1/output_devices
-+        If there are no output devices printed the output of this iga is lost.
-+        This can happen for example if only one (the other) iga is used.
-+        Writing to these files allows adjusting the output devices during
-+        runtime. One can add new devices, remove existing ones or switch
-+        between igas. Essentially you can write a ',' seperated list of device
-+        names (or a single one) in the same format as the output to those
-+        files. You can add a '+' or '-' as a prefix allowing simple addition
-+        and removal of devices. So a prefix '+' adds the devices from your list
-+        to the already existing ones, '-' removes the listed devices from the
-+        existing ones and if no prefix is given it replaces all existing ones
-+        with the listed ones. If you remove devices they are expected to turn
-+        off. If you add devices that are already part of the other iga they are
-+        removed there and added to the new one.
-+        Examples:
-+        Add CRT as output device to iga1
-+        # echo +CRT > /proc/viafb/iga1/output_devices
++	/* After inverting, we need to update the LED. */
++	if ((!n->invert && n->old_status = UNBLANK) ||
++			(n->invert && n->old_status = BLANK))
++		led_set_brightness(led, n->brightness);
++	else if ((!n->invert && n->old_status = BLANK) ||
++			(n->invert && n->old_status = UNBLANK))
++		led_set_brightness(led, LED_OFF);
 +
-+        Remove (turn off) DVP1 and LVDS1 as output devices of iga2
-+        # echo -DVP1,LVDS1 > /proc/viafb/iga2/output_devices
++	return num;
++}
++static DEVICE_ATTR(invert, 0644, bl_trig_invert_show, bl_trig_invert_store);
 +
-+        Replace all iga1 output devices by CRT
-+        # echo CRT > /proc/viafb/iga1/output_devices
+ static void bl_trig_activate(struct led_classdev *led)
+ {
+ 	int ret;
+@@ -66,6 +106,10 @@ static void bl_trig_activate(struct led_
+ 		return;
+ 	}
+ 
++	ret = device_create_file(led->dev, &dev_attr_invert);
++	if (ret)
++		goto err_invert;
 +
+ 	n->led = led;
+ 	n->brightness = led->brightness;
+ 	n->old_status = UNBLANK;
+@@ -74,6 +118,12 @@ static void bl_trig_activate(struct led_
+ 	ret = fb_register_client(&n->notifier);
+ 	if (ret)
+ 		dev_err(led->dev, "unable to register backlight trigger\n");
 +
- [Bootup with viafb]:
- --------------------
-     Add the following line to your grub.conf:
--- 
-1.6.3.2
-
++	return;
++
++err_invert:
++	led->trigger_data = NULL;
++	kfree(n);
+ }
+ 
+ static void bl_trig_deactivate(struct led_classdev *led)
+@@ -82,6 +132,7 @@ static void bl_trig_deactivate(struct le
+ 		(struct bl_trig_notifier *) led->trigger_data;
+ 
+ 	if (n) {
++		device_remove_file(led->dev, &dev_attr_invert);
+ 		fb_unregister_client(&n->notifier);
+ 		kfree(n);
+ 	}

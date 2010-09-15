@@ -1,74 +1,44 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Fri, 24 Sep 2010 04:51:10 +0000
-Subject: [PATCH 3/4] viafb: make suspend and resume work (on all machines?)
-Message-Id: <03ab435ce9986f547029ef728ddf6e7e12002a3f.1285303223.git.FlorianSchandinat@gmx.de>
+From: Jing Liu <jing.liu.linux@gmail.com>
+Date: Wed, 15 Sep 2010 18:35:39 +0000
+Subject: [PATCH] s3c-fb: fix spinlock lockup
+Message-Id: <1284575739.24018.19.camel@ubuntu64.ipb.online.sh.cn>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1285303222.git.FlorianSchandinat@gmx.de>
-In-Reply-To: <cover.1285303222.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>, Jonathan Corbet <corbet@lwn.net>
+To: linux-arm-kernel@lists.infradead.org
 
-This patch removes the dangerous suspend and resume code that was
-developed for VX855 only. After this the framebuffer is expected to
-cause no longer serious (freezing) issues on any machines.
-However the hardware acceleration is broken now so only doing resume
-with unaccelerated framebuffers is save. This did not work previously
-as the 2D engine is not mapped if the framebuffer is not accelerated.
-The acceleration issue will be addressed later.
+This patch fixes spinlock lockup caused by calling request_irq before
+init_waitqueue_head in s3c-fb.c.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Joseph Chan <JosephChan@via.com.tw>
-Cc: Jonathan Corbet <corbet@lwn.net>
+This patch has been tested on SmartQ5.
+
+
+Signed-off-by: Jing Liu <jing.liu.linux at gmail.com>
 ---
- drivers/video/via/viafbdev.c |   10 ----------
- drivers/video/via/viafbdev.h |    3 ---
- 2 files changed, 0 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 5b23293..c4218ce 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -1491,11 +1491,6 @@ int viafb_suspend(struct pci_dev *pdev, pm_message_t state)
- {
- 	if (state.event = PM_EVENT_SUSPEND) {
- 		acquire_console_sem();
--
--		memcpy_fromio(viaparinfo->shared->saved_regs,
--			      viaparinfo->shared->vdev->engine_mmio + 0x100,
--			      0xff * sizeof(u32));
--
- 		fb_set_suspend(viafbinfo, 1);
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index f9aca9d..980ad04 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -1160,8 +1160,6 @@ static int __devinit s3c_fb_probe_win(struct
+s3c_fb *sfb, unsigned int win_no,
  
- 		viafb_sync(viafbinfo);
-@@ -1517,11 +1512,6 @@ int viafb_resume(struct pci_dev *pdev)
- 	if (pci_enable_device(pdev))
- 		goto fail;
- 	pci_set_master(pdev);
--
--	memcpy_toio(viaparinfo->shared->vdev->engine_mmio + 0x100,
--		    viaparinfo->shared->saved_regs,
--		    0x100 * sizeof(u32));
--
- 	viafb_set_par(viafbinfo);
- 	if (viafb_dual_fb)
- 		viafb_set_par(viafbinfo1);
-diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
-index 3bcae0a..be2fad6 100644
---- a/drivers/video/via/viafbdev.h
-+++ b/drivers/video/via/viafbdev.h
-@@ -57,9 +57,6 @@ struct viafb_shared {
- 		u8 dst_bpp, u32 dst_addr, u32 dst_pitch, u32 dst_x, u32 dst_y,
- 		u32 *src_mem, u32 src_addr, u32 src_pitch, u32 src_x, u32 src_y,
- 		u32 fg_color, u32 bg_color, u8 fill_rop);
--
--	/* For suspend/resume */
--	u32 saved_regs[0x100];
- };
+ 	dev_dbg(sfb->dev, "probing window %d, variant %p\n", win_no, variant);
  
- struct viafb_par {
--- 
-1.6.3.2
+-	init_waitqueue_head(&sfb->vsync_info.wait);
+-
+ 	palette_size = variant->palette_sz * 4;
+ 
+ 	fbinfo = framebuffer_alloc(sizeof(struct s3c_fb_win) +
+@@ -1351,6 +1349,9 @@ static int __devinit s3c_fb_probe(struct
+platform_device *pdev)
+ 		goto err_ioremap;
+ 	}
+ 	sfb->irq_no = res->start;
++
++	init_waitqueue_head(&sfb->vsync_info.wait);
++
+ 	ret = request_irq(sfb->irq_no, s3c_fb_irq,
+ 			  0, "s3c_fb", sfb);
+ 	if (ret) {
 

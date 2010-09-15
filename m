@@ -1,18 +1,17 @@
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Mon, 13 Sep 2010 22:35:40 +0000
+From: James Simmons <jsimmons@infradead.org>
+Date: Wed, 15 Sep 2010 19:01:43 +0000
 Subject: Re: [PATCH] fbcon: fix lockdep warning from fbcon_deinit()
-Message-Id: <20100913223540.GB2176@del.dom.local>
+Message-Id: <alpine.LFD.2.00.1009152000220.7965@casper.infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100913215850.GA2176@del.dom.local>
- <20100913152127.c2328034.akpm@linux-foundation.org>
+References: <20100913215850.GA2176@del.dom.local> <20100913152127.c2328034.akpm@linux-foundation.org>
 In-Reply-To: <20100913152127.c2328034.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Jarek Poplawski <jarkao2@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Sep 13, 2010 at 03:21:27PM -0700, Andrew Morton wrote:
+
 > On Mon, 13 Sep 2010 23:58:50 +0200
 > Jarek Poplawski <jarkao2@gmail.com> wrote:
 > 
@@ -75,9 +74,9 @@ On Mon, Sep 13, 2010 at 03:21:27PM -0700, Andrew Morton wrote:
 > 
 > But all that code looks really hacky, fiddling around inside workqueue
 > internals as a driver-private state variable.  Needs a rewrite, I suspect.
-> 
 
-Sure, it's a fast hack. Proper fix, or at least verifying if there
-could more such uninitialized things, is welcome.
+You are not kidding. I just started to tackle that mess. Currently fbcon 
+is broken in my tree but I plan to get in going again in the next few 
+weeks.
 
-Jarek P.
+http://git.infradead.org/users/jsimmons/linuxconsole-2.6.git

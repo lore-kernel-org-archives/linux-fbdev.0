@@ -1,50 +1,42 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Sun, 05 Sep 2010 19:38:03 +0000
-Subject: [PATCH] [resend] savagefb: fix DDC for Savage 4
-Message-Id: <201009052138.06094.linux@rainbow-software.org>
+From: James Hogan <james@albanarts.com>
+Date: Fri, 17 Sep 2010 21:51:17 +0000
+Subject: [PATCH] fbmem: Fix whitespace (indentation with spaces).
+Message-Id: <201009172251.18740.james@albanarts.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: Dave Airlie <airlied@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Marcin Slusarz <marcin.slusarz@gmail.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Denys Vlasenko <vda.linux@googlemail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hello,
+Change a few lines of indentation to tabs.
 
-I tested savagefb on 3 different Savage 4 cards:
-Diamond Stealth III S520
-Number Nine SR9
-Datapath Horizon 2S (two savage chips on a PCI card)
+Signed-off-by: James Hogan <james@albanarts.com>
+---
+ drivers/video/fbmem.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-it worked except the DDC which did not work on any of them.
-
-Looking at the BIOS code, it does not use MMIO register 0xff20 but CRT
-register 0xa0 or 0xb1 - depending on the chip revision and something in
-register 0xa6. With this patch, DDC works fine on all 3 cards (even on the
-second head of Horizon 2S - although it does not display anything as it's
-misconfigured because of missing BIOS).
-
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-
---- linux-2.6.35-rc2/drivers/video/savage/savagefb-i2c.c	2010-06-06 05:43:24.000000000 +0200
-+++ linux-2.6.35-rc3/drivers/video/savage/savagefb-i2c.c	2010-08-28 23:54:10.000000000 +0200
-@@ -181,6 +181,15 @@
- 		par->chan.algo.getscl = prosavage_gpio_getscl;
- 		break;
- 	case FB_ACCEL_SAVAGE4:
-+		par->chan.reg = CR_SERIAL1;
-+		if (par->pcidev->revision > 1 && !(VGArCR(0xa6, par) & 0x40))
-+			par->chan.reg = CR_SERIAL2;
-+		par->chan.ioaddr      = par->mmio.vbase;
-+		par->chan.algo.setsda = prosavage_gpio_setsda;
-+		par->chan.algo.setscl = prosavage_gpio_setscl;
-+		par->chan.algo.getsda = prosavage_gpio_getsda;
-+		par->chan.algo.getscl = prosavage_gpio_getscl;
-+		break;
- 	case FB_ACCEL_SAVAGE2000:
- 		par->chan.reg         = 0xff20;
- 		par->chan.ioaddr      = par->mmio.vbase;
-
-
--- 
-Ondrej Zary
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index b066475..bafc558 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -877,13 +877,13 @@ fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var)
+ 
+ 	if ((err = info->fbops->fb_pan_display(var, info)))
+ 		return err;
+-        info->var.xoffset = var->xoffset;
+-        info->var.yoffset = var->yoffset;
+-        if (var->vmode & FB_VMODE_YWRAP)
+-                info->var.vmode |= FB_VMODE_YWRAP;
+-        else
+-                info->var.vmode &= ~FB_VMODE_YWRAP;
+-        return 0;
++	info->var.xoffset = var->xoffset;
++	info->var.yoffset = var->yoffset;
++	if (var->vmode & FB_VMODE_YWRAP)
++		info->var.vmode |= FB_VMODE_YWRAP;
++	else
++		info->var.vmode &= ~FB_VMODE_YWRAP;
++	return 0;
+ }
+ 
+ static int fb_check_caps(struct fb_info *info, struct fb_var_screeninfo *var,

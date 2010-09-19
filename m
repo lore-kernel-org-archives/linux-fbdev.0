@@ -1,131 +1,111 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Fri, 24 Sep 2010 04:50:22 +0000
-Subject: [PATCH 1/4] Minimal support for viafb suspend/resume
-Message-Id: <e448105a1db5f747caa3120f77cd0e93a9f43809.1285303223.git.FlorianSchandinat@gmx.de>
+Date: Sun, 19 Sep 2010 07:39:55 +0000
+Subject: [PATCH 10/12] viafb: add a mapping of supported output devices
+Message-Id: <a20caff43626418b91187e476905ebc7cd974701.1284879533.git.FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1285303222.git.FlorianSchandinat@gmx.de>
-In-Reply-To: <cover.1285303222.git.FlorianSchandinat@gmx.de>
+References: <cover.1284879532.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <cover.1284879532.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Deepak Saxena <dsaxena@laptop.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>, Jonathan Corbet <corbet@lwn.net>
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>, Jonathan Corbet <corbet@lwn.net>, Andrew Morton <akpm@linux-foundation.org>
 
-From: Deepak Saxena <dsaxena@laptop.org>
+viafb: add a mapping of supported output devices
 
-This patch adds minimal support for suspend/resume of the
-VIA framebuffer device. It requires a version of OFW
-that restores the video mode.
+This patch maps supported output devices to IGP versions. This list may
+contain errors as most of it is derived of the driver source but it should
+be correct enough to provide a good help. The devices are exported via a
+proc entry in the same format as those showing the output devices per IGA.
 
-This patch is OLPC-specific as the proper upstream solution
-is to move the VIA video path to using the kernel modesetting
-infrastructure and doing a proper save/restore in the kernel.
-
-[jc: extensive changes for 2.6.34 merge]
-Signed-off-by: Deepak Saxena <dsaxena@laptop.org>
-[fts: viafb_driver moved from viafbdev.c to via-core.c]
 Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Cc: Joseph Chan <JosephChan@via.com.tw>
 Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/video/via/via-core.c |    4 +++
- drivers/video/via/viafbdev.c |   46 ++++++++++++++++++++++++++++++++++++++++++
- drivers/video/via/viafbdev.h |    5 ++++
- 3 files changed, 55 insertions(+), 0 deletions(-)
+ drivers/video/via/viafbdev.c |   48 ++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 48 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/via/via-core.c b/drivers/video/via/via-core.c
-index 66f4030..bca9e9d 100644
---- a/drivers/video/via/via-core.c
-+++ b/drivers/video/via/via-core.c
-@@ -644,6 +644,10 @@ static struct pci_driver via_driver = {
- 	.id_table	= via_pci_table,
- 	.probe		= via_pci_probe,
- 	.remove		= __devexit_p(via_pci_remove),
-+#ifdef CONFIG_PM
-+	.suspend	= viafb_suspend,
-+	.resume		= viafb_resume,
-+#endif
- };
- 
- static int __init via_core_init(void)
 diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index bdd0e41..f2b68cc 100644
+index ce6f13a..17f228a 100644
 --- a/drivers/video/via/viafbdev.c
 +++ b/drivers/video/via/viafbdev.c
-@@ -1486,6 +1486,52 @@ static int parse_mode(const char *str, u32 *xres, u32 *yres)
- }
+@@ -56,6 +56,31 @@ static int viafb_pan_display(struct fb_var_screeninfo *var,
  
+ static struct fb_ops viafb_ops;
  
-+#ifdef CONFIG_PM
-+int viafb_suspend(struct pci_dev *pdev, pm_message_t state)
-+{
-+	if (state.event = PM_EVENT_SUSPEND) {
-+		acquire_console_sem();
-+
-+		memcpy_fromio(viaparinfo->shared->saved_regs,
-+			      viaparinfo->shared->vdev->engine_mmio + 0x100,
-+			      0xff * sizeof(u32));
-+
-+		fb_set_suspend(viafbinfo, 1);
-+
-+		viafb_sync(viafbinfo);
-+
-+		pci_save_state(pdev);
-+		pci_disable_device(pdev);
-+		pci_set_power_state(pdev, pci_choose_state(pdev, state));
-+		release_console_sem();
-+	}
-+
-+	return 0;
-+}
-+
-+int viafb_resume(struct pci_dev *pdev)
-+{
-+	acquire_console_sem();
-+	pci_set_power_state(pdev, PCI_D0);
-+	pci_restore_state(pdev);
-+	if (pci_enable_device(pdev))
-+		goto fail;
-+	pci_set_master(pdev);
-+
-+	memcpy_toio(viaparinfo->shared->vdev->engine_mmio + 0x100,
-+		    viaparinfo->shared->saved_regs,
-+		    0x100 * sizeof(u32));
-+
-+	fb_set_suspend(viafbinfo, 0);
-+
-+fail:
-+	release_console_sem();
-+	return 0;
-+}
-+
-+#endif
-+
-+
- int __devinit via_fb_pci_probe(struct viafb_dev *vdev)
++/* supported output devices on each IGP
++ * only CX700, VX800, VX855 were documented
++ * VIA_CRT should be everywhere
++ * VIA_6C can be onle pre-CX700 (probably only on CLE266) as 6C is used for PLL
++ * source selection on CX700 and later
++ * K400 seems to support VIA_96, VIA_DVP1, VIA_LVDS{1,2} as in viamode.c
++ */
++static const u32 supported_odev_map[] = {
++	[UNICHROME_CLE266]	= VIA_CRT | VIA_6C | VIA_93,
++	[UNICHROME_K400]	= VIA_CRT | VIA_96 | VIA_DVP1 | VIA_LVDS1
++				| VIA_LVDS2,
++	[UNICHROME_K800]	= VIA_CRT | VIA_96 | VIA_DVP1 | VIA_LVDS1
++				| VIA_LVDS2,
++	[UNICHROME_PM800]	= VIA_CRT | VIA_96 | VIA_DVP1 | VIA_LVDS1
++				| VIA_LVDS2,
++	[UNICHROME_CN700]	= VIA_CRT | VIA_96 | VIA_DVP1 | VIA_LVDS1
++				| VIA_LVDS2,
++	[UNICHROME_CX700]	= VIA_CRT | VIA_DVP1 | VIA_LVDS1 | VIA_LVDS2,
++	[UNICHROME_CN750]	= VIA_CRT | VIA_DVP1 | VIA_LVDS1 | VIA_LVDS2,
++	[UNICHROME_K8M890]	= VIA_CRT | VIA_DVP1 | VIA_LVDS1 | VIA_LVDS2,
++	[UNICHROME_P4M890]	= VIA_CRT | VIA_DVP1 | VIA_LVDS1 | VIA_LVDS2,
++	[UNICHROME_P4M900]	= VIA_CRT | VIA_DVP1 | VIA_LVDS1 | VIA_LVDS2,
++	[UNICHROME_VX800]	= VIA_CRT | VIA_DVP1 | VIA_LVDS1 | VIA_LVDS2,
++	[UNICHROME_VX855]	= VIA_CRT | VIA_DVP1 | VIA_LVDS1 | VIA_LVDS2,
++};
+ 
+ static void viafb_fill_var_color_info(struct fb_var_screeninfo *var, u8 depth)
  {
- 	u32 default_xres, default_yres;
-diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
-index 52a35fa..3bcae0a 100644
---- a/drivers/video/via/viafbdev.h
-+++ b/drivers/video/via/viafbdev.h
-@@ -57,6 +57,9 @@ struct viafb_shared {
- 		u8 dst_bpp, u32 dst_addr, u32 dst_pitch, u32 dst_x, u32 dst_y,
- 		u32 *src_mem, u32 src_addr, u32 src_pitch, u32 src_x, u32 src_y,
- 		u32 fg_color, u32 bg_color, u8 fill_rop);
-+
-+	/* For suspend/resume */
-+	u32 saved_regs[0x100];
- };
+@@ -1433,6 +1458,26 @@ static const struct file_operations viafb_vt1636_proc_fops = {
  
- struct viafb_par {
-@@ -103,4 +106,6 @@ void via_fb_pci_remove(struct pci_dev *pdev);
- /* Temporary */
- int viafb_init(void);
- void viafb_exit(void);
-+int viafb_suspend(struct pci_dev *pdev, pm_message_t state);
-+int viafb_resume(struct pci_dev *pdev);
- #endif /* __VIAFBDEV_H__ */
+ #endif /* CONFIG_FB_VIA_DIRECT_PROCFS */
+ 
++static int viafb_sup_odev_proc_show(struct seq_file *m, void *v)
++{
++	via_odev_to_seq(m, supported_odev_map[
++		viaparinfo->shared->chip_info.gfx_chip_name]);
++	return 0;
++}
++
++static int viafb_sup_odev_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, viafb_sup_odev_proc_show, NULL);
++}
++
++static const struct file_operations viafb_sup_odev_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= viafb_sup_odev_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
+ static ssize_t odev_update(const char __user *buffer, size_t count, u32 *odev)
+ {
+ 	char buf[64], *ptr = buf;
+@@ -1561,6 +1606,8 @@ static void viafb_init_proc(struct viafb_shared *shared)
+ 		}
+ #endif /* CONFIG_FB_VIA_DIRECT_PROCFS */
+ 
++		proc_create("supported_output_devices", 0, viafb_entry,
++			&viafb_sup_odev_proc_fops);
+ 		iga1_entry = proc_mkdir("iga1", viafb_entry);
+ 		shared->iga1_proc_entry = iga1_entry;
+ 		proc_create("output_devices", 0, iga1_entry,
+@@ -1585,6 +1632,7 @@ static void viafb_remove_proc(struct viafb_shared *shared)
+ 	remove_proc_entry("iga2", viafb_entry);
+ 	remove_proc_entry("output_devices", iga1_entry);
+ 	remove_proc_entry("iga1", viafb_entry);
++	remove_proc_entry("supported_output_devices", viafb_entry);
+ 
+ #ifdef CONFIG_FB_VIA_DIRECT_PROCFS
+ 	remove_proc_entry("dvp0", viafb_entry);/* parent dir */
 -- 
 1.6.3.2
 

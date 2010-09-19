@@ -1,53 +1,42 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 22 Sep 2010 02:52:57 +0000
-Subject: [PATCH] viafb: use proper register for colour when doing fill ops
-Message-Id: <1285124599-5997-1-git-send-email-FlorianSchandinat@gmx.de>
+Date: Sun, 19 Sep 2010 07:33:47 +0000
+Subject: [PATCH 06/12] viafb: enable I2C for CRT
+Message-Id: <dd6b494198f83d33c7529b3602ae232d18c1227d.1284879532.git.FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <AANLkTin7ZD19NSec58gOCNrbYzeWq5XW4LNte50Nsm8M@mail.gmail.com>
-In-Reply-To: <AANLkTin7ZD19NSec58gOCNrbYzeWq5XW4LNte50Nsm8M@mail.gmail.com>
+References: <171e0fb74a34b069c0c12aa90c56d5e5da5489c6.1284879532.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <171e0fb74a34b069c0c12aa90c56d5e5da5489c6.1284879532.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>, Daniel Drake <dsd@laptop.org>, Jon Nettleton <jon.nettleton@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>, Jonathan Corbet <corbet@lwn.net>
 
-The colour was written to a wrong register for fillrect operations.
-This sometimes caused empty console space (for example after 'clear')
-to have a different colour than desired. Fix this by writing to the
-correct register.
-Many thanks to Daniel Drake and Jon Nettleton for pointing out this
-issue and pointing me in the right direction for the fix.
+viafb: enable I2C for CRT
 
-Fixes http://dev.laptop.org/ticket/9323
+This patch enables the I2C port to talk with the CRT. This allows adding
+EDID reading and parsing capability for CRTs.
+Just a small preparation, no notable changes in user experience yet.
 
 Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Cc: Joseph Chan <JosephChan@via.com.tw>
-Cc: Daniel Drake <dsd@laptop.org>
-Cc: Jon Nettleton <jon.nettleton@gmail.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
 ---
- drivers/video/via/accel.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ drivers/video/via/via-core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
-index e44893e..c2f4e6e 100644
---- a/drivers/video/via/accel.c
-+++ b/drivers/video/via/accel.c
-@@ -283,11 +283,12 @@ static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
- 		writel(tmp, engine + 0x1C);
- 	}
- 
--	if (op != VIA_BITBLT_COLOR)
-+	if (op = VIA_BITBLT_FILL) {
-+		writel(fg_color, engine + 0x58);
-+	} else if (op = VIA_BITBLT_MONO) {
- 		writel(fg_color, engine + 0x4C);
--
--	if (op = VIA_BITBLT_MONO)
- 		writel(bg_color, engine + 0x50);
-+	}
- 
- 	if (op = VIA_BITBLT_FILL)
- 		ge_cmd |= fill_rop << 24 | 0x00002000 | 0x00000001;
+diff --git a/drivers/video/via/via-core.c b/drivers/video/via/via-core.c
+index 66f4030..69101ab 100644
+--- a/drivers/video/via/via-core.c
++++ b/drivers/video/via/via-core.c
+@@ -20,7 +20,7 @@
+  * The default port config.
+  */
+ static struct via_port_cfg adap_configs[] = {
+-	[VIA_PORT_26]	= { VIA_PORT_I2C,  VIA_MODE_OFF, VIASR, 0x26 },
++	[VIA_PORT_26]	= { VIA_PORT_I2C,  VIA_MODE_I2C, VIASR, 0x26 },
+ 	[VIA_PORT_31]	= { VIA_PORT_I2C,  VIA_MODE_I2C, VIASR, 0x31 },
+ 	[VIA_PORT_25]	= { VIA_PORT_GPIO, VIA_MODE_GPIO, VIASR, 0x25 },
+ 	[VIA_PORT_2C]	= { VIA_PORT_GPIO, VIA_MODE_I2C, VIASR, 0x2c },
 -- 
 1.6.3.2
 

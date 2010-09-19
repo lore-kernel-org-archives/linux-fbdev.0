@@ -1,85 +1,104 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Tue, 14 Sep 2010 13:08:21 +0000
-Subject: Re: locking inconsistency, when calling fb_ops::fb_release()
-Message-Id: <Pine.LNX.4.64.1009140935070.29821@axis700.grange>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 19 Sep 2010 07:33:46 +0000
+Subject: [PATCH 05/12] viafb: fix i2c_transfer error handling
+Message-Id: <171e0fb74a34b069c0c12aa90c56d5e5da5489c6.1284879532.git.FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1009130854280.24398@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1009130854280.24398@axis700.grange>
+References: <cover.1284879532.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <cover.1284879532.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>, Jonathan Corbet <corbet@lwn.net>
 
-On Mon, 13 Sep 2010, Greg KH wrote:
+viafb: fix i2c_transfer error handling
 
-> On Mon, Sep 13, 2010 at 06:06:03PM +0200, Guennadi Liakhovetski wrote:
-> > On Mon, 13 Sep 2010, Greg KH wrote:
-> > 
-> > > On Mon, Sep 13, 2010 at 09:17:04AM +0200, Guennadi Liakhovetski wrote:
-> > > > Hi
-> > > > 
-> > > > I do not know, whether this can be a problem for any existing driver, but 
-> > > > such an inconsistency seems like a bad idea to me anyway. The struct 
-> > > > fb_ops::fb_release() method can be called in following ways:
-> > > > 
-> > > > fbmem.c::fb_release() under the info->lock mutex (file.close("/dev/fbX") 
-> > > > 							operation)
-> > > > fbcon.c::con2fb_release_oldinfo() under console semaphore
-> > > > fbcon.c::fbcon_exit() from
-> > > > 	fbcon_deinit() from
-> > > > 		vt.c::vc_deallocate() under console semaphore (has 
-> > > > 			WARN_CONSOLE_UNLOCKED())
-> > > > 		bind_con_driver() under console semaphore
-> > > > 	fb_console_exit() under console semaphore
-> > > > 
-> > > > I.e., it can be either called within an acquire_console_sem() / 
-> > > > release_console_sem() block, or within a mutex_lock(&info->lock) / 
-> > > > mutex_unlock(&info->lock) block, which looks inconsistent to me.
-> > > > 
-> > > > The problem, this is causing me is, that I'd like to call the framebuffer 
-> > > > notifier chain from my driver's fb_release() method.
-> > > 
-> > > Why would you need/want to do this?  If you don't do that, all should be
-> > > fine, right?
-> > 
-> > I am implementing HDMI hot-plug support. When a new monitor is plugged in, 
-> > I configure its physical resolution, but keep the framebuffer parameters, 
-> > as long as there are user-space applications, using it. I have to do this, 
-> > because currently there is no way to inform users about a changed 
-> > geometry. Then, when the last non-console user releases the framebuffer, I 
-> > reconfigure the framebuffer and issue a notification to inform the 
-> > console, which then redraws the screen.
-> 
-> Hm, sounds valid.  I really don't know the fb layer at all, sorry,
-> someone else is going to have to help you.
+i2c_transfer returns negative errno on error and number of messages
+processed on success. Just returning this value would give a poor
+interface as it is not obvious that you must compare with 2 after reading
+1 or n bytes and with 1 after writing 1 byte to determine if it was
+successful. To avoid this error prone interface convert the error code
+of a successful read/write to zero and all other non-negative values to
+an negative error code.
+This fixes a regression introduced by
+	via: Rationalize vt1636 detection
+which resulted in no longer detecting a VT1636 chip and therefore has
+broken the output in configurations wich contain this chip.
 
-Ic, well, there is a "solution:" .fb_release() has a second parameter - 
-"user." When it is called from fbcon (with console sem held) user = 0, 
-when from fbmem (info->lock held, but not console sem) user = 1... Very 
-elegant indeed...
-
-In fb.h there is a comment:
-
-/*
- * Frame buffer operations
- *
- * LOCKING NOTE: those functions must _ALL_ be called with the console
- * semaphore held, this is the only suitable locking mechanism we have
- * in 2.6. Some may be called at interrupt time at this point though.
-...
- */
-
-So, someone might want to rethink either this comment or a few places in 
-fbmem.c.
-
-(OT) I was amused to see, that the i810 fb driver also uses a use_count in 
-their open and release methods, and use an "open_lock" mutex to protect 
-the counter - exactly like I did in my patch without seeing their driver - 
-honestly!:) Hope, they don't have a patent on that name;)
-
-Thanks
-Guennadi
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Joseph Chan <JosephChan@via.com.tw>
+Cc: Jonathan Corbet <corbet@lwn.net>
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+ drivers/video/via/via_i2c.c |   27 ++++++++++++++++++++++++---
+ 1 files changed, 24 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
+index da9e4ca..021112e 100644
+--- a/drivers/video/via/via_i2c.c
++++ b/drivers/video/via/via_i2c.c
+@@ -114,6 +114,7 @@ static void via_i2c_setsda(void *data, int state)
+ 
+ int viafb_i2c_readbyte(u8 adap, u8 slave_addr, u8 index, u8 *pdata)
+ {
++	int ret;
+ 	u8 mm1[] = {0x00};
+ 	struct i2c_msg msgs[2];
+ 
+@@ -126,11 +127,18 @@ int viafb_i2c_readbyte(u8 adap, u8 slave_addr, u8 index, u8 *pdata)
+ 	mm1[0] = index;
+ 	msgs[0].len = 1; msgs[1].len = 1;
+ 	msgs[0].buf = mm1; msgs[1].buf = pdata;
+-	return i2c_transfer(&via_i2c_par[adap].adapter, msgs, 2);
++	ret = i2c_transfer(&via_i2c_par[adap].adapter, msgs, 2);
++	if (ret = 2)
++		ret = 0;
++	else if (ret >= 0)
++		ret = -EIO;
++
++	return ret;
+ }
+ 
+ int viafb_i2c_writebyte(u8 adap, u8 slave_addr, u8 index, u8 data)
+ {
++	int ret;
+ 	u8 msg[2] = { index, data };
+ 	struct i2c_msg msgs;
+ 
+@@ -140,11 +148,18 @@ int viafb_i2c_writebyte(u8 adap, u8 slave_addr, u8 index, u8 data)
+ 	msgs.addr = slave_addr / 2;
+ 	msgs.len = 2;
+ 	msgs.buf = msg;
+-	return i2c_transfer(&via_i2c_par[adap].adapter, &msgs, 1);
++	ret = i2c_transfer(&via_i2c_par[adap].adapter, &msgs, 1);
++	if (ret = 1)
++		ret = 0;
++	else if (ret >= 0)
++		ret = -EIO;
++
++	return ret;
+ }
+ 
+ int viafb_i2c_readbytes(u8 adap, u8 slave_addr, u8 index, u8 *buff, int buff_len)
+ {
++	int ret;
+ 	u8 mm1[] = {0x00};
+ 	struct i2c_msg msgs[2];
+ 
+@@ -156,7 +171,13 @@ int viafb_i2c_readbytes(u8 adap, u8 slave_addr, u8 index, u8 *buff, int buff_len
+ 	mm1[0] = index;
+ 	msgs[0].len = 1; msgs[1].len = buff_len;
+ 	msgs[0].buf = mm1; msgs[1].buf = buff;
+-	return i2c_transfer(&via_i2c_par[adap].adapter, msgs, 2);
++	ret = i2c_transfer(&via_i2c_par[adap].adapter, msgs, 2);
++	if (ret = 2)
++		ret = 0;
++	else if (ret >= 0)
++		ret = -EIO;
++
++	return ret;
+ }
+ 
+ /*
+-- 
+1.6.3.2
+

@@ -1,420 +1,278 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Fri, 03 Sep 2010 07:20:23 +0000
-Subject: [PATCH 10/15] fbdev: sh_mobile_hdmi: implement locking
-Message-Id: <Pine.LNX.4.64.1009030914550.2883@axis700.grange>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 19 Sep 2010 07:26:09 +0000
+Subject: [PATCH 04/12] viafb: vt1636 cleanup
+Message-Id: <70dca952fa9f3594d20e8ea63e88b69482fe3847.1284879532.git.FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1284879532.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <cover.1284879532.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>
 
-The SH-Mobile HDMI driver runs in several contexts: ISR, delayed work-queue,
-task context, when called from the sh_mobile_lcdc framebuffer driver. This
-creates ample race possibilities. Even though most these races are purely
-theoretical, it is better to close them. To trace fb_info validity we install a
-notification callback in the HDMI driver, and the only way for it to get to
-driver internal data is by using struct sh_mobile_lcdc_chan, therefore it had
-to be extracted into a separate common header.
+viafb: vt1636 cleanup
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+This patch merges tbl1636 into vt1636 and cleans it up as the data was
+only used there anyway. No runtime changes are expected.
+
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Joseph Chan <JosephChan@via.com.tw>
 ---
- drivers/video/sh_mobile_hdmi.c   |  103 ++++++++++++++++++++++++++++++++------
- drivers/video/sh_mobile_lcdcfb.c |   46 ++++++-----------
- drivers/video/sh_mobile_lcdcfb.h |   37 ++++++++++++++
- include/video/sh_mobile_lcdc.h   |    2 +
- 4 files changed, 141 insertions(+), 47 deletions(-)
- create mode 100644 drivers/video/sh_mobile_lcdcfb.h
+ drivers/video/via/Makefile  |    2 +-
+ drivers/video/via/global.h  |    1 -
+ drivers/video/via/tbl1636.c |   71 -------------------------------------------
+ drivers/video/via/tbl1636.h |   34 --------------------
+ drivers/video/via/vt1636.c  |   65 +++++++++++++++++++++++++--------------
+ 5 files changed, 42 insertions(+), 131 deletions(-)
+ delete mode 100644 drivers/video/via/tbl1636.c
+ delete mode 100644 drivers/video/via/tbl1636.h
 
-diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-index 293b16d..a645d71 100644
---- a/drivers/video/sh_mobile_hdmi.c
-+++ b/drivers/video/sh_mobile_hdmi.c
-@@ -26,6 +26,8 @@
- #include <video/sh_mobile_hdmi.h>
- #include <video/sh_mobile_lcdc.h>
+diff --git a/drivers/video/via/Makefile b/drivers/video/via/Makefile
+index d496adb..96f01ee 100644
+--- a/drivers/video/via/Makefile
++++ b/drivers/video/via/Makefile
+@@ -5,5 +5,5 @@
+ obj-$(CONFIG_FB_VIA) += viafb.o
  
-+#include "sh_mobile_lcdcfb.h"
-+
- #define HDMI_SYSTEM_CTRL			0x00 /* System control */
- #define HDMI_L_R_DATA_SWAP_CTRL_RPKT		0x01 /* L/R data swap control,
- 							bits 19..16 of 20-bit N for Audio Clock Regeneration packet */
-@@ -209,6 +211,7 @@ struct sh_hdmi {
- 	struct clk *hdmi_clk;
- 	struct device *dev;
- 	struct fb_info *info;
-+	struct mutex mutex;		/* Protect the info pointer */
- 	struct delayed_work edid_work;
- 	struct fb_var_screeninfo var;
- };
-@@ -826,17 +829,21 @@ static irqreturn_t sh_hdmi_hotplug(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
+ viafb-y	:=viafbdev.o hw.o via_i2c.o dvi.o lcd.o ioctl.o accel.o \
+-	via_utility.o vt1636.o global.o tblDPASetting.o viamode.o tbl1636.o \
++	via_utility.o vt1636.o global.o tblDPASetting.o viamode.o \
+ 	via-core.o via-gpio.o via_modesetting.o
+diff --git a/drivers/video/via/global.h b/drivers/video/via/global.h
+index 28221a0..38ef5ac 100644
+--- a/drivers/video/via/global.h
++++ b/drivers/video/via/global.h
+@@ -48,7 +48,6 @@
+ #include "via_utility.h"
+ #include "vt1636.h"
+ #include "tblDPASetting.h"
+-#include "tbl1636.h"
  
-+/* locking:	called with info->lock held, or before register_framebuffer() */
- static void hdmi_display_on(void *arg, struct fb_info *info)
- {
-+	/*
-+	 * info is guaranteed to be valid, when we are called, because our
-+	 * FB_EVENT_FB_UNBIND notify is also called with info->lock held
-+	 */
- 	struct sh_hdmi *hdmi = arg;
- 	struct sh_mobile_hdmi_info *pdata = hdmi->dev->platform_data;
+ /* External struct*/
  
- 	pr_debug("%s(%p): state %x\n", __func__, pdata->lcd_dev, info->state);
--	/*
--	 * FIXME: not a good place to store fb_info. And we cannot nullify it
--	 * even on monitor disconnect. What should the lifecycle be?
--	 */
-+
-+	/* No need to lock */
- 	hdmi->info = info;
-+
- 	switch (hdmi->hp_state) {
- 	case HDMI_HOTPLUG_EDID_DONE:
- 		/* PS mode d->e. All functions are active */
-@@ -850,6 +857,7 @@ static void hdmi_display_on(void *arg, struct fb_info *info)
- 	}
- }
- 
-+/* locking: called with info->lock held */
- static void hdmi_display_off(void *arg)
- {
- 	struct sh_hdmi *hdmi = arg;
-@@ -872,6 +880,8 @@ static void edid_work_fn(struct work_struct *work)
- 	if (!pdata->lcd_dev)
- 		return;
- 
-+	mutex_lock(&hdmi->mutex);
-+
- 	if (hdmi->hp_state = HDMI_HOTPLUG_EDID_DONE) {
- 		pm_runtime_get_sync(hdmi->dev);
- 		/* A device has been plugged in */
-@@ -882,21 +892,25 @@ static void edid_work_fn(struct work_struct *work)
- 		msleep(10);
- 
- 		if (!hdmi->info)
--			return;
-+			goto out;
- 
- 		acquire_console_sem();
- 
- 		/* HDMI plug in */
- 		hdmi->info->var = hdmi->var;
--		if (hdmi->info->state != FBINFO_STATE_RUNNING)
-+		if (hdmi->info->state != FBINFO_STATE_RUNNING) {
- 			fb_set_suspend(hdmi->info, 0);
--		else
--			hdmi_display_on(hdmi, hdmi->info);
-+		} else {
-+			if (lock_fb_info(hdmi->info)) {
-+				hdmi_display_on(hdmi, hdmi->info);
-+				unlock_fb_info(hdmi->info);
-+			}
-+		}
- 
- 		release_console_sem();
- 	} else {
- 		if (!hdmi->info)
--			return;
-+			goto out;
- 
- 		acquire_console_sem();
- 
-@@ -907,13 +921,61 @@ static void edid_work_fn(struct work_struct *work)
- 		pm_runtime_put(hdmi->dev);
- 	}
- 
-+out:
-+	mutex_unlock(&hdmi->mutex);
-+
- 	pr_debug("%s(%p): end\n", __func__, pdata->lcd_dev);
- }
- 
-+static int sh_hdmi_notify(struct notifier_block *nb,
-+			  unsigned long action, void *data);
-+
-+static struct notifier_block sh_hdmi_notifier = {
-+	.notifier_call = sh_hdmi_notify,
-+};
-+
-+static int sh_hdmi_notify(struct notifier_block *nb,
-+			  unsigned long action, void *data)
-+{
-+	struct fb_event *event = data;
-+	struct fb_info *info = event->info;
-+	struct sh_mobile_lcdc_chan *ch = info->par;
-+	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
-+	struct sh_hdmi *hdmi = board_cfg->board_data;
-+
-+	if (nb != &sh_hdmi_notifier || !hdmi || hdmi->info != info)
-+		return NOTIFY_DONE;
-+
-+	switch(action) {
-+	case FB_EVENT_FB_REGISTERED:
-+		/* Unneeded, activation taken care by hdmi_display_on() */
-+		break;
-+	case FB_EVENT_FB_UNREGISTERED:
-+		/*
-+		 * We are called from unregister_framebuffer() with the
-+		 * info->lock held. This is bad for us, because we can race with
-+		 * the scheduled work, which has to call fb_set_suspend(), which
-+		 * takes info->lock internally, so, edid_work_fn() cannot take
-+		 * and hold info->lock for the whole function duration. Using an
-+		 * additional lock creates a classical AB-BA lock up. Therefore,
-+		 * we have to release the info->lock temporarily, synchronise
-+		 * with the work queue and re-acquire the info->lock.
-+		 */
-+		unlock_fb_info(hdmi->info);
-+		mutex_lock(&hdmi->mutex);
-+		hdmi->info = NULL;
-+		mutex_unlock(&hdmi->mutex);
-+		lock_fb_info(hdmi->info);
-+		return NOTIFY_OK;
-+	}
-+	return NOTIFY_DONE;
-+}
-+
- static int __init sh_hdmi_probe(struct platform_device *pdev)
- {
- 	struct sh_mobile_hdmi_info *pdata = pdev->dev.platform_data;
- 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	struct sh_mobile_lcdc_board_cfg	*board_cfg;
- 	int irq = platform_get_irq(pdev, 0), ret;
- 	struct sh_hdmi *hdmi;
- 	long rate;
-@@ -927,6 +989,7 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 	}
- 
-+	mutex_init(&hdmi->mutex);
- 	hdmi->dev = &pdev->dev;
- 
- 	hdmi->hdmi_clk = clk_get(&pdev->dev, "ick");
-@@ -984,9 +1047,11 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
- #endif
- 
- 	/* Set up LCDC callbacks */
--	pdata->lcd_chan->board_cfg.board_data = hdmi;
--	pdata->lcd_chan->board_cfg.display_on = hdmi_display_on;
--	pdata->lcd_chan->board_cfg.display_off = hdmi_display_off;
-+	board_cfg = &pdata->lcd_chan->board_cfg;
-+	board_cfg->owner = THIS_MODULE;
-+	board_cfg->board_data = hdmi;
-+	board_cfg->display_on = hdmi_display_on;
-+	board_cfg->display_off = hdmi_display_off;
- 
- 	INIT_DELAYED_WORK(&hdmi->edid_work, edid_work_fn);
- 
-@@ -1013,6 +1078,7 @@ eclkenable:
- erate:
- 	clk_put(hdmi->hdmi_clk);
- egetclk:
-+	mutex_destroy(&hdmi->mutex);
- 	kfree(hdmi);
- 
- 	return ret;
-@@ -1023,19 +1089,24 @@ static int __exit sh_hdmi_remove(struct platform_device *pdev)
- 	struct sh_mobile_hdmi_info *pdata = pdev->dev.platform_data;
- 	struct sh_hdmi *hdmi = platform_get_drvdata(pdev);
- 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	struct sh_mobile_lcdc_board_cfg	*board_cfg = &pdata->lcd_chan->board_cfg;
- 	int irq = platform_get_irq(pdev, 0);
- 
--	pdata->lcd_chan->board_cfg.display_on = NULL;
--	pdata->lcd_chan->board_cfg.display_off = NULL;
--	pdata->lcd_chan->board_cfg.board_data = NULL;
-+	board_cfg->display_on = NULL;
-+	board_cfg->display_off = NULL;
-+	board_cfg->board_data = NULL;
-+	board_cfg->owner = NULL;
- 
-+	/* No new work will be scheduled, wait for running ISR */
- 	free_irq(irq, hdmi);
--	pm_runtime_disable(&pdev->dev);
-+	/* Wait for already scheduled work */
- 	cancel_delayed_work_sync(&hdmi->edid_work);
-+	pm_runtime_disable(&pdev->dev);
- 	clk_disable(hdmi->hdmi_clk);
- 	clk_put(hdmi->hdmi_clk);
- 	iounmap(hdmi->base);
- 	release_mem_region(res->start, resource_size(res));
-+	mutex_destroy(&hdmi->mutex);
- 	kfree(hdmi);
- 
- 	return 0;
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index ddd6c46..29d7ce7 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -12,7 +12,6 @@
- #include <linux/init.h>
- #include <linux/delay.h>
- #include <linux/mm.h>
--#include <linux/fb.h>
- #include <linux/clk.h>
- #include <linux/pm_runtime.h>
- #include <linux/platform_device.h>
-@@ -24,7 +23,8 @@
- #include <video/sh_mobile_lcdc.h>
- #include <asm/atomic.h>
- 
--#define PALETTE_NR 16
-+#include "sh_mobile_lcdcfb.h"
-+
- #define SIDE_B_OFFSET 0x1000
- #define MIRROR_OFFSET 0x2000
- 
-@@ -53,12 +53,6 @@ static int lcdc_shared_regs[] = {
- };
- #define NR_SHARED_REGS ARRAY_SIZE(lcdc_shared_regs)
- 
--/* per-channel registers */
--enum { LDDCKPAT1R, LDDCKPAT2R, LDMT1R, LDMT2R, LDMT3R, LDDFR, LDSM1R,
--       LDSM2R, LDSA1R, LDMLSR, LDHCNR, LDHSYNR, LDVLNR, LDVSYNR, LDPMR,
--       LDHAJR,
--       NR_CH_REGS };
+diff --git a/drivers/video/via/tbl1636.c b/drivers/video/via/tbl1636.c
+deleted file mode 100644
+index 2d84534..0000000
+--- a/drivers/video/via/tbl1636.c
++++ /dev/null
+@@ -1,71 +0,0 @@
+-/*
+- * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
+- * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
 -
- static unsigned long lcdc_offs_mainlcd[NR_CH_REGS] = {
- 	[LDDCKPAT1R] = 0x400,
- 	[LDDCKPAT2R] = 0x404,
-@@ -112,25 +106,6 @@ static unsigned long lcdc_offs_sublcd[NR_CH_REGS] = {
- #define LDRCNTR_MRC	0x00000001
- #define LDSR_MRS	0x00000100
- 
--struct sh_mobile_lcdc_priv;
--struct sh_mobile_lcdc_chan {
--	struct sh_mobile_lcdc_priv *lcdc;
--	unsigned long *reg_offs;
--	unsigned long ldmt1r_value;
--	unsigned long enabled; /* ME and SE in LDCNT2R */
--	struct sh_mobile_lcdc_chan_cfg cfg;
--	u32 pseudo_palette[PALETTE_NR];
--	unsigned long saved_ch_regs[NR_CH_REGS];
--	struct fb_info *info;
--	dma_addr_t dma_handle;
--	struct fb_deferred_io defio;
--	struct scatterlist *sglist;
--	unsigned long frame_end;
--	unsigned long pan_offset;
--	wait_queue_head_t frame_end_wait;
--	struct completion vsync_completion;
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public
+- * License as published by the Free Software Foundation;
+- * either version 2, or (at your option) any later version.
+-
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
+- * the implied warranty of MERCHANTABILITY or FITNESS FOR
+- * A PARTICULAR PURPOSE.See the GNU General Public License
+- * for more details.
+-
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc.,
+- * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+- */
+-
+-#include "global.h"
+-struct IODATA COMMON_INIT_TBL_VT1636[] = {
+-/*  Index, Mask, Value */
+-	/* Set panel power sequence timing */
+-	{0x10, 0xC0, 0x00},
+-	/* T1: VDD on - Data on. Each increment is 1 ms. (50ms = 031h) */
+-	{0x0B, 0xFF, 0x40},
+-	/* T2: Data on - Backlight on. Each increment is 2 ms. (210ms = 068h) */
+-	{0x0C, 0xFF, 0x31},
+-	/* T3: Backlight off -Data off. Each increment is 2 ms. (210ms = 068h)*/
+-	{0x0D, 0xFF, 0x31},
+-	/* T4: Data off - VDD off. Each increment is 1 ms. (50ms = 031h) */
+-	{0x0E, 0xFF, 0x68},
+-	/* T5: VDD off - VDD on. Each increment is 100 ms. (500ms = 04h) */
+-	{0x0F, 0xFF, 0x68},
+-	/* LVDS output power up */
+-	{0x09, 0xA0, 0xA0},
+-	/* turn on back light */
+-	{0x10, 0x33, 0x13}
 -};
 -
- struct sh_mobile_lcdc_priv {
- 	void __iomem *base;
- 	int irq;
-@@ -589,8 +564,10 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 			continue;
+-struct IODATA DUAL_CHANNEL_ENABLE_TBL_VT1636[] = {
+-/*  Index, Mask, Value */
+-	{0x08, 0xF0, 0xE0}	/* Input Data Mode Select */
+-};
+-
+-struct IODATA SINGLE_CHANNEL_ENABLE_TBL_VT1636[] = {
+-/*  Index, Mask, Value */
+-	{0x08, 0xF0, 0x00}	/* Input Data Mode Select */
+-};
+-
+-struct IODATA DITHERING_ENABLE_TBL_VT1636[] = {
+-/*  Index, Mask, Value */
+-	{0x0A, 0x70, 0x50}
+-};
+-
+-struct IODATA DITHERING_DISABLE_TBL_VT1636[] = {
+-/*  Index, Mask, Value */
+-	{0x0A, 0x70, 0x00}
+-};
+-
+-struct IODATA VDD_ON_TBL_VT1636[] = {
+-/*  Index, Mask, Value */
+-	{0x10, 0x20, 0x20}
+-};
+-
+-struct IODATA VDD_OFF_TBL_VT1636[] = {
+-/*  Index, Mask, Value */
+-	{0x10, 0x20, 0x00}
+-};
+diff --git a/drivers/video/via/tbl1636.h b/drivers/video/via/tbl1636.h
+deleted file mode 100644
+index d906055..0000000
+--- a/drivers/video/via/tbl1636.h
++++ /dev/null
+@@ -1,34 +0,0 @@
+-/*
+- * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
+- * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
+-
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public
+- * License as published by the Free Software Foundation;
+- * either version 2, or (at your option) any later version.
+-
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
+- * the implied warranty of MERCHANTABILITY or FITNESS FOR
+- * A PARTICULAR PURPOSE.See the GNU General Public License
+- * for more details.
+-
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc.,
+- * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+- */
+-
+-#ifndef _TBL1636_H_
+-#define _TBL1636_H_
+-#include "hw.h"
+-
+-extern struct IODATA COMMON_INIT_TBL_VT1636[8];
+-extern struct IODATA DUAL_CHANNEL_ENABLE_TBL_VT1636[1];
+-extern struct IODATA SINGLE_CHANNEL_ENABLE_TBL_VT1636[1];
+-extern struct IODATA DITHERING_ENABLE_TBL_VT1636[1];
+-extern struct IODATA DITHERING_DISABLE_TBL_VT1636[1];
+-extern struct IODATA VDD_ON_TBL_VT1636[1];
+-extern struct IODATA VDD_OFF_TBL_VT1636[1];
+-
+-#endif /* _VIA_TBL1636_H_ */
+diff --git a/drivers/video/via/vt1636.c b/drivers/video/via/vt1636.c
+index 90aad12..60e4192 100644
+--- a/drivers/video/via/vt1636.c
++++ b/drivers/video/via/vt1636.c
+@@ -23,6 +23,34 @@
+ #include <linux/via_i2c.h>
+ #include "global.h"
  
- 		board_cfg = &ch->cfg.board_cfg;
--		if (board_cfg->display_on)
-+		if (try_module_get(board_cfg->owner) && board_cfg->display_on) {
- 			board_cfg->display_on(board_cfg->board_data, ch->info);
-+			module_put(board_cfg->owner);
-+		}
- 	}
- 
- 	return 0;
-@@ -622,8 +599,10 @@ static void sh_mobile_lcdc_stop(struct sh_mobile_lcdc_priv *priv)
- 		}
- 
- 		board_cfg = &ch->cfg.board_cfg;
--		if (board_cfg->display_off)
-+		if (try_module_get(board_cfg->owner) && board_cfg->display_off) {
- 			board_cfg->display_off(board_cfg->board_data);
-+			module_put(board_cfg->owner);
-+		}
- 	}
- 
- 	/* stop the lcdc */
-@@ -954,6 +933,7 @@ static const struct dev_pm_ops sh_mobile_lcdc_dev_pm_ops = {
- 	.runtime_resume = sh_mobile_lcdc_runtime_resume,
- };
- 
-+/* locking: called with info->lock held */
- static int sh_mobile_lcdc_notify(struct notifier_block *nb,
- 				 unsigned long action, void *data)
- {
-@@ -971,16 +951,20 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
- 
- 	switch(action) {
- 	case FB_EVENT_SUSPEND:
--		if (board_cfg->display_off)
-+		if (try_module_get(board_cfg->owner) && board_cfg->display_off) {
- 			board_cfg->display_off(board_cfg->board_data);
-+			module_put(board_cfg->owner);
-+		}
- 		pm_runtime_put(info->device);
- 		break;
- 	case FB_EVENT_RESUME:
- 		var = &info->var;
- 
- 		/* HDMI must be enabled before LCDC configuration */
--		if (board_cfg->display_on)
-+		if (try_module_get(board_cfg->owner) && board_cfg->display_on) {
- 			board_cfg->display_on(board_cfg->board_data, ch->info);
-+			module_put(board_cfg->owner);
-+		}
- 
- 		/* Check if the new display is not in our modelist */
- 		if (ch->info->modelist.next &&
-diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
-new file mode 100644
-index 0000000..6fcfc0f
---- /dev/null
-+++ b/drivers/video/sh_mobile_lcdcfb.h
-@@ -0,0 +1,37 @@
-+#ifndef SH_MOBILE_LCDCFB_H
-+#define SH_MOBILE_LCDCFB_H
-+
-+#include <linux/completion.h>
-+#include <linux/fb.h>
-+#include <linux/wait.h>
-+
-+/* per-channel registers */
-+enum { LDDCKPAT1R, LDDCKPAT2R, LDMT1R, LDMT2R, LDMT3R, LDDFR, LDSM1R,
-+       LDSM2R, LDSA1R, LDMLSR, LDHCNR, LDHSYNR, LDVLNR, LDVSYNR, LDPMR,
-+       LDHAJR,
-+       NR_CH_REGS };
-+
-+#define PALETTE_NR 16
-+
-+struct sh_mobile_lcdc_priv;
-+struct fb_info;
-+
-+struct sh_mobile_lcdc_chan {
-+	struct sh_mobile_lcdc_priv *lcdc;
-+	unsigned long *reg_offs;
-+	unsigned long ldmt1r_value;
-+	unsigned long enabled; /* ME and SE in LDCNT2R */
-+	struct sh_mobile_lcdc_chan_cfg cfg;
-+	u32 pseudo_palette[PALETTE_NR];
-+	unsigned long saved_ch_regs[NR_CH_REGS];
-+	struct fb_info *info;
-+	dma_addr_t dma_handle;
-+	struct fb_deferred_io defio;
-+	struct scatterlist *sglist;
-+	unsigned long frame_end;
-+	unsigned long pan_offset;
-+	wait_queue_head_t frame_end_wait;
-+	struct completion vsync_completion;
++static const struct IODATA common_init_data[] = {
++/*  Index, Mask, Value */
++	/* Set panel power sequence timing */
++	{0x10, 0xC0, 0x00},
++	/* T1: VDD on - Data on. Each increment is 1 ms. (50ms = 031h) */
++	{0x0B, 0xFF, 0x40},
++	/* T2: Data on - Backlight on. Each increment is 2 ms. (210ms = 068h) */
++	{0x0C, 0xFF, 0x31},
++	/* T3: Backlight off -Data off. Each increment is 2 ms. (210ms = 068h)*/
++	{0x0D, 0xFF, 0x31},
++	/* T4: Data off - VDD off. Each increment is 1 ms. (50ms = 031h) */
++	{0x0E, 0xFF, 0x68},
++	/* T5: VDD off - VDD on. Each increment is 100 ms. (500ms = 04h) */
++	{0x0F, 0xFF, 0x68},
++	/* LVDS output power up */
++	{0x09, 0xA0, 0xA0},
++	/* turn on back light */
++	{0x10, 0x33, 0x13}
 +};
 +
-+#endif
-diff --git a/include/video/sh_mobile_lcdc.h b/include/video/sh_mobile_lcdc.h
-index 19c69d7..daabae5 100644
---- a/include/video/sh_mobile_lcdc.h
-+++ b/include/video/sh_mobile_lcdc.h
-@@ -49,7 +49,9 @@ struct sh_mobile_lcdc_sys_bus_ops {
- 	unsigned long (*read_data)(void *handle);
- };
++/* Index, Mask, Value */
++static const struct IODATA dual_channel_enable_data = {0x08, 0xF0, 0xE0};
++static const struct IODATA single_channel_enable_data = {0x08, 0xF0, 0x00};
++static const struct IODATA dithering_enable_data = {0x0A, 0x70, 0x50};
++static const struct IODATA dithering_disable_data = {0x0A, 0x70, 0x00};
++static const struct IODATA vdd_on_data = {0x10, 0x20, 0x20};
++static const struct IODATA vdd_off_data = {0x10, 0x20, 0x00};
++
+ u8 viafb_gpio_i2c_read_lvds(struct lvds_setting_information
+ 	*plvds_setting_info, struct lvds_chip_information *plvds_chip_info,
+ 	u8 index)
+@@ -55,52 +83,41 @@ void viafb_init_lvds_vt1636(struct lvds_setting_information
+ 	int reg_num, i;
  
-+struct module;
- struct sh_mobile_lcdc_board_cfg {
-+	struct module *owner;
- 	void *board_data;
- 	int (*setup_sys)(void *board_data, void *sys_ops_handle,
- 			 struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
+ 	/* Common settings: */
+-	reg_num = ARRAY_SIZE(COMMON_INIT_TBL_VT1636);
+-
+-	for (i = 0; i < reg_num; i++) {
++	reg_num = ARRAY_SIZE(common_init_data);
++	for (i = 0; i < reg_num; i++)
+ 		viafb_gpio_i2c_write_mask_lvds(plvds_setting_info,
+-					 plvds_chip_info,
+-					 COMMON_INIT_TBL_VT1636[i]);
+-	}
++			plvds_chip_info, common_init_data[i]);
+ 
+ 	/* Input Data Mode Select */
+-	if (plvds_setting_info->device_lcd_dualedge) {
++	if (plvds_setting_info->device_lcd_dualedge)
+ 		viafb_gpio_i2c_write_mask_lvds(plvds_setting_info,
+-					 plvds_chip_info,
+-					 DUAL_CHANNEL_ENABLE_TBL_VT1636[0]);
+-	} else {
++			plvds_chip_info, dual_channel_enable_data);
++	else
+ 		viafb_gpio_i2c_write_mask_lvds(plvds_setting_info,
+-					 plvds_chip_info,
+-					 SINGLE_CHANNEL_ENABLE_TBL_VT1636[0]);
+-	}
++			plvds_chip_info, single_channel_enable_data);
+ 
+-	if (plvds_setting_info->LCDDithering) {
++	if (plvds_setting_info->LCDDithering)
+ 		viafb_gpio_i2c_write_mask_lvds(plvds_setting_info,
+-					 plvds_chip_info,
+-					 DITHERING_ENABLE_TBL_VT1636[0]);
+-	} else {
++			plvds_chip_info, dithering_enable_data);
++	else
+ 		viafb_gpio_i2c_write_mask_lvds(plvds_setting_info,
+-					 plvds_chip_info,
+-					 DITHERING_DISABLE_TBL_VT1636[0]);
+-	}
++			plvds_chip_info, dithering_disable_data);
+ }
+ 
+ void viafb_enable_lvds_vt1636(struct lvds_setting_information
+ 			*plvds_setting_info,
+ 			struct lvds_chip_information *plvds_chip_info)
+ {
+-
+ 	viafb_gpio_i2c_write_mask_lvds(plvds_setting_info, plvds_chip_info,
+-				 VDD_ON_TBL_VT1636[0]);
++		vdd_on_data);
+ }
+ 
+ void viafb_disable_lvds_vt1636(struct lvds_setting_information
+ 			 *plvds_setting_info,
+ 			 struct lvds_chip_information *plvds_chip_info)
+ {
+-
+ 	viafb_gpio_i2c_write_mask_lvds(plvds_setting_info, plvds_chip_info,
+-				 VDD_OFF_TBL_VT1636[0]);
++		vdd_off_data);
+ }
+ 
+ bool viafb_lvds_identify_vt1636(u8 i2c_adapter)
 -- 
-1.7.1
+1.6.3.2
 

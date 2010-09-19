@@ -1,61 +1,87 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Fri, 03 Sep 2010 07:20:20 +0000
-Subject: [PATCH 09/15] fbdev: sh_mobile_hdmi: enable "external" mode
-Message-Id: <Pine.LNX.4.64.1009030914290.2883@axis700.grange>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 19 Sep 2010 07:26:07 +0000
+Subject: [PATCH 02/12] viafb: limit LCD code impact
+Message-Id: <a439cc4ee1516f18038607b6ec28fe8a49f97bbf.1284879532.git.FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1284879532.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <cover.1284879532.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>
 
-The SH-Mobile HDMI controller supports two configuration modes: using
-pre-programmed VICs and the "external" mode - specifying video parameters
-explicitly. The driver already contains code, necessary to configure HDMI
-manually, this patch actually enables it.
+viafb: limit LCD code impact
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+This patch cleans the LCD code up. It forbids overwritting global
+decissions like what IGA should be used as the source and whether to
+enable the second display channel. Additionally it removes a bit code
+duplication.
+
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Joseph Chan <JosephChan@via.com.tw>
 ---
- drivers/video/sh_mobile_hdmi.c |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
+ drivers/video/via/lcd.c |   31 -------------------------------
+ 1 files changed, 0 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-index fd91204..293b16d 100644
---- a/drivers/video/sh_mobile_hdmi.c
-+++ b/drivers/video/sh_mobile_hdmi.c
-@@ -205,6 +205,7 @@ enum hotplug_state {
- struct sh_hdmi {
- 	void __iomem *base;
- 	enum hotplug_state hp_state;
-+	bool preprogrammed_mode;	/* use a pre-programmed VIC or the external mode */
- 	struct clk *hdmi_clk;
- 	struct device *dev;
- 	struct fb_info *info;
-@@ -282,7 +283,10 @@ static void hdmi_external_video_param(struct sh_hdmi *hdmi)
+diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
+index e99f933..b7d5535 100644
+--- a/drivers/video/via/lcd.c
++++ b/drivers/video/via/lcd.c
+@@ -818,19 +818,12 @@ void viafb_lcd_disable(void)
+ 		viafb_write_reg_mask(SR3D, VIASR, 0x00, 0x20);
+ 		/* 24 bit DI data paht off */
+ 		viafb_write_reg_mask(CR91, VIACR, 0x80, 0x80);
+-		/* Simultaneout disabled   */
+-		viafb_write_reg_mask(CR6B, VIACR, 0x00, 0x08);
+ 	}
  
- 	hdmi_write(hdmi, var->vsync_len, HDMI_EXTERNAL_V_DURATION);
- 
--	/* Set bit 0 of HDMI_EXTERNAL_VIDEO_PARAM_SETTINGS here for manual mode */
-+	/* Set bit 0 of HDMI_EXTERNAL_VIDEO_PARAM_SETTINGS here for external mode */
-+	if (!hdmi->preprogrammed_mode)
-+		hdmi_write(hdmi, sync | 1 | (voffset << 4),
-+			   HDMI_EXTERNAL_VIDEO_PARAM_SETTINGS);
+ 	/* Disable expansion bit   */
+ 	viafb_write_reg_mask(CR79, VIACR, 0x00, 0x01);
+-	/* CRT path set to IGA1    */
+-	viafb_write_reg_mask(SR16, VIASR, 0x00, 0x40);
+ 	/* Simultaneout disabled   */
+ 	viafb_write_reg_mask(CR6B, VIACR, 0x00, 0x08);
+-	/* IGA2 path disabled      */
+-	viafb_write_reg_mask(CR6A, VIACR, 0x00, 0x80);
+-
  }
  
- /**
-@@ -739,6 +743,13 @@ static void sh_hdmi_read_edid(struct sh_hdmi *hdmi)
- 		 var->upper_margin, var->yres, var->lower_margin, var->vsync_len,
- 		 PICOS2KHZ(var->pixclock));
- 
-+	if ((hdmi->var.xres = 720 && hdmi->var.yres = 480) ||
-+	    (hdmi->var.xres = 1280 && hdmi->var.yres = 720) ||
-+	    (hdmi->var.xres = 1920 && hdmi->var.yres = 1080))
-+		hdmi->preprogrammed_mode = true;
-+	else
-+		hdmi->preprogrammed_mode = false;
-+
- 	hdmi_external_video_param(hdmi);
+ static void set_lcd_output_path(int set_iga, int output_interface)
+@@ -892,33 +885,9 @@ void viafb_lcd_enable(void)
+ 		viafb_write_reg_mask(SR3D, VIASR, 0x20, 0x20);
+ 		/* 24 bit DI data paht on  */
+ 		viafb_write_reg_mask(CR91, VIACR, 0x00, 0x80);
+-
+-		/* Set data source selection bit by iga path */
+-		if (viaparinfo->lvds_setting_info->iga_path = IGA1) {
+-			/* DFP-H set to IGA1       */
+-			viafb_write_reg_mask(CR97, VIACR, 0x00, 0x10);
+-			/* DFP-L set to IGA1       */
+-			viafb_write_reg_mask(CR99, VIACR, 0x00, 0x10);
+-		} else {
+-			/* DFP-H set to IGA2       */
+-			viafb_write_reg_mask(CR97, VIACR, 0x10, 0x10);
+-			/* DFP-L set to IGA2       */
+-			viafb_write_reg_mask(CR99, VIACR, 0x10, 0x10);
+-		}
+ 		/* LCD enabled             */
+ 		viafb_write_reg_mask(CR6A, VIACR, 0x48, 0x48);
+ 	}
+-
+-	if (viaparinfo->lvds_setting_info->iga_path = IGA1) {
+-		/* CRT path set to IGA2    */
+-		viafb_write_reg_mask(SR16, VIASR, 0x40, 0x40);
+-		/* IGA2 path disabled      */
+-		viafb_write_reg_mask(CR6A, VIACR, 0x00, 0x80);
+-		/* IGA2 path enabled       */
+-	} else {		/* IGA2 */
+-		viafb_write_reg_mask(CR6A, VIACR, 0x80, 0x80);
+-	}
+-
  }
  
+ static void lcd_powersequence_off(void)
 -- 
-1.7.1
+1.6.3.2
 

@@ -1,85 +1,53 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Fri, 03 Sep 2010 07:20:42 +0000
-Subject: [PATCH 15/15] ARM: mach-shmobile: add two more video modes for HDMI
-Message-Id: <Pine.LNX.4.64.1009030917340.2883@axis700.grange>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Wed, 22 Sep 2010 02:52:57 +0000
+Subject: [PATCH] viafb: use proper register for colour when doing fill ops
+Message-Id: <1285124599-5997-1-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <AANLkTin7ZD19NSec58gOCNrbYzeWq5XW4LNte50Nsm8M@mail.gmail.com>
+In-Reply-To: <AANLkTin7ZD19NSec58gOCNrbYzeWq5XW4LNte50Nsm8M@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>, Daniel Drake <dsd@laptop.org>, Jon Nettleton <jon.nettleton@gmail.com>
 
-Add video modes for 480p and SXGA (1280x1024).
+The colour was written to a wrong register for fillrect operations.
+This sometimes caused empty console space (for example after 'clear')
+to have a different colour than desired. Fix this by writing to the
+correct register.
+Many thanks to Daniel Drake and Jon Nettleton for pointing out this
+issue and pointing me in the right direction for the fix.
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Fixes http://dev.laptop.org/ticket/9323
+
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Joseph Chan <JosephChan@via.com.tw>
+Cc: Daniel Drake <dsd@laptop.org>
+Cc: Jon Nettleton <jon.nettleton@gmail.com>
 ---
- arch/arm/mach-shmobile/board-ap4evb.c |   41 ++++++++++++++++++++++++++++-----
- 1 files changed, 35 insertions(+), 6 deletions(-)
+ drivers/video/via/accel.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
-index 0a7bab2..eca4703 100644
---- a/arch/arm/mach-shmobile/board-ap4evb.c
-+++ b/arch/arm/mach-shmobile/board-ap4evb.c
-@@ -599,18 +599,18 @@ static struct platform_device fsi_device = {
- 	},
- };
+diff --git a/drivers/video/via/accel.c b/drivers/video/via/accel.c
+index e44893e..c2f4e6e 100644
+--- a/drivers/video/via/accel.c
++++ b/drivers/video/via/accel.c
+@@ -283,11 +283,12 @@ static int hw_bitblt_2(void __iomem *engine, u8 op, u32 width, u32 height,
+ 		writel(tmp, engine + 0x1C);
+ 	}
  
-+/*
-+ * If left and right margins are not multiples of 8,
-+ * LDHAJR will be adjusted accordingly by the LCDC
-+ * driver. Until we start using EDID, these values
-+ * might have to be adjusted for different monitors.
-+ */
- const static struct fb_videomode ap4evb_hdmi_modes[] = {
- 	{
- 		.name = "HDMI 720p",
- 		.xres = 1280,
- 		.yres = 720,
+-	if (op != VIA_BITBLT_COLOR)
++	if (op = VIA_BITBLT_FILL) {
++		writel(fg_color, engine + 0x58);
++	} else if (op = VIA_BITBLT_MONO) {
+ 		writel(fg_color, engine + 0x4C);
+-
+-	if (op = VIA_BITBLT_MONO)
+ 		writel(bg_color, engine + 0x50);
++	}
  
--		/*
--		 * If left and right margins are not multiples of 8,
--		 * LDHAJR will be adjusted accordingly by the LCDC
--		 * driver. Until we start using EDID, these values
--		 * might have to be adjusted for different monitors.
--		 */
- 		.left_margin = 200,
- 		.right_margin = 88,
- 		.hsync_len = 48,
-@@ -621,6 +621,35 @@ const static struct fb_videomode ap4evb_hdmi_modes[] = {
- 
- 		.pixclock = 13468,
- 		.sync = FB_SYNC_VERT_HIGH_ACT | FB_SYNC_HOR_HIGH_ACT,
-+	}, {
-+		.name = "1280x1024",
-+		.xres = 1280,
-+		.yres = 1024,
-+
-+		.left_margin = 144,
-+		.right_margin = 48,
-+		.hsync_len = 64,
-+
-+		.upper_margin = 35,
-+		.lower_margin = 5,
-+		.vsync_len = 3,
-+
-+		.pixclock = 9800,
-+		.sync = FB_SYNC_VERT_HIGH_ACT | FB_SYNC_HOR_HIGH_ACT,
-+	}, {
-+		.name = "HDMI 480p",
-+		.xres = 720,
-+		.yres = 480,
-+
-+		.left_margin = 36,
-+		.right_margin = 18,
-+		.hsync_len = 68,
-+
-+		.upper_margin = 36,
-+		.lower_margin = 3,
-+		.vsync_len = 6,
-+		.pixclock = 37037,
-+		.sync = FB_SYNC_VERT_HIGH_ACT | FB_SYNC_HOR_HIGH_ACT,
- 	},
- };
- 
+ 	if (op = VIA_BITBLT_FILL)
+ 		ge_cmd |= fill_rop << 24 | 0x00002000 | 0x00000001;
 -- 
-1.7.1
+1.6.3.2
 

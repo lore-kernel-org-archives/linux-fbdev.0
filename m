@@ -1,65 +1,44 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Fri, 03 Sep 2010 07:19:53 +0000
-Subject: [PATCH 02/15] fbdev: sh_mobile_hdmi: simplify the EDID reading
-Message-Id: <Pine.LNX.4.64.1009030910350.2883@axis700.grange>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Fri, 24 Sep 2010 04:51:09 +0000
+Subject: [PATCH 2/4] viafb: restore display on resume
+Message-Id: <e16aa3895c06ec782df51f030dda61bc2ba322cc.1285303223.git.FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1285303222.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <cover.1285303222.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Joseph Chan <JosephChan@via.com.tw>, Jonathan Corbet <corbet@lwn.net>
 
-The present SH-Mobile HDMI driver reads and parses the EDID block into a
-variable screeninfo object, but since it is still unable to dynamically
-reconfigure the framebuffer, it overwrites the EDID information with preset
-values again. This patch just uses a temporary variable to store the EDID
-timing information instead.
+This patch makes viafb restore the display on resume by calling
+viafb_set_par. Resumeing has still its issues:
+- will probably freeze most machines (for me on VX800 reliable on the
+  second resume)
+- under some configurations the screen appears on the wrong output
+  device (reason unknown)
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Joseph Chan <JosephChan@via.com.tw>
+Cc: Jonathan Corbet <corbet@lwn.net>
 ---
- drivers/video/sh_mobile_hdmi.c |   23 +++--------------------
- 1 files changed, 3 insertions(+), 20 deletions(-)
+ drivers/video/via/viafbdev.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-index 2fde08c..03bcb20 100644
---- a/drivers/video/sh_mobile_hdmi.c
-+++ b/drivers/video/sh_mobile_hdmi.c
-@@ -663,10 +663,9 @@ static void sh_hdmi_configure(struct sh_hdmi *hdmi)
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index f2b68cc..5b23293 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1522,6 +1522,9 @@ int viafb_resume(struct pci_dev *pdev)
+ 		    viaparinfo->shared->saved_regs,
+ 		    0x100 * sizeof(u32));
  
- static void sh_hdmi_read_edid(struct sh_hdmi *hdmi)
- {
--	struct fb_var_screeninfo *var = &hdmi->var;
--	struct sh_mobile_hdmi_info *pdata = hdmi->dev->platform_data;
--	struct fb_videomode *lcd_cfg = &pdata->lcd_chan->lcd_cfg;
--	unsigned long height = var->height, width = var->width;
-+	struct fb_var_screeninfo tmpvar;
-+	/* TODO: When we are ready to use EDID, use this to fill &hdmi->var */
-+	struct fb_var_screeninfo *var = &tmpvar;
- 	int i;
- 	u8 edid[128];
++	viafb_set_par(viafbinfo);
++	if (viafb_dual_fb)
++		viafb_set_par(viafbinfo1);
+ 	fb_set_suspend(viafbinfo, 0);
  
-@@ -692,22 +691,6 @@ static void sh_hdmi_read_edid(struct sh_hdmi *hdmi)
- 		 var->upper_margin, var->yres, var->lower_margin, var->vsync_len,
- 		 PICOS2KHZ(var->pixclock));
- 
--	/* FIXME: Use user-provided configuration instead of EDID */
--	var->width		= width;
--	var->xres		= lcd_cfg->xres;
--	var->xres_virtual	= lcd_cfg->xres;
--	var->left_margin	= lcd_cfg->left_margin;
--	var->right_margin	= lcd_cfg->right_margin;
--	var->hsync_len		= lcd_cfg->hsync_len;
--	var->height		= height;
--	var->yres		= lcd_cfg->yres;
--	var->yres_virtual	= lcd_cfg->yres * 2;
--	var->upper_margin	= lcd_cfg->upper_margin;
--	var->lower_margin	= lcd_cfg->lower_margin;
--	var->vsync_len		= lcd_cfg->vsync_len;
--	var->sync		= lcd_cfg->sync;
--	var->pixclock		= lcd_cfg->pixclock;
--
- 	hdmi_external_video_param(hdmi);
- }
- 
+ fail:
 -- 
-1.7.1
+1.6.3.2
 

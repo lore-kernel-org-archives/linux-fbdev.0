@@ -1,130 +1,58 @@
-From: Randy Dunlap <rdunlap@xenotime.net>
-Date: Tue, 21 Sep 2010 00:17:17 +0000
-Subject: Re: [Linux-fbdev-devel] [Bugme-new] [Bug 18912] New: BUG: unable to
-Message-Id: <20100920171717.b5b203cb.rdunlap@xenotime.net>
+From: matt mooney <mfm@muteddisk.com>
+Date: Fri, 24 Sep 2010 19:17:34 +0000
+Subject: [PATCH 24/24] video: change to new flag variable
+Message-Id: <a46ccb29d75d29ec20a10c9a11acd5e12a693316.1285355033.git.mfm@muteddisk.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <e0bdab5d2e8c52041c003de68ba774c3e706716c.1285355033.git.mfm@muteddisk.com>
+ <9968d4260be8850200cc9c7dfe08addf611468b4.1285355033.git.mfm@muteddisk.com>
+ <036514b5dd23c5af14303519d79d60d79adccbee.1285355033.git.mfm@muteddisk.com>
+ <ffbd189ef2d414ea7c87ffe2b40fce87877dc014.1285355033.git.mfm@muteddisk.com>
+ <b3e2061e1e6703f7b84c0484030e07de6000546a.1285355033.git.mfm@muteddisk.com>
+ <70fe6b462b3ee22922698a12d62d650cf029033a.1285355033.git.mfm@muteddisk.com>
+ <40a2d76d013ad025d08a411992af10f6bbef0a13.1285355033.git.mfm@muteddisk.com>
+ <b484ccf548e1700e09ac7f731289503bf3e7b3bf.1285355033.git.mfm@muteddisk.com>
+ <2c0fbcaafb18007c5c83823cb33e35120fe15091.1285355033.git.mfm@muteddisk.com>
+ <ec9520aca140f253d8bad33cf35b8e668e7e9c9c.1285355033.git.mfm@muteddisk.com>
+ <8cea68a58c5ddba79fc96e93fa0b23681e6a7ffe.1285355033.git.mfm@muteddisk.com>
+ <e93a3f1af26d2b0fc798b4c15401b3422ae6e2bd.1285355033.git.mfm@muteddisk.com>
+ <c2f1ef5590660ae574e9bdaf7136213741081404.1285355033.git.mfm@muteddisk.com>
+ <efe88633e146de3e173afea14f777c41c37e5db2.1285355033.git.mfm@muteddisk.com>
+ <facbf79cadc81f9043e89160b7b3b8a90926aba1.1285355033.git.mfm@muteddisk.com>
+ <f8ffc630c8a56ebd5da0aa2227d63fecc21d4ee7.1285355033.git.mfm@muteddisk.com>
+ <0472f95473283ce75285e458b22b86ff791d7a42.1285355033.git.mfm@muteddisk.com>
+ <75da5e0e0a547b4acbc7cfbdf35c29a24512ca37.1285355033.git.mfm@muteddisk.com>
+ <30c1ad7f4200136e00723fd76da1e58200e6e5b0.1285355033.git.mfm@muteddisk.com>
+ <06e70fe4f8a51f65f3582c353329939a8548d897.1285355033.git.mfm@muteddisk.com>
+ <a2fd5831df37b0a306ab4ca51d2e86ea7ee06425.1285355033.git.mfm@muteddisk.com>
+ <58b418c2e7311bffb13606a6b94e33ddb7569346.1285355033.git.mfm@muteddisk.com>
+ <1dd0f4a1709a9b139fe87f2b311cc0d129900b3f.1285355033.git.mfm@muteddisk.com>
+In-Reply-To: <1dd0f4a1709a9b139fe87f2b311cc0d129900b3f.1285355033.git.mfm@muteddisk.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: kernel-janitors@vger.kernel.org
+Cc: Maik Broemme <mbroemme@plusserver.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, 20 Sep 2010 16:18:40 -0700 Andrew Morton wrote:
+Replace EXTRA_CFLAGS with ccflags-y.
 
-> 
-> (switched to email.  Please respond via emailed reply-to-all, not via the
-> bugzilla web interface).
-
-Hi!
-Please use the current fbdev mailing list (cc-ed).
-
-
-> On Mon, 20 Sep 2010 22:34:17 GMT bugzilla-daemon@bugzilla.kernel.org wrote:
-> 
-> > https://bugzilla.kernel.org/show_bug.cgi?id912
-> > 
-> >            Summary: BUG: unable to handle kernel NULL pointer dereference
-> >                     at (null)
-> >            Product: IO/Storage
-> >            Version: 2.5
-> >     Kernel Version: 2.6.35
-> >           Platform: All
-> >         OS/Version: Linux
-> >               Tree: Mainline
-> >             Status: NEW
-> >           Severity: normal
-> >           Priority: P1
-> >          Component: Other
-> >         AssignedTo: io_other@kernel-bugs.osdl.org
-> >         ReportedBy: thomas.creutz@gmx.de
-> >         Regression: No
-> > 
-> > 
-> > Created an attachment (id0872)
-> >  --> (https://bugzilla.kernel.org/attachment.cgi?id0872)
-> > full dmesg
-> > 
-> > at restart with ubuntu mainline kernel from there
-> > (http://kernel.ubuntu.com/~kernel-ppa/mainline/v2.6.35.4-maverick/) I get the
-> > following bug:
-> 
-> This is a bit strange.  We dereferenced a NULL pointer in
-> __mutex_lock_slowpath(), but where did it come from?  fb_release() does
-> 
-> 	mutex_lock(&info->lock);
-> 
-> but for that to be exactly zero, `info' must have been a small negative
-> number.
-> 
-> 
-> > [   43.635104] BUG: unable to handle kernel NULL pointer dereference at (null)
-> > [   43.635125] IP: [<ffffffff81576249>] __mutex_lock_slowpath+0xa9/0x170
-> > [   43.635144] PGD 2333cd067 PUD 2333ce067 PMD 0 
-> > [   43.635159] Oops: 0002 [#1] SMP 
-> > [   43.635171] last sysfs file: /sys/devices/platform/f71882fg.2560/temp3_input
-> > [   43.635185] CPU 4 
-> > [   43.635188] Modules linked in: ipt_LOG ip6t_LOG ip6t_rt ipt_REDIRECT
-> > xt_multiport xt_recent xt_tcpudp xt_limit nf_conntrack_ipv6 xt_state
-> > ip6table_filter ip6_tables iptable_mangle iptable_nat nf_nat iptable_filter
-> > nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 ip_tables x_tables nouveau ttm
-> > drm_kms_helper drm i7core_edac i2c_algo_bit edac_core f71882fg coretemp raid10
-> > raid456 async_raid6_recov async_pq raid6_pq async_xor xor async_memcpy async_tx
-> > raid0 multipath linear raid1 r8169 mii ahci libahci
-> > [   43.635293] 
-> > [   43.635297] Pid: 451, comm: plymouthd Not tainted 2.6.35-02063504-generic
-> > #201008271919 MSI X58 Pro-E (MS-7522)/MS-7522
-> > [   43.635305] RIP: 0010:[<ffffffff81576249>]  [<ffffffff81576249>]
-> > __mutex_lock_slowpath+0xa9/0x170
-> > [   43.635315] RSP: 0018:ffff8802331cbe18  EFLAGS: 00010246
-> > [   43.635321] RAX: ffff8802331cbe28 RBX: ffff88023429000c RCX:
-> > 00000000ffffffff
-> > [   43.635327] RDX: 0000000000000000 RSI: 00000000ffffffff RDI:
-> > ffff88023429000c
-> > [   43.635334] RBP: ffff8802331cbe78 R08: 0000000000000000 R09:
-> > 0000000000000000
-> > [   43.635340] R10: 00007fff508c4d70 R11: 0000000000000246 R12:
-> > ffff880234290008
-> > [   43.635346] R13: ffff880232fa8000 R14: ffff880232fa8000 R15:
-> > ffff880234290010
-> > [   43.635353] FS:  00007f374ac96700(0000) GS:ffff880001e80000(0000)
-> > knlGS:0000000000000000
-> > [   43.635360] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> > [   43.635365] CR2: 0000000000000000 CR3: 00000002331a0000 CR4:
-> > 00000000000006a0
-> > [   43.635372] DR0: 0000000000000000 DR1: 0000000000000000 DR2:
-> > 0000000000000000
-> > [   43.635378] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7:
-> > 0000000000000400
-> > [   43.635385] Process plymouthd (pid: 451, threadinfo ffff8802331ca000, task
-> > ffff880232fa8000)
-> > [   43.635392] Stack:
-> > [   43.635395]  ffff8802331cbe28 ffffffff815774fe ffff880234290010
-> > ffffffff8113e2a6
-> > [   43.635407] <0> ffff880001e8f970 ffffea0007ad5ff0 ffff880231892cf0
-> > ffff880234290008
-> > [   43.635420] <0> ffff880234290008 ffff8802342980d0 ffff880226b35c00
-> > ffff8802342980d0
-> > [   43.635434] Call Trace:
-> > [   43.635440]  [<ffffffff815774fe>] ? _raw_spin_lock+0xe/0x20
-> > [   43.635447]  [<ffffffff8113e2a6>] ? add_partial+0x56/0x90
-> > [   43.635453]  [<ffffffff81575ecb>] mutex_lock+0x2b/0x50
-> > [   43.635460]  [<ffffffff812e4839>] fb_release+0x29/0x70
-> > [   43.635467]  [<ffffffff81152d63>] __fput+0xf3/0x220
-> > [   43.635472]  [<ffffffff81152eac>] fput+0x1c/0x30
-> > [   43.635478]  [<ffffffff8114f6bd>] filp_close+0x5d/0x90
-> > [   43.635484]  [<ffffffff8115095f>] sys_close+0xaf/0x110
-> > [   43.635492]  [<ffffffff8100b072>] system_call_fastpath+0x16/0x1b
-> > [   43.635591] Code: 75 07 41 83 7e 20 63 7f b1 49 8d 5c 24 04 4d 8d 7c 24 08
-> > 48 89 df e8 b7 12 00 00 49 8b 57 08 48 8d 45 b0 4c 89 7d b0 49 89 47 08 <48> 89
-> > 02 48 89 55 b8 ba ff ff ff ff 4c 89 75 c0 89 d0 41 87 04 
-> > [   43.635716] RIP  [<ffffffff81576249>] __mutex_lock_slowpath+0xa9/0x170
-> > [   43.635724]  RSP <ffff8802331cbe18>
-> > [   43.635728] CR2: 0000000000000000
-> > [   43.635732] ---[ end trace 977d55bf15636e33 ]---
-> > 
-> > 
-> > Kernel is 2.6.35-02063504-generic
-
-
+Signed-off-by: matt mooney <mfm@muteddisk.com>
 ---
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+ drivers/video/intelfb/Makefile |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/intelfb/Makefile b/drivers/video/intelfb/Makefile
+index 6c782d3..f7d631e 100644
+--- a/drivers/video/intelfb/Makefile
++++ b/drivers/video/intelfb/Makefile
+@@ -4,7 +4,4 @@ intelfb-y := intelfbdrv.o intelfbhw.o
+ intelfb-$(CONFIG_FB_INTEL_I2C) += intelfb_i2c.o
+ intelfb-objs := $(intelfb-y)
+ 
+-ifdef CONFIG_FB_INTEL_DEBUG
+-#EXTRA_CFLAGS += -DDEBUG -DVERBOSE -DREGDUMP
+-EXTRA_CFLAGS += -DDEBUG -DREGDUMP
+-endif
++ccflags-$(CONFIG_FB_INTEL_DEBUG) := -DDEBUG -DREGDUMP
+-- 
+1.7.2.1
+

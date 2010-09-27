@@ -1,44 +1,51 @@
-From: Jing Liu <jing.liu.linux@gmail.com>
-Date: Wed, 15 Sep 2010 18:35:39 +0000
-Subject: [PATCH] s3c-fb: fix spinlock lockup
-Message-Id: <1284575739.24018.19.camel@ubuntu64.ipb.online.sh.cn>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Mon, 27 Sep 2010 20:23:51 +0000
+Subject: fbcon: fbcon_fb_unbind() mixing up vc/fb indexes?
+Message-Id: <20100927222351.1e15e2fd@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-This patch fixes spinlock lockup caused by calling request_irq before
-init_waitqueue_head in s3c-fb.c.
+Hi James,
 
-This patch has been tested on SmartQ5.
+What's your opinion regarding the code I marked in below quoted
+fbcon.c snipplet?
+
+This looks wrong, setting 'new_idx' to 'i', I would rather see it set to
+con2fb_map[i] instead as it's used as index into registered_fb[] by
+set_con2fb_map(), 'i' itself being used as vc index!
+
+Bruno
 
 
-Signed-off-by: Jing Liu <jing.liu.linux at gmail.com>
----
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index f9aca9d..980ad04 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -1160,8 +1160,6 @@ static int __devinit s3c_fb_probe_win(struct
-s3c_fb *sfb, unsigned int win_no,
- 
- 	dev_dbg(sfb->dev, "probing window %d, variant %p\n", win_no, variant);
- 
--	init_waitqueue_head(&sfb->vsync_info.wait);
--
- 	palette_size = variant->palette_sz * 4;
- 
- 	fbinfo = framebuffer_alloc(sizeof(struct s3c_fb_win) +
-@@ -1351,6 +1349,9 @@ static int __devinit s3c_fb_probe(struct
-platform_device *pdev)
- 		goto err_ioremap;
- 	}
- 	sfb->irq_no = res->start;
-+
-+	init_waitqueue_head(&sfb->vsync_info.wait);
-+
- 	ret = request_irq(sfb->irq_no, s3c_fb_irq,
- 			  0, "s3c_fb", sfb);
- 	if (ret) {
 
+drivers/video/console/fbcon.c:
+2991 static int fbcon_fb_unbind(int idx)
+2992 {
+2993         int i, new_idx = -1, ret = 0;
+2994
+2995         if (!fbcon_has_console_bind)
+2996                 return 0;
+2997
+2998         for (i = first_fb_vc; i <= last_fb_vc; i++) {
+2999                 if (con2fb_map[i] != idx &&
+3000                     con2fb_map[i] != -1) {
+3001                         new_idx = i;
+                             ^^^^^^^^^^^
+3002                         break;
+3003                 }
+3004         }
+3005
+3006         if (new_idx != -1) {
+3007                 for (i = first_fb_vc; i <= last_fb_vc; i++) {
+3008                         if (con2fb_map[i] = idx)
+3009                                 set_con2fb_map(i, new_idx, 0);
+                                                       ^^^^^^^
+3010                 }
+3011         } else
+3012                 ret = fbcon_unbind();
+3013
+3014         return ret;
+3015 }

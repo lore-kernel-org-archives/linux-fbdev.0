@@ -1,36 +1,41 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Mon, 20 Sep 2010 12:43:54 +0000
-Subject: Re: [PATCH 05/12] viafb: fix i2c_transfer error handling
-Message-Id: <20100920064354.2fc28219@bike.lwn.net>
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Mon, 27 Sep 2010 15:10:06 +0000
+Subject: Re: [RFC v4]update broken web addresses in the kernel.
+Message-Id: <20100927151005.GC11086@tuxdriver.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1284879532.git.FlorianSchandinat@gmx.de>
-	<171e0fb74a34b069c0c12aa90c56d5e5da5489c6.1284879532.git.FlorianSchandinat@gmx.de>
-In-Reply-To: <171e0fb74a34b069c0c12aa90c56d5e5da5489c6.1284879532.git.FlorianSchandinat@gmx.de>
+References: <1285525875-9920-1-git-send-email-justinmattock@gmail.com>
+In-Reply-To: <1285525875-9920-1-git-send-email-justinmattock@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Joseph Chan <JosephChan@via.com.tw>
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Cc: trivial@kernel.org, linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org, linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, linux-ide@vger.kernel.org, "Maciej W. Rozycki" <macro@linux-mips.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Finn Thain <fthain@telegraphics.com.au>, Randy Dunlap <rdunlap@xenotime.net>, Matt Turner <mattst88@gmail.com>, Dimitry Torokhov <dmitry.torokhov@gmail.com>, Mike Frysinger <vapier.adi@gmail.com>
 
-On Sun, 19 Sep 2010 07:33:46 +0000
-Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
+On Sun, Sep 26, 2010 at 11:31:15AM -0700, Justin P. Mattock wrote:
+> Below is an updated patch from the original fixing broken web addresses in the kernel.
+> Thanks for all the help and info on this to everybody..
+> Hopefully I didnt miss any of them(if so let me know, and I'll resend).
 
-> i2c_transfer returns negative errno on error and number of messages
-> processed on success. Just returning this value would give a poor
-> interface as it is not obvious that you must compare with 2 after reading
-> 1 or n bytes and with 1 after writing 1 byte to determine if it was
-> successful. To avoid this error prone interface convert the error code
-> of a successful read/write to zero and all other non-negative values to
-> an negative error code.
-> This fixes a regression introduced by
-> 	via: Rationalize vt1636 detection
-> which resulted in no longer detecting a VT1636 chip and therefore has
-> broken the output in configurations wich contain this chip.
+Changing a URL for a relocated page is one thing, but removing links
+isn't necessarily a great idea.  Even if the site is technically
+gone, it may be possible to find information e.g through the Internet
+Archive Wayback Machine.
 
-From a quick look, all of these patches look like improvements to me.
-This one, since it's a regression fix, should probably have a 
-Cc: stable@kernel.org in it as well.
+> diff --git a/drivers/net/wireless/orinoco/main.c b/drivers/net/wireless/orinoco/main.c
+> index e8e2d0f..ba10b07 100644
+> --- a/drivers/net/wireless/orinoco/main.c
+> +++ b/drivers/net/wireless/orinoco/main.c
+> @@ -17,7 +17,6 @@
+>   *
+>   * Portions based on wvlan_cs.c 1.0.6, Copyright Andreas Neuhaus <andy
+>   * AT fasta.fh-dortmund.de>
+> - *      http://www.stud.fh-dortmund.de/~andy/wvlan/
+>   *
+>   * The contents of this file are subject to the Mozilla Public License
+>   * Version 1.1 (the "License"); you may not use this file except in
 
-Acked-by: Jonathan Corbet <corbet@lwn.net>
+http://web.archive.org/web/20070716051348/http://www.stud.fh-dortmund.de/~andy/wvlan/
 
-jon
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.

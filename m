@@ -1,50 +1,33 @@
-From: Guruswamy Senthilvadivu <svadivu@ti.com>
-Date: Fri, 08 Oct 2010 06:56:33 +0000
-Subject: [PATCH v6 3/3] OMAP: DSS2: OMAPFB: Allow usage of def_vrfb only for omap2,3
-Message-Id: <1286520273-4892-4-git-send-email-svadivu@ti.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Date: Thu, 07 Oct 2010 05:28:19 +0000
+Subject: Re: [PATCH 2/2] powerpc/85xx: add DIU support to the Freecale P1022DS reference board
+Message-Id: <0088605C-957A-4AA8-9E1D-05EE2F1F7115@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1286520273-4892-1-git-send-email-svadivu@ti.com>
- <1286520273-4892-2-git-send-email-svadivu@ti.com>
- <1286520273-4892-3-git-send-email-svadivu@ti.com>
-In-Reply-To: <1286520273-4892-3-git-send-email-svadivu@ti.com>
+References: <1284057597-17126-1-git-send-email-timur@freescale.com>
+	<1284057597-17126-2-git-send-email-timur@freescale.com>
+In-Reply-To: <1284057597-17126-2-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@nokia.com, hvaibhav@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Senthilvadivu Guruswamy <svadivu@ti.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, linux-fbdev@vger.kernel.org, yorksun@freescale.com
 
-From: Senthilvadivu Guruswamy <svadivu@ti.com>
 
-VRFB is supported only on OMAP2 and OMAP3 platforms. If VRFB rotation is 
-not supported by the hardware and the user requests VRFB rotation, 
-print a warning and ignore the request from the user.
+On Sep 9, 2010, at 1:39 PM, Timur Tabi wrote:
 
-Signed-off-by: Senthilvadivu Guruswamy <svadivu@ti.com>
----
- drivers/video/omap2/omapfb/omapfb-main.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+> +static void p1022ds_set_monitor_port(int monitor_port)
+> +{
+> +	struct device_node *pixis_node;
+> +	u8 __iomem *brdcfg1;
+> +
+> +	pixis_node = of_find_compatible_node(NULL, NULL, "fsl,fpga-pixis");
+> +	if (!pixis_node) {
+> +		pr_err("p1022ds: missing ngPIXIS node\n");
+> +		return;
+> +	}
+> +
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index bddfca6..fcd9038 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -2198,6 +2198,16 @@ static int omapfb_probe(struct platform_device *pdev)
- 		goto err0;
- 	}
- 
-+	/* TODO : Replace cpu check with omap_has_vrfb once HAS_FEATURE
-+	*	 available for OMAP2 and OMAP3
-+	*/
-+	if (def_vrfb && !cpu_is_omap24xx() && !cpu_is_omap34xx()) {
-+		def_vrfb = 0;
-+		dev_warn(&pdev->dev, "VRFB is not supported in this hardware,"
-+				"ignoring the module parameter vrfb=y\n");
-+	}
-+
-+
- 	mutex_init(&fbdev->mtx);
- 
- 	fbdev->dev = &pdev->dev;
--- 
-1.6.3.3
+update based on change to compatible in .dts
+
+- k
 

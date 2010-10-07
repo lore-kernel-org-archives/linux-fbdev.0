@@ -1,33 +1,24 @@
-From: Nicolas Kaiser <nikai@nikai.net>
-Date: Tue, 05 Oct 2010 18:31:54 +0000
-Subject: [PATCH] arm/omap: simplify conditional
-Message-Id: <20101005203154.0ba412d2@absol.kitzblitz>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Thu, 07 Oct 2010 13:53:59 +0000
+Subject: Re: [PATCH] arm/omap: simplify conditional
+Message-Id: <1286459639.28499.1064.camel@tubuntu.research.nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20101005203154.0ba412d2@absol.kitzblitz>
+In-Reply-To: <20101005203154.0ba412d2@absol.kitzblitz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tony Lindgren <tony@atomide.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: ext Nicolas Kaiser <nikai@nikai.net>
+Cc: Tony Lindgren <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Simplify conditional: (a || (!a && !b)) => (a || !b)
+On Tue, 2010-10-05 at 20:31 +0200, ext Nicolas Kaiser wrote:
+> Simplify conditional: (a || (!a && !b)) => (a || !b)
+> 
+> Signed-off-by: Nicolas Kaiser <nikai@nikai.net>
+> ---
 
-Signed-off-by: Nicolas Kaiser <nikai@nikai.net>
----
- arch/arm/plat-omap/fb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Thanks, applied.
 
-diff --git a/arch/arm/plat-omap/fb.c b/arch/arm/plat-omap/fb.c
-index 0054b95..5c09095 100644
---- a/arch/arm/plat-omap/fb.c
-+++ b/arch/arm/plat-omap/fb.c
-@@ -126,7 +126,7 @@ static int set_fbmem_region_type(struct omapfb_mem_region *rg, int mem_type,
- 	 * type = 0 && paddr = 0, a default don't care case maps to
- 	 * the SDRAM type.
- 	 */
--	if (rg->type || (!rg->type && !rg->paddr))
-+	if (rg->type || !rg->paddr)
- 		return 0;
- 	if (ranges_overlap(rg->paddr, rg->size, mem_start, mem_size)) {
- 		rg->type = mem_type;
--- 
-1.7.2.2
+ Tomi
+
+

@@ -1,17 +1,57 @@
-From: Sangbeom Kim <sbkim73@samsung.com>
-Date: Mon, 18 Oct 2010 12:55:24 +0000
-Subject: [PATCH 0/4] ARM: S5PV310: Add support FIMD
-Message-Id: <1287406528-15324-1-git-send-email-sbkim73@samsung.com>
+From: Guruswamy Senthilvadivu <svadivu@ti.com>
+Date: Fri, 08 Oct 2010 06:56:31 +0000
+Subject: [PATCH v6 1/3] OMAP: DSS2: OMAPFB: Allow FB_OMAP2 to build without VRFB
+Message-Id: <1286520273-4892-2-git-send-email-svadivu@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1286520273-4892-1-git-send-email-svadivu@ti.com>
+In-Reply-To: <1286520273-4892-1-git-send-email-svadivu@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@nokia.com, hvaibhav@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Senthilvadivu Guruswamy <svadivu@ti.com>
 
-This patch adds support FIMD(Fully Interactive Mobile Display) on S5PV310 and S5PC210.
-The 3rd patch is update s3c-fb for it and others are for platform data.
+From: Senthilvadivu Guruswamy <svadivu@ti.com>
 
-[PATCH 1/4] ARM: S5PV310: Add FIMD resource definition
-[PATCH 2/4] ARM: S5PV310: Add platform device and helper functions for FIMD
-[PATCH 3/4] s3c-fb: Add support S5PV310 FIMD
-[PATCH 4/4] ARM: S5PV310: Add platform data for S5PV310 FIMD and LTE480WV platform-lcd
+FB_OMAP2 can work without VRFB, but currently does not build. Fix this.
+
+Signed-off-by: Senthilvadivu Guruswamy <svadivu@ti.com>
+---
+ arch/arm/plat-omap/include/plat/vrfb.h |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/plat/vrfb.h b/arch/arm/plat-omap/include/plat/vrfb.h
+index d8a03ce..3792bde 100644
+--- a/arch/arm/plat-omap/include/plat/vrfb.h
++++ b/arch/arm/plat-omap/include/plat/vrfb.h
+@@ -35,6 +35,7 @@ struct vrfb {
+ 	bool yuv_mode;
+ };
+ 
++#ifdef CONFIG_OMAP2_VRFB
+ extern int omap_vrfb_request_ctx(struct vrfb *vrfb);
+ extern void omap_vrfb_release_ctx(struct vrfb *vrfb);
+ extern void omap_vrfb_adjust_size(u16 *width, u16 *height,
+@@ -47,4 +48,19 @@ extern void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
+ extern int omap_vrfb_map_angle(struct vrfb *vrfb, u16 height, u8 rot);
+ extern void omap_vrfb_restore_context(void);
+ 
++#else
++static inline int omap_vrfb_request_ctx(struct vrfb *vrfb) { return 0; }
++static inline void omap_vrfb_release_ctx(struct vrfb *vrfb) {}
++static inline void omap_vrfb_adjust_size(u16 *width, u16 *height,
++		u8 bytespp) {}
++static inline u32 omap_vrfb_min_phys_size(u16 width, u16 height, u8 bytespp)
++		{ return 0; }
++static inline u16 omap_vrfb_max_height(u32 phys_size, u16 width, u8 bytespp)
++		{ return 0; }
++static inline void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
++		u16 width, u16 height, unsigned bytespp, bool yuv_mode) {}
++static inline int omap_vrfb_map_angle(struct vrfb *vrfb, u16 height, u8 rot)
++		{ return 0; }
++static inline void omap_vrfb_restore_context(void) {}
++#endif
+ #endif /* __VRFB_H */
+-- 
+1.6.3.3
+

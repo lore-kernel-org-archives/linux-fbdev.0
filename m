@@ -1,46 +1,35 @@
-From: Nicolas Kaiser <nikai@nikai.net>
-Date: Tue, 26 Oct 2010 12:36:50 +0000
-Subject: Re: [PATCH 12/14] drivers/video/omap/blizzard.c: delete double
-Message-Id: <20101026143650.14c836eb@absol.kitzblitz>
+From: Guruswamy Senthilvadivu <svadivu@ti.com>
+Date: Fri, 08 Oct 2010 06:56:30 +0000
+Subject: [PATCH v6 0/3] OMAP: DSS2: OMAPFB: Allow FB_OMAP2 to build without VRFB
+Message-Id: <1286520273-4892-1-git-send-email-svadivu@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1288088743-3725-1-git-send-email-julia@diku.dk>
-	<1288088743-3725-13-git-send-email-julia@diku.dk>
-In-Reply-To: <1288088743-3725-13-git-send-email-julia@diku.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Julia Lawall <julia@diku.dk>
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+To: tomi.valkeinen@nokia.com, hvaibhav@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Senthilvadivu Guruswamy <svadivu@ti.com>
 
-* Julia Lawall <julia@diku.dk>:
-> Delete successive assignments to the same location.  Initialize the out_y
-> field as well as the out_x field, rather than initializing the out_x field
-> twice.
+From: Senthilvadivu Guruswamy <svadivu@ti.com>
 
-Hi there!
+The changelog till v6 are:
+	- Address Multi-omap build issue
+	- Added a check to warn the wrong usage of vrfb 
+	in non-vrfb omap devices.
+	- The patch subject is as per the naming conventions
+	- patch 2/3 now has the changes in omap2/omapfb/Kconfig
+	instead of omap2/Kconfig.  The functional effect remains
+	the same, and the place of implementation is more appropriate.
+	- Provide details of non-vrfb devices in commit description in patch 3/3
+	- Removed extra paranthesis in cpu checks
 
-An identical patch is already in the -mm tree:
 
-> The patch titled
->      drivers/video/omap/blizzard.c: suspected typo in assignment
-> has been added to the -mm tree.  Its filename is
->      video-omap-suspected-typo-in-assignment.patch
+Senthilvadivu Guruswamy (3):
+  OMAP: DSS2: OMAPFB: Allow FB_OMAP2 to build without VRFB
+  OMAP: DSS2: OMAPFB: make VRFB depends on OMAP2,3
+  OMAP: DSS2: OMAPFB: Allow usage of def_vrfb only for omap2,3
 
-> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
-> out what to do about this
-> 
-> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
-> 
-> ------------------------------------------------------
-> Subject: drivers/video/omap/blizzard.c: suspected typo in assignment
-> From: Nicolas Kaiser <nikai@nikai.net>
-> 
-> Untested, but looks like an obvious typo to me.
-> 
-> Signed-off-by: Nicolas Kaiser <nikai@nikai.net>
-> Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-> Cc: Tony Lindgren <tony@atomide.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+ arch/arm/plat-omap/include/plat/vrfb.h   |   16 ++++++++++++++++
+ drivers/video/omap2/omapfb/Kconfig       |    2 +-
+ drivers/video/omap2/omapfb/omapfb-main.c |   10 ++++++++++
+ 3 files changed, 27 insertions(+), 1 deletions(-)
 
-Best regards,
-Nicolas Kaiser

@@ -1,47 +1,100 @@
-From: "Guruswamy, Senthilvadivu" <svadivu@ti.com>
-Date: Fri, 08 Oct 2010 10:31:14 +0000
-Subject: RE: [PATCH v6 0/3] OMAP: DSS2: OMAPFB: Allow FB_OMAP2 to build
-Message-Id: <FCCFB4CDC6E5564B9182F639FC356087034B94B48F@dbde02.ent.ti.com>
+From: Jimmy RUBIN <jimmy.rubin@stericsson.com>
+Date: Wed, 13 Oct 2010 06:58:54 +0000
+Subject: RFC: [PATCH 0/2] Add support for MCDE frame buffer driver
+Message-Id: <F45880696056844FA6A73F415B568C69535EA277BA@EXDCVYMBSTM006.EQ1STM.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1286520273-4892-1-git-send-email-svadivu@ti.com>
- <1286531543.28499.1072.camel@tubuntu.research.nokia.com>
-In-Reply-To: <1286531543.28499.1072.camel@tubuntu.research.nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: "Hiremath, Vaibhav" <hvaibhav@ti.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
+It contains a display sub system framework (DSS) which is used to
+implement the frame buffer device interface and a display device
+framework that is used to add support for different type of displays
+such as LCD, HDMI and so on.
 
+The current implementation supports DSI command mode displays.
 
-> -----Original Message-----
-> From: Tomi Valkeinen [mailto:tomi.valkeinen@nokia.com]
-> Sent: Friday, October 08, 2010 3:22 PM
-> To: Guruswamy, Senthilvadivu
-> Cc: Hiremath, Vaibhav; linux-omap@vger.kernel.org; linux-
-> fbdev@vger.kernel.org
-> Subject: Re: [PATCH v6 0/3] OMAP: DSS2: OMAPFB: Allow FB_OMAP2 to build
-> without VRFB
-> 
-> On Fri, 2010-10-08 at 08:44 +0200, ext Guruswamy Senthilvadivu wrote:
-> > From: Senthilvadivu Guruswamy <svadivu@ti.com>
-> >
-> > The changelog till v6 are:
-> > 	- Address Multi-omap build issue
-> > 	- Added a check to warn the wrong usage of vrfb
-> > 	in non-vrfb omap devices.
-> > 	- The patch subject is as per the naming conventions
-> > 	- patch 2/3 now has the changes in omap2/omapfb/Kconfig
-> > 	instead of omap2/Kconfig.  The functional effect remains
-> > 	the same, and the place of implementation is more appropriate.
-> > 	- Provide details of non-vrfb devices in commit description in patch
-> 3/3
-> > 	- Removed extra paranthesis in cpu checks
-> >
-> 
-> Thanks, looks fine to me. Applied to DSS2 tree.
-> 
-Thanks.
->  Tomi
-> 
+Below is a short summary of the files in this patch:
+
+mcde_fb.c
+Implements the frame buffer device driver.
+
+mcde_dss.c
+Contains the implementation of the display sub system framework (DSS).
+This API is used by the frame buffer device driver.
+
+mcde_display.c
+Contains default implementations of the functions in the display driver
+API. A display driver may override the necessary functions to function 
+properly. A simple display driver is implemented in display-generic_dsi.c.
+
+display-generic_dsi.c
+Sample driver for a DSI command mode display.
+
+mcde_bus.c
+Implementation of the display bus. A display device is probed when both
+the display driver and display configuration have been registered with
+the display bus.
+
+mcde_hw.c
+Hardware abstraction layer of MCDE. All code that communicates directly
+with the hardware resides in this file.
+
+board-mop500-mcde.c
+The configuration of the display and the frame buffer device is handled
+in this file.
+
+Jimmy Rubin (2):
+	Video: Add support for MCDE frame buffer driver
+	Ux500: Add support for MCDE frame buffer driver
+
+ drivers/video/Kconfig                         |    2 +
+ drivers/video/Makefile                        |    1 +
+ drivers/video/mcde/Kconfig                    |   39 +
+ drivers/video/mcde/Makefile                   |   12 +
+ drivers/video/mcde/display-generic_dsi.c      |  152 +
+ drivers/video/mcde/dsilink_regs.h             | 2024 ++++++++++
+ drivers/video/mcde/mcde_bus.c                 |  259 ++
+ drivers/video/mcde/mcde_display.c             |  427 ++
+ drivers/video/mcde/mcde_dss.c                 |  353 ++
+ drivers/video/mcde/mcde_fb.c                  |  697 ++++
+ drivers/video/mcde/mcde_hw.c                  | 2526 ++++++++++++
+ drivers/video/mcde/mcde_mod.c                 |   67 +
+ drivers/video/mcde/mcde_regs.h                | 5297 +++++++++++++++++++++++++
+ include/video/mcde/mcde.h                     |  387 ++
+ include/video/mcde/mcde_display-generic_dsi.h |   34 +
+ include/video/mcde/mcde_display.h             |  139 +
+ include/video/mcde/mcde_dss.h                 |   78 +
+ include/video/mcde/mcde_fb.h                  |   54 +
+ arch/arm/mach-ux500/Kconfig                    |    8 +
+ arch/arm/mach-ux500/Makefile                   |    1 +
+ arch/arm/mach-ux500/board-mop500-mcde.c        |  209 ++++++++++++++++++++++++
+ arch/arm/mach-ux500/board-mop500-regulators.c  |   28 +++
+ arch/arm/mach-ux500/board-mop500.c             |    3 +
+ arch/arm/mach-ux500/devices-db8500.c           |   68 ++++++++
+ arch/arm/mach-ux500/include/mach/db8500-regs.h |    7 +
+ arch/arm/mach-ux500/include/mach/devices.h     |    1 +
+ arch/arm/mach-ux500/include/mach/prcmu-regs.h  |    1 +
+ arch/arm/mach-ux500/include/mach/prcmu.h       |    3 +
+ arch/arm/mach-ux500/prcmu.c                    |  129 +++++++++++++++
+
+ 29 files changed, 13006 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/mcde/Kconfig
+ create mode 100644 drivers/video/mcde/Makefile
+ create mode 100644 drivers/video/mcde/display-generic_dsi.c
+ create mode 100644 drivers/video/mcde/dsilink_regs.h
+ create mode 100644 drivers/video/mcde/mcde_bus.c
+ create mode 100644 drivers/video/mcde/mcde_display.c
+ create mode 100644 drivers/video/mcde/mcde_dss.c
+ create mode 100644 drivers/video/mcde/mcde_fb.c
+ create mode 100644 drivers/video/mcde/mcde_hw.c
+ create mode 100644 drivers/video/mcde/mcde_mod.c
+ create mode 100644 drivers/video/mcde/mcde_regs.h
+ create mode 100644 include/video/mcde/mcde.h
+ create mode 100644 include/video/mcde/mcde_display-generic_dsi.h
+ create mode 100644 include/video/mcde/mcde_display.h
+ create mode 100644 include/video/mcde/mcde_dss.h
+ create mode 100644 include/video/mcde/mcde_fb.h
+ create mode 100644 arch/arm/mach-ux500/board-mop500-mcde.c
 

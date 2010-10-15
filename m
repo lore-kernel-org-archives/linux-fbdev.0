@@ -1,37 +1,26 @@
-From: Daniel Drake <dsd@laptop.org>
-Date: Fri, 29 Oct 2010 14:03:47 +0000
-Subject: Re: [PATCH 2/2] viafb: Add OLPC XO-1.5 port configs
-Message-Id: <AANLkTikkbvhdy2g8Cv7oCmgQxSmMuGnJNTGG1RfU-xac@mail.gmail.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 15 Oct 2010 07:53:44 +0000
+Subject: [PATCH 0/4] fbdev: sh: "video=" command line parsing, improved HDMI
+Message-Id: <Pine.LNX.4.64.1010150942270.3945@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20100921153726.21D609D401B@zog.reactivated.net>
-In-Reply-To: <20100921153726.21D609D401B@zog.reactivated.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On 28 October 2010 23:04, Jonathan Corbet <corbet@lwn.net> wrote:
-> Could you refresh my memory on that original patch?
->
-> I guess we could put something into the via-core initialization that
-> says:
->
-> =A0 =A0 =A0 =A0if (machine_is_olpc())
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0turn_02c_to_gpio();
->
-> That covers only your case, and not that of anybody else who will have
-> wired up a board differently, but we can let them generalize it when
-> they run into trouble :)
+Hi
 
-Thats pretty much what I posted:
-http://www.spinics.net/lists/linux-fbdev/msg01681.html
+Another round of SH-HDMI improvements. Tests showed, that the best result 
+is achieved with the 720p format on HDMI, to override that users are given 
+a possibility to use the "video=sh_mobile_lcdc:..." kernel command line to 
+specified a preferred video-mode.
 
-I now realise that all the #ifdefs are unnecessary, the code should be
-there unconditionally and the compiler will remove it on non-OLPC
-kernels.
+Paul, since one of the patches touches the ap4evb board, it's better to 
+push this via genesis.
 
-The other option we have is to detect the XO-1.5 using DMI. That's the
-more conventional way of detecting a specific platform in the kernel.
-Florian, what do you think?
-
-Daniel
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/

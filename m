@@ -1,30 +1,33 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 06 Oct 2010 21:33:50 +0000
-Subject: Re: [PATCH 0/4] initial suspend and resume support
-Message-Id: <20101006153350.7e506f5f@bike.lwn.net>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 15 Oct 2010 07:54:00 +0000
+Subject: [PATCH 3/4] fbdev: sh_mobile_lcdc: relax .check_var() HSYNC test
+Message-Id: <Pine.LNX.4.64.1010150951360.3945@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1285303222.git.FlorianSchandinat@gmx.de>
-In-Reply-To: <cover.1285303222.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Fri, 24 Sep 2010 05:01:22 +0000
-Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
+Some valid and supported video modes have .hsync_len > 120.
 
-> this little patch series finally adds basic suspend and resume support.
-> The good thing is, that it nearly works.
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
+ drivers/video/sh_mobile_lcdcfb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I finally got around to taking a quick look at this.  It looks fine as
-far as it goes, though I'd be tempted to take out the intermediate
-steps and reduce the code churn a bit.
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index d931382..8925e3f 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -919,7 +919,7 @@ static int sh_mobile_check_var(struct fb_var_screeninfo *var, struct fb_info *in
+ 	    var->right_margin < 12 || var->right_margin > 240 ||
+ 	    var->upper_margin < 12 || var->upper_margin > 120 ||
+ 	    var->lower_margin < 1 || var->lower_margin > 64 ||
+-	    var->hsync_len < 32 || var->hsync_len > 120 ||
++	    var->hsync_len < 32 || var->hsync_len > 240 ||
+ 	    var->vsync_len < 2 || var->vsync_len > 64 ||
+ 	    var->pixclock < 6000 || var->pixclock > 40000 ||
+ 	    var->xres * var->yres * (ch->cfg.bpp / 8) * 2 > info->fix.smem_len) {
+-- 
+1.7.1
 
-I need to dig out the more general suspend/resume stuff I have buried
-in one of my trees, we'll need it at some point.  In the mean time, I
-see no reason not to go ahead with this work.
-
-Thanks,
-
-jon

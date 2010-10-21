@@ -1,72 +1,210 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Date: Tue, 19 Oct 2010 06:50:56 +0000
-Subject: RE: [PATCH 4/4] ARM: S5PV310: Add platform data for S5PV310 FIMD and
-Message-Id: <002f01cb6f59$ff98d650$feca82f0$%szyprowski@samsung.com>
+From: Grazvydas Ignotas <notasas@gmail.com>
+Date: Thu, 21 Oct 2010 09:02:04 +0000
+Subject: Re: [PATCH V3] OMAP: DSS2: don't power off a panel twice
+Message-Id: <AANLkTin_ap=CcLXUVC6Ztw_GJ=arymNrK_ByOf8agvQq@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1287406528-15324-1-git-send-email-sbkim73@samsung.com>
-	<1287406528-15324-5-git-send-email-sbkim73@samsung.com>
-In-Reply-To: <1287406528-15324-5-git-send-email-sbkim73@samsung.com>
+References: <1283483028-1970-1-git-send-email-stanley.miao@windriver.com>
+In-Reply-To: <1283483028-1970-1-git-send-email-stanley.miao@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: tomi.valkeinen@nokia.com
+Cc: "Stanley.Miao" <stanley.miao@windriver.com>, linux-omap@vger.kernel.org, bryan.wu@canonical.com, mathieu.poirier@canonical.com, linux-fbdev@vger.kernel.org
 
-Hello,
+Tomi can you queue this? This has been tested by multiple people now,
+also see here:
+http://marc.info/?l=3Dlinux-omap&m=128759415821646&w=3D2
 
-On Monday, October 18, 2010 2:55 PM Sangbeom Kim wrote:
-
-> From: Jonghun Han <jonghun.han@samsung.com>
-> 
-> Some platform data for S5PV310 FIMD0 are added.
-> LTE480WV lcd pannel used by SMDKV310 are added via platform-lcd interface.
-> extern helper functions used by machine file are added.
-> 
-> Signed-off-by: Jonghun Han <jonghun.han@samsung.com>
-> Signed-off-by: Sangbeom Kim <sbkim73@samsung.com>
+On Fri, Sep 3, 2010 at 6:03 AM, Stanley.Miao <stanley.miao@windriver.com> w=
+rote:
+> If we blank the panel by
+> echo 1 > /sys/devices/platform/omapfb/graphics/fb0/blank
+>
+> Then, we reboot the sytem, the kernel will crash at
+> drivers/video/omap2/dss/core.c:323
+>
+> This is because the panel is closed twice. Now check the state of a dssdev
+> to forbid a panel is power on or power off twice.
+>
+> Signed-off-by: Stanley.Miao <stanley.miao@windriver.com>
 > ---
->  arch/arm/mach-s5pv310/mach-smdkv310.c   |   72 +++++++++++++++++++++++++++++++
->  arch/arm/plat-samsung/include/plat/fb.h |   14 ++++++
->  2 files changed, 86 insertions(+), 0 deletions(-)
-> 
-> ...
-
-> diff --git a/arch/arm/plat-samsung/include/plat/fb.h b/arch/arm/plat-samsung/include/plat/fb.h
-> index cb3ca3a..67733b5 100644
-> --- a/arch/arm/plat-samsung/include/plat/fb.h
-> +++ b/arch/arm/plat-samsung/include/plat/fb.h
-> @@ -74,6 +74,14 @@ struct s3c_fb_platdata {
->  extern void s3c_fb_set_platdata(struct s3c_fb_platdata *pd);
-> 
->  /**
-> + * s5p_fimd0_set_platdata() - Setup the FB device with platform data.
-> + * @pd: The platform data to set. The data is copied from the passed structure
-> + *      so the machine data can mark the data __initdata so that any unused
-> + *      machines will end up dumping their data at runtime.
-> + */
-> +extern void s5p_fimd0_set_platdata(struct s3c_fb_platdata *pd);
+> =A0drivers/video/omap2/displays/panel-acx565akm.c =A0 =A0 | =A0 =A06 ++++=
+++
+> =A0drivers/video/omap2/displays/panel-generic.c =A0 =A0 =A0 | =A0 =A06 ++=
+++++
+> =A0.../video/omap2/displays/panel-sharp-lq043t1dg01.c | =A0 =A06 ++++++
+> =A0.../video/omap2/displays/panel-sharp-ls037v7dw01.c | =A0 =A06 ++++++
+> =A0.../video/omap2/displays/panel-toppoly-tdo35s.c =A0 =A0| =A0 =A06 ++++=
+++
+> =A0.../video/omap2/displays/panel-tpo-td043mtea1.c =A0 =A0| =A0 =A06 ++++=
+++
+> =A06 files changed, 36 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/video/omap2/displays/panel-acx565akm.c b/drivers/vid=
+eo/omap2/displays/panel-acx565akm.c
+> index 07fbb8a..e773106 100644
+> --- a/drivers/video/omap2/displays/panel-acx565akm.c
+> +++ b/drivers/video/omap2/displays/panel-acx565akm.c
+> @@ -587,6 +587,9 @@ static int acx_panel_power_on(struct omap_dss_device =
+*dssdev)
+>
+> =A0 =A0 =A0 =A0dev_dbg(&dssdev->dev, "%s\n", __func__);
+>
+> + =A0 =A0 =A0 if (dssdev->state =3D OMAP_DSS_DISPLAY_ACTIVE)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
 > +
-> +/**
->   * s3c64xx_fb_gpio_setup_24bpp() - S3C64XX setup function for 24bpp LCD
->   *
->   * Initialise the GPIO for an 24bpp LCD display on the RGB interface.
-> @@ -94,4 +102,10 @@ extern void s5pc100_fb_gpio_setup_24bpp(void);
->   */
->  extern void s5pv210_fb_gpio_setup_24bpp(void);
-> 
-> +/**
-> + * s5pv310_fimd0_gpio_setup_24bpp() - S5PV310/S5PC210 setup function for 24bpp LCD0
-> + *
-> + * Initialise the GPIO for an 24bpp LCD display on the RGB interface 0.
-> + */
-> +extern void s5pv310_fimd0_gpio_setup_24bpp(void);
->  #endif /* __PLAT_S3C_FB_H */
-
-Changes to arch/arm/plat-samsung/include/plat/fb.h file should go together with patch
-2/4 from your series - they are not related to SMDK board at all.
-
-Best regards
---
-Marek Szyprowski
-Samsung Poland R&D Center
-
-
+> =A0 =A0 =A0 =A0mutex_lock(&md->mutex);
+>
+> =A0 =A0 =A0 =A0r =3D omapdss_sdi_display_enable(dssdev);
+> @@ -644,6 +647,9 @@ static void acx_panel_power_off(struct omap_dss_devic=
+e *dssdev)
+>
+> =A0 =A0 =A0 =A0dev_dbg(&dssdev->dev, "%s\n", __func__);
+>
+> + =A0 =A0 =A0 if (dssdev->state !=3D OMAP_DSS_DISPLAY_ACTIVE)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return;
+> +
+> =A0 =A0 =A0 =A0mutex_lock(&md->mutex);
+>
+> =A0 =A0 =A0 =A0if (!md->enabled) {
+> diff --git a/drivers/video/omap2/displays/panel-generic.c b/drivers/video=
+/omap2/displays/panel-generic.c
+> index 300eff5..395a68d 100644
+> --- a/drivers/video/omap2/displays/panel-generic.c
+> +++ b/drivers/video/omap2/displays/panel-generic.c
+> @@ -39,6 +39,9 @@ static int generic_panel_power_on(struct omap_dss_devic=
+e *dssdev)
+> =A0{
+> =A0 =A0 =A0 =A0int r;
+>
+> + =A0 =A0 =A0 if (dssdev->state =3D OMAP_DSS_DISPLAY_ACTIVE)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> =A0 =A0 =A0 =A0r =3D omapdss_dpi_display_enable(dssdev);
+> =A0 =A0 =A0 =A0if (r)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto err0;
+> @@ -58,6 +61,9 @@ err0:
+>
+> =A0static void generic_panel_power_off(struct omap_dss_device *dssdev)
+> =A0{
+> + =A0 =A0 =A0 if (dssdev->state !=3D OMAP_DSS_DISPLAY_ACTIVE)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return;
+> +
+> =A0 =A0 =A0 =A0if (dssdev->platform_disable)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dssdev->platform_disable(dssdev);
+>
+> diff --git a/drivers/video/omap2/displays/panel-sharp-lq043t1dg01.c b/dri=
+vers/video/omap2/displays/panel-sharp-lq043t1dg01.c
+> index 1026746..0c6896c 100644
+> --- a/drivers/video/omap2/displays/panel-sharp-lq043t1dg01.c
+> +++ b/drivers/video/omap2/displays/panel-sharp-lq043t1dg01.c
+> @@ -43,6 +43,9 @@ static int sharp_lq_panel_power_on(struct omap_dss_devi=
+ce *dssdev)
+> =A0{
+> =A0 =A0 =A0 =A0int r;
+>
+> + =A0 =A0 =A0 if (dssdev->state =3D OMAP_DSS_DISPLAY_ACTIVE)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> =A0 =A0 =A0 =A0r =3D omapdss_dpi_display_enable(dssdev);
+> =A0 =A0 =A0 =A0if (r)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto err0;
+> @@ -65,6 +68,9 @@ err0:
+>
+> =A0static void sharp_lq_panel_power_off(struct omap_dss_device *dssdev)
+> =A0{
+> + =A0 =A0 =A0 if (dssdev->state !=3D OMAP_DSS_DISPLAY_ACTIVE)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return;
+> +
+> =A0 =A0 =A0 =A0if (dssdev->platform_disable)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dssdev->platform_disable(dssdev);
+>
+> diff --git a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c b/dri=
+vers/video/omap2/displays/panel-sharp-ls037v7dw01.c
+> index 7d9eb2b..9a138f6 100644
+> --- a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
+> +++ b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
+> @@ -135,6 +135,9 @@ static int sharp_ls_power_on(struct omap_dss_device *=
+dssdev)
+> =A0{
+> =A0 =A0 =A0 =A0int r =3D 0;
+>
+> + =A0 =A0 =A0 if (dssdev->state =3D OMAP_DSS_DISPLAY_ACTIVE)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> =A0 =A0 =A0 =A0r =3D omapdss_dpi_display_enable(dssdev);
+> =A0 =A0 =A0 =A0if (r)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto err0;
+> @@ -157,6 +160,9 @@ err0:
+>
+> =A0static void sharp_ls_power_off(struct omap_dss_device *dssdev)
+> =A0{
+> + =A0 =A0 =A0 if (dssdev->state !=3D OMAP_DSS_DISPLAY_ACTIVE)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return;
+> +
+> =A0 =A0 =A0 =A0if (dssdev->platform_disable)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dssdev->platform_disable(dssdev);
+>
+> diff --git a/drivers/video/omap2/displays/panel-toppoly-tdo35s.c b/driver=
+s/video/omap2/displays/panel-toppoly-tdo35s.c
+> index e320e67..526e906 100644
+> --- a/drivers/video/omap2/displays/panel-toppoly-tdo35s.c
+> +++ b/drivers/video/omap2/displays/panel-toppoly-tdo35s.c
+> @@ -46,6 +46,9 @@ static int toppoly_tdo_panel_power_on(struct omap_dss_d=
+evice *dssdev)
+> =A0{
+> =A0 =A0 =A0 =A0int r;
+>
+> + =A0 =A0 =A0 if (dssdev->state =3D OMAP_DSS_DISPLAY_ACTIVE)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> =A0 =A0 =A0 =A0r =3D omapdss_dpi_display_enable(dssdev);
+> =A0 =A0 =A0 =A0if (r)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto err0;
+> @@ -65,6 +68,9 @@ err0:
+>
+> =A0static void toppoly_tdo_panel_power_off(struct omap_dss_device *dssdev)
+> =A0{
+> + =A0 =A0 =A0 if (dssdev->state !=3D OMAP_DSS_DISPLAY_ACTIVE)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return;
+> +
+> =A0 =A0 =A0 =A0if (dssdev->platform_disable)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dssdev->platform_disable(dssdev);
+>
+> diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/driver=
+s/video/omap2/displays/panel-tpo-td043mtea1.c
+> index e866e76..dbe9d43 100644
+> --- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+> +++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+> @@ -269,6 +269,9 @@ static int tpo_td043_power_on(struct omap_dss_device =
+*dssdev)
+> =A0 =A0 =A0 =A0int nreset_gpio =3D dssdev->reset_gpio;
+> =A0 =A0 =A0 =A0int r;
+>
+> + =A0 =A0 =A0 if (dssdev->state =3D OMAP_DSS_DISPLAY_ACTIVE)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> +
+> =A0 =A0 =A0 =A0r =3D omapdss_dpi_display_enable(dssdev);
+> =A0 =A0 =A0 =A0if (r)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto err0;
+> @@ -308,6 +311,9 @@ static void tpo_td043_power_off(struct omap_dss_devic=
+e *dssdev)
+> =A0 =A0 =A0 =A0struct tpo_td043_device *tpo_td043 =3D dev_get_drvdata(&ds=
+sdev->dev);
+> =A0 =A0 =A0 =A0int nreset_gpio =3D dssdev->reset_gpio;
+>
+> + =A0 =A0 =A0 if (dssdev->state !=3D OMAP_DSS_DISPLAY_ACTIVE)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return;
+> +
+> =A0 =A0 =A0 =A0tpo_td043_write(tpo_td043->spi, 3,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0TPO_R03_VAL_STANDBY | TPO_=
+R03_EN_PWM);
+>
+> --
+> 1.5.4.3
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+>

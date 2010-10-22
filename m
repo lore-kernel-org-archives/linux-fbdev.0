@@ -1,23 +1,35 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Fri, 15 Oct 2010 10:01:57 +0000
-Subject: Re: [PATCH 0/4] fbdev: sh: "video=" command line parsing, improved HDMI
-Message-Id: <20101015100156.GD7489@linux-sh.org>
+From: Nicolas Kaiser <nikai@nikai.net>
+Date: Fri, 22 Oct 2010 11:31:30 +0000
+Subject: [PATCH] rivafb: dubious assignment
+Message-Id: <20101022133130.4cb2cb96@absol.kitzblitz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1010150942270.3945@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1010150942270.3945@axis700.grange>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Antonino Daplas <adaplas@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, Oct 15, 2010 at 09:53:44AM +0200, Guennadi Liakhovetski wrote:
-> Another round of SH-HDMI improvements. Tests showed, that the best result 
-> is achieved with the 720p format on HDMI, to override that users are given 
-> a possibility to use the "video=sh_mobile_lcdc:..." kernel command line to 
-> specified a preferred video-mode.
-> 
-> Paul, since one of the patches touches the ap4evb board, it's better to 
-> push this via genesis.
-> 
-Yes, there are quite a few HDMI patches queued up in the genesis tree
-already, so I've added these to the bunch.
+A duplicated assignment unconditionally changes max_gfsize to
+GFIFO_SIZE.
+
+It looks to me like this might not be intended, or is it?
+
+Signed-off-by: Nicolas Kaiser <nikai@nikai.net>
+---
+ drivers/video/riva/riva_hw.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/riva/riva_hw.c b/drivers/video/riva/riva_hw.c
+index 78fdbf5..936abfa 100644
+--- a/drivers/video/riva/riva_hw.c
++++ b/drivers/video/riva/riva_hw.c
+@@ -263,7 +263,6 @@ static int nv3_iterate(nv3_fifo_info *res_info, nv3_sim_state * state, nv3_arb_i
+     vmisses = 2;
+     if (ainfo->gburst_size = 128) max_gfsize = GFIFO_SIZE_128;
+     else  max_gfsize = GFIFO_SIZE;
+-    max_gfsize = GFIFO_SIZE;
+     while (1)
+     {
+         if (ainfo->vid_en)
+-- 
+1.7.2.2

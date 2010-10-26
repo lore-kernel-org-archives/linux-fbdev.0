@@ -1,53 +1,46 @@
-From: Julia Lawall <julia@diku.dk>
-Date: Tue, 26 Oct 2010 10:25:41 +0000
-Subject: [PATCH 12/14] drivers/video/omap/blizzard.c: delete double assignment
-Message-Id: <1288088743-3725-13-git-send-email-julia@diku.dk>
+From: Nicolas Kaiser <nikai@nikai.net>
+Date: Tue, 26 Oct 2010 12:36:50 +0000
+Subject: Re: [PATCH 12/14] drivers/video/omap/blizzard.c: delete double
+Message-Id: <20101026143650.14c836eb@absol.kitzblitz>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1288088743-3725-1-git-send-email-julia@diku.dk>
-In-Reply-To: <1288088743-3725-1-git-send-email-julia@diku.dk>
+	<1288088743-3725-13-git-send-email-julia@diku.dk>
+In-Reply-To: <1288088743-3725-13-git-send-email-julia@diku.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Julia Lawall <julia@diku.dk>
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+* Julia Lawall <julia@diku.dk>:
+> Delete successive assignments to the same location.  Initialize the out_y
+> field as well as the out_x field, rather than initializing the out_x field
+> twice.
 
-Delete successive assignments to the same location.  Initialize the out_y
-field as well as the out_x field, rather than initializing the out_x field
-twice.
+Hi there!
 
-A simplified version of the semantic match that finds this problem is as
-follows: (http://coccinelle.lip6.fr/)
+An identical patch is already in the -mm tree:
 
-// <smpl>
-@@
-expression i;
-@@
+> The patch titled
+>      drivers/video/omap/blizzard.c: suspected typo in assignment
+> has been added to the -mm tree.  Its filename is
+>      video-omap-suspected-typo-in-assignment.patch
 
-*i = ...;
- i = ...;
-// </smpl>
+> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
+> out what to do about this
+> 
+> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+> 
+> ------------------------------------------------------
+> Subject: drivers/video/omap/blizzard.c: suspected typo in assignment
+> From: Nicolas Kaiser <nikai@nikai.net>
+> 
+> Untested, but looks like an obvious typo to me.
+> 
+> Signed-off-by: Nicolas Kaiser <nikai@nikai.net>
+> Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+> Cc: Tony Lindgren <tony@atomide.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
-This changes the semantics and has not been tested.
-
- drivers/video/omap/blizzard.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/omap/blizzard.c b/drivers/video/omap/blizzard.c
-index 2ffb34a..87785c2 100644
---- a/drivers/video/omap/blizzard.c
-+++ b/drivers/video/omap/blizzard.c
-@@ -1590,7 +1590,7 @@ static int blizzard_init(struct omapfb_device *fbdev, int ext_mode,
- 	blizzard.auto_update_window.width = fbdev->panel->x_res;
- 	blizzard.auto_update_window.height = fbdev->panel->y_res;
- 	blizzard.auto_update_window.out_x = 0;
--	blizzard.auto_update_window.out_x = 0;
-+	blizzard.auto_update_window.out_y = 0;
- 	blizzard.auto_update_window.out_width = fbdev->panel->x_res;
- 	blizzard.auto_update_window.out_height = fbdev->panel->y_res;
- 	blizzard.auto_update_window.format = 0;
-
+Best regards,
+Nicolas Kaiser

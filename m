@@ -1,77 +1,53 @@
-From: Samreen <samreen@ti.com>
-Date: Tue, 26 Oct 2010 03:29:54 +0000
-Subject: [PATCH v4] OMAP3: DSS: Kconfig changes to enable display options on OMAP3
-Message-Id: <1288063074-8879-1-git-send-email-samreen@ti.com>
+From: Julia Lawall <julia@diku.dk>
+Date: Tue, 26 Oct 2010 10:25:41 +0000
+Subject: [PATCH 12/14] drivers/video/omap/blizzard.c: delete double assignment
+Message-Id: <1288088743-3725-13-git-send-email-julia@diku.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1288088743-3725-1-git-send-email-julia@diku.dk>
+In-Reply-To: <1288088743-3725-1-git-send-email-julia@diku.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>, Grazvydas Ignotas <notasas@gmail.com>, Vaibhav Hiremath <hvaibhav@ti.com>, Roger Quadros <roger.quadros@nokia.com>, Senthilvadivu
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Samreen <samreen@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The defconfig options for display are taken in the respective Kconfig
-to enable display by default on OMAP3 platforms
+From: Julia Lawall <julia@diku.dk>
 
-Signed-off-by: Samreen <samreen@ti.com>
+Delete successive assignments to the same location.  Initialize the out_y
+field as well as the out_x field, rather than initializing the out_x field
+twice.
+
+A simplified version of the semantic match that finds this problem is as
+follows: (http://coccinelle.lip6.fr/)
+
+// <smpl>
+@@
+expression i;
+@@
+
+*i = ...;
+ i = ...;
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
 ---
- Version4:
-       Remove the enabling of the display panels by default.
+This changes the semantics and has not been tested.
 
- Version3:
-       Eliminate the separate default number of FBs for
- different architecture. Keeping default FBs as 3 as before.
+ drivers/video/omap/blizzard.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- Version2:
-        Enables by default NEC panel used in zoom2/3/3630sdp, instead of 
- Sharp LQ043T1DG01 panel enabled in previous version of this patch.
-
- drivers/video/omap2/dss/Kconfig    |    6 ++++--
- drivers/video/omap2/omapfb/Kconfig |    1 +
- 2 files changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/omap2/dss/Kconfig b/drivers/video/omap2/dss/Kconfig
-index 43b6440..f3244a2 100644
---- a/drivers/video/omap2/dss/Kconfig
-+++ b/drivers/video/omap2/dss/Kconfig
-@@ -1,6 +1,7 @@
- menuconfig OMAP2_DSS
-         tristate "OMAP2/3 Display Subsystem support (EXPERIMENTAL)"
-         depends on ARCH_OMAP2 || ARCH_OMAP3
-+	default y
-         help
-           OMAP2/3 Display Subsystem support.
- 
-@@ -9,7 +10,7 @@ if OMAP2_DSS
- config OMAP2_VRAM_SIZE
- 	int "VRAM size (MB)"
- 	range 0 32
--	default 0
-+	default 4
- 	help
- 	  The amount of SDRAM to reserve at boot time for video RAM use.
- 	  This VRAM will be used by omapfb and other drivers that need
-@@ -102,7 +103,8 @@ config OMAP2_DSS_FAKE_VSYNC
- config OMAP2_DSS_MIN_FCK_PER_PCK
- 	int "Minimum FCK/PCK ratio (for scaling)"
- 	range 0 32
--	default 0
-+	default 4  if ARCH_OMAP2 || ARCH_OMAP3
-+	default 0  if ARCH_OMAP4
- 	help
- 	  This can be used to adjust the minimum FCK/PCK ratio.
- 
-diff --git a/drivers/video/omap2/omapfb/Kconfig b/drivers/video/omap2/omapfb/Kconfig
-index 65149b2..923bf48 100644
---- a/drivers/video/omap2/omapfb/Kconfig
-+++ b/drivers/video/omap2/omapfb/Kconfig
-@@ -1,6 +1,7 @@
- menuconfig FB_OMAP2
-         tristate "OMAP2/3 frame buffer support (EXPERIMENTAL)"
-         depends on FB && OMAP2_DSS
-+	default y
- 
- 	select OMAP2_VRAM
- 	select OMAP2_VRFB if ARCH_OMAP2 || ARCH_OMAP3
--- 
-1.5.6.3
+diff --git a/drivers/video/omap/blizzard.c b/drivers/video/omap/blizzard.c
+index 2ffb34a..87785c2 100644
+--- a/drivers/video/omap/blizzard.c
++++ b/drivers/video/omap/blizzard.c
+@@ -1590,7 +1590,7 @@ static int blizzard_init(struct omapfb_device *fbdev, int ext_mode,
+ 	blizzard.auto_update_window.width = fbdev->panel->x_res;
+ 	blizzard.auto_update_window.height = fbdev->panel->y_res;
+ 	blizzard.auto_update_window.out_x = 0;
+-	blizzard.auto_update_window.out_x = 0;
++	blizzard.auto_update_window.out_y = 0;
+ 	blizzard.auto_update_window.out_width = fbdev->panel->x_res;
+ 	blizzard.auto_update_window.out_height = fbdev->panel->y_res;
+ 	blizzard.auto_update_window.format = 0;
 

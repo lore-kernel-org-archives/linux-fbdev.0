@@ -1,44 +1,37 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 06 Oct 2010 21:15:13 +0000
+From: Daniel Drake <dsd@laptop.org>
+Date: Wed, 27 Oct 2010 15:08:54 +0000
 Subject: Re: [PATCH 2/2] viafb: Add OLPC XO-1.5 port configs
-Message-Id: <20101006151513.6a06f6f4@bike.lwn.net>
+Message-Id: <AANLkTi=mypMUYKz183Ox4oM9YVFkAdJVU7jPeEnB47i0@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20100921153726.21D609D401B@zog.reactivated.net>
 In-Reply-To: <20100921153726.21D609D401B@zog.reactivated.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-Slow response, sorry.  Happily, I'm actually done crossing oceans for a
-little bit...
+On 26 September 2010 22:52, Jonathan Corbet <corbet@lwn.net> wrote:
+> Daniel, 0x2C *has* to be GPIO on the XO - that's the power/reset pair
+> for the camera sensor. =A0That's a little non-standard; I think normal
+> configurations use it for (i2c) communications to the monitor. =A0So I
+> think I understand what you're seeing: if the port is i2c, the driver
+> tries (unsuccessfully) to talk over it, confusing the camera in the
+> process. =A0If it's GPIO, those attempts fail immediately and it moves on.
 
-On Mon, 27 Sep 2010 06:55:16 +0200
-Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
+You may be right, but I've identified a more prominent reason why
+via-camera fails to initialize:
 
-> Jon, do you claim that 0x26 and 0x31 are essentially the same as the the GPIO ports?
+Linux currently has port 0x2C as VIA_MODE_I2C in via-core.c.
+During initialization, via-gpio.c iterates over all ports and ignores
+the ones that are not VIA_MODE_GPIO.
+So 0x2c is ignored by via-gpio since it is marked as I2C. As you point
+out, the GPIOs we need are behind 0x2c, so they are never
+probed/enabled.
 
-From a programming point of view, yes.  There may be some electrical
-differences.
+Florian, the via-camera driver is in linux-next and the maintainer
+indicates it'll go to Linus within a day or 2.
+This is the last issue preventing the driver from working on XO-1.5.
+Do you have any thoughts on our next steps?
 
-> After having a look at the relevant openchrome code (ViaI2C3):
-> http://openchrome.org/trac/browser/trunk/src/via_i2c.c
-> as well as VIAs X-Server (as far as I can decipher it) and assuming that this 
-> code was tested I am confident that our code is broken (for example we never set 
-> output enable back to 0). So I think we should just enable GPIO on that port as 
-> I2C on it looks very broken anyway.
-
-I'm confused...you're talking about 26/31 still?
-
-I2c works fine on 0x31; that's how the via-camera driver talks to the
-sensor.
-
-> I plan to test whether a correct implementation can be done on top of GPIO. 
-
-You could do that, but, if you look at what's there, that's essentially
-what's done now - it's a bitbanging driver.  So I'm not quite sure what
-you would change.
-
-Sorry if I'm being slow.
-
-jon
+Thanks,
+Daniel

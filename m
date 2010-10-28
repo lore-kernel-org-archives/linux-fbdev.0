@@ -1,42 +1,34 @@
-From: Daniel Drake <dsd@laptop.org>
-Date: Thu, 28 Oct 2010 21:54:23 +0000
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Thu, 28 Oct 2010 22:04:29 +0000
 Subject: Re: [PATCH 2/2] viafb: Add OLPC XO-1.5 port configs
-Message-Id: <AANLkTikRjgMFHd+Ug5870dRW_uWTx7BhOUgfhdy=3MS2@mail.gmail.com>
+Message-Id: <20101028160429.308a385c@bike.lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20100921153726.21D609D401B@zog.reactivated.net>
 In-Reply-To: <20100921153726.21D609D401B@zog.reactivated.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On 28 October 2010 19:51, Jonathan Corbet <corbet@lwn.net> wrote:
-> I had always figured that the default settings for those ports would
-> not suit everybody; it was just a matter of how they could be
-> customized. =A0Options would seem to be:
->
-> =A0- OLPC carries a small patch which configures the port properly.
+On Thu, 28 Oct 2010 22:54:23 +0100
+Daniel Drake <dsd@laptop.org> wrote:
 
-I'm trying to get generic distro kernels to work, so not so keen on this one
+> So I don't really like any of these solutions. I think we should
+> program this info from inside the kernel (like in my original patch,
+> although I'm open for nicer ways to do the same thing)
 
-> =A0- A set of configuration options is added allowing the port type to be
-> =A0 set when the kernel is configured.
+Could you refresh my memory on that original patch?
 
-ditto
+I guess we could put something into the via-core initialization that
+says:
 
-> =A0- The ports could be changed from the default configuration with a
-> =A0 boot-time command-line option.
-> That last option might be what works best for OLPC; those systems seem
-> to need several lines of special boot options anyway. =A0It wouldn't be
-> that hard to hack up...anybody got a better idea?
+	if (machine_is_olpc())
+		turn_02c_to_gpio();
 
-I'm hoping to get rid of that requirement for the reasons above, and
-I'm wondering if we've already got that far (Florian said he had it
-booting on his XO-1.5, although maybe he figured out the magic
-parameters and is using them)...
+That covers only your case, and not that of anybody else who will have
+wired up a board differently, but we can let them generalize it when
+they run into trouble :)
 
-So I don't really like any of these solutions. I think we should
-program this info from inside the kernel (like in my original patch,
-although I'm open for nicer ways to do the same thing)
+Objections to that approach?
 
-Daniel
+jon

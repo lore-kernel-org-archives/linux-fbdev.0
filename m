@@ -1,50 +1,42 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Thu, 28 Oct 2010 18:51:49 +0000
+From: Daniel Drake <dsd@laptop.org>
+Date: Thu, 28 Oct 2010 21:54:23 +0000
 Subject: Re: [PATCH 2/2] viafb: Add OLPC XO-1.5 port configs
-Message-Id: <20101028125149.14d53504@bike.lwn.net>
+Message-Id: <AANLkTikRjgMFHd+Ug5870dRW_uWTx7BhOUgfhdy=3MS2@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20100921153726.21D609D401B@zog.reactivated.net>
 In-Reply-To: <20100921153726.21D609D401B@zog.reactivated.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-On Wed, 27 Oct 2010 16:08:54 +0100
-Daniel Drake <dsd@laptop.org> wrote:
+On 28 October 2010 19:51, Jonathan Corbet <corbet@lwn.net> wrote:
+> I had always figured that the default settings for those ports would
+> not suit everybody; it was just a matter of how they could be
+> customized. =A0Options would seem to be:
+>
+> =A0- OLPC carries a small patch which configures the port properly.
 
-> Linux currently has port 0x2C as VIA_MODE_I2C in via-core.c.
-> During initialization, via-gpio.c iterates over all ports and ignores
-> the ones that are not VIA_MODE_GPIO.
-> So 0x2c is ignored by via-gpio since it is marked as I2C. As you point
-> out, the GPIOs we need are behind 0x2c, so they are never
-> probed/enabled.
-> 
-> Florian, the via-camera driver is in linux-next and the maintainer
-> indicates it'll go to Linus within a day or 2.
-> This is the last issue preventing the driver from working on XO-1.5.
-> Do you have any thoughts on our next steps?
+I'm trying to get generic distro kernels to work, so not so keen on this one
 
-...and now it's in mainline at last.  That took rather longer than I
-had expected.
+> =A0- A set of configuration options is added allowing the port type to be
+> =A0 set when the kernel is configured.
 
-I had always figured that the default settings for those ports would
-not suit everybody; it was just a matter of how they could be
-customized.  Options would seem to be:
+ditto
 
- - OLPC carries a small patch which configures the port properly.
+> =A0- The ports could be changed from the default configuration with a
+> =A0 boot-time command-line option.
+> That last option might be what works best for OLPC; those systems seem
+> to need several lines of special boot options anyway. =A0It wouldn't be
+> that hard to hack up...anybody got a better idea?
 
- - A set of configuration options is added allowing the port type to be
-   set when the kernel is configured.
+I'm hoping to get rid of that requirement for the reasons above, and
+I'm wondering if we've already got that far (Florian said he had it
+booting on his XO-1.5, although maybe he figured out the magic
+parameters and is using them)...
 
- - The ports could be changed from the default configuration with a
-   boot-time command-line option.
+So I don't really like any of these solutions. I think we should
+program this info from inside the kernel (like in my original patch,
+although I'm open for nicer ways to do the same thing)
 
-That last option might be what works best for OLPC; those systems seem
-to need several lines of special boot options anyway.  It wouldn't be
-that hard to hack up...anybody got a better idea?
-
-(Of course, option 4 is "OLPC doesn't repurpose i2c ports in strange
-ways, but I figured it's a bit late for that one :)
-
-jon
+Daniel

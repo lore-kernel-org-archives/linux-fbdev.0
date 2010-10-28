@@ -1,57 +1,62 @@
-From: Guruswamy Senthilvadivu <svadivu@ti.com>
-Date: Fri, 08 Oct 2010 06:56:31 +0000
-Subject: [PATCH v6 1/3] OMAP: DSS2: OMAPFB: Allow FB_OMAP2 to build without VRFB
-Message-Id: <1286520273-4892-2-git-send-email-svadivu@ti.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Thu, 28 Oct 2010 13:36:05 +0000
+Subject: [PATCH] fbdev: extend fb_do_probe_ddc_edid() to read two EDID blocks,
+Message-Id: <Pine.LNX.4.64.1010281534510.1257@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1286520273-4892-1-git-send-email-svadivu@ti.com>
-In-Reply-To: <1286520273-4892-1-git-send-email-svadivu@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@nokia.com, hvaibhav@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Senthilvadivu Guruswamy <svadivu@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-From: Senthilvadivu Guruswamy <svadivu@ti.com>
+A simple extension of the fb_do_probe_ddc_edid() function allows reading of up
+to two EDID blocks without changing the API. Two EDID blocks is also the usual
+case for HDMI devices.
 
-FB_OMAP2 can work without VRFB, but currently does not build. Fix this.
-
-Signed-off-by: Senthilvadivu Guruswamy <svadivu@ti.com>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
- arch/arm/plat-omap/include/plat/vrfb.h |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
+ drivers/video/fb_ddc.c |   21 +++++++++++++++------
+ 1 files changed, 15 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm/plat-omap/include/plat/vrfb.h b/arch/arm/plat-omap/include/plat/vrfb.h
-index d8a03ce..3792bde 100644
---- a/arch/arm/plat-omap/include/plat/vrfb.h
-+++ b/arch/arm/plat-omap/include/plat/vrfb.h
-@@ -35,6 +35,7 @@ struct vrfb {
- 	bool yuv_mode;
- };
+diff --git a/drivers/video/fb_ddc.c b/drivers/video/fb_ddc.c
+index 4a874c8..958035a 100644
+--- a/drivers/video/fb_ddc.c
++++ b/drivers/video/fb_ddc.c
+@@ -21,7 +21,7 @@
+ static unsigned char *fb_do_probe_ddc_edid(struct i2c_adapter *adapter)
+ {
+ 	unsigned char start = 0x0;
+-	unsigned char *buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
++	unsigned char *buf = kmalloc(2 * EDID_LENGTH, GFP_KERNEL);
+ 	struct i2c_msg msgs[] = {
+ 		{
+ 			.addr	= DDC_ADDR,
+@@ -42,12 +42,21 @@ static unsigned char *fb_do_probe_ddc_edid(struct i2c_adapter *adapter)
+ 		return NULL;
+ 	}
  
-+#ifdef CONFIG_OMAP2_VRFB
- extern int omap_vrfb_request_ctx(struct vrfb *vrfb);
- extern void omap_vrfb_release_ctx(struct vrfb *vrfb);
- extern void omap_vrfb_adjust_size(u16 *width, u16 *height,
-@@ -47,4 +48,19 @@ extern void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
- extern int omap_vrfb_map_angle(struct vrfb *vrfb, u16 height, u8 rot);
- extern void omap_vrfb_restore_context(void);
+-	if (i2c_transfer(adapter, msgs, 2) = 2)
+-		return buf;
++	if (i2c_transfer(adapter, msgs, 2) != 2) {
++		dev_warn(&adapter->dev, "unable to read EDID block.\n");
++		kfree(buf);
++		return NULL;
++	}
++
++	if (buf[126]) {
++		start = 0x80;
++		msgs[1].buf += EDID_LENGTH;
++		if (i2c_transfer(adapter, msgs, 2) != 2)
++			/* Indicate failed E-EDID */
++			buf[128] = 0xff;
++	}
  
-+#else
-+static inline int omap_vrfb_request_ctx(struct vrfb *vrfb) { return 0; }
-+static inline void omap_vrfb_release_ctx(struct vrfb *vrfb) {}
-+static inline void omap_vrfb_adjust_size(u16 *width, u16 *height,
-+		u8 bytespp) {}
-+static inline u32 omap_vrfb_min_phys_size(u16 width, u16 height, u8 bytespp)
-+		{ return 0; }
-+static inline u16 omap_vrfb_max_height(u32 phys_size, u16 width, u8 bytespp)
-+		{ return 0; }
-+static inline void omap_vrfb_setup(struct vrfb *vrfb, unsigned long paddr,
-+		u16 width, u16 height, unsigned bytespp, bool yuv_mode) {}
-+static inline int omap_vrfb_map_angle(struct vrfb *vrfb, u16 height, u8 rot)
-+		{ return 0; }
-+static inline void omap_vrfb_restore_context(void) {}
-+#endif
- #endif /* __VRFB_H */
+-	dev_warn(&adapter->dev, "unable to read EDID block.\n");
+-	kfree(buf);
+-	return NULL;
++	return buf;
+ }
+ 
+ unsigned char *fb_ddc_read(struct i2c_adapter *adapter)
 -- 
-1.6.3.3
+1.7.1
 

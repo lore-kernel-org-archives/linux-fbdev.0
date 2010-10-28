@@ -1,24 +1,26 @@
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Wed, 27 Oct 2010 16:24:01 +0000
-Subject: [PATCH/RFC 0/3] implement HDMI clock rate optimization
-Message-Id: <Pine.LNX.4.64.1010271807080.11687@axis700.grange>
+Date: Thu, 28 Oct 2010 12:34:40 +0000
+Subject: [PATCH 0/4] E-EDID for framebuffer and sh-mobile HDMI
+Message-Id: <Pine.LNX.4.64.1010281403300.32394@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-This is an attempt to further improve HDMI quality on sh-mobile by 
-optimizing clock rates. Currently on ap4evb PLLC2 is used as HDMI clock 
-parent, clocked at 594MHz, which provides exact 74.25MHz, required for 
-720p, when divided through 8. However, for other video modes other parent 
-clock frequencies can provide better precision for the HDMI clock. This 
-patch adds necessary platform callbacks to reconfigure the parent clock 
-and implements this optimization for ap4evb.
+This patch series adds support for E-EDID parsing to the framebuffer 
+subsystem and extends the sh_mobile_hdmi driver to use it. The first patch 
+is unmodified patch from Erik Gilling, included here only for 
+completeness. Fixes, that I proposed for it are included in the second 
+incremental patch. Since the discussion on the fbdev mailing list, 
+concerning where and how to implement this functionality to be able to 
+share it between framebuffer and DRM drivers, I decided to continue 
+implementing this locally under drivers/video for the beginning, later we 
+can certainly discuss how to further improve and share this and other 
+common functionality between the two subsystems. Comments, as usual, 
+welcome.
 
 Thanks
 Guennadi
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+Guennadi Liakhovetski

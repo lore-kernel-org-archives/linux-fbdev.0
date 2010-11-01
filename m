@@ -1,7 +1,7 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Mon, 01 Nov 2010 15:57:00 +0000
-Subject: Re: [PATCH 1/4] video: add fb_edid_add_monspecs for parsing extended
-Message-Id: <Pine.LNX.4.64.1011011654580.3588@axis700.grange>
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Mon, 01 Nov 2010 17:42:17 +0000
+Subject: Re: [PATCH 1/4] video: add fb_edid_add_monspecs for parsing
+Message-Id: <20101101104217.1eb8ff0b.akpm@linux-foundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <Pine.LNX.4.64.1010281427240.1257@axis700.grange>
 In-Reply-To: <Pine.LNX.4.64.1010281427240.1257@axis700.grange>
@@ -10,135 +10,29 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Andrew
+On Mon, 1 Nov 2010 16:57:00 +0100 (CET) Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
 
-On Thu, 28 Oct 2010, Andrew Morton wrote:
-
-> On Thu, 28 Oct 2010 14:34:44 +0200 (CEST)
-> Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+> Hi Andrew
 > 
-> > From: Erik Gilling <konkers@android.com>
-
-Thanks for your comments. My plan is to add my S-o-b to this patch from 
-Erik, but otherwise leave it unchanged, because that's what the 2nd patch 
-in this series is for - for fixes and improvements. So, I'll address all 
-your comments in it, is this ok with you?
-
-Thanks
-Guennadi
-
+> On Thu, 28 Oct 2010, Andrew Morton wrote:
+> 
+> > On Thu, 28 Oct 2010 14:34:44 +0200 (CEST)
+> > Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
 > > 
-> > Modern monitors/tvs have more extended EDID information blocks which can
-> > contain extra detailed modes.  This adds a fb_edid_add_monspecs function
-> > which drivers can use to parse those additions blocks.
-> > 
-> > Signed-off-by: Erik Gilling <konkers@android.com>
-> > ---
-> >  drivers/video/fbmon.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++++
-> >  include/linux/fb.h    |    2 +
-> >  2 files changed, 59 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-> > index 563a98b..a0b5a93 100644
-> > --- a/drivers/video/fbmon.c
-> > +++ b/drivers/video/fbmon.c
-> > @@ -973,6 +973,63 @@ void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
-> >  	DPRINTK("====================\n");
-> >  }
-> >  
-> > +void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
+> > > From: Erik Gilling <konkers@android.com>
 > 
-> Please document it.  This is a general rule when implementing
-> library-style functions.
-> 
-> > +{
-> > +	unsigned char *block;
-> > +	struct fb_videomode *mode, *m;
-> > +	int num = 0, i, first = 1;
-> > +
-> > +	if (edid = NULL)
-> > +		return;
-> > +
-> > +	if (!edid_checksum(edid))
-> > +		return;
-> > +
-> > +	if (edid[0] != 0x2)
-> > +		return;
-> > +
-> > +	mode = kzalloc(50 * sizeof(struct fb_videomode), GFP_KERNEL);
-> > +	if (mode = NULL)
-> > +		return;
-> > +
-> > +	block = edid + edid[0x2];
-> > +
-> > +	DPRINTK("  Extended Detailed Timings\n");
-> > +
-> > +	for (i = 0; i < (128 - edid[0x2]) / DETAILED_TIMING_DESCRIPTION_SIZE;
-> 
-> It should validate edid[2] first, methinks.  If it's some crazy value
-> then this loop will run off into the weeds.
-> 
-> > +	     i++, block += DETAILED_TIMING_DESCRIPTION_SIZE) {
-> > +		if (!(block[0] = 0x00 && block[1] = 0x00)) {
-> > +			get_detailed_timing(block, &mode[num]);
-> > +			if (first) {
-> > +			        mode[num].flag |= FB_MODE_IS_FIRST;
-> > +				first = 0;
-> > +			}
-> > +			num++;
-> > +		}
-> > +	}
-> > +
-> > +	/* Yikes, EDID data is totally useless */
-> > +	if (!num) {
-> > +		kfree(mode);
-> > +		return;
-> > +	}
-> > +
-> > +	m = kzalloc((specs->modedb_len + num) *
-> > +		       sizeof(struct fb_videomode), GFP_KERNEL);
-> > +
-> > +	if (!m) {
-> > +		kfree(mode);
-> > +		return;
-> > +	}
-> > +
-> > +	memmove(m, specs->modedb, specs->modedb_len * sizeof(struct fb_videomode));
-> > +	memmove(m + specs->modedb_len, mode, num * sizeof(struct fb_videomode));
-> 
-> It's unusual to use memmove() for a copy which cannot overlap -
-> memcpy() would be more typical.  memmove() works though.
-> 
-> 
-> > +	kfree(mode);
-> > +	kfree(specs->modedb);
-> > +	specs->modedb = m;
-> > +	specs->modedb_len = specs->modedb_len + num;
-> > +}
-> 
-> Without an EXPORT_SYMBOL(), other modules cannot use this function?
-> 
-> >  /*
-> >   * VESA Generalized Timing Formula (GTF)
-> >   */
-> > diff --git a/include/linux/fb.h b/include/linux/fb.h
-> > index f0268de..3fc99cb 100644
-> > --- a/include/linux/fb.h
-> > +++ b/include/linux/fb.h
-> > @@ -1086,6 +1086,8 @@ extern int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var);
-> >  extern const unsigned char *fb_firmware_edid(struct device *device);
-> >  extern void fb_edid_to_monspecs(unsigned char *edid,
-> >  				struct fb_monspecs *specs);
-> > +extern void fb_edid_add_monspecs(unsigned char *edid,
-> > +				 struct fb_monspecs *specs);
-> >  extern void fb_destroy_modedb(struct fb_videomode *modedb);
-> >  extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
-> >  extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
-> > -- 
-> > 1.7.1
+> Thanks for your comments. My plan is to add my S-o-b to this patch from 
+> Erik, but otherwise leave it unchanged, because that's what the 2nd patch 
+> in this series is for - for fixes and improvements. So, I'll address all 
+> your comments in it, is this ok with you?
 > 
 
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+Yes, that's OK.
+
+It's unusual to do things this way - normally I'd just clump Erik's
+patch and your changes to it into a single commit.  So we end up with
+something which can be more effectively reviewed and a cleaner kernel
+history.
+
+But that's not a terribly important thing - if for some particular
+reason you want to do it this way then that's OK by me.

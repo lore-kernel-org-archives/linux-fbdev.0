@@ -1,167 +1,131 @@
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Thu, 11 Nov 2010 14:45:04 +0000
-Subject: [PATCH 3/4 v3] fbdev: when parsing E-EDID blocks, also use SVD
-Message-Id: <Pine.LNX.4.64.1011111540150.15747@axis700.grange>
+Date: Tue, 02 Nov 2010 11:27:24 +0000
+Subject: [PATCH 3/4 v2] sh: add clk_round_parent() to optimize parent clock
+Message-Id: <Pine.LNX.4.64.1011021223100.4552@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Add parsing of E-EDID SVD entries. In this first version only a few
-CEA/EIA-861E modes are implemented, more can be added as needed.
+Sometimes it is possible and reasonable to adjust the parent clock rate to
+improve precision of the child clock, e.g., if the child clock has no siblings.
+clk_round_parent() is a new addition to the SH clock-framework API, that
+implements such an optimization for child clocks with divisors, taking all
+integer values in a range.
 
 Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
 
-v3: moved cea_modes to drivers/video/modedb.c
+v2: As suggested by Paul (thanks), this has been converted to a generic sh 
+clk-framework function, which is then used by ap4evb call-back in the next 
+patch
 
-v2: no change
+ drivers/sh/clk/core.c  |   75 ++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/sh_clk.h |    4 ++
+ 2 files changed, 79 insertions(+), 0 deletions(-)
 
- drivers/video/fbmon.c  |   37 +++++++++++++++++++++++++++++++++----
- drivers/video/modedb.c |   43 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/fb.h     |    1 +
- 3 files changed, 77 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index b25399a..4f57485 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -983,7 +983,8 @@ void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
- 	unsigned char *block;
- 	struct fb_videomode *m;
- 	int num = 0, i;
--	u8 edt[(128 - 4) / DETAILED_TIMING_DESCRIPTION_SIZE];
-+	u8 svd[64], edt[(128 - 4) / DETAILED_TIMING_DESCRIPTION_SIZE];
-+	u8 pos = 4, svd_n = 0;
- 
- 	if (!edid)
- 		return;
-@@ -995,6 +996,21 @@ void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
- 	    edid[2] < 4 || edid[2] > 128 - DETAILED_TIMING_DESCRIPTION_SIZE)
- 		return;
- 
-+	DPRINTK("  Short Video Descriptors\n");
-+
-+	while (pos < edid[2]) {
-+		u8 len = edid[pos] & 0x1f, type = (edid[pos] >> 5) & 7;
-+		pr_debug("Data block %u of %u bytes\n", type, len);
-+		if (type = 2)
-+			for (i = pos; i < pos + len; i++) {
-+				u8 idx = edid[pos + i] & 0x7f;
-+				svd[svd_n++] = idx;
-+				pr_debug("N%sative mode #%d\n",
-+					 edid[pos + i] & 0x80 ? "" : "on-n", idx);
-+			}
-+		pos += len + 1;
-+	}
-+
- 	block = edid + edid[2];
- 
- 	DPRINTK("  Extended Detailed Timings\n");
-@@ -1005,10 +1021,10 @@ void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
- 			edt[num++] = block - edid;
- 
- 	/* Yikes, EDID data is totally useless */
--	if (!num)
-+	if (!(num + svd_n))
- 		return;
- 
--	m = kzalloc((specs->modedb_len + num) *
-+	m = kzalloc((specs->modedb_len + num + svd_n) *
- 		       sizeof(struct fb_videomode), GFP_KERNEL);
- 
- 	if (!m)
-@@ -1023,9 +1039,22 @@ void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
- 		pr_debug("Adding %ux%u@%u\n", m[i].xres, m[i].yres, m[i].refresh);
- 	}
- 
-+	for (i = specs->modedb_len + num; i < specs->modedb_len + num + svd_n; i++) {
-+		int idx = svd[i - specs->modedb_len - num];
-+		if (!idx || idx > 63) {
-+			pr_warning("Reserved SVD code %d\n", idx);
-+		} else if (idx > ARRAY_SIZE(cea_modes) || !cea_modes[idx].xres) {
-+			pr_warning("Unimplemented SVD code %d\n", idx);
-+		} else {
-+			memcpy(&m[i], cea_modes + idx, sizeof(m[i]));
-+			pr_debug("Adding SVD #%d: %ux%u@%u\n", idx,
-+				 m[i].xres, m[i].yres, m[i].refresh);
-+		}
-+	}
-+
- 	kfree(specs->modedb);
- 	specs->modedb = m;
--	specs->modedb_len = specs->modedb_len + num;
-+	specs->modedb_len = specs->modedb_len + num + svd_n;
+diff --git a/drivers/sh/clk/core.c b/drivers/sh/clk/core.c
+index fd0d1b9..358db1b 100644
+--- a/drivers/sh/clk/core.c
++++ b/drivers/sh/clk/core.c
+@@ -541,6 +541,81 @@ long clk_round_rate(struct clk *clk, unsigned long rate)
  }
+ EXPORT_SYMBOL_GPL(clk_round_rate);
  
- /*
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index 0a4dbdc..9a0ae6c 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -278,6 +278,49 @@ static const struct fb_videomode modedb[] = {
- };
- 
- #ifdef CONFIG_FB_MODE_HELPERS
-+const struct fb_videomode cea_modes[64] = {
-+	/* #1: 640x480p@59.94/60Hz */
-+	[1] = {
-+		NULL, 60, 640, 480, 39722, 48, 16, 33, 10, 96, 2, 0, FB_VMODE_NONINTERLACED, 0,
-+	},
-+	/* #3: 720x480p@59.94/60Hz */
-+	[3] = {
-+		NULL, 60, 720, 480, 37037, 60, 16, 30, 9, 62, 6, 0, FB_VMODE_NONINTERLACED, 0,
-+	},
-+	/* #5: 1920x1080i@59.94/60Hz */
-+	[5] = {
-+		NULL, 60, 1920, 1080, 13763, 148, 88, 15, 2, 44, 5, 0, FB_VMODE_INTERLACED, 0,
-+	},
-+	/* #7: 720(1440)x480iH@59.94/60Hz */
-+	[7] = {
-+		NULL, 60, 1440, 480, 18554/*37108*/, 114, 38, 15, 4, 124, 3, 0, FB_VMODE_INTERLACED, 0,
-+	},
-+	/* #9: 720(1440)x240pH@59.94/60Hz */
-+	[9] = {
-+		NULL, 60, 1440, 240, 18554, 114, 38, 16, 4, 124, 3, 0, FB_VMODE_NONINTERLACED, 0,
-+	},
-+	/* #18: 720x576pH@50Hz */
-+	[18] = {
-+		NULL, 50, 720, 576, 37037, 68, 12, 39, 5, 64, 5, 0, FB_VMODE_NONINTERLACED, 0,
-+	},
-+	/* #19: 1280x720p@50Hz */
-+	[19] = {
-+		NULL, 50, 1280, 720, 13468, 220, 440, 20, 5, 40, 5, 0, FB_VMODE_NONINTERLACED, 0,
-+	},
-+	/* #20: 1920x1080i@50Hz */
-+	[20] = {
-+		NULL, 50, 1920, 1080, 13480, 148, 528, 15, 5, 528, 5, 0, FB_VMODE_INTERLACED, 0,
-+	},
-+	/* #32: 1920x1080p@23.98/24Hz */
-+	[32] = {
-+		NULL, 24, 1920, 1080, 13468, 148, 638, 36, 4, 44, 5, 0, FB_VMODE_NONINTERLACED, 0,
-+	},
-+	/* #35: (2880)x480p4x@59.94/60Hz */
-+	[35] = {
-+		NULL, 50, 2880, 480, 11100, 240, 64, 30, 9, 248, 6, 0, FB_VMODE_NONINTERLACED, 0,
-+	},
-+};
++long clk_round_parent(struct clk *clk, unsigned long target,
++		      unsigned long *best_freq, unsigned long *parent_freq,
++		      unsigned int div_min, unsigned int div_max)
++{
++	struct cpufreq_frequency_table *freq, *best = NULL;
++	unsigned long error = ULONG_MAX, freq_high, freq_low, div;
++	struct clk *parent = clk_get_parent(clk);
 +
- const struct fb_videomode vesa_modes[] = {
- 	/* 0 640x350-85 VESA */
- 	{ NULL, 85, 640, 350, 31746,  96, 32, 60, 32, 64, 3,
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 6f0274d..e154a79 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -1151,6 +1151,7 @@ struct fb_videomode {
++	if (!parent) {
++		*parent_freq = 0;
++		*best_freq = clk_round_rate(clk, target);
++		return abs(target - *best_freq);
++	}
++
++	for (freq = parent->freq_table; freq->frequency != CPUFREQ_TABLE_END;
++	     freq++) {
++		if (freq->frequency = CPUFREQ_ENTRY_INVALID)
++			continue;
++
++		if (unlikely(freq->frequency / target <= div_min - 1)) {
++			unsigned long freq_max = (freq->frequency + div_min / 2) / div_min;
++			if (error > target - freq_max) {
++				error = target - freq_max;
++				best = freq;
++				if (best_freq)
++					*best_freq = freq_max;
++			}
++			pr_debug("too low freq %lu, error %lu\n", freq->frequency, target - freq_max);
++			if (!error)
++				break;
++			continue;
++		}
++
++		if (unlikely(freq->frequency / target >= div_max)) {
++			unsigned long freq_min = (freq->frequency + div_max / 2) / div_max;
++			if (error > freq_min - target) {
++				error = freq_min - target;
++				best = freq;
++				if (best_freq)
++					*best_freq = freq_min;
++			}
++			pr_debug("too high freq %lu, error %lu\n", freq->frequency, freq_min - target);
++			if (!error)
++				break;
++			continue;
++		}
++
++		
++		div = freq->frequency / target;
++		freq_high = freq->frequency / div;
++		freq_low = freq->frequency / (div + 1);
++		if (freq_high - target < error) {
++			error = freq_high - target;
++			best = freq;
++			if (best_freq)
++				*best_freq = freq_high;
++		}
++		if (target - freq_low < error) {
++			error = target - freq_low;
++			best = freq;
++			if (best_freq)
++				*best_freq = freq_low;
++		}
++		pr_debug("%u / %lu = %lu, / %lu = %lu, best %lu, parent %u\n",
++			 freq->frequency, div, freq_high, div + 1, freq_low,
++			 *best_freq, best->frequency);
++		if (!error)
++			break;
++	}
++	if (parent_freq)
++		*parent_freq = best->frequency;
++	return error;
++}
++EXPORT_SYMBOL_GPL(clk_round_parent);
++
+ #ifdef CONFIG_PM
+ static int clks_sysdev_suspend(struct sys_device *dev, pm_message_t state)
+ {
+diff --git a/include/linux/sh_clk.h b/include/linux/sh_clk.h
+index 4dca992..cea0c38 100644
+--- a/include/linux/sh_clk.h
++++ b/include/linux/sh_clk.h
+@@ -122,6 +122,10 @@ int clk_rate_table_find(struct clk *clk,
+ long clk_rate_div_range_round(struct clk *clk, unsigned int div_min,
+ 			      unsigned int div_max, unsigned long rate);
  
- extern const char *fb_mode_option;
- extern const struct fb_videomode vesa_modes[];
-+extern const struct fb_videomode cea_modes[64];
- 
- struct fb_modelist {
- 	struct list_head list;
++long clk_round_parent(struct clk *clk, unsigned long target,
++		      unsigned long *best_freq, unsigned long *parent_freq,
++		      unsigned int div_min, unsigned int div_max);
++
+ #define SH_CLK_MSTP32(_parent, _enable_reg, _enable_bit, _flags)	\
+ {									\
+ 	.parent		= _parent,					\
 -- 
 1.7.2.3
 

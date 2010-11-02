@@ -1,91 +1,149 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Sat, 20 Nov 2010 08:56:24 +0000
-Subject: Re: abs() vs. abs64() (was: Re: [PATCH] fbdev: fix nearest mode search)
-Message-Id: <AANLkTinneJ+PcnZ9zFVjYUeA+-9MQ96-67kqvO=gS7zW@mail.gmail.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Tue, 02 Nov 2010 10:47:47 +0000
+Subject: [PATCH 4/4 v2] fbdev: sh_mobile_hdmi: add support for E-EDID parsing
+Message-Id: <Pine.LNX.4.64.1011021145570.4552@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <AANLkTimYDAJr9x00sjGGnDF2vOVXU12qmbnmfuzA5_0h@mail.gmail.com>
-	<20101119140721.33576c61.akpm@linux-foundation.org>
-	<20101119222823.GA28797@quadria>
-	<20101119150411.81092e94.akpm@linux-foundation.org>
-	<20101119151949.b7e514f7.akpm@linux-foundation.org>
-In-Reply-To: <20101119151949.b7e514f7.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: michalj@gmail.com, Rolf Eike Beer <eike-kernel@sf-tec.de>, linux-kernel@vger.kernel.org, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-On Sat, Nov 20, 2010 at 00:19, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Fri, 19 Nov 2010 15:04:11 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
->
->> > Looks good to me.  I posted essentially the same thing some 3 months ago
->> > (http://marc.info/?l=linux-kernel&m8033094822201&w=2) but it then
->> > failed to get any traction.  At any rate, I like your version better as
->> > it seems more readable.
->> >
->>
->> I spose we should document it.   Does this look complete and accurate?
->>
->> --- a/include/linux/kernel.h~include-linux-kernelh-abs-fix-handling-of-32-bit-unsigneds-on-64-bit-fix
->> +++ a/include/linux/kernel.h
->> @@ -143,6 +143,13 @@ extern int _cond_resched(void);
->>
->>  #define might_sleep_if(cond) do { if (cond) might_sleep(); } while (0)
->>
->> +/*
->> + * abs() handles unsigned and signed longs, ints, shorts and chars.  For long
->> + * types it returns a signed long.  For int, short and char types it returns a
->> + * signed int.
->> + * abs() should not be used for 64-bit types (s64, u64, long long) - use abs64()
->> + * for those.
->> + */
->>  #define abs(x) ({                                            \
->>               long ret;                                       \
->>               if (sizeof(x) = sizeof(long)) {                \
->
-> Well that was a load of bollocks.  2nd attempt:
+Many HDMI clients implement enhanced EDID blocks, which often contain
+additional supported video modes. This patch implements parsing of such
+E-EDID blocks.
 
-Yeah, I was just gonna complain "but long _is_ 64-bit on 64-bit platforms"...
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
 
-> --- a/include/linux/kernel.h~include-linux-kernelh-abs-fix-handling-of-32-bit-unsigneds-on-64-bit-fix
-> +++ a/include/linux/kernel.h
-> @@ -143,6 +143,12 @@ extern int _cond_resched(void);
->
->  #define might_sleep_if(cond) do { if (cond) might_sleep(); } while (0)
->
-> +/*
-> + * abs() handles unsigned and signed longs, ints, shorts and chars.  For all
-> + * input types abs() returns a signed long.
-> + * abs() should not be used for 64-bit types (s64, u64, long long) - use abs64()
-> + * for those.
-> + */
->  #define abs(x) ({                                              \
->                long ret;                                       \
->                if (sizeof(x) = sizeof(long)) {                \
+v2: no change
 
-After some second thinking, I think this is OK...
+ drivers/video/sh_mobile_hdmi.c |   60 ++++++++++++++++++++++++++++++++-------
+ 1 files changed, 49 insertions(+), 11 deletions(-)
 
-In the first patch:
-> of similarity between video modes.  The arguments of abs() are sometimes
-> unsigned numbers.  This worked fine until commit a49c59c0 ("Make sure the
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index c474b0bd..b3241dd 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -210,6 +210,9 @@ struct sh_hdmi {
+ 	void __iomem *base;
+ 	enum hotplug_state hp_state;	/* hot-plug status */
+ 	bool preprogrammed_mode;	/* use a pre-programmed VIC or the external mode */
++	u8 edid_block_addr;
++	u8 edid_segment_nr;
++	u8 edid_blocks;
+ 	struct clk *hdmi_clk;
+ 	struct device *dev;
+ 	struct fb_info *info;
+@@ -750,7 +753,38 @@ static int sh_hdmi_read_edid(struct sh_hdmi *hdmi, unsigned long *hdmi_rate,
+ 	printk(KERN_CONT "\n");
+ #endif
+ 
+-	fb_edid_to_monspecs(edid, &hdmi->monspec);
++	if (!hdmi->edid_blocks) {
++		fb_edid_to_monspecs(edid, &hdmi->monspec);
++		hdmi->edid_blocks = edid[126] + 1;
++
++		dev_dbg(hdmi->dev, "%d main modes, %d extension blocks\n",
++			hdmi->monspec.modedb_len, hdmi->edid_blocks - 1);
++	} else {
++		dev_dbg(hdmi->dev, "Extension %u detected, DTD start %u\n",
++			edid[0], edid[2]);
++		fb_edid_add_monspecs(edid, &hdmi->monspec);
++	}
++
++	if (hdmi->edid_blocks > hdmi->edid_segment_nr * 2 +
++	    (hdmi->edid_block_addr >> 7) + 1) {
++		/* More blocks to read */
++		if (hdmi->edid_block_addr) {
++			hdmi->edid_block_addr = 0;
++			hdmi->edid_segment_nr++;
++		} else {
++			hdmi->edid_block_addr = 0x80;
++		}
++		/* Set EDID word address  */
++		hdmi_write(hdmi, hdmi->edid_block_addr, HDMI_EDID_WORD_ADDRESS);
++		/* Enable EDID interrupt */
++		hdmi_write(hdmi, 0xC6, HDMI_INTERRUPT_MASK_1);
++		/* Set EDID segment pointer - starts reading EDID */
++		hdmi_write(hdmi, hdmi->edid_segment_nr, HDMI_EDID_SEGMENT_POINTER);
++		return -EAGAIN;
++	}
++
++	/* All E-EDID blocks ready */
++	dev_dbg(hdmi->dev, "%d main and extended modes\n", hdmi->monspec.modedb_len);
+ 
+ 	fb_get_options("sh_mobile_lcdc", &forced);
+ 	if (forced && *forced) {
+@@ -889,32 +923,34 @@ static irqreturn_t sh_hdmi_hotplug(int irq, void *dev_id)
+ 		/* Check, if hot plug & MSENS pin status are both high */
+ 		if ((msens & 0xC0) = 0xC0) {
+ 			/* Display plug in */
++			hdmi->edid_segment_nr = 0;
++			hdmi->edid_block_addr = 0;
++			hdmi->edid_blocks = 0;
+ 			hdmi->hp_state = HDMI_HOTPLUG_CONNECTED;
+ 
+ 			/* Set EDID word address  */
+ 			hdmi_write(hdmi, 0x00, HDMI_EDID_WORD_ADDRESS);
+-			/* Set EDID segment pointer */
+-			hdmi_write(hdmi, 0x00, HDMI_EDID_SEGMENT_POINTER);
+ 			/* Enable EDID interrupt */
+ 			hdmi_write(hdmi, 0xC6, HDMI_INTERRUPT_MASK_1);
++			/* Set EDID segment pointer - starts reading EDID */
++			hdmi_write(hdmi, 0x00, HDMI_EDID_SEGMENT_POINTER);
+ 		} else if (!(status1 & 0x80)) {
+ 			/* Display unplug, beware multiple interrupts */
+-			if (hdmi->hp_state != HDMI_HOTPLUG_DISCONNECTED)
++			if (hdmi->hp_state != HDMI_HOTPLUG_DISCONNECTED) {
++				hdmi->hp_state = HDMI_HOTPLUG_DISCONNECTED;
+ 				schedule_delayed_work(&hdmi->edid_work, 0);
+-
+-			hdmi->hp_state = HDMI_HOTPLUG_DISCONNECTED;
++			}
+ 			/* display_off will switch back to mode_a */
+ 		}
+ 	} else if (status1 & 2) {
+ 		/* EDID error interrupt: retry */
+ 		/* Set EDID word address  */
+-		hdmi_write(hdmi, 0x00, HDMI_EDID_WORD_ADDRESS);
++		hdmi_write(hdmi, hdmi->edid_block_addr, HDMI_EDID_WORD_ADDRESS);
+ 		/* Set EDID segment pointer */
+-		hdmi_write(hdmi, 0x00, HDMI_EDID_SEGMENT_POINTER);
++		hdmi_write(hdmi, hdmi->edid_segment_nr, HDMI_EDID_SEGMENT_POINTER);
+ 	} else if (status1 & 4) {
+ 		/* Disable EDID interrupt */
+ 		hdmi_write(hdmi, 0xC0, HDMI_INTERRUPT_MASK_1);
+-		hdmi->hp_state = HDMI_HOTPLUG_EDID_DONE;
+ 		schedule_delayed_work(&hdmi->edid_work, msecs_to_jiffies(10));
+ 	}
+ 
+@@ -1043,7 +1079,7 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 
+ 	mutex_lock(&hdmi->mutex);
+ 
+-	if (hdmi->hp_state = HDMI_HOTPLUG_EDID_DONE) {
++	if (hdmi->hp_state = HDMI_HOTPLUG_CONNECTED) {
+ 		unsigned long parent_rate = 0, hdmi_rate;
+ 
+ 		/* A device has been plugged in */
+@@ -1053,6 +1089,8 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 		if (ret < 0)
+ 			goto out;
+ 
++		hdmi->hp_state = HDMI_HOTPLUG_EDID_DONE;
++
+ 		/* Reconfigure the clock */
+ 		ret = sh_hdmi_clk_configure(hdmi, hdmi_rate, parent_rate);
+ 		if (ret < 0)
+@@ -1103,7 +1141,7 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 	}
+ 
+ out:
+-	if (ret < 0)
++	if (ret < 0 && ret != -EAGAIN)
+ 		hdmi->hp_state = HDMI_HOTPLUG_DISCONNECTED;
+ 	mutex_unlock(&hdmi->mutex);
+ 
+-- 
+1.7.2.3
 
-The "sometimes" is when the parameter is the difference of 2 numbers, which is a
-highly likely use case. Unlike most people's intuitive mathematical
-feelings, a difference
-is always unsigned in C (that was incorrect in the comment of Michal's
-first version).
-So I think it's worth mentioning that explicitly.
-
-... and please llet me do the third thinking during the rest of the day ;-)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

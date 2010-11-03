@@ -1,44 +1,42 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Thu, 11 Nov 2010 13:19:24 +0000
-Subject: Re: [PATCH 3/4 v2] fbdev: when parsing E-EDID blocks, also use SVD
-Message-Id: <Pine.LNX.4.64.1011111412370.15747@axis700.grange>
+From: Jiri Slaby <jslaby@suse.cz>
+Date: Wed, 03 Nov 2010 15:28:34 +0000
+Subject: [PATCH 3/3] VIDEO: xen-fb, switch to for_each_console
+Message-Id: <1288798114-23206-3-git-send-email-jslaby@suse.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1011021143480.4552@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1011021143480.4552@axis700.grange>
+References: <1288798114-23206-1-git-send-email-jslaby@suse.cz>
+In-Reply-To: <1288798114-23206-1-git-send-email-jslaby@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com, Jeremy Fitzhardinge <jeremy@xensource.com>, Chris Wright <chrisw@sous-sol.org>, virtualization@lists.osdl.org, xen-devel@lists.xensource.com, linux-fbdev@vger.kernel.org
 
-On Wed, 10 Nov 2010, Paul Mundt wrote:
+Use newly added for_each_console for iterating consoles.
 
-> On Tue, Nov 02, 2010 at 11:47:40AM +0100, Guennadi Liakhovetski wrote:
-> > diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-> > index 38b3c30..943bcff 100644
-> > --- a/drivers/video/fbmon.c
-> > +++ b/drivers/video/fbmon.c
-> > @@ -973,6 +973,45 @@ void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
-> >  	DPRINTK("====================\n");
-> >  }
-> >  
-> > +const struct fb_videomode cea_modes[] = {
-> 
-> This wants to be in drivers/video/modedb.c nested under
-> CONFIG_FB_MODE_HELPERS, you can simply follow the vesa_modes
-> example. Given that this can also be modular, you'll need a symbol export
-> for cea_modes in addition to a prototype in include/linux/fb.h.
-
-Actually it should have been static, it should only be used in 
-fb_edid_add_monspecs(). But if we move it to modedb.c, then it certainly 
-becomes global, but still doesn't have to be exported, modedb.c and 
-fbmon.c are always linked together. As for CONFIG_FB_MODE_HELPERS - yes, 
-it is already under it in fbmon.c. But well, yes, in the future these CEA 
-modes can be used by other code paths, so, moving it to modedb.c might be 
-more logical, yes, but I wouldn't export it.
-
-Thanks
-Guennadi
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Chris Wright <chrisw@sous-sol.org>
+Cc: virtualization@lists.osdl.org
+Cc: xen-devel@lists.xensource.com
+Cc: linux-fbdev@vger.kernel.org
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+ drivers/video/xen-fbfront.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
+index 428d273..4abb0b9 100644
+--- a/drivers/video/xen-fbfront.c
++++ b/drivers/video/xen-fbfront.c
+@@ -492,7 +492,7 @@ xenfb_make_preferred_console(void)
+ 		return;
+ 
+ 	acquire_console_sem();
+-	for (c = console_drivers; c; c = c->next) {
++	for_each_console(c) {
+ 		if (!strcmp(c->name, "tty") && c->index = 0)
+ 			break;
+ 	}
+-- 
+1.7.3.1
+
+

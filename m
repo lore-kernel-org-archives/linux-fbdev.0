@@ -1,140 +1,67 @@
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Thu, 11 Nov 2010 14:44:52 +0000
-Subject: [PATCH 2/4 v3] fbdev: export fb_edid_add_monspecs() for modules,
-Message-Id: <Pine.LNX.4.64.1011111524170.15747@axis700.grange>
+Date: Thu, 04 Nov 2010 11:06:11 +0000
+Subject: [PATCH 4/5] fbdev: sh_mobile_lcdc: use correct number of modes, when
+Message-Id: <Pine.LNX.4.64.1011041200340.13123@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-fb_edid_add_monspecs() should also be exported for use in modules, and it
-requires a dummy version for the case, when CONFIG_FB_MODE_HELPERS is not
-selected. This patch also improves the algorithm by removing a redundant
-memory allocation, adds function documentation, adds data verification and
-replaces memmove() with memcpy().
+Fix zero mode number, when using the default 720p mode.
 
 Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
+ drivers/video/sh_mobile_lcdcfb.c |   14 ++++++++------
+ 1 files changed, 8 insertions(+), 6 deletions(-)
 
-v3: use the PIXEL_CLOCK macro instead of open-coding
-
-v2: added changes, suggested by Andrew:
-
-1. replace memmove() with memcpy()
-2. add documentation
-3. sanity check edid[2]
-
- drivers/video/fbmon.c |   58 +++++++++++++++++++++++++-----------------------
- 1 files changed, 30 insertions(+), 28 deletions(-)
-
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index a0b5a93..b25399a 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -973,58 +973,56 @@ void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
- 	DPRINTK("====================\n");
- }
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 8e8d698..993be38 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -1188,6 +1188,7 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 		const struct fb_videomode *mode = cfg->lcd_cfg;
+ 		unsigned long max_size = 0;
+ 		int k;
++		int num_cfg;
  
-+/**
-+ * fb_edid_add_monspecs() - add monitor video modes from E-EDID data
-+ * @edid:	128 byte array with an E-EDID block
-+ * @spacs:	monitor specs to be extended
-+ */
- void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
- {
- 	unsigned char *block;
--	struct fb_videomode *mode, *m;
--	int num = 0, i, first = 1;
-+	struct fb_videomode *m;
-+	int num = 0, i;
-+	u8 edt[(128 - 4) / DETAILED_TIMING_DESCRIPTION_SIZE];
+ 		ch->info = framebuffer_alloc(0, &pdev->dev);
+ 		if (!ch->info) {
+@@ -1223,8 +1224,14 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 		info->fix = sh_mobile_lcdc_fix;
+ 		info->fix.smem_len = max_size * (cfg->bpp / 8) * 2;
  
--	if (edid = NULL)
-+	if (!edid)
- 		return;
+-		if (!mode)
++		if (!mode) {
+ 			mode = &default_720p;
++			num_cfg = 1;
++		} else {
++			num_cfg = ch->cfg.num_cfg;
++		}
++
++		fb_videomode_to_modelist(mode, num_cfg, &info->modelist);
  
- 	if (!edid_checksum(edid))
- 		return;
+ 		fb_videomode_to_var(var, mode);
+ 		/* Default Y virtual resolution is 2x panel size */
+@@ -1272,10 +1279,6 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
  
--	if (edid[0] != 0x2)
-+	if (edid[0] != 0x2 ||
-+	    edid[2] < 4 || edid[2] > 128 - DETAILED_TIMING_DESCRIPTION_SIZE)
- 		return;
- 
--	mode = kzalloc(50 * sizeof(struct fb_videomode), GFP_KERNEL);
--	if (mode = NULL)
--		return;
+ 	for (i = 0; i < j; i++) {
+ 		struct sh_mobile_lcdc_chan *ch = priv->ch + i;
+-		const struct fb_videomode *mode = ch->cfg.lcd_cfg;
 -
--	block = edid + edid[0x2];
-+	block = edid + edid[2];
+-		if (!mode)
+-			mode = &default_720p;
  
- 	DPRINTK("  Extended Detailed Timings\n");
+ 		info = ch->info;
  
--	for (i = 0; i < (128 - edid[0x2]) / DETAILED_TIMING_DESCRIPTION_SIZE;
--	     i++, block += DETAILED_TIMING_DESCRIPTION_SIZE) {
--		if (!(block[0] = 0x00 && block[1] = 0x00)) {
--			get_detailed_timing(block, &mode[num]);
--			if (first) {
--			        mode[num].flag |= FB_MODE_IS_FIRST;
--				first = 0;
--			}
--			num++;
--		}
--	}
-+	for (i = 0; i < (128 - edid[2]) / DETAILED_TIMING_DESCRIPTION_SIZE;
-+	     i++, block += DETAILED_TIMING_DESCRIPTION_SIZE)
-+		if (PIXEL_CLOCK)
-+			edt[num++] = block - edid;
+@@ -1288,7 +1291,6 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 			}
+ 		}
  
- 	/* Yikes, EDID data is totally useless */
--	if (!num) {
--		kfree(mode);
-+	if (!num)
- 		return;
--	}
- 
- 	m = kzalloc((specs->modedb_len + num) *
- 		       sizeof(struct fb_videomode), GFP_KERNEL);
- 
--	if (!m) {
--		kfree(mode);
-+	if (!m)
- 		return;
-+
-+	memcpy(m, specs->modedb, specs->modedb_len * sizeof(struct fb_videomode));
-+
-+	for (i = specs->modedb_len; i < specs->modedb_len + num; i++) {
-+		get_detailed_timing(edid + edt[i - specs->modedb_len], &m[i]);
-+		if (i = specs->modedb_len)
-+			m[i].flag |= FB_MODE_IS_FIRST;
-+		pr_debug("Adding %ux%u@%u\n", m[i].xres, m[i].yres, m[i].refresh);
- 	}
- 
--	memmove(m, specs->modedb, specs->modedb_len * sizeof(struct fb_videomode));
--	memmove(m + specs->modedb_len, mode, num * sizeof(struct fb_videomode));
--	kfree(mode);
- 	kfree(specs->modedb);
- 	specs->modedb = m;
- 	specs->modedb_len = specs->modedb_len + num;
-@@ -1346,6 +1344,9 @@ void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
- {
- 	specs = NULL;
- }
-+void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
-+{
-+}
- void fb_destroy_modedb(struct fb_videomode *modedb)
- {
- }
-@@ -1453,6 +1454,7 @@ EXPORT_SYMBOL(fb_firmware_edid);
- 
- EXPORT_SYMBOL(fb_parse_edid);
- EXPORT_SYMBOL(fb_edid_to_monspecs);
-+EXPORT_SYMBOL(fb_edid_add_monspecs);
- EXPORT_SYMBOL(fb_get_mode);
- EXPORT_SYMBOL(fb_validate_mode);
- EXPORT_SYMBOL(fb_destroy_modedb);
+-		fb_videomode_to_modelist(mode, ch->cfg.num_cfg, &info->modelist);
+ 		error = register_framebuffer(info);
+ 		if (error < 0)
+ 			goto err1;
 -- 
 1.7.2.3
 

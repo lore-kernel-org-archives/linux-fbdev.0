@@ -1,90 +1,44 @@
-From: "Nilofer, Samreen" <samreen@ti.com>
-Date: Thu, 04 Nov 2010 05:37:29 +0000
-Subject: RE: [PATCH] OMAP3630: DSS2: Enable Pre-Multiplied Alpha Support
-Message-Id: <FCCFB4CDC6E5564B9182F639FC356087034BE1ECC6@dbde02.ent.ti.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Thu, 04 Nov 2010 11:05:55 +0000
+Subject: [PATCH 1/5] fbdev: sh_mobile_hdmi: properly clean up modedb on
+Message-Id: <Pine.LNX.4.64.1011041158550.13123@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1288174567-24734-1-git-send-email-samreen@ti.com>
-	 <1288709767.5614.138.camel@tubuntu>
-	 <FCCFB4CDC6E5564B9182F639FC356087034BE1E990@dbde02.ent.ti.com>
- <1288776073.5614.183.camel@tubuntu>
- <FCCFB4CDC6E5564B9182F639FC356087034BE1EACA@dbde02.ent.ti.com>
-In-Reply-To: <FCCFB4CDC6E5564B9182F639FC356087034BE1EACA@dbde02.ent.ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Taneja, Archit" <archit@ti.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: "Syrjala Ville (Nokia-MS/Helsinki)" <ville.syrjala@nokia.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Rajkumar N <rajkumar.nagarajan@ti.com>, Sudeep Basavaraj <sudeep.basavaraj@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-Hi,
+Even though this is not a problem currently, it is better to clear the freed
+pointer and nullify the length of the freed memory.
 
-Taneja, Archit wrote:
-> Hi,
-> 
-> Tomi Valkeinen wrote:
->> On Wed, 2010-11-03 at 08:57 +0100, ext Taneja, Archit wrote:
->>> Hi,
->>> 
->>> linux-omap-owner@vger.kernel.org wrote:
->>>> Alpha Support
->>>> 
->>> 
->>> [snip]
->>> 
->>>>> 
->>>>> +static void _dispc_set_pre_mult_alpha(enum omap_plane plane, bool
->>>>> +enable) { +	if (!dss_has_feature(FEAT_PREMUL_ALPHA)) +		return;
->>>>> +
->>>>> +	BUG_ON(!dss_has_feature(FEAT_GLOBAL_ALPHA_VID1) &&
->>>>> +		plane = OMAP_DSS_VIDEO1);
->>>> 
->>>> What is the rationale for having the function return, if
->>>> FEAT_PREMUL_ALPHA is not supported, but BUG if plane is video1 and
->>>> GLOBAL_ALPHA_VID1 is not supported?
->>> 
->>> Premultiplied alpha is available on omap36xx and above, but on 36xx
->>> since global alpha itself isn't supported for video1 then writing to
->>> the pre multiplied alpha bit is incorrect.
->>> 
->>> It could have been possible to make a new feature like
->>> FEAT_PRE_MULT_VID1 but I think its redundant as
->>> FEAT_GLOBAL_ALPHA_VID1 is enough to determine if we should set the
->>> pre multiplied
->> alpha bit for video1 plane or not.
->> 
->> I was referring to the first check using return, and the second using
->> BUG(). If nobody is supposed to call that function when
->> 
->> !dss_has_feature(FEAT_GLOBAL_ALPHA_VID1) && plane = OMAP_DSS_VIDEO1)
->> 
->> then why is it ok to call that function when
->> 
->> !dss_has_feature(FEAT_PREMUL_ALPHA)
->> 
->> Shouldn't they both be either returns or BUGs?
->> 
-> 
-> If you see the current code, _dispc_setup_global_alpha() does
-> the same thing, and in the call to it in _dispc_setup_plane() is:
-> 
-> ...
-> ...
-> 	if (plane != OMAP_DSS_VIDEO1)
-> 		_dispc_setup_global_alpha(plane, global_alpha); ... ...
-> 
-> So, I guess this BUG_ON is probably not required for both
-> setup_global_alpha and setup_pre_multiplied_alpha if you take
-> care while calling these functions from _dispc_setup_plane().
-> 
-> But this is the same with _dispc_set_scaling(),
-> _dispc_set_vid_size() etc where we have a BUG_ON(plane =
-> OMAP_DSS_GFX) even when we take care of not calling it for
-> the GFX pipe.
-> 
-> Archit
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
+ drivers/video/sh_mobile_hdmi.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-[Samreen]
-     If this clarification is aligned, should I go ahead and post the patch
-with the remaining review comments
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index b3241dd..dadb632 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -1130,6 +1130,10 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 		if (!hdmi->info)
+ 			goto out;
+ 
++		hdmi->monspec.modedb_len = 0;
++		fb_destroy_modedb(hdmi->monspec.modedb);
++		hdmi->monspec.modedb = NULL;
++
+ 		acquire_console_sem();
+ 
+ 		/* HDMI disconnect */
+@@ -1137,7 +1141,6 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 
+ 		release_console_sem();
+ 		pm_runtime_put(hdmi->dev);
+-		fb_destroy_modedb(hdmi->monspec.modedb);
+ 	}
+ 
+ out:
+-- 
+1.7.2.3
 
-Regards,
-Samreen

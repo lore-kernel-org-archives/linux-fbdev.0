@@ -1,54 +1,232 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Fri, 26 Nov 2010 06:09:11 +0000
-Subject: Re: [PATCH 1/2] fbdev: bf537-lq035: new Blackfin Sharp LQ035 framebuffer driver
-Message-Id: <20101126060911.GB7893@linux-sh.org>
+From: Samreen <samreen@ti.com>
+Date: Thu, 04 Nov 2010 11:40:42 +0000
+Subject: [PATCH v2 2/2] OMAP3630: DSS2: Enable Pre-Multiplied Alpha Support
+Message-Id: <1288870122-22836-3-git-send-email-samreen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1290591239-6089-1-git-send-email-vapier@gentoo.org>
-In-Reply-To: <1290591239-6089-1-git-send-email-vapier@gentoo.org>
+References: <1288870122-22836-1-git-send-email-samreen@ti.com>
+ <1288870122-22836-2-git-send-email-samreen@ti.com>
+In-Reply-To: <1288870122-22836-2-git-send-email-samreen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>, ville.syrjala@nokia.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Rajkumar N <rajkumar.nagarajan@ti.com>, Sudeep Basavaraj <sudeep.basavaraj@ti.com>, Samreen <samreen@ti.com>, Archit Taneja <archit@ti.com>
 
-On Thu, Nov 25, 2010 at 04:21:48AM -0500, Mike Frysinger wrote:
-> On Thursday, November 25, 2010 03:28:11 Paul Mundt wrote:
-> > On Wed, Nov 24, 2010 at 04:33:58AM -0500, Mike Frysinger wrote:
-> > > From: Michael Hennerich <michael.hennerich@analog.com>
-> > > 
-> > > For LCDs hooked up to BF537-STAMP boards.
-> > > 
-> > > Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-> > > Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> > > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> > > ---
-> > > note: these have been posted in the past, but before we got a fbdev
-> > > 
-> > > 	maintainer, so i'm just reposting them to hopefully get merged
-> > 
-> > On Wed, Nov 24, 2010 at 04:33:59AM -0500, Mike Frysinger wrote:
-> > > From: Michael Hennerich <michael.hennerich@analog.com>
-> > > 
-> > > Driver for ADV7393 add-on card for multiple Blackfin boards.
-> > > 
-> > > Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-> > > Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> > > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> > > ---
-> > > note: these have been posted in the past, but before we got a fbdev
-> > > 
-> > > 	maintainer, so i'm just reposting them to hopefully get merged
-> > 
-> > While I don't really have any strong opinions about these drivers one way
-> > or the other, a cursory glance shows that they end up sharing quite a bit
-> > of code, along with the existing in-tree blackfin fb drivers. Have you
-> > considered trying to abstract things a bit and moving things in to a
-> > drivers/video/bfin or the like? Much of the DMA and PPI stuff looks like
-> > it could be pretty easily broken out.
-> 
-> we have thought about it quite a bit, but havent quite gotten an answer that 
-> worked without a lot of cruft
+From: Rajkumar N <rajkumar.nagarajan@ti.com>
 
-Ok. They're pretty limited in scope anyways, so there's not much harm in
-adding them as-is. I've queued them up for .38. I would like to see some
-effort to get the blackfin drivers tidied up and a bit more consolidated
-in the future, before things get too far out of hand, however.
+Enable dss to process color formats with pre-mulitplied alpha.
+With this we can have alpha values defined for each pixel
+and hence can have different blending values for each pixel.
+sysfs entry has been created for this and pre-multiplied alpha
+support is turned off by default.
+
+Signed-off-by: Sudeep Basavaraj <sudeep.basavaraj@ti.com>
+Signed-off-by: Rajkumar N <rajkumar.nagarajan@ti.com>
+Signed-off-by: Samreen <samreen@ti.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ arch/arm/plat-omap/include/plat/display.h |    1 +
+ drivers/video/omap2/dss/dispc.c           |   30 ++++++++++++++++-----
+ drivers/video/omap2/dss/dss.h             |    3 +-
+ drivers/video/omap2/dss/manager.c         |    5 +++-
+ drivers/video/omap2/dss/overlay.c         |   41 +++++++++++++++++++++++++++++
+ 5 files changed, 71 insertions(+), 9 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
+index c915a66..d433baf 100644
+--- a/arch/arm/plat-omap/include/plat/display.h
++++ b/arch/arm/plat-omap/include/plat/display.h
+@@ -268,6 +268,7 @@ struct omap_overlay_info {
+ 	u16 out_width;	/* if 0, out_width = width */
+ 	u16 out_height;	/* if 0, out_height = height */
+ 	u8 global_alpha;
++	u8 pre_mult_alpha;
+ };
+ 
+ struct omap_overlay {
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index fa40fa5..2179618 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -773,13 +773,26 @@ static void _dispc_set_vid_size(enum omap_plane plane, int width, int height)
+ 	dispc_write_reg(vsi_reg[plane-1], val);
+ }
+ 
++static void _dispc_set_pre_mult_alpha(enum omap_plane plane, bool enable)
++{
++	if (!dss_has_feature(FEAT_PRE_MULT_ALPHA))
++		return;
++
++	if (!dss_has_feature(FEAT_GLOBAL_ALPHA_VID1) &&
++		plane = OMAP_DSS_VIDEO1)
++		return;
++
++	REG_FLD_MOD(dispc_reg_att[plane], enable ? 1 : 0, 28, 28);
++}
++
+ static void _dispc_setup_global_alpha(enum omap_plane plane, u8 global_alpha)
+ {
+ 	if (!dss_has_feature(FEAT_GLOBAL_ALPHA))
+ 		return;
+ 
+-	BUG_ON(!dss_has_feature(FEAT_GLOBAL_ALPHA_VID1) &&
+-			plane = OMAP_DSS_VIDEO1);
++	if (!dss_has_feature(FEAT_GLOBAL_ALPHA_VID1) &&
++		plane = OMAP_DSS_VIDEO1)
++		return;
+ 
+ 	if (plane = OMAP_DSS_GFX)
+ 		REG_FLD_MOD(DISPC_GLOBAL_ALPHA, global_alpha, 7, 0);
+@@ -1507,7 +1520,8 @@ static int _dispc_setup_plane(enum omap_plane plane,
+ 		bool ilace,
+ 		enum omap_dss_rotation_type rotation_type,
+ 		u8 rotation, int mirror,
+-		u8 global_alpha)
++		u8 global_alpha,
++		u8 pre_mult_alpha)
+ {
+ 	const int maxdownscale = cpu_is_omap34xx() ? 4 : 2;
+ 	bool five_taps = 0;
+@@ -1693,8 +1707,8 @@ static int _dispc_setup_plane(enum omap_plane plane,
+ 
+ 	_dispc_set_rotation_attrs(plane, rotation, mirror, color_mode);
+ 
+-	if (plane != OMAP_DSS_VIDEO1)
+-		_dispc_setup_global_alpha(plane, global_alpha);
++	_dispc_set_pre_mult_alpha(plane, pre_mult_alpha);
++	_dispc_setup_global_alpha(plane, global_alpha);
+ 
+ 	return 0;
+ }
+@@ -3139,7 +3153,8 @@ int dispc_setup_plane(enum omap_plane plane,
+ 		       enum omap_color_mode color_mode,
+ 		       bool ilace,
+ 		       enum omap_dss_rotation_type rotation_type,
+-		       u8 rotation, bool mirror, u8 global_alpha)
++		       u8 rotation, bool mirror, u8 global_alpha,
++		       u8 pre_mult_alpha)
+ {
+ 	int r = 0;
+ 
+@@ -3161,7 +3176,8 @@ int dispc_setup_plane(enum omap_plane plane,
+ 			   color_mode, ilace,
+ 			   rotation_type,
+ 			   rotation, mirror,
+-			   global_alpha);
++			   global_alpha,
++			   pre_mult_alpha);
+ 
+ 	enable_clocks(0);
+ 
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 5c7940d..2bb515c 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -359,7 +359,8 @@ int dispc_setup_plane(enum omap_plane plane,
+ 		      bool ilace,
+ 		      enum omap_dss_rotation_type rotation_type,
+ 		      u8 rotation, bool mirror,
+-		      u8 global_alpha);
++		      u8 global_alpha,
++		      u8 pre_mult_alpha);
+ 
+ bool dispc_go_busy(enum omap_channel channel);
+ void dispc_go(enum omap_channel channel);
+diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+index 545e9b9..873b334 100644
+--- a/drivers/video/omap2/dss/manager.c
++++ b/drivers/video/omap2/dss/manager.c
+@@ -406,6 +406,7 @@ struct overlay_cache_data {
+ 	u16 out_width;	/* if 0, out_width = width */
+ 	u16 out_height;	/* if 0, out_height = height */
+ 	u8 global_alpha;
++	u8 pre_mult_alpha;
+ 
+ 	enum omap_channel channel;
+ 	bool replication;
+@@ -842,7 +843,8 @@ static int configure_overlay(enum omap_plane plane)
+ 			c->rotation_type,
+ 			c->rotation,
+ 			c->mirror,
+-			c->global_alpha);
++			c->global_alpha,
++			c->pre_mult_alpha);
+ 
+ 	if (r) {
+ 		/* this shouldn't happen */
+@@ -1265,6 +1267,7 @@ static int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
+ 		oc->out_width = ovl->info.out_width;
+ 		oc->out_height = ovl->info.out_height;
+ 		oc->global_alpha = ovl->info.global_alpha;
++		oc->pre_mult_alpha = ovl->info.pre_mult_alpha;
+ 
+ 		oc->replication  			dss_use_replication(dssdev, ovl->info.color_mode);
+diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
+index 75642c2..41a2902 100644
+--- a/drivers/video/omap2/dss/overlay.c
++++ b/drivers/video/omap2/dss/overlay.c
+@@ -257,6 +257,43 @@ static ssize_t overlay_global_alpha_store(struct omap_overlay *ovl,
+ 	return size;
+ }
+ 
++static ssize_t overlay_pre_mult_alpha_show(struct omap_overlay *ovl,
++		char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n",
++			ovl->info.pre_mult_alpha);
++}
++
++static ssize_t overlay_pre_mult_alpha_store(struct omap_overlay *ovl,
++		const char *buf, size_t size)
++{
++	int r;
++	struct omap_overlay_info info;
++
++	ovl->get_overlay_info(ovl, &info);
++
++	/* only GFX and Video2 plane support pre alpha multiplied
++	 * set zero for Video1 plane
++	 */
++	if (!dss_has_feature(FEAT_GLOBAL_ALPHA_VID1) &&
++		ovl->id = OMAP_DSS_VIDEO1)
++		info.pre_mult_alpha = 0;
++	else
++		info.pre_mult_alpha = simple_strtoul(buf, NULL, 10);
++
++	r = ovl->set_overlay_info(ovl, &info);
++	if (r)
++		return r;
++
++	if (ovl->manager) {
++		r = ovl->manager->apply(ovl->manager);
++		if (r)
++			return r;
++	}
++
++	return size;
++}
++
+ struct overlay_attribute {
+ 	struct attribute attr;
+ 	ssize_t (*show)(struct omap_overlay *, char *);
+@@ -280,6 +317,9 @@ static OVERLAY_ATTR(enabled, S_IRUGO|S_IWUSR,
+ 		overlay_enabled_show, overlay_enabled_store);
+ static OVERLAY_ATTR(global_alpha, S_IRUGO|S_IWUSR,
+ 		overlay_global_alpha_show, overlay_global_alpha_store);
++static OVERLAY_ATTR(pre_mult_alpha, S_IRUGO|S_IWUSR,
++		overlay_pre_mult_alpha_show,
++		overlay_pre_mult_alpha_store);
+ 
+ static struct attribute *overlay_sysfs_attrs[] = {
+ 	&overlay_attr_name.attr,
+@@ -290,6 +330,7 @@ static struct attribute *overlay_sysfs_attrs[] = {
+ 	&overlay_attr_output_size.attr,
+ 	&overlay_attr_enabled.attr,
+ 	&overlay_attr_global_alpha.attr,
++	&overlay_attr_pre_mult_alpha.attr,
+ 	NULL
+ };
+ 
+-- 
+1.5.6.3
+

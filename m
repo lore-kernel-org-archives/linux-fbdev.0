@@ -1,112 +1,71 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Thu, 11 Nov 2010 14:44:43 +0000
-Subject: [PATCH 1/4 v3] video: add fb_edid_add_monspecs for parsing extended
-Message-Id: <Pine.LNX.4.64.1011111521210.15747@axis700.grange>
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Fri, 05 Nov 2010 20:40:18 +0000
+Subject: Re: [RFC] [patch] fbcmap: integer overflow bug
+Message-Id: <20101105134018.2c11f283.akpm@linux-foundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20101027093716.GD6062@bicker>
+In-Reply-To: <20101027093716.GD6062@bicker>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Dan Carpenter <error27@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-From: Erik Gilling <konkers@android.com>
+On Wed, 27 Oct 2010 11:37:16 +0200
+Dan Carpenter <error27@gmail.com> wrote:
 
-Modern monitors/tvs have more extended EDID information blocks which can
-contain extra detailed modes.  This adds a fb_edid_add_monspecs function
-which drivers can use to parse those additions blocks.
+> There is an integer overflow bug in the FBIOPUTCMAP ioctl if
+> cmap->len * 2 overflows.
+> 
+> It's harmless, except that it messes up the cmap until someone types
+> `reset`.  It could have been caught by checking the return from
+> fb_copy_cmap().
+> 
+> Or it could have been caught by limiting the size of the cmaps to one
+> page.  The cmaps are allocated with GFP_ATOMIC and it makes sense to
+> limit them.
+> 
+> Different drivers use different sizes of cmaps.  There are about 150
+> drivers.  I've checked a bunch (50) of them and the larges cmap.len I've
+> found is gxt4500 which maxes out at 1024 so PAGE_SIZE is about twice that
+> length.  For some of the 50 I wasn't sure on the limit.
+> 
+> Is PAGE_SIZE a reasonable limit?  Does anyone know or do I have to audit
+> all 150 drivers?
 
-Signed-off-by: Erik Gilling <konkers@android.com>
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
----
+No signed-off-by:.
 
-v3: no change, still preserving the original version
+> diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
+> index f53b9f1..6dc5817 100644
+> --- a/drivers/video/fbcmap.c
+> +++ b/drivers/video/fbcmap.c
+> @@ -110,7 +110,9 @@ int fb_alloc_cmap(struct fb_cmap *cmap, int len, int transp)
+>      }
+>      cmap->start = 0;
+>      cmap->len = len;
+> -    fb_copy_cmap(fb_default_cmap(len), cmap);
+> +    if (fb_copy_cmap(fb_default_cmap(len), cmap))
+> +	goto fail;
+> +
+>      return 0;
+>  
+>  fail:
+> @@ -250,6 +252,9 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
+>  	int rc, size = cmap->len * sizeof(u16);
+>  	struct fb_cmap umap;
+>  
+> +	if (cmap->len > PAGE_SIZE || cmap->len * sizeof(u16) > PAGE_SIZE)
+> +		return -EINVAL;
+> +
+>  	memset(&umap, 0, sizeof(struct fb_cmap));
+>  	rc = fb_alloc_cmap(&umap, cmap->len, cmap->transp != NULL);
+>  	if (rc)
 
-v2: added my S-o-b.
+A suitable way to fix this would be to detect the overflow only, and
+then just throw the passed-in length at kmalloc(), and let kmalloc()
+decide whether it is sane or not.
 
- drivers/video/fbmon.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fb.h    |    2 +
- 2 files changed, 59 insertions(+), 0 deletions(-)
+To do that, one would need to implement a new
+fb_alloc_cmap_not_stupid() which takes a gfp_t, and pass in GFP_KERNEL.
 
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index 563a98b..a0b5a93 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -973,6 +973,63 @@ void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
- 	DPRINTK("====================\n");
- }
- 
-+void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
-+{
-+	unsigned char *block;
-+	struct fb_videomode *mode, *m;
-+	int num = 0, i, first = 1;
-+
-+	if (edid = NULL)
-+		return;
-+
-+	if (!edid_checksum(edid))
-+		return;
-+
-+	if (edid[0] != 0x2)
-+		return;
-+
-+	mode = kzalloc(50 * sizeof(struct fb_videomode), GFP_KERNEL);
-+	if (mode = NULL)
-+		return;
-+
-+	block = edid + edid[0x2];
-+
-+	DPRINTK("  Extended Detailed Timings\n");
-+
-+	for (i = 0; i < (128 - edid[0x2]) / DETAILED_TIMING_DESCRIPTION_SIZE;
-+	     i++, block += DETAILED_TIMING_DESCRIPTION_SIZE) {
-+		if (!(block[0] = 0x00 && block[1] = 0x00)) {
-+			get_detailed_timing(block, &mode[num]);
-+			if (first) {
-+			        mode[num].flag |= FB_MODE_IS_FIRST;
-+				first = 0;
-+			}
-+			num++;
-+		}
-+	}
-+
-+	/* Yikes, EDID data is totally useless */
-+	if (!num) {
-+		kfree(mode);
-+		return;
-+	}
-+
-+	m = kzalloc((specs->modedb_len + num) *
-+		       sizeof(struct fb_videomode), GFP_KERNEL);
-+
-+	if (!m) {
-+		kfree(mode);
-+		return;
-+	}
-+
-+	memmove(m, specs->modedb, specs->modedb_len * sizeof(struct fb_videomode));
-+	memmove(m + specs->modedb_len, mode, num * sizeof(struct fb_videomode));
-+	kfree(mode);
-+	kfree(specs->modedb);
-+	specs->modedb = m;
-+	specs->modedb_len = specs->modedb_len + num;
-+}
-+
- /*
-  * VESA Generalized Timing Formula (GTF)
-  */
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 7fca3dc..6f0274d 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -1092,6 +1092,8 @@ extern int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var);
- extern const unsigned char *fb_firmware_edid(struct device *device);
- extern void fb_edid_to_monspecs(unsigned char *edid,
- 				struct fb_monspecs *specs);
-+extern void fb_edid_add_monspecs(unsigned char *edid,
-+				 struct fb_monspecs *specs);
- extern void fb_destroy_modedb(struct fb_videomode *modedb);
- extern int fb_find_mode_cvt(struct fb_videomode *mode, int margins, int rb);
- extern unsigned char *fb_ddc_read(struct i2c_adapter *adapter);
--- 
-1.7.2.3
-
+Feel free to sanitise the fb_alloc_cmap() indenting in [patch 1/2] as well ;)

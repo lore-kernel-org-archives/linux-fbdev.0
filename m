@@ -1,64 +1,51 @@
-From: Inki Dae <inki.dae@samsung.com>
-Date: Thu, 18 Nov 2010 11:19:06 +0000
-Subject: [PATCH 2/3] S5PV210: added MIPI-DSI Driver.
-Message-Id: <1290079146-29151-1-git-send-email-inki.dae@samsung.com>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Tue, 09 Nov 2010 09:32:04 +0000
+Subject: [ANNOUNCE] fbdev git tree.
+Message-Id: <20101109093204.GB21086@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <>
-In-Reply-To: <>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>, Stephen Rothwell <sfr@canb.auug.org.au>, Andrew Morton <akpm@linux-foundation.org>, Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org
 
-Signed-off-by: Inki Dae <inki.dae@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- arch/arm/plat-samsung/include/plat/fb.h |   11 ++++++++++-
- 1 files changed, 10 insertions(+), 1 deletions(-)
+As I find myself spending more time reviewing and merging fbdev patches
+lately, and in an effort to offload some of the pressure on -mm, I've
+opted to start a git tree to start collecting and merging fbdev changes.
 
-diff --git a/arch/arm/plat-samsung/include/plat/fb.h b/arch/arm/plat-samsung/include/plat/fb.h
-index cb3ca3a..1ba0ae0 100644
---- a/arch/arm/plat-samsung/include/plat/fb.h
-+++ b/arch/arm/plat-samsung/include/plat/fb.h
-@@ -22,14 +22,21 @@
-  */
- #define S3C_FB_MAX_WIN	(5)
- 
-+enum {
-+	FIMD_VIDEO_MODE = 0,
-+	FIMD_CPU_MODE
-+};
-+
- /**
-  * struct s3c_fb_pd_win - per window setup data
-- * @win_mode: The display parameters to initialise (not for window 0)
-+ * @win_mode: The display parameters to RGB interface
-+ * @cpu_mode: The display parameters to CPU interface
-  * @virtual_x: The virtual X size.
-  * @virtual_y: The virtual Y size.
-  */
- struct s3c_fb_pd_win {
- 	struct fb_videomode	win_mode;
-+	struct fb_cpumode	cpu_mode;
- 
- 	unsigned short		default_bpp;
- 	unsigned short		max_bpp;
-@@ -43,6 +50,7 @@ struct s3c_fb_pd_win {
-  *		the data from the display system to the connected display
-  *		device.
-  * @default_win: default window layer number to be used for UI layer.
-+ * @interface_mode: cpu mode or rgb mode.
-  * @vidcon0: The base vidcon0 values to control the panel data format.
-  * @vidcon1: The base vidcon1 values to control the panel data output.
-  * @win: The setup data for each hardware window, or NULL for unused.
-@@ -59,6 +67,7 @@ struct s3c_fb_platdata {
- 
- 	struct s3c_fb_pd_win	*win[S3C_FB_MAX_WIN];
- 
-+	u32			interface_mode;
- 	u32			 default_win;
- 
- 	u32			 vidcon0;
--- 
-1.5.4.3
+I plan to get a patchwork queue established for the list as well so that
+things don't fall through the cracks (the link will be posted once it's
+been established). People will be able to see the status of their patches
+this way, rather than wondering whether things are being picked up,
+overlooked, or forced through an alternate merge strategy (We have had
+reasonable success with this with the SH tree, so here's hoping that the
+same approach will work well here, too).
 
+I've already made a note about this to akpm off-list, so fbdev patches
+that pop up outside of the regular channels that I may be unaware of
+should still have a reasonable chance of being intercepted and rerouted
+(although the mmotm is rather devoid of drivers/video churn at the
+moment).
+
+I'll be combing through the list archives to see if there is anything
+glaringly outstanding (the HDMI/EDID work comes to mind) and working on
+getting the oustanding issues there resolved. If anyone has any
+outstanding patches that have fallen through the cracks, now would be a
+good time to provide pointers!
+
+Given the point that we're at with .38 bits now and a cursory look at
+-next shows that there's already quite a bit of drivers/video churn
+coming in from git trees. It will likely take a few cycles to get people
+used to the idea of there being an active fbdev tree to merge through,
+but with any luck it will be a fairly natural transition. I'll be
+contacting and working with git tree owners separately so there aren't
+any surprises.
+
+The tree can be found at:
+
+	git://git.kernel.org/pub/scm/linux/kernel/git/lethal/fbdev-2.6.git
+
+Stephen, if you could add this with the master branch to -next, it would
+be appreciated. For the moment I expect most of the patches to follow a
+fairly linear line of development, but there may be cause for topic
+branches as new (or contested) patch sets arise.

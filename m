@@ -1,51 +1,87 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Tue, 09 Nov 2010 09:32:04 +0000
-Subject: [ANNOUNCE] fbdev git tree.
-Message-Id: <20101109093204.GB21086@linux-sh.org>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 09 Nov 2010 15:19:45 +0000
+Subject: Re: [ANNOUNCE] fbdev git tree.
+Message-Id: <20101110021945.b5ce52ca.sfr@canb.auug.org.au>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Signature=_Wed__10_Nov_2010_02_19_45_+1100_gT7N1wXQSd4O3g9F"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>, Stephen Rothwell <sfr@canb.auug.org.au>, Andrew Morton <akpm@linux-foundation.org>, Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org
+References: <20101109093204.GB21086@linux-sh.org>
+In-Reply-To: <20101109093204.GB21086@linux-sh.org>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-As I find myself spending more time reviewing and merging fbdev patches
-lately, and in an effort to offload some of the pressure on -mm, I've
-opted to start a git tree to start collecting and merging fbdev changes.
+--Signature=_Wed__10_Nov_2010_02_19_45_+1100_gT7N1wXQSd4O3g9F
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I plan to get a patchwork queue established for the list as well so that
-things don't fall through the cracks (the link will be posted once it's
-been established). People will be able to see the status of their patches
-this way, rather than wondering whether things are being picked up,
-overlooked, or forced through an alternate merge strategy (We have had
-reasonable success with this with the SH tree, so here's hoping that the
-same approach will work well here, too).
+Hi Paul,
 
-I've already made a note about this to akpm off-list, so fbdev patches
-that pop up outside of the regular channels that I may be unaware of
-should still have a reasonable chance of being intercepted and rerouted
-(although the mmotm is rather devoid of drivers/video churn at the
-moment).
+On Tue, 9 Nov 2010 18:32:04 +0900 Paul Mundt <lethal@linux-sh.org> wrote:
+>=20
+> The tree can be found at:
+>=20
+> 	git://git.kernel.org/pub/scm/linux/kernel/git/lethal/fbdev-2.6.git
+>=20
+> Stephen, if you could add this with the master branch to -next, it would
+> be appreciated. For the moment I expect most of the patches to follow a
+> fairly linear line of development, but there may be cause for topic
+> branches as new (or contested) patch sets arise.
 
-I'll be combing through the list archives to see if there is anything
-glaringly outstanding (the HDMI/EDID work comes to mind) and working on
-getting the oustanding issues there resolved. If anyone has any
-outstanding patches that have fallen through the cracks, now would be a
-good time to provide pointers!
+Added from next-20101110.  I also have a viafb and omap_dss2 trees in
+linux-next that are owned by Florian Tobias Schandinat and Tomi Valkeinen
+respectively (cc'd).  There is no reason that these trees cannot remain in
+linux-next even if you merge them as well.
 
-Given the point that we're at with .38 bits now and a cursory look at
--next shows that there's already quite a bit of drivers/video churn
-coming in from git trees. It will likely take a few cycles to get people
-used to the idea of there being an active fbdev tree to merge through,
-but with any luck it will be a fairly natural transition. I'll be
-contacting and working with git tree owners separately so there aren't
-any surprises.
+Currently you are the only listed contact for the fbdev tree.
 
-The tree can be found at:
+Thanks for adding your subsystem tree as a participant of linux-next.  As
+you may know, this is not a judgment of your code.  The purpose of
+linux-next is for integration testing and to lower the impact of
+conflicts between subsystems in the next merge window.=20
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/lethal/fbdev-2.6.git
+You will need to ensure that the patches/commits in your tree/series have
+been:
+     * submitted under GPL v2 (or later) and include the Contributor's
+	Signed-off-by,
+     * posted to the relevant mailing list,
+     * reviewed by you (or another maintainer of your subsystem tree),
+     * successfully unit tested, and=20
+     * destined for the current or next Linux merge window.
 
-Stephen, if you could add this with the master branch to -next, it would
-be appreciated. For the moment I expect most of the patches to follow a
-fairly linear line of development, but there may be cause for topic
-branches as new (or contested) patch sets arise.
+Basically, this should be just what you would send to Linus (or ask him
+to fetch).  It is allowed to be rebased if you deem it necessary.
+
+--=20
+Cheers,
+Stephen Rothwell=20
+sfr@canb.auug.org.au
+
+Legal Stuff:
+By participating in linux-next, your subsystem tree contributions are
+public and will be included in the linux-next trees.  You may be sent
+e-mail messages indicating errors or other issues when the
+patches/commits from your subsystem tree are merged and tested in
+linux-next.  These messages may also be cross-posted to the linux-next
+mailing list, the linux-kernel mailing list, etc.  The linux-next tree
+project and IBM (my employer) make no warranties regarding the linux-next
+project, the testing procedures, the results, the e-mails, etc.  If you
+don't agree to these ground rules, let me know and I'll remove your tree
+from participation in linux-next.
+
+--Signature=_Wed__10_Nov_2010_02_19_45_+1100_gT7N1wXQSd4O3g9F
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBAgAGBQJM2WaRAAoJEDMEi1NhKgbsX6AH/3J5AYZ5B/stzIojssEZEMKp
+ffaVxRrsyeAO9eBUN8Dtup+I3SSWSK6oK7tuijkac8FAEwZLvfKNdDfC/Nhax1T+
+DYDiUPYe/QoWw793qY+cZJH1nEUcL1SGqT7XRsRNdYVxNIT16dGbIxmAT4Sh0rKB
+LD2Pys7h40xCimKM7m28+zCetI7LxKpls0K20Oh95DLNCqcTwsLpx5voNKb5aBcI
+mex2TDAIDZXZ0qVKux+wOKKyJnLszISjXpLjVU9uy5W4yE+PAGFwcuF1SFZzL4UX
+nRjjZ2uNJoJwUMyCWYYCohMNd1CBHaLXnExVNVdH8hsJxdg4XQDO9qzDqfZszO4=
+=NDWn
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__10_Nov_2010_02_19_45_+1100_gT7N1wXQSd4O3g9F--

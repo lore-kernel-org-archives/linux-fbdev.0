@@ -1,43 +1,118 @@
-From: "Nilofer, Samreen" <samreen@ti.com>
-Date: Mon, 15 Nov 2010 12:58:08 +0000
-Subject: RE: [PATCH] OMAP: DSS2: OMAPFB: Fix null pointer check
-Message-Id: <FCCFB4CDC6E5564B9182F639FC356087034C101C7E@dbde02.ent.ti.com>
+From: Jimmy Rubin <jimmy.rubin@stericsson.com>
+Date: Wed, 10 Nov 2010 12:04:03 +0000
+Subject: [PATCH 00/10] MCDE: Add frame buffer device driver
+Message-Id: <1289390653-6111-1-git-send-email-jimmy.rubin@stericsson.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1289562435-8056-1-git-send-email-samreen@ti.com>
- <20101112120705.GF27763@nokia.com>
-In-Reply-To: <20101112120705.GF27763@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: =?iso-8859-1?Q?Ville_Syrj=E4l=E4?= <ville.syrjala@nokia.com>
-Cc: "Valkeinen Tomi (Nokia-MS/Helsinki)" <Tomi.Valkeinen@nokia.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-Ville Syrj=E4l=E4 wrote:
-> On Fri, Nov 12, 2010 at 12:47:15PM +0100, ext Samreen wrote:
->> A null pointer check added.
->>=20
->> Signed-off-by: Samreen <samreen@ti.com>
->> ---
->>  drivers/video/omap2/omapfb/omapfb-main.c |    2 ++
->>  1 files changed, 2 insertions(+), 0 deletions(-)
->>=20
->> diff --git a/drivers/video/omap2/omapfb/omapfb-main.c
->> b/drivers/video/omap2/omapfb/omapfb-main.c
->> index 6a704f1..55bed89 100644
->> --- a/drivers/video/omap2/omapfb/omapfb-main.c
->> +++ b/drivers/video/omap2/omapfb/omapfb-main.c
->> @@ -2133,6 +2133,8 @@ static int
-> omapfb_parse_def_modes(struct omapfb2_device *fbdev)
->>  	int r =3D 0;
->>=20
->>  	str =3D kmalloc(strlen(def_mode) + 1, GFP_KERNEL);
->> +	if (str =3D NULL)
->> +		return -EINVAL;
->>  	strcpy(str, def_mode);
->=20
-> While you're at it you could change the code to use kstrdup().
-[Samreen]
-Will use kstrdup() and post the patch soon.
+These set of patches contains a display sub system framework (DSS) which is used to
+implement the frame buffer device interface and a display device
+framework that is used to add support for different type of displays
+such as LCD, HDMI and so on.
 
-Warm Regards,
-Samreen
+The current implementation supports DSI command mode displays.
+
+Below is a short summary of the files in this patchset:
+
+mcde_fb.c
+Implements the frame buffer device driver.
+
+mcde_dss.c
+Contains the implementation of the display sub system framework (DSS).
+This API is used by the frame buffer device driver.
+
+mcde_display.c
+Contains default implementations of the functions in the display driver
+API. A display driver may override the necessary functions to function
+properly. A simple display driver is implemented in display-generic_dsi.c.
+
+display-generic_dsi.c
+Sample driver for a DSI command mode display.
+
+mcde_bus.c
+Implementation of the display bus. A display device is probed when both
+the display driver and display configuration have been registered with
+the display bus.
+
+mcde_hw.c
+Hardware abstraction layer of MCDE. All code that communicates directly
+with the hardware resides in this file.
+
+board-mop500-mcde.c
+The configuration of the display and the frame buffer device is handled
+in this file
+
+NOTE: These set of patches replaces the patches already sent out for review.
+
+RFC:[PATCH 1/2] Video: Add support for MCDE frame buffer driver
+RFC:[PATCH 2/2] Ux500: Add support for MCDE frame buffer driver  
+
+The old patchset was to large to be handled by the mailing lists.
+
+Jimmy Rubin (10):
+  MCDE: Add hardware abstraction layer
+  MCDE: Add configuration registers
+  MCDE: Add pixel processing registers
+  MCDE: Add formatter registers
+  MCDE: Add dsi link registers
+  MCDE: Add generic display
+  MCDE: Add display subsystem framework
+  MCDE: Add frame buffer device driver
+  MCDE: Add build files and bus
+  ux500: MCDE: Add platform specific data
+
+ arch/arm/mach-ux500/Kconfig                    |    8 +
+ arch/arm/mach-ux500/Makefile                   |    1 +
+ arch/arm/mach-ux500/board-mop500-mcde.c        |  209 ++
+ arch/arm/mach-ux500/board-mop500-regulators.c  |   28 +
+ arch/arm/mach-ux500/board-mop500.c             |    3 +
+ arch/arm/mach-ux500/devices-db8500.c           |   68 +
+ arch/arm/mach-ux500/include/mach/db8500-regs.h |    7 +
+ arch/arm/mach-ux500/include/mach/devices.h     |    1 +
+ arch/arm/mach-ux500/include/mach/prcmu-regs.h  |    1 +
+ arch/arm/mach-ux500/include/mach/prcmu.h       |    3 +
+ arch/arm/mach-ux500/prcmu.c                    |  129 ++
+ drivers/video/Kconfig                          |    2 +
+ drivers/video/Makefile                         |    1 +
+ drivers/video/mcde/Kconfig                     |   39 +
+ drivers/video/mcde/Makefile                    |   12 +
+ drivers/video/mcde/display-generic_dsi.c       |  152 ++
+ drivers/video/mcde/dsi_link_config.h           | 1486 ++++++++++++++
+ drivers/video/mcde/mcde_bus.c                  |  259 +++
+ drivers/video/mcde/mcde_config.h               | 2156 ++++++++++++++++++++
+ drivers/video/mcde/mcde_display.c              |  427 ++++
+ drivers/video/mcde/mcde_dss.c                  |  353 ++++
+ drivers/video/mcde/mcde_fb.c                   |  697 +++++++
+ drivers/video/mcde/mcde_formatter.h            |  782 ++++++++
+ drivers/video/mcde/mcde_hw.c                   | 2528 ++++++++++++++++++++++++
+ drivers/video/mcde/mcde_mod.c                  |   67 +
+ drivers/video/mcde/mcde_pixelprocess.h         | 1137 +++++++++++
+ include/video/mcde/mcde.h                      |  387 ++++
+ include/video/mcde/mcde_display-generic_dsi.h  |   34 +
+ include/video/mcde/mcde_display.h              |  139 ++
+ include/video/mcde/mcde_dss.h                  |   78 +
+ include/video/mcde/mcde_fb.h                   |   54 +
+ 31 files changed, 11248 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/mach-ux500/board-mop500-mcde.c
+ create mode 100644 drivers/video/mcde/Kconfig
+ create mode 100644 drivers/video/mcde/Makefile
+ create mode 100644 drivers/video/mcde/display-generic_dsi.c
+ create mode 100644 drivers/video/mcde/dsi_link_config.h
+ create mode 100644 drivers/video/mcde/mcde_bus.c
+ create mode 100644 drivers/video/mcde/mcde_config.h
+ create mode 100644 drivers/video/mcde/mcde_display.c
+ create mode 100644 drivers/video/mcde/mcde_dss.c
+ create mode 100644 drivers/video/mcde/mcde_fb.c
+ create mode 100644 drivers/video/mcde/mcde_formatter.h
+ create mode 100644 drivers/video/mcde/mcde_hw.c
+ create mode 100644 drivers/video/mcde/mcde_mod.c
+ create mode 100644 drivers/video/mcde/mcde_pixelprocess.h
+ create mode 100644 include/video/mcde/mcde.h
+ create mode 100644 include/video/mcde/mcde_display-generic_dsi.h
+ create mode 100644 include/video/mcde/mcde_display.h
+ create mode 100644 include/video/mcde/mcde_dss.h
+ create mode 100644 include/video/mcde/mcde_fb.h
+

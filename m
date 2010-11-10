@@ -1,38 +1,47 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Wed, 17 Nov 2010 04:00:05 +0000
-Subject: Re: [ANNOUNCE] fbdev git tree.
-Message-Id: <20101117040005.GB2790@linux-sh.org>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Wed, 10 Nov 2010 09:45:19 +0000
+Subject: [PATCH 2/3] OMAP: VRAM: Fix boot-time memory allocation
+Message-Id: <1289382320-17412-2-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20101109093204.GB21086@linux-sh.org> <1289318208.2260.9.camel@cowboy> <20101109162249.GB22740@linux-sh.org>
-In-Reply-To: <20101109162249.GB22740@linux-sh.org>
+References: <1289382320-17412-1-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1289382320-17412-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Davidlohr Bueso <dave@gnu.org>
-Cc: linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>, Stephen Rothwell <sfr@canb.auug.org.au>, Andrew Morton <akpm@linux-foundation.org>, Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-On Wed, Nov 10, 2010 at 01:22:49AM +0900, Paul Mundt wrote:
-> On Tue, Nov 09, 2010 at 12:56:48PM -0300, Davidlohr Bueso wrote:
-> > On Tue, 2010-11-09 at 18:32 +0900, Paul Mundt wrote:
-> > > The tree can be found at:
-> > > 
-> > > 	git://git.kernel.org/pub/scm/linux/kernel/git/lethal/fbdev-2.6.git
-> > > 
-> > 
-> > Could this be added to the MAINTAINERS file?
-> > 
-> >  FRAMEBUFFER LAYER
-> >  L:     linux-fbdev@vger.kernel.org
-> >  W:     http://linux-fbdev.sourceforge.net/
-> > +T:
-> > git://git.kernel.org/pub/scm/linux/kernel/git/lethal/fbdev-2.6.git
-> >  S:     Orphan
-> >  F:     Documentation/fb/
-> >  F:     drivers/video/fb*
-> > 
-> Yes, I'll queue an update for that later. I was going to wait until the
-> patchwork stuff came up and then update it all in one shot.
+Use memblock_free() and memblock_remove() to remove the allocated or
+reserved VRAM area from normal kernel memory.
 
-Ok, the patchwork queue is up now also:
+This is a slightly modified version of patches from Felipe Contreras and
+Namhyung Kim.
 
-	https://patchwork.kernel.org/project/linux-fbdev/list/
+Reported-by: Felipe Contreras <felipe.contreras@gmail.com>
+Reported-by: Namhyung Kim <namhyung@gmail.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ drivers/video/omap2/vram.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/omap2/vram.c b/drivers/video/omap2/vram.c
+index bb5ee06..2fd7e52 100644
+--- a/drivers/video/omap2/vram.c
++++ b/drivers/video/omap2/vram.c
+@@ -576,9 +576,12 @@ void __init omap_vram_reserve_sdram_memblock(void)
+ 			return;
+ 		}
+ 	} else {
+-		paddr = memblock_alloc_base(size, PAGE_SIZE, MEMBLOCK_REAL_LIMIT);
++		paddr = memblock_alloc(size, PAGE_SIZE);
+ 	}
+ 
++	memblock_free(paddr, size);
++	memblock_remove(paddr, size);
++
+ 	omap_vram_add_region(paddr, size);
+ 
+ 	pr_info("Reserving %u bytes SDRAM for VRAM\n", size);
+-- 
+1.7.1
+

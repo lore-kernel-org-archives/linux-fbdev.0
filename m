@@ -1,39 +1,45 @@
-From: Dan Carpenter <error27@gmail.com>
-Date: Mon, 15 Nov 2010 08:14:57 +0000
-Subject: Re: [patch 2/2] fbcmap: integer overflow bug
-Message-Id: <20101115081457.GC21614@bicker>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Wed, 10 Nov 2010 09:45:18 +0000
+Subject: [PATCH 1/3] OMAP: VRAM: improve VRAM error prints
+Message-Id: <1289382320-17412-1-git-send-email-tomi.valkeinen@nokia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20101027093716.GD6062@bicker>
- <20101105134018.2c11f283.akpm@linux-foundation.org>
- <20101113100718.GB1795@bicker>
- <20101115044820.GA8489@linux-sh.org>
- <AANLkTin0T5FN6WhUj0csypR=j0UPRbeHN+HC3N9xnk7E@mail.gmail.com>
- <20101115072014.GB21614@bicker>
- <4CE0E8CA.9010704@bfs.de>
-In-Reply-To: <4CE0E8CA.9010704@bfs.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: walter harms <wharms@bfs.de>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Paul Mundt <lethal@linux-sh.org>, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-On Mon, Nov 15, 2010 at 09:01:14AM +0100, walter harms wrote:
-> I do not see the rest of the code but it looks like
-> cmap->len is size in int8_t. So the upper limit is something like
-> INT_MAX/(sizeof(u16)*2). Perhaps we can call it a char ?
-> is there ANY system that has a more than 256 colors in R|G|B ?
-> 
+Improve the error prints to give more information about the offending
+address & size.
 
-Yeah.  There are.  I had a list of some but I've deleted it.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ drivers/video/omap2/vram.c |   12 +++++++++---
+ 1 files changed, 9 insertions(+), 3 deletions(-)
 
-> <spying for struct fb_cmap_user  >
->  __u32 len;
->  __u16 __user *red;
-> 
-> So no need to check for <0.
-
-I test size which is an int so that's why it's needed.
-
-regards,
-dan carpenter
+diff --git a/drivers/video/omap2/vram.c b/drivers/video/omap2/vram.c
+index fed2a72..bb5ee06 100644
+--- a/drivers/video/omap2/vram.c
++++ b/drivers/video/omap2/vram.c
+@@ -554,9 +554,15 @@ void __init omap_vram_reserve_sdram_memblock(void)
+ 	size = PAGE_ALIGN(size);
+ 
+ 	if (paddr) {
+-		if ((paddr & ~PAGE_MASK) ||
+-		    !memblock_is_region_memory(paddr, size)) {
+-			pr_err("Illegal SDRAM region for VRAM\n");
++		if (paddr & ~PAGE_MASK) {
++			pr_err("VRAM start address 0x%08x not page aligned\n",
++					paddr);
++			return;
++		}
++
++		if (!memblock_is_region_memory(paddr, size)) {
++			pr_err("Illegal SDRAM region 0x%08x..0x%08x for VRAM\n",
++					paddr, paddr + size - 1);
+ 			return;
+ 		}
+ 
+-- 
+1.7.1
 

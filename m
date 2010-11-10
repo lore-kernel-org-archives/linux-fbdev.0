@@ -1,7 +1,7 @@
 From: Paul Mundt <lethal@linux-sh.org>
-Date: Wed, 10 Nov 2010 04:14:41 +0000
+Date: Wed, 10 Nov 2010 04:34:26 +0000
 Subject: Re: [PATCH 2/4 v2] fbdev: export fb_edid_add_monspecs() for modules, improve algorithm
-Message-Id: <20101110041441.GA30931@linux-sh.org>
+Message-Id: <20101110043426.GC30715@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <Pine.LNX.4.64.1011021140390.4552@axis700.grange>
 In-Reply-To: <Pine.LNX.4.64.1011021140390.4552@axis700.grange>
@@ -26,14 +26,26 @@ On Tue, Nov 02, 2010 at 11:47:36AM +0100, Guennadi Liakhovetski wrote:
 > + */
 >  void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
 >  {
-[snip]
->  	m = kzalloc((specs->modedb_len + num) *
->  		       sizeof(struct fb_videomode), GFP_KERNEL);
+...
+
+> +	u8 edt[(128 - 4) / DETAILED_TIMING_DESCRIPTION_SIZE];
 >  
-> -	if (!m) {
-> -		kfree(mode);
-> +	if (!m)
+...
+> -	if (edid[0] != 0x2)
+> +	if (edid[0] != 0x2 ||
+> +	    edid[2] < 4 || edid[2] > 128 - DETAILED_TIMING_DESCRIPTION_SIZE)
 >  		return;
-> +
-This can obviously fail, and should be returning the error value instead
-of simply quashing it.
+>  
+...
+> +	block = edid + edid[2];
+>  
+...
+> +	for (i = 0; i < (128 - edid[2]) / DETAILED_TIMING_DESCRIPTION_SIZE;
+> +	     i++, block += DETAILED_TIMING_DESCRIPTION_SIZE)
+> +		if (!(block[0] = 0x00 && block[1] = 0x00))
+> +			edt[num++] = block - edid;
+>  
+Can we also do something about these magic numbers? There is already a
+drivers/video/edid.h that you can fill out as necessary. I realize that
+these values are probably pretty obvious if you have a copy of the spec
+in front of you, I don't.

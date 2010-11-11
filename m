@@ -1,98 +1,167 @@
-From: Daniel Drake <dsd@laptop.org>
-Date: Tue, 30 Nov 2010 20:34:52 +0000
-Subject: [PATCH] lxfb: Maintain video processor palette through suspend/resume
-Message-Id: <20101130203452.BAC5F9D401B@zog.reactivated.net>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Thu, 11 Nov 2010 14:45:04 +0000
+Subject: [PATCH 3/4 v3] fbdev: when parsing E-EDID blocks, also use SVD
+Message-Id: <Pine.LNX.4.64.1011111540150.15747@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The Geode X driver uses both of the LX's palettes, one for gamma
-correction and one for colormaps.
+Add parsing of E-EDID SVD entries. In this first version only a few
+CEA/EIA-861E modes are implemented, more can be added as needed.
 
-The kernel driver currently only backs up the one used for colormaps
-during suspend/resume. If you mess with gamma settings and do a
-suspend/resume, colors go funny.
-
-Fix this by backing up the video proc palette during suspend/resume,
-alongside the display controller one which is already handled.
-
-Signed-off-by: Daniel Drake <dsd@laptop.org>
-Acked-by: Andres Salomon <dilinger@queued.net>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
- drivers/video/geode/lxfb.h     |    4 +++-
- drivers/video/geode/lxfb_ops.c |   20 +++++++++++++++-----
- 2 files changed, 18 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/geode/lxfb.h b/drivers/video/geode/lxfb.h
-index e4c4d89..be8ccb4 100644
---- a/drivers/video/geode/lxfb.h
-+++ b/drivers/video/geode/lxfb.h
-@@ -22,6 +22,7 @@
- #define DC_HFILT_COUNT	0x100
- #define DC_VFILT_COUNT	0x100
- #define VP_COEFF_SIZE	0x1000
-+#define VP_PAL_COUNT	0x100
+v3: moved cea_modes to drivers/video/modedb.c
+
+v2: no change
+
+ drivers/video/fbmon.c  |   37 +++++++++++++++++++++++++++++++++----
+ drivers/video/modedb.c |   43 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fb.h     |    1 +
+ 3 files changed, 77 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index b25399a..4f57485 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -983,7 +983,8 @@ void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
+ 	unsigned char *block;
+ 	struct fb_videomode *m;
+ 	int num = 0, i;
+-	u8 edt[(128 - 4) / DETAILED_TIMING_DESCRIPTION_SIZE];
++	u8 svd[64], edt[(128 - 4) / DETAILED_TIMING_DESCRIPTION_SIZE];
++	u8 pos = 4, svd_n = 0;
  
- #define OUTPUT_CRT   0x01
- #define OUTPUT_PANEL 0x02
-@@ -48,7 +49,8 @@ struct lxfb_par {
- 	uint64_t vp[VP_REG_COUNT];
- 	uint64_t fp[FP_REG_COUNT];
+ 	if (!edid)
+ 		return;
+@@ -995,6 +996,21 @@ void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
+ 	    edid[2] < 4 || edid[2] > 128 - DETAILED_TIMING_DESCRIPTION_SIZE)
+ 		return;
  
--	uint32_t pal[DC_PAL_COUNT];
-+	uint32_t dc_pal[DC_PAL_COUNT];
-+	uint32_t vp_pal[VP_PAL_COUNT];
- 	uint32_t hcoeff[DC_HFILT_COUNT * 2];
- 	uint32_t vcoeff[DC_VFILT_COUNT];
- 	uint32_t vp_coeff[VP_COEFF_SIZE / 4];
-diff --git a/drivers/video/geode/lxfb_ops.c b/drivers/video/geode/lxfb_ops.c
-index 85ec7f6..79e9abc 100644
---- a/drivers/video/geode/lxfb_ops.c
-+++ b/drivers/video/geode/lxfb_ops.c
-@@ -610,10 +610,15 @@ static void lx_save_regs(struct lxfb_par *par)
- 	memcpy(par->vp, par->vp_regs, sizeof(par->vp));
- 	memcpy(par->fp, par->vp_regs + VP_FP_START, sizeof(par->fp));
- 
--	/* save the palette */
-+	/* save the display controller palette */
- 	write_dc(par, DC_PAL_ADDRESS, 0);
--	for (i = 0; i < ARRAY_SIZE(par->pal); i++)
--		par->pal[i] = read_dc(par, DC_PAL_DATA);
-+	for (i = 0; i < ARRAY_SIZE(par->dc_pal); i++)
-+		par->dc_pal[i] = read_dc(par, DC_PAL_DATA);
++	DPRINTK("  Short Video Descriptors\n");
 +
-+	/* save the video processor palette */
-+	write_vp(par, VP_PAR, 0);
-+	for (i = 0; i < ARRAY_SIZE(par->vp_pal); i++)
-+		par->vp_pal[i] = read_vp(par, VP_PDR);
++	while (pos < edid[2]) {
++		u8 len = edid[pos] & 0x1f, type = (edid[pos] >> 5) & 7;
++		pr_debug("Data block %u of %u bytes\n", type, len);
++		if (type = 2)
++			for (i = pos; i < pos + len; i++) {
++				u8 idx = edid[pos + i] & 0x7f;
++				svd[svd_n++] = idx;
++				pr_debug("N%sative mode #%d\n",
++					 edid[pos + i] & 0x80 ? "" : "on-n", idx);
++			}
++		pos += len + 1;
++	}
++
+ 	block = edid + edid[2];
  
- 	/* save the horizontal filter coefficients */
- 	filt = par->dc[DC_IRQ_FILT_CTL] | DC_IRQ_FILT_CTL_H_FILT_SEL;
-@@ -706,8 +711,8 @@ static void lx_restore_display_ctlr(struct lxfb_par *par)
+ 	DPRINTK("  Extended Detailed Timings\n");
+@@ -1005,10 +1021,10 @@ void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
+ 			edt[num++] = block - edid;
  
- 	/* restore the palette */
- 	write_dc(par, DC_PAL_ADDRESS, 0);
--	for (i = 0; i < ARRAY_SIZE(par->pal); i++)
--		write_dc(par, DC_PAL_DATA, par->pal[i]);
-+	for (i = 0; i < ARRAY_SIZE(par->dc_pal); i++)
-+		write_dc(par, DC_PAL_DATA, par->dc_pal[i]);
+ 	/* Yikes, EDID data is totally useless */
+-	if (!num)
++	if (!(num + svd_n))
+ 		return;
  
- 	/* restore the horizontal filter coefficients */
- 	filt = par->dc[DC_IRQ_FILT_CTL] | DC_IRQ_FILT_CTL_H_FILT_SEL;
-@@ -751,6 +756,11 @@ static void lx_restore_video_proc(struct lxfb_par *par)
- 		}
+-	m = kzalloc((specs->modedb_len + num) *
++	m = kzalloc((specs->modedb_len + num + svd_n) *
+ 		       sizeof(struct fb_videomode), GFP_KERNEL);
+ 
+ 	if (!m)
+@@ -1023,9 +1039,22 @@ void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
+ 		pr_debug("Adding %ux%u@%u\n", m[i].xres, m[i].yres, m[i].refresh);
  	}
  
-+	/* restore video processor palette */
-+	write_vp(par, VP_PAR, 0);
-+	for (i = 0; i < ARRAY_SIZE(par->vp_pal); i++)
-+		write_vp(par, VP_PDR, par->vp_pal[i]);
++	for (i = specs->modedb_len + num; i < specs->modedb_len + num + svd_n; i++) {
++		int idx = svd[i - specs->modedb_len - num];
++		if (!idx || idx > 63) {
++			pr_warning("Reserved SVD code %d\n", idx);
++		} else if (idx > ARRAY_SIZE(cea_modes) || !cea_modes[idx].xres) {
++			pr_warning("Unimplemented SVD code %d\n", idx);
++		} else {
++			memcpy(&m[i], cea_modes + idx, sizeof(m[i]));
++			pr_debug("Adding SVD #%d: %ux%u@%u\n", idx,
++				 m[i].xres, m[i].yres, m[i].refresh);
++		}
++	}
 +
- 	/* restore video coeff ram */
- 	memcpy(par->vp_regs + VP_VCR, par->vp_coeff, sizeof(par->vp_coeff));
+ 	kfree(specs->modedb);
+ 	specs->modedb = m;
+-	specs->modedb_len = specs->modedb_len + num;
++	specs->modedb_len = specs->modedb_len + num + svd_n;
  }
+ 
+ /*
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+index 0a4dbdc..9a0ae6c 100644
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -278,6 +278,49 @@ static const struct fb_videomode modedb[] = {
+ };
+ 
+ #ifdef CONFIG_FB_MODE_HELPERS
++const struct fb_videomode cea_modes[64] = {
++	/* #1: 640x480p@59.94/60Hz */
++	[1] = {
++		NULL, 60, 640, 480, 39722, 48, 16, 33, 10, 96, 2, 0, FB_VMODE_NONINTERLACED, 0,
++	},
++	/* #3: 720x480p@59.94/60Hz */
++	[3] = {
++		NULL, 60, 720, 480, 37037, 60, 16, 30, 9, 62, 6, 0, FB_VMODE_NONINTERLACED, 0,
++	},
++	/* #5: 1920x1080i@59.94/60Hz */
++	[5] = {
++		NULL, 60, 1920, 1080, 13763, 148, 88, 15, 2, 44, 5, 0, FB_VMODE_INTERLACED, 0,
++	},
++	/* #7: 720(1440)x480iH@59.94/60Hz */
++	[7] = {
++		NULL, 60, 1440, 480, 18554/*37108*/, 114, 38, 15, 4, 124, 3, 0, FB_VMODE_INTERLACED, 0,
++	},
++	/* #9: 720(1440)x240pH@59.94/60Hz */
++	[9] = {
++		NULL, 60, 1440, 240, 18554, 114, 38, 16, 4, 124, 3, 0, FB_VMODE_NONINTERLACED, 0,
++	},
++	/* #18: 720x576pH@50Hz */
++	[18] = {
++		NULL, 50, 720, 576, 37037, 68, 12, 39, 5, 64, 5, 0, FB_VMODE_NONINTERLACED, 0,
++	},
++	/* #19: 1280x720p@50Hz */
++	[19] = {
++		NULL, 50, 1280, 720, 13468, 220, 440, 20, 5, 40, 5, 0, FB_VMODE_NONINTERLACED, 0,
++	},
++	/* #20: 1920x1080i@50Hz */
++	[20] = {
++		NULL, 50, 1920, 1080, 13480, 148, 528, 15, 5, 528, 5, 0, FB_VMODE_INTERLACED, 0,
++	},
++	/* #32: 1920x1080p@23.98/24Hz */
++	[32] = {
++		NULL, 24, 1920, 1080, 13468, 148, 638, 36, 4, 44, 5, 0, FB_VMODE_NONINTERLACED, 0,
++	},
++	/* #35: (2880)x480p4x@59.94/60Hz */
++	[35] = {
++		NULL, 50, 2880, 480, 11100, 240, 64, 30, 9, 248, 6, 0, FB_VMODE_NONINTERLACED, 0,
++	},
++};
++
+ const struct fb_videomode vesa_modes[] = {
+ 	/* 0 640x350-85 VESA */
+ 	{ NULL, 85, 640, 350, 31746,  96, 32, 60, 32, 64, 3,
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 6f0274d..e154a79 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -1151,6 +1151,7 @@ struct fb_videomode {
+ 
+ extern const char *fb_mode_option;
+ extern const struct fb_videomode vesa_modes[];
++extern const struct fb_videomode cea_modes[64];
+ 
+ struct fb_modelist {
+ 	struct list_head list;
 -- 
-1.7.3.2
+1.7.2.3
 

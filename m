@@ -1,58 +1,33 @@
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-Date: Fri, 19 Nov 2010 21:58:49 +0000
-Subject: [PATCH 7/9] sisfb: replace SiS_SetMemory with memset_io
-Message-Id: <1290203931-25188-8-git-send-email-aaro.koskinen@iki.fi>
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Fri, 12 Nov 2010 13:35:16 +0000
+Subject: Re: [PATCH v3] OMAP: DSS2: Add NEC NL8048HL11-01B display panel
+Message-Id: <1289568916.3297.278.camel@tubuntu>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1290203931-25188-1-git-send-email-aaro.koskinen@iki.fi>
-In-Reply-To: <1290203931-25188-1-git-send-email-aaro.koskinen@iki.fi>
+References: <1288062756-8832-1-git-send-email-samreen@ti.com>
+In-Reply-To: <1288062756-8832-1-git-send-email-samreen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: thomas@winischhofer.net, aaro.koskinen@iki.fi
+To: ext Samreen <samreen@ti.com>
+Cc: Grazvydas Ignotas <notasas@gmail.com>, Vaibhav Hiremath <hvaibhav@ti.com>, "Quadros Roger (Nokia-MS/Helsinki)" <roger.quadros@nokia.com>, Mukund Mittal <mmittal@ti.com>, Jarkko Nikula <jhnikula@gmail.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Erik Gilling <konkers@android.com>, Rajkumar N <rajkumar.nagarajan@ti.com>, Subbu Venkatesh <subramani.venkatesh@windriver.com>
 
-Get rid of one more wrapper.
+Hi,
 
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>
----
- drivers/video/sis/init.c  |    4 ++--
- drivers/video/sis/osdef.h |    2 --
- 2 files changed, 2 insertions(+), 4 deletions(-)
+On Tue, 2010-10-26 at 05:12 +0200, ext Samreen wrote:
+> From: Erik Gilling <konkers@android.com>
+> 
+> NEC WVGA LCD NL8048HL11-01B panel support has been added.
+> This panel is being used in zoom2/zoom3/3630 sdp boards.
+> 
+> Signed-off-by: Mukund Mittal <mmittal@ti.com>
+> Signed-off-by: Rajkumar N <rajkumar.nagarajan@ti.com>
+> Signed-off-by: Samreen <samreen@ti.com>
+> CC: Subbu Venkatesh <subramani.venkatesh@windriver.com>
+> CC: Erik Gilling <konkers@android.com>
 
-diff --git a/drivers/video/sis/init.c b/drivers/video/sis/init.c
-index bfc6a1a..31137ad 100644
---- a/drivers/video/sis/init.c
-+++ b/drivers/video/sis/init.c
-@@ -1578,7 +1578,7 @@ SiS_ClearBuffer(struct SiS_Private *SiS_Pr, unsigned short ModeNo)
- 
-    if(SiS_Pr->SiS_ModeType >= ModeEGA) {
-       if(ModeNo > 0x13) {
--	 SiS_SetMemory(memaddr, memsize, 0);
-+	 memset_io(memaddr, 0, memsize);
-       } else {
- 	 pBuffer = (unsigned short SISIOMEMTYPE *)memaddr;
- 	 for(i = 0; i < 0x4000; i++) writew(0x0000, &pBuffer[i]);
-@@ -1587,7 +1587,7 @@ SiS_ClearBuffer(struct SiS_Private *SiS_Pr, unsigned short ModeNo)
-       pBuffer = (unsigned short SISIOMEMTYPE *)memaddr;
-       for(i = 0; i < 0x4000; i++) writew(0x0720, &pBuffer[i]);
-    } else {
--      SiS_SetMemory(memaddr, 0x8000, 0);
-+      memset_io(memaddr, 0, 0x8000);
-    }
- }
- 
-diff --git a/drivers/video/sis/osdef.h b/drivers/video/sis/osdef.h
-index be7f306..af5e9a2 100644
---- a/drivers/video/sis/osdef.h
-+++ b/drivers/video/sis/osdef.h
-@@ -63,6 +63,4 @@
- #warning sisfb will not work!
- #endif
- 
--#define SiS_SetMemory(MemoryAddress,MemorySize,value) memset_io(MemoryAddress, value, MemorySize)
--
- #endif  /* _OSDEF_H_ */
--- 
-1.5.6.5
+
+Thanks, applying.
+
+ Tomi
+
 

@@ -1,38 +1,59 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 01 Nov 2010 17:42:17 +0000
-Subject: Re: [PATCH 1/4] video: add fb_edid_add_monspecs for parsing
-Message-Id: <20101101104217.1eb8ff0b.akpm@linux-foundation.org>
+From: Belisko Marek <marek.belisko@gmail.com>
+Date: Fri, 12 Nov 2010 11:58:19 +0000
+Subject: Re: [PATCH] OMAP: DSS2: OMAPFB: Fix null pointer check
+Message-Id: <AANLkTik2WToLpQCK7zM+4xwwnbxY_PbRnZF-H40iYhuW@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1010281427240.1257@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1010281427240.1257@axis700.grange>
+References: <1289562435-8056-1-git-send-email-samreen@ti.com>
+In-Reply-To: <1289562435-8056-1-git-send-email-samreen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Samreen <samreen@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Mon, 1 Nov 2010 16:57:00 +0100 (CET) Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+On Fri, Nov 12, 2010 at 12:47 PM, Samreen <samreen@ti.com> wrote:
+> A null pointer check added.
+>
+> Signed-off-by: Samreen <samreen@ti.com>
+> ---
+>  drivers/video/omap2/omapfb/omapfb-main.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+> index 6a704f1..55bed89 100644
+> --- a/drivers/video/omap2/omapfb/omapfb-main.c
+> +++ b/drivers/video/omap2/omapfb/omapfb-main.c
+> @@ -2133,6 +2133,8 @@ static int omapfb_parse_def_modes(struct omapfb2_device *fbdev)
+>        int r = 0;
+>
+>        str = kmalloc(strlen(def_mode) + 1, GFP_KERNEL);
+> +       if (str = NULL)
+> +               return -EINVAL;
+Shouldn't be rerutn _ENNOMEM; instead to get correct error code?
+>        strcpy(str, def_mode);
+>        options = str;
+>
+> --
+> 1.5.6.3
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+thank,
 
-> Hi Andrew
-> 
-> On Thu, 28 Oct 2010, Andrew Morton wrote:
-> 
-> > On Thu, 28 Oct 2010 14:34:44 +0200 (CEST)
-> > Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
-> > 
-> > > From: Erik Gilling <konkers@android.com>
-> 
-> Thanks for your comments. My plan is to add my S-o-b to this patch from 
-> Erik, but otherwise leave it unchanged, because that's what the 2nd patch 
-> in this series is for - for fixes and improvements. So, I'll address all 
-> your comments in it, is this ok with you?
-> 
+marek
 
-Yes, that's OK.
 
-It's unusual to do things this way - normally I'd just clump Erik's
-patch and your changes to it into a single commit.  So we end up with
-something which can be more effectively reviewed and a cleaner kernel
-history.
+-- 
+as simple and primitive as possible
+-------------------------------------------------
+Marek Belisko - OPEN-NANDRA
+Freelance Developer
 
-But that's not a terribly important thing - if for some particular
-reason you want to do it this way then that's OK by me.
+Ruska Nova Ves 219 | Presov, 08005 Slovak Republic
+Tel: +421 915 052 184
+skype: marekwhite
+icq: 290551086
+web: http://open-nandra.com

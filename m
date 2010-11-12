@@ -1,14 +1,34 @@
-From: Alex Deucher <alexdeucher@gmail.com>
-Date: Wed, 10 Nov 2010 14:42:33 +0000
-Subject: Re: [PATCH 00/10] MCDE: Add frame buffer device driver
-Message-Id: <AANLkTinCDFuPpx+OKYRuHbdnL5FBgCTPpUf2xYNJQC0u@mail.gmail.com>
+From: Jimmy RUBIN <jimmy.rubin@stericsson.com>
+Date: Fri, 12 Nov 2010 13:18:42 +0000
+Subject: RE: [PATCH 00/10] MCDE: Add frame buffer device driver
+Message-Id: <F45880696056844FA6A73F415B568C69536047701B@EXDCVYMBSTM006.EQ1STM.local>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1289390653-6111-1-git-send-email-jimmy.rubin@stericsson.com>
-In-Reply-To: <1289390653-6111-1-git-send-email-jimmy.rubin@stericsson.com>
+	<AANLkTinCDFuPpx+OKYRuHbdnL5FBgCTPpUf2xYNJQC0u@mail.gmail.com>
+In-Reply-To: <AANLkTinCDFuPpx+OKYRuHbdnL5FBgCTPpUf2xYNJQC0u@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 To: linux-arm-kernel@lists.infradead.org
+
+Hi Alex,
+
+Good point, we are looking at this for possible future improvements but for=
+ the moment we feel like=20
+the structure of drm does not add any simplifications for our driver. We ha=
+ve the display manager (MCDE DSS =3D KMS) and the memory manager (HWMEM =3D=
+ GEM) that could be migrated to drm framework. But we do not have drm drive=
+rs for 3D hw and this also makes drm a less obvious choice at the moment.
+=20
+Jimmy
+
+-----Original Message-----
+From: Alex Deucher [mailto:alexdeucher@gmail.com]=20
+Sent: den 10 november 2010 15:43
+To: Jimmy RUBIN
+Cc: linux-fbdev@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linu=
+x-media@vger.kernel.org; Linus WALLEIJ; Dan JOHANSSON
+Subject: Re: [PATCH 00/10] MCDE: Add frame buffer device driver
 
 On Wed, Nov 10, 2010 at 7:04 AM, Jimmy Rubin <jimmy.rubin@stericsson.com> w=
 rote:

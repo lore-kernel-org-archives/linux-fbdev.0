@@ -1,16 +1,38 @@
-From: Hans Verkuil <hverkuil@xs4all.nl>
-Date: Sat, 13 Nov 2010 11:54:24 +0000
-Subject: Re: [PATCH 00/10] MCDE: Add frame buffer device driver
-Message-Id: <201011131254.24196.hverkuil@xs4all.nl>
+From: Marcus LORENTZON <marcus.xm.lorentzon@stericsson.com>
+Date: Sat, 13 Nov 2010 17:26:45 +0000
+Subject: RE: [PATCH 00/10] MCDE: Add frame buffer device driver
+Message-Id: <C832F8F5D375BD43BFA11E82E0FE9FE0081B425E92@EXDCVYMBSTM005.EQ1STM.local>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1289390653-6111-1-git-send-email-jimmy.rubin@stericsson.com>
 	<AANLkTi=aasEoC5ja=gHpzNjyA1h00wuJd-tWVkRaaHNd@mail.gmail.com>
-	<C832F8F5D375BD43BFA11E82E0FE9FE0081BDCB183@EXDCVYMBSTM005.EQ1STM.local>
-In-Reply-To: <C832F8F5D375BD43BFA11E82E0FE9FE0081BDCB183@EXDCVYMBSTM005.EQ1STM.local>
+	<C832F8F5D375BD43BFA11E82E0FE9FE0081BDCB183@EXDCVYMBSTM005.EQ1STM.local>,
+	<201011131254.24196.hverkuil@xs4all.nl>
+In-Reply-To: <201011131254.24196.hverkuil@xs4all.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
+
+Hi Hans,
+MCDE is for both "video" and graphics. That is, it supports YUV and RGB buffers to be blended onto a background during scanout. And as most SOCs it supports normal CRTC type of continous scanout like LCD and MIPI DPI/DSI video mode and command mode scanout like MIPI DBI/DSI. I guess you have seen the slides of U8500 published at the last L4L2 smmit in Helsinki (http://linuxtv.org/downloads/presentations/summit_jun_2010/ste_V4L2_developer_meeting.pdf). And as you might remember I had the action to propose a way of posting "GEM" type of buffers to V4L2 devices. That's kind of what I'm working on. First we just had to get the basic support up for customers using framebuffer API. Even though it's an old API it can do most of what you need on a mobile device. And the work to add framebuffer support was not a big deal once we had MCDE DSS driver framework in place. This is what Jimmy is now pushing.
+
+The next step we are working on is investigating how to extend the support for all the other features of MCDE. The two obvious choices are V4L2 and DRM. Both have their pros and cons. DRM has wide support in the community for window systems like X and now lately Wayland (go Kristian ;). I have not had time to investigate video overlay support in KMS yet. But my feeling is that "desktop" drivers are moving away from overlays and I guess userspace OpenGL composition is replacing overlays, blitters and other 2D HW rapidly. But my personal feeling is that SOC platform vendors try to do both. So personally I still see big possibilities for blitter/overlay HW, especially for power efficiency since these HW blocks can do basic composition with less gates and lower clock rates -> less power.
+
+To enable this type of HW we need APIs that can be used by ordinary userspace frameworks. Here KMS and "GEM" allow us to handle resolution changes, memory management and inter process buffer sharing. But the structure of DRM still look a bit to daunting for MCDE. Of course we could squeeze MCDE into DRM framework, we just have to undestand what we Have to use of DRM and what is actually valuable to reuse. It's not a big deal to maintain a driver like MCDE. On the other hand we might want to use KMS API. And Alex presented a new option I had not considered before, simply implement the KMS ioctl API. Both options are something we are looking at right now.
+Then there's the video stuff. Like video/camera overlays. Here userspace frameworks push us in the direction of V4L2 (mainly gstreamer). For example exposing overlays as V4L2 output devices. V4L2 media controller, mem2mem, output devices also looks like the best option for building a complete open source OpenWFC solution on top of linux kernel APIs. Giving us a standard API for user space blitter/overlay use to be used in _paralell_ with OpenGL(ES). Note that OpenWFC is a rendering API for blitters and overlays, not a standard window system as many confuse it with.
+
+The only question left is where do we control the muxing of channels/overlays/encoders/outputs etc. V4L2 media control API looks like the most flexible solution to do this. But KMS still have some features for controlling this type of connections for display outputs. And if we choose to go for KMS for resolution changes, TV mode settings etc. There's still little reason to go down the V4L2 media control path. And V4L2 media control path is still early development.
+
+I guess these lists are a good place to start learning others' views on DRM/KMS vs. V4L2/MC for SOC display sub systems like MCDE DSS. Of course, these are not exclusive, but we still have to look at the value of supporting both APIs in paralell.
+
+/BR
+/Marcus
+________________________________________
+From: Hans Verkuil [hverkuil@xs4all.nl]
+Sent: Saturday, November 13, 2010 12:54 PM
+To: Marcus LORENTZON
+Cc: Alex Deucher; Jimmy RUBIN; linux-fbdev@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linux-media@vger.kernel.org; Linus WALLEIJ; Dan JOHANSSON
+Subject: Re: [PATCH 00/10] MCDE: Add frame buffer device driver
 
 Hi Marcus,
 
@@ -28,23 +50,23 @@ It all seems quite messy at the moment.
 
 Regards,
 
-	Hans
+        Hans
 
 On Friday, November 12, 2010 17:46:53 Marcus LORENTZON wrote:
 > Hi Alex,
 > Do you have any idea of how we should use KMS without being a "real" drm 3D device? Do you mean that we should use the KMS ioctls on for display driver? Or do you mean that we should expose a /dev/drmX device only capable of KMS and no GEM?
-> 
+>
 > What if we were to add a drm driver for 3D later on. Is it possible to have a separate drm device for display and one for 3D, but still share "GEM" like buffers between these devices? It look like GEM handles are device relative. This is a vital use case for us. And we really don't like to entangle our MCDE display driver, memory manager and 3D driver without a good reason. Today they are maintained as independent drivers without code dependencies. Would this still be possible using drm? Or does drm require memory manager, 3D and display to be one driver? I can see the drm=graphics card on desktop machines. But embedded UMA systems doesn't really have this dependency. You can switch memory mamanger, 3D driver, display manager in menuconfig independently of the other drivers. Not that it's used like that on one particular HW, but for different HW you can use different parts. In drm it looks like all these pieces belong together.
-> 
+>
 > Do you think the driver should live in the "gpu/drm" folder, even though it's not a gpu driver?
-> 
+>
 > Do you know of any other driver that use DRM/KMS API but not being a PC-style graphics card that we could look at for inspiration?
-> 
+>
 > And GEM, is that the only way of exposing graphics buffers to user space in drm? Or is it possible (is it ok) to expose another similar API? You mentioned that there are TTM and GEM, do both expose user space APIs for things like sharing buffers between processes, security, cache management, defragmentation? Or are these type of features defined by DRM and not TTM/GEM?
-> 
+>
 > /BR
 > /Marcus
-> 
+>
 > > -----Original Message-----
 > > From: Alex Deucher [mailto:alexdeucher@gmail.com]
 > > Sent: den 12 november 2010 16:53
@@ -53,7 +75,7 @@ On Friday, November 12, 2010 17:46:53 Marcus LORENTZON wrote:
 > > linux-media@vger.kernel.org; Linus WALLEIJ; Dan JOHANSSON; Marcus
 > > LORENTZON
 > > Subject: Re: [PATCH 00/10] MCDE: Add frame buffer device driver
-> > 
+> >
 > > On Fri, Nov 12, 2010 at 8:18 AM, Jimmy RUBIN
 > > <jimmy.rubin@stericsson.com> wrote:
 > > > Hi Alex,
@@ -66,7 +88,7 @@ On Friday, November 12, 2010 17:46:53 Marcus LORENTZON wrote:
 > > have drm drivers for 3D hw and this also makes drm a less obvious
 > > choice at the moment.
 > > >
-> > 
+> >
 > > You don't have to use the drm strictly for 3D hardware.  historically
 > > that's why it was written, but with kms, it also provides an interface
 > > for complex display systems.  fbdev doesn't really deal properly with
@@ -80,9 +102,9 @@ On Friday, November 12, 2010 17:46:53 Marcus LORENTZON wrote:
 > > radeon and nouveau use ttm internally for example.  Something to
 > > consider.  I just want to make sure people are aware of the interface
 > > and what it's capable of.
-> > 
+> >
 > > Alex
-> > 
+> >
 > > > Jimmy
 > > >
 > > > -----Original Message-----
@@ -240,8 +262,8 @@ On Friday, November 12, 2010 17:46:53 Marcus LORENTZON wrote:
 > To unsubscribe from this list: send the line "unsubscribe linux-media" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+>
+>
 
--- 
+--
 Hans Verkuil - video4linux developer - sponsored by Cisco

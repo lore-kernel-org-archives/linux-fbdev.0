@@ -1,75 +1,120 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 25 Nov 2010 16:21:12 +0000
-Subject: Re: [PATCH 02/10] MCDE: Add configuration registers
-Message-Id: <201011251721.12315.arnd@arndb.de>
+From: Dan Carpenter <error27@gmail.com>
+Date: Sat, 13 Nov 2010 10:07:18 +0000
+Subject: [patch 2/2] fbcmap: integer overflow bug
+Message-Id: <20101113100718.GB1795@bicker>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1289390653-6111-1-git-send-email-jimmy.rubin@stericsson.com>
-	<201011121614.51528.arnd@arndb.de>
-	<F45880696056844FA6A73F415B568C695365E671B7@EXDCVYMBSTM006.EQ1STM.local>
-In-Reply-To: <F45880696056844FA6A73F415B568C695365E671B7@EXDCVYMBSTM006.EQ1STM.local>
+References: <20101027093716.GD6062@bicker>
+ <20101105134018.2c11f283.akpm@linux-foundation.org>
+In-Reply-To: <20101105134018.2c11f283.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-On Thursday 25 November 2010, Jimmy RUBIN wrote:
-> 
-> All these header files,
-> Configuration, pixel processing, formatter, dsi link registers are auto generated from an xml file.
+There is an integer overflow in fb_set_user_cmap() because cmap->len * 2
+can wrap.  It's basically harmless.  Your terminal will be messed up
+until you type reset.
 
-This actually may or may not be a legal problem, because it means that the
-distributed source code is not the preferred form for making modifications
-as the GPL intends, you might want to ask a lawyer. Distributing the XML
-file and the script with the kernel would solve that, but people might
-consider that ugly ;-).
+This patch does three things to fix the bug.
 
-> This is made because there are many registers which a prone to change for new hardware revisions and there is a possibility to exclude registers that are not used.
-> The chance of manual errors are less this way.
-> 
-> I also believe that these helper macros makes the source code easier to read.
-> For example.
-> #define MCDE_CR_DSICMD2_EN_V1_SHIFT 0
-> #define MCDE_CR_DSICMD2_EN_V1_MASK 0x00000001
-> #define MCDE_CR_DSICMD2_EN_V1(__x) \
-> 	MCDE_VAL2REG(MCDE_CR, DSICMD2_EN_V1, __x)
-> 
-> Writing a single field in the register MCDE_CR can e.g. be done like this:
-> mcde_wfld(MCDE_CR, DSICMD1_EN_V1, true);
-> 
-> and for a whole register (a totally other register but just to show):
-> 		mcde_wreg(MCDE_ROTACONF + chnl_id * MCDE_ROTACONF_GROUPOFFSET,
-> 			MCDE_ROTACONF_ROTBURSTSIZE_ENUM(8W) |
-> 			MCDE_ROTACONF_ROTBURSTSIZE_HW(1) |
-> 			MCDE_ROTACONF_ROTDIR(regs->rotdir) |
-> 			MCDE_ROTACONF_STRIP_WIDTH_ENUM(16PIX) |
-> 			MCDE_ROTACONF_RD_MAXOUT_ENUM(4_REQ) |
-> 			MCDE_ROTACONF_WR_MAXOUT_ENUM(8_REQ));
+First, it checks the return value of fb_copy_cmap() in fb_alloc_cmap().
+That is enough to fix address the overflow.
 
-I see what you mean, though I would probably still prefer an inline
-function for doing the same:
+Second it checks for the integer overflow in fb_set_user_cmap().
 
-static inline void mcde_write_rotaconf(struct mcde_chnl *chnl, unsigned burstsize,
-				unsigned rotdir, unsigned strip_width,
-				unsigned rd_maxout, wr_maxout)
-{
-	unsigned __iomem *reg = chnl->base + MCDE_ROTACONF +
-				chnl->id * MCDE_ROTACONF_GROUPOFFSET;
+Lastly I wanted to cap "cmap->len" in fb_set_user_cmap() much lower
+because it gets used to determine the size of allocation.  Unfortunately
+no one knows what the limit should be.  Instead what this patch does
+is makes the allocation happen with GFP_KERNEL instead of GFP_ATOMIC
+and lets the kmalloc() decide what values of cmap->len are reasonable.
+To do this, the patch introduces a function called fb_alloc_cmap_gfp()
+which is like fb_alloc_cmap() except that it takes a GFP flag.
 
-	writel(reg, burstsize << 20 | rotdir << 12 | strip_width << 8 |
-		rd_maxout << 4 | wr_maxout);
-}
+Signed-off-by: Dan Carpenter <error27@gmail.com>
 
-Anyway, it's not really important how you do it, this is mostly a matter
-of personal preference. If you can find a way to make it more readable,
-that would be really good, but it's really a minor issue compared to
-getting the overall layering inside the driver right.
-
-> I agree that the header files looks a bit unreadable I will try indent as you
-> suggested I am just worried about the file size. (Patch limit 100kbyte)
-
-Don't worry about the patch size limit too much, that is not the real
-problem here ;-). For review, you can always cut parts of these files
-since nobody will notice a problem in the middle of 2000 almost identical
-source lines. When you ask for a git pull, the size no longer matters.
-
-	Arnd
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 7fca3dc..d1631d3 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -1122,6 +1122,7 @@ extern const struct fb_videomode *fb_find_best_display(const struct fb_monspecs
+ 
+ /* drivers/video/fbcmap.c */
+ extern int fb_alloc_cmap(struct fb_cmap *cmap, int len, int transp);
++extern int fb_alloc_cmap_gfp(struct fb_cmap *cmap, int len, int transp, gfp_t flags);
+ extern void fb_dealloc_cmap(struct fb_cmap *cmap);
+ extern int fb_copy_cmap(const struct fb_cmap *from, struct fb_cmap *to);
+ extern int fb_cmap_to_user(const struct fb_cmap *from, struct fb_cmap_user *to);
+diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
+index a79b976..e6a01bf 100644
+--- a/drivers/video/fbcmap.c
++++ b/drivers/video/fbcmap.c
+@@ -88,26 +88,27 @@ static const struct fb_cmap default_16_colors = {
+  *
+  */
+ 
+-int fb_alloc_cmap(struct fb_cmap *cmap, int len, int transp)
++int fb_alloc_cmap_gfp(struct fb_cmap *cmap, int len, int transp, gfp_t flags)
+ {
+ 	int size = len * sizeof(u16);
++	int ret = -ENOMEM;
+ 
+ 	if (cmap->len != len) {
+ 		fb_dealloc_cmap(cmap);
+ 		if (!len)
+ 			return 0;
+ 
+-		cmap->red = kmalloc(size, GFP_ATOMIC);
++		cmap->red = kmalloc(size, flags);
+ 		if (!cmap->red)
+ 			goto fail;
+-		cmap->green = kmalloc(size, GFP_ATOMIC);
++		cmap->green = kmalloc(size, flags);
+ 		if (!cmap->green)
+ 			goto fail;
+-		cmap->blue = kmalloc(size, GFP_ATOMIC);
++		cmap->blue = kmalloc(size, flags);
+ 		if (!cmap->blue)
+ 			goto fail;
+ 		if (transp) {
+-			cmap->transp = kmalloc(size, GFP_ATOMIC);
++			cmap->transp = kmalloc(size, flags);
+ 			if (!cmap->transp)
+ 				goto fail;
+ 		} else {
+@@ -116,12 +117,19 @@ int fb_alloc_cmap(struct fb_cmap *cmap, int len, int transp)
+ 	}
+ 	cmap->start = 0;
+ 	cmap->len = len;
+-	fb_copy_cmap(fb_default_cmap(len), cmap);
++	ret = fb_copy_cmap(fb_default_cmap(len), cmap);
++	if (ret)
++		goto fail;
+ 	return 0;
+ 
+ fail:
+ 	fb_dealloc_cmap(cmap);
+-	return -ENOMEM;
++	return ret;
++}
++
++int fb_alloc_cmap(struct fb_cmap *cmap, int len, int transp)
++{
++	return fb_alloc_cmap_gfp(cmap, len, transp, GFP_ATOMIC);
+ }
+ 
+ /**
+@@ -256,8 +264,12 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
+ 	int rc, size = cmap->len * sizeof(u16);
+ 	struct fb_cmap umap;
+ 
++	if (cmap->len * 2 > INT_MAX)
++		return -EINVAL;
++
+ 	memset(&umap, 0, sizeof(struct fb_cmap));
+-	rc = fb_alloc_cmap(&umap, cmap->len, cmap->transp != NULL);
++	rc = fb_alloc_cmap_gfp(&umap, cmap->len, cmap->transp != NULL,
++				GFP_KERNEL);
+ 	if (rc)
+ 		return rc;
+ 	if (copy_from_user(umap.red, cmap->red, size) ||

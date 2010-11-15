@@ -1,86 +1,60 @@
-From: Jimmy RUBIN <jimmy.rubin@stericsson.com>
-Date: Mon, 15 Nov 2010 09:52:55 +0000
+From: Joe Perches <joe@perches.com>
+Date: Mon, 15 Nov 2010 16:30:18 +0000
 Subject: RE: [PATCH 01/10] MCDE: Add hardware abstraction layer
-Message-Id: <F45880696056844FA6A73F415B568C6953604E7105@EXDCVYMBSTM006.EQ1STM.local>
+Message-Id: <1289838618.16461.132.camel@Joe-Laptop>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1289390653-6111-1-git-send-email-jimmy.rubin@stericsson.com>
 	<1289390653-6111-2-git-send-email-jimmy.rubin@stericsson.com>
 	<1289409276.15905.65.camel@Joe-Laptop>
-In-Reply-To: <1289409276.15905.65.camel@Joe-Laptop>
+	<F45880696056844FA6A73F415B568C6953604E7105@EXDCVYMBSTM006.EQ1STM.local>
+In-Reply-To: <F45880696056844FA6A73F415B568C6953604E7105@EXDCVYMBSTM006.EQ1STM.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-SGkgSm9lLAoKVGhhbmtzIGZvciB5b3VyIGlucHV0LgpTZWUgY29tbWVudHMgYmVsb3cuCiAKPiBK
-dXN0IHRyaXZpYToKPiAKPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL21jZGUvbWNkZV9o
-dy5jCj4gYi9kcml2ZXJzL3ZpZGVvL21jZGUvbWNkZV9ody5jCj4gCj4gW10KPiAKPiA+ICsjZGVm
-aW5lIGRzaV9yZmxkKF9faSwgX19yZWcsIF9fZmxkKSBcCj4gPiArCSgoZHNpX3JyZWcoX19pLCBf
-X3JlZykgJiBfX3JlZyMjXyMjX19mbGQjI19NQVNLKSA+PiBcCj4gPiArCQlfX3JlZyMjXyMjX19m
-bGQjI19TSElGVCkKPiA+ICsjZGVmaW5lIGRzaV93ZmxkKF9faSwgX19yZWcsIF9fZmxkLCBfX3Zh
-bCkgXAo+ID4gKwlkc2lfd3JlZyhfX2ksIF9fcmVnLCAoZHNpX3JyZWcoX19pLCBfX3JlZykgJiBc
-Cj4gPiArCX5fX3JlZyMjXyMjX19mbGQjI19NQVNLKSB8ICgoKF9fdmFsKSA8PAo+IF9fcmVnIyNf
-IyNfX2ZsZCMjX1NISUZUKSAmIFwKPiA+ICsJCSBfX3JlZyMjXyMjX19mbGQjI19NQVNLKSkKPiAK
-PiBUaGVzZSBtYWNyb3MgYXJlIG5vdCBwYXJ0aWN1bGFybHkgcmVhZGFibGUuCj4gUGVyaGFwcyB1
-c2Ugc3RhdGVtZW50IGV4cHJlc3Npb24gbWFjcm9zIGxpa2U6Cj4gCj4gI2RlZmluZSBkc2lfcmZs
-ZChfX2ksIF9fcmVnLCBfX2ZsZCkKPiAJCVwKPiAoewo+IAkJCVwKPiAJY29uc3QgdTMyIG1hc2sg
-PSBfX3JlZyMjXyNfX2ZsZCMjX01BU0s7Cj4gCQlcCj4gCWNvbnN0IHUzMiBzaGlmdCA9IF9fcmVn
-IyNfIyNfX2ZsZCMjX1NISUZUOwo+IAlcCj4gCSgoZHNpX3JyZWcoX19pLCBfX3JlZykgJiBtYXNr
-KSA+PiBzaGlmdDsKPiAJXAo+IH0pCj4gCj4gI2RlZmluZSBkc2lfd2ZsZChfX2ksIF9fcmVnLCBf
-X2ZsZCwgX192YWwpCj4gCVwKPiAoewo+IAkJCVwKPiAJY29uc3QgdTMyIG1hc2sgPSBfX3JlZyMj
-XyNfX2ZsZCMjX01BU0s7Cj4gCQlcCj4gCWNvbnN0IHUzMiBzaGlmdCA9IF9fcmVnIyNfIyNfX2Zs
-ZCMjX1NISUZUOwo+IAlcCj4gCWRzaV93cmVnKF9faSwgX19yZWcsCj4gCQlcCj4gCQkgKGRzaV9y
-cmVnKF9faSwgX19yZWcpICYgfm1hc2spIHwgKCgoX192YWwpIDw8Cj4gc2hpZnQpICYgbWFzaykp
-O1wKPiB9KQoKSSBhZ3JlZSwgbW9yZSByZWFkYWJsZS4KPiAKPiA+ICtzdGF0aWMgc3RydWN0IG1j
-ZGVfY2hubF9zdGF0ZSBjaGFubmVsc1tdID0gewo+IAo+IFNob3VsZCBtb3JlIHN0YXRpYyBzdHJ1
-Y3RzIGJlIHN0YXRpYyBjb25zdD8KCkkgdGhpbmsgc28sIHdlIGdvdCBzb21lIHN0cmFuZ2UgYmVo
-YXZpb3Igd2hlbiB3ZSBjaGFuZ2VkIHRoZSBzdHJ1Y3RzIHRvIHN0YXRpYyBjb25zdC4gQnV0IHdl
-IHdpbGwgaW52ZXN0aWdhdGUgaXQuCgo+IAo+IFtdCj4gCj4gPiArCWRldl92ZGJnKCZtY2RlX2Rl
-di0+ZGV2LCAiJXNcbiIsIF9fZnVuY19fKTsKPiAKPiBJZiB5b3VyIGRldl88bGV2ZWw+IGxvZ2dp
-bmcgbWVzc2FnZXMgdXNlICIlcyIsIF9fZnVuY19fCj4gSSBzdWdnZXN0IHlvdSB1c2UgYSBzZXQg
-b2YgbG9jYWwgbWFjcm9zIHRvIHByZWZhY2UgdGhpcy4KPiAKPiBJIGRvbid0IGdlbmVyYWxseSBm
-aW5kIHRoZSBmdW5jdGlvbiBuYW1lIHVzZWZ1bC4KPiAKPiBNYXliZSBvbmx5IHVzZSB0aGUgJXMg
-X19mdW5jX18gcGFpciB3aGVuIHlvdSBhcmUgYWxzbwo+IHNldHRpbmcgdmVyYm9zZSBkZWJ1Z2dp
-bmcuCkFscmlnaHQsIHdpbGwgYWRkIHNvbWUgbG9jYWwgbWFjcm9zIGZvciB0aGlzLgoKPiAKPiAj
-aWZkZWYgVkVSQk9TRV9ERUJVRwo+ICNkZWZpbmUgbWNkZV9wcmludGsobGV2ZWwsIGRldiwgZm10
-LCBhcmdzKSBcCj4gCWRldl9wcmludGsobGV2ZWwsIGRldiwgIiVzOiAiIGZtdCwgX19mdW5jX18s
-ICMjYXJncykKPiAjZWxzZQo+ICNkZWZpbmUgbWNkZV9wcmludGsobGV2ZWwsIGRldiwgZm10LCBh
-cmdzKSBcCj4gCWRldl9wcmludGsobGV2ZWwsIGRldiwgZm10LCBhcmdzKQo+ICNlbmRpZgo+IAo+
-ICNpZmRlZiBWRVJCT1NFX0RFQlVHCj4gI2RlZmluZSBtY2RlX3ZkYmcoZGV2LCBmbXQsIGFyZ3Mp
-IFwKPiAJbWNkZV9wcmludGsoS0VSTl9ERUJVRywgZGV2LCBmbXQsICMjYXJncykKPiAjZWxzZQo+
-ICNkZWZpbmUgbWNkZV92ZGJnKGRldiwgZm10LCBhcmdzKSBcCj4gCWRvIHsgaWYgKDApIG1jZGVf
-cHJpbnRrKEtFUk5fREVCVUcsIGRldiwgZm10LCAjI2FyZ3MpOyB9Cj4gd2hpbGUgKDApCj4gI2Vu
-ZGlmCj4gCj4gI2lmZGVmIERFQlVHCj4gI2RlZmluZSBtY2RlX2RiZyhkZXYsIGZtdCwgYXJncykg
-XAo+IAltY2RlX3ByaW50ayhLRVJOX0RFQlVHLCBkZXYsIGZtdCwgIyNhcmdzKQo+ICNlbHNlCj4g
-I2RlZmluZSBtY2RlX2RiZyhkZXYsIGZtdCwgYXJncykgXAo+IAlkbyB7IGlmICgwKSBtY2RlX3By
-aW50ayhLRVJOX0RFQlVHLCBkZXYsIGZtdCwgIyNhcmdzKTsgfQo+IHdoaWxlICgwKQo+ICNlbmRp
-Zgo+IAo+ICNkZWZpbmUgbWNkZV9FUlIoZGV2LCBmbXQsIGFyZ3MpIFwKPiAJbWNkZV9wcmludGso
-S0VSTl9FUlIsIGRldiwgZm10LCAjI2FyZ3MpCj4gI2RlZmluZSBtY2RlX3dhcm4oZGV2LCBmbXQs
-IGFyZ3MpIFwKPiAJbWNkZV9wcmludGsoS0VSTl9XQVJOSU5HLCBkZXYsIGZtdCwgIyNhcmdzKQo+
-ICNkZWZpbmUgbWNkZV9pbmZvKGRldiwgZm10LCBhcmdzKSBcCj4gCW1jZGVfcHJpbnRrKEtFUk5f
-SU5GTywgZGV2LCBmbXQsICMjYXJncykKPiAKPiA+ICtzdGF0aWMgdm9pZCBkaXNhYmxlX2NoYW5u
-ZWwoc3RydWN0IG1jZGVfY2hubF9zdGF0ZSAqY2hubCkKPiA+ICt7Cj4gPiArCWludCBpOwo+ID4g
-Kwljb25zdCBzdHJ1Y3QgbWNkZV9wb3J0ICpwb3J0ID0gJmNobmwtPnBvcnQ7Cj4gPiArCj4gPiAr
-CWRldl92ZGJnKCZtY2RlX2Rldi0+ZGV2LCAiJXNcbiIsIF9fZnVuY19fKTsKPiA+ICsKPiA+ICsJ
-aWYgKGhhcmR3YXJlX3ZlcnNpb24gPSBNQ0RFX0NISVBfVkVSU0lPTl8zXzBfOCAmJgo+ID4gKwkJ
-CQkhaXNfY2hhbm5lbF9lbmFibGVkKGNobmwpKQo+IHsKPiA+ICsJCWNobmwtPmNvbnRpbm91c19y
-dW5uaW5nID0gZmFsc2U7Cj4gCj4gSXQnZCBiZSBuaWNlIHRvIGNoYW5nZSB0byBjb250aW51b3Vz
-X3J1bm5pbmcKCkNvbnRpbm91c19ydW5uaW5nIGlzIG5vcm1hbGx5IHNldCB0byB0cnVlIHdoZW4g
-YSBjaG5sX3VwZGF0ZSBpcyBwZXJmb3JtZWQuCkluIGRpc2FibGUgY2hhbm5lbCBjb250aW5vdXNf
-cnVubmluZyBtdXN0IGJlIHNldCB0byBmYWxzZSBpbiBvcmRlciB0byBnZXQgdGhlIGh3IHJlZ2lz
-dGVycyB1cGRhdGVkIGluIHRoZSBuZXh0IGNobmxfdXBkYXRlLgoKPiAKPiA+ICtpbnQgbWNkZV9k
-c2lfZGNzX3dyaXRlKHN0cnVjdCBtY2RlX2Nobmxfc3RhdGUgKmNobmwsIHU4IGNtZCwgdTgqCj4g
-ZGF0YSwgaW50IGxlbikKPiA+ICt7Cj4gPiArCWludCBpOwo+ID4gKwl1MzIgd3JkYXRbNF0gPSB7
-IDAsIDAsIDAsIDAgfTsKPiA+ICsJdTMyIHNldHRpbmdzOwo+ID4gKwl1OCBsaW5rID0gY2hubC0+
-cG9ydC5saW5rOwo+ID4gKwl1OCB2aXJ0X2lkID0gY2hubC0+cG9ydC5waHkuZHNpLnZpcnRfaWQ7
-Cj4gPiArCj4gPiArCS8qIFJFVklFVzogT25lIGNvbW1hbmQgYXQgYSB0aW1lICovCj4gPiArCS8q
-IFJFVklFVzogQWxsb3cgcmVhZC93cml0ZSBvbiB1bnJlc2VydmVkIHBvcnRzICovCj4gPiArCWlm
-IChsZW4gPiBNQ0RFX01BWF9EQ1NfV1JJVEUgfHwgY2hubC0+cG9ydC50eXBlICE+IE1DREVfUE9S
-VFRZUEVfRFNJKQo+ID4gKwkJcmV0dXJuIC1FSU5WQUw7Cj4gPiArCj4gPiArCXdyZGF0WzBdID0g
-Y21kOwo+ID4gKwlmb3IgKGkgPSAxOyBpIDw9IGxlbjsgaSsrKQo+ID4gKwkJd3JkYXRbaT4+Ml0g
-fD0gKCh1MzIpZGF0YVtpLTFdIDw8ICgoaSAmIDMpICogOCkpOwo+IAo+IEV2ZXIgb3ZlcnJ1biB3
-cmRhdD8KPiBNYXliZSBXQVJOX09OKGxlbiA+IDE2LCAib29wcz8iKQo+IApNQ0RFX01BWF9EQ1Nf
-V1JJVEUgaXMgMTUgc28gaXQgd2lsbCBiZSBhbiBlYXJseSByZXR1cm4gaW4gdGhhdCBjYXNlLgoK
-L0ppbW15Cv/06Lp7Lm7HK4m3n66JrYYrJYrL/7Hp3bYXpYp3/7p7Lm7HK4m3pYp7sf323Xr/4p7Y
-Xm6HcqH2pnrLGoHraJmo6K3aJqP74Hq/5Hq53pf6K4DKK3pmo6K3aJqIp36GrYbbaf//74Hq/5Hq
-53pf6K4P5mo6K3aJqP4p36P4bQo=
+On Mon, 2010-11-15 at 10:52 +0100, Jimmy RUBIN wrote:
+> > Just trivia:
+[]
+> > It'd be nice to change to continuous_running
+> Continous_running [...]
+
+It was just a spelling comment.
+continous
+continuous
+
+> 
+> > > +int mcde_dsi_dcs_write(struct mcde_chnl_state *chnl, u8 cmd, u8*
+> > data, int len)
+> > > +{
+> > > +	int i;
+> > > +	u32 wrdat[4] = { 0, 0, 0, 0 };
+> > > +	u32 settings;
+> > > +	u8 link = chnl->port.link;
+> > > +	u8 virt_id = chnl->port.phy.dsi.virt_id;
+> > > +
+> > > +	/* REVIEW: One command at a time */
+> > > +	/* REVIEW: Allow read/write on unreserved ports */
+> > > +	if (len > MCDE_MAX_DCS_WRITE || chnl->port.type !> > MCDE_PORTTYPE_DSI)
+> > > +		return -EINVAL;
+> > > +
+> > > +	wrdat[0] = cmd;
+> > > +	for (i = 1; i <= len; i++)
+> > > +		wrdat[i>>2] |= ((u32)data[i-1] << ((i & 3) * 8));
+> > 
+> > Ever overrun wrdat?
+> > Maybe WARN_ON(len > 16, "oops?")
+> > 
+> MCDE_MAX_DCS_WRITE is 15 so it will be an early return in that case.
+
+Perhaps it'd be better to use
+
+DECLARE_BITMAP(wrdat, MCDE_MAX_DCS_WRITE);
+
+or some other mechanism to link the array
+size to the #define. 
+
+> /Jimmy
+
+
+

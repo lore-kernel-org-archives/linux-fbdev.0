@@ -1,50 +1,52 @@
-From: Inki Dae <inki.dae@samsung.com>
-Date: Fri, 19 Nov 2010 01:29:24 +0000
-Subject: [PATCH 1/3] FB: added a structure for CPU interface to linux/fb.h
-Message-Id: <1290130164-7835-1-git-send-email-inki.dae@samsung.com>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Mon, 15 Nov 2010 06:25:17 +0000
+Subject: [GIT PULL] fbdev updates for 2.6.37-rc2
+Message-Id: <20101115062516.GA24960@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <>
-In-Reply-To: <>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-FB: added a structure for CPU interface to linux/fb.h
+This marks the first batch of fixes from the newly created fbdev git
+tree. As noted on the list and to the driver tree owners, I'll be looking
+after this for the forseeable future. This will hopefully ease some of
+the pressure on -mm in addition to weaning off the various fb driver
+trees from merging directly in lieu of a proper subsystem tree to go
+through. This tree is now what it is also pulled in to -next, both fixes
+and development branches.
 
-RGB or CPU interfaces could be used as display mode but framebuffer
-framework doesn't consider CPU interface so I added this structure
-because fb_cpumode structure could be used commonly.
+Please pull from:
 
-Signed-off-by: Inki Dae <inki.dae@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- include/linux/fb.h |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/fbdev-2.6.git fbdev-fixes-for-linus
 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 7fca3dc..9b9842c 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -1147,6 +1147,18 @@ struct fb_videomode {
- 	u32 flag;
- };
- 
-+struct fb_cpumode {
-+	const char *name;	/* optional */
-+	u32 refresh;		/* optional */
-+	u32 xres;
-+	u32 yres;
-+	u32 pixclock;
-+	u32 cs_setup;
-+	u32 wr_setup;
-+	u32 wr_act;
-+	u32 wr_hold;
-+};
-+
- extern const char *fb_mode_option;
- extern const struct fb_videomode vesa_modes[];
- 
--- 
-1.5.4.3
+Which contains:
 
+Aaro Koskinen (1):
+      sisfb: limit POST memory test according to PCI resource length
+
+Guennadi Liakhovetski (3):
+      fbdev: sh_mobile_hdmi: properly clean up modedb on monitor unplug
+      fbdev: sh_mobile_lcdc: use the standard CEA-861 720p timing
+      fbdev: sh_mobile_lcdc: use correct number of modes, when using the default
+
+Mike Frysinger (1):
+      fsl-diu-fb: drop dead ioctl define
+
+Paul Mundt (1):
+      MAINTAINERS: Add an fbdev git tree entry.
+
+Tomi Valkeinen (3):
+      OMAP: VRAM: improve VRAM error prints
+      OMAP: VRAM: Fix boot-time memory allocation
+      OMAP: DSS: Fix documentation regarding 'vram' kernel parameter
+
+ Documentation/arm/OMAP/DSS       |    7 ++++---
+ MAINTAINERS                      |    1 +
+ drivers/video/omap2/vram.c       |   17 +++++++++++++----
+ drivers/video/sh_mobile_hdmi.c   |    5 ++++-
+ drivers/video/sh_mobile_lcdcfb.c |   21 ++++++++++++---------
+ drivers/video/sis/sis_main.c     |    8 ++++++--
+ include/linux/fsl-diu-fb.h       |    1 -
+ 7 files changed, 40 insertions(+), 20 deletions(-)

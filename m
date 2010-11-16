@@ -1,29 +1,84 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Wed, 24 Nov 2010 06:26:15 +0000
-Subject: Re: [PATCH 0/9] sisfb: remove cruft code
-Message-Id: <20101124062615.GG11705@linux-sh.org>
+From: "Nilofer, Samreen" <samreen@ti.com>
+Date: Tue, 16 Nov 2010 06:21:01 +0000
+Subject: RE: [PATCH v4] OMAP3: DSS: Kconfig changes to enable display
+Message-Id: <FCCFB4CDC6E5564B9182F639FC356087034C101F0B@dbde02.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1290203931-25188-1-git-send-email-aaro.koskinen@iki.fi>
-In-Reply-To: <1290203931-25188-1-git-send-email-aaro.koskinen@iki.fi>
+References: <1288063074-8879-1-git-send-email-samreen@ti.com>
+In-Reply-To: <1288063074-8879-1-git-send-email-samreen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, thomas@winischhofer.net
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>, Grazvydas Ignotas <notasas@gmail.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>, Roger Quadros <roger.quadros@nokia.com>, Guruswamy, Senthilv
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-On Fri, Nov 19, 2010 at 11:58:42PM +0200, Aaro Koskinen wrote:
-> This series deletes unused/unneeded code from sisfb, while not changing
-> the functionality.
+Hi,
+  Any more comments on this patch?
+
+Warm Regards,
+Samreen 
+Nilofer, Samreen wrote:
+> The defconfig options for display are taken in the respective
+> Kconfig to enable display by default on OMAP3 platforms
 > 
-> Aaro Koskinen (9):
->   sisfb: delete obsolete PCI ROM bug workaround
->   sisfb: delete fallback code for pci_map_rom()
->   sisfb: delete dead SIS_XORG_XF86 code
->   sisfb: delete redudant #define SIS_LINUX_KERNEL
->   sisfb: use CONFIG_FB_SIS_301/315 instead of SIS301/315H
->   sisfb: remove InPort/OutPort wrappers
->   sisfb: replace SiS_SetMemory with memset_io
->   sisfb: move the CONFIG warning to sis_main.c
->   sisfb: delete osdef.h
+> Signed-off-by: Samreen <samreen@ti.com>
+> ---
+>  Version4:
+>        Remove the enabling of the display panels by default.
 > 
-Applied, thanks.
+>  Version3:
+>        Eliminate the separate default number of FBs for
+> different architecture. Keeping default FBs as 3 as before.
+> 
+>  Version2:
+>         Enables by default NEC panel used in zoom2/3/3630sdp,
+> instead of  Sharp LQ043T1DG01 panel enabled in previous
+> version of this patch.
+> 
+>  drivers/video/omap2/dss/Kconfig    |    6 ++++--
+>  drivers/video/omap2/omapfb/Kconfig |    1 +
+>  2 files changed, 5 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/omap2/dss/Kconfig
+> b/drivers/video/omap2/dss/Kconfig index 43b6440..f3244a2 100644
+> --- a/drivers/video/omap2/dss/Kconfig
+> +++ b/drivers/video/omap2/dss/Kconfig
+> @@ -1,6 +1,7 @@
+>  menuconfig OMAP2_DSS
+>          tristate "OMAP2/3 Display Subsystem support (EXPERIMENTAL)"
+>          depends on ARCH_OMAP2 || ARCH_OMAP3
+> +	default y
+>          help
+>            OMAP2/3 Display Subsystem support.
+> 
+> @@ -9,7 +10,7 @@ if OMAP2_DSS
+>  config OMAP2_VRAM_SIZE
+>  	int "VRAM size (MB)"
+>  	range 0 32
+> -	default 0
+> +	default 4
+>  	help
+>  	  The amount of SDRAM to reserve at boot time for video RAM use.
+>  	  This VRAM will be used by omapfb and other drivers
+> that need @@ -102,7 +103,8 @@ config OMAP2_DSS_FAKE_VSYNC
+> config OMAP2_DSS_MIN_FCK_PER_PCK
+>  	int "Minimum FCK/PCK ratio (for scaling)"
+>  	range 0 32
+> -	default 0
+> +	default 4  if ARCH_OMAP2 || ARCH_OMAP3
+> +	default 0  if ARCH_OMAP4
+>  	help
+>  	  This can be used to adjust the minimum FCK/PCK ratio.
+> 
+> diff --git a/drivers/video/omap2/omapfb/Kconfig
+> b/drivers/video/omap2/omapfb/Kconfig
+> index 65149b2..923bf48 100644
+> --- a/drivers/video/omap2/omapfb/Kconfig
+> +++ b/drivers/video/omap2/omapfb/Kconfig
+> @@ -1,6 +1,7 @@
+>  menuconfig FB_OMAP2
+>          tristate "OMAP2/3 frame buffer support (EXPERIMENTAL)"
+>          depends on FB && OMAP2_DSS
+> +	default y
+> 
+>  	select OMAP2_VRAM
+>  	select OMAP2_VRFB if ARCH_OMAP2 || ARCH_OMAP3

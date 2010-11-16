@@ -1,48 +1,124 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Thu, 04 Nov 2010 11:06:01 +0000
-Subject: [PATCH 2/5] fbdev: sh_mobile_lcdc: use the standard CEA-861 720p
-Message-Id: <Pine.LNX.4.64.1011041159420.13123@axis700.grange>
+From: Dan Carpenter <error27@gmail.com>
+Date: Tue, 16 Nov 2010 09:11:02 +0000
+Subject: [patch 2/2 v2] fbcmap: integer overflow bug
+Message-Id: <20101116090119.GA31724@bicker>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20101027093716.GD6062@bicker>
+ <20101105134018.2c11f283.akpm@linux-foundation.org>
+ <20101113100718.GB1795@bicker>
+ <20101115044820.GA8489@linux-sh.org>
+In-Reply-To: <20101115044820.GA8489@linux-sh.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-sh_mobile_lcdcfb.c has a hard-coded 720p video mode, used as default, if none
-is explicitly specified by the platform. Adjust its timing to match the CEA
-standard. Also add an explicit refresh rate value, which is needed, when used
-with HDMI, to be able to recognise the default 720p mode as a pre-programmed
-VIC #4.
+There is an integer overflow in fb_set_user_cmap() because cmap->len * 2
+can wrap.  It's basically harmless.  Your terminal will be messed up
+until you type reset.
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+This patch does three things to fix the bug.
+
+First, it checks the return value of fb_copy_cmap() in fb_alloc_cmap().
+That is enough to fix address the overflow.
+
+Second it checks for the integer overflow in fb_set_user_cmap().
+
+Lastly I wanted to cap "cmap->len" in fb_set_user_cmap() much lower
+because it gets used to determine the size of allocation.  Unfortunately
+no one knows what the limit should be.  Instead what this patch does
+is makes the allocation happen with GFP_KERNEL instead of GFP_ATOMIC
+and lets the kmalloc() decide what values of cmap->len are reasonable.
+To do this, the patch introduces a function called fb_alloc_cmap_gfp()
+which is like fb_alloc_cmap() except that it takes a GFP flag.
+
+Signed-off-by: Dan Carpenter <error27@gmail.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+v2:  Fix overflow check in fb_set_user_cmap().  Return -E2BIG on error.
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 5096373..a87dace 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -115,15 +115,16 @@ static const struct fb_videomode default_720p = {
- 	.xres = 1280,
- 	.yres = 720,
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 7fca3dc..d1631d3 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -1122,6 +1122,7 @@ extern const struct fb_videomode *fb_find_best_display(const struct fb_monspecs
  
--	.left_margin = 200,
--	.right_margin = 88,
--	.hsync_len = 48,
-+	.left_margin = 220,
-+	.right_margin = 110,
-+	.hsync_len = 40,
+ /* drivers/video/fbcmap.c */
+ extern int fb_alloc_cmap(struct fb_cmap *cmap, int len, int transp);
++extern int fb_alloc_cmap_gfp(struct fb_cmap *cmap, int len, int transp, gfp_t flags);
+ extern void fb_dealloc_cmap(struct fb_cmap *cmap);
+ extern int fb_copy_cmap(const struct fb_cmap *from, struct fb_cmap *to);
+ extern int fb_cmap_to_user(const struct fb_cmap *from, struct fb_cmap_user *to);
+diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
+index a79b976..affdf3e 100644
+--- a/drivers/video/fbcmap.c
++++ b/drivers/video/fbcmap.c
+@@ -88,26 +88,27 @@ static const struct fb_cmap default_16_colors = {
+  *
+  */
  
- 	.upper_margin = 20,
- 	.lower_margin = 5,
- 	.vsync_len = 5,
+-int fb_alloc_cmap(struct fb_cmap *cmap, int len, int transp)
++int fb_alloc_cmap_gfp(struct fb_cmap *cmap, int len, int transp, gfp_t flags)
+ {
+ 	int size = len * sizeof(u16);
++	int ret = -ENOMEM;
  
- 	.pixclock = 13468,
-+	.refresh = 60,
- 	.sync = FB_SYNC_VERT_HIGH_ACT | FB_SYNC_HOR_HIGH_ACT,
- };
+ 	if (cmap->len != len) {
+ 		fb_dealloc_cmap(cmap);
+ 		if (!len)
+ 			return 0;
  
--- 
-1.7.2.3
-
+-		cmap->red = kmalloc(size, GFP_ATOMIC);
++		cmap->red = kmalloc(size, flags);
+ 		if (!cmap->red)
+ 			goto fail;
+-		cmap->green = kmalloc(size, GFP_ATOMIC);
++		cmap->green = kmalloc(size, flags);
+ 		if (!cmap->green)
+ 			goto fail;
+-		cmap->blue = kmalloc(size, GFP_ATOMIC);
++		cmap->blue = kmalloc(size, flags);
+ 		if (!cmap->blue)
+ 			goto fail;
+ 		if (transp) {
+-			cmap->transp = kmalloc(size, GFP_ATOMIC);
++			cmap->transp = kmalloc(size, flags);
+ 			if (!cmap->transp)
+ 				goto fail;
+ 		} else {
+@@ -116,12 +117,19 @@ int fb_alloc_cmap(struct fb_cmap *cmap, int len, int transp)
+ 	}
+ 	cmap->start = 0;
+ 	cmap->len = len;
+-	fb_copy_cmap(fb_default_cmap(len), cmap);
++	ret = fb_copy_cmap(fb_default_cmap(len), cmap);
++	if (ret)
++		goto fail;
+ 	return 0;
+ 
+ fail:
+ 	fb_dealloc_cmap(cmap);
+-	return -ENOMEM;
++	return ret;
++}
++
++int fb_alloc_cmap(struct fb_cmap *cmap, int len, int transp)
++{
++	return fb_alloc_cmap_gfp(cmap, len, transp, GFP_ATOMIC);
+ }
+ 
+ /**
+@@ -256,8 +264,12 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
+ 	int rc, size = cmap->len * sizeof(u16);
+ 	struct fb_cmap umap;
+ 
++	if (size < 0 || size < cmap->len)
++		return -E2BIG;
++
+ 	memset(&umap, 0, sizeof(struct fb_cmap));
+-	rc = fb_alloc_cmap(&umap, cmap->len, cmap->transp != NULL);
++	rc = fb_alloc_cmap_gfp(&umap, cmap->len, cmap->transp != NULL,
++				GFP_KERNEL);
+ 	if (rc)
+ 		return rc;
+ 	if (copy_from_user(umap.red, cmap->red, size) ||

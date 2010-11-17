@@ -1,47 +1,40 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Wed, 10 Nov 2010 09:45:19 +0000
-Subject: [PATCH 2/3] OMAP: VRAM: Fix boot-time memory allocation
-Message-Id: <1289382320-17412-2-git-send-email-tomi.valkeinen@nokia.com>
+From: Felipe Contreras <felipe.contreras@gmail.com>
+Date: Wed, 17 Nov 2010 18:08:58 +0000
+Subject: Re: [PATCH 2/3] OMAP: VRAM: Fix boot-time memory allocation
+Message-Id: <AANLkTimkR9G9Gxm7oK7-0j+5Ywr=-oPvLPJ_uFc6W3k8@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1289382320-17412-1-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1289382320-17412-1-git-send-email-tomi.valkeinen@nokia.com>
+	<1289382320-17412-2-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1289382320-17412-2-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Use memblock_free() and memblock_remove() to remove the allocated or
-reserved VRAM area from normal kernel memory.
+On Wed, Nov 10, 2010 at 11:45 AM, Tomi Valkeinen
+<tomi.valkeinen@nokia.com> wrote:
+> Use memblock_free() and memblock_remove() to remove the allocated or
+> reserved VRAM area from normal kernel memory.
+>
+> This is a slightly modified version of patches from Felipe Contreras and
+> Namhyung Kim.
+>
+> Reported-by: Felipe Contreras <felipe.contreras@gmail.com>
+> Reported-by: Namhyung Kim <namhyung@gmail.com>
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 
-This is a slightly modified version of patches from Felipe Contreras and
-Namhyung Kim.
+I would have kept these as two separate patches as they do two different things:
+ 1) Fix a build error
+ 2) Prepare for future ioremap() changes[1]
 
-Reported-by: Felipe Contreras <felipe.contreras@gmail.com>
-Reported-by: Namhyung Kim <namhyung@gmail.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
----
- drivers/video/omap2/vram.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+The current patch mentions 1) in the summary, and 2) in the commit
+message, but it doesn't explain why 2) is needed. Maybe for the next
+time.
 
-diff --git a/drivers/video/omap2/vram.c b/drivers/video/omap2/vram.c
-index bb5ee06..2fd7e52 100644
---- a/drivers/video/omap2/vram.c
-+++ b/drivers/video/omap2/vram.c
-@@ -576,9 +576,12 @@ void __init omap_vram_reserve_sdram_memblock(void)
- 			return;
- 		}
- 	} else {
--		paddr = memblock_alloc_base(size, PAGE_SIZE, MEMBLOCK_REAL_LIMIT);
-+		paddr = memblock_alloc(size, PAGE_SIZE);
- 	}
- 
-+	memblock_free(paddr, size);
-+	memblock_remove(paddr, size);
-+
- 	omap_vram_add_region(paddr, size);
- 
- 	pr_info("Reserving %u bytes SDRAM for VRAM\n", size);
+Cheers.
+
+[1] http://article.gmane.org/gmane.linux.ports.arm.omap/44978
+
 -- 
-1.7.1
-
+Felipe Contreras

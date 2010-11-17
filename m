@@ -1,88 +1,33 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 17 Nov 2010 15:44:40 +0000
-Subject: Fwd: [PATCH] Framebuffer documentation index file updated.
-Message-Id: <AANLkTikZA06H7cuBQVyDeh6vFgymi65eSHvCuObGty3d@mail.gmail.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="20cf3054a4ad2d03c60495418dab"
+From: Randy Dunlap <rdunlap@xenotime.net>
+Date: Wed, 17 Nov 2010 17:34:38 +0000
+Subject: Re: Fwd: [PATCH] Framebuffer documentation index file updated.
+Message-Id: <20101117093438.2ccb1f40.rdunlap@xenotime.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <AANLkTikZA06H7cuBQVyDeh6vFgymi65eSHvCuObGty3d@mail.gmail.com>
+In-Reply-To: <AANLkTikZA06H7cuBQVyDeh6vFgymi65eSHvCuObGty3d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
---20cf3054a4ad2d03c60495418dab
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Wed, 17 Nov 2010 16:44:40 +0100 Geert Uytterhoeven wrote:
 
----------- Forwarded message ----------
-From: Vicente Jim=C3=A9nez <googuy@gmail.com>
-Date: Wed, Nov 17, 2010 at 16:41
-Subject: [PATCH] Framebuffer documentation index file updated.
-To: Geert Uytterhoeven <geert@linux-m68k.org>
+> ---------- Forwarded message ----------
+> From: Vicente Jim=E9nez <googuy@gmail.com>
+> Date: Wed, Nov 17, 2010 at 16:41
+> Subject: [PATCH] Framebuffer documentation index file updated.
+> To: Geert Uytterhoeven <geert@linux-m68k.org>
+>=20
+>=20
+> This is a simple update of the file Documentation/fb/00-INDEX based on
+> the directory content.
+>=20
+> Signed-off-by:: Vicente Jimenez Aguilar <googuy@gmail.com>
 
 
-This is a simple update of the file Documentation/fb/00-INDEX based on
-the directory content.
+Looks good to me.
 
-Signed-off-by:: Vicente Jimenez Aguilar <googuy@gmail.com>
-
---20cf3054a4ad2d03c60495418dab
-Content-Type: text/x-patch; charset=US-ASCII; 
-	name="0001-Framebuffer-documentation-index-file-updated.patch"
-Content-Disposition: attachment; 
-	filename="0001-Framebuffer-documentation-index-file-updated.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_ggmdl95q0
-
-RnJvbSA1ZTk5OTUwZWJlYzMxZDQ5ZDM5OTdiMTIyNDI4Y2FhYzNjYzRiMjQ0IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBWaWNlbnRlIEppbWVuZXogQWd1aWxhciA8Z29vZ3V5QGdtYWls
-LmNvbT4KRGF0ZTogV2VkLCAxNyBOb3YgMjAxMCAxNzozMDoyMyArMDEwMApTdWJqZWN0OiBbUEFU
-Q0hdIEZyYW1lYnVmZmVyIGRvY3VtZW50YXRpb24gaW5kZXggZmlsZSB1cGRhdGVkLgoKLS0tCiBE
-b2N1bWVudGF0aW9uL2ZiLzAwLUlOREVYIHwgICAzMiArKysrKysrKysrKysrKysrKysrKysrKysr
-LS0tLS0tLQogMSBmaWxlcyBjaGFuZ2VkLCAyNSBpbnNlcnRpb25zKCspLCA3IGRlbGV0aW9ucygt
-KQoKZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZmIvMDAtSU5ERVggYi9Eb2N1bWVudGF0aW9u
-L2ZiLzAwLUlOREVYCmluZGV4IGE2MThmZDkuLjMwYTcwNTQgMTAwNjQ0Ci0tLSBhL0RvY3VtZW50
-YXRpb24vZmIvMDAtSU5ERVgKKysrIGIvRG9jdW1lbnRhdGlvbi9mYi8wMC1JTkRFWApAQCAtNCwz
-MyArNCw0MSBAQCBwbGVhc2UgbWFpbCBtZS4KIAkJCQkgICAgR2VlcnQgVXl0dGVyaG9ldmVuIDxn
-ZWVydEBsaW51eC1tNjhrLm9yZz4KIAogMDAtSU5ERVgKLQktIHRoaXMgZmlsZQorCS0gdGhpcyBm
-aWxlLgogYXJrZmIudHh0CiAJLSBpbmZvIG9uIHRoZSBmYmRldiBkcml2ZXIgZm9yIEFSSyBMb2dp
-YyBjaGlwcy4KIGF0eTEyOGZiLnR4dAogCS0gaW5mbyBvbiB0aGUgQVRJIFJhZ2UxMjggZnJhbWUg
-YnVmZmVyIGRyaXZlci4KIGNpcnJ1c2ZiLnR4dAogCS0gaW5mbyBvbiB0aGUgZHJpdmVyIGZvciBD
-aXJydXMgTG9naWMgY2hpcHNldHMuCitjbWFwX3hmYmRldi50eHQKKwktIGFuIGludHJvZHVjdGlv
-biB0byBmYmRldidzIGNtYXAgc3RydWN0dXJlcy4KIGRlZmVycmVkX2lvLnR4dAogCS0gYW4gaW50
-cm9kdWN0aW9uIHRvIGRlZmVycmVkIElPLgorZWZpZmIudHh0CisJLSBpbmZvIG9uIHRoZSBFRkkg
-cGxhdGZvcm0gZHJpdmVyIGZvciBJbnRlbCBiYXNlZCBBcHBsZSBjb21wdXRlcnMuCitlcDkzeHgt
-ZmIudHh0CisJLSBpbmZvIG9uIHRoZSBkcml2ZXIgZm9yIEVQOTN4eCBMQ0QgY29udHJvbGxlci4K
-IGZiY29uLnR4dAogCS0gaW50cm8gdG8gYW5kIHVzYWdlIGd1aWRlIGZvciB0aGUgZnJhbWVidWZm
-ZXIgY29uc29sZSAoZmJjb24pLgogZnJhbWVidWZmZXIudHh0CiAJLSBpbnRyb2R1Y3Rpb24gdG8g
-ZnJhbWUgYnVmZmVyIGRldmljZXMuCi1pbWFjZmIudHh0Ci0JLSBpbmZvIG9uIHRoZSBnZW5lcmlj
-IEVGSSBwbGF0Zm9ybSBkcml2ZXIgZm9yIEludGVsIGJhc2VkIE1hY3MuCitneGZiLnR4dAorCS0g
-aW5mbyBvbiB0aGUgZnJhbWVidWZmZXIgZHJpdmVyIGZvciBBTUQgR2VvZGUgR1gyIGJhc2VkIHBy
-b2Nlc3NvcnMuCiBpbnRlbDgxMC50eHQKIAktIGRvY3VtZW50YXRpb24gZm9yIHRoZSBJbnRlbCA4
-MTAvODE1IGZyYW1lYnVmZmVyIGRyaXZlci4KIGludGVsZmIudHh0CiAJLSBkb2NzIGZvciBJbnRl
-bCA4MzBNLzg0NUcvODUyR00vODU1R00vODY1Ry85MTVHLzk0NUcgZmIgZHJpdmVyLgogaW50ZXJu
-YWxzLnR4dAogCS0gcXVpY2sgb3ZlcnZpZXcgb2YgZnJhbWUgYnVmZmVyIGRldmljZSBpbnRlcm5h
-bHMuCitseGZiLnR4dAorCS0gaW5mbyBvbiB0aGUgZnJhbWVidWZmZXIgZHJpdmVyIGZvciBBTUQg
-R2VvZGUgTFggYmFzZWQgcHJvY2Vzc29ycy4KIG1hdHJveGZiLnR4dAogCS0gaW5mbyBvbiB0aGUg
-TWF0cm94IGZyYW1lYnVmZmVyIGRyaXZlciBmb3IgQWxwaGEsIEludGVsIGFuZCBQUEMuCittZXRy
-b25vbWVmYi50eHQKKwktIGluZm8gb24gdGhlIGRyaXZlciBmb3IgdGhlIE1ldHJvbm9tZSBkaXNw
-bGF5IGNvbnRyb2xsZXIuCiBtb2RlZGIudHh0CiAJLSBpbmZvIG9uIHRoZSB2aWRlbyBtb2RlIGRh
-dGFiYXNlLgotbWF0cm94ZmIudHh0Ci0JLSBpbmZvIG9uIHRoZSBNYXRyb3ggZnJhbWUgYnVmZmVy
-IGRyaXZlci4KIHB2cjJmYi50eHQKIAktIGluZm8gb24gdGhlIFBvd2VyVlIgMiBmcmFtZSBidWZm
-ZXIgZHJpdmVyLgogcHhhZmIudHh0CkBAIC0zOSwxMyArNDcsMjMgQEAgczNmYi50eHQKIAktIGlu
-Zm8gb24gdGhlIGZiZGV2IGRyaXZlciBmb3IgUzMgVHJpby9WaXJnZSBjaGlwcy4KIHNhMTEwMGZi
-LnR4dAogCS0gaW5mb3JtYXRpb24gYWJvdXQgdGhlIGRyaXZlciBmb3IgdGhlIFNBLTExMDAgTENE
-IGNvbnRyb2xsZXIuCitzaDc3NjBmYi50eHQKKwktIGluZm8gb24gdGhlIFNINzc2MC9TSDc3NjMg
-aW50ZWdyYXRlZCBMQ0RDIEZyYW1lYnVmZmVyIGRyaXZlci4KIHNpc2ZiLnR4dAogCS0gaW5mbyBv
-biB0aGUgZnJhbWVidWZmZXIgZGV2aWNlIGRyaXZlciBmb3IgdmFyaW91cyBTaVMgY2hpcHMuCiBz
-c3RmYi50eHQKIAktIGluZm8gb24gdGhlIGZyYW1lIGJ1ZmZlciBkcml2ZXIgZm9yIDNkZngnIFZv
-b2RvbyBHcmFwaGljcyBib2FyZHMuCiB0Z2FmYi50eHQKLQktIGluZm8gb24gdGhlIFRHQSAoREVD
-Q2hpcCAyMTAzMCkgZnJhbWUgYnVmZmVyIGRyaXZlcgorCS0gaW5mbyBvbiB0aGUgVEdBIChERUND
-aGlwIDIxMDMwKSBmcmFtZSBidWZmZXIgZHJpdmVyLgordHJpZGVudGZiLnR4dAorCWluZm8gb24g
-dGhlIGZyYW1lYnVmZmVyIGRyaXZlciBmb3Igc29tZSBUcmlkZW50IGNoaXAgYmFzZWQgY2FyZHMu
-Cit1dmVzYWZiLnR4dAorCS0gaW5mbyBvbiB0aGUgdXNlcnNwYWNlIFZFU0EgKFZCRTIrIGNvbXBs
-aWFudCkgZnJhbWUgYnVmZmVyIGRldmljZS4KIHZlc2FmYi50eHQKLQktIGluZm8gb24gdGhlIFZF
-U0EgZnJhbWUgYnVmZmVyIGRldmljZQorCS0gaW5mbyBvbiB0aGUgVkVTQSBmcmFtZSBidWZmZXIg
-ZGV2aWNlLgordmlhZmIubW9kZXMKKwktIGxpc3Qgb2YgbW9kZXMgZm9yIFZJQSBJbnRlZ3JhdGlv
-biBHcmFwaGljIENoaXAuCit2aWFmYi50eHQKKwktIGluZm8gb24gdGhlIFZJQSBJbnRlZ3JhdGlv
-biBHcmFwaGljIENoaXAgY29uc29sZSBmcmFtZWJ1ZmZlciBkcml2ZXIuCiB2dDg2MjNmYi50eHQK
-IAktIGluZm8gb24gdGhlIGZiIGRyaXZlciBmb3IgdGhlIGdyYXBoaWNzIGNvcmUgaW4gVklBIFZU
-ODYyMyBjaGlwc2V0cy4KLS0gCjEuNy4yLjIKCg==
---20cf3054a4ad2d03c60495418dab--
+Thanks.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***

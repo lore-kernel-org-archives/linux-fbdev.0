@@ -1,60 +1,55 @@
-From: Joe Perches <joe@perches.com>
-Date: Wed, 17 Nov 2010 16:01:17 +0000
-Subject: Re: [PATCH 01/10] MCDE: Add hardware abstraction layer
-Message-Id: <1290009677.28741.302.camel@Joe-Laptop>
+From: Arnd Hannemann <arnd@arndnet.de>
+Date: Wed, 17 Nov 2010 21:06:19 +0000
+Subject: [PATCH] fbdev: modedb: fix CEA modes
+Message-Id: <1290027979-23272-1-git-send-email-arnd@arndnet.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1289390653-6111-1-git-send-email-jimmy.rubin@stericsson.com>
-	<F45880696056844FA6A73F415B568C6953604E7D94@EXDCVYMBSTM006.EQ1STM.local>
-	<1289936772.28741.188.camel@Joe-Laptop>
-	<201011171055.58201.arnd@arndb.de>
-In-Reply-To: <201011171055.58201.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-On Wed, 2010-11-17 at 10:55 +0100, Arnd Bergmann wrote:
-> On Tuesday 16 November 2010, Joe Perches wrote:
-> > static inline u32 MCDE_channel_path(u32 chnl, u32 fifo, u32 type, u32 ifc, u32 link)
-> > {
-> >         return ((chnl << 16) |
-> >                 (fifo << 12) |
-> >                 (type << 8) |
-> >                 (ifc << 4) |
-> >                 (link << 0));
-> > }
-> > 
-> > #define SET_ENUM_MCDE_CHNLPATH(chnl, fifo, var, type, ifc, link)        \
-> >         MCDE_CHNLPATH_CHNL##chnl##_FIFO##fifo##_##var =                 \
-> >                 MCDE_channel_path(MCDE_CHNL_##chnl,                     \
-> >                                   MCDE_FIFO_##fifo,                     \
-> >                                   MCDE_PORTTYPE_##type,                 \
-> >                                   ifc,                                  \
-> >                                   link)
-> > 
-> > enum mcde_chnl_path {
-> >         /* Channel A */
-> >         SET_ENUM_MCDE_CHNLPATH(A, A, DPI_0,             DPI, 0, 0),
-> >         SET_ENUM_MCDE_CHNLPATH(A, A, DSI_IFC0_0,        DSI, 0, 0),
-> >         SET_ENUM_MCDE_CHNLPATH(A, A, DSI_IFC0_1,        DSI, 0, 1),
-> 
-> While more readable, this has two significant problems:
-> 
-> * You cannot use the result of an inline function in an enum definition
-> * It hides the name of the identifier, making it impossible to use grep
->   or ctags to find the definition when you only know the name
+Some of the modes were missing the correct sync polarities.
+This was causing a corrupt or left shifted picture on my TV.
+Additionally format #35 had a wrong refresh rate and pixel clock.
 
-True, though I would avoid that problem by using a get function/macro
-and not use an enum at all.
+This patch fixes those issues.
 
-There are just 4 items of interest here.  chan, fifo, #1, #2.
-Encoding those in the variable name is a bit of a visual chase and
-a bit mind numbing to read I think.
+Signed-off-by: Arnd Hannemann <arnd@arndnet.de>
+---
+ drivers/video/modedb.c |   11 +++++++----
+ 1 files changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+index 9a0ae6c..08b1c21 100644
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -305,19 +305,22 @@ const struct fb_videomode cea_modes[64] = {
+ 	},
+ 	/* #19: 1280x720p@50Hz */
+ 	[19] = {
+-		NULL, 50, 1280, 720, 13468, 220, 440, 20, 5, 40, 5, 0, FB_VMODE_NONINTERLACED, 0,
++		NULL, 50, 1280, 720, 13468, 220, 440, 20, 5, 40, 5,
++		FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED, 0,
+ 	},
+ 	/* #20: 1920x1080i@50Hz */
+ 	[20] = {
+-		NULL, 50, 1920, 1080, 13480, 148, 528, 15, 5, 528, 5, 0, FB_VMODE_INTERLACED, 0,
++		NULL, 50, 1920, 1080, 13480, 148, 528, 15, 5, 528, 5,
++		FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT, FB_VMODE_INTERLACED, 0,
+ 	},
+ 	/* #32: 1920x1080p@23.98/24Hz */
+ 	[32] = {
+-		NULL, 24, 1920, 1080, 13468, 148, 638, 36, 4, 44, 5, 0, FB_VMODE_NONINTERLACED, 0,
++		NULL, 24, 1920, 1080, 13468, 148, 638, 36, 4, 44, 5,
++		FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED, 0,
+ 	},
+ 	/* #35: (2880)x480p4x@59.94/60Hz */
+ 	[35] = {
+-		NULL, 50, 2880, 480, 11100, 240, 64, 30, 9, 248, 6, 0, FB_VMODE_NONINTERLACED, 0,
++		NULL, 60, 2880, 480, 9250, 240, 64, 30, 9, 248, 6, 0, FB_VMODE_NONINTERLACED, 0,
+ 	},
+ };
  
-> The easiest way is probably to get rid of the macros entirely here
-> and just define the values as hex, with a comment exmplaining what the
-> digits mean.
-
-That'd be fine too.
-
+-- 
+1.7.0.4
 

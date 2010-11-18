@@ -1,7 +1,7 @@
 From: Inki Dae <inki.dae@samsung.com>
-Date: Thu, 18 Nov 2010 11:16:07 +0000
+Date: Thu, 18 Nov 2010 11:19:14 +0000
 Subject: [PATCH 3/3] S5PV210: added MIPI-DSI Driver.
-Message-Id: <1290078967-29097-1-git-send-email-inki.dae@samsung.com>
+Message-Id: <1290079154-29172-1-git-send-email-inki.dae@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <>
 In-Reply-To: <>
@@ -11,7 +11,7 @@ Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
 Signed-off-by: Inki Dae <inki.dae@samsung.com>
-Signed-off-by: Kyoungmin Park <kyoungmin.park@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
  arch/arm/mach-s5pv210/include/mach/regs-clock.h |    3 +-
  arch/arm/plat-samsung/Kconfig                   |    6 +

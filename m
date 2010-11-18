@@ -1,76 +1,117 @@
-From: Inki Dae <inki.dae@samsung.com>
-Date: Wed, 24 Nov 2010 01:41:23 +0000
-Subject: RE: [PATCH 1/4] FB: added a structure for CPU interface to linux/fb.h
-Message-Id: <001501cb8b78$b3c8aa80$1b59ff80$%dae@samsung.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 18 Nov 2010 06:40:19 +0000
+Subject: abs() vs. abs64() (was: Re: [PATCH] fbdev: fix nearest mode search)
+Message-Id: <AANLkTimYDAJr9x00sjGGnDF2vOVXU12qmbnmfuzA5_0h@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1290496504-4867-1-git-send-email-inki.dae@samsung.com>
-In-Reply-To: <1290496504-4867-1-git-send-email-inki.dae@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="windows-1253"
+Content-Transfer-Encoding: base64
+To: michalj@gmail.com, Rolf Eike Beer <eike-kernel@sf-tec.de>, Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
 
-Hello.
-
-Below is my comments
-Thank you.
-
-> -----Original Message-----
-> From: Sergei Shtylyov [mailto:sshtylyov@mvista.com]
-> Sent: Wednesday, November 24, 2010 1:02 AM
-> To: Inki Dae
-> Cc: linux-fbdev@vger.kernel.org; linux-arm-kernel@lists.infradead.org;
-> kyungmin.park@samsung.com; kgene.kim@samsung.com; akpm@linux-
-> foundation.org; lethal@linux-sh.org
-> Subject: Re: [PATCH 1/4] FB: added a structure for CPU interface to
-> linux/fb.h
-> 
-> Hello.
-> 
-> Inki Dae wrote:
-> 
-> > RGB or CPU interfaces could be used as display mode but framebuffer
-> > framework doesn't consider CPU interface so I added this structure
-> > because fb_cpumode structure could be used commonly.
-> 
-> > Signed-off-by: Inki Dae <inki.dae@samsung.com>
-> > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> > ---
-> >  include/linux/fb.h |   12 ++++++++++++
-> >  1 files changed, 12 insertions(+), 0 deletions(-)
-> 
-> > diff --git a/include/linux/fb.h b/include/linux/fb.h
-> > index 7fca3dc..9b9842c 100644
-> > --- a/include/linux/fb.h
-> > +++ b/include/linux/fb.h
-> > @@ -1147,6 +1147,18 @@ struct fb_videomode {
-> >  	u32 flag;
-> >  };
-> >
-> > +struct fb_cpumode {
-> > +	const char *name;	/* optional */
-> > +	u32 refresh;		/* optional */
-> > +	u32 xres;
-> > +	u32 yres;
-> 
->     I think that those two fields should happily fit into 'u16' type.
-> 
-I agree to your opinion, but I just followed existing struct fb_videomode.
-Do you or everybody have any idea for whether changing typef('u32' -> 'u16')
-or not?
-if it is more better to modify type then I will correct it.
-
-
-> > +	u32 pixclock;
-> > +	u32 cs_setup;
-> > +	u32 wr_setup;
-> > +	u32 wr_act;
-> > +	u32 wr_hold;
-> 
->     Suspecting the same about the above 4 fields...
-> 
-
-Same.
-
-> WBR, Sergei
-
+W0Rvbid0IHVzZSB0aGUgb2Jzb2xldGUgbGludXgtZmJkZXYtZGV2ZWwgYWRkcmVzc10KCk9uIFRo
+dSwgTm92IDE4LCAyMDEwIGF0IDAwOjA4LCBNaWNoYWwgSmFudXN6ZXdza2kgPG1pY2hhbGpAZ21h
+aWwuY29tPiB3cm90ZToKPiBJbiB0aGUgZnJhbWVidWZmZXIgc3Vic3lzdGVtIHRoZSBhYnMoKSBt
+YWNybyBpcyBvZnRlbiB1c2VkIGFzIGEgcGFydCBvZgo+IHRoZSBjYWxjdWxhdGlvbiBvZiBhIE1h
+bmhhdHRhbiBtZXRyaWMsIHdoaWNoIGluIHR1cm4gaXMgdXNlZCBhcyBhIG1lYXN1cmUKPiBvZiBz
+aW1pbGFyaXR5IGJldHdlZW4gdmlkZW8gbW9kZXMuIMKgVGhlIGFyZ3VtZW50cyBvZiBhYnMoKSBh
+cmUgc29tZXRpbWVzCj4gdW5zaWduZWQgbnVtYmVycy4gwqBUaGlzIHdvcmtlZCBmaW5lIHVudGls
+IGNvbW1pdCBhNDljNTljMCwgd2hpY2ggY2hhbmdlZAo+IHRoZSBkZWZpbml0aW9uIG9mIGFicygp
+IHRvIHByZXZlbnQgdHJ1bmNhdGlvbi4gwqBBcyBhIHJlc3VsdCBvZiB0aGlzCj4gY2hhbmdlLCBp
+biB0aGUgZm9sbG93aW5nIHBpZWNlIG9mIGNvZGU6Cj4KPiDCoHUzMiBhID0gMCwgYiA9IDE7Cj4g
+wqB1MzIgYyA9IGFicyhhIC0gYik7CgpJbmRlZWQsIHRoZSBkaWZmZXJlbmNlIG9mIDIgbnVtYmVy
+cyBpcyB1bnNpZ25lZCwgYXMgcGVyIEMuCgo+ICdjJyB3aWxsIGVuZCB1cCB3aXRoIGEgdmFsdWUg
+b2YgMHhmZmZmZmZmZiBpbnN0ZWFkIG9mIHRoZSBleHBlY3RlZCAweDEuCgpUaGlzIGhhcHBlbnMg
+b24gNjQtYml0IG9ubHksIHJpZ2h0PwoKQW55d2F5LCBJIHRoaW5rIGNvbW1pdCBhNDljNTljMCBp
+cyB3cm9uZzogYWJzKCkgb3BlcmF0ZXMgb24gc2lnbmVkCigzMi1iaXQpIG51bWJlcnMuIEZvciBs
+YXJnZXIgKDY0LWJpdCBzaWduZWQpIG51bWJlcnMsIHdlIGhhdmUgYWJzNjQoKS4KCj4gQSBwcm9i
+bGVtIGNhdXNlZCBieSB0aGlzIGNoYW5nZSBhbmQgdmlzaWJsZSBieSB0aGUgZW5kIHVzZXIgaXMg
+dGhhdAo+IGZyYW1lYnVmZmVyIGRyaXZlcnMgcmVseWluZyBvbiBmdW5jdGlvbnMgZnJvbSBtb2Rl
+ZGIuYyB3aWxsIGZhaWwgdG8KPiBmaW5kIGhpZ2ggcmVzb2x1dGlvbiB2aWRlbyBtb2RlcyBzaW1p
+bGFyIHRvIHRoYXQgZXhwbGljaXRseSByZXF1ZXN0ZWQKPiBieSB0aGUgdXNlciBpZiBhbiBleGFj
+dCBtYXRjaCBjYW5ub3QgYmUgZm91bmQgKHNlZSBlLmcuCj4gaHR0cHM6Ly9idWdzLmdlbnRvby5v
+cmcvc2hvd19idWcuY2dpP2lkKTY1MzkpLgo+Cj4gRml4IHRoaXMgcHJvYmxlbSBieSBjYXN0aW5n
+IGFsbCBhcmd1bWVudHMgb2YgYWJzKCkgdG8gYW4gaW50IHByaW9yCj4gdG8gdGhlIG1hY3JvIGV2
+YWx1YXRpb24gaW4gbW9kZWRiLmMgYW5kIHV2ZXNhZmIuYy4KPgo+IFNpZ25lZC1vZmYtYnk6IE1p
+Y2hhbCBKYW51c3pld3NraSA8bWljaGFsakBnbWFpbC5jb20+Cj4gLS0tCj4gZGlmZiAtLWdpdCBh
+L2RyaXZlcnMvdmlkZW8vbW9kZWRiLmMgYi9kcml2ZXJzL3ZpZGVvL21vZGVkYi5jCj4gaW5kZXgg
+MGE0ZGJkYy4uODc4YmVhMSAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL21vZGVkYi5jCj4g
+KysrIGIvZHJpdmVycy92aWRlby9tb2RlZGIuYwo+IEBAIC02MzYsOCArNjM2LDEwIEBAIGRvbmU6
+Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBpZiAocmVmcmVzaF9zcGVjaWZp
+ZWQgJiYgZGJbaV0ucmVmcmVzaCA9IHJlZnJlc2gpIHsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoHJldHVybiAxOwo+IMKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgfSBlbHNlIHsKPiAtIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIGlmIChhYnMoZGJbaV0ucmVmcmVzaCAtIHJlZnJlc2gpIDwgZGlmZikg
+ewo+IC0gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgZGlmZiA9IGFicyhkYltpXS5yZWZyZXNoIC0gcmVmcmVzaCk7Cj4gKyDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBpZiAoYWJzKChpbnQpKGRiW2ldLnJl
+ZnJlc2ggLSByZWZyZXNoKSkgPAo+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgZGlmZikgewo+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgZGlmZiA9IGFicygoaW50KShkYltpXS5yZWZy
+ZXNoIC0KPiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIHJlZnJlc2gpKTsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGJlc3QgPSBpOwo+IMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgfQo+IMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgfQo+IEBAIC02NTQsOCArNjU2LDggQEAgZG9uZToKPiDCoCDC
+oCDCoCDCoGZvciAoaSA9IDA7IGkgPCBkYnNpemU7IGkrKykgewo+IMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgRFBSSU5USygiVHJ5aW5nICVpeCVpXG4iLCBkYltpXS54cmVzLCBkYltpXS55cmVzKTsK
+PiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGlmICghZmJfdHJ5X21vZGUodmFyLCBpbmZvLCAmZGJb
+aV0sIGJwcCkpIHsKPiAtIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIHRkaWZmID0g
+YWJzKGRiW2ldLnhyZXMgLSB4cmVzKSArCj4gLSDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCBhYnMoZGJbaV0ueXJlcyAtIHlyZXMpOwo+ICsgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgwqAgdGRpZmYgPSBhYnMoKGludCkoZGJbaV0ueHJlcyAtIHhyZXMp
+KSArCj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBhYnMo
+KGludCkoZGJbaV0ueXJlcyAtIHlyZXMpKTsKPgo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgLyoKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCAqIFBlbmFs
+aXplIG1vZGVzIHdpdGggcmVzb2x1dGlvbnMgc21hbGxlcgo+IEBAIC04NTEsMTMgKzg1MywxMyBA
+QCBjb25zdCBzdHJ1Y3QgZmJfdmlkZW9tb2RlICpmYl9maW5kX25lYXJlc3RfbW9kZShjb25zdCBz
+dHJ1Y3QgZmJfdmlkZW9tb2RlICptb2RlLAo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgbW9kZWxp
+c3QgPSBsaXN0X2VudHJ5KHBvcywgc3RydWN0IGZiX21vZGVsaXN0LCBsaXN0KTsKPiDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoGNtb2RlID0gJm1vZGVsaXN0LT5tb2RlOwo+Cj4gLSDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCBkID0gYWJzKGNtb2RlLT54cmVzIC0gbW9kZS0+eHJlcykgKwo+IC0gwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgYWJzKGNtb2RlLT55cmVzIC0gbW9kZS0+eXJlcyk7
+Cj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCBkID0gYWJzKChpbnQpKGNtb2RlLT54cmVzIC0gbW9k
+ZS0+eHJlcykpICsKPiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGFicygoaW50
+KShjbW9kZS0+eXJlcyAtIG1vZGUtPnlyZXMpKTsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGlm
+IChkaWZmID4gZCkgewo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgZGlmZiA9
+IGQ7Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBiZXN0ID0gY21vZGU7Cj4g
+wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqB9IGVsc2UgaWYgKGRpZmYgPSBkKSB7Cj4gLSDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBkID0gYWJzKGNtb2RlLT5yZWZyZXNoIC0gbW9kZS0+
+cmVmcmVzaCk7Cj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBkID0gYWJzKChp
+bnQpKGNtb2RlLT5yZWZyZXNoIC0gbW9kZS0+cmVmcmVzaCkpOwo+IMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgaWYgKGRpZmZfcmVmcmVzaCA+IGQpIHsKPiDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGRpZmZfcmVmcmVzaCA9IGQ7Cj4gwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBiZXN0ID0gY21vZGU7
+Cj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vdXZlc2FmYi5jIGIvZHJpdmVycy92aWRlby91
+dmVzYWZiLmMKPiBpbmRleCA3Yjg4MzllLi42NjIxNDI3IDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMv
+dmlkZW8vdXZlc2FmYi5jCj4gKysrIGIvZHJpdmVycy92aWRlby91dmVzYWZiLmMKPiBAQCAtMzIw
+LDkgKzMyMCw5IEBAIHN0YXRpYyBpbnQgdXZlc2FmYl92YmVfZmluZF9tb2RlKHN0cnVjdCB1dmVz
+YWZiX3BhciAqcGFyLAo+IMKgIMKgIMKgIMKgaW50IGksIG1hdGNoID0gLTEsIGggPSAwLCBkID0g
+MHg3ZmZmZmZmZjsKPgo+IMKgIMKgIMKgIMKgZm9yIChpID0gMDsgaSA8IHBhci0+dmJlX21vZGVz
+X2NudDsgaSsrKSB7Cj4gLSDCoCDCoCDCoCDCoCDCoCDCoCDCoCBoID0gYWJzKHBhci0+dmJlX21v
+ZGVzW2ldLnhfcmVzIC0geHJlcykgKwo+IC0gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgYWJz
+KHBhci0+dmJlX21vZGVzW2ldLnlfcmVzIC0geXJlcykgKwo+IC0gwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgYWJzKGRlcHRoIC0gcGFyLT52YmVfbW9kZXNbaV0uZGVwdGgpOwo+ICsgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgaCA9IGFicygoaW50KShwYXItPnZiZV9tb2Rlc1tpXS54X3JlcyAtIHhy
+ZXMpKSArCj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBhYnMoKGludCkocGFyLT52YmVf
+bW9kZXNbaV0ueV9yZXMgLSB5cmVzKSkgKwo+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+YWJzKChpbnQpKGRlcHRoIC0gcGFyLT52YmVfbW9kZXNbaV0uZGVwdGgpKTsKPgo+IMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgLyoKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCAqIFdlIGhhdmUgYW4g
+ZXhhY3QgbWF0Y2ggaW4gdGVybXMgb2YgcmVzb2x1dGlvbgo+IEBAIC0xMzc1LDcgKzEzNzUsNyBA
+QCBzdGF0aWMgaW50IHV2ZXNhZmJfY2hlY2tfdmFyKHN0cnVjdCBmYl92YXJfc2NyZWVuaW5mbyAq
+dmFyLAo+IMKgIMKgIMKgIMKgICogd2hpY2ggaXMgdGhlb3JldGljYWxseSBpbmNvcnJlY3QsIGJ1
+dCB3aGljaCB3ZSdsbCB0cnkgdG8gaGFuZGxlCj4gwqAgwqAgwqAgwqAgKiBoZXJlLgo+IMKgIMKg
+IMKgIMKgICovCj4gLSDCoCDCoCDCoCBpZiAoZGVwdGggPSAwIHx8IGFicyhkZXB0aCAtIHZhci0+
+Yml0c19wZXJfcGl4ZWwpID49IDgpCj4gKyDCoCDCoCDCoCBpZiAoZGVwdGggPSAwIHx8IGFicygo
+aW50KShkZXB0aCAtIHZhci0+Yml0c19wZXJfcGl4ZWwpKSA+PSA4KQo+IMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgZGVwdGggPSB2YXItPmJpdHNfcGVyX3BpeGVsOwo+Cj4gwqAgwqAgwqAgwqBtYXRj
+aCA9IHV2ZXNhZmJfdmJlX2ZpbmRfbW9kZShwYXIsIHZhci0+eHJlcywgdmFyLT55cmVzLCBkZXB0
+aCwKCkdye29ldGplLGVldGluZ31zLAoKwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgR2VlcnQKCi0tCkdlZXJ0IFV5dHRlcmhvZXZlbiAtLSBUaGVyZSdzIGxvdHMgb2YgTGludXgg
+YmV5b25kIGlhMzIgLS0gZ2VlcnRAbGludXgtbTY4ay5vcmcKCkluIHBlcnNvbmFsIGNvbnZlcnNh
+dGlvbnMgd2l0aCB0ZWNobmljYWwgcGVvcGxlLCBJIGNhbGwgbXlzZWxmIGEgaGFja2VyLiBCdXQK
+d2hlbiBJJ20gdGFsa2luZyB0byBqb3VybmFsaXN0cyBJIGp1c3Qgc2F5ICJwcm9ncmFtbWVyIiBv
+ciBzb21ldGhpbmcgbGlrZSB0aGF0LgrCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoMKgIMKgwqAgLS0gTGludXMgVG9ydmFsZHMK//Tounsubscribefromthislisv/send
+thelinf/unsubscribelinux/fbdev/inthebodyofamessagetomajordomo/vger/kernel/or
+gMoremajordomoinfoathttp///vger/kernel/org/majordomo/info/htCg==

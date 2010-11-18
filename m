@@ -1,69 +1,39 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Wed, 17 Nov 2010 12:28:11 +0000
-Subject: Re: [PATCH v4] OMAP3: DSS: Kconfig changes to enable display
-Message-Id: <1289996891.26444.16.camel@tubuntu>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Thu, 18 Nov 2010 06:18:50 +0000
+Subject: Re: [PATCH v4] OMAP3: DSS: Kconfig changes to enable display options on OMAP3
+Message-Id: <20101118061850.GB17539@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1288063074-8879-1-git-send-email-samreen@ti.com>
-	 <FCCFB4CDC6E5564B9182F639FC356087034C101F0B@dbde02.ent.ti.com>
-	 <1289915437.2668.107.camel@tubuntu> <20101116193843.GZ9264@atomide.com>
-	 <8762vxcaco.fsf@deeprootsystems.com>  <20101116201054.GC9264@atomide.com>
-In-Reply-To: <20101116201054.GC9264@atomide.com>
+References: <1288063074-8879-1-git-send-email-samreen@ti.com> <FCCFB4CDC6E5564B9182F639FC356087034C101F0B@dbde02.ent.ti.com> <1289915437.2668.107.camel@tubuntu> <20101116193843.GZ9264@atomide.com> <8762vxcaco.fsf@deeprootsystems.com> <20101116201054.GC9264@atomide.com> <1289996891.26444.16.camel@tubuntu>
+In-Reply-To: <1289996891.26444.16.camel@tubuntu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: ext Tony Lindgren <tony@atomide.com>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>, "ext Nilofer, Samreen" <samreen@ti.com>, Grazvydas Ignotas <notasas@gmail.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>, "Quadros Roger (Nokia-MS/Helsinki)" <roger.quadros@nokia.com>, "Guruswamy, Senthilvadivu" <svadivu@ti.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: ext Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@deeprootsystems.com>, "ext Nilofer, Samreen" <samreen@ti.com>, Grazvydas Ignotas <notasas@gmail.com>, "Hiremath, Vaibhav" <hvaibhav@ti.com>, "Quadros Roger (Nokia-MS/Helsinki)" <roger.quadros@nokia.com>, "Guruswamy, Senthilvadivu" <svadivu@ti.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-On Tue, 2010-11-16 at 21:10 +0100, ext Tony Lindgren wrote:
-> * Kevin Hilman <khilman@deeprootsystems.com> [101116 11:45]:
-> > Tony Lindgren <tony@atomide.com> writes:
-> > 
-> > > * Tomi Valkeinen <tomi.valkeinen@nokia.com> [101116 05:41]:
-> > >> On Tue, 2010-11-16 at 07:09 +0100, ext Nilofer, Samreen wrote:
-> > >> > Hi,
-> > >> >   Any more comments on this patch?
-> > >> 
-> > >> I'm not sure if enabling kernel options by default is a good thing.
-> > >> Somehow I remember that enabling things by default is not looked kindly
-> > >> at. Shouldn't they be enabled in the arch/arm/configs config file, if
-> > >> they are wanted?
-> > >> 
-> > >> Tony, do you have opinnion on this? Should DSS features be enabled by
-> > >> default in the Kconfig files, or only in the board config file?
-> > >
-> > > The best thing would be to have DSS y if ARCH_OMAP2PLUS or similar,
-> > > then have all the features built in and pass the configuration options
-> > > in platform_data. That still allows disabling certain features with
-> > > Kconfig if needed for memory consumption etc. But the omap2plus_defconfig
-> > > should "just work" on all the boards.
-> > 
-> > Personally, I'd much rather see DSS core and optional features default
-> > to being built as a module.
-> > 
-> > Other than a splash screen, there's no reason DSS is needed for a
-> > minimal boot.
+On Wed, Nov 17, 2010 at 02:28:11PM +0200, Tomi Valkeinen wrote:
+> On Tue, 2010-11-16 at 21:10 +0100, ext Tony Lindgren wrote:
+> > Sure a module would be even better. My point is that the selection of
+> > all the features should be enabled by default and the board options come
+> > from platform_data.
 > 
-> Sure a module would be even better. My point is that the selection of
-> all the features should be enabled by default and the board options come
-> from platform_data.
+> Ok, let's build DSS & all panel drivers as modules by default.
+> 
+> Somehow I've gotten the impression from linux ml that enabling features
+> by default is bad. But perhaps it's more about intervening features than
+> normal drivers.
+> 
+The general rule is to avoid default enabling unless you really need it,
+but it still remains optional (which is why it's not being selected,
+instead). Some, like gpiolib, have come up with WANT/NEED options for the
+platform code to select in order to work out the desired behaviour, and
+you may benefit from a similar approach for your subsystem if it's really
+that integral for some parts.
 
-Ok, let's build DSS & all panel drivers as modules by default.
+The flip side of course is that if you expect your users to primarily be
+using the defconfigs provided, you can simply leave it default disabled
+in the Kconfig and set the options you want in the defconfigs.
 
-Somehow I've gotten the impression from linux ml that enabling features
-by default is bad. But perhaps it's more about intervening features than
-normal drivers.
-
-Samreen, will you change the patch to set DSS & panel drivers to be
-built as modules by default? Optimally all display interfaces should be
-enabled, but I believe at least SDI and DSI are currently slightly
-broken, because they prevent DSS from initializing if SDI/DSI regulator
-is not defined in the board file. So perhaps we should start with only
-DPI and VENC enabled (plus all the DPI panels).
-
-Also, this patch could be based on top of Bryan Wu's new generic panel
-patch set, which I'll perhaps apply today to my tree if I find no more
-to comment about.
-
- Tomi
-
-
+Unless you can say with certainty that all OMAP3 boards are going to want
+DSS enabled or modular by default, it's almost always better to just
+leave it up to the defconfigs.

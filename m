@@ -1,65 +1,44 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Tue, 02 Nov 2010 11:27:20 +0000
-Subject: [PATCH 2/4 v2] fbdev: sh_mobile_hdmi: improve support for more video
-Message-Id: <Pine.LNX.4.64.1011021221190.4552@axis700.grange>
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Date: Fri, 19 Nov 2010 21:58:43 +0000
+Subject: [PATCH 1/9] sisfb: delete obsolete PCI ROM bug workaround
+Message-Id: <1290203931-25188-2-git-send-email-aaro.koskinen@iki.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1290203931-25188-1-git-send-email-aaro.koskinen@iki.fi>
+In-Reply-To: <1290203931-25188-1-git-send-email-aaro.koskinen@iki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: thomas@winischhofer.net, aaro.koskinen@iki.fi
 
-Configure pre-programmed VIC modes for VGA (640x480@60) and 720x576@50
-modes, change PHY mode selection to be based on pixel clock frequency.
+Delete a workaround for a PCI ROM bug that has been fixed ages ago by
+the commit 761a3ac08c63718dacde12aaf0ec6d6760e8c2b7.
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>
 ---
+ drivers/video/sis/sis_main.c |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
 
-v2: no change
-
- drivers/video/sh_mobile_hdmi.c |   14 ++++++++++----
- 1 files changed, 10 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-index ff7f785..c474b0bd 100644
---- a/drivers/video/sh_mobile_hdmi.c
-+++ b/drivers/video/sh_mobile_hdmi.c
-@@ -466,7 +466,7 @@ static void sh_hdmi_audio_config(struct sh_hdmi *hdmi)
-  */
- static void sh_hdmi_phy_config(struct sh_hdmi *hdmi)
- {
--	if (hdmi->var.yres > 480) {
-+	if (hdmi->var.pixclock < 30000) {
- 		/* 720p, 8bit, 74.25MHz. Might need to be adjusted for other formats */
- 		/*
- 		 * [1:0]	Speed_A
-@@ -570,8 +570,12 @@ static void sh_hdmi_avi_infoframe_setup(struct sh_hdmi *hdmi)
- 	 */
- 	if (hdmi->var.yres = 1080 && hdmi->var.xres = 1920)
- 		vic = 16;
-+	else if (hdmi->var.yres = 576 && hdmi->var.xres = 720)
-+		vic = 17;
- 	else if (hdmi->var.yres = 480 && hdmi->var.xres = 720)
- 		vic = 2;
-+	else if (hdmi->var.yres = 480 && hdmi->var.xres = 640)
-+		vic = 1;
- 	else
- 		vic = 4;
- 	hdmi_write(hdmi, vic, HDMI_CTRL_PKT_BUF_ACCESS_PB4);
-@@ -824,9 +828,11 @@ static int sh_hdmi_read_edid(struct sh_hdmi *hdmi, unsigned long *hdmi_rate,
- 	if (!found)
- 		return -ENXIO;
+diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+index 3dde12b..1073b70 100644
+--- a/drivers/video/sis/sis_main.c
++++ b/drivers/video/sis/sis_main.c
+@@ -4114,14 +4114,6 @@ sisfb_find_rom(struct pci_dev *pdev)
+ 			if(sisfb_check_rom(rom_base, ivideo)) {
  
--	if ((found->xres = 720 && found->yres = 480) ||
--	    (found->xres = 1280 && found->yres = 720) ||
--	    (found->xres = 1920 && found->yres = 1080))
-+	if ((found->xres = 640 && found->yres = 480 && found->refresh = 60) ||
-+	    (found->xres = 720 && found->yres = 480 && found->refresh = 60) ||
-+	    (found->xres = 720 && found->yres = 576 && found->refresh = 50) ||
-+	    (found->xres = 1280 && found->yres = 720 && found->refresh = 60) ||
-+	    (found->xres = 1920 && found->yres = 1080 && found->refresh = 60))
- 		hdmi->preprogrammed_mode = true;
- 	else
- 		hdmi->preprogrammed_mode = false;
+ 				if((myrombase = vmalloc(65536))) {
+-
+-					/* Work around bug in pci/rom.c: Folks forgot to check
+-					 * whether the size retrieved from the BIOS image eventually
+-					 * is larger than the mapped size
+-					 */
+-					if(pci_resource_len(pdev, PCI_ROM_RESOURCE) < romsize)
+-						romsize = pci_resource_len(pdev, PCI_ROM_RESOURCE);
+-
+ 					memcpy_fromio(myrombase, rom_base,
+ 							(romsize > 65536) ? 65536 : romsize);
+ 				}
 -- 
-1.7.2.3
+1.5.6.5
 

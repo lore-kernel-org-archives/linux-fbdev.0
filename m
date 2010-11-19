@@ -1,7 +1,7 @@
 From: Inki Dae <inki.dae@samsung.com>
-Date: Thu, 18 Nov 2010 11:19:14 +0000
+Date: Fri, 19 Nov 2010 01:29:46 +0000
 Subject: [PATCH 3/3] S5PV210: added MIPI-DSI Driver.
-Message-Id: <1290079154-29172-1-git-send-email-inki.dae@samsung.com>
+Message-Id: <1290130186-7877-1-git-send-email-inki.dae@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <>
 In-Reply-To: <>
@@ -9,6 +9,19 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
+
+S5PV210: add MIPI-DSI Driver
+
+driver features:
+. Maximum resolution ranges up to XGA (1024x760)
+. CSIS0 supports 1,2,3 or 4 data lanes
+. CSIS1 supports 1 or 2 data lanes
+. supports pixel format : 16bpp, 18bpp packed,
+    18bpp loosely packed (3 byte format), and 24bpp
+. supports RGB interface for video image from display controller
+. support I80 interface for command mode image input from display controller
+. supports PMS control inteerface for PLL to configure byte clock frequency
+. supports Prescaler to generate escape clock from byte clock
 
 Signed-off-by: Inki Dae <inki.dae@samsung.com>
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
@@ -62,7 +75,7 @@ index dcd6eff..cadbe32 100644
  
 +config S5PV210_SETUP_DSIM
 +	bool
-+	depends on REGULATOR 
++	depends on REGULATOR
 +	help
 +	  Common setup code for MIPI-DSIM
 +
@@ -1087,8 +1100,8 @@ index 27c1fb4..6cdb4bc 100644
 +	tristate "Samsung SoC MIPI-DSI support."
 +	depends on FB_S3C && ARCH_S5PV210
 +	default n
-+	---help---
-+	  This enables support for MIPI-DSI device.
++	help
++	  This enables support for MIPI-DSI device for samsung SoC S5PV210.
 +
  config FB_NUC900
          bool "NUC900 LCD framebuffer support"

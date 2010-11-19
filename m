@@ -1,232 +1,144 @@
-From: Samreen <samreen@ti.com>
-Date: Thu, 04 Nov 2010 11:40:42 +0000
-Subject: [PATCH v2 2/2] OMAP3630: DSS2: Enable Pre-Multiplied Alpha Support
-Message-Id: <1288870122-22836-3-git-send-email-samreen@ti.com>
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Date: Fri, 19 Nov 2010 21:58:51 +0000
+Subject: [PATCH 9/9] sisfb: delete osdef.h
+Message-Id: <1290203931-25188-10-git-send-email-aaro.koskinen@iki.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1288870122-22836-1-git-send-email-samreen@ti.com>
- <1288870122-22836-2-git-send-email-samreen@ti.com>
-In-Reply-To: <1288870122-22836-2-git-send-email-samreen@ti.com>
+References: <1290203931-25188-1-git-send-email-aaro.koskinen@iki.fi>
+In-Reply-To: <1290203931-25188-1-git-send-email-aaro.koskinen@iki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>, ville.syrjala@nokia.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Rajkumar N <rajkumar.nagarajan@ti.com>, Sudeep Basavaraj <sudeep.basavaraj@ti.com>, Samreen <samreen@ti.com>, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: thomas@winischhofer.net, aaro.koskinen@iki.fi
 
-From: Rajkumar N <rajkumar.nagarajan@ti.com>
+The file is not needed.
 
-Enable dss to process color formats with pre-mulitplied alpha.
-With this we can have alpha values defined for each pixel
-and hence can have different blending values for each pixel.
-sysfs entry has been created for this and pre-multiplied alpha
-support is turned off by default.
-
-Signed-off-by: Sudeep Basavaraj <sudeep.basavaraj@ti.com>
-Signed-off-by: Rajkumar N <rajkumar.nagarajan@ti.com>
-Signed-off-by: Samreen <samreen@ti.com>
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>
 ---
- arch/arm/plat-omap/include/plat/display.h |    1 +
- drivers/video/omap2/dss/dispc.c           |   30 ++++++++++++++++-----
- drivers/video/omap2/dss/dss.h             |    3 +-
- drivers/video/omap2/dss/manager.c         |    5 +++-
- drivers/video/omap2/dss/overlay.c         |   41 +++++++++++++++++++++++++++++
- 5 files changed, 71 insertions(+), 9 deletions(-)
+ drivers/video/sis/init.h       |    1 -
+ drivers/video/sis/init301.h    |    1 -
+ drivers/video/sis/initextlfb.c |    1 -
+ drivers/video/sis/osdef.h      |   61 ----------------------------------------
+ drivers/video/sis/sis.h        |    1 -
+ 5 files changed, 0 insertions(+), 65 deletions(-)
+ delete mode 100644 drivers/video/sis/osdef.h
 
-diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
-index c915a66..d433baf 100644
---- a/arch/arm/plat-omap/include/plat/display.h
-+++ b/arch/arm/plat-omap/include/plat/display.h
-@@ -268,6 +268,7 @@ struct omap_overlay_info {
- 	u16 out_width;	/* if 0, out_width = width */
- 	u16 out_height;	/* if 0, out_height = height */
- 	u8 global_alpha;
-+	u8 pre_mult_alpha;
- };
+diff --git a/drivers/video/sis/init.h b/drivers/video/sis/init.h
+index 79aec28..ee8ed3c 100644
+--- a/drivers/video/sis/init.h
++++ b/drivers/video/sis/init.h
+@@ -53,7 +53,6 @@
+ #ifndef _INIT_H_
+ #define _INIT_H_
  
- struct omap_overlay {
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index fa40fa5..2179618 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -773,13 +773,26 @@ static void _dispc_set_vid_size(enum omap_plane plane, int width, int height)
- 	dispc_write_reg(vsi_reg[plane-1], val);
- }
+-#include "osdef.h"
+ #include "initdef.h"
  
-+static void _dispc_set_pre_mult_alpha(enum omap_plane plane, bool enable)
-+{
-+	if (!dss_has_feature(FEAT_PRE_MULT_ALPHA))
-+		return;
-+
-+	if (!dss_has_feature(FEAT_GLOBAL_ALPHA_VID1) &&
-+		plane = OMAP_DSS_VIDEO1)
-+		return;
-+
-+	REG_FLD_MOD(dispc_reg_att[plane], enable ? 1 : 0, 28, 28);
-+}
-+
- static void _dispc_setup_global_alpha(enum omap_plane plane, u8 global_alpha)
- {
- 	if (!dss_has_feature(FEAT_GLOBAL_ALPHA))
- 		return;
+ #include "vgatypes.h"
+diff --git a/drivers/video/sis/init301.h b/drivers/video/sis/init301.h
+index 2677152..e1fd31d 100644
+--- a/drivers/video/sis/init301.h
++++ b/drivers/video/sis/init301.h
+@@ -53,7 +53,6 @@
+ #ifndef  _INIT301_H_
+ #define  _INIT301_H_
  
--	BUG_ON(!dss_has_feature(FEAT_GLOBAL_ALPHA_VID1) &&
--			plane = OMAP_DSS_VIDEO1);
-+	if (!dss_has_feature(FEAT_GLOBAL_ALPHA_VID1) &&
-+		plane = OMAP_DSS_VIDEO1)
-+		return;
+-#include "osdef.h"
+ #include "initdef.h"
  
- 	if (plane = OMAP_DSS_GFX)
- 		REG_FLD_MOD(DISPC_GLOBAL_ALPHA, global_alpha, 7, 0);
-@@ -1507,7 +1520,8 @@ static int _dispc_setup_plane(enum omap_plane plane,
- 		bool ilace,
- 		enum omap_dss_rotation_type rotation_type,
- 		u8 rotation, int mirror,
--		u8 global_alpha)
-+		u8 global_alpha,
-+		u8 pre_mult_alpha)
- {
- 	const int maxdownscale = cpu_is_omap34xx() ? 4 : 2;
- 	bool five_taps = 0;
-@@ -1693,8 +1707,8 @@ static int _dispc_setup_plane(enum omap_plane plane,
+ #include "vgatypes.h"
+diff --git a/drivers/video/sis/initextlfb.c b/drivers/video/sis/initextlfb.c
+index 1975308..9dec64d 100644
+--- a/drivers/video/sis/initextlfb.c
++++ b/drivers/video/sis/initextlfb.c
+@@ -25,7 +25,6 @@
+  * Author:	Thomas Winischhofer <thomas@winischhofer.net>
+  */
  
- 	_dispc_set_rotation_attrs(plane, rotation, mirror, color_mode);
+-#include "osdef.h"
+ #include "initdef.h"
+ #include "vgatypes.h"
+ #include "vstruct.h"
+diff --git a/drivers/video/sis/osdef.h b/drivers/video/sis/osdef.h
+deleted file mode 100644
+index 5baaa79..0000000
+--- a/drivers/video/sis/osdef.h
++++ /dev/null
+@@ -1,61 +0,0 @@
+-/* $XFree86$ */
+-/* $XdotOrg$ */
+-/*
+- * OS depending defines
+- *
+- * Copyright (C) 2001-2005 by Thomas Winischhofer, Vienna, Austria
+- *
+- * If distributed as part of the Linux kernel, the following license terms
+- * apply:
+- *
+- * * This program is free software; you can redistribute it and/or modify
+- * * it under the terms of the GNU General Public License as published by
+- * * the Free Software Foundation; either version 2 of the named License,
+- * * or any later version.
+- * *
+- * * This program is distributed in the hope that it will be useful,
+- * * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+- * * GNU General Public License for more details.
+- * *
+- * * You should have received a copy of the GNU General Public License
+- * * along with this program; if not, write to the Free Software
+- * * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA
+- *
+- * Otherwise, the following license terms apply:
+- *
+- * * Redistribution and use in source and binary forms, with or without
+- * * modification, are permitted provided that the following conditions
+- * * are met:
+- * * 1) Redistributions of source code must retain the above copyright
+- * *    notice, this list of conditions and the following disclaimer.
+- * * 2) Redistributions in binary form must reproduce the above copyright
+- * *    notice, this list of conditions and the following disclaimer in the
+- * *    documentation and/or other materials provided with the distribution.
+- * * 3) The name of the author may not be used to endorse or promote products
+- * *    derived from this software without specific prior written permission.
+- * *
+- * * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+- * * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+- * * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+- * * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+- * * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- * * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+- * * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+- * * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+- * * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- *
+- * Author: 	Thomas Winischhofer <thomas@winischhofer.net>
+- *		Silicon Integrated Systems, Inc. (used by permission)
+- *
+- */
+-
+-#ifndef _SIS_OSDEF_H_
+-#define _SIS_OSDEF_H_
+-
+-/**********************************************************************/
+-/*  LINUX KERNEL                                                      */
+-/**********************************************************************/
+-
+-#endif  /* _OSDEF_H_ */
+diff --git a/drivers/video/sis/sis.h b/drivers/video/sis/sis.h
+index 7c5710e..80d89d3 100644
+--- a/drivers/video/sis/sis.h
++++ b/drivers/video/sis/sis.h
+@@ -24,7 +24,6 @@
+ #ifndef _SIS_H_
+ #define _SIS_H_
  
--	if (plane != OMAP_DSS_VIDEO1)
--		_dispc_setup_global_alpha(plane, global_alpha);
-+	_dispc_set_pre_mult_alpha(plane, pre_mult_alpha);
-+	_dispc_setup_global_alpha(plane, global_alpha);
+-#include "osdef.h"
+ #include <video/sisfb.h>
  
- 	return 0;
- }
-@@ -3139,7 +3153,8 @@ int dispc_setup_plane(enum omap_plane plane,
- 		       enum omap_color_mode color_mode,
- 		       bool ilace,
- 		       enum omap_dss_rotation_type rotation_type,
--		       u8 rotation, bool mirror, u8 global_alpha)
-+		       u8 rotation, bool mirror, u8 global_alpha,
-+		       u8 pre_mult_alpha)
- {
- 	int r = 0;
- 
-@@ -3161,7 +3176,8 @@ int dispc_setup_plane(enum omap_plane plane,
- 			   color_mode, ilace,
- 			   rotation_type,
- 			   rotation, mirror,
--			   global_alpha);
-+			   global_alpha,
-+			   pre_mult_alpha);
- 
- 	enable_clocks(0);
- 
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 5c7940d..2bb515c 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -359,7 +359,8 @@ int dispc_setup_plane(enum omap_plane plane,
- 		      bool ilace,
- 		      enum omap_dss_rotation_type rotation_type,
- 		      u8 rotation, bool mirror,
--		      u8 global_alpha);
-+		      u8 global_alpha,
-+		      u8 pre_mult_alpha);
- 
- bool dispc_go_busy(enum omap_channel channel);
- void dispc_go(enum omap_channel channel);
-diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
-index 545e9b9..873b334 100644
---- a/drivers/video/omap2/dss/manager.c
-+++ b/drivers/video/omap2/dss/manager.c
-@@ -406,6 +406,7 @@ struct overlay_cache_data {
- 	u16 out_width;	/* if 0, out_width = width */
- 	u16 out_height;	/* if 0, out_height = height */
- 	u8 global_alpha;
-+	u8 pre_mult_alpha;
- 
- 	enum omap_channel channel;
- 	bool replication;
-@@ -842,7 +843,8 @@ static int configure_overlay(enum omap_plane plane)
- 			c->rotation_type,
- 			c->rotation,
- 			c->mirror,
--			c->global_alpha);
-+			c->global_alpha,
-+			c->pre_mult_alpha);
- 
- 	if (r) {
- 		/* this shouldn't happen */
-@@ -1265,6 +1267,7 @@ static int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
- 		oc->out_width = ovl->info.out_width;
- 		oc->out_height = ovl->info.out_height;
- 		oc->global_alpha = ovl->info.global_alpha;
-+		oc->pre_mult_alpha = ovl->info.pre_mult_alpha;
- 
- 		oc->replication  			dss_use_replication(dssdev, ovl->info.color_mode);
-diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
-index 75642c2..41a2902 100644
---- a/drivers/video/omap2/dss/overlay.c
-+++ b/drivers/video/omap2/dss/overlay.c
-@@ -257,6 +257,43 @@ static ssize_t overlay_global_alpha_store(struct omap_overlay *ovl,
- 	return size;
- }
- 
-+static ssize_t overlay_pre_mult_alpha_show(struct omap_overlay *ovl,
-+		char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%d\n",
-+			ovl->info.pre_mult_alpha);
-+}
-+
-+static ssize_t overlay_pre_mult_alpha_store(struct omap_overlay *ovl,
-+		const char *buf, size_t size)
-+{
-+	int r;
-+	struct omap_overlay_info info;
-+
-+	ovl->get_overlay_info(ovl, &info);
-+
-+	/* only GFX and Video2 plane support pre alpha multiplied
-+	 * set zero for Video1 plane
-+	 */
-+	if (!dss_has_feature(FEAT_GLOBAL_ALPHA_VID1) &&
-+		ovl->id = OMAP_DSS_VIDEO1)
-+		info.pre_mult_alpha = 0;
-+	else
-+		info.pre_mult_alpha = simple_strtoul(buf, NULL, 10);
-+
-+	r = ovl->set_overlay_info(ovl, &info);
-+	if (r)
-+		return r;
-+
-+	if (ovl->manager) {
-+		r = ovl->manager->apply(ovl->manager);
-+		if (r)
-+			return r;
-+	}
-+
-+	return size;
-+}
-+
- struct overlay_attribute {
- 	struct attribute attr;
- 	ssize_t (*show)(struct omap_overlay *, char *);
-@@ -280,6 +317,9 @@ static OVERLAY_ATTR(enabled, S_IRUGO|S_IWUSR,
- 		overlay_enabled_show, overlay_enabled_store);
- static OVERLAY_ATTR(global_alpha, S_IRUGO|S_IWUSR,
- 		overlay_global_alpha_show, overlay_global_alpha_store);
-+static OVERLAY_ATTR(pre_mult_alpha, S_IRUGO|S_IWUSR,
-+		overlay_pre_mult_alpha_show,
-+		overlay_pre_mult_alpha_store);
- 
- static struct attribute *overlay_sysfs_attrs[] = {
- 	&overlay_attr_name.attr,
-@@ -290,6 +330,7 @@ static struct attribute *overlay_sysfs_attrs[] = {
- 	&overlay_attr_output_size.attr,
- 	&overlay_attr_enabled.attr,
- 	&overlay_attr_global_alpha.attr,
-+	&overlay_attr_pre_mult_alpha.attr,
- 	NULL
- };
- 
+ #include "vgatypes.h"
 -- 
-1.5.6.3
+1.5.6.5
 

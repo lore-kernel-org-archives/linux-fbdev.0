@@ -1,42 +1,25 @@
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Wed, 10 Nov 2010 09:45:20 +0000
-Subject: [PATCH 3/3] OMAP: DSS: Fix documentation regarding 'vram' kernel parameter
-Message-Id: <1289382320-17412-3-git-send-email-tomi.valkeinen@nokia.com>
+From: Inki Dae <inki.dae@samsung.com>
+Date: Mon, 22 Nov 2010 03:03:28 +0000
+Subject: Header definitions for RGB and CPU mode.
+Message-Id: <008901cb89f1$dbb6e030$9324a090$%dae@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1289382320-17412-1-git-send-email-tomi.valkeinen@nokia.com>
-In-Reply-To: <1289382320-17412-1-git-send-email-tomi.valkeinen@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: linux-fbdev@vger.kernel.org
 
-The DSS documentation didn't mention the option to give the VRAM start
-address.
+Hello, Paul.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
----
- Documentation/arm/OMAP/DSS |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+I wish your opinion to header definitions for rgb and cpu mode interface,
+Now, fb.h is considering only RGB interface.
+Framebuffer driver could be used as RGB mode and CPU mode also.
 
-diff --git a/Documentation/arm/OMAP/DSS b/Documentation/arm/OMAP/DSS
-index 0af0e9e..888ae7b 100644
---- a/Documentation/arm/OMAP/DSS
-+++ b/Documentation/arm/OMAP/DSS
-@@ -255,9 +255,10 @@ framebuffer parameters.
- Kernel boot arguments
- ---------------------
- 
--vram=<size>
--	- Amount of total VRAM to preallocate. For example, "10M". omapfb
--	  allocates memory for framebuffers from VRAM.
-+vram=<size>[,<physaddr>]
-+	- Amount of total VRAM to preallocate and optionally a physical start
-+	  memory address. For example, "10M". omapfb allocates memory for
-+	  framebuffers from VRAM.
- 
- omapfb.mode=<display>:<mode>[,...]
- 	- Default video mode for specified displays. For example,
--- 
-1.7.1
+How about adding definitions for RGB mode and CPU mode like below?
+
+For example,
+#define FB_MODE_RGB		0	<- default setting for
+compatibility.
+#define FB_MODE_CPU		1
+
+Thank you.
 

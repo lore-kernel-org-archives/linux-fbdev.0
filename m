@@ -1,31 +1,28 @@
-From: Dan Carpenter <error27@gmail.com>
-Date: Wed, 24 Nov 2010 06:46:49 +0000
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Wed, 24 Nov 2010 06:59:21 +0000
 Subject: Re: [PATCH] video: arcfb: fix buffer overflow
-Message-Id: <20101124064649.GQ1522@bicker>
+Message-Id: <20101124065921.GH11705@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1290361202-15065-1-git-send-email-segoon@openwall.com>
- <20101124062558.GF11705@linux-sh.org>
-In-Reply-To: <20101124062558.GF11705@linux-sh.org>
+References: <1290361202-15065-1-git-send-email-segoon@openwall.com> <20101124062558.GF11705@linux-sh.org> <20101124064649.GQ1522@bicker>
+In-Reply-To: <20101124064649.GQ1522@bicker>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Vasiliy Kulikov <segoon@openwall.com>, kernel-janitors@vger.kernel.org, Jaya Kumar <jayalk@intworks.biz>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Dan Carpenter <error27@gmail.com>, Vasiliy Kulikov <segoon@openwall.com>, kernel-janitors@vger.kernel.org, Jaya Kumar <jayalk@intworks.biz>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Nov 24, 2010 at 03:25:58PM +0900, Paul Mundt wrote:
-> On Sun, Nov 21, 2010 at 08:40:01PM +0300, Vasiliy Kulikov wrote:
-> > (count + p) is not checked for integer overflow.  If p < fbmemlength
-> > and count = (size_t)(1 - p) (very big unsigned integer) then
-> > count + p = 1 < fbmemlength and copy_to_user(base_addr+p, buf, count)
-> > overflows base_addr.
+On Wed, Nov 24, 2010 at 09:46:49AM +0300, Dan Carpenter wrote:
+> On Wed, Nov 24, 2010 at 03:25:58PM +0900, Paul Mundt wrote:
+> > On Sun, Nov 21, 2010 at 08:40:01PM +0300, Vasiliy Kulikov wrote:
+> > > (count + p) is not checked for integer overflow.  If p < fbmemlength
+> > > and count = (size_t)(1 - p) (very big unsigned integer) then
+> > > count + p = 1 < fbmemlength and copy_to_user(base_addr+p, buf, count)
+> > > overflows base_addr.
+> > > 
+> > > Signed-off-by: Vasiliy Kulikov <segoon@openwall.com>
 > > 
-> > Signed-off-by: Vasiliy Kulikov <segoon@openwall.com>
+> > Applied, thanks.
 > 
-> Applied, thanks.
-
-The patch is harmless, but the integer overflow would actually be caught
-in rw_verify_area().
-
-regards,
-dan carpenter
-
+> The patch is harmless, but the integer overflow would actually be caught
+> in rw_verify_area().
+> 
+Ah, so it is, I'll drop it then, thanks.

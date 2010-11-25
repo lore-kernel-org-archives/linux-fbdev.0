@@ -1,116 +1,103 @@
-From: Jimmy RUBIN <jimmy.rubin@stericsson.com>
-Date: Thu, 25 Nov 2010 11:52:41 +0000
-Subject: RE: [PATCH 08/10] MCDE: Add frame buffer device
-Message-Id: <F45880696056844FA6A73F415B568C695365E671E5@EXDCVYMBSTM006.EQ1STM.local>
+From: "Hiremath, Vaibhav" <hvaibhav@ti.com>
+Date: Thu, 25 Nov 2010 06:53:47 +0000
+Subject: RE: OMAP:DSS: possible bug in WAITFOR_VSYNC ioctl
+Message-Id: <19F8576C6E063C45BE387C64729E739404BCCA3CAE@dbde02.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1289390653-6111-1-git-send-email-jimmy.rubin@stericsson.com>
-	<1289390653-6111-8-git-send-email-jimmy.rubin@stericsson.com>
-	<1289390653-6111-9-git-send-email-jimmy.rubin@stericsson.com>
-	<201011121729.28354.arnd@arndb.de>
-In-Reply-To: <201011121729.28354.arnd@arndb.de>
+References: <19F8576C6E063C45BE387C64729E739404BC762E9A@dbde02.ent.ti.com>
+ <1290589057.13243.22.camel@tubuntu>
+ <19F8576C6E063C45BE387C64729E739404BCCA3A55@dbde02.ent.ti.com>
+ <20101124163100.GB5681@nokia.com>
+In-Reply-To: <20101124163100.GB5681@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: =?iso-8859-1?Q?Ville_Syrj=E4l=E4?= <ville.syrjala@nokia.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-Hi,
+> -----Original Message-----
+> From: Ville Syrj=E4l=E4 [mailto:ville.syrjala@nokia.com]
+> Sent: Wednesday, November 24, 2010 10:01 PM
+> To: Hiremath, Vaibhav
+> Cc: Tomi Valkeinen; linux-omap@vger.kernel.org
+> Subject: Re: OMAP:DSS: possible bug in WAITFOR_VSYNC ioctl
+>=20
+> On Wed, Nov 24, 2010 at 03:39:44PM +0530, ext Hiremath, Vaibhav wrote:
+> >
+> > > -----Original Message-----
+> > > From: Tomi Valkeinen [mailto:tomi.valkeinen@nokia.com]
+> > > Sent: Wednesday, November 24, 2010 2:28 PM
+> > > To: Hiremath, Vaibhav
+> > > Cc: linux-omap@vger.kernel.org
+> > > Subject: Re: OMAP:DSS: possible bug in WAITFOR_VSYNC ioctl
+> > >
+> > > On Tue, 2010-11-23 at 23:46 +0530, ext Hiremath, Vaibhav wrote:
+> > > > Hi,
+<snip>
+> >
+> > > Changing it to WAITFORGO would alter the behaviour. Sometimes it would
+> > > not wait at all, sometimes it could wait for multiple vsyncs.
+> > [Hiremath, Vaibhav] I am quite not sure, whether it makes sense from
+> application point of view to wait for vsync if config is not changed. What
+> could be the use-case for such requirement, where application won't change
+> anything but still would like to wait on vsync?
+> >
+> > And as far as wait on multiple vsync is concerned, it does make sense to
+> coat "WAITFORVSYNC ioctl makes sure that your change got applied to HW".
+> >
+> > I am not aware of other architectures, but I believe this is something
+> OMAP specific stuff. And for other platforms, WAITFORVSYNC means changes
+> applied to HW (why does apps care about whether it is vsync or anything
+> else?).
+>=20
+> WAITFORVSYNC waits for the next vsync (or actually vblank in many
+> cases).=20
+[Hiremath, Vaibhav] Please note that this doesn't include VFP (vertical fro=
+nt porch), since you are going to get VSYNC only after VFP.
 
-> 
-> On Wednesday 10 November 2010, Jimmy Rubin wrote:
-> > +
-> > +static struct platform_device mcde_fb_device = {
-> > +	.name = "mcde_fb",
-> > +	.id = -1,
-> > +};
-> 
-> Do not introduce new static devices. We are trying to remove them and
-> they will stop working. Why do you even need a device here if there is
-> only one of them?
+> That's it. I don't see any point in trying to shoehorn
+> other functionality into it.
+>=20
+> If you want to standardise WAITFORGO type of stuff then just add
+> another standard ioctl for it.
+>=20
+[Hiremath, Vaibhav] I still believe we should not only look at the name of =
+IOCTL (WAITFORVSYNC) and define what it should do, it may change based on y=
+our platform/HW to get the desired functionality out of it.
 
-> 
-> > +struct fb_info *mcde_fb_create(struct mcde_display_device *ddev,
-> > +	u16 w, u16 h, u16 vw, u16 vh, enum mcde_ovly_pix_fmt
-> pix_fmt,
-> > +	u32 rotate)
-> > +{
-> 
-> Here you have another device, which you could just use!
+I am putting fbdev mailing list in CC to get comments from other folks on w=
+hat is expected from WAITFORVSYNC, especially architectures like
+	- s3c-fb.c
+	- ps3fb.c
+	- atyfb_base.c
+	- matroxfb_crtc2.c
+	- sh_mobile_lcdcfb.c
 
-I will do that.
+Please refer the wiki page which explains the OMAP DSS issue - http://proce=
+ssors.wiki.ti.com/index.php/OMAP35x_Linux_-_DSS_FAQ
 
-> 
-> > +/* Overlay fbs' platform device */
-> > +static int mcde_fb_probe(struct platform_device *pdev)
-> > +{
-> > +	return 0;
-> > +}
-> > +
-> > +static int mcde_fb_remove(struct platform_device *pdev)
-> > +{
-> > +	return 0;
-> > +}
-> > +
-> > +static struct platform_driver mcde_fb_driver = {
-> > +	.probe  = mcde_fb_probe,
-> > +	.remove = mcde_fb_remove,
-> > +	.driver = {
-> > +		.name  = "mcde_fb",
-> > +		.owner = THIS_MODULE,
-> > +	},
-> > +};
-> > +
-> > +/* MCDE fb init */
-> > +
-> > +int __init mcde_fb_init(void)
-> > +{
-> > +	int ret;
-> > +
-> > +	ret = platform_driver_register(&mcde_fb_driver);
-> > +	if (ret)
-> > +		goto fb_driver_failed;
-> > +	ret = platform_device_register(&mcde_fb_device);
-> > +	if (ret)
-> > +		goto fb_device_failed;
-> > +
-> > +	goto out;
-> > +fb_device_failed:
-> > +	platform_driver_unregister(&mcde_fb_driver);
-> > +fb_driver_failed:
-> > +out:
-> > +	return ret;
-> > +}
-> > +
-> > +void mcde_fb_exit(void)
-> > +{
-> > +	platform_device_unregister(&mcde_fb_device);
-> > +	platform_driver_unregister(&mcde_fb_driver);
-> > +}
-> 
-> This appears to be an entirely useless registration for something that
-> does not exist and that you are not using anywhere ...
 
-Will look into this and remove it.
-> 
-> > +
-> > +#include <linux/fb.h>
-> > +#include <linux/ioctl.h>
-> > +#if !defined(__KERNEL__) && !defined(_KERNEL)
-> > +#include <stdint.h>
-> > +#else
-> > +#include <linux/types.h>
-> > +#endif
-> > +
-> > +#ifdef __KERNEL__
-> > +#include "mcde_dss.h"
-> > +#endif
-> > +
-> > +#ifdef __KERNEL__
-> > +#define to_mcde_fb(x) ((struct mcde_fb *)(x)->par)
-> 
-> Everything in this file is enclosed in #ifdef __KERNEL__, and the file
-> is not even exported. You can remove the #ifdef and the #else path
-> everywhere AFAICT.
+I would still argue on,=20
+In OMAP there is chance of miss-match between user application and Display =
+HW if user uses FBIO_WAITFORVSYNC ioctl in multi-buffer use-case.
 
-Agree, no IOCTLs there for the moment so only kernel include. 
+while (1) {
+	Update/Create the next buffer
+	FBIO_PAN
+	FBIO_WAITFORVSYNC //assuming HW-SW stay in sync (which is not)
+}
 
-/Jimmy
+There is definitely an issue with above use-case which has been un-doubtful=
+ly conformed now.
+
+At least in case of OMAP, WAITFORVSYNC is useless in multiple buffering use=
+-case, application has to use WAITFORGO.
+
+As far as WAITFORGO is concerned, I think GO bit concept is something OMAP =
+notion/term and doesn't make sense to standardize it. Atleast I am not awar=
+e of any other architecture having GO bit.
+
+Thanks,
+Vaibhav
+
+> --
+> Ville Syrj=E4l=E4

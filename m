@@ -1,100 +1,75 @@
-From: Jimmy RUBIN <jimmy.rubin@stericsson.com>
-Date: Thu, 25 Nov 2010 11:30:11 +0000
-Subject: RE: [PATCH 02/10] MCDE: Add configuration registers
-Message-Id: <F45880696056844FA6A73F415B568C695365E671B7@EXDCVYMBSTM006.EQ1STM.local>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 25 Nov 2010 16:21:12 +0000
+Subject: Re: [PATCH 02/10] MCDE: Add configuration registers
+Message-Id: <201011251721.12315.arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1289390653-6111-1-git-send-email-jimmy.rubin@stericsson.com>
-	<1289390653-6111-2-git-send-email-jimmy.rubin@stericsson.com>
-	<1289390653-6111-3-git-send-email-jimmy.rubin@stericsson.com>
 	<201011121614.51528.arnd@arndb.de>
-In-Reply-To: <201011121614.51528.arnd@arndb.de>
+	<F45880696056844FA6A73F415B568C695365E671B7@EXDCVYMBSTM006.EQ1STM.local>
+In-Reply-To: <F45880696056844FA6A73F415B568C695365E671B7@EXDCVYMBSTM006.EQ1STM.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
-
-> >
-> > This patch adds the configuration registers found in MCDE.
+On Thursday 25 November 2010, Jimmy RUBIN wrote:
 > 
-> > +
-> > +#define MCDE_VAL2REG(__reg, __fld, __val) \
-> > +	(((__val) << __reg##_##__fld##_SHIFT) &
-> __reg##_##__fld##_MASK)
-> > +#define MCDE_REG2VAL(__reg, __fld, __val) \
-> > +	(((__val) & __reg##_##__fld##_MASK) >>
-> __reg##_##__fld##_SHIFT)
-> > +
-> > +#define MCDE_CR 0x00000000
-> > +#define MCDE_CR_DSICMD2_EN_V1_SHIFT 0
-> > +#define MCDE_CR_DSICMD2_EN_V1_MASK 0x00000001
-> > +#define MCDE_CR_DSICMD2_EN_V1(__x) \
-> > +	MCDE_VAL2REG(MCDE_CR, DSICMD2_EN_V1, __x)
-> > +#define MCDE_CR_DSICMD1_EN_V1_SHIFT 1
-> > +#define MCDE_CR_DSICMD1_EN_V1_MASK 0x00000002
-> > +#define MCDE_CR_DSICMD1_EN_V1(__x) \
-> > +	MCDE_VAL2REG(MCDE_CR, DSICMD1_EN_V1, __x)
-> > +#define MCDE_CR_DSI0_EN_V3_SHIFT 0
-> > +#define MCDE_CR_DSI0_EN_V3_MASK 0x00000001
-> > +#define MCDE_CR_DSI0_EN_V3(__x) \
-> > +	MCDE_VAL2REG(MCDE_CR, DSI0_EN_V3, __x)
+> All these header files,
+> Configuration, pixel processing, formatter, dsi link registers are auto generated from an xml file.
+
+This actually may or may not be a legal problem, because it means that the
+distributed source code is not the preferred form for making modifications
+as the GPL intends, you might want to ask a lawyer. Distributing the XML
+file and the script with the kernel would solve that, but people might
+consider that ugly ;-).
+
+> This is made because there are many registers which a prone to change for new hardware revisions and there is a possibility to exclude registers that are not used.
+> The chance of manual errors are less this way.
 > 
-> This looks all rather unreadable. The easiest way is usually to just
-> define the bit mask, i.e. the second line of each register definition,
-> which you can use to mask the bits. It's also useful to indent the
-> lines
-> so you can easily tell the register offsets apart from the contents:
+> I also believe that these helper macros makes the source code easier to read.
+> For example.
+> #define MCDE_CR_DSICMD2_EN_V1_SHIFT 0
+> #define MCDE_CR_DSICMD2_EN_V1_MASK 0x00000001
+> #define MCDE_CR_DSICMD2_EN_V1(__x) \
+> 	MCDE_VAL2REG(MCDE_CR, DSICMD2_EN_V1, __x)
 > 
-> #define MCDE_CR 0x00000000
-> #define		MCDE_CR_DSICMD2_EN_V1 0x00000001
-> #define		MCDE_CR_DSICMD1_EN_V1 0x00000002
+> Writing a single field in the register MCDE_CR can e.g. be done like this:
+> mcde_wfld(MCDE_CR, DSICMD1_EN_V1, true);
 > 
-> Some people prefer to express all this in C instead of macros:
-> 
-> struct mcde_registers {
-> 	enum {
-> 		mcde_cr_dsicmd2_en = 0x00000001,
-> 		mcde_cr_dsicmd1_en = 0x00000002,
-> 		...
-> 	} cr;
-> 	enum {
-> 		mcde_conf0_syncmux0 = 0x00000001,
-> 		...
-> 	} conf0;
-> 	...
-> };
-> 
-> This gives you better type safety, but which one you choose is your
-> decision.
-> 
-> 	Arnd
+> and for a whole register (a totally other register but just to show):
+> 		mcde_wreg(MCDE_ROTACONF + chnl_id * MCDE_ROTACONF_GROUPOFFSET,
+> 			MCDE_ROTACONF_ROTBURSTSIZE_ENUM(8W) |
+> 			MCDE_ROTACONF_ROTBURSTSIZE_HW(1) |
+> 			MCDE_ROTACONF_ROTDIR(regs->rotdir) |
+> 			MCDE_ROTACONF_STRIP_WIDTH_ENUM(16PIX) |
+> 			MCDE_ROTACONF_RD_MAXOUT_ENUM(4_REQ) |
+> 			MCDE_ROTACONF_WR_MAXOUT_ENUM(8_REQ));
 
-All these header files,
-Configuration, pixel processing, formatter, dsi link registers are auto generated from an xml file.
-This is made because there are many registers which a prone to change for new hardware revisions and there is a possibility to exclude registers that are not used.
-The chance of manual errors are less this way.
+I see what you mean, though I would probably still prefer an inline
+function for doing the same:
 
-I also believe that these helper macros makes the source code easier to read.
-For example.
-#define MCDE_CR_DSICMD2_EN_V1_SHIFT 0
-#define MCDE_CR_DSICMD2_EN_V1_MASK 0x00000001
-#define MCDE_CR_DSICMD2_EN_V1(__x) \
-	MCDE_VAL2REG(MCDE_CR, DSICMD2_EN_V1, __x)
+static inline void mcde_write_rotaconf(struct mcde_chnl *chnl, unsigned burstsize,
+				unsigned rotdir, unsigned strip_width,
+				unsigned rd_maxout, wr_maxout)
+{
+	unsigned __iomem *reg = chnl->base + MCDE_ROTACONF +
+				chnl->id * MCDE_ROTACONF_GROUPOFFSET;
 
-Writing a single field in the register MCDE_CR can e.g. be done like this:
-mcde_wfld(MCDE_CR, DSICMD1_EN_V1, true);
+	writel(reg, burstsize << 20 | rotdir << 12 | strip_width << 8 |
+		rd_maxout << 4 | wr_maxout);
+}
 
-and for a whole register (a totally other register but just to show):
-		mcde_wreg(MCDE_ROTACONF + chnl_id * MCDE_ROTACONF_GROUPOFFSET,
-			MCDE_ROTACONF_ROTBURSTSIZE_ENUM(8W) |
-			MCDE_ROTACONF_ROTBURSTSIZE_HW(1) |
-			MCDE_ROTACONF_ROTDIR(regs->rotdir) |
-			MCDE_ROTACONF_STRIP_WIDTH_ENUM(16PIX) |
-			MCDE_ROTACONF_RD_MAXOUT_ENUM(4_REQ) |
-			MCDE_ROTACONF_WR_MAXOUT_ENUM(8_REQ));
+Anyway, it's not really important how you do it, this is mostly a matter
+of personal preference. If you can find a way to make it more readable,
+that would be really good, but it's really a minor issue compared to
+getting the overall layering inside the driver right.
 
+> I agree that the header files looks a bit unreadable I will try indent as you
+> suggested I am just worried about the file size. (Patch limit 100kbyte)
 
-I agree that the header files looks a bit unreadable I will try indent as you suggested I am just worried about the file size. (Patch limit 100kbyte)
+Don't worry about the patch size limit too much, that is not the real
+problem here ;-). For review, you can always cut parts of these files
+since nobody will notice a problem in the middle of 2000 almost identical
+source lines. When you ask for a git pull, the size no longer matters.
 
-/Jimmy
+	Arnd

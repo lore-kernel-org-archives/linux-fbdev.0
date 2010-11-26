@@ -1,19 +1,31 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Tue, 16 Nov 2010 01:13:24 +0000
-Subject: Re: [PATCH] fbdev: da8xx: punt duplicated FBIO_WAITFORVSYNC define
-Message-Id: <20101116011324.GA28879@linux-sh.org>
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Date: Fri, 26 Nov 2010 05:20:25 +0000
+Subject: [PATCH] framebuffer: fix fbcmap.c kernel-doc warning
+Message-Id: <20101125212025.e0ccbeda.randy.dunlap@oracle.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1289815393-32429-1-git-send-email-vapier@gentoo.org>
-In-Reply-To: <1289815393-32429-1-git-send-email-vapier@gentoo.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Mon, Nov 15, 2010 at 05:03:13AM -0500, Mike Frysinger wrote:
-> This is already defined by linux/fb.h now, so punt the duplicate
-> definition from the driver header.
-> 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Applied, thanks.
+Fix kernel-doc warning in fbcmap.c:
+
+Warning(drivers/video/fbcmap.c:92): No description found for parameter 'flags'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/video/fbcmap.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- linux-2.6.37-rc3-git2.orig/drivers/video/fbcmap.c
++++ linux-2.6.37-rc3-git2/drivers/video/fbcmap.c
+@@ -80,6 +80,7 @@ static const struct fb_cmap default_16_c
+  *	@cmap: frame buffer colormap structure
+  *	@len: length of @cmap
+  *	@transp: boolean, 1 if there is transparency, 0 otherwise
++ *	@flags: flags for kmalloc memory allocation
+  *
+  *	Allocates memory for a colormap @cmap.  @len is the
+  *	number of entries in the palette.

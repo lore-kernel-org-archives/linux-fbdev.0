@@ -1,73 +1,52 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Date: Fri, 31 Dec 2010 06:57:41 +0000
-Subject: RE: [PATCH 5/5] S5PC110: add MIPI-DSI based sample lcd panel driver.
-Message-Id: <014101cba8b8$06318ab0$1294a010$%kim@samsung.com>
+From: James Simmons <jsimmons@infradead.org>
+Date: Wed, 01 Dec 2010 23:57:38 +0000
+Subject: Re: 3Dfx KMS board needed
+Message-Id: <alpine.LFD.2.00.1011121644030.4947@casper.infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1293535595-24861-1-git-send-email-inki.dae@samsung.com>
-In-Reply-To: <1293535595-24861-1-git-send-email-inki.dae@samsung.com>
+References: <alpine.LFD.2.00.1011102348570.8324@casper.infradead.org>
+	<AANLkTi=hNCSkqD_V2SNVwykp7-uAK3S4qdXGxL_SqLK6@mail.gmail.com>
+In-Reply-To: <AANLkTi=hNCSkqD_V2SNVwykp7-uAK3S4qdXGxL_SqLK6@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Matt Turner <mattst88@gmail.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, DRI development list <dri-devel@lists.freedesktop.org>
 
-Inki Dae wrote:
+
+> On Wed, Nov 10, 2010 at 7:45 PM, James Simmons <jsimmons@infradead.org> wrote:
+> > Looking to work on the 3Dfx KMS driver I discovered that it is very
+> > difficult to find a motherboard that supports AGP of 3.3V. So I discovered
+> > that the only 3Dfx card that supports this is the 3dfx Voodoo 4 4500 AGP
+> > Card which also is difficult to find. Does anyone have this card to send
+> > to me or a old working system with a 3.3V AGP bus. Thanks.
 > 
-> this patch addes MIPI-DSI based sample panel driver.
-> to write MIPI-DSI based lcd panel driver, you can refer to
-> this sample driver.
+> Sorry, I'm having a hard time understanding. If motherboards with 3.3V
+> AGP are difficult to find, why are you looking for a Voodoo 4 4500?
+> You must mean that the Voodoo 4 4500 is the only AGP card that also
+> supports 1.5V AGP signaling?
+
+Sorry I was on vaction and had caught up on some things at work as well as 
+home. Yes, I left out that detail. I found the Voodoo 4 is the only card 
+in that it supports AGP 4X (1.5V)
+ 
+> I see a very cheap Voodoo 4 4500 on eBay in the UK. Item # 110610063423.
 > 
-> Signed-off-by: Inki Dae <inki.dae@samsung.com>
-> ---
->  drivers/video/Kconfig           |    7 ++
->  drivers/video/Makefile          |    1 +
->  drivers/video/s5p_mipi_sample.c |  220
-> +++++++++++++++++++++++++++++++++++++++
->  3 files changed, 228 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/video/s5p_mipi_sample.c
-> 
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index aa305c5..325ce86 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -2003,6 +2003,13 @@ config S5P_MIPI_DSI
->  	---help---
->  	  This enables support for MIPI-DSI device.
-> 
-> +config S5P_MIPI_SAMPLE
-> +	tristate "Samsung SoC MIPI-DSI based sample driver."
-> +	depends on S5P_MIPI_DSI && BACKLIGHT_LCD_SUPPORT
+> Also, the 4500 and 5500 come in PCI.
 
-Do we really need SAMPLE driver?...
-And is this MIPI SAMPLE not MIPI DSIM sample?
+Time to hunt them down. 
 
-> +	default n
-> +	---help---
-> +	  This enables support for MIPI-DSI based sample driver.
-> +
->  config FB_NUC900
->          bool "NUC900 LCD framebuffer support"
->          depends on FB && ARCH_W90X900
-> diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-> index f4baed6..c8ac591 100644
-> --- a/drivers/video/Makefile
-> +++ b/drivers/video/Makefile
-> @@ -117,6 +117,7 @@ obj-$(CONFIG_FB_S3C)		  += s3c-fb.o
->  obj-$(CONFIG_FB_S3C2410)	  += s3c2410fb.o
->  obj-$(CONFIG_S5P_MIPI_DSI)	  += s5p_mipi_dsi.o s5p_mipi_dsi_common.o \
->      					s5p_mipi_dsi_lowlevel.o
-> +obj-$(CONFIG_S5P_MIPI_SAMPLE)		+= s5p_mipi_sample.o
->  obj-$(CONFIG_FB_FSL_DIU)	  += fsl-diu-fb.o
->  obj-$(CONFIG_FB_COBALT)           += cobalt_lcdfb.o
->  obj-$(CONFIG_FB_PNX4008_DUM)	  += pnx4008/
+> I had trouble finding a suitable board to use with Permedia hardware
+> this summer. The last to support 3.3V AGP were the Athlon MP
+> motherboards, e.g., Tyan S246{0,2,6,8,9}. But at least you get dual
+> processors.
 
-(snip)
+:-/ I had a system like that but it became to unusable with the newer 
+linux software stacks. Pentium III are only so fast.
 
-Happy New Year!
-Thanks.
+> For reference, the last 3.3V supporting video cards were the R300
+> series (specifically Radeon 9800 Pro, but not 9800 XT) and the GeForce
+> 7950 GT. Not that any of that's specifically related to your query.
 
-Best regards,
-Kgene.
---
-Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-SW Solution Development Team, Samsung Electronics Co., Ltd.
+Thanks for the query. I settled for a AGP 8x board. I believe I can find 
+cards that work with it as well as PCI based cards.
 

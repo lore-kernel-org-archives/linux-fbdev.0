@@ -1,26 +1,43 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Fri, 24 Dec 2010 03:37:43 +0000
-Subject: Re: [PATCH] drivers: ld9040 amoled driver support
-Message-Id: <20101224033743.GK28151@linux-sh.org>
+From: Tony Lindgren <tony@atomide.com>
+Date: Thu, 02 Dec 2010 22:00:24 +0000
+Subject: Re: OMAP4 build error - omapfb
+Message-Id: <20101202220024.GX17222@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1292826187-17758-1-git-send-email-dh09.lee@samsung.com>
-In-Reply-To: <1292826187-17758-1-git-send-email-dh09.lee@samsung.com>
+References: <20101202212541.GH10461@n2100.arm.linux.org.uk>
+In-Reply-To: <20101202212541.GH10461@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Mon, Dec 20, 2010 at 03:23:07PM +0900, Donghwa Lee wrote:
-> This patch is ld9040 amoled panel driver using RGB interface. I resend it
-> because there was no comment.
+* Russell King - ARM Linux <linux@arm.linux.org.uk> [101202 13:15]:
+> drivers/built-in.o: In function `omapfb_do_probe':
+> drivers/video/omap/omapfb_main.c:1773: undefined reference to `omap2_int_ctrl'
 > 
-> ld9040 panel is 4 ~ 4.5 inch real WVGA model. It is similar to s6e63m0 panel
-> driver and use spi gpio to send panel information.
-> 
-> Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> Signed-off-by: Inki Dae <inki.dae@samsung.com>
-> 
-The backlight subsystem alleges to have a maintainer, so I'd rather avoid
-taking backlight-related patches through the fbdev tree. I can of course
-take them with Richard's Acked-by, though.
+> Looks like there's a missing dependency for CONFIG_FB_OMAP.  As the
+> only place omap2_int_ctrl is defined is in drivers/video/omap/dispc.c,
+> and this isn't built for OMAP4, maybe FB_OMAP is missing a dependency
+> such that it's only available for OMAP1, OMAP2 and OMAP3 ?
+
+This is something for Tomi, adding fbdev and Tomi to Cc.
+
+Tony
+ 
+> diff --git a/drivers/video/omap/Kconfig b/drivers/video/omap/Kconfig
+> index 455c605..083c8fe 100644
+> --- a/drivers/video/omap/Kconfig
+> +++ b/drivers/video/omap/Kconfig
+> @@ -1,7 +1,7 @@
+>  config FB_OMAP
+>  	tristate "OMAP frame buffer support (EXPERIMENTAL)"
+> -	depends on FB && ARCH_OMAP && (OMAP2_DSS = "n")
+> -
+> +	depends on FB && (OMAP2_DSS = "n")
+> +	depends on ARCH_OMAP1 || ARCH_OMAP2 || ARCH_OMAP3
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+>  	select FB_CFB_IMAGEBLIT
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html

@@ -1,82 +1,31 @@
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-Date: Mon, 20 Dec 2010 21:50:10 +0000
-Subject: [PATCH 01/13] sisfb: eliminate unused variable compiler warning
-Message-Id: <1292881822-32630-2-git-send-email-aaro.koskinen@iki.fi>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Fri, 03 Dec 2010 07:49:58 +0000
+Subject: [GIT PULL] fbdev updates for 2.6.37-rc5
+Message-Id: <20101203074958.GA1602@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1292881822-32630-1-git-send-email-aaro.koskinen@iki.fi>
-In-Reply-To: <1292881822-32630-1-git-send-email-aaro.koskinen@iki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, thomas@winischhofer.net
-Cc: aaro.koskinen@iki.fi
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Eliminate the following compiler warning on non-x86 platforms by limiting
-the variable scope:
+Please pull from:
 
-drivers/video/sis/sis_main.c:4108: warning: unused variable 'temp'
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/fbdev-2.6.git fbdev-fixes-for-linus
 
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>
----
- drivers/video/sis/sis_main.c |   30 ++++++++++++++++--------------
- 1 files changed, 16 insertions(+), 14 deletions(-)
+Which contains:
 
-diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
-index 7e3370f..436ae46 100644
---- a/drivers/video/sis/sis_main.c
-+++ b/drivers/video/sis/sis_main.c
-@@ -4105,7 +4105,6 @@ sisfb_find_rom(struct pci_dev *pdev)
- 	struct sis_video_info *ivideo = pci_get_drvdata(pdev);
- 	void __iomem *rom_base;
- 	unsigned char *myrombase = NULL;
--	u32 temp;
- 	size_t romsize;
- 
- 	/* First, try the official pci ROM functions (except
-@@ -4132,26 +4131,29 @@ sisfb_find_rom(struct pci_dev *pdev)
- 	/* Otherwise do it the conventional way. */
- 
- #if defined(__i386__) || defined(__x86_64__)
-+	{
-+		u32 temp;
- 
--	for(temp = 0x000c0000; temp < 0x000f0000; temp += 0x00001000) {
-+		for (temp = 0x000c0000; temp < 0x000f0000; temp += 0x00001000) {
- 
--		rom_base = ioremap(temp, 65536);
--		if(!rom_base)
--			continue;
-+			rom_base = ioremap(temp, 65536);
-+			if (!rom_base)
-+				continue;
- 
--		if(!sisfb_check_rom(rom_base, ivideo)) {
--			iounmap(rom_base);
--			continue;
--		}
-+			if (!sisfb_check_rom(rom_base, ivideo)) {
-+				iounmap(rom_base);
-+				continue;
-+			}
- 
--		if((myrombase = vmalloc(65536)))
--			memcpy_fromio(myrombase, rom_base, 65536);
-+			if ((myrombase = vmalloc(65536)))
-+				memcpy_fromio(myrombase, rom_base, 65536);
- 
--		iounmap(rom_base);
--		break;
-+			iounmap(rom_base);
-+			break;
- 
--        }
-+		}
- 
-+	}
- #endif
- 
- 	return myrombase;
--- 
-1.5.6.5
+Caglar Akyuz (1):
+      video: da8xx: Register IRQ as last thing in driver probing.
 
+Daniel Drake (1):
+      lxfb: Maintain video processor palette through suspend/resume
+
+Randy Dunlap (1):
+      framebuffer: fix fbcmap.c kernel-doc warning
+
+ drivers/video/da8xx-fb.c       |   14 ++++++--------
+ drivers/video/fbcmap.c         |    1 +
+ drivers/video/geode/lxfb.h     |    4 +++-
+ drivers/video/geode/lxfb_ops.c |   20 +++++++++++++++-----
+ 4 files changed, 25 insertions(+), 14 deletions(-)

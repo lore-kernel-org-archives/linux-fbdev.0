@@ -1,137 +1,142 @@
-From: Brent Cook <busterb@gmail.com>
-Date: Fri, 31 Dec 2010 05:56:50 +0000
-Subject: [PATCH] Fix the HGA framebuffer driver
-Message-Id: <1293775010-4503-1-git-send-email-busterb@gmail.com>
+From: Dzianis Kahanovich <mahatma@bspu.unibel.by>
+Date: Fri, 03 Dec 2010 11:32:16 +0000
+Subject: [PATCH v5] viafb: I2C/DDC LCD detection for VIA framebuffer
+Message-Id: <4CF8D540.5080405@bspu.unibel.by>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Resurrected some old hardware and fixed up the hgafb driver to work again. Only
-tested with fbcon, since most fbdev-based software appears to only support
-12bpp and up. It does not appear that this driver has worked for at least the
-entire 2.6.x series, perhaps since 2002.
+I2C/DDC LCD detection for VIA framebuffer
 
-I sent this to the sourceforge mailing list before realizing the list had
-moved. http://www.linux-fbdev.org/ has the wrong mailing list info.
+Adding legacy I2C/DDC support for VIA framebuffer, used to fix LCD
+panel size and (if "via_active_dev" is empty default) force LCD
+detection. This solving at least defaults on Chrome9 video
+on HP mini 2133 notebook, but must be good in other cases,
+include double-LCD. Also related bugfixes.
 
-Regards,
- Brent
+v3 patch: original viafb_find_i2c_adapt() code is unsafe (nowere used).
 
-Signed-off-by: Brent Cook <busterb@gmail.com>
+v4 patch: viafbinfo1 is not initilalized if !viafb_dual_fb
+and may cause problems with dual separated LCD. Now dual & SAMM
+code looks safe (will no generate errors).
 
-Hercules graphics hardware uses packed pixels horizontally, but rows are not
-linear. In other words, the pixels are not packed vertically. This means that
-custom imageblit, fillrect and copyarea need to be written specific to the
-hardware.
+v5 patch: handle undefined resolution, overhead, cleanup.
 
- * Removed the experimental acceleration option, since it is required for the
-   hardware to work.
- * Fixed imageblit to work with fb_image's wider than 8 pixels.
- * Updated configuration text (HGA hardware is from 1984)
+Signed-off-by: Dzianis Kahanovich <mahatma@eu.by>
 ---
- drivers/video/Kconfig |   14 ++------------
- drivers/video/hgafb.c |   22 +++++++++-------------
- 2 files changed, 11 insertions(+), 25 deletions(-)
-
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 27c1fb4..d6af5a2 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -750,24 +750,14 @@ config FB_N411
- config FB_HGA
- 	tristate "Hercules mono graphics support"
- 	depends on FB && X86
--	select FB_CFB_FILLRECT
--	select FB_CFB_COPYAREA
--	select FB_CFB_IMAGEBLIT
- 	help
- 	  Say Y here if you have a Hercules mono graphics card.
- 
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called hgafb.
- 
--	  As this card technology is 15 years old, most people will answer N
--	  here.
--
--config FB_HGA_ACCEL
--	bool "Hercules mono Acceleration functions (EXPERIMENTAL)"
--	depends on FB_HGA && EXPERIMENTAL
--	---help---
--	This will compile the Hercules mono graphics with
--	acceleration functions.
-+	  As this card technology is at least 25 years old,
-+	  most people will answer N here.
- 
- config FB_SGIVW
- 	tristate "SGI Visual Workstation framebuffer support"
-diff --git a/drivers/video/hgafb.c b/drivers/video/hgafb.c
-index af8f0f2..4052718 100644
---- a/drivers/video/hgafb.c
-+++ b/drivers/video/hgafb.c
-@@ -454,7 +454,6 @@ static int hgafb_blank(int blank_mode, struct fb_info *info)
- /*
-  * Accel functions
-  */
--#ifdef CONFIG_FB_HGA_ACCEL
- static void hgafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
- {
- 	u_int rows, y;
-@@ -466,7 +465,7 @@ static void hgafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
- 		dest = rowaddr(info, y) + (rect->dx >> 3);
- 		switch (rect->rop) {
- 		case ROP_COPY:
--			//fb_memset(dest, rect->color, (rect->width >> 3));
-+			memset_io(dest, rect->color, (rect->width >> 3));
- 			break;
- 		case ROP_XOR:
- 			fb_writeb(~(fb_readb(dest)), dest);
-@@ -488,7 +487,7 @@ static void hgafb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
- 		for (rows = area->height; rows--; ) {
- 			src = rowaddr(info, y1) + (area->sx >> 3);
- 			dest = rowaddr(info, y2) + (area->dx >> 3);
--			//fb_memmove(dest, src, (area->width >> 3));
-+			memmove(dest, src, (area->width >> 3));
- 			y1++;
- 			y2++;
+diff -pruN a/drivers/video/via/via-core.c b/drivers/video/via/via-core.c
+--- a/drivers/video/via/via-core.c	2010-12-03 13:06:06.000000000 +0200
++++ b/drivers/video/via/via-core.c	2010-12-03 13:16:14.000000000 +0200
+@@ -559,6 +560,69 @@ static void via_teardown_subdevs(void)
  		}
-@@ -499,7 +498,7 @@ static void hgafb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
- 		for (rows = area->height; rows--;) {
- 			src = rowaddr(info, y1) + (area->sx >> 3);
- 			dest = rowaddr(info, y2) + (area->dx >> 3);
--			//fb_memmove(dest, src, (area->width >> 3));
-+			memmove(dest, src, (area->width >> 3));
- 			y1--;
- 			y2--;
- 		}
-@@ -511,20 +510,17 @@ static void hgafb_imageblit(struct fb_info *info, const struct fb_image *image)
- 	u8 __iomem *dest;
- 	u8 *cdat = (u8 *) image->data;
- 	u_int rows, y = image->dy;
-+	u_int x;
- 	u8 d;
- 
- 	for (rows = image->height; rows--; y++) {
--		d = *cdat++;
--		dest = rowaddr(info, y) + (image->dx >> 3);
--		fb_writeb(d, dest);
-+		for (x = 0; x < image->width; x+= 8) {
-+			d = *cdat++;
-+			dest = rowaddr(info, y) + ((image->dx + x)>> 3);
-+			fb_writeb(d, dest);
-+		}
- 	}
  }
--#else /* !CONFIG_FB_HGA_ACCEL */
--#define hgafb_fillrect cfb_fillrect
--#define hgafb_copyarea cfb_copyarea
--#define hgafb_imageblit cfb_imageblit
--#endif /* CONFIG_FB_HGA_ACCEL */
--
- 
- static struct fb_ops hgafb_ops = {
- 	.owner		= THIS_MODULE,
--- 
-1.7.2.3
+
++static void via_i2c_detect(int stage)
++{
++	u8 *edid;
++	struct fb_var_screeninfo var;
++	int i, n = 0;
++	struct i2c_adapter *adapter;
++	struct lvds_setting_information *inf;
++
++	for (i = 0; i < VIAFB_NUM_PORTS; i++) {
++		adapter = viafb_find_i2c_adapter(i);
++		if (!adapter || !adapter->algo_data ||
++		    !(edid = fb_ddc_read(adapter)))
++			continue;
++		memset(&var, 0, sizeof(var));
++		if (fb_parse_edid(edid, &var))
++			goto free_edid;
++		if (!stage) {
++			if (n && !viafb_active_dev)
++				viafb_dual_fb = STATE_ON;
++			inf = NULL;
++		} else if (!n || !viafb_LCD_ON) {
++			fb_edid_to_monspecs(edid, &viafbinfo->monspecs);
++			inf = viaparinfo->lvds_setting_info;
++			if (!viafb_active_dev) {
++				viafb_DVI_ON +				    viaparinfo->tmds_setting_info->max_hres ?
++				    STATE_ON : STATE_OFF;
++				if (viafbinfo->monspecs.input & FB_DISP_DDI) {
++					viafb_LCD_ON = STATE_ON;
++					viafb_DeviceStatus = LCD_Device;
++					if (!n)
++						viafb_primary_dev = LCD_Device;
++				}
++			}
++		} else if (viafb_dual_fb) {
++			fb_edid_to_monspecs(edid, &viafbinfo1->monspecs);
++			inf = viaparinfo1->lvds_setting_info;
++			if (!viafb_active_dev &&
++			    (viafbinfo1->monspecs.input & FB_DISP_DDI))
++				viafb_LCD2_ON = STATE_ON;
++		} else {
++			fb_edid_to_monspecs(edid, &viafbinfo->monspecs);
++			inf = viaparinfo->lvds_setting_info2;
++			if (!viafb_active_dev &&
++			    (viafbinfo->monspecs.input & FB_DISP_DDI))
++				viafb_LCD2_ON = STATE_ON;
++		}
++		if (inf) {
++			if (var.xres)
++			    inf->lcd_panel_hres = var.xres;
++			if (var.yres)
++			    inf->lcd_panel_vres = var.yres;
++		}
++		n++;
++free_edid:
++		kfree(edid);
++		if (n > 1)
++			break;
++	}
++	if (stage && n && !viafb_active_dev)
++		viafb_set_iga_path();
++}
++
+
+ static int __devinit via_pci_probe(struct pci_dev *pdev,
+ 		const struct pci_device_id *ent)
+@@ -585,12 +649,16 @@ static int __devinit via_pci_probe(struc
+ 	 */
+ 	viafb_int_init();
+ 	via_setup_subdevs(&global_dev);
++	/* dual? */
++	via_i2c_detect(0);
+ 	/*
+ 	 * Set up the framebuffer device
+ 	 */
+ 	ret = via_fb_pci_probe(&global_dev);
+ 	if (ret)
+ 		goto out_subdevs;
++	/* LCD size & present */
++	via_i2c_detect(1);
+ 	return 0;
+
+ out_subdevs:
+diff -pruN a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
+--- a/drivers/video/via/viafbdev.h	2010-08-02 01:11:14.000000000 +0300
++++ b/drivers/video/via/viafbdev.h	2010-12-03 13:13:50.000000000 +0200
+@@ -88,6 +88,7 @@ extern int viafb_LCD2_ON;
+ extern int viafb_LCD_ON;
+ extern int viafb_DVI_ON;
+ extern int viafb_hotplug;
++extern char *viafb_active_dev;
+
+ extern int strict_strtoul(const char *cp, unsigned int base,
+ 	unsigned long *res);
+diff -pruN a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
+--- a/drivers/video/via/via_i2c.c	2010-12-03 13:06:06.000000000 +0200
++++ b/drivers/video/via/via_i2c.c	2010-12-03 13:10:26.000000000 +0200
+@@ -167,7 +167,7 @@ struct i2c_adapter *viafb_find_i2c_adapt
+ {
+ 	struct via_i2c_stuff *stuff = &via_i2c_par[which];
+
+-	return &stuff->adapter;
++	return stuff->is_active ? &stuff->adapter : NULL;
+ }
+ EXPORT_SYMBOL_GPL(viafb_find_i2c_adapter);
+
+--
 

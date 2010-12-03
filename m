@@ -1,58 +1,60 @@
-From: Liu Ying <liu.y.victor@gmail.com>
-Date: Tue, 14 Dec 2010 06:47:08 +0000
-Subject: Re: [PATCH 9/9] ARM i.MX51 babbage: Add framebuffer support
-Message-Id: <AANLkTimPpo5nJ2Bg_wZohgTuB1ypfqGJxvQSu5_2fKz2@mail.gmail.com>
+From: Dzianis Kahanovich <mahatma@bspu.unibel.by>
+Date: Fri, 03 Dec 2010 11:26:09 +0000
+Subject: Re: [PATCH v4+] viafb: I2C/DDC LCD detection for VIA framebuffer
+Message-Id: <4CF8D3D1.3010404@bspu.unibel.by>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291902441-24712-1-git-send-email-s.hauer@pengutronix.de>
-	<1291902441-24712-10-git-send-email-s.hauer@pengutronix.de>
-	<AANLkTi=vT8pX1QQ6DjzQatceO-tQb3Zu90CRAVi2DcpZ@mail.gmail.com>
-	<20101213114332.GF6017@pengutronix.de>
-In-Reply-To: <20101213114332.GF6017@pengutronix.de>
+References: <4CED3DD5.5080405@bspu.unibel.by>
+In-Reply-To: <4CED3DD5.5080405@bspu.unibel.by>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-2010/12/13 Sascha Hauer <s.hauer@pengutronix.de>:
-> On Sun, Dec 12, 2010 at 09:37:38AM +0800, Liu Ying wrote:
->> Hello, Sascha,
+Paul Mundt wrote:
+
+>> diff -pruN a/drivers/video/via/via-core.c b/drivers/video/via/via-core.c
+>> --- a/drivers/video/via/via-core.c	2010-11-24 00:12:22.000000000 +0200
+>> +++ b/drivers/video/via/via-core.c	2010-11-24 17:04:00.749999967 +0200
+>> @@ -2,6 +2,7 @@
+>>   * Copyright 1998-2009 VIA Technologies, Inc. All Rights Reserved.
+>>   * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
+>>   * Copyright 2009 Jonathan Corbet <corbet@lwn.net>
+>> + * Copyright 2010 Dzianis Kahanovich <mahatma@eu.by>
+>>   */
 >>
->> I have following 3 comments to this patch:
->> 1) I think DISP1_DATx pins need not be set specially, as they keep the
->> default register values.
->
-> We do not want to depend on default register values in the Linux Kernel.
-[LY] Ok. Please add disp1 related pins configuration, including
-DISP1_HSYNC, DISP1_VSYNC and DISP1_CLK.
-       It will be fine to add disp2 related pins configuration also.
->
->> 2) Please define 'MX51_PAD_DI_GP4__IPU_DI2_PIN15' in
->> arch/arm/plat-mxc/include/mach/iomux-mx51.h, and rename the pin to be
->> 'MX51_PAD_DI_GP4__DI2_PIN15', as we name it according to the MX51
->> iomux reference manual.
->
-> I'm not sure. Normally it's good practice to code the unit into the
-> name. Otherwise we end up with names like MX51_PAD_xyz__TX which could
-> be the tx pin of just about any unit.
->
->
->> 3) It is better to exchange the following two lines or just remove the
->> first line:
->> + =A0 =A0 =A0 gpio_set_value(GPIO_DVI_RESET, 0);
->> + =A0 =A0 =A0 gpio_direction_output(GPIO_DVI_RESET, 0);
->
-> ok.
->
-> Sascha
->
->
-> --
-> Pengutronix e.K. =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 |
-> Industrial Linux Solutions =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | http://www.p=
-engutronix.de/ =A0|
-> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0 =A0=
- =A0|
-> Amtsgericht Hildesheim, HRA 2686 =A0 =A0 =A0 =A0 =A0 | Fax: =A0 +49-5121-=
-206917-5555 |
->
+>>  /*
+>> @@ -16,6 +17,8 @@
+>>  #include <linux/interrupt.h>
+>>  #include <linux/platform_device.h>
+>>
+>> +extern char *viafb_active_dev;
+>> +
+> This belongs in viafbdev.h.
+
+But not visible here. Must add "#include" instead?
+
+>> diff -pruN a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+>> --- a/drivers/video/via/viafbdev.c	2010-11-21 11:34:11.000000000 +0200
+>> +++ b/drivers/video/via/viafbdev.c	2010-11-24 00:14:48.070000002 +0200
+>> @@ -43,7 +43,7 @@ static int viafb_second_size;
+>>  static int viafb_accel = 1;
+>>
+>>  /* Added for specifying active devices.*/
+>> -char *viafb_active_dev;
+>> +char *viafb_active_dev = NULL;
+>>
+> 
+> This you can just drop.
+
+Hmm. OK, removed. But only if you sure in memory model or else. But I still sure
+this variable still uninitialized by default (fixme?) and I found many zeroed
+global variables in tree. Keep to your opinion.
+
+> Since viafb has an active tree, I'll leave this for the viafb folks to
+> pick up at their leisure.
+
+While I not answering - I found bug. Resolution may be unset at least in
+fb_parse_edid() code. v5 will be sent.
+
+-- 
+WBR, Dzianis Kahanovich AKA Denis Kaganovich, http://mahatma.bspu.unibel.by/

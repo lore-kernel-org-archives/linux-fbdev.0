@@ -1,8 +1,10 @@
 From: Thiago Farina <tfransosi@gmail.com>
-Date: Sat, 04 Dec 2010 03:38:23 +0000
+Date: Sat, 04 Dec 2010 03:49:38 +0000
 Subject: [PATCH] drivers/video/via/viafbdev.c: Check return value of strict_strtoul().
-Message-Id: <1dda71ee1b12baa2366520b894d83d7b0abefc5c.1291433779.git.tfransosi@gmail.com>
+Message-Id: <0b32968e295b04d3ced937e2e17771ad1fd0f633.1291434520.git.tfransosi@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1dda71ee1b12baa2366520b894d83d7b0abefc5c.1291433779.git.tfransosi@gmail.com>
+In-Reply-To: <1dda71ee1b12baa2366520b894d83d7b0abefc5c.1291433779.git.tfransosi@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -24,7 +26,7 @@ Signed-off-by: Thiago Farina <tfransosi@gmail.com>
  1 files changed, 33 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index d298cfc..7c35100 100644
+index d298cfc..9a53ec3 100644
 --- a/drivers/video/via/viafbdev.c
 +++ b/drivers/video/via/viafbdev.c
 @@ -1131,6 +1131,8 @@ static ssize_t viafb_dvp0_proc_write(struct file *file,
@@ -42,7 +44,7 @@ index d298cfc..7c35100 100644
  		if (value != NULL) {
 -			strict_strtoul(value, 0, (unsigned long *)&reg_val);
 +			ret = strict_strtoul(value, 0, (unsigned long *)&reg_val);
-+			if (ret)
++			if (ret < 0)
 +				return ret;
 +
  			DEBUG_MSG(KERN_INFO "DVP0:reg_val[%l]=:%x\n", i,
@@ -63,7 +65,7 @@ index d298cfc..7c35100 100644
  		if (value != NULL) {
 -			strict_strtoul(value, 0, (unsigned long *)&reg_val);
 +			ret = strict_strtoul(value, 0, (unsigned long *)&reg_val);
-+			if (ret)
++			if (ret < 0)
 +				return ret;
 +
  			switch (i) {
@@ -83,7 +85,7 @@ index d298cfc..7c35100 100644
  	buf[length - 1] = '\0';	/*Ensure end string */
 -	strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
 +	ret = strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
-+	if (ret)
++	if (ret < 0)
 +		return ret;
  	viafb_write_reg_mask(CR97, VIACR, reg_val, 0x0f);
  	return count;
@@ -102,7 +104,7 @@ index d298cfc..7c35100 100644
  	buf[length - 1] = '\0';	/*Ensure end string */
 -	strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
 +	ret = strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
-+	if (ret)
++	if (ret < 0)
 +		return ret;
  	viafb_write_reg_mask(CR99, VIACR, reg_val, 0x0f);
  	return count;
@@ -124,7 +126,7 @@ index d298cfc..7c35100 100644
 -					(unsigned long *)&reg_val.Data);
 +				ret = strict_strtoul(value, 0,
 +						(unsigned long *)&reg_val.Data);
-+				if (ret)
++				if (ret < 0)
 +					return ret;
 +
  				switch (i) {
@@ -137,7 +139,7 @@ index d298cfc..7c35100 100644
 -				strict_strtoul(value, 0,
 +				ret = strict_strtoul(value, 0,
  					(unsigned long *)&reg_val.Data);
-+				if (ret)
++				if (ret < 0)
 +					return ret;
 +
  				switch (i) {

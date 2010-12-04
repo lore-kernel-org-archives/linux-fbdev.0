@@ -1,279 +1,295 @@
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-Date: Mon, 20 Dec 2010 21:50:19 +0000
-Subject: [PATCH 10/13] sisfb: replace andSISIDXREG with SiS_SetRegAND
-Message-Id: <1292881822-32630-11-git-send-email-aaro.koskinen@iki.fi>
+From: Heiko Schocher <hs@denx.de>
+Date: Sat, 04 Dec 2010 08:23:48 +0000
+Subject: [PATCH 2/2] powerpc, video: add SM501 support for charon board.
+Message-Id: <1291451028-22532-2-git-send-email-hs@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1292881822-32630-1-git-send-email-aaro.koskinen@iki.fi>
-In-Reply-To: <1292881822-32630-1-git-send-email-aaro.koskinen@iki.fi>
+References: <1291451028-22532-1-git-send-email-hs@denx.de>
+In-Reply-To: <1291451028-22532-1-git-send-email-hs@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, thomas@winischhofer.net
-Cc: aaro.koskinen@iki.fi
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-fbdev@vger.kernel.org, Heiko Schocher <hs@denx.de>
 
-Replace andSISIDXREG() with SiS_SetRegAND().
-
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>
+Signed-off-by: Heiko Schocher <hs@denx.de>
+cc: linux-fbdev@vger.kernel.org
 ---
- drivers/video/sis/sis_main.c |   66 +++++++++++++++++++++---------------------
- 1 files changed, 33 insertions(+), 33 deletions(-)
+based against 2.6.37-rc4
 
-diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
-index 0b10f12..65bf57f 100644
---- a/drivers/video/sis/sis_main.c
-+++ b/drivers/video/sis/sis_main.c
-@@ -2200,14 +2200,14 @@ sisfb_sense_crt1(struct sis_video_info *ivideo)
+./scripts/checkpatch.pl 0004-powerpc-video-add-SM501-support-for-charon-board.patch lems and is ready for
+total: 0 errors, 0 warnings, 249 lines checked
+
+0004-powerpc-video-add-SM501-support-for-charon-board.patch has no obvious style problems and is ready for submission.
+
+ arch/powerpc/boot/dts/charon.dts           |    9 ++
+ arch/powerpc/configs/52xx/charon_defconfig |  176 +++++++++++++++++++++++++++-
+ 2 files changed, 179 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
+index 768f0cc..b2353b3 100644
+--- a/arch/powerpc/boot/dts/charon.dts
++++ b/arch/powerpc/boot/dts/charon.dts
+@@ -186,6 +186,7 @@
+ 		#address-cells = <2>;
+ 		#size-cells = <1>;
+ 		ranges = <	0 0 0xfc000000 0x02000000
++				1 0 0xe0000000 0x04000000 // CS1 range, SM501
+ 				3 0 0xe8000000 0x00080000>;
  
-     sr1F = SiS_GetReg(SISSR, 0x1F);
-     SiS_SetRegOR(SISSR, 0x1F, 0x04);
--    andSISIDXREG(SISSR,0x1F,0x3F);
-+    SiS_SetRegAND(SISSR, 0x1F, 0x3F);
-     if(sr1F & 0xc0) mustwait = true;
+ 		flash@0,0 {
+@@ -197,6 +198,14 @@
+ 			#address-cells = <1>;
+ 		};
  
- #ifdef CONFIG_FB_SIS_315
-     if(ivideo->sisvga_engine = SIS_315_VGA) {
-        cr63 = SiS_GetReg(SISCR, ivideo->SiS_Pr.SiS_MyCR63);
-        cr63 &= 0x40;
--       andSISIDXREG(SISCR,ivideo->SiS_Pr.SiS_MyCR63,0xBF);
-+       SiS_SetRegAND(SISCR, ivideo->SiS_Pr.SiS_MyCR63, 0xBF);
-     }
- #endif
++		display@1,0 {
++			compatible = "smi,sm501";
++			reg = <1 0x00000000 0x00800000
++			       1 0x03e00000 0x00200000>;
++			mode = "640x480-32@60";
++			interrupts = <1 1 3>;
++		};
++
+ 		mram0@3,0 {
+ 			compatible = "mtd-ram";
+ 			reg = <3 0x00000 0x80000>;
+diff --git a/arch/powerpc/configs/52xx/charon_defconfig b/arch/powerpc/configs/52xx/charon_defconfig
+index edf3d40..05a46cf 100644
+--- a/arch/powerpc/configs/52xx/charon_defconfig
++++ b/arch/powerpc/configs/52xx/charon_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+ # Linux/powerpc 2.6.37-rc4 Kernel Configuration
+-# Tue Nov 30 12:24:32 2010
++# Tue Nov 30 12:32:58 2010
+ #
+ # CONFIG_PPC64 is not set
  
-@@ -2226,7 +2226,7 @@ sisfb_sense_crt1(struct sis_video_info *ivideo)
+@@ -719,18 +719,78 @@ CONFIG_WLAN=y
+ #
+ # Input device support
+ #
+-# CONFIG_INPUT is not set
++CONFIG_INPUT=y
++# CONFIG_INPUT_FF_MEMLESS is not set
++# CONFIG_INPUT_POLLDEV is not set
++# CONFIG_INPUT_SPARSEKMAP is not set
++
++#
++# Userland interfaces
++#
++CONFIG_INPUT_MOUSEDEV=y
++CONFIG_INPUT_MOUSEDEV_PSAUX=y
++CONFIG_INPUT_MOUSEDEV_SCREEN_X24
++CONFIG_INPUT_MOUSEDEV_SCREEN_Yv8
++# CONFIG_INPUT_JOYDEV is not set
++# CONFIG_INPUT_EVDEV is not set
++# CONFIG_INPUT_EVBUG is not set
++
++#
++# Input Device Drivers
++#
++CONFIG_INPUT_KEYBOARD=y
++# CONFIG_KEYBOARD_ADP5588 is not set
++CONFIG_KEYBOARD_ATKBD=y
++# CONFIG_KEYBOARD_QT2160 is not set
++# CONFIG_KEYBOARD_LKKBD is not set
++# CONFIG_KEYBOARD_TCA6416 is not set
++# CONFIG_KEYBOARD_MAX7359 is not set
++# CONFIG_KEYBOARD_MCS is not set
++# CONFIG_KEYBOARD_NEWTON is not set
++# CONFIG_KEYBOARD_OPENCORES is not set
++# CONFIG_KEYBOARD_STOWAWAY is not set
++# CONFIG_KEYBOARD_SUNKBD is not set
++# CONFIG_KEYBOARD_XTKBD is not set
++CONFIG_INPUT_MOUSE=y
++CONFIG_MOUSE_PS2=y
++CONFIG_MOUSE_PS2_ALPS=y
++CONFIG_MOUSE_PS2_LOGIPS2PP=y
++CONFIG_MOUSE_PS2_SYNAPTICS=y
++CONFIG_MOUSE_PS2_TRACKPOINT=y
++# CONFIG_MOUSE_PS2_ELANTECH is not set
++# CONFIG_MOUSE_PS2_SENTELIC is not set
++# CONFIG_MOUSE_PS2_TOUCHKIT is not set
++# CONFIG_MOUSE_SERIAL is not set
++# CONFIG_MOUSE_APPLETOUCH is not set
++# CONFIG_MOUSE_BCM5974 is not set
++# CONFIG_MOUSE_VSXXXAA is not set
++# CONFIG_MOUSE_SYNAPTICS_I2C is not set
++# CONFIG_INPUT_JOYSTICK is not set
++# CONFIG_INPUT_TABLET is not set
++# CONFIG_INPUT_TOUCHSCREEN is not set
++# CONFIG_INPUT_MISC is not set
  
- #ifdef CONFIG_FB_SIS_315
-     if(ivideo->chip >= SIS_330) {
--       andSISIDXREG(SISCR,0x32,~0x20);
-+       SiS_SetRegAND(SISCR, 0x32, ~0x20);
-        if(ivideo->chip >= SIS_340) {
- 	   SiS_SetReg(SISCR, 0x57, 0x4a);
-        } else {
-@@ -2236,8 +2236,8 @@ sisfb_sense_crt1(struct sis_video_info *ivideo)
- 	while ((SiS_GetRegByte(SISINPSTAT)) & 0x01)    break;
- 	while (!((SiS_GetRegByte(SISINPSTAT)) & 0x01)) break;
- 	if ((SiS_GetRegByte(SISMISCW)) & 0x10) temp = 1;
--       andSISIDXREG(SISCR, 0x53, 0xfd);
--       andSISIDXREG(SISCR, 0x57, 0x00);
-+	SiS_SetRegAND(SISCR, 0x53, 0xfd);
-+	SiS_SetRegAND(SISCR, 0x57, 0x00);
-     }
- #endif
+ #
+ # Hardware I/O ports
+ #
+-# CONFIG_SERIO is not set
++CONFIG_SERIO=y
++CONFIG_SERIO_I8042=y
++CONFIG_SERIO_SERPORT=y
++CONFIG_SERIO_LIBPS2=y
++# CONFIG_SERIO_RAW is not set
++# CONFIG_SERIO_XILINX_XPS_PS2 is not set
++# CONFIG_SERIO_ALTERA_PS2 is not set
++# CONFIG_SERIO_PS2MULT is not set
+ # CONFIG_GAMEPORT is not set
  
-@@ -2378,7 +2378,7 @@ SISDoSense(struct sis_video_info *ivideo, u16 type, u16 test)
-           if(temp = mytest) result++;
- #if 1
- 	  SiS_SetReg(SISPART4, 0x11, 0x00);
--	  andSISIDXREG(SISPART4,0x10,0xe0);
-+	  SiS_SetRegAND(SISPART4, 0x10, 0xe0);
- 	  SiS_DDC2Delay(&ivideo->SiS_Pr, 0x1000);
- #endif
-        }
-@@ -2461,7 +2461,7 @@ SiS_Sense30x(struct sis_video_info *ivideo)
-        SISDoSense(ivideo, 0, 0);
-     }
+ #
+ # Character devices
+ #
+-# CONFIG_VT is not set
++CONFIG_VT=y
++CONFIG_CONSOLE_TRANSLATIONS=y
++CONFIG_VT_CONSOLE=y
++CONFIG_HW_CONSOLE=y
++# CONFIG_VT_HW_CONSOLE_BINDING is not set
+ CONFIG_DEVKMEM=y
+ # CONFIG_SERIAL_NONSTANDARD is not set
+ # CONFIG_N_GSM is not set
+@@ -885,6 +945,7 @@ CONFIG_SENSORS_LM80=y
+ # CONFIG_SENSORS_W83L786NG is not set
+ # CONFIG_SENSORS_W83627HF is not set
+ # CONFIG_SENSORS_W83627EHF is not set
++# CONFIG_SENSORS_LIS3_I2C is not set
+ # CONFIG_THERMAL is not set
+ CONFIG_WATCHDOG=y
+ # CONFIG_WATCHDOG_NOWAYOUT is not set
+@@ -908,7 +969,7 @@ CONFIG_SSB_POSSIBLE=y
+ CONFIG_MFD_SUPPORT=y
+ # CONFIG_MFD_CORE is not set
+ # CONFIG_MFD_88PM860X is not set
+-# CONFIG_MFD_SM501 is not set
++CONFIG_MFD_SM501=y
+ # CONFIG_HTC_PASIC3 is not set
+ # CONFIG_TPS6507X is not set
+ # CONFIG_TWL4030_CORE is not set
+@@ -934,14 +995,116 @@ CONFIG_MFD_SUPPORT=y
+ # CONFIG_DRM is not set
+ # CONFIG_VGASTATE is not set
+ # CONFIG_VIDEO_OUTPUT_CONTROL is not set
+-# CONFIG_FB is not set
++CONFIG_FB=y
++CONFIG_FIRMWARE_EDID=y
++# CONFIG_FB_DDC is not set
++# CONFIG_FB_BOOT_VESA_SUPPORT is not set
++CONFIG_FB_CFB_FILLRECT=y
++CONFIG_FB_CFB_COPYAREA=y
++CONFIG_FB_CFB_IMAGEBLIT=y
++# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
++# CONFIG_FB_SYS_FILLRECT is not set
++# CONFIG_FB_SYS_COPYAREA is not set
++# CONFIG_FB_SYS_IMAGEBLIT is not set
++CONFIG_FB_FOREIGN_ENDIAN=y
++CONFIG_FB_BOTH_ENDIAN=y
++# CONFIG_FB_BIG_ENDIAN is not set
++# CONFIG_FB_LITTLE_ENDIAN is not set
++# CONFIG_FB_SYS_FOPS is not set
++# CONFIG_FB_SVGALIB is not set
++# CONFIG_FB_MACMODES is not set
++# CONFIG_FB_BACKLIGHT is not set
++# CONFIG_FB_MODE_HELPERS is not set
++# CONFIG_FB_TILEBLITTING is not set
++
++#
++# Frame buffer hardware drivers
++#
++# CONFIG_FB_OF is not set
++# CONFIG_FB_VGA16 is not set
++# CONFIG_FB_S1D13XXX is not set
++CONFIG_FB_SM501=y
++# CONFIG_FB_IBM_GXT4500 is not set
++# CONFIG_FB_VIRTUAL is not set
++# CONFIG_FB_METRONOME is not set
++# CONFIG_FB_MB862XX is not set
++# CONFIG_FB_BROADSHEET is not set
+ # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
  
--    andSISIDXREG(SISCR, 0x32, ~0x14);
-+    SiS_SetRegAND(SISCR, 0x32, ~0x14);
- 
-     if(vga2_c || vga2) {
-        if(SISDoSense(ivideo, vga2, vga2_c)) {
-@@ -2475,7 +2475,7 @@ SiS_Sense30x(struct sis_video_info *ivideo)
-        }
-     }
- 
--    andSISIDXREG(SISCR, 0x32, 0x3f);
-+    SiS_SetRegAND(SISCR, 0x32, 0x3f);
- 
-     if(ivideo->vbflags2 & VB2_30xCLV) {
-        SiS_SetRegOR(SISPART4, 0x0d, 0x04);
-@@ -2493,7 +2493,7 @@ SiS_Sense30x(struct sis_video_info *ivideo)
-        SiS_SetReg(SISPART2, 0x4d, backupP2_4d);
-     }
- 
--    andSISIDXREG(SISCR, 0x32, ~0x03);
-+    SiS_SetRegAND(SISCR, 0x32, ~0x03);
- 
-     if(!(ivideo->vbflags & TV_YPBPR)) {
-        if((result = SISDoSense(ivideo, svhs, svhs_c))) {
-@@ -2589,19 +2589,19 @@ SiS_SenseCh(struct sis_video_info *ivideo)
- 		printk(KERN_INFO "%s SVIDEO output\n", stdstr);
- 		ivideo->vbflags |= TV_SVIDEO;
- 		SiS_SetRegOR(SISCR, 0x32, 0x02);
--		andSISIDXREG(SISCR, 0x32, ~0x05);
-+		SiS_SetRegAND(SISCR, 0x32, ~0x05);
- 	   } else if (temp1 = 0x01) {
- 		printk(KERN_INFO "%s CVBS output\n", stdstr);
- 		ivideo->vbflags |= TV_AVIDEO;
- 		SiS_SetRegOR(SISCR, 0x32, 0x01);
--		andSISIDXREG(SISCR, 0x32, ~0x06);
-+		SiS_SetRegAND(SISCR, 0x32, ~0x06);
- 	   } else {
- 		SiS_SetCH70xxANDOR(&ivideo->SiS_Pr, 0x0e, 0x01, 0xF8);
--		andSISIDXREG(SISCR, 0x32, ~0x07);
-+		SiS_SetRegAND(SISCR, 0x32, ~0x07);
- 	   }
-        } else if(temp1 = 0) {
- 	  SiS_SetCH70xxANDOR(&ivideo->SiS_Pr, 0x0e, 0x01, 0xF8);
--	  andSISIDXREG(SISCR, 0x32, ~0x07);
-+	  SiS_SetRegAND(SISCR, 0x32, ~0x07);
-        }
-        /* Set general purpose IO for Chrontel communication */
-        SiS_SetChrontelGPIO(&ivideo->SiS_Pr, 0x00);
-@@ -2633,21 +2633,21 @@ SiS_SenseCh(struct sis_video_info *ivideo)
- 	     printk(KERN_INFO "%s CVBS output\n", stdstr);
- 	     ivideo->vbflags |= TV_AVIDEO;
- 	     SiS_SetRegOR(SISCR, 0x32, 0x01);
--	     andSISIDXREG(SISCR, 0x32, ~0x06);
-+	     SiS_SetRegAND(SISCR, 0x32, ~0x06);
- 	     break;
- 	case 0x02:
- 	     printk(KERN_INFO "%s SVIDEO output\n", stdstr);
- 	     ivideo->vbflags |= TV_SVIDEO;
- 	     SiS_SetRegOR(SISCR, 0x32, 0x02);
--	     andSISIDXREG(SISCR, 0x32, ~0x05);
-+	     SiS_SetRegAND(SISCR, 0x32, ~0x05);
- 	     break;
- 	case 0x04:
- 	     printk(KERN_INFO "%s SCART output\n", stdstr);
- 	     SiS_SetRegOR(SISCR, 0x32, 0x04);
--	     andSISIDXREG(SISCR, 0x32, ~0x03);
-+	     SiS_SetRegAND(SISCR, 0x32, ~0x03);
- 	     break;
- 	default:
--	     andSISIDXREG(SISCR, 0x32, ~0x07);
-+	     SiS_SetRegAND(SISCR, 0x32, ~0x07);
- 	}
- #endif
-     }
-@@ -3690,7 +3690,7 @@ sisfb_fixup_SR11(struct sis_video_info *ivideo)
- 			tmpreg = SiS_GetReg(SISSR, 0x11);
- 		}
- 		if(tmpreg & 0xf0) {
--			andSISIDXREG(SISSR,0x11,0x0f);
-+			SiS_SetRegAND(SISSR, 0x11, 0x0f);
- 		}
- 	}
- }
-@@ -3871,7 +3871,7 @@ sisfb_post_setmode(struct sis_video_info *ivideo)
- 		}
- 	}
- 
--	andSISIDXREG(SISSR, IND_SIS_RAMDAC_CONTROL, ~0x04);
-+	SiS_SetRegAND(SISSR, IND_SIS_RAMDAC_CONTROL, ~0x04);
- 
- 	if(ivideo->currentvbflags & CRT2_TV) {
- 		if(ivideo->vbflags2 & VB2_SISBRIDGE) {
-@@ -4194,7 +4194,7 @@ sisfb_post_300_buswidth(struct sis_video_info *ivideo)
- 	unsigned char reg;
- 	int i, j;
- 
--	andSISIDXREG(SISSR, 0x15, 0xFB);
-+	SiS_SetRegAND(SISSR, 0x15, 0xFB);
- 	SiS_SetRegOR(SISSR, 0x15, 0x04);
- 	SiS_SetReg(SISSR, 0x13, 0x00);
- 	SiS_SetReg(SISSR, 0x14, 0xBF);
-@@ -4208,7 +4208,7 @@ sisfb_post_300_buswidth(struct sis_video_info *ivideo)
- 			SiS_SetRegOR(SISSR, 0x3c, 0x01);
- 			reg = SiS_GetReg(SISSR, 0x05);
- 			reg = SiS_GetReg(SISSR, 0x05);
--			andSISIDXREG(SISSR, 0x3c, 0xfe);
-+			SiS_SetRegAND(SISSR, 0x3c, 0xfe);
- 			reg = SiS_GetReg(SISSR, 0x05);
- 			reg = SiS_GetReg(SISSR, 0x05);
- 			temp++;
-@@ -4283,7 +4283,7 @@ sisfb_post_300_rwtest(struct sis_video_info *ivideo, int iteration, int buswidth
- 		PhysicalAdrHalfPage = (PageCapacity / 2 + PhysicalAdrHigh) % PageCapacity;
- 		PhysicalAdrOtherPage = PageCapacity * SiS_DRAMType[k][2] + PhysicalAdrHigh;
- 
--		andSISIDXREG(SISSR, 0x15, 0xFB); /* Test */
-+		SiS_SetRegAND(SISSR, 0x15, 0xFB); /* Test */
- 		SiS_SetRegOR(SISSR, 0x15, 0x04);  /* Test */
- 		sr14 = (SiS_DRAMType[k][3] * buswidth) - 1;
- 		if(buswidth = 4)      sr14 |= 0x80;
-@@ -4423,7 +4423,7 @@ sisfb_post_sis300(struct pci_dev *pdev)
- 	SiS_SetReg(SISSR, 0x1a, v6);
- 	SiS_SetReg(SISSR, 0x1b, v7);
- 	SiS_SetReg(SISSR, 0x1c, v8);	   /* ---- */
--	andSISIDXREG(SISSR, 0x15 ,0xfb);
-+	SiS_SetRegAND(SISSR, 0x15, 0xfb);
- 	SiS_SetRegOR(SISSR, 0x15, 0x04);
- 	if(bios) {
- 		if(bios[0x53] & 0x02) {
-@@ -4485,7 +4485,7 @@ sisfb_post_sis300(struct pci_dev *pdev)
- 	}
- 	SiS_SetReg(SISSR, 0x32, v2);
- 
--	andSISIDXREG(SISPART1, 0x24, 0xfe);  /* Lock CRT2 */
-+	SiS_SetRegAND(SISPART1, 0x24, 0xfe);  /* Lock CRT2 */
- 
- 	reg = SiS_GetReg(SISSR, 0x16);
- 	reg &= 0xc3;
-@@ -5067,7 +5067,7 @@ sisfb_post_xgi(struct pci_dev *pdev)
- 		SiS_SetReg(SISCR, 0x7e, 0x0f);
- 	}
- 	if(ivideo->revision_id = 0) {	/* 40 *and* 20? */
--		andSISIDXREG(SISCR, 0x58, 0xd7);
-+		SiS_SetRegAND(SISCR, 0x58, 0xd7);
- 		reg = SiS_GetReg(SISCR, 0xcb);
- 		if(reg & 0x20) {
- 			setSISIDXREG(SISCR, 0x58, 0xd7, (reg & 0x10) ? 0x08 : 0x20); /* =0x28 Z7 ? */
-@@ -5085,15 +5085,15 @@ sisfb_post_xgi(struct pci_dev *pdev)
- 		SiS_SetReg(SISVID, 0x30, 0x00);
- 		SiS_SetReg(SISVID, 0x32, 0x01);
- 		SiS_SetReg(SISVID, 0x30, 0x00);
--		andSISIDXREG(SISVID, 0x2f, 0xdf);
--		andSISIDXREG(SISCAP, 0x00, 0x3f);
-+		SiS_SetRegAND(SISVID, 0x2f, 0xdf);
-+		SiS_SetRegAND(SISCAP, 0x00, 0x3f);
- 
- 		SiS_SetReg(SISPART1, 0x2f, 0x01);
- 		SiS_SetReg(SISPART1, 0x00, 0x00);
- 		SiS_SetReg(SISPART1, 0x02, bios[0x7e]);
- 		SiS_SetReg(SISPART1, 0x2e, 0x08);
--		andSISIDXREG(SISPART1, 0x35, 0x7f);
--		andSISIDXREG(SISPART1, 0x50, 0xfe);
-+		SiS_SetRegAND(SISPART1, 0x35, 0x7f);
-+		SiS_SetRegAND(SISPART1, 0x50, 0xfe);
- 
- 		reg = SiS_GetReg(SISPART4, 0x00);
- 		if(reg = 1 || reg = 2) {
-@@ -5101,7 +5101,7 @@ sisfb_post_xgi(struct pci_dev *pdev)
- 			SiS_SetReg(SISPART4, 0x0d, bios[0x7f]);
- 			SiS_SetReg(SISPART4, 0x0e, bios[0x80]);
- 			SiS_SetReg(SISPART4, 0x10, bios[0x81]);
--			andSISIDXREG(SISPART4, 0x0f, 0x3f);
-+			SiS_SetRegAND(SISPART4, 0x0f, 0x3f);
- 
- 			reg = SiS_GetReg(SISPART4, 0x01);
- 			if((reg & 0xf0) >= 0xb0) {
-@@ -5259,7 +5259,7 @@ sisfb_post_xgi(struct pci_dev *pdev)
- 		}
- 	}
- 
--	andSISIDXREG(SISCR, 0x6e, 0xfc);
-+	SiS_SetRegAND(SISCR, 0x6e, 0xfc);
- 
- 	ptr  = NULL;
- 	if(ivideo->haveXGIROM) {
-@@ -5297,7 +5297,7 @@ sisfb_post_xgi(struct pci_dev *pdev)
- 		SiS_SetReg(SISCR, 0x80 + i, ptr[j + regb]);
- 	}
- 
--	andSISIDXREG(SISCR, 0x89, 0x8f);
-+	SiS_SetRegAND(SISCR, 0x89, 0x8f);
- 
- 	ptr  = cs45a;
- 	if(ivideo->haveXGIROM) {
-@@ -5660,7 +5660,7 @@ sisfb_post_xgi(struct pci_dev *pdev)
- 		SiS_SetReg(SISSR, 0x05, 0x86);
- 
- 		/* Disable read-cache */
--		andSISIDXREG(SISSR, 0x21, 0xdf);
-+		SiS_SetRegAND(SISSR, 0x21, 0xdf);
- 		sisfb_post_xgi_ramsize(ivideo);
- 		/* Enable read-cache */
- 		SiS_SetRegOR(SISSR, 0x21, 0x20);
+ #
+ # Display device support
+ #
+ # CONFIG_DISPLAY_SUPPORT is not set
++
++#
++# Console display driver support
++#
++CONFIG_VGA_CONSOLE=y
++# CONFIG_VGACON_SOFT_SCROLLBACK is not set
++CONFIG_DUMMY_CONSOLE=y
++CONFIG_FRAMEBUFFER_CONSOLE=y
++# CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY is not set
++# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
++# CONFIG_FONTS is not set
++CONFIG_FONT_8x8=y
++CONFIG_FONT_8x16=y
++# CONFIG_LOGO is not set
+ # CONFIG_SOUND is not set
++CONFIG_HID_SUPPORT=y
++CONFIG_HID=y
++# CONFIG_HIDRAW is not set
++
++#
++# USB Input Devices
++#
++CONFIG_USB_HID=y
++# CONFIG_HID_PID is not set
++# CONFIG_USB_HIDDEV is not set
++
++#
++# Special HID drivers
++#
++# CONFIG_HID_3M_PCT is not set
++# CONFIG_HID_A4TECH is not set
++# CONFIG_HID_ACRUX_FF is not set
++# CONFIG_HID_APPLE is not set
++# CONFIG_HID_BELKIN is not set
++# CONFIG_HID_CANDO is not set
++# CONFIG_HID_CHERRY is not set
++# CONFIG_HID_CHICONY is not set
++# CONFIG_HID_CYPRESS is not set
++# CONFIG_HID_DRAGONRISE is not set
++# CONFIG_HID_EGALAX is not set
++# CONFIG_HID_EZKEY is not set
++# CONFIG_HID_KYE is not set
++# CONFIG_HID_UCLOGIC is not set
++# CONFIG_HID_WALTOP is not set
++# CONFIG_HID_GYRATION is not set
++# CONFIG_HID_TWINHAN is not set
++# CONFIG_HID_KENSINGTON is not set
++# CONFIG_HID_LOGITECH is not set
++# CONFIG_HID_MICROSOFT is not set
++# CONFIG_HID_MOSART is not set
++# CONFIG_HID_MONTEREY is not set
++# CONFIG_HID_NTRIG is not set
++# CONFIG_HID_ORTEK is not set
++# CONFIG_HID_PANTHERLORD is not set
++# CONFIG_HID_PETALYNX is not set
++# CONFIG_HID_PICOLCD is not set
++# CONFIG_HID_QUANTA is not set
++# CONFIG_HID_ROCCAT is not set
++# CONFIG_HID_ROCCAT_KONE is not set
++# CONFIG_HID_ROCCAT_PYRA is not set
++# CONFIG_HID_SAMSUNG is not set
++# CONFIG_HID_SONY is not set
++# CONFIG_HID_STANTUM is not set
++# CONFIG_HID_SUNPLUS is not set
++# CONFIG_HID_GREENASIA is not set
++# CONFIG_HID_SMARTJOYPLUS is not set
++# CONFIG_HID_TOPSEED is not set
++# CONFIG_HID_THRUSTMASTER is not set
++# CONFIG_HID_ZEROPLUS is not set
++# CONFIG_HID_ZYDACRON is not set
+ CONFIG_USB_SUPPORT=y
+ CONFIG_USB_ARCH_HAS_HCD=y
+ CONFIG_USB_ARCH_HAS_OHCI=y
+@@ -1007,6 +1170,7 @@ CONFIG_USB_STORAGE=y
+ # CONFIG_USB_STORAGE_SDDR55 is not set
+ # CONFIG_USB_STORAGE_JUMPSHOT is not set
+ # CONFIG_USB_STORAGE_ALAUDA is not set
++# CONFIG_USB_STORAGE_ONETOUCH is not set
+ # CONFIG_USB_STORAGE_KARMA is not set
+ # CONFIG_USB_STORAGE_CYPRESS_ATACB is not set
+ # CONFIG_USB_UAS is not set
 -- 
-1.5.6.5
+1.7.2.3
 

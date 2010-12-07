@@ -1,43 +1,61 @@
-From: Web Mail User <info@web.com>
-Date: Mon, 06 Dec 2010 03:37:58 +0000
-Subject: E-mail =?iso-8859-1?b?bWFz4T8=?= aktualizace
-Message-Id: <20101206043758.cfmeyvn404s0kkg8@webmail.u-bordeaux3.fr>
+From: Heiko Schocher <hs@denx.de>
+Date: Tue, 07 Dec 2010 06:59:20 +0000
+Subject: [PATCH 2/2 v2] powerpc, video: add SM501 support for charon board.
+Message-Id: <1291705160-26847-1-git-send-email-hs@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1291451028-22532-2-git-send-email-hs@denx.de>
+In-Reply-To: <1291451028-22532-2-git-send-email-hs-ynQEQJNshbs@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Heiko Schocher <hs-ynQEQJNshbs@public.gmane.org>, devicetree-discuss-mnsaURCQ41sdnm+yROfE0A@public.gmane.org
 
+Signed-off-by: Heiko Schocher <hs@denx.de>
+cc: linux-fbdev@vger.kernel.org
+cc: devicetree-discuss@ozlabs.org
+---
+- based against 2.6.37-rc4
 
-E-mail mas=E1? aktualizace z=E1znamu
+./scripts/checkpatch.pl 0003-powerpc-video-add-SM501-support-for-charon-board.patch
+total: 0 errors, 0 warnings, 21 lines checked
 
-Va?e po?tovn=ED schr=E1nka p?ekro?ila limit =FAlo?i?t? na 20GB, co? je
-definovan=E9 spr=E1vcem, ve kter=E9m pracujete +20,9gigabajt, kter=E9
-Mo?n=E1 nebudete moci odes=EDlat nebo p?ij=EDmat nov=E9 zpr=E1vy
-dokud se dal v po?tovn=ED schr=E1nce. Chcete-li ov??it
-?ten=E1?i e-mail:
+0003-powerpc-video-add-SM501-support-for-charon-board.patch has no obvious style problems and is ready for submission.
 
-Va?e schr=E1nka je t=E9m?? pln=E1.
-23 GB na 20 GB
-Hr=E1t
+- changes since v1:
+  - no board specific defconfig file for mpc52xx based boards as suggested
+    from Wolfram Sang
 
-Odpov?d?t a dokon?ete n=E1sleduj=EDc=ED informace na V=E1? e-mail m??e
-udr?ovat a zlep?ovat.
+ arch/powerpc/boot/dts/charon.dts |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-E-mail:
-
-U?ivatelsk=E9 jm=E9no:
-
-Heslo:
-
-Potvrdit heslo:
-
-Datum narozen=ED:
-
-Spr=E1vce syst=E9mu.
-
-P?e?t?te si poslechnout Foneticky
-
-
-
+diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
+index 9776889..d9af022 100644
+--- a/arch/powerpc/boot/dts/charon.dts
++++ b/arch/powerpc/boot/dts/charon.dts
+@@ -186,6 +186,7 @@
+ 		#address-cells = <2>;
+ 		#size-cells = <1>;
+ 		ranges = <	0 0 0xfc000000 0x02000000
++				1 0 0xe0000000 0x04000000 // CS1 range, SM501
+ 				3 0 0xe8000000 0x00080000>;
+ 
+ 		flash@0,0 {
+@@ -197,6 +198,14 @@
+ 			#address-cells = <1>;
+ 		};
+ 
++		display@1,0 {
++			compatible = "smi,sm501";
++			reg = <1 0x00000000 0x00800000
++			       1 0x03e00000 0x00200000>;
++			mode = "640x480-32@60";
++			interrupts = <1 1 3>;
++		};
++
+ 		mram0@3,0 {
+ 			compatible = "mtd-ram";
+ 			reg = <3 0x00000 0x80000>;
+-- 
+1.7.2.3
 

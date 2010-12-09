@@ -1,41 +1,40 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Mon, 27 Dec 2010 14:20:46 +0000
-Subject: [GIT PULL] fbdev updates for 2.6.37-rc8
-Message-Id: <20101227142046.GD16946@linux-sh.org>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Date: Thu, 09 Dec 2010 13:47:19 +0000
+Subject: [PATCH 7/9] ARM i.MX5: Allow to increase max zone order
+Message-Id: <1291902441-24712-8-git-send-email-s.hauer@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1291902441-24712-1-git-send-email-s.hauer@pengutronix.de>
+In-Reply-To: <1291902441-24712-1-git-send-email-s.hauer@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-This is a fairly straightforward set of bugfixes and regression fixes.
+default setting of 11 allows us to allocate at maximum
+2MB chunks of contiguous memory. For resolutions up to
+1920x1080 32bpp we need much more memory, so make zone
+order configurable
 
-When the SH-Mobile driver underwent some rework the userspace-facing var
-info ceased propagating accurate mode information to userspace tools,
-which is now corrected. A further patch for the LCDC fixes up bounding
-for invalid mode settings that was triggered on older platforms, which
-previously had a working fbcon but broken application interface.
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+---
+ arch/arm/Kconfig |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Please pull from:
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index db524e7..b3e070e 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -1410,8 +1410,8 @@ config SPARSE_IRQ
+ source "mm/Kconfig"
+ 
+ config FORCE_MAX_ZONEORDER
+-	int "Maximum zone order" if ARCH_SHMOBILE
+-	range 11 64 if ARCH_SHMOBILE
++	int "Maximum zone order" if ARCH_SHMOBILE || ARCH_MX5
++	range 11 64 if ARCH_SHMOBILE || ARCH_MX5
+ 	default "9" if SA1111
+ 	default "11"
+ 	help
+-- 
+1.7.2.3
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/fbdev-2.6.git fbdev-fixes-for-linus
-
-Which contains:
-
-Dave Airlie (1):
-      fb: fix overlapping test off-by-one.
-
-Fabio Estevam (1):
-      video: imxfb: Fix the maximum value for yres
-
-Guennadi Liakhovetski (3):
-      fbdev: sh-mobile: restore display size configuration
-      fbdev: sh-mobile: retrieve and propagate display sizes from EDID
-      fbdev: sh_mobile_lcdc: increase maximum framebuffer size to support 1080p
-
- drivers/video/fbmem.c            |    2 +-
- drivers/video/imxfb.c            |    9 +++------
- drivers/video/sh_mobile_hdmi.c   |   16 +++++++++++++---
- drivers/video/sh_mobile_lcdcfb.c |   30 +++++++++++-------------------
- 4 files changed, 28 insertions(+), 29 deletions(-)

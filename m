@@ -1,121 +1,193 @@
-From: "Hiremath, Vaibhav" <hvaibhav@ti.com>
-Date: Fri, 17 Dec 2010 09:11:54 +0000
-Subject: RE: OMAP:DSS: possible bug in WAITFOR_VSYNC ioctl
-Message-Id: <19F8576C6E063C45BE387C64729E739404BD0DBA3B@dbde02.ent.ti.com>
+From: Dzianis Kahanovich <mahatma@bspu.unibel.by>
+Date: Thu, 09 Dec 2010 13:09:28 +0000
+Subject: [PATCH v3] (new way) I2C/DDC defaults & I2C/DDC detection for VIA
+Message-Id: <4D00D508.1060106@bspu.unibel.by>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <19F8576C6E063C45BE387C64729E739404BC762E9A@dbde02.ent.ti.com>
-	 <1290589057.13243.22.camel@tubuntu>
-	 <19F8576C6E063C45BE387C64729E739404BCCA3A55@dbde02.ent.ti.com>
-	 <20101124163100.GB5681@nokia.com>
-	 <19F8576C6E063C45BE387C64729E739404BCCA3CAE@dbde02.ent.ti.com>
-	 <yw1xeia81nts.fsf@unicorn.mansr.com>
-	 <19F8576C6E063C45BE387C64729E739404BCCA401F@dbde02.ent.ti.com>
-	 <20101126125539.GG8094@nokia.com> <20101130063440.GF17114@linux-sh.org>
-	 <20101130063934.GG17114@linux-sh.org>
-	 <19F8576C6E063C45BE387C64729E739404BCCA455A@dbde02.ent.ti.com>
- <1291123945.24627.223.camel@tubuntu>
-In-Reply-To: <1291123945.24627.223.camel@tubuntu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, Ville Syrj?l? <ville.syrjala@nokia.com>, M?ns Rullg?rd <mans@mansr.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
+I2C/DDC defaults & I2C/DDC detection for VIA framebuffer.
 
-> -----Original Message-----
-> From: Tomi Valkeinen [mailto:tomi.valkeinen@nokia.com]
-> Sent: Tuesday, November 30, 2010 7:02 PM
-> To: Hiremath, Vaibhav
-> Cc: Paul Mundt; Ville Syrj?l?; M?ns Rullg?rd; linux-omap@vger.kernel.org;
-> linux-fbdev@vger.kernel.org
-> Subject: RE: OMAP:DSS: possible bug in WAITFOR_VSYNC ioctl
-> 
-> On Tue, 2010-11-30 at 12:29 +0530, ext Hiremath, Vaibhav wrote:
-> > > -----Original Message-----
-> > > From: Paul Mundt [mailto:lethal@linux-sh.org]
-> > > Sent: Tuesday, November 30, 2010 12:10 PM
-> > > To: Ville Syrj?l?
-> > > Cc: Hiremath, Vaibhav; M?ns Rullg?rd; linux-omap@vger.kernel.org;
-> linux-
-> > > fbdev@vger.kernel.org
-> > > Subject: Re: OMAP:DSS: possible bug in WAITFOR_VSYNC ioctl
-> > >
-> > > On Tue, Nov 30, 2010 at 03:34:40PM +0900, Paul Mundt wrote:
-> > > > On Fri, Nov 26, 2010 at 02:55:39PM +0200, Ville Syrj?l? wrote:
-> > > > > On Fri, Nov 26, 2010 at 05:38:11PM +0530, ext Hiremath, Vaibhav
-> wrote:
+Adding defaults & legacy I2C/DDC support for VIA framebuffer.
+Detecting legacy I2C/DDC outputs (if undetected else) and
+set autodetected defaults on empty "viafb_active_dev".
 
-<snip>
+v2: fixed configurable way LCD order
+v3: fixed CRT
 
-> > > a WAITFORHWSYNC or something similar.
-> > [Hiremath, Vaibhav] Yes exactly, this name fits to the use-case and
-> sounds ok to me.
-> >
-> > Tomi,
-> > Any comments?
-> 
-> Ah, I seem to have been dropped out from this mail thread...
-> 
-> Yes, WAITFORHWSYNC sounds much better.
-> 
-> But there seems to be some misunderstanding of what this is about.
-> Deferred IO or manual update displays are not directly related to this.
-> This is about configuration registers, ie. address, size, etc. of the
-> framebuffer, not about the contents of the framebuffer.
-> 
-> The reason why WAITFORGO was implemented is:
-> 
-> OMAP has user writeable shadow registers and hidden real registers for
-> display controller. The shadow registers are latched to real registers
-> on VFP, but only if GO bit has been set. The GO bit is cleared by the HW
-> when latching has been done.
-> 
-> If the GO bit is set, we cannot touch the shadow registers because we
-> don't know when the VFP  will happen. That's why there's additionally a
-> SW cache for the config, so that we don't need to block when the GO bit
-> is up and the user wants to change the config. The driver "flushes" the
-> SW config to real registers in VSYNC interrupt handler.
-> 
-> This is why the user may need to wait multiple vsyncs until the config
-> has really been written to the real HW registers, and WAITFORGO waits
-> for this. But if there has not been any config changes, WAITFORGO
-> doesn't wait at all.
-> 
-> So WAITFORVSYNC and WAITFORGO do quite a different thing on OMAP. It is
-> true what Hiremath says, WAITFORVSYNC is difficult (impossible?) to use
-> properly on OMAP as if the config write happens between VFP and VSYNC,
-> the config is not actually yet in the real registers.
-> 
-> But I'm still not comfortable with just moving WAITFORGO over
-> WAITFORVSYNC. At least we should then change WAITFORGO to always wait at
-> least for the next vsync, so that it wouldn't return immediately when
-> there are no pending changes. This would make WAITFORGO act like
-> WAITFORVSYNC in many cases, but not always.
-> 
-> And to add to the confusion, there are multiple overlays on OMAP. They
-> may be currently shared by multiple users (for example omapfb and v4l2).
-> If the user uses WAITFORVSYNC, the call will return for every vsync, as
-> expected. If he uses WAITFORGO, the call will return in random number of
-> vsyncs from the user's point of view, because the other user may be
-> competing from the same resource.
-> 
-> One could still argue that always using WAITFORGO is better, as there's
-> the problem with WAITFORVSYNC that Hiremath described. But then again,
-> WAITFORGO acts differently than what (I think) WAITFORVSYNC should do.
-> 
-> So summa summarum, I didn't know how to solve this perfectly earlier,
-> and thus I implemented WAITFORGO, and I still don't know what would be
-> the perfect solution.
-> 
-[Hiremath, Vaibhav] We did not had a closure on this topic, so summarizing our discussion here,
+Signed-off-by: Dzianis Kahanovich <mahatma@eu.by>
+---
+diff -pruN a/viafbdev.c c/viafbdev.c
+--- a/drivers/video/via/viafbdev.c	2010-12-07 18:35:22.000000000 +0200
++++ c/drivers/video/via/viafbdev.c	2010-12-09 04:04:49.000000000 +0200
+@@ -1485,6 +1485,135 @@ static int parse_mode(const char *str, u
+ 	return 0;
+ }
 
-Let's keep FBIO_WAITFORVSYNC (or OMAPFB_WAITFORVSYNC) ioctl as is, since as of now the way we understand this ioctl is, it should barely wait for next vsync. 
++/* stage=0: count devices to set dual and/or SAMM;
++   stage=1: add devices, detected only via i2c legacy;
++   set LCD/DVI/CRT if viafb_active_dev unset */
++static void viafb_detect_dev(int stage, struct viafb_dev *vdev)
++{
++	u8 *edid;
++	struct fb_var_screeninfo var;
++	int i, t, ndev = 0, nlcd = 0, unknown = 0;
++	struct i2c_adapter *adapter;
++	struct lvds_setting_information *inf;
++
++	/* FIXME: viaparinfo1->chip_info looks equal to viaparinfo */
++	i = !viafb_active_dev && stage;
++	if (viaparinfo->chip_info->tmds_chip_info.tmds_chip_name) {
++		ndev++;
++		if (i)
++			viafb_DVI_ON = STATE_ON;
++	}
++	if (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
++		ndev++;
++		nlcd = 1;
++		if (i)
++			viafb_LCD_ON = STATE_ON;
++	}
++	if (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name) {
++		ndev++;
++		nlcd = 2;
++		if (i)
++			viafb_LCD2_ON = STATE_ON;
++	}
++	/* enabling CRT in textmode is at least no bad */
++	if (viafb_CRT_ON) {
++		ndev++;
++		viafb_crt_enable();
++	}
++	for (i = 0; i < VIAFB_NUM_PORTS; i++) {
++		t = vdev->port_cfg[i].type;
++		/* detect only i2c ports, undetected in other places */
++		if ((viaparinfo && viaparinfo->chip_info && (
++		    (viaparinfo->chip_info->tmds_chip_info.tmds_chip_name &&
++		    viaparinfo->chip_info->tmds_chip_info.i2c_port = t) ||
++		    (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name &&
++		    viaparinfo->chip_info->lvds_chip_info.i2c_port = t) ||
++		    (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name &&
++		    viaparinfo->chip_info->lvds_chip_info2.i2c_port = t)
++		    )) || (viaparinfo1 && viaparinfo1->chip_info && (
++		    (viaparinfo1->chip_info->tmds_chip_info.tmds_chip_name &&
++		    viaparinfo1->chip_info->tmds_chip_info.i2c_port = t) ||
++		    (viaparinfo1->chip_info->lvds_chip_info.lvds_chip_name &&
++		    viaparinfo1->chip_info->lvds_chip_info.i2c_port = t) ||
++		    (viaparinfo1->chip_info->lvds_chip_info2.lvds_chip_name &&
++		    viaparinfo1->chip_info->lvds_chip_info2.i2c_port = t)
++		    )) || !(adapter = viafb_find_i2c_adapter(i)) ||
++		    !(edid = fb_ddc_read(adapter)))
++			continue;
++		memset(&var, 0, sizeof(var));
++		if (fb_parse_edid(edid, &var))
++			goto free_edid;
++		printk(KERN_INFO "viafb: %48s\n", adapter->name);
++		inf = NULL;
++		if (!stage) {
++		} else if (!nlcd) {
++			fb_edid_to_monspecs(edid, &viafbinfo->monspecs);
++			if (viafbinfo->monspecs.input & FB_DISP_DDI)
++				inf = viaparinfo->lvds_setting_info;
++			else
++				unknown++;
++		} else if (nlcd > 1) {
++			printk(KERN_ERR "viafb: too many LCD\n");
++			unknown++;
++		} else if (viafb_dual_fb) {
++			fb_edid_to_monspecs(edid, &viafbinfo1->monspecs);
++			if (viafbinfo1->monspecs.input & FB_DISP_DDI)
++				inf = viaparinfo1->lvds_setting_info;
++			else
++				unknown++;
++		} else {
++			fb_edid_to_monspecs(edid, &viafbinfo->monspecs);
++			if (viafbinfo->monspecs.input & FB_DISP_DDI)
++				inf = viaparinfo->lvds_setting_info2;
++			else
++				unknown++;
++		}
++		if (inf) {
++			if (!viafb_active_dev) {
++				if (nlcd)
++					viafb_LCD2_ON = STATE_ON;
++				else
++					viafb_LCD_ON = STATE_ON;
++			}
++			nlcd++;
++			if (var.xres)
++				inf->lcd_panel_hres = var.xres;
++			if (var.yres)
++				inf->lcd_panel_vres = var.yres;
++		}
++		ndev++;
++free_edid:
++		kfree(edid);
++	}
++	if (!viafb_active_dev) {
++		/* prefer CRT OFF if other devices */
++#if 1
++		if (unknown) {
++			if (!viafb_CRT_ON) {
++				viafb_CRT_ON = STATE_ON;
++				ndev++;
++			}
++		} else if (ndev > 1 && viafb_CRT_ON) {
++			viafb_CRT_ON = STATE_OFF;
++			ndev--;
++		}
++#endif
++		/* SAMM may be detected on stage 1,
++		   but troubles coming together & dual not wrong */
++		if (ndev > 1 && !stage)
++			viafb_SAMM_ON = viafb_dual_fb = STATE_ON;
++		viafb_DeviceStatus = viafb_primary_dev +		    viafb_CRT_ON ? CRT_Device :
++		    viafb_DVI_ON ? DVI_Device :
++		    viafb_LCD_ON ? LCD_Device : None_Device;
++		if (stage) {
++			if (!viafb_CRT_ON)
++				viafb_crt_disable();
++			viafb_set_iga_path();
++		}
++	}
++}
++
 
-Change the OMAPFB_WAITFORGO to (standard) FBIO_WAITFORHWSYNC, currently this will be used in OMAP2/3 Fb-display driver.
+ int __devinit via_fb_pci_probe(struct viafb_dev *vdev)
+ {
+@@ -1526,6 +1655,10 @@ int __devinit via_fb_pci_probe(struct vi
+ 	parse_dvi_port();
 
-Thanks,
-Vaibhav
+ 	viafb_init_chip_info(vdev->chip_type);
++	/* detect dual_fb & SAMM_ON, but let's keep it to options */
++#if 0
++	viafb_detect_dev(0, vdev);
++#endif
+ 	/*
+ 	 * The framebuffer will have been successfully mapped by
+ 	 * the core (or we'd not be here), but we still need to
+@@ -1675,6 +1808,8 @@ int __devinit via_fb_pci_probe(struct vi
+ 	viafb_init_proc(&viaparinfo->shared->proc_entry);
+ #endif
+ 	viafb_init_dac(IGA2);
++	/* update from legacy i2c DDC info */
++	viafb_detect_dev(1, vdev);
+ 	return 0;
 
->  Tomi
-> 
+ out_fb_unreg:
+diff -pruN a/via_i2c.c c/via_i2c.c
+--- a/drivers/video/via/via_i2c.c	2010-12-08 15:12:05.000000000 +0200
++++ c/drivers/video/via/via_i2c.c	2010-11-29 18:04:24.000000000 +0200
+@@ -167,7 +167,7 @@ struct i2c_adapter *viafb_find_i2c_adapt
+ {
+ 	struct via_i2c_stuff *stuff = &via_i2c_par[which];
+
+-	return &stuff->adapter;
++	return stuff->is_active ? &stuff->adapter : NULL;
+ }
+ EXPORT_SYMBOL_GPL(viafb_find_i2c_adapter);
+
+--
 

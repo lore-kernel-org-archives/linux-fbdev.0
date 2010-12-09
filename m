@@ -1,145 +1,157 @@
-From: Chen Jie-B02280 <B02280@freescale.com>
-Date: Thu, 16 Dec 2010 02:07:03 +0000
-Subject: RE: [PATCH 5/9] Add i.MX5 framebuffer driver
-Message-Id: <33F32152BE7EC740BC2C838D2836AC8704B2F3@039-SN1MPN1-002.039d.mgd.msft.net>
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Date: Thu, 09 Dec 2010 13:41:50 +0000
+Subject: [RESEND #2] [PATCH v2] LEDS: Add output invertion option to backlight trigger
+Message-Id: <201012091441.51846.jkrzyszt@tis.icnet.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <33F32152BE7EC740BC2C838D2836AC8704A957@039-SN1MPN1-002.039d.mgd.msft.net>
-	<33F32152BE7EC740BC2C838D2836AC8704A9F5@039-SN1MPN1-002.039d.mgd.msft.net>
-	<20101215143844.GE6017@pengutronix.de>
-In-Reply-To: <20101215143844.GE6017@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-kernel@vger.kernel.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 
-Hi, Sascha,
+This patch extends the LED backlight tirgger driver with an option that allows 
+for inverting the trigger output polarity.
 
+With the invertion option provided, I (ab)use the backlight trigger for 
+driving a LED that indicates LCD display blank condtition on my Amstrad Delta 
+videophone. Since the machine has no dedicated power LED, it was not possible 
+to distinguish if the display was blanked, or the machine was turned off, 
+without touching it.
 
+The invert sysfs control is patterned after a similiar function of the GPIO 
+trigger driver.
 
-Jason Chen / Chen Jie
-NMG / MAD
-Freescale Semiconductor (China) Ltd.
-2F, Building B, 177#, Bi Bo Rd
-Pu Dong New District Shanghai=A0201203
-Tel:=A0=A0=A0=A0 021-28937178=A0
-Fax:=A0=A0=A0=A0 021-28937444
-E-mail:=A0=A0Jason.Chen@freescale.com
+Created and tested against linux-2.6.36-rc5 on Amstrad Delta.
+Retested on linux-2.6.37-rc4.
 
+Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Cc: Richard Purdie <rpurdie@rpsys.net>
+---
 
------Original Message-----
-From: saschahauer@web.de [mailto:saschahauer@web.de] On Behalf Of s.hauer@p=
-engutronix.de
-Sent: Wednesday, December 15, 2010 10:39 PM
-To: Chen Jie-B02280
-Cc: linux-arm-kernel@lists.infradead.org; linux-kernel@vger.kernel.org; lin=
-ux-fbdev@vger.kernel.org; Zhang Lily-R58066; arnaud.patard@rtp-net.org
-Subject: Re: [PATCH 5/9] Add i.MX5 framebuffer driver
+Resent because I still can't see any response received, while yet another 
+merge window is going to pass away soon.
 
-On Tue, Dec 14, 2010 at 12:38:08PM +0000, Chen Jie-B02280 wrote:
-> Hi, Sascha,
->=20
-> Few comments inline with [Jason]
+Applies cleanly on top of 2.6.37-rc4, so no need for yet another refresh. Only 
+tried to clean up the commit message slightly - maybe my English is not good 
+enough to bother with, if not the code?
 
-Please consider switching to a sane mailer which is able to quote correctly.
+v1 -> v2 changes:
+- improve some conditional expressions to be more readable; thanks to Ralph 
+  Corderoy (from e3-hacking) and Lars-Peter Clausen for their suggestions,
+- refresh against linux-2.6.36-rc5.
 
->=20
-> I have following comments to this patch:
-> 1) Please modify the commit message, as IPUv3 is not embedded in i.MX50 S=
-oC.
-> 2) ADC is not supported yet in the framebuffer driver, so please=20
-> modify this comment:
->   > + * Framebuffer Framebuffer Driver for SDC and ADC.
-> 3) 'ipu_dp_set_window_pos()' is called only once in=20
-> imx_ipu_fb_set_par_overlay(). So, the framebuffer driver doesn't=20
-> support to change the overlay framebuffer position. Need a=20
-> mechanism/interface for users to change the overlay framebuffer=20
-> position.
-> [Jason] DP-FG should be one fb device, sequence ioctl should be added=20
-> after it, like global alpha , color key etc.
+ drivers/leds/ledtrig-backlight.c |   60 
+++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 56 insertions(+), 4 deletions(-)
 
-As said before, I have no interest in making the overlay fully functional a=
-tm. So either we'll leave it here for reference if someone ever tries to im=
-plement it properly or I'll remove it completely.
-[Jason] Ok, then pls keep it as reference.
-
-> > +static int imx_ipu_fb_set_par(struct fb_info *fbi) {
-> > +       int ret;
-> > +       struct ipu_di_signal_cfg sig_cfg;
-> > +       struct imx_ipu_fb_info *mxc_fbi =3D fbi->par;
-> > +       u32 out_pixel_fmt;
-> > +       int interlaced =3D 0;
-> > +       struct fb_var_screeninfo *var =3D &fbi->var;
-> > +       int enabled =3D mxc_fbi->enabled;
-> > +
-> > +       dev_dbg(fbi->device, "Reconfiguring framebuffer %dx%d-%d\n",
-> > +               fbi->var.xres, fbi->var.yres,=20
-> > + fbi->var.bits_per_pixel);
-> > +
-> > +       if (enabled)
-> > +               imx_ipu_fb_disable(fbi);
-> > +
-> > +       fbi->fix.line_length =3D var->xres_virtual *=20
-> > + var->bits_per_pixel / 8;
-> > +
-> > +       var->yres_virtual =3D var->yres;
-> > +
-> > +       ret =3D imx_ipu_fb_map_video_memory(fbi);
-> > +       if (ret)
-> > +               return ret;
-> > +
-> > +       if (var->vmode & FB_VMODE_INTERLACED)
-> > +               interlaced =3D 1;
-> > +
-> > +       memset(&sig_cfg, 0, sizeof(sig_cfg));
-> > +       out_pixel_fmt =3D mxc_fbi->ipu_di_pix_fmt;
-> > +
-> > +       if (var->vmode & FB_VMODE_INTERLACED)
-> > +               sig_cfg.interlaced =3D 1;
-> > +       if (var->vmode & FB_VMODE_ODD_FLD_FIRST) /* PAL */
-> > +               sig_cfg.odd_field_first =3D 1;
-> > +       if (var->sync & FB_SYNC_EXT)
-> > +               sig_cfg.ext_clk =3D 1;
-> [Jason] FB_SYNC_EXT has not be used in FSL kernel mainline, it=20
-> represent SYNC ext, should not be flag of ext clk. Some application=20
-> for example X-server could not recognize it.
-
-Ok, I'll remove it.
-
-
-> > +static int imx_ipu_fb_pan_display(struct fb_var_screeninfo *var,
-> > +               struct fb_info *info) {
-> > +       struct imx_ipu_fb_info *mxc_fbi =3D info->par;
-> > +       unsigned long base;
-> > +       int ret;
-> > +
-> > +       if (info->var.yoffset =3D var->yoffset)
-> > +               return 0;       /* No change, do nothing */
-> > +
-> > +       base =3D var->yoffset * var->xres_virtual * var->bits_per_pixel=
- / 8;
-> > +       base +=3D info->fix.smem_start;
-> > +
-> > +       ret =3D ipu_wait_for_interrupt(IPU_IRQ_EOF(mxc_fbi->ipu_channel=
-_num), 100);
-> > +       if (ret)
-> > +               return ret;
-> > +
-> > +       if (ipu_idmac_update_channel_buffer(mxc_fbi->ipu_ch, 0, base)) {
-> > +               dev_err(info->device,
-> > +                       "Error updating SDC buf to address=3D0x%08lX\n"=
-, base);
-> > +       }
-> [Jason] It's better to enable double -buffer for fb which could avoid tea=
-ring issue.
-
-There is no tearing as the switching is done during vsync.
-[Jason] Yes, you are right.
-
-
---=20
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
-
-
+diff -upr linux-2.6.36-rc5.orig/drivers/leds/ledtrig-backlight.c linux-2.6.36-rc5/drivers/leds/ledtrig-backlight.c
+--- linux-2.6.36-rc5.orig/drivers/leds/ledtrig-backlight.c	2010-09-24 15:35:13.000000000 +0200
++++ linux-2.6.36-rc5/drivers/leds/ledtrig-backlight.c	2010-10-03 15:59:49.000000000 +0200
+@@ -26,6 +26,7 @@ struct bl_trig_notifier {
+ 	int brightness;
+ 	int old_status;
+ 	struct notifier_block notifier;
++	unsigned invert;
+ };
+ 
+ static int fb_notifier_callback(struct notifier_block *p,
+@@ -36,23 +37,63 @@ static int fb_notifier_callback(struct n
+ 	struct led_classdev *led = n->led;
+ 	struct fb_event *fb_event = data;
+ 	int *blank = fb_event->data;
++	int new_status = *blank ? BLANK : UNBLANK;
+ 
+ 	switch (event) {
+ 	case FB_EVENT_BLANK :
+-		if (*blank && n->old_status = UNBLANK) {
++		if (new_status = n->old_status)
++			break;
++
++		if ((n->old_status = UNBLANK) ^ n->invert) {
+ 			n->brightness = led->brightness;
+ 			led_set_brightness(led, LED_OFF);
+-			n->old_status = BLANK;
+-		} else if (!*blank && n->old_status = BLANK) {
++		} else {
+ 			led_set_brightness(led, n->brightness);
+-			n->old_status = UNBLANK;
+ 		}
++
++		n->old_status = new_status;
++
+ 		break;
+ 	}
+ 
+ 	return 0;
+ }
+ 
++static ssize_t bl_trig_invert_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct led_classdev *led = dev_get_drvdata(dev);
++	struct bl_trig_notifier *n = led->trigger_data;
++
++	return sprintf(buf, "%s\n", n->invert ? "yes" : "no");
++}
++
++static ssize_t bl_trig_invert_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t num)
++{
++	struct led_classdev *led = dev_get_drvdata(dev);
++	struct bl_trig_notifier *n = led->trigger_data;
++	unsigned invert;
++	int ret;
++
++	ret = sscanf(buf, "%u", &invert);
++	if (ret < 1) {
++		dev_err(dev, "invalid value\n");
++		return -EINVAL;
++	}
++
++	n->invert = !!invert;
++
++	/* After inverting, we need to update the LED. */
++	if ((n->old_status = BLANK) ^ n->invert)
++		led_set_brightness(led, LED_OFF);
++	else
++		led_set_brightness(led, n->brightness);
++
++	return num;
++}
++static DEVICE_ATTR(invert, 0644, bl_trig_invert_show, bl_trig_invert_store);
++
+ static void bl_trig_activate(struct led_classdev *led)
+ {
+ 	int ret;
+@@ -66,6 +107,10 @@ static void bl_trig_activate(struct led_
+ 		return;
+ 	}
+ 
++	ret = device_create_file(led->dev, &dev_attr_invert);
++	if (ret)
++		goto err_invert;
++
+ 	n->led = led;
+ 	n->brightness = led->brightness;
+ 	n->old_status = UNBLANK;
+@@ -74,6 +119,12 @@ static void bl_trig_activate(struct led_
+ 	ret = fb_register_client(&n->notifier);
+ 	if (ret)
+ 		dev_err(led->dev, "unable to register backlight trigger\n");
++
++	return;
++
++err_invert:
++	led->trigger_data = NULL;
++	kfree(n);
+ }
+ 
+ static void bl_trig_deactivate(struct led_classdev *led)
+@@ -82,6 +133,7 @@ static void bl_trig_deactivate(struct le
+ 		(struct bl_trig_notifier *) led->trigger_data;
+ 
+ 	if (n) {
++		device_remove_file(led->dev, &dev_attr_invert);
+ 		fb_unregister_client(&n->notifier);
+ 		kfree(n);
+ 	}

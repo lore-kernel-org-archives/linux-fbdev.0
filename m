@@ -1,128 +1,917 @@
-From: =?ISO-8859-1?Q?Vicente_Jim=E9nez?= <googuy@gmail.com>
-Date: Tue, 28 Dec 2010 10:03:50 +0000
-Subject: [PATCH] Corrected matroxfb video option in comments and kernel config help.
-Message-Id: <AANLkTikqCduraRjVvtaU3u1ikQyR-3GryovdTMe-z5HD@mail.gmail.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="0022150482b7be3c7a0498759109"
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Date: Thu, 09 Dec 2010 13:47:17 +0000
+Subject: [PATCH 5/9] Add i.MX5 framebuffer driver
+Message-Id: <1291902441-24712-6-git-send-email-s.hauer@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: linux-fbdev@vger.kernel.org
+References: <1291902441-24712-1-git-send-email-s.hauer@pengutronix.de>
+In-Reply-To: <1291902441-24712-1-git-send-email-s.hauer@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
---0022150482b7be3c7a0498759109
-Content-Type: text/plain; charset=ISO-8859-1
+This patch adds framebuffer support to the Freescale i.MX SoCs
+equipped with an IPU v3, so far these are the i.MX50/51/53.
 
-I have just found this.
+This driver has been tested on the i.MX51 babbage board with
+both DVI and analog VGA in different resolutions and color depths.
+It has also been tested on a custom i.MX51 board using a fixed
+resolution panel.
 
-Best regards,
-vicente
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+---
+ drivers/video/Kconfig  |   11 +
+ drivers/video/Makefile |    1 +
+ drivers/video/mx5fb.c  |  846 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 858 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/mx5fb.c
 
---0022150482b7be3c7a0498759109
-Content-Type: text/x-patch; charset=US-ASCII; 
-	name="0002-Corrected-matroxfb-video-option-in-comments-and-kern.patch"
-Content-Disposition: attachment; 
-	filename="0002-Corrected-matroxfb-video-option-in-comments-and-kern.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_gi8mnxje0
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 27c1fb4..1901915 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2236,6 +2236,17 @@ config FB_MX3
+ 	  far only synchronous displays are supported. If you plan to use
+ 	  an LCD display with your i.MX31 system, say Y here.
+ 
++config FB_MX5
++	tristate "MX5 Framebuffer support"
++	depends on FB && MFD_IMX_IPU_V3
++	select FB_CFB_FILLRECT
++	select FB_CFB_COPYAREA
++	select FB_CFB_IMAGEBLIT
++	select FB_MODE_HELPERS
++	help
++	  This is a framebuffer device for the i.MX51 LCD Controller. If you
++	  plan to use an LCD display with your i.MX51 system, say Y here.
++
+ config FB_BROADSHEET
+ 	tristate "E-Ink Broadsheet/Epson S1D13521 controller support"
+ 	depends on FB
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 485e8ed..ad408d2 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -145,6 +145,7 @@ obj-$(CONFIG_FB_BF54X_LQ043)	  += bf54x-lq043fb.o
+ obj-$(CONFIG_FB_BFIN_LQ035Q1)     += bfin-lq035q1-fb.o
+ obj-$(CONFIG_FB_BFIN_T350MCQB)	  += bfin-t350mcqb-fb.o
+ obj-$(CONFIG_FB_MX3)		  += mx3fb.o
++obj-$(CONFIG_FB_MX5)		  += mx5fb.o
+ obj-$(CONFIG_FB_DA8XX)		  += da8xx-fb.o
+ 
+ # the test framebuffer is last
+diff --git a/drivers/video/mx5fb.c b/drivers/video/mx5fb.c
+new file mode 100644
+index 0000000..fd9baf4
+--- /dev/null
++++ b/drivers/video/mx5fb.c
+@@ -0,0 +1,846 @@
++/*
++ * Copyright 2004-2009 Freescale Semiconductor, Inc. All Rights Reserved.
++ *
++ * The code contained herein is licensed under the GNU General Public
++ * License. You may obtain a copy of the GNU General Public License
++ * Version 2 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/gpl-license.html
++ * http://www.gnu.org/copyleft/gpl.html
++ *
++ * Framebuffer Framebuffer Driver for SDC and ADC.
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/platform_device.h>
++#include <linux/errno.h>
++#include <linux/string.h>
++#include <linux/interrupt.h>
++#include <linux/slab.h>
++#include <linux/fb.h>
++#include <linux/delay.h>
++#include <linux/init.h>
++#include <linux/dma-mapping.h>
++#include <linux/console.h>
++#include <linux/mfd/imx-ipu-v3.h>
++#include <asm/uaccess.h>
++#include <mach/ipu-v3.h>
++
++#define DRIVER_NAME "imx-ipuv3-fb"
++
++struct imx_ipu_fb_info {
++	int			ipu_channel_num;
++	struct ipu_channel	*ipu_ch;
++	int			dc;
++	int			ipu_di;
++	u32			ipu_di_pix_fmt;
++	u32			ipu_in_pix_fmt;
++
++	u32			pseudo_palette[16];
++
++	struct ipu_dp		*dp;
++	struct dmfc_channel	*dmfc;
++	struct fb_info		*slave;
++	struct fb_info		*master;
++	bool			enabled;
++};
++
++static int imx_ipu_fb_set_fix(struct fb_info *info)
++{
++	struct fb_fix_screeninfo *fix = &info->fix;
++	struct fb_var_screeninfo *var = &info->var;
++
++	fix->line_length = var->xres_virtual * var->bits_per_pixel / 8;
++
++	fix->type = FB_TYPE_PACKED_PIXELS;
++	fix->accel = FB_ACCEL_NONE;
++	fix->visual = FB_VISUAL_TRUECOLOR;
++	fix->xpanstep = 1;
++	fix->ypanstep = 1;
++
++	return 0;
++}
++
++static int imx_ipu_fb_map_video_memory(struct fb_info *fbi)
++{
++	int size;
++
++	size = fbi->var.yres_virtual * fbi->fix.line_length;
++
++	if (fbi->screen_base) {
++		if (fbi->fix.smem_len >= size)
++			return 0;
++
++		dma_free_writecombine(fbi->device, fbi->fix.smem_len,
++			      fbi->screen_base, fbi->fix.smem_start);
++	}
++
++	fbi->screen_base = dma_alloc_writecombine(fbi->device,
++				size,
++				(dma_addr_t *)&fbi->fix.smem_start,
++				GFP_DMA);
++	if (fbi->screen_base = 0) {
++		dev_err(fbi->device, "Unable to allocate framebuffer memory (%d)\n",
++				fbi->fix.smem_len);
++		fbi->fix.smem_len = 0;
++		fbi->fix.smem_start = 0;
++		return -ENOMEM;
++	}
++
++	fbi->fix.smem_len = size;
++	fbi->screen_size = fbi->fix.smem_len;
++
++	dev_dbg(fbi->device, "allocated fb @ paddr=0x%08lx, size=%d\n",
++		fbi->fix.smem_start, fbi->fix.smem_len);
++
++	/* Clear the screen */
++	memset((char *)fbi->screen_base, 0, fbi->fix.smem_len);
++
++	return 0;
++}
++
++static void imx_ipu_fb_enable(struct fb_info *fbi)
++{
++	struct imx_ipu_fb_info *mxc_fbi = fbi->par;
++
++	if (mxc_fbi->enabled)
++		return;
++
++	ipu_di_enable(mxc_fbi->ipu_di);
++	ipu_dmfc_enable_channel(mxc_fbi->dmfc);
++	ipu_idmac_enable_channel(mxc_fbi->ipu_ch);
++	ipu_dc_enable_channel(mxc_fbi->dc);
++	ipu_dp_enable_channel(mxc_fbi->dp);
++	mxc_fbi->enabled = 1;
++}
++
++static void imx_ipu_fb_disable(struct fb_info *fbi)
++{
++	struct imx_ipu_fb_info *mxc_fbi = fbi->par;
++
++	if (!mxc_fbi->enabled)
++		return;
++
++	ipu_dp_disable_channel(mxc_fbi->dp);
++	ipu_dc_disable_channel(mxc_fbi->dc);
++	ipu_idmac_disable_channel(mxc_fbi->ipu_ch);
++	ipu_dmfc_disable_channel(mxc_fbi->dmfc);
++	ipu_di_disable(mxc_fbi->ipu_di);
++
++	mxc_fbi->enabled = 0;
++}
++
++static int calc_vref(struct fb_var_screeninfo *var)
++{
++	unsigned long htotal, vtotal;
++
++	htotal = var->xres + var->right_margin + var->hsync_len + var->left_margin;
++	vtotal = var->yres + var->lower_margin + var->vsync_len + var->upper_margin;
++
++	if (!htotal || !vtotal)
++		return 60;
++
++	return PICOS2KHZ(var->pixclock) * 1000 / vtotal / htotal;
++}
++
++static int calc_bandwidth(struct fb_var_screeninfo *var, unsigned int vref)
++{
++	return var->xres * var->yres * vref;
++}
++
++static int imx_ipu_fb_set_par(struct fb_info *fbi)
++{
++	int ret;
++	struct ipu_di_signal_cfg sig_cfg;
++	struct imx_ipu_fb_info *mxc_fbi = fbi->par;
++	u32 out_pixel_fmt;
++	int interlaced = 0;
++	struct fb_var_screeninfo *var = &fbi->var;
++	int enabled = mxc_fbi->enabled;
++
++	dev_dbg(fbi->device, "Reconfiguring framebuffer %dx%d-%d\n",
++		fbi->var.xres, fbi->var.yres, fbi->var.bits_per_pixel);
++
++	if (enabled)
++		imx_ipu_fb_disable(fbi);
++
++	fbi->fix.line_length = var->xres_virtual * var->bits_per_pixel / 8;
++
++	var->yres_virtual = var->yres;
++
++	ret = imx_ipu_fb_map_video_memory(fbi);
++	if (ret)
++		return ret;
++
++	if (var->vmode & FB_VMODE_INTERLACED)
++		interlaced = 1;
++
++	memset(&sig_cfg, 0, sizeof(sig_cfg));
++	out_pixel_fmt = mxc_fbi->ipu_di_pix_fmt;
++
++	if (var->vmode & FB_VMODE_INTERLACED)
++		sig_cfg.interlaced = 1;
++	if (var->vmode & FB_VMODE_ODD_FLD_FIRST) /* PAL */
++		sig_cfg.odd_field_first = 1;
++	if (var->sync & FB_SYNC_EXT)
++		sig_cfg.ext_clk = 1;
++	if (var->sync & FB_SYNC_HOR_HIGH_ACT)
++		sig_cfg.Hsync_pol = 1;
++	if (var->sync & FB_SYNC_VERT_HIGH_ACT)
++		sig_cfg.Vsync_pol = 1;
++	if (!(var->sync & FB_SYNC_CLK_LAT_FALL))
++		sig_cfg.clk_pol = 1;
++	if (var->sync & FB_SYNC_DATA_INVERT)
++		sig_cfg.data_pol = 1;
++	if (!(var->sync & FB_SYNC_OE_LOW_ACT))
++		sig_cfg.enable_pol = 1;
++	if (var->sync & FB_SYNC_CLK_IDLE_EN)
++		sig_cfg.clkidle_en = 1;
++
++	dev_dbg(fbi->device, "pixclock = %lu.%03lu MHz\n",
++		PICOS2KHZ(var->pixclock) / 1000,
++		PICOS2KHZ(var->pixclock) % 1000);
++
++	sig_cfg.width = var->xres;
++	sig_cfg.height = var->yres;
++	sig_cfg.pixel_fmt = out_pixel_fmt;
++	sig_cfg.h_start_width = var->left_margin;
++	sig_cfg.h_sync_width = var->hsync_len;
++	sig_cfg.h_end_width = var->right_margin;
++	sig_cfg.v_start_width = var->upper_margin;
++	sig_cfg.v_sync_width = var->vsync_len;
++	sig_cfg.v_end_width = var->lower_margin;
++	sig_cfg.v_to_h_sync = 0;
++
++	if (mxc_fbi->dp) {
++		ret = ipu_dp_setup_channel(mxc_fbi->dp, mxc_fbi->ipu_in_pix_fmt,
++				out_pixel_fmt, 1);
++		if (ret) {
++			dev_dbg(fbi->device, "initializing display processor failed with %d\n",
++				ret);
++			return ret;
++		}
++	}
++
++	ret = ipu_dc_init_sync(mxc_fbi->dc, mxc_fbi->ipu_di, interlaced,
++			out_pixel_fmt, fbi->var.xres);
++	if (ret) {
++		dev_dbg(fbi->device, "initializing display controller failed with %d\n",
++				ret);
++		return ret;
++	}
++
++	ret = ipu_di_init_sync_panel(mxc_fbi->ipu_di,
++				PICOS2KHZ(var->pixclock) * 1000UL,
++				&sig_cfg);
++	if (ret) {
++		dev_dbg(fbi->device, "initializing panel failed with %d\n",
++				ret);
++		return ret;
++	}
++
++	fbi->mode = (struct fb_videomode *)fb_match_mode(var, &fbi->modelist);
++	var->xoffset = var->yoffset = 0;
++
++	if (fbi->var.vmode & FB_VMODE_INTERLACED)
++		interlaced = 1;
++
++	ret = ipu_idmac_init_channel_buffer(mxc_fbi->ipu_ch,
++					mxc_fbi->ipu_in_pix_fmt,
++					var->xres, var->yres,
++					fbi->fix.line_length,
++					IPU_ROTATE_NONE,
++					fbi->fix.smem_start,
++					0,
++					0, 0, interlaced);
++	if (ret) {
++		dev_dbg(fbi->device, "init channel buffer failed with %d\n",
++				ret);
++		return ret;
++	}
++
++	ret = ipu_dmfc_init_channel(mxc_fbi->dmfc, var->xres);
++	if (ret) {
++		dev_dbg(fbi->device, "initializing dmfc channel failed with %d\n",
++				ret);
++		return ret;
++	}
++
++	ret = ipu_dmfc_alloc_bandwidth(mxc_fbi->dmfc, calc_bandwidth(var, calc_vref(var)));
++	if (ret) {
++		dev_dbg(fbi->device, "allocating dmfc bandwidth failed with %d\n",
++				ret);
++		return ret;
++	}
++
++	if (enabled)
++		imx_ipu_fb_enable(fbi);
++
++	return ret;
++}
++
++/*
++ * These are the bitfields for each
++ * display depth that we support.
++ */
++struct imxfb_rgb {
++	struct fb_bitfield	red;
++	struct fb_bitfield	green;
++	struct fb_bitfield	blue;
++	struct fb_bitfield	transp;
++};
++
++static struct imxfb_rgb def_rgb_8 = {
++	.red	= { .offset =  5, .length = 3, },
++	.green	= { .offset =  2, .length = 3, },
++	.blue	= { .offset =  0, .length = 2, },
++	.transp = { .offset =  0, .length = 0, },
++};
++
++static struct imxfb_rgb def_rgb_16 = {
++	.red	= { .offset = 11, .length = 5, },
++	.green	= { .offset =  5, .length = 6, },
++	.blue	= { .offset =  0, .length = 5, },
++	.transp = { .offset =  0, .length = 0, },
++};
++
++static struct imxfb_rgb def_rgb_24 = {
++	.red	= { .offset = 16, .length = 8, },
++	.green	= { .offset =  8, .length = 8, },
++	.blue	= { .offset =  0, .length = 8, },
++	.transp = { .offset =  0, .length = 0, },
++};
++
++static struct imxfb_rgb def_rgb_32 = {
++	.red	= { .offset = 16, .length = 8, },
++	.green	= { .offset =  8, .length = 8, },
++	.blue	= { .offset =  0, .length = 8, },
++	.transp = { .offset = 24, .length = 8, },
++};
++
++/*
++ * Check framebuffer variable parameters and adjust to valid values.
++ *
++ * @param       var      framebuffer variable parameters
++ *
++ * @param       info     framebuffer information pointer
++ */
++static int imx_ipu_fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
++{
++	struct imx_ipu_fb_info *mxc_fbi = info->par;
++	struct imxfb_rgb *rgb;
++
++	/* we don't support xpan, force xres_virtual to be equal to xres */
++	var->xres_virtual = var->xres;
++
++	if (var->yres_virtual < var->yres)
++		var->yres_virtual = var->yres;
++
++	switch (var->bits_per_pixel) {
++	case 8:
++		rgb = &def_rgb_8;
++		break;
++	case 16:
++		rgb = &def_rgb_16;
++		mxc_fbi->ipu_in_pix_fmt = IPU_PIX_FMT_RGB565;
++		break;
++	case 24:
++		rgb = &def_rgb_24;
++		mxc_fbi->ipu_in_pix_fmt = IPU_PIX_FMT_BGR24;
++		break;
++	case 32:
++		rgb = &def_rgb_32;
++		mxc_fbi->ipu_in_pix_fmt = IPU_PIX_FMT_BGR32;
++		break;
++	default:
++		var->bits_per_pixel = 24;
++		rgb = &def_rgb_24;
++		mxc_fbi->ipu_in_pix_fmt = IPU_PIX_FMT_BGR24;
++	}
++
++	var->red    = rgb->red;
++	var->green  = rgb->green;
++	var->blue   = rgb->blue;
++	var->transp = rgb->transp;
++
++	return 0;
++}
++
++static inline unsigned int chan_to_field(u_int chan, struct fb_bitfield *bf)
++{
++	chan &= 0xffff;
++	chan >>= 16 - bf->length;
++	return chan << bf->offset;
++}
++
++static int imx_ipu_fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
++			   u_int trans, struct fb_info *fbi)
++{
++	unsigned int val;
++	int ret = 1;
++
++	/*
++	 * If greyscale is true, then we convert the RGB value
++	 * to greyscale no matter what visual we are using.
++	 */
++	if (fbi->var.grayscale)
++		red = green = blue = (19595 * red + 38470 * green +
++				      7471 * blue) >> 16;
++	switch (fbi->fix.visual) {
++	case FB_VISUAL_TRUECOLOR:
++		/*
++		 * 16-bit True Colour.  We encode the RGB value
++		 * according to the RGB bitfield information.
++		 */
++		if (regno < 16) {
++			u32 *pal = fbi->pseudo_palette;
++
++			val = chan_to_field(red, &fbi->var.red);
++			val |= chan_to_field(green, &fbi->var.green);
++			val |= chan_to_field(blue, &fbi->var.blue);
++
++			pal[regno] = val;
++			ret = 0;
++		}
++		break;
++
++	case FB_VISUAL_STATIC_PSEUDOCOLOR:
++	case FB_VISUAL_PSEUDOCOLOR:
++		break;
++	}
++
++	return ret;
++}
++
++static int imx_ipu_fb_blank(int blank, struct fb_info *info)
++{
++	dev_dbg(info->device, "blank = %d\n", blank);
++
++	switch (blank) {
++	case FB_BLANK_POWERDOWN:
++	case FB_BLANK_VSYNC_SUSPEND:
++	case FB_BLANK_HSYNC_SUSPEND:
++	case FB_BLANK_NORMAL:
++		imx_ipu_fb_disable(info);
++		break;
++	case FB_BLANK_UNBLANK:
++		imx_ipu_fb_enable(info);
++		break;
++	}
++
++	return 0;
++}
++
++static int imx_ipu_fb_pan_display(struct fb_var_screeninfo *var,
++		struct fb_info *info)
++{
++	struct imx_ipu_fb_info *mxc_fbi = info->par;
++	unsigned long base;
++	int ret;
++
++	if (info->var.yoffset = var->yoffset)
++		return 0;	/* No change, do nothing */
++
++	base = var->yoffset * var->xres_virtual * var->bits_per_pixel / 8;
++	base += info->fix.smem_start;
++
++	ret = ipu_wait_for_interrupt(IPU_IRQ_EOF(mxc_fbi->ipu_channel_num), 100);
++	if (ret)
++		return ret;
++
++	if (ipu_idmac_update_channel_buffer(mxc_fbi->ipu_ch, 0, base)) {
++		dev_err(info->device,
++			"Error updating SDC buf to address=0x%08lX\n", base);
++	}
++
++	info->var.yoffset = var->yoffset;
++
++	return 0;
++}
++
++static struct fb_ops imx_ipu_fb_ops = {
++	.owner		= THIS_MODULE,
++	.fb_set_par	= imx_ipu_fb_set_par,
++	.fb_check_var	= imx_ipu_fb_check_var,
++	.fb_setcolreg	= imx_ipu_fb_setcolreg,
++	.fb_pan_display	= imx_ipu_fb_pan_display,
++	.fb_fillrect	= cfb_fillrect,
++	.fb_copyarea	= cfb_copyarea,
++	.fb_imageblit	= cfb_imageblit,
++	.fb_blank	= imx_ipu_fb_blank,
++};
++
++/*
++ * Overlay functions
++ */
++static int imx_ipu_fb_enable_overlay(struct fb_info *fbi)
++{
++	struct imx_ipu_fb_info *mxc_fbi = fbi->par;
++
++	ipu_dmfc_enable_channel(mxc_fbi->dmfc);
++	ipu_idmac_enable_channel(mxc_fbi->ipu_ch);
++	ipu_dp_enable_fg(mxc_fbi->dp);
++
++	return 0;
++}
++
++static int imx_ipu_fb_disable_overlay(struct fb_info *fbi)
++{
++	struct imx_ipu_fb_info *mxc_fbi = fbi->par;
++
++	ipu_dp_disable_fg(mxc_fbi->dp);
++	ipu_idmac_disable_channel(mxc_fbi->ipu_ch);
++	ipu_dmfc_disable_channel(mxc_fbi->dmfc);
++
++	return 0;
++}
++
++static int imx_ipu_fb_set_par_overlay(struct fb_info *fbi)
++{
++	struct imx_ipu_fb_info *mxc_fbi = fbi->par;
++	struct fb_var_screeninfo *var = &fbi->var;
++	struct fb_info *fbi_master = mxc_fbi->master;
++	struct fb_var_screeninfo *var_master = &fbi_master->var;
++	int ret;
++	int interlaced = 0;
++	int enabled = mxc_fbi->enabled;
++
++	dev_dbg(fbi->device, "Reconfiguring framebuffer %dx%d-%d\n",
++		fbi->var.xres, fbi->var.yres, fbi->var.bits_per_pixel);
++
++	if (enabled)
++		imx_ipu_fb_disable_overlay(fbi);
++
++	fbi->fix.line_length = var->xres_virtual *
++                                  var->bits_per_pixel / 8;
++
++	ret = imx_ipu_fb_map_video_memory(fbi);
++	if (ret)
++		return ret;
++
++	ipu_dp_set_window_pos(mxc_fbi->dp, 64, 64);
++
++	var->xoffset = var->yoffset = 0;
++
++	if (var->vmode & FB_VMODE_INTERLACED)
++		interlaced = 1;
++
++	ret = ipu_idmac_init_channel_buffer(mxc_fbi->ipu_ch,
++					mxc_fbi->ipu_in_pix_fmt,
++					var->xres, var->yres,
++					fbi->fix.line_length,
++					IPU_ROTATE_NONE,
++					fbi->fix.smem_start,
++					0,
++					0, 0, interlaced);
++	if (ret) {
++		dev_dbg(fbi->device, "init channel buffer failed with %d\n",
++				ret);
++		return ret;
++	}
++
++	ret = ipu_dmfc_init_channel(mxc_fbi->dmfc, var->xres);
++	if (ret) {
++		dev_dbg(fbi->device, "initializing dmfc channel failed with %d\n",
++				ret);
++		return ret;
++	}
++
++	ret = ipu_dmfc_alloc_bandwidth(mxc_fbi->dmfc, calc_bandwidth(var, calc_vref(var_master)));
++	if (ret) {
++		dev_dbg(fbi->device, "allocating dmfc bandwidth failed with %d\n",
++				ret);
++		return ret;
++	}
++
++	if (enabled)
++		imx_ipu_fb_enable_overlay(fbi);
++
++	return ret;
++}
++
++static int imx_ipu_fb_blank_overlay(int blank, struct fb_info *fbi)
++{
++	dev_dbg(fbi->device, "blank = %d\n", blank);
++
++	switch (blank) {
++	case FB_BLANK_POWERDOWN:
++	case FB_BLANK_VSYNC_SUSPEND:
++	case FB_BLANK_HSYNC_SUSPEND:
++	case FB_BLANK_NORMAL:
++		imx_ipu_fb_disable_overlay(fbi);
++		break;
++	case FB_BLANK_UNBLANK:
++		imx_ipu_fb_enable_overlay(fbi);
++		break;
++	}
++
++	return 0;
++}
++
++static struct fb_ops imx_ipu_fb_overlay_ops = {
++	.owner		= THIS_MODULE,
++	.fb_set_par	= imx_ipu_fb_set_par_overlay,
++	.fb_check_var	= imx_ipu_fb_check_var,
++	.fb_setcolreg	= imx_ipu_fb_setcolreg,
++	.fb_pan_display	= imx_ipu_fb_pan_display,
++	.fb_fillrect	= cfb_fillrect,
++	.fb_copyarea	= cfb_copyarea,
++	.fb_imageblit	= cfb_imageblit,
++	.fb_blank	= imx_ipu_fb_blank_overlay,
++};
++
++static struct fb_info *imx_ipu_fb_init_fbinfo(struct device *dev, struct fb_ops *ops)
++{
++	struct fb_info *fbi;
++	struct imx_ipu_fb_info *mxc_fbi;
++
++	fbi = framebuffer_alloc(sizeof(struct imx_ipu_fb_info), dev);
++	if (!fbi)
++		return NULL;
++
++	BUG_ON(fbi->par = NULL);
++	mxc_fbi = fbi->par;
++
++	fbi->var.activate = FB_ACTIVATE_NOW;
++
++	fbi->fbops = ops;
++	fbi->flags = FBINFO_FLAG_DEFAULT;
++	fbi->pseudo_palette = mxc_fbi->pseudo_palette;
++
++	fb_alloc_cmap(&fbi->cmap, 16, 0);
++
++	return fbi;
++}
++
++static int imx_ipu_fb_init_overlay(struct platform_device *pdev,
++		struct fb_info *fbi_master, int ipu_channel)
++{
++	struct imx_ipu_fb_info *mxc_fbi_master = fbi_master->par;
++	struct fb_info *ovlfbi;
++	struct imx_ipu_fb_info *ovl_mxc_fbi;
++	int ret;
++
++	ovlfbi = imx_ipu_fb_init_fbinfo(&pdev->dev, &imx_ipu_fb_overlay_ops);
++	if (!ovlfbi)
++		return -ENOMEM;
++
++	ovl_mxc_fbi = ovlfbi->par;
++	ovl_mxc_fbi->ipu_ch = ipu_idmac_get(ipu_channel);
++	ovl_mxc_fbi->dmfc = ipu_dmfc_get(ipu_channel);
++	ovl_mxc_fbi->ipu_di = -1;
++	ovl_mxc_fbi->dp = mxc_fbi_master->dp;
++	ovl_mxc_fbi->master = fbi_master;
++	mxc_fbi_master->slave = ovlfbi;
++
++	ovlfbi->var.xres = 240;
++	ovlfbi->var.yres = 320;
++	ovlfbi->var.yres_virtual = ovlfbi->var.yres;
++	ovlfbi->var.xres_virtual = ovlfbi->var.xres;
++	imx_ipu_fb_check_var(&ovlfbi->var, ovlfbi);
++	imx_ipu_fb_set_fix(ovlfbi);
++
++	ret = register_framebuffer(ovlfbi);
++	if (ret) {
++		framebuffer_release(ovlfbi);
++		return ret;
++	}
++
++	ipu_dp_set_global_alpha(ovl_mxc_fbi->dp, 1, 0x80, 1);
++	ipu_dp_set_color_key(ovl_mxc_fbi->dp, 0, 0);
++
++	imx_ipu_fb_set_par_overlay(ovlfbi);
++
++	return 0;
++}
++
++static void imx_ipu_fb_exit_overlay(struct platform_device *pdev,
++		struct fb_info *fbi_master, int ipu_channel)
++{
++	struct imx_ipu_fb_info *mxc_fbi_master = fbi_master->par;
++	struct fb_info *ovlfbi = mxc_fbi_master->slave;
++	struct imx_ipu_fb_info *ovl_mxc_fbi = ovlfbi->par;
++
++	imx_ipu_fb_blank_overlay(FB_BLANK_POWERDOWN, ovlfbi);
++
++	unregister_framebuffer(ovlfbi);
++
++	ipu_idmac_put(ovl_mxc_fbi->ipu_ch);
++	ipu_dmfc_free_bandwidth(ovl_mxc_fbi->dmfc);
++	ipu_dmfc_put(ovl_mxc_fbi->dmfc);
++
++	framebuffer_release(ovlfbi);
++}
++
++static int imx_ipu_fb_find_mode(struct fb_info *fbi)
++{
++	int ret;
++	struct fb_videomode *mode_array;
++	struct fb_modelist *modelist;
++	struct fb_var_screeninfo *var = &fbi->var;
++	int i = 0;
++
++	list_for_each_entry(modelist, &fbi->modelist, list)
++		i++;
++
++	mode_array = kmalloc(sizeof (struct fb_modelist) * i, GFP_KERNEL);
++	if (!mode_array)
++		return -ENOMEM;
++
++	i = 0;
++	list_for_each_entry(modelist, &fbi->modelist, list)
++		mode_array[i++] = modelist->mode;
++
++	ret = fb_find_mode(&fbi->var, fbi, NULL, mode_array, i, NULL, 16);
++	if (ret = 0)
++		return -EINVAL;
++
++	dev_dbg(fbi->device, "found %dx%d-%d hs:%d:%d:%d vs:%d:%d:%d\n",
++			var->xres, var->yres, var->bits_per_pixel,
++			var->hsync_len, var->left_margin, var->right_margin,
++			var->vsync_len, var->upper_margin, var->lower_margin);
++
++	kfree(mode_array);
++
++	return 0;
++}
++
++static int __devinit imx_ipu_fb_probe(struct platform_device *pdev)
++{
++	struct fb_info *fbi;
++	struct imx_ipu_fb_info *mxc_fbi;
++	struct ipuv3_fb_platform_data *plat_data = pdev->dev.platform_data;
++	int ret = 0, i;
++
++	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
++
++	fbi = imx_ipu_fb_init_fbinfo(&pdev->dev, &imx_ipu_fb_ops);
++	if (!fbi)
++		return -ENOMEM;
++
++	mxc_fbi = fbi->par;
++
++	mxc_fbi->ipu_channel_num = plat_data->ipu_channel_bg;
++	mxc_fbi->dc = plat_data->dc_channel;
++	mxc_fbi->ipu_di_pix_fmt = plat_data->interface_pix_fmt;
++	mxc_fbi->ipu_di = pdev->id;
++
++	mxc_fbi->ipu_ch = ipu_idmac_get(plat_data->ipu_channel_bg);
++	if (IS_ERR(mxc_fbi->ipu_ch)) {
++		ret = PTR_ERR(mxc_fbi->ipu_ch);
++		goto failed_request_ipu;
++	}
++
++	mxc_fbi->dmfc = ipu_dmfc_get(plat_data->ipu_channel_bg);
++	if (IS_ERR(mxc_fbi->ipu_ch)) {
++		ret = PTR_ERR(mxc_fbi->ipu_ch);
++		goto failed_request_dmfc;
++	}
++
++	if (plat_data->dp_channel >= 0) {
++		mxc_fbi->dp = ipu_dp_get(plat_data->dp_channel);
++		if (IS_ERR(mxc_fbi->dp)) {
++			ret = PTR_ERR(mxc_fbi->ipu_ch);
++			goto failed_request_dp;
++		}
++	}
++
++	fbi->var.yres_virtual = fbi->var.yres;
++
++	INIT_LIST_HEAD(&fbi->modelist);
++	for (i = 0; i < plat_data->num_modes; i++)
++		fb_add_videomode(&plat_data->modes[i], &fbi->modelist);
++
++	if (plat_data->flags & IMX_IPU_FB_USE_MODEDB) {
++		for (i = 0; i < num_fb_modes; i++)
++			fb_add_videomode(&fb_modes[i], &fbi->modelist);
++	}
++
++	imx_ipu_fb_find_mode(fbi);
++
++	imx_ipu_fb_check_var(&fbi->var, fbi);
++	imx_ipu_fb_set_fix(fbi);
++	ret = register_framebuffer(fbi);
++	if (ret < 0)
++		goto failed_register;
++
++	imx_ipu_fb_set_par(fbi);
++	imx_ipu_fb_blank(FB_BLANK_UNBLANK, fbi);
++
++	if (plat_data->ipu_channel_fg >= 0 && plat_data->flags & IMX_IPU_FB_USE_OVERLAY)
++		imx_ipu_fb_init_overlay(pdev, fbi, plat_data->ipu_channel_fg);
++
++	platform_set_drvdata(pdev, fbi);
++
++	return 0;
++
++failed_register:
++	if (plat_data->dp_channel >= 0)
++		ipu_dp_put(mxc_fbi->dp);
++failed_request_dp:
++	ipu_dmfc_put(mxc_fbi->dmfc);
++failed_request_dmfc:
++	ipu_idmac_put(mxc_fbi->ipu_ch);
++failed_request_ipu:
++	fb_dealloc_cmap(&fbi->cmap);
++	framebuffer_release(fbi);
++
++	return ret;
++}
++
++static int __devexit imx_ipu_fb_remove(struct platform_device *pdev)
++{
++	struct fb_info *fbi = platform_get_drvdata(pdev);
++	struct imx_ipu_fb_info *mxc_fbi = fbi->par;
++	struct ipuv3_fb_platform_data *plat_data = pdev->dev.platform_data;
++
++	if (plat_data->ipu_channel_fg >= 0 && plat_data->flags & IMX_IPU_FB_USE_OVERLAY)
++		imx_ipu_fb_exit_overlay(pdev, fbi, plat_data->ipu_channel_fg);
++
++	imx_ipu_fb_blank(FB_BLANK_POWERDOWN, fbi);
++
++	dma_free_writecombine(fbi->device, fbi->fix.smem_len,
++			      fbi->screen_base, fbi->fix.smem_start);
++
++	if (&fbi->cmap)
++		fb_dealloc_cmap(&fbi->cmap);
++
++	unregister_framebuffer(fbi);
++
++	if (plat_data->dp_channel >= 0)
++		ipu_dp_put(mxc_fbi->dp);
++	ipu_dmfc_free_bandwidth(mxc_fbi->dmfc);
++	ipu_dmfc_put(mxc_fbi->dmfc);
++	ipu_idmac_put(mxc_fbi->ipu_ch);
++
++	framebuffer_release(fbi);
++
++	return 0;
++}
++
++static struct platform_driver imx_ipu_fb_driver = {
++	.driver = {
++		.name = DRIVER_NAME,
++	},
++	.probe = imx_ipu_fb_probe,
++	.remove = __devexit_p(imx_ipu_fb_remove),
++};
++
++static int __init imx_ipu_fb_init(void)
++{
++	return platform_driver_register(&imx_ipu_fb_driver);
++}
++
++static void __exit imx_ipu_fb_exit(void)
++{
++	platform_driver_unregister(&imx_ipu_fb_driver);
++}
++
++module_init(imx_ipu_fb_init);
++module_exit(imx_ipu_fb_exit);
++
++MODULE_AUTHOR("Freescale Semiconductor, Inc.");
++MODULE_DESCRIPTION("i.MX framebuffer driver");
++MODULE_LICENSE("GPL");
++MODULE_SUPPORTED_DEVICE("fb");
+-- 
+1.7.2.3
 
-RnJvbSA4MTU2MWJiZjcyMjYxMzc5NGM3N2NkMDNjNTM3ZjQxMzliMmQwOTc2IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBWaWNlbnRlIEppbWVuZXogQWd1aWxhciA8Z29vZ3V5QGdtYWls
-LmNvbT4KRGF0ZTogVHVlLCAyOCBEZWMgMjAxMCAxMTozNToyNCArMDEwMApTdWJqZWN0OiBbUEFU
-Q0ggMi8yXSBDb3JyZWN0ZWQgbWF0cm94ZmIgdmlkZW8gb3B0aW9uIGluIGNvbW1lbnRzIGFuZCBr
-ZXJuZWwgY29uZmlnIGhlbHAuCgpDb25maWd1cmluZyB0aGUga2VybmVsIEkgZm91bmQgdGhhdCB0
-aGUgTWF0cm94IGZyYW1lIGJ1ZmZlciBoZWxwIGhhcyBhCmRpZmZlcmVudCBvcHRpb24gdGhhbiB0
-aGUgb25lIGluIHRoZSBkb2NzIChEb2N1bWVudGF0aW9uL2ZiL21hdHJveGZiLnR4dCkuCkkgZGVj
-aWRlZCB0byBjaGVjayB0aGUgc291cmNlIGNvZGUgdG8gc2VlIHdoYXQgaXMgdGhlIGNvcnJlY3Qg
-b3B0aW9uLgpkcml2ZXJzL3ZpZGVvL21hdHJveC9tYXRyb3hmYl9iYXNlLmMgaGFzIGEgbG90IG9m
-IGNvbW1lbnRzIHRoYXQgc3VnZXN0cwp0aGF0IHRoZSB2aWRlbyBvcHRpb24gaXMgIm1hdHJveCIu
-Ckhvd2V2ZXIgaW4gbGluZSAyNDUyIG9mIHRoaXMgc2FtZSBmaWxlIHlvdSBoYXZlOgpmYl9nZXRf
-b3B0aW9ucygibWF0cm94ZmIiLCAmb3B0aW9uKQoKdmlkZW89bWF0cm94ZmI6WFhYIGlzIHRoZSBj
-b3JyZWN0IHZpZGVvIG9wdGlvbiBub3QgdmlkZW89bWF0cm94OlhYWC4KLS0tCiBkcml2ZXJzL3Zp
-ZGVvL0tjb25maWcgICAgICAgICAgICAgICAgfCAgICAyICstCiBkcml2ZXJzL3ZpZGVvL21hdHJv
-eC9tYXRyb3hmYl9iYXNlLmMgfCAgIDcwICsrKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0t
-LS0KIDIgZmlsZXMgY2hhbmdlZCwgMzYgaW5zZXJ0aW9ucygrKSwgMzYgZGVsZXRpb25zKC0pCgpk
-aWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9LY29uZmlnIGIvZHJpdmVycy92aWRlby9LY29uZmln
-CmluZGV4IDI3YzFmYjQuLjU4YzMzNDkgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvdmlkZW8vS2NvbmZp
-ZworKysgYi9kcml2ZXJzL3ZpZGVvL0tjb25maWcKQEAgLTEyMDksNyArMTIwOSw3IEBAIGNvbmZp
-ZyBGQl9NQVRST1gKIAkgIG1vZHVsZSB3aWxsIGJlIGNhbGxlZCBtYXRyb3hmYi4KIAogCSAgWW91
-IGNhbiBwYXNzIHNldmVyYWwgcGFyYW1ldGVycyB0byB0aGUgZHJpdmVyIGF0IGJvb3QgdGltZSBv
-ciBhdAotCSAgbW9kdWxlIGxvYWQgdGltZS4gVGhlIHBhcmFtZXRlcnMgbG9vayBsaWtlICJ2aWRl
-bz1tYXRyb3g6WFhYIiwgYW5kCisJICBtb2R1bGUgbG9hZCB0aW1lLiBUaGUgcGFyYW1ldGVycyBs
-b29rIGxpa2UgInZpZGVvPW1hdHJveGZiOlhYWCIsIGFuZAogCSAgYXJlIGRlc2NyaWJlZCBpbiA8
-ZmlsZTpEb2N1bWVudGF0aW9uL2ZiL21hdHJveGZiLnR4dD4uCiAKIGNvbmZpZyBGQl9NQVRST1hf
-TUlMTEVOSVVNCmRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL21hdHJveC9tYXRyb3hmYl9iYXNl
-LmMgYi9kcml2ZXJzL3ZpZGVvL21hdHJveC9tYXRyb3hmYl9iYXNlLmMKaW5kZXggMDUyZGQ5Zi4u
-YTA4MmRlYiAxMDA2NDQKLS0tIGEvZHJpdmVycy92aWRlby9tYXRyb3gvbWF0cm94ZmJfYmFzZS5j
-CisrKyBiL2RyaXZlcnMvdmlkZW8vbWF0cm94L21hdHJveGZiX2Jhc2UuYwpAQCAtMTI0Nyw0NiAr
-MTI0Nyw0NiBAQCBzdGF0aWMgc3RydWN0IHsgc3RydWN0IGZiX2JpdGZpZWxkIHJlZCwgZ3JlZW4s
-IGJsdWUsIHRyYW5zcDsgaW50IGJpdHNfcGVyX3BpeGVsOwogfTsKIAogLyogaW5pdGlhbGl6ZWQg
-Ynkgc2V0dXAsIHNlZSBleHBsYW5hdGlvbiBhdCBlbmQgb2YgZmlsZSAoc2VhcmNoIGZvciBNT0RV
-TEVfUEFSTV9ERVNDKSAqLwotc3RhdGljIHVuc2lnbmVkIGludCBtZW07CQkvKiAibWF0cm94Om1l
-bTp4eHh4eE0iICovCitzdGF0aWMgdW5zaWduZWQgaW50IG1lbTsJCS8qICJtYXRyb3hmYjptZW06
-eHh4eHhNIiAqLwogc3RhdGljIGludCBvcHRpb25fcHJlY2lzZV93aWR0aCA9IDE7CS8qIGNhbm5v
-dCBiZSBjaGFuZ2VkLCBvcHRpb25fcHJlY2lzZV93aWR0aD09MCBtdXN0IGltcGx5IG5vYWNjZWwg
-Ki8KLXN0YXRpYyBpbnQgaW52MjQ7CQkJLyogIm1hdHJveDppbnYyNCIgKi8KLXN0YXRpYyBpbnQg
-Y3Jvc3M0TUIgPSAtMTsJCS8qICJtYXRyb3g6Y3Jvc3M0TUIiICovCi1zdGF0aWMgaW50IGRpc2Fi
-bGVkOwkJCS8qICJtYXRyb3g6ZGlzYWJsZWQiICovCi1zdGF0aWMgaW50IG5vYWNjZWw7CQkJLyog
-Im1hdHJveDpub2FjY2VsIiAqLwotc3RhdGljIGludCBub3BhbjsJCQkvKiAibWF0cm94Om5vcGFu
-IiAqLwotc3RhdGljIGludCBub19wY2lfcmV0cnk7CQkvKiAibWF0cm94Om5vcGNpcmV0cnkiICov
-Ci1zdGF0aWMgaW50IG5vdmdhOwkJCS8qICJtYXRyb3g6bm92Z2EiICovCi1zdGF0aWMgaW50IG5v
-YmlvczsJCQkvKiAibWF0cm94Om5vYmlvcyIgKi8KLXN0YXRpYyBpbnQgbm9pbml0ID0gMTsJCQkv
-KiAibWF0cm94OmluaXQiICovCi1zdGF0aWMgaW50IGludmVyc2U7CQkJLyogIm1hdHJveDppbnZl
-cnNlIiAqLwotc3RhdGljIGludCBzZ3JhbTsJCQkvKiAibWF0cm94OnNncmFtIiAqLworc3RhdGlj
-IGludCBpbnYyNDsJCQkvKiAibWF0cm94ZmI6aW52MjQiICovCitzdGF0aWMgaW50IGNyb3NzNE1C
-ID0gLTE7CQkvKiAibWF0cm94ZmI6Y3Jvc3M0TUIiICovCitzdGF0aWMgaW50IGRpc2FibGVkOwkJ
-CS8qICJtYXRyb3hmYjpkaXNhYmxlZCIgKi8KK3N0YXRpYyBpbnQgbm9hY2NlbDsJCQkvKiAibWF0
-cm94ZmI6bm9hY2NlbCIgKi8KK3N0YXRpYyBpbnQgbm9wYW47CQkJLyogIm1hdHJveGZiOm5vcGFu
-IiAqLworc3RhdGljIGludCBub19wY2lfcmV0cnk7CQkvKiAibWF0cm94ZmI6bm9wY2lyZXRyeSIg
-Ki8KK3N0YXRpYyBpbnQgbm92Z2E7CQkJLyogIm1hdHJveGZiOm5vdmdhIiAqLworc3RhdGljIGlu
-dCBub2Jpb3M7CQkJLyogIm1hdHJveGZiOm5vYmlvcyIgKi8KK3N0YXRpYyBpbnQgbm9pbml0ID0g
-MTsJCQkvKiAibWF0cm94ZmI6aW5pdCIgKi8KK3N0YXRpYyBpbnQgaW52ZXJzZTsJCQkvKiAibWF0
-cm94ZmI6aW52ZXJzZSIgKi8KK3N0YXRpYyBpbnQgc2dyYW07CQkJLyogIm1hdHJveGZiOnNncmFt
-IiAqLwogI2lmZGVmIENPTkZJR19NVFJSCi1zdGF0aWMgaW50IG10cnIgPSAxOwkJCS8qICJtYXRy
-b3g6bm9tdHJyIiAqLworc3RhdGljIGludCBtdHJyID0gMTsJCQkvKiAibWF0cm94ZmI6bm9tdHJy
-IiAqLwogI2VuZGlmCi1zdGF0aWMgaW50IGdyYXlzY2FsZTsJCQkvKiAibWF0cm94OmdyYXlzY2Fs
-ZSIgKi8KLXN0YXRpYyBpbnQgZGV2ID0gLTE7CQkJLyogIm1hdHJveDpkZXY6eHh4eHgiICovCi1z
-dGF0aWMgdW5zaWduZWQgaW50IHZlc2EgPSB+MDsJCS8qICJtYXRyb3g6dmVzYTp4eHh4eCIgKi8K
-LXN0YXRpYyBpbnQgZGVwdGggPSAtMTsJCQkvKiAibWF0cm94OmRlcHRoOnh4eHh4IiAqLwotc3Rh
-dGljIHVuc2lnbmVkIGludCB4cmVzOwkJLyogIm1hdHJveDp4cmVzOnh4eHh4IiAqLwotc3RhdGlj
-IHVuc2lnbmVkIGludCB5cmVzOwkJLyogIm1hdHJveDp5cmVzOnh4eHh4IiAqLwotc3RhdGljIHVu
-c2lnbmVkIGludCB1cHBlciA9IH4wOwkJLyogIm1hdHJveDp1cHBlcjp4eHh4eCIgKi8KLXN0YXRp
-YyB1bnNpZ25lZCBpbnQgbG93ZXIgPSB+MDsJCS8qICJtYXRyb3g6bG93ZXI6eHh4eHgiICovCi1z
-dGF0aWMgdW5zaWduZWQgaW50IHZzbGVuOwkJLyogIm1hdHJveDp2c2xlbjp4eHh4eCIgKi8KLXN0
-YXRpYyB1bnNpZ25lZCBpbnQgbGVmdCA9IH4wOwkJLyogIm1hdHJveDpsZWZ0Onh4eHh4IiAqLwot
-c3RhdGljIHVuc2lnbmVkIGludCByaWdodCA9IH4wOwkJLyogIm1hdHJveDpyaWdodDp4eHh4eCIg
-Ki8KLXN0YXRpYyB1bnNpZ25lZCBpbnQgaHNsZW47CQkvKiAibWF0cm94OmhzbGVuOnh4eHh4IiAq
-Lwotc3RhdGljIHVuc2lnbmVkIGludCBwaXhjbG9jazsJCS8qICJtYXRyb3g6cGl4Y2xvY2s6eHh4
-eHgiICovCi1zdGF0aWMgaW50IHN5bmMgPSAtMTsJCQkvKiAibWF0cm94OnN5bmM6eHh4eHgiICov
-Ci1zdGF0aWMgdW5zaWduZWQgaW50IGZ2OwkJCS8qICJtYXRyb3g6ZnY6eHh4eHgiICovCi1zdGF0
-aWMgdW5zaWduZWQgaW50IGZoOwkJCS8qICJtYXRyb3g6Zmg6eHh4eHhrIiAqLwotc3RhdGljIHVu
-c2lnbmVkIGludCBtYXhjbGs7CQkvKiAibWF0cm94Om1heGNsazp4eHh4TSIgKi8KLXN0YXRpYyBp
-bnQgZGZwOwkJCQkvKiAibWF0cm94OmRmcCAqLwotc3RhdGljIGludCBkZnBfdHlwZSA9IC0xOwkJ
-LyogIm1hdHJveDpkZnA6eHh4ICovCi1zdGF0aWMgaW50IG1lbXR5cGUgPSAtMTsJCS8qICJtYXRy
-b3g6bWVtdHlwZTp4eHgiICovCi1zdGF0aWMgY2hhciBvdXRwdXRzWzhdOwkJCS8qICJtYXRyb3g6
-b3V0cHV0czp4eHgiICovCitzdGF0aWMgaW50IGdyYXlzY2FsZTsJCQkvKiAibWF0cm94ZmI6Z3Jh
-eXNjYWxlIiAqLworc3RhdGljIGludCBkZXYgPSAtMTsJCQkvKiAibWF0cm94ZmI6ZGV2Onh4eHh4
-IiAqLworc3RhdGljIHVuc2lnbmVkIGludCB2ZXNhID0gfjA7CQkvKiAibWF0cm94ZmI6dmVzYTp4
-eHh4eCIgKi8KK3N0YXRpYyBpbnQgZGVwdGggPSAtMTsJCQkvKiAibWF0cm94ZmI6ZGVwdGg6eHh4
-eHgiICovCitzdGF0aWMgdW5zaWduZWQgaW50IHhyZXM7CQkvKiAibWF0cm94ZmI6eHJlczp4eHh4
-eCIgKi8KK3N0YXRpYyB1bnNpZ25lZCBpbnQgeXJlczsJCS8qICJtYXRyb3hmYjp5cmVzOnh4eHh4
-IiAqLworc3RhdGljIHVuc2lnbmVkIGludCB1cHBlciA9IH4wOwkJLyogIm1hdHJveGZiOnVwcGVy
-Onh4eHh4IiAqLworc3RhdGljIHVuc2lnbmVkIGludCBsb3dlciA9IH4wOwkJLyogIm1hdHJveGZi
-Omxvd2VyOnh4eHh4IiAqLworc3RhdGljIHVuc2lnbmVkIGludCB2c2xlbjsJCS8qICJtYXRyb3hm
-Yjp2c2xlbjp4eHh4eCIgKi8KK3N0YXRpYyB1bnNpZ25lZCBpbnQgbGVmdCA9IH4wOwkJLyogIm1h
-dHJveGZiOmxlZnQ6eHh4eHgiICovCitzdGF0aWMgdW5zaWduZWQgaW50IHJpZ2h0ID0gfjA7CQkv
-KiAibWF0cm94ZmI6cmlnaHQ6eHh4eHgiICovCitzdGF0aWMgdW5zaWduZWQgaW50IGhzbGVuOwkJ
-LyogIm1hdHJveGZiOmhzbGVuOnh4eHh4IiAqLworc3RhdGljIHVuc2lnbmVkIGludCBwaXhjbG9j
-azsJCS8qICJtYXRyb3hmYjpwaXhjbG9jazp4eHh4eCIgKi8KK3N0YXRpYyBpbnQgc3luYyA9IC0x
-OwkJCS8qICJtYXRyb3hmYjpzeW5jOnh4eHh4IiAqLworc3RhdGljIHVuc2lnbmVkIGludCBmdjsJ
-CQkvKiAibWF0cm94ZmI6ZnY6eHh4eHgiICovCitzdGF0aWMgdW5zaWduZWQgaW50IGZoOwkJCS8q
-ICJtYXRyb3hmYjpmaDp4eHh4eGsiICovCitzdGF0aWMgdW5zaWduZWQgaW50IG1heGNsazsJCS8q
-ICJtYXRyb3hmYjptYXhjbGs6eHh4eE0iICovCitzdGF0aWMgaW50IGRmcDsJCQkJLyogIm1hdHJv
-eGZiOmRmcCAqLworc3RhdGljIGludCBkZnBfdHlwZSA9IC0xOwkJLyogIm1hdHJveGZiOmRmcDp4
-eHggKi8KK3N0YXRpYyBpbnQgbWVtdHlwZSA9IC0xOwkJLyogIm1hdHJveGZiOm1lbXR5cGU6eHh4
-IiAqLworc3RhdGljIGNoYXIgb3V0cHV0c1s4XTsJCQkvKiAibWF0cm94ZmI6b3V0cHV0czp4eHgi
-ICovCiAKICNpZm5kZWYgTU9EVUxFCi1zdGF0aWMgY2hhciB2aWRlb21vZGVbNjRdOwkJLyogIm1h
-dHJveDptb2RlOnh4eHh4IiBvciAibWF0cm94Onh4eHh4IiAqLworc3RhdGljIGNoYXIgdmlkZW9t
-b2RlWzY0XTsJCS8qICJtYXRyb3hmYjptb2RlOnh4eHh4IiBvciAibWF0cm94ZmI6eHh4eHgiICov
-CiAjZW5kaWYKIAogc3RhdGljIGludCBtYXRyb3hmYl9nZXRtZW1vcnkoc3RydWN0IG1hdHJveF9m
-Yl9pbmZvICptaW5mbywKLS0gCjEuNy4yLjIKCg==
---0022150482b7be3c7a0498759109--

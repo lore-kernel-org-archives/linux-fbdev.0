@@ -1,83 +1,63 @@
-From: Heiko Schocher <hs@denx.de>
-Date: Mon, 13 Dec 2010 07:01:06 +0000
-Subject: Re: [PATCH v2 1/2] video, sm501: add OF binding to support SM501
-Message-Id: <4D05C4B2.5030005@denx.de>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Date: Thu, 09 Dec 2010 13:47:16 +0000
+Subject: [PATCH 4/9] fb: export fb mode db table
+Message-Id: <1291902441-24712-5-git-send-email-s.hauer@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291451028-22532-1-git-send-email-hs@denx.de>
-	<1292049075-1809-1-git-send-email-hs@denx.de>
-	<20101211143454.ccc5e296.rdunlap@xenotime.net>
-In-Reply-To: <20101211143454.ccc5e296.rdunlap@xenotime.net>
+References: <1291902441-24712-1-git-send-email-s.hauer@pengutronix.de>
+In-Reply-To: <1291902441-24712-1-git-send-email-s.hauer@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org, Samuel Ortiz <sameo@linux.intel.com>, Vincent Sanders <vince@simtec.co.uk>, linux-kernel@vger.kernel.org, Ben Dooks <ben@simtec.co.uk>, linuxppc-dev@lists.ozlabs.org
+To: linux-arm-kernel@lists.infradead.org
 
-Hello Randy,
+The different modes can be useful for drivers. Currently there is
+no way to expose the modes to sysfs, so export them.
 
-Randy Dunlap wrote:
-> On Sat, 11 Dec 2010 07:31:15 +0100 Heiko Schocher wrote:
-> 
->> - add commandline options:
->>   sm501.fb_mode:
-> 
->     sm501.mode:
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+---
+ drivers/video/modedb.c |    7 ++++++-
+ include/linux/fb.h     |    3 +++
+ 2 files changed, 9 insertions(+), 1 deletions(-)
 
-Sorry, type, should be "sm501fb.mode", thanks!
-
->>     Specify resolution as "<xres>x<yres>[-<bpp>][@<refresh>]"
->>   sm501.bpp:
-
-Here too, "sm501fb.bpp"
-
->>     Specify bit-per-pixel if not specified mode
->>
->> ---
->>
->>  Documentation/kernel-parameters.txt          |    7 +
->>  Documentation/powerpc/dts-bindings/sm501.txt |   30 +++
->>  drivers/mfd/sm501.c                          |  141 ++++++++------
->>  drivers/video/sm501fb.c                      |  264 +++++++++++++++++---------
->>  include/linux/sm501.h                        |    8 +
->>  5 files changed, 299 insertions(+), 151 deletions(-)
->>  create mode 100644 Documentation/powerpc/dts-bindings/sm501.txt
->>
->> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
->> index cdd2a6e..6341541 100644
->> --- a/Documentation/kernel-parameters.txt
->> +++ b/Documentation/kernel-parameters.txt
->> @@ -2301,6 +2301,13 @@ and is between 256 and 4096 characters. It is defined in the file
->>  			merging on their own.
->>  			For more information see Documentation/vm/slub.txt.
->>  
->> +	sm501.bpp=	SM501 Display driver:
->> +			Specify bit-per-pixel if not specified mode
-> 
-> 			Specifiy bits-per-pixel if not specified by 'mode'
-> 
->> +
->> +	sm501fb.mode=	SM501 Display driver:
-> 
-> Shouldn't that be sm501.mode ?
-
-No, the name of the source file is sm501fb.c -> sm501fb is right here.
-As the sm501 is a multifunction device, the "fb" is more precise here.
-
->> +			Specify resolution as
->> +			"<xres>x<yres>[-<bpp>][@<refresh>]"
->> +
->>  	smart2=		[HW]
->>  			Format: <io1>[,<io2>[,...,<io8>]]
-> 
-> 
-> However, I think that these shouldn't be added to Documentation/kernel-parameters.txt
-> but should be added to the Documentation/fb/ sub-directory either by adding to
-> Documentation/fb/modedb.txt or by adding a new file Documentation/fb/sm501.txt.
-
-Ok, do this. Thanks for the review!
-
-bye,
-Heiko
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+index 0a4dbdc..82122a9 100644
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -36,7 +36,7 @@ EXPORT_SYMBOL_GPL(fb_mode_option);
+      *  Standard video mode definitions (taken from XFree86)
+      */
+ 
+-static const struct fb_videomode modedb[] = {
++const struct fb_videomode modedb[] = {
+     {
+ 	/* 640x400 @ 70 Hz, 31.5 kHz hsync */
+ 	NULL, 70, 640, 400, 39721, 40, 24, 39, 9, 96, 2,
+@@ -277,6 +277,11 @@ static const struct fb_videomode modedb[] = {
+     },
+ };
+ 
++const struct fb_videomode *fb_modes = modedb;
++EXPORT_SYMBOL(fb_modes);
++const int num_fb_modes = ARRAY_SIZE(modedb);
++EXPORT_SYMBOL(num_fb_modes);
++
+ #ifdef CONFIG_FB_MODE_HELPERS
+ const struct fb_videomode vesa_modes[] = {
+ 	/* 0 640x350-85 VESA */
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index d1631d3..e006172 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -1151,6 +1151,9 @@ struct fb_videomode {
+ extern const char *fb_mode_option;
+ extern const struct fb_videomode vesa_modes[];
+ 
++extern const struct fb_videomode *fb_modes;
++extern const int num_fb_modes;
++
+ struct fb_modelist {
+ 	struct list_head list;
+ 	struct fb_videomode mode;
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+1.7.2.3
+

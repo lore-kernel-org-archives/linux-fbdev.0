@@ -1,61 +1,79 @@
-From: Heiko Schocher <hs@denx.de>
-Date: Tue, 07 Dec 2010 06:59:20 +0000
-Subject: [PATCH 2/2 v2] powerpc, video: add SM501 support for charon board.
-Message-Id: <1291705160-26847-1-git-send-email-hs@denx.de>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Date: Thu, 09 Dec 2010 13:47:12 +0000
+Subject: [PATCH RFC] i.MX51 Framebuffer support
+Message-Id: <1291902441-24712-1-git-send-email-s.hauer@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291451028-22532-2-git-send-email-hs@denx.de>
-In-Reply-To: <1291451028-22532-2-git-send-email-hs-ynQEQJNshbs@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Heiko Schocher <hs-ynQEQJNshbs@public.gmane.org>, devicetree-discuss-mnsaURCQ41sdnm+yROfE0A@public.gmane.org
+To: linux-arm-kernel@lists.infradead.org
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-cc: linux-fbdev@vger.kernel.org
-cc: devicetree-discuss@ozlabs.org
----
-- based against 2.6.37-rc4
+Hi,
 
-./scripts/checkpatch.pl 0003-powerpc-video-add-SM501-support-for-charon-board.patch
-total: 0 errors, 0 warnings, 21 lines checked
+The following series adds i.MX51 framebuffer support based on the IPUv3. It
+is not perfect but I decided it is good enough to open it for a wider audience
+and collect first reviews. I tested this on a babbage board using both outputs
+(VGA/DVI) with different resolutions up to 1680x1050 and different colour depths.
+I also tested it on one custom board using a fixed display setting.
 
-0003-powerpc-video-add-SM501-support-for-charon-board.patch has no obvious style problems and is ready for submission.
+Sascha
 
-- changes since v1:
-  - no board specific defconfig file for mpc52xx based boards as suggested
-    from Wolfram Sang
+The following changes since commit a96a688dcea84047c982dfbb61a335fa00d14f9a:
 
- arch/powerpc/boot/dts/charon.dts |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+  mx51: support FIQ on TZIC, revised (2010-12-07 22:29:32 +0100)
 
-diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
-index 9776889..d9af022 100644
---- a/arch/powerpc/boot/dts/charon.dts
-+++ b/arch/powerpc/boot/dts/charon.dts
-@@ -186,6 +186,7 @@
- 		#address-cells = <2>;
- 		#size-cells = <1>;
- 		ranges = <	0 0 0xfc000000 0x02000000
-+				1 0 0xe0000000 0x04000000 // CS1 range, SM501
- 				3 0 0xe8000000 0x00080000>;
- 
- 		flash@0,0 {
-@@ -197,6 +198,14 @@
- 			#address-cells = <1>;
- 		};
- 
-+		display@1,0 {
-+			compatible = "smi,sm501";
-+			reg = <1 0x00000000 0x00800000
-+			       1 0x03e00000 0x00200000>;
-+			mode = "640x480-32@60";
-+			interrupts = <1 1 3>;
-+		};
-+
- 		mram0@3,0 {
- 			compatible = "mtd-ram";
- 			reg = <3 0x00000 0x80000>;
--- 
-1.7.2.3
+are available in the git repository at:
+  git://git.pengutronix.de/git/imx/linux-2.6.git ipuv3
 
+Sascha Hauer (9):
+      ARM i.MX51: Add ipu clock support
+      ARM i.MX51: rename IPU irqs
+      Add a mfd IPUv3 driver
+      fb: export fb mode db table
+      Add i.MX5 framebuffer driver
+      ARM i.MX51: Add IPU device support
+      ARM i.MX5: Allow to increase max zone order
+      ARM i.MX5: increase dma consistent size for IPU support
+      ARM i.MX51 babbage: Add framebuffer support
+
+ arch/arm/Kconfig                                |    4 +-
+ arch/arm/mach-mx5/Kconfig                       |    1 +
+ arch/arm/mach-mx5/board-mx51_babbage.c          |   74 ++
+ arch/arm/mach-mx5/clock-mx51-mx53.c             |  140 ++++
+ arch/arm/mach-mx5/devices-imx51.h               |    4 +
+ arch/arm/plat-mxc/devices/Kconfig               |    4 +
+ arch/arm/plat-mxc/devices/Makefile              |    1 +
+ arch/arm/plat-mxc/devices/platform-imx_ipuv3.c  |   47 ++
+ arch/arm/plat-mxc/include/mach/devices-common.h |   10 +
+ arch/arm/plat-mxc/include/mach/ipu-v3.h         |   48 ++
+ arch/arm/plat-mxc/include/mach/memory.h         |    2 +-
+ arch/arm/plat-mxc/include/mach/mx51.h           |    4 +-
+ drivers/mfd/Kconfig                             |    7 +
+ drivers/mfd/Makefile                            |    1 +
+ drivers/mfd/imx-ipu-v3/Makefile                 |    3 +
+ drivers/mfd/imx-ipu-v3/ipu-common.c             |  661 ++++++++++++++++++
+ drivers/mfd/imx-ipu-v3/ipu-cpmem.c              |  608 ++++++++++++++++
+ drivers/mfd/imx-ipu-v3/ipu-dc.c                 |  362 ++++++++++
+ drivers/mfd/imx-ipu-v3/ipu-di.c                 |  507 ++++++++++++++
+ drivers/mfd/imx-ipu-v3/ipu-dmfc.c               |  343 +++++++++
+ drivers/mfd/imx-ipu-v3/ipu-dp.c                 |  468 +++++++++++++
+ drivers/mfd/imx-ipu-v3/ipu-prv.h                |  214 ++++++
+ drivers/video/Kconfig                           |   11 +
+ drivers/video/Makefile                          |    1 +
+ drivers/video/modedb.c                          |    7 +-
+ drivers/video/mx5fb.c                           |  846 +++++++++++++++++++++++
+ include/linux/fb.h                              |    3 +
+ include/linux/mfd/imx-ipu-v3.h                  |  218 ++++++
+ 28 files changed, 4593 insertions(+), 6 deletions(-)
+ create mode 100644 arch/arm/plat-mxc/devices/platform-imx_ipuv3.c
+ create mode 100644 arch/arm/plat-mxc/include/mach/ipu-v3.h
+ create mode 100644 drivers/mfd/imx-ipu-v3/Makefile
+ create mode 100644 drivers/mfd/imx-ipu-v3/ipu-common.c
+ create mode 100644 drivers/mfd/imx-ipu-v3/ipu-cpmem.c
+ create mode 100644 drivers/mfd/imx-ipu-v3/ipu-dc.c
+ create mode 100644 drivers/mfd/imx-ipu-v3/ipu-di.c
+ create mode 100644 drivers/mfd/imx-ipu-v3/ipu-dmfc.c
+ create mode 100644 drivers/mfd/imx-ipu-v3/ipu-dp.c
+ create mode 100644 drivers/mfd/imx-ipu-v3/ipu-prv.h
+ create mode 100644 drivers/video/mx5fb.c
+ create mode 100644 include/linux/mfd/imx-ipu-v3.h

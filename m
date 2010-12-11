@@ -1,59 +1,76 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Tue, 14 Dec 2010 18:55:50 +0000
-Subject: Re: Mainline OMAP3 breakage (and other OMAP?)
-Message-Id: <20101214185550.GM3054@atomide.com>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Sat, 11 Dec 2010 22:13:26 +0000
+Subject: intelfb refuses to load
+Message-Id: <20101211221325.GA1954@elf.ucw.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20101202211421.GG10461@n2100.arm.linux.org.uk>
-	<20101202215837.GW17222@atomide.com>
-	<20101202221612.GJ10461@n2100.arm.linux.org.uk>
-	<20101202223208.GA17222@atomide.com>
-	<20101203030954.GD3367@linux-sh.org>
-	<20101203084102.GA30957@n2100.arm.linux.org.uk>
-	<AANLkTim3573_MUZNpo2+tKa=ZJgQf26x5of_ZkMM6BR8@mail.gmail.com>
-	<20101203130724.GB30957@n2100.arm.linux.org.uk>
-	<1292329431.6893.113.camel@tubuntu>
-In-Reply-To: <1292329431.6893.113.camel@tubuntu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: kernel list <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, mbroemme@plusserver.de
 
-* Tomi Valkeinen <tomi.valkeinen@nokia.com> [101214 04:23]:
-> >
-> > So please, 2MB, or if you object, at the _very_ _least_ 1MB.  But
-> > definitely not PAGE_SIZE.
+Hi!
 
-Acked-by: Tony Lindgren <tony@atomide.com>
- 
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-> ---
->  drivers/video/omap2/vram.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/omap2/vram.c b/drivers/video/omap2/vram.c
-> index 2fd7e52..9441e2e 100644
-> --- a/drivers/video/omap2/vram.c
-> +++ b/drivers/video/omap2/vram.c
-> @@ -551,7 +551,7 @@ void __init omap_vram_reserve_sdram_memblock(void)
->  	if (!size)
->  		return;
->  
-> -	size = PAGE_ALIGN(size);
-> +	size = ALIGN(size, SZ_2M);
->  
->  	if (paddr) {
->  		if (paddr & ~PAGE_MASK) {
-> @@ -576,7 +576,7 @@ void __init omap_vram_reserve_sdram_memblock(void)
->  			return;
->  		}
->  	} else {
-> -		paddr = memblock_alloc(size, PAGE_SIZE);
-> +		paddr = memblock_alloc(size, SZ_2M);
->  	}
->  
->  	memblock_free(paddr, size);
-> -- 
-> 1.7.1
-> 
-> 
-> 
+I'm trying to fix up my kernel setup so that X is happy... currently
+it fails to start with:
+
+FATAL: Could not load /lib/modules/2.6.37-rc5+/modules.dep: No such
+file or directory
+(EE) intel(0): No kernel modesetting driver detected.
+(EE) Screen(s) found, but none have a usable configuration.
+
+So far I have:
+
+CONFIG_DRM=y
+# CONFIG_DRM_TDFX is not set
+# CONFIG_DRM_R128 is not set
+# CONFIG_DRM_RADEON is not set
+# CONFIG_DRM_I810 is not set
+# CONFIG_DRM_MGA is not set
+# CONFIG_DRM_SIS is not set
+# CONFIG_DRM_VIA is not set
+# CONFIG_DRM_SAVAGE is not set
+# CONFIG_STUB_POULSBO is not set
+CONFIG_VGASTATE=y
+CONFIG_VIDEO_OUTPUT_CONTROL=y
+CONFIG_FB=y
+CONFIG_FB_I810=y
+# CONFIG_FB_I810_GTF is not set
+# CONFIG_FB_LE80578 is not set
+CONFIG_FB_INTEL=y
+CONFIG_FB_INTEL_DEBUG=y
+CONFIG_FB_INTEL_I2C=y
+# CONFIG_FB_MATROX is not set
+
+And on the command line:
+
+BOOT_IMAGE=(hd0,2)/l/linux-good/arch/i386/boot/bzImage root=/dev/sda4
+resume=/dev/sda1 psmouse.psmouse_proto=imps psmouse_proto=imps
+psmouse.proto=imps vgay1 init=/tmp/swsusp-init
+acpi_sleep=s3_bios,s3_mode no_console_suspend i915.modeset=1
+video=intelfb:mode24x768 fbcon=scrollback:64k
+
+...but intelfb fails with:
+
+[drm] Initialized drm 1.1.0 20060810
+intelfb: intelfb_init
+intelfb: Framebuffer driver for Intel(R)
+830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/945GME/965G/965GM
+chipsets
+intelfb: Version 0.9.6
+intelfb: intelfb_setup
+intelfb: options: mode24x768
+intelfb: intelfb_pci_register
+intelfb 0000:00:02.0: power state changed by ACPI to D0
+intelfb 0000:00:02.0: power state changed by ACPI to D0
+intelfb 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+intelfb: fb aperture: 0xd0000000/0x10000000, MMIO region:
+0xee100000/0x80000
+intelfb: Cannot reserve FB region.
+intelfb: cleanup
+
+Any hints? If I'm doing some trivial mistake, perhaps "cannot reserve
+FB region" message could be improved?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html

@@ -1,30 +1,23 @@
-From: "Andrew Kephart" <andrew.kephart@alereon.com>
-Date: Fri, 10 Dec 2010 22:24:48 +0000
-Subject: [PATCH] fbdev: Fix fb_find_nearest_mode refresh comparison
-Message-Id: <1292019888.2896.17.camel@kephart>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Sat, 11 Dec 2010 01:59:48 +0000
+Subject: Re: [PATCH] fbdev: Fix fb_find_nearest_mode refresh comparison
+Message-Id: <20101211015948.GD3750@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1292019888.2896.17.camel@kephart>
+In-Reply-To: <1292019888.2896.17.camel@kephart>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-UmVmcmVzaCByYXRlIG5lYXJuZXNzIGlzIG5vdCBjYWxjdWxhdGVkIG9yIHJlc2V0IHdoZW4gbmVh
-cmVzdCByZXNvbHV0aW9uCmNoYW5nZXMuCgpUaGlzIHBhdGNoIHJlc2V0cyB0aGUgcmVmcmVzaCBy
-YXRlIGRpZmZlcmVudGlhbCBtZWFzdXJlbWVudCB3aGVuZXZlciBhCm5ldyBuZWFyZXN0IHJlc29s
-dXRpb24gaXMgZGlzY292ZXJlZC4gIFRoaXMgZml4ZXMgdHdvIGVycm9yIGNhc2VzOwpmaXJzdCwg
-d2hlcmVpbiB0aGUgZmlyc3QgbW9kZSdzIHJlZnJlc2ggcmF0ZSBkaWZmZXJlbnRpYWwgaXMgbmV2
-ZXIKY2FsY3VsYXRlZCBhbmQgc2Vjb25kLCB3aGVuIHRoZSBjbG9zZXN0IHJlZnJlc2ggcmF0ZSBm
-cm9tIGEgcHJldmlvdXMKbmVhcmVzdCByZXNvbHV0aW9uIGlzIGVycm9uZW91c2x5IHByZXNlcnZl
-ZC4KCi1hbmRyZXcKCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9tb2RlZGIuYyBiL2RyaXZl
-cnMvdmlkZW8vbW9kZWRiLmMgCmluZGV4IGMzYTE4MjUuLjdhNjFiYTYgMTAwNjQ0Ci0tLSBhL2Ry
-aXZlcnMvdmlkZW8vbW9kZWRiLmMKKysrIGIvZHJpdmVycy92aWRlby9tb2RlZGIuYwpAQCAtOTAy
-LDYgKzkwMiw3IEBAIGNvbnN0IHN0cnVjdCBmYl92aWRlb21vZGUKKmZiX2ZpbmRfbmVhcmVzdF9t
-b2RlKGNvbnN0IHN0cnVjdCBmYl92aWRlb21vZGUgKm1vZGUsCiAgICAgICAgICAgICAgICAgICAg
-ICAgIGFicyhjbW9kZS0+eXJlcyAtIG1vZGUtPnlyZXMpOwogICAgICAgICAgICAgICAgaWYgKGRp
-ZmYgPiBkKSB7CiAgICAgICAgICAgICAgICAgICAgICAgIGRpZmYgPSBkOworICAgICAgICAgICAg
-ICAgICAgICAgICBkaWZmX3JlZnJlc2ggPSBhYnMoY21vZGUtPnJlZnJlc2ggLSAgbW9kZS0+cmVm
-cmVzaCk7CiAgICAgICAgICAgICAgICAgICAgICAgIGJlc3QgPSBjbW9kZTsKICAgICAgICAgICAg
-ICAgIH0gZWxzZSBpZiAoZGlmZiA9IGQpIHsKICAgICAgICAgICAgICAgICAgICAgICAgZCA9IGFi
-cyhjbW9kZS0+cmVmcmVzaCAtIG1vZGUtPnJlZnJlc2gpOwoK//Tounsubscribefromthislisv/
-sendthelinf/unsubscribelinux/fbdev/inthebodyofamessagetomajordomo/vger/kerne
-l/orgMoremajordomoinfoathttp///vger/kernel/org/majordomo/info/htCg==
+On Fri, Dec 10, 2010 at 04:24:48PM -0600, Andrew Kephart wrote:
+> Refresh rate nearness is not calculated or reset when nearest resolution
+> changes.
+> 
+> This patch resets the refresh rate differential measurement whenever a
+> new nearest resolution is discovered.  This fixes two error cases;
+> first, wherein the first mode's refresh rate differential is never
+> calculated and second, when the closest refresh rate from a previous
+> nearest resolution is erroneously preserved.
+> 
+You're missing a signed-off-by tag.

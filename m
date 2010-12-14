@@ -1,7 +1,7 @@
-From: Felipe Contreras <felipe.contreras@gmail.com>
-Date: Fri, 03 Dec 2010 13:15:07 +0000
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Tue, 14 Dec 2010 12:23:51 +0000
 Subject: Re: Mainline OMAP3 breakage (and other OMAP?)
-Message-Id: <AANLkTimfj_J-P29Eqx29PGVqmUZs65SbwKewwrqib6ZC@mail.gmail.com>
+Message-Id: <1292329431.6893.113.camel@tubuntu>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20101202211421.GG10461@n2100.arm.linux.org.uk>
 	<20101202215837.GW17222@atomide.com>
@@ -13,45 +13,34 @@ References: <20101202211421.GG10461@n2100.arm.linux.org.uk>
 	<20101203130724.GB30957@n2100.arm.linux.org.uk>
 In-Reply-To: <20101203130724.GB30957@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Fri, Dec 3, 2010 at 3:07 PM, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
-> On Fri, Dec 03, 2010 at 02:10:23PM +0200, Felipe Contreras wrote:
->> On Fri, Dec 3, 2010 at 10:41 AM, Russell King - ARM Linux
->> <linux@arm.linux.org.uk> wrote:
->> > On Fri, Dec 03, 2010 at 12:09:55PM +0900, Paul Mundt wrote:
->> >> This has been fixed since -rc2.
->> >
->> > So it is.  However, the ioremap fix is wrong.
->> >
->> >        } else {
->> >                paddr = memblock_alloc(size, PAGE_SIZE);
->> >        }
->> >
->> >        memblock_free(paddr, size);
->> >        memblock_remove(paddr, size);
->> >
->> > Didn't I say that such blocks were supposed to be aligned to a 2MB
->> > boundary - and the size also so aligned?
->>
->> I asked you if there was something special and I didn't receive any response:
->> http://article.gmane.org/gmane.linux.kernel/1048434
->
-> So you thought you could ride rough-shod over my statement and ignore it?
-> Thank you for treating me like shit, I'll remember that for future and
-> treat you in a similar manner.
+Hi,
 
-No, you didn't make any statement, just provided code. I thought SZ_2M
-might have just been an example for something that required that
-alignment, thus my request for clarification.
+On Fri, 2010-12-03 at 13:07 +0000, ext Russell King - ARM Linux wrote:
 
->> So, why SZ_2M?
+> So please, 2MB, or if you object, at the _very_ _least_ 1MB.  But
+> definitely not PAGE_SIZE.
+
+Here's a patch for this. Works for me on OMAP3430SDP. If the patch is
+ok, I'll send a pull request to Paul.
+
+
+
+From 6c54704730626e2683e05574b3cbba966980c956 Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Tue, 14 Dec 2010 14:16:59 +0200
+Subject: [PATCH] OMAP: DSS: VRAM: Align start & size of vram to 2M
+
+Align the start address and size of VRAM area to 2M as per comments from
+Russell King:
+
+> > So, why SZ_2M?
 >
 > Firstly, that's the granularity which we allocate page tables - one
-> Linux page table covers 2MB of memory.  We want to avoid creating page
+> Linux page table covers 2MB of memory.  We want to avoid creating page
 > tables for the main memory mapping as that increases TLB pressure through
 > the use of additional TLB entries, and more page table walks.
 >
@@ -68,14 +57,38 @@ alignment, thus my request for clarification.
 > regions can be coalesced together into one block, and minimises run-time
 > expenses.
 >
-> So please, 2MB, or if you object, at the _very_ _least_ 1MB.  But
+> So please, 2MB, or if you object, at the _very_ _least_ 1MB.  But
 > definitely not PAGE_SIZE.
 
-Fair enough. If nobody beats me to it I would send patches to fix
-that, although perhaps it would make sense to write a helper function
-that does exactly this.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ drivers/video/omap2/vram.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Cheers.
-
+diff --git a/drivers/video/omap2/vram.c b/drivers/video/omap2/vram.c
+index 2fd7e52..9441e2e 100644
+--- a/drivers/video/omap2/vram.c
++++ b/drivers/video/omap2/vram.c
+@@ -551,7 +551,7 @@ void __init omap_vram_reserve_sdram_memblock(void)
+ 	if (!size)
+ 		return;
+ 
+-	size = PAGE_ALIGN(size);
++	size = ALIGN(size, SZ_2M);
+ 
+ 	if (paddr) {
+ 		if (paddr & ~PAGE_MASK) {
+@@ -576,7 +576,7 @@ void __init omap_vram_reserve_sdram_memblock(void)
+ 			return;
+ 		}
+ 	} else {
+-		paddr = memblock_alloc(size, PAGE_SIZE);
++		paddr = memblock_alloc(size, SZ_2M);
+ 	}
+ 
+ 	memblock_free(paddr, size);
 -- 
-Felipe Contreras
+1.7.1
+
+
+

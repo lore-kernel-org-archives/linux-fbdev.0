@@ -1,28 +1,36 @@
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 16 Dec 2010 17:06:59 +0000
-Subject: Re: [PATCH v4 5/5] fsl-diu-fb: Support setting display mode using EDID
-Message-Id: <AANLkTinOf__X0p3_5G90KkYS9PXpB2j0_06MFhFcZzqO@mail.gmail.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Thu, 16 Dec 2010 17:28:24 +0000
+Subject: Re: [PATCH v4 5/5] fsl-diu-fb: Support setting display mode using
+Message-Id: <4D0A4C38.3010105@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1279893639-24333-1-git-send-email-agust@denx.de>
 	<1279893639-24333-6-git-send-email-agust@denx.de>
 	<AANLkTin-TL5_TKnyHYtZdixosfqpkPNoarSTC+K4tTUb@mail.gmail.com>
 	<AANLkTi=NwY_gcBXeKXeGX-qist3tMQ4EWqj3twYGfeWD@mail.gmail.com>
 	<4D0A446E.5020600@freescale.com>
-In-Reply-To: <4D0A446E.5020600-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+	<AANLkTinOf__X0p3_5G90KkYS9PXpB2j0_06MFhFcZzqO@mail.gmail.com>
+In-Reply-To: <AANLkTinOf__X0p3_5G90KkYS9PXpB2j0_06MFhFcZzqO@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Timur Tabi <timur-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Cc: linuxppc-dev-mnsaURCQ41sdnm+yROfE0A@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, linux-fbdev@vger.kernel.org, Anatolij Gustschin <agust@denx.de>, devicetree-discuss@lists.ozlabs.org
 
-On Thu, Dec 16, 2010 at 9:55 AM, Timur Tabi <timur@freescale.com> wrote:
-> Grant Likely wrote:
->> This is for devices which don't have an i2c edid channel.
->
-> So are we expecting board-specific code in U-Boot to add the data to the device
-> tree?
+Grant Likely wrote:
+> No.  It is a static property of the board/machine.  It is expected it
+> to be encoded into the board's .dts file.
 
-No.  It is a static property of the board/machine.  It is expected it
-to be encoded into the board's .dts file.
+Ok, but that only makes sense if the monitor is hard-wired to the board itself.
+ If a user can attach any monitor he wants, then the EDID data can't be known at
+compile time.
 
-g.
+I guess it's no different than using hard-coded memory controller programming
+instead of SPD.  You can safely avoid SPD only if the DDR chips are soldered on
+the board.
+
+It looks like I need to add board-specific EDID reading to the DIU driver.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
+

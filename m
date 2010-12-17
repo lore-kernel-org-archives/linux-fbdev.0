@@ -1,75 +1,121 @@
-From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
-Date: Wed, 01 Dec 2010 14:58:43 +0000
-Subject: Re: OMAP:DSS: possible bug in WAITFOR_VSYNC ioctl
-Message-Id: <yw1xoc95zgik.fsf@unicorn.mansr.com>
+From: "Hiremath, Vaibhav" <hvaibhav@ti.com>
+Date: Fri, 17 Dec 2010 09:11:54 +0000
+Subject: RE: OMAP:DSS: possible bug in WAITFOR_VSYNC ioctl
+Message-Id: <19F8576C6E063C45BE387C64729E739404BD0DBA3B@dbde02.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <19F8576C6E063C45BE387C64729E739404BC762E9A@dbde02.ent.ti.com>
-	<1290589057.13243.22.camel@tubuntu>
-	<19F8576C6E063C45BE387C64729E739404BCCA3A55@dbde02.ent.ti.com>
-	<20101124163100.GB5681@nokia.com>
-	<19F8576C6E063C45BE387C64729E739404BCCA3CAE@dbde02.ent.ti.com>
-	<yw1xeia81nts.fsf@unicorn.mansr.com>
-	<19F8576C6E063C45BE387C64729E739404BCCA401F@dbde02.ent.ti.com>
-	<20101126125539.GG8094@nokia.com>
-	<20101130063440.GF17114@linux-sh.org>
-	<20101130063934.GG17114@linux-sh.org>
-	<19F8576C6E063C45BE387C64729E739404BCCA455A@dbde02.ent.ti.com>
-	<1291123945.24627.223.camel@tubuntu>
-	<AANLkTi=R9KO5V1i8wru6TLMq-k5skr1hfZa43MgS=9HS@mail.gmail.com>
-In-Reply-To: <AANLkTi=R9KO5V1i8wru6TLMq-k5skr1hfZa43MgS=9HS@mail.gmail.com> (Jonghun Han's message of "Wed, 1 Dec 2010 23:43:50 +0900")
+	 <1290589057.13243.22.camel@tubuntu>
+	 <19F8576C6E063C45BE387C64729E739404BCCA3A55@dbde02.ent.ti.com>
+	 <20101124163100.GB5681@nokia.com>
+	 <19F8576C6E063C45BE387C64729E739404BCCA3CAE@dbde02.ent.ti.com>
+	 <yw1xeia81nts.fsf@unicorn.mansr.com>
+	 <19F8576C6E063C45BE387C64729E739404BCCA401F@dbde02.ent.ti.com>
+	 <20101126125539.GG8094@nokia.com> <20101130063440.GF17114@linux-sh.org>
+	 <20101130063934.GG17114@linux-sh.org>
+	 <19F8576C6E063C45BE387C64729E739404BCCA455A@dbde02.ent.ti.com>
+ <1291123945.24627.223.camel@tubuntu>
+In-Reply-To: <1291123945.24627.223.camel@tubuntu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Jonghun Han <jonghun79.han@gmail.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>, "ext Hiremath, Vaibhav" <hvaibhav@ti.com>, Paul Mundt <lethal@linux-sh.org>, Ville Syrj?l? <ville.syrjala@nokia.com>, M?ns Rullg?rd <mans@mansr.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: Paul Mundt <lethal@linux-sh.org>, Ville Syrj?l? <ville.syrjala@nokia.com>, M?ns Rullg?rd <mans@mansr.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-Jonghun Han <jonghun79.han@gmail.com> writes:
 
-> Tomi Valkeinen wrote:
->
-> 2010/11/30 Tomi Valkeinen <tomi.valkeinen@nokia.com>:
->> On Tue, 2010-11-30 at 12:29 +0530, ext Hiremath, Vaibhav wrote:
->>> > -----Original Message-----
->>> > From: Paul Mundt [mailto:lethal@linux-sh.org]
->>> > Sent: Tuesday, November 30, 2010 12:10 PM
->>> > To: Ville Syrj?l?
->>> > Cc: Hiremath, Vaibhav; M?ns Rullg?rd; linux-omap@vger.kernel.org; lin=
-ux-
->>> > fbdev@vger.kernel.org
->>> > Subject: Re: OMAP:DSS: possible bug in WAITFOR_VSYNC ioctl
->>> >
->>> > On Tue, Nov 30, 2010 at 03:34:40PM +0900, Paul Mundt wrote:
->
-> <snip>
->
->> OMAP has user writeable shadow registers and hidden real registers for
->> display controller. The shadow registers are latched to real registers
->> on VFP, but only if GO bit has been set. The GO bit is cleared by the HW
->> when latching has been done.
->>
->> If the GO bit is set, we cannot touch the shadow registers because we
->> don't know when the VFP =A0will happen. That's why there's additionally a
->> SW cache for the config, so that we don't need to block when the GO bit
->> is up and the user wants to change the config. The driver "flushes" the
->> SW config to real registers in VSYNC interrupt handler.
->
-> Does the driver flush the config to real register directly not a
-> shadow register in VSYNC ISR? Does it mean display controller use
-> the config flushed to the real register from the VSYNC ?
+> -----Original Message-----
+> From: Tomi Valkeinen [mailto:tomi.valkeinen@nokia.com]
+> Sent: Tuesday, November 30, 2010 7:02 PM
+> To: Hiremath, Vaibhav
+> Cc: Paul Mundt; Ville Syrj?l?; M?ns Rullg?rd; linux-omap@vger.kernel.org;
+> linux-fbdev@vger.kernel.org
+> Subject: RE: OMAP:DSS: possible bug in WAITFOR_VSYNC ioctl
+> 
+> On Tue, 2010-11-30 at 12:29 +0530, ext Hiremath, Vaibhav wrote:
+> > > -----Original Message-----
+> > > From: Paul Mundt [mailto:lethal@linux-sh.org]
+> > > Sent: Tuesday, November 30, 2010 12:10 PM
+> > > To: Ville Syrj?l?
+> > > Cc: Hiremath, Vaibhav; M?ns Rullg?rd; linux-omap@vger.kernel.org;
+> linux-
+> > > fbdev@vger.kernel.org
+> > > Subject: Re: OMAP:DSS: possible bug in WAITFOR_VSYNC ioctl
+> > >
+> > > On Tue, Nov 30, 2010 at 03:34:40PM +0900, Paul Mundt wrote:
+> > > > On Fri, Nov 26, 2010 at 02:55:39PM +0200, Ville Syrj?l? wrote:
+> > > > > On Fri, Nov 26, 2010 at 05:38:11PM +0530, ext Hiremath, Vaibhav
+> wrote:
 
-The hardware latches the shadow registers to the active registers at
-start of VFP.
+<snip>
 
-> I don't know OMAP in detail. But as I know other SoCs also work like it.
->
-> Can Go bit is cleared by SW?
+> > > a WAITFORHWSYNC or something similar.
+> > [Hiremath, Vaibhav] Yes exactly, this name fits to the use-case and
+> sounds ok to me.
+> >
+> > Tomi,
+> > Any comments?
+> 
+> Ah, I seem to have been dropped out from this mail thread...
+> 
+> Yes, WAITFORHWSYNC sounds much better.
+> 
+> But there seems to be some misunderstanding of what this is about.
+> Deferred IO or manual update displays are not directly related to this.
+> This is about configuration registers, ie. address, size, etc. of the
+> framebuffer, not about the contents of the framebuffer.
+> 
+> The reason why WAITFORGO was implemented is:
+> 
+> OMAP has user writeable shadow registers and hidden real registers for
+> display controller. The shadow registers are latched to real registers
+> on VFP, but only if GO bit has been set. The GO bit is cleared by the HW
+> when latching has been done.
+> 
+> If the GO bit is set, we cannot touch the shadow registers because we
+> don't know when the VFP  will happen. That's why there's additionally a
+> SW cache for the config, so that we don't need to block when the GO bit
+> is up and the user wants to change the config. The driver "flushes" the
+> SW config to real registers in VSYNC interrupt handler.
+> 
+> This is why the user may need to wait multiple vsyncs until the config
+> has really been written to the real HW registers, and WAITFORGO waits
+> for this. But if there has not been any config changes, WAITFORGO
+> doesn't wait at all.
+> 
+> So WAITFORVSYNC and WAITFORGO do quite a different thing on OMAP. It is
+> true what Hiremath says, WAITFORVSYNC is difficult (impossible?) to use
+> properly on OMAP as if the config write happens between VFP and VSYNC,
+> the config is not actually yet in the real registers.
+> 
+> But I'm still not comfortable with just moving WAITFORGO over
+> WAITFORVSYNC. At least we should then change WAITFORGO to always wait at
+> least for the next vsync, so that it wouldn't return immediately when
+> there are no pending changes. This would make WAITFORGO act like
+> WAITFORVSYNC in many cases, but not always.
+> 
+> And to add to the confusion, there are multiple overlays on OMAP. They
+> may be currently shared by multiple users (for example omapfb and v4l2).
+> If the user uses WAITFORVSYNC, the call will return for every vsync, as
+> expected. If he uses WAITFORGO, the call will return in random number of
+> vsyncs from the user's point of view, because the other user may be
+> competing from the same resource.
+> 
+> One could still argue that always using WAITFORGO is better, as there's
+> the problem with WAITFORVSYNC that Hiremath described. But then again,
+> WAITFORGO acts differently than what (I think) WAITFORVSYNC should do.
+> 
+> So summa summarum, I didn't know how to solve this perfectly earlier,
+> and thus I implemented WAITFORGO, and I still don't know what would be
+> the perfect solution.
+> 
+[Hiremath, Vaibhav] We did not had a closure on this topic, so summarizing our discussion here,
 
-No.
+Let's keep FBIO_WAITFORVSYNC (or OMAPFB_WAITFORVSYNC) ioctl as is, since as of now the way we understand this ioctl is, it should barely wait for next vsync. 
 
-> And does each overlay(FB) have its own Go bit?
+Change the OMAPFB_WAITFORGO to (standard) FBIO_WAITFORHWSYNC, currently this will be used in OMAP2/3 Fb-display driver.
 
-No.  There is one GO bit per video output, i.e. one each for LCD and TV.
+Thanks,
+Vaibhav
 
---=20
-M=E5ns Rullg=E5rd
-mans@mansr.com
+>  Tomi
+> 
+

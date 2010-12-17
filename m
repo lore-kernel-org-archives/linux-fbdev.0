@@ -1,88 +1,230 @@
-From: Dzianis Kahanovich <mahatma@bspu.unibel.by>
-Date: Fri, 17 Dec 2010 20:57:11 +0000
-Subject: Re: [PATCH v3] (new way) I2C/DDC defaults & I2C/DDC detection for
-Message-Id: <4D0BCEA7.6080509@bspu.unibel.by>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Fri, 17 Dec 2010 07:45:46 +0000
+Subject: [PATCH] s3c-fb: add support for runtime pm
+Message-Id: <1292571946-13595-1-git-send-email-jg1.han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4D00D508.1060106@bspu.unibel.by>
-In-Reply-To: <4D00D508.1060106@bspu.unibel.by>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org
+Cc: ben-linux@fluff.org, Ilho Lee <ilho215.lee@samsung.com>, Jingoo Han <jg1.han@samsung.com>
 
-Florian Tobias Schandinat wrote:
+This patch adds support for runtime pm using the functions.
+ - pm_runtime_get_sync()
+ - pm_runtime_put_sync()
 
-I'm don't read my mail even more, sorry.
-OK, I will try to complete most of your recommendations. But few questions:
+pm_runtime_get_sync() and pm_runtime_put_sync() are called when
+open or release function of framebufer driver is called to inform
+the system if hardware is idle or not.
 
-> I'm wondering which tree are you using as a base?
-> Your patch does not apply and not compile. Please use at least latest mainline
-> as a base or even better current linux-next.
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/s3c-fb.c |  111 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 files changed, 107 insertions(+), 4 deletions(-)
 
-OK. First I was use linux-git, but may be (now not check) fall to release (at
-home) (git & release differs over line numbers only on that moment). Now I will
-use only linux-next latest.
-
-[...]
-> 
-> You are trying to do 2 sorts of things in this function:
-> 
-> - You are trying to detect the lcd_panel_hres/vres. This is usually a good thing
-> but you shouldn't blindly call them after the existing detection is done but
-> rather sanely integrate it in (extend) the already "detection" in lcd.c (I am
-> not happy that this would move the EDID code in the LCD area but as long as we
-> modify the lvds structure the only sane way is to call it from lcd.c)
-
-IMHO this tasks are not too same, but I will think. Really I detect not LCD, but
-"any EDID". But while my CRT (second device) don't return EDID and I unable to
-sure detect something else - I detect LCD only. Againg, various data required
-after detection. But I will look to code and think.
-
-> 
-> - You are trying to change the global default configuration. This is a lot
-> trickier as it is easy to make it work for you but break it for others. If you
-> do this you have to prove (code does the obvious correct thing) that it is
-> closer to what everybody needs
-
-HMM. May be I do wrong. But IMHO defaults vs. "dead device" (this is dead by
-default for anybody, exclude CRT) is not crime ;)
-
->>      viafb_init_chip_info(vdev->chip_type);
->> +    /* detect dual_fb & SAMM_ON, but let's keep it to options */
->> +#if 0
->> +    viafb_detect_dev(0, vdev);
-> 
-> As this is never true, please remove it. Adding dead code is strictly forbidden
-> and I've spent lots of days kicking such code out of the driver. Removing it of
-> course includes removing your whole stage stuff.
-
-OK. I just keep dual/SAMM detection working up to last moment. But finally I
-start to think, SAMM/dual defaults are not same with "viafb_active_dev" and may
-be better to keep it (I don't know now if SAMM/dual not set by user). But it it
-work even on my not "dual_fb" card (CRT+LCD workd anymore) and if anybody think
-this is good... But while you say about changing defaults is wrong - I will
-remove it.
-
-In terms of "best default config" SAMM/dual detection is good, but in terms of
-"don't touch" - no. Still unsure even now ;)
-
-> Perhaps you should send this one as a separate patch. It is unrelated to your
-> other stuff and looks good to me.
-
-OK, I separate it. But relative related - while it is completely "dead code" and
-don't used nowhere else and I cared to using it. ;)
-
-
-About CRT detection: I think, CRT don't detected becouse it must be detected via
-i2c+gpio. No? But i2c+gpio broken in many places (includes pieces of dead
-i2c+gpio code, newer be reached now). May be it related more to
-drivers/i2c/busses/i2c-gpio.ko, even it start and bint to viafb (after some i2c
-code fixes), but without results and I don't understand how it must work with
-current code and while it not completed, I think there are not too trivial task.
-Are you know how CRT/DDC must/may be detected?
-
-Summary: I will think more, then IMHO first I will send separated patches with
-this behaviour...
-
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index f9aca9d..83ce9a0 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -23,6 +23,7 @@
+ #include <linux/io.h>
+ #include <linux/uaccess.h>
+ #include <linux/interrupt.h>
++#include <linux/pm_runtime.h>
+ 
+ #include <mach/map.h>
+ #include <plat/regs-fb-v4.h>
+@@ -1013,8 +1014,30 @@ static int s3c_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 	return ret;
+ }
+ 
++static int s3c_fb_open(struct fb_info *info, int user)
++{
++	struct s3c_fb_win *win = info->par;
++	struct s3c_fb *sfb = win->parent;
++
++	pm_runtime_get_sync(sfb->dev);
++
++	return 0;
++}
++
++static int s3c_fb_release(struct fb_info *info, int user)
++{
++	struct s3c_fb_win *win = info->par;
++	struct s3c_fb *sfb = win->parent;
++
++	pm_runtime_put_sync(sfb->dev);
++
++	return 0;
++}
++
+ static struct fb_ops s3c_fb_ops = {
+ 	.owner		= THIS_MODULE,
++	.fb_open	= s3c_fb_open,
++	.fb_release	= s3c_fb_release,
+ 	.fb_check_var	= s3c_fb_check_var,
+ 	.fb_set_par	= s3c_fb_set_par,
+ 	.fb_blank	= s3c_fb_blank,
+@@ -1322,6 +1345,8 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 
+ 	clk_enable(sfb->bus_clk);
+ 
++	pm_runtime_enable(sfb->dev);
++
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!res) {
+ 		dev_err(dev, "failed to find registers\n");
+@@ -1360,6 +1385,9 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 
+ 	dev_dbg(dev, "got resources (regs %p), probing windows\n", sfb->regs);
+ 
++	platform_set_drvdata(pdev, sfb);
++	pm_runtime_get_sync(sfb->dev);
++
+ 	/* setup gpio and output polarity controls */
+ 
+ 	pd->setup_gpio();
+@@ -1400,6 +1428,7 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	platform_set_drvdata(pdev, sfb);
++	pm_runtime_put_sync(sfb->dev);
+ 
+ 	return 0;
+ 
+@@ -1434,6 +1463,8 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
+ 	struct s3c_fb *sfb = platform_get_drvdata(pdev);
+ 	int win;
+ 
++	pm_runtime_get_sync(sfb->dev);
++
+ 	for (win = 0; win < S3C_FB_MAX_WIN; win++)
+ 		if (sfb->windows[win])
+ 			s3c_fb_release_win(sfb, sfb->windows[win]);
+@@ -1450,12 +1481,74 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
+ 
+ 	kfree(sfb);
+ 
++	pm_runtime_put_sync(sfb->dev);
++	pm_runtime_disable(sfb->dev);
++
+ 	return 0;
+ }
+ 
+ #ifdef CONFIG_PM
+-static int s3c_fb_suspend(struct platform_device *pdev, pm_message_t state)
++static int s3c_fb_suspend(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct s3c_fb *sfb = platform_get_drvdata(pdev);
++	struct s3c_fb_win *win;
++	int win_no;
++
++	for (win_no = S3C_FB_MAX_WIN - 1; win_no >= 0; win_no--) {
++		win = sfb->windows[win_no];
++		if (!win)
++			continue;
++
++		/* use the blank function to push into power-down */
++		s3c_fb_blank(FB_BLANK_POWERDOWN, win->fbinfo);
++	}
++
++	clk_disable(sfb->bus_clk);
++	return 0;
++}
++
++static int s3c_fb_resume(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct s3c_fb *sfb = platform_get_drvdata(pdev);
++	struct s3c_fb_platdata *pd = sfb->pdata;
++	struct s3c_fb_win *win;
++	int win_no;
++
++	clk_enable(sfb->bus_clk);
++
++	/* setup registers */
++	writel(pd->vidcon1, sfb->regs + VIDCON1);
++
++	/* zero all windows before we do anything */
++	for (win_no = 0; win_no < sfb->variant.nr_windows; win_no++)
++		s3c_fb_clear_win(sfb, win_no);
++
++	for (win_no = 0; win_no < sfb->variant.nr_windows - 1; win_no++) {
++		void __iomem *regs = sfb->regs + sfb->variant.keycon;
++
++		regs += (win_no * 8);
++		writel(0xffffff, regs + WKEYCON0);
++		writel(0xffffff, regs + WKEYCON1);
++	}
++
++	/* restore framebuffers */
++	for (win_no = 0; win_no < S3C_FB_MAX_WIN; win_no++) {
++		win = sfb->windows[win_no];
++		if (!win)
++			continue;
++
++		dev_dbg(&pdev->dev, "resuming window %d\n", win_no);
++		s3c_fb_set_par(win->fbinfo);
++	}
++
++	return 0;
++}
++
++int s3c_fb_runtime_suspend(struct device *dev)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
+ 	struct s3c_fb *sfb = platform_get_drvdata(pdev);
+ 	struct s3c_fb_win *win;
+ 	int win_no;
+@@ -1473,8 +1566,9 @@ static int s3c_fb_suspend(struct platform_device *pdev, pm_message_t state)
+ 	return 0;
+ }
+ 
+-static int s3c_fb_resume(struct platform_device *pdev)
++int s3c_fb_runtime_resume(struct device *dev)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
+ 	struct s3c_fb *sfb = platform_get_drvdata(pdev);
+ 	struct s3c_fb_platdata *pd = sfb->pdata;
+ 	struct s3c_fb_win *win;
+@@ -1509,9 +1603,12 @@ static int s3c_fb_resume(struct platform_device *pdev)
+ 
+ 	return 0;
+ }
++
+ #else
+ #define s3c_fb_suspend NULL
+ #define s3c_fb_resume  NULL
++#define s3c_fb_runtime_suspend NULL
++#define s3c_fb_runtime_resume NULL
+ #endif
+ 
+ 
+@@ -1710,15 +1807,21 @@ static struct platform_device_id s3c_fb_driver_ids[] = {
+ };
+ MODULE_DEVICE_TABLE(platform, s3c_fb_driver_ids);
+ 
++static const struct dev_pm_ops s3cfb_pm_ops = {
++	.suspend	= s3c_fb_suspend,
++	.resume		= s3c_fb_resume,
++	.runtime_suspend	= s3c_fb_runtime_suspend,
++	.runtime_resume		= s3c_fb_runtime_resume,
++};
++
+ static struct platform_driver s3c_fb_driver = {
+ 	.probe		= s3c_fb_probe,
+ 	.remove		= __devexit_p(s3c_fb_remove),
+-	.suspend	= s3c_fb_suspend,
+-	.resume		= s3c_fb_resume,
+ 	.id_table	= s3c_fb_driver_ids,
+ 	.driver		= {
+ 		.name	= "s3c-fb",
+ 		.owner	= THIS_MODULE,
++		.pm	= &s3cfb_pm_ops,
+ 	},
+ };
+ 
 -- 
-WBR, Dzianis Kahanovich AKA Denis Kaganovich, http://mahatma.bspu.unibel.by/
+1.6.2.5
+

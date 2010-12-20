@@ -1,164 +1,96 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Tue, 21 Dec 2010 10:46:44 +0000
-Subject: [PATCH/RFC 3/3] ARM: mach-shmobile: disable HDMI, if no driver
-Message-Id: <Pine.LNX.4.64.1012211057550.32347@axis700.grange>
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Date: Mon, 20 Dec 2010 21:50:21 +0000
+Subject: [PATCH 12/13] sisfb: delete unused register I/O macros
+Message-Id: <1292881822-32630-13-git-send-email-aaro.koskinen@iki.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1292881822-32630-1-git-send-email-aaro.koskinen@iki.fi>
+In-Reply-To: <1292881822-32630-1-git-send-email-aaro.koskinen@iki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, thomas@winischhofer.net
+Cc: aaro.koskinen@iki.fi
 
-The ap4evb board has an HDMI connector on LCDC1, and a connector for a 
-MIPI-DSI display on LCDC0. Currently LCDC1 is always the default 
-framebuffer and there is no way to switch to default LCDC0 without editing 
-the sources. This patch switches the default framebuffer to LCDC0 if the 
-HDMI driver is disabled in .config.
+Delete unused register I/O macros.
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>
 ---
-diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
-index 5b07952..ed999a3 100644
---- a/arch/arm/mach-shmobile/board-ap4evb.c
-+++ b/arch/arm/mach-shmobile/board-ap4evb.c
-@@ -739,6 +739,7 @@ static struct platform_device fsi_device = {
- 	},
- };
+ drivers/video/sis/sis.h |   54 +----------------------------------------------
+ 1 files changed, 1 insertions(+), 53 deletions(-)
+
+diff --git a/drivers/video/sis/sis.h b/drivers/video/sis/sis.h
+index acf0766..eac7a01 100644
+--- a/drivers/video/sis/sis.h
++++ b/drivers/video/sis/sis.h
+@@ -307,7 +307,7 @@
+ #define VB2_LCDOVER1600BRIDGE	(VB2_307T  | VB2_307LV)
+ #define VB2_RAMDAC202MHZBRIDGE	(VB2_301C  | VB2_307T)
  
-+#if defined(CONFIG_FB_SH_MOBILE_HDMI) || defined(CONFIG_FB_SH_MOBILE_HDMI_MODULE)
- static struct sh_mobile_lcdc_info sh_mobile_lcdc1_info = {
- 	.clock_source = LCDC_CLK_EXTERNAL,
- 	.ch[0] = {
-@@ -804,6 +805,61 @@ static struct platform_device hdmi_device = {
- 	},
- };
+-/* I/O port access macros and functions */
++/* I/O port access functions */
  
-+static int __init hdmi_init_pm_clock(void)
-+{
-+	struct clk *hdmi_ick = clk_get(&hdmi_device.dev, "ick");
-+	int ret;
-+	long rate;
-+
-+	if (IS_ERR(hdmi_ick)) {
-+		ret = PTR_ERR(hdmi_ick);
-+		pr_err("Cannot get HDMI ICK: %d\n", ret);
-+		goto out;
-+	}
-+
-+	ret = clk_set_parent(&sh7372_pllc2_clk, &sh7372_dv_clki_div2_clk);
-+	if (ret < 0) {
-+		pr_err("Cannot set PLLC2 parent: %d, %d users\n", ret, sh7372_pllc2_clk.usecount);
-+		goto out;
-+	}
-+
-+	pr_debug("PLLC2 initial frequency %lu\n", clk_get_rate(&sh7372_pllc2_clk));
-+
-+	rate = clk_round_rate(&sh7372_pllc2_clk, 594000000);
-+	if (rate < 0) {
-+		pr_err("Cannot get suitable rate: %ld\n", rate);
-+		ret = rate;
-+		goto out;
-+	}
-+
-+	ret = clk_set_rate(&sh7372_pllc2_clk, rate);
-+	if (ret < 0) {
-+		pr_err("Cannot set rate %ld: %d\n", rate, ret);
-+		goto out;
-+	}
-+
-+	ret = clk_enable(&sh7372_pllc2_clk);
-+	if (ret < 0) {
-+		pr_err("Cannot enable pllc2 clock\n");
-+		goto out;
-+	}
-+	pr_debug("PLLC2 set frequency %lu\n", rate);
-+
-+	ret = clk_set_parent(hdmi_ick, &sh7372_pllc2_clk);
-+	if (ret < 0) {
-+		pr_err("Cannot set HDMI parent: %d\n", ret);
-+		goto out;
-+	}
-+
-+out:
-+	if (!IS_ERR(hdmi_ick))
-+		clk_put(hdmi_ick);
-+	return ret;
-+}
-+
-+device_initcall(hdmi_init_pm_clock);
-+#endif
-+
- static struct gpio_led ap4evb_leds[] = {
- 	{
- 		.name			= "led4",
-@@ -938,68 +994,16 @@ static struct platform_device *ap4evb_devices[] __initdata = {
- 	&usb1_host_device,
- 	&fsi_device,
- 	&sh_mmcif_device,
-+#if defined(CONFIG_FB_SH_MOBILE_HDMI) || defined(CONFIG_FB_SH_MOBILE_HDMI_MODULE)
- 	&lcdc1_device,
--	&lcdc_device,
- 	&hdmi_device,
-+#endif
-+	&lcdc_device,
- 	&csi2_device,
- 	&ceu_device,
- 	&ap4evb_camera,
- };
+ void SiS_SetReg(SISIOADDRESS, u8, u8);
+ void SiS_SetRegByte(SISIOADDRESS, u8);
+@@ -321,58 +321,6 @@ u8 SiS_GetRegByte(SISIOADDRESS);
+ u16 SiS_GetRegShort(SISIOADDRESS);
+ u32 SiS_GetRegLong(SISIOADDRESS);
  
--static int __init hdmi_init_pm_clock(void)
--{
--	struct clk *hdmi_ick = clk_get(&hdmi_device.dev, "ick");
--	int ret;
--	long rate;
+-#define inSISREG(base)		inb(base)
 -
--	if (IS_ERR(hdmi_ick)) {
--		ret = PTR_ERR(hdmi_ick);
--		pr_err("Cannot get HDMI ICK: %d\n", ret);
--		goto out;
--	}
+-#define outSISREG(base,val)	outb(val,base)
 -
--	ret = clk_set_parent(&sh7372_pllc2_clk, &sh7372_dv_clki_div2_clk);
--	if (ret < 0) {
--		pr_err("Cannot set PLLC2 parent: %d, %d users\n", ret, sh7372_pllc2_clk.usecount);
--		goto out;
--	}
+-#define orSISREG(base,val)      			\
+-		do {					\
+-			u8 __Temp = inSISREG(base); 	\
+-			outSISREG(base, __Temp | (val));\
+-		} while (0)
 -
--	pr_debug("PLLC2 initial frequency %lu\n", clk_get_rate(&sh7372_pllc2_clk));
+-#define andSISREG(base,val)     			\
+-		do {					\
+-			u8 __Temp = inSISREG(base); 	\
+-			outSISREG(base, __Temp & (val));\
+-		} while (0)
 -
--	rate = clk_round_rate(&sh7372_pllc2_clk, 594000000);
--	if (rate < 0) {
--		pr_err("Cannot get suitable rate: %ld\n", rate);
--		ret = rate;
--		goto out;
--	}
+-#define inSISIDXREG(base,idx,var)			\
+-		do {					\
+-			outSISREG(base, idx); 		\
+-			var = inSISREG((base)+1);	\
+-		} while (0)
 -
--	ret = clk_set_rate(&sh7372_pllc2_clk, rate);
--	if (ret < 0) {
--		pr_err("Cannot set rate %ld: %d\n", rate, ret);
--		goto out;
--	}
+-#define outSISIDXREG(base,idx,val)			\
+-		do {					\
+-			outSISREG(base, idx);		\
+-			outSISREG((base)+1, val);	\
+-		} while (0)
 -
--	ret = clk_enable(&sh7372_pllc2_clk);
--	if (ret < 0) {
--		pr_err("Cannot enable pllc2 clock\n");
--		goto out;
--	}
--	pr_debug("PLLC2 set frequency %lu\n", rate);
+-#define orSISIDXREG(base,idx,val)				\
+-		do {						\
+-			u8 __Temp; 				\
+-			outSISREG(base, idx);   		\
+-			__Temp = inSISREG((base)+1) | (val); 	\
+-			outSISREG((base)+1, __Temp);		\
+-		} while (0)
 -
--	ret = clk_set_parent(hdmi_ick, &sh7372_pllc2_clk);
--	if (ret < 0) {
--		pr_err("Cannot set HDMI parent: %d\n", ret);
--		goto out;
--	}
+-#define andSISIDXREG(base,idx,and)				\
+-		do {						\
+-			u8 __Temp; 				\
+-			outSISREG(base, idx);   		\
+-			__Temp = inSISREG((base)+1) & (and); 	\
+-			outSISREG((base)+1, __Temp);		\
+-		} while (0)
 -
--out:
--	if (!IS_ERR(hdmi_ick))
--		clk_put(hdmi_ick);
--	return ret;
--}
+-#define setSISIDXREG(base,idx,and,or)   				\
+-		do {							\
+-			u8 __Temp; 					\
+-			outSISREG(base, idx);				\
+-			__Temp = (inSISREG((base)+1) & (and)) | (or); 	\
+-			outSISREG((base)+1, __Temp);			\
+-		} while (0)
 -
--device_initcall(hdmi_init_pm_clock);
--
- static int __init fsi_init_pm_clock(void)
- {
- 	struct clk *fsia_ick;
+ /* MMIO access macros */
+ #define MMIO_IN8(base, offset)  readb((base+offset))
+ #define MMIO_IN16(base, offset) readw((base+offset))
+-- 
+1.5.6.5
+

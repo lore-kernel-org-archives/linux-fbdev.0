@@ -1,106 +1,148 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Mon, 27 Dec 2010 10:23:05 +0000
-Subject: [PATCH 1/2 v2] fbdev: sh-mobile: implement MIPI DSI runtime PM
-Message-Id: <Pine.LNX.4.64.1012271119471.669@axis700.grange>
+From: Dzianis Kahanovich <mahatma@bspu.unibel.by>
+Date: Mon, 20 Dec 2010 19:43:14 +0000
+Subject: [PATCH v4/cleanup] viafb: I2C/DDC legacy & detect output device if
+Message-Id: <4D0FB1D2.9050303@bspu.unibel.by>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On SH-Mobile platforms using runtime PM with the MIPI DSI driver switches the
-DSI Tx link clock on PM events.
+Adding output device detection. Including legacy I2C/DDC code, currently safe
+mostly for LCD, think "unknown" device as forced CRT. Detect whole output config
+if "viafb_active_dev" unset, or undetected else LCDs in other cases. Also early
+viafb_crt_enable if CRT ON - to force CRT DDC detection and multi-out in
+textmode as positive side-effect.
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Signed-off-by: Dzianis Kahanovich <mahatma@eu.by>
 ---
-
-v2: keep the device pointer in clk_get() call
-
- drivers/video/sh_mipi_dsi.c |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
-index 3f3d431..3563188 100644
---- a/drivers/video/sh_mipi_dsi.c
-+++ b/drivers/video/sh_mipi_dsi.c
-@@ -13,6 +13,7 @@
- #include <linux/init.h>
- #include <linux/io.h>
- #include <linux/platform_device.h>
-+#include <linux/pm_runtime.h>
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/types.h>
-@@ -33,6 +34,7 @@ struct sh_mipi {
- 	void __iomem	*base;
- 	struct clk	*dsit_clk;
- 	struct clk	*dsip_clk;
-+	struct device	*dev;
- };
- 
- static struct sh_mipi *mipi_dsi[MAX_SH_MIPI_DSI];
-@@ -104,6 +106,7 @@ static void mipi_display_on(void *arg, struct fb_info *info)
- {
- 	struct sh_mipi *mipi = arg;
- 
-+	pm_runtime_get_sync(mipi->dev);
- 	sh_mipi_dsi_enable(mipi, true);
- }
- 
-@@ -112,6 +115,7 @@ static void mipi_display_off(void *arg)
- 	struct sh_mipi *mipi = arg;
- 
- 	sh_mipi_dsi_enable(mipi, false);
-+	pm_runtime_put(mipi->dev);
- }
- 
- static int __init sh_mipi_setup(struct sh_mipi *mipi,
-@@ -356,6 +360,8 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
- 		goto emap;
- 	}
- 
-+	mipi->dev = &pdev->dev;
-+
- 	mipi->dsit_clk = clk_get(&pdev->dev, "dsit_clk");
- 	if (IS_ERR(mipi->dsit_clk)) {
- 		ret = PTR_ERR(mipi->dsit_clk);
-@@ -405,6 +411,9 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
- 
- 	mipi_dsi[idx] = mipi;
- 
-+	pm_runtime_enable(&pdev->dev);
-+	pm_runtime_resume(&pdev->dev);
-+
- 	ret = sh_mipi_setup(mipi, pdata);
- 	if (ret < 0)
- 		goto emipisetup;
-@@ -416,11 +425,13 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
- 	pdata->lcd_chan->board_cfg.board_data = mipi;
- 	pdata->lcd_chan->board_cfg.display_on = mipi_display_on;
- 	pdata->lcd_chan->board_cfg.display_off = mipi_display_off;
-+	pdata->lcd_chan->board_cfg.owner = THIS_MODULE;
- 
+--- a/drivers/video/via/viafbdev.c	2010-12-18 06:42:37.000000000 +0200
++++ b/drivers/video/via/viafbdev.c	2010-12-20 20:17:42.000000000 +0200
+@@ -1670,6 +1670,119 @@ static int parse_mode(const char *str, u
  	return 0;
- 
- emipisetup:
- 	mipi_dsi[idx] = NULL;
-+	pm_runtime_disable(&pdev->dev);
- 	clk_disable(mipi->dsip_clk);
- eclkpon:
- 	clk_disable(mipi->dsit_clk);
-@@ -467,10 +478,12 @@ static int __exit sh_mipi_remove(struct platform_device *pdev)
- 	if (ret < 0)
- 		return ret;
- 
-+	pdata->lcd_chan->board_cfg.owner = NULL;
- 	pdata->lcd_chan->board_cfg.display_on = NULL;
- 	pdata->lcd_chan->board_cfg.display_off = NULL;
- 	pdata->lcd_chan->board_cfg.board_data = NULL;
- 
-+	pm_runtime_disable(&pdev->dev);
- 	clk_disable(mipi->dsip_clk);
- 	clk_disable(mipi->dsit_clk);
- 	clk_put(mipi->dsit_clk);
--- 
-1.7.2.3
+ }
 
++/* Add devices, detected only via i2c legacy.
++   Really there may be CRT too, but unless I got no CRT DDC - LCD only.
++   Possible CRT may be found as "unknown" to keep CRT ON.
++   Set LCD/DVI/CRT if viafb_active_dev unset. */
++static void viafb_detect_dev(struct viafb_dev *vdev)
++{
++	u8 *edid;
++	struct fb_var_screeninfo var;
++	int i, t, ndev = 0, nlcd = 0, unknown = 0;
++	struct i2c_adapter *adapter;
++	struct lvds_setting_information *inf;
++
++	/* FIXME: viaparinfo1->chip_info looks equal to viaparinfo */
++	if (viaparinfo->chip_info->tmds_chip_info.tmds_chip_name) {
++		ndev++;
++		if (!viafb_active_dev)
++			viafb_DVI_ON = STATE_ON;
++	}
++	if (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
++		ndev++;
++		nlcd = 1;
++		if (!viafb_active_dev)
++			viafb_LCD_ON = STATE_ON;
++	}
++	if (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name) {
++		ndev++;
++		nlcd = 2;
++		if (!viafb_active_dev)
++			viafb_LCD2_ON = STATE_ON;
++	}
++	/* enabling CRT in textmode is at least no bad */
++	if (viafb_CRT_ON) {
++		ndev++;
++		viafb_crt_enable();
++	}
++	for (i = 0; i < VIAFB_NUM_PORTS; i++) {
++		t = vdev->port_cfg[i].type;
++		/* detect only i2c ports, undetected in other places */
++		if ((viaparinfo && viaparinfo->chip_info && (
++		    (viaparinfo->chip_info->tmds_chip_info.tmds_chip_name &&
++		    viaparinfo->chip_info->tmds_chip_info.i2c_port = t) ||
++		    (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name &&
++		    viaparinfo->chip_info->lvds_chip_info.i2c_port = t) ||
++		    (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name &&
++		    viaparinfo->chip_info->lvds_chip_info2.i2c_port = t)
++		    )) || (viaparinfo1 && viaparinfo1->chip_info && (
++		    (viaparinfo1->chip_info->tmds_chip_info.tmds_chip_name &&
++		    viaparinfo1->chip_info->tmds_chip_info.i2c_port = t) ||
++		    (viaparinfo1->chip_info->lvds_chip_info.lvds_chip_name &&
++		    viaparinfo1->chip_info->lvds_chip_info.i2c_port = t) ||
++		    (viaparinfo1->chip_info->lvds_chip_info2.lvds_chip_name &&
++		    viaparinfo1->chip_info->lvds_chip_info2.i2c_port = t)
++		    )) || !(adapter = viafb_find_i2c_adapter(i)) ||
++		    !(edid = fb_ddc_read(adapter)))
++			continue;
++		memset(&var, 0, sizeof(var));
++		if (fb_parse_edid(edid, &var))
++			goto free_edid;
++		printk(KERN_INFO "viafb: %48s\n", adapter->name);
++		inf = NULL;
++		if (!nlcd) {
++			fb_edid_to_monspecs(edid, &viafbinfo->monspecs);
++			if (viafbinfo->monspecs.input & FB_DISP_DDI)
++				inf = viaparinfo->lvds_setting_info;
++			else
++				unknown++;
++		} else if (nlcd > 1) {
++			printk(KERN_ERR "viafb: too many LCD\n");
++			unknown++;
++		} else if (viafb_dual_fb) {
++			fb_edid_to_monspecs(edid, &viafbinfo1->monspecs);
++			if (viafbinfo1->monspecs.input & FB_DISP_DDI)
++				inf = viaparinfo1->lvds_setting_info;
++			else
++				unknown++;
++		} else {
++			fb_edid_to_monspecs(edid, &viafbinfo->monspecs);
++			if (viafbinfo->monspecs.input & FB_DISP_DDI)
++				inf = viaparinfo->lvds_setting_info2;
++			else
++				unknown++;
++		}
++		if (inf) {
++			if (!viafb_active_dev) {
++				if (nlcd)
++					viafb_LCD2_ON = STATE_ON;
++				else
++					viafb_LCD_ON = STATE_ON;
++			}
++			nlcd++;
++			if (var.xres)
++				inf->lcd_panel_hres = var.xres;
++			if (var.yres)
++				inf->lcd_panel_vres = var.yres;
++		}
++		ndev++;
++free_edid:
++		kfree(edid);
++	}
++	if (!viafb_active_dev) {
++		/* prefer CRT OFF if other devices */
++		if (!unknown && ndev > 1) {
++			viafb_CRT_ON = STATE_OFF;
++			viafb_crt_disable();
++		}
++		viafb_DeviceStatus = viafb_primary_dev +		    viafb_CRT_ON ? CRT_Device :
++		    viafb_DVI_ON ? DVI_Device :
++		    viafb_LCD_ON ? LCD_Device : None_Device;
++		viafb_set_iga_path();
++	}
++}
++
+
+ #ifdef CONFIG_PM
+ static int viafb_suspend(void *unused)
+@@ -1891,6 +2004,7 @@ int __devinit via_fb_pci_probe(struct vi
+
+ 	viafb_init_proc(viaparinfo->shared);
+ 	viafb_init_dac(IGA2);
++	viafb_detect_dev(vdev);
+
+ #ifdef CONFIG_PM
+ 	viafb_pm_register(&viafb_fb_pm_hooks);
+--

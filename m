@@ -1,112 +1,24 @@
-From: Andres Salomon <dilinger@queued.net>
-Date: Sat, 18 Dec 2010 03:00:13 +0000
-Subject: [PATCH] s1d13xxxfb: drop unused code
-Message-Id: <20101217190013.0107a93a@queued.net>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Mon, 20 Dec 2010 15:59:12 +0000
+Subject: Re: [PATCH] s1d13xxxfb: drop unused code
+Message-Id: <20101220155912.GC26766@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20101217190013.0107a93a@queued.net>
+In-Reply-To: <20101217190013.0107a93a@queued.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: akpm@linux-foundation.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andres Salomon <dilinger@queued.net>
+Cc: akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
+On Fri, Dec 17, 2010 at 07:00:13PM -0800, Andres Salomon wrote:
+> 
+> Silence warnings such as -
+> 
+> drivers/video/s1d13xxxfb.c:421: warning: ???bltbit_wait_bitset??? defined but not used
+> 
+> Just drop the unused code.
+> 
+> Signed-off-by: Andres Salomon <dilinger@queued.net>
 
-Silence warnings such as -
-
-drivers/video/s1d13xxxfb.c:421: warning: ‘bltbit_wait_bitset’ defined but not used
-
-Just drop the unused code.
-
-Signed-off-by: Andres Salomon <dilinger@queued.net>
----
- drivers/video/s1d13xxxfb.c |   50 --------------------------------------------
- include/video/s1d13xxxfb.h |    6 -----
- 2 files changed, 0 insertions(+), 56 deletions(-)
-
-diff --git a/drivers/video/s1d13xxxfb.c b/drivers/video/s1d13xxxfb.c
-index a6247fc..28b1c6c 100644
---- a/drivers/video/s1d13xxxfb.c
-+++ b/drivers/video/s1d13xxxfb.c
-@@ -410,28 +410,6 @@ s1d13xxxfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
-  ************************************************************/
- 
- /**
-- *	bltbit_wait_bitset - waits for change in register value
-- *	@info : framebuffer structure
-- *	@bit  : value expected in register
-- *	@timeout : ...
-- *
-- *	waits until value changes INTO bit
-- */
--static u8
--bltbit_wait_bitset(struct fb_info *info, u8 bit, int timeout)
--{
--	while (!(s1d13xxxfb_readreg(info->par, S1DREG_BBLT_CTL0) & bit)) {
--		udelay(10);
--		if (!--timeout) {
--			dbg_blit("wait_bitset timeout\n");
--			break;
--		}
--	}
--
--	return timeout;
--}
--
--/**
-  *	bltbit_wait_bitclear - waits for change in register value
-  *	@info : frambuffer structure
-  *	@bit  : value currently in register
-@@ -454,34 +432,6 @@ bltbit_wait_bitclear(struct fb_info *info, u8 bit, int timeout)
- 	return timeout;
- }
- 
--/**
-- *	bltbit_fifo_status - checks the current status of the fifo
-- *	@info : framebuffer structure
-- *
-- *	returns number of free words in buffer
-- */
--static u8
--bltbit_fifo_status(struct fb_info *info)
--{
--	u8 status;
--
--	status = s1d13xxxfb_readreg(info->par, S1DREG_BBLT_CTL0);
--
--	/* its empty so room for 16 words */
--	if (status & BBLT_FIFO_EMPTY)
--		return 16;
--
--	/* its full so we dont want to add */
--	if (status & BBLT_FIFO_FULL)
--		return 0;
--
--	/* its atleast half full but we can add one atleast */
--	if (status & BBLT_FIFO_NOT_FULL)
--		return 1;
--
--	return 0;
--}
--
- /*
-  *	s1d13xxxfb_bitblt_copyarea - accelerated copyarea function
-  *	@info : framebuffer structure
-diff --git a/include/video/s1d13xxxfb.h b/include/video/s1d13xxxfb.h
-index f0736cf..55f5344 100644
---- a/include/video/s1d13xxxfb.h
-+++ b/include/video/s1d13xxxfb.h
-@@ -136,12 +136,6 @@
- #define S1DREG_DELAYOFF			0xFFFE
- #define S1DREG_DELAYON			0xFFFF
- 
--#define BBLT_FIFO_EMPTY			0x00
--#define BBLT_FIFO_NOT_EMPTY		0x40
--#define BBLT_FIFO_NOT_FULL		0x30
--#define BBLT_FIFO_HALF_FULL		0x20
--#define BBLT_FIFO_FULL			0x10
--
- #define BBLT_SOLID_FILL			0x0c
- 
- 
--- 
-1.7.2.3
-
+Applied, thanks.

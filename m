@@ -1,26 +1,66 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Wed, 29 Dec 2010 08:12:18 +0000
-Subject: [PATCH 0/3] fbdev: make the sh-mobile MIPI DSI driver more flexible
-Message-Id: <Pine.LNX.4.64.1012290859290.14233@axis700.grange>
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Date: Mon, 20 Dec 2010 21:50:15 +0000
+Subject: [PATCH 06/13] sisfb: replace outSISREG with SiS_SetRegByte
+Message-Id: <1292881822-32630-7-git-send-email-aaro.koskinen@iki.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1292881822-32630-1-git-send-email-aaro.koskinen@iki.fi>
+In-Reply-To: <1292881822-32630-1-git-send-email-aaro.koskinen@iki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, thomas@winischhofer.net
+Cc: aaro.koskinen@iki.fi
 
-These patches teach the sh-mobile MIPI DSI driver to use platform data to 
-support different SoC with register layout variations and different LCD 
-panels. Two of these patches affect the actual driver and one - currently 
-its only user - the ap4evb board. To avoid compilation and run-time 
-regressions we have to first add new gields to the header, then set them 
-in the affected platform, and only then modify the driver to use them. 
-This produces an unpleasant dependency chain. Alternatively, all these 
-patches could be merged into one, but that would span multiple subsystems. 
-I leave it to the maintainer to decide:)
+Replace outSISREG() with SiS_SetRegByte().
 
-Thanks
-Guennadi
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+ drivers/video/sis/sis_main.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+index 10d190a..fa8f01c 100644
+--- a/drivers/video/sis/sis_main.c
++++ b/drivers/video/sis/sis_main.c
+@@ -1388,15 +1388,15 @@ sisfb_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned blue,
+ 
+ 	switch(info->var.bits_per_pixel) {
+ 	case 8:
+-		outSISREG(SISDACA, regno);
+-		outSISREG(SISDACD, (red >> 10));
+-		outSISREG(SISDACD, (green >> 10));
+-		outSISREG(SISDACD, (blue >> 10));
++		SiS_SetRegByte(SISDACA, regno);
++		SiS_SetRegByte(SISDACD, (red >> 10));
++		SiS_SetRegByte(SISDACD, (green >> 10));
++		SiS_SetRegByte(SISDACD, (blue >> 10));
+ 		if(ivideo->currentvbflags & VB_DISPTYPE_DISP2) {
+-			outSISREG(SISDAC2A, regno);
+-			outSISREG(SISDAC2D, (red >> 8));
+-			outSISREG(SISDAC2D, (green >> 8));
+-			outSISREG(SISDAC2D, (blue >> 8));
++			SiS_SetRegByte(SISDAC2A, regno);
++			SiS_SetRegByte(SISDAC2D, (red >> 8));
++			SiS_SetRegByte(SISDAC2D, (green >> 8));
++			SiS_SetRegByte(SISDAC2D, (blue >> 8));
+ 		}
+ 		break;
+ 	case 16:
+@@ -4999,11 +4999,11 @@ sisfb_post_xgi(struct pci_dev *pdev)
+ 
+ 	/* VGA enable */
+ 	reg = SiS_GetRegByte(SISVGAENABLE) | 0x01;
+-	outSISREG(SISVGAENABLE, reg);
++	SiS_SetRegByte(SISVGAENABLE, reg);
+ 
+ 	/* Misc */
+ 	reg = SiS_GetRegByte(SISMISCR) | 0x01;
+-	outSISREG(SISMISCW, reg);
++	SiS_SetRegByte(SISMISCW, reg);
+ 
+ 	/* Unlock SR */
+ 	outSISIDXREG(SISSR, 0x05, 0x86);
+-- 
+1.5.6.5
+

@@ -1,157 +1,88 @@
-From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Date: Thu, 09 Dec 2010 13:41:50 +0000
-Subject: [RESEND #2] [PATCH v2] LEDS: Add output invertion option to backlight trigger
-Message-Id: <201012091441.51846.jkrzyszt@tis.icnet.pl>
+From: Alexey Charkov <alchark@gmail.com>
+Date: Mon, 20 Dec 2010 13:03:14 +0000
+Subject: [PATCH 1/2] fbdev: Minor cleanup in WM8505-related code
+Message-Id: <20101220130314.GA3627@alchark-u3s>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20101219181300.GA32645@alchark-u3s>
+ <EAF47CD23C76F840A9E7FCE10091EFAB0322F86AE6@dbde02.ent.ti.com>
+In-Reply-To: <EAF47CD23C76F840A9E7FCE10091EFAB0322F86AE6@dbde02.ent.ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-kernel@vger.kernel.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: "Janorkar, Mayuresh" <mayur@ti.com>
+Cc: Alexey Charkov <alchark@gmail.com>, Paul Mundt <lethal@linux-sh.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "vt8500-wm8505-linux-kernel@googlegroups.com" <vt8500-wm8505-linux-kernel@googlegroups.com>
 
-This patch extends the LED backlight tirgger driver with an option that allows 
-for inverting the trigger output polarity.
+This replaces the last remaining driver name reference with the
+macro for uniformity in wm8505fb.
 
-With the invertion option provided, I (ab)use the backlight trigger for 
-driving a LED that indicates LCD display blank condtition on my Amstrad Delta 
-videophone. Since the machine has no dedicated power LED, it was not possible 
-to distinguish if the display was blanked, or the machine was turned off, 
-without touching it.
+In addition, the error return path in wmt_ge_rops.c is made more
+uniform by getting rid of goto's in remaining places.
 
-The invert sysfs control is patterned after a similiar function of the GPIO 
-trigger driver.
-
-Created and tested against linux-2.6.36-rc5 on Amstrad Delta.
-Retested on linux-2.6.37-rc4.
-
-Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Cc: Richard Purdie <rpurdie@rpsys.net>
+Signed-off-by: Alexey Charkov <alchark@gmail.com>
 ---
 
-Resent because I still can't see any response received, while yet another 
-merge window is going to pass away soon.
+Splitted the vsync change (will follow in PATCH 2/2) from trivial
+cleanups. This indeed makes sense for at least bisecting purposes.
+Thanks Mayuresh for the suggestion!
 
-Applies cleanly on top of 2.6.37-rc4, so no need for yet another refresh. Only 
-tried to clean up the commit message slightly - maybe my English is not good 
-enough to bother with, if not the code?
+Best regards,
+Alexey
 
-v1 -> v2 changes:
-- improve some conditional expressions to be more readable; thanks to Ralph 
-  Corderoy (from e3-hacking) and Lars-Peter Clausen for their suggestions,
-- refresh against linux-2.6.36-rc5.
+ drivers/video/wm8505fb.c    |    2 +-
+ drivers/video/wmt_ge_rops.c |   10 ++--------
+ 2 files changed, 3 insertions(+), 9 deletions(-)
 
- drivers/leds/ledtrig-backlight.c |   60 
-++++++++++++++++++++++++++++++++++++---
- 1 file changed, 56 insertions(+), 4 deletions(-)
-
-diff -upr linux-2.6.36-rc5.orig/drivers/leds/ledtrig-backlight.c linux-2.6.36-rc5/drivers/leds/ledtrig-backlight.c
---- linux-2.6.36-rc5.orig/drivers/leds/ledtrig-backlight.c	2010-09-24 15:35:13.000000000 +0200
-+++ linux-2.6.36-rc5/drivers/leds/ledtrig-backlight.c	2010-10-03 15:59:49.000000000 +0200
-@@ -26,6 +26,7 @@ struct bl_trig_notifier {
- 	int brightness;
- 	int old_status;
- 	struct notifier_block notifier;
-+	unsigned invert;
- };
- 
- static int fb_notifier_callback(struct notifier_block *p,
-@@ -36,23 +37,63 @@ static int fb_notifier_callback(struct n
- 	struct led_classdev *led = n->led;
- 	struct fb_event *fb_event = data;
- 	int *blank = fb_event->data;
-+	int new_status = *blank ? BLANK : UNBLANK;
- 
- 	switch (event) {
- 	case FB_EVENT_BLANK :
--		if (*blank && n->old_status = UNBLANK) {
-+		if (new_status = n->old_status)
-+			break;
-+
-+		if ((n->old_status = UNBLANK) ^ n->invert) {
- 			n->brightness = led->brightness;
- 			led_set_brightness(led, LED_OFF);
--			n->old_status = BLANK;
--		} else if (!*blank && n->old_status = BLANK) {
-+		} else {
- 			led_set_brightness(led, n->brightness);
--			n->old_status = UNBLANK;
- 		}
-+
-+		n->old_status = new_status;
-+
- 		break;
+diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+index e37251b..9ca9dbb 100644
+--- a/drivers/video/wm8505fb.c
++++ b/drivers/video/wm8505fb.c
+@@ -291,7 +291,7 @@ static int __devinit wm8505fb_probe(struct platform_device *pdev)
+ 		goto failed_fbi;
  	}
+ 
+-	res = request_mem_region(res->start, resource_size(res), "wm8505fb");
++	res = request_mem_region(res->start, resource_size(res), DRIVER_NAME);
+ 	if (res = NULL) {
+ 		dev_err(&pdev->dev, "failed to request I/O memory\n");
+ 		ret = -EBUSY;
+diff --git a/drivers/video/wmt_ge_rops.c b/drivers/video/wmt_ge_rops.c
+index f31883f..45832b7 100644
+--- a/drivers/video/wmt_ge_rops.c
++++ b/drivers/video/wmt_ge_rops.c
+@@ -127,13 +127,11 @@ EXPORT_SYMBOL_GPL(wmt_ge_sync);
+ static int __devinit wmt_ge_rops_probe(struct platform_device *pdev)
+ {
+ 	struct resource *res;
+-	int ret;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (res = NULL) {
+ 		dev_err(&pdev->dev, "no I/O memory resource defined\n");
+-		ret = -ENODEV;
+-		goto error;
++		return -ENODEV;
+ 	}
+ 
+ 	/* Only one ROP engine is presently supported. */
+@@ -145,17 +143,13 @@ static int __devinit wmt_ge_rops_probe(struct platform_device *pdev)
+ 	regbase = ioremap(res->start, resource_size(res));
+ 	if (regbase = NULL) {
+ 		dev_err(&pdev->dev, "failed to map I/O memory\n");
+-		ret = -EBUSY;
+-		goto error;
++		return -EBUSY;
+ 	}
+ 
+ 	writel(1, regbase + GE_ENABLE_OFF);
+ 	printk(KERN_INFO "Enabled support for WMT GE raster acceleration\n");
  
  	return 0;
+-
+-error:
+-	return ret;
  }
  
-+static ssize_t bl_trig_invert_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct led_classdev *led = dev_get_drvdata(dev);
-+	struct bl_trig_notifier *n = led->trigger_data;
-+
-+	return sprintf(buf, "%s\n", n->invert ? "yes" : "no");
-+}
-+
-+static ssize_t bl_trig_invert_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t num)
-+{
-+	struct led_classdev *led = dev_get_drvdata(dev);
-+	struct bl_trig_notifier *n = led->trigger_data;
-+	unsigned invert;
-+	int ret;
-+
-+	ret = sscanf(buf, "%u", &invert);
-+	if (ret < 1) {
-+		dev_err(dev, "invalid value\n");
-+		return -EINVAL;
-+	}
-+
-+	n->invert = !!invert;
-+
-+	/* After inverting, we need to update the LED. */
-+	if ((n->old_status = BLANK) ^ n->invert)
-+		led_set_brightness(led, LED_OFF);
-+	else
-+		led_set_brightness(led, n->brightness);
-+
-+	return num;
-+}
-+static DEVICE_ATTR(invert, 0644, bl_trig_invert_show, bl_trig_invert_store);
-+
- static void bl_trig_activate(struct led_classdev *led)
- {
- 	int ret;
-@@ -66,6 +107,10 @@ static void bl_trig_activate(struct led_
- 		return;
- 	}
- 
-+	ret = device_create_file(led->dev, &dev_attr_invert);
-+	if (ret)
-+		goto err_invert;
-+
- 	n->led = led;
- 	n->brightness = led->brightness;
- 	n->old_status = UNBLANK;
-@@ -74,6 +119,12 @@ static void bl_trig_activate(struct led_
- 	ret = fb_register_client(&n->notifier);
- 	if (ret)
- 		dev_err(led->dev, "unable to register backlight trigger\n");
-+
-+	return;
-+
-+err_invert:
-+	led->trigger_data = NULL;
-+	kfree(n);
- }
- 
- static void bl_trig_deactivate(struct led_classdev *led)
-@@ -82,6 +133,7 @@ static void bl_trig_deactivate(struct le
- 		(struct bl_trig_notifier *) led->trigger_data;
- 
- 	if (n) {
-+		device_remove_file(led->dev, &dev_attr_invert);
- 		fb_unregister_client(&n->notifier);
- 		kfree(n);
- 	}
+ static int __devexit wmt_ge_rops_remove(struct platform_device *pdev)
+-- 
+1.7.3.4
+

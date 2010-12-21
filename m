@@ -1,49 +1,60 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Wed, 15 Dec 2010 17:12:46 +0000
-Subject: Re: [PATCH 1/9] ARM i.MX51: Add ipu clock support
-Message-Id: <20101215171246.GG9937@n2100.arm.linux.org.uk>
+From: Dave Airlie <airlied@gmail.com>
+Date: Tue, 21 Dec 2010 01:41:17 +0000
+Subject: [PATCH 3/3] fbcon: fix situation where fbcon gets deinitialised and can't reinit.
+Message-Id: <1292895677-4242-4-git-send-email-airlied@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291902441-24712-1-git-send-email-s.hauer@pengutronix.de>
-	<201012151640.03789.arnd@arndb.de>
-	<20101215163445.GE9937@n2100.arm.linux.org.uk>
-	<201012151749.59488.arnd@arndb.de>
-In-Reply-To: <201012151749.59488.arnd@arndb.de>
+References: <1292895677-4242-1-git-send-email-airlied@gmail.com>
+In-Reply-To: <1292895677-4242-1-git-send-email-airlied@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org, Dave Airlie <airlied@redhat.com>
 
-On Wed, Dec 15, 2010 at 05:49:59PM +0100, Arnd Bergmann wrote:
-> On Wednesday 15 December 2010, Russell King - ARM Linux wrote:
-> > Lastly, I don't see where atomicity comes into it - __raw_writel vs writel
-> > have the same atomicity.  Both are single access atomic provided they're
-> > naturally aligned.  Misaligned device accesses are not predictable.
-> 
-> This is just what gcc turns it into today. In theory, a future gcc or
-> a future cpu might change that. If you mark a pointer as
-> '__attribute__((packed))', it probably already does, even for aligned
-> pointers, while it does not when using writel_{,relaxed}. The point is
-> that __raw_* means just that -- we don't give any guarantees on what
-> happens on the bus, so people should not use it.
+From: Dave Airlie <airlied@redhat.com>
 
-No.  It does give guarantees on what happens on the bus.  The kind of
-pointer you pass in has no bearing on what happens on the bus because it's
-casted away immediately.
+Situation as follow:
+2 GPUs + vesafb + kms.
 
-__raw_writel(v, ptr) doesn't just do *(ptr) = v - that doesn't work when
-ptr is void.  Instead, it has to do a cast to ensure that we have a valid
-C dereference (void pointers are illegal to dereference):
+GPU 1 is primary, vesafb binds to it as fb0
+radeon loads
+GPU 0 loads as fb1
+GPU 1 loads, vesafb gets kicked off which causes fb0 to unbind
+console, which causes the dummy console to rebind.
 
-#define __raw_writel(v,a)  (__chk_io_ptr(a), \
-	*(volatile unsigned int __force   *)(a) = (v))
+this means fbcon_deinit gets called, which calls fbcon_exit
+since the console isn't bound anymore and we set fbcon_has_exited.
 
-Doesn't matter if 'a' was marked as packed or not - that's all casted away.
-That's not something that should ever change - otherwise we'll all be
-screwed as you could never cast away pointer attributes.
+GPU 1 creates a new fb0 which is primary and we want to be console.
+fbcon_fb_registered gets called sets the primary up and calls set_con2fb_map,
+however as fbcon_has_exited is set nothing further ever happens.
 
-It _may_ possible that the compiler decides that accessing an 'unsigned int'
-will not be done as a single word load, in which case we have exactly the
-same problems with writel() too.
+This patch bypasses the fbcon_has_exited and checks if the console is unbound,
+if its unbound it calls the fbcon_takeover which calls the vt layer to
+call the fbcon_startup method and everthing works.
 
-And in any case, if __raw_writel() was as you're suggesting, then it would
-serve absolutely no purpose at all.
+Signed-off-by: Dave Airlie <airlied@redhat.com>
+---
+ drivers/video/console/fbcon.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 7ccc967..6662687 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -823,10 +823,10 @@ static int set_con2fb_map(int unit, int newidx, int user)
+ 	if (oldidx = newidx)
+ 		return 0;
+ 
+-	if (!info || fbcon_has_exited)
++	if (!info)
+ 		return -EINVAL;
+ 
+- 	if (!err && !search_for_mapped_con()) {
++	if (!search_for_mapped_con() || !con_is_bound(&fb_con)) {
+ 		info_idx = newidx;
+ 		return fbcon_takeover(0);
+ 	}
+-- 
+1.7.1
+

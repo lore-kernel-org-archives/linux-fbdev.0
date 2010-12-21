@@ -1,40 +1,36 @@
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 16 Dec 2010 17:42:21 +0000
-Subject: Re: [PATCH v4 5/5] fsl-diu-fb: Support setting display mode using EDID
-Message-Id: <AANLkTimVxKojtWP=X2=5SoZZu0_dHkWxmHxhXj1-jr+U@mail.gmail.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Tue, 21 Dec 2010 10:46:26 +0000
+Subject: [PATCH 1/3] fbdev: sh-mobile: restore display size configuration
+Message-Id: <Pine.LNX.4.64.1012211048100.32347@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1279893639-24333-1-git-send-email-agust@denx.de>
-	<1279893639-24333-6-git-send-email-agust@denx.de>
-	<AANLkTin-TL5_TKnyHYtZdixosfqpkPNoarSTC+K4tTUb@mail.gmail.com>
-	<AANLkTi=NwY_gcBXeKXeGX-qist3tMQ4EWqj3twYGfeWD@mail.gmail.com>
-	<4D0A446E.5020600@freescale.com>
-	<AANLkTinOf__X0p3_5G90KkYS9PXpB2j0_06MFhFcZzqO@mail.gmail.com>
-	<4D0A4C38.3010105@freescale.com>
-In-Reply-To: <4D0A4C38.3010105@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev@vger.kernel.org, Anatolij Gustschin <agust@denx.de>, devicetree-discuss@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-On Thu, Dec 16, 2010 at 10:28 AM, Timur Tabi <timur@freescale.com> wrote:
-> Grant Likely wrote:
->> No. =A0It is a static property of the board/machine. =A0It is expected it
->> to be encoded into the board's .dts file.
->
-> Ok, but that only makes sense if the monitor is hard-wired to the board i=
-tself.
-> =A0If a user can attach any monitor he wants, then the EDID data can't be=
- known at
-> compile time.
->
-> I guess it's no different than using hard-coded memory controller program=
-ming
-> instead of SPD. =A0You can safely avoid SPD only if the DDR chips are sol=
-dered on
-> the board.
+An earlier patch replaced open-coded video-mode configuration from 
+platform data by a call to fb_videomode_to_var(), thereby setting 
+ofdisplay sizes have been accidentally lost. Restore them.
 
-Correct, if a real EDID i2c channel exists, then an edid property
-should *not* be specified in the device tree.
-
-g.
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index b02d97a..257ed0c 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -1238,12 +1238,14 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 			mode = &default_720p;
+ 			num_cfg = 1;
+ 		} else {
+-			num_cfg = ch->cfg.num_cfg;
++			num_cfg = cfg->num_cfg;
+ 		}
+ 
+ 		fb_videomode_to_modelist(mode, num_cfg, &info->modelist);
+ 
+ 		fb_videomode_to_var(var, mode);
++		var->width = cfg->lcd_size_cfg.width;
++		var->height = cfg->lcd_size_cfg.height;
+ 		/* Default Y virtual resolution is 2x panel size */
+ 		var->yres_virtual = var->yres * 2;
+ 		var->activate = FB_ACTIVATE_NOW;

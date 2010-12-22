@@ -1,67 +1,105 @@
-From: "Janorkar, Mayuresh" <mayur@ti.com>
-Date: Mon, 27 Dec 2010 13:56:00 +0000
-Subject: RE: [PATCH v3] video: imxfb: Fix the maximum value for yres
-Message-Id: <EAF47CD23C76F840A9E7FCE10091EFAB03229E3308@dbde02.ent.ti.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Wed, 22 Dec 2010 09:52:18 +0000
+Subject: [PATCH 1/2] fbdev: sh-mobile: implement MIPI DSI runtime PM support
+Message-Id: <Pine.LNX.4.64.1012221050400.14483@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1293193704-2855-1-git-send-email-fabio.estevam@freescale.com>
-In-Reply-To: <1293193704-2855-1-git-send-email-fabio.estevam@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Fabio,
-________________________________________
-> From: linux-fbdev-owner@vger.kernel.org [linux-fbdev-owner@vger.kernel.org] On Behalf Of Fabio Estevam [fabio.estevam@freescale.com]
-> Sent: Friday, December 24, 2010 5:58 PM
-> To: linux-fbdev@vger.kernel.org
-> Cc: kernel@pengutronix.de; linux-arm-kernel@lists.infradead.org; lethal@linux-sh.org; Fabio Estevam
-> Subject: [PATCH v3] video: imxfb: Fix the maximum value for yres
->
->MX27 and MX25 have 10 bits in the YMAX field of LCDC Size Register.
->
->Fix the maximum value for yres.
->
->Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
->---
->Changes since v2:
->- Perform run-time detection of CPU time
->
->Changes since v1:
->- factor out SIZE_YMAX definition
-> drivers/video/imxfb.c |    9 +++------
-> 1 files changed, 3 insertions(+), 6 deletions(-)
->
->diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
->index 5c363d0..1ab2c25 100644
->--- a/drivers/video/imxfb.c
->+++ b/drivers/video/imxfb.c
->@@ -53,11 +53,8 @@
- >#define LCDC_SIZE      0x04
- >#define SIZE_XMAX(x)   ((((x) >> 4) & 0x3f) << 20)
->
->-#ifdef CONFIG_ARCH_MX1
->-#define SIZE_YMAX(y)   ((y) & 0x1ff)
->-#else
->-#define SIZE_YMAX(y)   ((y) & 0x3ff)
->-#endif
->+#define YMAX_MASK       (cpu_is_mx1() ? 0x1ff : 0x3ff)
->+#define SIZE_YMAX(y)   ((y) & YMAX_MASK)
->
->#define LCDC_VPW       0x08
-> #define VPW_VPW(x)     ((x) & 0x3ff)
-> @@ -623,7 +620,7 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
->       if (var->right_margin > 255)
->                printk(KERN_ERR "%s: invalid right_margin %d\n",
->                      info->fix.id, var->right_margin);
->-       if (var->yres < 1 || var->yres > 511)
->+       if (var->yres < 1 || var->yres > YMAX_MASK)
+On SH-Mobile platforms using runtime PM with the MIPI DSI driver switches the
+DSI Tx link clock on PM events.
 
-[Mayuresh]: If minimum value of yres_mask is 1 then you please define YMIN_MASK to be 1
-This would make your code more readable.
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
+ drivers/video/sh_mipi_dsi.c |   15 ++++++++++++++-
+ 1 files changed, 14 insertions(+), 1 deletions(-)
 
->               printk(KERN_ERR "%s: invalid yres %d\n",
->                      info->fix.id, var->yres);
->       if (var->vsync_len > 100)
->--
-> 1.6.0.4
+diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
+index 3f3d431..ef19cac 100644
+--- a/drivers/video/sh_mipi_dsi.c
++++ b/drivers/video/sh_mipi_dsi.c
+@@ -13,6 +13,7 @@
+ #include <linux/init.h>
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
++#include <linux/pm_runtime.h>
+ #include <linux/slab.h>
+ #include <linux/string.h>
+ #include <linux/types.h>
+@@ -33,6 +34,7 @@ struct sh_mipi {
+ 	void __iomem	*base;
+ 	struct clk	*dsit_clk;
+ 	struct clk	*dsip_clk;
++	struct device	*dev;
+ };
+ 
+ static struct sh_mipi *mipi_dsi[MAX_SH_MIPI_DSI];
+@@ -104,6 +106,7 @@ static void mipi_display_on(void *arg, struct fb_info *info)
+ {
+ 	struct sh_mipi *mipi = arg;
+ 
++	pm_runtime_get_sync(mipi->dev);
+ 	sh_mipi_dsi_enable(mipi, true);
+ }
+ 
+@@ -112,6 +115,7 @@ static void mipi_display_off(void *arg)
+ 	struct sh_mipi *mipi = arg;
+ 
+ 	sh_mipi_dsi_enable(mipi, false);
++	pm_runtime_put(mipi->dev);
+ }
+ 
+ static int __init sh_mipi_setup(struct sh_mipi *mipi,
+@@ -356,7 +360,9 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
+ 		goto emap;
+ 	}
+ 
+-	mipi->dsit_clk = clk_get(&pdev->dev, "dsit_clk");
++	mipi->dev = &pdev->dev;
++
++	mipi->dsit_clk = clk_get(NULL, "dsit_clk");
+ 	if (IS_ERR(mipi->dsit_clk)) {
+ 		ret = PTR_ERR(mipi->dsit_clk);
+ 		goto eclktget;
+@@ -405,6 +411,9 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
+ 
+ 	mipi_dsi[idx] = mipi;
+ 
++	pm_runtime_enable(&pdev->dev);
++	pm_runtime_resume(&pdev->dev);
++
+ 	ret = sh_mipi_setup(mipi, pdata);
+ 	if (ret < 0)
+ 		goto emipisetup;
+@@ -416,11 +425,13 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
+ 	pdata->lcd_chan->board_cfg.board_data = mipi;
+ 	pdata->lcd_chan->board_cfg.display_on = mipi_display_on;
+ 	pdata->lcd_chan->board_cfg.display_off = mipi_display_off;
++	pdata->lcd_chan->board_cfg.owner = THIS_MODULE;
+ 
+ 	return 0;
+ 
+ emipisetup:
+ 	mipi_dsi[idx] = NULL;
++	pm_runtime_disable(&pdev->dev);
+ 	clk_disable(mipi->dsip_clk);
+ eclkpon:
+ 	clk_disable(mipi->dsit_clk);
+@@ -467,10 +478,12 @@ static int __exit sh_mipi_remove(struct platform_device *pdev)
+ 	if (ret < 0)
+ 		return ret;
+ 
++	pdata->lcd_chan->board_cfg.owner = NULL;
+ 	pdata->lcd_chan->board_cfg.display_on = NULL;
+ 	pdata->lcd_chan->board_cfg.display_off = NULL;
+ 	pdata->lcd_chan->board_cfg.board_data = NULL;
+ 
++	pm_runtime_disable(&pdev->dev);
+ 	clk_disable(mipi->dsip_clk);
+ 	clk_disable(mipi->dsit_clk);
+ 	clk_put(mipi->dsit_clk);
+-- 
+1.7.2.3
+

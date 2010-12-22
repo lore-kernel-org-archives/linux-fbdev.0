@@ -1,183 +1,121 @@
-From: Dzianis Kahanovich <mahatma@bspu.unibel.by>
-Date: Wed, 08 Dec 2010 15:30:15 +0000
-Subject: [PATCH] (new way) I2C/DDC defaults & I2C/DDC detection for VIA framebuffer.
-Message-Id: <4CFFA487.5020003@bspu.unibel.by>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Wed, 22 Dec 2010 09:52:21 +0000
+Subject: [PATCH 2/2] ARM: mach-shmobile: improve MIPI DSI clock configuration
+Message-Id: <Pine.LNX.4.64.1012221051430.14483@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-I2C/DDC defaults & I2C/DDC detection for VIA framebuffer.
+Now, that the MIPI DSI driver implements runtime PM, we don't need anymore to
+configure clocks statically in the platform code. This patch also adds a DSITX1
+clock definition for sh7372 and attaches PHY clocks to respective devices.
 
-Adding defaults & legacy I2C/DDC support for VIA framebuffer.
-Detecting legacy I2C/DDC outputs (if undetected else) and
-set autodetected defaults on empty "viafb_active_dev".
-
-Signed-off-by: Dzianis Kahanovich <mahatma@eu.by>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
-diff -pruN a/viafbdev.c c/viafbdev.c
---- a/drivers/video/via/viafbdev.c	2010-12-07 18:35:22.000000000 +0200
-+++ c/drivers/video/via/viafbdev.c	2010-12-08 17:15:54.000000000 +0200
-@@ -1485,6 +1485,123 @@ static int parse_mode(const char *str, u
- 	return 0;
- }
+ arch/arm/mach-shmobile/board-ap4evb.c |   38 ---------------------------------
+ arch/arm/mach-shmobile/clock-sh7372.c |   10 +++++---
+ 2 files changed, 6 insertions(+), 42 deletions(-)
 
-+/* stage=0: count devices to set dual and/or SAMM;
-+   stage=1: add devices, detected only via i2c legacy;
-+   set LCD/DVI/CRT if viafb_active_dev unset */
-+static void viafb_detect_dev(int stage, struct viafb_dev *vdev)
-+{
-+	u8 *edid;
-+	struct fb_var_screeninfo var;
-+	int i, t, ndev = 0;
-+	struct i2c_adapter *adapter;
-+	struct lvds_setting_information *inf;
-+
-+	/* FIXME: viaparinfo1->chip_info looks equal to viaparinfo */
-+	i = !viafb_active_dev && stage;
-+	if (viaparinfo->chip_info->tmds_chip_info.tmds_chip_name) {
-+		ndev++;
-+		if (i)
-+			viafb_DVI_ON = STATE_ON;
-+	}
-+	if (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
-+		ndev++;
-+		if (i)
-+			viafb_LCD_ON = STATE_ON;
-+	}
-+	if (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name) {
-+		ndev++;
-+		if (i)
-+			viafb_LCD2_ON = STATE_ON;
-+	}
-+	/* enabling CRT in textmode is at least no bad */
-+	if (viafb_CRT_ON) {
-+		ndev++;
-+		viafb_crt_enable();
-+	}
-+	for (i = 0; i < VIAFB_NUM_PORTS; i++) {
-+		t = vdev->port_cfg[i].type;
-+		/* detect only i2c ports, undetected in other places */
-+		if ((viaparinfo && viaparinfo->chip_info && (
-+		    (viaparinfo->chip_info->tmds_chip_info.tmds_chip_name &&
-+		    viaparinfo->chip_info->tmds_chip_info.i2c_port = t) ||
-+		    (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name &&
-+		    viaparinfo->chip_info->lvds_chip_info.i2c_port = t) ||
-+		    (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name &&
-+		    viaparinfo->chip_info->lvds_chip_info2.i2c_port = t)
-+		    )) || (viaparinfo1 && viaparinfo1->chip_info && (
-+		    (viaparinfo1->chip_info->tmds_chip_info.tmds_chip_name &&
-+		    viaparinfo1->chip_info->tmds_chip_info.i2c_port = t) ||
-+		    (viaparinfo1->chip_info->lvds_chip_info.lvds_chip_name &&
-+		    viaparinfo1->chip_info->lvds_chip_info.i2c_port = t) ||
-+		    (viaparinfo1->chip_info->lvds_chip_info2.lvds_chip_name &&
-+		    viaparinfo1->chip_info->lvds_chip_info2.i2c_port = t)
-+		    )) || !(adapter = viafb_find_i2c_adapter(i)) ||
-+		    !(edid = fb_ddc_read(adapter)))
-+			continue;
-+		memset(&var, 0, sizeof(var));
-+		if (fb_parse_edid(edid, &var))
-+			goto free_edid;
-+		if (!viafb_active_dev)
-+			printk(KERN_INFO "viafb: %48s\n", adapter->name);
-+		if (!stage) {
-+			inf = NULL;
-+		} else if (!viafb_LCD_ON) {
-+			fb_edid_to_monspecs(edid, &viafbinfo->monspecs);
-+			inf = viaparinfo->lvds_setting_info;
-+			if (!viafb_active_dev &&
-+			    (viafbinfo->monspecs.input & FB_DISP_DDI))
-+				viafb_LCD_ON = STATE_ON;
-+		} else if (viafb_LCD2_ON) {
-+			/* ??? */
-+		} else if (viafb_dual_fb) {
-+			fb_edid_to_monspecs(edid, &viafbinfo1->monspecs);
-+			inf = viaparinfo1->lvds_setting_info;
-+			if (!viafb_active_dev &&
-+			    (viafbinfo1->monspecs.input & FB_DISP_DDI))
-+				viafb_LCD2_ON = STATE_ON;
-+		} else {
-+			fb_edid_to_monspecs(edid, &viafbinfo->monspecs);
-+			inf = viaparinfo->lvds_setting_info2;
-+			if (!viafb_active_dev &&
-+			    (viafbinfo->monspecs.input & FB_DISP_DDI))
-+				viafb_LCD2_ON = STATE_ON;
-+		}
-+		if (inf) {
-+			if (var.xres)
-+				inf->lcd_panel_hres = var.xres;
-+			if (var.yres)
-+				inf->lcd_panel_vres = var.yres;
-+		}
-+		ndev++;
-+free_edid:
-+		kfree(edid);
-+	}
-+	if (!viafb_active_dev) {
-+		/* SAMM on Chrome9 LCD+CRT is wrong here
-+		   then keep CRT OFF & dual detection together */
-+#if 1		
-+		if (ndev > 1 && viafb_CRT_ON) {
-+			viafb_CRT_ON = STATE_OFF;
-+			viafb_crt_disable();
-+			ndev--;
-+		}
-+		/* SAMM may be detected on stage 1,
-+		   but troubles coming together */
-+		if (ndev > 1 && !stage)
-+			viafb_SAMM_ON = viafb_dual_fb = STATE_ON;
-+#endif
-+		if (viafb_DVI_ON)
-+			viafb_primary_dev = DVI_Device;
-+		else if (viafb_LCD_ON)
-+			viafb_primary_dev = LCD_Device;
-+		else if (viafb_CRT_ON)
-+			viafb_primary_dev = CRT_Device;
-+		viafb_DeviceStatus = viafb_primary_dev;
-+		if (stage)
-+			viafb_set_iga_path();
-+	}
-+}
-+
+diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
+index ed999a3..f0b8650 100644
+--- a/arch/arm/mach-shmobile/board-ap4evb.c
++++ b/arch/arm/mach-shmobile/board-ap4evb.c
+@@ -531,44 +531,6 @@ static struct platform_device mipidsi0_device = {
+ 	},
+ };
+ 
+-/* This function will disappear when we switch to (runtime) PM */
+-static int __init ap4evb_init_display_clk(void)
+-{
+-	struct clk *lcdc_clk;
+-	struct clk *dsitx_clk;
+-	int ret;
+-
+-	lcdc_clk = clk_get(&lcdc_device.dev, "sh_mobile_lcdc_fb.0");
+-	if (IS_ERR(lcdc_clk))
+-		return PTR_ERR(lcdc_clk);
+-
+-	dsitx_clk = clk_get(&mipidsi0_device.dev, "sh-mipi-dsi.0");
+-	if (IS_ERR(dsitx_clk)) {
+-		ret = PTR_ERR(dsitx_clk);
+-		goto eclkdsitxget;
+-	}
+-
+-	ret = clk_enable(lcdc_clk);
+-	if (ret < 0)
+-		goto eclklcdcon;
+-
+-	ret = clk_enable(dsitx_clk);
+-	if (ret < 0)
+-		goto eclkdsitxon;
+-
+-	return 0;
+-
+-eclkdsitxon:
+-	clk_disable(lcdc_clk);
+-eclklcdcon:
+-	clk_put(dsitx_clk);
+-eclkdsitxget:
+-	clk_put(lcdc_clk);
+-
+-	return ret;
+-}
+-device_initcall(ap4evb_init_display_clk);
+-
+ static struct platform_device *qhd_devices[] __initdata = {
+ 	&mipidsi0_device,
+ 	&keysc_device,
+diff --git a/arch/arm/mach-shmobile/clock-sh7372.c b/arch/arm/mach-shmobile/clock-sh7372.c
+index eb92fef..1729d6c 100644
+--- a/arch/arm/mach-shmobile/clock-sh7372.c
++++ b/arch/arm/mach-shmobile/clock-sh7372.c
+@@ -507,7 +507,7 @@ enum { MSTP001,
+        MSTP223,
+        MSTP207, MSTP206, MSTP204, MSTP203, MSTP202, MSTP201, MSTP200,
+        MSTP329, MSTP328, MSTP323, MSTP322, MSTP314, MSTP313, MSTP312,
+-       MSTP415, MSTP413, MSTP411, MSTP410, MSTP406, MSTP403,
++       MSTP423, MSTP415, MSTP413, MSTP411, MSTP410, MSTP406, MSTP403,
+        MSTP_NR };
+ 
+ #define MSTP(_parent, _reg, _bit, _flags) \
+@@ -543,6 +543,7 @@ static struct clk mstp_clks[MSTP_NR] = {
+ 	[MSTP314] = MSTP(&div4_clks[DIV4_HP], SMSTPCR3, 14, 0), /* SDHI0 */
+ 	[MSTP313] = MSTP(&div4_clks[DIV4_HP], SMSTPCR3, 13, 0), /* SDHI1 */
+ 	[MSTP312] = MSTP(&div4_clks[DIV4_HP], SMSTPCR3, 12, 0), /* MMC */
++	[MSTP423] = MSTP(&div4_clks[DIV4_B], SMSTPCR4, 23, 0), /* DSITX1 */
+ 	[MSTP415] = MSTP(&div4_clks[DIV4_HP], SMSTPCR4, 15, 0), /* SDHI2 */
+ 	[MSTP413] = MSTP(&pllc1_div2_clk, SMSTPCR4, 13, 0), /* HDMI */
+ 	[MSTP411] = MSTP(&div6_clks[DIV6_SUB], SMSTPCR4, 11, 0), /* IIC3 */
+@@ -597,8 +598,8 @@ static struct clk_lookup lookups[] = {
+ 	CLKDEV_CON_ID("vou_clk", &div6_clks[DIV6_VOU]),
+ 	CLKDEV_CON_ID("hdmi_clk", &div6_reparent_clks[DIV6_HDMI]),
+ 	CLKDEV_CON_ID("dsit_clk", &div6_clks[DIV6_DSIT]),
+-	CLKDEV_CON_ID("dsi0p_clk", &div6_clks[DIV6_DSI0P]),
+-	CLKDEV_CON_ID("dsi1p_clk", &div6_clks[DIV6_DSI1P]),
++	CLKDEV_ICK_ID("dsi0p_clk", "sh-mipi-dsi.0", &div6_clks[DIV6_DSI0P]),
++	CLKDEV_ICK_ID("dsi1p_clk", "sh-mipi-dsi.1", &div6_clks[DIV6_DSI1P]),
+ 
+ 	/* MSTP32 clocks */
+ 	CLKDEV_DEV_ID("i2c-sh_mobile.2", &mstp_clks[MSTP001]), /* IIC2 */
+@@ -610,7 +611,7 @@ static struct clk_lookup lookups[] = {
+ 	CLKDEV_DEV_ID("sh-mobile-csi2.0", &mstp_clks[MSTP126]), /* CSI2 */
+ 	CLKDEV_DEV_ID("sh_tmu.0", &mstp_clks[MSTP125]), /* TMU00 */
+ 	CLKDEV_DEV_ID("sh_tmu.1", &mstp_clks[MSTP125]), /* TMU01 */
+-	CLKDEV_DEV_ID("sh-mipi-dsi.0", &mstp_clks[MSTP118]), /* DSITX */
++	CLKDEV_DEV_ID("sh-mipi-dsi.0", &mstp_clks[MSTP118]), /* DSITX0 */
+ 	CLKDEV_DEV_ID("sh_mobile_lcdc_fb.1", &mstp_clks[MSTP117]), /* LCDC1 */
+ 	CLKDEV_DEV_ID("i2c-sh_mobile.0", &mstp_clks[MSTP116]), /* IIC0 */
+ 	CLKDEV_DEV_ID("uio_pdrv_genirq.5", &mstp_clks[MSTP106]), /* JPU */
+@@ -633,6 +634,7 @@ static struct clk_lookup lookups[] = {
+ 	CLKDEV_DEV_ID("sh_mobile_sdhi.0", &mstp_clks[MSTP314]), /* SDHI0 */
+ 	CLKDEV_DEV_ID("sh_mobile_sdhi.1", &mstp_clks[MSTP313]), /* SDHI1 */
+ 	CLKDEV_DEV_ID("sh_mmcif.0", &mstp_clks[MSTP312]), /* MMC */
++	CLKDEV_DEV_ID("sh-mipi-dsi.1", &mstp_clks[MSTP423]), /* DSITX1 */
+ 	CLKDEV_DEV_ID("sh_mobile_sdhi.2", &mstp_clks[MSTP415]), /* SDHI2 */
+ 	CLKDEV_DEV_ID("sh-mobile-hdmi", &mstp_clks[MSTP413]), /* HDMI */
+ 	CLKDEV_DEV_ID("i2c-sh_mobile.3", &mstp_clks[MSTP411]), /* IIC3 */
+-- 
+1.7.2.3
 
- int __devinit via_fb_pci_probe(struct viafb_dev *vdev)
- {
-@@ -1526,6 +1643,10 @@ int __devinit via_fb_pci_probe(struct vi
- 	parse_dvi_port();
-
- 	viafb_init_chip_info(vdev->chip_type);
-+	/* detect dual_fb & SAMM_ON, but let's keep it to options */
-+#if 0
-+	viafb_detect_dev(0, vdev);
-+#endif
- 	/*
- 	 * The framebuffer will have been successfully mapped by
- 	 * the core (or we'd not be here), but we still need to
-@@ -1675,6 +1796,8 @@ int __devinit via_fb_pci_probe(struct vi
- 	viafb_init_proc(&viaparinfo->shared->proc_entry);
- #endif
- 	viafb_init_dac(IGA2);
-+	/* update from legacy i2c DDC info */
-+	viafb_detect_dev(1, vdev);
- 	return 0;
-
- out_fb_unreg:
-diff -pruN a/via_i2c.c c/via_i2c.c
---- a/drivers/video/via/via_i2c.c	2010-12-08 15:12:05.000000000 +0200
-+++ c/drivers/video/via/via_i2c.c	2010-11-29 18:04:24.000000000 +0200
-@@ -167,7 +167,7 @@ struct i2c_adapter *viafb_find_i2c_adapt
- {
- 	struct via_i2c_stuff *stuff = &via_i2c_par[which];
-
--	return &stuff->adapter;
-+	return stuff->is_active ? &stuff->adapter : NULL;
- }
- EXPORT_SYMBOL_GPL(viafb_find_i2c_adapter);
-
---
-PS 0x21 still not working, forcing DVP1 on my 0x31 is wrong idea (visually).
-Then I only switch off CRT by default if another device present (to save power
-vs. full device capabilities). In theory, iteration for every port is not
-required, only i=1, but let it keep so to easy adding new ports. Early enabling
-CRT texmode may force (future) DDC detection and no bad to non-fb purposes too.

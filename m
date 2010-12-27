@@ -1,63 +1,40 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Date: Thu, 09 Dec 2010 13:47:16 +0000
-Subject: [PATCH 4/9] fb: export fb mode db table
-Message-Id: <1291902441-24712-5-git-send-email-s.hauer@pengutronix.de>
+From: Magnus Damm <magnus.damm@gmail.com>
+Date: Mon, 27 Dec 2010 02:02:58 +0000
+Subject: Re: [PATCH 3/5] fbdev: sh_mobile_lcdc: increase maximum framebuffer
+Message-Id: <AANLkTi=zRpLDg3Oqv+gq8sMAiidVoDojigQb9rn826aC@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291902441-24712-1-git-send-email-s.hauer@pengutronix.de>
-In-Reply-To: <1291902441-24712-1-git-send-email-s.hauer@pengutronix.de>
+References: <Pine.LNX.4.64.1011041200050.13123@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1011041200050.13123@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-The different modes can be useful for drivers. Currently there is
-no way to expose the modes to sysfs, so export them.
+Hi Guennadi,
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
----
- drivers/video/modedb.c |    7 ++++++-
- include/linux/fb.h     |    3 +++
- 2 files changed, 9 insertions(+), 1 deletions(-)
+On Sun, Dec 26, 2010 at 6:44 AM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> Paul, apart from increasing the fb size to 1080p, this patch also fixes a
+> regression, which leads to unusable by applications framebuffer on some
+> platforms, including migor. This happens, when one of parameters lies
+> outside of limits, being checked in sh_mobile_check_var(). On migor it is
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.left_margin =3D 0,
+>
+> Then the fb-console is working, but, e.g., mplayer is not. So, we need
+> this patch in 2.6.37 too, please. Unfortunately, it also introduces a
+> wrong format printk format, which a later patch of yours fixes, so, you
+> might want to push that patch too, although, that's not that important.
 
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index 0a4dbdc..82122a9 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -36,7 +36,7 @@ EXPORT_SYMBOL_GPL(fb_mode_option);
-      *  Standard video mode definitions (taken from XFree86)
-      */
- 
--static const struct fb_videomode modedb[] = {
-+const struct fb_videomode modedb[] = {
-     {
- 	/* 640x400 @ 70 Hz, 31.5 kHz hsync */
- 	NULL, 70, 640, 400, 39721, 40, 24, 39, 9, 96, 2,
-@@ -277,6 +277,11 @@ static const struct fb_videomode modedb[] = {
-     },
- };
- 
-+const struct fb_videomode *fb_modes = modedb;
-+EXPORT_SYMBOL(fb_modes);
-+const int num_fb_modes = ARRAY_SIZE(modedb);
-+EXPORT_SYMBOL(num_fb_modes);
-+
- #ifdef CONFIG_FB_MODE_HELPERS
- const struct fb_videomode vesa_modes[] = {
- 	/* 0 640x350-85 VESA */
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index d1631d3..e006172 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -1151,6 +1151,9 @@ struct fb_videomode {
- extern const char *fb_mode_option;
- extern const struct fb_videomode vesa_modes[];
- 
-+extern const struct fb_videomode *fb_modes;
-+extern const int num_fb_modes;
-+
- struct fb_modelist {
- 	struct list_head list;
- 	struct fb_videomode mode;
--- 
-1.7.2.3
+It's great that you work on fixing this issue, thank you.
 
+In the long run I wonder if it's best to try to get rid of the
+MAX_XRES/MAX_YRES stuff from the LCDC driver. I understand that you
+need to allocate the frame buffer memory early on, but it would be
+much better if the maximum values could be kept in platform data. The
+maximum resolution varies with CPU type, so a one-for-all modification
+like this may break older platforms.
+
+Thanks,
+
+/ magnus

@@ -1,199 +1,106 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Date: Thu, 09 Dec 2010 13:47:13 +0000
-Subject: [PATCH 1/9] ARM i.MX51: Add ipu clock support
-Message-Id: <1291902441-24712-2-git-send-email-s.hauer@pengutronix.de>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Mon, 27 Dec 2010 10:23:05 +0000
+Subject: [PATCH 1/2 v2] fbdev: sh-mobile: implement MIPI DSI runtime PM
+Message-Id: <Pine.LNX.4.64.1012271119471.669@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291902441-24712-1-git-send-email-s.hauer@pengutronix.de>
-In-Reply-To: <1291902441-24712-1-git-send-email-s.hauer@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+On SH-Mobile platforms using runtime PM with the MIPI DSI driver switches the
+DSI Tx link clock on PM events.
+
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
- arch/arm/mach-mx5/clock-mx51-mx53.c |  140 +++++++++++++++++++++++++++++++++++
- 1 files changed, 140 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/mach-mx5/clock-mx51-mx53.c b/arch/arm/mach-mx5/clock-mx51-mx53.c
-index 9fc65bb..f550d02 100644
---- a/arch/arm/mach-mx5/clock-mx51-mx53.c
-+++ b/arch/arm/mach-mx5/clock-mx51-mx53.c
-@@ -39,6 +39,9 @@ static struct clk periph_apm_clk;
- static struct clk ahb_clk;
- static struct clk ipg_clk;
- static struct clk usboh3_clk;
-+static struct clk emi_fast_clk;
-+static struct clk ipu_clk;
-+static struct clk mipi_hsc1_clk;
+v2: keep the device pointer in clk_get() call
+
+ drivers/video/sh_mipi_dsi.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
+index 3f3d431..3563188 100644
+--- a/drivers/video/sh_mipi_dsi.c
++++ b/drivers/video/sh_mipi_dsi.c
+@@ -13,6 +13,7 @@
+ #include <linux/init.h>
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
++#include <linux/pm_runtime.h>
+ #include <linux/slab.h>
+ #include <linux/string.h>
+ #include <linux/types.h>
+@@ -33,6 +34,7 @@ struct sh_mipi {
+ 	void __iomem	*base;
+ 	struct clk	*dsit_clk;
+ 	struct clk	*dsip_clk;
++	struct device	*dev;
+ };
  
- #define MAX_DPLL_WAIT_TRIES	1000 /* 1000 * udelay(1) = 1ms */
+ static struct sh_mipi *mipi_dsi[MAX_SH_MIPI_DSI];
+@@ -104,6 +106,7 @@ static void mipi_display_on(void *arg, struct fb_info *info)
+ {
+ 	struct sh_mipi *mipi = arg;
  
-@@ -688,6 +691,19 @@ static unsigned long clk_emi_slow_get_rate(struct clk *clk)
- 	return clk_get_rate(clk->parent) / div;
++	pm_runtime_get_sync(mipi->dev);
+ 	sh_mipi_dsi_enable(mipi, true);
  }
  
-+static unsigned long _clk_ddr_hf_get_rate(struct clk *clk)
-+{
-+	unsigned long rate;
-+	u32 reg, div;
-+
-+	reg = __raw_readl(MXC_CCM_CBCDR);
-+	div = ((reg & MXC_CCM_CBCDR_DDR_PODF_MASK) >>
-+		MXC_CCM_CBCDR_DDR_PODF_OFFSET) + 1;
-+	rate = clk_get_rate(clk->parent) / div;
-+
-+	return rate;
-+}
-+
- /* External high frequency clock */
- static struct clk ckih_clk = {
- 	.get_rate = get_high_reference_clock_rate,
-@@ -846,6 +862,109 @@ static struct clk emi_slow_clk = {
- 	.get_rate = clk_emi_slow_get_rate,
- };
+@@ -112,6 +115,7 @@ static void mipi_display_off(void *arg)
+ 	struct sh_mipi *mipi = arg;
  
-+static int clk_ipu_enable(struct clk *clk)
-+{
-+	u32 reg;
-+
-+	_clk_ccgr_enable(clk);
-+
-+	/* Enable handshake with IPU when certain clock rates are changed */
-+	reg = __raw_readl(MXC_CCM_CCDR);
-+	reg &= ~MXC_CCM_CCDR_IPU_HS_MASK;
-+	__raw_writel(reg, MXC_CCM_CCDR);
-+
-+	/* Enable handshake with IPU when LPM is entered */
-+	reg = __raw_readl(MXC_CCM_CLPCR);
-+	reg &= ~MXC_CCM_CLPCR_BYPASS_IPU_LPM_HS;
-+	__raw_writel(reg, MXC_CCM_CLPCR);
-+
-+	return 0;
-+}
-+
-+static void clk_ipu_disable(struct clk *clk)
-+{
-+	u32 reg;
-+
-+	_clk_ccgr_disable(clk);
-+
-+	/* Disable handshake with IPU whe dividers are changed */
-+	reg = __raw_readl(MXC_CCM_CCDR);
-+	reg |= MXC_CCM_CCDR_IPU_HS_MASK;
-+	__raw_writel(reg, MXC_CCM_CCDR);
-+
-+	/* Disable handshake with IPU when LPM is entered */
-+	reg = __raw_readl(MXC_CCM_CLPCR);
-+	reg |= MXC_CCM_CLPCR_BYPASS_IPU_LPM_HS;
-+	__raw_writel(reg, MXC_CCM_CLPCR);
-+}
-+
-+static struct clk ahbmux1_clk = {
-+	.parent = &ahb_clk,
-+	.secondary = &ahb_max_clk,
-+	.enable_reg = MXC_CCM_CCGR0,
-+	.enable_shift = MXC_CCM_CCGRx_CG8_OFFSET,
-+	.enable = _clk_ccgr_enable,
-+	.disable = _clk_ccgr_disable_inwait,
-+};
-+
-+static struct clk ipu_sec_clk = {
-+	.parent = &emi_fast_clk,
-+	.secondary = &ahbmux1_clk,
-+};
-+
-+static struct clk ddr_hf_clk = {
-+	.parent = &pll1_sw_clk,
-+	.get_rate = _clk_ddr_hf_get_rate,
-+};
-+
-+static struct clk ddr_clk = {
-+	.parent = &ddr_hf_clk,
-+};
-+
-+/* clock definitions for MIPI HSC unit which has been removed
-+ * from documentation, but not from hardware
-+ */
-+static int _clk_hsc_enable(struct clk *clk)
-+{
-+	u32 reg;
-+
-+	_clk_ccgr_enable(clk);
-+	/* Handshake with IPU when certain clock rates are changed. */
-+	reg = __raw_readl(MXC_CCM_CCDR);
-+	reg &= ~MXC_CCM_CCDR_HSC_HS_MASK;
-+	__raw_writel(reg, MXC_CCM_CCDR);
-+
-+	reg = __raw_readl(MXC_CCM_CLPCR);
-+	reg &= ~MXC_CCM_CLPCR_BYPASS_HSC_LPM_HS;
-+	__raw_writel(reg, MXC_CCM_CLPCR);
-+
-+	return 0;
-+}
-+
-+static void _clk_hsc_disable(struct clk *clk)
-+{
-+	u32 reg;
-+
-+	_clk_ccgr_disable(clk);
-+	/* No handshake with HSC as its not enabled. */
-+	reg = __raw_readl(MXC_CCM_CCDR);
-+	reg |= MXC_CCM_CCDR_HSC_HS_MASK;
-+	__raw_writel(reg, MXC_CCM_CCDR);
-+
-+	reg = __raw_readl(MXC_CCM_CLPCR);
-+	reg |= MXC_CCM_CLPCR_BYPASS_HSC_LPM_HS;
-+	__raw_writel(reg, MXC_CCM_CLPCR);
-+}
-+
-+static struct clk mipi_hsp_clk = {
-+	.parent = &ipu_clk,
-+	.enable_reg = MXC_CCM_CCGR4,
-+	.enable_shift = MXC_CCM_CCGRx_CG6_OFFSET,
-+	.enable = _clk_hsc_enable,
-+	.disable = _clk_hsc_disable,
-+	.secondary = &mipi_hsc1_clk,
-+};
-+
- #define DEFINE_CLOCK_CCGR(name, i, er, es, pfx, p, s)	\
- 	static struct clk name = {			\
- 		.id		= i,			\
-@@ -1077,6 +1196,23 @@ DEFINE_CLOCK_FULL(esdhc2_ipg_clk, 1, MXC_CCM_CCGR3, MXC_CCM_CCGRx_CG2_OFFSET,
- DEFINE_CLOCK_MAX(esdhc2_clk, 1, MXC_CCM_CCGR3, MXC_CCM_CCGRx_CG3_OFFSET,
- 	clk_esdhc2, &pll2_sw_clk, &esdhc2_ipg_clk);
+ 	sh_mipi_dsi_enable(mipi, false);
++	pm_runtime_put(mipi->dev);
+ }
  
-+DEFINE_CLOCK(mipi_esc_clk, 0, MXC_CCM_CCGR4, MXC_CCM_CCGRx_CG5_OFFSET, NULL, NULL, NULL, &pll2_sw_clk);
-+DEFINE_CLOCK(mipi_hsc2_clk, 0, MXC_CCM_CCGR4, MXC_CCM_CCGRx_CG4_OFFSET, NULL, NULL, &mipi_esc_clk, &pll2_sw_clk);
-+DEFINE_CLOCK(mipi_hsc1_clk, 0, MXC_CCM_CCGR4, MXC_CCM_CCGRx_CG3_OFFSET, NULL, NULL, &mipi_hsc2_clk, &pll2_sw_clk);
-+
-+/* IPU */
-+DEFINE_CLOCK_FULL(ipu_clk, 0, MXC_CCM_CCGR5, MXC_CCM_CCGRx_CG5_OFFSET,
-+	NULL,  NULL, clk_ipu_enable, clk_ipu_disable, &ahb_clk, &ipu_sec_clk);
-+
-+DEFINE_CLOCK_FULL(emi_fast_clk, 0, MXC_CCM_CCGR5, MXC_CCM_CCGRx_CG7_OFFSET,
-+		NULL, NULL, _clk_ccgr_enable, _clk_ccgr_disable_inwait,
-+		&ddr_clk, NULL);
-+
-+DEFINE_CLOCK(ipu_di0_clk, 0, MXC_CCM_CCGR6, MXC_CCM_CCGRx_CG5_OFFSET,
-+		NULL, NULL, &pll3_sw_clk, NULL);
-+DEFINE_CLOCK(ipu_di1_clk, 0, MXC_CCM_CCGR6, MXC_CCM_CCGRx_CG6_OFFSET,
-+		NULL, NULL, &pll3_sw_clk, NULL);
-+
- #define _REGISTER_CLOCK(d, n, c) \
-        { \
- 		.dev_id = d, \
-@@ -1117,6 +1253,10 @@ static struct clk_lookup mx51_lookups[] = {
- 	_REGISTER_CLOCK(NULL, "iim_clk", iim_clk)
- 	_REGISTER_CLOCK("imx2-wdt.0", NULL, dummy_clk)
- 	_REGISTER_CLOCK("imx2-wdt.1", NULL, dummy_clk)
-+	_REGISTER_CLOCK(NULL, "mipi_hsp", mipi_hsp_clk)
-+	_REGISTER_CLOCK("imx-ipuv3", NULL, ipu_clk)
-+	_REGISTER_CLOCK("imx-ipuv3", "di0", ipu_di0_clk)
-+	_REGISTER_CLOCK("imx-ipuv3", "di1", ipu_di1_clk)
- };
+ static int __init sh_mipi_setup(struct sh_mipi *mipi,
+@@ -356,6 +360,8 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
+ 		goto emap;
+ 	}
  
- static struct clk_lookup mx53_lookups[] = {
++	mipi->dev = &pdev->dev;
++
+ 	mipi->dsit_clk = clk_get(&pdev->dev, "dsit_clk");
+ 	if (IS_ERR(mipi->dsit_clk)) {
+ 		ret = PTR_ERR(mipi->dsit_clk);
+@@ -405,6 +411,9 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
+ 
+ 	mipi_dsi[idx] = mipi;
+ 
++	pm_runtime_enable(&pdev->dev);
++	pm_runtime_resume(&pdev->dev);
++
+ 	ret = sh_mipi_setup(mipi, pdata);
+ 	if (ret < 0)
+ 		goto emipisetup;
+@@ -416,11 +425,13 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
+ 	pdata->lcd_chan->board_cfg.board_data = mipi;
+ 	pdata->lcd_chan->board_cfg.display_on = mipi_display_on;
+ 	pdata->lcd_chan->board_cfg.display_off = mipi_display_off;
++	pdata->lcd_chan->board_cfg.owner = THIS_MODULE;
+ 
+ 	return 0;
+ 
+ emipisetup:
+ 	mipi_dsi[idx] = NULL;
++	pm_runtime_disable(&pdev->dev);
+ 	clk_disable(mipi->dsip_clk);
+ eclkpon:
+ 	clk_disable(mipi->dsit_clk);
+@@ -467,10 +478,12 @@ static int __exit sh_mipi_remove(struct platform_device *pdev)
+ 	if (ret < 0)
+ 		return ret;
+ 
++	pdata->lcd_chan->board_cfg.owner = NULL;
+ 	pdata->lcd_chan->board_cfg.display_on = NULL;
+ 	pdata->lcd_chan->board_cfg.display_off = NULL;
+ 	pdata->lcd_chan->board_cfg.board_data = NULL;
+ 
++	pm_runtime_disable(&pdev->dev);
+ 	clk_disable(mipi->dsip_clk);
+ 	clk_disable(mipi->dsit_clk);
+ 	clk_put(mipi->dsit_clk);
 -- 
 1.7.2.3
 

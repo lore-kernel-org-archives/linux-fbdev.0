@@ -1,24 +1,35 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Mon, 20 Dec 2010 15:59:12 +0000
-Subject: Re: [PATCH] s1d13xxxfb: drop unused code
-Message-Id: <20101220155912.GC26766@linux-sh.org>
+From: Inki Dae <inki.dae@samsung.com>
+Date: Tue, 28 Dec 2010 11:26:17 +0000
+Subject: [PATCH 2/5] S5PC110: add MIPI-DSI clock.
+Message-Id: <1293535577-24751-1-git-send-email-inki.dae@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20101217190013.0107a93a@queued.net>
-In-Reply-To: <20101217190013.0107a93a@queued.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andres Salomon <dilinger@queued.net>
-Cc: akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Fri, Dec 17, 2010 at 07:00:13PM -0800, Andres Salomon wrote:
-> 
-> Silence warnings such as -
-> 
-> drivers/video/s1d13xxxfb.c:421: warning: ???bltbit_wait_bitset??? defined but not used
-> 
-> Just drop the unused code.
-> 
-> Signed-off-by: Andres Salomon <dilinger@queued.net>
+Signed-off-by: Inki Dae <inki.dae@samsung.com>
+---
+ arch/arm/mach-s5pv210/clock.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-Applied, thanks.
+diff --git a/arch/arm/mach-s5pv210/clock.c b/arch/arm/mach-s5pv210/clock.c
+index 019c3a6..58a7c60 100644
+--- a/arch/arm/mach-s5pv210/clock.c
++++ b/arch/arm/mach-s5pv210/clock.c
+@@ -365,6 +365,12 @@ static struct clk init_clocks_disable[] = {
+ 		.enable		= s5pv210_clk_ip1_ctrl,
+ 		.ctrlbit	= (1<<0),
+ 	}, {
++		.name		= "dsim",
++		.id		= -1,
++		.parent		= &clk_hclk_dsys.clk,
++		.enable		= s5pv210_clk_ip1_ctrl,
++		.ctrlbit	= (1<<2),
++	}, {
+ 		.name		= "cfcon",
+ 		.id		= 0,
+ 		.parent		= &clk_hclk_psys.clk,
+-- 
+1.7.0.4
+

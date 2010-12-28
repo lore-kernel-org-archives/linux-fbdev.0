@@ -1,50 +1,42 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 15 Dec 2010 18:40:25 +0000
-Subject: Re: Force FB off
-Message-Id: <AANLkTimqPU-RgNrtNF3WB0KWc-kYXpn12OAefVg2EyTX@mail.gmail.com>
+From: Inki Dae <inki.dae@samsung.com>
+Date: Tue, 28 Dec 2010 11:26:02 +0000
+Subject: [PATCH 1/5] S5PC110: add MIPI-DSI system register definitions.
+Message-Id: <1293535562-24715-1-git-send-email-inki.dae@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.LNX.2.01.1012141840130.18577@obet.zrqbmnf.qr>
-	<AANLkTimEh+2rEFuq7q+wLcfHw_UKKHVipC0t7mFwSzx8@mail.gmail.com>
-	<alpine.LNX.2.01.1012151430220.2052@obet.zrqbmnf.qr>
-In-Reply-To: <alpine.LNX.2.01.1012151430220.2052@obet.zrqbmnf.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org, Dave Airlie <airlied@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Dec 15, 2010 at 14:39, Jan Engelhardt <jengelh@medozas.de> wrote:
-> On Tuesday 2010-12-14 21:18, Dave Airlie wrote:
->>On Wed, Dec 15, 2010 at 3:41 AM, Jan Engelhardt <jengelh@medozas.de> wrote:
->>
->>>
->>>booting with video=off nor video=i915:off has any effect on skipping
->>>FB. What is the correct option to stop FB from taking over my boot
->>>consoles?
->>
->>For KMS its not fb taking over its the drm i915 driver, nomodeset will
->>stop it however X will no longer work since it relies on the kernel
->>driver.
->
-> That would make sense. Furthermore I discovered that video=vesafb:off
-> also has no effect, but here it is clear because the source code ignores
-> the return value of fb_get_options, and so ignores any off command.
->
-> The real strange thing is that video=offb:off on an Apple Xserve G5
-> PPC64, while probably skipping OFFB initialization, still ends up in a
-> 640x480 mode with a 8x16 font instead of retaining the PROM
-> console/font.
+Signed-off-by: Inki Dae <inki.dae@samsung.com>
+---
+ arch/arm/mach-s5pv210/include/mach/regs-clock.h |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-That just means something different than offb is driving the console now.
-What does /proc/fb say?
+diff --git a/arch/arm/mach-s5pv210/include/mach/regs-clock.h b/arch/arm/mach-s5pv210/include/mach/regs-clock.h
+index ebaabe0..09680d9 100644
+--- a/arch/arm/mach-s5pv210/include/mach/regs-clock.h
++++ b/arch/arm/mach-s5pv210/include/mach/regs-clock.h
+@@ -146,6 +146,7 @@
+ #define S5P_OM_STAT		S5P_CLKREG(0xE100)
+ #define S5P_USB_PHY_CONTROL	S5P_CLKREG(0xE80C)
+ #define S5P_DAC_CONTROL		S5P_CLKREG(0xE810)
++#define S5P_MIPI_DPHY_CONTROL		S5P_CLKREG(0xE814)
+ 
+ #define S5P_INFORM0		S5P_CLKREG(0xF000)
+ #define S5P_INFORM1		S5P_CLKREG(0xF004)
+@@ -196,7 +197,10 @@
+ #define S5P_OTHERS_USB_SIG_MASK		(1 << 16)
+ 
+ /* MIPI */
+-#define S5P_MIPI_DPHY_EN		(3)
++#define S5P_MIPI_DPHY_EN		(3 << 0)
++
++/* S5P_MIPI_PHY_CON0 */
++#define S5P_MIPI_M_RESETN		(1 << 1)
+ 
+ /* S5P_DAC_CONTROL */
+ #define S5P_DAC_ENABLE			(1)
+-- 
+1.7.0.4
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

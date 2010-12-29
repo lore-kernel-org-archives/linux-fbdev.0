@@ -1,182 +1,59 @@
-From: Dzianis Kahanovich <mahatma@bspu.unibel.by>
-Date: Wed, 08 Dec 2010 16:42:47 +0000
-Subject: [PATCH v2] (new way) I2C/DDC defaults & I2C/DDC detection for VIA
-Message-Id: <4CFFB587.8070103@bspu.unibel.by>
+From: Lenny <darwinskernel@gmail.com>
+Date: Wed, 29 Dec 2010 05:11:15 +0000
+Subject: increase max fb size and i
+Message-Id: <20101229051115.GA18465@WALL-E>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-I2C/DDC defaults & I2C/DDC detection for VIA framebuffer.
 
-Adding defaults & legacy I2C/DDC support for VIA framebuffer.
-Detecting legacy I2C/DDC outputs (if undetected else) and
-set autodetected defaults on empty "viafb_active_dev".
+Guennadi: sorry for submitting twice. apparently linux-fbdev-users has
+been migrated here.
 
-v2: fixed non-defaults LCD order
+i was just wondering if this commit by Guennadi Liakhovetski in -rc8:
 
-Signed-off-by: Dzianis Kahanovich <mahatma@eu.by>
----
-diff -pruN a/viafbdev.c c/viafbdev.c
---- a/drivers/video/via/viafbdev.c	2010-12-07 18:35:22.000000000 +0200
-+++ c/drivers/video/via/viafbdev.c	2010-12-08 18:24:18.000000000 +0200
-@@ -1485,6 +1485,125 @@ static int parse_mode(const char *str, u
- 	return 0;
- }
+	fbdev: sh_mobile_lcdc: increase maximum framebuffer size to support 1080p
 
-+/* stage=0: count devices to set dual and/or SAMM;
-+   stage=1: add devices, detected only via i2c legacy;
-+   set LCD/DVI/CRT if viafb_active_dev unset */
-+static void viafb_detect_dev(int stage, struct viafb_dev *vdev)
-+{
-+	u8 *edid;
-+	struct fb_var_screeninfo var;
-+	int i, t, ndev = 0, nlcd = 0;
-+	struct i2c_adapter *adapter;
-+	struct lvds_setting_information *inf;
-+
-+	/* FIXME: viaparinfo1->chip_info looks equal to viaparinfo */
-+	i = !viafb_active_dev && stage;
-+	if (viaparinfo->chip_info->tmds_chip_info.tmds_chip_name) {
-+		ndev++;
-+		if (i)
-+			viafb_DVI_ON = STATE_ON;
-+	}
-+	if (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
-+		ndev++;
-+		nlcd = 1;
-+		if (i)
-+			viafb_LCD_ON = STATE_ON;
-+	}
-+	if (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name) {
-+		ndev++;
-+		nlcd = 2;
-+		if (i)
-+			viafb_LCD2_ON = STATE_ON;
-+	}
-+	/* enabling CRT in textmode is at least no bad */
-+	if (viafb_CRT_ON) {
-+		ndev++;
-+		viafb_crt_enable();
-+	}
-+	for (i = 0; i < VIAFB_NUM_PORTS; i++) {
-+		t = vdev->port_cfg[i].type;
-+		/* detect only i2c ports, undetected in other places */
-+		if ((viaparinfo && viaparinfo->chip_info && (
-+		    (viaparinfo->chip_info->tmds_chip_info.tmds_chip_name &&
-+		    viaparinfo->chip_info->tmds_chip_info.i2c_port = t) ||
-+		    (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name &&
-+		    viaparinfo->chip_info->lvds_chip_info.i2c_port = t) ||
-+		    (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name &&
-+		    viaparinfo->chip_info->lvds_chip_info2.i2c_port = t)
-+		    )) || (viaparinfo1 && viaparinfo1->chip_info && (
-+		    (viaparinfo1->chip_info->tmds_chip_info.tmds_chip_name &&
-+		    viaparinfo1->chip_info->tmds_chip_info.i2c_port = t) ||
-+		    (viaparinfo1->chip_info->lvds_chip_info.lvds_chip_name &&
-+		    viaparinfo1->chip_info->lvds_chip_info.i2c_port = t) ||
-+		    (viaparinfo1->chip_info->lvds_chip_info2.lvds_chip_name &&
-+		    viaparinfo1->chip_info->lvds_chip_info2.i2c_port = t)
-+		    )) || !(adapter = viafb_find_i2c_adapter(i)) ||
-+		    !(edid = fb_ddc_read(adapter)))
-+			continue;
-+		memset(&var, 0, sizeof(var));
-+		if (fb_parse_edid(edid, &var))
-+			goto free_edid;
-+		printk(KERN_INFO "viafb: %48s\n", adapter->name);
-+		inf = NULL;
-+		if (!stage) {
-+		} else if (!nlcd) {
-+			fb_edid_to_monspecs(edid, &viafbinfo->monspecs);
-+			if (viafbinfo->monspecs.input & FB_DISP_DDI)
-+				inf = viaparinfo->lvds_setting_info;
-+		} else if (nlcd > 1) {
-+			printk(KERN_ERR "viafb: too many LCD\n");
-+		} else if (viafb_dual_fb) {
-+			fb_edid_to_monspecs(edid, &viafbinfo1->monspecs);
-+			if (viafbinfo1->monspecs.input & FB_DISP_DDI)
-+				inf = viaparinfo1->lvds_setting_info;
-+		} else {
-+			fb_edid_to_monspecs(edid, &viafbinfo->monspecs);
-+			if (viafbinfo->monspecs.input & FB_DISP_DDI)
-+				inf = viaparinfo->lvds_setting_info2;
-+		}
-+		if (inf) {
-+			if (!viafb_active_dev) {
-+				if (nlcd)
-+					viafb_LCD2_ON = STATE_ON;
-+				else
-+					viafb_LCD_ON = STATE_ON;
-+			}
-+			nlcd++;
-+			if (var.xres)
-+				inf->lcd_panel_hres = var.xres;
-+			if (var.yres)
-+				inf->lcd_panel_vres = var.yres;
-+		}
-+		ndev++;
-+free_edid:
-+		kfree(edid);
-+	}
-+	if (!viafb_active_dev) {
-+		/* SAMM on Chrome9 LCD+CRT is wrong here
-+		   then keep CRT OFF & dual detection together */
-+#if 1		
-+		if (ndev > 1 && viafb_CRT_ON) {
-+			viafb_CRT_ON = STATE_OFF;
-+			viafb_crt_disable();
-+			ndev--;
-+		}
-+		/* SAMM may be detected on stage 1,
-+		   but troubles coming together */
-+		if (ndev > 1 && !stage)
-+			viafb_SAMM_ON = viafb_dual_fb = STATE_ON;
-+#endif
-+		if (viafb_DVI_ON)
-+			viafb_primary_dev = DVI_Device;
-+		else if (viafb_LCD_ON)
-+			viafb_primary_dev = LCD_Device;
-+		else if (viafb_CRT_ON)
-+			viafb_primary_dev = CRT_Device;
-+		viafb_DeviceStatus = viafb_primary_dev;
-+		if (stage)
-+			viafb_set_iga_path();
-+	}
-+}
-+
+would solve the probelm i've been having with 720p/1080p playback on my mac=
+hine.
+i'm using mplayer the err message i get is:
 
- int __devinit via_fb_pci_probe(struct viafb_dev *vdev)
- {
-@@ -1526,6 +1645,10 @@ int __devinit via_fb_pci_probe(struct vi
- 	parse_dvi_port();
+framebuffer too small for double-buffering, disabling
 
- 	viafb_init_chip_info(vdev->chip_type);
-+	/* detect dual_fb & SAMM_ON, but let's keep it to options */
-+#if 0
-+	viafb_detect_dev(0, vdev);
-+#endif
- 	/*
- 	 * The framebuffer will have been successfully mapped by
- 	 * the core (or we'd not be here), but we still need to
-@@ -1675,6 +1798,8 @@ int __devinit via_fb_pci_probe(struct vi
- 	viafb_init_proc(&viaparinfo->shared->proc_entry);
- #endif
- 	viafb_init_dac(IGA2);
-+	/* update from legacy i2c DDC info */
-+	viafb_detect_dev(1, vdev);
- 	return 0;
+machine's graphic chip's spec. reported by lscpi -vv:
 
- out_fb_unreg:
-diff -pruN a/via_i2c.c c/via_i2c.c
---- a/drivers/video/via/via_i2c.c	2010-12-08 15:12:05.000000000 +0200
-+++ c/drivers/video/via/via_i2c.c	2010-11-29 18:04:24.000000000 +0200
-@@ -167,7 +167,7 @@ struct i2c_adapter *viafb_find_i2c_adapt
- {
- 	struct via_i2c_stuff *stuff = &via_i2c_par[which];
+00:02.0 VGA compatible controller: Intel Corporation Mobile GM965/GL960 Int=
+egrated Graphics Controller (rev 03) (prog-if 00 [VGA controller])
+	Subsystem: Apple Computer Inc. Device 00a1
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Steppi=
+ng- SERR- FastB2B- DisINTx+
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=FAst >TAbort- <TAbort- <M=
+Abort- >SERR- <PERR- INTx-
+	Latency: 0
+	Interrupt: pin A routed to IRQ 43
+	Region 0: Memory at 50100000 (64-bit, non-prefetchable) [size=3D1M]
+	Region 2: Memory at 40000000 (64-bit, prefetchable) [size%6M]
+	Region 4: I/O ports at 6110 [size=3D8]
+	Expansion ROM at <unassigned> [disabled]
+	Capabilities: <access denied>
+	Kernel driver in use: i915
 
--	return &stuff->adapter;
-+	return stuff->is_active ? &stuff->adapter : NULL;
- }
- EXPORT_SYMBOL_GPL(viafb_find_i2c_adapter);
+00:02.1 Display controller: Intel Corporation Mobile GM965/GL960 Integrated=
+ Graphics Controller (rev 03)
+	Subsystem: Apple Computer Inc. Device 00a1
+	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Steppi=
+ng- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=FAst >TAbort- <TAbort- <M=
+Abort- >SERR- <PERR- INTx-
+	Region 0: Memory at 50200000 (64-bit, non-prefetchable) [disabled] [size=
+=3D1M]
+	Capabilities: <access denied>
 
---
+/proc/fb: 0 inteldrmfb
+
+Kernel command line: rootflags=3Drw rootfstype=3Dbtrfs add_efi_memmap ro vi=
+deo=3Dintelfb:mtrr=3D1,accel,vram%0
+
+regards,

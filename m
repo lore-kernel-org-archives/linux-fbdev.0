@@ -1,7 +1,7 @@
 From: Kukjin Kim <kgene.kim@samsung.com>
-Date: Wed, 29 Dec 2010 00:50:38 +0000
+Date: Wed, 29 Dec 2010 01:03:44 +0000
 Subject: RE: [PATCH 1/5] S5PC110: add MIPI-DSI system register definitions.
-Message-Id: <003201cba6f2$6b532a60$41f97f20$%kim@samsung.com>
+Message-Id: <003301cba6f4$3f6b2a90$be417fb0$%kim@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1293535562-24715-1-git-send-email-inki.dae@samsung.com>
 In-Reply-To: <1293535562-24715-1-git-send-email-inki.dae@samsung.com>
@@ -12,10 +12,10 @@ To: linux-arm-kernel@lists.infradead.org
 
 Inki Dae wrote:
 > 
-Please keep myself in Cc on this. I already noticed that to you before.
-I think you should check whether mail loop is suitable or not...
+One more comment.
 
-And would be better if you could add #0 patch to understand your patches.
+Please work on S5P SoCs based on maintainer's latest for-next.
+You can find the reason in below.
 
 > Signed-off-by: Inki Dae <inki.dae@samsung.com>
 > ---
@@ -34,6 +34,8 @@ b/arch/arm/mach-
 >  #define S5P_DAC_CONTROL		S5P_CLKREG(0xE810)
 > +#define S5P_MIPI_DPHY_CONTROL		S5P_CLKREG(0xE814)
 > 
+Already added by Sylwester's patch.
+
 >  #define S5P_INFORM0		S5P_CLKREG(0xF000)
 >  #define S5P_INFORM1		S5P_CLKREG(0xF004)
 > @@ -196,7 +197,10 @@
@@ -41,6 +43,9 @@ b/arch/arm/mach-
 > 
 >  /* MIPI */
 > -#define S5P_MIPI_DPHY_EN		(3)
+
+Oops, already removed because not used anywhere at that time.
+
 > +#define S5P_MIPI_DPHY_EN		(3 << 0)
 > +
 > +/* S5P_MIPI_PHY_CON0 */
@@ -50,6 +55,7 @@ b/arch/arm/mach-
 >  #define S5P_DAC_ENABLE			(1)
 > --
 
+Please re-work your all patches.
 
 Thanks.
 

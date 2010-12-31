@@ -1,70 +1,133 @@
-From: Heiko Schocher <hs@denx.de>
-Date: Sat, 11 Dec 2010 06:31:36 +0000
-Subject: [PATCH v3 2/2] powerpc, video: add SM501 support for charon board.
-Message-Id: <1292049096-1852-1-git-send-email-hs@denx.de>
-List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291451028-22532-2-git-send-email-hs@denx.de>
-In-Reply-To: <1291451028-22532-2-git-send-email-hs@denx.de>
+From: Brent Cook <busterb@gmail.com>
+Subject: [PATCH] Fix the HGA framebuffer driver
+Date: Thu, 30 Dec 2010 23:43:40 -0600
+Message-ID: <1293774220-4423-1-git-send-email-busterb@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <fbdev-devel.lists.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Heiko Schocher <hs@denx.de>, linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org, Ben Dooks <ben@simtec.co.uk>, Vincent Sanders <vince@simtec.co.uk>, Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org
+To: Linux-fbdev-devel@lists.sourceforge.net
+Cc: Ferenc Bakonyi <fero@drama.obuda.kando.hu>, linux-kernel@vger.kernel.org, Brent Cook <busterb@gmail.com>
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-cc: linux-fbdev@vger.kernel.org
-cc: devicetree-discuss@ozlabs.org
-cc: Ben Dooks <ben@simtec.co.uk>
-cc: Vincent Sanders <vince@simtec.co.uk>
-cc: Samuel Ortiz <sameo@linux.intel.com>
-cc: linux-kernel@vger.kernel.org
+Resurrected some old hardware and fixed up the hgafb driver to work again. Only
+tested with fbcon, since most fbdev-based software appears to only support
+12bpp and up. It does not appear that this driver has worked for at least the
+entire 2.6.x series, perhaps since 2002.
 
+Signed-off-by: Brent Cook <busterb@gmail.com>
+
+Hercules graphics hardware uses packed pixels horizontally, but rows are not
+linear. In other words, the pixels are not packed vertically. This means that
+custom imageblit, fillrect and copyarea need to be written specific to the
+hardware.
+
+ * Removed the experimental acceleration option, since it is required for the
+   hardware to work.
+ * Fixed imageblit to work with fb_image's wider than 8 pixels.
+ * Updated configuration text (HGA hardware is from 1984)
 ---
-- based against 2.6.37-rc4
+ drivers/video/Kconfig |   14 ++------------
+ drivers/video/hgafb.c |   22 +++++++++-------------
+ 2 files changed, 11 insertions(+), 25 deletions(-)
 
-./scripts/checkpatch.pl 0003-powerpc-video-add-SM501-support-for-charon-board.patch
-total: 0 errors, 0 warnings, 21 lines checked
-
-0003-powerpc-video-add-SM501-support-for-charon-board.patch has no obvious style problems and is ready for submission.
-
-- changes since v1:
-  - no board specific defconfig file for mpc52xx based boards as suggested
-    from Wolfram Sang
-
-- changes since v2:
-  add Ben Dooks, Vincent Sanders and Samuel Ortiz and lkml to cc, as
-  suggested from Paul Mundt.
-
- arch/powerpc/boot/dts/charon.dts |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
-index 9776889..d9af022 100644
---- a/arch/powerpc/boot/dts/charon.dts
-+++ b/arch/powerpc/boot/dts/charon.dts
-@@ -186,6 +186,7 @@
- 		#address-cells = <2>;
- 		#size-cells = <1>;
- 		ranges = <	0 0 0xfc000000 0x02000000
-+				1 0 0xe0000000 0x04000000 // CS1 range, SM501
- 				3 0 0xe8000000 0x00080000>;
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 27c1fb4..d6af5a2 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -750,24 +750,14 @@ config FB_N411
+ config FB_HGA
+ 	tristate "Hercules mono graphics support"
+ 	depends on FB && X86
+-	select FB_CFB_FILLRECT
+-	select FB_CFB_COPYAREA
+-	select FB_CFB_IMAGEBLIT
+ 	help
+ 	  Say Y here if you have a Hercules mono graphics card.
  
- 		flash@0,0 {
-@@ -197,6 +198,14 @@
- 			#address-cells = <1>;
- 		};
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called hgafb.
  
-+		display@1,0 {
-+			compatible = "smi,sm501";
-+			reg = <1 0x00000000 0x00800000
-+			       1 0x03e00000 0x00200000>;
-+			mode = "640x480-32@60";
-+			interrupts = <1 1 3>;
-+		};
-+
- 		mram0@3,0 {
- 			compatible = "mtd-ram";
- 			reg = <3 0x00000 0x80000>;
+-	  As this card technology is 15 years old, most people will answer N
+-	  here.
+-
+-config FB_HGA_ACCEL
+-	bool "Hercules mono Acceleration functions (EXPERIMENTAL)"
+-	depends on FB_HGA && EXPERIMENTAL
+-	---help---
+-	This will compile the Hercules mono graphics with
+-	acceleration functions.
++	  As this card technology is at least 25 years old,
++	  most people will answer N here.
+ 
+ config FB_SGIVW
+ 	tristate "SGI Visual Workstation framebuffer support"
+diff --git a/drivers/video/hgafb.c b/drivers/video/hgafb.c
+index af8f0f2..4052718 100644
+--- a/drivers/video/hgafb.c
++++ b/drivers/video/hgafb.c
+@@ -454,7 +454,6 @@ static int hgafb_blank(int blank_mode, struct fb_info *info)
+ /*
+  * Accel functions
+  */
+-#ifdef CONFIG_FB_HGA_ACCEL
+ static void hgafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+ {
+ 	u_int rows, y;
+@@ -466,7 +465,7 @@ static void hgafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+ 		dest = rowaddr(info, y) + (rect->dx >> 3);
+ 		switch (rect->rop) {
+ 		case ROP_COPY:
+-			//fb_memset(dest, rect->color, (rect->width >> 3));
++			memset_io(dest, rect->color, (rect->width >> 3));
+ 			break;
+ 		case ROP_XOR:
+ 			fb_writeb(~(fb_readb(dest)), dest);
+@@ -488,7 +487,7 @@ static void hgafb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+ 		for (rows = area->height; rows--; ) {
+ 			src = rowaddr(info, y1) + (area->sx >> 3);
+ 			dest = rowaddr(info, y2) + (area->dx >> 3);
+-			//fb_memmove(dest, src, (area->width >> 3));
++			memmove(dest, src, (area->width >> 3));
+ 			y1++;
+ 			y2++;
+ 		}
+@@ -499,7 +498,7 @@ static void hgafb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+ 		for (rows = area->height; rows--;) {
+ 			src = rowaddr(info, y1) + (area->sx >> 3);
+ 			dest = rowaddr(info, y2) + (area->dx >> 3);
+-			//fb_memmove(dest, src, (area->width >> 3));
++			memmove(dest, src, (area->width >> 3));
+ 			y1--;
+ 			y2--;
+ 		}
+@@ -511,20 +510,17 @@ static void hgafb_imageblit(struct fb_info *info, const struct fb_image *image)
+ 	u8 __iomem *dest;
+ 	u8 *cdat = (u8 *) image->data;
+ 	u_int rows, y = image->dy;
++	u_int x;
+ 	u8 d;
+ 
+ 	for (rows = image->height; rows--; y++) {
+-		d = *cdat++;
+-		dest = rowaddr(info, y) + (image->dx >> 3);
+-		fb_writeb(d, dest);
++		for (x = 0; x < image->width; x+= 8) {
++			d = *cdat++;
++			dest = rowaddr(info, y) + ((image->dx + x)>> 3);
++			fb_writeb(d, dest);
++		}
+ 	}
+ }
+-#else /* !CONFIG_FB_HGA_ACCEL */
+-#define hgafb_fillrect cfb_fillrect
+-#define hgafb_copyarea cfb_copyarea
+-#define hgafb_imageblit cfb_imageblit
+-#endif /* CONFIG_FB_HGA_ACCEL */
+-
+ 
+ static struct fb_ops hgafb_ops = {
+ 	.owner		= THIS_MODULE,
 -- 
 1.7.2.3
-

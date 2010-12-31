@@ -1,46 +1,137 @@
-From: Samuel Ortiz <sameo@linux.intel.com>
-Date: Thu, 09 Dec 2010 15:03:12 +0000
-Subject: Re: [PATCH 1/2] video, sm501: add OF binding to support SM501
-Message-Id: <20101209150311.GO8884@sortiz-mobl>
+From: Brent Cook <busterb@gmail.com>
+Date: Fri, 31 Dec 2010 05:56:50 +0000
+Subject: [PATCH] Fix the HGA framebuffer driver
+Message-Id: <1293775010-4503-1-git-send-email-busterb@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291451028-22532-1-git-send-email-hs@denx.de>
-	<20101208053635.GB31508@linux-sh.org> <4D007C09.3040308@denx.de>
-In-Reply-To: <4D007C09.3040308@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Heiko Schocher <hs@denx.de>
-Cc: linux-fbdev@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>, linuxppc-dev@lists.ozlabs.org, Ben Dooks <ben-linux@fluff.org>, devicetree-discuss@ozlabs.org
+To: linux-fbdev@vger.kernel.org
 
-Hi Heiko,
+Resurrected some old hardware and fixed up the hgafb driver to work again. Only
+tested with fbcon, since most fbdev-based software appears to only support
+12bpp and up. It does not appear that this driver has worked for at least the
+entire 2.6.x series, perhaps since 2002.
 
-On Thu, Dec 09, 2010 at 07:49:45AM +0100, Heiko Schocher wrote:
-> Hello Paul,
-> 
-> Paul Mundt wrote:
-> > On Sat, Dec 04, 2010 at 09:23:47AM +0100, Heiko Schocher wrote:
-> >> - add binding to OF, compatible name "smi,sm501"
-> >>
-> [...]
-> >>  Documentation/kernel-parameters.txt          |    7 +
-> >>  Documentation/powerpc/dts-bindings/sm501.txt |   30 +++
-> >>  drivers/mfd/sm501.c                          |  141 ++++++++------
-> >>  drivers/video/sm501fb.c                      |  264 +++++++++++++++++---------
-> >>  include/linux/sm501.h                        |    8 +
-> >>  5 files changed, 299 insertions(+), 151 deletions(-)
-> >>  create mode 100644 Documentation/powerpc/dts-bindings/sm501.txt
-> >>
-> > Given that this is all SM501 dependent, is there some particular reason
-> > why you neglected to Cc the author or the MFD folks?
-> 
-> Hups, sorry! No, there is no reason, thanks for detecting this.
-> 
-> Hmm.. couldn;t find a MFD maillinglist?
-We use lkml. Could you please re-send the patch to me ?
+I sent this to the sourceforge mailing list before realizing the list had
+moved. http://www.linux-fbdev.org/ has the wrong mailing list info.
 
-Cheers,
-Samuel.
+Regards,
+ Brent
 
+Signed-off-by: Brent Cook <busterb@gmail.com>
+
+Hercules graphics hardware uses packed pixels horizontally, but rows are not
+linear. In other words, the pixels are not packed vertically. This means that
+custom imageblit, fillrect and copyarea need to be written specific to the
+hardware.
+
+ * Removed the experimental acceleration option, since it is required for the
+   hardware to work.
+ * Fixed imageblit to work with fb_image's wider than 8 pixels.
+ * Updated configuration text (HGA hardware is from 1984)
+---
+ drivers/video/Kconfig |   14 ++------------
+ drivers/video/hgafb.c |   22 +++++++++-------------
+ 2 files changed, 11 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 27c1fb4..d6af5a2 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -750,24 +750,14 @@ config FB_N411
+ config FB_HGA
+ 	tristate "Hercules mono graphics support"
+ 	depends on FB && X86
+-	select FB_CFB_FILLRECT
+-	select FB_CFB_COPYAREA
+-	select FB_CFB_IMAGEBLIT
+ 	help
+ 	  Say Y here if you have a Hercules mono graphics card.
+ 
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called hgafb.
+ 
+-	  As this card technology is 15 years old, most people will answer N
+-	  here.
+-
+-config FB_HGA_ACCEL
+-	bool "Hercules mono Acceleration functions (EXPERIMENTAL)"
+-	depends on FB_HGA && EXPERIMENTAL
+-	---help---
+-	This will compile the Hercules mono graphics with
+-	acceleration functions.
++	  As this card technology is at least 25 years old,
++	  most people will answer N here.
+ 
+ config FB_SGIVW
+ 	tristate "SGI Visual Workstation framebuffer support"
+diff --git a/drivers/video/hgafb.c b/drivers/video/hgafb.c
+index af8f0f2..4052718 100644
+--- a/drivers/video/hgafb.c
++++ b/drivers/video/hgafb.c
+@@ -454,7 +454,6 @@ static int hgafb_blank(int blank_mode, struct fb_info *info)
+ /*
+  * Accel functions
+  */
+-#ifdef CONFIG_FB_HGA_ACCEL
+ static void hgafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+ {
+ 	u_int rows, y;
+@@ -466,7 +465,7 @@ static void hgafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+ 		dest = rowaddr(info, y) + (rect->dx >> 3);
+ 		switch (rect->rop) {
+ 		case ROP_COPY:
+-			//fb_memset(dest, rect->color, (rect->width >> 3));
++			memset_io(dest, rect->color, (rect->width >> 3));
+ 			break;
+ 		case ROP_XOR:
+ 			fb_writeb(~(fb_readb(dest)), dest);
+@@ -488,7 +487,7 @@ static void hgafb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+ 		for (rows = area->height; rows--; ) {
+ 			src = rowaddr(info, y1) + (area->sx >> 3);
+ 			dest = rowaddr(info, y2) + (area->dx >> 3);
+-			//fb_memmove(dest, src, (area->width >> 3));
++			memmove(dest, src, (area->width >> 3));
+ 			y1++;
+ 			y2++;
+ 		}
+@@ -499,7 +498,7 @@ static void hgafb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+ 		for (rows = area->height; rows--;) {
+ 			src = rowaddr(info, y1) + (area->sx >> 3);
+ 			dest = rowaddr(info, y2) + (area->dx >> 3);
+-			//fb_memmove(dest, src, (area->width >> 3));
++			memmove(dest, src, (area->width >> 3));
+ 			y1--;
+ 			y2--;
+ 		}
+@@ -511,20 +510,17 @@ static void hgafb_imageblit(struct fb_info *info, const struct fb_image *image)
+ 	u8 __iomem *dest;
+ 	u8 *cdat = (u8 *) image->data;
+ 	u_int rows, y = image->dy;
++	u_int x;
+ 	u8 d;
+ 
+ 	for (rows = image->height; rows--; y++) {
+-		d = *cdat++;
+-		dest = rowaddr(info, y) + (image->dx >> 3);
+-		fb_writeb(d, dest);
++		for (x = 0; x < image->width; x+= 8) {
++			d = *cdat++;
++			dest = rowaddr(info, y) + ((image->dx + x)>> 3);
++			fb_writeb(d, dest);
++		}
+ 	}
+ }
+-#else /* !CONFIG_FB_HGA_ACCEL */
+-#define hgafb_fillrect cfb_fillrect
+-#define hgafb_copyarea cfb_copyarea
+-#define hgafb_imageblit cfb_imageblit
+-#endif /* CONFIG_FB_HGA_ACCEL */
+-
+ 
+ static struct fb_ops hgafb_ops = {
+ 	.owner		= THIS_MODULE,
 -- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+1.7.2.3
+

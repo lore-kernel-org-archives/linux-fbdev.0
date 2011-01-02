@@ -1,44 +1,70 @@
-From: Cong Wang <amwang@redhat.com>
-Date: Wed, 19 Jan 2011 06:19:56 +0000
-Subject: Re: [Patch] video: remove pointless comments in drivers/video/console/vgacon.c
-Message-Id: <4D36828C.5030601@redhat.com>
+From: Julia Lawall <julia@diku.dk>
+Date: Sun, 02 Jan 2011 14:27:42 +0000
+Subject: [PATCH] drivers/video/carminefb.c: improve error handling
+Message-Id: <Pine.LNX.4.64.1101021527220.10933@ask.diku.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1295416803-17651-1-git-send-email-amwang@redhat.com> <20110119060257.GA12205@linux-sh.org> <4D367FD6.1010006@redhat.com> <20110119061551.GB12205@linux-sh.org>
-In-Reply-To: <20110119061551.GB12205@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Yannick Heneault <yheneaul@matrox.com>, Matthew Garrett <mjg@redhat.com>, open@linux-sh.org, "\"list@linux-sh.org\"@zmta03.collab.prod.int.phx2.redhat.com:FRAMEBUFFER
-	LAYER" <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-于 2011年01月19日 14:15, Paul Mundt 写道:
-> On Wed, Jan 19, 2011 at 02:08:22PM +0800, Cong Wang wrote:
->> ??? 2011???01???19??? 14:02, Paul Mundt ??????:
->>> On Wed, Jan 19, 2011 at 02:00:02PM +0800, Amerigo Wang wrote:
->>>> Now vgacon_scrollback_startup() uses slab, not bootmem,
->>>> so that comment is obsolete, the rest are useless.
->>>>
->>>> Signed-off-by: WANG Cong<amwang@redhat.com>
->>>>
->>> If you're going to do this then at least follow through and do the rest
->>> of it. The comment is no longer applicable, but then neither is the
->>> __init_refok annotation. Killing off the comment explaining why something
->>> is (or was there) without killing off the thing that is referenced by the
->>> comment is not terribly productive.
->>
->> Isn't __init_refok already a clear sign of "silence modpost"?
->> Why need to comment it again?
->
-> __init_refok was to silence what was presumably an alloc_bootmem()
-> reference at the time that the slab allocations were not early enough to
-> satisfy the allocation, necessitating the use of bootmem. Since kmalloc
-> and friends became usable early enough and the bootmem allocation has
-> subsequently been dropped, there's no longer any need for the annotation.
->
-> ie, alloc_bootmem() itself is __init while vgacon_scrollback_startup() is
-> not, hence the modpost complaint.
+From: Julia Lawall <julia@diku.dk>
 
-Ah, I see, will remove '__init_refok' as well.
+This code had an error handling goto to the wrong place, a misplaced
+release_mem_region, and a duplicated release_mem_region.
 
-Thanks!
+The semantic match that finds the double release_mem_region is as follows:
+(http://coccinelle.lip6.fr/)
+
+// <smpl>
+@r@
+expression e1,e2,e3;
+position p1,p2,p3;
+@@
+release_mem_region@p1(e1, e2)@p3;
+... when != request_mem_region(e1,e2,e3)
+release_mem_region(e1, e2)@p2;
+
+@@
+expression e <= r.e1,e3;
+expression r.e1,e2;
+position r.p1,r.p2,r.p3,p!=r.p1;
+@@
+*release_mem_region(e1, e2)@p3;
+... when != e = e3
+*release_mem_region@p(e1, e2)@p2;// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+diff --git a/drivers/video/carminefb.c b/drivers/video/carminefb.c
+index 6b19136..caaa27d 100644
+--- a/drivers/video/carminefb.c
++++ b/drivers/video/carminefb.c
+@@ -654,7 +654,7 @@ static int __devinit carminefb_probe(struct pci_dev *dev,
+ 		printk(KERN_ERR "carminefb: Memory bar is only %d bytes, %d "
+ 				"are required.", carminefb_fix.smem_len,
+ 				CARMINE_TOTAL_DIPLAY_MEM);
+-		goto err_free_reg_mmio;
++		goto err_unmap_vregs;
+ 	}
+ 
+ 	if (!request_mem_region(carminefb_fix.smem_start,
+@@ -667,8 +667,6 @@ static int __devinit carminefb_probe(struct pci_dev *dev,
+ 			carminefb_fix.smem_len);
+ 	if (!hw->screen_mem) {
+ 		printk(KERN_ERR "carmine: Can't ioremap smem area.\n");
+-		release_mem_region(carminefb_fix.smem_start,
+-				carminefb_fix.smem_len);
+ 		goto err_reg_smem;
+ 	}
+ 
+@@ -710,7 +708,7 @@ err_deinit_hw:
+ err_unmap_screen:
+ 	iounmap(hw->screen_mem);
+ err_reg_smem:
+-	release_mem_region(carminefb_fix.mmio_start, carminefb_fix.mmio_len);
++	release_mem_region(carminefb_fix.smem_start, carminefb_fix.smem_len);
+ err_unmap_vregs:
+ 	iounmap(hw->v_regs);
+ err_free_reg_mmio:

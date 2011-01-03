@@ -1,214 +1,218 @@
-From: Heiko Schocher <hs@denx.de>
-Date: Wed, 26 Jan 2011 07:21:30 +0000
-Subject: [PATCH 3/4 v5] video, sm501: add OF binding to support SM501
-Message-Id: <1296026490-14665-1-git-send-email-hs@denx.de>
+From: daeinki <inki.dae@samsung.com>
+Date: Mon, 03 Jan 2011 01:48:38 +0000
+Subject: Re: [PATCH 3/5] S5PC110: add machine specific MIPI-DSI setup code.
+Message-Id: <4D212AF6.40907@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291451028-22532-1-git-send-email-hs@denx.de>
-In-Reply-To: <1291451028-22532-1-git-send-email-hs@denx.de>
+References: <1293535583-24789-1-git-send-email-inki.dae@samsung.com>
+	<013a01cba8b5$39d505c0$ad7f1140$%kim@samsung.com>
+In-Reply-To: <013a01cba8b5$39d505c0$ad7f1140$%kim@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Heiko Schocher <hs@denx.de>, linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org, Ben Dooks <ben@simtec.co.uk>, Vincent Sanders <vince@simtec.co.uk>, Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>, Paul Mundt <lethal@linux-sh.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-arm-kernel@lists.infradead.org
 
-- add binding to OF, compatible name "smi,sm501"
+Kukjin Kim 쓴 글:
+> InKi Dae wrote:
+>> Signed-off-by: Inki Dae <inki.dae@samsung.com>
+>> ---
+>>  arch/arm/mach-s5pv210/Kconfig      |    6 +++
+>>  arch/arm/mach-s5pv210/Makefile     |    1 +
+>>  arch/arm/mach-s5pv210/setup-mipi.c |   76
+>> ++++++++++++++++++++++++++++++++++++
+>>  3 files changed, 83 insertions(+), 0 deletions(-)
+>>  create mode 100644 arch/arm/mach-s5pv210/setup-mipi.c
+>>
+>> diff --git a/arch/arm/mach-s5pv210/Kconfig b/arch/arm/mach-s5pv210/Kconfig
+>> index 862f239..76da541 100644
+>> --- a/arch/arm/mach-s5pv210/Kconfig
+>> +++ b/arch/arm/mach-s5pv210/Kconfig
+>> @@ -53,6 +53,11 @@ config S5PV210_SETUP_SDHCI_GPIO
+>>  	help
+>>  	  Common setup code for SDHCI gpio.
+>>
+>> +config S5P_SETUP_MIPI_DSI
+> 
+> If this is for S5PV210, please use S5PV210_xxx as prefix. Or this is for S5P
+> SoCS, move into plat-s5p.
+> 
+> And as I know, this is _not_ only for MIPI DSI master...so need to re-name.
+> 
+Ok, moved to plat-s5p.
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-cc: linux-fbdev@vger.kernel.org
-cc: devicetree-discuss@ozlabs.org
-cc: Ben Dooks <ben@simtec.co.uk>
-cc: Vincent Sanders <vince@simtec.co.uk>
-cc: Samuel Ortiz <sameo@linux.intel.com>
-cc: linux-kernel@vger.kernel.org
-cc: Randy Dunlap <rdunlap@xenotime.net>
-cc: Paul Mundt <lethal@linux-sh.org>
+>> +	bool
+>> +	help
+>> +	  Common setup code for MIPI-DSI
+>> +
+>>  menu "S5PC110 Machines"
+>>
+>>  config MACH_AQUILA
+>> @@ -92,6 +97,7 @@ config MACH_GONI
+>>  	select S5PV210_SETUP_I2C2
+>>  	select S5PV210_SETUP_KEYPAD
+>>  	select S5PV210_SETUP_SDHCI
+>> +	select S5P_SETUP_MIPI_DSI
+> 
+> Is this really only for machine?
+> 
+>>  	help
+>>  	  Machine support for Samsung GONI board
+>>  	  S5PC110(MCP) is one of package option of S5PV210
+>> diff --git a/arch/arm/mach-s5pv210/Makefile
+> b/arch/arm/mach-s5pv210/Makefile
+>> index ff1a0db..638747c 100644
+>> --- a/arch/arm/mach-s5pv210/Makefile
+>> +++ b/arch/arm/mach-s5pv210/Makefile
+>> @@ -37,3 +37,4 @@ obj-$(CONFIG_S5PV210_SETUP_IDE)		+> setup-ide.o
+>>  obj-$(CONFIG_S5PV210_SETUP_KEYPAD)	+= setup-keypad.o
+>>  obj-$(CONFIG_S5PV210_SETUP_SDHCI)       += setup-sdhci.o
+>>  obj-$(CONFIG_S5PV210_SETUP_SDHCI_GPIO)	+= setup-sdhci-gpio.o
+>> +obj-$(CONFIG_S5P_SETUP_MIPI_DSI)	+= setup-mipi.o
+>> \ No newline at end of file
+>> diff --git a/arch/arm/mach-s5pv210/setup-mipi.c b/arch/arm/mach-
+>> s5pv210/setup-mipi.c
+>> new file mode 100644
+>> index 0000000..2cc8cd1
+>> --- /dev/null
+>> +++ b/arch/arm/mach-s5pv210/setup-mipi.c
+>> @@ -0,0 +1,76 @@
+>> +/* linux/arch/arm/plat-s5p/setup-mipi.c
+>> + *
+>> + * Samsung MIPI-DSI DPHY driver.
+>> + *
+>> + * Author: InKi Dae <inki.dae@samsung.com>
+>> + *
+>> + * This program is free software; you can redistribute it and/or
+>> + * modify it under the terms of the GNU General Public License as
+>> + * published by the Free Software Foundation; either version 2 of
+>> + * the License, or (at your option) any later version.
+>> + *
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
+>> + * GNU General Public License for more details.
+>> + *
+>> + * You should have received a copy of the GNU General Public License
+>> + * along with this program; if not, write to the Free Software
+>> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+>> + * MA 02111-1307 USA
+>> + */
+>> +#include <linux/kernel.h>
+>> +#include <linux/string.h>
+>> +#include <linux/io.h>
+>> +#include <linux/err.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/clk.h>
+>> +
+>> +#include <mach/map.h>
+>> +#include <mach/regs-clock.h>
+>> +
+>> +#include <plat/mipi-dsi.h>
+> 
+> Hmm...I didn't find this header in your previous patch.
+>
+previous patch??
 
----
-- changes since v1:
-  add Ben Dooks, Vincent Sanders and Samuel Ortiz to cc, as suggested from
-  Paul Mundt.
-- changes since v2:
-  add comments from Randy Dunlap:
-  - move parameter documentation to Documentation/fb/sm501.txt
-- changes since v3:
-  - rebased against v2.6.38-rc2
-  - split in 3 patches
-    - of support patch
-      - get rid of "#if defined(CONFIG_PPC_MPC52xx)" usage
-        hide this in DTS, as Paul suggested.
-    - i/o routine patch
-    - edid support patch
-- changes since v4
-  replace remaining CONFIG_PPC_MPC52xx with CONFIG_OF, as
-  it is no longer MPC52xx only.
-- changes since v5
-  free edid_data after its usage, as it is no longer needed,
-  suggested from Paul Mundt. Also fall back to default if
-  kmemdup(edid_data) fails.
-
-./scripts/checkpatch.pl 0003-video-sm501-add-OF-binding-to-support-SM501.patch
-total: 0 errors, 0 warnings, 132 lines checked
-
-0003-video-sm501-add-OF-binding-to-support-SM501.patch has no obvious style problems and is ready for submission.
-
- Documentation/powerpc/dts-bindings/sm501.txt |   34 +++++++++++++++++++++
- drivers/mfd/sm501.c                          |    9 +++++-
- drivers/video/sm501fb.c                      |   42 ++++++++++++++++++++++++--
- 3 files changed, 81 insertions(+), 4 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/sm501.txt
-
-diff --git a/Documentation/powerpc/dts-bindings/sm501.txt b/Documentation/powerpc/dts-bindings/sm501.txt
-new file mode 100644
-index 0000000..7d319fb
---- /dev/null
-+++ b/Documentation/powerpc/dts-bindings/sm501.txt
-@@ -0,0 +1,34 @@
-+* SM SM501
-+
-+The SM SM501 is a LCD controller, with proper hardware, it can also
-+drive DVI monitors.
-+
-+Required properties:
-+- compatible : should be "smi,sm501".
-+- reg : contain two entries:
-+    - First entry: System Configuration register
-+    - Second entry: IO space (Display Controller register)
-+- interrupts : SMI interrupt to the cpu should be described here.
-+- interrupt-parent : the phandle for the interrupt controller that
-+  services interrupts for this device.
-+
-+Optional properties:
-+- mode : select a video mode:
-+    <xres>x<yres>[-<bpp>][@<refresh>]
-+- edid : verbatim EDID data block describing attached display.
-+  Data from the detailed timing descriptor will be used to
-+  program the display controller.
-+- little-endian: availiable on big endian systems, to
-+  set different foreign endian.
-+- big-endian: availiable on little endian systems, to
-+  set different foreign endian.
-+
-+Example for MPC5200:
-+	display@1,0 {
-+		compatible = "smi,sm501";
-+		reg = <1 0x00000000 0x00800000
-+		       1 0x03e00000 0x00200000>;
-+		interrupts = <1 1 3>;
-+		mode = "640x480-32@60";
-+		edid = [edid-data];
-+	};
-diff --git a/drivers/mfd/sm501.c b/drivers/mfd/sm501.c
-index 558d5f3..df3702c 100644
---- a/drivers/mfd/sm501.c
-+++ b/drivers/mfd/sm501.c
-@@ -1377,7 +1377,7 @@ static int __devinit sm501_init_dev(struct sm501_devdata *sm)
- 			sm501_register_gpio(sm);
- 	}
- 
--	if (pdata->gpio_i2c != NULL && pdata->gpio_i2c_nr > 0) {
-+	if (pdata && pdata->gpio_i2c != NULL && pdata->gpio_i2c_nr > 0) {
- 		if (!sm501_gpio_isregistered(sm))
- 			dev_err(sm->dev, "no gpio available for i2c gpio.\n");
- 		else
-@@ -1422,6 +1422,7 @@ static int __devinit sm501_plat_probe(struct platform_device *dev)
- 
- 	sm->io_res = platform_get_resource(dev, IORESOURCE_MEM, 1);
- 	sm->mem_res = platform_get_resource(dev, IORESOURCE_MEM, 0);
-+
- 	if (sm->io_res = NULL || sm->mem_res = NULL) {
- 		dev_err(&dev->dev, "failed to get IO resource\n");
- 		ret = -ENOENT;
-@@ -1735,10 +1736,16 @@ static struct pci_driver sm501_pci_driver = {
- 
- MODULE_ALIAS("platform:sm501");
- 
-+static struct of_device_id __devinitdata of_sm501_match_tbl[] = {
-+	{ .compatible = "smi,sm501", },
-+	{ /* end */ }
-+};
-+
- static struct platform_driver sm501_plat_driver = {
- 	.driver		= {
- 		.name	= "sm501",
- 		.owner	= THIS_MODULE,
-+		.of_match_table = of_sm501_match_tbl,
- 	},
- 	.probe		= sm501_plat_probe,
- 	.remove		= sm501_plat_remove,
-diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
-index d60b2a2..92b001d 100644
---- a/drivers/video/sm501fb.c
-+++ b/drivers/video/sm501fb.c
-@@ -1729,6 +1729,15 @@ static int sm501fb_init_fb(struct fb_info *fb,
- 		FBINFO_HWACCEL_COPYAREA | FBINFO_HWACCEL_FILLRECT |
- 		FBINFO_HWACCEL_XPAN | FBINFO_HWACCEL_YPAN;
- 
-+#if defined(CONFIG_OF)
-+#ifdef __BIG_ENDIAN
-+	if (of_get_property(info->dev->parent->of_node, "little-endian", NULL))
-+		fb->flags |= FBINFO_FOREIGN_ENDIAN;
-+#else
-+	if (of_get_property(info->dev->parent->of_node, "big-endian", NULL))
-+		fb->flags |= FBINFO_FOREIGN_ENDIAN;
-+#endif
-+#endif
- 	/* fixed data */
- 
- 	fb->fix.type		= FB_TYPE_PACKED_PIXELS;
-@@ -1765,14 +1774,17 @@ static int sm501fb_init_fb(struct fb_info *fb,
- 			fb->var.xres_virtual = fb->var.xres;
- 			fb->var.yres_virtual = fb->var.yres;
- 		} else {
--			if (info->edid_data)
-+			if (info->edid_data) {
- 				ret = fb_find_mode(&fb->var, fb, fb_mode,
- 					fb->monspecs.modedb,
- 					fb->monspecs.modedb_len,
- 					&sm501_default_mode, default_bpp);
--			else
-+				/* edid_data is no longer needed, free it */
-+				kfree(info->edid_data);
-+			} else {
- 				ret = fb_find_mode(&fb->var, fb,
- 					   NULL, NULL, 0, NULL, 8);
-+			}
- 
- 			switch (ret) {
- 			case 1:
-@@ -1933,8 +1945,32 @@ static int __devinit sm501fb_probe(struct platform_device *pdev)
- 	}
- 
- 	if (info->pdata = NULL) {
--		dev_info(dev, "using default configuration data\n");
-+		int found = 0;
-+#if defined(CONFIG_OF)
-+		struct device_node *np = pdev->dev.parent->of_node;
-+		const u8 *prop;
-+		const char *cp;
-+		int len;
-+
- 		info->pdata = &sm501fb_def_pdata;
-+		if (np) {
-+			/* Get EDID */
-+			cp = of_get_property(np, "mode", &len);
-+			if (cp)
-+				strcpy(fb_mode, cp);
-+			prop = of_get_property(np, "edid", &len);
-+			if (prop && len = EDID_LENGTH) {
-+				info->edid_data = kmemdup(prop, EDID_LENGTH,
-+							  GFP_KERNEL);
-+				if (info->edid_data)
-+					found = 1;
-+			}
-+		}
-+#endif
-+		if (!found) {
-+			dev_info(dev, "using default configuration data\n");
-+			info->pdata = &sm501fb_def_pdata;
-+		}
- 	}
- 
- 	/* probe for the presence of each panel */
--- 
-1.7.3.4
+>> +#include <plat/regs-dsim.h>
+> 
+> Same.
+> 
+>> +
+>> +static int s5p_mipi_enable_d_phy(struct dsim_device *dsim, unsigned int
+>> enable)
+> 
+> Why need struct dsim_device in argument?
+> As I said, this is for MIPI DSI and MIPI CSI...right?
+> 
+>> +{
+>> +	unsigned int reg;
+>> +
+>> +	reg = readl(S5P_MIPI_CONTROL) & ~(1 << 0);
+> 
+> Please use __raw_readl here, because no need memory barrier between
+> operations.
+> 
+>> +	reg |= (enable << 0);
+>> +	writel(reg, S5P_MIPI_CONTROL);
+> 
+> Same.
+> 
+>> +
+>> +	return 0;
+> 
+> Always, return 0?
+> 
+> If enabled by MIPI DSI and MIPI CSI, how each IP can know other IP's MIPI
+> enalbling?
+> 
+ok, naming issue sould be considered more.
+hm, how about using "DSIM"? I think S5P_MIPI_DSI or MIPI_DSI is too long.
+>> +}
+>> +
+>> +static int s5p_mipi_enable_dsi_master(struct dsim_device *dsim,
+> 
+> Same.
+> 
+>> +	unsigned int enable)
+>> +{
+>> +	unsigned int reg;
+>> +
+>> +	reg = readl(S5P_MIPI_CONTROL) & ~(1 << 2);
+> 
+> Same.
+> 
+>> +	reg |= (enable << 2);
+>> +	writel(reg, S5P_MIPI_CONTROL);
+> 
+> Same.
+> 
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +int s5p_mipi_part_reset(struct dsim_device *dsim)
+> 
+> Do we really need argument, struct dsim_device?
+> 
+It doesn't. setup-mipi.c is specific to SoC platform.
+these functions should be registered to mipi-dsi platform data as 
+callbacks in other words, mipi-dsi driver calls them so according to 
+mipi-dsi master framework rule, I added dsim_device as argument.
+anyway, don't care.
+>> +{
+>> +	writel(S5P_MIPI_M_RESETN, S5P_MIPI_PHY_CON0);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +int s5p_mipi_init_d_phy(struct dsim_device *dsim)
+>> +{
+>> +	/**
+>> +	 * DPHY and Master block must be enabled at the system
+> initialization
+>> +	 * step before data access from/to DPHY begins.
+>> +	 */
+>> +	s5p_mipi_enable_d_phy(dsim, 1);
+>> +
+>> +	s5p_mipi_enable_dsi_master(dsim, 1);
+>> +
+>> +	return 0;
+>> +}
+>> --
+> 
+> I can't get these needs...I mean need to re-think this for support MIPI
+> DSI(M) and MIPI CSI(S).
+> Actually MIPI control is needed in both.
+> 
+I agree to your opinion.
+it would be corrected, "MIPI" -> "DSIM"
+> 
+> Thanks.
+> 
+> Best regards,
+> Kgene.
+> --
+> Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+> SW Solution Development Team, Samsung Electronics Co., Ltd.
+> 
+> 
 

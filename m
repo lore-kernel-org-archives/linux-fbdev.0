@@ -1,83 +1,59 @@
-From: Joe Jin <joe.jin@oracle.com>
-Date: Fri, 07 Jan 2011 10:20:54 +0000
-Subject: [patch] xenfb: fix potential memory leak
-Message-Id: <4D26E906.3080608@oracle.com>
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Date: Mon, 03 Jan 2011 16:34:18 +0000
+Subject: Re: [Xen-devel] Re: [patch] xenfb: fix xenfb suspend/resume race
+Message-Id: <20110103163418.GA14102@dumpdata.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20101230125616.GA31537@joejin-pc.cn.oracle.com>
+ <20101230164051.GC24313@dumpdata.com>
+ <4D1D2A2D.80206@oracle.com>
+In-Reply-To: <4D1D2A2D.80206@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: jeremy@goop.org, ian.campbell@citrix.com, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, xen-devel@lists.xensource.com, gurudas.pai@oracle.com, guru.anbalagane@oracle.com, greg.marsden@oracle.com, joe.jin@oracle.com, linux-kernel@vger.kernel.org, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+To: Joe Jin <joe.jin@oracle.com>
+Cc: jeremy@goop.org, xen-devel@lists.xensource.com, ian.campbell@citrix.com, gurudas.pai@oracle.com, guru.anbalagane@oracle.com, greg.marsden@oracle.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 
-Hi,
+> > I am unclear from your description whether the patch fixes
+> > the problem (I would presume so). Or does it take a long time
+> > to hit this race?
+> > 
+> Yes, more than 100 migrations. we hit this issue around 3 times.
 
-This patch fix potential memory leak when xenfb connect backend failed.
-Thanks for Ian's review and comments.
+OK, so you are still trying to find the culprit.
 
-Signed-off-by: Joe Jin <joe.jin@oracle.com>
-Tested-by: Gurudas Pai <gurudas.pai@oracle.com>
-Acked-by: Ian Campbell <ian.campbell@citrix.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Did you look at this patch from Ian:
 
----
-  xen-fbfront.c |   17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+https://patchwork.kernel.org/patch/403192/
 
-diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
-index dc72563..953334a 100644
---- a/drivers/video/xen-fbfront.c
-+++ b/drivers/video/xen-fbfront.c
-@@ -561,26 +561,24 @@ static void xenfb_init_shared_page(struct xenfb_info *info,
- static int xenfb_connect_backend(struct xenbus_device *dev,
- 				 struct xenfb_info *info)
- {
--	int ret, evtchn;
-+	int ret, evtchn, irq;
- 	struct xenbus_transaction xbt;
- 
- 	ret = xenbus_alloc_evtchn(dev, &evtchn);
- 	if (ret)
- 		return ret;
--	ret = bind_evtchn_to_irqhandler(evtchn, xenfb_event_handler,
-+	irq = bind_evtchn_to_irqhandler(evtchn, xenfb_event_handler,
- 					0, dev->devicetype, info);
--	if (ret < 0) {
-+	if (irq < 0) {
- 		xenbus_free_evtchn(dev, evtchn);
- 		xenbus_dev_fatal(dev, ret, "bind_evtchn_to_irqhandler");
--		return ret;
-+		return irq;
- 	}
--	info->irq = ret;
--
-  again:
- 	ret = xenbus_transaction_start(&xbt);
- 	if (ret) {
- 		xenbus_dev_fatal(dev, ret, "starting transaction");
--		return ret;
-+		goto unbind_irq;
- 	}
- 	ret = xenbus_printf(xbt, dev->nodename, "page-ref", "%lu",
- 			    virt_to_mfn(info->page));
-@@ -602,15 +600,18 @@ static int xenfb_connect_backend(struct xenbus_device *dev,
- 		if (ret = -EAGAIN)
- 			goto again;
- 		xenbus_dev_fatal(dev, ret, "completing transaction");
--		return ret;
-+		goto unbind_irq;
- 	}
- 
- 	xenbus_switch_state(dev, XenbusStateInitialised);
-+	info->irq = irq;
- 	return 0;
- 
-  error_xenbus:
- 	xenbus_transaction_end(xbt, 1);
- 	xenbus_dev_fatal(dev, ret, "writing xenstore");
-+ unbind_irq:
-+	unbind_from_irqhandler(irq, info);
- 	return ret;
- }
- 
+?
+> 
+> I dumped vmcore when guest crashed, from vmcore everything
+> looked good, fb_info, xenfb_info and so on.
+
+And the event channels are correct?
+
+.. snip..
+> diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+> index ac7b42f..4cfb5e2 100644
+> --- a/drivers/xen/events.c
+> +++ b/drivers/xen/events.c
+> @@ -175,6 +175,8 @@ static struct irq_info *info_for_irq(unsigned irq)
+>  
+>  static unsigned int evtchn_from_irq(unsigned irq)
+>  {
+> +	if (unlikely(irq < 0 || irq >= nr_irqs))
+> +		return 0;
+
+You could insert a WARN_ON here to see see if you get this during your
+migration process.
+
+Or use xen_raw_printk in case the guest is hung for good.
+
+>  	return info_for_irq(irq)->evtchn;
+>  }
+>  
+> 
+> _______________________________________________
+> Xen-devel mailing list
+> Xen-devel@lists.xensource.com
+> http://lists.xensource.com/xen-devel

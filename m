@@ -1,47 +1,45 @@
-From: "Janorkar, Mayuresh" <mayur@ti.com>
-Date: Tue, 11 Jan 2011 13:12:27 +0000
-Subject: RE: [PATCH 1/2] Cleaning up modedb file
-Message-Id: <EAF47CD23C76F840A9E7FCE10091EFAB0323401F97@dbde02.ent.ti.com>
+From: Sedat Dilek <sedat.dilek@googlemail.com>
+Date: Mon, 03 Jan 2011 01:31:29 +0000
+Subject: [PATCH] gx1fb: Fix section mismatch derived from gx1fb_driver variable
+Message-Id: <1294018289-3911-1-git-send-email-sedat.dilek@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <EAF47CD23C76F840A9E7FCE10091EFAB03232B6B12@dbde02.ent.ti.com>
-In-Reply-To: <EAF47CD23C76F840A9E7FCE10091EFAB03232B6B12@dbde02.ent.ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-geode@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Sedat Dilek <sedat.dilek@gmail.com>
 
-Hi Paul,
+From my build.log:
 
-The patch which I received was having tabs not spaces.
+WARNING: drivers/video/geode/gx1fb.o(.data+0x54): Section mismatch in reference from the variable gx1fb_driver to the function .init.text:gx1fb_probe()
+The variable gx1fb_driver references
+the function __init gx1fb_probe()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
 
-I have seen some archives in which patches can also sent as an email attachment.
+This patch fixes the warning.
 
-Can send this patch as an attachment?
-(This particular being a special case.)
+Tested with linux-next (next-20101231)
 
--Thanks,
-Mayuresh
+Signed-off-by: Sedat Dilek <sedat.dilek@gmail.com>
+---
+ drivers/video/geode/gx1fb_core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> -----Original Message-----
-> From: Paul Mundt [mailto:lethal@linux-sh.org]
-> Sent: Thursday, January 06, 2011 12:26 PM
-> To: Janorkar, Mayuresh
-> Cc: linux-fbdev@vger.kernel.org
-> Subject: Re: [PATCH 1/2] Cleaning up modedb file
-> 
-> On Mon, Jan 03, 2011 at 04:31:38PM +0530, Janorkar, Mayuresh wrote:
-> > A part of file: drivers/video/modedb.c was not as per the coding
-> guidelines.
-> >
-> > The cleanup includes:
-> > 1) Converting spcaes to tabs
-> > 2) Adding spaces on either sides of "|" operator
-> >
-> > Signed-off-by: Mayuresh Janorkar <mayur@ti.com>
-> > ---
-> >  drivers/video/modedb.c |  316 ++++++++++++++++++++---------------------
-> -------
-> >  1 files changed, 134 insertions(+), 182 deletions(-)
-> >
-> The irony here is that your mailer has in turn converted your tabs back
-> to spaces, so it doesn't apply. :-)
+diff --git a/drivers/video/geode/gx1fb_core.c b/drivers/video/geode/gx1fb_core.c
+index c6b554f..9fdb115 100644
+--- a/drivers/video/geode/gx1fb_core.c
++++ b/drivers/video/geode/gx1fb_core.c
+@@ -437,7 +437,7 @@ static struct pci_device_id gx1fb_id_table[] = {
+ 
+ MODULE_DEVICE_TABLE(pci, gx1fb_id_table);
+ 
+-static struct pci_driver gx1fb_driver = {
++static struct pci_driver gx1fb_driver __refdata = {
+ 	.name		= "gx1fb",
+ 	.id_table	= gx1fb_id_table,
+ 	.probe		= gx1fb_probe,
+-- 
+1.7.4.rc0
+

@@ -1,28 +1,80 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Wed, 12 Jan 2011 06:01:33 +0000
-Subject: Re: [PATCH 1/2 v2] Cleaning up modedb file
-Message-Id: <20110112060133.GD2350@linux-sh.org>
+From: daeinki <inki.dae@samsung.com>
+Date: Mon, 03 Jan 2011 02:08:52 +0000
+Subject: Re: [PATCH 5/5] S5PC110: add MIPI-DSI based sample lcd panel driver.
+Message-Id: <4D212FB4.7090505@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <EAF47CD23C76F840A9E7FCE10091EFAB032340206C@dbde02.ent.ti.com>
-In-Reply-To: <EAF47CD23C76F840A9E7FCE10091EFAB032340206C@dbde02.ent.ti.com>
+References: <1293535595-24861-1-git-send-email-inki.dae@samsung.com>
+	<014101cba8b8$06318ab0$1294a010$%kim@samsung.com>
+In-Reply-To: <014101cba8b8$06318ab0$1294a010$%kim@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-arm-kernel@lists.infradead.org
 
-On Tue, Jan 11, 2011 at 07:56:32PM +0530, Janorkar, Mayuresh wrote:
-> From dc070372a63c83b579259938edbed6307dfd7613 Mon Sep 17 00:00:00 2001
-> From: Mayuresh Janorkar <mayur@ti.com>
-> Date: Tue, 11 Jan 2011 19:54:03 +0530
-> Subject: [PATCH 1/2 v2] Cleaning up modedb file
+Kukjin Kim 쓴 글:
+> Inki Dae wrote:
+>> this patch addes MIPI-DSI based sample panel driver.
+>> to write MIPI-DSI based lcd panel driver, you can refer to
+>> this sample driver.
+>>
+>> Signed-off-by: Inki Dae <inki.dae@samsung.com>
+>> ---
+>>  drivers/video/Kconfig           |    7 ++
+>>  drivers/video/Makefile          |    1 +
+>>  drivers/video/s5p_mipi_sample.c |  220
+>> +++++++++++++++++++++++++++++++++++++++
+>>  3 files changed, 228 insertions(+), 0 deletions(-)
+>>  create mode 100644 drivers/video/s5p_mipi_sample.c
+>>
+>> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+>> index aa305c5..325ce86 100644
+>> --- a/drivers/video/Kconfig
+>> +++ b/drivers/video/Kconfig
+>> @@ -2003,6 +2003,13 @@ config S5P_MIPI_DSI
+>>  	---help---
+>>  	  This enables support for MIPI-DSI device.
+>>
+>> +config S5P_MIPI_SAMPLE
+>> +	tristate "Samsung SoC MIPI-DSI based sample driver."
+>> +	depends on S5P_MIPI_DSI && BACKLIGHT_LCD_SUPPORT
 > 
-> A part of file: drivers/video/modedb.c was not as per the coding guidelines.
+> Do we really need SAMPLE driver?...
+> And is this MIPI SAMPLE not MIPI DSIM sample?
 > 
-> The cleanup includes:
-> 1) Converting spcaes to tabs
-> 2) Adding spaces on either sides of "|" operator
-> 
-> Signed-off-by: Mayuresh Janorkar <mayur@ti.com>
+I added this one for that someone who uses my mipi-dsi driver could 
+understand my driver easily. it is just for reference driver.
+this sample driver has some problem?
 
-I'm still not sure I really see the point, but it doesn't really hurt
-anything, so I've applied it.
+>> +	default n
+>> +	---help---
+>> +	  This enables support for MIPI-DSI based sample driver.
+>> +
+>>  config FB_NUC900
+>>          bool "NUC900 LCD framebuffer support"
+>>          depends on FB && ARCH_W90X900
+>> diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+>> index f4baed6..c8ac591 100644
+>> --- a/drivers/video/Makefile
+>> +++ b/drivers/video/Makefile
+>> @@ -117,6 +117,7 @@ obj-$(CONFIG_FB_S3C)		  += s3c-fb.o
+>>  obj-$(CONFIG_FB_S3C2410)	  += s3c2410fb.o
+>>  obj-$(CONFIG_S5P_MIPI_DSI)	  += s5p_mipi_dsi.o s5p_mipi_dsi_common.o \
+>>      					s5p_mipi_dsi_lowlevel.o
+>> +obj-$(CONFIG_S5P_MIPI_SAMPLE)		+= s5p_mipi_sample.o
+>>  obj-$(CONFIG_FB_FSL_DIU)	  += fsl-diu-fb.o
+>>  obj-$(CONFIG_FB_COBALT)           += cobalt_lcdfb.o
+>>  obj-$(CONFIG_FB_PNX4008_DUM)	  += pnx4008/
+> 
+> (snip)
+> 
+> Happy New Year!
+> Thanks.
+> 
+> Best regards,
+> Kgene.
+> --
+> Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+> SW Solution Development Team, Samsung Electronics Co., Ltd.
+> 
+> 
+

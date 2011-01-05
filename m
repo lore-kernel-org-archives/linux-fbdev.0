@@ -1,45 +1,32 @@
-From: Axel Lin <axel.lin@gmail.com>
-Date: Fri, 21 Jan 2011 11:18:06 +0000
-Subject: [PATCH] video: pxa168fb: remove a redundant pxa168fb_check_var call
-Message-Id: <1295608686.3976.9.camel@phoenix>
+From: daeinki <inki.dae@samsung.com>
+Date: Wed, 05 Jan 2011 10:31:32 +0000
+Subject: [PATCH 0/2] add Samsung SoC based MIPI-DSI support.
+Message-Id: <4D244884.70204@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Lennert Buytenhek <buytenh@marvell.com>, Green Wan <gwan@marvell.com>, Eric Miao <eric.y.miao@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Haojian Zhuang <haojian.zhuang@marvell.com>, linux-fbdev@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>Lennert Buytenhek <buytenh@marvell.com>Green Wan <gwan@marvell.com>Eric Miao <eric.y.miao@gmail.com>Marek Vasut <marek.vasut@gmail.com>Haojian Zhuang <haojian.zhuang@marvell.com>linux-fbdev@vger.kernel.orgPaul Mundt <lethal@linux-sh.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Current implementation calls pxa168fb_check_var twice in pxa168fb_probe.
+Hello, all.
 
-Signed-off-by: Axel Lin <axel.lin@gmail.com>
----
- drivers/video/pxa168fb.c |    6 +-----
- 1 files changed, 1 insertions(+), 5 deletions(-)
+S5PC110 and S5PC210 SoC platform have one or two MIPI-DSI controller.
+MIPI-DSI controller can be used to connect MIPI-DSI based LCD Panel.
+this patch adds MIPI-DSI controller driver.
 
-diff --git a/drivers/video/pxa168fb.c b/drivers/video/pxa168fb.c
-index cea6403..35f61dd 100644
---- a/drivers/video/pxa168fb.c
-+++ b/drivers/video/pxa168fb.c
-@@ -701,16 +701,12 @@ static int __devinit pxa168fb_probe(struct platform_device *pdev)
- 	 */
- 	pxa168fb_init_mode(info, mi);
- 
--	ret = pxa168fb_check_var(&info->var, info);
--	if (ret)
--		goto failed_free_fbmem;
--
- 	/*
- 	 * Fill in sane defaults.
- 	 */
- 	ret = pxa168fb_check_var(&info->var, info);
- 	if (ret)
--		goto failed;
-+		goto failed_free_fbmem;
- 
- 	/*
- 	 * enable controller clock
--- 
-1.7.0.4
+to use this driver, MIPI-DSI based LCD panel driver have to register
+mipi_dsim_lcd_driver object to MIPI-DSI driver and then when MIPI-DSI
+driver is probed, probe callback of LCD panel driver registered would be
+called.
 
+this patch includes just only MIPI-DSI driver because now mainline
+kernel has no any machine support with MIPI-DSI based LCD panel so this
+driver has been tested locally. I will have patch work for it and send
+it including machine specific codes in the future.
 
+The patch series contains:
 
+[PATCH 1/2] s5pc110: add clock gate for MIPI-DSI controller.
+[PATCH 2/2] s5pc110: add MIPI-DSI controller driver.
+
+thank you.

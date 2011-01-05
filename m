@@ -1,46 +1,57 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 05 Jan 2011 20:37:41 +0000
+From: Alex Buell <alex.buell@munted.org.uk>
+Date: Wed, 05 Jan 2011 21:13:42 +0000
 Subject: Re: Using s3virge card in Sun Blade 2000
-Message-Id: <AANLkTimW0xQ1F1d-_=jP_QKyQH=Yy6FZUbGD0Cm4JaBO@mail.gmail.com>
+Message-Id: <1294262022.24378.2.camel@lithium>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1294072336.17576.7.camel@lithium>
-	<20110103.105827.112602895.davem@davemloft.net>
-In-Reply-To: <20110103.105827.112602895.davem@davemloft.net>
+References: <1294086801.17576.14.camel@lithium>
+	 <20110103.123939.02282416.davem@davemloft.net>
+	 <1294090573.17576.16.camel@lithium>
+	 <20110105.110705.104043006.davem@davemloft.net>
+In-Reply-To: <20110105.110705.104043006.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: David Miller <davem@davemloft.net>
-Cc: alex.buell@munted.org.uk, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Jan 3, 2011 at 19:58, David Miller <davem@davemloft.net> wrote:
-> From: Alex Buell <alex.buell@munted.org.uk>
-> Date: Mon, 03 Jan 2011 16:32:16 +0000
->
->> I'm aware the s3fb driver has big endian issues, I can help fix those
->> issues so I can get the card working. Or in other words, I'd welcome
->> advice on how to proceed with this.
->
-> It's not endian issues, this driver has other problems.
->
-> It uses the VGA register accessors with a NULL regbase, which is not
-> going to work on sparc64.
->
-> It needs to access the VGA register space relative to the I/O space
-> of the PCI controller domain it is behind.
->
-> Probably if you replace the NULL values passes to vga_r*() and
-> vga_w*() with the I/O space resource base of the chip (should be
-> resource "1") it might work.
+On Wed, 2011-01-05 at 11:07 -0800, David Miller wrote:
+> > Those are 32 bit addresses, so I suppose I should be getting the
+> base
+> > address for the registers accesses from region 1, right? 
+> 
+> Actually, I take back what I said earlier.  Region 1 is a Memory
+> region not an I/O region.
+> 
+> It looks like you'll have to find a way to get at the implicit
+> I/O space for the PCI domain this framebuffer is behind and
+> construct the implicit VGA addresses by hand.
+> 
+> There is a way to do this, via pcibios_bus_to_resource().  You could
+> do something like:
+> 
+> struct s3fb_info {
+>  ...
+>         void __iomem *vga_iobase;
+>  ...
+> static int __devinit s3_pci_probe(struct pci_dev *dev, const struct
+> pci_device_id *id)
+> {
+>         struct pci_bus_region bus_reg;
+>         struct resource vga_res;
+>  ...
+>         bus_reg.start = 0;
+>         bus_reg.end = 64 * 1024;
+> 
+>         vga_res.flags = IORESOURCE_IO;
+> 
+>         pcibios_bus_to_resource(dev, &bus_reg, &vga_res);
+> 
+>         par->vga_iobase = (void __iomem *) vga_res.start;
+> 
+> Then replace all NULL vga_*() initial arguments in the driver
+> with par->vga_iobase. 
 
-Probably s3fb also relies on a card having been initialized by the VGA BIOS.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+No wonder it was crashing, there was nothing to access with region 1! I
+will do as you suggest, and see if it works. Thank you!
+-- 
+Tactical Nuclear Kittens

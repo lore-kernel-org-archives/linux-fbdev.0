@@ -1,99 +1,39 @@
-From: James Hogan <james@albanarts.com>
-Date: Wed, 12 Jan 2011 00:43:19 +0000
-Subject: Re: Recursive lock in fbcon after unblank and modelist change
-Message-Id: <20110112004319.GA24367@gandalf>
+From: Inki Dae <inki.dae@samsung.com>
+Date: Wed, 05 Jan 2011 10:34:50 +0000
+Subject: [PATCH 1/2] s5pc110: add clock gate for MIPI-DSI controller.
+Message-Id: <1294223690-31860-1-git-send-email-inki.dae@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <AANLkTinpmkgRCk_NHBFTWcoMs5gPtqgxxBP0W3wQYBGE@mail.gmail.com>
-In-Reply-To: <AANLkTinpmkgRCk_NHBFTWcoMs5gPtqgxxBP0W3wQYBGE@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-CC'ing lkml in hopes that somebody might be able to answer my questions:
+the clock gate for MIPI-DSI controller is placed at CLK_GATE_IP1[2]
+so it adds a clock object to clock framework for MIPI-DSI clock gating.
 
-On Fri, Jan 07, 2011 at 12:55:09PM +0000, James Hogan wrote:
-> Hi,
-> 
-> I'm hitting the following recursive locking problem when unblanking
-> the framebuffer (echoing 3 then 0 to /sys/class/graphics/fb0/blank).
-> 
-> Basically this is what's happening:
-> * the fb_blank function sends the blank notification
-> * fbcon gets the blank notification, and calls fbcon_switch
-> * fbcon_switch calls fb_set_var
-> * fb_set_var actually makes a change, which triggers another
-> notification (mode change), which tries to lock fb_notifier_list.rwsem
-> again, which triggers the lockdep warning (and presumably potentially
-> a deadlock).
-> 
-> The reason fb_set_var makes a change is because the mode list has been
-> updated since the last mode change, so the current mode is effectively
-> out of date. E.g. this could be done by writing to
-> /sys/class/graphics/fb0/modes, or in my case an HDMI driver updates
-> the modelist on a monitor hotplug event after reading the EDID in the
-> same way as the sysfs interface.
-> 
-> So, a few questions:
-> (1) Is this situation a valid situation, where the modelist has been
-> overwritten but current mode left unchanged?
-> (2) If (1), any ideas how the recursive locking situation should be resolved?
-> (3) If not (1), should updating the modelist using sysfs (and
-> similarly on a monitor hotplug event), also update the current mode to
-> the nearest mode in the list (fb_new_modelist would seem an
-> appropriate place)?
-> 
-> Thanks
-> James
-> 
-> ======================> [ INFO: possible recursive locking detected ]
-> 2.6.37-rc7+ #1435
-> ---------------------------------------------
-> sh/382 is trying to acquire lock:
->  ((fb_notifier_list).rwsem){.+.+.+}, at: [<40040a60>]
-> ___blocking_notifier_call_chain+0x34/0x80
-> 
-> but task is already holding lock:
->  ((fb_notifier_list).rwsem){.+.+.+}, at: [<40040a60>]
-> ___blocking_notifier_call_chain+0x34/0x80
-> 
-> other info that might help us debug this:
-> 3 locks held by sh/382:
->  #0:  (&buffer->mutex){+.+.+.}, at: [<400e8ab0>] _sysfs_write_file+0x38/0x1a4
->  #1:  (s_active#13){.+.+.+}, at: [<400e8ba0>] _sysfs_write_file+0x128/0x1a4
->  #2:  ((fb_notifier_list).rwsem){.+.+.+}, at: [<40040a60>]
-> ___blocking_notifier_call_chain+0x34/0x80
-> 
-> stack backtrace:
-> 
-> Call trace:
-> [<40003b1c>] _show_stack+0x68/0x7c
-> [<40003b44>] _dump_stack+0x14/0x28
-> [<4004f360>] _validate_chain+0x1170/0x137c
-> [<4004f9dc>] ___lock_acquire+0x470/0xc44
-> [<4005020c>] _lock_acquire+0x5c/0x84
-> [<40238204>] _down_read+0x48/0x64
-> [<40040a5c>] ___blocking_notifier_call_chain+0x30/0x80
-> [<40040ac0>] _blocking_notifier_call_chain+0x14/0x28
-> [<401332ac>] _fb_notifier_call_chain+0x1c/0x30
-> [<40134894>] _fb_set_var+0x170/0x324
-> [<40141e98>] _fbcon_switch+0x1b8/0x5a4
-> [<401635d4>] _redraw_screen+0x100/0x268
-> [<401424bc>] _fbcon_blank+0x238/0x2e0
-> [<40163834>] _do_unblank_screen+0xf8/0x200
-> [<40140aa8>] _fbcon_event_notify+0xae0/0xae8
-> [<40040608>] _notifier_call_chain+0x48/0x94
-> [<40040a74>] ___blocking_notifier_call_chain+0x48/0x80
-> [<40040ac0>] _blocking_notifier_call_chain+0x14/0x28
-> [<401332ac>] _fb_notifier_call_chain+0x1c/0x30
-> [<40133938>] _fb_blank+0x7c/0xa8
-> [<40139964>] _store_blank+0x50/0x84
-> [<401739ec>] _dev_attr_store+0x20/0x48
-> [<400e8bc0>] _sysfs_write_file+0x148/0x1a4
-> [<4009180c>] _vfs_write+0xec/0x194
-> [<40092168>] _sys_write+0x40/0x90
-> [<4000460c>] _switch_handler+0x110/0x170
-> [<40001098>] ___TBIBoingVec+0xc/0x10
-> 
-> INFO: lockdep is turned off.
+Signed-off-by: Inki Dae <inki.dae@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ arch/arm/mach-s5pv210/clock.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-s5pv210/clock.c b/arch/arm/mach-s5pv210/clock.c
+index dab6ef3..a8d5235 100644
+--- a/arch/arm/mach-s5pv210/clock.c
++++ b/arch/arm/mach-s5pv210/clock.c
+@@ -365,6 +365,12 @@ static struct clk init_clocks_disable[] = {
+ 		.enable		= s5pv210_clk_ip1_ctrl,
+ 		.ctrlbit	= (1<<0),
+ 	}, {
++		.name		= "dsim",
++		.id		= -1,
++		.parent		= &clk_hclk_dsys.clk,
++		.enable		= s5pv210_clk_ip1_ctrl,
++		.ctrlbit	= (1<<2),
++	}, {
+ 		.name		= "cfcon",
+ 		.id		= 0,
+ 		.parent		= &clk_hclk_psys.clk,
+-- 
+1.7.0.4
+

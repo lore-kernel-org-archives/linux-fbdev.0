@@ -1,38 +1,20 @@
-From: David Miller <davem@davemloft.net>
-Date: Tue, 11 Jan 2011 23:49:03 +0000
-Subject: [PATCH 1/22] svga: Use proper VGA register name macros in
-Message-Id: <20110111.154903.129760880.davem@davemloft.net>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Thu, 06 Jan 2011 06:44:28 +0000
+Subject: Re: [PATCH v3] video: imxfb: Fix the maximum value for yres
+Message-Id: <20110106064428.GC15340@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1293193704-2855-1-git-send-email-fabio.estevam@freescale.com>
+In-Reply-To: <1293193704-2855-1-git-send-email-fabio.estevam@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
+On Fri, Dec 24, 2010 at 10:28:24AM -0200, Fabio Estevam wrote:
+> MX27 and MX25 have 10 bits in the YMAX field of LCDC Size Register.
+> 
+> Fix the maximum value for yres.
+> 
+> Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
 
-Instead of magic register location constants.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- include/linux/svga.h |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/svga.h b/include/linux/svga.h
-index c59a51a..3fc52cb 100644
---- a/include/linux/svga.h
-+++ b/include/linux/svga.h
-@@ -69,9 +69,9 @@ struct svga_pll {
- 
- static inline void svga_wattr(u8 index, u8 data)
- {
--	inb(0x3DA);
--	outb(index, 0x3C0);
--	outb(data, 0x3C0);
-+	inb(VGA_IS1_RC);
-+	outb(index, VGA_ATT_IW);
-+	outb(data, VGA_ATT_W);
- }
- 
- /* Write a value to a sequence register with a mask */
--- 
-1.7.3.4
-
+Applied, thanks.

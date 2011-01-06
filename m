@@ -1,29 +1,28 @@
-From: Samuel Ortiz <sameo@linux.intel.com>
-Date: Mon, 31 Jan 2011 10:50:31 +0000
-Subject: Re: [PATCH 1/4 v4] video, sm501: add I/O functions for use on
-Message-Id: <20110131105030.GD5954@sortiz-mobl>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Thu, 06 Jan 2011 07:26:58 +0000
+Subject: Re: [PATCH 4/9] fb: export fb mode db table
+Message-Id: <20110106072658.GB15914@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291451028-22532-1-git-send-email-hs@denx.de>
- <1295863040-11086-1-git-send-email-hs@denx.de>
-In-Reply-To: <1295863040-11086-1-git-send-email-hs@denx.de>
+References: <1291902441-24712-1-git-send-email-s.hauer@pengutronix.de>
+	<1291902441-24712-5-git-send-email-s.hauer@pengutronix.de>
+In-Reply-To: <1291902441-24712-5-git-send-email-s.hauer@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Heiko Schocher <hs@denx.de>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org, Ben Dooks <ben@simtec.co.uk>, Vincent Sanders <vince@simtec.co.uk>, linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>, Paul Mundt <lethal@linux-sh.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Hi Heiko,
+On Thu, Dec 09, 2010 at 02:47:16PM +0100, Sascha Hauer wrote:
+> The different modes can be useful for drivers. Currently there is
+> no way to expose the modes to sysfs, so export them.
+> 
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 
-On Mon, Jan 24, 2011 at 10:57:20AM +0100, Heiko Schocher wrote:
-> - add read/write functions for using this driver
->   also on powerpc plattforms
-Not sure whose tree this is going through. Probably Paul's one though.
-The mfd part looks fine to me, please add my:
-Acked-by: Samuel Ortiz <sameo@linux.intel.com>
+I'll admit I don't really like the idea of exposing the modedb to drivers
+in this way, but given that we're already doing it for the vesa and cea
+modes, allowing drivers to copy ranges in to their modelist from the
+standard db is probably something we can live with.
 
-Cheers,
-Samuel.
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+The mode list dumping is basically a blatant sysfs abuse already though,
+and it would be much cleaner simply to back the mode store with an
+fb_find/try_mode() pair that grovels all the right places in addition to
+doing a pass over the fb_info's modelist.

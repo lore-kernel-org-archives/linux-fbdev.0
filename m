@@ -1,33 +1,29 @@
 From: Paul Mundt <lethal@linux-sh.org>
-Date: Wed, 05 Jan 2011 08:33:18 +0000
-Subject: Re: [PATCH 0/2 v2] runtime PM for the sh-mobile MIPI DSI driver
-Message-Id: <20110105083318.GE23889@linux-sh.org>
+Date: Thu, 06 Jan 2011 06:35:32 +0000
+Subject: Re: [PATCH] Corrected matroxfb video option in comments and kernel config help.
+Message-Id: <20110106063532.GA15340@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1012271115470.669@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1012271115470.669@axis700.grange>
+References: <AANLkTikqCduraRjVvtaU3u1ikQyR-3GryovdTMe-z5HD@mail.gmail.com>
+In-Reply-To: <AANLkTikqCduraRjVvtaU3u1ikQyR-3GryovdTMe-z5HD@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Mon, Dec 27, 2010 at 11:23:02AM +0100, Guennadi Liakhovetski wrote:
-> This is v2 of the patch series, implementing runtime-pm for the sh-mobile 
-> mipi-dsi driver and removing the static clock configuration on the AP4EVB 
-> board.
+On Tue, Dec 28, 2010 at 11:03:50AM +0100, Vicente Jim?nez wrote:
+> From 81561bbf722613794c77cd03c537f4139b2d0976 Mon Sep 17 00:00:00 2001
+> From: Vicente Jimenez Aguilar <googuy@gmail.com>
+> Date: Tue, 28 Dec 2010 11:35:24 +0100
+> Subject: [PATCH 2/2] Corrected matroxfb video option in comments and kernel config help.
+> 
+> Configuring the kernel I found that the Matrox frame buffer help has a
+> different option than the one in the docs (Documentation/fb/matroxfb.txt).
+> I decided to check the source code to see what is the correct option.
+> drivers/video/matrox/matroxfb_base.c has a lot of comments that sugests
+> that the video option is "matrox".
+> However in line 2452 of this same file you have:
+> fb_get_options("matroxfb", &option)
+> 
+> video=matroxfb:XXX is the correct video option not video=matrox:XXX.
 
-On Wed, Dec 29, 2010 at 09:12:18AM +0100, Guennadi Liakhovetski wrote:
-> These patches teach the sh-mobile MIPI DSI driver to use platform data to 
-> support different SoC with register layout variations and different LCD 
-> panels. Two of these patches affect the actual driver and one - currently 
-> its only user - the ap4evb board. To avoid compilation and run-time 
-> regressions we have to first add new gields to the header, then set them 
-> in the affected platform, and only then modify the driver to use them. 
-> This produces an unpleasant dependency chain. Alternatively, all these 
-> patches could be merged into one, but that would span multiple subsystems. 
-> I leave it to the maintainer to decide:)
-
-I've merged both of these patch series in to the common/fdev-mipi branch
-in the SH/R-Mobile tree and then merged that topic branch in to the fbdev
-tree. Both needed a bit of mangling to merge on top of Magnus's earlier
-patches, so you may want to verify that I haven't broken anything
-accidentally.
+Missing Signed-off-by.

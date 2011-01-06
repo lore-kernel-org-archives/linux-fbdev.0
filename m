@@ -1,35 +1,101 @@
-From: "Luck, Tony" <tony.luck@intel.com>
-Date: Thu, 27 Jan 2011 18:56:39 +0000
-Subject: RE: [PATCH 0/2][concept RFC] x86: BIOS-save kernel log to disk	upon
-Message-Id: <987664A83D2D224EAE907B061CE93D53019438F230@orsmsx505.amr.corp.intel.com>
+From: daeinki <inki.dae@samsung.com>
+Date: Thu, 06 Jan 2011 12:57:06 +0000
+Subject: Memory sharing issue by application on V4L2 based device driver with
+Message-Id: <4D25BC22.6080803@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <AANLkTinU0KYiCd4p=z+=ojbkeEoT2G+CAYvdRU02KJEn@mail.gmail.com>
- <20110126124954.GC24527@laptop>
- <987664A83D2D224EAE907B061CE93D53019438EABF@orsmsx505.amr.corp.intel.com>
- <20110126231620.GA14807@redhat.com>
- <987664A83D2D224EAE907B061CE93D53019438EB02@orsmsx505.amr.corp.intel.com>
- <20110126233033.GB14807@redhat.com>
- <987664A83D2D224EAE907B061CE93D53019438EBB6@orsmsx505.amr.corp.intel.com>
- <4D40F7F1.3020509@zytor.com> <20110127120039.GD20279@elte.hu>
- <4D4197CB.9070201@zytor.com> <20110127162429.GB26437@elte.hu>
-In-Reply-To: <20110127162429.GB26437@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: Dave Jones <davej@redhat.com>, "Ahmed S. Darwish" <darwish.07@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, X86-ML <x86@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Randy Dunlap <rdunlap@xenotime.net>, Willy Tarreau <wtarreau@hera.kernel.org>, Willy Tarreau <w@1wt.eu>, Dirk Hohndel <hohndel@infradead.org>, "Hohndel, Dirk" <dirk.hohndel@intel.com>, IDE-ML <linux-ide@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, =?iso-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>, Borislav Petkov <bp@alien8.de>, Arjan van de Ven <arjan@infradead.org>, Tejun Heo <tj@kernel.org>, James Bottomley <James.Bottomley@suse.de>, Mark Lord <kernel@teksavvy.com>, Jeff Garzik <jgarzik@pobox.com>, Eric Biederman <ebiederm@xmission.com>, Vivek
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-> Yeah, i've done it countless times and it's very painful indeed - but the 
-> alternative "losing context" would be even worse to me. Can we do both - i.e. have 
-> the barcode on the screen alongside the oops itself? (although at that point they'll 
-> be taking screen real estate from each other - degrading the information in *both* 
-> venues.)
->
-> Keyboard 'oops scrolling' driver with 'flip to barcode output' key? :-)
 
-If we can make the screen scroll, or guarantee that a hot key will switch to
-the barcode view, then those look like good solutions. Sharing space on a
-non-scrollable view sounds like a poor choice. Perhaps better to have a
-command line option to say which to provide (default = text).
+Hello, all.
 
--Tony
+I'd like to discuss memory sharing issue by application on v4l2 based
+device driver with system mmu and get some advices about that.
+
+Now I am working on Samsung SoC C210 platform and this platform has some
+multimedia devices with system mmu such as fimc, and mfc also we have
+implemented device drivers for them. those drivers are based on V4L2
+framework with videobuf2. for system mmu of each device, we used
+VCM(Virtual Contiguous Memory) framework.
+
+Simply, VCM framework provides  physical memory, device virtual memory
+allocation and memory mapping between them. when device driver is
+initialized or operated by user application, each driver allocates
+physical memory and device virtual memory and then mapping using VCM
+interface.
+
+refer to below link for more detail.
+http://www.spinics.net/lists/linux-media/msg26548.html
+
+Physical memory access process is as the following.
+            DVA                          PA
+device --------------> system mmu ------------------> physical memory
+
+DVA : device virtual address.
+PA : physical address.
+
+like this, device virtual address should be set to buffer(source or
+destination) register of multimedia device.
+
+the problem is that application want to share own memory with any device
+driver to avoid memory copy. in other words, user-allocated memory could
+be source or destination memory of multimedia device driver.
+
+
+let's see the diagram below.
+
+                user application
+
+                      |
+                      |
+                      |
+                      |
+                      |  1. UVA(allocated by malloc)
+                      |
+                      |
+                    =A1=AC|/                   2. UVA(in page unit)
+
+        -----> multimedia device driver -------------------> videobuf2
+        |
+        |        |     ^                                         |
+        |        |     |                                         |
+        |        |     -------------------------------------------
+        |        |                    3. PA(in page unit)
+        |        |
+        |        | 4. PA(in page unit)
+6. DVA  |        |
+        |        |
+        |        |
+        |      =A1=AC|/
+        |
+        |       Virtual Contiguous Memory ---------
+        |                                         |
+        |           |     ^                       |
+        |           |     |                       | 5. map PA to DVA
+        |           |     |                       |
+        |           |     |                       |
+        -------------     -------------------------
+
+PA : physical address.
+UVA : user virtual address.
+DVA : device virtual address.
+
+1. user application allocates user space memory through malloc function
+and sending it to multimedia device driver based on v4l2 framework
+through userptr feature.
+
+2, 3. multimedia device driver gets translated physical address from
+videobuf2 framework in page unit.
+
+4, 5. multimedia device driver gets allocated device virtual address and
+mapping it to physical address and then mapping them through VCM interface.
+
+6. multimedia device driver sets device virtual address from VCM to
+buffer register.
+
+the diagram above is fully theoretical so I wonder that this way is
+reasonable and has some problems also what should be considered.
+
+thank you for your interesting.

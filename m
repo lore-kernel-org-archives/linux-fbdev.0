@@ -1,91 +1,114 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Fri, 07 Jan 2011 11:57:59 +0000
-Subject: [PATCH 2/3 v2] fbdev: sh_mobile_hdmi: framebuffer notifiers have to
-Message-Id: <Pine.LNX.4.64.1101071256300.32550@axis700.grange>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Thu, 06 Jan 2011 04:47:02 +0000
+Subject: Re: [PATCH v2 1/2] video, sm501: add OF binding to support SM501
+Message-Id: <20110106044702.GO23889@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1291451028-22532-1-git-send-email-hs@denx.de> <1292049075-1809-1-git-send-email-hs@denx.de>
+In-Reply-To: <1292049075-1809-1-git-send-email-hs@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Heiko Schocher <hs@denx.de>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org, Ben Dooks <ben@simtec.co.uk>, Vincent Sanders <vince@simtec.co.uk>, Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org
 
-A previous patch added a framebuffer notifier to sh_mobile_hdmi.c,
-but did not register it with the framebuffer core. This patch adds
-such a registration and moves the notifier block into dynamically
-allocated per-device private data.
+On Sat, Dec 11, 2010 at 07:31:15AM +0100, Heiko Schocher wrote:
+> - add binding to OF, compatible name "smi,sm501"
+> 
+> - add read/write functions for using this driver
+>   also on powerpc plattforms
+> 
+> - add commandline options:
+>   sm501.fb_mode:
+>     Specify resolution as "<xres>x<yres>[-<bpp>][@<refresh>]"
+>   sm501.bpp:
+>     Specify bit-per-pixel if not specified mode
+> 
+> - Add support for encoding display mode information
+>   in the device tree using verbatim EDID block.
+> 
+>   If the "edid" entry in the "smi,sm501" node is present,
+>   the driver will build mode database using EDID data
+>   and allow setting the display modes from this database.
+> 
+> Signed-off-by: Heiko Schocher <hs@denx.de>
+> cc: linux-fbdev@vger.kernel.org
+> cc: devicetree-discuss@ozlabs.org
+> cc: Ben Dooks <ben@simtec.co.uk>
+> cc: Vincent Sanders <vince@simtec.co.uk>
+> cc: Samuel Ortiz <sameo@linux.intel.com>
+> cc: linux-kernel@vger.kernel.org
+> 
+> ---
+> - changes since v1:
+>   add Ben Dooks, Vincent Sanders and Samuel Ortiz to cc, as suggested from
+>   Paul Mundt.
+> 
+>  Documentation/kernel-parameters.txt          |    7 +
+>  Documentation/powerpc/dts-bindings/sm501.txt |   30 +++
+>  drivers/mfd/sm501.c                          |  141 ++++++++------
+>  drivers/video/sm501fb.c                      |  264 +++++++++++++++++---------
+>  include/linux/sm501.h                        |    8 +
+>  5 files changed, 299 insertions(+), 151 deletions(-)
+>  create mode 100644 Documentation/powerpc/dts-bindings/sm501.txt
+> 
+So has this stalled out? If Samuel wants to ack the MFD bits I don't mind
+taking it through the fbdev tree. I can dust off an SM501 board to make
+sure it still works for the non-OF case, although most of the changes
+look fairly mechanical, so I don't forsee too much difficulty.
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
----
- drivers/video/sh_mobile_hdmi.c |   19 +++++++++----------
- 1 files changed, 9 insertions(+), 10 deletions(-)
+A few minor notes however. For starters, it would be nice to see this
+patch split out a bit more logically. All of the items in your changelog
+are more or less independent logical changes, and should really be
+independent patches. As such, I'd like to see the EDID support as one
+patch, the OF binding support layered on top of that, the documentation
+split out as a trivial patch, and the I/O routine thing dealt with
+separately. This should also make it easier for Samuel to simply ack the
+OF bindings part that touch the MFD driver without having to be bothered
+with any of the other stuff should regressions pop up at a later point in
+time via a bisection.
 
-diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-index 571bd9f..46ab355 100644
---- a/drivers/video/sh_mobile_hdmi.c
-+++ b/drivers/video/sh_mobile_hdmi.c
-@@ -221,6 +221,7 @@ struct sh_hdmi {
- 	struct delayed_work edid_work;
- 	struct fb_var_screeninfo var;
- 	struct fb_monspecs monspec;
-+	struct notifier_block notifier;
- };
- 
- static void hdmi_write(struct sh_hdmi *hdmi, u8 data, u8 reg)
-@@ -1197,13 +1198,6 @@ out:
- }
- 
- static int sh_hdmi_notify(struct notifier_block *nb,
--			  unsigned long action, void *data);
--
--static struct notifier_block sh_hdmi_notifier = {
--	.notifier_call = sh_hdmi_notify,
--};
--
--static int sh_hdmi_notify(struct notifier_block *nb,
- 			  unsigned long action, void *data)
- {
- 	struct fb_event *event = data;
-@@ -1212,7 +1206,7 @@ static int sh_hdmi_notify(struct notifier_block *nb,
- 	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
- 	struct sh_hdmi *hdmi = board_cfg->board_data;
- 
--	if (nb != &sh_hdmi_notifier || !hdmi || hdmi->info != info)
-+	if (!hdmi || nb != &hdmi->notifier || hdmi->info != info)
- 		return NOTIFY_DONE;
- 
- 	switch(action) {
-@@ -1231,11 +1225,11 @@ static int sh_hdmi_notify(struct notifier_block *nb,
- 		 * temporarily, synchronise with the work queue and re-acquire
- 		 * the info->lock.
- 		 */
--		unlock_fb_info(hdmi->info);
-+		unlock_fb_info(info);
- 		mutex_lock(&hdmi->mutex);
- 		hdmi->info = NULL;
- 		mutex_unlock(&hdmi->mutex);
--		lock_fb_info(hdmi->info);
-+		lock_fb_info(info);
- 		return NOTIFY_OK;
- 	}
- 	return NOTIFY_DONE;
-@@ -1333,6 +1327,9 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
- 		goto ecodec;
- 	}
- 
-+	hdmi->notifier.notifier_call = sh_hdmi_notify;
-+	fb_register_client(&hdmi->notifier);
-+
- 	return 0;
- 
- ecodec:
-@@ -1363,6 +1360,8 @@ static int __exit sh_hdmi_remove(struct platform_device *pdev)
- 
- 	snd_soc_unregister_codec(&pdev->dev);
- 
-+	fb_unregister_client(&hdmi->notifier);
-+
- 	board_cfg->display_on = NULL;
- 	board_cfg->display_off = NULL;
- 	board_cfg->board_data = NULL;
--- 
-1.7.2.3
+As far as the DTS bindings documentation goes, I'm not sure what the best
+way to split that out is. Perhaps simply lumping it in with the OF
+bindings makes the most logical sense, and it's obviously a dependency
+for the architecture-specific portion as well.
 
+> @@ -1698,6 +1727,9 @@ static int sm501fb_init_fb(struct fb_info *fb,
+>  	fb->fbops = &par->ops;
+>  	fb->flags = FBINFO_FLAG_DEFAULT | FBINFO_READS_FAST |
+>  		FBINFO_HWACCEL_COPYAREA | FBINFO_HWACCEL_FILLRECT |
+> +#if defined(CONFIG_PPC_MPC52xx)
+> +		FBINFO_FOREIGN_ENDIAN |
+> +#endif
+>  		FBINFO_HWACCEL_XPAN | FBINFO_HWACCEL_YPAN;
+>  
+>  	/* fixed data */
+
+This is now getting in to deep hack territory. It's also not entirely
+obvious how you expect things like the imageblit op to work given that
+you're not selecting any of FB_{BIG,LITTLE,BOTH,FOREIGN}_ENDIAN, which
+leads me to suspect you are manually doing this in your .config in a
+relatively fragile way.
+
+In the OF case I suppose you probably want something like:
+
+#ifdef __BIG_ENDIAN
+        if (of_get_property(dp, "little-endian", NULL))
+                foreign_endian = FBINFO_FOREIGN_ENDIAN;
+#else
+        if (of_get_property(dp, "big-endian", NULL))
+                foreign_endian = FBINFO_FOREIGN_ENDIAN;
+#endif
+
+and then simply hide the details in the DTS file in order to get rid of
+CPU-specific hacks.
+
+> +#if defined(CONFIG_PPC_MPC52xx)
+> +#define smc501_readl(addr)	__do_readl_be((addr))
+> +#define smc501_writel(val, addr)	__do_writel_be((val), (addr))
+> +#else
+> +#define smc501_readl(addr)		readl(addr)
+> +#define smc501_writel(val, addr)	writel(val, addr)
+> +#endif
+
+Based on the Kconfig option for endianness you could probably just wrap these
+to ioread/write32{,be} and hide the semantics in your iomap implementation?

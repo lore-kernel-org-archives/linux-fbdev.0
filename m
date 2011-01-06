@@ -1,7 +1,7 @@
 From: Alex Buell <alex.buell@munted.org.uk>
-Date: Thu, 06 Jan 2011 23:25:19 +0000
+Date: Thu, 06 Jan 2011 23:34:28 +0000
 Subject: Re: Using s3virge card in Sun Blade 2000
-Message-Id: <1294356319.24378.22.camel@lithium>
+Message-Id: <1294356868.24378.26.camel@lithium>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20110106204240.GA6361@electric-eye.fr.zoreil.com>
 	 <1294347036.24378.13.camel@lithium> <1294352651.24378.17.camel@lithium>
@@ -17,35 +17,14 @@ On Thu, 2011-01-06 at 14:29 -0800, David Miller wrote:
 > You have to initialize par->state.vgabase in the s3fb driver to the
 > VGA area iomem pointer you calculated at boot time.
 
-Thanks for that, I've just got past that, now it's changing modes that
-crashes the driver. I can load and unload the driver,  and it
-automatically selects 640x480.
+I just had a look through the svgalib.c. It makes a lot of calls to
+vgastate with the NULL parameter for the vga iobase, I guess that's
+definitely why it's crashing the driver. 
 
-How do I track down the offending line of code from the following entry
-in the logs:
-TPC<s3fb_set_par+0x1a0/0xf78 [s3fb]>
-
-Also, oddly enough, before calling save_vga it clears par->state, which
-was why it was crashing. Explicitly setting the par->state.vgabase to
-the vga_iobase address solved the problem as below. I also noticed that
-having VGA_SAVE_FONTS crashes the driver, so I left it out - a quick
-look through the code in vgastate.c indicate it needs rework to make it
-work but I've left that for later. 
-
-(in s3fb_open)
-
- if (par->ref_count = 0) {
-                memset(&(par->state), 0, sizeof(struct vgastate));
-
-                /* save_vga/restore_vga needs this to function */
-                par->state.vgabase = par->vga_iobase;
-
-                /*par->state.flags = VGA_SAVE_MODE | VGA_SAVE_FONTS | VGA_SAVE_CMAP;*/
-                par->state.flags = VGA_SAVE_MODE | VGA_SAVE_CMAP;
-                par->state.num_crtc = 0x70;
-                par->state.num_seq = 0x20;
-                save_vga(&(par->state));
-
-Thanks, seems it's starting to work bit by bit!
+Also, svga.h has inline functions that needs modifying. Looks like a big
+change to let it work with the vga iobase or NULL. Perhaps just passing
+the par->state.vgabase into those functions could make it work. Usually
+this gets initialised as zero at boot or driver load so the default
+could be NULL anyway for those drivers that assume it is located at 0. 
 -- 
 Tactical Nuclear Kittens

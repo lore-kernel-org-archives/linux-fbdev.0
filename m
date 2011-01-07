@@ -1,118 +1,79 @@
-From: David Miller <davem@davemloft.net>
-Date: Tue, 11 Jan 2011 23:50:36 +0000
-Subject: [PATCH 6/22] svga: Make svga_set_default_atc_regs take an iomem
-Message-Id: <20110111.155036.191158491.davem@davemloft.net>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 07 Jan 2011 11:58:03 +0000
+Subject: [PATCH 3/3 v2] fbdev: sh_mobile_hdmi: simplify pointer handling
+Message-Id: <Pine.LNX.4.64.1101071256520.32550@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
- drivers/video/arkfb.c    |    2 +-
- drivers/video/s3fb.c     |    2 +-
- drivers/video/svgalib.c  |   24 ++++++++++++------------
- drivers/video/vt8623fb.c |    2 +-
- include/linux/svga.h     |    2 +-
- 5 files changed, 16 insertions(+), 16 deletions(-)
+ drivers/video/sh_mobile_hdmi.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
-index 7939d5e..2dfecbf 100644
---- a/drivers/video/arkfb.c
-+++ b/drivers/video/arkfb.c
-@@ -654,7 +654,7 @@ static int arkfb_set_par(struct fb_info *info)
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index 46ab355..e3eb77d 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -878,9 +878,9 @@ static int sh_hdmi_read_edid(struct sh_hdmi *hdmi, unsigned long *hdmi_rate,
+ 	 * driver, and passing ->info with HDMI platform data.
+ 	 */
+ 	if (info && !found) {
+-		modelist = hdmi->info->modelist.next &&
+-			!list_empty(&hdmi->info->modelist) ?
+-			list_entry(hdmi->info->modelist.next,
++		modelist = info->modelist.next &&
++			!list_empty(&info->modelist) ?
++			list_entry(info->modelist.next,
+ 				   struct fb_modelist, list) :
+ 			NULL;
  
- 	/* Set default values */
- 	svga_set_default_gfx_regs(par->state.vgabase);
--	svga_set_default_atc_regs();
-+	svga_set_default_atc_regs(par->state.vgabase);
- 	svga_set_default_seq_regs();
- 	svga_set_default_crt_regs();
- 	svga_wcrt_multi(par->state.vgabase, ark_line_compare_regs, 0xFFFFFFFF);
-diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
-index 773650c..a187376 100644
---- a/drivers/video/s3fb.c
-+++ b/drivers/video/s3fb.c
-@@ -515,7 +515,7 @@ static int s3fb_set_par(struct fb_info *info)
+@@ -1123,6 +1123,7 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 	mutex_lock(&hdmi->mutex);
  
- 	/* Set default values */
- 	svga_set_default_gfx_regs(par->state.vgabase);
--	svga_set_default_atc_regs();
-+	svga_set_default_atc_regs(par->state.vgabase);
- 	svga_set_default_seq_regs();
- 	svga_set_default_crt_regs();
- 	svga_wcrt_multi(par->state.vgabase, s3_line_compare_regs, 0xFFFFFFFF);
-diff --git a/drivers/video/svgalib.c b/drivers/video/svgalib.c
-index 25f9f87..8b97359 100644
---- a/drivers/video/svgalib.c
-+++ b/drivers/video/svgalib.c
-@@ -93,26 +93,26 @@ void svga_set_default_gfx_regs(void __iomem *regbase)
- }
+ 	if (hdmi->hp_state = HDMI_HOTPLUG_CONNECTED) {
++		struct fb_info *info = hdmi->info;
+ 		unsigned long parent_rate = 0, hdmi_rate;
  
- /* Set attribute controller registers to sane values */
--void svga_set_default_atc_regs(void)
-+void svga_set_default_atc_regs(void __iomem *regbase)
- {
- 	u8 count;
+ 		/* A device has been plugged in */
+@@ -1144,22 +1145,21 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 		/* Switched to another (d) power-save mode */
+ 		msleep(10);
  
--	vga_r(NULL, 0x3DA);
--	vga_w(NULL, VGA_ATT_W, 0x00);
-+	vga_r(regbase, 0x3DA);
-+	vga_w(regbase, VGA_ATT_W, 0x00);
+-		if (!hdmi->info)
++		if (!info)
+ 			goto out;
  
- 	/* All standard ATC registers (AR00 - AR14) */
- 	for (count = 0; count <= 0xF; count ++)
--		svga_wattr(NULL, count, count);
-+		svga_wattr(regbase, count, count);
+-		ch = hdmi->info->par;
++		ch = info->par;
  
--	svga_wattr(NULL, VGA_ATC_MODE, 0x01);
--/*	svga_wattr(NULL, VGA_ATC_MODE, 0x41); */
--	svga_wattr(NULL, VGA_ATC_OVERSCAN, 0x00);
--	svga_wattr(NULL, VGA_ATC_PLANE_ENABLE, 0x0F);
--	svga_wattr(NULL, VGA_ATC_PEL, 0x00);
--	svga_wattr(NULL, VGA_ATC_COLOR_PAGE, 0x00);
-+	svga_wattr(regbase, VGA_ATC_MODE, 0x01);
-+/*	svga_wattr(regbase, VGA_ATC_MODE, 0x41); */
-+	svga_wattr(regbase, VGA_ATC_OVERSCAN, 0x00);
-+	svga_wattr(regbase, VGA_ATC_PLANE_ENABLE, 0x0F);
-+	svga_wattr(regbase, VGA_ATC_PEL, 0x00);
-+	svga_wattr(regbase, VGA_ATC_COLOR_PAGE, 0x00);
+ 		acquire_console_sem();
  
--	vga_r(NULL, 0x3DA);
--	vga_w(NULL, VGA_ATT_W, 0x20);
-+	vga_r(regbase, 0x3DA);
-+	vga_w(regbase, VGA_ATT_W, 0x20);
- }
+ 		/* HDMI plug in */
+ 		if (!sh_hdmi_must_reconfigure(hdmi) &&
+-		    hdmi->info->state = FBINFO_STATE_RUNNING) {
++		    info->state = FBINFO_STATE_RUNNING) {
+ 			/*
+ 			 * First activation with the default monitor - just turn
+ 			 * on, if we run a resume here, the logo disappears
+ 			 */
+-			if (lock_fb_info(hdmi->info)) {
+-				struct fb_info *info = hdmi->info;
++			if (lock_fb_info(info)) {
+ 				info->var.width = hdmi->var.width;
+ 				info->var.height = hdmi->var.height;
+ 				sh_hdmi_display_on(hdmi, info);
+@@ -1167,7 +1167,7 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 			}
+ 		} else {
+ 			/* New monitor or have to wake up */
+-			fb_set_suspend(hdmi->info, 0);
++			fb_set_suspend(info, 0);
+ 		}
  
- /* Set sequencer registers to sane values */
-diff --git a/drivers/video/vt8623fb.c b/drivers/video/vt8623fb.c
-index 77382e9..24f5b43 100644
---- a/drivers/video/vt8623fb.c
-+++ b/drivers/video/vt8623fb.c
-@@ -426,7 +426,7 @@ static int vt8623fb_set_par(struct fb_info *info)
- 
- 	/* Set default values */
- 	svga_set_default_gfx_regs(par->state.vgabase);
--	svga_set_default_atc_regs();
-+	svga_set_default_atc_regs(par->state.vgabase);
- 	svga_set_default_seq_regs();
- 	svga_set_default_crt_regs();
- 	svga_wcrt_multi(par->state.vgabase, vt8623_line_compare_regs, 0xFFFFFFFF);
-diff --git a/include/linux/svga.h b/include/linux/svga.h
-index 4591032..87a4164 100644
---- a/include/linux/svga.h
-+++ b/include/linux/svga.h
-@@ -100,7 +100,7 @@ void svga_wcrt_multi(void __iomem *regbase, const struct vga_regset *regset, u32
- void svga_wseq_multi(void __iomem *regbase, const struct vga_regset *regset, u32 value);
- 
- void svga_set_default_gfx_regs(void __iomem *regbase);
--void svga_set_default_atc_regs(void);
-+void svga_set_default_atc_regs(void __iomem *regbase);
- void svga_set_default_seq_regs(void);
- void svga_set_default_crt_regs(void);
- void svga_set_textmode_vga_regs(void);
+ 		release_console_sem();
 -- 
-1.7.3.4
+1.7.2.3
 

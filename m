@@ -1,114 +1,134 @@
-From: David Miller <davem@davemloft.net>
-Date: Tue, 11 Jan 2011 23:50:04 +0000
-Subject: [PATCH 5/22] svga: Make svga_set_default_gfx_regs take an iomem
-Message-Id: <20110111.155004.141237935.davem@davemloft.net>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Fri, 07 Jan 2011 11:57:55 +0000
+Subject: [PATCH 1/3 v2] fbdev: sh_mobile_hdmi: add command line option to
+Message-Id: <Pine.LNX.4.64.1101071253330.32550@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
+Currently, if no command-line option is specified, the sh_mobile_hdmi
+will use the default 720p video mode. If a command line option of the
+form "video=sh_mobile_lcdc:<width>x<height>@<refresh>" is provided,
+the driver will look for that mode among those, available in the
+monitor EDID. This patch adds the ability to request the driver to
+use monitor's preferred mode by specifying 0 as width and hight in
+the above string. If that mode is not supported by the system, the
+driver will continue scanning through EDID modes, until it finds a
+suitable one.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
- drivers/video/arkfb.c    |    2 +-
- drivers/video/s3fb.c     |    2 +-
- drivers/video/svgalib.c  |   26 +++++++++++++-------------
- drivers/video/vt8623fb.c |    2 +-
- include/linux/svga.h     |    2 +-
- 5 files changed, 17 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
-index 311a512..7939d5e 100644
---- a/drivers/video/arkfb.c
-+++ b/drivers/video/arkfb.c
-@@ -653,7 +653,7 @@ static int arkfb_set_par(struct fb_info *info)
- 	svga_wcrt_mask(0x17, 0x00, 0x80);
+v2:
+
+1. ported onto current fbdev development tree
+2. fixed regression, caused by https://patchwork.kernel.org/patch/453141/ 
+which made the use of all EDID modes impossible, because they don't set 
+.bits_per_pixel
+
+ drivers/video/sh_mobile_hdmi.c |   60 +++++++++++++++++++++++++++------------
+ 1 files changed, 41 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index 8c59cc8..571bd9f 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -737,7 +737,7 @@ static int sh_hdmi_read_edid(struct sh_hdmi *hdmi, unsigned long *hdmi_rate,
+ 	struct fb_modelist *modelist = NULL;
+ 	unsigned int f_width = 0, f_height = 0, f_refresh = 0;
+ 	unsigned long found_rate_error = ULONG_MAX; /* silly compiler... */
+-	bool exact_match = false;
++	bool scanning = false, preferred_bad = false;
+ 	u8 edid[128];
+ 	char *forced;
+ 	int i;
+@@ -800,6 +800,9 @@ static int sh_hdmi_read_edid(struct sh_hdmi *hdmi, unsigned long *hdmi_rate,
+ 		if (i < 2) {
+ 			f_width = 0;
+ 			f_height = 0;
++		} else {
++			/* The user wants us to use the EDID data */
++			scanning = true;
+ 		}
+ 		dev_dbg(hdmi->dev, "Forced mode %ux%u@%uHz\n",
+ 			f_width, f_height, f_refresh);
+@@ -807,37 +810,56 @@ static int sh_hdmi_read_edid(struct sh_hdmi *hdmi, unsigned long *hdmi_rate,
  
- 	/* Set default values */
--	svga_set_default_gfx_regs();
-+	svga_set_default_gfx_regs(par->state.vgabase);
- 	svga_set_default_atc_regs();
- 	svga_set_default_seq_regs();
- 	svga_set_default_crt_regs();
-diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
-index 26698e6..773650c 100644
---- a/drivers/video/s3fb.c
-+++ b/drivers/video/s3fb.c
-@@ -514,7 +514,7 @@ static int s3fb_set_par(struct fb_info *info)
- 	svga_wcrt_mask(0x17, 0x00, 0x80);
+ 	/* Walk monitor modes to find the best or the exact match */
+ 	for (i = 0, mode = hdmi->monspec.modedb;
+-	     f_width && f_height && i < hdmi->monspec.modedb_len && !exact_match;
++	     i < hdmi->monspec.modedb_len && scanning;
+ 	     i++, mode++) {
+ 		unsigned long rate_error;
  
- 	/* Set default values */
--	svga_set_default_gfx_regs();
-+	svga_set_default_gfx_regs(par->state.vgabase);
- 	svga_set_default_atc_regs();
- 	svga_set_default_seq_regs();
- 	svga_set_default_crt_regs();
-diff --git a/drivers/video/svgalib.c b/drivers/video/svgalib.c
-index ed190aa..25f9f87 100644
---- a/drivers/video/svgalib.c
-+++ b/drivers/video/svgalib.c
-@@ -75,21 +75,21 @@ static unsigned int svga_regset_size(const struct vga_regset *regset)
+-		/* No interest in unmatching modes */
+-		if (f_width != mode->xres || f_height != mode->yres)
++		if (!f_width && !f_height) {
++			/*
++			 * A parameter string "video=sh_mobile_lcdc:0x0" means
++			 * use the preferred EDID mode. If it is rejected by
++			 * .fb_check_var(), keep looking, until an acceptable
++			 * one is found.
++			 */
++			if ((mode->flag & FB_MODE_IS_FIRST) || preferred_bad)
++				scanning = false;
++			else
++				continue;
++		} else if (f_width != mode->xres || f_height != mode->yres) {
++			/* No interest in unmatching modes */
+ 			continue;
++		}
  
+ 		rate_error = sh_hdmi_rate_error(hdmi, mode, hdmi_rate, parent_rate);
  
- /* Set graphics controller registers to sane values */
--void svga_set_default_gfx_regs(void)
-+void svga_set_default_gfx_regs(void __iomem *regbase)
- {
- 	/* All standard GFX registers (GR00 - GR08) */
--	vga_wgfx(NULL, VGA_GFX_SR_VALUE, 0x00);
--	vga_wgfx(NULL, VGA_GFX_SR_ENABLE, 0x00);
--	vga_wgfx(NULL, VGA_GFX_COMPARE_VALUE, 0x00);
--	vga_wgfx(NULL, VGA_GFX_DATA_ROTATE, 0x00);
--	vga_wgfx(NULL, VGA_GFX_PLANE_READ, 0x00);
--	vga_wgfx(NULL, VGA_GFX_MODE, 0x00);
--/*	vga_wgfx(NULL, VGA_GFX_MODE, 0x20); */
--/*	vga_wgfx(NULL, VGA_GFX_MODE, 0x40); */
--	vga_wgfx(NULL, VGA_GFX_MISC, 0x05);
--/*	vga_wgfx(NULL, VGA_GFX_MISC, 0x01); */
--	vga_wgfx(NULL, VGA_GFX_COMPARE_MASK, 0x0F);
--	vga_wgfx(NULL, VGA_GFX_BIT_MASK, 0xFF);
-+	vga_wgfx(regbase, VGA_GFX_SR_VALUE, 0x00);
-+	vga_wgfx(regbase, VGA_GFX_SR_ENABLE, 0x00);
-+	vga_wgfx(regbase, VGA_GFX_COMPARE_VALUE, 0x00);
-+	vga_wgfx(regbase, VGA_GFX_DATA_ROTATE, 0x00);
-+	vga_wgfx(regbase, VGA_GFX_PLANE_READ, 0x00);
-+	vga_wgfx(regbase, VGA_GFX_MODE, 0x00);
-+/*	vga_wgfx(regbase, VGA_GFX_MODE, 0x20); */
-+/*	vga_wgfx(regbase, VGA_GFX_MODE, 0x40); */
-+	vga_wgfx(regbase, VGA_GFX_MISC, 0x05);
-+/*	vga_wgfx(regbase, VGA_GFX_MISC, 0x01); */
-+	vga_wgfx(regbase, VGA_GFX_COMPARE_MASK, 0x0F);
-+	vga_wgfx(regbase, VGA_GFX_BIT_MASK, 0xFF);
- }
+-		if (f_refresh = mode->refresh || (!f_refresh && !rate_error))
+-			/*
+-			 * Exact match if either the refresh rate matches or it
+-			 * hasn't been specified and we've found a mode, for
+-			 * which we can configure the clock precisely
+-			 */
+-			exact_match = true;
+-		else if (found && found_rate_error <= rate_error)
+-			/*
+-			 * We otherwise search for the closest matching clock
+-			 * rate - either if no refresh rate has been specified
+-			 * or we cannot find an exactly matching one
+-			 */
+-			continue;
++		if (scanning) {
++			if (f_refresh = mode->refresh || (!f_refresh && !rate_error))
++				/*
++				 * Exact match if either the refresh rate
++				 * matches or it hasn't been specified and we've
++				 * found a mode, for which we can configure the
++				 * clock precisely
++				 */
++				scanning = false;
++			else if (found && found_rate_error <= rate_error)
++				/*
++				 * We otherwise search for the closest matching
++				 * clock rate - either if no refresh rate has
++				 * been specified or we cannot find an exactly
++				 * matching one
++				 */
++				continue;
++		}
  
- /* Set attribute controller registers to sane values */
-diff --git a/drivers/video/vt8623fb.c b/drivers/video/vt8623fb.c
-index 5301151..77382e9 100644
---- a/drivers/video/vt8623fb.c
-+++ b/drivers/video/vt8623fb.c
-@@ -425,7 +425,7 @@ static int vt8623fb_set_par(struct fb_info *info)
- 	svga_wcrt_mask(0x17, 0x00, 0x80);
+ 		/* Check if supported: sufficient fb memory, supported clock-rate */
+ 		fb_videomode_to_var(var, mode);
  
- 	/* Set default values */
--	svga_set_default_gfx_regs();
-+	svga_set_default_gfx_regs(par->state.vgabase);
- 	svga_set_default_atc_regs();
- 	svga_set_default_seq_regs();
- 	svga_set_default_crt_regs();
-diff --git a/include/linux/svga.h b/include/linux/svga.h
-index 357e2bd..4591032 100644
---- a/include/linux/svga.h
-+++ b/include/linux/svga.h
-@@ -99,7 +99,7 @@ static inline int svga_primary_device(struct pci_dev *dev)
- void svga_wcrt_multi(void __iomem *regbase, const struct vga_regset *regset, u32 value);
- void svga_wseq_multi(void __iomem *regbase, const struct vga_regset *regset, u32 value);
++		var->bits_per_pixel = info->var.bits_per_pixel;
++
+ 		if (info && info->fbops->fb_check_var &&
+ 		    info->fbops->fb_check_var(var, info)) {
+-			exact_match = false;
++			scanning = true;
++			preferred_bad = true;
+ 			continue;
+ 		}
  
--void svga_set_default_gfx_regs(void);
-+void svga_set_default_gfx_regs(void __iomem *regbase);
- void svga_set_default_atc_regs(void);
- void svga_set_default_seq_regs(void);
- void svga_set_default_crt_regs(void);
 -- 
-1.7.3.4
+1.7.2.3
 

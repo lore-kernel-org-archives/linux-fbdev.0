@@ -1,101 +1,125 @@
-From: daeinki <inki.dae@samsung.com>
-Date: Thu, 06 Jan 2011 12:57:06 +0000
-Subject: Memory sharing issue by application on V4L2 based device driver with
-Message-Id: <4D25BC22.6080803@samsung.com>
+From: InKi Dae <daeinki@gmail.com>
+Date: Fri, 07 Jan 2011 02:17:12 +0000
+Subject: Re: Memory sharing issue by application on V4L2 based device driver
+Message-Id: <AANLkTinsduJkynwwEeM5K9f3D7C6jtBgkAyZ0-_0z2X-@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <4D25BC22.6080803@samsung.com>
+	<AANLkTi=P8qY22saY9a_-rze1wsr-DLMgc6Lfa6qnfM7u@mail.gmail.com>
+	<002201cbadfd$6d59e490$480dadb0$%han@samsung.com>
+In-Reply-To: <002201cbadfd$6d59e490$480dadb0$%han@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
 To: linux-arm-kernel@lists.infradead.org
 
-
-Hello, all.
-
-I'd like to discuss memory sharing issue by application on v4l2 based
-device driver with system mmu and get some advices about that.
-
-Now I am working on Samsung SoC C210 platform and this platform has some
-multimedia devices with system mmu such as fimc, and mfc also we have
-implemented device drivers for them. those drivers are based on V4L2
-framework with videobuf2. for system mmu of each device, we used
-VCM(Virtual Contiguous Memory) framework.
-
-Simply, VCM framework provides  physical memory, device virtual memory
-allocation and memory mapping between them. when device driver is
-initialized or operated by user application, each driver allocates
-physical memory and device virtual memory and then mapping using VCM
-interface.
-
-refer to below link for more detail.
-http://www.spinics.net/lists/linux-media/msg26548.html
-
-Physical memory access process is as the following.
-            DVA                          PA
-device --------------> system mmu ------------------> physical memory
-
-DVA : device virtual address.
-PA : physical address.
-
-like this, device virtual address should be set to buffer(source or
-destination) register of multimedia device.
-
-the problem is that application want to share own memory with any device
-driver to avoid memory copy. in other words, user-allocated memory could
-be source or destination memory of multimedia device driver.
-
-
-let's see the diagram below.
-
-                user application
-
-                      |
-                      |
-                      |
-                      |
-                      |  1. UVA(allocated by malloc)
-                      |
-                      |
-                    =A1=AC|/                   2. UVA(in page unit)
-
-        -----> multimedia device driver -------------------> videobuf2
-        |
-        |        |     ^                                         |
-        |        |     |                                         |
-        |        |     -------------------------------------------
-        |        |                    3. PA(in page unit)
-        |        |
-        |        | 4. PA(in page unit)
-6. DVA  |        |
-        |        |
-        |        |
-        |      =A1=AC|/
-        |
-        |       Virtual Contiguous Memory ---------
-        |                                         |
-        |           |     ^                       |
-        |           |     |                       | 5. map PA to DVA
-        |           |     |                       |
-        |           |     |                       |
-        -------------     -------------------------
-
-PA : physical address.
-UVA : user virtual address.
-DVA : device virtual address.
-
-1. user application allocates user space memory through malloc function
-and sending it to multimedia device driver based on v4l2 framework
-through userptr feature.
-
-2, 3. multimedia device driver gets translated physical address from
-videobuf2 framework in page unit.
-
-4, 5. multimedia device driver gets allocated device virtual address and
-mapping it to physical address and then mapping them through VCM interface.
-
-6. multimedia device driver sets device virtual address from VCM to
-buffer register.
-
-the diagram above is fully theoretical so I wonder that this way is
-reasonable and has some problems also what should be considered.
-
-thank you for your interesting.
+dGhhbmsgeW91IGZvciB5b3VyIGNvbW1lbnRzLgoKeW91ciBzZWNvbmQgY29tbWVudCBoYXMgbm8g
+YW55IHByb2JsZW0gYXMgSSBzYWlkIGJlZm9yZSwgdXNlciB2aXJ0dWFsCmFkZGVzcyBjb3VsZCBi
+ZSB0cmFuc2xhdGVkIGluIHBhZ2UgdW5pdC4gYnV0IHRoZSBwcm9ibGVtLCBhcyB5b3Ugc2FpZCwK
+aXMgdGhhdCB3aGVuIGNwdSBhY2Nlc3MgdG8gdGhlIG1lbW9yeSBpbiB1c2VyIG1vZGUsIHRoZSBt
+ZW1vcnkKYWxsb2NhdGVkIGJ5IG1hbGxvYywgcGFnZSBmYXVsdCBvY2N1cnMgc28gd2UgY2FuJ3Qg
+ZmluZCBwZm4gdG8gdXNlcgp2aXJ0dWFsIGFkZHJlc3MuIEkgbWlzc2VkIHRoYXQuIGJ1dCBJIHRo
+aW5rIHdlIGNvdWxkIHJlc29sdmUgdGhpcyBvbmUuCgphcyBiZWZvcmUsIHVzZXIgYXBwbGljYXRp
+b24gYWxsb2NhdGVzIG1lbW9yeSB0aHJvdWdoIG1hbGxvYyBmdW5jdGlvbgphbmQgdGhlbiBzZW5k
+IGl0IHRvIGRldmljZSBkcml2ZXIodXNpbmcgdXNlcnB0ciBmZWF0dXJlKS4gaWYgdGhlIHBmbgpp
+cyBudWxsIHdoZW4gZGV2aWNlIGRyaXZlciB0cmFuc2xhdGVkIHVzZXIgdmlydHVhbCBhZGRyZXNz
+IGluIHBhZ2UKdW5pdCB0aGVuIGl0IGFsbG9jYXRlcyBwaHNpY2FsIG1lbW9yeSBpbiBwYWdlIHVu
+aXQgdXNpbmcgc29tZQppbnRlcmZhY2Ugc3VjaCBhcyBhbGxvY19wYWdlKCkgYW5kIHRoZW4gbWFw
+cGluZyB0aGVtLiB3aGVuIHBmbiBpcwpudWxsLCB0byBjaGVjayBpdCBhbmQgYWxsb2NhdGUgcGh5
+c2ljYWwgbWVtb3J5IGluIHBhZ2UgdW5pdCBjb3VsZCBiZQpwcm9jZXNzZWQgYnkgdmlkZW9idWYy
+LgoKb2YgY291cnNlLCB2aWRlb2J1ZjIgaGFzIG5vIGFueSBkdXR5IGNvbnNpZGVyZWQgZm9yIHN5
+c3RlbSBtbXUuIHNvCnZpZGVvYnVmMiBqdXN0IHByb3ZpZGVzIGNhbGxiYWNrIGZvciAzcmQgcGFy
+dHkgYW5kIGFueSBwbGF0Zm9ybSB3aXRoCnN5c3RlbSBtbXUgc3VjaCBhcyBTYW1zdW5nIFNvQyBD
+MjEwIGltcGxlbWVudHMgdGhlIGZ1bmN0aW9uKGFsbG9jYXRpbmcKcGh5c2ljYWwgbWVtb3J5IGFu
+ZCBtYXBwaW5nIGl0KSBhbmQgcmVnaXN0ZXJzIGl0IHRvIGNhbGxiYWNrIG9mCnZpZGVvYnVmMi4g
+YnkgZG9pbmcgc28sIEkgdGhpbmsgeW91ciBmaXJzdCBjb21tZW50IGNvdWxkIGJlIGNsZWFyZWQu
+CgpwbGVhc2UsIGZlZWwgZnJlZSB0byBnaXZlIG1lIHlvdXIgb3BpbmlvbiBhbmQgcG9pbnRpbmcg
+b3V0LgoKdGhhbmsgeW91LgoKMjAxMbPiIDG/+SA3wM8gv8DA/CA4OjU3LCBKb25naHVuIEhhbiA8
+am9uZ2h1bi5oYW5Ac2Ftc3VuZy5jb20+tNTAxyC4uzoKPgo+IEhlbGxvLAo+Cj4gVGhlcmUgYXJl
+IHR3byByZWFzb25zIHdoeSBtYWxsb2MgaXNuJ3Qgc3VpdGFibGUgZm9yIGl0Lgo+Cj4gVGhlIGZp
+cnN0IGlzIHRoYXQgbWFsbG9jIGRvZXNuJ3QgYWxsb2NhdGUgbWVtb3J5IHdoZW4gbWFsbG9jIGlz
+IGNhbGxlZC4KPiBTbyBkcml2ZXIgb3IgdmIyIGNhbm5vdCBmaW5kIFBGTiBmb3IgaXQgaW4gdGhl
+IFZJRElPQ19RQlVGLgo+Cj4gVGhlIHNlY29uZCBpcyB0aGF0IG1hbGxvYyB1c2VzIDRLQiBwYWdl
+IGFsbG9jYXRpb24uCj4gU1lTLk1NVShJTy1NTVUpIGNhbiBoYW5kbGUgc2NhdHRlcmVkIG1lbW9y
+eS4gQnV0IGl0IGhhcyBhIHBlbmFsdHkgd2hlbiBUTEIKPiBtaXNzIGlzIG9jY3VycmVkLgo+IFNv
+IGFzIHBvc3NpYmxlIGFzIHBoeXNpY2FsbHkgY29udGlndW91cyBwYWdlcyBhcmUgbmVlZGVkIGZv
+ciBwZXJmb3JtYW5jZQo+IGVuaGFuY2VtZW50Lgo+Cj4gU28gbmV3IGFsbG9jYXRvciB3aGljaCBj
+YW4gY2xlYXIgdHdvIG1haW4gaXNzdWVzIGlzIG5lZWRlZC4KPgo+IEJlc3QgcmVnYXJkcywKPgo+
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+PiBGcm9tOiBsaW51eC1tZWRpYS1vd25lckB2
+Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1tZWRpYS0KPj4gb3duZXJAdmdlci5rZXJuZWwu
+b3JnXSBPbiBCZWhhbGYgT2YgSW5LaSBEYWUKPj4gU2VudDogVGh1cnNkYXksIEphbnVhcnkgMDYs
+IDIwMTEgMTA6MjUgUE0KPj4gVG86IGxpbnV4LW1lZGlhQHZnZXIua2VybmVsLm9yZwo+PiBTdWJq
+ZWN0OiBNZW1vcnkgc2hhcmluZyBpc3N1ZSBieSBhcHBsaWNhdGlvbiBvbiBWNEwyIGJhc2VkIGRl
+dmljZSBkcml2ZXIKPiB3aXRoCj4+IHN5c3RlbSBtbXUuCj4+Cj4+IEhlbGxvLCBhbGwuCj4+Cj4+
+IEknZCBsaWtlIHRvIGRpc2N1c3MgbWVtb3J5IHNoYXJpbmcgaXNzdWUgYnkgYXBwbGljYXRpb24g
+b24gdjRsMiBiYXNlZAo+IGRldmljZSBkcml2ZXIKPj4gd2l0aCBzeXN0ZW0gbW11IGFuZCBnZXQg
+c29tZSBhZHZpY2VzIGFib3V0IHRoYXQuCj4+Cj4+IE5vdyBJIGFtIHdvcmtpbmcgb24gU2Ftc3Vu
+ZyBTb0MgQzIxMCBwbGF0Zm9ybSBhbmQgdGhpcyBwbGF0Zm9ybSBoYXMgc29tZQo+PiBtdWx0aW1l
+ZGlhIGRldmljZXMgd2l0aCBzeXN0ZW0gbW11IHN1Y2ggYXMgZmltYywgYW5kIG1mYyBhbHNvIHdl
+IGhhdmUKPj4gaW1wbGVtZW50ZWQgZGV2aWNlIGRyaXZlcnMgZm9yIHRoZW0uIHRob3NlIGRyaXZl
+cnMgYXJlIGJhc2VkIG9uIFY0TDIKPiBmcmFtZXdvcmsKPj4gd2l0aCB2aWRlb2J1ZjIuIGZvciBz
+eXN0ZW0gbW11IG9mIGVhY2ggZGV2aWNlLCB3ZSB1c2VkIFZDTShWaXJ0dWFsCj4gQ29udGlndW91
+cwo+PiBNZW1vcnkpIGZyYW1ld29yay4KPj4KPj4gU2ltcGx5LCBWQ00gZnJhbWV3b3JrIHByb3Zp
+ZGVzICBwaHlzaWNhbCBtZW1vcnksIGRldmljZSB2aXJ0dWFsIG1lbW9yeQo+PiBhbGxvY2F0aW9u
+IGFuZCBtZW1vcnkgbWFwcGluZyBiZXR3ZWVuIHRoZW0uIHdoZW4gZGV2aWNlIGRyaXZlciBpcwo+
+IGluaXRpYWxpemVkIG9yCj4+IG9wZXJhdGVkIGJ5IHVzZXIgYXBwbGljYXRpb24sIGVhY2ggZHJp
+dmVyIGFsbG9jYXRlcyBwaHlzaWNhbCBtZW1vcnkgYW5kCj4gZGV2aWNlCj4+IHZpcnR1YWwgbWVt
+b3J5IGFuZCB0aGVuIG1hcHBpbmcgdXNpbmcgVkNNIGludGVyZmFjZS4KPj4KPj4gcmVmZXIgdG8g
+YmVsb3cgbGluayBmb3IgbW9yZSBkZXRhaWwuCj4+IGh0dHA6Ly93d3cuc3Bpbmljcy5uZXQvbGlz
+dHMvbGludXgtbWVkaWEvbXNnMjY1NDguaHRtbAo+Pgo+PiBQaHlzaWNhbCBtZW1vcnkgYWNjZXNz
+IHByb2Nlc3MgaXMgYXMgdGhlIGZvbGxvd2luZy4KPj4gICAgICAgICAgICBEVkEgICAgICAgICAg
+ICAgICAgICAgICAgICAgIFBBCj4+IGRldmljZSAtLS0tLS0tLS0tLS0tLT4gc3lzdGVtIG1tdSAt
+LS0tLS0tLS0tLS0tLS0tLS0+IHBoeXNpY2FsIG1lbW9yeQo+Pgo+PiBEVkEgOiBkZXZpY2Ugdmly
+dHVhbCBhZGRyZXNzLgo+PiBQQSA6IHBoeXNpY2FsIGFkZHJlc3MuCj4+Cj4+IGxpa2UgdGhpcywg
+ZGV2aWNlIHZpcnR1YWwgYWRkcmVzcyBzaG91bGQgYmUgc2V0IHRvIGJ1ZmZlcihzb3VyY2Ugb3IK
+Pj4gZGVzdGluYXRpb24pIHJlZ2lzdGVyIG9mIG11bHRpbWVkaWEgZGV2aWNlLgo+Pgo+PiB0aGUg
+cHJvYmxlbSBpcyB0aGF0IGFwcGxpY2F0aW9uIHdhbnQgdG8gc2hhcmUgb3duIG1lbW9yeSB3aXRo
+IGFueSBkZXZpY2UKPiBkcml2ZXIgdG8KPj4gYXZvaWQgbWVtb3J5IGNvcHkuIGluIG90aGVyIHdv
+cmRzLCB1c2VyLWFsbG9jYXRlZCBtZW1vcnkgY291bGQgYmUgc291cmNlCj4gb3IKPj4gZGVzdGlu
+YXRpb24gbWVtb3J5IG9mIG11bHRpbWVkaWEgZGV2aWNlIGRyaXZlci4KPj4KPj4KPj4gbGV0J3Mg
+c2VlIHRoZSBkaWFncmFtIGJlbG93Lgo+Pgo+PiAgICAgICAgICAgICAgICB1c2VyIGFwcGxpY2F0
+aW9uCj4+Cj4+ICAgICAgICAgICAgICAgICAgICAgIHwKPj4gICAgICAgICAgICAgICAgICAgICAg
+fAo+PiAgICAgICAgICAgICAgICAgICAgICB8Cj4+ICAgICAgICAgICAgICAgICAgICAgIHwKPj4g
+ICAgICAgICAgICAgICAgICAgICAgfCAgMS4gVVZBKGFsbG9jYXRlZCBieSBtYWxsb2MpCj4+ICAg
+ICAgICAgICAgICAgICAgICAgIHwKPj4gICAgICAgICAgICAgICAgICAgICAgfAo+PiAgICAgICAg
+ICAgICAgICAgICAgoax8LyAgICAgICAgICAgICAgICAgICAyLiBVVkEoaW4gcGFnZSB1bml0KQo+
+Pgo+PiAgICAgICAgLS0tLS0+IG11bHRpbWVkaWEgZGV2aWNlIGRyaXZlciAtLS0tLS0tLS0tLS0t
+LS0tLS0tPiB2aWRlb2J1ZjIKPj4gICAgICAgIHwKPj4gICAgICAgIHwgICAgICAgIHwgICAgIF4g
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwKPj4gICAgICAgIHwgICAg
+ICAgIHwgICAgIHwgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwKPj4g
+ICAgICAgIHwgICAgICAgIHwgICAgIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0KPj4gICAgICAgIHwgICAgICAgIHwgICAgICAgICAgICAgICAgICAgIDMuIFBBKGlu
+IHBhZ2UgdW5pdCkKPj4gICAgICAgIHwgICAgICAgIHwKPj4gICAgICAgIHwgICAgICAgIHwgNC4g
+UEEoaW4gcGFnZSB1bml0KQo+PiA2LiBEVkEgIHwgICAgICAgIHwKPj4gICAgICAgIHwgICAgICAg
+IHwKPj4gICAgICAgIHwgICAgICAgIHwKPj4gICAgICAgIHwgICAgICChrHwvCj4+ICAgICAgICB8
+Cj4+ICAgICAgICB8ICAgICAgIFZpcnR1YWwgQ29udGlndW91cyBNZW1vcnkgLS0tLS0tLS0tCj4+
+ICAgICAgICB8ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8Cj4+ICAg
+ICAgICB8ICAgICAgICAgICB8ICAgICBeICAgICAgICAgICAgICAgICAgICAgICB8Cj4+ICAgICAg
+ICB8ICAgICAgICAgICB8ICAgICB8ICAgICAgICAgICAgICAgICAgICAgICB8IDUuIG1hcCBQQSB0
+byBEVkEKPj4gICAgICAgIHwgICAgICAgICAgIHwgICAgIHwgICAgICAgICAgICAgICAgICAgICAg
+IHwKPj4gICAgICAgIHwgICAgICAgICAgIHwgICAgIHwgICAgICAgICAgICAgICAgICAgICAgIHwK
+Pj4gICAgICAgIC0tLS0tLS0tLS0tLS0gICAgIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KPj4K
+Pj4gUEEgOiBwaHlzaWNhbCBhZGRyZXNzLgo+PiBVVkEgOiB1c2VyIHZpcnR1YWwgYWRkcmVzcy4K
+Pj4gRFZBIDogZGV2aWNlIHZpcnR1YWwgYWRkcmVzcy4KPj4KPj4gMS4gdXNlciBhcHBsaWNhdGlv
+biBhbGxvY2F0ZXMgdXNlciBzcGFjZSBtZW1vcnkgdGhyb3VnaCBtYWxsb2MgZnVuY3Rpb24KPiBh
+bmQKPj4gc2VuZGluZyBpdCB0byBtdWx0aW1lZGlhIGRldmljZSBkcml2ZXIgYmFzZWQgb24gdjRs
+MiBmcmFtZXdvcmsgdGhyb3VnaAo+IHVzZXJwdHIKPj4gZmVhdHVyZS4KPj4KPj4gMiwgMy4gbXVs
+dGltZWRpYSBkZXZpY2UgZHJpdmVyIGdldHMgdHJhbnNsYXRlZCBwaHlzaWNhbCBhZGRyZXNzIGZy
+b20KPj4gdmlkZW9idWYyIGZyYW1ld29yayBpbiBwYWdlIHVuaXQuCj4+Cj4+IDQsIDUuIG11bHRp
+bWVkaWEgZGV2aWNlIGRyaXZlciBnZXRzIGFsbG9jYXRlZCBkZXZpY2UgdmlydHVhbCBhZGRyZXNz
+IGFuZAo+IG1hcHBpbmcgaXQKPj4gdG8gcGh5c2ljYWwgYWRkcmVzcyBhbmQgdGhlbiBtYXBwaW5n
+IHRoZW0gdGhyb3VnaCBWQ00gaW50ZXJmYWNlLgo+Pgo+PiA2LiBtdWx0aW1lZGlhIGRldmljZSBk
+cml2ZXIgc2V0cyBkZXZpY2UgdmlydHVhbCBhZGRyZXNzIGZyb20gVkNNIHRvCj4gYnVmZmVyIHJl
+Z2lzdGVyLgo+Pgo+PiB0aGUgZGlhZ3JhbSBhYm92ZSBpcyBmdWxseSB0aGVvcmV0aWNhbCBzbyBJ
+IHdvbmRlciB0aGF0IHRoaXMgd2F5IGlzCj4gcmVhc29uYWJsZSBhbmQKPj4gaGFzIHNvbWUgcHJv
+YmxlbXMgYWxzbyB3aGF0IHNob3VsZCBiZSBjb25zaWRlcmVkLgo+Pgo+PiB0aGFuayB5b3UgZm9y
+IHlvdXIgaW50ZXJlc3RpbmcuCj4+Cj4+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fCj4+IGxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0Cj4+IGxpbnV4
+LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwo+PiBodHRwOi8vbGlzdHMuaW5mcmFkZWFk
+Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwKPj4gLS0KPj4gVG8gdW5zdWJz
+Y3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LW1l
+ZGlhIiBpbgo+IHRoZSBib2R5Cj4+IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJu
+ZWwub3JnIE1vcmUgbWFqb3Jkb21vIGluZm8gYXQKPj4gaHR0cDovL3ZnZXIua2VybmVsLm9yZy9t
+YWpvcmRvbW8taW5mby5odG1sCj4KPgotLQpUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDog
+c2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtZmJkZXYiIGluCnRoZSBib2R5IG9mIGEg
+bWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnCk1vcmUgbWFqb3Jkb21vIGluZm8g
+YXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA==

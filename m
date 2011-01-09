@@ -1,49 +1,31 @@
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Date: Thu, 06 Jan 2011 21:19:12 +0000
-Subject: Re: [RESEND #2] [PATCH v2] LEDS: Add output invertion option to backlight
-Message-Id: <4D2631D0.8030701@oracle.com>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Sun, 09 Jan 2011 16:33:38 +0000
+Subject: [PATCH] video: imx: Update the manufacturer name
+Message-Id: <1294590818-5001-1-git-send-email-festevam@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201012091441.51846.jkrzyszt@tis.icnet.pl>	<20110106130440.cfd77c8e.akpm@linux-foundation.org>	<20110106130856.22b92a8b.randy.dunlap@oracle.com> <20110106131659.cedf8500.akpm@linux-foundation.org>
-In-Reply-To: <20110106131659.cedf8500.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>, Richard Purdie <rpurdie@rpsys.net>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-kernel@vger.kernel.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>
+To: linux-fbdev@vger.kernel.org
 
-On 01/06/11 13:16, Andrew Morton wrote:
-> On Thu, 6 Jan 2011 13:08:56 -0800
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
->> On Thu, 6 Jan 2011 13:04:40 -0800 Andrew Morton wrote:
->>
->>> On Thu, 9 Dec 2010 14:41:50 +0100
->>> Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> wrote:
->>>
->>>> +static DEVICE_ATTR(invert, 0644, bl_trig_invert_show, bl_trig_invert_store);
->>>
->>> This new sysfs file should be documented.  Where would be an
->>> appropriate place for that?  Documentation/leds-class.txt doesn't
->>> mention a sysfs API at all.  
->>> --
->>
->> in Documentation/ABI/, where all sysfs interface info lives.
->>
-> 
-> Spose so.  Documentation/ABI/stable/sysfs-class-backlight does have
-> some stuff in it.
-> 
-> Personally I tend to regard Documentation/ABI/ as fairly useless
-> incomprehensible stuff, maintained to keep Greg happy ;) It'd be better
-> to have a nice little well-maintained document for a subsystem such as
-> this which actually explains its operation in a useful-to-humans way. 
-> Rather than just mechanically filling out forms.
-> 
-> But a Documentation/ABI update is a heck of a lot better than nothing.
+Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
+---
+ drivers/video/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Yes, I was giving you the "where it currently lives", not "what is best."
-I agree with you.
-
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 55dc6fb..0ac30ef 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -414,7 +414,7 @@ config FB_SA1100
+ 	  Y here.
+ 
+ config FB_IMX
+-	tristate "Motorola i.MX LCD support"
++	tristate "Freescale i.MX LCD support"
+ 	depends on FB && (HAVE_FB_IMX || ARCH_MX1 || ARCH_MX2)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
 -- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+1.6.0.4
+

@@ -1,23 +1,47 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Wed, 12 Jan 2011 06:00:23 +0000
-Subject: Re: [PATCH 05/16] s3c2410fb: don't treat NULL clk as an error
-Message-Id: <20110112060022.GB2350@linux-sh.org>
+From: Thomas Weber <weber@corscience.de>
+Date: Mon, 10 Jan 2011 15:34:32 +0000
+Subject: [PATCH] Drivers: video: Add modes for Devkit8000 displays
+Message-Id: <1294673672-30924-1-git-send-email-weber@corscience.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1294749833-32019-1-git-send-email-jamie@jamieiles.com> <1294749833-32019-6-git-send-email-jamie@jamieiles.com>
-In-Reply-To: <1294749833-32019-6-git-send-email-jamie@jamieiles.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jamie Iles <jamie@jamieiles.com>
-Cc: linux-kernel@vger.kernel.org, Vincent Sanders <support@simtec.co.uk>, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Thomas Weber <weber@corscience.de>
 
-On Tue, Jan 11, 2011 at 12:43:42PM +0000, Jamie Iles wrote:
-> clk_get() returns a struct clk cookie to the driver and some platforms
-> may return NULL if they only support a single clock.  clk_get() has only
-> failed if it returns a ERR_PTR() encoded pointer.
-> 
-> Cc: Vincent Sanders <support@simtec.co.uk>
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Jamie Iles <jamie@jamieiles.com>
+This patch adds the video modes for the 4.3, 5.6 and 7 inch panels that
+are sold with the devkit8000.
 
-Applied, thanks.
+Signed-off-by: Thomas Weber <weber@corscience.de>
+---
+ drivers/video/modedb.c |   14 +++++++++++++-
+ 1 files changed, 13 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+index de450c1..7b2581c 100644
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -274,7 +274,19 @@ static const struct fb_videomode modedb[] = {
+        /* 800x520i @ 50 Hz, 15.625 kHz hsync (PAL RGB) */
+        NULL, 50, 800, 520, 58823, 144, 64, 72, 28, 80, 5,
+        0, FB_VMODE_INTERLACED
+-    },
++    }, {
++       /* 480x272 @ 60 Hz */
++       NULL, 60, 480, 272, KHZ2PICOS(10164), 2, 2, 2, 2, 41, 10,
++       0, FB_VMODE_NONINTERLACED
++    }, {
++       /* 640x480 @ 60 Hz */
++       NULL, 60, 640, 480, KHZ2PICOS(25000), 16, 134, 32, 11, 10, 2,
++       0, FB_VMODE_NONINTERLACED
++    }, {
++       /* 800x480 @ 60 Hz */
++       NULL, 60, 800, 480, KHZ2PICOS(30000), 40, 40, 13, 29, 48, 3,
++       0, FB_VMODE_NONINTERLACED
++    }
+ };
+ 
+ #ifdef CONFIG_FB_MODE_HELPERS
+-- 
+1.7.4.rc1
+

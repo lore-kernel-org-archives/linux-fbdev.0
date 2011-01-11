@@ -1,7 +1,7 @@
 From: David Miller <davem@davemloft.net>
-Date: Tue, 11 Jan 2011 23:49:18 +0000
-Subject: [PATCH 2/22] svga: Make svga_wattr take an iomem regbase pointer.
-Message-Id: <20110111.154918.163245188.davem@davemloft.net>
+Date: Tue, 11 Jan 2011 23:52:11 +0000
+Subject: [PATCH 12/22] svga: Make svga_tilecursor() take an iomem regbase
+Message-Id: <20110111.155211.255391137.davem@davemloft.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -9,85 +9,150 @@ Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
 
-And use vga_{r,w}().
-
 Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
- drivers/video/s3fb.c    |    2 +-
- drivers/video/svgalib.c |   18 +++++++++---------
- include/linux/svga.h    |    8 ++++----
- 3 files changed, 14 insertions(+), 14 deletions(-)
+ drivers/video/arkfb.c    |    9 ++++++++-
+ drivers/video/s3fb.c     |   11 +++++++++--
+ drivers/video/svgalib.c  |   12 ++++++------
+ drivers/video/vt8623fb.c |    8 +++++++-
+ include/linux/svga.h     |    2 +-
+ 5 files changed, 31 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
-index dce8c97..0791f30 100644
---- a/drivers/video/s3fb.c
-+++ b/drivers/video/s3fb.c
-@@ -552,7 +552,7 @@ static int s3fb_set_par(struct fb_info *info)
+diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
+index d282aa1..7c21bb7 100644
+--- a/drivers/video/arkfb.c
++++ b/drivers/video/arkfb.c
+@@ -158,12 +158,19 @@ static void arkfb_settile(struct fb_info *info, struct fb_tilemap *map)
  	}
- 
- 	vga_wcrt(NULL, 0x3A, 0x35);
--	svga_wattr(0x33, 0x00);
-+	svga_wattr(par->state.vgabase, 0x33, 0x00);
- 
- 	if (info->var.vmode & FB_VMODE_DOUBLE)
- 		svga_wcrt_mask(0x09, 0x80, 0x80);
-diff --git a/drivers/video/svgalib.c b/drivers/video/svgalib.c
-index fdb4567..59c99fd 100644
---- a/drivers/video/svgalib.c
-+++ b/drivers/video/svgalib.c
-@@ -102,14 +102,14 @@ void svga_set_default_atc_regs(void)
- 
- 	/* All standard ATC registers (AR00 - AR14) */
- 	for (count = 0; count <= 0xF; count ++)
--		svga_wattr(count, count);
-+		svga_wattr(NULL, count, count);
- 
--	svga_wattr(VGA_ATC_MODE, 0x01);
--/*	svga_wattr(VGA_ATC_MODE, 0x41); */
--	svga_wattr(VGA_ATC_OVERSCAN, 0x00);
--	svga_wattr(VGA_ATC_PLANE_ENABLE, 0x0F);
--	svga_wattr(VGA_ATC_PEL, 0x00);
--	svga_wattr(VGA_ATC_COLOR_PAGE, 0x00);
-+	svga_wattr(NULL, VGA_ATC_MODE, 0x01);
-+/*	svga_wattr(NULL, VGA_ATC_MODE, 0x41); */
-+	svga_wattr(NULL, VGA_ATC_OVERSCAN, 0x00);
-+	svga_wattr(NULL, VGA_ATC_PLANE_ENABLE, 0x0F);
-+	svga_wattr(NULL, VGA_ATC_PEL, 0x00);
-+	svga_wattr(NULL, VGA_ATC_COLOR_PAGE, 0x00);
- 
- 	vga_r(NULL, 0x3DA);
- 	vga_w(NULL, VGA_ATT_W, 0x20);
-@@ -159,8 +159,8 @@ void svga_set_textmode_vga_regs(void)
- 	vga_r(NULL, 0x3DA);
- 	vga_w(NULL, VGA_ATT_W, 0x00);
- 
--	svga_wattr(0x10, 0x0C);			/* Attribute Mode Control Register - text mode, blinking and line graphics */
--	svga_wattr(0x13, 0x08);			/* Horizontal Pixel Panning Register  */
-+	svga_wattr(NULL, 0x10, 0x0C);			/* Attribute Mode Control Register - text mode, blinking and line graphics */
-+	svga_wattr(NULL, 0x13, 0x08);			/* Horizontal Pixel Panning Register  */
- 
- 	vga_r(NULL, 0x3DA);
- 	vga_w(NULL, VGA_ATT_W, 0x20);
-diff --git a/include/linux/svga.h b/include/linux/svga.h
-index 3fc52cb..95d3941 100644
---- a/include/linux/svga.h
-+++ b/include/linux/svga.h
-@@ -67,11 +67,11 @@ struct svga_pll {
- 
- /* Write a value to the attribute register */
- 
--static inline void svga_wattr(u8 index, u8 data)
-+static inline void svga_wattr(void __iomem *regbase, u8 index, u8 data)
- {
--	inb(VGA_IS1_RC);
--	outb(index, VGA_ATT_IW);
--	outb(data, VGA_ATT_W);
-+	vga_r(regbase, VGA_IS1_RC);
-+	vga_w(regbase, VGA_ATT_IW, index);
-+	vga_w(regbase, VGA_ATT_W, data);
  }
  
- /* Write a value to a sequence register with a mask */
++static void arkfb_tilecursor(struct fb_info *info, struct fb_tilecursor *cursor)
++{
++	struct arkfb_info *par = info->par;
++
++	svga_tilecursor(par->state.vgabase, info, cursor);
++}
++
+ static struct fb_tile_ops arkfb_tile_ops = {
+ 	.fb_settile	= arkfb_settile,
+ 	.fb_tilecopy	= svga_tilecopy,
+ 	.fb_tilefill    = svga_tilefill,
+ 	.fb_tileblit    = svga_tileblit,
+-	.fb_tilecursor  = svga_tilecursor,
++	.fb_tilecursor  = arkfb_tilecursor,
+ 	.fb_get_tilemax = svga_get_tilemax,
+ };
+ 
+diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
+index eef988d..0ec0f39 100644
+--- a/drivers/video/s3fb.c
++++ b/drivers/video/s3fb.c
+@@ -188,12 +188,19 @@ static void s3fb_settile_fast(struct fb_info *info, struct fb_tilemap *map)
+ 	}
+ }
+ 
++static void s3fb_tilecursor(struct fb_info *info, struct fb_tilecursor *cursor)
++{
++	struct s3fb_info *par = info->par;
++
++	svga_tilecursor(par->state.vgabase, info, cursor);
++}
++
+ static struct fb_tile_ops s3fb_tile_ops = {
+ 	.fb_settile	= svga_settile,
+ 	.fb_tilecopy	= svga_tilecopy,
+ 	.fb_tilefill    = svga_tilefill,
+ 	.fb_tileblit    = svga_tileblit,
+-	.fb_tilecursor  = svga_tilecursor,
++	.fb_tilecursor  = s3fb_tilecursor,
+ 	.fb_get_tilemax = svga_get_tilemax,
+ };
+ 
+@@ -202,7 +209,7 @@ static struct fb_tile_ops s3fb_fast_tile_ops = {
+ 	.fb_tilecopy	= svga_tilecopy,
+ 	.fb_tilefill    = svga_tilefill,
+ 	.fb_tileblit    = svga_tileblit,
+-	.fb_tilecursor  = svga_tilecursor,
++	.fb_tilecursor  = s3fb_tilecursor,
+ 	.fb_get_tilemax = svga_get_tilemax,
+ };
+ 
+diff --git a/drivers/video/svgalib.c b/drivers/video/svgalib.c
+index ecda90e..4876be8 100644
+--- a/drivers/video/svgalib.c
++++ b/drivers/video/svgalib.c
+@@ -299,7 +299,7 @@ void svga_tileblit(struct fb_info *info, struct fb_tileblit *blit)
+ }
+ 
+ /* Set cursor in text (tileblit) mode */
+-void svga_tilecursor(struct fb_info *info, struct fb_tilecursor *cursor)
++void svga_tilecursor(void __iomem *regbase, struct fb_info *info, struct fb_tilecursor *cursor)
+ {
+ 	u8 cs = 0x0d;
+ 	u8 ce = 0x0e;
+@@ -310,7 +310,7 @@ void svga_tilecursor(struct fb_info *info, struct fb_tilecursor *cursor)
+ 	if (! cursor -> mode)
+ 		return;
+ 
+-	svga_wcrt_mask(NULL, 0x0A, 0x20, 0x20); /* disable cursor */
++	svga_wcrt_mask(regbase, 0x0A, 0x20, 0x20); /* disable cursor */
+ 
+ 	if (cursor -> shape = FB_TILE_CURSOR_NONE)
+ 		return;
+@@ -334,11 +334,11 @@ void svga_tilecursor(struct fb_info *info, struct fb_tilecursor *cursor)
+ 	}
+ 
+ 	/* set cursor position */
+-	vga_wcrt(NULL, 0x0E, pos >> 8);
+-	vga_wcrt(NULL, 0x0F, pos & 0xFF);
++	vga_wcrt(regbase, 0x0E, pos >> 8);
++	vga_wcrt(regbase, 0x0F, pos & 0xFF);
+ 
+-	vga_wcrt(NULL, 0x0B, ce); /* set cursor end */
+-	vga_wcrt(NULL, 0x0A, cs); /* set cursor start and enable it */
++	vga_wcrt(regbase, 0x0B, ce); /* set cursor end */
++	vga_wcrt(regbase, 0x0A, cs); /* set cursor start and enable it */
+ }
+ 
+ int svga_get_tilemax(struct fb_info *info)
+diff --git a/drivers/video/vt8623fb.c b/drivers/video/vt8623fb.c
+index 47f0199..7e6afe1 100644
+--- a/drivers/video/vt8623fb.c
++++ b/drivers/video/vt8623fb.c
+@@ -121,13 +121,19 @@ MODULE_PARM_DESC(mtrr, "Enable write-combining with MTRR (1=enable, 0=disable, d
+ 
+ /* ------------------------------------------------------------------------- */
+ 
++static void vt8623fb_tilecursor(struct fb_info *info, struct fb_tilecursor *cursor)
++{
++	struct vt8623fb_info *par = info->par;
++
++	svga_tilecursor(par->state.vgabase, info, cursor);
++}
+ 
+ static struct fb_tile_ops vt8623fb_tile_ops = {
+ 	.fb_settile	= svga_settile,
+ 	.fb_tilecopy	= svga_tilecopy,
+ 	.fb_tilefill    = svga_tilefill,
+ 	.fb_tileblit    = svga_tileblit,
+-	.fb_tilecursor  = svga_tilecursor,
++	.fb_tilecursor  = vt8623fb_tilecursor,
+ 	.fb_get_tilemax = svga_get_tilemax,
+ };
+ 
+diff --git a/include/linux/svga.h b/include/linux/svga.h
+index 767937d..8787950 100644
+--- a/include/linux/svga.h
++++ b/include/linux/svga.h
+@@ -109,7 +109,7 @@ void svga_settile(struct fb_info *info, struct fb_tilemap *map);
+ void svga_tilecopy(struct fb_info *info, struct fb_tilearea *area);
+ void svga_tilefill(struct fb_info *info, struct fb_tilerect *rect);
+ void svga_tileblit(struct fb_info *info, struct fb_tileblit *blit);
+-void svga_tilecursor(struct fb_info *info, struct fb_tilecursor *cursor);
++void svga_tilecursor(void __iomem *regbase, struct fb_info *info, struct fb_tilecursor *cursor);
+ int svga_get_tilemax(struct fb_info *info);
+ void svga_get_caps(struct fb_info *info, struct fb_blit_caps *caps,
+ 		   struct fb_var_screeninfo *var);
 -- 
 1.7.3.4
 

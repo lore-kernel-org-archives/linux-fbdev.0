@@ -1,72 +1,38 @@
-From: Heiko Schocher <hs@denx.de>
-Date: Mon, 24 Jan 2011 09:57:48 +0000
-Subject: [PATCH 4/4 v4] powerpc, video: add SM501 support for charon board.
-Message-Id: <1295863068-11205-1-git-send-email-hs@denx.de>
+From: David Miller <davem@davemloft.net>
+Date: Tue, 11 Jan 2011 23:49:03 +0000
+Subject: [PATCH 1/22] svga: Use proper VGA register name macros in
+Message-Id: <20110111.154903.129760880.davem@davemloft.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291451028-22532-2-git-send-email-hs@denx.de>
-In-Reply-To: <1291451028-22532-2-git-send-email-hs@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Heiko Schocher <hs@denx.de>, linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org, Ben Dooks <ben@simtec.co.uk>, Vincent Sanders <vince@simtec.co.uk>, Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-cc: linux-fbdev@vger.kernel.org
-cc: devicetree-discuss@ozlabs.org
-cc: Ben Dooks <ben@simtec.co.uk>
-cc: Vincent Sanders <vince@simtec.co.uk>
-cc: Samuel Ortiz <sameo@linux.intel.com>
-cc: linux-kernel@vger.kernel.org
 
+Instead of magic register location constants.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
-- changes since v1:
-  - no board specific defconfig file for mpc52xx based boards as suggested
-    from Wolfram Sang
+ include/linux/svga.h |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-- changes since v2:
-  add Ben Dooks, Vincent Sanders and Samuel Ortiz and lkml to cc, as
-  suggested from Paul Mundt.
-
-- changes since v3:
-  - rebased against v2.6.38-rc2
-
-./scripts/checkpatch.pl 0004-powerpc-video-add-SM501-support-for-charon-board.patch
-total: 0 errors, 0 warnings, 22 lines checked
-
-0004-powerpc-video-add-SM501-support-for-charon-board.patch has no obvious style problems and is ready for submission.
-
- arch/powerpc/boot/dts/charon.dts |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
-index 9776889..0e00e50 100644
---- a/arch/powerpc/boot/dts/charon.dts
-+++ b/arch/powerpc/boot/dts/charon.dts
-@@ -186,6 +186,7 @@
- 		#address-cells = <2>;
- 		#size-cells = <1>;
- 		ranges = <	0 0 0xfc000000 0x02000000
-+				1 0 0xe0000000 0x04000000 // CS1 range, SM501
- 				3 0 0xe8000000 0x00080000>;
+diff --git a/include/linux/svga.h b/include/linux/svga.h
+index c59a51a..3fc52cb 100644
+--- a/include/linux/svga.h
++++ b/include/linux/svga.h
+@@ -69,9 +69,9 @@ struct svga_pll {
  
- 		flash@0,0 {
-@@ -197,6 +198,15 @@
- 			#address-cells = <1>;
- 		};
+ static inline void svga_wattr(u8 index, u8 data)
+ {
+-	inb(0x3DA);
+-	outb(index, 0x3C0);
+-	outb(data, 0x3C0);
++	inb(VGA_IS1_RC);
++	outb(index, VGA_ATT_IW);
++	outb(data, VGA_ATT_W);
+ }
  
-+		display@1,0 {
-+			compatible = "smi,sm501";
-+			reg = <1 0x00000000 0x00800000
-+			       1 0x03e00000 0x00200000>;
-+			mode = "640x480-32@60";
-+			interrupts = <1 1 3>;
-+			little-endian;
-+		};
-+
- 		mram0@3,0 {
- 			compatible = "mtd-ram";
- 			reg = <3 0x00000 0x80000>;
+ /* Write a value to a sequence register with a mask */
 -- 
 1.7.3.4
 

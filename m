@@ -1,51 +1,51 @@
-From: Axel Lin <axel.lin@gmail.com>
-Date: Sat, 29 Jan 2011 09:33:48 +0000
-Subject: [PATCH 1/2] video: hpfb: use resource_size()
-Message-Id: <1296293628.13797.2.camel@phoenix>
+From: David Miller <davem@davemloft.net>
+Date: Tue, 11 Jan 2011 23:54:35 +0000
+Subject: [PATCH 21/22] arkfb: Compute VGA base iomem pointer explicitly.
+Message-Id: <20110111.155435.134120804.davem@davemloft.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Phil Blundell <philb@gnu.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-The size calculation is done incorrectly here because it should include
-both the start and end (end - start + 1).
 
-Signed-off-by: Axel Lin <axel.lin@gmail.com>
+This allows the driver to work in multi-domain PCI
+configurations.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
- drivers/video/hpfb.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/arkfb.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/hpfb.c b/drivers/video/hpfb.c
-index c8e280f..ebf8495 100644
---- a/drivers/video/hpfb.c
-+++ b/drivers/video/hpfb.c
-@@ -321,11 +321,11 @@ static int __devinit hpfb_dio_probe(struct dio_dev * d, const struct dio_device_
- 	unsigned long paddr, vaddr;
- 
- 	paddr = d->resource.start;
--	if (!request_mem_region(d->resource.start, d->resource.end - d->resource.start, d->name))
-+	if (!request_mem_region(d->resource.start, resource_size(&d->resource), d->name))
-                 return -EBUSY;
- 
- 	if (d->scode >= DIOII_SCBASE) {
--		vaddr = (unsigned long)ioremap(paddr, d->resource.end - d->resource.start);
-+		vaddr = (unsigned long)ioremap(paddr, resource_size(&d->resource));
- 	} else {
- 		vaddr = paddr + DIO_VIRADDRBASE;
+diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
+index 7a648a7..f63fdf7 100644
+--- a/drivers/video/arkfb.c
++++ b/drivers/video/arkfb.c
+@@ -951,6 +951,8 @@ static struct fb_ops arkfb_ops = {
+ /* PCI probe */
+ static int __devinit ark_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ {
++	struct pci_bus_region bus_reg;
++	struct resource vga_res;
+ 	struct fb_info *info;
+ 	struct arkfb_info *par;
+ 	int rc;
+@@ -1006,6 +1008,15 @@ static int __devinit ark_pci_probe(struct pci_dev *dev, const struct pci_device_
+ 		goto err_iomap;
  	}
-@@ -344,7 +344,7 @@ static void __devexit hpfb_remove_one(struct dio_dev *d)
- 	unregister_framebuffer(&fb_info);
- 	if (d->scode >= DIOII_SCBASE)
- 		iounmap((void *)fb_regs);
--        release_mem_region(d->resource.start, d->resource.end - d->resource.start);
-+	release_mem_region(d->resource.start, resource_size(&d->resource));
- }
  
- static struct dio_device_id hpfb_dio_tbl[] = {
++	bus_reg.start = 0;
++	bus_reg.end = 64 * 1024;
++
++	vga_res.flags = IORESOURCE_IO;
++
++	pcibios_bus_to_resource(dev, &vga_res, &bus_reg);
++
++	par->state.vgabase = (void __iomem *) vga_res.start;
++
+ 	/* FIXME get memsize */
+ 	regval = vga_rseq(par->state.vgabase, 0x10);
+ 	info->screen_size = (1 << (regval >> 6)) << 20;
 -- 
-1.7.0.4
-
-
+1.7.3.4
 

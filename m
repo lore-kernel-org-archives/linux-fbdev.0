@@ -1,57 +1,51 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=
-Date: Mon, 10 Jan 2011 09:39:46 +0000
-Subject: Re: [PATCH] video: imx: Update the manufacturer name
-Message-Id: <20110110093946.GA24920@pengutronix.de>
+From: Jamie Iles <jamie@jamieiles.com>
+Date: Tue, 11 Jan 2011 12:43:43 +0000
+Subject: [PATCH 06/16] nuc900fb: don't treat NULL clk as an error
+Message-Id: <1294749833-32019-7-git-send-email-jamie@jamieiles.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1294590818-5001-1-git-send-email-festevam@gmail.com>
-In-Reply-To: <1294590818-5001-1-git-send-email-festevam@gmail.com>
+References: <1294749833-32019-1-git-send-email-jamie@jamieiles.com>
+In-Reply-To: <1294749833-32019-1-git-send-email-jamie@jamieiles.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: Jamie Iles <jamie@jamieiles.com>, Wan ZongShun <mcuos.com@gmail.com>, linux-fbdev@vger.kernel.org
 
-Hello Fabio,
+clk_get() returns a struct clk cookie to the driver and some platforms
+may return NULL if they only support a single clock.  clk_get() has only
+failed if it returns a ERR_PTR() encoded pointer.
 
-On Sun, Jan 09, 2011 at 09:19:18PM -0200, Fabio Estevam wrote:
-> 2011/1/9 Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>:
-> > On Sun, Jan 09, 2011 at 02:33:38PM -0200, Fabio Estevam wrote:
-> >> Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
-> >> ---
-> >> =A0drivers/video/Kconfig | =A0 =A02 +-
-> >> =A01 files changed, 1 insertions(+), 1 deletions(-)
-> >>
-> >> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> >> index 55dc6fb..0ac30ef 100644
-> >> --- a/drivers/video/Kconfig
-> >> +++ b/drivers/video/Kconfig
-> >> @@ -414,7 +414,7 @@ config FB_SA1100
-> >> =A0 =A0 =A0 =A0 Y here.
-> >>
-> >> =A0config FB_IMX
-> >> - =A0 =A0 tristate "Motorola i.MX LCD support"
-> >> + =A0 =A0 tristate "Freescale i.MX LCD support"
-> > do you have an explanation why this is wrong? =A0Was it a copy&paste
-> > error? =A0If it used to be correct I'd prefer to keep Motorola in there.
->=20
-> The reason is that there exists no "Motorola i.MX" anymore.
->=20
-> Freescale is the company that manufactures the i.MX processors
-> currently, not Motorola.
->=20
-> Motorola used to manufacture i.MX devices until 2004. After the
-> spin-off in 2004, Freescale continued as the i.MX manufacturer.
->=20
-> Also, if you look at the first submission of the i.MX framebuffer
-> driver from Sascha (imxfb: Add Freescale i.MX framebuffer driver -
-> http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dco=
-mmit;h|2f891cb64b0b9c8d389da97c221ee4288f1307)
-> it contains the correct name there ,so this patch makes the driver
-> selection consistent.
-If you add (a maybe shortend version of) this to the commit log it would
-be fine for me.
+Cc: Wan ZongShun <mcuos.com@gmail.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Jamie Iles <jamie@jamieiles.com>
+---
+ drivers/video/nuc900fb.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-Uwe
+diff --git a/drivers/video/nuc900fb.c b/drivers/video/nuc900fb.c
+index 81687ed..62498bd 100644
+--- a/drivers/video/nuc900fb.c
++++ b/drivers/video/nuc900fb.c
+@@ -15,6 +15,7 @@
+  */
+ #include <linux/module.h>
+ #include <linux/kernel.h>
++#include <linux/err.h>
+ #include <linux/errno.h>
+ #include <linux/string.h>
+ #include <linux/mm.h>
+@@ -597,9 +598,9 @@ static int __devinit nuc900fb_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	fbi->clk = clk_get(&pdev->dev, NULL);
+-	if (!fbi->clk || IS_ERR(fbi->clk)) {
++	if (IS_ERR(fbi->clk)) {
+ 		printk(KERN_ERR "nuc900-lcd:failed to get lcd clock source\n");
+-		ret = -ENOENT;
++		ret = PTR_ERR(fbi->clk);
+ 		goto release_irq;
+ 	}
+ 
+-- 
+1.7.3.4
 
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |

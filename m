@@ -1,38 +1,51 @@
-From: "Web Administrator" <web@inidep.edu.ar>
-Date: Mon, 03 Jan 2011 21:24:02 +0000
-Subject: =?iso-8859-1?Q?Posledn=ED_upozorn=ECn=ED_spr=E1vce_syst=E9mu?=
-Message-Id: <50950.91.121.199.74.1294089842.squirrel@webmail.inidep.edu.ar>
+From: David Miller <davem@davemloft.net>
+Date: Tue, 11 Jan 2011 23:54:21 +0000
+Subject: [PATCH 20/22] s3fb: Compute VGA base iomem pointer explicitly.
+Message-Id: <20110111.155421.51284798.davem@davemloft.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-Posledn=ED upozorn=ECn=ED spr=E1vce syst=E9mu
 
+This allows the driver to work in multi-domain PCI
+configurations.
 
-Va=9Ae schr=E1nka je t=E9m=EC=F8 pln=E1.
-23 GB 20 GB
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ drivers/video/s3fb.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
-Posledn=ED upozorn=ECn=ED spr=E1vce syst=E9mu
-
-Va=9Ae schr=E1nka je t=E9m=EC=F8 pln=E1.
-23 GB 20 GB
-
-Va=9Ae po=9Atovn=ED schr=E1nka p=F8ekro=E8ila limit =FAlo=9Ei=9At=EC pro 20=
- GB
-je definov=E1n spr=E1vce, ve kter=E9m pracujete 20.9gigabajt, kter=E9
-nemus=ED b=FDt mo=9En=E9 pos=EDlat nebo p=F8ij=EDmat
-Zpr=E1vy dokud ov=EC=F8en=ED va=9A=ED po=9Atovn=ED schr=E1nky. Chcete-li
-ov=EC=F8en=ED va=9A=ED po=9Atovn=ED schr=E1nky, klikn=ECte pros=EDm na:
-
-http://avahy.com.br/phpform/use/webservice/form1.html
-
-Vypl=F2te sv=F9j informac=ED na v=FD=9Ae uveden=FD odkaz a klikn=ECte na tl=
-a=E8=EDtko Odeslat
-
-"Odeslat soubor
-
-D=EDky
-
-spr=E1vce syst=E9mu
+diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
+index 45e1d43..64ef7b3 100644
+--- a/drivers/video/s3fb.c
++++ b/drivers/video/s3fb.c
+@@ -934,6 +934,8 @@ static int __devinit s3_identification(struct s3fb_info *par)
+ 
+ static int __devinit s3_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ {
++	struct pci_bus_region bus_reg;
++	struct resource vga_res;
+ 	struct fb_info *info;
+ 	struct s3fb_info *par;
+ 	int rc;
+@@ -983,6 +985,15 @@ static int __devinit s3_pci_probe(struct pci_dev *dev, const struct pci_device_i
+ 		goto err_iomap;
+ 	}
+ 
++	bus_reg.start = 0;
++	bus_reg.end = 64 * 1024;
++
++	vga_res.flags = IORESOURCE_IO;
++
++	pcibios_bus_to_resource(dev, &vga_res, &bus_reg);
++
++	par->state.vgabase = (void __iomem *) vga_res.start;
++
+ 	/* Unlock regs */
+ 	cr38 = vga_rcrt(par->state.vgabase, 0x38);
+ 	cr39 = vga_rcrt(par->state.vgabase, 0x39);
+-- 
+1.7.3.4
 

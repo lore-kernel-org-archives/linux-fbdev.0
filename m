@@ -1,24 +1,41 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Thu, 13 Jan 2011 04:10:02 +0000
-Subject: Re: [PATCH] video: move SH_MIPI_DSI/SH_LCD_MIPI_DSI to the top of menu
-Message-Id: <20110113041002.GC12013@linux-sh.org>
+From: Jean Delvare <khali@linux-fr.org>
+Date: Tue, 11 Jan 2011 15:23:52 +0000
+Subject: [PATCH] radeonfb: Let hwmon driver probe the "monid" I2C bus
+Message-Id: <20110111162352.5a634e9e@endymion.delvare>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1294845575-4508-1-git-send-email-dbaryshkov@gmail.com>
-In-Reply-To: <1294845575-4508-1-git-send-email-dbaryshkov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Wed, Jan 12, 2011 at 06:19:35PM +0300, Dmitry Eremin-Solenikov wrote:
-> Kconfig entries SH_MIPI_DSI and SH_LCD_MIPI_DSI while being invisible to
-> the user, broke the FrameBuffer menu (at least in menuconfig), as they
-> aren't depending on respective menuconfig item (FB). In result several
-> items got moved to the main "Graphics support" menu. Move these two
-> problematic items to the top of drivers/video/Kbuild to restore nice
-> display of FB menu.
-> 
-> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Some Radeon cards have an I2C-based thermal sensor chip connected to
+the "monid" I2C bus. Set the I2C probing class of this bus properly so
+that hwmon drivers can detect devices on it and bind to them.
 
-Applied, thanks.
+This closes kernel.org bug #26172.
+
+Reported-by: Alexander Goomenyuk <emerg.reanimator@gmail.com>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+Ben, please let me know if you have any objection, and if you don't,
+please let me know if you want to pick this patch or if you prefer that
+I push it through my hwmon tree.
+
+ drivers/video/aty/radeon_i2c.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- linux-2.6.38-rc0.orig/drivers/video/aty/radeon_i2c.c	2011-01-05 21:24:24.000000000 +0100
++++ linux-2.6.38-rc0/drivers/video/aty/radeon_i2c.c	2011-01-11 13:51:34.000000000 +0100
+@@ -100,6 +100,7 @@ void radeon_create_i2c_busses(struct rad
+ {
+ 	rinfo->i2c[0].rinfo	= rinfo;
+ 	rinfo->i2c[0].ddc_reg	= GPIO_MONID;
++	rinfo->i2c[0].adapter.class = I2C_CLASS_HWMON;
+ 	radeon_setup_i2c_bus(&rinfo->i2c[0], "monid");
+ 
+ 	rinfo->i2c[1].rinfo	= rinfo;
+
+
+-- 
+Jean Delvare

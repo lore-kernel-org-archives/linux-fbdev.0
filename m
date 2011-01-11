@@ -1,169 +1,180 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Thu, 06 Jan 2011 15:19:28 +0000
-Subject: [GIT PULL] fbdev updates for 2.6.38-rc1
-Message-Id: <20110106151928.GA17448@linux-sh.org>
+From: David Miller <davem@davemloft.net>
+Date: Tue, 11 Jan 2011 23:52:25 +0000
+Subject: [PATCH 13/22] svga: Make svga_set_timings() take an iomem regbase
+Message-Id: <20110111.155225.233876725.davem@davemloft.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-Please pull from:
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/fbdev-2.6.git
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ drivers/video/arkfb.c    |    2 +-
+ drivers/video/s3fb.c     |    2 +-
+ drivers/video/svgalib.c  |   33 +++++++++++++++++----------------
+ drivers/video/vt8623fb.c |    2 +-
+ include/linux/svga.h     |    2 +-
+ 5 files changed, 21 insertions(+), 20 deletions(-)
 
-Which contains:
+diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
+index 7c21bb7..9c1632e 100644
+--- a/drivers/video/arkfb.c
++++ b/drivers/video/arkfb.c
+@@ -781,7 +781,7 @@ static int arkfb_set_par(struct fb_info *info)
+ 	}
+ 
+ 	ark_set_pixclock(info, (hdiv * info->var.pixclock) / hmul);
+-	svga_set_timings(&ark_timing_regs, &(info->var), hmul, hdiv,
++	svga_set_timings(par->state.vgabase, &ark_timing_regs, &(info->var), hmul, hdiv,
+ 			 (info->var.vmode & FB_VMODE_DOUBLE)     ? 2 : 1,
+ 			 (info->var.vmode & FB_VMODE_INTERLACED) ? 2 : 1,
+ 			  hmul, info->node);
+diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
+index 0ec0f39..a53d974 100644
+--- a/drivers/video/s3fb.c
++++ b/drivers/video/s3fb.c
+@@ -712,7 +712,7 @@ static int s3fb_set_par(struct fb_info *info)
+ 	}
+ 
+ 	s3_set_pixclock(info, info->var.pixclock);
+-	svga_set_timings(&s3_timing_regs, &(info->var), hmul, 1,
++	svga_set_timings(par->state.vgabase, &s3_timing_regs, &(info->var), hmul, 1,
+ 			 (info->var.vmode & FB_VMODE_DOUBLE)     ? 2 : 1,
+ 			 (info->var.vmode & FB_VMODE_INTERLACED) ? 2 : 1,
+ 			 hmul, info->node);
+diff --git a/drivers/video/svgalib.c b/drivers/video/svgalib.c
+index 4876be8..33df9ec 100644
+--- a/drivers/video/svgalib.c
++++ b/drivers/video/svgalib.c
+@@ -507,8 +507,9 @@ int svga_check_timings(const struct svga_timing_regs *tm, struct fb_var_screenin
+ }
+ 
+ /* Set CRT timing registers */
+-void svga_set_timings(const struct svga_timing_regs *tm, struct fb_var_screeninfo *var,
+-			u32 hmul, u32 hdiv, u32 vmul, u32 vdiv, u32 hborder, int node)
++void svga_set_timings(void __iomem *regbase, const struct svga_timing_regs *tm,
++		      struct fb_var_screeninfo *var,
++		      u32 hmul, u32 hdiv, u32 vmul, u32 vdiv, u32 hborder, int node)
+ {
+ 	u8 regval;
+ 	u32 value;
+@@ -516,66 +517,66 @@ void svga_set_timings(const struct svga_timing_regs *tm, struct fb_var_screeninf
+ 	value = var->xres + var->left_margin + var->right_margin + var->hsync_len;
+ 	value = (value * hmul) / hdiv;
+ 	pr_debug("fb%d: horizontal total      : %d\n", node, value);
+-	svga_wcrt_multi(NULL, tm->h_total_regs, (value / 8) - 5);
++	svga_wcrt_multi(regbase, tm->h_total_regs, (value / 8) - 5);
+ 
+ 	value = var->xres;
+ 	value = (value * hmul) / hdiv;
+ 	pr_debug("fb%d: horizontal display    : %d\n", node, value);
+-	svga_wcrt_multi(NULL, tm->h_display_regs, (value / 8) - 1);
++	svga_wcrt_multi(regbase, tm->h_display_regs, (value / 8) - 1);
+ 
+ 	value = var->xres;
+ 	value = (value * hmul) / hdiv;
+ 	pr_debug("fb%d: horizontal blank start: %d\n", node, value);
+-	svga_wcrt_multi(NULL, tm->h_blank_start_regs, (value / 8) - 1 + hborder);
++	svga_wcrt_multi(regbase, tm->h_blank_start_regs, (value / 8) - 1 + hborder);
+ 
+ 	value = var->xres + var->left_margin + var->right_margin + var->hsync_len;
+ 	value = (value * hmul) / hdiv;
+ 	pr_debug("fb%d: horizontal blank end  : %d\n", node, value);
+-	svga_wcrt_multi(NULL, tm->h_blank_end_regs, (value / 8) - 1 - hborder);
++	svga_wcrt_multi(regbase, tm->h_blank_end_regs, (value / 8) - 1 - hborder);
+ 
+ 	value = var->xres + var->right_margin;
+ 	value = (value * hmul) / hdiv;
+ 	pr_debug("fb%d: horizontal sync start : %d\n", node, value);
+-	svga_wcrt_multi(NULL, tm->h_sync_start_regs, (value / 8));
++	svga_wcrt_multi(regbase, tm->h_sync_start_regs, (value / 8));
+ 
+ 	value = var->xres + var->right_margin + var->hsync_len;
+ 	value = (value * hmul) / hdiv;
+ 	pr_debug("fb%d: horizontal sync end   : %d\n", node, value);
+-	svga_wcrt_multi(NULL, tm->h_sync_end_regs, (value / 8));
++	svga_wcrt_multi(regbase, tm->h_sync_end_regs, (value / 8));
+ 
+ 	value = var->yres + var->upper_margin + var->lower_margin + var->vsync_len;
+ 	value = (value * vmul) / vdiv;
+ 	pr_debug("fb%d: vertical total        : %d\n", node, value);
+-	svga_wcrt_multi(NULL, tm->v_total_regs, value - 2);
++	svga_wcrt_multi(regbase, tm->v_total_regs, value - 2);
+ 
+ 	value = var->yres;
+ 	value = (value * vmul) / vdiv;
+ 	pr_debug("fb%d: vertical display      : %d\n", node, value);
+-	svga_wcrt_multi(NULL, tm->v_display_regs, value - 1);
++	svga_wcrt_multi(regbase, tm->v_display_regs, value - 1);
+ 
+ 	value = var->yres;
+ 	value = (value * vmul) / vdiv;
+ 	pr_debug("fb%d: vertical blank start  : %d\n", node, value);
+-	svga_wcrt_multi(NULL, tm->v_blank_start_regs, value);
++	svga_wcrt_multi(regbase, tm->v_blank_start_regs, value);
+ 
+ 	value = var->yres + var->upper_margin + var->lower_margin + var->vsync_len;
+ 	value = (value * vmul) / vdiv;
+ 	pr_debug("fb%d: vertical blank end    : %d\n", node, value);
+-	svga_wcrt_multi(NULL, tm->v_blank_end_regs, value - 2);
++	svga_wcrt_multi(regbase, tm->v_blank_end_regs, value - 2);
+ 
+ 	value = var->yres + var->lower_margin;
+ 	value = (value * vmul) / vdiv;
+ 	pr_debug("fb%d: vertical sync start   : %d\n", node, value);
+-	svga_wcrt_multi(NULL, tm->v_sync_start_regs, value);
++	svga_wcrt_multi(regbase, tm->v_sync_start_regs, value);
+ 
+ 	value = var->yres + var->lower_margin + var->vsync_len;
+ 	value = (value * vmul) / vdiv;
+ 	pr_debug("fb%d: vertical sync end     : %d\n", node, value);
+-	svga_wcrt_multi(NULL, tm->v_sync_end_regs, value);
++	svga_wcrt_multi(regbase, tm->v_sync_end_regs, value);
+ 
+ 	/* Set horizontal and vertical sync pulse polarity in misc register */
+ 
+-	regval = vga_r(NULL, VGA_MIS_R);
++	regval = vga_r(regbase, VGA_MIS_R);
+ 	if (var->sync & FB_SYNC_HOR_HIGH_ACT) {
+ 		pr_debug("fb%d: positive horizontal sync\n", node);
+ 		regval = regval & ~0x80;
+@@ -590,7 +591,7 @@ void svga_set_timings(const struct svga_timing_regs *tm, struct fb_var_screeninf
+ 		pr_debug("fb%d: negative vertical sync\n\n", node);
+ 		regval = regval | 0x40;
+ 	}
+-	vga_w(NULL, VGA_MIS_W, regval);
++	vga_w(regbase, VGA_MIS_W, regval);
+ }
+ 
+ 
+diff --git a/drivers/video/vt8623fb.c b/drivers/video/vt8623fb.c
+index 7e6afe1..f36c0e5 100644
+--- a/drivers/video/vt8623fb.c
++++ b/drivers/video/vt8623fb.c
+@@ -505,7 +505,7 @@ static int vt8623fb_set_par(struct fb_info *info)
+ 	}
+ 
+ 	vt8623_set_pixclock(info, info->var.pixclock);
+-	svga_set_timings(&vt8623_timing_regs, &(info->var), 1, 1,
++	svga_set_timings(par->state.vgabase, &vt8623_timing_regs, &(info->var), 1, 1,
+ 			 (info->var.vmode & FB_VMODE_DOUBLE) ? 2 : 1, 1,
+ 			 1, info->node);
+ 
+diff --git a/include/linux/svga.h b/include/linux/svga.h
+index 8787950..bfa68e8 100644
+--- a/include/linux/svga.h
++++ b/include/linux/svga.h
+@@ -116,7 +116,7 @@ void svga_get_caps(struct fb_info *info, struct fb_blit_caps *caps,
+ 
+ int svga_compute_pll(const struct svga_pll *pll, u32 f_wanted, u16 *m, u16 *n, u16 *r, int node);
+ int svga_check_timings(const struct svga_timing_regs *tm, struct fb_var_screeninfo *var, int node);
+-void svga_set_timings(const struct svga_timing_regs *tm, struct fb_var_screeninfo *var, u32 hmul, u32 hdiv, u32 vmul, u32 vdiv, u32 hborder, int node);
++void svga_set_timings(void __iomem *regbase, const struct svga_timing_regs *tm, struct fb_var_screeninfo *var, u32 hmul, u32 hdiv, u32 vmul, u32 vdiv, u32 hborder, int node);
+ 
+ int svga_match_format(const struct svga_fb_format *frm, struct fb_var_screeninfo *var, struct fb_fix_screeninfo *fix);
+ 
+-- 
+1.7.3.4
 
-Aaro Koskinen (13):
-      sisfb: eliminate unused variable compiler warning
-      sisfb: delete HAVE_CONFIG_H checks
-      sisfb: remove duplicate function declarations
-      sisfb: change register I/O functions to use fixed size types
-      sisfb: replace inSISREG with SiS_GetRegByte
-      sisfb: replace outSISREG with SiS_SetRegByte
-      sisfb: replace inSISIDXREG with SiS_GetReg
-      sisfb: replace outSISIDXREG with SiS_SetReg
-      sisfb: replace orSISIDXREG with SiS_SetRegOR
-      sisfb: replace andSISIDXREG with SiS_SetRegAND
-      sisfb: replace setSISIDXREG with SiS_SetRegANDOR
-      sisfb: delete unused register I/O macros
-      sisfb: eliminate compiler warnings
-
-Alexey Charkov (3):
-      ARM: Add support for the display controllers in VT8500 and WM8505
-      fbdev: Minor cleanup in WM8505-related code
-      fbdev: Modify vsync timing calculation in wm8505fb
-
-Andres Salomon (1):
-      s1d13xxxfb: drop unused code
-
-Arnd Hannemann (1):
-      fbdev: modedb: fix CEA modes
-
-Brent Cook (1):
-      video: Fix the HGA framebuffer driver
-
-Daniel Drake (2):
-      viafb: General power management infrastructure
-      viafb: Add OLPC XO-1.5 port configs
-
-Erik Gilling (1):
-      video: add fb_edid_add_monspecs for parsing extended edid information
-
-Fabio Estevam (1):
-      video: imxfb: Fix the maximum value for yres
-
-Guennadi Liakhovetski (13):
-      fbdev: sh_mobile_hdmi: add support for more precise HDMI clock configuration
-      fbdev: sh_mobile_hdmi: improve support for more video modes
-      fbdev: sh_mobile_lcdc: increase maximum framebuffer size to support 1080p
-      fbdev: sh_mobile_hdmi: add support for 1080p modes
-      ARM: mach-shmobile: optimize PLLC2 frequency for HDMI
-      fbdev: export fb_edid_add_monspecs() for modules, improve algorithm
-      fbdev: when parsing E-EDID blocks, also use SVD entries
-      fbdev: sh_mobile_hdmi: add support for E-EDID parsing
-      fbdev: sh-mobile: implement MIPI DSI runtime PM support
-      ARM: mach-shmobile: improve MIPI DSI clock configuration
-      fbdev: sh_mipi_dsi: support different register layouts
-      ARM: mach-shmobile: specify sh7372 MIPI DSI register layout
-      fbdev: sh_mipi_dsi: use platform provided register layout and values
-
-Jingoo Han (1):
-      s3c-fb: add support for runtime pm
-
-Joe Perches (1):
-      video: mx3fb: Use vsprintf extension %pR for struct resource
-
-Jonathan Corbet (1):
-      viafb: suspend/resume for GPIOs
-
-Julia Lawall (1):
-      drivers/video/carminefb.c: improve error handling
-
-Magnus Damm (5):
-      fbdev: sh_mipi_dsi: Make use of register names
-      ARM: mach-shmobile: Extend AP4EVB MIPI-DSI resources
-      fbdev: sh_mipi_dsi: Require two I/O resources V2
-      fbdev: sh_mipi_dsi: Allow LCDC board callbacks
-      fbdev: sh_mobile_lcdcfb: Enable 32 bpp and 24 bpp support
-
-Mayuresh Janorkar (1):
-      fbdev: modedb: Add a new mode for 864x480 TAAL panels.
-
-Michael Hennerich (2):
-      fbdev: bf537-lq035: new Blackfin Sharp LQ035 framebuffer driver
-      fbdev: bfin_adv7393fb: new Blackfin ADV7393 driver
-
-Paul Mundt (6):
-      fbdev: sh_mobile_lcdcfb: fix up compiler warnings.
-      fbdev: sh_mobile_hdmi: fix up compiler warnings.
-      fbdev: move udlfb out of staging.
-      video: udlfb: deifdefify (yes, that's a word).
-      video: udlfb: Kill off some magic constants for EDID sizing.
-      video: udlfb: Kill off special printk wrappers, use pr_fmt().
-
-Stefani Seibold (1):
-      drivers/video/i810/i810-i2c.c: fix i2c bus handling
-
- .../staging/udlfb => Documentation/fb}/udlfb.txt   |    0
- arch/arm/mach-shmobile/board-ap4evb.c              |   70 +-
- arch/arm/mach-shmobile/clock-sh7372.c              |   13 +-
- drivers/staging/Kconfig                            |    2 -
- drivers/staging/Makefile                           |    1 -
- drivers/staging/udlfb/Kconfig                      |   14 -
- drivers/staging/udlfb/Makefile                     |    1 -
- drivers/video/Kconfig                              |  120 ++-
- drivers/video/Makefile                             |    6 +
- drivers/video/bf537-lq035.c                        |  914 +++++++++++++++
- drivers/video/bfin_adv7393fb.c                     |  832 ++++++++++++++
- drivers/video/bfin_adv7393fb.h                     |  321 ++++++
- drivers/video/carminefb.c                          |    6 +-
- drivers/video/fbmon.c                              |   88 ++
- drivers/video/hgafb.c                              |   22 +-
- drivers/video/i810/i810-i2c.c                      |   12 +-
- drivers/video/modedb.c                             |   51 +
- drivers/video/mx3fb.c                              |    3 +-
- drivers/video/s1d13xxxfb.c                         |   50 -
- drivers/video/s3c-fb.c                             |  111 ++-
- drivers/video/sh_mipi_dsi.c                        |  129 ++-
- drivers/video/sh_mobile_hdmi.c                     |  219 +++--
- drivers/video/sh_mobile_lcdcfb.c                   |   76 ++-
- drivers/video/sis/init.c                           |   46 +-
- drivers/video/sis/init.h                           |   13 -
- drivers/video/sis/init301.c                        |    8 +-
- drivers/video/sis/init301.h                        |   11 -
- drivers/video/sis/sis.h                            |   65 +-
- drivers/video/sis/sis_main.c                       | 1196 ++++++++++----------
- drivers/{staging/udlfb => video}/udlfb.c           |  135 +--
- drivers/video/via/via-core.c                       |   96 ++-
- drivers/video/via/via-gpio.c                       |   29 +
- drivers/video/via/viafbdev.c                       |   34 +-
- drivers/video/via/viafbdev.h                       |    2 -
- drivers/video/vt8500lcdfb.c                        |  447 ++++++++
- drivers/video/vt8500lcdfb.h                        |   34 +
- drivers/video/wm8505fb.c                           |  422 +++++++
- drivers/video/wm8505fb_regs.h                      |   76 ++
- drivers/video/wmt_ge_rops.c                        |  186 +++
- drivers/video/wmt_ge_rops.h                        |    5 +
- include/linux/fb.h                                 |    3 +
- include/linux/via-core.h                           |   15 +
- include/video/s1d13xxxfb.h                         |    6 -
- include/video/sh_mipi_dsi.h                        |    6 +
- include/video/sh_mobile_hdmi.h                     |    3 +
- {drivers/staging/udlfb => include/video}/udlfb.h   |   22 -
- 46 files changed, 4820 insertions(+), 1101 deletions(-)
- rename {drivers/staging/udlfb => Documentation/fb}/udlfb.txt (100%)
- delete mode 100644 drivers/staging/udlfb/Kconfig
- delete mode 100644 drivers/staging/udlfb/Makefile
- create mode 100644 drivers/video/bf537-lq035.c
- create mode 100644 drivers/video/bfin_adv7393fb.c
- create mode 100644 drivers/video/bfin_adv7393fb.h
- rename drivers/{staging/udlfb => video}/udlfb.c (94%)
- create mode 100644 drivers/video/vt8500lcdfb.c
- create mode 100644 drivers/video/vt8500lcdfb.h
- create mode 100644 drivers/video/wm8505fb.c
- create mode 100644 drivers/video/wm8505fb_regs.h
- create mode 100644 drivers/video/wmt_ge_rops.c
- create mode 100644 drivers/video/wmt_ge_rops.h
- rename {drivers/staging/udlfb => include/video}/udlfb.h (78%)

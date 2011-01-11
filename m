@@ -1,151 +1,90 @@
-From: Dzianis Kahanovich <mahatma@bspu.unibel.by>
-Date: Tue, 04 Jan 2011 11:22:01 +0000
-Subject: [PATCH v5] viafb: I2C/DDC legacy & detect output device if viafb_active_dev
-Message-Id: <4D2302D9.4060404@bspu.unibel.by>
+From: David Miller <davem@davemloft.net>
+Date: Tue, 11 Jan 2011 23:53:11 +0000
+Subject: [PATCH 16/22] vt8623fb: Pass par->state.vgabase to vga_*() calls.
+Message-Id: <20110111.155311.66725233.davem@davemloft.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Adding output device detection. Including legacy I2C/DDC code, currently safe
-mostly for LCD, think "unknown" device as forced CRT. Detect whole output config
-if "viafb_active_dev" unset, or undetected else LCDs in other cases. Also early
-viafb_crt_enable if CRT ON - to force CRT DDC detection and multi-out in
-textmode as positive side-effect.
 
-v5 - check adapter->algo_data (against multiple viafb_find_i2c_adapter()
-behaviours).
+Instead of just plain NULL.
 
-Signed-off-by: Dzianis Kahanovich <mahatma@eu.by>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
---- a/drivers/video/via/viafbdev.c	2011-01-04 13:10:20.000000000 +0200
-+++ b/drivers/video/via/viafbdev.c	2011-01-04 13:12:34.000000000 +0200
-@@ -1670,6 +1670,119 @@ static int parse_mode(const char *str, u
- 	return 0;
- }
+ drivers/video/vt8623fb.c |   32 ++++++++++++++++----------------
+ 1 files changed, 16 insertions(+), 16 deletions(-)
 
-+/* Add devices, detected only via i2c legacy.
-+   Really there may be CRT too, but unless I got no CRT DDC - LCD only.
-+   Possible CRT may be found as "unknown" to keep CRT ON.
-+   Set LCD/DVI/CRT if viafb_active_dev unset. */
-+static void viafb_detect_dev(struct viafb_dev *vdev)
-+{
-+	u8 *edid;
-+	struct fb_var_screeninfo var;
-+	int i, t, ndev = 0, nlcd = 0, unknown = 0;
-+	struct i2c_adapter *adapter;
-+	struct lvds_setting_information *inf;
-+
-+	/* FIXME: viaparinfo1->chip_info looks equal to viaparinfo */
-+	if (viaparinfo->chip_info->tmds_chip_info.tmds_chip_name) {
-+		ndev++;
-+		if (!viafb_active_dev)
-+			viafb_DVI_ON = STATE_ON;
-+	}
-+	if (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
-+		ndev++;
-+		nlcd = 1;
-+		if (!viafb_active_dev)
-+			viafb_LCD_ON = STATE_ON;
-+	}
-+	if (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name) {
-+		ndev++;
-+		nlcd = 2;
-+		if (!viafb_active_dev)
-+			viafb_LCD2_ON = STATE_ON;
-+	}
-+	/* enabling CRT in textmode is at least no bad */
-+	if (viafb_CRT_ON) {
-+		ndev++;
-+		viafb_crt_enable();
-+	}
-+	for (i = 0; i < VIAFB_NUM_PORTS; i++) {
-+		t = vdev->port_cfg[i].type;
-+		/* detect only i2c ports, undetected in other places */
-+		if ((viaparinfo && viaparinfo->chip_info && (
-+		    (viaparinfo->chip_info->tmds_chip_info.tmds_chip_name &&
-+		    viaparinfo->chip_info->tmds_chip_info.i2c_port = t) ||
-+		    (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name &&
-+		    viaparinfo->chip_info->lvds_chip_info.i2c_port = t) ||
-+		    (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name &&
-+		    viaparinfo->chip_info->lvds_chip_info2.i2c_port = t)
-+		    )) || (viaparinfo1 && viaparinfo1->chip_info && (
-+		    (viaparinfo1->chip_info->tmds_chip_info.tmds_chip_name &&
-+		    viaparinfo1->chip_info->tmds_chip_info.i2c_port = t) ||
-+		    (viaparinfo1->chip_info->lvds_chip_info.lvds_chip_name &&
-+		    viaparinfo1->chip_info->lvds_chip_info.i2c_port = t) ||
-+		    (viaparinfo1->chip_info->lvds_chip_info2.lvds_chip_name &&
-+		    viaparinfo1->chip_info->lvds_chip_info2.i2c_port = t)
-+		    )) || !(adapter = viafb_find_i2c_adapter(i)) ||
-+		    !adapter->algo_data || !(edid = fb_ddc_read(adapter)))
-+			continue;
-+		memset(&var, 0, sizeof(var));
-+		if (fb_parse_edid(edid, &var))
-+			goto free_edid;
-+		printk(KERN_INFO "viafb: %48s\n", adapter->name);
-+		inf = NULL;
-+		if (!nlcd) {
-+			fb_edid_to_monspecs(edid, &viafbinfo->monspecs);
-+			if (viafbinfo->monspecs.input & FB_DISP_DDI)
-+				inf = viaparinfo->lvds_setting_info;
-+			else
-+				unknown++;
-+		} else if (nlcd > 1) {
-+			printk(KERN_ERR "viafb: too many LCD\n");
-+			unknown++;
-+		} else if (viafb_dual_fb) {
-+			fb_edid_to_monspecs(edid, &viafbinfo1->monspecs);
-+			if (viafbinfo1->monspecs.input & FB_DISP_DDI)
-+				inf = viaparinfo1->lvds_setting_info;
-+			else
-+				unknown++;
-+		} else {
-+			fb_edid_to_monspecs(edid, &viafbinfo->monspecs);
-+			if (viafbinfo->monspecs.input & FB_DISP_DDI)
-+				inf = viaparinfo->lvds_setting_info2;
-+			else
-+				unknown++;
-+		}
-+		if (inf) {
-+			if (!viafb_active_dev) {
-+				if (nlcd)
-+					viafb_LCD2_ON = STATE_ON;
-+				else
-+					viafb_LCD_ON = STATE_ON;
-+			}
-+			nlcd++;
-+			if (var.xres)
-+				inf->lcd_panel_hres = var.xres;
-+			if (var.yres)
-+				inf->lcd_panel_vres = var.yres;
-+		}
-+		ndev++;
-+free_edid:
-+		kfree(edid);
-+	}
-+	if (!viafb_active_dev) {
-+		/* prefer CRT OFF if other devices */
-+		if (!unknown && ndev > 1) {
-+			viafb_CRT_ON = STATE_OFF;
-+			viafb_crt_disable();
-+		}
-+		viafb_DeviceStatus = viafb_primary_dev +		    viafb_CRT_ON ? CRT_Device :
-+		    viafb_DVI_ON ? DVI_Device :
-+		    viafb_LCD_ON ? LCD_Device : None_Device;
-+		viafb_set_iga_path();
-+	}
-+}
-+
+diff --git a/drivers/video/vt8623fb.c b/drivers/video/vt8623fb.c
+index f36c0e5..b470157 100644
+--- a/drivers/video/vt8623fb.c
++++ b/drivers/video/vt8623fb.c
+@@ -271,12 +271,12 @@ static void vt8623_set_pixclock(struct fb_info *info, u32 pixclock)
+ 	}
+ 
+ 	/* Set VGA misc register  */
+-	regval = vga_r(NULL, VGA_MIS_R);
+-	vga_w(NULL, VGA_MIS_W, regval | VGA_MIS_ENB_PLL_LOAD);
++	regval = vga_r(par->state.vgabase, VGA_MIS_R);
++	vga_w(par->state.vgabase, VGA_MIS_W, regval | VGA_MIS_ENB_PLL_LOAD);
+ 
+ 	/* Set clock registers */
+-	vga_wseq(NULL, 0x46, (n  | (r << 6)));
+-	vga_wseq(NULL, 0x47, m);
++	vga_wseq(par->state.vgabase, 0x46, (n  | (r << 6)));
++	vga_wseq(par->state.vgabase, 0x47, m);
+ 
+ 	udelay(1000);
+ 
+@@ -454,18 +454,18 @@ static int vt8623fb_set_par(struct fb_info *info)
+ 	svga_wseq_mask(par->state.vgabase, 0x1E, 0xF0, 0xF0); // DI/DVP bus
+ 	svga_wseq_mask(par->state.vgabase, 0x2A, 0x0F, 0x0F); // DI/DVP bus
+ 	svga_wseq_mask(par->state.vgabase, 0x16, 0x08, 0xBF); // FIFO read threshold
+-	vga_wseq(NULL, 0x17, 0x1F);       // FIFO depth
+-	vga_wseq(NULL, 0x18, 0x4E);
++	vga_wseq(par->state.vgabase, 0x17, 0x1F);       // FIFO depth
++	vga_wseq(par->state.vgabase, 0x18, 0x4E);
+ 	svga_wseq_mask(par->state.vgabase, 0x1A, 0x08, 0x08); // enable MMIO ?
+ 
+-	vga_wcrt(NULL, 0x32, 0x00);
+-	vga_wcrt(NULL, 0x34, 0x00);
+-	vga_wcrt(NULL, 0x6A, 0x80);
+-	vga_wcrt(NULL, 0x6A, 0xC0);
++	vga_wcrt(par->state.vgabase, 0x32, 0x00);
++	vga_wcrt(par->state.vgabase, 0x34, 0x00);
++	vga_wcrt(par->state.vgabase, 0x6A, 0x80);
++	vga_wcrt(par->state.vgabase, 0x6A, 0xC0);
+ 
+-	vga_wgfx(NULL, 0x20, 0x00);
+-	vga_wgfx(NULL, 0x21, 0x00);
+-	vga_wgfx(NULL, 0x22, 0x00);
++	vga_wgfx(par->state.vgabase, 0x20, 0x00);
++	vga_wgfx(par->state.vgabase, 0x21, 0x00);
++	vga_wgfx(par->state.vgabase, 0x22, 0x00);
+ 
+ 	/* Set SR15 according to number of bits per pixel */
+ 	mode = svga_match_format(vt8623fb_formats, &(info->var), &(info->fix));
+@@ -478,7 +478,7 @@ static int vt8623fb_set_par(struct fb_info *info)
+ 		break;
+ 	case 1:
+ 		pr_debug("fb%d: 4 bit pseudocolor\n", info->node);
+-		vga_wgfx(NULL, VGA_GFX_MODE, 0x40);
++		vga_wgfx(par->state.vgabase, VGA_GFX_MODE, 0x40);
+ 		svga_wseq_mask(par->state.vgabase, 0x15, 0x20, 0xFE);
+ 		svga_wcrt_mask(par->state.vgabase, 0x11, 0x00, 0x70);
+ 		break;
+@@ -717,8 +717,8 @@ static int __devinit vt8623_pci_probe(struct pci_dev *dev, const struct pci_devi
+ 	}
+ 
+ 	/* Find how many physical memory there is on card */
+-	memsize1 = (vga_rseq(NULL, 0x34) + 1) >> 1;
+-	memsize2 = vga_rseq(NULL, 0x39) << 2;
++	memsize1 = (vga_rseq(par->state.vgabase, 0x34) + 1) >> 1;
++	memsize2 = vga_rseq(par->state.vgabase, 0x39) << 2;
+ 
+ 	if ((16 <= memsize1) && (memsize1 <= 64) && (memsize1 = memsize2))
+ 		info->screen_size = memsize1 << 20;
+-- 
+1.7.3.4
 
- #ifdef CONFIG_PM
- static int viafb_suspend(void *unused)
-@@ -1891,6 +2004,7 @@ int __devinit via_fb_pci_probe(struct vi
-
- 	viafb_init_proc(viaparinfo->shared);
- 	viafb_init_dac(IGA2);
-+	viafb_detect_dev(vdev);
-
- #ifdef CONFIG_PM
- 	viafb_pm_register(&viafb_fb_pm_hooks);
---

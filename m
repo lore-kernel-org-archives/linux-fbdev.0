@@ -1,20 +1,40 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Thu, 06 Jan 2011 06:44:28 +0000
-Subject: Re: [PATCH v3] video: imxfb: Fix the maximum value for yres
-Message-Id: <20110106064428.GC15340@linux-sh.org>
+From: Axel Lin <axel.lin@gmail.com>
+Date: Mon, 17 Jan 2011 08:33:42 +0000
+Subject: [PATCH 2/2] video: nuc900fb: properly free resources in
+Message-Id: <1295253222.12890.4.camel@mola>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1293193704-2855-1-git-send-email-fabio.estevam@freescale.com>
-In-Reply-To: <1293193704-2855-1-git-send-email-fabio.estevam@freescale.com>
+References: <1295253143.12890.3.camel@mola>
+In-Reply-To: <1295253143.12890.3.camel@mola>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Fri, Dec 24, 2010 at 10:28:24AM -0200, Fabio Estevam wrote:
-> MX27 and MX25 have 10 bits in the YMAX field of LCDC Size Register.
-> 
-> Fix the maximum value for yres.
-> 
-> Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
+From f0064467b1f9696ebcade98ec75ef3fbc6cfe38f Mon Sep 17 00:00:00 2001
+From: Axel Lin <axel.lin@gmail.com>
+Date: Mon, 17 Jan 2011 16:25:57 +0800
+Subject: [PATCH 2/2] video: nuc900fb: properly free resources in nuc900fb_remove
 
-Applied, thanks.
+Signed-off-by: Axel Lin <axel.lin@gmail.com>
+---
+ drivers/video/nuc900fb.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/nuc900fb.c b/drivers/video/nuc900fb.c
+index 29ef92f..f838d9e 100644
+--- a/drivers/video/nuc900fb.c
++++ b/drivers/video/nuc900fb.c
+@@ -696,6 +696,8 @@ static int nuc900fb_remove(struct platform_device *pdev)
+ 	nuc900fb_stop_lcd(fbinfo);
+ 	msleep(1);
+ 
++	unregister_framebuffer(fbinfo);
++	nuc900fb_cpufreq_deregister(fbi);
+ 	nuc900fb_unmap_video_memory(fbinfo);
+ 
+ 	iounmap(fbi->io);
+-- 
+1.7.2
+
+
+

@@ -1,58 +1,60 @@
-From: Dzianis Kahanovich <mahatma@bspu.unibel.by>
-Date: Tue, 04 Jan 2011 11:16:08 +0000
-Subject: Re: [PATCH] viafb: fix viafb_find_i2c_adapt return value
-Message-Id: <4D230178.9060406@bspu.unibel.by>
+From: Axel Lin <axel.lin@gmail.com>
+Date: Mon, 17 Jan 2011 08:32:23 +0000
+Subject: [PATCH 1/2] video: nuc900fb: fix compile error
+Message-Id: <1295253143.12890.3.camel@mola>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4D0FAB7E.1080704@bspu.unibel.by>
-In-Reply-To: <4D0FAB7E.1080704@bspu.unibel.by>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Florian Tobias Schandinat wrote:
-> [cc'ed Jon; un-cc'ed Joseph as his email address is no longer valid]
-> 
-> Dzianis Kahanovich schrieb:
->> viafb_find_i2c_adapt return unverifyed value, "is_active" field still uplevel.
->> Fix it.
-> 
-> This patch looks useful to me but the viafb camera driver uses this function at
-> the moment. It's not a big issue now as 31 will be always I2C but perhaps it
-> might be a good idea to patch drivers/media/video/via-camera.c
+From a4bd940fa4d162f95e51e67c7ec4973b1d5b6866 Mon Sep 17 00:00:00 2001
+From: Axel Lin <axel.lin@gmail.com>
+Date: Mon, 17 Jan 2011 16:24:36 +0800
+Subject: [PATCH 1/2] video: nuc900fb: fix compile error
 
-Oops!
+This patch fixes below compile error:
 
-> 
-> Jon, do you agree that this patch is useful, at least as long we do not
-> dynamically change the configuration?
-> 
-> 
-> Thanks,
-> 
-> Florian Tobias Schandinat
-> 
->>
->> Signed-off-by: Dzianis Kahanovich <mahatma@eu.by>
->> ---
->> --- a/drivers/video/via/via_i2c.c    2010-12-18 06:42:37.000000000 +0200
->> +++ b/drivers/video/via/via_i2c.c    2010-12-20 19:55:17.000000000 +0200
->> @@ -188,7 +188,7 @@ struct i2c_adapter *viafb_find_i2c_adapt
->>  {
->>      struct via_i2c_stuff *stuff = &via_i2c_par[which];
->>
->> -    return &stuff->adapter;
->> +    return stuff->is_active ? &stuff->adapter : NULL;
->>  }
->>  EXPORT_SYMBOL_GPL(viafb_find_i2c_adapter);
->>
->> -- 
->>
->>
-> 
-> 
-> 
+  CC      drivers/video/nuc900fb.o
+drivers/video/nuc900fb.c: In function 'nuc900fb_suspend':
+drivers/video/nuc900fb.c:726: error: too few arguments to function 'nuc900fb_stop_lcd'
+drivers/video/nuc900fb.c: In function 'nuc900fb_resume':
+drivers/video/nuc900fb.c:743: error: 'bfinfo' undeclared (first use in this function)
+drivers/video/nuc900fb.c:743: error: (Each undeclared identifier is reported only once
+drivers/video/nuc900fb.c:743: error: for each function it appears in.)
+make[2]: *** [drivers/video/nuc900fb.o] Error 1
+make[1]: *** [drivers/video] Error 2
+make: *** [drivers] Error 2
 
+Signed-off-by: Axel Lin <axel.lin@gmail.com>
+---
+ drivers/video/nuc900fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/video/nuc900fb.c b/drivers/video/nuc900fb.c
+index 62498bd..29ef92f 100644
+--- a/drivers/video/nuc900fb.c
++++ b/drivers/video/nuc900fb.c
+@@ -723,7 +723,7 @@ static int nuc900fb_suspend(struct platform_device *dev, pm_message_t state)
+ 	struct fb_info	   *fbinfo = platform_get_drvdata(dev);
+ 	struct nuc900fb_info *info = fbinfo->par;
+ 
+-	nuc900fb_stop_lcd();
++	nuc900fb_stop_lcd(fbinfo);
+ 	msleep(1);
+ 	clk_disable(info->clk);
+ 	return 0;
+@@ -740,7 +740,7 @@ static int nuc900fb_resume(struct platform_device *dev)
+ 	msleep(1);
+ 
+ 	nuc900fb_init_registers(fbinfo);
+-	nuc900fb_activate_var(bfinfo);
++	nuc900fb_activate_var(fbinfo);
+ 
+ 	return 0;
+ }
 -- 
-WBR, Dzianis Kahanovich AKA Denis Kaganovich, http://mahatma.bspu.unibel.by/
+1.7.2
+
+
+

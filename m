@@ -1,37 +1,40 @@
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Date: Tue, 11 Jan 2011 18:17:56 +0000
-Subject: Re: A query on frame buffers
-Message-Id: <20110111181756.GI14017@dumpdata.com>
+From: Axel Lin <axel.lin@gmail.com>
+Date: Thu, 20 Jan 2011 03:50:51 +0000
+Subject: [PATCH] video: da8xx-fb: fix fb_probe error path
+Message-Id: <1295495451.20884.3.camel@mola>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <AANLkTim38gpvun=QwWcnwz719a2NYBcpiSvPYtgR6jMj@mail.gmail.com>
-	<1294390835.6019.218.camel@thor.local>
-	<20110107165813.GA24320@dumpdata.com>
-	<AANLkTik_YENOcUioFFEN73i9ASZ7oZ80FZ_NXt-Ti5RV@mail.gmail.com>
-	<20110107192437.GD27871@dumpdata.com>
-	<AANLkTim4Cm-3gWwpqa8YmPekoyariRXVrzB6Ayv-zHAi@mail.gmail.com>
-	<20110110181716.GA9627@dumpdata.com>
-	<AANLkTikRJvAeDB7JDx+5NrAt8Rct8AvTTY+9LoGTOaqy@mail.gmail.com>
-	<20110110202451.GA14293@dumpdata.com>
-	<AANLkTimJ=WwnCtUNzQcxwHgHZp_bqQwt8YfiXm=g0gv-@mail.gmail.com>
-In-Reply-To: <AANLkTimJ=WwnCtUNzQcxwHgHZp_bqQwt8YfiXm=g0gv-@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Prasad Joshi <prasadjoshi124@gmail.com>
-Cc: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-kernel@vger.kernel.org
+Cc: Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org, Sudhakar Rajashekhara <sudhakar.raj@ti.com>
 
-> > What motherboard is this?
-> 
-> ASUS M4A89TD Pro/USB3, it is mentioned on the link
-> http://wiki.xensource.com/xenwiki/VTdHowTo
+Current implementation puts CONFIG_CPU_FREQ at wrong place, CONFIG_CPU_FREQ
+is for lcd_da8xx_cpufreq_deregister not for unregister_framebuffer.
 
-I am not sure how the implementation of the IOMMU
-in the Xen hypervisor is different from the Linux implementation.
-Usually it is lock-step, but it might be different.
+Signed-off-by: Axel Lin <axel.lin@gmail.com>
+---
+ drivers/video/da8xx-fb.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Also, Xen's QEMU has different mechanism for handling PCI passthrough
-so ... 
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index c265aed..520047a 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1092,9 +1092,10 @@ static int __init fb_probe(struct platform_device *device)
+ 
+ irq_freq:
+ #ifdef CONFIG_CPU_FREQ
++	lcd_da8xx_cpufreq_deregister(par);
++#endif
+ err_cpu_freq:
+ 	unregister_framebuffer(da8xx_fb_info);
+-#endif
+ 
+ err_dealloc_cmap:
+ 	fb_dealloc_cmap(&da8xx_fb_info->cmap);
+-- 
+1.7.2
 
-Lots of variables to figure out why it does not work for you.
-It might make sense to start first with a working case and from there
-start switching over to KVM.
+
+

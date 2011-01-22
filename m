@@ -1,37 +1,56 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Date: Thu, 20 Jan 2011 19:42:16 +0000
-Subject: Re: Request for unicore32 architecture codes to merge into
-Message-Id: <20110120114216.4b23182a@jbarnes-desktop>
+From: "Guan Xuetao" <guanxuetao@mprc.pku.edu.cn>
+Date: Sat, 22 Jan 2011 02:17:16 +0000
+Subject: RE: Request for unicore32 architecture codes to merge into linux-next
+Message-Id: <013801cbb9da$7f9bff10$7ed3fd30$@mprc.pku.edu.cn>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <004901cbb4d5$b9bb1370$2d313a50$@mprc.pku.edu.cn>
-In-Reply-To: <004901cbb4d5$b9bb1370$2d313a50$@mprc.pku.edu.cn>
+References: <004901cbb4d5$b9bb1370$2d313a50$@mprc.pku.edu.cn> <20110120114216.4b23182a@jbarnes-desktop>
+In-Reply-To: <20110120114216.4b23182a@jbarnes-desktop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Guan Xuetao <guanxuetao@mprc.pku.edu.cn>
-Cc: sfr@canb.auug.org.au, Arnd Bergmann <arnd@arndb.de>, gregkh@suse.de, dmitry.torokhov@gmail.com, dtor@mail.ru, rubini@cvml.unipv.it, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-next@vger.kernel.org
+To: 'Jesse Barnes' <jbarnes@virtuousgeek.org>
+Cc: sfr@canb.auug.org.au, 'Arnd Bergmann' <arnd@arndb.de>, gregkh@suse.de, dmitry.torokhov@gmail.com, dtor@mail.ru, rubini@cvml.unipv.it, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-next@vger.kernel.org
 
-On Sun, 16 Jan 2011 01:00:31 +0800
-"Guan Xuetao" <guanxuetao@mprc.pku.edu.cn> wrote:
 
-> Hi,
+
+> -----Original Message-----
+> From: Jesse Barnes [mailto:jbarnes@virtuousgeek.org]
+> Sent: Friday, January 21, 2011 3:42 AM
+> To: Guan Xuetao
+> Cc: sfr@canb.auug.org.au; Arnd Bergmann; gregkh@suse.de; dmitry.torokhov@gmail.com; dtor@mail.ru; rubini@cvml.unipv.it; linux-
+> arch@vger.kernel.org; linux-kernel@vger.kernel.org; linux-fbdev@vger.kernel.org; linux-next@vger.kernel.org
+> Subject: Re: Request for unicore32 architecture codes to merge into linux-next
 > 
-> I want to merge unicore32 repo into linux-next tree, the position is (unicore32 branch):
->   git://git.kernel.org/pub/scm/linux/kernel/git/epip/linux-2.6-unicore32.git
+> On Sun, 16 Jan 2011 01:00:31 +0800
+> "Guan Xuetao" <guanxuetao@mprc.pku.edu.cn> wrote:
 > 
-> Signed-off-by: Guan Xuetao <gxt@mprc.pku.edu.cn>
-> ---
+> > Hi,
+> >
+> > I want to merge unicore32 repo into linux-next tree, the position is (unicore32 branch):
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/epip/linux-2.6-unicore32.git
+> >
+> > Signed-off-by: Guan Xuetao <gxt@mprc.pku.edu.cn>
+> > ---
+> 
+> Took a quick look at the PCI parts, looks like you have a pretty big
+> DMA restriction.
+Yes, only 128MB low memory could be used as dma space for pci devices.
+> 
+> You could provide your own dma map ops and make the allocator a bit
+> smarter about where it gets memory (preferentially allocating from the
+> DMA'able region, which you could hide).  Or do you find that swiotlb
+> does ok in general?
+Swiotlb works well. For almost all functions are provided by IPs inside the SoC,
+the dma function is used mainly through amba/axi bus,  not pci bus.
 
-Took a quick look at the PCI parts, looks like you have a pretty big
-DMA restriction.
+> 
+> Other than that you had pretty tiny bits of enabling code, I assume
+> they work on your platform (config space access & setup, etc.).
+Yes.
+> 
+> --
+> Jesse Barnes, Intel Open Source Technology Center
+Thanks Jesse
 
-You could provide your own dma map ops and make the allocator a bit
-smarter about where it gets memory (preferentially allocating from the
-DMA'able region, which you could hide).  Or do you find that swiotlb
-does ok in general?
+Guan Xuetao
 
-Other than that you had pretty tiny bits of enabling code, I assume
-they work on your platform (config space access & setup, etc.).
-
--- 
-Jesse Barnes, Intel Open Source Technology Center

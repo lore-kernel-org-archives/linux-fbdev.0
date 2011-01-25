@@ -1,34 +1,41 @@
-From: David Miller <davem@davemloft.net>
-Date: Tue, 11 Jan 2011 23:53:38 +0000
-Subject: [PATCH 17/22] arkfb: Don't clobber par->state.vgabase during open
-Message-Id: <20110111.155338.77341413.davem@davemloft.net>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Tue, 25 Jan 2011 09:51:59 +0000
+Subject: [GIT PULL] fbdev updates for 2.6.38-rc3
+Message-Id: <20110125095159.GA18633@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
+Please pull from:
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- drivers/video/arkfb.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/fbdev-2.6.git fbdev-fixes-for-linus
 
-diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
-index f328c9d..7a648a7 100644
---- a/drivers/video/arkfb.c
-+++ b/drivers/video/arkfb.c
-@@ -535,7 +535,10 @@ static int arkfb_open(struct fb_info *info, int user)
- 
- 	mutex_lock(&(par->open_lock));
- 	if (par->ref_count = 0) {
-+		void __iomem *vgabase = par->state.vgabase;
-+
- 		memset(&(par->state), 0, sizeof(struct vgastate));
-+		par->state.vgabase = vgabase;
- 		par->state.flags = VGA_SAVE_MODE | VGA_SAVE_FONTS | VGA_SAVE_CMAP;
- 		par->state.num_crtc = 0x60;
- 		par->state.num_seq = 0x30;
--- 
-1.7.3.4
+Which contains:
 
+Amerigo Wang (1):
+      video: fix some comments in drivers/video/console/vgacon.c
+
+Axel Lin (5):
+      video: nuc900fb: fix compile error
+      video: nuc900fb: properly free resources in nuc900fb_remove
+      video: pxa3xx-gcu: Return -EFAULT when copy_from_user() fails
+      video: da8xx-fb: fix fb_probe error path
+      video: pxa168fb: remove a redundant pxa168fb_check_var call
+
+Julia Lawall (1):
+      drivers/video/bf537-lq035.c: Add missing IS_ERR test
+
+Paul Mundt (1):
+      mailmap: Add an entry for Axel Lin.
+
+ .mailmap                       |    1 +
+ drivers/video/bf537-lq035.c    |   58 ++++++++++++++++++++++-----------------
+ drivers/video/console/vgacon.c |    6 +---
+ drivers/video/da8xx-fb.c       |    3 +-
+ drivers/video/nuc900fb.c       |    6 +++-
+ drivers/video/pxa168fb.c       |    6 +---
+ drivers/video/pxa3xx-gcu.c     |    4 +-
+ 7 files changed, 44 insertions(+), 40 deletions(-)

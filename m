@@ -1,76 +1,35 @@
-From: Heiko Schocher <hs@denx.de>
-Date: Tue, 25 Jan 2011 06:45:46 +0000
-Subject: [PATCH 4/4 v5] powerpc, video: add SM501 support for charon board.
-Message-Id: <1295937946-26934-1-git-send-email-hs@denx.de>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Tue, 25 Jan 2011 06:49:49 +0000
+Subject: Re: [PATCH 4/4 v5] powerpc, video: add SM501 support for charon board.
+Message-Id: <20110125064949.GF11673@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1291451028-22532-2-git-send-email-hs@denx.de>
-In-Reply-To: <1291451028-22532-2-git-send-email-hs@denx.de>
+	<1295937946-26934-1-git-send-email-hs@denx.de>
+In-Reply-To: <1295937946-26934-1-git-send-email-hs-ynQEQJNshbs@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org, Samuel Ortiz <sameo@linux.intel.com>, Vincent Sanders <vince@simtec.co.uk>, linux-kernel@vger.kernel.org, Ben Dooks <ben@simtec.co.uk>, Paul Mundt <lethal@linux-sh.org>, Heiko Schocher <hs@denx.de>
+To: Heiko Schocher <hs-ynQEQJNshbs@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-mnsaURCQ41sdnm+yROfE0A@public.gmane.org, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Vincent Sanders <vince-Y5A6D6n0/KfQXOPxS62xeg@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ben Dooks <ben-Y5A6D6n0/KfQXOPxS62xeg@public.gmane.org>, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-cc: linux-fbdev@vger.kernel.org
-cc: devicetree-discuss@ozlabs.org
-cc: Ben Dooks <ben@simtec.co.uk>
-cc: Vincent Sanders <vince@simtec.co.uk>
-cc: Samuel Ortiz <sameo@linux.intel.com>
-cc: linux-kernel@vger.kernel.org
-cc: Paul Mundt <lethal@linux-sh.org>
+On Tue, Jan 25, 2011 at 07:45:46AM +0100, Heiko Schocher wrote:
+> @@ -197,6 +198,15 @@
+>  			#address-cells = <1>;
+>  		};
+>  
+> +		display@1,0 {
+> +			compatible = "smi,sm501";
+> +			reg = <1 0x00000000 0x00800000
+> +			       1 0x03e00000 0x00200000>;
+> +			mode = "640x480-32@60";
+> +			interrupts = <1 1 3>;
+> +			little-endian;
+> +		};
+> +
 
----
-- changes since v1:
-  - no board specific defconfig file for mpc52xx based boards as suggested
-    from Wolfram Sang
-
-- changes since v2:
-  add Ben Dooks, Vincent Sanders and Samuel Ortiz and lkml to cc, as
-  suggested from Paul Mundt.
-
-- changes since v3:
-  - rebased against v2.6.38-rc2
-
-- changes since v4:
-  - added Paul Mundt to cc (Sorry forgot this in series v4)
-
-./scripts/checkpatch.pl 0004-powerpc-video-add-SM501-support-for-charon-board.patch
-total: 0 errors, 0 warnings, 22 lines checked
-
-0004-powerpc-video-add-SM501-support-for-charon-board.patch has no obvious style problems and is ready for submission.
-
- arch/powerpc/boot/dts/charon.dts |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
-index 9776889..0e00e50 100644
---- a/arch/powerpc/boot/dts/charon.dts
-+++ b/arch/powerpc/boot/dts/charon.dts
-@@ -186,6 +186,7 @@
- 		#address-cells = <2>;
- 		#size-cells = <1>;
- 		ranges = <	0 0 0xfc000000 0x02000000
-+				1 0 0xe0000000 0x04000000 // CS1 range, SM501
- 				3 0 0xe8000000 0x00080000>;
- 
- 		flash@0,0 {
-@@ -197,6 +198,15 @@
- 			#address-cells = <1>;
- 		};
- 
-+		display@1,0 {
-+			compatible = "smi,sm501";
-+			reg = <1 0x00000000 0x00800000
-+			       1 0x03e00000 0x00200000>;
-+			mode = "640x480-32@60";
-+			interrupts = <1 1 3>;
-+			little-endian;
-+		};
-+
- 		mram0@3,0 {
- 			compatible = "mtd-ram";
- 			reg = <3 0x00000 0x80000>;
--- 
-1.7.3.4
-
+The endian designation looks good, but it still doesn't explain why you
+have a remaining CONFIG_PPC_MPC52xx ifdef encapsulating the property
+check in the sm501fb patch. It shouldn't be needed at all. If the
+platform supports OF then the property will need to be set one way or the
+other, so there is no need for any board or CPU ifdeffery within the
+driver itself.

@@ -1,24 +1,30 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Tue, 11 Jan 2011 03:04:25 +0000
-Subject: Re: [PATCH] Drivers: video: Add modes for Devkit8000 displays
-Message-Id: <20110111030425.GG3760@linux-sh.org>
+From: "Luck, Tony" <tony.luck@intel.com>
+Date: Wed, 26 Jan 2011 23:07:44 +0000
+Subject: RE: [PATCH 0/2][concept RFC] x86: BIOS-save kernel log to disk	upon
+Message-Id: <987664A83D2D224EAE907B061CE93D53019438EABF@orsmsx505.amr.corp.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1294673672-30924-1-git-send-email-weber@corscience.de>
-In-Reply-To: <1294673672-30924-1-git-send-email-weber@corscience.de>
+References: <20110125134748.GA10051@laptop>
+ <AANLkTinU0KYiCd4p=z+=ojbkeEoT2G+CAYvdRU02KJEn@mail.gmail.com>
+ <20110126124954.GC24527@laptop>
+In-Reply-To: <20110126124954.GC24527@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Weber <weber@corscience.de>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, X86-ML <x86@kernel.org>, Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Randy Dunlap <rdunlap@xenotime.net>, Willy Tarreau <wtarreau@hera.kernel.org>, Willy Tarreau <w@1wt.eu>, Dirk Hohndel <hohndel@infradead.org>, "Hohndel, Dirk" <dirk.hohndel@intel.com>, IDE-ML <linux-ide@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, =?iso-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>, Borislav Petkov <bp@alien8.de>, Arjan van de Ven <arjan@infradead.org>, Tejun Heo <tj@kernel.org>, James Bottomley <James.Bottomley@suse.de>, Mark Lord <kernel@teksavvy.com>, Jeff Garzik <jgarzik@pobox.com>, Eric Biederman <ebiederm@xmission.com>, Vivek Goyal <vgoyal@redhat.com>
 
-On Mon, Jan 10, 2011 at 04:34:32PM +0100, Thomas Weber wrote:
-> This patch adds the video modes for the 4.3, 5.6 and 7 inch panels that
-> are sold with the devkit8000.
-> 
-> Signed-off-by: Thomas Weber <weber@corscience.de>
+>- The latest approach (proposed by Linus) is to forget the disk: jump to
+>  real-mode, but display the kernel log in a fancy format (with scroll
+>  ups and downs) instead.
 
-The modedb is primarily intended for generic modes that are going to be
-used by a multiple of drivers. If you're simply dealing with modes for
-panels for a one-off board that no one else is using, then simply keep it
-local to the driver. If there are multiple users of the same modes, then
-it's of course possible to make it generally available.
+A while ago (first Plumbers conference?) someone was talking about
+using a 2-d barcode to display the tail of the kernel log & oops
+register data - with the plan that you could capture the image with
+a cell phone camera, and then get all the oops data without worrying
+about transcription errors as you wrote down & re-typed all the hex.
+
+Anyone know what happened to that plan?
+
+-Tony
+
+

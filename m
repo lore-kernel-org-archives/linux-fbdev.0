@@ -1,7 +1,7 @@
-From: Jean Delvare <khali@linux-fr.org>
-Date: Wed, 02 Feb 2011 08:12:34 +0000
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 02 Feb 2011 09:51:01 +0000
 Subject: Re: [PATCH] radeonfb: Let hwmon driver probe the "monid" I2C bus
-Message-Id: <20110202091234.46fde57a@endymion.delvare>
+Message-Id: <1296640261.2349.683.camel@pasglop>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20110111162352.5a634e9e@endymion.delvare>
 In-Reply-To: <20110111162352.5a634e9e@endymion.delvare>
@@ -10,33 +10,22 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Thu, 13 Jan 2011 09:56:57 +0100, Jean Delvare wrote:
-> Hi Ben,
-> 
-> On Thu, 13 Jan 2011 15:50:10 +1100, Benjamin Herrenschmidt wrote:
-> > On Thu, 2011-01-13 at 14:44 +1000, Dave Airlie wrote:
-> > > The radeon BIOS actually contains a table to tell us what chip is on
-> > > the bus,
-> > > in the KMS driver we read this table and load the appropriate hwmon
-> > > device,
-> > > 
-> > > There could possibly be other things on this bus than hw monitor
-> > > devices.
-> > > 
-> > > Though radeonfb should be considered mostly dead. 
+On Wed, 2011-02-02 at 09:12 +0100, Jean Delvare wrote:
+> > If this is a concern to you, I'd be fine excluding CONFIG_PPC from
+> the
+> > change. Or are you worried about Intel Mac machines too? If there's
+> an
+> > easy way to spot all powermac machines, we can use that too, just
+> let
+> > me know how.
 > > 
-> > I want to test that on a few powermacs first. "probing" i2c can be
-> > destructive and f* knows what Apple put on those busses on some
-> > machines.
+> > > Haven't had a chance to look much yet.
 > 
-> If this is a concern to you, I'd be fine excluding CONFIG_PPC from the
-> change. Or are you worried about Intel Mac machines too? If there's an
-> easy way to spot all powermac machines, we can use that too, just let
-> me know how.
-> 
-> > Haven't had a chance to look much yet.
+> Ben, any progress on this?
 
-Ben, any progress on this?
+Sorry, too swamped. Go on with CONFIG_PPC excluded for now.
 
--- 
-Jean Delvare
+Cheers,
+Ben.
+
+

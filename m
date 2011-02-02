@@ -1,80 +1,95 @@
-From: Daniel Morsing <daniel.morsing@gmail.com>
-Date: Wed, 16 Feb 2011 19:22:11 +0000
-Subject: Re: [PATCH 0/2] Add recommended bpp for omap dss2 generic dpi
-Message-Id: <1297884131.8777.34.camel@morsing>
+From: Alexander Goomenyuk <emerg.reanimator@gmail.com>
+Date: Wed, 02 Feb 2011 05:50:16 +0000
+Subject: Re: [PATCH] radeonfb: Let hwmon driver probe the "monid" I2C bus
+Message-Id: <1296625816.8818.19.camel@home-fx60>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1297530130-10355-1-git-send-email-daniel.morsing@gmail.com>
-	 <1297861914.988.1.camel@deskari>  <1297865193.8777.8.camel@morsing>
-	 <1297866996.988.69.camel@deskari>  <1297870958.8777.21.camel@morsing>
-	 <1297871886.14556.21.camel@deskari>
-In-Reply-To: <1297871886.14556.21.camel@deskari>
+References: <20110111162352.5a634e9e@endymion.delvare>
+In-Reply-To: <20110111162352.5a634e9e@endymion.delvare>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>, Bryan Wu <bryan.wu@canonical.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-On Wed, 2011-02-16 at 17:58 +0200, Tomi Valkeinen wrote:
-> On Wed, 2011-02-16 at 09:42 -0600, Daniel Morsing wrote:
-> > On Wed, 2011-02-16 at 16:36 +0200, Tomi Valkeinen wrote:
+On Thu, 2011-01-13 at 14:44 +1000, Dave Airlie wrote:
+> On Thu, Jan 13, 2011 at 2:11 PM, Paul Mundt <lethal@linux-sh.org> wrote:
+> > On Tue, Jan 11, 2011 at 04:23:52PM +0100, Jean Delvare wrote:
+> >> Some Radeon cards have an I2C-based thermal sensor chip connected to
+> >> the "monid" I2C bus. Set the I2C probing class of this bus properly so
+> >> that hwmon drivers can detect devices on it and bind to them.
+> >>
+> >> This closes kernel.org bug #26172.
+> >>
 > 
-> > > And I found:
-> > > 
-> > > http://www.timll.com/chinese/download/files/CHILIN_TECHNOLOGY.pdf
-> > > 
-> > > It looks like 24bpp display.
-> > > 
-> > 
-> > Ok I looked through the datasheet and it looks to me that i got
-> > the .config field right. Only thing that's vague from that sheet is
-> > which pixel clock edge the v-sync and h-sync are driven low and the
-> > color distortion is still there with either option.
-> > 
-> > > What kind of color distortion do you see? Perhaps the problem is
-> > > somewhere else, like wrong horizontal sync, vertical sync or pixel clock
-> > > signal setting in .config field. This info should be in the panel
-> > > datasheet, but it usually takes some deciphering to understand it =).
-> > > 
-> > >  Tomi
-> > > 
-> > 
-> > I'm seeing a light cyan tint to everything when running at 24bpp. Using
-> > 16 datalines causes a heavy blue tint.
+> The radeon BIOS actually contains a table to tell us what chip is on the bus,
+> in the KMS driver we read this table and load the appropriate hwmon device,
 > 
-> But with 24 datalines and 16 bpp it works? Sounds strange =). 
+> There could possibly be other things on this bus than hw monitor devices.
 > 
-> One thing to check are the pinmuxings (or pad configuration, as it's
-> called in omap3 trm).
+> Though radeonfb should be considered mostly dead.
 > 
-> Are you using 2.6.37 or newer kernel?
-> 
-> Is this also happening with other devkit8000 devices, so it's not just a
-> broken device?
-> 
-> Have you tried with an image with full red, green and blue areas, to see
-> if only certain colors are affected? 
-> 
-> And the last option is of course get a scope and see what's going on in
-> the datalines.
-> 
->  Tomi
-> 
-> 
+> Dave.
 
-Ok I've done some more testing, the result being that I'm a bit of an
-idiot.
+I have tried radeon KMS driver.
+        modinfo output:
+        filename:       /lib/modules/2.6.36-tuxonice-r3/kernel/drivers/gpu/drm/radeon/radeon.ko
+        depends:
+        drm,drm_kms_helper,ttm,fb,i2c-core,cfbfillrect,cfbimgblt,cfbcopyarea,i2c-algo-bit
+        vermagic:       2.6.36-tuxonice-r3 SMP mod_unload 686 
+        parm:           no_wb:Disable AGP writeback for scratch
+        registers (int)
+        parm:           modeset:Disable/Enable modesetting (int)
+        parm:           dynclks:Disable/Enable dynamic clocks (int)
+        parm:           r4xx_atom:Enable ATOMBIOS modesetting for R4xx
+        (int)
+        parm:           vramlimit:Restrict VRAM for testing (int)
+        parm:           agpmode:AGP Mode (-1 = PCI) (int)
+        parm:           gartsize:Size of PCIE/IGP gart to setup in
+        megabytes (32,64, etc)
+         (int)
+        parm:           benchmark:Run benchmark (int)
+        parm:           test:Run tests (int)
+        parm:           connector_table:Force connector table (int)
+        parm:           tv:TV enable (0 = disable) (int)
+        parm:           new_pll:Select new PLL code (int)
+        parm:           audio:Audio enable (0 = disable) (int)
+        parm:           disp_priority:Display Priority (0 = auto, 1         normal, 2 = high) (int)
+        parm:           hw_i2c:hw i2c engine enable (0 = disable) (int)
+        
+But it also need modifications in order to be used by lm63 hwmon driver.
+1. MONID line is disable by combios_setup_i2c_bus() for RV380 because
+of:
+        case CHIP_RV350:
+        case CHIP_RV380:
+        case CHIP_RS400:
+        case CHIP_RS480:
+                switch (ddc_line) {
+                case RADEON_GPIO_VGA_DDC:
+                case RADEON_GPIO_DVI_DDC:
++                       i2c.hw_capable = true;
+-                       i2c.hw_capable = false;
+                        break;
+                case RADEON_GPIO_MONID:
+                     /* hw i2c on RADEON_GPIO_MONID doesn't seem to work
+                      * reliably on some pre-r4xx hardware; not sure why
+                      */
+                        i2c.hw_capable = true;
+                        break;
 
-The cyan tint only appears on console text. Running any sort of program
-that actually used the display worked as intended. Setting the bpp as 16
-actually made all the colors muted when you actually used the display,
-so it is clearly the wrong "solution".
+extracted from the sources.
+It would be nice if there will be some driver parameter to control this
+behavior. Or/and control it in kernel configuration menu.
 
-Since no one actually uses a hardware tty on a device like this, the
-issue is kinda pointless. So I'm gonna resend the panel adding patch
-without the bpp hack and with the correct name.
+2. MONID adapter is not registered as HWMON capable.
+So I have added the following line into radeon_combios_i2c_init():
 
-Regards,
-Daniel Morsing
+        } else if (rdev->family >= CHIP_R300) {
+               i2c = combios_setup_i2c_bus(rdev, DDC_MONID, 0, 0);
+               rdev->i2c_bus[3] = radeon_i2c_create(dev, &i2c, "MONID");
++              rdev->i2c_bus[3]->adapter.class = I2C_CLASS_HWMON;
 
+Now I see GPU temperature using lm_sensors.
 
+P.S. There is also strange side effect after reloading radeon driver
+from X console: the screen switch off. So I have to switch between
+virtual console and X. Is it an bug?
 

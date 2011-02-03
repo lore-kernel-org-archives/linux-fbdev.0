@@ -1,100 +1,46 @@
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-Date: Sun, 13 Feb 2011 22:11:24 +0000
-Subject: [PATCH 2/6] sisfb: move XGI POST RAM type detection into a subroutine
-Message-Id: <1297635088-13224-3-git-send-email-aaro.koskinen@iki.fi>
+From: Jean Delvare <khali@linux-fr.org>
+Date: Thu, 03 Feb 2011 08:23:10 +0000
+Subject: [PATCH v2] radeonfb: Let hwmon driver probe the "monid" I2C bus
+Message-Id: <20110203092310.74f3c690@endymion.delvare>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1297635088-13224-1-git-send-email-aaro.koskinen@iki.fi>
-In-Reply-To: <1297635088-13224-1-git-send-email-aaro.koskinen@iki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Thomas Winischhofer <thomas@winischhofer.net>
+To: linux-fbdev@vger.kernel.org
 
-Move XGI POST RAM type detection into a separate subroutine to make
-further code changes easier. No changes in functionality
+Some Radeon cards have an I2C-based thermal sensor chip connected to
+the "monid" I2C bus. Set the I2C probing class of this bus properly so
+that hwmon drivers can detect devices on it and bind to them.
 
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>
+This closes kernel.org bug #26172.
+
+We exclude PPC for the time being, as Benjamin doesn't want us to
+mess up with them without explicit testing, and there is no evidence
+that this change is needed for them either.
+
+Reported-by: Alexander Goomenyuk <emerg.reanimator@gmail.com>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- drivers/video/sis/sis_main.c |   57 +++++++++++++++++++++++++----------------
- 1 files changed, 35 insertions(+), 22 deletions(-)
+Changes since v1:
+* Excluded CONFIG_PPC as requested by Benjamin H.
 
-diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
-index 2c5de66..364559b 100644
---- a/drivers/video/sis/sis_main.c
-+++ b/drivers/video/sis/sis_main.c
-@@ -4936,6 +4936,40 @@ sisfb_post_xgi_setclocks(struct sis_video_info *ivideo, u8 regb)
- 	sisfb_post_xgi_delay(ivideo, 0x43);
- }
- 
-+static u8 __devinit
-+sisfb_post_xgi_ramtype(struct sis_video_info *ivideo)
-+{
-+	unsigned char *bios = ivideo->bios_abase;
-+	u8 ramtype;
-+	u8 reg;
-+	u8 v1;
-+
-+	ramtype = 0x00; v1 = 0x10;
-+	if (ivideo->haveXGIROM) {
-+		ramtype = bios[0x62];
-+		v1 = bios[0x1d2];
-+	}
-+	if (!(ramtype & 0x80)) {
-+		if (ivideo->chip = XGI_20) {
-+			SiS_SetReg(SISCR, 0x97, v1);
-+			reg = SiS_GetReg(SISCR, 0x97);
-+			if (reg & 0x10) {
-+				ramtype = (reg & 0x01) << 1;
-+			}
-+		} else {
-+			reg = SiS_GetReg(SISSR, 0x39);
-+			ramtype = reg & 0x02;
-+			if (!(ramtype)) {
-+				reg = SiS_GetReg(SISSR, 0x3a);
-+				ramtype = (reg >> 1) & 0x01;
-+			}
-+		}
-+	}
-+	ramtype &= 0x07;
-+
-+	return ramtype;
-+}
-+
- static int __devinit
- sisfb_post_xgi(struct pci_dev *pdev)
+ drivers/video/aty/radeon_i2c.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+--- linux-2.6.38-rc3.orig/drivers/video/aty/radeon_i2c.c	2011-02-03 08:42:36.000000000 +0100
++++ linux-2.6.38-rc3/drivers/video/aty/radeon_i2c.c	2011-02-03 09:13:41.000000000 +0100
+@@ -100,6 +100,9 @@ void radeon_create_i2c_busses(struct rad
  {
-@@ -5380,28 +5414,7 @@ sisfb_post_xgi(struct pci_dev *pdev)
- 		SiS_SetReg(SISSR, 0x1c, 0x00);
- 	}
+ 	rinfo->i2c[0].rinfo	= rinfo;
+ 	rinfo->i2c[0].ddc_reg	= GPIO_MONID;
++#ifndef CONFIG_PPC
++	rinfo->i2c[0].adapter.class = I2C_CLASS_HWMON;
++#endif
+ 	radeon_setup_i2c_bus(&rinfo->i2c[0], "monid");
  
--	ramtype = 0x00; v1 = 0x10;
--	if(ivideo->haveXGIROM) {
--		ramtype = bios[0x62];
--		v1 = bios[0x1d2];
--	}
--	if(!(ramtype & 0x80)) {
--		if(ivideo->chip = XGI_20) {
--			SiS_SetReg(SISCR, 0x97, v1);
--			reg = SiS_GetReg(SISCR, 0x97);
--			if(reg & 0x10) {
--				ramtype = (reg & 0x01) << 1;
--			}
--		} else {
--			reg = SiS_GetReg(SISSR, 0x39);
--			ramtype = reg & 0x02;
--			if(!(ramtype)) {
--				reg = SiS_GetReg(SISSR, 0x3a);
--				ramtype = (reg >> 1) & 0x01;
--			}
--		}
--	}
--	ramtype &= 0x07;
-+	ramtype = sisfb_post_xgi_ramtype(ivideo);
- 
- 	regb = 0;	/* ! */
- 
--- 
-1.5.6.5
+ 	rinfo->i2c[1].rinfo	= rinfo;
 
+
+-- 
+Jean Delvare

@@ -1,35 +1,71 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 23 Feb 2011 09:47:41 +0000
-Subject: Re: [PATCH] OMAPFB: Adding a check for timings in set_def_mode
-Message-Id: <1298454461.29392.5.camel@deskari>
+From: Thomas Schlichter <thomas.schlichter@web.de>
+Date: Sun, 06 Feb 2011 11:02:05 +0000
+Subject: Re: [PATCH] uvesafb,vesafb: create write-combining or write-back PAT entries
+Message-Id: <201102061202.09503.thomas.schlichter@web.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="nextPart8479254.T2lzAKVkOP"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1298381713-13624-1-git-send-email-mayur@ti.com>
-In-Reply-To: <1298381713-13624-1-git-send-email-mayur@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Janorkar, Mayuresh" <mayur@ti.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "lethal@linux-sh.org" <lethal@linux-sh.org>
+References: <201011271437.38126.thomas.schlichter@web.de> <20101130061051.GD17114@linux-sh.org>
+In-Reply-To: <20101130061051.GD17114@linux-sh.org>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Michal Januszewski <spock@gentoo.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, 2011-02-22 at 07:35 -0600, Janorkar, Mayuresh wrote:
-> When omapfb.mode is passed through bootargs, when omapfb is setting mode,
-> it would check if timings passed are fine for panel attached to it.
-> It makes use of check_timing API provided by the panel.
-> 
-> In current code if check_timing API is not available for attached panel,
-> OMAPFB would return -EINVAL and BPP sent via bootargs will not have any effect.
-> 
-> In case of panels like TAAL panel, omapfb or any other driver should not be allowed to
-> change the timings. So bpps sent via bootargs will not have an effect.
-> 
-> In such case we can check only the x_res and y_res with the panels resolution
-> and if they match go ahead and set the bpps.
-> The bpp value sent via bootarg would have an effect.
-> 
-> Signed-off-by: Mayuresh Janorkar <mayur@ti.com>
+--nextPart8479254.T2lzAKVkOP
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-This looks good, applying to DSS tree.
+Sorry for answering this late, unfortunately I was quite busy with my daily=
+=20
+work...
 
- Tomi
+Am Dienstag 30 November 2010, um 07:10:51 schrieb Paul Mundt:
+> uvesafb presently has no special architecture dependencies, but
+> ioremap_wc() is not as of yet a wholly generic interface. Some
+> architectures that don't set ARCH_HAS_IOREMAP_WC get it by virtue of the
+> asm-generic/iomap.h include, and most of the nommu architectures will
+> stub it in via asm-generic/io.h, but this still leaves quite a long list
+> of platforms that don't handle it at all.
+>=20
+> Your options at this point are either to establish ioremap_wc() as a
+> generic API, and layer this patch on top of that, or rework
+> uvesafb_init_mtrr() to do the actual broken-out remapping and rework it
+> in to something like a uvesafb_remap(), where you bury the MTRR details
+> under CONFIG_MTRR.
+>=20
+> While there's probably value in exposing ioremap_wc() as a generic
+> interface, you're never going to hit any of the non-default ioremap()
+> calls on platforms lacking MTRRs anyways, so special-casing it is ok.
 
+Thank you for finding that problem and showing possibilities for fixing it.=
+ I=20
+prepared 3 patches, where the first essentially is my old patch with specia=
+l-
+casing via ifdef CONFIG_X86. The second patch establishes ioremap_cache() a=
+nd=20
+ioremap_wc() for all architectures, and the third patch removed the special-
+casing from uvesafb.
 
+So the first patch can stand on its own and hopefully can be merged upstrea=
+m.=20
+The third patch needs the second one, which may be merged for unifying=20
+purposes. But as these are mor cleanup-patches, they are not that important=
+=20
+for me.
+
+Best regards,
+Thomas Schlichter
+
+--nextPart8479254.T2lzAKVkOP
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAk1Of60ACgkQYAiN+WRIZzTmTwCgmkXxrMFyHBH7SZEoKuaWdoOL
+0igAoI0ZvOlJw4EKfhpJXdaDvojUCjir
+=c5J2
+-----END PGP SIGNATURE-----
+
+--nextPart8479254.T2lzAKVkOP--

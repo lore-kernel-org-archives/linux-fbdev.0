@@ -1,94 +1,96 @@
-From: Andres Salomon <dilinger@queued.net>
-Date: Fri, 18 Feb 2011 03:07:31 +0000
-Subject: [PATCH 24/29] tmio-fb: use mfd_data instead of driver_data
-Message-Id: <1297998456-7615-25-git-send-email-dilinger@queued.net>
+From: Andrea Righi <arighi@develer.com>
+Date: Sun, 06 Feb 2011 15:50:24 +0000
+Subject: [PATCH] fb: fix potential deadlock between lock_fb_info and console_lock
+Message-Id: <1297007424-14656-1-git-send-email-arighi@develer.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1297998456-7615-1-git-send-email-dilinger@queued.net>
-In-Reply-To: <1297998456-7615-1-git-send-email-dilinger@queued.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Greg KH <gregkh@suse.de>, =?UTF-8?q?Peter=20Nordstr=C3=B6m=20=28Palm=20GBU=29?= <peter.nordstrom@palm.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, stable@kernel.org
 
-Use mfd_data for passing information from mfd drivers to mfd
-clients.  The mfd_cell's driver_data field is being phased out.
+The function fb_set_suspend() must be called with the console semaphore
+held, which means the code path coming in here will first take the
+console_lock() and then call lock_fb_info().
 
-Clients that were using driver_data now access .mfd_data
-via mfd_get_data().  This changes tmio-fb only; mfd drivers with
-other cells are not modified.
+However several framebuffer ioctl commands acquire these locks in
+reverse order (lock_fb_info() and then console_lock()). This gives rise
+to potential AB-BA deadlock.
 
-Signed-off-by: Andres Salomon <dilinger@queued.net>
+Fix this by changing the order of acquisition in the ioctl commands that
+make use of console_lock().
+
+Reported-by: Peter Nordstr=C3=B6m (Palm GBU) <peter.nordstrom@palm.com>
+Signed-off-by: Andrea Righi <arighi@develer.com>
 ---
- drivers/mfd/tc6393xb.c |    2 +-
- drivers/video/tmiofb.c |   15 +++++++--------
- 2 files changed, 8 insertions(+), 9 deletions(-)
+ drivers/video/fbmem.c |   24 +++++++++++++++---------
+ 1 files changed, 15 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/mfd/tc6393xb.c b/drivers/mfd/tc6393xb.c
-index ecb045b..3d62ded 100644
---- a/drivers/mfd/tc6393xb.c
-+++ b/drivers/mfd/tc6393xb.c
-@@ -694,7 +694,7 @@ static int __devinit tc6393xb_probe(struct platform_device *dev)
- 	}
- 
- 	tc6393xb_cells[TC6393XB_CELL_NAND].mfd_data = tcpd->nand_data;
--	tc6393xb_cells[TC6393XB_CELL_FB].driver_data = tcpd->fb_data;
-+	tc6393xb_cells[TC6393XB_CELL_FB].mfd_data = tcpd->fb_data;
- 
- 	ret = mfd_add_devices(&dev->dev, dev->id,
- 			tc6393xb_cells, ARRAY_SIZE(tc6393xb_cells),
-diff --git a/drivers/video/tmiofb.c b/drivers/video/tmiofb.c
-index 6302882..7e57d3b 100644
---- a/drivers/video/tmiofb.c
-+++ b/drivers/video/tmiofb.c
-@@ -250,8 +250,7 @@ static irqreturn_t tmiofb_irq(int irq, void *__info)
-  */
- static int tmiofb_hw_stop(struct platform_device *dev)
- {
--	struct mfd_cell *cell = mfd_get_cell(dev);
--	struct tmio_fb_data *data = cell->driver_data;
-+	struct tmio_fb_data *data = mfd_get_data(dev);
- 	struct fb_info *info = platform_get_drvdata(dev);
- 	struct tmiofb_par *par = info->par;
- 
-@@ -313,7 +312,7 @@ static int tmiofb_hw_init(struct platform_device *dev)
- static void tmiofb_hw_mode(struct platform_device *dev)
- {
- 	struct mfd_cell *cell = mfd_get_cell(dev);
--	struct tmio_fb_data *data = cell->driver_data;
-+	struct tmio_fb_data *data = mfd_get_data(dev);
- 	struct fb_info *info = platform_get_drvdata(dev);
- 	struct fb_videomode *mode = info->mode;
- 	struct tmiofb_par *par = info->par;
-@@ -559,8 +558,8 @@ static int tmiofb_ioctl(struct fb_info *fbi,
- static struct fb_videomode *
- tmiofb_find_mode(struct fb_info *info, struct fb_var_screeninfo *var)
- {
--	struct mfd_cell *cell = mfd_get_cell(to_platform_device(info->device));
--	struct tmio_fb_data *data = cell->driver_data;
-+	struct tmio_fb_data *data +			mfd_get_data(to_platform_device(info->device));
- 	struct fb_videomode *best = NULL;
- 	int i;
- 
-@@ -580,8 +579,8 @@ static int tmiofb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
- 
- 	struct fb_videomode *mode;
--	struct mfd_cell *cell = mfd_get_cell(to_platform_device(info->device));
--	struct tmio_fb_data *data = cell->driver_data;
-+	struct tmio_fb_data *data +			mfd_get_data(to_platform_device(info->device));
- 
- 	mode = tmiofb_find_mode(info, var);
- 	if (!mode || var->bits_per_pixel > 16)
-@@ -682,7 +681,7 @@ static struct fb_ops tmiofb_ops = {
- static int __devinit tmiofb_probe(struct platform_device *dev)
- {
- 	struct mfd_cell *cell = mfd_get_cell(dev);
--	struct tmio_fb_data *data = cell->driver_data;
-+	struct tmio_fb_data *data = mfd_get_data(dev);
- 	struct resource *ccr = platform_get_resource(dev, IORESOURCE_MEM, 1);
- 	struct resource *lcr = platform_get_resource(dev, IORESOURCE_MEM, 0);
- 	struct resource *vram = platform_get_resource(dev, IORESOURCE_MEM, 2);
--- 
-1.7.2.3
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index e2bf953..def59f0 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1034,14 +1034,16 @@ static long do_fb_ioctl(struct fb_info *info, unsig=
+ned int cmd,
+ 	case FBIOPUT_VSCREENINFO:
+ 		if (copy_from_user(&var, argp, sizeof(var)))
+ 			return -EFAULT;
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
+ 		console_lock();
++		if (!lock_fb_info(info)) {
++			console_unlock();
++			return -ENODEV;
++		}
+ 		info->flags |=3D FBINFO_MISC_USEREVENT;
+ 		ret =3D fb_set_var(info, &var);
+ 		info->flags &=3D ~FBINFO_MISC_USEREVENT;
+-		console_unlock();
+ 		unlock_fb_info(info);
++		console_unlock();
+ 		if (!ret && copy_to_user(argp, &var, sizeof(var)))
+ 			ret =3D -EFAULT;
+ 		break;
+@@ -1070,12 +1072,14 @@ static long do_fb_ioctl(struct fb_info *info, unsig=
+ned int cmd,
+ 	case FBIOPAN_DISPLAY:
+ 		if (copy_from_user(&var, argp, sizeof(var)))
+ 			return -EFAULT;
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
+ 		console_lock();
++		if (!lock_fb_info(info)) {
++			console_unlock();
++			return -ENODEV;
++		}
+ 		ret =3D fb_pan_display(info, &var);
+-		console_unlock();
+ 		unlock_fb_info(info);
++		console_unlock();
+ 		if (ret =3D 0 && copy_to_user(argp, &var, sizeof(var)))
+ 			return -EFAULT;
+ 		break;
+@@ -1117,14 +1121,16 @@ static long do_fb_ioctl(struct fb_info *info, unsig=
+ned int cmd,
+ 		unlock_fb_info(info);
+ 		break;
+ 	case FBIOBLANK:
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
+ 		console_lock();
++		if (!lock_fb_info(info)) {
++			console_unlock();
++			return -ENODEV;
++		}
+ 		info->flags |=3D FBINFO_MISC_USEREVENT;
+ 		ret =3D fb_blank(info, arg);
+ 		info->flags &=3D ~FBINFO_MISC_USEREVENT;
+-		console_unlock();
+ 		unlock_fb_info(info);
++		console_unlock();
+ 		break;
+ 	default:
+ 		if (!lock_fb_info(info))
+--=20
+1.7.1
 

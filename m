@@ -1,50 +1,67 @@
-From: Vasily Khoruzhick <anarsoul@gmail.com>
-Date: Sun, 20 Feb 2011 15:02:26 +0000
-Subject: [PATCH v2 2/3] ARM: PXA: PXAFB: Fix plane Z-ordering problem
-Message-Id: <1298214147-11578-2-git-send-email-anarsoul@gmail.com>
+From: Thomas Schlichter <thomas.schlichter@web.de>
+Date: Sun, 06 Feb 2011 11:14:56 +0000
+Subject: [PATCH 3/3] uvesafb: remove-ifdef-CONFIG_X86-around-ioremap
+Message-Id: <201102061214.56729.thomas.schlichter@web.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Boundary-00=_wKoTNRL8bPvdXel"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20110217110321.GF24627@n2100.arm.linux.org.uk>
-	<1298214147-11578-1-git-send-email-anarsoul@gmail.com>
-In-Reply-To: <1298214147-11578-1-git-send-email-anarsoul@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+References: <201011271437.38126.thomas.schlichter@web.de> <20101130061051.GD17114@linux-sh.org> <201102061202.09503.thomas.schlichter@web.de>
+In-Reply-To: <201102061202.09503.thomas.schlichter@web.de>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Michal Januszewski <spock@gentoo.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+
+--Boundary-00=_wKoTNRL8bPvdXel
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
 
-pxafb_overlay_init is not right place to change Z-ordering,
-move it to main plane initialization.
 
-Signed-off-by: Vasily Khoruzhick <anarsoul@gmail.com>
+
+--Boundary-00=_wKoTNRL8bPvdXel
+Content-Type: text/x-patch;
+  charset="iso-8859-15";
+  name="0003-uvesafb-remove-ifdef-CONFIG_X86-around-ioremap.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+	filename="0003-uvesafb-remove-ifdef-CONFIG_X86-around-ioremap.patch"
+
+From d1e432f878746b699856160456f811affc3c42fe Mon Sep 17 00:00:00 2001
+From: Thomas Schlichter <thomas.schlichter@web.de>
+Date: Sun, 6 Feb 2011 11:45:08 +0100
+Subject: [PATCH 3/3] uvesafb: remove ifdef CONFIG_X86 around ioremap in
+
+Now that ioremap_cache() and ioremap_wc() are available on each architecture
+we can remove the unneccessary ifdef in uvesafb.
+
+Signed-off-by: Thomas Schlichter <thomas.schlichter@web.de>
 ---
- drivers/video/pxafb.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+ drivers/video/uvesafb.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-index 41a499f..54a9ab8 100644
---- a/drivers/video/pxafb.c
-+++ b/drivers/video/pxafb.c
-@@ -940,8 +940,6 @@ static int __devinit pxafb_overlay_init(struct pxafb_info *fbi)
- 	/* mask all IU/BS/EOF/SOF interrupts */
- 	lcd_writel(fbi, LCCR5, ~0);
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index 2d6f799..ca15166 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -1567,7 +1567,6 @@ static void __devinit uvesafb_init_mtrr(struct fb_info *info)
  
--	/* place overlay(s) on top of base */
--	fbi->lccr0 |= LCCR0_OUC;
- 	pr_info("PXA Overlay driver loaded successfully!\n");
- 	return 0;
+ static void __devinit uvesafb_ioremap(struct fb_info *info)
+ {
+-#ifdef CONFIG_X86
+ 	switch (mtrr) {
+ 	case 1: /* uncachable */
+ 		info->screen_base = ioremap_nocache(info->fix.smem_start, info->fix.smem_len);
+@@ -1583,9 +1582,6 @@ static void __devinit uvesafb_ioremap(struct fb_info *info)
+ 		info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
+ 		break;
+ 	}
+-#else
+-	info->screen_base = ioremap(info->fix.smem_start, info->fix.smem_len);
+-#endif /* CONFIG_X86 */
  }
-@@ -1825,6 +1823,12 @@ static struct pxafb_info * __devinit pxafb_init_fbinfo(struct device *dev)
  
- 	pxafb_decode_mach_info(fbi, inf);
- 
-+#ifdef CONFIG_FB_PXA_OVERLAY
-+	/* place overlay(s) on top of base */
-+	if (pxafb_overlay_supported())
-+		fbi->lccr0 |= LCCR0_OUC;
-+#endif
-+
- 	init_waitqueue_head(&fbi->ctrlr_wait);
- 	INIT_WORK(&fbi->task, pxafb_task);
- 	mutex_init(&fbi->ctrlr_lock);
+ static ssize_t uvesafb_show_vbe_ver(struct device *dev,
 -- 
-1.7.4
+1.7.1
 
+
+--Boundary-00=_wKoTNRL8bPvdXel--

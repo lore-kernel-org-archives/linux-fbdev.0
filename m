@@ -1,82 +1,56 @@
-From: Li Frank-B20596 <B20596@freescale.com>
-Date: Thu, 10 Feb 2011 10:37:51 +0000
-Subject: RE: [PATCH 1/2] video: Add i.MX23/28 framebuffer driver
-Message-Id: <09EC74FE2C9E8444BF2FF67BD36E1D69167988@039-SN1MPN1-003.039d.mgd.msft.net>
+From: Wolfram Sang <w.sang@pengutronix.de>
+Date: Thu, 10 Feb 2011 10:47:25 +0000
+Subject: Re: [PATCH 1/2] video: Add i.MX23/28 framebuffer driver
+Message-Id: <20110210104725.GC2206@pengutronix.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="oTHb8nViIGeoXxdp"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1297257651-8002-1-git-send-email-s.hauer@pengutronix.de>
-	<201102100951.10977.jbe@pengutronix.de>
-	<09EC74FE2C9E8444BF2FF67BD36E1D691678C9@039-SN1MPN1-003.039d.mgd.msft.net>
-	<201102101052.10958.jbe@pengutronix.de>
-In-Reply-To: <201102101052.10958.jbe@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	<1297257651-8002-2-git-send-email-s.hauer@pengutronix.de>
+	<09EC74FE2C9E8444BF2FF67BD36E1D69167919@039-SN1MPN1-003.039d.mgd.msft.net>
+	<201102101046.33994.jbe@pengutronix.de>
+In-Reply-To: <201102101046.33994.jbe@pengutronix.de>
 To: linux-arm-kernel@lists.infradead.org
 
-> This kind of macro encryption _may_ help when you are coding the driver
-> the
-> first time. But after reading and reading it again (while testing and
-> debugging) all these prefixes and suffixes do not add any valuable
-> information. They only fill up your lines, enlarges your source code and
-> make
-> you blind for the real bug...
-> 
-> Everyone who wants to see how source code looks that uses these longs
-> macros I
-> can recommend reading the so called 'bootlets' source code. :-))
 
-The complex of bootlets is not long macro, but the work around to make sure
-Chip PMU work safely. If there are not such macro, power_prep will become
-more difficult to understand.
+--oTHb8nViIGeoXxdp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> > Developer needn't look up register header file when coding, just
-> 
-> That's why I add these macros into the source file instead into a header
-> file.
-> 
-> > write down Register name or bit name according to mx23/mx28 spec.
-> 
-> And sometimes the spec is incomplete or just wrong and so on. Independent
-> of
-> any macro naming policy.
+> But I would prefer:
+> #define SET 4
+> #define CLEAR 8
+> [...]
+> writel(CTRL_DOTCLK_MODE, host->base + CTRL + SET)
 
-Not at all. Mx23/mx28 can keep spec, header file and RTL consistent just
-because using one source and multiple output. During Freescale mx28 BSP
-develop, never happen bit and register definition error.  
- 
-> 
-> > If you still think it is too long, I suggest keep HW_ and BM_ prefix to
-> > distinguish Which one is register name, which one is bit mask.
-> 
-> The used macro in the address part of the writel() must be an offset,
-> while
-> the macro used in the value part must be a bit definition. Anything else
-> is
-> redundant.
+NACK.
 
-If name is too short, there are possible to cause name pollution. 
-BM_, BP_, BF_ have their implication.
+This will indeed not be caught by the compiler.
 
-VDCTRL4_SET_DOTCLK_DLY(x), according to our macro policy, it should be
-BF_VDCTRL4_SET_DOTCLK_DLY(x). 
+And while I like the shorter macros better as well, an MXSFB_ prefix
+should be added IMO. Macros like CTRL and TIMING are not too well
+protected.
 
-Generally, you need 
-Reg = readl(offset+VDCTRL4);
-Reg &=~ ((0x7)<<29);
-Reg |= VDCTRL4_SET_DOTCLK_DLY(value)
-Writel(reg, offset+VDCTRL4)
+Regards,
 
-Compared with our macro policy.
+   Wolfram
 
-Reg = readl(offset+HW_VDCTRL4);
-Reg &=~ BM_VDCTRL4_SET_DOTCLK_DLY;
-Reg |= BF_VDCTRL4_SET_DOTCLK_DLY(value)
-Writel(reg, offset+HW_VDCTRL4)
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
+--oTHb8nViIGeoXxdp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-> 
-> Regards,
-> Juergen
-> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
+iEYEARECAAYFAk1Twj0ACgkQD27XaX1/VRubuQCeLpRR0S+KRFmbjQnsYMk4Fc0i
+l8gAn3zq2L545GdBZLc+oayzImYxRwl6
+=Y/bg
+-----END PGP SIGNATURE-----
+
+--oTHb8nViIGeoXxdp--

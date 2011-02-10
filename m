@@ -1,46 +1,45 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Date: Thu, 10 Feb 2011 11:51:09 +0000
-Subject: Re: [PATCH 1/2] video: Add i.MX23/28 framebuffer driver
-Message-Id: <20110210115109.GR9041@pengutronix.de>
+From: Li Frank-B20596 <B20596@freescale.com>
+Date: Thu, 10 Feb 2011 12:23:21 +0000
+Subject: RE: [PATCH 1/2] video: Add i.MX23/28 framebuffer driver
+Message-Id: <09EC74FE2C9E8444BF2FF67BD36E1D691679E4@039-SN1MPN1-003.039d.mgd.msft.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1297257651-8002-1-git-send-email-s.hauer@pengutronix.de>
-	<1297257651-8002-2-git-send-email-s.hauer@pengutronix.de>
-	<09EC74FE2C9E8444BF2FF67BD36E1D69167919@039-SN1MPN1-003.039d.mgd.msft.net>
-	<201102101046.33994.jbe@pengutronix.de>
-	<20110210104725.GC2206@pengutronix.de>
-In-Reply-To: <20110210104725.GC2206@pengutronix.de>
+	<201102101052.10958.jbe@pengutronix.de>
+	<09EC74FE2C9E8444BF2FF67BD36E1D69167988@039-SN1MPN1-003.039d.mgd.msft.net>
+	<201102101212.17370.jbe@pengutronix.de>
+In-Reply-To: <201102101212.17370.jbe@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Thu, Feb 10, 2011 at 11:47:25AM +0100, Wolfram Sang wrote:
-> > But I would prefer:
-> > #define SET 4
-> > #define CLEAR 8
-> > [...]
-> > writel(CTRL_DOTCLK_MODE, host->base + CTRL + SET)
-
-For this we already have __mxs_setl.
 
 > 
-> NACK.
+> What about?
+> > Reg &= ~VDCTRL4_SET_DOTCLK_DLY(0x7);
+> Or?
+> > Reg &= ~VDCTRL4_SET_DOTCLK_DLY_MASK;
+> Okay, the even get longer and longer.
+
+If use 0x7, you have to take care bit width. 
+If use VDCTRL4_SET_DOTCLK_DLY_MASK, I think BF_ and BM_ is better. 
+
+> > Reg |= VDCTRL4_SET_DOTCLK_DLY(value)
+> > Writel(reg, offset+VDCTRL4)
+> >
+> > Compared with our macro policy.
+> >
+> > Reg = readl(offset+HW_VDCTRL4);
+> > Reg &=~ BM_VDCTRL4_SET_DOTCLK_DLY;
+> > Reg |= BF_VDCTRL4_SET_DOTCLK_DLY(value)
+> > Writel(reg, offset+HW_VDCTRL4)
 > 
-> This will indeed not be caught by the compiler.
-> 
-> And while I like the shorter macros better as well, an MXSFB_ prefix
-> should be added IMO. Macros like CTRL and TIMING are not too well
-> protected.
+> Anywhere else such naming policy in the kernel? I have to deal with all
+> kind
+> of CPUs, not only i.MX23/28.
 
-+1 for a prefix, be it MXSFB_ or LCDIF_, will change this.
+This driver is for mx23/mx28. 
+I have not found such policy in the kernel, otherwise I have generated that at beginning. 
+It is better if all of mx23/mx28 driver follow the same role. 
 
-Otherwise can we please stop about arguing about register defines? It's
-too much a matter of taste and there is no perfect way to solve this.
 
-Sascha
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |

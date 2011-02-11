@@ -1,54 +1,73 @@
-From: Axel Lin <axel.lin@gmail.com>
-Date: Tue, 22 Feb 2011 01:52:42 +0000
-Subject: [PATCH] video: da8xx-fb: fix section mismatch warning
-Message-Id: <1298339562.3903.3.camel@mola>
+From: =?UTF-8?q?Andreas=20Bie=C3=9Fmann?= <biessmann@corscience.de>
+Date: Fri, 11 Feb 2011 15:19:43 +0000
+Subject: [PATCH 1/2] atmel_lcdfb: implement inverted contrast pwm
+Message-Id: <1297437584-14048-1-git-send-email-biessmann@corscience.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Sudhakar Rajashekhara <sudhakar.raj@ti.com>, Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: kernel@avr32linux.org
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, =?UTF-8?q?Andreas=20Bie=C3=9Fmann?= <biessmann@corscience.de>, "open list:ATMEL LCDFB DRIVER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-This patch includes below fixes:
-1. Mark fb_probe as __devinit to fix below section mismatch warning.
-WARNING: drivers/video/built-in.o(.data+0x13c): Section mismatch in reference from the variable da8xx_fb_driver to the function .init.text:fb_probe()
-The variable da8xx_fb_driver references
-the function __init fb_probe()
-If the reference is valid then annotate the
-variable with __init* or __refdata (see linux/init.h) or name the variable:
-*_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+ This patch introduces lcdc->lcdcon_pol_negative which set CONTRAST_CTR
+ register to inverted polarity.
 
-2. fb_remove is marked __devexit,
-thus add __devexit_p around reference to fb_remove.
-
-Signed-off-by: Axel Lin <axel.lin@gmail.com>
+Signed-off-by: Andreas Bie=C3=9Fmann <biessmann@corscience.de>
 ---
- drivers/video/da8xx-fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+These are some older patches which are used in some of our systems. Heavy
+merging pointed out these functionality was missed to push upstream.
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 8d61ef9..246f1c0 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -899,7 +899,7 @@ static struct fb_ops da8xx_fb_ops = {
- 	.fb_blank = cfb_blank,
- };
- 
--static int __init fb_probe(struct platform_device *device)
-+static int __devinit fb_probe(struct platform_device *device)
+ drivers/video/atmel_lcdfb.c |    7 ++++++-
+ include/video/atmel_lcdc.h  |    1 +
+ 2 files changed, 7 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index bac16345..16da8af 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -68,7 +68,7 @@ static void atmel_lcdfb_update_dma2d(struct atmel_lcdfb_i=
+nfo *sinfo,
+ }
+ #endif
+=20
+-static const u32 contrast_ctr =3D ATMEL_LCDC_PS_DIV8
++static u32 contrast_ctr =3D ATMEL_LCDC_PS_DIV8
+ 		| ATMEL_LCDC_POL_POSITIVE
+ 		| ATMEL_LCDC_ENA_PWMENABLE;
+=20
+@@ -163,6 +163,10 @@ static void exit_backlight(struct atmel_lcdfb_info *si=
+nfo)
+=20
+ static void init_contrast(struct atmel_lcdfb_info *sinfo)
  {
- 	struct da8xx_lcdc_platform_data *fb_pdata  						device->dev.platform_data;
-@@ -1165,7 +1165,7 @@ static int fb_resume(struct platform_device *dev)
- 
- static struct platform_driver da8xx_fb_driver = {
- 	.probe = fb_probe,
--	.remove = fb_remove,
-+	.remove = __devexit_p(fb_remove),
- 	.suspend = fb_suspend,
- 	.resume = fb_resume,
- 	.driver = {
--- 
-1.7.2
-
-
++	/* contrast pwm can be 'inverted' */
++	if (sinfo->lcdcon_pol_negative)
++			contrast_ctr &=3D ~(ATMEL_LCDC_POL_POSITIVE);
++
+ 	/* have some default contrast/backlight settings */
+ 	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, contrast_ctr);
+ 	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, ATMEL_LCDC_CVAL_DEFAULT);
+@@ -816,6 +820,7 @@ static int __init atmel_lcdfb_probe(struct platform_dev=
+ice *pdev)
+ 		sinfo->guard_time =3D pdata_sinfo->guard_time;
+ 		sinfo->smem_len =3D pdata_sinfo->smem_len;
+ 		sinfo->lcdcon_is_backlight =3D pdata_sinfo->lcdcon_is_backlight;
++		sinfo->lcdcon_pol_negative =3D pdata_sinfo->lcdcon_pol_negative;
+ 		sinfo->lcd_wiring_mode =3D pdata_sinfo->lcd_wiring_mode;
+ 	} else {
+ 		dev_err(dev, "cannot get default configuration\n");
+diff --git a/include/video/atmel_lcdc.h b/include/video/atmel_lcdc.h
+index 0c864db..28447f1 100644
+--- a/include/video/atmel_lcdc.h
++++ b/include/video/atmel_lcdc.h
+@@ -52,6 +52,7 @@ struct atmel_lcdfb_info {
+ 	u8			bl_power;
+ #endif
+ 	bool			lcdcon_is_backlight;
++	bool			lcdcon_pol_negative;
+ 	u8			saved_lcdcon;
+=20
+ 	u8			default_bpp;
+--=20
+1.7.2.3
 

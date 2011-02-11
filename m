@@ -1,46 +1,65 @@
-From: Jean Delvare <khali@linux-fr.org>
-Date: Thu, 03 Feb 2011 08:23:10 +0000
-Subject: [PATCH v2] radeonfb: Let hwmon driver probe the "monid" I2C bus
-Message-Id: <20110203092310.74f3c690@endymion.delvare>
+From: =?UTF-8?q?Andreas=20Bie=C3=9Fmann?= <biessmann@corscience.de>
+Date: Fri, 11 Feb 2011 15:19:44 +0000
+Subject: [PATCH 2/2] atmel_lcdfb: add fb_blank function
+Message-Id: <1297437584-14048-2-git-send-email-biessmann@corscience.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1297437584-14048-1-git-send-email-biessmann@corscience.de>
+In-Reply-To: <1297437584-14048-1-git-send-email-biessmann@corscience.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: kernel@avr32linux.org
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, =?UTF-8?q?Andreas=20Bie=C3=9Fmann?= <biessmann@corscience.de>, "open list:ATMEL LCDFB DRIVER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-Some Radeon cards have an I2C-based thermal sensor chip connected to
-the "monid" I2C bus. Set the I2C probing class of this bus properly so
-that hwmon drivers can detect devices on it and bind to them.
-
-This closes kernel.org bug #26172.
-
-We exclude PPC for the time being, as Benjamin doesn't want us to
-mess up with them without explicit testing, and there is no evidence
-that this change is needed for them either.
-
-Reported-by: Alexander Goomenyuk <emerg.reanimator@gmail.com>
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Andreas Bie=C3=9Fmann <biessmann@corscience.de>
 ---
-Changes since v1:
-* Excluded CONFIG_PPC as requested by Benjamin H.
+These are some older patches which are used in some of our systems. Heavy
+merging pointed out these functionality was missed to push upstream.
 
- drivers/video/aty/radeon_i2c.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/video/atmel_lcdfb.c |   24 ++++++++++++++++++++++++
+ 1 files changed, 24 insertions(+), 0 deletions(-)
 
---- linux-2.6.38-rc3.orig/drivers/video/aty/radeon_i2c.c	2011-02-03 08:42:36.000000000 +0100
-+++ linux-2.6.38-rc3/drivers/video/aty/radeon_i2c.c	2011-02-03 09:13:41.000000000 +0100
-@@ -100,6 +100,9 @@ void radeon_create_i2c_busses(struct rad
- {
- 	rinfo->i2c[0].rinfo	= rinfo;
- 	rinfo->i2c[0].ddc_reg	= GPIO_MONID;
-+#ifndef CONFIG_PPC
-+	rinfo->i2c[0].adapter.class = I2C_CLASS_HWMON;
-+#endif
- 	radeon_setup_i2c_bus(&rinfo->i2c[0], "monid");
- 
- 	rinfo->i2c[1].rinfo	= rinfo;
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 16da8af..59654e2 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -714,11 +714,35 @@ static int atmel_lcdfb_pan_display(struct fb_var_scre=
+eninfo *var,
+ 	return 0;
+ }
+=20
++static int atmel_lcdfb_blank(int blank_mode, struct fb_info *info)
++{
++	struct atmel_lcdfb_info *sinfo =3D info->par;
++
++	switch (blank_mode) {
++	case FB_BLANK_UNBLANK:
++	case FB_BLANK_NORMAL:
++		atmel_lcdfb_start(sinfo);
++		break;
++	case FB_BLANK_VSYNC_SUSPEND:
++	case FB_BLANK_HSYNC_SUSPEND:
++		break;
++	case FB_BLANK_POWERDOWN:
++		atmel_lcdfb_stop(sinfo);
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	/* let fbcon do a soft blank for us */
++	return ((blank_mode =3D FB_BLANK_NORMAL) ? 1 : 0);
++}
++
+ static struct fb_ops atmel_lcdfb_ops =3D {
+ 	.owner		=3D THIS_MODULE,
+ 	.fb_check_var	=3D atmel_lcdfb_check_var,
+ 	.fb_set_par	=3D atmel_lcdfb_set_par,
+ 	.fb_setcolreg	=3D atmel_lcdfb_setcolreg,
++	.fb_blank	=3D atmel_lcdfb_blank,
+ 	.fb_pan_display	=3D atmel_lcdfb_pan_display,
+ 	.fb_fillrect	=3D cfb_fillrect,
+ 	.fb_copyarea	=3D cfb_copyarea,
+--=20
+1.7.2.3
 
-
--- 
-Jean Delvare

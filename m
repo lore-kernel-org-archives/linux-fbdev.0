@@ -1,35 +1,77 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Date: Fri, 18 Feb 2011 10:07:01 +0000
-Subject: Re: [PATCH] ARM: PXA: Make PXA27x/PXA3xx overlay actually work
-Message-Id: <20110218100701.GA24655@pengutronix.de>
+From: Daniel Morsing <daniel.morsing@gmail.com>
+Date: Sat, 12 Feb 2011 17:02:10 +0000
+Subject: [PATCH 2/2] omap3: devkit8000: Add and use 4.3 inch display
+Message-Id: <1297530130-10355-3-git-send-email-daniel.morsing@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1296679619-32666-1-git-send-email-anarsoul@gmail.com>
-In-Reply-To: <1296679619-32666-1-git-send-email-anarsoul@gmail.com>
+References: <1297530130-10355-1-git-send-email-daniel.morsing@gmail.com>
+In-Reply-To: <1297530130-10355-1-git-send-email-daniel.morsing@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomba@iki.fi>
+Cc: Bryan Wu <bryan.wu@canonical.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Daniel Morsing <daniel.morsing@gmail.com>
 
-Hi Vasily,
+This patch adds a generic panel entry for the 4.3 inch display that is
+sold with the devkit8000 and modifies the board file to use this
+display.
 
-On Wed, Feb 02, 2011 at 10:46:59PM +0200, Vasily Khoruzhick wrote:
-> From: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-> 
-> Release callback tries to free memory even if it was not allocated in
-> map_video_memory. Fix PXA27x/3xx overlay memory management and make overlay
-> actually work.
+Signed-off-by: Daniel Morsing <daniel.morsing@gmail.com>
+---
+Note that this patch depends on the previous one in the series.
 
-While at pxa overlay support you also might to fix that the xpos field
-in var->nonstd is also used for ypos in two places:
+ arch/arm/mach-omap2/board-devkit8000.c           |    2 +-
+ drivers/video/omap2/displays/panel-generic-dpi.c |   26 ++++++++++++++++++++++
+ 2 files changed, 27 insertions(+), 1 deletions(-)
 
-ypos = NONSTD_TO_XPOS(var->nonstd);
-                ^^^
-
-I stumbled upon this but was not interested enough that moment to create
-a patch.
-
+diff --git a/arch/arm/mach-omap2/board-devkit8000.c b/arch/arm/mach-omap2/board-devkit8000.c
+index 9a2a31e..6dab13e 100644
+--- a/arch/arm/mach-omap2/board-devkit8000.c
++++ b/arch/arm/mach-omap2/board-devkit8000.c
+@@ -148,7 +148,7 @@ static struct regulator_consumer_supply devkit8000_vio_supply  	REGULATOR_SUPPLY("vcc", "spi2.0");
+ 
+ static struct panel_generic_dpi_data lcd_panel = {
+-	.name			= "generic",
++	.name			= "devkit_43",
+ 	.platform_enable        = devkit8000_panel_enable_lcd,
+ 	.platform_disable       = devkit8000_panel_disable_lcd,
+ };
+diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
+index b52a28f..ee9e7ea 100644
+--- a/drivers/video/omap2/displays/panel-generic-dpi.c
++++ b/drivers/video/omap2/displays/panel-generic-dpi.c
+@@ -83,6 +83,32 @@ static struct panel_config generic_dpi_panels[] = {
+ 		.name			= "generic",
+ 	},
+ 
++	/* Devkit8000 4.3 Inch display */
++	{
++		{
++			.x_res		= 480,
++			.y_res		= 272,
++
++			.pixel_clock	= 10000,
++
++			.hfp		= 2,
++			.hsw		= 41,
++			.hbp		= 2,
++
++			.vfp		= 2,
++			.vsw		= 10,
++			.vbp		= 2,
++		},
++		.acbi			= 0x0,
++		.acb			= 0x0,
++		.recommended_bpp	= 16,
++		.config			= OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
++						OMAP_DSS_LCD_IHS,
++		.power_on_delay		= 50,
++		.power_off_delay	= 100,
++		.name			= "devkit_43",
++	},
++
+ 	/* Sharp LQ043T1DG01 */
+ 	{
+ 		{
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+1.7.4
+

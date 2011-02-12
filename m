@@ -1,67 +1,175 @@
-From: Daniel Morsing <daniel.morsing@gmail.com>
-Date: Sat, 12 Feb 2011 17:02:09 +0000
-Subject: [PATCH 1/2] omap: dss2: Add recommended bpp option for generic dpi panels
-Message-Id: <1297530130-10355-2-git-send-email-daniel.morsing@gmail.com>
+From: Andres Salomon <dilinger@queued.net>
+Date: Sat, 12 Feb 2011 02:14:29 +0000
+Subject: [PATCH 12/17] tc6393xb: mfd_cell is now implicitly available to
+Message-Id: <20110211181429.36866ba0@queued.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1297530130-10355-1-git-send-email-daniel.morsing@gmail.com>
-In-Reply-To: <1297530130-10355-1-git-send-email-daniel.morsing@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomba@iki.fi>
-Cc: Bryan Wu <bryan.wu@canonical.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Daniel Morsing <daniel.morsing@gmail.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, David Brownell <dbrownell@users.sourceforge.net>, Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Currently, there is no way to specify a recommended bpp for a generic
-dpi display. This patch adds a mechanism for doing so.
 
-If no recommended bpp is specified by the driver, we fall back to the
-default recommended bpp function
+No need to explicitly set the cell's platform_data/data_size.
 
-Signed-off-by: Daniel Morsing <daniel.morsing@gmail.com>
+Modify clients to use mfd_get_cell helper function instead of
+accessing platform_data directly.
+
+Signed-off-by: Andres Salomon <dilinger@queued.net>
 ---
- drivers/video/omap2/displays/panel-generic-dpi.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+ drivers/mfd/tc6393xb.c       |   19 -------------------
+ drivers/usb/host/ohci-tmio.c |    8 ++++----
+ drivers/video/tmiofb.c       |   20 +++++++++-----------
+ 3 files changed, 13 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
-index 07eb30e..b52a28f 100644
---- a/drivers/video/omap2/displays/panel-generic-dpi.c
-+++ b/drivers/video/omap2/displays/panel-generic-dpi.c
-@@ -43,6 +43,8 @@ struct panel_config {
- 	/* Unit: line clocks */
- 	int acb;	/* ac-bias pin frequency */
+diff --git a/drivers/mfd/tc6393xb.c b/drivers/mfd/tc6393xb.c
+index 9a23863..a71ff5c 100644
+--- a/drivers/mfd/tc6393xb.c
++++ b/drivers/mfd/tc6393xb.c
+@@ -694,26 +694,7 @@ static int __devinit tc6393xb_probe(struct platform_device *dev)
+ 	}
  
-+	int recommended_bpp; /* overrides the default bpp */
-+
- 	enum omap_panel_config config;
+ 	tc6393xb_cells[TC6393XB_CELL_NAND].driver_data = tcpd->nand_data;
+-	tc6393xb_cells[TC6393XB_CELL_NAND].platform_data -		&tc6393xb_cells[TC6393XB_CELL_NAND];
+-	tc6393xb_cells[TC6393XB_CELL_NAND].data_size -		sizeof(tc6393xb_cells[TC6393XB_CELL_NAND]);
+-
+-	tc6393xb_cells[TC6393XB_CELL_MMC].platform_data -		&tc6393xb_cells[TC6393XB_CELL_MMC];
+-	tc6393xb_cells[TC6393XB_CELL_MMC].data_size -		sizeof(tc6393xb_cells[TC6393XB_CELL_MMC]);
+-
+-	tc6393xb_cells[TC6393XB_CELL_OHCI].platform_data -		&tc6393xb_cells[TC6393XB_CELL_OHCI];
+-	tc6393xb_cells[TC6393XB_CELL_OHCI].data_size -		sizeof(tc6393xb_cells[TC6393XB_CELL_OHCI]);
+-
+ 	tc6393xb_cells[TC6393XB_CELL_FB].driver_data = tcpd->fb_data;
+-	tc6393xb_cells[TC6393XB_CELL_FB].platform_data -		&tc6393xb_cells[TC6393XB_CELL_FB];
+-	tc6393xb_cells[TC6393XB_CELL_FB].data_size -		sizeof(tc6393xb_cells[TC6393XB_CELL_FB]);
  
- 	int power_on_delay;
-@@ -331,6 +333,17 @@ static int generic_dpi_panel_check_timings(struct omap_dss_device *dssdev,
- 	return dpi_check_timings(dssdev, timings);
- }
+ 	ret = mfd_add_devices(&dev->dev, dev->id,
+ 			tc6393xb_cells, ARRAY_SIZE(tc6393xb_cells),
+diff --git a/drivers/usb/host/ohci-tmio.c b/drivers/usb/host/ohci-tmio.c
+index 8dabe8e..eeed164 100644
+--- a/drivers/usb/host/ohci-tmio.c
++++ b/drivers/usb/host/ohci-tmio.c
+@@ -185,7 +185,7 @@ static struct platform_driver ohci_hcd_tmio_driver;
  
-+static int generic_dpi_panel_get_bpp(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *drv_data = dev_get_drvdata(&dssdev->dev);
-+	struct panel_config *panel_config = drv_data->panel_config;
-+
-+	if (panel_config->recommended_bpp != 0)
-+		return panel_config->recommended_bpp;
-+
-+	return omapdss_default_get_recommended_bpp(dssdev);
-+}
-+
- static struct omap_dss_driver dpi_driver = {
- 	.probe		= generic_dpi_panel_probe,
- 	.remove		= generic_dpi_panel_remove,
-@@ -344,6 +357,8 @@ static struct omap_dss_driver dpi_driver = {
- 	.get_timings	= generic_dpi_panel_get_timings,
- 	.check_timings	= generic_dpi_panel_check_timings,
+ static int __devinit ohci_hcd_tmio_drv_probe(struct platform_device *dev)
+ {
+-	struct mfd_cell *cell = dev->dev.platform_data;
++	struct mfd_cell *cell = mfd_get_cell(dev);
+ 	struct resource *regs = platform_get_resource(dev, IORESOURCE_MEM, 0);
+ 	struct resource *config = platform_get_resource(dev, IORESOURCE_MEM, 1);
+ 	struct resource *sram = platform_get_resource(dev, IORESOURCE_MEM, 2);
+@@ -274,7 +274,7 @@ static int __devexit ohci_hcd_tmio_drv_remove(struct platform_device *dev)
+ {
+ 	struct usb_hcd *hcd = platform_get_drvdata(dev);
+ 	struct tmio_hcd *tmio = hcd_to_tmio(hcd);
+-	struct mfd_cell *cell = dev->dev.platform_data;
++	struct mfd_cell *cell = mfd_get_cell(dev);
  
-+	.get_recommended_bpp = generic_dpi_panel_get_bpp,
-+
- 	.driver         = {
- 		.name   = "generic_dpi_panel",
- 		.owner  = THIS_MODULE,
+ 	usb_remove_hcd(hcd);
+ 	tmio_stop_hc(dev);
+@@ -293,7 +293,7 @@ static int __devexit ohci_hcd_tmio_drv_remove(struct platform_device *dev)
+ #ifdef CONFIG_PM
+ static int ohci_hcd_tmio_drv_suspend(struct platform_device *dev, pm_message_t state)
+ {
+-	struct mfd_cell *cell = dev->dev.platform_data;
++	struct mfd_cell *cell = mfd_get_cell(dev);
+ 	struct usb_hcd *hcd = platform_get_drvdata(dev);
+ 	struct ohci_hcd *ohci = hcd_to_ohci(hcd);
+ 	struct tmio_hcd *tmio = hcd_to_tmio(hcd);
+@@ -326,7 +326,7 @@ static int ohci_hcd_tmio_drv_suspend(struct platform_device *dev, pm_message_t s
+ 
+ static int ohci_hcd_tmio_drv_resume(struct platform_device *dev)
+ {
+-	struct mfd_cell *cell = dev->dev.platform_data;
++	struct mfd_cell *cell = mfd_get_cell(dev);
+ 	struct usb_hcd *hcd = platform_get_drvdata(dev);
+ 	struct ohci_hcd *ohci = hcd_to_ohci(hcd);
+ 	struct tmio_hcd *tmio = hcd_to_tmio(hcd);
+diff --git a/drivers/video/tmiofb.c b/drivers/video/tmiofb.c
+index dfef88c..6302882 100644
+--- a/drivers/video/tmiofb.c
++++ b/drivers/video/tmiofb.c
+@@ -250,7 +250,7 @@ static irqreturn_t tmiofb_irq(int irq, void *__info)
+  */
+ static int tmiofb_hw_stop(struct platform_device *dev)
+ {
+-	struct mfd_cell *cell = dev->dev.platform_data;
++	struct mfd_cell *cell = mfd_get_cell(dev);
+ 	struct tmio_fb_data *data = cell->driver_data;
+ 	struct fb_info *info = platform_get_drvdata(dev);
+ 	struct tmiofb_par *par = info->par;
+@@ -268,7 +268,7 @@ static int tmiofb_hw_stop(struct platform_device *dev)
+  */
+ static int tmiofb_hw_init(struct platform_device *dev)
+ {
+-	struct mfd_cell *cell = dev->dev.platform_data;
++	struct mfd_cell *cell = mfd_get_cell(dev);
+ 	struct fb_info *info = platform_get_drvdata(dev);
+ 	struct tmiofb_par *par = info->par;
+ 	const struct resource *nlcr = &cell->resources[0];
+@@ -312,7 +312,7 @@ static int tmiofb_hw_init(struct platform_device *dev)
+  */
+ static void tmiofb_hw_mode(struct platform_device *dev)
+ {
+-	struct mfd_cell *cell = dev->dev.platform_data;
++	struct mfd_cell *cell = mfd_get_cell(dev);
+ 	struct tmio_fb_data *data = cell->driver_data;
+ 	struct fb_info *info = platform_get_drvdata(dev);
+ 	struct fb_videomode *mode = info->mode;
+@@ -559,8 +559,7 @@ static int tmiofb_ioctl(struct fb_info *fbi,
+ static struct fb_videomode *
+ tmiofb_find_mode(struct fb_info *info, struct fb_var_screeninfo *var)
+ {
+-	struct mfd_cell *cell -		info->device->platform_data;
++	struct mfd_cell *cell = mfd_get_cell(to_platform_device(info->device));
+ 	struct tmio_fb_data *data = cell->driver_data;
+ 	struct fb_videomode *best = NULL;
+ 	int i;
+@@ -581,8 +580,7 @@ static int tmiofb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+ 
+ 	struct fb_videomode *mode;
+-	struct mfd_cell *cell -		info->device->platform_data;
++	struct mfd_cell *cell = mfd_get_cell(to_platform_device(info->device));
+ 	struct tmio_fb_data *data = cell->driver_data;
+ 
+ 	mode = tmiofb_find_mode(info, var);
+@@ -683,7 +681,7 @@ static struct fb_ops tmiofb_ops = {
+ 
+ static int __devinit tmiofb_probe(struct platform_device *dev)
+ {
+-	struct mfd_cell *cell = dev->dev.platform_data;
++	struct mfd_cell *cell = mfd_get_cell(dev);
+ 	struct tmio_fb_data *data = cell->driver_data;
+ 	struct resource *ccr = platform_get_resource(dev, IORESOURCE_MEM, 1);
+ 	struct resource *lcr = platform_get_resource(dev, IORESOURCE_MEM, 0);
+@@ -811,7 +809,7 @@ err_ioremap_ccr:
+ 
+ static int __devexit tmiofb_remove(struct platform_device *dev)
+ {
+-	struct mfd_cell *cell = dev->dev.platform_data;
++	struct mfd_cell *cell = mfd_get_cell(dev);
+ 	struct fb_info *info = platform_get_drvdata(dev);
+ 	int irq = platform_get_irq(dev, 0);
+ 	struct tmiofb_par *par;
+@@ -941,7 +939,7 @@ static int tmiofb_suspend(struct platform_device *dev, pm_message_t state)
+ #ifdef CONFIG_FB_TMIO_ACCELL
+ 	struct tmiofb_par *par = info->par;
+ #endif
+-	struct mfd_cell *cell = dev->dev.platform_data;
++	struct mfd_cell *cell = mfd_get_cell(dev);
+ 	int retval = 0;
+ 
+ 	console_lock();
+@@ -973,7 +971,7 @@ static int tmiofb_suspend(struct platform_device *dev, pm_message_t state)
+ static int tmiofb_resume(struct platform_device *dev)
+ {
+ 	struct fb_info *info = platform_get_drvdata(dev);
+-	struct mfd_cell *cell = dev->dev.platform_data;
++	struct mfd_cell *cell = mfd_get_cell(dev);
+ 	int retval = 0;
+ 
+ 	console_lock();
 -- 
-1.7.4
+1.7.2.3
 

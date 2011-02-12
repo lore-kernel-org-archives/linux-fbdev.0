@@ -1,43 +1,28 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Thu, 17 Feb 2011 08:20:15 +0000
-Subject: Re: [PATCH 0/22] Make SVGA oriented FBs work on multi-domain PCI
-Message-Id: <201102170920.15700.linux@rainbow-software.org>
+From: Daniel Morsing <daniel.morsing@gmail.com>
+Date: Sat, 12 Feb 2011 17:02:08 +0000
+Subject: [PATCH 0/2] Add recommended bpp for omap dss2 generic dpi panels
+Message-Id: <1297530130-10355-1-git-send-email-daniel.morsing@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20110111.154846.233419170.davem@davemloft.net>
-In-Reply-To: <20110111.154846.233419170.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomba@iki.fi>
+Cc: Bryan Wu <bryan.wu@canonical.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Daniel Morsing <daniel.morsing@gmail.com>
 
-On Thursday 17 February 2011, Alex Buell wrote:
-> On Wed, 2011-02-16 at 15:24 -0800, David Miller wrote:
-> > From: Alex Buell <alex.buell@munted.org.uk>
-> > Date: Wed, 16 Feb 2011 23:21:20 +0000
-> >
-> > > On Thu, 2011-02-17 at 00:01 +0100, Ondrej Zary wrote:
-> > >> > Signed-off-by: David S. Miller <davem@davemloft.net>
-> > >>
-> > >> Just tested arkfb and s3fb and they seem to still work fine (on x86)
-> > >> with these changes.
-> > >
-> > > Hmm, that's odd. The exact same driver with the updates crashes on
-> > > sparc hardware. So far, I've not been able to figure out why it does.
-> >
-> > We know why it does, because sparc systems do not initialize the VGA
-> > hardware in the BIOS the way a PC will.
-> >
-> > That's the whole gist of the most recent thread we had where we were
-> > trying to diagnose your crashes.
-> >
-> > We simply haven't figured out the magic that will get this to work.
-> >
-> > So it's perfectly fine and expected that platforms where these drivers
-> > worked before, still work fine.
->
-> OK, I'd forgotten that the VGA hardware needs initialising.
+This series adds a mechanism for specifying a recommended bpp for
+generic dss2 dpi panels and adds a panel that uses this feature.
 
-Playing with (at least) S3 initialization is on my todo list.
+The panel added is the 4.3 inch display that is sold with the
+Devkit8000.
+
+Daniel Morsing (2):
+  omap: dss2: Add recommended bpp option for generic dpi panels
+  omap3: devkit8000: Add and use 4.3 inch display
+
+ arch/arm/mach-omap2/board-devkit8000.c           |    2 +-
+ drivers/video/omap2/displays/panel-generic-dpi.c |   41 ++++++++++++++++++++++
+ 2 files changed, 42 insertions(+), 1 deletions(-)
 
 -- 
-Ondrej Zary
+1.7.4
+

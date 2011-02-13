@@ -1,72 +1,100 @@
-From: Donghwa Lee <dh09.lee@samsung.com>
-Date: Mon, 28 Feb 2011 06:14:48 +0000
-Subject: [PATCH] backlight/platform_lcd: change set power function parameter in
-Message-Id: <1298873688-17118-1-git-send-email-dh09.lee@samsung.com>
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Date: Sun, 13 Feb 2011 22:11:24 +0000
+Subject: [PATCH 2/6] sisfb: move XGI POST RAM type detection into a subroutine
+Message-Id: <1297635088-13224-3-git-send-email-aaro.koskinen@iki.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1297635088-13224-1-git-send-email-aaro.koskinen@iki.fi>
+In-Reply-To: <1297635088-13224-1-git-send-email-aaro.koskinen@iki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Thomas Winischhofer <thomas@winischhofer.net>
 
-In drivers/video/backlight/platform_lcd.c driver, to use lcd power
-control function in platdata, it is used
-set_power(struct plat_lcd_data *, unsigned int power) callback function.
-set_power() function is consists of two parameters,
-(struct plat_lcd_data *, unsigned int power).
+Move XGI POST RAM type detection into a separate subroutine to make
+further code changes easier. No changes in functionality
 
-But actually, there is no one to use (struct plat_lcd_data *), only use
-second (unsigned int power) value to control lcd power on/off.
-
-I don't know why (struct plat_lcd_data*) parameter is used in set_power()
-callback function. Maybe I think it is unessesntial or changeable to another
-meaningful variable. For example, struct lcd_device *, it can be used to
-control regulator_get() function.
-
-In mach-nuri.c, it has been patching by Minku Kang, (struct lcd_device*) can be
-used to regulator lcd power on/off, and many other machines uses regulator
-control to on/off lcd power.
-
-So I think more meaningful variable that (struct lcd_device* ) can be
-substituted for unessential variable that (struct plat_lcd_data *).
-
-Thank you,
-Donghwa Lee
-
-
-Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>
 ---
- drivers/video/backlight/platform_lcd.c |    2 +-
- include/video/platform_lcd.h           |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/sis/sis_main.c |   57 +++++++++++++++++++++++++----------------
+ 1 files changed, 35 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/video/backlight/platform_lcd.c b/drivers/video/backlight/platform_lcd.c
-index 302330a..cf23a3f 100644
---- a/drivers/video/backlight/platform_lcd.c
-+++ b/drivers/video/backlight/platform_lcd.c
-@@ -49,7 +49,7 @@ static int platform_lcd_set_power(struct lcd_device *lcd, int power)
- 	if (power = FB_BLANK_POWERDOWN || plcd->suspended)
- 		lcd_power = 0;
+diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+index 2c5de66..364559b 100644
+--- a/drivers/video/sis/sis_main.c
++++ b/drivers/video/sis/sis_main.c
+@@ -4936,6 +4936,40 @@ sisfb_post_xgi_setclocks(struct sis_video_info *ivideo, u8 regb)
+ 	sisfb_post_xgi_delay(ivideo, 0x43);
+ }
  
--	plcd->pdata->set_power(plcd->pdata, lcd_power);
-+	plcd->pdata->set_power(lcd, lcd_power);
- 	plcd->power = power;
++static u8 __devinit
++sisfb_post_xgi_ramtype(struct sis_video_info *ivideo)
++{
++	unsigned char *bios = ivideo->bios_abase;
++	u8 ramtype;
++	u8 reg;
++	u8 v1;
++
++	ramtype = 0x00; v1 = 0x10;
++	if (ivideo->haveXGIROM) {
++		ramtype = bios[0x62];
++		v1 = bios[0x1d2];
++	}
++	if (!(ramtype & 0x80)) {
++		if (ivideo->chip = XGI_20) {
++			SiS_SetReg(SISCR, 0x97, v1);
++			reg = SiS_GetReg(SISCR, 0x97);
++			if (reg & 0x10) {
++				ramtype = (reg & 0x01) << 1;
++			}
++		} else {
++			reg = SiS_GetReg(SISSR, 0x39);
++			ramtype = reg & 0x02;
++			if (!(ramtype)) {
++				reg = SiS_GetReg(SISSR, 0x3a);
++				ramtype = (reg >> 1) & 0x01;
++			}
++		}
++	}
++	ramtype &= 0x07;
++
++	return ramtype;
++}
++
+ static int __devinit
+ sisfb_post_xgi(struct pci_dev *pdev)
+ {
+@@ -5380,28 +5414,7 @@ sisfb_post_xgi(struct pci_dev *pdev)
+ 		SiS_SetReg(SISSR, 0x1c, 0x00);
+ 	}
  
- 	return 0;
-diff --git a/include/video/platform_lcd.h b/include/video/platform_lcd.h
-index ad3bdfe..e92a039 100644
---- a/include/video/platform_lcd.h
-+++ b/include/video/platform_lcd.h
-@@ -15,7 +15,7 @@ struct plat_lcd_data;
- struct fb_info;
+-	ramtype = 0x00; v1 = 0x10;
+-	if(ivideo->haveXGIROM) {
+-		ramtype = bios[0x62];
+-		v1 = bios[0x1d2];
+-	}
+-	if(!(ramtype & 0x80)) {
+-		if(ivideo->chip = XGI_20) {
+-			SiS_SetReg(SISCR, 0x97, v1);
+-			reg = SiS_GetReg(SISCR, 0x97);
+-			if(reg & 0x10) {
+-				ramtype = (reg & 0x01) << 1;
+-			}
+-		} else {
+-			reg = SiS_GetReg(SISSR, 0x39);
+-			ramtype = reg & 0x02;
+-			if(!(ramtype)) {
+-				reg = SiS_GetReg(SISSR, 0x3a);
+-				ramtype = (reg >> 1) & 0x01;
+-			}
+-		}
+-	}
+-	ramtype &= 0x07;
++	ramtype = sisfb_post_xgi_ramtype(ivideo);
  
- struct plat_lcd_data {
--	void	(*set_power)(struct plat_lcd_data *, unsigned int power);
-+	void	(*set_power)(struct lcd_device *, unsigned int power);
- 	int	(*match_fb)(struct plat_lcd_data *, struct fb_info *);
- };
+ 	regb = 0;	/* ! */
  
 -- 
-1.6.0.4
+1.5.6.5
 

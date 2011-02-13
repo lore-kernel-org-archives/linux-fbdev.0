@@ -1,182 +1,46 @@
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-Date: Sun, 13 Feb 2011 22:11:27 +0000
-Subject: [PATCH 5/6] sisfb: move XGI POST DDR2 bootup code into subroutines
-Message-Id: <1297635088-13224-6-git-send-email-aaro.koskinen@iki.fi>
+From: Martin Decky <martin@decky.cz>
+Date: Sun, 13 Feb 2011 19:28:40 +0000
+Subject: [PATCH] Fix EDID macros H_SYNC_WIDTH and H_SYNC_OFFSET
+Message-Id: <4D5830E8.50900@decky.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1297635088-13224-1-git-send-email-aaro.koskinen@iki.fi>
-In-Reply-To: <1297635088-13224-1-git-send-email-aaro.koskinen@iki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Thomas Winischhofer <thomas@winischhofer.net>
+To: linux-fbdev@vger.kernel.org
 
-Move DDR2 register setting code into separate subroutines. No changes
-in functionality.
+From: Martin Decky <martin@decky.cz>
 
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>
----
- drivers/video/sis/sis_main.c |  139 +++++++++++++++++++++++++-----------------
- 1 files changed, 84 insertions(+), 55 deletions(-)
+The macros for getting the values for horizontal sync width and offset
+do not respect the EDID specification. Both these values are 10 bit
+values according to [1], not 6 bit values. The lower 8 bits are stored
+in byte 8 and byte 9 of the DTD respectively, while two additional bits
+for each value are stored in byte 11. The original macros just slammed
+the bits together.
 
-diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
-index de03567..9c52d7b 100644
---- a/drivers/video/sis/sis_main.c
-+++ b/drivers/video/sis/sis_main.c
-@@ -4941,6 +4941,89 @@ sisfb_post_xgi_setclocks(struct sis_video_info *ivideo, u8 regb)
- 	sisfb_post_xgi_delay(ivideo, 0x43);
- }
- 
-+static void __devinit
-+sisfb_post_xgi_ddr2_mrs_default(struct sis_video_info *ivideo, u8 regb)
-+{
-+	unsigned char *bios = ivideo->bios_abase;
-+	u8 v1;
-+
-+	SiS_SetReg(SISSR, 0x28, 0x64);
-+	SiS_SetReg(SISSR, 0x29, 0x63);
-+	sisfb_post_xgi_delay(ivideo, 15);
-+	SiS_SetReg(SISSR, 0x18, 0x00);
-+	SiS_SetReg(SISSR, 0x19, 0x20);
-+	SiS_SetReg(SISSR, 0x16, 0x00);
-+	SiS_SetReg(SISSR, 0x16, 0x80);
-+	SiS_SetReg(SISSR, 0x18, 0xc5);
-+	SiS_SetReg(SISSR, 0x19, 0x23);
-+	SiS_SetReg(SISSR, 0x16, 0x00);
-+	SiS_SetReg(SISSR, 0x16, 0x80);
-+	sisfb_post_xgi_delay(ivideo, 1);
-+	SiS_SetReg(SISCR, 0x97, 0x11);
-+	sisfb_post_xgi_setclocks(ivideo, regb);
-+	sisfb_post_xgi_delay(ivideo, 0x46);
-+	SiS_SetReg(SISSR, 0x18, 0xc5);
-+	SiS_SetReg(SISSR, 0x19, 0x23);
-+	SiS_SetReg(SISSR, 0x16, 0x00);
-+	SiS_SetReg(SISSR, 0x16, 0x80);
-+	sisfb_post_xgi_delay(ivideo, 1);
-+	SiS_SetReg(SISSR, 0x1b, 0x04);
-+	sisfb_post_xgi_delay(ivideo, 1);
-+	SiS_SetReg(SISSR, 0x1b, 0x00);
-+	sisfb_post_xgi_delay(ivideo, 1);
-+	v1 = 0x31;
-+	if (ivideo->haveXGIROM) {
-+		v1 = bios[0xf0];
-+	}
-+	SiS_SetReg(SISSR, 0x18, v1);
-+	SiS_SetReg(SISSR, 0x19, 0x06);
-+	SiS_SetReg(SISSR, 0x16, 0x04);
-+	SiS_SetReg(SISSR, 0x16, 0x84);
-+	sisfb_post_xgi_delay(ivideo, 1);
-+}
-+
-+static void __devinit
-+sisfb_post_xgi_ddr2(struct sis_video_info *ivideo, u8 regb)
-+{
-+	unsigned char *bios = ivideo->bios_abase;
-+	static const u8 cs158[8] = {
-+		0x88, 0xaa, 0x48, 0x00, 0x00, 0x00, 0x00, 0x00
-+	};
-+	static const u8 cs160[8] = {
-+		0x44, 0x77, 0x77, 0x00, 0x00, 0x00, 0x00, 0x00
-+	};
-+	static const u8 cs168[8] = {
-+		0x48, 0x78, 0x88, 0x00, 0x00, 0x00, 0x00, 0x00
-+	};
-+	u8 reg;
-+	u8 v1;
-+	u8 v2;
-+	u8 v3;
-+
-+	SiS_SetReg(SISCR, 0x82, 0x77);
-+	SiS_SetReg(SISCR, 0x86, 0x00);
-+	reg = SiS_GetReg(SISCR, 0x86);
-+	SiS_SetReg(SISCR, 0x86, 0x88);
-+	reg = SiS_GetReg(SISCR, 0x86);
-+	v1 = cs168[regb]; v2 = cs160[regb]; v3 = cs158[regb];
-+	if (ivideo->haveXGIROM) {
-+		v1 = bios[regb + 0x168];
-+		v2 = bios[regb + 0x160];
-+		v3 = bios[regb + 0x158];
-+	}
-+	SiS_SetReg(SISCR, 0x86, v1);
-+	SiS_SetReg(SISCR, 0x82, 0x77);
-+	SiS_SetReg(SISCR, 0x85, 0x00);
-+	reg = SiS_GetReg(SISCR, 0x85);
-+	SiS_SetReg(SISCR, 0x85, 0x88);
-+	reg = SiS_GetReg(SISCR, 0x85);
-+	SiS_SetReg(SISCR, 0x85, v2);
-+	SiS_SetReg(SISCR, 0x82, v3);
-+	SiS_SetReg(SISCR, 0x98, 0x01);
-+	SiS_SetReg(SISCR, 0x9a, 0x02);
-+	sisfb_post_xgi_ddr2_default(ivideo, regb);
-+}
-+
- static u8 __devinit
- sisfb_post_xgi_ramtype(struct sis_video_info *ivideo)
- {
-@@ -5514,61 +5597,7 @@ sisfb_post_xgi(struct pci_dev *pdev)
- 		SiS_SetReg(SISSR, 0x1b, 0x00);
- 		break;
- 	case 1:
--		SiS_SetReg(SISCR, 0x82, 0x77);
--		SiS_SetReg(SISCR, 0x86, 0x00);
--		reg = SiS_GetReg(SISCR, 0x86);
--		SiS_SetReg(SISCR, 0x86, 0x88);
--		reg = SiS_GetReg(SISCR, 0x86);
--		v1 = cs168[regb]; v2 = cs160[regb]; v3 = cs158[regb];
--		if(ivideo->haveXGIROM) {
--			v1 = bios[regb + 0x168];
--			v2 = bios[regb + 0x160];
--			v3 = bios[regb + 0x158];
--		}
--		SiS_SetReg(SISCR, 0x86, v1);
--		SiS_SetReg(SISCR, 0x82, 0x77);
--		SiS_SetReg(SISCR, 0x85, 0x00);
--		reg = SiS_GetReg(SISCR, 0x85);
--		SiS_SetReg(SISCR, 0x85, 0x88);
--		reg = SiS_GetReg(SISCR, 0x85);
--		SiS_SetReg(SISCR, 0x85, v2);
--		SiS_SetReg(SISCR, 0x82, v3);
--		SiS_SetReg(SISCR, 0x98, 0x01);
--		SiS_SetReg(SISCR, 0x9a, 0x02);
--
--		SiS_SetReg(SISSR, 0x28, 0x64);
--		SiS_SetReg(SISSR, 0x29, 0x63);
--		sisfb_post_xgi_delay(ivideo, 15);
--		SiS_SetReg(SISSR, 0x18, 0x00);
--		SiS_SetReg(SISSR, 0x19, 0x20);
--		SiS_SetReg(SISSR, 0x16, 0x00);
--		SiS_SetReg(SISSR, 0x16, 0x80);
--		SiS_SetReg(SISSR, 0x18, 0xc5);
--		SiS_SetReg(SISSR, 0x19, 0x23);
--		SiS_SetReg(SISSR, 0x16, 0x00);
--		SiS_SetReg(SISSR, 0x16, 0x80);
--		sisfb_post_xgi_delay(ivideo, 1);
--		SiS_SetReg(SISCR, 0x97, 0x11);
--		sisfb_post_xgi_setclocks(ivideo, regb);
--		sisfb_post_xgi_delay(ivideo, 0x46);
--		SiS_SetReg(SISSR, 0x18, 0xc5);
--		SiS_SetReg(SISSR, 0x19, 0x23);
--		SiS_SetReg(SISSR, 0x16, 0x00);
--		SiS_SetReg(SISSR, 0x16, 0x80);
--		sisfb_post_xgi_delay(ivideo, 1);
--		SiS_SetReg(SISSR, 0x1b, 0x04);
--		sisfb_post_xgi_delay(ivideo, 1);
--		SiS_SetReg(SISSR, 0x1b, 0x00);
--		sisfb_post_xgi_delay(ivideo, 1);
--		v1 = 0x31;
--		if(ivideo->haveXGIROM) {
--			v1 = bios[0xf0];
--		}
--		SiS_SetReg(SISSR, 0x18, v1);
--		SiS_SetReg(SISSR, 0x19, 0x06);
--		SiS_SetReg(SISSR, 0x16, 0x04);
--		SiS_SetReg(SISSR, 0x16, 0x84);
--		sisfb_post_xgi_delay(ivideo, 1);
-+		sisfb_post_xgi_ddr2(ivideo, regb);
- 		break;
- 	default:
- 		sisfb_post_xgi_setclocks(ivideo, regb);
--- 
-1.5.6.5
+Although the original macros usually worked fine because the higher two
+bits are rarely used, it can cause severe problems on plasma panels
+running at 1920x1080 @ 50 Hz with drivers that rely on the correct
+parsing of the EDID data by fbmon.c (e.g. udlfb).
 
+The patch should apply cleanly to both the fbdev-2.6.git branch and
+linux-next.git branch.
+
+[1] VESA Enhanced Extended Display Identification Data Standard,
+     Release A, Revision 2, page 34, notes 7 & 8, VESA, Sep 2006
+
+Signed-off-by: Martin Decky <martin@decky.cz>
+----
+diff -Naurp fbdev-2.6.orig/drivers/video/edid.h fbdev-2.6/drivers/video/edid.h
+--- fbdev-2.6.orig/drivers/video/edid.h	2011-02-13 19:45:22.000000000 +0100
++++ fbdev-2.6/drivers/video/edid.h	2011-02-13 19:56:02.080350929 +0100
+@@ -101,8 +101,8 @@
+  #define V_SYNC_WIDTH       COMBINE_HI_4LO( V_SYNC_WIDTH_HI, V_SYNC_WIDTH_LO )
+  #define V_SYNC_OFFSET      COMBINE_HI_4LO( V_SYNC_OFFSET_HI, V_SYNC_OFFSET_LO )
+
+-#define H_SYNC_WIDTH       COMBINE_HI_4LO( H_SYNC_WIDTH_HI, H_SYNC_WIDTH_LO )
+-#define H_SYNC_OFFSET      COMBINE_HI_4LO( H_SYNC_OFFSET_HI, H_SYNC_OFFSET_LO )
++#define H_SYNC_WIDTH       COMBINE_HI_8LO( H_SYNC_WIDTH_HI, H_SYNC_WIDTH_LO )
++#define H_SYNC_OFFSET      COMBINE_HI_8LO( H_SYNC_OFFSET_HI, H_SYNC_OFFSET_LO )
+
+  #define H_SIZE_LO          (unsigned)block[ 12 ]
+  #define V_SIZE_LO          (unsigned)block[ 13 ]

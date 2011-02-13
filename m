@@ -1,72 +1,33 @@
-From: Jason Chen <weitway@gmail.com>
-Date: Sat, 19 Feb 2011 02:22:08 +0000
-Subject: Re: [PATCH 3/7] Add i.MX5 framebuffer driver
-Message-Id: <AANLkTi=hm41HUtwXJSdfGtjj2pRo1xAv1AmZ5zaTp5Sj@mail.gmail.com>
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Date: Sun, 13 Feb 2011 22:11:22 +0000
+Subject: [PATCH 0/6] sisfb: XGI Z9 POST
+Message-Id: <1297635088-13224-1-git-send-email-aaro.koskinen@iki.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1297865452-32181-1-git-send-email-s.hauer@pengutronix.de>
-	<1297865452-32181-4-git-send-email-s.hauer@pengutronix.de>
-	<AANLkTina46_CMvB_9cqc4=PvcPxaV_BQ_H_ghJZFFxg8@mail.gmail.com>
-	<20110218095221.GK24426@pengutronix.de>
-In-Reply-To: <20110218095221.GK24426@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-hi, Sascha,
+Here's some patches to get POST working with XGI Z9. I have tested them
+with the following card:
 
-2011/2/18 Sascha Hauer <s.hauer@pengutronix.de>:
-> Hi Jason,
->
-> On Fri, Feb 18, 2011 at 05:22:09PM +0800, Jason Chen wrote:
->> hi, Sasha,
->>
->> > + =A0 =A0 =A0 if (var->vmode & FB_VMODE_ODD_FLD_FIRST) /* PAL */
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 sig_cfg.odd_field_first =3D 1;
->> > + =A0 =A0 =A0 if (var->sync & FB_SYNC_EXT)
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 sig_cfg.ext_clk =3D 1;
->> > + =A0 =A0 =A0 if (var->sync & FB_SYNC_HOR_HIGH_ACT)
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 sig_cfg.Hsync_pol =3D 1;
->> Please remove FB_SYNC_EXT support.
->
-> No problem, can do. But why? Is it nonfunctional in the hardware
-> or is it that the current code just misses more pieces to support
-> this?
->
-This flag represents external sync, some application will not check
-this flag when they reset fb var, for example, X server fb driver will
-ignore it, if so, the ipu external clock can not be set correctly.
-I think ipu should decide external clock usage by other method. The
-latest method in freesacle mainline is decide it automatically -- if
-internal clock can not fit target clock rate well, switch it to
-external.
->>
->> +static void imx_ipu_fb_disable_overlay(struct fb_info *ovl)
->> +{
->> + =A0 =A0 =A0 struct imx_ipu_fb_info *mxc_ovl =3D ovl->par;
->> +
->> + =A0 =A0 =A0 if (!mxc_ovl->enabled)
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return;
->> +
->> + =A0 =A0 =A0 ipu_dp_disable_fg(mxc_ovl->dp);
->> + =A0 =A0 =A0 ipu_wait_for_interrupt(451, 100);
->> + =A0 =A0 =A0 ipu_idmac_disable_channel(mxc_ovl->ipu_ch);
->> + =A0 =A0 =A0 ipu_dmfc_disable_channel(mxc_ovl->dmfc);
->> + =A0 =A0 =A0 mxc_ovl->enabled =3D 0;
->> +}
->> Had better has a definition of ipu irq 451.
->
-> Ok.
->
-> Sascha
->
-> --
-> Pengutronix e.K. =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 |
-> Industrial Linux Solutions =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | http://www.p=
-engutronix.de/ =A0|
-> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0 =A0=
- =A0|
-> Amtsgericht Hildesheim, HRA 2686 =A0 =A0 =A0 =A0 =A0 | Fax: =A0 +49-5121-=
-206917-5555 |
->
+	http://www.roboard.com/Files/RB-100/MiniPCI-VGA-Z9s_UM_v1r1A.pdf
+
+I'm using the card on an ARM board where the bootloader knows nothing
+about VGA or VGA BIOS, so having POST support in the kernel driver
+is mandatory. With these patches the memory size is correct detected,
+R/W test passes and it's possible to use e.g. framebuffer console.
+
+Aaro Koskinen (6):
+  sisfb: POST should fail if R/W test fails
+  sisfb: move XGI POST RAM type detection into a subroutine
+  sisfb: add subroutine for detecting XGI Z9
+  sisfb: add RAM type detection for XGI Z9
+  sisfb: move XGI POST DDR2 bootup code into subroutines
+  sisfb: add support for XGI Z9 DDR2 POST
+
+ drivers/video/sis/sis.h      |    1 +
+ drivers/video/sis/sis_main.c |  315 ++++++++++++++++++++++++++++++------------
+ drivers/video/sis/vgatypes.h |    1 +
+ 3 files changed, 228 insertions(+), 89 deletions(-)
+

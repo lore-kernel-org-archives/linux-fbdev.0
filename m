@@ -1,46 +1,94 @@
-From: Martin Decky <martin@decky.cz>
-Date: Sun, 13 Feb 2011 19:28:40 +0000
-Subject: [PATCH] Fix EDID macros H_SYNC_WIDTH and H_SYNC_OFFSET
-Message-Id: <4D5830E8.50900@decky.cz>
+From: Andres Salomon <dilinger@queued.net>
+Date: Tue, 15 Feb 2011 22:25:27 +0000
+Subject: [PATCH 7/9] tmio-fb: use mfd_data instead of driver_data
+Message-Id: <1297808729-21110-8-git-send-email-dilinger@queued.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1297808729-21110-1-git-send-email-dilinger@queued.net>
+In-Reply-To: <1297808729-21110-1-git-send-email-dilinger@queued.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org
 
-From: Martin Decky <martin@decky.cz>
+Use mfd_data for passing information from mfd drivers to mfd
+clients.  The mfd_cell's driver_data field is being phased out.
 
-The macros for getting the values for horizontal sync width and offset
-do not respect the EDID specification. Both these values are 10 bit
-values according to [1], not 6 bit values. The lower 8 bits are stored
-in byte 8 and byte 9 of the DTD respectively, while two additional bits
-for each value are stored in byte 11. The original macros just slammed
-the bits together.
+Clients that were using driver_data now access .mfd_data
+via mfd_get_data().  This changes tmio-fb only; mfd drivers with
+other cells are not modified.
 
-Although the original macros usually worked fine because the higher two
-bits are rarely used, it can cause severe problems on plasma panels
-running at 1920x1080 @ 50 Hz with drivers that rely on the correct
-parsing of the EDID data by fbmon.c (e.g. udlfb).
+Signed-off-by: Andres Salomon <dilinger@queued.net>
+---
+ drivers/mfd/tc6393xb.c |    2 +-
+ drivers/video/tmiofb.c |   15 +++++++--------
+ 2 files changed, 8 insertions(+), 9 deletions(-)
 
-The patch should apply cleanly to both the fbdev-2.6.git branch and
-linux-next.git branch.
+diff --git a/drivers/mfd/tc6393xb.c b/drivers/mfd/tc6393xb.c
+index ecb045b..3d62ded 100644
+--- a/drivers/mfd/tc6393xb.c
++++ b/drivers/mfd/tc6393xb.c
+@@ -694,7 +694,7 @@ static int __devinit tc6393xb_probe(struct platform_device *dev)
+ 	}
+ 
+ 	tc6393xb_cells[TC6393XB_CELL_NAND].mfd_data = tcpd->nand_data;
+-	tc6393xb_cells[TC6393XB_CELL_FB].driver_data = tcpd->fb_data;
++	tc6393xb_cells[TC6393XB_CELL_FB].mfd_data = tcpd->fb_data;
+ 
+ 	ret = mfd_add_devices(&dev->dev, dev->id,
+ 			tc6393xb_cells, ARRAY_SIZE(tc6393xb_cells),
+diff --git a/drivers/video/tmiofb.c b/drivers/video/tmiofb.c
+index 6302882..7e57d3b 100644
+--- a/drivers/video/tmiofb.c
++++ b/drivers/video/tmiofb.c
+@@ -250,8 +250,7 @@ static irqreturn_t tmiofb_irq(int irq, void *__info)
+  */
+ static int tmiofb_hw_stop(struct platform_device *dev)
+ {
+-	struct mfd_cell *cell = mfd_get_cell(dev);
+-	struct tmio_fb_data *data = cell->driver_data;
++	struct tmio_fb_data *data = mfd_get_data(dev);
+ 	struct fb_info *info = platform_get_drvdata(dev);
+ 	struct tmiofb_par *par = info->par;
+ 
+@@ -313,7 +312,7 @@ static int tmiofb_hw_init(struct platform_device *dev)
+ static void tmiofb_hw_mode(struct platform_device *dev)
+ {
+ 	struct mfd_cell *cell = mfd_get_cell(dev);
+-	struct tmio_fb_data *data = cell->driver_data;
++	struct tmio_fb_data *data = mfd_get_data(dev);
+ 	struct fb_info *info = platform_get_drvdata(dev);
+ 	struct fb_videomode *mode = info->mode;
+ 	struct tmiofb_par *par = info->par;
+@@ -559,8 +558,8 @@ static int tmiofb_ioctl(struct fb_info *fbi,
+ static struct fb_videomode *
+ tmiofb_find_mode(struct fb_info *info, struct fb_var_screeninfo *var)
+ {
+-	struct mfd_cell *cell = mfd_get_cell(to_platform_device(info->device));
+-	struct tmio_fb_data *data = cell->driver_data;
++	struct tmio_fb_data *data +			mfd_get_data(to_platform_device(info->device));
+ 	struct fb_videomode *best = NULL;
+ 	int i;
+ 
+@@ -580,8 +579,8 @@ static int tmiofb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+ 
+ 	struct fb_videomode *mode;
+-	struct mfd_cell *cell = mfd_get_cell(to_platform_device(info->device));
+-	struct tmio_fb_data *data = cell->driver_data;
++	struct tmio_fb_data *data +			mfd_get_data(to_platform_device(info->device));
+ 
+ 	mode = tmiofb_find_mode(info, var);
+ 	if (!mode || var->bits_per_pixel > 16)
+@@ -682,7 +681,7 @@ static struct fb_ops tmiofb_ops = {
+ static int __devinit tmiofb_probe(struct platform_device *dev)
+ {
+ 	struct mfd_cell *cell = mfd_get_cell(dev);
+-	struct tmio_fb_data *data = cell->driver_data;
++	struct tmio_fb_data *data = mfd_get_data(dev);
+ 	struct resource *ccr = platform_get_resource(dev, IORESOURCE_MEM, 1);
+ 	struct resource *lcr = platform_get_resource(dev, IORESOURCE_MEM, 0);
+ 	struct resource *vram = platform_get_resource(dev, IORESOURCE_MEM, 2);
+-- 
+1.7.2.3
 
-[1] VESA Enhanced Extended Display Identification Data Standard,
-     Release A, Revision 2, page 34, notes 7 & 8, VESA, Sep 2006
-
-Signed-off-by: Martin Decky <martin@decky.cz>
-----
-diff -Naurp fbdev-2.6.orig/drivers/video/edid.h fbdev-2.6/drivers/video/edid.h
---- fbdev-2.6.orig/drivers/video/edid.h	2011-02-13 19:45:22.000000000 +0100
-+++ fbdev-2.6/drivers/video/edid.h	2011-02-13 19:56:02.080350929 +0100
-@@ -101,8 +101,8 @@
-  #define V_SYNC_WIDTH       COMBINE_HI_4LO( V_SYNC_WIDTH_HI, V_SYNC_WIDTH_LO )
-  #define V_SYNC_OFFSET      COMBINE_HI_4LO( V_SYNC_OFFSET_HI, V_SYNC_OFFSET_LO )
-
--#define H_SYNC_WIDTH       COMBINE_HI_4LO( H_SYNC_WIDTH_HI, H_SYNC_WIDTH_LO )
--#define H_SYNC_OFFSET      COMBINE_HI_4LO( H_SYNC_OFFSET_HI, H_SYNC_OFFSET_LO )
-+#define H_SYNC_WIDTH       COMBINE_HI_8LO( H_SYNC_WIDTH_HI, H_SYNC_WIDTH_LO )
-+#define H_SYNC_OFFSET      COMBINE_HI_8LO( H_SYNC_OFFSET_HI, H_SYNC_OFFSET_LO )
-
-  #define H_SIZE_LO          (unsigned)block[ 12 ]
-  #define V_SIZE_LO          (unsigned)block[ 13 ]

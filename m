@@ -1,44 +1,61 @@
-From: Jean Delvare <khali@linux-fr.org>
-Date: Thu, 03 Feb 2011 08:04:44 +0000
-Subject: Re: [PATCH] radeonfb: Let hwmon driver probe the "monid" I2C bus
-Message-Id: <20110203090444.6e020981@endymion.delvare>
+From: Axel Lin <axel.lin@gmail.com>
+Date: Tue, 15 Feb 2011 09:35:02 +0000
+Subject: [PATCH] video: add missing framebuffer_release in error path
+Message-Id: <1297762502.4049.2.camel@phoenix>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20110111162352.5a634e9e@endymion.delvare>
-In-Reply-To: <20110111162352.5a634e9e@endymion.delvare>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: "David S. Miller" <davem@davemloft.net>, Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org
 
-On Thu, 03 Feb 2011 07:41:01 +0200, Alexander Goomenyuk wrote:
-> > I can imagine that sensor support has only been implemented for
-> > atom-BIOS based boards and not older com-BIOS based ones. At least
-> > searching for "lm63" in the source code has matches in only
-> > radeon_atombios.c and not radeon_combios.c. I have no idea if it would
-> > be possible to extend this mechanism to older boards or not - I don't
-> > know if the com-BIOS included the information already.
->
-> I would like to make some clarifications:
-> The intention was to check how new radeon is working, or not working :),
-> with thermal sensors. I am not competent enough to introduce any fixes
-> to radeon driver.
+This patch fixes a memory leak in the error path.
 
-And neither am I.
+Signed-off-by: Axel Lin <axel.lin@gmail.com>
+---
+ drivers/video/cg14.c |    1 +
+ drivers/video/cg6.c  |    1 +
+ drivers/video/tcx.c  |    1 +
+ 3 files changed, 3 insertions(+), 0 deletions(-)
 
-> The question is: Should I file the bug for radeon driver to implement
-> thermal sensor support for com-BIOS based cards or not?
-
-This would obviously be a feature request rather than a bug report.
-
-I don't know if the com-BIOS based cards have the thermal sensor
-information in the first place, so I don't know if the feature can be
-implemented. If they don't, then auto-detection is the way to go, and
-we can do it ourselves. If they do, the radeon driver maintainers would
-have to work on it, if they are able and willing to do so.
-
-So the next step is the radeon driver maintainers telling us whether
-com-BIOS based cards have thermal sensor information as atom-BIOS based
-ones do. You should ask this question to the right people and list.
-
+diff --git a/drivers/video/cg14.c b/drivers/video/cg14.c
+index 2424953..2063a63 100644
+--- a/drivers/video/cg14.c
++++ b/drivers/video/cg14.c
+@@ -565,6 +565,7 @@ out_dealloc_cmap:
+ 
+ out_unmap_regs:
+ 	cg14_unmap_regs(op, info, par);
++	framebuffer_release(info);
+ 
+ out_err:
+ 	return err;
+diff --git a/drivers/video/cg6.c b/drivers/video/cg6.c
+index 2b5a970..f3b8848 100644
+--- a/drivers/video/cg6.c
++++ b/drivers/video/cg6.c
+@@ -822,6 +822,7 @@ out_dealloc_cmap:
+ 
+ out_unmap_regs:
+ 	cg6_unmap_regs(op, info, par);
++	framebuffer_release(info);
+ 
+ out_err:
+ 	return err;
+diff --git a/drivers/video/tcx.c b/drivers/video/tcx.c
+index 77ad279..3d84235 100644
+--- a/drivers/video/tcx.c
++++ b/drivers/video/tcx.c
+@@ -481,6 +481,7 @@ out_dealloc_cmap:
+ 
+ out_unmap_regs:
+ 	tcx_unmap_regs(op, info, par);
++	framebuffer_release(info);
+ 
+ out_err:
+ 	return err;
 -- 
-Jean Delvare
+1.7.1
+
+
+

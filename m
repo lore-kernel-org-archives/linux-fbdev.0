@@ -1,42 +1,43 @@
-From: Daniel Morsing <daniel.morsing@gmail.com>
-Date: Wed, 16 Feb 2011 14:06:33 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 16 Feb 2011 14:36:36 +0000
 Subject: Re: [PATCH 0/2] Add recommended bpp for omap dss2 generic dpi
-Message-Id: <1297865193.8777.8.camel@morsing>
+Message-Id: <1297866996.988.69.camel@deskari>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1297530130-10355-1-git-send-email-daniel.morsing@gmail.com>
-	 <1297861914.988.1.camel@deskari>
-In-Reply-To: <1297861914.988.1.camel@deskari>
+	 <1297861914.988.1.camel@deskari>  <1297865193.8777.8.camel@morsing>
+In-Reply-To: <1297865193.8777.8.camel@morsing>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: Daniel Morsing <daniel.morsing@gmail.com>
 Cc: Tony Lindgren <tony@atomide.com>, Bryan Wu <bryan.wu@canonical.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 
-Hi Tomi
-
-On Wed, 2011-02-16 at 15:11 +0200, Tomi Valkeinen wrote:
-> Hi,
-> 
-> On Sat, 2011-02-12 at 11:02 -0600, Daniel Morsing wrote:
-> > The panel added is the 4.3 inch display that is sold with the
-> > Devkit8000.
-> 
-> Hmm. Devkit8000's panel is connected with 24 datalines, according to the
-> board file. Why do you want to use 16 bpp format for that?
-> 
->  Tomi
-> 
-
-Running the panel at 24 bpp or specifying 16 datalines causes color
-distortion.
-
-The only way I've been able to run the panel without color distortion,
-is with 24 datalines and 16 bpp.
-
-I'm not well versed in displays, so I might be making a mistake
-somewhere. The BSP for the devkit8000 doesn't include a datasheet for
-the panel, so I can't look into what's causing this weirdness.
-
-Regards,
-Daniel Morsing
-
+T24gV2VkLCAyMDExLTAyLTE2IGF0IDA4OjA2IC0wNjAwLCBEYW5pZWwgTW9yc2luZyB3cm90ZToK
+PiBIaSBUb21pCj4gCj4gT24gV2VkLCAyMDExLTAyLTE2IGF0IDE1OjExICswMjAwLCBUb21pIFZh
+bGtlaW5lbiB3cm90ZToKPiA+IEhpLAo+ID4gCj4gPiBPbiBTYXQsIDIwMTEtMDItMTIgYXQgMTE6
+MDIgLTA2MDAsIERhbmllbCBNb3JzaW5nIHdyb3RlOgo+ID4gPiBUaGUgcGFuZWwgYWRkZWQgaXMg
+dGhlIDQuMyBpbmNoIGRpc3BsYXkgdGhhdCBpcyBzb2xkIHdpdGggdGhlCj4gPiA+IERldmtpdDgw
+MDAuCj4gPiAKPiA+IEhtbS4gRGV2a2l0ODAwMCdzIHBhbmVsIGlzIGNvbm5lY3RlZCB3aXRoIDI0
+IGRhdGFsaW5lcywgYWNjb3JkaW5nIHRvIHRoZQo+ID4gYm9hcmQgZmlsZS4gV2h5IGRvIHlvdSB3
+YW50IHRvIHVzZSAxNiBicHAgZm9ybWF0IGZvciB0aGF0Pwo+ID4gCj4gPiAgVG9taQo+ID4gCj4g
+Cj4gUnVubmluZyB0aGUgcGFuZWwgYXQgMjQgYnBwIG9yIHNwZWNpZnlpbmcgMTYgZGF0YWxpbmVz
+IGNhdXNlcyBjb2xvcgo+IGRpc3RvcnRpb24uCj4gCj4gVGhlIG9ubHkgd2F5IEkndmUgYmVlbiBh
+YmxlIHRvIHJ1biB0aGUgcGFuZWwgd2l0aG91dCBjb2xvciBkaXN0b3J0aW9uLAo+IGlzIHdpdGgg
+MjQgZGF0YWxpbmVzIGFuZCAxNiBicHAuCj4gCj4gSSdtIG5vdCB3ZWxsIHZlcnNlZCBpbiBkaXNw
+bGF5cywgc28gSSBtaWdodCBiZSBtYWtpbmcgYSBtaXN0YWtlCj4gc29tZXdoZXJlLiBUaGUgQlNQ
+IGZvciB0aGUgZGV2a2l0ODAwMCBkb2Vzbid0IGluY2x1ZGUgYSBkYXRhc2hlZXQgZm9yCj4gdGhl
+IHBhbmVsLCBzbyBJIGNhbid0IGxvb2sgaW50byB3aGF0J3MgY2F1c2luZyB0aGlzIHdlaXJkbmVz
+cy4KCkkgZG9uJ3QgdGhpbmsgSSdsbCBhZGQgYSBmZWF0dXJlIHdoaWNoIGRvZXNuJ3QgbWFrZSBz
+ZW5zZSwgdG8gZml4IGEKcHJvYmxlbSB3ZSBkb24ndCB1bmRlcnN0YW5kID0pLgoKQSBkYXRhc2hl
+ZXQgSSBmb3VuZCBtZW50aW9ucwoKIk9uZSA0LjPigJ0gVEZUIExDRCAoV2l0aCBUb3VjaCBwYW5l
+bCwgQ0hJIEhTSU4gTFIwNDNKQzIxMSBMQ0QKTW9kZWwpIgoKQW5kIEkgZm91bmQ6CgpodHRwOi8v
+d3d3LnRpbWxsLmNvbS9jaGluZXNlL2Rvd25sb2FkL2ZpbGVzL0NISUxJTl9URUNITk9MT0dZLnBk
+ZgoKSXQgbG9va3MgbGlrZSAyNGJwcCBkaXNwbGF5LgoKV2hhdCBraW5kIG9mIGNvbG9yIGRpc3Rv
+cnRpb24gZG8geW91IHNlZT8gUGVyaGFwcyB0aGUgcHJvYmxlbSBpcwpzb21ld2hlcmUgZWxzZSwg
+bGlrZSB3cm9uZyBob3Jpem9udGFsIHN5bmMsIHZlcnRpY2FsIHN5bmMgb3IgcGl4ZWwgY2xvY2sK
+c2lnbmFsIHNldHRpbmcgaW4gLmNvbmZpZyBmaWVsZC4gVGhpcyBpbmZvIHNob3VsZCBiZSBpbiB0
+aGUgcGFuZWwKZGF0YXNoZWV0LCBidXQgaXQgdXN1YWxseSB0YWtlcyBzb21lIGRlY2lwaGVyaW5n
+IHRvIHVuZGVyc3RhbmQgaXQgPSkuCgogVG9taQoKCi0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhp
+cyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4KdGhlIGJv
+ZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKTW9yZSBtYWpvcmRv
+bW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s

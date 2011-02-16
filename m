@@ -1,54 +1,60 @@
-From: Daniel Morsing <daniel.morsing@gmail.com>
-Date: Wed, 16 Feb 2011 15:42:38 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 16 Feb 2011 15:58:06 +0000
 Subject: Re: [PATCH 0/2] Add recommended bpp for omap dss2 generic dpi
-Message-Id: <1297870958.8777.21.camel@morsing>
+Message-Id: <1297871886.14556.21.camel@deskari>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1297530130-10355-1-git-send-email-daniel.morsing@gmail.com>
 	 <1297861914.988.1.camel@deskari>  <1297865193.8777.8.camel@morsing>
-	 <1297866996.988.69.camel@deskari>
-In-Reply-To: <1297866996.988.69.camel@deskari>
+	 <1297866996.988.69.camel@deskari>  <1297870958.8777.21.camel@morsing>
+In-Reply-To: <1297870958.8777.21.camel@morsing>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Daniel Morsing <daniel.morsing@gmail.com>
 Cc: Tony Lindgren <tony@atomide.com>, Bryan Wu <bryan.wu@canonical.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 
-T24gV2VkLCAyMDExLTAyLTE2IGF0IDE2OjM2ICswMjAwLCBUb21pIFZhbGtlaW5lbiB3cm90ZToK
-PiBPbiBXZWQsIDIwMTEtMDItMTYgYXQgMDg6MDYgLTA2MDAsIERhbmllbCBNb3JzaW5nIHdyb3Rl
-Ogo+ID4gSGkgVG9taQo+ID4gCj4gPiBPbiBXZWQsIDIwMTEtMDItMTYgYXQgMTU6MTEgKzAyMDAs
-IFRvbWkgVmFsa2VpbmVuIHdyb3RlOgo+ID4gPiBIaSwKPiA+ID4gCj4gPiA+IE9uIFNhdCwgMjAx
-MS0wMi0xMiBhdCAxMTowMiAtMDYwMCwgRGFuaWVsIE1vcnNpbmcgd3JvdGU6Cj4gPiA+ID4gVGhl
-IHBhbmVsIGFkZGVkIGlzIHRoZSA0LjMgaW5jaCBkaXNwbGF5IHRoYXQgaXMgc29sZCB3aXRoIHRo
-ZQo+ID4gPiA+IERldmtpdDgwMDAuCj4gPiA+IAo+ID4gPiBIbW0uIERldmtpdDgwMDAncyBwYW5l
-bCBpcyBjb25uZWN0ZWQgd2l0aCAyNCBkYXRhbGluZXMsIGFjY29yZGluZyB0byB0aGUKPiA+ID4g
-Ym9hcmQgZmlsZS4gV2h5IGRvIHlvdSB3YW50IHRvIHVzZSAxNiBicHAgZm9ybWF0IGZvciB0aGF0
-Pwo+ID4gPiAKPiA+ID4gIFRvbWkKPiA+ID4gCj4gPiAKPiA+IFJ1bm5pbmcgdGhlIHBhbmVsIGF0
-IDI0IGJwcCBvciBzcGVjaWZ5aW5nIDE2IGRhdGFsaW5lcyBjYXVzZXMgY29sb3IKPiA+IGRpc3Rv
-cnRpb24uCj4gPiAKPiA+IFRoZSBvbmx5IHdheSBJJ3ZlIGJlZW4gYWJsZSB0byBydW4gdGhlIHBh
-bmVsIHdpdGhvdXQgY29sb3IgZGlzdG9ydGlvbiwKPiA+IGlzIHdpdGggMjQgZGF0YWxpbmVzIGFu
-ZCAxNiBicHAuCj4gPiAKPiA+IEknbSBub3Qgd2VsbCB2ZXJzZWQgaW4gZGlzcGxheXMsIHNvIEkg
-bWlnaHQgYmUgbWFraW5nIGEgbWlzdGFrZQo+ID4gc29tZXdoZXJlLiBUaGUgQlNQIGZvciB0aGUg
-ZGV2a2l0ODAwMCBkb2Vzbid0IGluY2x1ZGUgYSBkYXRhc2hlZXQgZm9yCj4gPiB0aGUgcGFuZWws
-IHNvIEkgY2FuJ3QgbG9vayBpbnRvIHdoYXQncyBjYXVzaW5nIHRoaXMgd2VpcmRuZXNzLgo+IAo+
-IEkgZG9uJ3QgdGhpbmsgSSdsbCBhZGQgYSBmZWF0dXJlIHdoaWNoIGRvZXNuJ3QgbWFrZSBzZW5z
-ZSwgdG8gZml4IGEKPiBwcm9ibGVtIHdlIGRvbid0IHVuZGVyc3RhbmQgPSkuCj4gCj4gQSBkYXRh
-c2hlZXQgSSBmb3VuZCBtZW50aW9ucwo+IAo+ICJPbmUgNC4z4oCdIFRGVCBMQ0QgKFdpdGggVG91
-Y2ggcGFuZWwsIENISSBIU0lOIExSMDQzSkMyMTEgTENECj4gTW9kZWwpIgo+IAo+IEFuZCBJIGZv
-dW5kOgo+IAo+IGh0dHA6Ly93d3cudGltbGwuY29tL2NoaW5lc2UvZG93bmxvYWQvZmlsZXMvQ0hJ
-TElOX1RFQ0hOT0xPR1kucGRmCj4gCj4gSXQgbG9va3MgbGlrZSAyNGJwcCBkaXNwbGF5Lgo+IAoK
-T2sgSSBsb29rZWQgdGhyb3VnaCB0aGUgZGF0YXNoZWV0IGFuZCBpdCBsb29rcyB0byBtZSB0aGF0
-IGkgZ290CnRoZSAuY29uZmlnIGZpZWxkIHJpZ2h0LiBPbmx5IHRoaW5nIHRoYXQncyB2YWd1ZSBm
-cm9tIHRoYXQgc2hlZXQgaXMKd2hpY2ggcGl4ZWwgY2xvY2sgZWRnZSB0aGUgdi1zeW5jIGFuZCBo
-LXN5bmMgYXJlIGRyaXZlbiBsb3cgYW5kIHRoZQpjb2xvciBkaXN0b3J0aW9uIGlzIHN0aWxsIHRo
-ZXJlIHdpdGggZWl0aGVyIG9wdGlvbi4KCj4gV2hhdCBraW5kIG9mIGNvbG9yIGRpc3RvcnRpb24g
-ZG8geW91IHNlZT8gUGVyaGFwcyB0aGUgcHJvYmxlbSBpcwo+IHNvbWV3aGVyZSBlbHNlLCBsaWtl
-IHdyb25nIGhvcml6b250YWwgc3luYywgdmVydGljYWwgc3luYyBvciBwaXhlbCBjbG9jawo+IHNp
-Z25hbCBzZXR0aW5nIGluIC5jb25maWcgZmllbGQuIFRoaXMgaW5mbyBzaG91bGQgYmUgaW4gdGhl
-IHBhbmVsCj4gZGF0YXNoZWV0LCBidXQgaXQgdXN1YWxseSB0YWtlcyBzb21lIGRlY2lwaGVyaW5n
-IHRvIHVuZGVyc3RhbmQgaXQgPSkuCj4gCj4gIFRvbWkKPiAKCkknbSBzZWVpbmcgYSBsaWdodCBj
-eWFuIHRpbnQgdG8gZXZlcnl0aGluZyB3aGVuIHJ1bm5pbmcgYXQgMjRicHAuIFVzaW5nCjE2IGRh
-dGFsaW5lcyBjYXVzZXMgYSBoZWF2eSBibHVlIHRpbnQuCgpSZWdhcmRzLApEYW5pZWwgTW9yc2lu
-ZwoKCgoKLS0KVG8gdW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVu
-c3Vic2NyaWJlIGxpbnV4LWZiZGV2IiBpbgp0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jk
-b21vQHZnZXIua2VybmVsLm9yZwpNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5r
-ZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWw=
+On Wed, 2011-02-16 at 09:42 -0600, Daniel Morsing wrote:
+> On Wed, 2011-02-16 at 16:36 +0200, Tomi Valkeinen wrote:
+
+> > And I found:
+> > 
+> > http://www.timll.com/chinese/download/files/CHILIN_TECHNOLOGY.pdf
+> > 
+> > It looks like 24bpp display.
+> > 
+> 
+> Ok I looked through the datasheet and it looks to me that i got
+> the .config field right. Only thing that's vague from that sheet is
+> which pixel clock edge the v-sync and h-sync are driven low and the
+> color distortion is still there with either option.
+> 
+> > What kind of color distortion do you see? Perhaps the problem is
+> > somewhere else, like wrong horizontal sync, vertical sync or pixel clock
+> > signal setting in .config field. This info should be in the panel
+> > datasheet, but it usually takes some deciphering to understand it =).
+> > 
+> >  Tomi
+> > 
+> 
+> I'm seeing a light cyan tint to everything when running at 24bpp. Using
+> 16 datalines causes a heavy blue tint.
+
+But with 24 datalines and 16 bpp it works? Sounds strange =). 
+
+One thing to check are the pinmuxings (or pad configuration, as it's
+called in omap3 trm).
+
+Are you using 2.6.37 or newer kernel?
+
+Is this also happening with other devkit8000 devices, so it's not just a
+broken device?
+
+Have you tried with an image with full red, green and blue areas, to see
+if only certain colors are affected? 
+
+And the last option is of course get a scope and see what's going on in
+the datalines.
+
+ Tomi
+
+

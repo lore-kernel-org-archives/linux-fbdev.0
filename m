@@ -1,43 +1,49 @@
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-Date: Sun, 13 Feb 2011 22:11:26 +0000
-Subject: [PATCH 4/6] sisfb: add RAM type detection for XGI Z9
-Message-Id: <1297635088-13224-5-git-send-email-aaro.koskinen@iki.fi>
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+Date: Wed, 16 Feb 2011 06:55:38 +0000
+Subject: [PATCH 3/3]drivers:video:aty:radeon_base Fix typo occationally to occasionally
+Message-Id: <1297839338-3198-1-git-send-email-justinmattock@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1297635088-13224-1-git-send-email-aaro.koskinen@iki.fi>
-In-Reply-To: <1297635088-13224-1-git-send-email-aaro.koskinen@iki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Thomas Winischhofer <thomas@winischhofer.net>
+To: trivial@kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, "Justin P. Mattock" <justinmattock@gmail.com>
 
-Detect the XGI Z9 RAM type as "documented" by the XGI's xgifb driver.
+The below patch fixes a typo occationally to occasionally.
 
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>
+Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
+
 ---
- drivers/video/sis/sis_main.c |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+ drivers/gpu/drm/radeon/radeon_legacy_crtc.c |    2 +-
+ drivers/video/aty/radeon_base.c             |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
-index f0c48e8..de03567 100644
---- a/drivers/video/sis/sis_main.c
-+++ b/drivers/video/sis/sis_main.c
-@@ -4955,7 +4955,13 @@ sisfb_post_xgi_ramtype(struct sis_video_info *ivideo)
- 		v1 = bios[0x1d2];
- 	}
- 	if (!(ramtype & 0x80)) {
--		if (ivideo->chip = XGI_20) {
-+		if (sisfb_xgi_is21(ivideo)) {
-+			SiS_SetRegAND(SISCR, 0xb4, 0xfd); /* GPIO control */
-+			SiS_SetRegOR(SISCR, 0x4a, 0x80);  /* GPIOH EN */
-+			reg = SiS_GetReg(SISCR, 0x48);
-+			SiS_SetRegOR(SISCR, 0xb4, 0x02);
-+			ramtype = reg & 0x01;		  /* GPIOH */
-+		} else if (ivideo->chip = XGI_20) {
- 			SiS_SetReg(SISCR, 0x97, v1);
- 			reg = SiS_GetReg(SISCR, 0x97);
- 			if (reg & 0x10) {
+diff --git a/drivers/gpu/drm/radeon/radeon_legacy_crtc.c b/drivers/gpu/drm/radeon/radeon_legacy_crtc.c
+index cf0638c..a883902 100644
+--- a/drivers/gpu/drm/radeon/radeon_legacy_crtc.c
++++ b/drivers/gpu/drm/radeon/radeon_legacy_crtc.c
+@@ -888,7 +888,7 @@ static void radeon_set_pll(struct drm_crtc *crtc, struct drm_display_mode *mode)
+ 		}
+ 
+ 		if (rdev->flags & RADEON_IS_MOBILITY) {
+-			/* A temporal workaround for the occational blanking on certain laptop panels.
++			/* A temporal workaround for the occasional blanking on certain laptop panels.
+ 			   This appears to related to the PLL divider registers (fail to lock?).
+ 			   It occurs even when all dividers are the same with their old settings.
+ 			   In this case we really don't need to fiddle with PLL registers.
+diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
+index 3c1e13e..32f8cf6 100644
+--- a/drivers/video/aty/radeon_base.c
++++ b/drivers/video/aty/radeon_base.c
+@@ -1248,7 +1248,7 @@ static void radeon_write_pll_regs(struct radeonfb_info *rinfo, struct radeon_reg
+ 
+ 	/* Workaround from XFree */
+ 	if (rinfo->is_mobility) {
+-	        /* A temporal workaround for the occational blanking on certain laptop
++	        /* A temporal workaround for the occasional blanking on certain laptop
+ 		 * panels. This appears to related to the PLL divider registers
+ 		 * (fail to lock?). It occurs even when all dividers are the same
+ 		 * with their old settings. In this case we really don't need to
 -- 
-1.5.6.5
+1.6.5.2.180.gc5b3e
 

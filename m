@@ -1,24 +1,109 @@
-From: David Miller <davem@davemloft.net>
-Date: Tue, 08 Feb 2011 19:41:49 +0000
-Subject: Re: [PATCH] video: ffb: fix ffb_probe error path
-Message-Id: <20110208.114149.104062266.davem@davemloft.net>
+From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
+Date: Thu, 17 Feb 2011 18:10:24 +0000
+Subject: Re: [PATCH 1/7] Add a mfd IPUv3 driver
+Message-Id: <871v36pm5r.fsf@lechat.rtp-net.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1297177125.2343.3.camel@phoenix>
-In-Reply-To: <1297177125.2343.3.camel@phoenix>
+References: <1297865452-32181-1-git-send-email-s.hauer@pengutronix.de>
+	<1297865452-32181-2-git-send-email-s.hauer@pengutronix.de>
+In-Reply-To: <1297865452-32181-2-git-send-email-s.hauer@pengutronix.de>
+	(Sascha Hauer's message of "Wed, 16 Feb 2011 15:10:46 +0100")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: axel.lin@gmail.com
-Cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-From: Axel Lin <axel.lin@gmail.com>
-Date: Tue, 08 Feb 2011 22:58:45 +0800
+Sascha Hauer <s.hauer@pengutronix.de> writes:
 
-> Current implementation calls of_iounmap for par->fbc twice in error path.
-> In the case of goto out_unmap_dac, we should call of_iounmap for par->dac.
-> 
-> Signed-off-by: Axel Lin <axel.lin@gmail.com>
+Hi,
 
-Good spotting:
+> The IPU is the Image Processing Unit found on i.MX51/53 SoCs. It
+> features several units for image processing, this patch adds support
+> for the units needed for Framebuffer support, namely:
+>
+> - Display Controller (dc)
+> - Display Interface (di)
+> - Display Multi Fifo Controller (dmfc)
+> - Display Processor (dp)
+> - Image DMA Controller (idmac)
+>
+> This patch is based on the Freescale driver, but follows a different
+> approach. The Freescale code implements logical idmac channels and
+> the handling of the subunits is hidden in common idmac code pathes
+> in big switch/case statements. This patch instead just provides code
+> and resource management for the different subunits. The user, in this
+> case the framebuffer driver, decides how the different units play
+> together.
+>
+> The IPU has other units missing in this patch:
+>
+> - CMOS Sensor Interface (csi)
+> - Video Deinterlacer (vdi)
+> - Sensor Multi FIFO Controler (smfc)
+> - Image Converter (ic)
+> - Image Rotator (irt)
+>
+> So expect more files to come in this directory.
+>
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: Paul Mundt <lethal@linux-sh.org>
+> Cc: Samuel Ortiz <sameo@linux.intel.com>
+> ---
+>  arch/arm/plat-mxc/include/mach/ipu-v3.h |   49 +++
+>  drivers/video/Kconfig                   |    2 +
+>  drivers/video/Makefile                  |    1 +
+>  drivers/video/imx-ipu-v3/Makefile       |    3 +
+>  drivers/video/imx-ipu-v3/ipu-common.c   |  708 +++++++++++++++++++++++++++++++
+>  drivers/video/imx-ipu-v3/ipu-cpmem.c    |  612 ++++++++++++++++++++++++++
+>  drivers/video/imx-ipu-v3/ipu-dc.c       |  364 ++++++++++++++++
+>  drivers/video/imx-ipu-v3/ipu-di.c       |  550 ++++++++++++++++++++++++
+>  drivers/video/imx-ipu-v3/ipu-dmfc.c     |  355 ++++++++++++++++
+>  drivers/video/imx-ipu-v3/ipu-dp.c       |  476 +++++++++++++++++++++
+>  drivers/video/imx-ipu-v3/ipu-prv.h      |  216 ++++++++++
+>  include/linux/mfd/imx-ipu-v3.h          |  219 ++++++++++
+>  12 files changed, 3555 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/arm/plat-mxc/include/mach/ipu-v3.h
+>  create mode 100644 drivers/video/imx-ipu-v3/Makefile
+>  create mode 100644 drivers/video/imx-ipu-v3/ipu-common.c
+>  create mode 100644 drivers/video/imx-ipu-v3/ipu-cpmem.c
+>  create mode 100644 drivers/video/imx-ipu-v3/ipu-dc.c
+>  create mode 100644 drivers/video/imx-ipu-v3/ipu-di.c
+>  create mode 100644 drivers/video/imx-ipu-v3/ipu-dmfc.c
+>  create mode 100644 drivers/video/imx-ipu-v3/ipu-dp.c
+>  create mode 100644 drivers/video/imx-ipu-v3/ipu-prv.h
+>  create mode 100644 include/linux/mfd/imx-ipu-v3.h
 
-Acked-by: David S. Miller <davem@davemloft.net>
+[...]
+
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index 6bafb51b..ffdb37a 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -26,6 +26,8 @@ source "drivers/gpu/drm/Kconfig"
+>  
+>  source "drivers/gpu/stub/Kconfig"
+>  
+> +source "drivers/video/imx-ipu-v3/Kconfig"
+> +
+
+I don't see such a Kconfig file in this patch. Got lost while moving
+from mfd to video ?
+
+ 
+>  config VGASTATE
+>         tristate
+>         default n
+> diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+> index 8c8fabd..f4921ab 100644
+> --- a/drivers/video/Makefile
+> +++ b/drivers/video/Makefile
+> @@ -153,6 +153,7 @@ obj-$(CONFIG_FB_BFIN_T350MCQB)	  += bfin-t350mcqb-fb.o
+>  obj-$(CONFIG_FB_BFIN_7393)        += bfin_adv7393fb.o
+>  obj-$(CONFIG_FB_MX3)		  += mx3fb.o
+>  obj-$(CONFIG_FB_DA8XX)		  += da8xx-fb.o
+> +obj-$(CONFIG_MFD_IMX_IPU_V3)	  += imx-ipu-v3/
+
+Now that files are in drivers/video, do we want to keep MFD in the name ?
+
+Arnaud

@@ -1,42 +1,51 @@
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-Date: Wed, 16 Feb 2011 17:41:40 +0000
-Subject: Re: [PATCH 0/6] sisfb: XGI Z9 POST
-Message-Id: <alpine.DEB.1.10.1102161916510.479@loser>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Thu, 17 Feb 2011 11:03:21 +0000
+Subject: Re: [PATCH 1/2] ARM: PXA: PXAFB: Fix double-free issue.
+Message-Id: <20110217110321.GF24627@n2100.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1297635088-13224-1-git-send-email-aaro.koskinen@iki.fi>
-In-Reply-To: <1297635088-13224-1-git-send-email-aaro.koskinen@iki.fi>
+References: <201102151718.00800.anarsoul@gmail.com>
+	<1297928588-10545-1-git-send-email-anarsoul@gmail.com>
+In-Reply-To: <1297928588-10545-1-git-send-email-anarsoul@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+On Thu, Feb 17, 2011 at 09:43:07AM +0200, Vasily Khoruzhick wrote:
+> From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+> 
+> From: Russell King - ARM Linux <linux@arm.linux.org.uk>
 
-On Mon, 14 Feb 2011, Aaro Koskinen wrote:
-> Here's some patches to get POST working with XGI Z9. I have tested them
-> with the following card:
->
-> 	http://www.roboard.com/Files/RB-100/MiniPCI-VGA-Z9s_UM_v1r1A.pdf
->
-> I'm using the card on an ARM board where the bootloader knows nothing
-> about VGA or VGA BIOS, so having POST support in the kernel driver
-> is mandatory. With these patches the memory size is correct detected,
-> R/W test passes and it's possible to use e.g. framebuffer console.
->
-> Aaro Koskinen (6):
->  sisfb: POST should fail if R/W test fails
->  sisfb: move XGI POST RAM type detection into a subroutine
->  sisfb: add subroutine for detecting XGI Z9
->  sisfb: add RAM type detection for XGI Z9
->  sisfb: move XGI POST DDR2 bootup code into subroutines
->  sisfb: add support for XGI Z9 DDR2 POST
+No need for two From: lines.
 
-Hmm, I think these patches can be ignored, at least for a while.
+> @@ -636,7 +639,8 @@ static void overlay1fb_disable(struct pxafb_layer *ofb)
+>  	lcd_writel(ofb->fbi, FBR1, ofb->fbi->fdadr[DMA_OV1] | 0x3);
+>  
+>  	if (wait_for_completion_timeout(&ofb->branch_done, 1 * HZ) = 0)
+> -		pr_warning("%s: timeout disabling overlay1\n", __func__);
+> +		pr_warning("%s: timeout disabling overlay1\n",
+> +			__func__);
 
-I realized that xgifb driver is now in staging, and it has much wider
-support for XGI chips. So, we should work on getting that driver into
-an acceptable form. And after that, it should be even possible to drop
-XGI support from sisfb.
+No need for this change.
 
-A.
+> @@ -687,6 +691,9 @@ static void overlay2fb_disable(struct pxafb_layer *ofb)
+>  {
+>  	uint32_t lccr5 = lcd_readl(ofb->fbi, LCCR5);
+>  
+> +	if (!(lcd_readl(ofb->fbi, OVL2C1) & OVLxC1_OEN))
+> +		return;
+> +
+
+You don't describe this change in the change log, and this wasn't in my
+patch.
+
+> @@ -696,7 +703,8 @@ static void overlay2fb_disable(struct pxafb_layer *ofb)
+>  	lcd_writel(ofb->fbi, FBR4, ofb->fbi->fdadr[DMA_OV2_Cr] | 0x3);
+>  
+>  	if (wait_for_completion_timeout(&ofb->branch_done, 1 * HZ) = 0)
+> -		pr_warning("%s: timeout disabling overlay2\n", __func__);
+> +		pr_warning("%s: timeout disabling overlay2\n",
+> +			__func__);
+
+No need for this change.
+

@@ -1,96 +1,50 @@
-From: Andrea Righi <arighi@develer.com>
-Date: Sun, 06 Feb 2011 15:50:24 +0000
-Subject: [PATCH] fb: fix potential deadlock between lock_fb_info and console_lock
-Message-Id: <1297007424-14656-1-git-send-email-arighi@develer.com>
+From: Vasily Khoruzhick <anarsoul@gmail.com>
+Date: Thu, 17 Feb 2011 07:43:08 +0000
+Subject: [PATCH 2/2] ARM: PXA: PXAFB: fix plane Z-ordering problem
+Message-Id: <1297928588-10545-2-git-send-email-anarsoul@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <201102151718.00800.anarsoul@gmail.com>
+	<1297928588-10545-1-git-send-email-anarsoul@gmail.com>
+In-Reply-To: <1297928588-10545-1-git-send-email-anarsoul@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Greg KH <gregkh@suse.de>, =?UTF-8?q?Peter=20Nordstr=C3=B6m=20=28Palm=20GBU=29?= <peter.nordstrom@palm.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, stable@kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-The function fb_set_suspend() must be called with the console semaphore
-held, which means the code path coming in here will first take the
-console_lock() and then call lock_fb_info().
+pxafb_overlay_init is not right place to change Z-ordering,
+move it to main plane initialization.
 
-However several framebuffer ioctl commands acquire these locks in
-reverse order (lock_fb_info() and then console_lock()). This gives rise
-to potential AB-BA deadlock.
-
-Fix this by changing the order of acquisition in the ioctl commands that
-make use of console_lock().
-
-Reported-by: Peter Nordstr=C3=B6m (Palm GBU) <peter.nordstrom@palm.com>
-Signed-off-by: Andrea Righi <arighi@develer.com>
+Signed-off-by: Vasily Khoruzhick <anarsoul@gmail.com>
 ---
- drivers/video/fbmem.c |   24 +++++++++++++++---------
- 1 files changed, 15 insertions(+), 9 deletions(-)
+ drivers/video/pxafb.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index e2bf953..def59f0 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1034,14 +1034,16 @@ static long do_fb_ioctl(struct fb_info *info, unsig=
-ned int cmd,
- 	case FBIOPUT_VSCREENINFO:
- 		if (copy_from_user(&var, argp, sizeof(var)))
- 			return -EFAULT;
--		if (!lock_fb_info(info))
--			return -ENODEV;
- 		console_lock();
-+		if (!lock_fb_info(info)) {
-+			console_unlock();
-+			return -ENODEV;
-+		}
- 		info->flags |=3D FBINFO_MISC_USEREVENT;
- 		ret =3D fb_set_var(info, &var);
- 		info->flags &=3D ~FBINFO_MISC_USEREVENT;
--		console_unlock();
- 		unlock_fb_info(info);
-+		console_unlock();
- 		if (!ret && copy_to_user(argp, &var, sizeof(var)))
- 			ret =3D -EFAULT;
- 		break;
-@@ -1070,12 +1072,14 @@ static long do_fb_ioctl(struct fb_info *info, unsig=
-ned int cmd,
- 	case FBIOPAN_DISPLAY:
- 		if (copy_from_user(&var, argp, sizeof(var)))
- 			return -EFAULT;
--		if (!lock_fb_info(info))
--			return -ENODEV;
- 		console_lock();
-+		if (!lock_fb_info(info)) {
-+			console_unlock();
-+			return -ENODEV;
-+		}
- 		ret =3D fb_pan_display(info, &var);
--		console_unlock();
- 		unlock_fb_info(info);
-+		console_unlock();
- 		if (ret =3D 0 && copy_to_user(argp, &var, sizeof(var)))
- 			return -EFAULT;
- 		break;
-@@ -1117,14 +1121,16 @@ static long do_fb_ioctl(struct fb_info *info, unsig=
-ned int cmd,
- 		unlock_fb_info(info);
- 		break;
- 	case FBIOBLANK:
--		if (!lock_fb_info(info))
--			return -ENODEV;
- 		console_lock();
-+		if (!lock_fb_info(info)) {
-+			console_unlock();
-+			return -ENODEV;
-+		}
- 		info->flags |=3D FBINFO_MISC_USEREVENT;
- 		ret =3D fb_blank(info, arg);
- 		info->flags &=3D ~FBINFO_MISC_USEREVENT;
--		console_unlock();
- 		unlock_fb_info(info);
-+		console_unlock();
- 		break;
- 	default:
- 		if (!lock_fb_info(info))
---=20
-1.7.1
+diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
+index c6aad56..590a99a 100644
+--- a/drivers/video/pxafb.c
++++ b/drivers/video/pxafb.c
+@@ -942,8 +942,6 @@ static int __devinit pxafb_overlay_init(struct pxafb_info *fbi)
+ 	/* mask all IU/BS/EOF/SOF interrupts */
+ 	lcd_writel(fbi, LCCR5, ~0);
+ 
+-	/* place overlay(s) on top of base */
+-	fbi->lccr0 |= LCCR0_OUC;
+ 	pr_info("PXA Overlay driver loaded successfully!\n");
+ 	return 0;
+ }
+@@ -1827,6 +1825,12 @@ static struct pxafb_info * __devinit pxafb_init_fbinfo(struct device *dev)
+ 
+ 	pxafb_decode_mach_info(fbi, inf);
+ 
++#ifdef CONFIG_FB_PXA_OVERLAY
++	/* place overlay(s) on top of base */
++	if (pxafb_overlay_supported())
++		fbi->lccr0 |= LCCR0_OUC;
++#endif
++
+ 	init_waitqueue_head(&fbi->ctrlr_wait);
+ 	INIT_WORK(&fbi->task, pxafb_task);
+ 	mutex_init(&fbi->ctrlr_lock);
+-- 
+1.7.4
 

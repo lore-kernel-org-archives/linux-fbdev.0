@@ -1,192 +1,61 @@
-From: Marek Vasut <marek.vasut@gmail.com>
-Date: Thu, 17 Feb 2011 18:17:41 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Thu, 17 Feb 2011 18:56:09 +0000
 Subject: Re: [PATCH 1/2] ARM: PXA: PXAFB: Fix double-free issue.
-Message-Id: <201102171917.41442.marek.vasut@gmail.com>
+Message-Id: <20110217185609.GB30606@n2100.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <201102151718.00800.anarsoul@gmail.com>
 	<1297928588-10545-1-git-send-email-anarsoul@gmail.com>
-In-Reply-To: <1297928588-10545-1-git-send-email-anarsoul@gmail.com>
+	<201102171917.41442.marek.vasut@gmail.com>
+In-Reply-To: <201102171917.41442.marek.vasut@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Thursday 17 February 2011 08:43:07 Vasily Khoruzhick wrote:
-> From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-> 
-> From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-> 
-> Release callback tries to free memory even if it was not allocated in
-> map_video_memory, fix it.
-> 
-> Added by Vasily Khoruzhick:
-> 
-> - Clear x_res/y_res fields of fb.var on release, to make sure
-> our callback will be called on next FBIOPUT_VSCREENINFO ioctl.
-> - Disable overlay only if it was enabled.
-> 
-> Signed-off-by: Vasily Khoruzhick <anarsoul@gmail.com>
-> ---
->  drivers/video/pxafb.c |   55
-> +++++++++++++++++++++++++++++++++--------------- drivers/video/pxafb.h |  
->  2 +-
->  2 files changed, 39 insertions(+), 18 deletions(-)
-> 
-> diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-> index 825b665..c6aad56 100644
-> --- a/drivers/video/pxafb.c
-> +++ b/drivers/video/pxafb.c
-> @@ -629,6 +629,9 @@ static void overlay1fb_disable(struct pxafb_layer *ofb)
->  {
->  	uint32_t lccr5 = lcd_readl(ofb->fbi, LCCR5);
-> 
-> +	if (!(lcd_readl(ofb->fbi, OVL1C1) & OVLxC1_OEN))
-> +		return;
-> +
->  	lcd_writel(ofb->fbi, OVL1C1, ofb->control[0] & ~OVLxC1_OEN);
-> 
->  	lcd_writel(ofb->fbi, LCSR1, LCSR1_BS(1));
-> @@ -636,7 +639,8 @@ static void overlay1fb_disable(struct pxafb_layer *ofb)
->  	lcd_writel(ofb->fbi, FBR1, ofb->fbi->fdadr[DMA_OV1] | 0x3);
-> 
->  	if (wait_for_completion_timeout(&ofb->branch_done, 1 * HZ) = 0)
-> -		pr_warning("%s: timeout disabling overlay1\n", __func__);
-> +		pr_warning("%s: timeout disabling overlay1\n",
-> +			__func__);
-> 
->  	lcd_writel(ofb->fbi, LCCR5, lccr5);
->  }
-> @@ -687,6 +691,9 @@ static void overlay2fb_disable(struct pxafb_layer *ofb)
->  {
->  	uint32_t lccr5 = lcd_readl(ofb->fbi, LCCR5);
-> 
-> +	if (!(lcd_readl(ofb->fbi, OVL2C1) & OVLxC1_OEN))
-> +		return;
-> +
->  	lcd_writel(ofb->fbi, OVL2C1, ofb->control[0] & ~OVLxC1_OEN);
-> 
->  	lcd_writel(ofb->fbi, LCSR1, LCSR1_BS(2));
-> @@ -696,7 +703,8 @@ static void overlay2fb_disable(struct pxafb_layer *ofb)
->  	lcd_writel(ofb->fbi, FBR4, ofb->fbi->fdadr[DMA_OV2_Cr] | 0x3);
-> 
->  	if (wait_for_completion_timeout(&ofb->branch_done, 1 * HZ) = 0)
-> -		pr_warning("%s: timeout disabling overlay2\n", __func__);
-> +		pr_warning("%s: timeout disabling overlay2\n",
-> +			__func__);
->  }
-> 
->  static struct pxafb_layer_ops ofb_ops[] = {
-> @@ -720,12 +728,10 @@ static int overlayfb_open(struct fb_info *info, int
-> user) if (user = 0)
->  		return -ENODEV;
-> 
+On Thu, Feb 17, 2011 at 07:17:41PM +0100, Marek Vasut wrote:
+> Why are you getting rid of the atomic operations ?
 
-Why are you getting rid of the atomic operations ?
-Besides, "if (ofb->usage++ = 0)" looks suspicious, especially if you later 
-declare it as uint32_t.
+Because they're idiotic.  Just because something is called "atomic"
+doesn't make it so, and this is one instance where it's absolutely
+useless.
 
-> -	/* allow only one user at a time */
-> -	if (atomic_inc_and_test(&ofb->usage))
-> -		return -EBUSY;
-> +	if (ofb->usage++ = 0)
-> +		/* unblank the base framebuffer */
-> +		fb_blank(&ofb->fbi->fb, FB_BLANK_UNBLANK);
-> 
-> -	/* unblank the base framebuffer */
-> -	fb_blank(&ofb->fbi->fb, FB_BLANK_UNBLANK);
->  	return 0;
->  }
-> 
-> @@ -733,12 +739,24 @@ static int overlayfb_release(struct fb_info *info,
-> int user) {
->  	struct pxafb_layer *ofb = (struct pxafb_layer*) info;
-> 
+The open and release functions are called with a mutex held.  Only
+_one_ thread can be inside these at any one time.  So what use does
+additionally doing an atomic operation within an already thread-safe
+environment gain you?
 
-DTTO, why no atomic?
+> Besides, "if (ofb->usage++ = 0)" looks suspicious, especially if you later 
+> declare it as uint32_t.
 
-> -	atomic_dec(&ofb->usage);
-> -	ofb->ops->disable(ofb);
-> -
-> -	free_pages_exact(ofb->video_mem, ofb->video_mem_size);
-> -	ofb->video_mem = NULL;
-> -	ofb->video_mem_size = 0;
-> +	if (--ofb->usage = 0) {
-> +		ofb->ops->disable(ofb);
-> +		ofb->fb.var.height	= -1;
-> +		ofb->fb.var.width	= -1;
-> +		ofb->fb.var.xres = ofb->fb.var.xres_virtual = 0;
-> +		ofb->fb.var.yres = ofb->fb.var.yres_virtual = 0;
-> +
-> +		mutex_lock(&ofb->fb.mm_lock);
-> +		ofb->fb.fix.smem_start	= 0;
-> +		ofb->fb.fix.smem_len	= 0;
-> +		mutex_unlock(&ofb->fb.mm_lock);
-> +
-> +		if (ofb->video_mem) {
-> +			free_pages_exact(ofb->video_mem, ofb->video_mem_size);
-> +			ofb->video_mem = NULL;
-> +			ofb->video_mem_size = 0;
-> +		}
-> +	}
->  	return 0;
->  }
-> 
-> @@ -817,7 +835,8 @@ static int overlayfb_map_video_memory(struct
-> pxafb_layer *ofb) if (ofb->video_mem_size >= size)
->  			return 0;
-> 
-> -		free_pages_exact(ofb->video_mem, ofb->video_mem_size);
-> +		/* don't re-allocate: userspace may have the buffer mapped */
-> +		return -EINVAL;
->  	}
-> 
->  	ofb->video_mem = alloc_pages_exact(size, GFP_KERNEL | __GFP_ZERO);
-> @@ -891,7 +910,7 @@ static void __devinit init_pxafb_overlay(struct
-> pxafb_info *fbi,
-> 
->  	ofb->id = id;
->  	ofb->ops = &ofb_ops[id];
+No.  You're not understanding the code.  This is equivalent to:
 
-DTTO
+	usage = ofb->usage;
+	ofb->usage = usage + 1;
+	if (usage = 0)
 
-> -	atomic_set(&ofb->usage, 0);
-> +	ofb->usage = 0;
->  	ofb->fbi = fbi;
->  	init_completion(&ofb->branch_done);
->  }
-> @@ -1368,7 +1387,8 @@ static int pxafb_activate_var(struct
-> fb_var_screeninfo *var, (lcd_readl(fbi, LCCR3) != fbi->reg_lccr3) ||
->  	    (lcd_readl(fbi, LCCR4) != fbi->reg_lccr4) ||
->  	    (lcd_readl(fbi, FDADR0) != fbi->fdadr[0]) ||
-> -	    (lcd_readl(fbi, FDADR1) != fbi->fdadr[1]))
-> +	    ((fbi->lccr0 & LCCR0_SDS) &&
-> +	    (lcd_readl(fbi, FDADR1) != fbi->fdadr[1])))
->  		pxafb_schedule_work(fbi, C_REENABLE);
-> 
->  	return 0;
-> @@ -1420,7 +1440,8 @@ static void pxafb_enable_controller(struct pxafb_info
-> *fbi) lcd_writel(fbi, LCCR0, fbi->reg_lccr0 & ~LCCR0_ENB);
-> 
->  	lcd_writel(fbi, FDADR0, fbi->fdadr[0]);
-> -	lcd_writel(fbi, FDADR1, fbi->fdadr[1]);
-> +	if (fbi->lccr0 & LCCR0_SDS)
-> +		lcd_writel(fbi, FDADR1, fbi->fdadr[1]);
->  	lcd_writel(fbi, LCCR0, fbi->reg_lccr0 | LCCR0_ENB);
->  }
-> 
-> diff --git a/drivers/video/pxafb.h b/drivers/video/pxafb.h
-> index 2353521..84e3ae1 100644
-> --- a/drivers/video/pxafb.h
-> +++ b/drivers/video/pxafb.h
-> @@ -92,7 +92,7 @@ struct pxafb_layer_ops {
->  struct pxafb_layer {
->  	struct fb_info		fb;
->  	int			id;
+And if you write it like that, then it is obvious.  It's your understanding
+of what a post-increment looks like which is suspicious here.
 
-DTTO, here.
-
-> -	atomic_t		usage;
-> +	uint32_t		usage;
->  	uint32_t		control[2];
+> > @@ -733,12 +739,24 @@ static int overlayfb_release(struct fb_info *info,
+> > int user) {
+> >  	struct pxafb_layer *ofb = (struct pxafb_layer*) info;
+> > 
 > 
->  	struct pxafb_layer_ops	*ops;
+> DTTO, why no atomic?
+
+Because this is already a thread-safe code region.
+
+> >  	ofb->video_mem = alloc_pages_exact(size, GFP_KERNEL | __GFP_ZERO);
+> > @@ -891,7 +910,7 @@ static void __devinit init_pxafb_overlay(struct
+> > pxafb_info *fbi,
+> > 
+> >  	ofb->id = id;
+> >  	ofb->ops = &ofb_ops[id];
+> 
+> DTTO
+
+An initializing store by which a machine can write the entire contents in
+one instruction _is_ by its very nature atomic.
+
+atomic_t is one of the most over(ab)used types because people just don't
+think about the code they're writing. ;(

@@ -1,7 +1,7 @@
-From: Thomas Weber <weber@corscience.de>
-Date: Wed, 16 Feb 2011 14:42:08 +0000
+From: Thomas Weber <thomas.weber.linux@googlemail.com>
+Date: Fri, 18 Feb 2011 12:36:55 +0000
 Subject: Re: [PATCH 2/2] omap3: devkit8000: Add and use 4.3 inch display
-Message-Id: <4D5BE240.8080002@corscience.de>
+Message-Id: <4D5E67E7.7040603@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1297530130-10355-1-git-send-email-daniel.morsing@gmail.com> <1297530130-10355-3-git-send-email-daniel.morsing@gmail.com>
 In-Reply-To: <1297530130-10355-3-git-send-email-daniel.morsing@gmail.com>
@@ -38,6 +38,13 @@ Am 12.02.2011 18:02, schrieb Daniel Morsing:
 >  	.platform_enable        = devkit8000_panel_enable_lcd,
 >  	.platform_disable       = devkit8000_panel_disable_lcd,
 >  };
+
+So only the 4.3 inch display can be used with the devkit8000?
+There are also Devkit8000 with 5.6 and 7 inch displays.
+
+Regards,
+Thomas
+
 > diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
 > index b52a28f..ee9e7ea 100644
 > --- a/drivers/video/omap2/displays/panel-generic-dpi.c
@@ -76,21 +83,3 @@ Am 12.02.2011 18:02, schrieb Daniel Morsing:
 >  	{
 >  		{
 
-can you try these settings.
-I have these settings from other users of the 4.3 inch display.
-I think only the pixel clock is a little bit slower.
-
-
-//.name         = "4.3inch_LCD",
-.x_res          = 480,
-.y_res          = 272,
-.hsw            = 41,           /* hsync_len (4) - 1 */
-.hfp            = 2,            /* right_margin (4) - 1 */
-.hbp            = 2,            /* left_margin (40) - 1 */
-.vsw            = 10,           /* vsync_len (2) - 1 */
-.vfp            = 2,            /* lower_margin */
-.vbp            = 2,            /* upper_margin (8) - 1 */
-.pixel_clock    = 9600,
-
-Regards,
-Thomas

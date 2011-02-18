@@ -1,7 +1,7 @@
 From: "Clark, Rob" <rob@ti.com>
-Date: Fri, 18 Feb 2011 04:32:24 +0000
+Date: Fri, 18 Feb 2011 04:34:39 +0000
 Subject: Re: [PATCH] i.MX23/28 framebuffer driver
-Message-Id: <AANLkTimFBSJ04o29GFFqtwp32k_EfHGemE-h35O4xx7B@mail.gmail.com>
+Message-Id: <AANLkTinbDuX_ajoOaq712HiuejfCp8DZv3nXwzzGbzwa@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1297257651-8002-1-git-send-email-s.hauer@pengutronix.de>
 	<201102091731.07794.arnd@arndb.de>
@@ -9,67 +9,117 @@ References: <1297257651-8002-1-git-send-email-s.hauer@pengutronix.de>
 	<201102161322.08126.arnd@arndb.de>
 	<AANLkTik+ounqcTJ6rhiUqKPGkwcCOKGXdsVADs6zHfPU@mail.gmail.com>
 	<AANLkTimMBLhopNq0L-NuJLdX08SrA078VF3tWf9TcEom@mail.gmail.com>
-	<alpine.LFD.2.00.1102171545470.21278@casper.infradead.org>
-	<AANLkTimcwr4vpycSQCH9vMaB+umh+yHD_+WD2MJNqMOB@mail.gmail.com>
-In-Reply-To: <AANLkTimcwr4vpycSQCH9vMaB+umh+yHD_+WD2MJNqMOB-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+	<AANLkTim3iUNHsaCf7387H-X+XW0YDQsQVa1FwDvo0KvH@mail.gmail.com>
+	<AANLkTim4rsuDLnyLtetMpn_i+x0e8FmyzLvy1Bm0JEAG@mail.gmail.com>
+	<AANLkTimOUnaHNMg03cHAiNJLuGhGuMWSHt+kibxWfYMH@mail.gmail.com>
+In-Reply-To: <AANLkTimOUnaHNMg03cHAiNJLuGhGuMWSHt+kibxWfYMH@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Jammy Zhou <jammy.zhou-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, DRI development list <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, James Simmons <jsimmons-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Jakob Bornecrantz <wallbraker-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: linux-arm-kernel@lists.infradead.org
 
-I'm all for a more modular drm, although I think the framework of
-CRTCs, encoders, and connectors is a nice fit, at least for our hw.
-It would be nice to have a better way to expose overlays.  And I'm
-still thinking about how/if GEM fits in with our various video and
-2/3d accelerators.
+I'm in the process of adding xrandr support to our xorg driver..
+definitely more built-in support on the X side would make this easier.
 
 BR,
 -R
 
-On Thu, Feb 17, 2011 at 8:19 PM, Jammy Zhou <jammy.zhou@linaro.org> wrote:
-> To accommodate the fact of independent display controller and GPU compone=
-nts
-> in ARM SOC, it will be better if we can separate KMS from DRM both in ker=
-nel
-> space and user space (i.e, create a new drivers/video/kms directory for
-> kernel side, move KMS related code in libdrm to libkms in user space). Th=
-en
-> we can build xrandr1.2+ support based on KMS for ARM platforms, even if D=
-RM
-> is still not supported. Besides, for buffer management part (GEM) in DRM,=
- if
-> possible, we can also make it an independent module leaving DRM just a
-> wrapper, so that the GEM stuff can be used more flexibly.
+On Thu, Feb 17, 2011 at 8:25 PM, Jammy Zhou <jammy.zhou@linaro.org> wrote:
+> I also noticed that default XRandR1.2+ implementation is missing in X sid=
+e.
+> If we can implement one, it would be beneficial for all ARM platforms. By
+> the way, does X driver of TI support XRandR1.2+?
 >
 > Regards,
 > Jammy
 >
-> On Fri, Feb 18, 2011 at 12:14 AM, James Simmons <jsimmons@infradead.org>
-> wrote:
+> On Thu, Feb 17, 2011 at 11:25 PM, Clark, Rob <rob@ti.com> wrote:
 >>
->> > I'm still in the learning-as-I-go phase here, so definitely not ready
->> > to propose a solution, but it does seem to me like there is room for
->> > some sort of kms-helper library here to handle more of the boilerplate
->> > xf86-video-* stuff.. =A0I guess I'll have a better picture once I have=
- a
->> > chance to add support for the various multi-monitor configurations.
->> > But certainly would be interested if anyone already has some ideas.
+>> Hmm, I was thinking more on the xf86 side of things.. ie. to provide
+>> default implementations of xf86CrtcFuncsRec and xf86OutputFuncsRec
+>> functions..
 >>
->> I have been thinking about this as well. One of the short coming for DRM
->> on embedded platforms is the lack of a small well defined library that o=
-ne
->> could use. Right now libkms only handles buffer allocation. The mode
->> setting is currently tied to the libdrm library. It would be nice to
->> seperate the two out more. Move the mode setting code to libkms and then
->> have libdrm be a wrapper around this. This way libdrm can both support
->> the legacy drm drivers and the new kms drivers at the same time. It also
->> makes a clear seperation. Jakob if you are willing to take this work I
->> will gladly seen you patches.
+>> BR,
+>> -R
 >>
->> _______________________________________________
->> linaro-dev mailing list
->> linaro-dev@lists.linaro.org
->> http://lists.linaro.org/mailman/listinfo/linaro-dev
+>> On Wed, Feb 16, 2011 at 7:24 PM, Jammy Zhou <jammy.zhou@linaro.org> wrot=
+e:
+>> >
+>> > There is already one KMS abstraction layer (libkms.so) in libdrm, maybe
+>> > it can serve as what we needed.
+>> >
+>> > Regards,
+>> > Jammy
+>> >
+>> > On Thu, Feb 17, 2011 at 9:08 AM, Clark, Rob <rob@ti.com> wrote:
+>> >>
+>> >> I'm still in the learning-as-I-go phase here, so definitely not ready
+>> >> to propose a solution, but it does seem to me like there is room for
+>> >> some sort of kms-helper library here to handle more of the boilerplate
+>> >> xf86-video-* stuff.. =A0I guess I'll have a better picture once I hav=
+e a
+>> >> chance to add support for the various multi-monitor configurations.
+>> >> But certainly would be interested if anyone already has some ideas.
+>> >>
+>> >> BR,
+>> >> -R
+>> >>
+>> >> On Wed, Feb 16, 2011 at 8:42 AM, Jesse Barker <jesse.barker@linaro.or=
+g>
+>> >> wrote:
+>> >> > Speaking for the Linaro graphics working group, I think it's great.
+>> >> > And, I
+>> >> > think you're right, that if enough of the KMS support in xf86-video=
+-*
+>> >> > is
+>> >> > similar enough (I was only aware of intel and nouveau supporting it
+>> >> > properly
+>> >> > at current), pulling it out into a common layer would make it easier
+>> >> > to
+>> >> > support in new drivers (including fbdev).
+>> >> >
+>> >> > cheers,
+>> >> > Jesse
+>> >> >
+>> >> > On Wed, Feb 16, 2011 at 4:22 AM, Arnd Bergmann <arnd@arndb.de> wrot=
+e:
+>> >> >>
+>> >> >> On Tuesday 15 February 2011, Clark, Rob wrote:
+>> >> >> > I'd been experimenting a bit on the side w/ the DRM driver
+>> >> >> > framework (
+>> >> >> >
+>> >> >> >
+>> >> >> > http://gitorious.com/~robclark/pandaboard/robclarks-kernel-omap4=
+/commits/omap_gpu
+>> >> >> > ), but had to add a good chunk of mostly boilerplate code to our
+>> >> >> > xorg
+>> >> >> > driver in order just to test it. =A0Maybe some generic support f=
+or
+>> >> >> > KMS
+>> >> >> > in xf86-video-fbdev would have made this easier to develop the
+>> >> >> > kernel
+>> >> >> > part without in parallel having to implement the userspace part.
+>> >> >> > =A0I'm
+>> >> >> > not sure if this is the sort of thing the linaro-wg has in mind?
+>> >> >>
+>> >> >> I'm not sure what the the linaro multimedia wg thinks of this, but
+>> >> >> the
+>> >> >> kernel code you linked looks like it's doing exactly the right
+>> >> >> thing.
+>> >> >>
+>> >> >> =A0 =A0 =A0 =A0Arnd
+>> >> >>
+>> >> >> _______________________________________________
+>> >> >> linaro-dev mailing list
+>> >> >> linaro-dev@lists.linaro.org
+>> >> >> http://lists.linaro.org/mailman/listinfo/linaro-dev
+>> >> >
+>> >> >
+>> >>
+>> >> _______________________________________________
+>> >> linaro-dev mailing list
+>> >> linaro-dev@lists.linaro.org
+>> >> http://lists.linaro.org/mailman/listinfo/linaro-dev
+>> >
 >
 >

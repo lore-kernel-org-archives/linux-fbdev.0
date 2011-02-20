@@ -1,32 +1,46 @@
-From: "Nilofer, Samreen" <samreen@ti.com>
-Date: Thu, 24 Feb 2011 04:34:28 +0000
-Subject: RE: [PATCH] OMAP2/3/4: DSS2: Enable Display SubSystem as modules
-Message-Id: <FCCFB4CDC6E5564B9182F639FC3560870370563B3A@dbde02.ent.ti.com>
+From: Vasily Khoruzhick <anarsoul@gmail.com>
+Date: Sun, 20 Feb 2011 15:02:27 +0000
+Subject: [PATCH v2 3/3] ARM: PXA: PXAFB: Fix typo in ypos assignment
+Message-Id: <1298214147-11578-3-git-send-email-anarsoul@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1298463753-24880-1-git-send-email-samreen@ti.com>
-	<1298468006.18466.37.camel@deskari>
-In-Reply-To: <1298468006.18466.37.camel@deskari>
+References: <20110217110321.GF24627@n2100.arm.linux.org.uk>
+	<1298214147-11578-1-git-send-email-anarsoul@gmail.com>
+In-Reply-To: <1298214147-11578-1-git-send-email-anarsoul@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
-Valkeinen, Tomi wrote:
-> Hi,
-> 
-> On Wed, 2011-02-23 at 06:22 -0600, Nilofer, Samreen wrote:
->> Enabling Display options to be built as modules Also, the generic dpi,
->> sharp & nec panels are also enabled as modules.
-> 
-> I've just posted a patch which fixes the problem with the
-> regulators in DSS. With that patch we can safely enable all DSS interfaces
-> (and thus panels) and the resulting binary will work on all boards.
-> 
-> So can you make one more version which enables all the
-> interfaces and panels as modules, based on
-> git://gitorious.org/linux-omap-dss2/linux.git master
-> 
-[samreen]
-Sure. Will post out the next version soon.
->  Tomi
+Sascha Hauer <s.hauer@pengutronix.de> pointed that
+ypos takes value of xpos due to typo.
+
+Signed-off-by: Vasily Khoruzhick <anarsoul@gmail.com>
+---
+ drivers/video/pxafb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
+index 54a9ab8..80ea7e6 100644
+--- a/drivers/video/pxafb.c
++++ b/drivers/video/pxafb.c
+@@ -766,7 +766,7 @@ static int overlayfb_check_var(struct fb_var_screeninfo *var,
+ 	int xpos, ypos, pfor, bpp;
+ 
+ 	xpos = NONSTD_TO_XPOS(var->nonstd);
+-	ypos = NONSTD_TO_XPOS(var->nonstd);
++	ypos = NONSTD_TO_YPOS(var->nonstd);
+ 	pfor = NONSTD_TO_PFOR(var->nonstd);
+ 
+ 	bpp = pxafb_var_to_bpp(var);
+@@ -864,7 +864,7 @@ static int overlayfb_set_par(struct fb_info *info)
+ 
+ 	bpp  = pxafb_var_to_bpp(var);
+ 	xpos = NONSTD_TO_XPOS(var->nonstd);
+-	ypos = NONSTD_TO_XPOS(var->nonstd);
++	ypos = NONSTD_TO_YPOS(var->nonstd);
+ 	pfor = NONSTD_TO_PFOR(var->nonstd);
+ 
+ 	ofb->control[0] = OVLxC1_PPL(var->xres) | OVLxC1_LPO(var->yres) |
+-- 
+1.7.4
+

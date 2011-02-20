@@ -1,65 +1,38 @@
-From: =?UTF-8?q?Andreas=20Bie=C3=9Fmann?= <biessmann@corscience.de>
-Date: Fri, 11 Feb 2011 15:19:44 +0000
-Subject: [PATCH 2/2] atmel_lcdfb: add fb_blank function
-Message-Id: <1297437584-14048-2-git-send-email-biessmann@corscience.de>
+From: Henry Nestler <henry.nestler@gmail.com>
+Date: Sun, 20 Feb 2011 20:50:56 +0000
+Subject: Fwd: Re: [PATCH] fbcon: Bugfix soft cursor detection in Tile Blitting
+Message-Id: <4D617EB0.3070705@henry.nestler.mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1297437584-14048-1-git-send-email-biessmann@corscience.de>
-In-Reply-To: <1297437584-14048-1-git-send-email-biessmann@corscience.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: kernel@avr32linux.org
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, =?UTF-8?q?Andreas=20Bie=C3=9Fmann?= <biessmann@corscience.de>, "open list:ATMEL LCDFB DRIVER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-Signed-off-by: Andreas Bie=C3=9Fmann <biessmann@corscience.de>
+Use mask 0x10 for "soft cursor" detection on in function tile_cursor.
+(Tile Blitting Operation in framebuffer console).
+
+The old mask 0x01 for vc_cursor_type detects CUR_NONE, CUR_LOWER_THIRD
+and every second mode value as "software cursor". This hides the cursor
+for these modes (cursor.mode = 0). But, only CUR_NONE or "software cursor"
+should hide the cursor.
+See also 0x10 in functions add_softcursor, bit_cursor and cw_cursor.
 ---
-These are some older patches which are used in some of our systems. Heavy
-merging pointed out these functionality was missed to push upstream.
+Kernel version 2.6.38-rc5
 
- drivers/video/atmel_lcdfb.c |   24 ++++++++++++++++++++++++
- 1 files changed, 24 insertions(+), 0 deletions(-)
+ drivers/video/console/tileblit.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 16da8af..59654e2 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -714,11 +714,35 @@ static int atmel_lcdfb_pan_display(struct fb_var_scre=
-eninfo *var,
- 	return 0;
- }
-=20
-+static int atmel_lcdfb_blank(int blank_mode, struct fb_info *info)
-+{
-+	struct atmel_lcdfb_info *sinfo =3D info->par;
-+
-+	switch (blank_mode) {
-+	case FB_BLANK_UNBLANK:
-+	case FB_BLANK_NORMAL:
-+		atmel_lcdfb_start(sinfo);
-+		break;
-+	case FB_BLANK_VSYNC_SUSPEND:
-+	case FB_BLANK_HSYNC_SUSPEND:
-+		break;
-+	case FB_BLANK_POWERDOWN:
-+		atmel_lcdfb_stop(sinfo);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	/* let fbcon do a soft blank for us */
-+	return ((blank_mode =3D FB_BLANK_NORMAL) ? 1 : 0);
-+}
-+
- static struct fb_ops atmel_lcdfb_ops =3D {
- 	.owner		=3D THIS_MODULE,
- 	.fb_check_var	=3D atmel_lcdfb_check_var,
- 	.fb_set_par	=3D atmel_lcdfb_set_par,
- 	.fb_setcolreg	=3D atmel_lcdfb_setcolreg,
-+	.fb_blank	=3D atmel_lcdfb_blank,
- 	.fb_pan_display	=3D atmel_lcdfb_pan_display,
- 	.fb_fillrect	=3D cfb_fillrect,
- 	.fb_copyarea	=3D cfb_copyarea,
---=20
-1.7.2.3
+diff --git a/drivers/video/console/tileblit.c b/drivers/video/console/tileblit.c
+index 0056a41..15e8e1a 100644
+--- a/drivers/video/console/tileblit.c
++++ b/drivers/video/console/tileblit.c
+@@ -83,7 +83,7 @@ static void tile_cursor(struct vc_data *vc, struct fb_info *info, int mode,
+ 			int softback_lines, int fg, int bg)
+ {
+ 	struct fb_tilecursor cursor;
+-	int use_sw = (vc->vc_cursor_type & 0x01);
++	int use_sw = (vc->vc_cursor_type & 0x10);
+ 
+ 	cursor.sx = vc->vc_x;
+ 	cursor.sy = vc->vc_y;
 

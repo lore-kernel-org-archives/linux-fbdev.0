@@ -1,181 +1,158 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Date: Fri, 18 Feb 2011 09:38:30 +0000
-Subject: RE: [PATCH RE-SEND] s3c-fb: Add support S5PV310 FIMD
-Message-Id: <021001cbcf4f$9c1551c0$d43ff540$%kim@samsung.com>
+From: Vasily Khoruzhick <anarsoul@gmail.com>
+Date: Sun, 20 Feb 2011 15:02:25 +0000
+Subject: [PATCH v2 1/3] ARM: PXA: PXAFB: Fix double-free issue
+Message-Id: <1298214147-11578-1-git-send-email-anarsoul@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1294128333-28736-1-git-send-email-kgene.kim@samsung.com>
- <001b01cbabf6$c62180a0$526481e0$%dae@samsung.com>
- <00db01cbad61$4a308d80$de91a880$%kim@samsung.com>
- <4D25666C.4060102@samsung.com>
-In-Reply-To: <4D25666C.4060102@samsung.com>
+References: <20110217110321.GF24627@n2100.arm.linux.org.uk>
+In-Reply-To: <20110217110321.GF24627@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'daeinki' <inki.dae@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org, ben-linux@fluff.org, akpm@linux-foundation.org, lethal@linux-sh.org, 'Jonghun Han' <jonghun.han@samsung.com>, 'Sangbeom Kim' <sbkim73@samsung.com>
+To: linux-arm-kernel@lists.infradead.org
 
-daeinki wrote:
-> 
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
 
-> >> I know we had a discussion about your patch below.
-> >> after that, did you have some discussion about that?
-> >> If not, Paul advised to use clkdev lookup.
-> >>
-> >> Please, refer to below mail.
-> >>
-> > http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg03448.html
-> >
-> > I think it's different with your approach even though the purpose is
-> similar
-> > and I know, Mr. Han explained about clock configurable by call.
-> 
-> please, refer to below.
-> http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg03445.html
-> 
-> for identify clock types("lcd" for bus clock or "fimd" for sclk_fimd),
-> using switch-case seems to be bad. for avoiding this one I suggested
-> other way and the way clock type selection from platform data is also
-> bad so Paul adviced us to use clk_dev lookup.
-> 
+Release callback tries to free memory even if it was not allocated in
+map_video_memory, fix it.
 
-I don't think that it's bad. As I said, it's just different with your approach.
+Added by Vasily Khoruzhick:
 
-Paul, could you please let me know your opinion for this?
+- Clear x_res/y_res fields of fb.var on release, to make sure
+our callback will be called on next FBIOPUT_VSCREENINFO ioctl.
+- Disable overlay only if it was enabled.
+- Don't touch FDADR1 if it's not necessary
 
-Thanks.
+Signed-off-by: Vasily Khoruzhick <anarsoul@gmail.com>
+---
+v2: remove unnecessary newlines, add comment about FDADR1
 
-Best regards,
-Kgene.
---
-Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-SW Solution Development Team, Samsung Electronics Co., Ltd.
+ drivers/video/pxafb.c |   49 ++++++++++++++++++++++++++++++++++---------------
+ drivers/video/pxafb.h |    2 +-
+ 2 files changed, 35 insertions(+), 16 deletions(-)
 
-> >
-> > Paul, how do you think about this?
-> >
-> > Personally, if we want to support S5PV310 FIMD now, this patch is good to
-> > support it and to us now.
-> > Of course, I think, we can upgrade it later.
-> >
-> > Thanks.
-> >
-> > Best regards,
-> > Kgene.
-> > --
-> > Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-> > SW Solution Development Team, Samsung Electronics Co., Ltd.
-> >
-> >>> -----Original Message-----
-> >>> From: linux-fbdev-owner@vger.kernel.org [mailto:linux-fbdev-
-> >>> owner@vger.kernel.org] On Behalf Of Kukjin Kim
-> >>> Sent: Tuesday, January 04, 2011 5:06 PM
-> >>> To: linux-samsung-soc@vger.kernel.org; linux-fbdev@vger.kernel.org
-> >>> Cc: ben-linux@fluff.org; akpm@linux-foundation.org; lethal@linux-sh.org;
-> >>> Jonghun Han; Sangbeom Kim; InKi Dae; Kukjin Kim
-> >>> Subject: [PATCH RE-SEND] s3c-fb: Add support S5PV310 FIMD
-> >>>
-> >>> From: Jonghun Han <jonghun.han@samsung.com>
-> >>>
-> >>> This patch adds struct s3c_fb_driverdata s3c_fb_data_s5pv310 for S5PV310
-> >>> and S5PC210. The clk_type is added to distinguish clock type in it and
-> >>> lcd_clk is added in structure s3c_fb to calculate divider for lcd panel.
-> >>>
-> >>> Please refer to below diagrams about clocks of FIMD IP. FIMD driver
-> > needs
-> >>> two clocks for FIMD IP and LCD pixel clock. Actually, the LCD pixel
-> > clock
-> >>> can be selected from 1.clk 'lcd' and 2.SCLK_FIMD before S5PV310. But
-> > from
-> >>> S5PV310, the 2.SCLK_FIMD can be used only for source of LCD pixel clock.
-> >>>
-> >>> FIMD_CLK_TYPE0:
-> >>>            ------------------------------------
-> >>>                       dsys bus
-> >>>            ----------------+-------------------
-> >>>                            |
-> >>>                            |1.clk 'lcd'
-> >>>                            |
-> >>>                            | FIMD block
-> >>>                        +---+-----------+
-> >>> 4.mout_mpll |\         |   |           |
-> >>>     --------|m|        | +-+-+ +----+  |
-> >>>             |u|-+      | |   +-+core|  |
-> >>>             |x| |      | |     +----+  |
-> >>>             |/  |      | | |\          |
-> >>>                 |      | +-|m|  +---+  |
-> >>>                 |      |   |u|--+div|  |
-> >>>                 +------+---|x|  +---+  |
-> >>>            2.SCLK_FIMD |   |/     |    |
-> >>>                        |          |    |
-> >>>                        +----------+----+
-> >>>                                   |
-> >>>            inside of SoC          |
-> >>>            -----------------------+--------------------------
-> >>>            outside of SoC         |
-> >>>                                   | 3.LCD pixel clock
-> >>>                                   |
-> >>>                           +--------------+
-> >>>                           | LCD module   |
-> >>>                           +--------------+
-> >>>
-> >>> FIMD_CLK_TYPE1:
-> >>>            ------------------------------------
-> >>>                       dsys bus
-> >>>            ----------------+-------------------
-> >>>                            |
-> >>>                            |1.clk 'fimd'
-> >>>                            |
-> >>>                            | FIMD block
-> >>>                        +---+-----------+
-> >>> 4.mout_mpll |\         |   |           |
-> >>>     --------|m|        |   |   +----+  |
-> >>>             |u|-+      |   +---+core|  |
-> >>>             |x| |      |       +----+  |
-> >>>             |/  |      |               |
-> >>>                 |      |        +---+  |
-> >>>                 |      |     +--+div|  |
-> >>>                 +------+-----+  +---+  |
-> >>>            2.SCLK_FIMD |          |    |
-> >>>                        |          |    |
-> >>>                        +----------+----+
-> >>>                                   |
-> >>>            inside of SoC          |
-> >>>            -----------------------+--------------------------
-> >>>            outside of SoC         |
-> >>>                                   | 3.LCD pixel clock
-> >>>                                   |
-> >>>                           +--------------+
-> >>>                           | LCD module   |
-> >>>                           +--------------+
-> >>>
-> >>> Signed-off-by: Jonghun Han <jonghun.han@samsung.com>
-> >>> Signed-off-by: Sangbeom Kim <sbkim73@samsung.com>
-> >>> Cc: InKi Dae <inki.dae@samsung.com>
-> >>> Cc: Ben Dooks <ben-linux@fluff.org>
-> >>> Signed-off-by: Kukjin Kim <kgene.kim@samsung.com>
-> >>> ---
-> >>> Hi Paul,
-> >>>
-> >>> I and Mr. Han, Jonghun sent below patch several weeks ago.
-> >>> But I couldn't find it in your tree...
-> >>> (Re-made against on your latest fbdev-2.6.git #master)
-> >>>
-> >>> I think this should be merged for supporting S5PV310/S5PC210 frame
-> > buffer.
-> >>> So could you please let me know your opinion or plan about this?
-> >>>
-> >>> NOTE: Needs following platform device patches for S5PV310/S5PC210 frame
-> >>> buffer.
-> >>> And I already applied that in my tree as S5P SoCs architecture
-> > maintainer.
-> >>> 0001-ARM-S5PV310-Add-FIMD-resource-definition.patch
-> >>> 0002-ARM-S5PV310-Add-platform-device-and-helper-functio.patch
-> >>> 0004-ARM-S5PV310-Add-support-FIMD0-and-LTE480WV-LCD-for.patch
-> >>>
-> >>>  drivers/video/Kconfig  |    2 +-
-> >>>  drivers/video/s3c-fb.c |  125
-> >>> +++++++++++++++++++++++++++++++++++++++++++-----
-> >>>  2 files changed, 113 insertions(+), 14 deletions(-)
-> >
-> >
+diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
+index 825b665..41a499f 100644
+--- a/drivers/video/pxafb.c
++++ b/drivers/video/pxafb.c
+@@ -629,6 +629,9 @@ static void overlay1fb_disable(struct pxafb_layer *ofb)
+ {
+ 	uint32_t lccr5 = lcd_readl(ofb->fbi, LCCR5);
+ 
++	if (!(lcd_readl(ofb->fbi, OVL1C1) & OVLxC1_OEN))
++		return;
++
+ 	lcd_writel(ofb->fbi, OVL1C1, ofb->control[0] & ~OVLxC1_OEN);
+ 
+ 	lcd_writel(ofb->fbi, LCSR1, LCSR1_BS(1));
+@@ -687,6 +690,9 @@ static void overlay2fb_disable(struct pxafb_layer *ofb)
+ {
+ 	uint32_t lccr5 = lcd_readl(ofb->fbi, LCCR5);
+ 
++	if (!(lcd_readl(ofb->fbi, OVL2C1) & OVLxC1_OEN))
++		return;
++
+ 	lcd_writel(ofb->fbi, OVL2C1, ofb->control[0] & ~OVLxC1_OEN);
+ 
+ 	lcd_writel(ofb->fbi, LCSR1, LCSR1_BS(2));
+@@ -720,12 +726,10 @@ static int overlayfb_open(struct fb_info *info, int user)
+ 	if (user = 0)
+ 		return -ENODEV;
+ 
+-	/* allow only one user at a time */
+-	if (atomic_inc_and_test(&ofb->usage))
+-		return -EBUSY;
++	if (ofb->usage++ = 0)
++		/* unblank the base framebuffer */
++		fb_blank(&ofb->fbi->fb, FB_BLANK_UNBLANK);
+ 
+-	/* unblank the base framebuffer */
+-	fb_blank(&ofb->fbi->fb, FB_BLANK_UNBLANK);
+ 	return 0;
+ }
+ 
+@@ -733,12 +737,24 @@ static int overlayfb_release(struct fb_info *info, int user)
+ {
+ 	struct pxafb_layer *ofb = (struct pxafb_layer*) info;
+ 
+-	atomic_dec(&ofb->usage);
+-	ofb->ops->disable(ofb);
+-
+-	free_pages_exact(ofb->video_mem, ofb->video_mem_size);
+-	ofb->video_mem = NULL;
+-	ofb->video_mem_size = 0;
++	if (--ofb->usage = 0) {
++		ofb->ops->disable(ofb);
++		ofb->fb.var.height	= -1;
++		ofb->fb.var.width	= -1;
++		ofb->fb.var.xres = ofb->fb.var.xres_virtual = 0;
++		ofb->fb.var.yres = ofb->fb.var.yres_virtual = 0;
++
++		mutex_lock(&ofb->fb.mm_lock);
++		ofb->fb.fix.smem_start	= 0;
++		ofb->fb.fix.smem_len	= 0;
++		mutex_unlock(&ofb->fb.mm_lock);
++
++		if (ofb->video_mem) {
++			free_pages_exact(ofb->video_mem, ofb->video_mem_size);
++			ofb->video_mem = NULL;
++			ofb->video_mem_size = 0;
++		}
++	}
+ 	return 0;
+ }
+ 
+@@ -817,7 +833,8 @@ static int overlayfb_map_video_memory(struct pxafb_layer *ofb)
+ 		if (ofb->video_mem_size >= size)
+ 			return 0;
+ 
+-		free_pages_exact(ofb->video_mem, ofb->video_mem_size);
++		/* don't re-allocate: userspace may have the buffer mapped */
++		return -EINVAL;
+ 	}
+ 
+ 	ofb->video_mem = alloc_pages_exact(size, GFP_KERNEL | __GFP_ZERO);
+@@ -891,7 +908,7 @@ static void __devinit init_pxafb_overlay(struct pxafb_info *fbi,
+ 
+ 	ofb->id = id;
+ 	ofb->ops = &ofb_ops[id];
+-	atomic_set(&ofb->usage, 0);
++	ofb->usage = 0;
+ 	ofb->fbi = fbi;
+ 	init_completion(&ofb->branch_done);
+ }
+@@ -1368,7 +1385,8 @@ static int pxafb_activate_var(struct fb_var_screeninfo *var,
+ 	    (lcd_readl(fbi, LCCR3) != fbi->reg_lccr3) ||
+ 	    (lcd_readl(fbi, LCCR4) != fbi->reg_lccr4) ||
+ 	    (lcd_readl(fbi, FDADR0) != fbi->fdadr[0]) ||
+-	    (lcd_readl(fbi, FDADR1) != fbi->fdadr[1]))
++	    ((fbi->lccr0 & LCCR0_SDS) &&
++	    (lcd_readl(fbi, FDADR1) != fbi->fdadr[1])))
+ 		pxafb_schedule_work(fbi, C_REENABLE);
+ 
+ 	return 0;
+@@ -1420,7 +1438,8 @@ static void pxafb_enable_controller(struct pxafb_info *fbi)
+ 	lcd_writel(fbi, LCCR0, fbi->reg_lccr0 & ~LCCR0_ENB);
+ 
+ 	lcd_writel(fbi, FDADR0, fbi->fdadr[0]);
+-	lcd_writel(fbi, FDADR1, fbi->fdadr[1]);
++	if (fbi->lccr0 & LCCR0_SDS)
++		lcd_writel(fbi, FDADR1, fbi->fdadr[1]);
+ 	lcd_writel(fbi, LCCR0, fbi->reg_lccr0 | LCCR0_ENB);
+ }
+ 
+diff --git a/drivers/video/pxafb.h b/drivers/video/pxafb.h
+index 2353521..84e3ae1 100644
+--- a/drivers/video/pxafb.h
++++ b/drivers/video/pxafb.h
+@@ -92,7 +92,7 @@ struct pxafb_layer_ops {
+ struct pxafb_layer {
+ 	struct fb_info		fb;
+ 	int			id;
+-	atomic_t		usage;
++	uint32_t		usage;
+ 	uint32_t		control[2];
+ 
+ 	struct pxafb_layer_ops	*ops;
+-- 
+1.7.4
 

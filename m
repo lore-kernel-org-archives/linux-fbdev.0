@@ -1,176 +1,93 @@
-From: Andres Salomon <dilinger@queued.net>
-Date: Fri, 18 Feb 2011 03:07:19 +0000
-Subject: [PATCH 12/29] tc6393xb: mfd_cell is now implicitly available to drivers
-Message-Id: <1297998456-7615-13-git-send-email-dilinger@queued.net>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Sun, 20 Feb 2011 19:40:44 +0000
+Subject: [PATCH] s3fb: add support for 86C365 Trio3D
+Message-Id: <201102202040.48219.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1297998456-7615-1-git-send-email-dilinger@queued.net>
-In-Reply-To: <1297998456-7615-1-git-send-email-dilinger@queued.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, David Brownell <dbrownell@users.sourceforge.net>, Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Ondrej Zajicek <santiago@crfreenet.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
 
-No need to explicitly set the cell's platform_data/data_size.
+Add support for S3 Trio3D (86C365) cards to s3fb driver. Tested with one 4MB card.
 
-Modify clients to use mfd_get_cell helper function instead of
-accessing platform_data directly.
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
-Signed-off-by: Andres Salomon <dilinger@queued.net>
----
- drivers/mfd/tc6393xb.c       |   19 -------------------
- drivers/usb/host/ohci-tmio.c |    8 ++++----
- drivers/video/tmiofb.c       |   20 +++++++++-----------
- 3 files changed, 13 insertions(+), 34 deletions(-)
+--- linux-2.6.38-rc4-/drivers/video/s3fb.c	2011-02-20 20:11:18.000000000 +0100
++++ linux-2.6.38-rc4/drivers/video/s3fb.c	2011-02-20 20:31:34.000000000 +0100
+@@ -64,6 +64,8 @@ static const struct svga_fb_format s3fb_
+ 
+ static const struct svga_pll s3_pll = {3, 129, 3, 33, 0, 3,
+ 	35000, 240000, 14318};
++static const struct svga_pll s3_trio3d_pll = {3, 129, 3, 31, 0, 4,
++	230000, 460000, 14318};
+ 
+ static const int s3_memsizes[] = {4096, 0, 3072, 8192, 2048, 6144, 1024, 512};
+ 
+@@ -72,7 +74,8 @@ static const char * const s3_names[] = {
+ 			"S3 Plato/PX", "S3 Aurora64VP", "S3 Virge",
+ 			"S3 Virge/VX", "S3 Virge/DX", "S3 Virge/GX",
+ 			"S3 Virge/GX2", "S3 Virge/GX2P", "S3 Virge/GX2P",
+-			"S3 Trio3D/1X", "S3 Trio3D/2X", "S3 Trio3D/2X"};
++			"S3 Trio3D/1X", "S3 Trio3D/2X", "S3 Trio3D/2X",
++			"S3 Trio3D"};
+ 
+ #define CHIP_UNKNOWN		0x00
+ #define CHIP_732_TRIO32		0x01
+@@ -93,6 +96,7 @@ static const char * const s3_names[] = {
+ #define CHIP_360_TRIO3D_1X	0x10
+ #define CHIP_362_TRIO3D_2X	0x11
+ #define CHIP_368_TRIO3D_2X	0x12
++#define CHIP_365_TRIO3D		0x13
+ 
+ #define CHIP_XXX_TRIO		0x80
+ #define CHIP_XXX_TRIO64V2_DXGX	0x81
+@@ -341,7 +345,8 @@ static void s3_set_pixclock(struct fb_in
+ 	u8 regval;
+ 	int rv;
+ 
+-	rv = svga_compute_pll(&s3_pll, 1000000000 / pixclock, &m, &n, &r, info->node);
++	rv = svga_compute_pll((par->chip = CHIP_365_TRIO3D) ? &s3_trio3d_pll : &s3_pll,
++			      1000000000 / pixclock, &m, &n, &r, info->node);
+ 	if (rv < 0) {
+ 		printk(KERN_ERR "fb%d: cannot set requested pixclock, keeping old value\n", info->node);
+ 		return;
+@@ -598,7 +603,8 @@ static int s3fb_set_par(struct fb_info *
+ 
+ 	if (par->chip = CHIP_360_TRIO3D_1X ||
+ 	    par->chip = CHIP_362_TRIO3D_2X ||
+-	    par->chip = CHIP_368_TRIO3D_2X) {
++	    par->chip = CHIP_368_TRIO3D_2X ||
++	    par->chip = CHIP_365_TRIO3D) {
+ 		dbytes = info->var.xres * ((bpp+7)/8);
+ 		vga_wcrt(par->state.vgabase, 0x91, (dbytes + 7) / 8);
+ 		vga_wcrt(par->state.vgabase, 0x90, (((dbytes + 7) / 8) >> 8) | 0x80);
+@@ -1012,13 +1018,15 @@ static int __devinit s3_pci_probe(struct
+ 	regval = vga_rcrt(par->state.vgabase, 0x36);
+ 	if (par->chip = CHIP_360_TRIO3D_1X ||
+ 	    par->chip = CHIP_362_TRIO3D_2X ||
+-	    par->chip = CHIP_368_TRIO3D_2X) {
++	    par->chip = CHIP_368_TRIO3D_2X ||
++	    par->chip = CHIP_365_TRIO3D) {
+ 		switch ((regval & 0xE0) >> 5) {
+ 		case 0: /* 8MB -- only 4MB usable for display */
+ 		case 1: /* 4MB with 32-bit bus */
+ 		case 2:	/* 4MB */
+ 			info->screen_size = 4 << 20;
+ 			break;
++		case 4: /* 2MB on 365 Trio3D */
+ 		case 6: /* 2MB */
+ 			info->screen_size = 2 << 20;
+ 			break;
+@@ -1233,6 +1241,7 @@ static struct pci_device_id s3_devices[]
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A11), .driver_data = CHIP_357_VIRGE_GX2P},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A12), .driver_data = CHIP_359_VIRGE_GX2P},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A13), .driver_data = CHIP_36X_TRIO3D_1X_2X},
++	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8904), .driver_data = CHIP_365_TRIO3D},
+ 
+ 	{0, 0, 0, 0, 0, 0, 0}
+ };
 
-diff --git a/drivers/mfd/tc6393xb.c b/drivers/mfd/tc6393xb.c
-index 9a23863..a71ff5c 100644
---- a/drivers/mfd/tc6393xb.c
-+++ b/drivers/mfd/tc6393xb.c
-@@ -694,26 +694,7 @@ static int __devinit tc6393xb_probe(struct platform_device *dev)
- 	}
- 
- 	tc6393xb_cells[TC6393XB_CELL_NAND].driver_data = tcpd->nand_data;
--	tc6393xb_cells[TC6393XB_CELL_NAND].platform_data -		&tc6393xb_cells[TC6393XB_CELL_NAND];
--	tc6393xb_cells[TC6393XB_CELL_NAND].data_size -		sizeof(tc6393xb_cells[TC6393XB_CELL_NAND]);
--
--	tc6393xb_cells[TC6393XB_CELL_MMC].platform_data -		&tc6393xb_cells[TC6393XB_CELL_MMC];
--	tc6393xb_cells[TC6393XB_CELL_MMC].data_size -		sizeof(tc6393xb_cells[TC6393XB_CELL_MMC]);
--
--	tc6393xb_cells[TC6393XB_CELL_OHCI].platform_data -		&tc6393xb_cells[TC6393XB_CELL_OHCI];
--	tc6393xb_cells[TC6393XB_CELL_OHCI].data_size -		sizeof(tc6393xb_cells[TC6393XB_CELL_OHCI]);
--
- 	tc6393xb_cells[TC6393XB_CELL_FB].driver_data = tcpd->fb_data;
--	tc6393xb_cells[TC6393XB_CELL_FB].platform_data -		&tc6393xb_cells[TC6393XB_CELL_FB];
--	tc6393xb_cells[TC6393XB_CELL_FB].data_size -		sizeof(tc6393xb_cells[TC6393XB_CELL_FB]);
- 
- 	ret = mfd_add_devices(&dev->dev, dev->id,
- 			tc6393xb_cells, ARRAY_SIZE(tc6393xb_cells),
-diff --git a/drivers/usb/host/ohci-tmio.c b/drivers/usb/host/ohci-tmio.c
-index 8dabe8e..eeed164 100644
---- a/drivers/usb/host/ohci-tmio.c
-+++ b/drivers/usb/host/ohci-tmio.c
-@@ -185,7 +185,7 @@ static struct platform_driver ohci_hcd_tmio_driver;
- 
- static int __devinit ohci_hcd_tmio_drv_probe(struct platform_device *dev)
- {
--	struct mfd_cell *cell = dev->dev.platform_data;
-+	struct mfd_cell *cell = mfd_get_cell(dev);
- 	struct resource *regs = platform_get_resource(dev, IORESOURCE_MEM, 0);
- 	struct resource *config = platform_get_resource(dev, IORESOURCE_MEM, 1);
- 	struct resource *sram = platform_get_resource(dev, IORESOURCE_MEM, 2);
-@@ -274,7 +274,7 @@ static int __devexit ohci_hcd_tmio_drv_remove(struct platform_device *dev)
- {
- 	struct usb_hcd *hcd = platform_get_drvdata(dev);
- 	struct tmio_hcd *tmio = hcd_to_tmio(hcd);
--	struct mfd_cell *cell = dev->dev.platform_data;
-+	struct mfd_cell *cell = mfd_get_cell(dev);
- 
- 	usb_remove_hcd(hcd);
- 	tmio_stop_hc(dev);
-@@ -293,7 +293,7 @@ static int __devexit ohci_hcd_tmio_drv_remove(struct platform_device *dev)
- #ifdef CONFIG_PM
- static int ohci_hcd_tmio_drv_suspend(struct platform_device *dev, pm_message_t state)
- {
--	struct mfd_cell *cell = dev->dev.platform_data;
-+	struct mfd_cell *cell = mfd_get_cell(dev);
- 	struct usb_hcd *hcd = platform_get_drvdata(dev);
- 	struct ohci_hcd *ohci = hcd_to_ohci(hcd);
- 	struct tmio_hcd *tmio = hcd_to_tmio(hcd);
-@@ -326,7 +326,7 @@ static int ohci_hcd_tmio_drv_suspend(struct platform_device *dev, pm_message_t s
- 
- static int ohci_hcd_tmio_drv_resume(struct platform_device *dev)
- {
--	struct mfd_cell *cell = dev->dev.platform_data;
-+	struct mfd_cell *cell = mfd_get_cell(dev);
- 	struct usb_hcd *hcd = platform_get_drvdata(dev);
- 	struct ohci_hcd *ohci = hcd_to_ohci(hcd);
- 	struct tmio_hcd *tmio = hcd_to_tmio(hcd);
-diff --git a/drivers/video/tmiofb.c b/drivers/video/tmiofb.c
-index dfef88c..6302882 100644
---- a/drivers/video/tmiofb.c
-+++ b/drivers/video/tmiofb.c
-@@ -250,7 +250,7 @@ static irqreturn_t tmiofb_irq(int irq, void *__info)
-  */
- static int tmiofb_hw_stop(struct platform_device *dev)
- {
--	struct mfd_cell *cell = dev->dev.platform_data;
-+	struct mfd_cell *cell = mfd_get_cell(dev);
- 	struct tmio_fb_data *data = cell->driver_data;
- 	struct fb_info *info = platform_get_drvdata(dev);
- 	struct tmiofb_par *par = info->par;
-@@ -268,7 +268,7 @@ static int tmiofb_hw_stop(struct platform_device *dev)
-  */
- static int tmiofb_hw_init(struct platform_device *dev)
- {
--	struct mfd_cell *cell = dev->dev.platform_data;
-+	struct mfd_cell *cell = mfd_get_cell(dev);
- 	struct fb_info *info = platform_get_drvdata(dev);
- 	struct tmiofb_par *par = info->par;
- 	const struct resource *nlcr = &cell->resources[0];
-@@ -312,7 +312,7 @@ static int tmiofb_hw_init(struct platform_device *dev)
-  */
- static void tmiofb_hw_mode(struct platform_device *dev)
- {
--	struct mfd_cell *cell = dev->dev.platform_data;
-+	struct mfd_cell *cell = mfd_get_cell(dev);
- 	struct tmio_fb_data *data = cell->driver_data;
- 	struct fb_info *info = platform_get_drvdata(dev);
- 	struct fb_videomode *mode = info->mode;
-@@ -559,8 +559,7 @@ static int tmiofb_ioctl(struct fb_info *fbi,
- static struct fb_videomode *
- tmiofb_find_mode(struct fb_info *info, struct fb_var_screeninfo *var)
- {
--	struct mfd_cell *cell -		info->device->platform_data;
-+	struct mfd_cell *cell = mfd_get_cell(to_platform_device(info->device));
- 	struct tmio_fb_data *data = cell->driver_data;
- 	struct fb_videomode *best = NULL;
- 	int i;
-@@ -581,8 +580,7 @@ static int tmiofb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
- 
- 	struct fb_videomode *mode;
--	struct mfd_cell *cell -		info->device->platform_data;
-+	struct mfd_cell *cell = mfd_get_cell(to_platform_device(info->device));
- 	struct tmio_fb_data *data = cell->driver_data;
- 
- 	mode = tmiofb_find_mode(info, var);
-@@ -683,7 +681,7 @@ static struct fb_ops tmiofb_ops = {
- 
- static int __devinit tmiofb_probe(struct platform_device *dev)
- {
--	struct mfd_cell *cell = dev->dev.platform_data;
-+	struct mfd_cell *cell = mfd_get_cell(dev);
- 	struct tmio_fb_data *data = cell->driver_data;
- 	struct resource *ccr = platform_get_resource(dev, IORESOURCE_MEM, 1);
- 	struct resource *lcr = platform_get_resource(dev, IORESOURCE_MEM, 0);
-@@ -811,7 +809,7 @@ err_ioremap_ccr:
- 
- static int __devexit tmiofb_remove(struct platform_device *dev)
- {
--	struct mfd_cell *cell = dev->dev.platform_data;
-+	struct mfd_cell *cell = mfd_get_cell(dev);
- 	struct fb_info *info = platform_get_drvdata(dev);
- 	int irq = platform_get_irq(dev, 0);
- 	struct tmiofb_par *par;
-@@ -941,7 +939,7 @@ static int tmiofb_suspend(struct platform_device *dev, pm_message_t state)
- #ifdef CONFIG_FB_TMIO_ACCELL
- 	struct tmiofb_par *par = info->par;
- #endif
--	struct mfd_cell *cell = dev->dev.platform_data;
-+	struct mfd_cell *cell = mfd_get_cell(dev);
- 	int retval = 0;
- 
- 	console_lock();
-@@ -973,7 +971,7 @@ static int tmiofb_suspend(struct platform_device *dev, pm_message_t state)
- static int tmiofb_resume(struct platform_device *dev)
- {
- 	struct fb_info *info = platform_get_drvdata(dev);
--	struct mfd_cell *cell = dev->dev.platform_data;
-+	struct mfd_cell *cell = mfd_get_cell(dev);
- 	int retval = 0;
- 
- 	console_lock();
+
 -- 
-1.7.2.3
-
+Ondrej Zary

@@ -1,37 +1,54 @@
-From: Axel Lin <axel.lin@gmail.com>
-Date: Sun, 13 Feb 2011 04:02:10 +0000
-Subject: [PATCH] video: metronomefb: add __devexit_p around reference to
-Message-Id: <1297569730.3608.3.camel@phoenix>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Tue, 22 Feb 2011 22:36:45 +0000
+Subject: [PATCH] s3fb: fix 15/16bpp modes with over 115MHz pixclocks on 86C365 Trio3D
+Message-Id: <201102222336.48506.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>
+To: Ondrej Zajicek <santiago@crfreenet.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
 
-metronomefb_remove is marked __devexit,
-thus add __devexit_p around reference to metronomefb_remove.
+Enable pixel multiplexing in 15/16bpp modes when pixclock is over 115MHz
+on Trio3D (86C365) cards to fix artifacts on the left side of screen.
 
-Signed-off-by: Axel Lin <axel.lin@gmail.com>
----
- drivers/video/metronomefb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
-diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
-index 63ed3b7..ed64edf 100644
---- a/drivers/video/metronomefb.c
-+++ b/drivers/video/metronomefb.c
-@@ -765,7 +765,7 @@ static int __devexit metronomefb_remove(struct platform_device *dev)
- 
- static struct platform_driver metronomefb_driver = {
- 	.probe	= metronomefb_probe,
--	.remove = metronomefb_remove,
-+	.remove = __devexit_p(metronomefb_remove),
- 	.driver	= {
- 		.owner	= THIS_MODULE,
- 		.name	= "metronomefb",
+--- linux-2.6.38-rc4-/drivers/video/s3fb.c	2011-02-20 20:48:41.000000000 +0100
++++ linux-2.6.38-rc4/drivers/video/s3fb.c	2011-02-22 23:31:16.000000000 +0100
+@@ -675,6 +675,15 @@
+ 				svga_wcrt_mask(par->state.vgabase, 0x67, 0x20, 0xF0);
+ 			else
+ 				svga_wcrt_mask(par->state.vgabase, 0x67, 0x30, 0xF0);
++		} else if (par->chip = CHIP_365_TRIO3D) {
++			svga_wcrt_mask(par->state.vgabase, 0x50, 0x10, 0x30);
++			if (info->var.pixclock > 8695) {
++				svga_wcrt_mask(par->state.vgabase, 0x67, 0x30, 0xF0);
++				hmul = 2;
++			} else {
++				svga_wcrt_mask(par->state.vgabase, 0x67, 0x20, 0xF0);
++				multiplex = 1;
++			}
+ 		} else {
+ 			svga_wcrt_mask(par->state.vgabase, 0x50, 0x10, 0x30);
+ 			svga_wcrt_mask(par->state.vgabase, 0x67, 0x30, 0xF0);
+@@ -691,6 +700,15 @@
+ 				svga_wcrt_mask(par->state.vgabase, 0x67, 0x40, 0xF0);
+ 			else
+ 				svga_wcrt_mask(par->state.vgabase, 0x67, 0x50, 0xF0);
++		} else if (par->chip = CHIP_365_TRIO3D) {
++			svga_wcrt_mask(par->state.vgabase, 0x50, 0x10, 0x30);
++			if (info->var.pixclock > 8695) {
++				svga_wcrt_mask(par->state.vgabase, 0x67, 0x50, 0xF0);
++				hmul = 2;
++			} else {
++				svga_wcrt_mask(par->state.vgabase, 0x67, 0x40, 0xF0);
++				multiplex = 1;
++			}
+ 		} else {
+ 			svga_wcrt_mask(par->state.vgabase, 0x50, 0x10, 0x30);
+ 			svga_wcrt_mask(par->state.vgabase, 0x67, 0x50, 0xF0);
+
+
 -- 
-1.7.1
-
-
-
+Ondrej Zary

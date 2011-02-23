@@ -1,67 +1,45 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Date: Mon, 28 Feb 2011 10:00:22 +0000
-Subject: [PATCH 1/8] fb: export fb mode db table
-Message-Id: <1298887229-7987-2-git-send-email-s.hauer@pengutronix.de>
+From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+Date: Wed, 23 Feb 2011 10:16:50 +0000
+Subject: [PATCH 2/2] fbdev: sh_mobile_lcdc: Define additional .nonstd flags for sh7372
+Message-Id: <1298456210-26519-3-git-send-email-dhobsong@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1298887229-7987-1-git-send-email-s.hauer@pengutronix.de>
-In-Reply-To: <1298887229-7987-1-git-send-email-s.hauer@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-The different modes can be useful for drivers. Currently there is
-no way to expose the modes to sysfs, so export them.
+The value of the .nonstd member of struct sh_mobile_lcdc_info is written
+directly into bits 16 and up of LDDFR in the LCDC. This patch defines
+additional flags that can be "or'ed" with the .nonstd value to control
+the LCDC behaviour when operating the the YUV display mode.
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
-Cc: Paul Mundt <lethal@linux-sh.org>
+Signed-off-by: Damian Hobson-Garcia <dhobsong@igel.co.jp>
 ---
- drivers/video/modedb.c |    8 ++++++--
- include/linux/fb.h     |    3 +++
- 2 files changed, 9 insertions(+), 2 deletions(-)
+ arch/arm/mach-shmobile/include/mach/sh7372.h |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index 48c3ea8..942b44d 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -36,8 +36,7 @@ EXPORT_SYMBOL_GPL(fb_mode_option);
-  *  Standard video mode definitions (taken from XFree86)
-  */
+diff --git a/arch/arm/mach-shmobile/include/mach/sh7372.h b/arch/arm/mach-shmobile/include/mach/sh7372.h
+index 5736efc..cdbc2cf 100644
+--- a/arch/arm/mach-shmobile/include/mach/sh7372.h
++++ b/arch/arm/mach-shmobile/include/mach/sh7372.h
+@@ -13,6 +13,17 @@
  
--static const struct fb_videomode modedb[] = {
--
-+const struct fb_videomode modedb[] = {
- 	/* 640x400 @ 70 Hz, 31.5 kHz hsync */
- 	{ NULL, 70, 640, 400, 39721, 40, 24, 39, 9, 96, 2, 0,
- 		FB_VMODE_NONINTERLACED },
-@@ -291,6 +290,11 @@ static const struct fb_videomode modedb[] = {
- 		0, FB_VMODE_NONINTERLACED },
- };
+ #include <linux/sh_clk.h>
  
-+const struct fb_videomode *fb_modes = modedb;
-+EXPORT_SYMBOL(fb_modes);
-+const int num_fb_modes = ARRAY_SIZE(modedb);
-+EXPORT_SYMBOL(num_fb_modes);
++/* LCDC YUV support:
++ * The following bit flags are used to set the bits 17 and up
++ * in the MLDDFR. These flags should be used to set the
++ * .nonstd field in the struct sh_mobile_lcdc_info.
++ * Bit 16, which is accessible from user space is defined in
++ * <linux/sh_mobile_fb.h>
++ * The flags have different values for different chips
++ */
++#define LCDC_YUV_FULL_RANGE ((0x1 << 17) >> 16)
++#define LCDC_YUV_BT_709 ((0x1 << 18) >> 16)
 +
- #ifdef CONFIG_FB_MODE_HELPERS
- const struct fb_videomode cea_modes[64] = {
- 	/* #1: 640x480p@59.94/60Hz */
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 68ba85a..41b0ce1 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -1154,6 +1154,9 @@ extern const char *fb_mode_option;
- extern const struct fb_videomode vesa_modes[];
- extern const struct fb_videomode cea_modes[64];
- 
-+extern const struct fb_videomode *fb_modes;
-+extern const int num_fb_modes;
-+
- struct fb_modelist {
- 	struct list_head list;
- 	struct fb_videomode mode;
+ /*
+  * Pin Function Controller:
+  *	GPIO_FN_xx - GPIO used to select pin function
 -- 
-1.7.2.3
+1.7.1
 

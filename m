@@ -1,73 +1,40 @@
-From: =?UTF-8?q?Andreas=20Bie=C3=9Fmann?= <biessmann@corscience.de>
-Date: Fri, 11 Feb 2011 15:19:43 +0000
-Subject: [PATCH 1/2] atmel_lcdfb: implement inverted contrast pwm
-Message-Id: <1297437584-14048-1-git-send-email-biessmann@corscience.de>
+From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+Date: Wed, 23 Feb 2011 10:16:48 +0000
+Subject: [PATCH 0/2] fbdev: sh_mobile_lcdc: YUV framebuffer support
+Message-Id: <1298456210-26519-1-git-send-email-dhobsong@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: kernel@avr32linux.org
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, =?UTF-8?q?Andreas=20Bie=C3=9Fmann?= <biessmann@corscience.de>, "open list:ATMEL LCDFB DRIVER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
- This patch introduces lcdc->lcdcon_pol_negative which set CONTRAST_CTR
- register to inverted polarity.
+These patches add support for 12, 16, and 24 bit YUV framebuffers.
 
-Signed-off-by: Andreas Bie=C3=9Fmann <biessmann@corscience.de>
----
-These are some older patches which are used in some of our systems. Heavy
-merging pointed out these functionality was missed to push upstream.
+These patches are a reworking of an earlier submitted patch 
+"Add NV12 input framebuffer support" to include the two other modes.
 
- drivers/video/atmel_lcdfb.c |    7 ++++++-
- include/video/atmel_lcdc.h  |    1 +
- 2 files changed, 7 insertions(+), 1 deletions(-)
+Additionally updated are:
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index bac16345..16da8af 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -68,7 +68,7 @@ static void atmel_lcdfb_update_dma2d(struct atmel_lcdfb_i=
-nfo *sinfo,
- }
- #endif
-=20
--static const u32 contrast_ctr =3D ATMEL_LCDC_PS_DIV8
-+static u32 contrast_ctr =3D ATMEL_LCDC_PS_DIV8
- 		| ATMEL_LCDC_POL_POSITIVE
- 		| ATMEL_LCDC_ENA_PWMENABLE;
-=20
-@@ -163,6 +163,10 @@ static void exit_backlight(struct atmel_lcdfb_info *si=
-nfo)
-=20
- static void init_contrast(struct atmel_lcdfb_info *sinfo)
- {
-+	/* contrast pwm can be 'inverted' */
-+	if (sinfo->lcdcon_pol_negative)
-+			contrast_ctr &=3D ~(ATMEL_LCDC_POL_POSITIVE);
-+
- 	/* have some default contrast/backlight settings */
- 	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, contrast_ctr);
- 	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, ATMEL_LCDC_CVAL_DEFAULT);
-@@ -816,6 +820,7 @@ static int __init atmel_lcdfb_probe(struct platform_dev=
-ice *pdev)
- 		sinfo->guard_time =3D pdata_sinfo->guard_time;
- 		sinfo->smem_len =3D pdata_sinfo->smem_len;
- 		sinfo->lcdcon_is_backlight =3D pdata_sinfo->lcdcon_is_backlight;
-+		sinfo->lcdcon_pol_negative =3D pdata_sinfo->lcdcon_pol_negative;
- 		sinfo->lcd_wiring_mode =3D pdata_sinfo->lcd_wiring_mode;
- 	} else {
- 		dev_err(dev, "cannot get default configuration\n");
-diff --git a/include/video/atmel_lcdc.h b/include/video/atmel_lcdc.h
-index 0c864db..28447f1 100644
---- a/include/video/atmel_lcdc.h
-+++ b/include/video/atmel_lcdc.h
-@@ -52,6 +52,7 @@ struct atmel_lcdfb_info {
- 	u8			bl_power;
- #endif
- 	bool			lcdcon_is_backlight;
-+	bool			lcdcon_pol_negative;
- 	u8			saved_lcdcon;
-=20
- 	u8			default_bpp;
---=20
-1.7.2.3
+* Y and C plane ordering.  When double-buffering both Y planes appear before
+  the C planes (Y-Y-C-C), instead of Y-C-Y-C.  
+* In YUV 420 mode, panning is only possible in 2 line increments
+* Additionally in YUV 420 mode the value of yres must be set to an even number
+* The value of .nonstd in struct sh_mobile_lcdc_chan_cfg from the platform data is
+  exposed to applications via the .nonstd element of struct fb_var_screeninfo.
+  Additionally this value is written to bits 16-31 of LDDFR in the LCDC.
+* Chip dependent flags for the bits of LDDFR greater that bit 17 are defined
+* Add a userspace include file <linux/sh_mobile_fb.h> as a place to hold defines
+  and future ioctl definitions.
+
+Damian Hobson-Garcia (2):
+  fbdev: sh_mobile_lcdc: Add YUV input support
+  fbdev: sh_mobile_lcdc: Define additional .nonstd flags for sh7372
+
+ arch/arm/mach-shmobile/include/mach/sh7372.h |   11 ++
+ drivers/video/sh_mobile_lcdcfb.c             |  142 +++++++++++++++++++++-----
+ drivers/video/sh_mobile_lcdcfb.h             |    2 +-
+ include/linux/sh_mobile_fb.h                 |   14 +++
+ include/video/sh_mobile_lcdc.h               |    1 +
+ 5 files changed, 141 insertions(+), 29 deletions(-)
+ create mode 100644 include/linux/sh_mobile_fb.h
 

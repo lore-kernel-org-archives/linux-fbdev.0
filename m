@@ -1,70 +1,30 @@
-From: Samreen <samreen@ti.com>
-Date: Wed, 23 Feb 2011 12:34:33 +0000
-Subject: [PATCH] OMAP2/3/4: DSS2: Enable Display SubSystem as modules
-Message-Id: <1298463753-24880-1-git-send-email-samreen@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 23 Feb 2011 13:33:26 +0000
+Subject: Re: [PATCH] OMAP2/3/4: DSS2: Enable Display SubSystem as modules
+Message-Id: <1298468006.18466.37.camel@deskari>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1298463753-24880-1-git-send-email-samreen@ti.com>
+In-Reply-To: <1298463753-24880-1-git-send-email-samreen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Enabling Display options to be built as modules
-Also, the generic dpi, sharp & nec panels are also
-enabled as modules.
+Hi,
 
-Signed-off-by: Samreen <samreen@ti.com>
----
- Version5:
-        Incorporating the comments from Tony Lindgren, Kevin Hilman,
- Paul Mundt & Tomi Valkeinen to build DSS & panels as modules.
- See: https://patchwork.kernel.org/patch/281492/
+On Wed, 2011-02-23 at 06:22 -0600, Nilofer, Samreen wrote:
+> Enabling Display options to be built as modules
+> Also, the generic dpi, sharp & nec panels are also
+> enabled as modules.
 
- Version4:
-       Remove the enabling of the display panels by default.
+I've just posted a patch which fixes the problem with the regulators in
+DSS. With that patch we can safely enable all DSS interfaces (and thus
+panels) and the resulting binary will work on all boards.
 
- Version3:
-       Eliminate the separate default number of FBs for
- different architecture. Keeping default FBs as 3 as before.
+So can you make one more version which enables all the interfaces and
+panels as modules, based on
+git://gitorious.org/linux-omap-dss2/linux.git master
 
- Version2:
-        Enables by default NEC panel used in zoom2/3/3630sdp, instead of
- Sharp LQ043T1DG01 panel enabled in previous version of this patch.
+ Tomi
 
-Testing:
----------
-The base used for OMAP3 testing is:
-branch: master
-commit: 7c23277
-URL: git://gitorious.org/linux-omap-dss2/linux.git
-
-And OMAP4 testing is on the following branch + few patches to enable DSI taal panel:
-branch: lo-dss2-Feb18
-commit: 67bcb5600
-URL: git://dev.omapzoom.org/pub/scm/axelcx/kernel-display.git
-
-The patch is tested on 3630zoom, 3430sdp & 4430sdp, it was not tested
-on OMAP2 platform due crash seen while boot.
-(See: http://www.mail-archive.com/linux-omap@vger.kernel.org/msg43921.html)
-
- arch/arm/configs/omap2plus_defconfig |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
-index ae890ca..ddcae13 100644
---- a/arch/arm/configs/omap2plus_defconfig
-+++ b/arch/arm/configs/omap2plus_defconfig
-@@ -192,6 +192,11 @@ CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_MODE_HELPERS=y
- CONFIG_FB_TILEBLITTING=y
- CONFIG_FB_OMAP_LCD_VGA=y
-+CONFIG_OMAP2_DSS=m
-+CONFIG_FB_OMAP2=m
-+CONFIG_PANEL_GENERIC_DPI=m
-+CONFIG_PANEL_SHARP_LS037V7DW01=m
-+CONFIG_PANEL_NEC_NL8048HL11_01B=m
- CONFIG_BACKLIGHT_LCD_SUPPORT=y
- CONFIG_LCD_CLASS_DEVICE=y
- CONFIG_LCD_PLATFORM=y
--- 
-1.5.6.3
 

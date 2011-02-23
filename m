@@ -1,20 +1,70 @@
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
-Date: Wed, 02 Feb 2011 11:13:38 +0000
-Subject: Re: [PATCH 0/2][concept RFC] x86: BIOS-save kernel log to disk
-Message-Id: <20110202111338.GA15729@laptop>
+From: Samreen <samreen@ti.com>
+Date: Wed, 23 Feb 2011 12:34:33 +0000
+Subject: [PATCH] OMAP2/3/4: DSS2: Enable Display SubSystem as modules
+Message-Id: <1298463753-24880-1-git-send-email-samreen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20110125134748.GA10051@laptop> <AANLkTinU0KYiCd4p=z+=ojbkeEoT2G+CAYvdRU02KJEn@mail.gmail.com> <20110126124954.GC24527@laptop> <20110127021338.GA20334@redhat.com> <4D40F81E.1030009@zytor.com> <20110127052639.GA16289@laptop> <m1sjweyeax.fsf@fess.ebiederm.org>
-In-Reply-To: <m1sjweyeax.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Vivek Goyal <vgoyal@redhat.com>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, X86-ML <x86@kernel.org>, Tony Luck <tony.luck@intel.com>, Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Randy Dunlap <rdunlap@xenotime.net>, Willy Tarreau <wtarreau@hera.kernel.org>, Willy Tarreau <w@1wt.eu>, Dirk Hohndel <hohndel@infradead.org>, Dirk.Hohndel@intel.com, IDE-ML <linux-ide@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>, Borislav Petkov <bp@alien8.de>, Arjan van de Ven <arjan@infradead.org>, Tejun Heo <tj@kernel.org>, James Bottomley <James.Bottomley@suse.de>, Mark Lord <kernel@teksavvy.com>, Jeff Garzik <jgarzik@pobox.com>, Haren
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+Enabling Display options to be built as modules
+Also, the generic dpi, sharp & nec panels are also
+enabled as modules.
 
-Quick note: the Internet has just returned back here after a full
-5-day shutdown by the “authorities”. I will hopefully return back
-home on Saturday to continue working on this.
+Signed-off-by: Samreen <samreen@ti.com>
+---
+ Version5:
+        Incorporating the comments from Tony Lindgren, Kevin Hilman,
+ Paul Mundt & Tomi Valkeinen to build DSS & panels as modules.
+ See: https://patchwork.kernel.org/patch/281492/
 
-thanks,
+ Version4:
+       Remove the enabling of the display panels by default.
+
+ Version3:
+       Eliminate the separate default number of FBs for
+ different architecture. Keeping default FBs as 3 as before.
+
+ Version2:
+        Enables by default NEC panel used in zoom2/3/3630sdp, instead of
+ Sharp LQ043T1DG01 panel enabled in previous version of this patch.
+
+Testing:
+---------
+The base used for OMAP3 testing is:
+branch: master
+commit: 7c23277
+URL: git://gitorious.org/linux-omap-dss2/linux.git
+
+And OMAP4 testing is on the following branch + few patches to enable DSI taal panel:
+branch: lo-dss2-Feb18
+commit: 67bcb5600
+URL: git://dev.omapzoom.org/pub/scm/axelcx/kernel-display.git
+
+The patch is tested on 3630zoom, 3430sdp & 4430sdp, it was not tested
+on OMAP2 platform due crash seen while boot.
+(See: http://www.mail-archive.com/linux-omap@vger.kernel.org/msg43921.html)
+
+ arch/arm/configs/omap2plus_defconfig |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
+index ae890ca..ddcae13 100644
+--- a/arch/arm/configs/omap2plus_defconfig
++++ b/arch/arm/configs/omap2plus_defconfig
+@@ -192,6 +192,11 @@ CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_MODE_HELPERS=y
+ CONFIG_FB_TILEBLITTING=y
+ CONFIG_FB_OMAP_LCD_VGA=y
++CONFIG_OMAP2_DSS=m
++CONFIG_FB_OMAP2=m
++CONFIG_PANEL_GENERIC_DPI=m
++CONFIG_PANEL_SHARP_LS037V7DW01=m
++CONFIG_PANEL_NEC_NL8048HL11_01B=m
+ CONFIG_BACKLIGHT_LCD_SUPPORT=y
+ CONFIG_LCD_CLASS_DEVICE=y
+ CONFIG_LCD_PLATFORM=y
+-- 
+1.5.6.3
+

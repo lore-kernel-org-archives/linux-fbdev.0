@@ -1,21 +1,17 @@
-From: Damian <dhobsong@igel.co.jp>
-Date: Thu, 24 Feb 2011 03:38:41 +0000
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 24 Feb 2011 06:05:38 +0000
 Subject: Re: [PATCH 1/2] fbdev: sh_mobile_lcdc: Add YUV input support
-Message-Id: <4D65D2C1.2050200@igel.co.jp>
+Message-Id: <AANLkTikCo9CruLWE5=XjaspnM6CdKhbyPs3rajPLMV0G@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1298456210-26519-2-git-send-email-dhobsong@igel.co.jp>
 In-Reply-To: <1298456210-26519-2-git-send-email-dhobsong@igel.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Magnus,
-On 2011/02/24 8:28, Magnus Damm wrote:
-> Hi Damian,
->
-> On Wed, Feb 23, 2011 at 8:22 PM, Damian<dhobsong@igel.co.jp>  wrote:
->>
+On Thu, Feb 24, 2011 at 00:28, Magnus Damm <magnus.damm@gmail.com> wrote:
+> On Wed, Feb 23, 2011 at 8:22 PM, Damian <dhobsong@igel.co.jp> wrote:
 >>>> diff --git a/include/linux/sh_mobile_fb.h b/include/linux/sh_mobile_fb.h
 >>>> new file mode 100644
 >>>> index 0000000..ec448bc
@@ -34,7 +30,7 @@ On 2011/02/24 8:28, Magnus Damm wrote:
 >>>> +#ifndef SH_MOBILE_FB_H
 >>>> +#define SH_MOBILE_FB_H
 >>>> +
->>>> +#define SH_FB_YUV      0x1
+>>>> +#define SH_FB_YUV      0x1
 >>>> +#endif /* SH_MOBILE_FB_H */
 >>>> diff --git a/include/video/sh_mobile_lcdc.h
 >>>> b/include/video/sh_mobile_lcdc.h
@@ -42,14 +38,14 @@ On 2011/02/24 8:28, Magnus Damm wrote:
 >>>> --- a/include/video/sh_mobile_lcdc.h
 >>>> +++ b/include/video/sh_mobile_lcdc.h
 >>>> @@ -77,6 +77,7 @@ struct sh_mobile_lcdc_chan_cfg {
->>>>         struct sh_mobile_lcdc_lcd_size_cfg lcd_size_cfg;
->>>>         struct sh_mobile_lcdc_board_cfg board_cfg;
->>>>         struct sh_mobile_lcdc_sys_bus_cfg sys_bus_cfg; /* only for SYSn
+>>>>        struct sh_mobile_lcdc_lcd_size_cfg lcd_size_cfg;
+>>>>        struct sh_mobile_lcdc_board_cfg board_cfg;
+>>>>        struct sh_mobile_lcdc_sys_bus_cfg sys_bus_cfg; /* only for SYSn
 >>>> I/F */
->>>> +       int nonstd;
->>>>   };
+>>>> +       int nonstd;
+>>>>  };
 >>>>
->>>>   struct sh_mobile_lcdc_info {
+>>>>  struct sh_mobile_lcdc_info {
 >>>> --
 >>>> 1.7.1
 >>>
@@ -57,7 +53,7 @@ On 2011/02/24 8:28, Magnus Damm wrote:
 >>> include/video/sh_mobile_lcdc.h too?
 >>
 >> My thinking behind separating this out was that I wanted this
->> define to be accessible from user space.  The reason is so that
+>> define to be accessible from user space.  The reason is so that
 >> an application can test the value of .nonstd against the flag to
 >> know for sure if it is dealing with a YUV framebuffer or not.
 >
@@ -88,18 +84,20 @@ On 2011/02/24 8:28, Magnus Damm wrote:
 > some abstraction on top of a hackish interface. Just check if nonstd
 > is non-zero in the driver and assume that means YUV for now. That's
 > good enough.
->
 
-Ok, I see what you're saying. But if the SH_FB_YUV flag is disappearing, 
-I guess it makes sense to ditch the second patch in this series as well, 
-since that's just further abstraction (albeit locally).
+For YUV (do you mean YCbCr?), I'm inclined to suggest adding a new FB_VISUAL_*
+type instead, which indicates the fb_var_screeninfo.{red,green,blue} fields are
+YCbCr instead of RGB.
+Depending on the frame buffer organization, you also need new FB_TYPE_*/FB_AUX_*
+types.
 
-> Thanks,
->
-> / magnus
+Gr{oetje,eeting}s,
 
-Thank you,
--- 
-Damian Hobson-Garcia
-IGEL Co.,Ltd
-http://www.igel.co.jp
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

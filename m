@@ -1,29 +1,29 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Thu, 24 Feb 2011 21:09:51 +0000
-Subject: Re: [PATCH v6] OMAP2/3/4: DSS2: Enable Display SubSystem as modules
-Message-Id: <20110224210951.GJ20560@atomide.com>
+From: leedonghwa <dh09.lee@samsung.com>
+Date: Thu, 24 Feb 2011 01:34:52 +0000
+Subject: RE: [PATCH] drivers: ld9040 amoled driver support
+Message-Id: <000101cbd3c3$08a0caf0$19e260d0$%lee@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1298528800-7399-1-git-send-email-samreen@ti.com>
-	<1298536312.16119.23.camel@deskari>
-In-Reply-To: <1298536312.16119.23.camel@deskari>
+References: <1294893628-16998-1-git-send-email-dh09.lee@samsung.com>
+	<4D364EFF.6080401@samsung.com> <20110119032518.GD19486@linux-sh.org>
+	<20110118193046.27790664.akpm@linux-foundation.org>
+In-Reply-To: <20110118193046.27790664.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [110224 00:30]:
-> On Thu, 2011-02-24 at 00:26 -0600, Nilofer, Samreen wrote:
-> > Enabling all the display interface options to be built as module
-> > And enabling all the display panels to be built as modules.
-> > 
-> > Signed-off-by: Samreen <samreen@ti.com>
-> 
-> This looks good to me.
-> 
-> Tony, want to ack this? This enables all DSS features as modules. This
-> should go through dss tree, as this doesn't work without a fix that is
-> there.
+Hi, Andrew and Paul
 
-Sounds good to me:
+A month had elapsed since my patch was posted in mainline, but, 
+there is no review about it. So I make a request again to review
+it.
+As I explained before, ld9040 driver is very simple driver to 
+control amoled lcd panel. And it is very similar with s6e63m0 
+amoled driver, the difference is nothing but each specific 
+registers value. 
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+Please review it.
+
+Thank you,
+Donghwa Lee
+

@@ -1,7 +1,7 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 28 Feb 2011 17:11:45 +0000
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Mon, 28 Feb 2011 18:33:05 +0000
 Subject: Re: [PATCH 3/8] Add a mfd IPUv3 driver
-Message-Id: <201102281811.45277.arnd@arndb.de>
+Message-Id: <alpine.LFD.2.00.1102281858240.2701@localhost6.localdomain6>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1298887229-7987-1-git-send-email-s.hauer@pengutronix.de>
 	<1298887229-7987-4-git-send-email-s.hauer@pengutronix.de>
@@ -11,58 +11,63 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Sascha,
-
-I've had a brief look around the driver. It looks reasonable in general,
-but the division into subdrivers feels a bit ad-hoc. If all the components
-are built into a single module, I don't see the need for separating the
-data by functional units by file. It seems simple enough to turn this
-into a layered driver with multiple sub-devices each derived from a 
-platform_device on its own.
-
-On Monday 28 February 2011, Sascha Hauer wrote:
->  arch/arm/plat-mxc/include/mach/ipu-v3.h |   49 +++
->  drivers/video/Kconfig                   |    2 +
->  drivers/video/Makefile                  |    1 +
->  drivers/video/imx-ipu-v3/Kconfig        |   10 +
->  drivers/video/imx-ipu-v3/Makefile       |    3 +
->  drivers/video/imx-ipu-v3/ipu-common.c   |  666 +++++++++++++++++++++++++++++++
->  drivers/video/imx-ipu-v3/ipu-cpmem.c    |  612 ++++++++++++++++++++++++++++
->  drivers/video/imx-ipu-v3/ipu-dc.c       |  364 +++++++++++++++++
->  drivers/video/imx-ipu-v3/ipu-di.c       |  550 +++++++++++++++++++++++++
->  drivers/video/imx-ipu-v3/ipu-dmfc.c     |  355 ++++++++++++++++
->  drivers/video/imx-ipu-v3/ipu-dp.c       |  476 ++++++++++++++++++++++
->  drivers/video/imx-ipu-v3/ipu-prv.h      |  216 ++++++++++
->  include/video/imx-ipu-v3.h              |  219 ++++++++++
-
-I wonder if this is something that would fit better in drivers/gpu instead
-of drivers/video. We recently discussed the benefits of KMS vs fb drivers,
-and I think it would be good to be prepared for making this a KMS driver
-in the long run, even if the immediate target has to be a simple frame buffer
-driver.
-
-> +#include "ipu-prv.h"
-> +
-> +static struct clk *ipu_clk;
-> +static struct device *ipu_dev;
-> +
-> +static DEFINE_SPINLOCK(ipu_lock);
-> +static DEFINE_MUTEX(ipu_channel_lock);
-> +void __iomem *ipu_cm_reg;
-> +void __iomem *ipu_idmac_reg;
+On Mon, 28 Feb 2011, Sascha Hauer wrote:
 > +
 > +static int ipu_use_count;
 > +
 > +static struct ipu_channel channels[64];
+> +
+> +struct ipu_channel *ipu_idmac_get(unsigned num)
+> +{
+> +	struct ipu_channel *channel;
+> +
+> +	dev_dbg(ipu_dev, "%s %d\n", __func__, num);
+> +
+> +	if (num > 63)
 
-Keeping these global limits you to just one ipu, and makes
-understanding the code a little harder. How about moving
-these variables into a struct ipu_data (or similar) that
-is referenced from the platform_device?
+  >= ARRAY_SIZE(channels) or a sensible define please
 
+> +		return ERR_PTR(-ENODEV);
+> +
+> +	mutex_lock(&ipu_channel_lock);
+> +
+> +	channel = &channels[num];
+> +
+> +	if (channel->busy) {
+> +		channel = ERR_PTR(-EBUSY);
+> +		goto out;
+> +	}
+> +
+> +	channel->busy = 1;
+> +	channel->num = num;
+> +
+> +out:
+> +	mutex_unlock(&ipu_channel_lock);
+> +
+> +	return channel;
+> +}
+> +EXPORT_SYMBOL(ipu_idmac_get);
+
+EXPORT_SYMBOL_GPL all over the place
+
+> +void ipu_idmac_put(struct ipu_channel *channel)
+> +{
+> +	dev_dbg(ipu_dev, "%s %d\n", __func__, channel->num);
+
+Do we really need this debug stuff in all these functions ?
+
+> +	mutex_lock(&ipu_channel_lock);
+> +
+> +	channel->busy = 0;
+> +
+> +	mutex_unlock(&ipu_channel_lock);
+> +}
 > +EXPORT_SYMBOL(ipu_idmac_put);
+> +
 
-Why not EXPORT_SYMBOL_GPL?
+Also exported functions want a proper kerneldoc comment.
+
+> +void ipu_idmac_set_double_buffer(struct ipu_channel *channel, bool doublebuffer)
 
 > +static LIST_HEAD(ipu_irq_handlers);
 > +
@@ -72,7 +77,9 @@ Why not EXPORT_SYMBOL_GPL?
 > +	int i;
 > +
 > +	DECLARE_IPU_IRQ_BITMAP(irqs);
-> +
+
+Why the hell do we need this? It's a bog standard bitmap, right ?
+
 > +	bitmap_zero(irqs, IPU_IRQ_COUNT);
 > +
 > +	list_for_each_entry(handler, &ipu_irq_handlers, list)
@@ -81,23 +88,14 @@ Why not EXPORT_SYMBOL_GPL?
 > +	for (i = 0; i < BITS_TO_LONGS(IPU_IRQ_COUNT); i++)
 > +		ipu_cm_write(irqs[i], IPU_INT_CTRL(i + 1));
 > +}
-> +
-> +int ipu_irq_add_handler(struct ipu_irq_handler *ipuirq)
+
+> +static void ipu_completion_handler(unsigned long *bitmask, void *context)
 > +{
-> +	unsigned long flags;
+> +	struct completion *completion = context;
 > +
-> +	spin_lock_irqsave(&ipu_lock, flags);
-> +
-> +	list_add_tail(&ipuirq->list, &ipu_irq_handlers);
-> +	ipu_irq_update_irq_mask();
-> +
-> +	spin_unlock_irqrestore(&ipu_lock, flags);
-> +	return 0;
+> +	complete(completion);
 > +}
-> +EXPORT_SYMBOL(ipu_irq_add_handler);
-
-The interrupt logic needs some comments. What are you trying to achieve here?
-
+> +
 > +int ipu_wait_for_interrupt(int interrupt, int timeout_ms)
 > +{
 > +	struct ipu_irq_handler handler;
@@ -124,13 +122,15 @@ The interrupt logic needs some comments. What are you trying to achieve here?
 > +		ret = -ETIMEDOUT;
 > +
 > +	return ret;
+
+  return ret > 0 ? 0 : -ETIMEDOUT;
+
+  perhaps ?
+
+
 > +}
 > +EXPORT_SYMBOL(ipu_wait_for_interrupt);
-
-If I understand this correctly, this is a very complicated way to implement
-something that could be done with a single wait_event_timeout() and
-wake_up_interruptible_all() from the irq handler.
-
+> +
 > +static irqreturn_t ipu_irq_handler(int irq, void *desc)
 > +{
 > +	DECLARE_IPU_IRQ_BITMAP(status);
@@ -147,109 +147,126 @@ wake_up_interruptible_all() from the irq handler.
 > +		if (bitmap_and(tmp, status, handler->ipu_irqs, IPU_IRQ_COUNT))
 > +			handler->handler(tmp, handler->context);
 > +	}
+
+And what protects the list walk? Just the fact that this is a UP
+machine?
+
+> +void ipu_put(void)
+> +{
+> +	mutex_lock(&ipu_channel_lock);
 > +
-> +	return IRQ_HANDLED;
+> +	ipu_use_count--;
+> +
+> +	if (ipu_use_count = 0)
+> +		clk_disable(ipu_clk);
+> +
+> +	if (ipu_use_count < 0) {
+> +		dev_err(ipu_dev, "ipu use count < 0\n");
+
+This wants to be a WARN_ON(ipu_use_count < 0) so you get some
+information which code is calling this.
+
+> +		ipu_use_count = 0;
+> +	}
+> +
+> +	mutex_unlock(&ipu_channel_lock);
 > +}
 
-This needs to take spin_lock_irqsave before walking the ipu_irq_handlers
-list, in order to prevent another CPU from modifying the list
-while you are in the handler.
-
-> +static int ipu_reset(void)
+> +static int __devinit ipu_probe(struct platform_device *pdev)
 > +{
-> +	int timeout = 10000;
-> +	u32 val;
+> +	struct resource *res;
+> +	unsigned long ipu_base;
+> +	int ret, irq1, irq2;
 > +
-> +	/* hard reset the IPU */
-> +	val = readl(MX51_IO_ADDRESS(MX51_SRC_BASE_ADDR));
-> +	val |= 1 << 3;
-> +	writel(val, MX51_IO_ADDRESS(MX51_SRC_BASE_ADDR));
+> +	/* There can be only one */
+> +	if (ipu_dev)
+> +		return -EBUSY;
 > +
-> +	ipu_cm_write(0x807FFFFF, IPU_MEM_RST);
+> +	spin_lock_init(&ipu_lock);
 > +
-> +	while (ipu_cm_read(IPU_MEM_RST) & 0x80000000) {
-> +		if (!timeout--)
-> +			return -ETIME;
-> +		udelay(100);
+> +	ipu_dev = &pdev->dev;
+> +
+> +	irq1 = platform_get_irq(pdev, 0);
+> +	irq2 = platform_get_irq(pdev, 1);
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +
+> +	if (!res || irq1 < 0 || irq2 < 0)
+> +		return -ENODEV;
+> +
+> +	ipu_base = res->start;
+> +
+> +	ipu_cm_reg = ioremap(ipu_base + IPU_CM_REG_BASE, PAGE_SIZE);
+> +	if (!ipu_cm_reg) {
+> +		ret = -ENOMEM;
+> +		goto failed_ioremap1;
+> +	}
+> +
+> +	ipu_idmac_reg = ioremap(ipu_base + IPU_IDMAC_REG_BASE, PAGE_SIZE);
+> +	if (!ipu_idmac_reg) {
+> +		ret = -ENOMEM;
+> +		goto failed_ioremap2;
+> +	}
+> +
+> +	ipu_clk = clk_get(&pdev->dev, "ipu");
+> +	if (IS_ERR(ipu_clk)) {
+> +		ret = PTR_ERR(ipu_clk);
+> +		dev_err(&pdev->dev, "clk_get failed with %d", ret);
+> +		goto failed_clk_get;
+> +	}
+> +
+> +	ipu_get();
+> +
+> +	ret = request_irq(irq1, ipu_irq_handler, IRQF_DISABLED, pdev->name,
+> +			&pdev->dev);
+
+s/IRQF_DISABLED/0/ We run all handlers with interrupts disabled
+nowadays.
+
+> +	ret = ipu_submodules_init(pdev, ipu_base, ipu_clk);
+> +	if (ret)
+> +		goto failed_submodules_init;
+> +
+> +	/* Set sync refresh channels as high priority */
+> +	ipu_idmac_write(0x18800000, IDMAC_CHA_PRI(0));
+
+Hmm, this random prio setting here is odd.
+
+> +	ret = ipu_add_client_devices(pdev);
+> +        if (ret) {
+> +                dev_err(&pdev->dev, "adding client devices failed with %d\n", ret);
+> +		goto failed_add_clients;
+> +        }
+
+White space damage.
+
+> +	ret = ipu_wait_for_interrupt(irq, 50);
+> +	if (ret)
+> +		return;
+> +
+> +	/* Wait for DC triple buffer to empty */
+> +	if (dc_channels[dc_chan].di = 0)
+> +		while ((__raw_readl(DC_STAT) & 0x00000002)
+> +			!= 0x00000002) {
+> +			msleep(2);
+> +			timeout -= 2;
+> +			if (timeout <= 0)
+> +				break;
+
+So we poll stuff which is updated from some other function ?
+
+> +		}
+> +	else if (dc_channels[dc_chan].di = 1)
+> +		while ((__raw_readl(DC_STAT) & 0x00000020)
+> +			!= 0x00000020) {
+> +			msleep(2);
+> +			timeout -= 2;
+> +			if (timeout <= 0)
+> +				break;
+
+Ditto
+
 > +	}
 
-You have a timeout of over one second with udelay, which
-is not acceptable on many systems. AFAICT, the function 
-can sleep, so you can replace udelay with msleep(1), and
-you should use a better logic to determine the end of the
-loop:
+Thanks,
 
-	unsigned long timeout = jiffies + msecs_to_jiffies(1000);
-
-	while (ipu_cm_read(IPU_MEM_RST) & 0x80000000) {
-		if (time_after(jiffies, timeout))
-			return -ETIME;
-		msleep(1);
-	}
-
-> +static u32 *ipu_cpmem_base;
-> +static struct device *ipu_dev;
-> +
-> +struct ipu_ch_param_word {
-> +	u32 data[5];
-> +	u32 res[3];
-> +};
-> +
-> +struct ipu_ch_param {
-> +	struct ipu_ch_param_word word[2];
-> +};
-
-Same comment as for the previous file
-> +
-> +static void __iomem *ipu_dc_reg;
-> +static void __iomem *ipu_dc_tmpl_reg;
-> +static struct device *ipu_dev;
-> +
-> +struct ipu_dc {
-> +	unsigned int di; /* The display interface number assigned to this dc channel */
-> +	unsigned int channel_offset;
-> +};
-> +
-> +static struct ipu_dc dc_channels[10];
-
-And here again.
-
-> +static void ipu_dc_link_event(int chan, int event, int addr, int priority)
-> +{
-> +	u32 reg;
-> +
-> +	reg = __raw_readl(DC_RL_CH(chan, event));
-> +	reg &= ~(0xFFFF << (16 * (event & 0x1)));
-> +	reg |= ((addr << 8) | priority) << (16 * (event & 0x1));
-> +	__raw_writel(reg, DC_RL_CH(chan, event));
-> +}
-
-Better use readl/writel instead of __raw_readl/__raw_writel, throughout the
-code.
-
-> +int ipu_di_init(struct platform_device *pdev, int id, unsigned long base,
-> +		u32 module, struct clk *ipu_clk);
-> +void ipu_di_exit(struct platform_device *pdev, int id);
-> +
-> +int ipu_dmfc_init(struct platform_device *pdev, unsigned long base,
-> +		struct clk *ipu_clk);
-> +void ipu_dmfc_exit(struct platform_device *pdev);
-> +
-> +int ipu_dp_init(struct platform_device *pdev, unsigned long base);
-> +void ipu_dp_exit(struct platform_device *pdev);
-> +
-> +int ipu_dc_init(struct platform_device *pdev, unsigned long base,
-> +		unsigned long template_base);
-> +void ipu_dc_exit(struct platform_device *pdev);
-> +
-> +int ipu_cpmem_init(struct platform_device *pdev, unsigned long base);
-> +void ipu_cpmem_exit(struct platform_device *pdev);
-
-If you make the main driver an mfd device, the sub-drivers could become
-real platform drivers, which can structure the layering in a more modular
-way.
-E.g. instead of a single module init function, each subdriver can be
-a module by itself and look at the resources associated with the
-platform device it matches.
-
-	Arnd
+	tglx

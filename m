@@ -1,45 +1,72 @@
-From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
-Date: Wed, 23 Feb 2011 10:16:50 +0000
-Subject: [PATCH 2/2] fbdev: sh_mobile_lcdc: Define additional .nonstd flags for sh7372
-Message-Id: <1298456210-26519-3-git-send-email-dhobsong@igel.co.jp>
+From: Donghwa Lee <dh09.lee@samsung.com>
+Date: Mon, 28 Feb 2011 06:14:48 +0000
+Subject: [PATCH] backlight/platform_lcd: change set power function parameter in
+Message-Id: <1298873688-17118-1-git-send-email-dh09.lee@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-The value of the .nonstd member of struct sh_mobile_lcdc_info is written
-directly into bits 16 and up of LDDFR in the LCDC. This patch defines
-additional flags that can be "or'ed" with the .nonstd value to control
-the LCDC behaviour when operating the the YUV display mode.
+In drivers/video/backlight/platform_lcd.c driver, to use lcd power
+control function in platdata, it is used
+set_power(struct plat_lcd_data *, unsigned int power) callback function.
+set_power() function is consists of two parameters,
+(struct plat_lcd_data *, unsigned int power).
 
-Signed-off-by: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+But actually, there is no one to use (struct plat_lcd_data *), only use
+second (unsigned int power) value to control lcd power on/off.
+
+I don't know why (struct plat_lcd_data*) parameter is used in set_power()
+callback function. Maybe I think it is unessesntial or changeable to another
+meaningful variable. For example, struct lcd_device *, it can be used to
+control regulator_get() function.
+
+In mach-nuri.c, it has been patching by Minku Kang, (struct lcd_device*) can be
+used to regulator lcd power on/off, and many other machines uses regulator
+control to on/off lcd power.
+
+So I think more meaningful variable that (struct lcd_device* ) can be
+substituted for unessential variable that (struct plat_lcd_data *).
+
+Thank you,
+Donghwa Lee
+
+
+Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+
 ---
- arch/arm/mach-shmobile/include/mach/sh7372.h |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
+ drivers/video/backlight/platform_lcd.c |    2 +-
+ include/video/platform_lcd.h           |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/mach-shmobile/include/mach/sh7372.h b/arch/arm/mach-shmobile/include/mach/sh7372.h
-index 5736efc..cdbc2cf 100644
---- a/arch/arm/mach-shmobile/include/mach/sh7372.h
-+++ b/arch/arm/mach-shmobile/include/mach/sh7372.h
-@@ -13,6 +13,17 @@
+diff --git a/drivers/video/backlight/platform_lcd.c b/drivers/video/backlight/platform_lcd.c
+index 302330a..cf23a3f 100644
+--- a/drivers/video/backlight/platform_lcd.c
++++ b/drivers/video/backlight/platform_lcd.c
+@@ -49,7 +49,7 @@ static int platform_lcd_set_power(struct lcd_device *lcd, int power)
+ 	if (power = FB_BLANK_POWERDOWN || plcd->suspended)
+ 		lcd_power = 0;
  
- #include <linux/sh_clk.h>
+-	plcd->pdata->set_power(plcd->pdata, lcd_power);
++	plcd->pdata->set_power(lcd, lcd_power);
+ 	plcd->power = power;
  
-+/* LCDC YUV support:
-+ * The following bit flags are used to set the bits 17 and up
-+ * in the MLDDFR. These flags should be used to set the
-+ * .nonstd field in the struct sh_mobile_lcdc_info.
-+ * Bit 16, which is accessible from user space is defined in
-+ * <linux/sh_mobile_fb.h>
-+ * The flags have different values for different chips
-+ */
-+#define LCDC_YUV_FULL_RANGE ((0x1 << 17) >> 16)
-+#define LCDC_YUV_BT_709 ((0x1 << 18) >> 16)
-+
- /*
-  * Pin Function Controller:
-  *	GPIO_FN_xx - GPIO used to select pin function
+ 	return 0;
+diff --git a/include/video/platform_lcd.h b/include/video/platform_lcd.h
+index ad3bdfe..e92a039 100644
+--- a/include/video/platform_lcd.h
++++ b/include/video/platform_lcd.h
+@@ -15,7 +15,7 @@ struct plat_lcd_data;
+ struct fb_info;
+ 
+ struct plat_lcd_data {
+-	void	(*set_power)(struct plat_lcd_data *, unsigned int power);
++	void	(*set_power)(struct lcd_device *, unsigned int power);
+ 	int	(*match_fb)(struct plat_lcd_data *, struct fb_info *);
+ };
+ 
 -- 
-1.7.1
+1.6.0.4
 

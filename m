@@ -1,40 +1,67 @@
-From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
-Date: Wed, 23 Feb 2011 10:16:48 +0000
-Subject: [PATCH 0/2] fbdev: sh_mobile_lcdc: YUV framebuffer support
-Message-Id: <1298456210-26519-1-git-send-email-dhobsong@igel.co.jp>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Date: Mon, 28 Feb 2011 10:00:22 +0000
+Subject: [PATCH 1/8] fb: export fb mode db table
+Message-Id: <1298887229-7987-2-git-send-email-s.hauer@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1298887229-7987-1-git-send-email-s.hauer@pengutronix.de>
+In-Reply-To: <1298887229-7987-1-git-send-email-s.hauer@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-These patches add support for 12, 16, and 24 bit YUV framebuffers.
+The different modes can be useful for drivers. Currently there is
+no way to expose the modes to sysfs, so export them.
 
-These patches are a reworking of an earlier submitted patch 
-"Add NV12 input framebuffer support" to include the two other modes.
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: Paul Mundt <lethal@linux-sh.org>
+---
+ drivers/video/modedb.c |    8 ++++++--
+ include/linux/fb.h     |    3 +++
+ 2 files changed, 9 insertions(+), 2 deletions(-)
 
-Additionally updated are:
-
-* Y and C plane ordering.  When double-buffering both Y planes appear before
-  the C planes (Y-Y-C-C), instead of Y-C-Y-C.  
-* In YUV 420 mode, panning is only possible in 2 line increments
-* Additionally in YUV 420 mode the value of yres must be set to an even number
-* The value of .nonstd in struct sh_mobile_lcdc_chan_cfg from the platform data is
-  exposed to applications via the .nonstd element of struct fb_var_screeninfo.
-  Additionally this value is written to bits 16-31 of LDDFR in the LCDC.
-* Chip dependent flags for the bits of LDDFR greater that bit 17 are defined
-* Add a userspace include file <linux/sh_mobile_fb.h> as a place to hold defines
-  and future ioctl definitions.
-
-Damian Hobson-Garcia (2):
-  fbdev: sh_mobile_lcdc: Add YUV input support
-  fbdev: sh_mobile_lcdc: Define additional .nonstd flags for sh7372
-
- arch/arm/mach-shmobile/include/mach/sh7372.h |   11 ++
- drivers/video/sh_mobile_lcdcfb.c             |  142 +++++++++++++++++++++-----
- drivers/video/sh_mobile_lcdcfb.h             |    2 +-
- include/linux/sh_mobile_fb.h                 |   14 +++
- include/video/sh_mobile_lcdc.h               |    1 +
- 5 files changed, 141 insertions(+), 29 deletions(-)
- create mode 100644 include/linux/sh_mobile_fb.h
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+index 48c3ea8..942b44d 100644
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -36,8 +36,7 @@ EXPORT_SYMBOL_GPL(fb_mode_option);
+  *  Standard video mode definitions (taken from XFree86)
+  */
+ 
+-static const struct fb_videomode modedb[] = {
+-
++const struct fb_videomode modedb[] = {
+ 	/* 640x400 @ 70 Hz, 31.5 kHz hsync */
+ 	{ NULL, 70, 640, 400, 39721, 40, 24, 39, 9, 96, 2, 0,
+ 		FB_VMODE_NONINTERLACED },
+@@ -291,6 +290,11 @@ static const struct fb_videomode modedb[] = {
+ 		0, FB_VMODE_NONINTERLACED },
+ };
+ 
++const struct fb_videomode *fb_modes = modedb;
++EXPORT_SYMBOL(fb_modes);
++const int num_fb_modes = ARRAY_SIZE(modedb);
++EXPORT_SYMBOL(num_fb_modes);
++
+ #ifdef CONFIG_FB_MODE_HELPERS
+ const struct fb_videomode cea_modes[64] = {
+ 	/* #1: 640x480p@59.94/60Hz */
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 68ba85a..41b0ce1 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -1154,6 +1154,9 @@ extern const char *fb_mode_option;
+ extern const struct fb_videomode vesa_modes[];
+ extern const struct fb_videomode cea_modes[64];
+ 
++extern const struct fb_videomode *fb_modes;
++extern const int num_fb_modes;
++
+ struct fb_modelist {
+ 	struct list_head list;
+ 	struct fb_videomode mode;
+-- 
+1.7.2.3
 

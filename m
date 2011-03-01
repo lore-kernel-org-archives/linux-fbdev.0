@@ -1,128 +1,50 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 31 Mar 2011 10:11:04 +0000
-Subject: [PATCH 7/9] OMAP: DSS2: OMAPFB: Handle errors when initializing panel
-Message-Id: <1301566266-11187-8-git-send-email-tomi.valkeinen@ti.com>
+From: Jarkko Nikula <jhnikula@gmail.com>
+Date: Tue, 01 Mar 2011 08:40:37 +0000
+Subject: [PATCH] omapfb: Fix linker error in drivers/video/omap/lcd_2430sdp.c
+Message-Id: <1298968837-13584-1-git-send-email-jhnikula@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1301566266-11187-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1301566266-11187-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1298905757.9809.135.camel@deskari>
+In-Reply-To: <1298905757.9809.135.camel@deskari>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jarkko Nikula <jhnikula@gmail.com>
 
-Errors from the panel driver were ignored during panel initialization.
-Handle the errors and fail accordingly.
+There is a linker error from lcd_2430sdp.c if CONFIG_TWL4030_CORE is not
+set. This can be triggered on OMAP2 builds when OMAP3 or OMAP4 are not set.
 
-Also move the display initialization to a separate function to make it
-cleaner.
+drivers/built-in.o: In function `sdp2430_panel_disable':
+drivers/video/omap/lcd_2430sdp.c:123: undefined reference to `twl_i2c_write_u8'
+drivers/video/omap/lcd_2430sdp.c:124: undefined reference to `twl_i2c_write_u8'
+drivers/built-in.o: In function `sdp2430_panel_enable':
+drivers/video/omap/lcd_2430sdp.c:110: undefined reference to `twl_i2c_write_u8'
+drivers/video/omap/lcd_2430sdp.c:112: undefined reference to `twl_i2c_write_u8'
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Fix this by selecting the TWL4030_CORE for MACH_OMAP_2430SDP when building
+with CONFIG_FB_OMAP as there is no own Kconfig entry for lcd_2430 and it is
+compiled always when both MACH_OMAP_2430SDP and FB_OMAP are set.
+
+Signed-off-by: Jarkko Nikula <jhnikula@gmail.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c |   80 ++++++++++++++++++++++--------
- 1 files changed, 59 insertions(+), 21 deletions(-)
+Quite old issue probably. I don't think any fancier fix is required as this
+is legacy omapfb code?
+---
+ drivers/video/omap/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 163fb8b..1b89e28 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -2193,6 +2193,61 @@ static int omapfb_parse_def_modes(struct omapfb2_device *fbdev)
- 	return r;
- }
+diff --git a/drivers/video/omap/Kconfig b/drivers/video/omap/Kconfig
+index 083c8fe..c981249 100644
+--- a/drivers/video/omap/Kconfig
++++ b/drivers/video/omap/Kconfig
+@@ -5,6 +5,7 @@ config FB_OMAP
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
++	select TWL4030_CORE if MACH_OMAP_2430SDP
+ 	help
+           Frame buffer driver for OMAP based boards.
  
-+static int omapfb_init_display(struct omapfb2_device *fbdev,
-+		struct omap_dss_device *dssdev)
-+{
-+	struct omap_dss_driver *dssdrv = dssdev->driver;
-+	int r;
-+
-+	r = dssdrv->enable(dssdev);
-+	if (r) {
-+		dev_warn(fbdev->dev, "Failed to enable display '%s'\n",
-+				dssdev->name);
-+		return r;
-+	}
-+
-+	if (dssdev->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE) {
-+		u16 w, h;
-+		if (dssdrv->enable_te) {
-+			r = dssdrv->enable_te(dssdev, 1);
-+			if (r) {
-+				dev_err(fbdev->dev, "Failed to set TE\n");
-+				return r;
-+			}
-+		}
-+
-+		if (dssdrv->set_update_mode) {
-+			r = dssdrv->set_update_mode(dssdev,
-+					OMAP_DSS_UPDATE_MANUAL);
-+			if (r) {
-+				dev_err(fbdev->dev,
-+						"Failed to set update mode\n");
-+				return r;
-+			}
-+		}
-+
-+		dssdrv->get_resolution(dssdev, &w, &h);
-+		r = dssdrv->update(dssdev, 0, 0, w, h);
-+		if (r) {
-+			dev_err(fbdev->dev,
-+					"Failed to update display\n");
-+			return r;
-+		}
-+	} else {
-+		if (dssdrv->set_update_mode) {
-+			r = dssdrv->set_update_mode(dssdev,
-+					OMAP_DSS_UPDATE_AUTO);
-+			if (r) {
-+				dev_err(fbdev->dev,
-+						"Failed to set update mode\n");
-+				return r;
-+			}
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- static int omapfb_probe(struct platform_device *pdev)
- {
- 	struct omapfb2_device *fbdev = NULL;
-@@ -2292,30 +2347,13 @@ static int omapfb_probe(struct platform_device *pdev)
- 	}
- 
- 	if (def_display) {
--		struct omap_dss_driver *dssdrv = def_display->driver;
--
--		r = def_display->driver->enable(def_display);
-+		r = omapfb_init_display(fbdev, def_display);
- 		if (r) {
--			dev_warn(fbdev->dev, "Failed to enable display '%s'\n",
--					def_display->name);
-+			dev_err(fbdev->dev,
-+					"failed to initialize default "
-+					"display\n");
- 			goto cleanup;
- 		}
--
--		if (def_display->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE) {
--			u16 w, h;
--			if (dssdrv->enable_te)
--				dssdrv->enable_te(def_display, 1);
--			if (dssdrv->set_update_mode)
--				dssdrv->set_update_mode(def_display,
--						OMAP_DSS_UPDATE_MANUAL);
--
--			dssdrv->get_resolution(def_display, &w, &h);
--			def_display->driver->update(def_display, 0, 0, w, h);
--		} else {
--			if (dssdrv->set_update_mode)
--				dssdrv->set_update_mode(def_display,
--						OMAP_DSS_UPDATE_AUTO);
--		}
- 	}
- 
- 	DBG("create sysfs for fbs\n");
 -- 
-1.7.1
+1.7.2.3
 

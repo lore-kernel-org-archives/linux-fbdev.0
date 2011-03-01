@@ -1,41 +1,60 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Wed, 02 Mar 2011 11:27:52 +0000
-Subject: Re: [PATCH 1/2] fbdev: sh_mobile_lcdc: Add YUV input support
-Message-Id: <20110302112752.297116dc@lxorguk.ukuu.org.uk>
+From: Gary Hade <garyhade@us.ibm.com>
+Date: Tue, 01 Mar 2011 17:50:26 +0000
+Subject: matroxfb: remove incorrect Matrox G200eV support
+Message-Id: <20110301175026.GA18770@us.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1298456210-26519-1-git-send-email-dhobsong@igel.co.jp>
-	<1298456210-26519-2-git-send-email-dhobsong@igel.co.jp>
-	<Pine.LNX.4.64.1102231132030.10099@axis700.grange>
-	<4D64EDFC.6070203@igel.co.jp>
-	<AANLkTi=rKDRbQYzPLHmRj+fEvAgpHzG2HXBwaBZi0vn_@mail.gmail.com>
-	<AANLkTikCo9CruLWE5=XjaspnM6CdKhbyPs3rajPLMV0G@mail.gmail.com>
-	<AANLkTikpL3m_8YVMiRRRULmB_Px9asdK-Fto07WeyJgG@mail.gmail.com>
-	<AANLkTi=Kc6wueQPJrw1ZtAe4qkOrmn1O7eXgF5oze-FP@mail.gmail.com>
-	<AANLkTikFPdZ1ER=Cb59LL2CwBTA2NExSiVaTPzbGsE_o@mail.gmail.com>
-In-Reply-To: <AANLkTikFPdZ1ER=Cb59LL2CwBTA2NExSiVaTPzbGsE_o@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Corbin Simpson <mostawesomedude@gmail.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, matsu@igel.co.jp, linux-fbdev@vger.kernel.org, taki@igel.co.jp, linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, dri-devel@lists.freedesktop.org, Damian <dhobsong@igel.co.jp>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: "Darrick J. Wong" <djwong@us.ibm.com>, Krzysztof Helt <krzysztof.h1@wp.pl>, Petr Vandrovec <vandrove@vc.cvut.cz>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Gary Hade <garyhade@us.ibm.com>
 
-On Tue, 1 Mar 2011 13:31:19 -0800
-Corbin Simpson <mostawesomedude@gmail.com> wrote:
 
-> I am slightly curious about this as well; I have a device with only YUV
-> scanout and was considering KMS, but don't know what the best approach is.
+From: Gary Hade <garyhade@us.ibm.com>
 
-The problem with hiding behind a fake RGB frame buffer is you've then
-completely stuffed any framebuffer based apps that could use YUV happily
-(eg framebuffer video playback).
+Remove incorrect Matrox G200eV support that was previously added
+by commit e3a1938805d2e81b27d3d348788644f3bad004f2
 
-Far better to make the kernel tell the truth in these cases. You'll need
-to add some tweaks to the fb code for it and a YUV boot penguin.[1]
+One serious issue with the G200eV support that I have reproduced
+on a Matrox G200eV equipped IBM x3650 M2 is the lack of text (login
+banner, login prompt, etc) on the console when X not running and
+lack of text on all of the virtual consoles after X is started.
 
-If you want to run X on it then you can use shadowfb on the X side to do
-your YUV/RGB adaptation.
+Signed-off-by: Gary Hade <garyhade@us.ibm.com>
+Cc: Darrick J. Wong <djwong@us.ibm.com>
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: Petr Vandrovec <vandrove@vc.cvut.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
 
-Alan
---
-[1] Am I the only one who thinks the fb code also needs an imagine of an
-embarassed penguin that has wet itself to go with oops output ?
+---
+ drivers/video/matrox/matroxfb_base.c |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
+index a082deb..a74439a 100644
+--- a/drivers/video/matrox/matroxfb_base.c
++++ b/drivers/video/matrox/matroxfb_base.c
+@@ -1461,13 +1461,6 @@ static struct board {
+ 		MGA_G100,
+ 		&vbG100,
+ 		"MGA-G100 (AGP)"},
+-	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200EV_PCI,	0xFF,
+-		0,			0,
+-		DEVF_G200,
+-		230000,
+-		MGA_G200,
+-		&vbG200,
+-		"MGA-G200eV (PCI)"},
+ 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_PCI,	0xFF,
+ 		0,			0,
+ 		DEVF_G200,
+@@ -2119,8 +2112,6 @@ static struct pci_device_id matroxfb_devices[] = {
+ 		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
+ 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G100_AGP,
+ 		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
+-	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200EV_PCI,
+-		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
+ 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_PCI,
+ 		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
+ 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_AGP,

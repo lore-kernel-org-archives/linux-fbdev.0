@@ -1,34 +1,92 @@
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Wed, 16 Mar 2011 11:17:25 +0000
-Subject: Re: [PATCH 1/4] ARM: PXA: PXAFB: rework pxafb overlay memory management
-Message-Id: <AANLkTi=FctYRCNQV3Sa8m6R3qfwSKoqHBZ7T5riRCA95@mail.gmail.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Tue, 01 Mar 2011 19:18:17 +0000
+Subject: [PATCH 2/5] s3fb: add support for 86C365 Trio3D
+Message-Id: <201103012018.19557.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201103060030.59584.anarsoul@gmail.com>
-	<1299835250-11095-1-git-send-email-anarsoul@gmail.com>
-	<201103112234.10904.marek.vasut@gmail.com>
-	<201103112346.51471.anarsoul@gmail.com>
-In-Reply-To: <201103112346.51471.anarsoul@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Ondrej Zajicek <santiago@crfreenet.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-2011/3/12 Vasily Khoruzhick <anarsoul@gmail.com>:
-> On Friday 11 March 2011 23:34:10 Marek Vasut wrote:
->> > + =C2=A0 if (ofb->usage++ =3D 0)
->>
->> TBH I don't like this notation, it feels hard to read. Can you split that
->> ofb-
->>
->> >usage++ into two parts ?
->>
->> Cheers
->
-> It's not deprecated by kernel codestyle, looks ok and works ok, but I'll
-> change it if one more person argues against it :)
->
+Add support for S3 Trio3D (86C365) cards to s3fb driver. Tested with one 4MB card.
 
-I'm OK with the it. The whole series merged into -devel.
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
-Thanks.
-- eric
+--- linux-2.6.38-rc4-/drivers/video/s3fb.c	2011-02-20 20:11:18.000000000 +0100
++++ linux-2.6.38-rc4/drivers/video/s3fb.c	2011-02-20 20:31:34.000000000 +0100
+@@ -64,6 +64,8 @@ static const struct svga_fb_format s3fb_
+ 
+ static const struct svga_pll s3_pll = {3, 129, 3, 33, 0, 3,
+ 	35000, 240000, 14318};
++static const struct svga_pll s3_trio3d_pll = {3, 129, 3, 31, 0, 4,
++	230000, 460000, 14318};
+ 
+ static const int s3_memsizes[] = {4096, 0, 3072, 8192, 2048, 6144, 1024, 512};
+ 
+@@ -72,7 +74,8 @@ static const char * const s3_names[] = {
+ 			"S3 Plato/PX", "S3 Aurora64VP", "S3 Virge",
+ 			"S3 Virge/VX", "S3 Virge/DX", "S3 Virge/GX",
+ 			"S3 Virge/GX2", "S3 Virge/GX2P", "S3 Virge/GX2P",
+-			"S3 Trio3D/1X", "S3 Trio3D/2X", "S3 Trio3D/2X"};
++			"S3 Trio3D/1X", "S3 Trio3D/2X", "S3 Trio3D/2X",
++			"S3 Trio3D"};
+ 
+ #define CHIP_UNKNOWN		0x00
+ #define CHIP_732_TRIO32		0x01
+@@ -93,6 +96,7 @@ static const char * const s3_names[] = {
+ #define CHIP_360_TRIO3D_1X	0x10
+ #define CHIP_362_TRIO3D_2X	0x11
+ #define CHIP_368_TRIO3D_2X	0x12
++#define CHIP_365_TRIO3D		0x13
+ 
+ #define CHIP_XXX_TRIO		0x80
+ #define CHIP_XXX_TRIO64V2_DXGX	0x81
+@@ -341,7 +345,8 @@ static void s3_set_pixclock(struct fb_in
+ 	u8 regval;
+ 	int rv;
+ 
+-	rv = svga_compute_pll(&s3_pll, 1000000000 / pixclock, &m, &n, &r, info->node);
++	rv = svga_compute_pll((par->chip = CHIP_365_TRIO3D) ? &s3_trio3d_pll : &s3_pll,
++			      1000000000 / pixclock, &m, &n, &r, info->node);
+ 	if (rv < 0) {
+ 		printk(KERN_ERR "fb%d: cannot set requested pixclock, keeping old value\n", info->node);
+ 		return;
+@@ -598,7 +603,8 @@ static int s3fb_set_par(struct fb_info *
+ 
+ 	if (par->chip = CHIP_360_TRIO3D_1X ||
+ 	    par->chip = CHIP_362_TRIO3D_2X ||
+-	    par->chip = CHIP_368_TRIO3D_2X) {
++	    par->chip = CHIP_368_TRIO3D_2X ||
++	    par->chip = CHIP_365_TRIO3D) {
+ 		dbytes = info->var.xres * ((bpp+7)/8);
+ 		vga_wcrt(par->state.vgabase, 0x91, (dbytes + 7) / 8);
+ 		vga_wcrt(par->state.vgabase, 0x90, (((dbytes + 7) / 8) >> 8) | 0x80);
+@@ -1012,13 +1018,15 @@ static int __devinit s3_pci_probe(struct
+ 	regval = vga_rcrt(par->state.vgabase, 0x36);
+ 	if (par->chip = CHIP_360_TRIO3D_1X ||
+ 	    par->chip = CHIP_362_TRIO3D_2X ||
+-	    par->chip = CHIP_368_TRIO3D_2X) {
++	    par->chip = CHIP_368_TRIO3D_2X ||
++	    par->chip = CHIP_365_TRIO3D) {
+ 		switch ((regval & 0xE0) >> 5) {
+ 		case 0: /* 8MB -- only 4MB usable for display */
+ 		case 1: /* 4MB with 32-bit bus */
+ 		case 2:	/* 4MB */
+ 			info->screen_size = 4 << 20;
+ 			break;
++		case 4: /* 2MB on 365 Trio3D */
+ 		case 6: /* 2MB */
+ 			info->screen_size = 2 << 20;
+ 			break;
+@@ -1233,6 +1241,7 @@ static struct pci_device_id s3_devices[]
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A11), .driver_data = CHIP_357_VIRGE_GX2P},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A12), .driver_data = CHIP_359_VIRGE_GX2P},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A13), .driver_data = CHIP_36X_TRIO3D_1X_2X},
++	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8904), .driver_data = CHIP_365_TRIO3D},
+ 
+ 	{0, 0, 0, 0, 0, 0, 0}
+ };
+
+-- 
+Ondrej Zary

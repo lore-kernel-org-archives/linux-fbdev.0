@@ -1,48 +1,31 @@
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 22 Mar 2011 20:58:09 +0000
-Subject: Re: [PATCH v6 0/6] powerpc, 52xx: add charon board support
-Message-Id: <AANLkTi=Da06s2WeA0+9fshBV2ME-ADHPBWxZ5iL6rM_T@mail.gmail.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Tue, 01 Mar 2011 19:18:43 +0000
+Subject: [PATCH 5/5] s3fb: use new start address register
+Message-Id: <201103012018.45635.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291451028-22532-1-git-send-email-hs@denx.de> <1300782452-528-1-git-send-email-hs@denx.de>
-In-Reply-To: <1300782452-528-1-git-send-email-hs@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Heiko Schocher <hs@denx.de>
-Cc: linuxppc-dev@lists.ozlabs.org, Wolfram Sang <w.sang@pengutronix.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org, Ben Dooks <ben@simtec.co.uk>, Vincent Sanders <vince@simtec.co.uk>, Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>, Wolfgang Denk <wd@denx.de>, Paul Mundt <lethal@linux-sh.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Ondrej Zajicek <santiago@crfreenet.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-On Tue, Mar 22, 2011 at 2:27 AM, Heiko Schocher <hs@denx.de> wrote:
-> cc: Wolfram Sang <w.sang@pengutronix.de>
-> cc: Grant Likely <grant.likely@secretlab.ca>
-> cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> cc: linux-fbdev@vger.kernel.org
-> cc: devicetree-discuss@ozlabs.org
-> cc: Ben Dooks <ben@simtec.co.uk>
-> cc: Vincent Sanders <vince@simtec.co.uk>
-> cc: Samuel Ortiz <sameo@linux.intel.com>
-> cc: linux-kernel@vger.kernel.org
-> cc: Randy Dunlap <rdunlap@xenotime.net>
-> cc: Wolfgang Denk <wd@denx.de>
-> cc: Paul Mundt <lethal@linux-sh.org>
->
-> changes since v5:
-> - repost complete patchseries, as Paul Mundt suggested
-> - rebased against current head
-> - add Acked-by from Samuel Ortiz (MFD parts)
-> =A0http://www.spinics.net/lists/linux-fbdev/msg02550.html
-> =A0http://linux.derkeiler.com/Mailing-Lists/Kernel/2011-01/msg11798.html
->
-> =A0and Benjamin Herrenschmidt (DTS parts)
-> =A0http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-February/088279.ht=
-ml
-> - removed patch
-> =A0"powerpc, mpc5200: update mpc5200_defconfig to fit for charon board."
-> =A0therefore added
-> =A0"powerpc, tqm5200: update tqm5200_defconfig to fit for charon board."
+Use "new" start address register 0x69 (bits 16-20) instead of "old" 0x31
+(bits 16-17) and 0x51 (bits 18-19). This is needed for panning to work
+correctly on Trio3D/2X cards (and does no harm on other ones).
 
-Why?  As Wolfram mentioned, I'd rather see mpc5200 defconfig used.
-Eventually I'd like to remove tqm5200_defconfig
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
-I'll look through the rest of the patches soon.
+--- linux-2.6.38-rc4-/drivers/video/s3fb.c	2011-03-01 18:38:58.000000000 +0100
++++ linux-2.6.38-rc4/drivers/video/s3fb.c	2011-03-01 18:39:35.000000000 +0100
+@@ -123,7 +123,7 @@ static const struct vga_regset s3_v_sync
+ static const struct vga_regset s3_v_sync_end_regs[]     = {{0x11, 0, 3}, VGA_REGSET_END};
+ 
+ static const struct vga_regset s3_line_compare_regs[]   = {{0x18, 0, 7}, {0x07, 4, 4}, {0x09, 6, 6}, {0x5E, 6, 6}, VGA_REGSET_END};
+-static const struct vga_regset s3_start_address_regs[]  = {{0x0d, 0, 7}, {0x0c, 0, 7}, {0x31, 4, 5}, {0x51, 0, 1}, VGA_REGSET_END};
++static const struct vga_regset s3_start_address_regs[]  = {{0x0d, 0, 7}, {0x0c, 0, 7}, {0x69, 0, 4}, VGA_REGSET_END};
+ static const struct vga_regset s3_offset_regs[]         = {{0x13, 0, 7}, {0x51, 4, 5}, VGA_REGSET_END}; /* set 0x43 bit 2 to 0 */
+ 
+ static const struct vga_regset s3_dtpc_regs[]		= {{0x3B, 0, 7}, {0x5D, 6, 6}, VGA_REGSET_END};
 
-g.
+-- 
+Ondrej Zary

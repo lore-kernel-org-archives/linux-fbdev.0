@@ -1,67 +1,95 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Date: Tue, 01 Mar 2011 11:12:20 +0000
+Date: Tue, 01 Mar 2011 11:31:55 +0000
 Subject: Re: [PATCH 3/8] Add a mfd IPUv3 driver
-Message-Id: <20110301111220.GN29521@pengutronix.de>
+Message-Id: <20110301113155.GO29521@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1298887229-7987-1-git-send-email-s.hauer@pengutronix.de>
-	<201102281811.45277.arnd@arndb.de>
-	<20110301091544.GK29521@pengutronix.de>
-	<201103011127.51605.arnd@arndb.de>
-In-Reply-To: <201103011127.51605.arnd@arndb.de>
+	<1298887229-7987-4-git-send-email-s.hauer@pengutronix.de>
+	<alpine.LFD.2.00.1102281858240.2701@localhost6.localdomain6>
+	<20110301093956.GL29521@pengutronix.de>
+	<alpine.LFD.2.00.1103011054440.2701@localhost6.localdomain6>
+In-Reply-To: <alpine.LFD.2.00.1103011054440.2701@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Tue, Mar 01, 2011 at 11:27:49AM +0100, Arnd Bergmann wrote:
-> On Tuesday 01 March 2011, Sascha Hauer wrote:
-> 
-> > When turning this into a kms driver moving the source code will be the
-> > smallest problem I guess.
-> > I have no preference where to put this code. First it was in
-> > drivers/mfd/ and it felt wrong because there seems to be too much code
-> > in it a mfd maintainer shouldn't be bothered with. drivers/video/ seems
-> > to be wrong because this code will probably support cameras which belong
-> > to drivers/media/video/. So if there's consensus on drivers/gpu/ I will
-> > happily put it there.
-> > What directory do you suggest? drivers/gpu/ or some subdirectory
-> > (drm/vga)?
-> 
-> I'd suggest a subdirectory of drivers/gpu/, e.g.
-> drivers/gpu/embedded/imx-ipu/. Alan is currently adding a driver
-> for the Intel GMA500, and there are others (TI, ST-Ericsson, ...)
-> that fit in a similar category of complex graphics subsystems
-> without an actual GPU core. I think they should all go to the same
-> place.
-> 
-> > > The interrupt logic needs some comments. What are you trying to achieve here?
+On Tue, Mar 01, 2011 at 11:00:09AM +0100, Thomas Gleixner wrote:
+> On Tue, 1 Mar 2011, Sascha Hauer wrote:
+> > On Mon, Feb 28, 2011 at 07:33:05PM +0100, Thomas Gleixner wrote:
+> > > > +void ipu_idmac_put(struct ipu_channel *channel)
+> > > > +{
+> > > > +	dev_dbg(ipu_dev, "%s %d\n", __func__, channel->num);
+> > > 
+> > > Do we really need this debug stuff in all these functions ?
 > > 
-> > The IPU has 463 status bits which can trigger an interrupt. Most
-> > of them are associated to channels, some are general interrupts. My
-> > problem is that I don't know how the interrupts will be used by drivers
-> > later. Most drivers will probably use only one interrupt but others
-> > will be interested in a larger group of interrupts. So I decided to
-> > use a bitmap allowing each driver to register for groups of event
-> > it is interested in.
+> > Reading this comment I expected tons of dev_dbg in the driver. The one
+> > you mentioned above (plus the corresponding one in ipu_idmac_get) are
+> > indeed not particularly useful, but do you think there is still too much
+> > debug code left?
 > 
-> Ok, I see. So you essentially have a huge nested interrupt controller
-> and try to be clever about the possible use cases, which may be the
-> right choice, but apparently you don't know that yet because not
-> all the drivers have been written at this point.
+> Well, I don't see a point in having useless debug stuff around.
+> > > > +	DECLARE_IPU_IRQ_BITMAP(irqs);
+> > > 
+> > > Why the hell do we need this? It's a bog standard bitmap, right ?
+> > 
+> > It's defined as:
+> > 
+> > #define DECLARE_IPU_IRQ_BITMAP(name)     DECLARE_BITMAP(name, IPU_IRQ_COUNT)
+> > 
+> > So yes, it's a standard bitmask. It can be used in client drivers
+> > aswell. Where's the problem of adding a define for this so that client
+> > drivers do not have to care about the size of the bitmap?
 > 
-> Taking one step back from this, have you considered making this
-> a regular interrupt controller? That would make the client drivers
-> more standard -- you could define the interrupt numbers as resources
-> of a platform device or in the device tree, for instance.
-> The cost might be more complex code, e.g. when a device requires
-> many interrupts, but I think it will be at least as efficient
-> at run-time, and less surprising for readers and authors of
-> client drivers.
+> That's nonsense. You have to know about the size of the bitmap for any
+> operation on it. Or are you going to provide wrappers around
+> bitmap_zero() and all other possible bitmap_* functions as well?
 
-I thought about this, but hesitated to increase NR_IRQS by 463. Do you
-think we should do this instead?
+Ok, you're right.
+
+> 
+> > > 
+> > > > +	bitmap_zero(irqs, IPU_IRQ_COUNT);
+> > > > +	ret = ipu_submodules_init(pdev, ipu_base, ipu_clk);
+> > > > +	if (ret)
+> > > > +		goto failed_submodules_init;
+> > > > +
+> > > > +	/* Set sync refresh channels as high priority */
+> > > > +	ipu_idmac_write(0x18800000, IDMAC_CHA_PRI(0));
+> > > 
+> > > Hmm, this random prio setting here is odd.
+> > 
+> > This is 1:1 from the Freescale Kernel and I never thought about it. We
+> > can remove it and see what happens. Maybe then some day we'll learn
+> > *why* this is done.
+> 
+> Well, the point is to move that to the init function which deals with
+> IDMAC and not have it at some random place in the code.
+
+Ok, will move it there.
+
+>  
+> > > > +	/* Wait for DC triple buffer to empty */
+> > > > +	if (dc_channels[dc_chan].di = 0)
+> > > > +		while ((__raw_readl(DC_STAT) & 0x00000002)
+> > > > +			!= 0x00000002) {
+> > > > +			msleep(2);
+> > > > +			timeout -= 2;
+> > > > +			if (timeout <= 0)
+> > > > +				break;
+> > > 
+> > > So we poll stuff which is updated from some other function ?
+> > 
+> > We poll the DC_STAT register here which is updated from the hardware.
+> 
+> And there is no interrupt for this ?
+
+Given the sheer amount of interrupt bits it's a bit surprising, but no,
+I haven't found an interrupt for this (This of course doesn't mean it
+doesn't exist...)
 
 Sascha
+
 
 -- 
 Pengutronix e.K.                           |                             |

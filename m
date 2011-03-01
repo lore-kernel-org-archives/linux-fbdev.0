@@ -1,26 +1,52 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Wed, 16 Mar 2011 08:28:32 +0000
-Subject: Re: [PATCH v2] fbdev: sh_mobile_lcdc: Add YUV input support
-Message-Id: <20110316082832.GB5591@linux-sh.org>
+From: Maurus Cuelenaere <mcuelenaere@gmail.com>
+Date: Tue, 01 Mar 2011 12:06:01 +0000
+Subject: [PATCH 3/6] FBDEV: JZ4740: Initialize framebuffer properly
+Message-Id: <1d49e2b9aa2fa143c14a9782fd4e67cb50610ca8.1298980528.git.mcuelenaere@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1298526433-6621-1-git-send-email-dhobsong@igel.co.jp>
-In-Reply-To: <1298526433-6621-1-git-send-email-dhobsong@igel.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Tue, Mar 15, 2011 at 10:23:44AM +0900, Damian wrote:
-> On 2011/03/11 13:54, Paul Mundt wrote:
-> >You may wish to double check to make sure that what has been merged is in
-> >sync with your latest changes.
-> I tried to find this merged into the fbdev tree, but the head shows as
-> 3b0fd9d75598584478d1d3f6551f8a8a9696c34e
-> 'fbdev: sh_mobile_lcdcfb: add backlight support', and I can't find in in 
-> the log before that.
-> 
-> I don't have access to master.kernel.org, so I'm pulling from 
-> git.kernel.org.
-> 
-Oops, I forgot to push from my work machine so I've just applied it and
-pushed it out now. It'll be included for the merge window changes.
+Use the jzfb_enable() function instead of manually faking it in jzfb_probe().
+Also add the reverse operation when the framebuffer couldn't be registered.
+
+Signed-off-by: Maurus Cuelenaere <mcuelenaere@gmail.com>
+---
+ drivers/video/jz4740_fb.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/video/jz4740_fb.c b/drivers/video/jz4740_fb.c
+index cea7b7e..2f3ea57 100644
+--- a/drivers/video/jz4740_fb.c
++++ b/drivers/video/jz4740_fb.c
+@@ -707,16 +707,13 @@ static int __devinit jzfb_probe(struct platform_device *pdev)
+ 
+ 	fb_alloc_cmap(&fb->cmap, 256, 0);
+ 
+-	clk_enable(jzfb->ldclk);
+-	jzfb->is_enabled = 1;
+-
+-	writel(jzfb->framedesc->next, jzfb->base + JZ_REG_LCD_DA0);
+-
+ 	fb->mode = NULL;
+ 	jzfb_set_par(fb);
+ 
+ 	jzfb_pins_operation(jzfb, REQUEST_PINS);
+ 
++	jzfb_blank(FB_BLANK_UNBLANK, fb);
++
+ 	ret = register_framebuffer(fb);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to register framebuffer: %d\n", ret);
+@@ -726,6 +723,7 @@ static int __devinit jzfb_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ err_free_devmem:
++	jzfb_blank(FB_BLANK_POWERDOWN, fb);
+ 	jzfb_pins_operation(jzfb, FREE_PINS);
+ 
+ 	fb_dealloc_cmap(&fb->cmap);
+-- 
+1.7.4
+

@@ -1,301 +1,572 @@
-From: Carl Vanderlip <carlv@codeaurora.org>
-Date: Fri, 18 Mar 2011 21:54:39 +0000
-Subject: [PATCH 05/20] video: msm: Setup framework for multiple output interfaces
-Message-Id: <1300485279-27084-1-git-send-email-carlv@codeaurora.org>
+From: Maurus Cuelenaere <mcuelenaere@gmail.com>
+Date: Tue, 01 Mar 2011 12:06:07 +0000
+Subject: [RFC/PATCH 6/6] backlight: Add Truly G240400RTSW LCD panel driver
+Message-Id: <916310c85f03dec73b745b91b3437381b6dd73eb.1298980528.git.mcuelenaere@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
-In-Reply-To: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Moving the dma waitqueue into a struct that is uniquely
-configurable for each output interface allows for
-multiple displays using different callback and irq masks.
+This is a driver for the Truly G240400RTSW LCD panel using the Jz4740
+SLCD framebuffer functions to communicate with the driver chip (Renesas R61509).
 
-Authors:
-Dima Zavin <dima@android.com>
-Rebecca Schultz Zavin <rebecca@android.com>
-Colin Cross <ccross@android.com>
+It currently supports initializing at boot and suspending, but it fails to come
+back up after resume and it doesn't support any gamma or image control.
 
-Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
+Tested on an Onda VX747 (Ingenic Jz4740 device).
+
+Signed-off-by: Maurus Cuelenaere <mcuelenaere@gmail.com>
 ---
- arch/arm/mach-msm/include/mach/msm_fb.h |    6 +-
- drivers/video/msm/mdp.c                 |  111 +++++++++++++++++++++++++------
- drivers/video/msm/mdp_hw.h              |   24 +++++++
- 3 files changed, 117 insertions(+), 24 deletions(-)
+ drivers/video/backlight/Kconfig             |    7 +
+ drivers/video/backlight/Makefile            |    1 +
+ drivers/video/backlight/truly_g240400rtsw.c |  464 +++++++++++++++++++++++++++
+ include/video/truly_g240400rtsw.h           |   35 ++
+ 4 files changed, 507 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/backlight/truly_g240400rtsw.c
+ create mode 100644 include/video/truly_g240400rtsw.h
 
-diff --git a/arch/arm/mach-msm/include/mach/msm_fb.h b/arch/arm/mach-msm/include/mach/msm_fb.h
-index da11719..2d0899c 100644
---- a/arch/arm/mach-msm/include/mach/msm_fb.h
-+++ b/arch/arm/mach-msm/include/mach/msm_fb.h
-@@ -34,9 +34,11 @@ struct msmfb_callback {
- };
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index e54a337..afa96c2 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -109,6 +109,13 @@ config LCD_S6E63M0
+ 	  If you have an S6E63M0 LCD Panel, say Y to enable its
+ 	  LCD control driver.
  
- enum {
--	MSM_MDDI_PMDH_INTERFACE,
-+	MSM_MDDI_PMDH_INTERFACE = 0,
- 	MSM_MDDI_EMDH_INTERFACE,
- 	MSM_EBI2_INTERFACE,
++config LCD_G240400
++	tristate "Truly G240400RTSW LCD Driver"
++	depends on MACH_JZ4740
++	help
++	  If you have a Truly G2400400RTSW LCD panel, say Y to enable its LCD
++	  control driver.
 +
-+	MSM_MDP_NUM_INTERFACES = MSM_EBI2_INTERFACE + 1,
- };
+ endif # LCD_CLASS_DEVICE
  
- #define MSMFB_CAP_PARTIAL_UPDATES	(1 << 0)
-@@ -117,7 +119,7 @@ struct mdp_device {
- 	void (*dma)(struct mdp_device *mdp, uint32_t addr,
- 		    uint32_t stride, uint32_t w, uint32_t h, uint32_t x,
- 		    uint32_t y, struct msmfb_callback *callback, int interface);
--	void (*dma_wait)(struct mdp_device *mdp);
-+	void (*dma_wait)(struct mdp_device *mdp, int interface);
- 	int (*blit)(struct mdp_device *mdp, struct fb_info *fb,
- 		    struct mdp_blit_req *req);
- 	void (*set_grp_disp)(struct mdp_device *mdp, uint32_t disp_id);
-diff --git a/drivers/video/msm/mdp.c b/drivers/video/msm/mdp.c
-index e68df14..c046982 100644
---- a/drivers/video/msm/mdp.c
-+++ b/drivers/video/msm/mdp.c
-@@ -40,9 +40,7 @@ static uint16_t mdp_default_ccs[] = {
- 	0x010, 0x080, 0x080
- };
+ #
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index 44c0f81..1e338ce 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -12,6 +12,7 @@ obj-$(CONFIG_LCD_VGG2432A4)	   += vgg2432a4.o
+ obj-$(CONFIG_LCD_TDO24M)	   += tdo24m.o
+ obj-$(CONFIG_LCD_TOSA)		   += tosa_lcd.o
+ obj-$(CONFIG_LCD_S6E63M0)	+= s6e63m0.o
++obj-$(CONFIG_LCD_G240400)	+= truly_g240400rtsw.o
  
--static DECLARE_WAIT_QUEUE_HEAD(mdp_dma2_waitqueue);
- static DECLARE_WAIT_QUEUE_HEAD(mdp_ppp_waitqueue);
--static struct msmfb_callback *dma_callback;
- static unsigned int mdp_irq_mask;
- DEFINE_MUTEX(mdp_mutex);
- 
-@@ -118,6 +116,7 @@ static irqreturn_t mdp_isr(int irq, void *data)
- 	uint32_t status;
- 	unsigned long irq_flags;
- 	struct mdp_info *mdp = data;
-+	int i;
- 
- 	spin_lock_irqsave(&mdp->lock, irq_flags);
- 
-@@ -125,12 +124,16 @@ static irqreturn_t mdp_isr(int irq, void *data)
- 	mdp_writel(mdp, status, MDP_INTR_CLEAR);
- 
- 	status &= mdp_irq_mask;
--	if (status & DL0_DMA2_TERM_DONE) {
--		if (dma_callback) {
--			dma_callback->func(dma_callback);
--			dma_callback = NULL;
+ obj-$(CONFIG_BACKLIGHT_CLASS_DEVICE) += backlight.o
+ obj-$(CONFIG_BACKLIGHT_ATMEL_PWM)    += atmel-pwm-bl.o
+diff --git a/drivers/video/backlight/truly_g240400rtsw.c b/drivers/video/backlight/truly_g240400rtsw.c
+new file mode 100644
+index 0000000..437980b
+--- /dev/null
++++ b/drivers/video/backlight/truly_g240400rtsw.c
+@@ -0,0 +1,464 @@
++/*
++ *  drivers/video/backlight/truly_g240400rtsw.c
++ *
++ *  Truly G240400RTSW LCD panel driver
++ *
++ *  Copyright (c) 2011, Maurus Cuelenaere <mcuelenaere@gmail.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify it
++ *  under  the terms of  the GNU General Public License as published by the
++ *  Free Software Foundation;  either version 2 of the License, or (at your
++ *  option) any later version.
++ *
++ */
++#include <linux/backlight.h>
++#include <linux/device.h>
++#include <linux/fb.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/delay.h>
++#include <linux/gpio.h>
++#include <linux/lcd.h>
 +
-+	for (i = 0; i < MSM_MDP_NUM_INTERFACES; ++i) {
-+		struct mdp_out_interface *out_if = &mdp->out_if[i];
-+		if (status & out_if->dma_mask) {
-+			if (out_if->dma_cb) {
-+				out_if->dma_cb->func(out_if->dma_cb);
-+				out_if->dma_cb = NULL;
-+			}
-+			wake_up(&out_if->dma_waitqueue);
- 		}
--		wake_up(&mdp_dma2_waitqueue);
- 	}
- 
- 	if (status & DL0_ROI_DONE)
-@@ -173,13 +176,27 @@ static int mdp_wait(struct mdp_info *mdp, uint32_t mask, wait_queue_head_t *wq)
- 	return ret;
- }
- 
--void mdp_dma_wait(struct mdp_device *mdp_dev)
-+void mdp_dma_wait(struct mdp_device *mdp_dev, int interface)
- {
- #define MDP_MAX_TIMEOUTS 20
- 	static int timeout_count;
- 	struct mdp_info *mdp = container_of(mdp_dev, struct mdp_info, mdp_dev);
-+	unsigned int mask = 0;
-+	wait_queue_head_t *wq;
++#include <asm/mach-jz4740/jz4740_fb.h>
 +
-+	switch (interface) {
-+	case MSM_MDDI_PMDH_INTERFACE:
-+	case MSM_MDDI_EMDH_INTERFACE:
-+		BUG_ON(!mdp->out_if[interface].registered);
-+		mask = mdp->out_if[interface].dma_mask;
-+		wq = &mdp->out_if[interface].dma_waitqueue;
-+		break;
-+	default:
-+		pr_err("%s: Unknown interface %d\n", __func__, interface);
-+		BUG();
-+	}
- 
--	if (mdp_wait(mdp, DL0_DMA2_TERM_DONE, &mdp_dma2_waitqueue) = -ETIMEDOUT)
-+	if (mdp_wait(mdp, mask, wq) = -ETIMEDOUT)
- 		timeout_count++;
- 	else
- 		timeout_count = 0;
-@@ -196,20 +213,14 @@ static int mdp_ppp_wait(struct mdp_info *mdp)
- 	return mdp_wait(mdp, DL0_ROI_DONE, &mdp_ppp_waitqueue);
- }
- 
--void mdp_dma_to_mddi(struct mdp_info *mdp, uint32_t addr, uint32_t stride,
--		     uint32_t width, uint32_t height, uint32_t x, uint32_t y,
--		     struct msmfb_callback *callback)
-+static void mdp_dma_to_mddi(void *priv, uint32_t addr, uint32_t stride,
-+			    uint32_t width, uint32_t height, uint32_t x,
-+			    uint32_t y)
- {
-+	struct mdp_info *mdp = priv;
- 	uint32_t dma2_cfg;
- 	uint16_t ld_param = 0; /* 0=PRIM, 1=SECD, 2=EXT */
- 
--	if (enable_mdp_irq(mdp, DL0_DMA2_TERM_DONE)) {
--		printk(KERN_ERR "mdp_dma_to_mddi: busy\n");
--		return;
--	}
--
--	dma_callback = callback;
--
- 	dma2_cfg = DMA_PACK_TIGHT |
- 		DMA_PACK_ALIGN_LSB |
- 		DMA_PACK_PATTERN_RGB |
-@@ -250,11 +261,26 @@ void mdp_dma(struct mdp_device *mdp_dev, uint32_t addr, uint32_t stride,
- 	     struct msmfb_callback *callback, int interface)
- {
- 	struct mdp_info *mdp = container_of(mdp_dev, struct mdp_info, mdp_dev);
-+	struct mdp_out_interface *out_if;
-+	unsigned long flags;
++#include <video/truly_g240400rtsw.h>
 +
-+	if (interface < 0 || interface > MSM_MDP_NUM_INTERFACES ||
-+	    !mdp->out_if[interface].registered) {
-+		pr_err("%s: Unknown interface: %d\n", __func__, interface);
-+		BUG();
-+	}
-+	out_if = &mdp->out_if[interface];
- 
--	if (interface = MSM_MDDI_PMDH_INTERFACE) {
--		mdp_dma_to_mddi(mdp, addr, stride, width, height, x, y,
--				callback);
-+	spin_lock_irqsave(&mdp->lock, flags);
-+	if (locked_enable_mdp_irq(mdp, out_if->dma_mask)) {
-+		pr_err("%s: busy\n", __func__);
-+		goto done;
- 	}
++/* This LCD panel contains a Renesas R61509 driver chip */
++/* Register list */
++#define REG_DEVICE_CODE                  0x000
++#define REG_DRIVER_OUTPUT                0x001
++#define REG_LCD_DR_WAVE_CTRL             0x002
++#define REG_ENTRY_MODE                   0x003
++#define REG_OUTL_SHARP_CTRL              0x006
++#define REG_DISP_CTRL1                   0x007
++#define REG_DISP_CTRL2                   0x008
++#define REG_DISP_CTRL3                   0x009
++#define REG_LPCTRL                       0x00B
++#define REG_EXT_DISP_CTRL1               0x00C
++#define REG_EXT_DISP_CTRL2               0x00F
++#define REG_PAN_INTF_CTRL1               0x010
++#define REG_PAN_INTF_CTRL2               0x011
++#define REG_PAN_INTF_CTRL3               0x012
++#define REG_PAN_INTF_CTRL4               0x020
++#define REG_PAN_INTF_CTRL5               0x021
++#define REG_PAN_INTF_CTRL6               0x022
++#define REG_FRM_MRKR_CTRL                0x090
 +
-+	out_if->dma_cb = callback;
-+	out_if->dma_start(out_if->priv, addr, stride, width, height, x, y);
-+done:
-+	spin_unlock_irqrestore(&mdp->lock, flags);
- }
- 
- int get_img(struct mdp_img *img, struct fb_info *info,
-@@ -374,6 +400,41 @@ void mdp_set_grp_disp(struct mdp_device *mdp_dev, unsigned disp_id)
- 	mdp_writel(mdp, disp_id, MDP_FULL_BYPASS_WORD43);
- }
- 
-+/* used by output interface drivers like mddi and lcdc */
-+int mdp_out_if_register(struct mdp_device *mdp_dev, int interface,
-+			void *private_data, uint32_t dma_mask,
-+			mdp_dma_start_func_t dma_start)
++#define REG_PWR_CTRL1                    0x100
++#define REG_PWR_CTRL2                    0x101
++#define REG_PWR_CTRL3                    0x102
++#define REG_PWR_CTRL4                    0x103
++#define REG_PWR_CTRL5                    0x107
++#define REG_PWR_CTRL6                    0x110
++#define REG_PWR_CTRL7                    0x112
++
++#define REG_RAM_HADDR_SET                0x200
++#define REG_RAM_VADDR_SET                0x201
++#define REG_RW_GRAM                      0x202
++#define REG_RAM_HADDR_START              0x210
++#define REG_RAM_HADDR_END                0x211
++#define REG_RAM_VADDR_START              0x212
++#define REG_RAM_VADDR_END                0x213
++#define REG_RW_NVM                       0x280
++#define REG_VCOM_HVOLTAGE1               0x281
++#define REG_VCOM_HVOLTAGE2               0x282
++
++#define REG_GAMMA_CTRL1                  0x300
++#define REG_GAMMA_CTRL2                  0x301
++#define REG_GAMMA_CTRL3                  0x302
++#define REG_GAMMA_CTRL4                  0x303
++#define REG_GAMMA_CTRL5                  0x304
++#define REG_GAMMA_CTRL6                  0x305
++#define REG_GAMMA_CTRL7                  0x306
++#define REG_GAMMA_CTRL8                  0x307
++#define REG_GAMMA_CTRL9                  0x308
++#define REG_GAMMA_CTRL10                 0x309
++#define REG_GAMMA_CTRL11                 0x30A
++#define REG_GAMMA_CTRL12                 0x30B
++#define REG_GAMMA_CTRL13                 0x30C
++#define REG_GAMMA_CTRL14                 0x30D
++
++#define REG_BIMG_NR_LINE                 0x400
++#define REG_BIMG_DISP_CTRL               0x401
++#define REG_BIMG_VSCROLL_CTRL            0x404
++
++#define REG_PARTIMG1_POS                 0x500
++#define REG_PARTIMG1_RAM_START           0x501
++#define REG_PARTIMG1_RAM_END             0x502
++#define REG_PARTIMG2_POS                 0x503
++#define REG_PARTIMG2_RAM_START           0x504
++#define REG_PARTIMG2_RAM_END             0x505
++
++#define REG_SOFT_RESET                   0x600
++#define REG_ENDIAN_CTRL                  0x606
++#define REG_NVM_ACCESS_CTRL              0x6F0
++
++/* Bits */
++#define DRIVER_OUTPUT_SS_BIT             (1 << 8)
++#define DRIVER_OUTPUT_SM_BIT             (1 << 10)
++
++#define ENTRY_MODE_TRI                   (1 << 15)
++#define ENTRY_MODE_DFM                   (1 << 14)
++#define ENTRY_MODE_BGR                   (1 << 12)
++#define ENTRY_MODE_HWM                   (1 << 9)
++#define ENTRY_MODE_ORG                   (1 << 7)
++#define ENTRY_MODE_VID                   (1 << 5)
++#define ENTRY_MODE_HID                   (1 << 4)
++#define ENTRY_MODE_AM                    (1 << 3)
++#define ENTRY_MODE_EPF(n)                (n & 3)
++
++#define OUTL_SHARP_CTRL_EGMODE           (1 << 15)
++#define OUTL_SHARP_CTRL_AVST(n)          ((n & 7) << 7)
++#define OUTL_SHARP_CTRL_ADST(n)          ((n & 7) << 4)
++#define OUTL_SHARP_CTRL_DTHU(n)          ((n & 3) << 2)
++#define OUTL_SHARP_CTRL_DTHL(n)          (n & 3)
++
++#define DISP_CTRL1_PTDE(n)               ((n & 4) << 12)
++#define DISP_CTRL1_BASEE                 (1 << 8)
++#define DISP_CTRL1_VON                   (1 << 6)
++#define DISP_CTRL1_GON                   (1 << 5)
++#define DISP_CTRL1_DTE                   (1 << 4)
++#define DISP_CTRL1_D(n)                  (n & 3)
++
++#define EXT_DISP_CTRL1_ENC(n)            ((n & 7) << 12)
++#define EXT_DISP_CTRL1_RM(n)             ((n & 1) << 8)
++#define EXT_DISP_CTRL1_DM(n)             ((n & 3) << 4)
++#define EXT_DISP_CTRL1_RIM(n)            (n & 3)
++
++#define PWR_CTRL1_SAP(n)                 ((n & 3) << 13)
++#define PWR_CTRL1_SAPE                   (1 << 12)
++#define PWR_CTRL1_BT(n)                  ((n & 7) << 8)
++#define PWR_CTRL1_APE                    (1 << 7)
++#define PWR_CTRL1_AP(n)                  ((n & 7) << 4)
++#define PWR_CTRL1_DSTB                   (1 << 2)
++#define PWR_CTRL1_SLP                    (1 << 1)
++
++#define SOFT_RESET(n)                    (n << 0)
++
++struct g240400 {
++	struct device			*dev;
++	struct lcd_device		*lcd;
++
++	struct g240400_pdata		pdata;
++
++	int				power;
++};
++
++#define POWER_IS_ON(pwr)		((pwr) <= FB_BLANK_NORMAL)
++
++static void g240400_reset(struct g240400 *lcm)
 +{
-+	struct mdp_info *mdp = container_of(mdp_dev, struct mdp_info, mdp_dev);
-+	unsigned long flags;
-+	int ret = 0;
++	struct platform_device *jzfb = lcm->pdata.jz4740_fb;
 +
-+	if (interface < 0 || interface >= MSM_MDP_NUM_INTERFACES) {
-+		pr_err("%s: invalid interface (%d)\n", __func__, interface);
++	if (gpio_is_valid(lcm->pdata.gpio_reset)) {
++		gpio_direction_output(lcm->pdata.gpio_reset, 0);
++		mdelay(1);
++		gpio_direction_output(lcm->pdata.gpio_reset, 1);
++	}
++
++	jz4740_fb_slcd_disable_transfer(jzfb);
++
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_SOFT_RESET, SOFT_RESET(1));
++	mdelay(1);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_SOFT_RESET, SOFT_RESET(0));
++	mdelay(1);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_ENDIAN_CTRL, 0);
++
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_DRIVER_OUTPUT, 0x100);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_LCD_DR_WAVE_CTRL, 0x100);
++
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_ENTRY_MODE, (ENTRY_MODE_BGR | ENTRY_MODE_HWM | ENTRY_MODE_DFM | ENTRY_MODE_VID | ENTRY_MODE_HID));
++
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_DISP_CTRL2, 0x503);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_DISP_CTRL3, 1);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_LPCTRL, 0x10);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_EXT_DISP_CTRL1, EXT_DISP_CTRL1_RIM(1)); /* 16-bit RGB interface */
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_EXT_DISP_CTRL2, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_DISP_CTRL1, DISP_CTRL1_D(1));
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PAN_INTF_CTRL1, 0x12);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PAN_INTF_CTRL2, 0x202);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PAN_INTF_CTRL3, 0x300);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PAN_INTF_CTRL4, 0x21e);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PAN_INTF_CTRL5, 0x202);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PAN_INTF_CTRL6, 0x100);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_FRM_MRKR_CTRL, 0x8000);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PWR_CTRL1, (PWR_CTRL1_SAPE | PWR_CTRL1_BT(6) | PWR_CTRL1_APE | PWR_CTRL1_AP(3)));
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PWR_CTRL2, 0x147);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PWR_CTRL3, 0x1bd);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PWR_CTRL4, 0x2f00);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PWR_CTRL5, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PWR_CTRL6, 1);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_RW_NVM, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_VCOM_HVOLTAGE1, 6);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_VCOM_HVOLTAGE2, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_GAMMA_CTRL1, 0x101);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_GAMMA_CTRL2, 0xb27);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_GAMMA_CTRL3, 0x132a);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_GAMMA_CTRL4, 0x2a13);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_GAMMA_CTRL5, 0x270b);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_GAMMA_CTRL6, 0x101);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_GAMMA_CTRL7, 0x1205);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_GAMMA_CTRL8, 0x512);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_GAMMA_CTRL9, 5);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_GAMMA_CTRL10, 3);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_GAMMA_CTRL11, 0xf04);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_GAMMA_CTRL12, 0xf00);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_GAMMA_CTRL13, 0xf);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_GAMMA_CTRL14, 0x40f);
++	jz4740_fb_slcd_send_cmd_data(jzfb, 0x30e, 0x300);
++	jz4740_fb_slcd_send_cmd_data(jzfb, 0x30f, 0x500);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_BIMG_NR_LINE, 0x3100);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_BIMG_DISP_CTRL, 1);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_BIMG_VSCROLL_CTRL, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PARTIMG1_POS, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PARTIMG1_RAM_START, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PARTIMG1_RAM_END, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PARTIMG2_POS, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PARTIMG2_RAM_START, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PARTIMG2_RAM_END, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_ENDIAN_CTRL, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_NVM_ACCESS_CTRL, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, 0x7f0, 0x5420);
++	jz4740_fb_slcd_send_cmd_data(jzfb, 0x7f3, 0x288a);
++	jz4740_fb_slcd_send_cmd_data(jzfb, 0x7f4, 0x22);
++	jz4740_fb_slcd_send_cmd_data(jzfb, 0x7f5, 1);
++	jz4740_fb_slcd_send_cmd_data(jzfb, 0x7f0, 0);
++
++	/* LCD ON */
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_DISP_CTRL1, (DISP_CTRL1_GON |
++				     DISP_CTRL1_D(1)));
++	mdelay(1);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_DISP_CTRL1, (DISP_CTRL1_VON |
++				     DISP_CTRL1_GON | DISP_CTRL1_D(1)));
++	mdelay(1);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_DISP_CTRL1, (DISP_CTRL1_BASEE |
++				     DISP_CTRL1_VON | DISP_CTRL1_GON |
++				     DISP_CTRL1_DTE | DISP_CTRL1_D(3)));
++
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_RAM_HADDR_START, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_RAM_HADDR_END,   lcm->pdata.default_mode->xres - 1);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_RAM_VADDR_START, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_RAM_VADDR_END,   lcm->pdata.default_mode->yres - 1);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_RAM_HADDR_SET,   0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_RAM_VADDR_SET,   0);
++	jz4740_fb_slcd_send_cmd(jzfb, REG_RW_GRAM); /* write data to GRAM */
++
++	jz4740_fb_slcd_enable_transfer(jzfb);
++}
++
++static void g240400_powerdown(struct g240400 *lcm)
++{
++	struct platform_device *jzfb = lcm->pdata.jz4740_fb;
++
++	jz4740_fb_slcd_disable_transfer(jzfb);
++
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_DISP_CTRL1, (DISP_CTRL1_VON |
++				     DISP_CTRL1_GON | DISP_CTRL1_DTE |
++				     DISP_CTRL1_D(2)));
++	mdelay(1);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_DISP_CTRL1, DISP_CTRL1_D(1));
++	mdelay(1);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_DISP_CTRL1, DISP_CTRL1_D(0));
++
++	jz4740_fb_slcd_enable_transfer(jzfb);
++}
++
++static void g240400_standby(struct g240400 *lcm)
++{
++	struct platform_device *jzfb = lcm->pdata.jz4740_fb;
++
++	jz4740_fb_slcd_disable_transfer(jzfb);
++
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PWR_CTRL1, PWR_CTRL1_SLP);
++
++	jz4740_fb_slcd_enable_transfer(jzfb);
++}
++
++static void g240400_poweron(struct g240400 *lcm)
++{
++	struct platform_device *jzfb = lcm->pdata.jz4740_fb;
++
++	jz4740_fb_slcd_disable_transfer(jzfb);
++
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_PWR_CTRL1, (PWR_CTRL1_SAPE | PWR_CTRL1_BT(6) | PWR_CTRL1_APE | PWR_CTRL1_AP(3)));
++
++	jz4740_fb_slcd_enable_transfer(jzfb);
++}
++
++static int g240400_get_power(struct lcd_device *lcd)
++{
++	struct g240400 *lcm = lcd_get_data(lcd);
++
++	return lcm->power;
++}
++
++static int g240400_set_power(struct lcd_device *lcd, int power)
++{
++	struct g240400 *lcm = lcd_get_data(lcd);
++
++	if (power = lcm->power)
++		return 0;
++
++	if (POWER_IS_ON(power))
++		g240400_poweron(lcm);
++	else
++		g240400_standby(lcm);
++
++	lcm->power = power;
++
++	return 0;
++}
++
++static int g240400_set_mode(struct lcd_device *lcd, struct fb_videomode *mode)
++{
++	struct g240400 *lcm = lcd_get_data(lcd);
++	struct platform_device *jzfb = lcm->pdata.jz4740_fb;
++
++	jz4740_fb_slcd_disable_transfer(jzfb);
++
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_RAM_HADDR_START, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_RAM_HADDR_END,   mode->xres - 1);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_RAM_VADDR_START, 0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_RAM_VADDR_END,   mode->yres - 1);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_RAM_HADDR_SET,   0);
++	jz4740_fb_slcd_send_cmd_data(jzfb, REG_RAM_VADDR_SET,   0);
++	jz4740_fb_slcd_send_cmd(jzfb, REG_RW_GRAM); /* write data to GRAM */
++
++	jz4740_fb_slcd_enable_transfer(jzfb);
++
++	lcm->pdata.default_mode = mode;
++
++	return 0;
++}
++
++static struct lcd_ops g240400_lcd_ops = {
++	.get_power	= g240400_get_power,
++	.set_power	= g240400_set_power,
++	.set_mode	= g240400_set_mode,
++};
++
++static int __devinit g240400_probe(struct platform_device *pdev)
++{
++	int ret;
++	struct g240400 *lcm;
++	struct lcd_device *lcd;
++	struct g240400_pdata *pdata = pdev->dev.platform_data;
++
++	if (!pdata) {
++		dev_err(&pdev->dev, "Platform data wasn't provided!");
 +		return -EINVAL;
 +	}
 +
-+	spin_lock_irqsave(&mdp->lock, flags);
++	lcm = kzalloc(sizeof(struct g240400), GFP_KERNEL);
++	if (!lcm)
++		return -ENOMEM;
 +
-+	if (mdp->out_if[interface].registered) {
-+		pr_err("%s: interface (%d) already registered\n", __func__,
-+		       interface);
-+		ret = -EINVAL;
-+		goto done;
++	lcm->dev = &pdev->dev;
++	memcpy(&lcm->pdata, pdata, sizeof(struct g240400_pdata));
++
++	lcd = lcd_device_register("truly_g240400", &pdev->dev, lcm,
++				  &g240400_lcd_ops);
++	if (IS_ERR(lcd)) {
++		ret = PTR_ERR(lcd);
++		goto out_free_device;
 +	}
 +
-+	init_waitqueue_head(&mdp->out_if[interface].dma_waitqueue);
-+	mdp->out_if[interface].registered = 1;
-+	mdp->out_if[interface].priv = private_data;
-+	mdp->out_if[interface].dma_mask = dma_mask;
-+	mdp->out_if[interface].dma_start = dma_start;
-+	mdp->out_if[interface].dma_cb = NULL;
++	if (gpio_is_valid(lcm->pdata.gpio_reset)) {
++		ret = gpio_request(lcm->pdata.gpio_reset, "lcd reset");
++		if (ret)
++			goto out_unregister_lcd;
++	}
 +
-+done:
-+	spin_unlock_irqrestore(&mdp->lock, flags);
++	if (gpio_is_valid(lcm->pdata.gpio_cs)) {
++		ret = gpio_request(lcm->pdata.gpio_cs, "lcd chip select");
++		if (ret)
++			goto out_free_pin_cs;
++	}
++
++	dev_set_drvdata(&pdev->dev, lcm);
++
++	/* Always select LCD chip */
++	if (gpio_is_valid(lcm->pdata.gpio_cs))
++		gpio_direction_output(lcm->pdata.gpio_cs, 0);
++
++	g240400_reset(lcm);
++
++	return 0;
++
++out_free_pin_cs:
++	if (gpio_is_valid(lcm->pdata.gpio_cs))
++		gpio_free(lcm->pdata.gpio_cs);
++out_unregister_lcd:
++	lcd_device_unregister(lcd);
++out_free_device:
++	kfree(lcm);
++
 +	return ret;
 +}
 +
- int register_mdp_client(struct class_interface *cint)
- {
- 	if (!mdp_class) {
-@@ -426,6 +487,11 @@ int mdp_probe(struct platform_device *pdev)
- 	mdp->mdp_dev.blit = mdp_blit;
- 	mdp->mdp_dev.set_grp_disp = mdp_set_grp_disp;
- 
-+	ret = mdp_out_if_register(&mdp->mdp_dev, MSM_MDDI_PMDH_INTERFACE, mdp,
-+				  MDP_DMA_P_DONE, mdp_dma_to_mddi);
-+	if (ret)
-+		goto error_mddi_pmdh_register;
++static int __devexit g240400_remove(struct platform_device *pdev)
++{
++	struct g240400 *lcm = dev_get_drvdata(&pdev->dev);
 +
- 	mdp->clk = clk_get(&pdev->dev, "mdp_clk");
- 	if (IS_ERR(mdp->clk)) {
- 		printk(KERN_INFO "mdp: failed to get mdp clk");
-@@ -506,6 +572,7 @@ error_device_register:
- 	free_irq(mdp->irq, mdp);
- error_request_irq:
- error_get_mdp_clk:
-+error_mddi_pmdh_register:
- 	iounmap(mdp->base);
- error_get_irq:
- error_ioremap:
-diff --git a/drivers/video/msm/mdp_hw.h b/drivers/video/msm/mdp_hw.h
-index 54b3934..05deac8 100644
---- a/drivers/video/msm/mdp_hw.h
-+++ b/drivers/video/msm/mdp_hw.h
-@@ -15,16 +15,38 @@
- #ifndef _MDP_HW_H_
- #define _MDP_HW_H_
- 
-+#include <linux/wait.h>
- #include <mach/msm_iomap.h>
- #include <mach/msm_fb.h>
- 
-+typedef void (*mdp_dma_start_func_t)(void *private_data, uint32_t addr,
-+				     uint32_t stride, uint32_t width,
-+				     uint32_t height, uint32_t x, uint32_t y);
++	if (gpio_is_valid(lcm->pdata.gpio_reset))
++		gpio_free(lcm->pdata.gpio_reset);
++	if (gpio_is_valid(lcm->pdata.gpio_cs))
++		gpio_free(lcm->pdata.gpio_cs);
++	lcd_device_unregister(lcm->lcd);
++	kfree(lcm);
 +
-+struct mdp_out_interface {
-+	uint32_t		registered:1;
-+	void			*priv;
++	return 0;
++}
 +
-+	/* If the interface client wants to get DMA_DONE events */
-+	uint32_t		dma_mask;
-+	mdp_dma_start_func_t	dma_start;
++#ifdef CONFIG_PM
++static int g240400_suspend(struct device *dev)
++{
++	struct g240400 *lcm = dev_get_drvdata(dev);
 +
-+	struct msmfb_callback	*dma_cb;
-+	wait_queue_head_t	dma_waitqueue;
++	g240400_powerdown(lcm);
++	gpio_direction_output(lcm->pdata.gpio_cs, 1);
++
++	return 0;
++}
++
++static int g240400_resume(struct device *dev)
++{
++	struct g240400 *lcm = dev_get_drvdata(dev);
++
++	gpio_direction_output(lcm->pdata.gpio_cs, 0);
++	g240400_reset(lcm);
++
++	return 0;
++}
++
++static const struct dev_pm_ops g240400_ops = {
++	.suspend	= g240400_suspend,
++	.resume		= g240400_resume,
++};
++#endif
++
++static struct platform_driver g240400_driver = {
++	.driver		= {
++		.name	= "truly_g240400rtsw",
++		.owner	= THIS_MODULE,
++#ifdef CONFIG_PM
++		.pm	= &g240400_ops,
++#endif
++	},
++	.probe		= g240400_probe,
++	.remove		= __devexit_p(g240400_remove),
 +};
 +
- struct mdp_info {
- 	spinlock_t lock;
- 	struct mdp_device mdp_dev;
- 	char * __iomem base;
- 	int irq;
- 	struct clk *clk;
-+	struct mdp_out_interface out_if[MSM_MDP_NUM_INTERFACES];
- };
++static int __init g240400_init(void)
++{
++	return platform_driver_register(&g240400_driver);
++}
++late_initcall(g240400_init); /* Ensure this gets loaded *after* the FB */
 +
-+extern int mdp_out_if_register(struct mdp_device *mdp_dev, int interface,
-+			       void *private_data, uint32_t dma_mask,
-+			       mdp_dma_start_func_t dma_start);
- struct mdp_blit_req;
- struct mdp_device;
- int mdp_ppp_blit(const struct mdp_info *mdp, struct mdp_blit_req *req,
-@@ -210,6 +232,8 @@ int mdp_ppp_blit(const struct mdp_info *mdp, struct mdp_blit_req *req,
- 			   DL1_FETCH_DONE| \
- 			   TV_ENC_UNDERRUN)
- 
-+#define MDP_DMA_P_DONE			(1 << 2)
++static void __exit g240400_exit(void)
++{
++	platform_driver_unregister(&g240400_driver);
++}
++module_exit(g240400_exit);
+diff --git a/include/video/truly_g240400rtsw.h b/include/video/truly_g240400rtsw.h
+new file mode 100644
+index 0000000..e4147b2
+--- /dev/null
++++ b/include/video/truly_g240400rtsw.h
+@@ -0,0 +1,35 @@
++/*
++ *  include/video/truly_g240400rtsw.h
++ *
++ *  Truly G240400RTSW LCD panel driver
++ *
++ *  Copyright (c) 2011, Maurus Cuelenaere <mcuelenaere@gmail.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify it
++ *  under  the terms of  the GNU General Public License as published by the
++ *  Free Software Foundation;  either version 2 of the License, or (at your
++ *  option) any later version.
++ *
++ */
 +
- #define MDP_TOP_LUMA       16
- #define MDP_TOP_CHROMA     0
- #define MDP_BOTTOM_LUMA    19
++#ifndef __VIDEO_TRULY_G240400RTSW_H__
++#define __VIDEO_TRULY_G240400RTSW_H__
++
++struct platform_device;
++struct fb_videomode;
++
++/**
++ * @jz4740_fb: pointer to the platform_device corresponding with the Ingenic
++ *             Jz4740 framebuffer driver, required
++ * @default_mode: initial video mode when LCD panel gets powered on, required
++ * @gpio_reset: GPIO reset pin, set to -1 for unused
++ * @gpio_cs: GPIO chip select pin, set to -1 for unused
++ */
++struct g240400_pdata {
++	struct platform_device		*jz4740_fb;
++	struct fb_videomode		*default_mode;
++	int				gpio_reset;
++	int				gpio_cs;
++};
++
++#endif /* __VIDEO_TRULY_G240400RTSW_H__ */
 -- 
-Sent by an employee of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+1.7.4
 

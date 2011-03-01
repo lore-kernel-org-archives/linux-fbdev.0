@@ -1,13 +1,13 @@
 From: Ondrej Zary <linux@rainbow-software.org>
-Date: Sun, 20 Feb 2011 18:37:15 +0000
-Subject: [PATCH] s3fb: maximize virtual vertical size for fast scrolling
-Message-Id: <201102201937.19112.linux@rainbow-software.org>
+Date: Tue, 01 Mar 2011 19:18:08 +0000
+Subject: [PATCH 1/5] s3fb: maximize virtual vertical size for fast scrolling
+Message-Id: <201103012018.11283.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Ondrej Zajicek <santiago@crfreenet.org>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
 Maximize virtual vertical framebuffer size during init to allow fast scrolling 
 (accelerated by panning).

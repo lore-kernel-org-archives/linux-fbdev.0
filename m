@@ -1,243 +1,307 @@
-From: "Janorkar, Mayuresh" <mayur@ti.com>
-Date: Mon, 21 Mar 2011 05:30:47 +0000
-Subject: RE: [PATCH 11/20] video: msm: Add MDP FB DMA configuration
-Message-Id: <EAF47CD23C76F840A9E7FCE10091EFAB033D22EB72@dbde02.ent.ti.com>
+From: Damian <dhobsong@igel.co.jp>
+Date: Wed, 02 Mar 2011 06:42:13 +0000
+Subject: [PATCH v2] fbdev: sh_mobile_lcdc: Add YUV input support
+Message-Id: <4D6DE6C5.1060105@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
-	<1300485470-27360-1-git-send-email-carlv@codeaurora.org>
-In-Reply-To: <1300485470-27360-1-git-send-email-carlv@codeaurora.org>
+References: <1298526433-6621-1-git-send-email-dhobsong@igel.co.jp>
+In-Reply-To: <1298526433-6621-1-git-send-email-dhobsong@igel.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
+Supports YCbCr420sp, YCbCr422sp, and YCbCr44sp, formats
+(bpp = 12, 16, and 24) respectively.
 
+When double-buffering both Y planes appear before the C planes (Y-Y-C-C),
+as opposed to  Y-C-Y-C.
+Set .nonstd in struct sh_mobile_lcdc_chan_cfg to enable YUV mode, and use
+.bpp to distiguish between the 3 modes.
+The value of .nonstd is copied to bits 16-31 of LDDFR in the LCDC and
+should be set accordingly.
+.nonstd must be set to 0 for RGB mode.
 
-> -----Original Message-----
-> From: linux-fbdev-owner@vger.kernel.org [mailto:linux-fbdev-
-> owner@vger.kernel.org] On Behalf Of Carl Vanderlip
-> Sent: Saturday, March 19, 2011 3:28 AM
-> To: Russell King; David Brown; Daniel Walker; Bryan Huntsman
-> Cc: Brian Swetland; Dima Zavin; Rebecca Schultz Zavin; Colin Cross; linux-
-> fbdev@vger.kernel.org; Carl Vanderlip; linux-arm-
-> kernel@lists.infradead.org; linux-arm-msm@vger.kernel.org; linux-
-> kernel@vger.kernel.org
-> Subject: [PATCH 11/20] video: msm: Add MDP FB DMA configuration
-> 
-> Setup configure_dma, check_output_format and set_output_format functions.
-> 
-> Authors:
-> Dima Zavin <dima@android.com>
-> Rebecca Schultz Zavin <rebecca@android.com>
-> Colin Cross <ccross@android.com>
-> 
-> Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
-> ---
->  arch/arm/mach-msm/include/mach/msm_fb.h |    3 ++
->  drivers/video/msm/mdp.c                 |   61
-> ++++++++++++++++++++++++++++++-
->  drivers/video/msm/mdp_hw.h              |   16 ++++++++
->  drivers/video/msm/msm_fb.c              |    5 ++-
->  4 files changed, 83 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/arm/mach-msm/include/mach/msm_fb.h b/arch/arm/mach-
-> msm/include/mach/msm_fb.h
-> index 2d0899c..238ea2a 100644
-> --- a/arch/arm/mach-msm/include/mach/msm_fb.h
-> +++ b/arch/arm/mach-msm/include/mach/msm_fb.h
-> @@ -123,6 +123,9 @@ struct mdp_device {
->  	int (*blit)(struct mdp_device *mdp, struct fb_info *fb,
->  		    struct mdp_blit_req *req);
->  	void (*set_grp_disp)(struct mdp_device *mdp, uint32_t disp_id);
-> +	void (*configure_dma)(struct mdp_device *mdp);
-> +	int (*check_output_format)(struct mdp_device *mdp, int bpp);
-> +	int (*set_output_format)(struct mdp_device *mdp, int bpp);
->  };
-> 
->  struct class_interface;
-> diff --git a/drivers/video/msm/mdp.c b/drivers/video/msm/mdp.c
-> index 95e19e5..15241b4 100644
-> --- a/drivers/video/msm/mdp.c
-> +++ b/drivers/video/msm/mdp.c
-> @@ -223,7 +223,7 @@ static void mdp_dma_to_mddi(void *priv, uint32_t addr,
-> uint32_t stride,
->  		DMA_OUT_SEL_AHB |
->  		DMA_IBUF_NONCONTIGUOUS;
-> 
-> -	dma2_cfg |= DMA_IBUF_FORMAT_RGB565;
-> +	dma2_cfg |= mdp->format;
-> 
->  	dma2_cfg |= DMA_OUT_SEL_MDDI;
-> 
-> @@ -304,6 +304,62 @@ void put_img(struct file *src_file, struct file
-> *dst_file)
->  {
->  }
-> 
-> +void mdp_configure_dma(struct mdp_device *mdp_dev)
-> +{
-> +	struct mdp_info *mdp = container_of(mdp_dev, struct mdp_info,
-> mdp_dev);
-> +	uint32_t dma_cfg;
-> +
-> +	if (!mdp->dma_config_dirty)
-> +		return;
-> +	dma_cfg = mdp_readl(mdp, MDP_DMA_P_CONFIG);
-> +	dma_cfg &= ~DMA_IBUF_FORMAT_MASK;
-> +	dma_cfg &= ~DMA_PACK_PATTERN_MASK;
-> +	dma_cfg |= (mdp->format | mdp->pack_pattern);
-> +	mdp_writel(mdp, dma_cfg, MDP_DMA_P_CONFIG);
-> +	mdp->dma_config_dirty = false;
-> +
-> +	return;
-> +}
-> +
-> +int mdp_check_output_format(struct mdp_device *mdp_dev, int bpp)
-> +{
-> +	switch (bpp) {
-> +	case 16:
-> +	case 24:
-> +	case 32:
-> +		break;
-Why break?
-You can return with a value 0 from here.
+Due to the encoding of YUV data, the framebuffer will clear to green
+instead of black.
 
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +	return 0;
-> +}
-> +
-> +int mdp_set_output_format(struct mdp_device *mdp_dev, int bpp)
-> +{
-> +	struct mdp_info *mdp = container_of(mdp_dev, struct mdp_info,
-> mdp_dev);
-> +	uint32_t format, pack_pattern;
-> +
-> +	switch (bpp) {
-> +	case 16:
-> +		format = DMA_IBUF_FORMAT_RGB565;
-> +		pack_pattern = DMA_PACK_PATTERN_RGB;
-> +		break;
-> +	case 24:
-> +	case 32:
-> +		format = DMA_IBUF_FORMAT_RGB888_OR_ARGB8888;
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +	if (format != mdp->format || pack_pattern != mdp->pack_pattern) {
-> +		mdp->format = format;
-> +		mdp->pack_pattern = pack_pattern;
-> +		mdp->dma_config_dirty = true;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->  int mdp_blit_and_wait(struct mdp_info *mdp, struct mdp_blit_req *req,
->  		struct file *src_file, unsigned long src_start,
->  		unsigned long src_len, struct file *dst_file,
-> @@ -540,6 +596,9 @@ int mdp_probe(struct platform_device *pdev)
->  	mdp->mdp_dev.dma_wait = mdp_dma_wait;
->  	mdp->mdp_dev.blit = mdp_blit;
->  	mdp->mdp_dev.set_grp_disp = mdp_set_grp_disp;
-> +	mdp->mdp_dev.set_output_format = mdp_set_output_format;
-> +	mdp->mdp_dev.check_output_format = mdp_check_output_format;
-> +	mdp->mdp_dev.configure_dma = mdp_configure_dma;
-> 
->  	ret = mdp_out_if_register(&mdp->mdp_dev, MSM_MDDI_PMDH_INTERFACE,
-> mdp,
->  				  MDP_DMA_P_DONE, mdp_dma_to_mddi);
-> diff --git a/drivers/video/msm/mdp_hw.h b/drivers/video/msm/mdp_hw.h
-> index 34a204e..cc48218 100644
-> --- a/drivers/video/msm/mdp_hw.h
-> +++ b/drivers/video/msm/mdp_hw.h
-> @@ -42,6 +42,9 @@ struct mdp_info {
->  	int irq;
->  	struct clk *clk;
->  	struct mdp_out_interface out_if[MSM_MDP_NUM_INTERFACES];
-> +	int format;
-> +	int pack_pattern;
-> +	bool dma_config_dirty;
->  };
-> 
->  extern int mdp_out_if_register(struct mdp_device *mdp_dev, int interface,
-> @@ -183,6 +186,15 @@ int mdp_ppp_blit(const struct mdp_info *mdp, struct
-> mdp_blit_req *req,
->  #define MDP_TEST_CAPTURED_DCLK           (0xd0210)
->  #define MDP_TEST_MISR_CAPT_VAL_DCLK      (0xd0214)
->  #define MDP_LCDC_CTL                     (0xe0000)
-> +
-> +#define MDP_DMA_P_START                  (0x00044)
-> +#define MDP_DMA_P_CONFIG                 (0x90000)
-> +#define MDP_DMA_P_SIZE                   (0x90004)
-> +#define MDP_DMA_P_IBUF_ADDR              (0x90008)
-> +#define MDP_DMA_P_IBUF_Y_STRIDE          (0x9000c)
-> +#define MDP_DMA_P_OUT_XY                 (0x90010)
-> +#define MDP_DMA_P_COLOR_CORRECT_CONFIG   (0x90070)
-> +
->  #define MDP_LCDC_HSYNC_CTL               (0xe0004)
->  #define MDP_LCDC_VSYNC_CTL               (0xe0008)
->  #define MDP_LCDC_ACTIVE_HCTL             (0xe000c)
-> @@ -629,8 +641,11 @@ int mdp_ppp_blit(const struct mdp_info *mdp, struct
-> mdp_blit_req *req,
->  #define DMA_PACK_LOOSE 0
->  #define DMA_PACK_ALIGN_LSB 0
->  #define DMA_PACK_ALIGN_MSB (1<<7)
-> +#define DMA_PACK_PATTERN_MASK (0x3f<<8)
->  #define DMA_PACK_PATTERN_RGB \
->  	(MDP_GET_PACK_PATTERN(0, CLR_R, CLR_G, CLR_B, 2)<<8)
-> +#define DMA_PACK_PATTERN_BGR \
-> +	(MDP_GET_PACK_PATTERN(0, CLR_B, CLR_G, CLR_R, 2)<<8)
-> 
->  #define DMA_OUT_SEL_AHB  0
->  #define DMA_OUT_SEL_MDDI (1<<14)
-> @@ -645,6 +660,7 @@ int mdp_ppp_blit(const struct mdp_info *mdp, struct
-> mdp_blit_req *req,
-> 
->  #define DMA_IBUF_FORMAT_RGB565 (1<<20)
->  #define DMA_IBUF_FORMAT_RGB888_OR_ARGB8888 0
-> +#define DMA_IBUF_FORMAT_MASK (1 << 20)
-> 
->  #define DMA_IBUF_NONCONTIGUOUS (1<<21)
-> 
-> diff --git a/drivers/video/msm/msm_fb.c b/drivers/video/msm/msm_fb.c
-> index 6af8b41..ccd7417 100644
-> --- a/drivers/video/msm/msm_fb.c
-> +++ b/drivers/video/msm/msm_fb.c
-> @@ -332,7 +332,7 @@ static int msmfb_check_var(struct fb_var_screeninfo
-> *var, struct fb_info *info)
->  	if ((var->xres != info->var.xres) ||
->  	    (var->yres != info->var.yres) ||
->  	    (var->xoffset != info->var.xoffset) ||
-> -	    (var->bits_per_pixel != info->var.bits_per_pixel) ||
-> +	    (mdp->check_output_format(mdp, var->bits_per_pixel)) ||
->  	    (var->grayscale != info->var.grayscale))
->  		 return -EINVAL;
-> 
-> @@ -365,6 +365,7 @@ static int msmfb_set_par(struct fb_info *info)
->  		var->blue.length = 5;
->  	} else
->  		return -1;
-> +	mdp->set_output_format(mdp, var->bits_per_pixel);
->  	fix->line_length = var->xres * var->bits_per_pixel / 8;
-> 
->  	return 0;
-> @@ -519,6 +520,8 @@ static void setup_fb_info(struct msmfb_info *msmfb)
->  	fb_info->var.blue.length = 5;
->  	fb_info->var.blue.msb_right = 0;
-> 
-> +	mdp->set_output_format(mdp, fb_info->var.bits_per_pixel);
-> +
->  	r = fb_alloc_cmap(&fb_info->cmap, 16, 0);
->  	fb_info->pseudo_palette = PP;
-> 
-> --
-> Sent by an employee of the Qualcomm Innovation Center, Inc.
-> The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+In YUV 420 mode, panning is only possible in 2 line increments.
+Additionally in YUV 420 mode the vertical resolution of the framebuffer
+must be an even number.
+
+Signed-off-by: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+---
+Changed from v1
+
+* Drop the use of SH_FB_YUV defines everywhere
+* Delete the now unnecessary <linux/sh_mobile_fb.h>
+* Delete the second patch in the series (now only this patch remains)
+
+  drivers/video/sh_mobile_lcdcfb.c |  141 
+++++++++++++++++++++++++++++++--------
+  drivers/video/sh_mobile_lcdcfb.h |    2 +-
+  include/video/sh_mobile_lcdc.h   |    1 +
+  3 files changed, 115 insertions(+), 29 deletions(-)
+
+diff --git a/drivers/video/sh_mobile_lcdcfb.c 
+b/drivers/video/sh_mobile_lcdcfb.c
+index bf12e53..173973b 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -67,6 +67,7 @@ static unsigned long lcdc_offs_mainlcd[NR_CH_REGS] = {
+  	[LDSM1R] = 0x428,
+  	[LDSM2R] = 0x42c,
+  	[LDSA1R] = 0x430,
++	[LDSA2R] = 0x434,
+  	[LDMLSR] = 0x438,
+  	[LDHCNR] = 0x448,
+  	[LDHSYNR] = 0x44c,
+@@ -151,6 +152,7 @@ static bool banked(int reg_nr)
+  	case LDDFR:
+  	case LDSM1R:
+  	case LDSA1R:
++	case LDSA2R:
+  	case LDMLSR:
+  	case LDHCNR:
+  	case LDHSYNR:
+@@ -463,6 +465,7 @@ static int sh_mobile_lcdc_start(struct 
+sh_mobile_lcdc_priv *priv)
+  	struct sh_mobile_lcdc_board_cfg	*board_cfg;
+  	unsigned long tmp;
+  	int bpp = 0;
++	unsigned long ldddsr;
+  	int k, m;
+  	int ret = 0;
+  @@ -541,16 +544,21 @@ static int sh_mobile_lcdc_start(struct 
+sh_mobile_lcdc_priv *priv)
+  	}
+   	/* word and long word swap */
+-	switch (bpp) {
+-	case 16:
+-		lcdc_write(priv, _LDDDSR, lcdc_read(priv, _LDDDSR) | 6);
+-		break;
+-	case 24:
+-		lcdc_write(priv, _LDDDSR, lcdc_read(priv, _LDDDSR) | 7);
+-		break;
+-	case 32:
+-		lcdc_write(priv, _LDDDSR, lcdc_read(priv, _LDDDSR) | 4);
+-		break;
++	ldddsr = lcdc_read(priv, _LDDDSR);
++	if  (priv->ch[0].info->var.nonstd)
++		lcdc_write(priv, _LDDDSR, ldddsr | 7);
++	else {
++		switch (bpp) {
++		case 16:
++			lcdc_write(priv, _LDDDSR, ldddsr | 6);
++			break;
++		case 24:
++			lcdc_write(priv, _LDDDSR, ldddsr | 7);
++			break;
++		case 32:
++			lcdc_write(priv, _LDDDSR, ldddsr | 4);
++			break;
++		}
+  	}
+   	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
+@@ -561,21 +569,40 @@ static int sh_mobile_lcdc_start(struct 
+sh_mobile_lcdc_priv *priv)
+   		/* set bpp format in PKF[4:0] */
+  		tmp = lcdc_read_chan(ch, LDDFR);
+-		tmp &= ~0x0001001f;
+-		switch (ch->info->var.bits_per_pixel) {
+-		case 16:
+-			tmp |= 0x03;
+-			break;
+-		case 24:
+-			tmp |= 0x0b;
+-			break;
+-		case 32:
+-			break;
++		tmp &= ~0x0003031f;
++		if (ch->info->var.nonstd) {
++			tmp |= (ch->info->var.nonstd << 16);
++			switch (ch->info->var.bits_per_pixel) {
++			case 12:
++				break;
++			case 16:
++				tmp |= (0x1 << 8);
++				break;
++			case 24:
++				tmp |= (0x2 << 8);
++				break;
++			}
++		} else {
++			switch (ch->info->var.bits_per_pixel) {
++			case 16:
++				tmp |= 0x03;
++				break;
++			case 24:
++				tmp |= 0x0b;
++				break;
++			case 32:
++				break;
++			}
+  		}
+  		lcdc_write_chan(ch, LDDFR, tmp);
+   		/* point out our frame buffer */
+  		lcdc_write_chan(ch, LDSA1R, ch->info->fix.smem_start);
++		if (ch->info->var.nonstd)
++			lcdc_write_chan(ch, LDSA2R,
++				ch->info->fix.smem_start +
++				ch->info->var.xres *
++				ch->info->var.yres_virtual);
+   		/* set line size */
+  		lcdc_write_chan(ch, LDMLSR, ch->info->fix.line_length);
+@@ -804,9 +831,15 @@ static int sh_mobile_fb_pan_display(struct 
+fb_var_screeninfo *var,
+  	struct sh_mobile_lcdc_priv *priv = ch->lcdc;
+  	unsigned long ldrcntr;
+  	unsigned long new_pan_offset;
++	unsigned long base_addr_y, base_addr_c;
++	unsigned long c_offset;
+  -	new_pan_offset = (var->yoffset * info->fix.line_length) +
+-		(var->xoffset * (info->var.bits_per_pixel / 8));
++	if (!var->nonstd)
++		new_pan_offset = (var->yoffset * info->fix.line_length) +
++			(var->xoffset * (info->var.bits_per_pixel / 8));
++	else
++		new_pan_offset = (var->yoffset * info->fix.line_length) +
++			(var->xoffset);
+   	if (new_pan_offset = ch->pan_offset)
+  		return 0;	/* No change, do nothing */
+@@ -814,7 +847,26 @@ static int sh_mobile_fb_pan_display(struct 
+fb_var_screeninfo *var,
+  	ldrcntr = lcdc_read(priv, _LDRCNTR);
+   	/* Set the source address for the next refresh */
+-	lcdc_write_chan_mirror(ch, LDSA1R, ch->dma_handle + new_pan_offset);
++	base_addr_y = ch->dma_handle + new_pan_offset;
++	if (var->nonstd) {
++		/* Set y offset */
++		c_offset = (var->yoffset *
++			info->fix.line_length *
++			(info->var.bits_per_pixel - 8)) / 8;
++		base_addr_c = ch->dma_handle + var->xres * var->yres_virtual +
++			c_offset;
++		/* Set x offset */
++		if (info->var.bits_per_pixel = 24)
++			base_addr_c += 2 * var->xoffset;
++		else
++			base_addr_c += var->xoffset;
++	} else
++		base_addr_c = 0;
++
++	lcdc_write_chan_mirror(ch, LDSA1R, base_addr_y);
++	if (base_addr_c)
++		lcdc_write_chan_mirror(ch, LDSA2R, base_addr_c);
++
+  	if (lcdc_chan_is_sublcd(ch))
+  		lcdc_write(ch->lcdc, _LDRCNTR, ldrcntr ^ LDRCNTR_SRS);
+  	else
+@@ -885,7 +937,10 @@ static void sh_mobile_fb_reconfig(struct fb_info *info)
+  		/* Couldn't reconfigure, hopefully, can continue as before */
+  		return;
+  -	info->fix.line_length = mode1.xres * (ch->cfg.bpp / 8);
++	if (info->var.nonstd)
++		info->fix.line_length = mode1.xres;
++	else
++		info->fix.line_length = mode1.xres * (ch->cfg.bpp / 8);
+   	/*
+  	 * fb_set_var() calls the notifier change internally, only if
+@@ -980,8 +1035,22 @@ static struct fb_ops sh_mobile_lcdc_ops = {
+  	.fb_check_var	= sh_mobile_check_var,
+  };
+  -static int sh_mobile_lcdc_set_bpp(struct fb_var_screeninfo *var, int bpp)
++static int sh_mobile_lcdc_set_bpp(struct fb_var_screeninfo *var, int bpp,
++				   int nonstd)
+  {
++	if (nonstd) {
++		switch (bpp) {
++		case 12:
++		case 16:
++		case 24:
++			var->bits_per_pixel = bpp;
++			var->nonstd = nonstd;
++			return 0;
++		default:
++			return -EINVAL;
++		}
++	}
++
+  	switch (bpp) {
+  	case 16: /* PKF[4:0] = 00011 - RGB 565 */
+  		var->red.offset = 11;
+@@ -1260,6 +1329,14 @@ static int __devinit sh_mobile_lcdc_probe(struct 
+platform_device *pdev)
+  		     k < cfg->num_cfg && lcd_cfg;
+  		     k++, lcd_cfg++) {
+  			unsigned long size = lcd_cfg->yres * lcd_cfg->xres;
++			/* NV12 buffers must have even number of lines */
++			if ((cfg->nonstd) && cfg->bpp = 12 &&
++					(lcd_cfg->yres & 0x1)) {
++				dev_err(&pdev->dev, "yres must be multiple of 2"
++						" for YCbCr420 mode.\n");
++				error = -EINVAL;
++				goto err1;
++			}
+   			if (size > max_size) {
+  				max_cfg = lcd_cfg;
+@@ -1274,7 +1351,11 @@ static int __devinit sh_mobile_lcdc_probe(struct 
+platform_device *pdev)
+  				max_cfg->xres, max_cfg->yres);
+   		info->fix = sh_mobile_lcdc_fix;
+-		info->fix.smem_len = max_size * (cfg->bpp / 8) * 2;
++		info->fix.smem_len = max_size * 2 * cfg->bpp / 8;
++
++		 /* Only pan in 2 line steps for NV12 */
++		if (cfg->nonstd && cfg->bpp = 12)
++			info->fix.ypanstep = 2;
+   		if (!mode) {
+  			mode = &default_720p;
+@@ -1292,7 +1373,7 @@ static int __devinit sh_mobile_lcdc_probe(struct 
+platform_device *pdev)
+  		var->yres_virtual = var->yres * 2;
+  		var->activate = FB_ACTIVATE_NOW;
+  -		error = sh_mobile_lcdc_set_bpp(var, cfg->bpp);
++		error = sh_mobile_lcdc_set_bpp(var, cfg->bpp, cfg->nonstd);
+  		if (error)
+  			break;
+  @@ -1316,7 +1397,11 @@ static int __devinit 
+sh_mobile_lcdc_probe(struct platform_device *pdev)
+  		}
+   		info->fix.smem_start = ch->dma_handle;
+-		info->fix.line_length = var->xres * (cfg->bpp / 8);
++		if (var->nonstd)
++			info->fix.line_length = var->xres;
++		else
++			info->fix.line_length = var->xres * (cfg->bpp / 8);
++
+  		info->screen_base = buf;
+  		info->device = &pdev->dev;
+  		ch->display_var = *var;
+diff --git a/drivers/video/sh_mobile_lcdcfb.h 
+b/drivers/video/sh_mobile_lcdcfb.h
+index 9ecee2f..c953cb0 100644
+--- a/drivers/video/sh_mobile_lcdcfb.h
++++ b/drivers/video/sh_mobile_lcdcfb.h
+@@ -8,7 +8,7 @@
+   /* per-channel registers */
+  enum { LDDCKPAT1R, LDDCKPAT2R, LDMT1R, LDMT2R, LDMT3R, LDDFR, LDSM1R,
+-       LDSM2R, LDSA1R, LDMLSR, LDHCNR, LDHSYNR, LDVLNR, LDVSYNR, LDPMR,
++       LDSM2R, LDSA1R, LDSA2R, LDMLSR, LDHCNR, LDHSYNR, LDVLNR, 
+LDVSYNR, LDPMR,
+         LDHAJR,
+         NR_CH_REGS };
+  diff --git a/include/video/sh_mobile_lcdc.h 
+b/include/video/sh_mobile_lcdc.h
+index daabae5..650ff17 100644
+--- a/include/video/sh_mobile_lcdc.h
++++ b/include/video/sh_mobile_lcdc.h
+@@ -77,6 +77,7 @@ struct sh_mobile_lcdc_chan_cfg {
+  	struct sh_mobile_lcdc_lcd_size_cfg lcd_size_cfg;
+  	struct sh_mobile_lcdc_board_cfg board_cfg;
+  	struct sh_mobile_lcdc_sys_bus_cfg sys_bus_cfg; /* only for SYSn I/F */
++	int nonstd;
+  };
+   struct sh_mobile_lcdc_info {
+-- 
+1.7.1
+

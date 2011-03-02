@@ -1,108 +1,39 @@
-From: "Carl Vanderlip" <carlv@codeaurora.org>
-Date: Tue, 22 Mar 2011 00:21:10 +0000
-Subject: RE: [PATCH 07/20] video: msm: Allow users to request a larger x
-Message-Id: <94462146d712916438b435acb20c9f00.squirrel@www.codeaurora.org>
+From: Carl Vanderlip <carlv@codeaurora.org>
+Date: Wed, 02 Mar 2011 21:17:51 +0000
+Subject: [PATCH 3/4] [ARM] msm_fb: Fix framebuffer console
+Message-Id: <1299100671-11665-1-git-send-email-carlv@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
-	<1300485381-27201-1-git-send-email-carlv@codeaurora.org>
-	<EAF47CD23C76F840A9E7FCE10091EFAB033D22EAE7@dbde02.ent.ti.com>
-In-Reply-To: <EAF47CD23C76F840A9E7FCE10091EFAB033D22EAE7@dbde02.ent.ti.com>
+References: <1299100542-11120-1-git-send-email-carlv@codeaurora.org>
+In-Reply-To: <1299100542-11120-1-git-send-email-carlv@codeaurora.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: linux-arm-kernel@lists.infradead.org
 
->> diff --git a/drivers/video/msm/msm_fb.c b/drivers/video/msm/msm_fb.c
->> index 04d0067..6af8b41 100644
->> --- a/drivers/video/msm/msm_fb.c
->> +++ b/drivers/video/msm/msm_fb.c
+From: Arve Hjønnevåg <arve@android.com>
 
->> @@ -323,14 +327,46 @@ error:
->>
->>  static int msmfb_check_var(struct fb_var_screeninfo *var, struct
->> fb_info
->> *info)
->>  {
->> +	u32 size;
->> +
->>  	if ((var->xres != info->var.xres) ||
->>  	    (var->yres != info->var.yres) ||
->> -	    (var->xres_virtual != info->var.xres_virtual) ||
->> -	    (var->yres_virtual != info->var.yres_virtual) ||
->>  	    (var->xoffset != info->var.xoffset) ||
->>  	    (var->bits_per_pixel != info->var.bits_per_pixel) ||
->>  	    (var->grayscale != info->var.grayscale))
->>  		 return -EINVAL;
->> +
->> +	size = var->xres_virtual * var->yres_virtual *
->> +		(var->bits_per_pixel >> 3);
->
-> How about defining a new macro BYTES_PER_PIXEL_VAR for fb_var_screeninfo
-> also? That would make code more readable.
->
->> +	if (size > info->fix.smem_len)
->> +		return -EINVAL;
->> +	return 0;
->> +}
+Don't allow non panning updates to bypass the wait for the panel to turn on.
 
-Name might be a little easy to confuse with the other BYTES_PER_PIXEL, but
-overall readability would increase IMHO; Done.
+Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
+---
+ drivers/video/msm/msm_fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
->> +static int msmfb_set_par(struct fb_info *info)
->> +{
->> +	struct fb_var_screeninfo *var = &info->var;
->> +	struct fb_fix_screeninfo *fix = &info->fix;
->> +
->> +	/* we only support RGB ordering for now */
->> +	if (var->bits_per_pixel = 32 || var->bits_per_pixel = 24) {
->> +		var->red.offset = 0;
->> +		var->red.length = 8;
->> +		var->green.offset = 8;
->> +		var->green.length = 8;
->> +		var->blue.offset = 16;
->> +		var->blue.length = 8;
->
-> var->red is a fb_bitfield variable.
-> It provides offset, length and msb_right.
->
-> struct fb_bitfield {
->     __u32 offset;                   /* beginning of bitfield        */
->     __u32 length;                   /* length of bitfield           */
->     __u32 msb_right;                /* != 0 : Most significant bit is */
->                                     /* right */
-> }
-> Please don't keep msb_right unassigned.
->
->> +	} else if (var->bits_per_pixel = 16) {
->> +		var->red.offset = 11;
->> +		var->red.length = 5;
->> +		var->green.offset = 5;
->> +		var->green.length = 6;
->> +		var->blue.offset = 0;
->> +		var->blue.length = 5;
->> +	} else
->> +		return -1;
->
-> Please use standard error code provided by Linux kernel -EINVAL
-> (-22 Invalid argument)
->
->> +	fix->line_length = var->xres * var->bits_per_pixel / 8;
-> Why to divide by 8? Atleast use >>3, bitwise operations that would take
-> less cpu cycles)
-> As I stated earlier define a new macro for var also.
->
->> +
->>  	return 0;
->>  }
-
-And Done. And done again... and while I'm at it, all the changes you
-suggested are being pulled into v2 (except for updating Google's copyright
-date (see: Brian Swetland's response)).
-
-Thank you for reviewing my patches :)
-
-   -Carl V.
-
+diff --git a/drivers/video/msm/msm_fb.c b/drivers/video/msm/msm_fb.c
+index fe5efe5..ec35130 100644
+--- a/drivers/video/msm/msm_fb.c
++++ b/drivers/video/msm/msm_fb.c
+@@ -219,8 +219,8 @@ restart:
+ 
+ 	sleeping = msmfb->sleeping;
+ 	/* on a full update, if the last frame has not completed, wait for it */
+-	if (pan_display && (msmfb->frame_requested != msmfb->frame_done ||
+-			    sleeping = UPDATING)) {
++	if ((pan_display && msmfb->frame_requested != msmfb->frame_done) ||
++			    sleeping = UPDATING) {
+ 		int ret;
+ 		spin_unlock_irqrestore(&msmfb->update_lock, irq_flags);
+ 		ret = wait_event_interruptible_timeout(msmfb->frame_wq,
 -- 
 Sent by an employee of the Qualcomm Innovation Center, Inc.
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.

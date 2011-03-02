@@ -1,40 +1,28 @@
-From: Carl Vanderlip <carlv@codeaurora.org>
-Date: Wed, 02 Mar 2011 21:17:51 +0000
-Subject: [PATCH 3/4] [ARM] msm_fb: Fix framebuffer console
-Message-Id: <1299100671-11665-1-git-send-email-carlv@codeaurora.org>
+From: "Carl Vanderlip" <carlv@codeaurora.org>
+Date: Wed, 02 Mar 2011 21:26:22 +0000
+Subject: Re: [PATCH 3/4] [ARM] msm_fb: Fix framebuffer console
+Message-Id: <9d6dd47e36dafad4e2f876d994f607e2.squirrel@www.codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1299100542-11120-1-git-send-email-carlv@codeaurora.org>
-In-Reply-To: <1299100542-11120-1-git-send-email-carlv@codeaurora.org>
+	<1299100671-11665-1-git-send-email-carlv@codeaurora.org>
+In-Reply-To: <1299100671-11665-1-git-send-email-carlv@codeaurora.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-arm-kernel@lists.infradead.org
 
-From: Arve Hjønnevåg <arve@android.com>
+On Wed, 2011-03-02 at 13:17 -0800, Carl Vanderlip wrote:
+> From: Arve Hj=F8nnev=E5g <arve@android.com>
+>
+> Don't allow non panning updates to bypass the wait for the panel to turn
+on.
+>
+> Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
 
-Don't allow non panning updates to bypass the wait for the panel to turn on.
+Arve,
 
-Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
----
- drivers/video/msm/msm_fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+	This patch did not have a SOB from you. Would you sign off on this patch?
 
-diff --git a/drivers/video/msm/msm_fb.c b/drivers/video/msm/msm_fb.c
-index fe5efe5..ec35130 100644
---- a/drivers/video/msm/msm_fb.c
-+++ b/drivers/video/msm/msm_fb.c
-@@ -219,8 +219,8 @@ restart:
- 
- 	sleeping = msmfb->sleeping;
- 	/* on a full update, if the last frame has not completed, wait for it */
--	if (pan_display && (msmfb->frame_requested != msmfb->frame_done ||
--			    sleeping = UPDATING)) {
-+	if ((pan_display && msmfb->frame_requested != msmfb->frame_done) ||
-+			    sleeping = UPDATING) {
- 		int ret;
- 		spin_unlock_irqrestore(&msmfb->update_lock, irq_flags);
- 		ret = wait_event_interruptible_timeout(msmfb->frame_wq,
--- 
-Sent by an employee of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+    -Carl V.
+
 

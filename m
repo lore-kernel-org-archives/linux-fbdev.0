@@ -1,88 +1,37 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 31 Mar 2011 10:11:03 +0000
-Subject: [PATCH 6/9] OMAP: DSS2: Add method for querying display dimensions from DSS drivers
-Message-Id: <1301566266-11187-7-git-send-email-tomi.valkeinen@ti.com>
+From: Carl Vanderlip <carlv@codeaurora.org>
+Date: Wed, 02 Mar 2011 21:18:19 +0000
+Subject: [PATCH 4/4] [ARM] msm: mdp: Set the correct pack pattern for XRGB/ARGB
+Message-Id: <1299100699-11705-1-git-send-email-carlv@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1301566266-11187-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1301566266-11187-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1299100542-11120-1-git-send-email-carlv@codeaurora.org>
+In-Reply-To: <1299100542-11120-1-git-send-email-carlv@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Jani Nikula <ext-jani.1.nikula@nokia.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+From: Dima Zavin <dima@android.com>
 
-Add get_dimensions() to struct omap_dss_driver. Use the call, if supported
-by the driver, in OMAPFB.
-
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Dima Zavin <dima@android.com>
+Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
 ---
- arch/arm/plat-omap/include/plat/display.h |    2 ++
- drivers/video/omap2/omapfb/omapfb-ioctl.c |   12 ++++++++++--
- drivers/video/omap2/omapfb/omapfb-main.c  |   12 ++++++++++--
- 3 files changed, 22 insertions(+), 4 deletions(-)
+ drivers/video/msm/mdp_hw.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
-index e10cfe2..f6e4b87 100644
---- a/arch/arm/plat-omap/include/plat/display.h
-+++ b/arch/arm/plat-omap/include/plat/display.h
-@@ -507,6 +507,8 @@ struct omap_dss_driver {
- 
- 	void (*get_resolution)(struct omap_dss_device *dssdev,
- 			u16 *xres, u16 *yres);
-+	void (*get_dimensions)(struct omap_dss_device *dssdev,
-+			u32 *width, u32 *height);
- 	int (*get_recommended_bpp)(struct omap_dss_device *dssdev);
- 
- 	int (*check_timings)(struct omap_dss_device *dssdev,
-diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
-index 6f43545..b4636b1 100644
---- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
-+++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
-@@ -895,8 +895,16 @@ int omapfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
- 
- 		p.display_info.xres = xres;
- 		p.display_info.yres = yres;
--		p.display_info.width = 0;
--		p.display_info.height = 0;
-+
-+		if (display->driver->get_dimensions) {
-+			u32 w, h;
-+			display->driver->get_dimensions(display, &w, &h);
-+			p.display_info.width = w;
-+			p.display_info.height = h;
-+		} else {
-+			p.display_info.width = 0;
-+			p.display_info.height = 0;
-+		}
- 
- 		if (copy_to_user((void __user *)arg, &p.display_info,
- 					sizeof(p.display_info)))
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 505ec66..163fb8b 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -702,8 +702,16 @@ int check_fb_var(struct fb_info *fbi, struct fb_var_screeninfo *var)
- 			var->xres, var->yres,
- 			var->xres_virtual, var->yres_virtual);
- 
--	var->height             = -1;
--	var->width              = -1;
-+	if (display && display->driver->get_dimensions) {
-+		u32 w, h;
-+		display->driver->get_dimensions(display, &w, &h);
-+		var->width = DIV_ROUND_CLOSEST(w, 1000);
-+		var->height = DIV_ROUND_CLOSEST(h, 1000);
-+	} else {
-+		var->height = -1;
-+		var->width = -1;
-+	}
-+
- 	var->grayscale          = 0;
- 
- 	if (display && display->driver->get_timings) {
+diff --git a/drivers/video/msm/mdp_hw.h b/drivers/video/msm/mdp_hw.h
+index 9e1e92e..d804774 100644
+--- a/drivers/video/msm/mdp_hw.h
++++ b/drivers/video/msm/mdp_hw.h
+@@ -489,7 +489,7 @@ int mdp_ppp_blit(const struct mdp_info *mdp, struct mdp_blit_req *req,
+ 	MDP_GET_PACK_PATTERN(0, CLR_R, CLR_G, CLR_B, 8)
+ #define PPP_PACK_PATTERN_MDP_RGB_888 PPP_PACK_PATTERN_MDP_RGB_565
+ #define PPP_PACK_PATTERN_MDP_XRGB_8888 \
+-	MDP_GET_PACK_PATTERN(CLR_ALPHA, CLR_R, CLR_G, CLR_B, 8)
++	MDP_GET_PACK_PATTERN(CLR_B, CLR_G, CLR_R, CLR_ALPHA, 8)
+ #define PPP_PACK_PATTERN_MDP_ARGB_8888 PPP_PACK_PATTERN_MDP_XRGB_8888
+ #define PPP_PACK_PATTERN_MDP_RGBA_8888 \
+ 	MDP_GET_PACK_PATTERN(CLR_ALPHA, CLR_B, CLR_G, CLR_R, 8)
 -- 
-1.7.1
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
 

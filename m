@@ -1,178 +1,105 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 23 Mar 2011 21:48:57 +0000
-Subject: [PATCH 3/4] viafb: kill crt_setting_information
-Message-Id: <1300917792-3880-4-git-send-email-FlorianSchandinat@gmx.de>
+From: Carl Vanderlip <carlv@codeaurora.org>
+Date: Wed, 02 Mar 2011 21:17:08 +0000
+Subject: [PATCH 2/4] [ARM] msm: mdp: Add support for RGBX 8888 image format.
+Message-Id: <1299100629-11625-1-git-send-email-carlv@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1300917792-3880-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1300917792-3880-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <1299100542-11120-1-git-send-email-carlv@codeaurora.org>
+In-Reply-To: <1299100542-11120-1-git-send-email-carlv@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-arm-kernel@lists.infradead.org
 
-As the iga path is the only remaining information which is also
-handled by the active devices there is no reason to keep it.
+From: Dima Zavin <dima@android.com>
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Signed-off-by: Dima Zavin <dima@android.com>
+Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
 ---
- drivers/video/via/chip.h     |    4 ----
- drivers/video/via/hw.c       |   28 +++++++++++++---------------
- drivers/video/via/viafbdev.c |    7 ++-----
- drivers/video/via/viafbdev.h |    2 --
- 4 files changed, 15 insertions(+), 26 deletions(-)
+ drivers/video/msm/mdp_hw.h  |    9 ++++++++-
+ drivers/video/msm/mdp_ppp.c |    1 +
+ include/linux/msm_mdp.h     |    1 +
+ 3 files changed, 10 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/via/chip.h b/drivers/video/via/chip.h
-index 29d7024..1aa0fb3 100644
---- a/drivers/video/via/chip.h
-+++ b/drivers/video/via/chip.h
-@@ -137,10 +137,6 @@ struct chip_information {
- 	struct lvds_chip_information lvds_chip_info2;
+diff --git a/drivers/video/msm/mdp_hw.h b/drivers/video/msm/mdp_hw.h
+index 4e3deb4..9e1e92e 100644
+--- a/drivers/video/msm/mdp_hw.h
++++ b/drivers/video/msm/mdp_hw.h
+@@ -449,6 +449,7 @@ int mdp_ppp_blit(const struct mdp_info *mdp, struct mdp_blit_req *req,
+ #define PPP_CFG_MDP_XRGB_8888(dir) PPP_CFG_MDP_ARGB_8888(dir)
+ #define PPP_CFG_MDP_RGBA_8888(dir) PPP_CFG_MDP_ARGB_8888(dir)
+ #define PPP_CFG_MDP_BGRA_8888(dir) PPP_CFG_MDP_ARGB_8888(dir)
++#define PPP_CFG_MDP_RGBX_8888(dir) PPP_CFG_MDP_ARGB_8888(dir)
+ 
+ #define PPP_CFG_MDP_Y_CBCR_H2V2(dir)   (PPP_##dir##_C2R_8BIT | \
+ 					PPP_##dir##_C0G_8BIT | \
+@@ -494,6 +495,8 @@ int mdp_ppp_blit(const struct mdp_info *mdp, struct mdp_blit_req *req,
+ 	MDP_GET_PACK_PATTERN(CLR_ALPHA, CLR_B, CLR_G, CLR_R, 8)
+ #define PPP_PACK_PATTERN_MDP_BGRA_8888 \
+ 	MDP_GET_PACK_PATTERN(CLR_ALPHA, CLR_R, CLR_G, CLR_B, 8)
++#define PPP_PACK_PATTERN_MDP_RGBX_8888 \
++	MDP_GET_PACK_PATTERN(CLR_ALPHA, CLR_B, CLR_G, CLR_R, 8)
+ #define PPP_PACK_PATTERN_MDP_Y_CBCR_H2V1 \
+ 	MDP_GET_PACK_PATTERN(0, 0, CLR_CB, CLR_CR, 8)
+ #define PPP_PACK_PATTERN_MDP_Y_CBCR_H2V2 PPP_PACK_PATTERN_MDP_Y_CBCR_H2V1
+@@ -509,6 +512,7 @@ int mdp_ppp_blit(const struct mdp_info *mdp, struct mdp_blit_req *req,
+ #define PPP_CHROMA_SAMP_MDP_ARGB_8888(dir) PPP_OP_##dir##_CHROMA_RGB
+ #define PPP_CHROMA_SAMP_MDP_RGBA_8888(dir) PPP_OP_##dir##_CHROMA_RGB
+ #define PPP_CHROMA_SAMP_MDP_BGRA_8888(dir) PPP_OP_##dir##_CHROMA_RGB
++#define PPP_CHROMA_SAMP_MDP_RGBX_8888(dir) PPP_OP_##dir##_CHROMA_RGB
+ #define PPP_CHROMA_SAMP_MDP_Y_CBCR_H2V1(dir) PPP_OP_##dir##_CHROMA_H2V1
+ #define PPP_CHROMA_SAMP_MDP_Y_CBCR_H2V2(dir) PPP_OP_##dir##_CHROMA_420
+ #define PPP_CHROMA_SAMP_MDP_Y_CRCB_H2V1(dir) PPP_OP_##dir##_CHROMA_H2V1
+@@ -523,6 +527,7 @@ int mdp_ppp_blit(const struct mdp_info *mdp, struct mdp_blit_req *req,
+ 	[MDP_ARGB_8888] = PPP_##name##_MDP_ARGB_8888,\
+ 	[MDP_RGBA_8888] = PPP_##name##_MDP_RGBA_8888,\
+ 	[MDP_BGRA_8888] = PPP_##name##_MDP_BGRA_8888,\
++	[MDP_RGBX_8888] = PPP_##name##_MDP_RGBX_8888,\
+ 	[MDP_Y_CBCR_H2V1] = PPP_##name##_MDP_Y_CBCR_H2V1,\
+ 	[MDP_Y_CBCR_H2V2] = PPP_##name##_MDP_Y_CBCR_H2V2,\
+ 	[MDP_Y_CRCB_H2V1] = PPP_##name##_MDP_Y_CRCB_H2V1,\
+@@ -536,6 +541,7 @@ int mdp_ppp_blit(const struct mdp_info *mdp, struct mdp_blit_req *req,
+ 	[MDP_ARGB_8888] = PPP_##name##_MDP_ARGB_8888(dir),\
+ 	[MDP_RGBA_8888] = PPP_##name##_MDP_RGBA_8888(dir),\
+ 	[MDP_BGRA_8888] = PPP_##name##_MDP_BGRA_8888(dir),\
++	[MDP_RGBX_8888] = PPP_##name##_MDP_RGBX_8888(dir),\
+ 	[MDP_Y_CBCR_H2V1] = PPP_##name##_MDP_Y_CBCR_H2V1(dir),\
+ 	[MDP_Y_CBCR_H2V2] = PPP_##name##_MDP_Y_CBCR_H2V2(dir),\
+ 	[MDP_Y_CRCB_H2V1] = PPP_##name##_MDP_Y_CRCB_H2V1(dir),\
+@@ -547,7 +553,8 @@ int mdp_ppp_blit(const struct mdp_info *mdp, struct mdp_blit_req *req,
+ 		       (img = MDP_YCRYCB_H2V1))
+ #define IS_RGB(img) ((img = MDP_RGB_565) | (img = MDP_RGB_888) | \
+ 		     (img = MDP_ARGB_8888) | (img = MDP_RGBA_8888) | \
+-		     (img = MDP_XRGB_8888) | (img = MDP_BGRA_8888))
++		     (img = MDP_XRGB_8888) | (img = MDP_BGRA_8888) | \
++		     (img = MDP_RGBX_8888))
+ #define HAS_ALPHA(img) ((img = MDP_ARGB_8888) | (img = MDP_RGBA_8888) | \
+ 			(img = MDP_BGRA_8888))
+ 
+diff --git a/drivers/video/msm/mdp_ppp.c b/drivers/video/msm/mdp_ppp.c
+index 4ff001f..2b6564e 100644
+--- a/drivers/video/msm/mdp_ppp.c
++++ b/drivers/video/msm/mdp_ppp.c
+@@ -69,6 +69,7 @@ static uint32_t bytes_per_pixel[] = {
+ 	[MDP_ARGB_8888] = 4,
+ 	[MDP_RGBA_8888] = 4,
+ 	[MDP_BGRA_8888] = 4,
++	[MDP_RGBX_8888] = 4,
+ 	[MDP_Y_CBCR_H2V1] = 1,
+ 	[MDP_Y_CBCR_H2V2] = 1,
+ 	[MDP_Y_CRCB_H2V1] = 1,
+diff --git a/include/linux/msm_mdp.h b/include/linux/msm_mdp.h
+index d11fe0f..fe722c1 100644
+--- a/include/linux/msm_mdp.h
++++ b/include/linux/msm_mdp.h
+@@ -32,6 +32,7 @@ enum {
+ 	MDP_Y_CBCR_H2V1,	/* Y and CrCb, pseduo planar w/ Cr is in MSB */
+ 	MDP_RGBA_8888,		/* ARGB 888 */
+ 	MDP_BGRA_8888,		/* ABGR 888 */
++	MDP_RGBX_8888,		/* RGBX 888 */
+ 	MDP_IMGTYPE_LIMIT	/* Non valid image type after this enum */
  };
  
--struct crt_setting_information {
--	int iga_path;
--};
--
- struct tmds_setting_information {
- 	int iga_path;
- 	int h_active;
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index c4d2136..0098270 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -770,13 +770,14 @@ static u32 get_lcd_devices(int output_interface)
- /*Set IGA path for each device*/
- void viafb_set_iga_path(void)
- {
-+	int crt_iga_path = 0;
- 
- 	if (viafb_SAMM_ON = 1) {
- 		if (viafb_CRT_ON) {
- 			if (viafb_primary_dev = CRT_Device)
--				viaparinfo->crt_setting_info->iga_path = IGA1;
-+				crt_iga_path = IGA1;
- 			else
--				viaparinfo->crt_setting_info->iga_path = IGA2;
-+				crt_iga_path = IGA2;
- 		}
- 
- 		if (viafb_DVI_ON) {
-@@ -793,8 +794,7 @@ void viafb_set_iga_path(void)
- 					UNICHROME_CLE266)) {
- 					viaparinfo->
- 					lvds_setting_info->iga_path = IGA2;
--					viaparinfo->
--					crt_setting_info->iga_path = IGA1;
-+					crt_iga_path = IGA1;
- 					viaparinfo->
- 					tmds_setting_info->iga_path = IGA1;
- 				} else
-@@ -814,10 +814,10 @@ void viafb_set_iga_path(void)
- 		viafb_SAMM_ON = 0;
- 
- 		if (viafb_CRT_ON && viafb_LCD_ON) {
--			viaparinfo->crt_setting_info->iga_path = IGA1;
-+			crt_iga_path = IGA1;
- 			viaparinfo->lvds_setting_info->iga_path = IGA2;
- 		} else if (viafb_CRT_ON && viafb_DVI_ON) {
--			viaparinfo->crt_setting_info->iga_path = IGA1;
-+			crt_iga_path = IGA1;
- 			viaparinfo->tmds_setting_info->iga_path = IGA2;
- 		} else if (viafb_LCD_ON && viafb_DVI_ON) {
- 			viaparinfo->tmds_setting_info->iga_path = IGA1;
-@@ -826,7 +826,7 @@ void viafb_set_iga_path(void)
- 			viaparinfo->lvds_setting_info->iga_path = IGA2;
- 			viaparinfo->lvds_setting_info2->iga_path = IGA2;
- 		} else if (viafb_CRT_ON) {
--			viaparinfo->crt_setting_info->iga_path = IGA1;
-+			crt_iga_path = IGA1;
- 		} else if (viafb_LCD_ON) {
- 			viaparinfo->lvds_setting_info->iga_path = IGA2;
- 		} else if (viafb_DVI_ON) {
-@@ -837,7 +837,7 @@ void viafb_set_iga_path(void)
- 	viaparinfo->shared->iga1_devices = 0;
- 	viaparinfo->shared->iga2_devices = 0;
- 	if (viafb_CRT_ON) {
--		if (viaparinfo->crt_setting_info->iga_path = IGA1)
-+		if (crt_iga_path = IGA1)
- 			viaparinfo->shared->iga1_devices |= VIA_CRT;
- 		else
- 			viaparinfo->shared->iga2_devices |= VIA_CRT;
-@@ -2072,8 +2072,6 @@ void __devinit viafb_init_chip_info(int chip_type)
- 	init_tmds_chip_info();
- 	init_lvds_chip_info();
- 
--	viaparinfo->crt_setting_info->iga_path = IGA1;
--
- 	/*Set IGA path for each device */
- 	viafb_set_iga_path();
- 
-@@ -2450,15 +2448,15 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
- 
- 	/* CRT set mode */
- 	if (viafb_CRT_ON) {
--		if (viafb_SAMM_ON && (viaparinfo->crt_setting_info->iga_path =
--			IGA2)) {
-+		if (viafb_SAMM_ON &&
-+			viaparinfo->shared->iga2_devices & VIA_CRT) {
- 			viafb_fill_crtc_timing(crt_timing1, vmode_tbl1,
--				video_bpp1 / 8,
--				viaparinfo->crt_setting_info->iga_path);
-+				video_bpp1 / 8, IGA2);
- 		} else {
- 			viafb_fill_crtc_timing(crt_timing, vmode_tbl,
- 				video_bpp / 8,
--				viaparinfo->crt_setting_info->iga_path);
-+				(viaparinfo->shared->iga1_devices & VIA_CRT)
-+				? IGA1 : IGA2);
- 		}
- 
- 		/* Patch if set_hres is not 8 alignment (1366) to viafb_setmode
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 9d9bb9b..ed9bd79 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -930,10 +930,8 @@ static int get_primary_device(void)
- 	/* Rule: device on iga1 path are the primary device. */
- 	if (viafb_SAMM_ON) {
- 		if (viafb_CRT_ON) {
--			if (viaparinfo->crt_setting_info->iga_path = IGA1) {
--				DEBUG_MSG(KERN_INFO "CRT IGA Path:%d\n",
--					viaparinfo->
--					crt_setting_info->iga_path);
-+			if (viaparinfo->shared->iga1_devices & VIA_CRT) {
-+				DEBUG_MSG(KERN_INFO "CRT IGA Path:%d\n", IGA1);
- 				primary_device = CRT_Device;
- 			}
- 		}
-@@ -1746,7 +1744,6 @@ int __devinit via_fb_pci_probe(struct viafb_dev *vdev)
- 	viaparinfo->lvds_setting_info = &viaparinfo->shared->lvds_setting_info;
- 	viaparinfo->lvds_setting_info2  		&viaparinfo->shared->lvds_setting_info2;
--	viaparinfo->crt_setting_info = &viaparinfo->shared->crt_setting_info;
- 	viaparinfo->chip_info = &viaparinfo->shared->chip_info;
- 
- 	if (viafb_dual_fb)
-diff --git a/drivers/video/via/viafbdev.h b/drivers/video/via/viafbdev.h
-index d66f963..ff60e1d 100644
---- a/drivers/video/via/viafbdev.h
-+++ b/drivers/video/via/viafbdev.h
-@@ -50,7 +50,6 @@ struct viafb_shared {
- 
- 	/* All the information will be needed to set engine */
- 	struct tmds_setting_information tmds_setting_info;
--	struct crt_setting_information crt_setting_info;
- 	struct lvds_setting_information lvds_setting_info;
- 	struct lvds_setting_information lvds_setting_info2;
- 	struct chip_information chip_info;
-@@ -79,7 +78,6 @@ struct viafb_par {
- 	/* All the information will be needed to set engine */
- 	/* depreciated, use the ones in shared directly */
- 	struct tmds_setting_information *tmds_setting_info;
--	struct crt_setting_information *crt_setting_info;
- 	struct lvds_setting_information *lvds_setting_info;
- 	struct lvds_setting_information *lvds_setting_info2;
- 	struct chip_information *chip_info;
 -- 
-1.6.3.2
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
 

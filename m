@@ -1,36 +1,48 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Tue, 01 Mar 2011 19:18:08 +0000
-Subject: [PATCH 1/5] s3fb: maximize virtual vertical size for fast scrolling
-Message-Id: <201103012018.11283.linux@rainbow-software.org>
+From: Ondrej Zajicek <santiago@crfreenet.org>
+Date: Thu, 03 Mar 2011 08:49:02 +0000
+Subject: Re: [PATCH 1/5] s3fb: maximize virtual vertical size for fast
+Message-Id: <20110303084902.GA8363@localhost>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="AhhlLboLdkugWU4S"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Ondrej Zajicek <santiago@crfreenet.org>
+References: <201103012018.11283.linux@rainbow-software.org>
+In-Reply-To: <201103012018.11283.linux@rainbow-software.org>
+To: Ondrej Zary <linux@rainbow-software.org>
 Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-Maximize virtual vertical framebuffer size during init to allow fast scrolling 
-(accelerated by panning).
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+--AhhlLboLdkugWU4S
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
---- linux-2.6.38-rc4-/drivers/video/s3fb.c	2011-02-20 19:11:28.000000000 +0100
-+++ linux-2.6.38-rc4/drivers/video/s3fb.c	2011-02-20 19:17:04.000000000 +0100
-@@ -1060,6 +1060,14 @@ static int __devinit s3_pci_probe(struct
- 		goto err_find_mode;
- 	}
- 
-+	/* maximize virtual vertical size for fast scrolling */
-+	info->var.yres_virtual = info->fix.smem_len * 8 /
-+			(info->var.bits_per_pixel * info->var.xres_virtual);
-+	if (info->var.yres_virtual < info->var.yres) {
-+		dev_err(info->device, "virtual vertical size smaller than real\n");
-+		goto err_find_mode;
-+	}
-+
- 	rc = fb_alloc_cmap(&info->cmap, 256, 0);
- 	if (rc < 0) {
- 		dev_err(info->device, "cannot allocate colormap\n");
+On Tue, Mar 01, 2011 at 08:18:08PM +0100, Ondrej Zary wrote:
+> Maximize virtual vertical framebuffer size during init to allow fast scro=
+lling=20
+> (accelerated by panning).
+>=20
+> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
--- 
-Ondrej Zary
+Acked-by: Ondrej Zajicek <santiago@crfreenet.org>
+
+--=20
+Elen sila lumenn' omentielvo
+
+Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
+OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
+"To err is human -- to blame it on a computer is even more so."
+
+--AhhlLboLdkugWU4S
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAk1vVf4ACgkQw1GB2RHercPJmwCfc85Uw/DM9pt7/mTZnR7CLElk
+xsYAn3wpPJUadCxQ/KXFbQs62mmkrQZH
+=KyOz
+-----END PGP SIGNATURE-----
+
+--AhhlLboLdkugWU4S--

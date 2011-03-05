@@ -1,40 +1,24 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 09 Mar 2011 14:45:10 +0000
-Subject: Re: [PATCH 0/6] OMAP: DSS2: DSI: IRQ restructuring
-Message-Id: <1299681910.2151.98.camel@deskari>
+From: Vasily Khoruzhick <anarsoul@gmail.com>
+Date: Sat, 05 Mar 2011 22:30:59 +0000
+Subject: Re: [PATCH v2 1/3] ARM: PXA: PXAFB: Fix double-free issue
+Message-Id: <201103060030.59584.anarsoul@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1299655288-7121-1-git-send-email-tomi.valkeinen@ti.com>
-	 <4D77868A.7020700@ti.com>
-In-Reply-To: <4D77868A.7020700@ti.com>
+References: <20110217110321.GF24627@n2100.arm.linux.org.uk>
+	<1298214147-11578-1-git-send-email-anarsoul@gmail.com>
+In-Reply-To: <1298214147-11578-1-git-send-email-anarsoul@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Taneja, Archit" <archit@ti.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-On Wed, 2011-03-09 at 07:54 -0600, Taneja, Archit wrote:
-> On Wednesday 09 March 2011 12:51 PM, Valkeinen, Tomi wrote:
-> > Hi,
-> >
-> > In the future we will have more features using the DSI interrupts, like ULPS
-> > handling, and making use-case specific hooks into the main IRQ handler would
-> > become burdensome.
-> >
-> > This patch set cleans up the DSI IRQ handling a bit by implementing a generic
-> > way to register/unregister interrupt service routines. This allows us to remove
-> > the use-case specific callbacks from the main IRQ handler.
-> >
-> 
-> Would this make it more easy/difficult to migrate to irq_chip(if needed) 
-> later on? I guess it will atleast bring dispc and dsi irq 
-> requesting/handling in a similar state, hence the changes needed to move 
-> to irq_chip would be the same for both.
+Please discard this series.
 
-Well, I'm not really familiar with irq_chip, but I don't see how this
-could make it more difficult. It divides the code in cleaner way,
-removing irq specific callbacks in the irq handler, so it should make
-migrating easier, if anything.
+PXA270/3xx overlay memory management is still broken - it was not good 
+decision to allocate memory on open/close - after some time OS just does not 
+have 115kb of contiguous memory, so it fails to allocate overlay fb memory 
+after ~1h of uptime.
 
- Tomi
+I'll rework it and resend soon.
 
-
+Regards
+Vasily

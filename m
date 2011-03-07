@@ -1,97 +1,77 @@
-From: Maurus Cuelenaere <mcuelenaere@gmail.com>
-Date: Tue, 01 Mar 2011 17:26:14 +0000
-Subject: Re: [PATCH 5/6] FBDEV: JZ4740: Get rid of enumeration value not handled
-Message-Id: <4D6D2C36.9060002@gmail.com>
+From: Axel Lin <axel.lin@gmail.com>
+Date: Mon, 07 Mar 2011 08:26:13 +0000
+Subject: [PATCH] video: add MODULE_DEVICE_TABLE
+Message-Id: <1299486373.20702.1.camel@mola>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1202f26b58f8dea782600827a158f08b1775953b.1298980528.git.mcuelenaere@gmail.com>
-In-Reply-To: <1202f26b58f8dea782600827a158f08b1775953b.1298980528.git.mcuelenaere@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Ghozlane Toumi <gtoumi@laposte.net>, "David S. Miller" <davem@davemloft.net>, Alan Hourihane <alanh@tungstengraphics.com>, Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org
 
-> On 03/01/2011 01:06 PM, Maurus Cuelenaere wrote:
->> Convert enum jz4740_fb_lcd_type to #define's in order to get rid of these
->> warnings.
->>
-> Nack. If it is not handled the code is wrong.
-> If this is because you only handle SLCD types in some SLCD specific functions add a
-> default:
-> 	BUG();
+The device table is required to load modules based on modaliases.
 
-Ok, that's also a way to handle it.
+Signed-off-by: Axel Lin <axel.lin@gmail.com>
+Cc: Ghozlane Toumi <gtoumi@laposte.net>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Alan Hourihane <alanh@tungstengraphics.com>
+---
+ drivers/video/sstfb.c               |    1 +
+ drivers/video/sunxvr2500.c          |    1 +
+ drivers/video/sunxvr500.c           |    1 +
+ drivers/video/vermilion/vermilion.c |    1 +
+ 4 files changed, 4 insertions(+), 0 deletions(-)
 
->> Signed-off-by: Maurus Cuelenaere <mcuelenaere@gmail.com>
->> ---
->>  arch/mips/include/asm/mach-jz4740/jz4740_fb.h |   40 ++++++++++++-------------
->>  1 files changed, 19 insertions(+), 21 deletions(-)
->>
->> diff --git a/arch/mips/include/asm/mach-jz4740/jz4740_fb.h b/arch/mips/include/asm/mach-jz4740/jz4740_fb.h
->> index eaaac43..d6c11f2 100644
->> --- a/arch/mips/include/asm/mach-jz4740/jz4740_fb.h
->> +++ b/arch/mips/include/asm/mach-jz4740/jz4740_fb.h
->> @@ -17,27 +17,25 @@
->>  
->>  #include <linux/fb.h>
->>  
->> -enum jz4740_fb_lcd_type {
->> -	JZ_LCD_TYPE_GENERIC_16_BIT = 0,
->> -	JZ_LCD_TYPE_GENERIC_18_BIT = 0 | (1 << 4),
->> -	JZ_LCD_TYPE_SPECIAL_TFT_1 = 1,
->> -	JZ_LCD_TYPE_SPECIAL_TFT_2 = 2,
->> -	JZ_LCD_TYPE_SPECIAL_TFT_3 = 3,
->> -	JZ_LCD_TYPE_NON_INTERLACED_CCIR656 = 5,
->> -	JZ_LCD_TYPE_INTERLACED_CCIR656 = 7,
->> -	JZ_LCD_TYPE_SINGLE_COLOR_STN = 8,
->> -	JZ_LCD_TYPE_SINGLE_MONOCHROME_STN = 9,
->> -	JZ_LCD_TYPE_DUAL_COLOR_STN = 10,
->> -	JZ_LCD_TYPE_DUAL_MONOCHROME_STN = 11,
->> -	JZ_LCD_TYPE_8BIT_SERIAL = 12,
->> +#define JZ_LCD_TYPE_GENERIC_16_BIT		(0)
->> +#define JZ_LCD_TYPE_GENERIC_18_BIT		(0 | (1 << 4))
->> +#define JZ_LCD_TYPE_SPECIAL_TFT_1		(1)
->> +#define JZ_LCD_TYPE_SPECIAL_TFT_2		(2)
->> +#define JZ_LCD_TYPE_SPECIAL_TFT_3		(3)
->> +#define JZ_LCD_TYPE_NON_INTERLACED_CCIR656	(5)
->> +#define JZ_LCD_TYPE_INTERLACED_CCIR656		(7)
->> +#define JZ_LCD_TYPE_SINGLE_COLOR_STN		(8)
->> +#define JZ_LCD_TYPE_SINGLE_MONOCHROME_STN	(9)
->> +#define JZ_LCD_TYPE_DUAL_COLOR_STN		(10)
->> +#define JZ_LCD_TYPE_DUAL_MONOCHROME_STN		(11)
->> +#define JZ_LCD_TYPE_8BIT_SERIAL			(12)
->>  
->> -	JZ_SLCD_TYPE_PARALLEL_8_BIT = 1 | (1 << 5),
->> -	JZ_SLCD_TYPE_PARALLEL_16_BIT = 0 | (1 << 5),
->> -	JZ_SLCD_TYPE_PARALLEL_18_BIT = 2 | (1 << 5),
->> -	JZ_SLCD_TYPE_SERIAL_8_BIT = 1 | (3 << 5),
->> -	JZ_SLCD_TYPE_SERIAL_16_BIT = 0 | (3 << 5),
->> -	JZ_SLCD_TYPE_SERIAL_18_BIT = 2 | (3 << 5),
->> -};
->> +#define JZ_SLCD_TYPE_PARALLEL_8_BIT		(1 | (1 << 5))
->> +#define JZ_SLCD_TYPE_PARALLEL_16_BIT		(0 | (1 << 5))
->> +#define JZ_SLCD_TYPE_PARALLEL_18_BIT		(2 | (1 << 5))
->> +#define JZ_SLCD_TYPE_SERIAL_8_BIT		(1 | (3 << 5))
->> +#define JZ_SLCD_TYPE_SERIAL_16_BIT		(0 | (3 << 5))
->> +#define JZ_SLCD_TYPE_SERIAL_18_BIT		(2 | (3 << 5))
->>  
->>  #define JZ4740_FB_SPECIAL_TFT_CONFIG(start, stop) (((start) << 16) | (stop))
->>  
->> @@ -58,7 +56,7 @@ struct jz4740_fb_platform_data {
->>  	struct fb_videomode *modes;
->>  
->>  	unsigned int bpp;
->> -	enum jz4740_fb_lcd_type lcd_type;
->> +	unsigned int lcd_type;
->>  
->>  	struct {
->>  		uint32_t spl;
->
-> Nack
-
-Ok.
-
-Thanks for the review!
-
+diff --git a/drivers/video/sstfb.c b/drivers/video/sstfb.c
+index 2ab7041..597e80b 100644
+--- a/drivers/video/sstfb.c
++++ b/drivers/video/sstfb.c
+@@ -1485,6 +1485,7 @@ static const struct pci_device_id sstfb_id_tbl[] = {
+ 		.driver_data = ID_VOODOO2, },
+ 	{ 0 },
+ };
++MODULE_DEVICE_TABLE(pci, sstfb_id_tbl);
+ 
+ static struct pci_driver sstfb_driver = {
+ 	.name		= "sstfb",
+diff --git a/drivers/video/sunxvr2500.c b/drivers/video/sunxvr2500.c
+index 5848436..a83bc42 100644
+--- a/drivers/video/sunxvr2500.c
++++ b/drivers/video/sunxvr2500.c
+@@ -244,6 +244,7 @@ static struct pci_device_id s3d_pci_table[] = {
+ 	{	PCI_DEVICE(PCI_VENDOR_ID_3DLABS, 0x0033),	},
+ 	{ 0, }
+ };
++MODULE_DEVICE_TABLE(pci, s3d_pci_table);
+ 
+ static struct pci_driver s3d_driver = {
+ 	.name		= "s3d",
+diff --git a/drivers/video/sunxvr500.c b/drivers/video/sunxvr500.c
+index b9c2b94..19e0395 100644
+--- a/drivers/video/sunxvr500.c
++++ b/drivers/video/sunxvr500.c
+@@ -428,6 +428,7 @@ static struct pci_device_id e3d_pci_table[] = {
+ 	},
+ 	{ 0, }
+ };
++MODULE_DEVICE_TABLE(pci, e3d_pci_table);
+ 
+ static struct pci_driver e3d_driver = {
+ 	.name		= "e3d",
+diff --git a/drivers/video/vermilion/vermilion.c b/drivers/video/vermilion/vermilion.c
+index 931a567..30bd156 100644
+--- a/drivers/video/vermilion/vermilion.c
++++ b/drivers/video/vermilion/vermilion.c
+@@ -1057,6 +1057,7 @@ static struct pci_device_id vml_ids[] = {
+ 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, VML_DEVICE_VDC)},
+ 	{0}
+ };
++MODULE_DEVICE_TABLE(pci, vml_ids);
+ 
+ static struct pci_driver vmlfb_pci_driver = {
+ 	.name = "vmlfb",
 -- 
-Maurus Cuelenaere
+1.7.2
+
+
 

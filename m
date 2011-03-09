@@ -1,48 +1,34 @@
-From: Ondrej Zajicek <santiago@crfreenet.org>
-Date: Thu, 03 Mar 2011 08:49:02 +0000
-Subject: Re: [PATCH 1/5] s3fb: maximize virtual vertical size for fast
-Message-Id: <20110303084902.GA8363@localhost>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="AhhlLboLdkugWU4S"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 09 Mar 2011 07:21:22 +0000
+Subject: [PATCH 0/6] OMAP: DSS2: DSI: IRQ restructuring
+Message-Id: <1299655288-7121-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201103012018.11283.linux@rainbow-software.org>
-In-Reply-To: <201103012018.11283.linux@rainbow-software.org>
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
+Hi,
 
---AhhlLboLdkugWU4S
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In the future we will have more features using the DSI interrupts, like ULPS
+handling, and making use-case specific hooks into the main IRQ handler would
+become burdensome.
 
-On Tue, Mar 01, 2011 at 08:18:08PM +0100, Ondrej Zary wrote:
-> Maximize virtual vertical framebuffer size during init to allow fast scro=
-lling=20
-> (accelerated by panning).
->=20
-> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+This patch set cleans up the DSI IRQ handling a bit by implementing a generic
+way to register/unregister interrupt service routines. This allows us to remove
+the use-case specific callbacks from the main IRQ handler.
 
-Acked-by: Ondrej Zajicek <santiago@crfreenet.org>
+ Tomi
 
---=20
-Elen sila lumenn' omentielvo
+Tomi Valkeinen (6):
+  OMAP: DSS2: DSI: Restructure IRQ handler
+  OMAP: DSS2: DSI: Add ISR support
+  OMAP: DSS2: DSI: use ISR in send_bta_sync
+  OMAP: DSS2: DSI: use ISR for BTA in framedone
+  OMAP: DSS2: DSI: catch DSI errors in send_bta_sync
+  OMAP: DSS2: DSI: fix IRQ debug prints
 
-Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
+ drivers/video/omap2/dss/dsi.c |  523 ++++++++++++++++++++++++++++++++---------
+ 1 files changed, 408 insertions(+), 115 deletions(-)
 
---AhhlLboLdkugWU4S
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAk1vVf4ACgkQw1GB2RHercPJmwCfc85Uw/DM9pt7/mTZnR7CLElk
-xsYAn3wpPJUadCxQ/KXFbQs62mmkrQZH
-=KyOz
------END PGP SIGNATURE-----
-
---AhhlLboLdkugWU4S--

@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 09 Mar 2011 07:21:27 +0000
-Subject: [PATCH 5/6] OMAP: DSS2: DSI: catch DSI errors in send_bta_sync
-Message-Id: <1299655288-7121-6-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 09 Mar 2011 07:21:25 +0000
+Subject: [PATCH 3/6] OMAP: DSS2: DSI: use ISR in send_bta_sync
+Message-Id: <1299655288-7121-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1299655288-7121-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1299655288-7121-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,58 +11,103 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-dsi_vc_send_bta_sync() waits for BTA interrupt with a 500ms timeout. If
-a DSI error happens, no BTA is received and the timeout triggers. This
-could be handled much faster by listening to DSI errors also.
-
-This patch uses the ISR support to notice DSI errors while waiting for
-the BTA, thus speeding up the fail-path considerably.
+Remove bta_completion handling from the interrupt handler, and use ISR
+support instead.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dsi.c |   15 +++++++++++----
- 1 files changed, 11 insertions(+), 4 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   32 ++++++++++++++++++--------------
+ 1 files changed, 18 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 5672e40..ec5b879 100644
+index 9aea9a7..a4d47dd 100644
 --- a/drivers/video/omap2/dss/dsi.c
 +++ b/drivers/video/omap2/dss/dsi.c
-@@ -2230,24 +2230,31 @@ int dsi_vc_send_bta_sync(int channel)
- 	if (r)
- 		goto err0;
+@@ -257,7 +257,6 @@ static struct
  
--	r = dsi_vc_send_bta(channel);
-+	r = dsi_register_isr(dsi_completion_handler, &completion,
-+			DSI_IRQ_ERROR_MASK);
- 	if (r)
- 		goto err1;
+ 	unsigned pll_locked;
  
-+	r = dsi_vc_send_bta(channel);
-+	if (r)
-+		goto err2;
+-	struct completion bta_completion;
+ 	void (*bta_callback)(void);
+ 
+ 	spinlock_t irq_lock;
+@@ -341,6 +340,11 @@ static bool dsi_bus_is_locked(void)
+ 	return dsi.bus_lock.count = 0;
+ }
+ 
++static void dsi_completion_handler(void *data, u32 mask)
++{
++	complete((struct completion *)data);
++}
 +
- 	if (wait_for_completion_timeout(&completion,
+ static inline int wait_for_bit_change(const struct dsi_reg idx, int bitnum,
+ 		int value)
+ {
+@@ -642,8 +646,6 @@ static irqreturn_t omap_dsi_irq_handler(int irq, void *arg)
+ 			continue;
+ 
+ 		if (vcstatus[i] & DSI_VC_IRQ_BTA) {
+-			complete(&dsi.bta_completion);
+-
+ 			if (dsi.bta_callback)
+ 				dsi.bta_callback();
+ 		}
+@@ -2251,33 +2253,37 @@ static int dsi_vc_send_bta(int channel)
+ 
+ int dsi_vc_send_bta_sync(int channel)
+ {
++	DECLARE_COMPLETION_ONSTACK(completion);
+ 	int r = 0;
+ 	u32 err;
+ 
+-	INIT_COMPLETION(dsi.bta_completion);
+-
+-	dsi_vc_enable_bta_irq(channel);
++	r = dsi_register_isr_vc(channel, dsi_completion_handler,
++			&completion, DSI_VC_IRQ_BTA);
++	if (r)
++		goto err0;
+ 
+ 	r = dsi_vc_send_bta(channel);
+ 	if (r)
+-		goto err;
++		goto err1;
+ 
+-	if (wait_for_completion_timeout(&dsi.bta_completion,
++	if (wait_for_completion_timeout(&completion,
  				msecs_to_jiffies(500)) = 0) {
  		DSSERR("Failed to receive BTA\n");
  		r = -EIO;
--		goto err1;
-+		goto err2;
+-		goto err;
++		goto err1;
  	}
  
  	err = dsi_get_errors();
  	if (err) {
  		DSSERR("Error while sending BTA: %x\n", err);
  		r = -EIO;
--		goto err1;
-+		goto err2;
+-		goto err;
++		goto err1;
  	}
+-err:
+-	dsi_vc_disable_bta_irq(channel);
+ 
++err1:
++	dsi_unregister_isr_vc(channel, dsi_completion_handler,
++			&completion, DSI_VC_IRQ_BTA);
++err0:
+ 	return r;
+ }
+ EXPORT_SYMBOL(dsi_vc_send_bta_sync);
+@@ -3647,8 +3653,6 @@ static int dsi_init(struct platform_device *pdev)
+ 	dsi.irq_stats.last_reset = jiffies;
+ #endif
+ 
+-	init_completion(&dsi.bta_completion);
 -
-+err2:
-+	dsi_unregister_isr(dsi_completion_handler, &completion,
-+			DSI_IRQ_ERROR_MASK);
- err1:
- 	dsi_unregister_isr_vc(channel, dsi_completion_handler,
- 			&completion, DSI_VC_IRQ_BTA);
+ 	mutex_init(&dsi.lock);
+ 	sema_init(&dsi.bus_lock, 1);
+ 
 -- 
 1.7.1
 

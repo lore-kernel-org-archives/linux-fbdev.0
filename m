@@ -1,38 +1,60 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 23 Mar 2011 21:48:56 +0000
-Subject: [PATCH 2/4] viafb: no need to write CRTC values twice
-Message-Id: <1300917792-3880-3-git-send-email-FlorianSchandinat@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 09 Mar 2011 07:21:28 +0000
+Subject: [PATCH 6/6] OMAP: DSS2: DSI: fix IRQ debug prints
+Message-Id: <1299655288-7121-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1300917792-3880-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1300917792-3880-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <1299655288-7121-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1299655288-7121-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Later the correct values will be written so there is no need to
-write early some values which might be wrong.
+print_irq_status functions can be called with empty irq status when full
+irq debugging is enabled. This patch makes print_irq_status functions
+return immediately when given an empty irq status to lessen the debug
+spam slightly.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/via/hw.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+ drivers/video/omap2/dss/dsi.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index a982718..c4d2136 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -2401,9 +2401,6 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index ec5b879..f6733b5 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -412,6 +412,9 @@ static void dsi_perf_show(const char *name)
  
- 	viafb_write_reg_mask(0x15, VIASR, 0xA2, 0xA2);
+ static void print_irq_status(u32 status)
+ {
++	if (status = 0)
++		return;
++
+ #ifndef VERBOSE_IRQ
+ 	if ((status & ~DSI_IRQ_CHANNEL_MASK) = 0)
+ 		return;
+@@ -447,6 +450,9 @@ static void print_irq_status(u32 status)
  
--	/* Write CRTC */
--	viafb_fill_crtc_timing(crt_timing, vmode_tbl, video_bpp / 8, IGA1);
--
- 	/* Write Graphic Controller */
- 	for (i = 0; i < StdGR; i++)
- 		via_write_reg(VIAGR, i, VPIT.GR[i]);
+ static void print_irq_status_vc(int channel, u32 status)
+ {
++	if (status = 0)
++		return;
++
+ #ifndef VERBOSE_IRQ
+ 	if ((status & ~DSI_VC_IRQ_PACKET_SENT) = 0)
+ 		return;
+@@ -473,6 +479,9 @@ static void print_irq_status_vc(int channel, u32 status)
+ 
+ static void print_irq_status_cio(u32 status)
+ {
++	if (status = 0)
++		return;
++
+ 	printk(KERN_DEBUG "DSI CIO IRQ 0x%x: ", status);
+ 
+ #define PIS(x) \
 -- 
-1.6.3.2
+1.7.1
 

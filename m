@@ -1,262 +1,418 @@
-From: Chris Wright <chrisw@sous-sol.org>
-Date: Thu, 03 Mar 2011 20:26:26 +0000
-Subject: [RFC PATCH 3/2] security: update security_netlink_recv hook prototype
-Message-Id: <20110303202626.GV4988@sequoia.sous-sol.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 09 Mar 2011 07:21:24 +0000
+Subject: [PATCH 2/6] OMAP: DSS2: DSI: Add ISR support
+Message-Id: <1299655288-7121-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1299655288-7121-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1299655288-7121-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Morris <jmorris@namei.org>, kaber@trash.net
-Cc: David Miller <davem@davemloft.net>, Chris Wright <chrisw@sous-sol.org>, netdev@vger.kernel.org, dm-devel@redhat.com, linux-security-module@vger.kernel.org, drbd-dev@lists.linbit.com, Evgeniy Polyakov <zbr@ioremap.net>, linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-We no longer need the skb in security_netlink_recv hook because the
-netlink kernel receive path is synchronous.  There is no need to inspect
-the netlink_skb_params.  Eliminating this makes it easy to reuse
-the security_netlink_recv hook in connector callbacks.
+Add generic ISR support for DSI interrupts. ISRs can be used instead of
+custom hooks in the interrupt handler.
 
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/scsi/scsi_netlink.c     |    2 +-
- include/linux/security.h        |   14 ++++++--------
- kernel/audit.c                  |    4 ++--
- net/core/rtnetlink.c            |    2 +-
- net/decnet/netfilter/dn_rtmsg.c |    2 +-
- net/ipv4/netfilter/ip_queue.c   |    2 +-
- net/ipv6/netfilter/ip6_queue.c  |    2 +-
- net/netfilter/nfnetlink.c       |    2 +-
- net/netlink/genetlink.c         |    2 +-
- net/xfrm/xfrm_user.c            |    2 +-
- security/commoncap.c            |    2 +-
- security/security.c             |    4 ++--
- security/selinux/hooks.c        |    4 ++--
- 13 files changed, 21 insertions(+), 23 deletions(-)
+ drivers/video/omap2/dss/dsi.c |  325 ++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 301 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/scsi/scsi_netlink.c b/drivers/scsi/scsi_netlink.c
-index a2ed201..711bdc8 100644
---- a/drivers/scsi/scsi_netlink.c
-+++ b/drivers/scsi/scsi_netlink.c
-@@ -111,7 +111,7 @@ scsi_nl_rcv_msg(struct sk_buff *skb)
- 			goto next_msg;
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index a0881da..9aea9a7 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -193,6 +193,16 @@ struct dsi_reg { u16 idx; };
+ #define REGM_DSI_MAX (1 << 4)
+ #define LP_DIV_MAX ((1 << 13) - 1)
+ 
++typedef void (*omap_dsi_isr_t) (void *arg, u32 mask);
++
++#define DSI_MAX_NR_ISRS                2
++
++struct dsi_isr_data {
++	omap_dsi_isr_t	isr;
++	void		*arg;
++	u32		mask;
++};
++
+ enum fifo_size {
+ 	DSI_FIFO_SIZE_0		= 0,
+ 	DSI_FIFO_SIZE_32	= 1,
+@@ -219,6 +229,12 @@ struct dsi_irq_stats {
+ 	unsigned cio_irqs[32];
+ };
+ 
++struct dsi_isr_tables {
++	struct dsi_isr_data isr_table[DSI_MAX_NR_ISRS];
++	struct dsi_isr_data isr_table_vc[4][DSI_MAX_NR_ISRS];
++	struct dsi_isr_data isr_table_cio[DSI_MAX_NR_ISRS];
++};
++
+ static struct
+ {
+ 	struct platform_device *pdev;
+@@ -244,6 +260,11 @@ static struct
+ 	struct completion bta_completion;
+ 	void (*bta_callback)(void);
+ 
++	spinlock_t irq_lock;
++	struct dsi_isr_tables isr_tables;
++	/* space for a copy used by the interrupt handler */
++	struct dsi_isr_tables isr_tables_copy;
++
+ 	int update_channel;
+ 	struct dsi_update_region update_region;
+ 
+@@ -535,11 +556,49 @@ static void dsi_handle_irq_errors(u32 irqstatus, u32 *vcstatus, u32 ciostatus)
+ 	}
+ }
+ 
++static void dsi_call_isrs(struct dsi_isr_data *isr_array,
++		unsigned isr_array_size, u32 irqstatus)
++{
++	struct dsi_isr_data *isr_data;
++	int i;
++
++	for (i = 0; i < isr_array_size; i++) {
++		isr_data = &isr_array[i];
++		if (isr_data->isr && isr_data->mask & irqstatus)
++			isr_data->isr(isr_data->arg, irqstatus);
++	}
++}
++
++static void dsi_handle_isrs(struct dsi_isr_tables *isr_tables,
++		u32 irqstatus, u32 *vcstatus, u32 ciostatus)
++{
++	int i;
++
++	dsi_call_isrs(isr_tables->isr_table,
++			ARRAY_SIZE(isr_tables->isr_table),
++			irqstatus);
++
++	for (i = 0; i < 4; ++i) {
++		if (vcstatus[i] = 0)
++			continue;
++		dsi_call_isrs(isr_tables->isr_table_vc[i],
++				ARRAY_SIZE(isr_tables->isr_table_vc[i]),
++				vcstatus[i]);
++	}
++
++	if (ciostatus != 0)
++		dsi_call_isrs(isr_tables->isr_table_cio,
++				ARRAY_SIZE(isr_tables->isr_table_cio),
++				ciostatus);
++}
++
+ static irqreturn_t omap_dsi_irq_handler(int irq, void *arg)
+ {
+ 	u32 irqstatus, vcstatus[4], ciostatus;
+ 	int i;
+ 
++	spin_lock(&dsi.irq_lock);
++
+ 	irqstatus = dsi_read_reg(DSI_IRQSTATUS);
+ 
+ 	/* IRQ is not for us */
+@@ -590,6 +649,14 @@ static irqreturn_t omap_dsi_irq_handler(int irq, void *arg)
  		}
+ 	}
  
--		if (security_netlink_recv(skb, CAP_SYS_ADMIN)) {
-+		if (security_netlink_recv(CAP_SYS_ADMIN)) {
- 			err = -EPERM;
- 			goto next_msg;
- 		}
-diff --git a/include/linux/security.h b/include/linux/security.h
-index b2b7f97..8f10864 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -93,7 +93,7 @@ struct xfrm_user_sec_ctx;
- struct seq_file;
++	/* make a copy and unlock, so that isrs can unregister
++	 * themselves */
++	memcpy(&dsi.isr_tables_copy, &dsi.isr_tables, sizeof(dsi.isr_tables));
++
++	spin_unlock(&dsi.irq_lock);
++
++	dsi_handle_isrs(&dsi.isr_tables_copy, irqstatus, vcstatus, ciostatus);
++
+ 	dsi_handle_irq_errors(irqstatus, vcstatus, ciostatus);
  
- extern int cap_netlink_send(struct sock *sk, struct sk_buff *skb);
--extern int cap_netlink_recv(struct sk_buff *skb, int cap);
-+extern int cap_netlink_recv(int cap);
- 
- void reset_security_ops(void);
- 
-@@ -784,9 +784,7 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
-  *	Return 0 if the information was successfully saved and message
-  *	is allowed to be transmitted.
-  * @netlink_recv:
-- *	Check permission before processing the received netlink message in
-- *	@skb.
-- *	@skb contains the sk_buff structure for the netlink message.
-+ *	Check permission before processing a received netlink message.
-  *	@cap indicates the capability required
-  *	Return 0 if permission is granted.
-  *
-@@ -1552,7 +1550,7 @@ struct security_operations {
- 			  struct sembuf *sops, unsigned nsops, int alter);
- 
- 	int (*netlink_send) (struct sock *sk, struct sk_buff *skb);
--	int (*netlink_recv) (struct sk_buff *skb, int cap);
-+	int (*netlink_recv) (int cap);
- 
- 	void (*d_instantiate) (struct dentry *dentry, struct inode *inode);
- 
-@@ -1798,7 +1796,7 @@ void security_d_instantiate(struct dentry *dentry, struct inode *inode);
- int security_getprocattr(struct task_struct *p, char *name, char **value);
- int security_setprocattr(struct task_struct *p, char *name, void *value, size_t size);
- int security_netlink_send(struct sock *sk, struct sk_buff *skb);
--int security_netlink_recv(struct sk_buff *skb, int cap);
-+int security_netlink_recv(int cap);
- int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen);
- int security_secctx_to_secid(const char *secdata, u32 seclen, u32 *secid);
- void security_release_secctx(char *secdata, u32 seclen);
-@@ -2493,9 +2491,9 @@ static inline int security_netlink_send(struct sock *sk, struct sk_buff *skb)
- 	return cap_netlink_send(sk, skb);
+ 	dsi_collect_irq_stats(irqstatus, vcstatus, ciostatus);
+@@ -597,42 +664,251 @@ static irqreturn_t omap_dsi_irq_handler(int irq, void *arg)
+ 	return IRQ_HANDLED;
  }
  
--static inline int security_netlink_recv(struct sk_buff *skb, int cap)
-+static inline int security_netlink_recv(int cap)
+-static void _dsi_initialize_irq(void)
++/* dsi.irq_lock has to be locked by the caller */
++static void _omap_dsi_configure_irqs(struct dsi_isr_data *isr_array,
++		unsigned isr_array_size, u32 default_mask,
++		const struct dsi_reg enable_reg,
++		const struct dsi_reg status_reg)
  {
--	return cap_netlink_recv(skb, cap);
-+	return cap_netlink_recv(cap);
+-	u32 l;
++	struct dsi_isr_data *isr_data;
++	u32 mask;
++	u32 old_mask;
+ 	int i;
+ 
+-	/* disable all interrupts */
+-	dsi_write_reg(DSI_IRQENABLE, 0);
+-	for (i = 0; i < 4; ++i)
+-		dsi_write_reg(DSI_VC_IRQENABLE(i), 0);
+-	dsi_write_reg(DSI_COMPLEXIO_IRQ_ENABLE, 0);
++	mask = default_mask;
+ 
+-	/* clear interrupt status */
+-	l = dsi_read_reg(DSI_IRQSTATUS);
+-	dsi_write_reg(DSI_IRQSTATUS, l & ~DSI_IRQ_CHANNEL_MASK);
++	for (i = 0; i < isr_array_size; i++) {
++		isr_data = &isr_array[i];
+ 
+-	for (i = 0; i < 4; ++i) {
+-		l = dsi_read_reg(DSI_VC_IRQSTATUS(i));
+-		dsi_write_reg(DSI_VC_IRQSTATUS(i), l);
++		if (isr_data->isr = NULL)
++			continue;
++
++		mask |= isr_data->mask;
+ 	}
+ 
+-	l = dsi_read_reg(DSI_COMPLEXIO_IRQ_STATUS);
+-	dsi_write_reg(DSI_COMPLEXIO_IRQ_STATUS, l);
++	old_mask = dsi_read_reg(enable_reg);
++	/* clear the irqstatus for newly enabled irqs */
++	dsi_write_reg(status_reg, (mask ^ old_mask) & mask);
++	dsi_write_reg(enable_reg, mask);
++
++	/* flush posted writes */
++	dsi_read_reg(enable_reg);
++	dsi_read_reg(status_reg);
++}
+ 
+-	/* enable error irqs */
+-	l = DSI_IRQ_ERROR_MASK;
++/* dsi.irq_lock has to be locked by the caller */
++static void _omap_dsi_set_irqs(void)
++{
++	u32 mask = DSI_IRQ_ERROR_MASK;
+ #ifdef DSI_CATCH_MISSING_TE
+-	l |= DSI_IRQ_TE_TRIGGER;
++	mask |= DSI_IRQ_TE_TRIGGER;
+ #endif
+-	dsi_write_reg(DSI_IRQENABLE, l);
++	_omap_dsi_configure_irqs(dsi.isr_tables.isr_table,
++			ARRAY_SIZE(dsi.isr_tables.isr_table), mask,
++			DSI_IRQENABLE, DSI_IRQSTATUS);
++}
+ 
+-	l = DSI_VC_IRQ_ERROR_MASK;
+-	for (i = 0; i < 4; ++i)
+-		dsi_write_reg(DSI_VC_IRQENABLE(i), l);
++/* dsi.irq_lock has to be locked by the caller */
++static void _omap_dsi_set_irqs_vc(int vc)
++{
++	_omap_dsi_configure_irqs(dsi.isr_tables.isr_table_vc[vc],
++			ARRAY_SIZE(dsi.isr_tables.isr_table_vc[vc]),
++			DSI_VC_IRQ_ERROR_MASK,
++			DSI_VC_IRQENABLE(vc), DSI_VC_IRQSTATUS(vc));
++}
++
++/* dsi.irq_lock has to be locked by the caller */
++static void _omap_dsi_set_irqs_cio(void)
++{
++	_omap_dsi_configure_irqs(dsi.isr_tables.isr_table_cio,
++			ARRAY_SIZE(dsi.isr_tables.isr_table_cio),
++			DSI_CIO_IRQ_ERROR_MASK,
++			DSI_COMPLEXIO_IRQ_ENABLE, DSI_COMPLEXIO_IRQ_STATUS);
++}
++
++static void _dsi_initialize_irq(void)
++{
++	unsigned long flags;
++	int vc;
++
++	spin_lock_irqsave(&dsi.irq_lock, flags);
++
++	memset(&dsi.isr_tables, 0, sizeof(dsi.isr_tables));
++
++	_omap_dsi_set_irqs();
++	for (vc = 0; vc < 4; ++vc)
++		_omap_dsi_set_irqs_vc(vc);
++	_omap_dsi_set_irqs_cio();
++
++	spin_unlock_irqrestore(&dsi.irq_lock, flags);
++}
++
++static int _dsi_register_isr(omap_dsi_isr_t isr, void *arg, u32 mask,
++		struct dsi_isr_data *isr_array, unsigned isr_array_size)
++{
++	struct dsi_isr_data *isr_data;
++	int free_idx;
++	int i;
++
++	BUG_ON(isr = NULL);
++
++	/* check for duplicate entry and find a free slot */
++	free_idx = -1;
++	for (i = 0; i < isr_array_size; i++) {
++		isr_data = &isr_array[i];
++
++		if (isr_data->isr = isr && isr_data->arg = arg &&
++				isr_data->mask = mask) {
++			return -EINVAL;
++		}
++
++		if (isr_data->isr = NULL && free_idx = -1)
++			free_idx = i;
++	}
++
++	if (free_idx = -1)
++		return -EBUSY;
++
++	isr_data = &isr_array[free_idx];
++	isr_data->isr = isr;
++	isr_data->arg = arg;
++	isr_data->mask = mask;
++
++	return 0;
++}
++
++static int _dsi_unregister_isr(omap_dsi_isr_t isr, void *arg, u32 mask,
++		struct dsi_isr_data *isr_array, unsigned isr_array_size)
++{
++	struct dsi_isr_data *isr_data;
++	int i;
++
++	for (i = 0; i < isr_array_size; i++) {
++		isr_data = &isr_array[i];
++		if (isr_data->isr != isr || isr_data->arg != arg ||
++				isr_data->mask != mask)
++			continue;
++
++		isr_data->isr = NULL;
++		isr_data->arg = NULL;
++		isr_data->mask = 0;
++
++		return 0;
++	}
++
++	return -EINVAL;
++}
++
++static int dsi_register_isr(omap_dsi_isr_t isr, void *arg, u32 mask)
++{
++	unsigned long flags;
++	int r;
++
++	spin_lock_irqsave(&dsi.irq_lock, flags);
++
++	r = _dsi_register_isr(isr, arg, mask, dsi.isr_tables.isr_table,
++			ARRAY_SIZE(dsi.isr_tables.isr_table));
++
++	if (r = 0)
++		_omap_dsi_set_irqs();
++
++	spin_unlock_irqrestore(&dsi.irq_lock, flags);
++
++	return r;
++}
++
++static int dsi_unregister_isr(omap_dsi_isr_t isr, void *arg, u32 mask)
++{
++	unsigned long flags;
++	int r;
++
++	spin_lock_irqsave(&dsi.irq_lock, flags);
++
++	r = _dsi_unregister_isr(isr, arg, mask, dsi.isr_tables.isr_table,
++			ARRAY_SIZE(dsi.isr_tables.isr_table));
++
++	if (r = 0)
++		_omap_dsi_set_irqs();
++
++	spin_unlock_irqrestore(&dsi.irq_lock, flags);
++
++	return r;
++}
++
++static int dsi_register_isr_vc(int channel, omap_dsi_isr_t isr, void *arg,
++		u32 mask)
++{
++	unsigned long flags;
++	int r;
++
++	spin_lock_irqsave(&dsi.irq_lock, flags);
++
++	r = _dsi_register_isr(isr, arg, mask,
++			dsi.isr_tables.isr_table_vc[channel],
++			ARRAY_SIZE(dsi.isr_tables.isr_table_vc[channel]));
++
++	if (r = 0)
++		_omap_dsi_set_irqs_vc(channel);
+ 
+-	l = DSI_CIO_IRQ_ERROR_MASK;
+-	dsi_write_reg(DSI_COMPLEXIO_IRQ_ENABLE, l);
++	spin_unlock_irqrestore(&dsi.irq_lock, flags);
++
++	return r;
++}
++
++static int dsi_unregister_isr_vc(int channel, omap_dsi_isr_t isr, void *arg,
++		u32 mask)
++{
++	unsigned long flags;
++	int r;
++
++	spin_lock_irqsave(&dsi.irq_lock, flags);
++
++	r = _dsi_unregister_isr(isr, arg, mask,
++			dsi.isr_tables.isr_table_vc[channel],
++			ARRAY_SIZE(dsi.isr_tables.isr_table_vc[channel]));
++
++	if (r = 0)
++		_omap_dsi_set_irqs_vc(channel);
++
++	spin_unlock_irqrestore(&dsi.irq_lock, flags);
++
++	return r;
++}
++
++static int dsi_register_isr_cio(omap_dsi_isr_t isr, void *arg, u32 mask)
++{
++	unsigned long flags;
++	int r;
++
++	spin_lock_irqsave(&dsi.irq_lock, flags);
++
++	r = _dsi_register_isr(isr, arg, mask, dsi.isr_tables.isr_table_cio,
++			ARRAY_SIZE(dsi.isr_tables.isr_table_cio));
++
++	if (r = 0)
++		_omap_dsi_set_irqs_cio();
++
++	spin_unlock_irqrestore(&dsi.irq_lock, flags);
++
++	return r;
++}
++
++static int dsi_unregister_isr_cio(omap_dsi_isr_t isr, void *arg, u32 mask)
++{
++	unsigned long flags;
++	int r;
++
++	spin_lock_irqsave(&dsi.irq_lock, flags);
++
++	r = _dsi_unregister_isr(isr, arg, mask, dsi.isr_tables.isr_table_cio,
++			ARRAY_SIZE(dsi.isr_tables.isr_table_cio));
++
++	if (r = 0)
++		_omap_dsi_set_irqs_cio();
++
++	spin_unlock_irqrestore(&dsi.irq_lock, flags);
++
++	return r;
  }
  
- static inline int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
-diff --git a/kernel/audit.c b/kernel/audit.c
-index 608347c..ed43e46 100644
---- a/kernel/audit.c
-+++ b/kernel/audit.c
-@@ -596,13 +596,13 @@ static int audit_netlink_ok(struct sk_buff *skb, u16 msg_type)
- 	case AUDIT_TTY_SET:
- 	case AUDIT_TRIM:
- 	case AUDIT_MAKE_EQUIV:
--		if (security_netlink_recv(skb, CAP_AUDIT_CONTROL))
-+		if (security_netlink_recv(CAP_AUDIT_CONTROL))
- 			err = -EPERM;
- 		break;
- 	case AUDIT_USER:
- 	case AUDIT_FIRST_USER_MSG ... AUDIT_LAST_USER_MSG:
- 	case AUDIT_FIRST_USER_MSG2 ... AUDIT_LAST_USER_MSG2:
--		if (security_netlink_recv(skb, CAP_AUDIT_WRITE))
-+		if (security_netlink_recv(CAP_AUDIT_WRITE))
- 			err = -EPERM;
- 		break;
- 	default:  /* bad msg */
-diff --git a/net/core/rtnetlink.c b/net/core/rtnetlink.c
-index 2d65c6b..0d2dad5 100644
---- a/net/core/rtnetlink.c
-+++ b/net/core/rtnetlink.c
-@@ -1819,7 +1819,7 @@ static int rtnetlink_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
- 	sz_idx = type>>2;
- 	kind = type&3;
+ static u32 dsi_get_errors(void)
+@@ -3362,6 +3638,7 @@ static int dsi_init(struct platform_device *pdev)
+ 	int r, i;
+ 	struct resource *dsi_mem;
  
--	if (kind != 2 && security_netlink_recv(skb, CAP_NET_ADMIN))
-+	if (kind != 2 && security_netlink_recv(CAP_NET_ADMIN))
- 		return -EPERM;
- 
- 	if (kind = 2 && nlh->nlmsg_flags&NLM_F_DUMP) {
-diff --git a/net/decnet/netfilter/dn_rtmsg.c b/net/decnet/netfilter/dn_rtmsg.c
-index 64a7f39..51d9707 100644
---- a/net/decnet/netfilter/dn_rtmsg.c
-+++ b/net/decnet/netfilter/dn_rtmsg.c
-@@ -108,7 +108,7 @@ static inline void dnrmg_receive_user_skb(struct sk_buff *skb)
- 	if (nlh->nlmsg_len < sizeof(*nlh) || skb->len < nlh->nlmsg_len)
- 		return;
- 
--	if (security_netlink_recv(skb, CAP_NET_ADMIN))
-+	if (security_netlink_recv(CAP_NET_ADMIN))
- 		RCV_SKB_FAIL(-EPERM);
- 
- 	/* Eventually we might send routing messages too */
-diff --git a/net/ipv4/netfilter/ip_queue.c b/net/ipv4/netfilter/ip_queue.c
-index d2c1311..f821562 100644
---- a/net/ipv4/netfilter/ip_queue.c
-+++ b/net/ipv4/netfilter/ip_queue.c
-@@ -430,7 +430,7 @@ __ipq_rcv_skb(struct sk_buff *skb)
- 	if (type <= IPQM_BASE)
- 		return;
- 
--	if (security_netlink_recv(skb, CAP_NET_ADMIN))
-+	if (security_netlink_recv(CAP_NET_ADMIN))
- 		RCV_SKB_FAIL(-EPERM);
- 
- 	spin_lock_bh(&queue_lock);
-diff --git a/net/ipv6/netfilter/ip6_queue.c b/net/ipv6/netfilter/ip6_queue.c
-index 413ab07..f58cebb 100644
---- a/net/ipv6/netfilter/ip6_queue.c
-+++ b/net/ipv6/netfilter/ip6_queue.c
-@@ -431,7 +431,7 @@ __ipq_rcv_skb(struct sk_buff *skb)
- 	if (type <= IPQM_BASE)
- 		return;
- 
--	if (security_netlink_recv(skb, CAP_NET_ADMIN))
-+	if (security_netlink_recv(CAP_NET_ADMIN))
- 		RCV_SKB_FAIL(-EPERM);
- 
- 	spin_lock_bh(&queue_lock);
-diff --git a/net/netfilter/nfnetlink.c b/net/netfilter/nfnetlink.c
-index b4a4532..caca5c6 100644
---- a/net/netfilter/nfnetlink.c
-+++ b/net/netfilter/nfnetlink.c
-@@ -130,7 +130,7 @@ static int nfnetlink_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
- 	const struct nfnetlink_subsystem *ss;
- 	int type, err;
- 
--	if (security_netlink_recv(skb, CAP_NET_ADMIN))
-+	if (security_netlink_recv(CAP_NET_ADMIN))
- 		return -EPERM;
- 
- 	/* All the messages must at least contain nfgenmsg */
-diff --git a/net/netlink/genetlink.c b/net/netlink/genetlink.c
-index 1781d99..8c47d8f 100644
---- a/net/netlink/genetlink.c
-+++ b/net/netlink/genetlink.c
-@@ -516,7 +516,7 @@ static int genl_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
- 		return -EOPNOTSUPP;
- 
- 	if ((ops->flags & GENL_ADMIN_PERM) &&
--	    security_netlink_recv(skb, CAP_NET_ADMIN))
-+	    security_netlink_recv(CAP_NET_ADMIN))
- 		return -EPERM;
- 
- 	if (nlh->nlmsg_flags & NLM_F_DUMP) {
-diff --git a/net/xfrm/xfrm_user.c b/net/xfrm/xfrm_user.c
-index 117a99e..5ad66bf 100644
---- a/net/xfrm/xfrm_user.c
-+++ b/net/xfrm/xfrm_user.c
-@@ -2192,7 +2192,7 @@ static int xfrm_user_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
- 	link = &xfrm_dispatch[type];
- 
- 	/* All operations require privileges, even GET */
--	if (security_netlink_recv(skb, CAP_NET_ADMIN))
-+	if (security_netlink_recv(CAP_NET_ADMIN))
- 		return -EPERM;
- 
- 	if ((type = (XFRM_MSG_GETSA - XFRM_MSG_BASE) ||
-diff --git a/security/commoncap.c b/security/commoncap.c
-index a83e607..a9eefc9 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -55,7 +55,7 @@ int cap_netlink_send(struct sock *sk, struct sk_buff *skb)
- 	return 0;
- }
- 
--int cap_netlink_recv(struct sk_buff *skb, int cap)
-+int cap_netlink_recv(int cap)
- {
- 	if (!cap_raised(current_cap(), cap))
- 		return -EPERM;
-diff --git a/security/security.c b/security/security.c
-index 7b7308a..1e0879d 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -941,9 +941,9 @@ int security_netlink_send(struct sock *sk, struct sk_buff *skb)
- 	return security_ops->netlink_send(sk, skb);
- }
- 
--int security_netlink_recv(struct sk_buff *skb, int cap)
-+int security_netlink_recv(int cap)
- {
--	return security_ops->netlink_recv(skb, cap);
-+	return security_ops->netlink_recv(cap);
- }
- EXPORT_SYMBOL(security_netlink_recv);
- 
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index cef42f5..a832d6b 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -4665,13 +4665,13 @@ static int selinux_netlink_send(struct sock *sk, struct sk_buff *skb)
- 	return selinux_nlmsg_perm(sk, skb);
- }
- 
--static int selinux_netlink_recv(struct sk_buff *skb, int capability)
-+static int selinux_netlink_recv(int capability)
- {
- 	int err;
- 	struct common_audit_data ad;
- 	u32 sid;
- 
--	err = cap_netlink_recv(skb, capability);
-+	err = cap_netlink_recv(capability);
- 	if (err)
- 		return err;
++	spin_lock_init(&dsi.irq_lock);
+ 	spin_lock_init(&dsi.errors_lock);
+ 	dsi.errors = 0;
  
 -- 
 1.7.1

@@ -1,72 +1,46 @@
-From: InKi Dae <daeinki@gmail.com>
-Date: Thu, 17 Mar 2011 08:28:22 +0000
-Subject: Re: [PATCH 1/2] s5pc110: add clock gate for MIPI-DSI controller.
-Message-Id: <AANLkTimGLcmHiAAY2pTE1w7QW__N-b3UvoaUt8L8M6+9@mail.gmail.com>
+From: Vasily Khoruzhick <anarsoul@gmail.com>
+Date: Fri, 11 Mar 2011 09:20:49 +0000
+Subject: [PATCH 3/4] ARM: PXA: PXAFB: Fix typo in ypos assignment
+Message-Id: <1299835250-11095-3-git-send-email-anarsoul@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1294223690-31860-1-git-send-email-inki.dae@samsung.com>
-	<00af01cbe47c$8fde0180$af9a0480$%kim@samsung.com>
-In-Reply-To: <00af01cbe47c$8fde0180$af9a0480$%kim@samsung.com>
+References: <201103060030.59584.anarsoul@gmail.com>
+	<1299835250-11095-1-git-send-email-anarsoul@gmail.com>
+In-Reply-To: <1299835250-11095-1-git-send-email-anarsoul@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-2011/3/17 Kukjin Kim <kgene.kim@samsung.com>:
-> Inki Dae wrote:
->>
->> the clock gate for MIPI-DSI controller is placed at CLK_GATE_IP1[2]
->> so it adds a clock object to clock framework for MIPI-DSI clock gating.
->>
->> Signed-off-by: Inki Dae <inki.dae@samsung.com>
->> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
->> ---
->> =A0arch/arm/mach-s5pv210/clock.c | =A0 =A06 ++++++
->> =A01 files changed, 6 insertions(+), 0 deletions(-)
->>
->> diff --git a/arch/arm/mach-s5pv210/clock.c b/arch/arm/mach-s5pv210/clock=
-.c
->> index dab6ef3..a8d5235 100644
->> --- a/arch/arm/mach-s5pv210/clock.c
->> +++ b/arch/arm/mach-s5pv210/clock.c
->> @@ -365,6 +365,12 @@ static struct clk init_clocks_disable[] =3D {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 .enable =A0 =A0 =A0 =A0 =3D s5pv210_clk_ip1_=
-ctrl,
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 .ctrlbit =A0 =A0 =A0 =A0=3D (1<<0),
->> =A0 =A0 =A0 }, {
->> + =A0 =A0 =A0 =A0 =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =3D "dsim",
->> + =A0 =A0 =A0 =A0 =A0 =A0 .id =A0 =A0 =A0 =A0 =A0 =A0 =3D -1,
->> + =A0 =A0 =A0 =A0 =A0 =A0 .parent =A0 =A0 =A0 =A0 =3D &clk_hclk_dsys.clk,
->> + =A0 =A0 =A0 =A0 =A0 =A0 .enable =A0 =A0 =A0 =A0 =3D s5pv210_clk_ip1_ct=
-rl,
->> + =A0 =A0 =A0 =A0 =A0 =A0 .ctrlbit =A0 =A0 =A0 =A0=3D (1<<2),
->
-> According to coding-style, should be added blank around "<<" like (1 << 2=
-),
-> even though there are wrong things to others.
->
+Sascha Hauer <s.hauer@pengutronix.de> pointed that
+ypos takes value of xpos due to typo.
 
-ok, I will correct it and give me your comments on my second patch please.
-thank you.
+Signed-off-by: Vasily Khoruzhick <anarsoul@gmail.com>
+---
+ drivers/video/pxafb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
->> + =A0 =A0 }, {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =3D "cfcon",
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 .id =A0 =A0 =A0 =A0 =A0 =A0 =3D 0,
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 .parent =A0 =A0 =A0 =A0 =3D &clk_hclk_psys.c=
-lk,
->> --
->> 1.7.0.4
->
-> Thanks.
->
-> Best regards,
-> Kgene.
-> --
-> Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-> SW Solution Development Team, Samsung Electronics Co., Ltd.
->
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
->
+diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
+index e2f643e..a3bdcc1 100644
+--- a/drivers/video/pxafb.c
++++ b/drivers/video/pxafb.c
+@@ -761,7 +761,7 @@ static int overlayfb_check_var(struct fb_var_screeninfo *var,
+ 	int xpos, ypos, pfor, bpp;
+ 
+ 	xpos = NONSTD_TO_XPOS(var->nonstd);
+-	ypos = NONSTD_TO_XPOS(var->nonstd);
++	ypos = NONSTD_TO_YPOS(var->nonstd);
+ 	pfor = NONSTD_TO_PFOR(var->nonstd);
+ 
+ 	bpp = pxafb_var_to_bpp(var);
+@@ -842,7 +842,7 @@ static int overlayfb_set_par(struct fb_info *info)
+ 
+ 	bpp  = pxafb_var_to_bpp(var);
+ 	xpos = NONSTD_TO_XPOS(var->nonstd);
+-	ypos = NONSTD_TO_XPOS(var->nonstd);
++	ypos = NONSTD_TO_YPOS(var->nonstd);
+ 	pfor = NONSTD_TO_PFOR(var->nonstd);
+ 
+ 	ofb->control[0] = OVLxC1_PPL(var->xres) | OVLxC1_LPO(var->yres) |
+-- 
+1.7.4.1
+

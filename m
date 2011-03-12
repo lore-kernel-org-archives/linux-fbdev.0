@@ -1,196 +1,44 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 09 Mar 2011 07:21:23 +0000
-Subject: [PATCH 1/6] OMAP: DSS2: DSI: Restructure IRQ handler
-Message-Id: <1299655288-7121-2-git-send-email-tomi.valkeinen@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 12 Mar 2011 21:22:57 +0000
+Subject: [PATCH 2/4] viafb: remove unused data_mode and device_type
+Message-Id: <1299964979-3391-3-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1299655288-7121-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1299655288-7121-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1299964979-3391-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1299964979-3391-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Clean up the IRQ handler a bit by separating collection of IRQ stats and
-handling of IRQ errors to separate functions.
+This patch is a little cleanup for the chip_info structures.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/omap2/dss/dsi.c |  123 ++++++++++++++++++++++++-----------------
- 1 files changed, 73 insertions(+), 50 deletions(-)
+ drivers/video/via/chip.h |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index be7694f..a0881da 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -480,26 +480,33 @@ static void print_irq_status_cio(u32 status)
- 	printk("\n");
- }
+diff --git a/drivers/video/via/chip.h b/drivers/video/via/chip.h
+index a2f6200..3e8aacd 100644
+--- a/drivers/video/via/chip.h
++++ b/drivers/video/via/chip.h
+@@ -110,16 +110,13 @@
+ struct tmds_chip_information {
+ 	int tmds_chip_name;
+ 	int tmds_chip_slave_addr;
+-	int data_mode;
+ 	int output_interface;
+ 	int i2c_port;
+-	int device_type;
+ };
  
--static int debug_irq;
--
--/* called from dss */
--static irqreturn_t omap_dsi_irq_handler(int irq, void *arg)
-+#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
-+static void dsi_collect_irq_stats(u32 irqstatus, u32 *vcstatus, u32 ciostatus)
- {
--	u32 irqstatus, vcstatus, ciostatus;
- 	int i;
- 
--	irqstatus = dsi_read_reg(DSI_IRQSTATUS);
--
--	/* IRQ is not for us */
--	if (!irqstatus)
--		return IRQ_NONE;
--
--#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
- 	spin_lock(&dsi.irq_stats_lock);
-+
- 	dsi.irq_stats.irq_count++;
- 	dss_collect_irq_stats(irqstatus, dsi.irq_stats.dsi_irqs);
-+
-+	for (i = 0; i < 4; ++i)
-+		dss_collect_irq_stats(vcstatus[i], dsi.irq_stats.vc_irqs[i]);
-+
-+	dss_collect_irq_stats(ciostatus, dsi.irq_stats.cio_irqs);
-+
-+	spin_unlock(&dsi.irq_stats_lock);
-+}
-+#else
-+#define dsi_collect_irq_stats(irqstatus, vcstatus, ciostatus)
- #endif
- 
-+static int debug_irq;
-+
-+static void dsi_handle_irq_errors(u32 irqstatus, u32 *vcstatus, u32 ciostatus)
-+{
-+	int i;
-+
- 	if (irqstatus & DSI_IRQ_ERROR_MASK) {
- 		DSSERR("DSI error, irqstatus %x\n", irqstatus);
- 		print_irq_status(irqstatus);
-@@ -510,37 +517,48 @@ static irqreturn_t omap_dsi_irq_handler(int irq, void *arg)
- 		print_irq_status(irqstatus);
- 	}
- 
--#ifdef DSI_CATCH_MISSING_TE
--	if (irqstatus & DSI_IRQ_TE_TRIGGER)
--		del_timer(&dsi.te_timer);
--#endif
--
- 	for (i = 0; i < 4; ++i) {
--		if ((irqstatus & (1<<i)) = 0)
--			continue;
-+		if (vcstatus[i] & DSI_VC_IRQ_ERROR_MASK) {
-+			DSSERR("DSI VC(%d) error, vc irqstatus %x\n",
-+				       i, vcstatus[i]);
-+			print_irq_status_vc(i, vcstatus[i]);
-+		} else if (debug_irq) {
-+			print_irq_status_vc(i, vcstatus[i]);
-+		}
-+	}
- 
--		vcstatus = dsi_read_reg(DSI_VC_IRQSTATUS(i));
-+	if (ciostatus & DSI_CIO_IRQ_ERROR_MASK) {
-+		DSSERR("DSI CIO error, cio irqstatus %x\n", ciostatus);
-+		print_irq_status_cio(ciostatus);
-+	} else if (debug_irq) {
-+		print_irq_status_cio(ciostatus);
-+	}
-+}
- 
--#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
--		dss_collect_irq_stats(vcstatus, dsi.irq_stats.vc_irqs[i]);
--#endif
-+static irqreturn_t omap_dsi_irq_handler(int irq, void *arg)
-+{
-+	u32 irqstatus, vcstatus[4], ciostatus;
-+	int i;
- 
--		if (vcstatus & DSI_VC_IRQ_BTA) {
--			complete(&dsi.bta_completion);
-+	irqstatus = dsi_read_reg(DSI_IRQSTATUS);
- 
--			if (dsi.bta_callback)
--				dsi.bta_callback();
--		}
-+	/* IRQ is not for us */
-+	if (!irqstatus)
-+		return IRQ_NONE;
- 
--		if (vcstatus & DSI_VC_IRQ_ERROR_MASK) {
--			DSSERR("DSI VC(%d) error, vc irqstatus %x\n",
--				       i, vcstatus);
--			print_irq_status_vc(i, vcstatus);
--		} else if (debug_irq) {
--			print_irq_status_vc(i, vcstatus);
-+	dsi_write_reg(DSI_IRQSTATUS, irqstatus & ~DSI_IRQ_CHANNEL_MASK);
-+	/* flush posted write */
-+	dsi_read_reg(DSI_IRQSTATUS);
-+
-+	for (i = 0; i < 4; ++i) {
-+		if ((irqstatus & (1 << i)) = 0) {
-+			vcstatus[i] = 0;
-+			continue;
- 		}
- 
--		dsi_write_reg(DSI_VC_IRQSTATUS(i), vcstatus);
-+		vcstatus[i] = dsi_read_reg(DSI_VC_IRQSTATUS(i));
-+
-+		dsi_write_reg(DSI_VC_IRQSTATUS(i), vcstatus[i]);
- 		/* flush posted write */
- 		dsi_read_reg(DSI_VC_IRQSTATUS(i));
- 	}
-@@ -548,29 +566,34 @@ static irqreturn_t omap_dsi_irq_handler(int irq, void *arg)
- 	if (irqstatus & DSI_IRQ_COMPLEXIO_ERR) {
- 		ciostatus = dsi_read_reg(DSI_COMPLEXIO_IRQ_STATUS);
- 
--#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
--		dss_collect_irq_stats(ciostatus, dsi.irq_stats.cio_irqs);
--#endif
--
- 		dsi_write_reg(DSI_COMPLEXIO_IRQ_STATUS, ciostatus);
- 		/* flush posted write */
- 		dsi_read_reg(DSI_COMPLEXIO_IRQ_STATUS);
-+	} else {
-+		ciostatus = 0;
-+	}
- 
--		if (ciostatus & DSI_CIO_IRQ_ERROR_MASK) {
--			DSSERR("DSI CIO error, cio irqstatus %x\n", ciostatus);
--			print_irq_status_cio(ciostatus);
--		} else if (debug_irq) {
--			print_irq_status_cio(ciostatus);
-+#ifdef DSI_CATCH_MISSING_TE
-+	if (irqstatus & DSI_IRQ_TE_TRIGGER)
-+		del_timer(&dsi.te_timer);
-+#endif
-+
-+	for (i = 0; i < 4; ++i) {
-+		if (vcstatus[i] = 0)
-+			continue;
-+
-+		if (vcstatus[i] & DSI_VC_IRQ_BTA) {
-+			complete(&dsi.bta_completion);
-+
-+			if (dsi.bta_callback)
-+				dsi.bta_callback();
- 		}
- 	}
- 
--	dsi_write_reg(DSI_IRQSTATUS, irqstatus & ~DSI_IRQ_CHANNEL_MASK);
--	/* flush posted write */
--	dsi_read_reg(DSI_IRQSTATUS);
-+	dsi_handle_irq_errors(irqstatus, vcstatus, ciostatus);
-+
-+	dsi_collect_irq_stats(irqstatus, vcstatus, ciostatus);
- 
--#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
--	spin_unlock(&dsi.irq_stats_lock);
--#endif
- 	return IRQ_HANDLED;
- }
- 
+ struct lvds_chip_information {
+ 	int lvds_chip_name;
+ 	int lvds_chip_slave_addr;
+-	int data_mode;
+ 	int output_interface;
+ 	int i2c_port;
+ };
 -- 
-1.7.1
+1.6.3.2
 

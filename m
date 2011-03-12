@@ -1,78 +1,42 @@
-From: Chris Wright <chrisw@sous-sol.org>
-Date: Thu, 03 Mar 2011 20:30:12 +0000
-Subject: [RFC PATCH 4/2] connector: update callbacks to use
-Message-Id: <20110303203012.GW4988@sequoia.sous-sol.org>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 12 Mar 2011 15:31:35 +0000
+Subject: Re: [PATCH] video/via: drop deprecated (and unused) i2c_adapter.id
+Message-Id: <4D7B91D7.807@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20110303202626.GV4988@sequoia.sous-sol.org>
-In-Reply-To: <20110303202626.GV4988@sequoia.sous-sol.org>
+References: <1295991264-8640-1-git-send-email-peterhuewe@gmx.de>
+In-Reply-To: <1295991264-8640-1-git-send-email-peterhuewe@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Morris <jmorris@namei.org>, kaber@trash.net
-Cc: David Miller <davem@davemloft.net>, Chris Wright <chrisw@sous-sol.org>, netdev@vger.kernel.org, dm-devel@redhat.com, linux-security-module@vger.kernel.org, drbd-dev@lists.linbit.com, Evgeniy Polyakov <zbr@ioremap.net>, linux-fbdev@vger.kernel.org
+To: Peter Huewe <peterhuewe@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Jean Delvare <khali@linux-fr.org>
 
-This moves callbacks from a raw capabiliity hook to the generic lsm hook
-when receiving request from userspace.
+Peter Huewe schrieb:
+> This patch removes an assignment to the deprecated i2c_adapter.id
+> field. Since the field isn't used anywhere else in the driver it is
+> save to remove it.
+> 
+> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
 
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- drivers/block/drbd/drbd_nl.c           |    2 +-
- drivers/md/dm-log-userspace-transfer.c |    2 +-
- drivers/staging/pohmelfs/config.c      |    2 +-
- drivers/video/uvesafb.c                |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+Applied. Thanks,
 
-diff --git a/drivers/block/drbd/drbd_nl.c b/drivers/block/drbd/drbd_nl.c
-index fe81c85..8b3301b 100644
---- a/drivers/block/drbd/drbd_nl.c
-+++ b/drivers/block/drbd/drbd_nl.c
-@@ -2177,7 +2177,7 @@ static void drbd_connector_callback(struct cn_msg *req, struct netlink_skb_parms
- 		return;
- 	}
- 
--	if (!cap_raised(current_cap(), CAP_SYS_ADMIN)) {
-+	if (security_netlink_recv(CAP_SYS_ADMIN)) {
- 		retcode = ERR_PERM;
- 		goto fail;
- 	}
-diff --git a/drivers/md/dm-log-userspace-transfer.c b/drivers/md/dm-log-userspace-transfer.c
-index 1f23e04..db34a3a 100644
---- a/drivers/md/dm-log-userspace-transfer.c
-+++ b/drivers/md/dm-log-userspace-transfer.c
-@@ -134,7 +134,7 @@ static void cn_ulog_callback(struct cn_msg *msg, struct netlink_skb_parms *nsp)
- {
- 	struct dm_ulog_request *tfr = (struct dm_ulog_request *)(msg + 1);
- 
--	if (!cap_raised(current_cap(), CAP_SYS_ADMIN))
-+	if (security_netlink_recv(CAP_SYS_ADMIN))
- 		return;
- 
- 	spin_lock(&receiving_list_lock);
-diff --git a/drivers/staging/pohmelfs/config.c b/drivers/staging/pohmelfs/config.c
-index 39413b7..123295a 100644
---- a/drivers/staging/pohmelfs/config.c
-+++ b/drivers/staging/pohmelfs/config.c
-@@ -525,7 +525,7 @@ static void pohmelfs_cn_callback(struct cn_msg *msg, struct netlink_skb_parms *n
- {
- 	int err;
- 
--	if (!cap_raised(current_cap(), CAP_SYS_ADMIN))
-+	if (security_netlink_recv(CAP_SYS_ADMIN))
- 		return;
- 
- 	switch (msg->flags) {
-diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-index 5180a21..081463a 100644
---- a/drivers/video/uvesafb.c
-+++ b/drivers/video/uvesafb.c
-@@ -73,7 +73,7 @@ static void uvesafb_cn_callback(struct cn_msg *msg, struct netlink_skb_parms *ns
- 	struct uvesafb_task *utask;
- 	struct uvesafb_ktask *task;
- 
--	if (!cap_raised(current_cap(), CAP_SYS_ADMIN))
-+	if (security_netlink_recv(CAP_SYS_ADMIN))
- 		return;
- 
- 	if (msg->seq >= UVESAFB_TASKS_MAX)
--- 
-1.7.1
+
+Florian Tobias Schandinat
+
+> ---
+>  drivers/video/via/via_i2c.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
+> index 3844b55..a172a31 100644
+> --- a/drivers/video/via/via_i2c.c
+> +++ b/drivers/video/via/via_i2c.c
+> @@ -209,7 +209,6 @@ static int create_i2c_bus(struct i2c_adapter *adapter,
+>  	sprintf(adapter->name, "viafb i2c io_port idx 0x%02x",
+>  		adap_cfg->ioport_index);
+>  	adapter->owner = THIS_MODULE;
+> -	adapter->id = 0x01FFFF;
+>  	adapter->class = I2C_CLASS_DDC;
+>  	adapter->algo_data = algo;
+>  	if (pdev)
+

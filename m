@@ -1,137 +1,86 @@
-From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
-Date: Tue, 29 Mar 2011 03:35:58 +0000
-Subject: [RFC][PATCH 3/3] sh_mobile_meram: MERAM platform data for LCDC
-Message-Id: <1301369758-18394-4-git-send-email-dhobsong@igel.co.jp>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 12 Mar 2011 21:22:58 +0000
+Subject: [PATCH 3/4] viafb: strip some structures
+Message-Id: <1299964979-3391-4-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1299964979-3391-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1299964979-3391-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Based on the patch by Takanari Hayama <taki@igel.co.jp>
+This patch removes some write-only variables from the device management
+structures. Just a small cleanup.
 
-Add the necessary platform data to add MERAM functionality to LCDC
-
-Signed-off-by: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- arch/arm/mach-shmobile/board-ap4evb.c |   69 +++++++++++++++++++++++++++++++++
- 1 files changed, 69 insertions(+), 0 deletions(-)
+ drivers/video/via/chip.h |    4 ----
+ drivers/video/via/hw.c   |   11 -----------
+ 2 files changed, 0 insertions(+), 15 deletions(-)
 
-diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
-index a94f29d..e467696 100644
---- a/arch/arm/mach-shmobile/board-ap4evb.c
-+++ b/arch/arm/mach-shmobile/board-ap4evb.c
-@@ -249,6 +249,31 @@ static int slot_cn7_get_cd(struct platform_device *pdev)
+diff --git a/drivers/video/via/chip.h b/drivers/video/via/chip.h
+index 3e8aacd..781f3aa 100644
+--- a/drivers/video/via/chip.h
++++ b/drivers/video/via/chip.h
+@@ -139,9 +139,6 @@ struct chip_information {
+ 
+ struct crt_setting_information {
+ 	int iga_path;
+-	int h_active;
+-	int v_active;
+-	int bpp;
+ 	int refresh_rate;
+ };
+ 
+@@ -159,7 +156,6 @@ struct lvds_setting_information {
+ 	int h_active;
+ 	int v_active;
+ 	int bpp;
+-	int refresh_rate;
+ 	int lcd_panel_hres;
+ 	int lcd_panel_vres;
+ 	int display_method;
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 9ecf486..b0b0278 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -2117,9 +2117,6 @@ void viafb_update_device_setting(int hres, int vres,
+ 	int bpp, int vmode_refresh, int flag)
  {
- 	return !gpio_get_value(GPIO_PORT41);
+ 	if (flag = 0) {
+-		viaparinfo->crt_setting_info->h_active = hres;
+-		viaparinfo->crt_setting_info->v_active = vres;
+-		viaparinfo->crt_setting_info->bpp = bpp;
+ 		viaparinfo->crt_setting_info->refresh_rate  			vmode_refresh;
+ 
+@@ -2129,13 +2126,9 @@ void viafb_update_device_setting(int hres, int vres,
+ 		viaparinfo->lvds_setting_info->h_active = hres;
+ 		viaparinfo->lvds_setting_info->v_active = vres;
+ 		viaparinfo->lvds_setting_info->bpp = bpp;
+-		viaparinfo->lvds_setting_info->refresh_rate -			vmode_refresh;
+ 		viaparinfo->lvds_setting_info2->h_active = hres;
+ 		viaparinfo->lvds_setting_info2->v_active = vres;
+ 		viaparinfo->lvds_setting_info2->bpp = bpp;
+-		viaparinfo->lvds_setting_info2->refresh_rate -			vmode_refresh;
+ 	} else {
+ 
+ 		if (viaparinfo->tmds_setting_info->iga_path = IGA2) {
+@@ -2147,15 +2140,11 @@ void viafb_update_device_setting(int hres, int vres,
+ 			viaparinfo->lvds_setting_info->h_active = hres;
+ 			viaparinfo->lvds_setting_info->v_active = vres;
+ 			viaparinfo->lvds_setting_info->bpp = bpp;
+-			viaparinfo->lvds_setting_info->refresh_rate -				vmode_refresh;
+ 		}
+ 		if (IGA2 = viaparinfo->lvds_setting_info2->iga_path) {
+ 			viaparinfo->lvds_setting_info2->h_active = hres;
+ 			viaparinfo->lvds_setting_info2->v_active = vres;
+ 			viaparinfo->lvds_setting_info2->bpp = bpp;
+-			viaparinfo->lvds_setting_info2->refresh_rate -				vmode_refresh;
+ 		}
+ 	}
  }
-+#ifdef CONFIG_FB_SH_MOBILE_MERAM
-+/* MERAM */
-+static struct sh_mobile_meram_info mackerel_meram_info = {
-+	.addr_mode      = SH_MOBILE_MERAM_MODE1,
-+};
-+
-+static struct resource meram_resources[] = {
-+	[0] = {
-+		.name   = "MERAM",
-+		.start  = 0xe8000000,
-+		.end    = 0xe81fffff,
-+		.flags  = IORESOURCE_MEM,
-+	},
-+};
-+
-+static struct platform_device meram_device = {
-+	.name           = "sh_mobile_meram",
-+	.id             = -1,
-+	.num_resources  = ARRAY_SIZE(meram_resources),
-+	.resource       = meram_resources,
-+	.dev            = {
-+		.platform_data = &mackerel_meram_info,
-+	},
-+};
-+#endif
- 
- /* SH_MMCIF */
- static struct resource sh_mmcif_resources[] = {
-@@ -431,6 +456,23 @@ const static struct fb_videomode ap4evb_lcdc_modes[] = {
- #endif
- 	},
- };
-+#ifdef CONFIG_FB_SH_MOBILE_MERAM
-+static struct sh_mobile_meram_cfg lcd_meram_cfg = {
-+	.meram_dev = &mackerel_meram_info,
-+	.icb[0] = {
-+		.marker_icb     = 28,
-+		.cache_icb      = 24,
-+		.meram_offset   = 0x0,
-+		.meram_size     = 0x40,
-+	},
-+	.icb[1] = {
-+		.marker_icb     = 29,
-+		.cache_icb      = 25,
-+		.meram_offset   = 0x40,
-+		.meram_size     = 0x40,
-+	},
-+};
-+#endif
- 
- static struct sh_mobile_lcdc_info lcdc_info = {
- 	.ch[0] = {
-@@ -438,6 +480,9 @@ static struct sh_mobile_lcdc_info lcdc_info = {
- 		.bpp = 16,
- 		.lcd_cfg = ap4evb_lcdc_modes,
- 		.num_cfg = ARRAY_SIZE(ap4evb_lcdc_modes),
-+#ifdef CONFIG_FB_SH_MOBILE_MERAM
-+		.meram_cfg = &lcd_meram_cfg,
-+#endif
- 	}
- };
- 
-@@ -708,6 +753,23 @@ static struct platform_device fsi_device = {
- static struct platform_device fsi_ak4643_device = {
- 	.name		= "sh_fsi2_a_ak4643",
- };
-+#ifdef CONFIG_FB_SH_MOBILE_MERAM
-+static struct sh_mobile_meram_cfg hdmi_meram_cfg = {
-+	.meram_dev = &mackerel_meram_info,
-+	.icb[0] = {
-+		.marker_icb     = 30,
-+		.cache_icb      = 26,
-+		.meram_offset   = 0x80,
-+		.meram_size     = 0x100,
-+	},
-+	.icb[1] = {
-+		.marker_icb     = 31,
-+		.cache_icb      = 27,
-+		.meram_offset   = 0x180,
-+		.meram_size     = 0x100,
-+	},
-+};
-+#endif
- 
- static struct sh_mobile_lcdc_info sh_mobile_lcdc1_info = {
- 	.clock_source = LCDC_CLK_EXTERNAL,
-@@ -717,6 +779,10 @@ static struct sh_mobile_lcdc_info sh_mobile_lcdc1_info = {
- 		.interface_type = RGB24,
- 		.clock_divider = 1,
- 		.flags = LCDC_FLAGS_DWPOL,
-+#ifdef CONFIG_FB_SH_MOBILE_MERAM
-+		.meram_cfg = &hdmi_meram_cfg,
-+#endif
-+
- 	}
- };
- 
-@@ -945,6 +1011,9 @@ static struct platform_device *ap4evb_devices[] __initdata = {
- 	&csi2_device,
- 	&ceu_device,
- 	&ap4evb_camera,
-+#ifdef CONFIG_FB_SH_MOBILE_MERAM
-+	&meram_device,
-+#endif
- };
- 
- static int __init hdmi_init_pm_clock(void)
 -- 
-1.7.1
+1.6.3.2
 

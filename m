@@ -1,67 +1,114 @@
-From: Carl Vanderlip <carlv@codeaurora.org>
-Date: Fri, 18 Mar 2011 21:53:58 +0000
-Subject: [PATCH 03/20] video: msm: add locked_enable_mdp_irq function
-Message-Id: <1300485238-27004-1-git-send-email-carlv@codeaurora.org>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 12 Mar 2011 21:46:24 +0000
+Subject: [PATCH 2/4] viafb: always return the best possible clock
+Message-Id: <1299966386-3439-3-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
-In-Reply-To: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
+References: <1299966386-3439-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1299966386-3439-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Add a version of this fuction to be called in a locked context.
+Before this patch only clocks that perfectly match were used and if
+none existed this was not handled properly. This patch changes this
+to always use the closest clock supported. This should behave like
+before for clocks that have a perfect match but be much saner for
+clocks which are slightly off.
 
-Authors:
-Dima Zavin <dima@android.com>
-Rebecca Schultz Zavin <rebecca@android.com>
-Colin Cross <ccross@android.com>
-
-Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/msm/mdp.c |   16 ++++++++++++----
- 1 files changed, 12 insertions(+), 4 deletions(-)
+ drivers/video/via/hw.c |   60 ++++++++++++++++++++++-------------------------
+ drivers/video/via/hw.h |    2 -
+ 2 files changed, 28 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/video/msm/mdp.c b/drivers/video/msm/mdp.c
-index a078028..9fb9f1a 100644
---- a/drivers/video/msm/mdp.c
-+++ b/drivers/video/msm/mdp.c
-@@ -47,14 +47,12 @@ static struct clk *clk;
- static unsigned int mdp_irq_mask;
- DEFINE_MUTEX(mdp_mutex);
- 
--static int enable_mdp_irq(struct mdp_info *mdp, uint32_t mask)
-+static int locked_enable_mdp_irq(struct mdp_info *mdp, uint32_t mask)
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 8c1393e..a7a5614 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -1677,40 +1677,36 @@ static u32 vx855_encode_pll(struct pll_config pll)
+ u32 viafb_get_clk_value(int clk)
  {
--	unsigned long irq_flags;
- 	int ret = 0;
+ 	u32 value = 0;
+-	int i = 0;
++	int i, best = 0;
  
- 	BUG_ON(!mask);
+-	while (i < NUM_TOTAL_PLL_TABLE && clk != pll_value[i].clk)
+-		i++;
+-
+-	if (i = NUM_TOTAL_PLL_TABLE) {
+-		printk(KERN_WARNING "viafb_get_clk_value: PLL lookup failed!");
+-	} else {
+-		switch (viaparinfo->chip_info->gfx_chip_name) {
+-		case UNICHROME_CLE266:
+-		case UNICHROME_K400:
+-			value = cle266_encode_pll(pll_value[i].cle266_pll);
+-			break;
+-
+-		case UNICHROME_K800:
+-		case UNICHROME_PM800:
+-		case UNICHROME_CN700:
+-			value = k800_encode_pll(pll_value[i].k800_pll);
+-			break;
+-
+-		case UNICHROME_CX700:
+-		case UNICHROME_CN750:
+-		case UNICHROME_K8M890:
+-		case UNICHROME_P4M890:
+-		case UNICHROME_P4M900:
+-		case UNICHROME_VX800:
+-			value = k800_encode_pll(pll_value[i].cx700_pll);
+-			break;
++	for (i = 1; i < ARRAY_SIZE(pll_value); i++) {
++		if (abs(pll_value[i].clk - clk)
++			< abs(pll_value[best].clk - clk))
++			best = i;
++	}
  
--	spin_lock_irqsave(&mdp->lock, irq_flags);
- 	/* if the mask bits are already set return an error, this interrupt
- 	 * is already enabled */
- 	if (mdp_irq_mask & mask) {
-@@ -72,7 +70,17 @@ static int enable_mdp_irq(struct mdp_info *mdp, uint32_t mask)
- 	/* update the irq mask to reflect the fact that the interrupt is
- 	 * enabled */
- 	mdp_irq_mask |= mask;
--	spin_unlock_irqrestore(&mdp->lock, irq_flags);
-+	return 0;
-+}
-+
-+static int enable_mdp_irq(struct mdp_info *mdp, uint32_t mask)
-+{
-+	unsigned long flags;
-+	int ret;
-+
-+	spin_lock_irqsave(&mdp->lock, flags);
-+	ret = locked_enable_mdp_irq(mdp, mask);
-+	spin_unlock_irqrestore(&mdp->lock, flags);
- 	return ret;
- }
+-		case UNICHROME_VX855:
+-		case UNICHROME_VX900:
+-			value = vx855_encode_pll(pll_value[i].vx855_pll);
+-			break;
+-		}
++	switch (viaparinfo->chip_info->gfx_chip_name) {
++	case UNICHROME_CLE266:
++	case UNICHROME_K400:
++		value = cle266_encode_pll(pll_value[best].cle266_pll);
++		break;
++	case UNICHROME_K800:
++	case UNICHROME_PM800:
++	case UNICHROME_CN700:
++		value = k800_encode_pll(pll_value[best].k800_pll);
++		break;
++	case UNICHROME_CX700:
++	case UNICHROME_CN750:
++	case UNICHROME_K8M890:
++	case UNICHROME_P4M890:
++	case UNICHROME_P4M900:
++	case UNICHROME_VX800:
++		value = k800_encode_pll(pll_value[best].cx700_pll);
++		break;
++	case UNICHROME_VX855:
++	case UNICHROME_VX900:
++		value = vx855_encode_pll(pll_value[best].vx855_pll);
++		break;
+ 	}
  
+ 	return value;
+diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
+index 668d534..7295263 100644
+--- a/drivers/video/via/hw.h
++++ b/drivers/video/via/hw.h
+@@ -893,8 +893,6 @@ struct iga2_crtc_timing {
+ /* VT3410 chipset*/
+ #define VX900_FUNCTION3     0x3410
+ 
+-#define NUM_TOTAL_PLL_TABLE ARRAY_SIZE(pll_value)
+-
+ struct IODATA {
+ 	u8 Index;
+ 	u8 Mask;
 -- 
-Sent by an employee of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+1.6.3.2
 

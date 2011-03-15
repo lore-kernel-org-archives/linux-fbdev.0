@@ -1,47 +1,64 @@
-From: Ondrej Zajicek <santiago@crfreenet.org>
-Date: Thu, 03 Mar 2011 08:49:51 +0000
-Subject: Re: [PATCH 2/5] s3fb: add support for 86C365 Trio3D
-Message-Id: <20110303084951.GB8363@localhost>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="2B/JsCI69OhZNC5r"
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Tue, 15 Mar 2011 18:41:11 +0000
+Subject: [GIT PULL] viafb updates for 2.6.39
+Message-Id: <4D7FB2C7.80300@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201103012018.19557.linux@rainbow-software.org>
-In-Reply-To: <201103012018.19557.linux@rainbow-software.org>
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: Ondrej Zajicek <santiago@crfreenet.org>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+
+Hi Paul,
+
+please pull the viafb updates below for this merge window.
+The stuff is pretty boring, most things are cleanups. The only user visible 
+change is the behavior for modes for which we don't know a proper clock now use 
+the best available clock instead an invalid one. The rest are preparations which 
+will allow easier improvements.
 
 
---2B/JsCI69OhZNC5r
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks,
 
-On Tue, Mar 01, 2011 at 08:18:17PM +0100, Ondrej Zary wrote:
-> Add support for S3 Trio3D (86C365) cards to s3fb driver. Tested with one =
-4MB card.
->=20
-> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Florian Tobias Schandinat
 
-Acked-by: Ondrej Zajicek <santiago@crfreenet.org>
 
---=20
-Elen sila lumenn' omentielvo
+The following changes since commit dd9c1549edef02290edced639f67b54a25abbe0e:
+   Linus Torvalds (1):
+         Linux 2.6.38-rc7
 
-Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
+are available in the git repository at:
 
---2B/JsCI69OhZNC5r
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+   git://github.com/schandinat/linux-2.6.git viafb-next
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Florian Tobias Schandinat (9):
+       viafb: kill lcd_panel_id
+       viafb: remove unused data_mode and device_type
+       viafb: strip some structures
+       viafb: factor lcd scaling parameters out
+       viafb: remove duplicated clock information
+       viafb: always return the best possible clock
+       viafb: remove duplicated clock storage
+       viafb: split pll configs up
+       Merge branch 'viafb-pll' into viafb-next
 
-iEYEARECAAYFAk1vVi4ACgkQw1GB2RHercNHowCfbM4dlP4rtxRyEUZhcqutYBYm
-qBQAnjGO5Mg5b5phy3+3UYIXjymUSBPD
-=p7YS
------END PGP SIGNATURE-----
+Peter Huewe (1):
+       video/via: drop deprecated (and unused) i2c_adapter.id
 
---2B/JsCI69OhZNC5r--
+Stephen Hemminger (2):
+       video via: fix iomem access
+       video via: make local variables static
+
+  drivers/video/via/chip.h          |    9 -
+  drivers/video/via/dvi.c           |    4 +-
+  drivers/video/via/hw.c            |  772 ++++++++++++++++++-------------------
+  drivers/video/via/hw.h            |    2 -
+  drivers/video/via/lcd.c           |   83 +---
+  drivers/video/via/share.h         |  141 -------
+  drivers/video/via/tblDPASetting.c |   23 --
+  drivers/video/via/tblDPASetting.h |    2 -
+  drivers/video/via/via_i2c.c       |    3 +-
+  drivers/video/via/viafbdev.c      |    6 +-
+  drivers/video/via/viamode.c       |  507 ++++++++----------------
+  drivers/video/via/viamode.h       |    9 -
+  drivers/video/via/vt1636.c        |   43 +--
+  13 files changed, 579 insertions(+), 1025 deletions(-)

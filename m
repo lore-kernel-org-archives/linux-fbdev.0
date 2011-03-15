@@ -1,59 +1,37 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 31 Mar 2011 10:10:59 +0000
-Subject: [PATCH 2/9] OMAP: DSS2: remove non-working msleep(40) workaround
-Message-Id: <1301566266-11187-3-git-send-email-tomi.valkeinen@ti.com>
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+Date: Tue, 15 Mar 2011 22:53:19 +0000
+Subject: [PATCH 07/13] vmlfb: use list_move() instead of list_del()/list_add() combination
+Message-Id: <1300229605-14499-7-git-send-email-kirill@shutemov.name>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1301566266-11187-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1301566266-11187-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1300229605-14499-1-git-send-email-kirill@shutemov.name>
+In-Reply-To: <1300229605-14499-1-git-send-email-kirill@shutemov.name>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-kernel@vger.kernel.org
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>, Tejun Heo <tj@kernel.org>, linux-fbdev@vger.kernel.org
 
-The sleep workaround for the problem described in the comment doesn't
-really work. This patch removes the workaround, and improves the comment
-about the bug, and proposes an userspace workaround.
-
-omap_dss_set_manager() is called 6 times when loading omapdss and
-omapfb, which means that 40ms * 6 = 240ms was spent sleeping when
-booting up.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: linux-fbdev@vger.kernel.org
 ---
- drivers/video/omap2/dss/overlay.c |   19 ++++++++++++-------
- 1 files changed, 12 insertions(+), 7 deletions(-)
+ drivers/video/vermilion/vermilion.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
-index f1aca6d..fcde51b 100644
---- a/drivers/video/omap2/dss/overlay.c
-+++ b/drivers/video/omap2/dss/overlay.c
-@@ -491,13 +491,18 @@ static int omap_dss_set_manager(struct omap_overlay *ovl,
- 	ovl->manager = mgr;
+diff --git a/drivers/video/vermilion/vermilion.c b/drivers/video/vermilion/vermilion.c
+index 931a567..970e43d 100644
+--- a/drivers/video/vermilion/vermilion.c
++++ b/drivers/video/vermilion/vermilion.c
+@@ -891,8 +891,7 @@ static int vmlfb_set_par(struct fb_info *info)
+ 	int ret;
  
- 	dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK);
--	/* XXX: on manual update display, in auto update mode, a bug happens
--	 * here. When an overlay is first enabled on LCD, then it's disabled,
--	 * and the manager is changed to TV, we sometimes get SYNC_LOST_DIGIT
--	 * errors. Waiting before changing the channel_out fixes it. I'm
--	 * guessing that the overlay is still somehow being used for the LCD,
--	 * but I don't understand how or why. */
--	msleep(40);
-+	/* XXX: When there is an overlay on a DSI manual update display, and
-+	 * the overlay is first disabled, then moved to tv, and enabled, we
-+	 * seem to get SYNC_LOST_DIGIT error.
-+	 *
-+	 * Waiting doesn't seem to help, but updating the manual update display
-+	 * after disabling the overlay seems to fix this. This hints that the
-+	 * overlay is perhaps somehow tied to the LCD output until the output
-+	 * is updated.
-+	 *
-+	 * Userspace workaround for this is to update the LCD after disabling
-+	 * the overlay, but before moving the overlay to TV.
-+	 */
- 	dispc_set_channel_out(ovl->id, mgr->id);
- 	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK);
+ 	mutex_lock(&vml_mutex);
+-	list_del(&vinfo->head);
+-	list_add(&vinfo->head, (subsys) ? &global_has_mode : &global_no_mode);
++	list_move(&vinfo->head, (subsys) ? &global_has_mode : &global_no_mode);
+ 	ret = vmlfb_set_par_locked(vinfo);
  
+ 	mutex_unlock(&vml_mutex);
 -- 
-1.7.1
+1.7.4.1
 

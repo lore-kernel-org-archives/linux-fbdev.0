@@ -1,21 +1,38 @@
 From: Paul Mundt <lethal@linux-sh.org>
-Date: Tue, 22 Mar 2011 07:09:43 +0000
-Subject: Re: [patch v2] fbdev: sh_mobile_lcdc: checking NULL instead of IS_ERR()
-Message-Id: <20110322070943.GE25925@linux-sh.org>
+Date: Wed, 16 Mar 2011 15:36:02 +0000
+Subject: Re: [PATCH 3/4 v5] video, sm501: add OF binding to support SM501
+Message-Id: <20110316153601.GA13315@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20110321150313.GQ2008@bicker>
-In-Reply-To: <20110321150313.GQ2008@bicker>
+References: <1291451028-22532-1-git-send-email-hs@denx.de> <1296026490-14665-1-git-send-email-hs@denx.de> <4D7F14B0.1030008@denx.de>
+In-Reply-To: <4D7F14B0.1030008@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Heiko Schocher <hs@denx.de>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org, Ben Dooks <ben@simtec.co.uk>, Vincent Sanders <vince@simtec.co.uk>, Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>, Wolfgang Denk <wd@denx.de>
 
-On Mon, Mar 21, 2011 at 06:03:13PM +0300, Dan Carpenter wrote:
-> backlight_device_register() returns an ERR_PTR.  It doesn't return NULL.
+On Tue, Mar 15, 2011 at 08:26:40AM +0100, Heiko Schocher wrote:
+> > 0003-video-sm501-add-OF-binding-to-support-SM501.patch has no obvious style problems and is ready for submission.
+> > 
+> >  Documentation/powerpc/dts-bindings/sm501.txt |   34 +++++++++++++++++++++
+> >  drivers/mfd/sm501.c                          |    9 +++++-
+> >  drivers/video/sm501fb.c                      |   42 ++++++++++++++++++++++++--
+> >  3 files changed, 81 insertions(+), 4 deletions(-)
+> >  create mode 100644 Documentation/powerpc/dts-bindings/sm501.txt
 > 
-> Signed-off-by: Dan Carpenter <error27@gmail.com>
-> ---
-> V2:  print the error code as well.
-> This patch is againts linux-next, in case you missed that earlier.
+> This patchset is pending know for a while. I got Acked by from
 > 
-Applied, thanks.
+> Samuel Ortiz for the mfd part, see here:
+> 
+> http://www.spinics.net/lists/linux-fbdev/msg02550.html
+> http://linux.derkeiler.com/Mailing-Lists/Kernel/2011-01/msg11798.html
+> 
+> and for the DTS part from Benjamin Herrenschmidt:
+> 
+> http://lists.ozlabs.org/pipermail/linuxppc-dev/2011-February/088279.html
+> 
+> Are there some more issues?
+> 
+Not that I remember off the top of my head, but I think they've been lost
+in my backlog. Could you re-send the current series with the appropriate
+acked-bys? If there's nothing else obvious outstanding I'll roll them in.

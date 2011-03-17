@@ -1,220 +1,55 @@
-From: Peter Jones <pjones@redhat.com>
-Date: Thu, 31 Mar 2011 14:33:49 +0000
-Subject: [PATCH 1/2] Support overriding fields FW tells us with the DMI data.
-Message-Id: <1301582030-10607-2-git-send-email-pjones@redhat.com>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Date: Thu, 17 Mar 2011 08:23:09 +0000
+Subject: RE: [PATCH 1/2] s5pc110: add clock gate for MIPI-DSI controller.
+Message-Id: <00af01cbe47c$8fde0180$af9a0480$%kim@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1294223690-31860-1-git-send-email-inki.dae@samsung.com>
+In-Reply-To: <1294223690-31860-1-git-send-email-inki.dae@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Some machines apparently give us bogus linelength/stride/pitch data, so
-we need to support letting the DMI table override the supplied data.
+Inki Dae wrote:
+> 
+> the clock gate for MIPI-DSI controller is placed at CLK_GATE_IP1[2]
+> so it adds a clock object to clock framework for MIPI-DSI clock gating.
+> 
+> Signed-off-by: Inki Dae <inki.dae@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> ---
+>  arch/arm/mach-s5pv210/clock.c |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/arm/mach-s5pv210/clock.c b/arch/arm/mach-s5pv210/clock.c
+> index dab6ef3..a8d5235 100644
+> --- a/arch/arm/mach-s5pv210/clock.c
+> +++ b/arch/arm/mach-s5pv210/clock.c
+> @@ -365,6 +365,12 @@ static struct clk init_clocks_disable[] = {
+>  		.enable		= s5pv210_clk_ip1_ctrl,
+>  		.ctrlbit	= (1<<0),
+>  	}, {
+> +		.name		= "dsim",
+> +		.id		= -1,
+> +		.parent		= &clk_hclk_dsys.clk,
+> +		.enable		= s5pv210_clk_ip1_ctrl,
+> +		.ctrlbit	= (1<<2),
 
-I bet you can't guess whose machines I'm talking about.
----
- drivers/video/efifb.c |  149 +++++++++++++++++++++++++++++--------------------
- 1 files changed, 88 insertions(+), 61 deletions(-)
+According to coding-style, should be added blank around "<<" like (1 << 2),
+even though there are wrong things to others.
 
-diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
-index a9645b8..2359b64 100644
---- a/drivers/video/efifb.c
-+++ b/drivers/video/efifb.c
-@@ -68,41 +68,48 @@ enum {
- 	M_UNKNOWN	/* placeholder */
- };
- 
-+#define OVERRIDE_NONE	0x0
-+#define OVERRIDE_BASE	0x1
-+#define OVERRIDE_STRIDE	0x2
-+#define OVERRIDE_HEIGHT	0x4
-+#define OVERRIDE_WIDTH	0x8
-+
- static struct efifb_dmi_info {
- 	char *optname;
- 	unsigned long base;
- 	int stride;
- 	int width;
- 	int height;
-+	int flags;
- } dmi_list[] __initdata = {
--	[M_I17] = { "i17", 0x80010000, 1472 * 4, 1440, 900 },
--	[M_I20] = { "i20", 0x80010000, 1728 * 4, 1680, 1050 }, /* guess */
--	[M_I20_SR] = { "imac7", 0x40010000, 1728 * 4, 1680, 1050 },
--	[M_I24] = { "i24", 0x80010000, 2048 * 4, 1920, 1200 }, /* guess */
--	[M_I24_8_1] = { "imac8", 0xc0060000, 2048 * 4, 1920, 1200 },
--	[M_I24_10_1] = { "imac10", 0xc0010000, 2048 * 4, 1920, 1080 },
--	[M_I27_11_1] = { "imac11", 0xc0010000, 2560 * 4, 2560, 1440 },
--	[M_MINI]= { "mini", 0x80000000, 2048 * 4, 1024, 768 },
--	[M_MINI_3_1] = { "mini31", 0x40010000, 1024 * 4, 1024, 768 },
--	[M_MINI_4_1] = { "mini41", 0xc0010000, 2048 * 4, 1920, 1200 },
--	[M_MB] = { "macbook", 0x80000000, 2048 * 4, 1280, 800 },
--	[M_MB_5_1] = { "macbook51", 0x80010000, 2048 * 4, 1280, 800 },
--	[M_MB_6_1] = { "macbook61", 0x80010000, 2048 * 4, 1280, 800 },
--	[M_MB_7_1] = { "macbook71", 0x80010000, 2048 * 4, 1280, 800 },
--	[M_MBA] = { "mba", 0x80000000, 2048 * 4, 1280, 800 },
--	[M_MBP] = { "mbp", 0x80010000, 1472 * 4, 1440, 900 },
--	[M_MBP_2] = { "mbp2", 0, 0, 0, 0 }, /* placeholder */
--	[M_MBP_2_2] = { "mbp22", 0x80010000, 1472 * 4, 1440, 900 },
--	[M_MBP_SR] = { "mbp3", 0x80030000, 2048 * 4, 1440, 900 },
--	[M_MBP_4] = { "mbp4", 0xc0060000, 2048 * 4, 1920, 1200 },
--	[M_MBP_5_1] = { "mbp51", 0xc0010000, 2048 * 4, 1440, 900 },
--	[M_MBP_5_2] = { "mbp52", 0xc0010000, 2048 * 4, 1920, 1200 },
--	[M_MBP_5_3] = { "mbp53", 0xd0010000, 2048 * 4, 1440, 900 },
--	[M_MBP_6_1] = { "mbp61", 0x90030000, 2048 * 4, 1920, 1200 },
--	[M_MBP_6_2] = { "mbp62", 0x90030000, 2048 * 4, 1680, 1050 },
--	[M_MBP_7_1] = { "mbp71", 0xc0010000, 2048 * 4, 1280, 800 },
--	[M_MBP_8_2] = { "mbp82", 0x90010000, 1472 * 4, 1440, 900 },
--	[M_UNKNOWN] = { NULL, 0, 0, 0, 0 }
-+	[M_I17] = { "i17", 0x80010000, 1472 * 4, 1440, 900, OVERRIDE_NONE },
-+	[M_I20] = { "i20", 0x80010000, 1728 * 4, 1680, 1050, OVERRIDE_NONE }, /* guess */
-+	[M_I20_SR] = { "imac7", 0x40010000, 1728 * 4, 1680, 1050, OVERRIDE_NONE },
-+	[M_I24] = { "i24", 0x80010000, 2048 * 4, 1920, 1200, OVERRIDE_NONE }, /* guess */
-+	[M_I24_8_1] = { "imac8", 0xc0060000, 2048 * 4, 1920, 1200, OVERRIDE_NONE },
-+	[M_I24_10_1] = { "imac10", 0xc0010000, 2048 * 4, 1920, 1080, OVERRIDE_NONE },
-+	[M_I27_11_1] = { "imac11", 0xc0010000, 2560 * 4, 2560, 1440, OVERRIDE_NONE },
-+	[M_MINI]= { "mini", 0x80000000, 2048 * 4, 1024, 768, OVERRIDE_NONE },
-+	[M_MINI_3_1] = { "mini31", 0x40010000, 1024 * 4, 1024, 768, OVERRIDE_NONE },
-+	[M_MINI_4_1] = { "mini41", 0xc0010000, 2048 * 4, 1920, 1200, OVERRIDE_NONE },
-+	[M_MB] = { "macbook", 0x80000000, 2048 * 4, 1280, 800, OVERRIDE_NONE },
-+	[M_MB_5_1] = { "macbook51", 0x80010000, 2048 * 4, 1280, 800, OVERRIDE_NONE },
-+	[M_MB_6_1] = { "macbook61", 0x80010000, 2048 * 4, 1280, 800, OVERRIDE_NONE },
-+	[M_MB_7_1] = { "macbook71", 0x80010000, 2048 * 4, 1280, 800, OVERRIDE_NONE },
-+	[M_MBA] = { "mba", 0x80000000, 2048 * 4, 1280, 800, OVERRIDE_NONE },
-+	[M_MBP] = { "mbp", 0x80010000, 1472 * 4, 1440, 900, OVERRIDE_NONE },
-+	[M_MBP_2] = { "mbp2", 0, 0, 0, 0, OVERRIDE_NONE }, /* placeholder */
-+	[M_MBP_2_2] = { "mbp22", 0x80010000, 1472 * 4, 1440, 900, OVERRIDE_NONE },
-+	[M_MBP_SR] = { "mbp3", 0x80030000, 2048 * 4, 1440, 900, OVERRIDE_NONE },
-+	[M_MBP_4] = { "mbp4", 0xc0060000, 2048 * 4, 1920, 1200, OVERRIDE_NONE },
-+	[M_MBP_5_1] = { "mbp51", 0xc0010000, 2048 * 4, 1440, 900, OVERRIDE_NONE },
-+	[M_MBP_5_2] = { "mbp52", 0xc0010000, 2048 * 4, 1920, 1200, OVERRIDE_NONE },
-+	[M_MBP_5_3] = { "mbp53", 0xd0010000, 2048 * 4, 1440, 900, OVERRIDE_NONE },
-+	[M_MBP_6_1] = { "mbp61", 0x90030000, 2048 * 4, 1920, 1200, OVERRIDE_NONE },
-+	[M_MBP_6_2] = { "mbp62", 0x90030000, 2048 * 4, 1680, 1050, OVERRIDE_NONE },
-+	[M_MBP_7_1] = { "mbp71", 0xc0010000, 2048 * 4, 1280, 800, OVERRIDE_NONE },
-+	[M_MBP_8_2] = { "mbp82", 0x90010000, 1472 * 4, 1440, 900, OVERRIDE_NONE },
-+	[M_UNKNOWN] = { NULL, 0, 0, 0, 0, OVERRIDE_NONE }
- };
- 
- static int set_system(const struct dmi_system_id *id);
-@@ -157,16 +164,22 @@ static const struct dmi_system_id dmi_system_table[] __initconst = {
- 	{},
- };
- 
-+#define choose_value(dmivalue, fwvalue, field, flags) ({	\
-+		typeof(fwvalue) _ret_ = fwvalue;		\
-+		if ((flags) & (field))				\
-+			_ret_ = dmivalue;			\
-+		else if ((fwvalue) = 0)			\
-+			_ret_ = dmivalue;			\
-+		_ret_;						\
-+	})
-+
- static int set_system(const struct dmi_system_id *id)
- {
- 	struct efifb_dmi_info *info = id->driver_data;
--	if (info->base = 0)
--		return 0;
- 
--	printk(KERN_INFO "efifb: dmi detected %s - framebuffer at %p "
--			 "(%dx%d, stride %d)\n", id->ident,
--			 (void *)info->base, info->width, info->height,
--			 info->stride);
-+	if (info->base = 0 && info->height = 0 && info->width = 0
-+			&& info->stride = 0)
-+		return 0;
- 
- 	/* Trust the bootloader over the DMI tables */
- 	if (screen_info.lfb_base = 0) {
-@@ -174,40 +187,47 @@ static int set_system(const struct dmi_system_id *id)
- 		struct pci_dev *dev = NULL;
- 		int found_bar = 0;
- #endif
--		screen_info.lfb_base = info->base;
-+		if (info->base) {
-+			screen_info.lfb_base = choose_value(info->base,
-+				screen_info.lfb_base, OVERRIDE_BASE,
-+				info->flags);
- 
- #if defined(CONFIG_PCI)
--		/* make sure that the address in the table is actually on a
--		 * VGA device's PCI BAR */
--
--		for_each_pci_dev(dev) {
--			int i;
--			if ((dev->class >> 8) != PCI_CLASS_DISPLAY_VGA)
--				continue;
--			for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--				resource_size_t start, end;
--
--				start = pci_resource_start(dev, i);
--				if (start = 0)
--					break;
--				end = pci_resource_end(dev, i);
--				if (screen_info.lfb_base >= start &&
--						screen_info.lfb_base < end) {
--					found_bar = 1;
-+			/* make sure that the address in the table is actually
-+			 * on a VGA device's PCI BAR */
-+
-+			for_each_pci_dev(dev) {
-+				int i;
-+				if ((dev->class >> 8) != PCI_CLASS_DISPLAY_VGA)
-+					continue;
-+				for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
-+					resource_size_t start, end;
-+
-+					start = pci_resource_start(dev, i);
-+					if (start = 0)
-+						break;
-+					end = pci_resource_end(dev, i);
-+					if (screen_info.lfb_base >= start &&
-+					    screen_info.lfb_base < end) {
-+						found_bar = 1;
-+					}
- 				}
- 			}
--		}
--		if (!found_bar)
--			screen_info.lfb_base = 0;
-+			if (!found_bar)
-+				screen_info.lfb_base = 0;
- #endif
-+		}
- 	}
- 	if (screen_info.lfb_base) {
--		if (screen_info.lfb_linelength = 0)
--			screen_info.lfb_linelength = info->stride;
--		if (screen_info.lfb_width = 0)
--			screen_info.lfb_width = info->width;
--		if (screen_info.lfb_height = 0)
--			screen_info.lfb_height = info->height;
-+		screen_info.lfb_linelength = choose_value(info->stride,
-+			screen_info.lfb_linelength, OVERRIDE_STRIDE,
-+			info->flags);
-+		screen_info.lfb_width = choose_value(info->width,
-+			screen_info.lfb_width, OVERRIDE_WIDTH,
-+			info->flags);
-+		screen_info.lfb_height = choose_value(info->height,
-+			screen_info.lfb_height, OVERRIDE_HEIGHT,
-+			info->flags);
- 		if (screen_info.orig_video_isVGA = 0)
- 			screen_info.orig_video_isVGA = VIDEO_TYPE_EFI;
- 	} else {
-@@ -217,6 +237,13 @@ static int set_system(const struct dmi_system_id *id)
- 		screen_info.orig_video_isVGA = 0;
- 		return 0;
- 	}
-+
-+	printk(KERN_INFO "efifb: dmi detected %s - framebuffer at %p "
-+			 "(%dx%d, stride %d)\n", id->ident,
-+			 (void *)screen_info.lfb_base, screen_info.lfb_width,
-+			 screen_info.lfb_height, screen_info.lfb_linelength);
-+
-+
- 	return 1;
- }
- 
--- 
-1.7.4
+> +	}, {	
+>  		.name		= "cfcon",
+>  		.id		= 0,
+>  		.parent		= &clk_hclk_psys.clk,
+> --
+> 1.7.0.4
+
+Thanks.
+
+Best regards,
+Kgene.
+--
+Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+SW Solution Development Team, Samsung Electronics Co., Ltd.
 

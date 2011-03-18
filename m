@@ -1,27 +1,55 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 24 Mar 2011 15:57:28 +0000
-Subject: viafb clock patches - second round
-Message-Id: <1300983180-7343-1-git-send-email-FlorianSchandinat@gmx.de>
+From: Carl Vanderlip <carlv@codeaurora.org>
+Date: Fri, 18 Mar 2011 21:58:58 +0000
+Subject: [PATCH 14/20] video: msm: Write IRQ mask to MDP registers
+Message-Id: <1300485538-27479-1-git-send-email-carlv@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
+In-Reply-To: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Here are the remaining clock patches which finally put it in a good 
-shape. Most of the clock and PLL went into an extra file making the 
-codebase more structured. Only the PLL table and related code was 
-left out as it is not yet in a desirable state as this table is only 
-usable for the X1 source as the limits are frequency dependend.
+Writing MDP IRQ mask to the MDP IRQ register to fully disable interrupt.
 
-All patches (including first round) are also available at
-	git://github.com/schandinat/linux-2.6.git viafb-pll
+Authors:
+Dima Zavin <dima@android.com>
+Rebecca Schultz Zavin <rebecca@android.com>
+Colin Cross <ccross@android.com>
 
-and will also show up in linux-nexxt after the early rc's are done.
+Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
+---
+ drivers/video/msm/mdp.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-
-Thanks,
-
-Florian Tobias Schandinat
+diff --git a/drivers/video/msm/mdp.c b/drivers/video/msm/mdp.c
+index bdca2d9..8184ca9 100644
+--- a/drivers/video/msm/mdp.c
++++ b/drivers/video/msm/mdp.c
+@@ -59,9 +59,13 @@ static int locked_enable_mdp_irq(struct mdp_info *mdp, uint32_t mask)
+ 		enable_irq(mdp->irq);
+ 	}
+ 
++	/* clear out any previous irqs for the requested mask*/
++	mdp_writel(mdp, mask, MDP_INTR_CLEAR);
++
+ 	/* update the irq mask to reflect the fact that the interrupt is
+ 	 * enabled */
+ 	mdp_irq_mask |= mask;
++	mdp_writel(mdp, mdp_irq_mask, MDP_INTR_ENABLE);
+ 	return 0;
+ }
+ 
+@@ -87,6 +91,8 @@ static int locked_disable_mdp_irq(struct mdp_info *mdp, uint32_t mask)
+ 	/* update the irq mask to reflect the fact that the interrupt is
+ 	 * disabled */
+ 	mdp_irq_mask &= ~(mask);
++	mdp_writel(mdp, mdp_irq_mask, MDP_INTR_ENABLE);
++
+ 	/* if no one is waiting on the interrupt, disable it */
+ 	if (!mdp_irq_mask) {
+ 		disable_irq_nosync(mdp->irq);
+-- 
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
 

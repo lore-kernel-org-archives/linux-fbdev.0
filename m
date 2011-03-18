@@ -1,55 +1,70 @@
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Wed, 16 Mar 2011 13:16:29 +0000
-Subject: Re: [PATCH 2/4] ARM: PXA: PXAFB: Fix plane Z-ordering problem
-Message-Id: <AANLkTi=7pCyv5Dif36ynNbhJkz54CoTr5FYeThHbT7dj@mail.gmail.com>
+From: Carl Vanderlip <carlv@codeaurora.org>
+Date: Fri, 18 Mar 2011 21:59:34 +0000
+Subject: [PATCH 17/20] video: msm: Prevent framebuffer glitch during initialization
+Message-Id: <1300485574-27600-1-git-send-email-carlv@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201103060030.59584.anarsoul@gmail.com>
-	<1299835250-11095-1-git-send-email-anarsoul@gmail.com>
-	<1299835250-11095-2-git-send-email-anarsoul@gmail.com>
-In-Reply-To: <1299835250-11095-2-git-send-email-anarsoul@gmail.com>
+References: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
+In-Reply-To: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Applied.
+Holds a reference to the mdp_clk until lateinit, and moves the frambuffer
+initialization to device_init.  The framebuffer lcdc driver will grab a
+reference to mdp_clk, which prevents the clock from being disabled by
+clock_late_init.
 
-On Fri, Mar 11, 2011 at 5:20 PM, Vasily Khoruzhick <anarsoul@gmail.com> wrote:
-> pxafb_overlay_init is not right place to change Z-ordering,
-> move it to main plane initialization.
->
-> Signed-off-by: Vasily Khoruzhick <anarsoul@gmail.com>
-> ---
->  drivers/video/pxafb.c |    8 ++++++--
->  1 files changed, 6 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-> index 0764759..e2f643e 100644
-> --- a/drivers/video/pxafb.c
-> +++ b/drivers/video/pxafb.c
-> @@ -952,8 +952,6 @@ static void __devinit pxafb_overlay_init(struct pxafb_info *fbi)
->        /* mask all IU/BS/EOF/SOF interrupts */
->        lcd_writel(fbi, LCCR5, ~0);
->
-> -       /* place overlay(s) on top of base */
-> -       fbi->lccr0 |= LCCR0_OUC;
->        pr_info("PXA Overlay driver loaded successfully!\n");
->  }
->
-> @@ -1843,6 +1841,12 @@ static struct pxafb_info * __devinit pxafb_init_fbinfo(struct device *dev)
->
->        pxafb_decode_mach_info(fbi, inf);
->
-> +#ifdef CONFIG_FB_PXA_OVERLAY
-> +       /* place overlay(s) on top of base */
-> +       if (pxafb_overlay_supported())
-> +               fbi->lccr0 |= LCCR0_OUC;
-> +#endif
-> +
->        init_waitqueue_head(&fbi->ctrlr_wait);
->        INIT_WORK(&fbi->task, pxafb_task);
->        mutex_init(&fbi->ctrlr_lock);
-> --
-> 1.7.4.1
->
->
+Authors:
+Dima Zavin <dima@android.com>
+Rebecca Schultz Zavin <rebecca@android.com>
+Colin Cross <ccross@android.com>
+
+Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
+---
+ drivers/video/msm/mdp.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/msm/mdp.c b/drivers/video/msm/mdp.c
+index 0bb19fa..b3f334ad 100644
+--- a/drivers/video/msm/mdp.c
++++ b/drivers/video/msm/mdp.c
+@@ -38,6 +38,7 @@ struct class *mdp_class;
+ 
+ static DECLARE_WAIT_QUEUE_HEAD(mdp_ppp_waitqueue);
+ static unsigned int mdp_irq_mask;
++struct clk *mdp_clk_to_disable_later;
+ DEFINE_MUTEX(mdp_mutex);
+ 
+ static int locked_enable_mdp_irq(struct mdp_info *mdp, uint32_t mask)
+@@ -670,6 +671,7 @@ int mdp_probe(struct platform_device *pdev)
+ 	disable_irq(mdp->irq);
+ 
+ 	clk_enable(mdp->clk);
++	mdp_clk_to_disable_later = mdp->clk;
+ 	mdp_hw_init(mdp);
+ 
+ 	/* register mdp device */
+@@ -706,6 +708,13 @@ static struct platform_driver msm_mdp_driver = {
+ 	.driver = {.name = "msm_mdp"},
+ };
+ 
++static int __init mdp_lateinit(void)
++{
++	if (mdp_clk_to_disable_later)
++		clk_disable(mdp_clk_to_disable_later);
++	return 0;
++}
++
+ static int __init mdp_init(void)
+ {
+ 	mdp_class = class_create(THIS_MODULE, "msm_mdp");
+@@ -717,3 +726,4 @@ static int __init mdp_init(void)
+ }
+ 
+ subsys_initcall(mdp_init);
++late_initcall(mdp_lateinit);
+-- 
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+

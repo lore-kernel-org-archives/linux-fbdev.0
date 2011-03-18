@@ -1,103 +1,169 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 24 Mar 2011 11:05:02 +0000
-Subject: Re: Future desktop on dumb frame buffers?
-Message-Id: <201103241205.02640.laurent.pinchart@ideasonboard.com>
+From: Carl Vanderlip <carlv@codeaurora.org>
+Date: Fri, 18 Mar 2011 21:56:21 +0000
+Subject: [PATCH 07/20] video: msm: Allow users to request a larger x and y virtual fb
+Message-Id: <1300485381-27201-1-git-send-email-carlv@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <AANLkTimJWpebAskcjA+qQUDWXjiH6aHta4fri9z6OxRN@mail.gmail.com> <AANLkTimqkA7GGdT52Ys0b+346Pxr3A=PtDpY0nJ+ycVO@mail.gmail.com> <AANLkTi=fWKt=v5O9A7XivDiFaJyki6H90k1=Jfcmw2dN@mail.gmail.com>
-In-Reply-To: <AANLkTi=fWKt=v5O9A7XivDiFaJyki6H90k1=Jfcmw2dN@mail.gmail.com>
+References: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
+In-Reply-To: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Robert Fekete <robert.fekete@linaro.org>
-Cc: Alex Deucher <alexdeucher@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, dri-devel@lists.freedesktop.org, timofonic timofonic <timofonic@gmail.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, wayland-devel@lists.freedesktop.org, linaro-dev@lists.linaro.org, linux-media@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Wednesday 23 March 2011 15:09:54 Robert Fekete wrote:
-> On 21 March 2011 21:08, Alex Deucher <alexdeucher@gmail.com> wrote:
-> > On Mon, Mar 21, 2011 at 3:50 PM, Geert Uytterhoeven wrote:
-> >> On Mon, Mar 21, 2011 at 20:25, Jesse Barnes wrote:
-> >>> On Mon, 21 Mar 2011 19:19:43 +0000 timofonic timofonic wrote:
-> >>>> So if KMS is so cool and provides many advantages over fbdev and
-> >>>> such... Why isn't more widely used intead of still relying on fbdev?
-> >>>> Why still using fbdev emulation (that is partial and somewhat broken,
-> >>>> it seems) instead using KMS directly?
-> >>> 
-> >>> Used by what?  All three major GPU device classes have KMS support
-> >>> (Intel, ATI, and nVidia).  If you want it for a particular device, you
-> >>> can always port it over.
-> >> 
-> >> The three major GPU device classes on PC...
-> > 
-> > Sadly it gets worse.  A lot of the SoC vendors are adding an fbdev
-> > emulation layer on top of v4l rather than using fbdev directly or
-> > using KMS and v4l has grown it's own edid, hdmi, and cec handling.
+As long as the total size fits inside the memory allocated to the framebuffer
+users can request a larger size. This change allows users to request a triple
+buffered fb.
 
-We're also evaluating the possibility of providing a generic fbdev emulation 
-layer on top of V4L2 without requiring any device-specific fbdev code. fbdev 
-isn't maintained and hasn't really evolved for quite some time now.
+Authors:
+Dima Zavin <dima@android.com>
+Rebecca Schultz Zavin <rebecca@android.com>
+Colin Cross <ccross@android.com>
 
-> I agree, it is sad that as a SoC vendor there are different
-> kernel/user API's(v4l2/fbdev/drm) to choose from when implementing say
-> a Display controller driver. One must also remember that there are big
-> differences between a desktop/PC multimedia/graphics system and the
-> ones present on an embedded SoC. It is two very different cultures and
-> HW designs now trying to merge into one Linux Kernel. Of course there
-> will be some overlaps but I believe it can be sorted out as soon as we
-> understand each others different possibilities/limitations. Doing
-> duplicate work like HDMI will not benefit any party.
-> 
-> Just to list some of the differences.
-> 
-> - Developments within V4L2 has mainly been driven by embedded devices
-> while DRM is a result of desktop Graphics cards. And for some extent
-> also solving different problems.
-> - Embedded devices usually have several different hw IP's managing
-> displays, hdmi, camera/ISP, video codecs(h264 accellerators), DSP's,
-> 2D blitters, Open GL ES hw, all of which have a separate device/driver
-> in the kernel, while on a desktop nowadays all this functionality
-> usually resides on ONE graphics card, hence one DRM device for all.
-> - DRM is closely developed in conjunction with desktop/Xorg, while X11
-> on an embedded device is not very 2011...wayland on the other hand is
-> 
-> :-), but do wayland really need the full potential of DRM/DRI or just
-> 
-> parts of it.
-> - Copying buffers is really bad for embedded devices due to lower
-> memory bandwidth and power consumption while on a Desktop memory
-> bandwidth is from an other galaxy (copying still bad but accepted it
-> seems), AND embedded devices of today records and plays/displays 1080p
-> content as well.
-> - Not all embedded devices have MMU's for each IP requiring physical
-> contiguous memory, while on a desktop MMU's have been present for
-> ages.
-> - Embedded devices are usually ARM based SoCs while x86 dominates the
-> Desktop/Laptop market, and functionality provided is soon the very
-> same.
-> - yada yada....The list can grow very long....There are also
-> similarities of course.
-> 
-> The outcome is that SoC vendors likes the embedded friendliness of
-> v4l2 and fbdev while "we" also glance at the DRM part due to its
-> de-facto standard on desktop environments. But from an embedded point
-> of view DRM lacks the support for interconnecting multiple
-> devices/drivers mentioned above, GEM/TTM is valid within a DRM device,
-> the execution/context management is not needed,, no overlays(or
-> similar), the coupling to DRI/X11 not wanted. SoCs like KMS/GEM but
-> the rest of DRM will likely not be heavily used on SoCs unless running
-> X11 as well. Most likely this worked on as well within the DRI
-> community. I can see good features all over the place(sometimes
-> duplicated) but not find one single guideline/API that solves all the
-> embedded SoC problems (which involves use-cases optimized for no-copy
-> cross media/drivers).
-> 
-> Last but not least...
-> 
-> On Linaro there is already discussions ongoing to solve one of the
-> biggest issues from a SoC point of view and that is a "System Wide
-> Memory manager" which manages buffer sharing and resolves no-copy use
-> cases between devices/drivers. Read more on the following thread:
-> http://lists.linaro.org/pipermail/linaro-dev/2011-March/003053.html.
+Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
+---
+ drivers/video/msm/msm_fb.c |   63 ++++++++++++++++++++++++++++++++++---------
+ 1 files changed, 50 insertions(+), 13 deletions(-)
 
+diff --git a/drivers/video/msm/msm_fb.c b/drivers/video/msm/msm_fb.c
+index 04d0067..6af8b41 100644
+--- a/drivers/video/msm/msm_fb.c
++++ b/drivers/video/msm/msm_fb.c
+@@ -53,6 +53,9 @@ do { \
+ 		printk(KERN_INFO "msmfb: "fmt, ##args); \
+ } while (0)
+ 
++#define BITS_PER_PIXEL(info) (info->fb->var.bits_per_pixel)
++#define BYTES_PER_PIXEL(info) (info->fb->var.bits_per_pixel >> 3)
++
+ static int msmfb_debug_mask;
+ module_param_named(msmfb_debug_mask, msmfb_debug_mask, int,
+ 		   S_IRUGO | S_IWUSR | S_IWGRP);
+@@ -161,9 +164,10 @@ static int msmfb_start_dma(struct msmfb_info *msmfb)
+ 	}
+ 	spin_unlock_irqrestore(&msmfb->update_lock, irq_flags);
+ 
+-	addr = ((msmfb->xres * (yoffset + y) + x) * 2);
++	addr = ((msmfb->xres * (yoffset + y) + x) * BYTES_PER_PIXEL(msmfb));
+ 	mdp->dma(mdp, addr + msmfb->fb->fix.smem_start,
+-		 msmfb->xres * 2, w, h, x, y, &msmfb->dma_callback,
++		 msmfb->xres * BYTES_PER_PIXEL(msmfb), w, h, x, y,
++		 &msmfb->dma_callback,
+ 		 panel->interface_type);
+ 	return 0;
+ error:
+@@ -323,14 +327,46 @@ error:
+ 
+ static int msmfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
++	u32 size;
++
+ 	if ((var->xres != info->var.xres) ||
+ 	    (var->yres != info->var.yres) ||
+-	    (var->xres_virtual != info->var.xres_virtual) ||
+-	    (var->yres_virtual != info->var.yres_virtual) ||
+ 	    (var->xoffset != info->var.xoffset) ||
+ 	    (var->bits_per_pixel != info->var.bits_per_pixel) ||
+ 	    (var->grayscale != info->var.grayscale))
+ 		 return -EINVAL;
++
++	size = var->xres_virtual * var->yres_virtual *
++		(var->bits_per_pixel >> 3);
++	if (size > info->fix.smem_len)
++		return -EINVAL;
++	return 0;
++}
++
++static int msmfb_set_par(struct fb_info *info)
++{
++	struct fb_var_screeninfo *var = &info->var;
++	struct fb_fix_screeninfo *fix = &info->fix;
++
++	/* we only support RGB ordering for now */
++	if (var->bits_per_pixel = 32 || var->bits_per_pixel = 24) {
++		var->red.offset = 0;
++		var->red.length = 8;
++		var->green.offset = 8;
++		var->green.length = 8;
++		var->blue.offset = 16;
++		var->blue.length = 8;
++	} else if (var->bits_per_pixel = 16) {
++		var->red.offset = 11;
++		var->red.length = 5;
++		var->green.offset = 5;
++		var->green.length = 6;
++		var->blue.offset = 0;
++		var->blue.length = 5;
++	} else
++		return -1;
++	fix->line_length = var->xres * var->bits_per_pixel / 8;
++
+ 	return 0;
+ }
+ 
+@@ -427,6 +463,7 @@ static struct fb_ops msmfb_ops = {
+ 	.fb_open = msmfb_open,
+ 	.fb_release = msmfb_release,
+ 	.fb_check_var = msmfb_check_var,
++	.fb_set_par = msmfb_set_par,
+ 	.fb_pan_display = msmfb_pan_display,
+ 	.fb_fillrect = msmfb_fillrect,
+ 	.fb_copyarea = msmfb_copyarea,
+@@ -438,8 +475,6 @@ static unsigned PP[16];
+ 
+ 
+ 
+-#define BITS_PER_PIXEL 16
+-
+ static void setup_fb_info(struct msmfb_info *msmfb)
+ {
+ 	struct fb_info *fb_info = msmfb->fb;
+@@ -462,7 +497,7 @@ static void setup_fb_info(struct msmfb_info *msmfb)
+ 	fb_info->var.height = msmfb->panel->fb_data->height;
+ 	fb_info->var.xres_virtual = msmfb->xres;
+ 	fb_info->var.yres_virtual = msmfb->yres * 2;
+-	fb_info->var.bits_per_pixel = BITS_PER_PIXEL;
++	fb_info->var.bits_per_pixel = 16;
+ 	fb_info->var.accel_flags = 0;
+ 
+ 	fb_info->var.yoffset = 0;
+@@ -497,28 +532,30 @@ static int setup_fbmem(struct msmfb_info *msmfb, struct platform_device *pdev)
+ 	struct fb_info *fb = msmfb->fb;
+ 	struct resource *resource;
+ 	unsigned long size = msmfb->xres * msmfb->yres *
+-			     (BITS_PER_PIXEL >> 3) * 2;
++		BYTES_PER_PIXEL(msmfb) * 2;
++	unsigned long resource_size;
+ 	unsigned char *fbram;
+ 
+ 	/* board file might have attached a resource describing an fb */
+ 	resource = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!resource)
+ 		return -EINVAL;
++	resource_size = resource->end - resource->start + 1;
+ 
+ 	/* check the resource is large enough to fit the fb */
+-	if (resource->end - resource->start < size) {
+-		printk(KERN_ERR "allocated resource is too small for "
++	if (resource_size < size) {
++		printk(KERN_ERR "msmfb: allocated resource is too small for "
+ 				"fb\n");
+ 		return -ENOMEM;
+ 	}
+ 	fb->fix.smem_start = resource->start;
+-	fb->fix.smem_len = resource->end - resource->start;
+-	fbram = ioremap(resource->start,
+-			resource->end - resource->start);
++	fb->fix.smem_len = resource_size;
++	fbram = ioremap(resource->start, resource_size);
+ 	if (fbram = 0) {
+ 		printk(KERN_ERR "msmfb: cannot allocate fbram!\n");
+ 		return -ENOMEM;
+ 	}
++
+ 	fb->screen_base = fbram;
+ 	return 0;
+ }
 -- 
-Regards,
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
 
-Laurent Pinchart

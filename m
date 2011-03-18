@@ -1,83 +1,105 @@
-From: Gary Hade <garyhade@us.ibm.com>
-Date: Mon, 21 Mar 2011 17:28:59 +0000
-Subject: [PATCH v3] matroxfb: remove incorrect Matrox G200eV support
-Message-Id: <20110321172859.GB7549@us.ibm.com>
+From: Carl Vanderlip <carlv@codeaurora.org>
+Date: Fri, 18 Mar 2011 21:54:16 +0000
+Subject: [PATCH 04/20] video: msm: Move clk to mdp_info struct
+Message-Id: <1300485256-27044-1-git-send-email-carlv@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
+In-Reply-To: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Darrick J. Wong" <djwong@us.ibm.com>, Krzysztof Helt <krzysztof.h1@wp.pl>, Petr Vandrovec <vandrove@vc.cvut.cz>, Andrew Morton <akpm@linux-foundation.org>, Christian Toutant <ctoutant@matrox.com>, Gary Hade <garyhade@us.ibm.com>
+To: linux-arm-kernel@lists.infradead.org
 
+Move local clock variable into mdp_info struct for easier access.
 
-From: Gary Hade <garyhade@us.ibm.com>
+Authors:
+Dima Zavin <dima@android.com>
+Rebecca Schultz Zavin <rebecca@android.com>
+Colin Cross <ccross@android.com>
 
-Remove incorrect Matrox G200eV support that was previously
-added by commit e3a1938805d2e81b27d3d348788644f3bad004f2
-
-A serious issue with the incorrect G200eV support that reproduces
-on the Matrox G200eV equipped IBM x3650 M2 is the total lack of
-text (login banner, login prompt, etc) on the console when X is
-not running and total lack of text on all of the virtual consoles
-after X is started.
-
-Any concerns that the incorrect code (upstream since October 2008)
-has been successfully used on non-IBM G200eV equipped system(s)
-appear to be unwarranted.  In addition to the serious/non-intermittent
-nature of issues that have been spotted on IBM systems, complete
-removal of the incorrect code is clearly supported by the following
-Matrox (Yannick Heneault) provided input.
- "It impossible that this patch should have work on a system.
- The patch only declare the G200eV as a regular G200 which is
- not case. Many registers are different, including at least the
- PLL programming sequence. If the G200eV is programmed like a
- regular G200, it will not display anything."
-
-v1 - Initial patch that removed the incorrect code for _all_
-     G200eV equipped systems.
-v2 - Darrick Wong provided patch that blacklisted the incorrect
-     code on G200eV equipped IBM systems leaving it enabled on
-     all G200eV equipped non-IBM systems.
-v3 - Same code changes included with v1 plus additional 
-     justification for complete removal of the incorrect code.
-
-Signed-off-by: Gary Hade <garyhade@us.ibm.com>
-Cc: Darrick J. Wong <djwong@us.ibm.com>
-Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: Petr Vandrovec <vandrove@vc.cvut.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Yannick Heneault <yannick_heneault@matrox.com>
-Cc: Christian Toutant <ctoutant@matrox.com>
-
+Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
 ---
- drivers/video/matrox/matroxfb_base.c |    9 ---------
- 1 files changed, 0 insertions(+), 9 deletions(-)
+ drivers/video/msm/mdp.c    |   17 +++++++++--------
+ drivers/video/msm/mdp_hw.h |    1 +
+ 2 files changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
-index a082deb..a74439a 100644
---- a/drivers/video/matrox/matroxfb_base.c
-+++ b/drivers/video/matrox/matroxfb_base.c
-@@ -1461,13 +1461,6 @@ static struct board {
- 		MGA_G100,
- 		&vbG100,
- 		"MGA-G100 (AGP)"},
--	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200EV_PCI,	0xFF,
--		0,			0,
--		DEVF_G200,
--		230000,
--		MGA_G200,
--		&vbG200,
--		"MGA-G200eV (PCI)"},
- 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_PCI,	0xFF,
- 		0,			0,
- 		DEVF_G200,
-@@ -2119,8 +2112,6 @@ static struct pci_device_id matroxfb_devices[] = {
- 		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
- 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G100_AGP,
- 		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
--	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200EV_PCI,
--		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
- 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_PCI,
- 		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
- 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_AGP,
+diff --git a/drivers/video/msm/mdp.c b/drivers/video/msm/mdp.c
+index 9fb9f1a..e68df14 100644
+--- a/drivers/video/msm/mdp.c
++++ b/drivers/video/msm/mdp.c
+@@ -43,7 +43,6 @@ static uint16_t mdp_default_ccs[] = {
+ static DECLARE_WAIT_QUEUE_HEAD(mdp_dma2_waitqueue);
+ static DECLARE_WAIT_QUEUE_HEAD(mdp_ppp_waitqueue);
+ static struct msmfb_callback *dma_callback;
+-static struct clk *clk;
+ static unsigned int mdp_irq_mask;
+ DEFINE_MUTEX(mdp_mutex);
+ 
+@@ -62,8 +61,7 @@ static int locked_enable_mdp_irq(struct mdp_info *mdp, uint32_t mask)
+ 	}
+ 	/* if the mdp irq is not already enabled enable it */
+ 	if (!mdp_irq_mask) {
+-		if (clk)
+-			clk_enable(clk);
++		clk_enable(mdp->clk);
+ 		enable_irq(mdp->irq);
+ 	}
+ 
+@@ -98,8 +96,8 @@ static int locked_disable_mdp_irq(struct mdp_info *mdp, uint32_t mask)
+ 	/* if no one is waiting on the interrupt, disable it */
+ 	if (!mdp_irq_mask) {
+ 		disable_irq_nosync(mdp->irq);
+-		if (clk)
+-			clk_disable(clk);
++		if (mdp->clk)
++			clk_disable(mdp->clk);
+ 	}
+ 	return 0;
+ }
+@@ -428,10 +426,11 @@ int mdp_probe(struct platform_device *pdev)
+ 	mdp->mdp_dev.blit = mdp_blit;
+ 	mdp->mdp_dev.set_grp_disp = mdp_set_grp_disp;
+ 
+-	clk = clk_get(&pdev->dev, "mdp_clk");
+-	if (IS_ERR(clk)) {
++	mdp->clk = clk_get(&pdev->dev, "mdp_clk");
++	if (IS_ERR(mdp->clk)) {
+ 		printk(KERN_INFO "mdp: failed to get mdp clk");
+-		return PTR_ERR(clk);
++		ret = PTR_ERR(mdp->clk);
++		goto error_get_mdp_clk;
+ 	}
+ 
+ 	ret = request_irq(mdp->irq, mdp_isr, IRQF_DISABLED, "msm_mdp", mdp);
+@@ -467,6 +466,7 @@ int mdp_probe(struct platform_device *pdev)
+ 	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0174);
+ 	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x017c);
+ 
++	clk_enable(mdp->clk);
+ 	/* comp.plane 2 & 3 */
+ 	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0114);
+ 	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0118);
+@@ -505,6 +505,7 @@ int mdp_probe(struct platform_device *pdev)
+ error_device_register:
+ 	free_irq(mdp->irq, mdp);
+ error_request_irq:
++error_get_mdp_clk:
+ 	iounmap(mdp->base);
+ error_get_irq:
+ error_ioremap:
+diff --git a/drivers/video/msm/mdp_hw.h b/drivers/video/msm/mdp_hw.h
+index 05a3164..54b3934 100644
+--- a/drivers/video/msm/mdp_hw.h
++++ b/drivers/video/msm/mdp_hw.h
+@@ -23,6 +23,7 @@ struct mdp_info {
+ 	struct mdp_device mdp_dev;
+ 	char * __iomem base;
+ 	int irq;
++	struct clk *clk;
+ };
+ struct mdp_blit_req;
+ struct mdp_device;
+-- 
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+

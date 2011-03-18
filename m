@@ -1,232 +1,293 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 23 Mar 2011 22:35:33 +0000
-Subject: [PATCH 3/4] viafb: prepare for PLL separation
-Message-Id: <1300919734-3931-4-git-send-email-FlorianSchandinat@gmx.de>
+From: Carl Vanderlip <carlv@codeaurora.org>
+Date: Fri, 18 Mar 2011 21:57:27 +0000
+Subject: [PATCH 10/20] video: msm: Separate more MDP HW specific code
+Message-Id: <1300485447-27320-1-git-send-email-carlv@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1300919734-3931-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1300919734-3931-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
+In-Reply-To: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-arm-kernel@lists.infradead.org
 
-This patch splits some functionality to extra functions.
+Simplifies mdp_probe by moving register initialization to
+mdp_hw_init
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Authors:
+Dima Zavin <dima@android.com>
+Rebecca Schultz Zavin <rebecca@android.com>
+Colin Cross <ccross@android.com>
+
+Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
 ---
- drivers/video/via/hw.c |  127 +++++++++++++++++++++++++++++++----------------
- 1 files changed, 84 insertions(+), 43 deletions(-)
+ drivers/video/msm/mdp.c           |   96 ++++++++++++++++++-------------------
+ drivers/video/msm/mdp_csc_table.h |   95 ++++++++++++++++--------------------
+ drivers/video/msm/mdp_hw.h        |    9 ++++
+ 3 files changed, 98 insertions(+), 102 deletions(-)
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index c28ae2e..bd28e13 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -1430,6 +1430,70 @@ static u32 vx855_encode_pll(struct pll_config pll)
- 		| pll.multiplier;
- }
+diff --git a/drivers/video/msm/mdp.c b/drivers/video/msm/mdp.c
+index 6aa9ed5..95e19e5 100644
+--- a/drivers/video/msm/mdp.c
++++ b/drivers/video/msm/mdp.c
+@@ -36,11 +36,6 @@ struct class *mdp_class;
  
-+static inline void cle266_set_primary_pll_encoded(u32 data)
-+{
-+	via_write_reg_mask(VIASR, 0x40, 0x02, 0x02); /* enable reset */
-+	via_write_reg(VIASR, 0x46, data & 0xFF);
-+	via_write_reg(VIASR, 0x47, (data >> 8) & 0xFF);
-+	via_write_reg_mask(VIASR, 0x40, 0x00, 0x02); /* disable reset */
-+}
-+
-+static inline void k800_set_primary_pll_encoded(u32 data)
-+{
-+	via_write_reg_mask(VIASR, 0x40, 0x02, 0x02); /* enable reset */
-+	via_write_reg(VIASR, 0x44, data & 0xFF);
-+	via_write_reg(VIASR, 0x45, (data >> 8) & 0xFF);
-+	via_write_reg(VIASR, 0x46, (data >> 16) & 0xFF);
-+	via_write_reg_mask(VIASR, 0x40, 0x00, 0x02); /* disable reset */
-+}
-+
-+static inline void cle266_set_secondary_pll_encoded(u32 data)
-+{
-+	via_write_reg_mask(VIASR, 0x40, 0x04, 0x04); /* enable reset */
-+	via_write_reg(VIASR, 0x44, data & 0xFF);
-+	via_write_reg(VIASR, 0x45, (data >> 8) & 0xFF);
-+	via_write_reg_mask(VIASR, 0x40, 0x00, 0x04); /* disable reset */
-+}
-+
-+static inline void k800_set_secondary_pll_encoded(u32 data)
-+{
-+	via_write_reg_mask(VIASR, 0x40, 0x04, 0x04); /* enable reset */
-+	via_write_reg(VIASR, 0x4A, data & 0xFF);
-+	via_write_reg(VIASR, 0x4B, (data >> 8) & 0xFF);
-+	via_write_reg(VIASR, 0x4C, (data >> 16) & 0xFF);
-+	via_write_reg_mask(VIASR, 0x40, 0x00, 0x04); /* disable reset */
-+}
-+
-+static void cle266_set_primary_pll(struct pll_config config)
-+{
-+	cle266_set_primary_pll_encoded(cle266_encode_pll(config));
-+}
-+
-+static void k800_set_primary_pll(struct pll_config config)
-+{
-+	k800_set_primary_pll_encoded(k800_encode_pll(config));
-+}
-+
-+static void vx855_set_primary_pll(struct pll_config config)
-+{
-+	k800_set_primary_pll_encoded(vx855_encode_pll(config));
-+}
-+
-+static void cle266_set_secondary_pll(struct pll_config config)
-+{
-+	cle266_set_secondary_pll_encoded(cle266_encode_pll(config));
-+}
-+
-+static void k800_set_secondary_pll(struct pll_config config)
-+{
-+	k800_set_secondary_pll_encoded(k800_encode_pll(config));
-+}
-+
-+static void vx855_set_secondary_pll(struct pll_config config)
-+{
-+	k800_set_secondary_pll_encoded(vx855_encode_pll(config));
-+}
-+
- static inline u32 get_pll_internal_frequency(u32 ref_freq,
- 	struct pll_config pll)
+ #define MDP_CMD_DEBUG_ACCESS_BASE (0x10000)
+ 
+-static uint16_t mdp_default_ccs[] = {
+-	0x254, 0x000, 0x331, 0x254, 0xF38, 0xE61, 0x254, 0x409, 0x000,
+-	0x010, 0x080, 0x080
+-};
+-
+ static DECLARE_WAIT_QUEUE_HEAD(mdp_ppp_waitqueue);
+ static unsigned int mdp_irq_mask;
+ DEFINE_MUTEX(mdp_mutex);
+@@ -457,6 +452,52 @@ int register_mdp_client(struct class_interface *cint)
+ 
+ void mdp_hw_init(struct mdp_info *mdp)
  {
-@@ -1474,21 +1538,21 @@ static struct pll_config get_pll_config(struct pll_limit *limits, int size,
- 	return best;
- }
- 
--static u32 viafb_get_clk_value(int clk)
-+static struct pll_config get_best_pll_config(int clk)
++	int n;
++
++	mdp_irq_mask = 0;
++
++	mdp_writel(mdp, 0, MDP_INTR_ENABLE);
++
++	/* debug interface write access */
++	mdp_writel(mdp, 1, 0x60);
++	mdp_writel(mdp, 1, MDP_EBI2_PORTMAP_MODE);
++
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01f8);
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01fc);
++	mdp_writel(mdp, 1, 0x60);
++
++	for (n = 0; n < ARRAY_SIZE(csc_color_lut); n++)
++		mdp_writel(mdp, csc_color_lut[n].val, csc_color_lut[n].reg);
++
++	/* clear up unused fg/main registers */
++	/* comp.plane 2&3 ystride */
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0120);
++
++	/* unpacked pattern */
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x012c);
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0130);
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0134);
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0158);
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x015c);
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0160);
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0170);
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0174);
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x017c);
++
++	/* comp.plane 2 & 3 */
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0114);
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0118);
++
++	/* clear unused bg registers */
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01c8);
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01d0);
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01dc);
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01e0);
++	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01e4);
++
++	for (n = 0; n < ARRAY_SIZE(csc_matrix_config_table); n++)
++		mdp_writel(mdp, csc_matrix_config_table[n].val,
++			   csc_matrix_config_table[n].reg);
+ #ifdef CONFIG_MSM_MDP22
+ 	mdp_ppp_init_scale(mdp);
+ #endif
+@@ -466,7 +507,6 @@ int mdp_probe(struct platform_device *pdev)
  {
--	u32 value = 0;
-+	struct pll_config config;
+ 	struct resource *resource;
+ 	int ret;
+-	int n;
+ 	struct mdp_info *mdp;
  
- 	switch (viaparinfo->chip_info->gfx_chip_name) {
- 	case UNICHROME_CLE266:
- 	case UNICHROME_K400:
--		value = cle266_encode_pll(get_pll_config(cle266_pll_limits,
--			ARRAY_SIZE(cle266_pll_limits), clk));
-+		config = get_pll_config(cle266_pll_limits,
-+			ARRAY_SIZE(cle266_pll_limits), clk);
- 		break;
- 	case UNICHROME_K800:
- 	case UNICHROME_PM800:
- 	case UNICHROME_CN700:
--		value = k800_encode_pll(get_pll_config(k800_pll_limits,
--			ARRAY_SIZE(k800_pll_limits), clk));
-+		config = get_pll_config(k800_pll_limits,
-+			ARRAY_SIZE(k800_pll_limits), clk);
- 		break;
- 	case UNICHROME_CX700:
- 	case UNICHROME_CN750:
-@@ -1496,38 +1560,31 @@ static u32 viafb_get_clk_value(int clk)
- 	case UNICHROME_P4M890:
- 	case UNICHROME_P4M900:
- 	case UNICHROME_VX800:
--		value = k800_encode_pll(get_pll_config(cx700_pll_limits,
--			ARRAY_SIZE(cx700_pll_limits), clk));
-+		config = get_pll_config(cx700_pll_limits,
-+			ARRAY_SIZE(cx700_pll_limits), clk);
- 		break;
- 	case UNICHROME_VX855:
- 	case UNICHROME_VX900:
--		value = vx855_encode_pll(get_pll_config(vx855_pll_limits,
--			ARRAY_SIZE(vx855_pll_limits), clk));
-+		config = get_pll_config(vx855_pll_limits,
-+			ARRAY_SIZE(vx855_pll_limits), clk);
- 		break;
- 	}
+ 	resource = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+@@ -517,52 +557,8 @@ int mdp_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto error_request_irq;
+ 	disable_irq(mdp->irq);
+-	mdp_irq_mask = 0;
+-
+-	/* debug interface write access */
+-	mdp_writel(mdp, 1, 0x60);
+-
+-	mdp_writel(mdp, MDP_ANY_INTR_MASK, MDP_INTR_ENABLE);
+-	mdp_writel(mdp, 1, MDP_EBI2_PORTMAP_MODE);
+-
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01f8);
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01fc);
+-
+-	for (n = 0; n < ARRAY_SIZE(csc_table); n++)
+-		mdp_writel(mdp, csc_table[n].val, csc_table[n].reg);
+-
+-	/* clear up unused fg/main registers */
+-	/* comp.plane 2&3 ystride */
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0120);
+-
+-	/* unpacked pattern */
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x012c);
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0130);
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0134);
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0158);
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x015c);
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0160);
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0170);
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0174);
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x017c);
  
--	return value;
-+	return config;
- }
+ 	clk_enable(mdp->clk);
+-	/* comp.plane 2 & 3 */
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0114);
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0118);
+-
+-	/* clear unused bg registers */
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01c8);
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01d0);
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01dc);
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01e0);
+-	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01e4);
+-
+-	for (n = 0; n < 9; n++)
+-		mdp_writel(mdp, mdp_default_ccs[n], 0x40440 + 4 * n);
+-	mdp_writel(mdp, mdp_default_ccs[9], 0x40500 + 4 * 0);
+-	mdp_writel(mdp, mdp_default_ccs[10], 0x40500 + 4 * 0);
+-	mdp_writel(mdp, mdp_default_ccs[11], 0x40500 + 4 * 0);
+ 	mdp_hw_init(mdp);
  
- /* Set VCLK*/
- void viafb_set_vclock(u32 clk, int set_iga)
- {
--	u32 value = viafb_get_clk_value(clk);
--
--	DEBUG_MSG(KERN_INFO "PLL=0x%x", value);
--
--	/* H.W. Reset : ON */
--	viafb_write_reg_mask(CR17, VIACR, 0x00, BIT7);
-+	struct pll_config config = get_best_pll_config(clk);
+ 	/* register mdp device */
+diff --git a/drivers/video/msm/mdp_csc_table.h b/drivers/video/msm/mdp_csc_table.h
+index d1cde30..6eb0fc3 100644
+--- a/drivers/video/msm/mdp_csc_table.h
++++ b/drivers/video/msm/mdp_csc_table.h
+@@ -1,6 +1,6 @@
+ /* drivers/video/msm_fb/mdp_csc_table.h
+  *
+- * Copyright (C) 2007 QUALCOMM Incorporated
++ * Copyright (C) 2007, 2011 Code Aurora Forum. All rights reserved.
+  * Copyright (C) 2007 Google Incorporated
+  *
+  * This software is licensed under the terms of the GNU General Public
+@@ -16,57 +16,48 @@
+ static struct {
+ 	uint32_t reg;
+ 	uint32_t val;
+-} csc_table[] = {
+-	{ 0x40400, 0x83 },
+-	{ 0x40404, 0x102 },
+-	{ 0x40408, 0x32 },
+-	{ 0x4040c, 0xffffffb5 },
+-	{ 0x40410, 0xffffff6c },
+-	{ 0x40414, 0xe1 },
+-	{ 0x40418, 0xe1 },
+-	{ 0x4041c, 0xffffff45 },
+-	{ 0x40420, 0xffffffdc },
+-	{ 0x40440, 0x254 },
+-	{ 0x40444, 0x0 },
+-	{ 0x40448, 0x331 },
+-	{ 0x4044c, 0x254 },
+-	{ 0x40450, 0xffffff38 },
+-	{ 0x40454, 0xfffffe61 },
+-	{ 0x40458, 0x254 },
+-	{ 0x4045c, 0x409 },
+-	{ 0x40460, 0x0 },
+-	{ 0x40480, 0x5d },
+-	{ 0x40484, 0x13a },
+-	{ 0x40488, 0x20 },
+-	{ 0x4048c, 0xffffffcd },
+-	{ 0x40490, 0xffffff54 },
+-	{ 0x40494, 0xe1 },
+-	{ 0x40498, 0xe1 },
+-	{ 0x4049c, 0xffffff35 },
+-	{ 0x404a0, 0xffffffec },
+-	{ 0x404c0, 0x254 },
+-	{ 0x404c4, 0x0 },
+-	{ 0x404c8, 0x396 },
+-	{ 0x404cc, 0x254 },
+-	{ 0x404d0, 0xffffff94 },
+-	{ 0x404d4, 0xfffffef0 },
+-	{ 0x404d8, 0x254 },
+-	{ 0x404dc, 0x43a },
+-	{ 0x404e0, 0x0 },
+-	{ 0x40500, 0x10 },
+-	{ 0x40504, 0x80 },
+-	{ 0x40508, 0x80 },
+-	{ 0x40540, 0x10 },
+-	{ 0x40544, 0x80 },
+-	{ 0x40548, 0x80 },
+-	{ 0x40580, 0x10 },
+-	{ 0x40584, 0xeb },
+-	{ 0x40588, 0x10 },
+-	{ 0x4058c, 0xf0 },
+-	{ 0x405c0, 0x10 },
+-	{ 0x405c4, 0xeb },
+-	{ 0x405c8, 0x10 },
+-	{ 0x405cc, 0xf0 },
++} csc_matrix_config_table[] = {
++	/* RGB -> YUV primary forward matrix (set1). */
++	{ MDP_CSC_PFMVn(0), 0x83 },
++	{ MDP_CSC_PFMVn(1), 0x102 },
++	{ MDP_CSC_PFMVn(2), 0x32 },
++	{ MDP_CSC_PFMVn(3), 0xffffffb5 },
++	{ MDP_CSC_PFMVn(4), 0xffffff6c },
++	{ MDP_CSC_PFMVn(5), 0xe1 },
++	{ MDP_CSC_PFMVn(6), 0xe1 },
++	{ MDP_CSC_PFMVn(7), 0xffffff45 },
++	{ MDP_CSC_PFMVn(8), 0xffffffdc },
++
++	/* YUV -> RGB primary reverse matrix (set2) */
++	{ MDP_CSC_PRMVn(0), 0x254 },
++	{ MDP_CSC_PRMVn(1), 0x0 },
++	{ MDP_CSC_PRMVn(2), 0x331 },
++	{ MDP_CSC_PRMVn(3), 0x254 },
++	{ MDP_CSC_PRMVn(4), 0xffffff38 },
++	{ MDP_CSC_PRMVn(5), 0xfffffe61 },
++	{ MDP_CSC_PRMVn(6), 0x254 },
++	{ MDP_CSC_PRMVn(7), 0x409 },
++	{ MDP_CSC_PRMVn(8), 0x0 },
++
++	/* For MDP 2.2/3.0 */
++
++	/* primary limit vector */
++	{ MDP_CSC_PLVn(0), 0x10 },
++	{ MDP_CSC_PLVn(1), 0xeb },
++	{ MDP_CSC_PLVn(2), 0x10 },
++	{ MDP_CSC_PLVn(3), 0xf0 },
++
++	/* primary bias vector */
++	{ MDP_CSC_PBVn(0), 0x10 },
++	{ MDP_CSC_PBVn(1), 0x80 },
++	{ MDP_CSC_PBVn(2), 0x80 },
++
++};
++
++static struct {
++	uint32_t reg;
++	uint32_t val;
++} csc_color_lut[] = {
+ 	{ 0x40800, 0x0 },
+ 	{ 0x40804, 0x151515 },
+ 	{ 0x40808, 0x1d1d1d },
+diff --git a/drivers/video/msm/mdp_hw.h b/drivers/video/msm/mdp_hw.h
+index 05deac8..34a204e 100644
+--- a/drivers/video/msm/mdp_hw.h
++++ b/drivers/video/msm/mdp_hw.h
+@@ -608,6 +608,15 @@ int mdp_ppp_blit(const struct mdp_info *mdp, struct mdp_blit_req *req,
+ #define PPP_ADDR_BG_CFG			MDP_FULL_BYPASS_WORD53
+ #define PPP_ADDR_BG_PACK_PATTERN	MDP_FULL_BYPASS_WORD54
  
- 	if (set_iga = IGA1) {
- 		/* Change D,N FOR VCLK */
- 		switch (viaparinfo->chip_info->gfx_chip_name) {
- 		case UNICHROME_CLE266:
- 		case UNICHROME_K400:
--			via_write_reg(VIASR, SR46, (value & 0x00FF));
--			via_write_reg(VIASR, SR47, (value & 0xFF00) >> 8);
-+			cle266_set_primary_pll(config);
- 			break;
--
- 		case UNICHROME_K800:
- 		case UNICHROME_PM800:
- 		case UNICHROME_CN700:
-@@ -1537,11 +1594,11 @@ void viafb_set_vclock(u32 clk, int set_iga)
- 		case UNICHROME_P4M890:
- 		case UNICHROME_P4M900:
- 		case UNICHROME_VX800:
-+			k800_set_primary_pll(config);
-+			break;
- 		case UNICHROME_VX855:
- 		case UNICHROME_VX900:
--			via_write_reg(VIASR, SR44, (value & 0x0000FF));
--			via_write_reg(VIASR, SR45, (value & 0x00FF00) >> 8);
--			via_write_reg(VIASR, SR46, (value & 0xFF0000) >> 16);
-+			vx855_set_primary_pll(config);
- 			break;
- 		}
- 	}
-@@ -1551,10 +1608,8 @@ void viafb_set_vclock(u32 clk, int set_iga)
- 		switch (viaparinfo->chip_info->gfx_chip_name) {
- 		case UNICHROME_CLE266:
- 		case UNICHROME_K400:
--			via_write_reg(VIASR, SR44, (value & 0x00FF));
--			via_write_reg(VIASR, SR45, (value & 0xFF00) >> 8);
-+			cle266_set_secondary_pll(config);
- 			break;
--
- 		case UNICHROME_K800:
- 		case UNICHROME_PM800:
- 		case UNICHROME_CN700:
-@@ -1564,29 +1619,15 @@ void viafb_set_vclock(u32 clk, int set_iga)
- 		case UNICHROME_P4M890:
- 		case UNICHROME_P4M900:
- 		case UNICHROME_VX800:
-+			k800_set_secondary_pll(config);
-+			break;
- 		case UNICHROME_VX855:
- 		case UNICHROME_VX900:
--			via_write_reg(VIASR, SR4A, (value & 0x0000FF));
--			via_write_reg(VIASR, SR4B, (value & 0x00FF00) >> 8);
--			via_write_reg(VIASR, SR4C, (value & 0xFF0000) >> 16);
-+			vx855_set_secondary_pll(config);
- 			break;
- 		}
- 	}
- 
--	/* H.W. Reset : OFF */
--	viafb_write_reg_mask(CR17, VIACR, 0x80, BIT7);
--
--	/* Reset PLL */
--	if (set_iga = IGA1) {
--		viafb_write_reg_mask(SR40, VIASR, 0x02, BIT1);
--		viafb_write_reg_mask(SR40, VIASR, 0x00, BIT1);
--	}
--
--	if (set_iga = IGA2) {
--		viafb_write_reg_mask(SR40, VIASR, 0x04, BIT2);
--		viafb_write_reg_mask(SR40, VIASR, 0x00, BIT2);
--	}
--
- 	/* Fire! */
- 	via_write_misc_reg_mask(0x0C, 0x0C); /* select external clock */
- }
++/* color conversion matrix configuration registers */
++/* pfmv is mv1, prmv is mv2 */
++#define MDP_CSC_PFMVn(n)		(0x40400 + (4 * (n)))
++#define MDP_CSC_PRMVn(n)		(0x40440 + (4 * (n)))
++#define MDP_CSC_PBVn(n)			(0x40500 + (4 * (n)))
++#define MDP_CSC_SBVn(n)			(0x40540 + (4 * (n)))
++#define MDP_CSC_PLVn(n)			(0x40580 + (4 * (n)))
++#define MDP_CSC_SLVn(n)			(0x405c0 + (4 * (n)))
++
+ /* MDP_DMA_CONFIG / MDP_FULL_BYPASS_WORD32 */
+ #define DMA_DSTC0G_6BITS (1<<1)
+ #define DMA_DSTC1B_6BITS (1<<3)
 -- 
-1.6.3.2
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
 

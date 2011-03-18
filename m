@@ -1,33 +1,67 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Fri, 11 Mar 2011 22:50:37 +0000
-Subject: framebuffer works with console, but not tty
-Message-Id: <4D7AA73D.5090705@freescale.com>
+From: Carl Vanderlip <carlv@codeaurora.org>
+Date: Fri, 18 Mar 2011 21:53:58 +0000
+Subject: [PATCH 03/20] video: msm: add locked_enable_mdp_irq function
+Message-Id: <1300485238-27004-1-git-send-email-carlv@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
+In-Reply-To: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-I have a framebuffer driver (drivers/video/fsl_diu_fb.c) that works fine as a
-console.  However, I cannot get any tty output to appear on my video device.
-tty output appears on the serial port, as does the login prompt.
+Add a version of this fuction to be called in a locked context.
 
-I'm pretty sure this is a problem with my root file system configuration, but I
-can't find any information on how to get it to work.  I've checked the fbdev
-documentation, done numerous Google searches, and searched the archives of this
-mailing list, but I can't even find any threads discussing the issue, let alone
-answering it.
+Authors:
+Dima Zavin <dima@android.com>
+Rebecca Schultz Zavin <rebecca@android.com>
+Colin Cross <ccross@android.com>
 
-So what am I missing?  What do I need to do in my rootfs to get tty output and
-the login prompt to appear on my video device, and not the serial port?
+Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
+---
+ drivers/video/msm/mdp.c |   16 ++++++++++++----
+ 1 files changed, 12 insertions(+), 4 deletions(-)
 
-Here's my kernel command line:
-
-root=/dev/ram rw console=ttyS0,115200 console=tty0
-video=fslfb:1280x1024-32@60,monitor=dvi panic=1 ramdisk_size1000 debug=1
-
-
+diff --git a/drivers/video/msm/mdp.c b/drivers/video/msm/mdp.c
+index a078028..9fb9f1a 100644
+--- a/drivers/video/msm/mdp.c
++++ b/drivers/video/msm/mdp.c
+@@ -47,14 +47,12 @@ static struct clk *clk;
+ static unsigned int mdp_irq_mask;
+ DEFINE_MUTEX(mdp_mutex);
+ 
+-static int enable_mdp_irq(struct mdp_info *mdp, uint32_t mask)
++static int locked_enable_mdp_irq(struct mdp_info *mdp, uint32_t mask)
+ {
+-	unsigned long irq_flags;
+ 	int ret = 0;
+ 
+ 	BUG_ON(!mask);
+ 
+-	spin_lock_irqsave(&mdp->lock, irq_flags);
+ 	/* if the mask bits are already set return an error, this interrupt
+ 	 * is already enabled */
+ 	if (mdp_irq_mask & mask) {
+@@ -72,7 +70,17 @@ static int enable_mdp_irq(struct mdp_info *mdp, uint32_t mask)
+ 	/* update the irq mask to reflect the fact that the interrupt is
+ 	 * enabled */
+ 	mdp_irq_mask |= mask;
+-	spin_unlock_irqrestore(&mdp->lock, irq_flags);
++	return 0;
++}
++
++static int enable_mdp_irq(struct mdp_info *mdp, uint32_t mask)
++{
++	unsigned long flags;
++	int ret;
++
++	spin_lock_irqsave(&mdp->lock, flags);
++	ret = locked_enable_mdp_irq(mdp, mask);
++	spin_unlock_irqrestore(&mdp->lock, flags);
+ 	return ret;
+ }
+ 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
 

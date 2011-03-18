@@ -1,43 +1,124 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Tue, 01 Mar 2011 14:09:52 +0000
-Subject: Re: [PATCH 3/8] Add a mfd IPUv3 driver
-Message-Id: <alpine.LFD.2.00.1103011507220.2701@localhost6.localdomain6>
+From: Carl Vanderlip <carlv@codeaurora.org>
+Date: Fri, 18 Mar 2011 21:58:30 +0000
+Subject: [PATCH 13/20] video: msm: Debugging for send_blit
+Message-Id: <1300485510-27439-1-git-send-email-carlv@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1298887229-7987-1-git-send-email-s.hauer@pengutronix.de>
-	<201103011127.51605.arnd@arndb.de>
-	<20110301111220.GN29521@pengutronix.de>
-	<201103011243.33765.arnd@arndb.de>
-In-Reply-To: <201103011243.33765.arnd@arndb.de>
+References: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
+In-Reply-To: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Tue, 1 Mar 2011, Arnd Bergmann wrote:
+Allows for mdp_writel_dbg to be redefined as needed to debug blits.
 
-> On Tuesday 01 March 2011, Sascha Hauer wrote:
-> > > Taking one step back from this, have you considered making this
-> > > a regular interrupt controller? That would make the client drivers
-> > > more standard -- you could define the interrupt numbers as resources
-> > > of a platform device or in the device tree, for instance.
-> > > The cost might be more complex code, e.g. when a device requires
-> > > many interrupts, but I think it will be at least as efficient
-> > > at run-time, and less surprising for readers and authors of
-> > > client drivers.
-> > 
-> > I thought about this, but hesitated to increase NR_IRQS by 463. Do you
-> > think we should do this instead?
-> 
-> I think there is a plan to virtualize the interrupt numbers on ARM,
-> and in that case NR_IRQS becomes rather meaningless. I don't know
-> exactly how far that effort has come.
+Authors:
+Dima Zavin <dima@android.com>
+Rebecca Schultz Zavin <rebecca@android.com>
+Colin Cross <ccross@android.com>
 
-Also sparse irqs allows us now to allocate beyond NR_IRQS. With sparse
-irqs NR_IRQS is pretty meaningless and just gives us an indicator how
-large the irq space might become, but we allow up to 8k dynamically
-allocated irqs beyond NR_IRQS, so this should be sufficient for your
-problem.
+Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
+---
+ drivers/video/msm/mdp_hw.h  |    2 +-
+ drivers/video/msm/mdp_ppp.c |   61 ++++++++++++++++++++++--------------------
+ 2 files changed, 33 insertions(+), 30 deletions(-)
 
-Thanks,
+diff --git a/drivers/video/msm/mdp_hw.h b/drivers/video/msm/mdp_hw.h
+index acb48f5..fdf9e5e 100644
+--- a/drivers/video/msm/mdp_hw.h
++++ b/drivers/video/msm/mdp_hw.h
+@@ -87,7 +87,7 @@ int mdp_ppp_blit(const struct mdp_info *mdp, struct mdp_blit_req *req,
+ #define MDP_DISPLAY0_ADDR                (0x00054)
+ #define MDP_DISPLAY1_ADDR                (0x00058)
+ #define MDP_EBI2_PORTMAP_MODE            (0x0005c)
+-#define MDP_MODE                         (0x00060)
++#define MDP_PPP_CMD_MODE                 (0x00060)
+ #define MDP_TV_OUT_STATUS                (0x00064)
+ #define MDP_HW_VERSION                   (0x00070)
+ #define MDP_SW_RESET                     (0x00074)
+diff --git a/drivers/video/msm/mdp_ppp.c b/drivers/video/msm/mdp_ppp.c
+index 3d190b9..290c29a 100644
+--- a/drivers/video/msm/mdp_ppp.c
++++ b/drivers/video/msm/mdp_ppp.c
+@@ -331,45 +331,48 @@ static void get_chroma_addr(struct mdp_img *img, struct mdp_rect *rect,
+ 	}
+ }
+ 
++#define mdp_writel_dbg(mdp, val, reg) mdp_writel((mdp), (val), (reg))
++
+ static int send_blit(const struct mdp_info *mdp, struct mdp_blit_req *req,
+ 		     struct ppp_regs *regs, struct file *src_file,
+ 		     struct file *dst_file)
+ {
+-	mdp_writel(mdp, 1, 0x060);
+-	mdp_writel(mdp, regs->src_rect, PPP_ADDR_SRC_ROI);
+-	mdp_writel(mdp, regs->src0, PPP_ADDR_SRC0);
+-	mdp_writel(mdp, regs->src1, PPP_ADDR_SRC1);
+-	mdp_writel(mdp, regs->src_ystride, PPP_ADDR_SRC_YSTRIDE);
+-	mdp_writel(mdp, regs->src_cfg, PPP_ADDR_SRC_CFG);
+-	mdp_writel(mdp, regs->src_pack, PPP_ADDR_SRC_PACK_PATTERN);
+-
+-	mdp_writel(mdp, regs->op, PPP_ADDR_OPERATION);
+-	mdp_writel(mdp, regs->phasex_init, PPP_ADDR_PHASEX_INIT);
+-	mdp_writel(mdp, regs->phasey_init, PPP_ADDR_PHASEY_INIT);
+-	mdp_writel(mdp, regs->phasex_step, PPP_ADDR_PHASEX_STEP);
+-	mdp_writel(mdp, regs->phasey_step, PPP_ADDR_PHASEY_STEP);
+-
+-	mdp_writel(mdp, (req->alpha << 24) | (req->transp_mask & 0xffffff),
++#if 0
++	mdp_writel_dbg(mdp, 1, MDP_PPP_CMD_MODE);
++#endif
++	mdp_writel_dbg(mdp, regs->src_rect, PPP_ADDR_SRC_ROI);
++	mdp_writel_dbg(mdp, regs->src0, PPP_ADDR_SRC0);
++	mdp_writel_dbg(mdp, regs->src1, PPP_ADDR_SRC1);
++	mdp_writel_dbg(mdp, regs->src_ystride, PPP_ADDR_SRC_YSTRIDE);
++	mdp_writel_dbg(mdp, regs->src_cfg, PPP_ADDR_SRC_CFG);
++	mdp_writel_dbg(mdp, regs->src_pack, PPP_ADDR_SRC_PACK_PATTERN);
++
++	mdp_writel_dbg(mdp, regs->op, PPP_ADDR_OPERATION);
++	mdp_writel_dbg(mdp, regs->phasex_init, PPP_ADDR_PHASEX_INIT);
++	mdp_writel_dbg(mdp, regs->phasey_init, PPP_ADDR_PHASEY_INIT);
++	mdp_writel_dbg(mdp, regs->phasex_step, PPP_ADDR_PHASEX_STEP);
++	mdp_writel_dbg(mdp, regs->phasey_step, PPP_ADDR_PHASEY_STEP);
++
++	mdp_writel_dbg(mdp, regs->edge, PPP_ADDR_EDGE);
++	mdp_writel_dbg(mdp, (req->alpha << 24) | (req->transp_mask & 0xffffff),
+ 	       PPP_ADDR_ALPHA_TRANSP);
+ 
+-	mdp_writel(mdp, regs->dst_cfg, PPP_ADDR_DST_CFG);
+-	mdp_writel(mdp, regs->dst_pack, PPP_ADDR_DST_PACK_PATTERN);
+-	mdp_writel(mdp, regs->dst_rect, PPP_ADDR_DST_ROI);
+-	mdp_writel(mdp, regs->dst0, PPP_ADDR_DST0);
+-	mdp_writel(mdp, regs->dst1, PPP_ADDR_DST1);
+-	mdp_writel(mdp, regs->dst_ystride, PPP_ADDR_DST_YSTRIDE);
++	mdp_writel_dbg(mdp, regs->dst_cfg, PPP_ADDR_DST_CFG);
++	mdp_writel_dbg(mdp, regs->dst_pack, PPP_ADDR_DST_PACK_PATTERN);
++	mdp_writel_dbg(mdp, regs->dst_rect, PPP_ADDR_DST_ROI);
++	mdp_writel_dbg(mdp, regs->dst0, PPP_ADDR_DST0);
++	mdp_writel_dbg(mdp, regs->dst1, PPP_ADDR_DST1);
++	mdp_writel_dbg(mdp, regs->dst_ystride, PPP_ADDR_DST_YSTRIDE);
+ 
+-	mdp_writel(mdp, regs->edge, PPP_ADDR_EDGE);
+ 	if (regs->op & PPP_OP_BLEND_ON) {
+-		mdp_writel(mdp, regs->dst0, PPP_ADDR_BG0);
+-		mdp_writel(mdp, regs->dst1, PPP_ADDR_BG1);
+-		mdp_writel(mdp, regs->dst_ystride, PPP_ADDR_BG_YSTRIDE);
+-		mdp_writel(mdp, src_img_cfg[req->dst.format], PPP_ADDR_BG_CFG);
+-		mdp_writel(mdp, pack_pattern[req->dst.format],
+-			   PPP_ADDR_BG_PACK_PATTERN);
++		mdp_writel_dbg(mdp, regs->bg0, PPP_ADDR_BG0);
++		mdp_writel_dbg(mdp, regs->bg1, PPP_ADDR_BG1);
++		mdp_writel_dbg(mdp, regs->bg_ystride, PPP_ADDR_BG_YSTRIDE);
++		mdp_writel_dbg(mdp, regs->bg_cfg, PPP_ADDR_BG_CFG);
++		mdp_writel_dbg(mdp, regs->bg_pack, PPP_ADDR_BG_PACK_PATTERN);
+ 	}
+ 	flush_imgs(req, regs, src_file, dst_file);
+-	mdp_writel(mdp, 0x1000, MDP_DISPLAY0_START);
++	mdp_writel_dbg(mdp, 0x1000, MDP_DISPLAY0_START);
+ 	return 0;
+ }
+ 
+-- 
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
 
-	tglx

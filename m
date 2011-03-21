@@ -1,21 +1,33 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Thu, 31 Mar 2011 04:54:23 +0000
-Subject: Re: [PATCH] efifb: support AMD Radeon HD 6490
-Message-Id: <20110331045409.GB15486@linux-sh.org>
+From: Dan Carpenter <error27@gmail.com>
+Date: Mon, 21 Mar 2011 15:03:13 +0000
+Subject: [patch v2] fbdev: sh_mobile_lcdc: checking NULL instead of IS_ERR()
+Message-Id: <20110321150313.GQ2008@bicker>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1301530342.2140.2.camel@offworld>
-In-Reply-To: <1301530342.2140.2.camel@offworld>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Davidlohr Bueso <dave@gnu.org>
-Cc: Peter Jones <pjones@redhat.com>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, zeus@gnu.org
+To: linux-fbdev@vger.kernel.org
 
-On Wed, Mar 30, 2011 at 09:12:22PM -0300, Davidlohr Bueso wrote:
-> This patch enables the framebuffer for the AMD Radeon 6490 found in the new MacBook Pro 8,2 generation.
-> The framebuffer's base is located at 0x90010000, the method for obtaining it was found in the same way mentioned in https://patchwork.kernel.org/patch/91704/
-> 
-> Signed-off-by: Davidlohr Bueso <dave@gnu.org>
-> Signed-off-by: Jonathan Gonzalez <zeus@gnu.org>
+backlight_device_register() returns an ERR_PTR.  It doesn't return NULL.
 
-Applied, thanks.
+Signed-off-by: Dan Carpenter <error27@gmail.com>
+---
+V2:  print the error code as well.
+This patch is againts linux-next, in case you missed that earlier.
+
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index bf2629f..757665b 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -1088,8 +1088,9 @@ static struct backlight_device *sh_mobile_lcdc_bl_probe(struct device *parent,
+ 
+ 	bl = backlight_device_register(ch->cfg.bl_info.name, parent, ch,
+ 				       &sh_mobile_lcdc_bl_ops, NULL);
+-	if (!bl) {
+-		dev_err(parent, "unable to register backlight device\n");
++	if (IS_ERR(bl)) {
++		dev_err(parent, "unable to register backlight device: %ld\n",
++			PTR_ERR(bl));
+ 		return NULL;
+ 	}
+ 

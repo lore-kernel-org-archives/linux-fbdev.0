@@ -1,135 +1,83 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 23 Mar 2011 22:35:34 +0000
-Subject: [PATCH 4/4] viafb: add clock source selection and PLL power management support
-Message-Id: <1300919734-3931-5-git-send-email-FlorianSchandinat@gmx.de>
+From: Gary Hade <garyhade@us.ibm.com>
+Date: Mon, 21 Mar 2011 17:28:59 +0000
+Subject: [PATCH v3] matroxfb: remove incorrect Matrox G200eV support
+Message-Id: <20110321172859.GB7549@us.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1300919734-3931-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1300919734-3931-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Darrick J. Wong" <djwong@us.ibm.com>, Krzysztof Helt <krzysztof.h1@wp.pl>, Petr Vandrovec <vandrove@vc.cvut.cz>, Andrew Morton <akpm@linux-foundation.org>, Christian Toutant <ctoutant@matrox.com>, Gary Hade <garyhade@us.ibm.com>
 
-This patch adds some support for clock source selection as well as
-PLL power management. The code is unused at the moment but was
-successfully tested as far as possible.
-The implementation is according to the documentation for VX700,
-VX800, VX855, VX900. Probably the source selection works like this
-starting with K800 and the power managemennt at least since VX700.
-(guessed based on the initialization in viamode.c)
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+From: Gary Hade <garyhade@us.ibm.com>
+
+Remove incorrect Matrox G200eV support that was previously
+added by commit e3a1938805d2e81b27d3d348788644f3bad004f2
+
+A serious issue with the incorrect G200eV support that reproduces
+on the Matrox G200eV equipped IBM x3650 M2 is the total lack of
+text (login banner, login prompt, etc) on the console when X is
+not running and total lack of text on all of the virtual consoles
+after X is started.
+
+Any concerns that the incorrect code (upstream since October 2008)
+has been successfully used on non-IBM G200eV equipped system(s)
+appear to be unwarranted.  In addition to the serious/non-intermittent
+nature of issues that have been spotted on IBM systems, complete
+removal of the incorrect code is clearly supported by the following
+Matrox (Yannick Heneault) provided input.
+ "It impossible that this patch should have work on a system.
+ The patch only declare the G200eV as a regular G200 which is
+ not case. Many registers are different, including at least the
+ PLL programming sequence. If the G200eV is programmed like a
+ regular G200, it will not display anything."
+
+v1 - Initial patch that removed the incorrect code for _all_
+     G200eV equipped systems.
+v2 - Darrick Wong provided patch that blacklisted the incorrect
+     code on G200eV equipped IBM systems leaving it enabled on
+     all G200eV equipped non-IBM systems.
+v3 - Same code changes included with v1 plus additional 
+     justification for complete removal of the incorrect code.
+
+Signed-off-by: Gary Hade <garyhade@us.ibm.com>
+Cc: Darrick J. Wong <djwong@us.ibm.com>
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: Petr Vandrovec <vandrove@vc.cvut.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Yannick Heneault <yannick_heneault@matrox.com>
+Cc: Christian Toutant <ctoutant@matrox.com>
+
 ---
- drivers/video/via/hw.c |   88 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 88 insertions(+), 0 deletions(-)
+ drivers/video/matrox/matroxfb_base.c |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index bd28e13..b38d3b4 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -1409,6 +1409,42 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
- 
- }
- 
-+static void set_primary_pll_state(u8 state)
-+{
-+	u8 value;
-+
-+	switch (state) {
-+	case VIA_STATE_ON:
-+		value = 0x20;
-+		break;
-+	case VIA_STATE_OFF:
-+		value = 0x00;
-+		break;
-+	default:
-+		return;
-+	}
-+
-+	via_write_reg_mask(VIASR, 0x2D, value, 0x30);
-+}
-+
-+static void set_secondary_pll_state(u8 state)
-+{
-+	u8 value;
-+
-+	switch (state) {
-+	case VIA_STATE_ON:
-+		value = 0x08;
-+		break;
-+	case VIA_STATE_OFF:
-+		value = 0x00;
-+		break;
-+	default:
-+		return;
-+	}
-+
-+	via_write_reg_mask(VIASR, 0x2D, value, 0x08);
-+}
-+
- static u32 cle266_encode_pll(struct pll_config pll)
- {
- 	return (pll.multiplier << 8)
-@@ -1494,6 +1530,58 @@ static void vx855_set_secondary_pll(struct pll_config config)
- 	k800_set_secondary_pll_encoded(vx855_encode_pll(config));
- }
- 
-+enum via_clksrc {
-+	VIA_CLKSRC_X1 = 0,
-+	VIA_CLKSRC_TVX1,
-+	VIA_CLKSRC_TVPLL,
-+	VIA_CLKSRC_DVP1TVCLKR,
-+	VIA_CLKSRC_CAP0,
-+	VIA_CLKSRC_CAP1,
-+};
-+
-+static inline u8 set_clock_source_common(enum via_clksrc source, bool use_pll)
-+{
-+	u8 data = 0;
-+
-+	switch (source) {
-+	case VIA_CLKSRC_X1:
-+		data = 0x00;
-+		break;
-+	case VIA_CLKSRC_TVX1:
-+		data = 0x02;
-+		break;
-+	case VIA_CLKSRC_TVPLL:
-+		data = 0x04; /* 0x06 should be the same */
-+		break;
-+	case VIA_CLKSRC_DVP1TVCLKR:
-+		data = 0x0A;
-+		break;
-+	case VIA_CLKSRC_CAP0:
-+		data = 0xC;
-+		break;
-+	case VIA_CLKSRC_CAP1:
-+		data = 0x0E;
-+		break;
-+	}
-+
-+	if (!use_pll)
-+		data |= 1;
-+
-+	return data;
-+}
-+
-+static void set_primary_clock_source(enum via_clksrc source, bool use_pll)
-+{
-+	u8 data = set_clock_source_common(source, use_pll) << 4;
-+	via_write_reg_mask(VIACR, 0x6C, data, 0xF0);
-+}
-+
-+static void set_secondary_clock_source(enum via_clksrc source, bool use_pll)
-+{
-+	u8 data = set_clock_source_common(source, use_pll);
-+	via_write_reg_mask(VIACR, 0x6C, data, 0x0F);
-+}
-+
- static inline u32 get_pll_internal_frequency(u32 ref_freq,
- 	struct pll_config pll)
- {
--- 
-1.6.3.2
-
+diff --git a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
+index a082deb..a74439a 100644
+--- a/drivers/video/matrox/matroxfb_base.c
++++ b/drivers/video/matrox/matroxfb_base.c
+@@ -1461,13 +1461,6 @@ static struct board {
+ 		MGA_G100,
+ 		&vbG100,
+ 		"MGA-G100 (AGP)"},
+-	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200EV_PCI,	0xFF,
+-		0,			0,
+-		DEVF_G200,
+-		230000,
+-		MGA_G200,
+-		&vbG200,
+-		"MGA-G200eV (PCI)"},
+ 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_PCI,	0xFF,
+ 		0,			0,
+ 		DEVF_G200,
+@@ -2119,8 +2112,6 @@ static struct pci_device_id matroxfb_devices[] = {
+ 		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
+ 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G100_AGP,
+ 		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
+-	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200EV_PCI,
+-		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
+ 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_PCI,
+ 		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
+ 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G200_AGP,

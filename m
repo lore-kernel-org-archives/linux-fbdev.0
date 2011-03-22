@@ -1,7 +1,7 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Mon, 21 Mar 2011 16:41:56 +0000
-Subject: Re: [PATCH 07/20] video: msm: Allow users to request a larger x
-Message-Id: <20110321164156.GF4340@n2100.arm.linux.org.uk>
+From: "Carl Vanderlip" <carlv@codeaurora.org>
+Date: Tue, 22 Mar 2011 00:21:10 +0000
+Subject: RE: [PATCH 07/20] video: msm: Allow users to request a larger x
+Message-Id: <94462146d712916438b435acb20c9f00.squirrel@www.codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
 	<1300485381-27201-1-git-send-email-carlv@codeaurora.org>
@@ -12,11 +12,98 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Mon, Mar 21, 2011 at 10:10:09AM +0530, Janorkar, Mayuresh wrote:
-> > +	fix->line_length = var->xres * var->bits_per_pixel / 8;
+>> diff --git a/drivers/video/msm/msm_fb.c b/drivers/video/msm/msm_fb.c
+>> index 04d0067..6af8b41 100644
+>> --- a/drivers/video/msm/msm_fb.c
+>> +++ b/drivers/video/msm/msm_fb.c
+
+>> @@ -323,14 +327,46 @@ error:
+>>
+>>  static int msmfb_check_var(struct fb_var_screeninfo *var, struct
+>> fb_info
+>> *info)
+>>  {
+>> +	u32 size;
+>> +
+>>  	if ((var->xres != info->var.xres) ||
+>>  	    (var->yres != info->var.yres) ||
+>> -	    (var->xres_virtual != info->var.xres_virtual) ||
+>> -	    (var->yres_virtual != info->var.yres_virtual) ||
+>>  	    (var->xoffset != info->var.xoffset) ||
+>>  	    (var->bits_per_pixel != info->var.bits_per_pixel) ||
+>>  	    (var->grayscale != info->var.grayscale))
+>>  		 return -EINVAL;
+>> +
+>> +	size = var->xres_virtual * var->yres_virtual *
+>> +		(var->bits_per_pixel >> 3);
+>
+> How about defining a new macro BYTES_PER_PIXEL_VAR for fb_var_screeninfo
+> also? That would make code more readable.
+>
+>> +	if (size > info->fix.smem_len)
+>> +		return -EINVAL;
+>> +	return 0;
+>> +}
+
+Name might be a little easy to confuse with the other BYTES_PER_PIXEL, but
+overall readability would increase IMHO; Done.
+
+>> +static int msmfb_set_par(struct fb_info *info)
+>> +{
+>> +	struct fb_var_screeninfo *var = &info->var;
+>> +	struct fb_fix_screeninfo *fix = &info->fix;
+>> +
+>> +	/* we only support RGB ordering for now */
+>> +	if (var->bits_per_pixel = 32 || var->bits_per_pixel = 24) {
+>> +		var->red.offset = 0;
+>> +		var->red.length = 8;
+>> +		var->green.offset = 8;
+>> +		var->green.length = 8;
+>> +		var->blue.offset = 16;
+>> +		var->blue.length = 8;
+>
+> var->red is a fb_bitfield variable.
+> It provides offset, length and msb_right.
+>
+> struct fb_bitfield {
+>     __u32 offset;                   /* beginning of bitfield        */
+>     __u32 length;                   /* length of bitfield           */
+>     __u32 msb_right;                /* != 0 : Most significant bit is */
+>                                     /* right */
+> }
+> Please don't keep msb_right unassigned.
+>
+>> +	} else if (var->bits_per_pixel = 16) {
+>> +		var->red.offset = 11;
+>> +		var->red.length = 5;
+>> +		var->green.offset = 5;
+>> +		var->green.length = 6;
+>> +		var->blue.offset = 0;
+>> +		var->blue.length = 5;
+>> +	} else
+>> +		return -1;
+>
+> Please use standard error code provided by Linux kernel -EINVAL
+> (-22 Invalid argument)
+>
+>> +	fix->line_length = var->xres * var->bits_per_pixel / 8;
 > Why to divide by 8? Atleast use >>3, bitwise operations that would take
 > less cpu cycles)
 > As I stated earlier define a new macro for var also.
+>
+>> +
+>>  	return 0;
+>>  }
 
-Modern compilers know about such things.  >> 3 vs / 8 (probably) makes no
-difference to the generated code with the toolchains we use.
+And Done. And done again... and while I'm at it, all the changes you
+suggested are being pulled into v2 (except for updating Google's copyright
+date (see: Brian Swetland's response)).
+
+Thank you for reviewing my patches :)
+
+   -Carl V.
+
+-- 
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+

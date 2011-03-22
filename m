@@ -1,34 +1,75 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 02 Mar 2011 07:58:49 +0000
-Subject: Re: [PATCH] omapfb: Fix linker error in
-Message-Id: <1299052729.2226.44.camel@deskari>
+From: Heiko Schocher <hs@denx.de>
+Date: Tue, 22 Mar 2011 08:27:31 +0000
+Subject: [PATCH v6 5/6] powerpc, video: add SM501 support for charon board.
+Message-Id: <1300782452-528-6-git-send-email-hs@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1298905757.9809.135.camel@deskari>
-	 <1298968837-13584-1-git-send-email-jhnikula@gmail.com>
-In-Reply-To: <1298968837-13584-1-git-send-email-jhnikula@gmail.com>
+References: <1291451028-22532-1-git-send-email-hs@denx.de>
+ <1300782452-528-1-git-send-email-hs@denx.de>
+In-Reply-To: <1300782452-528-1-git-send-email-hs@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jarkko Nikula <jhnikula@gmail.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Heiko Schocher <hs@denx.de>, Wolfram Sang <w.sang@pengutronix.de>, Grant Likely <grant.likely@secretlab.ca>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org, Ben Dooks <ben@simtec.co.uk>, Vincent Sanders <vince@simtec.co.uk>, Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>, Wolfgang Denk <wd@denx.de>, Paul Mundt <lethal@linux-sh.org>
 
-On Tue, 2011-03-01 at 02:40 -0600, Jarkko Nikula wrote:
-> There is a linker error from lcd_2430sdp.c if CONFIG_TWL4030_CORE is not
-> set. This can be triggered on OMAP2 builds when OMAP3 or OMAP4 are not set.
-> 
-> drivers/built-in.o: In function `sdp2430_panel_disable':
-> drivers/video/omap/lcd_2430sdp.c:123: undefined reference to `twl_i2c_write_u8'
-> drivers/video/omap/lcd_2430sdp.c:124: undefined reference to `twl_i2c_write_u8'
-> drivers/built-in.o: In function `sdp2430_panel_enable':
-> drivers/video/omap/lcd_2430sdp.c:110: undefined reference to `twl_i2c_write_u8'
-> drivers/video/omap/lcd_2430sdp.c:112: undefined reference to `twl_i2c_write_u8'
-> 
-> Fix this by selecting the TWL4030_CORE for MACH_OMAP_2430SDP when building
-> with CONFIG_FB_OMAP as there is no own Kconfig entry for lcd_2430 and it is
-> compiled always when both MACH_OMAP_2430SDP and FB_OMAP are set.
+Signed-off-by: Heiko Schocher <hs@denx.de>
+cc: Wolfram Sang <w.sang@pengutronix.de>
+cc: Grant Likely <grant.likely@secretlab.ca>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: linux-fbdev@vger.kernel.org
+cc: devicetree-discuss@ozlabs.org
+cc: Ben Dooks <ben@simtec.co.uk>
+cc: Vincent Sanders <vince@simtec.co.uk>
+cc: Samuel Ortiz <sameo@linux.intel.com>
+cc: linux-kernel@vger.kernel.org
+cc: Randy Dunlap <rdunlap@xenotime.net>
+cc: Wolfgang Denk <wd@denx.de>
+cc: Paul Mundt <lethal@linux-sh.org>
+---
+- changes since v1:
+  - no board specific defconfig file for mpc52xx based boards as suggested
+    from Wolfram Sang
 
-Thanks, applied.
+- changes since v2:
+  add Ben Dooks, Vincent Sanders and Samuel Ortiz and lkml to cc, as
+  suggested from Paul Mundt.
 
- Tomi
+- changes since v3:
+  - rebased against v2.6.38-rc2
+- changes since v4:
+  - added Paul Mundt to cc (Sorry forgot this in series v4)
 
+ arch/powerpc/boot/dts/charon.dts |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
+index 9776889..0e00e50 100644
+--- a/arch/powerpc/boot/dts/charon.dts
++++ b/arch/powerpc/boot/dts/charon.dts
+@@ -186,6 +186,7 @@
+ 		#address-cells = <2>;
+ 		#size-cells = <1>;
+ 		ranges = <	0 0 0xfc000000 0x02000000
++				1 0 0xe0000000 0x04000000 // CS1 range, SM501
+ 				3 0 0xe8000000 0x00080000>;
+ 
+ 		flash@0,0 {
+@@ -197,6 +198,15 @@
+ 			#address-cells = <1>;
+ 		};
+ 
++		display@1,0 {
++			compatible = "smi,sm501";
++			reg = <1 0x00000000 0x00800000
++			       1 0x03e00000 0x00200000>;
++			mode = "640x480-32@60";
++			interrupts = <1 1 3>;
++			little-endian;
++		};
++
+ 		mram0@3,0 {
+ 			compatible = "mtd-ram";
+ 			reg = <3 0x00000 0x80000>;
+-- 
+1.7.4
 

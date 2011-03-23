@@ -1,37 +1,41 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 01 Mar 2011 18:29:23 +0000
-Subject: Re: matroxfb: remove incorrect Matrox G200eV support
-Message-Id: <AANLkTikwSXN8VgDaoUqfHcxoTNxW9uA4D2fUtRLuLbHo@mail.gmail.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Wed, 23 Mar 2011 12:25:25 +0000
+Subject: [GIT PULL] viafb fixes for 2.6.39
+Message-Id: <4D89E6B5.8080005@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20110301175026.GA18770@us.ibm.com>
-In-Reply-To: <20110301175026.GA18770@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Darrick J. Wong" <djwong@us.ibm.com>, Krzysztof Helt <krzysztof.h1@wp.pl>, Petr Vandrovec <vandrove@vc.cvut.cz>, Andrew Morton <akpm@linux-foundation.org>
+To: linux-fbdev@vger.kernel.org
 
-On Tue, Mar 1, 2011 at 9:50 AM, Gary Hade <garyhade@us.ibm.com> wrote:
->
-> Remove incorrect Matrox G200eV support that was previously added
-> by commit e3a1938805d2e81b27d3d348788644f3bad004f2
+Hi Paul,
 
-That commit goes back to 2.6.28 (and is dated Oct 2008).
+please pull the viafb fixes below.
+They fix the handling of refresh rates which should now work (or at least work 
+much better than it did before). Especially the initial refresh rate as passed 
+in via module parameter is now handled correct. Before these patches this didn't 
+work for higher refresh rates.
 
-That means that you really need to describe the problem more:
 
-> One serious issue with the G200eV support that I have reproduced
-> on a Matrox G200eV equipped IBM x3650 M2 is the lack of text (login
-> banner, login prompt, etc) on the console when X not running and
-> lack of text on all of the virtual consoles after X is started.
+Thanks,
 
-.. but without the commit, you get no fb at all, right? So even with
-the commit, at worst you'd just be able to not use the matroxfb
-driver, right?
+Florian Tobias Schandinat
 
-What I'm trying to say is that I suspect there are G200eV users that
-likely prefer having the support in - even though it's not perfect.
-And the fact that the commit has been there for 2.5 years without
-comments makes me very loath to just revert it.
 
-                           Linus
+The following changes since commit 2563afa9ec6970f3545906382cc986ee012f60ec:
+   Florian Tobias Schandinat (1):
+         Merge branch 'viafb-pll' into viafb-next
+
+are available in the git repository at:
+
+   git://github.com/schandinat/linux-2.6.git viafb-next
+
+Florian Tobias Schandinat (2):
+       viafb: refresh rate bug collection
+       viafb: initialize margins correct
+
+  drivers/video/via/chip.h     |    1 -
+  drivers/video/via/hw.c       |   17 ++++------
+  drivers/video/via/hw.h       |    3 +-
+  drivers/video/via/viafbdev.c |   74 +++++++++++++++++++++--------------------
+  4 files changed, 46 insertions(+), 49 deletions(-)

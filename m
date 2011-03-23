@@ -1,79 +1,91 @@
-From: "K, Mythri P" <mythripk@ti.com>
-Date: Wed, 23 Mar 2011 13:59:20 +0000
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Date: Wed, 23 Mar 2011 15:18:20 +0000
 Subject: Re: [RFC PATCH] HDMI:Support for EDID parsing in kernel.
-Message-Id: <AANLkTinjEmih3GC9FMByUCcLVvcc1k1PCzVECbQZa62f@mail.gmail.com>
+Message-Id: <20110323081820.5b37d169@jbarnes-desktop>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1300815176-21206-1-git-send-email-mythripk@ti.com>
- <4D88E1FB.5070503@redhat.com> <20110322175810.GA32416@linux-sh.org>
-In-Reply-To: <20110322175810.GA32416@linux-sh.org>
+	<AANLkTim61Xdo6ED7mr_SvpLuotso89RdR6Qaz-GCXOmJ@mail.gmail.com>
+	<AANLkTinMUCbaEVjwZsHG9BxFVjx0YxS=Sw+3gViDJXhg@mail.gmail.com>
+In-Reply-To: <AANLkTinMUCbaEVjwZsHG9BxFVjx0YxS=Sw+3gViDJXhg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-media@vger.kernel.org
+To: "K, Mythri P" <mythripk@ti.com>
+Cc: Dave Airlie <airlied@gmail.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, linux-media@vger.kernel.org
 
-Hi Paul,
+On Wed, 23 Mar 2011 18:58:27 +0530
+"K, Mythri P" <mythripk@ti.com> wrote:
 
-On Tue, Mar 22, 2011 at 11:28 PM, Paul Mundt <lethal@linux-sh.org> wrote:
-> On Tue, Mar 22, 2011 at 02:52:59PM -0300, Mauro Carvalho Chehab wrote:
->> Em 22-03-2011 14:32, Mythri P K escreveu:
->> > Adding support for common EDID parsing in kernel.
->> >
->> > EDID - Extended display identification data is a data structure provid=
+> Hi Dave,
+>=20
+> On Wed, Mar 23, 2011 at 6:16 AM, Dave Airlie <airlied@gmail.com> wrote:
+> > On Wed, Mar 23, 2011 at 3:32 AM, Mythri P K <mythripk@ti.com> wrote:
+> >> Adding support for common EDID parsing in kernel.
+> >>
+> >> EDID - Extended display identification data is a data structure provid=
 ed by
->> > a digital display to describe its capabilities to a video source, This=
+> >> a digital display to describe its capabilities to a video source, This=
  a
->> > standard supported by CEA and VESA.
->> >
->> > There are several custom implementations for parsing EDID in kernel, s=
+> >> standard supported by CEA and VESA.
+> >>
+> >> There are several custom implementations for parsing EDID in kernel, s=
 ome
->> > of them are present in fbmon.c, drm_edid.c, sh_mobile_hdmi.c, Ideally
->> > parsing of EDID should be done in a library, which is agnostic of the
->> > framework (V4l2, DRM, FB) =A0which is using the functionality, just ba=
+> >> of them are present in fbmon.c, drm_edid.c, sh_mobile_hdmi.c, Ideally
+> >> parsing of EDID should be done in a library, which is agnostic of the
+> >> framework (V4l2, DRM, FB) =A0which is using the functionality, just ba=
 sed on
->> > the raw EDID pointer with size/segment information.
->> >
->> > With other RFC's such as the one below, which tries to standardize HDM=
+> >> the raw EDID pointer with size/segment information.
+> >>
+> >> With other RFC's such as the one below, which tries to standardize HDM=
 I API's
->> > It would be better to have a common EDID code in one place.It also hel=
+> >> It would be better to have a common EDID code in one place.It also hel=
 ps to
->> > provide better interoperability with variety of TV/Monitor may be even=
+> >> provide better interoperability with variety of TV/Monitor may be even=
  by
->> > listing out quirks which might get missed with several custom implemen=
+> >> listing out quirks which might get missed with several custom implemen=
 tation
->> > of EDID.
->> > http://permalink.gmane.org/gmane.linux.drivers.video-input-infrastruct=
+> >> of EDID.
+> >> http://permalink.gmane.org/gmane.linux.drivers.video-input-infrastruct=
 ure/30401
->> >
->> > This patch tries to add functions to parse some portion EDID (detailed=
+> >>
+> >> This patch tries to add functions to parse some portion EDID (detailed=
  timing,
->> > monitor limits, AV delay information, deep color mode support, Audio a=
+> >> monitor limits, AV delay information, deep color mode support, Audio a=
 nd VSDB)
->> > If we can align on this library approach i can enhance this library to=
+> >> If we can align on this library approach i can enhance this library to=
  parse
->> > other blocks and probably we could also add quirks from other implemen=
+> >> other blocks and probably we could also add quirks from other implemen=
 tation
->> > as well.
->> >
->> > Signed-off-by: Mythri P K <mythripk@ti.com>
->> > ---
->> > =A0arch/arm/include/asm/edid.h | =A0243 ++++++++++++++++++++++++++++++
->> > =A0drivers/video/edid.c =A0 =A0 =A0 =A0| =A0340 ++++++++++++++++++++++=
-+++++++++++++++++++++
->>
->> Hmm... if you want this to be agnostic, the header file should not be in=
-side
->> arch/arm, but on some other place, like include/video/.
->>
-> Ironically this adds a drivers/video/edid.c but completely ignores
-> drivers/video/edid.h which already exists and already contains many of
-> these definitions.
->
-> I like the idea of a generalized library, but it would be nice to see the
-> existing edid.h evolved and its users updated incrementally.
->
-well yes , That could be enhanced and that would take care of Mauro's
-comment too.
+> >> as well.
+> >>
+> >
+> > If you want to take this approach, you need to start from the DRM EDID =
+parser,
+> > its the most well tested and I can guarantee its been plugged into more=
+ monitors
+> > than any of the others. There is just no way we would move the DRM pars=
+er to a
+> > library one that isn't derived from it + enhancements, as we'd throw aw=
+ay the
+> > years of testing and the regression count would be way too high.
+> >
+> I had a look at the DRM EDID code, but for quirks it looks pretty much th=
+e same.
+> yes i could take quirks and other DRM tested code and enhance, but
+> still the code has to do away with struct drm_display_mode
+> which is very much custom to DRM.
 
-Thanks and regards,
-Mythri.
+If that's the only issue you have, we could easily rename that
+structure or add conversion funcs to a smaller structure if that's what
+you need.
+
+Dave's point is that we can't ditch the existing code without
+introducing a lot of risk; it would be better to start a library-ized
+EDID codebase from the most complete one we have already, i.e. the DRM
+EDID code.
+
+Do you really think the differences between your code and the existing
+DRM code are irreconcilable?
+
+--=20
+Jesse Barnes, Intel Open Source Technology Center

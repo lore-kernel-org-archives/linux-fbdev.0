@@ -1,114 +1,135 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sat, 12 Mar 2011 21:46:24 +0000
-Subject: [PATCH 2/4] viafb: always return the best possible clock
-Message-Id: <1299966386-3439-3-git-send-email-FlorianSchandinat@gmx.de>
+Date: Wed, 23 Mar 2011 22:35:34 +0000
+Subject: [PATCH 4/4] viafb: add clock source selection and PLL power management support
+Message-Id: <1300919734-3931-5-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1299966386-3439-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1299966386-3439-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <1300919734-3931-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1300919734-3931-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Before this patch only clocks that perfectly match were used and if
-none existed this was not handled properly. This patch changes this
-to always use the closest clock supported. This should behave like
-before for clocks that have a perfect match but be much saner for
-clocks which are slightly off.
+This patch adds some support for clock source selection as well as
+PLL power management. The code is unused at the moment but was
+successfully tested as far as possible.
+The implementation is according to the documentation for VX700,
+VX800, VX855, VX900. Probably the source selection works like this
+starting with K800 and the power managemennt at least since VX700.
+(guessed based on the initialization in viamode.c)
 
 Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/via/hw.c |   60 ++++++++++++++++++++++-------------------------
- drivers/video/via/hw.h |    2 -
- 2 files changed, 28 insertions(+), 34 deletions(-)
+ drivers/video/via/hw.c |   88 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 88 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 8c1393e..a7a5614 100644
+index bd28e13..b38d3b4 100644
 --- a/drivers/video/via/hw.c
 +++ b/drivers/video/via/hw.c
-@@ -1677,40 +1677,36 @@ static u32 vx855_encode_pll(struct pll_config pll)
- u32 viafb_get_clk_value(int clk)
- {
- 	u32 value = 0;
--	int i = 0;
-+	int i, best = 0;
+@@ -1409,6 +1409,42 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
  
--	while (i < NUM_TOTAL_PLL_TABLE && clk != pll_value[i].clk)
--		i++;
--
--	if (i = NUM_TOTAL_PLL_TABLE) {
--		printk(KERN_WARNING "viafb_get_clk_value: PLL lookup failed!");
--	} else {
--		switch (viaparinfo->chip_info->gfx_chip_name) {
--		case UNICHROME_CLE266:
--		case UNICHROME_K400:
--			value = cle266_encode_pll(pll_value[i].cle266_pll);
--			break;
--
--		case UNICHROME_K800:
--		case UNICHROME_PM800:
--		case UNICHROME_CN700:
--			value = k800_encode_pll(pll_value[i].k800_pll);
--			break;
--
--		case UNICHROME_CX700:
--		case UNICHROME_CN750:
--		case UNICHROME_K8M890:
--		case UNICHROME_P4M890:
--		case UNICHROME_P4M900:
--		case UNICHROME_VX800:
--			value = k800_encode_pll(pll_value[i].cx700_pll);
--			break;
-+	for (i = 1; i < ARRAY_SIZE(pll_value); i++) {
-+		if (abs(pll_value[i].clk - clk)
-+			< abs(pll_value[best].clk - clk))
-+			best = i;
+ }
+ 
++static void set_primary_pll_state(u8 state)
++{
++	u8 value;
++
++	switch (state) {
++	case VIA_STATE_ON:
++		value = 0x20;
++		break;
++	case VIA_STATE_OFF:
++		value = 0x00;
++		break;
++	default:
++		return;
 +	}
++
++	via_write_reg_mask(VIASR, 0x2D, value, 0x30);
++}
++
++static void set_secondary_pll_state(u8 state)
++{
++	u8 value;
++
++	switch (state) {
++	case VIA_STATE_ON:
++		value = 0x08;
++		break;
++	case VIA_STATE_OFF:
++		value = 0x00;
++		break;
++	default:
++		return;
++	}
++
++	via_write_reg_mask(VIASR, 0x2D, value, 0x08);
++}
++
+ static u32 cle266_encode_pll(struct pll_config pll)
+ {
+ 	return (pll.multiplier << 8)
+@@ -1494,6 +1530,58 @@ static void vx855_set_secondary_pll(struct pll_config config)
+ 	k800_set_secondary_pll_encoded(vx855_encode_pll(config));
+ }
  
--		case UNICHROME_VX855:
--		case UNICHROME_VX900:
--			value = vx855_encode_pll(pll_value[i].vx855_pll);
--			break;
--		}
-+	switch (viaparinfo->chip_info->gfx_chip_name) {
-+	case UNICHROME_CLE266:
-+	case UNICHROME_K400:
-+		value = cle266_encode_pll(pll_value[best].cle266_pll);
++enum via_clksrc {
++	VIA_CLKSRC_X1 = 0,
++	VIA_CLKSRC_TVX1,
++	VIA_CLKSRC_TVPLL,
++	VIA_CLKSRC_DVP1TVCLKR,
++	VIA_CLKSRC_CAP0,
++	VIA_CLKSRC_CAP1,
++};
++
++static inline u8 set_clock_source_common(enum via_clksrc source, bool use_pll)
++{
++	u8 data = 0;
++
++	switch (source) {
++	case VIA_CLKSRC_X1:
++		data = 0x00;
 +		break;
-+	case UNICHROME_K800:
-+	case UNICHROME_PM800:
-+	case UNICHROME_CN700:
-+		value = k800_encode_pll(pll_value[best].k800_pll);
++	case VIA_CLKSRC_TVX1:
++		data = 0x02;
 +		break;
-+	case UNICHROME_CX700:
-+	case UNICHROME_CN750:
-+	case UNICHROME_K8M890:
-+	case UNICHROME_P4M890:
-+	case UNICHROME_P4M900:
-+	case UNICHROME_VX800:
-+		value = k800_encode_pll(pll_value[best].cx700_pll);
++	case VIA_CLKSRC_TVPLL:
++		data = 0x04; /* 0x06 should be the same */
 +		break;
-+	case UNICHROME_VX855:
-+	case UNICHROME_VX900:
-+		value = vx855_encode_pll(pll_value[best].vx855_pll);
++	case VIA_CLKSRC_DVP1TVCLKR:
++		data = 0x0A;
 +		break;
- 	}
- 
- 	return value;
-diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
-index 668d534..7295263 100644
---- a/drivers/video/via/hw.h
-+++ b/drivers/video/via/hw.h
-@@ -893,8 +893,6 @@ struct iga2_crtc_timing {
- /* VT3410 chipset*/
- #define VX900_FUNCTION3     0x3410
- 
--#define NUM_TOTAL_PLL_TABLE ARRAY_SIZE(pll_value)
--
- struct IODATA {
- 	u8 Index;
- 	u8 Mask;
++	case VIA_CLKSRC_CAP0:
++		data = 0xC;
++		break;
++	case VIA_CLKSRC_CAP1:
++		data = 0x0E;
++		break;
++	}
++
++	if (!use_pll)
++		data |= 1;
++
++	return data;
++}
++
++static void set_primary_clock_source(enum via_clksrc source, bool use_pll)
++{
++	u8 data = set_clock_source_common(source, use_pll) << 4;
++	via_write_reg_mask(VIACR, 0x6C, data, 0xF0);
++}
++
++static void set_secondary_clock_source(enum via_clksrc source, bool use_pll)
++{
++	u8 data = set_clock_source_common(source, use_pll);
++	via_write_reg_mask(VIACR, 0x6C, data, 0x0F);
++}
++
+ static inline u32 get_pll_internal_frequency(u32 ref_freq,
+ 	struct pll_config pll)
+ {
 -- 
 1.6.3.2
 

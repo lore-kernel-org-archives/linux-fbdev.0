@@ -1,112 +1,232 @@
-From: Carl Vanderlip <carlv@codeaurora.org>
-Date: Fri, 18 Mar 2011 21:55:02 +0000
-Subject: [PATCH 06/20] video: msm: Simplify mdp_blit function
-Message-Id: <1300485302-27123-1-git-send-email-carlv@codeaurora.org>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Wed, 23 Mar 2011 21:48:38 +0000
+Subject: [PATCH 4/4] viafb: remove unused max_hres/vres
+Message-Id: <1300917792-3880-5-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
-In-Reply-To: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
+References: <1300917792-3880-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1300917792-3880-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Move the enabling of mdp interrupt, blitting and waiting for blit
-to complete to a separate function to simplify the actions completed
-by mdp_blit.
+This patch removes the max_hres and max_vres which are not used at
+the moment. In general they could be useful but it would be better
+to get them via any standard EDID implementation and not the buggy
+incomplete one currently used which is also removed as far as
+possible.
 
-Authors:
-Dima Zavin <dima@android.com>
-Rebecca Schultz Zavin <rebecca@android.com>
-Colin Cross <ccross@android.com>
-
-Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/msm/mdp.c |   53 ++++++++++++++++++++++++++--------------------
- 1 files changed, 30 insertions(+), 23 deletions(-)
+ drivers/video/via/chip.h |    2 -
+ drivers/video/via/dvi.c  |  138 +---------------------------------------------
+ 2 files changed, 3 insertions(+), 137 deletions(-)
 
-diff --git a/drivers/video/msm/mdp.c b/drivers/video/msm/mdp.c
-index c046982..765df06 100644
---- a/drivers/video/msm/mdp.c
-+++ b/drivers/video/msm/mdp.c
-@@ -308,6 +308,29 @@ void put_img(struct file *src_file, struct file *dst_file)
- {
- }
+diff --git a/drivers/video/via/chip.h b/drivers/video/via/chip.h
+index 1aa0fb3..3ebf20c 100644
+--- a/drivers/video/via/chip.h
++++ b/drivers/video/via/chip.h
+@@ -142,8 +142,6 @@ struct tmds_setting_information {
+ 	int h_active;
+ 	int v_active;
+ 	int max_pixel_clock;
+-	int max_hres;
+-	int max_vres;
+ };
  
-+int mdp_blit_and_wait(struct mdp_info *mdp, struct mdp_blit_req *req,
-+		struct file *src_file, unsigned long src_start,
-+		unsigned long src_len, struct file *dst_file,
-+		unsigned long dst_start, unsigned long dst_len)
-+{
-+	int ret;
-+	enable_mdp_irq(mdp, DL0_ROI_DONE);
-+	ret = mdp_ppp_blit(mdp, req,
-+			src_file, src_start, src_len,
-+			dst_file, dst_start, dst_len);
-+	if (unlikely(ret)) {
-+		disable_mdp_irq(mdp, DL0_ROI_DONE);
-+		return ret;
-+	}
-+	ret = mdp_ppp_wait(mdp);
-+	if (unlikely(ret)) {
-+		printk(KERN_ERR "%s: failed!\n", __func__);
-+		BUG();
-+		return ret;
-+	}
-+	return 0;
-+}
-+
- int mdp_blit(struct mdp_device *mdp_dev, struct fb_info *fb,
- 	     struct mdp_blit_req *req)
- {
-@@ -354,15 +377,11 @@ int mdp_blit(struct mdp_device *mdp_dev, struct fb_info *fb,
- 		req->src_rect.w = 16*req->src_rect.w / req->dst_rect.h;
- 		req->dst_rect.h = 16;
- 		for (i = 0; i < tiles; i++) {
--			enable_mdp_irq(mdp, DL0_ROI_DONE);
--			ret = mdp_ppp_blit(mdp, req, src_file, src_start,
--					   src_len, dst_file, dst_start,
--					   dst_len);
--			if (ret)
--				goto err_bad_blit;
--			ret = mdp_ppp_wait(mdp);
-+			ret = mdp_blit_and_wait(mdp, req,
-+						src_file, src_start, src_len,
-+						dst_file, dst_start, dst_len);
- 			if (ret)
--				goto err_wait_failed;
-+				goto end;
- 			req->dst_rect.y += 16;
- 			req->src_rect.x += req->src_rect.w;
- 		}
-@@ -371,24 +390,12 @@ int mdp_blit(struct mdp_device *mdp_dev, struct fb_info *fb,
- 		req->src_rect.w = remainder*req->src_rect.w / req->dst_rect.h;
- 		req->dst_rect.h = remainder;
+ struct lvds_setting_information {
+diff --git a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
+index 41ca198..3dbcd77 100644
+--- a/drivers/video/via/dvi.c
++++ b/drivers/video/via/dvi.c
+@@ -28,9 +28,6 @@ static int tmds_register_read_bytes(int index, u8 *buff, int buff_len);
+ static void __devinit dvi_get_panel_size_from_DDCv1(
+ 	struct tmds_chip_information *tmds_chip,
+ 	struct tmds_setting_information *tmds_setting);
+-static void __devinit dvi_get_panel_size_from_DDCv2(
+-	struct tmds_chip_information *tmds_chip,
+-	struct tmds_setting_information *tmds_setting);
+ static int viafb_dvi_query_EDID(void);
+ 
+ static int check_tmds_chip(int device_id_subaddr, int device_id)
+@@ -47,17 +44,8 @@ void __devinit viafb_init_dvi_size(struct tmds_chip_information *tmds_chip,
+ 	DEBUG_MSG(KERN_INFO "viafb_init_dvi_size()\n");
+ 
+ 	viafb_dvi_sense();
+-	switch (viafb_dvi_query_EDID()) {
+-	case 1:
++	if (viafb_dvi_query_EDID() = 1)
+ 		dvi_get_panel_size_from_DDCv1(tmds_chip, tmds_setting);
+-		break;
+-	case 2:
+-		dvi_get_panel_size_from_DDCv2(tmds_chip, tmds_setting);
+-		break;
+-	default:
+-		printk(KERN_WARNING "viafb_init_dvi_size: DVI panel size undetected!\n");
+-		break;
+-	}
+ 
+ 	return;
+ }
+@@ -306,12 +294,7 @@ static int viafb_dvi_query_EDID(void)
+ 		return EDID_VERSION_1;	/* Found EDID1 Table */
  	}
--	enable_mdp_irq(mdp, DL0_ROI_DONE);
--	ret = mdp_ppp_blit(mdp, req, src_file, src_start, src_len, dst_file,
--			   dst_start,
--			   dst_len);
--	if (ret)
--		goto err_bad_blit;
--	ret = mdp_ppp_wait(mdp);
--	if (ret)
--		goto err_wait_failed;
-+	ret = mdp_blit_and_wait(mdp, req,
-+				src_file, src_start, src_len,
-+				dst_file, dst_start, dst_len);
- end:
- 	put_img(src_file, dst_file);
- 	mutex_unlock(&mdp_mutex);
--	return 0;
--err_bad_blit:
--	disable_mdp_irq(mdp, DL0_ROI_DONE);
--err_wait_failed:
--	put_img(src_file, dst_file);
--	mutex_unlock(&mdp_mutex);
- 	return ret;
+ 
+-	data0 = (u8) tmds_register_read(0x00);
+-	viaparinfo->chip_info->tmds_chip_info.tmds_chip_slave_addr = restore;
+-	if (data0 = 0x20)
+-		return EDID_VERSION_2;	/* Found EDID2 Table */
+-	else
+-		return false;
++	return false;
  }
  
+ /* Get Panel Size Using EDID1 Table */
+@@ -319,50 +302,15 @@ static void __devinit dvi_get_panel_size_from_DDCv1(
+ 	struct tmds_chip_information *tmds_chip,
+ 	struct tmds_setting_information *tmds_setting)
+ {
+-	int i, max_h = 0, tmp, restore;
+-	unsigned char rData;
++	int i, restore;
+ 	unsigned char EDID_DATA[18];
+ 
+ 	DEBUG_MSG(KERN_INFO "\n dvi_get_panel_size_from_DDCv1 \n");
+ 
+ 	restore = tmds_chip->tmds_chip_slave_addr;
+ 	tmds_chip->tmds_chip_slave_addr = 0xA0;
+-
+-	rData = tmds_register_read(0x23);
+-	if (rData & 0x3C)
+-		max_h = 640;
+-	if (rData & 0xC0)
+-		max_h = 720;
+-	if (rData & 0x03)
+-		max_h = 800;
+-
+-	rData = tmds_register_read(0x24);
+-	if (rData & 0xC0)
+-		max_h = 800;
+-	if (rData & 0x1E)
+-		max_h = 1024;
+-	if (rData & 0x01)
+-		max_h = 1280;
+-
+ 	for (i = 0x25; i < 0x6D; i++) {
+ 		switch (i) {
+-		case 0x26:
+-		case 0x28:
+-		case 0x2A:
+-		case 0x2C:
+-		case 0x2E:
+-		case 0x30:
+-		case 0x32:
+-		case 0x34:
+-			rData = tmds_register_read(i);
+-			if (rData = 1)
+-				break;
+-			/* data = (data + 31) * 8 */
+-			tmp = (rData + 31) << 3;
+-			if (tmp > max_h)
+-				max_h = tmp;
+-			break;
+-
+ 		case 0x36:
+ 		case 0x48:
+ 		case 0x5A:
+@@ -383,91 +331,11 @@ static void __devinit dvi_get_panel_size_from_DDCv1(
+ 		}
+ 	}
+ 
+-	tmds_setting->max_hres = max_h;
+-	switch (max_h) {
+-	case 640:
+-		tmds_setting->max_vres = 480;
+-		break;
+-	case 800:
+-		tmds_setting->max_vres = 600;
+-		break;
+-	case 1024:
+-		tmds_setting->max_vres = 768;
+-		break;
+-	case 1280:
+-		tmds_setting->max_vres = 1024;
+-		break;
+-	case 1400:
+-		tmds_setting->max_vres = 1050;
+-		break;
+-	case 1440:
+-		tmds_setting->max_vres = 1050;
+-		break;
+-	case 1600:
+-		tmds_setting->max_vres = 1200;
+-		break;
+-	case 1920:
+-		tmds_setting->max_vres = 1080;
+-		break;
+-	default:
+-		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d ! "
+-					 "set default panel size.\n", max_h);
+-		break;
+-	}
+-
+ 	DEBUG_MSG(KERN_INFO "DVI max pixelclock = %d\n",
+ 		tmds_setting->max_pixel_clock);
+ 	tmds_chip->tmds_chip_slave_addr = restore;
+ }
+ 
+-/* Get Panel Size Using EDID2 Table */
+-static void __devinit dvi_get_panel_size_from_DDCv2(
+-	struct tmds_chip_information *tmds_chip,
+-	struct tmds_setting_information *tmds_setting)
+-{
+-	int restore;
+-	unsigned char R_Buffer[2];
+-
+-	DEBUG_MSG(KERN_INFO "\n dvi_get_panel_size_from_DDCv2 \n");
+-
+-	restore = tmds_chip->tmds_chip_slave_addr;
+-	tmds_chip->tmds_chip_slave_addr = 0xA2;
+-
+-	/* Horizontal: 0x76, 0x77 */
+-	tmds_register_read_bytes(0x76, R_Buffer, 2);
+-	tmds_setting->max_hres = R_Buffer[0] + (R_Buffer[1] << 8);
+-
+-	switch (tmds_setting->max_hres) {
+-	case 640:
+-		tmds_setting->max_vres = 480;
+-		break;
+-	case 800:
+-		tmds_setting->max_vres = 600;
+-		break;
+-	case 1024:
+-		tmds_setting->max_vres = 768;
+-		break;
+-	case 1280:
+-		tmds_setting->max_vres = 1024;
+-		break;
+-	case 1400:
+-		tmds_setting->max_vres = 1050;
+-		break;
+-	case 1440:
+-		tmds_setting->max_vres = 1050;
+-		break;
+-	case 1600:
+-		tmds_setting->max_vres = 1200;
+-		break;
+-	default:
+-		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d! "
+-			"set default panel size.\n", tmds_setting->max_hres);
+-		break;
+-	}
+-
+-	tmds_chip->tmds_chip_slave_addr = restore;
+-}
+-
+ /* If Disable DVI, turn off pad */
+ void viafb_dvi_disable(void)
+ {
 -- 
-Sent by an employee of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+1.6.3.2
 

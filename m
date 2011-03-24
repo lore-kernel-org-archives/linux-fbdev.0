@@ -1,293 +1,764 @@
-From: Carl Vanderlip <carlv@codeaurora.org>
-Date: Fri, 18 Mar 2011 21:57:27 +0000
-Subject: [PATCH 10/20] video: msm: Separate more MDP HW specific code
-Message-Id: <1300485447-27320-1-git-send-email-carlv@codeaurora.org>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Thu, 24 Mar 2011 15:57:46 +0000
+Subject: [PATCH 2/3] viafb: split clock and PLL code to an extra file
+Message-Id: <1300983180-7343-3-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
-In-Reply-To: <1300484846-26393-1-git-send-email-carlv@codeaurora.org>
+References: <1300983180-7343-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1300983180-7343-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Simplifies mdp_probe by moving register initialization to
-mdp_hw_init
+This patch is a huge move operation with some rename and introduces
+an interface to still use the functions. This should be a step in
+the right direction to reuse the code whenever possible but cleanly
+separate code that differs on different platform and keeping the
+complexity as low as possible.
+pll_config was renamed to via_pll_config to keep the naming scheme.
 
-Authors:
-Dima Zavin <dima@android.com>
-Rebecca Schultz Zavin <rebecca@android.com>
-Colin Cross <ccross@android.com>
-
-Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/msm/mdp.c           |   96 ++++++++++++++++++-------------------
- drivers/video/msm/mdp_csc_table.h |   95 ++++++++++++++++--------------------
- drivers/video/msm/mdp_hw.h        |    9 ++++
- 3 files changed, 98 insertions(+), 102 deletions(-)
+ drivers/video/via/Makefile    |    2 +-
+ drivers/video/via/hw.c        |  288 ++---------------------------------------
+ drivers/video/via/hw.h        |    6 -
+ drivers/video/via/via_clock.c |  280 +++++++++++++++++++++++++++++++++++++++
+ drivers/video/via/via_clock.h |   73 +++++++++++
+ 5 files changed, 368 insertions(+), 281 deletions(-)
+ create mode 100644 drivers/video/via/via_clock.c
+ create mode 100644 drivers/video/via/via_clock.h
 
-diff --git a/drivers/video/msm/mdp.c b/drivers/video/msm/mdp.c
-index 6aa9ed5..95e19e5 100644
---- a/drivers/video/msm/mdp.c
-+++ b/drivers/video/msm/mdp.c
-@@ -36,11 +36,6 @@ struct class *mdp_class;
+diff --git a/drivers/video/via/Makefile b/drivers/video/via/Makefile
+index 96f01ee..5108136 100644
+--- a/drivers/video/via/Makefile
++++ b/drivers/video/via/Makefile
+@@ -6,4 +6,4 @@ obj-$(CONFIG_FB_VIA) += viafb.o
  
- #define MDP_CMD_DEBUG_ACCESS_BASE (0x10000)
+ viafb-y	:=viafbdev.o hw.o via_i2c.o dvi.o lcd.o ioctl.o accel.o \
+ 	via_utility.o vt1636.o global.o tblDPASetting.o viamode.o \
+-	via-core.o via-gpio.o via_modesetting.o
++	via-core.o via-gpio.o via_modesetting.o via_clock.o
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 712348d..f1eff0b 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -21,6 +21,7 @@
  
--static uint16_t mdp_default_ccs[] = {
--	0x254, 0x000, 0x331, 0x254, 0xF38, 0xE61, 0x254, 0x409, 0x000,
--	0x010, 0x080, 0x080
+ #include <linux/via-core.h>
+ #include "global.h"
++#include "via_clock.h"
+ 
+ static struct pll_limit cle266_pll_limits[] = {
+ 	{19, 19, 4, 0},
+@@ -484,6 +485,9 @@ static struct via_device_mapping device_mapping[] = {
+ 	{VIA_LVDS2, "LVDS2"}
+ };
+ 
++/* structure with function pointers to support clock control */
++static struct via_clock clock;
++
+ static void load_fix_bit_crtc_reg(void);
+ static void __devinit init_gfx_chip_info(int chip_type);
+ static void __devinit init_tmds_chip_info(void);
+@@ -1409,230 +1413,10 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
+ 
+ }
+ 
+-static void set_primary_clock_state(u8 state)
+-{
+-	u8 value;
+-
+-	switch (state) {
+-	case VIA_STATE_ON:
+-		value = 0x20;
+-		break;
+-	case VIA_STATE_OFF:
+-		value = 0x00;
+-		break;
+-	default:
+-		return;
+-	}
+-
+-	via_write_reg_mask(VIASR, 0x1B, value, 0x30);
+-}
+-
+-static void set_secondary_clock_state(u8 state)
+-{
+-	u8 value;
+-
+-	switch (state) {
+-	case VIA_STATE_ON:
+-		value = 0x80;
+-		break;
+-	case VIA_STATE_OFF:
+-		value = 0x00;
+-		break;
+-	default:
+-		return;
+-	}
+-
+-	via_write_reg_mask(VIASR, 0x1B, value, 0xC0);
+-}
+-
+-static void set_primary_pll_state(u8 state)
+-{
+-	u8 value;
+-
+-	switch (state) {
+-	case VIA_STATE_ON:
+-		value = 0x20;
+-		break;
+-	case VIA_STATE_OFF:
+-		value = 0x00;
+-		break;
+-	default:
+-		return;
+-	}
+-
+-	via_write_reg_mask(VIASR, 0x2D, value, 0x30);
+-}
+-
+-static void set_secondary_pll_state(u8 state)
+-{
+-	u8 value;
+-
+-	switch (state) {
+-	case VIA_STATE_ON:
+-		value = 0x08;
+-		break;
+-	case VIA_STATE_OFF:
+-		value = 0x00;
+-		break;
+-	default:
+-		return;
+-	}
+-
+-	via_write_reg_mask(VIASR, 0x2D, value, 0x0C);
+-}
+-
+-static u32 cle266_encode_pll(struct pll_config pll)
+-{
+-	return (pll.multiplier << 8)
+-		| (pll.rshift << 6)
+-		| pll.divisor;
+-}
+-
+-static u32 k800_encode_pll(struct pll_config pll)
+-{
+-	return ((pll.divisor - 2) << 16)
+-		| (pll.rshift << 10)
+-		| (pll.multiplier - 2);
+-}
+-
+-static u32 vx855_encode_pll(struct pll_config pll)
+-{
+-	return (pll.divisor << 16)
+-		| (pll.rshift << 10)
+-		| pll.multiplier;
+-}
+-
+-static inline void cle266_set_primary_pll_encoded(u32 data)
+-{
+-	via_write_reg_mask(VIASR, 0x40, 0x02, 0x02); /* enable reset */
+-	via_write_reg(VIASR, 0x46, data & 0xFF);
+-	via_write_reg(VIASR, 0x47, (data >> 8) & 0xFF);
+-	via_write_reg_mask(VIASR, 0x40, 0x00, 0x02); /* disable reset */
+-}
+-
+-static inline void k800_set_primary_pll_encoded(u32 data)
+-{
+-	via_write_reg_mask(VIASR, 0x40, 0x02, 0x02); /* enable reset */
+-	via_write_reg(VIASR, 0x44, data & 0xFF);
+-	via_write_reg(VIASR, 0x45, (data >> 8) & 0xFF);
+-	via_write_reg(VIASR, 0x46, (data >> 16) & 0xFF);
+-	via_write_reg_mask(VIASR, 0x40, 0x00, 0x02); /* disable reset */
+-}
+-
+-static inline void cle266_set_secondary_pll_encoded(u32 data)
+-{
+-	via_write_reg_mask(VIASR, 0x40, 0x04, 0x04); /* enable reset */
+-	via_write_reg(VIASR, 0x44, data & 0xFF);
+-	via_write_reg(VIASR, 0x45, (data >> 8) & 0xFF);
+-	via_write_reg_mask(VIASR, 0x40, 0x00, 0x04); /* disable reset */
+-}
+-
+-static inline void k800_set_secondary_pll_encoded(u32 data)
+-{
+-	via_write_reg_mask(VIASR, 0x40, 0x04, 0x04); /* enable reset */
+-	via_write_reg(VIASR, 0x4A, data & 0xFF);
+-	via_write_reg(VIASR, 0x4B, (data >> 8) & 0xFF);
+-	via_write_reg(VIASR, 0x4C, (data >> 16) & 0xFF);
+-	via_write_reg_mask(VIASR, 0x40, 0x00, 0x04); /* disable reset */
+-}
+-
+-static void cle266_set_primary_pll(struct pll_config config)
+-{
+-	cle266_set_primary_pll_encoded(cle266_encode_pll(config));
+-}
+-
+-static void k800_set_primary_pll(struct pll_config config)
+-{
+-	k800_set_primary_pll_encoded(k800_encode_pll(config));
+-}
+-
+-static void vx855_set_primary_pll(struct pll_config config)
+-{
+-	k800_set_primary_pll_encoded(vx855_encode_pll(config));
+-}
+-
+-static void cle266_set_secondary_pll(struct pll_config config)
+-{
+-	cle266_set_secondary_pll_encoded(cle266_encode_pll(config));
+-}
+-
+-static void k800_set_secondary_pll(struct pll_config config)
+-{
+-	k800_set_secondary_pll_encoded(k800_encode_pll(config));
+-}
+-
+-static void vx855_set_secondary_pll(struct pll_config config)
+-{
+-	k800_set_secondary_pll_encoded(vx855_encode_pll(config));
+-}
+-
+-enum via_clksrc {
+-	VIA_CLKSRC_X1 = 0,
+-	VIA_CLKSRC_TVX1,
+-	VIA_CLKSRC_TVPLL,
+-	VIA_CLKSRC_DVP1TVCLKR,
+-	VIA_CLKSRC_CAP0,
+-	VIA_CLKSRC_CAP1,
 -};
 -
- static DECLARE_WAIT_QUEUE_HEAD(mdp_ppp_waitqueue);
- static unsigned int mdp_irq_mask;
- DEFINE_MUTEX(mdp_mutex);
-@@ -457,6 +452,52 @@ int register_mdp_client(struct class_interface *cint)
- 
- void mdp_hw_init(struct mdp_info *mdp)
+-static inline u8 set_clock_source_common(enum via_clksrc source, bool use_pll)
+-{
+-	u8 data = 0;
+-
+-	switch (source) {
+-	case VIA_CLKSRC_X1:
+-		data = 0x00;
+-		break;
+-	case VIA_CLKSRC_TVX1:
+-		data = 0x02;
+-		break;
+-	case VIA_CLKSRC_TVPLL:
+-		data = 0x04; /* 0x06 should be the same */
+-		break;
+-	case VIA_CLKSRC_DVP1TVCLKR:
+-		data = 0x0A;
+-		break;
+-	case VIA_CLKSRC_CAP0:
+-		data = 0xC;
+-		break;
+-	case VIA_CLKSRC_CAP1:
+-		data = 0x0E;
+-		break;
+-	}
+-
+-	if (!use_pll)
+-		data |= 1;
+-
+-	return data;
+-}
+-
+-static void set_primary_clock_source(enum via_clksrc source, bool use_pll)
+-{
+-	u8 data = set_clock_source_common(source, use_pll) << 4;
+-	via_write_reg_mask(VIACR, 0x6C, data, 0xF0);
+-}
+-
+-static void set_secondary_clock_source(enum via_clksrc source, bool use_pll)
+-{
+-	u8 data = set_clock_source_common(source, use_pll);
+-	via_write_reg_mask(VIACR, 0x6C, data, 0x0F);
+-}
+-
+-static inline u32 get_pll_internal_frequency(u32 ref_freq,
+-	struct pll_config pll)
+-{
+-	return ref_freq / pll.divisor * pll.multiplier;
+-}
+-
+-static inline u32 get_pll_output_frequency(u32 ref_freq, struct pll_config pll)
+-{
+-	return get_pll_internal_frequency(ref_freq, pll)>>pll.rshift;
+-}
+-
+-static struct pll_config get_pll_config(struct pll_limit *limits, int size,
++static struct via_pll_config get_pll_config(struct pll_limit *limits, int size,
+ 	int clk)
  {
-+	int n;
-+
-+	mdp_irq_mask = 0;
-+
-+	mdp_writel(mdp, 0, MDP_INTR_ENABLE);
-+
-+	/* debug interface write access */
-+	mdp_writel(mdp, 1, 0x60);
-+	mdp_writel(mdp, 1, MDP_EBI2_PORTMAP_MODE);
-+
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01f8);
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01fc);
-+	mdp_writel(mdp, 1, 0x60);
-+
-+	for (n = 0; n < ARRAY_SIZE(csc_color_lut); n++)
-+		mdp_writel(mdp, csc_color_lut[n].val, csc_color_lut[n].reg);
-+
-+	/* clear up unused fg/main registers */
-+	/* comp.plane 2&3 ystride */
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0120);
-+
-+	/* unpacked pattern */
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x012c);
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0130);
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0134);
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0158);
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x015c);
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0160);
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0170);
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0174);
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x017c);
-+
-+	/* comp.plane 2 & 3 */
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0114);
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0118);
-+
-+	/* clear unused bg registers */
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01c8);
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01d0);
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01dc);
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01e0);
-+	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01e4);
-+
-+	for (n = 0; n < ARRAY_SIZE(csc_matrix_config_table); n++)
-+		mdp_writel(mdp, csc_matrix_config_table[n].val,
-+			   csc_matrix_config_table[n].reg);
- #ifdef CONFIG_MSM_MDP22
- 	mdp_ppp_init_scale(mdp);
- #endif
-@@ -466,7 +507,6 @@ int mdp_probe(struct platform_device *pdev)
+-	struct pll_config cur, up, down, best = {0, 1, 0};
++	struct via_pll_config cur, up, down, best = {0, 1, 0};
+ 	const u32 f0 = 14318180; /* X1 frequency */
+ 	int i, f;
+ 
+@@ -1662,9 +1446,9 @@ static struct pll_config get_pll_config(struct pll_limit *limits, int size,
+ 	return best;
+ }
+ 
+-static struct pll_config get_best_pll_config(int clk)
++static struct via_pll_config get_best_pll_config(int clk)
  {
- 	struct resource *resource;
- 	int ret;
--	int n;
- 	struct mdp_info *mdp;
+-	struct pll_config config;
++	struct via_pll_config config;
  
- 	resource = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-@@ -517,52 +557,8 @@ int mdp_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto error_request_irq;
- 	disable_irq(mdp->irq);
--	mdp_irq_mask = 0;
--
--	/* debug interface write access */
--	mdp_writel(mdp, 1, 0x60);
--
--	mdp_writel(mdp, MDP_ANY_INTR_MASK, MDP_INTR_ENABLE);
--	mdp_writel(mdp, 1, MDP_EBI2_PORTMAP_MODE);
--
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01f8);
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01fc);
--
--	for (n = 0; n < ARRAY_SIZE(csc_table); n++)
--		mdp_writel(mdp, csc_table[n].val, csc_table[n].reg);
--
--	/* clear up unused fg/main registers */
--	/* comp.plane 2&3 ystride */
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0120);
--
--	/* unpacked pattern */
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x012c);
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0130);
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0134);
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0158);
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x015c);
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0160);
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0170);
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0174);
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x017c);
+ 	switch (viaparinfo->chip_info->gfx_chip_name) {
+ 	case UNICHROME_CLE266:
+@@ -1700,57 +1484,12 @@ static struct pll_config get_best_pll_config(int clk)
+ /* Set VCLK*/
+ void viafb_set_vclock(u32 clk, int set_iga)
+ {
+-	struct pll_config config = get_best_pll_config(clk);
++	struct via_pll_config config = get_best_pll_config(clk);
  
- 	clk_enable(mdp->clk);
--	/* comp.plane 2 & 3 */
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0114);
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x0118);
+-	if (set_iga = IGA1) {
+-		/* Change D,N FOR VCLK */
+-		switch (viaparinfo->chip_info->gfx_chip_name) {
+-		case UNICHROME_CLE266:
+-		case UNICHROME_K400:
+-			cle266_set_primary_pll(config);
+-			break;
+-		case UNICHROME_K800:
+-		case UNICHROME_PM800:
+-		case UNICHROME_CN700:
+-		case UNICHROME_CX700:
+-		case UNICHROME_CN750:
+-		case UNICHROME_K8M890:
+-		case UNICHROME_P4M890:
+-		case UNICHROME_P4M900:
+-		case UNICHROME_VX800:
+-			k800_set_primary_pll(config);
+-			break;
+-		case UNICHROME_VX855:
+-		case UNICHROME_VX900:
+-			vx855_set_primary_pll(config);
+-			break;
+-		}
+-	}
 -
--	/* clear unused bg registers */
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01c8);
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01d0);
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01dc);
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01e0);
--	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01e4);
--
--	for (n = 0; n < 9; n++)
--		mdp_writel(mdp, mdp_default_ccs[n], 0x40440 + 4 * n);
--	mdp_writel(mdp, mdp_default_ccs[9], 0x40500 + 4 * 0);
--	mdp_writel(mdp, mdp_default_ccs[10], 0x40500 + 4 * 0);
--	mdp_writel(mdp, mdp_default_ccs[11], 0x40500 + 4 * 0);
- 	mdp_hw_init(mdp);
+-	if (set_iga = IGA2) {
+-		/* Change D,N FOR LCK */
+-		switch (viaparinfo->chip_info->gfx_chip_name) {
+-		case UNICHROME_CLE266:
+-		case UNICHROME_K400:
+-			cle266_set_secondary_pll(config);
+-			break;
+-		case UNICHROME_K800:
+-		case UNICHROME_PM800:
+-		case UNICHROME_CN700:
+-		case UNICHROME_CX700:
+-		case UNICHROME_CN750:
+-		case UNICHROME_K8M890:
+-		case UNICHROME_P4M890:
+-		case UNICHROME_P4M900:
+-		case UNICHROME_VX800:
+-			k800_set_secondary_pll(config);
+-			break;
+-		case UNICHROME_VX855:
+-		case UNICHROME_VX900:
+-			vx855_set_secondary_pll(config);
+-			break;
+-		}
+-	}
++	if (set_iga = IGA1)
++		clock.set_primary_pll(config);
++	if (set_iga = IGA2)
++		clock.set_secondary_pll(config);
  
- 	/* register mdp device */
-diff --git a/drivers/video/msm/mdp_csc_table.h b/drivers/video/msm/mdp_csc_table.h
-index d1cde30..6eb0fc3 100644
---- a/drivers/video/msm/mdp_csc_table.h
-+++ b/drivers/video/msm/mdp_csc_table.h
-@@ -1,6 +1,6 @@
- /* drivers/video/msm_fb/mdp_csc_table.h
-  *
-- * Copyright (C) 2007 QUALCOMM Incorporated
-+ * Copyright (C) 2007, 2011 Code Aurora Forum. All rights reserved.
-  * Copyright (C) 2007 Google Incorporated
-  *
-  * This software is licensed under the terms of the GNU General Public
-@@ -16,57 +16,48 @@
- static struct {
- 	uint32_t reg;
- 	uint32_t val;
--} csc_table[] = {
--	{ 0x40400, 0x83 },
--	{ 0x40404, 0x102 },
--	{ 0x40408, 0x32 },
--	{ 0x4040c, 0xffffffb5 },
--	{ 0x40410, 0xffffff6c },
--	{ 0x40414, 0xe1 },
--	{ 0x40418, 0xe1 },
--	{ 0x4041c, 0xffffff45 },
--	{ 0x40420, 0xffffffdc },
--	{ 0x40440, 0x254 },
--	{ 0x40444, 0x0 },
--	{ 0x40448, 0x331 },
--	{ 0x4044c, 0x254 },
--	{ 0x40450, 0xffffff38 },
--	{ 0x40454, 0xfffffe61 },
--	{ 0x40458, 0x254 },
--	{ 0x4045c, 0x409 },
--	{ 0x40460, 0x0 },
--	{ 0x40480, 0x5d },
--	{ 0x40484, 0x13a },
--	{ 0x40488, 0x20 },
--	{ 0x4048c, 0xffffffcd },
--	{ 0x40490, 0xffffff54 },
--	{ 0x40494, 0xe1 },
--	{ 0x40498, 0xe1 },
--	{ 0x4049c, 0xffffff35 },
--	{ 0x404a0, 0xffffffec },
--	{ 0x404c0, 0x254 },
--	{ 0x404c4, 0x0 },
--	{ 0x404c8, 0x396 },
--	{ 0x404cc, 0x254 },
--	{ 0x404d0, 0xffffff94 },
--	{ 0x404d4, 0xfffffef0 },
--	{ 0x404d8, 0x254 },
--	{ 0x404dc, 0x43a },
--	{ 0x404e0, 0x0 },
--	{ 0x40500, 0x10 },
--	{ 0x40504, 0x80 },
--	{ 0x40508, 0x80 },
--	{ 0x40540, 0x10 },
--	{ 0x40544, 0x80 },
--	{ 0x40548, 0x80 },
--	{ 0x40580, 0x10 },
--	{ 0x40584, 0xeb },
--	{ 0x40588, 0x10 },
--	{ 0x4058c, 0xf0 },
--	{ 0x405c0, 0x10 },
--	{ 0x405c4, 0xeb },
--	{ 0x405c8, 0x10 },
--	{ 0x405cc, 0xf0 },
-+} csc_matrix_config_table[] = {
-+	/* RGB -> YUV primary forward matrix (set1). */
-+	{ MDP_CSC_PFMVn(0), 0x83 },
-+	{ MDP_CSC_PFMVn(1), 0x102 },
-+	{ MDP_CSC_PFMVn(2), 0x32 },
-+	{ MDP_CSC_PFMVn(3), 0xffffffb5 },
-+	{ MDP_CSC_PFMVn(4), 0xffffff6c },
-+	{ MDP_CSC_PFMVn(5), 0xe1 },
-+	{ MDP_CSC_PFMVn(6), 0xe1 },
-+	{ MDP_CSC_PFMVn(7), 0xffffff45 },
-+	{ MDP_CSC_PFMVn(8), 0xffffffdc },
+ 	/* Fire! */
+ 	via_write_misc_reg_mask(0x0C, 0x0C); /* select external clock */
+@@ -2059,6 +1798,7 @@ void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
+ 
+ void __devinit viafb_init_chip_info(int chip_type)
+ {
++	via_clock_init(&clock, chip_type);
+ 	init_gfx_chip_info(chip_type);
+ 	init_tmds_chip_info();
+ 	init_lvds_chip_info();
+diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
+index 2cdce9b..7e9f51a 100644
+--- a/drivers/video/via/hw.h
++++ b/drivers/video/via/hw.h
+@@ -732,12 +732,6 @@ struct _lcd_scaling_factor {
+ 	struct _lcd_ver_scaling_factor lcd_ver_scaling_factor;
+ };
+ 
+-struct pll_config {
+-	u16 multiplier;
+-	u8 divisor;
+-	u8 rshift;
+-};
+-
+ struct pll_limit {
+ 	u16 multiplier_min;
+ 	u16 multiplier_max;
+diff --git a/drivers/video/via/via_clock.c b/drivers/video/via/via_clock.c
+new file mode 100644
+index 0000000..29afe4c
+--- /dev/null
++++ b/drivers/video/via/via_clock.c
+@@ -0,0 +1,280 @@
++/*
++ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
++ * Copyright 2011 Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public
++ * License as published by the Free Software Foundation;
++ * either version 2, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
++ * the implied warranty of MERCHANTABILITY or FITNESS FOR
++ * A PARTICULAR PURPOSE.See the GNU General Public License
++ * for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc.,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++/*
++ * clock and PLL management functions
++ */
 +
-+	/* YUV -> RGB primary reverse matrix (set2) */
-+	{ MDP_CSC_PRMVn(0), 0x254 },
-+	{ MDP_CSC_PRMVn(1), 0x0 },
-+	{ MDP_CSC_PRMVn(2), 0x331 },
-+	{ MDP_CSC_PRMVn(3), 0x254 },
-+	{ MDP_CSC_PRMVn(4), 0xffffff38 },
-+	{ MDP_CSC_PRMVn(5), 0xfffffe61 },
-+	{ MDP_CSC_PRMVn(6), 0x254 },
-+	{ MDP_CSC_PRMVn(7), 0x409 },
-+	{ MDP_CSC_PRMVn(8), 0x0 },
++#include <linux/kernel.h>
++#include <linux/via-core.h>
++#include "via_clock.h"
++#include "global.h"
++#include "debug.h"
 +
-+	/* For MDP 2.2/3.0 */
++static inline u32 cle266_encode_pll(struct via_pll_config pll)
++{
++	return (pll.multiplier << 8)
++		| (pll.rshift << 6)
++		| pll.divisor;
++}
 +
-+	/* primary limit vector */
-+	{ MDP_CSC_PLVn(0), 0x10 },
-+	{ MDP_CSC_PLVn(1), 0xeb },
-+	{ MDP_CSC_PLVn(2), 0x10 },
-+	{ MDP_CSC_PLVn(3), 0xf0 },
++static inline u32 k800_encode_pll(struct via_pll_config pll)
++{
++	return ((pll.divisor - 2) << 16)
++		| (pll.rshift << 10)
++		| (pll.multiplier - 2);
++}
 +
-+	/* primary bias vector */
-+	{ MDP_CSC_PBVn(0), 0x10 },
-+	{ MDP_CSC_PBVn(1), 0x80 },
-+	{ MDP_CSC_PBVn(2), 0x80 },
++static inline u32 vx855_encode_pll(struct via_pll_config pll)
++{
++	return (pll.divisor << 16)
++		| (pll.rshift << 10)
++		| pll.multiplier;
++}
 +
++static inline void cle266_set_primary_pll_encoded(u32 data)
++{
++	via_write_reg_mask(VIASR, 0x40, 0x02, 0x02); /* enable reset */
++	via_write_reg(VIASR, 0x46, data & 0xFF);
++	via_write_reg(VIASR, 0x47, (data >> 8) & 0xFF);
++	via_write_reg_mask(VIASR, 0x40, 0x00, 0x02); /* disable reset */
++}
++
++static inline void k800_set_primary_pll_encoded(u32 data)
++{
++	via_write_reg_mask(VIASR, 0x40, 0x02, 0x02); /* enable reset */
++	via_write_reg(VIASR, 0x44, data & 0xFF);
++	via_write_reg(VIASR, 0x45, (data >> 8) & 0xFF);
++	via_write_reg(VIASR, 0x46, (data >> 16) & 0xFF);
++	via_write_reg_mask(VIASR, 0x40, 0x00, 0x02); /* disable reset */
++}
++
++static inline void cle266_set_secondary_pll_encoded(u32 data)
++{
++	via_write_reg_mask(VIASR, 0x40, 0x04, 0x04); /* enable reset */
++	via_write_reg(VIASR, 0x44, data & 0xFF);
++	via_write_reg(VIASR, 0x45, (data >> 8) & 0xFF);
++	via_write_reg_mask(VIASR, 0x40, 0x00, 0x04); /* disable reset */
++}
++
++static inline void k800_set_secondary_pll_encoded(u32 data)
++{
++	via_write_reg_mask(VIASR, 0x40, 0x04, 0x04); /* enable reset */
++	via_write_reg(VIASR, 0x4A, data & 0xFF);
++	via_write_reg(VIASR, 0x4B, (data >> 8) & 0xFF);
++	via_write_reg(VIASR, 0x4C, (data >> 16) & 0xFF);
++	via_write_reg_mask(VIASR, 0x40, 0x00, 0x04); /* disable reset */
++}
++
++static void cle266_set_primary_pll(struct via_pll_config config)
++{
++	cle266_set_primary_pll_encoded(cle266_encode_pll(config));
++}
++
++static void k800_set_primary_pll(struct via_pll_config config)
++{
++	k800_set_primary_pll_encoded(k800_encode_pll(config));
++}
++
++static void vx855_set_primary_pll(struct via_pll_config config)
++{
++	k800_set_primary_pll_encoded(vx855_encode_pll(config));
++}
++
++static void cle266_set_secondary_pll(struct via_pll_config config)
++{
++	cle266_set_secondary_pll_encoded(cle266_encode_pll(config));
++}
++
++static void k800_set_secondary_pll(struct via_pll_config config)
++{
++	k800_set_secondary_pll_encoded(k800_encode_pll(config));
++}
++
++static void vx855_set_secondary_pll(struct via_pll_config config)
++{
++	k800_set_secondary_pll_encoded(vx855_encode_pll(config));
++}
++
++static void set_primary_pll_state(u8 state)
++{
++	u8 value;
++
++	switch (state) {
++	case VIA_STATE_ON:
++		value = 0x20;
++		break;
++	case VIA_STATE_OFF:
++		value = 0x00;
++		break;
++	default:
++		return;
++	}
++
++	via_write_reg_mask(VIASR, 0x2D, value, 0x30);
++}
++
++static void set_secondary_pll_state(u8 state)
++{
++	u8 value;
++
++	switch (state) {
++	case VIA_STATE_ON:
++		value = 0x08;
++		break;
++	case VIA_STATE_OFF:
++		value = 0x00;
++		break;
++	default:
++		return;
++	}
++
++	via_write_reg_mask(VIASR, 0x2D, value, 0x0C);
++}
++
++static void set_primary_clock_state(u8 state)
++{
++	u8 value;
++
++	switch (state) {
++	case VIA_STATE_ON:
++		value = 0x20;
++		break;
++	case VIA_STATE_OFF:
++		value = 0x00;
++		break;
++	default:
++		return;
++	}
++
++	via_write_reg_mask(VIASR, 0x1B, value, 0x30);
++}
++
++static void set_secondary_clock_state(u8 state)
++{
++	u8 value;
++
++	switch (state) {
++	case VIA_STATE_ON:
++		value = 0x80;
++		break;
++	case VIA_STATE_OFF:
++		value = 0x00;
++		break;
++	default:
++		return;
++	}
++
++	via_write_reg_mask(VIASR, 0x1B, value, 0xC0);
++}
++
++static inline u8 set_clock_source_common(enum via_clksrc source, bool use_pll)
++{
++	u8 data = 0;
++
++	switch (source) {
++	case VIA_CLKSRC_X1:
++		data = 0x00;
++		break;
++	case VIA_CLKSRC_TVX1:
++		data = 0x02;
++		break;
++	case VIA_CLKSRC_TVPLL:
++		data = 0x04; /* 0x06 should be the same */
++		break;
++	case VIA_CLKSRC_DVP1TVCLKR:
++		data = 0x0A;
++		break;
++	case VIA_CLKSRC_CAP0:
++		data = 0xC;
++		break;
++	case VIA_CLKSRC_CAP1:
++		data = 0x0E;
++		break;
++	}
++
++	if (!use_pll)
++		data |= 1;
++
++	return data;
++}
++
++static void set_primary_clock_source(enum via_clksrc source, bool use_pll)
++{
++	u8 data = set_clock_source_common(source, use_pll) << 4;
++	via_write_reg_mask(VIACR, 0x6C, data, 0xF0);
++}
++
++static void set_secondary_clock_source(enum via_clksrc source, bool use_pll)
++{
++	u8 data = set_clock_source_common(source, use_pll);
++	via_write_reg_mask(VIACR, 0x6C, data, 0x0F);
++}
++
++void via_clock_init(struct via_clock *clock, int gfx_chip)
++{
++	switch (gfx_chip) {
++	case UNICHROME_CLE266:
++	case UNICHROME_K400:
++		clock->set_primary_clock_state = NULL;
++		clock->set_primary_clock_source = NULL;
++		clock->set_primary_pll_state = NULL;
++		clock->set_primary_pll = cle266_set_primary_pll;
++
++		clock->set_secondary_clock_state = NULL;
++		clock->set_secondary_clock_source = NULL;
++		clock->set_secondary_pll_state = NULL;
++		clock->set_secondary_pll = cle266_set_secondary_pll;
++		break;
++	case UNICHROME_K800:
++	case UNICHROME_PM800:
++	case UNICHROME_CN700:
++	case UNICHROME_CX700:
++	case UNICHROME_CN750:
++	case UNICHROME_K8M890:
++	case UNICHROME_P4M890:
++	case UNICHROME_P4M900:
++	case UNICHROME_VX800:
++		clock->set_primary_clock_state = set_primary_clock_state;
++		clock->set_primary_clock_source = set_primary_clock_source;
++		clock->set_primary_pll_state = set_primary_pll_state;
++		clock->set_primary_pll = k800_set_primary_pll;
++
++		clock->set_secondary_clock_state = set_secondary_clock_state;
++		clock->set_secondary_clock_source = set_secondary_clock_source;
++		clock->set_secondary_pll_state = set_secondary_pll_state;
++		clock->set_secondary_pll = k800_set_secondary_pll;
++		break;
++	case UNICHROME_VX855:
++	case UNICHROME_VX900:
++		clock->set_primary_clock_state = set_primary_clock_state;
++		clock->set_primary_clock_source = set_primary_clock_source;
++		clock->set_primary_pll_state = set_primary_pll_state;
++		clock->set_primary_pll = vx855_set_primary_pll;
++
++		clock->set_secondary_clock_state = set_secondary_clock_state;
++		clock->set_secondary_clock_source = set_secondary_clock_source;
++		clock->set_secondary_pll_state = set_secondary_pll_state;
++		clock->set_secondary_pll = vx855_set_secondary_pll;
++		break;
++
++	}
++}
+diff --git a/drivers/video/via/via_clock.h b/drivers/video/via/via_clock.h
+new file mode 100644
+index 0000000..f213a7a
+--- /dev/null
++++ b/drivers/video/via/via_clock.h
+@@ -0,0 +1,73 @@
++/*
++ * Copyright 1998-2008 VIA Technologies, Inc. All Rights Reserved.
++ * Copyright 2001-2008 S3 Graphics, Inc. All Rights Reserved.
++ * Copyright 2011 Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public
++ * License as published by the Free Software Foundation;
++ * either version 2, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTIES OR REPRESENTATIONS; without even
++ * the implied warranty of MERCHANTABILITY or FITNESS FOR
++ * A PARTICULAR PURPOSE.See the GNU General Public License
++ * for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc.,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++/*
++ * clock and PLL management functions
++ */
++
++#ifndef __VIA_CLOCK_H__
++#define __VIA_CLOCK_H__
++
++#include <linux/types.h>
++
++enum via_clksrc {
++	VIA_CLKSRC_X1 = 0,
++	VIA_CLKSRC_TVX1,
++	VIA_CLKSRC_TVPLL,
++	VIA_CLKSRC_DVP1TVCLKR,
++	VIA_CLKSRC_CAP0,
++	VIA_CLKSRC_CAP1,
 +};
 +
-+static struct {
-+	uint32_t reg;
-+	uint32_t val;
-+} csc_color_lut[] = {
- 	{ 0x40800, 0x0 },
- 	{ 0x40804, 0x151515 },
- 	{ 0x40808, 0x1d1d1d },
-diff --git a/drivers/video/msm/mdp_hw.h b/drivers/video/msm/mdp_hw.h
-index 05deac8..34a204e 100644
---- a/drivers/video/msm/mdp_hw.h
-+++ b/drivers/video/msm/mdp_hw.h
-@@ -608,6 +608,15 @@ int mdp_ppp_blit(const struct mdp_info *mdp, struct mdp_blit_req *req,
- #define PPP_ADDR_BG_CFG			MDP_FULL_BYPASS_WORD53
- #define PPP_ADDR_BG_PACK_PATTERN	MDP_FULL_BYPASS_WORD54
- 
-+/* color conversion matrix configuration registers */
-+/* pfmv is mv1, prmv is mv2 */
-+#define MDP_CSC_PFMVn(n)		(0x40400 + (4 * (n)))
-+#define MDP_CSC_PRMVn(n)		(0x40440 + (4 * (n)))
-+#define MDP_CSC_PBVn(n)			(0x40500 + (4 * (n)))
-+#define MDP_CSC_SBVn(n)			(0x40540 + (4 * (n)))
-+#define MDP_CSC_PLVn(n)			(0x40580 + (4 * (n)))
-+#define MDP_CSC_SLVn(n)			(0x405c0 + (4 * (n)))
++struct via_pll_config {
++	u16 multiplier;
++	u8 divisor;
++	u8 rshift;
++};
 +
- /* MDP_DMA_CONFIG / MDP_FULL_BYPASS_WORD32 */
- #define DMA_DSTC0G_6BITS (1<<1)
- #define DMA_DSTC1B_6BITS (1<<3)
++struct via_clock {
++	void (*set_primary_clock_state)(u8 state);
++	void (*set_primary_clock_source)(enum via_clksrc src, bool use_pll);
++	void (*set_primary_pll_state)(u8 state);
++	void (*set_primary_pll)(struct via_pll_config config);
++
++	void (*set_secondary_clock_state)(u8 state);
++	void (*set_secondary_clock_source)(enum via_clksrc src, bool use_pll);
++	void (*set_secondary_pll_state)(u8 state);
++	void (*set_secondary_pll)(struct via_pll_config config);
++};
++
++
++static inline u32 get_pll_internal_frequency(u32 ref_freq,
++	struct via_pll_config pll)
++{
++	return ref_freq / pll.divisor * pll.multiplier;
++}
++
++static inline u32 get_pll_output_frequency(u32 ref_freq,
++	struct via_pll_config pll)
++{
++	return get_pll_internal_frequency(ref_freq, pll) >> pll.rshift;
++}
++
++void via_clock_init(struct via_clock *clock, int gfx_chip);
++
++#endif /* __VIA_CLOCK_H__ */
 -- 
-Sent by an employee of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+1.6.3.2
 

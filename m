@@ -1,146 +1,118 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 31 Mar 2011 10:10:58 +0000
-Subject: [PATCH 1/9] OMAP: DSS2: move dss device clock configuration
-Message-Id: <1301566266-11187-2-git-send-email-tomi.valkeinen@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Thu, 24 Mar 2011 15:57:45 +0000
+Subject: [PATCH 3/3] viafb: add VIA slapping capability
+Message-Id: <1300983180-7343-4-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1301566266-11187-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1301566266-11187-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1300983180-7343-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1300983180-7343-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Clock configuration was defined inside dssdev.phy.dsi struct. The clock
-config doesn't really belong there, and so it's moved to dssdev.clock
-struct.
+This patch introduces dummy functions to execute when we don't know
+what we should do (due to missing documentation). They do nothing
+but print a nice message in the log explaining the situation.
+To trigger this message initial power management support is
+activated which might save a bit energy by disabling PLL and clock
+if no device is configured to use them.
 
-Now the explicit clock configuration could also be used for other
-interfaces than DSI, although there's no support for it currently.
+Note: The message is only shown for the oldest IGPs CLE266 and K400
+      as for the other platforms there are reasonable assumptions
+      how it does (hopefully) work.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- arch/arm/mach-omap2/board-4430sdp.c       |   14 +++++++++-----
- arch/arm/plat-omap/include/plat/display.h |   28 ++++++++++++++++------------
- drivers/video/omap2/dss/dsi.c             |   14 +++++++-------
- 3 files changed, 32 insertions(+), 24 deletions(-)
+ drivers/video/via/hw.c        |   19 +++++++++++++++++++
+ drivers/video/via/via_clock.c |   30 ++++++++++++++++++++++++------
+ 2 files changed, 43 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
-index 05288c9..626b16b 100644
---- a/arch/arm/mach-omap2/board-4430sdp.c
-+++ b/arch/arm/mach-omap2/board-4430sdp.c
-@@ -766,17 +766,21 @@ static struct omap_dss_device sdp4430_lcd_device = {
- 		.data1_pol	= 0,
- 		.data2_lane	= 3,
- 		.data2_pol	= 0,
--		.div		= {
-+	},
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index f1eff0b..df84251 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -2289,6 +2289,25 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
+ 			get_sync(viafbinfo1));
+ 	}
+ 
++	clock.set_primary_clock_source(VIA_CLKSRC_X1, true);
++	clock.set_secondary_clock_source(VIA_CLKSRC_X1, true);
 +
-+	.clocks = {
-+		.dispc = {
-+			.lck_div	= 1,	/* Logic Clock = 172.8 MHz */
-+			.pck_div	= 5,	/* Pixel Clock = 34.56 MHz */
-+		},
++	if (viaparinfo->shared->iga1_devices) {
++		clock.set_primary_pll_state(VIA_STATE_ON);
++		clock.set_primary_clock_state(VIA_STATE_ON);
++	} else {
++		clock.set_primary_pll_state(VIA_STATE_OFF);
++		clock.set_primary_clock_state(VIA_STATE_OFF);
++	}
 +
-+		.dsi = {
- 			.regn		= 16,	/* Fint = 2.4 MHz */
- 			.regm		= 180,	/* DDR Clock = 216 MHz */
- 			.regm_dispc	= 5,	/* PLL1_CLK1 = 172.8 MHz */
- 			.regm_dsi	= 5,	/* PLL1_CLK2 = 172.8 MHz */
- 
- 			.lp_clk_div	= 10,	/* LP Clock = 8.64 MHz */
--
--			.lck_div	= 1,	/* Logic Clock = 172.8 MHz */
--			.pck_div	= 5,	/* Pixel Clock = 34.56 MHz */
--
- 		},
- 	},
- 	.channel		= OMAP_DSS_CHANNEL_LCD,
-diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
-index 5e04ddc..e10cfe2 100644
---- a/arch/arm/plat-omap/include/plat/display.h
-+++ b/arch/arm/plat-omap/include/plat/display.h
-@@ -401,18 +401,6 @@ struct omap_dss_device {
- 			u8 data2_lane;
- 			u8 data2_pol;
- 
--			struct {
--				u16 regn;
--				u16 regm;
--				u16 regm_dispc;
--				u16 regm_dsi;
--
--				u16 lp_clk_div;
--
--				u16 lck_div;
--				u16 pck_div;
--			} div;
--
- 			bool ext_te;
- 			u8 ext_te_gpio;
- 		} dsi;
-@@ -424,6 +412,22 @@ struct omap_dss_device {
- 	} phy;
- 
- 	struct {
-+		struct {
-+			u16 lck_div;
-+			u16 pck_div;
-+		} dispc;
++	if (viaparinfo->shared->iga2_devices) {
++		clock.set_secondary_pll_state(VIA_STATE_ON);
++		clock.set_secondary_clock_state(VIA_STATE_ON);
++	} else {
++		clock.set_secondary_pll_state(VIA_STATE_OFF);
++		clock.set_secondary_clock_state(VIA_STATE_OFF);
++	}
 +
-+		struct {
-+			u16 regn;
-+			u16 regm;
-+			u16 regm_dispc;
-+			u16 regm_dsi;
+ 	via_set_state(devices, VIA_STATE_ON);
+ 	device_screen_on();
+ 	return 1;
+diff --git a/drivers/video/via/via_clock.c b/drivers/video/via/via_clock.c
+index 29afe4c..a1f9039 100644
+--- a/drivers/video/via/via_clock.c
++++ b/drivers/video/via/via_clock.c
+@@ -29,6 +29,9 @@
+ #include "global.h"
+ #include "debug.h"
+ 
++const char *via_slap = "Please slap VIA Technologies to motivate them "
++	"releasing full documentation for your platform!\n";
 +
-+			u16 lp_clk_div;
-+		} dsi;
-+	} clocks;
+ static inline u32 cle266_encode_pll(struct via_pll_config pll)
+ {
+ 	return (pll.multiplier << 8)
+@@ -229,19 +232,34 @@ static void set_secondary_clock_source(enum via_clksrc source, bool use_pll)
+ 	via_write_reg_mask(VIACR, 0x6C, data, 0x0F);
+ }
+ 
++static void dummy_set_clock_state(u8 state)
++{
++	printk(KERN_INFO "Using undocumented set clock state.\n%s", via_slap);
++}
 +
-+	struct {
- 		struct omap_video_timings timings;
++static void dummy_set_clock_source(enum via_clksrc source, bool use_pll)
++{
++	printk(KERN_INFO "Using undocumented set slock soure.\n%s", via_slap);
++}
++
++static void dummy_set_pll_state(u8 state)
++{
++	printk(KERN_INFO "Using undocumented set PLL state.\n%s", via_slap);
++}
++
+ void via_clock_init(struct via_clock *clock, int gfx_chip)
+ {
+ 	switch (gfx_chip) {
+ 	case UNICHROME_CLE266:
+ 	case UNICHROME_K400:
+-		clock->set_primary_clock_state = NULL;
+-		clock->set_primary_clock_source = NULL;
+-		clock->set_primary_pll_state = NULL;
++		clock->set_primary_clock_state = dummy_set_clock_state;
++		clock->set_primary_clock_source = dummy_set_clock_source;
++		clock->set_primary_pll_state = dummy_set_pll_state;
+ 		clock->set_primary_pll = cle266_set_primary_pll;
  
- 		int acbi;	/* ac-bias pin transitions per interrupt */
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 23d9bbe..7304c87 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -1026,7 +1026,7 @@ static int dsi_set_lp_clk_divisor(struct omap_dss_device *dssdev)
- 	unsigned lp_clk_div;
- 	unsigned long lp_clk;
- 
--	lp_clk_div = dssdev->phy.dsi.div.lp_clk_div;
-+	lp_clk_div = dssdev->clocks.dsi.lp_clk_div;
- 
- 	if (lp_clk_div = 0 || lp_clk_div > dsi.lpdiv_max)
- 		return -EINVAL;
-@@ -3388,10 +3388,10 @@ static int dsi_configure_dsi_clocks(struct omap_dss_device *dssdev)
- 
- 	/* we always use DSS_CLK_SYSCK as input clock */
- 	cinfo.use_sys_clk = true;
--	cinfo.regn  = dssdev->phy.dsi.div.regn;
--	cinfo.regm  = dssdev->phy.dsi.div.regm;
--	cinfo.regm_dispc = dssdev->phy.dsi.div.regm_dispc;
--	cinfo.regm_dsi = dssdev->phy.dsi.div.regm_dsi;
-+	cinfo.regn  = dssdev->clocks.dsi.regn;
-+	cinfo.regm  = dssdev->clocks.dsi.regm;
-+	cinfo.regm_dispc = dssdev->clocks.dsi.regm_dispc;
-+	cinfo.regm_dsi = dssdev->clocks.dsi.regm_dsi;
- 	r = dsi_calc_clock_rates(dssdev, &cinfo);
- 	if (r) {
- 		DSSERR("Failed to calc dsi clocks\n");
-@@ -3415,8 +3415,8 @@ static int dsi_configure_dispc_clocks(struct omap_dss_device *dssdev)
- 
- 	fck = dsi_get_pll_hsdiv_dispc_rate();
- 
--	dispc_cinfo.lck_div = dssdev->phy.dsi.div.lck_div;
--	dispc_cinfo.pck_div = dssdev->phy.dsi.div.pck_div;
-+	dispc_cinfo.lck_div = dssdev->clocks.dispc.lck_div;
-+	dispc_cinfo.pck_div = dssdev->clocks.dispc.pck_div;
- 
- 	r = dispc_calc_clock_rates(fck, &dispc_cinfo);
- 	if (r) {
+-		clock->set_secondary_clock_state = NULL;
+-		clock->set_secondary_clock_source = NULL;
+-		clock->set_secondary_pll_state = NULL;
++		clock->set_secondary_clock_state = dummy_set_clock_state;
++		clock->set_secondary_clock_source = dummy_set_clock_source;
++		clock->set_secondary_pll_state = dummy_set_pll_state;
+ 		clock->set_secondary_pll = cle266_set_secondary_pll;
+ 		break;
+ 	case UNICHROME_K800:
 -- 
-1.7.1
+1.6.3.2
 

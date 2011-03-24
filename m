@@ -1,7 +1,7 @@
-From: Wim Van Sebroeck <wim@iguana.be>
-Date: Thu, 24 Mar 2011 08:29:40 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+Date: Thu, 24 Mar 2011 22:27:05 +0000
 Subject: Re: [trivial PATCH 1/2] treewide: Fix iomap resource size
-Message-Id: <20110324082940.GB4968@infomag.iguana.be>
+Message-Id: <20110324222705.GA19339@linux-mips.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1300909445.git.joe@perches.com>
 	<c4422b4a8ee132d3adac95fd86237c61b2f8b364.1300909446.git.joe@perches.com>
@@ -11,20 +11,8 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Joe,
+On Wed, Mar 23, 2011 at 12:55:36PM -0700, Joe Perches wrote:
 
-> Convert off-by-1 r->end - r->start to resource_size(r)
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  arch/arm/mach-ux500/mbox-db5500.c |    6 ++----
->  arch/mips/rb532/gpio.c            |    2 +-
->  drivers/video/msm/mddi.c          |    2 +-
->  drivers/watchdog/bcm63xx_wdt.c    |    2 +-
->  4 files changed, 5 insertions(+), 7 deletions(-)
+Acked-by: Ralf Baechle <ralf@linux-mips.org>
 
-Acked-by: Wim Van Sebroeck <wim@iguana.be>
-
-Kind regards,
-Wim.
-
+  Ralf

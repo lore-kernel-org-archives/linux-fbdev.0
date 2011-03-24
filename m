@@ -1,51 +1,81 @@
-From: Carl Vanderlip <carlv@codeaurora.org>
-Date: Wed, 02 Mar 2011 21:16:36 +0000
-Subject: [PATCH 1/4] video: msmfb: Put the partial update magic value into the fix_screen struct.
-Message-Id: <1299100596-11157-1-git-send-email-carlv@codeaurora.org>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Thu, 24 Mar 2011 15:57:41 +0000
+Subject: [PATCH 1/3] viafb: add primary/secondary clock on/off switches
+Message-Id: <1300983180-7343-2-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1299100542-11120-1-git-send-email-carlv@codeaurora.org>
-In-Reply-To: <1299100542-11120-1-git-send-email-carlv@codeaurora.org>
+References: <1300983180-7343-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1300983180-7343-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-From: Dima Zavin <dima@android.com>
+This patch adds functions to enable/disable the display clocks.
+It also fixes a tiny bug that slipped in with a previous commit but
+could not yet have caused any problems.
 
-This can then be tested by userspace to see if the capability is supported.
-Userspace cannot rely on that value being left in var_screen, since userspace
-itself can change it.
-
-Signed-off-by: Dima Zavin <dima@android.com>
-Signed-off-by: Carl Vanderlip <carlv@codeaurora.org>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/msm/msm_fb.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+ drivers/video/via/hw.c |   38 +++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 37 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/msm/msm_fb.c b/drivers/video/msm/msm_fb.c
-index 5436aeb..fe5efe5 100644
---- a/drivers/video/msm/msm_fb.c
-+++ b/drivers/video/msm/msm_fb.c
-@@ -469,6 +469,18 @@ static void setup_fb_info(struct msmfb_info *msmfb)
- 	fb_info->var.yoffset = 0;
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index b38d3b4..712348d 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -1409,6 +1409,42 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
  
- 	if (msmfb->panel->caps & MSMFB_CAP_PARTIAL_UPDATES) {
-+		/*
-+		 * Set the param in the fixed screen, so userspace can't
-+		 * change it. This will be used to check for the
-+		 * capability.
-+		 */
-+		fb_info->fix.reserved[0] = 0x5444;
-+		fb_info->fix.reserved[1] = 0x5055;
+ }
+ 
++static void set_primary_clock_state(u8 state)
++{
++	u8 value;
 +
-+		/*
-+		 * This preloads the value so that if userspace doesn't
-+		 * change it, it will be a full update
-+		 */
- 		fb_info->var.reserved[0] = 0x54445055;
- 		fb_info->var.reserved[1] = 0;
- 		fb_info->var.reserved[2] = (uint16_t)msmfb->xres |
++	switch (state) {
++	case VIA_STATE_ON:
++		value = 0x20;
++		break;
++	case VIA_STATE_OFF:
++		value = 0x00;
++		break;
++	default:
++		return;
++	}
++
++	via_write_reg_mask(VIASR, 0x1B, value, 0x30);
++}
++
++static void set_secondary_clock_state(u8 state)
++{
++	u8 value;
++
++	switch (state) {
++	case VIA_STATE_ON:
++		value = 0x80;
++		break;
++	case VIA_STATE_OFF:
++		value = 0x00;
++		break;
++	default:
++		return;
++	}
++
++	via_write_reg_mask(VIASR, 0x1B, value, 0xC0);
++}
++
+ static void set_primary_pll_state(u8 state)
+ {
+ 	u8 value;
+@@ -1442,7 +1478,7 @@ static void set_secondary_pll_state(u8 state)
+ 		return;
+ 	}
+ 
+-	via_write_reg_mask(VIASR, 0x2D, value, 0x08);
++	via_write_reg_mask(VIASR, 0x2D, value, 0x0C);
+ }
+ 
+ static u32 cle266_encode_pll(struct pll_config pll)
 -- 
-Sent by an employee of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+1.6.3.2
 

@@ -1,140 +1,27 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 09 Mar 2011 07:21:26 +0000
-Subject: [PATCH 4/6] OMAP: DSS2: DSI: use ISR for BTA in framedone
-Message-Id: <1299655288-7121-5-git-send-email-tomi.valkeinen@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Thu, 24 Mar 2011 15:57:28 +0000
+Subject: viafb clock patches - second round
+Message-Id: <1300983180-7343-1-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1299655288-7121-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1299655288-7121-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 
-Remove bta_callback from the interrupt handler, and use ISR support
-instead.
+Here are the remaining clock patches which finally put it in a good 
+shape. Most of the clock and PLL went into an extra file making the 
+codebase more structured. Only the PLL table and related code was 
+left out as it is not yet in a desirable state as this table is only 
+usable for the X1 source as the limits are frequency dependend.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/dsi.c |   57 +++++++++++------------------------------
- 1 files changed, 15 insertions(+), 42 deletions(-)
+All patches (including first round) are also available at
+	git://github.com/schandinat/linux-2.6.git viafb-pll
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index a4d47dd..5672e40 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -257,8 +257,6 @@ static struct
- 
- 	unsigned pll_locked;
- 
--	void (*bta_callback)(void);
--
- 	spinlock_t irq_lock;
- 	struct dsi_isr_tables isr_tables;
- 	/* space for a copy used by the interrupt handler */
-@@ -641,16 +639,6 @@ static irqreturn_t omap_dsi_irq_handler(int irq, void *arg)
- 		del_timer(&dsi.te_timer);
- #endif
- 
--	for (i = 0; i < 4; ++i) {
--		if (vcstatus[i] = 0)
--			continue;
--
--		if (vcstatus[i] & DSI_VC_IRQ_BTA) {
--			if (dsi.bta_callback)
--				dsi.bta_callback();
--		}
--	}
--
- 	/* make a copy and unlock, so that isrs can unregister
- 	 * themselves */
- 	memcpy(&dsi.isr_tables_copy, &dsi.isr_tables, sizeof(dsi.isr_tables));
-@@ -924,26 +912,6 @@ static u32 dsi_get_errors(void)
- 	return e;
- }
- 
--static void dsi_vc_enable_bta_irq(int channel)
--{
--	u32 l;
--
--	dsi_write_reg(DSI_VC_IRQSTATUS(channel), DSI_VC_IRQ_BTA);
--
--	l = dsi_read_reg(DSI_VC_IRQENABLE(channel));
--	l |= DSI_VC_IRQ_BTA;
--	dsi_write_reg(DSI_VC_IRQENABLE(channel), l);
--}
--
--static void dsi_vc_disable_bta_irq(int channel)
--{
--	u32 l;
--
--	l = dsi_read_reg(DSI_VC_IRQENABLE(channel));
--	l &= ~DSI_VC_IRQ_BTA;
--	dsi_write_reg(DSI_VC_IRQENABLE(channel), l);
--}
--
- /* DSI func clock. this could also be dsi_pll_hsdiv_dsi_clk */
- static inline void enable_clocks(bool enable)
- {
-@@ -3097,19 +3065,20 @@ static void dsi_te_timeout(unsigned long arg)
- }
- #endif
- 
-+static void dsi_framedone_bta_callback(void *data, u32 mask);
-+
- static void dsi_handle_framedone(int error)
- {
- 	const int channel = dsi.update_channel;
- 
--	cancel_delayed_work(&dsi.framedone_timeout_work);
-+	dsi_unregister_isr_vc(channel, dsi_framedone_bta_callback,
-+			NULL, DSI_VC_IRQ_BTA);
- 
--	dsi_vc_disable_bta_irq(channel);
-+	cancel_delayed_work(&dsi.framedone_timeout_work);
- 
- 	/* SIDLEMODE back to smart-idle */
- 	dispc_enable_sidle();
- 
--	dsi.bta_callback = NULL;
--
- 	if (dsi.te_enabled) {
- 		/* enable LP_RX_TO again after the TE */
- 		REG_FLD_MOD(DSI_TIMING2, 1, 15, 15); /* LP_RX_TO */
-@@ -3143,7 +3112,7 @@ static void dsi_framedone_timeout_work_callback(struct work_struct *work)
- 	dsi_handle_framedone(-ETIMEDOUT);
- }
- 
--static void dsi_framedone_bta_callback(void)
-+static void dsi_framedone_bta_callback(void *data, u32 mask)
- {
- 	dsi_handle_framedone(0);
- 
-@@ -3183,15 +3152,19 @@ static void dsi_framedone_irq_callback(void *data, u32 mask)
- 	 * asynchronously.
- 	 * */
- 
--	dsi.bta_callback = dsi_framedone_bta_callback;
--
--	barrier();
--
--	dsi_vc_enable_bta_irq(channel);
-+	r = dsi_register_isr_vc(channel, dsi_framedone_bta_callback,
-+			NULL, DSI_VC_IRQ_BTA);
-+	if (r) {
-+		DSSERR("Failed to register BTA ISR\n");
-+		dsi_handle_framedone(-EIO);
-+		return;
-+	}
- 
- 	r = dsi_vc_send_bta(channel);
- 	if (r) {
- 		DSSERR("BTA after framedone failed\n");
-+		dsi_unregister_isr_vc(channel, dsi_framedone_bta_callback,
-+				NULL, DSI_VC_IRQ_BTA);
- 		dsi_handle_framedone(-EIO);
- 	}
- }
--- 
-1.7.1
+and will also show up in linux-nexxt after the early rc's are done.
+
+
+Thanks,
+
+Florian Tobias Schandinat
 

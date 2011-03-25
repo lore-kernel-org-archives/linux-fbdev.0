@@ -1,43 +1,50 @@
 From: "K, Mythri P" <mythripk@ti.com>
-Date: Fri, 25 Mar 2011 13:46:05 +0000
+Date: Fri, 25 Mar 2011 15:33:31 +0000
 Subject: Re: [RFC PATCH] HDMI:Support for EDID parsing in kernel.
-Message-Id: <AANLkTikQdUYYRSG1ZNesgxQG+HhDJ-PY_wpwz3Mec-3V@mail.gmail.com>
+Message-Id: <AANLkTinP3CUm3d8-RTG6NVniGh8MEwJ-unkggwZwpiZb@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1300815176-21206-1-git-send-email-mythripk@ti.com>
  <AANLkTim61Xdo6ED7mr_SvpLuotso89RdR6Qaz-GCXOmJ@mail.gmail.com>
  <AANLkTinMUCbaEVjwZsHG9BxFVjx0YxS=Sw+3gViDJXhg@mail.gmail.com>
  <20110323081820.5b37d169@jbarnes-desktop> <AANLkTinYHzCgXe9yw1rGHZA0uM=-VrY+Mktpn-HvfRyR@mail.gmail.com>
- <Pine.LNX.4.64.1103242001460.21914@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1103242001460.21914@axis700.grange>
+ <AANLkTi=Yc0Pg9uCZcTei45PLbERutoRc7XyoFghwS=KV@mail.gmail.com> <4D8BC915.60400@gmx.de>
+In-Reply-To: <4D8BC915.60400@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@gmail.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, linux-media@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Corbin Simpson <mostawesomedude@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, linux-media@vger.kernel.org
 
-Hi Gunnedi,
+Hi Florian,
 
 <snip>
->> > Dave's point is that we can't ditch the existing code without
->> > introducing a lot of risk; it would be better to start a library-ized
->> > EDID codebase from the most complete one we have already, i.e. the DRM
->> > EDID code.
 >
-> Does the DRM EDID-parser also process blocks beyond the first one and
-> also parses SVD entries similar to what I've recently added to fbdev? Yes,
-> we definitely need a common EDID parses, and maybe we'll have to collect
-> various pieces from different implementations.
+>> So why should this be a common library? Most kernel code doesn't need
+>> it. Or is there a serious need for video input to parse EDIDs?
 >
-As far as I know , it does not parse SVD ,But it should not be that
-difficult to add.
-We could take the SVD parsing from your code . In the RFC i have
-posted I parse for detailed timing and other VSDB blocks.
-Also the parsing should be based on the extension type for  multiple
-128 byte blocks.
+> It's true that most kernel code does not need it as it is only useful for
+> display output systems (and only the ones that can be connected to something
+> sending EDID data) but it would be good anyway.
+> Because sharing code that should fulfill the same purpose is always a good
+> idea. But of course only if the scope is clearly limited as we don't want to
+> end up with a mess that nobody dares touching again as it became to complex.
+> So I totally agree that we should share the common stuff we all need and
+> adding the extras one needs in the subsystem/driver.
+> This is good because it looks like we'll have 3 display subsystems within
+> the kernel for a long future and with a common library the same patch would
+> not need to be done 3 times but only once. Or even more often if drivers
+> have there private EDID implementation which I just throw out of mine to
+> replace it later with a common one.
+>
+
+Precisely my point . Also if there are some bad TV models which
+doesn't adhere to standard EDID, It would help to add quirks.
+Anyone out there want to help me split the DRM code ? As i don't want
+DRMer's to fret over changed code :).
 
 Thanks and regards,
 Mythri.
-
-> Thanks
-> Guennadi
+> Regards,
+>
+> Florian Tobias Schandinat
 >

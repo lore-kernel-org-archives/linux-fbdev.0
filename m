@@ -1,194 +1,174 @@
-From: Heiko Schocher <hs@denx.de>
-Date: Tue, 22 Mar 2011 08:27:29 +0000
-Subject: [PATCH v6 3/6] video, sm501: add edid and commandline support
-Message-Id: <1300782452-528-4-git-send-email-hs@denx.de>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Tue, 29 Mar 2011 19:07:08 +0000
+Subject: [PATCH] s3fb: fix Virge/GX2
+Message-Id: <201103292107.11969.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291451028-22532-1-git-send-email-hs@denx.de>
-	<1300782452-528-1-git-send-email-hs@denx.de>
-In-Reply-To: <1300782452-528-1-git-send-email-hs-ynQEQJNshbs@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Cc: Ben Dooks <ben-Y5A6D6n0/KfQXOPxS62xeg@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-mnsaURCQ41sdnm+yROfE0A@public.gmane.org, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Vincent Sanders <vince-Y5A6D6n0/KfQXOPxS62xeg@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Randy Dunlap <rdunlap-/UHa2rfvQTnk1uMJSBkQmQ@public.gmane.org>, Paul Mundt <lethal-M7jkjyW5wf5g9hUCZPvPmw@public.gmane.org>, Heiko Schocher <hs-ynQEQJNshbs@public.gmane.org>, Wolfgang Denk <wd-ynQEQJNshbs@public.gmane.org>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Ondrej Zajicek <santiago@crfreenet.org>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>
 
-- add commandline options:
-  sm501fb.mode:
-    Specify resolution as "<xres>x<yres>[-<bpp>][@<refresh>]"
-  sm501fb.bpp:
-    Specify bit-per-pixel if not specified mode
+Fix Virge/GX2 support in s3fb:
+- fix IDs: 86C357 is GX2, 86C359 is GX2+, 86C356 probably does not exist
+- add memory size detection
+- drive it the same way as Trio3D/2X
 
-- Add support for encoding display mode information
-  in the device tree using verbatim EDID block.
+The original IDs most likely came from S3 website which claims that:
+- 356 is Virge/GX2 with ID=8A10, driver included in Windows 2K, XP
+- 357 is Virge/GX2+ with ID=8A11, driver included in Windows ME
+- 359 is Virge/GX2+ with ID=8A12, driver included in Windows ME
+but:
+- google search for 86C356 only reveals references to Trio3D (probably
+because of a typo - Trio3D is 86C365)
+- my card is clearly marked as 86C357, Virge/GX2 and has ID=8A10
+- there is no driver for IDs 8A11 and 8A12 in Windows ME
+- there is a driver for ID 8A10 in Windows ME that says it's GX2 (357)
 
-  If the "edid" entry in the "smi,sm501" node is present,
-  the driver will build mode database using EDID data
-  and allow setting the display modes from this database.
+Tested with #9 Reality 334 (86C357 Virge/GX2, ID=3D0x8A10).
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-cc: Wolfram Sang <w.sang@pengutronix.de>
-cc: Grant Likely <grant.likely@secretlab.ca>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: linux-fbdev@vger.kernel.org
-cc: devicetree-discuss@ozlabs.org
-cc: Ben Dooks <ben@simtec.co.uk>
-cc: Vincent Sanders <vince@simtec.co.uk>
-cc: Samuel Ortiz <sameo@linux.intel.com>
-cc: linux-kernel@vger.kernel.org
-cc: Randy Dunlap <rdunlap@xenotime.net>
-cc: Wolfgang Denk <wd@denx.de>
-cc: Paul Mundt <lethal@linux-sh.org>
----
-- changes since v1:
-  add Ben Dooks, Vincent Sanders and Samuel Ortiz to cc, as suggested from
-  Paul Mundt.
-- changes since v2:
-  add comments from Randy Dunlap:
-  - move parameter documentation to Documentation/fb/sm501.txt
-- changes since v3:
-  - rebased against v2.6.38-rc2
-  - split in 3 patches
-    - of support patch
-    - i/o routine patch
-    - edid support patch
-- changes since v4:
-  - add "info->pdata = &sm501fb_def_pdata;" in sm501fb_probe()
-    as Paul Mundt suggested (and I wrongly deleted)
-  - move kfree(info->edid_data); to patch 3/4
-    as edid_data is only allocated in the CONFIG_OF case
-- changes for v6:
-  - repost complete patchserie
-  - rebased against current head
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
- Documentation/fb/sm501.txt |   10 +++++++
- drivers/video/sm501fb.c    |   65 ++++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 70 insertions(+), 5 deletions(-)
- create mode 100644 Documentation/fb/sm501.txt
-
-diff --git a/Documentation/fb/sm501.txt b/Documentation/fb/sm501.txt
-new file mode 100644
-index 0000000..8d17aeb
---- /dev/null
-+++ b/Documentation/fb/sm501.txt
-@@ -0,0 +1,10 @@
-+Configuration:
-+
-+You can pass the following kernel command line options to sm501 videoframebuffer:
-+
-+	sm501fb.bpp=	SM501 Display driver:
-+			Specifiy bits-per-pixel if not specified by 'mode'
-+
-+	sm501fb.mode=	SM501 Display driver:
-+			Specify resolution as
-+			"<xres>x<yres>[-<bpp>][@<refresh>]"
-diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
-index 5df406c..f31252c 100644
---- a/drivers/video/sm501fb.c
-+++ b/drivers/video/sm501fb.c
-@@ -41,6 +41,26 @@
- #include <linux/sm501.h>
- #include <linux/sm501-regs.h>
- 
-+#include "edid.h"
-+
-+static char *fb_mode = "640x480-16@60";
-+static unsigned long default_bpp = 16;
-+
-+static struct fb_videomode __devinitdata sm501_default_mode = {
-+	.refresh	= 60,
-+	.xres		= 640,
-+	.yres		= 480,
-+	.pixclock	= 20833,
-+	.left_margin	= 142,
-+	.right_margin	= 13,
-+	.upper_margin	= 21,
-+	.lower_margin	= 1,
-+	.hsync_len	= 69,
-+	.vsync_len	= 3,
-+	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
-+	.vmode		= FB_VMODE_NONINTERLACED
-+};
-+
- #define NR_PALETTE	256
- 
- enum sm501_controller {
-@@ -77,6 +97,7 @@ struct sm501fb_info {
- 	void __iomem		*regs2d;	/* 2d remapped registers */
- 	void __iomem		*fbmem;		/* remapped framebuffer */
- 	size_t			 fbmem_len;	/* length of remapped region */
-+	u8 *edid_data;
- };
- 
- /* per-framebuffer private data */
-@@ -1725,9 +1746,16 @@ static int sm501fb_init_fb(struct fb_info *fb,
- 	fb->var.vmode		= FB_VMODE_NONINTERLACED;
- 	fb->var.bits_per_pixel  = 16;
- 
-+	if (info->edid_data) {
-+			/* Now build modedb from EDID */
-+			fb_edid_to_monspecs(info->edid_data, &fb->monspecs);
-+			fb_videomode_to_modelist(fb->monspecs.modedb,
-+						 fb->monspecs.modedb_len,
-+						 &fb->modelist);
-+	}
-+
- 	if (enable && (pd->flags & SM501FB_FLAG_USE_INIT_MODE) && 0) {
- 		/* TODO read the mode from the current display */
--
- 	} else {
- 		if (pd->def_mode) {
- 			dev_info(info->dev, "using supplied mode\n");
-@@ -1737,12 +1765,34 @@ static int sm501fb_init_fb(struct fb_info *fb,
- 			fb->var.xres_virtual = fb->var.xres;
- 			fb->var.yres_virtual = fb->var.yres;
+--- linux-2.6.38-rc4-/drivers/video/s3fb.c	2011-03-29 17:17:48.000000000 +0=
+200
++++ linux-2.6.38-rc4/drivers/video/s3fb.c	2011-03-29 20:25:12.000000000 +02=
+00
+@@ -71,9 +71,9 @@ static const int s3_memsizes[] =3D {4096,
+=20
+ static const char * const s3_names[] =3D {"S3 Unknown", "S3 Trio32", "S3 T=
+rio64", "S3 Trio64V+",
+ 			"S3 Trio64UV+", "S3 Trio64V2/DX", "S3 Trio64V2/GX",
+-			"S3 Plato/PX", "S3 Aurora64VP", "S3 Virge",
++			"S3 Plato/PX", "S3 Aurora64V+", "S3 Virge",
+ 			"S3 Virge/VX", "S3 Virge/DX", "S3 Virge/GX",
+-			"S3 Virge/GX2", "S3 Virge/GX2P", "S3 Virge/GX2P",
++			"S3 Virge/GX2", "S3 Virge/GX2+", "",
+ 			"S3 Trio3D/1X", "S3 Trio3D/2X", "S3 Trio3D/2X",
+ 			"S3 Trio3D"};
+=20
+@@ -90,9 +90,8 @@ static const char * const s3_names[] =3D {
+ #define CHIP_988_VIRGE_VX	0x0A
+ #define CHIP_375_VIRGE_DX	0x0B
+ #define CHIP_385_VIRGE_GX	0x0C
+-#define CHIP_356_VIRGE_GX2	0x0D
+-#define CHIP_357_VIRGE_GX2P	0x0E
+-#define CHIP_359_VIRGE_GX2P	0x0F
++#define CHIP_357_VIRGE_GX2	0x0D
++#define CHIP_359_VIRGE_GX2P	0x0E
+ #define CHIP_360_TRIO3D_1X	0x10
+ #define CHIP_362_TRIO3D_2X	0x11
+ #define CHIP_368_TRIO3D_2X	0x12
+@@ -359,7 +358,9 @@ static void s3_set_pixclock(struct fb_in
+ 	vga_w(par->state.vgabase, VGA_MIS_W, regval | VGA_MIS_ENB_PLL_LOAD);
+=20
+ 	/* Set S3 clock registers */
+-	if (par->chip =3D CHIP_360_TRIO3D_1X ||
++	if (par->chip =3D CHIP_357_VIRGE_GX2 ||
++	    par->chip =3D CHIP_359_VIRGE_GX2P ||
++	    par->chip =3D CHIP_360_TRIO3D_1X ||
+ 	    par->chip =3D CHIP_362_TRIO3D_2X ||
+ 	    par->chip =3D CHIP_368_TRIO3D_2X) {
+ 		vga_wseq(par->state.vgabase, 0x12, (n - 2) | ((r & 3) << 6));	/* n and t=
+wo bits of r */
+@@ -560,7 +561,9 @@ static int s3fb_set_par(struct fb_info *
+ 	pr_debug("fb%d: offset register       : %d\n", info->node, offset_value);
+ 	svga_wcrt_multi(par->state.vgabase, s3_offset_regs, offset_value);
+=20
+-	if (par->chip !=3D CHIP_360_TRIO3D_1X &&
++	if (par->chip !=3D CHIP_357_VIRGE_GX2 &&
++	    par->chip !=3D CHIP_359_VIRGE_GX2P &&
++	    par->chip !=3D CHIP_360_TRIO3D_1X &&
+ 	    par->chip !=3D CHIP_362_TRIO3D_2X &&
+ 	    par->chip !=3D CHIP_368_TRIO3D_2X) {
+ 		vga_wcrt(par->state.vgabase, 0x54, 0x18); /* M parameter */
+@@ -604,7 +607,9 @@ static int s3fb_set_par(struct fb_info *
+ 		vga_wcrt(par->state.vgabase, 0x66, 0x90);
+ 	}
+=20
+-	if (par->chip =3D CHIP_360_TRIO3D_1X ||
++	if (par->chip =3D CHIP_357_VIRGE_GX2 ||
++	    par->chip =3D CHIP_359_VIRGE_GX2P ||
++	    par->chip =3D CHIP_360_TRIO3D_1X ||
+ 	    par->chip =3D CHIP_362_TRIO3D_2X ||
+ 	    par->chip =3D CHIP_368_TRIO3D_2X ||
+ 	    par->chip =3D CHIP_365_TRIO3D    ||
+@@ -617,8 +622,7 @@ static int s3fb_set_par(struct fb_info *
+ 		vga_wcrt(par->state.vgabase, 0x66, 0x81);
+ 	}
+=20
+-	if (par->chip =3D CHIP_356_VIRGE_GX2  ||
+-	    par->chip =3D CHIP_357_VIRGE_GX2P ||
++	if (par->chip =3D CHIP_357_VIRGE_GX2  ||
+ 	    par->chip =3D CHIP_359_VIRGE_GX2P ||
+ 	    par->chip =3D CHIP_360_TRIO3D_1X ||
+ 	    par->chip =3D CHIP_362_TRIO3D_2X ||
+@@ -674,6 +678,8 @@ static int s3fb_set_par(struct fb_info *
+ 		pr_debug("fb%d: 8 bit pseudocolor\n", info->node);
+ 		svga_wcrt_mask(par->state.vgabase, 0x50, 0x00, 0x30);
+ 		if (info->var.pixclock > 20000 ||
++		    par->chip =3D CHIP_357_VIRGE_GX2 ||
++		    par->chip =3D CHIP_359_VIRGE_GX2P ||
+ 		    par->chip =3D CHIP_360_TRIO3D_1X ||
+ 		    par->chip =3D CHIP_362_TRIO3D_2X ||
+ 		    par->chip =3D CHIP_368_TRIO3D_2X)
+@@ -702,7 +708,9 @@ static int s3fb_set_par(struct fb_info *
  		} else {
--			ret = fb_find_mode(&fb->var, fb,
-+			if (info->edid_data)
-+				ret = fb_find_mode(&fb->var, fb, fb_mode,
-+					fb->monspecs.modedb,
-+					fb->monspecs.modedb_len,
-+					&sm501_default_mode, default_bpp);
-+			else
-+				ret = fb_find_mode(&fb->var, fb,
- 					   NULL, NULL, 0, NULL, 8);
- 
--			if (ret = 0 || ret = 4) {
--				dev_err(info->dev,
--					"failed to get initial mode\n");
-+			switch (ret) {
-+			case 1:
-+				dev_info(info->dev, "using mode specified in "
-+						"@mode\n");
-+				break;
-+			case 2:
-+				dev_info(info->dev, "using mode specified in "
-+					"@mode with ignored refresh rate\n");
-+				break;
-+			case 3:
-+				dev_info(info->dev, "using mode default "
-+					"mode\n");
-+				break;
-+			case 4:
-+				dev_info(info->dev, "using mode from list\n");
-+				break;
-+			default:
-+				dev_info(info->dev, "ret = %d\n", ret);
-+				dev_info(info->dev, "failed to find mode\n");
- 				return -EINVAL;
- 			}
+ 			svga_wcrt_mask(par->state.vgabase, 0x50, 0x10, 0x30);
+ 			svga_wcrt_mask(par->state.vgabase, 0x67, 0x30, 0xF0);
+-			if (par->chip !=3D CHIP_360_TRIO3D_1X &&
++			if (par->chip !=3D CHIP_357_VIRGE_GX2 &&
++			    par->chip !=3D CHIP_359_VIRGE_GX2P &&
++			    par->chip !=3D CHIP_360_TRIO3D_1X &&
+ 			    par->chip !=3D CHIP_362_TRIO3D_2X &&
+ 			    par->chip !=3D CHIP_368_TRIO3D_2X)
+ 				hmul =3D 2;
+@@ -727,7 +735,9 @@ static int s3fb_set_par(struct fb_info *
+ 		} else {
+ 			svga_wcrt_mask(par->state.vgabase, 0x50, 0x10, 0x30);
+ 			svga_wcrt_mask(par->state.vgabase, 0x67, 0x50, 0xF0);
+-			if (par->chip !=3D CHIP_360_TRIO3D_1X &&
++			if (par->chip !=3D CHIP_357_VIRGE_GX2 &&
++			    par->chip !=3D CHIP_359_VIRGE_GX2P &&
++			    par->chip !=3D CHIP_360_TRIO3D_1X &&
+ 			    par->chip !=3D CHIP_362_TRIO3D_2X &&
+ 			    par->chip !=3D CHIP_368_TRIO3D_2X)
+ 				hmul =3D 2;
+@@ -1069,6 +1079,16 @@ static int __devinit s3_pci_probe(struct
+ 			info->screen_size =3D 2 << 20;
+ 			break;
  		}
-@@ -2157,6 +2207,11 @@ static void __exit sm501fb_cleanup(void)
- module_init(sm501fb_init);
- module_exit(sm501fb_cleanup);
- 
-+module_param_named(mode, fb_mode, charp, 0);
-+MODULE_PARM_DESC(mode,
-+	"Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\" ");
-+module_param_named(bpp, default_bpp, ulong, 0);
-+MODULE_PARM_DESC(bpp, "Specify bit-per-pixel if not specified mode");
- MODULE_AUTHOR("Ben Dooks, Vincent Sanders");
- MODULE_DESCRIPTION("SM501 Framebuffer driver");
- MODULE_LICENSE("GPL v2");
--- 
-1.7.4
++	} else if (par->chip =3D CHIP_357_VIRGE_GX2 ||
++		   par->chip =3D CHIP_359_VIRGE_GX2P) {
++		switch ((regval & 0xC0) >> 6) {
++		case 1: /* 4MB */
++			info->screen_size =3D 4 << 20;
++			break;
++		case 3: /* 2MB */
++			info->screen_size =3D 2 << 20;
++			break;
++		}
+ 	} else
+ 		info->screen_size =3D s3_memsizes[regval >> 5] << 10;
+ 	info->fix.smem_len =3D info->screen_size;
+@@ -1275,8 +1295,8 @@ static struct pci_device_id s3_devices[]
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x5631), .driver_data =3D CHIP_325_VIRGE},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x883D), .driver_data =3D CHIP_988_VIRGE_VX=
+},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A01), .driver_data =3D CHIP_XXX_VIRGE_DX=
+GX},
+-	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A10), .driver_data =3D CHIP_356_VIRGE_GX=
+2},
+-	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A11), .driver_data =3D CHIP_357_VIRGE_GX=
+2P},
++	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A10), .driver_data =3D CHIP_357_VIRGE_GX=
+2},
++	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A11), .driver_data =3D CHIP_359_VIRGE_GX=
+2P},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A12), .driver_data =3D CHIP_359_VIRGE_GX=
+2P},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A13), .driver_data =3D CHIP_36X_TRIO3D_1=
+X_2X},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8904), .driver_data =3D CHIP_365_TRIO3D},
 
+--=20
+Ondrej Zary

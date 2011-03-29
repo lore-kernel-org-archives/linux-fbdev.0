@@ -1,35 +1,35 @@
-From: Evgeniy Polyakov <zbr@ioremap.net>
-Date: Thu, 17 Mar 2011 15:43:03 +0000
-Subject: Re: [Drbd-dev] [PATCH 2/2 v2] netlink: kill eff_cap from struct
-Message-Id: <20110317154303.GA12811@ioremap.net>
+From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+Date: Tue, 29 Mar 2011 03:35:55 +0000
+Subject: [RFC][PATCH 0/3] MERAM support for LCDC
+Message-Id: <1301369758-18394-1-git-send-email-dhobsong@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4D6F6180.5030903@trash.net>
- <20110303173230.GP4988@sequoia.sous-sol.org>
- <20110303.105655.189705829.davem@davemloft.net>
- <20110303201522.GT4988@sequoia.sous-sol.org>
- <20110303223746.GI25069@barkeeper1-xen.linbit>
- <20110304012956.GA13573@ioremap.net>
- <4D764247.9080509@trash.net>
- <20110308183246.GA17412@ioremap.net>
- <4D767B69.2030603@trash.net>
-In-Reply-To: <4D767B69.2030603@trash.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Patrick McHardy <kaber@trash.net>
-Cc: Chris Wright <chrisw@sous-sol.org>, David Miller <davem@davemloft.net>, linux-fbdev@vger.kernel.org, netdev@vger.kernel.org, linux-security-module@vger.kernel.org, dm-devel@redhat.com, drbd-dev@lists.linbit.com
+To: linux-fbdev@vger.kernel.org
 
-Hi.
+This patch series is based on the fbdev tree.  
 
-On Tue, Mar 08, 2011 at 07:54:33PM +0100, Patrick McHardy (kaber@trash.net) wrote:
-> >> Are you going to do this or do you want me to take care of it?
-> > 
-> > I will return back at the end of the week and will take care of this
-> > problem. I will not mind if you complete it first though :)
-> 
-> Thanks Evgeniy, I'll give it a shot.
+This series adds support for read-ahead cache access through the ICBs and
+MERAM available on SH devices.  The exact ICBs to use are chip specific
+and are specified in the platform data. 
 
-Is my help needed there or you will clean things up?
+Damian Hobson-Garcia (3):
+  sh_mobile_meram: MERAM framework for LCDC
+  sh_mobile_meram: Add support for NV24 framebuffers
+  sh_mobile_meram: MERAM platform data for LCDC
 
--- 
-	Evgeniy Polyakov
+ arch/arm/mach-shmobile/board-ap4evb.c |   69 ++++
+ drivers/video/Kconfig                 |   12 +
+ drivers/video/Makefile                |    1 +
+ drivers/video/sh_mobile_lcdcfb.c      |  104 ++++++-
+ drivers/video/sh_mobile_lcdcfb.h      |    1 +
+ drivers/video/sh_mobile_meram.c       |  567 +++++++++++++++++++++++++++++++++
+ drivers/video/sh_mobile_meram.h       |   41 +++
+ include/video/sh_mobile_lcdc.h        |    2 +
+ include/video/sh_mobile_meram.h       |   69 ++++
+ 9 files changed, 857 insertions(+), 9 deletions(-)
+ create mode 100644 drivers/video/sh_mobile_meram.c
+ create mode 100644 drivers/video/sh_mobile_meram.h
+ create mode 100644 include/video/sh_mobile_meram.h
+

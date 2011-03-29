@@ -1,53 +1,30 @@
-From: Maurus Cuelenaere <mcuelenaere@gmail.com>
-Date: Tue, 01 Mar 2011 17:21:36 +0000
-Subject: Re: [PATCH 3/6] FBDEV: JZ4740: Initialize framebuffer properly
-Message-Id: <4D6D2B20.4020604@gmail.com>
+From: Dan Carpenter <error27@gmail.com>
+Date: Tue, 29 Mar 2011 03:19:09 +0000
+Subject: [patch] backlight/ld9040.c: testing the wrong variable in
+Message-Id: <20110329031909.GC9856@bicker>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1d49e2b9aa2fa143c14a9782fd4e67cb50610ca8.1298980528.git.mcuelenaere@gmail.com>
-In-Reply-To: <1d49e2b9aa2fa143c14a9782fd4e67cb50610ca8.1298980528.git.mcuelenaere@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-> On 03/01/2011 01:06 PM, Maurus Cuelenaere wrote:
->> Use the jzfb_enable() function instead of manually faking it in jzfb_probe().
->> Also add the reverse operation when the framebuffer couldn't be registered.
->>
->> Signed-off-by: Maurus Cuelenaere <mcuelenaere@gmail.com>
->> ---
->>  drivers/video/jz4740_fb.c |    8 +++-----
->>  1 files changed, 3 insertions(+), 5 deletions(-)
->>
->> diff --git a/drivers/video/jz4740_fb.c b/drivers/video/jz4740_fb.c
->> index cea7b7e..2f3ea57 100644
->> --- a/drivers/video/jz4740_fb.c
->> +++ b/drivers/video/jz4740_fb.c
->> @@ -707,16 +707,13 @@ static int __devinit jzfb_probe(struct platform_device *pdev)
->>  
->>  	fb_alloc_cmap(&fb->cmap, 256, 0);
->>  
->> -	clk_enable(jzfb->ldclk);
->> -	jzfb->is_enabled = 1;
->> -
->> -	writel(jzfb->framedesc->next, jzfb->base + JZ_REG_LCD_DA0);
->> -
->>  	fb->mode = NULL;
->>  	jzfb_set_par(fb);
->>  
->>  	jzfb_pins_operation(jzfb, REQUEST_PINS);
->>  
->> +	jzfb_blank(FB_BLANK_UNBLANK, fb);
->> +
-> I'd prefer:
-> jzfb_enable(jzfb);
-> jzfb->is_enabled = 1;
->
-> since there is no need for locking here.
->
+We should be testing "bd" here instead of "ld".  It's a copy and
+paste bug.
 
-Ok.
+Signed-off-by: Dan Carpenter <error27@gmail.com>
 
--- 
-Maurus Cuelenaere
-
+diff --git a/drivers/video/backlight/ld9040.c b/drivers/video/backlight/ld9040.c
+index 7281b25..9e81d69 100644
+--- a/drivers/video/backlight/ld9040.c
++++ b/drivers/video/backlight/ld9040.c
+@@ -701,8 +701,8 @@ static int ld9040_probe(struct spi_device *spi)
+ 
+ 	bd = backlight_device_register("ld9040-bl", &spi->dev,
+ 		lcd, &ld9040_backlight_ops, NULL);
+-	if (IS_ERR(ld)) {
+-		ret = PTR_ERR(ld);
++	if (IS_ERR(bd)) {
++		ret = PTR_ERR(bd);
+ 		goto out_free_lcd;
+ 	}
+ 

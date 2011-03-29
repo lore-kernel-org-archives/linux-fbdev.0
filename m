@@ -1,112 +1,142 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 09 Mar 2011 07:21:25 +0000
-Subject: [PATCH 3/6] OMAP: DSS2: DSI: use ISR in send_bta_sync
-Message-Id: <1299655288-7121-4-git-send-email-tomi.valkeinen@ti.com>
+From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+Date: Tue, 29 Mar 2011 03:35:57 +0000
+Subject: [RFC][PATCH 2/3] sh_mobile_meram: Add support for NV24 framebuffers
+Message-Id: <1301369758-18394-3-git-send-email-dhobsong@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1299655288-7121-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1299655288-7121-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Remove bta_completion handling from the interrupt handler, and use ISR
-support instead.
+Since the NV24 framebuffer has a CbCr plane that is twice as wide
+as the Y plane, it needs to be handled as a special case.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Damian Hobson-Garcia <dhobsong@igel.co.jp>
 ---
- drivers/video/omap2/dss/dsi.c |   32 ++++++++++++++++++--------------
- 1 files changed, 18 insertions(+), 14 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |   10 +++++++---
+ drivers/video/sh_mobile_meram.c  |   24 +++++++++++++++++++-----
+ include/video/sh_mobile_meram.h  |    3 ++-
+ 3 files changed, 28 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 9aea9a7..a4d47dd 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -257,7 +257,6 @@ static struct
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 92366bd..6b1db92 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -626,10 +626,14 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
  
- 	unsigned pll_locked;
+ 			ch->meram_enabled = 0;
  
--	struct completion bta_completion;
- 	void (*bta_callback)(void);
+-			if (ch->info->var.nonstd)
+-				pf = SH_MOBILE_MERAM_PF_NV;
+-			else
++			if (ch->info->var.nonstd) {
++				if (ch->info->var.bits_per_pixel = 24)
++					pf = SH_MOBILE_MERAM_PF_NV24;
++				else
++					pf = SH_MOBILE_MERAM_PF_NV;
++			} else {
+ 				pf = SH_MOBILE_MERAM_PF_RGB;
++			}
  
- 	spinlock_t irq_lock;
-@@ -341,6 +340,11 @@ static bool dsi_bus_is_locked(void)
- 	return dsi.bus_lock.count = 0;
+ 			ret = mdev->ops->meram_register(mdev, cfg, pitch,
+ 						ch->info->var.yres,
+diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
+index bd68f3d..9170c82 100644
+--- a/drivers/video/sh_mobile_meram.c
++++ b/drivers/video/sh_mobile_meram.c
+@@ -164,6 +164,16 @@ static inline void meram_unmark(struct sh_mobile_meram_priv *priv,
+ 	}
  }
  
-+static void dsi_completion_handler(void *data, u32 mask)
++/*
++ * is this a YCbCr(NV12, NV16 or NV24) colorspace
++ */
++static inline int is_nvcolor(int cspace)
 +{
-+	complete((struct completion *)data);
++	if (cspace = SH_MOBILE_MERAM_PF_NV ||
++			cspace = SH_MOBILE_MERAM_PF_NV24)
++		return 1;
++	return 0;
 +}
-+
- static inline int wait_for_bit_change(const struct dsi_reg idx, int bitnum,
- 		int value)
- {
-@@ -642,8 +646,6 @@ static irqreturn_t omap_dsi_irq_handler(int irq, void *arg)
- 			continue;
  
- 		if (vcstatus[i] & DSI_VC_IRQ_BTA) {
--			complete(&dsi.bta_completion);
--
- 			if (dsi.bta_callback)
- 				dsi.bta_callback();
- 		}
-@@ -2251,33 +2253,37 @@ static int dsi_vc_send_bta(int channel)
+ /*
+  * set the next address to fetch
+@@ -184,7 +194,7 @@ static inline void meram_set_next_addr(struct sh_mobile_meram_priv *priv,
+ 	meram_write_icb(priv->base, cfg->icb[0].marker_icb, target,
+ 			base_addr_y + cfg->icb[0].cache_unit);
  
- int dsi_vc_send_bta_sync(int channel)
- {
-+	DECLARE_COMPLETION_ONSTACK(completion);
- 	int r = 0;
- 	u32 err;
+-	if (cfg->pixelformat = SH_MOBILE_MERAM_PF_NV) {
++	if (is_nvcolor(cfg->pixelformat)) {
+ 		meram_write_icb(priv->base, cfg->icb[1].cache_icb,  target,
+ 				base_addr_c);
+ 		meram_write_icb(priv->base, cfg->icb[1].marker_icb, target,
+@@ -208,7 +218,7 @@ static inline void meram_get_next_icb_addr(struct sh_mobile_meram_info *pdata,
+ 		icb_offset = 0xc0000000 | (cfg->current_reg << 23);
  
--	INIT_COMPLETION(dsi.bta_completion);
--
--	dsi_vc_enable_bta_irq(channel);
-+	r = dsi_register_isr_vc(channel, dsi_completion_handler,
-+			&completion, DSI_VC_IRQ_BTA);
-+	if (r)
-+		goto err0;
- 
- 	r = dsi_vc_send_bta(channel);
- 	if (r)
--		goto err;
-+		goto err1;
- 
--	if (wait_for_completion_timeout(&dsi.bta_completion,
-+	if (wait_for_completion_timeout(&completion,
- 				msecs_to_jiffies(500)) = 0) {
- 		DSSERR("Failed to receive BTA\n");
- 		r = -EIO;
--		goto err;
-+		goto err1;
- 	}
- 
- 	err = dsi_get_errors();
- 	if (err) {
- 		DSSERR("Error while sending BTA: %x\n", err);
- 		r = -EIO;
--		goto err;
-+		goto err1;
- 	}
--err:
--	dsi_vc_disable_bta_irq(channel);
- 
-+err1:
-+	dsi_unregister_isr_vc(channel, dsi_completion_handler,
-+			&completion, DSI_VC_IRQ_BTA);
-+err0:
- 	return r;
+ 	*icb_addr_y = icb_offset | (cfg->icb[0].marker_icb << 24);
+-	if ((*icb_addr_c) && cfg->pixelformat = SH_MOBILE_MERAM_PF_NV)
++	if ((*icb_addr_c) && is_nvcolor(cfg->pixelformat))
+ 		*icb_addr_c = icb_offset | (cfg->icb[1].marker_icb << 24);
  }
- EXPORT_SYMBOL(dsi_vc_send_bta_sync);
-@@ -3647,8 +3653,6 @@ static int dsi_init(struct platform_device *pdev)
- 	dsi.irq_stats.last_reset = jiffies;
- #endif
  
--	init_completion(&dsi.bta_completion);
--
- 	mutex_init(&dsi.lock);
- 	sema_init(&dsi.bus_lock, 1);
+@@ -316,6 +326,7 @@ static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
+ 		return -EINVAL;
+ 
+ 	if (pixelformat != SH_MOBILE_MERAM_PF_NV &&
++	    pixelformat != SH_MOBILE_MERAM_PF_NV24 &&
+ 	    pixelformat != SH_MOBILE_MERAM_PF_RGB)
+ 		return -EINVAL;
+ 
+@@ -366,7 +377,7 @@ static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
+ 		n = 2;
+ 	}
+ 
+-	if (pixelformat = SH_MOBILE_MERAM_PF_NV && n != 2) {
++	if (is_nvcolor(pixelformat) && n != 2) {
+ 		dev_err(&pdev->dev, "requires two ICB sets for planar Y/C.");
+ 		error =  -EINVAL;
+ 		goto err;
+@@ -375,7 +386,7 @@ static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
+ 	/* we now register the ICB */
+ 	cfg->pixelformat = pixelformat;
+ 	meram_mark(priv, &cfg->icb[0]);
+-	if (pixelformat = SH_MOBILE_MERAM_PF_NV)
++	if (is_nvcolor(pixelformat))
+ 		meram_mark(priv, &cfg->icb[1]);
+ 
+ 	/* initialize MERAM */
+@@ -384,6 +395,9 @@ static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
+ 	if (pixelformat = SH_MOBILE_MERAM_PF_NV)
+ 		meram_init(priv, &cfg->icb[1], xres, (yres + 1) / 2,
+ 			&out_pitch);
++	else if (pixelformat = SH_MOBILE_MERAM_PF_NV24)
++		meram_init(priv, &cfg->icb[1], 2 * xres, (yres + 1) / 2,
++			&out_pitch);
+ 
+ 	cfg->current_reg = 1;
+ 	meram_set_next_addr(priv, cfg, base_addr_y, base_addr_c);
+@@ -410,7 +424,7 @@ static int sh_mobile_meram_unregister(struct sh_mobile_meram_info *pdata,
+ 	mutex_lock(&priv->lock);
+ 
+ 	/* deinit & unmark */
+-	if (cfg->pixelformat = SH_MOBILE_MERAM_PF_NV) {
++	if (is_nvcolor(cfg->pixelformat)) {
+ 		meram_deinit(priv, &cfg->icb[1]);
+ 		meram_unmark(priv, &cfg->icb[1]);
+ 	}
+diff --git a/include/video/sh_mobile_meram.h b/include/video/sh_mobile_meram.h
+index e6d2410..989eb23 100644
+--- a/include/video/sh_mobile_meram.h
++++ b/include/video/sh_mobile_meram.h
+@@ -9,7 +9,8 @@ enum {
+ 
+ enum {
+ 	SH_MOBILE_MERAM_PF_NV = 0,
+-	SH_MOBILE_MERAM_PF_RGB
++	SH_MOBILE_MERAM_PF_RGB,
++	SH_MOBILE_MERAM_PF_NV24
+ };
+ 
  
 -- 
 1.7.1

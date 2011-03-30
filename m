@@ -1,7 +1,7 @@
 From: "Guan Xuetao" <gxt@mprc.pku.edu.cn>
-Date: Tue, 29 Mar 2011 14:54:27 +0000
+Date: Wed, 30 Mar 2011 01:39:26 +0000
 Subject: RE: [PATCH] unicore32 framebuffer driver fix: make videomemory kmalloc-ed and floatable
-Message-Id: <019a01cbee21$341d2d90$9c5788b0$@mprc.pku.edu.cn>
+Message-Id: <01ca01cbee7b$4f790370$ee6b0a50$@mprc.pku.edu.cn>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <019701cbee1e$c4e2d260$4ea87720$@mprc.pku.edu.cn> <201103291642.49555.arnd@arndb.de>
 In-Reply-To: <201103291642.49555.arnd@arndb.de>
@@ -32,17 +32,13 @@ Cc: 'Paul Mundt' <lethal@linux-sh.org>, linux-kernel@vger.kernel.org, linux-fbde
 > 
 > How does this work? UNIFB_MEMSIZE seems to be 4 MB, much more than the
 > maximum of 128 KB that kmalloc can allocate.
-I'm surprised. But kmalloc() returns success with 0xc7000000.
-
 > 
 > Shouldn't this use get_free_pages() instead of kmalloc?
-
-I will check and correct it.
-
 > 
 > 	Arnd
 
-Thanks.
+When using SLUB allocator, if required memory size  is larger than 2*PAGE_SIZE, kmalloc_large is called,
+and eventually __get_free_pages will  be called.
+So,  it would be the same as __get_free_pages.
 
-Guan Xuetao
 

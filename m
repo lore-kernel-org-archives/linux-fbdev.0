@@ -1,44 +1,63 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sat, 12 Mar 2011 21:22:57 +0000
-Subject: [PATCH 2/4] viafb: remove unused data_mode and device_type
-Message-Id: <1299964979-3391-3-git-send-email-FlorianSchandinat@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 31 Mar 2011 10:11:06 +0000
+Subject: [PATCH 9/9] OMAP: DSS2: VENC: Add missing start/stop_device calls
+Message-Id: <1301566266-11187-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1299964979-3391-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1299964979-3391-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <1301566266-11187-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1301566266-11187-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This patch is a little cleanup for the chip_info structures.
+VENC code was missing omap_dss_start/stop_device calls. This didn't
+cause any problems as VENC could not be compiled as a module, but
+nevertheless it's better to add the calls.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/via/chip.h |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+ drivers/video/omap2/dss/venc.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/via/chip.h b/drivers/video/via/chip.h
-index a2f6200..3e8aacd 100644
---- a/drivers/video/via/chip.h
-+++ b/drivers/video/via/chip.h
-@@ -110,16 +110,13 @@
- struct tmds_chip_information {
- 	int tmds_chip_name;
- 	int tmds_chip_slave_addr;
--	int data_mode;
- 	int output_interface;
- 	int i2c_port;
--	int device_type;
- };
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index fe18800..b845c56 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -476,6 +476,12 @@ static int venc_panel_enable(struct omap_dss_device *dssdev)
  
- struct lvds_chip_information {
- 	int lvds_chip_name;
- 	int lvds_chip_slave_addr;
--	int data_mode;
- 	int output_interface;
- 	int i2c_port;
- };
+ 	mutex_lock(&venc.venc_lock);
+ 
++	r = omap_dss_start_device(dssdev);
++	if (r) {
++		DSSERR("failed to start device\n");
++		goto err0;
++	}
++
+ 	if (dssdev->state != OMAP_DSS_DISPLAY_DISABLED) {
+ 		r = -EINVAL;
+ 		goto err1;
+@@ -487,7 +493,11 @@ static int venc_panel_enable(struct omap_dss_device *dssdev)
+ 
+ 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
+ 
++	mutex_unlock(&venc.venc_lock);
++	return 0;
+ err1:
++	omap_dss_stop_device(dssdev);
++err0:
+ 	mutex_unlock(&venc.venc_lock);
+ 
+ 	return r;
+@@ -511,6 +521,8 @@ static void venc_panel_disable(struct omap_dss_device *dssdev)
+ 	venc_power_off(dssdev);
+ 
+ 	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
++
++	omap_dss_stop_device(dssdev);
+ end:
+ 	mutex_unlock(&venc.venc_lock);
+ }
 -- 
-1.6.3.2
+1.7.1
 

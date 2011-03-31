@@ -1,75 +1,128 @@
-From: Heiko Schocher <hs@denx.de>
-Date: Tue, 22 Mar 2011 08:27:31 +0000
-Subject: [PATCH v6 5/6] powerpc, video: add SM501 support for charon board.
-Message-Id: <1300782452-528-6-git-send-email-hs@denx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 31 Mar 2011 10:11:04 +0000
+Subject: [PATCH 7/9] OMAP: DSS2: OMAPFB: Handle errors when initializing panel
+Message-Id: <1301566266-11187-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291451028-22532-1-git-send-email-hs@denx.de>
- <1300782452-528-1-git-send-email-hs@denx.de>
-In-Reply-To: <1300782452-528-1-git-send-email-hs@denx.de>
+References: <1301566266-11187-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1301566266-11187-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Heiko Schocher <hs@denx.de>, Wolfram Sang <w.sang@pengutronix.de>, Grant Likely <grant.likely@secretlab.ca>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org, Ben Dooks <ben@simtec.co.uk>, Vincent Sanders <vince@simtec.co.uk>, Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>, Wolfgang Denk <wd@denx.de>, Paul Mundt <lethal@linux-sh.org>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-cc: Wolfram Sang <w.sang@pengutronix.de>
-cc: Grant Likely <grant.likely@secretlab.ca>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: linux-fbdev@vger.kernel.org
-cc: devicetree-discuss@ozlabs.org
-cc: Ben Dooks <ben@simtec.co.uk>
-cc: Vincent Sanders <vince@simtec.co.uk>
-cc: Samuel Ortiz <sameo@linux.intel.com>
-cc: linux-kernel@vger.kernel.org
-cc: Randy Dunlap <rdunlap@xenotime.net>
-cc: Wolfgang Denk <wd@denx.de>
-cc: Paul Mundt <lethal@linux-sh.org>
+Errors from the panel driver were ignored during panel initialization.
+Handle the errors and fail accordingly.
+
+Also move the display initialization to a separate function to make it
+cleaner.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
-- changes since v1:
-  - no board specific defconfig file for mpc52xx based boards as suggested
-    from Wolfram Sang
+ drivers/video/omap2/omapfb/omapfb-main.c |   80 ++++++++++++++++++++++--------
+ 1 files changed, 59 insertions(+), 21 deletions(-)
 
-- changes since v2:
-  add Ben Dooks, Vincent Sanders and Samuel Ortiz and lkml to cc, as
-  suggested from Paul Mundt.
-
-- changes since v3:
-  - rebased against v2.6.38-rc2
-- changes since v4:
-  - added Paul Mundt to cc (Sorry forgot this in series v4)
-
- arch/powerpc/boot/dts/charon.dts |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/charon.dts b/arch/powerpc/boot/dts/charon.dts
-index 9776889..0e00e50 100644
---- a/arch/powerpc/boot/dts/charon.dts
-+++ b/arch/powerpc/boot/dts/charon.dts
-@@ -186,6 +186,7 @@
- 		#address-cells = <2>;
- 		#size-cells = <1>;
- 		ranges = <	0 0 0xfc000000 0x02000000
-+				1 0 0xe0000000 0x04000000 // CS1 range, SM501
- 				3 0 0xe8000000 0x00080000>;
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 163fb8b..1b89e28 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -2193,6 +2193,61 @@ static int omapfb_parse_def_modes(struct omapfb2_device *fbdev)
+ 	return r;
+ }
  
- 		flash@0,0 {
-@@ -197,6 +198,15 @@
- 			#address-cells = <1>;
- 		};
- 
-+		display@1,0 {
-+			compatible = "smi,sm501";
-+			reg = <1 0x00000000 0x00800000
-+			       1 0x03e00000 0x00200000>;
-+			mode = "640x480-32@60";
-+			interrupts = <1 1 3>;
-+			little-endian;
-+		};
++static int omapfb_init_display(struct omapfb2_device *fbdev,
++		struct omap_dss_device *dssdev)
++{
++	struct omap_dss_driver *dssdrv = dssdev->driver;
++	int r;
 +
- 		mram0@3,0 {
- 			compatible = "mtd-ram";
- 			reg = <3 0x00000 0x80000>;
++	r = dssdrv->enable(dssdev);
++	if (r) {
++		dev_warn(fbdev->dev, "Failed to enable display '%s'\n",
++				dssdev->name);
++		return r;
++	}
++
++	if (dssdev->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE) {
++		u16 w, h;
++		if (dssdrv->enable_te) {
++			r = dssdrv->enable_te(dssdev, 1);
++			if (r) {
++				dev_err(fbdev->dev, "Failed to set TE\n");
++				return r;
++			}
++		}
++
++		if (dssdrv->set_update_mode) {
++			r = dssdrv->set_update_mode(dssdev,
++					OMAP_DSS_UPDATE_MANUAL);
++			if (r) {
++				dev_err(fbdev->dev,
++						"Failed to set update mode\n");
++				return r;
++			}
++		}
++
++		dssdrv->get_resolution(dssdev, &w, &h);
++		r = dssdrv->update(dssdev, 0, 0, w, h);
++		if (r) {
++			dev_err(fbdev->dev,
++					"Failed to update display\n");
++			return r;
++		}
++	} else {
++		if (dssdrv->set_update_mode) {
++			r = dssdrv->set_update_mode(dssdev,
++					OMAP_DSS_UPDATE_AUTO);
++			if (r) {
++				dev_err(fbdev->dev,
++						"Failed to set update mode\n");
++				return r;
++			}
++		}
++	}
++
++	return 0;
++}
++
+ static int omapfb_probe(struct platform_device *pdev)
+ {
+ 	struct omapfb2_device *fbdev = NULL;
+@@ -2292,30 +2347,13 @@ static int omapfb_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	if (def_display) {
+-		struct omap_dss_driver *dssdrv = def_display->driver;
+-
+-		r = def_display->driver->enable(def_display);
++		r = omapfb_init_display(fbdev, def_display);
+ 		if (r) {
+-			dev_warn(fbdev->dev, "Failed to enable display '%s'\n",
+-					def_display->name);
++			dev_err(fbdev->dev,
++					"failed to initialize default "
++					"display\n");
+ 			goto cleanup;
+ 		}
+-
+-		if (def_display->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE) {
+-			u16 w, h;
+-			if (dssdrv->enable_te)
+-				dssdrv->enable_te(def_display, 1);
+-			if (dssdrv->set_update_mode)
+-				dssdrv->set_update_mode(def_display,
+-						OMAP_DSS_UPDATE_MANUAL);
+-
+-			dssdrv->get_resolution(def_display, &w, &h);
+-			def_display->driver->update(def_display, 0, 0, w, h);
+-		} else {
+-			if (dssdrv->set_update_mode)
+-				dssdrv->set_update_mode(def_display,
+-						OMAP_DSS_UPDATE_AUTO);
+-		}
+ 	}
+ 
+ 	DBG("create sysfs for fbs\n");
 -- 
-1.7.4
+1.7.1
 

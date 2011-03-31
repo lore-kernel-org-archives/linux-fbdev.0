@@ -1,53 +1,63 @@
-From: Peter Jones <pjones@redhat.com>
-Date: Thu, 31 Mar 2011 14:33:50 +0000
-Subject: [PATCH 2/2] efifb: Add override for 11" Macbook Air 3,1
-Message-Id: <1301582030-10607-3-git-send-email-pjones@redhat.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 31 Mar 2011 10:11:01 +0000
+Subject: [PATCH 4/9] OMAP: DSS2: VENC: make 20ms venc bug-fix sleep optional
+Message-Id: <1301566266-11187-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1301566266-11187-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1301566266-11187-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Matthew Garrett <mjg@redhat.com>
+There's a 20ms sleep after VENC reset. It's unknown what bug this
+circumvents and on what platforms. Add a Kconfig option to disable the
+sleep.
 
-The 11" Macbook Air appears to claim that its stride is 1366, when it's
-actually 2048. Override it.
-
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
-Signed-off-by: Peter Jones <pjones@redhat.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/efifb.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ drivers/video/omap2/dss/Kconfig |   12 ++++++++++++
+ drivers/video/omap2/dss/venc.c  |    3 +++
+ 2 files changed, 15 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
-index 2359b64..4eb38db 100644
---- a/drivers/video/efifb.c
-+++ b/drivers/video/efifb.c
-@@ -53,6 +53,7 @@ enum {
- 	M_MB_7_1,	/* MacBook, 7th rev. */
- 	M_MB_SR,	/* MacBook, 2nd gen, (Santa Rosa) */
- 	M_MBA,		/* MacBook Air */
-+	M_MBA_3,	/* Macbook Air, 3rd rev */
- 	M_MBP,		/* MacBook Pro */
- 	M_MBP_2,	/* MacBook Pro 2nd gen */
- 	M_MBP_2_2,	/* MacBook Pro 2,2nd gen */
-@@ -97,6 +98,8 @@ static struct efifb_dmi_info {
- 	[M_MB_6_1] = { "macbook61", 0x80010000, 2048 * 4, 1280, 800, OVERRIDE_NONE },
- 	[M_MB_7_1] = { "macbook71", 0x80010000, 2048 * 4, 1280, 800, OVERRIDE_NONE },
- 	[M_MBA] = { "mba", 0x80000000, 2048 * 4, 1280, 800, OVERRIDE_NONE },
-+	/* 11" Macbook Air 3,1 passes the wrong stride */
-+	[M_MBA_3] = { "mba3", 0, 2048 * 4, 0, 0, OVERRIDE_STRIDE },
- 	[M_MBP] = { "mbp", 0x80010000, 1472 * 4, 1440, 900, OVERRIDE_NONE },
- 	[M_MBP_2] = { "mbp2", 0, 0, 0, 0, OVERRIDE_NONE }, /* placeholder */
- 	[M_MBP_2_2] = { "mbp22", 0x80010000, 1472 * 4, 1440, 900, OVERRIDE_NONE },
-@@ -147,6 +150,7 @@ static const struct dmi_system_id dmi_system_table[] __initconst = {
- 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBook6,1", M_MB_6_1),
- 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBook7,1", M_MB_7_1),
- 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBookAir1,1", M_MBA),
-+	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBookAir3,1", M_MBA_3),
- 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "MacBookPro1,1", M_MBP),
- 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "MacBookPro2,1", M_MBP_2),
- 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "MacBookPro2,2", M_MBP_2_2),
+diff --git a/drivers/video/omap2/dss/Kconfig b/drivers/video/omap2/dss/Kconfig
+index 458cfe1..5b45c0c 100644
+--- a/drivers/video/omap2/dss/Kconfig
++++ b/drivers/video/omap2/dss/Kconfig
+@@ -136,4 +136,16 @@ config OMAP2_DSS_SLEEP_BEFORE_RESET
+ 	  However, 50ms is quite long time to sleep, and with some
+ 	  configurations the SYNC_LOST may never happen, so the sleep can
+ 	  be disabled here.
++
++config OMAP2_DSS_SLEEP_AFTER_VENC_RESET
++	bool "Sleep 20ms after VENC reset"
++	default y
++	help
++	  There is a 20ms sleep after VENC reset which seemed to fix the
++	  reset. The reason for the bug is unclear, and it's also unclear
++	  on what platforms this happens.
++
++	  This option enables the sleep, and is enabled by default. You can
++	  disable the sleep if it doesn't cause problems on your platform.
++
+ endif
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 8e35a5b..8c7af90 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -373,8 +373,11 @@ static void venc_reset(void)
+ 		}
+ 	}
+ 
++#ifdef CONFIG_OMAP2_DSS_SLEEP_AFTER_VENC_RESET
+ 	/* the magical sleep that makes things work */
++	/* XXX more info? What bug this circumvents? */
+ 	msleep(20);
++#endif
+ }
+ 
+ static void venc_enable_clocks(int enable)
 -- 
-1.7.4
+1.7.1
 

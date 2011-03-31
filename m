@@ -1,85 +1,53 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Mon, 21 Mar 2011 22:46:39 +0000
-Subject: [PATCH 2/2] viafb: initialize margins correct
-Message-Id: <1300748487-9883-3-git-send-email-FlorianSchandinat@gmx.de>
+From: Peter Jones <pjones@redhat.com>
+Date: Thu, 31 Mar 2011 14:33:50 +0000
+Subject: [PATCH 2/2] efifb: Add override for 11" Macbook Air 3,1
+Message-Id: <1301582030-10607-3-git-send-email-pjones@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1300748487-9883-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1300748487-9883-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-This patch initializes the margins for the initial mode correct.
-This is required to get the desired initial refresh rate. Also do
-more verbose sanity checking to prevent misbehavior.
+From: Matthew Garrett <mjg@redhat.com>
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+The 11" Macbook Air appears to claim that its stride is 1366, when it's
+actually 2048. Override it.
+
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
+Signed-off-by: Peter Jones <pjones@redhat.com>
 ---
- drivers/video/via/viafbdev.c |   31 +++++++++++--------------------
- 1 files changed, 11 insertions(+), 20 deletions(-)
+ drivers/video/efifb.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index fd6a15f..9d9bb9b 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -1806,14 +1806,9 @@ int __devinit via_fb_pci_probe(struct viafb_dev *vdev)
- 	default_var.xres_virtual = default_xres;
- 	default_var.yres_virtual = default_yres;
- 	default_var.bits_per_pixel = viafb_bpp;
--	default_var.pixclock -	    viafb_get_pixclock(default_xres, default_yres, viafb_refresh);
--	default_var.left_margin = (default_xres >> 3) & 0xf8;
--	default_var.right_margin = 32;
--	default_var.upper_margin = 16;
--	default_var.lower_margin = 4;
--	default_var.hsync_len = default_var.left_margin;
--	default_var.vsync_len = 4;
-+	viafb_fill_var_timing_info(&default_var, viafb_get_refresh(
-+		default_var.xres, default_var.yres, viafb_refresh),
-+		viafb_get_mode(default_var.xres, default_var.yres));
- 	viafb_setup_fixinfo(&viafbinfo->fix, viaparinfo);
- 	viafbinfo->var = default_var;
- 
-@@ -1852,15 +1847,9 @@ int __devinit via_fb_pci_probe(struct viafb_dev *vdev)
- 		default_var.xres_virtual = viafb_second_virtual_xres;
- 		default_var.yres_virtual = viafb_second_virtual_yres;
- 		default_var.bits_per_pixel = viafb_bpp1;
--		default_var.pixclock -		    viafb_get_pixclock(viafb_second_xres, viafb_second_yres,
--		    viafb_refresh1);
--		default_var.left_margin = (viafb_second_xres >> 3) & 0xf8;
--		default_var.right_margin = 32;
--		default_var.upper_margin = 16;
--		default_var.lower_margin = 4;
--		default_var.hsync_len = default_var.left_margin;
--		default_var.vsync_len = 4;
-+		viafb_fill_var_timing_info(&default_var, viafb_get_refresh(
-+			default_var.xres, default_var.yres, viafb_refresh1),
-+			viafb_get_mode(default_var.xres, default_var.yres));
- 
- 		viafb_setup_fixinfo(&viafbinfo1->fix, viaparinfo1);
- 		viafb_check_var(&default_var, viafbinfo1);
-@@ -2015,15 +2004,17 @@ static int __init viafb_setup(char *options)
-  */
- int __init viafb_init(void)
- {
--	u32 dummy;
-+	u32 dummy_x, dummy_y;
- #ifndef MODULE
- 	char *option = NULL;
- 	if (fb_get_options("viafb", &option))
- 		return -ENODEV;
- 	viafb_setup(option);
- #endif
--	if (parse_mode(viafb_mode, &dummy, &dummy)
--		|| parse_mode(viafb_mode1, &dummy, &dummy)
-+	if (parse_mode(viafb_mode, &dummy_x, &dummy_y)
-+		|| !viafb_get_mode(dummy_x, dummy_y)
-+		|| parse_mode(viafb_mode1, &dummy_x, &dummy_y)
-+		|| !viafb_get_mode(dummy_x, dummy_y)
- 		|| viafb_bpp < 0 || viafb_bpp > 32
- 		|| viafb_bpp1 < 0 || viafb_bpp1 > 32
- 		|| parse_active_dev())
+diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
+index 2359b64..4eb38db 100644
+--- a/drivers/video/efifb.c
++++ b/drivers/video/efifb.c
+@@ -53,6 +53,7 @@ enum {
+ 	M_MB_7_1,	/* MacBook, 7th rev. */
+ 	M_MB_SR,	/* MacBook, 2nd gen, (Santa Rosa) */
+ 	M_MBA,		/* MacBook Air */
++	M_MBA_3,	/* Macbook Air, 3rd rev */
+ 	M_MBP,		/* MacBook Pro */
+ 	M_MBP_2,	/* MacBook Pro 2nd gen */
+ 	M_MBP_2_2,	/* MacBook Pro 2,2nd gen */
+@@ -97,6 +98,8 @@ static struct efifb_dmi_info {
+ 	[M_MB_6_1] = { "macbook61", 0x80010000, 2048 * 4, 1280, 800, OVERRIDE_NONE },
+ 	[M_MB_7_1] = { "macbook71", 0x80010000, 2048 * 4, 1280, 800, OVERRIDE_NONE },
+ 	[M_MBA] = { "mba", 0x80000000, 2048 * 4, 1280, 800, OVERRIDE_NONE },
++	/* 11" Macbook Air 3,1 passes the wrong stride */
++	[M_MBA_3] = { "mba3", 0, 2048 * 4, 0, 0, OVERRIDE_STRIDE },
+ 	[M_MBP] = { "mbp", 0x80010000, 1472 * 4, 1440, 900, OVERRIDE_NONE },
+ 	[M_MBP_2] = { "mbp2", 0, 0, 0, 0, OVERRIDE_NONE }, /* placeholder */
+ 	[M_MBP_2_2] = { "mbp22", 0x80010000, 1472 * 4, 1440, 900, OVERRIDE_NONE },
+@@ -147,6 +150,7 @@ static const struct dmi_system_id dmi_system_table[] __initconst = {
+ 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBook6,1", M_MB_6_1),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBook7,1", M_MB_7_1),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBookAir1,1", M_MBA),
++	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBookAir3,1", M_MBA_3),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "MacBookPro1,1", M_MBP),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "MacBookPro2,1", M_MBP_2),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "MacBookPro2,2", M_MBP_2_2),
 -- 
-1.6.3.2
+1.7.4
 

@@ -1,88 +1,99 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 19 Apr 2011 09:22:19 +0000
-Subject: [PATCH 16/19] OMAP: DSS2: Taal: Add sysfs file for ESD interval
-Message-Id: <1303204942-25450-17-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 01 Apr 2011 10:00:29 +0000
+Subject: [PATCH 4/5] OMAP: DSS2: Add omap_dss_register_driver_probe()
+Message-Id: <1301652030-32223-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1301652030-32223-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1301652030-32223-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Implement sysfs support to configure the ESD interval.
+Implement omap_dss_register_driver_probe() function, which is similar to
+platform_driver_probe(). omap_dss_register_driver_probe will add the
+driver and probe devices in one go, thus enabling us to use __init for
+panel probe functions.
+
+Also, if no devices are found in omap_dss_register_driver_probe(), the
+function will return -ENODEV, which causes the panel driver module to be
+unloaded.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/displays/panel-taal.c |   42 +++++++++++++++++++++++++++++
- 1 files changed, 42 insertions(+), 0 deletions(-)
+ arch/arm/plat-omap/include/plat/display.h |    2 +
+ drivers/video/omap2/dss/core.c            |   44 +++++++++++++++++++++++++++++
+ 2 files changed, 46 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 2787a51..3192dd7 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -635,18 +635,60 @@ static ssize_t show_cabc_available_modes(struct device *dev,
- 	return len < PAGE_SIZE ? len : PAGE_SIZE - 1;
- }
+diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
+index e239a0d..226a78f 100644
+--- a/arch/arm/plat-omap/include/plat/display.h
++++ b/arch/arm/plat-omap/include/plat/display.h
+@@ -517,6 +517,8 @@ struct omap_dss_driver {
+ };
  
-+static ssize_t taal_store_esd_interval(struct device *dev,
-+		struct device_attribute *attr,
-+		const char *buf, size_t count)
+ int omap_dss_register_driver(struct omap_dss_driver *);
++int omap_dss_register_driver_probe(struct omap_dss_driver *,
++		int (*probe)(struct omap_dss_device *));
+ void omap_dss_unregister_driver(struct omap_dss_driver *);
+ 
+ void omap_dss_get_device(struct omap_dss_device *dssdev);
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 3584e3e..b3eba14 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -447,6 +447,50 @@ void omap_dss_unregister_driver(struct omap_dss_driver *dssdriver)
+ }
+ EXPORT_SYMBOL(omap_dss_unregister_driver);
+ 
++static int omap_dss_driver_probe_fail(struct device *dev)
 +{
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++	return -ENXIO;
++}
 +
-+	unsigned long t;
++static int find_any_dev(struct device *dev, void *data)
++{
++	struct omap_dss_driver *dssdrv = data;
++	return dev->driver = &dssdrv->driver;
++}
++
++int omap_dss_register_driver_probe(struct omap_dss_driver *dssdriver,
++		int (*probe)(struct omap_dss_device *))
++{
 +	int r;
 +
-+	r = strict_strtoul(buf, 10, &t);
++	/* make sure driver won't have bind/unbind attributes */
++	dssdriver->driver.suppress_bind_attrs = true;
++
++	/* temporary section violation during probe() */
++	dssdriver->probe = probe;
++	r = omap_dss_register_driver(dssdriver);
++
++	/* fixup that section violation */
++
++	dssdriver->probe = NULL;
++	dssdriver->driver.probe = omap_dss_driver_probe_fail;
++
 +	if (r)
 +		return r;
 +
-+	mutex_lock(&td->lock);
-+	taal_cancel_esd_work(dssdev);
-+	td->esd_interval = t;
-+	if (td->enabled)
-+		taal_queue_esd_work(dssdev);
-+	mutex_unlock(&td->lock);
++	/* find any device using this driver */
++	r = bus_for_each_dev(&dss_bus_type, NULL, dssdriver, find_any_dev);
 +
-+	return count;
++	if (r = 0) {
++		/* no devices for this driver */
++		omap_dss_unregister_driver(dssdriver);
++		return -ENODEV;
++	}
++
++	return 0;
 +}
++EXPORT_SYMBOL(omap_dss_register_driver_probe);
 +
-+static ssize_t taal_show_esd_interval(struct device *dev,
-+		struct device_attribute *attr,
-+		char *buf)
-+{
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
-+	unsigned t;
-+
-+	mutex_lock(&td->lock);
-+	t = td->esd_interval;
-+	mutex_unlock(&td->lock);
-+
-+	return snprintf(buf, PAGE_SIZE, "%u\n", t);
-+}
-+
- static DEVICE_ATTR(num_dsi_errors, S_IRUGO, taal_num_errors_show, NULL);
- static DEVICE_ATTR(hw_revision, S_IRUGO, taal_hw_revision_show, NULL);
- static DEVICE_ATTR(cabc_mode, S_IRUGO | S_IWUSR,
- 		show_cabc_mode, store_cabc_mode);
- static DEVICE_ATTR(cabc_available_modes, S_IRUGO,
- 		show_cabc_available_modes, NULL);
-+static DEVICE_ATTR(esd_interval, S_IRUGO | S_IWUSR,
-+		taal_show_esd_interval, taal_store_esd_interval);
- 
- static struct attribute *taal_attrs[] = {
- 	&dev_attr_num_dsi_errors.attr,
- 	&dev_attr_hw_revision.attr,
- 	&dev_attr_cabc_mode.attr,
- 	&dev_attr_cabc_available_modes.attr,
-+	&dev_attr_esd_interval.attr,
- 	NULL,
- };
- 
+ /* DEVICE */
+ static void reset_device(struct device *dev, int check)
+ {
 -- 
 1.7.1
 

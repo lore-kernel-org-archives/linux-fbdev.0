@@ -1,24 +1,118 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Mon, 11 Apr 2011 16:40:13 +0000
-Subject: Re: [PATCH] video: s3c-fb: make runtime pm functions static
-Message-Id: <20110411164013.GC13545@linux-sh.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 01 Apr 2011 10:00:30 +0000
+Subject: [PATCH 5/5] OMAP: DSS2: use omap_dss_register_driver_probe() in selected drivers
+Message-Id: <1301652030-32223-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1302506578-21676-1-git-send-email-jg1.han@samsung.com>
-In-Reply-To: <1302506578-21676-1-git-send-email-jg1.han@samsung.com>
+References: <1301652030-32223-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1301652030-32223-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Mon, Apr 11, 2011 at 04:22:58PM +0900, Jingoo Han wrote:
-> This patch makes runtime pm functions static.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Use omap_dss_register_driver_probe() in plain dss panel drivers, which
+allows us to use __init for the driver probe functions.
 
-On Mon, Apr 11, 2011 at 04:25:37PM +0900, Jingoo Han wrote:
-> The spinlock is added to interrupt routine to ensure that the driver
-> is protected against multiple accesses.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/displays/panel-generic-dpi.c   |    6 +++---
+ .../video/omap2/displays/panel-sharp-ls037v7dw01.c |    6 +++---
+ drivers/video/omap2/displays/panel-taal.c          |    5 ++---
+ 3 files changed, 8 insertions(+), 9 deletions(-)
 
-Both applied, thanks.
+diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
+index e359f93..010ea4e 100644
+--- a/drivers/video/omap2/displays/panel-generic-dpi.c
++++ b/drivers/video/omap2/displays/panel-generic-dpi.c
+@@ -246,7 +246,7 @@ static void generic_dpi_panel_power_off(struct omap_dss_device *dssdev)
+ 	omapdss_dpi_display_disable(dssdev);
+ }
+ 
+-static int generic_dpi_panel_probe(struct omap_dss_device *dssdev)
++static int __init generic_dpi_panel_probe(struct omap_dss_device *dssdev)
+ {
+ 	struct panel_generic_dpi_data *panel_data = get_panel_data(dssdev);
+ 	struct panel_config *panel_config = NULL;
+@@ -357,7 +357,6 @@ static int generic_dpi_panel_check_timings(struct omap_dss_device *dssdev,
+ }
+ 
+ static struct omap_dss_driver dpi_driver = {
+-	.probe		= generic_dpi_panel_probe,
+ 	.remove		= __exit_p(generic_dpi_panel_remove),
+ 
+ 	.enable		= generic_dpi_panel_enable,
+@@ -377,7 +376,8 @@ static struct omap_dss_driver dpi_driver = {
+ 
+ static int __init generic_dpi_panel_drv_init(void)
+ {
+-	return omap_dss_register_driver(&dpi_driver);
++	return omap_dss_register_driver_probe(&dpi_driver,
++			generic_dpi_panel_probe);
+ }
+ 
+ static void __exit generic_dpi_panel_drv_exit(void)
+diff --git a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
+index c772747..2cf3c9f 100644
+--- a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
++++ b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
+@@ -79,7 +79,7 @@ static const struct backlight_ops sharp_ls_bl_ops = {
+ 
+ 
+ 
+-static int sharp_ls_panel_probe(struct omap_dss_device *dssdev)
++static int __init sharp_ls_panel_probe(struct omap_dss_device *dssdev)
+ {
+ 	struct backlight_properties props;
+ 	struct backlight_device *bl;
+@@ -204,7 +204,6 @@ static int sharp_ls_panel_resume(struct omap_dss_device *dssdev)
+ }
+ 
+ static struct omap_dss_driver sharp_ls_driver = {
+-	.probe		= sharp_ls_panel_probe,
+ 	.remove		= __exit_p(sharp_ls_panel_remove),
+ 
+ 	.enable		= sharp_ls_panel_enable,
+@@ -220,7 +219,8 @@ static struct omap_dss_driver sharp_ls_driver = {
+ 
+ static int __init sharp_ls_panel_drv_init(void)
+ {
+-	return omap_dss_register_driver(&sharp_ls_driver);
++	return omap_dss_register_driver_probe(&sharp_ls_driver,
++			sharp_ls_panel_probe);
+ }
+ 
+ static void __exit sharp_ls_panel_drv_exit(void)
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 490998f..d62821e 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -661,7 +661,7 @@ static void taal_hw_reset(struct omap_dss_device *dssdev)
+ 		msleep(td->panel_config->sleep.hw_reset);
+ }
+ 
+-static int taal_probe(struct omap_dss_device *dssdev)
++static int __init taal_probe(struct omap_dss_device *dssdev)
+ {
+ 	struct backlight_properties props;
+ 	struct taal_data *td;
+@@ -1556,7 +1556,6 @@ static enum omap_dss_update_mode taal_get_update_mode(
+ }
+ 
+ static struct omap_dss_driver taal_driver = {
+-	.probe		= taal_probe,
+ 	.remove		= __exit_p(taal_remove),
+ 
+ 	.enable		= taal_enable,
+@@ -1593,7 +1592,7 @@ static struct omap_dss_driver taal_driver = {
+ 
+ static int __init taal_init(void)
+ {
+-	omap_dss_register_driver(&taal_driver);
++	omap_dss_register_driver_probe(&taal_driver, taal_probe);
+ 
+ 	return 0;
+ }
+-- 
+1.7.1
+

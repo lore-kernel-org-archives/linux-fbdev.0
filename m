@@ -1,116 +1,71 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 19 Apr 2011 09:22:13 +0000
-Subject: [PATCH 10/19] OMAP: DSS2: DSI: wait for TXCLKESC domain to come out of reset
-Message-Id: <1303204942-25450-11-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 01 Apr 2011 10:00:26 +0000
+Subject: [PATCH 1/5] OMAP: DSS2: make omap_dss_(un)register_device static
+Message-Id: <1301652030-32223-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1301652030-32223-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1301652030-32223-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add dsi_cio_wait_tx_clk_esc_reset() function which waits for the
-TXCLKESC domains to come out of reset.
-
-Things have worked fine without this, but better be safe than sorry.
+omap_dss_register_device and omap_dss_unregister_device can only be
+called from core.c, so we can make it static.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dsi.c |   65 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 65 insertions(+), 0 deletions(-)
+ arch/arm/plat-omap/include/plat/display.h |    3 ---
+ drivers/video/omap2/dss/core.c            |    7 +++++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 9f450af..8d85635 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -1969,6 +1969,65 @@ static void dsi_cio_disable_lane_override(void)
- 	REG_FLD_MOD(DSI_DSIPHY_CFG10, 0, 22, 17); /* REGLPTXSCPDAT4TO0DXDY */
+diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
+index 5e04ddc..e239a0d 100644
+--- a/arch/arm/plat-omap/include/plat/display.h
++++ b/arch/arm/plat-omap/include/plat/display.h
+@@ -519,9 +519,6 @@ struct omap_dss_driver {
+ int omap_dss_register_driver(struct omap_dss_driver *);
+ void omap_dss_unregister_driver(struct omap_dss_driver *);
+ 
+-int omap_dss_register_device(struct omap_dss_device *);
+-void omap_dss_unregister_device(struct omap_dss_device *);
+-
+ void omap_dss_get_device(struct omap_dss_device *dssdev);
+ void omap_dss_put_device(struct omap_dss_device *dssdev);
+ #define for_each_dss_dev(d) while ((d = omap_dss_get_next_device(d)) != NULL)
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 1aa2ed1..9bcb0b8 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -54,6 +54,9 @@ unsigned int dss_debug;
+ module_param_named(debug, dss_debug, bool, 0644);
+ #endif
+ 
++static int omap_dss_register_device(struct omap_dss_device *);
++static void omap_dss_unregister_device(struct omap_dss_device *);
++
+ /* REGULATORS */
+ 
+ struct regulator *dss_get_vdds_dsi(void)
+@@ -480,7 +483,7 @@ static void omap_dss_dev_release(struct device *dev)
+ 	reset_device(dev, 0);
  }
  
-+static int dsi_cio_wait_tx_clk_esc_reset(struct omap_dss_device *dssdev)
-+{
-+	int t;
-+	int bits[3];
-+	bool in_use[3];
-+
-+	if (dss_has_feature(FEAT_DSI_REVERSE_TXCLKESC)) {
-+		bits[0] = 28;
-+		bits[1] = 27;
-+		bits[2] = 26;
-+	} else {
-+		bits[0] = 24;
-+		bits[1] = 25;
-+		bits[2] = 26;
-+	}
-+
-+	in_use[0] = false;
-+	in_use[1] = false;
-+	in_use[2] = false;
-+
-+	if (dssdev->phy.dsi.clk_lane != 0)
-+		in_use[dssdev->phy.dsi.clk_lane - 1] = true;
-+	if (dssdev->phy.dsi.data1_lane != 0)
-+		in_use[dssdev->phy.dsi.data1_lane - 1] = true;
-+	if (dssdev->phy.dsi.data2_lane != 0)
-+		in_use[dssdev->phy.dsi.data2_lane - 1] = true;
-+
-+	t = 100000;
-+	while (true) {
-+		u32 l;
-+		int i;
-+		int ok;
-+
-+		l = dsi_read_reg(DSI_DSIPHY_CFG5);
-+
-+		ok = 0;
-+		for (i = 0; i < 3; ++i) {
-+			if (!in_use[i] || (l & (1 << bits[i])))
-+				ok++;
-+		}
-+
-+		if (ok = 3)
-+			break;
-+
-+		if (--t = 0) {
-+			for (i = 0; i < 3; ++i) {
-+				if (!in_use[i] || (l & (1 << bits[i])))
-+					continue;
-+
-+				DSSERR("CIO TXCLKESC%d domain not coming " \
-+						"out of reset\n", i);
-+			}
-+			return -EIO;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- static int dsi_cio_init(struct omap_dss_device *dssdev)
+-int omap_dss_register_device(struct omap_dss_device *dssdev)
++static int omap_dss_register_device(struct omap_dss_device *dssdev)
  {
- 	int r;
-@@ -2028,6 +2087,10 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
- 	dsi_if_enable(false);
- 	REG_FLD_MOD(DSI_CLK_CTRL, 1, 20, 20); /* LP_CLK_ENABLE */
+ 	static int dev_num;
  
-+	r = dsi_cio_wait_tx_clk_esc_reset(dssdev);
-+	if (r)
-+		goto err_tx_clk_esc_rst;
-+
- 	if (dsi.ulps_enabled) {
- 		/* Keep Mark-1 state for 1ms (as per DSI spec) */
- 		ktime_t wait = ns_to_ktime(1000 * 1000);
-@@ -2050,6 +2113,8 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
+@@ -494,7 +497,7 @@ int omap_dss_register_device(struct omap_dss_device *dssdev)
+ 	return device_register(&dssdev->dev);
+ }
  
- 	return 0;
- 
-+err_tx_clk_esc_rst:
-+	REG_FLD_MOD(DSI_CLK_CTRL, 0, 20, 20); /* LP_CLK_ENABLE */
- err_cio_pwr_dom:
- 	dsi_cio_power(DSI_COMPLEXIO_POWER_OFF);
- err_cio_pwr:
+-void omap_dss_unregister_device(struct omap_dss_device *dssdev)
++static void omap_dss_unregister_device(struct omap_dss_device *dssdev)
+ {
+ 	device_unregister(&dssdev->dev);
+ }
 -- 
 1.7.1
 

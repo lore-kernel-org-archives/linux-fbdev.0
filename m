@@ -1,120 +1,42 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 19 Apr 2011 09:22:18 +0000
-Subject: [PATCH 15/19] OMAP: DSS2: Taal: Clean up ESD queueing
-Message-Id: <1303204942-25450-16-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 01 Apr 2011 10:00:25 +0000
+Subject: [PATCH 0/5] OMAP: DSS: add __inits and __exits
+Message-Id: <1301652030-32223-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Separate the code which queues/cancels ESD work into their own
-functions.
+These patches add __inits and __exits to multiple functions in omapdss and
+panel drivers. Also omap_dss_register_driver_probe() is added which allows us
+to define panel driver probe functions as __init.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/displays/panel-taal.c |   36 ++++++++++++++++++----------
- 1 files changed, 23 insertions(+), 13 deletions(-)
+This moved almost 7kB from .text section to .init section on my configuration.
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index cdb28a8..2787a51 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -420,6 +420,22 @@ static int taal_set_update_window(struct taal_data *td,
- 	return r;
- }
- 
-+static void taal_queue_esd_work(struct omap_dss_device *dssdev)
-+{
-+	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
-+
-+	if (td->esd_interval > 0)
-+		queue_delayed_work(td->esd_wq, &td->esd_work,
-+				msecs_to_jiffies(td->esd_interval));
-+}
-+
-+static void taal_cancel_esd_work(struct omap_dss_device *dssdev)
-+{
-+	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
-+
-+	cancel_delayed_work(&td->esd_work);
-+}
-+
- static int taal_bl_update_status(struct backlight_device *dev)
- {
- 	struct omap_dss_device *dssdev = dev_get_drvdata(&dev->dev);
-@@ -841,7 +857,7 @@ static void __exit taal_remove(struct omap_dss_device *dssdev)
- 	taal_bl_update_status(bldev);
- 	backlight_device_unregister(bldev);
- 
--	cancel_delayed_work(&td->esd_work);
-+	taal_cancel_esd_work(dssdev);
- 	destroy_workqueue(td->esd_wq);
- 
- 	/* reset, to be sure that the panel is in a valid state */
-@@ -983,9 +999,7 @@ static int taal_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err;
- 
--	if (td->esd_interval > 0)
--		queue_delayed_work(td->esd_wq, &td->esd_work,
--				msecs_to_jiffies(td->esd_interval));
-+	taal_queue_esd_work(dssdev);
- 
- 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
- 
-@@ -1006,7 +1020,7 @@ static void taal_disable(struct omap_dss_device *dssdev)
- 
- 	mutex_lock(&td->lock);
- 
--	cancel_delayed_work(&td->esd_work);
-+	taal_cancel_esd_work(dssdev);
- 
- 	dsi_bus_lock();
- 
-@@ -1034,7 +1048,7 @@ static int taal_suspend(struct omap_dss_device *dssdev)
- 		goto err;
- 	}
- 
--	cancel_delayed_work(&td->esd_work);
-+	taal_cancel_esd_work(dssdev);
- 
- 	dsi_bus_lock();
- 
-@@ -1076,9 +1090,7 @@ static int taal_resume(struct omap_dss_device *dssdev)
- 		dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
- 	} else {
- 		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
--		if (td->esd_interval > 0)
--			queue_delayed_work(td->esd_wq, &td->esd_work,
--					msecs_to_jiffies(td->esd_interval));
-+		taal_queue_esd_work(dssdev);
- 	}
- 
- 	mutex_unlock(&td->lock);
-@@ -1521,8 +1533,7 @@ static void taal_esd_work(struct work_struct *work)
- 
- 	dsi_bus_unlock();
- 
--	queue_delayed_work(td->esd_wq, &td->esd_work,
--		       msecs_to_jiffies(td->esd_interval));
-+	taal_queue_esd_work(dssdev);
- 
- 	mutex_unlock(&td->lock);
- 	return;
-@@ -1535,8 +1546,7 @@ err:
- 
- 	dsi_bus_unlock();
- 
--	queue_delayed_work(td->esd_wq, &td->esd_work,
--		       msecs_to_jiffies(td->esd_interval));
-+	taal_queue_esd_work(dssdev);
- 
- 	mutex_unlock(&td->lock);
- }
--- 
-1.7.1
+Tomi Valkeinen (5):
+  OMAP: DSS2: make omap_dss_(un)register_device static
+  OMAP: DSS2: add __inits to omapdss driver
+  OMAP: DSS2: use __exit for selected panel drivers
+  OMAP: DSS2: Add omap_dss_register_driver_probe()
+  OMAP: DSS2: use omap_dss_register_driver_probe() in selected drivers
+
+ arch/arm/plat-omap/include/plat/display.h          |    5 +-
+ drivers/video/omap2/displays/panel-generic-dpi.c   |   10 ++--
+ .../video/omap2/displays/panel-sharp-ls037v7dw01.c |   10 ++--
+ drivers/video/omap2/displays/panel-taal.c          |    9 +--
+ drivers/video/omap2/dss/core.c                     |   64 +++++++++++++++++---
+ drivers/video/omap2/dss/dispc.c                    |    7 +-
+ drivers/video/omap2/dss/dpi.c                      |    2 +-
+ drivers/video/omap2/dss/dsi.c                      |    7 +-
+ drivers/video/omap2/dss/dss.c                      |    9 +--
+ drivers/video/omap2/dss/dss_features.c             |    2 +-
+ drivers/video/omap2/dss/hdmi.c                     |    8 +-
+ drivers/video/omap2/dss/manager.c                  |    2 +-
+ drivers/video/omap2/dss/overlay.c                  |    2 +-
+ drivers/video/omap2/dss/rfbi.c                     |    7 +-
+ drivers/video/omap2/dss/sdi.c                      |    2 +-
+ drivers/video/omap2/dss/venc.c                     |    7 +-
+ 16 files changed, 96 insertions(+), 57 deletions(-)
 

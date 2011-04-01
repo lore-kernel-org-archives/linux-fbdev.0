@@ -1,32 +1,76 @@
-From: Baruch Siach <baruch@tkos.co.il>
-Date: Thu, 07 Apr 2011 04:36:23 +0000
-Subject: Re: [PATCH] video: imx-fb: just depend on IMX_HAVE_PLATFORM_IMX_FB
-Message-Id: <20110407043623.GA3905@jasper.tkos.co.il>
+From: Julia Lawall <julia@diku.dk>
+Date: Fri, 01 Apr 2011 14:23:47 +0000
+Subject: [PATCH 6/6] drivers/video/bfin-lq035q1-fb.c: introduce missing kfree
+Message-Id: <1301667827-20056-6-git-send-email-julia@diku.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1302100144-17176-1-git-send-email-u.kleine-koenig@pengutronix.de>
-	<20110406163805.GA11820@linux-sh.org>
-	<20110406184022.GI13963@pengutronix.de>
-In-Reply-To: <20110406184022.GI13963@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Uwe,
+Error handling code following a kmalloc should free the allocated data.
 
-On Wed, Apr 06, 2011 at 08:40:22PM +0200, Uwe Kleine-K=F6nig wrote:
-> I currently collect imx patches for Sascha because he is busy doing
-> other stuff.
+The semantic match that finds the problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-Can you take the following one then? I need this to enable multiple NAND ch=
-ips=20
-on i.MX25.
+// <smpl>
+@r exists@
+local idexpression x;
+statement S;
+expression E;
+identifier f,f1,l;
+position p1,p2;
+expression *ptr != NULL;
+@@
 
-http://article.gmane.org/gmane.linux.ports.arm.kernel/110313
+x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
+...
+if (x = NULL) S
+<... when != x
+     when != if (...) { <+...x...+> }
+(
+x->f1 = E
+|
+ (x->f1 = NULL || ...)
+|
+ f(...,x->f1,...)
+)
+...>
+(
+ return \(0\|<+...x...+>\|ptr\);
+|
+ return@p2 ...;
+)
 
-baruch
+@script:python@
+p1 << r.p1;
+p2 << r.p2;
+@@
 
---=20
-                                                     ~. .~   Tk Open Systems
-=3D}------------------------------------------------ooO--U--Ooo------------=
-{   - baruch@tkos.co.il - tel: +972.2.679.5364, http://www.tkos.co.il -
+print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/video/bfin-lq035q1-fb.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
+index c8e1f04..23b6c4b 100644
+--- a/drivers/video/bfin-lq035q1-fb.c
++++ b/drivers/video/bfin-lq035q1-fb.c
+@@ -154,8 +154,10 @@ static int __devinit lq035q1_spidev_probe(struct spi_device *spi)
+ 
+ 	ret = lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_ON);
+ 	ret |= lq035q1_control(spi, LQ035_DRIVER_OUTPUT_CTL, ctl->mode);
+-	if (ret)
++	if (ret) {
++		kfree(ctl);
+ 		return ret;
++	}
+ 
+ 	spi_set_drvdata(spi, ctl);
+ 
+

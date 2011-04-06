@@ -1,75 +1,53 @@
-From: Tormod Volden <lists.tormod@gmail.com>
-Date: Sun, 03 Apr 2011 12:54:05 +0000
-Subject: [PATCH 2/2] savagefb: Set up I2C based on chip family instead of card id
-Message-Id: <1301835246-6520-2-git-send-email-lists.tormod@gmail.com>
+From: Peter Jones <pjones@redhat.com>
+Date: Wed, 06 Apr 2011 17:34:59 +0000
+Subject: [PATCH 2/2] efifb: Add override for 11" Macbook Air 3,1
+Message-Id: <1302111299-10561-2-git-send-email-pjones@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-From: Tormod Volden <debian.tormod@gmail.com>
+From: Matthew Garrett <mjg@redhat.com>
 
-In practice this means enabling I2C (for DDC2) on all prosavage cards,
-like the xorg ddx does. The savage4 and savage2000 families have only
-one member each, so there is no change for those.
+The 11" Macbook Air appears to claim that its stride is 1366, when it's
+actually 2048. Override it.
 
-Tested on TwisterK.
-
-Signed-off-by: Tormod Volden <debian.tormod@gmail.com>
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
+Signed-off-by: Peter Jones <pjones@redhat.com>
 ---
+ drivers/video/efifb.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-Since this seems to work fine in xorg, I do not expect any surprises.
-However, the framebuffer might now come up in higher resolution
-and refresh rate (as allowed by the EDID) than the old defaults.
-This might uncover broken EDIDs or other mode bugs.
-
-WRT my own testing, I can see that the EDID is read out successfully,
-but the external monitor goes black and complains with the chosen mode.
-(For the record, the same happened with the non-edid default mode.)
-This is because of other bugs in the mode calculations or the
-monitor itself I am testing on. With xorg the monitor comes up,
-because xorg picks a lower refresh rate by default.
-
-Tormod
-
- drivers/video/savage/savagefb-i2c.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/video/savage/savagefb-i2c.c b/drivers/video/savage/savagefb-i2c.c
-index 58c8a3c..5e7acda 100644
---- a/drivers/video/savage/savagefb-i2c.c
-+++ b/drivers/video/savage/savagefb-i2c.c
-@@ -170,9 +170,8 @@ void savagefb_create_i2c_busses(struct fb_info *info)
- 	struct savagefb_par *par = info->par;
- 	par->chan.par	= par;
- 
--	switch(info->fix.accel) {
--	case FB_ACCEL_PROSAVAGE_DDRK:
--	case FB_ACCEL_PROSAVAGE_PM:
-+	switch (par->chip) {
-+	case S3_PROSAVAGE:
- 		par->chan.reg         = CR_SERIAL2;
- 		par->chan.ioaddr      = par->mmio.vbase;
- 		par->chan.algo.setsda = prosavage_gpio_setsda;
-@@ -180,7 +179,7 @@ void savagefb_create_i2c_busses(struct fb_info *info)
- 		par->chan.algo.getsda = prosavage_gpio_getsda;
- 		par->chan.algo.getscl = prosavage_gpio_getscl;
- 		break;
--	case FB_ACCEL_SAVAGE4:
-+	case S3_SAVAGE4:
- 		par->chan.reg = CR_SERIAL1;
- 		if (par->pcidev->revision > 1 && !(VGArCR(0xa6, par) & 0x40))
- 			par->chan.reg = CR_SERIAL2;
-@@ -190,7 +189,7 @@ void savagefb_create_i2c_busses(struct fb_info *info)
- 		par->chan.algo.getsda = prosavage_gpio_getsda;
- 		par->chan.algo.getscl = prosavage_gpio_getscl;
- 		break;
--	case FB_ACCEL_SAVAGE2000:
-+	case S3_SAVAGE2000:
- 		par->chan.reg         = MM_SERIAL1;
- 		par->chan.ioaddr      = par->mmio.vbase;
- 		par->chan.algo.setsda = savage4_gpio_setsda;
+diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
+index 2359b64..4eb38db 100644
+--- a/drivers/video/efifb.c
++++ b/drivers/video/efifb.c
+@@ -53,6 +53,7 @@ enum {
+ 	M_MB_7_1,	/* MacBook, 7th rev. */
+ 	M_MB_SR,	/* MacBook, 2nd gen, (Santa Rosa) */
+ 	M_MBA,		/* MacBook Air */
++	M_MBA_3,	/* Macbook Air, 3rd rev */
+ 	M_MBP,		/* MacBook Pro */
+ 	M_MBP_2,	/* MacBook Pro 2nd gen */
+ 	M_MBP_2_2,	/* MacBook Pro 2,2nd gen */
+@@ -97,6 +98,8 @@ static struct efifb_dmi_info {
+ 	[M_MB_6_1] = { "macbook61", 0x80010000, 2048 * 4, 1280, 800, OVERRIDE_NONE },
+ 	[M_MB_7_1] = { "macbook71", 0x80010000, 2048 * 4, 1280, 800, OVERRIDE_NONE },
+ 	[M_MBA] = { "mba", 0x80000000, 2048 * 4, 1280, 800, OVERRIDE_NONE },
++	/* 11" Macbook Air 3,1 passes the wrong stride */
++	[M_MBA_3] = { "mba3", 0, 2048 * 4, 0, 0, OVERRIDE_STRIDE },
+ 	[M_MBP] = { "mbp", 0x80010000, 1472 * 4, 1440, 900, OVERRIDE_NONE },
+ 	[M_MBP_2] = { "mbp2", 0, 0, 0, 0, OVERRIDE_NONE }, /* placeholder */
+ 	[M_MBP_2_2] = { "mbp22", 0x80010000, 1472 * 4, 1440, 900, OVERRIDE_NONE },
+@@ -147,6 +150,7 @@ static const struct dmi_system_id dmi_system_table[] __initconst = {
+ 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBook6,1", M_MB_6_1),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBook7,1", M_MB_7_1),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBookAir1,1", M_MBA),
++	EFIFB_DMI_SYSTEM_ID("Apple Inc.", "MacBookAir3,1", M_MBA_3),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "MacBookPro1,1", M_MBP),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "MacBookPro2,1", M_MBP_2),
+ 	EFIFB_DMI_SYSTEM_ID("Apple Computer, Inc.", "MacBookPro2,2", M_MBP_2_2),
 -- 
-1.7.0.4
+1.7.4
 

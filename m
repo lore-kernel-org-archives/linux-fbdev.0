@@ -1,96 +1,37 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 19 Apr 2011 09:22:15 +0000
-Subject: [PATCH 12/19] OMAP: DSS2: DSI: Add DSI pad muxing support
-Message-Id: <1303204942-25450-13-git-send-email-tomi.valkeinen@ti.com>
+From: Tormod Volden <lists.tormod@gmail.com>
+Date: Sun, 10 Apr 2011 20:57:35 +0000
+Subject: [PATCH 2/2] savagefb: Enable LCD detection on mobile Twister
+Message-Id: <1302469055-3400-2-git-send-email-lists.tormod@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Add dsi_mux_pads function pointer to omap_dss_board_info, and use the
-function pointer in DSI code to configure the DSI pads either to normal
-DSI operation, or to pull down when in ULPS.
+From: Tormod Volden <debian.tormod@gmail.com>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Copy and paste from the Xorg DDX. Tested on TwisterK (Compaq Presario 700).
+
+Signed-off-by: Tormod Volden <debian.tormod@gmail.com>
 ---
- arch/arm/plat-omap/include/plat/display.h |    1 +
- drivers/video/omap2/dss/dsi.c             |   15 +++++++++++++++
- 2 files changed, 16 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
-index a65479c..bd0f08e 100644
---- a/arch/arm/plat-omap/include/plat/display.h
-+++ b/arch/arm/plat-omap/include/plat/display.h
-@@ -235,6 +235,7 @@ struct omap_dss_board_info {
- 	int num_devices;
- 	struct omap_dss_device **devices;
- 	struct omap_dss_device *default_device;
-+	void (*dsi_mux_pads)(bool enable);
- };
+ drivers/video/savage/savagefb_driver.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
+index 0be3f31..0c64d2e 100644
+--- a/drivers/video/savage/savagefb_driver.c
++++ b/drivers/video/savage/savagefb_driver.c
+@@ -1967,7 +1967,8 @@ static int savage_init_hw(struct savagefb_par *par)
+ 		}
+ 	}
  
- #if defined(CONFIG_OMAP2_DSS_MODULE) || defined(CONFIG_OMAP2_DSS)
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index d15014e..f1e14ca 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -244,6 +244,8 @@ static struct
- 	void __iomem	*base;
- 	int irq;
- 
-+	void (*dsi_mux_pads)(bool enable);
-+
- 	struct dsi_clock_info current_cinfo;
- 
- 	bool vdds_dsi_enabled;
-@@ -2035,6 +2037,9 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
- 
- 	DSSDBGF();
- 
-+	if (dsi.dsi_mux_pads)
-+		dsi.dsi_mux_pads(true);
-+
- 	dsi_enable_scp_clk();
- 
- 	/* A dummy read using the SCP interface to any DSIPHY register is
-@@ -2122,6 +2127,8 @@ err_cio_pwr:
- 		dsi_cio_disable_lane_override();
- err_scp_clk_dom:
- 	dsi_disable_scp_clk();
-+	if (dsi.dsi_mux_pads)
-+		dsi.dsi_mux_pads(false);
- 	return r;
- }
- 
-@@ -2129,6 +2136,8 @@ static void dsi_cio_uninit(void)
- {
- 	dsi_cio_power(DSI_COMPLEXIO_POWER_OFF);
- 	dsi_disable_scp_clk();
-+	if (dsi.dsi_mux_pads)
-+		dsi.dsi_mux_pads(false);
- }
- 
- static int _dsi_wait_reset(void)
-@@ -3993,10 +4002,16 @@ static void dsi_calc_clock_param_ranges(void)
- 
- static int dsi_init(struct platform_device *pdev)
- {
-+	struct omap_display_platform_data *dss_plat_data;
-+	struct omap_dss_board_info *board_info;
- 	u32 rev;
- 	int r, i;
- 	struct resource *dsi_mem;
- 
-+	dss_plat_data = pdev->dev.platform_data;
-+	board_info = dss_plat_data->board_data;
-+	dsi.dsi_mux_pads = board_info->dsi_mux_pads;
-+
- 	spin_lock_init(&dsi.irq_lock);
- 	spin_lock_init(&dsi.errors_lock);
- 	dsi.errors = 0;
+-	if (S3_SAVAGE_MOBILE_SERIES(par->chip) && !par->crtonly)
++	if ((S3_SAVAGE_MOBILE_SERIES(par->chip) ||
++	     S3_MOBILE_TWISTER_SERIES(par->chip)) && !par->crtonly)
+ 		par->display_type = DISP_LCD;
+ 	else if (dvi || (par->chip = S3_SAVAGE4 && par->dvi))
+ 		par->display_type = DISP_DFP;
 -- 
-1.7.1
+1.7.0.4
 

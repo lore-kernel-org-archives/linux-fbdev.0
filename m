@@ -1,82 +1,92 @@
-From: Archit Taneja <archit@ti.com>
-Date: Fri, 01 Apr 2011 09:38:36 +0000
-Subject: Re: [PATCH 1/9] OMAP: DSS2: move dss device clock configuration
-Message-Id: <4D959A4C.3050305@ti.com>
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+Date: Sun, 10 Apr 2011 11:10:01 +0000
+Subject: [2.6.39-rc2, framebuffer] use after free oops
+Message-Id: <BANLkTi=8U3=E0=j8MJ-r70O_aO8Pxvv9Nw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1301566266-11187-1-git-send-email-tomi.valkeinen@ti.com>	 <1301566266-11187-2-git-send-email-tomi.valkeinen@ti.com>	 <4D957923.2030902@ti.com> <1301641628.3393.5.camel@deskari>	 <4D958407.1080505@ti.com> <1301644231.3393.20.camel@deskari>	 <4D958A91.90807@ti.com> <1301647184.3393.29.camel@deskari>
-In-Reply-To: <1301647184.3393.29.camel@deskari>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Valkeinen, Tomi" <tomi.valkeinen@ti.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
 
-On Friday 01 April 2011 02:09 PM, Valkeinen, Tomi wrote:
-> On Fri, 2011-04-01 at 13:49 +0530, Archit Taneja wrote:
->
->> But there are some parameters which might get common across dss devices.
->> Things like dispc clock source, dispc core clock divider will be shared
->> across the panels. We had discussed the possibility of declaring this
->> common info in omap_dss_board_info or as a separate common_clocks
->> structure. Each device could pick this filled up common_clocks struct,
->> or fill it up its own way (for the use cases which has only one panel on
->> at a time). I was wondering if it would be easy to move to this approach
->> with your patch. dispc itself would now have some common clock stuff and
->> per panel clock stuff. Is that a very clean approach?
->
-> I don't know =). I think the simplest solution is to have full divisor
-> info for each dss_device. And it's up to the board file writer to make
-> sure the divisors match for all the displays that can be enabled at the
-> same time.
->
-> I don't think that is perfect, but trying to share the data sounds a bit
-> confusing. Especially as there are just a divisor and a clock source
-> that are shared. If we have a lot of common data, then a shared struct
-> would of course be better.
->
->> Anyway, I think it would be good to have a channel struct, as there are
->> more things to put in dispc clocks, it should look something like:
->>
->> struct clocks {
->> 		struct {
->> 			struct {
->> 				u16 lck_div;
->> 				u16 pck_div;
->> 				enum clock_source lcd_clk_src;
->> 			} channel;
->> 			...
->> 			...
->> 			u16 core_clk_div;
->> 		} dispc;
->> 		...
->> 		...
->> };
->
-> In my original patch I had:
->
->          struct {
->                  struct {
->                          u16 fck_div;
->                  } dss;
->
->                  struct {
->                          u16 lck_div;
->                          u16 pck_div;
->
->                          bool fclk_from_dsi_pll;
->                  } dispc;
->
-> 		...
-> 	};
->
-> Which I removed due to comments and slight confusion how to handle the
-> DSS_FCLK divisor and the clock source.
->
-> Adding the clock source there needs some more work, moving the enum to
-> public include file, and implementing the support. If you agree that
-> this patch in its current form is an improvement, I'd like to go forward
-> with this and work on the clock source later.
+When building in the eg vga16 and intelfb framebuffers and page
+debugging, we can get hit by a use-after-free oops [1]; with page
+debugging disabled, this slips by unnoticed.
 
-Yeah it is, sure.
+When intelfb registers, the vga16 framebuffer is detected covering
+it's I/O regions, so it is removed (in
+remove_conflicting_framebuffers->unregister_framebuffer). The problem
+is the fb_info structure is freed (in
+unregister_framebuffer->vga16fb_destroy->framebuffer_release->kfree)
+before all open files to it are closed, so we get a use-after-free
+scenario.
 
-Archit
+Freeing should be deferred until the last user has gone away. What
+approach would make sense here?
+
+Daniel
+
+--- [1]
+
+checking generic (a0000 10000) vs hw (d0000000 10000000)
+fb: conflicting fb hw usage inteldrmfb vs VGA16 VGA - removing generic driver
+Console: switching to colour VGA+ 80x25
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000010
+IP: [<ffffffff81708394>] mutex_lock_nested+0x94/0x390
+PGD 2203ab067 PUD 2203ac067 PMD 0
+Oops: 0002 [#2] PREEMPT SMP DEBUG_PAGEALLOC
+last sysfs file: /sys/devices/pci0000:00/0000:00:1b.0/sound/card0/uevent
+CPU 3
+Modules linked in: arc4 ecb uvcvideo videodev v4l2_compat_ioctl32
+i915(+) drm_kms_helper iwlagn mmc_block mac80211 drm video sdhci_pci
+sdhci mmc_core
+
+Pid: 271, comm: plymouthd Tainted: G      D     2.6.39-rc2-350cd+ #1
+Dell Inc. Latitude E5420/0H5TG2
+RIP: 0010:[<ffffffff81708394>]  [<ffffffff81708394>]
+mutex_lock_nested+0x94/0x390
+RSP: 0018:ffff88021ee77c08  EFLAGS: 00010046
+RAX: 0000000000010000 RBX: 0000000000000008 RCX: 0000000000000000
+RDX: 0000000000000000 RSI: 0000000000000001 RDI: ffffffff8170838b
+RBP: ffff88021ee77c78 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000000 R12: ffff88021e574020
+R13: 0000000000000010 R14: 0000000000000246 R15: ffff88021de6f478
+FS:  00007f50d6e9c720(0000) GS:ffff88022ec60000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 0000000000000010 CR3: 00000002203aa000 CR4: 00000000000406e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process plymouthd (pid: 271, threadinfo ffff88021ee76000, task ffff88021e574020)
+Stack:
+ ffffffff81375552 0000000000000000 00000000fffffff2 ffff88021de6f478
+ ffff88021e574020 0000000000000246 0000000000000000 00000000fffffff2
+ ffff88021ee77c68 0000000000000000 0000000000000008 0000000000000000
+Call Trace:
+ [<ffffffff81375552>] ? lock_fb_info+0x22/0x60
+ [<ffffffff81375552>] lock_fb_info+0x22/0x60
+ [<ffffffff8137a24b>] fb_set_user_cmap+0x15b/0x1a0
+ [<ffffffff81376e28>] do_fb_ioctl+0x4b8/0x5e0
+ [<ffffffff81105dae>] ? might_fault+0x4e/0xa0
+ [<ffffffff81058e61>] ? get_parent_ip+0x11/0x50
+ [<ffffffff81058f3d>] ? sub_preempt_count+0x9d/0xd0
+ [<ffffffff8170a26d>] ? _raw_spin_unlock_irqrestore+0x3d/0x80
+ [<ffffffff8104840e>] ? __wake_up+0x4e/0x70
+ [<ffffffff813e47b9>] ? put_ldisc+0x59/0xd0
+ [<ffffffff813e4839>] ? tty_ldisc_deref+0x9/0x10
+ [<ffffffff813def59>] ? tty_ioctl+0x299/0xa00
+ [<ffffffff81377214>] fb_ioctl+0x24/0x30
+ [<ffffffff81152ec7>] do_vfs_ioctl+0x87/0x330
+ [<ffffffff81140e85>] ? fget+0x95/0x240
+ [<ffffffff81140df0>] ? fget_raw+0x240/0x240
+ [<ffffffff811531ba>] sys_ioctl+0x4a/0x80
+ [<ffffffff8170adfb>] system_call_fastpath+0x16/0x1b
+Code: 48 8b 04 25 c8 b5 00 00 8b 80 44 e0 ff ff a9 00 ff ff 07 0f 85
+d7 02 00 00 9c 41 5e fa e8 15 d2 98 ff 4c 8d 6b 08 b8 00 00 01 00 <f0>
+0f c1 43 08 0f b7 d0 c1 e8 10 39 c2 74 08 f3 90 0f b7 53 08
+RIP  [<ffffffff81708394>] mutex_lock_nested+0x94/0x390
+ RSP <ffff88021ee77c08>
+CR2: 0000000000000010
+---[ end trace cdacd65f5f1b187d ]---
+note: plymouthd[271] exited with preempt_count 1
+-- 
+Daniel J Blueman

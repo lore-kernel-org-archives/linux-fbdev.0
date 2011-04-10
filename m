@@ -1,28 +1,97 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Thu, 07 Apr 2011 17:01:51 +0000
-Subject: Re: [PATCH v3] s3fb: add DDC support
-Message-Id: <20110407170151.GE8052@linux-sh.org>
+From: Jiri Kosina <jkosina@suse.cz>
+Date: Sun, 10 Apr 2011 15:09:06 +0000
+Subject: Re: [trivial PATCH 1/2] treewide: Fix iomap resource size
+Message-Id: <alpine.LNX.2.00.1104081939360.6392@deuxcents.site>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201104032236.18936.linux@rainbow-software.org>
-In-Reply-To: <201104032236.18936.linux@rainbow-software.org>
+References: <cover.1300909445.git.joe@perches.com>
+	<c4422b4a8ee132d3adac95fd86237c61b2f8b364.1300909446.git.joe@perches.com>
+In-Reply-To: <c4422b4a8ee132d3adac95fd86237c61b2f8b364.1300909446.git.joe@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: Ondrej Zajicek <santiago@crfreenet.org>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-On Sun, Apr 03, 2011 at 10:36:15PM +0200, Ondrej Zary wrote:
-> Add I2C support for the DDC bus and also default mode initialization by
-> reading monitor EDID to the s3fb driver.
+On Wed, 23 Mar 2011, Joe Perches wrote:
+
+> Convert off-by-1 r->end - r->start to resource_size(r)
 > 
-> Tested on Trio64V+ (2 cards), Trio64V2/DX, Virge (3 cards),
-> Virge/DX (3 cards), Virge/GX2, Trio3D/2X (4 cards), Trio3D.
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  arch/arm/mach-ux500/mbox-db5500.c |    6 ++----
+>  arch/mips/rb532/gpio.c            |    2 +-
+>  drivers/video/msm/mddi.c          |    2 +-
+>  drivers/watchdog/bcm63xx_wdt.c    |    2 +-
+>  4 files changed, 5 insertions(+), 7 deletions(-)
+
+Applied, thanks
+
 > 
-> Will probably not work on Trio32 - my 2 cards have DDC support in BIOS that
-> looks different from the other cards but the DDC pins on the VGA connector
-> are not connected.
+> diff --git a/arch/arm/mach-ux500/mbox-db5500.c b/arch/arm/mach-ux500/mbox-db5500.c
+> index a4ffb9f..2b2d51c 100644
+> --- a/arch/arm/mach-ux500/mbox-db5500.c
+> +++ b/arch/arm/mach-ux500/mbox-db5500.c
+> @@ -416,8 +416,7 @@ struct mbox *mbox_setup(u8 mbox_id, mbox_recv_cb_t *mbox_cb, void *priv)
+>  	dev_dbg(&(mbox->pdev->dev),
+>  		"Resource name: %s start: 0x%X, end: 0x%X\n",
+>  		resource->name, resource->start, resource->end);
+> -	mbox->virtbase_peer > -		ioremap(resource->start, resource->end - resource->start);
+> +	mbox->virtbase_peer = ioremap(resource->start, resource_size(resource));
+>  	if (!mbox->virtbase_peer) {
+>  		dev_err(&(mbox->pdev->dev), "Unable to ioremap peer mbox\n");
+>  		mbox = NULL;
+> @@ -440,8 +439,7 @@ struct mbox *mbox_setup(u8 mbox_id, mbox_recv_cb_t *mbox_cb, void *priv)
+>  	dev_dbg(&(mbox->pdev->dev),
+>  		"Resource name: %s start: 0x%X, end: 0x%X\n",
+>  		resource->name, resource->start, resource->end);
+> -	mbox->virtbase_local > -		ioremap(resource->start, resource->end - resource->start);
+> +	mbox->virtbase_local = ioremap(resource->start, resource_size(resource));
+>  	if (!mbox->virtbase_local) {
+>  		dev_err(&(mbox->pdev->dev), "Unable to ioremap local mbox\n");
+>  		mbox = NULL;
+> diff --git a/arch/mips/rb532/gpio.c b/arch/mips/rb532/gpio.c
+> index 37de05d..6c47dfe 100644
+> --- a/arch/mips/rb532/gpio.c
+> +++ b/arch/mips/rb532/gpio.c
+> @@ -185,7 +185,7 @@ int __init rb532_gpio_init(void)
+>  	struct resource *r;
+>  
+>  	r = rb532_gpio_reg0_res;
+> -	rb532_gpio_chip->regbase = ioremap_nocache(r->start, r->end - r->start);
+> +	rb532_gpio_chip->regbase = ioremap_nocache(r->start, resource_size(r));
+>  
+>  	if (!rb532_gpio_chip->regbase) {
+>  		printk(KERN_ERR "rb532: cannot remap GPIO register 0\n");
+> diff --git a/drivers/video/msm/mddi.c b/drivers/video/msm/mddi.c
+> index b66d86a..178b072 100644
+> --- a/drivers/video/msm/mddi.c
+> +++ b/drivers/video/msm/mddi.c
+> @@ -679,7 +679,7 @@ static int __devinit mddi_probe(struct platform_device *pdev)
+>  		printk(KERN_ERR "mddi: no associated mem resource!\n");
+>  		return -ENOMEM;
+>  	}
+> -	mddi->base = ioremap(resource->start, resource->end - resource->start);
+> +	mddi->base = ioremap(resource->start, resource_size(resource));
+>  	if (!mddi->base) {
+>  		printk(KERN_ERR "mddi: failed to remap base!\n");
+>  		ret = -EINVAL;
+> diff --git a/drivers/watchdog/bcm63xx_wdt.c b/drivers/watchdog/bcm63xx_wdt.c
+> index 3c5045a..5064e83 100644
+> --- a/drivers/watchdog/bcm63xx_wdt.c
+> +++ b/drivers/watchdog/bcm63xx_wdt.c
+> @@ -248,7 +248,7 @@ static int __devinit bcm63xx_wdt_probe(struct platform_device *pdev)
+>  		return -ENODEV;
+>  	}
+>  
+> -	bcm63xx_wdt_device.regs = ioremap_nocache(r->start, r->end - r->start);
+> +	bcm63xx_wdt_device.regs = ioremap_nocache(r->start, resource_size(r));
+>  	if (!bcm63xx_wdt_device.regs) {
+>  		dev_err(&pdev->dev, "failed to remap I/O resources\n");
+>  		return -ENXIO;
+> -- 
+> 1.7.4.2.g597a6.dirty
 > 
-> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-> 
-This no longer builds with the latest i2c changes merged, please respin
-this against the current kernel and resubmit.
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
+

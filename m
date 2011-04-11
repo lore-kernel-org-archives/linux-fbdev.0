@@ -1,42 +1,24 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 11 Apr 2011 07:22:58 +0000
-Subject: [PATCH] video: s3c-fb: make runtime pm functions static
-Message-Id: <1302506578-21676-1-git-send-email-jg1.han@samsung.com>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Mon, 11 Apr 2011 16:40:13 +0000
+Subject: Re: [PATCH] video: s3c-fb: make runtime pm functions static
+Message-Id: <20110411164013.GC13545@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1302506578-21676-1-git-send-email-jg1.han@samsung.com>
+In-Reply-To: <1302506578-21676-1-git-send-email-jg1.han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-This patch makes runtime pm functions static.
+On Mon, Apr 11, 2011 at 04:22:58PM +0900, Jingoo Han wrote:
+> This patch makes runtime pm functions static.
+> 
+> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
----
- drivers/video/s3c-fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+On Mon, Apr 11, 2011 at 04:25:37PM +0900, Jingoo Han wrote:
+> The spinlock is added to interrupt routine to ensure that the driver
+> is protected against multiple accesses.
+> 
+> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 6817d18..832c7e5 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -1547,7 +1547,7 @@ static int s3c_fb_resume(struct device *dev)
- 	return 0;
- }
- 
--int s3c_fb_runtime_suspend(struct device *dev)
-+static int s3c_fb_runtime_suspend(struct device *dev)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct s3c_fb *sfb = platform_get_drvdata(pdev);
-@@ -1567,7 +1567,7 @@ int s3c_fb_runtime_suspend(struct device *dev)
- 	return 0;
- }
- 
--int s3c_fb_runtime_resume(struct device *dev)
-+static int s3c_fb_runtime_resume(struct device *dev)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct s3c_fb *sfb = platform_get_drvdata(pdev);
--- 
-1.7.1
-
+Both applied, thanks.

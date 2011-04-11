@@ -1,57 +1,67 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 15 Apr 2011 08:11:08 +0000
-Subject: [PATCH 2/5] OMAP: DSS2: DSI: fix dsi_dump_clocks()
-Message-Id: <1302855071-5510-3-git-send-email-tomi.valkeinen@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 11 Apr 2011 07:25:37 +0000
+Subject: [PATCH] video: s3c-fb: add spinlock to interrupt routine
+Message-Id: <1302506737-22764-1-git-send-email-jg1.han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1302855071-5510-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1302855071-5510-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-On OMAP4, reading DSI_PLL_CONFIGURATION2 register requires the L3 clock
-(CIO_CLK_ICG) to PLL. Currently dsi_dump_clocks() tries to read that
-register without enabling the L3 clock, leading to crash if DSI is not
-in use.
+The spinlock is added to interrupt routine to ensure that the driver
+is protected against multiple accesses.
 
-The status of the bit being read from DSI_PLL_CONFIGURATION2 is
-available from dsi_clock_info->use_sys_clk, so we can avoid the whole
-problem by just using that.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/omap2/dss/dsi.c |    6 +-----
- 1 files changed, 1 insertions(+), 5 deletions(-)
+ drivers/video/s3c-fb.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 8604153..1464ac4 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -1491,7 +1491,6 @@ void dsi_pll_uninit(void)
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 6817d18..23481f3 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -182,6 +182,7 @@ struct s3c_fb_vsync {
  
- void dsi_dump_clocks(struct seq_file *s)
- {
--	int clksel;
- 	struct dsi_clock_info *cinfo = &dsi.current_cinfo;
- 	enum dss_clk_source dispc_clk_src, dsi_clk_src;
+ /**
+  * struct s3c_fb - overall hardware state of the hardware
++ * @slock: The spinlock protection for this data sturcture.
+  * @dev: The device that we bound to, for printing, etc.
+  * @regs_res: The resource we claimed for the IO registers.
+  * @bus_clk: The clk (hclk) feeding our interface and possibly pixclk.
+@@ -195,6 +196,7 @@ struct s3c_fb_vsync {
+  * @vsync_info: VSYNC-related information (count, queues...)
+  */
+ struct s3c_fb {
++	spinlock_t		slock;
+ 	struct device		*dev;
+ 	struct resource		*regs_res;
+ 	struct clk		*bus_clk;
+@@ -947,6 +949,8 @@ static irqreturn_t s3c_fb_irq(int irq, void *dev_id)
+ 	void __iomem  *regs = sfb->regs;
+ 	u32 irq_sts_reg;
  
-@@ -1500,13 +1499,10 @@ void dsi_dump_clocks(struct seq_file *s)
++	spin_lock(&sfb->slock);
++
+ 	irq_sts_reg = readl(regs + VIDINTCON1);
  
- 	enable_clocks(1);
+ 	if (irq_sts_reg & VIDINTCON1_INT_FRAME) {
+@@ -963,6 +967,7 @@ static irqreturn_t s3c_fb_irq(int irq, void *dev_id)
+ 	 */
+ 	s3c_fb_disable_irq(sfb);
  
--	clksel = REG_GET(DSI_PLL_CONFIGURATION2, 11, 11);
--
- 	seq_printf(s,	"- DSI PLL -\n");
++	spin_unlock(&sfb->slock);
+ 	return IRQ_HANDLED;
+ }
  
- 	seq_printf(s,	"dsi pll source = %s\n",
--			clksel = 0 ?
--			"dss_sys_clk" : "pclkfree");
-+			cinfo->use_sys_clk ? "dss_sys_clk" : "pclkfree");
+@@ -1337,6 +1342,8 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 	sfb->pdata = pd;
+ 	sfb->variant = fbdrv->variant;
  
- 	seq_printf(s,	"Fint\t\t%-16luregn %u\n", cinfo->fint, cinfo->regn);
- 
++	spin_lock_init(&sfb->slock);
++
+ 	sfb->bus_clk = clk_get(dev, "lcd");
+ 	if (IS_ERR(sfb->bus_clk)) {
+ 		dev_err(dev, "failed to get bus clock\n");
 -- 
 1.7.1
 

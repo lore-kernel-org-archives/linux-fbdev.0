@@ -1,27 +1,42 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Tue, 19 Apr 2011 06:51:20 +0000
-Subject: Re: [PATCH v4] [resend] s3fb: add DDC support
-Message-Id: <20110419065120.GC28271@linux-sh.org>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 11 Apr 2011 07:22:58 +0000
+Subject: [PATCH] video: s3c-fb: make runtime pm functions static
+Message-Id: <1302506578-21676-1-git-send-email-jg1.han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201104181214.57501.linux@rainbow-software.org>
-In-Reply-To: <201104181214.57501.linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: Ondrej Zajicek <santiago@crfreenet.org>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-On Mon, Apr 18, 2011 at 12:14:57PM +0200, Ondrej Zary wrote:
-> Add I2C support for the DDC bus and also default mode initialization by
-> reading monitor EDID to the s3fb driver.
-> 
-> Tested on Trio64V+ (2 cards), Trio64V2/DX, Virge (3 cards),
-> Virge/DX (3 cards), Virge/GX2, Trio3D/2X (4 cards), Trio3D.
-> 
-> Will probably not work on Trio32 - my 2 cards have DDC support in BIOS that
-> looks different from the other cards but the DDC pins on the VGA connector
-> are not connected.
-> 
-> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-> 
-Applied, thanks.
+This patch makes runtime pm functions static.
+
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/s3c-fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 6817d18..832c7e5 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -1547,7 +1547,7 @@ static int s3c_fb_resume(struct device *dev)
+ 	return 0;
+ }
+ 
+-int s3c_fb_runtime_suspend(struct device *dev)
++static int s3c_fb_runtime_suspend(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct s3c_fb *sfb = platform_get_drvdata(pdev);
+@@ -1567,7 +1567,7 @@ int s3c_fb_runtime_suspend(struct device *dev)
+ 	return 0;
+ }
+ 
+-int s3c_fb_runtime_resume(struct device *dev)
++static int s3c_fb_runtime_resume(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct s3c_fb *sfb = platform_get_drvdata(pdev);
+-- 
+1.7.1
+

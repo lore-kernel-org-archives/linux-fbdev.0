@@ -1,157 +1,274 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 24 Apr 2011 01:58:13 +0000
-Subject: [PATCH 1/3] viafb: add engine clock support
-Message-Id: <1303611201-8727-2-git-send-email-FlorianSchandinat@gmx.de>
+From: Inki Dae <inki.dae@samsung.com>
+Date: Thu, 14 Apr 2011 12:15:29 +0000
+Subject: [PATCH 2/2] video: Samsung SoC MIPI-DSI based sample lcd panel driver.
+Message-Id: <1302783329-31266-1-git-send-email-inki.dae@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1303611201-8727-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1303611201-8727-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-arm-kernel@lists.infradead.org
 
-This patch adds support for enabling and configuring the engine on
-VIAs IGPs. This is the main clock used for everything but pixel
-output.
+this driver provides an example for implementing MIPI-DSI based lcd panel
+driver and includes most features for LCD Panel driver so just implement
+lcd register setting functions using sample functions.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Signed-off-by: Inki Dae <inki.dae@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/video/via/hw.c        |    1 +
- drivers/video/via/via_clock.c |   51 +++++++++++++++++++++++++++++++++++++++++
- drivers/video/via/via_clock.h |    3 ++
- 3 files changed, 55 insertions(+), 0 deletions(-)
+ Documentation/s5p_mipi_dsim/dsim_sample_lcd.c |  244 +++++++++++++++++++++++++
+ 1 files changed, 244 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/s5p_mipi_dsim/dsim_sample_lcd.c
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index df84251..e531147 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -2289,6 +2289,7 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
- 			get_sync(viafbinfo1));
- 	}
- 
-+	clock.set_engine_pll_state(VIA_STATE_ON);
- 	clock.set_primary_clock_source(VIA_CLKSRC_X1, true);
- 	clock.set_secondary_clock_source(VIA_CLKSRC_X1, true);
- 
-diff --git a/drivers/video/via/via_clock.c b/drivers/video/via/via_clock.c
-index a829a24..af8f26b 100644
---- a/drivers/video/via/via_clock.c
-+++ b/drivers/video/via/via_clock.c
-@@ -87,6 +87,15 @@ static inline void k800_set_secondary_pll_encoded(u32 data)
- 	via_write_reg_mask(VIASR, 0x40, 0x00, 0x04); /* disable reset */
- }
- 
-+static inline void set_engine_pll_encoded(u32 data)
+diff --git a/Documentation/s5p_mipi_dsim/dsim_sample_lcd.c b/Documentation/s5p_mipi_dsim/dsim_sample_lcd.c
+new file mode 100644
+index 0000000..7f38c84
+--- /dev/null
++++ b/Documentation/s5p_mipi_dsim/dsim_sample_lcd.c
+@@ -0,0 +1,244 @@
++/*
++ * Samsung SoC MIPI-DSI based sample lcd panel driver.
++ *
++ * Copyright (c) 2011 Samsung Electronics Co., Ltd
++ *
++ * Inki Dae, <inki.dae@samsung.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++*/
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/ctype.h>
++#include <linux/io.h>
++#include <linux/delay.h>
++#include <linux/device.h>
++#include <linux/lcd.h>
++#include <linux/backlight.h>
++
++#include <video/mipi_display.h>
++
++#include <plat/mipi_dsim.h>
++
++#define MIN_BRIGHTNESS		(0)
++#define MAX_BRIGHTNESS		(10)
++
++#define lcd_to_master(a)	(a->dsim_dev->master)
++#define lcd_to_master_ops(a)	((lcd_to_master(a))->master_ops)
++
++struct dsim_lcd {
++	struct device			*dev;
++
++	struct lcd_device		*ld;
++	struct backlight_device		*bd;
++
++	struct mipi_dsim_lcd_device	*dsim_dev;
++	struct lcd_platform_data	*ddi_pd;
++};
++
++static void dsim_lcd_short_write(struct dsim_lcd *lcd)
 +{
-+	via_write_reg_mask(VIASR, 0x40, 0x01, 0x01); /* enable reset */
-+	via_write_reg(VIASR, 0x47, data & 0xFF);
-+	via_write_reg(VIASR, 0x48, (data >> 8) & 0xFF);
-+	via_write_reg(VIASR, 0x49, (data >> 16) & 0xFF);
-+	via_write_reg_mask(VIASR, 0x40, 0x00, 0x01); /* disable reset */
++	struct mipi_dsim_master_ops *ops = lcd_to_master_ops(lcd);
++
++	ops->cmd_write(lcd_to_master(lcd), MIPI_DSI_DCS_SHORT_WRITE_PARAM,
++				0x00, 0x00);
 +}
 +
- static void cle266_set_primary_pll(struct via_pll_config config)
- {
- 	cle266_set_primary_pll_encoded(cle266_encode_pll(config));
-@@ -117,6 +126,16 @@ static void vx855_set_secondary_pll(struct via_pll_config config)
- 	k800_set_secondary_pll_encoded(vx855_encode_pll(config));
- }
- 
-+static void k800_set_engine_pll(struct via_pll_config config)
++static void dsim_lcd_long_write(struct dsim_lcd *lcd)
 +{
-+	set_engine_pll_encoded(k800_encode_pll(config));
++	struct mipi_dsim_master_ops *ops = lcd_to_master_ops(lcd);
++	unsigned char data_to_send[8] = {
++		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
++	};
++
++	ops->cmd_write(lcd_to_master(lcd), MIPI_DSI_DCS_LONG_WRITE,
++		(unsigned int) data_to_send, sizeof(data_to_send));
 +}
 +
-+static void vx855_set_engine_pll(struct via_pll_config config)
++static int dsim_lcd_panel_init(struct dsim_lcd *lcd)
 +{
-+	set_engine_pll_encoded(vx855_encode_pll(config));
++
++	dsim_lcd_short_write(lcd);
++	dsim_lcd_long_write(lcd);
++
++	return 0;
 +}
 +
- static void set_primary_pll_state(u8 state)
- {
- 	u8 value;
-@@ -153,6 +172,24 @@ static void set_secondary_pll_state(u8 state)
- 	via_write_reg_mask(VIASR, 0x2D, value, 0x0C);
- }
- 
-+static void set_engine_pll_state(u8 state)
++static int dsim_lcd_gamma_ctrl(struct dsim_lcd *lcd, int gamma)
 +{
-+	u8 value;
++	struct mipi_dsim_master_ops *ops = lcd_to_master_ops(lcd);
 +
-+	switch (state) {
-+	case VIA_STATE_ON:
-+		value = 0x02;
-+		break;
-+	case VIA_STATE_OFF:
-+		value = 0x00;
-+		break;
-+	default:
-+		return;
++	/* update gamma value at here. */
++
++	return 0;
++}
++
++static int dsim_lcd_set_power(struct lcd_device *ld, int power)
++{
++	return 0;
++}
++
++static int dsim_lcd_get_power(struct lcd_device *ld)
++{
++	return 0;
++}
++
++static int dsim_lcd_get_brightness(struct backlight_device *bd)
++{
++	return bd->props.brightness;
++}
++
++static int dsim_lcd_set_brightness(struct backlight_device *bd)
++{
++	int ret = 0, brightness = bd->props.brightness;
++	struct dsim_lcd *lcd = bl_get_data(bd);
++
++	if (brightness < MIN_BRIGHTNESS ||
++		brightness > bd->props.max_brightness) {
++		dev_err(lcd->dev, "lcd brightness should be %d to %d.\n",
++			MIN_BRIGHTNESS, MAX_BRIGHTNESS);
++		return -EINVAL;
 +	}
 +
-+	via_write_reg_mask(VIASR, 0x2D, value, 0x03);
++	ret = dsim_lcd_gamma_ctrl(lcd, bd->props.brightness);
++	if (ret) {
++		dev_err(&bd->dev, "lcd brightness setting failed.\n");
++		return -EIO;
++	}
++
++	return ret;
 +}
 +
- static void set_primary_clock_state(u8 state)
- {
- 	u8 value;
-@@ -247,6 +284,11 @@ static void dummy_set_pll_state(u8 state)
- 	printk(KERN_INFO "Using undocumented set PLL state.\n%s", via_slap);
- }
- 
-+static void dummy_set_pll(struct via_pll_config config)
++static const struct lcd_ops dsim_lcd_lcd_ops = {
++	.set_power = dsim_lcd_set_power,
++	.get_power = dsim_lcd_get_power,
++};
++
++static const struct backlight_ops dsim_lcd_backlight_ops = {
++	.get_brightness = dsim_lcd_get_brightness,
++	.update_status = dsim_lcd_set_brightness,
++};
++
++static int dsim_lcd_probe(struct mipi_dsim_lcd_device *dsim_dev)
 +{
-+	printk(KERN_INFO "Using undocumented set PLL.\n%s", via_slap);
++	struct dsim_lcd *lcd = NULL;
++	int ret;
++
++	lcd = kzalloc(sizeof(struct dsim_lcd), GFP_KERNEL);
++	if (!lcd) {
++		dev_err(&dsim_dev->dev, "failed to allocate dsim_lcd structure.\n");
++		return -ENOMEM;
++	}
++
++	lcd->dsim_dev = dsim_dev;
++	lcd->ddi_pd = (struct lcd_platform_data *)dsim_dev->platform_data;
++	lcd->dev = &dsim_dev->dev;
++
++	dev_set_drvdata(&dsim_dev->dev, lcd);
++
++	lcd->ld = lcd_device_register("dsim_lcd", lcd->dev, lcd,
++			&dsim_lcd_lcd_ops);
++	if (IS_ERR(lcd->ld)) {
++		dev_err(lcd->dev, "failed to register lcd ops.\n");
++		ret = PTR_ERR(lcd->ld);
++
++		goto err1;
++	}
++
++	lcd->bd = backlight_device_register("dsim_lcd-bl", lcd->dev, lcd,
++			&dsim_lcd_backlight_ops, NULL);
++	if (IS_ERR(lcd->bd)) {
++		dev_err(lcd->dev, "failed to register backlight ops.\n");
++		ret = PTR_ERR(lcd->bd);
++
++		goto err1;
++	}
++
++	lcd->bd->props.max_brightness = MAX_BRIGHTNESS;
++	lcd->bd->props.brightness = MAX_BRIGHTNESS;
++
++	/* lcd power on */
++	if (lcd->ddi_pd->power_on)
++		lcd->ddi_pd->power_on(lcd->ld, 1);
++	else
++		dev_warn(lcd->dev, "lcd_power_on func is null.\n");
++
++	mdelay(lcd->ddi_pd->reset_delay);
++
++	/* lcd reset */
++	if (lcd->ddi_pd->reset)
++		lcd->ddi_pd->reset(lcd->ld);
++	else
++		dev_warn(lcd->dev, "lcd_reset func is null.\n");
++
++	dsim_lcd_panel_init(lcd);
++
++	dev_dbg(lcd->dev, "dsim_lcd panel driver has been probed.\n");
++
++	return 0;
++
++err1:
++	kfree(lcd);
++
++	return ret;
 +}
 +
- void via_clock_init(struct via_clock *clock, int gfx_chip)
- {
- 	switch (gfx_chip) {
-@@ -261,6 +303,9 @@ void via_clock_init(struct via_clock *clock, int gfx_chip)
- 		clock->set_secondary_clock_source = dummy_set_clock_source;
- 		clock->set_secondary_pll_state = dummy_set_pll_state;
- 		clock->set_secondary_pll = cle266_set_secondary_pll;
++static int __devexit dsim_lcd_remove(struct mipi_dsim_lcd_device *dsim_dev)
++{
++	struct dsim_lcd *lcd = dev_get_drvdata(&dsim_dev->dev);
 +
-+		clock->set_engine_pll_state = dummy_set_pll_state;
-+		clock->set_engine_pll = dummy_set_pll;
- 		break;
- 	case UNICHROME_K800:
- 	case UNICHROME_PM800:
-@@ -280,6 +325,9 @@ void via_clock_init(struct via_clock *clock, int gfx_chip)
- 		clock->set_secondary_clock_source = set_secondary_clock_source;
- 		clock->set_secondary_pll_state = set_secondary_pll_state;
- 		clock->set_secondary_pll = k800_set_secondary_pll;
++	kfree(lcd);
 +
-+		clock->set_engine_pll_state = set_engine_pll_state;
-+		clock->set_engine_pll = k800_set_engine_pll;
- 		break;
- 	case UNICHROME_VX855:
- 	case UNICHROME_VX900:
-@@ -292,6 +340,9 @@ void via_clock_init(struct via_clock *clock, int gfx_chip)
- 		clock->set_secondary_clock_source = set_secondary_clock_source;
- 		clock->set_secondary_pll_state = set_secondary_pll_state;
- 		clock->set_secondary_pll = vx855_set_secondary_pll;
++	return 0;
++}
 +
-+		clock->set_engine_pll_state = set_engine_pll_state;
-+		clock->set_engine_pll = vx855_set_engine_pll;
- 		break;
- 
- 	}
-diff --git a/drivers/video/via/via_clock.h b/drivers/video/via/via_clock.h
-index f213a7a..88714ae 100644
---- a/drivers/video/via/via_clock.h
-+++ b/drivers/video/via/via_clock.h
-@@ -53,6 +53,9 @@ struct via_clock {
- 	void (*set_secondary_clock_source)(enum via_clksrc src, bool use_pll);
- 	void (*set_secondary_pll_state)(u8 state);
- 	void (*set_secondary_pll)(struct via_pll_config config);
++#ifdef CONFIG_PM
++static int dsim_lcd_suspend(struct mipi_dsim_lcd_device *dsim_dev)
++{
++	struct dsim_lcd *lcd = dev_get_drvdata(&dsim_dev->dev);
 +
-+	void (*set_engine_pll_state)(u8 state);
-+	void (*set_engine_pll)(struct via_pll_config config);
- };
- 
- 
++	return 0;
++}
++
++static int dsim_lcd_resume(struct mipi_dsim_lcd_device *dsim_dev)
++{
++	struct dsim_lcd *lcd = dev_get_drvdata(&dsim_dev->dev);
++
++	return 0;
++}
++#else
++#define dsim_lcd_suspend	NULL
++#define dsim_lcd_resume		NULL
++#endif
++
++static struct mipi_dsim_lcd_driver dsim_lcd_dsim_ddi_driver = {
++	.name		= "dsim_lcd",
++	.id		= -1,
++
++	.probe		= dsim_lcd_probe,
++	.remove		= __devexit_p(dsim_lcd_remove),
++	.suspend	= dsim_lcd_suspend,
++	.resume		= dsim_lcd_resume,
++};
++
++static int dsim_lcd_init(void)
++{
++	s5p_mipi_dsi_register_lcd_driver(&dsim_lcd_dsim_ddi_driver);
++
++	return 0;
++}
++
++static void dsim_lcd_exit(void)
++{
++}
++
++module_init(dsim_lcd_init);
++module_exit(dsim_lcd_exit);
++
++MODULE_AUTHOR("Inki Dae <inki.dae@samsung.com>");
++MODULE_DESCRIPTION("Samsung SoC MIPI-DSI based sample lcd panel driver");
++MODULE_LICENSE("GPL");
 -- 
-1.6.3.2
+1.7.0.4
 

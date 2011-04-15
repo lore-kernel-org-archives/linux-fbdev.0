@@ -1,25 +1,37 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Mon, 04 Apr 2011 09:40:49 +0000
-Subject: Re: Future desktop on dumb frame buffers?
-Message-Id: <20110404104049.1b8f4571@lxorguk.ukuu.org.uk>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 15 Apr 2011 08:11:06 +0000
+Subject: [PATCH 0/5] OMAP: DSS: fixes for rc
+Message-Id: <1302855071-5510-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <AANLkTimJWpebAskcjA+qQUDWXjiH6aHta4fri9z6OxRN@mail.gmail.com>
-	<20110321110040.6f1ea6d3@jbarnes-desktop>
-	<AANLkTimjOs8ZuKRUt1aOizhbRw2-Ni4bTPty-dKpZ-rz@mail.gmail.com>
-	<20110321122518.6b7ec7e4@jbarnes-desktop>
-	<20110321212008.384711f0@lxorguk.ukuu.org.uk>
-	<AANLkTikAQ1ZLy6aoCPSQdJ8F9-D172uypff+-4+_WXPz@mail.gmail.com>
-In-Reply-To: <AANLkTikAQ1ZLy6aoCPSQdJ8F9-D172uypff+-4+_WXPz@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Matt Turner <mattst88@gmail.com>
-Cc: Fbdev development list <linux-fbdev@vger.kernel.org>, dri-devel@lists.freedesktop.org, wayland-devel@lists.freedesktop.org, Geert Uytterhoeven <geert@linux-m68k.org>, Linux@freedesktop.org, timofonic timofonic <timofonic@gmail.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-> It's nothing fantastic, but I've had a number of people tell me that
-> it was useful for them.
+Some small fixes to OMAP DSS for the next rc.
 
-It does document some stuff nicely - not alas the bits I need to figure
-out at the moment but its definitely a nice reference to the basic setup.
+I will send a pull request to Paul Mundt soon if there are no problems with the
+patches.
 
-(ponders Voodoo2 DRI)
+Note that DSS doesn't still work for OMAP4. It needs a clock patch which has
+been discussed on l-o, and Paul Walmsley will handle that patch.
+
+ Tomi
+
+Archit Taneja (1):
+  OMAP: DSS2: Fix: Return correct lcd clock source for OMAP2/3
+
+Tomi Valkeinen (4):
+  OMAP: DSS2: DSI: fix use_sys_clk & highfreq
+  OMAP: DSS2: DSI: fix dsi_dump_clocks()
+  OMAP: DSS2: DSI: Fix DSI PLL power bug
+  OMAP: DSS2: fix panel Kconfig dependencies
+
+ drivers/video/omap2/displays/Kconfig   |    9 +++++----
+ drivers/video/omap2/dss/dsi.c          |   14 +++++++++-----
+ drivers/video/omap2/dss/dss.c          |   10 ++++++++--
+ drivers/video/omap2/dss/dss_features.c |    2 +-
+ drivers/video/omap2/dss/dss_features.h |    2 ++
+ 5 files changed, 25 insertions(+), 12 deletions(-)
+

@@ -1,54 +1,57 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 19 Apr 2011 09:22:09 +0000
-Subject: [PATCH 06/19] OMAP: DSS2: Add FEAT_DSI_REVERSE_TXCLKESC
-Message-Id: <1303204942-25450-7-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 15 Apr 2011 08:11:08 +0000
+Subject: [PATCH 2/5] OMAP: DSS2: DSI: fix dsi_dump_clocks()
+Message-Id: <1302855071-5510-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1302855071-5510-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1302855071-5510-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-OMAP3430 has RESETDONETXCLKESCx bits in the order following bitnumber
-order for lanes 0, 1, 2: 28, 27, 26. OMAP3630 and later have them in
-saner order: 24, 25, 26 (and 27, 28 for OMAP4).
+On OMAP4, reading DSI_PLL_CONFIGURATION2 register requires the L3 clock
+(CIO_CLK_ICG) to PLL. Currently dsi_dump_clocks() tries to read that
+register without enabling the L3 clock, leading to crash if DSI is not
+in use.
 
-This patch adds a dss_feature that can be used to differentiate between
-those two orders of RESETDONETXCLKESCx bits.
+The status of the bit being read from DSI_PLL_CONFIGURATION2 is
+available from dsi_clock_info->use_sys_clk, so we can avoid the whole
+problem by just using that.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dss_features.c |    2 +-
- drivers/video/omap2/dss/dss_features.h |    1 +
- 2 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/video/omap2/dss/dsi.c |    6 +-----
+ 1 files changed, 1 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index 5f3a7c4..502a953 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -253,7 +253,7 @@ static struct omap_dss_features omap3430_dss_features = {
- 		FEAT_LCDENABLESIGNAL | FEAT_PCKFREEENABLE |
- 		FEAT_FUNCGATED | FEAT_ROWREPEATENABLE |
- 		FEAT_LINEBUFFERSPLIT | FEAT_RESIZECONF |
--		FEAT_DSI_PLL_FREQSEL,
-+		FEAT_DSI_PLL_FREQSEL | FEAT_DSI_REVERSE_TXCLKESC,
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 8604153..1464ac4 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -1491,7 +1491,6 @@ void dsi_pll_uninit(void)
  
- 	.num_mgrs = 2,
- 	.num_ovls = 3,
-diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
-index 1093e8d..5668fec 100644
---- a/drivers/video/omap2/dss/dss_features.h
-+++ b/drivers/video/omap2/dss/dss_features.h
-@@ -45,6 +45,7 @@ enum dss_feat_id {
- 	FEAT_DSI_PLL_FREQSEL		= 1 << 14,
- 	FEAT_DSI_DCS_CMD_CONFIG_VC	= 1 << 15,
- 	FEAT_DSI_VC_OCP_WIDTH		= 1 << 16,
-+	FEAT_DSI_REVERSE_TXCLKESC	= 1 << 17,
- };
+ void dsi_dump_clocks(struct seq_file *s)
+ {
+-	int clksel;
+ 	struct dsi_clock_info *cinfo = &dsi.current_cinfo;
+ 	enum dss_clk_source dispc_clk_src, dsi_clk_src;
  
- /* DSS register field id */
+@@ -1500,13 +1499,10 @@ void dsi_dump_clocks(struct seq_file *s)
+ 
+ 	enable_clocks(1);
+ 
+-	clksel = REG_GET(DSI_PLL_CONFIGURATION2, 11, 11);
+-
+ 	seq_printf(s,	"- DSI PLL -\n");
+ 
+ 	seq_printf(s,	"dsi pll source = %s\n",
+-			clksel = 0 ?
+-			"dss_sys_clk" : "pclkfree");
++			cinfo->use_sys_clk ? "dss_sys_clk" : "pclkfree");
+ 
+ 	seq_printf(s,	"Fint\t\t%-16luregn %u\n", cinfo->fint, cinfo->regn);
+ 
 -- 
 1.7.1
 

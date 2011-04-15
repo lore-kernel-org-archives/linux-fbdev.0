@@ -1,37 +1,72 @@
-From: Tormod Volden <lists.tormod@gmail.com>
-Date: Sun, 10 Apr 2011 20:57:35 +0000
-Subject: [PATCH 2/2] savagefb: Enable LCD detection on mobile Twister
-Message-Id: <1302469055-3400-2-git-send-email-lists.tormod@gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 15 Apr 2011 08:11:10 +0000
+Subject: [PATCH 4/5] OMAP: DSS2: DSI: Fix DSI PLL power bug
+Message-Id: <1302855071-5510-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1302855071-5510-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1302855071-5510-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Tormod Volden <debian.tormod@gmail.com>
+OMAP3630 has a HW bug causing DSI PLL power command POWER_ON_DIV (0x3)
+to not work properly. The bug prevents us from enabling DSI PLL power
+only to HS divider block.
 
-Copy and paste from the Xorg DDX. Tested on TwisterK (Compaq Presario 700).
+This patch adds a dss feature for the bug and converts POWER_ON_DIV
+requests to POWER_ON_ALL (0x2).
 
-Signed-off-by: Tormod Volden <debian.tormod@gmail.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
+ drivers/video/omap2/dss/dsi.c          |    5 +++++
+ drivers/video/omap2/dss/dss_features.c |    2 +-
+ drivers/video/omap2/dss/dss_features.h |    2 ++
+ 3 files changed, 8 insertions(+), 1 deletions(-)
 
- drivers/video/savage/savagefb_driver.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
-index 0be3f31..0c64d2e 100644
---- a/drivers/video/savage/savagefb_driver.c
-+++ b/drivers/video/savage/savagefb_driver.c
-@@ -1967,7 +1967,8 @@ static int savage_init_hw(struct savagefb_par *par)
- 		}
- 	}
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 1464ac4..cbd9ca4 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -1059,6 +1059,11 @@ static int dsi_pll_power(enum dsi_pll_power_state state)
+ {
+ 	int t = 0;
  
--	if (S3_SAVAGE_MOBILE_SERIES(par->chip) && !par->crtonly)
-+	if ((S3_SAVAGE_MOBILE_SERIES(par->chip) ||
-+	     S3_MOBILE_TWISTER_SERIES(par->chip)) && !par->crtonly)
- 		par->display_type = DISP_LCD;
- 	else if (dvi || (par->chip = S3_SAVAGE4 && par->dvi))
- 		par->display_type = DISP_DFP;
++	/* DSI-PLL power command 0x3 is not working */
++	if (dss_has_feature(FEAT_DSI_PLL_PWR_BUG) &&
++			state = DSI_PLL_POWER_ON_DIV)
++		state = DSI_PLL_POWER_ON_ALL;
++
+ 	REG_FLD_MOD(DSI_CLK_CTRL, state, 31, 30);	/* PLL_PWR_CMD */
+ 
+ 	/* PLL_PWR_STATUS */
+diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
+index aa16222..8c50e18 100644
+--- a/drivers/video/omap2/dss/dss_features.c
++++ b/drivers/video/omap2/dss/dss_features.c
+@@ -271,7 +271,7 @@ static struct omap_dss_features omap3630_dss_features = {
+ 		FEAT_LCDENABLESIGNAL | FEAT_PCKFREEENABLE |
+ 		FEAT_PRE_MULT_ALPHA | FEAT_FUNCGATED |
+ 		FEAT_ROWREPEATENABLE | FEAT_LINEBUFFERSPLIT |
+-		FEAT_RESIZECONF,
++		FEAT_RESIZECONF | FEAT_DSI_PLL_PWR_BUG,
+ 
+ 	.num_mgrs = 2,
+ 	.num_ovls = 3,
+diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
+index 12e9c4e..37922ce 100644
+--- a/drivers/video/omap2/dss/dss_features.h
++++ b/drivers/video/omap2/dss/dss_features.h
+@@ -40,6 +40,8 @@ enum dss_feat_id {
+ 	/* Independent core clk divider */
+ 	FEAT_CORE_CLK_DIV	= 1 << 11,
+ 	FEAT_LCD_CLK_SRC	= 1 << 12,
++	/* DSI-PLL power command 0x3 is not working */
++	FEAT_DSI_PLL_PWR_BUG	= 1 << 13,
+ };
+ 
+ /* DSS register field id */
 -- 
-1.7.0.4
+1.7.1
 

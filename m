@@ -1,76 +1,68 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 22 Apr 2011 07:09:40 +0000
-Subject: [PATCH 2/3] video: s3c-fb: add additional validate bpps
-Message-Id: <1303456180-19135-1-git-send-email-jg1.han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 15 Apr 2011 08:11:11 +0000
+Subject: [PATCH 5/5] OMAP: DSS2: fix panel Kconfig dependencies
+Message-Id: <1302855071-5510-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1302855071-5510-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1302855071-5510-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Additional validate bpps are added to windows as follows:
-window0: 18 bpp for RGB666
-window1, 2 and 3: 28 bpp for ARGB4888
-window4: 19 bpp for ARGB1666, 28 bpp for ARGB4888
+All DPI panels were missing dependency to OMAP2_DSS_DPI. Add the
+dependency.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/s3c-fb.c |   15 ++++++++++-----
- 1 files changed, 10 insertions(+), 5 deletions(-)
+ drivers/video/omap2/displays/Kconfig |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 6d0622c..7f4c1b3 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -1630,7 +1630,8 @@ static struct s3c_fb_win_variant s3c_fb_data_64xx_wins[] = {
- 		.has_osd_c	= 1,
- 		.osd_size_off	= 0x8,
- 		.palette_sz	= 256,
--		.valid_bpp	= VALID_BPP1248 | VALID_BPP(16) | VALID_BPP(24),
-+		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(16) |
-+				   VALID_BPP(18) | VALID_BPP(24)),
- 	},
- 	[1] = {
- 		.has_osd_c	= 1,
-@@ -1640,7 +1641,8 @@ static struct s3c_fb_win_variant s3c_fb_data_64xx_wins[] = {
- 		.palette_sz	= 256,
- 		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(16) |
- 				   VALID_BPP(18) | VALID_BPP(19) |
--				   VALID_BPP(24) | VALID_BPP(25)),
-+				   VALID_BPP(24) | VALID_BPP(25) |
-+				   VALID_BPP(28)),
- 	},
- 	[2] = {
- 		.has_osd_c	= 1,
-@@ -1651,7 +1653,8 @@ static struct s3c_fb_win_variant s3c_fb_data_64xx_wins[] = {
- 		.palette_16bpp	= 1,
- 		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(16) |
- 				   VALID_BPP(18) | VALID_BPP(19) |
--				   VALID_BPP(24) | VALID_BPP(25)),
-+				   VALID_BPP(24) | VALID_BPP(25) |
-+				   VALID_BPP(28)),
- 	},
- 	[3] = {
- 		.has_osd_c	= 1,
-@@ -1660,7 +1663,8 @@ static struct s3c_fb_win_variant s3c_fb_data_64xx_wins[] = {
- 		.palette_16bpp	= 1,
- 		.valid_bpp	= (VALID_BPP124  | VALID_BPP(16) |
- 				   VALID_BPP(18) | VALID_BPP(19) |
--				   VALID_BPP(24) | VALID_BPP(25)),
-+				   VALID_BPP(24) | VALID_BPP(25) |
-+				   VALID_BPP(28)),
- 	},
- 	[4] = {
- 		.has_osd_c	= 1,
-@@ -1669,7 +1673,8 @@ static struct s3c_fb_win_variant s3c_fb_data_64xx_wins[] = {
- 		.palette_16bpp	= 1,
- 		.valid_bpp	= (VALID_BPP(1) | VALID_BPP(2) |
- 				   VALID_BPP(16) | VALID_BPP(18) |
--				   VALID_BPP(24) | VALID_BPP(25)),
-+				   VALID_BPP(19) | VALID_BPP(24) |
-+				   VALID_BPP(25) | VALID_BPP(28)),
- 	},
- };
+diff --git a/drivers/video/omap2/displays/Kconfig b/drivers/video/omap2/displays/Kconfig
+index d18ad6b..609a280 100644
+--- a/drivers/video/omap2/displays/Kconfig
++++ b/drivers/video/omap2/displays/Kconfig
+@@ -3,6 +3,7 @@ menu "OMAP2/3 Display Device Drivers"
+ 
+ config PANEL_GENERIC_DPI
+         tristate "Generic DPI Panel"
++	depends on OMAP2_DSS_DPI
+         help
+ 	  Generic DPI panel driver.
+ 	  Supports DVI output for Beagle and OMAP3 SDP.
+@@ -11,20 +12,20 @@ config PANEL_GENERIC_DPI
+ 
+ config PANEL_LGPHILIPS_LB035Q02
+ 	tristate "LG.Philips LB035Q02 LCD Panel"
+-	depends on OMAP2_DSS && SPI
++	depends on OMAP2_DSS_DPI && SPI
+ 	help
+ 	  LCD Panel used on the Gumstix Overo Palo35
+ 
+ config PANEL_SHARP_LS037V7DW01
+         tristate "Sharp LS037V7DW01 LCD Panel"
+-        depends on OMAP2_DSS
++        depends on OMAP2_DSS_DPI
+         select BACKLIGHT_CLASS_DEVICE
+         help
+           LCD Panel used in TI's SDP3430 and EVM boards
+ 
+ config PANEL_NEC_NL8048HL11_01B
+ 	tristate "NEC NL8048HL11-01B Panel"
+-	depends on OMAP2_DSS
++	depends on OMAP2_DSS_DPI
+ 	help
+ 		This NEC NL8048HL11-01B panel is TFT LCD
+ 		used in the Zoom2/3/3630 sdp boards.
+@@ -37,7 +38,7 @@ config PANEL_TAAL
+ 
+ config PANEL_TPO_TD043MTEA1
+         tristate "TPO TD043MTEA1 LCD Panel"
+-        depends on OMAP2_DSS && SPI
++        depends on OMAP2_DSS_DPI && SPI
+         help
+           LCD Panel used in OMAP3 Pandora
  
 -- 
 1.7.1

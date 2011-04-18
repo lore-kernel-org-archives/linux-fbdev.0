@@ -1,33 +1,41 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Wed, 06 Apr 2011 16:50:16 +0000
-Subject: Re: [PATCH 1/2] savagefb: Replace magic register address with define
-Message-Id: <20110406165006.GE11820@linux-sh.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 18 Apr 2011 07:12:41 +0000
+Subject: [GIT PULL] OMAP DSS fixes for 39 rc
+Message-Id: <1303110761.2062.11.camel@deskari>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1301835246-6520-1-git-send-email-lists.tormod@gmail.com>
-In-Reply-To: <1301835246-6520-1-git-send-email-lists.tormod@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: lethal@linux-sh.org
+Cc: lo-ml <linux-omap@vger.kernel.org>, lfbdev-ml <linux-fbdev@vger.kernel.org>
 
-On Sun, Apr 03, 2011 at 02:54:04PM +0200, Tormod Volden wrote:
-> MM_SERIAL1 was already defined, but not used.
-> 
-> Signed-off-by: Tormod Volden <debian.tormod@gmail.com>
+Hi Paul,
 
-On Sun, Apr 03, 2011 at 02:54:05PM +0200, Tormod Volden wrote:
-> In practice this means enabling I2C (for DDC2) on all prosavage cards,
-> like the xorg ddx does. The savage4 and savage2000 families have only
-> one member each, so there is no change for those.
-> 
-> Tested on TwisterK.
-> 
-> Signed-off-by: Tormod Volden <debian.tormod@gmail.com>
+Here are a few OMAP DSS fixes for the next rc.
 
-On Sun, Apr 03, 2011 at 02:54:06PM +0200, Tormod Volden wrote:
-> The else clause was not needed after the cleanup in commit
-> b8901b091db260b0f0101d6395ce5c6016835a47
-> 
-> Signed-off-by: Tormod Volden <debian.tormod@gmail.com>
+ Tomi
 
-These all look fine. All applied, thanks.
+The following changes since commit a6360dd37e1a144ed11e6548371bade559a1e4df:
+
+  Linux 2.6.39-rc3 (2011-04-11 17:21:51 -0700)
+
+are available in the git repository at:
+  git://gitorious.org/linux-omap-dss2/linux.git for-paul-39-rc
+
+Archit Taneja (1):
+      OMAP: DSS2: Fix: Return correct lcd clock source for OMAP2/3		
+
+Tomi Valkeinen (4):
+      OMAP: DSS2: DSI: fix use_sys_clk & highfreq
+      OMAP: DSS2: DSI: fix dsi_dump_clocks()
+      OMAP: DSS2: DSI: Fix DSI PLL power bug
+      OMAP: DSS2: fix panel Kconfig dependencies
+
+ drivers/video/omap2/displays/Kconfig   |    9 +++++----
+ drivers/video/omap2/dss/dsi.c          |   14 +++++++++-----
+ drivers/video/omap2/dss/dss.c          |   10 ++++++++--
+ drivers/video/omap2/dss/dss_features.c |    2 +-
+ drivers/video/omap2/dss/dss_features.h |    2 ++
+ 5 files changed, 25 insertions(+), 12 deletions(-)
+
+

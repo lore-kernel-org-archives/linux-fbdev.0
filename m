@@ -1,41 +1,17 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 18 Apr 2011 07:12:41 +0000
-Subject: [GIT PULL] OMAP DSS fixes for 39 rc
-Message-Id: <1303110761.2062.11.camel@deskari>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Mon, 18 Apr 2011 08:49:44 +0000
+Subject: Re: [GIT PULL] OMAP DSS fixes for 39 rc
+Message-Id: <20110418084943.GD32457@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1303110761.2062.11.camel@deskari>
+In-Reply-To: <1303110761.2062.11.camel@deskari>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: lethal@linux-sh.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: lo-ml <linux-omap@vger.kernel.org>, lfbdev-ml <linux-fbdev@vger.kernel.org>
 
-Hi Paul,
-
-Here are a few OMAP DSS fixes for the next rc.
-
- Tomi
-
-The following changes since commit a6360dd37e1a144ed11e6548371bade559a1e4df:
-
-  Linux 2.6.39-rc3 (2011-04-11 17:21:51 -0700)
-
-are available in the git repository at:
-  git://gitorious.org/linux-omap-dss2/linux.git for-paul-39-rc
-
-Archit Taneja (1):
-      OMAP: DSS2: Fix: Return correct lcd clock source for OMAP2/3		
-
-Tomi Valkeinen (4):
-      OMAP: DSS2: DSI: fix use_sys_clk & highfreq
-      OMAP: DSS2: DSI: fix dsi_dump_clocks()
-      OMAP: DSS2: DSI: Fix DSI PLL power bug
-      OMAP: DSS2: fix panel Kconfig dependencies
-
- drivers/video/omap2/displays/Kconfig   |    9 +++++----
- drivers/video/omap2/dss/dsi.c          |   14 +++++++++-----
- drivers/video/omap2/dss/dss.c          |   10 ++++++++--
- drivers/video/omap2/dss/dss_features.c |    2 +-
- drivers/video/omap2/dss/dss_features.h |    2 ++
- 5 files changed, 25 insertions(+), 12 deletions(-)
-
-
+On Mon, Apr 18, 2011 at 10:12:41AM +0300, Tomi Valkeinen wrote:
+> Here are a few OMAP DSS fixes for the next rc.
+> 
+Pulled and pushed out, thanks.

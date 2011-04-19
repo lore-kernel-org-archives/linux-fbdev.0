@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 19 Apr 2011 09:22:14 +0000
-Subject: [PATCH 11/19] OMAP: DSS2: DSI: add parameter to enter ulps on disable
-Message-Id: <1303204942-25450-12-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 19 Apr 2011 09:22:18 +0000
+Subject: [PATCH 15/19] OMAP: DSS2: Taal: Clean up ESD queueing
+Message-Id: <1303204942-25450-16-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,94 +11,110 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add parameter to omapdss_dsi_display_disable() which the panel driver
-can use to tell if the DSI lanes should be put to ULPS before disabling
-the interface.
-
-This can be used to skip ULPS entry in cases where the panel doesn't
-care about ULPS state, for example when the panel will be reset, or when
-the display interface will be enabled again right after the disable.
-
-This will speed up the operation considerably in cases where entering
-ULPS would fail with timeout, and the panel driver isn't even interested
-in entering ULPS.
+Separate the code which queues/cancels ESD work into their own
+functions.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/plat-omap/include/plat/display.h |    2 +-
- drivers/video/omap2/displays/panel-taal.c |    4 ++--
- drivers/video/omap2/dss/dsi.c             |    8 ++++----
- 3 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |   36 ++++++++++++++++++----------
+ 1 files changed, 23 insertions(+), 13 deletions(-)
 
-diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
-index 205c6de..a65479c 100644
---- a/arch/arm/plat-omap/include/plat/display.h
-+++ b/arch/arm/plat-omap/include/plat/display.h
-@@ -592,7 +592,7 @@ void omap_dsi_release_vc(struct omap_dss_device *dssdev, int channel);
- 
- int omapdss_dsi_display_enable(struct omap_dss_device *dssdev);
- void omapdss_dsi_display_disable(struct omap_dss_device *dssdev,
--		bool disconnect_lanes);
-+		bool disconnect_lanes, bool enter_ulps);
- 
- int omapdss_dpi_display_enable(struct omap_dss_device *dssdev);
- void omapdss_dpi_display_disable(struct omap_dss_device *dssdev);
 diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 74ce9f8..d68119e 100644
+index cdb28a8..2787a51 100644
 --- a/drivers/video/omap2/displays/panel-taal.c
 +++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -932,7 +932,7 @@ err:
- 
- 	taal_hw_reset(dssdev);
- 
--	omapdss_dsi_display_disable(dssdev, true);
-+	omapdss_dsi_display_disable(dssdev, true, false);
- err0:
+@@ -420,6 +420,22 @@ static int taal_set_update_window(struct taal_data *td,
  	return r;
  }
-@@ -955,7 +955,7 @@ static void taal_power_off(struct omap_dss_device *dssdev)
- 		taal_hw_reset(dssdev);
+ 
++static void taal_queue_esd_work(struct omap_dss_device *dssdev)
++{
++	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++
++	if (td->esd_interval > 0)
++		queue_delayed_work(td->esd_wq, &td->esd_work,
++				msecs_to_jiffies(td->esd_interval));
++}
++
++static void taal_cancel_esd_work(struct omap_dss_device *dssdev)
++{
++	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++
++	cancel_delayed_work(&td->esd_work);
++}
++
+ static int taal_bl_update_status(struct backlight_device *dev)
+ {
+ 	struct omap_dss_device *dssdev = dev_get_drvdata(&dev->dev);
+@@ -841,7 +857,7 @@ static void __exit taal_remove(struct omap_dss_device *dssdev)
+ 	taal_bl_update_status(bldev);
+ 	backlight_device_unregister(bldev);
+ 
+-	cancel_delayed_work(&td->esd_work);
++	taal_cancel_esd_work(dssdev);
+ 	destroy_workqueue(td->esd_wq);
+ 
+ 	/* reset, to be sure that the panel is in a valid state */
+@@ -983,9 +999,7 @@ static int taal_enable(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err;
+ 
+-	if (td->esd_interval > 0)
+-		queue_delayed_work(td->esd_wq, &td->esd_work,
+-				msecs_to_jiffies(td->esd_interval));
++	taal_queue_esd_work(dssdev);
+ 
+ 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
+ 
+@@ -1006,7 +1020,7 @@ static void taal_disable(struct omap_dss_device *dssdev)
+ 
+ 	mutex_lock(&td->lock);
+ 
+-	cancel_delayed_work(&td->esd_work);
++	taal_cancel_esd_work(dssdev);
+ 
+ 	dsi_bus_lock();
+ 
+@@ -1034,7 +1048,7 @@ static int taal_suspend(struct omap_dss_device *dssdev)
+ 		goto err;
  	}
  
--	omapdss_dsi_display_disable(dssdev, true);
-+	omapdss_dsi_display_disable(dssdev, true, false);
+-	cancel_delayed_work(&td->esd_work);
++	taal_cancel_esd_work(dssdev);
  
- 	td->enabled = 0;
+ 	dsi_bus_lock();
+ 
+@@ -1076,9 +1090,7 @@ static int taal_resume(struct omap_dss_device *dssdev)
+ 		dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
+ 	} else {
+ 		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
+-		if (td->esd_interval > 0)
+-			queue_delayed_work(td->esd_wq, &td->esd_work,
+-					msecs_to_jiffies(td->esd_interval));
++		taal_queue_esd_work(dssdev);
+ 	}
+ 
+ 	mutex_unlock(&td->lock);
+@@ -1521,8 +1533,7 @@ static void taal_esd_work(struct work_struct *work)
+ 
+ 	dsi_bus_unlock();
+ 
+-	queue_delayed_work(td->esd_wq, &td->esd_work,
+-		       msecs_to_jiffies(td->esd_interval));
++	taal_queue_esd_work(dssdev);
+ 
+ 	mutex_unlock(&td->lock);
+ 	return;
+@@ -1535,8 +1546,7 @@ err:
+ 
+ 	dsi_bus_unlock();
+ 
+-	queue_delayed_work(td->esd_wq, &td->esd_work,
+-		       msecs_to_jiffies(td->esd_interval));
++	taal_queue_esd_work(dssdev);
+ 
+ 	mutex_unlock(&td->lock);
  }
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 8d85635..d15014e 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -3763,9 +3763,9 @@ err0:
- }
- 
- static void dsi_display_uninit_dsi(struct omap_dss_device *dssdev,
--		bool disconnect_lanes)
-+		bool disconnect_lanes, bool enter_ulps)
- {
--	if (!dsi.ulps_enabled)
-+	if (enter_ulps && !dsi.ulps_enabled)
- 		dsi_enter_ulps();
- 
- 	/* disable interface */
-@@ -3848,7 +3848,7 @@ err0:
- EXPORT_SYMBOL(omapdss_dsi_display_enable);
- 
- void omapdss_dsi_display_disable(struct omap_dss_device *dssdev,
--		bool disconnect_lanes)
-+		bool disconnect_lanes, bool enter_ulps)
- {
- 	DSSDBG("dsi_display_disable\n");
- 
-@@ -3858,7 +3858,7 @@ void omapdss_dsi_display_disable(struct omap_dss_device *dssdev,
- 
- 	dsi_display_uninit_dispc(dssdev);
- 
--	dsi_display_uninit_dsi(dssdev, disconnect_lanes);
-+	dsi_display_uninit_dsi(dssdev, disconnect_lanes, enter_ulps);
- 
- 	enable_clocks(0);
- 	dsi_enable_pll_clock(0);
 -- 
 1.7.1
 

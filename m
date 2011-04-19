@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 19 Apr 2011 09:22:20 +0000
-Subject: [PATCH 17/19] OMAP: DSS2: Taal: Separate panel reset
-Message-Id: <1303204942-25450-18-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 19 Apr 2011 09:22:16 +0000
+Subject: [PATCH 13/19] OMAP: DSS2: DSI: ensure VDDS_DSI is disabled on exit
+Message-Id: <1303204942-25450-14-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,46 +11,32 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Separate panel reset code to a function of its own. This will keep the
-code cleaner in the future when panel reset is called from multiple
-locations.
+The panel drivers can leave the VDDS_DSI regulator enabled, even when
+the panel is disabled, to ensure that the DSI pins are powered.
+
+This patch ensures that VDDS_DSI is disabled on DSI module unload.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/displays/panel-taal.c |   13 ++++++++++---
- 1 files changed, 10 insertions(+), 3 deletions(-)
+ drivers/video/omap2/dss/dsi.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 3192dd7..2f7a223 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -1018,6 +1018,15 @@ static void taal_power_off(struct omap_dss_device *dssdev)
- 	td->enabled = 0;
- }
- 
-+static int taal_panel_reset(struct omap_dss_device *dssdev)
-+{
-+	dev_err(&dssdev->dev, "performing LCD reset\n");
-+
-+	taal_power_off(dssdev);
-+	taal_hw_reset(dssdev);
-+	return taal_power_on(dssdev);
-+}
-+
- static int taal_enable(struct omap_dss_device *dssdev)
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index f1e14ca..9c5715a 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -4090,6 +4090,11 @@ err1:
+ static void dsi_exit(void)
  {
- 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
-@@ -1582,9 +1591,7 @@ static void taal_esd_work(struct work_struct *work)
- err:
- 	dev_err(&dssdev->dev, "performing LCD reset\n");
- 
--	taal_power_off(dssdev);
--	taal_hw_reset(dssdev);
--	taal_power_on(dssdev);
-+	taal_panel_reset(dssdev);
- 
- 	dsi_bus_unlock();
- 
+ 	if (dsi.vdds_dsi_reg != NULL) {
++		if (dsi.vdds_dsi_enabled) {
++			regulator_disable(dsi.vdds_dsi_reg);
++			dsi.vdds_dsi_enabled = false;
++		}
++
+ 		regulator_put(dsi.vdds_dsi_reg);
+ 		dsi.vdds_dsi_reg = NULL;
+ 	}
 -- 
 1.7.1
 

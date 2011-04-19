@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 19 Apr 2011 09:22:08 +0000
-Subject: [PATCH 05/19] OMAP: DSS2: DSI: rename complexio related functions
-Message-Id: <1303204942-25450-6-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 19 Apr 2011 09:22:11 +0000
+Subject: [PATCH 08/19] OMAP: DSS2: DSI: implement enable/disable SCP clk
+Message-Id: <1303204942-25450-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,173 +11,124 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Rename ComplexIO from dsi_complexio_xxx to dsi_cio_xxx for brevity.
-Also, add cio prefix for couple of functions that didn't have it, but
-are cio related.
+SCP clock is needed for CIO on OMAP3, and for CIO and PLL on OMAP4.
+Current driver enables the CIO clock always when DSI display is
+initialized. However, if a DPI display tries to use DSI PLL, the SCP
+clock is never enabled.
+
+This patch implements simple ref counting enable/disable functions for
+SCP clock.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dsi.c |   38 +++++++++++++++++++-------------------
- 1 files changed, 19 insertions(+), 19 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   33 ++++++++++++++++++++++++++++-----
+ 1 files changed, 28 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 54fc0f6..61d9f3c 100644
+index a6b6ca6..9a0f9e4 100644
 --- a/drivers/video/omap2/dss/dsi.c
 +++ b/drivers/video/omap2/dss/dsi.c
-@@ -1738,13 +1738,13 @@ void dsi_dump_regs(struct seq_file *s)
- #undef DUMPREG
- }
+@@ -305,6 +305,8 @@ static struct
+ 	unsigned long  regm_dispc_max, regm_dsi_max;
+ 	unsigned long  fint_min, fint_max;
+ 	unsigned long lpdiv_max;
++
++	unsigned scp_clk_refcount;
+ } dsi;
  
--enum dsi_complexio_power_state {
-+enum dsi_cio_power_state {
- 	DSI_COMPLEXIO_POWER_OFF		= 0x0,
- 	DSI_COMPLEXIO_POWER_ON		= 0x1,
- 	DSI_COMPLEXIO_POWER_ULPS	= 0x2,
- };
- 
--static int dsi_complexio_power(enum dsi_complexio_power_state state)
-+static int dsi_cio_power(enum dsi_cio_power_state state)
- {
- 	int t = 0;
- 
-@@ -1764,7 +1764,7 @@ static int dsi_complexio_power(enum dsi_complexio_power_state state)
+ #ifdef DEBUG
+@@ -1073,6 +1075,18 @@ static int dsi_set_lp_clk_divisor(struct omap_dss_device *dssdev)
  	return 0;
  }
  
--static void dsi_complexio_config(struct omap_dss_device *dssdev)
-+static void dsi_set_lane_config(struct omap_dss_device *dssdev)
- {
- 	u32 r;
++static void dsi_enable_scp_clk(void)
++{
++	if (dsi.scp_clk_refcount++ = 0)
++		REG_FLD_MOD(DSI_CLK_CTRL, 1, 14, 14); /* CIO_CLK_ICG */
++}
++
++static void dsi_disable_scp_clk(void)
++{
++	WARN_ON(dsi.scp_clk_refcount = 0);
++	if (--dsi.scp_clk_refcount = 0)
++		REG_FLD_MOD(DSI_CLK_CTRL, 0, 14, 14); /* CIO_CLK_ICG */
++}
  
-@@ -1816,7 +1816,7 @@ static inline unsigned ddr2ns(unsigned ddr)
- 	return ddr * 1000 * 1000 / (ddr_clk / 1000);
+ enum dsi_pll_power_state {
+ 	DSI_PLL_POWER_OFF	= 0x0,
+@@ -1458,6 +1472,10 @@ int dsi_pll_init(struct omap_dss_device *dssdev, bool enable_hsclk,
+ 
+ 	enable_clocks(1);
+ 	dsi_enable_pll_clock(1);
++	/*
++	 * Note: SCP CLK is not required on OMAP3, but it is required on OMAP4.
++	 */
++	dsi_enable_scp_clk();
+ 
+ 	if (!dsi.vdds_dsi_enabled) {
+ 		r = regulator_enable(dsi.vdds_dsi_reg);
+@@ -1503,6 +1521,7 @@ err1:
+ 		dsi.vdds_dsi_enabled = false;
+ 	}
+ err0:
++	dsi_disable_scp_clk();
+ 	enable_clocks(0);
+ 	dsi_enable_pll_clock(0);
+ 	return r;
+@@ -1510,9 +1529,6 @@ err0:
+ 
+ void dsi_pll_uninit(bool disconnect_lanes)
+ {
+-	enable_clocks(0);
+-	dsi_enable_pll_clock(0);
+-
+ 	dsi.pll_locked = 0;
+ 	dsi_pll_power(DSI_PLL_POWER_OFF);
+ 	if (disconnect_lanes) {
+@@ -1520,6 +1536,11 @@ void dsi_pll_uninit(bool disconnect_lanes)
+ 		regulator_disable(dsi.vdds_dsi_reg);
+ 		dsi.vdds_dsi_enabled = false;
+ 	}
++
++	dsi_disable_scp_clk();
++	enable_clocks(0);
++	dsi_enable_pll_clock(0);
++
+ 	DSSDBG("PLL uninit done\n");
  }
  
--static void dsi_complexio_timings(void)
-+static void dsi_cio_timings(void)
- {
- 	u32 r;
- 	u32 ths_prepare, ths_prepare_ths_zero, ths_trail, ths_exit;
-@@ -1886,7 +1886,7 @@ static void dsi_complexio_timings(void)
- 	dsi_write_reg(DSI_DSIPHY_CFG2, r);
- }
+@@ -3611,8 +3632,7 @@ static int dsi_display_init_dsi(struct omap_dss_device *dssdev)
+ 	int r;
  
--static void dsi_enable_lane_override(struct omap_dss_device *dssdev,
-+static void dsi_cio_enable_lane_override(struct omap_dss_device *dssdev,
- 		enum dsi_lane lanes)
- {
- 	int clk_lane   = dssdev->phy.dsi.clk_lane;
-@@ -1927,7 +1927,7 @@ static void dsi_enable_lane_override(struct omap_dss_device *dssdev,
- 	REG_FLD_MOD(DSI_DSIPHY_CFG10, 1, 27, 27); /* ENLPTXSCPDAT */
- }
+ 	/* The SCPClk is required for both PLL and CIO registers on OMAP4 */
+-	/* CIO_CLK_ICG, enable L3 clk to CIO */
+-	REG_FLD_MOD(DSI_CLK_CTRL, 1, 14, 14);
++	dsi_enable_scp_clk();
  
--static void dsi_disable_lane_override(void)
-+static void dsi_cio_disable_lane_override(void)
- {
- 	/* Disable lane override */
- 	REG_FLD_MOD(DSI_DSIPHY_CFG10, 0, 27, 27); /* ENLPTXSCPDAT */
-@@ -1935,12 +1935,12 @@ static void dsi_disable_lane_override(void)
- 	REG_FLD_MOD(DSI_DSIPHY_CFG10, 0, 22, 17); /* REGLPTXSCPDAT4TO0DXDY */
- }
+ 	_dsi_print_reset_status();
  
--static int dsi_complexio_init(struct omap_dss_device *dssdev)
-+static int dsi_cio_init(struct omap_dss_device *dssdev)
- {
- 	int r = 0;
- 	u32 l;
- 
--	DSSDBG("dsi_complexio_init\n");
-+	DSSDBGF();
- 
- 	if (dsi.ulps_enabled)
- 		DSSDBG("manual ulps exit\n");
-@@ -1956,7 +1956,7 @@ static int dsi_complexio_init(struct omap_dss_device *dssdev)
- 		goto err;
- 	}
- 
--	dsi_complexio_config(dssdev);
-+	dsi_set_lane_config(dssdev);
- 
- 	dsi_if_enable(true);
- 	dsi_if_enable(false);
-@@ -1979,11 +1979,11 @@ static int dsi_complexio_init(struct omap_dss_device *dssdev)
- 		 * manually.
- 		 */
- 
--		dsi_enable_lane_override(dssdev,
-+		dsi_cio_enable_lane_override(dssdev,
- 				DSI_CLK_P | DSI_DATA1_P | DSI_DATA2_P);
- 	}
- 
--	r = dsi_complexio_power(DSI_COMPLEXIO_POWER_ON);
-+	r = dsi_cio_power(DSI_COMPLEXIO_POWER_ON);
- 	if (r)
- 		goto err;
- 
-@@ -1995,7 +1995,7 @@ static int dsi_complexio_init(struct omap_dss_device *dssdev)
- 
- 		/* Disable the override. The lanes should be set to Mark-11
- 		 * state by the HW */
--		dsi_disable_lane_override();
-+		dsi_cio_disable_lane_override();
- 	}
- 
- 	/* FORCE_TX_STOP_MODE_IO */
-@@ -2007,7 +2007,7 @@ static int dsi_complexio_init(struct omap_dss_device *dssdev)
- 		goto err;
- 	}
- 
--	dsi_complexio_timings();
-+	dsi_cio_timings();
- 
- 	dsi.ulps_enabled = false;
- 
-@@ -2016,9 +2016,9 @@ err:
+@@ -3668,6 +3688,7 @@ err2:
+ err1:
+ 	dsi_pll_uninit(true);
+ err0:
++	dsi_disable_scp_clk();
  	return r;
  }
  
--static void dsi_complexio_uninit(void)
-+static void dsi_cio_uninit(void)
- {
--	dsi_complexio_power(DSI_COMPLEXIO_POWER_OFF);
-+	dsi_cio_power(DSI_COMPLEXIO_POWER_OFF);
+@@ -3688,6 +3709,7 @@ static void dsi_display_uninit_dsi(struct omap_dss_device *dssdev,
+ 	dss_select_dsi_clk_source(OMAP_DSS_CLK_SRC_FCK);
+ 	dsi_cio_uninit();
+ 	dsi_pll_uninit(disconnect_lanes);
++	dsi_disable_scp_clk();
  }
  
- static int _dsi_wait_reset(void)
-@@ -2892,7 +2892,7 @@ static int dsi_enter_ulps(void)
- 	dsi_unregister_isr_cio(dsi_completion_handler, &completion,
- 			DSI_CIO_IRQ_ULPSACTIVENOT_ALL0);
- 
--	dsi_complexio_power(DSI_COMPLEXIO_POWER_ULPS);
-+	dsi_cio_power(DSI_COMPLEXIO_POWER_ULPS);
- 
- 	dsi_if_enable(false);
- 
-@@ -3622,7 +3622,7 @@ static int dsi_display_init_dsi(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err2;
- 
--	r = dsi_complexio_init(dssdev);
-+	r = dsi_cio_init(dssdev);
- 	if (r)
- 		goto err2;
- 
-@@ -3648,7 +3648,7 @@ static int dsi_display_init_dsi(struct omap_dss_device *dssdev)
- 
+ static int dsi_core_init(void)
+@@ -4013,6 +4035,7 @@ err_dsi:
+ static int omap_dsi1hw_remove(struct platform_device *pdev)
+ {
+ 	dsi_exit();
++	WARN_ON(dsi.scp_clk_refcount > 0);
  	return 0;
- err3:
--	dsi_complexio_uninit();
-+	dsi_cio_uninit();
- err2:
- 	dss_select_dispc_clk_source(OMAP_DSS_CLK_SRC_FCK);
- 	dss_select_dsi_clk_source(OMAP_DSS_CLK_SRC_FCK);
-@@ -3673,7 +3673,7 @@ static void dsi_display_uninit_dsi(struct omap_dss_device *dssdev,
- 
- 	dss_select_dispc_clk_source(OMAP_DSS_CLK_SRC_FCK);
- 	dss_select_dsi_clk_source(OMAP_DSS_CLK_SRC_FCK);
--	dsi_complexio_uninit();
-+	dsi_cio_uninit();
- 	dsi_pll_uninit(disconnect_lanes);
  }
  
 -- 

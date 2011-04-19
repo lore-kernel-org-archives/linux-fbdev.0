@@ -1,67 +1,104 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 11 Apr 2011 07:25:37 +0000
-Subject: [PATCH] video: s3c-fb: add spinlock to interrupt routine
-Message-Id: <1302506737-22764-1-git-send-email-jg1.han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 19 Apr 2011 09:22:14 +0000
+Subject: [PATCH 11/19] OMAP: DSS2: DSI: add parameter to enter ulps on disable
+Message-Id: <1303204942-25450-12-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The spinlock is added to interrupt routine to ensure that the driver
-is protected against multiple accesses.
+Add parameter to omapdss_dsi_display_disable() which the panel driver
+can use to tell if the DSI lanes should be put to ULPS before disabling
+the interface.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+This can be used to skip ULPS entry in cases where the panel doesn't
+care about ULPS state, for example when the panel will be reset, or when
+the display interface will be enabled again right after the disable.
+
+This will speed up the operation considerably in cases where entering
+ULPS would fail with timeout, and the panel driver isn't even interested
+in entering ULPS.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/s3c-fb.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ arch/arm/plat-omap/include/plat/display.h |    2 +-
+ drivers/video/omap2/displays/panel-taal.c |    4 ++--
+ drivers/video/omap2/dss/dsi.c             |    8 ++++----
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 6817d18..23481f3 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -182,6 +182,7 @@ struct s3c_fb_vsync {
+diff --git a/arch/arm/plat-omap/include/plat/display.h b/arch/arm/plat-omap/include/plat/display.h
+index 205c6de..a65479c 100644
+--- a/arch/arm/plat-omap/include/plat/display.h
++++ b/arch/arm/plat-omap/include/plat/display.h
+@@ -592,7 +592,7 @@ void omap_dsi_release_vc(struct omap_dss_device *dssdev, int channel);
  
- /**
-  * struct s3c_fb - overall hardware state of the hardware
-+ * @slock: The spinlock protection for this data sturcture.
-  * @dev: The device that we bound to, for printing, etc.
-  * @regs_res: The resource we claimed for the IO registers.
-  * @bus_clk: The clk (hclk) feeding our interface and possibly pixclk.
-@@ -195,6 +196,7 @@ struct s3c_fb_vsync {
-  * @vsync_info: VSYNC-related information (count, queues...)
-  */
- struct s3c_fb {
-+	spinlock_t		slock;
- 	struct device		*dev;
- 	struct resource		*regs_res;
- 	struct clk		*bus_clk;
-@@ -947,6 +949,8 @@ static irqreturn_t s3c_fb_irq(int irq, void *dev_id)
- 	void __iomem  *regs = sfb->regs;
- 	u32 irq_sts_reg;
+ int omapdss_dsi_display_enable(struct omap_dss_device *dssdev);
+ void omapdss_dsi_display_disable(struct omap_dss_device *dssdev,
+-		bool disconnect_lanes);
++		bool disconnect_lanes, bool enter_ulps);
  
-+	spin_lock(&sfb->slock);
-+
- 	irq_sts_reg = readl(regs + VIDINTCON1);
+ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev);
+ void omapdss_dpi_display_disable(struct omap_dss_device *dssdev);
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 74ce9f8..d68119e 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -932,7 +932,7 @@ err:
  
- 	if (irq_sts_reg & VIDINTCON1_INT_FRAME) {
-@@ -963,6 +967,7 @@ static irqreturn_t s3c_fb_irq(int irq, void *dev_id)
- 	 */
- 	s3c_fb_disable_irq(sfb);
+ 	taal_hw_reset(dssdev);
  
-+	spin_unlock(&sfb->slock);
- 	return IRQ_HANDLED;
+-	omapdss_dsi_display_disable(dssdev, true);
++	omapdss_dsi_display_disable(dssdev, true, false);
+ err0:
+ 	return r;
+ }
+@@ -955,7 +955,7 @@ static void taal_power_off(struct omap_dss_device *dssdev)
+ 		taal_hw_reset(dssdev);
+ 	}
+ 
+-	omapdss_dsi_display_disable(dssdev, true);
++	omapdss_dsi_display_disable(dssdev, true, false);
+ 
+ 	td->enabled = 0;
+ }
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 8d85635..d15014e 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -3763,9 +3763,9 @@ err0:
  }
  
-@@ -1337,6 +1342,8 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
- 	sfb->pdata = pd;
- 	sfb->variant = fbdrv->variant;
+ static void dsi_display_uninit_dsi(struct omap_dss_device *dssdev,
+-		bool disconnect_lanes)
++		bool disconnect_lanes, bool enter_ulps)
+ {
+-	if (!dsi.ulps_enabled)
++	if (enter_ulps && !dsi.ulps_enabled)
+ 		dsi_enter_ulps();
  
-+	spin_lock_init(&sfb->slock);
-+
- 	sfb->bus_clk = clk_get(dev, "lcd");
- 	if (IS_ERR(sfb->bus_clk)) {
- 		dev_err(dev, "failed to get bus clock\n");
+ 	/* disable interface */
+@@ -3848,7 +3848,7 @@ err0:
+ EXPORT_SYMBOL(omapdss_dsi_display_enable);
+ 
+ void omapdss_dsi_display_disable(struct omap_dss_device *dssdev,
+-		bool disconnect_lanes)
++		bool disconnect_lanes, bool enter_ulps)
+ {
+ 	DSSDBG("dsi_display_disable\n");
+ 
+@@ -3858,7 +3858,7 @@ void omapdss_dsi_display_disable(struct omap_dss_device *dssdev,
+ 
+ 	dsi_display_uninit_dispc(dssdev);
+ 
+-	dsi_display_uninit_dsi(dssdev, disconnect_lanes);
++	dsi_display_uninit_dsi(dssdev, disconnect_lanes, enter_ulps);
+ 
+ 	enable_clocks(0);
+ 	dsi_enable_pll_clock(0);
 -- 
 1.7.1
 

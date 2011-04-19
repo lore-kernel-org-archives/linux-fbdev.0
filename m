@@ -1,99 +1,151 @@
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
-Date: Tue, 05 Apr 2011 00:02:58 +0000
-Subject: [PATCH] udlfb.c dlfb_ops_ioctl - missing copy_from_user's  - NEEDS
-Message-Id: <20110405000258.GA30668@gallifrey>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 19 Apr 2011 09:22:17 +0000
+Subject: [PATCH 14/19] OMAP: DSS2: Taal: Implement configurable ESD interval
+Message-Id: <1303204942-25450-15-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-    Fix __user casting in dlfb_ops_ioctl and a missing copy_from_user, and a missing &
+ESD check in Taal driver is currently on/off feature with hardcoded
+interval. This patch changes it to a configurable interval, which can be
+set from the board file.
 
-Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
+ arch/arm/mach-omap2/board-4430sdp.c               |    2 +-
+ arch/arm/plat-omap/include/plat/nokia-dsi-panel.h |    4 ++--
+ drivers/video/omap2/displays/panel-taal.c         |   20 ++++++++++----------
+ 3 files changed, 13 insertions(+), 13 deletions(-)
 
-NOTE! I don't have the hardware to test this; but Bernie suggested I put the
-patch together anyway; build and Sparse tested only -**  don't **
-merge without a test by a udl dev
-
-Patch is against ecb78ab6f30106ab72a575a25b1cdfd1633b7ca2 on Linus's tree
-a few days after 39-rc1
-
-diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
-index 2c8364e..ef7801a 100644
---- a/drivers/video/udlfb.c
-+++ b/drivers/video/udlfb.c
-@@ -751,14 +751,13 @@ static int dlfb_ops_ioctl(struct fb_info *info, unsigned int cmd,
- {
+diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+index 1503f0b..570e83f 100644
+--- a/arch/arm/mach-omap2/board-4430sdp.c
++++ b/arch/arm/mach-omap2/board-4430sdp.c
+@@ -753,7 +753,7 @@ static struct nokia_dsi_panel_data dsi1_panel = {
+ 		.reset_gpio	= 102,
+ 		.use_ext_te	= false,
+ 		.ext_te_gpio	= 101,
+-		.use_esd_check	= false,
++		.esd_interval	= 0,
+ 		.set_backlight	= dsi1_panel_set_backlight,
+ };
  
- 	struct dlfb_data *dev = info->par;
--	struct dloarea *area = NULL;
+diff --git a/arch/arm/plat-omap/include/plat/nokia-dsi-panel.h b/arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
+index 01ab657..aaa1c14 100644
+--- a/arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
++++ b/arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
+@@ -8,7 +8,7 @@
+  * @name: panel name
+  * @use_ext_te: use external TE
+  * @ext_te_gpio: external TE GPIO
+- * @use_esd_check: perform ESD checks
++ * @esd_interval: interval of ESD checks, 0 = disabled (ms)
+  * @max_backlight_level: maximum backlight level
+  * @set_backlight: pointer to backlight set function
+  * @get_backlight: pointer to backlight get function
+@@ -21,7 +21,7 @@ struct nokia_dsi_panel_data {
+ 	bool use_ext_te;
+ 	int ext_te_gpio;
  
- 	if (!atomic_read(&dev->usb_active))
- 		return 0;
+-	bool use_esd_check;
++	unsigned esd_interval;
  
- 	/* TODO: Update X server to get this from sysfs instead */
- 	if (cmd = DLFB_IOCTL_RETURN_EDID) {
--		char *edid = (char *)arg;
-+		void __user *edid = (void __user *)arg;
- 		if (copy_to_user(edid, dev->edid, dev->edid_size))
- 			return -EFAULT;
- 		return 0;
-@@ -766,6 +765,11 @@ static int dlfb_ops_ioctl(struct fb_info *info, unsigned int cmd,
+ 	int max_backlight_level;
+ 	int (*set_backlight)(struct omap_dss_device *dssdev, int level);
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index d68119e..cdb28a8 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -63,8 +63,6 @@
+ #define DCS_GET_ID2		0xdb
+ #define DCS_GET_ID3		0xdc
  
- 	/* TODO: Help propose a standard fb.h ioctl to report mmap damage */
- 	if (cmd = DLFB_IOCTL_REPORT_DAMAGE) {
-+		struct dloarea area;
-+
-+		if (copy_from_user(&area, (void __user *)arg,
-+				   sizeof(struct dloarea)))
-+			return -EFAULT;
- 
- 		/*
- 		 * If we have a damage-aware client, turn fb_defio "off"
-@@ -777,21 +781,19 @@ static int dlfb_ops_ioctl(struct fb_info *info, unsigned int cmd,
- 		if (info->fbdefio)
- 			info->fbdefio->delay = DL_DEFIO_WRITE_DISABLE;
- 
--		area = (struct dloarea *)arg;
+-#define TAAL_ESD_CHECK_PERIOD	msecs_to_jiffies(5000)
 -
--		if (area->x < 0)
--			area->x = 0;
-+		if (area.x < 0)
-+			area.x = 0;
+ static irqreturn_t taal_te_isr(int irq, void *data);
+ static void taal_te_timeout_work_callback(struct work_struct *work);
+ static int _taal_enable_te(struct omap_dss_device *dssdev, bool enable);
+@@ -231,6 +229,7 @@ struct taal_data {
  
--		if (area->x > info->var.xres)
--			area->x = info->var.xres;
-+		if (area.x > info->var.xres)
-+			area.x = info->var.xres;
+ 	struct workqueue_struct *esd_wq;
+ 	struct delayed_work esd_work;
++	unsigned esd_interval;
  
--		if (area->y < 0)
--			area->y = 0;
-+		if (area.y < 0)
-+			area.y = 0;
+ 	struct panel_config *panel_config;
+ };
+@@ -700,6 +699,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 	}
+ 	td->dssdev = dssdev;
+ 	td->panel_config = panel_config;
++	td->esd_interval = panel_data->esd_interval;
  
--		if (area->y > info->var.yres)
--			area->y = info->var.yres;
-+		if (area.y > info->var.yres)
-+			area.y = info->var.yres;
+ 	mutex_init(&td->lock);
  
--		dlfb_handle_damage(dev, area->x, area->y, area->w, area->h,
-+		dlfb_handle_damage(dev, area.x, area.y, area.w, area.h,
- 			   info->screen_base);
+@@ -963,7 +963,6 @@ static void taal_power_off(struct omap_dss_device *dssdev)
+ static int taal_enable(struct omap_dss_device *dssdev)
+ {
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+-	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
+ 	int r;
+ 
+ 	dev_dbg(&dssdev->dev, "enable\n");
+@@ -984,9 +983,9 @@ static int taal_enable(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err;
+ 
+-	if (panel_data->use_esd_check)
++	if (td->esd_interval > 0)
+ 		queue_delayed_work(td->esd_wq, &td->esd_work,
+-				TAAL_ESD_CHECK_PERIOD);
++				msecs_to_jiffies(td->esd_interval));
+ 
+ 	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
+ 
+@@ -1056,7 +1055,6 @@ err:
+ static int taal_resume(struct omap_dss_device *dssdev)
+ {
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+-	struct nokia_dsi_panel_data *panel_data = get_panel_data(dssdev);
+ 	int r;
+ 
+ 	dev_dbg(&dssdev->dev, "resume\n");
+@@ -1078,9 +1076,9 @@ static int taal_resume(struct omap_dss_device *dssdev)
+ 		dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
+ 	} else {
+ 		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
+-		if (panel_data->use_esd_check)
++		if (td->esd_interval > 0)
+ 			queue_delayed_work(td->esd_wq, &td->esd_work,
+-					TAAL_ESD_CHECK_PERIOD);
++					msecs_to_jiffies(td->esd_interval));
  	}
  
-@@ -839,7 +841,7 @@ static int dlfb_ops_open(struct fb_info *info, int user)
- 	 * preventing other clients (X) from working properly. Usually
- 	 * not what the user wants. Fail by default with option to enable.
- 	 */
--	if ((user = 0) & (!console))
-+	if ((user = 0) && (!console))
- 		return -EBUSY;
+ 	mutex_unlock(&td->lock);
+@@ -1523,7 +1521,8 @@ static void taal_esd_work(struct work_struct *work)
  
- 	/* If the USB device is gone, we don't accept new opens */
+ 	dsi_bus_unlock();
+ 
+-	queue_delayed_work(td->esd_wq, &td->esd_work, TAAL_ESD_CHECK_PERIOD);
++	queue_delayed_work(td->esd_wq, &td->esd_work,
++		       msecs_to_jiffies(td->esd_interval));
+ 
+ 	mutex_unlock(&td->lock);
+ 	return;
+@@ -1536,7 +1535,8 @@ err:
+ 
+ 	dsi_bus_unlock();
+ 
+-	queue_delayed_work(td->esd_wq, &td->esd_work, TAAL_ESD_CHECK_PERIOD);
++	queue_delayed_work(td->esd_wq, &td->esd_work,
++		       msecs_to_jiffies(td->esd_interval));
+ 
+ 	mutex_unlock(&td->lock);
+ }
 -- 
- -----Open up your eyes, open up your mind, open up your code -------   
-/ Dr. David Alan Gilbert    |       Running GNU/Linux       | Happy  \ 
-\ gro.gilbert @ treblig.org |                               | In Hex /
- \ _________________________|_____ http://www.treblig.org   |_______/
+1.7.1
+

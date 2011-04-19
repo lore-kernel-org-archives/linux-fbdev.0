@@ -1,207 +1,185 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 24 Apr 2011 01:45:34 +0000
-Subject: [PATCH 3/3] viafb: replace custom return values
-Message-Id: <1303610443-8681-4-git-send-email-FlorianSchandinat@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 19 Apr 2011 09:22:08 +0000
+Subject: [PATCH 05/19] OMAP: DSS2: DSI: rename complexio related functions
+Message-Id: <1303204942-25450-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1303610443-8681-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1303610443-8681-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This patch replaces OK/FAIL by true/false which is simpler and saner.
+Rename ComplexIO from dsi_complexio_xxx to dsi_cio_xxx for brevity.
+Also, add cio prefix for couple of functions that didn't have it, but
+are cio related.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/via/dvi.c   |   22 +++++++++-------------
- drivers/video/via/dvi.h   |    2 +-
- drivers/video/via/lcd.c   |   16 ++++++----------
- drivers/video/via/lcd.h   |    2 +-
- drivers/video/via/share.h |    8 --------
- 5 files changed, 17 insertions(+), 33 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   38 +++++++++++++++++++-------------------
+ 1 files changed, 19 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
-index 3dbcd77..b1f3647 100644
---- a/drivers/video/via/dvi.c
-+++ b/drivers/video/via/dvi.c
-@@ -30,12 +30,9 @@ static void __devinit dvi_get_panel_size_from_DDCv1(
- 	struct tmds_setting_information *tmds_setting);
- static int viafb_dvi_query_EDID(void);
- 
--static int check_tmds_chip(int device_id_subaddr, int device_id)
-+static inline bool check_tmds_chip(int device_id_subaddr, int device_id)
- {
--	if (tmds_register_read(device_id_subaddr) = device_id)
--		return OK;
--	else
--		return FAIL;
-+	return tmds_register_read(device_id_subaddr) = device_id;
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 54fc0f6..61d9f3c 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -1738,13 +1738,13 @@ void dsi_dump_regs(struct seq_file *s)
+ #undef DUMPREG
  }
  
- void __devinit viafb_init_dvi_size(struct tmds_chip_information *tmds_chip,
-@@ -50,7 +47,7 @@ void __devinit viafb_init_dvi_size(struct tmds_chip_information *tmds_chip,
- 	return;
- }
- 
--int __devinit viafb_tmds_trasmitter_identify(void)
-+bool __devinit viafb_tmds_trasmitter_identify(void)
- {
- 	unsigned char sr2a = 0, sr1e = 0, sr3e = 0;
- 
-@@ -89,7 +86,7 @@ int __devinit viafb_tmds_trasmitter_identify(void)
- 	viaparinfo->chip_info->
- 		tmds_chip_info.tmds_chip_slave_addr = VT1632_TMDS_I2C_ADDR;
- 	viaparinfo->chip_info->tmds_chip_info.i2c_port = VIA_PORT_31;
--	if (check_tmds_chip(VT1632_DEVICE_ID_REG, VT1632_DEVICE_ID) != FAIL) {
-+	if (check_tmds_chip(VT1632_DEVICE_ID_REG, VT1632_DEVICE_ID)) {
- 		/*
- 		 * Currently only support 12bits,dual edge,add 24bits mode later
- 		 */
-@@ -100,11 +97,10 @@ int __devinit viafb_tmds_trasmitter_identify(void)
- 			  viaparinfo->chip_info->tmds_chip_info.tmds_chip_name);
- 		DEBUG_MSG(KERN_INFO "\n %2d",
- 			  viaparinfo->chip_info->tmds_chip_info.i2c_port);
--		return OK;
-+		return true;
- 	} else {
- 		viaparinfo->chip_info->tmds_chip_info.i2c_port = VIA_PORT_2C;
--		if (check_tmds_chip(VT1632_DEVICE_ID_REG, VT1632_DEVICE_ID)
--		    != FAIL) {
-+		if (check_tmds_chip(VT1632_DEVICE_ID_REG, VT1632_DEVICE_ID)) {
- 			tmds_register_write(0x08, 0x3b);
- 			DEBUG_MSG(KERN_INFO "\n VT1632 TMDS ! \n");
- 			DEBUG_MSG(KERN_INFO "\n %2d",
-@@ -113,7 +109,7 @@ int __devinit viafb_tmds_trasmitter_identify(void)
- 			DEBUG_MSG(KERN_INFO "\n %2d",
- 				  viaparinfo->chip_info->
- 				  tmds_chip_info.i2c_port);
--			return OK;
-+			return true;
- 		}
- 	}
- 
-@@ -123,7 +119,7 @@ int __devinit viafb_tmds_trasmitter_identify(void)
- 	    ((viafb_display_hardware_layout = HW_LAYOUT_DVI_ONLY) ||
- 	     (viafb_display_hardware_layout = HW_LAYOUT_LCD_DVI))) {
- 		DEBUG_MSG(KERN_INFO "\n Integrated TMDS ! \n");
--		return OK;
-+		return true;
- 	}
- 
- 	switch (viaparinfo->chip_info->gfx_chip_name) {
-@@ -147,7 +143,7 @@ int __devinit viafb_tmds_trasmitter_identify(void)
- 		tmds_chip_info.tmds_chip_name = NON_TMDS_TRANSMITTER;
- 	viaparinfo->chip_info->tmds_chip_info.
- 		tmds_chip_slave_addr = VT1632_TMDS_I2C_ADDR;
--	return FAIL;
-+	return false;
- }
- 
- static void tmds_register_write(int index, u8 data)
-diff --git a/drivers/video/via/dvi.h b/drivers/video/via/dvi.h
-index 2c525c0..f473dd0 100644
---- a/drivers/video/via/dvi.h
-+++ b/drivers/video/via/dvi.h
-@@ -56,7 +56,7 @@
- int viafb_dvi_sense(void);
- void viafb_dvi_disable(void);
- void viafb_dvi_enable(void);
--int __devinit viafb_tmds_trasmitter_identify(void);
-+bool __devinit viafb_tmds_trasmitter_identify(void);
- void __devinit viafb_init_dvi_size(struct tmds_chip_information *tmds_chip,
- 	struct tmds_setting_information *tmds_setting);
- void viafb_dvi_set_mode(struct VideoModeTable *videoMode, int mode_bpp,
-diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
-index 64bc7e7..6984046 100644
---- a/drivers/video/via/lcd.c
-+++ b/drivers/video/via/lcd.c
-@@ -48,7 +48,6 @@ static struct _lcd_scaling_factor lcd_scaling_factor_CLE = {
- 	{LCD_VER_SCALING_FACTOR_REG_NUM_CLE, {{CR78, 0, 7}, {CR79, 6, 7} } }
+-enum dsi_complexio_power_state {
++enum dsi_cio_power_state {
+ 	DSI_COMPLEXIO_POWER_OFF		= 0x0,
+ 	DSI_COMPLEXIO_POWER_ON		= 0x1,
+ 	DSI_COMPLEXIO_POWER_ULPS	= 0x2,
  };
  
--static int check_lvds_chip(int device_id_subaddr, int device_id);
- static bool lvds_identify_integratedlvds(void);
- static void __devinit fp_id_to_vindex(int panel_id);
- static int lvds_register_read(int index);
-@@ -84,12 +83,9 @@ static struct display_timing lcd_centering_timging(struct display_timing
- 					    mode_crt_reg,
- 					   struct display_timing panel_crt_reg);
- 
--static int check_lvds_chip(int device_id_subaddr, int device_id)
-+static inline bool check_lvds_chip(int device_id_subaddr, int device_id)
+-static int dsi_complexio_power(enum dsi_complexio_power_state state)
++static int dsi_cio_power(enum dsi_cio_power_state state)
  {
--	if (lvds_register_read(device_id_subaddr) = device_id)
--		return OK;
--	else
--		return FAIL;
-+	return lvds_register_read(device_id_subaddr) = device_id;
+ 	int t = 0;
+ 
+@@ -1764,7 +1764,7 @@ static int dsi_complexio_power(enum dsi_complexio_power_state state)
+ 	return 0;
  }
  
- void __devinit viafb_init_lcd_size(void)
-@@ -150,7 +146,7 @@ static bool lvds_identify_integratedlvds(void)
- 	return true;
+-static void dsi_complexio_config(struct omap_dss_device *dssdev)
++static void dsi_set_lane_config(struct omap_dss_device *dssdev)
+ {
+ 	u32 r;
+ 
+@@ -1816,7 +1816,7 @@ static inline unsigned ddr2ns(unsigned ddr)
+ 	return ddr * 1000 * 1000 / (ddr_clk / 1000);
  }
  
--int __devinit viafb_lvds_trasmitter_identify(void)
-+bool __devinit viafb_lvds_trasmitter_identify(void)
+-static void dsi_complexio_timings(void)
++static void dsi_cio_timings(void)
  {
- 	if (viafb_lvds_identify_vt1636(VIA_PORT_31)) {
- 		viaparinfo->chip_info->lvds_chip_info.i2c_port = VIA_PORT_31;
-@@ -175,20 +171,20 @@ int __devinit viafb_lvds_trasmitter_identify(void)
- 	viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr  		VT1631_LVDS_I2C_ADDR;
+ 	u32 r;
+ 	u32 ths_prepare, ths_prepare_ths_zero, ths_trail, ths_exit;
+@@ -1886,7 +1886,7 @@ static void dsi_complexio_timings(void)
+ 	dsi_write_reg(DSI_DSIPHY_CFG2, r);
+ }
  
--	if (check_lvds_chip(VT1631_DEVICE_ID_REG, VT1631_DEVICE_ID) != FAIL) {
-+	if (check_lvds_chip(VT1631_DEVICE_ID_REG, VT1631_DEVICE_ID)) {
- 		DEBUG_MSG(KERN_INFO "\n VT1631 LVDS ! \n");
- 		DEBUG_MSG(KERN_INFO "\n %2d",
- 			  viaparinfo->chip_info->lvds_chip_info.lvds_chip_name);
- 		DEBUG_MSG(KERN_INFO "\n %2d",
- 			  viaparinfo->chip_info->lvds_chip_info.lvds_chip_name);
--		return OK;
-+		return true;
+-static void dsi_enable_lane_override(struct omap_dss_device *dssdev,
++static void dsi_cio_enable_lane_override(struct omap_dss_device *dssdev,
+ 		enum dsi_lane lanes)
+ {
+ 	int clk_lane   = dssdev->phy.dsi.clk_lane;
+@@ -1927,7 +1927,7 @@ static void dsi_enable_lane_override(struct omap_dss_device *dssdev,
+ 	REG_FLD_MOD(DSI_DSIPHY_CFG10, 1, 27, 27); /* ENLPTXSCPDAT */
+ }
+ 
+-static void dsi_disable_lane_override(void)
++static void dsi_cio_disable_lane_override(void)
+ {
+ 	/* Disable lane override */
+ 	REG_FLD_MOD(DSI_DSIPHY_CFG10, 0, 27, 27); /* ENLPTXSCPDAT */
+@@ -1935,12 +1935,12 @@ static void dsi_disable_lane_override(void)
+ 	REG_FLD_MOD(DSI_DSIPHY_CFG10, 0, 22, 17); /* REGLPTXSCPDAT4TO0DXDY */
+ }
+ 
+-static int dsi_complexio_init(struct omap_dss_device *dssdev)
++static int dsi_cio_init(struct omap_dss_device *dssdev)
+ {
+ 	int r = 0;
+ 	u32 l;
+ 
+-	DSSDBG("dsi_complexio_init\n");
++	DSSDBGF();
+ 
+ 	if (dsi.ulps_enabled)
+ 		DSSDBG("manual ulps exit\n");
+@@ -1956,7 +1956,7 @@ static int dsi_complexio_init(struct omap_dss_device *dssdev)
+ 		goto err;
  	}
  
- 	viaparinfo->chip_info->lvds_chip_info.lvds_chip_name  		NON_LVDS_TRANSMITTER;
- 	viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr  		VT1631_LVDS_I2C_ADDR;
--	return FAIL;
-+	return false;
+-	dsi_complexio_config(dssdev);
++	dsi_set_lane_config(dssdev);
+ 
+ 	dsi_if_enable(true);
+ 	dsi_if_enable(false);
+@@ -1979,11 +1979,11 @@ static int dsi_complexio_init(struct omap_dss_device *dssdev)
+ 		 * manually.
+ 		 */
+ 
+-		dsi_enable_lane_override(dssdev,
++		dsi_cio_enable_lane_override(dssdev,
+ 				DSI_CLK_P | DSI_DATA1_P | DSI_DATA2_P);
+ 	}
+ 
+-	r = dsi_complexio_power(DSI_COMPLEXIO_POWER_ON);
++	r = dsi_cio_power(DSI_COMPLEXIO_POWER_ON);
+ 	if (r)
+ 		goto err;
+ 
+@@ -1995,7 +1995,7 @@ static int dsi_complexio_init(struct omap_dss_device *dssdev)
+ 
+ 		/* Disable the override. The lanes should be set to Mark-11
+ 		 * state by the HW */
+-		dsi_disable_lane_override();
++		dsi_cio_disable_lane_override();
+ 	}
+ 
+ 	/* FORCE_TX_STOP_MODE_IO */
+@@ -2007,7 +2007,7 @@ static int dsi_complexio_init(struct omap_dss_device *dssdev)
+ 		goto err;
+ 	}
+ 
+-	dsi_complexio_timings();
++	dsi_cio_timings();
+ 
+ 	dsi.ulps_enabled = false;
+ 
+@@ -2016,9 +2016,9 @@ err:
+ 	return r;
  }
  
- static void __devinit fp_id_to_vindex(int panel_id)
-diff --git a/drivers/video/via/lcd.h b/drivers/video/via/lcd.h
-index c7909fe..75f60a6 100644
---- a/drivers/video/via/lcd.h
-+++ b/drivers/video/via/lcd.h
-@@ -79,7 +79,7 @@ void __devinit viafb_init_lvds_output_interface(struct lvds_chip_information
- void viafb_lcd_set_mode(struct crt_mode_table *mode_crt_table,
- 		  struct lvds_setting_information *plvds_setting_info,
- 		  struct lvds_chip_information *plvds_chip_info);
--int __devinit viafb_lvds_trasmitter_identify(void);
-+bool __devinit viafb_lvds_trasmitter_identify(void);
- void viafb_init_lvds_output_interface(struct lvds_chip_information
- 				*plvds_chip_info,
- 				struct lvds_setting_information
-diff --git a/drivers/video/via/share.h b/drivers/video/via/share.h
-index 4b7831f..beb59bc 100644
---- a/drivers/video/via/share.h
-+++ b/drivers/video/via/share.h
-@@ -22,14 +22,6 @@
- #ifndef __SHARE_H__
- #define __SHARE_H__
+-static void dsi_complexio_uninit(void)
++static void dsi_cio_uninit(void)
+ {
+-	dsi_complexio_power(DSI_COMPLEXIO_POWER_OFF);
++	dsi_cio_power(DSI_COMPLEXIO_POWER_OFF);
+ }
  
--/* Define Return Value */
--#define FAIL        -1
--#define OK          1
--
--#ifndef NULL
--#define NULL 0
--#endif
--
- /* Define Bit Field */
- #define BIT0    0x01
- #define BIT1    0x02
+ static int _dsi_wait_reset(void)
+@@ -2892,7 +2892,7 @@ static int dsi_enter_ulps(void)
+ 	dsi_unregister_isr_cio(dsi_completion_handler, &completion,
+ 			DSI_CIO_IRQ_ULPSACTIVENOT_ALL0);
+ 
+-	dsi_complexio_power(DSI_COMPLEXIO_POWER_ULPS);
++	dsi_cio_power(DSI_COMPLEXIO_POWER_ULPS);
+ 
+ 	dsi_if_enable(false);
+ 
+@@ -3622,7 +3622,7 @@ static int dsi_display_init_dsi(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err2;
+ 
+-	r = dsi_complexio_init(dssdev);
++	r = dsi_cio_init(dssdev);
+ 	if (r)
+ 		goto err2;
+ 
+@@ -3648,7 +3648,7 @@ static int dsi_display_init_dsi(struct omap_dss_device *dssdev)
+ 
+ 	return 0;
+ err3:
+-	dsi_complexio_uninit();
++	dsi_cio_uninit();
+ err2:
+ 	dss_select_dispc_clk_source(OMAP_DSS_CLK_SRC_FCK);
+ 	dss_select_dsi_clk_source(OMAP_DSS_CLK_SRC_FCK);
+@@ -3673,7 +3673,7 @@ static void dsi_display_uninit_dsi(struct omap_dss_device *dssdev,
+ 
+ 	dss_select_dispc_clk_source(OMAP_DSS_CLK_SRC_FCK);
+ 	dss_select_dsi_clk_source(OMAP_DSS_CLK_SRC_FCK);
+-	dsi_complexio_uninit();
++	dsi_cio_uninit();
+ 	dsi_pll_uninit(disconnect_lanes);
+ }
+ 
 -- 
-1.6.3.2
+1.7.1
 

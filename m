@@ -1,45 +1,88 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 25 Apr 2011 10:38:29 +0000
-Subject: [PATCH] video: s3c-fb: add gpio setup function to resume function
-Message-Id: <1303727909-20934-1-git-send-email-jg1.han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 19 Apr 2011 09:22:19 +0000
+Subject: [PATCH 16/19] OMAP: DSS2: Taal: Add sysfs file for ESD interval
+Message-Id: <1303204942-25450-17-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This patch adds gpio setup function to resume function to ensure
-gpio used by FIMD IP and LCD panel during a resume.
+Implement sysfs support to configure the ESD interval.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/s3c-fb.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |   42 +++++++++++++++++++++++++++++
+ 1 files changed, 42 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 3fa7911..9457546 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -1528,7 +1528,8 @@ static int s3c_fb_resume(struct device *dev)
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 2787a51..3192dd7 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -635,18 +635,60 @@ static ssize_t show_cabc_available_modes(struct device *dev,
+ 	return len < PAGE_SIZE ? len : PAGE_SIZE - 1;
+ }
  
- 	clk_enable(sfb->bus_clk);
++static ssize_t taal_store_esd_interval(struct device *dev,
++		struct device_attribute *attr,
++		const char *buf, size_t count)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++
++	unsigned long t;
++	int r;
++
++	r = strict_strtoul(buf, 10, &t);
++	if (r)
++		return r;
++
++	mutex_lock(&td->lock);
++	taal_cancel_esd_work(dssdev);
++	td->esd_interval = t;
++	if (td->enabled)
++		taal_queue_esd_work(dssdev);
++	mutex_unlock(&td->lock);
++
++	return count;
++}
++
++static ssize_t taal_show_esd_interval(struct device *dev,
++		struct device_attribute *attr,
++		char *buf)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
++	unsigned t;
++
++	mutex_lock(&td->lock);
++	t = td->esd_interval;
++	mutex_unlock(&td->lock);
++
++	return snprintf(buf, PAGE_SIZE, "%u\n", t);
++}
++
+ static DEVICE_ATTR(num_dsi_errors, S_IRUGO, taal_num_errors_show, NULL);
+ static DEVICE_ATTR(hw_revision, S_IRUGO, taal_hw_revision_show, NULL);
+ static DEVICE_ATTR(cabc_mode, S_IRUGO | S_IWUSR,
+ 		show_cabc_mode, store_cabc_mode);
+ static DEVICE_ATTR(cabc_available_modes, S_IRUGO,
+ 		show_cabc_available_modes, NULL);
++static DEVICE_ATTR(esd_interval, S_IRUGO | S_IWUSR,
++		taal_show_esd_interval, taal_store_esd_interval);
  
--	/* setup registers */
-+	/* setup gpio and output polarity controls */
-+	pd->setup_gpio();
- 	writel(pd->vidcon1, sfb->regs + VIDCON1);
+ static struct attribute *taal_attrs[] = {
+ 	&dev_attr_num_dsi_errors.attr,
+ 	&dev_attr_hw_revision.attr,
+ 	&dev_attr_cabc_mode.attr,
+ 	&dev_attr_cabc_available_modes.attr,
++	&dev_attr_esd_interval.attr,
+ 	NULL,
+ };
  
- 	/* zero all windows before we do anything */
-@@ -1586,7 +1587,8 @@ static int s3c_fb_runtime_resume(struct device *dev)
- 
- 	clk_enable(sfb->bus_clk);
- 
--	/* setup registers */
-+	/* setup gpio and output polarity controls */
-+	pd->setup_gpio();
- 	writel(pd->vidcon1, sfb->regs + VIDCON1);
- 
- 	/* zero all windows before we do anything */
 -- 
 1.7.1
 

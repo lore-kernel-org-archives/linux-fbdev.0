@@ -1,46 +1,29 @@
-From: Mike Waychison <mikew@google.com>
-Date: Tue, 19 Apr 2011 20:38:03 +0000
-Subject: [PATCH] efifb: Fix "cast to pointer from integer of different size"
-Message-Id: <1303245483-2799-1-git-send-email-mikew@google.com>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Wed, 20 Apr 2011 09:25:00 +0000
+Subject: Re: [PATCH] efifb: Fix "cast to pointer from integer of different size"
+Message-Id: <20110420092500.GD15898@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1303245483-2799-1-git-send-email-mikew@google.com>
+In-Reply-To: <1303245483-2799-1-git-send-email-mikew@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Peter Jones <pjones@redhat.com>, Paul Mundt <lethal@linux-sh.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Mike Waychison <mikew@google.com>
+To: Mike Waychison <mikew@google.com>
+Cc: Peter Jones <pjones@redhat.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Fix set_system() to not cause a cast warning when printing a u32 as a
-pointer:
+On Tue, Apr 19, 2011 at 01:38:03PM -0700, Mike Waychison wrote:
+> Fix set_system() to not cause a cast warning when printing a u32 as a
+> pointer:
+> 
+> drivers/video/efifb.c: In function 'set_system':
+> drivers/video/efifb.c:247: error: cast to pointer from integer of
+> different size
+> 
+> Allow the integer to print as a pointer by first casting to unsigned
+> long which we know will be the width of a pointer and at least as wide
+> as u32.
+> 
+> Signed-off-by: Mike Waychison <mikew@google.com>
 
-drivers/video/efifb.c: In function 'set_system':
-drivers/video/efifb.c:247: error: cast to pointer from integer of
-different size
-
-Allow the integer to print as a pointer by first casting to unsigned
-long which we know will be the width of a pointer and at least as wide
-as u32.
-
-Signed-off-by: Mike Waychison <mikew@google.com>
----
- drivers/video/efifb.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
-index 4eb38db..59e9f06 100644
---- a/drivers/video/efifb.c
-+++ b/drivers/video/efifb.c
-@@ -244,8 +244,9 @@ static int set_system(const struct dmi_system_id *id)
- 
- 	printk(KERN_INFO "efifb: dmi detected %s - framebuffer at %p "
- 			 "(%dx%d, stride %d)\n", id->ident,
--			 (void *)screen_info.lfb_base, screen_info.lfb_width,
--			 screen_info.lfb_height, screen_info.lfb_linelength);
-+			 (void *)(unsigned long)screen_info.lfb_base,
-+			 screen_info.lfb_width, screen_info.lfb_height,
-+			 screen_info.lfb_linelength);
- 
- 
- 	return 1;
--- 
-1.7.3.1
-
+I've already taken another patch that fixed it a slightly different way,
+thanks anyways.

@@ -1,15 +1,17 @@
 From: Maciej Rutecki <maciej.rutecki@gmail.com>
-Date: Sun, 17 Apr 2011 16:06:43 +0000
+Date: Thu, 21 Apr 2011 17:22:05 +0000
 Subject: Re: [REGRESSION] [2.6.39-rc3] Wrong resolution in framebuffer and X Window
-Message-Id: <201104171806.44355.maciej.rutecki@gmail.com>
+Message-Id: <201104211922.05779.maciej.rutecki@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <201104171804.04664.maciej.rutecki@gmail.com>
 In-Reply-To: <201104171804.04664.maciej.rutecki@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, dri-devel@lists.freedesktop.org, mbroemme@plusserver.de
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: mbroemme@plusserver.de, airlied@linux.ie, dri-devel@lists.freedesktop.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+
+(add LKML)
 
 On niedziela, 17 kwietnia 2011 o 18:04:04 Maciej Rutecki wrote:
 > Hi
@@ -38,11 +40,9 @@ On niedziela, 17 kwietnia 2011 o 18:04:04 Maciej Rutecki wrote:
 > 
 > Best regards
 
-Forgot:
+Device:
 00:02.0 VGA compatible controller: Intel Corporation 82G33/G31 Express 
 Integrated Graphics Controller (rev 02)
-
-Regards
 
 -- 
 Maciej Rutecki

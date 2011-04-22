@@ -1,88 +1,83 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 19 Apr 2011 09:22:05 +0000
-Subject: [PATCH 02/19] OMAP: DSS2: DSI: Remove CIO LDO status check
-Message-Id: <1303204942-25450-3-git-send-email-tomi.valkeinen@ti.com>
+From: Julia Lawall <julia@diku.dk>
+Date: Fri, 22 Apr 2011 20:11:21 +0000
+Subject: [PATCH 1/3] drivers/video: Convert release_resource to release_mem_region
+Message-Id: <1303503083-26170-1-git-send-email-julia@diku.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1303204942-25450-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-CIO LDO status check seems to be broken on OMAP3630+ chips, and it's
-also quite unclear what LDO status actually tells and when its status
-changes.
+Request_mem_region should be used with release_mem_region, not
+release_resource.
 
-This patch removes the whole check on the grounds that if there's a
-problem with the LDO, we should anyway catch the problem as we check the
-CIO power state and CIO reset status.
+The semantic match that finds this problem is as follows:
+(http://coccinelle.lip6.fr/)
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+// <smpl>
+@s exists@
+expression e1,e2,e3,e4,e;
+@@
+
+*e4 = request_mem_region(e1,e2,e3)
+... when != e4 = e
+*release_resource(e4);
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
 ---
- drivers/video/omap2/dss/dsi.c          |    8 --------
- drivers/video/omap2/dss/dss_features.c |    4 ++--
- drivers/video/omap2/dss/dss_features.h |    5 ++---
- 3 files changed, 4 insertions(+), 13 deletions(-)
+ drivers/video/s3c-fb.c   |    6 ++----
+ drivers/video/sh7760fb.c |    6 ++----
+ 2 files changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index d245c5c..013621e 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -1952,14 +1952,6 @@ static int dsi_complexio_init(struct omap_dss_device *dssdev)
- 		goto err;
- 	}
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 3fa7911..d570e58 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -1449,8 +1449,7 @@ err_ioremap:
+ 	iounmap(sfb->regs);
  
--	if (dss_has_feature(FEAT_DSI_LDO_STATUS)) {
--		if (wait_for_bit_change(DSI_COMPLEXIO_CFG1, 21, 1) != 1) {
--			DSSERR("ComplexIO LDO power down.\n");
--			r = -ENODEV;
--			goto err;
--		}
--	}
--
- 	dsi_complexio_timings();
+ err_req_region:
+-	release_resource(sfb->regs_res);
+-	kfree(sfb->regs_res);
++	release_mem_region(sfb->regs_res->start, resource_size(sfb->regs_res));
  
- 	/*
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index 6a1b130..5f3a7c4 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -253,7 +253,7 @@ static struct omap_dss_features omap3430_dss_features = {
- 		FEAT_LCDENABLESIGNAL | FEAT_PCKFREEENABLE |
- 		FEAT_FUNCGATED | FEAT_ROWREPEATENABLE |
- 		FEAT_LINEBUFFERSPLIT | FEAT_RESIZECONF |
--		FEAT_DSI_PLL_FREQSEL | FEAT_DSI_LDO_STATUS,
-+		FEAT_DSI_PLL_FREQSEL,
+ err_clk:
+ 	clk_disable(sfb->bus_clk);
+@@ -1486,8 +1485,7 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
+ 	clk_disable(sfb->bus_clk);
+ 	clk_put(sfb->bus_clk);
  
- 	.num_mgrs = 2,
- 	.num_ovls = 3,
-@@ -273,7 +273,7 @@ static struct omap_dss_features omap3630_dss_features = {
- 		FEAT_PRE_MULT_ALPHA | FEAT_FUNCGATED |
- 		FEAT_ROWREPEATENABLE | FEAT_LINEBUFFERSPLIT |
- 		FEAT_RESIZECONF | FEAT_DSI_PLL_PWR_BUG |
--		FEAT_DSI_PLL_FREQSEL |FEAT_DSI_LDO_STATUS,
-+		FEAT_DSI_PLL_FREQSEL,
+-	release_resource(sfb->regs_res);
+-	kfree(sfb->regs_res);
++	release_mem_region(sfb->regs_res->start, resource_size(sfb->regs_res));
  
- 	.num_mgrs = 2,
- 	.num_ovls = 3,
-diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
-index d03f558..1093e8d 100644
---- a/drivers/video/omap2/dss/dss_features.h
-+++ b/drivers/video/omap2/dss/dss_features.h
-@@ -43,9 +43,8 @@ enum dss_feat_id {
- 	/* DSI-PLL power command 0x3 is not working */
- 	FEAT_DSI_PLL_PWR_BUG		= 1 << 13,
- 	FEAT_DSI_PLL_FREQSEL		= 1 << 14,
--	FEAT_DSI_LDO_STATUS		= 1 << 15,
--	FEAT_DSI_DCS_CMD_CONFIG_VC	= 1 << 16,
--	FEAT_DSI_VC_OCP_WIDTH		= 1 << 17,
-+	FEAT_DSI_DCS_CMD_CONFIG_VC	= 1 << 15,
-+	FEAT_DSI_VC_OCP_WIDTH		= 1 << 16,
- };
+ 	kfree(sfb);
  
- /* DSS register field id */
--- 
-1.7.1
+diff --git a/drivers/video/sh7760fb.c b/drivers/video/sh7760fb.c
+index 8fe1958..45e47d8 100644
+--- a/drivers/video/sh7760fb.c
++++ b/drivers/video/sh7760fb.c
+@@ -551,8 +551,7 @@ out_unmap:
+ 		free_irq(par->irq, &par->vsync);
+ 	iounmap(par->base);
+ out_res:
+-	release_resource(par->ioarea);
+-	kfree(par->ioarea);
++	release_mem_region(res->start, resource_size(res));
+ out_fb:
+ 	framebuffer_release(info);
+ 	return ret;
+@@ -570,8 +569,7 @@ static int __devexit sh7760fb_remove(struct platform_device *dev)
+ 	if (par->irq >= 0)
+ 		free_irq(par->irq, par);
+ 	iounmap(par->base);
+-	release_resource(par->ioarea);
+-	kfree(par->ioarea);
++	release_mem_region(par->ioarea->start, resource_size(par->ioarea));
+ 	framebuffer_release(info);
+ 	platform_set_drvdata(dev, NULL);
+ 
 

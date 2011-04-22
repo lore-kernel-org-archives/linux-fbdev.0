@@ -1,69 +1,66 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 15 Apr 2011 08:11:11 +0000
-Subject: [PATCH 5/5] OMAP: DSS2: fix panel Kconfig dependencies
-Message-Id: <1302855071-5510-6-git-send-email-tomi.valkeinen@ti.com>
+From: Julia Lawall <julia@diku.dk>
+Date: Fri, 22 Apr 2011 20:11:23 +0000
+Subject: [PATCH 3/3] drivers/video/s3c2410fb.c: Convert release_resource to release_mem_region
+Message-Id: <1303503083-26170-3-git-send-email-julia@diku.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1302855071-5510-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1302855071-5510-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-All DPI panels were missing dependency to OMAP2_DSS_DPI. Add the
-dependency.
+Request_mem_region should be used with release_mem_region, not
+release_resource.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+The semantic match that finds this problem is as follows:
+(http://coccinelle.lip6.fr/)
+
+// <smpl>
+@s exists@
+expression e1,e2,e3,e4,e;
+@@
+
+*e4 = request_mem_region(e1,e2,e3)
+... when != e4 = e
+*release_resource(e4);
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
 ---
- drivers/video/omap2/displays/Kconfig |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/video/s3c2410fb.c |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/Kconfig b/drivers/video/omap2/displays/Kconfig
-index d18ad6b..609a280 100644
---- a/drivers/video/omap2/displays/Kconfig
-+++ b/drivers/video/omap2/displays/Kconfig
-@@ -3,6 +3,7 @@ menu "OMAP2/3 Display Device Drivers"
+diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
+index 61c819e..0aa1376 100644
+--- a/drivers/video/s3c2410fb.c
++++ b/drivers/video/s3c2410fb.c
+@@ -867,7 +867,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+ 		goto dealloc_fb;
+ 	}
  
- config PANEL_GENERIC_DPI
-         tristate "Generic DPI Panel"
-+	depends on OMAP2_DSS_DPI
-         help
- 	  Generic DPI panel driver.
- 	  Supports DVI output for Beagle and OMAP3 SDP.
-@@ -11,20 +12,20 @@ config PANEL_GENERIC_DPI
+-	size = (res->end - res->start) + 1;
++	size = resource_size(res);
+ 	info->mem = request_mem_region(res->start, size, pdev->name);
+ 	if (info->mem = NULL) {
+ 		dev_err(&pdev->dev, "failed to get memory region\n");
+@@ -997,8 +997,7 @@ release_irq:
+ release_regs:
+ 	iounmap(info->io);
+ release_mem:
+-	release_resource(info->mem);
+-	kfree(info->mem);
++	release_mem_region(res->start, size);
+ dealloc_fb:
+ 	platform_set_drvdata(pdev, NULL);
+ 	framebuffer_release(fbinfo);
+@@ -1044,8 +1043,7 @@ static int __devexit s3c2410fb_remove(struct platform_device *pdev)
  
- config PANEL_LGPHILIPS_LB035Q02
- 	tristate "LG.Philips LB035Q02 LCD Panel"
--	depends on OMAP2_DSS && SPI
-+	depends on OMAP2_DSS_DPI && SPI
- 	help
- 	  LCD Panel used on the Gumstix Overo Palo35
+ 	iounmap(info->io);
  
- config PANEL_SHARP_LS037V7DW01
-         tristate "Sharp LS037V7DW01 LCD Panel"
--        depends on OMAP2_DSS
-+        depends on OMAP2_DSS_DPI
-         select BACKLIGHT_CLASS_DEVICE
-         help
-           LCD Panel used in TI's SDP3430 and EVM boards
+-	release_resource(info->mem);
+-	kfree(info->mem);
++	release_mem_region(info->mem->start, resource_size(info->mem));
  
- config PANEL_NEC_NL8048HL11_01B
- 	tristate "NEC NL8048HL11-01B Panel"
--	depends on OMAP2_DSS
-+	depends on OMAP2_DSS_DPI
- 	help
- 		This NEC NL8048HL11-01B panel is TFT LCD
- 		used in the Zoom2/3/3630 sdp boards.
-@@ -37,7 +38,7 @@ config PANEL_TAAL
- 
- config PANEL_TPO_TD043MTEA1
-         tristate "TPO TD043MTEA1 LCD Panel"
--        depends on OMAP2_DSS && SPI
-+        depends on OMAP2_DSS_DPI && SPI
-         help
-           LCD Panel used in OMAP3 Pandora
- 
--- 
-1.7.1
+ 	platform_set_drvdata(pdev, NULL);
+ 	framebuffer_release(fbinfo);
 

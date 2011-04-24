@@ -1,68 +1,69 @@
-From: Liu Yuan <namei.unix@gmail.com>
-Date: Mon, 18 Apr 2011 10:44:38 +0000
-Subject: [PATCH v2] video, udlfb: Fix two build warnings about 'ignoring return value'
-Message-Id: <1303123478-9059-1-git-send-email-namei.unix@gmail.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 24 Apr 2011 02:39:23 +0000
+Subject: [PATCH 2/2] viafb: reduce OLPC refresh a bit
+Message-Id: <1303612763-8852-3-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1303612763-8852-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1303612763-8852-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-From: Liu Yuan <tailai.ly@taobao.com>
+When allowing some PLL calculation we get a frequency that seems to
+be a bit higher than what the OLPC DCON likes resulting in a still
+readable but not so good image. We don't really know whether this is
+a problem with the calculation formula or the OLPC but as other
+displays seem to be happy with the other modes adjusting the OLPC
+refresh looks like the better thing. This patch prevents a
+regression when dynamic PLL calculation is allowed.
 
-build warning:
-
-...
-drivers/video/udlfb.c:1590: warning: ignoring return value of ‘device_create_file’, declared with attribute warn_unused_result
-drivers/video/udlfb.c:1592: warning: ignoring return value of ‘device_create_bin_file’, declared with attribute warn_unused_result
-...
-
-So add two checks to get rid of 'em.
-
-Signed-off-by: Liu Yuan <tailai.ly@taobao.com>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/udlfb.c |   19 ++++++++++++++++---
- 1 files changed, 16 insertions(+), 3 deletions(-)
+ drivers/video/via/hw.c      |    2 +-
+ drivers/video/via/share.h   |    1 +
+ drivers/video/via/viamode.c |    2 +-
+ 3 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
-index 68041d9..1baa802 100644
---- a/drivers/video/udlfb.c
-+++ b/drivers/video/udlfb.c
-@@ -1586,10 +1586,19 @@ static int dlfb_usb_probe(struct usb_interface *interface,
- 		goto error;
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index b8f0110..56ad185 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -2605,7 +2605,7 @@ int viafb_get_refresh(int hres, int vres, u32 long_refresh)
+ 
+ 	if (abs(best->refresh_rate - long_refresh) > 3) {
+ 		if (hres = 1200 && vres = 900)
+-			return 50; /* OLPC DCON only supports 50 Hz */
++			return 49; /* OLPC DCON only supports 50 Hz */
+ 		else
+ 			return 60;
  	}
+diff --git a/drivers/video/via/share.h b/drivers/video/via/share.h
+index 4b7831f..62bed2b 100644
+--- a/drivers/video/via/share.h
++++ b/drivers/video/via/share.h
+@@ -290,6 +290,7 @@
+ #define HW_LAYOUT_LCD_EXTERNAL_LCD2 0x10
  
--	for (i = 0; i < ARRAY_SIZE(fb_device_attrs); i++)
--		device_create_file(info->dev, &fb_device_attrs[i]);
-+	for (i = 0; i < ARRAY_SIZE(fb_device_attrs); i++) {
-+		retval = device_create_file(info->dev, &fb_device_attrs[i]);
-+		if (retval) {
-+			pr_err("device_create_file failed %d\n", retval);
-+			goto err_del_attrs;
-+		}
-+	}
- 
--	device_create_bin_file(info->dev, &edid_attr);
-+	retval = device_create_bin_file(info->dev, &edid_attr);
-+	if (retval) {
-+		pr_err("device_create_bin_file failed %d\n", retval);
-+		goto err_del_attrs;
-+	}
- 
- 	pr_info("DisplayLink USB device /dev/fb%d attached. %dx%d resolution."
- 			" Using %dK framebuffer memory\n", info->node,
-@@ -1598,6 +1607,10 @@ static int dlfb_usb_probe(struct usb_interface *interface,
- 			info->fix.smem_len * 2 : info->fix.smem_len) >> 10);
- 	return 0;
- 
-+err_del_attrs:
-+	for (i -= 1; i >= 0; i--)
-+		device_remove_file(info->dev, &fb_device_attrs[i]);
-+
- error:
- 	if (dev) {
- 
+ /* Definition Refresh Rate */
++#define REFRESH_49      49
+ #define REFRESH_50      50
+ #define REFRESH_60      60
+ #define REFRESH_75      75
+diff --git a/drivers/video/via/viamode.c b/drivers/video/via/viamode.c
+index 260d339..ccb5eec 100644
+--- a/drivers/video/via/viamode.c
++++ b/drivers/video/via/viamode.c
+@@ -606,7 +606,7 @@ static struct crt_mode_table CRTM1200x720[] = {
+ /* 1200x900 (DCON) */
+ static struct crt_mode_table DCON1200x900[] = {
+ 	/* r_rate,               hsp,               vsp   */
+-	{REFRESH_50, M1200X900_R60_HSP, M1200X900_R60_VSP,
++	{REFRESH_49, M1200X900_R60_HSP, M1200X900_R60_VSP,
+ 	/* The correct htotal is 1240, but this doesn't raster on VX855. */
+ 	/* Via suggested changing to a multiple of 16, hence 1264.       */
+ 	/*  HT,   HA,  HBS, HBE,  HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
 -- 
-1.7.1
+1.6.3.2
 

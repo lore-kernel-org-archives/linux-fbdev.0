@@ -1,154 +1,157 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 24 Apr 2011 01:45:34 +0000
-Subject: [PATCH 1/3] viafb: gather common good, old VGA initialization in one place
-Message-Id: <1303610443-8681-2-git-send-email-FlorianSchandinat@gmx.de>
+Date: Sun, 24 Apr 2011 01:58:13 +0000
+Subject: [PATCH 1/3] viafb: add engine clock support
+Message-Id: <1303611201-8727-2-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1303610443-8681-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1303610443-8681-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <1303611201-8727-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1303611201-8727-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-This patch moves all unprotected VGA initialization in one table and
-provides some documentation for those values.
+This patch adds support for enabling and configuring the engine on
+VIAs IGPs. This is the main clock used for everything but pixel
+output.
 
 Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/via/hw.c      |   49 ++++++++++++++++++++++++++++++++----------
- drivers/video/via/viamode.c |   19 ----------------
- 2 files changed, 37 insertions(+), 31 deletions(-)
+ drivers/video/via/hw.c        |    1 +
+ drivers/video/via/via_clock.c |   51 +++++++++++++++++++++++++++++++++++++++++
+ drivers/video/via/via_clock.h |    3 ++
+ 3 files changed, 55 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 0098270..5b9c096 100644
+index df84251..e531147 100644
 --- a/drivers/video/via/hw.c
 +++ b/drivers/video/via/hw.c
-@@ -308,6 +308,42 @@ static struct io_reg scaling_parameters[] = {
- 	{VIACR, CR87, 0xFF, 0x1F},	/* LCD Scaling Parameter 14 */
+@@ -2289,6 +2289,7 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
+ 			get_sync(viafbinfo1));
+ 	}
+ 
++	clock.set_engine_pll_state(VIA_STATE_ON);
+ 	clock.set_primary_clock_source(VIA_CLKSRC_X1, true);
+ 	clock.set_secondary_clock_source(VIA_CLKSRC_X1, true);
+ 
+diff --git a/drivers/video/via/via_clock.c b/drivers/video/via/via_clock.c
+index a829a24..af8f26b 100644
+--- a/drivers/video/via/via_clock.c
++++ b/drivers/video/via/via_clock.c
+@@ -87,6 +87,15 @@ static inline void k800_set_secondary_pll_encoded(u32 data)
+ 	via_write_reg_mask(VIASR, 0x40, 0x00, 0x04); /* disable reset */
+ }
+ 
++static inline void set_engine_pll_encoded(u32 data)
++{
++	via_write_reg_mask(VIASR, 0x40, 0x01, 0x01); /* enable reset */
++	via_write_reg(VIASR, 0x47, data & 0xFF);
++	via_write_reg(VIASR, 0x48, (data >> 8) & 0xFF);
++	via_write_reg(VIASR, 0x49, (data >> 16) & 0xFF);
++	via_write_reg_mask(VIASR, 0x40, 0x00, 0x01); /* disable reset */
++}
++
+ static void cle266_set_primary_pll(struct via_pll_config config)
+ {
+ 	cle266_set_primary_pll_encoded(cle266_encode_pll(config));
+@@ -117,6 +126,16 @@ static void vx855_set_secondary_pll(struct via_pll_config config)
+ 	k800_set_secondary_pll_encoded(vx855_encode_pll(config));
+ }
+ 
++static void k800_set_engine_pll(struct via_pll_config config)
++{
++	set_engine_pll_encoded(k800_encode_pll(config));
++}
++
++static void vx855_set_engine_pll(struct via_pll_config config)
++{
++	set_engine_pll_encoded(vx855_encode_pll(config));
++}
++
+ static void set_primary_pll_state(u8 state)
+ {
+ 	u8 value;
+@@ -153,6 +172,24 @@ static void set_secondary_pll_state(u8 state)
+ 	via_write_reg_mask(VIASR, 0x2D, value, 0x0C);
+ }
+ 
++static void set_engine_pll_state(u8 state)
++{
++	u8 value;
++
++	switch (state) {
++	case VIA_STATE_ON:
++		value = 0x02;
++		break;
++	case VIA_STATE_OFF:
++		value = 0x00;
++		break;
++	default:
++		return;
++	}
++
++	via_write_reg_mask(VIASR, 0x2D, value, 0x03);
++}
++
+ static void set_primary_clock_state(u8 state)
+ {
+ 	u8 value;
+@@ -247,6 +284,11 @@ static void dummy_set_pll_state(u8 state)
+ 	printk(KERN_INFO "Using undocumented set PLL state.\n%s", via_slap);
+ }
+ 
++static void dummy_set_pll(struct via_pll_config config)
++{
++	printk(KERN_INFO "Using undocumented set PLL.\n%s", via_slap);
++}
++
+ void via_clock_init(struct via_clock *clock, int gfx_chip)
+ {
+ 	switch (gfx_chip) {
+@@ -261,6 +303,9 @@ void via_clock_init(struct via_clock *clock, int gfx_chip)
+ 		clock->set_secondary_clock_source = dummy_set_clock_source;
+ 		clock->set_secondary_pll_state = dummy_set_pll_state;
+ 		clock->set_secondary_pll = cle266_set_secondary_pll;
++
++		clock->set_engine_pll_state = dummy_set_pll_state;
++		clock->set_engine_pll = dummy_set_pll;
+ 		break;
+ 	case UNICHROME_K800:
+ 	case UNICHROME_PM800:
+@@ -280,6 +325,9 @@ void via_clock_init(struct via_clock *clock, int gfx_chip)
+ 		clock->set_secondary_clock_source = set_secondary_clock_source;
+ 		clock->set_secondary_pll_state = set_secondary_pll_state;
+ 		clock->set_secondary_pll = k800_set_secondary_pll;
++
++		clock->set_engine_pll_state = set_engine_pll_state;
++		clock->set_engine_pll = k800_set_engine_pll;
+ 		break;
+ 	case UNICHROME_VX855:
+ 	case UNICHROME_VX900:
+@@ -292,6 +340,9 @@ void via_clock_init(struct via_clock *clock, int gfx_chip)
+ 		clock->set_secondary_clock_source = set_secondary_clock_source;
+ 		clock->set_secondary_pll_state = set_secondary_pll_state;
+ 		clock->set_secondary_pll = vx855_set_secondary_pll;
++
++		clock->set_engine_pll_state = set_engine_pll_state;
++		clock->set_engine_pll = vx855_set_engine_pll;
+ 		break;
+ 
+ 	}
+diff --git a/drivers/video/via/via_clock.h b/drivers/video/via/via_clock.h
+index f213a7a..88714ae 100644
+--- a/drivers/video/via/via_clock.h
++++ b/drivers/video/via/via_clock.h
+@@ -53,6 +53,9 @@ struct via_clock {
+ 	void (*set_secondary_clock_source)(enum via_clksrc src, bool use_pll);
+ 	void (*set_secondary_pll_state)(u8 state);
+ 	void (*set_secondary_pll)(struct via_pll_config config);
++
++	void (*set_engine_pll_state)(u8 state);
++	void (*set_engine_pll)(struct via_pll_config config);
  };
  
-+static struct io_reg common_vga[] = {
-+	{VIACR, CR07, 0x10, 0x10}, /* [0] vertical total (bit 8)
-+					[1] vertical display end (bit 8)
-+					[2] vertical retrace start (bit 8)
-+					[3] start vertical blanking (bit 8)
-+					[4] line compare (bit 8)
-+					[5] vertical total (bit 9)
-+					[6] vertical display end (bit 9)
-+					[7] vertical retrace start (bit 9) */
-+	{VIACR, CR08, 0xFF, 0x00}, /* [0-4] preset row scan
-+					[5-6] byte panning */
-+	{VIACR, CR09, 0xDF, 0x40}, /* [0-4] max scan line
-+					[5] start vertical blanking (bit 9)
-+					[6] line compare (bit 9)
-+					[7] scan doubling */
-+	{VIACR, CR0A, 0xFF, 0x1E}, /* [0-4] cursor start
-+					[5] cursor disable */
-+	{VIACR, CR0B, 0xFF, 0x00}, /* [0-4] cursor end
-+					[5-6] cursor skew */
-+	{VIACR, CR0E, 0xFF, 0x00}, /* [0-7] cursor location (high) */
-+	{VIACR, CR0F, 0xFF, 0x00}, /* [0-7] cursor location (low) */
-+	{VIACR, CR11, 0xF0, 0x80}, /* [0-3] vertical retrace end
-+					[6] memory refresh bandwidth
-+					[7] CRTC register protect enable */
-+	{VIACR, CR14, 0xFF, 0x00}, /* [0-4] underline location
-+					[5] divide memory address clock by 4
-+					[6] double word addressing */
-+	{VIACR, CR17, 0xFF, 0x63}, /* [0-1] mapping of display address 13-14
-+					[2] divide scan line clock by 2
-+					[3] divide memory address clock by 2
-+					[5] address wrap
-+					[6] byte mode select
-+					[7] sync enable */
-+	{VIACR, CR18, 0xFF, 0xFF}, /* [0-7] line compare */
-+};
-+
- static struct fifo_depth_select display_fifo_depth_reg = {
- 	/* IGA1 FIFO Depth_Select */
- 	{IGA1_FIFO_DEPTH_SELECT_REG_NUM, {{SR17, 0, 7} } },
-@@ -1167,22 +1203,10 @@ static void load_fix_bit_crtc_reg(void)
- 	/* always set to 1 */
- 	viafb_write_reg_mask(CR03, VIACR, 0x80, BIT7);
- 	/* line compare should set all bits = 1 (extend modes) */
--	viafb_write_reg(CR18, VIACR, 0xff);
--	/* line compare should set all bits = 1 (extend modes) */
--	viafb_write_reg_mask(CR07, VIACR, 0x10, BIT4);
--	/* line compare should set all bits = 1 (extend modes) */
- 	viafb_write_reg_mask(CR35, VIACR, 0x10, BIT4);
- 	/* line compare should set all bits = 1 (extend modes) */
- 	viafb_write_reg_mask(CR33, VIACR, 0x06, BIT0 + BIT1 + BIT2);
- 	/*viafb_write_reg_mask(CR32, VIACR, 0x01, BIT0); */
--	/* extend mode always set to e3h */
--	viafb_write_reg(CR17, VIACR, 0xe3);
--	/* extend mode always set to 0h */
--	viafb_write_reg(CR08, VIACR, 0x00);
--	/* extend mode always set to 0h */
--	viafb_write_reg(CR14, VIACR, 0x00);
--	viafb_write_reg_mask(CR09, VIACR, 0x40, 0xDF);
--	viafb_write_reg_mask(CR11, VIACR, 0x00, BIT4 + BIT5 + BIT6);
  
- 	viafb_lock_crt();
- 
-@@ -2353,6 +2377,7 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
- 	outb(0x00, VIAAR);
- 
- 	/* Write Common Setting for Video Mode */
-+	viafb_write_regx(common_vga, ARRAY_SIZE(common_vga));
- 	switch (viaparinfo->chip_info->gfx_chip_name) {
- 	case UNICHROME_CLE266:
- 		viafb_write_regx(CLE266_ModeXregs, NUM_TOTAL_CLE266_ModeXregs);
-diff --git a/drivers/video/via/viamode.c b/drivers/video/via/viamode.c
-index 8c5bc41..036ad3a 100644
---- a/drivers/video/via/viamode.c
-+++ b/drivers/video/via/viamode.c
-@@ -30,10 +30,6 @@ struct io_reg CN400_ModeXregs[] = { {VIASR, SR10, 0xFF, 0x01},
- {VIASR, SR1A, 0xFB, 0x08},
- {VIASR, SR1E, 0x0F, 0x01},
- {VIASR, SR2A, 0xFF, 0x00},
--{VIACR, CR0A, 0xFF, 0x1E},	/* Cursor Start                        */
--{VIACR, CR0B, 0xFF, 0x00},	/* Cursor End                          */
--{VIACR, CR0E, 0xFF, 0x00},	/* Cursor Location High                */
--{VIACR, CR0F, 0xFF, 0x00},	/* Cursor Localtion Low                */
- {VIACR, CR32, 0xFF, 0x00},
- {VIACR, CR33, 0xFF, 0x00},
- {VIACR, CR35, 0xFF, 0x00},
-@@ -125,10 +121,6 @@ struct io_reg KM400_ModeXregs[] = {
- 	{VIASR, SR2A, 0xFF, 0x00},	/* Power Management Control 5      */
- 	{VIASR, SR2D, 0xFF, 0xFF},	/* Power Management Control 1      */
- 	{VIASR, SR2E, 0xFF, 0xFF},	/* Power Management Control 2      */
--	{VIACR, CR0A, 0xFF, 0x1E},	/* Cursor Start                    */
--	{VIACR, CR0B, 0xFF, 0x00},	/* Cursor End                      */
--	{VIACR, CR0E, 0xFF, 0x00},	/* Cursor Location High            */
--	{VIACR, CR0F, 0xFF, 0x00},	/* Cursor Localtion Low            */
- 	{VIACR, CR33, 0xFF, 0x00},
- 	{VIACR, CR55, 0x80, 0x00},
- 	{VIACR, CR5D, 0x80, 0x00},
-@@ -162,10 +154,6 @@ struct io_reg CX700_ModeXregs[] = { {VIASR, SR10, 0xFF, 0x01},
- {VIASR, SR1E, 0xFF, 0x01},
- {VIASR, SR2A, 0xFF, 0x00},
- {VIASR, SR2D, 0xFF, 0xFF},	/* VCK and LCK PLL power on.           */
--{VIACR, CR0A, 0xFF, 0x1E},	/* Cursor Start                        */
--{VIACR, CR0B, 0xFF, 0x00},	/* Cursor End                          */
--{VIACR, CR0E, 0xFF, 0x00},	/* Cursor Location High                */
--{VIACR, CR0F, 0xFF, 0x00},	/* Cursor Localtion Low                */
- {VIACR, CR32, 0xFF, 0x00},
- {VIACR, CR33, 0xFF, 0x00},
- {VIACR, CR35, 0xFF, 0x00},
-@@ -205,13 +193,6 @@ struct io_reg VX855_ModeXregs[] = {
- {VIASR, SR58, 0xFF, 0x00},
- {VIASR, SR59, 0xFF, 0x00},
- {VIASR, SR2D, 0xFF, 0xFF},	/* VCK and LCK PLL power on.           */
--{VIACR, CR09, 0xFF, 0x00},	/* Initial CR09=0*/
--{VIACR, CR11, 0x8F, 0x00},	/* IGA1 initial  Vertical end       */
--{VIACR, CR17, 0x7F, 0x00}, 	/* IGA1 CRT Mode control init   */
--{VIACR, CR0A, 0xFF, 0x1E},	/* Cursor Start                        */
--{VIACR, CR0B, 0xFF, 0x00},	/* Cursor End                          */
--{VIACR, CR0E, 0xFF, 0x00},	/* Cursor Location High                */
--{VIACR, CR0F, 0xFF, 0x00},	/* Cursor Localtion Low                */
- {VIACR, CR32, 0xFF, 0x00},
- {VIACR, CR33, 0x7F, 0x00},
- {VIACR, CR35, 0xFF, 0x00},
 -- 
 1.6.3.2
 

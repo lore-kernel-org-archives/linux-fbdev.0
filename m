@@ -1,42 +1,27 @@
-From: Tormod Volden <lists.tormod@gmail.com>
-Date: Sun, 03 Apr 2011 12:54:06 +0000
-Subject: [PATCH] savagefb: Remove obsolete else clause in savage_setup_i2c_bus
-Message-Id: <1301835246-6520-3-git-send-email-lists.tormod@gmail.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 24 Apr 2011 01:57:38 +0000
+Subject: viafb clock patches - third round
+Message-Id: <1303611201-8727-1-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 
-From: Tormod Volden <debian.tormod@gmail.com>
+This patch series contains basic support for the main IGP clock, 
+avoids some double initialization and adds a compatiblity config 
+option that ensures that you can still use a (non-fbdev) X server 
+which could be otherwise confused by a disable clock/PLL due to the 
+viafb power management.
 
-The else clause was not needed after the cleanup in commit
-b8901b091db260b0f0101d6395ce5c6016835a47
+All patches are also available at
+	git://github.com/schandinat/linux-2.6.git viafb-pll
 
-Signed-off-by: Tormod Volden <debian.tormod@gmail.com>
----
+and will soon show up in linux-next.
 
-I could probably have sent this to some janitor list instead?
 
-Tormod
+Thanks,
 
- drivers/video/savage/savagefb-i2c.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/savage/savagefb-i2c.c b/drivers/video/savage/savagefb-i2c.c
-index 5e7acda..bb71fea 100644
---- a/drivers/video/savage/savagefb-i2c.c
-+++ b/drivers/video/savage/savagefb-i2c.c
-@@ -159,8 +159,7 @@ static int savage_setup_i2c_bus(struct savagefb_i2c_chan *chan,
- 		else
- 			dev_warn(&chan->par->pcidev->dev,
- 				 "Failed to register I2C bus %s.\n", name);
--	} else
--		chan->par = NULL;
-+	}
- 
- 	return rc;
- }
--- 
-1.7.0.4
+Florian Tobias Schandinat
 

@@ -1,129 +1,154 @@
-From: Tormod Volden <lists.tormod@gmail.com>
-Date: Sun, 10 Apr 2011 20:57:34 +0000
-Subject: [PATCH 1/2] savagefb: New S3_TWISTER and S3_PROSAVAGEDDR chip families
-Message-Id: <1302469055-3400-1-git-send-email-lists.tormod@gmail.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 24 Apr 2011 01:45:34 +0000
+Subject: [PATCH 1/3] viafb: gather common good, old VGA initialization in one place
+Message-Id: <1303610443-8681-2-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1303610443-8681-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1303610443-8681-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-From: Tormod Volden <debian.tormod@gmail.com>
+This patch moves all unprotected VGA initialization in one table and
+provides some documentation for those values.
 
-Realign the chip families with the Xorg DDX
-
-Signed-off-by: Tormod Volden <debian.tormod@gmail.com>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
+ drivers/video/via/hw.c      |   49 ++++++++++++++++++++++++++++++++----------
+ drivers/video/via/viamode.c |   19 ----------------
+ 2 files changed, 37 insertions(+), 31 deletions(-)
 
-This commit should functionally be a NOP, only prepares for the next patch.
-
-Regards,
-Tormod
-
- drivers/video/savage/savagefb-i2c.c    |    2 ++
- drivers/video/savage/savagefb.h        |    8 +++++---
- drivers/video/savage/savagefb_driver.c |   12 ++++++++----
- 3 files changed, 15 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/video/savage/savagefb-i2c.c b/drivers/video/savage/savagefb-i2c.c
-index bb71fea..80fa87e 100644
---- a/drivers/video/savage/savagefb-i2c.c
-+++ b/drivers/video/savage/savagefb-i2c.c
-@@ -171,6 +171,8 @@ void savagefb_create_i2c_busses(struct fb_info *info)
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 0098270..5b9c096 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -308,6 +308,42 @@ static struct io_reg scaling_parameters[] = {
+ 	{VIACR, CR87, 0xFF, 0x1F},	/* LCD Scaling Parameter 14 */
+ };
  
- 	switch (par->chip) {
- 	case S3_PROSAVAGE:
-+	case S3_PROSAVAGEDDR:
-+	case S3_TWISTER:
- 		par->chan.reg         = CR_SERIAL2;
- 		par->chan.ioaddr      = par->mmio.vbase;
- 		par->chan.algo.setsda = prosavage_gpio_setsda;
-diff --git a/drivers/video/savage/savagefb.h b/drivers/video/savage/savagefb.h
-index e4c3f21..6f20ae4 100644
---- a/drivers/video/savage/savagefb.h
-+++ b/drivers/video/savage/savagefb.h
-@@ -36,7 +36,6 @@
- #define PCI_CHIP_SAVAGE_IX    0x8c13
- #define PCI_CHIP_PROSAVAGE_PM 0x8a25
- #define PCI_CHIP_PROSAVAGE_KM 0x8a26
-- /* Twister is a code name; hope I get the real name soon. */
- #define PCI_CHIP_S3TWISTER_P  0x8d01
- #define PCI_CHIP_S3TWISTER_K  0x8d02
- #define PCI_CHIP_PROSAVAGE_DDR          0x8d03
-@@ -52,14 +51,15 @@
- #define PCI_CHIP_SUPSAV_IXCDDR		0x8c2f
++static struct io_reg common_vga[] = {
++	{VIACR, CR07, 0x10, 0x10}, /* [0] vertical total (bit 8)
++					[1] vertical display end (bit 8)
++					[2] vertical retrace start (bit 8)
++					[3] start vertical blanking (bit 8)
++					[4] line compare (bit 8)
++					[5] vertical total (bit 9)
++					[6] vertical display end (bit 9)
++					[7] vertical retrace start (bit 9) */
++	{VIACR, CR08, 0xFF, 0x00}, /* [0-4] preset row scan
++					[5-6] byte panning */
++	{VIACR, CR09, 0xDF, 0x40}, /* [0-4] max scan line
++					[5] start vertical blanking (bit 9)
++					[6] line compare (bit 9)
++					[7] scan doubling */
++	{VIACR, CR0A, 0xFF, 0x1E}, /* [0-4] cursor start
++					[5] cursor disable */
++	{VIACR, CR0B, 0xFF, 0x00}, /* [0-4] cursor end
++					[5-6] cursor skew */
++	{VIACR, CR0E, 0xFF, 0x00}, /* [0-7] cursor location (high) */
++	{VIACR, CR0F, 0xFF, 0x00}, /* [0-7] cursor location (low) */
++	{VIACR, CR11, 0xF0, 0x80}, /* [0-3] vertical retrace end
++					[6] memory refresh bandwidth
++					[7] CRTC register protect enable */
++	{VIACR, CR14, 0xFF, 0x00}, /* [0-4] underline location
++					[5] divide memory address clock by 4
++					[6] double word addressing */
++	{VIACR, CR17, 0xFF, 0x63}, /* [0-1] mapping of display address 13-14
++					[2] divide scan line clock by 2
++					[3] divide memory address clock by 2
++					[5] address wrap
++					[6] byte mode select
++					[7] sync enable */
++	{VIACR, CR18, 0xFF, 0xFF}, /* [0-7] line compare */
++};
++
+ static struct fifo_depth_select display_fifo_depth_reg = {
+ 	/* IGA1 FIFO Depth_Select */
+ 	{IGA1_FIFO_DEPTH_SELECT_REG_NUM, {{SR17, 0, 7} } },
+@@ -1167,22 +1203,10 @@ static void load_fix_bit_crtc_reg(void)
+ 	/* always set to 1 */
+ 	viafb_write_reg_mask(CR03, VIACR, 0x80, BIT7);
+ 	/* line compare should set all bits = 1 (extend modes) */
+-	viafb_write_reg(CR18, VIACR, 0xff);
+-	/* line compare should set all bits = 1 (extend modes) */
+-	viafb_write_reg_mask(CR07, VIACR, 0x10, BIT4);
+-	/* line compare should set all bits = 1 (extend modes) */
+ 	viafb_write_reg_mask(CR35, VIACR, 0x10, BIT4);
+ 	/* line compare should set all bits = 1 (extend modes) */
+ 	viafb_write_reg_mask(CR33, VIACR, 0x06, BIT0 + BIT1 + BIT2);
+ 	/*viafb_write_reg_mask(CR32, VIACR, 0x01, BIT0); */
+-	/* extend mode always set to e3h */
+-	viafb_write_reg(CR17, VIACR, 0xe3);
+-	/* extend mode always set to 0h */
+-	viafb_write_reg(CR08, VIACR, 0x00);
+-	/* extend mode always set to 0h */
+-	viafb_write_reg(CR14, VIACR, 0x00);
+-	viafb_write_reg_mask(CR09, VIACR, 0x40, 0xDF);
+-	viafb_write_reg_mask(CR11, VIACR, 0x00, BIT4 + BIT5 + BIT6);
  
+ 	viafb_lock_crt();
  
-+#define S3_SAVAGE_SERIES(chip)    ((chip>=S3_SAVAGE3D) && (chip<=S3_SAVAGE2000))
+@@ -2353,6 +2377,7 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
+ 	outb(0x00, VIAAR);
  
- #define S3_SAVAGE3D_SERIES(chip)  ((chip>=S3_SAVAGE3D) && (chip<=S3_SAVAGE_MX))
- 
--#define S3_SAVAGE4_SERIES(chip)   ((chip=S3_SAVAGE4) || (chip=S3_PROSAVAGE))
-+#define S3_SAVAGE4_SERIES(chip)   ((chip>=S3_SAVAGE4) || (chip<=S3_PROSAVAGEDDR))
- 
- #define S3_SAVAGE_MOBILE_SERIES(chip)  ((chip=S3_SAVAGE_MX) || (chip=S3_SUPERSAVAGE))
- 
--#define S3_SAVAGE_SERIES(chip)    ((chip>=S3_SAVAGE3D) && (chip<=S3_SAVAGE2000))
-+#define S3_MOBILE_TWISTER_SERIES(chip) ((chip=S3_TWISTER) || (chip=S3_PROSAVAGEDDR))
- 
- /* Chip tags.  These are used to group the adapters into
-  * related families.
-@@ -71,6 +71,8 @@ typedef enum {
-   S3_SAVAGE_MX,
-   S3_SAVAGE4,
-   S3_PROSAVAGE,
-+  S3_TWISTER,
-+  S3_PROSAVAGEDDR,
-   S3_SUPERSAVAGE,
-   S3_SAVAGE2000,
-   S3_LAST
-diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
-index 487911e..0be3f31 100644
---- a/drivers/video/savage/savagefb_driver.c
-+++ b/drivers/video/savage/savagefb_driver.c
-@@ -328,7 +328,9 @@ SavageSetup2DEngine(struct savagefb_par  *par)
- 		savage_out32(0x48C18, savage_in32(0x48C18, par) | 0x0C, par);
- 		break;
- 	case S3_SAVAGE4:
-+	case S3_TWISTER:
- 	case S3_PROSAVAGE:
-+	case S3_PROSAVAGEDDR:
- 	case S3_SUPERSAVAGE:
- 		/* Disable BCI */
- 		savage_out32(0x48C18, savage_in32(0x48C18, par) & 0x3FF0, par);
-@@ -1886,6 +1888,8 @@ static int savage_init_hw(struct savagefb_par *par)
- 		break;
- 
- 	case S3_PROSAVAGE:
-+	case S3_PROSAVAGEDDR:
-+	case S3_TWISTER:
- 		videoRam = RamSavageNB[(config1 & 0xE0) >> 5] * 1024;
- 		break;
- 
-@@ -2111,19 +2115,19 @@ static int __devinit savage_init_fb_info(struct fb_info *info,
- 		snprintf(info->fix.id, 16, "ProSavageKM");
- 		break;
- 	case FB_ACCEL_S3TWISTER_P:
--		par->chip = S3_PROSAVAGE;
-+		par->chip = S3_TWISTER;
- 		snprintf(info->fix.id, 16, "TwisterP");
- 		break;
- 	case FB_ACCEL_S3TWISTER_K:
--		par->chip = S3_PROSAVAGE;
-+		par->chip = S3_TWISTER;
- 		snprintf(info->fix.id, 16, "TwisterK");
- 		break;
- 	case FB_ACCEL_PROSAVAGE_DDR:
--		par->chip = S3_PROSAVAGE;
-+		par->chip = S3_PROSAVAGEDDR;
- 		snprintf(info->fix.id, 16, "ProSavageDDR");
- 		break;
- 	case FB_ACCEL_PROSAVAGE_DDRK:
--		par->chip = S3_PROSAVAGE;
-+		par->chip = S3_PROSAVAGEDDR;
- 		snprintf(info->fix.id, 16, "ProSavage8");
- 		break;
- 	}
+ 	/* Write Common Setting for Video Mode */
++	viafb_write_regx(common_vga, ARRAY_SIZE(common_vga));
+ 	switch (viaparinfo->chip_info->gfx_chip_name) {
+ 	case UNICHROME_CLE266:
+ 		viafb_write_regx(CLE266_ModeXregs, NUM_TOTAL_CLE266_ModeXregs);
+diff --git a/drivers/video/via/viamode.c b/drivers/video/via/viamode.c
+index 8c5bc41..036ad3a 100644
+--- a/drivers/video/via/viamode.c
++++ b/drivers/video/via/viamode.c
+@@ -30,10 +30,6 @@ struct io_reg CN400_ModeXregs[] = { {VIASR, SR10, 0xFF, 0x01},
+ {VIASR, SR1A, 0xFB, 0x08},
+ {VIASR, SR1E, 0x0F, 0x01},
+ {VIASR, SR2A, 0xFF, 0x00},
+-{VIACR, CR0A, 0xFF, 0x1E},	/* Cursor Start                        */
+-{VIACR, CR0B, 0xFF, 0x00},	/* Cursor End                          */
+-{VIACR, CR0E, 0xFF, 0x00},	/* Cursor Location High                */
+-{VIACR, CR0F, 0xFF, 0x00},	/* Cursor Localtion Low                */
+ {VIACR, CR32, 0xFF, 0x00},
+ {VIACR, CR33, 0xFF, 0x00},
+ {VIACR, CR35, 0xFF, 0x00},
+@@ -125,10 +121,6 @@ struct io_reg KM400_ModeXregs[] = {
+ 	{VIASR, SR2A, 0xFF, 0x00},	/* Power Management Control 5      */
+ 	{VIASR, SR2D, 0xFF, 0xFF},	/* Power Management Control 1      */
+ 	{VIASR, SR2E, 0xFF, 0xFF},	/* Power Management Control 2      */
+-	{VIACR, CR0A, 0xFF, 0x1E},	/* Cursor Start                    */
+-	{VIACR, CR0B, 0xFF, 0x00},	/* Cursor End                      */
+-	{VIACR, CR0E, 0xFF, 0x00},	/* Cursor Location High            */
+-	{VIACR, CR0F, 0xFF, 0x00},	/* Cursor Localtion Low            */
+ 	{VIACR, CR33, 0xFF, 0x00},
+ 	{VIACR, CR55, 0x80, 0x00},
+ 	{VIACR, CR5D, 0x80, 0x00},
+@@ -162,10 +154,6 @@ struct io_reg CX700_ModeXregs[] = { {VIASR, SR10, 0xFF, 0x01},
+ {VIASR, SR1E, 0xFF, 0x01},
+ {VIASR, SR2A, 0xFF, 0x00},
+ {VIASR, SR2D, 0xFF, 0xFF},	/* VCK and LCK PLL power on.           */
+-{VIACR, CR0A, 0xFF, 0x1E},	/* Cursor Start                        */
+-{VIACR, CR0B, 0xFF, 0x00},	/* Cursor End                          */
+-{VIACR, CR0E, 0xFF, 0x00},	/* Cursor Location High                */
+-{VIACR, CR0F, 0xFF, 0x00},	/* Cursor Localtion Low                */
+ {VIACR, CR32, 0xFF, 0x00},
+ {VIACR, CR33, 0xFF, 0x00},
+ {VIACR, CR35, 0xFF, 0x00},
+@@ -205,13 +193,6 @@ struct io_reg VX855_ModeXregs[] = {
+ {VIASR, SR58, 0xFF, 0x00},
+ {VIASR, SR59, 0xFF, 0x00},
+ {VIASR, SR2D, 0xFF, 0xFF},	/* VCK and LCK PLL power on.           */
+-{VIACR, CR09, 0xFF, 0x00},	/* Initial CR09=0*/
+-{VIACR, CR11, 0x8F, 0x00},	/* IGA1 initial  Vertical end       */
+-{VIACR, CR17, 0x7F, 0x00}, 	/* IGA1 CRT Mode control init   */
+-{VIACR, CR0A, 0xFF, 0x1E},	/* Cursor Start                        */
+-{VIACR, CR0B, 0xFF, 0x00},	/* Cursor End                          */
+-{VIACR, CR0E, 0xFF, 0x00},	/* Cursor Location High                */
+-{VIACR, CR0F, 0xFF, 0x00},	/* Cursor Localtion Low                */
+ {VIACR, CR32, 0xFF, 0x00},
+ {VIACR, CR33, 0x7F, 0x00},
+ {VIACR, CR35, 0xFF, 0x00},
 -- 
-1.7.0.4
+1.6.3.2
 

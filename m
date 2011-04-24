@@ -1,72 +1,54 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 15 Apr 2011 08:11:10 +0000
-Subject: [PATCH 4/5] OMAP: DSS2: DSI: Fix DSI PLL power bug
-Message-Id: <1302855071-5510-5-git-send-email-tomi.valkeinen@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 24 Apr 2011 02:39:22 +0000
+Subject: [PATCH 1/2] viafb: fix OLPC XO 1.5 device connection
+Message-Id: <1303612763-8852-2-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1302855071-5510-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1302855071-5510-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1303612763-8852-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1303612763-8852-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-OMAP3630 has a HW bug causing DSI PLL power command POWER_ON_DIV (0x3)
-to not work properly. The bug prevents us from enabling DSI PLL power
-only to HS divider block.
+This patch fixes the devices connected on OLPC. The OLPC panel seems
+to be connected to DVP1 and LVDS2 for some reasons and if not both
+are handled correct the display does not work correct or not at all.
+This patch prevents regressions on the OLPC where it worked by
+accident but would break in future as the driver did not know the
+correct devices connected. This might also fix hardware scaling.
+Hopefully the OLPC is the only device with such a requirement but it
+will be certainly better to actually know what devices are actually
+connected and to not work by accident.
 
-This patch adds a dss feature for the bug and converts POWER_ON_DIV
-requests to POWER_ON_ALL (0x2).
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/omap2/dss/dsi.c          |    5 +++++
- drivers/video/omap2/dss/dss_features.c |    2 +-
- drivers/video/omap2/dss/dss_features.h |    2 ++
- 3 files changed, 8 insertions(+), 1 deletions(-)
+ drivers/video/via/hw.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 1464ac4..cbd9ca4 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -1059,6 +1059,11 @@ static int dsi_pll_power(enum dsi_pll_power_state state)
- {
- 	int t = 0;
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 980e263..b8f0110 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -20,6 +20,7 @@
+  */
  
-+	/* DSI-PLL power command 0x3 is not working */
-+	if (dss_has_feature(FEAT_DSI_PLL_PWR_BUG) &&
-+			state = DSI_PLL_POWER_ON_DIV)
-+		state = DSI_PLL_POWER_ON_ALL;
+ #include <linux/via-core.h>
++#include <asm/olpc.h>
+ #include "global.h"
+ 
+ static struct pll_config cle266_pll_config[] = {
+@@ -875,6 +876,10 @@ void viafb_set_iga_path(void)
+ 				viaparinfo->chip_info->
+ 				lvds_chip_info2.output_interface);
+ 	}
 +
- 	REG_FLD_MOD(DSI_CLK_CTRL, state, 31, 30);	/* PLL_PWR_CMD */
++	/* looks like the OLPC has its display wired to DVP1 and LVDS2 */
++	if (machine_is_olpc())
++		viaparinfo->shared->iga2_devices = VIA_DVP1 | VIA_LVDS2;
+ }
  
- 	/* PLL_PWR_STATUS */
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index aa16222..8c50e18 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -271,7 +271,7 @@ static struct omap_dss_features omap3630_dss_features = {
- 		FEAT_LCDENABLESIGNAL | FEAT_PCKFREEENABLE |
- 		FEAT_PRE_MULT_ALPHA | FEAT_FUNCGATED |
- 		FEAT_ROWREPEATENABLE | FEAT_LINEBUFFERSPLIT |
--		FEAT_RESIZECONF,
-+		FEAT_RESIZECONF | FEAT_DSI_PLL_PWR_BUG,
- 
- 	.num_mgrs = 2,
- 	.num_ovls = 3,
-diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
-index 12e9c4e..37922ce 100644
---- a/drivers/video/omap2/dss/dss_features.h
-+++ b/drivers/video/omap2/dss/dss_features.h
-@@ -40,6 +40,8 @@ enum dss_feat_id {
- 	/* Independent core clk divider */
- 	FEAT_CORE_CLK_DIV	= 1 << 11,
- 	FEAT_LCD_CLK_SRC	= 1 << 12,
-+	/* DSI-PLL power command 0x3 is not working */
-+	FEAT_DSI_PLL_PWR_BUG	= 1 << 13,
- };
- 
- /* DSS register field id */
+ static void set_color_register(u8 index, u8 red, u8 green, u8 blue)
 -- 
-1.7.1
+1.6.3.2
 

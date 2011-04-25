@@ -1,67 +1,45 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Fri, 15 Apr 2011 21:52:59 +0000
-Subject: [PATCH] viafb: fix OLPC DCON refresh rate
-Message-Id: <1302905311-3821-1-git-send-email-FlorianSchandinat@gmx.de>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 25 Apr 2011 10:38:29 +0000
+Subject: [PATCH] video: s3c-fb: add gpio setup function to resume function
+Message-Id: <1303727909-20934-1-git-send-email-jg1.han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4DA62C4D.8070407@gmx.de>
-In-Reply-To: <4DA62C4D.8070407@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Daniel Drake <dsd@laptop.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-This patch fixes a regression introduced by
-	fd3cc69848b7e1873e5f12bbcdd572b20277ecf3a
-	"viafb: remove duplicated clock storage"
-caused by an incosistent mode which pretended to have a higher
-refresh rate than it actually had. The wrong refresh rate resulted
-in a calculated higher pixclock which the OLPC DCON could not handle.
-By reducing the refresh rate to 50Hz we get close to the old
-pixclock which makes the OLPC display usable again.
-Minor other adjustments are needed as 60Hz is assumed to be a safe
-value which is not true for OLPC DCON. This is no problem as we only
-support 1200x900 on the OLPC.
+This patch adds gpio setup function to resume function to ensure
+gpio used by FIMD IP and LCD panel during a resume.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Reported-by: Daniel Drake <dsd@laptop.org>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/via/hw.c      |    8 ++++++--
- drivers/video/via/viamode.c |    2 +-
- 2 files changed, 7 insertions(+), 3 deletions(-)
+ drivers/video/s3c-fb.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index dc4c778..980e263 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -2598,8 +2598,12 @@ int viafb_get_refresh(int hres, int vres, u32 long_refresh)
- 			best = &vmode->crtc[i];
- 	}
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 3fa7911..9457546 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -1528,7 +1528,8 @@ static int s3c_fb_resume(struct device *dev)
  
--	if (abs(best->refresh_rate - long_refresh) > 3)
--		return 60;
-+	if (abs(best->refresh_rate - long_refresh) > 3) {
-+		if (hres = 1200 && vres = 900)
-+			return 50; /* OLPC DCON only supports 50 Hz */
-+		else
-+			return 60;
-+	}
+ 	clk_enable(sfb->bus_clk);
  
- 	return best->refresh_rate;
- }
-diff --git a/drivers/video/via/viamode.c b/drivers/video/via/viamode.c
-index 8c5bc41..260d339 100644
---- a/drivers/video/via/viamode.c
-+++ b/drivers/video/via/viamode.c
-@@ -606,7 +606,7 @@ static struct crt_mode_table CRTM1200x720[] = {
- /* 1200x900 (DCON) */
- static struct crt_mode_table DCON1200x900[] = {
- 	/* r_rate,               hsp,               vsp   */
--	{REFRESH_60, M1200X900_R60_HSP, M1200X900_R60_VSP,
-+	{REFRESH_50, M1200X900_R60_HSP, M1200X900_R60_VSP,
- 	/* The correct htotal is 1240, but this doesn't raster on VX855. */
- 	/* Via suggested changing to a multiple of 16, hence 1264.       */
- 	/*  HT,   HA,  HBS, HBE,  HSS, HSE,  VT,  VA, VBS, VBE, VSS, VSE */
+-	/* setup registers */
++	/* setup gpio and output polarity controls */
++	pd->setup_gpio();
+ 	writel(pd->vidcon1, sfb->regs + VIDCON1);
+ 
+ 	/* zero all windows before we do anything */
+@@ -1586,7 +1587,8 @@ static int s3c_fb_runtime_resume(struct device *dev)
+ 
+ 	clk_enable(sfb->bus_clk);
+ 
+-	/* setup registers */
++	/* setup gpio and output polarity controls */
++	pd->setup_gpio();
+ 	writel(pd->vidcon1, sfb->regs + VIDCON1);
+ 
+ 	/* zero all windows before we do anything */
 -- 
-1.6.3.2
+1.7.1
 

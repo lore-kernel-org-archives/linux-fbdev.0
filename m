@@ -1,49 +1,61 @@
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-Date: Thu, 21 Apr 2011 17:22:05 +0000
-Subject: Re: [REGRESSION] [2.6.39-rc3] Wrong resolution in framebuffer and X Window
-Message-Id: <201104211922.05779.maciej.rutecki@gmail.com>
+From: Magnus Damm <magnus.damm@gmail.com>
+Date: Tue, 26 Apr 2011 05:46:02 +0000
+Subject: Re: [RFC][PATCH 0/3] MERAM support for LCDC
+Message-Id: <BANLkTinoRDza1WKsYdwKTJvumoUaqeYr3g@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201104171804.04664.maciej.rutecki@gmail.com>
-In-Reply-To: <201104171804.04664.maciej.rutecki@gmail.com>
+References: <1301369758-18394-1-git-send-email-dhobsong@igel.co.jp>
+In-Reply-To: <1301369758-18394-1-git-send-email-dhobsong@igel.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: mbroemme@plusserver.de, airlied@linux.ie, dri-devel@lists.freedesktop.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-(add LKML)
+Hi Damian,
 
-On niedziela, 17 kwietnia 2011 o 18:04:04 Maciej Rutecki wrote:
-> Hi
-> 
-> Last known good: 2.6.38
-> Failing kernel: 2.6.39-rc3
-> Subsystem: Intel graphics driver.
-> 
-> Description:
-> PC should work with 1440x900 resolution. But console (and after) X Window
-> start work with 1024x768.
-> 
-> I attach dmesg and Xorg.0.log with drm.debug log_buf_lenM options:
-> http://unixy.pl/maciek/download/kernel/2.6.39-rc1/zlom/kms/
-> 
-> seems that driver cannot detect resolution higher than 1024x768.
-> 
-> Also I boot kernel replace "i915.modeset=1" with "nomodeset" option:
-> http://unixy.pl/maciek/download/kernel/2.6.39-rc1/zlom/nomodeset/
-> 
-> But then X Window fails to start and got message: "(EE) No devices
-> detected."
-> 
-> Config for 2.6.39-rc3:
-> http://unixy.pl/maciek/download/kernel/2.6.39-rc1/zlom/config-2.6.39-rc3
-> 
-> Best regards
+Thanks for your work on this!
 
-Device:
-00:02.0 VGA compatible controller: Intel Corporation 82G33/G31 Express 
-Integrated Graphics Controller (rev 02)
+On Tue, Mar 29, 2011 at 12:35 PM, Damian Hobson-Garcia
+<dhobsong@igel.co.jp> wrote:
+> This patch series is based on the fbdev tree.
+>
+> This series adds support for read-ahead cache access through the ICBs and
+> MERAM available on SH devices. =A0The exact ICBs to use are chip specific
+> and are specified in the platform data.
+>
+> Damian Hobson-Garcia (3):
+> =A0sh_mobile_meram: MERAM framework for LCDC
+> =A0sh_mobile_meram: Add support for NV24 framebuffers
+> =A0sh_mobile_meram: MERAM platform data for LCDC
 
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+I think these patches look very good in general. I have one request
+and some general comments:
+
+Please add Runtime PM support to the MERAM driver. The MSTP113 bit of
+SMSTPCR1 should be dynamically controlled using pm_runtime_get_sync()
+and pm_runtime_put_sync().
+
+I also wonder if we can chose to use MERAM dynamically somehow. I know
+the sh7372 MERAM can be used to back the entire frame buffer memory
+(controlled by the LRCTRL register, see the MERAM section in the
+sh7372 data sheet). This fully-backed mode can perhaps be used to save
+power for regular low-performance operation and/or semi-standby.
+
+For low-performance operation I imagine that by using MERAM for frame
+buffer memory we can put the SDRAM in self-refresh mode and that way
+enter deep idle modes even though the screen is still operating.
+
+The semi-standby would be that the "real" framebuffer is in say 32-bit
+RGB in SDRAM, but we keep a 8-bit RGB shadow buffer in MERAM and
+switch to that at the same instant we move from full backlight to low
+backlight. This is most likely useful only when combined with
+switching the LCD panel itself to 8-bit mode as well to save
+bandwidth.
+
+Then you have your full-performance mode that I guess is what these
+patches implement. =3D)
+
+Any ideas/suggestions about the low power LCDC modes?
+
+Thanks,
+
+/ magnus

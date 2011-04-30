@@ -1,83 +1,48 @@
-From: Julia Lawall <julia@diku.dk>
-Date: Fri, 22 Apr 2011 20:11:21 +0000
-Subject: [PATCH 1/3] drivers/video: Convert release_resource to release_mem_region
-Message-Id: <1303503083-26170-1-git-send-email-julia@diku.dk>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 30 Apr 2011 14:18:05 +0000
+Subject: [PATCH 2/3] viafb: try to map less memory in case of failure
+Message-Id: <1304173086-3434-3-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1304173086-3434-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1304173086-3434-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Request_mem_region should be used with release_mem_region, not
-release_resource.
+The current code might result in trying to remap 512MB video ram on
+a 32 bit system which is quite likely to fail.
+This patch tries to map less of it down to 8MB as this should still
+be enough to get a reasonably well working framebuffer. This should
+make viafb work for many people without requiring them to manually
+allocate more space.
 
-The semantic match that finds this problem is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@s exists@
-expression e1,e2,e3,e4,e;
-@@
-
-*e4 = request_mem_region(e1,e2,e3)
-... when != e4 = e
-*release_resource(e4);
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/s3c-fb.c   |    6 ++----
- drivers/video/sh7760fb.c |    6 ++----
- 2 files changed, 4 insertions(+), 8 deletions(-)
+ drivers/video/via/via-core.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 3fa7911..d570e58 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -1449,8 +1449,7 @@ err_ioremap:
- 	iounmap(sfb->regs);
- 
- err_req_region:
--	release_resource(sfb->regs_res);
--	kfree(sfb->regs_res);
-+	release_mem_region(sfb->regs_res->start, resource_size(sfb->regs_res));
- 
- err_clk:
- 	clk_disable(sfb->bus_clk);
-@@ -1486,8 +1485,7 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
- 	clk_disable(sfb->bus_clk);
- 	clk_put(sfb->bus_clk);
- 
--	release_resource(sfb->regs_res);
--	kfree(sfb->regs_res);
-+	release_mem_region(sfb->regs_res->start, resource_size(sfb->regs_res));
- 
- 	kfree(sfb);
- 
-diff --git a/drivers/video/sh7760fb.c b/drivers/video/sh7760fb.c
-index 8fe1958..45e47d8 100644
---- a/drivers/video/sh7760fb.c
-+++ b/drivers/video/sh7760fb.c
-@@ -551,8 +551,7 @@ out_unmap:
- 		free_irq(par->irq, &par->vsync);
- 	iounmap(par->base);
- out_res:
--	release_resource(par->ioarea);
--	kfree(par->ioarea);
-+	release_mem_region(res->start, resource_size(res));
- out_fb:
- 	framebuffer_release(info);
- 	return ret;
-@@ -570,8 +569,7 @@ static int __devexit sh7760fb_remove(struct platform_device *dev)
- 	if (par->irq >= 0)
- 		free_irq(par->irq, par);
- 	iounmap(par->base);
--	release_resource(par->ioarea);
--	kfree(par->ioarea);
-+	release_mem_region(par->ioarea->start, resource_size(par->ioarea));
- 	framebuffer_release(info);
- 	platform_set_drvdata(dev, NULL);
- 
+diff --git a/drivers/video/via/via-core.c b/drivers/video/via/via-core.c
+index 5b0129b..eb112b6 100644
+--- a/drivers/video/via/via-core.c
++++ b/drivers/video/via/via-core.c
+@@ -505,7 +505,14 @@ static int __devinit via_pci_setup_mmio(struct viafb_dev *vdev)
+ 	ret = vdev->fbmem_len = viafb_get_fb_size_from_pci(vdev->chip_type);
+ 	if (ret < 0)
+ 		goto out_unmap;
+-	vdev->fbmem = ioremap_wc(vdev->fbmem_start, vdev->fbmem_len);
++
++	/* try to map less memory on failure, 8 MB should be still enough */
++	for (; vdev->fbmem_len >= 8 << 20; vdev->fbmem_len /= 2) {
++		vdev->fbmem = ioremap_wc(vdev->fbmem_start, vdev->fbmem_len);
++		if (vdev->fbmem)
++			break;
++	}
++
+ 	if (vdev->fbmem = NULL) {
+ 		ret = -ENOMEM;
+ 		goto out_unmap;
+-- 
+1.6.3.2
 

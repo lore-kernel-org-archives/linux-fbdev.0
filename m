@@ -1,120 +1,29 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Mon, 16 May 2011 08:33:37 +0000
-Subject: Re: [PATCH v3] viafb: Automatic OLPC XO-1.5 configuration
-Message-Id: <4DD0E161.8090202@gmx.de>
+From: Timur Tabi <timur@freescale.com>
+Date: Mon, 02 May 2011 19:30:36 +0000
+Subject: Login prompt on a video console instead of serial port?
+Message-Id: <4DBF065C.3030407@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20110510213411.38D0F9D401C@zog.reactivated.net>
-In-Reply-To: <20110510213411.38D0F9D401C@zog.reactivated.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, devicetree-discuss <devicetree-discuss-mnsaURCQ41sdnm+yROfE0A@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On 05/10/2011 09:34 PM, Daniel Drake wrote:
-> Currently, a long set of viafb options are needed to get the XO-1.5
-> laptop to output video (there is only 1 configuration that works, that
-> can't really be autodetected).
->
-> This patch automatically detects and configures viafb for the XO-1.5
-> laptop, meaning all that is required for working display is that
-> viafb is loaded.
+I'm using a Freescale P1022DS (PowerPC e500 core) system, which has a built-in
+video controller.  I have a framebuffer driver that works fine, and if I add
+"video=fslfb:1280x1024-32@60,monitor=0 console=tty0" to the command-line, then
+*most* of the kernel boot log appears on the serial port and the video display.
 
-Applied.
+However, the login prompt is always on the serial port.  This happens even if I
+delete the "console=ttyS0,115200" from the command-line.  I presume this is
+because the "linux,stdout-path" property in the device tree always points to a
+serial port node.
 
+So my question is: what do I need to do get the login prompt on the video
+console?  That is, stdout goes to /dev/fb0 but stdin is still from /dev/ttyS0.
+I presume I need to direct "linux,stdout-path" to the fslfb node in the device
+tree, but there doesn't appear to be support for "linux,stdin-path".
 
-Thanks,
-
-Florian Tobias Schandinat
-
-> Signed-off-by: Daniel Drake<dsd@laptop.org>
-> ---
->   drivers/video/via/viafbdev.c |   39 ++++++++++++++++++++++++++++++---------
->   1 files changed, 30 insertions(+), 9 deletions(-)
->
-> v2: incorporates all feedback from Florian
-> v3: drop unnecessary viafb_bpp override
->
-> diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-> index 7b4390e..cf43c80 100644
-> --- a/drivers/video/via/viafbdev.c
-> +++ b/drivers/video/via/viafbdev.c
-> @@ -24,6 +24,7 @@
->   #include<linux/slab.h>
->   #include<linux/stat.h>
->   #include<linux/via-core.h>
-> +#include<asm/olpc.h>
->
->   #define _MASTER_FILE
->   #include "global.h"
-> @@ -1011,8 +1012,13 @@ static int __init parse_active_dev(void)
->   	/*    Note: The previous of active_dev is primary device,
->   	   and the following is secondary device. */
->   	if (!viafb_active_dev) {
-> -		viafb_CRT_ON = STATE_ON;
-> -		viafb_SAMM_ON = STATE_OFF;
-> +		if (machine_is_olpc()) { /* LCD only */
-> +			viafb_LCD_ON = STATE_ON;
-> +			viafb_SAMM_ON = STATE_OFF;
-> +		} else {
-> +			viafb_CRT_ON = STATE_ON;
-> +			viafb_SAMM_ON = STATE_OFF;
-> +		}
->   	} else if (!strcmp(viafb_active_dev, "CRT+DVI")) {
->   		/* CRT+DVI */
->   		viafb_CRT_ON = STATE_ON;
-> @@ -1665,8 +1671,13 @@ static int parse_mode(const char *str, u32 *xres, u32 *yres)
->   	char *ptr;
->
->   	if (!str) {
-> -		*xres = 640;
-> -		*yres = 480;
-> +		if (machine_is_olpc()) {
-> +			*xres = 1200;
-> +			*yres = 900;
-> +		} else {
-> +			*xres = 640;
-> +			*yres = 480;
-> +		}
->   		return 0;
->   	}
->
-> @@ -1922,11 +1933,16 @@ void __devexit via_fb_pci_remove(struct pci_dev *pdev)
->   }
->
->   #ifndef MODULE
-> -static int __init viafb_setup(char *options)
-> +static int __init viafb_setup(void)
->   {
->   	char *this_opt;
-> +	char *options;
-> +
->   	DEBUG_MSG(KERN_INFO "viafb_setup!\n");
->
-> +	if (fb_get_options("viafb",&options))
-> +		return -ENODEV;
-> +
->   	if (!options || !*options)
->   		return 0;
->
-> @@ -2000,11 +2016,16 @@ static int __init viafb_setup(char *options)
->   int __init viafb_init(void)
->   {
->   	u32 dummy_x, dummy_y;
-> +	int r;
-> +
-> +	if (machine_is_olpc())
-> +		/* Apply XO-1.5-specific configuration. */
-> +		viafb_lcd_panel_id = 23;
-> +
->   #ifndef MODULE
-> -	char *option = NULL;
-> -	if (fb_get_options("viafb",&option))
-> -		return -ENODEV;
-> -	viafb_setup(option);
-> +	r = viafb_setup();
-> +	if (r<  0)
-> +		return r;
->   #endif
->   	if (parse_mode(viafb_mode,&dummy_x,&dummy_y)
->   		|| !viafb_get_mode(dummy_x, dummy_y)
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
 

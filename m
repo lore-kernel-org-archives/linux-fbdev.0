@@ -1,37 +1,62 @@
-From: Mike Frysinger <vapier@gentoo.org>
-Date: Mon, 30 May 2011 03:23:36 +0000
-Subject: [PATCH] fbdev: bf537-lq035: add missing blacklight properties type
-Message-Id: <1306725816-11120-1-git-send-email-vapier@gentoo.org>
+From: Enric Balletbo i Serra <eballetbo@iseebcn.com>
+Date: Tue, 03 May 2011 07:07:36 +0000
+Subject: [PATCHv2 1/2] OMAP: DSS2: Support for Seiko 70WVW1TZ3
+Message-Id: <1304406457-5109-2-git-send-email-eballetbo@iseebcn.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1304406457-5109-1-git-send-email-eballetbo@iseebcn.com>
+In-Reply-To: <1304406457-5109-1-git-send-email-eballetbo@iseebcn.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Enric Balletbo i Serra <eballetbo@iseebcn.com>
 
-From: Steven Miao <realmz6@gmail.com>
+Add support for Seiko 70WVW1TZ3, a LCD 7.0inch WVGA (800x480) display
+type with 24-bit RGB interface and Touch-Panel, to panel-generic-dpi
 
-Seems this new field was missed, probably due to this driver being merged
-around the time this new backlight field was being added.  At any rate,
-initial the type field to avoid ugly WARN() dumps.
+Tested with IGEP v2 board.
 
-Signed-off-by: Steven Miao <realmz6@gmail.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: Enric Balletbo i Serra <eballetbo@iseebcn.com>
 ---
- drivers/video/bf537-lq035.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/video/omap2/displays/panel-generic-dpi.c |   25 ++++++++++++++++++++++
+ 1 files changed, 25 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/bf537-lq035.c b/drivers/video/bf537-lq035.c
-index 47c21fb..bea53c1 100644
---- a/drivers/video/bf537-lq035.c
-+++ b/drivers/video/bf537-lq035.c
-@@ -789,6 +789,7 @@ static int __devinit bfin_lq035_probe(struct platform_device *pdev)
- 	i2c_add_driver(&ad5280_driver);
+diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
+index 4a9b9ff..644d370 100644
+--- a/drivers/video/omap2/displays/panel-generic-dpi.c
++++ b/drivers/video/omap2/displays/panel-generic-dpi.c
+@@ -181,6 +181,31 @@ static struct panel_config generic_dpi_panels[] = {
+ 		.power_off_delay	= 0,
+ 		.name			= "samsung_lte430wq_f0c",
+ 	},
++
++	/* Seiko 70WVW1TZ3Z3 */
++	{
++		{
++			.x_res		= 800,
++			.y_res		= 480,
++
++			.pixel_clock	= 33000,
++
++			.hsw		= 128,
++			.hfp		= 10,
++			.hbp		= 10,
++
++			.vsw		= 2,
++			.vfp		= 4,
++			.vbp		= 11,
++		},
++		.acbi			= 0x0,
++		.acb			= 0x0,
++		.config			= OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
++						OMAP_DSS_LCD_IHS,
++		.power_on_delay		= 0,
++		.power_off_delay	= 0,
++		.name			= "seiko_70wvw1tz3",
++	},
+ };
  
- 	memset(&props, 0, sizeof(props));
-+	props.type = BACKLIGHT_RAW;
- 	props.max_brightness = MAX_BRIGHENESS;
- 	bl_dev = backlight_device_register("bf537-bl", NULL, NULL,
- 					   &bfin_lq035fb_bl_ops, &props);
+ struct panel_drv_data {
 -- 
-1.7.5.rc3
+1.7.0.4
 

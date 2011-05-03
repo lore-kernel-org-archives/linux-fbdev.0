@@ -1,58 +1,42 @@
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 02 May 2011 20:12:31 +0000
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 03 May 2011 05:41:04 +0000
 Subject: Re: Login prompt on a video console instead of serial port?
-Message-Id: <BANLkTintvjvgVs6EVUr8zzWqkcLZ2zMpfg@mail.gmail.com>
+Message-Id: <1304401264.2513.303.camel@pasglop>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <4DBF065C.3030407@freescale.com>
-In-Reply-To: <4DBF065C.3030407@freescale.com>
+	<BANLkTikWMksVsvs8KzjdiZfRR-2WGD0Ftw@mail.gmail.com>
+	<4DBF0DF1.6050207@freescale.com>
+In-Reply-To: <4DBF0DF1.6050207@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Timur Tabi <timur@freescale.com>
-Cc: linux-fbdev@vger.kernel.org, devicetree-discuss <devicetree-discuss@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
+Cc: McClintock Matthew-B29882 <B29882@freescale.com>, devicetree-discuss <devicetree-discuss@lists.ozlabs.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-On Mon, May 2, 2011 at 1:30 PM, Timur Tabi <timur@freescale.com> wrote:
-> I'm using a Freescale P1022DS (PowerPC e500 core) system, which has a bui=
-lt-in
-> video controller. =A0I have a framebuffer driver that works fine, and if =
-I add
-> "video=3Dfslfb:1280x1024-32@60,monitor=3D0 console=3Dtty0" to the command=
--line, then
-> *most* of the kernel boot log appears on the serial port and the video di=
-splay.
->
-> However, the login prompt is always on the serial port. =A0This happens e=
-ven if I
-> delete the "console=3DttyS0,115200" from the command-line. =A0I presume t=
-his is
-> because the "linux,stdout-path" property in the device tree always points=
- to a
-> serial port node.
->
-> So my question is: what do I need to do get the login prompt on the video
-> console? =A0That is, stdout goes to /dev/fb0 but stdin is still from /dev=
-/ttyS0.
-> I presume I need to direct "linux,stdout-path" to the fslfb node in the d=
-evice
-> tree, but there doesn't appear to be support for "linux,stdin-path".
+On Mon, 2011-05-02 at 15:02 -0500, Timur Tabi wrote:
+> McClintock Matthew-B29882 wrote:
+> > Don't you have to spawn a terminal on the framebuffer for the login?
+> 
+> I suppose, but I don't know how to do that.  And although that would technically
+> answer the question in the subject of this thread, I still would have *some*
+> boot output on the serial port.  It would be nice if I could get all of stdout
+> on the video display, and all of stdin from the serial port.
 
-Look in /etc/inittab.  That's usually where the login gettys are specified.
+I don't think we have a way to do that unless you can make a serial
+"keyboard" device in the input layer. The VT layer will only get its
+input from such a thing, maybe that does exist in the depth of legacy
+code in there but it has nothing to do with your device-tree.
 
-g.
+> > Right now getty spawns the login on the serial port via /etc/inittab.
+> > Something similiar is probably needed for the framebuffer.
+> 
+> getty appears to work only with serial devices, since it insists on a baud rate
+> as one of the parameters.
 
->
-> --
-> Timur Tabi
-> Linux kernel developer at Freescale
->
-> _______________________________________________
-> devicetree-discuss mailing list
-> devicetree-discuss@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/devicetree-discuss
->
+No, or no existing distro would work :-)
 
+Just fake a baudrate for the tty's
 
+Cheers,
+Ben.
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.

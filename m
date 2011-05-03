@@ -1,46 +1,34 @@
-From: Alexey Charkov <alchark@gmail.com>
-Date: Thu, 26 May 2011 03:54:26 +0000
-Subject: Re: [PATCH 27/29] vt8500lcdfb: use display information in info not in
-Message-Id: <BANLkTin6YzLUu=pjSigbH+bwMuXjcwX=dQ@mail.gmail.com>
+From: Enric Balletbo i Serra <eballetbo@iseebcn.com>
+Date: Tue, 03 May 2011 07:07:35 +0000
+Subject: [PATCHv2 0/2] OMAP: DSS: Support new dpi panels
+Message-Id: <1304406457-5109-1-git-send-email-eballetbo@iseebcn.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1306364301-8195-28-git-send-email-laurent.pinchart@ideasonboard.com>
-In-Reply-To: <1306364301-8195-28-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Enric Balletbo i Serra <eballetbo@iseebcn.com>
 
-2011/5/26 Laurent Pinchart <laurent.pinchart@ideasonboard.com>:
-> We must not use any information in the passed var besides xoffset,
-> yoffset and vmode as otherwise applications might abuse it.
+Hi all,
 
-Agreed, thanks for the fix!
+These patches add support for two new panels to the generic-dpi-panel.
 
-> Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> Cc: Alexey Charkov <alchark@gmail.com>
-> ---
->  drivers/video/vt8500lcdfb.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
-> index 0e120d6..c13c246 100644
-> --- a/drivers/video/vt8500lcdfb.c
-> +++ b/drivers/video/vt8500lcdfb.c
-> @@ -210,8 +210,8 @@ static int vt8500lcd_pan_display(struct fb_var_screeninfo *var,
->        struct vt8500lcd_info *fbi = to_vt8500lcd_info(info);
->
->        writel((1 << 31)
-> -               | (((var->xres_virtual - var->xres) * pixlen / 4) << 20)
-> -               | (off >> 2), fbi->regbase + 0x20);
-> +            | (((info->var.xres_virtual - info->var.xres) * pixlen / 4) << 20)
-> +            | (off >> 2), fbi->regbase + 0x20);
->        return 0;
->  }
->
-> --
-> 1.7.3.4
->
->
+The first patch adds support for the Seiko 70WVW1TZ3 LCD panel, and the second
+adds support for the Powertip PH480272T LCD panel.
 
-Best regards,
-Alexey
+Tested with an IGEP v2 board.
+
+Changes since v1:
+  - Change the names of both panels in the panel_config struct to
+    include the name of the manufacturer.
+  - Mention the board which uses those panels.
+
+Please consider to add in next merge window, thanks,
+
+Enric Balletbo i Serra (2):
+  OMAP: DSS2: Support for Seiko 70WVW1TZ3
+  OMAP: DSS2: Support for Powertip PH480272T
+
+ drivers/video/omap2/displays/panel-generic-dpi.c |   50 ++++++++++++++++++++++
+ 1 files changed, 50 insertions(+), 0 deletions(-)
+

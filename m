@@ -1,304 +1,365 @@
-From: Anatolij Gustschin <agust@denx.de>
-Date: Fri, 13 May 2011 15:54:49 +0000
-Subject: [PATCH 5/5] video: mb862xxfb: add support for L1 displaying
-Message-Id: <1305302089-7666-6-git-send-email-agust@denx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 04 May 2011 12:27:37 +0000
+Subject: [PATCH 5/7] OMAP: LDP: Port the display driver to new DSS2
+Message-Id: <1304512059-10372-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1304512059-10372-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1304512059-10372-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Stanley Miao <stanley.miao@windriver.com>
 
-Allow displaying L1 video data on top of the primary L0 layer.
-The L1 layer position and dimensions can be configured and the
-layer enabled/disabled by using the appropriate L1 controls
-added by this patch.
+Port the old omapfb panel driver to DSS2 and change the board file
+accordingly.
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Stanley Miao <stanley.miao@windriver.com>
 ---
- drivers/video/mb862xx/mb862xx_reg.h |   31 +++++++++
- drivers/video/mb862xx/mb862xxfb.c   |  116 ++++++++++++++++++++++++++++++++++-
- drivers/video/mb862xx/mb862xxfb.h   |   27 ++++++++
- 3 files changed, 173 insertions(+), 1 deletions(-)
+ arch/arm/mach-omap2/board-ldp.c |   73 ++++++++++++--
+ drivers/video/omap/Makefile     |    1 -
+ drivers/video/omap/lcd_ldp.c    |  201 ---------------------------------------
+ 3 files changed, 63 insertions(+), 212 deletions(-)
+ delete mode 100644 drivers/video/omap/lcd_ldp.c
 
-diff --git a/drivers/video/mb862xx/mb862xx_reg.h b/drivers/video/mb862xx/mb862xx_reg.h
-index 5784b01..9df48b8 100644
---- a/drivers/video/mb862xx/mb862xx_reg.h
-+++ b/drivers/video/mb862xx/mb862xx_reg.h
-@@ -51,10 +51,16 @@
- #define GC_L0OA0		0x00000024
- #define GC_L0DA0		0x00000028
- #define GC_L0DY_L0DX		0x0000002c
-+#define GC_L1M			0x00000030
-+#define GC_L1DA			0x00000034
- #define GC_DCM1			0x00000100
- #define GC_L0EM			0x00000110
- #define GC_L0WY_L0WX		0x00000114
- #define GC_L0WH_L0WW		0x00000118
-+#define GC_L1EM			0x00000120
-+#define GC_L1WY_L1WX		0x00000124
-+#define GC_L1WH_L1WW		0x00000128
-+#define GC_DLS			0x00000180
- #define GC_DCM2			0x00000104
- #define GC_DCM3			0x00000108
- #define GC_CPM_CUTC		0x000000a0
-@@ -66,6 +72,11 @@
+diff --git a/arch/arm/mach-omap2/board-ldp.c b/arch/arm/mach-omap2/board-ldp.c
+index e2ba779..2fdfd7f 100644
+--- a/arch/arm/mach-omap2/board-ldp.c
++++ b/arch/arm/mach-omap2/board-ldp.c
+@@ -43,6 +43,8 @@
  
- #define GC_CPM_CEN0		0x00100000
- #define GC_CPM_CEN1		0x00200000
-+#define GC_DCM1_DEN		0x80000000
-+#define GC_DCM1_L1E		0x00020000
-+#define GC_L1M_16		0x80000000
-+#define GC_L1M_YC		0x40000000
-+#define GC_L1M_CS		0x20000000
+ #include <asm/delay.h>
+ #include <plat/usb.h>
++#include <plat/display.h>
++#include <plat/panel-generic-dpi.h>
  
- #define GC_DCM01_ESY		0x00000004
- #define GC_DCM01_SC		0x00003f00
-@@ -77,6 +88,7 @@
- #define GC_L0M_L0C_16		0x80000000
- #define GC_L0EM_L0EC_24		0x40000000
- #define GC_L0M_L0W_UNIT		64
-+#define GC_L1EM_DM		0x02000000
- 
- #define GC_DISP_REFCLK_400	400
- 
-@@ -101,6 +113,25 @@
- #define I2C_TRX			0x80
- #define I2C_LRB			0x10
- 
-+/* Capture registers and bits */
-+#define GC_CAP_VCM		0x00000000
-+#define GC_CAP_CSC		0x00000004
-+#define GC_CAP_VCS		0x00000008
-+#define GC_CAP_CBM		0x00000010
-+#define GC_CAP_CBOA		0x00000014
-+#define GC_CAP_CBLA		0x00000018
-+#define GC_CAP_IMG_START	0x0000001C
-+#define GC_CAP_IMG_END		0x00000020
-+#define GC_CAP_CMSS		0x00000048
-+#define GC_CAP_CMDS		0x0000004C
-+
-+#define GC_VCM_VIE		0x80000000
-+#define GC_VCM_CM		0x03000000
-+#define GC_VCM_VS_PAL		0x00000002
-+#define GC_CBM_OO		0x80000000
-+#define GC_CBM_HRV		0x00000010
-+#define GC_CBM_CBST		0x00000001
-+
- /* Carmine specific */
- #define MB86297_DRAW_BASE		0x00020000
- #define MB86297_DISP0_BASE		0x00100000
-diff --git a/drivers/video/mb862xx/mb862xxfb.c b/drivers/video/mb862xx/mb862xxfb.c
-index a9779f8..c098b88 100644
---- a/drivers/video/mb862xx/mb862xxfb.c
-+++ b/drivers/video/mb862xx/mb862xxfb.c
-@@ -27,7 +27,7 @@
- 
- #define NR_PALETTE		256
- #define MB862XX_MEM_SIZE	0x1000000
--#define CORALP_MEM_SIZE		0x4000000
-+#define CORALP_MEM_SIZE		0x2000000
- #define CARMINE_MEM_SIZE	0x8000000
- #define DRV_NAME		"mb862xxfb"
- 
-@@ -309,6 +309,97 @@ static int mb862xxfb_blank(int mode, struct fb_info *fbi)
- 	return 0;
+ #include "board-flash.h"
+ #include "mux.h"
+@@ -275,19 +277,71 @@ static inline void __init ldp_init_smsc911x(void)
+ 	gpio_direction_input(eth_gpio);
  }
  
-+static int mb862xxfb_ioctl(struct fb_info *fbi, unsigned int cmd,
-+			   unsigned long arg)
+-static struct platform_device ldp_lcd_device = {
+-	.name		= "ldp_lcd",
+-	.id		= -1,
++/* LCD */
++
++#define LCD_PANEL_BACKLIGHT_GPIO	(15 + OMAP_MAX_GPIO_LINES)
++#define LCD_PANEL_ENABLE_GPIO		(7 + OMAP_MAX_GPIO_LINES)
++#define LCD_PANEL_RESET_GPIO		55
++#define LCD_PANEL_QVGA_GPIO		56
++
++static int ldp_panel_enable_lcd(struct omap_dss_device *dssdev)
 +{
-+	struct mb862xxfb_par *par = fbi->par;
-+	struct mb862xx_l1_cfg *l1_cfg = &par->l1_cfg;
-+	void __user *argp = (void __user *)arg;
-+	int *enable;
-+	u32 l1em = 0;
++	gpio_direction_output(LCD_PANEL_ENABLE_GPIO, 1);
++	gpio_direction_output(LCD_PANEL_BACKLIGHT_GPIO, 1);
 +
-+	switch (cmd) {
-+	case MB862XX_L1_GET_CFG:
-+		if (copy_to_user(argp, l1_cfg, sizeof(*l1_cfg)))
-+			return -EFAULT;
-+		break;
-+	case MB862XX_L1_SET_CFG:
-+		if (copy_from_user(l1_cfg, argp, sizeof(*l1_cfg)))
-+			return -EFAULT;
-+		if ((l1_cfg->sw >= l1_cfg->dw) && (l1_cfg->sh >= l1_cfg->dh)) {
-+			/* downscaling */
-+			outreg(cap, GC_CAP_CSC,
-+				pack((l1_cfg->sh << 11) / l1_cfg->dh,
-+				     (l1_cfg->sw << 11) / l1_cfg->dw));
-+			l1em = inreg(disp, GC_L1EM);
-+			l1em &= ~GC_L1EM_DM;
-+		} else if ((l1_cfg->sw <= l1_cfg->dw) &&
-+			   (l1_cfg->sh <= l1_cfg->dh)) {
-+			/* upscaling */
-+			outreg(cap, GC_CAP_CSC,
-+				pack((l1_cfg->sh << 11) / l1_cfg->dh,
-+				     (l1_cfg->sw << 11) / l1_cfg->dw));
-+			outreg(cap, GC_CAP_CMSS,
-+				pack(l1_cfg->sw >> 1, l1_cfg->sh));
-+			outreg(cap, GC_CAP_CMDS,
-+				pack(l1_cfg->dw >> 1, l1_cfg->dh));
-+			l1em = inreg(disp, GC_L1EM);
-+			l1em |= GC_L1EM_DM;
-+		}
-+
-+		if (l1_cfg->mirror) {
-+			outreg(cap, GC_CAP_CBM,
-+				inreg(cap, GC_CAP_CBM) | GC_CBM_HRV);
-+			l1em |= l1_cfg->dw * 2 - 8;
-+		} else {
-+			outreg(cap, GC_CAP_CBM,
-+				inreg(cap, GC_CAP_CBM) & ~GC_CBM_HRV);
-+			l1em &= 0xffff0000;
-+		}
-+		outreg(disp, GC_L1EM, l1em);
-+		break;
-+	case MB862XX_L1_ENABLE:
-+		enable = (int *)arg;
-+		if (*enable) {
-+			outreg(disp, GC_L1DA, par->cap_buf);
-+			outreg(cap, GC_CAP_IMG_START,
-+				pack(l1_cfg->sy >> 1, l1_cfg->sx));
-+			outreg(cap, GC_CAP_IMG_END,
-+				pack(l1_cfg->sh, l1_cfg->sw));
-+			outreg(disp, GC_L1M, GC_L1M_16 | GC_L1M_YC | GC_L1M_CS |
-+					     (par->l1_stride << 16));
-+			outreg(disp, GC_L1WY_L1WX,
-+				pack(l1_cfg->dy, l1_cfg->dx));
-+			outreg(disp, GC_L1WH_L1WW,
-+				pack(l1_cfg->dh - 1, l1_cfg->dw));
-+			outreg(disp, GC_DLS, 1);
-+			outreg(cap, GC_CAP_VCM,
-+				GC_VCM_VIE | GC_VCM_CM | GC_VCM_VS_PAL);
-+			outreg(disp, GC_DCM1, inreg(disp, GC_DCM1) |
-+					      GC_DCM1_DEN | GC_DCM1_L1E);
-+		} else {
-+			outreg(cap, GC_CAP_VCM,
-+				inreg(cap, GC_CAP_VCM) & ~GC_VCM_VIE);
-+			outreg(disp, GC_DCM1,
-+				inreg(disp, GC_DCM1) & ~GC_DCM1_L1E);
-+		}
-+		break;
-+	case MB862XX_L1_CAP_CTL:
-+		enable = (int *)arg;
-+		if (*enable) {
-+			outreg(cap, GC_CAP_VCM,
-+				inreg(cap, GC_CAP_VCM) | GC_VCM_VIE);
-+		} else {
-+			outreg(cap, GC_CAP_VCM,
-+				inreg(cap, GC_CAP_VCM) & ~GC_VCM_VIE);
-+		}
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
 +	return 0;
 +}
 +
- /* framebuffer ops */
- static struct fb_ops mb862xxfb_ops = {
- 	.owner		= THIS_MODULE,
-@@ -320,6 +411,7 @@ static struct fb_ops mb862xxfb_ops = {
- 	.fb_fillrect	= cfb_fillrect,
- 	.fb_copyarea	= cfb_copyarea,
- 	.fb_imageblit	= cfb_imageblit,
-+	.fb_ioctl	= mb862xxfb_ioctl,
++static void ldp_panel_disable_lcd(struct omap_dss_device *dssdev)
++{
++	gpio_direction_output(LCD_PANEL_ENABLE_GPIO, 0);
++	gpio_direction_output(LCD_PANEL_BACKLIGHT_GPIO, 0);
++}
++
++static struct panel_generic_dpi_data ldp_panel_data = {
++	.name			= "2430sdp",
++	.platform_enable	= ldp_panel_enable_lcd,
++	.platform_disable	= ldp_panel_disable_lcd,
  };
  
- /* initialize fb_info data */
-@@ -328,6 +420,7 @@ static int mb862xxfb_init_fbinfo(struct fb_info *fbi)
- 	struct mb862xxfb_par *par = fbi->par;
- 	struct mb862xx_gc_mode *mode = par->gc_mode;
- 	unsigned long reg;
-+	int stride;
+-static struct omap_lcd_config ldp_lcd_config __initdata = {
+-	.ctrl_name	= "internal",
++static struct omap_dss_device ldp_lcd_device = {
++	.name			= "lcd",
++	.driver_name		= "generic_dpi_panel",
++	.type			= OMAP_DISPLAY_TYPE_DPI,
++	.phy.dpi.data_lines	= 16,
++	.data			= &ldp_panel_data,
+ };
  
- 	fbi->fbops = &mb862xxfb_ops;
- 	fbi->pseudo_palette = par->pseudo_palette;
-@@ -420,6 +513,27 @@ static int mb862xxfb_init_fbinfo(struct fb_info *fbi)
- 	fbi->fix.line_length = (fbi->var.xres_virtual *
- 				fbi->var.bits_per_pixel) / 8;
- 	fbi->fix.smem_len = fbi->fix.line_length * fbi->var.yres_virtual;
-+
-+	/*
-+	 * reserve space for capture buffers and two cursors
-+	 * at the end of vram: 720x576 * 2 * 2.2 + 64x64 * 16.
-+	 */
-+	par->cap_buf = par->mapped_vram - 0x1bd800 - 0x10000;
-+	par->cap_len = 0x1bd800;
-+	par->l1_cfg.sx = 0;
-+	par->l1_cfg.sy = 0;
-+	par->l1_cfg.sw = 720;
-+	par->l1_cfg.sh = 576;
-+	par->l1_cfg.dx = 0;
-+	par->l1_cfg.dy = 0;
-+	par->l1_cfg.dw = 720;
-+	par->l1_cfg.dh = 576;
-+	stride = par->l1_cfg.sw * (fbi->var.bits_per_pixel / 8);
-+	par->l1_stride = stride / 64 + ((stride % 64) ? 1 : 0);
-+	outreg(cap, GC_CAP_CBM, GC_CBM_OO | GC_CBM_CBST |
-+				(par->l1_stride << 16));
-+	outreg(cap, GC_CAP_CBOA, par->cap_buf);
-+	outreg(cap, GC_CAP_CBLA, par->cap_buf + par->cap_len);
- 	return 0;
- }
- 
-diff --git a/drivers/video/mb862xx/mb862xxfb.h b/drivers/video/mb862xx/mb862xxfb.h
-index f0f57ea..12ba0f0 100644
---- a/drivers/video/mb862xx/mb862xxfb.h
-+++ b/drivers/video/mb862xx/mb862xxfb.h
-@@ -1,6 +1,26 @@
- #ifndef __MB862XX_H__
- #define __MB862XX_H__
- 
-+struct mb862xx_l1_cfg {
-+	unsigned short sx;
-+	unsigned short sy;
-+	unsigned short sw;
-+	unsigned short sh;
-+	unsigned short dx;
-+	unsigned short dy;
-+	unsigned short dw;
-+	unsigned short dh;
-+	int mirror;
+-static struct omap_board_config_kernel ldp_config[] __initdata = {
+-	{ OMAP_TAG_LCD,		&ldp_lcd_config },
++static struct omap_dss_device *ldp_dss_devices[] = {
++	&ldp_lcd_device,
 +};
 +
-+#define MB862XX_BASE		'M'
-+#define MB862XX_L1_GET_CFG	_IOR(MB862XX_BASE, 0, struct mb862xx_l1_cfg*)
-+#define MB862XX_L1_SET_CFG	_IOW(MB862XX_BASE, 1, struct mb862xx_l1_cfg*)
-+#define MB862XX_L1_ENABLE	_IOW(MB862XX_BASE, 2, int)
-+#define MB862XX_L1_CAP_CTL	_IOW(MB862XX_BASE, 3, int)
-+
-+#ifdef __KERNEL__
-+
- #define PCI_VENDOR_ID_FUJITSU_LIMITED	0x10cf
- #define PCI_DEVICE_ID_FUJITSU_CORALP	0x2019
- #define PCI_DEVICE_ID_FUJITSU_CORALPA	0x201e
-@@ -38,6 +58,8 @@ struct mb862xxfb_par {
- 	void __iomem		*mmio_base;	/* remapped registers */
- 	size_t			mapped_vram;	/* length of remapped vram */
- 	size_t			mmio_len;	/* length of register region */
-+	unsigned long		cap_buf;	/* capture buffers offset */
-+	size_t			cap_len;	/* length of capture buffers */
- 
- 	void __iomem		*host;		/* relocatable reg. bases */
- 	void __iomem		*i2c;
-@@ -60,6 +82,9 @@ struct mb862xxfb_par {
- 	struct i2c_adapter	*adap;		/* GDC I2C bus adapter */
- 	int			i2c_rs;
- 
-+	struct mb862xx_l1_cfg	l1_cfg;
-+	int			l1_stride;
-+
- 	u32			pseudo_palette[16];
++static struct omap_dss_board_info ldp_dss_data = {
++	.num_devices	= ARRAY_SIZE(ldp_dss_devices),
++	.devices	= ldp_dss_devices,
++	.default_device	= &ldp_lcd_device,
  };
  
-@@ -85,4 +110,6 @@ extern int mb862xx_i2c_init(struct mb862xxfb_par *par);
- 
- #define pack(a, b)	(((a) << 16) | (b))
- 
-+#endif /* __KERNEL__ */
++static void __init ldp_display_init(void)
++{
++	int r;
 +
- #endif
++	struct gpio gpios[] = {
++		{LCD_PANEL_RESET_GPIO, GPIOF_OUT_INIT_HIGH, "LCD RESET"},
++		{LCD_PANEL_QVGA_GPIO, GPIOF_OUT_INIT_HIGH, "LCD QVGA"},
++		{LCD_PANEL_ENABLE_GPIO, GPIOF_OUT_INIT_LOW, "LCD ENABLE"},
++		{LCD_PANEL_BACKLIGHT_GPIO, GPIOF_OUT_INIT_LOW, "LCD BACKLIGHT"},
++	};
++
++	r = gpio_request_array(gpios, ARRAY_SIZE(gpios));
++	if (r) {
++		pr_err("Cannot request LCD GPIOs, error %d\n", r);
++		return;
++	}
++
++	omap_display_init(&ldp_dss_data);
++}
++
+ static void __init omap_ldp_init_early(void)
+ {
+ 	omap2_init_common_infrastructure();
+@@ -390,7 +444,6 @@ static struct omap2_hsmmc_info mmc[] __initdata = {
+ 
+ static struct platform_device *ldp_devices[] __initdata = {
+ 	&ldp_smsc911x_device,
+-	&ldp_lcd_device,
+ 	&ldp_gpio_keys_device,
+ };
+ 
+@@ -441,8 +494,6 @@ static struct mtd_partition ldp_nand_partitions[] = {
+ static void __init omap_ldp_init(void)
+ {
+ 	omap3_mux_init(board_mux, OMAP_PACKAGE_CBB);
+-	omap_board_config = ldp_config;
+-	omap_board_config_size = ARRAY_SIZE(ldp_config);
+ 	ldp_init_smsc911x();
+ 	omap_i2c_init();
+ 	platform_add_devices(ldp_devices, ARRAY_SIZE(ldp_devices));
+@@ -459,6 +510,8 @@ static void __init omap_ldp_init(void)
+ 	omap2_hsmmc_init(mmc);
+ 	/* link regulators to MMC adapters */
+ 	ldp_vmmc1_supply.dev = mmc[0].dev;
++
++	ldp_display_init();
+ }
+ 
+ MACHINE_START(OMAP_LDP, "OMAP LDP board")
+diff --git a/drivers/video/omap/Makefile b/drivers/video/omap/Makefile
+index f654ba0..43eb64a 100644
+--- a/drivers/video/omap/Makefile
++++ b/drivers/video/omap/Makefile
+@@ -27,7 +27,6 @@ objs-$(CONFIG_ARCH_OMAP15XX)$(CONFIG_MACH_OMAP_INNOVATOR) += lcd_inn1510.o
+ objs-y$(CONFIG_MACH_OMAP_OSK) += lcd_osk.o
+ 
+ objs-y$(CONFIG_MACH_OMAP_APOLLON) += lcd_apollon.o
+-objs-y$(CONFIG_MACH_OMAP_LDP) += lcd_ldp.o
+ objs-y$(CONFIG_FB_OMAP_LCD_MIPID) += lcd_mipid.o
+ objs-y$(CONFIG_MACH_HERALD) += lcd_htcherald.o
+ 
+diff --git a/drivers/video/omap/lcd_ldp.c b/drivers/video/omap/lcd_ldp.c
+deleted file mode 100644
+index 0f5952c..0000000
+--- a/drivers/video/omap/lcd_ldp.c
++++ /dev/null
+@@ -1,201 +0,0 @@
+-/*
+- * LCD panel support for the TI LDP board
+- *
+- * Copyright (C) 2007 WindRiver
+- * Author: Stanley Miao <stanley.miao@windriver.com>
+- *
+- * Derived from drivers/video/omap/lcd-2430sdp.c
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of the GNU General Public License as published by the
+- * Free Software Foundation; either version 2 of the License, or (at your
+- * option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+- */
+-
+-#include <linux/module.h>
+-#include <linux/platform_device.h>
+-#include <linux/delay.h>
+-#include <linux/i2c/twl.h>
+-
+-#include <mach/gpio.h>
+-#include <plat/mux.h>
+-#include <asm/mach-types.h>
+-
+-#include "omapfb.h"
+-
+-#define LCD_PANEL_BACKLIGHT_GPIO	(15 + OMAP_MAX_GPIO_LINES)
+-#define LCD_PANEL_ENABLE_GPIO		(7 + OMAP_MAX_GPIO_LINES)
+-
+-#define LCD_PANEL_RESET_GPIO		55
+-#define LCD_PANEL_QVGA_GPIO		56
+-
+-#ifdef CONFIG_FB_OMAP_LCD_VGA
+-#define LCD_XRES		480
+-#define LCD_YRES		640
+-#define LCD_PIXCLOCK_MAX	41700
+-#else
+-#define LCD_XRES		240
+-#define LCD_YRES		320
+-#define LCD_PIXCLOCK_MAX	185186
+-#endif
+-
+-#define PM_RECEIVER             TWL4030_MODULE_PM_RECEIVER
+-#define ENABLE_VAUX2_DEDICATED  0x09
+-#define ENABLE_VAUX2_DEV_GRP    0x20
+-#define ENABLE_VAUX3_DEDICATED	0x03
+-#define ENABLE_VAUX3_DEV_GRP	0x20
+-
+-#define ENABLE_VPLL2_DEDICATED          0x05
+-#define ENABLE_VPLL2_DEV_GRP            0xE0
+-#define TWL4030_VPLL2_DEV_GRP           0x33
+-#define TWL4030_VPLL2_DEDICATED         0x36
+-
+-#define t2_out(c, r, v) twl_i2c_write_u8(c, r, v)
+-
+-
+-static int ldp_panel_init(struct lcd_panel *panel,
+-				struct omapfb_device *fbdev)
+-{
+-	gpio_request(LCD_PANEL_RESET_GPIO, "lcd reset");
+-	gpio_request(LCD_PANEL_QVGA_GPIO, "lcd qvga");
+-	gpio_request(LCD_PANEL_ENABLE_GPIO, "lcd panel");
+-	gpio_request(LCD_PANEL_BACKLIGHT_GPIO, "lcd backlight");
+-
+-	gpio_direction_output(LCD_PANEL_QVGA_GPIO, 0);
+-	gpio_direction_output(LCD_PANEL_RESET_GPIO, 0);
+-	gpio_direction_output(LCD_PANEL_ENABLE_GPIO, 0);
+-	gpio_direction_output(LCD_PANEL_BACKLIGHT_GPIO, 0);
+-
+-#ifdef CONFIG_FB_OMAP_LCD_VGA
+-	gpio_set_value(LCD_PANEL_QVGA_GPIO, 0);
+-#else
+-	gpio_set_value(LCD_PANEL_QVGA_GPIO, 1);
+-#endif
+-	gpio_set_value(LCD_PANEL_RESET_GPIO, 1);
+-
+-	return 0;
+-}
+-
+-static void ldp_panel_cleanup(struct lcd_panel *panel)
+-{
+-	gpio_free(LCD_PANEL_BACKLIGHT_GPIO);
+-	gpio_free(LCD_PANEL_ENABLE_GPIO);
+-	gpio_free(LCD_PANEL_QVGA_GPIO);
+-	gpio_free(LCD_PANEL_RESET_GPIO);
+-}
+-
+-static int ldp_panel_enable(struct lcd_panel *panel)
+-{
+-	if (0 != t2_out(PM_RECEIVER, ENABLE_VPLL2_DEDICATED,
+-			TWL4030_VPLL2_DEDICATED))
+-		return -EIO;
+-	if (0 != t2_out(PM_RECEIVER, ENABLE_VPLL2_DEV_GRP,
+-			TWL4030_VPLL2_DEV_GRP))
+-		return -EIO;
+-
+-	gpio_direction_output(LCD_PANEL_ENABLE_GPIO, 1);
+-	gpio_direction_output(LCD_PANEL_BACKLIGHT_GPIO, 1);
+-
+-	if (0 != t2_out(PM_RECEIVER, ENABLE_VAUX3_DEDICATED,
+-				TWL4030_VAUX3_DEDICATED))
+-		return -EIO;
+-	if (0 != t2_out(PM_RECEIVER, ENABLE_VAUX3_DEV_GRP,
+-				TWL4030_VAUX3_DEV_GRP))
+-		return -EIO;
+-
+-	return 0;
+-}
+-
+-static void ldp_panel_disable(struct lcd_panel *panel)
+-{
+-	gpio_direction_output(LCD_PANEL_ENABLE_GPIO, 0);
+-	gpio_direction_output(LCD_PANEL_BACKLIGHT_GPIO, 0);
+-
+-	t2_out(PM_RECEIVER, 0x0, TWL4030_VPLL2_DEDICATED);
+-	t2_out(PM_RECEIVER, 0x0, TWL4030_VPLL2_DEV_GRP);
+-	msleep(4);
+-}
+-
+-static unsigned long ldp_panel_get_caps(struct lcd_panel *panel)
+-{
+-	return 0;
+-}
+-
+-struct lcd_panel ldp_panel = {
+-	.name		= "ldp",
+-	.config		= OMAP_LCDC_PANEL_TFT | OMAP_LCDC_INV_VSYNC |
+-			  OMAP_LCDC_INV_HSYNC,
+-
+-	.bpp		= 16,
+-	.data_lines	= 18,
+-	.x_res		= LCD_XRES,
+-	.y_res		= LCD_YRES,
+-	.hsw		= 3,		/* hsync_len (4) - 1 */
+-	.hfp		= 3,		/* right_margin (4) - 1 */
+-	.hbp		= 39,		/* left_margin (40) - 1 */
+-	.vsw		= 1,		/* vsync_len (2) - 1 */
+-	.vfp		= 2,		/* lower_margin */
+-	.vbp		= 7,		/* upper_margin (8) - 1 */
+-
+-	.pixel_clock	= LCD_PIXCLOCK_MAX,
+-
+-	.init		= ldp_panel_init,
+-	.cleanup	= ldp_panel_cleanup,
+-	.enable		= ldp_panel_enable,
+-	.disable	= ldp_panel_disable,
+-	.get_caps	= ldp_panel_get_caps,
+-};
+-
+-static int ldp_panel_probe(struct platform_device *pdev)
+-{
+-	omapfb_register_panel(&ldp_panel);
+-	return 0;
+-}
+-
+-static int ldp_panel_remove(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+-static int ldp_panel_suspend(struct platform_device *pdev, pm_message_t mesg)
+-{
+-	return 0;
+-}
+-
+-static int ldp_panel_resume(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+-struct platform_driver ldp_panel_driver = {
+-	.probe		= ldp_panel_probe,
+-	.remove		= ldp_panel_remove,
+-	.suspend	= ldp_panel_suspend,
+-	.resume		= ldp_panel_resume,
+-	.driver		= {
+-		.name	= "ldp_lcd",
+-		.owner	= THIS_MODULE,
+-	},
+-};
+-
+-static int __init ldp_panel_drv_init(void)
+-{
+-	return platform_driver_register(&ldp_panel_driver);
+-}
+-
+-static void __exit ldp_panel_drv_exit(void)
+-{
+-	platform_driver_unregister(&ldp_panel_driver);
+-}
+-
+-module_init(ldp_panel_drv_init);
+-module_exit(ldp_panel_drv_exit);
 -- 
-1.7.1
+1.7.4.1
 

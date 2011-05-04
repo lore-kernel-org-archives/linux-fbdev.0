@@ -1,34 +1,413 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 25 May 2011 22:58:04 +0000
-Subject: [PATCH 12/29] imsttfb: use display information in info not in var for panning
-Message-Id: <1306364301-8195-13-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 04 May 2011 12:27:36 +0000
+Subject: [PATCH 4/7] OMAP: 2420SDP: Port the display driver to new DSS2
+Message-Id: <1304512059-10372-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1304512059-10372-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1304512059-10372-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Hunyue Yau <hyau@mvista.com>
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+Port the old omapfb panel driver to DSS2 and change the board file
+accordingly.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Hunyue Yau <hyau@mvista.com>
 ---
- drivers/video/imsttfb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/arm/mach-omap2/board-2430sdp.c              |   84 ++++++++--
+ drivers/video/omap/Makefile                      |    2 -
+ drivers/video/omap/lcd_2430sdp.c                 |  203 ----------------------
+ drivers/video/omap2/displays/panel-generic-dpi.c |   21 +++
+ 4 files changed, 91 insertions(+), 219 deletions(-)
+ delete mode 100644 drivers/video/omap/lcd_2430sdp.c
 
-diff --git a/drivers/video/imsttfb.c b/drivers/video/imsttfb.c
-index efb2c10..8149356 100644
---- a/drivers/video/imsttfb.c
-+++ b/drivers/video/imsttfb.c
-@@ -749,7 +749,7 @@ set_offset (struct fb_var_screeninfo *var, struct fb_info *info)
+diff --git a/arch/arm/mach-omap2/board-2430sdp.c b/arch/arm/mach-omap2/board-2430sdp.c
+index 1fa6bb8..9b6e987 100644
+--- a/arch/arm/mach-omap2/board-2430sdp.c
++++ b/arch/arm/mach-omap2/board-2430sdp.c
+@@ -38,6 +38,8 @@
+ #include <plat/gpmc.h>
+ #include <plat/usb.h>
+ #include <plat/gpmc-smc91x.h>
++#include <plat/display.h>
++#include <plat/panel-generic-dpi.h>
+ 
+ #include "mux.h"
+ #include "hsmmc.h"
+@@ -98,20 +100,79 @@ static struct platform_device sdp2430_flash_device = {
+ 	.resource	= &sdp2430_flash_resource,
+ };
+ 
+-static struct platform_device sdp2430_lcd_device = {
+-	.name		= "sdp2430_lcd",
+-	.id		= -1,
+-};
+-
+ static struct platform_device *sdp2430_devices[] __initdata = {
+ 	&sdp2430_flash_device,
++};
++
++/* LCD */
++#define SDP2430_LCD_PANEL_BACKLIGHT_GPIO	91
++#define SDP2430_LCD_PANEL_ENABLE_GPIO		154
++
++static int sdp2430_panel_enable_lcd(struct omap_dss_device *dssdev)
++{
++	gpio_direction_output(SDP2430_LCD_PANEL_ENABLE_GPIO, 1);
++	gpio_direction_output(SDP2430_LCD_PANEL_BACKLIGHT_GPIO, 1);
++
++	return 0;
++}
++
++static void sdp2430_panel_disable_lcd(struct omap_dss_device *dssdev)
++{
++	gpio_direction_output(SDP2430_LCD_PANEL_ENABLE_GPIO, 0);
++	gpio_direction_output(SDP2430_LCD_PANEL_BACKLIGHT_GPIO, 0);
++}
++
++static struct panel_generic_dpi_data sdp2430_panel_data = {
++	.name			= "2430sdp",
++	.platform_enable	= sdp2430_panel_enable_lcd,
++	.platform_disable	= sdp2430_panel_disable_lcd,
++};
++
++static struct omap_dss_device sdp2430_lcd_device = {
++	.name			= "lcd",
++	.driver_name		= "generic_dpi_panel",
++	.type			= OMAP_DISPLAY_TYPE_DPI,
++	.phy.dpi.data_lines	= 16,
++	.data			= &sdp2430_panel_data,
++};
++
++static struct omap_dss_device *sdp2430_dss_devices[] = {
+ 	&sdp2430_lcd_device,
+ };
+ 
+-static struct omap_lcd_config sdp2430_lcd_config __initdata = {
+-	.ctrl_name	= "internal",
++static struct omap_dss_board_info sdp2430_dss_data = {
++	.num_devices	= ARRAY_SIZE(sdp2430_dss_devices),
++	.devices	= sdp2430_dss_devices,
++	.default_device	= &sdp2430_lcd_device,
+ };
+ 
++static void __init sdp2430_display_init(void)
++{
++	int r;
++
++	r = gpio_request_one(SDP2430_LCD_PANEL_ENABLE_GPIO,
++			GPIOF_OUT_INIT_LOW, "LCD reset");
++	if (r) {
++		printk(KERN_ERR "failed to get LCD reset GPIO\n");
++		goto err0;
++	}
++
++	r = gpio_request_one(SDP2430_LCD_PANEL_BACKLIGHT_GPIO,
++			GPIOF_OUT_INIT_LOW, "LCD Backlight");
++	if (r) {
++		printk(KERN_ERR "failed to get LCD backlight GPIO\n");
++		goto err1;
++	}
++
++	omap_display_init(&sdp2430_dss_data);
++
++	return;
++err1:
++	gpio_free(SDP2430_LCD_PANEL_ENABLE_GPIO);
++err0:
++	return;
++}
++
+ #if defined(CONFIG_SMC91X) || defined(CONFIG_SMC91x_MODULE)
+ 
+ static struct omap_smc91x_platform_data board_smc91x_data = {
+@@ -136,10 +197,6 @@ static inline void board_smc91x_init(void)
+ 
+ #endif
+ 
+-static struct omap_board_config_kernel sdp2430_config[] __initdata = {
+-	{OMAP_TAG_LCD, &sdp2430_lcd_config},
+-};
+-
+ static void __init omap_2430sdp_init_early(void)
  {
- 	struct imstt_par *par = info->par;
- 	__u32 off = var->yoffset * (info->fix.line_length >> 3)
--		    + ((var->xoffset * (var->bits_per_pixel >> 3)) >> 3);
-+		    + ((var->xoffset * (info->var.bits_per_pixel >> 3)) >> 3);
- 	write_reg_le32(par->dc_regs, SSR, off);
+ 	omap2_init_common_infrastructure();
+@@ -244,9 +301,6 @@ static void __init omap_2430sdp_init(void)
+ 
+ 	omap2430_mux_init(board_mux, OMAP_PACKAGE_ZAC);
+ 
+-	omap_board_config = sdp2430_config;
+-	omap_board_config_size = ARRAY_SIZE(sdp2430_config);
+-
+ 	omap2430_i2c_init();
+ 
+ 	platform_add_devices(sdp2430_devices, ARRAY_SIZE(sdp2430_devices));
+@@ -263,6 +317,8 @@ static void __init omap_2430sdp_init(void)
+ 	ret = gpio_request(SECONDARY_LCD_GPIO, "Secondary LCD backlight");
+ 	if (ret = 0)
+ 		gpio_direction_output(SECONDARY_LCD_GPIO, 0);
++
++	sdp2430_display_init();
  }
  
+ static void __init omap_2430sdp_map_io(void)
+diff --git a/drivers/video/omap/Makefile b/drivers/video/omap/Makefile
+index 8eec6d7..f654ba0 100644
+--- a/drivers/video/omap/Makefile
++++ b/drivers/video/omap/Makefile
+@@ -27,8 +27,6 @@ objs-$(CONFIG_ARCH_OMAP15XX)$(CONFIG_MACH_OMAP_INNOVATOR) += lcd_inn1510.o
+ objs-y$(CONFIG_MACH_OMAP_OSK) += lcd_osk.o
+ 
+ objs-y$(CONFIG_MACH_OMAP_APOLLON) += lcd_apollon.o
+-objs-y$(CONFIG_MACH_OMAP_2430SDP) += lcd_2430sdp.o
+-objs-y$(CONFIG_MACH_OMAP_3430SDP) += lcd_2430sdp.o
+ objs-y$(CONFIG_MACH_OMAP_LDP) += lcd_ldp.o
+ objs-y$(CONFIG_FB_OMAP_LCD_MIPID) += lcd_mipid.o
+ objs-y$(CONFIG_MACH_HERALD) += lcd_htcherald.o
+diff --git a/drivers/video/omap/lcd_2430sdp.c b/drivers/video/omap/lcd_2430sdp.c
+deleted file mode 100644
+index e3eccc9..0000000
+--- a/drivers/video/omap/lcd_2430sdp.c
++++ /dev/null
+@@ -1,203 +0,0 @@
+-/*
+- * LCD panel support for the TI 2430SDP board
+- *
+- * Copyright (C) 2007 MontaVista
+- * Author: Hunyue Yau <hyau@mvista.com>
+- *
+- * Derived from drivers/video/omap/lcd-apollon.c
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of the GNU General Public License as published by the
+- * Free Software Foundation; either version 2 of the License, or (at your
+- * option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+- */
+-
+-#include <linux/module.h>
+-#include <linux/platform_device.h>
+-#include <linux/delay.h>
+-#include <linux/gpio.h>
+-#include <linux/i2c/twl.h>
+-
+-#include <plat/mux.h>
+-#include <asm/mach-types.h>
+-
+-#include "omapfb.h"
+-
+-#define SDP2430_LCD_PANEL_BACKLIGHT_GPIO	91
+-#define SDP2430_LCD_PANEL_ENABLE_GPIO		154
+-#define SDP3430_LCD_PANEL_BACKLIGHT_GPIO	24
+-#define SDP3430_LCD_PANEL_ENABLE_GPIO		28
+-
+-static unsigned backlight_gpio;
+-static unsigned enable_gpio;
+-
+-#define LCD_PIXCLOCK_MAX		5400 /* freq 5.4 MHz */
+-#define PM_RECEIVER             TWL4030_MODULE_PM_RECEIVER
+-#define ENABLE_VAUX2_DEDICATED  0x09
+-#define ENABLE_VAUX2_DEV_GRP    0x20
+-#define ENABLE_VAUX3_DEDICATED	0x03
+-#define ENABLE_VAUX3_DEV_GRP	0x20
+-
+-#define ENABLE_VPLL2_DEDICATED          0x05
+-#define ENABLE_VPLL2_DEV_GRP            0xE0
+-#define TWL4030_VPLL2_DEV_GRP           0x33
+-#define TWL4030_VPLL2_DEDICATED         0x36
+-
+-#define t2_out(c, r, v) twl_i2c_write_u8(c, r, v)
+-
+-
+-static int sdp2430_panel_init(struct lcd_panel *panel,
+-				struct omapfb_device *fbdev)
+-{
+-	if (machine_is_omap_3430sdp()) {
+-		enable_gpio    = SDP3430_LCD_PANEL_ENABLE_GPIO;
+-		backlight_gpio = SDP3430_LCD_PANEL_BACKLIGHT_GPIO;
+-	} else {
+-		enable_gpio    = SDP2430_LCD_PANEL_ENABLE_GPIO;
+-		backlight_gpio = SDP2430_LCD_PANEL_BACKLIGHT_GPIO;
+-	}
+-
+-	gpio_request(enable_gpio, "LCD enable");	/* LCD panel */
+-	gpio_request(backlight_gpio, "LCD bl");		/* LCD backlight */
+-	gpio_direction_output(enable_gpio, 0);
+-	gpio_direction_output(backlight_gpio, 0);
+-
+-	return 0;
+-}
+-
+-static void sdp2430_panel_cleanup(struct lcd_panel *panel)
+-{
+-	gpio_free(backlight_gpio);
+-	gpio_free(enable_gpio);
+-}
+-
+-static int sdp2430_panel_enable(struct lcd_panel *panel)
+-{
+-	u8 ded_val, ded_reg;
+-	u8 grp_val, grp_reg;
+-
+-	if (machine_is_omap_3430sdp()) {
+-		ded_reg = TWL4030_VAUX3_DEDICATED;
+-		ded_val = ENABLE_VAUX3_DEDICATED;
+-		grp_reg = TWL4030_VAUX3_DEV_GRP;
+-		grp_val = ENABLE_VAUX3_DEV_GRP;
+-
+-		if (omap_rev() > OMAP3430_REV_ES1_0) {
+-			t2_out(PM_RECEIVER, ENABLE_VPLL2_DEDICATED,
+-					TWL4030_VPLL2_DEDICATED);
+-			t2_out(PM_RECEIVER, ENABLE_VPLL2_DEV_GRP,
+-					TWL4030_VPLL2_DEV_GRP);
+-		}
+-	} else {
+-		ded_reg = TWL4030_VAUX2_DEDICATED;
+-		ded_val = ENABLE_VAUX2_DEDICATED;
+-		grp_reg = TWL4030_VAUX2_DEV_GRP;
+-		grp_val = ENABLE_VAUX2_DEV_GRP;
+-	}
+-
+-	gpio_set_value(enable_gpio, 1);
+-	gpio_set_value(backlight_gpio, 1);
+-
+-	if (0 != t2_out(PM_RECEIVER, ded_val, ded_reg))
+-		return -EIO;
+-	if (0 != t2_out(PM_RECEIVER, grp_val, grp_reg))
+-		return -EIO;
+-
+-	return 0;
+-}
+-
+-static void sdp2430_panel_disable(struct lcd_panel *panel)
+-{
+-	gpio_set_value(enable_gpio, 0);
+-	gpio_set_value(backlight_gpio, 0);
+-	if (omap_rev() > OMAP3430_REV_ES1_0) {
+-		t2_out(PM_RECEIVER, 0x0, TWL4030_VPLL2_DEDICATED);
+-		t2_out(PM_RECEIVER, 0x0, TWL4030_VPLL2_DEV_GRP);
+-		msleep(4);
+-	}
+-}
+-
+-static unsigned long sdp2430_panel_get_caps(struct lcd_panel *panel)
+-{
+-	return 0;
+-}
+-
+-struct lcd_panel sdp2430_panel = {
+-	.name		= "sdp2430",
+-	.config		= OMAP_LCDC_PANEL_TFT | OMAP_LCDC_INV_VSYNC |
+-			  OMAP_LCDC_INV_HSYNC,
+-
+-	.bpp		= 16,
+-	.data_lines	= 16,
+-	.x_res		= 240,
+-	.y_res		= 320,
+-	.hsw		= 3,		/* hsync_len (4) - 1 */
+-	.hfp		= 3,		/* right_margin (4) - 1 */
+-	.hbp		= 39,		/* left_margin (40) - 1 */
+-	.vsw		= 1,		/* vsync_len (2) - 1 */
+-	.vfp		= 2,		/* lower_margin */
+-	.vbp		= 7,		/* upper_margin (8) - 1 */
+-
+-	.pixel_clock	= LCD_PIXCLOCK_MAX,
+-
+-	.init		= sdp2430_panel_init,
+-	.cleanup	= sdp2430_panel_cleanup,
+-	.enable		= sdp2430_panel_enable,
+-	.disable	= sdp2430_panel_disable,
+-	.get_caps	= sdp2430_panel_get_caps,
+-};
+-
+-static int sdp2430_panel_probe(struct platform_device *pdev)
+-{
+-	omapfb_register_panel(&sdp2430_panel);
+-	return 0;
+-}
+-
+-static int sdp2430_panel_remove(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+-static int sdp2430_panel_suspend(struct platform_device *pdev,
+-					pm_message_t mesg)
+-{
+-	return 0;
+-}
+-
+-static int sdp2430_panel_resume(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+-struct platform_driver sdp2430_panel_driver = {
+-	.probe		= sdp2430_panel_probe,
+-	.remove		= sdp2430_panel_remove,
+-	.suspend	= sdp2430_panel_suspend,
+-	.resume		= sdp2430_panel_resume,
+-	.driver		= {
+-		.name	= "sdp2430_lcd",
+-		.owner	= THIS_MODULE,
+-	},
+-};
+-
+-static int __init sdp2430_panel_drv_init(void)
+-{
+-	return platform_driver_register(&sdp2430_panel_driver);
+-}
+-
+-static void __exit sdp2430_panel_drv_exit(void)
+-{
+-	platform_driver_unregister(&sdp2430_panel_driver);
+-}
+-
+-module_init(sdp2430_panel_drv_init);
+-module_exit(sdp2430_panel_drv_exit);
+diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
+index 4a9b9ff..2c1b093 100644
+--- a/drivers/video/omap2/displays/panel-generic-dpi.c
++++ b/drivers/video/omap2/displays/panel-generic-dpi.c
+@@ -181,6 +181,27 @@ static struct panel_config generic_dpi_panels[] = {
+ 		.power_off_delay	= 0,
+ 		.name			= "samsung_lte430wq_f0c",
+ 	},
++
++	/* Unknown panel used in OMAP 2430 SDP */
++	{
++		{
++			.x_res		= 240,
++			.y_res		= 320,
++
++			.pixel_clock	= 5400,
++
++			.hsw		= 3,
++			.hfp		= 3,
++			.hbp		= 39,
++
++			.vsw		= 1,
++			.vfp		= 2,
++			.vbp		= 7,
++		},
++		.config			= OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
++						OMAP_DSS_LCD_IHS,
++		.name			= "2430sdp",
++	},
+ };
+ 
+ struct panel_drv_data {
 -- 
-1.7.3.4
+1.7.4.1
 

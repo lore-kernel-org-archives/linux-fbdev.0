@@ -1,201 +1,64 @@
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 02 May 2011 22:27:16 +0000
-Subject: Re: [PATCH v6 3/6] video, sm501: add edid and commandline support
-Message-Id: <20110502222716.GB15187@ponder.secretlab.ca>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 04 May 2011 12:27:32 +0000
+Subject: [PATCH 0/7] OMAP: DSS: porting old drivers to DSS2
+Message-Id: <1304512059-10372-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291451028-22532-1-git-send-email-hs@denx.de>
-	<1300782452-528-1-git-send-email-hs@denx.de>
-	<1300782452-528-4-git-send-email-hs@denx.de>
-In-Reply-To: <1300782452-528-4-git-send-email-hs-ynQEQJNshbs@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Heiko Schocher <hs-ynQEQJNshbs@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-mnsaURCQ41sdnm+yROfE0A@public.gmane.org, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Vincent Sanders <vince-Y5A6D6n0/KfQXOPxS62xeg@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ben Dooks <ben-Y5A6D6n0/KfQXOPxS62xeg@public.gmane.org>, Randy Dunlap <rdunlap-/UHa2rfvQTnk1uMJSBkQmQ@public.gmane.org>, Paul Mundt <lethal-M7jkjyW5wf5g9hUCZPvPmw@public.gmane.org>, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Wolfgang Denk <wd-ynQEQJNshbs@public.gmane.org>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Tue, Mar 22, 2011 at 09:27:29AM +0100, Heiko Schocher wrote:
-> - add commandline options:
->   sm501fb.mode:
->     Specify resolution as "<xres>x<yres>[-<bpp>][@<refresh>]"
->   sm501fb.bpp:
->     Specify bit-per-pixel if not specified mode
-> 
-> - Add support for encoding display mode information
->   in the device tree using verbatim EDID block.
-> 
->   If the "edid" entry in the "smi,sm501" node is present,
->   the driver will build mode database using EDID data
->   and allow setting the display modes from this database.
-> 
-> Signed-off-by: Heiko Schocher <hs@denx.de>
+This patch set ports all the OMAP2/3 boards, except N8x0, that use the old
+omapfb to use the newer DSS2 driver.
 
-Merged, thanks.
+Some board files contained old omapfb code, but there wasn't a matching LCD
+driver. That board file code is also removed.
 
-g.
+Porting N800 driver is more complicated, as the blizzard chip driver is quite
+big and includes features that cannot be supported in DSS2 currently. I will
+post patches for that later.
 
-> cc: Wolfram Sang <w.sang@pengutronix.de>
-> cc: Grant Likely <grant.likely@secretlab.ca>
-> cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> cc: linux-fbdev@vger.kernel.org
-> cc: devicetree-discuss@ozlabs.org
-> cc: Ben Dooks <ben@simtec.co.uk>
-> cc: Vincent Sanders <vince@simtec.co.uk>
-> cc: Samuel Ortiz <sameo@linux.intel.com>
-> cc: linux-kernel@vger.kernel.org
-> cc: Randy Dunlap <rdunlap@xenotime.net>
-> cc: Wolfgang Denk <wd@denx.de>
-> cc: Paul Mundt <lethal@linux-sh.org>
-> ---
-> - changes since v1:
->   add Ben Dooks, Vincent Sanders and Samuel Ortiz to cc, as suggested from
->   Paul Mundt.
-> - changes since v2:
->   add comments from Randy Dunlap:
->   - move parameter documentation to Documentation/fb/sm501.txt
-> - changes since v3:
->   - rebased against v2.6.38-rc2
->   - split in 3 patches
->     - of support patch
->     - i/o routine patch
->     - edid support patch
-> - changes since v4:
->   - add "info->pdata = &sm501fb_def_pdata;" in sm501fb_probe()
->     as Paul Mundt suggested (and I wrongly deleted)
->   - move kfree(info->edid_data); to patch 3/4
->     as edid_data is only allocated in the CONFIG_OF case
-> - changes for v6:
->   - repost complete patchserie
->   - rebased against current head
-> 
->  Documentation/fb/sm501.txt |   10 +++++++
->  drivers/video/sm501fb.c    |   65 ++++++++++++++++++++++++++++++++++++++++---
->  2 files changed, 70 insertions(+), 5 deletions(-)
->  create mode 100644 Documentation/fb/sm501.txt
-> 
-> diff --git a/Documentation/fb/sm501.txt b/Documentation/fb/sm501.txt
-> new file mode 100644
-> index 0000000..8d17aeb
-> --- /dev/null
-> +++ b/Documentation/fb/sm501.txt
-> @@ -0,0 +1,10 @@
-> +Configuration:
-> +
-> +You can pass the following kernel command line options to sm501 videoframebuffer:
-> +
-> +	sm501fb.bpp=	SM501 Display driver:
-> +			Specifiy bits-per-pixel if not specified by 'mode'
-> +
-> +	sm501fb.mode=	SM501 Display driver:
-> +			Specify resolution as
-> +			"<xres>x<yres>[-<bpp>][@<refresh>]"
-> diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
-> index 5df406c..f31252c 100644
-> --- a/drivers/video/sm501fb.c
-> +++ b/drivers/video/sm501fb.c
-> @@ -41,6 +41,26 @@
->  #include <linux/sm501.h>
->  #include <linux/sm501-regs.h>
->  
-> +#include "edid.h"
-> +
-> +static char *fb_mode = "640x480-16@60";
-> +static unsigned long default_bpp = 16;
-> +
-> +static struct fb_videomode __devinitdata sm501_default_mode = {
-> +	.refresh	= 60,
-> +	.xres		= 640,
-> +	.yres		= 480,
-> +	.pixclock	= 20833,
-> +	.left_margin	= 142,
-> +	.right_margin	= 13,
-> +	.upper_margin	= 21,
-> +	.lower_margin	= 1,
-> +	.hsync_len	= 69,
-> +	.vsync_len	= 3,
-> +	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
-> +	.vmode		= FB_VMODE_NONINTERLACED
-> +};
-> +
->  #define NR_PALETTE	256
->  
->  enum sm501_controller {
-> @@ -77,6 +97,7 @@ struct sm501fb_info {
->  	void __iomem		*regs2d;	/* 2d remapped registers */
->  	void __iomem		*fbmem;		/* remapped framebuffer */
->  	size_t			 fbmem_len;	/* length of remapped region */
-> +	u8 *edid_data;
->  };
->  
->  /* per-framebuffer private data */
-> @@ -1725,9 +1746,16 @@ static int sm501fb_init_fb(struct fb_info *fb,
->  	fb->var.vmode		= FB_VMODE_NONINTERLACED;
->  	fb->var.bits_per_pixel  = 16;
->  
-> +	if (info->edid_data) {
-> +			/* Now build modedb from EDID */
-> +			fb_edid_to_monspecs(info->edid_data, &fb->monspecs);
-> +			fb_videomode_to_modelist(fb->monspecs.modedb,
-> +						 fb->monspecs.modedb_len,
-> +						 &fb->modelist);
-> +	}
-> +
->  	if (enable && (pd->flags & SM501FB_FLAG_USE_INIT_MODE) && 0) {
->  		/* TODO read the mode from the current display */
-> -
->  	} else {
->  		if (pd->def_mode) {
->  			dev_info(info->dev, "using supplied mode\n");
-> @@ -1737,12 +1765,34 @@ static int sm501fb_init_fb(struct fb_info *fb,
->  			fb->var.xres_virtual = fb->var.xres;
->  			fb->var.yres_virtual = fb->var.yres;
->  		} else {
-> -			ret = fb_find_mode(&fb->var, fb,
-> +			if (info->edid_data)
-> +				ret = fb_find_mode(&fb->var, fb, fb_mode,
-> +					fb->monspecs.modedb,
-> +					fb->monspecs.modedb_len,
-> +					&sm501_default_mode, default_bpp);
-> +			else
-> +				ret = fb_find_mode(&fb->var, fb,
->  					   NULL, NULL, 0, NULL, 8);
->  
-> -			if (ret = 0 || ret = 4) {
-> -				dev_err(info->dev,
-> -					"failed to get initial mode\n");
-> +			switch (ret) {
-> +			case 1:
-> +				dev_info(info->dev, "using mode specified in "
-> +						"@mode\n");
-> +				break;
-> +			case 2:
-> +				dev_info(info->dev, "using mode specified in "
-> +					"@mode with ignored refresh rate\n");
-> +				break;
-> +			case 3:
-> +				dev_info(info->dev, "using mode default "
-> +					"mode\n");
-> +				break;
-> +			case 4:
-> +				dev_info(info->dev, "using mode from list\n");
-> +				break;
-> +			default:
-> +				dev_info(info->dev, "ret = %d\n", ret);
-> +				dev_info(info->dev, "failed to find mode\n");
->  				return -EINVAL;
->  			}
->  		}
-> @@ -2157,6 +2207,11 @@ static void __exit sm501fb_cleanup(void)
->  module_init(sm501fb_init);
->  module_exit(sm501fb_cleanup);
->  
-> +module_param_named(mode, fb_mode, charp, 0);
-> +MODULE_PARM_DESC(mode,
-> +	"Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\" ");
-> +module_param_named(bpp, default_bpp, ulong, 0);
-> +MODULE_PARM_DESC(bpp, "Specify bit-per-pixel if not specified mode");
->  MODULE_AUTHOR("Ben Dooks, Vincent Sanders");
->  MODULE_DESCRIPTION("SM501 Framebuffer driver");
->  MODULE_LICENSE("GPL v2");
-> -- 
-> 1.7.4
-> 
+I don't have any of the boards touched by these patches, so testing is
+appreciated.
+
+ Tomi
+
+Tomi Valkeinen (7):
+  OMAP: OMAPFB: Remove unused lcd drivers
+  OMAP: RX51: Remove unused old omapfb stuff
+  OMAP: omap3touchbook: Remove unused lcd stuff
+  OMAP: 2420SDP: Port the display driver to new DSS2
+  OMAP: LDP: Port the display driver to new DSS2
+  OMAP: H4: Port the display driver to new DSS2
+  OMAP: Apollon: Port the display driver to new DSS2
+
+ arch/arm/mach-omap2/board-2430sdp.c              |   84 ++++++++--
+ arch/arm/mach-omap2/board-apollon.c              |   34 +++--
+ arch/arm/mach-omap2/board-h4.c                   |   41 +++--
+ arch/arm/mach-omap2/board-ldp.c                  |   73 +++++++-
+ arch/arm/mach-omap2/board-omap3touchbook.c       |   18 --
+ arch/arm/mach-omap2/board-rx51.c                 |   25 ---
+ drivers/video/omap/Makefile                      |    9 -
+ drivers/video/omap/lcd_2430sdp.c                 |  203 ----------------------
+ drivers/video/omap/lcd_apollon.c                 |  136 ---------------
+ drivers/video/omap/lcd_h4.c                      |  117 -------------
+ drivers/video/omap/lcd_ldp.c                     |  201 ---------------------
+ drivers/video/omap/lcd_omap2evm.c                |  192 --------------------
+ drivers/video/omap/lcd_omap3beagle.c             |  130 --------------
+ drivers/video/omap/lcd_omap3evm.c                |  193 --------------------
+ drivers/video/omap/lcd_overo.c                   |  180 -------------------
+ drivers/video/omap2/displays/panel-generic-dpi.c |   64 +++++++
+ 16 files changed, 244 insertions(+), 1456 deletions(-)
+ delete mode 100644 drivers/video/omap/lcd_2430sdp.c
+ delete mode 100644 drivers/video/omap/lcd_apollon.c
+ delete mode 100644 drivers/video/omap/lcd_h4.c
+ delete mode 100644 drivers/video/omap/lcd_ldp.c
+ delete mode 100644 drivers/video/omap/lcd_omap2evm.c
+ delete mode 100644 drivers/video/omap/lcd_omap3beagle.c
+ delete mode 100644 drivers/video/omap/lcd_omap3evm.c
+ delete mode 100644 drivers/video/omap/lcd_overo.c
+
+-- 
+1.7.4.1
+

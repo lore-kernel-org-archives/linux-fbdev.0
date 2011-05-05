@@ -1,10 +1,9 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Thu, 05 May 2011 18:30:12 +0000
-Subject: Re: [PATCH] fbcon -- fix race between open and removal of
-Message-Id: <20110505203012.7bc8127f@neptune.home>
+From: Jack Stone <jwjstone@fastmail.fm>
+Date: Thu, 05 May 2011 21:00:42 +0000
+Subject: Re: [PATCH] fbcon -- fix race between open and removal of framebuffers
+Message-Id: <4DC30FFA.9030708@fastmail.fm>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1304617307-7389-1-git-send-email-tim.gardner@canonical.com>
-	<1304617307-7389-2-git-send-email-tim.gardner@canonical.com>
+References: <1304617307-7389-1-git-send-email-tim.gardner@canonical.com> <1304617307-7389-2-git-send-email-tim.gardner@canonical.com>
 In-Reply-To: <1304617307-7389-2-git-send-email-tim.gardner@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,63 +11,48 @@ Content-Transfer-Encoding: 7bit
 To: tim.gardner@canonical.com
 Cc: linux-fbdev@vger.kernel.org, lethal@linux-sh.org, linux-kernel@vger.kernel.org, Andy Whitcroft <apw@canonical.com>, Leann Ogasawara <leann.ogasawara@canonical.com>
 
-On Thu, 05 May 2011 tim.gardner@canonical.com wrote:
-> From: Andy Whitcroft <apw@canonical.com>
-> 
-> Currently there is no locking for updates to the registered_fb list.
-> This allows an open through /dev/fbN to pick up a registered framebuffer
-> pointer in parallel with it being released, as happens when a conflicting
-> framebuffer is ejected or on module unload.  There is also no reference
-> counting on the framebuffer descriptor which is referenced from all open
-> files, leading to references to released or reused memory to persist on
-> these open files.
-> 
-> This patch adds a reference count to the framebuffer descriptor to prevent
-> it from being released until after all pending opens are closed.  This
-> allows the pending opens to detect the closed status and unmap themselves.
-> It also adds locking to the framebuffer lookup path, locking it against
-> the removal path such that it is possible to atomically lookup and take a
-> reference to the descriptor.  It also adds locking to the read and write
-> paths which currently could access the framebuffer descriptor after it
-> has been freed.  Finally it moves the device to FBINFO_STATE_REMOVED to
-> indicate that all access should be errored for this device.
+On 05/05/2011 18:41, tim.gardner@canonical.com wrote:
+> +static struct fb_info *get_framebuffer_info(int idx)
+> +__acquires(&registered_lock)
+> +__releases(&registered_lock)
+> +{
+> +	struct fb_info *fb_info;
+> +
+> +	spin_lock(&registered_lock);
+> +	fb_info = registered_fb[idx];
+> +	fb_info->ref_count++;
+> +	spin_unlock(&registered_lock);
+> +
+> +	return fb_info;
+> +}
+> +
+>  static int
+>  fb_open(struct inode *inode, struct file *file)
+>  __acquires(&info->lock)
+> @@ -1363,13 +1421,17 @@ __releases(&info->lock)
+>  
+>  	if (fbidx >= FB_MAX)
+>  		return -ENODEV;
+> -	info = registered_fb[fbidx];
+> +	info = get_framebuffer_info(fbidx);
+>  	if (!info)
+>  		request_module("fb%d", fbidx);
+> -	info = registered_fb[fbidx];
+> +	info = get_framebuffer_info(fbidx);
+>  	if (!info)
+>  		return -ENODEV;
 
-Is there a good reason to not use kref for the refcounting? Except for
-(un)registering framebuffers this would avoid the need for taking
-registered_lock.
+If the first get_framebuffer_info succeeds don't you up the ref count
+twice? Shouldn't this be:
 
-Unfortunately fbcon also accesses registered_fb (quite a lot!) but it
-probably is save enough through use of the notifiers.
+info = get_framebuffer_info(fbidx);
+if (!info) {
+	request_module("fb%d", fbidx);
+	info = get_framebuffer_info(fbidx);
+}
+if (!info)
+	return -ENODEV;
 
-> Signed-off-by: Andy Whitcroft <apw@canonical.com>
-> Acked-by: Stefan Bader <stefan.bader@canonical.com>
-> Signed-off-by: Leann Ogasawara <leann.ogasawara@canonical.com>
-> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-> ---
->  drivers/video/fbmem.c |  132 ++++++++++++++++++++++++++++++++++++++-----------
->  include/linux/fb.h    |    2 +
->  2 files changed, 105 insertions(+), 29 deletions(-)
-> 
+Thanks,
 
-...
-
-> diff --git a/include/linux/fb.h b/include/linux/fb.h
-> index df728c1..60de3fa 100644
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -834,6 +834,7 @@ struct fb_tile_ops {
->  struct fb_info {
->  	int node;
->  	int flags;
-> +	int ref_count;
->  	struct mutex lock;		/* Lock for open/release/ioctl funcs */
->  	struct mutex mm_lock;		/* Lock for fb_mmap and smem_* fields */
->  	struct fb_var_screeninfo var;	/* Current var */
-> @@ -873,6 +874,7 @@ struct fb_info {
->  	void *pseudo_palette;		/* Fake palette of 16 colors */ 
->  #define FBINFO_STATE_RUNNING	0
->  #define FBINFO_STATE_SUSPENDED	1
-> +#define FBINFO_STATE_REMOVED	2
->  	u32 state;			/* Hardware state i.e suspend */
->  	void *fbcon_par;                /* fbcon use-only private area */
->  	/* From here on everything is device dependent */
+Jack

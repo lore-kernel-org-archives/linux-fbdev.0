@@ -1,80 +1,60 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 25 May 2011 22:58:14 +0000
-Subject: [PATCH 22/29] sisfb: use display information in info not in var for panning
-Message-Id: <1306364301-8195-23-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Thu, 05 May 2011 16:35:11 +0000
+Subject: [PATCH] fbdev: sh_mobile_hdmi: runtime suspend HDMI on error and
+Message-Id: <Pine.LNX.4.64.1105051833570.29735@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
-
-Fix checkpatch.pl warnings in the surrounding code.
-
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
- drivers/video/sis/sis_main.c |   30 ++++++++++--------------------
- 1 files changed, 10 insertions(+), 20 deletions(-)
+ drivers/video/sh_mobile_hdmi.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
-index 7525984..078ca21 100644
---- a/drivers/video/sis/sis_main.c
-+++ b/drivers/video/sis/sis_main.c
-@@ -1333,19 +1333,14 @@ sisfb_set_base_CRT2(struct sis_video_info *ivideo, unsigned int base)
- }
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index 2b9e56a..6ae40b6 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -1131,15 +1131,19 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 		pm_runtime_get_sync(hdmi->dev);
  
- static int
--sisfb_pan_var(struct sis_video_info *ivideo, struct fb_var_screeninfo *var)
-+sisfb_pan_var(struct sis_video_info *ivideo, struct fb_info *info,
-+	      struct fb_var_screeninfo *var)
- {
--	if(var->xoffset > (var->xres_virtual - var->xres)) {
--		return -EINVAL;
--	}
--	if(var->yoffset > (var->yres_virtual - var->yres)) {
--		return -EINVAL;
--	}
--
--	ivideo->current_base = (var->yoffset * var->xres_virtual) + var->xoffset;
-+	ivideo->current_base = var->yoffset * info->var.xres_virtual
-+			     + var->xoffset;
+ 		ret = sh_hdmi_read_edid(hdmi, &hdmi_rate, &parent_rate);
+-		if (ret < 0)
++		if (ret < 0) {
++			pm_runtime_put(hdmi->dev);
+ 			goto out;
++		}
  
- 	/* calculate base bpp dep. */
--	switch(var->bits_per_pixel) {
-+	switch (info->var.bits_per_pixel) {
- 	case 32:
- 		break;
- 	case 16:
-@@ -1635,20 +1630,15 @@ sisfb_pan_display(struct fb_var_screeninfo *var, struct fb_info* info)
- 	struct sis_video_info *ivideo = (struct sis_video_info *)info->par;
- 	int err;
+ 		hdmi->hp_state = HDMI_HOTPLUG_EDID_DONE;
  
--	if(var->xoffset > (var->xres_virtual - var->xres))
--		return -EINVAL;
--
--	if(var->yoffset > (var->yres_virtual - var->yres))
--		return -EINVAL;
--
--	if(var->vmode & FB_VMODE_YWRAP)
-+	if (var->vmode & FB_VMODE_YWRAP)
- 		return -EINVAL;
+ 		/* Reconfigure the clock */
+ 		ret = sh_hdmi_clk_configure(hdmi, hdmi_rate, parent_rate);
+-		if (ret < 0)
++		if (ret < 0) {
++			pm_runtime_put(hdmi->dev);
+ 			goto out;
++		}
  
--	if(var->xoffset + info->var.xres > info->var.xres_virtual ||
--	   var->yoffset + info->var.yres > info->var.yres_virtual)
-+	if (var->xoffset + info->var.xres > info->var.xres_virtual ||
-+	    var->yoffset + info->var.yres > info->var.yres_virtual)
- 		return -EINVAL;
- 
--	if((err = sisfb_pan_var(ivideo, var)) < 0)
-+	err = sisfb_pan_var(ivideo, info, var);
-+	if (err < 0)
- 		return err;
- 
- 	info->var.xoffset = var->xoffset;
+ 		msleep(10);
+ 		sh_hdmi_configure(hdmi);
+@@ -1336,6 +1340,7 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
+ ecodec:
+ 	free_irq(irq, hdmi);
+ ereqirq:
++	pm_runtime_suspend(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
+ 	iounmap(hdmi->base);
+ emap:
+@@ -1372,6 +1377,7 @@ static int __exit sh_hdmi_remove(struct platform_device *pdev)
+ 	free_irq(irq, hdmi);
+ 	/* Wait for already scheduled work */
+ 	cancel_delayed_work_sync(&hdmi->edid_work);
++	pm_runtime_suspend(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
+ 	clk_disable(hdmi->hdmi_clk);
+ 	clk_put(hdmi->hdmi_clk);
 -- 
-1.7.3.4
+1.7.2.5
 

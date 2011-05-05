@@ -1,61 +1,51 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 20 May 2011 06:32:33 +0000
-Subject: linux-next: build failure after merge of the final tree
-Message-Id: <20110520163233.abcabd67.sfr@canb.auug.org.au>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Thu, 05 May 2011 16:32:36 +0000
+Subject: [PATCH] fbdev: sh_mobile_lcdc: reduce scope of a variable
+Message-Id: <Pine.LNX.4.64.1105051831270.29735@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus <torvalds@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-Hi all,
+The "ret" variable in sh_mobile_lcdc_start() is only used at one
+location, move its definition to the inner-most scope.
 
-After merging the final tree, today's linux-next build (powerpc
-allyesconfig) failed like this:
-
-drivers/video/udlfb.c: In function 'dlfb_compress_hline':
-drivers/video/udlfb.c:421: error: implicit declaration of function 'prefetch_range'
-
-Presumably caused by commit e66eed651fd1 ("list: remove prefetching from
-regular list iterators").  We need to include preempt.h explictly, now.
-
-I have included this patch for today:
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 20 May 2011 16:29:01 +1000
-Subject: [PATCH] udlfb: include prefetch.h explicitly
-
-Commit e66eed651fd1 ("list: remove prefetching from
-regular list iterators") removed the include of prefetch.h from list.h,
-so we need to include it explicitly, now.
-
-fixes this build error on powerpc:
-
-drivers/video/udlfb.c: In function 'dlfb_compress_hline':
-drivers/video/udlfb.c:421: error: implicit declaration of function 'prefetch_range'
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 ---
- drivers/video/udlfb.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
-index 68041d9..4c299cc 100644
---- a/drivers/video/udlfb.c
-+++ b/drivers/video/udlfb.c
-@@ -28,6 +28,7 @@
- #include <linux/vmalloc.h>
- #include <linux/slab.h>
- #include <linux/delay.h>
-+#include <linux/prefetch.h>
- #include <video/udlfb.h>
- #include "edid.h"
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 9bcc61b..466834c 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -469,7 +469,6 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 	int bpp = 0;
+ 	unsigned long ldddsr;
+ 	int k, m;
+-	int ret = 0;
  
+ 	/* enable clocks before accessing the hardware */
+ 	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
+@@ -538,11 +537,12 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 		lcdc_write_chan(ch, LDPMR, 0);
+ 
+ 		board_cfg = &ch->cfg.board_cfg;
+-		if (board_cfg->setup_sys)
+-			ret = board_cfg->setup_sys(board_cfg->board_data, ch,
+-						   &sh_mobile_lcdc_sys_bus_ops);
+-		if (ret)
+-			return ret;
++		if (board_cfg->setup_sys) {
++			int ret = board_cfg->setup_sys(board_cfg->board_data,
++						ch, &sh_mobile_lcdc_sys_bus_ops);
++			if (ret)
++				return ret;
++		}
+ 	}
+ 
+ 	/* word and long word swap */
 -- 
-1.7.5.1
+1.7.2.5
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/

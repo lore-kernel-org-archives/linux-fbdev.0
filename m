@@ -1,60 +1,20 @@
-From: Enric Balletbo i Serra <eballetbo@iseebcn.com>
-Date: Mon, 02 May 2011 10:29:44 +0000
-Subject: [PATCH 2/2] OMAP: DSS2: Support for Powertip PH480272T
-Message-Id: <1304332184-14687-3-git-send-email-eballetbo@iseebcn.com>
+From: tim.gardner@canonical.com
+Date: Thu, 05 May 2011 17:41:46 +0000
+Subject: [PATCH 0/1] fbcon -- fix race between open and removal of framebuffers
+Message-Id: <1304617307-7389-1-git-send-email-tim.gardner@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1304332184-14687-1-git-send-email-eballetbo@iseebcn.com>
-In-Reply-To: <1304332184-14687-1-git-send-email-eballetbo@iseebcn.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Enric Balletbo i Serra <eballetbo@iseebcn.com>
+To: linux-fbdev@vger.kernel.org
+Cc: lethal@linux-sh.org, linux-kernel@vger.kernel.org
 
-Add support for Powertip PH480242T, a LCD 4.3inch (480x242) display
-type with 24-bit RGB interface, to panel-generic-dpi.
 
-Signed-off-by: Enric Balletbo i Serra <eballetbo@iseebcn.com>
----
- drivers/video/omap2/displays/panel-generic-dpi.c |   25 ++++++++++++++++++++++
- 1 files changed, 25 insertions(+), 0 deletions(-)
+I'm sending this out for Andy since he is a bit busy this week and has been
+gone for the past several weeks. Its been on our todo list to get this
+upstreamed, but release pressures have intervened. Mea culpa. I've also had
+a couple of requests recently which have served to remind me to get off my butt.
 
-diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
-index e8819ee..3250a85 100644
---- a/drivers/video/omap2/displays/panel-generic-dpi.c
-+++ b/drivers/video/omap2/displays/panel-generic-dpi.c
-@@ -206,6 +206,31 @@ static struct panel_config generic_dpi_panels[] = {
- 		.power_off_delay	= 0,
- 		.name			= "70wvw1tz3",
- 	},
-+
-+	/* Powertip PH480272T */
-+	{
-+		{
-+			.x_res		= 480,
-+			.y_res		= 272,
-+
-+			.pixel_clock	= 9000,
-+
-+			.hsw		= 40,
-+			.hfp		= 2,
-+			.hbp		= 2,
-+
-+			.vsw		= 10,
-+			.vfp		= 2,
-+			.vbp		= 2,
-+		},
-+		.acbi			= 0x0,
-+		.acb			= 0x0,
-+		.config			= OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
-+					  OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IEO,
-+		.power_on_delay		= 0,
-+		.power_off_delay	= 0,
-+		.name			= "ph480272t",
-+	},
- };
- 
- struct panel_drv_data {
--- 
-1.7.0.4
+https://lists.ubuntu.com/archives/kernel-team/2011-May/015544.html
 
+rtg

@@ -1,197 +1,121 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 12 May 2011 11:40:09 +0000
-Subject: [PATCHv2 4/8] OMAP: DSS2: RFBI: clock enable/disable changes
-Message-Id: <1305200413-23697-5-git-send-email-tomi.valkeinen@ti.com>
+From: Roger Leigh <rleigh@codelibre.net>
+Date: Mon, 09 May 2011 18:08:25 +0000
+Subject: [bug] drmfb does not set physical screen dimensions
+Message-Id: <20110509180825.GM13524@codelibre.net>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="OE2a2PUdqti0gBVO"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>
 
-RFBI enables and disables clocks inside almost every function to get a
-finegrained control to the clocks. However, the current understanding is
-that this is not necessary power-management-wise.
 
-Change the clocking scheme so that RFBI clocks are enabled when the
-omapdss_rfbi_display_enable is called, and disabled when
-omapdss_rfbi_display_disable is called.
+--OE2a2PUdqti0gBVO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/rfbi.c |   28 ++++------------------------
- 1 files changed, 4 insertions(+), 24 deletions(-)
+Hi,
 
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index 46817e7..1c19d17 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -163,7 +163,6 @@ EXPORT_SYMBOL(rfbi_bus_unlock);
- 
- void omap_rfbi_write_command(const void *buf, u32 len)
+drivers/gpu/drm/drm_fb_helper.c is not setting width and height
+in struct fb_var_screeninfo.  drm_fb_helper_fill_var sets them to -1
+rather than using the real values:
+        info->var.height =3D -1;
+        info->var.width =3D -1;
+
+Since the physical dimensions are most likely known from the monitor
+EDID, it would be ideal if this could be set here.  If not, it might
+be nice to assume a default of 96dpi and compute the size based upon
+the current resolution (so applications don't need to implement
+fallbacks when unset).  On my hardware the radeon driver certainly
+does have this information.
+
+This information is needed in order to do accurate font rendering and
+drawing.  It's available in X, and it would be great if it was also
+available using the framebuffer.
+
+I've also attached a small patch to fbset to allow reporting of the
+current state in fb_var_screeninfo such as resolution, size, depth etc.
+Could be extended to report more info if desired.
+I'm not entirely sure who is best to submit this to, so my apologies
+if this is not you.
+
+I've included the dri and fbdev lists because I'm not sure if it's
+specific to the drmfb code or the generic framebuffer code.  Likewise
+if you set a default 96dpi size, I'm not sure if it's a generic issue
+or specific to drmfb.
+
+
+Thanks,
+Roger
+
+
+diff -urN /tmp/fbset-2.1/fbset.c ./fbset.c
+--- /tmp/fbset-2.1/fbset.c	2011-05-09 18:47:47.000000000 +0100
++++ ./fbset.c	2011-05-09 18:46:32.142945642 +0100
+@@ -281,7 +281,8 @@
+ static struct VideoMode *FindVideoMode(const char *name);
+ static void ModifyVideoMode(struct VideoMode *vmode);
+ static void DisplayVModeInfo(struct VideoMode *vmode);
+-static void DisplayFBInfo(struct fb_fix_screeninfo *fix);
++static void DisplayFBInfo(struct fb_fix_screeninfo *fix,
++			  struct fb_var_screeninfo *var);
+ static int FillScanRates(struct VideoMode *vmode);
+ static void Usage(void) __attribute__ ((noreturn));
+ int main(int argc, char *argv[]);
+@@ -758,7 +759,8 @@
+      *  Display the Frame Buffer Device Information
+      */
+=20
+-static void DisplayFBInfo(struct fb_fix_screeninfo *fix)
++static void DisplayFBInfo(struct fb_fix_screeninfo *fix,
++			  struct fb_var_screeninfo *var)
  {
--	rfbi_enable_clocks(1);
- 	switch (rfbi.parallelmode) {
- 	case OMAP_DSS_RFBI_PARALLELMODE_8:
- 	{
-@@ -187,13 +186,11 @@ void omap_rfbi_write_command(const void *buf, u32 len)
- 	default:
- 		BUG();
- 	}
--	rfbi_enable_clocks(0);
- }
- EXPORT_SYMBOL(omap_rfbi_write_command);
- 
- void omap_rfbi_read_data(void *buf, u32 len)
- {
--	rfbi_enable_clocks(1);
- 	switch (rfbi.parallelmode) {
- 	case OMAP_DSS_RFBI_PARALLELMODE_8:
- 	{
-@@ -221,13 +218,11 @@ void omap_rfbi_read_data(void *buf, u32 len)
- 	default:
- 		BUG();
- 	}
--	rfbi_enable_clocks(0);
- }
- EXPORT_SYMBOL(omap_rfbi_read_data);
- 
- void omap_rfbi_write_data(const void *buf, u32 len)
- {
--	rfbi_enable_clocks(1);
- 	switch (rfbi.parallelmode) {
- 	case OMAP_DSS_RFBI_PARALLELMODE_8:
- 	{
-@@ -252,7 +247,6 @@ void omap_rfbi_write_data(const void *buf, u32 len)
- 		BUG();
- 
- 	}
--	rfbi_enable_clocks(0);
- }
- EXPORT_SYMBOL(omap_rfbi_write_data);
- 
-@@ -264,8 +258,6 @@ void omap_rfbi_write_pixels(const void __iomem *buf, int scr_width,
- 	int horiz_offset = scr_width - w;
- 	int i;
- 
--	rfbi_enable_clocks(1);
--
- 	if (rfbi.datatype = OMAP_DSS_RFBI_DATATYPE_16 &&
- 	   rfbi.parallelmode = OMAP_DSS_RFBI_PARALLELMODE_8) {
- 		const u16 __iomem *pd = buf;
-@@ -310,8 +302,6 @@ void omap_rfbi_write_pixels(const void __iomem *buf, int scr_width,
- 	} else {
- 		BUG();
- 	}
--
--	rfbi_enable_clocks(0);
- }
- EXPORT_SYMBOL(omap_rfbi_write_pixels);
- 
-@@ -332,8 +322,6 @@ void rfbi_transfer_area(struct omap_dss_device *dssdev, u16 width,
- 	rfbi.framedone_callback = callback;
- 	rfbi.framedone_callback_data = data;
- 
--	rfbi_enable_clocks(1);
--
- 	rfbi_write_reg(RFBI_PIXEL_CNT, width * height);
- 
- 	l = rfbi_read_reg(RFBI_CONTROL);
-@@ -352,8 +340,6 @@ static void framedone_callback(void *data, u32 mask)
- 
- 	REG_FLD_MOD(RFBI_CONTROL, 0, 0, 0);
- 
--	rfbi_enable_clocks(0);
--
- 	callback = rfbi.framedone_callback;
- 	rfbi.framedone_callback = NULL;
- 
-@@ -462,7 +448,6 @@ void rfbi_set_timings(int rfbi_module, struct rfbi_timings *t)
- 
- 	BUG_ON(!t->converted);
- 
--	rfbi_enable_clocks(1);
- 	rfbi_write_reg(RFBI_ONOFF_TIME(rfbi_module), t->tim[0]);
- 	rfbi_write_reg(RFBI_CYCLE_TIME(rfbi_module), t->tim[1]);
- 
-@@ -471,7 +456,6 @@ void rfbi_set_timings(int rfbi_module, struct rfbi_timings *t)
- 		    (t->tim[2] ? 1 : 0), 4, 4);
- 
- 	rfbi_print_timings();
--	rfbi_enable_clocks(0);
- }
- 
- static int ps_to_rfbi_ticks(int time, int div)
-@@ -659,7 +643,6 @@ int omap_rfbi_setup_te(enum omap_rfbi_te_mode mode,
- 	DSSDBG("setup_te: mode %d hs %d vs %d hs_inv %d vs_inv %d\n",
- 		mode, hs, vs, hs_pol_inv, vs_pol_inv);
- 
--	rfbi_enable_clocks(1);
- 	rfbi_write_reg(RFBI_HSYNC_WIDTH, hs);
- 	rfbi_write_reg(RFBI_VSYNC_WIDTH, vs);
- 
-@@ -672,7 +655,6 @@ int omap_rfbi_setup_te(enum omap_rfbi_te_mode mode,
- 		l &= ~(1 << 20);
- 	else
- 		l |= 1 << 20;
--	rfbi_enable_clocks(0);
- 
- 	return 0;
- }
-@@ -687,7 +669,6 @@ int omap_rfbi_enable_te(bool enable, unsigned line)
- 	if (line > (1 << 11) - 1)
- 		return -EINVAL;
- 
--	rfbi_enable_clocks(1);
- 	l = rfbi_read_reg(RFBI_CONFIG(0));
- 	l &= ~(0x3 << 2);
- 	if (enable) {
-@@ -697,7 +678,6 @@ int omap_rfbi_enable_te(bool enable, unsigned line)
- 		rfbi.te_enabled = 0;
- 	rfbi_write_reg(RFBI_CONFIG(0), l);
- 	rfbi_write_reg(RFBI_LINE_NUMBER, line);
--	rfbi_enable_clocks(0);
- 
- 	return 0;
- }
-@@ -836,8 +816,6 @@ int rfbi_configure(int rfbi_module, int bpp, int lines)
- 		break;
- 	}
- 
--	rfbi_enable_clocks(1);
--
- 	REG_FLD_MOD(RFBI_CONTROL, 0, 3, 2); /* clear CS */
- 
- 	l = 0;
-@@ -871,8 +849,6 @@ int rfbi_configure(int rfbi_module, int bpp, int lines)
- 	DSSDBG("RFBI config: bpp %d, lines %d, cycles: 0x%x 0x%x 0x%x\n",
- 	       bpp, lines, cycle1, cycle2, cycle3);
- 
--	rfbi_enable_clocks(0);
--
- 	return 0;
- }
- EXPORT_SYMBOL(rfbi_configure);
-@@ -975,6 +951,8 @@ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
- {
- 	int r;
- 
-+	rfbi_enable_clocks(1);
+     int i;
+=20
+@@ -845,6 +847,16 @@
+ 	puts(Accelerators[i].name);
+     else
+ 	printf("Unknown (%d)\n", fix->accel);
 +
- 	r = omap_dss_start_device(dssdev);
- 	if (r) {
- 		DSSERR("failed to start device\n");
-@@ -1017,6 +995,8 @@ void omapdss_rfbi_display_disable(struct omap_dss_device *dssdev)
- 	omap_dispc_unregister_isr(framedone_callback, NULL,
- 			DISPC_IRQ_FRAMEDONE);
- 	omap_dss_stop_device(dssdev);
-+
-+	rfbi_enable_clocks(0);
++    printf("    Dimensions  : %dx%d pixels", var->xres, var->yres);
++    if (var->width !=3D -1 && var->height !=3D -1)
++      printf(" (%dx%d mm)", var->width, var->height);
++    putc('\n', stdout);
++    printf("    Virtual     : %dx%d pixels\n", var->xres_virtual, var->yre=
+s_virtual);
++    printf("    Offset      : %dx%d pixels\n", var->xoffset, var->yoffset);
++    printf("    Bits/Pixel  : %d\n", var->bits_per_pixel);
++    if (var->grayscale)
++      printf("    Graylevels  : %d\n", var->grayscale);
  }
- EXPORT_SYMBOL(omapdss_rfbi_display_disable);
- 
--- 
-1.7.4.1
+=20
+=20
+@@ -1101,7 +1113,7 @@
+ 	if (Opt_verbose)
+ 	    puts("Getting further frame buffer information");
+ 	GetFixScreenInfo(fh, &fix);
+-	DisplayFBInfo(&fix);
++	DisplayFBInfo(&fix, &var);
+     }
+=20
+     /*
 
+--=20
+  .''`.  Roger Leigh
+ : :' :  Debian GNU/Linux             http://people.debian.org/~rleigh/
+ `. `'   Printing on GNU/Linux?       http://gutenprint.sourceforge.net/
+   `-    GPG Public Key: 0x25BFB848   Please GPG sign your mail.
+
+--OE2a2PUdqti0gBVO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAk3ILZkACgkQVcFcaSW/uEjQ8gCfa00mLh1vPGY8aE6zgiPygDdW
+iHwAoLOqLg8fYjnjdMVjnuFC3POmwfwc
+=2d35
+-----END PGP SIGNATURE-----
+
+--OE2a2PUdqti0gBVO--

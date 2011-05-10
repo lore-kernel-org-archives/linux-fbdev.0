@@ -1,41 +1,70 @@
-From: Andy Lutomirski <luto@MIT.EDU>
-Date: Thu, 26 May 2011 14:13:30 +0000
-Subject: [PATCH 0/4] efifb speedup and fixes
-Message-Id: <cover.1306418703.git.luto@mit.edu>
+From: Niels de Vos <ndevos@redhat.com>
+Date: Tue, 10 May 2011 09:20:49 +0000
+Subject: [PATCH] omap2/omapfb: make DBG() more resistant in if-else constructions
+Message-Id: <1305019249-9898-1-git-send-email-ndevos@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Niels de Vos <ndevos@redhat.com>
 
-Fbcon over efifb is so slow that I thought I needed a faster modem.
-It turns out that scrolling boot messages at 1024x768 pixels with
-uncached accesses can take longer than every other step of kernel
-bootup *combined*.
+When DBG() is used in a simple if-else, the resulting code path
+currently depends on the definition of DBG(). Inserting the statement in
+a "do { ... } while (0)" prevents this possible misuse.
 
-Fixing it is a one-liner, but I found some bugs while I was digging
-around.  One is a mismatched resource release (although not on my
-box), one is a harmless compiler warning, and one fixes all manner of
-badness that happens if you manually bind or unbind the efifb driver.
+Signed-off-by: Niels de Vos <ndevos@redhat.com>
 
-The speedup may or may not be 2.6.40 material, but the other fixes
-should probably go in.  (2/4 and 4/4 are possibly -stable candidates.)
+---
+Note, I have not found any offenders, but a mistake can easily be made.
+The following example shows what can go wrong if little intention is
+paid to the definition of the DBG() macro.
 
-Andy Lutomirski (4):
-  efifb: Enable write-combining
-  efifb: Fix mismatched request/release_mem_region
-  efifb: Fix an integer-to-pointer size warning
-  efifb: Disallow manual bind and unbind
+Example:
+	if something_went_wrong()
+		DBG("oh no, something went wrong!\n");
+	else
+		printk("all went fine\n");
 
-Andy Lutomirski (4):
-  efifb: Enable write-combining
-  efifb: Fix mismatched request/release_mem_region
-  efifb: Fix an integer-to-pointer size warning
-  efifb: Disallow manual bind and unbind
+Old result where the else is placed inside the first if-statment:
+	if something_went_wrong() {
+		if (omapfb_debug) {
+			printk(KERN_DEBUG "oh no, something went wrong!\n");
+		} else {
+			printk("all went fine\n");
+		}
+	}
 
- drivers/video/efifb.c |   39 +++++++++++++++++++++++++--------------
- 1 files changed, 25 insertions(+), 14 deletions(-)
+New result where the else is an alternative to the first if-statement:
+	if something_went_wrong() {
+		do {
+			if (omapfb_debug)
+				printk(KERN_DEBUG "oh no, something went wrong!\n");
+		} while (0);
+	} else {
+		printk("all went fine\n");
+	}
+---
+ drivers/video/omap2/omapfb/omapfb.h |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/video/omap2/omapfb/omapfb.h b/drivers/video/omap2/omapfb/omapfb.h
+index 1305fc9..a01b0bb 100644
+--- a/drivers/video/omap2/omapfb/omapfb.h
++++ b/drivers/video/omap2/omapfb/omapfb.h
+@@ -34,8 +34,10 @@
+ #ifdef DEBUG
+ extern unsigned int omapfb_debug;
+ #define DBG(format, ...) \
+-	if (omapfb_debug) \
+-		printk(KERN_DEBUG "OMAPFB: " format, ## __VA_ARGS__)
++	do { \
++		if (omapfb_debug) \
++			printk(KERN_DEBUG "OMAPFB: " format, ## __VA_ARGS__); \
++	while (0)
+ #else
+ #define DBG(format, ...)
+ #endif
 -- 
-1.7.5.1
+1.7.4.4
 

@@ -1,43 +1,74 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 03 May 2011 07:54:04 +0000
-Subject: Re: [PATCHv2 0/2] OMAP: DSS: Support new dpi panels
-Message-Id: <1304409244.2180.26.camel@deskari>
+From: Niels de Vos <ndevos@redhat.com>
+Date: Tue, 10 May 2011 11:07:33 +0000
+Subject: [PATCH V2] omap2/omapfb: make DBG() more resistant in if-else constructions
+Message-Id: <1305025653-17138-1-git-send-email-ndevos@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1304406457-5109-1-git-send-email-eballetbo@iseebcn.com>
-In-Reply-To: <1304406457-5109-1-git-send-email-eballetbo@iseebcn.com>
+References: <BANLkTinEJZ=fvJmWRkQ7kKyxbFRaJnum7g@mail.gmail.com>
+In-Reply-To: <BANLkTinEJZ=fvJmWRkQ7kKyxbFRaJnum7g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Enric Balletbo i Serra <eballetbo@iseebcn.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Sanjeev Premi <premi@ti.com>, Niels de Vos <ndevos@redhat.com>
 
-On Tue, 2011-05-03 at 09:07 +0200, Enric Balletbo i Serra wrote:
-> Hi all,
-> 
-> These patches add support for two new panels to the generic-dpi-panel.
-> 
-> The first patch adds support for the Seiko 70WVW1TZ3 LCD panel, and the second
-> adds support for the Powertip PH480272T LCD panel.
-> 
-> Tested with an IGEP v2 board.
-> 
-> Changes since v1:
->   - Change the names of both panels in the panel_config struct to
->     include the name of the manufacturer.
->   - Mention the board which uses those panels.
-> 
-> Please consider to add in next merge window, thanks,
-> 
-> Enric Balletbo i Serra (2):
->   OMAP: DSS2: Support for Seiko 70WVW1TZ3
->   OMAP: DSS2: Support for Powertip PH480272T
-> 
->  drivers/video/omap2/displays/panel-generic-dpi.c |   50 ++++++++++++++++++++++
->  1 files changed, 50 insertions(+), 0 deletions(-)
+When DBG() is used in a simple if-else, the resulting code path
+currently depends on the definition of DBG(). Inserting the statement in
+a "do { ... } while (0)" prevents this possible misuse.
 
-Thanks, applied to DSS tree.
+Signed-off-by: Niels de Vos <ndevos@redhat.com>
 
- Tomi
+---
+V2: add the missing closing }
 
+Note, I have not found any offenders, but a mistake can easily be made.
+The following example shows what can go wrong if little intention is
+paid to the definition of the DBG() macro.
 
+Example:
+	if something_went_wrong()
+		DBG("oh no, something went wrong!\n");
+	else
+		printk("all went fine\n");
+
+Old result where the else is placed inside the first if-statment:
+	if something_went_wrong() {
+		if (omapfb_debug) {
+			printk(KERN_DEBUG "oh no, something went wrong!\n");
+		} else {
+			printk("all went fine\n");
+		}
+	}
+
+New result where the else is an alternative to the first if-statement:
+	if something_went_wrong() {
+		do {
+			if (omapfb_debug)
+				printk(KERN_DEBUG "oh no, something went wrong!\n");
+		} while (0);
+	} else {
+		printk("all went fine\n");
+	}
+---
+ drivers/video/omap2/omapfb/omapfb.h |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/omap2/omapfb/omapfb.h b/drivers/video/omap2/omapfb/omapfb.h
+index 1305fc9..456c586 100644
+--- a/drivers/video/omap2/omapfb/omapfb.h
++++ b/drivers/video/omap2/omapfb/omapfb.h
+@@ -34,8 +34,10 @@
+ #ifdef DEBUG
+ extern unsigned int omapfb_debug;
+ #define DBG(format, ...) \
+-	if (omapfb_debug) \
+-		printk(KERN_DEBUG "OMAPFB: " format, ## __VA_ARGS__)
++	do { \
++		if (omapfb_debug) \
++			printk(KERN_DEBUG "OMAPFB: " format, ## __VA_ARGS__); \
++	} while (0)
+ #else
+ #define DBG(format, ...)
+ #endif
+-- 
+1.7.4.4
 

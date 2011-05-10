@@ -1,37 +1,73 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 25 May 2011 22:58:08 +0000
-Subject: [PATCH 16/29] neofb: use display information in info not in var for panning
-Message-Id: <1306364301-8195-17-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 10 May 2011 16:24:10 +0000
+Subject: [PATCH 2/8] OMAPFB: fix wrong clock aliases and device name
+Message-Id: <1305044656-31512-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1305044656-31512-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1305044656-31512-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+The clock aliases and the dss platform device name have changed, and
+omapfb fails to initialize. Update the names to correct ones.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/neofb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/omap/dispc.c       |    4 ++--
+ drivers/video/omap/omapfb_main.c |    2 +-
+ drivers/video/omap/rfbi.c        |    2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/neofb.c b/drivers/video/neofb.c
-index 588527a..feea7b1 100644
---- a/drivers/video/neofb.c
-+++ b/drivers/video/neofb.c
-@@ -1185,8 +1185,8 @@ static int neofb_pan_display(struct fb_var_screeninfo *var,
+diff --git a/drivers/video/omap/dispc.c b/drivers/video/omap/dispc.c
+index 5294834..0ccd7ad 100644
+--- a/drivers/video/omap/dispc.c
++++ b/drivers/video/omap/dispc.c
+@@ -922,14 +922,14 @@ static int get_dss_clocks(void)
+ 		return PTR_ERR(dispc.dss_ick);
+ 	}
  
- 	DBG("neofb_update_start");
+-	dispc.dss1_fck = clk_get(&dispc.fbdev->dssdev->dev, "dss1_fck");
++	dispc.dss1_fck = clk_get(&dispc.fbdev->dssdev->dev, "fck");
+ 	if (IS_ERR(dispc.dss1_fck)) {
+ 		dev_err(dispc.fbdev->dev, "can't get dss1_fck\n");
+ 		clk_put(dispc.dss_ick);
+ 		return PTR_ERR(dispc.dss1_fck);
+ 	}
  
--	Base = (var->yoffset * var->xres_virtual + var->xoffset) >> 2;
--	Base *= (var->bits_per_pixel + 7) / 8;
-+	Base = (var->yoffset * info->var.xres_virtual + var->xoffset) >> 2;
-+	Base *= (info->var.bits_per_pixel + 7) / 8;
+-	dispc.dss_54m_fck = clk_get(&dispc.fbdev->dssdev->dev, "tv_fck");
++	dispc.dss_54m_fck = clk_get(&dispc.fbdev->dssdev->dev, "tv_clk");
+ 	if (IS_ERR(dispc.dss_54m_fck)) {
+ 		dev_err(dispc.fbdev->dev, "can't get tv_fck\n");
+ 		clk_put(dispc.dss_ick);
+diff --git a/drivers/video/omap/omapfb_main.c b/drivers/video/omap/omapfb_main.c
+index e264efd..b3ddd74 100644
+--- a/drivers/video/omap/omapfb_main.c
++++ b/drivers/video/omap/omapfb_main.c
+@@ -90,7 +90,7 @@ static void omapdss_release(struct device *dev)
  
- 	neoUnlock();
+ /* dummy device for clocks */
+ static struct platform_device omapdss_device = {
+-	.name		= "omapdss",
++	.name		= "omapdss_dss",
+ 	.id		= -1,
+ 	.dev            = {
+ 		.release = omapdss_release,
+diff --git a/drivers/video/omap/rfbi.c b/drivers/video/omap/rfbi.c
+index eada9f1..0c6981f 100644
+--- a/drivers/video/omap/rfbi.c
++++ b/drivers/video/omap/rfbi.c
+@@ -90,7 +90,7 @@ static int rfbi_get_clocks(void)
+ 		return PTR_ERR(rfbi.dss_ick);
+ 	}
  
+-	rfbi.dss1_fck = clk_get(&rfbi.fbdev->dssdev->dev, "dss1_fck");
++	rfbi.dss1_fck = clk_get(&rfbi.fbdev->dssdev->dev, "fck");
+ 	if (IS_ERR(rfbi.dss1_fck)) {
+ 		dev_err(rfbi.fbdev->dev, "can't get dss1_fck\n");
+ 		clk_put(rfbi.dss_ick);
 -- 
-1.7.3.4
+1.7.4.1
 

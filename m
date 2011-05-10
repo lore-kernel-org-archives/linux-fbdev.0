@@ -1,74 +1,26 @@
-From: Niels de Vos <ndevos@redhat.com>
-Date: Tue, 10 May 2011 11:07:33 +0000
-Subject: [PATCH V2] omap2/omapfb: make DBG() more resistant in if-else constructions
-Message-Id: <1305025653-17138-1-git-send-email-ndevos@redhat.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 10 May 2011 12:16:07 +0000
+Subject: Re: [PATCH V2] omap2/omapfb: make DBG() more resistant in if-else
+Message-Id: <1305029767.2045.42.camel@deskari>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <BANLkTinEJZ=fvJmWRkQ7kKyxbFRaJnum7g@mail.gmail.com>
-In-Reply-To: <BANLkTinEJZ=fvJmWRkQ7kKyxbFRaJnum7g@mail.gmail.com>
+	 <1305025653-17138-1-git-send-email-ndevos@redhat.com>
+In-Reply-To: <1305025653-17138-1-git-send-email-ndevos@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Sanjeev Premi <premi@ti.com>, Niels de Vos <ndevos@redhat.com>
+To: Niels de Vos <ndevos@redhat.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Sanjeev Premi <premi@ti.com>
 
-When DBG() is used in a simple if-else, the resulting code path
-currently depends on the definition of DBG(). Inserting the statement in
-a "do { ... } while (0)" prevents this possible misuse.
+On Tue, 2011-05-10 at 12:07 +0100, Niels de Vos wrote:
+> When DBG() is used in a simple if-else, the resulting code path
+> currently depends on the definition of DBG(). Inserting the statement in
+> a "do { ... } while (0)" prevents this possible misuse.
+> 
+> Signed-off-by: Niels de Vos <ndevos@redhat.com>
 
-Signed-off-by: Niels de Vos <ndevos@redhat.com>
+Thanks, I'll add this to the dss2 tree.
 
----
-V2: add the missing closing }
+ Tomi
 
-Note, I have not found any offenders, but a mistake can easily be made.
-The following example shows what can go wrong if little intention is
-paid to the definition of the DBG() macro.
-
-Example:
-	if something_went_wrong()
-		DBG("oh no, something went wrong!\n");
-	else
-		printk("all went fine\n");
-
-Old result where the else is placed inside the first if-statment:
-	if something_went_wrong() {
-		if (omapfb_debug) {
-			printk(KERN_DEBUG "oh no, something went wrong!\n");
-		} else {
-			printk("all went fine\n");
-		}
-	}
-
-New result where the else is an alternative to the first if-statement:
-	if something_went_wrong() {
-		do {
-			if (omapfb_debug)
-				printk(KERN_DEBUG "oh no, something went wrong!\n");
-		} while (0);
-	} else {
-		printk("all went fine\n");
-	}
----
- drivers/video/omap2/omapfb/omapfb.h |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/omap2/omapfb/omapfb.h b/drivers/video/omap2/omapfb/omapfb.h
-index 1305fc9..456c586 100644
---- a/drivers/video/omap2/omapfb/omapfb.h
-+++ b/drivers/video/omap2/omapfb/omapfb.h
-@@ -34,8 +34,10 @@
- #ifdef DEBUG
- extern unsigned int omapfb_debug;
- #define DBG(format, ...) \
--	if (omapfb_debug) \
--		printk(KERN_DEBUG "OMAPFB: " format, ## __VA_ARGS__)
-+	do { \
-+		if (omapfb_debug) \
-+			printk(KERN_DEBUG "OMAPFB: " format, ## __VA_ARGS__); \
-+	} while (0)
- #else
- #define DBG(format, ...)
- #endif
--- 
-1.7.4.4
 

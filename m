@@ -1,36 +1,38 @@
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Date: Tue, 31 May 2011 14:28:33 +0000
-Subject: Re: [TRIVIAL PATCH V2 next 12/15] video: Convert vmalloc/memset to
-Message-Id: <20110531142833.GJ14641@dumpdata.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 10 May 2011 16:24:08 +0000
+Subject: [PATCH 0/8] OMAP: DSS2: Miscellaneous patches
+Message-Id: <1305044656-31512-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1306603968.git.joe@perches.com>
- <77538de911b8af99f68b7bcfbaaedce8e40db04f.1306603968.git.joe@perches.com>
- <201105281948.12941.heiko@sntech.de>
- <1306606413.20336.9.camel@Joe-Laptop>
-In-Reply-To: <1306606413.20336.9.camel@Joe-Laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>
-Cc: Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>, Jaya Kumar <jayalk@intworks.biz>, Paul Mundt <lethal@linux-sh.org>, Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>, Jiri Kosina <trivial@kernel.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com, virtualization@lists.linux-foundation.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Sat, May 28, 2011 at 11:13:33AM -0700, Joe Perches wrote:
-> Signed-off-by: Joe Perches <joe@perches.com>
+Here are some smallish fixes and cleanups I made while porting N800's display
+driver to DSS2. 
 
-Acked-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com> on the:
+ Tomi
 
-> diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
-> index a20218c..beac52f 100644
-> --- a/drivers/video/xen-fbfront.c
-> +++ b/drivers/video/xen-fbfront.c
-> @@ -395,10 +395,9 @@ static int __devinit xenfb_probe(struct xenbus_device *dev,
->  	spin_lock_init(&info->dirty_lock);
->  	spin_lock_init(&info->resize_lock);
->  
-> -	info->fb = vmalloc(fb_size);
-> +	info->fb = vzalloc(fb_size);
->  	if (info->fb = NULL)
->  		goto error_nomem;
-> -	memset(info->fb, 0, fb_size);
->  
->  	info->nr_pages = (fb_size + PAGE_SIZE - 1) >> PAGE_SHIFT;
+Tomi Valkeinen (8):
+  OMAP: DSS2: Add missing dummy functions
+  OMAPFB: fix wrong clock aliases and device name
+  OMAP: DSS2: RFBI: add rfbi_bus_lock
+  OMAP: DSS2: RFIB: clock enable/disable changes
+  OMAP: DSS2: RFBI: add omap_rfbi_configure
+  OMAP: DSS2: RFIB: cleanup
+  OMAP: DSS2: OMAPFB: remove dead code
+  OMAP: DSS2: OMAPFB: Reduce stack usage
+
+ arch/arm/plat-omap/include/plat/display.h |    4 +
+ drivers/video/omap/dispc.c                |    4 +-
+ drivers/video/omap/omapfb_main.c          |    2 +-
+ drivers/video/omap/rfbi.c                 |    2 +-
+ drivers/video/omap2/dss/dss.h             |   28 ++++-
+ drivers/video/omap2/dss/rfbi.c            |  174 +++++------------------------
+ drivers/video/omap2/omapfb/omapfb-main.c  |   78 +++++--------
+ 7 files changed, 86 insertions(+), 206 deletions(-)
+
+-- 
+1.7.4.1
+

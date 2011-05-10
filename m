@@ -1,82 +1,430 @@
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 03 May 2011 05:43:57 +0000
-Subject: Re: [PATCH v6 3/6] video, sm501: add edid and commandline support
-Message-Id: <BANLkTinH+dsW3MMxs_WfyxeE--HAQzhzLQ@mail.gmail.com>
+From: Tim Gardner <tim.gardner@canonical.com>
+Date: Tue, 10 May 2011 12:47:42 +0000
+Subject: [PATCH V2] fbcon -- fix race between open and removal of framebuffers
+Message-Id: <4DC933EE.70409@canonical.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------030504060404050900070901"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291451028-22532-1-git-send-email-hs@denx.de> <1300782452-528-1-git-send-email-hs@denx.de>
- <1300782452-528-4-git-send-email-hs@denx.de> <20110502222716.GB15187@ponder.secretlab.ca>
- <BANLkTik3L28mmL=LGZ_0nV7vSOX9Miw3ow@mail.gmail.com> <4DBF922F.8040703@denx.de>
-In-Reply-To: <4DBF922F.8040703@denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: hs@denx.de
-Cc: linuxppc-dev@lists.ozlabs.org, Wolfram Sang <w.sang@pengutronix.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org, Ben Dooks <ben@simtec.co.uk>, Vincent Sanders <vince@simtec.co.uk>, Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>, Wolfgang Denk <wd@denx.de>, Paul Mundt <lethal@linux-sh.org>
+References: <1304617307-7389-1-git-send-email-tim.gardner@canonical.com> <1304617307-7389-2-git-send-email-tim.gardner@canonical.com> <4DC30FFA.9030708@fastmail.fm>
+In-Reply-To: <4DC30FFA.9030708@fastmail.fm>
+To: Jack Stone <jwjstone@fastmail.fm>
+Cc: linux-fbdev@vger.kernel.org, lethal@linux-sh.org, linux-kernel@vger.kernel.org, Andy Whitcroft <apw@canonical.com>, Leann Ogasawara <leann.ogasawara@canonical.com>
 
-On Mon, May 2, 2011 at 11:27 PM, Heiko Schocher <hs@denx.de> wrote:
-> Hello Grant,
->
-> Grant Likely wrote:
->> On Mon, May 2, 2011 at 4:27 PM, Grant Likely <grant.likely@secretlab.ca>=
- wrote:
->>> On Tue, Mar 22, 2011 at 09:27:29AM +0100, Heiko Schocher wrote:
->>>> - add commandline options:
->>>> =A0 sm501fb.mode:
->>>> =A0 =A0 Specify resolution as "<xres>x<yres>[-<bpp>][@<refresh>]"
->>>> =A0 sm501fb.bpp:
->>>> =A0 =A0 Specify bit-per-pixel if not specified mode
->>>>
->>>> - Add support for encoding display mode information
->>>> =A0 in the device tree using verbatim EDID block.
->>>>
->>>> =A0 If the "edid" entry in the "smi,sm501" node is present,
->>>> =A0 the driver will build mode database using EDID data
->>>> =A0 and allow setting the display modes from this database.
->>>>
->>>> Signed-off-by: Heiko Schocher <hs@denx.de>
->>> Merged, thanks.
+This is a multi-part message in MIME format.
+--------------030504060404050900070901
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+On 05/05/2011 11:00 PM, Jack Stone wrote:
+> On 05/05/2011 18:41, tim.gardner@canonical.com wrote:
+>> +static struct fb_info *get_framebuffer_info(int idx)
+>> +__acquires(&registered_lock)
+>> +__releases(&registered_lock)
+>> +{
+>> +	struct fb_info *fb_info;
+>> +
+>> +	spin_lock(&registered_lock);
+>> +	fb_info = registered_fb[idx];
+>> +	fb_info->ref_count++;
+>> +	spin_unlock(&registered_lock);
+>> +
+>> +	return fb_info;
+>> +}
+>> +
+>>   static int
+>>   fb_open(struct inode *inode, struct file *file)
+>>   __acquires(&info->lock)
+>> @@ -1363,13 +1421,17 @@ __releases(&info->lock)
 >>
->> This patch causes the following build warning:
+>>   	if (fbidx>= FB_MAX)
+>>   		return -ENODEV;
+>> -	info = registered_fb[fbidx];
+>> +	info = get_framebuffer_info(fbidx);
+>>   	if (!info)
+>>   		request_module("fb%d", fbidx);
+>> -	info = registered_fb[fbidx];
+>> +	info = get_framebuffer_info(fbidx);
+>>   	if (!info)
+>>   		return -ENODEV;
 >
-> Hups ... when I posted the patch, it compiled clean ...
+> If the first get_framebuffer_info succeeds don't you up the ref count
+> twice? Shouldn't this be:
 >
->> =A0 MODPOST vmlinux.o
->> WARNING: vmlinux.o(.text+0x1d5572): Section mismatch in reference from
->> the function sm501fb_init_fb() to the variable
->> .devinit.data:sm501_default_mode
->> The function sm501fb_init_fb() references
->> the variable __devinitdata sm501_default_mode.
->> This is often because sm501fb_init_fb lacks a __devinitdata
->> annotation or the annotation of sm501_default_mode is wrong.
->>
->> WARNING: vmlinux.o(.text+0x1d557a): Section mismatch in reference from
->> the function sm501fb_init_fb() to the variable
->> .devinit.data:sm501_default_mode
->> The function sm501fb_init_fb() references
->> the variable __devinitdata sm501_default_mode.
->> This is often because sm501fb_init_fb lacks a __devinitdata
->> annotation or the annotation of sm501_default_mode is wrong.
->>
->> I've dropped the __devinitdata declaration in what I committed; can
->> you investigate and post a fixup patch?
+> info = get_framebuffer_info(fbidx);
+> if (!info) {
+> 	request_module("fb%d", fbidx);
+> 	info = get_framebuffer_info(fbidx);
+> }
+> if (!info)
+> 	return -ENODEV;
 >
-> Of course, I look ASAP at it, thanks!
-> (Dummy question: where can I find your tree?)
-
-git://git.secretlab.ca/git/linux-2.6 powerpc/next
-
-g.
-
+> Thanks,
 >
-> bye,
-> Heiko
-> --
-> DENX Software Engineering GmbH, =A0 =A0 MD: Wolfgang Denk & Detlev Zundel
-> HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
->
+> Jack
+
+Good catch. See attached.
+
+rtg
+-- 
+Tim Gardner tim.gardner@canonical.com
+
+--------------030504060404050900070901
+Content-Type: text/x-patch;
+ name="0001-fbcon-fix-race-between-open-and-removal-of-framebuff.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename*0="0001-fbcon-fix-race-between-open-and-removal-of-framebuff.pa";
+ filename*1="tch"
+
+From cefd70cfbb798cca488d6e97b25f41158f222afc Mon Sep 17 00:00:00 2001
+From: Andy Whitcroft <apw@canonical.com>
+Date: Thu, 29 Jul 2010 16:48:20 +0100
+Subject: [PATCH] fbcon -- fix race between open and removal of framebuffers
+
+Currently there is no locking for updates to the registered_fb list.
+This allows an open through /dev/fbN to pick up a registered framebuffer
+pointer in parallel with it being released, as happens when a conflicting
+framebuffer is ejected or on module unload.  There is also no reference
+counting on the framebuffer descriptor which is referenced from all open
+files, leading to references to released or reused memory to persist on
+these open files.
+
+This patch adds a reference count to the framebuffer descriptor to prevent
+it from being released until after all pending opens are closed.  This
+allows the pending opens to detect the closed status and unmap themselves.
+It also adds locking to the framebuffer lookup path, locking it against
+the removal path such that it is possible to atomically lookup and take a
+reference to the descriptor.  It also adds locking to the read and write
+paths which currently could access the framebuffer descriptor after it
+has been freed.  Finally it moves the device to FBINFO_STATE_REMOVED to
+indicate that all access should be errored for this device.
+
+Signed-off-by: Andy Whitcroft <apw@canonical.com>
+Acked-by: Stefan Bader <stefan.bader@canonical.com>
+Signed-off-by: Leann Ogasawara <leann.ogasawara@canonical.com>
+Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+---
+ drivers/video/fbmem.c |  135 ++++++++++++++++++++++++++++++++++++++-----------
+ include/linux/fb.h    |    2 +
+ 2 files changed, 107 insertions(+), 30 deletions(-)
+
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index e0c2284..ea333dd 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -42,6 +42,8 @@
+ 
+ #define FBPIXMAPSIZE	(1024 * 8)
+ 
++/* Protects the registered framebuffer list and count. */
++static DEFINE_SPINLOCK(registered_lock);
+ struct fb_info *registered_fb[FB_MAX] __read_mostly;
+ int num_registered_fb __read_mostly;
+ 
+@@ -694,9 +696,7 @@ static ssize_t
+ fb_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+ {
+ 	unsigned long p = *ppos;
+-	struct inode *inode = file->f_path.dentry->d_inode;
+-	int fbidx = iminor(inode);
+-	struct fb_info *info = registered_fb[fbidx];
++	struct fb_info *info = file->private_data;
+ 	u8 *buffer, *dst;
+ 	u8 __iomem *src;
+ 	int c, cnt = 0, err = 0;
+@@ -705,19 +705,28 @@ fb_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+ 	if (!info || ! info->screen_base)
+ 		return -ENODEV;
+ 
+-	if (info->state != FBINFO_STATE_RUNNING)
+-		return -EPERM;
++	if (!lock_fb_info(info))
++		return -ENODEV;
++
++	if (info->state != FBINFO_STATE_RUNNING) {
++		err = -EPERM;
++		goto out_fb_info;
++	}
+ 
+-	if (info->fbops->fb_read)
+-		return info->fbops->fb_read(info, buf, count, ppos);
++	if (info->fbops->fb_read) {
++		err = info->fbops->fb_read(info, buf, count, ppos);
++		goto out_fb_info;
++	}
+ 	
+ 	total_size = info->screen_size;
+ 
+ 	if (total_size == 0)
+ 		total_size = info->fix.smem_len;
+ 
+-	if (p >= total_size)
+-		return 0;
++	if (p >= total_size) {
++		err = 0;
++		goto out_fb_info;
++	}
+ 
+ 	if (count >= total_size)
+ 		count = total_size;
+@@ -727,8 +736,10 @@ fb_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+ 
+ 	buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count,
+ 			 GFP_KERNEL);
+-	if (!buffer)
+-		return -ENOMEM;
++	if (!buffer) {
++		err = -ENOMEM;
++		goto out_fb_info;
++	}
+ 
+ 	src = (u8 __iomem *) (info->screen_base + p);
+ 
+@@ -751,19 +762,21 @@ fb_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+ 		cnt += c;
+ 		count -= c;
+ 	}
++	if (!err)
++		err = cnt;
+ 
+ 	kfree(buffer);
++out_fb_info:
++	unlock_fb_info(info);
+ 
+-	return (err) ? err : cnt;
++	return err;
+ }
+ 
+ static ssize_t
+ fb_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
+ {
+ 	unsigned long p = *ppos;
+-	struct inode *inode = file->f_path.dentry->d_inode;
+-	int fbidx = iminor(inode);
+-	struct fb_info *info = registered_fb[fbidx];
++	struct fb_info *info = file->private_data;
+ 	u8 *buffer, *src;
+ 	u8 __iomem *dst;
+ 	int c, cnt = 0, err = 0;
+@@ -772,8 +785,13 @@ fb_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
+ 	if (!info || !info->screen_base)
+ 		return -ENODEV;
+ 
+-	if (info->state != FBINFO_STATE_RUNNING)
+-		return -EPERM;
++	if (!lock_fb_info(info))
++		return -ENODEV;
++
++	if (info->state != FBINFO_STATE_RUNNING) {
++		err = -EPERM;
++		goto out_fb_info;
++	}
+ 
+ 	if (info->fbops->fb_write)
+ 		return info->fbops->fb_write(info, buf, count, ppos);
+@@ -783,8 +801,10 @@ fb_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
+ 	if (total_size == 0)
+ 		total_size = info->fix.smem_len;
+ 
+-	if (p > total_size)
+-		return -EFBIG;
++	if (p > total_size) {
++		err = -EFBIG;
++		goto out_fb_info;
++	}
+ 
+ 	if (count > total_size) {
+ 		err = -EFBIG;
+@@ -800,8 +820,10 @@ fb_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
+ 
+ 	buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count,
+ 			 GFP_KERNEL);
+-	if (!buffer)
+-		return -ENOMEM;
++	if (!buffer) {
++		err = -ENOMEM;
++		goto out_fb_info;
++	}
+ 
+ 	dst = (u8 __iomem *) (info->screen_base + p);
+ 
+@@ -825,10 +847,14 @@ fb_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
+ 		cnt += c;
+ 		count -= c;
+ 	}
++	if (cnt)
++		err = cnt;
+ 
+ 	kfree(buffer);
++out_fb_info:
++	unlock_fb_info(info);
+ 
+-	return (cnt) ? cnt : err;
++	return err;
+ }
+ 
+ int
+@@ -1303,8 +1329,7 @@ static long fb_compat_ioctl(struct file *file, unsigned int cmd,
+ static int
+ fb_mmap(struct file *file, struct vm_area_struct * vma)
+ {
+-	int fbidx = iminor(file->f_path.dentry->d_inode);
+-	struct fb_info *info = registered_fb[fbidx];
++	struct fb_info * const info = file->private_data;
+ 	struct fb_ops *fb = info->fbops;
+ 	unsigned long off;
+ 	unsigned long start;
+@@ -1316,6 +1341,11 @@ fb_mmap(struct file *file, struct vm_area_struct * vma)
+ 	if (!fb)
+ 		return -ENODEV;
+ 	mutex_lock(&info->mm_lock);
++	if (info->state == FBINFO_STATE_REMOVED) {
++		mutex_unlock(&info->mm_lock);
++		return -ENODEV;
++	}
++
+ 	if (fb->fb_mmap) {
+ 		int res;
+ 		res = fb->fb_mmap(info, vma);
+@@ -1352,6 +1382,34 @@ fb_mmap(struct file *file, struct vm_area_struct * vma)
+ 	return 0;
+ }
+ 
++static struct fb_info *get_framebuffer_info(int idx)
++__acquires(&registered_lock)
++__releases(&registered_lock)
++{
++	struct fb_info *fb_info;
++
++	spin_lock(&registered_lock);
++	fb_info = registered_fb[idx];
++	fb_info->ref_count++;
++	spin_unlock(&registered_lock);
++
++	return fb_info;
++}
++
++static void put_framebuffer_info(struct fb_info *fb_info)
++__acquires(&registered_lock)
++__releases(&registered_lock)
++{
++	int keep;
++
++	spin_lock(&registered_lock);
++	keep = --fb_info->ref_count;
++	spin_unlock(&registered_lock);
++
++	if (!keep && fb_info->fbops->fb_destroy)
++		fb_info->fbops->fb_destroy(fb_info);
++}
++
+ static int
+ fb_open(struct inode *inode, struct file *file)
+ __acquires(&info->lock)
+@@ -1363,13 +1421,18 @@ __releases(&info->lock)
+ 
+ 	if (fbidx >= FB_MAX)
+ 		return -ENODEV;
+-	info = registered_fb[fbidx];
+-	if (!info)
++	info = get_framebuffer_info(fbidx);
++	if (!info) {
+ 		request_module("fb%d", fbidx);
+-	info = registered_fb[fbidx];
++		info = get_framebuffer_info(fbidx);
++	}
+ 	if (!info)
+ 		return -ENODEV;
+ 	mutex_lock(&info->lock);
++	if (info->state == FBINFO_STATE_REMOVED) {
++		res = -ENODEV;
++		goto out;
++	}
+ 	if (!try_module_get(info->fbops->owner)) {
+ 		res = -ENODEV;
+ 		goto out;
+@@ -1386,6 +1449,8 @@ __releases(&info->lock)
+ #endif
+ out:
+ 	mutex_unlock(&info->lock);
++	if (res)
++		put_framebuffer_info(info);
+ 	return res;
+ }
+ 
+@@ -1401,6 +1466,7 @@ __releases(&info->lock)
+ 		info->fbops->fb_release(info,1);
+ 	module_put(info->fbops->owner);
+ 	mutex_unlock(&info->lock);
++	put_framebuffer_info(info);
+ 	return 0;
+ }
+ 
+@@ -1549,6 +1615,7 @@ register_framebuffer(struct fb_info *fb_info)
+ 	fb_info->node = i;
+ 	mutex_init(&fb_info->lock);
+ 	mutex_init(&fb_info->mm_lock);
++	fb_info->ref_count = 1;
+ 
+ 	fb_info->dev = device_create(fb_class, fb_info->device,
+ 				     MKDEV(FB_MAJOR, i), NULL, "fb%d", i);
+@@ -1592,7 +1659,6 @@ register_framebuffer(struct fb_info *fb_info)
+ 	return 0;
+ }
+ 
+-
+ /**
+  *	unregister_framebuffer - releases a frame buffer device
+  *	@fb_info: frame buffer info structure
+@@ -1627,6 +1693,16 @@ unregister_framebuffer(struct fb_info *fb_info)
+ 		return -ENODEV;
+ 	event.info = fb_info;
+ 	ret = fb_notifier_call_chain(FB_EVENT_FB_UNBIND, &event);
++	if (!ret) {
++		mutex_lock(&fb_info->mm_lock);
++		/*
++		 * We must prevent any operations for this transition, we
++		 * already have info->lock so grab the info->mm_lock to hold
++		 * the remainder.
++		 */
++		fb_info->state = FBINFO_STATE_REMOVED;
++		mutex_unlock(&fb_info->mm_lock);
++	}
+ 	unlock_fb_info(fb_info);
+ 
+ 	if (ret) {
+@@ -1646,8 +1722,7 @@ unregister_framebuffer(struct fb_info *fb_info)
+ 	fb_notifier_call_chain(FB_EVENT_FB_UNREGISTERED, &event);
+ 
+ 	/* this may free fb info */
+-	if (fb_info->fbops->fb_destroy)
+-		fb_info->fbops->fb_destroy(fb_info);
++	put_framebuffer_info(fb_info);
+ done:
+ 	return ret;
+ }
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index df728c1..60de3fa 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -834,6 +834,7 @@ struct fb_tile_ops {
+ struct fb_info {
+ 	int node;
+ 	int flags;
++	int ref_count;
+ 	struct mutex lock;		/* Lock for open/release/ioctl funcs */
+ 	struct mutex mm_lock;		/* Lock for fb_mmap and smem_* fields */
+ 	struct fb_var_screeninfo var;	/* Current var */
+@@ -873,6 +874,7 @@ struct fb_info {
+ 	void *pseudo_palette;		/* Fake palette of 16 colors */ 
+ #define FBINFO_STATE_RUNNING	0
+ #define FBINFO_STATE_SUSPENDED	1
++#define FBINFO_STATE_REMOVED	2
+ 	u32 state;			/* Hardware state i.e suspend */
+ 	void *fbcon_par;                /* fbcon use-only private area */
+ 	/* From here on everything is device dependent */
+-- 
+1.7.4.1
 
 
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+--------------030504060404050900070901--

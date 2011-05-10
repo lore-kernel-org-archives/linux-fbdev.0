@@ -1,26 +1,113 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 10 May 2011 12:16:07 +0000
-Subject: Re: [PATCH V2] omap2/omapfb: make DBG() more resistant in if-else
-Message-Id: <1305029767.2045.42.camel@deskari>
+From: Daniel Drake <dsd@laptop.org>
+Date: Tue, 10 May 2011 19:55:46 +0000
+Subject: [PATCH v2] viafb: Automatic OLPC XO-1.5 configuration
+Message-Id: <20110510195546.728739D401C@zog.reactivated.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <BANLkTinEJZ=fvJmWRkQ7kKyxbFRaJnum7g@mail.gmail.com>
-	 <1305025653-17138-1-git-send-email-ndevos@redhat.com>
-In-Reply-To: <1305025653-17138-1-git-send-email-ndevos@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Niels de Vos <ndevos@redhat.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Sanjeev Premi <premi@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-On Tue, 2011-05-10 at 12:07 +0100, Niels de Vos wrote:
-> When DBG() is used in a simple if-else, the resulting code path
-> currently depends on the definition of DBG(). Inserting the statement in
-> a "do { ... } while (0)" prevents this possible misuse.
-> 
-> Signed-off-by: Niels de Vos <ndevos@redhat.com>
+Currently, a long set of viafb options are needed to get the XO-1.5
+laptop to output video (there is only 1 configuration that works, that
+can't really be autodetected).
 
-Thanks, I'll add this to the dss2 tree.
+This patch automatically detects and configures viafb for the XO-1.5
+laptop, meaning all that is required for working display is that
+viafb is loaded.
 
- Tomi
+Signed-off-by: Daniel Drake <dsd@laptop.org>
+---
+ drivers/video/via/viafbdev.c |   41 ++++++++++++++++++++++++++++++++---------
+ 1 files changed, 32 insertions(+), 9 deletions(-)
 
+v2: incorporates all feedback from Florian
+
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 7b4390e..7a4dd0e 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -24,6 +24,7 @@
+ #include <linux/slab.h>
+ #include <linux/stat.h>
+ #include <linux/via-core.h>
++#include <asm/olpc.h>
+ 
+ #define _MASTER_FILE
+ #include "global.h"
+@@ -1011,8 +1012,13 @@ static int __init parse_active_dev(void)
+ 	/*    Note: The previous of active_dev is primary device,
+ 	   and the following is secondary device. */
+ 	if (!viafb_active_dev) {
+-		viafb_CRT_ON = STATE_ON;
+-		viafb_SAMM_ON = STATE_OFF;
++		if (machine_is_olpc()) { /* LCD only */
++			viafb_LCD_ON = STATE_ON;
++			viafb_SAMM_ON = STATE_OFF;
++		} else {
++			viafb_CRT_ON = STATE_ON;
++			viafb_SAMM_ON = STATE_OFF;
++		}
+ 	} else if (!strcmp(viafb_active_dev, "CRT+DVI")) {
+ 		/* CRT+DVI */
+ 		viafb_CRT_ON = STATE_ON;
+@@ -1665,8 +1671,13 @@ static int parse_mode(const char *str, u32 *xres, u32 *yres)
+ 	char *ptr;
+ 
+ 	if (!str) {
+-		*xres = 640;
+-		*yres = 480;
++		if (machine_is_olpc()) {
++			*xres = 1200;
++			*yres = 900;
++		} else {
++			*xres = 640;
++			*yres = 480;
++		}
+ 		return 0;
+ 	}
+ 
+@@ -1922,11 +1933,16 @@ void __devexit via_fb_pci_remove(struct pci_dev *pdev)
+ }
+ 
+ #ifndef MODULE
+-static int __init viafb_setup(char *options)
++static int __init viafb_setup(void)
+ {
+ 	char *this_opt;
++	char *options;
++
+ 	DEBUG_MSG(KERN_INFO "viafb_setup!\n");
+ 
++	if (fb_get_options("viafb", &options))
++		return -ENODEV;
++
+ 	if (!options || !*options)
+ 		return 0;
+ 
+@@ -2000,11 +2016,18 @@ static int __init viafb_setup(char *options)
+ int __init viafb_init(void)
+ {
+ 	u32 dummy_x, dummy_y;
++	int r;
++
++	if (machine_is_olpc()) {
++		/* Apply XO-1.5-specific configuration. */
++		viafb_lcd_panel_id = 23;
++		viafb_bpp = 24;
++	}
++
+ #ifndef MODULE
+-	char *option = NULL;
+-	if (fb_get_options("viafb", &option))
+-		return -ENODEV;
+-	viafb_setup(option);
++	r = viafb_setup();
++	if (r < 0)
++		return r;
+ #endif
+ 	if (parse_mode(viafb_mode, &dummy_x, &dummy_y)
+ 		|| !viafb_get_mode(dummy_x, dummy_y)
+-- 
+1.7.4.4
 

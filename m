@@ -1,31 +1,106 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Tue, 24 May 2011 09:05:38 +0000
-Subject: Re: [PATCH] [resend] video: s3c-fb: correct transparency checking in 32bpp
-Message-Id: <20110524090537.GA12015@linux-sh.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 10 May 2011 16:24:16 +0000
+Subject: [PATCH 8/8] OMAP: DSS2: OMAPFB: Reduce stack usage
+Message-Id: <1305044656-31512-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1306227323-22681-1-git-send-email-jg1.han@samsung.com>
-In-Reply-To: <1306227323-22681-1-git-send-email-jg1.han@samsung.com>
+References: <1305044656-31512-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1305044656-31512-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Tue, May 24, 2011 at 05:55:23PM +0900, Jingoo Han wrote:
-> 32bpp means ARGB 8888 in the driver, therfore the transparency length
-> and offset should be 8 and 24 respectively. However, the transparency
-> length and offset were previously 0, which means that the driver supports
-> RGB 888 without alpha blending when 32bpp is used.
-> 
-> So, the transparency checking in 32bpp is corrected so that the
-> transparency length and offset are 8 and 24 respectively.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+omapfb_mode_to_timings() had struct fb_info, struct fb_var and struct
+fb_ops allocated from stack. This caused the stack usage grow quite
+high.
 
-On Tue, May 24, 2011 at 05:55:31PM +0900, Jingoo Han wrote:
-> This patch adds gpio setup function to resume function to ensure
-> gpio used by FIMD IP and LCD panel during a resume.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Use kzalloc to allocate the structs instead.
 
-Curiously the first version appears to have missed patchwork altogether,
-and I missed it in my mail folder, too. Applied now, thanks.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/omapfb/omapfb-main.c |   49 +++++++++++++++++-------------
+ 1 files changed, 28 insertions(+), 21 deletions(-)
+
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 30c958b..ae3e2be 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -1996,9 +1996,9 @@ static int omapfb_create_framebuffers(struct omapfb2_device *fbdev)
+ static int omapfb_mode_to_timings(const char *mode_str,
+ 		struct omap_video_timings *timings, u8 *bpp)
+ {
+-	struct fb_info fbi;
+-	struct fb_var_screeninfo var;
+-	struct fb_ops fbops;
++	struct fb_info *fbi;
++	struct fb_var_screeninfo *var;
++	struct fb_ops *fbops;
+ 	int r;
+ 
+ #ifdef CONFIG_OMAP2_DSS_VENC
+@@ -2016,25 +2016,25 @@ static int omapfb_mode_to_timings(const char *mode_str,
+ 	/* this is quite a hack, but I wanted to use the modedb and for
+ 	 * that we need fb_info and var, so we create dummy ones */
+ 
+-	memset(&fbi, 0, sizeof(fbi));
+-	memset(&var, 0, sizeof(var));
+-	memset(&fbops, 0, sizeof(fbops));
+-	fbi.fbops = &fbops;
++	fbi = kzalloc(sizeof(*fbi), GFP_KERNEL);
++	var = kzalloc(sizeof(*var), GFP_KERNEL);
++	fbops = kzalloc(sizeof(*fbops), GFP_KERNEL);
++	fbi->fbops = fbops;
+ 
+-	r = fb_find_mode(&var, &fbi, mode_str, NULL, 0, NULL, 24);
++	r = fb_find_mode(var, fbi, mode_str, NULL, 0, NULL, 24);
+ 
+ 	if (r != 0) {
+-		timings->pixel_clock = PICOS2KHZ(var.pixclock);
+-		timings->hbp = var.left_margin;
+-		timings->hfp = var.right_margin;
+-		timings->vbp = var.upper_margin;
+-		timings->vfp = var.lower_margin;
+-		timings->hsw = var.hsync_len;
+-		timings->vsw = var.vsync_len;
+-		timings->x_res = var.xres;
+-		timings->y_res = var.yres;
+-
+-		switch (var.bits_per_pixel) {
++		timings->pixel_clock = PICOS2KHZ(var->pixclock);
++		timings->hbp = var->left_margin;
++		timings->hfp = var->right_margin;
++		timings->vbp = var->upper_margin;
++		timings->vfp = var->lower_margin;
++		timings->hsw = var->hsync_len;
++		timings->vsw = var->vsync_len;
++		timings->x_res = var->xres;
++		timings->y_res = var->yres;
++
++		switch (var->bits_per_pixel) {
+ 		case 16:
+ 			*bpp = 16;
+ 			break;
+@@ -2045,10 +2045,17 @@ static int omapfb_mode_to_timings(const char *mode_str,
+ 			break;
+ 		}
+ 
+-		return 0;
++		r = 0;
+ 	} else {
+-		return -EINVAL;
++		*bpp = 0;
++		r = -EINVAL;
+ 	}
++
++	kfree(fbi);
++	kfree(var);
++	kfree(fbops);
++
++	return r;
+ }
+ 
+ static int omapfb_set_def_mode(struct omapfb2_device *fbdev,
+-- 
+1.7.4.1
+

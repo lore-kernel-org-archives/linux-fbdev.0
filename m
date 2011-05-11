@@ -1,68 +1,83 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 May 2011 12:27:34 +0000
-Subject: [PATCH 2/7] OMAP: RX51: Remove unused old omapfb stuff
-Message-Id: <1304512059-10372-3-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 11 May 2011 12:26:27 +0000
+Subject: [PATCH 0/3] OMAP: DSS2: Move header files to include/video/
+Message-Id: <1305116790-24067-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1304512059-10372-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1304512059-10372-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: tony@atomide.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-RX51 uses the new DSS2 display driver, but the board file still
-contained some code for the old omapfb driver. The old code can be
-removed.
+OMAP Display Subsystem driver header files are currently located in
+arch/arm/plat-omap/include/plat/ which is not a good place for driver headers.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- arch/arm/mach-omap2/board-rx51.c |   25 -------------------------
- 1 files changed, 0 insertions(+), 25 deletions(-)
+This patch set moves the headers to a more suitable location at include/video/
+and renaming the files as follows:
 
-diff --git a/arch/arm/mach-omap2/board-rx51.c b/arch/arm/mach-omap2/board-rx51.c
-index e964895..116e19b 100644
---- a/arch/arm/mach-omap2/board-rx51.c
-+++ b/arch/arm/mach-omap2/board-rx51.c
-@@ -75,29 +75,6 @@ static struct cpuidle_params rx51_cpuidle_params[] = {
- 	{1, 7505, 15274, 484329},
- };
- 
--static struct omap_lcd_config rx51_lcd_config = {
--	.ctrl_name	= "internal",
--};
--
--static struct omap_fbmem_config rx51_fbmem0_config = {
--	.size = 752 * 1024,
--};
--
--static struct omap_fbmem_config rx51_fbmem1_config = {
--	.size = 752 * 1024,
--};
--
--static struct omap_fbmem_config rx51_fbmem2_config = {
--	.size = 752 * 1024,
--};
--
--static struct omap_board_config_kernel rx51_config[] = {
--	{ OMAP_TAG_FBMEM,	&rx51_fbmem0_config },
--	{ OMAP_TAG_FBMEM,	&rx51_fbmem1_config },
--	{ OMAP_TAG_FBMEM,	&rx51_fbmem2_config },
--	{ OMAP_TAG_LCD,		&rx51_lcd_config },
--};
--
- static void __init rx51_init_early(void)
- {
- 	struct omap_sdrc_params *sdrc_params;
-@@ -124,8 +101,6 @@ static struct omap_musb_board_data musb_board_data = {
- static void __init rx51_init(void)
- {
- 	omap3_mux_init(board_mux, OMAP_PACKAGE_CBB);
--	omap_board_config = rx51_config;
--	omap_board_config_size = ARRAY_SIZE(rx51_config);
- 	omap3_pm_init_cpuidle(rx51_cpuidle_params);
- 	omap_serial_init();
- 	usb_musb_init(&musb_board_data);
+display.h -> omapdss.h
+panel-generic-dpi.h -> omap-panel-generic-dpi.h
+nokia-dsi-panel.h -> omap-panel-nokia-dsi.h
+
+ Tomi
+
+Tomi Valkeinen (3):
+  OMAP: DSS2: Move display.h to include/video/
+  OMAP: DSS2: Move panel-generic-dpi.h to include/video/
+  OMAP: DSS2: Move nokia-dsi-panel.h to include/video/
+
+ arch/arm/mach-omap2/board-3430sdp.c                |    4 ++--
+ arch/arm/mach-omap2/board-4430sdp.c                |    2 +-
+ arch/arm/mach-omap2/board-am3517evm.c              |    4 ++--
+ arch/arm/mach-omap2/board-cm-t35.c                 |    4 ++--
+ arch/arm/mach-omap2/board-devkit8000.c             |    4 ++--
+ arch/arm/mach-omap2/board-igep0020.c               |    4 ++--
+ arch/arm/mach-omap2/board-omap3beagle.c            |    4 ++--
+ arch/arm/mach-omap2/board-omap3evm.c               |    4 ++--
+ arch/arm/mach-omap2/board-omap3pandora.c           |    2 +-
+ arch/arm/mach-omap2/board-omap3stalker.c           |    4 ++--
+ arch/arm/mach-omap2/board-omap4panda.c             |    4 ++--
+ arch/arm/mach-omap2/board-overo.c                  |    4 ++--
+ arch/arm/mach-omap2/board-rx51-video.c             |    2 +-
+ arch/arm/mach-omap2/board-zoom-display.c           |    2 +-
+ arch/arm/mach-omap2/display.c                      |    2 +-
+ arch/arm/mach-omap2/include/mach/board-zoom.h      |    2 +-
+ drivers/media/video/omap/omap_vout.c               |    2 +-
+ drivers/media/video/omap/omap_voutdef.h            |    2 +-
+ drivers/video/omap2/displays/panel-acx565akm.c     |    2 +-
+ drivers/video/omap2/displays/panel-generic-dpi.c   |    3 ++-
+ .../omap2/displays/panel-lgphilips-lb035q02.c      |    2 +-
+ .../omap2/displays/panel-nec-nl8048hl11-01b.c      |    2 +-
+ .../video/omap2/displays/panel-sharp-ls037v7dw01.c |    2 +-
+ drivers/video/omap2/displays/panel-taal.c          |    4 ++--
+ .../video/omap2/displays/panel-tpo-td043mtea1.c    |    2 +-
+ drivers/video/omap2/dss/core.c                     |    2 +-
+ drivers/video/omap2/dss/dispc.c                    |    2 +-
+ drivers/video/omap2/dss/display.c                  |    2 +-
+ drivers/video/omap2/dss/dpi.c                      |    2 +-
+ drivers/video/omap2/dss/dsi.c                      |    2 +-
+ drivers/video/omap2/dss/dss.c                      |    2 +-
+ drivers/video/omap2/dss/dss_features.c             |    2 +-
+ drivers/video/omap2/dss/hdmi.c                     |    2 +-
+ drivers/video/omap2/dss/hdmi.h                     |    2 +-
+ drivers/video/omap2/dss/hdmi_omap4_panel.c         |    2 +-
+ drivers/video/omap2/dss/manager.c                  |    2 +-
+ drivers/video/omap2/dss/overlay.c                  |    2 +-
+ drivers/video/omap2/dss/rfbi.c                     |    2 +-
+ drivers/video/omap2/dss/sdi.c                      |    2 +-
+ drivers/video/omap2/dss/venc.c                     |    2 +-
+ drivers/video/omap2/omapfb/omapfb-ioctl.c          |    2 +-
+ drivers/video/omap2/omapfb/omapfb-main.c           |    2 +-
+ drivers/video/omap2/omapfb/omapfb-sysfs.c          |    2 +-
+ drivers/video/omap2/omapfb/omapfb.h                |    2 +-
+ .../video/omap-panel-generic-dpi.h                 |    8 ++++----
+ .../video/omap-panel-nokia-dsi.h                   |    8 ++++----
+ .../plat/display.h => include/video/omapdss.h      |    6 ++----
+ 47 files changed, 66 insertions(+), 67 deletions(-)
+ rename arch/arm/plat-omap/include/plat/panel-generic-dpi.h => include/video/omap-panel-generic-dpi.h (86%)
+ rename arch/arm/plat-omap/include/plat/nokia-dsi-panel.h => include/video/omap-panel-nokia-dsi.h (79%)
+ rename arch/arm/plat-omap/include/plat/display.h => include/video/omapdss.h (99%)
+
 -- 
 1.7.4.1
 

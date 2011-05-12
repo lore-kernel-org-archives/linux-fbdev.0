@@ -1,34 +1,142 @@
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Mon, 02 May 2011 22:31:20 +0000
-Subject: Re: [PATCH v6 6/6] powerpc, tqm5200: update tqm5200_defconfig to fit
-Message-Id: <20110502223120.GD15187@ponder.secretlab.ca>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 12 May 2011 11:40:13 +0000
+Subject: [PATCHv2 8/8] OMAP: DSS2: OMAPFB: Reduce stack usage
+Message-Id: <1305200413-23697-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1291451028-22532-1-git-send-email-hs@denx.de>
- <1300782452-528-1-git-send-email-hs@denx.de>
- <1300782452-528-7-git-send-email-hs@denx.de>
- <20110322091027.GC2134@pengutronix.de>
-In-Reply-To: <20110322091027.GC2134@pengutronix.de>
+References: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Heiko Schocher <hs@denx.de>, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev@vger.kernel.org, devicetree-discuss@ozlabs.org, Ben Dooks <ben@simtec.co.uk>, Vincent Sanders <vince@simtec.co.uk>, Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>, Wolfgang Denk <wd@denx.de>, Paul Mundt <lethal@linux-sh.org>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Tue, Mar 22, 2011 at 10:10:27AM +0100, Wolfram Sang wrote:
-> >     As this board is tqm5200 based, added necessary changes
-> >     to the tqm5200_defconfig. In previous patchserie I added
-> >     the changes to mpc5200_defconfig, as Wolfram Sang mentioned,
-> >     but as tqm5200_defconfig is in mainline, and the board is
-> >     tqm5200 based, I think, thats the appropriate place, as
-> 
-> I'd think the perfect solution would have been to merge the
-> tqm-defconfig into the mpc5200-defconfig entirely and get rid of it.
-> That being said, I don't think this issue is big enough to block this
-> series, so fine enough with me.
+omapfb_mode_to_timings() had struct fb_info, struct fb_var and struct
+fb_ops allocated from stack. This caused the stack usage grow quite
+high.
 
-Merged, thanks.
+Use kzalloc to allocate the structs instead.
 
-g.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/omapfb/omapfb-main.c |   95 +++++++++++++++++++-----------
+ 1 files changed, 61 insertions(+), 34 deletions(-)
 
-
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 9a5b4bc..505bc12 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -1996,9 +1996,9 @@ static int omapfb_create_framebuffers(struct omapfb2_device *fbdev)
+ static int omapfb_mode_to_timings(const char *mode_str,
+ 		struct omap_video_timings *timings, u8 *bpp)
+ {
+-	struct fb_info fbi;
+-	struct fb_var_screeninfo var;
+-	struct fb_ops fbops;
++	struct fb_info *fbi;
++	struct fb_var_screeninfo *var;
++	struct fb_ops *fbops;
+ 	int r;
+ 
+ #ifdef CONFIG_OMAP2_DSS_VENC
+@@ -2016,39 +2016,66 @@ static int omapfb_mode_to_timings(const char *mode_str,
+ 	/* this is quite a hack, but I wanted to use the modedb and for
+ 	 * that we need fb_info and var, so we create dummy ones */
+ 
+-	memset(&fbi, 0, sizeof(fbi));
+-	memset(&var, 0, sizeof(var));
+-	memset(&fbops, 0, sizeof(fbops));
+-	fbi.fbops = &fbops;
+-
+-	r = fb_find_mode(&var, &fbi, mode_str, NULL, 0, NULL, 24);
+-
+-	if (r != 0) {
+-		timings->pixel_clock = PICOS2KHZ(var.pixclock);
+-		timings->hbp = var.left_margin;
+-		timings->hfp = var.right_margin;
+-		timings->vbp = var.upper_margin;
+-		timings->vfp = var.lower_margin;
+-		timings->hsw = var.hsync_len;
+-		timings->vsw = var.vsync_len;
+-		timings->x_res = var.xres;
+-		timings->y_res = var.yres;
+-
+-		switch (var.bits_per_pixel) {
+-		case 16:
+-			*bpp = 16;
+-			break;
+-		case 24:
+-		case 32:
+-		default:
+-			*bpp = 24;
+-			break;
+-		}
++	*bpp = 0;
++	fbi = NULL;
++	var = NULL;
++	fbops = NULL;
+ 
+-		return 0;
+-	} else {
+-		return -EINVAL;
++	fbi = kzalloc(sizeof(*fbi), GFP_KERNEL);
++	if (fbi = NULL) {
++		r = -ENOMEM;
++		goto err;
++	}
++
++	var = kzalloc(sizeof(*var), GFP_KERNEL);
++	if (var = NULL) {
++		r = -ENOMEM;
++		goto err;
++	}
++
++	fbops = kzalloc(sizeof(*fbops), GFP_KERNEL);
++	if (fbops = NULL) {
++		r = -ENOMEM;
++		goto err;
++	}
++
++	fbi->fbops = fbops;
++
++	r = fb_find_mode(var, fbi, mode_str, NULL, 0, NULL, 24);
++	if (r = 0) {
++		r = -EINVAL;
++		goto err;
+ 	}
++
++	timings->pixel_clock = PICOS2KHZ(var->pixclock);
++	timings->hbp = var->left_margin;
++	timings->hfp = var->right_margin;
++	timings->vbp = var->upper_margin;
++	timings->vfp = var->lower_margin;
++	timings->hsw = var->hsync_len;
++	timings->vsw = var->vsync_len;
++	timings->x_res = var->xres;
++	timings->y_res = var->yres;
++
++	switch (var->bits_per_pixel) {
++	case 16:
++		*bpp = 16;
++		break;
++	case 24:
++	case 32:
++	default:
++		*bpp = 24;
++		break;
++	}
++
++	r = 0;
++
++err:
++	kfree(fbi);
++	kfree(var);
++	kfree(fbops);
++
++	return r;
+ }
+ 
+ static int omapfb_set_def_mode(struct omapfb2_device *fbdev,
+-- 
+1.7.4.1
 

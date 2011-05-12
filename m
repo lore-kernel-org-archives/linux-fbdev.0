@@ -1,73 +1,63 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 25 May 2011 22:57:57 +0000
-Subject: [PATCH 05/29] atmel_lcdfb: use display information in info not in var for panning
-Message-Id: <1306364301-8195-6-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 12 May 2011 11:40:12 +0000
+Subject: [PATCHv2 7/8] OMAP: DSS2: OMAPFB: remove dead code
+Message-Id: <1305200413-23697-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+Remove old unused code lying inside #if 0.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/atmel_lcdfb.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
+ drivers/video/omap2/omapfb/omapfb-main.c |   29 -----------------------------
+ 1 files changed, 0 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 4484c72..8b5d755 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -39,7 +39,8 @@
- 					 | FBINFO_HWACCEL_YPAN)
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index eba90b3..9a5b4bc 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -757,35 +757,6 @@ static int omapfb_open(struct fb_info *fbi, int user)
  
- static inline void atmel_lcdfb_update_dma2d(struct atmel_lcdfb_info *sinfo,
--					struct fb_var_screeninfo *var)
-+					struct fb_var_screeninfo *var,
-+					struct fb_info *info)
+ static int omapfb_release(struct fb_info *fbi, int user)
  {
- 
- }
-@@ -50,14 +51,16 @@ static inline void atmel_lcdfb_update_dma2d(struct atmel_lcdfb_info *sinfo,
- 					| FBINFO_HWACCEL_YPAN)
- 
- static void atmel_lcdfb_update_dma2d(struct atmel_lcdfb_info *sinfo,
--				     struct fb_var_screeninfo *var)
-+				     struct fb_var_screeninfo *var,
-+				     struct fb_info *info)
- {
- 	u32 dma2dcfg;
- 	u32 pixeloff;
- 
--	pixeloff = (var->xoffset * var->bits_per_pixel) & 0x1f;
-+	pixeloff = (var->xoffset * info->var.bits_per_pixel) & 0x1f;
- 
--	dma2dcfg = ((var->xres_virtual - var->xres) * var->bits_per_pixel) / 8;
-+	dma2dcfg = (info-var.xres_virtual - info->var.xres)
-+		 * info->var.bits_per_pixel / 8;
- 	dma2dcfg |= pixeloff << ATMEL_LCDC_PIXELOFF_OFFSET;
- 	lcdc_writel(sinfo, ATMEL_LCDC_DMA2DCFG, dma2dcfg);
- 
-@@ -249,14 +252,14 @@ static void atmel_lcdfb_update_dma(struct fb_info *info,
- 	unsigned long dma_addr;
- 
- 	dma_addr = (fix->smem_start + var->yoffset * fix->line_length
--		    + var->xoffset * var->bits_per_pixel / 8);
-+		    + var->xoffset * info->var.bits_per_pixel / 8);
- 
- 	dma_addr &= ~3UL;
- 
- 	/* Set framebuffer DMA base address and pixel offset */
- 	lcdc_writel(sinfo, ATMEL_LCDC_DMABADDR1, dma_addr);
- 
--	atmel_lcdfb_update_dma2d(sinfo, var);
-+	atmel_lcdfb_update_dma2d(sinfo, var, info);
+-#if 0
+-	struct omapfb_info *ofbi = FB2OFB(fbi);
+-	struct omapfb2_device *fbdev = ofbi->fbdev;
+-	struct omap_dss_device *display = fb2display(fbi);
+-
+-	DBG("Closing fb with plane index %d\n", ofbi->id);
+-
+-	omapfb_lock(fbdev);
+-
+-	if (display && display->get_update_mode && display->update) {
+-		/* XXX this update should be removed, I think. But it's
+-		 * good for debugging */
+-		if (display->get_update_mode(display) =
+-				OMAP_DSS_UPDATE_MANUAL) {
+-			u16 w, h;
+-
+-			if (display->sync)
+-				display->sync(display);
+-
+-			display->get_resolution(display, &w, &h);
+-			display->update(display, 0, 0, w, h);
+-		}
+-	}
+-
+-	if (display && display->sync)
+-		display->sync(display);
+-
+-	omapfb_unlock(fbdev);
+-#endif
+ 	return 0;
  }
  
- static inline void atmel_lcdfb_free_video_memory(struct atmel_lcdfb_info *sinfo)
 -- 
-1.7.3.4
+1.7.4.1
 

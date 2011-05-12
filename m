@@ -1,28 +1,56 @@
-From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
-Date: Sun, 15 May 2011 19:26:22 +0000
-Subject: I80 interface on S3C and manual command mode
-Message-Id: <201105152126.22338.heiko@sntech.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 12 May 2011 11:40:06 +0000
+Subject: [PATCHv2 1/8] OMAP: DSS2: Add missing dummy functions
+Message-Id: <1305200413-23697-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi,
+dpi.c does not compile if DSI is not compiled in. Add the missing dummy
+functions so that dpi.c compiles.
 
-I'm working on porting a kernel to a device which has an epaper-controller 
-connected to the I80 interface of an S3C2416 and uses its "manual command 
-mode", via SIFCCON[0,1,2], as the datasheet calls it.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dss.h |   21 +++++++++++++++++++++
+ 1 files changed, 21 insertions(+), 0 deletions(-)
 
-While digging around the mailinglists I found patches by Inki Dae that 
-implement the I80 basics. (cpu_mode struct and probe_win).
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index eea5c7d..f659cfb 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -313,6 +313,27 @@ static inline unsigned long dsi_get_pll_hsdiv_dispc_rate(void)
+ 	WARN("%s: DSI not compiled in, returning rate as 0\n", __func__);
+ 	return 0;
+ }
++static inline int dsi_pll_set_clock_div(struct dsi_clock_info *cinfo)
++{
++	WARN("%s: DSI not compiled in\n", __func__);
++	return -ENODEV;
++}
++static inline int dsi_pll_calc_clock_div_pck(bool is_tft, unsigned long req_pck,
++		struct dsi_clock_info *cinfo,
++		struct dispc_clock_info *dispc_cinfo)
++{
++	WARN("%s: DSI not compiled in\n", __func__);
++	return -ENODEV;
++}
++static inline int dsi_pll_init(struct omap_dss_device *dssdev,
++		bool enable_hsclk, bool enable_hsdiv)
++{
++	WARN("%s: DSI not compiled in\n", __func__);
++	return -ENODEV;
++}
++static inline void dsi_pll_uninit(bool disconnect_lanes)
++{
++}
+ static inline void dsi_wait_pll_hsdiv_dispc_active(void)
+ {
+ }
+-- 
+1.7.4.1
 
-As there are multiple versions available in the fbdev patchwork and the i80 
-interface seems to have been dropped in the latest version from 2011-04 I'd 
-like ask if there are "final" versions laying around somewhere.
-
-Also, to not reinvent the wheel, does an implementation of the i80 interface 
-[via SIFCCONx] for s3c-fb exist somewhere per chance?
-
-Thanks
-Heiko

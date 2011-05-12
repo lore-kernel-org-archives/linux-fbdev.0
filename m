@@ -1,78 +1,56 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 25 May 2011 22:58:21 +0000
-Subject: [PATCH 29/29] staging: xgifb: use display information in info not in var for panning
-Message-Id: <1306364301-8195-30-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 12 May 2011 11:40:10 +0000
+Subject: [PATCHv2 5/8] OMAP: DSS2: RFBI: add omap_rfbi_configure
+Message-Id: <1305200413-23697-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+Add omap_rfbi_configure() which the panel driver can use to reconfigure
+the data element size and the number of data lines in the RFBI bus.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc: Arnaud Patard <apatard@mandriva.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/staging/xgifb/XGI_main_26.c |   22 ++++++----------------
- 1 files changed, 6 insertions(+), 16 deletions(-)
+ drivers/video/omap2/dss/rfbi.c |    8 +++++++-
+ include/video/omapdss.h        |    2 ++
+ 2 files changed, 9 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/staging/xgifb/XGI_main_26.c b/drivers/staging/xgifb/XGI_main_26.c
-index 721bd25..10a6142 100644
---- a/drivers/staging/xgifb/XGI_main_26.c
-+++ b/drivers/staging/xgifb/XGI_main_26.c
-@@ -1148,26 +1148,16 @@ static int XGIfb_do_set_var(struct fb_var_screeninfo *var, int isactive,
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 1c19d17..155caf0 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -851,7 +851,13 @@ int rfbi_configure(int rfbi_module, int bpp, int lines)
+ 
+ 	return 0;
  }
+-EXPORT_SYMBOL(rfbi_configure);
++
++int omap_rfbi_configure(struct omap_dss_device *dssdev, int pixel_size,
++		int data_lines)
++{
++	return rfbi_configure(dssdev->phy.rfbi.channel, pixel_size, data_lines);
++}
++EXPORT_SYMBOL(omap_rfbi_configure);
  
- #ifdef XGIFB_PAN
--static int XGIfb_pan_var(struct fb_var_screeninfo *var)
-+static int XGIfb_pan_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
- 	unsigned int base;
+ int omap_rfbi_prepare_update(struct omap_dss_device *dssdev,
+ 		u16 *x, u16 *y, u16 *w, u16 *h)
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 1ea151e..9b00748 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -612,5 +612,7 @@ int omap_rfbi_prepare_update(struct omap_dss_device *dssdev,
+ int omap_rfbi_update(struct omap_dss_device *dssdev,
+ 		u16 x, u16 y, u16 w, u16 h,
+ 		void (*callback)(void *), void *data);
++int omap_rfbi_configure(struct omap_dss_device *dssdev, int pixel_size,
++		int data_lines);
  
- 	/* printk("Inside pan_var"); */
- 
--	if (var->xoffset > (var->xres_virtual - var->xres)) {
--		/* printk("Pan: xo: %d xv %d xr %d\n",
--			var->xoffset, var->xres_virtual, var->xres); */
--		return -EINVAL;
--	}
--	if (var->yoffset > (var->yres_virtual - var->yres)) {
--		/* printk("Pan: yo: %d yv %d yr %d\n",
--			var->yoffset, var->yres_virtual, var->yres); */
--		return -EINVAL;
--	}
--	base = var->yoffset * var->xres_virtual + var->xoffset;
-+	base = var->yoffset * info->var.xres_virtual + var->xoffset;
- 
- 	/* calculate base bpp dep. */
--	switch (var->bits_per_pixel) {
-+	switch (info->var.bits_per_pixel) {
- 	case 16:
- 		base >>= 1;
- 		break;
-@@ -1425,9 +1415,9 @@ static int XGIfb_pan_display(struct fb_var_screeninfo *var,
- 
- 	/* printk("\nInside pan_display:\n"); */
- 
--	if (var->xoffset > (var->xres_virtual - var->xres))
-+	if (var->xoffset > (info->var.xres_virtual - info->var.xres))
- 		return -EINVAL;
--	if (var->yoffset > (var->yres_virtual - var->yres))
-+	if (var->yoffset > (info->var.yres_virtual - info->var.yres))
- 		return -EINVAL;
- 
- 	if (var->vmode & FB_VMODE_YWRAP) {
-@@ -1440,7 +1430,7 @@ static int XGIfb_pan_display(struct fb_var_screeninfo *var,
- 						> info->var.yres_virtual)
- 			return -EINVAL;
- 	}
--	err = XGIfb_pan_var(var);
-+	err = XGIfb_pan_var(var, info);
- 	if (err < 0)
- 		return err;
- 
+ #endif
 -- 
-1.7.3.4
+1.7.4.1
 

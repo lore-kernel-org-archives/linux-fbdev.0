@@ -1,45 +1,43 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 24 May 2011 08:55:31 +0000
-Subject: [PATCH] [resend] video: s3c-fb: add gpio setup function to resume function
-Message-Id: <1306227331-22713-1-git-send-email-jg1.han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 12 May 2011 11:40:05 +0000
+Subject: [PATCHv2 0/8] OMAP: DSS: Miscellaneous patches
+Message-Id: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This patch adds gpio setup function to resume function to ensure
-gpio used by FIMD IP and LCD panel during a resume.
+Here are some smallish fixes and cleanups I made while porting N800's display
+driver to DSS2.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
----
- drivers/video/s3c-fb.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+Changes in v2:
+* Fix typos in commit messages
+* Properly check kzalloc return value and fail if allocation failed 
+* Rebased on DSS master
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 6b7c5a8..2bd86a9 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -1526,7 +1526,8 @@ static int s3c_fb_resume(struct device *dev)
- 
- 	clk_enable(sfb->bus_clk);
- 
--	/* setup registers */
-+	/* setup gpio and output polarity controls */
-+	pd->setup_gpio();
- 	writel(pd->vidcon1, sfb->regs + VIDCON1);
- 
- 	/* zero all windows before we do anything */
-@@ -1584,7 +1585,8 @@ static int s3c_fb_runtime_resume(struct device *dev)
- 
- 	clk_enable(sfb->bus_clk);
- 
--	/* setup registers */
-+	/* setup gpio and output polarity controls */
-+	pd->setup_gpio();
- 	writel(pd->vidcon1, sfb->regs + VIDCON1);
- 
- 	/* zero all windows before we do anything */
+ Tomi
+
+Tomi Valkeinen (8):
+  OMAP: DSS2: Add missing dummy functions
+  OMAPFB: fix wrong clock aliases and device name
+  OMAP: DSS2: RFBI: add rfbi_bus_lock
+  OMAP: DSS2: RFBI: clock enable/disable changes
+  OMAP: DSS2: RFBI: add omap_rfbi_configure
+  OMAP: DSS2: RFBI: cleanup
+  OMAP: DSS2: OMAPFB: remove dead code
+  OMAP: DSS2: OMAPFB: Reduce stack usage
+
+ drivers/video/omap/dispc.c               |    4 +-
+ drivers/video/omap/omapfb_main.c         |    2 +-
+ drivers/video/omap/rfbi.c                |    2 +-
+ drivers/video/omap2/dss/dss.h            |   28 ++++--
+ drivers/video/omap2/dss/rfbi.c           |  174 +++++-------------------------
+ drivers/video/omap2/omapfb/omapfb-main.c |  124 +++++++++++-----------
+ include/video/omapdss.h                  |    4 +
+ 7 files changed, 119 insertions(+), 219 deletions(-)
+
 -- 
-1.7.1
+1.7.4.1
 

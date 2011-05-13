@@ -1,142 +1,435 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Tue, 24 May 2011 20:32:21 +0000
-Subject: [Patch 2/2 resend] Prevent vga16fb from accessing hw after it was
-Message-Id: <20110524223221.741ffbc0@neptune.home>
+From: Tony Lindgren <tony@atomide.com>
+Date: Fri, 13 May 2011 11:54:07 +0000
+Subject: Re: Updated mach-types update
+Message-Id: <20110513115406.GQ31483@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20110320110322.GC16646@n2100.arm.linux.org.uk>
+ <20110320114137.GD16646@n2100.arm.linux.org.uk>
+ <20110324175945.GV2811@atomide.com>
+In-Reply-To: <20110324175945.GV2811@atomide.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, Subhasish Ghosh <subhasish@mistralsolutions.com>, Srinath <srinath@mistralsolutions.com>, Arun C <arunedarath@mistralsolutions.com>, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jarkko Nikula <jhnikula@gmail.com>
 
-Since fb_info is refcounted it can successfully remain open while
-being unregistered (though not freed).
+* Tony Lindgren <tony@atomide.com> [110324 10:57]:
+> * Russell King - ARM Linux <linux@arm.linux.org.uk> [110320 04:39]:
+> > On Sun, Mar 20, 2011 at 11:03:22AM +0000, Russell King - ARM Linux wrote:
+> > 
+> > Note that OMAP references machine_is_omap2evm() yet this has never been
+> > merged.
+> > 
+> > arch/arm/plat-omap/include/plat/uncompress.h:
+> > 
+> >                 DEBUG_LL_OMAP2(1, omap2evm);
+> > 
+> > so this entry needs to be removed.
+> 
+> Hmm looks like we have LCD support and ASoC support for it, but no
+> board :)
+> 
+> Anybody working with this board?
+> 
+> If so, please send patches for the related board-*.c support ASAP.
+> Otherwise let's plan on deleting the related support.
 
-Prevent the following sequence to corrupt modify hardware state
-behind back of native driver that took over control of hardware:
-- vga16fb registered
-+ open /dev/fb0 (vga16fb)
-- load native driver
-  - unregisters conflicting vga16fb
-  - configures GPU with nouveaufb and more
-  - fbcon takes over
-+ close /dev/fb0
-  + vga16fb resets hw to vgacon mode (in fbops.fb_release)
+No patches, so let's remove it. Here's the patch to do that,
+I'm planning to add this to my devel-cleanup branch.
+
+Regards,
+
+Tony
 
 
-Add a new callback fb_unregistered to struct fbops to be called
-at end of unregister_framebuffer() so interested drivers can
-get know their fb was unregistered (previously they would know
-through fb_destroy callback but now that callback may happen
-way later)
+From: Tony Lindgren <tony@atomide.com>
+Date: Fri, 13 May 2011 04:41:32 -0700
+Subject: [PATCH] omap: Remove support for omap2evm
 
-Prevent such hardware access by setting a flag with new fb_unregistered
-callback and checking it when vga16fb framebuffer is last closed and
-skipping vga state restore in case it's not registered anymore.
+The board support has never been merged for it as noticed
+by Russell King <linux@arm.linux.org.uk>. So let's remove the
+related dead code.
 
-CC: stable@kernel.org
-Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
----
-Resend as my MUA decided to take wrong source address...
+Cc: linux-fbdev@vger.kernel.org
+Cc: alsa-devel@alsa-project.org
+Signed-off-by: Tony Lindgren <tony@atomide.com>
 
-This should also go into 2.6.39 stable as it didn't make it into 2.6.39
-with the rest of fb_info refcounting work.
-
-This comes from
-  [2.6.39-rc2, framebuffer] use after free oops
-     ...
-       [PATCH 0/2] fbcon sanity
-thread
----
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 5aac00e..bd9f93b 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1661,6 +1661,11 @@ static int do_unregister_framebuffer(struct fb_info =
-*fb_info)
- 	device_destroy(fb_class, MKDEV(FB_MAJOR, i));
- 	event.info =3D fb_info;
- 	fb_notifier_call_chain(FB_EVENT_FB_UNREGISTERED, &event);
-+	if (fb_info->fbops->fb_unregistered) {
-+		mutex_lock(&fb_info->lock);
-+		fb_info->fbops->fb_unregistered(fb_info);
-+		mutex_unlock(&fb_info->lock);
-+	}
-=20
- 	/* this may free fb info */
- 	put_fb_info(fb_info);
-diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
-index 53b2c5a..dad96e1 100644
---- a/drivers/video/vga16fb.c
-+++ b/drivers/video/vga16fb.c
-@@ -59,7 +59,7 @@ struct vga16fb_par {
- 	struct vgastate state;
- 	unsigned int ref_count;
- 	int palette_blanked, vesa_blanked, mode, isVGA;
--	u8 misc, pel_msk, vss, clkdiv;
-+	u8 misc, pel_msk, vss, clkdiv, unregistered;
- 	u8 crtc[VGA_CRT_C];
- };
-=20
-@@ -302,7 +302,7 @@ static int vga16fb_release(struct fb_info *info, int us=
-er)
- 	if (!par->ref_count)
- 		return -EINVAL;
-=20
--	if (par->ref_count =3D 1)
-+	if (par->ref_count =3D 1 && !par->unregistered)
- 		restore_vga(&par->state);
- 	par->ref_count--;
-=20
-@@ -1271,19 +1271,26 @@ static void vga16fb_destroy(struct fb_info *info)
- 	framebuffer_release(info);
- }
-=20
-+static void vga16fb_unregistered(struct fb_info *info)
-+{
-+	struct vga16fb_par *par =3D info->par;
-+	par->unregistered =3D 1;
-+}
-+
- static struct fb_ops vga16fb_ops =3D {
--	.owner		=3D THIS_MODULE,
--	.fb_open        =3D vga16fb_open,
--	.fb_release     =3D vga16fb_release,
--	.fb_destroy	=3D vga16fb_destroy,
--	.fb_check_var	=3D vga16fb_check_var,
--	.fb_set_par	=3D vga16fb_set_par,
--	.fb_setcolreg 	=3D vga16fb_setcolreg,
--	.fb_pan_display =3D vga16fb_pan_display,
--	.fb_blank 	=3D vga16fb_blank,
--	.fb_fillrect	=3D vga16fb_fillrect,
--	.fb_copyarea	=3D vga16fb_copyarea,
--	.fb_imageblit	=3D vga16fb_imageblit,
-+	.owner		 =3D THIS_MODULE,
-+	.fb_open         =3D vga16fb_open,
-+	.fb_release      =3D vga16fb_release,
-+	.fb_destroy	 =3D vga16fb_destroy,
-+	.fb_unregistered =3D vga16fb_unregistered,
-+	.fb_check_var	 =3D vga16fb_check_var,
-+	.fb_set_par	 =3D vga16fb_set_par,
-+	.fb_setcolreg	 =3D vga16fb_setcolreg,
-+	.fb_pan_display  =3D vga16fb_pan_display,
-+	.fb_blank	 =3D vga16fb_blank,
-+	.fb_fillrect	 =3D vga16fb_fillrect,
-+	.fb_copyarea	 =3D vga16fb_copyarea,
-+	.fb_imageblit	 =3D vga16fb_imageblit,
- };
-=20
- #ifndef MODULE
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 6a82748..22a8796 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -685,6 +685,9 @@ struct fb_ops {
- 	void (*fb_get_caps)(struct fb_info *info, struct fb_blit_caps *caps,
- 			    struct fb_var_screeninfo *var);
-=20
-+	/* teardown hardware for this framebuffer (another driver may get
-+	 * ownership of hardware after this returns) */
-+	void (*fb_unregistered)(struct fb_info *info);
- 	/* teardown any resources to do with this framebuffer */
- 	void (*fb_destroy)(struct fb_info *info);
-=20
+diff --git a/arch/arm/plat-omap/include/plat/uncompress.h b/arch/arm/plat-omap/include/plat/uncompress.h
+index 30b891c..2b576f1 100644
+--- a/arch/arm/plat-omap/include/plat/uncompress.h
++++ b/arch/arm/plat-omap/include/plat/uncompress.h
+@@ -129,7 +129,6 @@ static inline void __arch_decomp_setup(unsigned long arch_id)
+ 		DEBUG_LL_OMAP1(3, sx1);
+ 
+ 		/* omap2 based boards using UART1 */
+-		DEBUG_LL_OMAP2(1, omap2evm);
+ 		DEBUG_LL_OMAP2(1, omap_2430sdp);
+ 		DEBUG_LL_OMAP2(1, omap_apollon);
+ 		DEBUG_LL_OMAP2(1, omap_h4);
+diff --git a/drivers/video/omap/Makefile b/drivers/video/omap/Makefile
+index 49226a1..25db556 100644
+--- a/drivers/video/omap/Makefile
++++ b/drivers/video/omap/Makefile
+@@ -30,7 +30,6 @@ objs-y$(CONFIG_MACH_OMAP_APOLLON) += lcd_apollon.o
+ objs-y$(CONFIG_MACH_OMAP_2430SDP) += lcd_2430sdp.o
+ objs-y$(CONFIG_MACH_OMAP_3430SDP) += lcd_2430sdp.o
+ objs-y$(CONFIG_MACH_OMAP_LDP) += lcd_ldp.o
+-objs-y$(CONFIG_MACH_OMAP2EVM) += lcd_omap2evm.o
+ objs-y$(CONFIG_MACH_OMAP3EVM) += lcd_omap3evm.o
+ objs-y$(CONFIG_MACH_OMAP3_BEAGLE) += lcd_omap3beagle.o
+ objs-y$(CONFIG_FB_OMAP_LCD_MIPID) += lcd_mipid.o
+diff --git a/drivers/video/omap/lcd_omap2evm.c b/drivers/video/omap/lcd_omap2evm.c
+deleted file mode 100644
+index 7e7a65c..0000000
+--- a/drivers/video/omap/lcd_omap2evm.c
++++ /dev/null
+@@ -1,192 +0,0 @@
+-/*
+- * LCD panel support for the MISTRAL OMAP2EVM board
+- *
+- * Author: Arun C <arunedarath@mistralsolutions.com>
+- *
+- * Derived from drivers/video/omap/lcd_omap3evm.c
+- * Derived from drivers/video/omap/lcd-apollon.c
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of the GNU General Public License as published by the
+- * Free Software Foundation; either version 2 of the License, or (at your
+- * option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+- */
+-
+-#include <linux/module.h>
+-#include <linux/platform_device.h>
+-#include <linux/gpio.h>
+-#include <linux/i2c/twl.h>
+-
+-#include <plat/mux.h>
+-#include <asm/mach-types.h>
+-
+-#include "omapfb.h"
+-
+-#define LCD_PANEL_ENABLE_GPIO	154
+-#define LCD_PANEL_LR		128
+-#define LCD_PANEL_UD		129
+-#define LCD_PANEL_INI		152
+-#define LCD_PANEL_QVGA		148
+-#define LCD_PANEL_RESB		153
+-
+-#define TWL_LED_LEDEN		0x00
+-#define TWL_PWMA_PWMAON		0x00
+-#define TWL_PWMA_PWMAOFF	0x01
+-
+-static unsigned int bklight_level;
+-
+-static int omap2evm_panel_init(struct lcd_panel *panel,
+-				struct omapfb_device *fbdev)
+-{
+-	gpio_request(LCD_PANEL_ENABLE_GPIO, "LCD enable");
+-	gpio_request(LCD_PANEL_LR, "LCD lr");
+-	gpio_request(LCD_PANEL_UD, "LCD ud");
+-	gpio_request(LCD_PANEL_INI, "LCD ini");
+-	gpio_request(LCD_PANEL_QVGA, "LCD qvga");
+-	gpio_request(LCD_PANEL_RESB, "LCD resb");
+-
+-	gpio_direction_output(LCD_PANEL_ENABLE_GPIO, 1);
+-	gpio_direction_output(LCD_PANEL_RESB, 1);
+-	gpio_direction_output(LCD_PANEL_INI, 1);
+-	gpio_direction_output(LCD_PANEL_QVGA, 0);
+-	gpio_direction_output(LCD_PANEL_LR, 1);
+-	gpio_direction_output(LCD_PANEL_UD, 1);
+-
+-	twl_i2c_write_u8(TWL4030_MODULE_LED, 0x11, TWL_LED_LEDEN);
+-	twl_i2c_write_u8(TWL4030_MODULE_PWMA, 0x01, TWL_PWMA_PWMAON);
+-	twl_i2c_write_u8(TWL4030_MODULE_PWMA, 0x02, TWL_PWMA_PWMAOFF);
+-	bklight_level = 100;
+-
+-	return 0;
+-}
+-
+-static void omap2evm_panel_cleanup(struct lcd_panel *panel)
+-{
+-	gpio_free(LCD_PANEL_RESB);
+-	gpio_free(LCD_PANEL_QVGA);
+-	gpio_free(LCD_PANEL_INI);
+-	gpio_free(LCD_PANEL_UD);
+-	gpio_free(LCD_PANEL_LR);
+-	gpio_free(LCD_PANEL_ENABLE_GPIO);
+-}
+-
+-static int omap2evm_panel_enable(struct lcd_panel *panel)
+-{
+-	gpio_set_value(LCD_PANEL_ENABLE_GPIO, 0);
+-	return 0;
+-}
+-
+-static void omap2evm_panel_disable(struct lcd_panel *panel)
+-{
+-	gpio_set_value(LCD_PANEL_ENABLE_GPIO, 1);
+-}
+-
+-static unsigned long omap2evm_panel_get_caps(struct lcd_panel *panel)
+-{
+-	return 0;
+-}
+-
+-static int omap2evm_bklight_setlevel(struct lcd_panel *panel,
+-						unsigned int level)
+-{
+-	u8 c;
+-	if ((level >= 0) && (level <= 100)) {
+-		c = (125 * (100 - level)) / 100 + 2;
+-		twl_i2c_write_u8(TWL4030_MODULE_PWMA, c, TWL_PWMA_PWMAOFF);
+-		bklight_level = level;
+-	}
+-	return 0;
+-}
+-
+-static unsigned int omap2evm_bklight_getlevel(struct lcd_panel *panel)
+-{
+-	return bklight_level;
+-}
+-
+-static unsigned int omap2evm_bklight_getmaxlevel(struct lcd_panel *panel)
+-{
+-	return 100;
+-}
+-
+-struct lcd_panel omap2evm_panel = {
+-	.name		= "omap2evm",
+-	.config		= OMAP_LCDC_PANEL_TFT | OMAP_LCDC_INV_VSYNC |
+-			  OMAP_LCDC_INV_HSYNC,
+-
+-	.bpp		= 16,
+-	.data_lines	= 18,
+-	.x_res		= 480,
+-	.y_res		= 640,
+-	.hsw		= 3,
+-	.hfp		= 0,
+-	.hbp		= 28,
+-	.vsw		= 2,
+-	.vfp		= 1,
+-	.vbp		= 0,
+-
+-	.pixel_clock	= 20000,
+-
+-	.init		= omap2evm_panel_init,
+-	.cleanup	= omap2evm_panel_cleanup,
+-	.enable		= omap2evm_panel_enable,
+-	.disable	= omap2evm_panel_disable,
+-	.get_caps	= omap2evm_panel_get_caps,
+-	.set_bklight_level      = omap2evm_bklight_setlevel,
+-	.get_bklight_level      = omap2evm_bklight_getlevel,
+-	.get_bklight_max        = omap2evm_bklight_getmaxlevel,
+-};
+-
+-static int omap2evm_panel_probe(struct platform_device *pdev)
+-{
+-	omapfb_register_panel(&omap2evm_panel);
+-	return 0;
+-}
+-
+-static int omap2evm_panel_remove(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+-static int omap2evm_panel_suspend(struct platform_device *pdev,
+-				   pm_message_t mesg)
+-{
+-	return 0;
+-}
+-
+-static int omap2evm_panel_resume(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+-struct platform_driver omap2evm_panel_driver = {
+-	.probe		= omap2evm_panel_probe,
+-	.remove		= omap2evm_panel_remove,
+-	.suspend	= omap2evm_panel_suspend,
+-	.resume		= omap2evm_panel_resume,
+-	.driver		= {
+-		.name	= "omap2evm_lcd",
+-		.owner	= THIS_MODULE,
+-	},
+-};
+-
+-static int __init omap2evm_panel_drv_init(void)
+-{
+-	return platform_driver_register(&omap2evm_panel_driver);
+-}
+-
+-static void __exit omap2evm_panel_drv_exit(void)
+-{
+-	platform_driver_unregister(&omap2evm_panel_driver);
+-}
+-
+-module_init(omap2evm_panel_drv_init);
+-module_exit(omap2evm_panel_drv_exit);
+diff --git a/sound/soc/omap/Makefile b/sound/soc/omap/Makefile
+index ba9fc65..6c2c87e 100644
+--- a/sound/soc/omap/Makefile
++++ b/sound/soc/omap/Makefile
+@@ -13,7 +13,6 @@ snd-soc-rx51-objs := rx51.o
+ snd-soc-ams-delta-objs := ams-delta.o
+ snd-soc-osk5912-objs := osk5912.o
+ snd-soc-overo-objs := overo.o
+-snd-soc-omap2evm-objs := omap2evm.o
+ snd-soc-omap3evm-objs := omap3evm.o
+ snd-soc-am3517evm-objs := am3517evm.o
+ snd-soc-sdp3430-objs := sdp3430.o
+diff --git a/sound/soc/omap/omap2evm.c b/sound/soc/omap/omap2evm.c
+deleted file mode 100644
+index 29b60d6..0000000
+--- a/sound/soc/omap/omap2evm.c
++++ /dev/null
+@@ -1,139 +0,0 @@
+-/*
+- * omap2evm.c  --  SoC audio machine driver for omap2evm board
+- *
+- * Author: Arun KS <arunks@mistralsolutions.com>
+- *
+- * Based on sound/soc/omap/overo.c by Steve Sakoman
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * version 2 as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+- * 02110-1301 USA
+- *
+- */
+-
+-#include <linux/clk.h>
+-#include <linux/platform_device.h>
+-#include <sound/core.h>
+-#include <sound/pcm.h>
+-#include <sound/soc.h>
+-
+-#include <asm/mach-types.h>
+-#include <mach/hardware.h>
+-#include <mach/gpio.h>
+-#include <plat/mcbsp.h>
+-
+-#include "omap-mcbsp.h"
+-#include "omap-pcm.h"
+-
+-static int omap2evm_hw_params(struct snd_pcm_substream *substream,
+-	struct snd_pcm_hw_params *params)
+-{
+-	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+-	struct snd_soc_dai *codec_dai = rtd->codec_dai;
+-	struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
+-	int ret;
+-
+-	/* Set codec DAI configuration */
+-	ret = snd_soc_dai_set_fmt(codec_dai,
+-				  SND_SOC_DAIFMT_I2S |
+-				  SND_SOC_DAIFMT_NB_NF |
+-				  SND_SOC_DAIFMT_CBM_CFM);
+-	if (ret < 0) {
+-		printk(KERN_ERR "can't set codec DAI configuration\n");
+-		return ret;
+-	}
+-
+-	/* Set cpu DAI configuration */
+-	ret = snd_soc_dai_set_fmt(cpu_dai,
+-				  SND_SOC_DAIFMT_I2S |
+-				  SND_SOC_DAIFMT_NB_NF |
+-				  SND_SOC_DAIFMT_CBM_CFM);
+-	if (ret < 0) {
+-		printk(KERN_ERR "can't set cpu DAI configuration\n");
+-		return ret;
+-	}
+-
+-	/* Set the codec system clock for DAC and ADC */
+-	ret = snd_soc_dai_set_sysclk(codec_dai, 0, 26000000,
+-					    SND_SOC_CLOCK_IN);
+-	if (ret < 0) {
+-		printk(KERN_ERR "can't set codec system clock\n");
+-		return ret;
+-	}
+-
+-	return 0;
+-}
+-
+-static struct snd_soc_ops omap2evm_ops = {
+-	.hw_params = omap2evm_hw_params,
+-};
+-
+-/* Digital audio interface glue - connects codec <--> CPU */
+-static struct snd_soc_dai_link omap2evm_dai = {
+-	.name = "TWL4030",
+-	.stream_name = "TWL4030",
+-	.cpu_dai_name = "omap-mcbsp-dai.1",
+-	.codec_dai_name = "twl4030-hifi",
+-	.platform_name = "omap-pcm-audio",
+-	.codec_name = "twl4030-codec",
+-	.ops = &omap2evm_ops,
+-};
+-
+-/* Audio machine driver */
+-static struct snd_soc_card snd_soc_omap2evm = {
+-	.name = "omap2evm",
+-	.dai_link = &omap2evm_dai,
+-	.num_links = 1,
+-};
+-
+-static struct platform_device *omap2evm_snd_device;
+-
+-static int __init omap2evm_soc_init(void)
+-{
+-	int ret;
+-
+-	if (!machine_is_omap2evm())
+-		return -ENODEV;
+-	printk(KERN_INFO "omap2evm SoC init\n");
+-
+-	omap2evm_snd_device = platform_device_alloc("soc-audio", -1);
+-	if (!omap2evm_snd_device) {
+-		printk(KERN_ERR "Platform device allocation failed\n");
+-		return -ENOMEM;
+-	}
+-
+-	platform_set_drvdata(omap2evm_snd_device, &snd_soc_omap2evm);
+-
+-	ret = platform_device_add(omap2evm_snd_device);
+-	if (ret)
+-		goto err1;
+-
+-	return 0;
+-
+-err1:
+-	printk(KERN_ERR "Unable to add platform device\n");
+-	platform_device_put(omap2evm_snd_device);
+-
+-	return ret;
+-}
+-module_init(omap2evm_soc_init);
+-
+-static void __exit omap2evm_soc_exit(void)
+-{
+-	platform_device_unregister(omap2evm_snd_device);
+-}
+-module_exit(omap2evm_soc_exit);
+-
+-MODULE_AUTHOR("Arun KS <arunks@mistralsolutions.com>");
+-MODULE_DESCRIPTION("ALSA SoC omap2evm");
+-MODULE_LICENSE("GPL");

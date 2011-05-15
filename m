@@ -1,87 +1,28 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 May 2011 12:27:35 +0000
-Subject: [PATCH 3/7] OMAP: omap3touchbook: Remove unused lcd stuff
-Message-Id: <1304512059-10372-4-git-send-email-tomi.valkeinen@ti.com>
+From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
+Date: Sun, 15 May 2011 19:26:22 +0000
+Subject: I80 interface on S3C and manual command mode
+Message-Id: <201105152126.22338.heiko@sntech.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1304512059-10372-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1304512059-10372-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Gregoire Gentil <gregoire@gentil.com>
+To: linux-arm-kernel@lists.infradead.org
 
-board-omap3touchbook.c adds an LCD device, but the kernel doesn't
-contain a driver for the device. So let's remove the unneeded LCD
-device.
+Hi,
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Gregoire Gentil <gregoire@gentil.com>
----
- arch/arm/mach-omap2/board-omap3touchbook.c |   18 ------------------
- 1 files changed, 0 insertions(+), 18 deletions(-)
+I'm working on porting a kernel to a device which has an epaper-controller 
+connected to the I80 interface of an S3C2416 and uses its "manual command 
+mode", via SIFCCON[0,1,2], as the datasheet calls it.
 
-diff --git a/arch/arm/mach-omap2/board-omap3touchbook.c b/arch/arm/mach-omap2/board-omap3touchbook.c
-index 127cb17..1c717a4 100644
---- a/arch/arm/mach-omap2/board-omap3touchbook.c
-+++ b/arch/arm/mach-omap2/board-omap3touchbook.c
-@@ -115,15 +115,6 @@ static struct omap2_hsmmc_info mmc[] = {
- 	{}	/* Terminator */
- };
- 
--static struct platform_device omap3_touchbook_lcd_device = {
--	.name		= "omap3touchbook_lcd",
--	.id		= -1,
--};
--
--static struct omap_lcd_config omap3_touchbook_lcd_config __initdata = {
--	.ctrl_name	= "internal",
--};
--
- static struct regulator_consumer_supply touchbook_vmmc1_supply = {
- 	.supply			= "vmmc",
- };
-@@ -181,12 +172,10 @@ static struct twl4030_gpio_platform_data touchbook_gpio_data = {
- 
- static struct regulator_consumer_supply touchbook_vdac_supply = {
- 	.supply		= "vdac",
--	.dev		= &omap3_touchbook_lcd_device.dev,
- };
- 
- static struct regulator_consumer_supply touchbook_vdvi_supply = {
- 	.supply		= "vdvi",
--	.dev		= &omap3_touchbook_lcd_device.dev,
- };
- 
- /* VMMC1 for MMC1 pins CMD, CLK, DAT0..DAT3 (20 mA, plus card = max 220 mA) */
-@@ -403,10 +392,6 @@ static struct platform_device keys_gpio = {
- 	},
- };
- 
--static struct omap_board_config_kernel omap3_touchbook_config[] __initdata = {
--	{ OMAP_TAG_LCD,		&omap3_touchbook_lcd_config },
--};
--
- #ifdef CONFIG_OMAP_MUX
- static struct omap_board_mux board_mux[] __initdata = {
- 	{ .reg_offset = OMAP_MUX_TERMINATOR },
-@@ -429,7 +414,6 @@ static void __init omap3_touchbook_init_irq(void)
- }
- 
- static struct platform_device *omap3_touchbook_devices[] __initdata = {
--	&omap3_touchbook_lcd_device,
- 	&leds_gpio,
- 	&keys_gpio,
- };
-@@ -510,8 +494,6 @@ static struct omap_musb_board_data musb_board_data = {
- static void __init omap3_touchbook_init(void)
- {
- 	omap3_mux_init(board_mux, OMAP_PACKAGE_CBB);
--	omap_board_config = omap3_touchbook_config;
--	omap_board_config_size = ARRAY_SIZE(omap3_touchbook_config);
- 
- 	pm_power_off = omap3_touchbook_poweroff;
- 
--- 
-1.7.4.1
+While digging around the mailinglists I found patches by Inki Dae that 
+implement the I80 basics. (cpu_mode struct and probe_win).
 
+As there are multiple versions available in the fbdev patchwork and the i80 
+interface seems to have been dropped in the latest version from 2011-04 I'd 
+like ask if there are "final" versions laying around somewhere.
+
+Also, to not reinvent the wheel, does an implementation of the i80 interface 
+[via SIFCCONx] for s3c-fb exist somewhere per chance?
+
+Thanks
+Heiko

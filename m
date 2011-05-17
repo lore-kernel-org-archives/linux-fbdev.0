@@ -1,38 +1,35 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 25 May 2011 22:58:03 +0000
-Subject: [PATCH 11/29] hgafb: use display information in info not in var for panning
-Message-Id: <1306364301-8195-12-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 17 May 2011 09:45:38 +0000
+Subject: [PATCH] video: s3c2410fb: use resource_size()
+Message-Id: <1305625538-32302-1-git-send-email-jg1.han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+This patch uses the resource_size help function instead of
+manually calculating the resource size. It can reduce the chance
+of introducing off-by-one errors.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Ferenc Bakonyi <fero@drama.obuda.kando.hu>
-Cc: Brent Cook <busterb@gmail.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/hgafb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/s3c2410fb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/hgafb.c b/drivers/video/hgafb.c
-index 4052718..4394389 100644
---- a/drivers/video/hgafb.c
-+++ b/drivers/video/hgafb.c
-@@ -422,8 +422,8 @@ static int hgafb_pan_display(struct fb_var_screeninfo *var,
- 		    var->xoffset)
- 			return -EINVAL;
- 	} else {
--		if (var->xoffset + var->xres > info->var.xres_virtual
--		 || var->yoffset + var->yres > info->var.yres_virtual
-+		if (var->xoffset + info->var.xres > info->var.xres_virtual
-+		 || var->yoffset + info->var.yres > info->var.yres_virtual
- 		 || var->yoffset % 8)
- 			return -EINVAL;
+diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
+index 61c819e..4226ec3 100644
+--- a/drivers/video/s3c2410fb.c
++++ b/drivers/video/s3c2410fb.c
+@@ -867,7 +867,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+ 		goto dealloc_fb;
  	}
+ 
+-	size = (res->end - res->start) + 1;
++	size = resource_size(res);
+ 	info->mem = request_mem_region(res->start, size, pdev->name);
+ 	if (info->mem = NULL) {
+ 		dev_err(&pdev->dev, "failed to get memory region\n");
 -- 
-1.7.3.4
+1.7.1
 

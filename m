@@ -1,42 +1,77 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 03 May 2011 05:41:04 +0000
-Subject: Re: Login prompt on a video console instead of serial port?
-Message-Id: <1304401264.2513.303.camel@pasglop>
+From: anish <anish198519851985@gmail.com>
+Date: Tue, 17 May 2011 17:41:02 +0000
+Subject: [PATCH 2/2] trivial: Changed the printk loglevel when not able to
+Message-Id: <1305653342.2182.15.camel@anish-desktop>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-Pcngg4g4Wi+OELAs/4bI"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4DBF065C.3030407@freescale.com>
-	<BANLkTikWMksVsvs8KzjdiZfRR-2WGD0Ftw@mail.gmail.com>
-	<4DBF0DF1.6050207@freescale.com>
-In-Reply-To: <4DBF0DF1.6050207@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+To: linux@arm.linux.org.uk, lethal@linux-sh.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+
+
+--=-Pcngg4g4Wi+OELAs/4bI
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-To: Timur Tabi <timur@freescale.com>
-Cc: McClintock Matthew-B29882 <B29882@freescale.com>, devicetree-discuss <devicetree-discuss@lists.ozlabs.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-On Mon, 2011-05-02 at 15:02 -0500, Timur Tabi wrote:
-> McClintock Matthew-B29882 wrote:
-> > Don't you have to spawn a terminal on the framebuffer for the login?
-> 
-> I suppose, but I don't know how to do that.  And although that would technically
-> answer the question in the subject of this thread, I still would have *some*
-> boot output on the serial port.  It would be nice if I could get all of stdout
-> on the video display, and all of stdin from the serial port.
+When not able to allocate memory we were using KERN_INFO as 
+log level in printk so changed to KERN_ERR
+ Signed-off-by: anish kumar<anish198519851985@gmail.com>
 
-I don't think we have a way to do that unless you can make a serial
-"keyboard" device in the input layer. The VT layer will only get its
-input from such a thing, maybe that does exist in the depth of legacy
-code in there but it has nothing to do with your device-tree.
+---
+ drivers/video/amba-clcd.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> > Right now getty spawns the login on the serial port via /etc/inittab.
-> > Something similiar is probably needed for the framebuffer.
-> 
-> getty appears to work only with serial devices, since it insists on a baud rate
-> as one of the parameters.
+diff --git a/drivers/video/amba-clcd.c b/drivers/video/amba-clcd.c
+index cb7ec86..e87d98b 100644
+--- a/drivers/video/amba-clcd.c
++++ b/drivers/video/amba-clcd.c
+@@ -551,7 +551,7 @@ static int clcdfb_probe(struct amba_device *dev, const struct amba_id *id)
+ 
+ 	fb = kzalloc(sizeof(*fb), GFP_KERNEL);
+ 	if (!fb) {
+-		printk(KERN_INFO "CLCD: could not allocate new clcd_fb struct\n");
++		printk(KERN_ERR "CLCD: could not allocate new clcd_fb struct\n");
+ 		ret = -ENOMEM;
+ 		goto free_region;
+ 	}
+-- 
+1.7.0.4
 
-No, or no existing distro would work :-)
 
-Just fake a baudrate for the tty's
 
-Cheers,
-Ben.
+--=-Pcngg4g4Wi+OELAs/4bI
+Content-Disposition: attachment; filename*0=0002-Changed-the-printk-loglevel-when-not-able-to-allocat.pat; filename*1=ch
+Content-Type: text/x-patch; name="0002-Changed-the-printk-loglevel-when-not-able-to-allocat.patch"; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+From 19bbb666a6067a6ba280e2cb984c924bcaf06f52 Mon Sep 17 00:00:00 2001
+From: anish kumar <anish198519851985@gmail.com>
+Date: Tue, 17 May 2011 22:50:59 +0530
+Subject: [PATCH 2/2] Changed the printk loglevel when not able to allocate memory
+ When not able to allocate memory we were using KERN_INFO so just
+ changed to KERN_ERR
+ Signed-off-by: anish kumar<anish198519851985@gmail.com>
+
+---
+ drivers/video/amba-clcd.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/amba-clcd.c b/drivers/video/amba-clcd.c
+index cb7ec86..e87d98b 100644
+--- a/drivers/video/amba-clcd.c
++++ b/drivers/video/amba-clcd.c
+@@ -551,7 +551,7 @@ static int clcdfb_probe(struct amba_device *dev, const struct amba_id *id)
+ 
+ 	fb = kzalloc(sizeof(*fb), GFP_KERNEL);
+ 	if (!fb) {
+-		printk(KERN_INFO "CLCD: could not allocate new clcd_fb struct\n");
++		printk(KERN_ERR "CLCD: could not allocate new clcd_fb struct\n");
+ 		ret = -ENOMEM;
+ 		goto free_region;
+ 	}
+-- 
+1.7.0.4
+
+
+--=-Pcngg4g4Wi+OELAs/4bI--
 

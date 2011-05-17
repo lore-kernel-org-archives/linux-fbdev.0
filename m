@@ -1,82 +1,74 @@
-From: Mark Lord <kernel@teksavvy.com>
-Date: Thu, 19 May 2011 20:23:13 +0000
-Subject: Re: [REGRESSION] [2.6.39-rc3] Wrong resolution in framebuffer and
-Message-Id: <4DD57C31.3080903@teksavvy.com>
+From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
+Date: Tue, 17 May 2011 11:59:40 +0000
+Subject: i80 (Intel 8080-like) command interface to LCDs - how to implement
+Message-Id: <201105171359.43658.heiko@sntech.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201104171804.04664.maciej.rutecki@gmail.com> <201104211922.05779.maciej.rutecki@gmail.com> <201105192101.50000.maciej.rutecki@gmail.com>
-In-Reply-To: <201105192101.50000.maciej.rutecki@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: maciej.rutecki@gmail.com
-Cc: linux-fbdev@vger.kernel.org, chris@chris-wilson.co.uk, linux-kernel@vger.kernel.org, mbroemme@plusserver.de, airlied@linux.ie, dri-devel@lists.freedesktop.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Heiko =?iso-8859-1?q?St=FCbner?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
 
-On 11-05-19 03:01 PM, Maciej Rutecki wrote:
-> On czwartek, 21 kwietnia 2011 o 19:22:05 Maciej Rutecki wrote:
->> (add LKML)
->>
->> On niedziela, 17 kwietnia 2011 o 18:04:04 Maciej Rutecki wrote:
->>> Hi
->>>
->>> Last known good: 2.6.38
->>> Failing kernel: 2.6.39-rc3
->>> Subsystem: Intel graphics driver.
->>>
->>> Description:
->>> PC should work with 1440x900 resolution. But console (and after) X Window
->>> start work with 1024x768.
->>>
->>> I attach dmesg and Xorg.0.log with drm.debug log_buf_lenM options:
->>> http://unixy.pl/maciek/download/kernel/2.6.39-rc1/zlom/kms/
->>>
->>> seems that driver cannot detect resolution higher than 1024x768.
->>>
->>> Also I boot kernel replace "i915.modeset=1" with "nomodeset" option:
->>> http://unixy.pl/maciek/download/kernel/2.6.39-rc1/zlom/nomodeset/
->>>
->>> But then X Window fails to start and got message: "(EE) No devices
->>> detected."
->>>
->>> Config for 2.6.39-rc3:
->>> http://unixy.pl/maciek/download/kernel/2.6.39-rc1/zlom/config-2.6.39-rc3
->>>
->>> Best regards
->>
->> Device:
->> 00:02.0 VGA compatible controller: Intel Corporation 82G33/G31 Express
->> Integrated Graphics Controller (rev 02)
->
-> Reported on:
-> https://bugzilla.kernel.org/show_bug.cgi?id4002
->
-> 2 weeks ago. Problem STILL exists on 2.6.39. That any of the graphic
-> developers might be interested in the problem?
+Hi,
 
-I had a problem similar to this, beginning with 2.6.37 (2.6.36 was okay).
-It turned out to be that newer kernels were detecting the LVDS (LCD panel)
-interface from the chipset, event though nothing was attached to that interface.
-So GNOME would come up at 1024x768 (max the LVDS supported, I guess).
+I'm trying to find the best way on implementing an i80 interface (especially 
+the command mode) between a s3c2416 and an AUO-K1900 (epaper controller).
 
-I initially worked around it by going into the GNOME -> Preferences -> Monitors,
-and disabling the LVDS device there, in favour of the 1920x1200 "VGA" device I use.
+On the host side it is usable at least in all Samsung SoCs following the 
+S3C2443 and on the device side I've found, apart from the K1900, for example 
+the ili9320 and STM32F10xxx displays controllers using this interface.
 
-Later, I hacked my kernel to just ignore the LVDS completely:
+It looks a bit like a cross between SPI and I2C but fits neither category - at 
+least for my understanding.
+
+pins/pins consist of:
+CS ... chip-select
+RS ... control or data register select
+WE ... write enable
+RE ... read enable
+D0-Dn ... data 0-n for variing values of n
+(I've seen up to 18 data bits)
 
 
---- linux/drivers/gpu/drm/i915/intel_lvds.c.orig	2011-05-09 22:33:54.000000000 -0400
-+++ linux/drivers/gpu/drm/i915/intel_lvds.c	2011-05-17 23:00:40.829773525 -0400
-@@ -841,6 +841,7 @@
-  */
- bool intel_lvds_init(struct drm_device *dev)
- {
-+    if (0) {
- 	struct drm_i915_private *dev_priv = dev->dev_private;
- 	struct intel_lvds *intel_lvds;
- 	struct intel_encoder *intel_encoder;
-@@ -1041,5 +1042,6 @@
- 	drm_encoder_cleanup(encoder);
- 	kfree(intel_lvds);
- 	kfree(intel_connector);
-+    }
- 	return false;
- }
+commands can look like:
+(* set command mode)
+* set chip-select
+
+* set RS to control (mostly low)
+* set WE to high
+* write command to D
+* unset WE
+* set RS to data
+
+* set WE
+* write data to D
+* unset WE
+* set WE
+* write data to D
+* unset WE
+...
+* set RE
+* read data from D
+* unset RE
+...
+* unset chip-select
+(* unset command mode)
+
+the fourth possible state (read-control) is also used by the ili9320.
+
+looks a lot like an i2c-transfer, i.e. something like
+{
+  { WC, 6001 }, //for write-control
+  { WD, 576 }, //for write-data
+  { WD, 12 }, //for write-data
+  { RD, *buf } //for read-data
+}
+could represent the above command-sequence.
+
+
+So, is this a new bus type or does it fit somehow into spi or i2c or some other 
+bus-type I don't know yet? Or, does code for i80 exist somewhere I haven't 
+looked yet?
+
+Thanks in advance
+Heiko

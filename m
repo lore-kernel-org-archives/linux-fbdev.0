@@ -1,45 +1,40 @@
-From: Hans Verkuil <hansverk@cisco.com>
-Date: Mon, 02 May 2011 13:20:22 +0000
-Subject: Re: Query: Implementation of overlay on linux
-Message-Id: <201105021520.22842.hansverk@cisco.com>
+From: anish <anish198519851985@gmail.com>
+Date: Wed, 18 May 2011 18:19:06 +0000
+Subject: [patch 1/2] trivial: amba-clcd.c preferred form of passing size of
+Message-Id: <1305742026.8771.26.camel@anish-desktop>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4DBE8FDB.5010506@st.com>
-In-Reply-To: <4DBE8FDB.5010506@st.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: vipul kumar samar <vipulkumar.samar@st.com>
-Cc: linux-media@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux@arm.linux.org.uk, lethal@linux-sh.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday, May 02, 2011 13:04:59 vipul kumar samar wrote:
-> Hello,
-> 
-> I am working on LCD module and I want to implement two overlay windows
-> on frame buffer. I have some queries related to this:
+The preferred form for passing a size of a struct is the following:
+         p = kmalloc(sizeof(*p), ...);
+  Please refer Documentation/Codingstyle chapter 14
 
-You mean capture overlay windows? E.g. you want to capture from a video input 
-and have the video directly rendered in the framebuffer?
+ Signed-off-by: anish kumar <anish198519851985@gmail.com>
 
-The "Video Overlay Interface" section in the V4L2 specification describes how 
-to do that, but it also depends on whether the V4L2 driver in question 
-supports that feature.
+---
+ drivers/video/amba-clcd.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-It might be that you mean something else, though.
+diff --git a/drivers/video/amba-clcd.c b/drivers/video/amba-clcd.c
+index 5fc983c..cb7ec86 100644
+--- a/drivers/video/amba-clcd.c
++++ b/drivers/video/amba-clcd.c
+@@ -549,7 +549,7 @@ static int clcdfb_probe(struct amba_device *dev, const struct amba_id *id)
+ 		goto out;
+ 	}
+ 
+-	fb = kzalloc(sizeof(struct clcd_fb), GFP_KERNEL);
++	fb = kzalloc(sizeof(*fb), GFP_KERNEL);
+ 	if (!fb) {
+ 		printk(KERN_INFO "CLCD: could not allocate new clcd_fb struct\n");
+ 		ret = -ENOMEM;
+-- 
+1.7.0.4
 
-Regards,
 
-	Hans
 
-> 1. Can any body suggest me how to proceed towards it??
-> 2. Is their any standard way to use frame buffer ioctl calls??
-> 3. If i have to define my own ioctls then how application manage it??
-> 
-> 
-> Thanks and Regards
-> Vipul Samar
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-media" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+

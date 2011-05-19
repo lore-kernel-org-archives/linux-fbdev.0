@@ -1,81 +1,57 @@
-From: Peter Jones <pjones@redhat.com>
-Date: Thu, 26 May 2011 14:34:23 +0000
-Subject: Re: [PATCH 2/4] efifb: Fix mismatched request/release_mem_region
-Message-Id: <4DDE64EF.80109@redhat.com>
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+Date: Thu, 19 May 2011 19:01:49 +0000
+Subject: Re: [REGRESSION] [2.6.39-rc3] Wrong resolution in framebuffer and X Window
+Message-Id: <201105192101.50000.maciej.rutecki@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <66cbd008789c83ed102f94adf5f3a58392a3519d.1306418703.git.luto@mit.edu>
-In-Reply-To: <66cbd008789c83ed102f94adf5f3a58392a3519d.1306418703.git.luto@mit.edu>
+References: <201104171804.04664.maciej.rutecki@gmail.com> <201104211922.05779.maciej.rutecki@gmail.com>
+In-Reply-To: <201104211922.05779.maciej.rutecki@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, chris@chris-wilson.co.uk
+Cc: linux-kernel@vger.kernel.org, mbroemme@plusserver.de, airlied@linux.ie, dri-devel@lists.freedesktop.org, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On 05/26/2011 10:13 AM, Andy Lutomirski wrote:
-> Signed-off-by: Andy Lutomirski <luto@mit.edu>
-
-Thanks for spotting this.
-
-Signed-off-by: Peter Jones <pjones@redhat.com>
-
-> ---
->  drivers/video/efifb.c |   11 +++++++----
->  1 files changed, 7 insertions(+), 4 deletions(-)
+On czwartek, 21 kwietnia 2011 o 19:22:05 Maciej Rutecki wrote:
+> (add LKML)
 > 
-> diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
-> index a81c944..43af770 100644
-> --- a/drivers/video/efifb.c
-> +++ b/drivers/video/efifb.c
-> @@ -16,6 +16,8 @@
->  #include <linux/pci.h>
->  #include <video/vga.h>
->  
-> +static bool request_mem_succeeded = false;
-> +
->  static struct fb_var_screeninfo efifb_defined __devinitdata = {
->  	.activate		= FB_ACTIVATE_NOW,
->  	.height			= -1,
-> @@ -281,7 +283,9 @@ static void efifb_destroy(struct fb_info *info)
->  {
->  	if (info->screen_base)
->  		iounmap(info->screen_base);
-> -	release_mem_region(info->apertures->ranges[0].base, info->apertures->ranges[0].size);
-> +	if (request_mem_succeeded)
-> +		release_mem_region(info->apertures->ranges[0].base,
-> +				   info->apertures->ranges[0].size);
->  	framebuffer_release(info);
->  }
->  
-> @@ -333,7 +337,6 @@ static int __devinit efifb_probe(struct platform_device *dev)
->  	unsigned int size_vmode;
->  	unsigned int size_remap;
->  	unsigned int size_total;
-> -	int request_succeeded = 0;
->  
->  	if (!screen_info.lfb_depth)
->  		screen_info.lfb_depth = 32;
-> @@ -387,7 +390,7 @@ static int __devinit efifb_probe(struct platform_device *dev)
->  	efifb_fix.smem_len = size_remap;
->  
->  	if (request_mem_region(efifb_fix.smem_start, size_remap, "efifb")) {
-> -		request_succeeded = 1;
-> +		request_mem_succeeded = true;
->  	} else {
->  		/* We cannot make this fatal. Sometimes this comes from magic
->  		   spaces our resource handlers simply don't know about */
-> @@ -491,7 +494,7 @@ err_unmap:
->  err_release_fb:
->  	framebuffer_release(info);
->  err_release_mem:
-> -	if (request_succeeded)
-> +	if (request_mem_succeeded)
->  		release_mem_region(efifb_fix.smem_start, size_total);
->  	return err;
->  }
+> On niedziela, 17 kwietnia 2011 o 18:04:04 Maciej Rutecki wrote:
+> > Hi
+> > 
+> > Last known good: 2.6.38
+> > Failing kernel: 2.6.39-rc3
+> > Subsystem: Intel graphics driver.
+> > 
+> > Description:
+> > PC should work with 1440x900 resolution. But console (and after) X Window
+> > start work with 1024x768.
+> > 
+> > I attach dmesg and Xorg.0.log with drm.debug log_buf_lenM options:
+> > http://unixy.pl/maciek/download/kernel/2.6.39-rc1/zlom/kms/
+> > 
+> > seems that driver cannot detect resolution higher than 1024x768.
+> > 
+> > Also I boot kernel replace "i915.modeset=1" with "nomodeset" option:
+> > http://unixy.pl/maciek/download/kernel/2.6.39-rc1/zlom/nomodeset/
+> > 
+> > But then X Window fails to start and got message: "(EE) No devices
+> > detected."
+> > 
+> > Config for 2.6.39-rc3:
+> > http://unixy.pl/maciek/download/kernel/2.6.39-rc1/zlom/config-2.6.39-rc3
+> > 
+> > Best regards
+> 
+> Device:
+> 00:02.0 VGA compatible controller: Intel Corporation 82G33/G31 Express
+> Integrated Graphics Controller (rev 02)
+
+Reported on:
+https://bugzilla.kernel.org/show_bug.cgi?id4002
+
+2 weeks ago. Problem STILL exists on 2.6.39. That any of the graphic 
+developers might be interested in the problem?
 
 
 -- 
-        Peter
-
-If you're not part of the solution, then you're part of the precipitate.
-
-01234567890123456789012345678901234567890123456789012345678901234567890123456789
+Maciej Rutecki
+http://www.maciek.unixy.pl

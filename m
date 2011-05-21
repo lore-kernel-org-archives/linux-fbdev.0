@@ -1,57 +1,44 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 11 May 2011 06:12:53 +0000
-Subject: RE: [PATCH 0/8] OMAP: DSS2: Miscellaneous patches
-Message-Id: <1305094373.2097.2.camel@deskari>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Sat, 21 May 2011 19:42:54 +0000
+Subject: [PATCH 1/3] fbdev/amifb: Correct check for video memory size
+Message-Id: <1306006976-32117-1-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1305044656-31512-1-git-send-email-tomi.valkeinen@ti.com>
-	 <EAF47CD23C76F840A9E7FCE10091EFAB033DBC0B9D@dbde02.ent.ti.com>
-In-Reply-To: <EAF47CD23C76F840A9E7FCE10091EFAB033DBC0B9D@dbde02.ent.ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Janorkar, Mayuresh" <mayur@ti.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-fbdev@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Wed, 2011-05-11 at 09:15 +0530, Janorkar, Mayuresh wrote:
-> 
-> > -----Original Message-----
-> > From: linux-fbdev-owner@vger.kernel.org [mailto:linux-fbdev-
-> > owner@vger.kernel.org] On Behalf Of Valkeinen, Tomi
-> > Sent: Tuesday, May 10, 2011 9:54 PM
-> > To: linux-omap@vger.kernel.org; linux-fbdev@vger.kernel.org
-> > Cc: Valkeinen, Tomi
-> > Subject: [PATCH 0/8] OMAP: DSS2: Miscellaneous patches
-> > 
-> > Here are some smallish fixes and cleanups I made while porting N800's
-> > display
-> > driver to DSS2.
-> > 
-> >  Tomi
-> > 
-> > Tomi Valkeinen (8):
-> >   OMAP: DSS2: Add missing dummy functions
-> >   OMAPFB: fix wrong clock aliases and device name
-> >   OMAP: DSS2: RFBI: add rfbi_bus_lock
-> >   OMAP: DSS2: RFIB: clock enable/disable changes
-> RFIB a typo?
-> 
-> >   OMAP: DSS2: RFBI: add omap_rfbi_configure
-> >   OMAP: DSS2: RFIB: cleanup
-> Same here
-> 
-> >   OMAP: DSS2: OMAPFB: remove dead code
-> >   OMAP: DSS2: OMAPFB: Reduce stack usage
-> > 
-> >  arch/arm/plat-omap/include/plat/display.h |    4 +
-> >  drivers/video/omap/dispc.c                |    4 +-
-> >  drivers/video/omap/omapfb_main.c          |    2 +-
-> >  drivers/video/omap/rfbi.c                 |    2 +-
-> 
-> If the series touches drivers/video/omap then the title should be "DSS and DSS2" using only DSS2 is misleading.
+The check should compare the available memory size with the highest allocation
+value (VIDEOMEMSIZE_*_2M), not with the lowest value (VIDEOMEMSIZE_*_1M).
 
-Right you are. Although the old driver was never called "DSS", but I'll
-improve the subject. Thanks!
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/video/amifb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
- Tomi
-
+diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
+index e5d6b56..603f84f 100644
+--- a/drivers/video/amifb.c
++++ b/drivers/video/amifb.c
+@@ -2295,7 +2295,7 @@ default_chipset:
+ 			    defmode = amiga_vblank = 50 ? DEFMODE_PAL
+ 							 : DEFMODE_NTSC;
+ 			if (amiga_chip_avail()-CHIPRAM_SAFETY_LIMIT >
+-			    VIDEOMEMSIZE_ECS_1M)
++			    VIDEOMEMSIZE_ECS_2M)
+ 				fb_info.fix.smem_len = VIDEOMEMSIZE_ECS_2M;
+ 			else
+ 				fb_info.fix.smem_len = VIDEOMEMSIZE_ECS_1M;
+@@ -2312,7 +2312,7 @@ default_chipset:
+ 			maxfmode = TAG_FMODE_4;
+ 			defmode = DEFMODE_AGA;
+ 			if (amiga_chip_avail()-CHIPRAM_SAFETY_LIMIT >
+-			    VIDEOMEMSIZE_AGA_1M)
++			    VIDEOMEMSIZE_AGA_2M)
+ 				fb_info.fix.smem_len = VIDEOMEMSIZE_AGA_2M;
+ 			else
+ 				fb_info.fix.smem_len = VIDEOMEMSIZE_AGA_1M;
+-- 
+1.7.0.4
 

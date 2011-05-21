@@ -1,56 +1,51 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 12 May 2011 11:40:10 +0000
-Subject: [PATCHv2 5/8] OMAP: DSS2: RFBI: add omap_rfbi_configure
-Message-Id: <1305200413-23697-6-git-send-email-tomi.valkeinen@ti.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Sat, 21 May 2011 19:42:55 +0000
+Subject: [PATCH 2/3] fbdev/amifb: Do not call panic() if there's not enough Chip RAM
+Message-Id: <1306006976-32117-2-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1306006976-32117-1-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1306006976-32117-1-git-send-email-geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-fbdev@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-Add omap_rfbi_configure() which the panel driver can use to reconfigure
-the data element size and the number of data lines in the RFBI bus.
+Fail gracefully instead.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/video/omap2/dss/rfbi.c |    8 +++++++-
- include/video/omapdss.h        |    2 ++
- 2 files changed, 9 insertions(+), 1 deletions(-)
+ drivers/video/amifb.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index 1c19d17..155caf0 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -851,7 +851,13 @@ int rfbi_configure(int rfbi_module, int bpp, int lines)
- 
- 	return 0;
+diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
+index 603f84f..1b0185c 100644
+--- a/drivers/video/amifb.c
++++ b/drivers/video/amifb.c
+@@ -2230,8 +2230,10 @@ static inline u_long __init chipalloc(u_long size)
+ {
+ 	size += PAGE_SIZE-1;
+ 	if (!(unaligned_chipptr = (u_long)amiga_chip_alloc(size,
+-							   "amifb [RAM]")))
+-		panic("No Chip RAM for frame buffer");
++							   "amifb [RAM]"))) {
++		pr_err("amifb: No Chip RAM for frame buffer");
++		return 0;
++	}
+ 	memset((void *)unaligned_chipptr, 0, size);
+ 	return PAGE_ALIGN(unaligned_chipptr);
  }
--EXPORT_SYMBOL(rfbi_configure);
-+
-+int omap_rfbi_configure(struct omap_dss_device *dssdev, int pixel_size,
-+		int data_lines)
-+{
-+	return rfbi_configure(dssdev->phy.rfbi.channel, pixel_size, data_lines);
-+}
-+EXPORT_SYMBOL(omap_rfbi_configure);
+@@ -2385,6 +2387,10 @@ default_chipset:
+ 	                    DUMMYSPRITEMEMSIZE+
+ 	                    COPINITSIZE+
+ 	                    4*COPLISTSIZE);
++	if (!chipptr) {
++		err = -ENOMEM;
++		goto amifb_error;
++	}
  
- int omap_rfbi_prepare_update(struct omap_dss_device *dssdev,
- 		u16 *x, u16 *y, u16 *w, u16 *h)
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 1ea151e..9b00748 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -612,5 +612,7 @@ int omap_rfbi_prepare_update(struct omap_dss_device *dssdev,
- int omap_rfbi_update(struct omap_dss_device *dssdev,
- 		u16 x, u16 y, u16 w, u16 h,
- 		void (*callback)(void *), void *data);
-+int omap_rfbi_configure(struct omap_dss_device *dssdev, int pixel_size,
-+		int data_lines);
- 
- #endif
+ 	assignchunk(videomemory, u_long, chipptr, fb_info.fix.smem_len);
+ 	assignchunk(spritememory, u_long, chipptr, SPRITEMEMSIZE);
 -- 
-1.7.4.1
+1.7.0.4
 

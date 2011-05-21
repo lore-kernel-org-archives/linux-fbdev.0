@@ -1,63 +1,59 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 12 May 2011 11:40:12 +0000
-Subject: [PATCHv2 7/8] OMAP: DSS2: OMAPFB: remove dead code
-Message-Id: <1305200413-23697-8-git-send-email-tomi.valkeinen@ti.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Sat, 21 May 2011 19:42:56 +0000
+Subject: [PATCH 3/3] fbdev/amifb: Remove superfluous alignment of frame buffer memory
+Message-Id: <1306006976-32117-3-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1306006976-32117-1-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1306006976-32117-1-git-send-email-geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-fbdev@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-Remove old unused code lying inside #if 0.
+amiga_chip_alloc() already aligns to the PAGE_SIZE
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c |   29 -----------------------------
- 1 files changed, 0 insertions(+), 29 deletions(-)
+ drivers/video/amifb.c |   15 +++++++--------
+ 1 files changed, 7 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index eba90b3..9a5b4bc 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -757,35 +757,6 @@ static int omapfb_open(struct fb_info *fbi, int user)
+diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
+index 1b0185c..5ea6596 100644
+--- a/drivers/video/amifb.c
++++ b/drivers/video/amifb.c
+@@ -2224,24 +2224,23 @@ static int amifb_ioctl(struct fb_info *info,
+ 	 * Allocate, Clear and Align a Block of Chip Memory
+ 	 */
  
- static int omapfb_release(struct fb_info *fbi, int user)
+-static u_long unaligned_chipptr = 0;
++static void *aligned_chipptr;
+ 
+ static inline u_long __init chipalloc(u_long size)
  {
--#if 0
--	struct omapfb_info *ofbi = FB2OFB(fbi);
--	struct omapfb2_device *fbdev = ofbi->fbdev;
--	struct omap_dss_device *display = fb2display(fbi);
--
--	DBG("Closing fb with plane index %d\n", ofbi->id);
--
--	omapfb_lock(fbdev);
--
--	if (display && display->get_update_mode && display->update) {
--		/* XXX this update should be removed, I think. But it's
--		 * good for debugging */
--		if (display->get_update_mode(display) =
--				OMAP_DSS_UPDATE_MANUAL) {
--			u16 w, h;
--
--			if (display->sync)
--				display->sync(display);
--
--			display->get_resolution(display, &w, &h);
--			display->update(display, 0, 0, w, h);
--		}
--	}
--
--	if (display && display->sync)
--		display->sync(display);
--
--	omapfb_unlock(fbdev);
--#endif
- 	return 0;
+-	size += PAGE_SIZE-1;
+-	if (!(unaligned_chipptr = (u_long)amiga_chip_alloc(size,
+-							   "amifb [RAM]"))) {
++	aligned_chipptr = amiga_chip_alloc(size, "amifb [RAM]");
++	if (!aligned_chipptr) {
+ 		pr_err("amifb: No Chip RAM for frame buffer");
+ 		return 0;
+ 	}
+-	memset((void *)unaligned_chipptr, 0, size);
+-	return PAGE_ALIGN(unaligned_chipptr);
++	memset(aligned_chipptr, 0, size);
++	return (u_long)aligned_chipptr;
  }
  
+ static inline void chipfree(void)
+ {
+-	if (unaligned_chipptr)
+-		amiga_chip_free((void *)unaligned_chipptr);
++	if (aligned_chipptr)
++		amiga_chip_free(aligned_chipptr);
+ }
+ 
+ 
 -- 
-1.7.4.1
+1.7.0.4
 

@@ -1,55 +1,45 @@
-From: Anatolij Gustschin <agust@denx.de>
-Date: Fri, 13 May 2011 15:54:46 +0000
-Subject: [PATCH 2/5] video: mb862xxfb: use pre-initialized configuration for PCI GDCs
-Message-Id: <1305302089-7666-3-git-send-email-agust@denx.de>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 24 May 2011 08:55:31 +0000
+Subject: [PATCH] [resend] video: s3c-fb: add gpio setup function to resume function
+Message-Id: <1306227331-22713-1-git-send-email-jg1.han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-If the bootloader has already initialized the display
-controller, do not re-initialize it in the driver. Take over
-the bootloader's configuration instead. This is already supported
-for non PCI GDCs Lime and Mint. Add this functionality for PCI
-GDCs Coral-P and Coral-PA. It is useful to avoid flicker and
-also avoids unneeded init delays while booting.
+This patch adds gpio setup function to resume function to ensure
+gpio used by FIMD IP and LCD panel during a resume.
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/mb862xx/mb862xxfb.c |   16 ++++++++++++----
- 1 files changed, 12 insertions(+), 4 deletions(-)
+ drivers/video/s3c-fb.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/mb862xx/mb862xxfb.c b/drivers/video/mb862xx/mb862xxfb.c
-index 8257958..a1b81e7 100644
---- a/drivers/video/mb862xx/mb862xxfb.c
-+++ b/drivers/video/mb862xx/mb862xxfb.c
-@@ -746,13 +746,21 @@ static int coralp_init(struct mb862xxfb_par *par)
- 	cn = (ver & GC_CID_CNAME_MSK) >> 8;
- 	ver = ver & GC_CID_VERSION_MSK;
- 	if (cn = 3) {
-+		unsigned long reg;
-+
- 		dev_info(par->dev, "Fujitsu Coral-%s GDC Rev.%d found\n",\
- 			 (ver = 6) ? "P" : (ver = 8) ? "PA" : "?",
- 			 par->pdev->revision);
--		outreg(host, GC_CCF, GC_CCF_CGE_166 | GC_CCF_COT_133);
--		udelay(200);
--		outreg(host, GC_MMR, GC_MMR_CORALP_EVB_VAL);
--		udelay(10);
-+		reg = inreg(disp, GC_DCM1);
-+		if (reg & GC_DCM01_DEN && reg & GC_DCM01_L0E)
-+			par->pre_init = 1;
-+
-+		if (!par->pre_init) {
-+			outreg(host, GC_CCF, GC_CCF_CGE_166 | GC_CCF_COT_133);
-+			udelay(200);
-+			outreg(host, GC_MMR, GC_MMR_CORALP_EVB_VAL);
-+			udelay(10);
-+		}
- 		/* Clear interrupt status */
- 		outreg(host, GC_IST, 0);
- 	} else {
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 6b7c5a8..2bd86a9 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -1526,7 +1526,8 @@ static int s3c_fb_resume(struct device *dev)
+ 
+ 	clk_enable(sfb->bus_clk);
+ 
+-	/* setup registers */
++	/* setup gpio and output polarity controls */
++	pd->setup_gpio();
+ 	writel(pd->vidcon1, sfb->regs + VIDCON1);
+ 
+ 	/* zero all windows before we do anything */
+@@ -1584,7 +1585,8 @@ static int s3c_fb_runtime_resume(struct device *dev)
+ 
+ 	clk_enable(sfb->bus_clk);
+ 
+-	/* setup registers */
++	/* setup gpio and output polarity controls */
++	pd->setup_gpio();
+ 	writel(pd->vidcon1, sfb->regs + VIDCON1);
+ 
+ 	/* zero all windows before we do anything */
 -- 
 1.7.1
 

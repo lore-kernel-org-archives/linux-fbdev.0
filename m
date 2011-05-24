@@ -1,51 +1,46 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 10 May 2011 12:14:20 +0000
-Subject: Re: [PATCH] omap2/omapfb: make DBG() more resistant in if-else constructions
-Message-Id: <BANLkTi=dCF-EskTECWpfmFmf-UL0ZjLCqw@mail.gmail.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 24 May 2011 08:55:23 +0000
+Subject: [PATCH] [resend] video: s3c-fb: correct transparency checking in 32bpp
+Message-Id: <1306227323-22681-1-git-send-email-jg1.han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1305019249-9898-1-git-send-email-ndevos@redhat.com>
-	<BANLkTinEJZ=fvJmWRkQ7kKyxbFRaJnum7g@mail.gmail.com>
-	<1305029285.2045.38.camel@deskari>
-In-Reply-To: <1305029285.2045.38.camel@deskari>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Niels de Vos <ndevos@redhat.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-On Tue, May 10, 2011 at 14:08, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On Tue, 2011-05-10 at 11:42 +0200, Geert Uytterhoeven wrote:
->> What about using the standard pr_debug()/dev_dbg() instead?
->> With dynamic debug, it can be enabled at run time.
->> As a bonus, you get printf()-style format checking if debugging is disabled.
->
-> Yes, dev_dbg & co. would be better.
->
-> However, one thing I dislike about them is the extra stuff they print.
-> For example, for omapfb and omapdss dev_dbg will print:
->
-> omapfb omapfb: foo
-> omapdss_dss omapdss_dss: foo
->
-> I originally added the debug macros to omapdss to be able to
-> automatically print the DSS module name, as at that point there was only
-> one big omapdss device. And I guess I just followed with similar macro
-> in omapfb also. But I believe both omapdss and omapfb should be changed
-> to dev_* prints sometime soon.
+32bpp means ARGB 8888 in the driver, therfore the transparency length
+and offset should be 8 and 24 respectively. However, the transparency
+length and offset were previously 0, which means that the driver supports
+RGB 888 without alpha blending when 32bpp is used.
 
-If you don't want the extra baggage, do
+So, the transparency checking in 32bpp is corrected so that the
+transparency length and offset are 8 and 24 respectively.
 
-        #define pr_fmt(fmt)     KBUILD_MODNAME ": " fmt
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/s3c-fb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-and use pr_debug().
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 6b7c5a8..574e046 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -302,6 +302,7 @@ static int s3c_fb_check_var(struct fb_var_screeninfo *var,
+ 		var->blue.length	= 5;
+ 		break;
+ 
++	case 32:
+ 	case 28:
+ 	case 25:
+ 		var->transp.length	= var->bits_per_pixel - 24;
+@@ -310,7 +311,6 @@ static int s3c_fb_check_var(struct fb_var_screeninfo *var,
+ 	case 24:
+ 		/* our 24bpp is unpacked, so 32bpp */
+ 		var->bits_per_pixel	= 32;
+-	case 32:
+ 		var->red.offset		= 16;
+ 		var->red.length		= 8;
+ 		var->green.offset	= 8;
+-- 
+1.7.1
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

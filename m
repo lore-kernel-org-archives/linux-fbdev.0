@@ -1,62 +1,48 @@
-From: Enric Balletbo i Serra <eballetbo@iseebcn.com>
-Date: Tue, 03 May 2011 07:07:36 +0000
-Subject: [PATCHv2 1/2] OMAP: DSS2: Support for Seiko 70WVW1TZ3
-Message-Id: <1304406457-5109-2-git-send-email-eballetbo@iseebcn.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 25 May 2011 22:58:15 +0000
+Subject: [PATCH 23/29] sm501fb: use display information in info not in var for panning
+Message-Id: <1306364301-8195-24-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1304406457-5109-1-git-send-email-eballetbo@iseebcn.com>
-In-Reply-To: <1304406457-5109-1-git-send-email-eballetbo@iseebcn.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Enric Balletbo i Serra <eballetbo@iseebcn.com>
+To: linux-fbdev@vger.kernel.org
 
-Add support for Seiko 70WVW1TZ3, a LCD 7.0inch WVGA (800x480) display
-type with 24-bit RGB interface and Touch-Panel, to panel-generic-dpi
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
 
-Tested with IGEP v2 board.
-
-Signed-off-by: Enric Balletbo i Serra <eballetbo@iseebcn.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Ben Dooks <ben@simtec.co.uk>
 ---
- drivers/video/omap2/displays/panel-generic-dpi.c |   25 ++++++++++++++++++++++
- 1 files changed, 25 insertions(+), 0 deletions(-)
+ drivers/video/sm501fb.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
-index 4a9b9ff..644d370 100644
---- a/drivers/video/omap2/displays/panel-generic-dpi.c
-+++ b/drivers/video/omap2/displays/panel-generic-dpi.c
-@@ -181,6 +181,31 @@ static struct panel_config generic_dpi_panels[] = {
- 		.power_off_delay	= 0,
- 		.name			= "samsung_lte430wq_f0c",
- 	},
-+
-+	/* Seiko 70WVW1TZ3Z3 */
-+	{
-+		{
-+			.x_res		= 800,
-+			.y_res		= 480,
-+
-+			.pixel_clock	= 33000,
-+
-+			.hsw		= 128,
-+			.hfp		= 10,
-+			.hbp		= 10,
-+
-+			.vsw		= 2,
-+			.vfp		= 4,
-+			.vbp		= 11,
-+		},
-+		.acbi			= 0x0,
-+		.acb			= 0x0,
-+		.config			= OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
-+						OMAP_DSS_LCD_IHS,
-+		.power_on_delay		= 0,
-+		.power_off_delay	= 0,
-+		.name			= "seiko_70wvw1tz3",
-+	},
- };
+diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
+index 56ef6b3..53bc35e 100644
+--- a/drivers/video/sm501fb.c
++++ b/drivers/video/sm501fb.c
+@@ -582,7 +582,7 @@ static int sm501fb_pan_crt(struct fb_var_screeninfo *var,
+ {
+ 	struct sm501fb_par  *par = info->par;
+ 	struct sm501fb_info *fbi = par->info;
+-	unsigned int bytes_pixel = var->bits_per_pixel / 8;
++	unsigned int bytes_pixel = info->var.bits_per_pixel / 8;
+ 	unsigned long reg;
+ 	unsigned long xoffs;
  
- struct panel_drv_data {
+@@ -614,10 +614,10 @@ static int sm501fb_pan_pnl(struct fb_var_screeninfo *var,
+ 	struct sm501fb_info *fbi = par->info;
+ 	unsigned long reg;
+ 
+-	reg = var->xoffset | (var->xres_virtual << 16);
++	reg = var->xoffset | (info->var.xres_virtual << 16);
+ 	smc501_writel(reg, fbi->regs + SM501_DC_PANEL_FB_WIDTH);
+ 
+-	reg = var->yoffset | (var->yres_virtual << 16);
++	reg = var->yoffset | (info->var.yres_virtual << 16);
+ 	smc501_writel(reg, fbi->regs + SM501_DC_PANEL_FB_HEIGHT);
+ 
+ 	sm501fb_sync_regs(fbi);
 -- 
-1.7.0.4
+1.7.3.4
 

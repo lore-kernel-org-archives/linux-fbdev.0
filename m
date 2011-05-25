@@ -1,37 +1,43 @@
-From: =?euc-kr?B?x9HB+LG4?= <jg1.han@samsung.com>
-Date: Fri, 27 May 2011 00:45:58 +0000
-Subject: Re: [PATCH 19/29] s3c-fb: use display information in info not in var
-Message-Id: <12589456.8031306457158097.JavaMail.weblogic@epml08>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 25 May 2011 22:58:12 +0000
+Subject: [PATCH 20/29] s3c-fb: use display information in info not in var for panning
+Message-Id: <1306364301-8195-21-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1306364301-8195-20-git-send-email-laurent.pinchart@ideasonboard.com>
-In-Reply-To: <1306364301-8195-20-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-CkFja2VkLWJ5OiBKaW5nb28gSGFuIDxqZzEuaGFuQHNhbXN1bmcuY29tPgoKPiAtLS0tLS0tIE9y
-aWdpbmFsIE1lc3NhZ2UgLS0tLS0tLQo+IFNlbmRlciA6IExhdXJlbnQgUGluY2hhcnQ8bGF1cmVu
-dC5waW5jaGFydEBpZGVhc29uYm9hcmQuY29tPiAKPiBEYXRlICAgOiAyMDExLTA1LTI2IDA3OjU4
-IChHTVQrMDk6MDApCj4gVGl0bGUgIDogW1BBVENIIDE5LzI5XSBzM2MtZmI6IHVzZSBkaXNwbGF5
-IGluZm9ybWF0aW9uIGluIGluZm8gbm90IGluIHZhciBmb3IKPiAgcGFubmluZwo+IAo+IFdlIG11
-c3Qgbm90IHVzZSBhbnkgaW5mb3JtYXRpb24gaW4gdGhlIHBhc3NlZCB2YXIgYmVzaWRlcyB4b2Zm
-c2V0LAo+IHlvZmZzZXQgYW5kIHZtb2RlIGFzIG90aGVyd2lzZSBhcHBsaWNhdGlvbnMgbWlnaHQg
-YWJ1c2UgaXQuCj4gCj4gU2lnbmVkLW9mZi1ieTogTGF1cmVudCBQaW5jaGFydCA8bGF1cmVudC5w
-aW5jaGFydEBpZGVhc29uYm9hcmQuY29tPgo+IENjOiBCZW4gRG9va3MgPGJlbkBzaW10ZWMuY28u
-dWs+Cj4gQ2M6IEluS2kgRGFlIDxpbmtpLmRhZUBzYW1zdW5nLmNvbT4KPiAtLS0KPiAgZHJpdmVy
-cy92aWRlby9zM2MtZmIuYyB8ICAgIDIgKy0KPiAgMSBmaWxlcyBjaGFuZ2VkLCAxIGluc2VydGlv
-bnMoKyksIDEgZGVsZXRpb25zKC0pCj4gCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vczNj
-LWZiLmMgYi9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jCj4gaW5kZXggM2I2Y2RjYS4uNGZjZTMwNyAx
-MDA2NDQKPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jCj4gKysrIGIvZHJpdmVycy92aWRl
-by9zM2MtZmIuYwo+IEBAIC04ODIsNyArODgyLDcgQEAgc3RhdGljIGludCBzM2NfZmJfcGFuX2Rp
-c3BsYXkoc3RydWN0IGZiX3Zhcl9zY3JlZW5pbmZvICp2YXIsCj4gIAkJfQo+ICAJfQogPiAJLyog
-T2Zmc2V0IGluIGJ5dGVzIHRvIHRoZSBlbmQgb2YgdGhlIGRpc3BsYXllZCBhcmVhICovCj4gLQll
-bmRfYm9mZiA9IHN0YXJ0X2JvZmYgKyB2YXItPnlyZXMgKiBpbmZvLT5maXgubGluZV9sZW5ndGg7
-Cj4gKwllbmRfYm9mZiA9IHN0YXJ0X2JvZmYgKyBpbmZvLT52YXIueXJlcyAqIGluZm8tPmZpeC5s
-aW5lX2xlbmd0aDsKPiAgCj4gIAkvKiBUZW1wb3JhcmlseSB0dXJuIG9mZiBwZXItdnN5bmMgdXBk
-YXRlIGZyb20gc2hhZG93IHJlZ2lzdGVycyB1bnRpbAo+ICAJICogYm90aCBzdGFydCBhbmQgZW5k
-IGFkZHJlc3NlcyBhcmUgdXBkYXRlZCB0byBwcmV2ZW50IGNvcnJ1cHRpb24gKi8KPiAtLSAK//To
-unsubscribefromthislisv/sendthelinf/unsubscribelinux/fbdev/inthebodyofamessa
-getomajordomo/vger/kernel/orgMoremajordomoinfoathttp///vger/kernel/org/major
-domo/info/htCg==
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
+
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Ondrej Zary <linux@rainbow-software.org>
+---
+ drivers/video/s3fb.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
+index c4482f2..a625e5a 100644
+--- a/drivers/video/s3fb.c
++++ b/drivers/video/s3fb.c
+@@ -894,12 +894,13 @@ static int s3fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
+ 	unsigned int offset;
+ 
+ 	/* Calculate the offset */
+-	if (var->bits_per_pixel = 0) {
+-		offset = (var->yoffset / 16) * (var->xres_virtual / 2) + (var->xoffset / 2);
++	if (info->var.bits_per_pixel = 0) {
++		offset = (var->yoffset / 16) * (info->var.xres_virtual / 2)
++		       + (var->xoffset / 2);
+ 		offset = offset >> 2;
+ 	} else {
+ 		offset = (var->yoffset * info->fix.line_length) +
+-			 (var->xoffset * var->bits_per_pixel / 8);
++			 (var->xoffset * info->var.bits_per_pixel / 8);
+ 		offset = offset >> 2;
+ 	}
+ 
+-- 
+1.7.3.4
+

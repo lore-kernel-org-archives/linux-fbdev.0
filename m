@@ -1,63 +1,78 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 10 May 2011 16:24:15 +0000
-Subject: [PATCH 7/8] OMAP: DSS2: OMAPFB: remove dead code
-Message-Id: <1305044656-31512-8-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 25 May 2011 22:58:21 +0000
+Subject: [PATCH 29/29] staging: xgifb: use display information in info not in var for panning
+Message-Id: <1306364301-8195-30-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1305044656-31512-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1305044656-31512-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Remove old unused code lying inside #if 0.
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
+Cc: Arnaud Patard <apatard@mandriva.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c |   29 -----------------------------
- 1 files changed, 0 insertions(+), 29 deletions(-)
+ drivers/staging/xgifb/XGI_main_26.c |   22 ++++++----------------
+ 1 files changed, 6 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 1f9cb3a..30c958b 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -757,35 +757,6 @@ static int omapfb_open(struct fb_info *fbi, int user)
- 
- static int omapfb_release(struct fb_info *fbi, int user)
- {
--#if 0
--	struct omapfb_info *ofbi = FB2OFB(fbi);
--	struct omapfb2_device *fbdev = ofbi->fbdev;
--	struct omap_dss_device *display = fb2display(fbi);
--
--	DBG("Closing fb with plane index %d\n", ofbi->id);
--
--	omapfb_lock(fbdev);
--
--	if (display && display->get_update_mode && display->update) {
--		/* XXX this update should be removed, I think. But it's
--		 * good for debugging */
--		if (display->get_update_mode(display) =
--				OMAP_DSS_UPDATE_MANUAL) {
--			u16 w, h;
--
--			if (display->sync)
--				display->sync(display);
--
--			display->get_resolution(display, &w, &h);
--			display->update(display, 0, 0, w, h);
--		}
--	}
--
--	if (display && display->sync)
--		display->sync(display);
--
--	omapfb_unlock(fbdev);
--#endif
- 	return 0;
+diff --git a/drivers/staging/xgifb/XGI_main_26.c b/drivers/staging/xgifb/XGI_main_26.c
+index 721bd25..10a6142 100644
+--- a/drivers/staging/xgifb/XGI_main_26.c
++++ b/drivers/staging/xgifb/XGI_main_26.c
+@@ -1148,26 +1148,16 @@ static int XGIfb_do_set_var(struct fb_var_screeninfo *var, int isactive,
  }
  
+ #ifdef XGIFB_PAN
+-static int XGIfb_pan_var(struct fb_var_screeninfo *var)
++static int XGIfb_pan_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+ 	unsigned int base;
+ 
+ 	/* printk("Inside pan_var"); */
+ 
+-	if (var->xoffset > (var->xres_virtual - var->xres)) {
+-		/* printk("Pan: xo: %d xv %d xr %d\n",
+-			var->xoffset, var->xres_virtual, var->xres); */
+-		return -EINVAL;
+-	}
+-	if (var->yoffset > (var->yres_virtual - var->yres)) {
+-		/* printk("Pan: yo: %d yv %d yr %d\n",
+-			var->yoffset, var->yres_virtual, var->yres); */
+-		return -EINVAL;
+-	}
+-	base = var->yoffset * var->xres_virtual + var->xoffset;
++	base = var->yoffset * info->var.xres_virtual + var->xoffset;
+ 
+ 	/* calculate base bpp dep. */
+-	switch (var->bits_per_pixel) {
++	switch (info->var.bits_per_pixel) {
+ 	case 16:
+ 		base >>= 1;
+ 		break;
+@@ -1425,9 +1415,9 @@ static int XGIfb_pan_display(struct fb_var_screeninfo *var,
+ 
+ 	/* printk("\nInside pan_display:\n"); */
+ 
+-	if (var->xoffset > (var->xres_virtual - var->xres))
++	if (var->xoffset > (info->var.xres_virtual - info->var.xres))
+ 		return -EINVAL;
+-	if (var->yoffset > (var->yres_virtual - var->yres))
++	if (var->yoffset > (info->var.yres_virtual - info->var.yres))
+ 		return -EINVAL;
+ 
+ 	if (var->vmode & FB_VMODE_YWRAP) {
+@@ -1440,7 +1430,7 @@ static int XGIfb_pan_display(struct fb_var_screeninfo *var,
+ 						> info->var.yres_virtual)
+ 			return -EINVAL;
+ 	}
+-	err = XGIfb_pan_var(var);
++	err = XGIfb_pan_var(var, info);
+ 	if (err < 0)
+ 		return err;
+ 
 -- 
-1.7.4.1
+1.7.3.4
 

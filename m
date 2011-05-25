@@ -1,35 +1,37 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 25 May 2011 22:57:54 +0000
-Subject: [PATCH 02/29] acornfb: Dont BUG() on invalid pan parameters
-Message-Id: <1306364301-8195-3-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Wed, 25 May 2011 22:58:02 +0000
+Subject: [PATCH 10/29] gxt4500: use display information in info not in var for panning
+Message-Id: <1306364301-8195-11-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The driver currently BUG()s if the pan parameters passed directly from
-userspace are invalid. Return -EINVAL instead.
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Paul Mackerras <paulus@samba.org>
 ---
- drivers/video/acornfb.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/video/gxt4500.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/acornfb.c b/drivers/video/acornfb.c
-index 6183a57..3bacc12 100644
---- a/drivers/video/acornfb.c
-+++ b/drivers/video/acornfb.c
-@@ -852,7 +852,8 @@ acornfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
- 	if (!(var->vmode & FB_VMODE_YWRAP))
- 		y_bottom += var->yres;
+diff --git a/drivers/video/gxt4500.c b/drivers/video/gxt4500.c
+index 896e53d..0fad23f 100644
+--- a/drivers/video/gxt4500.c
++++ b/drivers/video/gxt4500.c
+@@ -543,8 +543,8 @@ static int gxt4500_pan_display(struct fb_var_screeninfo *var,
  
--	BUG_ON(y_bottom > var->yres_virtual);
-+	if (y_bottom > var->yres_virtual)
-+		return -EINVAL;
+ 	if (var->xoffset & 7)
+ 		return -EINVAL;
+-	if (var->xoffset + var->xres > var->xres_virtual ||
+-	    var->yoffset + var->yres > var->yres_virtual)
++	if (var->xoffset + info->var.xres > info->var.xres_virtual ||
++	    var->yoffset + info->var.yres > info->var.yres_virtual)
+ 		return -EINVAL;
  
- 	acornfb_update_dma(info, var);
- 
+ 	writereg(par, REFRESH_START, (var->xoffset << 16) | var->yoffset);
 -- 
 1.7.3.4
 

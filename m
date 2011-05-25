@@ -1,56 +1,35 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 10 May 2011 16:24:09 +0000
-Subject: [PATCH 1/8] OMAP: DSS2: Add missing dummy functions
-Message-Id: <1305044656-31512-2-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 25 May 2011 22:57:54 +0000
+Subject: [PATCH 02/29] acornfb: Dont BUG() on invalid pan parameters
+Message-Id: <1306364301-8195-3-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1305044656-31512-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1305044656-31512-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-dpi.c does not compile if DSI is not compiled in. Add the missing dummy
-functions so that dpi.c compiles.
+The driver currently BUG()s if the pan parameters passed directly from
+userspace are invalid. Return -EINVAL instead.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/omap2/dss/dss.h |   21 +++++++++++++++++++++
- 1 files changed, 21 insertions(+), 0 deletions(-)
+ drivers/video/acornfb.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index eea5c7d..f659cfb 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -313,6 +313,27 @@ static inline unsigned long dsi_get_pll_hsdiv_dispc_rate(void)
- 	WARN("%s: DSI not compiled in, returning rate as 0\n", __func__);
- 	return 0;
- }
-+static inline int dsi_pll_set_clock_div(struct dsi_clock_info *cinfo)
-+{
-+	WARN("%s: DSI not compiled in\n", __func__);
-+	return -ENODEV;
-+}
-+static inline int dsi_pll_calc_clock_div_pck(bool is_tft, unsigned long req_pck,
-+		struct dsi_clock_info *cinfo,
-+		struct dispc_clock_info *dispc_cinfo)
-+{
-+	WARN("%s: DSI not compiled in\n", __func__);
-+	return -ENODEV;
-+}
-+static inline int dsi_pll_init(struct omap_dss_device *dssdev,
-+		bool enable_hsclk, bool enable_hsdiv)
-+{
-+	WARN("%s: DSI not compiled in\n", __func__);
-+	return -ENODEV;
-+}
-+static inline void dsi_pll_uninit(bool disconnect_lanes)
-+{
-+}
- static inline void dsi_wait_pll_hsdiv_dispc_active(void)
- {
- }
+diff --git a/drivers/video/acornfb.c b/drivers/video/acornfb.c
+index 6183a57..3bacc12 100644
+--- a/drivers/video/acornfb.c
++++ b/drivers/video/acornfb.c
+@@ -852,7 +852,8 @@ acornfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
+ 	if (!(var->vmode & FB_VMODE_YWRAP))
+ 		y_bottom += var->yres;
+ 
+-	BUG_ON(y_bottom > var->yres_virtual);
++	if (y_bottom > var->yres_virtual)
++		return -EINVAL;
+ 
+ 	acornfb_update_dma(info, var);
+ 
 -- 
-1.7.4.1
+1.7.3.4
 

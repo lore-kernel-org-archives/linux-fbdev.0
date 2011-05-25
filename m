@@ -1,7 +1,7 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 25 May 2011 22:58:05 +0000
-Subject: [PATCH 13/29] intelfb: use display information in info not in var for panning
-Message-Id: <1306364301-8195-14-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Wed, 25 May 2011 22:58:06 +0000
+Subject: [PATCH 14/29] mb862xxfb: use display information in info not in var for panning
+Message-Id: <1306364301-8195-15-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,31 +12,24 @@ We must not use any information in the passed var besides xoffset,
 yoffset and vmode as otherwise applications might abuse it.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Maik Broemme <mbroemme@plusserver.de>
+Cc: Anatolij Gustschin <agust@denx.de>
 ---
- drivers/video/intelfb/intelfbhw.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/mb862xx/mb862xxfb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/intelfb/intelfbhw.c b/drivers/video/intelfb/intelfbhw.c
-index 38065cf..fbad61d 100644
---- a/drivers/video/intelfb/intelfbhw.c
-+++ b/drivers/video/intelfb/intelfbhw.c
-@@ -390,12 +390,12 @@ int intelfbhw_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
- 	xoffset = ROUND_DOWN_TO(var->xoffset, 8);
- 	yoffset = var->yoffset;
+diff --git a/drivers/video/mb862xx/mb862xxfb.c b/drivers/video/mb862xx/mb862xxfb.c
+index c76e663..5225c88 100644
+--- a/drivers/video/mb862xx/mb862xxfb.c
++++ b/drivers/video/mb862xx/mb862xxfb.c
+@@ -277,7 +277,7 @@ static int mb862xxfb_pan(struct fb_var_screeninfo *var,
+ 	reg = pack(var->yoffset, var->xoffset);
+ 	outreg(disp, GC_L0WY_L0WX, reg);
  
--	if ((xoffset + var->xres > var->xres_virtual) ||
--	    (yoffset + var->yres > var->yres_virtual))
-+	if ((xoffset + info->var.xres > info->var.xres_virtual) ||
-+	    (yoffset + info->var.yres > info->var.yres_virtual))
- 		return -EINVAL;
- 
- 	offset = (yoffset * dinfo->pitch) +
--		 (xoffset * var->bits_per_pixel) / 8;
-+		 (xoffset * info->var.bits_per_pixel) / 8;
- 
- 	offset += dinfo->fb.offset << 12;
- 
+-	reg = pack(var->yres_virtual, var->xres_virtual);
++	reg = pack(info->var.yres_virtual, info->var.xres_virtual);
+ 	outreg(disp, GC_L0WH_L0WW, reg);
+ 	return 0;
+ }
 -- 
 1.7.3.4
 

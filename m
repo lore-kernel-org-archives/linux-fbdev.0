@@ -1,59 +1,38 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Sat, 21 May 2011 19:42:56 +0000
-Subject: [PATCH 3/3] fbdev/amifb: Remove superfluous alignment of frame buffer memory
-Message-Id: <1306006976-32117-3-git-send-email-geert@linux-m68k.org>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 25 May 2011 22:58:10 +0000
+Subject: [PATCH 18/29] pm3fb: use display information in info not in var for panning
+Message-Id: <1306364301-8195-19-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1306006976-32117-1-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1306006976-32117-1-git-send-email-geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: linux-fbdev@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-fbdev@vger.kernel.org
 
-amiga_chip_alloc() already aligns to the PAGE_SIZE
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
- drivers/video/amifb.c |   15 +++++++--------
- 1 files changed, 7 insertions(+), 8 deletions(-)
+ drivers/video/pm3fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
-index 1b0185c..5ea6596 100644
---- a/drivers/video/amifb.c
-+++ b/drivers/video/amifb.c
-@@ -2224,24 +2224,23 @@ static int amifb_ioctl(struct fb_info *info,
- 	 * Allocate, Clear and Align a Block of Chip Memory
- 	 */
- 
--static u_long unaligned_chipptr = 0;
-+static void *aligned_chipptr;
- 
- static inline u_long __init chipalloc(u_long size)
+diff --git a/drivers/video/pm3fb.c b/drivers/video/pm3fb.c
+index 6666f45..8221b5b 100644
+--- a/drivers/video/pm3fb.c
++++ b/drivers/video/pm3fb.c
+@@ -1147,9 +1147,9 @@ static int pm3fb_pan_display(struct fb_var_screeninfo *var,
+ 				 struct fb_info *info)
  {
--	size += PAGE_SIZE-1;
--	if (!(unaligned_chipptr = (u_long)amiga_chip_alloc(size,
--							   "amifb [RAM]"))) {
-+	aligned_chipptr = amiga_chip_alloc(size, "amifb [RAM]");
-+	if (!aligned_chipptr) {
- 		pr_err("amifb: No Chip RAM for frame buffer");
- 		return 0;
- 	}
--	memset((void *)unaligned_chipptr, 0, size);
--	return PAGE_ALIGN(unaligned_chipptr);
-+	memset(aligned_chipptr, 0, size);
-+	return (u_long)aligned_chipptr;
- }
+ 	struct pm3_par *par = info->par;
+-	const u32 xres = (var->xres + 31) & ~31;
++	const u32 xres = (info->var.xres + 31) & ~31;
  
- static inline void chipfree(void)
- {
--	if (unaligned_chipptr)
--		amiga_chip_free((void *)unaligned_chipptr);
-+	if (aligned_chipptr)
-+		amiga_chip_free(aligned_chipptr);
- }
- 
- 
+-	par->base = pm3fb_shift_bpp(var->bits_per_pixel,
++	par->base = pm3fb_shift_bpp(info->var.bits_per_pixel,
+ 					(var->yoffset * xres)
+ 					+ var->xoffset);
+ 	PM3_WAIT(par, 1);
 -- 
-1.7.0.4
+1.7.3.4
 

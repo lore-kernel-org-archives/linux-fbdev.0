@@ -1,61 +1,38 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 11 May 2011 12:26:30 +0000
-Subject: [PATCH 3/3] OMAP: DSS2: Move nokia-dsi-panel.h to include/video/
-Message-Id: <1305116790-24067-4-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 25 May 2011 22:58:03 +0000
+Subject: [PATCH 11/29] hgafb: use display information in info not in var for panning
+Message-Id: <1306364301-8195-12-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1305116790-24067-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1305116790-24067-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: tony@atomide.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-arch/arm/plat-omap/include/plat/nokia-dsi-panel.h is an include for the
-OMAP DSS panel driver for Nokia's DSI displays. A more logical place for
-it is in include/video.
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Ferenc Bakonyi <fero@drama.obuda.kando.hu>
+Cc: Brent Cook <busterb@gmail.com>
 ---
- drivers/video/omap2/displays/panel-taal.c          |    2 +-
- .../video/omap-panel-nokia-dsi.h                   |    6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
- rename arch/arm/plat-omap/include/plat/nokia-dsi-panel.h => include/video/omap-panel-nokia-dsi.h (81%)
+ drivers/video/hgafb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 4673517..ed46a1e 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -34,7 +34,7 @@
- #include <linux/mutex.h>
- 
- #include <video/omapdss.h>
--#include <plat/nokia-dsi-panel.h>
-+#include <video/omap-panel-nokia-dsi.h>
- 
- /* DSI Virtual channel. Hardcoded for now. */
- #define TCH 0
-diff --git a/arch/arm/plat-omap/include/plat/nokia-dsi-panel.h b/include/video/omap-panel-nokia-dsi.h
-similarity index 81%
-rename from arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
-rename to include/video/omap-panel-nokia-dsi.h
-index 4d1e794..e109b21 100644
---- a/arch/arm/plat-omap/include/plat/nokia-dsi-panel.h
-+++ b/include/video/omap-panel-nokia-dsi.h
-@@ -1,5 +1,5 @@
--#ifndef __ARCH_ARM_PLAT_OMAP_NOKIA_DSI_PANEL_H
--#define __ARCH_ARM_PLAT_OMAP_NOKIA_DSI_PANEL_H
-+#ifndef __OMAP_NOKIA_DSI_PANEL_H
-+#define __OMAP_NOKIA_DSI_PANEL_H
- 
- struct omap_dss_device;
- 
-@@ -28,4 +28,4 @@ struct nokia_dsi_panel_data {
- 	int (*get_backlight)(struct omap_dss_device *dssdev);
- };
- 
--#endif /* __ARCH_ARM_PLAT_OMAP_NOKIA_DSI_PANEL_H */
-+#endif /* __OMAP_NOKIA_DSI_PANEL_H */
+diff --git a/drivers/video/hgafb.c b/drivers/video/hgafb.c
+index 4052718..4394389 100644
+--- a/drivers/video/hgafb.c
++++ b/drivers/video/hgafb.c
+@@ -422,8 +422,8 @@ static int hgafb_pan_display(struct fb_var_screeninfo *var,
+ 		    var->xoffset)
+ 			return -EINVAL;
+ 	} else {
+-		if (var->xoffset + var->xres > info->var.xres_virtual
+-		 || var->yoffset + var->yres > info->var.yres_virtual
++		if (var->xoffset + info->var.xres > info->var.xres_virtual
++		 || var->yoffset + info->var.yres > info->var.yres_virtual
+ 		 || var->yoffset % 8)
+ 			return -EINVAL;
+ 	}
 -- 
-1.7.4.1
+1.7.3.4
 

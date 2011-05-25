@@ -1,7 +1,7 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 25 May 2011 22:57:56 +0000
-Subject: [PATCH 04/29] arkfb: use display information in info not in var for panning
-Message-Id: <1306364301-8195-5-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Wed, 25 May 2011 22:58:05 +0000
+Subject: [PATCH 13/29] intelfb: use display information in info not in var for panning
+Message-Id: <1306364301-8195-14-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,34 +12,31 @@ We must not use any information in the passed var besides xoffset,
 yoffset and vmode as otherwise applications might abuse it.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Ondrej Zajicek <santiago@crfreenet.org>
+Cc: Maik Broemme <mbroemme@plusserver.de>
 ---
- drivers/video/arkfb.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/video/intelfb/intelfbhw.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
-index 8686429..555dd4c 100644
---- a/drivers/video/arkfb.c
-+++ b/drivers/video/arkfb.c
-@@ -908,13 +908,14 @@ static int arkfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info
- 	unsigned int offset;
+diff --git a/drivers/video/intelfb/intelfbhw.c b/drivers/video/intelfb/intelfbhw.c
+index 38065cf..fbad61d 100644
+--- a/drivers/video/intelfb/intelfbhw.c
++++ b/drivers/video/intelfb/intelfbhw.c
+@@ -390,12 +390,12 @@ int intelfbhw_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
+ 	xoffset = ROUND_DOWN_TO(var->xoffset, 8);
+ 	yoffset = var->yoffset;
  
- 	/* Calculate the offset */
--	if (var->bits_per_pixel = 0) {
--		offset = (var->yoffset / 16) * (var->xres_virtual / 2) + (var->xoffset / 2);
-+	if (info->var.bits_per_pixel = 0) {
-+		offset = (var->yoffset / 16) * (info->var.xres_virtual / 2)
-+		       + (var->xoffset / 2);
- 		offset = offset >> 2;
- 	} else {
- 		offset = (var->yoffset * info->fix.line_length) +
--			 (var->xoffset * var->bits_per_pixel / 8);
--		offset = offset >> ((var->bits_per_pixel = 4) ? 2 : 3);
-+			 (var->xoffset * info->var.bits_per_pixel / 8);
-+		offset = offset >> ((info->var.bits_per_pixel = 4) ? 2 : 3);
- 	}
+-	if ((xoffset + var->xres > var->xres_virtual) ||
+-	    (yoffset + var->yres > var->yres_virtual))
++	if ((xoffset + info->var.xres > info->var.xres_virtual) ||
++	    (yoffset + info->var.yres > info->var.yres_virtual))
+ 		return -EINVAL;
  
- 	/* Set the offset */
+ 	offset = (yoffset * dinfo->pitch) +
+-		 (xoffset * var->bits_per_pixel) / 8;
++		 (xoffset * info->var.bits_per_pixel) / 8;
+ 
+ 	offset += dinfo->fb.offset << 12;
+ 
 -- 
 1.7.3.4
 

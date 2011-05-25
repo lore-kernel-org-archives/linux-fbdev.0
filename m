@@ -1,48 +1,37 @@
-From: anish <anish198519851985@gmail.com>
-Date: Wed, 18 May 2011 18:19:18 +0000
-Subject: [patch 2/2] trivial: amba-clcd.c changed the printk to pr_err
-Message-Id: <1305742038.8771.27.camel@anish-desktop>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 25 May 2011 22:58:00 +0000
+Subject: [PATCH 08/29] fbdev: unicore32: use display information in info not in var for panning
+Message-Id: <1306364301-8195-9-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-As suggested by russell,printk in the fail scenario
- is an error and should be reported at error severity.They
- cause things to stop working and so they are not just a
- warning so changed to pr_err.
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
 
-Signed-off-by: anish kumar <anish198519851985@gmail.com>
-
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Guan Xuetao <gxt@mprc.pku.edu.cn>
 ---
- drivers/video/amba-clcd.c |    4 ++--
+ drivers/video/fb-puv3.c |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/amba-clcd.c b/drivers/video/amba-clcd.c
-index 5fc983c..9f27c71 100644
---- a/drivers/video/amba-clcd.c
-+++ b/drivers/video/amba-clcd.c
-@@ -545,13 +545,13 @@ static int clcdfb_probe(struct amba_device *dev, const struct amba_id *id)
- 
- 	ret = amba_request_regions(dev, NULL);
- 	if (ret) {
--		printk(KERN_ERR "CLCD: unable to reserve regs region\n");
-+		pr_err("CLCD: unable to reserve regs region\n");
- 		goto out;
+diff --git a/drivers/video/fb-puv3.c b/drivers/video/fb-puv3.c
+index 27f2c57..60a787f 100644
+--- a/drivers/video/fb-puv3.c
++++ b/drivers/video/fb-puv3.c
+@@ -624,8 +624,8 @@ static int unifb_pan_display(struct fb_var_screeninfo *var,
+ 		    || var->xoffset)
+ 			return -EINVAL;
+ 	} else {
+-		if (var->xoffset + var->xres > info->var.xres_virtual ||
+-		    var->yoffset + var->yres > info->var.yres_virtual)
++		if (var->xoffset + info->var.xres > info->var.xres_virtual ||
++		    var->yoffset + info->var.yres > info->var.yres_virtual)
+ 			return -EINVAL;
  	}
- 
- 	fb = kzalloc(sizeof(struct clcd_fb), GFP_KERNEL);
- 	if (!fb) {
--		printk(KERN_INFO "CLCD: could not allocate new clcd_fb struct\n");
-+		pr_err("CLCD: could not allocate new clcd_fb struct\n");
- 		ret = -ENOMEM;
- 		goto free_region;
- 	}
+ 	info->var.xoffset = var->xoffset;
 -- 
-1.7.0.4
-
-
-
-
+1.7.3.4
 

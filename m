@@ -1,142 +1,36 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 12 May 2011 11:40:13 +0000
-Subject: [PATCHv2 8/8] OMAP: DSS2: OMAPFB: Reduce stack usage
-Message-Id: <1305200413-23697-9-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 25 May 2011 22:57:53 +0000
+Subject: [PATCH 01/29] 68328fb: use display information in info not in var for panning
+Message-Id: <1306364301-8195-2-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1305200413-23697-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-omapfb_mode_to_timings() had struct fb_info, struct fb_var and struct
-fb_ops allocated from stack. This caused the stack usage grow quite
-high.
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
 
-Use kzalloc to allocate the structs instead.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c |   95 +++++++++++++++++++-----------
- 1 files changed, 61 insertions(+), 34 deletions(-)
+ drivers/video/68328fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 9a5b4bc..505bc12 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -1996,9 +1996,9 @@ static int omapfb_create_framebuffers(struct omapfb2_device *fbdev)
- static int omapfb_mode_to_timings(const char *mode_str,
- 		struct omap_video_timings *timings, u8 *bpp)
- {
--	struct fb_info fbi;
--	struct fb_var_screeninfo var;
--	struct fb_ops fbops;
-+	struct fb_info *fbi;
-+	struct fb_var_screeninfo *var;
-+	struct fb_ops *fbops;
- 	int r;
- 
- #ifdef CONFIG_OMAP2_DSS_VENC
-@@ -2016,39 +2016,66 @@ static int omapfb_mode_to_timings(const char *mode_str,
- 	/* this is quite a hack, but I wanted to use the modedb and for
- 	 * that we need fb_info and var, so we create dummy ones */
- 
--	memset(&fbi, 0, sizeof(fbi));
--	memset(&var, 0, sizeof(var));
--	memset(&fbops, 0, sizeof(fbops));
--	fbi.fbops = &fbops;
--
--	r = fb_find_mode(&var, &fbi, mode_str, NULL, 0, NULL, 24);
--
--	if (r != 0) {
--		timings->pixel_clock = PICOS2KHZ(var.pixclock);
--		timings->hbp = var.left_margin;
--		timings->hfp = var.right_margin;
--		timings->vbp = var.upper_margin;
--		timings->vfp = var.lower_margin;
--		timings->hsw = var.hsync_len;
--		timings->vsw = var.vsync_len;
--		timings->x_res = var.xres;
--		timings->y_res = var.yres;
--
--		switch (var.bits_per_pixel) {
--		case 16:
--			*bpp = 16;
--			break;
--		case 24:
--		case 32:
--		default:
--			*bpp = 24;
--			break;
--		}
-+	*bpp = 0;
-+	fbi = NULL;
-+	var = NULL;
-+	fbops = NULL;
- 
--		return 0;
--	} else {
--		return -EINVAL;
-+	fbi = kzalloc(sizeof(*fbi), GFP_KERNEL);
-+	if (fbi = NULL) {
-+		r = -ENOMEM;
-+		goto err;
-+	}
-+
-+	var = kzalloc(sizeof(*var), GFP_KERNEL);
-+	if (var = NULL) {
-+		r = -ENOMEM;
-+		goto err;
-+	}
-+
-+	fbops = kzalloc(sizeof(*fbops), GFP_KERNEL);
-+	if (fbops = NULL) {
-+		r = -ENOMEM;
-+		goto err;
-+	}
-+
-+	fbi->fbops = fbops;
-+
-+	r = fb_find_mode(var, fbi, mode_str, NULL, 0, NULL, 24);
-+	if (r = 0) {
-+		r = -EINVAL;
-+		goto err;
+diff --git a/drivers/video/68328fb.c b/drivers/video/68328fb.c
+index 75a39ea..a425d65 100644
+--- a/drivers/video/68328fb.c
++++ b/drivers/video/68328fb.c
+@@ -378,8 +378,8 @@ static int mc68x328fb_pan_display(struct fb_var_screeninfo *var,
+ 		    || var->xoffset)
+ 			return -EINVAL;
+ 	} else {
+-		if (var->xoffset + var->xres > info->var.xres_virtual ||
+-		    var->yoffset + var->yres > info->var.yres_virtual)
++		if (var->xoffset + info->var.xres > info->var.xres_virtual ||
++		    var->yoffset + info->var.yres > info->var.yres_virtual)
+ 			return -EINVAL;
  	}
-+
-+	timings->pixel_clock = PICOS2KHZ(var->pixclock);
-+	timings->hbp = var->left_margin;
-+	timings->hfp = var->right_margin;
-+	timings->vbp = var->upper_margin;
-+	timings->vfp = var->lower_margin;
-+	timings->hsw = var->hsync_len;
-+	timings->vsw = var->vsync_len;
-+	timings->x_res = var->xres;
-+	timings->y_res = var->yres;
-+
-+	switch (var->bits_per_pixel) {
-+	case 16:
-+		*bpp = 16;
-+		break;
-+	case 24:
-+	case 32:
-+	default:
-+		*bpp = 24;
-+		break;
-+	}
-+
-+	r = 0;
-+
-+err:
-+	kfree(fbi);
-+	kfree(var);
-+	kfree(fbops);
-+
-+	return r;
- }
- 
- static int omapfb_set_def_mode(struct omapfb2_device *fbdev,
+ 	info->var.xoffset = var->xoffset;
 -- 
-1.7.4.1
+1.7.3.4
 

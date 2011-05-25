@@ -1,51 +1,45 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Sat, 21 May 2011 19:42:55 +0000
-Subject: [PATCH 2/3] fbdev/amifb: Do not call panic() if there's not enough Chip RAM
-Message-Id: <1306006976-32117-2-git-send-email-geert@linux-m68k.org>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 25 May 2011 22:57:56 +0000
+Subject: [PATCH 04/29] arkfb: use display information in info not in var for panning
+Message-Id: <1306364301-8195-5-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1306006976-32117-1-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1306006976-32117-1-git-send-email-geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: linux-fbdev@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-fbdev@vger.kernel.org
 
-Fail gracefully instead.
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Ondrej Zajicek <santiago@crfreenet.org>
 ---
- drivers/video/amifb.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+ drivers/video/arkfb.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
-index 603f84f..1b0185c 100644
---- a/drivers/video/amifb.c
-+++ b/drivers/video/amifb.c
-@@ -2230,8 +2230,10 @@ static inline u_long __init chipalloc(u_long size)
- {
- 	size += PAGE_SIZE-1;
- 	if (!(unaligned_chipptr = (u_long)amiga_chip_alloc(size,
--							   "amifb [RAM]")))
--		panic("No Chip RAM for frame buffer");
-+							   "amifb [RAM]"))) {
-+		pr_err("amifb: No Chip RAM for frame buffer");
-+		return 0;
-+	}
- 	memset((void *)unaligned_chipptr, 0, size);
- 	return PAGE_ALIGN(unaligned_chipptr);
- }
-@@ -2385,6 +2387,10 @@ default_chipset:
- 	                    DUMMYSPRITEMEMSIZE+
- 	                    COPINITSIZE+
- 	                    4*COPLISTSIZE);
-+	if (!chipptr) {
-+		err = -ENOMEM;
-+		goto amifb_error;
-+	}
+diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
+index 8686429..555dd4c 100644
+--- a/drivers/video/arkfb.c
++++ b/drivers/video/arkfb.c
+@@ -908,13 +908,14 @@ static int arkfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info
+ 	unsigned int offset;
  
- 	assignchunk(videomemory, u_long, chipptr, fb_info.fix.smem_len);
- 	assignchunk(spritememory, u_long, chipptr, SPRITEMEMSIZE);
+ 	/* Calculate the offset */
+-	if (var->bits_per_pixel = 0) {
+-		offset = (var->yoffset / 16) * (var->xres_virtual / 2) + (var->xoffset / 2);
++	if (info->var.bits_per_pixel = 0) {
++		offset = (var->yoffset / 16) * (info->var.xres_virtual / 2)
++		       + (var->xoffset / 2);
+ 		offset = offset >> 2;
+ 	} else {
+ 		offset = (var->yoffset * info->fix.line_length) +
+-			 (var->xoffset * var->bits_per_pixel / 8);
+-		offset = offset >> ((var->bits_per_pixel = 4) ? 2 : 3);
++			 (var->xoffset * info->var.bits_per_pixel / 8);
++		offset = offset >> ((info->var.bits_per_pixel = 4) ? 2 : 3);
+ 	}
+ 
+ 	/* Set the offset */
 -- 
-1.7.0.4
+1.7.3.4
 

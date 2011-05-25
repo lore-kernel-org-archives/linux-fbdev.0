@@ -1,7 +1,7 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 25 May 2011 22:58:07 +0000
-Subject: [PATCH 15/29] mx3fb: use display information in info not in var for panning
-Message-Id: <1306364301-8195-16-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Wed, 25 May 2011 22:58:19 +0000
+Subject: [PATCH 27/29] vt8500lcdfb: use display information in info not in var for panning
+Message-Id: <1306364301-8195-28-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -9,38 +9,29 @@ Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
 We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it. Also use the
-aligned fix.line_length and not the (possible) unaligned xres_virtual.
+yoffset and vmode as otherwise applications might abuse it.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Alexey Charkov <alchark@gmail.com>
 ---
- drivers/video/mx3fb.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/vt8500lcdfb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-index 7e3a490..759e244 100644
---- a/drivers/video/mx3fb.c
-+++ b/drivers/video/mx3fb.c
-@@ -1062,15 +1062,15 @@ static int mx3fb_pan_display(struct fb_var_screeninfo *var,
- 	y_bottom = var->yoffset;
+diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
+index 0e120d6..c13c246 100644
+--- a/drivers/video/vt8500lcdfb.c
++++ b/drivers/video/vt8500lcdfb.c
+@@ -210,8 +210,8 @@ static int vt8500lcd_pan_display(struct fb_var_screeninfo *var,
+ 	struct vt8500lcd_info *fbi = to_vt8500lcd_info(info);
  
- 	if (!(var->vmode & FB_VMODE_YWRAP))
--		y_bottom += var->yres;
-+		y_bottom += fbi->var.yres;
+ 	writel((1 << 31)
+-		| (((var->xres_virtual - var->xres) * pixlen / 4) << 20)
+-		| (off >> 2), fbi->regbase + 0x20);
++	     | (((info->var.xres_virtual - info->var.xres) * pixlen / 4) << 20)
++	     | (off >> 2), fbi->regbase + 0x20);
+ 	return 0;
+ }
  
- 	if (y_bottom > fbi->var.yres_virtual)
- 		return -EINVAL;
- 
- 	mutex_lock(&mx3_fbi->mutex);
- 
--	offset = (var->yoffset * var->xres_virtual + var->xoffset) *
--		(var->bits_per_pixel / 8);
-+	offset = var->yoffset * fbi->fix.line_length
-+	       + var->xoffset * (var->bits_per_pixel / 8);
- 	base = fbi->fix.smem_start + offset;
- 
- 	dev_dbg(fbi->device, "Updating SDC BG buf %d address=0x%08lX\n",
 -- 
 1.7.3.4
 

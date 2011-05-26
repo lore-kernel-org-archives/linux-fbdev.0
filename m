@@ -1,25 +1,47 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Mon, 23 May 2011 07:13:01 +0000
-Subject: Re: [patch 1/2] trivial: amba-clcd.c preferred form of passing size of structure
-Message-Id: <20110523071301.GK5206@linux-sh.org>
+From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+Date: Thu, 26 May 2011 09:09:02 +0000
+Subject: [PATCH] fbdev: sh_mobile_lcdcfb: Change BGR24 to RGB24
+Message-Id: <1306400942-26956-1-git-send-email-dhobsong@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1305742026.8771.26.camel@anish-desktop>
-In-Reply-To: <1305742026.8771.26.camel@anish-desktop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: anish <anish198519851985@gmail.com>
-Cc: linux@arm.linux.org.uk, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Wed, May 18, 2011 at 11:37:06PM +0530, anish wrote:
-> The preferred form for passing a size of a struct is the following:
->          p = kmalloc(sizeof(*p), ...);
->   Please refer Documentation/Codingstyle chapter 14
-> 
->  Signed-off-by: anish kumar <anish198519851985@gmail.com>
-> 
-That's pretty subjective, and ultimately depends on the author. I
-personally prefer to have it written out, but then I don't randomly
-change my structure types around either, so the "bug" alluded to isn't
-really an issue. I'm not sure I buy the impaired readability argument,
-either..
+The ordering of the bytes in the 24 bpp RGB colour mode was
+being set to BGR.
+
+This now matches the values returned in the
+struct fb_var_screeninfo .red, .green, and .blue offsets as well as
+the output format of other blocs, such as the VEU
+
+Signed-off-by: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+---
+ drivers/video/sh_mobile_lcdcfb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 04f2260..a442471 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -590,7 +590,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 				tmp |= 0x03;
+ 				break;
+ 			case 24:
+-				tmp |= 0x0b;
++				tmp |= 0x02;
+ 				break;
+ 			case 32:
+ 				break;
+@@ -1178,7 +1178,7 @@ static int sh_mobile_lcdc_set_bpp(struct fb_var_screeninfo *var, int bpp,
+ 		var->transp.length = 0;
+ 		break;
+ 
+-	case 24: /* PKF[4:0] = 01011 - RGB 888 */
++	case 24: /* PKF[4:0] = 00010 - RGB 888 */
+ 		var->red.offset = 16;
+ 		var->red.length = 8;
+ 		var->green.offset = 8;
+-- 
+1.7.1
+

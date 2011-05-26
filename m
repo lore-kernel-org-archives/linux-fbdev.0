@@ -1,46 +1,39 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Wed, 11 May 2011 14:27:43 +0000
-Subject: Re: [PATCH V3] fbcon -- fix race between open and removal of
-Message-Id: <20110511162743.6b363f1f@pluto.restena.lu>
+From: Andy Lutomirski <luto@MIT.EDU>
+Date: Thu, 26 May 2011 14:13:31 +0000
+Subject: [PATCH 1/4] efifb: Enable write-combining
+Message-Id: <3647a3cc4157f8c50ab719f1a7500e695cf66a05.1306418703.git.luto@mit.edu>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1304617307-7389-1-git-send-email-tim.gardner@canonical.com>
-	<4DC94314.8050701@canonical.com>
-	<20110510234424.5a5b7a08@neptune.home>
-	<4DCA9899.6070403@canonical.com>
-In-Reply-To: <4DCA9899.6070403@canonical.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Tim Gardner <tim.gardner@canonical.com>
-Cc: linux-fbdev@vger.kernel.org, lethal@linux-sh.org, linux-kernel@vger.kernel.org, Andy Whitcroft <andy.whitcroft@canonical.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-On Wed, 11 May 2011 16:09:29 Tim Gardner wrote:
-> On 05/10/2011 11:44 PM, Bruno Pr=C3=A9mont wrote:
-> > On Tue, 10 May 2011 Tim Gardner<tim.gardner@canonical.com>  wrote:
-> > This only partially protects the list and count as two concurrent
-> > framebuffer registrations do still race against each other.
-> > For the issue addressed by this patch I don't think it makes sense to
-> > have this spinlock at all as it's only used in get_framebuffer_info()
-> > and in put_framebuffer_info() and put_framebuffer_info() doesn't even
-> > look at registered_fb or num_registered_fb.
-> > Such a spinlock makes sense in a separate patch that really protects
-> > all access to registered_fb or num_registered_fb, be it during framebuf=
-fer
-> > (un)registration or during access from fbcon.
-> >
->=20
-> Our goal was merely to stop the user space open/close races. I agree=20
-> that the framebuffer registration list needs more orthogonal protection, =
+Running fbcon on an uncached framebuffer is remarkably slow.  So try
+to enable write combining in efifb.
 
-> but that is going to be a much larger patch.
+Without this patch, it takes 5.8 seconds from efifb probe to i915
+probe (default options; no plymouth or quiet mode).  With this patch,
+it only takes 1.7 seconds.  That means we wasted over 4 seconds just
+writing to UC memory.
 
-I know that such a protection needs a much larger patch. (that would be
-for 2.6.40 or 2.6.41, I have preparing patches for that cooking)
+Signed-off-by: Andy Lutomirski <luto@mit.edu>
+---
+ drivers/video/efifb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-My main issue for tis patch is that the comment reads as if spinlock was
-protecting registered_fb[] and num_registered_fb. So changing the
-comment would be a good thing (say it protects fb_info->ref_count).
-Later patch can then protect registered_fb against concurrent
-framebuffer registrations.
+diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
+index 4eb38db..a81c944 100644
+--- a/drivers/video/efifb.c
++++ b/drivers/video/efifb.c
+@@ -413,7 +413,7 @@ static int __devinit efifb_probe(struct platform_device *dev)
+ 	info->apertures->ranges[0].base = efifb_fix.smem_start;
+ 	info->apertures->ranges[0].size = size_remap;
+ 
+-	info->screen_base = ioremap(efifb_fix.smem_start, efifb_fix.smem_len);
++	info->screen_base = ioremap_wc(efifb_fix.smem_start, efifb_fix.smem_len);
+ 	if (!info->screen_base) {
+ 		printk(KERN_ERR "efifb: abort, cannot ioremap video memory "
+ 				"0x%x @ 0x%lx\n",
+-- 
+1.7.5.1
 
-Bruno

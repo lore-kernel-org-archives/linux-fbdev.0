@@ -1,26 +1,72 @@
-From: Andrew Lutomirski <luto@mit.edu>
-Date: Thu, 26 May 2011 14:55:38 +0000
-Subject: Re: [PATCH 3/4] efifb: Fix an integer-to-pointer size warning
-Message-Id: <BANLkTi=C1oyzbv_okXp8SJNxAdXyywesNw@mail.gmail.com>
+From: Andy Lutomirski <luto@MIT.EDU>
+Date: Thu, 26 May 2011 14:13:34 +0000
+Subject: [PATCH 4/4] efifb: Disallow manual bind and unbind
+Message-Id: <7c160d075ca68ffd4eef4d0a64ef5fa49fa2c40e.1306418703.git.luto@mit.edu>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <0c405ceeca72c92d25cb6ee4bc92c35d2cb15019.1306418703.git.luto@mit.edu>
-In-Reply-To: <0c405ceeca72c92d25cb6ee4bc92c35d2cb15019.1306418703.git.luto@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Thu, May 26, 2011 at 10:34 AM, Peter Jones <pjones@redhat.com> wrote:
-> On 05/26/2011 10:13 AM, Andy Lutomirski wrote:
->> Signed-off-by: Andy Lutomirski <luto@mit.edu>
->
-> Signed-off-by: Peter Jones <pjones@redhat.com>
+Both were buggy: bind would happily scribble over a real graphics
+device and unbind wouldn't destroy the framebuffer.  Hotplugging
+efifb makes no sense anyway, so just disable it.
 
-I got beaten to the punch:
+As an added benefit, we save some runtime memory.
 
-http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
-it;h=DC3e5b6a6e842116ec2436161adf31877f09b6b9
+Signed-off-by: Andy Lutomirski <luto@mit.edu>
+---
+ drivers/video/efifb.c |   21 ++++++++++++++-------
+ 1 files changed, 14 insertions(+), 7 deletions(-)
 
-Feel free to drop this patch.  The others should still be fine.
+diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
+index 39bbfa9..f67717e 100644
+--- a/drivers/video/efifb.c
++++ b/drivers/video/efifb.c
+@@ -331,7 +331,7 @@ static int __init efifb_setup(char *options)
+ 	return 0;
+ }
+ 
+-static int __devinit efifb_probe(struct platform_device *dev)
++static int __init efifb_probe(struct platform_device *dev)
+ {
+ 	struct fb_info *info;
+ 	int err;
+@@ -501,7 +501,6 @@ err_release_mem:
+ }
+ 
+ static struct platform_driver efifb_driver = {
+-	.probe	= efifb_probe,
+ 	.driver	= {
+ 		.name	= "efifb",
+ 	},
+@@ -532,13 +531,21 @@ static int __init efifb_init(void)
+ 	if (!screen_info.lfb_linelength)
+ 		return -ENODEV;
+ 
+-	ret = platform_driver_register(&efifb_driver);
++	ret = platform_device_register(&efifb_device);
++	if (ret)
++		return ret;
+ 
+-	if (!ret) {
+-		ret = platform_device_register(&efifb_device);
+-		if (ret)
+-			platform_driver_unregister(&efifb_driver);
++	/*
++	 * This is not just an optimization.  We will interfere
++	 * with a real driver if we get reprobed, so don't allow
++	 * it.
++	 */
++	ret = platform_driver_probe(&efifb_driver, efifb_probe);
++	if (ret) {
++		platform_device_unregister(&efifb_driver);
++		return ret;
+ 	}
++
+ 	return ret;
+ }
+ module_init(efifb_init);
+-- 
+1.7.5.1
 
---Andy

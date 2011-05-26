@@ -1,59 +1,27 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 25 May 2011 22:58:13 +0000
-Subject: [PATCH 21/29] s3fb: use display information in info not in var for panning
-Message-Id: <1306364301-8195-22-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tormod Volden <lists.tormod@gmail.com>
+Date: Thu, 26 May 2011 14:12:21 +0000
+Subject: Re: [PATCH 21/29] s3fb: use display information in info not in var
+Message-Id: <BANLkTincNfXaXb-fxTbOvcHvFj+=BkJ2vQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1306364301-8195-22-git-send-email-laurent.pinchart@ideasonboard.com>
+In-Reply-To: <1306364301-8195-22-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it. Also use the
-aligned fix.line_length and not the (possible) unaligned xres_virtual.
+On Thu, May 26, 2011 at 12:58 AM, Laurent Pinchart wrote:
+> We must not use any information in the passed var besides xoffset,
+> yoffset and vmode as otherwise applications might abuse it. Also use the
+> aligned fix.line_length and not the (possible) unaligned xres_virtual.
+>
+> Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> Cc: Antonino Daplas <adaplas@gmail.com>
+> ---
+> =A0drivers/video/savage/savagefb_driver.c | =A0 16 +++++++---------
+> =A01 files changed, 7 insertions(+), 9 deletions(-)
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
----
- drivers/video/savage/savagefb_driver.c |   16 +++++++---------
- 1 files changed, 7 insertions(+), 9 deletions(-)
+The patch title is misleading, this is not the s3fb driver but the
+savagefb driver.
 
-diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
-index a2dc1a7..6db8485 100644
---- a/drivers/video/savage/savagefb_driver.c
-+++ b/drivers/video/savage/savagefb_driver.c
-@@ -1475,15 +1475,9 @@ static void savagefb_set_par_int(struct savagefb_par  *par, struct savage_reg *r
- 	vgaHWProtect(par, 0);
- }
- 
--static void savagefb_update_start(struct savagefb_par      *par,
--				  struct fb_var_screeninfo *var)
-+static void savagefb_update_start(struct savagefb_par *par, int base)
- {
--	int base;
--
--	base = ((var->yoffset * var->xres_virtual + (var->xoffset & ~1))
--		* ((var->bits_per_pixel+7) / 8)) >> 2;
--
--	/* now program the start address registers */
-+	/* program the start address registers */
- 	vga_out16(0x3d4, (base & 0x00ff00) | 0x0c, par);
- 	vga_out16(0x3d4, ((base & 0x00ff) << 8) | 0x0d, par);
- 	vga_out8(0x3d4, 0x69, par);
-@@ -1548,8 +1542,12 @@ static int savagefb_pan_display(struct fb_var_screeninfo *var,
- 				struct fb_info           *info)
- {
- 	struct savagefb_par *par = info->par;
-+	int base;
-+
-+	base = (var->yoffset * info->fix.line_length
-+	     + (var->xoffset & ~1) * ((info->var.bits_per_pixel+7) / 8)) >> 2;
- 
--	savagefb_update_start(par, var);
-+	savagefb_update_start(par, base);
- 	return 0;
- }
- 
--- 
-1.7.3.4
-
+Tormod

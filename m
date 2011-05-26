@@ -1,32 +1,34 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 26 May 2011 05:23:36 +0000
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 26 May 2011 08:17:45 +0000
 Subject: Re: [PATCH 00/29] Use display information in info not in var for panning
-Message-Id: <BANLkTi=3Da1dgvdehJkwthK+OEmQeqXJmA@mail.gmail.com>
+Message-Id: <201105261017.45838.laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1306364301-8195-1-git-send-email-laurent.pinchart@ideasonboard.com>
 In-Reply-To: <1306364301-8195-1-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Thu, May 26, 2011 at 00:57, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
-> While playing with the FBIOPAN_DISPLAY ioctl I noticed that many drivers use
-> information from the ioctl argument such as the display resolution when they
-> should use the current settings from the fb_info structure.
+Hi Geert,
 
-Haven't gone through all patches, but the above is correct.
+On Thursday 26 May 2011 07:23:36 Geert Uytterhoeven wrote:
+> On Thu, May 26, 2011 at 00:57, Laurent Pinchart wrote:
+> > While playing with the FBIOPAN_DISPLAY ioctl I noticed that many drivers
+> > use information from the ioctl argument such as the display resolution
+> > when they should use the current settings from the fb_info structure.
+> 
+> Haven't gone through all patches, but the above is correct.
+> 
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Thanks.
 
-Gr{oetje,eeting}s,
+I will wait a couple of days for individual drievr maintainers to reply. I 
+don't expect to get an ack for every driver, so we will have to decide whether 
+to apply some of the patches without testing them.
 
-                        Geert
+-- 
+Regards,
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Laurent Pinchart

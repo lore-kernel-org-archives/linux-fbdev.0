@@ -1,36 +1,37 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 25 May 2011 22:58:11 +0000
-Subject: [PATCH 19/29] s3c-fb: use display information in info not in var for panning
-Message-Id: <1306364301-8195-20-git-send-email-laurent.pinchart@ideasonboard.com>
+From: =?euc-kr?B?x9HB+LG4?= <jg1.han@samsung.com>
+Date: Fri, 27 May 2011 00:45:58 +0000
+Subject: Re: [PATCH 19/29] s3c-fb: use display information in info not in var
+Message-Id: <12589456.8031306457158097.JavaMail.weblogic@epml08>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1306364301-8195-20-git-send-email-laurent.pinchart@ideasonboard.com>
+In-Reply-To: <1306364301-8195-20-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
 To: linux-fbdev@vger.kernel.org
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
-
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Ben Dooks <ben@simtec.co.uk>
-Cc: InKi Dae <inki.dae@samsung.com>
----
- drivers/video/s3c-fb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 3b6cdca..4fce307 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -882,7 +882,7 @@ static int s3c_fb_pan_display(struct fb_var_screeninfo *var,
- 		}
- 	}
- 	/* Offset in bytes to the end of the displayed area */
--	end_boff = start_boff + var->yres * info->fix.line_length;
-+	end_boff = start_boff + info->var.yres * info->fix.line_length;
- 
- 	/* Temporarily turn off per-vsync update from shadow registers until
- 	 * both start and end addresses are updated to prevent corruption */
--- 
-1.7.3.4
-
+CkFja2VkLWJ5OiBKaW5nb28gSGFuIDxqZzEuaGFuQHNhbXN1bmcuY29tPgoKPiAtLS0tLS0tIE9y
+aWdpbmFsIE1lc3NhZ2UgLS0tLS0tLQo+IFNlbmRlciA6IExhdXJlbnQgUGluY2hhcnQ8bGF1cmVu
+dC5waW5jaGFydEBpZGVhc29uYm9hcmQuY29tPiAKPiBEYXRlICAgOiAyMDExLTA1LTI2IDA3OjU4
+IChHTVQrMDk6MDApCj4gVGl0bGUgIDogW1BBVENIIDE5LzI5XSBzM2MtZmI6IHVzZSBkaXNwbGF5
+IGluZm9ybWF0aW9uIGluIGluZm8gbm90IGluIHZhciBmb3IKPiAgcGFubmluZwo+IAo+IFdlIG11
+c3Qgbm90IHVzZSBhbnkgaW5mb3JtYXRpb24gaW4gdGhlIHBhc3NlZCB2YXIgYmVzaWRlcyB4b2Zm
+c2V0LAo+IHlvZmZzZXQgYW5kIHZtb2RlIGFzIG90aGVyd2lzZSBhcHBsaWNhdGlvbnMgbWlnaHQg
+YWJ1c2UgaXQuCj4gCj4gU2lnbmVkLW9mZi1ieTogTGF1cmVudCBQaW5jaGFydCA8bGF1cmVudC5w
+aW5jaGFydEBpZGVhc29uYm9hcmQuY29tPgo+IENjOiBCZW4gRG9va3MgPGJlbkBzaW10ZWMuY28u
+dWs+Cj4gQ2M6IEluS2kgRGFlIDxpbmtpLmRhZUBzYW1zdW5nLmNvbT4KPiAtLS0KPiAgZHJpdmVy
+cy92aWRlby9zM2MtZmIuYyB8ICAgIDIgKy0KPiAgMSBmaWxlcyBjaGFuZ2VkLCAxIGluc2VydGlv
+bnMoKyksIDEgZGVsZXRpb25zKC0pCj4gCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vczNj
+LWZiLmMgYi9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jCj4gaW5kZXggM2I2Y2RjYS4uNGZjZTMwNyAx
+MDA2NDQKPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jCj4gKysrIGIvZHJpdmVycy92aWRl
+by9zM2MtZmIuYwo+IEBAIC04ODIsNyArODgyLDcgQEAgc3RhdGljIGludCBzM2NfZmJfcGFuX2Rp
+c3BsYXkoc3RydWN0IGZiX3Zhcl9zY3JlZW5pbmZvICp2YXIsCj4gIAkJfQo+ICAJfQogPiAJLyog
+T2Zmc2V0IGluIGJ5dGVzIHRvIHRoZSBlbmQgb2YgdGhlIGRpc3BsYXllZCBhcmVhICovCj4gLQll
+bmRfYm9mZiA9IHN0YXJ0X2JvZmYgKyB2YXItPnlyZXMgKiBpbmZvLT5maXgubGluZV9sZW5ndGg7
+Cj4gKwllbmRfYm9mZiA9IHN0YXJ0X2JvZmYgKyBpbmZvLT52YXIueXJlcyAqIGluZm8tPmZpeC5s
+aW5lX2xlbmd0aDsKPiAgCj4gIAkvKiBUZW1wb3JhcmlseSB0dXJuIG9mZiBwZXItdnN5bmMgdXBk
+YXRlIGZyb20gc2hhZG93IHJlZ2lzdGVycyB1bnRpbAo+ICAJICogYm90aCBzdGFydCBhbmQgZW5k
+IGFkZHJlc3NlcyBhcmUgdXBkYXRlZCB0byBwcmV2ZW50IGNvcnJ1cHRpb24gKi8KPiAtLSAK//To
+unsubscribefromthislisv/sendthelinf/unsubscribelinux/fbdev/inthebodyofamessa
+getomajordomo/vger/kernel/orgMoremajordomoinfoathttp///vger/kernel/org/major
+domo/info/htCg==

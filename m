@@ -1,47 +1,113 @@
-From: Andrew Lutomirski <luto@mit.edu>
-Date: Thu, 26 May 2011 14:12:26 +0000
-Subject: Re: efifb not detected on Intel DQ67SW
-Message-Id: <BANLkTi=dcWfKjB+qiW2pForE+synTABruA@mail.gmail.com>
+From: Joe Perches <joe@perches.com>
+Date: Sat, 28 May 2011 17:36:32 +0000
+Subject: [TRIVIAL PATCH next 12/15] video: Convert vmalloc/memset to vzalloc
+Message-Id: <77538de911b8af99f68b7bcfbaaedce8e40db04f.1306603968.git.joe@perches.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <BANLkTikxX577VKmPRVGcp_Chj-udCf-KaQ@mail.gmail.com>
-In-Reply-To: <BANLkTikxX577VKmPRVGcp_Chj-udCf-KaQ@mail.gmail.com>
+References: <cover.1306603968.git.joe@perches.com>
+In-Reply-To: <cover.1306603968.git.joe@perches.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jaya Kumar <jayalk@intworks.biz>, Paul Mundt <lethal@linux-sh.org>, Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Jiri Kosina <trivial@kernel.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com, virtualization@lists.linux-foundation.org
 
-On Thu, May 26, 2011 at 9:56 AM, Peter Jones <pjones@redhat.com> wrote:
-> On 05/26/2011 12:09 AM, Andrew Lutomirski wrote:
->> On Wed, May 25, 2011 at 2:54 PM, Andrew Lutomirski <luto@mit.edu> wrote:
->>> On Wed, May 25, 2011 at 2:32 PM, Matthew Garrett <mjg@redhat.com> wrote:
->>>> On Wed, May 25, 2011 at 02:21:17PM -0400, Andrew Lutomirski wrote:
->>>>
->>>>> Looking at the code, I'm a little confused how it's supposed to work.
->>>>> AFAICT, unless there's a DMI match, then the driver will only load
->>>>> ifthe boot code sets VIDEO_TYPE_EFI, but nothing sets that.
->>>>
->>>> grub should be setting that.
->>>
->>> It looks like grub-fedora (the git version, anyway) has a function
->>> set_kernel_params that tries to do this. =A0Peter, the git tree claims
->>> that you maintain it. =A0Are there any experiments you'd like me to do?
->>> (Dumping boot_params, perhaps?)
->>
->> It's a bug in grub. =A0If I have a splashimage then efifb works. =A0If I
->> don't, then efifb doesn't. =A0If I don't hear anything back soon, I'll
->> file a bug against Fedora.
->
-> That's expected, though I admit it's not the best thing ever. We're curre=
-ntly
-> working on not needing that bootloader at all any more, in favor of grub2,
-> which doesn't have this limitation.
->
->> FWIW, efifb seems really slow.
->
-> It's a non-accelerated console. =A0Of course it's slow.
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ drivers/video/arcfb.c        |    5 ++---
+ drivers/video/broadsheetfb.c |    4 +---
+ drivers/video/hecubafb.c     |    5 ++---
+ drivers/video/metronomefb.c  |    4 +---
+ drivers/video/xen-fbfront.c  |    3 +--
+ 5 files changed, 7 insertions(+), 14 deletions(-)
 
-Yes, but it's really really amazingly slow.  It's so slow that merely
-enabling it doubles the time it takes to get i915 loaded.  A one-liner
-to fix it is coming right now...
+diff --git a/drivers/video/arcfb.c b/drivers/video/arcfb.c
+index 3ec4923..86573e2 100644
+--- a/drivers/video/arcfb.c
++++ b/drivers/video/arcfb.c
+@@ -515,11 +515,10 @@ static int __devinit arcfb_probe(struct platform_device *dev)
+ 
+ 	/* We need a flat backing store for the Arc's
+ 	   less-flat actual paged framebuffer */
+-	if (!(videomemory = vmalloc(videomemorysize)))
++	videomemory = vmalloc(videomemorysize);
++	if (!videomemory)
+ 		return retval;
+ 
+-	memset(videomemory, 0, videomemorysize);
+-
+ 	info = framebuffer_alloc(sizeof(struct arcfb_par), &dev->dev);
+ 	if (!info)
+ 		goto err;
+diff --git a/drivers/video/broadsheetfb.c b/drivers/video/broadsheetfb.c
+index ebda687..377dde3 100644
+--- a/drivers/video/broadsheetfb.c
++++ b/drivers/video/broadsheetfb.c
+@@ -1101,12 +1101,10 @@ static int __devinit broadsheetfb_probe(struct platform_device *dev)
+ 
+ 	videomemorysize = roundup((dpyw*dpyh), PAGE_SIZE);
+ 
+-	videomemory = vmalloc(videomemorysize);
++	videomemory = vzalloc(videomemorysize);
+ 	if (!videomemory)
+ 		goto err_fb_rel;
+ 
+-	memset(videomemory, 0, videomemorysize);
+-
+ 	info->screen_base = (char *)videomemory;
+ 	info->fbops = &broadsheetfb_ops;
+ 
+diff --git a/drivers/video/hecubafb.c b/drivers/video/hecubafb.c
+index 1b94643..fbef15f 100644
+--- a/drivers/video/hecubafb.c
++++ b/drivers/video/hecubafb.c
+@@ -231,11 +231,10 @@ static int __devinit hecubafb_probe(struct platform_device *dev)
+ 
+ 	videomemorysize = (DPY_W*DPY_H)/8;
+ 
+-	if (!(videomemory = vmalloc(videomemorysize)))
++	videomemory = vzalloc(videomemorysize);
++	if (!videomemory)
+ 		return retval;
+ 
+-	memset(videomemory, 0, videomemorysize);
+-
+ 	info = framebuffer_alloc(sizeof(struct hecubafb_par), &dev->dev);
+ 	if (!info)
+ 		goto err_fballoc;
+diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
+index ed64edf..97d45e5 100644
+--- a/drivers/video/metronomefb.c
++++ b/drivers/video/metronomefb.c
+@@ -628,12 +628,10 @@ static int __devinit metronomefb_probe(struct platform_device *dev)
+ 	/* we need to add a spare page because our csum caching scheme walks
+ 	 * to the end of the page */
+ 	videomemorysize = PAGE_SIZE + (fw * fh);
+-	videomemory = vmalloc(videomemorysize);
++	videomemory = vzalloc(videomemorysize);
+ 	if (!videomemory)
+ 		goto err_fb_rel;
+ 
+-	memset(videomemory, 0, videomemorysize);
+-
+ 	info->screen_base = (char __force __iomem *)videomemory;
+ 	info->fbops = &metronomefb_ops;
+ 
+diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
+index a20218c..beac52f 100644
+--- a/drivers/video/xen-fbfront.c
++++ b/drivers/video/xen-fbfront.c
+@@ -395,10 +395,9 @@ static int __devinit xenfb_probe(struct xenbus_device *dev,
+ 	spin_lock_init(&info->dirty_lock);
+ 	spin_lock_init(&info->resize_lock);
+ 
+-	info->fb = vmalloc(fb_size);
++	info->fb = vzalloc(fb_size);
+ 	if (info->fb = NULL)
+ 		goto error_nomem;
+-	memset(info->fb, 0, fb_size);
+ 
+ 	info->nr_pages = (fb_size + PAGE_SIZE - 1) >> PAGE_SHIFT;
+ 
+-- 
+1.7.5.rc3.dirty
 
---Andy

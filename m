@@ -1,83 +1,71 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 11 May 2011 12:26:27 +0000
-Subject: [PATCH 0/3] OMAP: DSS2: Move header files to include/video/
-Message-Id: <1305116790-24067-1-git-send-email-tomi.valkeinen@ti.com>
+From: Joe Perches <joe@perches.com>
+Date: Sat, 28 May 2011 17:36:20 +0000
+Subject: [TRIVIAL PATCH next 00/15] treewide: Convert vmalloc/memset to vzalloc
+Message-Id: <cover.1306603968.git.joe@perches.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: tony@atomide.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-atm-general@lists.sourceforge.net, netdev@vger.kernel.org, drbd-user@lists.linbit.com, dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-mtd@lists.infradead.org
+Cc: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, devel@driverdev.osuosl.org, xfs@oss.sgi.com
 
-OMAP Display Subsystem driver header files are currently located in
-arch/arm/plat-omap/include/plat/ which is not a good place for driver headers.
+Resubmittal of patches from November 2010 and a few new ones.
 
-This patch set moves the headers to a more suitable location at include/video/
-and renaming the files as follows:
+Joe Perches (15):
+  s390: Convert vmalloc/memset to vzalloc
+  x86: Convert vmalloc/memset to vzalloc
+  atm: Convert vmalloc/memset to vzalloc
+  drbd: Convert vmalloc/memset to vzalloc
+  char: Convert vmalloc/memset to vzalloc
+  isdn: Convert vmalloc/memset to vzalloc
+  md: Convert vmalloc/memset to vzalloc
+  media: Convert vmalloc/memset to vzalloc
+  mtd: Convert vmalloc/memset to vzalloc
+  scsi: Convert vmalloc/memset to vzalloc
+  staging: Convert vmalloc/memset to vzalloc
+  video: Convert vmalloc/memset to vzalloc
+  fs: Convert vmalloc/memset to vzalloc
+  mm: Convert vmalloc/memset to vzalloc
+  net: Convert vmalloc/memset to vzalloc
 
-display.h -> omapdss.h
-panel-generic-dpi.h -> omap-panel-generic-dpi.h
-nokia-dsi-panel.h -> omap-panel-nokia-dsi.h
-
- Tomi
-
-Tomi Valkeinen (3):
-  OMAP: DSS2: Move display.h to include/video/
-  OMAP: DSS2: Move panel-generic-dpi.h to include/video/
-  OMAP: DSS2: Move nokia-dsi-panel.h to include/video/
-
- arch/arm/mach-omap2/board-3430sdp.c                |    4 ++--
- arch/arm/mach-omap2/board-4430sdp.c                |    2 +-
- arch/arm/mach-omap2/board-am3517evm.c              |    4 ++--
- arch/arm/mach-omap2/board-cm-t35.c                 |    4 ++--
- arch/arm/mach-omap2/board-devkit8000.c             |    4 ++--
- arch/arm/mach-omap2/board-igep0020.c               |    4 ++--
- arch/arm/mach-omap2/board-omap3beagle.c            |    4 ++--
- arch/arm/mach-omap2/board-omap3evm.c               |    4 ++--
- arch/arm/mach-omap2/board-omap3pandora.c           |    2 +-
- arch/arm/mach-omap2/board-omap3stalker.c           |    4 ++--
- arch/arm/mach-omap2/board-omap4panda.c             |    4 ++--
- arch/arm/mach-omap2/board-overo.c                  |    4 ++--
- arch/arm/mach-omap2/board-rx51-video.c             |    2 +-
- arch/arm/mach-omap2/board-zoom-display.c           |    2 +-
- arch/arm/mach-omap2/display.c                      |    2 +-
- arch/arm/mach-omap2/include/mach/board-zoom.h      |    2 +-
- drivers/media/video/omap/omap_vout.c               |    2 +-
- drivers/media/video/omap/omap_voutdef.h            |    2 +-
- drivers/video/omap2/displays/panel-acx565akm.c     |    2 +-
- drivers/video/omap2/displays/panel-generic-dpi.c   |    3 ++-
- .../omap2/displays/panel-lgphilips-lb035q02.c      |    2 +-
- .../omap2/displays/panel-nec-nl8048hl11-01b.c      |    2 +-
- .../video/omap2/displays/panel-sharp-ls037v7dw01.c |    2 +-
- drivers/video/omap2/displays/panel-taal.c          |    4 ++--
- .../video/omap2/displays/panel-tpo-td043mtea1.c    |    2 +-
- drivers/video/omap2/dss/core.c                     |    2 +-
- drivers/video/omap2/dss/dispc.c                    |    2 +-
- drivers/video/omap2/dss/display.c                  |    2 +-
- drivers/video/omap2/dss/dpi.c                      |    2 +-
- drivers/video/omap2/dss/dsi.c                      |    2 +-
- drivers/video/omap2/dss/dss.c                      |    2 +-
- drivers/video/omap2/dss/dss_features.c             |    2 +-
- drivers/video/omap2/dss/hdmi.c                     |    2 +-
- drivers/video/omap2/dss/hdmi.h                     |    2 +-
- drivers/video/omap2/dss/hdmi_omap4_panel.c         |    2 +-
- drivers/video/omap2/dss/manager.c                  |    2 +-
- drivers/video/omap2/dss/overlay.c                  |    2 +-
- drivers/video/omap2/dss/rfbi.c                     |    2 +-
- drivers/video/omap2/dss/sdi.c                      |    2 +-
- drivers/video/omap2/dss/venc.c                     |    2 +-
- drivers/video/omap2/omapfb/omapfb-ioctl.c          |    2 +-
- drivers/video/omap2/omapfb/omapfb-main.c           |    2 +-
- drivers/video/omap2/omapfb/omapfb-sysfs.c          |    2 +-
- drivers/video/omap2/omapfb/omapfb.h                |    2 +-
- .../video/omap-panel-generic-dpi.h                 |    8 ++++----
- .../video/omap-panel-nokia-dsi.h                   |    8 ++++----
- .../plat/display.h => include/video/omapdss.h      |    6 ++----
- 47 files changed, 66 insertions(+), 67 deletions(-)
- rename arch/arm/plat-omap/include/plat/panel-generic-dpi.h => include/video/omap-panel-generic-dpi.h (86%)
- rename arch/arm/plat-omap/include/plat/nokia-dsi-panel.h => include/video/omap-panel-nokia-dsi.h (79%)
- rename arch/arm/plat-omap/include/plat/display.h => include/video/omapdss.h (99%)
+ arch/s390/hypfs/hypfs_diag.c           |    3 +--
+ arch/x86/mm/pageattr-test.c            |    3 +--
+ drivers/atm/idt77252.c                 |   11 ++++++-----
+ drivers/atm/lanai.c                    |    3 +--
+ drivers/block/drbd/drbd_bitmap.c       |    5 ++---
+ drivers/char/agp/backend.c             |    3 +--
+ drivers/char/raw.c                     |    3 +--
+ drivers/isdn/i4l/isdn_common.c         |    4 ++--
+ drivers/isdn/mISDN/dsp_core.c          |    3 +--
+ drivers/isdn/mISDN/l1oip_codec.c       |    6 ++----
+ drivers/md/dm-log.c                    |    3 +--
+ drivers/md/dm-snap-persistent.c        |    3 +--
+ drivers/md/dm-table.c                  |    4 +---
+ drivers/media/video/videobuf2-dma-sg.c |    8 ++------
+ drivers/mtd/mtdswap.c                  |    3 +--
+ drivers/s390/cio/blacklist.c           |    3 +--
+ drivers/scsi/bfa/bfad.c                |    3 +--
+ drivers/scsi/bfa/bfad_debugfs.c        |    8 ++------
+ drivers/scsi/cxgbi/libcxgbi.h          |    6 ++----
+ drivers/scsi/qla2xxx/qla_attr.c        |    6 ++----
+ drivers/scsi/qla2xxx/qla_bsg.c         |    3 +--
+ drivers/scsi/scsi_debug.c              |    7 ++-----
+ drivers/staging/rts_pstor/ms.c         |    3 +--
+ drivers/staging/rts_pstor/rtsx_chip.c  |    6 ++----
+ drivers/video/arcfb.c                  |    5 ++---
+ drivers/video/broadsheetfb.c           |    4 +---
+ drivers/video/hecubafb.c               |    5 ++---
+ drivers/video/metronomefb.c            |    4 +---
+ drivers/video/xen-fbfront.c            |    3 +--
+ fs/coda/coda_linux.h                   |    5 ++---
+ fs/reiserfs/journal.c                  |    9 +++------
+ fs/reiserfs/resize.c                   |    4 +---
+ fs/xfs/linux-2.6/kmem.h                |    7 +------
+ mm/page_cgroup.c                       |    3 +--
+ net/netfilter/x_tables.c               |    5 ++---
+ net/rds/ib_cm.c                        |    6 ++----
+ 36 files changed, 57 insertions(+), 113 deletions(-)
 
 -- 
-1.7.4.1
+1.7.5.rc3.dirty
 

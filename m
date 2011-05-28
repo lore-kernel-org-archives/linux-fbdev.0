@@ -1,82 +1,86 @@
-From: Anatolij Gustschin <agust@denx.de>
-Date: Fri, 13 May 2011 15:54:47 +0000
-Subject: [PATCH 3/5] video: mb862xxfb: relocate register space to get contiguous vram
-Message-Id: <1305302089-7666-4-git-send-email-agust@denx.de>
+From: Tormod Volden <lists.tormod@gmail.com>
+Date: Sat, 28 May 2011 15:06:11 +0000
+Subject: [PATCH] savagefb: Use panel CVT mode as default
+Message-Id: <1306595171-18633-1-git-send-email-lists.tormod@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-By default the GDC registers are located in the middle of the 64MiB
-area for video RAM and registers. When 32MiB VRAM or more is used,
-relocate the register space to the top of the 64MiB space so that
-we get the contiguous VRAM for GDC frame buffer layers, drawing
-frames, capture and cursor buffers.
+From: Tormod Volden <debian.tormod@gmail.com>
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
+If there is no EDID but an LCD panel is detected, generate a CVT
+mode from the panel resolution (at 60 Hz), and use this as a
+default mode instead of the hardcoded 800x600x8 mode.
+
+Signed-off-by: Tormod Volden <debian.tormod@gmail.com>
+
 ---
- drivers/video/mb862xx/mb862xx_reg.h |    6 ++----
- drivers/video/mb862xx/mb862xxfb.c   |   14 +++++++++++++-
- 2 files changed, 15 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/mb862xx/mb862xx_reg.h b/drivers/video/mb862xx/mb862xx_reg.h
-index 2ba65e1..737fc01 100644
---- a/drivers/video/mb862xx/mb862xx_reg.h
-+++ b/drivers/video/mb862xx/mb862xx_reg.h
-@@ -5,11 +5,8 @@
- #ifndef _MB862XX_REG_H
- #define _MB862XX_REG_H
- 
--#ifdef MB862XX_MMIO_BOTTOM
--#define MB862XX_MMIO_BASE	0x03fc0000
--#else
- #define MB862XX_MMIO_BASE	0x01fc0000
--#endif
-+#define MB862XX_MMIO_HIGH_BASE	0x03fc0000
- #define MB862XX_I2C_BASE	0x0000c000
- #define MB862XX_DISP_BASE	0x00010000
- #define MB862XX_CAP_BASE	0x00018000
-@@ -23,6 +20,7 @@
- #define GC_IMASK		0x00000024
- #define GC_SRST			0x0000002c
- #define GC_CCF			0x00000038
-+#define GC_RSW			0x0000005c
- #define GC_CID			0x000000f0
- #define GC_REVISION		0x00000084
- 
-diff --git a/drivers/video/mb862xx/mb862xxfb.c b/drivers/video/mb862xx/mb862xxfb.c
-index a1b81e7..ffb6a2c 100644
---- a/drivers/video/mb862xx/mb862xxfb.c
-+++ b/drivers/video/mb862xx/mb862xxfb.c
-@@ -742,6 +742,12 @@ static int coralp_init(struct mb862xxfb_par *par)
- 
- 	par->refclk = GC_DISP_REFCLK_400;
- 
-+	if (par->mapped_vram >= 0x2000000) {
-+		/* relocate gdc registers space */
-+		writel(1, par->fb_base + MB862XX_MMIO_BASE + GC_RSW);
-+		udelay(1); /* wait at least 20 bus cycles */
-+	}
+This is maybe tight for 2.6.40, however this is long-standing
+issue on savage-equipped laptops: The framebuffer would
+default to an antiquated resolution of 800x600 instead of
+using the LCD panel native mode (if there is no EDID).
+
+The logic was inspired by the xorg DDX, which also feeds the
+panel resolution (and 60 Hz) to a CVT function to get a mode
+in this case.
+
+I had to export fb_find_mode_cvt() from modedb.c for this. The
+alternative would be to build up a string similar to the
+mode_option given by the user and pass this to fb_find_mode
+but that seems awkward.
+
+Any suggestions or comments on this?
+
+I searched a number of other drivers to see if they do something
+similar, but I could not find any good match.
+
+Regards,
+Tormod
+
+
+ drivers/video/modedb.c                 |    1 +
+ drivers/video/savage/savagefb_driver.c |   16 ++++++++++++++++
+ 2 files changed, 17 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+index 48c3ea8..cb175fe 100644
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -1128,3 +1128,4 @@ EXPORT_SYMBOL(fb_find_best_mode);
+ EXPORT_SYMBOL(fb_find_nearest_mode);
+ EXPORT_SYMBOL(fb_videomode_to_modelist);
+ EXPORT_SYMBOL(fb_find_mode);
++EXPORT_SYMBOL(fb_find_mode_cvt);
+diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
+index 9f172fa..eddca61 100644
+--- a/drivers/video/savage/savagefb_driver.c
++++ b/drivers/video/savage/savagefb_driver.c
+@@ -2243,6 +2243,22 @@ static int __devinit savagefb_probe(struct pci_dev* dev,
+ 				 &info->modelist);
+ #endif
+ 	info->var = savagefb_var800x600x8;
++	/* if a panel was detected, default to a CVT mode instead */
++	if (par->SavagePanelWidth) {
++		struct fb_videomode cvt_mode;
 +
- 	ver = inreg(host, GC_CID);
- 	cn = (ver & GC_CID_CNAME_MSK) >> 8;
- 	ver = ver & GC_CID_VERSION_MSK;
-@@ -907,7 +913,13 @@ static int __devinit mb862xx_pci_probe(struct pci_dev *pdev,
- 	case PCI_DEVICE_ID_FUJITSU_CORALPA:
- 		par->fb_base_phys = pci_resource_start(par->pdev, 0);
- 		par->mapped_vram = CORALP_MEM_SIZE;
--		par->mmio_base_phys = par->fb_base_phys + MB862XX_MMIO_BASE;
-+		if (par->mapped_vram >= 0x2000000) {
-+			par->mmio_base_phys = par->fb_base_phys +
-+					      MB862XX_MMIO_HIGH_BASE;
-+		} else {
-+			par->mmio_base_phys = par->fb_base_phys +
-+					      MB862XX_MMIO_BASE;
-+		}
- 		par->mmio_len = MB862XX_MMIO_SIZE;
- 		par->type = BT_CORALP;
- 		break;
++		memset(&cvt_mode, 0, sizeof(cvt_mode));
++		cvt_mode.xres = par->SavagePanelWidth;
++		cvt_mode.yres = par->SavagePanelHeight;
++		cvt_mode.refresh = 60;
++		/* FIXME: if we know there is only the panel
++		 * we can enable reduced blanking as well */
++		if (fb_find_mode_cvt(&cvt_mode, 0, 0))
++			printk(KERN_WARNING "No CVT mode found for panel\n");
++		else if (fb_find_mode(&info->var, info, NULL, NULL, 0,
++				      &cvt_mode, 0) != 3)
++			info->var = savagefb_var800x600x8;
++	}
+ 
+ 	if (mode_option) {
+ 		fb_find_mode(&info->var, info, mode_option,
 -- 
-1.7.1
+1.7.0.4
 

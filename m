@@ -1,37 +1,21 @@
-From: JinGoo Han <jg1.han@samsung.com>
-Date: Wed, 22 Jun 2011 12:21:41 +0000
-Subject: [PATCH V6 0/5] ARM: EXYNOS4: Add support EXYNOS4 FIMD
-Message-Id: <27061283.131341308745300255.JavaMail.weblogic@epv6ml03>
+From: Erlon Cruz <sombrafam@gmail.com>
+Date: Wed, 01 Jun 2011 20:27:20 +0000
+Subject: Framebuffer Documentation
+Message-Id: <BANLkTimwj+oDg+teMoQWXNSOZW7W_osc+g@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-f>
-Cc: ANAND KUMAR N <anand.kn@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, THOMAS P ABRAHAM <thomas.ab@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kmpark@infradead.org>, In-Ki Dae <inki.dae@samsung.com>, ARM Linux <linux@arm.linux.org.uk>, Ben Dooks <ben-linux@fluff.org>, JinGoo Han <jg1.han@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-VGhpcyBwYXRjaCBzZXJpZXMgaXMgYmFzZWQgb24gdGhlIGxhdGVzdApnaXQua2VybmVsLm9yZy9w
-dWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgtMi42LmdpdAoKVGhpcyB3YXMg
-b3JpZ2luYWxseSBzdWJtaXR0ZWQgYnkgSm9uZ2h1biBIYW4gPGpvbmdodW4uaGFuQHNhbXN1bmcu
-Y29tPgpodHRwOi8vd3d3LnNwaW5pY3MubmV0L2xpc3RzL2FybS1rZXJuZWwvbXNnMTAxNzgxLmh0
-bWwKClRoaXMgcGF0Y2ggYWRkcyBzdXBwb3J0IEZJTUQoRnVsbHkgSW50ZXJhY3RpdmUgTW9iaWxl
-IERpc3BsYXkpIG9uIEV4eW5vczQuClRoZSA0dGggcGF0Y2ggaXMgdXBkYXRlIGZvciBzM2MtZmIg
-YW5kIG90aGVycyBhcmUgZm9yIHBsYXRmb3JtIGRhdGEuCgp2MjogY2hhbmdlIGNsb2NrIG5hbWUg
-b2YgZXh5bm9zNCBGSU1EOiAiZmltZCIgLT4gImxjZCIKICAgICB1c2UgJ2hhc19jbGtzZWwnIHZh
-cmlhYmxlIGluIG9yZGVyIHRvIGRpc3Rpbmd1aXNoIEZJTUQgdmVyc2lvbgogICAgIGFkZCAnbGNk
-X2NsaycgdGhhdCBjYW4gYmUgdXNlZCBmb3Igb25seSBsY2QgcGl4ZWwgY2xvY2sKICAgICBhZGQg
-Y2FsbGJhY2sgJ2VuYWJsZV9jbGsoKScgdG8gZW5hYmxlIHBhcmVudCBjbG9jayAnc2Nsa19maW1k
-Jy4KdjM6IHJlbW92ZSB0aGUgY2FsbGJhY2sgZnJvbSB0aGUgcGxhdGZvcm0gZGF0YSBzdHJ1Y3R1
-cmUKdjQ6IG1vdmUgY2xrX2VuYWJsZShzZmItPmxjZF9jbGspIHVuZGVyIHRoZSBpZiBzdGF0ZW1l
-bnQKdjU6IGFkZCBjbGtfZW5hYmxlL2Rpc2FibGUoc2ZiLT5sY2RfY2xrKSB0byBzM2NfZmJfcnVu
-dGltZV9zdXNwZW5kL3Jlc3VtZSgpLgp2NjogcmVuYW1lIGRldi1maW1kLTI0YnBwLmMgdG8gZGV2
-LWZpbWQwLmMKICAgICBhZGQgJ2V4eW5vczRfZmltZDBfc2V0dXBfY2xvY2soKScgdG8gZGV2LWZp
-bWQwLmMgdG8gc2V0dXAgcGFyZW50IGNsb2NrLgoKbyBUbyBLdWtqaW4gS2ltCltQQVRDSCBWNiAx
-LzVdIEFSTTogRVhZTk9TNDogQ2hhbmdlIGNsb2NrIG5hbWUgZm9yIEZJTUQKW1BBVENIIFY2IDIv
-NV0gQVJNOiBFWFlOT1M0OiBBZGQgRklNRCByZXNvdXJjZSBkZWZpbml0aW9uCltQQVRDSCBWNiAz
-LzVdIEFSTTogRVhZTk9TNDogQWRkIHBsYXRmb3JtIGRldmljZSBhbmQgaGVscGVyIGZ1bmN0aW9u
-cyBmb3IgRklNRApbUEFUQ0ggVjYgNS81XSBBUk06IEVYWU5PUzQ6IEFkZCBwbGF0Zm9ybSBkYXRh
-IGZvciBFWFlOT1M0IEZJTUQgYW5kIExURTQ4MFdWIHBsYXRmb3JtLWxjZAoKbyBUbyBQYXVsIE11
-bmR0CltQQVRDSCBWNiA0LzVdIHZpZGVvOiBzM2MtZmI6IEFkZCBzdXBwb3J0IEVYWU5PUzQgRklN
-RP/06Lp7Lm7HK4m3n66JrYYrJYrL/7Hp3bYXpYp3/7p7Lm7HK4m3pYp7sf323Xr/4p7YXm6HcqH2
-pnrLGoHraJmo6K3aJqP74Hq/5Hq53pf6K4DKK3pmo6K3aJqIp36GrYbbaf//74Hq/5Hq53pf6K4P
-5mo6K3aJqP4p36P4bQo=
+Hi all,
+
+
+Im starting a project to develop a frame-buffer but I know anything
+about framebuffers. :) ... well do you guys have any suggestion about
+documentation or books (even though very hight level) about
+frame-buffers that could help me understand what goes around FBs
+drivers and devices??
+
+Regards,
+Erlon

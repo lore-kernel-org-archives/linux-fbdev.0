@@ -1,36 +1,58 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Fri, 24 Jun 2011 08:01:54 +0000
-Subject: Re: [PATCH] gx1fb: Fix section mismatch warnings
-Message-Id: <20110624080154.GA24184@linux-sh.org>
+From: Julia Lawall <julia@diku.dk>
+Date: Wed, 01 Jun 2011 17:10:11 +0000
+Subject: [PATCH 8/10] drivers/video/imxfb.c: add missing clk_put
+Message-Id: <1306948213-20767-8-git-send-email-julia@diku.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20110616123240.ecd25243.randy.dunlap@oracle.com> <1294018289-3911-1-git-send-email-sedat.dilek@gmail.com> <20110106063906.GB15340@linux-sh.org> <20110616123119.6ca873fa.randy.dunlap@oracle.com>
-In-Reply-To: <20110616123240.ecd25243.randy.dunlap@oracle.com> <20110616123119.6ca873fa.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Sedat Dilek <sedat.dilek@googlemail.com>, linux-geode@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Sedat Dilek <sedat.dilek@gmail.com>
+To: linux-arm-kernel@lists.infradead.org
 
-On Thu, Jun 16, 2011 at 12:31:19PM -0700, Randy Dunlap wrote:
-> Fix a chain of section mismatches in geode driver, beginning with:
-> 
-> WARNING: drivers/video/geode/gx1fb.o(.data+0x70): Section mismatch in reference from the variable gx1fb_driver to the function .init.text:gx1fb_probe()
-> The variable gx1fb_driver references
-> the function __init gx1fb_probe()
-> If the reference is valid then annotate the
-> variable with __init* or __refdata (see linux/init.h) or name the variable:
-> *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console
-> 
-> Making the changes that Paul pointed out resulted in a few more
-> changes being needed, so they are all included here.
+From: Julia Lawall <julia@diku.dk>
 
-On Thu, Jun 16, 2011 at 12:32:40PM -0700, Randy Dunlap wrote:
-> Fix section mismatch warning in sm501fb:
-> 
-> WARNING: drivers/video/sm501fb.o(.text+0x21d6): Section mismatch in reference from the function sm501fb_init_fb() to the variable .devinit.data:sm501_default_mode
-> The function sm501fb_init_fb() references
-> the variable __devinitdata sm501_default_mode.
-> This is often because sm501fb_init_fb lacks a __devinitdata 
-> annotation or the annotation of sm501_default_mode is wrong.
+Reorder the labels at the end of the function to correspond to the order in
+which the resources are allocated.
 
-Both applied, thanks.
+A simplified version of the semantic match that finds this problem is as
+follows: (http://coccinelle.lip6.fr/)
+
+// <smpl>
+@r exists@
+expression e1,e2;
+statement S;
+@@
+
+e1 = clk_get@p1(...);
+... when != e1 = e2
+    when != clk_put(e1)
+    when any
+if (...) { ... when != clk_put(e1)
+               when != if (...) { ... clk_put(e1) ... }
+* return@p3 ...;
+ } else S
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/video/imxfb.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+index d2ccfd6..f135dbe 100644
+--- a/drivers/video/imxfb.c
++++ b/drivers/video/imxfb.c
+@@ -856,10 +856,10 @@ failed_platform_init:
+ 		dma_free_writecombine(&pdev->dev,fbi->map_size,fbi->map_cpu,
+ 			fbi->map_dma);
+ failed_map:
+-	clk_put(fbi->clk);
+-failed_getclock:
+ 	iounmap(fbi->regs);
+ failed_ioremap:
++	clk_put(fbi->clk);
++failed_getclock:
+ 	release_mem_region(res->start, resource_size(res));
+ failed_req:
+ 	kfree(info->pseudo_palette);
+

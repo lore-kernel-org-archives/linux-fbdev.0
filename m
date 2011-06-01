@@ -1,7 +1,7 @@
 From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Wed, 01 Jun 2011 18:43:45 +0000
+Date: Wed, 01 Jun 2011 20:02:59 +0000
 Subject: Re: Mirror "module" for framebuffer
-Message-Id: <20110601204345.6129d6a1@neptune.home>
+Message-Id: <20110601220259.7e838306@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <4DE67493.6090708@daccii.it>
 In-Reply-To: <4DE67493.6090708@daccii.it>
@@ -10,36 +10,61 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Daniele,
+Hi,
+
+[re-adding linux-fbdev, please make sure to reply-to-all]
 
 On Wed, 01 June 2011 Daniele Salvatore Albano <info@daccii.it> wrote:
-> In short i should start to work to an application to remote control an 
-> android phone, just using the browser (video stream plus a lot of 
-> javascript).
-> While this is partially working right now, as you can imagine, phone is 
-> slow, a lot slow, so, while the framebuffer is little in most cases 
-> (320x256x2/320x256x4/800x480x2/800x480x4) a simple comparison, using 
-> neon extension too, if avaiable, is too slow, so the screen is refreshed 
-> too few times in a sec.
+>  From what i understand, technically i should hook registered 
+> framebuffer and change the callback (info->fbdefio->deferred_io), 
+> restoring it on module unloading to avoid the caos.
+>
+> In this way i could "catch" updates passed to the pagelist argument of 
+> the deferred io callback, add them to an own list, and call the original 
+> callback to let the driver to do the own work.
+
+Note that some framebuffer drivers might implement (lots) of private
+ioctls to implement (accelerated) drawing primitives.
+So unless you know the driver you are hooking onto all bets are open.
+
+> This is in the kernel from 2.6.20, so it should be on phone kernel.
 > 
-> On windows exists Mirror Drivers infrastructure that supply a list of 
-> changed parts of the screen and more (mouse events too if i'm not 
-> wrong), but looking around on the web i didn't founded anything related 
-> to this stuff (or similar) for linux.
-> 
-> So, before i start scrambling docs and source code (i've really little 
-> experience with kernel module programming, i've done simply things), i 
-> want to ask a simple question: can be done using a sort of hooking of 
-> internal framebuffer function calls (fb_ops for example) or it's 
-> impossible because apps write directly into the framebuffer memory?
+> I've a couple more questions:
+> - i need to access the structure containing the list of registered 
+> framebuffer device (struct fb_info *registered_fb[FB_MAX]), i've seen 
+> that there is an export symbol on registered_fb so can i access that 
+> directly/num_registered_fb?
 
-fbdefio probably is the nearest to what you are looking for.
+You can access it (as does fbcon) though that direct access may/will
+go away in the future as (since 2.6.39) now that array is protected
+by a mutex on fb core side (fbcon being indirectly fine through its
+synchronization via notification events, except when loading fbcon
+module)
+If you do access the list, write an function to do just that
+so there is no big rewrite needed to move your driver forward.
 
-It catches changes to the framebuffer (at page level) and calls back to
-driver at regular intervals to react on those changes.
+> - i need to know when a framebuffer is registered, i've seen that there 
+> is fb_register_client ... from what i see it seems that callback are 
+> called on every event so from the callback itself i should check for 
+> FB_EVENT_FB_REGISTERED, is this right?
 
-Though if your Andriod has some video HW acceleration you are going to
-be lost here unless you can get change notification from the hardware
-itself and then read back the changes.
+If you want to know when framebuffers get (un)registered (or get
+reconfigured) this is the way to go.
+
+> - (stupid question) do all fb modules implement deferred input/output?
+
+No, only a few selected ones implement deferred input/output, usually
+because the real framebuffer cannot be mapped into memory or the link
+to it is just dead slow so changes are pushed down to device at regular
+intervals.
+
+
+I'm wondering if you not better had to create a new framebuffer driver
+(based on virtual framebuffer) with fbdefio to push the changes to a
+backing framebuffer [the way fbcon draws console] (as well as whatever you
+use to stream to the remote system).
+This will make you lose any potential hardware acceleration but keep
+things simple.
+Though you would need ability to move software to your new framebuffer.
 
 Bruno

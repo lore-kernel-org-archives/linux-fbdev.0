@@ -1,128 +1,59 @@
-From: JinGoo Han <jg1.han@samsung.com>
-Date: Thu, 23 Jun 2011 06:44:22 +0000
-Subject: Re: RE: [PATCH V5 5/5] ARM: EXYNOS4: Add platform data for EXYNOS4
-Message-Id: <6250997.156871308811460901.JavaMail.weblogic@epml08>
+From: Daniele Salvatore Albano <info@daccii.it>
+Date: Wed, 01 Jun 2011 17:19:15 +0000
+Subject: Mirror "module" for framebuffer
+Message-Id: <4DE67493.6090708@daccii.it>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1308724904-31521-1-git-send-email-jg1.han@samsung.com>
-In-Reply-To: <1308724904-31521-1-git-send-email-jg1.han@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: JinGoo Han <jg1.han@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, 'Paul Mundt' <lethal@linux-sh.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Jong-Hun Han <jonghun.han@samsung.com>, ANAND KUMAR N <anand.kn@samsung.com>, THOMAS P ABRAHAM <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, 'Kyungmin Park' <kmpark@infradead.org>, In-Ki Dae <inki.dae@samsung.com>, 'ARM Linux' <linux@arm.linux.org.uk>, 'Ben Dooks' <ben-linux@fluff.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-CkhpLCBNYXJlay4KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+IEZyb206IGxpbnV4LWZi
-ZGV2LW93bmVyQHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LWZiZGV2LQo+IG93bmVyQHZn
-ZXIua2VybmVsLm9yZ10gT24gQmVoYWxmIE9mIE1hcmVrIFN6eXByb3dza2kKPiBTZW50OiBXZWRu
-ZXNkYXksIEp1bmUgMjIsIDIwMTEgNjo0NyBQTQo+IFRvOiAnSmluZ29vIEhhbic7ICdLdWtqaW4g
-S2ltJzsgJ1BhdWwgTXVuZHQnOyBsaW51eC1zYW1zdW5nLQo+IHNvY0B2Z2VyLmtlcm5lbC5vcmc7
-IGxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZzsgJ0pvbmdodW4gSGFuJwo+IENjOiAnQW5hbmQg
-S3VtYXIgTic7ICdUaG9tYXMgQWJyYWhhbSc7IFN5bHdlc3RlciBOYXdyb2NraTsgJ0t5dW5nbWlu
-IFBhcmsnOwo+ICdJbmtpIERhZSc7ICdBUk0gTGludXgnOyAnQmVuIERvb2tzJzsgJ0pvbmdodW4g
-SGFuJwo+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggVjUgNS81XSBBUk06IEVYWU5PUzQ6IEFkZCBwbGF0
-Zm9ybSBkYXRhIGZvciBFWFlOT1M0Cj4gRklNRCBhbmQgTFRFNDgwV1YgcGxhdGZvcm0tbGNkCj4g
-Cj4gSGVsbG8sCj4gCj4gT24gV2VkbmVzZGF5LCBKdW5lIDIyLCAyMDExIDg6NDIgQU0gSmluZ29v
-IEhhbiB3cm90ZToKPiAKPiA+IEZyb206IEpvbmdodW4gSGFuIDxqb25naHVuLmhhbkBzYW1zdW5n
-LmNvbT4KPiA+Cj4gPiBUaGlzIHBhdGNoIGFkZHMgc3VwcG9ydCBFWFlOT1M0IEZJTUQwIGFuZCBM
-VEU0ODBXViBMQ0QgcGFubmVsLgo+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IEpvbmdodW4gSGFuIDxq
-b25naHVuLmhhbkBzYW1zdW5nLmNvbT4KPiA+IFNpZ25lZC1vZmYtYnk6IEppbmdvbyBIYW4gPGpn
-MS5oYW5Ac2Ftc3VuZy5jb20+Cj4gPiAtLS0KPiA+ICBhcmNoL2FybS9tYWNoLWV4eW5vczQvbWFj
-aC1zbWRrYzIxMC5jIHwgIDExNAo+ID4gKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-Cj4gPiAgYXJjaC9hcm0vbWFjaC1leHlub3M0L21hY2gtc21ka3YzMTAuYyB8ICAxMTQKPiA+ICsr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKwo+ID4gIDIgZmlsZXMgY2hhbmdlZCwgMjI4
-IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pCj4gPgo+ID4gZGlmZiAtLWdpdCBhL2FyY2gv
-YXJtL21hY2gtZXh5bm9zNC9tYWNoLXNtZGtjMjEwLmMgYi9hcmNoL2FybS9tYWNoLQo+ID4gZXh5
-bm9zNC9tYWNoLXNtZGtjMjEwLmMKPiA+IGluZGV4IGU2NDVmN2EuLjM2MGE1MGEgMTAwNjQ0Cj4g
-PiAtLS0gYS9hcmNoL2FybS9tYWNoLWV4eW5vczQvbWFjaC1zbWRrYzIxMC5jCj4gPiArKysgYi9h
-cmNoL2FybS9tYWNoLWV4eW5vczQvbWFjaC1zbWRrYzIxMC5jCj4gPiBAQCAtOSwyNiArOSwzMyBA
-QAo+ID4gICovCj4gPgo+ID4gICNpbmNsdWRlIDxsaW51eC9zZXJpYWxfY29yZS5oPgo+ID4gKyNp
-bmNsdWRlIDxsaW51eC9kZWxheS5oPgo+ID4gICNpbmNsdWRlIDxsaW51eC9ncGlvLmg+Cj4gPiAr
-I2luY2x1ZGUgPGxpbnV4L2xjZC5oPgo+ID4gICNpbmNsdWRlIDxsaW51eC9tbWMvaG9zdC5oPgo+
-ID4gICNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9kZXZpY2UuaD4KPiA+ICAjaW5jbHVkZSA8bGlu
-dXgvc21zYzkxMXguaD4KPiA+ICAjaW5jbHVkZSA8bGludXgvaW8uaD4KPiA+ICAjaW5jbHVkZSA8
-bGludXgvaTJjLmg+Cj4gPiArI2luY2x1ZGUgPGxpbnV4L2Nsay5oPgo+ID4KPiA+ICAjaW5jbHVk
-ZSA8YXNtL21hY2gvYXJjaC5oPgo+ID4gICNpbmNsdWRlIDxhc20vbWFjaC10eXBlcy5oPgo+ID4K
-PiA+ICsjaW5jbHVkZSA8dmlkZW8vcGxhdGZvcm1fbGNkLmg+Cj4gPiArCj4gPiAgI2luY2x1ZGUg
-PHBsYXQvcmVncy1zZXJpYWwuaD4KPiA+ICAjaW5jbHVkZSA8cGxhdC9yZWdzLXNyb20uaD4KPiA+
-ICAjaW5jbHVkZSA8cGxhdC9leHlub3M0Lmg+Cj4gPiAgI2luY2x1ZGUgPHBsYXQvY3B1Lmg+Cj4g
-PiAgI2luY2x1ZGUgPHBsYXQvZGV2cy5oPgo+ID4gKyNpbmNsdWRlIDxwbGF0L2ZiLmg+Cj4gPiAg
-I2luY2x1ZGUgPHBsYXQvc2RoY2kuaD4KPiA+ICAjaW5jbHVkZSA8cGxhdC9paWMuaD4KPiA+ICAj
-aW5jbHVkZSA8cGxhdC9wZC5oPgo+ID4KPiA+ICAjaW5jbHVkZSA8bWFjaC9tYXAuaD4KPiA+ICsj
-aW5jbHVkZSA8bWFjaC9yZWdzLWZiLmg+Cj4gPgo+ID4gIC8qIEZvbGxvd2luZyBhcmUgZGVmYXVs
-dCB2YWx1ZXMgZm9yIFVDT04sIFVMQ09OIGFuZCBVRkNPTiBVQVJUCj4gcmVnaXN0ZXJzCj4gPiAq
-Lwo+ID4gICNkZWZpbmUgU01ES0MyMTBfVUNPTl9ERUZBVUxUCShTM0MyNDEwX1VDT05fVFhJTEVW
-RUwgfAlcCj4gPiBAQCAtMTExLDYgKzExOCw2OSBAQCBzdGF0aWMgc3RydWN0IHMzY19zZGhjaV9w
-bGF0ZGF0YQo+IHNtZGtjMjEwX2hzbW1jM19wZGF0YQo+ID4gX19pbml0ZGF0YSA9IHsKPiA+ICAJ
-LmNsa190eXBlCQk9IFMzQ19TREhDSV9DTEtfRElWX0VYVEVSTkFMLAo+ID4gIH07Cj4gPgo+ID4g
-K3N0YXRpYyB2b2lkIGxjZF9sdGU0ODB3dl9zZXRfcG93ZXIoc3RydWN0IHBsYXRfbGNkX2RhdGEg
-KnBkLAo+ID4gKwkJCQkgICB1bnNpZ25lZCBpbnQgcG93ZXIpCj4gPiArewo+ID4gKwlpZiAocG93
-ZXIpIHsKPiA+ICsjaWYgIWRlZmluZWQoQ09ORklHX0JBQ0tMSUdIVF9QV00pCj4gPiArCQlncGlv
-X3JlcXVlc3QoRVhZTk9TNF9HUEQwKDEpLCAiR1BEMCIpOwo+ID4gKwkJZ3Bpb19kaXJlY3Rpb25f
-b3V0cHV0KEVYWU5PUzRfR1BEMCgxKSwgMSk7Cj4gPiArCQlncGlvX2ZyZWUoRVhZTk9TNF9HUEQw
-KDEpKTsKPiA+ICsjZW5kaWYKPiA+ICsJCS8qIGZpcmUgblJFU0VUIG9uIHBvd2VyIHVwICovCj4g
-PiArCQlncGlvX3JlcXVlc3QoRVhZTk9TNF9HUFgwKDYpLCAiR1BYMCIpOwo+ID4gKwo+ID4gKwkJ
-Z3Bpb19kaXJlY3Rpb25fb3V0cHV0KEVYWU5PUzRfR1BYMCg2KSwgMSk7Cj4gPiArCQltZGVsYXko
-MTAwKTsKPiA+ICsKPiA+ICsJCWdwaW9fc2V0X3ZhbHVlKEVYWU5PUzRfR1BYMCg2KSwgMCk7Cj4g
-PiArCQltZGVsYXkoMTApOwo+ID4gKwo+ID4gKwkJZ3Bpb19zZXRfdmFsdWUoRVhZTk9TNF9HUFgw
-KDYpLCAxKTsKPiA+ICsJCW1kZWxheSgxMCk7Cj4gPiArCj4gPiArCQlncGlvX2ZyZWUoRVhZTk9T
-NF9HUFgwKDYpKTsKPiA+ICsJfSBlbHNlIHsKPiA+ICsjaWYgIWRlZmluZWQoQ09ORklHX0JBQ0tM
-SUdIVF9QV00pCj4gPiArCQlncGlvX3JlcXVlc3QoRVhZTk9TNF9HUEQwKDEpLCAiR1BEMCIpOwo+
-ID4gKwkJZ3Bpb19kaXJlY3Rpb25fb3V0cHV0KEVYWU5PUzRfR1BEMCgxKSwgMCk7Cj4gPiArCQln
-cGlvX2ZyZWUoRVhZTk9TNF9HUEQwKDEpKTsKPiA+ICsjZW5kaWYKPiA+ICsJfQo+ID4gK30KPiA+
-ICsKPiA+ICtzdGF0aWMgc3RydWN0IHBsYXRfbGNkX2RhdGEgc21ka2MyMTBfbGNkX2x0ZTQ4MHd2
-X2RhdGEgPSB7Cj4gPiArCS5zZXRfcG93ZXIgICAgICA9IGxjZF9sdGU0ODB3dl9zZXRfcG93ZXIs
-Cj4gPiArfTsKPiA+ICsKPiA+ICtzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2RldmljZSBzbWRrYzIx
-MF9sY2RfbHRlNDgwd3YgPSB7Cj4gPiArCS5uYW1lICAgICAgICAgICAgICAgICAgID0gInBsYXRm
-b3JtLWxjZCIsCj4gPiArCS5kZXYucGFyZW50ICAgICAgICAgICAgID0gJnM1cF9kZXZpY2VfZmlt
-ZDAuZGV2LAo+ID4gKwkuZGV2LnBsYXRmb3JtX2RhdGEgICAgICA9ICZzbWRrYzIxMF9sY2RfbHRl
-NDgwd3ZfZGF0YSwKPiA+ICt9Owo+ID4gKwo+ID4gK3N0YXRpYyBzdHJ1Y3QgczNjX2ZiX3BkX3dp
-biBzbWRrYzIxMF9mYl93aW4wID0gewo+ID4gKwkud2luX21vZGUgPSB7Cj4gPiArCQkubGVmdF9t
-YXJnaW4gICAgPSAxMywKPiA+ICsJCS5yaWdodF9tYXJnaW4gICA9IDgsCj4gPiArCQkudXBwZXJf
-bWFyZ2luICAgPSA3LAo+ID4gKwkJLmxvd2VyX21hcmdpbiAgID0gNSwKPiA+ICsJCS5oc3luY19s
-ZW4gICAgICA9IDMsCj4gPiArCQkudnN5bmNfbGVuICAgICAgPSAxLAo+ID4gKwkJLnhyZXMgICA9
-IDgwMCwKPiA+ICsJCS55cmVzICAgPSA0ODAsCj4gPiArCX0sCj4gPiArCS5tYXhfYnBwICAgICAg
-ICA9IDMyLAo+ID4gKwkuZGVmYXVsdF9icHAgICAgPSAyNCwKPiA+ICt9Owo+ID4gKwo+ID4gK3N0
-YXRpYyBzdHJ1Y3QgczNjX2ZiX3BsYXRkYXRhIHNtZGtjMjEwX2xjZDBfcGRhdGEgX19pbml0ZGF0
-YSA9IHsKPiA+ICsJLndpblswXQkJPSAmc21ka2MyMTBfZmJfd2luMCwKPiA+ICsJLnZpZGNvbjAJ
-PSBWSURDT04wX1ZJRE9VVF9SR0IgfCBWSURDT04wX1BOUk1PREVfUkdCLAo+ID4gKwkudmlkY29u
-MQk9IFZJRENPTjFfSU5WX0hTWU5DIHwgVklEQ09OMV9JTlZfVlNZTkMsCj4gPiArCS5zZXR1cF9n
-cGlvCT0gZXh5bm9zNF9maW1kMF9ncGlvX3NldHVwXzI0YnBwLAo+ID4gK307Cj4gPiArCj4gPiAg
-c3RhdGljIHN0cnVjdCByZXNvdXJjZSBzbWRrYzIxMF9zbXNjOTExeF9yZXNvdXJjZXNbXSA9IHsK
-PiA+ICAJWzBdID0gewo+ID4gIAkJLnN0YXJ0CT0gRVhZTk9TNF9QQV9TUk9NX0JBTksoMSksCj4g
-PiBAQCAtMTY1LDYgKzIzNSw4IEBAIHN0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpzbWRr
-YzIxMF9kZXZpY2VzW10KPiA+IF9faW5pdGRhdGEgPSB7Cj4gPiAgCSZleHlub3M0X2RldmljZV9w
-ZFtQRF9HUFNdLAo+ID4gIAkmZXh5bm9zNF9kZXZpY2Vfc3lzbW11LAo+ID4gIAkmc2Ftc3VuZ19h
-c29jX2RtYSwKPiA+ICsJJnM1cF9kZXZpY2VfZmltZDAsCj4gPiArCSZzbWRrYzIxMF9sY2RfbHRl
-NDgwd3YsCj4gPiAgCSZzbWRrYzIxMF9zbXNjOTExeCwKPiA+ICB9Owo+ID4KPiA+IEBAIC0xOTEs
-NiArMjYzLDQ0IEBAIHN0YXRpYyB2b2lkIF9faW5pdCBzbWRrYzIxMF9zbXNjOTExeF9pbml0KHZv
-aWQpCj4gPiAgCQkgICAgICgweDEgPDwgUzVQX1NST01fQkNYX19UQUNTX19TSElGVCksIFM1UF9T
-Uk9NX0JDMSk7Cj4gPiAgfQo+ID4KPiA+ICtzdGF0aWMgaW50IF9faW5pdCBzbWRrYzIxMF9maW1k
-MF9zZXR1cF9jbG9jayh2b2lkKQo+ID4gK3sKPiA+ICsJc3RydWN0IGNsayAqc2NsayA9IE5VTEw7
-Cj4gPiArCXN0cnVjdCBjbGsgKm1vdXRfbXBsbCA9IE5VTEw7Cj4gPiArCj4gPiArCXUzMiByYXRl
-ID0gMDsKPiA+ICsKPiA+ICsJc2NsayA9IGNsa19nZXQoJnM1cF9kZXZpY2VfZmltZDAuZGV2LCAi
-c2Nsa19maW1kIik7Cj4gPiArCWlmIChJU19FUlIoc2NsaykpIHsKPiA+ICsJCXByaW50ayhLRVJO
-X0VSUiAiZmFpbGVkIHRvIGdldCBzY2xrIGZvciBmaW1kXG4iKTsKPiA+ICsJCWdvdG8gZXJyX2Ns
-azI7Cj4gPiArCX0KPiA+ICsKPiA+ICsJbW91dF9tcGxsID0gY2xrX2dldChOVUxMLCAibW91dF9t
-cGxsIik7Cj4gPiArCWlmIChJU19FUlIobW91dF9tcGxsKSkgewo+ID4gKwkJcHJpbnRrKEtFUk5f
-RVJSICJmYWlsZWQgdG8gZ2V0IG1vdXRfbXBsbFxuIik7Cj4gPiArCQlnb3RvIGVycl9jbGsxOwo+
-ID4gKwl9Cj4gPiArCj4gPiArCWNsa19zZXRfcGFyZW50KHNjbGssIG1vdXRfbXBsbCk7Cj4gPiAr
-CWlmICghcmF0ZSkKPiA+ICsJCXJhdGUgPSAxMzQwMDAwMDA7Cj4gPiArCj4gPiArCWNsa19zZXRf
-cmF0ZShzY2xrLCByYXRlKTsKPiA+ICsKPiA+ICsJY2xrX3B1dChzY2xrKTsKPiA+ICsJY2xrX3B1
-dChtb3V0X21wbGwpOwo+ID4gKwo+ID4gKwlyZXR1cm4gMDsKPiA+ICsKPiA+ICtlcnJfY2xrMToK
-PiA+ICsJY2xrX3B1dChtb3V0X21wbGwpOwo+ID4gK2Vycl9jbGsyOgo+ID4gKwljbGtfcHV0KHNj
-bGspOwo+ID4gKwo+ID4gKwlyZXR1cm4gLUVJTlZBTDsKPiA+ICt9Cj4gPiArCj4gCj4gSSdtIG5v
-dCBzdXJlIGlmIG1hY2gtc21kayouYyBpcyB0aGUgcmlnaHQgcGxhY2UgZm9yIHRoZSBhYm92ZSBj
-b2RlLgo+IElNSE8gYWxsIHRoZSBjb2RlIHRoYXQgY29uZmlndXJlcyB2ZXJ5IGxvdyBsZXZlbCwg
-Ym9hcmQgc3BlY2lmaWMKPiBwYXJhbWV0ZXJzCj4gKGxpa2UgY2xvY2tzIGFuZCB0aGVpciByZWxh
-dGlvbnMpIHNob3VsZCBiZSBwZXJmb3JtZWQgaW4gYm9vdCBsb2FyZGVyLgoKSSBhZ3JlZSB3aXRo
-IHlvdXIgc3VnZ2VzdGlvbi4KSSB3aWxsIHJlbW92ZSB0aGUgcGFyZW50IGNsb2NrIHNldHRpbmcg
-ZnJvbSB0aGUgbWFjaGluZSBhcyBmaW1jIGRvZXMuCkkgd2lsbCBzZW5kIFY3IHBhdGNoZXMsIHNv
-b24uCgpJIHJlYWxseSBhcHByZWNpYXRlIHlvdXIgcmV2aWV3LiBUaGFuayB5b3UuCgo+IAo+IChz
-bmlwcGVkKQo+IAo+IEJlc3QgcmVnYXJkcwo+IC0tCj4gTWFyZWsgU3p5cHJvd3NraQo+IFNhbXN1
-bmcgUG9sYW5kIFImRCBDZW50ZXIKPiAKPiAKPiAKPiAtLQo+IFRvIHVuc3Vic2NyaWJlIGZyb20g
-dGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4KPiB0
-aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZwo+IE1vcmUg
-bWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8u
-aHRtbAr/9Oi6ey5uxyuJt5+uia2GKyWKy/+x6d22F6WKd/+6ey5uxyuJt6WKe7H99t16/+Ke2F5u
-h3Kh9qZ6yxqB62iZqOit2iaj++B6v+R6ud6X+iuAyit6ZqOit2iaiKd+hq2G22n//++B6v+R6ud6
-X+iuD+ZqOit2iaj+Kd+j+G0K
+Hi to all,
+
+In short i should start to work to an application to remote control an 
+android phone, just using the browser (video stream plus a lot of 
+javascript).
+While this is partially working right now, as you can imagine, phone is 
+slow, a lot slow, so, while the framebuffer is little in most cases 
+(320x256x2/320x256x4/800x480x2/800x480x4) a simple comparison, using 
+neon extension too, if avaiable, is too slow, so the screen is refreshed 
+too few times in a sec.
+
+On windows exists Mirror Drivers infrastructure that supply a list of 
+changed parts of the screen and more (mouse events too if i'm not 
+wrong), but looking around on the web i didn't founded anything related 
+to this stuff (or similar) for linux.
+
+So, before i start scrambling docs and source code (i've really little 
+experience with kernel module programming, i've done simply things), i 
+want to ask a simple question: can be done using a sort of hooking of 
+internal framebuffer function calls (fb_ops for example) or it's 
+impossible because apps write directly into the framebuffer memory?
+
+Thank you!!!
+
+
+Best Regards,
+Daniele
+
+-- 
+____________________________________________________________
+                                         |
+Daniele Salvatore Albano                | web site:
+  IT Consultant                          | http://www.itechcon.it
+  Website Design and Development         |
+  Software Engineer and Developer        | e-mail:
+  Linux Servers SetUp And Administration | info@itechcon.it
+  Embedded Network Solutions             | d.albano@itechcon.it
+
+Ai sensi del D.Lgs. 196/2003 si precisa che le informazioni contenute in 
+questo messaggio sono riservate ed a uso esclusivo del destinatario. 
+Qualora il messaggio in parola Le fosse pervenuto per errore, La 
+invitiamo ad eliminarlo senza copiarlo e a non inoltrarlo a terzi, 
+dandocene gentilmente comunicazione. Grazie.
+Pursuant to Legislative Decree No. 196/2003, you are hereby informed 
+that this message contains confidential information intended only for 
+the use of the addressee. If you are not the addressee, and have 
+received this message by mistake, please delete it and immediately 
+notify us. You may not copy or disseminate this message to anyone. Thank 
+you.

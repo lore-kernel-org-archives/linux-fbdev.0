@@ -1,121 +1,101 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 03 Jun 2011 10:00:34 +0000
-Subject: [PATCH 24/27] OMAP: DSS2: Remove ctx loss count from dss.c
-Message-Id: <1307095237-14805-25-git-send-email-tomi.valkeinen@ti.com>
+From: Julia Lawall <julia@diku.dk>
+Date: Wed, 01 Jun 2011 17:10:13 +0000
+Subject: [PATCH 10/10] drivers/video/pxa168fb.c: add missing clk_put
+Message-Id: <1306948213-20767-10-git-send-email-julia@diku.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-dss.c only saves 1 register (3 in OMAP3) so the extra overhead from
-need_ctx_restore & co. is probably bigger than the time spent saving and
-restoring those few registers every time.
+From: Julia Lawall <julia@diku.dk>
 
-So remove the code from dss.c and restore context every time dss has
-been off.
+Add a label for error-handling code in the case where only clk_get has
+succeeded.  Rename the label failed to be consistent with the rest.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+A simplified version of the semantic match that finds the missing clk_put
+is as follows: (http://coccinelle.lip6.fr/)
+
+// <smpl>
+@r exists@
+expression e1,e2;
+statement S;
+@@
+
+e1 = clk_get@p1(...);
+... when != e1 = e2
+    when != clk_put(e1)
+    when any
+if (...) { ... when != clk_put(e1)
+               when != if (...) { ... clk_put(e1) ... }
+* return@p3 ...;
+ } else S
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
 ---
- drivers/video/omap2/dss/dss.c |   61 +----------------------------------------
- 1 files changed, 1 insertions(+), 60 deletions(-)
+ drivers/video/pxa168fb.c |   17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index c8d7357..91572b6 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -62,7 +62,6 @@ static struct {
- 	struct platform_device *pdev;
- 	void __iomem    *base;
- 
--	int		ctx_loss_cnt;
- 	struct mutex	runtime_lock;
- 	int		runtime_count;
- 
-@@ -633,61 +632,6 @@ void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select hdmi)
- 	REG_FLD_MOD(DSS_CONTROL, hdmi, 15, 15);	/* VENC_HDMI_SWITCH */
- }
- 
--/* CONTEXT */
--static void dss_init_ctx_loss_count(void)
--{
--	struct device *dev = &dss.pdev->dev;
--	struct omap_display_platform_data *pdata = dev->platform_data;
--	struct omap_dss_board_info *board_data = pdata->board_data;
--	int cnt = 0;
--
--	/*
--	 * get_context_loss_count returns negative on error. We'll ignore the
--	 * error and store the error to ctx_loss_cnt, which will cause
--	 * dss_need_ctx_restore() call to return true.
--	 */
--
--	if (board_data->get_context_loss_count)
--		cnt = board_data->get_context_loss_count(dev);
--
--	WARN_ON(cnt < 0);
--
--	dss.ctx_loss_cnt = cnt;
--
--	DSSDBG("initial ctx_loss_cnt %u\n", cnt);
--}
--
--static bool dss_need_ctx_restore(void)
--{
--	struct device *dev = &dss.pdev->dev;
--	struct omap_display_platform_data *pdata = dev->platform_data;
--	struct omap_dss_board_info *board_data = pdata->board_data;
--	int cnt;
--
--	/*
--	 * If get_context_loss_count is not available, assume that we need
--	 * context restore always.
--	 */
--	if (!board_data->get_context_loss_count)
--		return true;
--
--	cnt = board_data->get_context_loss_count(dev);
--	if (cnt < 0) {
--		dev_err(dev, "getting context loss count failed, will force "
--				"context restore\n");
--		dss.ctx_loss_cnt = cnt;
--		return true;
--	}
--
--	if (cnt = dss.ctx_loss_cnt)
--		return false;
--
--	DSSDBG("ctx_loss_cnt %d -> %d\n", dss.ctx_loss_cnt, cnt);
--	dss.ctx_loss_cnt = cnt;
--
--	return true;
--}
--
- static int dss_get_clocks(void)
- {
- 	struct clk *clk;
-@@ -756,8 +700,7 @@ int dss_runtime_get(void)
- 		if (r < 0)
- 			goto err;
- 
--		if (dss_need_ctx_restore())
--			dss_restore_context();
-+		dss_restore_context();
+diff --git a/drivers/video/pxa168fb.c b/drivers/video/pxa168fb.c
+index 35f61dd..bb95ec5 100644
+--- a/drivers/video/pxa168fb.c
++++ b/drivers/video/pxa168fb.c
+@@ -623,19 +623,21 @@ static int __devinit pxa168fb_probe(struct platform_device *pdev)
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (res = NULL) {
+ 		dev_err(&pdev->dev, "no IO memory defined\n");
+-		return -ENOENT;
++		ret = -ENOENT;
++		goto failed_put_clk;
  	}
  
- 	mutex_unlock(&dss.runtime_lock);
-@@ -828,8 +771,6 @@ static int omap_dsshw_probe(struct platform_device *pdev)
- 	if (r)
- 		goto err_clocks;
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq < 0) {
+ 		dev_err(&pdev->dev, "no IRQ defined\n");
+-		return -ENOENT;
++		ret = -ENOENT;
++		goto failed_put_clk;
+ 	}
  
--	dss_init_ctx_loss_count();
--
- 	mutex_init(&dss.runtime_lock);
+ 	info = framebuffer_alloc(sizeof(struct pxa168fb_info), &pdev->dev);
+ 	if (info = NULL) {
+-		clk_put(clk);
+-		return -ENOMEM;
++		ret = -ENOMEM;
++		goto failed_put_clk;
+ 	}
  
- 	pm_runtime_enable(&pdev->dev);
--- 
-1.7.4.1
+ 	/* Initialize private data */
+@@ -671,7 +673,7 @@ static int __devinit pxa168fb_probe(struct platform_device *pdev)
+ 	fbi->reg_base = ioremap_nocache(res->start, resource_size(res));
+ 	if (fbi->reg_base = NULL) {
+ 		ret = -ENOMEM;
+-		goto failed;
++		goto failed_free_info;
+ 	}
+ 
+ 	/*
+@@ -683,7 +685,7 @@ static int __devinit pxa168fb_probe(struct platform_device *pdev)
+ 						&fbi->fb_start_dma, GFP_KERNEL);
+ 	if (info->screen_base = NULL) {
+ 		ret = -ENOMEM;
+-		goto failed;
++		goto failed_free_info;
+ 	}
+ 
+ 	info->fix.smem_start = (unsigned long)fbi->fb_start_dma;
+@@ -772,8 +774,9 @@ failed_free_clk:
+ failed_free_fbmem:
+ 	dma_free_coherent(fbi->dev, info->fix.smem_len,
+ 			info->screen_base, fbi->fb_start_dma);
+-failed:
++failed_free_info:
+ 	kfree(info);
++failed_put_clk:
+ 	clk_put(clk);
+ 
+ 	dev_err(&pdev->dev, "frame buffer device init failed with %d\n", ret);
 

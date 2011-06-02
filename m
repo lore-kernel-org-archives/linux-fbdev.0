@@ -1,39 +1,21 @@
-From: JinGoo Han <jg1.han@samsung.com>
-Date: Mon, 27 Jun 2011 10:54:14 +0000
-Subject: [PATCH V7 0/5] ARM: EXYNOS4: Add support EXYNOS4 FIMD
-Message-Id: <19779751.102691309172052908.JavaMail.weblogic@epml18>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Thu, 02 Jun 2011 08:13:26 +0000
+Subject: Re: [PATCH] fbdev: bf537-lq035: add missing blacklight properties type
+Message-Id: <20110602081326.GF6087@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-f>
-Cc: ANAND KUMAR N <anand.kn@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, THOMAS P ABRAHAM <thomas.ab@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kmpark@infradead.org>, In-Ki Dae <inki.dae@samsung.com>, ARM Linux <linux@arm.linux.org.uk>, Ben Dooks <ben-linux@fluff.org>, JinGoo Han <jg1.han@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-VGhpcyBwYXRjaCBzZXJpZXMgaXMgYmFzZWQgb24gdGhlIGxhdGVzdApnaXQua2VybmVsLm9yZy9w
-dWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgtMi42LmdpdAoKVGhpcyB3YXMg
-b3JpZ2luYWxseSBzdWJtaXR0ZWQgYnkgSm9uZ2h1biBIYW4gPGpvbmdodW4uaGFuQHNhbXN1bmcu
-Y29tPgpodHRwOi8vd3d3LnNwaW5pY3MubmV0L2xpc3RzL2FybS1rZXJuZWwvbXNnMTAxNzgxLmh0
-bWwKClRoaXMgcGF0Y2ggYWRkcyBzdXBwb3J0IEZJTUQoRnVsbHkgSW50ZXJhY3RpdmUgTW9iaWxl
-IERpc3BsYXkpIG9uIEV4eW5vczQuClRoZSA0dGggcGF0Y2ggaXMgdXBkYXRlIGZvciBzM2MtZmIg
-YW5kIG90aGVycyBhcmUgZm9yIHBsYXRmb3JtIGRhdGEuCgp2MjogY2hhbmdlIGNsb2NrIG5hbWUg
-b2YgZXh5bm9zNCBGSU1EOiAiZmltZCIgLT4gImxjZCIKICAgICB1c2UgJ2hhc19jbGtzZWwnIHZh
-cmlhYmxlIGluIG9yZGVyIHRvIGRpc3Rpbmd1aXNoIEZJTUQgdmVyc2lvbgogICAgIGFkZCAnbGNk
-X2NsaycgdGhhdCBjYW4gYmUgdXNlZCBmb3Igb25seSBsY2QgcGl4ZWwgY2xvY2sKICAgICBhZGQg
-Y2FsbGJhY2sgJ2VuYWJsZV9jbGsoKScgdG8gZW5hYmxlIHBhcmVudCBjbG9jayAnc2Nsa19maW1k
-Jy4KdjM6IHJlbW92ZSB0aGUgY2FsbGJhY2sgZnJvbSB0aGUgcGxhdGZvcm0gZGF0YSBzdHJ1Y3R1
-cmUKdjQ6IG1vdmUgY2xrX2VuYWJsZShzZmItPmxjZF9jbGspIHVuZGVyIHRoZSBpZiBzdGF0ZW1l
-bnQKdjU6IGFkZCBjbGtfZW5hYmxlL2Rpc2FibGUoc2ZiLT5sY2RfY2xrKSB0byBzM2NfZmJfcnVu
-dGltZV9zdXNwZW5kL3Jlc3VtZSgpLgp2NjogcmVuYW1lIGRldi1maW1kLTI0YnBwLmMgdG8gZGV2
-LWZpbWQwLmMKICAgICBhZGQgJ2V4eW5vczRfZmltZDBfc2V0dXBfY2xvY2soKScgdG8gZGV2LWZp
-bWQwLmMgdG8gc2V0dXAgcGFyZW50IGNsb2NrLgp2NzogcmVtb3ZlIHBhcmVudCBjbG9jayBzZXR0
-aW5nIGZyb20gbWFjaGluZSBkaXJlY3RvcnkKICAgICB1c2Ugoa5ncGlvX3JlcXVlc3Rfb25lKCmh
-ryB0byBzaW1wbHkgdGhlIGdwaW8gc2V0dGluZyBzdGVwCgpvIFRvIEt1a2ppbiBLaW0KW1BBVENI
-IFY3IDEvNV0gQVJNOiBFWFlOT1M0OiBDaGFuZ2UgY2xvY2sgbmFtZSBmb3IgRklNRApbUEFUQ0gg
-VjcgMi81XSBBUk06IEVYWU5PUzQ6IEFkZCBGSU1EIHJlc291cmNlIGRlZmluaXRpb24KW1BBVENI
-IFY3IDMvNV0gQVJNOiBFWFlOT1M0OiBBZGQgcGxhdGZvcm0gZGV2aWNlIGFuZCBoZWxwZXIgZnVu
-Y3Rpb25zIGZvciBGSU1ECltQQVRDSCBWNyA1LzVdIEFSTTogRVhZTk9TNDogQWRkIHBsYXRmb3Jt
-IGRhdGEgZm9yIEVYWU5PUzQgRklNRCBhbmQgTFRFNDgwV1YgcGxhdGZvcm0tbGNkCgpvIFRvIFBh
-dWwgTXVuZHQKW1BBVENIIFY3IDQvNV0gdmlkZW86IHMzYy1mYjogQWRkIHN1cHBvcnQgRVhZTk9T
-NAoK//Tounsubscribefromthislisv/sendthelinf/unsubscribelinux/fbdev/inthebody
-ofamessagetomajordomo/vger/kernel/orgMoremajordomoinfoathttp///vger/kernel/o
-rg/majordomo/info/htCg==
+On Sun, May 29, 2011 at 11:23:36PM -0400, Mike Frysinger wrote:
+> From: Steven Miao <realmz6@gmail.com>
+> 
+> Seems this new field was missed, probably due to this driver being merged
+> around the time this new backlight field was being added.  At any rate,
+> initial the type field to avoid ugly WARN() dumps.
+> 
+> Signed-off-by: Steven Miao <realmz6@gmail.com>
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+
+Applied, thanks.

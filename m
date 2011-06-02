@@ -1,55 +1,27 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 06 Jun 2011 16:16:51 +0000
-Subject: Re: [PATCH 21/29] s3fb: use display information in info not in var for panning
-Message-Id: <201106061816.51350.laurent.pinchart@ideasonboard.com>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Thu, 02 Jun 2011 08:26:28 +0000
+Subject: Re: [TRIVIAL PATCH V2 next 12/15] video: Convert vmalloc/memset to vzalloc
+Message-Id: <20110602082628.GI6087@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1306364301-8195-22-git-send-email-laurent.pinchart@ideasonboard.com>
-In-Reply-To: <1306364301-8195-22-git-send-email-laurent.pinchart@ideasonboard.com>
+References: <cover.1306603968.git.joe@perches.com> <77538de911b8af99f68b7bcfbaaedce8e40db04f.1306603968.git.joe@perches.com> <201105281948.12941.heiko@sntech.de> <1306606413.20336.9.camel@Joe-Laptop>
+In-Reply-To: <1306606413.20336.9.camel@Joe-Laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Joe Perches <joe@perches.com>
+Cc: Heiko St?bner <heiko@sntech.de>, Jaya Kumar <jayalk@intworks.biz>, Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Jiri Kosina <trivial@kernel.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com, virtualization@lists.linux-foundation.org
 
-Hi Tormod,
-
-On Friday 03 June 2011 11:26:51 Tormod Volden wrote:
-> On Thu, May 26, 2011 at 6:31 PM, Laurent Pinchart  wrote:
-> > On Thursday 26 May 2011 16:12:21 Tormod Volden wrote:
-> >> On Thu, May 26, 2011 at 12:58 AM, Laurent Pinchart wrote:
-> >> > We must not use any information in the passed var besides xoffset,
-> >> > yoffset and vmode as otherwise applications might abuse it. Also use
-> >> > the aligned fix.line_length and not the (possible) unaligned
-> >> > xres_virtual.
-> >> > 
-> >> > Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> >> > Cc: Antonino Daplas <adaplas@gmail.com>
-> >> > ---
-> >> >  drivers/video/savage/savagefb_driver.c |   16 +++++++---------
-> >> >  1 files changed, 7 insertions(+), 9 deletions(-)
-> >> 
-> >> The patch title is misleading, this is not the s3fb driver but the
-> >> savagefb driver.
-> > 
-> > Yes, sorry about that. I've fixed the patch title, as well as the next
-> > patch.
+On Sat, May 28, 2011 at 11:13:33AM -0700, Joe Perches wrote:
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+> Heiko St??bner <heiko@sntech.de> pointed out I can't type...
+> s/vmalloc/vmalloc/ doesn't do much.
 > 
-> Hi Laurent,
-> I haven't seen any updated patch posted,
-
-That's because I haven't posted the updated patches yet :-) I was waiting for 
-more review.
-
-> but anyway, the patch looks otherwise correct to me, and I have tested it on
-> my Savage TwisterK:
+>  drivers/video/arcfb.c        |    5 ++---
+>  drivers/video/broadsheetfb.c |    4 +---
+>  drivers/video/hecubafb.c     |    5 ++---
+>  drivers/video/metronomefb.c  |    4 +---
+>  drivers/video/xen-fbfront.c  |    3 +--
+>  5 files changed, 7 insertions(+), 14 deletions(-)
 > 
-> Reviewed-by: Tormod Volden <debian.tormod@gmail.com>
-
-Thank you.
-
-It's been a week and a half since I posted the first version, I'll now send an 
-updated one with correct titles and Acked-by/Reviewed-by lines.
-
--- 
-Regards,
-
-Laurent Pinchart
+v2 applied.

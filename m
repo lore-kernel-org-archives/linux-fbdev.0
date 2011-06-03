@@ -1,48 +1,73 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 14 Jun 2011 09:25:01 +0000
-Subject: [PATCH v2 23/29] sm501fb: use display information in info not in var for panning
-Message-Id: <1308043507-11083-24-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 03 Jun 2011 10:00:24 +0000
+Subject: [PATCH 14/27] OMAP: DSS2: Remove CONFIG_OMAP2_DSS_SLEEP_BEFORE_RESET
+Message-Id: <1307095237-14805-15-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+CONFIG_OMAP2_DSS_SLEEP_BEFORE_RESET is used to avoid an unclear bug at
+DSS reset time. The pm runtime will handle reset in the future, and this
+code has to be removed. Hopefully we won't see this error anymore.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Ben Dooks <ben@simtec.co.uk>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/sm501fb.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/omap2/dss/Kconfig |   12 ------------
+ drivers/video/omap2/dss/dss.c   |   13 -------------
+ 2 files changed, 0 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
-index 87f0be1..2c9e9d3 100644
---- a/drivers/video/sm501fb.c
-+++ b/drivers/video/sm501fb.c
-@@ -582,7 +582,7 @@ static int sm501fb_pan_crt(struct fb_var_screeninfo *var,
- {
- 	struct sm501fb_par  *par = info->par;
- 	struct sm501fb_info *fbi = par->info;
--	unsigned int bytes_pixel = var->bits_per_pixel / 8;
-+	unsigned int bytes_pixel = info->var.bits_per_pixel / 8;
- 	unsigned long reg;
- 	unsigned long xoffs;
+diff --git a/drivers/video/omap2/dss/Kconfig b/drivers/video/omap2/dss/Kconfig
+index 6b3e2da..0d12524 100644
+--- a/drivers/video/omap2/dss/Kconfig
++++ b/drivers/video/omap2/dss/Kconfig
+@@ -117,18 +117,6 @@ config OMAP2_DSS_MIN_FCK_PER_PCK
+ 	  Max FCK is 173MHz, so this doesn't work if your PCK
+ 	  is very high.
  
-@@ -614,10 +614,10 @@ static int sm501fb_pan_pnl(struct fb_var_screeninfo *var,
- 	struct sm501fb_info *fbi = par->info;
- 	unsigned long reg;
+-config OMAP2_DSS_SLEEP_BEFORE_RESET
+-	bool "Sleep 50ms before DSS reset"
+-	default y
+-	help
+-	  For some unknown reason we may get SYNC_LOST errors from the display
+-	  subsystem at initialization time if we don't sleep before resetting
+-	  the DSS. See the source (dss.c) for more comments.
+-
+-	  However, 50ms is quite long time to sleep, and with some
+-	  configurations the SYNC_LOST may never happen, so the sleep can
+-	  be disabled here.
+-
+ config OMAP2_DSS_SLEEP_AFTER_VENC_RESET
+ 	bool "Sleep 20ms after VENC reset"
+ 	default y
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 951c849..a0e933a 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -1037,19 +1037,6 @@ static int omap_dsshw_probe(struct platform_device *pdev)
+ 	 * the kernel resets it */
+ 	omap_writel(omap_readl(0x48050440) & ~0x3, 0x48050440);
  
--	reg = var->xoffset | (var->xres_virtual << 16);
-+	reg = var->xoffset | (info->var.xres_virtual << 16);
- 	smc501_writel(reg, fbi->regs + SM501_DC_PANEL_FB_WIDTH);
+-#ifdef CONFIG_OMAP2_DSS_SLEEP_BEFORE_RESET
+-	/* We need to wait here a bit, otherwise we sometimes start to
+-	 * get synclost errors, and after that only power cycle will
+-	 * restore DSS functionality. I have no idea why this happens.
+-	 * And we have to wait _before_ resetting the DSS, but after
+-	 * enabling clocks.
+-	 *
+-	 * This bug was at least present on OMAP3430. It's unknown
+-	 * if it happens on OMAP2 or OMAP3630.
+-	 */
+-	msleep(50);
+-#endif
+-
+ 	_omap_dss_reset();
  
--	reg = var->yoffset | (var->yres_virtual << 16);
-+	reg = var->yoffset | (info->var.yres_virtual << 16);
- 	smc501_writel(reg, fbi->regs + SM501_DC_PANEL_FB_HEIGHT);
- 
- 	sm501fb_sync_regs(fbi);
+ 	/* autoidle */
 -- 
-1.7.3.4
+1.7.4.1
 

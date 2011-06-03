@@ -1,86 +1,43 @@
-From: Rajendra Nayak <rnayak@ti.com>
-Date: Wed, 15 Jun 2011 09:19:03 +0000
-Subject: Re: [PATCHv2 01/28] OMAP: change get_context_loss_count ret value
-Message-Id: <4DF87637.7020200@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 03 Jun 2011 10:00:13 +0000
+Subject: [PATCH 03/27] OMAP: DSS2: Reset LANEx_ULPS_SIG2 bits after use
+Message-Id: <1307095237-14805-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>	 <1307627810-3768-2-git-send-email-tomi.valkeinen@ti.com>	 <1307958710.1847.56.camel@deskari>	 <alpine.DEB.2.00.1106140111540.20723@utopia.booyaka.com> <1308036257.1899.8.camel@deskari> <4DF76830.8070108@ti.com>
-In-Reply-To: <4DF76830.8070108@ti.com>
+References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Paul Walmsley <paul@pwsan.com>, linux-fbdev@vger.kernel.org, b-cousson@ti.com, khilman@ti.com, linux-omap mailing list <linux-omap@vger.kernel.org>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 6/14/2011 7:24 PM, Rajendra Nayak wrote:
-> On 6/14/2011 12:54 PM, Tomi Valkeinen wrote:
->> On Tue, 2011-06-14 at 01:13 -0600, Paul Walmsley wrote:
->>> Hi Tomi
->>>
->>> On Mon, 13 Jun 2011, Tomi Valkeinen wrote:
->>>
->>>> Paul, can you take this patch and queue it for an rc?
->>>
->>> Generally I only queue regressions or fixes for major problems (crashes,
->>> corruption, etc.) for -rc series. So probably this one should go in via
->>> the normal merge window, unless it's been causing major disruptions?
->>
->> No, only disruptions for me as the DSS pm_runtime patches depend on this
->> one to function correctly. So merge window is ok, I'll handle the DSS
->> side somehow.
->
-> Hi Paul/Kevin,
->
-> I had a query, not directly related to this patch, but to the way
-> the omap_pm_get_dev_context_loss_count() api is implemented, which
-> this patch is trying to fix in some ways.
-> I see that the api relies on the pwrdm level state counters, which
-> in-turn seem to be getting updated only in the cpuidle/suspend path.
-> How are domains like DSS which can independently transition outside
-> of the cpuidle path handled?
+LANEx_ULPS_SIG2 bits are left on after entering ULPS. This doesn't cause
+any problems currently, as DSI HW is reset when it is enabled. However,
+if the reset is not done, operation fails if the bits are still set.
 
-Thinking some more on this, maybe I now understand how this worked
-on OMAP3. We always had the 'autodeps' on OMAP3 which made sure no
-clkdm idle's while MPU is not in standby, and hence all transitions
-would always happen between the pwrdm_pre_transition() and
-pwrdm_post_transition() (where the pwrdm level state counters get
-cleared/updated) callbacks. So there were really no domain
-transitions outside of this on OMAP3.
+So reset the bits after entering ULPS to ensure operation even without
+HW reset.
 
-My questions were popping out from the work I was trying to do to
-support this on OMAP4, and with no 'autodeps' on OMAP4 there will
-be transitions outside of cpuidle/suspend where counters need
-to be updated/cleared which at this point I have no clue how to
-handle :(
-I will start a separate discussion/thread on this since
-this is probably not the right place to discuss on how to do
-this on OMAP4.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dsi.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-Thanks,
-Rajendra
-
-
-> What I mean is, if DSS on disabling its clocks transitions to OFF
-> state (it being an independent powerdomain) and tries to use this api
-> to know if it lost context the next time it is re-enabling clocks and
-> all this happens while there was no cpuidle being scheduled, where do
-> the pwrdm level state counters get updated, which tell DSS it did lose
-> context?
->
-> On another note, i was wondering if it even made any sense to drivers
-> like DSS, which have an independent power domain of its own on OMAP to
-> try and do a restore-only-if-needed kind of an implementation.
-> Would'nt it always lose context the moment it run-time idle's?
->
-> regards,
-> Rajendra
->
->>
->> Tomi
->>
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at http://vger.kernel.org/majordomo-info.html
->
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 69c2d4f..4496d09 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -3395,6 +3395,10 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
+ 	dsi_unregister_isr_cio(dsidev, dsi_completion_handler, &completion,
+ 			DSI_CIO_IRQ_ULPSACTIVENOT_ALL0);
+ 
++	/* Reset LANEx_ULPS_SIG2 */
++	REG_FLD_MOD(dsidev, DSI_COMPLEXIO_CFG2, (0 << 0) | (0 << 1) | (0 << 2),
++		7, 5);
++
+ 	dsi_cio_power(dsidev, DSI_COMPLEXIO_POWER_ULPS);
+ 
+ 	dsi_if_enable(dsidev, false);
+-- 
+1.7.4.1
 

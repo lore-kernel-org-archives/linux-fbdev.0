@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 03 Jun 2011 10:00:17 +0000
-Subject: [PATCH 07/27] OMAP: DSS2: Remove clk optimization at dss init
-Message-Id: <1307095237-14805-8-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 03 Jun 2011 10:00:19 +0000
+Subject: [PATCH 09/27] OMAP: DSS2: Use omap_pm_get_dev_context_loss_count to get ctx loss count
+Message-Id: <1307095237-14805-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,39 +11,35 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-DSS enables core clocks for the duration of initialization to avoid
-unnecessary context saves and restores.
-
-With PM runtime the clocks cannot be handled in this way, outside the
-dss module drivers. Thus we need to remove the optimization.
+Initialize get_context_loss_count in the DSS board data to
+omap_pm_get_dev_context_loss_count, so that omapdss driver can use it.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/core.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+ arch/arm/mach-omap2/display.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index 02187df..f0bae6d 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -183,8 +183,6 @@ static int omap_dss_probe(struct platform_device *pdev)
- 		goto err_dss;
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index 084a51b..c7e19c4 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -25,6 +25,7 @@
+ #include <video/omapdss.h>
+ #include <plat/omap_hwmod.h>
+ #include <plat/omap_device.h>
++#include <plat/omap-pm.h>
+ 
+ static struct platform_device omap_display_device = {
+ 	.name          = "omapdss",
+@@ -117,7 +118,8 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
  	}
  
--	/* keep clocks enabled to prevent context saves/restores during init */
--	dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK);
- 	r = dispc_init_platform_driver();
- 	if (r) {
- 		DSSERR("Failed to initialize dispc platform driver\n");
-@@ -237,8 +235,6 @@ static int omap_dss_probe(struct platform_device *pdev)
- 			pdata->default_device = dssdev;
- 	}
+ 	pdata.board_data = board_data;
+-	pdata.board_data->get_context_loss_count = NULL;
++	pdata.board_data->get_context_loss_count +		omap_pm_get_dev_context_loss_count;
+ 	pdata.opt_clock_available = opt_clock_available;
  
--	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK);
--
- 	return 0;
- 
- err_register:
+ 	for (i = 0; i < oh_count; i++) {
 -- 
 1.7.4.1
 

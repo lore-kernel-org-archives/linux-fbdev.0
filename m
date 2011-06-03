@@ -1,43 +1,51 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 09 Jun 2011 13:56:25 +0000
-Subject: [PATCHv2 03/28] OMAP: DSS2: Reset LANEx_ULPS_SIG2 bits after use
-Message-Id: <1307627810-3768-4-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 03 Jun 2011 10:00:33 +0000
+Subject: [PATCH 23/27] OMAP: DSS2: Remove unused code from display.c
+Message-Id: <1307095237-14805-24-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-LANEx_ULPS_SIG2 bits are left on after entering ULPS. This doesn't cause
-any problems currently, as DSI HW is reset when it is enabled. However,
-if the reset is not done, operation fails if the bits are still set.
-
-So reset the bits after entering ULPS to ensure operation even without
-HW reset.
+oh_core variable is no longer used, so it and its initialization can be
+removed.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dsi.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ arch/arm/mach-omap2/display.c |   10 ----------
+ 1 files changed, 0 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 69c2d4f..4496d09 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -3395,6 +3395,10 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
- 	dsi_unregister_isr_cio(dsidev, dsi_completion_handler, &completion,
- 			DSI_CIO_IRQ_ULPSACTIVENOT_ALL0);
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index af43620..a5b7a23 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -43,9 +43,6 @@ static struct omap_device_pm_latency omap_dss_latency[] = {
+ 	},
+ };
  
-+	/* Reset LANEx_ULPS_SIG2 */
-+	REG_FLD_MOD(dsidev, DSI_COMPLEXIO_CFG2, (0 << 0) | (0 << 1) | (0 << 2),
-+		7, 5);
-+
- 	dsi_cio_power(dsidev, DSI_COMPLEXIO_POWER_ULPS);
+-/* oh_core is used for getting opt-clocks */
+-static struct omap_hwmod	*oh_core;
+-
+ struct omap_dss_hwmod_data {
+ 	const char *oh_name;
+ 	const char *dev_name;
+@@ -99,13 +96,6 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
+ 		oh_count = ARRAY_SIZE(omap4_dss_hwmod_data);
+ 	}
  
- 	dsi_if_enable(dsidev, false);
+-	/* opt_clks are always associated with dss hwmod */
+-	oh_core = omap_hwmod_lookup("dss_core");
+-	if (!oh_core) {
+-		pr_err("Could not look up dss_core.\n");
+-		return -ENODEV;
+-	}
+-
+ 	pdata.board_data = board_data;
+ 	pdata.board_data->get_context_loss_count  		omap_pm_get_dev_context_loss_count;
 -- 
 1.7.4.1
 

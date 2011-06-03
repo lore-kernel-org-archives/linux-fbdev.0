@@ -1,40 +1,288 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Sun, 26 Jun 2011 16:20:08 +0000
-Subject: Re: [PATCH] ARM: amba: Link fb device to its parent
-Message-Id: <20110626162008.GA7312@linux-sh.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 03 Jun 2011 10:00:15 +0000
+Subject: [PATCH 05/27] OMAP: DSS2: Clean up probe for DSS & DSI
+Message-Id: <1307095237-14805-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1308602657-28783-1-git-send-email-loic.minier@linaro.org>
-	<20110624080721.GC24184@linux-sh.org>
-	<alpine.LFD.2.00.1106240949590.2142@xanadu.home>
-In-Reply-To: <alpine.LFD.2.00.1106240949590.2142@xanadu.home>
+References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Fri, Jun 24, 2011 at 09:57:06AM -0400, Nicolas Pitre wrote:
-> On Fri, 24 Jun 2011, Paul Mundt wrote:
-> 
-> > On Mon, Jun 20, 2011 at 10:44:17PM +0200, Lo??c Minier wrote:
-> > > Some pieces of userspace like debian-installer expect to find the fb0
-> > > driver name by readlink-ing /sys/class/graphics/fb0/device/driver but
-> > > this was broken with amba-clcd as it sets up fb_info manually and missed
-> > > the .device parent pointer.
-> > > 
-> > > Signed-off-by: Lo??c Minier <loic.minier@linaro.org>
-> > > Cc: Russell King <linux@arm.linux.org.uk>
-> > > Cc: Paul Mundt <lethal@linux-sh.org>
-> > > ---
-> > >  drivers/video/amba-clcd.c |    2 ++
-> > >  1 files changed, 2 insertions(+), 0 deletions(-)
-> > > 
-> > While this is titled as an ARM patch it's certainly fbdev-specific. I'll
-> > apply it barring any objections from Russell.
-> 
-> BTW this should be "Lo?c Minier" not "Lo??c Minier" The original email 
-> was fine with proper UTF-8 in that regard.  Maybe you should have a look 
-> at your MUA config so the resulting patch log going into git is not 
-> dammaged.
-> 
-My MUA ignores UTF-8 intentionally, but this has no bearing on the status
-in my git tree.
+Both dss.c and dsi.c had a probe function, which was almost a dummy one,
+calling dss_init() and dsi_init().
+
+Remove the init functions by moving the initialization code into probe
+functions.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dsi.c |   30 ++-------
+ drivers/video/omap2/dss/dss.c |  145 ++++++++++++++++++-----------------------
+ 2 files changed, 69 insertions(+), 106 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 4496d09..0609885 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -4450,7 +4450,8 @@ static void dsi_calc_clock_param_ranges(struct platform_device *dsidev)
+ 	dsi->lpdiv_max = dss_feat_get_param_max(FEAT_PARAM_DSIPLL_LPDIV);
+ }
+ 
+-static int dsi_init(struct platform_device *dsidev)
++/* DSI1 HW IP initialisation */
++static int omap_dsi1hw_probe(struct platform_device *dsidev)
+ {
+ 	struct omap_display_platform_data *dss_plat_data;
+ 	struct omap_dss_board_info *board_info;
+@@ -4547,10 +4548,12 @@ err0:
+ 	return r;
+ }
+ 
+-static void dsi_exit(struct platform_device *dsidev)
++static int omap_dsi1hw_remove(struct platform_device *dsidev)
+ {
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 
++	WARN_ON(dsi->scp_clk_refcount > 0);
++
+ 	if (dsi->vdds_dsi_reg != NULL) {
+ 		if (dsi->vdds_dsi_enabled) {
+ 			regulator_disable(dsi->vdds_dsi_reg);
+@@ -4566,29 +4569,6 @@ static void dsi_exit(struct platform_device *dsidev)
+ 
+ 	kfree(dsi);
+ 
+-	DSSDBG("omap_dsi_exit\n");
+-}
+-
+-/* DSI1 HW IP initialisation */
+-static int omap_dsi1hw_probe(struct platform_device *dsidev)
+-{
+-	int r;
+-
+-	r = dsi_init(dsidev);
+-	if (r) {
+-		DSSERR("Failed to initialize DSI\n");
+-		goto err_dsi;
+-	}
+-err_dsi:
+-	return r;
+-}
+-
+-static int omap_dsi1hw_remove(struct platform_device *dsidev)
+-{
+-	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+-
+-	dsi_exit(dsidev);
+-	WARN_ON(dsi->scp_clk_refcount > 0);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 3eed8a2..f5f9fcb 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -664,79 +664,6 @@ void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select hdmi)
+ 	REG_FLD_MOD(DSS_CONTROL, hdmi, 15, 15);	/* VENC_HDMI_SWITCH */
+ }
+ 
+-static int dss_init(void)
+-{
+-	int r;
+-	u32 rev;
+-	struct resource *dss_mem;
+-
+-	dss_mem = platform_get_resource(dss.pdev, IORESOURCE_MEM, 0);
+-	if (!dss_mem) {
+-		DSSERR("can't get IORESOURCE_MEM DSS\n");
+-		r = -EINVAL;
+-		goto fail0;
+-	}
+-	dss.base = ioremap(dss_mem->start, resource_size(dss_mem));
+-	if (!dss.base) {
+-		DSSERR("can't ioremap DSS\n");
+-		r = -ENOMEM;
+-		goto fail0;
+-	}
+-
+-	/* disable LCD and DIGIT output. This seems to fix the synclost
+-	 * problem that we get, if the bootloader starts the DSS and
+-	 * the kernel resets it */
+-	omap_writel(omap_readl(0x48050440) & ~0x3, 0x48050440);
+-
+-#ifdef CONFIG_OMAP2_DSS_SLEEP_BEFORE_RESET
+-	/* We need to wait here a bit, otherwise we sometimes start to
+-	 * get synclost errors, and after that only power cycle will
+-	 * restore DSS functionality. I have no idea why this happens.
+-	 * And we have to wait _before_ resetting the DSS, but after
+-	 * enabling clocks.
+-	 *
+-	 * This bug was at least present on OMAP3430. It's unknown
+-	 * if it happens on OMAP2 or OMAP3630.
+-	 */
+-	msleep(50);
+-#endif
+-
+-	_omap_dss_reset();
+-
+-	/* autoidle */
+-	REG_FLD_MOD(DSS_SYSCONFIG, 1, 0, 0);
+-
+-	/* Select DPLL */
+-	REG_FLD_MOD(DSS_CONTROL, 0, 0, 0);
+-
+-#ifdef CONFIG_OMAP2_DSS_VENC
+-	REG_FLD_MOD(DSS_CONTROL, 1, 4, 4);	/* venc dac demen */
+-	REG_FLD_MOD(DSS_CONTROL, 1, 3, 3);	/* venc clock 4x enable */
+-	REG_FLD_MOD(DSS_CONTROL, 0, 2, 2);	/* venc clock mode = normal */
+-#endif
+-	dss.dsi_clk_source[0] = OMAP_DSS_CLK_SRC_FCK;
+-	dss.dsi_clk_source[1] = OMAP_DSS_CLK_SRC_FCK;
+-	dss.dispc_clk_source = OMAP_DSS_CLK_SRC_FCK;
+-	dss.lcd_clk_source[0] = OMAP_DSS_CLK_SRC_FCK;
+-	dss.lcd_clk_source[1] = OMAP_DSS_CLK_SRC_FCK;
+-
+-	dss_save_context();
+-
+-	rev = dss_read_reg(DSS_REVISION);
+-	printk(KERN_INFO "OMAP DSS rev %d.%d\n",
+-			FLD_GET(rev, 7, 4), FLD_GET(rev, 3, 0));
+-
+-	return 0;
+-
+-fail0:
+-	return r;
+-}
+-
+-static void dss_exit(void)
+-{
+-	iounmap(dss.base);
+-}
+-
+ /* CONTEXT */
+ static int dss_get_ctx_id(void)
+ {
+@@ -1094,10 +1021,25 @@ void dss_debug_dump_clocks(struct seq_file *s)
+ /* DSS HW IP initialisation */
+ static int omap_dsshw_probe(struct platform_device *pdev)
+ {
++	struct resource *dss_mem;
++	u32 rev;
+ 	int r;
+ 
+ 	dss.pdev = pdev;
+ 
++	dss_mem = platform_get_resource(dss.pdev, IORESOURCE_MEM, 0);
++	if (!dss_mem) {
++		DSSERR("can't get IORESOURCE_MEM DSS\n");
++		r = -EINVAL;
++		goto err_ioremap;
++	}
++	dss.base = ioremap(dss_mem->start, resource_size(dss_mem));
++	if (!dss.base) {
++		DSSERR("can't ioremap DSS\n");
++		r = -ENOMEM;
++		goto err_ioremap;
++	}
++
+ 	r = dss_get_clocks();
+ 	if (r)
+ 		goto err_clocks;
+@@ -1107,11 +1049,42 @@ static int omap_dsshw_probe(struct platform_device *pdev)
+ 	dss.ctx_id = dss_get_ctx_id();
+ 	DSSDBG("initial ctx id %u\n", dss.ctx_id);
+ 
+-	r = dss_init();
+-	if (r) {
+-		DSSERR("Failed to initialize DSS\n");
+-		goto err_dss;
+-	}
++	/* disable LCD and DIGIT output. This seems to fix the synclost
++	 * problem that we get, if the bootloader starts the DSS and
++	 * the kernel resets it */
++	omap_writel(omap_readl(0x48050440) & ~0x3, 0x48050440);
++
++#ifdef CONFIG_OMAP2_DSS_SLEEP_BEFORE_RESET
++	/* We need to wait here a bit, otherwise we sometimes start to
++	 * get synclost errors, and after that only power cycle will
++	 * restore DSS functionality. I have no idea why this happens.
++	 * And we have to wait _before_ resetting the DSS, but after
++	 * enabling clocks.
++	 *
++	 * This bug was at least present on OMAP3430. It's unknown
++	 * if it happens on OMAP2 or OMAP3630.
++	 */
++	msleep(50);
++#endif
++
++	_omap_dss_reset();
++
++	/* autoidle */
++	REG_FLD_MOD(DSS_SYSCONFIG, 1, 0, 0);
++
++	/* Select DPLL */
++	REG_FLD_MOD(DSS_CONTROL, 0, 0, 0);
++
++#ifdef CONFIG_OMAP2_DSS_VENC
++	REG_FLD_MOD(DSS_CONTROL, 1, 4, 4);	/* venc dac demen */
++	REG_FLD_MOD(DSS_CONTROL, 1, 3, 3);	/* venc clock 4x enable */
++	REG_FLD_MOD(DSS_CONTROL, 0, 2, 2);	/* venc clock mode = normal */
++#endif
++	dss.dsi_clk_source[0] = OMAP_DSS_CLK_SRC_FCK;
++	dss.dsi_clk_source[1] = OMAP_DSS_CLK_SRC_FCK;
++	dss.dispc_clk_source = OMAP_DSS_CLK_SRC_FCK;
++	dss.lcd_clk_source[0] = OMAP_DSS_CLK_SRC_FCK;
++	dss.lcd_clk_source[1] = OMAP_DSS_CLK_SRC_FCK;
+ 
+ 	r = dpi_init();
+ 	if (r) {
+@@ -1125,23 +1098,32 @@ static int omap_dsshw_probe(struct platform_device *pdev)
+ 		goto err_sdi;
+ 	}
+ 
++	dss_save_context();
++
++	rev = dss_read_reg(DSS_REVISION);
++	printk(KERN_INFO "OMAP DSS rev %d.%d\n",
++			FLD_GET(rev, 7, 4), FLD_GET(rev, 3, 0));
++
+ 	dss_clk_disable_all_no_ctx();
++
+ 	return 0;
+ err_sdi:
+ 	dpi_exit();
+ err_dpi:
+-	dss_exit();
+-err_dss:
+ 	dss_clk_disable_all_no_ctx();
+ 	dss_put_clocks();
+ err_clocks:
++	iounmap(dss.base);
++err_ioremap:
+ 	return r;
+ }
+ 
+ static int omap_dsshw_remove(struct platform_device *pdev)
+ {
++	dpi_exit();
++	sdi_exit();
+ 
+-	dss_exit();
++	iounmap(dss.base);
+ 
+ 	/*
+ 	 * As part of hwmod changes, DSS is not the only controller of dss
+@@ -1152,6 +1134,7 @@ static int omap_dsshw_remove(struct platform_device *pdev)
+ 	WARN_ON(dss.num_clks_enabled > 0);
+ 
+ 	dss_put_clocks();
++
+ 	return 0;
+ }
+ 
+-- 
+1.7.4.1
+

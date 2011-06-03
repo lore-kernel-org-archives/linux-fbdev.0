@@ -1,85 +1,221 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Fri, 24 Jun 2011 19:45:57 +0000
-Subject: Re: [PATCH/RFC] fbdev: Add FOURCC-based format configuration API
-Message-Id: <4E04E975.2060003@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 03 Jun 2011 10:00:11 +0000
+Subject: [PATCH 01/27] OMAP: change get_context_loss_count ret value to int
+Message-Id: <1307095237-14805-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4DDAE63A.3070203@gmx.de>	<1308670579-15138-1-git-send-email-laurent.pinchart@ideasonboard.com>	<BANLkTim6wUaeZCya=9dMvU7iHj4W4E57Fg@mail.gmail.com>	<201106220031.57972.laurent.pinchart@ideasonboard.com>	<4E018189.3020305@gmx.de>	<BANLkTikMLE=F4OLTRhQ6LYR=d1x6xukJXA@mail.gmail.com>	<20110624061926.GA26504@linux-sh.org> <BANLkTi=RCx9Bifpw9BvqNAB0J+1ENkRK4A@mail.gmail.com>
-In-Reply-To: <BANLkTi=RCx9Bifpw9BvqNAB0J+1ENkRK4A@mail.gmail.com>
+References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 06/24/2011 06:55 PM, Geert Uytterhoeven wrote:
-> On Fri, Jun 24, 2011 at 08:19, Paul Mundt<lethal@linux-sh.org>  wrote:
->> On Thu, Jun 23, 2011 at 06:08:03PM +0200, Geert Uytterhoeven wrote:
->>> On Wed, Jun 22, 2011 at 07:45, Florian Tobias Schandinat
->>> <FlorianSchandinat@gmx.de>  wrote:
->>>> On 06/21/2011 10:31 PM, Laurent Pinchart wrote:
->>>>> On Tuesday 21 June 2011 22:49:14 Geert Uytterhoeven wrote:
->>>>>> As FOURCC values are always 4 ASCII characters (hence all 4 bytes must
->>>>>> be non-zero), I don't think there are any conflicts with existing values
->>>>>> of
->>>>>> nonstd. To make it even safer and easier to parse, you could set bit 31
->>>>>> of
->>>>>> nonstd as a FOURCC indicator.
->>>>>
->>>>> I would then create a union between nonstd and fourcc, and document nonstd
->>>>> as
->>>>> being used for the legacy API only. Most existing drivers use a couple of
->>>>> nonstd bits only. The driver that (ab)uses nonstd the most is pxafb and
->>>>> uses
->>>>> bits 22:0. Bits 31:24 are never used as far as I can tell, so nonstd&
->>>>> 0xff000000 != 0 could be used as a FOURCC mode test.
->>>>>
->>>>> This assumes that FOURCCs will never have their last character set to
->>>>> '\0'. Is
->>>>> that a safe assumption for the future ?
->>>>
->>>> Yes, I think. The information I found indicates that space should be used
->>>> for padding, so a \0 shouldn't exist.
->>>> I think using only the nonstd field and requiring applications to check the
->>>> capabilities would be possible, although not fool proof ;)
->>>
->>> So we can declare the 8 msb bits of nonstd reserved, and assume FOURCC if
->>> any of them is set.
->>>
->>> Nicely backwards compatible, as sane drivers should reject nonstd values they
->>> don't support (apps _will_ start filling in FOURCC values ignoring capabilities,
->>> won't they?).
->>>
->> That seems like a reasonable case, but if we're going to do that then
->> certainly the nonstd bit encoding needs to be documented and treated as a
->> hard ABI.
->>
->> I'm not so sure about the if any bit in the upper byte is set assume
->> FOURCC case though, there will presumably be other users in the future
->> that will want bits for themselves, too. What exactly was the issue with
->> having a FOURCC capability bit in the upper byte?
->
-> That indeed gives less issues (as long as you don't stuff 8-bit ASCII
-> in the MSB)
-> and more bits for tradiditional nonstd users.
+get_context_loss_count functions return context loss count as u32, and
+zero means an error. However, zero is also returned when context has
+never been lost and could also be returned when the context loss count
+has wrapped and goes to zero.
 
-The only disadvantage I can see is that it requires adding this bit in the 
-application and stripping it when interpreting it. But I think the 24 lower bits 
-should be enough for driver specific behavior (as the current values really can 
-only be interpreted per driver).
+Change the functions to return an int, with negative value meaning an
+error.
 
-> BTW, after giving it some more thought: what does the FB_CAP_FOURCC buys
-> us? It's not like all drivers will support whatever random FOURCC mode
-> you give them,
-> so you have to check whether it's supported by doing a set_var first.
+OMAP HSMMC code uses omap_pm_get_dev_context_loss_count(), but as the
+hsmmc code handles the returned value as an int, with negative value
+meaning an error, this patch actually fixes hsmmc code also.
 
-Because any solution purely based on the nonstd field is insane. The abuse of 
-that field is just too widespread. Drivers that use nonstd usually only check 
-whether it is zero or nonzero and others will just interpret parts of nonstd and 
-ignore the rest. They will happily accept FOURCC values in the nonstd and just 
-doing the wrong thing. Even if we would fix those the problems applications will 
-run into with older kernels will remain.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Acked-by: Kevin Hilman <khilman@ti.com>
+---
+ arch/arm/mach-omap2/omap_hwmod.c              |    2 +-
+ arch/arm/mach-omap2/powerdomain.c             |   14 ++++++++++----
+ arch/arm/mach-omap2/powerdomain.h             |    2 +-
+ arch/arm/plat-omap/include/plat/omap-pm.h     |    4 ++--
+ arch/arm/plat-omap/include/plat/omap_device.h |    2 +-
+ arch/arm/plat-omap/include/plat/omap_hwmod.h  |    2 +-
+ arch/arm/plat-omap/omap-pm-noop.c             |   24 +++++++++++++++++-------
+ arch/arm/plat-omap/omap_device.c              |    2 +-
+ 8 files changed, 34 insertions(+), 18 deletions(-)
 
+diff --git a/arch/arm/mach-omap2/omap_hwmod.c b/arch/arm/mach-omap2/omap_hwmod.c
+index e034294..4f0d554 100644
+--- a/arch/arm/mach-omap2/omap_hwmod.c
++++ b/arch/arm/mach-omap2/omap_hwmod.c
+@@ -2332,7 +2332,7 @@ ohsps_unlock:
+  * Returns the context loss count of the powerdomain assocated with @oh
+  * upon success, or zero if no powerdomain exists for @oh.
+  */
+-u32 omap_hwmod_get_context_loss_count(struct omap_hwmod *oh)
++int omap_hwmod_get_context_loss_count(struct omap_hwmod *oh)
+ {
+ 	struct powerdomain *pwrdm;
+ 	int ret = 0;
+diff --git a/arch/arm/mach-omap2/powerdomain.c b/arch/arm/mach-omap2/powerdomain.c
+index 9af0847..9d53a34 100644
+--- a/arch/arm/mach-omap2/powerdomain.c
++++ b/arch/arm/mach-omap2/powerdomain.c
+@@ -935,16 +935,16 @@ int pwrdm_post_transition(void)
+  * @pwrdm: struct powerdomain * to wait for
+  *
+  * Context loss count is the sum of powerdomain off-mode counter, the
+- * logic off counter and the per-bank memory off counter.  Returns 0
++ * logic off counter and the per-bank memory off counter.  Returns negative
+  * (and WARNs) upon error, otherwise, returns the context loss count.
+  */
+-u32 pwrdm_get_context_loss_count(struct powerdomain *pwrdm)
++int pwrdm_get_context_loss_count(struct powerdomain *pwrdm)
+ {
+ 	int i, count;
+ 
+ 	if (!pwrdm) {
+ 		WARN(1, "powerdomain: %s: pwrdm is null\n", __func__);
+-		return 0;
++		return -ENODEV;
+ 	}
+ 
+ 	count = pwrdm->state_counter[PWRDM_POWER_OFF];
+@@ -953,7 +953,13 @@ u32 pwrdm_get_context_loss_count(struct powerdomain *pwrdm)
+ 	for (i = 0; i < pwrdm->banks; i++)
+ 		count += pwrdm->ret_mem_off_counter[i];
+ 
+-	pr_debug("powerdomain: %s: context loss count = %u\n",
++	/*
++	 * Context loss count has to be a non-negative value. Clear the sign
++	 * bit to get a value range from 0 to INT_MAX.
++	 */
++	count &= INT_MAX;
++
++	pr_debug("powerdomain: %s: context loss count = %d\n",
+ 		 pwrdm->name, count);
+ 
+ 	return count;
+diff --git a/arch/arm/mach-omap2/powerdomain.h b/arch/arm/mach-omap2/powerdomain.h
+index d23d979..012827f 100644
+--- a/arch/arm/mach-omap2/powerdomain.h
++++ b/arch/arm/mach-omap2/powerdomain.h
+@@ -207,7 +207,7 @@ int pwrdm_clkdm_state_switch(struct clockdomain *clkdm);
+ int pwrdm_pre_transition(void);
+ int pwrdm_post_transition(void);
+ int pwrdm_set_lowpwrstchange(struct powerdomain *pwrdm);
+-u32 pwrdm_get_context_loss_count(struct powerdomain *pwrdm);
++int pwrdm_get_context_loss_count(struct powerdomain *pwrdm);
+ bool pwrdm_can_ever_lose_context(struct powerdomain *pwrdm);
+ 
+ extern void omap2xxx_powerdomains_init(void);
+diff --git a/arch/arm/plat-omap/include/plat/omap-pm.h b/arch/arm/plat-omap/include/plat/omap-pm.h
+index c0a7520..68df031 100644
+--- a/arch/arm/plat-omap/include/plat/omap-pm.h
++++ b/arch/arm/plat-omap/include/plat/omap-pm.h
+@@ -350,9 +350,9 @@ unsigned long omap_pm_cpu_get_freq(void);
+  * driver must restore device context.   If the number of context losses
+  * exceeds the maximum positive integer, the function will wrap to 0 and
+  * continue counting.  Returns the number of context losses for this device,
+- * or zero upon error.
++ * or negative value upon error.
+  */
+-u32 omap_pm_get_dev_context_loss_count(struct device *dev);
++int omap_pm_get_dev_context_loss_count(struct device *dev);
+ 
+ void omap_pm_enable_off_mode(void);
+ void omap_pm_disable_off_mode(void);
+diff --git a/arch/arm/plat-omap/include/plat/omap_device.h b/arch/arm/plat-omap/include/plat/omap_device.h
+index e4c349f..70d31d0 100644
+--- a/arch/arm/plat-omap/include/plat/omap_device.h
++++ b/arch/arm/plat-omap/include/plat/omap_device.h
+@@ -107,7 +107,7 @@ void __iomem *omap_device_get_rt_va(struct omap_device *od);
+ int omap_device_align_pm_lat(struct platform_device *pdev,
+ 			     u32 new_wakeup_lat_limit);
+ struct powerdomain *omap_device_get_pwrdm(struct omap_device *od);
+-u32 omap_device_get_context_loss_count(struct platform_device *pdev);
++int omap_device_get_context_loss_count(struct platform_device *pdev);
+ 
+ /* Other */
+ 
+diff --git a/arch/arm/plat-omap/include/plat/omap_hwmod.h b/arch/arm/plat-omap/include/plat/omap_hwmod.h
+index 1adea9c..8658e2d 100644
+--- a/arch/arm/plat-omap/include/plat/omap_hwmod.h
++++ b/arch/arm/plat-omap/include/plat/omap_hwmod.h
+@@ -598,7 +598,7 @@ int omap_hwmod_for_each_by_class(const char *classname,
+ 				 void *user);
+ 
+ int omap_hwmod_set_postsetup_state(struct omap_hwmod *oh, u8 state);
+-u32 omap_hwmod_get_context_loss_count(struct omap_hwmod *oh);
++int omap_hwmod_get_context_loss_count(struct omap_hwmod *oh);
+ 
+ int omap_hwmod_no_setup_reset(struct omap_hwmod *oh);
+ 
+diff --git a/arch/arm/plat-omap/omap-pm-noop.c b/arch/arm/plat-omap/omap-pm-noop.c
+index b0471bb2..3dc3801 100644
+--- a/arch/arm/plat-omap/omap-pm-noop.c
++++ b/arch/arm/plat-omap/omap-pm-noop.c
+@@ -27,7 +27,7 @@
+ #include <plat/omap_device.h>
+ 
+ static bool off_mode_enabled;
+-static u32 dummy_context_loss_counter;
++static int dummy_context_loss_counter;
+ 
+ /*
+  * Device-driver-originated constraints (via board-*.c files)
+@@ -311,22 +311,32 @@ void omap_pm_disable_off_mode(void)
+ 
+ #ifdef CONFIG_ARCH_OMAP2PLUS
+ 
+-u32 omap_pm_get_dev_context_loss_count(struct device *dev)
++int omap_pm_get_dev_context_loss_count(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+-	u32 count;
++	int count;
+ 
+ 	if (WARN_ON(!dev))
+-		return 0;
++		return -ENODEV;
+ 
+ 	if (dev->parent = &omap_device_parent) {
+ 		count = omap_device_get_context_loss_count(pdev);
+ 	} else {
+ 		WARN_ONCE(off_mode_enabled, "omap_pm: using dummy context loss counter; device %s should be converted to omap_device",
+ 			  dev_name(dev));
+-		if (off_mode_enabled)
+-			dummy_context_loss_counter++;
++
+ 		count = dummy_context_loss_counter;
++
++		if (off_mode_enabled) {
++			count++;
++			/*
++			 * Context loss count has to be a non-negative value.
++			 * Clear the sign bit to get a value range from 0 to
++			 * INT_MAX.
++			 */
++			count &= INT_MAX;
++			dummy_context_loss_counter = count;
++		}
+ 	}
+ 
+ 	pr_debug("OMAP PM: context loss count for dev %s = %d\n",
+@@ -337,7 +347,7 @@ u32 omap_pm_get_dev_context_loss_count(struct device *dev)
+ 
+ #else
+ 
+-u32 omap_pm_get_dev_context_loss_count(struct device *dev)
++int omap_pm_get_dev_context_loss_count(struct device *dev)
+ {
+ 	return dummy_context_loss_counter;
+ }
+diff --git a/arch/arm/plat-omap/omap_device.c b/arch/arm/plat-omap/omap_device.c
+index 9bbda9a..9753f71 100644
+--- a/arch/arm/plat-omap/omap_device.c
++++ b/arch/arm/plat-omap/omap_device.c
+@@ -310,7 +310,7 @@ static void _add_optional_clock_clkdev(struct omap_device *od,
+  * return the context loss counter for that hwmod, otherwise return
+  * zero.
+  */
+-u32 omap_device_get_context_loss_count(struct platform_device *pdev)
++int omap_device_get_context_loss_count(struct platform_device *pdev)
+ {
+ 	struct omap_device *od;
+ 	u32 ret = 0;
+-- 
+1.7.4.1
 
-Greetings,
-
-Florian Tobias Schandinat

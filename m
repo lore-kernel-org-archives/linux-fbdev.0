@@ -1,37 +1,96 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 14 Jun 2011 09:25:02 +0000
-Subject: [PATCH v2 24/29] tridentfb: use display information in info not in var for panning
-Message-Id: <1308043507-11083-25-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 03 Jun 2011 10:00:28 +0000
+Subject: [PATCH 18/27] OMAP2430: HWMOD: Add DSS opt clocks
+Message-Id: <1307095237-14805-19-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+Add DSS optional clocks to HWMOD data for OMAP2430.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: Benoit Cousson <b-cousson@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/tridentfb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/mach-omap2/omap_hwmod_2430_data.c |   19 +++++++++++++++++++
+ 1 files changed, 19 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/tridentfb.c b/drivers/video/tridentfb.c
-index c6c7756..34cf019 100644
---- a/drivers/video/tridentfb.c
-+++ b/drivers/video/tridentfb.c
-@@ -987,8 +987,8 @@ static int tridentfb_pan_display(struct fb_var_screeninfo *var,
- 	unsigned int offset;
+diff --git a/arch/arm/mach-omap2/omap_hwmod_2430_data.c b/arch/arm/mach-omap2/omap_hwmod_2430_data.c
+index 9682dd5..8009945 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_2430_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_2430_data.c
+@@ -1302,6 +1302,7 @@ static struct omap_hwmod_ocp_if *omap2430_dss_slaves[] = {
+ };
  
- 	debug("enter\n");
--	offset = (var->xoffset + (var->yoffset * var->xres_virtual))
--		* var->bits_per_pixel / 32;
-+	offset = (var->xoffset + (var->yoffset * info->var.xres_virtual))
-+		* info->var.bits_per_pixel / 32;
- 	set_screen_start(par, offset);
- 	debug("exit\n");
- 	return 0;
+ static struct omap_hwmod_opt_clk dss_opt_clks[] = {
++	{ .role = "dss_clk", .clk = "dss1_fck" },
+ 	{ .role = "tv_clk", .clk = "dss_54m_fck" },
+ 	{ .role = "sys_clk", .clk = "dss2_fck" },
+ };
+@@ -1379,6 +1380,10 @@ static struct omap_hwmod_ocp_if *omap2430_dss_dispc_slaves[] = {
+ 	&omap2430_l4_core__dss_dispc,
+ };
+ 
++static struct omap_hwmod_opt_clk dispc_opt_clks[] = {
++	{ .role = "dss_clk", .clk = "dss1_fck" },
++};
++
+ static struct omap_hwmod omap2430_dss_dispc_hwmod = {
+ 	.name		= "dss_dispc",
+ 	.class		= &omap2430_dispc_hwmod_class,
+@@ -1394,6 +1399,8 @@ static struct omap_hwmod omap2430_dss_dispc_hwmod = {
+ 			.idlest_stdby_bit = OMAP24XX_ST_DSS_SHIFT,
+ 		},
+ 	},
++	.opt_clks	= dispc_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(dispc_opt_clks),
+ 	.slaves		= omap2430_dss_dispc_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap2430_dss_dispc_slaves),
+ 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2430),
+@@ -1443,6 +1450,10 @@ static struct omap_hwmod_ocp_if *omap2430_dss_rfbi_slaves[] = {
+ 	&omap2430_l4_core__dss_rfbi,
+ };
+ 
++static struct omap_hwmod_opt_clk rfbi_opt_clks[] = {
++	{ .role = "rfbi_iclk", .clk = "dss_ick" },
++};
++
+ static struct omap_hwmod omap2430_dss_rfbi_hwmod = {
+ 	.name		= "dss_rfbi",
+ 	.class		= &omap2430_rfbi_hwmod_class,
+@@ -1454,6 +1465,8 @@ static struct omap_hwmod omap2430_dss_rfbi_hwmod = {
+ 			.module_offs = CORE_MOD,
+ 		},
+ 	},
++	.opt_clks	= rfbi_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(rfbi_opt_clks),
+ 	.slaves		= omap2430_dss_rfbi_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap2430_dss_rfbi_slaves),
+ 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2430),
+@@ -1494,6 +1507,10 @@ static struct omap_hwmod_ocp_if *omap2430_dss_venc_slaves[] = {
+ 	&omap2430_l4_core__dss_venc,
+ };
+ 
++static struct omap_hwmod_opt_clk venc_opt_clks[] = {
++	{ .role = "tv_clk", .clk = "dss_54m_fck" },
++};
++
+ static struct omap_hwmod omap2430_dss_venc_hwmod = {
+ 	.name		= "dss_venc",
+ 	.class		= &omap2430_venc_hwmod_class,
+@@ -1505,6 +1522,8 @@ static struct omap_hwmod omap2430_dss_venc_hwmod = {
+ 			.module_offs = CORE_MOD,
+ 		},
+ 	},
++	.opt_clks	= venc_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(venc_opt_clks),
+ 	.slaves		= omap2430_dss_venc_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap2430_dss_venc_slaves),
+ 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2430),
 -- 
-1.7.3.4
+1.7.4.1
 

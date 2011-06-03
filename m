@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 03 Jun 2011 10:00:36 +0000
-Subject: [PATCH 26/27] OMAP: DSS2: DISPC: Fix context save/restore
-Message-Id: <1307095237-14805-27-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 03 Jun 2011 10:00:21 +0000
+Subject: [PATCH 11/27] OMAP: DSS2: Add FEAT_VENC_REQUIRES_TV_DAC_CLK
+Message-Id: <1307095237-14805-12-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,176 +11,80 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The current method of saving and restoring the context could cause a
-restore before saving, effectively "restoring" zero values to registers.
+OMAP3430 requires an 96MHz clock to VENC's DAC, but no other OMAP needs
+it.
 
-Add ctx_valid field to indicate if the saved context is valid and can be
-restored.
-
-Also restructure the code to save the ctx_loss_count in save_context(),
-which makes more sense than the previous method of storing new
-ctx_loss_count in dispc_need_ctx_restore.
+Add a new feature, FEAT_VENC_REQUIRES_TV_DAC_CLK, which tells if the
+clock is needed on this platform, and use that feature in venc.c to
+decide if the clock needs enabling.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |   97 +++++++++++++++-----------------------
- 1 files changed, 38 insertions(+), 59 deletions(-)
+ drivers/video/omap2/dss/dss_features.c |    3 ++-
+ drivers/video/omap2/dss/dss_features.h |    1 +
+ drivers/video/omap2/dss/venc.c         |   16 ++++++++++------
+ 3 files changed, 13 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index b13a656..73f1105 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -110,6 +110,7 @@ static struct {
- 	u32 error_irqs;
- 	struct work_struct error_work;
+diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
+index 1c18888..a588380 100644
+--- a/drivers/video/omap2/dss/dss_features.c
++++ b/drivers/video/omap2/dss/dss_features.c
+@@ -286,7 +286,8 @@ static const struct omap_dss_features omap3430_dss_features = {
+ 		FEAT_LCDENABLESIGNAL | FEAT_PCKFREEENABLE |
+ 		FEAT_FUNCGATED | FEAT_ROWREPEATENABLE |
+ 		FEAT_LINEBUFFERSPLIT | FEAT_RESIZECONF |
+-		FEAT_DSI_PLL_FREQSEL | FEAT_DSI_REVERSE_TXCLKESC,
++		FEAT_DSI_PLL_FREQSEL | FEAT_DSI_REVERSE_TXCLKESC |
++		FEAT_VENC_REQUIRES_TV_DAC_CLK,
  
-+	bool		ctx_valid;
- 	u32		ctx[DISPC_SZ_REGS / sizeof(u32)];
+ 	.num_mgrs = 2,
+ 	.num_ovls = 3,
+diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
+index 07b346f..3058e24 100644
+--- a/drivers/video/omap2/dss/dss_features.h
++++ b/drivers/video/omap2/dss/dss_features.h
+@@ -51,6 +51,7 @@ enum dss_feat_id {
+ 	FEAT_HDMI_CTS_SWMODE		= 1 << 19,
+ 	FEAT_HANDLE_UV_SEPARATE         = 1 << 20,
+ 	FEAT_ATTR2                      = 1 << 21,
++	FEAT_VENC_REQUIRES_TV_DAC_CLK	= 1 << 22,
+ };
  
- #ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
-@@ -142,6 +143,23 @@ static inline u32 dispc_read_reg(const u16 idx)
- 	return __raw_readl(dispc.base + idx);
- }
+ /* DSS register field id */
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 980f919..15b4431 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -38,6 +38,7 @@
+ #include <plat/cpu.h>
  
-+static int dispc_get_ctx_loss_count(void)
-+{
-+	struct device *dev = &dispc.pdev->dev;
-+	struct omap_display_platform_data *pdata = dev->platform_data;
-+	struct omap_dss_board_info *board_data = pdata->board_data;
-+	int cnt;
-+
-+	if (!board_data->get_context_loss_count)
-+		return -ENOENT;
-+
-+	cnt = board_data->get_context_loss_count(dev);
-+
-+	WARN_ONCE(cnt < 0, "get_context_loss_count failed: %d\n", cnt);
-+
-+	return cnt;
-+}
-+
- #define SR(reg) \
- 	dispc.ctx[DISPC_##reg / sizeof(u32)] = dispc_read_reg(DISPC_##reg)
- #define RR(reg) \
-@@ -318,14 +336,30 @@ static void dispc_save_context(void)
+ #include "dss.h"
++#include "dss_features.h"
  
- 	if (dss_has_feature(FEAT_CORE_CLK_DIV))
- 		SR(DIVISOR);
-+
-+	dispc.ctx_loss_cnt = dispc_get_ctx_loss_count();
-+	dispc.ctx_valid = true;
-+
-+	DSSDBG("context saved, ctx_loss_count %d\n", dispc.ctx_loss_cnt);
- }
+ /* Venc registers */
+ #define VENC_REV_ID				0x00
+@@ -382,12 +383,15 @@ static void venc_reset(void)
  
- static void dispc_restore_context(void)
+ static void venc_enable_clocks(int enable)
  {
--	int i;
-+	int i, ctx;
- 
- 	DSSDBG("dispc_restore_context\n");
- 
-+	if (!dispc.ctx_valid)
-+		return;
-+
-+	ctx = dispc_get_ctx_loss_count();
-+
-+	if (ctx >= 0 && ctx = dispc.ctx_loss_cnt)
-+		return;
-+
-+	DSSDBG("ctx_loss_count: saved %d, current %d\n",
-+			dispc.ctx_loss_cnt, ctx);
-+
- 	/*RR(IRQENABLE);*/
- 	/*RR(CONTROL);*/
- 	RR(CONFIG);
-@@ -504,65 +538,13 @@ static void dispc_restore_context(void)
- 	 * the context is fully restored
- 	 */
- 	RR(IRQENABLE);
-+
-+	DSSDBG("context restored\n");
+-	if (enable)
+-		dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK | DSS_CLK_TVFCK |
+-				DSS_CLK_VIDFCK);
+-	else
+-		dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK | DSS_CLK_TVFCK |
+-				DSS_CLK_VIDFCK);
++	if (enable) {
++		dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK | DSS_CLK_TVFCK);
++		if (dss_has_feature(FEAT_VENC_REQUIRES_TV_DAC_CLK))
++			dss_clk_enable(DSS_CLK_VIDFCK);
++	} else {
++		dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK | DSS_CLK_TVFCK);
++		if (dss_has_feature(FEAT_VENC_REQUIRES_TV_DAC_CLK))
++			dss_clk_disable(DSS_CLK_VIDFCK);
++	}
  }
  
- #undef SR
- #undef RR
- 
--static void dispc_init_ctx_loss_count(void)
--{
--	struct device *dev = &dispc.pdev->dev;
--	struct omap_display_platform_data *pdata = dev->platform_data;
--	struct omap_dss_board_info *board_data = pdata->board_data;
--	int cnt = 0;
--
--	/*
--	 * get_context_loss_count returns negative on error. We'll ignore the
--	 * error and store the error to ctx_loss_cnt, which will cause
--	 * dispc_need_ctx_restore() call to return true.
--	 */
--
--	if (board_data->get_context_loss_count)
--		cnt = board_data->get_context_loss_count(dev);
--
--	WARN_ON(cnt < 0);
--
--	dispc.ctx_loss_cnt = cnt;
--
--	DSSDBG("initial ctx_loss_cnt %u\n", cnt);
--}
--
--static bool dispc_need_ctx_restore(void)
--{
--	struct device *dev = &dispc.pdev->dev;
--	struct omap_display_platform_data *pdata = dev->platform_data;
--	struct omap_dss_board_info *board_data = pdata->board_data;
--	int cnt;
--
--	/*
--	 * If get_context_loss_count is not available, assume that we need
--	 * context restore always.
--	 */
--	if (!board_data->get_context_loss_count)
--		return true;
--
--	cnt = board_data->get_context_loss_count(dev);
--	if (cnt < 0) {
--		dev_err(dev, "getting context loss count failed, will force "
--				"context restore\n");
--		dispc.ctx_loss_cnt = cnt;
--		return true;
--	}
--
--	if (cnt = dispc.ctx_loss_cnt)
--		return false;
--
--	DSSDBG("ctx_loss_cnt %d -> %d\n", dispc.ctx_loss_cnt, cnt);
--	dispc.ctx_loss_cnt = cnt;
--
--	return true;
--}
--
- int dispc_runtime_get(void)
- {
- 	int r;
-@@ -584,8 +566,7 @@ int dispc_runtime_get(void)
- 		if (r < 0)
- 			goto err_runtime_get;
- 
--		if (dispc_need_ctx_restore())
--			dispc_restore_context();
-+		dispc_restore_context();
- 	}
- 
- 	mutex_unlock(&dispc.runtime_lock);
-@@ -3682,8 +3663,6 @@ static int omap_dispchw_probe(struct platform_device *pdev)
- 		goto err_irq;
- 	}
- 
--	dispc_init_ctx_loss_count();
--
- 	mutex_init(&dispc.runtime_lock);
- 
- 	pm_runtime_enable(&pdev->dev);
+ static const struct venc_config *venc_timings_to_config(
 -- 
 1.7.4.1
 

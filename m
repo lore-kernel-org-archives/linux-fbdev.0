@@ -1,161 +1,71 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 13 Jun 2011 09:12:52 +0000
-Subject: [PATCH 1/3] OMAP: DSS2: OMAPFB: Add struct to store per-display data
-Message-Id: <1307956374-1107-2-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 03 Jun 2011 10:00:20 +0000
+Subject: [PATCH 10/27] OMAP: DSS2: DPI: remove unneeded SYSCK enable/disable
+Message-Id: <1307095237-14805-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307956374-1107-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307956374-1107-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Create a new struct omapfb_display_data to contain omapfb's private
-per-display data. Move the bpp override there.
+DSI PLL requires sys_clk to function, and DPI enables sys_clk when it
+wants to use DSI PLL. However, DSI PLL code already handles enabling
+sys_clk, so DPI's sys_clk code is extra.
 
-This struct will be used to hold auto/manual update state of a display
-in the following patches.
+Remove the unneeded sys_clk handling from dpi.c.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c |   29 +++++++++++++++--------------
- drivers/video/omap2/omapfb/omapfb.h      |   26 +++++++++++++++++++-------
- 2 files changed, 34 insertions(+), 21 deletions(-)
+ drivers/video/omap2/dss/dpi.c |   11 +++--------
+ 1 files changed, 3 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 505bc12..44eb666 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -1858,10 +1858,11 @@ static void omapfb_free_resources(struct omapfb2_device *fbdev)
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index ff6bd30..bab55cd 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -202,15 +202,14 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
+ 		goto err2;
+ 
+ 	if (dpi_use_dsi_pll(dssdev)) {
+-		dss_clk_enable(DSS_CLK_SYSCK);
+ 		r = dsi_pll_init(dpi.dsidev, 0, 1);
+ 		if (r)
+-			goto err3;
++			goto err2;
  	}
  
- 	for (i = 0; i < fbdev->num_displays; i++) {
--		if (fbdev->displays[i]->state != OMAP_DSS_DISPLAY_DISABLED)
--			fbdev->displays[i]->driver->disable(fbdev->displays[i]);
-+		struct omap_dss_device *dssdev = fbdev->displays[i].dssdev;
-+		if (dssdev->state != OMAP_DSS_DISPLAY_DISABLED)
-+			dssdev->driver->disable(dssdev);
- 
--		omap_dss_put_device(fbdev->displays[i]);
-+		omap_dss_put_device(dssdev);
- 	}
- 
- 	dev_set_drvdata(fbdev->dev, NULL);
-@@ -2084,14 +2085,14 @@ static int omapfb_set_def_mode(struct omapfb2_device *fbdev,
- 	int r;
- 	u8 bpp;
- 	struct omap_video_timings timings, temp_timings;
-+	struct omapfb_display_data *d;
- 
- 	r = omapfb_mode_to_timings(mode_str, &timings, &bpp);
+ 	r = dpi_set_mode(dssdev);
  	if (r)
- 		return r;
+-		goto err4;
++		goto err3;
  
--	fbdev->bpp_overrides[fbdev->num_bpp_overrides].dssdev = display;
--	fbdev->bpp_overrides[fbdev->num_bpp_overrides].bpp = bpp;
--	++fbdev->num_bpp_overrides;
-+	d = get_display_data(fbdev, display);
-+	d->bpp_override = bpp;
+ 	mdelay(2);
  
- 	if (display->driver->check_timings) {
- 		r = display->driver->check_timings(display, &timings);
-@@ -2117,14 +2118,14 @@ static int omapfb_set_def_mode(struct omapfb2_device *fbdev,
- static int omapfb_get_recommended_bpp(struct omapfb2_device *fbdev,
- 		struct omap_dss_device *dssdev)
- {
--	int i;
-+	struct omapfb_display_data *d;
+@@ -218,12 +217,9 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
  
- 	BUG_ON(dssdev->driver->get_recommended_bpp = NULL);
+ 	return 0;
  
--	for (i = 0; i < fbdev->num_bpp_overrides; ++i) {
--		if (dssdev = fbdev->bpp_overrides[i].dssdev)
--			return fbdev->bpp_overrides[i].bpp;
--	}
-+	d = get_display_data(fbdev, dssdev);
-+
-+	if (d->bpp_override != 0)
-+		return d->bpp_override;
- 
- 	return dssdev->driver->get_recommended_bpp(dssdev);
- }
-@@ -2156,9 +2157,9 @@ static int omapfb_parse_def_modes(struct omapfb2_device *fbdev)
- 
- 		display = NULL;
- 		for (i = 0; i < fbdev->num_displays; ++i) {
--			if (strcmp(fbdev->displays[i]->name,
-+			if (strcmp(fbdev->displays[i].dssdev->name,
- 						display_str) = 0) {
--				display = fbdev->displays[i];
-+				display = fbdev->displays[i].dssdev;
- 				break;
- 			}
- 		}
-@@ -2282,7 +2283,7 @@ static int omapfb_probe(struct platform_device *pdev)
- 			r = -ENODEV;
- 		}
- 
--		fbdev->displays[fbdev->num_displays++] = dssdev;
-+		fbdev->displays[fbdev->num_displays++].dssdev = dssdev;
+-err4:
+-	if (dpi_use_dsi_pll(dssdev))
+-		dsi_pll_uninit(dpi.dsidev, true);
+ err3:
+ 	if (dpi_use_dsi_pll(dssdev))
+-		dss_clk_disable(DSS_CLK_SYSCK);
++		dsi_pll_uninit(dpi.dsidev, true);
+ err2:
+ 	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK);
+ 	if (cpu_is_omap34xx())
+@@ -242,7 +238,6 @@ void omapdss_dpi_display_disable(struct omap_dss_device *dssdev)
+ 	if (dpi_use_dsi_pll(dssdev)) {
+ 		dss_select_dispc_clk_source(OMAP_DSS_CLK_SRC_FCK);
+ 		dsi_pll_uninit(dpi.dsidev, true);
+-		dss_clk_disable(DSS_CLK_SYSCK);
  	}
  
- 	if (r)
-diff --git a/drivers/video/omap2/omapfb/omapfb.h b/drivers/video/omap2/omapfb/omapfb.h
-index aa1b1d9..f07dbbb 100644
---- a/drivers/video/omap2/omapfb/omapfb.h
-+++ b/drivers/video/omap2/omapfb/omapfb.h
-@@ -73,6 +73,11 @@ struct omapfb_info {
- 	bool mirror;
- };
- 
-+struct omapfb_display_data {
-+	struct omap_dss_device *dssdev;
-+	u8 bpp_override;
-+};
-+
- struct omapfb2_device {
- 	struct device *dev;
- 	struct mutex  mtx;
-@@ -86,17 +91,11 @@ struct omapfb2_device {
- 	struct omapfb2_mem_region regions[10];
- 
- 	unsigned num_displays;
--	struct omap_dss_device *displays[10];
-+	struct omapfb_display_data displays[10];
- 	unsigned num_overlays;
- 	struct omap_overlay *overlays[10];
- 	unsigned num_managers;
- 	struct omap_overlay_manager *managers[10];
--
--	unsigned num_bpp_overrides;
--	struct {
--		struct omap_dss_device *dssdev;
--		u8 bpp;
--	} bpp_overrides[10];
- };
- 
- struct omapfb_colormode {
-@@ -143,6 +142,19 @@ static inline struct omap_dss_device *fb2display(struct fb_info *fbi)
- 	return NULL;
- }
- 
-+static inline struct omapfb_display_data *get_display_data(
-+		struct omapfb2_device *fbdev, struct omap_dss_device *dssdev)
-+{
-+	int i;
-+
-+	for (i = 0; i < fbdev->num_displays; ++i)
-+		if (fbdev->displays[i].dssdev = dssdev)
-+			return &fbdev->displays[i];
-+
-+	/* This should never happen */
-+	BUG();
-+}
-+
- static inline void omapfb_lock(struct omapfb2_device *fbdev)
- {
- 	mutex_lock(&fbdev->mtx);
+ 	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK);
 -- 
 1.7.4.1
 

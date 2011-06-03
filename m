@@ -1,39 +1,97 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 09 Jun 2011 13:56:43 +0000
-Subject: [PATCHv2 21/28] OMAP4: HWMOD: Remove unneeded DSS opt clocks
-Message-Id: <1307627810-3768-22-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 03 Jun 2011 10:00:12 +0000
+Subject: [PATCH 02/27] OMAP: DSS2: Taal: Make driver more fault tolerant
+Message-Id: <1307095237-14805-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Some of the optional clocks for dss_core are not needed. Remove them.
+If ULPS exit fails, and the following reset fails also, Taal driver was
+left in state where it thinks DSI is enabled while it really isn't,
+leading to crash.
 
-Cc: Benoit Cousson <b-cousson@ti.com>
+This patch checks the return value of taal_panel_reset, and if that
+fails, ulps_enabled is left true, causing the driver to retry ulps exit
+later.
+
+Also the return value of taal_wake_up is checked at taal_disable, and if
+wake up fails, we'll skip the power_off. This could leave the panel into
+a not-quite-valid state, but there's nothing we can do about it in that
+situation.
+
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-omap2/omap_hwmod_44xx_data.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |   33 ++++++++++++++++++----------
+ 1 files changed, 21 insertions(+), 12 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/omap_hwmod_44xx_data.c b/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
-index 857bdda..d7d86b6 100644
---- a/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
-+++ b/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
-@@ -1164,10 +1164,7 @@ static struct omap_hwmod_ocp_if *omap44xx_dss_slaves[] = {
- };
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index fdd5d4ae..b82bcc1 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -504,14 +504,18 @@ static int taal_exit_ulps(struct omap_dss_device *dssdev)
+ 		return 0;
  
- static struct omap_hwmod_opt_clk dss_opt_clks[] = {
--	{ .role = "sys_clk", .clk = "dss_sys_clk" },
--	{ .role = "tv_clk", .clk = "dss_tv_clk" },
- 	{ .role = "dss_clk", .clk = "dss_dss_clk" },
--	{ .role = "video_clk", .clk = "dss_48mhz_clk" },
- };
+ 	r = omapdss_dsi_display_enable(dssdev);
+-	if (r)
+-		goto err;
++	if (r) {
++		dev_err(&dssdev->dev, "failed to enable DSI\n");
++		goto err1;
++	}
  
- static struct omap_hwmod omap44xx_dss_hwmod = {
+ 	omapdss_dsi_vc_enable_hs(dssdev, td->channel, true);
+ 
+ 	r = _taal_enable_te(dssdev, true);
+-	if (r)
+-		goto err;
++	if (r) {
++		dev_err(&dssdev->dev, "failed to re-enable TE");
++		goto err2;
++	}
+ 
+ 	enable_irq(gpio_to_irq(panel_data->ext_te_gpio));
+ 
+@@ -521,13 +525,15 @@ static int taal_exit_ulps(struct omap_dss_device *dssdev)
+ 
+ 	return 0;
+ 
+-err:
+-	dev_err(&dssdev->dev, "exit ULPS failed");
+-	r = taal_panel_reset(dssdev);
+-
+-	enable_irq(gpio_to_irq(panel_data->ext_te_gpio));
+-	td->ulps_enabled = false;
++err2:
++	dev_err(&dssdev->dev, "failed to exit ULPS");
+ 
++	r = taal_panel_reset(dssdev);
++	if (!r) {
++		enable_irq(gpio_to_irq(panel_data->ext_te_gpio));
++		td->ulps_enabled = false;
++	}
++err1:
+ 	taal_queue_ulps_work(dssdev);
+ 
+ 	return r;
+@@ -1317,8 +1323,11 @@ static void taal_disable(struct omap_dss_device *dssdev)
+ 	dsi_bus_lock(dssdev);
+ 
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
+-		taal_wake_up(dssdev);
+-		taal_power_off(dssdev);
++		int r;
++
++		r = taal_wake_up(dssdev);
++		if (!r)
++			taal_power_off(dssdev);
+ 	}
+ 
+ 	dsi_bus_unlock(dssdev);
 -- 
 1.7.4.1
 

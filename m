@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 03 Jun 2011 10:00:30 +0000
-Subject: [PATCH 20/27] OMAP4: HWMOD: Remove unneeded DSS opt clocks
-Message-Id: <1307095237-14805-21-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 03 Jun 2011 10:00:16 +0000
+Subject: [PATCH 06/27] OMAP: DSS2: Init dispc first before other components
+Message-Id: <1307095237-14805-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,29 +11,46 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Some of the optional clocks for dss_core are not needed. Remove them.
+The initialization order of the DSS modules is important when pm_runtime
+support is implemented. Currently RFBI is initialized before DISPC,
+which will cause problems with pm_runtime as RFBI uses DISPC.
 
-Cc: Benoit Cousson <b-cousson@ti.com>
+Change the init order so that DISPC is before RFBI.
+
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-omap2/omap_hwmod_44xx_data.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+ drivers/video/omap2/dss/core.c |   11 +++++------
+ 1 files changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/omap_hwmod_44xx_data.c b/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
-index 4f6ae94..b374cd0 100644
---- a/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
-+++ b/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
-@@ -1164,10 +1164,7 @@ static struct omap_hwmod_ocp_if *omap44xx_dss_slaves[] = {
- };
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 3da4267..02187df 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -185,6 +185,11 @@ static int omap_dss_probe(struct platform_device *pdev)
  
- static struct omap_hwmod_opt_clk dss_opt_clks[] = {
--	{ .role = "sys_clk", .clk = "dss_sys_clk" },
--	{ .role = "tv_clk", .clk = "dss_tv_clk" },
- 	{ .role = "dss_clk", .clk = "dss_dss_clk" },
--	{ .role = "video_clk", .clk = "dss_48mhz_clk" },
- };
+ 	/* keep clocks enabled to prevent context saves/restores during init */
+ 	dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK);
++	r = dispc_init_platform_driver();
++	if (r) {
++		DSSERR("Failed to initialize dispc platform driver\n");
++		goto err_dispc;
++	}
  
- static struct omap_hwmod omap44xx_dss_hwmod = {
+ 	r = rfbi_init_platform_driver();
+ 	if (r) {
+@@ -192,12 +197,6 @@ static int omap_dss_probe(struct platform_device *pdev)
+ 		goto err_rfbi;
+ 	}
+ 
+-	r = dispc_init_platform_driver();
+-	if (r) {
+-		DSSERR("Failed to initialize dispc platform driver\n");
+-		goto err_dispc;
+-	}
+-
+ 	r = venc_init_platform_driver();
+ 	if (r) {
+ 		DSSERR("Failed to initialize venc platform driver\n");
 -- 
 1.7.4.1
 

@@ -1,46 +1,49 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 14 Jun 2011 09:24:53 +0000
-Subject: [PATCH v2 15/29] mx3fb: use display information in info not in var for panning
-Message-Id: <1308043507-11083-16-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 03 Jun 2011 10:00:17 +0000
+Subject: [PATCH 07/27] OMAP: DSS2: Remove clk optimization at dss init
+Message-Id: <1307095237-14805-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it. Also use the
-aligned fix.line_length and not the (possible) unaligned xres_virtual.
+DSS enables core clocks for the duration of initialization to avoid
+unnecessary context saves and restores.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Tested-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+With PM runtime the clocks cannot be handled in this way, outside the
+dss module drivers. Thus we need to remove the optimization.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/mx3fb.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/omap2/dss/core.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-index 7e3a490..bd76858 100644
---- a/drivers/video/mx3fb.c
-+++ b/drivers/video/mx3fb.c
-@@ -1062,15 +1062,15 @@ static int mx3fb_pan_display(struct fb_var_screeninfo *var,
- 	y_bottom = var->yoffset;
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 02187df..f0bae6d 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -183,8 +183,6 @@ static int omap_dss_probe(struct platform_device *pdev)
+ 		goto err_dss;
+ 	}
  
- 	if (!(var->vmode & FB_VMODE_YWRAP))
--		y_bottom += var->yres;
-+		y_bottom += fbi->var.yres;
+-	/* keep clocks enabled to prevent context saves/restores during init */
+-	dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK);
+ 	r = dispc_init_platform_driver();
+ 	if (r) {
+ 		DSSERR("Failed to initialize dispc platform driver\n");
+@@ -237,8 +235,6 @@ static int omap_dss_probe(struct platform_device *pdev)
+ 			pdata->default_device = dssdev;
+ 	}
  
- 	if (y_bottom > fbi->var.yres_virtual)
- 		return -EINVAL;
+-	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK);
+-
+ 	return 0;
  
- 	mutex_lock(&mx3_fbi->mutex);
- 
--	offset = (var->yoffset * var->xres_virtual + var->xoffset) *
--		(var->bits_per_pixel / 8);
-+	offset = var->yoffset * fbi->fix.line_length
-+	       + var->xoffset * (fbi->var.bits_per_pixel / 8);
- 	base = fbi->fix.smem_start + offset;
- 
- 	dev_dbg(fbi->device, "Updating SDC BG buf %d address=0x%08lX\n",
+ err_register:
 -- 
-1.7.3.4
+1.7.4.1
 

@@ -1,56 +1,46 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 06 Jun 2011 07:21:34 +0000
-Subject: Re: [PATCH 03/27] OMAP: DSS2: Reset LANEx_ULPS_SIG2 bits after use
-Message-Id: <1307344894.1910.1.camel@deskari>
+From: Hubert Feurstein <h.feurstein@gmail.com>
+Date: Mon, 06 Jun 2011 08:50:51 +0000
+Subject: [PATCH] atmel_lcdfb: fix usage of wrong registers in suspend/resume
+Message-Id: <1307350251-5767-1-git-send-email-h.feurstein@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1307095237-14805-4-git-send-email-tomi.valkeinen@ti.com>
-	 <4DEC6889.6020607@ti.com>
-In-Reply-To: <4DEC6889.6020607@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Cousson, Benoit" <b-cousson@ti.com>, "paul@pwsan.com" <paul@pwsan.com>, "Hilman, Kevin" <khilman@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-On Mon, 2011-06-06 at 11:11 +0530, Archit Taneja wrote:
-> Hi,
-> 
-> On Friday 03 June 2011 03:30 PM, Valkeinen, Tomi wrote:
-> > LANEx_ULPS_SIG2 bits are left on after entering ULPS. This doesn't cause
-> > any problems currently, as DSI HW is reset when it is enabled. However,
-> > if the reset is not done, operation fails if the bits are still set.
-> >
-> > So reset the bits after entering ULPS to ensure operation even without
-> > HW reset.
-> >
-> > Signed-off-by: Tomi Valkeinen<tomi.valkeinen@ti.com>
-> > ---
-> >   drivers/video/omap2/dss/dsi.c |    4 ++++
-> >   1 files changed, 4 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-> > index 69c2d4f..4496d09 100644
-> > --- a/drivers/video/omap2/dss/dsi.c
-> > +++ b/drivers/video/omap2/dss/dsi.c
-> > @@ -3395,6 +3395,10 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
-> >   	dsi_unregister_isr_cio(dsidev, dsi_completion_handler,&completion,
-> >   			DSI_CIO_IRQ_ULPSACTIVENOT_ALL0);
-> >
-> > +	/* Reset LANEx_ULPS_SIG2 */
-> > +	REG_FLD_MOD(dsidev, DSI_COMPLEXIO_CFG2, (0<<  0) | (0<<  1) | (0<<  2),
-> > +		7, 5);
-> > +
-> 
-> We may need to reset more lanes based on the number of lanes the panel 
-> is using. We could calculate a mask here instead.
+I assume the intention was to set the contrast value to 0 and not
+the contrast control register (in atmel_lcdfb_suspend). And in
+atmel_lcdfb_resume the contrast value should be restored.
 
-Yes, I noticed that but I decided just to fix the bug here. The same
-bits are set a few lines earlier.
+Signed-off-by: Hubert Feurstein <h.feurstein@gmail.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+---
+ drivers/video/atmel_lcdfb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-We should go through all the lane configs in dsi.c, and come up with a
-way to easily get the necessary masks.
-
- Tomi
-
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 4484c72..2ed7ec1 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -1086,7 +1086,7 @@ static int atmel_lcdfb_suspend(struct platform_device *pdev, pm_message_t mesg)
+ 	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0UL);
+ 
+ 	sinfo->saved_lcdcon = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_VAL);
+-	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, 0);
++	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, 0);
+ 	if (sinfo->atmel_lcdfb_power_control)
+ 		sinfo->atmel_lcdfb_power_control(0);
+ 
+@@ -1105,7 +1105,7 @@ static int atmel_lcdfb_resume(struct platform_device *pdev)
+ 	atmel_lcdfb_start(sinfo);
+ 	if (sinfo->atmel_lcdfb_power_control)
+ 		sinfo->atmel_lcdfb_power_control(1);
+-	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, sinfo->saved_lcdcon);
++	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, sinfo->saved_lcdcon);
+ 
+ 	/* Enable FIFO & DMA errors */
+ 	lcdc_writel(sinfo, ATMEL_LCDC_IER, ATMEL_LCDC_UFLWI
+-- 
+1.7.1
 

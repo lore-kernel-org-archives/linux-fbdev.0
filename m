@@ -1,31 +1,55 @@
 From: Paul Mundt <lethal@linux-sh.org>
-Date: Wed, 15 Jun 2011 02:37:19 +0000
-Subject: Re: [PATCH] EFIFB: Fix error handling
-Message-Id: <20110615023718.GK17891@linux-sh.org>
+Date: Mon, 06 Jun 2011 03:39:00 +0000
+Subject: [GIT PULL] fbdev fixes for 3.0-rc2
+Message-Id: <20110606033900.GF26101@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20110615003817.18883.41030.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20110615003817.18883.41030.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: David Howells <dhowells@redhat.com>
-Cc: pjones@redhat.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, stable@kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Jun 15, 2011 at 01:38:17AM +0100, David Howells wrote:
-> Fix the error handling in the EFIFB driver if platform_driver_probe() fails.
-> In that case, the code will pass the driver struct to the _device_
-> unregistration function.  It presumably should pass a pointer to the device
-> struct instead.
-> 
-> The compiler gives the following warning to indicate this:
-> 
-> drivers/video/efifb.c: In function 'efifb_init':
-> drivers/video/efifb.c:544:3: warning: passing argument 1 of 'platform_device_unregister' from incompatible pointer type
-> include/linux/platform_device.h:40:13: note: expected 'struct platform_device *' but argument is of type 'struct platform_driver *'
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> cc: Peter Jones <pjones@redhat.com>
-> cc: linux-fbdev@vger.kernel.org
-> cc: stable@kernel.org
+Please pull from:
 
-Thanks, I've already queued a fix for this.
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/fbdev-3.x.git fbdev-fixes-for-linus
+
+Which contains:
+
+Andy Lutomirski (3):
+      efifb: Enable write-combining
+      efifb: Fix mismatched request/release_mem_region
+      efifb: Disallow manual bind and unbind
+
+Bruno PrÃƒÆ’Ã‚Â©mont (1):
+      video: Fix use-after-free by vga16fb on rmmod
+
+Joe Perches (1):
+      video: Convert vmalloc/memset to vzalloc
+
+Julia Lawall (2):
+      drivers/video/imxfb.c: add missing clk_put
+      drivers/video/pxa168fb.c: add missing clk_put
+
+Paul Mundt (1):
+      fbdev: sh_mobile_lcdcfb: Fix up fallout from MERAM changes.
+
+Steven Miao (1):
+      fbdev: bf537-lq035: add missing blacklight properties type
+
+Tormod Volden (1):
+      savagefb: Use panel CVT mode as default
+
+ drivers/video/arcfb.c                  |    5 +--
+ drivers/video/bf537-lq035.c            |    1 +
+ drivers/video/broadsheetfb.c           |    4 +--
+ drivers/video/efifb.c                  |   34 ++++++++++++++++++++-----------
+ drivers/video/hecubafb.c               |    5 +--
+ drivers/video/imxfb.c                  |    4 +-
+ drivers/video/metronomefb.c            |    4 +--
+ drivers/video/modedb.c                 |    1 +
+ drivers/video/pxa168fb.c               |   17 +++++++++------
+ drivers/video/savage/savagefb_driver.c |   16 +++++++++++++++
+ drivers/video/sh_mobile_lcdcfb.c       |    4 +-
+ drivers/video/vga16fb.c                |    2 +
+ drivers/video/xen-fbfront.c            |    3 +-
+ 13 files changed, 63 insertions(+), 37 deletions(-)

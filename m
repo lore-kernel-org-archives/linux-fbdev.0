@@ -1,24 +1,33 @@
-From: Anatolij Gustschin <agust@denx.de>
-Date: Thu, 23 Jun 2011 11:39:40 +0000
-Subject: Re: [PATCH] fsl-diu-fb: remove the ioctl interface
-Message-Id: <20110623133940.5c6b8b1a@wker>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Mon, 06 Jun 2011 03:07:04 +0000
+Subject: Re: [Patch 2/2 resend] Prevent vga16fb from accessing hw after it was unregistered
+Message-Id: <20110606030704.GD26101@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1308691655-3416-1-git-send-email-timur@freescale.com>
-	<20110622003853.1041385c@wker>
-	<929D3CED81F34E43887A393170D66FB90484A280@GBRSUN01MS002.eu.xerox.net>
-	<20110623132604.1a6d0d71@wker> <4E0323A5.7080706@freescale.com>
-In-Reply-To: <4E0323A5.7080706@freescale.com>
+References: <20110524223221.741ffbc0@neptune.home>
+In-Reply-To: <20110524223221.741ffbc0@neptune.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-On Thu, 23 Jun 2011 11:29:42 +0000
-Tabi Timur-B04825 <B04825@freescale.com> wrote:
-...
-> > test-app:http://pastebin.com/J2RvKb6n
-> 
-> What's the "VIU"?
+On Tue, May 24, 2011 at 10:32:21PM +0200, Bruno Pr??mont wrote:
+> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+> index 5aac00e..bd9f93b 100644
+> --- a/drivers/video/fbmem.c
+> +++ b/drivers/video/fbmem.c
+> @@ -1661,6 +1661,11 @@ static int do_unregister_framebuffer(struct fb_info *fb_info)
+>  	device_destroy(fb_class, MKDEV(FB_MAJOR, i));
+>  	event.info = fb_info;
+>  	fb_notifier_call_chain(FB_EVENT_FB_UNREGISTERED, &event);
+> +	if (fb_info->fbops->fb_unregistered) {
+> +		mutex_lock(&fb_info->lock);
+> +		fb_info->fbops->fb_unregistered(fb_info);
+> +		mutex_unlock(&fb_info->lock);
+> +	}
+>  
+>  	/* this may free fb info */
+>  	put_fb_info(fb_info);
 
-Video-IN unit on mpc5121e (for capturing ITU656 video stream data).
+I'm not sure I really see the point, given that you can already do all of
+the same work by tying in to the notifier chain. See for example the
+sh_mobile_hdmi driver and its unreg notifier.

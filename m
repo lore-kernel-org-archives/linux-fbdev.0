@@ -1,55 +1,37 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Jun 2011 05:24:53 +0000
-Subject: Re: [PATCH 2/2] video: omap2: Compile omap2 support only when
-Message-Id: <1308633893.1850.11.camel@deskari>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Wed, 08 Jun 2011 10:43:17 +0000
+Subject: [PATCH 1/3] video: s3c-fb: fix misleading kfree in remove function
+Message-Id: <1307529797-27153-1-git-send-email-jg1.han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1308566761-2850-1-git-send-email-tushar.behera@linaro.org>
-	<1308566761-2850-3-git-send-email-tushar.behera@linaro.org>
-	<1308575201.2076.57.camel@deskari>  <4E0022B5.9000500@linaro.org>
-In-Reply-To: <4E0022B5.9000500@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-On Tue, 2011-06-21 at 10:18 +0530, Tushar Behera wrote:
-> Hi,
-> 
-> On Monday 20 June 2011 06:36 PM, Tomi Valkeinen wrote:
-> > On Mon, 2011-06-20 at 16:16 +0530, Tushar Behera wrote:
-> >> Currently display support for omap2 is selected by default and
-> >> it gets built for all the configurations.
-> >>
-> >> Instead of it being a built-in feature, it's compilation should
-> >> depend on the config option CONFIG_FB_OMAP2.
-> >
-> > No, I don't think so. omap2 directory contains vram, vrfb and omapdss,
-> > all of which can be used without omapfb driver. vram and vrfb can be
-> > even used without omapdss driver.
-> Even if I build the kernel with i386_defconfig, I get some compiled 
-> files within drivers/video/omap2.
-> 
-> $ make ARCH=x86 i386_defconfig O=out_dir
-> $ make ARCH=x86 O=out_dir
-> 
-> $ ls out_dir/drivers/video/omap2
-> built-in.o  displays  modules.builtin  modules.order
-> 
-> IMHO, drivers/video/omap2/ should not be compiled if the kernel is not 
-> built for omap2.
+This patch fixes misleading kfree in remove function.
 
-Ok. Yes, that's a known "problem". We could have a OMAPx check there,
-but then again, the driver is a driver for the DSS HW, which could, at
-least in theory, used in other SoCs.
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/s3c-fb.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-I don't think any driver should normally depend on ARCH_something or
-MACH_something.
-
-I think this is more of a "problem" with the build system. The same
-thing can be seen with, for example, drivers/video/backlight/ and
-drivers/video/display/ directories. In practice the created files do not
-affect the kernel in any way, as far as I see.
-
- Tomi
-
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 0352afa..148e19d 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -1487,11 +1487,10 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
+ 
+ 	release_mem_region(sfb->regs_res->start, resource_size(sfb->regs_res));
+ 
+-	kfree(sfb);
+-
+ 	pm_runtime_put_sync(sfb->dev);
+ 	pm_runtime_disable(sfb->dev);
+ 
++	kfree(sfb);
+ 	return 0;
+ }
+ 
+-- 
+1.7.1
 

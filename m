@@ -1,66 +1,54 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 03 Jun 2011 10:00:31 +0000
-Subject: [PATCH 21/27] OMAP: DSS2: Remove unused opt_clock_available
-Message-Id: <1307095237-14805-22-git-send-email-tomi.valkeinen@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Wed, 08 Jun 2011 10:43:49 +0000
+Subject: [PATCH] video: s3c-fb: move enabling channel for window
+Message-Id: <1307529829-31612-1-git-send-email-jg1.han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-opt_clock_available() is no longer needed, so remove it.
+This patch moves enabling channel for window, because there should
+be enabling channel before enabling window. If the sequence is
+reversed, it makes the problem in displaying images to lcd panel.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- arch/arm/mach-omap2/display.c |   12 ------------
- include/video/omapdss.h       |    2 --
- 2 files changed, 0 insertions(+), 14 deletions(-)
+ drivers/video/s3c-fb.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
-index c7e19c4..af43620 100644
---- a/arch/arm/mach-omap2/display.c
-+++ b/arch/arm/mach-omap2/display.c
-@@ -46,17 +46,6 @@ static struct omap_device_pm_latency omap_dss_latency[] = {
- /* oh_core is used for getting opt-clocks */
- static struct omap_hwmod	*oh_core;
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 0352afa..4f1bc39 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -558,6 +558,13 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 	vidosd_set_alpha(win, alpha);
+ 	vidosd_set_size(win, data);
  
--static bool opt_clock_available(const char *clk_role)
--{
--	int i;
--
--	for (i = 0; i < oh_core->opt_clks_cnt; i++) {
--		if (!strcmp(oh_core->opt_clks[i].role, clk_role))
--			return true;
++	/* Enable DMA channel for this window */
++	if (sfb->variant.has_shadowcon) {
++		data = readl(sfb->regs + SHADOWCON);
++		data |= SHADOWCON_CHx_ENABLE(win_no);
++		writel(data, sfb->regs + SHADOWCON);
++	}
++
+ 	data = WINCONx_ENWIN;
+ 
+ 	/* note, since we have to round up the bits-per-pixel, we end up
+@@ -637,13 +644,6 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 	writel(data, regs + sfb->variant.wincon + (win_no * 4));
+ 	writel(0x0, regs + sfb->variant.winmap + (win_no * 4));
+ 
+-	/* Enable DMA channel for this window */
+-	if (sfb->variant.has_shadowcon) {
+-		data = readl(sfb->regs + SHADOWCON);
+-		data |= SHADOWCON_CHx_ENABLE(win_no);
+-		writel(data, sfb->regs + SHADOWCON);
 -	}
--	return false;
--}
 -
- struct omap_dss_hwmod_data {
- 	const char *oh_name;
- 	const char *dev_name;
-@@ -120,7 +109,6 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
- 	pdata.board_data = board_data;
- 	pdata.board_data->get_context_loss_count  		omap_pm_get_dev_context_loss_count;
--	pdata.opt_clock_available = opt_clock_available;
+ 	shadow_protect_win(win, 0);
  
- 	for (i = 0; i < oh_count; i++) {
- 		oh = omap_hwmod_lookup(curr_dss_hwmod[i].oh_name);
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 4f914a5..06914b1 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -264,8 +264,6 @@ static inline int omap_display_init(struct omap_dss_board_info *board_data)
- struct omap_display_platform_data {
- 	struct omap_dss_board_info *board_data;
- 	/* TODO: Additional members to be added when PM is considered */
--
--	bool (*opt_clock_available)(const char *clk_role);
- };
- 
- struct omap_video_timings {
+ 	return 0;
 -- 
-1.7.4.1
+1.7.1
 

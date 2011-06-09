@@ -1,37 +1,49 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 14 Jun 2011 09:24:55 +0000
-Subject: [PATCH v2 17/29] pm2fb: use display information in info not in var for panning
-Message-Id: <1308043507-11083-18-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 09 Jun 2011 13:56:29 +0000
+Subject: [PATCHv2 07/28] OMAP: DSS2: Remove clk optimization at dss init
+Message-Id: <1307627810-3768-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+DSS enables core clocks for the duration of initialization to avoid
+unnecessary context saves and restores.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
+With PM runtime the clocks cannot be handled in this way, outside the
+dss module drivers. Thus we need to remove the optimization.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/pm2fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/core.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/pm2fb.c b/drivers/video/pm2fb.c
-index 27f93aa..f4f8ce8 100644
---- a/drivers/video/pm2fb.c
-+++ b/drivers/video/pm2fb.c
-@@ -973,8 +973,8 @@ static int pm2fb_pan_display(struct fb_var_screeninfo *var,
- {
- 	struct pm2fb_par *p = info->par;
- 	u32 base;
--	u32 depth = (var->bits_per_pixel + 7) & ~7;
--	u32 xres = (var->xres + 31) & ~31;
-+	u32 depth = (info->var.bits_per_pixel + 7) & ~7;
-+	u32 xres = (info->var.xres + 31) & ~31;
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 02187df..f0bae6d 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -183,8 +183,6 @@ static int omap_dss_probe(struct platform_device *pdev)
+ 		goto err_dss;
+ 	}
  
- 	depth = (depth > 32) ? 32 : depth;
- 	base = to3264(var->yoffset * xres + var->xoffset, depth, 1);
+-	/* keep clocks enabled to prevent context saves/restores during init */
+-	dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK);
+ 	r = dispc_init_platform_driver();
+ 	if (r) {
+ 		DSSERR("Failed to initialize dispc platform driver\n");
+@@ -237,8 +235,6 @@ static int omap_dss_probe(struct platform_device *pdev)
+ 			pdata->default_device = dssdev;
+ 	}
+ 
+-	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK);
+-
+ 	return 0;
+ 
+ err_register:
 -- 
-1.7.3.4
+1.7.4.1
 

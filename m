@@ -1,68 +1,56 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 27 Jun 2011 10:50:37 +0000
-Subject: [PATCH V7 2/5] ARM: EXYNOS4: Add FIMD resource definition
-Message-Id: <1309171837-30299-1-git-send-email-jg1.han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 09 Jun 2011 13:56:28 +0000
+Subject: [PATCHv2 06/28] OMAP: DSS2: Init dispc first before other components
+Message-Id: <1307627810-3768-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Anand Kumar N <anand.kn@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kmpark@infradead.org>, Inki Dae <inki.dae@samsung.com>, ARM Linux <linux@arm.linux.org.uk>, Ben Dooks <ben-linux@fluff.org>, Jonghun Han <jonghun.han@samsung.com>, Jingoo Han <jg1.han@samsung.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Jonghun Han <jonghun.han@samsung.com>
+The initialization order of the DSS modules is important when pm_runtime
+support is implemented. Currently RFBI is initialized before DISPC,
+which will cause problems with pm_runtime as RFBI uses DISPC.
 
-This patch adds resource definitions for EXYNOS4 FIMD.
-IRQ and SFR definitions are added.
+Change the init order so that DISPC is before RFBI.
 
-Signed-off-by: Jonghun Han <jonghun.han@samsung.com>
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-exynos4/include/mach/irqs.h |    8 ++++++++
- arch/arm/mach-exynos4/include/mach/map.h  |    5 +++++
- 2 files changed, 13 insertions(+), 0 deletions(-)
+ drivers/video/omap2/dss/core.c |   11 +++++------
+ 1 files changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm/mach-exynos4/include/mach/irqs.h b/arch/arm/mach-exynos4/include/mach/irqs.h
-index 5d03730..2cd2090 100644
---- a/arch/arm/mach-exynos4/include/mach/irqs.h
-+++ b/arch/arm/mach-exynos4/include/mach/irqs.h
-@@ -73,6 +73,14 @@
- #define IRQ_SYSMMU_MFC_M1_0	COMBINER_IRQ(5, 6)
- #define IRQ_SYSMMU_PCIE_0	COMBINER_IRQ(5, 7)
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 3da4267..02187df 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -185,6 +185,11 @@ static int omap_dss_probe(struct platform_device *pdev)
  
-+#define IRQ_FIMD0_FIFO		COMBINER_IRQ(11, 0)
-+#define IRQ_FIMD0_VSYNC		COMBINER_IRQ(11, 1)
-+#define IRQ_FIMD0_SYSTEM	COMBINER_IRQ(11, 2)
-+
-+#define IRQ_FIMD1_FIFO		COMBINER_IRQ(12, 0)
-+#define IRQ_FIMD1_VSYNC		COMBINER_IRQ(12, 1)
-+#define IRQ_FIMD1_SYSTEM	COMBINER_IRQ(12, 2)
-+
- #define IRQ_PDMA0		COMBINER_IRQ(21, 0)
- #define IRQ_PDMA1		COMBINER_IRQ(21, 1)
+ 	/* keep clocks enabled to prevent context saves/restores during init */
+ 	dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK);
++	r = dispc_init_platform_driver();
++	if (r) {
++		DSSERR("Failed to initialize dispc platform driver\n");
++		goto err_dispc;
++	}
  
-diff --git a/arch/arm/mach-exynos4/include/mach/map.h b/arch/arm/mach-exynos4/include/mach/map.h
-index 0009e77..94006f7 100644
---- a/arch/arm/mach-exynos4/include/mach/map.h
-+++ b/arch/arm/mach-exynos4/include/mach/map.h
-@@ -93,6 +93,9 @@
- #define EXYNOS4_PA_MIPI_CSIS0		0x11880000
- #define EXYNOS4_PA_MIPI_CSIS1		0x11890000
+ 	r = rfbi_init_platform_driver();
+ 	if (r) {
+@@ -192,12 +197,6 @@ static int omap_dss_probe(struct platform_device *pdev)
+ 		goto err_rfbi;
+ 	}
  
-+#define EXYNOS4_PA_FIMD0		0x11C00000
-+#define EXYNOS4_PA_FIMD1		0x12000000
-+
- #define EXYNOS4_PA_HSMMC(x)		(0x12510000 + ((x) * 0x10000))
- 
- #define EXYNOS4_PA_SATA			0x12560000
-@@ -140,6 +143,8 @@
- #define S5P_PA_FIMC3			EXYNOS4_PA_FIMC3
- #define S5P_PA_MIPI_CSIS0		EXYNOS4_PA_MIPI_CSIS0
- #define S5P_PA_MIPI_CSIS1		EXYNOS4_PA_MIPI_CSIS1
-+#define S5P_PA_FIMD0			EXYNOS4_PA_FIMD0
-+#define S5P_PA_FIMD1			EXYNOS4_PA_FIMD1
- #define S5P_PA_ONENAND			EXYNOS4_PA_ONENAND
- #define S5P_PA_ONENAND_DMA		EXYNOS4_PA_ONENAND_DMA
- #define S5P_PA_SDRAM			EXYNOS4_PA_SDRAM
+-	r = dispc_init_platform_driver();
+-	if (r) {
+-		DSSERR("Failed to initialize dispc platform driver\n");
+-		goto err_dispc;
+-	}
+-
+ 	r = venc_init_platform_driver();
+ 	if (r) {
+ 		DSSERR("Failed to initialize venc platform driver\n");
 -- 
-1.7.1
+1.7.4.1
 

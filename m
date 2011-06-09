@@ -1,283 +1,170 @@
-From: Manuel Lauss <manuel.lauss@googlemail.com>
-Date: Fri, 10 Jun 2011 15:23:02 +0000
-Subject: [PATCH 2/4] au1200fb: fixup PM
-Message-Id: <1307719384-23702-3-git-send-email-manuel.lauss@googlemail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 09 Jun 2011 13:56:41 +0000
+Subject: [PATCHv2 19/28] OMAP4: HWMOD: change DSS main_clk scheme
+Message-Id: <1307627810-3768-20-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Remove last traces of the unused custom Alchemy PM code, implement
-suspend/resume callbacks.
+Currently using pm_runtime with DSS requires the DSS driver to enable
+the DSS functional clock before calling pm_runtime_get(). That makes it
+impossible to use pm_runtime in DSS as it is meant to be used, with
+pm_runtime callbacks.
 
-Signed-off-by: Manuel Lauss <manuel.lauss@googlemail.com>
+This patch changes the hwmod database for OMAP4 so that enabling the
+hwmod via pm_runtime will also enable the DSS functional clock, allowing
+us to use pm_runtime properly in DSS driver.
+
+The DSS HWMOD side is not really correct, not before nor after this
+patch, and getting DSS to retention will probably not work currently.
+However, it is not supported in the mainline kernel anyway, so this
+won't break anything.
+
+So this patch allows us to write the pm_runtime adaptation for the DSS
+driver the way it should be done, and the HWMOD/PM side can be fixed
+later.
+
+Cc: Benoit Cousson <b-cousson@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/au1200fb.c |  154 ++++++++++++------------------------------=
-----
- 1 files changed, 39 insertions(+), 115 deletions(-)
+ arch/arm/mach-omap2/omap_hwmod_44xx_data.c |   28 ++++++++++++++--------------
+ 1 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
-index 442d005..480ecb1 100644
---- a/drivers/video/au1200fb.c
-+++ b/drivers/video/au1200fb.c
-@@ -46,10 +46,6 @@
- #include <asm/mach-au1x00/au1000.h>
- #include "au1200fb.h"
-=20
--#ifdef CONFIG_PM
--#include <asm/mach-au1x00/au1xxx_pm.h>
--#endif
--
- #ifndef CONFIG_FB_AU1200_DEVS
- #define CONFIG_FB_AU1200_DEVS 4
- #endif
-@@ -205,12 +201,6 @@ struct window_settings {
- extern int board_au1200fb_panel_init (void);
- extern int board_au1200fb_panel_shutdown (void);
-=20
--#ifdef CONFIG_PM
--int au1200fb_pm_callback(au1xxx_power_dev_t *dev,
--		au1xxx_request_t request, void *data);
--au1xxx_power_dev_t *LCD_pm_dev;
--#endif
--
- /*
-  * Default window configurations
-  */
-@@ -652,25 +642,6 @@ static struct panel_settings known_lcd_panels[] =20
- /********************************************************************/
-=20
--#ifdef CONFIG_PM
--static int set_brightness(unsigned int brightness)
--{
--	unsigned int hi1, divider;
--
--	/* limit brightness pwm duty to >=3D 30/1600 */
--	if (brightness < 30) {
--		brightness =3D 30;
--	}
--	divider =3D (lcd->pwmdiv & 0x3FFFF) + 1;
--	hi1 =3D (lcd->pwmhi >> 16) + 1;
--	hi1 =3D (((brightness & 0xFF) + 1) * divider >> 8);
--	lcd->pwmhi &=3D 0xFFFF;
--	lcd->pwmhi |=3D (hi1 << 16);
--
--	return brightness;
--}
--#endif /* CONFIG_PM */
--
- static int winbpp (unsigned int winctrl1)
- {
- 	int bits =3D 0;
-@@ -1248,10 +1219,6 @@ static int au1200fb_fb_mmap(struct fb_info *info, st=
-ruct vm_area_struct *vma)
- 	unsigned long start=3D0, off;
- 	struct au1200fb_device *fbdev =3D info->par;
-=20
--#ifdef CONFIG_PM
--	au1xxx_pm_access(LCD_pm_dev);
--#endif
--
- 	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT)) {
- 		return -EINVAL;
- 	}
-@@ -1461,10 +1428,6 @@ static int au1200fb_ioctl(struct fb_info *info, unsi=
-gned int cmd,
- 	int plane;
- 	int val;
-=20
--#ifdef CONFIG_PM
--	au1xxx_pm_access(LCD_pm_dev);
--#endif
--
- 	plane =3D fbinfo2index(info);
- 	print_dbg("au1200fb: ioctl %d on plane %d\n", cmd, plane);
-=20
-@@ -1622,7 +1585,7 @@ static int au1200fb_init_fbinfo(struct au1200fb_devic=
-e *fbdev)
-=20
- /* AU1200 LCD controller device driver */
-=20
--static int au1200fb_drv_probe(struct platform_device *dev)
-+static int __devinit au1200fb_drv_probe(struct platform_device *dev)
- {
- 	struct au1200fb_device *fbdev;
- 	struct fb_info *fbi =3D NULL;
-@@ -1633,6 +1596,9 @@ static int au1200fb_drv_probe(struct platform_device =
-*dev)
- 	ret =3D 0;
- 	fbdev =3D NULL;
-=20
-+	/* Kickstart the panel */
-+	au1200_setpanel(panel);
-+
- 	for (plane =3D 0; plane < CONFIG_FB_AU1200_DEVS; ++plane) {
- 		bpp =3D winbpp(win->w[plane].mode_winctrl1);
- 		if (win->w[plane].xres =3D 0)
-@@ -1724,15 +1690,12 @@ failed:
- 	return ret;
- }
-=20
--static int au1200fb_drv_remove(struct platform_device *dev)
-+static int __devexit au1200fb_drv_remove(struct platform_device *dev)
- {
- 	struct au1200fb_device *fbdev;
- 	struct fb_info *fbi;
- 	int plane;
-=20
--	if (!dev)
--		return -ENODEV;
--
- 	/* Turn off the panel */
- 	au1200_setpanel(NULL);
-=20
-@@ -1760,31 +1723,53 @@ static int au1200fb_drv_remove(struct platform_devi=
-ce *dev)
- }
-=20
- #ifdef CONFIG_PM
--static int au1200fb_drv_suspend(struct platform_device *dev,
--				pm_message_t state)
-+static int au1200fb_drv_suspend(struct device *dev)
- {
--	/* TODO */
-+	au1200_setpanel(NULL);
-+
-+	lcd->outmask =3D 0;
-+	au_sync();
-+
- 	return 0;
- }
-=20
--static int au1200fb_drv_resume(struct platform_device *dev)
-+static int au1200fb_drv_resume(struct device *dev)
- {
--	/* TODO */
-+	struct fb_info *fbi;
-+	int i;
-+
-+	/* Kickstart the panel */
-+	au1200_setpanel(panel);
-+
-+	for (i =3D 0; i < CONFIG_FB_AU1200_DEVS; i++) {
-+		fbi =3D _au1200fb_infos[i];
-+		au1200fb_fb_set_par(fbi);
-+	}
-+
- 	return 0;
- }
-+
-+static const struct dev_pm_ops au1200fb_pmops =3D {
-+	.suspend	=3D au1200fb_drv_suspend,
-+	.resume		=3D au1200fb_drv_resume,
-+	.freeze		=3D au1200fb_drv_suspend,
-+	.thaw		=3D au1200fb_drv_resume,
-+};
-+
-+#define AU1200FB_PMOPS	(&au1200fb_pmops)
-+
-+#else
-+#define AU1200FB_PMOPS	NULL
- #endif /* CONFIG_PM */
-=20
- static struct platform_driver au1200fb_driver =3D {
- 	.driver =3D {
--		.name		=3D "au1200-lcd",
--		.owner          =3D THIS_MODULE,
-+		.name	=3D "au1200-lcd",
-+		.owner	=3D THIS_MODULE,
-+		.pm	=3D AU1200FB_PMOPS,
- 	},
- 	.probe		=3D au1200fb_drv_probe,
--	.remove		=3D au1200fb_drv_remove,
--#ifdef CONFIG_PM
--	.suspend	=3D au1200fb_drv_suspend,
--	.resume		=3D au1200fb_drv_resume,
--#endif
-+	.remove		=3D __devexit_p(au1200fb_drv_remove),
- };
-=20
- /*------------------------------------------------------------------------=
--*/
-@@ -1847,56 +1832,6 @@ static void au1200fb_setup(void)
- 	}
- }
-=20
--#ifdef CONFIG_PM
--static int au1200fb_pm_callback(au1xxx_power_dev_t *dev,
--		au1xxx_request_t request, void *data) {
--	int retval =3D -1;
--	unsigned int d =3D 0;
--	unsigned int brightness =3D 0;
--
--	if (request =3D AU1XXX_PM_SLEEP) {
--		board_au1200fb_panel_shutdown();
--	}
--	else if (request =3D AU1XXX_PM_WAKEUP) {
--		if(dev->prev_state =3D SLEEP_STATE)
--		{
--			int plane;
--			au1200_setpanel(panel);
--			for (plane =3D 0; plane < CONFIG_FB_AU1200_DEVS; ++plane) 	{
--				struct au1200fb_device *fbdev;
--				fbdev =3D &_au1200fb_devices[plane];
--				au1200fb_fb_set_par(&fbdev->fb_info);
--			}
--		}
--
--		d =3D *((unsigned int*)data);
--		if(d <=10) brightness =3D 26;
--		else if(d< ) brightness =3D 51;
--		else if(d<0) brightness =3D 77;
--		else if(d<@) brightness =3D 102;
--		else if(d<P) brightness =3D 128;
--		else if(d<`) brightness =3D 153;
--		else if(d<p) brightness =3D 179;
--		else if(d<=80) brightness =3D 204;
--		else if(d<=90) brightness =3D 230;
--		else brightness =3D 255;
--		set_brightness(brightness);
--	} else if (request =3D AU1XXX_PM_GETSTATUS) {
--		return dev->cur_state;
--	} else if (request =3D AU1XXX_PM_ACCESS) {
--		if (dev->cur_state !=3D SLEEP_STATE)
--			return retval;
--		else {
--			au1200_setpanel(panel);
--		}
--	} else if (request =3D AU1XXX_PM_IDLE) {
--	} else if (request =3D AU1XXX_PM_CLEANUP) {
--	}
--
--	return retval;
--}
--#endif
--
- static int __init au1200fb_init(void)
- {
- 	print_info("" DRIVER_DESC "");
-@@ -1911,17 +1846,6 @@ static int __init au1200fb_init(void)
- 	printk(DRIVER_NAME ": Panel %d %s\n", panel_index, panel->name);
- 	printk(DRIVER_NAME ": Win %d %s\n", window_index, win->name);
-=20
--	/* Kickstart the panel, the framebuffers/windows come soon enough */
--	au1200_setpanel(panel);
--
--	#ifdef CONFIG_PM
--	LCD_pm_dev =3D new_au1xxx_power_device("LCD", &au1200fb_pm_callback, NULL=
-);
--	if ( LCD_pm_dev =3D NULL)
--		printk(KERN_INFO "Unable to create a power management device entry for t=
-he au1200fb.\n");
--	else
--		printk(KERN_INFO "Power management device entry for the au1200fb loaded.=
-\n");
--	#endif
--
- 	return platform_driver_register(&au1200fb_driver);
- }
-=20
---=20
-1.7.5.3
+diff --git a/arch/arm/mach-omap2/omap_hwmod_44xx_data.c b/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
+index 4f6ae94..857bdda 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
+@@ -1133,7 +1133,7 @@ static struct omap_hwmod_addr_space omap44xx_dss_dma_addrs[] = {
+ static struct omap_hwmod_ocp_if omap44xx_l3_main_2__dss = {
+ 	.master		= &omap44xx_l3_main_2_hwmod,
+ 	.slave		= &omap44xx_dss_hwmod,
+-	.clk		= "l3_div_ck",
++	.clk		= "dss_fck",
+ 	.addr		= omap44xx_dss_dma_addrs,
+ 	.addr_cnt	= ARRAY_SIZE(omap44xx_dss_dma_addrs),
+ 	.user		= OCP_USER_SDMA,
+@@ -1173,7 +1173,7 @@ static struct omap_hwmod_opt_clk dss_opt_clks[] = {
+ static struct omap_hwmod omap44xx_dss_hwmod = {
+ 	.name		= "dss_core",
+ 	.class		= &omap44xx_dss_hwmod_class,
+-	.main_clk	= "dss_fck",
++	.main_clk	= "dss_dss_clk",
+ 	.prcm = {
+ 		.omap4 = {
+ 			.clkctrl_reg = OMAP4430_CM_DSS_DSS_CLKCTRL,
+@@ -1233,7 +1233,7 @@ static struct omap_hwmod_addr_space omap44xx_dss_dispc_dma_addrs[] = {
+ static struct omap_hwmod_ocp_if omap44xx_l3_main_2__dss_dispc = {
+ 	.master		= &omap44xx_l3_main_2_hwmod,
+ 	.slave		= &omap44xx_dss_dispc_hwmod,
+-	.clk		= "l3_div_ck",
++	.clk		= "dss_fck",
+ 	.addr		= omap44xx_dss_dispc_dma_addrs,
+ 	.addr_cnt	= ARRAY_SIZE(omap44xx_dss_dispc_dma_addrs),
+ 	.user		= OCP_USER_SDMA,
+@@ -1282,7 +1282,7 @@ static struct omap_hwmod omap44xx_dss_dispc_hwmod = {
+ 	.mpu_irqs_cnt	= ARRAY_SIZE(omap44xx_dss_dispc_irqs),
+ 	.sdma_reqs	= omap44xx_dss_dispc_sdma_reqs,
+ 	.sdma_reqs_cnt	= ARRAY_SIZE(omap44xx_dss_dispc_sdma_reqs),
+-	.main_clk	= "dss_fck",
++	.main_clk	= "dss_dss_clk",
+ 	.prcm = {
+ 		.omap4 = {
+ 			.clkctrl_reg = OMAP4430_CM_DSS_DSS_CLKCTRL,
+@@ -1338,7 +1338,7 @@ static struct omap_hwmod_addr_space omap44xx_dss_dsi1_dma_addrs[] = {
+ static struct omap_hwmod_ocp_if omap44xx_l3_main_2__dss_dsi1 = {
+ 	.master		= &omap44xx_l3_main_2_hwmod,
+ 	.slave		= &omap44xx_dss_dsi1_hwmod,
+-	.clk		= "l3_div_ck",
++	.clk		= "dss_fck",
+ 	.addr		= omap44xx_dss_dsi1_dma_addrs,
+ 	.addr_cnt	= ARRAY_SIZE(omap44xx_dss_dsi1_dma_addrs),
+ 	.user		= OCP_USER_SDMA,
+@@ -1380,7 +1380,7 @@ static struct omap_hwmod omap44xx_dss_dsi1_hwmod = {
+ 	.mpu_irqs_cnt	= ARRAY_SIZE(omap44xx_dss_dsi1_irqs),
+ 	.sdma_reqs	= omap44xx_dss_dsi1_sdma_reqs,
+ 	.sdma_reqs_cnt	= ARRAY_SIZE(omap44xx_dss_dsi1_sdma_reqs),
+-	.main_clk	= "dss_fck",
++	.main_clk	= "dss_dss_clk",
+ 	.prcm = {
+ 		.omap4 = {
+ 			.clkctrl_reg = OMAP4430_CM_DSS_DSS_CLKCTRL,
+@@ -1415,7 +1415,7 @@ static struct omap_hwmod_addr_space omap44xx_dss_dsi2_dma_addrs[] = {
+ static struct omap_hwmod_ocp_if omap44xx_l3_main_2__dss_dsi2 = {
+ 	.master		= &omap44xx_l3_main_2_hwmod,
+ 	.slave		= &omap44xx_dss_dsi2_hwmod,
+-	.clk		= "l3_div_ck",
++	.clk		= "dss_fck",
+ 	.addr		= omap44xx_dss_dsi2_dma_addrs,
+ 	.addr_cnt	= ARRAY_SIZE(omap44xx_dss_dsi2_dma_addrs),
+ 	.user		= OCP_USER_SDMA,
+@@ -1452,7 +1452,7 @@ static struct omap_hwmod omap44xx_dss_dsi2_hwmod = {
+ 	.mpu_irqs_cnt	= ARRAY_SIZE(omap44xx_dss_dsi2_irqs),
+ 	.sdma_reqs	= omap44xx_dss_dsi2_sdma_reqs,
+ 	.sdma_reqs_cnt	= ARRAY_SIZE(omap44xx_dss_dsi2_sdma_reqs),
+-	.main_clk	= "dss_fck",
++	.main_clk	= "dss_dss_clk",
+ 	.prcm = {
+ 		.omap4 = {
+ 			.clkctrl_reg = OMAP4430_CM_DSS_DSS_CLKCTRL,
+@@ -1505,7 +1505,7 @@ static struct omap_hwmod_addr_space omap44xx_dss_hdmi_dma_addrs[] = {
+ static struct omap_hwmod_ocp_if omap44xx_l3_main_2__dss_hdmi = {
+ 	.master		= &omap44xx_l3_main_2_hwmod,
+ 	.slave		= &omap44xx_dss_hdmi_hwmod,
+-	.clk		= "l3_div_ck",
++	.clk		= "dss_fck",
+ 	.addr		= omap44xx_dss_hdmi_dma_addrs,
+ 	.addr_cnt	= ARRAY_SIZE(omap44xx_dss_hdmi_dma_addrs),
+ 	.user		= OCP_USER_SDMA,
+@@ -1547,7 +1547,7 @@ static struct omap_hwmod omap44xx_dss_hdmi_hwmod = {
+ 	.mpu_irqs_cnt	= ARRAY_SIZE(omap44xx_dss_hdmi_irqs),
+ 	.sdma_reqs	= omap44xx_dss_hdmi_sdma_reqs,
+ 	.sdma_reqs_cnt	= ARRAY_SIZE(omap44xx_dss_hdmi_sdma_reqs),
+-	.main_clk	= "dss_fck",
++	.main_clk	= "dss_dss_clk",
+ 	.prcm = {
+ 		.omap4 = {
+ 			.clkctrl_reg = OMAP4430_CM_DSS_DSS_CLKCTRL,
+@@ -1598,7 +1598,7 @@ static struct omap_hwmod_addr_space omap44xx_dss_rfbi_dma_addrs[] = {
+ static struct omap_hwmod_ocp_if omap44xx_l3_main_2__dss_rfbi = {
+ 	.master		= &omap44xx_l3_main_2_hwmod,
+ 	.slave		= &omap44xx_dss_rfbi_hwmod,
+-	.clk		= "l3_div_ck",
++	.clk		= "dss_fck",
+ 	.addr		= omap44xx_dss_rfbi_dma_addrs,
+ 	.addr_cnt	= ARRAY_SIZE(omap44xx_dss_rfbi_dma_addrs),
+ 	.user		= OCP_USER_SDMA,
+@@ -1637,7 +1637,7 @@ static struct omap_hwmod omap44xx_dss_rfbi_hwmod = {
+ 	.class		= &omap44xx_rfbi_hwmod_class,
+ 	.sdma_reqs	= omap44xx_dss_rfbi_sdma_reqs,
+ 	.sdma_reqs_cnt	= ARRAY_SIZE(omap44xx_dss_rfbi_sdma_reqs),
+-	.main_clk	= "dss_fck",
++	.main_clk	= "dss_dss_clk",
+ 	.prcm = {
+ 		.omap4 = {
+ 			.clkctrl_reg = OMAP4430_CM_DSS_DSS_CLKCTRL,
+@@ -1673,7 +1673,7 @@ static struct omap_hwmod_addr_space omap44xx_dss_venc_dma_addrs[] = {
+ static struct omap_hwmod_ocp_if omap44xx_l3_main_2__dss_venc = {
+ 	.master		= &omap44xx_l3_main_2_hwmod,
+ 	.slave		= &omap44xx_dss_venc_hwmod,
+-	.clk		= "l3_div_ck",
++	.clk		= "dss_fck",
+ 	.addr		= omap44xx_dss_venc_dma_addrs,
+ 	.addr_cnt	= ARRAY_SIZE(omap44xx_dss_venc_dma_addrs),
+ 	.user		= OCP_USER_SDMA,
+@@ -1710,7 +1710,7 @@ static struct omap_hwmod_opt_clk venc_opt_clks[] = {
+ static struct omap_hwmod omap44xx_dss_venc_hwmod = {
+ 	.name		= "dss_venc",
+ 	.class		= &omap44xx_venc_hwmod_class,
+-	.main_clk	= "dss_fck",
++	.main_clk	= "dss_dss_clk",
+ 	.prcm = {
+ 		.omap4 = {
+ 			.clkctrl_reg = OMAP4430_CM_DSS_DSS_CLKCTRL,
+-- 
+1.7.4.1
 

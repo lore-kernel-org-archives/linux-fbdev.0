@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 09 Jun 2011 13:56:49 +0000
-Subject: [PATCHv2 27/28] OMAP: DSS2: DISPC: Fix context save/restore
-Message-Id: <1307627810-3768-28-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 09 Jun 2011 13:56:30 +0000
+Subject: [PATCHv2 08/28] OMAP: DSS2: rewrite use of context_loss_count
+Message-Id: <1307627810-3768-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,176 +11,166 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The current method of saving and restoring the context could cause a
-restore before saving, effectively "restoring" zero values to registers.
+The function to get device's context loss count has changed from
 
-Add ctx_valid field to indicate if the saved context is valid and can be
-restored.
+omap_pm_get_last_off_on_transaction_id() to
+omap_pm_get_dev_context_loss_count()
 
-Also restructure the code to save the ctx_loss_count in save_context(),
-which makes more sense than the previous method of storing new
-ctx_loss_count in dispc_need_ctx_restore.
+Change name of the function pointer in omapdss.h accordingly, and use
+the term "context loss count" instead of "context id" in the code.
+
+Restructure the context loss count functions to handle errors properly,
+and ensure that context is always considered lost if an error happens.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |   97 +++++++++++++++-----------------------
- 1 files changed, 38 insertions(+), 59 deletions(-)
+ arch/arm/mach-omap2/display.c |    2 +-
+ drivers/video/omap2/dss/dss.c |   71 +++++++++++++++++++++++++++--------------
+ drivers/video/omap2/dss/dss.h |    1 -
+ include/video/omapdss.h       |    2 +-
+ 4 files changed, 49 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 2de7e92..eac768f 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -108,6 +108,7 @@ static struct {
- 	u32 error_irqs;
- 	struct work_struct error_work;
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index 543fcb8..084a51b 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -117,7 +117,7 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
+ 	}
  
-+	bool		ctx_valid;
- 	u32		ctx[DISPC_SZ_REGS / sizeof(u32)];
+ 	pdata.board_data = board_data;
+-	pdata.board_data->get_last_off_on_transaction_id = NULL;
++	pdata.board_data->get_context_loss_count = NULL;
+ 	pdata.opt_clock_available = opt_clock_available;
  
- #ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
-@@ -140,6 +141,23 @@ static inline u32 dispc_read_reg(const u16 idx)
- 	return __raw_readl(dispc.base + idx);
+ 	for (i = 0; i < oh_count; i++) {
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 57ce428..4f3de35 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -60,7 +60,7 @@ struct dss_reg {
+ static struct {
+ 	struct platform_device *pdev;
+ 	void __iomem    *base;
+-	int             ctx_id;
++	int		ctx_loss_cnt;
+ 
+ 	struct clk	*dpll4_m4_ck;
+ 	struct clk	*dss_ick;
+@@ -665,34 +665,58 @@ void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select hdmi)
  }
  
-+static int dispc_get_ctx_loss_count(void)
-+{
-+	struct device *dev = &dispc.pdev->dev;
+ /* CONTEXT */
+-static int dss_get_ctx_id(void)
++static void dss_init_ctx_loss_count(void)
+ {
+-	struct omap_display_platform_data *pdata = dss.pdev->dev.platform_data;
+-	int r;
++	struct device *dev = &dss.pdev->dev;
++	struct omap_display_platform_data *pdata = dev->platform_data;
++	struct omap_dss_board_info *board_data = pdata->board_data;
++	int cnt = 0;
+ 
+-	if (!pdata->board_data->get_last_off_on_transaction_id)
+-		return 0;
+-	r = pdata->board_data->get_last_off_on_transaction_id(&dss.pdev->dev);
+-	if (r < 0) {
+-		dev_err(&dss.pdev->dev, "getting transaction ID failed, "
+-				"will force context restore\n");
+-		r = -1;
+-	}
+-	return r;
++	/*
++	 * get_context_loss_count returns negative on error. We'll ignore the
++	 * error and store the error to ctx_loss_cnt, which will cause
++	 * dss_need_ctx_restore() call to return true.
++	 */
++
++	if (board_data->get_context_loss_count)
++		cnt = board_data->get_context_loss_count(dev);
++
++	WARN_ON(cnt < 0);
++
++	dss.ctx_loss_cnt = cnt;
++
++	DSSDBG("initial ctx_loss_cnt %u\n", cnt);
+ }
+ 
+-int dss_need_ctx_restore(void)
++static bool dss_need_ctx_restore(void)
+ {
+-	int id = dss_get_ctx_id();
++	struct device *dev = &dss.pdev->dev;
 +	struct omap_display_platform_data *pdata = dev->platform_data;
 +	struct omap_dss_board_info *board_data = pdata->board_data;
 +	int cnt;
-+
+ 
+-	if (id < 0 || id != dss.ctx_id) {
+-		DSSDBG("ctx id %d -> id %d\n",
+-				dss.ctx_id, id);
+-		dss.ctx_id = id;
+-		return 1;
+-	} else {
+-		return 0;
++	/*
++	 * If get_context_loss_count is not available, assume that we need
++	 * context restore always.
++	 */
 +	if (!board_data->get_context_loss_count)
-+		return -ENOENT;
++		return true;
 +
 +	cnt = board_data->get_context_loss_count(dev);
-+
-+	WARN_ONCE(cnt < 0, "get_context_loss_count failed: %d\n", cnt);
-+
-+	return cnt;
-+}
-+
- #define SR(reg) \
- 	dispc.ctx[DISPC_##reg / sizeof(u32)] = dispc_read_reg(DISPC_##reg)
- #define RR(reg) \
-@@ -316,14 +334,30 @@ static void dispc_save_context(void)
- 
- 	if (dss_has_feature(FEAT_CORE_CLK_DIV))
- 		SR(DIVISOR);
-+
-+	dispc.ctx_loss_cnt = dispc_get_ctx_loss_count();
-+	dispc.ctx_valid = true;
-+
-+	DSSDBG("context saved, ctx_loss_count %d\n", dispc.ctx_loss_cnt);
- }
- 
- static void dispc_restore_context(void)
- {
--	int i;
-+	int i, ctx;
- 
- 	DSSDBG("dispc_restore_context\n");
- 
-+	if (!dispc.ctx_valid)
-+		return;
-+
-+	ctx = dispc_get_ctx_loss_count();
-+
-+	if (ctx >= 0 && ctx = dispc.ctx_loss_cnt)
-+		return;
-+
-+	DSSDBG("ctx_loss_count: saved %d, current %d\n",
-+			dispc.ctx_loss_cnt, ctx);
-+
- 	/*RR(IRQENABLE);*/
- 	/*RR(CONTROL);*/
- 	RR(CONFIG);
-@@ -502,65 +536,13 @@ static void dispc_restore_context(void)
- 	 * the context is fully restored
- 	 */
- 	RR(IRQENABLE);
-+
-+	DSSDBG("context restored\n");
- }
- 
- #undef SR
- #undef RR
- 
--static void dispc_init_ctx_loss_count(void)
--{
--	struct device *dev = &dispc.pdev->dev;
--	struct omap_display_platform_data *pdata = dev->platform_data;
--	struct omap_dss_board_info *board_data = pdata->board_data;
--	int cnt = 0;
--
--	/*
--	 * get_context_loss_count returns negative on error. We'll ignore the
--	 * error and store the error to ctx_loss_cnt, which will cause
--	 * dispc_need_ctx_restore() call to return true.
--	 */
--
--	if (board_data->get_context_loss_count)
--		cnt = board_data->get_context_loss_count(dev);
--
--	WARN_ON(cnt < 0);
--
--	dispc.ctx_loss_cnt = cnt;
--
--	DSSDBG("initial ctx_loss_cnt %u\n", cnt);
--}
--
--static bool dispc_need_ctx_restore(void)
--{
--	struct device *dev = &dispc.pdev->dev;
--	struct omap_display_platform_data *pdata = dev->platform_data;
--	struct omap_dss_board_info *board_data = pdata->board_data;
--	int cnt;
--
--	/*
--	 * If get_context_loss_count is not available, assume that we need
--	 * context restore always.
--	 */
--	if (!board_data->get_context_loss_count)
--		return true;
--
--	cnt = board_data->get_context_loss_count(dev);
--	if (cnt < 0) {
--		dev_err(dev, "getting context loss count failed, will force "
--				"context restore\n");
--		dispc.ctx_loss_cnt = cnt;
--		return true;
--	}
--
--	if (cnt = dispc.ctx_loss_cnt)
--		return false;
--
--	DSSDBG("ctx_loss_cnt %d -> %d\n", dispc.ctx_loss_cnt, cnt);
--	dispc.ctx_loss_cnt = cnt;
--
--	return true;
--}
--
- int dispc_runtime_get(void)
- {
- 	int r;
-@@ -3641,8 +3623,6 @@ static int omap_dispchw_probe(struct platform_device *pdev)
- 		goto err_irq;
++	if (cnt < 0) {
++		dev_err(dev, "getting context loss count failed, will force "
++				"context restore\n");
++		dss.ctx_loss_cnt = cnt;
++		return true;
  	}
- 
--	dispc_init_ctx_loss_count();
--
- 	pm_runtime_enable(&pdev->dev);
- 
- 	r = dispc_runtime_get();
-@@ -3701,8 +3681,7 @@ static int dispc_runtime_resume(struct device *dev)
- 		return r;
- 
- 	clk_enable(dispc.dss_clk);
--	if (dispc_need_ctx_restore())
--		dispc_restore_context();
-+	dispc_restore_context();
- 
- 	return 0;
++
++	if (cnt = dss.ctx_loss_cnt)
++		return false;
++
++	DSSDBG("ctx_loss_cnt %d -> %d\n", dss.ctx_loss_cnt, cnt);
++	dss.ctx_loss_cnt = cnt;
++
++	return true;
  }
+ 
+ static void save_all_ctx(void)
+@@ -1046,8 +1070,7 @@ static int omap_dsshw_probe(struct platform_device *pdev)
+ 
+ 	dss_clk_enable_all_no_ctx();
+ 
+-	dss.ctx_id = dss_get_ctx_id();
+-	DSSDBG("initial ctx id %u\n", dss.ctx_id);
++	dss_init_ctx_loss_count();
+ 
+ 	/* disable LCD and DIGIT output. This seems to fix the synclost
+ 	 * problem that we get, if the bootloader starts the DSS and
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 8ab6d43..aeb611d 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -226,7 +226,6 @@ void dss_restore_context(void);
+ void dss_clk_enable(enum dss_clock clks);
+ void dss_clk_disable(enum dss_clock clks);
+ unsigned long dss_clk_get_rate(enum dss_clock clk);
+-int dss_need_ctx_restore(void);
+ const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
+ void dss_dump_clocks(struct seq_file *s);
+ 
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index bb39738..4f914a5 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -244,7 +244,7 @@ int dsi_vc_send_bta_sync(struct omap_dss_device *dssdev, int channel);
+ 
+ /* Board specific data */
+ struct omap_dss_board_info {
+-	int (*get_last_off_on_transaction_id)(struct device *dev);
++	int (*get_context_loss_count)(struct device *dev);
+ 	int num_devices;
+ 	struct omap_dss_device **devices;
+ 	struct omap_dss_device *default_device;
 -- 
 1.7.4.1
 

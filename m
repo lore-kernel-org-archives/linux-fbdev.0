@@ -1,33 +1,96 @@
-From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
-Date: Wed, 22 Jun 2011 07:49:52 +0000
-Subject: [PATCH 5/5] fbdev: sh_mobile_meram: Assign meram to the SH7372_A4LC power domain
-Message-Id: <1308728992-9660-6-git-send-email-dhobsong@igel.co.jp>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 09 Jun 2011 13:56:40 +0000
+Subject: [PATCHv2 18/28] OMAP2430: HWMOD: Add DSS opt clocks
+Message-Id: <1307627810-3768-19-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Register the MERAM device as a part of the A4LC power domain for
-power management.
+Add DSS optional clocks to HWMOD data for OMAP2430.
 
-Signed-off-by: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+Cc: Benoit Cousson <b-cousson@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-shmobile/board-mackerel.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ arch/arm/mach-omap2/omap_hwmod_2430_data.c |   19 +++++++++++++++++++
+ 1 files changed, 19 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
-index f556b2a..53f2b93 100644
---- a/arch/arm/mach-shmobile/board-mackerel.c
-+++ b/arch/arm/mach-shmobile/board-mackerel.c
-@@ -1585,6 +1585,7 @@ static void __init mackerel_init(void)
- 	sh7372_init_pm_domain(&sh7372_a4lc_domain);
- 	sh7372_add_device_to_domain(SH7372_A4LC, &lcdc_device);
- 	sh7372_add_device_to_domain(SH7372_A4LC, &hdmi_lcdc_device);
-+	sh7372_add_device_to_domain(SH7372_A4LC, &meram_device);
+diff --git a/arch/arm/mach-omap2/omap_hwmod_2430_data.c b/arch/arm/mach-omap2/omap_hwmod_2430_data.c
+index 9682dd5..8009945 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_2430_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_2430_data.c
+@@ -1302,6 +1302,7 @@ static struct omap_hwmod_ocp_if *omap2430_dss_slaves[] = {
+ };
  
- 	hdmi_init_pm_clock();
- 	sh7372_pm_init();
+ static struct omap_hwmod_opt_clk dss_opt_clks[] = {
++	{ .role = "dss_clk", .clk = "dss1_fck" },
+ 	{ .role = "tv_clk", .clk = "dss_54m_fck" },
+ 	{ .role = "sys_clk", .clk = "dss2_fck" },
+ };
+@@ -1379,6 +1380,10 @@ static struct omap_hwmod_ocp_if *omap2430_dss_dispc_slaves[] = {
+ 	&omap2430_l4_core__dss_dispc,
+ };
+ 
++static struct omap_hwmod_opt_clk dispc_opt_clks[] = {
++	{ .role = "dss_clk", .clk = "dss1_fck" },
++};
++
+ static struct omap_hwmod omap2430_dss_dispc_hwmod = {
+ 	.name		= "dss_dispc",
+ 	.class		= &omap2430_dispc_hwmod_class,
+@@ -1394,6 +1399,8 @@ static struct omap_hwmod omap2430_dss_dispc_hwmod = {
+ 			.idlest_stdby_bit = OMAP24XX_ST_DSS_SHIFT,
+ 		},
+ 	},
++	.opt_clks	= dispc_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(dispc_opt_clks),
+ 	.slaves		= omap2430_dss_dispc_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap2430_dss_dispc_slaves),
+ 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2430),
+@@ -1443,6 +1450,10 @@ static struct omap_hwmod_ocp_if *omap2430_dss_rfbi_slaves[] = {
+ 	&omap2430_l4_core__dss_rfbi,
+ };
+ 
++static struct omap_hwmod_opt_clk rfbi_opt_clks[] = {
++	{ .role = "rfbi_iclk", .clk = "dss_ick" },
++};
++
+ static struct omap_hwmod omap2430_dss_rfbi_hwmod = {
+ 	.name		= "dss_rfbi",
+ 	.class		= &omap2430_rfbi_hwmod_class,
+@@ -1454,6 +1465,8 @@ static struct omap_hwmod omap2430_dss_rfbi_hwmod = {
+ 			.module_offs = CORE_MOD,
+ 		},
+ 	},
++	.opt_clks	= rfbi_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(rfbi_opt_clks),
+ 	.slaves		= omap2430_dss_rfbi_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap2430_dss_rfbi_slaves),
+ 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2430),
+@@ -1494,6 +1507,10 @@ static struct omap_hwmod_ocp_if *omap2430_dss_venc_slaves[] = {
+ 	&omap2430_l4_core__dss_venc,
+ };
+ 
++static struct omap_hwmod_opt_clk venc_opt_clks[] = {
++	{ .role = "tv_clk", .clk = "dss_54m_fck" },
++};
++
+ static struct omap_hwmod omap2430_dss_venc_hwmod = {
+ 	.name		= "dss_venc",
+ 	.class		= &omap2430_venc_hwmod_class,
+@@ -1505,6 +1522,8 @@ static struct omap_hwmod omap2430_dss_venc_hwmod = {
+ 			.module_offs = CORE_MOD,
+ 		},
+ 	},
++	.opt_clks	= venc_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(venc_opt_clks),
+ 	.slaves		= omap2430_dss_venc_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap2430_dss_venc_slaves),
+ 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2430),
 -- 
-1.7.1
+1.7.4.1
 

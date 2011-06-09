@@ -1,53 +1,37 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Mon, 13 Jun 2011 13:57:00 +0000
-Subject: Re: [PATCH] fb.h: ARM uses __raw_{read/write}
-Message-Id: <20110613135700.GB13643@n2100.arm.linux.org.uk>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 09 Jun 2011 04:26:31 +0000
+Subject: [PATCH] [resend] video: s3c-fb: fix misleading kfree in remove function
+Message-Id: <1307593591-4507-1-git-send-email-jg1.han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201106101731.08578.hartleys@visionengravers.com>
-	<20110613040003.GA29731@linux-sh.org>
-	<20110613100819.GA26914@1n450.cable.virginmedia.net>
-	<201106131537.10698.arnd@arndb.de>
-In-Reply-To: <201106131537.10698.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-On Mon, Jun 13, 2011 at 03:37:10PM +0200, Arnd Bergmann wrote:
-> On Monday 13 June 2011 12:08:19 Catalin Marinas wrote:
-> > The change proposed by Hartley wouldn't make much difference from the
-> > current volatile accesses (__raw_* accessors are implemented as volatile
-> > on ARM).
-> 
-> I guess it would mainly make a difference if we get a platform where
-> the PCI bus window is not in the same address space as the regular
-> physical memory and the accessors actually need to do a computation
-> on the address. AFAICT, ARM does not currently have any such platform
-> and I would hope that it says that way.
+This patch fixes misleading kfree in remove function.
 
-Actually we do.
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/s3c-fb.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-Footbridge has this situation: PCI memory space is 0 to 4GB, and appears
-in physical space at 2GB-4GB physical, and can be switched between the
-low and high 2GB of PCI space.
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 0352afa..148e19d 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -1487,11 +1487,10 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
+ 
+ 	release_mem_region(sfb->regs_res->start, resource_size(sfb->regs_res));
+ 
+-	kfree(sfb);
+-
+ 	pm_runtime_put_sync(sfb->dev);
+ 	pm_runtime_disable(sfb->dev);
+ 
++	kfree(sfb);
+ 	return 0;
+ }
+ 
+-- 
+1.7.1
 
-Non-PCI peripherals are located at 0 to 2GB physical.
-
-We handle this by having pcibios_bus_to_resource() and
-pcibios_resource_to_bus(), which translates from the bus space to a
-cookie suitable for ioremap() and /proc/iomem.  This cookie happens to
-be the physical address.
-
-We avoid the obvious problem with the upper 2GB of PCI memory space by
-placing the system RAM at 0xe0000000 on the PCI bus, and not allocating
-any peripherals in the upper 2GB of PCI memory space.
-
-So, I rather wish that people would stop saying that "ioremap takes the
-PCI bus address".  It doesn't - it takes a platform specific cookie to
-allow a mapping to be setup, which in the case of pci will be a cookie
-provided from the PCI bus address by the pcibios_bus_to_resource()
-platform code.
-
-And the final thing to note on this is that fbmem/fbcon does work - see
-the Cyber2000/CyberPro VGA driver which has been - and still is - used
-on Netwinder (footbridge).

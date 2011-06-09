@@ -1,45 +1,97 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 14 Jun 2011 09:24:42 +0000
-Subject: [PATCH v2 04/29] arkfb: use display information in info not in var for panning
-Message-Id: <1308043507-11083-5-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 09 Jun 2011 13:56:24 +0000
+Subject: [PATCHv2 02/28] OMAP: DSS2: Taal: Make driver more fault tolerant
+Message-Id: <1307627810-3768-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+If ULPS exit fails, and the following reset fails also, Taal driver was
+left in state where it thinks DSI is enabled while it really isn't,
+leading to crash.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Ondrej Zajicek <santiago@crfreenet.org>
+This patch checks the return value of taal_panel_reset, and if that
+fails, ulps_enabled is left true, causing the driver to retry ulps exit
+later.
+
+Also the return value of taal_wake_up is checked at taal_disable, and if
+wake up fails, we'll skip the power_off. This could leave the panel into
+a not-quite-valid state, but there's nothing we can do about it in that
+situation.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/arkfb.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/video/omap2/displays/panel-taal.c |   33 ++++++++++++++++++----------
+ 1 files changed, 21 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
-index 8686429..555dd4c 100644
---- a/drivers/video/arkfb.c
-+++ b/drivers/video/arkfb.c
-@@ -908,13 +908,14 @@ static int arkfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info
- 	unsigned int offset;
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index fdd5d4ae..b82bcc1 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -504,14 +504,18 @@ static int taal_exit_ulps(struct omap_dss_device *dssdev)
+ 		return 0;
  
- 	/* Calculate the offset */
--	if (var->bits_per_pixel = 0) {
--		offset = (var->yoffset / 16) * (var->xres_virtual / 2) + (var->xoffset / 2);
-+	if (info->var.bits_per_pixel = 0) {
-+		offset = (var->yoffset / 16) * (info->var.xres_virtual / 2)
-+		       + (var->xoffset / 2);
- 		offset = offset >> 2;
- 	} else {
- 		offset = (var->yoffset * info->fix.line_length) +
--			 (var->xoffset * var->bits_per_pixel / 8);
--		offset = offset >> ((var->bits_per_pixel = 4) ? 2 : 3);
-+			 (var->xoffset * info->var.bits_per_pixel / 8);
-+		offset = offset >> ((info->var.bits_per_pixel = 4) ? 2 : 3);
+ 	r = omapdss_dsi_display_enable(dssdev);
+-	if (r)
+-		goto err;
++	if (r) {
++		dev_err(&dssdev->dev, "failed to enable DSI\n");
++		goto err1;
++	}
+ 
+ 	omapdss_dsi_vc_enable_hs(dssdev, td->channel, true);
+ 
+ 	r = _taal_enable_te(dssdev, true);
+-	if (r)
+-		goto err;
++	if (r) {
++		dev_err(&dssdev->dev, "failed to re-enable TE");
++		goto err2;
++	}
+ 
+ 	enable_irq(gpio_to_irq(panel_data->ext_te_gpio));
+ 
+@@ -521,13 +525,15 @@ static int taal_exit_ulps(struct omap_dss_device *dssdev)
+ 
+ 	return 0;
+ 
+-err:
+-	dev_err(&dssdev->dev, "exit ULPS failed");
+-	r = taal_panel_reset(dssdev);
+-
+-	enable_irq(gpio_to_irq(panel_data->ext_te_gpio));
+-	td->ulps_enabled = false;
++err2:
++	dev_err(&dssdev->dev, "failed to exit ULPS");
+ 
++	r = taal_panel_reset(dssdev);
++	if (!r) {
++		enable_irq(gpio_to_irq(panel_data->ext_te_gpio));
++		td->ulps_enabled = false;
++	}
++err1:
+ 	taal_queue_ulps_work(dssdev);
+ 
+ 	return r;
+@@ -1317,8 +1323,11 @@ static void taal_disable(struct omap_dss_device *dssdev)
+ 	dsi_bus_lock(dssdev);
+ 
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
+-		taal_wake_up(dssdev);
+-		taal_power_off(dssdev);
++		int r;
++
++		r = taal_wake_up(dssdev);
++		if (!r)
++			taal_power_off(dssdev);
  	}
  
- 	/* Set the offset */
+ 	dsi_bus_unlock(dssdev);
 -- 
-1.7.3.4
+1.7.4.1
 

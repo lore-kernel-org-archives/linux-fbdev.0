@@ -1,84 +1,92 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 09 Jun 2011 13:56:35 +0000
-Subject: [PATCHv2 13/28] OMAP: DSS2: Remove core_dump_clocks
-Message-Id: <1307627810-3768-14-git-send-email-tomi.valkeinen@ti.com>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Thu, 09 Jun 2011 04:28:36 +0000
+Subject: Re: [PATCH] fbdev: sh_mobile_lcdc: reduce scope of a variable
+Message-Id: <w3pipsfaas0.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Currently dss.c does all the low level clock handling in the DSS, and
-thus it contains pointers to all the clocks. This allows dss.c to dump
-the clock information for all the clocks.
 
-With pm_runtime this is no longer the case, as each submodule will
-handle its clocks independently. Thus remove the core_dump_clocks
-function as it cannot be used with pm_runtime.
+Dear Paul, Guennadi
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+I cannot compile on current paul/master.
+below patch seems breaks compile.
+"ret" is still needed.
+
+Can you revert it or apply attached patch ?
+
+At Thu, 05 May 2011 18:32:36 +0200 (CEST),
+Guennadi wrote:
+> 
+> The "ret" variable in sh_mobile_lcdc_start() is only used at one
+> location, move its definition to the inner-most scope.
+> 
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> ---
+>  drivers/video/sh_mobile_lcdcfb.c |   12 ++++++------
+>  1 files changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+> index 9bcc61b..466834c 100644
+> --- a/drivers/video/sh_mobile_lcdcfb.c
+> +++ b/drivers/video/sh_mobile_lcdcfb.c
+> @@ -469,7 +469,6 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+>  	int bpp = 0;
+>  	unsigned long ldddsr;
+>  	int k, m;
+> -	int ret = 0;
+>  
+>  	/* enable clocks before accessing the hardware */
+>  	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
+> @@ -538,11 +537,12 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+>  		lcdc_write_chan(ch, LDPMR, 0);
+>  
+>  		board_cfg = &ch->cfg.board_cfg;
+> -		if (board_cfg->setup_sys)
+> -			ret = board_cfg->setup_sys(board_cfg->board_data, ch,
+> -						   &sh_mobile_lcdc_sys_bus_ops);
+> -		if (ret)
+> -			return ret;
+> +		if (board_cfg->setup_sys) {
+> +			int ret = board_cfg->setup_sys(board_cfg->board_data,
+> +						ch, &sh_mobile_lcdc_sys_bus_ops);
+> +			if (ret)
+> +				return ret;
+> +		}
+>  	}
+>  
+>  	/* word and long word swap */
+> -- 
+> 1.7.2.5
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
 ---
- drivers/video/omap2/dss/dss.c |   40 ----------------------------------------
- 1 files changed, 0 insertions(+), 40 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 4f3de35..ff5664e 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -989,50 +989,10 @@ static void dss_clk_disable_all_no_ctx(void)
- 	dss_clk_disable_no_ctx(clks);
- }
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 404c03b..d0a03ef 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -617,6 +617,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 			unsigned long icb_addr_y, icb_addr_c;
+ 			int icb_pitch;
+ 			int pf;
++			int ret;
  
--#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
--/* CLOCKS */
--static void core_dump_clocks(struct seq_file *s)
--{
--	int i;
--	struct clk *clocks[5] = {
--		dss.dss_ick,
--		dss.dss_fck,
--		dss.dss_sys_clk,
--		dss.dss_tv_fck,
--		dss.dss_video_fck
--	};
--
--	const char *names[5] = {
--		"ick",
--		"fck",
--		"sys_clk",
--		"tv_fck",
--		"video_fck"
--	};
--
--	seq_printf(s, "- CORE -\n");
--
--	seq_printf(s, "internal clk count\t\t%u\n", dss.num_clks_enabled);
--
--	for (i = 0; i < 5; i++) {
--		if (!clocks[i])
--			continue;
--		seq_printf(s, "%s (%s)%*s\t%lu\t%d\n",
--				names[i],
--				clocks[i]->name,
--				24 - strlen(names[i]) - strlen(clocks[i]->name),
--				"",
--				clk_get_rate(clocks[i]),
--				clocks[i]->usecount);
--	}
--}
--#endif /* defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT) */
--
- /* DEBUGFS */
- #if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
- void dss_debug_dump_clocks(struct seq_file *s)
- {
--	core_dump_clocks(s);
- 	dss_dump_clocks(s);
- 	dispc_dump_clocks(s);
- #ifdef CONFIG_OMAP2_DSS_DSI
+ 			cfg = ch->cfg.meram_cfg;
+ 			mdev = priv->meram_dev;
 -- 
-1.7.4.1
 
+
+
+Best regards
+--
+Kuninori Morimoto
+ 

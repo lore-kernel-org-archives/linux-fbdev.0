@@ -1,85 +1,96 @@
-From: Steve Strobel <steve.strobel@link-comm.com>
-Date: Mon, 20 Jun 2011 21:02:36 +0000
-Subject: Re: Framebuffer driver for controller with indirect addressing?
-Message-Id: <0Md2yY-1QGglf24oc-00IIFk@mrelay.perfora.net>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 09 Jun 2011 13:56:39 +0000
+Subject: [PATCHv2 17/28] OMAP2420: HWMOD: Add DSS opt clocks
+Message-Id: <1307627810-3768-18-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <0LlUqt-1Pye1R36EZ-00bCDF@mrelay.perfora.net>
-In-Reply-To: <0LlUqt-1Pye1R36EZ-00bCDF@mrelay.perfora.net>
+References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-At 06:18 PM 6/17/2011, Bernie Thompson wrote:
->On Fri, Jun 17, 2011 at 4:10 PM, Steve Strobel
-><steve.strobel@link-comm.com> wrote:
-> > It does not have address lines, so the framebuffer memory
-> > is not directly accessible
-> >
-> > If someone could point me to a driver that works in a similar way, it w=
-ould
-> > help me out a lot. =C2 Thanks.
->
->Hi Steve - there are several drivers that handle this kind of case,
->including the udlfb driver for DisplayLink USB graphics chips (in the
->kernel tree /drivers/video/udlfb.c)
+Add DSS optional clocks to HWMOD data for OMAP2420.
 
-That helps a lot.  I will check it out.  Is there=20
-something other than the source code that I=20
-should read to get up to speed on it?
-
->The main unsolved challenge is fbdev (in the memory mapped framebuffer
->case) assumes writes to the framebuffer take effect immediately.  [snip]
-
-If I am understanding you right, the challenge is=20
-knowing when to flush the changed framebuffer memory to the graphics hardwa=
-re.
-
->1) Use of /driver/video/fb_defio.c to use the MMU to trigger...
-
-I don't know if a Blackfin system could support=20
-that method or not.  It doesn't have a full MMU=20
-with virtual memory (it runs uClinux), but it=20
-does have a memory protection unit.  I suppose=20
-all that would be needed is to be notified when=20
-the framebuffer memory is written to;  I think it could do that.
-
->2) Use of an ioctl to allow the user mode client to inform the
->framebuffer of changed pixels (usually xorg forwarding X DAMAGE
->notifications, which are well matched for this purpose).  This works
->well and is simple, however we don't yet have a standardized ioctl, so
->several drivers have different ioctls and thus custom x servers,
->instead of being supported by the standard xf86-video-fbdev driver.
-
-Since this is a custom embedded system, we are in=20
-control of all of the software on it.  So we can=20
-just make sure that everything included is set up for the same ioctl.
-
->#2 would be the quickest way to give Linux a clean way of handling
->remote (non-directly-addressable) framebuffers.
->
->Others may have some additional suggestions.
-
-Someone suggested to me using the double-buffer=20
-flipping logic.  Does it get flipped on every=20
-screen refresh, or just when the contents of one buffer have been changed?
-
->Hope that helps. Best wishes,
->Bernie
->http://plugable.com/
-
-Thanks a bunch,
-Steve
-
-
-
+Cc: Benoit Cousson <b-cousson@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
-Steve Strobel
-Link Communications, Inc.
-1035 Cerise Rd
-Billings, MT 59101-7378
-(406) 245-5002 ext 102
-(406) 245-4889 (fax)
-WWW: http://www.link-comm.com
-MailTo:steve.strobel@link-comm.com
+ arch/arm/mach-omap2/omap_hwmod_2420_data.c |   19 +++++++++++++++++++
+ 1 files changed, 19 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/omap_hwmod_2420_data.c b/arch/arm/mach-omap2/omap_hwmod_2420_data.c
+index c4d0ae8..d87019d 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_2420_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_2420_data.c
+@@ -1208,6 +1208,7 @@ static struct omap_hwmod_ocp_if *omap2420_dss_slaves[] = {
+ };
+ 
+ static struct omap_hwmod_opt_clk dss_opt_clks[] = {
++	{ .role = "dss_clk", .clk = "dss1_fck" },
+ 	{ .role = "tv_clk", .clk = "dss_54m_fck" },
+ 	{ .role = "sys_clk", .clk = "dss2_fck" },
+ };
+@@ -1291,6 +1292,10 @@ static struct omap_hwmod_ocp_if *omap2420_dss_dispc_slaves[] = {
+ 	&omap2420_l4_core__dss_dispc,
+ };
+ 
++static struct omap_hwmod_opt_clk dispc_opt_clks[] = {
++	{ .role = "dss_clk", .clk = "dss1_fck" },
++};
++
+ static struct omap_hwmod omap2420_dss_dispc_hwmod = {
+ 	.name		= "dss_dispc",
+ 	.class		= &omap2420_dispc_hwmod_class,
+@@ -1306,6 +1311,8 @@ static struct omap_hwmod omap2420_dss_dispc_hwmod = {
+ 			.idlest_stdby_bit = OMAP24XX_ST_DSS_SHIFT,
+ 		},
+ 	},
++	.opt_clks	= dispc_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(dispc_opt_clks),
+ 	.slaves		= omap2420_dss_dispc_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap2420_dss_dispc_slaves),
+ 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2420),
+@@ -1361,6 +1368,10 @@ static struct omap_hwmod_ocp_if *omap2420_dss_rfbi_slaves[] = {
+ 	&omap2420_l4_core__dss_rfbi,
+ };
+ 
++static struct omap_hwmod_opt_clk rfbi_opt_clks[] = {
++	{ .role = "rfbi_iclk", .clk = "dss_ick" },
++};
++
+ static struct omap_hwmod omap2420_dss_rfbi_hwmod = {
+ 	.name		= "dss_rfbi",
+ 	.class		= &omap2420_rfbi_hwmod_class,
+@@ -1372,6 +1383,8 @@ static struct omap_hwmod omap2420_dss_rfbi_hwmod = {
+ 			.module_offs = CORE_MOD,
+ 		},
+ 	},
++	.opt_clks	= rfbi_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(rfbi_opt_clks),
+ 	.slaves		= omap2420_dss_rfbi_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap2420_dss_rfbi_slaves),
+ 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2420),
+@@ -1418,6 +1431,10 @@ static struct omap_hwmod_ocp_if *omap2420_dss_venc_slaves[] = {
+ 	&omap2420_l4_core__dss_venc,
+ };
+ 
++static struct omap_hwmod_opt_clk venc_opt_clks[] = {
++	{ .role = "tv_clk", .clk = "dss_54m_fck" },
++};
++
+ static struct omap_hwmod omap2420_dss_venc_hwmod = {
+ 	.name		= "dss_venc",
+ 	.class		= &omap2420_venc_hwmod_class,
+@@ -1429,6 +1446,8 @@ static struct omap_hwmod omap2420_dss_venc_hwmod = {
+ 			.module_offs = CORE_MOD,
+ 		},
+ 	},
++	.opt_clks	= venc_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(venc_opt_clks),
+ 	.slaves		= omap2420_dss_venc_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap2420_dss_venc_slaves),
+ 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2420),
+-- 
+1.7.4.1
 

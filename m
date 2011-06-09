@@ -1,40 +1,68 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 27 Jun 2011 10:49:00 +0000
-Subject: [PATCH V7 1/5] ARM: EXYNOS4: Change clock name for FIMD
-Message-Id: <1309171740-27146-1-git-send-email-jg1.han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 09 Jun 2011 13:56:50 +0000
+Subject: [PATCHv2 28/28] OMAP: DSS2: DSS: Fix context save/restore
+Message-Id: <1307627810-3768-29-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org, Jonghun Han <jonghun.han@samsung.com>
-Cc: Anand Kumar N <anand.kn@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kmpark@infradead.org>, Inki Dae <inki.dae@samsung.com>, ARM Linux <linux@arm.linux.org.uk>, Ben Dooks <ben-linux@fluff.org>, Jingoo Han <jg1.han@samsung.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This patch changes clock name for FIMD from "fimd" to "lcd".
+The current method of saving and restoring the context could cause a
+restore before saving, effectively "restoring" zero values to registers.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Add ctx_valid field to indicate if the saved context is valid and can be
+restored.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-exynos4/clock.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/dss.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/mach-exynos4/clock.c b/arch/arm/mach-exynos4/clock.c
-index 871f9d5..12e6853 100644
---- a/arch/arm/mach-exynos4/clock.c
-+++ b/arch/arm/mach-exynos4/clock.c
-@@ -433,12 +433,12 @@ static struct clk init_clocks_off[] = {
- 		.enable		= exynos4_clk_ip_cam_ctrl,
- 		.ctrlbit	= (1 << 3),
- 	}, {
--		.name		= "fimd",
-+		.name		= "lcd",
- 		.id		= 0,
- 		.enable		= exynos4_clk_ip_lcd0_ctrl,
- 		.ctrlbit	= (1 << 0),
- 	}, {
--		.name		= "fimd",
-+		.name		= "lcd",
- 		.id		= 1,
- 		.enable		= exynos4_clk_ip_lcd1_ctrl,
- 		.ctrlbit	= (1 << 0),
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 21c8389..5c6499a 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -74,6 +74,7 @@ static struct {
+ 	enum omap_dss_clk_source dispc_clk_source;
+ 	enum omap_dss_clk_source lcd_clk_source[MAX_DSS_LCD_MANAGERS];
+ 
++	bool		ctx_valid;
+ 	u32		ctx[DSS_SZ_REGS / sizeof(u32)];
+ } dss;
+ 
+@@ -109,12 +110,19 @@ static void dss_save_context(void)
+ 		SR(SDI_CONTROL);
+ 		SR(PLL_CONTROL);
+ 	}
++
++	dss.ctx_valid = true;
++
++	DSSDBG("context saved\n");
+ }
+ 
+ static void dss_restore_context(void)
+ {
+ 	DSSDBG("dss_restore_context\n");
+ 
++	if (!dss.ctx_valid)
++		return;
++
+ 	RR(CONTROL);
+ 
+ 	if (dss_feat_get_supported_displays(OMAP_DSS_CHANNEL_LCD) &
+@@ -122,6 +130,8 @@ static void dss_restore_context(void)
+ 		RR(SDI_CONTROL);
+ 		RR(PLL_CONTROL);
+ 	}
++
++	DSSDBG("context restored\n");
+ }
+ 
+ #undef SR
 -- 
-1.7.1
+1.7.4.1
 

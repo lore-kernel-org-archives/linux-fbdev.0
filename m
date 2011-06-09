@@ -1,118 +1,129 @@
-From: Kristoffer Glembo <kristoffer@gaisler.com>
-Date: Thu, 16 Jun 2011 07:20:33 +0000
-Subject: Re: [PATCH] video: Add GRVGA framebuffer device driver
-Message-Id: <4DF9AEC1.8050808@gaisler.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 09 Jun 2011 13:56:38 +0000
+Subject: [PATCHv2 16/28] OMAP3: HWMOD: Add DSS opt clocks
+Message-Id: <1307627810-3768-17-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1308128180-14645-1-git-send-email-kristoffer@gaisler.com>
-In-Reply-To: <1308128180-14645-1-git-send-email-kristoffer@gaisler.com>
+References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi Konrad,
+Add DSS optional clocks to HWMOD data for OMAP3xxx.
 
+Cc: Benoit Cousson <b-cousson@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/mach-omap2/omap_hwmod_3xxx_data.c |   37 ++++++++++++++++++++++++++-
+ 1 files changed, 35 insertions(+), 2 deletions(-)
 
-Konrad Rzeszutek Wilk wrote:
+diff --git a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
+index 909a84d..5fac4c0 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
+@@ -1542,9 +1542,15 @@ static struct omap_hwmod_ocp_if *omap3xxx_dss_slaves[] = {
+ };
+ 
+ static struct omap_hwmod_opt_clk dss_opt_clks[] = {
+-	{ .role = "tv_clk", .clk = "dss_tv_fck" },
+-	{ .role = "video_clk", .clk = "dss_96m_fck" },
++	{ .role = "dss_clk", .clk = "dss1_alwon_fck" },
++	/*
++	 * The rest of the clocks are not needed by the driver,
++	 * but are needed by the hwmod to reset DSS properly.
++	 */
+ 	{ .role = "sys_clk", .clk = "dss2_alwon_fck" },
++	{ .role = "tv_clk", .clk = "dss_tv_fck" },
++	/* required only on OMAP3430 */
++	{ .role = "tv_dac_clk", .clk = "dss_96m_fck" },
+ };
+ 
+ static struct omap_hwmod omap3430es1_dss_core_hwmod = {
+@@ -1656,6 +1662,10 @@ static struct omap_hwmod_ocp_if *omap3xxx_dss_dispc_slaves[] = {
+ 	&omap3xxx_l4_core__dss_dispc,
+ };
+ 
++static struct omap_hwmod_opt_clk dispc_opt_clks[] = {
++	{ .role = "dss_clk", .clk = "dss1_alwon_fck" },
++};
++
+ static struct omap_hwmod omap3xxx_dss_dispc_hwmod = {
+ 	.name		= "dss_dispc",
+ 	.class		= &omap3xxx_dispc_hwmod_class,
+@@ -1669,6 +1679,8 @@ static struct omap_hwmod omap3xxx_dss_dispc_hwmod = {
+ 			.module_offs = OMAP3430_DSS_MOD,
+ 		},
+ 	},
++	.opt_clks	= dispc_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(dispc_opt_clks),
+ 	.slaves		= omap3xxx_dss_dispc_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap3xxx_dss_dispc_slaves),
+ 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP3430ES1 |
+@@ -1720,6 +1732,11 @@ static struct omap_hwmod_ocp_if *omap3xxx_dss_dsi1_slaves[] = {
+ 	&omap3xxx_l4_core__dss_dsi1,
+ };
+ 
++static struct omap_hwmod_opt_clk dsi1_opt_clks[] = {
++	{ .role = "dss_clk", .clk = "dss1_alwon_fck" },
++	{ .role = "sys_clk", .clk = "dss2_alwon_fck" },
++};
++
+ static struct omap_hwmod omap3xxx_dss_dsi1_hwmod = {
+ 	.name		= "dss_dsi1",
+ 	.class		= &omap3xxx_dsi_hwmod_class,
+@@ -1733,6 +1750,8 @@ static struct omap_hwmod omap3xxx_dss_dsi1_hwmod = {
+ 			.module_offs = OMAP3430_DSS_MOD,
+ 		},
+ 	},
++	.opt_clks	= dsi1_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(dsi1_opt_clks),
+ 	.slaves		= omap3xxx_dss_dsi1_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap3xxx_dss_dsi1_slaves),
+ 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP3430ES1 |
+@@ -1791,6 +1810,10 @@ static struct omap_hwmod_ocp_if *omap3xxx_dss_rfbi_slaves[] = {
+ 	&omap3xxx_l4_core__dss_rfbi,
+ };
+ 
++static struct omap_hwmod_opt_clk rfbi_opt_clks[] = {
++	{ .role = "rfbi_iclk", .clk = "dss_ick" },
++};
++
+ static struct omap_hwmod omap3xxx_dss_rfbi_hwmod = {
+ 	.name		= "dss_rfbi",
+ 	.class		= &omap3xxx_rfbi_hwmod_class,
+@@ -1802,6 +1825,8 @@ static struct omap_hwmod omap3xxx_dss_rfbi_hwmod = {
+ 			.module_offs = OMAP3430_DSS_MOD,
+ 		},
+ 	},
++	.opt_clks	= rfbi_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(rfbi_opt_clks),
+ 	.slaves		= omap3xxx_dss_rfbi_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap3xxx_dss_rfbi_slaves),
+ 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP3430ES1 |
+@@ -1851,6 +1876,12 @@ static struct omap_hwmod_ocp_if *omap3xxx_dss_venc_slaves[] = {
+ 	&omap3xxx_l4_core__dss_venc,
+ };
+ 
++static struct omap_hwmod_opt_clk venc_opt_clks[] = {
++	{ .role = "tv_clk", .clk = "dss_tv_fck" },
++	/* required only on OMAP3430 */
++	{ .role = "tv_dac_clk", .clk = "dss_96m_fck" },
++};
++
+ static struct omap_hwmod omap3xxx_dss_venc_hwmod = {
+ 	.name		= "dss_venc",
+ 	.class		= &omap3xxx_venc_hwmod_class,
+@@ -1862,6 +1893,8 @@ static struct omap_hwmod omap3xxx_dss_venc_hwmod = {
+ 			.module_offs = OMAP3430_DSS_MOD,
+ 		},
+ 	},
++	.opt_clks	= venc_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(venc_opt_clks),
+ 	.slaves		= omap3xxx_dss_venc_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap3xxx_dss_venc_slaves),
+ 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP3430ES1 |
+-- 
+1.7.4.1
 
->> +#define GRVGA_REGLOAD(a)	    (__raw_readl(&(a)))
->> +#define GRVGA_REGSAVE(a, v)         (__raw_writel(v, &(a)))
-> 
-> writel?
-> 
-
-
-I use __raw since I want native endianess. On a big endian system
-writel/readl byte swap since they are for little endian (PCI).
-
-
->> +struct grvga_regs {
->> +	u32 status; 		/* 0x00 */
->> +	u32 video_length; 	/* 0x04 */
->> +	u32 front_porch;	/* 0x08 */
->> +	u32 sync_length;	/* 0x0C */
->> +	u32 line_length;	/* 0x10 */
->> +	u32 fb_pos;		/* 0x14 */
->> +	u32 clk_vector[4];	/* 0x18 */
->> +	u32 clut;	        /* 0x20 */
->> +};
-> 
-> Would it make sense to add __packed__ here? It seems that you
-> really depend on this ordering.
-> 
-
-I depend on the ordering, but that is guaranteed by the compiler without __packed__. 
-Attribute __packed__ is dangerous here since it tells the compiler that it is ok
-to do byte accesses.
-
-
->> +static struct fb_ops grvga_ops = {
->> +	.owner          = THIS_MODULE,
->> +	.fb_check_var   = grvga_check_var,
->> +	.fb_set_par	= grvga_set_par,
->> +	.fb_setcolreg   = grvga_setcolreg,
->> +	.fb_pan_display = grvga_pan_display,
->> +	.fb_fillrect	= cfb_fillrect,
->> +	.fb_copyarea	= cfb_copyarea,
->> +	.fb_imageblit	= cfb_imageblit
->> +};
-> 
-> Could you move this struct down and remove the declarations earlier?
-
-Yes sure.
-
-
->> +	}
->> +	if (i != -1)
->> +		par->clk_sel = i;
-> 
-> How would i possibly become -1?
-
-
-Refactoring error .. thanks!
-
-
->> +static int grvga_set_par(struct fb_info *info)
->> +{
->> +
->> +	int func = 0;
-> 
-> You probably want that to be u32.
-
-Sure why not.
-
-
-> No default case?
-
-Will add ...
-
-
->> +		physical_start = __pa(virtual_start);
-> 
-> Yikes. That is one big assumption. You don't want to use the PCI/DMA API
-> to map it? I thought that on SPARCs the Bus addresses are different
-> from the physical addresses?
-
-Yeah I should map it for cleanliness sake. It does not matter on this architecture (LEON) though.
-
-
->> +
->> +	if (info) {
->> +		unregister_framebuffer(info);
->> +		fb_dealloc_cmap(&info->cmap);
->> +		of_iounmap(&device->resource[0], par->regs,
->> +			   resource_size(&device->resource[0]));
->> +		framebuffer_release(info);
->> +		dev_set_drvdata(&device->dev, NULL);
-> 
-> Shouldn't that be much earlier? Like right after unregister_framebuffer?
-> 
-
-You mean I should set driver_data = NULL ASAP after unregistering the framebuffer?
-Does it really matter? Please enlighten me.
-
-
-Thanks a lot for your feedback.
-
-Best regards,
-Kristoffer Glembo

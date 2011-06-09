@@ -1,39 +1,84 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 14 Jun 2011 09:24:47 +0000
-Subject: [PATCH v2 09/29] g364fb: use display information in info not in var for panning
-Message-Id: <1308043507-11083-10-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 09 Jun 2011 13:56:35 +0000
+Subject: [PATCHv2 13/28] OMAP: DSS2: Remove core_dump_clocks
+Message-Id: <1307627810-3768-14-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+Currently dss.c does all the low level clock handling in the DSS, and
+thus it contains pointers to all the clocks. This allows dss.c to dump
+the clock information for all the clocks.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+With pm_runtime this is no longer the case, as each submodule will
+handle its clocks independently. Thus remove the core_dump_clocks
+function as it cannot be used with pm_runtime.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/g364fb.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/dss.c |   40 ----------------------------------------
+ 1 files changed, 0 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/video/g364fb.c b/drivers/video/g364fb.c
-index d662317..223896c 100644
---- a/drivers/video/g364fb.c
-+++ b/drivers/video/g364fb.c
-@@ -149,10 +149,11 @@ int g364fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- static int g364fb_pan_display(struct fb_var_screeninfo *var, 
- 			      struct fb_info *info)
- {
--	if (var->xoffset || var->yoffset + var->yres > var->yres_virtual)
-+	if (var->xoffset ||
-+	    var->yoffset + info->var.yres > info->var.yres_virtual)
- 		return -EINVAL;
- 
--	*(unsigned int *) TOP_REG = var->yoffset * var->xres;
-+	*(unsigned int *) TOP_REG = var->yoffset * info->var.xres;
- 	return 0;
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 4f3de35..ff5664e 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -989,50 +989,10 @@ static void dss_clk_disable_all_no_ctx(void)
+ 	dss_clk_disable_no_ctx(clks);
  }
  
+-#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
+-/* CLOCKS */
+-static void core_dump_clocks(struct seq_file *s)
+-{
+-	int i;
+-	struct clk *clocks[5] = {
+-		dss.dss_ick,
+-		dss.dss_fck,
+-		dss.dss_sys_clk,
+-		dss.dss_tv_fck,
+-		dss.dss_video_fck
+-	};
+-
+-	const char *names[5] = {
+-		"ick",
+-		"fck",
+-		"sys_clk",
+-		"tv_fck",
+-		"video_fck"
+-	};
+-
+-	seq_printf(s, "- CORE -\n");
+-
+-	seq_printf(s, "internal clk count\t\t%u\n", dss.num_clks_enabled);
+-
+-	for (i = 0; i < 5; i++) {
+-		if (!clocks[i])
+-			continue;
+-		seq_printf(s, "%s (%s)%*s\t%lu\t%d\n",
+-				names[i],
+-				clocks[i]->name,
+-				24 - strlen(names[i]) - strlen(clocks[i]->name),
+-				"",
+-				clk_get_rate(clocks[i]),
+-				clocks[i]->usecount);
+-	}
+-}
+-#endif /* defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT) */
+-
+ /* DEBUGFS */
+ #if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
+ void dss_debug_dump_clocks(struct seq_file *s)
+ {
+-	core_dump_clocks(s);
+ 	dss_dump_clocks(s);
+ 	dispc_dump_clocks(s);
+ #ifdef CONFIG_OMAP2_DSS_DSI
 -- 
-1.7.3.4
+1.7.4.1
 

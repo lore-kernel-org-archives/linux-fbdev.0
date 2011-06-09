@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 09 Jun 2011 13:56:29 +0000
-Subject: [PATCHv2 07/28] OMAP: DSS2: Remove clk optimization at dss init
-Message-Id: <1307627810-3768-8-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 09 Jun 2011 13:56:25 +0000
+Subject: [PATCHv2 03/28] OMAP: DSS2: Reset LANEx_ULPS_SIG2 bits after use
+Message-Id: <1307627810-3768-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,39 +11,33 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-DSS enables core clocks for the duration of initialization to avoid
-unnecessary context saves and restores.
+LANEx_ULPS_SIG2 bits are left on after entering ULPS. This doesn't cause
+any problems currently, as DSI HW is reset when it is enabled. However,
+if the reset is not done, operation fails if the bits are still set.
 
-With PM runtime the clocks cannot be handled in this way, outside the
-dss module drivers. Thus we need to remove the optimization.
+So reset the bits after entering ULPS to ensure operation even without
+HW reset.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/core.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+ drivers/video/omap2/dss/dsi.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index 02187df..f0bae6d 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -183,8 +183,6 @@ static int omap_dss_probe(struct platform_device *pdev)
- 		goto err_dss;
- 	}
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 69c2d4f..4496d09 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -3395,6 +3395,10 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
+ 	dsi_unregister_isr_cio(dsidev, dsi_completion_handler, &completion,
+ 			DSI_CIO_IRQ_ULPSACTIVENOT_ALL0);
  
--	/* keep clocks enabled to prevent context saves/restores during init */
--	dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK);
- 	r = dispc_init_platform_driver();
- 	if (r) {
- 		DSSERR("Failed to initialize dispc platform driver\n");
-@@ -237,8 +235,6 @@ static int omap_dss_probe(struct platform_device *pdev)
- 			pdata->default_device = dssdev;
- 	}
++	/* Reset LANEx_ULPS_SIG2 */
++	REG_FLD_MOD(dsidev, DSI_COMPLEXIO_CFG2, (0 << 0) | (0 << 1) | (0 << 2),
++		7, 5);
++
+ 	dsi_cio_power(dsidev, DSI_COMPLEXIO_POWER_ULPS);
  
--	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK);
--
- 	return 0;
- 
- err_register:
+ 	dsi_if_enable(dsidev, false);
 -- 
 1.7.4.1
 

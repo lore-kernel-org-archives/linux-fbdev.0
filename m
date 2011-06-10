@@ -1,179 +1,86 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Thu, 09 Jun 2011 20:03:37 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 10 Jun 2011 06:52:09 +0000
 Subject: Re: [PATCHv2 20/28] OMAP: DSS2: Use PM runtime & HWMOD support
-Message-Id: <20110609200335.GD26006@linux-sh.org>
+Message-Id: <1307688729.1823.12.camel@lappyti>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com> <1307627810-3768-21-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307627810-3768-21-git-send-email-tomi.valkeinen@ti.com>
+References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
+	 <1307627810-3768-21-git-send-email-tomi.valkeinen@ti.com>
+	 <20110609200335.GD26006@linux-sh.org>
+In-Reply-To: <20110609200335.GD26006@linux-sh.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Paul Mundt <lethal@linux-sh.org>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, b-cousson@ti.com, paul@pwsan.com, khilman@ti.com
 
-On Thu, Jun 09, 2011 at 04:56:42PM +0300, Tomi Valkeinen wrote:
-> +int dispc_runtime_get(void)
-> +{
-> +	int r;
-> +
-> +	DSSDBG("dispc_runtime_get\n");
-> +
-> +	r = pm_runtime_get_sync(&dispc.pdev->dev);
-> +	WARN_ON(r < 0);
-> +	return r < 0 ? r : 0;
-> +}
-> +
-> +void dispc_runtime_put(void)
-> +{
-> +	int r;
-> +
-> +	DSSDBG("dispc_runtime_put\n");
-> +
-> +	r = pm_runtime_put(&dispc.pdev->dev);
-> +	WARN_ON(r < 0);
->  }
->  
-This seems a bit odd. Your runtime_get wrapper is explicitly synchronous
-while your put wrapper is explicitly asynchronous, although these details
-(if intentional) are not at all obvious from the wrapper naming. From
-the use in the error paths and so on you will definitely need to be using
-pm_runtime_put_sync() at least some of the time.
+On Fri, 2011-06-10 at 05:03 +0900, Paul Mundt wrote:
+> On Thu, Jun 09, 2011 at 04:56:42PM +0300, Tomi Valkeinen wrote:
+> > +int dispc_runtime_get(void)
+> > +{
+> > +	int r;
+> > +
+> > +	DSSDBG("dispc_runtime_get\n");
+> > +
+> > +	r = pm_runtime_get_sync(&dispc.pdev->dev);
+> > +	WARN_ON(r < 0);
+> > +	return r < 0 ? r : 0;
+> > +}
+> > +
+> > +void dispc_runtime_put(void)
+> > +{
+> > +	int r;
+> > +
+> > +	DSSDBG("dispc_runtime_put\n");
+> > +
+> > +	r = pm_runtime_put(&dispc.pdev->dev);
+> > +	WARN_ON(r < 0);
+> >  }
+> >  
+> This seems a bit odd. Your runtime_get wrapper is explicitly synchronous
+> while your put wrapper is explicitly asynchronous, although these details
+> (if intentional) are not at all obvious from the wrapper naming. From
 
-In the interest of avoiding confusion, I would in general just get rid of
-these wrappers and use the pm_runtime calls openly, as you already do for
-some of the other parts of the API. The runtime PM framework has pretty
-verbose debugging already that goes well beyond what you presently have,
-too.
+Yes, the naming could be improved to make the (a)synchronousness obvious
+to the caller. The functions are internal to DSS, but still.
 
-You seem to have adopted this sync/async pattern for all of the users:
+> the use in the error paths and so on you will definitely need to be using
+> pm_runtime_put_sync() at least some of the time.
 
-> +int dsi_runtime_get(struct platform_device *dsidev)
->  {
-> -	if (enable)
-> -		dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK);
-> -	else
-> -		dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK);
-> +	int r;
-> +	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
-> +
-> +	DSSDBG("dsi_runtime_get\n");
-> +
-> +	r = pm_runtime_get_sync(&dsi->pdev->dev);
-> +	WARN_ON(r < 0);
-> +	return r < 0 ? r : 0;
-> +}
-> +
-> +void dsi_runtime_put(struct platform_device *dsidev)
-> +{
-> +	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
-> +	int r;
-> +
-> +	DSSDBG("dsi_runtime_put\n");
-> +
-> +	r = pm_runtime_put(&dsi->pdev->dev);
-> +	WARN_ON(r < 0);
->  }
->  
-Here.
+Hmm, why is that? When the user of, say, dispc, has finished with it and
+calls dispc_runtime_put(), the caller shouldn't care if the HW is
+actually turned off now or later.
 
-> -void dss_clk_disable(enum dss_clock clks)
-> -{
-..
-> -	dss_clk_disable_no_ctx(clks);
-> +	r = pm_runtime_get_sync(&dss.pdev->dev);
-> +	WARN_ON(r < 0);
-> +	return r < 0 ? r : 0;
->  }
->  
-> -static void dss_clk_enable_all_no_ctx(void)
-> +void dss_runtime_put(void)
->  {
-..
-> +	r = pm_runtime_put(&dss.pdev->dev);
-> +	WARN_ON(r < 0);
->  }
->  
-And here.
+pm_runtime_put() can return an error value, but my wrappers discard it,
+as I don't know in which situations it could happen, and what could the
+driver do about it. If the HW cannot be turned off now, why could it be
+turned off later, and when would that be?
 
-> +static int hdmi_runtime_get(void)
-> +{
-> +	int r;
-> +
-> +	DSSDBG("hdmi_runtime_get\n");
-> +
-> +	r = pm_runtime_get_sync(&hdmi.pdev->dev);
-> +	WARN_ON(r < 0);
-> +	return r < 0 ? r : 0;
-> +}
-> +
-> +static void hdmi_runtime_put(void)
-> +{
-> +	int r;
-> +
-> +	DSSDBG("hdmi_runtime_put\n");
-> +
-> +	r = pm_runtime_put(&hdmi.pdev->dev);
-> +	WARN_ON(r < 0);
-> +}
-> +
-And here.
+> In the interest of avoiding confusion, I would in general just get rid of
+> these wrappers and use the pm_runtime calls openly, as you already do for
+> some of the other parts of the API. The runtime PM framework has pretty
+> verbose debugging already that goes well beyond what you presently have,
+> too.
 
-> -static void rfbi_enable_clocks(bool enable)
-> +static int rfbi_runtime_get(void)
->  {
-> -	if (enable)
-> -		dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK);
-> -	else
-> -		dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK);
-> +	int r;
-> +
-> +	DSSDBG("rfbi_runtime_get\n");
-> +
-> +	r = pm_runtime_get_sync(&rfbi.pdev->dev);
-> +	WARN_ON(r < 0);
-> +	return r < 0 ? r : 0;
-> +}
-> +
-> +static void rfbi_runtime_put(void)
-> +{
-> +	int r;
-> +
-> +	DSSDBG("rfbi_runtime_put\n");
-> +
-> +	r = pm_runtime_put(&rfbi.pdev->dev);
-> +	WARN_ON(r < 0);
->  }
->  
-And here.
+Yes, my main reason for the wrapper is to hide the device pointer from
+the users. So when, say, DSI block needs to use DISPC, it can just call
+dispc_runtime_get(), instead of having a mechanism to get the dispc
+device (dispc_get_dev() perhaps), and then using pm_runtime directly.
 
-> +static int venc_runtime_get(void)
->  {
-> -	if (enable) {
-> -		dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK | DSS_CLK_TVFCK);
-> -		if (dss_has_feature(FEAT_VENC_REQUIRES_TV_DAC_CLK))
-> -			dss_clk_enable(DSS_CLK_VIDFCK);
-> -	} else {
-> -		dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK | DSS_CLK_TVFCK);
-> -		if (dss_has_feature(FEAT_VENC_REQUIRES_TV_DAC_CLK))
-> -			dss_clk_disable(DSS_CLK_VIDFCK);
-> -	}
-> +	int r;
-> +
-> +	DSSDBG("venc_runtime_get\n");
-> +
-> +	r = pm_runtime_get_sync(&venc.pdev->dev);
-> +	WARN_ON(r < 0);
-> +	return r < 0 ? r : 0;
-> +}
-> +
-> +static void venc_runtime_put(void)
-> +{
-> +	int r;
-> +
-> +	DSSDBG("venc_runtime_put\n");
-> +
-> +	r = pm_runtime_put(&venc.pdev->dev);
-> +	WARN_ON(r < 0);
->  }
->  
-And here.
+Not a big difference, but I'd like to keep the dispc device pointer
+internal to dispc, as there's no real need to access it directly from
+elsewhere.
+
+Some of the wrappers are actually private to the file already, like for
+dsi. These wrappers could be removed without exposing any device
+pointers, but having them keeps the pattern consistent in all parts of
+the dss. And it allows me to have the WARN_ONs there easily.
+
+> You seem to have adopted this sync/async pattern for all of the users:
+
+Yes, I think the pattern is similar all around: when you get the device,
+you want it to be up and running immediately. When you put the device,
+you don't care when it's actually disabled.
+
+ Tomi
+
+

@@ -1,96 +1,231 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 09 Jun 2011 13:56:40 +0000
-Subject: [PATCHv2 18/28] OMAP2430: HWMOD: Add DSS opt clocks
-Message-Id: <1307627810-3768-19-git-send-email-tomi.valkeinen@ti.com>
+From: Manuel Lauss <manuel.lauss@googlemail.com>
+Date: Fri, 10 Jun 2011 15:23:01 +0000
+Subject: [PATCH 1/4] au1200fb: use framebuffer_alloc()
+Message-Id: <1307719384-23702-2-git-send-email-manuel.lauss@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Add DSS optional clocks to HWMOD data for OMAP2430.
+Convert to use framebuffer_alloc() instead of using fb_info embedded
+into device context (which broke the driver in the past due to un-
+initialized elements).
 
-Cc: Benoit Cousson <b-cousson@ti.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Manuel Lauss <manuel.lauss@googlemail.com>
 ---
- arch/arm/mach-omap2/omap_hwmod_2430_data.c |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
+ drivers/video/au1200fb.c |   80 ++++++++++++++++++++++++++-------------------
+ 1 files changed, 46 insertions(+), 34 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/omap_hwmod_2430_data.c b/arch/arm/mach-omap2/omap_hwmod_2430_data.c
-index 9682dd5..8009945 100644
---- a/arch/arm/mach-omap2/omap_hwmod_2430_data.c
-+++ b/arch/arm/mach-omap2/omap_hwmod_2430_data.c
-@@ -1302,6 +1302,7 @@ static struct omap_hwmod_ocp_if *omap2430_dss_slaves[] = {
+diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
+index 5dff32a..442d005 100644
+--- a/drivers/video/au1200fb.c
++++ b/drivers/video/au1200fb.c
+@@ -150,7 +150,7 @@ struct au1200_lcd_iodata_t {
+ 
+ /* Private, per-framebuffer management information (independent of the panel itself) */
+ struct au1200fb_device {
+-	struct fb_info fb_info;			/* FB driver info record */
++	struct fb_info *fb_info;		/* FB driver info record */
+ 
+ 	int					plane;
+ 	unsigned char* 		fb_mem;		/* FrameBuffer memory map */
+@@ -158,7 +158,7 @@ struct au1200fb_device {
+ 	dma_addr_t    		fb_phys;
  };
  
- static struct omap_hwmod_opt_clk dss_opt_clks[] = {
-+	{ .role = "dss_clk", .clk = "dss1_fck" },
- 	{ .role = "tv_clk", .clk = "dss_54m_fck" },
- 	{ .role = "sys_clk", .clk = "dss2_fck" },
- };
-@@ -1379,6 +1380,10 @@ static struct omap_hwmod_ocp_if *omap2430_dss_dispc_slaves[] = {
- 	&omap2430_l4_core__dss_dispc,
- };
+-static struct au1200fb_device _au1200fb_devices[CONFIG_FB_AU1200_DEVS];
++static struct fb_info *_au1200fb_infos[CONFIG_FB_AU1200_DEVS];
+ /********************************************************************/
  
-+static struct omap_hwmod_opt_clk dispc_opt_clks[] = {
-+	{ .role = "dss_clk", .clk = "dss1_fck" },
-+};
+ /* LCD controller restrictions */
+@@ -713,7 +713,7 @@ static int fbinfo2index (struct fb_info *fb_info)
+ 	int i;
+ 
+ 	for (i = 0; i < CONFIG_FB_AU1200_DEVS; ++i) {
+-		if (fb_info = (struct fb_info *)(&_au1200fb_devices[i].fb_info))
++		if (fb_info = _au1200fb_infos[i])
+ 			return i;
+ 	}
+ 	printk("au1200fb: ERROR: fbinfo2index failed!\n");
+@@ -962,7 +962,7 @@ static void au1200_setmode(struct au1200fb_device *fbdev)
+ 	lcd->window[plane].winctrl2 = ( 0
+ 		| LCD_WINCTRL2_CKMODE_00
+ 		| LCD_WINCTRL2_DBM
+-		| LCD_WINCTRL2_BX_N( fbdev->fb_info.fix.line_length)
++		| LCD_WINCTRL2_BX_N(fbdev->fb_info->fix.line_length)
+ 		| LCD_WINCTRL2_SCX_1
+ 		| LCD_WINCTRL2_SCY_1
+ 		) ;
+@@ -1050,7 +1050,7 @@ static void au1200fb_update_fbinfo(struct fb_info *fbi)
+ static int au1200fb_fb_check_var(struct fb_var_screeninfo *var,
+ 	struct fb_info *fbi)
+ {
+-	struct au1200fb_device *fbdev = (struct au1200fb_device *)fbi;
++	struct au1200fb_device *fbdev = fbi->par;
+ 	u32 pixclock;
+ 	int screen_size, plane;
+ 
+@@ -1142,7 +1142,7 @@ static int au1200fb_fb_check_var(struct fb_var_screeninfo *var,
+  */
+ static int au1200fb_fb_set_par(struct fb_info *fbi)
+ {
+-	struct au1200fb_device *fbdev = (struct au1200fb_device *)fbi;
++	struct au1200fb_device *fbdev = fbi->par;
+ 
+ 	au1200fb_update_fbinfo(fbi);
+ 	au1200_setmode(fbdev);
+@@ -1246,7 +1246,7 @@ static int au1200fb_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ {
+ 	unsigned int len;
+ 	unsigned long start=0, off;
+-	struct au1200fb_device *fbdev = (struct au1200fb_device *) info;
++	struct au1200fb_device *fbdev = info->par;
+ 
+ #ifdef CONFIG_PM
+ 	au1xxx_pm_access(LCD_pm_dev);
+@@ -1561,10 +1561,9 @@ static irqreturn_t au1200fb_handle_irq(int irq, void* dev_id)
+ 
+ static int au1200fb_init_fbinfo(struct au1200fb_device *fbdev)
+ {
+-	struct fb_info *fbi = &fbdev->fb_info;
++	struct fb_info *fbi = fbdev->fb_info;
+ 	int bpp;
+ 
+-	memset(fbi, 0, sizeof(struct fb_info));
+ 	fbi->fbops = &au1200fb_fb_ops;
+ 
+ 	bpp = winbpp(win->w[fbdev->plane].mode_winctrl1);
+@@ -1626,11 +1625,13 @@ static int au1200fb_init_fbinfo(struct au1200fb_device *fbdev)
+ static int au1200fb_drv_probe(struct platform_device *dev)
+ {
+ 	struct au1200fb_device *fbdev;
++	struct fb_info *fbi = NULL;
+ 	unsigned long page;
+ 	int bpp, plane, ret;
+ 
+-	if (!dev)
+-		return -EINVAL;
++	/* shut gcc up */
++	ret = 0;
++	fbdev = NULL;
+ 
+ 	for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane) {
+ 		bpp = winbpp(win->w[plane].mode_winctrl1);
+@@ -1639,8 +1640,15 @@ static int au1200fb_drv_probe(struct platform_device *dev)
+ 		if (win->w[plane].yres = 0)
+ 			win->w[plane].yres = panel->Yres;
+ 
+-		fbdev = &_au1200fb_devices[plane];
+-		memset(fbdev, 0, sizeof(struct au1200fb_device));
++		fbi = framebuffer_alloc(sizeof(struct au1200fb_device),
++					&dev->dev);
++		if (!fbi)
++			goto failed;
 +
- static struct omap_hwmod omap2430_dss_dispc_hwmod = {
- 	.name		= "dss_dispc",
- 	.class		= &omap2430_dispc_hwmod_class,
-@@ -1394,6 +1399,8 @@ static struct omap_hwmod omap2430_dss_dispc_hwmod = {
- 			.idlest_stdby_bit = OMAP24XX_ST_DSS_SHIFT,
- 		},
- 	},
-+	.opt_clks	= dispc_opt_clks,
-+	.opt_clks_cnt	= ARRAY_SIZE(dispc_opt_clks),
- 	.slaves		= omap2430_dss_dispc_slaves,
- 	.slaves_cnt	= ARRAY_SIZE(omap2430_dss_dispc_slaves),
- 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2430),
-@@ -1443,6 +1450,10 @@ static struct omap_hwmod_ocp_if *omap2430_dss_rfbi_slaves[] = {
- 	&omap2430_l4_core__dss_rfbi,
- };
- 
-+static struct omap_hwmod_opt_clk rfbi_opt_clks[] = {
-+	{ .role = "rfbi_iclk", .clk = "dss_ick" },
-+};
++		_au1200fb_infos[plane] = fbi;
++		fbdev = fbi->par;
++		fbdev->fb_info = fbi;
 +
- static struct omap_hwmod omap2430_dss_rfbi_hwmod = {
- 	.name		= "dss_rfbi",
- 	.class		= &omap2430_rfbi_hwmod_class,
-@@ -1454,6 +1465,8 @@ static struct omap_hwmod omap2430_dss_rfbi_hwmod = {
- 			.module_offs = CORE_MOD,
- 		},
- 	},
-+	.opt_clks	= rfbi_opt_clks,
-+	.opt_clks_cnt	= ARRAY_SIZE(rfbi_opt_clks),
- 	.slaves		= omap2430_dss_rfbi_slaves,
- 	.slaves_cnt	= ARRAY_SIZE(omap2430_dss_rfbi_slaves),
- 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2430),
-@@ -1494,6 +1507,10 @@ static struct omap_hwmod_ocp_if *omap2430_dss_venc_slaves[] = {
- 	&omap2430_l4_core__dss_venc,
- };
+ 		fbdev->plane = plane;
  
-+static struct omap_hwmod_opt_clk venc_opt_clks[] = {
-+	{ .role = "tv_clk", .clk = "dss_54m_fck" },
-+};
+ 		/* Allocate the framebuffer to the maximum screen size */
+@@ -1673,21 +1681,20 @@ static int au1200fb_drv_probe(struct platform_device *dev)
+ 			goto failed;
+ 
+ 		/* Register new framebuffer */
+-		if ((ret = register_framebuffer(&fbdev->fb_info)) < 0) {
++		ret = register_framebuffer(fbi);
++		if (ret < 0) {
+ 			print_err("cannot register new framebuffer");
+ 			goto failed;
+ 		}
+ 
+-		au1200fb_fb_set_par(&fbdev->fb_info);
++		au1200fb_fb_set_par(fbi);
+ 
+ #if !defined(CONFIG_FRAMEBUFFER_CONSOLE) && defined(CONFIG_LOGO)
+ 		if (plane = 0)
+-			if (fb_prepare_logo(&fbdev->fb_info, FB_ROTATE_UR)) {
++			if (fb_prepare_logo(fbi, FB_ROTATE_UR)) {
+ 				/* Start display and show logo on boot */
+-				fb_set_cmap(&fbdev->fb_info.cmap,
+-						&fbdev->fb_info);
+-
+-				fb_show_logo(&fbdev->fb_info, FB_ROTATE_UR);
++				fb_set_cmap(&fbi->cmap, fbi);
++				fb_show_logo(fbi, FB_ROTATE_UR);
+ 			}
+ #endif
+ 	}
+@@ -1705,12 +1712,13 @@ static int au1200fb_drv_probe(struct platform_device *dev)
+ failed:
+ 	/* NOTE: This only does the current plane/window that failed; others are still active */
+ 	if (fbdev->fb_mem)
+-		dma_free_noncoherent(dev, PAGE_ALIGN(fbdev->fb_len),
++		dma_free_noncoherent(&dev->dev, PAGE_ALIGN(fbdev->fb_len),
+ 				fbdev->fb_mem, fbdev->fb_phys);
+-	if (fbdev->fb_info.cmap.len != 0)
+-		fb_dealloc_cmap(&fbdev->fb_info.cmap);
+-	if (fbdev->fb_info.pseudo_palette)
+-		kfree(fbdev->fb_info.pseudo_palette);
++	if (fbi) {
++		if (fbi->cmap.len != 0)
++			fb_dealloc_cmap(&fbi->cmap);
++		kfree(fbi->pseudo_palette);
++	}
+ 	if (plane = 0)
+ 		free_irq(AU1200_LCD_INT, (void*)dev);
+ 	return ret;
+@@ -1719,6 +1727,7 @@ failed:
+ static int au1200fb_drv_remove(struct platform_device *dev)
+ {
+ 	struct au1200fb_device *fbdev;
++	struct fb_info *fbi;
+ 	int plane;
+ 
+ 	if (!dev)
+@@ -1727,20 +1736,22 @@ static int au1200fb_drv_remove(struct platform_device *dev)
+ 	/* Turn off the panel */
+ 	au1200_setpanel(NULL);
+ 
+-	for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane)
+-	{
+-		fbdev = &_au1200fb_devices[plane];
++	for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane)	{
++		fbi = _au1200fb_infos[plane];
++		fbdev = fbi->par;
+ 
+ 		/* Clean up all probe data */
+-		unregister_framebuffer(&fbdev->fb_info);
++		unregister_framebuffer(fbi);
+ 		if (fbdev->fb_mem)
+ 			dma_free_noncoherent(&dev->dev,
+ 					PAGE_ALIGN(fbdev->fb_len),
+ 					fbdev->fb_mem, fbdev->fb_phys);
+-		if (fbdev->fb_info.cmap.len != 0)
+-			fb_dealloc_cmap(&fbdev->fb_info.cmap);
+-		if (fbdev->fb_info.pseudo_palette)
+-			kfree(fbdev->fb_info.pseudo_palette);
++		if (fbi->cmap.len != 0)
++			fb_dealloc_cmap(&fbi->cmap);
++		kfree(fbi->pseudo_palette);
 +
- static struct omap_hwmod omap2430_dss_venc_hwmod = {
- 	.name		= "dss_venc",
- 	.class		= &omap2430_venc_hwmod_class,
-@@ -1505,6 +1522,8 @@ static struct omap_hwmod omap2430_dss_venc_hwmod = {
- 			.module_offs = CORE_MOD,
- 		},
- 	},
-+	.opt_clks	= venc_opt_clks,
-+	.opt_clks_cnt	= ARRAY_SIZE(venc_opt_clks),
- 	.slaves		= omap2430_dss_venc_slaves,
- 	.slaves_cnt	= ARRAY_SIZE(omap2430_dss_venc_slaves),
- 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2430),
++		framebuffer_release(fbi);
++		_au1200fb_infos[plane] = NULL;
+ 	}
+ 
+ 	free_irq(AU1200_LCD_INT, (void *)dev);
+@@ -1749,7 +1760,8 @@ static int au1200fb_drv_remove(struct platform_device *dev)
+ }
+ 
+ #ifdef CONFIG_PM
+-static int au1200fb_drv_suspend(struct platform_device *dev, u32 state)
++static int au1200fb_drv_suspend(struct platform_device *dev,
++				pm_message_t state)
+ {
+ 	/* TODO */
+ 	return 0;
 -- 
-1.7.4.1
+1.7.5.3
 

@@ -1,176 +1,58 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 03 Jun 2011 10:00:18 +0000
-Subject: [PATCH 08/27] OMAP: DSS2: rewrite use of context_loss_count
-Message-Id: <1307095237-14805-9-git-send-email-tomi.valkeinen@ti.com>
+From: Manuel Lauss <manuel.lauss@googlemail.com>
+Date: Fri, 10 Jun 2011 15:23:04 +0000
+Subject: [PATCH 4/4] au1200fb: switch to FB_SYS helpers
+Message-Id: <1307719384-23702-5-git-send-email-manuel.lauss@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-The function to get device's context loss count has changed from
+Since all video memory is in system ram, use FB_SYS helpers.
 
-omap_pm_get_last_off_on_transaction_id() to
-omap_pm_get_dev_context_loss_count()
-
-Change name of the function pointer in omapdss.h accordingly, and use
-the term "context loss count" instead of "context id" in the code.
-
-Restructure the context loss count functions to handle errors properly,
-and ensure that context is always considered lost if an error happens.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Manuel Lauss <manuel.lauss@googlemail.com>
 ---
- arch/arm/mach-omap2/display.c |    2 +-
- drivers/video/omap2/dss/dss.c |   71 +++++++++++++++++++++++++++--------------
- drivers/video/omap2/dss/dss.h |    1 -
- include/video/omapdss.h       |    2 +-
- 4 files changed, 49 insertions(+), 27 deletions(-)
+ drivers/video/Kconfig    |    7 ++++---
+ drivers/video/au1200fb.c |    8 +++++---
+ 2 files changed, 9 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
-index 543fcb8..084a51b 100644
---- a/arch/arm/mach-omap2/display.c
-+++ b/arch/arm/mach-omap2/display.c
-@@ -117,7 +117,7 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
- 	}
- 
- 	pdata.board_data = board_data;
--	pdata.board_data->get_last_off_on_transaction_id = NULL;
-+	pdata.board_data->get_context_loss_count = NULL;
- 	pdata.opt_clock_available = opt_clock_available;
- 
- 	for (i = 0; i < oh_count; i++) {
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index f5f9fcb..b63e290 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -60,7 +60,7 @@ struct dss_reg {
- static struct {
- 	struct platform_device *pdev;
- 	void __iomem    *base;
--	int             ctx_id;
-+	int		ctx_loss_cnt;
- 
- 	struct clk	*dpll4_m4_ck;
- 	struct clk	*dss_ick;
-@@ -665,34 +665,58 @@ void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select hdmi)
- }
- 
- /* CONTEXT */
--static int dss_get_ctx_id(void)
-+static void dss_init_ctx_loss_count(void)
- {
--	struct omap_display_platform_data *pdata = dss.pdev->dev.platform_data;
--	int r;
-+	struct device *dev = &dss.pdev->dev;
-+	struct omap_display_platform_data *pdata = dev->platform_data;
-+	struct omap_dss_board_info *board_data = pdata->board_data;
-+	int cnt = 0;
- 
--	if (!pdata->board_data->get_last_off_on_transaction_id)
--		return 0;
--	r = pdata->board_data->get_last_off_on_transaction_id(&dss.pdev->dev);
--	if (r < 0) {
--		dev_err(&dss.pdev->dev, "getting transaction ID failed, "
--				"will force context restore\n");
--		r = -1;
--	}
--	return r;
-+	/*
-+	 * get_context_loss_count returns negative on error. We'll ignore the
-+	 * error and store the error to ctx_loss_cnt, which will cause
-+	 * dss_need_ctx_restore() call to return true.
-+	 */
-+
-+	if (board_data->get_context_loss_count)
-+		cnt = board_data->get_context_loss_count(dev);
-+
-+	WARN_ON(cnt < 0);
-+
-+	dss.ctx_loss_cnt = cnt;
-+
-+	DSSDBG("initial ctx_loss_cnt %u\n", cnt);
- }
- 
--int dss_need_ctx_restore(void)
-+static bool dss_need_ctx_restore(void)
- {
--	int id = dss_get_ctx_id();
-+	struct device *dev = &dss.pdev->dev;
-+	struct omap_display_platform_data *pdata = dev->platform_data;
-+	struct omap_dss_board_info *board_data = pdata->board_data;
-+	int cnt;
- 
--	if (id < 0 || id != dss.ctx_id) {
--		DSSDBG("ctx id %d -> id %d\n",
--				dss.ctx_id, id);
--		dss.ctx_id = id;
--		return 1;
--	} else {
--		return 0;
-+	/*
-+	 * If get_context_loss_count is not available, assume that we need
-+	 * context restore always.
-+	 */
-+	if (!board_data->get_context_loss_count)
-+		return true;
-+
-+	cnt = board_data->get_context_loss_count(dev);
-+	if (cnt < 0) {
-+		dev_err(dev, "getting context loss count failed, will force "
-+				"context restore\n");
-+		dss.ctx_loss_cnt = cnt;
-+		return true;
- 	}
-+
-+	if (cnt = dss.ctx_loss_cnt)
-+		return false;
-+
-+	DSSDBG("ctx_loss_cnt %d -> %d\n", dss.ctx_loss_cnt, cnt);
-+	dss.ctx_loss_cnt = cnt;
-+
-+	return true;
- }
- 
- static void save_all_ctx(void)
-@@ -1046,8 +1070,7 @@ static int omap_dsshw_probe(struct platform_device *pdev)
- 
- 	dss_clk_enable_all_no_ctx();
- 
--	dss.ctx_id = dss_get_ctx_id();
--	DSSDBG("initial ctx id %u\n", dss.ctx_id);
-+	dss_init_ctx_loss_count();
- 
- 	/* disable LCD and DIGIT output. This seems to fix the synclost
- 	 * problem that we get, if the bootloader starts the DSS and
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 8ab6d43..aeb611d 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -226,7 +226,6 @@ void dss_restore_context(void);
- void dss_clk_enable(enum dss_clock clks);
- void dss_clk_disable(enum dss_clock clks);
- unsigned long dss_clk_get_rate(enum dss_clock clk);
--int dss_need_ctx_restore(void);
- const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
- void dss_dump_clocks(struct seq_file *s);
- 
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index bb39738..4f914a5 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -244,7 +244,7 @@ int dsi_vc_send_bta_sync(struct omap_dss_device *dssdev, int channel);
- 
- /* Board specific data */
- struct omap_dss_board_info {
--	int (*get_last_off_on_transaction_id)(struct device *dev);
-+	int (*get_context_loss_count)(struct device *dev);
- 	int num_devices;
- 	struct omap_dss_device **devices;
- 	struct omap_dss_device *default_device;
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 549b960..5e19de9 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1756,9 +1756,10 @@ config FB_AU1100
+ config FB_AU1200
+ 	bool "Au1200 LCD Driver"
+ 	depends on (FB = y) && MIPS && SOC_AU1200
+-	select FB_CFB_FILLRECT
+-	select FB_CFB_COPYAREA
+-	select FB_CFB_IMAGEBLIT
++	select FB_SYS_FILLRECT
++	select FB_SYS_COPYAREA
++	select FB_SYS_IMAGEBLIT
++	select FB_SYS_FOPS
+ 	help
+ 	  This is the framebuffer driver for the AMD Au1200 SOC.  It can drive
+ 	  various panels and CRTs by passing in kernel cmd line option
+diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
+index 4b58f7b..b1b16d9 100644
+--- a/drivers/video/au1200fb.c
++++ b/drivers/video/au1200fb.c
+@@ -1502,9 +1502,11 @@ static struct fb_ops au1200fb_fb_ops = {
+ 	.fb_set_par	= au1200fb_fb_set_par,
+ 	.fb_setcolreg	= au1200fb_fb_setcolreg,
+ 	.fb_blank	= au1200fb_fb_blank,
+-	.fb_fillrect	= cfb_fillrect,
+-	.fb_copyarea	= cfb_copyarea,
+-	.fb_imageblit	= cfb_imageblit,
++	.fb_fillrect	= sys_fillrect,
++	.fb_copyarea	= sys_copyarea,
++	.fb_imageblit	= sys_imageblit,
++	.fb_read	= fb_sys_read,
++	.fb_write	= fb_sys_write,
+ 	.fb_sync	= NULL,
+ 	.fb_ioctl	= au1200fb_ioctl,
+ 	.fb_mmap	= au1200fb_fb_mmap,
 -- 
-1.7.4.1
+1.7.5.3
 

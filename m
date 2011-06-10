@@ -1,129 +1,159 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 03 Jun 2011 10:00:26 +0000
-Subject: [PATCH 16/27] OMAP3: HWMOD: Add DSS opt clocks
-Message-Id: <1307095237-14805-17-git-send-email-tomi.valkeinen@ti.com>
+From: Manuel Lauss <manuel.lauss@googlemail.com>
+Date: Fri, 10 Jun 2011 15:23:03 +0000
+Subject: [PATCH 3/4] au1200fb: make number of windows configurable at load time.
+Message-Id: <1307719384-23702-4-git-send-email-manuel.lauss@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Add DSS optional clocks to HWMOD data for OMAP3xxx.
+Make the number of framebuffer windows and the window configuration
+selectable at the kernel commandline instead of hardcoding it
+in the kernel config.
 
-Cc: Benoit Cousson <b-cousson@ti.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Manuel Lauss <manuel.lauss@googlemail.com>
 ---
- arch/arm/mach-omap2/omap_hwmod_3xxx_data.c |   37 ++++++++++++++++++++++++++-
- 1 files changed, 35 insertions(+), 2 deletions(-)
+ drivers/video/au1200fb.c |   53 +++++++++++++++++++++++++++++++++------------
+ 1 files changed, 39 insertions(+), 14 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
-index 909a84d..5fac4c0 100644
---- a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
-+++ b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
-@@ -1542,9 +1542,15 @@ static struct omap_hwmod_ocp_if *omap3xxx_dss_slaves[] = {
+diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
+index 480ecb1..4b58f7b 100644
+--- a/drivers/video/au1200fb.c
++++ b/drivers/video/au1200fb.c
+@@ -46,10 +46,6 @@
+ #include <asm/mach-au1x00/au1000.h>
+ #include "au1200fb.h"
+ 
+-#ifndef CONFIG_FB_AU1200_DEVS
+-#define CONFIG_FB_AU1200_DEVS 4
+-#endif
+-
+ #define DRIVER_NAME "au1200fb"
+ #define DRIVER_DESC "LCD controller driver for AU1200 processors"
+ 
+@@ -154,7 +150,6 @@ struct au1200fb_device {
+ 	dma_addr_t    		fb_phys;
  };
  
- static struct omap_hwmod_opt_clk dss_opt_clks[] = {
--	{ .role = "tv_clk", .clk = "dss_tv_fck" },
--	{ .role = "video_clk", .clk = "dss_96m_fck" },
-+	{ .role = "dss_clk", .clk = "dss1_alwon_fck" },
-+	/*
-+	 * The rest of the clocks are not needed by the driver,
-+	 * but are needed by the hwmod to reset DSS properly.
-+	 */
- 	{ .role = "sys_clk", .clk = "dss2_alwon_fck" },
-+	{ .role = "tv_clk", .clk = "dss_tv_fck" },
-+	/* required only on OMAP3430 */
-+	{ .role = "tv_dac_clk", .clk = "dss_96m_fck" },
- };
+-static struct fb_info *_au1200fb_infos[CONFIG_FB_AU1200_DEVS];
+ /********************************************************************/
  
- static struct omap_hwmod omap3430es1_dss_core_hwmod = {
-@@ -1656,6 +1662,10 @@ static struct omap_hwmod_ocp_if *omap3xxx_dss_dispc_slaves[] = {
- 	&omap3xxx_l4_core__dss_dispc,
- };
+ /* LCD controller restrictions */
+@@ -167,10 +162,18 @@ static struct fb_info *_au1200fb_infos[CONFIG_FB_AU1200_DEVS];
+ /* Default number of visible screen buffer to allocate */
+ #define AU1200FB_NBR_VIDEO_BUFFERS 1
  
-+static struct omap_hwmod_opt_clk dispc_opt_clks[] = {
-+	{ .role = "dss_clk", .clk = "dss1_alwon_fck" },
-+};
++/* Default maximum number of fb devices to create */
++#define MAX_DEVICE_COUNT	4
 +
- static struct omap_hwmod omap3xxx_dss_dispc_hwmod = {
- 	.name		= "dss_dispc",
- 	.class		= &omap3xxx_dispc_hwmod_class,
-@@ -1669,6 +1679,8 @@ static struct omap_hwmod omap3xxx_dss_dispc_hwmod = {
- 			.module_offs = OMAP3430_DSS_MOD,
- 		},
- 	},
-+	.opt_clks	= dispc_opt_clks,
-+	.opt_clks_cnt	= ARRAY_SIZE(dispc_opt_clks),
- 	.slaves		= omap3xxx_dss_dispc_slaves,
- 	.slaves_cnt	= ARRAY_SIZE(omap3xxx_dss_dispc_slaves),
- 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP3430ES1 |
-@@ -1720,6 +1732,11 @@ static struct omap_hwmod_ocp_if *omap3xxx_dss_dsi1_slaves[] = {
- 	&omap3xxx_l4_core__dss_dsi1,
- };
- 
-+static struct omap_hwmod_opt_clk dsi1_opt_clks[] = {
-+	{ .role = "dss_clk", .clk = "dss1_alwon_fck" },
-+	{ .role = "sys_clk", .clk = "dss2_alwon_fck" },
-+};
++/* Default window configuration entry to use (see windows[]) */
++#define DEFAULT_WINDOW_INDEX	2
 +
- static struct omap_hwmod omap3xxx_dss_dsi1_hwmod = {
- 	.name		= "dss_dsi1",
- 	.class		= &omap3xxx_dsi_hwmod_class,
-@@ -1733,6 +1750,8 @@ static struct omap_hwmod omap3xxx_dss_dsi1_hwmod = {
- 			.module_offs = OMAP3430_DSS_MOD,
- 		},
- 	},
-+	.opt_clks	= dsi1_opt_clks,
-+	.opt_clks_cnt	= ARRAY_SIZE(dsi1_opt_clks),
- 	.slaves		= omap3xxx_dss_dsi1_slaves,
- 	.slaves_cnt	= ARRAY_SIZE(omap3xxx_dss_dsi1_slaves),
- 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP3430ES1 |
-@@ -1791,6 +1810,10 @@ static struct omap_hwmod_ocp_if *omap3xxx_dss_rfbi_slaves[] = {
- 	&omap3xxx_l4_core__dss_rfbi,
- };
+ /********************************************************************/
  
-+static struct omap_hwmod_opt_clk rfbi_opt_clks[] = {
-+	{ .role = "rfbi_iclk", .clk = "dss_ick" },
-+};
-+
- static struct omap_hwmod omap3xxx_dss_rfbi_hwmod = {
- 	.name		= "dss_rfbi",
- 	.class		= &omap3xxx_rfbi_hwmod_class,
-@@ -1802,6 +1825,8 @@ static struct omap_hwmod omap3xxx_dss_rfbi_hwmod = {
- 			.module_offs = OMAP3430_DSS_MOD,
- 		},
- 	},
-+	.opt_clks	= rfbi_opt_clks,
-+	.opt_clks_cnt	= ARRAY_SIZE(rfbi_opt_clks),
- 	.slaves		= omap3xxx_dss_rfbi_slaves,
- 	.slaves_cnt	= ARRAY_SIZE(omap3xxx_dss_rfbi_slaves),
- 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP3430ES1 |
-@@ -1851,6 +1876,12 @@ static struct omap_hwmod_ocp_if *omap3xxx_dss_venc_slaves[] = {
- 	&omap3xxx_l4_core__dss_venc,
- };
++static struct fb_info *_au1200fb_infos[MAX_DEVICE_COUNT];
+ static struct au1200_lcd *lcd = (struct au1200_lcd *) AU1200_LCD_ADDR;
+-static int window_index = 2; /* default is zero */
++static int device_count = MAX_DEVICE_COUNT;
++static int window_index = DEFAULT_WINDOW_INDEX;	/* default is zero */
+ static int panel_index = 2; /* default is zero */
+ static struct window_settings *win;
+ static struct panel_settings *panel;
+@@ -683,7 +686,7 @@ static int fbinfo2index (struct fb_info *fb_info)
+ {
+ 	int i;
  
-+static struct omap_hwmod_opt_clk venc_opt_clks[] = {
-+	{ .role = "tv_clk", .clk = "dss_tv_fck" },
-+	/* required only on OMAP3430 */
-+	{ .role = "tv_dac_clk", .clk = "dss_96m_fck" },
-+};
+-	for (i = 0; i < CONFIG_FB_AU1200_DEVS; ++i) {
++	for (i = 0; i < device_count; ++i) {
+ 		if (fb_info = _au1200fb_infos[i])
+ 			return i;
+ 	}
+@@ -1599,7 +1602,7 @@ static int __devinit au1200fb_drv_probe(struct platform_device *dev)
+ 	/* Kickstart the panel */
+ 	au1200_setpanel(panel);
+ 
+-	for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane) {
++	for (plane = 0; plane < device_count; ++plane) {
+ 		bpp = winbpp(win->w[plane].mode_winctrl1);
+ 		if (win->w[plane].xres = 0)
+ 			win->w[plane].xres = panel->Xres;
+@@ -1699,7 +1702,7 @@ static int __devexit au1200fb_drv_remove(struct platform_device *dev)
+ 	/* Turn off the panel */
+ 	au1200_setpanel(NULL);
+ 
+-	for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane)	{
++	for (plane = 0; plane < device_count; ++plane)	{
+ 		fbi = _au1200fb_infos[plane];
+ 		fbdev = fbi->par;
+ 
+@@ -1741,7 +1744,7 @@ static int au1200fb_drv_resume(struct device *dev)
+ 	/* Kickstart the panel */
+ 	au1200_setpanel(panel);
+ 
+-	for (i = 0; i < CONFIG_FB_AU1200_DEVS; i++) {
++	for (i = 0; i < device_count; i++) {
+ 		fbi = _au1200fb_infos[i];
+ 		au1200fb_fb_set_par(fbi);
+ 	}
+@@ -1776,10 +1779,10 @@ static struct platform_driver au1200fb_driver = {
+ 
+ /* Kernel driver */
+ 
+-static void au1200fb_setup(void)
++static int au1200fb_setup(void)
+ {
+-	char* options = NULL;
+-	char* this_opt;
++	char *options = NULL;
++	char *this_opt, *endptr;
+ 	int num_panels = ARRAY_SIZE(known_lcd_panels);
+ 	int panel_idx = -1;
+ 
+@@ -1824,12 +1827,33 @@ static void au1200fb_setup(void)
+ 				nohwcursor = 1;
+ 			}
+ 
++			else if (strncmp(this_opt, "devices:", 8) = 0) {
++				this_opt += 8;
++				device_count = simple_strtol(this_opt,
++							     &endptr, 0);
++				if ((device_count < 0) ||
++				    (device_count > MAX_DEVICE_COUNT))
++					device_count = MAX_DEVICE_COUNT;
++			}
 +
- static struct omap_hwmod omap3xxx_dss_venc_hwmod = {
- 	.name		= "dss_venc",
- 	.class		= &omap3xxx_venc_hwmod_class,
-@@ -1862,6 +1893,8 @@ static struct omap_hwmod omap3xxx_dss_venc_hwmod = {
- 			.module_offs = OMAP3430_DSS_MOD,
- 		},
- 	},
-+	.opt_clks	= venc_opt_clks,
-+	.opt_clks_cnt	= ARRAY_SIZE(venc_opt_clks),
- 	.slaves		= omap3xxx_dss_venc_slaves,
- 	.slaves_cnt	= ARRAY_SIZE(omap3xxx_dss_venc_slaves),
- 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP3430ES1 |
++			else if (strncmp(this_opt, "wincfg:", 7) = 0) {
++				this_opt += 7;
++				window_index = simple_strtol(this_opt,
++							     &endptr, 0);
++				if ((window_index < 0) ||
++				    (window_index >= ARRAY_SIZE(windows)))
++					window_index = DEFAULT_WINDOW_INDEX;
++			}
++
++			else if (strncmp(this_opt, "off", 3) = 0)
++				return 1;
+ 			/* Unsupported option */
+ 			else {
+ 				print_warn("Unsupported option \"%s\"", this_opt);
+ 			}
+ 		}
+ 	}
++	return 0;
+ }
+ 
+ static int __init au1200fb_init(void)
+@@ -1837,7 +1861,8 @@ static int __init au1200fb_init(void)
+ 	print_info("" DRIVER_DESC "");
+ 
+ 	/* Setup driver with options */
+-	au1200fb_setup();
++	if (au1200fb_setup())
++		return -ENODEV;
+ 
+ 	/* Point to the panel selected */
+ 	panel = &known_lcd_panels[panel_index];
 -- 
-1.7.4.1
+1.7.5.3
 

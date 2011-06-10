@@ -1,122 +1,283 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 09 Jun 2011 13:56:47 +0000
-Subject: [PATCHv2 25/28] OMAP: DSS2: Remove ctx loss count from dss.c
-Message-Id: <1307627810-3768-26-git-send-email-tomi.valkeinen@ti.com>
+From: Manuel Lauss <manuel.lauss@googlemail.com>
+Date: Fri, 10 Jun 2011 15:23:02 +0000
+Subject: [PATCH 2/4] au1200fb: fixup PM
+Message-Id: <1307719384-23702-3-git-send-email-manuel.lauss@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-dss.c only saves 1 register (3 in OMAP3) so the extra overhead from
-need_ctx_restore & co. is probably bigger than the time spent saving and
-restoring those few registers every time.
+Remove last traces of the unused custom Alchemy PM code, implement
+suspend/resume callbacks.
 
-So remove the code from dss.c and restore context every time dss has
-been off.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Manuel Lauss <manuel.lauss@googlemail.com>
 ---
- drivers/video/omap2/dss/dss.c |   62 +----------------------------------------
- 1 files changed, 1 insertions(+), 61 deletions(-)
+ drivers/video/au1200fb.c |  154 ++++++++++++------------------------------=
+----
+ 1 files changed, 39 insertions(+), 115 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 4e36a07..21c8389 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -62,8 +62,6 @@ static struct {
- 	struct platform_device *pdev;
- 	void __iomem    *base;
- 
--	int		ctx_loss_cnt;
+diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
+index 442d005..480ecb1 100644
+--- a/drivers/video/au1200fb.c
++++ b/drivers/video/au1200fb.c
+@@ -46,10 +46,6 @@
+ #include <asm/mach-au1x00/au1000.h>
+ #include "au1200fb.h"
+=20
+-#ifdef CONFIG_PM
+-#include <asm/mach-au1x00/au1xxx_pm.h>
+-#endif
 -
- 	struct clk	*dpll4_m4_ck;
- 	struct clk	*dss_clk;
- 
-@@ -631,61 +629,6 @@ void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select hdmi)
- 	REG_FLD_MOD(DSS_CONTROL, hdmi, 15, 15);	/* VENC_HDMI_SWITCH */
- }
- 
--/* CONTEXT */
--static void dss_init_ctx_loss_count(void)
+ #ifndef CONFIG_FB_AU1200_DEVS
+ #define CONFIG_FB_AU1200_DEVS 4
+ #endif
+@@ -205,12 +201,6 @@ struct window_settings {
+ extern int board_au1200fb_panel_init (void);
+ extern int board_au1200fb_panel_shutdown (void);
+=20
+-#ifdef CONFIG_PM
+-int au1200fb_pm_callback(au1xxx_power_dev_t *dev,
+-		au1xxx_request_t request, void *data);
+-au1xxx_power_dev_t *LCD_pm_dev;
+-#endif
+-
+ /*
+  * Default window configurations
+  */
+@@ -652,25 +642,6 @@ static struct panel_settings known_lcd_panels[] =20
+ /********************************************************************/
+=20
+-#ifdef CONFIG_PM
+-static int set_brightness(unsigned int brightness)
 -{
--	struct device *dev = &dss.pdev->dev;
--	struct omap_display_platform_data *pdata = dev->platform_data;
--	struct omap_dss_board_info *board_data = pdata->board_data;
--	int cnt = 0;
+-	unsigned int hi1, divider;
 -
--	/*
--	 * get_context_loss_count returns negative on error. We'll ignore the
--	 * error and store the error to ctx_loss_cnt, which will cause
--	 * dss_need_ctx_restore() call to return true.
--	 */
--
--	if (board_data->get_context_loss_count)
--		cnt = board_data->get_context_loss_count(dev);
--
--	WARN_ON(cnt < 0);
--
--	dss.ctx_loss_cnt = cnt;
--
--	DSSDBG("initial ctx_loss_cnt %u\n", cnt);
--}
--
--static bool dss_need_ctx_restore(void)
--{
--	struct device *dev = &dss.pdev->dev;
--	struct omap_display_platform_data *pdata = dev->platform_data;
--	struct omap_dss_board_info *board_data = pdata->board_data;
--	int cnt;
--
--	/*
--	 * If get_context_loss_count is not available, assume that we need
--	 * context restore always.
--	 */
--	if (!board_data->get_context_loss_count)
--		return true;
--
--	cnt = board_data->get_context_loss_count(dev);
--	if (cnt < 0) {
--		dev_err(dev, "getting context loss count failed, will force "
--				"context restore\n");
--		dss.ctx_loss_cnt = cnt;
--		return true;
+-	/* limit brightness pwm duty to >=3D 30/1600 */
+-	if (brightness < 30) {
+-		brightness =3D 30;
 -	}
+-	divider =3D (lcd->pwmdiv & 0x3FFFF) + 1;
+-	hi1 =3D (lcd->pwmhi >> 16) + 1;
+-	hi1 =3D (((brightness & 0xFF) + 1) * divider >> 8);
+-	lcd->pwmhi &=3D 0xFFFF;
+-	lcd->pwmhi |=3D (hi1 << 16);
 -
--	if (cnt = dss.ctx_loss_cnt)
--		return false;
--
--	DSSDBG("ctx_loss_cnt %d -> %d\n", dss.ctx_loss_cnt, cnt);
--	dss.ctx_loss_cnt = cnt;
--
--	return true;
+-	return brightness;
 -}
+-#endif /* CONFIG_PM */
 -
- static int dss_get_clocks(void)
+ static int winbpp (unsigned int winctrl1)
  {
- 	struct clk *clk;
-@@ -797,8 +740,6 @@ static int omap_dsshw_probe(struct platform_device *pdev)
- 	if (r)
- 		goto err_clocks;
- 
--	dss_init_ctx_loss_count();
+ 	int bits =3D 0;
+@@ -1248,10 +1219,6 @@ static int au1200fb_fb_mmap(struct fb_info *info, st=
+ruct vm_area_struct *vma)
+ 	unsigned long start=3D0, off;
+ 	struct au1200fb_device *fbdev =3D info->par;
+=20
+-#ifdef CONFIG_PM
+-	au1xxx_pm_access(LCD_pm_dev);
+-#endif
 -
- 	pm_runtime_enable(&pdev->dev);
- 
- 	r = dss_runtime_get();
-@@ -875,8 +816,7 @@ static int dss_runtime_suspend(struct device *dev)
- static int dss_runtime_resume(struct device *dev)
+ 	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT)) {
+ 		return -EINVAL;
+ 	}
+@@ -1461,10 +1428,6 @@ static int au1200fb_ioctl(struct fb_info *info, unsi=
+gned int cmd,
+ 	int plane;
+ 	int val;
+=20
+-#ifdef CONFIG_PM
+-	au1xxx_pm_access(LCD_pm_dev);
+-#endif
+-
+ 	plane =3D fbinfo2index(info);
+ 	print_dbg("au1200fb: ioctl %d on plane %d\n", cmd, plane);
+=20
+@@ -1622,7 +1585,7 @@ static int au1200fb_init_fbinfo(struct au1200fb_devic=
+e *fbdev)
+=20
+ /* AU1200 LCD controller device driver */
+=20
+-static int au1200fb_drv_probe(struct platform_device *dev)
++static int __devinit au1200fb_drv_probe(struct platform_device *dev)
  {
- 	clk_enable(dss.dss_clk);
--	if (dss_need_ctx_restore())
--		dss_restore_context();
-+	dss_restore_context();
+ 	struct au1200fb_device *fbdev;
+ 	struct fb_info *fbi =3D NULL;
+@@ -1633,6 +1596,9 @@ static int au1200fb_drv_probe(struct platform_device =
+*dev)
+ 	ret =3D 0;
+ 	fbdev =3D NULL;
+=20
++	/* Kickstart the panel */
++	au1200_setpanel(panel);
++
+ 	for (plane =3D 0; plane < CONFIG_FB_AU1200_DEVS; ++plane) {
+ 		bpp =3D winbpp(win->w[plane].mode_winctrl1);
+ 		if (win->w[plane].xres =3D 0)
+@@ -1724,15 +1690,12 @@ failed:
+ 	return ret;
+ }
+=20
+-static int au1200fb_drv_remove(struct platform_device *dev)
++static int __devexit au1200fb_drv_remove(struct platform_device *dev)
+ {
+ 	struct au1200fb_device *fbdev;
+ 	struct fb_info *fbi;
+ 	int plane;
+=20
+-	if (!dev)
+-		return -ENODEV;
+-
+ 	/* Turn off the panel */
+ 	au1200_setpanel(NULL);
+=20
+@@ -1760,31 +1723,53 @@ static int au1200fb_drv_remove(struct platform_devi=
+ce *dev)
+ }
+=20
+ #ifdef CONFIG_PM
+-static int au1200fb_drv_suspend(struct platform_device *dev,
+-				pm_message_t state)
++static int au1200fb_drv_suspend(struct device *dev)
+ {
+-	/* TODO */
++	au1200_setpanel(NULL);
++
++	lcd->outmask =3D 0;
++	au_sync();
++
  	return 0;
  }
- 
--- 
-1.7.4.1
+=20
+-static int au1200fb_drv_resume(struct platform_device *dev)
++static int au1200fb_drv_resume(struct device *dev)
+ {
+-	/* TODO */
++	struct fb_info *fbi;
++	int i;
++
++	/* Kickstart the panel */
++	au1200_setpanel(panel);
++
++	for (i =3D 0; i < CONFIG_FB_AU1200_DEVS; i++) {
++		fbi =3D _au1200fb_infos[i];
++		au1200fb_fb_set_par(fbi);
++	}
++
+ 	return 0;
+ }
++
++static const struct dev_pm_ops au1200fb_pmops =3D {
++	.suspend	=3D au1200fb_drv_suspend,
++	.resume		=3D au1200fb_drv_resume,
++	.freeze		=3D au1200fb_drv_suspend,
++	.thaw		=3D au1200fb_drv_resume,
++};
++
++#define AU1200FB_PMOPS	(&au1200fb_pmops)
++
++#else
++#define AU1200FB_PMOPS	NULL
+ #endif /* CONFIG_PM */
+=20
+ static struct platform_driver au1200fb_driver =3D {
+ 	.driver =3D {
+-		.name		=3D "au1200-lcd",
+-		.owner          =3D THIS_MODULE,
++		.name	=3D "au1200-lcd",
++		.owner	=3D THIS_MODULE,
++		.pm	=3D AU1200FB_PMOPS,
+ 	},
+ 	.probe		=3D au1200fb_drv_probe,
+-	.remove		=3D au1200fb_drv_remove,
+-#ifdef CONFIG_PM
+-	.suspend	=3D au1200fb_drv_suspend,
+-	.resume		=3D au1200fb_drv_resume,
+-#endif
++	.remove		=3D __devexit_p(au1200fb_drv_remove),
+ };
+=20
+ /*------------------------------------------------------------------------=
+-*/
+@@ -1847,56 +1832,6 @@ static void au1200fb_setup(void)
+ 	}
+ }
+=20
+-#ifdef CONFIG_PM
+-static int au1200fb_pm_callback(au1xxx_power_dev_t *dev,
+-		au1xxx_request_t request, void *data) {
+-	int retval =3D -1;
+-	unsigned int d =3D 0;
+-	unsigned int brightness =3D 0;
+-
+-	if (request =3D AU1XXX_PM_SLEEP) {
+-		board_au1200fb_panel_shutdown();
+-	}
+-	else if (request =3D AU1XXX_PM_WAKEUP) {
+-		if(dev->prev_state =3D SLEEP_STATE)
+-		{
+-			int plane;
+-			au1200_setpanel(panel);
+-			for (plane =3D 0; plane < CONFIG_FB_AU1200_DEVS; ++plane) 	{
+-				struct au1200fb_device *fbdev;
+-				fbdev =3D &_au1200fb_devices[plane];
+-				au1200fb_fb_set_par(&fbdev->fb_info);
+-			}
+-		}
+-
+-		d =3D *((unsigned int*)data);
+-		if(d <=10) brightness =3D 26;
+-		else if(d< ) brightness =3D 51;
+-		else if(d<0) brightness =3D 77;
+-		else if(d<@) brightness =3D 102;
+-		else if(d<P) brightness =3D 128;
+-		else if(d<`) brightness =3D 153;
+-		else if(d<p) brightness =3D 179;
+-		else if(d<=80) brightness =3D 204;
+-		else if(d<=90) brightness =3D 230;
+-		else brightness =3D 255;
+-		set_brightness(brightness);
+-	} else if (request =3D AU1XXX_PM_GETSTATUS) {
+-		return dev->cur_state;
+-	} else if (request =3D AU1XXX_PM_ACCESS) {
+-		if (dev->cur_state !=3D SLEEP_STATE)
+-			return retval;
+-		else {
+-			au1200_setpanel(panel);
+-		}
+-	} else if (request =3D AU1XXX_PM_IDLE) {
+-	} else if (request =3D AU1XXX_PM_CLEANUP) {
+-	}
+-
+-	return retval;
+-}
+-#endif
+-
+ static int __init au1200fb_init(void)
+ {
+ 	print_info("" DRIVER_DESC "");
+@@ -1911,17 +1846,6 @@ static int __init au1200fb_init(void)
+ 	printk(DRIVER_NAME ": Panel %d %s\n", panel_index, panel->name);
+ 	printk(DRIVER_NAME ": Win %d %s\n", window_index, win->name);
+=20
+-	/* Kickstart the panel, the framebuffers/windows come soon enough */
+-	au1200_setpanel(panel);
+-
+-	#ifdef CONFIG_PM
+-	LCD_pm_dev =3D new_au1xxx_power_device("LCD", &au1200fb_pm_callback, NULL=
+);
+-	if ( LCD_pm_dev =3D NULL)
+-		printk(KERN_INFO "Unable to create a power management device entry for t=
+he au1200fb.\n");
+-	else
+-		printk(KERN_INFO "Power management device entry for the au1200fb loaded.=
+\n");
+-	#endif
+-
+ 	return platform_driver_register(&au1200fb_driver);
+ }
+=20
+--=20
+1.7.5.3
 

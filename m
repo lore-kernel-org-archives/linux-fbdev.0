@@ -1,42 +1,61 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Mon, 06 Jun 2011 03:01:47 +0000
-Subject: Re: [Patch 1/2] Fix use-after-free by vga16fb on rmmod
-Message-Id: <20110606030146.GC26101@linux-sh.org>
+From: Manuel Lauss <manuel.lauss@googlemail.com>
+Date: Sun, 12 Jun 2011 17:15:29 +0000
+Subject: [PATCH] au1200fb: fix hardcoded IRQ
+Message-Id: <1307898929-12365-1-git-send-email-manuel.lauss@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20110524215917.4b01df45@neptune.home>
-In-Reply-To: <20110524215917.4b01df45@neptune.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Bruno,
+Use the IRQ provided by platform resource information.
+Required for Au1300 support.
 
-On Thu, Jun 02, 2011 at 08:18:57PM +0200, Bruno Pr??mont wrote:
-> On Tue, 24 May 2011 Bruno Pr??mont <bonbons@linux-vserver.org> wrote:
-> > Since fb_info is now refcounted and thus may get freed at any time it
-> > gets unregistered module unloading will try to unregister framebuffer
-> > as stored in platform data on probe though this pointer may
-> > be stale.
-> > 
-> > Cleanup platform data on framebuffer release.
-> > 
-> > CC: stable@kernel.org
-> > Signed-off-by: Bruno Pr??mont <bonbons@linux-vserver.org>
-> > ---
-> > This should also go into 2.6.39 stable as it didn't make it into 2.6.39
-> > with the rest of fb_info refcounting work.
-> > 
-> > This comes from
-> >   [2.6.39-rc2, framebuffer] use after free oops
-> >      ...
-> >        [PATCH 0/2] fbcon sanity
-> > thread
-> 
-> Any chance of applying these two patches?
-> 
-> I've had no feedback from you on them and they don't show up in your tree.
-> 
-Patchwork has been a bit spotty lately with some patches showing up and
-others not, so I've invariably missed a few. I've applied the first one
-now, and will address the second one separately.
+Signed-off-by: Manuel Lauss <manuel.lauss@googlemail.com>
+---
+applies on top of the other 3 au1200fb patches sent earlier.
+
+ drivers/video/au1200fb.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
+index e018373..e6d3478 100644
+--- a/drivers/video/au1200fb.c
++++ b/drivers/video/au1200fb.c
+@@ -1631,7 +1631,7 @@ static int __devinit au1200fb_drv_probe(struct platform_device *dev)
+ 	struct au1200fb_device *fbdev;
+ 	struct fb_info *fbi = NULL;
+ 	unsigned long page;
+-	int bpp, plane, ret;
++	int bpp, plane, ret, irq;
+ 
+ 	/* shut gcc up */
+ 	ret = 0;
+@@ -1707,10 +1707,12 @@ static int __devinit au1200fb_drv_probe(struct platform_device *dev)
+ 	}
+ 
+ 	/* Now hook interrupt too */
+-	if ((ret = request_irq(AU1200_LCD_INT, au1200fb_handle_irq,
+-		 	  IRQF_DISABLED | IRQF_SHARED, "lcd", (void *)dev)) < 0) {
++	irq = platform_get_irq(dev, 0);
++	ret = request_irq(irq, au1200fb_handle_irq,
++			  IRQF_DISABLED | IRQF_SHARED, "lcd", (void *)dev);
++	if (ret) {
+ 		print_err("fail to request interrupt line %d (err: %d)",
+-			  AU1200_LCD_INT, ret);
++			  irq, ret);
+ 		goto failed;
+ 	}
+ 
+@@ -1758,7 +1760,7 @@ static int __devexit au1200fb_drv_remove(struct platform_device *dev)
+ 		_au1200fb_infos[plane] = NULL;
+ 	}
+ 
+-	free_irq(AU1200_LCD_INT, (void *)dev);
++	free_irq(platform_get_irq(dev, 0), (void *)dev);
+ 
+ 	return 0;
+ }
+-- 
+1.7.5.3
+

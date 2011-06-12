@@ -1,41 +1,28 @@
-From: "wanlong.gao" <wanlong.gao@gmail.com>
-Date: Sun, 12 Jun 2011 10:52:33 +0000
-Subject: re:[PATCH] efifb: Fix call to wrong unregister function
-Message-Id: <1307875953.1859.6.camel@Tux>
+From: Maarten Lankhorst <m.b.lankhorst@gmail.com>
+Date: Sun, 12 Jun 2011 17:48:10 +0000
+Subject: Re: [PATCH] efifb: Fix call to wrong unregister function
+Message-Id: <BANLkTimXALxHwNMSODXujT4pT-C+m3rcaQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307868301-1773-1-git-send-email-m.b.lankhorst@gmail.com>
-In-Reply-To: <1307868301-1773-1-git-send-email-m.b.lankhorst@gmail.com>
+References: <1307875953.1859.6.camel@Tux>
+In-Reply-To: <1307875953.1859.6.camel@Tux>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Maarten Lankhorst <m.b.lankhorst@gmail.com>Maarten Lankhorst <m.b.lankhorst@gmail.com>, Peter Jones <pjones@redhat.com>
+To: "wanlong.gao" <wanlong.gao@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Peter Jones <pjones@redhat.com>
 
-<snip>
+Hey,
 
-Hi Maarten:
-It registered efifb_device but try to unregistered efifb_driver,
-so I think you should fix it like this?
+2011/6/12 wanlong.gao <wanlong.gao@gmail.com>:
+> <snip>
+>
+> Hi Maarten:
+> It registered efifb_device but try to unregistered efifb_driver,
+> so I think you should fix it like this?
+Ah yes, that seems to be the correct one, platform_driver_register was
+removed. Not 100% sure if acked by or signed-off-by is appropriate
+here.
 
-Signed-off-by: Wanlong Gao <wanlong.gao@gmail.com>
----
- drivers/video/efifb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Signed-off-by: Maarten Lankhorst <m.b.lankhorst@gmail.com>
 
-diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
-index 69c49df..784139a 100644
---- a/drivers/video/efifb.c
-+++ b/drivers/video/efifb.c
-@@ -541,7 +541,7 @@ static int __init efifb_init(void)
- 	 */
- 	ret = platform_driver_probe(&efifb_driver, efifb_probe);
- 	if (ret) {
--		platform_device_unregister(&efifb_driver);
-+		platform_device_unregister(&efifb_device);
- 		return ret;
- 	}
- 
--- 
-1.7.4.1
-
-
+~Maarten

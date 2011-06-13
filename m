@@ -1,80 +1,55 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 14 Jun 2011 09:25:00 +0000
-Subject: [PATCH v2 22/29] sisfb: use display information in info not in var for panning
-Message-Id: <1308043507-11083-23-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 13 Jun 2011 09:12:51 +0000
+Subject: [PATCH 0/3] OMAPFB: Move auto-update to omapfb
+Message-Id: <1307956374-1107-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+OMAP DSS driver has currently support to change the display's update mode from
+manual to auto, but it's up to the display to implement support for this.
+Normally displays only support one update mode.
 
-Fix checkpatch.pl warnings in the surrounding code.
+As the the update mode support adds extra code to a place where it doesn't
+really belong, this patch set removes update mode support from omapdss, and
+implements a simple version of it in omapfb.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>
----
- drivers/video/sis/sis_main.c |   30 ++++++++++--------------------
- 1 files changed, 10 insertions(+), 20 deletions(-)
+This will:
+* Clean up omapdss
+* Keep the omapfb's ioctl interface intact with functional update-mode ioctls
+* Allow us to support auto-update for manual update displays for testing
+* Allow us to do the above with the code in single place, for all manual-update
+  displays, without any changes needed in display drivers
 
-diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
-index 7525984..078ca21 100644
---- a/drivers/video/sis/sis_main.c
-+++ b/drivers/video/sis/sis_main.c
-@@ -1333,19 +1333,14 @@ sisfb_set_base_CRT2(struct sis_video_info *ivideo, unsigned int base)
- }
- 
- static int
--sisfb_pan_var(struct sis_video_info *ivideo, struct fb_var_screeninfo *var)
-+sisfb_pan_var(struct sis_video_info *ivideo, struct fb_info *info,
-+	      struct fb_var_screeninfo *var)
- {
--	if(var->xoffset > (var->xres_virtual - var->xres)) {
--		return -EINVAL;
--	}
--	if(var->yoffset > (var->yres_virtual - var->yres)) {
--		return -EINVAL;
--	}
--
--	ivideo->current_base = (var->yoffset * var->xres_virtual) + var->xoffset;
-+	ivideo->current_base = var->yoffset * info->var.xres_virtual
-+			     + var->xoffset;
- 
- 	/* calculate base bpp dep. */
--	switch(var->bits_per_pixel) {
-+	switch (info->var.bits_per_pixel) {
- 	case 32:
- 		break;
- 	case 16:
-@@ -1635,20 +1630,15 @@ sisfb_pan_display(struct fb_var_screeninfo *var, struct fb_info* info)
- 	struct sis_video_info *ivideo = (struct sis_video_info *)info->par;
- 	int err;
- 
--	if(var->xoffset > (var->xres_virtual - var->xres))
--		return -EINVAL;
--
--	if(var->yoffset > (var->yres_virtual - var->yres))
--		return -EINVAL;
--
--	if(var->vmode & FB_VMODE_YWRAP)
-+	if (var->vmode & FB_VMODE_YWRAP)
- 		return -EINVAL;
- 
--	if(var->xoffset + info->var.xres > info->var.xres_virtual ||
--	   var->yoffset + info->var.yres > info->var.yres_virtual)
-+	if (var->xoffset + info->var.xres > info->var.xres_virtual ||
-+	    var->yoffset + info->var.yres > info->var.yres_virtual)
- 		return -EINVAL;
- 
--	if((err = sisfb_pan_var(ivideo, var)) < 0)
-+	err = sisfb_pan_var(ivideo, info, var);
-+	if (err < 0)
- 		return err;
- 
- 	info->var.xoffset = var->xoffset;
+Auto-update for manual-update displays should be considered a hack, used only
+for testing or temporarily running a userspace that doesn't properly support
+manual-update displays. It should not be used in production systems.
+
+The patches create a private workqueue for the update work to minimize impact
+on other parts of the system. As this auto-update feature is not normally used,
+the workqueue is only created when needed.
+
+ Tomi
+
+Tomi Valkeinen (3):
+  OMAP: DSS2: OMAPFB: Add struct to store per-display data
+  OMAP: DSS2: OMAPFB: Implement auto-update mode
+  OMAP: DSS2: remove update_mode from omapdss
+
+ drivers/video/omap2/displays/panel-taal.c |   17 ---
+ drivers/video/omap2/dss/display.c         |   45 --------
+ drivers/video/omap2/dss/manager.c         |   59 +++--------
+ drivers/video/omap2/dss/venc.c            |   17 ---
+ drivers/video/omap2/omapfb/omapfb-ioctl.c |   72 +++++++-------
+ drivers/video/omap2/omapfb/omapfb-main.c  |  159 +++++++++++++++++++++++------
+ drivers/video/omap2/omapfb/omapfb-sysfs.c |   34 ++++++
+ drivers/video/omap2/omapfb/omapfb.h       |   37 ++++++-
+ include/video/omapdss.h                   |   11 --
+ 9 files changed, 241 insertions(+), 210 deletions(-)
+
 -- 
-1.7.3.4
+1.7.4.1
 

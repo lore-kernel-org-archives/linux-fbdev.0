@@ -1,134 +1,60 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 09 Jun 2011 13:56:26 +0000
-Subject: [PATCHv2 04/28] OMAP: DSS2: Handle dpll4_m4_ck in dss_get/put_clocks
-Message-Id: <1307627810-3768-5-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 14 Jun 2011 09:24:59 +0000
+Subject: [PATCH v2 21/29] savagefb: use display information in info not in var for panning
+Message-Id: <1308043507-11083-22-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Get and put for dpll4_m4_ck was handled in dss_init/dss_exit. Move the
-code to dss_get/put_clocks(), which is a better place to handle it.
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it. Also use the
+aligned fix.line_length and not the (possible) unaligned xres_virtual.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Reviewed-by: Tormod Volden <debian.tormod@gmail.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
 ---
- drivers/video/omap2/dss/dss.c |   52 ++++++++++++++++++++--------------------
- 1 files changed, 26 insertions(+), 26 deletions(-)
+ drivers/video/savage/savagefb_driver.c |   16 +++++++---------
+ 1 files changed, 7 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index d0b3f81..bcd4a07 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -669,7 +669,6 @@ static int dss_init(void)
- 	int r;
- 	u32 rev;
- 	struct resource *dss_mem;
--	struct clk *dpll4_m4_ck;
+diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
+index 3b7f2f5..df9e061 100644
+--- a/drivers/video/savage/savagefb_driver.c
++++ b/drivers/video/savage/savagefb_driver.c
+@@ -1477,15 +1477,9 @@ static void savagefb_set_par_int(struct savagefb_par  *par, struct savage_reg *r
+ 	vgaHWProtect(par, 0);
+ }
  
- 	dss_mem = platform_get_resource(dss.pdev, IORESOURCE_MEM, 0);
- 	if (!dss_mem) {
-@@ -715,26 +714,6 @@ static int dss_init(void)
- 	REG_FLD_MOD(DSS_CONTROL, 1, 3, 3);	/* venc clock 4x enable */
- 	REG_FLD_MOD(DSS_CONTROL, 0, 2, 2);	/* venc clock mode = normal */
- #endif
--	if (cpu_is_omap34xx()) {
--		dpll4_m4_ck = clk_get(NULL, "dpll4_m4_ck");
--		if (IS_ERR(dpll4_m4_ck)) {
--			DSSERR("Failed to get dpll4_m4_ck\n");
--			r = PTR_ERR(dpll4_m4_ck);
--			goto fail1;
--		}
--	} else if (cpu_is_omap44xx()) {
--		dpll4_m4_ck = clk_get(NULL, "dpll_per_m5x2_ck");
--		if (IS_ERR(dpll4_m4_ck)) {
--			DSSERR("Failed to get dpll4_m4_ck\n");
--			r = PTR_ERR(dpll4_m4_ck);
--			goto fail1;
--		}
--	} else { /* omap24xx */
--		dpll4_m4_ck = NULL;
--	}
+-static void savagefb_update_start(struct savagefb_par      *par,
+-				  struct fb_var_screeninfo *var)
++static void savagefb_update_start(struct savagefb_par *par, int base)
+ {
+-	int base;
 -
--	dss.dpll4_m4_ck = dpll4_m4_ck;
+-	base = ((var->yoffset * var->xres_virtual + (var->xoffset & ~1))
+-		* ((var->bits_per_pixel+7) / 8)) >> 2;
 -
- 	dss.dsi_clk_source[0] = OMAP_DSS_CLK_SRC_FCK;
- 	dss.dsi_clk_source[1] = OMAP_DSS_CLK_SRC_FCK;
- 	dss.dispc_clk_source = OMAP_DSS_CLK_SRC_FCK;
-@@ -749,17 +728,12 @@ static int dss_init(void)
+-	/* now program the start address registers */
++	/* program the start address registers */
+ 	vga_out16(0x3d4, (base & 0x00ff00) | 0x0c, par);
+ 	vga_out16(0x3d4, ((base & 0x00ff) << 8) | 0x0d, par);
+ 	vga_out8(0x3d4, 0x69, par);
+@@ -1550,8 +1544,12 @@ static int savagefb_pan_display(struct fb_var_screeninfo *var,
+ 				struct fb_info           *info)
+ {
+ 	struct savagefb_par *par = info->par;
++	int base;
++
++	base = (var->yoffset * info->fix.line_length
++	     + (var->xoffset & ~1) * ((info->var.bits_per_pixel+7) / 8)) >> 2;
  
+-	savagefb_update_start(par, var);
++	savagefb_update_start(par, base);
  	return 0;
- 
--fail1:
--	iounmap(dss.base);
- fail0:
- 	return r;
  }
  
- static void dss_exit(void)
- {
--	if (dss.dpll4_m4_ck)
--		clk_put(dss.dpll4_m4_ck);
--
- 	iounmap(dss.base);
- }
- 
-@@ -845,6 +819,7 @@ static int dss_get_clock(struct clk **clock, const char *clk_name)
- static int dss_get_clocks(void)
- {
- 	int r;
-+	struct clk *dpll4_m4_ck;
- 	struct omap_display_platform_data *pdata = dss.pdev->dev.platform_data;
- 
- 	dss.dss_ick = NULL;
-@@ -884,6 +859,27 @@ static int dss_get_clocks(void)
- 			goto err;
- 	}
- 
-+	if (cpu_is_omap34xx()) {
-+		dpll4_m4_ck = clk_get(NULL, "dpll4_m4_ck");
-+		if (IS_ERR(dpll4_m4_ck)) {
-+			DSSERR("Failed to get dpll4_m4_ck\n");
-+			r = PTR_ERR(dpll4_m4_ck);
-+			goto err;
-+		}
-+	} else if (cpu_is_omap44xx()) {
-+		dpll4_m4_ck = clk_get(NULL, "dpll_per_m5x2_ck");
-+		if (IS_ERR(dpll4_m4_ck)) {
-+			DSSERR("Failed to get dpll_per_m5x2_ck\n");
-+			r = PTR_ERR(dpll4_m4_ck);
-+			goto err;
-+		}
-+	} else { /* omap24xx */
-+		dpll4_m4_ck = NULL;
-+	}
-+
-+	dss.dpll4_m4_ck = dpll4_m4_ck;
-+
-+
- 	return 0;
- 
- err:
-@@ -897,12 +893,16 @@ err:
- 		clk_put(dss.dss_tv_fck);
- 	if (dss.dss_video_fck)
- 		clk_put(dss.dss_video_fck);
-+	if (dss.dpll4_m4_ck)
-+		clk_put(dss.dpll4_m4_ck);
- 
- 	return r;
- }
- 
- static void dss_put_clocks(void)
- {
-+	if (dss.dpll4_m4_ck)
-+		clk_put(dss.dpll4_m4_ck);
- 	if (dss.dss_video_fck)
- 		clk_put(dss.dss_video_fck);
- 	if (dss.dss_tv_fck)
 -- 
-1.7.4.1
+1.7.3.4
 

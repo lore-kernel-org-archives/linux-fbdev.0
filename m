@@ -1,96 +1,106 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 09 Jun 2011 13:56:39 +0000
-Subject: [PATCHv2 17/28] OMAP2420: HWMOD: Add DSS opt clocks
-Message-Id: <1307627810-3768-18-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 14 Jun 2011 09:24:38 +0000
+Subject: [PATCH v2 00/29] Use display information in info not in var for panning
+Message-Id: <1308043507-11083-1-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Add DSS optional clocks to HWMOD data for OMAP2420.
+Hi everybody,
 
-Cc: Benoit Cousson <b-cousson@ti.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- arch/arm/mach-omap2/omap_hwmod_2420_data.c |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
+Here's the second version of the FBIOPAN_DISPLAY fixes patch series.
 
-diff --git a/arch/arm/mach-omap2/omap_hwmod_2420_data.c b/arch/arm/mach-omap2/omap_hwmod_2420_data.c
-index c4d0ae8..d87019d 100644
---- a/arch/arm/mach-omap2/omap_hwmod_2420_data.c
-+++ b/arch/arm/mach-omap2/omap_hwmod_2420_data.c
-@@ -1208,6 +1208,7 @@ static struct omap_hwmod_ocp_if *omap2420_dss_slaves[] = {
- };
- 
- static struct omap_hwmod_opt_clk dss_opt_clks[] = {
-+	{ .role = "dss_clk", .clk = "dss1_fck" },
- 	{ .role = "tv_clk", .clk = "dss_54m_fck" },
- 	{ .role = "sys_clk", .clk = "dss2_fck" },
- };
-@@ -1291,6 +1292,10 @@ static struct omap_hwmod_ocp_if *omap2420_dss_dispc_slaves[] = {
- 	&omap2420_l4_core__dss_dispc,
- };
- 
-+static struct omap_hwmod_opt_clk dispc_opt_clks[] = {
-+	{ .role = "dss_clk", .clk = "dss1_fck" },
-+};
-+
- static struct omap_hwmod omap2420_dss_dispc_hwmod = {
- 	.name		= "dss_dispc",
- 	.class		= &omap2420_dispc_hwmod_class,
-@@ -1306,6 +1311,8 @@ static struct omap_hwmod omap2420_dss_dispc_hwmod = {
- 			.idlest_stdby_bit = OMAP24XX_ST_DSS_SHIFT,
- 		},
- 	},
-+	.opt_clks	= dispc_opt_clks,
-+	.opt_clks_cnt	= ARRAY_SIZE(dispc_opt_clks),
- 	.slaves		= omap2420_dss_dispc_slaves,
- 	.slaves_cnt	= ARRAY_SIZE(omap2420_dss_dispc_slaves),
- 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2420),
-@@ -1361,6 +1368,10 @@ static struct omap_hwmod_ocp_if *omap2420_dss_rfbi_slaves[] = {
- 	&omap2420_l4_core__dss_rfbi,
- };
- 
-+static struct omap_hwmod_opt_clk rfbi_opt_clks[] = {
-+	{ .role = "rfbi_iclk", .clk = "dss_ick" },
-+};
-+
- static struct omap_hwmod omap2420_dss_rfbi_hwmod = {
- 	.name		= "dss_rfbi",
- 	.class		= &omap2420_rfbi_hwmod_class,
-@@ -1372,6 +1383,8 @@ static struct omap_hwmod omap2420_dss_rfbi_hwmod = {
- 			.module_offs = CORE_MOD,
- 		},
- 	},
-+	.opt_clks	= rfbi_opt_clks,
-+	.opt_clks_cnt	= ARRAY_SIZE(rfbi_opt_clks),
- 	.slaves		= omap2420_dss_rfbi_slaves,
- 	.slaves_cnt	= ARRAY_SIZE(omap2420_dss_rfbi_slaves),
- 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2420),
-@@ -1418,6 +1431,10 @@ static struct omap_hwmod_ocp_if *omap2420_dss_venc_slaves[] = {
- 	&omap2420_l4_core__dss_venc,
- };
- 
-+static struct omap_hwmod_opt_clk venc_opt_clks[] = {
-+	{ .role = "tv_clk", .clk = "dss_54m_fck" },
-+};
-+
- static struct omap_hwmod omap2420_dss_venc_hwmod = {
- 	.name		= "dss_venc",
- 	.class		= &omap2420_venc_hwmod_class,
-@@ -1429,6 +1446,8 @@ static struct omap_hwmod omap2420_dss_venc_hwmod = {
- 			.module_offs = CORE_MOD,
- 		},
- 	},
-+	.opt_clks	= venc_opt_clks,
-+	.opt_clks_cnt	= ARRAY_SIZE(venc_opt_clks),
- 	.slaves		= omap2420_dss_venc_slaves,
- 	.slaves_cnt	= ARRAY_SIZE(omap2420_dss_venc_slaves),
- 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2420),
+As a reminder, while playing with the FBIOPAN_DISPLAY ioctl I noticed that many
+drivers use information from the ioctl argument such as the display resolution
+when they should use the current settings from the fb_info structure.
+
+These 29 patches fix most of those drivers. Missing drivers are ivtv (for
+which a patch has Andy Walls has already pushed a patch), sh_mobile_lcdcfb (for
+which the fix is a bit more complex, I will work on it later) and viafb (for
+which Florian Tobias Schandinat has already sent a patch).
+
+The patches have been compile-tested on architectures for which I have a
+working compiler (x86 and ARM) with allyesconfig. I don't own any hardware
+supported by these drivers so I haven't been able to perform additional tests.
+
+I've split the fixes in one patch per driver for easier review and handling of
+potential problems. The patches can be squashed together if needed. I've tried
+to CC individual driver maintainers when possible, and Acked-by lines received
+in reply to the first version have been included.
+
+Compared to v1, I've fixed a couple of subject lines that mentioned the wrong
+driver name, and replaced var->bits_per_pixel in the mx3fb driver.
+
+Not all patches have been tested on real hardware and acked. Geert Uytterhoeven
+acked the overall idea, and I believe the patches are now ready to be applied.
+
+Laurent Pinchart (29):
+  68328fb: use display information in info not in var for panning
+  acornfb: Dont BUG() on invalid pan parameters
+  acornfb: use display information in info not in var for panning
+  arkfb: use display information in info not in var for panning
+  atmel_lcdfb: use display information in info not in var for panning
+  radeonfb: use display information in info not in var for panning
+  fbdev: da8xx: use display information in info not in var for panning
+  fbdev: unicore32: use display information in info not in var for
+    panning
+  g364fb: use display information in info not in var for panning
+  gxt4500: use display information in info not in var for panning
+  hgafb: use display information in info not in var for panning
+  imsttfb: use display information in info not in var for panning
+  intelfb: use display information in info not in var for panning
+  mb862xxfb: use display information in info not in var for panning
+  mx3fb: use display information in info not in var for panning
+  neofb: use display information in info not in var for panning
+  pm2fb: use display information in info not in var for panning
+  pm3fb: use display information in info not in var for panning
+  s3c-fb: use display information in info not in var for panning
+  s3fb: use display information in info not in var for panning
+  savagefb: use display information in info not in var for panning
+  sisfb: use display information in info not in var for panning
+  sm501fb: use display information in info not in var for panning
+  tridentfb: use display information in info not in var for panning
+  vfb: use display information in info not in var for panning
+  vga16fb: use display information in info not in var for panning
+  vt8500lcdfb: use display information in info not in var for panning
+  vt8623fb: use display information in info not in var for panning
+  staging: xgifb: use display information in info not in var for
+    panning
+
+ drivers/staging/xgifb/XGI_main_26.c    |   22 ++++++----------------
+ drivers/video/68328fb.c                |    4 ++--
+ drivers/video/acornfb.c                |    5 +++--
+ drivers/video/arkfb.c                  |    9 +++++----
+ drivers/video/atmel_lcdfb.c            |   15 +++++++++------
+ drivers/video/aty/radeon_base.c        |   10 +++++-----
+ drivers/video/da8xx-fb.c               |    4 ++--
+ drivers/video/fb-puv3.c                |    4 ++--
+ drivers/video/g364fb.c                 |    5 +++--
+ drivers/video/gxt4500.c                |    4 ++--
+ drivers/video/hgafb.c                  |    4 ++--
+ drivers/video/imsttfb.c                |    2 +-
+ drivers/video/intelfb/intelfbhw.c      |    6 +++---
+ drivers/video/mb862xx/mb862xxfbdrv.c   |    2 +-
+ drivers/video/mx3fb.c                  |    6 +++---
+ drivers/video/neofb.c                  |    4 ++--
+ drivers/video/pm2fb.c                  |    4 ++--
+ drivers/video/pm3fb.c                  |    4 ++--
+ drivers/video/s3c-fb.c                 |    2 +-
+ drivers/video/s3fb.c                   |    7 ++++---
+ drivers/video/savage/savagefb_driver.c |   16 +++++++---------
+ drivers/video/sis/sis_main.c           |   30 ++++++++++--------------------
+ drivers/video/sm501fb.c                |    6 +++---
+ drivers/video/tridentfb.c              |    4 ++--
+ drivers/video/vfb.c                    |    4 ++--
+ drivers/video/vga16fb.c                |    2 +-
+ drivers/video/vt8500lcdfb.c            |    4 ++--
+ drivers/video/vt8623fb.c               |    9 +++++----
+ 28 files changed, 92 insertions(+), 106 deletions(-)
+
 -- 
-1.7.4.1
+Regards,
+
+Laurent Pinchart
 

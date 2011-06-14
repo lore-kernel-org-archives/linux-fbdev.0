@@ -1,7 +1,7 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 14 Jun 2011 09:25:06 +0000
-Subject: [PATCH v2 28/29] vt8623fb: use display information in info not in var for panning
-Message-Id: <1308043507-11083-29-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Tue, 14 Jun 2011 09:24:45 +0000
+Subject: [PATCH v2 07/29] fbdev: da8xx: use display information in info not in var for panning
+Message-Id: <1308043507-11083-8-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,35 +12,27 @@ We must not use any information in the passed var besides xoffset,
 yoffset and vmode as otherwise applications might abuse it.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Ondrej Zajicek <santiago@crfreenet.org>
-Cc: David S. Miller <davem@davemloft.net>
+Cc: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+Cc: Martin Ambrose <martin@ti.com>
 ---
- drivers/video/vt8623fb.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/video/da8xx-fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/vt8623fb.c b/drivers/video/vt8623fb.c
-index f9b3e3d..4e74d26 100644
---- a/drivers/video/vt8623fb.c
-+++ b/drivers/video/vt8623fb.c
-@@ -620,13 +620,14 @@ static int vt8623fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *i
- 	unsigned int offset;
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index fcdac87..8d4e4eb 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -877,8 +877,8 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
  
- 	/* Calculate the offset */
--	if (var->bits_per_pixel = 0) {
--		offset = (var->yoffset / 16) * var->xres_virtual + var->xoffset;
-+	if (info->var.bits_per_pixel = 0) {
-+		offset = (var->yoffset / 16) * info->var.xres_virtual
-+		       + var->xoffset;
- 		offset = offset >> 3;
- 	} else {
- 		offset = (var->yoffset * info->fix.line_length) +
--			 (var->xoffset * var->bits_per_pixel / 8);
--		offset = offset >> ((var->bits_per_pixel = 4) ? 2 : 1);
-+			 (var->xoffset * info->var.bits_per_pixel / 8);
-+		offset = offset >> ((info->var.bits_per_pixel = 4) ? 2 : 1);
- 	}
- 
- 	/* Set the offset */
+ 			start	= fix->smem_start +
+ 				new_var.yoffset * fix->line_length +
+-				new_var.xoffset * var->bits_per_pixel / 8;
+-			end	= start + var->yres * fix->line_length - 1;
++				new_var.xoffset * fbi->var.bits_per_pixel / 8;
++			end	= start + fbi->var.yres * fix->line_length - 1;
+ 			par->dma_start	= start;
+ 			par->dma_end	= end;
+ 		}
 -- 
 1.7.3.4
 

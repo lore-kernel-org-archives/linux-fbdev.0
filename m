@@ -1,90 +1,37 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 09 Jun 2011 13:56:33 +0000
-Subject: [PATCHv2 11/28] OMAP: DSS2: Add FEAT_VENC_REQUIRES_TV_DAC_CLK
-Message-Id: <1307627810-3768-12-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 14 Jun 2011 09:24:55 +0000
+Subject: [PATCH v2 17/29] pm2fb: use display information in info not in var for panning
+Message-Id: <1308043507-11083-18-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-OMAP3430 requires an 96MHz clock to VENC's DAC, but no other OMAP needs
-it.
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
 
-Add a new feature, FEAT_VENC_REQUIRES_TV_DAC_CLK, which tells if the
-clock is needed on this platform, and use that feature in venc.c to
-decide if the clock needs enabling.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
- drivers/video/omap2/dss/dss_features.c |    3 ++-
- drivers/video/omap2/dss/dss_features.h |    1 +
- drivers/video/omap2/dss/venc.c         |   16 ++++++++++------
- 3 files changed, 13 insertions(+), 7 deletions(-)
+ drivers/video/pm2fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index 1c18888..a588380 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -286,7 +286,8 @@ static const struct omap_dss_features omap3430_dss_features = {
- 		FEAT_LCDENABLESIGNAL | FEAT_PCKFREEENABLE |
- 		FEAT_FUNCGATED | FEAT_ROWREPEATENABLE |
- 		FEAT_LINEBUFFERSPLIT | FEAT_RESIZECONF |
--		FEAT_DSI_PLL_FREQSEL | FEAT_DSI_REVERSE_TXCLKESC,
-+		FEAT_DSI_PLL_FREQSEL | FEAT_DSI_REVERSE_TXCLKESC |
-+		FEAT_VENC_REQUIRES_TV_DAC_CLK,
- 
- 	.num_mgrs = 2,
- 	.num_ovls = 3,
-diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
-index 07b346f..3058e24 100644
---- a/drivers/video/omap2/dss/dss_features.h
-+++ b/drivers/video/omap2/dss/dss_features.h
-@@ -51,6 +51,7 @@ enum dss_feat_id {
- 	FEAT_HDMI_CTS_SWMODE		= 1 << 19,
- 	FEAT_HANDLE_UV_SEPARATE         = 1 << 20,
- 	FEAT_ATTR2                      = 1 << 21,
-+	FEAT_VENC_REQUIRES_TV_DAC_CLK	= 1 << 22,
- };
- 
- /* DSS register field id */
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 980f919..15b4431 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -38,6 +38,7 @@
- #include <plat/cpu.h>
- 
- #include "dss.h"
-+#include "dss_features.h"
- 
- /* Venc registers */
- #define VENC_REV_ID				0x00
-@@ -382,12 +383,15 @@ static void venc_reset(void)
- 
- static void venc_enable_clocks(int enable)
+diff --git a/drivers/video/pm2fb.c b/drivers/video/pm2fb.c
+index 27f93aa..f4f8ce8 100644
+--- a/drivers/video/pm2fb.c
++++ b/drivers/video/pm2fb.c
+@@ -973,8 +973,8 @@ static int pm2fb_pan_display(struct fb_var_screeninfo *var,
  {
--	if (enable)
--		dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK | DSS_CLK_TVFCK |
--				DSS_CLK_VIDFCK);
--	else
--		dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK | DSS_CLK_TVFCK |
--				DSS_CLK_VIDFCK);
-+	if (enable) {
-+		dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK | DSS_CLK_TVFCK);
-+		if (dss_has_feature(FEAT_VENC_REQUIRES_TV_DAC_CLK))
-+			dss_clk_enable(DSS_CLK_VIDFCK);
-+	} else {
-+		dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK | DSS_CLK_TVFCK);
-+		if (dss_has_feature(FEAT_VENC_REQUIRES_TV_DAC_CLK))
-+			dss_clk_disable(DSS_CLK_VIDFCK);
-+	}
- }
+ 	struct pm2fb_par *p = info->par;
+ 	u32 base;
+-	u32 depth = (var->bits_per_pixel + 7) & ~7;
+-	u32 xres = (var->xres + 31) & ~31;
++	u32 depth = (info->var.bits_per_pixel + 7) & ~7;
++	u32 xres = (info->var.xres + 31) & ~31;
  
- static const struct venc_config *venc_timings_to_config(
+ 	depth = (depth > 32) ? 32 : depth;
+ 	base = to3264(var->yoffset * xres + var->xoffset, depth, 1);
 -- 
-1.7.4.1
+1.7.3.4
 

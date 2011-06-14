@@ -1,84 +1,35 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 03 Jun 2011 10:00:23 +0000
-Subject: [PATCH 13/27] OMAP: DSS2: Remove core_dump_clocks
-Message-Id: <1307095237-14805-14-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 14 Jun 2011 09:24:40 +0000
+Subject: [PATCH v2 02/29] acornfb: Dont BUG() on invalid pan parameters
+Message-Id: <1308043507-11083-3-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Currently dss.c does all the low level clock handling in the DSS, and
-thus it contains pointers to all the clocks. This allows dss.c to dump
-the clock information for all the clocks.
+The driver currently BUG()s if the pan parameters passed directly from
+userspace are invalid. Return -EINVAL instead.
 
-With pm_runtime this is no longer the case, as each submodule will
-handle its clocks independently. Thus remove the core_dump_clocks
-function as it cannot be used with pm_runtime.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/omap2/dss/dss.c |   40 ----------------------------------------
- 1 files changed, 0 insertions(+), 40 deletions(-)
+ drivers/video/acornfb.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index b63e290..951c849 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -989,50 +989,10 @@ static void dss_clk_disable_all_no_ctx(void)
- 	dss_clk_disable_no_ctx(clks);
- }
+diff --git a/drivers/video/acornfb.c b/drivers/video/acornfb.c
+index 6183a57..3bacc12 100644
+--- a/drivers/video/acornfb.c
++++ b/drivers/video/acornfb.c
+@@ -852,7 +852,8 @@ acornfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
+ 	if (!(var->vmode & FB_VMODE_YWRAP))
+ 		y_bottom += var->yres;
  
--#if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
--/* CLOCKS */
--static void core_dump_clocks(struct seq_file *s)
--{
--	int i;
--	struct clk *clocks[5] = {
--		dss.dss_ick,
--		dss.dss_fck,
--		dss.dss_sys_clk,
--		dss.dss_tv_fck,
--		dss.dss_video_fck
--	};
--
--	const char *names[5] = {
--		"ick",
--		"fck",
--		"sys_clk",
--		"tv_fck",
--		"video_fck"
--	};
--
--	seq_printf(s, "- CORE -\n");
--
--	seq_printf(s, "internal clk count\t\t%u\n", dss.num_clks_enabled);
--
--	for (i = 0; i < 5; i++) {
--		if (!clocks[i])
--			continue;
--		seq_printf(s, "%s (%s)%*s\t%lu\t%d\n",
--				names[i],
--				clocks[i]->name,
--				24 - strlen(names[i]) - strlen(clocks[i]->name),
--				"",
--				clk_get_rate(clocks[i]),
--				clocks[i]->usecount);
--	}
--}
--#endif /* defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT) */
--
- /* DEBUGFS */
- #if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
- void dss_debug_dump_clocks(struct seq_file *s)
- {
--	core_dump_clocks(s);
- 	dss_dump_clocks(s);
- 	dispc_dump_clocks(s);
- #ifdef CONFIG_OMAP2_DSS_DSI
+-	BUG_ON(y_bottom > var->yres_virtual);
++	if (y_bottom > var->yres_virtual)
++		return -EINVAL;
+ 
+ 	acornfb_update_dma(info, var);
+ 
 -- 
-1.7.4.1
+1.7.3.4
 

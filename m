@@ -1,21 +1,46 @@
-From: Erlon Cruz <sombrafam@gmail.com>
-Date: Wed, 01 Jun 2011 20:27:20 +0000
-Subject: Framebuffer Documentation
-Message-Id: <BANLkTimwj+oDg+teMoQWXNSOZW7W_osc+g@mail.gmail.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 14 Jun 2011 09:24:53 +0000
+Subject: [PATCH v2 15/29] mx3fb: use display information in info not in var for panning
+Message-Id: <1308043507-11083-16-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi all,
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it. Also use the
+aligned fix.line_length and not the (possible) unaligned xres_virtual.
 
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Tested-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+---
+ drivers/video/mx3fb.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Im starting a project to develop a frame-buffer but I know anything
-about framebuffers. :) ... well do you guys have any suggestion about
-documentation or books (even though very hight level) about
-frame-buffers that could help me understand what goes around FBs
-drivers and devices??
+diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+index 7e3a490..bd76858 100644
+--- a/drivers/video/mx3fb.c
++++ b/drivers/video/mx3fb.c
+@@ -1062,15 +1062,15 @@ static int mx3fb_pan_display(struct fb_var_screeninfo *var,
+ 	y_bottom = var->yoffset;
+ 
+ 	if (!(var->vmode & FB_VMODE_YWRAP))
+-		y_bottom += var->yres;
++		y_bottom += fbi->var.yres;
+ 
+ 	if (y_bottom > fbi->var.yres_virtual)
+ 		return -EINVAL;
+ 
+ 	mutex_lock(&mx3_fbi->mutex);
+ 
+-	offset = (var->yoffset * var->xres_virtual + var->xoffset) *
+-		(var->bits_per_pixel / 8);
++	offset = var->yoffset * fbi->fix.line_length
++	       + var->xoffset * (fbi->var.bits_per_pixel / 8);
+ 	base = fbi->fix.smem_start + offset;
+ 
+ 	dev_dbg(fbi->device, "Updating SDC BG buf %d address=0x%08lX\n",
+-- 
+1.7.3.4
 
-Regards,
-Erlon

@@ -1,26 +1,37 @@
-From: Peter Jones <pjones@redhat.com>
-Date: Thu, 02 Jun 2011 17:04:37 +0000
-Subject: Re: [PATCH 0/4] efifb speedup and fixes
-Message-Id: <4DE7C2A5.1090101@redhat.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 14 Jun 2011 09:24:46 +0000
+Subject: [PATCH v2 08/29] fbdev: unicore32: use display information in info not in var for panning
+Message-Id: <1308043507-11083-9-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1306418703.git.luto@mit.edu>
-In-Reply-To: <cover.1306418703.git.luto@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
->> Andy Lutomirski (4):
->>   efifb: Enable write-combining
->>   efifb: Fix mismatched request/release_mem_region
->>   efifb: Fix an integer-to-pointer size warning
->>   efifb: Disallow manual bind and unbind
->>
-> I've applied patches 1, 2, and 4 along with Peter's sign off. I've not
-> added a stable cc since neither were specifically regressions, so I'll
-> just let Greg naturally decide whether to take them or not.
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
 
-Thanks, Paul.
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Guan Xuetao <gxt@mprc.pku.edu.cn>
+---
+ drivers/video/fb-puv3.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/video/fb-puv3.c b/drivers/video/fb-puv3.c
+index 27f2c57..60a787f 100644
+--- a/drivers/video/fb-puv3.c
++++ b/drivers/video/fb-puv3.c
+@@ -624,8 +624,8 @@ static int unifb_pan_display(struct fb_var_screeninfo *var,
+ 		    || var->xoffset)
+ 			return -EINVAL;
+ 	} else {
+-		if (var->xoffset + var->xres > info->var.xres_virtual ||
+-		    var->yoffset + var->yres > info->var.yres_virtual)
++		if (var->xoffset + info->var.xres > info->var.xres_virtual ||
++		    var->yoffset + info->var.yres > info->var.yres_virtual)
+ 			return -EINVAL;
+ 	}
+ 	info->var.xoffset = var->xoffset;
 -- 
-        Peter
+1.7.3.4
+

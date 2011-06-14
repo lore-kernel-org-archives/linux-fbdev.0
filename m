@@ -1,7 +1,7 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 14 Jun 2011 09:24:48 +0000
-Subject: [PATCH v2 10/29] gxt4500: use display information in info not in var for panning
-Message-Id: <1308043507-11083-11-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Tue, 14 Jun 2011 09:25:03 +0000
+Subject: [PATCH v2 25/29] vfb: use display information in info not in var for panning
+Message-Id: <1308043507-11083-26-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,26 +12,25 @@ We must not use any information in the passed var besides xoffset,
 yoffset and vmode as otherwise applications might abuse it.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Paul Mackerras <paulus@samba.org>
 ---
- drivers/video/gxt4500.c |    4 ++--
+ drivers/video/vfb.c |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/gxt4500.c b/drivers/video/gxt4500.c
-index 896e53d..0fad23f 100644
---- a/drivers/video/gxt4500.c
-+++ b/drivers/video/gxt4500.c
-@@ -543,8 +543,8 @@ static int gxt4500_pan_display(struct fb_var_screeninfo *var,
- 
- 	if (var->xoffset & 7)
- 		return -EINVAL;
--	if (var->xoffset + var->xres > var->xres_virtual ||
--	    var->yoffset + var->yres > var->yres_virtual)
-+	if (var->xoffset + info->var.xres > info->var.xres_virtual ||
-+	    var->yoffset + info->var.yres > info->var.yres_virtual)
- 		return -EINVAL;
- 
- 	writereg(par, REFRESH_START, (var->xoffset << 16) | var->yoffset);
+diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
+index bc67251..bf2f780 100644
+--- a/drivers/video/vfb.c
++++ b/drivers/video/vfb.c
+@@ -395,8 +395,8 @@ static int vfb_pan_display(struct fb_var_screeninfo *var,
+ 		    || var->xoffset)
+ 			return -EINVAL;
+ 	} else {
+-		if (var->xoffset + var->xres > info->var.xres_virtual ||
+-		    var->yoffset + var->yres > info->var.yres_virtual)
++		if (var->xoffset + info->var.xres > info->var.xres_virtual ||
++		    var->yoffset + info->var.yres > info->var.yres_virtual)
+ 			return -EINVAL;
+ 	}
+ 	info->var.xoffset = var->xoffset;
 -- 
 1.7.3.4
 

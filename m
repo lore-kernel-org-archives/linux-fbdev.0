@@ -1,71 +1,36 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 09 Jun 2011 13:56:32 +0000
-Subject: [PATCHv2 10/28] OMAP: DSS2: DPI: remove unneeded SYSCK enable/disable
-Message-Id: <1307627810-3768-11-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 14 Jun 2011 09:24:39 +0000
+Subject: [PATCH v2 01/29] 68328fb: use display information in info not in var for panning
+Message-Id: <1308043507-11083-2-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-DSI PLL requires sys_clk to function, and DPI enables sys_clk when it
-wants to use DSI PLL. However, DSI PLL code already handles enabling
-sys_clk, so DPI's sys_clk code is extra.
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
 
-Remove the unneeded sys_clk handling from dpi.c.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/omap2/dss/dpi.c |   11 +++--------
- 1 files changed, 3 insertions(+), 8 deletions(-)
+ drivers/video/68328fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index ff6bd30..bab55cd 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -202,15 +202,14 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
- 		goto err2;
- 
- 	if (dpi_use_dsi_pll(dssdev)) {
--		dss_clk_enable(DSS_CLK_SYSCK);
- 		r = dsi_pll_init(dpi.dsidev, 0, 1);
- 		if (r)
--			goto err3;
-+			goto err2;
+diff --git a/drivers/video/68328fb.c b/drivers/video/68328fb.c
+index 75a39ea..a425d65 100644
+--- a/drivers/video/68328fb.c
++++ b/drivers/video/68328fb.c
+@@ -378,8 +378,8 @@ static int mc68x328fb_pan_display(struct fb_var_screeninfo *var,
+ 		    || var->xoffset)
+ 			return -EINVAL;
+ 	} else {
+-		if (var->xoffset + var->xres > info->var.xres_virtual ||
+-		    var->yoffset + var->yres > info->var.yres_virtual)
++		if (var->xoffset + info->var.xres > info->var.xres_virtual ||
++		    var->yoffset + info->var.yres > info->var.yres_virtual)
+ 			return -EINVAL;
  	}
- 
- 	r = dpi_set_mode(dssdev);
- 	if (r)
--		goto err4;
-+		goto err3;
- 
- 	mdelay(2);
- 
-@@ -218,12 +217,9 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
- 
- 	return 0;
- 
--err4:
--	if (dpi_use_dsi_pll(dssdev))
--		dsi_pll_uninit(dpi.dsidev, true);
- err3:
- 	if (dpi_use_dsi_pll(dssdev))
--		dss_clk_disable(DSS_CLK_SYSCK);
-+		dsi_pll_uninit(dpi.dsidev, true);
- err2:
- 	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK);
- 	if (cpu_is_omap34xx())
-@@ -242,7 +238,6 @@ void omapdss_dpi_display_disable(struct omap_dss_device *dssdev)
- 	if (dpi_use_dsi_pll(dssdev)) {
- 		dss_select_dispc_clk_source(OMAP_DSS_CLK_SRC_FCK);
- 		dsi_pll_uninit(dpi.dsidev, true);
--		dss_clk_disable(DSS_CLK_SYSCK);
- 	}
- 
- 	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK);
+ 	info->var.xoffset = var->xoffset;
 -- 
-1.7.4.1
+1.7.3.4
 

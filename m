@@ -1,105 +1,48 @@
-From: Mythri P K <mythripk@ti.com>
-Date: Wed, 22 Jun 2011 11:55:11 +0000
-Subject: [PATCH 3/8] OMAP4: DSS: HDMI: Use specific HDMI timings structure
-Message-Id: <1308742996-19230-4-git-send-email-mythripk@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 14 Jun 2011 09:25:01 +0000
+Subject: [PATCH v2 23/29] sm501fb: use display information in info not in var for panning
+Message-Id: <1308043507-11083-24-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Define new HDMI timings structure to replace the OMAP DSS timing strucutre in hdmi.c
-to have the HDMI include defintion out of DSS.
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
 
-Signed-off-by: Mythri P K <mythripk@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Ben Dooks <ben@simtec.co.uk>
 ---
- drivers/video/omap2/dss/hdmi.c |   23 ++++++++++++++++++++---
- drivers/video/omap2/dss/hdmi.h |   15 ++++++++++++++-
- 2 files changed, 34 insertions(+), 4 deletions(-)
+ drivers/video/sm501fb.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 4ee879a..c24d573 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -593,6 +593,20 @@ static int read_edid(struct hdmi_ip_data *ip_data, u8 *pedid, u16 max_length)
- 	return 0;
- }
- 
-+static void copy_hdmi_to_dss_timings(struct hdmi_video_timings hdmi_timings,
-+			struct omap_video_timings *timings)
-+{
-+	timings->x_res = hdmi_timings.x_res;
-+	timings->y_res = hdmi_timings.y_res;
-+	timings->pixel_clock = hdmi_timings.pixel_clock;
-+	timings->hbp = hdmi_timings.hbp;
-+	timings->hfp = hdmi_timings.hfp;
-+	timings->hsw = hdmi_timings.hsw;
-+	timings->vbp = hdmi_timings.vbp;
-+	timings->vfp = hdmi_timings.vfp;
-+	timings->vsw = hdmi_timings.vsw;
-+}
-+
- static int get_timings_index(void)
+diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
+index 87f0be1..2c9e9d3 100644
+--- a/drivers/video/sm501fb.c
++++ b/drivers/video/sm501fb.c
+@@ -582,7 +582,7 @@ static int sm501fb_pan_crt(struct fb_var_screeninfo *var,
  {
- 	int code;
-@@ -617,7 +631,7 @@ static struct hdmi_cm hdmi_get_code(struct omap_video_timings *timing)
- {
- 	int i = 0, code = -1, temp_vsync = 0, temp_hsync = 0;
- 	int timing_vsync = 0, timing_hsync = 0;
--	struct omap_video_timings temp;
-+	struct hdmi_video_timings temp;
- 	struct hdmi_cm cm = {-1};
- 	DSSDBG("hdmi_get_code\n");
+ 	struct sm501fb_par  *par = info->par;
+ 	struct sm501fb_info *fbi = par->info;
+-	unsigned int bytes_pixel = var->bits_per_pixel / 8;
++	unsigned int bytes_pixel = info->var.bits_per_pixel / 8;
+ 	unsigned long reg;
+ 	unsigned long xoffs;
  
-@@ -775,7 +789,8 @@ static void hdmi_read_edid(struct omap_video_timings *dp)
+@@ -614,10 +614,10 @@ static int sm501fb_pan_pnl(struct fb_var_screeninfo *var,
+ 	struct sm501fb_info *fbi = par->info;
+ 	unsigned long reg;
  
- 	code = get_timings_index();
+-	reg = var->xoffset | (var->xres_virtual << 16);
++	reg = var->xoffset | (info->var.xres_virtual << 16);
+ 	smc501_writel(reg, fbi->regs + SM501_DC_PANEL_FB_WIDTH);
  
--	*dp = cea_vesa_timings[code].timings;
-+	copy_hdmi_to_dss_timings(cea_vesa_timings[code].timings, dp);
-+
- }
+-	reg = var->yoffset | (var->yres_virtual << 16);
++	reg = var->yoffset | (info->var.yres_virtual << 16);
+ 	smc501_writel(reg, fbi->regs + SM501_DC_PANEL_FB_HEIGHT);
  
- static void hdmi_core_init(struct hdmi_core_video_config *video_cfg,
-@@ -1234,7 +1249,9 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
- 		hdmi_read_edid(p);
- 	}
- 	code = get_timings_index();
--	dssdev->panel.timings = cea_vesa_timings[code].timings;
-+	copy_hdmi_to_dss_timings(cea_vesa_timings[code].timings,
-+			&dssdev->panel.timings);
-+
- 	update_hdmi_timings(&hdmi.cfg, p, code);
- 
- 	phy = p->pixel_clock;
-diff --git a/drivers/video/omap2/dss/hdmi.h b/drivers/video/omap2/dss/hdmi.h
-index f57ef4a..dcc30b7 100644
---- a/drivers/video/omap2/dss/hdmi.h
-+++ b/drivers/video/omap2/dss/hdmi.h
-@@ -188,9 +188,22 @@ struct hdmi_reg { u16 idx; };
- #define REG_GET(base, idx, start, end) \
- 	FLD_GET(hdmi_read_reg(base, idx), start, end)
- 
-+struct hdmi_video_timings {
-+	u16 x_res;
-+	u16 y_res;
-+	/* Unit: KHz */
-+	u32 pixel_clock;
-+	u16 hsw;
-+	u16 hfp;
-+	u16 hbp;
-+	u16 vsw;
-+	u16 vfp;
-+	u16 vbp;
-+};
-+
- /* HDMI timing structure */
- struct hdmi_timings {
--	struct omap_video_timings timings;
-+	struct hdmi_video_timings timings;
- 	int vsync_pol;
- 	int hsync_pol;
- };
+ 	sm501fb_sync_regs(fbi);
 -- 
-1.7.5.4
+1.7.3.4
 

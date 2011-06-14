@@ -1,30 +1,42 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Thu, 09 Jun 2011 06:04:57 +0000
-Subject: Re: [PATCH] [resend] video: s3c-fb: fix misleading kfree in remove function
-Message-Id: <20110609060455.GB26006@linux-sh.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 14 Jun 2011 18:15:53 +0000
+Subject: Re: Possible deadlock when suspending framebuffer
+Message-Id: <BANLkTimny9nzr23TufH1kMcsk57M3NXuaA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307593591-4507-1-git-send-email-jg1.han@samsung.com>
-In-Reply-To: <1307593591-4507-1-git-send-email-jg1.han@samsung.com>
+References: <BANLkTiko+2AM8dq8jP5xjbTcCM63hBAK=A@mail.gmail.com>
+In-Reply-To: <BANLkTiko+2AM8dq8jP5xjbTcCM63hBAK=A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Francis Moreau <francis.moro@gmail.com>
 
-On Thu, Jun 09, 2011 at 01:26:31PM +0900, Jingoo Han wrote:
-> This patch fixes misleading kfree in remove function.
+Paul, fbdev people.. Comments? This was sent to me and lkml, the right
+people probably didn't see it.
 
-On Thu, Jun 09, 2011 at 01:26:38PM +0900, Jingoo Han wrote:
-> This patch fixes mishandling in virtual resolution checking.
-> Previously, virtual resolution is changed to virtual_x and virtual_y
-> which mean the size for buffer allocation, when s3c_fb_check_var is
-> called by fb_check_var. However, it is meaningless, since virtual_x
-> and virtual_y are fixed and user cannot change virtual resolution.
-> Therefore, virtual resolution should be more than resolution
-> such as xres and yres.
+I doubt it's a big problem in practice, but..
 
-On Thu, Jun 09, 2011 at 01:26:45PM +0900, Jingoo Han wrote:
-> This patch moves enabling channel for window, because there should
-> be enabling channel before enabling window. If the sequence is
-> reversed, it makes the problem in displaying images to lcd panel.
+                      Linus
 
-All applied, thanks.
+On Tue, Jun 14, 2011 at 6:10 AM, Francis Moreau <francis.moro@gmail.com> wrote:
+> Hello,
+>
+> I noticed that a possible deadlock can happen when the current frame
+> buffering is being suspended and a new frambuffer device is being
+> registred at the same time.
+>
+> When suspending the current frambuffer by doing : echo 1
+>>/sys/class/graphics/fb0/state, the kernel actually takes the
+> following locks in that order: console_lock, lock_fb_info (see
+> store_fbstate()).
+>
+> However when a new framebuffer is coming in, the lock sequence is:
+> lock_fb_info (taken by do_remove_conflicting_framebuffer()),
+> console_lock() (taken by unbind_console).
+>
+> I don't know how this should be fixed though...
+>
+> Thanks
+> --
+> Francis
+>

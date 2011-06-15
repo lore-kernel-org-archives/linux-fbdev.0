@@ -1,70 +1,45 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 10 Jun 2011 17:01:56 +0000
-Subject: Re: [PATCH 15/29] mx3fb: use display information in info not in var for panning
-Message-Id: <201106101901.56984.laurent.pinchart@ideasonboard.com>
+From: David Howells <dhowells@redhat.com>
+Date: Wed, 15 Jun 2011 00:38:17 +0000
+Subject: [PATCH] EFIFB: Fix error handling
+Message-Id: <20110615003817.18883.41030.stgit@warthog.procyon.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1306364301-8195-16-git-send-email-laurent.pinchart@ideasonboard.com>
-In-Reply-To: <1306364301-8195-16-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: pjones@redhat.com
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>, linux-fbdev@vger.kernel.org, stable@kernel.org
 
-Hi Guennadi,
+Fix the error handling in the EFIFB driver if platform_driver_probe() fails.
+In that case, the code will pass the driver struct to the _device_
+unregistration function.  It presumably should pass a pointer to the device
+struct instead.
 
-On Friday 10 June 2011 11:01:46 Guennadi Liakhovetski wrote:
-> On Thu, 26 May 2011, Laurent Pinchart wrote:
-> > We must not use any information in the passed var besides xoffset,
-> > yoffset and vmode as otherwise applications might abuse it. Also use the
-> > aligned fix.line_length and not the (possible) unaligned xres_virtual.
-> >=20
-> > Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> > Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> > ---
-> >=20
-> >  drivers/video/mx3fb.c |    6 +++---
-> >  1 files changed, 3 insertions(+), 3 deletions(-)
-> >=20
-> > diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-> > index 7e3a490..759e244 100644
-> > --- a/drivers/video/mx3fb.c
-> > +++ b/drivers/video/mx3fb.c
-> > @@ -1062,15 +1062,15 @@ static int mx3fb_pan_display(struct
-> > fb_var_screeninfo *var,
-> >=20
-> >  	y_bottom =3D var->yoffset;
-> >  =09
-> >  	if (!(var->vmode & FB_VMODE_YWRAP))
-> >=20
-> > -		y_bottom +=3D var->yres;
-> > +		y_bottom +=3D fbi->var.yres;
-> >=20
-> >  	if (y_bottom > fbi->var.yres_virtual)
-> >  =09
-> >  		return -EINVAL;
-> >  =09
-> >  	mutex_lock(&mx3_fbi->mutex);
-> >=20
-> > -	offset =3D (var->yoffset * var->xres_virtual + var->xoffset) *
-> > -		(var->bits_per_pixel / 8);
-> > +	offset =3D var->yoffset * fbi->fix.line_length
-> > +	       + var->xoffset * (var->bits_per_pixel / 8);
->=20
-> Didn't you mean
->=20
-> +	       + var->xoffset * (fbi->var.bits_per_pixel / 8);
+The compiler gives the following warning to indicate this:
 
-Yes, my bad. Thank you.
+drivers/video/efifb.c: In function 'efifb_init':
+drivers/video/efifb.c:544:3: warning: passing argument 1 of 'platform_device_unregister' from incompatible pointer type
+include/linux/platform_device.h:40:13: note: expected 'struct platform_device *' but argument is of type 'struct platform_driver *'
 
-> With this fix:
->=20
-> Tested-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
->=20
-> (tested using http://git.ideasonboard.org/?p=FBdev-test.git;a=3Dsummary)
+Signed-off-by: David Howells <dhowells@redhat.com>
+cc: Peter Jones <pjones@redhat.com>
+cc: linux-fbdev@vger.kernel.org
+cc: stable@kernel.org
+---
 
-Thanks.
+ drivers/video/efifb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
---=20
-Regards,
+diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
+index 69c49df..784139a 100644
+--- a/drivers/video/efifb.c
++++ b/drivers/video/efifb.c
+@@ -541,7 +541,7 @@ static int __init efifb_init(void)
+ 	 */
+ 	ret = platform_driver_probe(&efifb_driver, efifb_probe);
+ 	if (ret) {
+-		platform_device_unregister(&efifb_driver);
++		platform_device_unregister(&efifb_device);
+ 		return ret;
+ 	}
+ 
 
-Laurent Pinchart

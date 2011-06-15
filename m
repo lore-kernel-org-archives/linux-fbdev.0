@@ -1,80 +1,623 @@
-From: JinGoo Han <jg1.han@samsung.com>
-Date: Thu, 23 Jun 2011 11:08:58 +0000
-Subject: Re: Re: [PATCH V4 5/5] ARM: EXYNOS4: Add platform data for EXYNOS4
-Message-Id: <3561939.168581308827336693.JavaMail.weblogic@epml08>
+From: Kristoffer Glembo <kristoffer@gaisler.com>
+Date: Wed, 15 Jun 2011 12:04:03 +0000
+Subject: [PATCH V2] video: Add GRVGA framebuffer device driver
+Message-Id: <1308139443-15661-1-git-send-email-kristoffer@gaisler.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <11291403.110251308714504687.JavaMail.weblogic@epml08>
-In-Reply-To: <11291403.110251308714504687.JavaMail.weblogic@epml08>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: "K, Mythri P" <mythripk@ti.com>
-Cc: JinGoo Han <jg1.han@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Jong-Hun Han <jonghun.han@samsung.com>, ANAND KUMAR N <anand.kn@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, THOMAS P ABRAHAM <thomas.ab@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kmpark@infradead.org>, In-Ki Dae <inki.dae@samsung.com>, ARM Linux <linux@arm.linux.org.uk>, Ben Dooks <ben-linux@fluff.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-CkhpLCBNeXRocmkuCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0KPiBGcm9tOiBsaW51eC1m
-YmRldi1vd25lckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1mYmRldi0KPiBvd25lckB2
-Z2VyLmtlcm5lbC5vcmddIE9uIEJlaGFsZiBPZiBLLCBNeXRocmkgUAo+IFNlbnQ6IFRodXJzZGF5
-LCBKdW5lIDIzLCAyMDExIDY6MDQgUE0KPiBUbzogamcxLmhhbkBzYW1zdW5nLmNvbQo+IENjOiBL
-dWtqaW4gS2ltOyBQYXVsIE11bmR0OyBsaW51eC1zYW1zdW5nLXNvY0B2Z2VyLmtlcm5lbC5vcmc7
-IGxpbnV4LQo+IGZiZGV2QHZnZXIua2VybmVsLm9yZzsgSm9uZy1IdW4gSGFuOyBBTkFORCBLVU1B
-UiBOOyBTeWx3ZXN0ZXIgTmF3cm9ja2k7Cj4gVEhPTUFTIFAgQUJSQUhBTTsgTWFyZWsgU3p5cHJv
-d3NraTsgS3l1bmdtaW4gUGFyazsgSW4tS2kgRGFlOyBBUk0gTGludXg7Cj4gQmVuIERvb2tzCj4g
-U3ViamVjdDogUmU6IFtQQVRDSCBWNCA1LzVdIEFSTTogRVhZTk9TNDogQWRkIHBsYXRmb3JtIGRh
-dGEgZm9yIEVYWU5PUzQKPiBGSU1EIGFuZCBMVEU0ODBXViBwbGF0Zm9ybS1sY2QKPiAKPiAyMDEx
-LzYvMjIgSmluR29vIEhhbiA8amcxLmhhbkBzYW1zdW5nLmNvbT46Cj4gPiBGcm9tOiBKb25naHVu
-IEhhbiA8am9uZ2h1bi5oYW5Ac2Ftc3VuZy5jb20+Cj4gPgo+ID4gVGhpcyBwYXRjaCBhZGRzIHN1
-cHBvcnQgRVhZTk9TNCBGSU1EMCBhbmQgTFRFNDgwV1YgTENEIHBhbm5lbC4KPiA+Cj4gPiBTaWdu
-ZWQtb2ZmLWJ5OiBKb25naHVuIEhhbiA8am9uZ2h1bi5oYW5Ac2Ftc3VuZy5jb20+Cj4gPiBTaWdu
-ZWQtb2ZmLWJ5OiBKaW5nb28gSGFuIDxqZzEuaGFuQHNhbXN1bmcuY29tPgo+ID4gLS0tCj4gPiAg
-YXJjaC9hcm0vbWFjaC1leHlub3M0L21hY2gtc21ka2MyMTAuYyB8ICAxMTQKPiArKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysKPiA+ICBhcmNoL2FybS9tYWNoLWV4eW5vczQvbWFjaC1z
-bWRrdjMxMC5jIHwgIDExNAo+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKwo+ID4g
-IDIgZmlsZXMgY2hhbmdlZCwgMjI4IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pCj4gPgo+
-IDw8c25pcD4+Cj4gPiArc3RhdGljIHZvaWQgbGNkX2x0ZTQ4MHd2X3NldF9wb3dlcihzdHJ1Y3Qg
-cGxhdF9sY2RfZGF0YSAqcGQsCj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IHVuc2lnbmVkIGludCBwb3dlcikKPiA+ICt7Cj4gPiArICAgICAgIGlmIChwb3dlcikgewo+ID4g
-KyNpZiAhZGVmaW5lZChDT05GSUdfQkFDS0xJR0hUX1BXTSkKPiA+ICsgICAgICAgICAgICAgICBn
-cGlvX3JlcXVlc3QoRVhZTk9TNF9HUEQwKDEpLCAiR1BEMCIpOwo+ID4gKyAgICAgICAgICAgICAg
-IGdwaW9fZGlyZWN0aW9uX291dHB1dChFWFlOT1M0X0dQRDAoMSksIDEpOwo+ID4gKyAgICAgICAg
-ICAgICAgIGdwaW9fZnJlZShFWFlOT1M0X0dQRDAoMSkpOwo+ID4gKyNlbmRpZgo+ID4gKyAgICAg
-ICAgICAgICAgIC8qIGZpcmUgblJFU0VUIG9uIHBvd2VyIHVwICovCj4gPiArICAgICAgICAgICAg
-ICAgZ3Bpb19yZXF1ZXN0KEVYWU5PUzRfR1BYMCg2KSwgIkdQWDAiKTsKPiA+ICsKPiA+ICsgICAg
-ICAgICAgICAgICBncGlvX2RpcmVjdGlvbl9vdXRwdXQoRVhZTk9TNF9HUFgwKDYpLCAxKTsKPiA+
-ICsgICAgICAgICAgICAgICBtZGVsYXkoMTAwKTsKPiA+ICsKPiA+ICsgICAgICAgICAgICAgICBn
-cGlvX3NldF92YWx1ZShFWFlOT1M0X0dQWDAoNiksIDApOwo+ID4gKyAgICAgICAgICAgICAgIG1k
-ZWxheSgxMCk7Cj4gPiArCj4gPiArICAgICAgICAgICAgICAgZ3Bpb19zZXRfdmFsdWUoRVhZTk9T
-NF9HUFgwKDYpLCAxKTsKPiA+ICsgICAgICAgICAgICAgICBtZGVsYXkoMTApOwo+ID4gKwo+ID4g
-KyAgICAgICAgICAgICAgIGdwaW9fZnJlZShFWFlOT1M0X0dQWDAoNikpOwo+ID4gKyAgICAgICB9
-IGVsc2Ugewo+ID4gKyNpZiAhZGVmaW5lZChDT05GSUdfQkFDS0xJR0hUX1BXTSkKPiA+ICsgICAg
-ICAgICAgICAgICBncGlvX3JlcXVlc3QoRVhZTk9TNF9HUEQwKDEpLCAiR1BEMCIpOwo+ID4gKyAg
-ICAgICAgICAgICAgIGdwaW9fZGlyZWN0aW9uX291dHB1dChFWFlOT1M0X0dQRDAoMSksIDApOwo+
-ID4gKyAgICAgICAgICAgICAgIGdwaW9fZnJlZShFWFlOT1M0X0dQRDAoMSkpOwo+ID4gKyNlbmRp
-Zgo+ID4gKyAgICAgICB9Cj4gPiArfQo+ID4gKwo+IAo+IGhhdmUgeW91IGNvbnNpZGVyZWQgdXNp
-bmcgZ3Bpb19yZXF1ZXN0X29uZSBpbnN0ZWFkID8gSXQgc2ltcGxpZmllcyB0aGUKPiB0aHJlZSBz
-dGVwIEFQSS4KWW91J3JlIHJpZ2h0LiBJdCBzZWVtcyB0byBiZSB2ZXJ5IGhlbHBmdWwuCkkgd2ls
-bCBhcHBseSBpdCBhbmQgc2VuZCBWNyBwYXRjaGVzLCBzb29uLgpUaGFuayB5b3UgZm9yIHlvdXIg
-cmVwbHkuCj4gCj4gPDxzbmlwPj4KPiAKPiA+ICsgICAgICAgaWYgKHBvd2VyKSB7Cj4gPiArI2lm
-ICFkZWZpbmVkKENPTkZJR19CQUNLTElHSFRfUFdNKQo+ID4gKyAgICAgICAgICAgICAgIGdwaW9f
-cmVxdWVzdChFWFlOT1M0X0dQRDAoMSksICJHUEQwIik7Cj4gPiArICAgICAgICAgICAgICAgZ3Bp
-b19kaXJlY3Rpb25fb3V0cHV0KEVYWU5PUzRfR1BEMCgxKSwgMSk7Cj4gPiArICAgICAgICAgICAg
-ICAgZ3Bpb19mcmVlKEVYWU5PUzRfR1BEMCgxKSk7Cj4gPiArI2VuZGlmCj4gPiArICAgICAgICAg
-ICAgICAgLyogZmlyZSBuUkVTRVQgb24gcG93ZXIgdXAgKi8KPiA+ICsgICAgICAgICAgICAgICBn
-cGlvX3JlcXVlc3QoRVhZTk9TNF9HUFgwKDYpLCAiR1BYMCIpOwo+ID4gKwo+ID4gKyAgICAgICAg
-ICAgICAgIGdwaW9fZGlyZWN0aW9uX291dHB1dChFWFlOT1M0X0dQWDAoNiksIDEpOwo+ID4gKyAg
-ICAgICAgICAgICAgIG1kZWxheSgxMDApOwo+ID4gKwo+ID4gKyAgICAgICAgICAgICAgIGdwaW9f
-c2V0X3ZhbHVlKEVYWU5PUzRfR1BYMCg2KSwgMCk7Cj4gPiArICAgICAgICAgICAgICAgbWRlbGF5
-KDEwKTsKPiA+ICsKPiA+ICsgICAgICAgICAgICAgICBncGlvX3NldF92YWx1ZShFWFlOT1M0X0dQ
-WDAoNiksIDEpOwo+ID4gKyAgICAgICAgICAgICAgIG1kZWxheSgxMCk7Cj4gPiArCj4gPiArICAg
-ICAgICAgICAgICAgZ3Bpb19mcmVlKEVYWU5PUzRfR1BYMCg2KSk7Cj4gPiArICAgICAgIH0gZWxz
-ZSB7Cj4gPiArI2lmICFkZWZpbmVkKENPTkZJR19CQUNLTElHSFRfUFdNKQo+ID4gKyAgICAgICAg
-ICAgICAgIGdwaW9fcmVxdWVzdChFWFlOT1M0X0dQRDAoMSksICJHUEQwIik7Cj4gPiArICAgICAg
-ICAgICAgICAgZ3Bpb19kaXJlY3Rpb25fb3V0cHV0KEVYWU5PUzRfR1BEMCgxKSwgMCk7Cj4gPiAr
-ICAgICAgICAgICAgICAgZ3Bpb19mcmVlKEVYWU5PUzRfR1BEMCgxKSk7Cj4gPiArI2VuZGlmCj4g
-PiArICAgICAgIH0KPiA+ICt9Cj4gCj4gc2FtZSBjb21tZW50IGFzIGFib3ZlLgo+IAo+IDw8c25p
-cD4+Cj4gCj4gCj4gCj4gLS0KPiBUaGFua3MgYW5kIHJlZ2FyZHMsCj4gTXl0aHJpLgo+IC0tCj4g
-VG8gdW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJl
-IGxpbnV4LWZiZGV2IiBpbgo+IHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdl
-ci5rZXJuZWwub3JnCj4gTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVs
-Lm9yZy9tYWpvcmRvbW8taW5mby5odG1sCv/06Lp7Lm7HK4m3n66JrYYrJYrL/7Hp3bYXpYp3/7p7
-Lm7HK4m3pYp7sf323Xr/4p7YXm6HcqH2pnrLGoHraJmo6K3aJqP74Hq/5Hq53pf6K4DKK3pmo6K3
-aJqIp36GrYbbaf//74Hq/5Hq53pf6K4P5mo6K3aJqP4p36P4bQo=
+This patch adds support for the GRVGA framebuffer IP core from Aeroflex Gaisler.
+The device is used in LEON SPARCV8 based System on Chips. Documentation can
+be found here: www.gaisler.com/products/grlib/grip.pdf.
+
+Signed-off-by: Kristoffer Glembo <kristoffer@gaisler.com>
+---
+ drivers/video/Kconfig  |   10 +
+ drivers/video/Makefile |    1 +
+ drivers/video/grvga.c  |  559 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 570 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/grvga.c
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 549b960..18ee201 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -259,6 +259,16 @@ config FB_TILEBLITTING
+ comment "Frame buffer hardware drivers"
+ 	depends on FB
+ 
++config FB_GRVGA
++	tristate "Aeroflex Gaisler framebuffer support"
++	depends on FB && SPARC
++	select FB_CFB_FILLRECT
++	select FB_CFB_COPYAREA
++	select FB_CFB_IMAGEBLIT
++	---help---
++	This enables support for the SVGACTRL framebuffer in the GRLIB IP library from Aeroflex Gaisler.
++
++
+ config FB_CIRRUS
+ 	tristate "Cirrus Logic support"
+ 	depends on FB && (ZORRO || PCI)
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 8b83129..4cff5ec 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -29,6 +29,7 @@ obj-$(CONFIG_FB_DEFERRED_IO)   += fb_defio.o
+ obj-$(CONFIG_FB_WMT_GE_ROPS)   += wmt_ge_rops.o
+ 
+ # Hardware specific drivers go first
++obj-$(CONFIG_FB_GRVGA)            += grvga.o
+ obj-$(CONFIG_FB_AMIGA)            += amifb.o c2p_planar.o
+ obj-$(CONFIG_FB_ARC)              += arcfb.o
+ obj-$(CONFIG_FB_CLPS711X)         += clps711xfb.o
+diff --git a/drivers/video/grvga.c b/drivers/video/grvga.c
+new file mode 100644
+index 0000000..aa1f9ab
+--- /dev/null
++++ b/drivers/video/grvga.c
+@@ -0,0 +1,559 @@
++/*
++ * Driver for Aeroflex Gaisler SVGACTRL framebuffer device.
++ *
++ * 2011 (c) Aeroflex Gaisler AB
++ *
++ * Full documentation of the core can be found here:
++ * http://www.gaisler.com/products/grlib/grip.pdf
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2 of the License, or (at your
++ * option) any later version.
++ *
++ * Contributors: Kristoffer Glembo <kristoffer@gaisler.com>
++ *
++ */
++
++#include <linux/platform_device.h>
++#include <linux/of_platform.h>
++#include <linux/of_device.h>
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/string.h>
++#include <linux/delay.h>
++#include <linux/errno.h>
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <linux/tty.h>
++#include <linux/mm.h>
++#include <linux/fb.h>
++#include <linux/io.h>
++
++#define GRVGA_REGLOAD(a)	    (__raw_readl(&(a)))
++#define GRVGA_REGSAVE(a, v)         (__raw_writel(v, &(a)))
++#define GRVGA_REGORIN(a, v)         (GRVGA_REGSAVE(a, (GRVGA_REGLOAD(a) | (v))))
++#define GRVGA_REGANDIN(a, v)        (GRVGA_REGSAVE(a, (GRVGA_REGLOAD(a) & (v))))
++
++#define	GRVGA_FBINFO_DEFAULT	(FBINFO_DEFAULT \
++				 | FBINFO_PARTIAL_PAN_OK \
++				 | FBINFO_HWACCEL_YPAN)
++
++struct grvga_regs {
++	u32 status; 		/* 0x00 */
++	u32 video_length; 	/* 0x04 */
++	u32 front_porch;	/* 0x08 */
++	u32 sync_length;	/* 0x0C */
++	u32 line_length;	/* 0x10 */
++	u32 fb_pos;		/* 0x14 */
++	u32 clk_vector[4];	/* 0x18 */
++	u32 clut;	        /* 0x20 */
++};
++
++struct grvga_par {
++	struct grvga_regs *regs;
++	u32 color_palette[16];  /* 16 entry pseudo palette used by fbcon in true color mode */
++	int clk_sel;
++};
++
++
++static const struct fb_videomode grvga_modedb[] = {
++    {
++	/* 640x480 @ 60 Hz */
++	NULL, 60, 640, 480, 40000, 48, 16, 39, 11, 96, 2,
++	0, FB_VMODE_NONINTERLACED
++    }, {
++	/* 800x600 @ 60 Hz */
++	NULL, 60, 800, 600, 25000, 88, 40, 23, 1, 128, 4,
++	0, FB_VMODE_NONINTERLACED
++    }, {
++	/* 800x600 @ 72 Hz */
++	NULL, 72, 800, 600, 20000, 64, 56, 23, 37, 120, 6,
++	0, FB_VMODE_NONINTERLACED
++    }, {
++	/* 1024x768 @ 60 Hz */
++	NULL, 60, 1024, 768, 15385, 160, 24, 29, 3, 136, 6,
++	0, FB_VMODE_NONINTERLACED
++    }
++ };
++
++static struct fb_fix_screeninfo grvga_fix __initdata = {
++	.id =		"AG SVGACTRL",
++	.type =		FB_TYPE_PACKED_PIXELS,
++	.visual =       FB_VISUAL_PSEUDOCOLOR,
++	.xpanstep =	0,
++	.ypanstep =	1,
++	.ywrapstep =	0,
++	.accel =	FB_ACCEL_NONE,
++};
++
++
++static int grvga_check_var(struct fb_var_screeninfo *var,
++			   struct fb_info *info);
++static int grvga_set_par(struct fb_info *info);
++static int grvga_setcolreg(unsigned regno,
++			   unsigned red, unsigned green, unsigned blue, unsigned transp,
++			   struct fb_info *info);
++static int grvga_pan_display(struct fb_var_screeninfo *var, struct fb_info *info);
++
++static struct fb_ops grvga_ops = {
++	.owner          = THIS_MODULE,
++	.fb_check_var   = grvga_check_var,
++	.fb_set_par	= grvga_set_par,
++	.fb_setcolreg   = grvga_setcolreg,
++	.fb_pan_display = grvga_pan_display,
++	.fb_fillrect	= cfb_fillrect,
++	.fb_copyarea	= cfb_copyarea,
++	.fb_imageblit	= cfb_imageblit
++};
++
++static int grvga_check_var(struct fb_var_screeninfo *var,
++			   struct fb_info *info)
++{
++	struct grvga_par *par = info->par;
++	int i;
++
++	if (!var->xres)
++		var->xres = 1;
++	if (!var->yres)
++		var->yres = 1;
++	if (var->bits_per_pixel <= 8)
++		var->bits_per_pixel = 8;
++	else if (var->bits_per_pixel <= 16)
++		var->bits_per_pixel = 16;
++	else if (var->bits_per_pixel <= 24)
++		var->bits_per_pixel = 24;
++	else if (var->bits_per_pixel <= 32)
++		var->bits_per_pixel = 32;
++	else
++		return -EINVAL;
++
++	var->xres_virtual = var->xres;
++	var->yres_virtual = 2*var->yres;
++
++	if (info->fix.smem_len) {
++		if ((var->yres_virtual*var->xres_virtual*var->bits_per_pixel/8) > info->fix.smem_len)
++			return -ENOMEM;
++	}
++
++	/* Which clocks that are available can be read out in these registers */
++	for (i = 0; i <= 3 ; i++) {
++		if (var->pixclock = par->regs->clk_vector[i])
++			break;
++	}
++	if (i != -1)
++		par->clk_sel = i;
++	else
++		return -EINVAL;
++
++	switch (info->var.bits_per_pixel) {
++	case 8:
++		var->red   = (struct fb_bitfield) {0, 8, 0};      /* offset, length, msb-right */
++		var->green = (struct fb_bitfield) {0, 8, 0};
++		var->blue  = (struct fb_bitfield) {0, 8, 0};
++		var->transp = (struct fb_bitfield) {0, 0, 0};
++		break;
++	case 16:
++		var->red   = (struct fb_bitfield) {11, 5, 0};
++		var->green = (struct fb_bitfield) {5, 6, 0};
++		var->blue  = (struct fb_bitfield) {0, 5, 0};
++		var->transp = (struct fb_bitfield) {0, 0, 0};
++		break;
++	case 24:
++	case 32:
++		var->red   = (struct fb_bitfield) {16, 8, 0};
++		var->green = (struct fb_bitfield) {8, 8, 0};
++		var->blue  = (struct fb_bitfield) {0, 8, 0};
++		var->transp = (struct fb_bitfield) {24, 8, 0};
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int grvga_set_par(struct fb_info *info)
++{
++
++	int func = 0;
++	struct grvga_par *par = info->par;
++
++	GRVGA_REGSAVE(par->regs->video_length,
++		      ((info->var.yres - 1)   << 16) | (info->var.xres - 1));
++	GRVGA_REGSAVE(par->regs->front_porch,
++		      (info->var.lower_margin << 16) | (info->var.right_margin));
++	GRVGA_REGSAVE(par->regs->sync_length,
++		      (info->var.vsync_len    << 16) | (info->var.hsync_len));
++	GRVGA_REGSAVE(par->regs->line_length,
++		      ((info->var.yres + info->var.lower_margin + info->var.upper_margin + info->var.vsync_len - 1) << 16) |
++		      (info->var.xres + info->var.right_margin + info->var.left_margin + info->var.hsync_len - 1));
++
++	switch (info->var.bits_per_pixel) {
++	case 8:
++		info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
++		func = 1;
++		break;
++	case 16:
++		info->fix.visual = FB_VISUAL_TRUECOLOR;
++		func = 2;
++		break;
++	case 24:
++	case 32:
++		info->fix.visual = FB_VISUAL_TRUECOLOR;
++		func = 3;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	GRVGA_REGSAVE(par->regs->status, ((par->clk_sel << 6) | (func << 4)) | 1);
++
++	info->fix.line_length = (info->var.xres_virtual*info->var.bits_per_pixel)/8;
++	return 0;
++}
++
++static int grvga_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned blue, unsigned transp, struct fb_info *info)
++{
++	struct grvga_par *par;
++	par = info->par;
++
++	if (regno >= 256)	/* Size of CLUT */
++		return -EINVAL;
++
++	if (info->var.grayscale) {
++		/* grayscale = 0.30*R + 0.59*G + 0.11*B */
++		red = green = blue = (red * 77 + green * 151 + blue * 28) >> 8;
++	}
++
++
++
++#define CNVT_TOHW(val, width) ((((val)<<(width))+0x7FFF-(val))>>16)
++
++	red    = CNVT_TOHW(red,   info->var.red.length);
++	green  = CNVT_TOHW(green, info->var.green.length);
++	blue   = CNVT_TOHW(blue,  info->var.blue.length);
++	transp = CNVT_TOHW(transp, info->var.transp.length);
++
++#undef CNVT_TOHW
++
++	/* In PSEUDOCOLOR we use the hardware CLUT */
++	if (info->fix.visual = FB_VISUAL_PSEUDOCOLOR)
++		GRVGA_REGSAVE(par->regs->clut,
++			      (regno << 24) | (red << 16) | (green << 8) | blue);
++
++	/* Truecolor uses the pseudo palette */
++	else if (info->fix.visual = FB_VISUAL_TRUECOLOR) {
++		u32 v;
++		if (regno >= 16)
++			return -EINVAL;
++
++
++		v =     (red    << info->var.red.offset)   |
++			(green  << info->var.green.offset) |
++			(blue   << info->var.blue.offset)  |
++			(transp << info->var.transp.offset);
++
++		((u32 *) (info->pseudo_palette))[regno] = v;
++	}
++	return 0;
++}
++
++static int grvga_pan_display(struct fb_var_screeninfo *var,
++			     struct fb_info *info)
++{
++	struct grvga_par *par = info->par;
++	struct fb_fix_screeninfo *fix = &info->fix;
++	u32 base_addr;
++
++	if (var->xoffset != 0)
++		return -EINVAL;
++
++	base_addr = fix->smem_start + (var->yoffset * fix->line_length);
++	base_addr &= ~3UL;
++
++	/* Set framebuffer base address  */
++	GRVGA_REGSAVE(par->regs->fb_pos, base_addr);
++
++	return 0;
++}
++
++static int __init grvga_parse_custom(char *options,
++				     struct fb_var_screeninfo *screendata)
++{
++	char *this_opt;
++	int count = 0;
++	if (!options || !*options)
++		return -1;
++
++	while ((this_opt = strsep(&options, " ")) != NULL) {
++		if (!*this_opt)
++			continue;
++
++		switch (count) {
++		case 0:
++			screendata->pixclock = simple_strtoul(this_opt, NULL, 0);
++			count++;
++			break;
++		case 1:
++			screendata->xres = screendata->xres_virtual = simple_strtoul(this_opt, NULL, 0);
++			count++;
++			break;
++		case 2:
++			screendata->right_margin = simple_strtoul(this_opt, NULL, 0);
++			count++;
++			break;
++		case 3:
++			screendata->hsync_len = simple_strtoul(this_opt, NULL, 0);
++			count++;
++			break;
++		case 4:
++			screendata->left_margin = simple_strtoul(this_opt, NULL, 0);
++			count++;
++			break;
++		case 5:
++			screendata->yres = screendata->yres_virtual = simple_strtoul(this_opt, NULL, 0);
++			count++;
++			break;
++		case 6:
++			screendata->lower_margin = simple_strtoul(this_opt, NULL, 0);
++			count++;
++			break;
++		case 7:
++			screendata->vsync_len = simple_strtoul(this_opt, NULL, 0);
++			count++;
++			break;
++		case 8:
++			screendata->upper_margin = simple_strtoul(this_opt, NULL, 0);
++			count++;
++			break;
++		case 9:
++			screendata->bits_per_pixel = simple_strtoul(this_opt, NULL, 0);
++			count++;
++			break;
++		}
++	}
++	screendata->activate  = FB_ACTIVATE_NOW;
++	screendata->vmode     = FB_VMODE_NONINTERLACED;
++	return 0;
++}
++
++static int __devinit grvga_probe(struct platform_device *dev)
++{
++	struct fb_info *info;
++	int retval = -ENOMEM;
++	unsigned long virtual_start;
++	unsigned long grvga_fix_addr = 0;
++	unsigned long physical_start = 0;
++	unsigned long grvga_mem_size = 0;
++	struct grvga_par *par;
++	char *options = NULL, *mode_opt = NULL;
++
++	info = framebuffer_alloc(sizeof(struct grvga_par), &dev->dev);
++	if (!info) {
++		dev_err(&dev->dev, "framebuffer_alloc failed\n");
++		return -ENOMEM;
++	}
++
++	/* Expecting: "grvga: modestring, [addr:<framebuffer physical address>], [size:<framebuffer size>]
++	 *
++	 * If modestring is custom:<custom mode string> we parse the string which then contains all videoparameters
++	 * If address is left out, we allocate memory,
++	 * if size is left out we only allocate enough to support the given mode.
++	 */
++	if (fb_get_options("grvga", &options)) {
++		retval = -ENODEV;
++		goto err;
++	}
++
++	if (!options || !*options)
++		options =  "640x480-8@60";
++
++	while (1) {
++		char *this_opt = strsep(&options, ",");
++
++		if (!this_opt)
++			break;
++
++		if (!strncmp(this_opt, "custom", 6))
++			grvga_parse_custom(this_opt, &info->var);
++		else if (!strncmp(this_opt, "addr:", 5))
++			grvga_fix_addr = simple_strtoul(this_opt + 5, NULL, 16);
++		else if (!strncmp(this_opt, "size:", 5))
++			grvga_mem_size = simple_strtoul(this_opt + 5, NULL, 0);
++		else
++			mode_opt = this_opt;
++	}
++
++	par = info->par;
++	info->fbops = &grvga_ops;
++	info->fix = grvga_fix;
++	info->pseudo_palette = par->color_palette;
++	info->flags = GRVGA_FBINFO_DEFAULT;
++	info->fix.smem_len = grvga_mem_size;
++
++	par->regs = of_ioremap(&dev->resource[0], 0,
++			       resource_size(&dev->resource[0]),
++			       "grlib-svgactrl regs");
++
++	retval = fb_alloc_cmap(&info->cmap, 256, 0);
++	if (retval < 0) {
++		dev_err(&dev->dev, "failed to allocate mem with fb_alloc_cmap\n");
++		retval = -ENOMEM;
++		goto err1;
++	}
++
++	if (mode_opt) {
++		retval = fb_find_mode(&info->var, info, mode_opt,
++				      grvga_modedb, sizeof(grvga_modedb), &grvga_modedb[0], 8);
++		if (!retval || retval = 4) {
++			retval = -EINVAL;
++			goto err2;
++		}
++	}
++
++	if (!grvga_mem_size)
++		grvga_mem_size = info->var.xres_virtual * info->var.yres_virtual * info->var.bits_per_pixel/8;
++
++	if (grvga_fix_addr) {
++		/* Got framebuffer base address from argument list */
++
++		physical_start = grvga_fix_addr;
++
++		if (!request_mem_region(physical_start, grvga_mem_size, dev->name)) {
++			dev_err(&dev->dev, "request mem region failed\n");
++			retval = -ENOMEM;
++			goto err2;
++		}
++
++		virtual_start = (unsigned long) ioremap(physical_start, grvga_mem_size);
++
++		if (!virtual_start) {
++			dev_err(&dev->dev, "error mapping memory\n");
++			retval = -ENOMEM;
++			goto err3;
++		}
++	} else {	/* Allocate frambuffer memory */
++
++		unsigned long page;
++
++		virtual_start = (unsigned long) __get_free_pages(GFP_ATOMIC | GFP_DMA,
++								 get_order(grvga_mem_size));
++		if (!virtual_start) {
++			dev_err(&dev->dev,
++				"unable to allocate framebuffer memory (%lu bytes)\n",
++				grvga_mem_size);
++			retval = -ENOMEM;
++			goto err2;
++		}
++
++
++		physical_start = __pa(virtual_start);
++
++		/* Set page reserved so that mmap will work. This is necessary
++		 * since we'll be remapping normal memory.
++		 */
++		for (page = virtual_start;
++		     page < PAGE_ALIGN(virtual_start + grvga_mem_size);
++		     page += PAGE_SIZE) {
++			SetPageReserved(virt_to_page(page));
++		}
++	}
++
++	memset((unsigned long *) virtual_start, 0, grvga_mem_size);
++
++	info->screen_base = (char __iomem *) virtual_start;
++	info->fix.smem_start = physical_start;
++	info->fix.smem_len   = grvga_mem_size;
++
++	dev_set_drvdata(&dev->dev, info);
++
++	dev_info(&dev->dev,
++		 "Aeroflex Gaisler framebuffer device (fb%d), %dx%d-%d, using %luK of video memory @ %p\n",
++		 info->node, info->var.xres, info->var.yres, info->var.bits_per_pixel,
++		 grvga_mem_size >> 10, info->screen_base);
++
++	retval = register_framebuffer(info);
++	if (retval < 0) {
++		dev_err(&dev->dev, "failed to register framebuffer\n");
++		if (grvga_fix_addr)
++			goto err3;
++		else {
++			kfree((void *)virtual_start);
++			goto err2;
++		}
++	}
++
++	GRVGA_REGSAVE(par->regs->fb_pos, physical_start);
++	GRVGA_REGORIN(par->regs->status, 1); /* Enable framebuffer */
++
++	return 0;
++
++err3:
++	release_mem_region(physical_start, grvga_mem_size);
++err2:
++	fb_dealloc_cmap(&info->cmap);
++err1:
++	of_iounmap(&dev->resource[0], par->regs,
++		   resource_size(&dev->resource[0]));
++err:
++	framebuffer_release(info);
++
++	return retval;
++}
++
++static int __devexit grvga_remove(struct platform_device *device)
++{
++	struct fb_info *info = dev_get_drvdata(&device->dev);
++	struct grvga_par *par = info->par;
++
++	if (info) {
++		unregister_framebuffer(info);
++		fb_dealloc_cmap(&info->cmap);
++		of_iounmap(&device->resource[0], par->regs,
++			   resource_size(&device->resource[0]));
++		framebuffer_release(info);
++		dev_set_drvdata(&device->dev, NULL);
++	}
++
++	return 0;
++}
++
++static struct of_device_id svgactrl_of_match[] = {
++	{
++		.name = "GAISLER_SVGACTRL",
++	},
++	{
++		.name = "01_063",
++	},
++	{},
++};
++MODULE_DEVICE_TABLE(of, svgactrl_of_match);
++
++static struct platform_driver grvga_driver = {
++	.driver = {
++		.name = "grlib-svgactrl",
++		.owner = THIS_MODULE,
++		.of_match_table = svgactrl_of_match,
++	},
++	.probe		= grvga_probe,
++	.remove		= __devexit_p(grvga_remove),
++};
++
++
++int __init grvga_init(void)
++{
++	return platform_driver_register(&grvga_driver);
++}
++
++static void __exit grvga_exit(void)
++{
++	platform_driver_unregister(&grvga_driver);
++}
++
++module_init(grvga_init);
++module_exit(grvga_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Aeroflex Gaisler");
++MODULE_DESCRIPTION("Aeroflex Gaisler framebuffer device driver");
+-- 
+1.6.4.1
+

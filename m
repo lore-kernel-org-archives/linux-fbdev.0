@@ -1,65 +1,95 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Tue, 14 Jun 2011 19:04:20 +0000
-Subject: Re: Possible deadlock when suspending framebuffer
-Message-Id: <4DF7B0B4.4060002@gmx.de>
+From: Wanlong Gao <wanlong.gao@gmail.com>
+Date: Wed, 15 Jun 2011 01:09:24 +0000
+Subject: re:Possible deadlock when suspending framebuffer
+Message-Id: <1308100165.2113.4.camel@Tux>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-rTnFNydmgaih3M/h0Rn4"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <BANLkTiko+2AM8dq8jP5xjbTcCM63hBAK=A@mail.gmail.com> <BANLkTimny9nzr23TufH1kMcsk57M3NXuaA@mail.gmail.com>
+References: <BANLkTimny9nzr23TufH1kMcsk57M3NXuaA@mail.gmail.com>
 In-Reply-To: <BANLkTimny9nzr23TufH1kMcsk57M3NXuaA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+To: Francis Moreau <francis.moro@gmail.com>
+Cc: Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>
+
+
+--=-rTnFNydmgaih3M/h0Rn4
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Francis Moreau <francis.moro@gmail.com>
 
-Hi Linus,
+<snip>
+Hi Francis:
+can you test this patch?
+Thanks
 
-On 06/14/2011 06:15 PM, Linus Torvalds wrote:
-> Paul, fbdev people.. Comments? This was sent to me and lkml, the right
-> people probably didn't see it.
-
-Sounds very familiar. Indeed a quick glance at my archive revealed 2 
-approaches/patches dealing with similar issues
-http://marc.info/?l=linux-fbdev&m9539210207429&w=2
-http://marc.info/?l=linux-fbdev&m9700789632450&w=2
-
-I did not have time to verify that those do actually get those things right 
-everywhere but the first one looks good and should also solve this issue I think.
+From fe026c42af4cbdce053460a428a445e99071586a Mon Sep 17 00:00:00 2001
+From: Wanlong Gao <wanlong.gao@gmail.com>
+Date: Wed, 15 Jun 2011 09:03:41 +0800
+Subject: [PATCH] test
 
 
-Regards,
 
-Florian Tobias Schandinat
+Signed-off-by: Wanlong Gao <wanlong.gao@gmail.com>
+---
+ drivers/video/fbmem.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
->
-> I doubt it's a big problem in practice, but..
->
->                        Linus
->
-> On Tue, Jun 14, 2011 at 6:10 AM, Francis Moreau<francis.moro@gmail.com>  wrote:
->> Hello,
->>
->> I noticed that a possible deadlock can happen when the current frame
->> buffering is being suspended and a new frambuffer device is being
->> registred at the same time.
->>
->> When suspending the current frambuffer by doing : echo 1
->>> /sys/class/graphics/fb0/state, the kernel actually takes the
->> following locks in that order: console_lock, lock_fb_info (see
->> store_fbstate()).
->>
->> However when a new framebuffer is coming in, the lock sequence is:
->> lock_fb_info (taken by do_remove_conflicting_framebuffer()),
->> console_lock() (taken by unbind_console).
->>
->> I don't know how this should be fixed though...
->>
->> Thanks
->> --
->> Francis
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 5aac00e..6e6cef3 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1642,11 +1642,8 @@ static int do_unregister_framebuffer(struct
+fb_info *fb_info)
+ 	if (i < 0 || i >= FB_MAX || registered_fb[i] != fb_info)
+ 		return -EINVAL;
+ 
+-	if (!lock_fb_info(fb_info))
+-		return -ENODEV;
+ 	event.info = fb_info;
+ 	ret = fb_notifier_call_chain(FB_EVENT_FB_UNBIND, &event);
+-	unlock_fb_info(fb_info);
+ 
+ 	if (ret)
+ 		return -EINVAL;
+-- 
+1.7.4.1
+
+
+
+--=-rTnFNydmgaih3M/h0Rn4
+Content-Disposition: attachment; filename="0001-test.patch"
+Content-Type: text/x-patch; name="0001-test.patch"; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+From fe026c42af4cbdce053460a428a445e99071586a Mon Sep 17 00:00:00 2001
+From: Wanlong Gao <wanlong.gao@gmail.com>
+Date: Wed, 15 Jun 2011 09:03:41 +0800
+Subject: [PATCH] test
+
+test
+
+Signed-off-by: Wanlong Gao <wanlong.gao@gmail.com>
+---
+ drivers/video/fbmem.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 5aac00e..6e6cef3 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1642,11 +1642,8 @@ static int do_unregister_framebuffer(struct fb_info *fb_info)
+ 	if (i < 0 || i >= FB_MAX || registered_fb[i] != fb_info)
+ 		return -EINVAL;
+ 
+-	if (!lock_fb_info(fb_info))
+-		return -ENODEV;
+ 	event.info = fb_info;
+ 	ret = fb_notifier_call_chain(FB_EVENT_FB_UNBIND, &event);
+-	unlock_fb_info(fb_info);
+ 
+ 	if (ret)
+ 		return -EINVAL;
+-- 
+1.7.4.1
+
+
+--=-rTnFNydmgaih3M/h0Rn4--
 

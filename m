@@ -1,38 +1,40 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 14 Jun 2011 09:24:45 +0000
-Subject: [PATCH v2 07/29] fbdev: da8xx: use display information in info not in var for panning
-Message-Id: <1308043507-11083-8-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Thu, 16 Jun 2011 06:53:47 +0000
+Subject: [GIT PULL] fbdev fixes for 3.0-rc4
+Message-Id: <20110616065339.GA25825@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+This is just a pretty straightforward set of fixes. It doesn't yet
+address the console locking / suspend/resume issue as that's still
+pending feedback.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
-Cc: Martin Ambrose <martin@ti.com>
----
- drivers/video/da8xx-fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Please pull from:
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index fcdac87..8d4e4eb 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -877,8 +877,8 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
- 
- 			start	= fix->smem_start +
- 				new_var.yoffset * fix->line_length +
--				new_var.xoffset * var->bits_per_pixel / 8;
--			end	= start + var->yres * fix->line_length - 1;
-+				new_var.xoffset * fbi->var.bits_per_pixel / 8;
-+			end	= start + fbi->var.yres * fix->line_length - 1;
- 			par->dma_start	= start;
- 			par->dma_end	= end;
- 		}
--- 
-1.7.3.4
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/fbdev-3.x.git fbdev-fixes-for-linus
 
+Which contains:
+
+Geert Uytterhoeven (1):
+      fbdev/atyfb: Fix 2 defined-but-not-used warnings
+
+Guennadi Liakhovetski (1):
+      fbdev: sh_mobile_hdmi: fix regression: statically enable RTPM
+
+Jingoo Han (3):
+      video: s3c-fb: fix misleading kfree in remove function
+      video: s3c-fb: fix virtual resolution checking
+      video: s3c-fb: move enabling channel for window
+
+Wanlong Gao (1):
+      efifb: Fix call to wrong unregister function
+
+ drivers/video/aty/atyfb_base.c |   10 ++++------
+ drivers/video/efifb.c          |    2 +-
+ drivers/video/s3c-fb.c         |   22 ++++++++++------------
+ drivers/video/sh_mobile_hdmi.c |   18 +++++-------------
+ 4 files changed, 20 insertions(+), 32 deletions(-)

@@ -1,50 +1,52 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 21 Jun 2011 15:18:29 +0000
-Subject: Re: [PATCHv2 20/28] OMAP: DSS2: Use PM runtime & HWMOD support
-Message-Id: <1308669509.1872.32.camel@deskari>
+From: Steve Strobel <steve.strobel@link-comm.com>
+Date: Fri, 17 Jun 2011 23:10:22 +0000
+Subject: Framebuffer driver for controller with indirect addressing?
+Message-Id: <0LlUqt-1Pye1R36EZ-00bCDF@mrelay.perfora.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1307627810-3768-21-git-send-email-tomi.valkeinen@ti.com>
-	 <87vcvzz1bc.fsf@ti.com>
-In-Reply-To: <87vcvzz1bc.fsf@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kevin Hilman <khilman@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, b-cousson@ti.com, paul@pwsan.com
+To: linux-fbdev@vger.kernel.org
 
-On Tue, 2011-06-21 at 07:49 -0700, Kevin Hilman wrote:
-> Tomi Valkeinen <tomi.valkeinen@ti.com> writes:
-> 
-> > Use PM runtime and HWMOD support to handle enabling and disabling of DSS
-> > modules.
-> >
-> > Each DSS module will have get and put functions which can be used to
-> > enable and disable that module. The functions use pm_runtime and hwmod
-> > opt-clocks to enable the hardware.
-> >
-> > Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> 
-> Runtime PM usage is much better on this version, thanks!
-> 
-> Like Paul, I'm not crazy about the helper functions, especially the ones
-> that don't do much other than call runtime PM with some debug code
-> around them since runtime PM already has useful debug.
-> 
-> However, you're the maintainer and the one who has to debug this code
-> more than I do, so that decision is up to you.
+I am trying to support a Tianma TM023KDH18 QVGA LCD display (1) via a 
+16-bit parallel bus interface on a BF537 Blackfin running the 
+distribution from blackfin.uclinux.org.  Built into the display is a 
+ILITEK ILI9342 controller (2).  The controller has built-in memory 
+for the framebuffer and handles refreshing the display 
+automatically.  Changing the contents of the framebuffer is done by 
+sending commands to set the starting pixel position, then writing 
+repeatedly to the same address with the data for each successive 
+pixel.  It does not have address lines, so the framebuffer memory is 
+not directly accessible as with the S1D13XXX chips.  A single D/CX 
+pin, which we plan to treat like an address line, controls whether 
+each bus read/write operation is treated as a command or data.
 
-I have to say I'm not familiar with runtime PM's debug (yet, I need to
-check it out), but if I'm debugging DSS, I'm not interested in runtime
-PM's debug concerning some other drivers or any verbose details about
-runtime PM.
+I am wondering if there is an existing driver for something that 
+works in a similar way that I could use as a model.  I think I am 
+going to need to create a shadow framebuffer in system memory (maybe 
+using the virtual framebuffer) and DMA it to the graphics controller 
+whenever the displayed information changes (or maybe on the 
+double-buffer flip).  Ultimately I would like to use Qt, so building 
+on the existing framebuffer API seems like a good idea.
 
-So by having the wrappers I can just observe DSS debug, and see when DSS
-enables/disables runtime PM etc.
+If someone could point me to a driver that works in a similar way, it 
+would help me out a lot.  Thanks.
 
-If runtime PM's debug allows me to easily only see debugs about DSS,
-then I agree that the wrappers are extra.
+Steve
 
- Tomi
+(1) Datasheet at 
+http://www.tianma-usa.com/web/uploads/spec/0906123532_TM023KDH18%20V1.0.pdf
+(2) Datasheet at http://linkcomm.com/temp/ILI9342.pdf
 
+
+
+---
+Steve Strobel
+Link Communications, Inc.
+1035 Cerise Rd
+Billings, MT 59101-7378
+(406) 245-5002 ext 102
+(406) 245-4889 (fax)
+WWW: http://www.link-comm.com
+MailTo:steve.strobel@link-comm.com
 

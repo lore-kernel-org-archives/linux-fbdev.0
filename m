@@ -1,47 +1,50 @@
-From: Manuel Lauss <manuel.lauss@googlemail.com>
-Date: Tue, 14 Jun 2011 08:20:45 +0000
-Subject: Re: [PATCH 0/4] fbdev: au1200fb updates
-Message-Id: <BANLkTin=GXU333wCevGg8obA-LvF8aqZAQ@mail.gmail.com>
+From: Pavel Shved <shved@ispras.ru>
+Date: Fri, 17 Jun 2011 16:25:12 +0000
+Subject: [PATCH] hecubafb: add module_put on error path in hecubafb_probe()
+Message-Id: <1308327913-23220-3-git-send-email-shved@ispras.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307719384-23702-1-git-send-email-manuel.lauss@googlemail.com>
-In-Reply-To: <1307719384-23702-1-git-send-email-manuel.lauss@googlemail.com>
+References: <1308327913-23220-1-git-send-email-shved@ispras.ru>
+In-Reply-To: <1308327913-23220-1-git-send-email-shved@ispras.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Pavel Shved <shved@ispras.ru>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, ldv-project@ispras.ru
 
-Hi Paul,
+In hecubafb_probe(), after a successful try_module_get, vzalloc may
+fail and make the hecubafb_probe return, but the module is not put on
+this error path.
 
-On Tue, Jun 14, 2011 at 9:26 AM, Paul Mundt <lethal@linux-sh.org> wrote:
-> On Fri, Jun 10, 2011 at 05:23:00PM +0200, Manuel Lauss wrote:
->> Here are 4 updates to the au1200fb codebase to get it to work and compile
->> again, also with PM enabled.
->>
->> Run and PM-tested on DB1200 and DB1300.
->>
->> Manuel Lauss (4):
->> =A0 au1200fb: use framebuffer_alloc()
->> =A0 au1200fb: fixup PM
->> =A0 au1200fb: make number of windows configurable at load time.
->> =A0 au1200fb: switch to FB_SYS helpers
->>
->> =A0drivers/video/Kconfig =A0 =A0| =A0 =A07 +-
->> =A0drivers/video/au1200fb.c | =A0285 ++++++++++++++++++++---------------=
------------
->> =A02 files changed, 128 insertions(+), 164 deletions(-)
->>
-> This is quite a bit bigger than something I would generally like to push
-> along for -rc4 timing. Patches 1, 2, and 4 all technically qualify as
-> fixes, so those are workable. 3/4 on the other hand looks like a feature
-> enhancement that you're either dependent on for your new platform or a
-> cleanup to move off of the previous hardcoding (in either case not really
-> -rc4 material).
->
-> On the other hand, if you don't require any of these for -rc4 then I can
-> just apply the whole batch aimed at the next merge window.
+This patch adds an exit point that calls module_put in such situation.
 
-next merge window is fine.  the driver has been in this state for ages, so
-another few weeks really don't matter.
+Found by Linux Driver Verification project (linuxtesting.org).
 
-Thanks!
-        Manuel Lauss
+Signed-off-by: Pavel Shved <shved@ispras.ru>
+---
+ drivers/video/hecubafb.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/hecubafb.c b/drivers/video/hecubafb.c
+index fbef15f..614251a 100644
+--- a/drivers/video/hecubafb.c
++++ b/drivers/video/hecubafb.c
+@@ -233,7 +233,7 @@ static int __devinit hecubafb_probe(struct platform_device *dev)
+ 
+ 	videomemory = vzalloc(videomemorysize);
+ 	if (!videomemory)
+-		return retval;
++		goto err_videomem_alloc;
+ 
+ 	info = framebuffer_alloc(sizeof(struct hecubafb_par), &dev->dev);
+ 	if (!info)
+@@ -275,6 +275,7 @@ err_fbreg:
+ 	framebuffer_release(info);
+ err_fballoc:
+ 	vfree(videomemory);
++err_videomem_alloc:
+ 	module_put(board->owner);
+ 	return retval;
+ }
+-- 
+1.7.0.2
+

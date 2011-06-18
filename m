@@ -1,52 +1,51 @@
-From: Steve Strobel <steve.strobel@link-comm.com>
-Date: Fri, 17 Jun 2011 23:10:22 +0000
-Subject: Framebuffer driver for controller with indirect addressing?
-Message-Id: <0LlUqt-1Pye1R36EZ-00bCDF@mrelay.perfora.net>
+From: Bernie Thompson <bernie@plugable.com>
+Date: Sat, 18 Jun 2011 00:18:37 +0000
+Subject: Re: Framebuffer driver for controller with indirect addressing?
+Message-Id: <BANLkTikZjs=RScURA=Nmo0v63hBC8+MARA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <0LlUqt-1Pye1R36EZ-00bCDF@mrelay.perfora.net>
+In-Reply-To: <0LlUqt-1Pye1R36EZ-00bCDF@mrelay.perfora.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-I am trying to support a Tianma TM023KDH18 QVGA LCD display (1) via a 
-16-bit parallel bus interface on a BF537 Blackfin running the 
-distribution from blackfin.uclinux.org.  Built into the display is a 
-ILITEK ILI9342 controller (2).  The controller has built-in memory 
-for the framebuffer and handles refreshing the display 
-automatically.  Changing the contents of the framebuffer is done by 
-sending commands to set the starting pixel position, then writing 
-repeatedly to the same address with the data for each successive 
-pixel.  It does not have address lines, so the framebuffer memory is 
-not directly accessible as with the S1D13XXX chips.  A single D/CX 
-pin, which we plan to treat like an address line, controls whether 
-each bus read/write operation is treated as a command or data.
+On Fri, Jun 17, 2011 at 4:10 PM, Steve Strobel
+<steve.strobel@link-comm.com> wrote:
+> It does not have address lines, so the framebuffer memory
+> is not directly accessible
+>
+> If someone could point me to a driver that works in a similar way, it wou=
+ld
+> help me out a lot. =C2=A0Thanks.
 
-I am wondering if there is an existing driver for something that 
-works in a similar way that I could use as a model.  I think I am 
-going to need to create a shadow framebuffer in system memory (maybe 
-using the virtual framebuffer) and DMA it to the graphics controller 
-whenever the displayed information changes (or maybe on the 
-double-buffer flip).  Ultimately I would like to use Qt, so building 
-on the existing framebuffer API seems like a good idea.
+Hi Steve - there are several drivers that handle this kind of case,
+including the udlfb driver for DisplayLink USB graphics chips (in the
+kernel tree /drivers/video/udlfb.c)
 
-If someone could point me to a driver that works in a similar way, it 
-would help me out a lot.  Thanks.
+The main unsolved challenge is fbdev (in the memory mapped framebuffer
+case) assumes writes to the framebuffer take effect immediately.  For
+hardware in which this isn't true (e.g. USB, eink controllers, etc.),
+there are two common solutions. However both have problems:
 
-Steve
+1) Use of /driver/video/fb_defio.c to use the MMU to trigger fault
+handlers on framebuffer writes, and transmit to hardware via delayed
+processing of the dirty pages. However, this implementation still
+appears to have some race conditions which can result in difficult to
+debug problems.  It's also a bit of MMU/cache load.
 
-(1) Datasheet at 
-http://www.tianma-usa.com/web/uploads/spec/0906123532_TM023KDH18%20V1.0.pdf
-(2) Datasheet at http://linkcomm.com/temp/ILI9342.pdf
+2) Use of an ioctl to allow the user mode client to inform the
+framebuffer of changed pixels (usually xorg forwarding X DAMAGE
+notifications, which are well matched for this purpose).  This works
+well and is simple, however we don't yet have a standardized ioctl, so
+several drivers have different ioctls and thus custom x servers,
+instead of being supported by the standard xf86-video-fbdev driver.
 
+#2 would be the quickest way to give Linux a clean way of handling
+remote (non-directly-addressable) framebuffers.
 
+Others may have some additional suggestions.
 
----
-Steve Strobel
-Link Communications, Inc.
-1035 Cerise Rd
-Billings, MT 59101-7378
-(406) 245-5002 ext 102
-(406) 245-4889 (fax)
-WWW: http://www.link-comm.com
-MailTo:steve.strobel@link-comm.com
-
+Hope that helps. Best wishes,
+Bernie
+http://plugable.com/

@@ -1,38 +1,42 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Date: Wed, 29 Jun 2011 13:58:33 +0000
-Subject: RE: [PATCH V7 5/5] ARM: EXYNOS4: Add platform data for EXYNOS4 FIMD
-Message-Id: <004c01cc3664$a640dd00$f2c29700$%kim@samsung.com>
+From: Tushar Behera <tushar.behera@linaro.org>
+Date: Mon, 20 Jun 2011 10:58:01 +0000
+Subject: [PATCH 2/2] video: omap2: Compile omap2 support only when needed
+Message-Id: <1308566761-2850-3-git-send-email-tushar.behera@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1309171858-30397-1-git-send-email-jg1.han@samsung.com>
-In-Reply-To: <1309171858-30397-1-git-send-email-jg1.han@samsung.com>
+References: <1308566761-2850-1-git-send-email-tushar.behera@linaro.org>
+In-Reply-To: <1308566761-2850-1-git-send-email-tushar.behera@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Jingoo Han' <jg1.han@samsung.com>, 'Paul Mundt' <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: 'Anand Kumar N' <anand.kn@samsung.com>, 'Thomas Abraham' <thomas.ab@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Marek Szyprowski' <m.szyprowski@samsung.com>, 'Kyungmin Park' <kmpark@infradead.org>, 'Inki Dae' <inki.dae@samsung.com>, 'ARM Linux' <linux@arm.linux.org.uk>, 'Ben Dooks' <ben-linux@fluff.org>, 'Jonghun Han' <jonghun.han@samsung.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Jingoo Han wrote:
-> 
-> From: Jonghun Han <jonghun.han@samsung.com>
-> 
-> This patch adds support EXYNOS4 FIMD0 and LTE480WV LCD pannel.
-> 
-> Signed-off-by: Jonghun Han <jonghun.han@samsung.com>
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> ---
->  arch/arm/mach-exynos4/mach-smdkc210.c |   71
-> +++++++++++++++++++++++++++++++++
->  arch/arm/mach-exynos4/mach-smdkv310.c |   71
-> +++++++++++++++++++++++++++++++++
->  2 files changed, 142 insertions(+), 0 deletions(-)
-> 
-As I said, don't push same codes into both.
+Currently display support for omap2 is selected by default and
+it gets built for all the configurations.
 
-Thanks.
+Instead of it being a built-in feature, it's compilation should
+depend on the config option CONFIG_FB_OMAP2.
 
-Best regards,
-Kgene.
---
-Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-SW Solution Development Team, Samsung Electronics Co., Ltd.
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
+---
+ drivers/video/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 8b83129..a19e44e 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -133,7 +133,7 @@ obj-$(CONFIG_FB_SH_MOBILE_HDMI)	  += sh_mobile_hdmi.o
+ obj-$(CONFIG_FB_SH_MOBILE_MERAM)  += sh_mobile_meram.o
+ obj-$(CONFIG_FB_SH_MOBILE_LCDC)	  += sh_mobile_lcdcfb.o
+ obj-$(CONFIG_FB_OMAP)             += omap/
+-obj-y                             += omap2/
++obj-$(CONFIG_FB_OMAP2)            += omap2/
+ obj-$(CONFIG_XEN_FBDEV_FRONTEND)  += xen-fbfront.o
+ obj-$(CONFIG_FB_CARMINE)          += carminefb.o
+ obj-$(CONFIG_FB_MB862XX)	  += mb862xx/
+-- 
+1.7.4.1
 

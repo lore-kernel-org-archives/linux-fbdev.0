@@ -1,42 +1,29 @@
-From: Tushar Behera <tushar.behera@linaro.org>
-Date: Mon, 20 Jun 2011 10:58:01 +0000
-Subject: [PATCH 2/2] video: omap2: Compile omap2 support only when needed
-Message-Id: <1308566761-2850-3-git-send-email-tushar.behera@linaro.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 20 Jun 2011 13:06:41 +0000
+Subject: Re: [PATCH 2/2] video: omap2: Compile omap2 support only when
+Message-Id: <1308575201.2076.57.camel@deskari>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1308566761-2850-1-git-send-email-tushar.behera@linaro.org>
-In-Reply-To: <1308566761-2850-1-git-send-email-tushar.behera@linaro.org>
+	<1308566761-2850-3-git-send-email-tushar.behera@linaro.org>
+In-Reply-To: <1308566761-2850-3-git-send-email-tushar.behera@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Currently display support for omap2 is selected by default and
-it gets built for all the configurations.
+On Mon, 2011-06-20 at 16:16 +0530, Tushar Behera wrote:
+> Currently display support for omap2 is selected by default and
+> it gets built for all the configurations.
+> 
+> Instead of it being a built-in feature, it's compilation should
+> depend on the config option CONFIG_FB_OMAP2.
 
-Instead of it being a built-in feature, it's compilation should
-depend on the config option CONFIG_FB_OMAP2.
+No, I don't think so. omap2 directory contains vram, vrfb and omapdss,
+all of which can be used without omapfb driver. vram and vrfb can be
+even used without omapdss driver.
 
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: Tony Lindgren <tony@atomide.com>
-Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
----
- drivers/video/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Is this patch fixing some real problem?
 
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index 8b83129..a19e44e 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -133,7 +133,7 @@ obj-$(CONFIG_FB_SH_MOBILE_HDMI)	  += sh_mobile_hdmi.o
- obj-$(CONFIG_FB_SH_MOBILE_MERAM)  += sh_mobile_meram.o
- obj-$(CONFIG_FB_SH_MOBILE_LCDC)	  += sh_mobile_lcdcfb.o
- obj-$(CONFIG_FB_OMAP)             += omap/
--obj-y                             += omap2/
-+obj-$(CONFIG_FB_OMAP2)            += omap2/
- obj-$(CONFIG_XEN_FBDEV_FRONTEND)  += xen-fbfront.o
- obj-$(CONFIG_FB_CARMINE)          += carminefb.o
- obj-$(CONFIG_FB_MB862XX)	  += mb862xx/
--- 
-1.7.4.1
+ Tomi
+
 

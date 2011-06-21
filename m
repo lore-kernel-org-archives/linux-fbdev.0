@@ -1,30 +1,27 @@
-From: Anatolij Gustschin <agust@denx.de>
-Date: Tue, 21 Jun 2011 22:38:53 +0000
+From: Tabi Timur-B04825 <B04825@freescale.com>
+Date: Tue, 21 Jun 2011 23:13:11 +0000
 Subject: Re: [PATCH] fsl-diu-fb: remove the ioctl interface
-Message-Id: <20110622003853.1041385c@wker>
+Message-Id: <4E012586.7050808@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1308691655-3416-1-git-send-email-timur@freescale.com>
-In-Reply-To: <1308691655-3416-1-git-send-email-timur@freescale.com>
+	<20110622003853.1041385c@wker>
+In-Reply-To: <20110622003853.1041385c@wker>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev@vger.kernel.org, lethal@linux-sh.org, yorksun@freescale.com
+To: Anatolij Gustschin <agust@denx.de>
+Cc: sun york-R58495 <R58495@freescale.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "lethal@linux-sh.org" <lethal@linux-sh.org>, Tabi Timur-B04825 <B04825@freescale.com>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 
-On Tue, 21 Jun 2011 16:27:35 -0500
-Timur Tabi <timur@freescale.com> wrote:
+Anatolij Gustschin wrote:
+> No! We are using ioctl interface of this driver in many video
+> rendering applications on overlay planes on huge number of boards.
+> So, please don't remove it.
 
-> The ioctl interface in the Freescale DIU framebuffer driver is just a
-> collection of miscellaneous functions which were only used in a one-time
-> demo application that was never distributed.  Plus, the ioctls were spread
-> across two types (both conflicting), and the demo app didn't even use all
-> of them.
-> 
-> Removing the ioctl interface also allows us to clean up the header file and
-> remove other unusued stuff.
+Ok, I had no idea anyone was using it.
 
-No! We are using ioctl interface of this driver in many video
-rendering applications on overlay planes on huge number of boards.
-So, please don't remove it.
+Can you email me details about how you use the ioctl interface?  If I can't 
+remove it, maybe I can clean it up.
 
-Anatolij
+-- 
+Timur Tabi
+Linux kernel developer at Freescale

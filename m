@@ -1,54 +1,40 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 09 Jun 2011 04:26:45 +0000
-Subject: [PATCH] [resend] video: s3c-fb: move enabling channel for window
-Message-Id: <1307593605-4569-1-git-send-email-jg1.han@samsung.com>
+Date: Wed, 22 Jun 2011 06:41:13 +0000
+Subject: [PATCH V5 1/5] ARM: EXYNOS4: Change clock name for FIMD
+Message-Id: <1308724873-31382-1-git-send-email-jg1.han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org, Jonghun Han <jonghun.han@samsung.com>
+Cc: Anand Kumar N <anand.kn@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kmpark@infradead.org>, Inki Dae <inki.dae@samsung.com>, ARM Linux <linux@arm.linux.org.uk>, Ben Dooks <ben-linux@fluff.org>, Jingoo Han <jg1.han@samsung.com>
 
-This patch moves enabling channel for window, because there should
-be enabling channel before enabling window. If the sequence is
-reversed, it makes the problem in displaying images to lcd panel.
+This patch changes clock name for FIMD from "fimd" to "lcd".
 
 Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/s3c-fb.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ arch/arm/mach-exynos4/clock.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 0352afa..4f1bc39 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -558,6 +558,13 @@ static int s3c_fb_set_par(struct fb_info *info)
- 	vidosd_set_alpha(win, alpha);
- 	vidosd_set_size(win, data);
- 
-+	/* Enable DMA channel for this window */
-+	if (sfb->variant.has_shadowcon) {
-+		data = readl(sfb->regs + SHADOWCON);
-+		data |= SHADOWCON_CHx_ENABLE(win_no);
-+		writel(data, sfb->regs + SHADOWCON);
-+	}
-+
- 	data = WINCONx_ENWIN;
- 
- 	/* note, since we have to round up the bits-per-pixel, we end up
-@@ -637,13 +644,6 @@ static int s3c_fb_set_par(struct fb_info *info)
- 	writel(data, regs + sfb->variant.wincon + (win_no * 4));
- 	writel(0x0, regs + sfb->variant.winmap + (win_no * 4));
- 
--	/* Enable DMA channel for this window */
--	if (sfb->variant.has_shadowcon) {
--		data = readl(sfb->regs + SHADOWCON);
--		data |= SHADOWCON_CHx_ENABLE(win_no);
--		writel(data, sfb->regs + SHADOWCON);
--	}
--
- 	shadow_protect_win(win, 0);
- 
- 	return 0;
+diff --git a/arch/arm/mach-exynos4/clock.c b/arch/arm/mach-exynos4/clock.c
+index 871f9d5..12e6853 100644
+--- a/arch/arm/mach-exynos4/clock.c
++++ b/arch/arm/mach-exynos4/clock.c
+@@ -433,12 +433,12 @@ static struct clk init_clocks_off[] = {
+ 		.enable		= exynos4_clk_ip_cam_ctrl,
+ 		.ctrlbit	= (1 << 3),
+ 	}, {
+-		.name		= "fimd",
++		.name		= "lcd",
+ 		.id		= 0,
+ 		.enable		= exynos4_clk_ip_lcd0_ctrl,
+ 		.ctrlbit	= (1 << 0),
+ 	}, {
+-		.name		= "fimd",
++		.name		= "lcd",
+ 		.id		= 1,
+ 		.enable		= exynos4_clk_ip_lcd1_ctrl,
+ 		.ctrlbit	= (1 << 0),
 -- 
 1.7.1
 

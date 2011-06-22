@@ -1,60 +1,68 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 14 Jun 2011 09:24:59 +0000
-Subject: [PATCH v2 21/29] savagefb: use display information in info not in var for panning
-Message-Id: <1308043507-11083-22-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Wed, 22 Jun 2011 12:16:44 +0000
+Subject: [PATCH V6 2/5] ARM: EXYNOS4: Add FIMD resource definition
+Message-Id: <1308745004-17601-1-git-send-email-jg1.han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Anand Kumar N <anand.kn@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kmpark@infradead.org>, Inki Dae <inki.dae@samsung.com>, ARM Linux <linux@arm.linux.org.uk>, Ben Dooks <ben-linux@fluff.org>, Jonghun Han <jonghun.han@samsung.com>, Jingoo Han <jg1.han@samsung.com>
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it. Also use the
-aligned fix.line_length and not the (possible) unaligned xres_virtual.
+From: Jonghun Han <jonghun.han@samsung.com>
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Reviewed-by: Tormod Volden <debian.tormod@gmail.com>
-Cc: Antonino Daplas <adaplas@gmail.com>
+This patch adds resource definitions for EXYNOS4 FIMD.
+IRQ and SFR definitions are added.
+
+Signed-off-by: Jonghun Han <jonghun.han@samsung.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/savage/savagefb_driver.c |   16 +++++++---------
- 1 files changed, 7 insertions(+), 9 deletions(-)
+ arch/arm/mach-exynos4/include/mach/irqs.h |    8 ++++++++
+ arch/arm/mach-exynos4/include/mach/map.h  |    5 +++++
+ 2 files changed, 13 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
-index 3b7f2f5..df9e061 100644
---- a/drivers/video/savage/savagefb_driver.c
-+++ b/drivers/video/savage/savagefb_driver.c
-@@ -1477,15 +1477,9 @@ static void savagefb_set_par_int(struct savagefb_par  *par, struct savage_reg *r
- 	vgaHWProtect(par, 0);
- }
+diff --git a/arch/arm/mach-exynos4/include/mach/irqs.h b/arch/arm/mach-exynos4/include/mach/irqs.h
+index 5d03730..2cd2090 100644
+--- a/arch/arm/mach-exynos4/include/mach/irqs.h
++++ b/arch/arm/mach-exynos4/include/mach/irqs.h
+@@ -73,6 +73,14 @@
+ #define IRQ_SYSMMU_MFC_M1_0	COMBINER_IRQ(5, 6)
+ #define IRQ_SYSMMU_PCIE_0	COMBINER_IRQ(5, 7)
  
--static void savagefb_update_start(struct savagefb_par      *par,
--				  struct fb_var_screeninfo *var)
-+static void savagefb_update_start(struct savagefb_par *par, int base)
- {
--	int base;
--
--	base = ((var->yoffset * var->xres_virtual + (var->xoffset & ~1))
--		* ((var->bits_per_pixel+7) / 8)) >> 2;
--
--	/* now program the start address registers */
-+	/* program the start address registers */
- 	vga_out16(0x3d4, (base & 0x00ff00) | 0x0c, par);
- 	vga_out16(0x3d4, ((base & 0x00ff) << 8) | 0x0d, par);
- 	vga_out8(0x3d4, 0x69, par);
-@@ -1550,8 +1544,12 @@ static int savagefb_pan_display(struct fb_var_screeninfo *var,
- 				struct fb_info           *info)
- {
- 	struct savagefb_par *par = info->par;
-+	int base;
++#define IRQ_FIMD0_FIFO		COMBINER_IRQ(11, 0)
++#define IRQ_FIMD0_VSYNC		COMBINER_IRQ(11, 1)
++#define IRQ_FIMD0_SYSTEM	COMBINER_IRQ(11, 2)
 +
-+	base = (var->yoffset * info->fix.line_length
-+	     + (var->xoffset & ~1) * ((info->var.bits_per_pixel+7) / 8)) >> 2;
++#define IRQ_FIMD1_FIFO		COMBINER_IRQ(12, 0)
++#define IRQ_FIMD1_VSYNC		COMBINER_IRQ(12, 1)
++#define IRQ_FIMD1_SYSTEM	COMBINER_IRQ(12, 2)
++
+ #define IRQ_PDMA0		COMBINER_IRQ(21, 0)
+ #define IRQ_PDMA1		COMBINER_IRQ(21, 1)
  
--	savagefb_update_start(par, var);
-+	savagefb_update_start(par, base);
- 	return 0;
- }
+diff --git a/arch/arm/mach-exynos4/include/mach/map.h b/arch/arm/mach-exynos4/include/mach/map.h
+index 0009e77..94006f7 100644
+--- a/arch/arm/mach-exynos4/include/mach/map.h
++++ b/arch/arm/mach-exynos4/include/mach/map.h
+@@ -93,6 +93,9 @@
+ #define EXYNOS4_PA_MIPI_CSIS0		0x11880000
+ #define EXYNOS4_PA_MIPI_CSIS1		0x11890000
  
++#define EXYNOS4_PA_FIMD0		0x11C00000
++#define EXYNOS4_PA_FIMD1		0x12000000
++
+ #define EXYNOS4_PA_HSMMC(x)		(0x12510000 + ((x) * 0x10000))
+ 
+ #define EXYNOS4_PA_SATA			0x12560000
+@@ -140,6 +143,8 @@
+ #define S5P_PA_FIMC3			EXYNOS4_PA_FIMC3
+ #define S5P_PA_MIPI_CSIS0		EXYNOS4_PA_MIPI_CSIS0
+ #define S5P_PA_MIPI_CSIS1		EXYNOS4_PA_MIPI_CSIS1
++#define S5P_PA_FIMD0			EXYNOS4_PA_FIMD0
++#define S5P_PA_FIMD1			EXYNOS4_PA_FIMD1
+ #define S5P_PA_ONENAND			EXYNOS4_PA_ONENAND
+ #define S5P_PA_ONENAND_DMA		EXYNOS4_PA_ONENAND_DMA
+ #define S5P_PA_SDRAM			EXYNOS4_PA_SDRAM
 -- 
-1.7.3.4
+1.7.1
 

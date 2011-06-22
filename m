@@ -1,41 +1,60 @@
-From: WESTERN UNION MONEY TRANSFER <info@wumt.com>
-Date: Sat, 25 Jun 2011 15:37:44 +0000
-Subject: WESTERN UNION 5000.00USD URGENT PICK UP
-Message-Id: <26f8f17f69ca36e10086badb89b90a56@172.16.87.11>
+From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+Date: Wed, 22 Jun 2011 07:49:50 +0000
+Subject: [PATCH 3/5] fbdev: sh_mobile_meram: Move private data from .h to .c
+Message-Id: <1308728992-9660-4-git-send-email-dhobsong@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: info@wumt.com
+To: linux-fbdev@vger.kernel.org
 
+There is no reason for sh_mobile_meram_priv to be in the .h file
+since it should be private to sh_mobile_meram.c
 
+Signed-off-by: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+---
+ drivers/video/sh_mobile_meram.c |    8 ++++++++
+ drivers/video/sh_mobile_meram.h |    8 --------
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
+index 371f129..cc71cbf 100644
+--- a/drivers/video/sh_mobile_meram.c
++++ b/drivers/video/sh_mobile_meram.c
+@@ -37,6 +37,14 @@
+ #define MEQSEL1 0x40
+ #define MEQSEL2 0x44
+ 
++struct sh_mobile_meram_priv {
++	void __iomem	*base;
++	struct mutex	lock;
++	unsigned long	used_icb;
++	int		used_meram_cache_regions;
++	unsigned long	used_meram_cache[SH_MOBILE_MERAM_ICB_NUM];
++};
++
+ /* settings */
+ #define MERAM_SEC_LINE 15
+ #define MERAM_LINE_WIDTH 2048
+diff --git a/drivers/video/sh_mobile_meram.h b/drivers/video/sh_mobile_meram.h
+index 82c54fb..1615204 100644
+--- a/drivers/video/sh_mobile_meram.h
++++ b/drivers/video/sh_mobile_meram.h
+@@ -17,14 +17,6 @@
+ #define SH_MOBILE_MERAM_CACHE_OFFSET(p)	((p) >> 16)
+ #define SH_MOBILE_MERAM_CACHE_SIZE(p)	((p) & 0xffff)
+ 
+-struct sh_mobile_meram_priv {
+-	void __iomem	*base;
+-	struct mutex	lock;
+-	unsigned long	used_icb;
+-	int		used_meram_cache_regions;
+-	unsigned long	used_meram_cache[SH_MOBILE_MERAM_ICB_NUM];
+-};
+-
+ int sh_mobile_meram_alloc_icb(const struct sh_mobile_meram_cfg *cfg,
+ 		   int xres,
+ 		   int yres,
 -- 
-How are you doing today?
-
-I write to inform you that we have already sent you $5000.00USD dollars through Western union as we have been given the mandate to transfer your full benefited sum of $1,800,000.00USD via our office here (Western Union)  by the United nations in conjunction with the Nigeria Government as a compensation.
-
-I called to give you the information through phone as internet hackers were many but i cannot reach you yesterday even this morning.So,I decided to email you the MTCN and sender name so that can pick up this $5000.00USD to enable us send another $5000.00USD by tomorrow as you knows we will be sending you only $5000.00USD per day.
-
-Kindly pick up this information and hurry up to the nearest western union money office that is close to you and pick up this first payment that has been sent to you now and as soon as you are done with the pick up kindly get back to us in order for us to send you another payment by tomorrow,as you know that we shall be sending  you $5000USD par day.
-
-Manager :Mrs.Anita Daniel
-Email: w.westernmoneytransfer@yahoo.com.hk
-
-Email me once you picked up this $5000.00USD today.
-Here is the western union information to pick up the $5000.00USD,
-
-Payment Information.
-MTCN :_______________853-435-9544
-Sender's Name:_________Rose Micheal
-Text Question:__________What
-Answer:_______________Blue
-Amount Sent___________$5000.00USD
-Country:_______________Nigeria
-
-With due respect please get back to us urgently after the pick of the money and 
-if you have any problem you can as well contact us immediately.
-
-Thanks
-Mrs. Anita Daniel.
-western union Office.
+1.7.1
 

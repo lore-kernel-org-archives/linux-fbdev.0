@@ -1,179 +1,68 @@
-From: Mythri P K <mythripk@ti.com>
-Date: Wed, 22 Jun 2011 11:55:15 +0000
-Subject: [PATCH 7/8] HDMI: Move HDMI IP Library from OMAP DSS to common
-Message-Id: <1308742996-19230-8-git-send-email-mythripk@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Wed, 22 Jun 2011 06:41:22 +0000
+Subject: [PATCH V5 2/5] ARM: EXYNOS4: Add FIMD resource definition
+Message-Id: <1308724882-31417-1-git-send-email-jg1.han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Anand Kumar N <anand.kn@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kmpark@infradead.org>, Inki Dae <inki.dae@samsung.com>, ARM Linux <linux@arm.linux.org.uk>, Ben Dooks <ben-linux@fluff.org>, Jonghun Han <jonghun.han@samsung.com>, Jingoo Han <jg1.han@samsung.com>
 
-Moving support of HDMI IP library from OMAP4 DSS directory to Video directory as
-HDMI IP present in both TI OMAP4, TI81xx, TI38xx Processor,Thus the library in
-DSS can be reused in TI81xx, TI38xx processors.
+From: Jonghun Han <jonghun.han@samsung.com>
 
-Although both these processors have different Display subsytem HDMI IP remains
-the same , thus to promote the reuse of code across SoC's, IP library named
-hdmi_4xxx_ip.c is moved from DSS to video directory.Also functions are renamed
-as the module has to export and the function name would be global symbol table,
-hence renaming to function name specific to the library module.
+This patch adds resource definitions for EXYNOS4 FIMD.
+IRQ and SFR definitions are added.
 
-With this approach Independent of their(OMAP/TI81xx/TI38xx) respective DSS, generic IP
-configurations will be done using this library.
-
-Signed-off-by: Mythri P K <mythripk@ti.com>
+Signed-off-by: Jonghun Han <jonghun.han@samsung.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/Kconfig                           |    7 ++++++
- drivers/video/Makefile                          |    1 +
- drivers/video/{omap2/dss => }/hdmi_ti_4xxx_ip.c |   24 ++++++++++++++++++++++-
- drivers/video/{omap2/dss => }/hdmi_ti_4xxx_ip.h |    5 ++++
- drivers/video/omap2/dss/Kconfig                 |    1 +
- drivers/video/omap2/dss/Makefile                |    1 -
- 6 files changed, 37 insertions(+), 2 deletions(-)
- rename drivers/video/{omap2/dss => }/hdmi_ti_4xxx_ip.c (97%)
- rename drivers/video/{omap2/dss => }/hdmi_ti_4xxx_ip.h (98%)
+ arch/arm/mach-exynos4/include/mach/irqs.h |    8 ++++++++
+ arch/arm/mach-exynos4/include/mach/map.h  |    5 +++++
+ 2 files changed, 13 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index e6a8d8c..2204fef 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2341,6 +2341,13 @@ config FB_PUV3_UNIGFX
- 	  Choose this option if you want to use the Unigfx device as a
- 	  framebuffer device. Without the support of PCI & AGP.
+diff --git a/arch/arm/mach-exynos4/include/mach/irqs.h b/arch/arm/mach-exynos4/include/mach/irqs.h
+index 5d03730..2cd2090 100644
+--- a/arch/arm/mach-exynos4/include/mach/irqs.h
++++ b/arch/arm/mach-exynos4/include/mach/irqs.h
+@@ -73,6 +73,14 @@
+ #define IRQ_SYSMMU_MFC_M1_0	COMBINER_IRQ(5, 6)
+ #define IRQ_SYSMMU_PCIE_0	COMBINER_IRQ(5, 7)
  
-+config HDMI_TI_4XXX_IP
-+	tristate
-+	default n
-+	help
-+	  HDMI Library Interface , for TI OMAP4/Netra IP.
-+	  See http://www.hdmi.org/ for HDMI specification.
++#define IRQ_FIMD0_FIFO		COMBINER_IRQ(11, 0)
++#define IRQ_FIMD0_VSYNC		COMBINER_IRQ(11, 1)
++#define IRQ_FIMD0_SYSTEM	COMBINER_IRQ(11, 2)
 +
- source "drivers/video/omap/Kconfig"
- source "drivers/video/omap2/Kconfig"
- 
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index 2ea44b6..3118055 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -133,6 +133,7 @@ obj-$(CONFIG_FB_SH_MOBILE_HDMI)	  += sh_mobile_hdmi.o
- obj-$(CONFIG_FB_SH_MOBILE_LCDC)	  += sh_mobile_lcdcfb.o
- obj-$(CONFIG_FB_OMAP)             += omap/
- obj-y                             += omap2/
-+obj-$(CONFIG_HDMI_TI_4XXX_IP)     += hdmi_ti_4xxx_ip.o
- obj-$(CONFIG_XEN_FBDEV_FRONTEND)  += xen-fbfront.o
- obj-$(CONFIG_FB_CARMINE)          += carminefb.o
- obj-$(CONFIG_FB_MB862XX)	  += mb862xx/
-diff --git a/drivers/video/omap2/dss/hdmi_ti_4xxx_ip.c b/drivers/video/hdmi_ti_4xxx_ip.c
-similarity index 97%
-rename from drivers/video/omap2/dss/hdmi_ti_4xxx_ip.c
-rename to drivers/video/hdmi_ti_4xxx_ip.c
-index 51dc2a8..c8ea145 100644
---- a/drivers/video/omap2/dss/hdmi_ti_4xxx_ip.c
-+++ b/drivers/video/hdmi_ti_4xxx_ip.c
-@@ -29,7 +29,6 @@
- #include <linux/string.h>
- 
- #include "hdmi_ti_4xxx_ip.h"
--#include "dss.h"
- 
- static inline void hdmi_write_reg(void __iomem *base_addr,
- 				const struct hdmi_reg idx, u32 val)
-@@ -179,6 +178,7 @@ if (hdmi_wait_for_bit_change(hdmi_wp_base(ip_data), HDMI_WP_PWR_CTRL,
- 
- 	return 0;
- }
-+EXPORT_SYMBOL(hdmi_ti_4xxx_set_pll_pwr);
- 
- static int hdmi_pll_reset(struct hdmi_ip_data *ip_data)
- {
-@@ -264,6 +264,8 @@ void hdmi_ti_4xxx_phy_off(struct hdmi_ip_data *ip_data)
- {
- 	hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
- }
-+EXPORT_SYMBOL(hdmi_ti_4xxx_phy_init);
-+EXPORT_SYMBOL(hdmi_ti_4xxx_phy_off);
- 
- static int hdmi_core_ddc_edid(struct hdmi_ip_data *ip_data,
- 						u8 *pedid, int ext)
-@@ -404,6 +406,7 @@ int read_ti_4xxx_edid(struct hdmi_ip_data *ip_data, u8 *pedid, u16 max_length)
- 	}
- 	return 0;
- }
-+EXPORT_SYMBOL(read_ti_4xxx_edid);
- 
- static void hdmi_core_init(struct hdmi_core_video_config *video_cfg,
- 			struct hdmi_core_infoframe_avi *avi_cfg,
-@@ -631,6 +634,7 @@ void hdmi_ti_4xxx_wp_video_start(struct hdmi_ip_data *ip_data, bool start)
- {
- 	REG_FLD_MOD(hdmi_wp_base(ip_data), HDMI_WP_VIDEO_CFG, start, 31, 31);
- }
-+EXPORT_SYMBOL(hdmi_ti_4xxx_wp_video_start);
- 
- static void hdmi_wp_video_init_format(struct hdmi_video_format *video_fmt,
- 	struct omap_video_timings *timings, struct hdmi_config *param)
-@@ -779,3 +783,21 @@ void hdmi_ti_4xxx_basic_configure(struct hdmi_ip_data *ip_data,
- 	repeat_cfg.audio_pkt_repeat = HDMI_PACKETREPEATON;
- 	hdmi_core_av_packet_config(ip_data, repeat_cfg);
- }
-+EXPORT_SYMBOL(hdmi_ti_4xxx_basic_configure);
++#define IRQ_FIMD1_FIFO		COMBINER_IRQ(12, 0)
++#define IRQ_FIMD1_VSYNC		COMBINER_IRQ(12, 1)
++#define IRQ_FIMD1_SYSTEM	COMBINER_IRQ(12, 2)
 +
-+static int __init hdmi_ti_4xxx_init(void)
-+{
-+	return 0;
-+}
-+
-+static void __exit hdmi_ti_4xxx_exit(void)
-+{
-+
-+}
-+
-+module_init(hdmi_ti_4xxx_init);
-+module_exit(hdmi_ti_4xxx_exit);
-+
-+MODULE_AUTHOR("Texas Instruments");
-+MODULE_DESCRIPTION("hdmi_ti_4xxx_ip module");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/video/omap2/dss/hdmi_ti_4xxx_ip.h b/drivers/video/hdmi_ti_4xxx_ip.h
-similarity index 98%
-rename from drivers/video/omap2/dss/hdmi_ti_4xxx_ip.h
-rename to drivers/video/hdmi_ti_4xxx_ip.h
-index 97e573c..b0b8c92 100644
---- a/drivers/video/omap2/dss/hdmi_ti_4xxx_ip.h
-+++ b/drivers/video/hdmi_ti_4xxx_ip.h
-@@ -183,6 +183,11 @@ struct hdmi_reg { u16 idx; };
- #define HDMI_TXPHY_POWER_CTRL			HDMI_REG(0x8)
- #define HDMI_TXPHY_PAD_CFG_CTRL			HDMI_REG(0xC)
+ #define IRQ_PDMA0		COMBINER_IRQ(21, 0)
+ #define IRQ_PDMA1		COMBINER_IRQ(21, 1)
  
-+#define FLD_MASK(start, end)	(((1 << ((start) - (end) + 1)) - 1) << (end))
-+#define FLD_VAL(val, start, end) (((val) << (end)) & FLD_MASK(start, end))
-+#define FLD_GET(val, start, end) (((val) & FLD_MASK(start, end)) >> (end))
-+#define FLD_MOD(orig, val, start, end) \
-+	(((orig) & ~FLD_MASK(start, end)) | FLD_VAL(val, start, end))
- #define REG_FLD_MOD(base, idx, val, start, end) \
- 	hdmi_write_reg(base, idx, FLD_MOD(hdmi_read_reg(base, idx),\
- 							val, start, end))
-diff --git a/drivers/video/omap2/dss/Kconfig b/drivers/video/omap2/dss/Kconfig
-index 0d12524..8f9420e 100644
---- a/drivers/video/omap2/dss/Kconfig
-+++ b/drivers/video/omap2/dss/Kconfig
-@@ -63,6 +63,7 @@ config OMAP2_DSS_VENC
- config OMAP4_DSS_HDMI
- 	bool "HDMI support"
- 	depends on ARCH_OMAP4
-+	select HDMI_TI_4XXX_IP
-         default y
- 	help
- 	  HDMI Interface. This adds the High Definition Multimedia Interface.
-diff --git a/drivers/video/omap2/dss/Makefile b/drivers/video/omap2/dss/Makefile
-index cf967e0..10d9d3b 100644
---- a/drivers/video/omap2/dss/Makefile
-+++ b/drivers/video/omap2/dss/Makefile
-@@ -6,5 +6,4 @@ omapdss-$(CONFIG_OMAP2_DSS_VENC) += venc.o
- omapdss-$(CONFIG_OMAP2_DSS_SDI) += sdi.o
- omapdss-$(CONFIG_OMAP2_DSS_DSI) += dsi.o
- omapdss-$(CONFIG_OMAP4_DSS_HDMI) += hdmi.o \
--				    hdmi_ti_4xxx_ip.o \
- 				    hdmi_omap4_panel.o
+diff --git a/arch/arm/mach-exynos4/include/mach/map.h b/arch/arm/mach-exynos4/include/mach/map.h
+index 0009e77..94006f7 100644
+--- a/arch/arm/mach-exynos4/include/mach/map.h
++++ b/arch/arm/mach-exynos4/include/mach/map.h
+@@ -93,6 +93,9 @@
+ #define EXYNOS4_PA_MIPI_CSIS0		0x11880000
+ #define EXYNOS4_PA_MIPI_CSIS1		0x11890000
+ 
++#define EXYNOS4_PA_FIMD0		0x11C00000
++#define EXYNOS4_PA_FIMD1		0x12000000
++
+ #define EXYNOS4_PA_HSMMC(x)		(0x12510000 + ((x) * 0x10000))
+ 
+ #define EXYNOS4_PA_SATA			0x12560000
+@@ -140,6 +143,8 @@
+ #define S5P_PA_FIMC3			EXYNOS4_PA_FIMC3
+ #define S5P_PA_MIPI_CSIS0		EXYNOS4_PA_MIPI_CSIS0
+ #define S5P_PA_MIPI_CSIS1		EXYNOS4_PA_MIPI_CSIS1
++#define S5P_PA_FIMD0			EXYNOS4_PA_FIMD0
++#define S5P_PA_FIMD1			EXYNOS4_PA_FIMD1
+ #define S5P_PA_ONENAND			EXYNOS4_PA_ONENAND
+ #define S5P_PA_ONENAND_DMA		EXYNOS4_PA_ONENAND_DMA
+ #define S5P_PA_SDRAM			EXYNOS4_PA_SDRAM
 -- 
-1.7.5.4
+1.7.1
 

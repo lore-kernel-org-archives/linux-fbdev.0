@@ -1,38 +1,33 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 14 Jun 2011 09:24:49 +0000
-Subject: [PATCH v2 11/29] hgafb: use display information in info not in var for panning
-Message-Id: <1308043507-11083-12-git-send-email-laurent.pinchart@ideasonboard.com>
+From: JinGoo Han <jg1.han@samsung.com>
+Date: Wed, 22 Jun 2011 03:19:51 +0000
+Subject: [PATCH V4 0/5] ARM: EXYNOS4: Add support EXYNOS4 FIMD
+Message-Id: <11032485.109331308712790030.JavaMail.weblogic@epml08>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-fbdev@vger.kernel.org, Jong-Hun
+Cc: ANAND KUMAR N <anand.kn@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, THOMAS P ABRAHAM <thomas.ab@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kmpark@infradead.org>, In-Ki Dae <inki.dae@samsung.com>, ARM Linux <linux@arm.linux.org.uk>, Ben Dooks <ben-linux@fluff.org>, JinGoo Han <jg1.han@samsung.com>
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
-
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Ferenc Bakonyi <fero@drama.obuda.kando.hu>
-Cc: Brent Cook <busterb@gmail.com>
----
- drivers/video/hgafb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/hgafb.c b/drivers/video/hgafb.c
-index 4052718..4394389 100644
---- a/drivers/video/hgafb.c
-+++ b/drivers/video/hgafb.c
-@@ -422,8 +422,8 @@ static int hgafb_pan_display(struct fb_var_screeninfo *var,
- 		    var->xoffset)
- 			return -EINVAL;
- 	} else {
--		if (var->xoffset + var->xres > info->var.xres_virtual
--		 || var->yoffset + var->yres > info->var.yres_virtual
-+		if (var->xoffset + info->var.xres > info->var.xres_virtual
-+		 || var->yoffset + info->var.yres > info->var.yres_virtual
- 		 || var->yoffset % 8)
- 			return -EINVAL;
- 	}
--- 
-1.7.3.4
-
+VGhpcyBwYXRjaCBzZXJpZXMgaXMgYmFzZWQgb24gdGhlIGxhdGVzdApnaXQua2VybmVsLm9yZy9w
+dWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgtMi42LmdpdAoKVGhpcyB3YXMg
+b3JpZ2luYWxseSBzdWJtaXR0ZWQgYnkgSm9uZ2h1biBIYW4gPGpvbmdodW4uaGFuQHNhbXN1bmcu
+Y29tPgpodHRwOi8vd3d3LnNwaW5pY3MubmV0L2xpc3RzL2FybS1rZXJuZWwvbXNnMTAxNzgxLmh0
+bWwKClRoaXMgcGF0Y2ggYWRkcyBzdXBwb3J0IEZJTUQoRnVsbHkgSW50ZXJhY3RpdmUgTW9iaWxl
+IERpc3BsYXkpIG9uIEV4eW5vczQuClRoZSA0dGggcGF0Y2ggaXMgdXBkYXRlIGZvciBzM2MtZmIg
+YW5kIG90aGVycyBhcmUgZm9yIHBsYXRmb3JtIGRhdGEuCgp2MjogY2hhbmdlIGNsb2NrIG5hbWUg
+b2YgZXh5bm9zNCBGSU1EOiAiZmltZCIgLT4gImxjZCIKICAgICB1c2UgJ2hhc19jbGtzZWwnIHZh
+cmlhYmxlIGluIG9yZGVyIHRvIGRpc3Rpbmd1aXNoIEZJTUQgdmVyc2lvbgogICAgIGFkZCAnbGNk
+X2NsaycgdGhhdCBjYW4gYmUgdXNlZCBmb3Igb25seSBsY2QgcGl4ZWwgY2xvY2sKICAgICBhZGQg
+Y2FsbGJhY2sgJ2VuYWJsZV9jbGsoKScgdG8gZW5hYmxlIHBhcmVudCBjbG9jayAnc2Nsa19maW1k
+Jy4KdjM6IHJlbW92ZSB0aGUgY2FsbGJhY2sgZnJvbSB0aGUgcGxhdGZvcm0gZGF0YSBzdHJ1Y3R1
+cmUKdjQ6IG1vdmUgY2xrX2VuYWJsZShzZmItPmxjZF9jbGspIHVuZGVyIHRoZSBpZiBzdGF0ZW1l
+bnQKCm8gVG8gS3VramluIEtpbQpbUEFUQ0ggVjQgMS81XSBBUk06IEVYWU5PUzQ6IENoYW5nZSBj
+bG9jayBuYW1lIGZvciBGSU1ECltQQVRDSCBWNCAyLzVdIEFSTTogRVhZTk9TNDogQWRkIEZJTUQg
+cmVzb3VyY2UgZGVmaW5pdGlvbgpbUEFUQ0ggVjQgMy81XSBBUk06IEVYWU5PUzQ6IEFkZCBwbGF0
+Zm9ybSBkZXZpY2UgYW5kIGhlbHBlciBmdW5jdGlvbnMgZm9yIEZJTUQKW1BBVENIIFY0IDUvNV0g
+QVJNOiBFWFlOT1M0OiBBZGQgcGxhdGZvcm0gZGF0YSBmb3IgRVhZTk9TNCBGSU1EIGFuZCBMVEU0
+ODBXViBwbGF0Zm9ybS1sY2QKCm8gVG8gUGF1bCBNdW5kdApbUEFUQ0ggVjQgNC81XSB2aWRlbzog
+czNjLWZiOiBBZGQgc3VwcG9ydCBFWFlOT1M0IEZJTUT/9Oi6ey5uxyuJt5+uia2GKyWKy/+x6d22
+F6WKd/+6ey5uxyuJt6WKe7H99t16/+Ke2F5uh3Kh9qZ6yxqB62iZqOit2iaj++B6v+R6ud6X+iuA
+yit6ZqOit2iaiKd+hq2G22n//++B6v+R6ud6X+iuD+ZqOit2iaj+Kd+j+G0K

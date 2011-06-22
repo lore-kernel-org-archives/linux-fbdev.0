@@ -1,83 +1,105 @@
-From: Jesper Juhl <jj@chaosbits.net>
-Date: Thu, 23 Jun 2011 22:35:17 +0000
-Subject: [PATCH 18/37] Remove unneeded version.h includes from
-Message-Id: <alpine.LNX.2.00.1106240032560.17688@swampdragon.chaosbits.net>
+From: Mythri P K <mythripk@ti.com>
+Date: Wed, 22 Jun 2011 11:55:11 +0000
+Subject: [PATCH 3/8] OMAP4: DSS: HDMI: Use specific HDMI timings structure
+Message-Id: <1308742996-19230-4-git-send-email-mythripk@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.LNX.2.00.1106232344480.17688@swampdragon.chaosbits.net>
-In-Reply-To: <alpine.LNX.2.00.1106232344480.17688@swampdragon.chaosbits.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: trivial@kernel.org, Michael Hennerich <michael.hennerich@analog.com>, Richard Purdie <rpurdie@rpsys.net>, Paul Mundt <lethal@linux-sh.org>, device-drivers-devel@blackfin.uclinux.org, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-It was pointed out by 'make versioncheck' that some includes of
-linux/version.h are not needed in drivers/video/.
-This patch removes them.
+Define new HDMI timings structure to replace the OMAP DSS timing strucutre in hdmi.c
+to have the HDMI include defintion out of DSS.
 
-Signed-off-by: Jesper Juhl <jj@chaosbits.net>
+Signed-off-by: Mythri P K <mythripk@ti.com>
 ---
- drivers/video/backlight/adp8860_bl.c |    1 -
- drivers/video/backlight/adp8870_bl.c |    1 -
- drivers/video/pxa3xx-gcu.c           |    2 --
- drivers/video/xilinxfb.c             |    1 -
- 4 files changed, 0 insertions(+), 5 deletions(-)
+ drivers/video/omap2/dss/hdmi.c |   23 ++++++++++++++++++++---
+ drivers/video/omap2/dss/hdmi.h |   15 ++++++++++++++-
+ 2 files changed, 34 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/backlight/adp8860_bl.c b/drivers/video/backlight/adp8860_bl.c
-index d2a96a4..24a6dfd 100644
---- a/drivers/video/backlight/adp8860_bl.c
-+++ b/drivers/video/backlight/adp8860_bl.c
-@@ -7,7 +7,6 @@
-  */
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 4ee879a..c24d573 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -593,6 +593,20 @@ static int read_edid(struct hdmi_ip_data *ip_data, u8 *pedid, u16 max_length)
+ 	return 0;
+ }
  
- #include <linux/module.h>
--#include <linux/version.h>
- #include <linux/init.h>
- #include <linux/errno.h>
- #include <linux/pm.h>
-diff --git a/drivers/video/backlight/adp8870_bl.c b/drivers/video/backlight/adp8870_bl.c
-index 05a8832..383c4c3 100644
---- a/drivers/video/backlight/adp8870_bl.c
-+++ b/drivers/video/backlight/adp8870_bl.c
-@@ -7,7 +7,6 @@
-  */
++static void copy_hdmi_to_dss_timings(struct hdmi_video_timings hdmi_timings,
++			struct omap_video_timings *timings)
++{
++	timings->x_res = hdmi_timings.x_res;
++	timings->y_res = hdmi_timings.y_res;
++	timings->pixel_clock = hdmi_timings.pixel_clock;
++	timings->hbp = hdmi_timings.hbp;
++	timings->hfp = hdmi_timings.hfp;
++	timings->hsw = hdmi_timings.hsw;
++	timings->vbp = hdmi_timings.vbp;
++	timings->vfp = hdmi_timings.vfp;
++	timings->vsw = hdmi_timings.vsw;
++}
++
+ static int get_timings_index(void)
+ {
+ 	int code;
+@@ -617,7 +631,7 @@ static struct hdmi_cm hdmi_get_code(struct omap_video_timings *timing)
+ {
+ 	int i = 0, code = -1, temp_vsync = 0, temp_hsync = 0;
+ 	int timing_vsync = 0, timing_hsync = 0;
+-	struct omap_video_timings temp;
++	struct hdmi_video_timings temp;
+ 	struct hdmi_cm cm = {-1};
+ 	DSSDBG("hdmi_get_code\n");
  
- #include <linux/module.h>
--#include <linux/version.h>
- #include <linux/init.h>
- #include <linux/errno.h>
- #include <linux/pm.h>
-diff --git a/drivers/video/pxa3xx-gcu.c b/drivers/video/pxa3xx-gcu.c
-index 0283c70..d8de557 100644
---- a/drivers/video/pxa3xx-gcu.c
-+++ b/drivers/video/pxa3xx-gcu.c
-@@ -31,8 +31,6 @@
-  */
+@@ -775,7 +789,8 @@ static void hdmi_read_edid(struct omap_video_timings *dp)
  
- #include <linux/module.h>
--#include <linux/version.h>
--
- #include <linux/platform_device.h>
- #include <linux/dma-mapping.h>
- #include <linux/miscdevice.h>
-diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
-index 77dea01..fcb6cd9 100644
---- a/drivers/video/xilinxfb.c
-+++ b/drivers/video/xilinxfb.c
-@@ -23,7 +23,6 @@
- #include <linux/device.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
--#include <linux/version.h>
- #include <linux/errno.h>
- #include <linux/string.h>
- #include <linux/mm.h>
+ 	code = get_timings_index();
+ 
+-	*dp = cea_vesa_timings[code].timings;
++	copy_hdmi_to_dss_timings(cea_vesa_timings[code].timings, dp);
++
+ }
+ 
+ static void hdmi_core_init(struct hdmi_core_video_config *video_cfg,
+@@ -1234,7 +1249,9 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
+ 		hdmi_read_edid(p);
+ 	}
+ 	code = get_timings_index();
+-	dssdev->panel.timings = cea_vesa_timings[code].timings;
++	copy_hdmi_to_dss_timings(cea_vesa_timings[code].timings,
++			&dssdev->panel.timings);
++
+ 	update_hdmi_timings(&hdmi.cfg, p, code);
+ 
+ 	phy = p->pixel_clock;
+diff --git a/drivers/video/omap2/dss/hdmi.h b/drivers/video/omap2/dss/hdmi.h
+index f57ef4a..dcc30b7 100644
+--- a/drivers/video/omap2/dss/hdmi.h
++++ b/drivers/video/omap2/dss/hdmi.h
+@@ -188,9 +188,22 @@ struct hdmi_reg { u16 idx; };
+ #define REG_GET(base, idx, start, end) \
+ 	FLD_GET(hdmi_read_reg(base, idx), start, end)
+ 
++struct hdmi_video_timings {
++	u16 x_res;
++	u16 y_res;
++	/* Unit: KHz */
++	u32 pixel_clock;
++	u16 hsw;
++	u16 hfp;
++	u16 hbp;
++	u16 vsw;
++	u16 vfp;
++	u16 vbp;
++};
++
+ /* HDMI timing structure */
+ struct hdmi_timings {
+-	struct omap_video_timings timings;
++	struct hdmi_video_timings timings;
+ 	int vsync_pol;
+ 	int hsync_pol;
+ };
 -- 
-1.7.5.2
-
-
--- 
-Jesper Juhl <jj@chaosbits.net>       http://www.chaosbits.net/
-Don't top-post http://www.catb.org/jargon/html/T/top-post.html
-Plain text mails only, please.
+1.7.5.4
 

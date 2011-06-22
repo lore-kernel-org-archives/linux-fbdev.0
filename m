@@ -1,207 +1,183 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Date: Wed, 22 Jun 2011 09:47:09 +0000
-Subject: RE: [PATCH V5 5/5] ARM: EXYNOS4: Add platform data for EXYNOS4 FIMD
-Message-Id: <002901cc30c1$5ac6ef70$1054ce50$%szyprowski@samsung.com>
+From: Anand Kumar N <anand.kn@samsung.com>
+Date: Wed, 22 Jun 2011 13:37:14 +0000
+Subject: Re: [PATCH V5 5/5] ARM: EXYNOS4: Add platform data for EXYNOS4 FIMD
+Message-Id: <BANLkTi=iS3H8xYhouvZZwP5_daxoGSBwLA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1308724904-31521-1-git-send-email-jg1.han@samsung.com>
-In-Reply-To: <1308724904-31521-1-git-send-email-jg1.han@samsung.com>
+	<002901cc30c1$5ac6ef70$1054ce50$%szyprowski@samsung.com>
+	<BANLkTimPjo+WefApQLe=HKbYLCwmo_gGRw@mail.gmail.com>
+In-Reply-To: <BANLkTimPjo+WefApQLe=HKbYLCwmo_gGRw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: 'Jingoo Han' <jg1.han@samsung.com>, 'Kukjin Kim' <kgene.kim@samsung.com>, 'Paul Mundt' <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: 'Anand Kumar N' <anand.kn@samsung.com>, 'Thomas Abraham' <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, 'Kyungmin Park' <kmpark@infradead.org>, 'Inki Dae' <inki.dae@samsung.com>, 'ARM Linux' <linux@arm.linux.org.uk>, 'Ben Dooks' <ben-linux@fluff.org>, 'Jonghun Han' <jonghun.han@samsung.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Jingoo Han <jg1.han@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org, Jonghun Han <jonghun.han@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Kyungmin Park <kmpark@infradead.org>, Inki Dae <inki.dae@samsung.com>, ARM Linux <linux@arm.linux.org.uk>, Ben Dooks <ben-linux@fluff.org>
 
-Hello,
+Hi Marek/Jingoo,
 
-On Wednesday, June 22, 2011 8:42 AM Jingoo Han wrote:
-
-> From: Jonghun Han <jonghun.han@samsung.com>
-> 
-> This patch adds support EXYNOS4 FIMD0 and LTE480WV LCD pannel.
-> 
-> Signed-off-by: Jonghun Han <jonghun.han@samsung.com>
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> ---
->  arch/arm/mach-exynos4/mach-smdkc210.c |  114
-> +++++++++++++++++++++++++++++++++
->  arch/arm/mach-exynos4/mach-smdkv310.c |  114
-> +++++++++++++++++++++++++++++++++
->  2 files changed, 228 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/arm/mach-exynos4/mach-smdkc210.c b/arch/arm/mach-
-> exynos4/mach-smdkc210.c
-> index e645f7a..360a50a 100644
-> --- a/arch/arm/mach-exynos4/mach-smdkc210.c
-> +++ b/arch/arm/mach-exynos4/mach-smdkc210.c
-> @@ -9,26 +9,33 @@
->  */
-> 
->  #include <linux/serial_core.h>
-> +#include <linux/delay.h>
->  #include <linux/gpio.h>
-> +#include <linux/lcd.h>
->  #include <linux/mmc/host.h>
->  #include <linux/platform_device.h>
->  #include <linux/smsc911x.h>
->  #include <linux/io.h>
->  #include <linux/i2c.h>
-> +#include <linux/clk.h>
-> 
->  #include <asm/mach/arch.h>
->  #include <asm/mach-types.h>
-> 
-> +#include <video/platform_lcd.h>
-> +
->  #include <plat/regs-serial.h>
->  #include <plat/regs-srom.h>
->  #include <plat/exynos4.h>
->  #include <plat/cpu.h>
->  #include <plat/devs.h>
-> +#include <plat/fb.h>
->  #include <plat/sdhci.h>
->  #include <plat/iic.h>
->  #include <plat/pd.h>
-> 
->  #include <mach/map.h>
-> +#include <mach/regs-fb.h>
-> 
->  /* Following are default values for UCON, ULCON and UFCON UART registers
-> */
->  #define SMDKC210_UCON_DEFAULT	(S3C2410_UCON_TXILEVEL |	\
-> @@ -111,6 +118,69 @@ static struct s3c_sdhci_platdata smdkc210_hsmmc3_pdata
-> __initdata = {
->  	.clk_type		= S3C_SDHCI_CLK_DIV_EXTERNAL,
->  };
-> 
-> +static void lcd_lte480wv_set_power(struct plat_lcd_data *pd,
-> +				   unsigned int power)
-> +{
-> +	if (power) {
-> +#if !defined(CONFIG_BACKLIGHT_PWM)
-> +		gpio_request(EXYNOS4_GPD0(1), "GPD0");
-> +		gpio_direction_output(EXYNOS4_GPD0(1), 1);
-> +		gpio_free(EXYNOS4_GPD0(1));
-> +#endif
-> +		/* fire nRESET on power up */
-> +		gpio_request(EXYNOS4_GPX0(6), "GPX0");
-> +
-> +		gpio_direction_output(EXYNOS4_GPX0(6), 1);
-> +		mdelay(100);
-> +
-> +		gpio_set_value(EXYNOS4_GPX0(6), 0);
-> +		mdelay(10);
-> +
-> +		gpio_set_value(EXYNOS4_GPX0(6), 1);
-> +		mdelay(10);
-> +
-> +		gpio_free(EXYNOS4_GPX0(6));
-> +	} else {
-> +#if !defined(CONFIG_BACKLIGHT_PWM)
-> +		gpio_request(EXYNOS4_GPD0(1), "GPD0");
-> +		gpio_direction_output(EXYNOS4_GPD0(1), 0);
-> +		gpio_free(EXYNOS4_GPD0(1));
-> +#endif
-> +	}
-> +}
-> +
-> +static struct plat_lcd_data smdkc210_lcd_lte480wv_data = {
-> +	.set_power      = lcd_lte480wv_set_power,
-> +};
-> +
-> +static struct platform_device smdkc210_lcd_lte480wv = {
-> +	.name                   = "platform-lcd",
-> +	.dev.parent             = &s5p_device_fimd0.dev,
-> +	.dev.platform_data      = &smdkc210_lcd_lte480wv_data,
-> +};
-> +
-> +static struct s3c_fb_pd_win smdkc210_fb_win0 = {
-> +	.win_mode = {
-> +		.left_margin    = 13,
-> +		.right_margin   = 8,
-> +		.upper_margin   = 7,
-> +		.lower_margin   = 5,
-> +		.hsync_len      = 3,
-> +		.vsync_len      = 1,
-> +		.xres   = 800,
-> +		.yres   = 480,
-> +	},
-> +	.max_bpp        = 32,
-> +	.default_bpp    = 24,
-> +};
-> +
-> +static struct s3c_fb_platdata smdkc210_lcd0_pdata __initdata = {
-> +	.win[0]		= &smdkc210_fb_win0,
-> +	.vidcon0	= VIDCON0_VIDOUT_RGB | VIDCON0_PNRMODE_RGB,
-> +	.vidcon1	= VIDCON1_INV_HSYNC | VIDCON1_INV_VSYNC,
-> +	.setup_gpio	= exynos4_fimd0_gpio_setup_24bpp,
-> +};
-> +
->  static struct resource smdkc210_smsc911x_resources[] = {
->  	[0] = {
->  		.start	= EXYNOS4_PA_SROM_BANK(1),
-> @@ -165,6 +235,8 @@ static struct platform_device *smdkc210_devices[]
-> __initdata = {
->  	&exynos4_device_pd[PD_GPS],
->  	&exynos4_device_sysmmu,
->  	&samsung_asoc_dma,
-> +	&s5p_device_fimd0,
-> +	&smdkc210_lcd_lte480wv,
->  	&smdkc210_smsc911x,
->  };
-> 
-> @@ -191,6 +263,44 @@ static void __init smdkc210_smsc911x_init(void)
->  		     (0x1 << S5P_SROM_BCX__TACS__SHIFT), S5P_SROM_BC1);
->  }
-> 
-> +static int __init smdkc210_fimd0_setup_clock(void)
-> +{
-> +	struct clk *sclk = NULL;
-> +	struct clk *mout_mpll = NULL;
-> +
-> +	u32 rate = 0;
-> +
-> +	sclk = clk_get(&s5p_device_fimd0.dev, "sclk_fimd");
-> +	if (IS_ERR(sclk)) {
-> +		printk(KERN_ERR "failed to get sclk for fimd\n");
-> +		goto err_clk2;
-> +	}
-> +
-> +	mout_mpll = clk_get(NULL, "mout_mpll");
-> +	if (IS_ERR(mout_mpll)) {
-> +		printk(KERN_ERR "failed to get mout_mpll\n");
-> +		goto err_clk1;
-> +	}
-> +
-> +	clk_set_parent(sclk, mout_mpll);
-> +	if (!rate)
-> +		rate = 134000000;
-> +
-> +	clk_set_rate(sclk, rate);
-> +
-> +	clk_put(sclk);
-> +	clk_put(mout_mpll);
-> +
-> +	return 0;
-> +
-> +err_clk1:
-> +	clk_put(mout_mpll);
-> +err_clk2:
-> +	clk_put(sclk);
-> +
-> +	return -EINVAL;
-> +}
-> +
-
-I'm not sure if mach-smdk*.c is the right place for the above code.
-IMHO all the code that configures very low level, board specific parameters
-(like clocks and their relations) should be performed in boot loarder.
-
+On Wed, Jun 22, 2011 at 3:17 PM, Marek Szyprowski
+<m.szyprowski@samsung.com> wrote:
+> Hello,
+>
+> On Wednesday, June 22, 2011 8:42 AM Jingoo Han wrote:
+>
+>> From: Jonghun Han <jonghun.han@samsung.com>
 (snipped)
+Instead of hardcoding the parent clock in platform/bootloader code ,is
+it not possible to select/set the
+parent clock based on the pixel clk(plat data) having the least delta
+with the 9 src clks.with this change I have checked it for WA101S.
+These are the changes I am proposing..
 
-Best regards
--- 
-Marek Szyprowski
-Samsung Poland R&D Center
+arch/arm/mach-exynos4/clock.c
++struct clk *clkset_sclk_fimd0_list[] =3D {
++ =A0 =A0 =A0 =A0[0] =3D &clk_sclk_xxti,
++ =A0 =A0 =A0 =A0[1] =3D &clk_sclk_xusbxti,
++ =A0 =A0 =A0 =A0[2] =3D &clk_sclk_hdmi27m,
++ =A0 =A0 =A0 =A0[3] =3D &clk_sclk_usbphy0,
++ =A0 =A0 =A0 =A0[4] =3D &clk_sclk_usbphy1,
++ =A0 =A0 =A0 =A0[5] =3D &clk_sclk_hdmiphy,
++ =A0 =A0 =A0 =A0[6] =3D &clk_mout_mpll.clk,
++ =A0 =A0 =A0 =A0[7] =3D &clk_mout_epll.clk,
++ =A0 =A0 =A0 =A0[8] =3D &clk_sclk_vpll.clk,
++};
+arch/arm/mach-exynos4/mach-smdkv310.c
++static int fimd_s3c_consider_clock(struct device *sfb,int src
+,unsigned int wanted)
++{
++ =A0 =A0 =A0 =A0unsigned long rate =3D 0;
++ =A0 =A0 =A0 =A0int div =3D1;
++ =A0 =A0 =A0 =A0struct clk *mout_mpll =3D NULL;
++
++ =A0 =A0 =A0 =A0if(clkset_sclk_fimd0_list[src]){
++ =A0 =A0 =A0 =A0mout_mpll =3D clk_get(sfb,clkset_sclk_fimd0_list[src]->nam=
+e);
++ =A0 =A0 =A0 =A0if (IS_ERR(mout_mpll)) {
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(sfb, "failed to clk_get
+%s\n",clkset_sclk_fimd0_list[src]->name);
++ =A0 =A0 =A0 =A0}
++
++ =A0 =A0 =A0 =A0rate =3D clk_get_rate(mout_mpll);
++
++ =A0 =A0 =A0 =A0for (div =3D 1; div < 256; div *=3D 2) {
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if ((rate / div) <=3D wanted)
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0break;
++ =A0 =A0 =A0 =A0}
++
++
++ =A0 =A0 =A0 }
++ =A0 =A0 =A0 =A0return (wanted - (rate / div));
++}
++
++int exynos4_fimd0_find_clock(struct platform_device *pdev,struct clk
+**lcd_clk,unsigned int clock(pixel clock needed for the lcd))
++{
++ =A0 =A0 =A0 =A0int best =3D 0;
++ =A0 =A0 =A0 =A0int delta =3D 0;
++ =A0 =A0 =A0 =A0int best_src =3D 0;
++ =A0 =A0 =A0 =A0int src;
++ =A0 =A0 =A0 =A0struct clk *best_clk_src =3D NULL;
++ =A0 =A0 =A0 struct clk *clk =A0=3D NULL;
++
++ =A0 =A0 =A0 if (clock =3D 0)
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return 0;
++
++ =A0 =A0 =A0 =A0for (src =3D 0; src < MAX_NUM_CLKS ;src++) {
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0delta =3D fimd_s3c_consider_clock(&pdev->d=
+ev,src,clock);
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (delta < best) {
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0best =3D delta;
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0best_src =3D src;
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
++ =A0 =A0 =A0 =A0}
++ =A0 =A0 =A0 clk =3D clk_get(&pdev->dev, "sclk_fimd");
++ =A0 =A0 =A0 =A0if (IS_ERR(clk)) {
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&pdev->dev, "failed to get sclk for f=
+imd\n");
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_clk2;
++ =A0 =A0 =A0 }
++
++ =A0 =A0 =A0 best_clk_src clk_get(&pdev->dev,clkset_sclk_fimd0_list[best_s=
+rc]->name);
++ =A0 =A0 =A0 if (IS_ERR(best_clk_src)) {
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&pdev->dev, "failed to get best_src\n=
+");
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_clk1;
++ =A0 =A0 =A0 }
++ =A0 =A0 =A0 clk_set_parent(clk,best_clk_src);
++ =A0 =A0 =A0 *lcd_clk =3D clk;
++ =A0 =A0 =A0 =A0clk_put(best_clk_src);
++ =A0 =A0 =A0 =A0clk_enable(clk);
++ =A0 =A0 =A0 =A0dev_dbg(&pdev->dev, "set fimd sclk rate to %d\n", clock);
++
++err_clk1:
++ =A0 =A0 =A0 clk_put(best_clk_src);
++err_clk2:
++ =A0 =A0 =A0 clk_put(clk);
++
++ =A0 =A0 =A0 return -EINVAL;
++}
+I have based these patches on the v1 version of this patch.I can base
+these changes
+on your latest changes(v6) and send as a patch.
 
+>> +static int __init smdkc210_fimd0_setup_clock(void)
+>> +{
+>> + =A0 =A0 struct clk *sclk =3D NULL;
+>> + =A0 =A0 struct clk *mout_mpll =3D NULL;
+>> +
+>> + =A0 =A0 u32 rate =3D 0;
+>> +
+>> + =A0 =A0 sclk =3D clk_get(&s5p_device_fimd0.dev, "sclk_fimd");
+>> + =A0 =A0 if (IS_ERR(sclk)) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_ERR "failed to get sclk for fimd\n=
+");
+>> + =A0 =A0 =A0 =A0 =A0 =A0 goto err_clk2;
+>> + =A0 =A0 }
+>> +
+>> + =A0 =A0 mout_mpll =3D clk_get(NULL, "mout_mpll");
+>> + =A0 =A0 if (IS_ERR(mout_mpll)) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_ERR "failed to get mout_mpll\n");
+>> + =A0 =A0 =A0 =A0 =A0 =A0 goto err_clk1;
+>> + =A0 =A0 }
+>> +
+>> + =A0 =A0 clk_set_parent(sclk, mout_mpll);
+>> + =A0 =A0 if (!rate)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 rate =3D 134000000;
+>> +
+>> + =A0 =A0 clk_set_rate(sclk, rate);
+>> +
+>> + =A0 =A0 clk_put(sclk);
+>> + =A0 =A0 clk_put(mout_mpll);
+>> +
+>> + =A0 =A0 return 0;
+>> +
+>> +err_clk1:
+>> + =A0 =A0 clk_put(mout_mpll);
+>> +err_clk2:
+>> + =A0 =A0 clk_put(sclk);
+>> +
+>> + =A0 =A0 return -EINVAL;
+>> +}
+>> +
+>
+> I'm not sure if mach-smdk*.c is the right place for the above code.
+> IMHO all the code that configures very low level, board specific paramete=
+rs
+> (like clocks and their relations) should be performed in boot loarder.
+>
 
+I feel pushing the clock enabling into the bootloader,will create an
+unneccesary dependcy for the lcd on the u-boot.
 
+> (snipped)
+>
+> Best regards
+> --
+> Marek Szyprowski
+> Samsung Poland R&D Center
+>
+>
+>
+regards
+anand

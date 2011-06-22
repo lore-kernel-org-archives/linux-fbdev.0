@@ -1,40 +1,33 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Wed, 22 Jun 2011 12:16:23 +0000
-Subject: [PATCH V6 1/5] ARM: EXYNOS4: Change clock name for FIMD
-Message-Id: <1308744983-17550-1-git-send-email-jg1.han@samsung.com>
+From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+Date: Wed, 22 Jun 2011 07:49:52 +0000
+Subject: [PATCH 5/5] fbdev: sh_mobile_meram: Assign meram to the SH7372_A4LC power domain
+Message-Id: <1308728992-9660-6-git-send-email-dhobsong@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org, Jonghun Han <jonghun.han@samsung.com>
-Cc: Anand Kumar N <anand.kn@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kmpark@infradead.org>, Inki Dae <inki.dae@samsung.com>, ARM Linux <linux@arm.linux.org.uk>, Ben Dooks <ben-linux@fluff.org>, Jingoo Han <jg1.han@samsung.com>
+To: linux-fbdev@vger.kernel.org
 
-This patch changes clock name for FIMD from "fimd" to "lcd".
+Register the MERAM device as a part of the A4LC power domain for
+power management.
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Damian Hobson-Garcia <dhobsong@igel.co.jp>
 ---
- arch/arm/mach-exynos4/clock.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/mach-shmobile/board-mackerel.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/mach-exynos4/clock.c b/arch/arm/mach-exynos4/clock.c
-index 871f9d5..12e6853 100644
---- a/arch/arm/mach-exynos4/clock.c
-+++ b/arch/arm/mach-exynos4/clock.c
-@@ -433,12 +433,12 @@ static struct clk init_clocks_off[] = {
- 		.enable		= exynos4_clk_ip_cam_ctrl,
- 		.ctrlbit	= (1 << 3),
- 	}, {
--		.name		= "fimd",
-+		.name		= "lcd",
- 		.id		= 0,
- 		.enable		= exynos4_clk_ip_lcd0_ctrl,
- 		.ctrlbit	= (1 << 0),
- 	}, {
--		.name		= "fimd",
-+		.name		= "lcd",
- 		.id		= 1,
- 		.enable		= exynos4_clk_ip_lcd1_ctrl,
- 		.ctrlbit	= (1 << 0),
+diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
+index f556b2a..53f2b93 100644
+--- a/arch/arm/mach-shmobile/board-mackerel.c
++++ b/arch/arm/mach-shmobile/board-mackerel.c
+@@ -1585,6 +1585,7 @@ static void __init mackerel_init(void)
+ 	sh7372_init_pm_domain(&sh7372_a4lc_domain);
+ 	sh7372_add_device_to_domain(SH7372_A4LC, &lcdc_device);
+ 	sh7372_add_device_to_domain(SH7372_A4LC, &hdmi_lcdc_device);
++	sh7372_add_device_to_domain(SH7372_A4LC, &meram_device);
+ 
+ 	hdmi_init_pm_clock();
+ 	sh7372_pm_init();
 -- 
 1.7.1
 

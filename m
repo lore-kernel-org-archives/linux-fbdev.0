@@ -1,38 +1,48 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 14 Jun 2011 09:24:56 +0000
-Subject: [PATCH v2 18/29] pm3fb: use display information in info not in var for panning
-Message-Id: <1308043507-11083-19-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+Date: Wed, 22 Jun 2011 07:49:47 +0000
+Subject: [PATCH 0/5 v3] LCDC MERAM runtime PM support
+Message-Id: <1308728992-9660-1-git-send-email-dhobsong@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+This patch series is a provides PM runtime support for the LCDC MERAM.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
----
- drivers/video/pm3fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+The runtime_pm_get/put calls are made at the same time as the LCDC calls, so
+that the LCDC MERAM is enabled with the first LCDC device and disabled 
+with the last LCDC device.
 
-diff --git a/drivers/video/pm3fb.c b/drivers/video/pm3fb.c
-index 6666f45..8221b5b 100644
---- a/drivers/video/pm3fb.c
-+++ b/drivers/video/pm3fb.c
-@@ -1147,9 +1147,9 @@ static int pm3fb_pan_display(struct fb_var_screeninfo *var,
- 				 struct fb_info *info)
- {
- 	struct pm3_par *par = info->par;
--	const u32 xres = (var->xres + 31) & ~31;
-+	const u32 xres = (info->var.xres + 31) & ~31;
- 
--	par->base = pm3fb_shift_bpp(var->bits_per_pixel,
-+	par->base = pm3fb_shift_bpp(info->var.bits_per_pixel,
- 					(var->yoffset * xres)
- 					+ var->xoffset);
- 	PM3_WAIT(par, 1);
--- 
-1.7.3.4
+The first 4 patches will apply to rmobile-latest or common/fbdev-meram as-is,
+but the final patch needs to have the "PM / Domains: Support for generic I/O PM
+domains" patch series. 
+
+Changes from V2
+
+* Change the names of the clk_on/clk_off callbacks to pm_get_sync/pm_put_sync
+  to better reflect their actual functionality
+
+* Make these callback functions static
+
+* The private data structure definition was moved from sh_mobile_meram.h to
+  sh_mobile_meram.c.  This has been moved into a separate patch
+
+* Use the sh7372_add_device_to_domain() function to register the MERAM in
+  the SH7372_A4LC domain.
+
+Damian Hobson-Garcia (5):
+  fbdev: sh_mobile_meram: Add enable/disble hooks for LCDC
+  fbdev: sh_mobile_meram: Enable/disable MERAM along with LCDC
+  fbdev: sh_mobile_meram: Move private data from .h to .c
+  fbdev: sh_mobile_meram: Backup/restore device registers on
+    shutdown/resume
+  fbdev: sh_mobile_meram: Assign meram to the SH7372_A4LC power domain
+
+ arch/arm/mach-shmobile/board-mackerel.c |    1 +
+ drivers/video/sh_mobile_lcdcfb.c        |   10 +++
+ drivers/video/sh_mobile_meram.c         |  106 +++++++++++++++++++++++++++++++
+ drivers/video/sh_mobile_meram.h         |    8 ---
+ include/video/sh_mobile_meram.h         |    6 ++
+ 5 files changed, 123 insertions(+), 8 deletions(-)
 

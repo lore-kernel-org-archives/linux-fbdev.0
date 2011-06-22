@@ -1,288 +1,192 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 09 Jun 2011 13:56:27 +0000
-Subject: [PATCHv2 05/28] OMAP: DSS2: Clean up probe for DSS & DSI
-Message-Id: <1307627810-3768-6-git-send-email-tomi.valkeinen@ti.com>
+From: Mythri P K <mythripk@ti.com>
+Date: Wed, 22 Jun 2011 11:55:14 +0000
+Subject: [PATCH 6/8] OMAP4: DSS: HDMI: Rename the functions in HDMI IP
+Message-Id: <1308742996-19230-7-git-send-email-mythripk@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Both dss.c and dsi.c had a probe function, which was almost a dummy one,
-calling dss_init() and dsi_init().
+Functions that are included in the generic video include of HDMI TI OMAP4, TI8xx
+etc IP library is renamed to have IP specific names so that it will not conflict
+with similar function from other IP.
 
-Remove the init functions by moving the initialization code into probe
-functions.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Mythri P K <mythripk@ti.com>
 ---
- drivers/video/omap2/dss/dsi.c |   30 ++-------
- drivers/video/omap2/dss/dss.c |  145 ++++++++++++++++++-----------------------
- 2 files changed, 69 insertions(+), 106 deletions(-)
+ drivers/video/omap2/dss/hdmi.c            |   18 +++++++++---------
+ drivers/video/omap2/dss/hdmi_ti_4xxx_ip.c |   18 +++++++++---------
+ include/video/hdmi_ti_4xxx_ip.h           |   14 +++++++-------
+ 3 files changed, 25 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 4496d09..0609885 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -4450,7 +4450,8 @@ static void dsi_calc_clock_param_ranges(struct platform_device *dsidev)
- 	dsi->lpdiv_max = dss_feat_get_param_max(FEAT_PARAM_DSIPLL_LPDIV);
- }
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 1bd98d9..d42bb5d 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -395,7 +395,7 @@ static void hdmi_read_edid(struct omap_video_timings *dp)
+ 	memset(hdmi.edid, 0, HDMI_EDID_MAX_LENGTH);
  
--static int dsi_init(struct platform_device *dsidev)
-+/* DSI1 HW IP initialisation */
-+static int omap_dsi1hw_probe(struct platform_device *dsidev)
- {
- 	struct omap_display_platform_data *dss_plat_data;
- 	struct omap_dss_board_info *board_info;
-@@ -4547,10 +4548,12 @@ err0:
- 	return r;
- }
+ 	if (!hdmi.edid_set)
+-		ret = read_edid(&hdmi.hdmi_data, hdmi.edid,
++		ret = read_ti_4xxx_edid(&hdmi.hdmi_data, hdmi.edid,
+ 						HDMI_EDID_MAX_LENGTH);
+ 	if (!ret) {
+ 		if (!memcmp(hdmi.edid, edid_header, sizeof(edid_header))) {
+@@ -508,16 +508,16 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
  
--static void dsi_exit(struct platform_device *dsidev)
-+static int omap_dsi1hw_remove(struct platform_device *dsidev)
- {
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	hdmi_compute_pll(dssdev, phy, &pll_data);
  
-+	WARN_ON(dsi->scp_clk_refcount > 0);
-+
- 	if (dsi->vdds_dsi_reg != NULL) {
- 		if (dsi->vdds_dsi_enabled) {
- 			regulator_disable(dsi->vdds_dsi_reg);
-@@ -4566,29 +4569,6 @@ static void dsi_exit(struct platform_device *dsidev)
+-	hdmi_wp_video_start(&hdmi.hdmi_data, 0);
++	hdmi_ti_4xxx_wp_video_start(&hdmi.hdmi_data, 0);
  
- 	kfree(dsi);
- 
--	DSSDBG("omap_dsi_exit\n");
--}
--
--/* DSI1 HW IP initialisation */
--static int omap_dsi1hw_probe(struct platform_device *dsidev)
--{
--	int r;
--
--	r = dsi_init(dsidev);
--	if (r) {
--		DSSERR("Failed to initialize DSI\n");
--		goto err_dsi;
--	}
--err_dsi:
--	return r;
--}
--
--static int omap_dsi1hw_remove(struct platform_device *dsidev)
--{
--	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
--
--	dsi_exit(dsidev);
--	WARN_ON(dsi->scp_clk_refcount > 0);
- 	return 0;
- }
- 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index bcd4a07..57ce428 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -664,79 +664,6 @@ void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select hdmi)
- 	REG_FLD_MOD(DSS_CONTROL, hdmi, 15, 15);	/* VENC_HDMI_SWITCH */
- }
- 
--static int dss_init(void)
--{
--	int r;
--	u32 rev;
--	struct resource *dss_mem;
--
--	dss_mem = platform_get_resource(dss.pdev, IORESOURCE_MEM, 0);
--	if (!dss_mem) {
--		DSSERR("can't get IORESOURCE_MEM DSS\n");
--		r = -EINVAL;
--		goto fail0;
--	}
--	dss.base = ioremap(dss_mem->start, resource_size(dss_mem));
--	if (!dss.base) {
--		DSSERR("can't ioremap DSS\n");
--		r = -ENOMEM;
--		goto fail0;
--	}
--
--	/* disable LCD and DIGIT output. This seems to fix the synclost
--	 * problem that we get, if the bootloader starts the DSS and
--	 * the kernel resets it */
--	omap_writel(omap_readl(0x48050440) & ~0x3, 0x48050440);
--
--#ifdef CONFIG_OMAP2_DSS_SLEEP_BEFORE_RESET
--	/* We need to wait here a bit, otherwise we sometimes start to
--	 * get synclost errors, and after that only power cycle will
--	 * restore DSS functionality. I have no idea why this happens.
--	 * And we have to wait _before_ resetting the DSS, but after
--	 * enabling clocks.
--	 *
--	 * This bug was at least present on OMAP3430. It's unknown
--	 * if it happens on OMAP2 or OMAP3630.
--	 */
--	msleep(50);
--#endif
--
--	_omap_dss_reset();
--
--	/* autoidle */
--	REG_FLD_MOD(DSS_SYSCONFIG, 1, 0, 0);
--
--	/* Select DPLL */
--	REG_FLD_MOD(DSS_CONTROL, 0, 0, 0);
--
--#ifdef CONFIG_OMAP2_DSS_VENC
--	REG_FLD_MOD(DSS_CONTROL, 1, 4, 4);	/* venc dac demen */
--	REG_FLD_MOD(DSS_CONTROL, 1, 3, 3);	/* venc clock 4x enable */
--	REG_FLD_MOD(DSS_CONTROL, 0, 2, 2);	/* venc clock mode = normal */
--#endif
--	dss.dsi_clk_source[0] = OMAP_DSS_CLK_SRC_FCK;
--	dss.dsi_clk_source[1] = OMAP_DSS_CLK_SRC_FCK;
--	dss.dispc_clk_source = OMAP_DSS_CLK_SRC_FCK;
--	dss.lcd_clk_source[0] = OMAP_DSS_CLK_SRC_FCK;
--	dss.lcd_clk_source[1] = OMAP_DSS_CLK_SRC_FCK;
--
--	dss_save_context();
--
--	rev = dss_read_reg(DSS_REVISION);
--	printk(KERN_INFO "OMAP DSS rev %d.%d\n",
--			FLD_GET(rev, 7, 4), FLD_GET(rev, 3, 0));
--
--	return 0;
--
--fail0:
--	return r;
--}
--
--static void dss_exit(void)
--{
--	iounmap(dss.base);
--}
--
- /* CONTEXT */
- static int dss_get_ctx_id(void)
- {
-@@ -1094,10 +1021,25 @@ void dss_debug_dump_clocks(struct seq_file *s)
- /* DSS HW IP initialisation */
- static int omap_dsshw_probe(struct platform_device *pdev)
- {
-+	struct resource *dss_mem;
-+	u32 rev;
- 	int r;
- 
- 	dss.pdev = pdev;
- 
-+	dss_mem = platform_get_resource(dss.pdev, IORESOURCE_MEM, 0);
-+	if (!dss_mem) {
-+		DSSERR("can't get IORESOURCE_MEM DSS\n");
-+		r = -EINVAL;
-+		goto err_ioremap;
-+	}
-+	dss.base = ioremap(dss_mem->start, resource_size(dss_mem));
-+	if (!dss.base) {
-+		DSSERR("can't ioremap DSS\n");
-+		r = -ENOMEM;
-+		goto err_ioremap;
-+	}
-+
- 	r = dss_get_clocks();
- 	if (r)
- 		goto err_clocks;
-@@ -1107,11 +1049,42 @@ static int omap_dsshw_probe(struct platform_device *pdev)
- 	dss.ctx_id = dss_get_ctx_id();
- 	DSSDBG("initial ctx id %u\n", dss.ctx_id);
- 
--	r = dss_init();
--	if (r) {
--		DSSERR("Failed to initialize DSS\n");
--		goto err_dss;
--	}
-+	/* disable LCD and DIGIT output. This seems to fix the synclost
-+	 * problem that we get, if the bootloader starts the DSS and
-+	 * the kernel resets it */
-+	omap_writel(omap_readl(0x48050440) & ~0x3, 0x48050440);
-+
-+#ifdef CONFIG_OMAP2_DSS_SLEEP_BEFORE_RESET
-+	/* We need to wait here a bit, otherwise we sometimes start to
-+	 * get synclost errors, and after that only power cycle will
-+	 * restore DSS functionality. I have no idea why this happens.
-+	 * And we have to wait _before_ resetting the DSS, but after
-+	 * enabling clocks.
-+	 *
-+	 * This bug was at least present on OMAP3430. It's unknown
-+	 * if it happens on OMAP2 or OMAP3630.
-+	 */
-+	msleep(50);
-+#endif
-+
-+	_omap_dss_reset();
-+
-+	/* autoidle */
-+	REG_FLD_MOD(DSS_SYSCONFIG, 1, 0, 0);
-+
-+	/* Select DPLL */
-+	REG_FLD_MOD(DSS_CONTROL, 0, 0, 0);
-+
-+#ifdef CONFIG_OMAP2_DSS_VENC
-+	REG_FLD_MOD(DSS_CONTROL, 1, 4, 4);	/* venc dac demen */
-+	REG_FLD_MOD(DSS_CONTROL, 1, 3, 3);	/* venc clock 4x enable */
-+	REG_FLD_MOD(DSS_CONTROL, 0, 2, 2);	/* venc clock mode = normal */
-+#endif
-+	dss.dsi_clk_source[0] = OMAP_DSS_CLK_SRC_FCK;
-+	dss.dsi_clk_source[1] = OMAP_DSS_CLK_SRC_FCK;
-+	dss.dispc_clk_source = OMAP_DSS_CLK_SRC_FCK;
-+	dss.lcd_clk_source[0] = OMAP_DSS_CLK_SRC_FCK;
-+	dss.lcd_clk_source[1] = OMAP_DSS_CLK_SRC_FCK;
- 
- 	r = dpi_init();
+ 	/* config the PLL and PHY hdmi_set_pll_pwrfirst */
+-	r = hdmi_pll_program(&hdmi.hdmi_data, &pll_data);
++	r = hdmi_ti_4xxx_pll_program(&hdmi.hdmi_data, &pll_data);
  	if (r) {
-@@ -1125,23 +1098,32 @@ static int omap_dsshw_probe(struct platform_device *pdev)
- 		goto err_sdi;
+ 		DSSDBG("Failed to lock PLL\n");
+ 		goto err;
  	}
  
-+	dss_save_context();
-+
-+	rev = dss_read_reg(DSS_REVISION);
-+	printk(KERN_INFO "OMAP DSS rev %d.%d\n",
-+			FLD_GET(rev, 7, 4), FLD_GET(rev, 3, 0));
-+
- 	dss_clk_disable_all_no_ctx();
-+
- 	return 0;
- err_sdi:
- 	dpi_exit();
- err_dpi:
--	dss_exit();
--err_dss:
- 	dss_clk_disable_all_no_ctx();
- 	dss_put_clocks();
- err_clocks:
-+	iounmap(dss.base);
-+err_ioremap:
- 	return r;
- }
+-	r = hdmi_phy_init(&hdmi.hdmi_data);
++	r = hdmi_ti_4xxx_phy_init(&hdmi.hdmi_data);
+ 	if (r) {
+ 		DSSDBG("Failed to start PHY\n");
+ 		goto err;
+@@ -525,7 +525,7 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
  
- static int omap_dsshw_remove(struct platform_device *pdev)
+ 	hdmi.cfg.cm.mode = hdmi.mode;
+ 	hdmi.cfg.cm.code = hdmi.code;
+-	hdmi_basic_configure(&hdmi.hdmi_data, &hdmi.cfg);
++	hdmi_ti_4xxx_basic_configure(&hdmi.hdmi_data, &hdmi.cfg);
+ 
+ 	/* Make selection of HDMI in DSS */
+ 	dss_select_hdmi_venc_clk_source(DSS_HDMI_M_PCLK);
+@@ -547,7 +547,7 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
+ 
+ 	dispc_enable_channel(OMAP_DSS_CHANNEL_DIGIT, 1);
+ 
+-	hdmi_wp_video_start(&hdmi.hdmi_data, 1);
++	hdmi_ti_4xxx_wp_video_start(&hdmi.hdmi_data, 1);
+ 
+ 	return 0;
+ err:
+@@ -559,9 +559,9 @@ static void hdmi_power_off(struct omap_dss_device *dssdev)
  {
-+	dpi_exit();
-+	sdi_exit();
+ 	dispc_enable_channel(OMAP_DSS_CHANNEL_DIGIT, 0);
  
--	dss_exit();
-+	iounmap(dss.base);
+-	hdmi_wp_video_start(&hdmi.hdmi_data, 0);
+-	hdmi_phy_off(&hdmi.hdmi_data);
+-	hdmi_set_pll_pwr(&hdmi.hdmi_data, HDMI_PLLPWRCMD_ALLOFF);
++	hdmi_ti_4xxx_wp_video_start(&hdmi.hdmi_data, 0);
++	hdmi_ti_4xxx_phy_off(&hdmi.hdmi_data);
++	hdmi_ti_4xxx_set_pll_pwr(&hdmi.hdmi_data, HDMI_PLLPWRCMD_ALLOFF);
+ 	hdmi_runtime_put();
  
- 	/*
- 	 * As part of hwmod changes, DSS is not the only controller of dss
-@@ -1152,6 +1134,7 @@ static int omap_dsshw_remove(struct platform_device *pdev)
- 	WARN_ON(dss.num_clks_enabled > 0);
+ 	hdmi.edid_set = 0;
+diff --git a/drivers/video/omap2/dss/hdmi_ti_4xxx_ip.c b/drivers/video/omap2/dss/hdmi_ti_4xxx_ip.c
+index b4e8875..51dc2a8 100644
+--- a/drivers/video/omap2/dss/hdmi_ti_4xxx_ip.c
++++ b/drivers/video/omap2/dss/hdmi_ti_4xxx_ip.c
+@@ -165,7 +165,7 @@ static int hdmi_set_phy_pwr(struct hdmi_ip_data *ip_data, enum hdmi_phy_pwr val)
+ }
  
- 	dss_put_clocks();
-+
+ /* PLL_PWR_CMD */
+-int hdmi_set_pll_pwr(struct hdmi_ip_data *ip_data, enum hdmi_pll_pwr val)
++int hdmi_ti_4xxx_set_pll_pwr(struct hdmi_ip_data *ip_data, enum hdmi_pll_pwr val)
+ {
+ 	/* Command for power control of HDMI PLL */
+ 	REG_FLD_MOD(hdmi_wp_base(ip_data), HDMI_WP_PWR_CTRL, val, 3, 2);
+@@ -195,17 +195,17 @@ static int hdmi_pll_reset(struct hdmi_ip_data *ip_data)
  	return 0;
  }
  
+-int hdmi_pll_program(struct hdmi_ip_data *ip_data,
++int hdmi_ti_4xxx_pll_program(struct hdmi_ip_data *ip_data,
+ 				struct hdmi_pll_info *fmt)
+ {
+ 	u16 r = 0;
+ 	enum hdmi_clk_refsel refsel;
+ 
+-	r = hdmi_set_pll_pwr(ip_data, HDMI_PLLPWRCMD_ALLOFF);
++	r = hdmi_ti_4xxx_set_pll_pwr(ip_data, HDMI_PLLPWRCMD_ALLOFF);
+ 	if (r)
+ 		return r;
+ 
+-	r = hdmi_set_pll_pwr(ip_data, HDMI_PLLPWRCMD_BOTHON_ALLCLKS);
++	r = hdmi_ti_4xxx_set_pll_pwr(ip_data, HDMI_PLLPWRCMD_BOTHON_ALLCLKS);
+ 	if (r)
+ 		return r;
+ 
+@@ -222,7 +222,7 @@ int hdmi_pll_program(struct hdmi_ip_data *ip_data,
+ 	return 0;
+ }
+ 
+-int hdmi_phy_init(struct hdmi_ip_data *ip_data)
++int hdmi_ti_4xxx_phy_init(struct hdmi_ip_data *ip_data)
+ {
+ 	u16 r = 0;
+ 
+@@ -260,7 +260,7 @@ int hdmi_phy_init(struct hdmi_ip_data *ip_data)
+ 	return 0;
+ }
+ 
+-void hdmi_phy_off(struct hdmi_ip_data *ip_data)
++void hdmi_ti_4xxx_phy_off(struct hdmi_ip_data *ip_data)
+ {
+ 	hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
+ }
+@@ -376,7 +376,7 @@ static int hdmi_core_ddc_edid(struct hdmi_ip_data *ip_data,
+ 	return 0;
+ }
+ 
+-int read_edid(struct hdmi_ip_data *ip_data, u8 *pedid, u16 max_length)
++int read_ti_4xxx_edid(struct hdmi_ip_data *ip_data, u8 *pedid, u16 max_length)
+ {
+ 	int r = 0, n = 0, i = 0;
+ 	int max_ext_blocks = (max_length / 128) - 1;
+@@ -627,7 +627,7 @@ static void hdmi_wp_init(struct omap_video_timings *timings,
+ 
+ }
+ 
+-void hdmi_wp_video_start(struct hdmi_ip_data *ip_data, bool start)
++void hdmi_ti_4xxx_wp_video_start(struct hdmi_ip_data *ip_data, bool start)
+ {
+ 	REG_FLD_MOD(hdmi_wp_base(ip_data), HDMI_WP_VIDEO_CFG, start, 31, 31);
+ }
+@@ -694,7 +694,7 @@ static void hdmi_wp_video_config_timing(struct hdmi_ip_data *ip_data,
+ 	hdmi_write_reg(hdmi_wp_base(ip_data), HDMI_WP_VIDEO_TIMING_V, timing_v);
+ }
+ 
+-void hdmi_basic_configure(struct hdmi_ip_data *ip_data,
++void hdmi_ti_4xxx_basic_configure(struct hdmi_ip_data *ip_data,
+ 			struct hdmi_config *cfg)
+ {
+ 	/* HDMI */
+diff --git a/include/video/hdmi_ti_4xxx_ip.h b/include/video/hdmi_ti_4xxx_ip.h
+index 3355f40..d354280 100644
+--- a/include/video/hdmi_ti_4xxx_ip.h
++++ b/include/video/hdmi_ti_4xxx_ip.h
+@@ -82,13 +82,13 @@ struct hdmi_pll_info {
+ 	u16 dcofreq;
+ };
+ 
+-int hdmi_phy_init(struct hdmi_ip_data *ip_data);
+-void hdmi_phy_off(struct hdmi_ip_data *ip_data);
+-int read_edid(struct hdmi_ip_data *ip_data, u8 *pedid, u16 max_length);
+-void hdmi_wp_video_start(struct hdmi_ip_data *ip_data, bool start);
+-int hdmi_pll_program(struct hdmi_ip_data *ip_data,
++int hdmi_ti_4xxx_phy_init(struct hdmi_ip_data *ip_data);
++void hdmi_ti_4xxx_phy_off(struct hdmi_ip_data *ip_data);
++int read_ti_4xxx_edid(struct hdmi_ip_data *ip_data, u8 *pedid, u16 max_length);
++void hdmi_ti_4xxx_wp_video_start(struct hdmi_ip_data *ip_data, bool start);
++int hdmi_ti_4xxx_pll_program(struct hdmi_ip_data *ip_data,
+ 			struct hdmi_pll_info *fmt);
+-int hdmi_set_pll_pwr(struct hdmi_ip_data *ip_data, enum hdmi_pll_pwr val);
+-void hdmi_basic_configure(struct hdmi_ip_data *ip_data,
++int hdmi_ti_4xxx_set_pll_pwr(struct hdmi_ip_data *ip_data, enum hdmi_pll_pwr val);
++void hdmi_ti_4xxx_basic_configure(struct hdmi_ip_data *ip_data,
+ 			struct hdmi_config *cfg);
+ #endif
 -- 
-1.7.4.1
+1.7.5.4
 

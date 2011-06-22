@@ -1,265 +1,49 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 22 Jun 2011 08:45:24 +0000
-Subject: [PATCH 2/4] OMAP: DSS2: Add Color Phase Rotation support
-Message-Id: <1308732326-17278-3-git-send-email-tomi.valkeinen@ti.com>
+From: JinGoo Han <jg1.han@samsung.com>
+Date: Wed, 22 Jun 2011 03:44:09 +0000
+Subject: [PATCH V4 2/5] ARM: EXYNOS4: Add FIMD resource definition
+Message-Id: <15943202.110001308714247936.JavaMail.weblogic@epml08>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1308732326-17278-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1308732326-17278-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-f>
+Cc: ANAND KUMAR N <anand.kn@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, THOMAS P ABRAHAM <thomas.ab@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kmpark@infradead.org>, In-Ki Dae <inki.dae@samsung.com>, ARM Linux <linux@arm.linux.org.uk>, Ben Dooks <ben-linux@fluff.org>, JinGoo Han <jg1.han@samsung.com>
 
-Add Color Phase Rotation (CPR) support and sysfs files to enable CPR and
-to set the CPR coefficient matrix.
-
-CPR is enabled via manager?/cpr_enable file, and the coefficient matrix
-is set via manager?/cpr_coef file. The values in cpr_coef are in the
-following order:
-
-RR RG RB GR GG GB BR BG BB
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/dispc.c   |   34 +++++++++++
- drivers/video/omap2/dss/dss.h     |    3 +
- drivers/video/omap2/dss/manager.c |  114 +++++++++++++++++++++++++++++++++++++
- include/video/omapdss.h           |    9 +++
- 4 files changed, 160 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index eac768f..0151f16 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -1082,6 +1082,40 @@ void dispc_enable_gamma_table(bool enable)
- 	REG_FLD_MOD(DISPC_CONFIG, enable, 9, 9);
- }
- 
-+void dispc_enable_cpr(enum omap_channel channel, bool enable)
-+{
-+	u16 reg;
-+
-+	if (channel = OMAP_DSS_CHANNEL_LCD)
-+		reg = DISPC_CONFIG;
-+	else if (channel = OMAP_DSS_CHANNEL_LCD2)
-+		reg = DISPC_CONFIG2;
-+	else
-+		return;
-+
-+	REG_FLD_MOD(reg, enable, 15, 15);
-+}
-+
-+void dispc_set_cpr_coef(enum omap_channel channel,
-+		struct omap_dss_cpr_coefs *coefs)
-+{
-+	u32 coef_r, coef_g, coef_b;
-+
-+	if (channel != OMAP_DSS_CHANNEL_LCD && channel != OMAP_DSS_CHANNEL_LCD2)
-+		return;
-+
-+	coef_r = FLD_VAL(coefs->rr, 31, 22) | FLD_VAL(coefs->rg, 20, 11) |
-+		FLD_VAL(coefs->rb, 9, 0);
-+	coef_g = FLD_VAL(coefs->gr, 31, 22) | FLD_VAL(coefs->gg, 20, 11) |
-+		FLD_VAL(coefs->gb, 9, 0);
-+	coef_b = FLD_VAL(coefs->br, 31, 22) | FLD_VAL(coefs->bg, 20, 11) |
-+		FLD_VAL(coefs->bb, 9, 0);
-+
-+	dispc_write_reg(DISPC_CPR_COEF_R(channel), coef_r);
-+	dispc_write_reg(DISPC_CPR_COEF_G(channel), coef_g);
-+	dispc_write_reg(DISPC_CPR_COEF_B(channel), coef_b);
-+}
-+
- static void _dispc_set_vid_color_conv(enum omap_plane plane, bool enable)
- {
- 	u32 val;
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index ce17a61..9dc5c00 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -398,6 +398,9 @@ void dispc_setup_plane_fifo(enum omap_plane plane, u32 low, u32 high);
- void dispc_enable_fifomerge(bool enable);
- void dispc_set_burst_size(enum omap_plane plane,
- 		enum omap_burst_size burst_size);
-+void dispc_enable_cpr(enum omap_channel channel, bool enable);
-+void dispc_set_cpr_coef(enum omap_channel channel,
-+		struct omap_dss_cpr_coefs *coefs);
- 
- void dispc_set_plane_ba0(enum omap_plane plane, u32 paddr);
- void dispc_set_plane_ba1(enum omap_plane plane, u32 paddr);
-diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
-index 4691b81..ad76c5b 100644
---- a/drivers/video/omap2/dss/manager.c
-+++ b/drivers/video/omap2/dss/manager.c
-@@ -275,6 +275,108 @@ static ssize_t manager_alpha_blending_enabled_store(
- 	return size;
- }
- 
-+static ssize_t manager_cpr_enable_show(struct omap_overlay_manager *mgr,
-+		char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%d\n", mgr->info.cpr_enable);
-+}
-+
-+static ssize_t manager_cpr_enable_store(struct omap_overlay_manager *mgr,
-+		const char *buf, size_t size)
-+{
-+	struct omap_overlay_manager_info info;
-+	int v;
-+	int r;
-+	bool enable;
-+
-+	if (!dss_has_feature(FEAT_CPR))
-+		return -ENODEV;
-+
-+	r = kstrtoint(buf, 0, &v);
-+	if (r)
-+		return r;
-+
-+	enable = !!v;
-+
-+	mgr->get_manager_info(mgr, &info);
-+
-+	if (info.cpr_enable = enable)
-+		return size;
-+
-+	info.cpr_enable = enable;
-+
-+	r = mgr->set_manager_info(mgr, &info);
-+	if (r)
-+		return r;
-+
-+	r = mgr->apply(mgr);
-+	if (r)
-+		return r;
-+
-+	return size;
-+}
-+
-+static ssize_t manager_cpr_coef_show(struct omap_overlay_manager *mgr,
-+		char *buf)
-+{
-+	struct omap_overlay_manager_info info;
-+
-+	mgr->get_manager_info(mgr, &info);
-+
-+	return snprintf(buf, PAGE_SIZE,
-+			"%d %d %d %d %d %d %d %d %d\n",
-+			info.cpr_coefs.rr,
-+			info.cpr_coefs.rg,
-+			info.cpr_coefs.rb,
-+			info.cpr_coefs.gr,
-+			info.cpr_coefs.gg,
-+			info.cpr_coefs.gb,
-+			info.cpr_coefs.br,
-+			info.cpr_coefs.bg,
-+			info.cpr_coefs.bb);
-+}
-+
-+static ssize_t manager_cpr_coef_store(struct omap_overlay_manager *mgr,
-+		const char *buf, size_t size)
-+{
-+	struct omap_overlay_manager_info info;
-+	struct omap_dss_cpr_coefs coefs;
-+	int r, i;
-+	s16 *arr;
-+
-+	if (!dss_has_feature(FEAT_CPR))
-+		return -ENODEV;
-+
-+	if (sscanf(buf, "%hd %hd %hd %hd %hd %hd %hd %hd %hd",
-+				&coefs.rr, &coefs.rg, &coefs.rb,
-+				&coefs.gr, &coefs.gg, &coefs.gb,
-+				&coefs.br, &coefs.bg, &coefs.bb) != 9)
-+		return -EINVAL;
-+
-+	arr = (s16[]){ coefs.rr, coefs.rg, coefs.rb,
-+		coefs.gr, coefs.gg, coefs.gb,
-+		coefs.br, coefs.bg, coefs.bb };
-+
-+	for (i = 0; i < 9; ++i) {
-+		if (arr[i] < -512 || arr[i] > 511)
-+			return -EINVAL;
-+	}
-+
-+	mgr->get_manager_info(mgr, &info);
-+
-+	info.cpr_coefs = coefs;
-+
-+	r = mgr->set_manager_info(mgr, &info);
-+	if (r)
-+		return r;
-+
-+	r = mgr->apply(mgr);
-+	if (r)
-+		return r;
-+
-+	return size;
-+}
-+
- struct manager_attribute {
- 	struct attribute attr;
- 	ssize_t (*show)(struct omap_overlay_manager *, char *);
-@@ -300,6 +402,12 @@ static MANAGER_ATTR(trans_key_enabled, S_IRUGO|S_IWUSR,
- static MANAGER_ATTR(alpha_blending_enabled, S_IRUGO|S_IWUSR,
- 		manager_alpha_blending_enabled_show,
- 		manager_alpha_blending_enabled_store);
-+static MANAGER_ATTR(cpr_enable, S_IRUGO|S_IWUSR,
-+		manager_cpr_enable_show,
-+		manager_cpr_enable_store);
-+static MANAGER_ATTR(cpr_coef, S_IRUGO|S_IWUSR,
-+		manager_cpr_coef_show,
-+		manager_cpr_coef_store);
- 
- 
- static struct attribute *manager_sysfs_attrs[] = {
-@@ -310,6 +418,8 @@ static struct attribute *manager_sysfs_attrs[] = {
- 	&manager_attr_trans_key_value.attr,
- 	&manager_attr_trans_key_enabled.attr,
- 	&manager_attr_alpha_blending_enabled.attr,
-+	&manager_attr_cpr_enable.attr,
-+	&manager_attr_cpr_coef.attr,
- 	NULL
- };
- 
-@@ -858,6 +968,10 @@ static void configure_manager(enum omap_channel channel)
- 	dispc_set_trans_key(channel, mi->trans_key_type, mi->trans_key);
- 	dispc_enable_trans_key(channel, mi->trans_enabled);
- 	dispc_enable_alpha_blending(channel, mi->alpha_enabled);
-+	if (dss_has_feature(FEAT_CPR)) {
-+		dispc_enable_cpr(channel, mi->cpr_enable);
-+		dispc_set_cpr_coef(channel, &mi->cpr_coefs);
-+	}
- }
- 
- /* configure_dispc() tries to write values from cache to shadow registers.
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index e02823e..3b55ef2 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -290,6 +290,12 @@ extern const struct omap_video_timings omap_dss_pal_timings;
- extern const struct omap_video_timings omap_dss_ntsc_timings;
- #endif
- 
-+struct omap_dss_cpr_coefs {
-+	s16 rr, rg, rb;
-+	s16 gr, gg, gb;
-+	s16 br, bg, bb;
-+};
-+
- struct omap_overlay_info {
- 	bool enabled;
- 
-@@ -349,6 +355,9 @@ struct omap_overlay_manager_info {
- 	bool trans_enabled;
- 
- 	bool alpha_enabled;
-+
-+	bool cpr_enable;
-+	struct omap_dss_cpr_coefs cpr_coefs;
- };
- 
- struct omap_overlay_manager {
--- 
-1.7.4.1
-
+RnJvbTogSm9uZ2h1biBIYW4gPGpvbmdodW4uaGFuQHNhbXN1bmcuY29tPgoKVGhpcyBwYXRjaCBh
+ZGRzIHJlc291cmNlIGRlZmluaXRpb25zIGZvciBFWFlOT1M0IEZJTUQuCklSUSBhbmQgU0ZSIGRl
+ZmluaXRpb25zIGFyZSBhZGRlZC4KClNpZ25lZC1vZmYtYnk6IEpvbmdodW4gSGFuIDxqb25naHVu
+LmhhbkBzYW1zdW5nLmNvbT4KU2lnbmVkLW9mZi1ieTogSmluZ29vIEhhbiA8amcxLmhhbkBzYW1z
+dW5nLmNvbT4KLS0tCiBhcmNoL2FybS9tYWNoLWV4eW5vczQvaW5jbHVkZS9tYWNoL2lycXMuaCB8
+ICAgIDggKysrKysrKysKIGFyY2gvYXJtL21hY2gtZXh5bm9zNC9pbmNsdWRlL21hY2gvbWFwLmgg
+IHwgICAgNSArKysrKwogMiBmaWxlcyBjaGFuZ2VkLCAxMyBpbnNlcnRpb25zKCspLCAwIGRlbGV0
+aW9ucygtKQoKZGlmZiAtLWdpdCBhL2FyY2gvYXJtL21hY2gtZXh5bm9zNC9pbmNsdWRlL21hY2gv
+aXJxcy5oIGIvYXJjaC9hcm0vbWFjaC1leHlub3M0L2luY2x1ZGUvbWFjaC9pcnFzLmgKaW5kZXgg
+NWQwMzczMC4uMmNkMjA5MCAxMDA2NDQKLS0tIGEvYXJjaC9hcm0vbWFjaC1leHlub3M0L2luY2x1
+ZGUvbWFjaC9pcnFzLmgKKysrIGIvYXJjaC9hcm0vbWFjaC1leHlub3M0L2luY2x1ZGUvbWFjaC9p
+cnFzLmgKQEAgLTczLDYgKzczLDE0IEBACiAjZGVmaW5lIElSUV9TWVNNTVVfTUZDX00xXzAJQ09N
+QklORVJfSVJRKDUsIDYpCiAjZGVmaW5lIElSUV9TWVNNTVVfUENJRV8wCUNPTUJJTkVSX0lSUSg1
+LCA3KQogCisjZGVmaW5lIElSUV9GSU1EMF9GSUZPCQlDT01CSU5FUl9JUlEoMTEsIDApCisjZGVm
+aW5lIElSUV9GSU1EMF9WU1lOQwkJQ09NQklORVJfSVJRKDExLCAxKQorI2RlZmluZSBJUlFfRklN
+RDBfU1lTVEVNCUNPTUJJTkVSX0lSUSgxMSwgMikKKworI2RlZmluZSBJUlFfRklNRDFfRklGTwkJ
+Q09NQklORVJfSVJRKDEyLCAwKQorI2RlZmluZSBJUlFfRklNRDFfVlNZTkMJCUNPTUJJTkVSX0lS
+USgxMiwgMSkKKyNkZWZpbmUgSVJRX0ZJTUQxX1NZU1RFTQlDT01CSU5FUl9JUlEoMTIsIDIpCisK
+ICNkZWZpbmUgSVJRX1BETUEwCQlDT01CSU5FUl9JUlEoMjEsIDApCiAjZGVmaW5lIElSUV9QRE1B
+MQkJQ09NQklORVJfSVJRKDIxLCAxKQogCmRpZmYgLS1naXQgYS9hcmNoL2FybS9tYWNoLWV4eW5v
+czQvaW5jbHVkZS9tYWNoL21hcC5oIGIvYXJjaC9hcm0vbWFjaC1leHlub3M0L2luY2x1ZGUvbWFj
+aC9tYXAuaAppbmRleCAwMDA5ZTc3Li45NDAwNmY3IDEwMDY0NAotLS0gYS9hcmNoL2FybS9tYWNo
+LWV4eW5vczQvaW5jbHVkZS9tYWNoL21hcC5oCisrKyBiL2FyY2gvYXJtL21hY2gtZXh5bm9zNC9p
+bmNsdWRlL21hY2gvbWFwLmgKQEAgLTkzLDYgKzkzLDkgQEAKICNkZWZpbmUgRVhZTk9TNF9QQV9N
+SVBJX0NTSVMwCQkweDExODgwMDAwCiAjZGVmaW5lIEVYWU5PUzRfUEFfTUlQSV9DU0lTMQkJMHgx
+MTg5MDAwMAogCisjZGVmaW5lIEVYWU5PUzRfUEFfRklNRDAJCTB4MTFDMDAwMDAKKyNkZWZpbmUg
+RVhZTk9TNF9QQV9GSU1EMQkJMHgxMjAwMDAwMAorCiAjZGVmaW5lIEVYWU5PUzRfUEFfSFNNTUMo
+eCkJCSgweDEyNTEwMDAwICsgKCh4KSAqIDB4MTAwMDApKQogCiAjZGVmaW5lIEVYWU5PUzRfUEFf
+U0FUQQkJCTB4MTI1NjAwMDAKQEAgLTE0MCw2ICsxNDMsOCBAQAogI2RlZmluZSBTNVBfUEFfRklN
+QzMJCQlFWFlOT1M0X1BBX0ZJTUMzCiAjZGVmaW5lIFM1UF9QQV9NSVBJX0NTSVMwCQlFWFlOT1M0
+X1BBX01JUElfQ1NJUzAKICNkZWZpbmUgUzVQX1BBX01JUElfQ1NJUzEJCUVYWU5PUzRfUEFfTUlQ
+SV9DU0lTMQorI2RlZmluZSBTNVBfUEFfRklNRDAJCQlFWFlOT1M0X1BBX0ZJTUQwCisjZGVmaW5l
+IFM1UF9QQV9GSU1EMQkJCUVYWU5PUzRfUEFfRklNRDEKICNkZWZpbmUgUzVQX1BBX09ORU5BTkQJ
+CQlFWFlOT1M0X1BBX09ORU5BTkQKICNkZWZpbmUgUzVQX1BBX09ORU5BTkRfRE1BCQlFWFlOT1M0
+X1BBX09ORU5BTkRfRE1BCiAjZGVmaW5lIFM1UF9QQV9TRFJBTQkJCUVYWU5PUzRfUEFfU0RSQU0K
+LS0gCjEuNy4xCgr/9Oi6ey5uxyuJt5+uia2GKyWKy/+x6d22F6WKd/+6ey5uxyuJt6WKe7H99t16
+/+Ke2F5uh3Kh9qZ6yxqB62iZqOit2iaj++B6v+R6ud6X+iuAyit6ZqOit2iaiKd+hq2G22n//++B
+6v+R6ud6X+iuD+ZqOit2iaj+Kd+j+G0K

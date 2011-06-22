@@ -1,97 +1,54 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 03 Jun 2011 10:00:12 +0000
-Subject: [PATCH 02/27] OMAP: DSS2: Taal: Make driver more fault tolerant
-Message-Id: <1307095237-14805-3-git-send-email-tomi.valkeinen@ti.com>
+From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+Date: Wed, 22 Jun 2011 07:49:49 +0000
+Subject: [PATCH 2/5 v3] fbdev: sh_mobile_meram: Enable/disable MERAM along with LCDC
+Message-Id: <1308728992-9660-3-git-send-email-dhobsong@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307095237-14805-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: b-cousson@ti.com, paul@pwsan.com, khilman@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-If ULPS exit fails, and the following reset fails also, Taal driver was
-left in state where it thinks DSI is enabled while it really isn't,
-leading to crash.
+The MERAM reference counts should be tied to the two LCDC devices (LCD/HDMI)
+so that when they are enable/disabled, the MERAM is as well.
 
-This patch checks the return value of taal_panel_reset, and if that
-fails, ulps_enabled is left true, causing the driver to retry ulps exit
-later.
-
-Also the return value of taal_wake_up is checked at taal_disable, and if
-wake up fails, we'll skip the power_off. This could leave the panel into
-a not-quite-valid state, but there's nothing we can do about it in that
-situation.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Damian Hobson-Garcia <dhobsong@igel.co.jp>
 ---
- drivers/video/omap2/displays/panel-taal.c |   33 ++++++++++++++++++----------
- 1 files changed, 21 insertions(+), 12 deletions(-)
+Changes from V2
+=======
+* Change the names of the clk_on/clk_off callbacks to pm_get_sync/pm_put_sync
+  to better reflect their actual functionality
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index fdd5d4ae..b82bcc1 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -504,14 +504,18 @@ static int taal_exit_ulps(struct omap_dss_device *dssdev)
- 		return 0;
- 
- 	r = omapdss_dsi_display_enable(dssdev);
--	if (r)
--		goto err;
-+	if (r) {
-+		dev_err(&dssdev->dev, "failed to enable DSI\n");
-+		goto err1;
-+	}
- 
- 	omapdss_dsi_vc_enable_hs(dssdev, td->channel, true);
- 
- 	r = _taal_enable_te(dssdev, true);
--	if (r)
--		goto err;
-+	if (r) {
-+		dev_err(&dssdev->dev, "failed to re-enable TE");
-+		goto err2;
-+	}
- 
- 	enable_irq(gpio_to_irq(panel_data->ext_te_gpio));
- 
-@@ -521,13 +525,15 @@ static int taal_exit_ulps(struct omap_dss_device *dssdev)
- 
- 	return 0;
- 
--err:
--	dev_err(&dssdev->dev, "exit ULPS failed");
--	r = taal_panel_reset(dssdev);
--
--	enable_irq(gpio_to_irq(panel_data->ext_te_gpio));
--	td->ulps_enabled = false;
-+err2:
-+	dev_err(&dssdev->dev, "failed to exit ULPS");
- 
-+	r = taal_panel_reset(dssdev);
-+	if (!r) {
-+		enable_irq(gpio_to_irq(panel_data->ext_te_gpio));
-+		td->ulps_enabled = false;
-+	}
-+err1:
- 	taal_queue_ulps_work(dssdev);
- 
- 	return r;
-@@ -1317,8 +1323,11 @@ static void taal_disable(struct omap_dss_device *dssdev)
- 	dsi_bus_lock(dssdev);
- 
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
--		taal_wake_up(dssdev);
--		taal_power_off(dssdev);
-+		int r;
-+
-+		r = taal_wake_up(dssdev);
-+		if (!r)
-+			taal_power_off(dssdev);
+ drivers/video/sh_mobile_lcdcfb.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 019dbd3..78cc828 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -259,6 +259,11 @@ static void sh_mobile_lcdc_clk_on(struct sh_mobile_lcdc_priv *priv)
+ 		pm_runtime_get_sync(priv->dev);
+ 		if (priv->dot_clk)
+ 			clk_enable(priv->dot_clk);
++		if (priv->meram_dev && priv->meram_dev->ops) {
++			struct sh_mobile_meram_info *mdev;
++			mdev = priv->meram_dev;
++			mdev->ops->meram_pm_get_sync(mdev);
++		}
  	}
+ }
  
- 	dsi_bus_unlock(dssdev);
+@@ -267,6 +272,11 @@ static void sh_mobile_lcdc_clk_off(struct sh_mobile_lcdc_priv *priv)
+ 	if (atomic_sub_return(1, &priv->hw_usecnt) = -1) {
+ 		if (priv->dot_clk)
+ 			clk_disable(priv->dot_clk);
++		if (priv->meram_dev && priv->meram_dev->ops) {
++			struct sh_mobile_meram_info *mdev;
++			mdev = priv->meram_dev;
++			mdev->ops->meram_pm_put_sync(mdev);
++		}
+ 		pm_runtime_put(priv->dev);
+ 	}
+ }
 -- 
-1.7.4.1
+1.7.1
 

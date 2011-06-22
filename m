@@ -1,126 +1,63 @@
-From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
-Date: Wed, 22 Jun 2011 07:49:51 +0000
-Subject: [PATCH 4/5 v3] fbdev: sh_mobile_meram: Backup/restore device registers on shutdown/resume
-Message-Id: <1308728992-9660-5-git-send-email-dhobsong@igel.co.jp>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 22 Jun 2011 08:45:25 +0000
+Subject: [PATCH 3/4] OMAP: DSS2: DSI: sync when disabling a display
+Message-Id: <1308732326-17278-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1308732326-17278-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1308732326-17278-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Save and reconfigure the MERAM registers when the MERAM is powered down
-and restored
+When the panel driver calls omapdss_dsi_display_disable() it is possible
+that there are still some unsent packets in the TX fifo.
 
-Signed-off-by: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+Add dsi_sync_vc() calls in the beginning of
+omapdss_dsi_display_disable() to make sure the TX fifos are empty.
+
+This allows us to remove the msleep(10) hack from panel-taal.c
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
-Changes from V2
-=======
-* The private data structure definition was moved from sh_mobile_meram.h to
-  sh_mobile_meram.c.  This has been moved into a separate patch
+ drivers/video/omap2/displays/panel-taal.c |    5 +----
+ drivers/video/omap2/dss/dsi.c             |    5 +++++
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
- drivers/video/sh_mobile_meram.c |   71 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 71 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
-index cc71cbf..7afd77a 100644
---- a/drivers/video/sh_mobile_meram.c
-+++ b/drivers/video/sh_mobile_meram.c
-@@ -37,12 +37,31 @@
- #define MEQSEL1 0x40
- #define MEQSEL2 0x44
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 4cb0449..4e888ac 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -1247,11 +1247,8 @@ static void taal_power_off(struct omap_dss_device *dssdev)
+ 	int r;
  
-+static unsigned long common_regs[] = {
-+	MEVCR1,
-+	MEQSEL1,
-+	MEQSEL2,
-+};
-+#define CMN_REGS_SIZE ARRAY_SIZE(common_regs)
-+
-+static unsigned long icb_regs[] = {
-+	MExxCTL,
-+	MExxBSIZE,
-+	MExxMNCF,
-+	MExxSARA,
-+	MExxSARB,
-+	MExxSBSIZE,
-+};
-+#define ICB_REGS_SIZE ARRAY_SIZE(icb_regs)
-+
- struct sh_mobile_meram_priv {
- 	void __iomem	*base;
- 	struct mutex	lock;
- 	unsigned long	used_icb;
- 	int		used_meram_cache_regions;
- 	unsigned long	used_meram_cache[SH_MOBILE_MERAM_ICB_NUM];
-+	unsigned long	cmn_saved_regs[CMN_REGS_SIZE];
-+	unsigned long	icb_saved_regs[ICB_REGS_SIZE * SH_MOBILE_MERAM_ICB_NUM];
- };
+ 	r = taal_dcs_write_0(td, DCS_DISPLAY_OFF);
+-	if (!r) {
++	if (!r)
+ 		r = taal_sleep_in(td);
+-		/* HACK: wait a bit so that the message goes through */
+-		msleep(10);
+-	}
  
- /* settings */
-@@ -489,6 +508,57 @@ int sh_mobile_meram_pm_put_sync(struct sh_mobile_meram_info *pdata)
- 	return 0;
- }
+ 	if (r) {
+ 		dev_err(&dssdev->dev,
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index b6a57bb..62b11c5 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -4263,6 +4263,11 @@ void omapdss_dsi_display_disable(struct omap_dss_device *dssdev,
  
-+static int sh_mobile_meram_runtime_suspend(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
-+	int k, j;
+ 	mutex_lock(&dsi->lock);
+ 
++	dsi_sync_vc(dsidev, 0);
++	dsi_sync_vc(dsidev, 1);
++	dsi_sync_vc(dsidev, 2);
++	dsi_sync_vc(dsidev, 3);
 +
-+	for (k = 0; k < CMN_REGS_SIZE; k++)
-+		priv->cmn_saved_regs[k] = meram_read_reg(priv->base,
-+			common_regs[k]);
-+
-+	for (j = 0; j < 32; j++) {
-+		if (!test_bit(j, &priv->used_icb))
-+			continue;
-+		for (k = 0; k < ICB_REGS_SIZE; k++) {
-+			priv->icb_saved_regs[j * ICB_REGS_SIZE + k] +				meram_read_icb(priv->base, j, icb_regs[k]);
-+			/* Reset ICB on resume */
-+			if (icb_regs[k] = MExxCTL)
-+				priv->icb_saved_regs[j * ICB_REGS_SIZE + k] +					0x70;
-+		}
-+	}
-+	return 0;
-+}
-+
-+static int sh_mobile_meram_runtime_resume(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
-+	int k, j;
-+
-+	for (j = 0; j < 32; j++) {
-+		if (!test_bit(j, &priv->used_icb))
-+			continue;
-+		for (k = 0; k < ICB_REGS_SIZE; k++) {
-+			meram_write_icb(priv->base, j, icb_regs[k],
-+			priv->icb_saved_regs[j * ICB_REGS_SIZE + k]);
-+		}
-+	}
-+
-+	for (k = 0; k < CMN_REGS_SIZE; k++)
-+		meram_write_reg(priv->base, common_regs[k],
-+			priv->cmn_saved_regs[k]);
-+	return 0;
-+}
-+
-+static const struct dev_pm_ops sh_mobile_meram_dev_pm_ops = {
-+	.runtime_suspend = sh_mobile_meram_runtime_suspend,
-+	.runtime_resume = sh_mobile_meram_runtime_resume,
-+};
-+
- static struct sh_mobile_meram_ops sh_mobile_meram_ops = {
- 	.module			= THIS_MODULE,
- 	.meram_register		= sh_mobile_meram_register,
-@@ -579,6 +649,7 @@ static struct platform_driver sh_mobile_meram_driver = {
- 	.driver	= {
- 		.name		= "sh_mobile_meram",
- 		.owner		= THIS_MODULE,
-+		.pm		= &sh_mobile_meram_dev_pm_ops,
- 	},
- 	.probe		= sh_mobile_meram_probe,
- 	.remove		= sh_mobile_meram_remove,
+ 	dsi_display_uninit_dispc(dssdev);
+ 
+ 	dsi_display_uninit_dsi(dssdev, disconnect_lanes, enter_ulps);
 -- 
-1.7.1
+1.7.4.1
 

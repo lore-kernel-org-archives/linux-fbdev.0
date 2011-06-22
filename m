@@ -1,66 +1,67 @@
-From: daeinki <inki.dae@samsung.com>
-Date: Wed, 22 Jun 2011 06:04:23 +0000
+From: InKi Dae <daeinki@gmail.com>
+Date: Wed, 22 Jun 2011 07:50:58 +0000
 Subject: Re: Some questions about DRM(Direct Rendering Manager)
-Message-Id: <4E0185E7.8020708@samsung.com>
+Message-Id: <BANLkTim6xvD5U9GJ2pHu-=OrYccRHSj7Fg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <4E016EDC.30200@samsung.com>
-In-Reply-To: <4E016EDC.30200@samsung.com>
+	<4E0185E7.8020708@samsung.com>
+In-Reply-To: <4E0185E7.8020708@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
+To: daeinki <inki.dae@samsung.com>, dri-devel@lists.freedesktop.org
+Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, Kukjin Kim <kgene.kim@samsung.com>, Kyungmin Park <kmpark@infradead.org>, airlied@linux.ie, Paul Mundt <lethal@linux-sh.org>, jesse.barnes@intel.com, linux-arm-kernel@lists.infradead.org
 
-below is additional comments.
-
-daeinki =BE=B4 =B1=DB:
-> Hi all,
->=20
-> I'm writing Samsung SoC based DRM framework and this one includes FIMD
-> and HDMI driver as hardware dependent modules. and for now, encoder,
-> connector, crtc and fb module has been materialized almost. but I'm
-> contending with  framebuffer setting issue(created fb_info should be
-> registered to linux framebuffer through register_framebuffer() or not)as
-> default framebuffer at booting time.
->=20
-> at drm_fb_helper_single_fb_probe() of drm_fb_helper.c file, fb_helper's
-> fb_probe callback is called and this one creates new framebuffer and
-> returns a value more then 0 if true. internally, this process creates an
-> fb_info object and drm_framebuffer and then drm_framebuffer would be
-> added to mode_config.fb_list of the drm_device.
->
-it's my mistake. return value is 0 if true, nonzero otherwise.
-
-> a value returned, new_fb is used to decide that it calls
-> register_framebuffer() or drm_fb_helper_set_par(). at this point, I am
-> confused it's a good way to call register_framebuffer() otherwise
-> drm_fb_helper_set_par(). if register_framebuffer() is called then I
-> guess drm_fb_helper_set_par() or drm_crtc_helper_set_config() should be
-> called somewhere subsequently to apply this one to real hardware because
-> previous process is just for maintaining data logically.(not set up data
-> to h/w)
->=20
-> it's a right way to call register_framebuffer() and then
-> drm_fb_helper_set_par() or drm_crtc_helper_set_config()? otherwise just
-> only drm_fb_helper_set_par() or drm_crtc_helper_set_config() ignoring
-> register_framebuffer()? and what is the purpose of using
-> register_framebuffer()?
->=20
-I understood that if fb_probe() callback is fail then fb_info object is
-registered to linux framebuffer through register_framebuffer()
-otherwise(if true) hardware configuration would be completed by
-drm_fb_helper_set_par() so the reason of using register_framebuffer() is
-that the case of failing fb_probe() callback, it is for drawing on only
-linux framebuffer. is it right?
-
-> In my case, first, register_framebuffer() is called and then if desired
-> default crtc id is matched with drm_fb_helper->crtc_info[0 ~ n].crtc_id,
-> it gets mode_set of drm_fb_helper->crtc_info[n] and then  it calls
-> drm_crtc_helper_set_config(mode_set). at this time, all the hardware
-> configurations would be completed.
->=20
-> thank you in advance.
->=20
-> Best Regards
-> Inki Dae.
->=20
-
+SXQgYWRkcyBkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnIHRvIHRoaXMgbWFpbCB0aHJl
+YWQuClRoYW5rIHlvdS4KCjIwMTGz4iA2v/kgMjLAzyC/wMjEIDM6MDQsIGRhZWlua2kgPGlua2ku
+ZGFlQHNhbXN1bmcuY29tPrTUwMcguLs6Cj4gYmVsb3cgaXMgYWRkaXRpb25hbCBjb21tZW50cy4K
+Pgo+IGRhZWlua2kgvrQgsds6Cj4+IEhpIGFsbCwKPj4KPj4gSSdtIHdyaXRpbmcgU2Ftc3VuZyBT
+b0MgYmFzZWQgRFJNIGZyYW1ld29yayBhbmQgdGhpcyBvbmUgaW5jbHVkZXMgRklNRAo+PiBhbmQg
+SERNSSBkcml2ZXIgYXMgaGFyZHdhcmUgZGVwZW5kZW50IG1vZHVsZXMuIGFuZCBmb3Igbm93LCBl
+bmNvZGVyLAo+PiBjb25uZWN0b3IsIGNydGMgYW5kIGZiIG1vZHVsZSBoYXMgYmVlbiBtYXRlcmlh
+bGl6ZWQgYWxtb3N0LiBidXQgSSdtCj4+IGNvbnRlbmRpbmcgd2l0aCAgZnJhbWVidWZmZXIgc2V0
+dGluZyBpc3N1ZShjcmVhdGVkIGZiX2luZm8gc2hvdWxkIGJlCj4+IHJlZ2lzdGVyZWQgdG8gbGlu
+dXggZnJhbWVidWZmZXIgdGhyb3VnaCByZWdpc3Rlcl9mcmFtZWJ1ZmZlcigpIG9yIG5vdClhcwo+
+PiBkZWZhdWx0IGZyYW1lYnVmZmVyIGF0IGJvb3RpbmcgdGltZS4KPj4KPj4gYXQgZHJtX2ZiX2hl
+bHBlcl9zaW5nbGVfZmJfcHJvYmUoKSBvZiBkcm1fZmJfaGVscGVyLmMgZmlsZSwgZmJfaGVscGVy
+J3MKPj4gZmJfcHJvYmUgY2FsbGJhY2sgaXMgY2FsbGVkIGFuZCB0aGlzIG9uZSBjcmVhdGVzIG5l
+dyBmcmFtZWJ1ZmZlciBhbmQKPj4gcmV0dXJucyBhIHZhbHVlIG1vcmUgdGhlbiAwIGlmIHRydWUu
+IGludGVybmFsbHksIHRoaXMgcHJvY2VzcyBjcmVhdGVzIGFuCj4+IGZiX2luZm8gb2JqZWN0IGFu
+ZCBkcm1fZnJhbWVidWZmZXIgYW5kIHRoZW4gZHJtX2ZyYW1lYnVmZmVyIHdvdWxkIGJlCj4+IGFk
+ZGVkIHRvIG1vZGVfY29uZmlnLmZiX2xpc3Qgb2YgdGhlIGRybV9kZXZpY2UuCj4+Cj4gaXQncyBt
+eSBtaXN0YWtlLiByZXR1cm4gdmFsdWUgaXMgMCBpZiB0cnVlLCBub256ZXJvIG90aGVyd2lzZS4K
+Pgo+PiBhIHZhbHVlIHJldHVybmVkLCBuZXdfZmIgaXMgdXNlZCB0byBkZWNpZGUgdGhhdCBpdCBj
+YWxscwo+PiByZWdpc3Rlcl9mcmFtZWJ1ZmZlcigpIG9yIGRybV9mYl9oZWxwZXJfc2V0X3Bhcigp
+LiBhdCB0aGlzIHBvaW50LCBJIGFtCj4+IGNvbmZ1c2VkIGl0J3MgYSBnb29kIHdheSB0byBjYWxs
+IHJlZ2lzdGVyX2ZyYW1lYnVmZmVyKCkgb3RoZXJ3aXNlCj4+IGRybV9mYl9oZWxwZXJfc2V0X3Bh
+cigpLiBpZiByZWdpc3Rlcl9mcmFtZWJ1ZmZlcigpIGlzIGNhbGxlZCB0aGVuIEkKPj4gZ3Vlc3Mg
+ZHJtX2ZiX2hlbHBlcl9zZXRfcGFyKCkgb3IgZHJtX2NydGNfaGVscGVyX3NldF9jb25maWcoKSBz
+aG91bGQgYmUKPj4gY2FsbGVkIHNvbWV3aGVyZSBzdWJzZXF1ZW50bHkgdG8gYXBwbHkgdGhpcyBv
+bmUgdG8gcmVhbCBoYXJkd2FyZSBiZWNhdXNlCj4+IHByZXZpb3VzIHByb2Nlc3MgaXMganVzdCBm
+b3IgbWFpbnRhaW5pbmcgZGF0YSBsb2dpY2FsbHkuKG5vdCBzZXQgdXAgZGF0YQo+PiB0byBoL3cp
+Cj4+Cj4+IGl0J3MgYSByaWdodCB3YXkgdG8gY2FsbCByZWdpc3Rlcl9mcmFtZWJ1ZmZlcigpIGFu
+ZCB0aGVuCj4+IGRybV9mYl9oZWxwZXJfc2V0X3BhcigpIG9yIGRybV9jcnRjX2hlbHBlcl9zZXRf
+Y29uZmlnKCk/IG90aGVyd2lzZSBqdXN0Cj4+IG9ubHkgZHJtX2ZiX2hlbHBlcl9zZXRfcGFyKCkg
+b3IgZHJtX2NydGNfaGVscGVyX3NldF9jb25maWcoKSBpZ25vcmluZwo+PiByZWdpc3Rlcl9mcmFt
+ZWJ1ZmZlcigpPyBhbmQgd2hhdCBpcyB0aGUgcHVycG9zZSBvZiB1c2luZwo+PiByZWdpc3Rlcl9m
+cmFtZWJ1ZmZlcigpPwo+Pgo+IEkgdW5kZXJzdG9vZCB0aGF0IGlmIGZiX3Byb2JlKCkgY2FsbGJh
+Y2sgaXMgZmFpbCB0aGVuIGZiX2luZm8gb2JqZWN0IGlzCj4gcmVnaXN0ZXJlZCB0byBsaW51eCBm
+cmFtZWJ1ZmZlciB0aHJvdWdoIHJlZ2lzdGVyX2ZyYW1lYnVmZmVyKCkKPiBvdGhlcndpc2UoaWYg
+dHJ1ZSkgaGFyZHdhcmUgY29uZmlndXJhdGlvbiB3b3VsZCBiZSBjb21wbGV0ZWQgYnkKPiBkcm1f
+ZmJfaGVscGVyX3NldF9wYXIoKSBzbyB0aGUgcmVhc29uIG9mIHVzaW5nIHJlZ2lzdGVyX2ZyYW1l
+YnVmZmVyKCkgaXMKPiB0aGF0IHRoZSBjYXNlIG9mIGZhaWxpbmcgZmJfcHJvYmUoKSBjYWxsYmFj
+aywgaXQgaXMgZm9yIGRyYXdpbmcgb24gb25seQo+IGxpbnV4IGZyYW1lYnVmZmVyLiBpcyBpdCBy
+aWdodD8KPgo+PiBJbiBteSBjYXNlLCBmaXJzdCwgcmVnaXN0ZXJfZnJhbWVidWZmZXIoKSBpcyBj
+YWxsZWQgYW5kIHRoZW4gaWYgZGVzaXJlZAo+PiBkZWZhdWx0IGNydGMgaWQgaXMgbWF0Y2hlZCB3
+aXRoIGRybV9mYl9oZWxwZXItPmNydGNfaW5mb1swIH4gbl0uY3J0Y19pZCwKPj4gaXQgZ2V0cyBt
+b2RlX3NldCBvZiBkcm1fZmJfaGVscGVyLT5jcnRjX2luZm9bbl0gYW5kIHRoZW4gIGl0IGNhbGxz
+Cj4+IGRybV9jcnRjX2hlbHBlcl9zZXRfY29uZmlnKG1vZGVfc2V0KS4gYXQgdGhpcyB0aW1lLCBh
+bGwgdGhlIGhhcmR3YXJlCj4+IGNvbmZpZ3VyYXRpb25zIHdvdWxkIGJlIGNvbXBsZXRlZC4KPj4K
+Pj4gdGhhbmsgeW91IGluIGFkdmFuY2UuCj4+Cj4+IEJlc3QgUmVnYXJkcwo+PiBJbmtpIERhZS4K
+Pj4KPgo+Cj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+PiBsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdAo+IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMu
+aW5mcmFkZWFkLm9yZwo+IGh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGlu
+Zm8vbGludXgtYXJtLWtlcm5lbAo+Ci0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBz
+ZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4KdGhlIGJvZHkgb2YgYSBt
+ZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKTW9yZSBtYWpvcmRvbW8gaW5mbyBh
+dCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s

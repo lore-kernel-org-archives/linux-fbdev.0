@@ -1,191 +1,83 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Sat, 18 Jun 2011 09:19:34 +0000
-Subject: Re: [PATCH] fb: avoid possible deadlock caused by fb_set_suspend
-Message-Id: <20110618111934.26203dbf@neptune.home>
+From: Timur Tabi <timur@freescale.com>
+Date: Thu, 23 Jun 2011 20:20:26 +0000
+Subject: [PATCH] fsl-diu-fb: remove check for pixel clock ranges
+Message-Id: <1308860426-17920-1-git-send-email-timur@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4DF7B0B4.4060002@gmx.de>
-	<1308337359-3480-1-git-send-email-FlorianSchandinat@gmx.de>
-	<20110618104311.6d80ba50@neptune.home>
-In-Reply-To: <20110618104311.6d80ba50@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, lethal@linux-sh.org, linux-fbdev@vger.kernel.org, francis.moro@gmail.com, torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, Herton Ronaldo Krzesinski <herton@mandriva.com.br>, stable@kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: lethal@linux-sh.org, linux-fbdev@vger.kernel.org, agust@denx.de, yorksun@freescale.com, linuxppc-dev@ozlabs.org
 
-Guennadi, could you have a look at (completely untested) patch which avoids
-possible deadlock due to inverted lock taking order on hotplug as well
-as "readding" lock_fb_info() for fb_set_suspend() call after Herton's
-patch to fb_set_suspend().
+The Freescale DIU framebuffer driver defines two constants, MIN_PIX_CLK and
+MAX_PIX_CLK, that are supposed to represent the lower and upper limits of
+the pixel clock.  These values, however, are true only for one platform
+clock rate (533MHz) and only for the MPC8610.  So the actual range for
+the pixel clock is chip-specific, which means the current values are almost
+always wrong.  The chance of an out-of-range pixel clock being used are also
+remote.
 
-Thanks,
-Bruno
+Rather than try to detect an out-of-range clock in the DIU driver, we depend
+on the board-specific pixel clock function (e.g. p1022ds_set_pixel_clock)
+to clamp the pixel clock to a supported value.
 
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ drivers/video/fsl-diu-fb.c |   16 ----------------
+ include/linux/fsl-diu-fb.h |    6 ------
+ 2 files changed, 0 insertions(+), 22 deletions(-)
 
-On Sat, 18 June 2011 Bruno Pr=C3=A9mont <bonbons@linux-vserver.org> wrote:
-> On Fri, 17 June 2011 Florian Tobias Schandinat <FlorianSchandinat@gmx.de>=
- wrote:
-> > From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-> >=20
-> > A lock ordering issue can cause deadlocks: in framebuffer/console code,
-> > all needed struct fb_info locks are taken before acquire_console_sem(),
-> > in places which need to take console semaphore.
-> >=20
-> > But fb_set_suspend is always called with console semaphore held, and
-> > inside it we call lock_fb_info which gets the fb_info lock, inverse
-> > locking order of what the rest of the code does. This causes a real
-> > deadlock issue, when we write to state fb sysfs attribute (which calls
-> > fb_set_suspend) while a framebuffer is being unregistered by
-> > remove_conflicting_framebuffers, as can be shown by following show
-> > blocked state trace on a test program which loads i915 and runs another
-> > forked processes writing to state attribute:
-> >=20
-> > Test process with semaphore held and trying to get fb_info lock:
->=20
-> ...
->=20
-> > fb-test2 which reproduces above is available on kernel.org bug #26232.
-> > To solve this issue, avoid calling lock_fb_info inside fb_set_suspend,
-> > and move it out to where needed (callers of fb_set_suspend must call
-> > lock_fb_info before if needed). So far, the only place which needs to
-> > call lock_fb_info is store_fbstate, all other places which calls
-> > fb_set_suspend are suspend/resume hooks that should not need the lock as
-> > they should be run only when processes are already frozen in
-> > suspend/resume.
->=20
-> From a quick look through FB drivers in 2.6.39 I've found one that would =
-need
-> more work:
-> - drivers/video/sh_mobile_hdmi.c: sh_hdmi_edid_work_fn()
->   Should get changed to
->   a) right locking order in case (hdmi->hp_state =3D HDMI_HOTPLUG_CONNECT=
-ED)
->   b) lock fb_info in the other case
->   For this one fb_set_suspend() does get call in a hotplug worker,
->   thus independently on suspend/resume process.
->=20
-> The rest does match the suspend/resume hook pattern mentioned.
->=20
-> Bruno
->=20
->=20
-> > References: https://bugzilla.kernel.org/show_bug.cgi?id&232
-> > Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-> > Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-> > Cc: stable@kernel.org
-> > ---
-> >  drivers/video/fbmem.c   |    3 ---
-> >  drivers/video/fbsysfs.c |    3 +++
-> >  2 files changed, 3 insertions(+), 3 deletions(-)
-> >=20
-> > diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-> > index 5aac00e..ad93629 100644
-> > --- a/drivers/video/fbmem.c
-> > +++ b/drivers/video/fbmem.c
-> > @@ -1738,8 +1738,6 @@ void fb_set_suspend(struct fb_info *info, int sta=
-te)
-> >  {
-> >  	struct fb_event event;
-> > =20
-> > -	if (!lock_fb_info(info))
-> > -		return;
-> >  	event.info =3D info;
-> >  	if (state) {
-> >  		fb_notifier_call_chain(FB_EVENT_SUSPEND, &event);
-> > @@ -1748,7 +1746,6 @@ void fb_set_suspend(struct fb_info *info, int sta=
-te)
-> >  		info->state =3D FBINFO_STATE_RUNNING;
-> >  		fb_notifier_call_chain(FB_EVENT_RESUME, &event);
-> >  	}
-> > -	unlock_fb_info(info);
-> >  }
-> > =20
-> >  /**
-> > diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
-> > index 04251ce..67afa9c 100644
-> > --- a/drivers/video/fbsysfs.c
-> > +++ b/drivers/video/fbsysfs.c
-> > @@ -399,9 +399,12 @@ static ssize_t store_fbstate(struct device *device,
-> > =20
-> >  	state =3D simple_strtoul(buf, &last, 0);
-> > =20
-> > +	if (!lock_fb_info(fb_info))
-> > +		return -ENODEV;
-> >  	console_lock();
-> >  	fb_set_suspend(fb_info, (int)state);
-> >  	console_unlock();
-> > +	unlock_fb_info(fb_info);
-> > =20
-> >  	return count;
-> >  }
-
-
-diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-index 2b9e56a..b1a13ab 100644
---- a/drivers/video/sh_mobile_hdmi.c
-+++ b/drivers/video/sh_mobile_hdmi.c
-@@ -1151,27 +1151,27 @@ static void sh_hdmi_edid_work_fn(struct work_struct=
- *work)
-=20
- 		ch =3D info->par;
-=20
--		console_lock();
-+		if (lock_fb_info(info)) {
-+			console_lock();
-=20
--		/* HDMI plug in */
--		if (!sh_hdmi_must_reconfigure(hdmi) &&
--		    info->state =3D FBINFO_STATE_RUNNING) {
--			/*
--			 * First activation with the default monitor - just turn
--			 * on, if we run a resume here, the logo disappears
--			 */
--			if (lock_fb_info(info)) {
-+			/* HDMI plug in */
-+			if (!sh_hdmi_must_reconfigure(hdmi) &&
-+			    info->state =3D FBINFO_STATE_RUNNING) {
-+				/*
-+				 * First activation with the default monitor - just turn
-+				 * on, if we run a resume here, the logo disappears
-+				 */
- 				info->var.width =3D hdmi->var.width;
- 				info->var.height =3D hdmi->var.height;
- 				sh_hdmi_display_on(hdmi, info);
--				unlock_fb_info(info);
-+			} else {
-+				/* New monitor or have to wake up */
-+				fb_set_suspend(info, 0);
- 			}
--		} else {
--			/* New monitor or have to wake up */
--			fb_set_suspend(info, 0);
--		}
-=20
--		console_unlock();
-+			console_unlock();
-+			unlock_fb_info(info);
-+		}
- 	} else {
- 		ret =3D 0;
- 		if (!hdmi->info)
-@@ -1181,12 +1181,15 @@ static void sh_hdmi_edid_work_fn(struct work_struct=
- *work)
- 		fb_destroy_modedb(hdmi->monspec.modedb);
- 		hdmi->monspec.modedb =3D NULL;
-=20
--		console_lock();
-+		if (lock_fb_info(info)) {
-+			console_lock();
-=20
--		/* HDMI disconnect */
--		fb_set_suspend(hdmi->info, 1);
-+			/* HDMI disconnect */
-+			fb_set_suspend(hdmi->info, 1);
-=20
--		console_unlock();
-+			console_unlock();
-+			unlock_fb_info(info);
-+		}
- 		pm_runtime_put(hdmi->dev);
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index bedf5be..0acc7d6 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -555,8 +555,6 @@ static void adjust_aoi_size_position(struct fb_var_screeninfo *var,
+ static int fsl_diu_check_var(struct fb_var_screeninfo *var,
+ 				struct fb_info *info)
+ {
+-	unsigned long htotal, vtotal;
+-
+ 	pr_debug("check_var xres: %d\n", var->xres);
+ 	pr_debug("check_var yres: %d\n", var->yres);
+ 
+@@ -635,20 +633,6 @@ static int fsl_diu_check_var(struct fb_var_screeninfo *var,
+ 
+ 		break;
  	}
-=20
+-	/* If the pixclock is below the minimum spec'd value then set to
+-	 * refresh rate for 60Hz since this is supported by most monitors.
+-	 * Refer to Documentation/fb/ for calculations.
+-	 */
+-	if ((var->pixclock < MIN_PIX_CLK) || (var->pixclock > MAX_PIX_CLK)) {
+-		htotal = var->xres + var->right_margin + var->hsync_len +
+-		    var->left_margin;
+-		vtotal = var->yres + var->lower_margin + var->vsync_len +
+-		    var->upper_margin;
+-		var->pixclock = (vtotal * htotal * 6UL) / 100UL;
+-		var->pixclock = KHZ2PICOS(var->pixclock);
+-		pr_debug("pixclock set for 60Hz refresh = %u ps\n",
+-			var->pixclock);
+-	}
+ 
+ 	var->height = -1;
+ 	var->width = -1;
+diff --git a/include/linux/fsl-diu-fb.h b/include/linux/fsl-diu-fb.h
+index 781d467..daa9952 100644
+--- a/include/linux/fsl-diu-fb.h
++++ b/include/linux/fsl-diu-fb.h
+@@ -24,12 +24,6 @@
+  * See mpc8610fb_set_par(), map_video_memory(), and unmap_video_memory()
+  */
+ #define MEM_ALLOC_THRESHOLD (1024*768*4+32)
+-/* Minimum value that the pixel clock can be set to in pico seconds
+- * This is determined by platform clock/3 where the minimum platform
+- * clock is 533MHz. This gives 5629 pico seconds.
+- */
+-#define MIN_PIX_CLK 5629
+-#define MAX_PIX_CLK 96096
+ 
+ #include <linux/types.h>
+ 
+-- 
+1.7.3.4
+
+

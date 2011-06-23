@@ -1,103 +1,80 @@
-From: "K, Mythri P" <mythripk@ti.com>
-Date: Thu, 23 Jun 2011 09:15:43 +0000
-Subject: Re: [PATCH V4 5/5] ARM: EXYNOS4: Add platform data for EXYNOS4 FIMD
-Message-Id: <BANLkTin7J=fBbp+4Ti_a2D6bgU15sVZHzg@mail.gmail.com>
+From: JinGoo Han <jg1.han@samsung.com>
+Date: Thu, 23 Jun 2011 11:08:58 +0000
+Subject: Re: Re: [PATCH V4 5/5] ARM: EXYNOS4: Add platform data for EXYNOS4
+Message-Id: <3561939.168581308827336693.JavaMail.weblogic@epml08>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <11291403.110251308714504687.JavaMail.weblogic@epml08>
 In-Reply-To: <11291403.110251308714504687.JavaMail.weblogic@epml08>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: jg1.han@samsung.com
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Jong-Hun Han <jonghun.han@samsung.com>, ANAND KUMAR N <anand.kn@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, THOMAS P ABRAHAM <thomas.ab@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kmpark@infradead.org>, In-Ki Dae <inki.dae@samsung.com>, ARM Linux <linux@arm.linux.org.uk>, Ben Dooks <ben-linux@fluff.org>
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: "K, Mythri P" <mythripk@ti.com>
+Cc: JinGoo Han <jg1.han@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Jong-Hun Han <jonghun.han@samsung.com>, ANAND KUMAR N <anand.kn@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, THOMAS P ABRAHAM <thomas.ab@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kmpark@infradead.org>, In-Ki Dae <inki.dae@samsung.com>, ARM Linux <linux@arm.linux.org.uk>, Ben Dooks <ben-linux@fluff.org>
 
-2011/6/22 JinGoo Han <jg1.han@samsung.com>:
-> From: Jonghun Han <jonghun.han@samsung.com>
->
-> This patch adds support EXYNOS4 FIMD0 and LTE480WV LCD pannel.
->
-> Signed-off-by: Jonghun Han <jonghun.han@samsung.com>
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> ---
-> =A0arch/arm/mach-exynos4/mach-smdkc210.c | =A0114 +++++++++++++++++++++++=
-++++++++++
-> =A0arch/arm/mach-exynos4/mach-smdkv310.c | =A0114 +++++++++++++++++++++++=
-++++++++++
-> =A02 files changed, 228 insertions(+), 0 deletions(-)
->
-<<snip>>
-> +static void lcd_lte480wv_set_power(struct plat_lcd_data *pd,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0unsi=
-gned int power)
-> +{
-> + =A0 =A0 =A0 if (power) {
-> +#if !defined(CONFIG_BACKLIGHT_PWM)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_request(EXYNOS4_GPD0(1), "GPD0");
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_direction_output(EXYNOS4_GPD0(1), 1);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_free(EXYNOS4_GPD0(1));
-> +#endif
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* fire nRESET on power up */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_request(EXYNOS4_GPX0(6), "GPX0");
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_direction_output(EXYNOS4_GPX0(6), 1);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mdelay(100);
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_set_value(EXYNOS4_GPX0(6), 0);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mdelay(10);
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_set_value(EXYNOS4_GPX0(6), 1);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mdelay(10);
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_free(EXYNOS4_GPX0(6));
-> + =A0 =A0 =A0 } else {
-> +#if !defined(CONFIG_BACKLIGHT_PWM)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_request(EXYNOS4_GPD0(1), "GPD0");
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_direction_output(EXYNOS4_GPD0(1), 0);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_free(EXYNOS4_GPD0(1));
-> +#endif
-> + =A0 =A0 =A0 }
-> +}
-> +
-
-have you considered using gpio_request_one instead ? It simplifies the
-three step API.
-
-<<snip>>
-
-> + =A0 =A0 =A0 if (power) {
-> +#if !defined(CONFIG_BACKLIGHT_PWM)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_request(EXYNOS4_GPD0(1), "GPD0");
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_direction_output(EXYNOS4_GPD0(1), 1);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_free(EXYNOS4_GPD0(1));
-> +#endif
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* fire nRESET on power up */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_request(EXYNOS4_GPX0(6), "GPX0");
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_direction_output(EXYNOS4_GPX0(6), 1);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mdelay(100);
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_set_value(EXYNOS4_GPX0(6), 0);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mdelay(10);
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_set_value(EXYNOS4_GPX0(6), 1);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 mdelay(10);
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_free(EXYNOS4_GPX0(6));
-> + =A0 =A0 =A0 } else {
-> +#if !defined(CONFIG_BACKLIGHT_PWM)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_request(EXYNOS4_GPD0(1), "GPD0");
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_direction_output(EXYNOS4_GPD0(1), 0);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 gpio_free(EXYNOS4_GPD0(1));
-> +#endif
-> + =A0 =A0 =A0 }
-> +}
-
-same comment as above.
-
-<<snip>>
-
-
-
---=20
-Thanks and regards,
-Mythri.
+CkhpLCBNeXRocmkuCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0KPiBGcm9tOiBsaW51eC1m
+YmRldi1vd25lckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1mYmRldi0KPiBvd25lckB2
+Z2VyLmtlcm5lbC5vcmddIE9uIEJlaGFsZiBPZiBLLCBNeXRocmkgUAo+IFNlbnQ6IFRodXJzZGF5
+LCBKdW5lIDIzLCAyMDExIDY6MDQgUE0KPiBUbzogamcxLmhhbkBzYW1zdW5nLmNvbQo+IENjOiBL
+dWtqaW4gS2ltOyBQYXVsIE11bmR0OyBsaW51eC1zYW1zdW5nLXNvY0B2Z2VyLmtlcm5lbC5vcmc7
+IGxpbnV4LQo+IGZiZGV2QHZnZXIua2VybmVsLm9yZzsgSm9uZy1IdW4gSGFuOyBBTkFORCBLVU1B
+UiBOOyBTeWx3ZXN0ZXIgTmF3cm9ja2k7Cj4gVEhPTUFTIFAgQUJSQUhBTTsgTWFyZWsgU3p5cHJv
+d3NraTsgS3l1bmdtaW4gUGFyazsgSW4tS2kgRGFlOyBBUk0gTGludXg7Cj4gQmVuIERvb2tzCj4g
+U3ViamVjdDogUmU6IFtQQVRDSCBWNCA1LzVdIEFSTTogRVhZTk9TNDogQWRkIHBsYXRmb3JtIGRh
+dGEgZm9yIEVYWU5PUzQKPiBGSU1EIGFuZCBMVEU0ODBXViBwbGF0Zm9ybS1sY2QKPiAKPiAyMDEx
+LzYvMjIgSmluR29vIEhhbiA8amcxLmhhbkBzYW1zdW5nLmNvbT46Cj4gPiBGcm9tOiBKb25naHVu
+IEhhbiA8am9uZ2h1bi5oYW5Ac2Ftc3VuZy5jb20+Cj4gPgo+ID4gVGhpcyBwYXRjaCBhZGRzIHN1
+cHBvcnQgRVhZTk9TNCBGSU1EMCBhbmQgTFRFNDgwV1YgTENEIHBhbm5lbC4KPiA+Cj4gPiBTaWdu
+ZWQtb2ZmLWJ5OiBKb25naHVuIEhhbiA8am9uZ2h1bi5oYW5Ac2Ftc3VuZy5jb20+Cj4gPiBTaWdu
+ZWQtb2ZmLWJ5OiBKaW5nb28gSGFuIDxqZzEuaGFuQHNhbXN1bmcuY29tPgo+ID4gLS0tCj4gPiAg
+YXJjaC9hcm0vbWFjaC1leHlub3M0L21hY2gtc21ka2MyMTAuYyB8ICAxMTQKPiArKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysKPiA+ICBhcmNoL2FybS9tYWNoLWV4eW5vczQvbWFjaC1z
+bWRrdjMxMC5jIHwgIDExNAo+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKwo+ID4g
+IDIgZmlsZXMgY2hhbmdlZCwgMjI4IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pCj4gPgo+
+IDw8c25pcD4+Cj4gPiArc3RhdGljIHZvaWQgbGNkX2x0ZTQ4MHd2X3NldF9wb3dlcihzdHJ1Y3Qg
+cGxhdF9sY2RfZGF0YSAqcGQsCj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IHVuc2lnbmVkIGludCBwb3dlcikKPiA+ICt7Cj4gPiArICAgICAgIGlmIChwb3dlcikgewo+ID4g
+KyNpZiAhZGVmaW5lZChDT05GSUdfQkFDS0xJR0hUX1BXTSkKPiA+ICsgICAgICAgICAgICAgICBn
+cGlvX3JlcXVlc3QoRVhZTk9TNF9HUEQwKDEpLCAiR1BEMCIpOwo+ID4gKyAgICAgICAgICAgICAg
+IGdwaW9fZGlyZWN0aW9uX291dHB1dChFWFlOT1M0X0dQRDAoMSksIDEpOwo+ID4gKyAgICAgICAg
+ICAgICAgIGdwaW9fZnJlZShFWFlOT1M0X0dQRDAoMSkpOwo+ID4gKyNlbmRpZgo+ID4gKyAgICAg
+ICAgICAgICAgIC8qIGZpcmUgblJFU0VUIG9uIHBvd2VyIHVwICovCj4gPiArICAgICAgICAgICAg
+ICAgZ3Bpb19yZXF1ZXN0KEVYWU5PUzRfR1BYMCg2KSwgIkdQWDAiKTsKPiA+ICsKPiA+ICsgICAg
+ICAgICAgICAgICBncGlvX2RpcmVjdGlvbl9vdXRwdXQoRVhZTk9TNF9HUFgwKDYpLCAxKTsKPiA+
+ICsgICAgICAgICAgICAgICBtZGVsYXkoMTAwKTsKPiA+ICsKPiA+ICsgICAgICAgICAgICAgICBn
+cGlvX3NldF92YWx1ZShFWFlOT1M0X0dQWDAoNiksIDApOwo+ID4gKyAgICAgICAgICAgICAgIG1k
+ZWxheSgxMCk7Cj4gPiArCj4gPiArICAgICAgICAgICAgICAgZ3Bpb19zZXRfdmFsdWUoRVhZTk9T
+NF9HUFgwKDYpLCAxKTsKPiA+ICsgICAgICAgICAgICAgICBtZGVsYXkoMTApOwo+ID4gKwo+ID4g
+KyAgICAgICAgICAgICAgIGdwaW9fZnJlZShFWFlOT1M0X0dQWDAoNikpOwo+ID4gKyAgICAgICB9
+IGVsc2Ugewo+ID4gKyNpZiAhZGVmaW5lZChDT05GSUdfQkFDS0xJR0hUX1BXTSkKPiA+ICsgICAg
+ICAgICAgICAgICBncGlvX3JlcXVlc3QoRVhZTk9TNF9HUEQwKDEpLCAiR1BEMCIpOwo+ID4gKyAg
+ICAgICAgICAgICAgIGdwaW9fZGlyZWN0aW9uX291dHB1dChFWFlOT1M0X0dQRDAoMSksIDApOwo+
+ID4gKyAgICAgICAgICAgICAgIGdwaW9fZnJlZShFWFlOT1M0X0dQRDAoMSkpOwo+ID4gKyNlbmRp
+Zgo+ID4gKyAgICAgICB9Cj4gPiArfQo+ID4gKwo+IAo+IGhhdmUgeW91IGNvbnNpZGVyZWQgdXNp
+bmcgZ3Bpb19yZXF1ZXN0X29uZSBpbnN0ZWFkID8gSXQgc2ltcGxpZmllcyB0aGUKPiB0aHJlZSBz
+dGVwIEFQSS4KWW91J3JlIHJpZ2h0LiBJdCBzZWVtcyB0byBiZSB2ZXJ5IGhlbHBmdWwuCkkgd2ls
+bCBhcHBseSBpdCBhbmQgc2VuZCBWNyBwYXRjaGVzLCBzb29uLgpUaGFuayB5b3UgZm9yIHlvdXIg
+cmVwbHkuCj4gCj4gPDxzbmlwPj4KPiAKPiA+ICsgICAgICAgaWYgKHBvd2VyKSB7Cj4gPiArI2lm
+ICFkZWZpbmVkKENPTkZJR19CQUNLTElHSFRfUFdNKQo+ID4gKyAgICAgICAgICAgICAgIGdwaW9f
+cmVxdWVzdChFWFlOT1M0X0dQRDAoMSksICJHUEQwIik7Cj4gPiArICAgICAgICAgICAgICAgZ3Bp
+b19kaXJlY3Rpb25fb3V0cHV0KEVYWU5PUzRfR1BEMCgxKSwgMSk7Cj4gPiArICAgICAgICAgICAg
+ICAgZ3Bpb19mcmVlKEVYWU5PUzRfR1BEMCgxKSk7Cj4gPiArI2VuZGlmCj4gPiArICAgICAgICAg
+ICAgICAgLyogZmlyZSBuUkVTRVQgb24gcG93ZXIgdXAgKi8KPiA+ICsgICAgICAgICAgICAgICBn
+cGlvX3JlcXVlc3QoRVhZTk9TNF9HUFgwKDYpLCAiR1BYMCIpOwo+ID4gKwo+ID4gKyAgICAgICAg
+ICAgICAgIGdwaW9fZGlyZWN0aW9uX291dHB1dChFWFlOT1M0X0dQWDAoNiksIDEpOwo+ID4gKyAg
+ICAgICAgICAgICAgIG1kZWxheSgxMDApOwo+ID4gKwo+ID4gKyAgICAgICAgICAgICAgIGdwaW9f
+c2V0X3ZhbHVlKEVYWU5PUzRfR1BYMCg2KSwgMCk7Cj4gPiArICAgICAgICAgICAgICAgbWRlbGF5
+KDEwKTsKPiA+ICsKPiA+ICsgICAgICAgICAgICAgICBncGlvX3NldF92YWx1ZShFWFlOT1M0X0dQ
+WDAoNiksIDEpOwo+ID4gKyAgICAgICAgICAgICAgIG1kZWxheSgxMCk7Cj4gPiArCj4gPiArICAg
+ICAgICAgICAgICAgZ3Bpb19mcmVlKEVYWU5PUzRfR1BYMCg2KSk7Cj4gPiArICAgICAgIH0gZWxz
+ZSB7Cj4gPiArI2lmICFkZWZpbmVkKENPTkZJR19CQUNLTElHSFRfUFdNKQo+ID4gKyAgICAgICAg
+ICAgICAgIGdwaW9fcmVxdWVzdChFWFlOT1M0X0dQRDAoMSksICJHUEQwIik7Cj4gPiArICAgICAg
+ICAgICAgICAgZ3Bpb19kaXJlY3Rpb25fb3V0cHV0KEVYWU5PUzRfR1BEMCgxKSwgMCk7Cj4gPiAr
+ICAgICAgICAgICAgICAgZ3Bpb19mcmVlKEVYWU5PUzRfR1BEMCgxKSk7Cj4gPiArI2VuZGlmCj4g
+PiArICAgICAgIH0KPiA+ICt9Cj4gCj4gc2FtZSBjb21tZW50IGFzIGFib3ZlLgo+IAo+IDw8c25p
+cD4+Cj4gCj4gCj4gCj4gLS0KPiBUaGFua3MgYW5kIHJlZ2FyZHMsCj4gTXl0aHJpLgo+IC0tCj4g
+VG8gdW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJl
+IGxpbnV4LWZiZGV2IiBpbgo+IHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdl
+ci5rZXJuZWwub3JnCj4gTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVs
+Lm9yZy9tYWpvcmRvbW8taW5mby5odG1sCv/06Lp7Lm7HK4m3n66JrYYrJYrL/7Hp3bYXpYp3/7p7
+Lm7HK4m3pYp7sf323Xr/4p7YXm6HcqH2pnrLGoHraJmo6K3aJqP74Hq/5Hq53pf6K4DKK3pmo6K3
+aJqIp36GrYbbaf//74Hq/5Hq53pf6K4P5mo6K3aJqP4p36P4bQo=

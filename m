@@ -1,25 +1,46 @@
-From: Mike Frysinger <vapier@gentoo.org>
-Date: Wed, 29 Jun 2011 21:05:00 +0000
-Subject: Re: [uclinux-dist-devel] [PATCH] fbdev: bfin_adv7393fb: convert to seq_file
-Message-Id: <BANLkTingNmwMf4eKYVh_beho309L_mPSSg@mail.gmail.com>
+From: William Katsak <william.katsak@alcatel-lucent.com>
+Date: Thu, 23 Jun 2011 13:16:29 +0000
+Subject: [PATCH] This patch fixes a problem where a DisplayLink device autoselects a suboptimal framebuffer r
+Message-Id: <1308834989-28712-1-git-send-email-william.katsak@alcatel-lucent.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1309213715-31842-1-git-send-email-vapier@gentoo.org>
-In-Reply-To: <1309213715-31842-1-git-send-email-vapier@gentoo.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Mon, Jun 27, 2011 at 18:28, Mike Frysinger wrote:
-> ->read_proc and ->write_proc interfaces are going away,
-> switch to seq_file/->write().
+The situation in which the problem occurred was with a Plugable UGA-2K-A
+connected to a Samsung EX2220X display. The driver indicates that
+1920x1080 is a valid mode (the first mode available, in fact), but
+proceeds to set the framebuffer size to 1600x1200.
 
-actually, let's not merge this.  it has build errors:
-drivers/video/bfin_adv7393fb.c:364: error: ‘adv7393_proc_write’
-undeclared here (not in a function)
+The patch corrects what seems to be a logic error, regarding unsetting
+the FB_MISC_1ST_DETAIL flag, if the first (top/best) mode is invalid.
+The existing code unset the flag if ANY mode was invalid.
 
-the code originally had "adv7393_write_proc", but the new code refers
-to "adv7393fb_proc_write".  also, file_operations.write does not take
-the same arguments as proc_dir_entry.write.  so this needs a little
-more love than renaming the func.
--mike
+Signed-off-by: William Katsak <william.katsak@alcatel-lucent.com>
+---
+ drivers/video/udlfb.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
+index 52b0f3e..816a4fd 100644
+--- a/drivers/video/udlfb.c
++++ b/drivers/video/udlfb.c
+@@ -1233,8 +1233,12 @@ static int dlfb_setup_modes(struct dlfb_data *dev,
+ 			if (dlfb_is_valid_mode(&info->monspecs.modedb[i], info))
+ 				fb_add_videomode(&info->monspecs.modedb[i],
+ 					&info->modelist);
+-			else /* if we've removed top/best mode */
+-				info->monspecs.misc &= ~FB_MISC_1ST_DETAIL;
++			else {
++				if (i = 0)
++					/* if we've removed top/best mode */
++					info->monspecs.misc
++						&= ~FB_MISC_1ST_DETAIL;
++			}
+ 		}
+ 
+ 		default_vmode = fb_find_best_display(&info->monspecs,
+-- 
+1.7.3.4
+

@@ -1,40 +1,36 @@
 From: Anatolij Gustschin <agust@denx.de>
-Date: Wed, 22 Jun 2011 20:11:43 +0000
+Date: Thu, 23 Jun 2011 11:26:04 +0000
 Subject: Re: [PATCH] fsl-diu-fb: remove the ioctl interface
-Message-Id: <20110622221143.503add74@wker>
+Message-Id: <20110623132604.1a6d0d71@wker>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1308691655-3416-1-git-send-email-timur@freescale.com>
-	<20110622003853.1041385c@wker> <4E012586.7050808@freescale.com>
-In-Reply-To: <4E012586.7050808@freescale.com>
+	<20110622003853.1041385c@wker>
+	<929D3CED81F34E43887A393170D66FB90484A280@GBRSUN01MS002.eu.xerox.net>
+In-Reply-To: <929D3CED81F34E43887A393170D66FB90484A280@GBRSUN01MS002.eu.xerox.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "lethal@linux-sh.org" <lethal@linux-sh.org>, sun york-R58495 <R58495@freescale.com>
+To: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
+Cc: linuxppc-dev@ozlabs.org, linux-fbdev@vger.kernel.org, lethal@linux-sh.org, Timur Tabi <timur@freescale.com>, yorksun@freescale.com
 
-On Tue, 21 Jun 2011 23:13:11 +0000
-Tabi Timur-B04825 <B04825@freescale.com> wrote:
-
-> Anatolij Gustschin wrote:
+On Wed, 22 Jun 2011 11:39:49 +0100
+"Jenkins, Clive" <Clive.Jenkins@xerox.com> wrote:
+...
+> > > Removing the ioctl interface also allows us to clean up the header
+> file and
+> > > remove other unusued stuff.
+> > 
 > > No! We are using ioctl interface of this driver in many video
 > > rendering applications on overlay planes on huge number of boards.
 > > So, please don't remove it.
-> 
-> Ok, I had no idea anyone was using it.
-> 
-> Can you email me details about how you use the ioctl interface?  If I can't 
-> remove it, maybe I can clean it up.
+...
+> Can you make available your application code by posting a link to it?
 
-Following DIU specific ioctls are used:
+I do not have the code of the real applications since I didn't wrote
+it. All I can share is the test and sample code that I used when working
+on driver fixes:
 
-MFB_SET_CHROMA_KEY
-MFB_SET_PIXFMT
-MFB_GET_PIXFMT
-MFB_SET_AOID
-MFB_GET_AOID
-MFB_GET_ALPHA
-MFB_SET_ALPHA
+test-app: http://pastebin.com/J2RvKb6n
 
-Other ioctls can be removed. I'm not sure if someone
-uses FBIOGET_GWINFO. If there are no objections from
-other people, it can also be dropped.
+HTH,
+Anatolij

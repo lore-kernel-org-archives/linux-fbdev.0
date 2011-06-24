@@ -1,19 +1,27 @@
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Thu, 23 Jun 2011 22:51:04 +0000
+From: Paul Mundt <lethal@linux-sh.org>
+Date: Fri, 24 Jun 2011 08:17:51 +0000
 Subject: Re: [PATCH 18/37] Remove unneeded version.h includes from drivers/video/
-Message-Id: <BANLkTi=FAvr7nmRdKv6Ta5zvSJ82SeK0QA@mail.gmail.com>
+Message-Id: <20110624081751.GG24184@linux-sh.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <alpine.LNX.2.00.1106232344480.17688@swampdragon.chaosbits.net> <alpine.LNX.2.00.1106240032560.17688@swampdragon.chaosbits.net>
 In-Reply-To: <alpine.LNX.2.00.1106240032560.17688@swampdragon.chaosbits.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Jesper Juhl <jj@chaosbits.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, trivial@kernel.org, Michael Hennerich <michael.hennerich@analog.com>, Richard Purdie <rpurdie@rpsys.net>, Paul Mundt <lethal@linux-sh.org>, device-drivers-devel@blackfin.uclinux.org, linux-fbdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, trivial@kernel.org, Michael Hennerich <michael.hennerich@analog.com>, Richard Purdie <rpurdie@rpsys.net>, device-drivers-devel@blackfin.uclinux.org, linux-fbdev@vger.kernel.org
 
-On Thu, Jun 23, 2011 at 18:35, Jesper Juhl wrote:
->  drivers/video/backlight/adp8860_bl.c |    1 -
->  drivers/video/backlight/adp8870_bl.c |    1 -
-
-Acked-by: Mike Frysinger <vapier@gentoo.org>
--mike
+On Fri, Jun 24, 2011 at 12:35:17AM +0200, Jesper Juhl wrote:
+> It was pointed out by 'make versioncheck' that some includes of
+> linux/version.h are not needed in drivers/video/.
+> This patch removes them.
+> 
+> Signed-off-by: Jesper Juhl <jj@chaosbits.net>
+> ---
+>  drivers/video/backlight/adp8860_bl.c |    1 -
+>  drivers/video/backlight/adp8870_bl.c |    1 -
+>  drivers/video/pxa3xx-gcu.c           |    2 --
+>  drivers/video/xilinxfb.c             |    1 -
+>  4 files changed, 0 insertions(+), 5 deletions(-)
+> 
+Applied, thanks.

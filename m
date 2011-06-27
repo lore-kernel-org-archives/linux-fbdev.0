@@ -1,41 +1,45 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Wed, 15 Jun 2011 10:20:46 +0000
-Subject: Re: Possible deadlock when suspending framebuffer
-Message-Id: <20110615122046.70e1ee17@pluto.restena.lu>
+From: Dima Zavin <dima@android.com>
+Date: Mon, 27 Jun 2011 17:31:05 +0000
+Subject: [PATCH] OMAP: DSS: dispc: enable/disable clocks in error handler
+Message-Id: <1309195865-23808-1-git-send-email-dima@android.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1308100165.2113.4.camel@Tux>
-	<20110615075803.3348b4ec@pluto.restena.lu>
-	<BANLkTinE+EZ9nr1qGKC0VY0bVHuF8U-R0w@mail.gmail.com>
-In-Reply-To: <BANLkTinE+EZ9nr1qGKC0VY0bVHuF8U-R0w@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Francis Moreau <francis.moro@gmail.com>
-Cc: Wanlong Gao <wanlong.gao@gmail.com>, Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Dima Zavin <dima@android.com>
 
-On Wed, 15 Jun 2011 09:12:46 Francis Moreau wrote:
-> On Wed, Jun 15, 2011 at 7:58 AM, Bruno Pr=C3=A9mont wrote:
-> Well, sorry for the dumb question but the fb/fbcon code is pretty hard
-> to follow for me.
+There's no guarantee that the error handler worker thread
+will run while the dispc clocks are on. Explicitly enable/disable
+them.
 
-Certainly not just for you
+Signed-off-by: Dima Zavin <dima@android.com>
+---
+ drivers/video/omap2/dss/dispc.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-> Why does store_fbstate() and any fb driver's suspsend methods acquire
-> the console lock at all ?
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 62aa77c..2458248 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -3292,6 +3292,8 @@ static void dispc_error_worker(struct work_struct *work)
+ 	dispc.error_irqs = 0;
+ 	spin_unlock_irqrestore(&dispc.irq_lock, flags);
+ 
++	dispc_runtime_get();
++
+ 	if (errors & DISPC_IRQ_GFX_FIFO_UNDERFLOW) {
+ 		DSSERR("GFX_FIFO_UNDERFLOW, disabling GFX\n");
+ 		for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
+@@ -3478,6 +3480,8 @@ static void dispc_error_worker(struct work_struct *work)
+ 	dispc.irq_error_mask |= errors;
+ 	_omap_dispc_set_irqs();
+ 	spin_unlock_irqrestore(&dispc.irq_lock, flags);
++
++	dispc_runtime_put();
+ }
+ 
+ int omap_dispc_wait_for_irq_timeout(u32 irqmask, unsigned long timeout)
+-- 
+1.7.3.1
 
-From my understanding, fbcon currently has very loose binding with
-framebuffers in general instead of just with those few framebuffers
-it is effectively mapped to (and active on!).
-James Simmons started a complete rework of fbcon/tty code which is
-expected to get things more fine-grained, until then console semaphore
-(console_lock) remains a kind of big kernel lock in the
-console/framebuffer area.
-
-As such any state change of framebuffer may influence/race against
-fbcon.
-e.g. for the suspend state you want to avoid fbcon to fiddle with
-your framebuffer while it is suspending (and have fbcon know about the
-suspended state). This way fbcon can unsuspend framebuffer if needed
-but also stop accessing it when it should not.
-
-Bruno

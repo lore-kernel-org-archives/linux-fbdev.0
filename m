@@ -1,80 +1,119 @@
-From: Wu Fengguang <fengguang.wu@intel.com>
-Date: Thu, 09 Jun 2011 06:38:10 +0000
-Subject: Re: [RFC] fbmem: reset file->private_data on failed fb_open()
-Message-Id: <20110609063810.GA8071@localhost>
+From: Mike Frysinger <vapier@gentoo.org>
+Date: Mon, 27 Jun 2011 22:28:35 +0000
+Subject: [PATCH] fbdev: bfin_adv7393fb: convert to seq_file
+Message-Id: <1309213715-31842-1-git-send-email-vapier@gentoo.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20110609030628.GA10233@localhost>
- <20110609081019.145ed6d5@pluto.restena.lu>
-In-Reply-To: <20110609081019.145ed6d5@pluto.restena.lu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Bruno =?utf-8?Q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, thomas.creutz@gmx.de
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-[Add CC to Thomas Creutz]
+From: Alexey Dobriyan <adobriyan@gmail.com>
 
-On Thu, Jun 09, 2011 at 02:10:19PM +0800, Bruno Pr=C3=A9mont wrote:
-> On Thu, 9 Jun 2011 11:06:28 Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > I wrote this when looking at NULL dereference bug
-> > https://bugzilla.kernel.org/show_bug.cgi?id=18912
->=20
-> The trace over there rather looks like closing of a framebuffer that
-> has been replaced (and destroyed) during boot sequence.
-> This action happens when switching from VESA to KMS from initrd
-> or early userspace boot sequence where plymouthd had already opened
-> vesafb.
->=20
-> That should hopefully be fixed by refcounting FBs as done during
-> 2.6.39-rc7.
+->read_proc and ->write_proc interfaces are going away,
+switch to seq_file/->write().
 
-That's great! Then hopefully the bug can be closed?
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ drivers/video/bfin_adv7393fb.c |   44 ++++++++++++++-------------------------
+ 1 files changed, 16 insertions(+), 28 deletions(-)
 
-> > Will it help by clearing private_data? I have no idea at all, because
-> > for regular files, ->release won't be called on failed ->open. Just in
-> > case there are some exceptions in fbmem...
->=20
-> fb devices files should be just as regular as any other device files...
+diff --git a/drivers/video/bfin_adv7393fb.c b/drivers/video/bfin_adv7393fb.c
+index 8486f54..ac19284 100644
+--- a/drivers/video/bfin_adv7393fb.c
++++ b/drivers/video/bfin_adv7393fb.c
+@@ -35,6 +35,7 @@
+ 
+ #include <linux/dma-mapping.h>
+ #include <linux/proc_fs.h>
++#include <linux/seq_file.h>
+ #include <linux/platform_device.h>
+ 
+ #include <linux/i2c.h>
+@@ -322,42 +323,25 @@ static irqreturn_t ppi_irq_error(int irq, void *dev_id)
+ 
+ }
+ 
+-static int proc_output(char *buf)
++static int adv7393_proc_show(struct seq_file *m, void *v)
+ {
+-	char *p = buf;
+-
+-	p += sprintf(p,
++	return seq_puts(m,
+ 		"Usage:\n"
+ 		"echo 0x[REG][Value] > adv7393\n"
+ 		"example: echo 0x1234 >adv7393\n"
+ 		"writes 0x34 into Register 0x12\n");
+-
+-	return p - buf;
+ }
+ 
+-static int
+-adv7393_read_proc(char *page, char **start, off_t off,
+-		  int count, int *eof, void *data)
++static int adv7393_proc_open(struct inode *inode, struct file *file)
+ {
+-	int len;
+-
+-	len = proc_output(page);
+-	if (len <= off + count)
+-		*eof = 1;
+-	*start = page + off;
+-	len -= off;
+-	if (len > count)
+-		len = count;
+-	if (len < 0)
+-		len = 0;
+-	return len;
++	return single_open(file, adv7393_proc_show, NULL);
+ }
+ 
+ static int
+ adv7393_write_proc(struct file *file, const char __user * buffer,
+ 		   unsigned long count, void *data)
+ {
+-	struct adv7393fb_device *fbdev = data;
++	struct adv7393fb_device *fbdev = PDE(file->f_path.dentry->d_inode)->data;
+ 	char line[8];
+ 	unsigned int val;
+ 	int ret;
+@@ -372,6 +356,14 @@ adv7393_write_proc(struct file *file, const char __user * buffer,
+ 	return count;
+ }
+ 
++static const struct file_operations adv7393_proc_ops = {
++	.open		= adv7393_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++	.write		= adv7393_proc_write,
++};
++
+ static int __devinit bfin_adv7393_fb_probe(struct i2c_client *client,
+ 					   const struct i2c_device_id *id)
+ {
+@@ -509,17 +501,13 @@ static int __devinit bfin_adv7393_fb_probe(struct i2c_client *client,
+ 	       fbdev->info.node, fbdev->info.fix.id);
+ 	dev_info(&client->dev, "fb memory address : 0x%p\n", fbdev->fb_mem);
+ 
+-	entry = create_proc_entry("driver/adv7393", 0, NULL);
++	entry = proc_create_data("driver/adv7393", 0, NULL,
++				 &adv7393_proc_ops, fbdev);
+ 	if (!entry) {
+ 		dev_err(&client->dev, "unable to create /proc entry\n");
+ 		ret = -EFAULT;
+ 		goto out_0;
+ 	}
+-
+-	entry->read_proc = adv7393_read_proc;
+-	entry->write_proc = adv7393_write_proc;
+-	entry->data = fbdev;
+-
+ 	return 0;
+ 
+  out_0:
+-- 
+1.7.5.3
 
-Good, thanks for the confirmation.
-
-Thanks,
-Fengguang
-
-> > ---
-> >  drivers/video/fbmem.c |    4 +++-
-> >  1 file changed, 3 insertions(+), 1 deletion(-)
-> >=20
-> > --- linux-next.orig/drivers/video/fbmem.c	2011-06-09 10:36:06.000000000=
- +0800
-> > +++ linux-next/drivers/video/fbmem.c	2011-06-09 10:39:30.000000000 +0800
-> > @@ -1424,26 +1424,28 @@ __releases(&info->lock)
-> >  	file->private_data =3D info;
-> >  	if (info->fbops->fb_open) {
-> >  		res =3D info->fbops->fb_open(info,1);
-> >  		if (res)
-> >  			module_put(info->fbops->owner);
-> >  	}
-> >  #ifdef CONFIG_FB_DEFERRED_IO
-> >  	if (info->fbdefio)
-> >  		fb_deferred_io_open(info, inode, file);
-> >  #endif
-> >  out:
-> >  	mutex_unlock(&info->lock);
-> > -	if (res)
-> > +	if (res) {
-> > +		file->private_data =3D NULL;
-> >  		put_fb_info(info);
-> > +	}
-> >  	return res;
-> >  }
-> > =20
-> >  static int=20
-> >  fb_release(struct inode *inode, struct file *file)
-> >  __acquires(&info->lock)
-> >  __releases(&info->lock)
-> >  {
-> >  	struct fb_info * const info =3D file->private_data;
-> > =20
-> >  	mutex_lock(&info->lock);
-> >  	if (info->fbops->fb_release)

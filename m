@@ -1,38 +1,33 @@
-From: Pavel Roskin <proski@gnu.org>
-Date: Wed, 13 Jul 2011 15:25:02 +0000
-Subject: Re: [PATCH] video: output: remove video_output_{register,unregister}
-Message-Id: <4E1DB8CE.9060000@gnu.org>
+From: Greg Dietsche <Gregory.Dietsche@cuw.edu>
+Date: Fri, 01 Jul 2011 22:47:11 +0000
+Subject: [PATCH] video: backlight: fix const array syntax
+Message-Id: <1309560431-17389-1-git-send-email-Gregory.Dietsche@cuw.edu>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20110706150251.30204.26171.stgit@mj.roinet.com>
-In-Reply-To: <20110706150251.30204.26171.stgit@mj.roinet.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On 07/13/2011 03:52 AM, Paul Mundt wrote:
-> On Wed, Jul 06, 2011 at 11:02:51AM -0400, Pavel Roskin wrote:
->> Signed-off-by: Pavel Roskin<proski@gnu.org>
->>
->> video_output_register() and video_output_unregister() are not called
->> anywhere in the kernel code.  Also remove the fallback implementation
->> from the header.
->
-> I'm not sure why your signed-off-by line is above your description?
+Correct the syntax so that both array and pointer are const.
 
-Thanks for pointing it out.
+Signed-off-by: Greg Dietsche <Gregory.Dietsche@cuw.edu>
+---
+ drivers/video/backlight/backlight.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> This interface seems like it was primarily used by the ACPI video code,
-> which dropped support for the output switching fairly recently (see
-> 677bd810eedce61edf15452491781ff046b92edc).
->
-> If you remove the registration interface then it's not clear that there's
-> any point in keeping the class handling or anything else around, either.
-> If the entire thing is to be killed off however we'll need the ack from
-> the author (added to Cc).
-
-Indeed.  I didn't realize that.
-
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index 80d292f..4bda2e7 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -19,7 +19,7 @@
+ #include <asm/backlight.h>
+ #endif
+ 
+-static const char const *backlight_types[] = {
++static const char * const backlight_types[] = {
+ 	[BACKLIGHT_RAW] = "raw",
+ 	[BACKLIGHT_PLATFORM] = "platform",
+ 	[BACKLIGHT_FIRMWARE] = "firmware",
 -- 
-Regards,
-Pavel Roskin
+1.7.2.5
+

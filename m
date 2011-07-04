@@ -1,104 +1,43 @@
-From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Date: Tue, 26 Jul 2011 04:32:12 +0000
-Subject: RE: [PATCH v3] video: da8xx-fb: Increased resolution configuration
-Message-Id: <B85A65D85D7EB246BE421B3FB0FBB593024DD2CFCF@dbde02.ent.ti.com>
+From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+Date: Mon, 04 Jul 2011 08:05:28 +0000
+Subject: [PATCH 0/5 v4] LCDC MERAM runtime PM support
+Message-Id: <1309766728-32419-1-git-send-email-dhobsong@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1310963333-29806-1-git-send-email-prakash.pm@ti.com>
-In-Reply-To: <1310963333-29806-1-git-send-email-prakash.pm@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Paul,
+This patch series is a provides PM runtime support for the LCDC MERAM.
 
-Could you please accept this patch as there are no comments?
+The runtime_pm_get/put calls are made at the same time as the LCDC calls, so
+that the LCDC MERAM is enabled with the first LCDC device and disabled 
+with the last LCDC device.
 
-Thanks,
-Prakash
-On Mon, Jul 18, 2011 at 09:58:53, Manjunathappa, Prakash wrote:
-> Revised LCD controller in upcoming TI SoC which is an updated version of
-> LCDC IP that was found on TI's DA850 SoC supports 2048*2048 resolution.
-> Below are the encoding details:
-> Width:
-> Pixels Per Line = {pplmsb, ppllsb, 4'b1111} + 1
-> Where pplmsb:1bit=>Raster Timing0[3], ppllsb:6bits=>Raster Timing0[9:4].
-> And encoded value can range from 16 to 2048 in multiples of 16.
-> 
-> Height:
-> Lines Per Panel = {lpp_b10, lpp}
-> Where lpp:10bits=>Raster Timing1[9:0], lpp_b10:1bit=>Raster Timing2[26].
-> And encoded value can range from 1 to 2048, programmable range is 0 to
-> 2047.
-> 
-> Patch is verified on emulation platform of upcoming SoC for updated
-> feature and on DA850 platform to make sure nothing existing breaks.
-> 
-> Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
-> ---
-> Since v2:
-> Corrected comment describing horizontal resolution bits and removed unnecessary
-> outer parenthesis.
-> Since v1:
-> 1)Fixed the bug in configuration of lpp_b10 in Raster Timing2[26] register.
-> 2)Reframed commit message.
-> 
->  drivers/video/da8xx-fb.c |   31 ++++++++++++++++++++++++++++---
->  1 files changed, 28 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index 620f1c3..94b611a 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -460,18 +460,43 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
->  
->  	/* Set the Panel Width */
->  	/* Pixels per line = (PPL + 1)*16 */
-> -	/*0x3F in bits 4..9 gives max horisontal resolution = 1024 pixels*/
-> -	width &= 0x3f0;
-> +	if (lcd_revision = LCD_VERSION_1) {
-> +		/*
-> +		 * 0x3F in bits 4..9 gives max horizontal resolution = 1024
-> +		 * pixels.
-> +		 */
-> +		width &= 0x3f0;
-> +	} else {
-> +		/*
-> +		 * 0x7F in bits 4..10 gives max horizontal resolution = 2048
-> +		 * pixels.
-> +		 */
-> +		width &= 0x7f0;
-> +	}
-> +
->  	reg = lcdc_read(LCD_RASTER_TIMING_0_REG);
->  	reg &= 0xfffffc00;
-> -	reg |= ((width >> 4) - 1) << 4;
-> +	if (lcd_revision = LCD_VERSION_1) {
-> +		reg |= ((width >> 4) - 1) << 4;
-> +	} else {
-> +		width = (width >> 4) - 1;
-> +		reg |= ((width & 0x3f) << 4) | ((width & 0x40) >> 3);
-> +	}
->  	lcdc_write(reg, LCD_RASTER_TIMING_0_REG);
->  
->  	/* Set the Panel Height */
-> +	/* Set bits 9:0 of Lines Per Pixel */
->  	reg = lcdc_read(LCD_RASTER_TIMING_1_REG);
->  	reg = ((height - 1) & 0x3ff) | (reg & 0xfffffc00);
->  	lcdc_write(reg, LCD_RASTER_TIMING_1_REG);
->  
-> +	/* Set bit 10 of Lines Per Pixel */
-> +	if (lcd_revision = LCD_VERSION_2) {
-> +		reg = lcdc_read(LCD_RASTER_TIMING_2_REG);
-> +		reg |= ((height - 1) & 0x400) << 16;
-> +		lcdc_write(reg, LCD_RASTER_TIMING_2_REG);
-> +	}
-> +
->  	/* Set the Raster Order of the Frame Buffer */
->  	reg = lcdc_read(LCD_RASTER_CTRL_REG) & ~(1 << 8);
->  	if (raster_order)
-> -- 
-> 1.7.1
-> 
-> 
+The first 4 patches will apply to rmobile-latest or common/fbdev-meram as-is,
+but the final patch needs to have the "PM / Domains: Support for generic I/O PM
+domains" patch series. 
+
+Only the first 2 patches of the series have been updated from v3 sent on
+2011/06/22
+
+Changes from V3
+
+* Remove the MERAM callbacks used to runtime_get/runtime_put the device from
+  the LCDC driver.  Instead, just call the functions on the MERAM device
+  directly
+
+Damian Hobson-Garcia (5):
+  fbdev: sh_mobile_meram: Enable runtime PM
+  fbdev: sh_mobile_meram: Enable/disable MERAM along with LCDC - v4
+  fbdev: sh_mobile_meram: Move private data from .h to .c 
+  fbdev: sh_mobile_meram: Backup/restore device registers on
+    shutdown/resume - v3
+  fbdev: sh_mobile_meram: Assign meram to the SH7372_A4LC power domain
+
+ arch/arm/mach-shmobile/board-mackerel.c |    1 +
+ drivers/video/sh_mobile_lcdcfb.c        |    6 ++
+ drivers/video/sh_mobile_meram.c         |   84 +++++++++++++++++++++++++++++++
+ drivers/video/sh_mobile_meram.h         |    8 ---
+ 4 files changed, 91 insertions(+), 8 deletions(-)
 

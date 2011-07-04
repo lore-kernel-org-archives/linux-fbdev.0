@@ -1,38 +1,48 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 08 Jul 2011 11:14:22 +0000
-Subject: [PATCH v3 08/29] fbdev: unicore32: use display information in info not in var for panning
-Message-Id: <1310123683-8064-9-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+Date: Mon, 04 Jul 2011 08:06:47 +0000
+Subject: [PATCH 2/5 v4] fbdev: sh_mobile_meram: Enable/disable MERAM along with LCDC
+Message-Id: <1309766807-32484-1-git-send-email-dhobsong@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+The MERAM reference counts should be tied to the two LCDC devices (LCD/HDMI)
+so that when they are enable/disabled, the MERAM is as well.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Tested-by: Guan Xuetao <gxt@mprc.pku.edu.cn>
-Acked-by: Guan Xuetao <gxt@mprc.pku.edu.cn>
+Signed-off-by: Damian Hobson-Garcia <dhobsong@igel.co.jp>
 ---
- drivers/video/fb-puv3.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Changes from V3
+=======* Remove the MERAM callbacks used to runtime_get/runtime_put the device from
+  the LCDC driver.  Instead, just call the functions on the MERAM device
+  directly
 
-diff --git a/drivers/video/fb-puv3.c b/drivers/video/fb-puv3.c
-index 27f2c57..60a787f 100644
---- a/drivers/video/fb-puv3.c
-+++ b/drivers/video/fb-puv3.c
-@@ -624,8 +624,8 @@ static int unifb_pan_display(struct fb_var_screeninfo *var,
- 		    || var->xoffset)
- 			return -EINVAL;
- 	} else {
--		if (var->xoffset + var->xres > info->var.xres_virtual ||
--		    var->yoffset + var->yres > info->var.yres_virtual)
-+		if (var->xoffset + info->var.xres > info->var.xres_virtual ||
-+		    var->yoffset + info->var.yres > info->var.yres_virtual)
- 			return -EINVAL;
+ drivers/video/sh_mobile_lcdcfb.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 019dbd3..15e77f3 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -259,6 +259,8 @@ static void sh_mobile_lcdc_clk_on(struct sh_mobile_lcdc_priv *priv)
+ 		pm_runtime_get_sync(priv->dev);
+ 		if (priv->dot_clk)
+ 			clk_enable(priv->dot_clk);
++		if (priv->meram_dev && priv->meram_dev->pdev)
++			pm_runtime_get_sync(&priv->meram_dev->pdev->dev);
  	}
- 	info->var.xoffset = var->xoffset;
+ }
+ 
+@@ -267,6 +270,8 @@ static void sh_mobile_lcdc_clk_off(struct sh_mobile_lcdc_priv *priv)
+ 	if (atomic_sub_return(1, &priv->hw_usecnt) = -1) {
+ 		if (priv->dot_clk)
+ 			clk_disable(priv->dot_clk);
++		if (priv->meram_dev && priv->meram_dev->pdev)
++			pm_runtime_put_sync(&priv->meram_dev->pdev->dev);
+ 		pm_runtime_put(priv->dev);
+ 	}
+ }
 -- 
-1.7.3.4
+1.7.1
 

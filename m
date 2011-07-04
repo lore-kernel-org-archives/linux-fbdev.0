@@ -1,46 +1,48 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 08 Jul 2011 11:14:29 +0000
-Subject: [PATCH v3 15/29] mx3fb: use display information in info not in var for panning
-Message-Id: <1310123683-8064-16-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+Date: Mon, 04 Jul 2011 08:06:11 +0000
+Subject: [PATCH 1/5] fbdev: sh_mobile_meram: Enable runtime PM
+Message-Id: <1309766771-32452-1-git-send-email-dhobsong@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it. Also use the
-aligned fix.line_length and not the (possible) unaligned xres_virtual.
-
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Tested-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Signed-off-by: Damian Hobson-Garcia <dhobsong@igel.co.jp>
 ---
- drivers/video/mx3fb.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/sh_mobile_meram.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-index 7e3a490..bd76858 100644
---- a/drivers/video/mx3fb.c
-+++ b/drivers/video/mx3fb.c
-@@ -1062,15 +1062,15 @@ static int mx3fb_pan_display(struct fb_var_screeninfo *var,
- 	y_bottom = var->yoffset;
+diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
+index 9170c82..61e106f 100644
+--- a/drivers/video/sh_mobile_meram.c
++++ b/drivers/video/sh_mobile_meram.c
+@@ -12,6 +12,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/device.h>
++#include <linux/pm_runtime.h>
+ #include <linux/io.h>
+ #include <linux/slab.h>
+ #include <linux/platform_device.h>
+@@ -515,6 +516,8 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
+ 	if (pdata->addr_mode = SH_MOBILE_MERAM_MODE1)
+ 		meram_write_reg(priv->base, MEVCR1, 1 << 29);
  
- 	if (!(var->vmode & FB_VMODE_YWRAP))
--		y_bottom += var->yres;
-+		y_bottom += fbi->var.yres;
++	pm_runtime_enable(&pdev->dev);
++
+ 	dev_info(&pdev->dev, "sh_mobile_meram initialized.");
  
- 	if (y_bottom > fbi->var.yres_virtual)
- 		return -EINVAL;
+ 	return 0;
+@@ -530,6 +533,8 @@ static int sh_mobile_meram_remove(struct platform_device *pdev)
+ {
+ 	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
  
- 	mutex_lock(&mx3_fbi->mutex);
++	pm_runtime_disable(&pdev->dev);
++
+ 	if (priv->base)
+ 		iounmap(priv->base);
  
--	offset = (var->yoffset * var->xres_virtual + var->xoffset) *
--		(var->bits_per_pixel / 8);
-+	offset = var->yoffset * fbi->fix.line_length
-+	       + var->xoffset * (fbi->var.bits_per_pixel / 8);
- 	base = fbi->fix.smem_start + offset;
- 
- 	dev_dbg(fbi->device, "Updating SDC BG buf %d address=0x%08lX\n",
 -- 
-1.7.3.4
+1.7.1
 

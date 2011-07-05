@@ -1,111 +1,310 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 31 Jul 2011 23:58:27 +0000
-Subject: Re: [PATCH/RFC] fbdev: Add FOURCC-based format configuration API
-Message-Id: <4E35EC23.1010701@gmx.de>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Tue, 05 Jul 2011 10:33:20 +0000
+Subject: [PATCH v2] video: da8xx-fb: Interrupt configuration of revised LCDC IP
+Message-Id: <1309861280-32240-1-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4DDAE63A.3070203@gmx.de> <CAMuHMdX=c=p7oASCE+GgY9AgaCPWoXRQyjEGpn4BvA9xSY6GQg@mail.gmail.com> <4E35DD38.7070609@gmx.de> <201108010128.13832.laurent.pinchart@ideasonboard.com>
-In-Reply-To: <201108010128.13832.laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-fbdev@vger.kernel.org
 
-Hi Laurent,
+An upcoming SoC of TI comes with an LCD controller which is an updated
+version of that found on TI's DA850 SoC. The da8xx-fb driver can support
+this LCD with some enhancements.
+This patch adds support for updated interrupt configuration on the new
+SoC.
+1) Registers for setting and clearing interrupts are different.
+2) Raw and masked status registers are different.
+The updates have been tested on an emulation platform for new features
+and the patch has been tested on DA850 platform to make sure nothing
+existing breaks.
 
-On 07/31/2011 11:28 PM, Laurent Pinchart wrote:
-> Hi Florian,
->
-> Thanks for the feedback.
->
-> On Monday 01 August 2011 00:54:48 Florian Tobias Schandinat wrote:
->> On 07/31/2011 08:32 PM, Geert Uytterhoeven wrote:
->>> On Thu, Jul 28, 2011 at 12:51, Laurent Pinchart wrote:
->>>>> As for struct fb_var_screeninfo fields to support switching to a FOURCC
->>>>> mode, I also prefer an explicit dedicated flag to specify switching to
->>>>> it. Even though using FOURCC doesn't fit under the notion of a
->>>>> videomode, using one of .vmode bits is too tempting, so, I would
->>>>> actually take the plunge and use FB_VMODE_FOURCC.
->>>>
->>>> Another option would be to consider any grayscale>   1 value as a FOURCC.
->>>> I've briefly checked the in-tree drivers: they only assign grayscale
->>>> with 0 or 1, and check whether grayscale is 0 or different than 0. If a
->>>> userspace application only sets grayscale>   1 when talking to a driver
->>>> that supports the FOURCC-based API, we could get rid of the flag.
->>>>
->>>> What can't be easily found out is whether existing applications set
->>>> grayscale to a>   1 value. They would break when used with FOURCC-aware
->>>> drivers if we consider any grayscale>   1 value as a FOURCC. Is that a
->>>> risk we can take ?
->>>
->>> I think we can. I'd expect applications to use either 1 or -1 (i.e.
->>> all ones), both are
->>> invalid FOURCC values.
->>>
->>> Still, I prefer the nonstd way.
->>> And limiting traditional nonstd values to the lowest 24 bits (there
->>> are no in-tree
->>> drivers using the highest 8 bits, right?).
->>
->> Okay, it would be okay for me to
->> - write raw FOURCC values in nonstd, enable FOURCC mode if upper byte != 0
->> - not having an explicit flag to enable FOURCC
->> - in FOURCC mode drivers must set visual to FB_VISUAL_FOURCC
->> - making support of FOURCC visible to userspace by capabilites |>> FB_CAP_FOURCC
->>
->> The capabilities is not strictly necessary but I think it's very useful as
->> - it allows applications to make sure the extension is supported (for
->> example to adjust the UI)
->> - it allows applications to distinguish whether a particular format is not
->> supported or FOURCC at all
->> - it allows signaling further extensions of the API
->> - it does not hurt, one line per driver and still some bytes in fixinfo
->> free
->
-> Without a FOURCC capability applications will need to try FOURCCs blindly.
-> Drivers that are not FOURCC aware would then risk interpreting the FOURCC as
-> something else. As you mention below applications will need that check that
-> visual = FB_VISUAL_FOURCC, so it's less of an issue than I initially thought,
-> but it doesn't become a non-issue. The display might still show glitches.
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+---
+Since v1:
+1)Added verification details in commit message.
+2)Removed random white spaces in code.
+ drivers/video/da8xx-fb.c |  151 +++++++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 142 insertions(+), 9 deletions(-)
 
-True.
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index fcdac87..620f1c3 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -35,6 +35,9 @@
+ 
+ #define DRIVER_NAME "da8xx_lcdc"
+ 
++#define LCD_VERSION_1	1
++#define LCD_VERSION_2	2
++
+ /* LCD Status Register */
+ #define LCD_END_OF_FRAME1		BIT(9)
+ #define LCD_END_OF_FRAME0		BIT(8)
+@@ -49,7 +52,9 @@
+ #define LCD_DMA_BURST_4			0x2
+ #define LCD_DMA_BURST_8			0x3
+ #define LCD_DMA_BURST_16		0x4
+-#define LCD_END_OF_FRAME_INT_ENA	BIT(2)
++#define LCD_V1_END_OF_FRAME_INT_ENA	BIT(2)
++#define LCD_V2_END_OF_FRAME0_INT_ENA	BIT(8)
++#define LCD_V2_END_OF_FRAME1_INT_ENA	BIT(9)
+ #define LCD_DUAL_FRAME_BUFFER_ENABLE	BIT(0)
+ 
+ /* LCD Control Register */
+@@ -65,12 +70,18 @@
+ #define LCD_MONO_8BIT_MODE		BIT(9)
+ #define LCD_RASTER_ORDER		BIT(8)
+ #define LCD_TFT_MODE			BIT(7)
+-#define LCD_UNDERFLOW_INT_ENA		BIT(6)
+-#define LCD_PL_ENABLE			BIT(4)
++#define LCD_V1_UNDERFLOW_INT_ENA	BIT(6)
++#define LCD_V2_UNDERFLOW_INT_ENA	BIT(5)
++#define LCD_V1_PL_INT_ENA		BIT(4)
++#define LCD_V2_PL_INT_ENA		BIT(6)
+ #define LCD_MONOCHROME_MODE		BIT(1)
+ #define LCD_RASTER_ENABLE		BIT(0)
+ #define LCD_TFT_ALT_ENABLE		BIT(23)
+ #define LCD_STN_565_ENABLE		BIT(24)
++#define LCD_V2_DMA_CLK_EN		BIT(2)
++#define LCD_V2_LIDD_CLK_EN		BIT(1)
++#define LCD_V2_CORE_CLK_EN		BIT(0)
++#define LCD_V2_LPP_B10			26
+ 
+ /* LCD Raster Timing 2 Register */
+ #define LCD_AC_BIAS_TRANSITIONS_PER_INT(x)	((x) << 16)
+@@ -82,6 +93,7 @@
+ #define LCD_INVERT_FRAME_CLOCK			BIT(20)
+ 
+ /* LCD Block */
++#define  LCD_PID_REG				0x0
+ #define  LCD_CTRL_REG				0x4
+ #define  LCD_STAT_REG				0x8
+ #define  LCD_RASTER_CTRL_REG			0x28
+@@ -94,6 +106,17 @@
+ #define  LCD_DMA_FRM_BUF_BASE_ADDR_1_REG	0x4C
+ #define  LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG	0x50
+ 
++/* Interrupt Registers available only in Version 2 */
++#define  LCD_RAW_STAT_REG			0x58
++#define  LCD_MASKED_STAT_REG			0x5c
++#define  LCD_INT_ENABLE_SET_REG			0x60
++#define  LCD_INT_ENABLE_CLR_REG			0x64
++#define  LCD_END_OF_INT_IND_REG			0x68
++
++/* Clock registers available only on Version 2 */
++#define  LCD_CLK_ENABLE_REG			0x6c
++#define  LCD_CLK_RESET_REG			0x70
++
+ #define LCD_NUM_BUFFERS	2
+ 
+ #define WSI_TIMEOUT	50
+@@ -105,6 +128,8 @@
+ 
+ static resource_size_t da8xx_fb_reg_base;
+ static struct resource *lcdc_regs;
++static unsigned int lcd_revision;
++static irq_handler_t lcdc_irq_handler;
+ 
+ static inline unsigned int lcdc_read(unsigned int addr)
+ {
+@@ -240,6 +265,7 @@ static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
+ 	u32 end;
+ 	u32 reg_ras;
+ 	u32 reg_dma;
++	u32 reg_int;
+ 
+ 	/* init reg to clear PLM (loading mode) fields */
+ 	reg_ras = lcdc_read(LCD_RASTER_CTRL_REG);
+@@ -252,7 +278,14 @@ static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
+ 		end      = par->dma_end;
+ 
+ 		reg_ras |= LCD_PALETTE_LOAD_MODE(DATA_ONLY);
+-		reg_dma |= LCD_END_OF_FRAME_INT_ENA;
++		if (lcd_revision = LCD_VERSION_1) {
++			reg_dma |= LCD_V1_END_OF_FRAME_INT_ENA;
++		} else {
++			reg_int = lcdc_read(LCD_INT_ENABLE_SET_REG) |
++				LCD_V2_END_OF_FRAME0_INT_ENA |
++				LCD_V2_END_OF_FRAME1_INT_ENA;
++			lcdc_write(reg_int, LCD_INT_ENABLE_SET_REG);
++		}
+ 		reg_dma |= LCD_DUAL_FRAME_BUFFER_ENABLE;
+ 
+ 		lcdc_write(start, LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
+@@ -264,7 +297,14 @@ static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
+ 		end      = start + par->palette_sz - 1;
+ 
+ 		reg_ras |= LCD_PALETTE_LOAD_MODE(PALETTE_ONLY);
+-		reg_ras |= LCD_PL_ENABLE;
++
++		if (lcd_revision = LCD_VERSION_1) {
++			reg_ras |= LCD_V1_PL_INT_ENA;
++		} else {
++			reg_int = lcdc_read(LCD_INT_ENABLE_SET_REG) |
++				LCD_V2_PL_INT_ENA;
++			lcdc_write(reg_int, LCD_INT_ENABLE_SET_REG);
++		}
+ 
+ 		lcdc_write(start, LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
+ 		lcdc_write(end, LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
+@@ -348,6 +388,7 @@ static void lcd_cfg_vertical_sync(int back_porch, int pulse_width,
+ static int lcd_cfg_display(const struct lcd_ctrl_config *cfg)
+ {
+ 	u32 reg;
++	u32 reg_int;
+ 
+ 	reg = lcdc_read(LCD_RASTER_CTRL_REG) & ~(LCD_TFT_MODE |
+ 						LCD_MONO_8BIT_MODE |
+@@ -375,7 +416,13 @@ static int lcd_cfg_display(const struct lcd_ctrl_config *cfg)
+ 	}
+ 
+ 	/* enable additional interrupts here */
+-	reg |= LCD_UNDERFLOW_INT_ENA;
++	if (lcd_revision = LCD_VERSION_1) {
++		reg |= LCD_V1_UNDERFLOW_INT_ENA;
++	} else {
++		reg_int = lcdc_read(LCD_INT_ENABLE_SET_REG) |
++			LCD_V2_UNDERFLOW_INT_ENA;
++		lcdc_write(reg_int, LCD_INT_ENABLE_SET_REG);
++	}
+ 
+ 	lcdc_write(reg, LCD_RASTER_CTRL_REG);
+ 
+@@ -511,6 +558,9 @@ static void lcd_reset(struct da8xx_fb_par *par)
+ 	/* DMA has to be disabled */
+ 	lcdc_write(0, LCD_DMA_CTRL_REG);
+ 	lcdc_write(0, LCD_RASTER_CTRL_REG);
++
++	if (lcd_revision = LCD_VERSION_2)
++		lcdc_write(0, LCD_INT_ENABLE_SET_REG);
+ }
+ 
+ static void lcd_calc_clk_divider(struct da8xx_fb_par *par)
+@@ -523,6 +573,11 @@ static void lcd_calc_clk_divider(struct da8xx_fb_par *par)
+ 	/* Configure the LCD clock divisor. */
+ 	lcdc_write(LCD_CLK_DIVISOR(div) |
+ 			(LCD_RASTER_MODE & 0x1), LCD_CTRL_REG);
++
++	if (lcd_revision = LCD_VERSION_2)
++		lcdc_write(LCD_V2_DMA_CLK_EN | LCD_V2_LIDD_CLK_EN |
++				LCD_V2_CORE_CLK_EN, LCD_CLK_ENABLE_REG);
++
+ }
+ 
+ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+@@ -583,7 +638,63 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+ 	return 0;
+ }
+ 
+-static irqreturn_t lcdc_irq_handler(int irq, void *arg)
++/* IRQ handler for version 2 of LCDC */
++static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
++{
++	struct da8xx_fb_par *par = arg;
++	u32 stat = lcdc_read(LCD_MASKED_STAT_REG);
++	u32 reg_int;
++
++	if ((stat & LCD_SYNC_LOST) && (stat & LCD_FIFO_UNDERFLOW)) {
++		lcd_disable_raster();
++		lcdc_write(stat, LCD_MASKED_STAT_REG);
++		lcd_enable_raster();
++	} else if (stat & LCD_PL_LOAD_DONE) {
++		/*
++		 * Must disable raster before changing state of any control bit.
++		 * And also must be disabled before clearing the PL loading
++		 * interrupt via the following write to the status register. If
++		 * this is done after then one gets multiple PL done interrupts.
++		 */
++		lcd_disable_raster();
++
++		lcdc_write(stat, LCD_MASKED_STAT_REG);
++
++		/* Disable PL completion inerrupt */
++		reg_int = lcdc_read(LCD_INT_ENABLE_CLR_REG) |
++		       (LCD_V2_PL_INT_ENA);
++		lcdc_write(reg_int, LCD_INT_ENABLE_CLR_REG);
++
++		/* Setup and start data loading mode */
++		lcd_blit(LOAD_DATA, par);
++	} else {
++		lcdc_write(stat, LCD_MASKED_STAT_REG);
++
++		if (stat & LCD_END_OF_FRAME0) {
++			lcdc_write(par->dma_start,
++				   LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
++			lcdc_write(par->dma_end,
++				   LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
++			par->vsync_flag = 1;
++			wake_up_interruptible(&par->vsync_wait);
++		}
++
++		if (stat & LCD_END_OF_FRAME1) {
++			lcdc_write(par->dma_start,
++				   LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
++			lcdc_write(par->dma_end,
++				   LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
++			par->vsync_flag = 1;
++			wake_up_interruptible(&par->vsync_wait);
++		}
++	}
++
++	lcdc_write(0, LCD_END_OF_INT_IND_REG);
++	return IRQ_HANDLED;
++}
++
++/* IRQ handler for version 1 LCDC */
++static irqreturn_t lcdc_irq_handler_rev01(int irq, void *arg)
+ {
+ 	struct da8xx_fb_par *par = arg;
+ 	u32 stat = lcdc_read(LCD_STAT_REG);
+@@ -606,7 +717,7 @@ static irqreturn_t lcdc_irq_handler(int irq, void *arg)
+ 
+ 		/* Disable PL completion inerrupt */
+ 		reg_ras  = lcdc_read(LCD_RASTER_CTRL_REG);
+-		reg_ras &= ~LCD_PL_ENABLE;
++		reg_ras &= ~LCD_V1_PL_INT_ENA;
+ 		lcdc_write(reg_ras, LCD_RASTER_CTRL_REG);
+ 
+ 		/* Setup and start data loading mode */
+@@ -945,6 +1056,22 @@ static int __devinit fb_probe(struct platform_device *device)
+ 	if (ret)
+ 		goto err_clk_put;
+ 
++	/* Determine LCD IP Version */
++	switch (lcdc_read(LCD_PID_REG)) {
++	case 0x4C100102:
++		lcd_revision = LCD_VERSION_1;
++		break;
++	case 0x4F200800:
++		lcd_revision = LCD_VERSION_2;
++		break;
++	default:
++		dev_warn(&device->dev, "Unknown PID Reg value 0x%x, "
++				"defaulting to LCD revision 1\n",
++				lcdc_read(LCD_PID_REG));
++		lcd_revision = LCD_VERSION_1;
++		break;
++	}
++
+ 	for (i = 0, lcdc_info = known_lcd_panels;
+ 		i < ARRAY_SIZE(known_lcd_panels);
+ 		i++, lcdc_info++) {
+@@ -1085,7 +1212,13 @@ static int __devinit fb_probe(struct platform_device *device)
+ 	}
+ #endif
+ 
+-	ret = request_irq(par->irq, lcdc_irq_handler, 0, DRIVER_NAME, par);
++	if (lcd_revision = LCD_VERSION_1)
++		lcdc_irq_handler = lcdc_irq_handler_rev01;
++	else
++		lcdc_irq_handler = lcdc_irq_handler_rev02;
++
++	ret = request_irq(par->irq, lcdc_irq_handler, 0,
++			DRIVER_NAME, par);
+ 	if (ret)
+ 		goto irq_freq;
+ 	return 0;
+-- 
+1.7.1
 
->> So using it would look like this:
->> - the driver must have capabilities |= FB_CAP_FOURCC
->> - the application may check capabilities to know whether FOURCC is
->> supported - the application may write a raw FOURCC value in nonstd to
->> request changing to FOURCC mode with this format
->> - when the driver switches to a FOURCC mode it must have visual >> FB_VISUAL_FOURCC and the current FOURCC format in nonstd
->> - the application should check visual and nonstd to make sure it gets what
->> it wanted
->>
->>
->> So if there are no strong objections against this I think we should
->> implement it. I do not really care whether we use a union or not but I
->> think if we decide to have one it should cover all fields that are
->> undefined/unused in FOURCC mode.
->>
->>
->> Hope we can find anything that everyone considers acceptable,
->
-> This sounds good to me, except that I would use the grayscale field instead of
-> the nonstd field. nonstd has pretty weird usecases, while grayscale is better
-> defined. nonstd might also make sense combined with FOURCC-based modes, while
-> grayscale would be completely redundant.
->
-> What's your opinion on that ?
-
-I do not really care, either one would be okay for me.
-You're right that nonstd is used for a lot of things and perhaps some of those 
-should still be possible in FOURCC mode. On the other hand I think applications 
-are more likely to pass random values to grayscale as its meaning seems globally 
-accepted (in contrast to nonstd where the application needs to know the driver 
-to get any use of it).
-Perhaps you should also say that in FOURCC mode all unused pixel format fields 
-should be set to 0 by the application and other values of those may get a 
-meaning in later extensions or individual drivers.
-
-
-Regards,
-
-Florian Tobias Schandinat

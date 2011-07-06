@@ -1,48 +1,38 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Mon, 11 Jul 2011 05:50:43 +0000
-Subject: Re: [PATCH 0/5 v4] LCDC MERAM runtime PM support
-Message-Id: <20110711055042.GI24169@linux-sh.org>
+From: bernie@plugable.com
+Date: Wed, 06 Jul 2011 00:04:11 +0000
+Subject: [PATCH] drivers/video/udlfb bind framebuffer to interface.
+Message-Id: <1309910651-3483-1-git-send-email-bernie@plugable.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1309766728-32419-1-git-send-email-dhobsong@igel.co.jp>
-In-Reply-To: <1309766728-32419-1-git-send-email-dhobsong@igel.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Mon, Jul 11, 2011 at 02:36:42PM +0900, Paul Mundt wrote:
-> On Mon, Jul 04, 2011 at 05:05:28PM +0900, Damian Hobson-Garcia wrote:
-> > This patch series is a provides PM runtime support for the LCDC MERAM.
-> > 
-> > The runtime_pm_get/put calls are made at the same time as the LCDC calls, so
-> > that the LCDC MERAM is enabled with the first LCDC device and disabled 
-> > with the last LCDC device.
-> > 
-> > The first 4 patches will apply to rmobile-latest or common/fbdev-meram as-is,
-> > but the final patch needs to have the "PM / Domains: Support for generic I/O PM
-> > domains" patch series. 
-> > 
-> > Only the first 2 patches of the series have been updated from v3 sent on
-> > 2011/06/22
-> > 
-> > Changes from V3
-> > 
-> > * Remove the MERAM callbacks used to runtime_get/runtime_put the device from
-> >   the LCDC driver.  Instead, just call the functions on the MERAM device
-> >   directly
-> > 
-> > Damian Hobson-Garcia (5):
-> >   fbdev: sh_mobile_meram: Enable runtime PM
-> >   fbdev: sh_mobile_meram: Enable/disable MERAM along with LCDC - v4
-> >   fbdev: sh_mobile_meram: Move private data from .h to .c 
-> >   fbdev: sh_mobile_meram: Backup/restore device registers on
-> >     shutdown/resume - v3
-> >   fbdev: sh_mobile_meram: Assign meram to the SH7372_A4LC power domain
-> > 
-> I've applied 1-4, and will roll in the last one once the power domain
-> stuff hits mainline.
+From: Kay Sievers <kay.sievers@vrfy.org>
 
-Magnus informs me that there is still some testing going on with this
-series and that there may be future updates. I've queued up the changes
-in the common/fbdev-meram topic branch but will hold off on pulling that
-in to the fbdev tree until everyone involved is happy with it.
+Udlfb has been binding the framebuffer device to its parent, which
+isn't correct and causes confusion with operations like udev remove.
+
+Coming plug and play multiseat support is dependent on this fix.
+
+Signed-off-by: Bernie Thompson <bernie@plugable.com>
+---
+ drivers/video/udlfb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
+index 816a4fd..c6584c9 100644
+--- a/drivers/video/udlfb.c
++++ b/drivers/video/udlfb.c
+@@ -1549,7 +1549,7 @@ static int dlfb_usb_probe(struct usb_interface *interface,
+ 	/* We don't register a new USB class. Our client interface is fbdev */
+ 
+ 	/* allocates framebuffer driver structure, not framebuffer memory */
+-	info = framebuffer_alloc(0, &usbdev->dev);
++	info = framebuffer_alloc(0, &interface->dev);
+ 	if (!info) {
+ 		retval = -ENOMEM;
+ 		pr_err("framebuffer_alloc failed\n");
+-- 
+1.7.4.1
+

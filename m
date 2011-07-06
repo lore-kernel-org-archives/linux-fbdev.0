@@ -1,107 +1,97 @@
-From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Date: Thu, 14 Jul 2011 11:14:21 +0000
-Subject: RE: [PATCH v2] video: da8xx-fb: Increased resolution configuration
-Message-Id: <B85A65D85D7EB246BE421B3FB0FBB593024DB11E1C@dbde02.ent.ti.com>
+From: Pavel Roskin <proski@gnu.org>
+Date: Wed, 06 Jul 2011 15:02:51 +0000
+Subject: [PATCH] video: output: remove video_output_{register,unregister}
+Message-Id: <20110706150251.30204.26171.stgit@mj.roinet.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1310554333-25242-1-git-send-email-prakash.pm@ti.com>
-In-Reply-To: <1310554333-25242-1-git-send-email-prakash.pm@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Sergei,
+Signed-off-by: Pavel Roskin <proski@gnu.org>
 
-On Thu, Jul 14, 2011 at 16:05:35, Sergei Shtylyov wrote:
-> Hello.
-> 
-> On 13-07-2011 14:52, Manjunathappa, Prakash wrote:
-> 
-> > Revised LCD controller in upcoming TI SoC which is an updated version of
-> > LCDC IP that was found on TI's DA850 SoC supports 2048*2048 resolution.
-> > Below are the encoding details:
-> > Width:
-> > Pixels Per Line = {pplmsb, ppllsb, 4'b1111} + 1
-> > Where pplmsb:1bit=>Raster Timing0[3], ppllsb:6bits=>Raster Timing0[9:4].
-> > And encoded value can range from 16 to 2048 in multiples of 16.
-> 
-> > Height:
-> > Lines Per Panel = {lpp_b10, lpp}
-> > Where lpp:10bits=>Raster Timing1[9:0], lpp_b10:1bit=>Raster Timing2[26].
-> > And encoded value can range from 1 to 2048, programmable range is 0 to
-> > 2047.
-> 
-> > Patch is verified on emulation platform of upcoming SoC for updated
-> > feature and on DA850 platform to make sure nothing existing breaks.
-> 
-> > Signed-off-by: Manjunathappa, Prakash<prakash.pm@ti.com>
-> > ---
-> > Since v1:
-> > 1)Fixed the bug in configuration of lpp_b10 in Raster Timing2[26] register.
-> > 2)Reframed commit message.
-> >   drivers/video/da8xx-fb.c |   31 ++++++++++++++++++++++++++++---
-> >   1 files changed, 28 insertions(+), 3 deletions(-)
-> 
-> > diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> > index 620f1c3..19ce407 100644
-> > --- a/drivers/video/da8xx-fb.c
-> > +++ b/drivers/video/da8xx-fb.c
-> > @@ -460,18 +460,43 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
-> >
-> >   	/* Set the Panel Width */
-> >   	/* Pixels per line = (PPL + 1)*16 */
-> > -	/*0x3F in bits 4..9 gives max horisontal resolution = 1024 pixels*/
-> > -	width&= 0x3f0;
-> > +	if (lcd_revision = LCD_VERSION_1) {
-> > +		/*
-> > +		 * 0x3F in bits 4..9 gives max horizontal resolution = 1024
-> > +		 * pixels.
-> > +		 */
-> > +		width&= 0x3f0;
-> > +	} else {
-> > +		/*
-> > +		 * 0x7F in bits 3..9 gives max horizontal resolution = 2048
-> 
->     Maybe bits 4..10?
-Correct, I will fix this comment.
-> 
-> > +		 * pixels.
-> > +		 */
-> > +		width&= 0x7f0;
-> > +	}
-> > +
-> >   	reg = lcdc_read(LCD_RASTER_TIMING_0_REG);
-> >   	reg &= 0xfffffc00;
-> > -	reg |= ((width >> 4) - 1) << 4;
-> > +	if (lcd_revision = LCD_VERSION_1) {
-> > +		reg |= ((width>>  4) - 1)<<  4;
-> > +	} else {
-> > +		width = ((width>>  4) - 1);
-> 
->     Most outer parens not needed.
-Ok. I will remove them.
-> 
-> > +		reg |= ((width & 0x3f) << 4) | ((width&  0x40) >> 3);
-> > +	}
-> >   	lcdc_write(reg, LCD_RASTER_TIMING_0_REG);
-> >
-> >   	/* Set the Panel Height */
-> > +	/* Set bits 9:0 of Lines Per Pixel */
-> >   	reg = lcdc_read(LCD_RASTER_TIMING_1_REG);
-> >   	reg = ((height - 1) & 0x3ff) | (reg & 0xfffffc00);
-> >   	lcdc_write(reg, LCD_RASTER_TIMING_1_REG);
-> >
-> > +	/* Set bit 10 of Lines Per Pixel */
-> > +	if (lcd_revision = LCD_VERSION_2) {
-> > +		reg = lcdc_read(LCD_RASTER_TIMING_2_REG);
-> > +		reg |= (((height - 1) & 0x400) << 16);
-> 
->     Most outer parens not needed.
-Ok. I will remove them.
+video_output_register() and video_output_unregister() are not called
+anywhere in the kernel code.  Also remove the fallback implementation
+from the header.
+---
+ drivers/video/output.c       |   38 --------------------------------------
+ include/linux/video_output.h |   19 -------------------
+ 2 files changed, 0 insertions(+), 57 deletions(-)
 
-Thanks,
-Prakash
-> 
-> WBR, Sergei
-> 
-
+diff --git a/drivers/video/output.c b/drivers/video/output.c
+index 0d6f2cd..858b6d1 100644
+--- a/drivers/video/output.c
++++ b/drivers/video/output.c
+@@ -81,44 +81,6 @@ static struct class video_output_class = {
+ 	.dev_attrs = video_output_attributes,
+ };
+ 
+-struct output_device *video_output_register(const char *name,
+-	struct device *dev,
+-	void *devdata,
+-	struct output_properties *op)
+-{
+-	struct output_device *new_dev;
+-	int ret_code = 0;
+-
+-	new_dev = kzalloc(sizeof(struct output_device),GFP_KERNEL);
+-	if (!new_dev) {
+-		ret_code = -ENOMEM;
+-		goto error_return;
+-	}
+-	new_dev->props = op;
+-	new_dev->dev.class = &video_output_class;
+-	new_dev->dev.parent = dev;
+-	dev_set_name(&new_dev->dev, name);
+-	dev_set_drvdata(&new_dev->dev, devdata);
+-	ret_code = device_register(&new_dev->dev);
+-	if (ret_code) {
+-		kfree(new_dev);
+-		goto error_return;
+-	}
+-	return new_dev;
+-
+-error_return:
+-	return ERR_PTR(ret_code);
+-}
+-EXPORT_SYMBOL(video_output_register);
+-
+-void video_output_unregister(struct output_device *dev)
+-{
+-	if (!dev)
+-		return;
+-	device_unregister(&dev->dev);
+-}
+-EXPORT_SYMBOL(video_output_unregister);
+-
+ static void __exit video_output_class_exit(void)
+ {
+ 	class_unregister(&video_output_class);
+diff --git a/include/linux/video_output.h b/include/linux/video_output.h
+index ed5cdeb..be03118 100644
+--- a/include/linux/video_output.h
++++ b/include/linux/video_output.h
+@@ -35,23 +35,4 @@ struct output_device {
+ 	struct device dev;
+ };
+ #define to_output_device(obj) container_of(obj, struct output_device, dev)
+-#if	defined(CONFIG_VIDEO_OUTPUT_CONTROL) || defined(CONFIG_VIDEO_OUTPUT_CONTROL_MODULE)
+-struct output_device *video_output_register(const char *name,
+-	struct device *dev,
+-	void *devdata,
+-	struct output_properties *op);
+-void video_output_unregister(struct output_device *dev);
+-#else
+-static struct output_device *video_output_register(const char *name,
+-        struct device *dev,
+-        void *devdata,
+-        struct output_properties *op)
+-{
+-	return ERR_PTR(-ENODEV);
+-}
+-static void video_output_unregister(struct output_device *dev)
+-{
+-	return;
+-}
+-#endif
+ #endif

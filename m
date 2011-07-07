@@ -1,25 +1,36 @@
-From: Francis Moreau <francis.moro@gmail.com>
-Date: Thu, 28 Jul 2011 22:10:36 +0000
-Subject: Re: [PATCH] fb: avoid possible deadlock caused by fb_set_suspend
-Message-Id: <CAC9WiBidzYhuZMDS4VZpE7cTUdF0_NcAXFwEfCduKzge1CA4mw@mail.gmail.com>
+From: Wolfram Sang <w.sang@pengutronix.de>
+Date: Thu, 07 Jul 2011 10:20:37 +0000
+Subject: [PATCH] video: s3c2410: remove unused variable
+Message-Id: <1310034037-5090-1-git-send-email-w.sang@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4DF7B0B4.4060002@gmx.de>
-	<1308337359-3480-1-git-send-email-FlorianSchandinat@gmx.de>
-	<4E271B72.3070909@gmx.de>
-In-Reply-To: <4E271B72.3070909@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: lethal@linux-sh.org, linux-fbdev@vger.kernel.org, torvalds@linux-foundation.org, bonbons@linux-vserver.org, linux-kernel@vger.kernel.org, Herton Ronaldo Krzesinski <herton@mandriva.com.br>, stable@kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Wed, Jul 20, 2011 at 8:16 PM, Florian Tobias Schandinat
-<FlorianSchandinat@gmx.de> wrote:
-> what are your plans for the patch below? Do you queue it for 3.1?
+Fixes:
 
-Looks like someone else fixed it slightly differently:
+drivers/video/s3c2410fb.c: In function 's3c2410fb_cpufreq_transition':
+drivers/video/s3c2410fb.c:770:24: warning: unused variable 'freqs'
 
-http://permalink.gmane.org/gmane.linux.kernel.stable/15187
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Paul Mundt <lethal@linux-sh.org>
+---
+ drivers/video/s3c2410fb.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
+diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
+index 0aa1376..798144a 100644
+--- a/drivers/video/s3c2410fb.c
++++ b/drivers/video/s3c2410fb.c
+@@ -767,7 +767,6 @@ static irqreturn_t s3c2410fb_irq(int irq, void *dev_id)
+ static int s3c2410fb_cpufreq_transition(struct notifier_block *nb,
+ 					unsigned long val, void *data)
+ {
+-	struct cpufreq_freqs *freqs = data;
+ 	struct s3c2410fb_info *info;
+ 	struct fb_info *fbinfo;
+ 	long delta_f;
 -- 
-Francis
+1.7.5.4
+

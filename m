@@ -1,22 +1,105 @@
-From: Paul Walmsley <paul@pwsan.com>
-Date: Fri, 15 Jul 2011 06:49:08 +0000
-Subject: Re: [PATCHv2 16/28] OMAP3: HWMOD: Add DSS opt clocks
-Message-Id: <alpine.DEB.2.00.1107150048530.16606@utopia.booyaka.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Fri, 08 Jul 2011 11:14:14 +0000
+Subject: [PATCH v3 00/29] Use display information in info not in var for panning
+Message-Id: <1310123683-8064-1-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com> <1307627810-3768-17-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1307627810-3768-17-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, b-cousson@ti.com, khilman@ti.com
+To: linux-fbdev@vger.kernel.org
 
-On Thu, 9 Jun 2011, Tomi Valkeinen wrote:
+Hi everybody,
 
-> Add DSS optional clocks to HWMOD data for OMAP3xxx.
+Here's the third version of the FBIOPAN_DISPLAY fixes patch series.
 
-Thanks; queued for 3.1-rc fixes at git://git.pwsan.com/linux-2.6 in the 
-branch 'omap2_3_hwmod_dss_fixes_3.1rc'.  
+As a reminder, while playing with the FBIOPAN_DISPLAY ioctl I noticed that many
+drivers use information from the ioctl argument such as the display resolution
+when they should use the current settings from the fb_info structure.
 
+These 29 patches fix most of those drivers. Missing drivers are ivtv (for
+which a patch has Andy Walls has already pushed a patch), sh_mobile_lcdcfb (for
+which the fix is a bit more complex, I will work on it later) and viafb (for
+which Florian Tobias Schandinat has already sent a patch).
 
-- Paul
+The patches have been compile-tested on architectures for which I have a
+working compiler (x86 and ARM) with allyesconfig. I don't own any hardware
+supported by these drivers so I haven't been able to perform additional tests.
+
+I've split the fixes in one patch per driver for easier review and handling of
+potential problems. The patches can be squashed together if needed. I've tried
+to CC individual driver maintainers when possible, and Acked-by lines received
+in reply to the first version have been included.
+
+Compared to v2, I've fixed a compile issue in the atmel_lcdfb driver and added
+a couple of SoB lines.
+
+Paul, is it time to push this for 3.1 ?
+
+Laurent Pinchart (29):
+  68328fb: use display information in info not in var for panning
+  acornfb: Dont BUG() on invalid pan parameters
+  acornfb: use display information in info not in var for panning
+  arkfb: use display information in info not in var for panning
+  atmel_lcdfb: use display information in info not in var for panning
+  radeonfb: use display information in info not in var for panning
+  fbdev: da8xx: use display information in info not in var for panning
+  fbdev: unicore32: use display information in info not in var for
+    panning
+  g364fb: use display information in info not in var for panning
+  gxt4500: use display information in info not in var for panning
+  hgafb: use display information in info not in var for panning
+  imsttfb: use display information in info not in var for panning
+  intelfb: use display information in info not in var for panning
+  mb862xxfb: use display information in info not in var for panning
+  mx3fb: use display information in info not in var for panning
+  neofb: use display information in info not in var for panning
+  pm2fb: use display information in info not in var for panning
+  pm3fb: use display information in info not in var for panning
+  s3c-fb: use display information in info not in var for panning
+  s3fb: use display information in info not in var for panning
+  savagefb: use display information in info not in var for panning
+  sisfb: use display information in info not in var for panning
+  sm501fb: use display information in info not in var for panning
+  tridentfb: use display information in info not in var for panning
+  vfb: use display information in info not in var for panning
+  vga16fb: use display information in info not in var for panning
+  vt8500lcdfb: use display information in info not in var for panning
+  vt8623fb: use display information in info not in var for panning
+  staging: xgifb: use display information in info not in var for
+    panning
+
+ drivers/staging/xgifb/XGI_main_26.c    |   22 ++++++----------------
+ drivers/video/68328fb.c                |    4 ++--
+ drivers/video/acornfb.c                |    5 +++--
+ drivers/video/arkfb.c                  |    9 +++++----
+ drivers/video/atmel_lcdfb.c            |   15 +++++++++------
+ drivers/video/aty/radeon_base.c        |   10 +++++-----
+ drivers/video/da8xx-fb.c               |    4 ++--
+ drivers/video/fb-puv3.c                |    4 ++--
+ drivers/video/g364fb.c                 |    5 +++--
+ drivers/video/gxt4500.c                |    4 ++--
+ drivers/video/hgafb.c                  |    4 ++--
+ drivers/video/imsttfb.c                |    2 +-
+ drivers/video/intelfb/intelfbhw.c      |    6 +++---
+ drivers/video/mb862xx/mb862xxfbdrv.c   |    2 +-
+ drivers/video/mx3fb.c                  |    6 +++---
+ drivers/video/neofb.c                  |    4 ++--
+ drivers/video/pm2fb.c                  |    4 ++--
+ drivers/video/pm3fb.c                  |    4 ++--
+ drivers/video/s3c-fb.c                 |    2 +-
+ drivers/video/s3fb.c                   |    7 ++++---
+ drivers/video/savage/savagefb_driver.c |   16 +++++++---------
+ drivers/video/sis/sis_main.c           |   30 ++++++++++--------------------
+ drivers/video/sm501fb.c                |    6 +++---
+ drivers/video/tridentfb.c              |    4 ++--
+ drivers/video/vfb.c                    |    4 ++--
+ drivers/video/vga16fb.c                |    2 +-
+ drivers/video/vt8500lcdfb.c            |    4 ++--
+ drivers/video/vt8623fb.c               |    9 +++++----
+ 28 files changed, 92 insertions(+), 106 deletions(-)
+
+-- 
+Regards,
+
+Laurent Pinchart
+

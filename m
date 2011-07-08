@@ -1,39 +1,135 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 08 Jul 2011 11:14:23 +0000
-Subject: [PATCH v3 09/29] g364fb: use display information in info not in var for panning
-Message-Id: <1310123683-8064-10-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Jan Weitzel <j.weitzel@phytec.de>
+Date: Fri, 08 Jul 2011 10:47:14 +0000
+Subject: [PATCH] ARM: OMAP2+ Add Primview dispalys to panel-generic
+Message-Id: <1310122034-6561-1-git-send-email-j.weitzel@phytec.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+Add displays to panel-generic-dpi.c
+Prime View PD035VL1 (640 x 480)
+Prime View PD050VL1 (640 x 480)
+Prime View PD104SLF (800 x 600)
+Prime View PM070WL4 (800 x 480)
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Jan Weitzel <j.weitzel@phytec.de>
 ---
- drivers/video/g364fb.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/video/omap2/displays/panel-generic-dpi.c |  100 ++++++++++++++++++++++
+ 1 files changed, 100 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/g364fb.c b/drivers/video/g364fb.c
-index d662317..223896c 100644
---- a/drivers/video/g364fb.c
-+++ b/drivers/video/g364fb.c
-@@ -149,10 +149,11 @@ int g364fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- static int g364fb_pan_display(struct fb_var_screeninfo *var, 
- 			      struct fb_info *info)
- {
--	if (var->xoffset || var->yoffset + var->yres > var->yres_virtual)
-+	if (var->xoffset ||
-+	    var->yoffset + info->var.yres > info->var.yres_virtual)
- 		return -EINVAL;
+diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
+index 9c90f75..87d9ba1 100644
+--- a/drivers/video/omap2/displays/panel-generic-dpi.c
++++ b/drivers/video/omap2/displays/panel-generic-dpi.c
+@@ -232,6 +232,106 @@ static struct panel_config generic_dpi_panels[] = {
+ 		.power_off_delay	= 0,
+ 		.name			= "powertip_ph480272t",
+ 	},
++
++	/* Prime-View PD035VL1 */
++	{
++		{
++			.x_res		= 640,
++			.y_res		= 480,
++
++			.pixel_clock	= 25000,
++
++			.hsw		= 96,
++			.hfp		= 18,
++			.hbp		= 46,
++
++			.vsw		= 2,
++			.vfp		= 10,
++			.vbp		= 33,
++		},
++		.acbi			= 0x0,
++		.acb			= 0x28,
++		.config			= OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
++					  OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC,
++		.power_on_delay		= 50,
++		.power_off_delay	= 100,
++		.name			= "pd035vl1",
++	},
++
++	/* Prime-View PD050VL1 */
++	{
++		{
++			.x_res		= 640,
++			.y_res		= 480,
++
++			.pixel_clock	= 25000,
++
++			.hsw		= 96,
++			.hfp		= 18,
++			.hbp		= 46,
++
++			.vsw		= 2,
++			.vfp		= 10,
++			.vbp		= 33,
++		},
++		.acbi			= 0x0,
++		.acb			= 0x28,
++		.config			= OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
++					  OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC,
++		.power_on_delay		= 50,
++		.power_off_delay	= 100,
++		.name			= "pd050vl1",
++	},
++
++	/* Prime-View PM070WL4 */
++	{
++		{
++			.x_res		= 800,
++			.y_res		= 480,
++
++			.pixel_clock	= 32000,
++
++			.hsw		= 128,
++			.hfp		= 42,
++			.hbp		= 86,
++
++			.vsw		= 2,
++			.vfp		= 10,
++			.vbp		= 33,
++		},
++		.acbi			= 0x0,
++		.acb			= 0x28,
++		.config			= OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
++					  OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC,
++		.power_on_delay		= 50,
++		.power_off_delay	= 100,
++		.name			= "pm070wl4",
++	},
++
++	/* Prime-View PD104SLF */
++	{
++		{
++			.x_res		= 800,
++			.y_res		= 600,
++
++			.pixel_clock	= 40000,
++
++			.hsw		= 128,
++			.hfp		= 42,
++			.hbp		= 86,
++
++			.vsw		= 4,
++			.vfp		= 1,
++			.vbp		= 23,
++		},
++		.acbi			= 0x0,
++		.acb			= 0x28,
++		.config			= OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
++					  OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC,
++		.power_on_delay		= 50,
++		.power_off_delay	= 100,
++		.name			= "pd104slf",
++	},
+ };
  
--	*(unsigned int *) TOP_REG = var->yoffset * var->xres;
-+	*(unsigned int *) TOP_REG = var->yoffset * info->var.xres;
- 	return 0;
- }
- 
+ struct panel_drv_data {
 -- 
-1.7.3.4
+1.7.0.4
 

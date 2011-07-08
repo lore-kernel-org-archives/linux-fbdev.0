@@ -1,7 +1,7 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 08 Jul 2011 11:14:15 +0000
-Subject: [PATCH v3 01/29] 68328fb: use display information in info not in var for panning
-Message-Id: <1310123683-8064-2-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Fri, 08 Jul 2011 11:14:39 +0000
+Subject: [PATCH v3 25/29] vfb: use display information in info not in var for panning
+Message-Id: <1310123683-8064-26-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,14 +13,14 @@ yoffset and vmode as otherwise applications might abuse it.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/68328fb.c |    4 ++--
+ drivers/video/vfb.c |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/68328fb.c b/drivers/video/68328fb.c
-index 75a39ea..a425d65 100644
---- a/drivers/video/68328fb.c
-+++ b/drivers/video/68328fb.c
-@@ -378,8 +378,8 @@ static int mc68x328fb_pan_display(struct fb_var_screeninfo *var,
+diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
+index bc67251..bf2f780 100644
+--- a/drivers/video/vfb.c
++++ b/drivers/video/vfb.c
+@@ -395,8 +395,8 @@ static int vfb_pan_display(struct fb_var_screeninfo *var,
  		    || var->xoffset)
  			return -EINVAL;
  	} else {

@@ -1,35 +1,35 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Sat, 30 Jul 2011 20:26:51 +0000
-Subject: [PATCH 0/4] sh_mobile_meram cleanups and fixes
-Message-Id: <1312057615-29123-1-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Fri, 08 Jul 2011 11:14:16 +0000
+Subject: [PATCH v3 02/29] acornfb: Dont BUG() on invalid pan parameters
+Message-Id: <1310123683-8064-3-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi everybody,
+The driver currently BUG()s if the pan parameters passed directly from
+userspace are invalid. Return -EINVAL instead.
 
-This patch series follows the sh_mobile_lcdc patches I've posted to the list.
-As with the previous series, I've started with a readability patch that made
-me find a bug. Patches 1/4, 2/4 and 4/4 are cleanups, and patch 3/4 fix the
-bug. Please see individual patch descriptions for details.
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/acornfb.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Laurent Pinchart (4):
-  fbdev: sh_mobile_meram: Replace hardcoded register values with macros
-  fbdev: sh_mobile_meram: Validate ICB configuration outside mutex
-  fbdev: sh_mobile_meram: Fix MExxCTL register save on runtime PM
-    suspend
-  fbdev: sh_mobile_meram: Remove unneeded sh_mobile_meram.h
-
- drivers/video/sh_mobile_lcdcfb.c |    2 +-
- drivers/video/sh_mobile_meram.c  |  122 ++++++++++++++++++++++++++------------
- drivers/video/sh_mobile_meram.h  |   33 ----------
- 3 files changed, 84 insertions(+), 73 deletions(-)
- delete mode 100644 drivers/video/sh_mobile_meram.h
-
+diff --git a/drivers/video/acornfb.c b/drivers/video/acornfb.c
+index 6183a57..3bacc12 100644
+--- a/drivers/video/acornfb.c
++++ b/drivers/video/acornfb.c
+@@ -852,7 +852,8 @@ acornfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
+ 	if (!(var->vmode & FB_VMODE_YWRAP))
+ 		y_bottom += var->yres;
+ 
+-	BUG_ON(y_bottom > var->yres_virtual);
++	if (y_bottom > var->yres_virtual)
++		return -EINVAL;
+ 
+ 	acornfb_update_dma(info, var);
+ 
 -- 
-Regards,
-
-Laurent Pinchart
+1.7.3.4
 

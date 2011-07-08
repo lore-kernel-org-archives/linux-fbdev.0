@@ -1,7 +1,7 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 08 Jul 2011 11:14:18 +0000
-Subject: [PATCH v3 04/29] arkfb: use display information in info not in var for panning
-Message-Id: <1310123683-8064-5-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Fri, 08 Jul 2011 11:14:15 +0000
+Subject: [PATCH v3 01/29] 68328fb: use display information in info not in var for panning
+Message-Id: <1310123683-8064-2-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,34 +12,25 @@ We must not use any information in the passed var besides xoffset,
 yoffset and vmode as otherwise applications might abuse it.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Ondrej Zajicek <santiago@crfreenet.org>
 ---
- drivers/video/arkfb.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/video/68328fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
-index 8686429..555dd4c 100644
---- a/drivers/video/arkfb.c
-+++ b/drivers/video/arkfb.c
-@@ -908,13 +908,14 @@ static int arkfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info
- 	unsigned int offset;
- 
- 	/* Calculate the offset */
--	if (var->bits_per_pixel = 0) {
--		offset = (var->yoffset / 16) * (var->xres_virtual / 2) + (var->xoffset / 2);
-+	if (info->var.bits_per_pixel = 0) {
-+		offset = (var->yoffset / 16) * (info->var.xres_virtual / 2)
-+		       + (var->xoffset / 2);
- 		offset = offset >> 2;
+diff --git a/drivers/video/68328fb.c b/drivers/video/68328fb.c
+index 75a39ea..a425d65 100644
+--- a/drivers/video/68328fb.c
++++ b/drivers/video/68328fb.c
+@@ -378,8 +378,8 @@ static int mc68x328fb_pan_display(struct fb_var_screeninfo *var,
+ 		    || var->xoffset)
+ 			return -EINVAL;
  	} else {
- 		offset = (var->yoffset * info->fix.line_length) +
--			 (var->xoffset * var->bits_per_pixel / 8);
--		offset = offset >> ((var->bits_per_pixel = 4) ? 2 : 3);
-+			 (var->xoffset * info->var.bits_per_pixel / 8);
-+		offset = offset >> ((info->var.bits_per_pixel = 4) ? 2 : 3);
+-		if (var->xoffset + var->xres > info->var.xres_virtual ||
+-		    var->yoffset + var->yres > info->var.yres_virtual)
++		if (var->xoffset + info->var.xres > info->var.xres_virtual ||
++		    var->yoffset + info->var.yres > info->var.yres_virtual)
+ 			return -EINVAL;
  	}
- 
- 	/* Set the offset */
+ 	info->var.xoffset = var->xoffset;
 -- 
 1.7.3.4
 

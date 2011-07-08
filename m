@@ -1,7 +1,7 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 08 Jul 2011 11:14:30 +0000
-Subject: [PATCH v3 16/29] neofb: use display information in info not in var for panning
-Message-Id: <1310123683-8064-17-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Fri, 08 Jul 2011 11:14:17 +0000
+Subject: [PATCH v3 03/29] acornfb: use display information in info not in var for panning
+Message-Id: <1310123683-8064-4-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -12,26 +12,26 @@ We must not use any information in the passed var besides xoffset,
 yoffset and vmode as otherwise applications might abuse it.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
 ---
- drivers/video/neofb.c |    4 ++--
+ drivers/video/acornfb.c |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/neofb.c b/drivers/video/neofb.c
-index 588527a..feea7b1 100644
---- a/drivers/video/neofb.c
-+++ b/drivers/video/neofb.c
-@@ -1185,8 +1185,8 @@ static int neofb_pan_display(struct fb_var_screeninfo *var,
+diff --git a/drivers/video/acornfb.c b/drivers/video/acornfb.c
+index 3bacc12..b303f17 100644
+--- a/drivers/video/acornfb.c
++++ b/drivers/video/acornfb.c
+@@ -850,9 +850,9 @@ acornfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
+ 	u_int y_bottom = var->yoffset;
  
- 	DBG("neofb_update_start");
+ 	if (!(var->vmode & FB_VMODE_YWRAP))
+-		y_bottom += var->yres;
++		y_bottom += info->var.yres;
  
--	Base = (var->yoffset * var->xres_virtual + var->xoffset) >> 2;
--	Base *= (var->bits_per_pixel + 7) / 8;
-+	Base = (var->yoffset * info->var.xres_virtual + var->xoffset) >> 2;
-+	Base *= (info->var.bits_per_pixel + 7) / 8;
+-	if (y_bottom > var->yres_virtual)
++	if (y_bottom > info->var.yres_virtual)
+ 		return -EINVAL;
  
- 	neoUnlock();
- 
+ 	acornfb_update_dma(info, var);
 -- 
 1.7.3.4
 

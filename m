@@ -1,36 +1,78 @@
-From: Andy Doan <andy.doan@linaro.org>
-Date: Wed, 06 Jul 2011 17:08:29 +0000
-Subject: [PATCH] OMAPFB: make debug message more useful
-Message-Id: <1309972109-23778-1-git-send-email-andy.doan@linaro.org>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Fri, 08 Jul 2011 11:14:43 +0000
+Subject: [PATCH v3 29/29] staging: xgifb: use display information in info not in var for panning
+Message-Id: <1310123683-8064-30-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Andy Doan <andy.doan@linaro.org>
+To: linux-fbdev@vger.kernel.org
 
-Make the debug message useful by printing the name of the device
-that no associated driver could be found for.
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
 
-Signed-off-by: Andy Doan <andy.doan@linaro.org>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
+Cc: Arnaud Patard <apatard@mandriva.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/staging/xgifb/XGI_main_26.c |   22 ++++++----------------
+ 1 files changed, 6 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 602b71a..e5a64b3 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -2373,7 +2373,8 @@ static int omapfb_probe(struct platform_device *pdev)
- 		omap_dss_get_device(dssdev);
+diff --git a/drivers/staging/xgifb/XGI_main_26.c b/drivers/staging/xgifb/XGI_main_26.c
+index cadec2a..e92f6fa 100644
+--- a/drivers/staging/xgifb/XGI_main_26.c
++++ b/drivers/staging/xgifb/XGI_main_26.c
+@@ -1365,26 +1365,16 @@ static int XGIfb_do_set_var(struct fb_var_screeninfo *var, int isactive,
+ }
  
- 		if (!dssdev->driver) {
--			dev_err(&pdev->dev, "no driver for display\n");
-+			dev_err(&pdev->dev, "no driver for display: %s\n",
-+				dssdev->name);
- 			r = -ENODEV;
- 		}
+ #ifdef XGIFB_PAN
+-static int XGIfb_pan_var(struct fb_var_screeninfo *var)
++static int XGIfb_pan_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+ 	unsigned int base;
+ 
+ 	/* printk("Inside pan_var"); */
+ 
+-	if (var->xoffset > (var->xres_virtual - var->xres)) {
+-		/* printk("Pan: xo: %d xv %d xr %d\n",
+-			var->xoffset, var->xres_virtual, var->xres); */
+-		return -EINVAL;
+-	}
+-	if (var->yoffset > (var->yres_virtual - var->yres)) {
+-		/* printk("Pan: yo: %d yv %d yr %d\n",
+-			var->yoffset, var->yres_virtual, var->yres); */
+-		return -EINVAL;
+-	}
+-	base = var->yoffset * var->xres_virtual + var->xoffset;
++	base = var->yoffset * info->var.xres_virtual + var->xoffset;
+ 
+ 	/* calculate base bpp dep. */
+-	switch (var->bits_per_pixel) {
++	switch (info->var.bits_per_pixel) {
+ 	case 16:
+ 		base >>= 1;
+ 		break;
+@@ -1682,9 +1672,9 @@ static int XGIfb_pan_display(struct fb_var_screeninfo *var,
+ 
+ 	/* printk("\nInside pan_display:\n"); */
+ 
+-	if (var->xoffset > (var->xres_virtual - var->xres))
++	if (var->xoffset > (info->var.xres_virtual - info->var.xres))
+ 		return -EINVAL;
+-	if (var->yoffset > (var->yres_virtual - var->yres))
++	if (var->yoffset > (info->var.yres_virtual - info->var.yres))
+ 		return -EINVAL;
+ 
+ 	if (var->vmode & FB_VMODE_YWRAP) {
+@@ -1697,7 +1687,7 @@ static int XGIfb_pan_display(struct fb_var_screeninfo *var,
+ 						> info->var.yres_virtual)
+ 			return -EINVAL;
+ 	}
+-	err = XGIfb_pan_var(var);
++	err = XGIfb_pan_var(var, info);
+ 	if (err < 0)
+ 		return err;
  
 -- 
-1.7.4.1
+1.7.3.4
 

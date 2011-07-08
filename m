@@ -1,54 +1,45 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Date: Mon, 18 Jul 2011 01:22:15 +0000
-Subject: RE: [PATCH V7 1/5] ARM: EXYNOS4: Change clock name for FIMD
-Message-Id: <047201cc44e9$2444a910$6ccdfb30$%kim@samsung.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Fri, 08 Jul 2011 11:14:18 +0000
+Subject: [PATCH v3 04/29] arkfb: use display information in info not in var for panning
+Message-Id: <1310123683-8064-5-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1309171740-27146-1-git-send-email-jg1.han@samsung.com>
-In-Reply-To: <1309171740-27146-1-git-send-email-jg1.han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Jingoo Han' <jg1.han@samsung.com>, 'Paul Mundt' <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org, 'Jonghun Han' <jonghun.han@samsung.com>
-Cc: 'Thomas Abraham' <thomas.ab@samsung.com>
+To: linux-fbdev@vger.kernel.org
 
-Jingoo Han wrote:
-> 
-> This patch changes clock name for FIMD from "fimd" to "lcd".
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> ---
->  arch/arm/mach-exynos4/clock.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/arm/mach-exynos4/clock.c b/arch/arm/mach-exynos4/clock.c
-> index 871f9d5..12e6853 100644
-> --- a/arch/arm/mach-exynos4/clock.c
-> +++ b/arch/arm/mach-exynos4/clock.c
-> @@ -433,12 +433,12 @@ static struct clk init_clocks_off[] = {
->  		.enable		= exynos4_clk_ip_cam_ctrl,
->  		.ctrlbit	= (1 << 3),
->  	}, {
-> -		.name		= "fimd",
-> +		.name		= "lcd",
->  		.id		= 0,
->  		.enable		= exynos4_clk_ip_lcd0_ctrl,
->  		.ctrlbit	= (1 << 0),
->  	}, {
-> -		.name		= "fimd",
-> +		.name		= "lcd",
->  		.id		= 1,
->  		.enable		= exynos4_clk_ip_lcd1_ctrl,
->  		.ctrlbit	= (1 << 0),
-> --
-> 1.7.1
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
 
-This should be re-worked based on latest my for-next which includes clkdev.
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Ondrej Zajicek <santiago@crfreenet.org>
+---
+ drivers/video/arkfb.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-Thanks.
-
-Best regards,
-Kgene.
---
-Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-SW Solution Development Team, Samsung Electronics Co., Ltd.
+diff --git a/drivers/video/arkfb.c b/drivers/video/arkfb.c
+index 8686429..555dd4c 100644
+--- a/drivers/video/arkfb.c
++++ b/drivers/video/arkfb.c
+@@ -908,13 +908,14 @@ static int arkfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info
+ 	unsigned int offset;
+ 
+ 	/* Calculate the offset */
+-	if (var->bits_per_pixel = 0) {
+-		offset = (var->yoffset / 16) * (var->xres_virtual / 2) + (var->xoffset / 2);
++	if (info->var.bits_per_pixel = 0) {
++		offset = (var->yoffset / 16) * (info->var.xres_virtual / 2)
++		       + (var->xoffset / 2);
+ 		offset = offset >> 2;
+ 	} else {
+ 		offset = (var->yoffset * info->fix.line_length) +
+-			 (var->xoffset * var->bits_per_pixel / 8);
+-		offset = offset >> ((var->bits_per_pixel = 4) ? 2 : 3);
++			 (var->xoffset * info->var.bits_per_pixel / 8);
++		offset = offset >> ((info->var.bits_per_pixel = 4) ? 2 : 3);
+ 	}
+ 
+ 	/* Set the offset */
+-- 
+1.7.3.4
 

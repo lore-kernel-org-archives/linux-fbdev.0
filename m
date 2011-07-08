@@ -1,51 +1,35 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 15 Jul 2011 21:52:33 +0000
-Subject: [PATCH 3/3] fbdev: sh_mobile_lcdc: Compute clock pattern using divider denominator
-Message-Id: <1310766753-30314-4-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Fri, 08 Jul 2011 11:14:40 +0000
+Subject: [PATCH v3 26/29] vga16fb: use display information in info not in var for panning
+Message-Id: <1310123683-8064-27-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The clock divider pattern is computed based on the dot clock register
-value which stores the divider denumerator. However, when using a 1:1
-divider ratio, the register is programmed with a value that must not be
-interpreted as a denominator. This results in a shift left operation
-with a value of 32, which produces undefined behaviour.
-
-Compute the clock pattern using the divider denominator, not the dot
-clock register value.
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Antonino A. Daplas <adaplas@gmail.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+ drivers/video/vga16fb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 32f884e..856f6a9 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -481,13 +481,15 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 		if (!m)
- 			continue;
- 
-+		/* FIXME: sh7724 can only use 42, 48, 54 and 60 for the divider
-+		 * denominator.
-+		 */
-+		lcdc_write_chan(ch, LDDCKPAT1R, 0);
-+		lcdc_write_chan(ch, LDDCKPAT2R, (1 << (m/2)) - 1);
-+
- 		if (m = 1)
- 			m = LDDCKR_MOSEL;
- 		tmp |= m << (lcdc_chan_is_sublcd(ch) ? 8 : 0);
--
--		/* FIXME: sh7724 can only use 42, 48, 54 and 60 for the divider denominator */
--		lcdc_write_chan(ch, LDDCKPAT1R, 0);
--		lcdc_write_chan(ch, LDDCKPAT2R, (1 << (m/2)) - 1);
- 	}
- 
- 	lcdc_write(priv, _LDDCKR, tmp);
+diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
+index 305c975..0267acd 100644
+--- a/drivers/video/vga16fb.c
++++ b/drivers/video/vga16fb.c
+@@ -207,7 +207,7 @@ static void vga16fb_pan_var(struct fb_info *info,
+ 	 * granularity if someone supports xoffset in bit resolution */
+ 	vga_io_r(VGA_IS1_RC);		/* reset flip-flop */
+ 	vga_io_w(VGA_ATT_IW, VGA_ATC_PEL);
+-	if (var->bits_per_pixel = 8)
++	if (info->var.bits_per_pixel = 8)
+ 		vga_io_w(VGA_ATT_IW, (xoffset & 3) << 1);
+ 	else
+ 		vga_io_w(VGA_ATT_IW, xoffset & 7);
 -- 
 1.7.3.4
 

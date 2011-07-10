@@ -1,35 +1,65 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 08 Jul 2011 11:14:40 +0000
-Subject: [PATCH v3 26/29] vga16fb: use display information in info not in var for panning
-Message-Id: <1310123683-8064-27-git-send-email-laurent.pinchart@ideasonboard.com>
+From: bernie@plugable.com
+Date: Sun, 10 Jul 2011 07:30:00 +0000
+Subject: [PATCH] drivers/video/udlfb match class, subclass, and protocol
+Message-Id: <1310283000-2482-1-git-send-email-bernie@plugable.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+From: Bernie Thompson <bernie@plugable.com>
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Antonino A. Daplas <adaplas@gmail.com>
+Match udlfb only against vendor-specific class (e.g. only DisplayLink
+graphics, not composite standard audio class interfaces). This enables
+compatibility with composite graphics+audio devices (e.g. HDMI).
+
+Match udlfb only against compatible subclass 0 and protocol 0 chips.
+DisplayLink's USB 3.0 generation chips increment these values
+to signal that they have a incompatible protocol, preventing udlfb
+from erroneously matching to hardware it does not support.
+
+Tested to confirm proper behavior on both USB 2.0 and USB 3.0
+generation devices.
+
+Reported-by: Andrew Kephart <akephart@akephart.org>
+Signed-off-by: Bernie Thompson <bernie@plugable.com>
 ---
- drivers/video/vga16fb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/udlfb.c |   19 ++++++++++++++-----
+ 1 files changed, 14 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
-index 305c975..0267acd 100644
---- a/drivers/video/vga16fb.c
-+++ b/drivers/video/vga16fb.c
-@@ -207,7 +207,7 @@ static void vga16fb_pan_var(struct fb_info *info,
- 	 * granularity if someone supports xoffset in bit resolution */
- 	vga_io_r(VGA_IS1_RC);		/* reset flip-flop */
- 	vga_io_w(VGA_ATT_IW, VGA_ATC_PEL);
--	if (var->bits_per_pixel = 8)
-+	if (info->var.bits_per_pixel = 8)
- 		vga_io_w(VGA_ATT_IW, (xoffset & 3) << 1);
- 	else
- 		vga_io_w(VGA_ATT_IW, xoffset & 7);
+diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
+index c6584c9..4e13375 100644
+--- a/drivers/video/udlfb.c
++++ b/drivers/video/udlfb.c
+@@ -49,13 +49,22 @@ static const u32 udlfb_info_flags = FBINFO_DEFAULT | FBINFO_READS_FAST |
+ 		FBINFO_HWACCEL_COPYAREA | FBINFO_MISC_ALWAYS_SETPAR;
+ 
+ /*
+- * There are many DisplayLink-based products, all with unique PIDs. We are able
+- * to support all volume ones (circa 2009) with a single driver, so we match
+- * globally on VID. TODO: Probe() needs to detect when we might be running
+- * "future" chips, and bail on those, so a compatible driver can match.
++ * There are many DisplayLink-based graphics products, all with unique PIDs.
++ * So we match on DisplayLink's VID + Vendor-Defined Interface Class (0xff)
++ * We also require a match on SubClass (0x00) and Protocol (0x00),
++ * which is compatible with all known USB 2.0 era graphics chips and firmware,
++ * but allows DisplayLink to increment those for any future incompatible chips
+  */
+ static struct usb_device_id id_table[] = {
+-	{.idVendor = 0x17e9, .match_flags = USB_DEVICE_ID_MATCH_VENDOR,},
++	{.idVendor = 0x17e9,
++	 .bInterfaceClass = 0xff,
++	 .bInterfaceSubClass = 0x00,
++	 .bInterfaceProtocol = 0x00,
++	 .match_flags = USB_DEVICE_ID_MATCH_VENDOR |
++		USB_DEVICE_ID_MATCH_INT_CLASS |
++		USB_DEVICE_ID_MATCH_INT_SUBCLASS |
++		USB_DEVICE_ID_MATCH_INT_PROTOCOL,
++	},
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(usb, id_table);
 -- 
-1.7.3.4
+1.7.4.1
 

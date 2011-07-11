@@ -1,38 +1,45 @@
-From: bernie@plugable.com
-Date: Wed, 06 Jul 2011 00:04:11 +0000
-Subject: [PATCH] drivers/video/udlfb bind framebuffer to interface.
-Message-Id: <1309910651-3483-1-git-send-email-bernie@plugable.com>
+From: JinGoo Han <jg1.han@samsung.com>
+Date: Mon, 11 Jul 2011 04:26:14 +0000
+Subject: Re: [PATCH] drivers/video/udlfb bind framebuffer to interface.
+Message-Id: <22966736.78901310358374131.JavaMail.weblogic@epv6ml05>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1309910651-3483-1-git-send-email-bernie@plugable.com>
+In-Reply-To: <1309910651-3483-1-git-send-email-bernie@plugable.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
 To: linux-fbdev@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
-
-Udlfb has been binding the framebuffer device to its parent, which
-isn't correct and causes confusion with operations like udev remove.
-
-Coming plug and play multiseat support is dependent on this fix.
-
-Signed-off-by: Bernie Thompson <bernie@plugable.com>
----
- drivers/video/udlfb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
-index 816a4fd..c6584c9 100644
---- a/drivers/video/udlfb.c
-+++ b/drivers/video/udlfb.c
-@@ -1549,7 +1549,7 @@ static int dlfb_usb_probe(struct usb_interface *interface,
- 	/* We don't register a new USB class. Our client interface is fbdev */
- 
- 	/* allocates framebuffer driver structure, not framebuffer memory */
--	info = framebuffer_alloc(0, &usbdev->dev);
-+	info = framebuffer_alloc(0, &interface->dev);
- 	if (!info) {
- 		retval = -ENOMEM;
- 		pr_err("framebuffer_alloc failed\n");
--- 
-1.7.4.1
-
+SGksIEJlcm5pZSBUaG9tcHNvbi4KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+IEZyb206
+IGxpbnV4LWZiZGV2LW93bmVyQHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LWZiZGV2LQo+
+IG93bmVyQHZnZXIua2VybmVsLm9yZ10gT24gQmVoYWxmIE9mIGJlcm5pZUBwbHVnYWJsZS5jb20K
+PiBTZW50OiBXZWRuZXNkYXksIEp1bHkgMDYsIDIwMTEgOTowNCBBTQo+IFRvOiBsaW51eC1mYmRl
+dkB2Z2VyLmtlcm5lbC5vcmcKPiBDYzogbGV0aGFsQGxpbnV4LXNoLm9yZzsgS2F5IFNpZXZlcnM7
+IEJlcm5pZSBUaG9tcHNvbgo+IFN1YmplY3Q6IFtQQVRDSF0gZHJpdmVycy92aWRlby91ZGxmYiBi
+aW5kIGZyYW1lYnVmZmVyIHRvIGludGVyZmFjZS4KPiAKPiBGcm9tOiBLYXkgU2lldmVycyA8a2F5
+LnNpZXZlcnNAdnJmeS5vcmc+Cj4gCj4gVWRsZmIgaGFzIGJlZW4gYmluZGluZyB0aGUgZnJhbWVi
+dWZmZXIgZGV2aWNlIHRvIGl0cyBwYXJlbnQsIHdoaWNoCj4gaXNuJ3QgY29ycmVjdCBhbmQgY2F1
+c2VzIGNvbmZ1c2lvbiB3aXRoIG9wZXJhdGlvbnMgbGlrZSB1ZGV2IHJlbW92ZS4KPiAKPiBDb21p
+bmcgcGx1ZyBhbmQgcGxheSBtdWx0aXNlYXQgc3VwcG9ydCBpcyBkZXBlbmRlbnQgb24gdGhpcyBm
+aXguCj4gCj4gU2lnbmVkLW9mZi1ieTogQmVybmllIFRob21wc29uIDxiZXJuaWVAcGx1Z2FibGUu
+Y29tPgpUaGlzIHBhdGNoIGF1dGhvciBzZWVtcyB0byBiZSBLYXkgU2lldmVycyA8a2F5LnNpZXZl
+cnNAdnJmeS5vcmc+LgpTaG91bGQgeW91IGFkZCBTaWduZWQtb2ZmLWJ5OiBLYXkgU2lldmVycyA8
+a2F5LnNpZXZlcnNAdnJmeS5vcmc+ID8KPiAtLS0KPiAgZHJpdmVycy92aWRlby91ZGxmYi5jIHwg
+ICAgMiArLQo+ICAxIGZpbGVzIGNoYW5nZWQsIDEgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbnMo
+LSkKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby91ZGxmYi5jIGIvZHJpdmVycy92aWRl
+by91ZGxmYi5jCj4gaW5kZXggODE2YTRmZC4uYzY1ODRjOSAxMDA2NDQKPiAtLS0gYS9kcml2ZXJz
+L3ZpZGVvL3VkbGZiLmMKPiArKysgYi9kcml2ZXJzL3ZpZGVvL3VkbGZiLmMKPiBAQCAtMTU0OSw3
+ICsxNTQ5LDcgQEAgc3RhdGljIGludCBkbGZiX3VzYl9wcm9iZShzdHJ1Y3QgdXNiX2ludGVyZmFj
+ZQo+ICppbnRlcmZhY2UsCj4gIAkvKiBXZSBkb24ndCByZWdpc3RlciBhIG5ldyBVU0IgY2xhc3Mu
+IE91ciBjbGllbnQgaW50ZXJmYWNlIGlzIGZiZGV2Cj4gKi8KPiAKPiAgCS8qIGFsbG9jYXRlcyBm
+cmFtZWJ1ZmZlciBkcml2ZXIgc3RydWN0dXJlLCBub3QgZnJhbWVidWZmZXIgbWVtb3J5Cj4gKi8K
+PiAtCWluZm8gPSBmcmFtZWJ1ZmZlcl9hbGxvYygwLCAmdXNiZGV2LT5kZXYpOwo+ICsJaW5mbyA9
+IGZyYW1lYnVmZmVyX2FsbG9jKDAsICZpbnRlcmZhY2UtPmRldik7Cj4gIAlpZiAoIWluZm8pIHsK
+PiAgCQlyZXR2YWwgPSAtRU5PTUVNOwo+ICAJCXByX2VycigiZnJhbWVidWZmZXJfYWxsb2MgZmFp
+bGVkXG4iKTsKPiAtLQo+IDEuNy40LjEKPiAKPiAtLQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhp
+cyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4KPiB0aGUg
+Ym9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZwo+IE1vcmUgbWFq
+b3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRt
+bAoK//Tounsubscribefromthislisv/sendthelinf/unsubscribelinux/fbdev/inthebody
+ofamessagetomajordomo/vger/kernel/orgMoremajordomoinfoathttp///vger/kernel/o
+rg/majordomo/info/htCg==

@@ -1,27 +1,61 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Wed, 13 Jul 2011 08:18:43 +0000
-Subject: Re: [PATCH v2] video: da8xx-fb: Interrupt configuration of revised LCDC IP
-Message-Id: <20110713081843.GE13701@linux-sh.org>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Mon, 11 Jul 2011 12:35:54 +0000
+Subject: [PATCH] fbdev: sh_mobile_lcdc: Turn dot clock on before resuming from runtime PM
+Message-Id: <1310387754-23033-1-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1309861280-32240-1-git-send-email-prakash.pm@ti.com>
-In-Reply-To: <1309861280-32240-1-git-send-email-prakash.pm@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Tue, Jul 05, 2011 at 03:51:20PM +0530, Manjunathappa, Prakash wrote:
-> An upcoming SoC of TI comes with an LCD controller which is an updated
-> version of that found on TI's DA850 SoC. The da8xx-fb driver can support
-> this LCD with some enhancements.
-> This patch adds support for updated interrupt configuration on the new
-> SoC.
-> 1) Registers for setting and clearing interrupts are different.
-> 2) Raw and masked status registers are different.
-> The updates have been tested on an emulation platform for new features
-> and the patch has been tested on DA850 platform to make sure nothing
-> existing breaks.
-> 
-> Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+Resuming from runtime PM restores all LCDC registers. If the dot clock
+is off at that time display panning information will be corrupted.
 
-Applied, thanks.
+Turn the dot clock on before resuming from runtime PM. Similarly,
+turn the clock off after suspending the LCDC.
+
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Magnus Damm <magnus.damm@gmail.com>
+Cc: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+---
+ drivers/video/sh_mobile_lcdcfb.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+This patch should fix the LCDC panning issue caused by runtime suspend. It
+applies on top of Rafael J. Wysocki's pm-domains branch and Damian
+Hobson-Garcia's MERAM patches.
+
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 48a40e3..e9b80bc 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -256,9 +256,9 @@ struct sh_mobile_lcdc_sys_bus_ops sh_mobile_lcdc_sys_bus_ops = {
+ static void sh_mobile_lcdc_clk_on(struct sh_mobile_lcdc_priv *priv)
+ {
+ 	if (atomic_inc_and_test(&priv->hw_usecnt)) {
+-		pm_runtime_get_sync(priv->dev);
+ 		if (priv->dot_clk)
+ 			clk_enable(priv->dot_clk);
++		pm_runtime_get_sync(priv->dev);
+ 		if (priv->meram_dev && priv->meram_dev->pdev)
+ 			pm_runtime_get_sync(&priv->meram_dev->pdev->dev);
+ 	}
+@@ -267,11 +267,11 @@ static void sh_mobile_lcdc_clk_on(struct sh_mobile_lcdc_priv *priv)
+ static void sh_mobile_lcdc_clk_off(struct sh_mobile_lcdc_priv *priv)
+ {
+ 	if (atomic_sub_return(1, &priv->hw_usecnt) = -1) {
+-		if (priv->dot_clk)
+-			clk_disable(priv->dot_clk);
+ 		if (priv->meram_dev && priv->meram_dev->pdev)
+ 			pm_runtime_put_sync(&priv->meram_dev->pdev->dev);
+ 		pm_runtime_put(priv->dev);
++		if (priv->dot_clk)
++			clk_disable(priv->dot_clk);
+ 	}
+ }
+ 
+-- 
+Regards,
+
+Laurent Pinchart
+

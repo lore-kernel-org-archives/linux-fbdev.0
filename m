@@ -1,61 +1,84 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 11 Jul 2011 12:35:54 +0000
-Subject: [PATCH] fbdev: sh_mobile_lcdc: Turn dot clock on before resuming from runtime PM
-Message-Id: <1310387754-23033-1-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Tue, 12 Jul 2011 09:33:09 +0000
+Subject: Re: [PATCH] fbdev: sh_mobile_lcdc: Turn dot clock on before resuming
+Message-Id: <Pine.LNX.4.64.1107121026050.18477@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1310387754-23033-1-git-send-email-laurent.pinchart@ideasonboard.com>
+In-Reply-To: <1310387754-23033-1-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Resuming from runtime PM restores all LCDC registers. If the dot clock
-is off at that time display panning information will be corrupted.
+On Mon, 11 Jul 2011, Laurent Pinchart wrote:
 
-Turn the dot clock on before resuming from runtime PM. Similarly,
-turn the clock off after suspending the LCDC.
+> Resuming from runtime PM restores all LCDC registers. If the dot clock
+> is off at that time display panning information will be corrupted.
+> 
+> Turn the dot clock on before resuming from runtime PM. Similarly,
+> turn the clock off after suspending the LCDC.
+> 
+> Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> Cc: Magnus Damm <magnus.damm@gmail.com>
+> Cc: Damian Hobson-Garcia <dhobsong@igel.co.jp>
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Magnus Damm <magnus.damm@gmail.com>
-Cc: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+(testing would have been a bit easier, if prerequisites had been specified 
+in the patch;))
+
+Tested-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+
+Thanks
+Guennadi
+
+> ---
+>  drivers/video/sh_mobile_lcdcfb.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> This patch should fix the LCDC panning issue caused by runtime suspend. It
+> applies on top of Rafael J. Wysocki's pm-domains branch and Damian
+> Hobson-Garcia's MERAM patches.
+> 
+> diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+> index 48a40e3..e9b80bc 100644
+> --- a/drivers/video/sh_mobile_lcdcfb.c
+> +++ b/drivers/video/sh_mobile_lcdcfb.c
+> @@ -256,9 +256,9 @@ struct sh_mobile_lcdc_sys_bus_ops sh_mobile_lcdc_sys_bus_ops = {
+>  static void sh_mobile_lcdc_clk_on(struct sh_mobile_lcdc_priv *priv)
+>  {
+>  	if (atomic_inc_and_test(&priv->hw_usecnt)) {
+> -		pm_runtime_get_sync(priv->dev);
+>  		if (priv->dot_clk)
+>  			clk_enable(priv->dot_clk);
+> +		pm_runtime_get_sync(priv->dev);
+>  		if (priv->meram_dev && priv->meram_dev->pdev)
+>  			pm_runtime_get_sync(&priv->meram_dev->pdev->dev);
+>  	}
+> @@ -267,11 +267,11 @@ static void sh_mobile_lcdc_clk_on(struct sh_mobile_lcdc_priv *priv)
+>  static void sh_mobile_lcdc_clk_off(struct sh_mobile_lcdc_priv *priv)
+>  {
+>  	if (atomic_sub_return(1, &priv->hw_usecnt) = -1) {
+> -		if (priv->dot_clk)
+> -			clk_disable(priv->dot_clk);
+>  		if (priv->meram_dev && priv->meram_dev->pdev)
+>  			pm_runtime_put_sync(&priv->meram_dev->pdev->dev);
+>  		pm_runtime_put(priv->dev);
+> +		if (priv->dot_clk)
+> +			clk_disable(priv->dot_clk);
+>  	}
+>  }
+>  
+> -- 
+> Regards,
+> 
+> Laurent Pinchart
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
 ---
- drivers/video/sh_mobile_lcdcfb.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-This patch should fix the LCDC panning issue caused by runtime suspend. It
-applies on top of Rafael J. Wysocki's pm-domains branch and Damian
-Hobson-Garcia's MERAM patches.
-
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 48a40e3..e9b80bc 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -256,9 +256,9 @@ struct sh_mobile_lcdc_sys_bus_ops sh_mobile_lcdc_sys_bus_ops = {
- static void sh_mobile_lcdc_clk_on(struct sh_mobile_lcdc_priv *priv)
- {
- 	if (atomic_inc_and_test(&priv->hw_usecnt)) {
--		pm_runtime_get_sync(priv->dev);
- 		if (priv->dot_clk)
- 			clk_enable(priv->dot_clk);
-+		pm_runtime_get_sync(priv->dev);
- 		if (priv->meram_dev && priv->meram_dev->pdev)
- 			pm_runtime_get_sync(&priv->meram_dev->pdev->dev);
- 	}
-@@ -267,11 +267,11 @@ static void sh_mobile_lcdc_clk_on(struct sh_mobile_lcdc_priv *priv)
- static void sh_mobile_lcdc_clk_off(struct sh_mobile_lcdc_priv *priv)
- {
- 	if (atomic_sub_return(1, &priv->hw_usecnt) = -1) {
--		if (priv->dot_clk)
--			clk_disable(priv->dot_clk);
- 		if (priv->meram_dev && priv->meram_dev->pdev)
- 			pm_runtime_put_sync(&priv->meram_dev->pdev->dev);
- 		pm_runtime_put(priv->dev);
-+		if (priv->dot_clk)
-+			clk_disable(priv->dot_clk);
- 	}
- }
- 
--- 
-Regards,
-
-Laurent Pinchart
-
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/

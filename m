@@ -1,77 +1,93 @@
-From: John Stanley <jpsinthemix@verizon.net>
-Date: Sun, 31 Jul 2011 10:04:47 +0000
-Subject: Patch fixing savagefb driver typo/regression in linux-3.0.0
-Message-Id: <4E3528BF.2020601@verizon.net>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------020708060707030800050406"
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Wed, 13 Jul 2011 10:50:15 +0000
+Subject: RE: [PATCH] video: da8xx-fb: Increased resolution configuration of
+Message-Id: <B85A65D85D7EB246BE421B3FB0FBB593024DA7B6C9@dbde02.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020708060707030800050406
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi Paul,
 
-   I have an old T22 Thinkpad with integrated Savage/IX-MV video. As of 
-linux-3.0, the video is non-functional; the PC either hard hangs 
-immediately or has totally garbled video, and then hard hangs, as soon 
-as I attempt to edit a file or cat a file with more than a screen-full 
-of text. The foregoing details are actually not important any more as in 
-looking at the code changes I discovered a typo in
-linux-3.0.0/drivers/video/savage/savagefb.h and have applied the 
-attached patch to fix the issue.
+I have found out bug in height configuration, will be sending out version 2 of this patch.
 
-PLEASE NOTE:
-   I realize that the patch does not quite adhere to linux kernel patch 
-coding-style conventions (in particular, spaces around logical 
-operators, and lines not exceeding 80 chars), but I have simply changed an
-'||' to an '&&' -- and NOT attempted to resolve pre-existing 
-coding-style violations.
+Thanks,
+Prakash
 
-thanks much,
-John
+On Mon, Jun 27, 2011 at 10:26:43, Manjunathappa, Prakash wrote:
+> Revised LCDC IP of DA850 supports 2048*2048 resolution. Below are the
+> encoding details:
+> Width:
+> Pixels Per Line = {pplmsb, ppllsb, 4'b1111} + 1
+> Where pplmsb:1bit=>Raster Timing0[3], ppllsb:6bits=>Raster Timing0[9:4].
+> And encoded value can range from 16 to 2048 in multiples of 16.
+> 
+> Height:
+> Lines Per Panel = {lpp_b10, lpp}
+> Where lpp:10bits=>Raster Timing1[9:0], lpp_b10:1bit=>Raster Timing2[26].
+> And encoded value can range from 1 to 2048, programmable range is 0 to
+> 2047.
+> 
+> Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+> ---
+>  drivers/video/da8xx-fb.c |   30 +++++++++++++++++++++++++++---
+>  1 files changed, 27 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+> index 0e02665..367d839 100644
+> --- a/drivers/video/da8xx-fb.c
+> +++ b/drivers/video/da8xx-fb.c
+> @@ -460,20 +460,44 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+>  
+>  	/* Set the Panel Width */
+>  	/* Pixels per line = (PPL + 1)*16 */
+> -	/*0x3F in bits 4..9 gives max horisontal resolution = 1024 pixels*/
+> -	width &= 0x3f0;
+> +	if (lcd_revision = LCD_VERSION_1) {
+> +		/*
+> +		 * 0x3F in bits 4..9 gives max horizontal resolution = 1024
+> +		 * pixels.
+> +		 */
+> +		width &= 0x3f0;
+> +	} else {
+> +		/*
+> +		 * 0x7F in bits 3..9 gives max horizontal resolution = 2048
+> +		 * pixels.
+> +		 */
+> +		width &= 0x7f0;
+> +	}
+>  
+>  	reg = lcdc_read(LCD_RASTER_TIMING_0_REG);
+>  	reg &= 0xfffffc00;
+> -	reg |= ((width >> 4) - 1) << 4;
+> +	if (lcd_revision = LCD_VERSION_1) {
+> +		reg |= ((width >> 4) - 1) << 4;
+> +	} else {
+> +		width = ((width >> 4) - 1);
+> +		reg |= ((width & 0x3f) << 4) | ((width & 0x40) >> 3);
+> +	}
+>  	lcdc_write(reg, LCD_RASTER_TIMING_0_REG);
+>  
+>  	/* Set the Panel Height */
+>  
+> +	/* Set bits 9:0 of Lines Per Pixel */
+>  	reg = lcdc_read(LCD_RASTER_TIMING_1_REG);
+>  	reg = ((height - 1) & 0x3ff) | (reg & 0xfffffc00);
+>  	lcdc_write(reg, LCD_RASTER_TIMING_1_REG);
+>  
+> +	/* Set bit 10 of Lines Per Pixel */
+> +	if (lcd_revision = LCD_VERSION_2) {
+> +		reg = lcdc_read(LCD_RASTER_TIMING_2_REG);
+> +		reg |= (((height - 1) & 0x40) << 20);
+> +		lcdc_write(reg, LCD_RASTER_TIMING_2_REG);
+> +	}
+> +
+>  	/* Set the Raster Order of the Frame Buffer */
+>  	reg = lcdc_read(LCD_RASTER_CTRL_REG) & ~(1 << 8);
+>  	if (raster_order)
+> -- 
+> 1.7.1
+> 
+> 
 
-P.S. Many, many thanks for lifting the 800x600 resolution limit! I've 
-been using a patch/hack to bump the limit to 1024x768 for an very long 
-time...
-
-
---------------020708060707030800050406
-Content-Type: text/plain;
- name="linux-3.0.0-savagefb-savage4-series-def-fix.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="linux-3.0.0-savagefb-savage4-series-def-fix.patch"
-
-This patch corrects a typo/regression in the savage driver code occurring in going
-from linux-2.6.39.3 to linux-3.0.0.
-
-In linux-2.6.39.3, there were two savage4 variants (S3_SAVAGE4 and S3_PROSAVAGE).
-Hence, S3_SAVAGE4_SERIES was defined as
-
-  S3_SAVAGE4 or S3_PROSAVAGE
-
-In linux-3.0.0, two additional savage4 variants (S3_TWISTER and S3_PROSAVAGEDDR) have
-been added. Hence S3_SAVAGE4_SERIES should be defined as
-
-  S3_SAVAGE4, S3_PROSAVAGE, S3_TWISTER, or S3_PROSAVAGEDDR
-
-In going from linux-2.6.39.3 to linux-3.0.0, the define statement for S3_SAVAGE4_SERIES
-was incompletely modified: the '||' should have been changed to an '&&'; for an '||' will
-set S3_SAVAGE4_SERIES true for any card.
-
-Signed-off-by: John P. Stanley <jpsinthemix@verizon.net>
-
---- linux-3.0.0/drivers/video/savage/savagefb.h.orig	2011-07-21 22:17:23.000000000 -0400
-+++ linux-3.0.0/drivers/video/savage/savagefb.h	2011-07-31 05:27:47.314798215 -0400
-@@ -55,7 +55,7 @@
- 
- #define S3_SAVAGE3D_SERIES(chip)  ((chip>=S3_SAVAGE3D) && (chip<=S3_SAVAGE_MX))
- 
--#define S3_SAVAGE4_SERIES(chip)   ((chip>=S3_SAVAGE4) || (chip<=S3_PROSAVAGEDDR))
-+#define S3_SAVAGE4_SERIES(chip)   ((chip>=S3_SAVAGE4) && (chip<=S3_PROSAVAGEDDR))
- 
- #define S3_SAVAGE_MOBILE_SERIES(chip)  ((chip==S3_SAVAGE_MX) || (chip==S3_SUPERSAVAGE))
- 
-
---------------020708060707030800050406--

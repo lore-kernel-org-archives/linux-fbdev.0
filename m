@@ -1,62 +1,75 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Wed, 20 Jul 2011 22:54:09 +0000
-Subject: [PATCH V8 2/5] ARM: EXYNOS4: Add resource definition for FIMD
-Message-Id: <1311202449-18169-1-git-send-email-jg1.han@samsung.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Fri, 15 Jul 2011 21:52:32 +0000
+Subject: [PATCH 2/3] fbdev: sh_mobile_lcdc: Don't acknowlege interrupts unintentionally
+Message-Id: <1310766753-30314-3-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Jonghun Han <jonghun.han@samsung.com>, Ben Dooks <ben-linux@fluff.org>, Jingoo Han <jg1.han@samsung.com>
+To: linux-fbdev@vger.kernel.org
 
-From: Jonghun Han <jonghun.han@samsung.com>
+The LDINTR register caries both interrupt enable and interrupt status
+bits. When setting or clearing interrupt enable bits, write all status
+bits to 1 to avoid acknowledging interrupts by mistake.
 
-This patch adds resource definitions for EXYNOS4 FIMD.
-IRQ and SFR definitions are added.
+When acknowledging interrupts, write 1 to all non-triggered interrupt
+bits to avoid losing interrupts.
 
-Signed-off-by: Jonghun Han <jonghun.han@samsung.com>
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- arch/arm/mach-exynos4/include/mach/irqs.h |    4 ++++
- arch/arm/mach-exynos4/include/mach/map.h  |    3 +++
- 2 files changed, 7 insertions(+), 0 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |   20 ++++++++------------
+ 1 files changed, 8 insertions(+), 12 deletions(-)
 
-diff --git a/arch/arm/mach-exynos4/include/mach/irqs.h b/arch/arm/mach-exynos4/include/mach/irqs.h
-index 250427f..0d315a9 100644
---- a/arch/arm/mach-exynos4/include/mach/irqs.h
-+++ b/arch/arm/mach-exynos4/include/mach/irqs.h
-@@ -137,6 +137,10 @@
- #define IRQ_SYSMMU_MFC_M1_0	COMBINER_IRQ(5, 6)
- #define IRQ_SYSMMU_PCIE_0	COMBINER_IRQ(5, 7)
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 7d77651..32f884e 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -318,19 +318,13 @@ static irqreturn_t sh_mobile_lcdc_irq(int irq, void *data)
+ {
+ 	struct sh_mobile_lcdc_priv *priv = data;
+ 	struct sh_mobile_lcdc_chan *ch;
+-	unsigned long tmp;
+ 	unsigned long ldintr;
+ 	int is_sub;
+ 	int k;
  
-+#define IRQ_FIMD0_FIFO		COMBINER_IRQ(11, 0)
-+#define IRQ_FIMD0_VSYNC		COMBINER_IRQ(11, 1)
-+#define IRQ_FIMD0_SYSTEM	COMBINER_IRQ(11, 2)
-+
- #define MAX_COMBINER_NR		16
+-	/* acknowledge interrupt */
+-	ldintr = tmp = lcdc_read(priv, _LDINTR);
+-	/*
+-	 * disable further VSYNC End IRQs, preserve all other enabled IRQs,
+-	 * write 0 to bits 0-6 to ack all triggered IRQs.
+-	 */
+-	tmp &= ~LDINTR_STATUS_MASK & ~LDINTR_VEE;
+-	lcdc_write(priv, _LDINTR, tmp);
++	/* Acknowledge interrupts and disable further VSYNC End IRQs. */
++	ldintr = lcdc_read(priv, _LDINTR);
++	lcdc_write(priv, _LDINTR, (ldintr ^ LDINTR_STATUS_MASK) & ~LDINTR_VEE);
  
- #define S5P_IRQ_EINT_BASE	COMBINER_IRQ(MAX_COMBINER_NR, 0)
-diff --git a/arch/arm/mach-exynos4/include/mach/map.h b/arch/arm/mach-exynos4/include/mach/map.h
-index 3677356..2a5a6f6 100644
---- a/arch/arm/mach-exynos4/include/mach/map.h
-+++ b/arch/arm/mach-exynos4/include/mach/map.h
-@@ -95,6 +95,8 @@
- #define EXYNOS4_PA_MIPI_CSIS0		0x11880000
- #define EXYNOS4_PA_MIPI_CSIS1		0x11890000
+ 	/* figure out if this interrupt is for main or sub lcd */
+ 	is_sub = (lcdc_read(priv, _LDSR) & LDSR_MSS) ? 1 : 0;
+@@ -342,7 +336,7 @@ static irqreturn_t sh_mobile_lcdc_irq(int irq, void *data)
+ 		if (!ch->enabled)
+ 			continue;
  
-+#define EXYNOS4_PA_FIMD0		0x11C00000
-+
- #define EXYNOS4_PA_HSMMC(x)		(0x12510000 + ((x) * 0x10000))
+-		/* Frame Start */
++		/* Frame End */
+ 		if (ldintr & LDINTR_FS) {
+ 			if (is_sub = lcdc_chan_is_sublcd(ch)) {
+ 				ch->frame_end = 1;
+@@ -971,9 +965,11 @@ static int sh_mobile_wait_for_vsync(struct fb_info *info)
+ 	unsigned long ldintr;
+ 	int ret;
  
- #define EXYNOS4_PA_SATA			0x12560000
-@@ -142,6 +144,7 @@
- #define S5P_PA_FIMC3			EXYNOS4_PA_FIMC3
- #define S5P_PA_MIPI_CSIS0		EXYNOS4_PA_MIPI_CSIS0
- #define S5P_PA_MIPI_CSIS1		EXYNOS4_PA_MIPI_CSIS1
-+#define S5P_PA_FIMD0			EXYNOS4_PA_FIMD0
- #define S5P_PA_ONENAND			EXYNOS4_PA_ONENAND
- #define S5P_PA_ONENAND_DMA		EXYNOS4_PA_ONENAND_DMA
- #define S5P_PA_SDRAM			EXYNOS4_PA_SDRAM
+-	/* Enable VSync End interrupt */
++	/* Enable VSync End interrupt and be careful not to acknowledge any
++	 * pending interrupt.
++	 */
+ 	ldintr = lcdc_read(ch->lcdc, _LDINTR);
+-	ldintr |= LDINTR_VEE;
++	ldintr |= LDINTR_VEE | LDINTR_STATUS_MASK;
+ 	lcdc_write(ch->lcdc, _LDINTR, ldintr);
+ 
+ 	ret = wait_for_completion_interruptible_timeout(&ch->vsync_completion,
 -- 
-1.7.1
+1.7.3.4
 

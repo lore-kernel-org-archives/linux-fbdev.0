@@ -1,35 +1,34 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Date: Wed, 13 Jul 2011 08:21:13 +0000
-Subject: Re: [PATCH] fbdev: sh_mobile_lcdc: Turn dot clock on before resuming from runtime PM
-Message-Id: <20110713082113.GH13701@linux-sh.org>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Fri, 15 Jul 2011 21:52:30 +0000
+Subject: [PATCH 0/3] sh_mobile_lcdc cleanup and fixes
+Message-Id: <1310766753-30314-1-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1310387754-23033-1-git-send-email-laurent.pinchart@ideasonboard.com>
-In-Reply-To: <1310387754-23033-1-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Tue, Jul 12, 2011 at 11:37:57AM +0200, Laurent Pinchart wrote:
-> On Tuesday 12 July 2011 11:33:09 Guennadi Liakhovetski wrote:
-> > On Mon, 11 Jul 2011, Laurent Pinchart wrote:
-> > > Resuming from runtime PM restores all LCDC registers. If the dot clock
-> > > is off at that time display panning information will be corrupted.
-> > > 
-> > > Turn the dot clock on before resuming from runtime PM. Similarly,
-> > > turn the clock off after suspending the LCDC.
-> > > 
-> > > Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> > > Cc: Magnus Damm <magnus.damm@gmail.com>
-> > > Cc: Damian Hobson-Garcia <dhobsong@igel.co.jp>
-> > 
-> > (testing would have been a bit easier, if prerequisites had been specified
-> > in the patch;))
-> 
-> They're specified a couple of lines down ;-)
-> 
-> > Tested-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> 
-> Thank you.
-> 
-Folded in on top of the rest of the MERAM changes, thanks.
+Hi everybody,
+
+When trying to understand the sh_mobile_lcdc driver, I found it hard to read
+statements that include hardcoded register values. I thus wrote a patch that
+replace them with macros, making the code more readable.
+
+While doing so, I found two potential issues in the driver. See patches 2 and
+3 for detailed explanations and fixes.
+
+Laurent Pinchart (3):
+  fbdev: sh_mobile_lcdc: Replace hardcoded register values with macros
+  fbdev: sh_mobile_lcdc: Don't acknowlege interrupts unintentionally
+  fbdev: sh_mobile_lcdc: Compute clock pattern using divider
+    denominator
+
+ drivers/video/sh_mobile_lcdcfb.c |  232 +++++++++++++++++---------------------
+ include/video/sh_mobile_lcdc.h   |  135 +++++++++++++++++++---
+ 2 files changed, 222 insertions(+), 145 deletions(-)
+
+-- 
+Best regards,
+
+Laurent Pinchart
+

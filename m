@@ -1,48 +1,51 @@
-From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
-Date: Mon, 04 Jul 2011 08:06:11 +0000
-Subject: [PATCH 1/5] fbdev: sh_mobile_meram: Enable runtime PM
-Message-Id: <1309766771-32452-1-git-send-email-dhobsong@igel.co.jp>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Fri, 15 Jul 2011 21:52:33 +0000
+Subject: [PATCH 3/3] fbdev: sh_mobile_lcdc: Compute clock pattern using divider denominator
+Message-Id: <1310766753-30314-4-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Signed-off-by: Damian Hobson-Garcia <dhobsong@igel.co.jp>
----
- drivers/video/sh_mobile_meram.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+The clock divider pattern is computed based on the dot clock register
+value which stores the divider denumerator. However, when using a 1:1
+divider ratio, the register is programmed with a value that must not be
+interpreted as a denominator. This results in a shift left operation
+with a value of 32, which produces undefined behaviour.
 
-diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
-index 9170c82..61e106f 100644
---- a/drivers/video/sh_mobile_meram.c
-+++ b/drivers/video/sh_mobile_meram.c
-@@ -12,6 +12,7 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/device.h>
-+#include <linux/pm_runtime.h>
- #include <linux/io.h>
- #include <linux/slab.h>
- #include <linux/platform_device.h>
-@@ -515,6 +516,8 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
- 	if (pdata->addr_mode = SH_MOBILE_MERAM_MODE1)
- 		meram_write_reg(priv->base, MEVCR1, 1 << 29);
+Compute the clock pattern using the divider denominator, not the dot
+clock register value.
+
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/sh_mobile_lcdcfb.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 32f884e..856f6a9 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -481,13 +481,15 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 		if (!m)
+ 			continue;
  
-+	pm_runtime_enable(&pdev->dev);
++		/* FIXME: sh7724 can only use 42, 48, 54 and 60 for the divider
++		 * denominator.
++		 */
++		lcdc_write_chan(ch, LDDCKPAT1R, 0);
++		lcdc_write_chan(ch, LDDCKPAT2R, (1 << (m/2)) - 1);
 +
- 	dev_info(&pdev->dev, "sh_mobile_meram initialized.");
+ 		if (m = 1)
+ 			m = LDDCKR_MOSEL;
+ 		tmp |= m << (lcdc_chan_is_sublcd(ch) ? 8 : 0);
+-
+-		/* FIXME: sh7724 can only use 42, 48, 54 and 60 for the divider denominator */
+-		lcdc_write_chan(ch, LDDCKPAT1R, 0);
+-		lcdc_write_chan(ch, LDDCKPAT2R, (1 << (m/2)) - 1);
+ 	}
  
- 	return 0;
-@@ -530,6 +533,8 @@ static int sh_mobile_meram_remove(struct platform_device *pdev)
- {
- 	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
- 
-+	pm_runtime_disable(&pdev->dev);
-+
- 	if (priv->base)
- 		iounmap(priv->base);
- 
+ 	lcdc_write(priv, _LDDCKR, tmp);
 -- 
-1.7.1
+1.7.3.4
 

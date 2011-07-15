@@ -1,35 +1,22 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 08 Jul 2011 11:14:33 +0000
-Subject: [PATCH v3 19/29] s3c-fb: use display information in info not in var for panning
-Message-Id: <1310123683-8064-20-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Paul Walmsley <paul@pwsan.com>
+Date: Fri, 15 Jul 2011 06:49:23 +0000
+Subject: Re: [PATCHv2 18/28] OMAP2430: HWMOD: Add DSS opt clocks
+Message-Id: <alpine.DEB.2.00.1107150049110.16606@utopia.booyaka.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com> <1307627810-3768-19-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307627810-3768-19-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, b-cousson@ti.com, khilman@ti.com
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+On Thu, 9 Jun 2011, Tomi Valkeinen wrote:
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Acked-by: Jingoo Han <jg1.han@samsung.com>
----
- drivers/video/s3c-fb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> Add DSS optional clocks to HWMOD data for OMAP2430.
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 4aecf21..fd9f20d 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -883,7 +883,7 @@ static int s3c_fb_pan_display(struct fb_var_screeninfo *var,
- 		}
- 	}
- 	/* Offset in bytes to the end of the displayed area */
--	end_boff = start_boff + var->yres * info->fix.line_length;
-+	end_boff = start_boff + info->var.yres * info->fix.line_length;
- 
- 	/* Temporarily turn off per-vsync update from shadow registers until
- 	 * both start and end addresses are updated to prevent corruption */
--- 
-1.7.3.4
+Thanks; queued for 3.1-rc fixes at git://git.pwsan.com/linux-2.6 in the 
+branch 'omap2_3_hwmod_dss_fixes_3.1rc'.  
 
+
+- Paul

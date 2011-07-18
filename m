@@ -1,160 +1,93 @@
-From: JinGoo Han <jg1.han@samsung.com>
-Date: Fri, 22 Jul 2011 01:06:05 +0000
-Subject: RE: [PATCH V8 4/5] video: s3c-fb: Add support EXYNOS4 FIMD
-Message-Id: <29194164.10701311296764425.JavaMail.weblogic@epml20>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Mon, 18 Jul 2011 04:40:53 +0000
+Subject: [PATCH v3] video: da8xx-fb: Increased resolution configuration of revised LCDC IP
+Message-Id: <1310963333-29806-1-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1311202461-18235-1-git-send-email-jg1.han@samsung.com>
-In-Reply-To: <1311202461-18235-1-git-send-email-jg1.han@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Jong-Hun Han <jonghun.han@samsung.com>, Ben Dooks <ben-linux@fluff.org>, JinGoo Han <jg1.han@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-SGkgIFBhdWwsCgpPdGhlciBwYXRjaGVzIHdlcmUgY29tbWl0ZWQgdG8gJ2xpbnV4LWFybS1zb2Mu
-Z2l0Jy4KUGxlYXNlLCBjb21taXQgdGhpcyBwYXRjaCAnW1BBVENIIFY4IDQvNV0gdmlkZW86IHMz
-Yy1mYjogQWRkIHN1cHBvcnQgRVhZTk9TNCBGSU1EJyB0byAnZmJkZXYtMi42Jy4KClRoYW5rcywK
-SmluZ29vIEhhbgoKSmluZ29vIEhhbiB3cm90ZToKPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0t
-LQo+IFN1YmplY3Q6IFtQQVRDSCBWOCA0LzVdIHZpZGVvOiBzM2MtZmI6IEFkZCBzdXBwb3J0IEVY
-WU5PUzQgRklNRAo+IAo+IFRoaXMgcGF0Y2ggYWRkcyBzdHJ1Y3QgczNjX2ZiX2RyaXZlcmRhdGEg
-czNjX2ZiX2RhdGFfZXh5bm9zNCBmb3IgRVhZTk9TNAo+IGFuZCBhZGRzIGxjZCBjbG9jayBnYXRp
-bmcgc3VwcG9ydC4KPiAKPiBGSU1EIGRyaXZlciBuZWVkcyB0d28gY2xvY2tzIGZvciBGSU1EIElQ
-IGFuZCBMQ0QgcGl4ZWwgY2xvY2suIFByZXZpb3VzbHksCj4gYm90aCBjbG9ja3MgYXJlIHByb3Zp
-ZGVkIGJ5IHVzaW5nIGJ1cyBjbG9jayBzdWNoIGFzIEhDTEsuIEhvd2V2ZXIsIEVYWU5PUzQKPiBj
-YW4gbm90IHNlbGVjdCBIQ0xLIGZvciBMQ0QgcGl4ZWwgY2xvY2sgYmVjYXVzZSB0aGUgRVhZTk9T
-NCBGSU1EIElQIGRvZXMKPiBub3QKPiBoYXZlIHRoZSBDTEtTRUwgYml0IG9mIFZJRENPTjAuIFNv
-LCBGSU1EIGRyaXZlciBzaG91bGQgcHJvdmlkZSB0aGUgbGNkCj4gY2xvY2sKPiB1c2luZyBTQ0xL
-X0ZJTUQgYXMgTENEIHBpeGVsIGNsb2NrIGZvciBFWFlOT1M0Lgo+IAo+IFRoZSBkcml2ZXIgc2Vs
-ZWN0cyBlbmFibGluZyBsY2QgY2xvY2sgYWNjb3JkaW5nIHRvIGhhc19jbGtzZWwgd2hpY2ggbWVh
-bnMKPiB0aGUgQ0xLU0VMIGJpdCBvZiBWSURDT04wLiBJZiB0aGVyZSBpcyBoYXNfY2xrc2VsLCB0
-aGUgZHJpdmVyIHdpbGwgbm90Cj4gZW5hYmxlIHRoZSBsY2QgY2xvY2sgdXNpbmcgU0NMS19GSU1E
-IGJlY2F1c2UgYnVzIGNsb2NrIHVzaW5nIEhDTEsgaXMgdXNlZAo+IGEgTENEIHBpeGVsIGNsb2Nr
-Lgo+IAo+IFNpZ25lZC1vZmYtYnk6IEppbmdvbyBIYW4gPGpnMS5oYW5Ac2Ftc3VuZy5jb20+Cj4g
-LS0tCj4gIGRyaXZlcnMvdmlkZW8vS2NvbmZpZyAgfCAgICAyICstCj4gIGRyaXZlcnMvdmlkZW8v
-czNjLWZiLmMgfCAgIDg4Cj4gKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrLS0KPiAgMiBmaWxlcyBjaGFuZ2VkLCA4NSBpbnNlcnRpb25zKCspLCA1IGRlbGV0aW9u
-cygtKQo+IAo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL0tjb25maWcgYi9kcml2ZXJzL3Zp
-ZGVvL0tjb25maWcKPiBpbmRleCA1NDliOTYwLi45NjNiOGI3IDEwMDY0NAo+IC0tLSBhL2RyaXZl
-cnMvdmlkZW8vS2NvbmZpZwo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vS2NvbmZpZwo+IEBAIC0yMDI3
-LDcgKzIwMjcsNyBAQCBjb25maWcgRkJfVE1JT19BQ0NFTEwKPiAKPiAgY29uZmlnIEZCX1MzQwo+
-ICAJdHJpc3RhdGUgIlNhbXN1bmcgUzNDIGZyYW1lYnVmZmVyIHN1cHBvcnQiCj4gLQlkZXBlbmRz
-IG9uIEZCICYmIFMzQ19ERVZfRkIKPiArCWRlcGVuZHMgb24gRkIgJiYgKFMzQ19ERVZfRkIgfHwg
-UzVQX0RFVl9GSU1EMCkKPiAgCXNlbGVjdCBGQl9DRkJfRklMTFJFQ1QKPiAgCXNlbGVjdCBGQl9D
-RkJfQ09QWUFSRUEKPiAgCXNlbGVjdCBGQl9DRkJfSU1BR0VCTElUCj4gZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvdmlkZW8vczNjLWZiLmMgYi9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jCj4gaW5kZXggNGFl
-Y2YyMS4uY2IwZDNlYSAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jCj4gKysr
-IGIvZHJpdmVycy92aWRlby9zM2MtZmIuYwo+IEBAIC04MSw2ICs4MSw3IEBAIHN0cnVjdCBzM2Nf
-ZmI7Cj4gICAqIEBwYWxldHRlOiBBZGRyZXNzIG9mIHBhbGV0dGUgbWVtb3J5LCBvciAwIGlmIG5v
-bmUuCj4gICAqIEBoYXNfcHJ0Y29uOiBTZXQgaWYgaGFzIFBSVENPTiByZWdpc3Rlci4KPiAgICog
-QGhhc19zaGFkb3djb246IFNldCBpZiBoYXMgU0hBRE9XQ09OIHJlZ2lzdGVyLgo+ICsgKiBAaGFz
-X2Nsa3NlbDogU2V0IGlmIFZJRENPTjAgcmVnaXN0ZXIgaGFzIENMS1NFTCBiaXQuCj4gICAqLwo+
-ICBzdHJ1Y3QgczNjX2ZiX3ZhcmlhbnQgewo+ICAJdW5zaWduZWQgaW50CWlzXzI0NDM6MTsKPiBA
-QCAtOTgsNiArOTksNyBAQCBzdHJ1Y3QgczNjX2ZiX3ZhcmlhbnQgewo+IAo+ICAJdW5zaWduZWQg
-aW50CWhhc19wcnRjb246MTsKPiAgCXVuc2lnbmVkIGludAloYXNfc2hhZG93Y29uOjE7Cj4gKwl1
-bnNpZ25lZCBpbnQJaGFzX2Nsa3NlbDoxOwo+ICB9Owo+IAo+ICAvKioKPiBAQCAtMTg2LDYgKzE4
-OCw3IEBAIHN0cnVjdCBzM2NfZmJfdnN5bmMgewo+ICAgKiBAZGV2OiBUaGUgZGV2aWNlIHRoYXQg
-d2UgYm91bmQgdG8sIGZvciBwcmludGluZywgZXRjLgo+ICAgKiBAcmVnc19yZXM6IFRoZSByZXNv
-dXJjZSB3ZSBjbGFpbWVkIGZvciB0aGUgSU8gcmVnaXN0ZXJzLgo+ICAgKiBAYnVzX2NsazogVGhl
-IGNsayAoaGNsaykgZmVlZGluZyBvdXIgaW50ZXJmYWNlIGFuZCBwb3NzaWJseSBwaXhjbGsuCj4g
-KyAqIEBsY2RfY2xrOiBUaGUgY2xrIChzY2xrKSBmZWVkaW5nIHBpeGNsay4KPiAgICogQHJlZ3M6
-IFRoZSBtYXBwZWQgaGFyZHdhcmUgcmVnaXN0ZXJzLgo+ICAgKiBAdmFyaWFudDogVmFyaWFudCBp
-bmZvcm1hdGlvbiBmb3IgdGhpcyBoYXJkd2FyZS4KPiAgICogQGVuYWJsZWQ6IEEgYml0bWFzayBv
-ZiBlbmFibGVkIGhhcmR3YXJlIHdpbmRvd3MuCj4gQEAgLTIwMCw2ICsyMDMsNyBAQCBzdHJ1Y3Qg
-czNjX2ZiIHsKPiAgCXN0cnVjdCBkZXZpY2UJCSpkZXY7Cj4gIAlzdHJ1Y3QgcmVzb3VyY2UJCSpy
-ZWdzX3JlczsKPiAgCXN0cnVjdCBjbGsJCSpidXNfY2xrOwo+ICsJc3RydWN0IGNsawkJKmxjZF9j
-bGs7Cj4gIAl2b2lkIF9faW9tZW0JCSpyZWdzOwo+ICAJc3RydWN0IHMzY19mYl92YXJpYW50CSB2
-YXJpYW50Owo+IAo+IEBAIC0zMzYsMTAgKzM0MCwxNSBAQCBzdGF0aWMgaW50IHMzY19mYl9jaGVj
-a192YXIoc3RydWN0IGZiX3Zhcl9zY3JlZW5pbmZvCj4gKnZhciwKPiAgICovCj4gIHN0YXRpYyBp
-bnQgczNjX2ZiX2NhbGNfcGl4Y2xrKHN0cnVjdCBzM2NfZmIgKnNmYiwgdW5zaWduZWQgaW50IHBp
-eGNsaykKPiAgewo+IC0JdW5zaWduZWQgbG9uZyBjbGsgPSBjbGtfZ2V0X3JhdGUoc2ZiLT5idXNf
-Y2xrKTsKPiArCXVuc2lnbmVkIGxvbmcgY2xrOwo+ICAJdW5zaWduZWQgbG9uZyBsb25nIHRtcDsK
-PiAgCXVuc2lnbmVkIGludCByZXN1bHQ7Cj4gCj4gKwlpZiAoc2ZiLT52YXJpYW50Lmhhc19jbGtz
-ZWwpCj4gKwkJY2xrID0gY2xrX2dldF9yYXRlKHNmYi0+YnVzX2Nsayk7Cj4gKwllbHNlCj4gKwkJ
-Y2xrID0gY2xrX2dldF9yYXRlKHNmYi0+bGNkX2Nsayk7Cj4gKwo+ICAJdG1wID0gKHVuc2lnbmVk
-IGxvbmcgbG9uZyljbGs7Cj4gIAl0bXAgKj0gcGl4Y2xrOwo+IAo+IEBAIC0xMzU0LDEzICsxMzYz
-LDI0IEBAIHN0YXRpYyBpbnQgX19kZXZpbml0IHMzY19mYl9wcm9iZShzdHJ1Y3QKPiBwbGF0Zm9y
-bV9kZXZpY2UgKnBkZXYpCj4gCj4gIAljbGtfZW5hYmxlKHNmYi0+YnVzX2Nsayk7Cj4gCj4gKwlp
-ZiAoIXNmYi0+dmFyaWFudC5oYXNfY2xrc2VsKSB7Cj4gKwkJc2ZiLT5sY2RfY2xrID0gY2xrX2dl
-dChkZXYsICJzY2xrX2ZpbWQiKTsKPiArCQlpZiAoSVNfRVJSKHNmYi0+bGNkX2NsaykpIHsKPiAr
-CQkJZGV2X2VycihkZXYsICJmYWlsZWQgdG8gZ2V0IGxjZCBjbG9ja1xuIik7Cj4gKwkJCXJldCA9
-IFBUUl9FUlIoc2ZiLT5sY2RfY2xrKTsKPiArCQkJZ290byBlcnJfYnVzX2NsazsKPiArCQl9Cj4g
-Kwo+ICsJCWNsa19lbmFibGUoc2ZiLT5sY2RfY2xrKTsKPiArCX0KPiArCj4gIAlwbV9ydW50aW1l
-X2VuYWJsZShzZmItPmRldik7Cj4gCj4gIAlyZXMgPSBwbGF0Zm9ybV9nZXRfcmVzb3VyY2UocGRl
-diwgSU9SRVNPVVJDRV9NRU0sIDApOwo+ICAJaWYgKCFyZXMpIHsKPiAgCQlkZXZfZXJyKGRldiwg
-ImZhaWxlZCB0byBmaW5kIHJlZ2lzdGVyc1xuIik7Cj4gIAkJcmV0ID0gLUVOT0VOVDsKPiAtCQln
-b3RvIGVycl9jbGs7Cj4gKwkJZ290byBlcnJfbGNkX2NsazsKPiAgCX0KPiAKPiAgCXNmYi0+cmVn
-c19yZXMgPSByZXF1ZXN0X21lbV9yZWdpb24ocmVzLT5zdGFydCwgcmVzb3VyY2Vfc2l6ZShyZXMp
-LAo+IEBAIC0xMzY4LDcgKzEzODgsNyBAQCBzdGF0aWMgaW50IF9fZGV2aW5pdCBzM2NfZmJfcHJv
-YmUoc3RydWN0Cj4gcGxhdGZvcm1fZGV2aWNlICpwZGV2KQo+ICAJaWYgKCFzZmItPnJlZ3NfcmVz
-KSB7Cj4gIAkJZGV2X2VycihkZXYsICJmYWlsZWQgdG8gY2xhaW0gcmVnaXN0ZXIgcmVnaW9uXG4i
-KTsKPiAgCQlyZXQgPSAtRU5PRU5UOwo+IC0JCWdvdG8gZXJyX2NsazsKPiArCQlnb3RvIGVycl9s
-Y2RfY2xrOwo+ICAJfQo+IAo+ICAJc2ZiLT5yZWdzID0gaW9yZW1hcChyZXMtPnN0YXJ0LCByZXNv
-dXJjZV9zaXplKHJlcykpOwo+IEBAIC0xNDUwLDcgKzE0NzAsMTMgQEAgZXJyX2lvcmVtYXA6Cj4g
-IGVycl9yZXFfcmVnaW9uOgo+ICAJcmVsZWFzZV9tZW1fcmVnaW9uKHNmYi0+cmVnc19yZXMtPnN0
-YXJ0LCByZXNvdXJjZV9zaXplKHNmYi0KPiA+cmVnc19yZXMpKTsKPiAKPiAtZXJyX2NsazoKPiAr
-ZXJyX2xjZF9jbGs6Cj4gKwlpZiAoIXNmYi0+dmFyaWFudC5oYXNfY2xrc2VsKSB7Cj4gKwkJY2xr
-X2Rpc2FibGUoc2ZiLT5sY2RfY2xrKTsKPiArCQljbGtfcHV0KHNmYi0+bGNkX2Nsayk7Cj4gKwl9
-Cj4gKwo+ICtlcnJfYnVzX2NsazoKPiAgCWNsa19kaXNhYmxlKHNmYi0+YnVzX2Nsayk7Cj4gIAlj
-bGtfcHV0KHNmYi0+YnVzX2Nsayk7Cj4gCj4gQEAgLTE0ODEsNiArMTUwNywxMSBAQCBzdGF0aWMg
-aW50IF9fZGV2ZXhpdCBzM2NfZmJfcmVtb3ZlKHN0cnVjdAo+IHBsYXRmb3JtX2RldmljZSAqcGRl
-dikKPiAKPiAgCWlvdW5tYXAoc2ZiLT5yZWdzKTsKPiAKPiArCWlmICghc2ZiLT52YXJpYW50Lmhh
-c19jbGtzZWwpIHsKPiArCQljbGtfZGlzYWJsZShzZmItPmxjZF9jbGspOwo+ICsJCWNsa19wdXQo
-c2ZiLT5sY2RfY2xrKTsKPiArCX0KPiArCj4gIAljbGtfZGlzYWJsZShzZmItPmJ1c19jbGspOwo+
-ICAJY2xrX3B1dChzZmItPmJ1c19jbGspOwo+IAo+IEBAIC0xNTEwLDYgKzE1NDEsOSBAQCBzdGF0
-aWMgaW50IHMzY19mYl9zdXNwZW5kKHN0cnVjdCBkZXZpY2UgKmRldikKPiAgCQlzM2NfZmJfYmxh
-bmsoRkJfQkxBTktfUE9XRVJET1dOLCB3aW4tPmZiaW5mbyk7Cj4gIAl9Cj4gCj4gKwlpZiAoIXNm
-Yi0+dmFyaWFudC5oYXNfY2xrc2VsKQo+ICsJCWNsa19kaXNhYmxlKHNmYi0+bGNkX2Nsayk7Cj4g
-Kwo+ICAJY2xrX2Rpc2FibGUoc2ZiLT5idXNfY2xrKTsKPiAgCXJldHVybiAwOwo+ICB9Cj4gQEAg
-LTE1MjQsNiArMTU1OCw5IEBAIHN0YXRpYyBpbnQgczNjX2ZiX3Jlc3VtZShzdHJ1Y3QgZGV2aWNl
-ICpkZXYpCj4gCj4gIAljbGtfZW5hYmxlKHNmYi0+YnVzX2Nsayk7Cj4gCj4gKwlpZiAoIXNmYi0+
-dmFyaWFudC5oYXNfY2xrc2VsKQo+ICsJCWNsa19lbmFibGUoc2ZiLT5sY2RfY2xrKTsKPiArCj4g
-IAkvKiBzZXR1cCBncGlvIGFuZCBvdXRwdXQgcG9sYXJpdHkgY29udHJvbHMgKi8KPiAgCXBkLT5z
-ZXR1cF9ncGlvKCk7Cj4gIAl3cml0ZWwocGQtPnZpZGNvbjEsIHNmYi0+cmVncyArIFZJRENPTjEp
-Owo+IEBAIC0xNTY5LDYgKzE2MDYsOSBAQCBzdGF0aWMgaW50IHMzY19mYl9ydW50aW1lX3N1c3Bl
-bmQoc3RydWN0IGRldmljZSAqZGV2KQo+ICAJCXMzY19mYl9ibGFuayhGQl9CTEFOS19QT1dFUkRP
-V04sIHdpbi0+ZmJpbmZvKTsKPiAgCX0KPiAKPiArCWlmICghc2ZiLT52YXJpYW50Lmhhc19jbGtz
-ZWwpCj4gKwkJY2xrX2Rpc2FibGUoc2ZiLT5sY2RfY2xrKTsKPiArCj4gIAljbGtfZGlzYWJsZShz
-ZmItPmJ1c19jbGspOwo+ICAJcmV0dXJuIDA7Cj4gIH0KPiBAQCAtMTU4Myw2ICsxNjIzLDkgQEAg
-c3RhdGljIGludCBzM2NfZmJfcnVudGltZV9yZXN1bWUoc3RydWN0IGRldmljZSAqZGV2KQo+IAo+
-ICAJY2xrX2VuYWJsZShzZmItPmJ1c19jbGspOwo+IAo+ICsJaWYgKCFzZmItPnZhcmlhbnQuaGFz
-X2Nsa3NlbCkKPiArCQljbGtfZW5hYmxlKHNmYi0+bGNkX2Nsayk7Cj4gKwo+ICAJLyogc2V0dXAg
-Z3BpbyBhbmQgb3V0cHV0IHBvbGFyaXR5IGNvbnRyb2xzICovCj4gIAlwZC0+c2V0dXBfZ3Bpbygp
-Owo+ICAJd3JpdGVsKHBkLT52aWRjb24xLCBzZmItPnJlZ3MgKyBWSURDT04xKTsKPiBAQCAtMTc1
-NSw2ICsxNzk4LDcgQEAgc3RhdGljIHN0cnVjdCBzM2NfZmJfZHJpdmVyZGF0YSBzM2NfZmJfZGF0
-YV82NHh4ID0gewo+ICAJCX0sCj4gCj4gIAkJLmhhc19wcnRjb24JPSAxLAo+ICsJCS5oYXNfY2xr
-c2VsCT0gMSwKPiAgCX0sCj4gIAkud2luWzBdCT0gJnMzY19mYl9kYXRhXzY0eHhfd2luc1swXSwK
-PiAgCS53aW5bMV0JPSAmczNjX2ZiX2RhdGFfNjR4eF93aW5zWzFdLAo+IEBAIC0xNzg1LDYgKzE4
-MjksNyBAQCBzdGF0aWMgc3RydWN0IHMzY19mYl9kcml2ZXJkYXRhIHMzY19mYl9kYXRhX3M1cGMx
-MDAKPiA9IHsKPiAgCQl9LAo+IAo+ICAJCS5oYXNfcHJ0Y29uCT0gMSwKPiArCQkuaGFzX2Nsa3Nl
-bAk9IDEsCj4gIAl9LAo+ICAJLndpblswXQk9ICZzM2NfZmJfZGF0YV9zNXBfd2luc1swXSwKPiAg
-CS53aW5bMV0JPSAmczNjX2ZiX2RhdGFfczVwX3dpbnNbMV0sCj4gQEAgLTE4MTUsNiArMTg2MCwz
-NyBAQCBzdGF0aWMgc3RydWN0IHMzY19mYl9kcml2ZXJkYXRhIHMzY19mYl9kYXRhX3M1cHYyMTAK
-PiA9IHsKPiAgCQl9LAo+IAo+ICAJCS5oYXNfc2hhZG93Y29uCT0gMSwKPiArCQkuaGFzX2Nsa3Nl
-bAk9IDEsCj4gKwl9LAo+ICsJLndpblswXQk9ICZzM2NfZmJfZGF0YV9zNXBfd2luc1swXSwKPiAr
-CS53aW5bMV0JPSAmczNjX2ZiX2RhdGFfczVwX3dpbnNbMV0sCj4gKwkud2luWzJdCT0gJnMzY19m
-Yl9kYXRhX3M1cF93aW5zWzJdLAo+ICsJLndpblszXQk9ICZzM2NfZmJfZGF0YV9zNXBfd2luc1sz
-XSwKPiArCS53aW5bNF0JPSAmczNjX2ZiX2RhdGFfczVwX3dpbnNbNF0sCj4gK307Cj4gKwo+ICtz
-dGF0aWMgc3RydWN0IHMzY19mYl9kcml2ZXJkYXRhIHMzY19mYl9kYXRhX2V4eW5vczQgPSB7Cj4g
-KwkudmFyaWFudCA9IHsKPiArCQkubnJfd2luZG93cwk9IDUsCj4gKwkJLnZpZHRjb24JPSBWSURU
-Q09OMCwKPiArCQkud2luY29uCQk9IFdJTkNPTigwKSwKPiArCQkud2lubWFwCQk9IFdJTnhNQVAo
-MCksCj4gKwkJLmtleWNvbgkJPSBXS0VZQ09OLAo+ICsJCS5vc2QJCT0gVklET1NEX0JBU0UsCj4g
-KwkJLm9zZF9zdHJpZGUJPSAxNiwKPiArCQkuYnVmX3N0YXJ0CT0gVklEV19CVUZfU1RBUlQoMCks
-Cj4gKwkJLmJ1Zl9zaXplCT0gVklEV19CVUZfU0laRSgwKSwKPiArCQkuYnVmX2VuZAk9IFZJRFdf
-QlVGX0VORCgwKSwKPiArCj4gKwkJLnBhbGV0dGUgPSB7Cj4gKwkJCVswXSA9IDB4MjQwMCwKPiAr
-CQkJWzFdID0gMHgyODAwLAo+ICsJCQlbMl0gPSAweDJjMDAsCj4gKwkJCVszXSA9IDB4MzAwMCwK
-PiArCQkJWzRdID0gMHgzNDAwLAo+ICsJCX0sCj4gKwo+ICsJCS5oYXNfc2hhZG93Y29uCT0gMSwK
-PiAgCX0sCj4gIAkud2luWzBdCT0gJnMzY19mYl9kYXRhX3M1cF93aW5zWzBdLAo+ICAJLndpblsx
-XQk9ICZzM2NfZmJfZGF0YV9zNXBfd2luc1sxXSwKPiBAQCAtMTg0Myw2ICsxOTE5LDcgQEAgc3Rh
-dGljIHN0cnVjdCBzM2NfZmJfZHJpdmVyZGF0YSBzM2NfZmJfZGF0YV9zM2MyNDQzCj4gPSB7Cj4g
-IAkJCVswXSA9IDB4NDAwLAo+ICAJCQlbMV0gPSAweDgwMCwKPiAgCQl9LAo+ICsJCS5oYXNfY2xr
-c2VsCT0gMSwKPiAgCX0sCj4gIAkud2luWzBdID0gJihzdHJ1Y3QgczNjX2ZiX3dpbl92YXJpYW50
-KSB7Cj4gIAkJLnBhbGV0dGVfc3oJPSAyNTYsCj4gQEAgLTE4NzAsNiArMTk0Nyw5IEBAIHN0YXRp
-YyBzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlX2lkIHMzY19mYl9kcml2ZXJfaWRzW10KPiA9IHsKPiAg
-CQkubmFtZQkJPSAiczVwdjIxMC1mYiIsCj4gIAkJLmRyaXZlcl9kYXRhCT0gKHVuc2lnbmVkIGxv
-bmcpJnMzY19mYl9kYXRhX3M1cHYyMTAsCj4gIAl9LCB7Cj4gKwkJLm5hbWUJCT0gImV4eW5vczQt
-ZmIiLAo+ICsJCS5kcml2ZXJfZGF0YQk9ICh1bnNpZ25lZCBsb25nKSZzM2NfZmJfZGF0YV9leHlu
-b3M0LAo+ICsJfSwgewo+ICAJCS5uYW1lCQk9ICJzM2MyNDQzLWZiIiwKPiAgCQkuZHJpdmVyX2Rh
-dGEJPSAodW5zaWduZWQgbG9uZykmczNjX2ZiX2RhdGFfczNjMjQ0MywKPiAgCX0sCj4gLS0KPiAx
-LjcuMQoKCv/06Lp7Lm7HK4m3n66JrYYrJYrL/7Hp3bYXpYp3/7p7Lm7HK4m3pYp7sf323Xr/4p7Y
-Xm6HcqH2pnrLGoHraJmo6K3aJqP74Hq/5Hq53pf6K4DKK3pmo6K3aJqIp36GrYbbaf//74Hq/5Hq
-53pf6K4P5mo6K3aJqP4p36P4bQo=
+Revised LCD controller in upcoming TI SoC which is an updated version of
+LCDC IP that was found on TI's DA850 SoC supports 2048*2048 resolution.
+Below are the encoding details:
+Width:
+Pixels Per Line = {pplmsb, ppllsb, 4'b1111} + 1
+Where pplmsb:1bit=>Raster Timing0[3], ppllsb:6bits=>Raster Timing0[9:4].
+And encoded value can range from 16 to 2048 in multiples of 16.
+
+Height:
+Lines Per Panel = {lpp_b10, lpp}
+Where lpp:10bits=>Raster Timing1[9:0], lpp_b10:1bit=>Raster Timing2[26].
+And encoded value can range from 1 to 2048, programmable range is 0 to
+2047.
+
+Patch is verified on emulation platform of upcoming SoC for updated
+feature and on DA850 platform to make sure nothing existing breaks.
+
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+---
+Since v2:
+Corrected comment describing horizontal resolution bits and removed unnecessary
+outer parenthesis.
+Since v1:
+1)Fixed the bug in configuration of lpp_b10 in Raster Timing2[26] register.
+2)Reframed commit message.
+
+ drivers/video/da8xx-fb.c |   31 ++++++++++++++++++++++++++++---
+ 1 files changed, 28 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 620f1c3..94b611a 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -460,18 +460,43 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+ 
+ 	/* Set the Panel Width */
+ 	/* Pixels per line = (PPL + 1)*16 */
+-	/*0x3F in bits 4..9 gives max horisontal resolution = 1024 pixels*/
+-	width &= 0x3f0;
++	if (lcd_revision = LCD_VERSION_1) {
++		/*
++		 * 0x3F in bits 4..9 gives max horizontal resolution = 1024
++		 * pixels.
++		 */
++		width &= 0x3f0;
++	} else {
++		/*
++		 * 0x7F in bits 4..10 gives max horizontal resolution = 2048
++		 * pixels.
++		 */
++		width &= 0x7f0;
++	}
++
+ 	reg = lcdc_read(LCD_RASTER_TIMING_0_REG);
+ 	reg &= 0xfffffc00;
+-	reg |= ((width >> 4) - 1) << 4;
++	if (lcd_revision = LCD_VERSION_1) {
++		reg |= ((width >> 4) - 1) << 4;
++	} else {
++		width = (width >> 4) - 1;
++		reg |= ((width & 0x3f) << 4) | ((width & 0x40) >> 3);
++	}
+ 	lcdc_write(reg, LCD_RASTER_TIMING_0_REG);
+ 
+ 	/* Set the Panel Height */
++	/* Set bits 9:0 of Lines Per Pixel */
+ 	reg = lcdc_read(LCD_RASTER_TIMING_1_REG);
+ 	reg = ((height - 1) & 0x3ff) | (reg & 0xfffffc00);
+ 	lcdc_write(reg, LCD_RASTER_TIMING_1_REG);
+ 
++	/* Set bit 10 of Lines Per Pixel */
++	if (lcd_revision = LCD_VERSION_2) {
++		reg = lcdc_read(LCD_RASTER_TIMING_2_REG);
++		reg |= ((height - 1) & 0x400) << 16;
++		lcdc_write(reg, LCD_RASTER_TIMING_2_REG);
++	}
++
+ 	/* Set the Raster Order of the Frame Buffer */
+ 	reg = lcdc_read(LCD_RASTER_CTRL_REG) & ~(1 << 8);
+ 	if (raster_order)
+-- 
+1.7.1
+

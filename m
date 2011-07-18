@@ -1,37 +1,54 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 08 Jul 2011 11:14:24 +0000
-Subject: [PATCH v3 10/29] gxt4500: use display information in info not in var for panning
-Message-Id: <1310123683-8064-11-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Date: Mon, 18 Jul 2011 01:22:15 +0000
+Subject: RE: [PATCH V7 1/5] ARM: EXYNOS4: Change clock name for FIMD
+Message-Id: <047201cc44e9$2444a910$6ccdfb30$%kim@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1309171740-27146-1-git-send-email-jg1.han@samsung.com>
+In-Reply-To: <1309171740-27146-1-git-send-email-jg1.han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: 'Jingoo Han' <jg1.han@samsung.com>, 'Paul Mundt' <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org, 'Jonghun Han' <jonghun.han@samsung.com>
+Cc: 'Thomas Abraham' <thomas.ab@samsung.com>
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+Jingoo Han wrote:
+> 
+> This patch changes clock name for FIMD from "fimd" to "lcd".
+> 
+> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+> ---
+>  arch/arm/mach-exynos4/clock.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/arm/mach-exynos4/clock.c b/arch/arm/mach-exynos4/clock.c
+> index 871f9d5..12e6853 100644
+> --- a/arch/arm/mach-exynos4/clock.c
+> +++ b/arch/arm/mach-exynos4/clock.c
+> @@ -433,12 +433,12 @@ static struct clk init_clocks_off[] = {
+>  		.enable		= exynos4_clk_ip_cam_ctrl,
+>  		.ctrlbit	= (1 << 3),
+>  	}, {
+> -		.name		= "fimd",
+> +		.name		= "lcd",
+>  		.id		= 0,
+>  		.enable		= exynos4_clk_ip_lcd0_ctrl,
+>  		.ctrlbit	= (1 << 0),
+>  	}, {
+> -		.name		= "fimd",
+> +		.name		= "lcd",
+>  		.id		= 1,
+>  		.enable		= exynos4_clk_ip_lcd1_ctrl,
+>  		.ctrlbit	= (1 << 0),
+> --
+> 1.7.1
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Paul Mackerras <paulus@samba.org>
----
- drivers/video/gxt4500.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+This should be re-worked based on latest my for-next which includes clkdev.
 
-diff --git a/drivers/video/gxt4500.c b/drivers/video/gxt4500.c
-index 896e53d..0fad23f 100644
---- a/drivers/video/gxt4500.c
-+++ b/drivers/video/gxt4500.c
-@@ -543,8 +543,8 @@ static int gxt4500_pan_display(struct fb_var_screeninfo *var,
- 
- 	if (var->xoffset & 7)
- 		return -EINVAL;
--	if (var->xoffset + var->xres > var->xres_virtual ||
--	    var->yoffset + var->yres > var->yres_virtual)
-+	if (var->xoffset + info->var.xres > info->var.xres_virtual ||
-+	    var->yoffset + info->var.yres > info->var.yres_virtual)
- 		return -EINVAL;
- 
- 	writereg(par, REFRESH_START, (var->xoffset << 16) | var->yoffset);
--- 
-1.7.3.4
+Thanks.
+
+Best regards,
+Kgene.
+--
+Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+SW Solution Development Team, Samsung Electronics Co., Ltd.
 

@@ -1,151 +1,174 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Date: Thu, 21 Jul 2011 07:16:49 +0000
-Subject: RE: [PATCH V8 1/5] ARM: EXYNOS4: Change clock name for FIMD
-Message-Id: <006501cc4776$2ee2a4a0$8ca7ede0$%kim@samsung.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Wed, 20 Jul 2011 18:16:18 +0000
+Subject: Re: [PATCH] fb: avoid possible deadlock caused by fb_set_suspend
+Message-Id: <4E271B72.3070909@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1311202444-18137-1-git-send-email-jg1.han@samsung.com>
-In-Reply-To: <1311202444-18137-1-git-send-email-jg1.han@samsung.com>
+References: <4DF7B0B4.4060002@gmx.de> <1308337359-3480-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1308337359-3480-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Jingoo Han' <jg1.han@samsung.com>, 'Paul Mundt' <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: 'Jonghun Han' <jonghun.han@samsung.com>, 'Ben Dooks' <ben-linux@fluff.org>
+To: lethal@linux-sh.org
+Cc: linux-fbdev@vger.kernel.org, francis.moro@gmail.com, torvalds@linux-foundation.org, bonbons@linux-vserver.org, linux-kernel@vger.kernel.org, Herton Ronaldo Krzesinski <herton@mandriva.com.br>, stable@kernel.org
 
-Jingoo Han wrote:
-> 
-> This patch changes clock for FIMD from 'fimd' to 'lcd'.
-> Also, devname for FIMD is changed from 's5pv310-fb' to 'exynos4-fb'.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Hi Paul,
+
+what are your plans for the patch below? Do you queue it for 3.1?
+The only feedback so far was that one driver (sh_mobile_hdmi) would require more 
+work with a patch for that proposed. Without any objections to the patch I think 
+we should take it as fixing the subsystem is more important than causing 
+potential issues with a single driver.
+
+
+Thanks,
+
+Florian Tobias Schandinat
+
+On 06/17/2011 07:02 PM, Florian Tobias Schandinat wrote:
+> From: Herton Ronaldo Krzesinski<herton@mandriva.com.br>
+>
+> A lock ordering issue can cause deadlocks: in framebuffer/console code,
+> all needed struct fb_info locks are taken before acquire_console_sem(),
+> in places which need to take console semaphore.
+>
+> But fb_set_suspend is always called with console semaphore held, and
+> inside it we call lock_fb_info which gets the fb_info lock, inverse
+> locking order of what the rest of the code does. This causes a real
+> deadlock issue, when we write to state fb sysfs attribute (which calls
+> fb_set_suspend) while a framebuffer is being unregistered by
+> remove_conflicting_framebuffers, as can be shown by following show
+> blocked state trace on a test program which loads i915 and runs another
+> forked processes writing to state attribute:
+>
+> Test process with semaphore held and trying to get fb_info lock:
+> ..
+> fb-test2      D 0000000000000000     0   237    228 0x00000000
+>   ffff8800774f3d68 0000000000000082 00000000000135c0 00000000000135c0
+>   ffff880000000000 ffff8800774f3fd8 ffff8800774f3fd8 ffff880076ee4530
+>   00000000000135c0 ffff8800774f3fd8 ffff8800774f2000 00000000000135c0
+> Call Trace:
+>   [<ffffffff8141287a>] __mutex_lock_slowpath+0x11a/0x1e0
+>   [<ffffffff814142f2>] ? _raw_spin_lock_irq+0x22/0x40
+>   [<ffffffff814123d3>] mutex_lock+0x23/0x50
+>   [<ffffffff8125dfc5>] lock_fb_info+0x25/0x60
+>   [<ffffffff8125e3f0>] fb_set_suspend+0x20/0x80
+>   [<ffffffff81263e2f>] store_fbstate+0x4f/0x70
+>   [<ffffffff812e7f70>] dev_attr_store+0x20/0x30
+>   [<ffffffff811c46b4>] sysfs_write_file+0xd4/0x160
+>   [<ffffffff81155a26>] vfs_write+0xc6/0x190
+>   [<ffffffff81155d51>] sys_write+0x51/0x90
+>   [<ffffffff8100c012>] system_call_fastpath+0x16/0x1b
+> ..
+> modprobe process stalled because has the fb_info lock (got inside
+> unregister_framebuffer) but waiting for the semaphore held by the
+> test process which is waiting to get the fb_info lock:
+> ..
+> modprobe      D 0000000000000000     0   230    218 0x00000000
+>   ffff880077a4d618 0000000000000082 0000000000000001 0000000000000001
+>   ffff880000000000 ffff880077a4dfd8 ffff880077a4dfd8 ffff8800775a2e20
+>   00000000000135c0 ffff880077a4dfd8 ffff880077a4c000 00000000000135c0
+> Call Trace:
+>   [<ffffffff81411fe5>] schedule_timeout+0x215/0x310
+>   [<ffffffff81058051>] ? get_parent_ip+0x11/0x50
+>   [<ffffffff814130dd>] __down+0x6d/0xb0
+>   [<ffffffff81089f71>] down+0x41/0x50
+>   [<ffffffff810629ac>] acquire_console_sem+0x2c/0x50
+>   [<ffffffff812ca53d>] unbind_con_driver+0xad/0x2d0
+>   [<ffffffff8126f5f7>] fbcon_event_notify+0x457/0x890
+>   [<ffffffff814144ff>] ? _raw_spin_unlock_irqrestore+0x1f/0x50
+>   [<ffffffff81058051>] ? get_parent_ip+0x11/0x50
+>   [<ffffffff8141836d>] notifier_call_chain+0x4d/0x70
+>   [<ffffffff8108a3b8>] __blocking_notifier_call_chain+0x58/0x80
+>   [<ffffffff8108a3f6>] blocking_notifier_call_chain+0x16/0x20
+>   [<ffffffff8125dabb>] fb_notifier_call_chain+0x1b/0x20
+>   [<ffffffff8125e6ac>] unregister_framebuffer+0x7c/0x130
+>   [<ffffffff8125e8b3>] remove_conflicting_framebuffers+0x153/0x180
+>   [<ffffffff8125eef3>] register_framebuffer+0x93/0x2c0
+>   [<ffffffffa0331112>] drm_fb_helper_single_fb_probe+0x252/0x2f0 [drm_kms_helper]
+>   [<ffffffffa03314a3>] drm_fb_helper_initial_config+0x2f3/0x6d0 [drm_kms_helper]
+>   [<ffffffffa03318dd>] ? drm_fb_helper_single_add_all_connectors+0x5d/0x1c0 [drm_kms_helper]
+>   [<ffffffffa037b588>] intel_fbdev_init+0xa8/0x160 [i915]
+>   [<ffffffffa0343d74>] i915_driver_load+0x854/0x12b0 [i915]
+>   [<ffffffffa02f0e7e>] drm_get_pci_dev+0x19e/0x360 [drm]
+>   [<ffffffff8141821d>] ? sub_preempt_count+0x9d/0xd0
+>   [<ffffffffa0386f91>] i915_pci_probe+0x15/0x17 [i915]
+>   [<ffffffff8124481f>] local_pci_probe+0x5f/0xd0
+>   [<ffffffff81244f89>] pci_device_probe+0x119/0x120
+>   [<ffffffff812eccaa>] ? driver_sysfs_add+0x7a/0xb0
+>   [<ffffffff812ed003>] driver_probe_device+0xa3/0x290
+>   [<ffffffff812ed1f0>] ? __driver_attach+0x0/0xb0
+>   [<ffffffff812ed29b>] __driver_attach+0xab/0xb0
+>   [<ffffffff812ed1f0>] ? __driver_attach+0x0/0xb0
+>   [<ffffffff812ebd3e>] bus_for_each_dev+0x5e/0x90
+>   [<ffffffff812ecc2e>] driver_attach+0x1e/0x20
+>   [<ffffffff812ec6f2>] bus_add_driver+0xe2/0x320
+>   [<ffffffffa03aa000>] ? i915_init+0x0/0x96 [i915]
+>   [<ffffffff812ed536>] driver_register+0x76/0x140
+>   [<ffffffffa03aa000>] ? i915_init+0x0/0x96 [i915]
+>   [<ffffffff81245216>] __pci_register_driver+0x56/0xd0
+>   [<ffffffffa02f1264>] drm_pci_init+0xe4/0xf0 [drm]
+>   [<ffffffffa03aa000>] ? i915_init+0x0/0x96 [i915]
+>   [<ffffffffa02e84a8>] drm_init+0x58/0x70 [drm]
+>   [<ffffffffa03aa094>] i915_init+0x94/0x96 [i915]
+>   [<ffffffff81002194>] do_one_initcall+0x44/0x190
+>   [<ffffffff810a066b>] sys_init_module+0xcb/0x210
+>   [<ffffffff8100c012>] system_call_fastpath+0x16/0x1b
+> ..
+>
+> fb-test2 which reproduces above is available on kernel.org bug #26232.
+> To solve this issue, avoid calling lock_fb_info inside fb_set_suspend,
+> and move it out to where needed (callers of fb_set_suspend must call
+> lock_fb_info before if needed). So far, the only place which needs to
+> call lock_fb_info is store_fbstate, all other places which calls
+> fb_set_suspend are suspend/resume hooks that should not need the lock as
+> they should be run only when processes are already frozen in
+> suspend/resume.
+>
+> References: https://bugzilla.kernel.org/show_bug.cgi?id&232
+> Signed-off-by: Herton Ronaldo Krzesinski<herton@mandriva.com.br>
+> Signed-off-by: Florian Tobias Schandinat<FlorianSchandinat@gmx.de>
+> Cc: stable@kernel.org
 > ---
->  arch/arm/mach-exynos4/clock.c |   12 ++++++------
->  1 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/arm/mach-exynos4/clock.c b/arch/arm/mach-exynos4/clock.c
-> index 98b5cc4..778a202 100644
-> --- a/arch/arm/mach-exynos4/clock.c
-> +++ b/arch/arm/mach-exynos4/clock.c
-> @@ -405,13 +405,13 @@ static struct clk init_clocks_off[] = {
->  		.enable		= exynos4_clk_ip_cam_ctrl,
->  		.ctrlbit	= (1 << 3),
->  	}, {
-> -		.name		= "fimd",
-> -		.devname	= "s5pv310-fb.0",
-> +		.name		= "lcd",
-> +		.devname	= "exynos4-fb.0",
->  		.enable		= exynos4_clk_ip_lcd0_ctrl,
->  		.ctrlbit	= (1 << 0),
->  	}, {
-> -		.name		= "fimd",
-> -		.devname	= "s5pv310-fb.1",
-> +		.name		= "lcd",
-
-As I remember, some guys discussed about the clock name before.
-
-Please refer to the following diagram. Before EXYNOS4210 clk 'lcd' was used
-for FIMD IP core clock and source of the LCD pixel clock. But the mux used
-to select source of LCD pixel clock is removed. So 'lcd' clock is only used
-for core clock of FIMD IP. It isn't used for LCD pixel clock.
-
-As a result clock name was changed from lcd to fimd in the EXYNOS4210
-datasheet.
-
-Before EXYNOS4
-           ------------------------------------
-                      dsys bus
-           ----------------+-------------------
-                           |
-                           |1.clk 'lcd'
-                           |
-                           | FIMD block
-                       +---+-----------+
-4.mout_mpll |\         |   |           |
-    --------|m|        | +-+-+ +----+  |
-            |u|-+      | |   +-+core|  |
-            |x| |      | |     +----+  |
-            |/  |      | | |\          |
-                |      | +-|m|  +---+  |
-                |      |   |u|--+div|  |
-                +------+---|x|  +---+  |
-           2.SCLK_FIMD |   |/     |    |
-                       |          |    |
-                       +----------+----+
-                                  |
-           inside of SoC          |
-           -----------------------+--------------------------
-           outside of SoC         |
-                                  | 3.LCD pixel clock
-                                  |
-                          +--------------+
-                          | LCD module   |
-                          +--------------+
-
-
-EXYNOS4210
-           ------------------------------------
-                      dsys bus
-           ----------------+-------------------
-                           |
-                           |1.clk 'fimd'
-                           |
-                           | FIMD block
-                       +---+-----------+
-4.mout_mpll |\         |   |           |
-    --------|m|        |   |   +----+  |
-            |u|-+      |   +---+core|  |
-            |x| |      |       +----+  |
-            |/  |      |               |
-                |      |        +---+  |
-                |      |     +--+div|  |
-                +------+-----+  +---+  |
-           2.SCLK_FIMD |          |    |
-                       |          |    |
-                       +----------+----+
-                                  |
-           inside of SoC          |
-           -----------------------+--------------------------
-           outside of SoC         |
-                                  | 3.LCD pixel clock
-                                  |
-                          +--------------+
-                          | LCD module   |
-                          +--------------+
-
-To change devname is ok to me. So will apply only it.
-
-If any problems, please let me know :)
-
-Thanks.
-
-Best regards,
-Kgene.
---
-Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-SW Solution Development Team, Samsung Electronics Co., Ltd.
-
-
-> +		.devname	= "exynos4-fb.1",
->  		.enable		= exynos4_clk_ip_lcd1_ctrl,
->  		.ctrlbit	= (1 << 0),
->  	}, {
-> @@ -909,7 +909,7 @@ static struct clksrc_clk clksrcs[] = {
->  	}, {
->  		.clk		= {
->  			.name		= "sclk_fimd",
-> -			.devname	= "s5pv310-fb.0",
-> +			.devname	= "exynos4-fb.0",
->  			.enable		= exynos4_clksrc_mask_lcd0_ctrl,
->  			.ctrlbit	= (1 << 0),
->  		},
-> @@ -919,7 +919,7 @@ static struct clksrc_clk clksrcs[] = {
->  	}, {
->  		.clk		= {
->  			.name		= "sclk_fimd",
-> -			.devname	= "s5pv310-fb.1",
-> +			.devname	= "exynos4-fb.1",
->  			.enable		= exynos4_clksrc_mask_lcd1_ctrl,
->  			.ctrlbit	= (1 << 0),
->  		},
-> --
-> 1.7.1
+>   drivers/video/fbmem.c   |    3 ---
+>   drivers/video/fbsysfs.c |    3 +++
+>   2 files changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+> index 5aac00e..ad93629 100644
+> --- a/drivers/video/fbmem.c
+> +++ b/drivers/video/fbmem.c
+> @@ -1738,8 +1738,6 @@ void fb_set_suspend(struct fb_info *info, int state)
+>   {
+>   	struct fb_event event;
+>
+> -	if (!lock_fb_info(info))
+> -		return;
+>   	event.info = info;
+>   	if (state) {
+>   		fb_notifier_call_chain(FB_EVENT_SUSPEND,&event);
+> @@ -1748,7 +1746,6 @@ void fb_set_suspend(struct fb_info *info, int state)
+>   		info->state = FBINFO_STATE_RUNNING;
+>   		fb_notifier_call_chain(FB_EVENT_RESUME,&event);
+>   	}
+> -	unlock_fb_info(info);
+>   }
+>
+>   /**
+> diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
+> index 04251ce..67afa9c 100644
+> --- a/drivers/video/fbsysfs.c
+> +++ b/drivers/video/fbsysfs.c
+> @@ -399,9 +399,12 @@ static ssize_t store_fbstate(struct device *device,
+>
+>   	state = simple_strtoul(buf,&last, 0);
+>
+> +	if (!lock_fb_info(fb_info))
+> +		return -ENODEV;
+>   	console_lock();
+>   	fb_set_suspend(fb_info, (int)state);
+>   	console_unlock();
+> +	unlock_fb_info(fb_info);
+>
+>   	return count;
+>   }
 

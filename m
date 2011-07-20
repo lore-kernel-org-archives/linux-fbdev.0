@@ -1,444 +1,75 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 20 Jul 2011 11:24:27 +0000
-Subject: [PATCH v2 4/6] fbdev: sh_mobile_lcdc: Split LCDC start code from sh_mobile_lcdc_start
-Message-Id: <1311161069-11918-5-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Wed, 20 Jul 2011 11:24:25 +0000
+Subject: [PATCH v2 2/6] fbdev: sh_mobile_lcdc: Don't acknowlege interrupts unintentionally
+Message-Id: <1311161069-11918-3-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Splitting the LCDC start code from clock, MERAM and panel management
-will make the code usable by runtime PM.
+The LDINTR register caries both interrupt enable and interrupt status
+bits. When setting or clearing interrupt enable bits, write all status
+bits to 1 to avoid acknowledging interrupts by mistake.
+
+When acknowledging interrupts, write 1 to all non-triggered interrupt
+bits to avoid losing interrupts.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |  313 +++++++++++++++++++-------------------
- drivers/video/sh_mobile_lcdcfb.h |   11 ++
- 2 files changed, 164 insertions(+), 160 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |   20 ++++++++------------
+ 1 files changed, 8 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 31aef60..785521e 100644
+index abc2a91..ba946f4 100644
 --- a/drivers/video/sh_mobile_lcdcfb.c
 +++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -435,48 +435,42 @@ static void sh_mobile_lcdc_geometry(struct sh_mobile_lcdc_chan *ch)
- 	lcdc_write_chan(ch, LDHAJR, tmp);
- }
- 
--static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
-+/*
-+ * __sh_mobile_lcdc_start - Configure and tart the LCDC
-+ * @priv: LCDC device
-+ *
-+ * Configure all enabled channels and start the LCDC device. All external
-+ * devices (clocks, MERAM, panels, ...) are not touched by this function.
-+ */
-+static void __sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+@@ -318,19 +318,13 @@ static irqreturn_t sh_mobile_lcdc_irq(int irq, void *data)
  {
+ 	struct sh_mobile_lcdc_priv *priv = data;
  	struct sh_mobile_lcdc_chan *ch;
--	struct sh_mobile_lcdc_board_cfg	*board_cfg;
- 	unsigned long tmp;
- 	int bpp = 0;
--	unsigned long ldddsr;
--	int k, m, ret;
-+	int k, m;
+-	unsigned long tmp;
+ 	unsigned long ldintr;
+ 	int is_sub;
+ 	int k;
  
--	/* enable clocks before accessing the hardware */
--	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
--		if (priv->ch[k].enabled) {
--			sh_mobile_lcdc_clk_on(priv);
--			if (!bpp)
--				bpp = priv->ch[k].info->var.bits_per_pixel;
--		}
--	}
--
--	/* reset */
--	lcdc_write(priv, _LDCNT2R, lcdc_read(priv, _LDCNT2R) | LDCNT2R_BR);
--	lcdc_wait_bit(priv, _LDCNT2R, LDCNT2R_BR, 0);
--
--	/* enable LCDC channels */
--	tmp = lcdc_read(priv, _LDCNT2R);
--	tmp |= priv->ch[0].enabled;
--	tmp |= priv->ch[1].enabled;
--	lcdc_write(priv, _LDCNT2R, tmp);
--
--	/* read data from external memory, avoid using the BEU for now */
--	lcdc_write(priv, _LDCNT2R, lcdc_read(priv, _LDCNT2R) & ~LDCNT2R_MD);
-+	/* Enable LCDC channels. Read data from external memory, avoid using the
-+	 * BEU for now.
-+	 */
-+	lcdc_write(priv, _LDCNT2R, priv->ch[0].enabled | priv->ch[1].enabled);
+-	/* acknowledge interrupt */
+-	ldintr = tmp = lcdc_read(priv, _LDINTR);
+-	/*
+-	 * disable further VSYNC End IRQs, preserve all other enabled IRQs,
+-	 * write 0 to bits 0-6 to ack all triggered IRQs.
+-	 */
+-	tmp &= ~LDINTR_STATUS_MASK & ~LDINTR_VEE;
+-	lcdc_write(priv, _LDINTR, tmp);
++	/* Acknowledge interrupts and disable further VSYNC End IRQs. */
++	ldintr = lcdc_read(priv, _LDINTR);
++	lcdc_write(priv, _LDINTR, (ldintr ^ LDINTR_STATUS_MASK) & ~LDINTR_VEE);
  
--	/* stop the lcdc first */
-+	/* Stop the LCDC first and disable all interrupts. */
- 	sh_mobile_lcdc_start_stop(priv, 0);
-+	lcdc_write(priv, _LDINTR, 0);
- 
--	/* configure clocks */
-+	/* Configure power supply, dot clocks and start them. */
- 	tmp = priv->lddckr;
- 	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
- 		ch = &priv->ch[k];
--
--		if (!priv->ch[k].enabled)
-+		if (!ch->enabled)
- 			continue;
- 
-+		if (!bpp)
-+			bpp = ch->info->var.bits_per_pixel;
-+
-+		/* Power supply */
-+		lcdc_write_chan(ch, LDPMR, 0);
-+
- 		m = ch->cfg.clock_divider;
- 		if (!m)
- 			continue;
-@@ -493,188 +487,187 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 	}
- 
- 	lcdc_write(priv, _LDDCKR, tmp);
--
--	/* start dotclock again */
- 	lcdc_write(priv, _LDDCKSTPR, 0);
- 	lcdc_wait_bit(priv, _LDDCKSTPR, ~0, 0);
- 
--	/* interrupts are disabled to begin with */
--	lcdc_write(priv, _LDINTR, 0);
--
-+	/* Setup geometry, format, frame buffer memory and operation mode. */
- 	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
- 		ch = &priv->ch[k];
--
+ 	/* figure out if this interrupt is for main or sub lcd */
+ 	is_sub = (lcdc_read(priv, _LDSR) & LDSR_MSS) ? 1 : 0;
+@@ -342,7 +336,7 @@ static irqreturn_t sh_mobile_lcdc_irq(int irq, void *data)
  		if (!ch->enabled)
  			continue;
  
- 		sh_mobile_lcdc_geometry(ch);
+-		/* Frame Start */
++		/* Frame End */
+ 		if (ldintr & LDINTR_FS) {
+ 			if (is_sub = lcdc_chan_is_sublcd(ch)) {
+ 				ch->frame_end = 1;
+@@ -971,9 +965,11 @@ static int sh_mobile_wait_for_vsync(struct fb_info *info)
+ 	unsigned long ldintr;
+ 	int ret;
  
--		/* power supply */
--		lcdc_write_chan(ch, LDPMR, 0);
--
--		board_cfg = &ch->cfg.board_cfg;
--		if (board_cfg->setup_sys) {
--			ret = board_cfg->setup_sys(board_cfg->board_data,
--						ch, &sh_mobile_lcdc_sys_bus_ops);
--			if (ret)
--				return ret;
--		}
--	}
--
--	/* word and long word swap */
--	ldddsr = lcdc_read(priv, _LDDDSR);
--	if  (priv->ch[0].info->var.nonstd)
--		ldddsr |= LDDDSR_LS | LDDDSR_WS | LDDDSR_BS;
--	else {
--		switch (bpp) {
--		case 16:
--			ldddsr |= LDDDSR_LS | LDDDSR_WS;
--			break;
--		case 24:
--			ldddsr |= LDDDSR_LS | LDDDSR_WS | LDDDSR_BS;
--			break;
--		case 32:
--			ldddsr |= LDDDSR_LS;
--			break;
--		}
--	}
--	lcdc_write(priv, _LDDDSR, ldddsr);
--
--	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
--		unsigned long base_addr_y;
--		unsigned long base_addr_c = 0;
--		int pitch;
--		ch = &priv->ch[k];
--
--		if (!priv->ch[k].enabled)
--			continue;
--
--		/* set bpp format in PKF[4:0] */
--		tmp = lcdc_read_chan(ch, LDDFR);
--		tmp &= ~(LDDFR_CF0 | LDDFR_CC | LDDFR_YF_MASK | LDDFR_PKF_MASK);
- 		if (ch->info->var.nonstd) {
--			tmp |= (ch->info->var.nonstd << 16);
-+			tmp = (ch->info->var.nonstd << 16);
- 			switch (ch->info->var.bits_per_pixel) {
- 			case 12:
-+				tmp |= LDDFR_YF_420;
- 				break;
- 			case 16:
- 				tmp |= LDDFR_YF_422;
- 				break;
- 			case 24:
-+			default:
- 				tmp |= LDDFR_YF_444;
- 				break;
- 			}
- 		} else {
- 			switch (ch->info->var.bits_per_pixel) {
- 			case 16:
--				tmp |= LDDFR_PKF_RGB16;
-+				tmp = LDDFR_PKF_RGB16;
- 				break;
- 			case 24:
--				tmp |= LDDFR_PKF_RGB24;
-+				tmp = LDDFR_PKF_RGB24;
- 				break;
- 			case 32:
--				tmp |= LDDFR_PKF_ARGB32;
-+			default:
-+				tmp = LDDFR_PKF_ARGB32;
- 				break;
- 			}
- 		}
-+
- 		lcdc_write_chan(ch, LDDFR, tmp);
-+		lcdc_write_chan(ch, LDMLSR, ch->pitch);
-+		lcdc_write_chan(ch, LDSA1R, ch->base_addr_y);
-+		if (ch->info->var.nonstd)
-+			lcdc_write_chan(ch, LDSA2R, ch->base_addr_c);
- 
--		base_addr_y = ch->info->fix.smem_start;
--		base_addr_c = base_addr_y +
--				ch->info->var.xres *
--				ch->info->var.yres_virtual;
--		pitch = ch->info->fix.line_length;
-+		/* When using deferred I/O mode, configure the LCDC for one-shot
-+		 * operation and enable the frame end interrupt. Otherwise use
-+		 * continuous read mode.
-+		 */
-+		if (ch->ldmt1r_value & LDMT1R_IFM &&
-+		    ch->cfg.sys_bus_cfg.deferred_io_msec) {
-+			lcdc_write_chan(ch, LDSM1R, LDSM1R_OS);
-+			lcdc_write(priv, _LDINTR, LDINTR_FE);
-+		} else {
-+			lcdc_write_chan(ch, LDSM1R, 0);
-+		}
-+	}
- 
--		/* test if we can enable meram */
--		if (ch->cfg.meram_cfg && priv->meram_dev &&
--				priv->meram_dev->ops) {
--			struct sh_mobile_meram_cfg *cfg;
--			struct sh_mobile_meram_info *mdev;
--			unsigned long icb_addr_y, icb_addr_c;
--			int icb_pitch;
--			int pf;
-+	/* Word and long word swap. */
-+	if  (priv->ch[0].info->var.nonstd)
-+		tmp = LDDDSR_LS | LDDDSR_WS | LDDDSR_BS;
-+	else {
-+		switch (bpp) {
-+		case 16:
-+			tmp = LDDDSR_LS | LDDDSR_WS;
-+			break;
-+		case 24:
-+			tmp = LDDDSR_LS | LDDDSR_WS | LDDDSR_BS;
-+			break;
-+		case 32:
-+		default:
-+			tmp = LDDDSR_LS;
-+			break;
-+		}
-+	}
-+	lcdc_write(priv, _LDDDSR, tmp);
- 
--			cfg = ch->cfg.meram_cfg;
--			mdev = priv->meram_dev;
--			/* we need to de-init configured ICBs before we
--			 * we can re-initialize them.
--			 */
--			if (ch->meram_enabled)
--				mdev->ops->meram_unregister(mdev, cfg);
-+	/* Enable the display output. */
-+	lcdc_write(priv, _LDCNT1R, LDCNT1R_DE);
-+	sh_mobile_lcdc_start_stop(priv, 1);
-+	priv->started = 1;
-+}
- 
--			ch->meram_enabled = 0;
-+static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
-+{
-+	struct sh_mobile_meram_info *mdev = priv->meram_dev;
-+	struct sh_mobile_lcdc_board_cfg	*board_cfg;
-+	struct sh_mobile_lcdc_chan *ch;
-+	unsigned long tmp;
-+	int ret;
-+	int k;
- 
--			if (ch->info->var.nonstd) {
--				if (ch->info->var.bits_per_pixel = 24)
--					pf = SH_MOBILE_MERAM_PF_NV24;
--				else
--					pf = SH_MOBILE_MERAM_PF_NV;
--			} else {
--				pf = SH_MOBILE_MERAM_PF_RGB;
--			}
-+	/* enable clocks before accessing the hardware */
-+	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
-+		if (priv->ch[k].enabled)
-+			sh_mobile_lcdc_clk_on(priv);
-+	}
- 
--			ret = mdev->ops->meram_register(mdev, cfg, pitch,
--						ch->info->var.yres,
--						pf,
--						base_addr_y,
--						base_addr_c,
--						&icb_addr_y,
--						&icb_addr_c,
--						&icb_pitch);
--			if (!ret)  {
--				/* set LDSA1R value */
--				base_addr_y = icb_addr_y;
--				pitch = icb_pitch;
--
--				/* set LDSA2R value if required */
--				if (base_addr_c)
--					base_addr_c = icb_addr_c;
--
--				ch->meram_enabled = 1;
--			}
--		}
-+	/* reset */
-+	lcdc_write(priv, _LDCNT2R, lcdc_read(priv, _LDCNT2R) | LDCNT2R_BR);
-+	lcdc_wait_bit(priv, _LDCNT2R, LDCNT2R_BR, 0);
- 
--		/* point out our frame buffer */
--		lcdc_write_chan(ch, LDSA1R, base_addr_y);
--		if (ch->info->var.nonstd)
--			lcdc_write_chan(ch, LDSA2R, base_addr_c);
-+	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
-+		ch = &priv->ch[k];
- 
--		/* set line size */
--		lcdc_write_chan(ch, LDMLSR, pitch);
-+		if (!ch->enabled)
-+			continue;
- 
--		/* setup deferred io if SYS bus */
--		tmp = ch->cfg.sys_bus_cfg.deferred_io_msec;
--		if (ch->ldmt1r_value & LDMT1R_IFM && tmp) {
--			ch->defio.deferred_io = sh_mobile_lcdc_deferred_io;
--			ch->defio.delay = msecs_to_jiffies(tmp);
--			ch->info->fbdefio = &ch->defio;
--			fb_deferred_io_init(ch->info);
-+		board_cfg = &ch->cfg.board_cfg;
-+		if (board_cfg->setup_sys) {
-+			ret = board_cfg->setup_sys(board_cfg->board_data, ch,
-+						   &sh_mobile_lcdc_sys_bus_ops);
-+			if (ret)
-+				return ret;
-+		}
-+	}
- 
--			/* one-shot mode */
--			lcdc_write_chan(ch, LDSM1R, LDSM1R_OS);
-+	/* Compute frame buffer base address and pitch for each channel. */
-+	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
-+		struct sh_mobile_meram_cfg *cfg;
-+		int pixelformat;
- 
--			/* enable "Frame End Interrupt Enable" bit */
--			lcdc_write(priv, _LDINTR, LDINTR_FE);
-+		ch = &priv->ch[k];
-+		if (!ch->enabled)
-+			continue;
- 
--		} else {
--			/* continuous read mode */
--			lcdc_write_chan(ch, LDSM1R, 0);
-+		ch->base_addr_y = ch->info->fix.smem_start;
-+		ch->base_addr_c = ch->base_addr_y
-+				+ ch->info->var.xres
-+				* ch->info->var.yres_virtual;
-+		ch->pitch = ch->info->fix.line_length;
-+
-+		/* Enable MERAM if possible. */
-+		cfg = ch->cfg.meram_cfg;
-+		if (mdev = NULL || mdev->ops = NULL || cfg = NULL)
-+			continue;
-+
-+		/* we need to de-init configured ICBs before we can
-+		 * re-initialize them.
-+		 */
-+		if (ch->meram_enabled) {
-+			mdev->ops->meram_unregister(mdev, cfg);
-+			ch->meram_enabled = 0;
- 		}
--	}
- 
--	/* display output */
--	lcdc_write(priv, _LDCNT1R, LDCNT1R_DE);
-+		if (!ch->info->var.nonstd)
-+			pixelformat = SH_MOBILE_MERAM_PF_RGB;
-+		else if (ch->info->var.bits_per_pixel = 24)
-+			pixelformat = SH_MOBILE_MERAM_PF_NV24;
-+		else
-+			pixelformat = SH_MOBILE_MERAM_PF_NV;
-+
-+		ret = mdev->ops->meram_register(mdev, cfg, ch->pitch,
-+					ch->info->var.yres, pixelformat,
-+					ch->base_addr_y, ch->base_addr_c,
-+					&ch->base_addr_y, &ch->base_addr_c,
-+					&ch->pitch);
-+		if (!ret)
-+			ch->meram_enabled = 1;
-+	}
- 
--	/* start the lcdc */
--	sh_mobile_lcdc_start_stop(priv, 1);
--	priv->started = 1;
-+	/* Start the LCDC. */
-+	__sh_mobile_lcdc_start(priv);
- 
--	/* tell the board code to enable the panel */
-+	/* Setup deferred I/O, tell the board code to enable the panels, and
-+	 * turn backlight on.
+-	/* Enable VSync End interrupt */
++	/* Enable VSync End interrupt and be careful not to acknowledge any
++	 * pending interrupt.
 +	 */
- 	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
- 		ch = &priv->ch[k];
- 		if (!ch->enabled)
- 			continue;
+ 	ldintr = lcdc_read(ch->lcdc, _LDINTR);
+-	ldintr |= LDINTR_VEE;
++	ldintr |= LDINTR_VEE | LDINTR_STATUS_MASK;
+ 	lcdc_write(ch->lcdc, _LDINTR, ldintr);
  
-+		tmp = ch->cfg.sys_bus_cfg.deferred_io_msec;
-+		if (ch->ldmt1r_value & LDMT1R_IFM && tmp) {
-+			ch->defio.deferred_io = sh_mobile_lcdc_deferred_io;
-+			ch->defio.delay = msecs_to_jiffies(tmp);
-+			ch->info->fbdefio = &ch->defio;
-+			fb_deferred_io_init(ch->info);
-+		}
-+
- 		board_cfg = &ch->cfg.board_cfg;
- 		if (board_cfg->display_on && try_module_get(board_cfg->owner)) {
- 			board_cfg->display_on(board_cfg->board_data, ch->info);
-diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
-index aeed668..a06219b 100644
---- a/drivers/video/sh_mobile_lcdcfb.h
-+++ b/drivers/video/sh_mobile_lcdcfb.h
-@@ -18,6 +18,13 @@ struct sh_mobile_lcdc_priv;
- struct fb_info;
- struct backlight_device;
- 
-+/*
-+ * struct sh_mobile_lcdc_chan - LCDC display channel
-+ *
-+ * @base_addr_y: Frame buffer viewport base address (luma component)
-+ * @base_addr_c: Frame buffer viewport base address (chroma component)
-+ * @pitch: Frame buffer line pitch
-+ */
- struct sh_mobile_lcdc_chan {
- 	struct sh_mobile_lcdc_priv *lcdc;
- 	unsigned long *reg_offs;
-@@ -40,6 +47,10 @@ struct sh_mobile_lcdc_chan {
- 	int blank_status;
- 	struct mutex open_lock;		/* protects the use counter */
- 	int meram_enabled;
-+
-+	unsigned long base_addr_y;
-+	unsigned long base_addr_c;
-+	unsigned int pitch;
- };
- 
- #endif
+ 	ret = wait_for_completion_interruptible_timeout(&ch->vsync_completion,
 -- 
 1.7.3.4
 

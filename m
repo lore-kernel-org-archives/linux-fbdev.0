@@ -1,34 +1,48 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 08 Jul 2011 11:14:26 +0000
-Subject: [PATCH v3 12/29] imsttfb: use display information in info not in var for panning
-Message-Id: <1310123683-8064-13-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Wed, 20 Jul 2011 10:25:55 +0000
+Subject: [PATCH] atmel_lcdfb: Fix compilation
+Message-Id: <1311157555-10618-1-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+A typo in the "atmel_lcdfb: use display information in info not in var
+for panning" patch broke compilation. Fix it.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/imsttfb.c |    2 +-
+ drivers/video/atmel_lcdfb.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/imsttfb.c b/drivers/video/imsttfb.c
-index efb2c10..8149356 100644
---- a/drivers/video/imsttfb.c
-+++ b/drivers/video/imsttfb.c
-@@ -749,7 +749,7 @@ set_offset (struct fb_var_screeninfo *var, struct fb_info *info)
- {
- 	struct imstt_par *par = info->par;
- 	__u32 off = var->yoffset * (info->fix.line_length >> 3)
--		    + ((var->xoffset * (var->bits_per_pixel >> 3)) >> 3);
-+		    + ((var->xoffset * (info->var.bits_per_pixel >> 3)) >> 3);
- 	write_reg_le32(par->dc_regs, SSR, off);
- }
+Paul,
+
+This patch applies on top of the fbdev/panning-fixes branch in
+git://git.kernel.org/pub/scm/linux/kernel/git/lethal/fbdev-3.x.git
+
+You can apply it, squash it with patch "atmel_lcdfb: use display information
+in info not in var for panning" in that branch, or replace the whole branch
+with my "[PATCH v3 00/29] Use display information in info not in var for
+panning" patch series posted to the linux-fbdev list.
+
+Do you plan to push the result for v3.1 ?
+
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 8b5d755..5f1de1f 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -59,7 +59,7 @@ static void atmel_lcdfb_update_dma2d(struct atmel_lcdfb_info *sinfo,
  
+ 	pixeloff = (var->xoffset * info->var.bits_per_pixel) & 0x1f;
+ 
+-	dma2dcfg = (info-var.xres_virtual - info->var.xres)
++	dma2dcfg = (info->var.xres_virtual - info->var.xres)
+ 		 * info->var.bits_per_pixel / 8;
+ 	dma2dcfg |= pixeloff << ATMEL_LCDC_PIXELOFF_OFFSET;
+ 	lcdc_writel(sinfo, ATMEL_LCDC_DMA2DCFG, dma2dcfg);
 -- 
-1.7.3.4
+Regards,
+
+Laurent Pinchart
 

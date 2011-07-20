@@ -1,46 +1,37 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 20 Jul 2011 10:25:55 +0000
-Subject: [PATCH] atmel_lcdfb: Fix compilation
-Message-Id: <1311157555-10618-1-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Wed, 20 Jul 2011 11:24:23 +0000
+Subject: [PATCH v2 0/6] sh_mobile_lcdc cleanup and fixes
+Message-Id: <1311161069-11918-1-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-A typo in the "atmel_lcdfb: use display information in info not in var
-for panning" patch broke compilation. Fix it.
+Hi everybody,
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
----
- drivers/video/atmel_lcdfb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Here's a second version of my sh_mobile_lcdc cleanup and fixes patch set.
+Compared to v1, it adds three new patches that clean the driver's runtime PM
+resume handling, and fix a panning issue on resume.
 
-Paul,
+The first three patches have not been modified.
 
-This patch applies on top of the fbdev/panning-fixes branch in
-git://git.kernel.org/pub/scm/linux/kernel/git/lethal/fbdev-3.x.git
+Laurent Pinchart (6):
+  fbdev: sh_mobile_lcdc: Replace hardcoded register values with macros
+  fbdev: sh_mobile_lcdc: Don't acknowlege interrupts unintentionally
+  fbdev: sh_mobile_lcdc: Compute clock pattern using divider
+    denominator
+  fbdev: sh_mobile_lcdc: Split LCDC start code from
+    sh_mobile_lcdc_start
+  fbdev: sh_mobile_lcdc: Store the frame buffer base address when
+    panning
+  fbdev: sh_mobile_lcdc: Restart LCDC in runtime PM resume handler
 
-You can apply it, squash it with patch "atmel_lcdfb: use display information
-in info not in var for panning" in that branch, or replace the whole branch
-with my "[PATCH v3 00/29] Use display information in info not in var for
-panning" patch series posted to the linux-fbdev list.
+ drivers/video/sh_mobile_lcdcfb.c |  582 +++++++++++++++++---------------------
+ drivers/video/sh_mobile_lcdcfb.h |   12 +-
+ include/video/sh_mobile_lcdc.h   |  135 ++++++++--
+ 3 files changed, 383 insertions(+), 346 deletions(-)
 
-Do you plan to push the result for v3.1 ?
-
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 8b5d755..5f1de1f 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -59,7 +59,7 @@ static void atmel_lcdfb_update_dma2d(struct atmel_lcdfb_info *sinfo,
- 
- 	pixeloff = (var->xoffset * info->var.bits_per_pixel) & 0x1f;
- 
--	dma2dcfg = (info-var.xres_virtual - info->var.xres)
-+	dma2dcfg = (info->var.xres_virtual - info->var.xres)
- 		 * info->var.bits_per_pixel / 8;
- 	dma2dcfg |= pixeloff << ATMEL_LCDC_PIXELOFF_OFFSET;
- 	lcdc_writel(sinfo, ATMEL_LCDC_DMA2DCFG, dma2dcfg);
 -- 
 Regards,
 

@@ -1,69 +1,68 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 17 Jul 2011 00:34:03 +0000
-Subject: [PATCH 2/2] viafb: improve pitch handling
-Message-Id: <1310862843-4526-1-git-send-email-FlorianSchandinat@gmx.de>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 20 Jul 2011 11:24:28 +0000
+Subject: [PATCH v2 5/6] fbdev: sh_mobile_lcdc: Store the frame buffer base address when panning
+Message-Id: <1311161069-11918-6-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, stable@kernel.org
 
-This patch adds checks for minimum and maximum pitch size to prevent
-invalid settings which could otherwise crash the machine. Also the
-alignment is done in a slightly more readable way.
+When the frame buffer base address is changed by a panning operation,
+store it in the channel structure. It will be reused when runtime PM
+code will use __sh_mobile_lcdc_start().
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: stable@kernel.org
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/via/via_modesetting.h |    5 +++++
- drivers/video/via/viafbdev.c        |   11 ++++++++---
- 2 files changed, 13 insertions(+), 3 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |   22 +++++++++-------------
+ 1 files changed, 9 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/via/via_modesetting.h b/drivers/video/via/via_modesetting.h
-index ae35cfd..0138845 100644
---- a/drivers/video/via/via_modesetting.h
-+++ b/drivers/video/via/via_modesetting.h
-@@ -28,6 +28,11 @@
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 785521e..f0a3d54 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -915,32 +915,28 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
+ 			base_addr_c += 2 * var->xoffset;
+ 		else
+ 			base_addr_c += var->xoffset;
+-	} else
+-		base_addr_c = 0;
++	}
  
- #include <linux/types.h>
+-	if (!ch->meram_enabled) {
+-		lcdc_write_chan_mirror(ch, LDSA1R, base_addr_y);
+-		if (base_addr_c)
+-			lcdc_write_chan_mirror(ch, LDSA2R, base_addr_c);
+-	} else {
++	if (ch->meram_enabled) {
+ 		struct sh_mobile_meram_cfg *cfg;
+ 		struct sh_mobile_meram_info *mdev;
+-		unsigned long icb_addr_y, icb_addr_c;
+ 		int ret;
  
-+
-+#define VIA_PITCH_SIZE	(1<<3)
-+#define VIA_PITCH_MAX	0x3FF8
-+
-+
- void via_set_primary_address(u32 addr);
- void via_set_secondary_address(u32 addr);
- void via_set_primary_pitch(u32 pitch);
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index aa87529..bddae58 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -151,7 +151,8 @@ static void viafb_update_fix(struct fb_info *info)
+ 		cfg = ch->cfg.meram_cfg;
+ 		mdev = priv->meram_dev;
+ 		ret = mdev->ops->meram_update(mdev, cfg,
+ 					base_addr_y, base_addr_c,
+-					&icb_addr_y, &icb_addr_c);
++					&base_addr_y, &base_addr_c);
+ 		if (ret)
+ 			return ret;
++	}
  
- 	info->fix.visual  		bpp = 8 ? FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
--	info->fix.line_length = (info->var.xres_virtual * bpp / 8 + 7) & ~7;
-+	info->fix.line_length = ALIGN(info->var.xres_virtual * bpp / 8,
-+		VIA_PITCH_SIZE);
- }
+-		lcdc_write_chan_mirror(ch, LDSA1R, icb_addr_y);
+-		if (icb_addr_c)
+-			lcdc_write_chan_mirror(ch, LDSA2R, icb_addr_c);
++	ch->base_addr_y = base_addr_y;
++	ch->base_addr_c = base_addr_c;
  
- static void viafb_setup_fixinfo(struct fb_fix_screeninfo *fix,
-@@ -238,8 +239,12 @@ static int viafb_check_var(struct fb_var_screeninfo *var,
- 		depth = 24;
+-	}
++	lcdc_write_chan_mirror(ch, LDSA1R, base_addr_y);
++	if (var->nonstd)
++		lcdc_write_chan_mirror(ch, LDSA2R, base_addr_c);
  
- 	viafb_fill_var_color_info(var, depth);
--	line = (var->xres_virtual * var->bits_per_pixel / 8 + 7) & ~7;
--	if (line * var->yres_virtual > ppar->memsize)
-+	if (var->xres_virtual < var->xres)
-+		var->xres_virtual = var->xres;
-+
-+	line = ALIGN(var->xres_virtual * var->bits_per_pixel / 8,
-+		VIA_PITCH_SIZE);
-+	if (line > VIA_PITCH_MAX || line * var->yres_virtual > ppar->memsize)
- 		return -EINVAL;
- 
- 	/* Based on var passed in to calculate the refresh,
+ 	if (lcdc_chan_is_sublcd(ch))
+ 		lcdc_write(ch->lcdc, _LDRCNTR, ldrcntr ^ LDRCNTR_SRS);
 -- 
-1.6.3.2
+1.7.3.4
 

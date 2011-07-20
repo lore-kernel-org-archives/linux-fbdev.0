@@ -1,38 +1,62 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 08 Jul 2011 11:14:21 +0000
-Subject: [PATCH v3 07/29] fbdev: da8xx: use display information in info not in var for panning
-Message-Id: <1310123683-8064-8-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Wed, 20 Jul 2011 22:54:09 +0000
+Subject: [PATCH V8 2/5] ARM: EXYNOS4: Add resource definition for FIMD
+Message-Id: <1311202449-18169-1-git-send-email-jg1.han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Jonghun Han <jonghun.han@samsung.com>, Ben Dooks <ben-linux@fluff.org>, Jingoo Han <jg1.han@samsung.com>
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+From: Jonghun Han <jonghun.han@samsung.com>
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
-Cc: Martin Ambrose <martin@ti.com>
+This patch adds resource definitions for EXYNOS4 FIMD.
+IRQ and SFR definitions are added.
+
+Signed-off-by: Jonghun Han <jonghun.han@samsung.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/da8xx-fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/mach-exynos4/include/mach/irqs.h |    4 ++++
+ arch/arm/mach-exynos4/include/mach/map.h  |    3 +++
+ 2 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index fcdac87..8d4e4eb 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -877,8 +877,8 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
+diff --git a/arch/arm/mach-exynos4/include/mach/irqs.h b/arch/arm/mach-exynos4/include/mach/irqs.h
+index 250427f..0d315a9 100644
+--- a/arch/arm/mach-exynos4/include/mach/irqs.h
++++ b/arch/arm/mach-exynos4/include/mach/irqs.h
+@@ -137,6 +137,10 @@
+ #define IRQ_SYSMMU_MFC_M1_0	COMBINER_IRQ(5, 6)
+ #define IRQ_SYSMMU_PCIE_0	COMBINER_IRQ(5, 7)
  
- 			start	= fix->smem_start +
- 				new_var.yoffset * fix->line_length +
--				new_var.xoffset * var->bits_per_pixel / 8;
--			end	= start + var->yres * fix->line_length - 1;
-+				new_var.xoffset * fbi->var.bits_per_pixel / 8;
-+			end	= start + fbi->var.yres * fix->line_length - 1;
- 			par->dma_start	= start;
- 			par->dma_end	= end;
- 		}
++#define IRQ_FIMD0_FIFO		COMBINER_IRQ(11, 0)
++#define IRQ_FIMD0_VSYNC		COMBINER_IRQ(11, 1)
++#define IRQ_FIMD0_SYSTEM	COMBINER_IRQ(11, 2)
++
+ #define MAX_COMBINER_NR		16
+ 
+ #define S5P_IRQ_EINT_BASE	COMBINER_IRQ(MAX_COMBINER_NR, 0)
+diff --git a/arch/arm/mach-exynos4/include/mach/map.h b/arch/arm/mach-exynos4/include/mach/map.h
+index 3677356..2a5a6f6 100644
+--- a/arch/arm/mach-exynos4/include/mach/map.h
++++ b/arch/arm/mach-exynos4/include/mach/map.h
+@@ -95,6 +95,8 @@
+ #define EXYNOS4_PA_MIPI_CSIS0		0x11880000
+ #define EXYNOS4_PA_MIPI_CSIS1		0x11890000
+ 
++#define EXYNOS4_PA_FIMD0		0x11C00000
++
+ #define EXYNOS4_PA_HSMMC(x)		(0x12510000 + ((x) * 0x10000))
+ 
+ #define EXYNOS4_PA_SATA			0x12560000
+@@ -142,6 +144,7 @@
+ #define S5P_PA_FIMC3			EXYNOS4_PA_FIMC3
+ #define S5P_PA_MIPI_CSIS0		EXYNOS4_PA_MIPI_CSIS0
+ #define S5P_PA_MIPI_CSIS1		EXYNOS4_PA_MIPI_CSIS1
++#define S5P_PA_FIMD0			EXYNOS4_PA_FIMD0
+ #define S5P_PA_ONENAND			EXYNOS4_PA_ONENAND
+ #define S5P_PA_ONENAND_DMA		EXYNOS4_PA_ONENAND_DMA
+ #define S5P_PA_SDRAM			EXYNOS4_PA_SDRAM
 -- 
-1.7.3.4
+1.7.1
 

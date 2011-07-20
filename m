@@ -1,74 +1,51 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 08 Jul 2011 11:14:19 +0000
-Subject: [PATCH v3 05/29] atmel_lcdfb: use display information in info not in var for panning
-Message-Id: <1310123683-8064-6-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Wed, 20 Jul 2011 11:24:26 +0000
+Subject: [PATCH v2 3/6] fbdev: sh_mobile_lcdc: Compute clock pattern using divider denominator
+Message-Id: <1311161069-11918-4-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+The clock divider pattern is computed based on the dot clock register
+value which stores the divider denumerator. However, when using a 1:1
+divider ratio, the register is programmed with a value that must not be
+interpreted as a denominator. This results in a shift left operation
+with a value of 32, which produces undefined behaviour.
+
+Compute the clock pattern using the divider denominator, not the dot
+clock register value.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
 ---
- drivers/video/atmel_lcdfb.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 4484c72..5f1de1f 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -39,7 +39,8 @@
- 					 | FBINFO_HWACCEL_YPAN)
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index ba946f4..31aef60 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -481,13 +481,15 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 		if (!m)
+ 			continue;
  
- static inline void atmel_lcdfb_update_dma2d(struct atmel_lcdfb_info *sinfo,
--					struct fb_var_screeninfo *var)
-+					struct fb_var_screeninfo *var,
-+					struct fb_info *info)
- {
++		/* FIXME: sh7724 can only use 42, 48, 54 and 60 for the divider
++		 * denominator.
++		 */
++		lcdc_write_chan(ch, LDDCKPAT1R, 0);
++		lcdc_write_chan(ch, LDDCKPAT2R, (1 << (m/2)) - 1);
++
+ 		if (m = 1)
+ 			m = LDDCKR_MOSEL;
+ 		tmp |= m << (lcdc_chan_is_sublcd(ch) ? 8 : 0);
+-
+-		/* FIXME: sh7724 can only use 42, 48, 54 and 60 for the divider denominator */
+-		lcdc_write_chan(ch, LDDCKPAT1R, 0);
+-		lcdc_write_chan(ch, LDDCKPAT2R, (1 << (m/2)) - 1);
+ 	}
  
- }
-@@ -50,14 +51,16 @@ static inline void atmel_lcdfb_update_dma2d(struct atmel_lcdfb_info *sinfo,
- 					| FBINFO_HWACCEL_YPAN)
- 
- static void atmel_lcdfb_update_dma2d(struct atmel_lcdfb_info *sinfo,
--				     struct fb_var_screeninfo *var)
-+				     struct fb_var_screeninfo *var,
-+				     struct fb_info *info)
- {
- 	u32 dma2dcfg;
- 	u32 pixeloff;
- 
--	pixeloff = (var->xoffset * var->bits_per_pixel) & 0x1f;
-+	pixeloff = (var->xoffset * info->var.bits_per_pixel) & 0x1f;
- 
--	dma2dcfg = ((var->xres_virtual - var->xres) * var->bits_per_pixel) / 8;
-+	dma2dcfg = (info->var.xres_virtual - info->var.xres)
-+		 * info->var.bits_per_pixel / 8;
- 	dma2dcfg |= pixeloff << ATMEL_LCDC_PIXELOFF_OFFSET;
- 	lcdc_writel(sinfo, ATMEL_LCDC_DMA2DCFG, dma2dcfg);
- 
-@@ -249,14 +252,14 @@ static void atmel_lcdfb_update_dma(struct fb_info *info,
- 	unsigned long dma_addr;
- 
- 	dma_addr = (fix->smem_start + var->yoffset * fix->line_length
--		    + var->xoffset * var->bits_per_pixel / 8);
-+		    + var->xoffset * info->var.bits_per_pixel / 8);
- 
- 	dma_addr &= ~3UL;
- 
- 	/* Set framebuffer DMA base address and pixel offset */
- 	lcdc_writel(sinfo, ATMEL_LCDC_DMABADDR1, dma_addr);
- 
--	atmel_lcdfb_update_dma2d(sinfo, var);
-+	atmel_lcdfb_update_dma2d(sinfo, var, info);
- }
- 
- static inline void atmel_lcdfb_free_video_memory(struct atmel_lcdfb_info *sinfo)
+ 	lcdc_write(priv, _LDDCKR, tmp);
 -- 
 1.7.3.4
 

@@ -1,10 +1,8 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 13 Jul 2011 08:33:31 +0000
-Subject: Re: [PATCH v3 00/29] Use display information in info not in var for panning
-Message-Id: <201107131033.31782.laurent.pinchart@ideasonboard.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Wed, 20 Jul 2011 15:22:57 +0000
+Subject: [GIT PULL] viafb updates for 3.1
+Message-Id: <4E26F2D1.5040205@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1310123683-8064-1-git-send-email-laurent.pinchart@ideasonboard.com>
-In-Reply-To: <1310123683-8064-1-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,52 +10,26 @@ To: linux-fbdev@vger.kernel.org
 
 Hi Paul,
 
-On Wednesday 13 July 2011 10:24:24 Paul Mundt wrote:
-> On Fri, Jul 08, 2011 at 01:14:14PM +0200, Laurent Pinchart wrote:
-> > Hi everybody,
-> > 
-> > Here's the third version of the FBIOPAN_DISPLAY fixes patch series.
-> > 
-> > As a reminder, while playing with the FBIOPAN_DISPLAY ioctl I noticed
-> > that many drivers use information from the ioctl argument such as the
-> > display resolution when they should use the current settings from the
-> > fb_info structure.
-> > 
-> > These 29 patches fix most of those drivers. Missing drivers are ivtv (for
-> > which a patch has Andy Walls has already pushed a patch),
-> > sh_mobile_lcdcfb (for which the fix is a bit more complex, I will work
-> > on it later) and viafb (for which Florian Tobias Schandinat has already
-> > sent a patch).
-> > 
-> > The patches have been compile-tested on architectures for which I have a
-> > working compiler (x86 and ARM) with allyesconfig. I don't own any
-> > hardware supported by these drivers so I haven't been able to perform
-> > additional tests.
-> > 
-> > I've split the fixes in one patch per driver for easier review and
-> > handling of potential problems. The patches can be squashed together if
-> > needed. I've tried to CC individual driver maintainers when possible,
-> > and Acked-by lines received in reply to the first version have been
-> > included.
-> > 
-> > Compared to v2, I've fixed a compile issue in the atmel_lcdfb driver and
-> > added a couple of SoB lines.
-> > 
-> > Paul, is it time to push this for 3.1 ?
-> 
-> I have the v2 series queued up already, so it would be nice to simply
-> have the v2->v3 differences as incremental changes that can be piled on.
+please pull the viafb updates below. It contains only 2 fixes.
 
-Ah. Next time please notify me when you queue the patches up. That was too 
-soon. This will end up potentially breaking bisections, which is never good.
 
-> The signed-off-by lines are not that critical in this case since it's a
-> largely mechanical change all over the place, so it's primarily the build
-> fix(es?) that would be nice to have.
+Thanks,
 
-I would say they are more than "nice to have". Where have you queued v2 ?
+Florian Tobias Schandinat
 
--- 
-Regards,
 
-Laurent Pinchart
+The following changes since commit 8aa4d96fe3e4cda9a6469b22b3f017ed30996b10:
+   Daniel Drake (1):
+         viafb: Automatic OLPC XO-1.5 configuration
+
+are available in the git repository at:
+
+   git://github.com/schandinat/linux-2.6.git viafb-next
+
+Florian Tobias Schandinat (2):
+       viafb: use display information in info not in var for panning
+       viafb: improve pitch handling
+
+  drivers/video/via/via_modesetting.h |    5 +++++
+  drivers/video/via/viafbdev.c        |   16 +++++++++++-----
+  2 files changed, 16 insertions(+), 5 deletions(-)

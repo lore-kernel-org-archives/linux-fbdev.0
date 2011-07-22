@@ -1,274 +1,160 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Wed, 20 Jul 2011 22:54:21 +0000
-Subject: [PATCH V8 4/5] video: s3c-fb: Add support EXYNOS4 FIMD
-Message-Id: <1311202461-18235-1-git-send-email-jg1.han@samsung.com>
+From: JinGoo Han <jg1.han@samsung.com>
+Date: Fri, 22 Jul 2011 01:06:05 +0000
+Subject: RE: [PATCH V8 4/5] video: s3c-fb: Add support EXYNOS4 FIMD
+Message-Id: <29194164.10701311296764425.JavaMail.weblogic@epml20>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1311202461-18235-1-git-send-email-jg1.han@samsung.com>
+In-Reply-To: <1311202461-18235-1-git-send-email-jg1.han@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Jonghun Han <jonghun.han@samsung.com>, Ben Dooks <ben-linux@fluff.org>, Jingoo Han <jg1.han@samsung.com>
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Jong-Hun Han <jonghun.han@samsung.com>, Ben Dooks <ben-linux@fluff.org>, JinGoo Han <jg1.han@samsung.com>
 
-This patch adds struct s3c_fb_driverdata s3c_fb_data_exynos4 for EXYNOS4
-and adds lcd clock gating support.
-
-FIMD driver needs two clocks for FIMD IP and LCD pixel clock. Previously,
-both clocks are provided by using bus clock such as HCLK. However, EXYNOS4
-can not select HCLK for LCD pixel clock because the EXYNOS4 FIMD IP does not
-have the CLKSEL bit of VIDCON0. So, FIMD driver should provide the lcd clock
-using SCLK_FIMD as LCD pixel clock for EXYNOS4.
-
-The driver selects enabling lcd clock according to has_clksel which means
-the CLKSEL bit of VIDCON0. If there is has_clksel, the driver will not
-enable the lcd clock using SCLK_FIMD because bus clock using HCLK is used
-a LCD pixel clock.
-
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
----
- drivers/video/Kconfig  |    2 +-
- drivers/video/s3c-fb.c |   88 +++++++++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 85 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 549b960..963b8b7 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2027,7 +2027,7 @@ config FB_TMIO_ACCELL
- 
- config FB_S3C
- 	tristate "Samsung S3C framebuffer support"
--	depends on FB && S3C_DEV_FB
-+	depends on FB && (S3C_DEV_FB || S5P_DEV_FIMD0)
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 4aecf21..cb0d3ea 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -81,6 +81,7 @@ struct s3c_fb;
-  * @palette: Address of palette memory, or 0 if none.
-  * @has_prtcon: Set if has PRTCON register.
-  * @has_shadowcon: Set if has SHADOWCON register.
-+ * @has_clksel: Set if VIDCON0 register has CLKSEL bit.
-  */
- struct s3c_fb_variant {
- 	unsigned int	is_2443:1;
-@@ -98,6 +99,7 @@ struct s3c_fb_variant {
- 
- 	unsigned int	has_prtcon:1;
- 	unsigned int	has_shadowcon:1;
-+	unsigned int	has_clksel:1;
- };
- 
- /**
-@@ -186,6 +188,7 @@ struct s3c_fb_vsync {
-  * @dev: The device that we bound to, for printing, etc.
-  * @regs_res: The resource we claimed for the IO registers.
-  * @bus_clk: The clk (hclk) feeding our interface and possibly pixclk.
-+ * @lcd_clk: The clk (sclk) feeding pixclk.
-  * @regs: The mapped hardware registers.
-  * @variant: Variant information for this hardware.
-  * @enabled: A bitmask of enabled hardware windows.
-@@ -200,6 +203,7 @@ struct s3c_fb {
- 	struct device		*dev;
- 	struct resource		*regs_res;
- 	struct clk		*bus_clk;
-+	struct clk		*lcd_clk;
- 	void __iomem		*regs;
- 	struct s3c_fb_variant	 variant;
- 
-@@ -336,10 +340,15 @@ static int s3c_fb_check_var(struct fb_var_screeninfo *var,
-  */
- static int s3c_fb_calc_pixclk(struct s3c_fb *sfb, unsigned int pixclk)
- {
--	unsigned long clk = clk_get_rate(sfb->bus_clk);
-+	unsigned long clk;
- 	unsigned long long tmp;
- 	unsigned int result;
- 
-+	if (sfb->variant.has_clksel)
-+		clk = clk_get_rate(sfb->bus_clk);
-+	else
-+		clk = clk_get_rate(sfb->lcd_clk);
-+
- 	tmp = (unsigned long long)clk;
- 	tmp *= pixclk;
- 
-@@ -1354,13 +1363,24 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
- 
- 	clk_enable(sfb->bus_clk);
- 
-+	if (!sfb->variant.has_clksel) {
-+		sfb->lcd_clk = clk_get(dev, "sclk_fimd");
-+		if (IS_ERR(sfb->lcd_clk)) {
-+			dev_err(dev, "failed to get lcd clock\n");
-+			ret = PTR_ERR(sfb->lcd_clk);
-+			goto err_bus_clk;
-+		}
-+
-+		clk_enable(sfb->lcd_clk);
-+	}
-+
- 	pm_runtime_enable(sfb->dev);
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (!res) {
- 		dev_err(dev, "failed to find registers\n");
- 		ret = -ENOENT;
--		goto err_clk;
-+		goto err_lcd_clk;
- 	}
- 
- 	sfb->regs_res = request_mem_region(res->start, resource_size(res),
-@@ -1368,7 +1388,7 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
- 	if (!sfb->regs_res) {
- 		dev_err(dev, "failed to claim register region\n");
- 		ret = -ENOENT;
--		goto err_clk;
-+		goto err_lcd_clk;
- 	}
- 
- 	sfb->regs = ioremap(res->start, resource_size(res));
-@@ -1450,7 +1470,13 @@ err_ioremap:
- err_req_region:
- 	release_mem_region(sfb->regs_res->start, resource_size(sfb->regs_res));
- 
--err_clk:
-+err_lcd_clk:
-+	if (!sfb->variant.has_clksel) {
-+		clk_disable(sfb->lcd_clk);
-+		clk_put(sfb->lcd_clk);
-+	}
-+
-+err_bus_clk:
- 	clk_disable(sfb->bus_clk);
- 	clk_put(sfb->bus_clk);
- 
-@@ -1481,6 +1507,11 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
- 
- 	iounmap(sfb->regs);
- 
-+	if (!sfb->variant.has_clksel) {
-+		clk_disable(sfb->lcd_clk);
-+		clk_put(sfb->lcd_clk);
-+	}
-+
- 	clk_disable(sfb->bus_clk);
- 	clk_put(sfb->bus_clk);
- 
-@@ -1510,6 +1541,9 @@ static int s3c_fb_suspend(struct device *dev)
- 		s3c_fb_blank(FB_BLANK_POWERDOWN, win->fbinfo);
- 	}
- 
-+	if (!sfb->variant.has_clksel)
-+		clk_disable(sfb->lcd_clk);
-+
- 	clk_disable(sfb->bus_clk);
- 	return 0;
- }
-@@ -1524,6 +1558,9 @@ static int s3c_fb_resume(struct device *dev)
- 
- 	clk_enable(sfb->bus_clk);
- 
-+	if (!sfb->variant.has_clksel)
-+		clk_enable(sfb->lcd_clk);
-+
- 	/* setup gpio and output polarity controls */
- 	pd->setup_gpio();
- 	writel(pd->vidcon1, sfb->regs + VIDCON1);
-@@ -1569,6 +1606,9 @@ static int s3c_fb_runtime_suspend(struct device *dev)
- 		s3c_fb_blank(FB_BLANK_POWERDOWN, win->fbinfo);
- 	}
- 
-+	if (!sfb->variant.has_clksel)
-+		clk_disable(sfb->lcd_clk);
-+
- 	clk_disable(sfb->bus_clk);
- 	return 0;
- }
-@@ -1583,6 +1623,9 @@ static int s3c_fb_runtime_resume(struct device *dev)
- 
- 	clk_enable(sfb->bus_clk);
- 
-+	if (!sfb->variant.has_clksel)
-+		clk_enable(sfb->lcd_clk);
-+
- 	/* setup gpio and output polarity controls */
- 	pd->setup_gpio();
- 	writel(pd->vidcon1, sfb->regs + VIDCON1);
-@@ -1755,6 +1798,7 @@ static struct s3c_fb_driverdata s3c_fb_data_64xx = {
- 		},
- 
- 		.has_prtcon	= 1,
-+		.has_clksel	= 1,
- 	},
- 	.win[0]	= &s3c_fb_data_64xx_wins[0],
- 	.win[1]	= &s3c_fb_data_64xx_wins[1],
-@@ -1785,6 +1829,7 @@ static struct s3c_fb_driverdata s3c_fb_data_s5pc100 = {
- 		},
- 
- 		.has_prtcon	= 1,
-+		.has_clksel	= 1,
- 	},
- 	.win[0]	= &s3c_fb_data_s5p_wins[0],
- 	.win[1]	= &s3c_fb_data_s5p_wins[1],
-@@ -1815,6 +1860,37 @@ static struct s3c_fb_driverdata s3c_fb_data_s5pv210 = {
- 		},
- 
- 		.has_shadowcon	= 1,
-+		.has_clksel	= 1,
-+	},
-+	.win[0]	= &s3c_fb_data_s5p_wins[0],
-+	.win[1]	= &s3c_fb_data_s5p_wins[1],
-+	.win[2]	= &s3c_fb_data_s5p_wins[2],
-+	.win[3]	= &s3c_fb_data_s5p_wins[3],
-+	.win[4]	= &s3c_fb_data_s5p_wins[4],
-+};
-+
-+static struct s3c_fb_driverdata s3c_fb_data_exynos4 = {
-+	.variant = {
-+		.nr_windows	= 5,
-+		.vidtcon	= VIDTCON0,
-+		.wincon		= WINCON(0),
-+		.winmap		= WINxMAP(0),
-+		.keycon		= WKEYCON,
-+		.osd		= VIDOSD_BASE,
-+		.osd_stride	= 16,
-+		.buf_start	= VIDW_BUF_START(0),
-+		.buf_size	= VIDW_BUF_SIZE(0),
-+		.buf_end	= VIDW_BUF_END(0),
-+
-+		.palette = {
-+			[0] = 0x2400,
-+			[1] = 0x2800,
-+			[2] = 0x2c00,
-+			[3] = 0x3000,
-+			[4] = 0x3400,
-+		},
-+
-+		.has_shadowcon	= 1,
- 	},
- 	.win[0]	= &s3c_fb_data_s5p_wins[0],
- 	.win[1]	= &s3c_fb_data_s5p_wins[1],
-@@ -1843,6 +1919,7 @@ static struct s3c_fb_driverdata s3c_fb_data_s3c2443 = {
- 			[0] = 0x400,
- 			[1] = 0x800,
- 		},
-+		.has_clksel	= 1,
- 	},
- 	.win[0] = &(struct s3c_fb_win_variant) {
- 		.palette_sz	= 256,
-@@ -1870,6 +1947,9 @@ static struct platform_device_id s3c_fb_driver_ids[] = {
- 		.name		= "s5pv210-fb",
- 		.driver_data	= (unsigned long)&s3c_fb_data_s5pv210,
- 	}, {
-+		.name		= "exynos4-fb",
-+		.driver_data	= (unsigned long)&s3c_fb_data_exynos4,
-+	}, {
- 		.name		= "s3c2443-fb",
- 		.driver_data	= (unsigned long)&s3c_fb_data_s3c2443,
- 	},
--- 
-1.7.1
-
+SGkgIFBhdWwsCgpPdGhlciBwYXRjaGVzIHdlcmUgY29tbWl0ZWQgdG8gJ2xpbnV4LWFybS1zb2Mu
+Z2l0Jy4KUGxlYXNlLCBjb21taXQgdGhpcyBwYXRjaCAnW1BBVENIIFY4IDQvNV0gdmlkZW86IHMz
+Yy1mYjogQWRkIHN1cHBvcnQgRVhZTk9TNCBGSU1EJyB0byAnZmJkZXYtMi42Jy4KClRoYW5rcywK
+SmluZ29vIEhhbgoKSmluZ29vIEhhbiB3cm90ZToKPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0t
+LQo+IFN1YmplY3Q6IFtQQVRDSCBWOCA0LzVdIHZpZGVvOiBzM2MtZmI6IEFkZCBzdXBwb3J0IEVY
+WU5PUzQgRklNRAo+IAo+IFRoaXMgcGF0Y2ggYWRkcyBzdHJ1Y3QgczNjX2ZiX2RyaXZlcmRhdGEg
+czNjX2ZiX2RhdGFfZXh5bm9zNCBmb3IgRVhZTk9TNAo+IGFuZCBhZGRzIGxjZCBjbG9jayBnYXRp
+bmcgc3VwcG9ydC4KPiAKPiBGSU1EIGRyaXZlciBuZWVkcyB0d28gY2xvY2tzIGZvciBGSU1EIElQ
+IGFuZCBMQ0QgcGl4ZWwgY2xvY2suIFByZXZpb3VzbHksCj4gYm90aCBjbG9ja3MgYXJlIHByb3Zp
+ZGVkIGJ5IHVzaW5nIGJ1cyBjbG9jayBzdWNoIGFzIEhDTEsuIEhvd2V2ZXIsIEVYWU5PUzQKPiBj
+YW4gbm90IHNlbGVjdCBIQ0xLIGZvciBMQ0QgcGl4ZWwgY2xvY2sgYmVjYXVzZSB0aGUgRVhZTk9T
+NCBGSU1EIElQIGRvZXMKPiBub3QKPiBoYXZlIHRoZSBDTEtTRUwgYml0IG9mIFZJRENPTjAuIFNv
+LCBGSU1EIGRyaXZlciBzaG91bGQgcHJvdmlkZSB0aGUgbGNkCj4gY2xvY2sKPiB1c2luZyBTQ0xL
+X0ZJTUQgYXMgTENEIHBpeGVsIGNsb2NrIGZvciBFWFlOT1M0Lgo+IAo+IFRoZSBkcml2ZXIgc2Vs
+ZWN0cyBlbmFibGluZyBsY2QgY2xvY2sgYWNjb3JkaW5nIHRvIGhhc19jbGtzZWwgd2hpY2ggbWVh
+bnMKPiB0aGUgQ0xLU0VMIGJpdCBvZiBWSURDT04wLiBJZiB0aGVyZSBpcyBoYXNfY2xrc2VsLCB0
+aGUgZHJpdmVyIHdpbGwgbm90Cj4gZW5hYmxlIHRoZSBsY2QgY2xvY2sgdXNpbmcgU0NMS19GSU1E
+IGJlY2F1c2UgYnVzIGNsb2NrIHVzaW5nIEhDTEsgaXMgdXNlZAo+IGEgTENEIHBpeGVsIGNsb2Nr
+Lgo+IAo+IFNpZ25lZC1vZmYtYnk6IEppbmdvbyBIYW4gPGpnMS5oYW5Ac2Ftc3VuZy5jb20+Cj4g
+LS0tCj4gIGRyaXZlcnMvdmlkZW8vS2NvbmZpZyAgfCAgICAyICstCj4gIGRyaXZlcnMvdmlkZW8v
+czNjLWZiLmMgfCAgIDg4Cj4gKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrLS0KPiAgMiBmaWxlcyBjaGFuZ2VkLCA4NSBpbnNlcnRpb25zKCspLCA1IGRlbGV0aW9u
+cygtKQo+IAo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL0tjb25maWcgYi9kcml2ZXJzL3Zp
+ZGVvL0tjb25maWcKPiBpbmRleCA1NDliOTYwLi45NjNiOGI3IDEwMDY0NAo+IC0tLSBhL2RyaXZl
+cnMvdmlkZW8vS2NvbmZpZwo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vS2NvbmZpZwo+IEBAIC0yMDI3
+LDcgKzIwMjcsNyBAQCBjb25maWcgRkJfVE1JT19BQ0NFTEwKPiAKPiAgY29uZmlnIEZCX1MzQwo+
+ICAJdHJpc3RhdGUgIlNhbXN1bmcgUzNDIGZyYW1lYnVmZmVyIHN1cHBvcnQiCj4gLQlkZXBlbmRz
+IG9uIEZCICYmIFMzQ19ERVZfRkIKPiArCWRlcGVuZHMgb24gRkIgJiYgKFMzQ19ERVZfRkIgfHwg
+UzVQX0RFVl9GSU1EMCkKPiAgCXNlbGVjdCBGQl9DRkJfRklMTFJFQ1QKPiAgCXNlbGVjdCBGQl9D
+RkJfQ09QWUFSRUEKPiAgCXNlbGVjdCBGQl9DRkJfSU1BR0VCTElUCj4gZGlmZiAtLWdpdCBhL2Ry
+aXZlcnMvdmlkZW8vczNjLWZiLmMgYi9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jCj4gaW5kZXggNGFl
+Y2YyMS4uY2IwZDNlYSAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jCj4gKysr
+IGIvZHJpdmVycy92aWRlby9zM2MtZmIuYwo+IEBAIC04MSw2ICs4MSw3IEBAIHN0cnVjdCBzM2Nf
+ZmI7Cj4gICAqIEBwYWxldHRlOiBBZGRyZXNzIG9mIHBhbGV0dGUgbWVtb3J5LCBvciAwIGlmIG5v
+bmUuCj4gICAqIEBoYXNfcHJ0Y29uOiBTZXQgaWYgaGFzIFBSVENPTiByZWdpc3Rlci4KPiAgICog
+QGhhc19zaGFkb3djb246IFNldCBpZiBoYXMgU0hBRE9XQ09OIHJlZ2lzdGVyLgo+ICsgKiBAaGFz
+X2Nsa3NlbDogU2V0IGlmIFZJRENPTjAgcmVnaXN0ZXIgaGFzIENMS1NFTCBiaXQuCj4gICAqLwo+
+ICBzdHJ1Y3QgczNjX2ZiX3ZhcmlhbnQgewo+ICAJdW5zaWduZWQgaW50CWlzXzI0NDM6MTsKPiBA
+QCAtOTgsNiArOTksNyBAQCBzdHJ1Y3QgczNjX2ZiX3ZhcmlhbnQgewo+IAo+ICAJdW5zaWduZWQg
+aW50CWhhc19wcnRjb246MTsKPiAgCXVuc2lnbmVkIGludAloYXNfc2hhZG93Y29uOjE7Cj4gKwl1
+bnNpZ25lZCBpbnQJaGFzX2Nsa3NlbDoxOwo+ICB9Owo+IAo+ICAvKioKPiBAQCAtMTg2LDYgKzE4
+OCw3IEBAIHN0cnVjdCBzM2NfZmJfdnN5bmMgewo+ICAgKiBAZGV2OiBUaGUgZGV2aWNlIHRoYXQg
+d2UgYm91bmQgdG8sIGZvciBwcmludGluZywgZXRjLgo+ICAgKiBAcmVnc19yZXM6IFRoZSByZXNv
+dXJjZSB3ZSBjbGFpbWVkIGZvciB0aGUgSU8gcmVnaXN0ZXJzLgo+ICAgKiBAYnVzX2NsazogVGhl
+IGNsayAoaGNsaykgZmVlZGluZyBvdXIgaW50ZXJmYWNlIGFuZCBwb3NzaWJseSBwaXhjbGsuCj4g
+KyAqIEBsY2RfY2xrOiBUaGUgY2xrIChzY2xrKSBmZWVkaW5nIHBpeGNsay4KPiAgICogQHJlZ3M6
+IFRoZSBtYXBwZWQgaGFyZHdhcmUgcmVnaXN0ZXJzLgo+ICAgKiBAdmFyaWFudDogVmFyaWFudCBp
+bmZvcm1hdGlvbiBmb3IgdGhpcyBoYXJkd2FyZS4KPiAgICogQGVuYWJsZWQ6IEEgYml0bWFzayBv
+ZiBlbmFibGVkIGhhcmR3YXJlIHdpbmRvd3MuCj4gQEAgLTIwMCw2ICsyMDMsNyBAQCBzdHJ1Y3Qg
+czNjX2ZiIHsKPiAgCXN0cnVjdCBkZXZpY2UJCSpkZXY7Cj4gIAlzdHJ1Y3QgcmVzb3VyY2UJCSpy
+ZWdzX3JlczsKPiAgCXN0cnVjdCBjbGsJCSpidXNfY2xrOwo+ICsJc3RydWN0IGNsawkJKmxjZF9j
+bGs7Cj4gIAl2b2lkIF9faW9tZW0JCSpyZWdzOwo+ICAJc3RydWN0IHMzY19mYl92YXJpYW50CSB2
+YXJpYW50Owo+IAo+IEBAIC0zMzYsMTAgKzM0MCwxNSBAQCBzdGF0aWMgaW50IHMzY19mYl9jaGVj
+a192YXIoc3RydWN0IGZiX3Zhcl9zY3JlZW5pbmZvCj4gKnZhciwKPiAgICovCj4gIHN0YXRpYyBp
+bnQgczNjX2ZiX2NhbGNfcGl4Y2xrKHN0cnVjdCBzM2NfZmIgKnNmYiwgdW5zaWduZWQgaW50IHBp
+eGNsaykKPiAgewo+IC0JdW5zaWduZWQgbG9uZyBjbGsgPSBjbGtfZ2V0X3JhdGUoc2ZiLT5idXNf
+Y2xrKTsKPiArCXVuc2lnbmVkIGxvbmcgY2xrOwo+ICAJdW5zaWduZWQgbG9uZyBsb25nIHRtcDsK
+PiAgCXVuc2lnbmVkIGludCByZXN1bHQ7Cj4gCj4gKwlpZiAoc2ZiLT52YXJpYW50Lmhhc19jbGtz
+ZWwpCj4gKwkJY2xrID0gY2xrX2dldF9yYXRlKHNmYi0+YnVzX2Nsayk7Cj4gKwllbHNlCj4gKwkJ
+Y2xrID0gY2xrX2dldF9yYXRlKHNmYi0+bGNkX2Nsayk7Cj4gKwo+ICAJdG1wID0gKHVuc2lnbmVk
+IGxvbmcgbG9uZyljbGs7Cj4gIAl0bXAgKj0gcGl4Y2xrOwo+IAo+IEBAIC0xMzU0LDEzICsxMzYz
+LDI0IEBAIHN0YXRpYyBpbnQgX19kZXZpbml0IHMzY19mYl9wcm9iZShzdHJ1Y3QKPiBwbGF0Zm9y
+bV9kZXZpY2UgKnBkZXYpCj4gCj4gIAljbGtfZW5hYmxlKHNmYi0+YnVzX2Nsayk7Cj4gCj4gKwlp
+ZiAoIXNmYi0+dmFyaWFudC5oYXNfY2xrc2VsKSB7Cj4gKwkJc2ZiLT5sY2RfY2xrID0gY2xrX2dl
+dChkZXYsICJzY2xrX2ZpbWQiKTsKPiArCQlpZiAoSVNfRVJSKHNmYi0+bGNkX2NsaykpIHsKPiAr
+CQkJZGV2X2VycihkZXYsICJmYWlsZWQgdG8gZ2V0IGxjZCBjbG9ja1xuIik7Cj4gKwkJCXJldCA9
+IFBUUl9FUlIoc2ZiLT5sY2RfY2xrKTsKPiArCQkJZ290byBlcnJfYnVzX2NsazsKPiArCQl9Cj4g
+Kwo+ICsJCWNsa19lbmFibGUoc2ZiLT5sY2RfY2xrKTsKPiArCX0KPiArCj4gIAlwbV9ydW50aW1l
+X2VuYWJsZShzZmItPmRldik7Cj4gCj4gIAlyZXMgPSBwbGF0Zm9ybV9nZXRfcmVzb3VyY2UocGRl
+diwgSU9SRVNPVVJDRV9NRU0sIDApOwo+ICAJaWYgKCFyZXMpIHsKPiAgCQlkZXZfZXJyKGRldiwg
+ImZhaWxlZCB0byBmaW5kIHJlZ2lzdGVyc1xuIik7Cj4gIAkJcmV0ID0gLUVOT0VOVDsKPiAtCQln
+b3RvIGVycl9jbGs7Cj4gKwkJZ290byBlcnJfbGNkX2NsazsKPiAgCX0KPiAKPiAgCXNmYi0+cmVn
+c19yZXMgPSByZXF1ZXN0X21lbV9yZWdpb24ocmVzLT5zdGFydCwgcmVzb3VyY2Vfc2l6ZShyZXMp
+LAo+IEBAIC0xMzY4LDcgKzEzODgsNyBAQCBzdGF0aWMgaW50IF9fZGV2aW5pdCBzM2NfZmJfcHJv
+YmUoc3RydWN0Cj4gcGxhdGZvcm1fZGV2aWNlICpwZGV2KQo+ICAJaWYgKCFzZmItPnJlZ3NfcmVz
+KSB7Cj4gIAkJZGV2X2VycihkZXYsICJmYWlsZWQgdG8gY2xhaW0gcmVnaXN0ZXIgcmVnaW9uXG4i
+KTsKPiAgCQlyZXQgPSAtRU5PRU5UOwo+IC0JCWdvdG8gZXJyX2NsazsKPiArCQlnb3RvIGVycl9s
+Y2RfY2xrOwo+ICAJfQo+IAo+ICAJc2ZiLT5yZWdzID0gaW9yZW1hcChyZXMtPnN0YXJ0LCByZXNv
+dXJjZV9zaXplKHJlcykpOwo+IEBAIC0xNDUwLDcgKzE0NzAsMTMgQEAgZXJyX2lvcmVtYXA6Cj4g
+IGVycl9yZXFfcmVnaW9uOgo+ICAJcmVsZWFzZV9tZW1fcmVnaW9uKHNmYi0+cmVnc19yZXMtPnN0
+YXJ0LCByZXNvdXJjZV9zaXplKHNmYi0KPiA+cmVnc19yZXMpKTsKPiAKPiAtZXJyX2NsazoKPiAr
+ZXJyX2xjZF9jbGs6Cj4gKwlpZiAoIXNmYi0+dmFyaWFudC5oYXNfY2xrc2VsKSB7Cj4gKwkJY2xr
+X2Rpc2FibGUoc2ZiLT5sY2RfY2xrKTsKPiArCQljbGtfcHV0KHNmYi0+bGNkX2Nsayk7Cj4gKwl9
+Cj4gKwo+ICtlcnJfYnVzX2NsazoKPiAgCWNsa19kaXNhYmxlKHNmYi0+YnVzX2Nsayk7Cj4gIAlj
+bGtfcHV0KHNmYi0+YnVzX2Nsayk7Cj4gCj4gQEAgLTE0ODEsNiArMTUwNywxMSBAQCBzdGF0aWMg
+aW50IF9fZGV2ZXhpdCBzM2NfZmJfcmVtb3ZlKHN0cnVjdAo+IHBsYXRmb3JtX2RldmljZSAqcGRl
+dikKPiAKPiAgCWlvdW5tYXAoc2ZiLT5yZWdzKTsKPiAKPiArCWlmICghc2ZiLT52YXJpYW50Lmhh
+c19jbGtzZWwpIHsKPiArCQljbGtfZGlzYWJsZShzZmItPmxjZF9jbGspOwo+ICsJCWNsa19wdXQo
+c2ZiLT5sY2RfY2xrKTsKPiArCX0KPiArCj4gIAljbGtfZGlzYWJsZShzZmItPmJ1c19jbGspOwo+
+ICAJY2xrX3B1dChzZmItPmJ1c19jbGspOwo+IAo+IEBAIC0xNTEwLDYgKzE1NDEsOSBAQCBzdGF0
+aWMgaW50IHMzY19mYl9zdXNwZW5kKHN0cnVjdCBkZXZpY2UgKmRldikKPiAgCQlzM2NfZmJfYmxh
+bmsoRkJfQkxBTktfUE9XRVJET1dOLCB3aW4tPmZiaW5mbyk7Cj4gIAl9Cj4gCj4gKwlpZiAoIXNm
+Yi0+dmFyaWFudC5oYXNfY2xrc2VsKQo+ICsJCWNsa19kaXNhYmxlKHNmYi0+bGNkX2Nsayk7Cj4g
+Kwo+ICAJY2xrX2Rpc2FibGUoc2ZiLT5idXNfY2xrKTsKPiAgCXJldHVybiAwOwo+ICB9Cj4gQEAg
+LTE1MjQsNiArMTU1OCw5IEBAIHN0YXRpYyBpbnQgczNjX2ZiX3Jlc3VtZShzdHJ1Y3QgZGV2aWNl
+ICpkZXYpCj4gCj4gIAljbGtfZW5hYmxlKHNmYi0+YnVzX2Nsayk7Cj4gCj4gKwlpZiAoIXNmYi0+
+dmFyaWFudC5oYXNfY2xrc2VsKQo+ICsJCWNsa19lbmFibGUoc2ZiLT5sY2RfY2xrKTsKPiArCj4g
+IAkvKiBzZXR1cCBncGlvIGFuZCBvdXRwdXQgcG9sYXJpdHkgY29udHJvbHMgKi8KPiAgCXBkLT5z
+ZXR1cF9ncGlvKCk7Cj4gIAl3cml0ZWwocGQtPnZpZGNvbjEsIHNmYi0+cmVncyArIFZJRENPTjEp
+Owo+IEBAIC0xNTY5LDYgKzE2MDYsOSBAQCBzdGF0aWMgaW50IHMzY19mYl9ydW50aW1lX3N1c3Bl
+bmQoc3RydWN0IGRldmljZSAqZGV2KQo+ICAJCXMzY19mYl9ibGFuayhGQl9CTEFOS19QT1dFUkRP
+V04sIHdpbi0+ZmJpbmZvKTsKPiAgCX0KPiAKPiArCWlmICghc2ZiLT52YXJpYW50Lmhhc19jbGtz
+ZWwpCj4gKwkJY2xrX2Rpc2FibGUoc2ZiLT5sY2RfY2xrKTsKPiArCj4gIAljbGtfZGlzYWJsZShz
+ZmItPmJ1c19jbGspOwo+ICAJcmV0dXJuIDA7Cj4gIH0KPiBAQCAtMTU4Myw2ICsxNjIzLDkgQEAg
+c3RhdGljIGludCBzM2NfZmJfcnVudGltZV9yZXN1bWUoc3RydWN0IGRldmljZSAqZGV2KQo+IAo+
+ICAJY2xrX2VuYWJsZShzZmItPmJ1c19jbGspOwo+IAo+ICsJaWYgKCFzZmItPnZhcmlhbnQuaGFz
+X2Nsa3NlbCkKPiArCQljbGtfZW5hYmxlKHNmYi0+bGNkX2Nsayk7Cj4gKwo+ICAJLyogc2V0dXAg
+Z3BpbyBhbmQgb3V0cHV0IHBvbGFyaXR5IGNvbnRyb2xzICovCj4gIAlwZC0+c2V0dXBfZ3Bpbygp
+Owo+ICAJd3JpdGVsKHBkLT52aWRjb24xLCBzZmItPnJlZ3MgKyBWSURDT04xKTsKPiBAQCAtMTc1
+NSw2ICsxNzk4LDcgQEAgc3RhdGljIHN0cnVjdCBzM2NfZmJfZHJpdmVyZGF0YSBzM2NfZmJfZGF0
+YV82NHh4ID0gewo+ICAJCX0sCj4gCj4gIAkJLmhhc19wcnRjb24JPSAxLAo+ICsJCS5oYXNfY2xr
+c2VsCT0gMSwKPiAgCX0sCj4gIAkud2luWzBdCT0gJnMzY19mYl9kYXRhXzY0eHhfd2luc1swXSwK
+PiAgCS53aW5bMV0JPSAmczNjX2ZiX2RhdGFfNjR4eF93aW5zWzFdLAo+IEBAIC0xNzg1LDYgKzE4
+MjksNyBAQCBzdGF0aWMgc3RydWN0IHMzY19mYl9kcml2ZXJkYXRhIHMzY19mYl9kYXRhX3M1cGMx
+MDAKPiA9IHsKPiAgCQl9LAo+IAo+ICAJCS5oYXNfcHJ0Y29uCT0gMSwKPiArCQkuaGFzX2Nsa3Nl
+bAk9IDEsCj4gIAl9LAo+ICAJLndpblswXQk9ICZzM2NfZmJfZGF0YV9zNXBfd2luc1swXSwKPiAg
+CS53aW5bMV0JPSAmczNjX2ZiX2RhdGFfczVwX3dpbnNbMV0sCj4gQEAgLTE4MTUsNiArMTg2MCwz
+NyBAQCBzdGF0aWMgc3RydWN0IHMzY19mYl9kcml2ZXJkYXRhIHMzY19mYl9kYXRhX3M1cHYyMTAK
+PiA9IHsKPiAgCQl9LAo+IAo+ICAJCS5oYXNfc2hhZG93Y29uCT0gMSwKPiArCQkuaGFzX2Nsa3Nl
+bAk9IDEsCj4gKwl9LAo+ICsJLndpblswXQk9ICZzM2NfZmJfZGF0YV9zNXBfd2luc1swXSwKPiAr
+CS53aW5bMV0JPSAmczNjX2ZiX2RhdGFfczVwX3dpbnNbMV0sCj4gKwkud2luWzJdCT0gJnMzY19m
+Yl9kYXRhX3M1cF93aW5zWzJdLAo+ICsJLndpblszXQk9ICZzM2NfZmJfZGF0YV9zNXBfd2luc1sz
+XSwKPiArCS53aW5bNF0JPSAmczNjX2ZiX2RhdGFfczVwX3dpbnNbNF0sCj4gK307Cj4gKwo+ICtz
+dGF0aWMgc3RydWN0IHMzY19mYl9kcml2ZXJkYXRhIHMzY19mYl9kYXRhX2V4eW5vczQgPSB7Cj4g
+KwkudmFyaWFudCA9IHsKPiArCQkubnJfd2luZG93cwk9IDUsCj4gKwkJLnZpZHRjb24JPSBWSURU
+Q09OMCwKPiArCQkud2luY29uCQk9IFdJTkNPTigwKSwKPiArCQkud2lubWFwCQk9IFdJTnhNQVAo
+MCksCj4gKwkJLmtleWNvbgkJPSBXS0VZQ09OLAo+ICsJCS5vc2QJCT0gVklET1NEX0JBU0UsCj4g
+KwkJLm9zZF9zdHJpZGUJPSAxNiwKPiArCQkuYnVmX3N0YXJ0CT0gVklEV19CVUZfU1RBUlQoMCks
+Cj4gKwkJLmJ1Zl9zaXplCT0gVklEV19CVUZfU0laRSgwKSwKPiArCQkuYnVmX2VuZAk9IFZJRFdf
+QlVGX0VORCgwKSwKPiArCj4gKwkJLnBhbGV0dGUgPSB7Cj4gKwkJCVswXSA9IDB4MjQwMCwKPiAr
+CQkJWzFdID0gMHgyODAwLAo+ICsJCQlbMl0gPSAweDJjMDAsCj4gKwkJCVszXSA9IDB4MzAwMCwK
+PiArCQkJWzRdID0gMHgzNDAwLAo+ICsJCX0sCj4gKwo+ICsJCS5oYXNfc2hhZG93Y29uCT0gMSwK
+PiAgCX0sCj4gIAkud2luWzBdCT0gJnMzY19mYl9kYXRhX3M1cF93aW5zWzBdLAo+ICAJLndpblsx
+XQk9ICZzM2NfZmJfZGF0YV9zNXBfd2luc1sxXSwKPiBAQCAtMTg0Myw2ICsxOTE5LDcgQEAgc3Rh
+dGljIHN0cnVjdCBzM2NfZmJfZHJpdmVyZGF0YSBzM2NfZmJfZGF0YV9zM2MyNDQzCj4gPSB7Cj4g
+IAkJCVswXSA9IDB4NDAwLAo+ICAJCQlbMV0gPSAweDgwMCwKPiAgCQl9LAo+ICsJCS5oYXNfY2xr
+c2VsCT0gMSwKPiAgCX0sCj4gIAkud2luWzBdID0gJihzdHJ1Y3QgczNjX2ZiX3dpbl92YXJpYW50
+KSB7Cj4gIAkJLnBhbGV0dGVfc3oJPSAyNTYsCj4gQEAgLTE4NzAsNiArMTk0Nyw5IEBAIHN0YXRp
+YyBzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlX2lkIHMzY19mYl9kcml2ZXJfaWRzW10KPiA9IHsKPiAg
+CQkubmFtZQkJPSAiczVwdjIxMC1mYiIsCj4gIAkJLmRyaXZlcl9kYXRhCT0gKHVuc2lnbmVkIGxv
+bmcpJnMzY19mYl9kYXRhX3M1cHYyMTAsCj4gIAl9LCB7Cj4gKwkJLm5hbWUJCT0gImV4eW5vczQt
+ZmIiLAo+ICsJCS5kcml2ZXJfZGF0YQk9ICh1bnNpZ25lZCBsb25nKSZzM2NfZmJfZGF0YV9leHlu
+b3M0LAo+ICsJfSwgewo+ICAJCS5uYW1lCQk9ICJzM2MyNDQzLWZiIiwKPiAgCQkuZHJpdmVyX2Rh
+dGEJPSAodW5zaWduZWQgbG9uZykmczNjX2ZiX2RhdGFfczNjMjQ0MywKPiAgCX0sCj4gLS0KPiAx
+LjcuMQoKCv/06Lp7Lm7HK4m3n66JrYYrJYrL/7Hp3bYXpYp3/7p7Lm7HK4m3pYp7sf323Xr/4p7Y
+Xm6HcqH2pnrLGoHraJmo6K3aJqP74Hq/5Hq53pf6K4DKK3pmo6K3aJqIp36GrYbbaf//74Hq/5Hq
+53pf6K4P5mo6K3aJqP4p36P4bQo=

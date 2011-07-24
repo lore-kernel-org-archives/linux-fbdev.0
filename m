@@ -1,42 +1,32 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 08 Jul 2011 11:14:27 +0000
-Subject: [PATCH v3 13/29] intelfb: use display information in info not in var for panning
-Message-Id: <1310123683-8064-14-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Wanlong Gao <wanlong.gao@gmail.com>
+Date: Sun, 24 Jul 2011 04:18:42 +0000
+Subject: [PATCH] drivers:video:remove the dup include file prefetch.h
+Message-Id: <1311481122-11398-1-git-send-email-gaowanlong@cn.fujitsu.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+linux/prefetch.h has been incuded more than once.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Maik Broemme <mbroemme@plusserver.de>
+Signed-off-by: Wanlong Gao <gaowanlong@cn.fujitsu.com>
 ---
- drivers/video/intelfb/intelfbhw.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/udlfb.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/intelfb/intelfbhw.c b/drivers/video/intelfb/intelfbhw.c
-index 38065cf..fbad61d 100644
---- a/drivers/video/intelfb/intelfbhw.c
-+++ b/drivers/video/intelfb/intelfbhw.c
-@@ -390,12 +390,12 @@ int intelfbhw_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
- 	xoffset = ROUND_DOWN_TO(var->xoffset, 8);
- 	yoffset = var->yoffset;
- 
--	if ((xoffset + var->xres > var->xres_virtual) ||
--	    (yoffset + var->yres > var->yres_virtual))
-+	if ((xoffset + info->var.xres > info->var.xres_virtual) ||
-+	    (yoffset + info->var.yres > info->var.yres_virtual))
- 		return -EINVAL;
- 
- 	offset = (yoffset * dinfo->pitch) +
--		 (xoffset * var->bits_per_pixel) / 8;
-+		 (xoffset * info->var.bits_per_pixel) / 8;
- 
- 	offset += dinfo->fb.offset << 12;
+diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
+index 816a4fd..087fc99 100644
+--- a/drivers/video/udlfb.c
++++ b/drivers/video/udlfb.c
+@@ -29,7 +29,6 @@
+ #include <linux/slab.h>
+ #include <linux/prefetch.h>
+ #include <linux/delay.h>
+-#include <linux/prefetch.h>
+ #include <video/udlfb.h>
+ #include "edid.h"
  
 -- 
-1.7.3.4
+1.7.4.1
 

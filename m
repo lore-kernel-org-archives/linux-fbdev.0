@@ -1,43 +1,167 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 08 Jul 2011 11:14:34 +0000
-Subject: [PATCH v3 20/29] s3fb: use display information in info not in var for panning
-Message-Id: <1310123683-8064-21-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Sat, 30 Jul 2011 20:26:52 +0000
+Subject: [PATCH 1/4] fbdev: sh_mobile_meram: Replace hardcoded register values with macros
+Message-Id: <1312057615-29123-2-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-We must not use any information in the passed var besides xoffset,
-yoffset and vmode as otherwise applications might abuse it.
+Instead of hardcoding register values through the driver, define macros
+for individual register bits using the register name and the bit name,
+and use the macros.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Ondrej Zary <linux@rainbow-software.org>
 ---
- drivers/video/s3fb.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ drivers/video/sh_mobile_meram.c |   97 ++++++++++++++++++++++++++++-------=
+---
+ 1 files changed, 71 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/video/s3fb.c b/drivers/video/s3fb.c
-index 4ca5d0c..0f9af1a 100644
---- a/drivers/video/s3fb.c
-+++ b/drivers/video/s3fb.c
-@@ -1019,12 +1019,13 @@ static int s3fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
- 	unsigned int offset;
- 
- 	/* Calculate the offset */
--	if (var->bits_per_pixel = 0) {
--		offset = (var->yoffset / 16) * (var->xres_virtual / 2) + (var->xoffset / 2);
-+	if (info->var.bits_per_pixel = 0) {
-+		offset = (var->yoffset / 16) * (info->var.xres_virtual / 2)
-+		       + (var->xoffset / 2);
- 		offset = offset >> 2;
- 	} else {
- 		offset = (var->yoffset * info->fix.line_length) +
--			 (var->xoffset * var->bits_per_pixel / 8);
-+			 (var->xoffset * info->var.bits_per_pixel / 8);
- 		offset = offset >> 2;
+diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_mera=
+m.c
+index 39f28a1..85577cf 100644
+--- a/drivers/video/sh_mobile_meram.c
++++ b/drivers/video/sh_mobile_meram.c
+@@ -20,22 +20,67 @@
+ #include "sh_mobile_meram.h"
+=20
+ /* meram registers */
+-#define MExxCTL 0x0
+-#define MExxBSIZE 0x4
+-#define MExxMNCF 0x8
+-#define MExxSARA 0x10
+-#define MExxSARB 0x14
+-#define MExxSBSIZE 0x18
+-
+-#define MERAM_MExxCTL_VAL(ctl, next_icb, addr)	\
+-	((ctl) | (((next_icb) & 0x1f) << 11) | (((addr) & 0x7ff) << 16))
+-#define	MERAM_MExxBSIZE_VAL(a, b, c) \
+-	(((a) << 28) | ((b) << 16) | (c))
+-
+-#define MEVCR1 0x4
+-#define MEACTS 0x10
+-#define MEQSEL1 0x40
+-#define MEQSEL2 0x44
++#define MEVCR1			0x4
++#define MEVCR1_RST		(1 << 31)
++#define MEVCR1_WD		(1 << 30)
++#define MEVCR1_AMD1		(1 << 29)
++#define MEVCR1_AMD0		(1 << 28)
++#define MEQSEL1			0x40
++#define MEQSEL2			0x44
++
++#define MExxCTL			0x400
++#define MExxCTL_BV		(1 << 31)
++#define MExxCTL_BSZ_SHIFT	28
++#define MExxCTL_MSAR_MASK	(0x7ff << MExxCTL_MSAR_SHIFT)
++#define MExxCTL_MSAR_SHIFT	16
++#define MExxCTL_NXT_MASK	(0x1f << MExxCTL_NXT_SHIFT)
++#define MExxCTL_NXT_SHIFT	11
++#define MExxCTL_WD1		(1 << 10)
++#define MExxCTL_WD0		(1 << 9)
++#define MExxCTL_WS		(1 << 8)
++#define MExxCTL_CB		(1 << 7)
++#define MExxCTL_WBF		(1 << 6)
++#define MExxCTL_WF		(1 << 5)
++#define MExxCTL_RF		(1 << 4)
++#define MExxCTL_CM		(1 << 3)
++#define MExxCTL_MD_READ		(1 << 0)
++#define MExxCTL_MD_WRITE	(2 << 0)
++#define MExxCTL_MD_ICB_WB	(3 << 0)
++#define MExxCTL_MD_ICB		(4 << 0)
++#define MExxCTL_MD_FB		(7 << 0)
++#define MExxCTL_MD_MASK		(7 << 0)
++#define MExxBSIZE		0x404
++#define MExxBSIZE_RCNT_SHIFT	28
++#define MExxBSIZE_YSZM1_SHIFT	16
++#define MExxBSIZE_XSZM1_SHIFT	0
++#define MExxMNCF		0x408
++#define MExxMNCF_KWBNM_SHIFT	28
++#define MExxMNCF_KRBNM_SHIFT	24
++#define MExxMNCF_BNM_SHIFT	16
++#define MExxMNCF_XBV		(1 << 15)
++#define MExxMNCF_CPL_YCBCR444	(1 << 12)
++#define MExxMNCF_CPL_YCBCR420	(2 << 12)
++#define MExxMNCF_CPL_YCBCR422	(3 << 12)
++#define MExxMNCF_CPL_MSK	(3 << 12)
++#define MExxMNCF_BL		(1 << 2)
++#define MExxMNCF_LNM_SHIFT	0
++#define MExxSARA		0x410
++#define MExxSARB		0x414
++#define MExxSBSIZE		0x418
++#define MExxSBSIZE_HDV		(1 << 31)
++#define MExxSBSIZE_HSZ16	(0 << 28)
++#define MExxSBSIZE_HSZ32	(1 << 28)
++#define MExxSBSIZE_HSZ64	(2 << 28)
++#define MExxSBSIZE_HSZ128	(3 << 28)
++#define MExxSBSIZE_SBSIZZ_SHIFT	0
++
++#define MERAM_MExxCTL_VAL(next, addr)	\
++	((((next) << MExxCTL_NXT_SHIFT) & MExxCTL_NXT_MASK) | \
++	 (((addr) << MExxCTL_MSAR_SHIFT) & MExxCTL_MSAR_MASK))
++#define	MERAM_MExxBSIZE_VAL(rcnt, yszm1, xszm1) \
++	(((rcnt) << MExxBSIZE_RCNT_SHIFT) | \
++	 ((yszm1) << MExxBSIZE_YSZM1_SHIFT) | \
++	 ((xszm1) << MExxBSIZE_XSZM1_SHIFT))
+=20
+ static unsigned long common_regs[] =3D {
+ 	MEVCR1,
+@@ -72,8 +117,7 @@ struct sh_mobile_meram_priv {
+  * MERAM/ICB access functions
+  */
+=20
+-#define MERAM_ICB_OFFSET(base, idx, off)	\
+-	((base) + (0x400 + ((idx) * 0x20) + (off)))
++#define MERAM_ICB_OFFSET(base, idx, off)	((base) + (off) + (idx) * 0x20)
+=20
+ static inline void meram_write_icb(void __iomem *base, int idx, int off,
+ 	unsigned long val)
+@@ -308,17 +352,18 @@ static int meram_init(struct sh_mobile_meram_priv *pr=
+iv,
+ 	/*
+ 	 * Set MERAM for framebuffer
+ 	 *
+-	 * 0x70f:  WD =3D 0x3, WS=3D0x1, CM=3D0x1, MD=FB mode
+ 	 * we also chain the cache_icb and the marker_icb.
+ 	 * we also split the allocated MERAM buffer between two ICBs.
+ 	 */
+ 	meram_write_icb(priv->base, icb->cache_icb, MExxCTL,
+-			MERAM_MExxCTL_VAL(0x70f, icb->marker_icb,
+-					  icb->meram_offset));
++			MERAM_MExxCTL_VAL(icb->marker_icb, icb->meram_offset) |
++			MExxCTL_WD1 | MExxCTL_WD0 | MExxCTL_WS | MExxCTL_CM |
++			MExxCTL_MD_FB);
+ 	meram_write_icb(priv->base, icb->marker_icb, MExxCTL,
+-			MERAM_MExxCTL_VAL(0x70f, icb->cache_icb,
+-					  icb->meram_offset +
+-					  icb->meram_size / 2));
++			MERAM_MExxCTL_VAL(icb->cache_icb, icb->meram_offset +
++					  icb->meram_size / 2) |
++			MExxCTL_WD1 | MExxCTL_WD0 | MExxCTL_WS | MExxCTL_CM |
++			MExxCTL_MD_FB);
+=20
+ 	return 0;
+ }
+@@ -507,7 +552,7 @@ static int sh_mobile_meram_runtime_suspend(struct devic=
+e *dev)
+ 			/* Reset ICB on resume */
+ 			if (icb_regs[k] =3D MExxCTL)
+ 				priv->icb_saved_regs[j * ICB_REGS_SIZE + k] -					0x70;
++					MExxCTL_WBF | MExxCTL_WF | MExxCTL_RF;
+ 		}
  	}
- 
--- 
+ 	return 0;
+@@ -592,7 +637,7 @@ static int __devinit sh_mobile_meram_probe(struct platf=
+orm_device *pdev)
+=20
+ 	/* initialize ICB addressing mode */
+ 	if (pdata->addr_mode =3D SH_MOBILE_MERAM_MODE1)
+-		meram_write_reg(priv->base, MEVCR1, 1 << 29);
++		meram_write_reg(priv->base, MEVCR1, MEVCR1_AMD1);
+=20
+ 	pm_runtime_enable(&pdev->dev);
+=20
+--=20
 1.7.3.4
 

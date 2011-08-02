@@ -1,87 +1,107 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 07 Aug 2011 15:50:24 +0000
-Subject: [PATCH 2/6] viafb: eliminate viafb_get_pixclock
-Message-Id: <42edcb162d67e8a88c7b873941c19eab689db272.1312730860.git.FlorianSchandinat@gmx.de>
+From: John Stanley <jpsinthemix@verizon.net>
+Date: Tue, 02 Aug 2011 03:19:18 +0000
+Subject: [PATCH] Fix typo in savage4 series definition in linux-3.0.0
+Message-Id: <4E376CB6.4000803@verizon.net>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="------------070908050107000900050500"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1312730859.git.FlorianSchandinat@gmx.de>
-In-Reply-To: <cover.1312730859.git.FlorianSchandinat@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-As there is only one user we can just insert the formula where
-needed. Avoids one lookup in the modetable and
-viafb_fill_var_timing_info does no longer depend on the modetable.
+This is a multi-part message in MIME format.
+--------------070908050107000900050500
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
----
- drivers/video/via/hw.c    |   16 ++--------------
- drivers/video/via/hw.h    |    1 -
- drivers/video/via/share.h |    4 ----
- 3 files changed, 2 insertions(+), 19 deletions(-)
+Thanks Tormod,
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 5e69c20..d7b9a9f 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -2033,18 +2033,6 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
- 	return 1;
- }
- 
--int viafb_get_pixclock(int hres, int vres, int vmode_refresh)
--{
--	struct crt_mode_table *best;
--
--	best = viafb_get_best_mode(hres, vres, vmode_refresh);
--	if (!best)
--		return RES_640X480_60HZ_PIXCLOCK;
--
--	return 1000000000 / (best->crtc.hor_total * best->crtc.ver_total)
--		* 1000 / best->refresh_rate;
--}
--
- int viafb_get_refresh(int hres, int vres, u32 long_refresh)
- {
- 	struct crt_mode_table *best;
-@@ -2160,8 +2148,8 @@ void viafb_fill_var_timing_info(struct fb_var_screeninfo *var,
- 	struct display_timing crt_reg;
- 
- 	crt_reg = mode->crtc;
--	var->pixclock = viafb_get_pixclock(var->xres, var->yres,
--		mode->refresh_rate);
-+	var->pixclock = 1000000000 / (crt_reg.hor_total * crt_reg.ver_total)
-+		* 1000 / mode->refresh_rate;
- 	var->left_margin  	    crt_reg.hor_total - (crt_reg.hor_sync_start + crt_reg.hor_sync_end);
- 	var->right_margin = crt_reg.hor_sync_start - crt_reg.hor_addr;
-diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
-index 3b7e149..5516b02 100644
---- a/drivers/video/via/hw.h
-+++ b/drivers/video/via/hw.h
-@@ -665,7 +665,6 @@ void viafb_fill_var_timing_info(struct fb_var_screeninfo *var,
- 	struct crt_mode_table *mode);
- void __devinit viafb_init_chip_info(int chip_type);
- void __devinit viafb_init_dac(int set_iga);
--int viafb_get_pixclock(int hres, int vres, int vmode_refresh);
- int viafb_get_refresh(int hres, int vres, u32 float_refresh);
- void viafb_update_device_setting(int hres, int vres, int bpp, int flag);
- 
-diff --git a/drivers/video/via/share.h b/drivers/video/via/share.h
-index 2906b2d..69d882c 100644
---- a/drivers/video/via/share.h
-+++ b/drivers/video/via/share.h
-@@ -636,10 +636,6 @@
- #define V_SYNC_SATRT_SHADOW_INDEX   18
- #define V_SYNC_END_SHADOW_INDEX     19
- 
--/* Definition Video Mode Pixel Clock (picoseconds)
--*/
--#define RES_640X480_60HZ_PIXCLOCK    39722
--
- /* LCD display method
- */
- #define     LCD_EXPANDSION              0x00
--- 
-1.6.3.2
+Attached is the same patch, but with your 'Reviewed-by' added.
 
+Yeah, the T22 is rather old, and a bit of a 'Frankenstein PC' at this 
+point, but its quite functional even with Linux-3.0 and KDE-4.7
+
+thanks again,
+John
+
+On 08/01/2011 06:56 PM, Tormod Volden wrote:
+> On Sun, Jul 31, 2011 at 12:04 PM, John Stanley wrote:
+>>   I have an old T22 Thinkpad with integrated Savage/IX-MV video. As of
+>> linux-3.0, the video is non-functional; the PC either hard hangs immediately
+>> or has totally garbled video, and then hard hangs, as soon as I attempt to
+>> edit a file or cat a file with more than a screen-full of text. The
+>> foregoing details are actually not important any more as in looking at the
+>> code changes I discovered a typo in
+>> linux-3.0.0/drivers/video/savage/savagefb.h and have applied the attached
+>> patch to fix the issue.
+> John, you are absolutely correct. My bad, this was from a commit of
+> mine. You may add my
+>   Reviewed-by: Tormod Volden<debian.tormod@gmail.com>
+> to your patch. I'd suggest you change the patch description (mail
+> subject) to "[PATCH] Fix typo in savage4 series definition" or
+> something similar.
+>
+> The patch should also go into the stable series (by cc'ing
+> stable@vger.kernel.org if I remember correctly).
+>
+>> PLEASE NOTE:
+>>   I realize that the patch does not quite adhere to linux kernel patch
+>> coding-style conventions (in particular, spaces around logical operators,
+>> and lines not exceeding 80 chars), but I have simply changed an
+>> '||' to an'&&' -- and NOT attempted to resolve pre-existing coding-style
+>> violations.
+> I also preserved the old coding style, which is the same in the xorg
+> driver which shares much of this code. We can always change it there
+> as well if somebody would like to fix it up.
+>
+>> thanks much,
+>> John
+>>
+>> P.S. Many, many thanks for lifting the 800x600 resolution limit! I've been
+>> using a patch/hack to bump the limit to 1024x768 for an very long time...
+> Glad to hear that! So there are still other savagefb users around :)
+> My apologies to those who were affected by the typo.
+>
+> Cheers,
+> Tormod
+>
+
+--------------070908050107000900050500
+Content-Type: text/plain;
+ name="linux-3.0.0-savagefb-savage4-series-def-fix.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="linux-3.0.0-savagefb-savage4-series-def-fix.patch"
+
+This patch corrects a typo/regression in the savage driver code occurring in going
+from linux-2.6.39.3 to linux-3.0.0.
+
+In linux-2.6.39.3, there were two savage4 variants (S3_SAVAGE4 and S3_PROSAVAGE).
+Hence, S3_SAVAGE4_SERIES was defined as
+
+  S3_SAVAGE4 or S3_PROSAVAGE
+
+In linux-3.0.0, two additional savage4 variants (S3_TWISTER and S3_PROSAVAGEDDR) have
+been added. Hence S3_SAVAGE4_SERIES should be defined as
+
+  S3_SAVAGE4, S3_PROSAVAGE, S3_TWISTER, or S3_PROSAVAGEDDR
+
+In going from linux-2.6.39.3 to linux-3.0.0, the define statement for S3_SAVAGE4_SERIES
+was incompletely modified: the '||' should have been changed to an '&&'; for an '||' will
+set S3_SAVAGE4_SERIES true for any card.
+
+Signed-off-by: John P. Stanley <jpsinthemix@verizon.net>
+
+Reviewed-by: Tormod Volden <debian.tormod@gmail.com>
+
+--- linux-3.0.0/drivers/video/savage/savagefb.h.orig	2011-07-21 22:17:23.000000000 -0400
++++ linux-3.0.0/drivers/video/savage/savagefb.h	2011-07-31 05:27:47.314798215 -0400
+@@ -55,7 +55,7 @@
+ 
+ #define S3_SAVAGE3D_SERIES(chip)  ((chip>=S3_SAVAGE3D) && (chip<=S3_SAVAGE_MX))
+ 
+-#define S3_SAVAGE4_SERIES(chip)   ((chip>=S3_SAVAGE4) || (chip<=S3_PROSAVAGEDDR))
++#define S3_SAVAGE4_SERIES(chip)   ((chip>=S3_SAVAGE4) && (chip<=S3_PROSAVAGEDDR))
+ 
+ #define S3_SAVAGE_MOBILE_SERIES(chip)  ((chip==S3_SAVAGE_MX) || (chip==S3_SUPERSAVAGE))
+ 
+
+--------------070908050107000900050500--

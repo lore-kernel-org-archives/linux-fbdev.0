@@ -1,87 +1,83 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 11 Aug 2011 00:25:00 +0000
-Subject: Re: [PATCH v3 00/29] Use display information in info not in var for panning
-Message-Id: <201108110225.00782.laurent.pinchart@ideasonboard.com>
+From: bernie@plugable.com
+Date: Tue, 02 Aug 2011 05:54:29 +0000
+Subject: [PATCH 2/5] udlfb: Search config descriptor if not at device level
+Message-Id: <1312264472-2900-2-git-send-email-bernie@plugable.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1310123683-8064-1-git-send-email-laurent.pinchart@ideasonboard.com>
-In-Reply-To: <1310123683-8064-1-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Florian,
+From: Andrew Kephart <akephart@akephart.org>
 
-On Wednesday 10 August 2011 23:01:59 Florian Tobias Schandinat wrote:
-> On 08/09/2011 12:35 PM, Laurent Pinchart wrote:
-> > On Wednesday 13 July 2011 10:24:24 Paul Mundt wrote:
-> >> On Fri, Jul 08, 2011 at 01:14:14PM +0200, Laurent Pinchart wrote:
-> >>> Hi everybody,
-> >>> 
-> >>> Here's the third version of the FBIOPAN_DISPLAY fixes patch series.
-> >>> 
-> >>> As a reminder, while playing with the FBIOPAN_DISPLAY ioctl I noticed
-> >>> that many drivers use information from the ioctl argument such as the
-> >>> display resolution when they should use the current settings from the
-> >>> fb_info structure.
-> >>> 
-> >>> These 29 patches fix most of those drivers. Missing drivers are ivtv
-> >>> (for which a patch has Andy Walls has already pushed a patch),
-> >>> sh_mobile_lcdcfb (for which the fix is a bit more complex, I will work
-> >>> on it later) and viafb (for which Florian Tobias Schandinat has already
-> >>> sent a patch).
-> >>> 
-> >>> The patches have been compile-tested on architectures for which I have
-> >>> a working compiler (x86 and ARM) with allyesconfig. I don't own any
-> >>> hardware supported by these drivers so I haven't been able to perform
-> >>> additional tests.
-> >>> 
-> >>> I've split the fixes in one patch per driver for easier review and
-> >>> handling of potential problems. The patches can be squashed together if
-> >>> needed. I've tried to CC individual driver maintainers when possible,
-> >>> and Acked-by lines received in reply to the first version have been
-> >>> included.
-> >>> 
-> >>> Compared to v2, I've fixed a compile issue in the atmel_lcdfb driver
-> >>> and added a couple of SoB lines.
-> >>> 
-> >>> Paul, is it time to push this for 3.1 ?
-> >> 
-> >> I have the v2 series queued up already, so it would be nice to simply
-> >> have the v2->v3 differences as incremental changes that can be piled on.
-> >> The signed-off-by lines are not that critical in this case since it's a
-> >> largely mechanical change all over the place, so it's primarily the
-> >> build fix(es?) that would be nice to have.
-> > 
-> > I've sent you a fix on top of your v2 series a while ago, and none of
-> > these patches made it to v3.1-rc1.
-> > 
-> > Is fbdev maintained at all ?
-> 
-> Yes, it is :)
+For at least one DisplayLink device, the vendor-specific information can
+be found in the config descriptor instead of as a separate, device-level
+descriptor.  This patch searches the current interface (of the current
+config descriptor) for the DL vendor-specific descriptor.
 
-Great :-)
+Signed-off-by: Andrew Kephart <akephart@akephart.org>
+Signed-off-by: Bernie Thompson <bernie@plugable.com>
+---
+ drivers/video/udlfb.c |   21 ++++++++++++++++-----
+ 1 files changed, 16 insertions(+), 5 deletions(-)
 
-> Well I already wrote to Paul because of this and got a response. Basically
-> he had to do other stuff/trees and felt that everything could go in after
-> rc1 as well.
-
-I know how being overwhelmed with work feels, so I'm not blaming Paul at all. 
-As the last couple of e-mails I've sent him got no reply, and as the patches 
-haven't been pushed to v3.1-rc1, I wanted to check if he was still alive :-) 
-(or if a technical issue was preventing his replies for reaching me).
-
-> But if the situation persists that he has too much other stuff to do and no
-> time left for fbdev I'd be willing to take over maintaining the fbdev stuff.
-> So you may rest assured that your work will not be lost and at worst be
-> merged in the next merge window.
-
-A delay of one merge window is OK in this case. I'm quite new to fbdev 
-development, and still trying to find out how this subsystem is maintained 
-(including how fast patches should be pushed, and how to submit urgent fixes 
-when required).
-
+diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
+index 844b371..bdd21de 100644
+--- a/drivers/video/udlfb.c
++++ b/drivers/video/udlfb.c
+@@ -1489,21 +1489,30 @@ static int dlfb_select_std_channel(struct dlfb_data *dev)
+ }
+ 
+ static int dlfb_parse_vendor_descriptor(struct dlfb_data *dev,
+-					struct usb_device *usbdev)
++					struct usb_interface *interface)
+ {
+ 	char *desc;
+ 	char *buf;
+ 	char *desc_end;
+ 
+-	u8 total_len = 0;
++	int total_len = 0;
+ 
+ 	buf = kzalloc(MAX_VENDOR_DESCRIPTOR_SIZE, GFP_KERNEL);
+ 	if (!buf)
+ 		return false;
+ 	desc = buf;
+ 
+-	total_len = usb_get_descriptor(usbdev, 0x5f, /* vendor specific */
+-				    0, desc, MAX_VENDOR_DESCRIPTOR_SIZE);
++	total_len = usb_get_descriptor(interface_to_usbdev(interface),
++					0x5f, /* vendor specific */
++					0, desc, MAX_VENDOR_DESCRIPTOR_SIZE);
++
++	/* if not found, look in configuration descriptor */
++	if (total_len < 0) {
++		if (0 = usb_get_extra_descriptor(interface->cur_altsetting,
++			0x5f, &desc))
++			total_len = (int) desc[0];
++	}
++
+ 	if (total_len > 5) {
+ 		pr_info("vendor descriptor length:%x data:%02x %02x %02x %02x" \
+ 			"%02x %02x %02x %02x %02x %02x %02x\n",
+@@ -1544,6 +1553,8 @@ static int dlfb_parse_vendor_descriptor(struct dlfb_data *dev,
+ 			}
+ 			desc += length;
+ 		}
++	} else {
++		pr_info("vendor descriptor not available (%d)\n", total_len);
+ 	}
+ 
+ 	goto success;
+@@ -1593,7 +1604,7 @@ static int dlfb_usb_probe(struct usb_interface *interface,
+ 
+ 	dev->sku_pixel_limit = 2048 * 1152; /* default to maximum */
+ 
+-	if (!dlfb_parse_vendor_descriptor(dev, usbdev)) {
++	if (!dlfb_parse_vendor_descriptor(dev, interface)) {
+ 		pr_err("firmware not recognized. Assume incompatible device\n");
+ 		goto error;
+ 	}
 -- 
-Regards,
+1.7.4.1
 
-Laurent Pinchart

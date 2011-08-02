@@ -1,134 +1,192 @@
-From: Jaya Kumar <jayakumar.lkml@gmail.com>
-Date: Sat, 27 Aug 2011 10:28:46 +0000
-Subject: Re: [PATCH 1/4] OMAP: OMAPFB: make omapfb start even when a display
-Message-Id: <CADqH6VybU7=rSAobaOKbvGwHouLeWuGwbUrc70xKgusE_+rqzQ@mail.gmail.com>
+From: Paul Walmsley <paul@pwsan.com>
+Date: Tue, 02 Aug 2011 01:14:14 +0000
+Subject: Re: [PATCHv2 17/28] OMAP2420: HWMOD: Add DSS opt clocks
+Message-Id: <alpine.DEB.2.00.1108011910410.28427@utopia.booyaka.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314001636-18036-1-git-send-email-tomi.valkeinen@ti.com>
-	<1314001636-18036-2-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314001636-18036-2-git-send-email-tomi.valkeinen@ti.com>
+References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com> <1307627810-3768-18-git-send-email-tomi.valkeinen@ti.com> <alpine.DEB.2.00.1107150047160.16606@utopia.booyaka.com>
+In-Reply-To: <alpine.DEB.2.00.1107150047160.16606@utopia.booyaka.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, b-cousson@ti.com, khilman@ti.com
 
-On Mon, Aug 22, 2011 at 4:27 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wro=
-te:
-> Currently omapfb wants that all the display devices have a driver,
-> otherwise omapfb refuses to start. There's no real requirement to act
-> like that, and this patch will make omapfb give a warning and skip that
-> device.
+Hello Tomi
 
-Hi Tomi,
+On Fri, 15 Jul 2011, Paul Walmsley wrote:
 
-Just a question, I am working with an out-of-tree hdmi driver for the
-NXP TDA9984 with dm3730. This worked fine in 2.6.32 as a runtime
-loaded dss display driver. That is:
+> On Thu, 9 Jun 2011, Tomi Valkeinen wrote:
+> 
+> > Add DSS optional clocks to HWMOD data for OMAP2420.
 
-+static struct omap_dss_device wiser2_hdmi_device =3D {
-+       .type =3D OMAP_DISPLAY_TYPE_DPI,
-+       .name =3D "hdmi",
-+       .driver_name =3D "hdmi_panel",
-+       .phy.dpi.data_lines =3D 24,
-+       .platform_enable =3D wiser2_enable_hdmi,
-+       .platform_disable =3D wiser2_disable_hdmi,
+This patch has been combined with the 2430 patch and the OMAP2xxx portion 
+of the temporary hack in the DSS driver has been removed.  Care to review 
+the new changes before it's sent to Tony?
+
+
+- Paul
+
+
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 1 Aug 2011 19:02:23 -0600
+Subject: [PATCH 1/2] OMAP2xxx: HWMOD: Add DSS opt clocks
+
+Add DSS optional clocks to HWMOD data for OMAP2420 and OMAP2430.
+
+Revert OMAP2xxx portion of commit
+9ede365aa6f74428a1f69c21ca1cf21213167576 ("HACK: OMAP: DSS2: clk hack
+for OMAP2/3").
+
+Cc: Benoit Cousson <b-cousson@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+[paul@pwsan.com: merge 2420 and 2430 patches; remove temporary DSS driver hack;
+ update changelog]
+Signed-off-by: Paul Walmsley <paul@pwsan.com>
+---
+ arch/arm/mach-omap2/omap_hwmod_2420_data.c |   17 ++++++++---------
+ arch/arm/mach-omap2/omap_hwmod_2430_data.c |   17 ++++++++---------
+ drivers/video/omap2/dss/rfbi.c             |    2 +-
+ 3 files changed, 17 insertions(+), 19 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/omap_hwmod_2420_data.c b/arch/arm/mach-omap2/omap_hwmod_2420_data.c
+index a015c69..b075188 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_2420_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_2420_data.c
+@@ -873,11 +873,6 @@ static struct omap_hwmod_ocp_if *omap2420_dss_slaves[] = {
+ 	&omap2420_l4_core__dss,
+ };
+ 
+-static struct omap_hwmod_opt_clk dss_opt_clks[] = {
+-	{ .role = "tv_clk", .clk = "dss_54m_fck" },
+-	{ .role = "sys_clk", .clk = "dss2_fck" },
+-};
+-
+ static struct omap_hwmod omap2420_dss_core_hwmod = {
+ 	.name		= "dss_core",
+ 	.class		= &omap2_dss_hwmod_class,
+@@ -892,8 +887,6 @@ static struct omap_hwmod omap2420_dss_core_hwmod = {
+ 			.idlest_stdby_bit = OMAP24XX_ST_DSS_SHIFT,
+ 		},
+ 	},
+-	.opt_clks	= dss_opt_clks,
+-	.opt_clks_cnt = ARRAY_SIZE(dss_opt_clks),
+ 	.slaves		= omap2420_dss_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap2420_dss_slaves),
+ 	.masters	= omap2420_dss_masters,
+@@ -962,6 +955,10 @@ static struct omap_hwmod_ocp_if *omap2420_dss_rfbi_slaves[] = {
+ 	&omap2420_l4_core__dss_rfbi,
+ };
+ 
++static struct omap_hwmod_opt_clk dss_rfbi_opt_clks[] = {
++	{ .role = "ick", .clk = "dss_ick" },
 +};
 +
-+static struct omap_dss_device wiser2_tv_device =3D {
-+       .name =3D "tv",
-+       .driver_name =3D "venc",
-+       .type =3D OMAP_DISPLAY_TYPE_VENC,
-+       .phy.venc.type =3D OMAP_DSS_VENC_TYPE_SVIDEO,
-+       .platform_enable =3D wiser2_panel_enable_tv,
-+       .platform_disable =3D wiser2_panel_disable_tv,
+ static struct omap_hwmod omap2420_dss_rfbi_hwmod = {
+ 	.name		= "dss_rfbi",
+ 	.class		= &omap2_rfbi_hwmod_class,
+@@ -973,6 +970,8 @@ static struct omap_hwmod omap2420_dss_rfbi_hwmod = {
+ 			.module_offs = CORE_MOD,
+ 		},
+ 	},
++	.opt_clks	= dss_rfbi_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(dss_rfbi_opt_clks),
+ 	.slaves		= omap2420_dss_rfbi_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap2420_dss_rfbi_slaves),
+ 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2420),
+@@ -983,7 +982,7 @@ static struct omap_hwmod omap2420_dss_rfbi_hwmod = {
+ static struct omap_hwmod_ocp_if omap2420_l4_core__dss_venc = {
+ 	.master		= &omap2420_l4_core_hwmod,
+ 	.slave		= &omap2420_dss_venc_hwmod,
+-	.clk		= "dss_54m_fck",
++	.clk		= "dss_ick",
+ 	.addr		= omap2_dss_venc_addrs,
+ 	.fw = {
+ 		.omap2 = {
+@@ -1003,7 +1002,7 @@ static struct omap_hwmod_ocp_if *omap2420_dss_venc_slaves[] = {
+ static struct omap_hwmod omap2420_dss_venc_hwmod = {
+ 	.name		= "dss_venc",
+ 	.class		= &omap2_venc_hwmod_class,
+-	.main_clk	= "dss1_fck",
++	.main_clk	= "dss_54m_fck",
+ 	.prcm		= {
+ 		.omap2 = {
+ 			.prcm_reg_id = 1,
+diff --git a/arch/arm/mach-omap2/omap_hwmod_2430_data.c b/arch/arm/mach-omap2/omap_hwmod_2430_data.c
+index 16743c7..3569084 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_2430_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_2430_data.c
+@@ -939,11 +939,6 @@ static struct omap_hwmod_ocp_if *omap2430_dss_slaves[] = {
+ 	&omap2430_l4_core__dss,
+ };
+ 
+-static struct omap_hwmod_opt_clk dss_opt_clks[] = {
+-	{ .role = "tv_clk", .clk = "dss_54m_fck" },
+-	{ .role = "sys_clk", .clk = "dss2_fck" },
+-};
+-
+ static struct omap_hwmod omap2430_dss_core_hwmod = {
+ 	.name		= "dss_core",
+ 	.class		= &omap2_dss_hwmod_class,
+@@ -958,8 +953,6 @@ static struct omap_hwmod omap2430_dss_core_hwmod = {
+ 			.idlest_stdby_bit = OMAP24XX_ST_DSS_SHIFT,
+ 		},
+ 	},
+-	.opt_clks	= dss_opt_clks,
+-	.opt_clks_cnt = ARRAY_SIZE(dss_opt_clks),
+ 	.slaves		= omap2430_dss_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap2430_dss_slaves),
+ 	.masters	= omap2430_dss_masters,
+@@ -1016,6 +1009,10 @@ static struct omap_hwmod_ocp_if *omap2430_dss_rfbi_slaves[] = {
+ 	&omap2430_l4_core__dss_rfbi,
+ };
+ 
++static struct omap_hwmod_opt_clk dss_rfbi_opt_clks[] = {
++	{ .role = "ick", .clk = "dss_ick" },
 +};
 +
-+static struct omap_dss_device *wiser2_dss_devices[] =3D {
-+       &wiser2_dvi_device,
-+       &wiser2_tv_device,
-+       &wiser2_hdmi_device,
-+};
+ static struct omap_hwmod omap2430_dss_rfbi_hwmod = {
+ 	.name		= "dss_rfbi",
+ 	.class		= &omap2_rfbi_hwmod_class,
+@@ -1027,6 +1024,8 @@ static struct omap_hwmod omap2430_dss_rfbi_hwmod = {
+ 			.module_offs = CORE_MOD,
+ 		},
+ 	},
++	.opt_clks	= dss_rfbi_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(dss_rfbi_opt_clks),
+ 	.slaves		= omap2430_dss_rfbi_slaves,
+ 	.slaves_cnt	= ARRAY_SIZE(omap2430_dss_rfbi_slaves),
+ 	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP2430),
+@@ -1037,7 +1036,7 @@ static struct omap_hwmod omap2430_dss_rfbi_hwmod = {
+ static struct omap_hwmod_ocp_if omap2430_l4_core__dss_venc = {
+ 	.master		= &omap2430_l4_core_hwmod,
+ 	.slave		= &omap2430_dss_venc_hwmod,
+-	.clk		= "dss_54m_fck",
++	.clk		= "dss_ick",
+ 	.addr		= omap2_dss_venc_addrs,
+ 	.flags		= OCPIF_SWSUP_IDLE,
+ 	.user		= OCP_USER_MPU | OCP_USER_SDMA,
+@@ -1051,7 +1050,7 @@ static struct omap_hwmod_ocp_if *omap2430_dss_venc_slaves[] = {
+ static struct omap_hwmod omap2430_dss_venc_hwmod = {
+ 	.name		= "dss_venc",
+ 	.class		= &omap2_venc_hwmod_class,
+-	.main_clk	= "dss1_fck",
++	.main_clk	= "dss_54m_fck",
+ 	.prcm		= {
+ 		.omap2 = {
+ 			.prcm_reg_id = 1,
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 39f4c59..457f1ac 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -952,7 +952,7 @@ static int omap_rfbihw_probe(struct platform_device *pdev)
+ 
+ 	msleep(10);
+ 
+-	if (cpu_is_omap24xx() || cpu_is_omap34xx() || cpu_is_omap3630())
++	if (cpu_is_omap34xx() || cpu_is_omap3630())
+ 		clk = dss_get_ick();
+ 	else
+ 		clk = clk_get(&pdev->dev, "ick");
+-- 
+1.7.5.4
 
-so this hdmi_panel omap_dss_driver was being insmoded after init at
-bootup and it worked fine, no problems with omaplfb so pvr stuff
-worked fine.
-
-I then switched to 2.6.37 (from TI devkit 2.1 gingerbread) and this
-kernel wasn't so happy (panic at boot). I applied your patch below. I
-also figured out that omap_vout had a similar problem as the one
-you've fixed which was what was causing the panic (omap_vout tries to
-call display->driver->update without checking if driver exists):
-diff --git a/drivers/media/video/omap/omap_vout.c
-b/drivers/media/video/omap/omap_vout.c
-index 2aee372..36d69db 100644
---- a/drivers/media/video/omap/omap_vout.c
-+++ b/drivers/media/video/omap/omap_vout.c
-@@ -2574,24 +2591,32 @@ static int __init omap_vout_probe(struct
-platform_device *pdev)
-+       printk(KERN_INFO "%s:%d\n", __func__, __LINE__);
-        for (i =3D 0; i < vid_dev->num_displays; i++) {
-                struct omap_dss_device *display =3D vid_dev->displays[i];
-
--               if (display->driver->update)
-+       printk(KERN_INFO "%s:%d\n", __func__, __LINE__);
-+               if ((display->driver) && (display->driver->update)) {
-+       printk(KERN_INFO "%s:%d\n", __func__, __LINE__);
-                        display->driver->update(display, 0, 0,
-                                        display->panel.timings.x_res,
-                                        display->panel.timings.y_res);
-+               }
-+       printk(KERN_INFO "%s:%d\n", __func__, __LINE__);
-        }
-+       printk(KERN_INFO "%s:%d\n", __func__, __LINE__);
-        return 0;
-
-After that change, it boots up cleanly but I don't get any display
-output. I noticed that:
-echo 1 > /sys/devices/omapdss/display2/enabled
-no longer works. display2 stays enabled=3D0 rather than coming on.
-
-I'm planning on debugging this some more when I have some free time.
-But I figured I should ask first if this is a known problem, whether
-anyone else is testing runtime loaded omap_dss_driver stuff and if
-anyone has gotten it to work with kernels 2.6.37 and above.
-
-Thanks,
-jaya
-
->
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
-> =A0drivers/video/omap2/omapfb/omapfb-main.c | =A0 =A05 +++--
-> =A01 files changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/oma=
-p2/omapfb/omapfb-main.c
-> index e5a64b3..cd2cae8e 100644
-> --- a/drivers/video/omap2/omapfb/omapfb-main.c
-> +++ b/drivers/video/omap2/omapfb/omapfb-main.c
-> @@ -2373,9 +2373,10 @@ static int omapfb_probe(struct platform_device *pd=
-ev)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0omap_dss_get_device(dssdev);
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (!dssdev->driver) {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&pdev->dev, "no dri=
-ver for display: %s\n",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_warn(&pdev->dev, "no dr=
-iver for display: %s\n",
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dssdev->na=
-me);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 r =3D -ENODEV;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 omap_dss_put_device(dssdev);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0d =3D &fbdev->displays[fbdev->num_displays=
-++];
-> --
-> 1.7.4.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
->

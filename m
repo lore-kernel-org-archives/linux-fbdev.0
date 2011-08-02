@@ -1,37 +1,95 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 24 Aug 2011 14:24:41 +0000
-Subject: Re: [PULL] Use display information in info not in var for panning
-Message-Id: <201108241624.41547.laurent.pinchart@ideasonboard.com>
+From: bernie@plugable.com
+Date: Tue, 02 Aug 2011 05:54:30 +0000
+Subject: [PATCH 3/5] udlfb: fix issues found with Sparse static analysis
+Message-Id: <1312264472-2900-3-git-send-email-bernie@plugable.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201108191038.43286.laurent.pinchart@ideasonboard.com>
-In-Reply-To: <201108191038.43286.laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Florian,
+From: Dr. David Alan Gilbert <linux@treblig.org>
 
-On Wednesday 24 August 2011 16:15:46 Florian Tobias Schandinat wrote:
-> On 08/19/2011 08:38 AM, Laurent Pinchart wrote:
-> > Hi Florian (or should I call you Florian Tobias ?),
-> 
-> Florian is good. I just use my full name as an indication of authenticity.
-> 
-> > Here is the latest version of the pan patches based on top of v3.1-rc2.
-> > Apart from being rebased, they're identical to the v3 version posted to
-> > the linux- fbdev mailing list.
-> 
-> Pulled this one.
+Add __user casting, a missing copy_from_user, and proper boolean
 
-Thank you.
+Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
+Signed-off-by: Bernie Thompson <bernie@plugable.com>
+---
+ drivers/video/udlfb.c |   30 ++++++++++++++++--------------
+ 1 files changed, 16 insertions(+), 14 deletions(-)
 
-> JFYI: I want to have a deeper look at the other pull request you sent and
-> therefore I will need some time for it.
-
-No worries. Review is always appreciated :-)
-
+diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
+index bdd21de..f5df3d3 100644
+--- a/drivers/video/udlfb.c
++++ b/drivers/video/udlfb.c
+@@ -786,14 +786,13 @@ static int dlfb_ops_ioctl(struct fb_info *info, unsigned int cmd,
+ {
+ 
+ 	struct dlfb_data *dev = info->par;
+-	struct dloarea *area = NULL;
+ 
+ 	if (!atomic_read(&dev->usb_active))
+ 		return 0;
+ 
+ 	/* TODO: Update X server to get this from sysfs instead */
+ 	if (cmd = DLFB_IOCTL_RETURN_EDID) {
+-		char *edid = (char *)arg;
++		void __user *edid = (void __user *)arg;
+ 		if (copy_to_user(edid, dev->edid, dev->edid_size))
+ 			return -EFAULT;
+ 		return 0;
+@@ -801,6 +800,11 @@ static int dlfb_ops_ioctl(struct fb_info *info, unsigned int cmd,
+ 
+ 	/* TODO: Help propose a standard fb.h ioctl to report mmap damage */
+ 	if (cmd = DLFB_IOCTL_REPORT_DAMAGE) {
++		struct dloarea area;
++
++		if (copy_from_user(&area, (void __user *)arg,
++				  sizeof(struct dloarea)))
++			return -EFAULT;
+ 
+ 		/*
+ 		 * If we have a damage-aware client, turn fb_defio "off"
+@@ -812,21 +816,19 @@ static int dlfb_ops_ioctl(struct fb_info *info, unsigned int cmd,
+ 		if (info->fbdefio)
+ 			info->fbdefio->delay = DL_DEFIO_WRITE_DISABLE;
+ 
+-		area = (struct dloarea *)arg;
+-
+-		if (area->x < 0)
+-			area->x = 0;
++		if (area.x < 0)
++			area.x = 0;
+ 
+-		if (area->x > info->var.xres)
+-			area->x = info->var.xres;
++		if (area.x > info->var.xres)
++			area.x = info->var.xres;
+ 
+-		if (area->y < 0)
+-			area->y = 0;
++		if (area.y < 0)
++			area.y = 0;
+ 
+-		if (area->y > info->var.yres)
+-			area->y = info->var.yres;
++		if (area.y > info->var.yres)
++			area.y = info->var.yres;
+ 
+-		dlfb_handle_damage(dev, area->x, area->y, area->w, area->h,
++		dlfb_handle_damage(dev, area.x, area.y, area.w, area.h,
+ 			   info->screen_base);
+ 	}
+ 
+@@ -874,7 +876,7 @@ static int dlfb_ops_open(struct fb_info *info, int user)
+ 	 * preventing other clients (X) from working properly. Usually
+ 	 * not what the user wants. Fail by default with option to enable.
+ 	 */
+-	if ((user = 0) & (!console))
++	if ((user = 0) && (!console))
+ 		return -EBUSY;
+ 
+ 	/* If the USB device is gone, we don't accept new opens */
 -- 
-Regards,
+1.7.4.1
 
-Laurent Pinchart

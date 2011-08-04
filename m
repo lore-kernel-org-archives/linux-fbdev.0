@@ -1,35 +1,65 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 24 Aug 2011 13:59:03 +0000
-Subject: Re: [PATCH 4/6] udlfb: Add module option to do without shadow framebuffer
-Message-Id: <4E5503A7.9070707@gmx.de>
+From: Randy Dunlap <rdunlap@xenotime.net>
+Date: Thu, 04 Aug 2011 00:55:41 +0000
+Subject: Re: [Bugme-new] [Bug 40492] New: FB_BACKLIGHT should be set by
+Message-Id: <20110803175541.7ed2fb24.rdunlap@xenotime.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1313958862-5640-7-git-send-email-bernie@plugable.com>
-In-Reply-To: <1313958862-5640-7-git-send-email-bernie@plugable.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On 08/21/2011 08:34 PM, bernie@plugable.com wrote:
-> From: Stuart Hopkins <stuart@linux-depot.com>
+On Wed, 3 Aug 2011 18:55:41 GMT bugzilla-daemon@bugzilla.kernel.org wrote:
+
+> https://bugzilla.kernel.org/show_bug.cgi?id@492
 > 
-> By default, udlfb allocates a 2nd buffer to shadow what's across
-> the bus on the USB device.  It can operate without this shadow,
-> but then it cannot tell which pixels have changed, and must send all.
+>            Summary: FB_BACKLIGHT should be set by BACKLIGHT_CLASS_DEVICE
+>            Product: Other
+>            Version: 2.5
+>     Kernel Version: 3.0.0
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: Configuration
+>         AssignedTo: other_configuration@kernel-bugs.osdl.org
+>         ReportedBy: StormByte@gmail.com
+>         Regression: No
 > 
-> Saves host memory, but worsens the USB 2.0 bus bottleneck.
 > 
-> This option allows users in very low memory situations (e.g.
-> bifferboard) to optionally turn off this shadow framebuffer.
+> Created an attachment (idg432)
+>  --> (https://bugzilla.kernel.org/attachment.cgi?idg432)
+> Kernel's config
 > 
-> Signed-off-by: Bernie Thompson <bernie@plugable.com>
-> Signed-off-by: Stuart Hopkins <stuart@linux-depot.com>
+> I discovered a scenario in which menuconfig fails to set FB_BACKLIGHT symbol
+> when needed.
+> 
+> In my case, I have propietary nvidia drivers once loaded Xorg, but in the
+> meanwhile, I have configured an uvesafb framebuffer (thus, no other framebuffer
+> active nor compiled).
+> 
+> System works ok, but when trying to install nvidiabl[1] (to control nvidia's
+> backlight) I find that FB_BACKLIGHT is not set where it should be because I
+> have BACKLIGHT_CLASS_DEVICE set.
+> 
+> The result is that nvidiabl does not compile.
+> 
+> The workarround for this now is to enable as a modile any component with
+> support for backlight [Nvidia Framebuffer (CONFIG_FB_NVIDIA), ATI Radeon
+> display (CONFIG_FB_RADEON), etc...]
+> 
+> I propose either enabling it automatically with CONFIG_BACKLIGHT_CLASS_DEVICE,
+> or either having a separate option to allow it to be selected manually for
+> external modules.
+> 
+> I add an attachment of a kernel config showing this scenario with FB_BACKLIGHT
+> not set nor any other framebuffer than uvesafb
+> 
+> -- 
 
-The order of the Signed-offs looks a bit strange here so I reordered them.
+Any fbdev comments on this bug report?
 
-I applied the ?/6 series.
-
-
-Thanks,
-
-Florian Tobias Schandinat
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***

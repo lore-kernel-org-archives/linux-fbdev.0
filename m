@@ -1,170 +1,149 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 19 Aug 2011 09:16:12 +0000
-Subject: [PATCH 7/7] fbdev: sh_mobile_lcdc: Remove sh_mobile_lcdc_set_bpp()
-Message-Id: <1313745372-20856-8-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 04 Aug 2011 12:18:59 +0000
+Subject: Re: [PATCH] ARM: OMAP2+ Add Primview dispalys to panel-generic
+Message-Id: <1312460339.2143.23.camel@deskari>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1310122034-6561-1-git-send-email-j.weitzel@phytec.de>
+In-Reply-To: <1310122034-6561-1-git-send-email-j.weitzel@phytec.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-The function duplicates code found in sh_mobile_check_var(). Remove
-sh_mobile_lcdc_set_bpp() and call sh_mobile_check_var() instead.
+Hi,
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
----
- drivers/video/sh_mobile_lcdcfb.c |   87 +++++++------------------------------
- 1 files changed, 17 insertions(+), 70 deletions(-)
+On Fri, 2011-07-08 at 12:47 +0200, Jan Weitzel wrote:
+> Add displays to panel-generic-dpi.c
+> Prime View PD035VL1 (640 x 480)
+> Prime View PD050VL1 (640 x 480)
+> Prime View PD104SLF (800 x 600)
+> Prime View PM070WL4 (800 x 480)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index d1576e2..97ab8ba 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -1291,66 +1291,6 @@ static void sh_mobile_lcdc_bl_remove(struct backlight_device *bdev)
- 	backlight_device_unregister(bdev);
- }
- 
--static int sh_mobile_lcdc_set_bpp(struct fb_var_screeninfo *var, int bpp,
--				   int nonstd)
--{
--	if (nonstd) {
--		switch (bpp) {
--		case 12:
--		case 16:
--		case 24:
--			var->bits_per_pixel = bpp;
--			var->nonstd = nonstd;
--			return 0;
--		default:
--			return -EINVAL;
--		}
--	}
--
--	switch (bpp) {
--	case 16: /* PKF[4:0] = 00011 - RGB 565 */
--		var->red.offset = 11;
--		var->red.length = 5;
--		var->green.offset = 5;
--		var->green.length = 6;
--		var->blue.offset = 0;
--		var->blue.length = 5;
--		var->transp.offset = 0;
--		var->transp.length = 0;
--		break;
--
--	case 24: /* PKF[4:0] = 01011 - RGB 888 */
--		var->red.offset = 16;
--		var->red.length = 8;
--		var->green.offset = 8;
--		var->green.length = 8;
--		var->blue.offset = 0;
--		var->blue.length = 8;
--		var->transp.offset = 0;
--		var->transp.length = 0;
--		break;
--
--	case 32: /* PKF[4:0] = 00000 - RGBA 888 */
--		var->red.offset = 16;
--		var->red.length = 8;
--		var->green.offset = 8;
--		var->green.length = 8;
--		var->blue.offset = 0;
--		var->blue.length = 8;
--		var->transp.offset = 24;
--		var->transp.length = 8;
--		break;
--	default:
--		return -EINVAL;
--	}
--	var->bits_per_pixel = bpp;
--	var->red.msb_right = 0;
--	var->green.msb_right = 0;
--	var->blue.msb_right = 0;
--	var->transp.msb_right = 0;
--	return 0;
--}
--
- static int sh_mobile_lcdc_suspend(struct device *dev)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
-@@ -1499,6 +1439,9 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
- 	int ret;
- 	int i;
- 
-+	mutex_init(&ch->open_lock);
-+
-+	/* Allocate the frame buffer device. */
- 	ch->info = framebuffer_alloc(0, dev);
- 	if (!ch->info) {
- 		dev_err(dev, "unable to allocate fb_info\n");
-@@ -1506,11 +1449,10 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
- 	}
- 
- 	info = ch->info;
--	var = &info->var;
- 	info->fbops = &sh_mobile_lcdc_ops;
- 	info->par = ch;
--
--	mutex_init(&ch->open_lock);
-+	info->pseudo_palette = &ch->pseudo_palette;
-+	info->flags = FBINFO_FLAG_DEFAULT;
- 
- 	/* Iterate through the modes to validate them and find the highest
- 	 * resolution.
-@@ -1541,13 +1483,15 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
- 		dev_dbg(dev, "Found largest videomode %ux%u\n",
- 			max_mode->xres, max_mode->yres);
- 
-+	/* Initialize fixed screen information. Restrict pan to 2 lines steps
-+	 * for NV12.
-+	 */
- 	info->fix = sh_mobile_lcdc_fix;
- 	info->fix.smem_len = max_size * 2 * cfg->bpp / 8;
--
--	 /* Only pan in 2 line steps for NV12 */
- 	if (cfg->nonstd && cfg->bpp = 12)
- 		info->fix.ypanstep = 2;
- 
-+	/* Create the mode list. */
- 	if (cfg->lcd_cfg = NULL) {
- 		mode = &default_720p;
- 		num_cfg = 1;
-@@ -1558,17 +1502,23 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
- 
- 	fb_videomode_to_modelist(mode, num_cfg, &info->modelist);
- 
-+	/* Initialize variable screen information using the first mode as
-+	 * default. The default Y virtual resolution is twice the panel size to
-+	 * allow for double-buffering.
-+	 */
-+	var = &info->var;
- 	fb_videomode_to_var(var, mode);
-+	var->bits_per_pixel = cfg->bpp;
- 	var->width = cfg->lcd_size_cfg.width;
- 	var->height = cfg->lcd_size_cfg.height;
--	/* Default Y virtual resolution is 2x panel size */
- 	var->yres_virtual = var->yres * 2;
- 	var->activate = FB_ACTIVATE_NOW;
- 
--	ret = sh_mobile_lcdc_set_bpp(var, cfg->bpp, cfg->nonstd);
-+	ret = sh_mobile_check_var(var, info);
- 	if (ret)
- 		return ret;
- 
-+	/* Allocate frame buffer memory and color map. */
- 	buf = dma_alloc_coherent(dev, info->fix.smem_len, &ch->dma_handle,
- 				 GFP_KERNEL);
- 	if (!buf) {
-@@ -1576,9 +1526,6 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
- 		return -ENOMEM;
- 	}
- 
--	info->pseudo_palette = &ch->pseudo_palette;
--	info->flags = FBINFO_FLAG_DEFAULT;
--
- 	ret = fb_alloc_cmap(&info->cmap, PALETTE_NR, 0);
- 	if (ret < 0) {
- 		dev_err(dev, "unable to allocate cmap\n");
--- 
-1.7.3.4
+Did you copy the acb and power_on/off_delay values from the sharp panel?
+acbi and acb are not needed at all, and you should check if
+power_on/off_delay are needed and if they are, what they should be.
+
+Also, the first two panels look identical. While there's nothing wrong
+with that, I wonder if could be a more generic "family" name for the
+panels, and there would be need to define the timings only once.
+
+ Tomi
+
+> Signed-off-by: Jan Weitzel <j.weitzel@phytec.de>
+> ---
+>  drivers/video/omap2/displays/panel-generic-dpi.c |  100 ++++++++++++++++++++++
+>  1 files changed, 100 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
+> index 9c90f75..87d9ba1 100644
+> --- a/drivers/video/omap2/displays/panel-generic-dpi.c
+> +++ b/drivers/video/omap2/displays/panel-generic-dpi.c
+> @@ -232,6 +232,106 @@ static struct panel_config generic_dpi_panels[] = {
+>  		.power_off_delay	= 0,
+>  		.name			= "powertip_ph480272t",
+>  	},
+> +
+> +	/* Prime-View PD035VL1 */
+> +	{
+> +		{
+> +			.x_res		= 640,
+> +			.y_res		= 480,
+> +
+> +			.pixel_clock	= 25000,
+> +
+> +			.hsw		= 96,
+> +			.hfp		= 18,
+> +			.hbp		= 46,
+> +
+> +			.vsw		= 2,
+> +			.vfp		= 10,
+> +			.vbp		= 33,
+> +		},
+> +		.acbi			= 0x0,
+> +		.acb			= 0x28,
+> +		.config			= OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
+> +					  OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC,
+> +		.power_on_delay		= 50,
+> +		.power_off_delay	= 100,
+> +		.name			= "pd035vl1",
+> +	},
+> +
+> +	/* Prime-View PD050VL1 */
+> +	{
+> +		{
+> +			.x_res		= 640,
+> +			.y_res		= 480,
+> +
+> +			.pixel_clock	= 25000,
+> +
+> +			.hsw		= 96,
+> +			.hfp		= 18,
+> +			.hbp		= 46,
+> +
+> +			.vsw		= 2,
+> +			.vfp		= 10,
+> +			.vbp		= 33,
+> +		},
+> +		.acbi			= 0x0,
+> +		.acb			= 0x28,
+> +		.config			= OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
+> +					  OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC,
+> +		.power_on_delay		= 50,
+> +		.power_off_delay	= 100,
+> +		.name			= "pd050vl1",
+> +	},
+> +
+> +	/* Prime-View PM070WL4 */
+> +	{
+> +		{
+> +			.x_res		= 800,
+> +			.y_res		= 480,
+> +
+> +			.pixel_clock	= 32000,
+> +
+> +			.hsw		= 128,
+> +			.hfp		= 42,
+> +			.hbp		= 86,
+> +
+> +			.vsw		= 2,
+> +			.vfp		= 10,
+> +			.vbp		= 33,
+> +		},
+> +		.acbi			= 0x0,
+> +		.acb			= 0x28,
+> +		.config			= OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
+> +					  OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC,
+> +		.power_on_delay		= 50,
+> +		.power_off_delay	= 100,
+> +		.name			= "pm070wl4",
+> +	},
+> +
+> +	/* Prime-View PD104SLF */
+> +	{
+> +		{
+> +			.x_res		= 800,
+> +			.y_res		= 600,
+> +
+> +			.pixel_clock	= 40000,
+> +
+> +			.hsw		= 128,
+> +			.hfp		= 42,
+> +			.hbp		= 86,
+> +
+> +			.vsw		= 4,
+> +			.vfp		= 1,
+> +			.vbp		= 23,
+> +		},
+> +		.acbi			= 0x0,
+> +		.acb			= 0x28,
+> +		.config			= OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
+> +					  OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC,
+> +		.power_on_delay		= 50,
+> +		.power_off_delay	= 100,
+> +		.name			= "pd104slf",
+> +	},
+>  };
+>  
+>  struct panel_drv_data {
+
 

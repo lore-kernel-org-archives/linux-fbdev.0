@@ -1,41 +1,42 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 22 Aug 2011 08:26:10 +0000
-Subject: [PATCH 2/3] Revert "OMAP: DSS2: HDMI: fix hdmi clock name"
-Message-Id: <1314001571-17877-3-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 04 Aug 2011 08:09:19 +0000
+Subject: Re: [PATCH] OMAPFB: make debug message more useful
+Message-Id: <1312445359.2143.9.camel@deskari>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314001571-17877-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314001571-17877-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1309972109-23778-1-git-send-email-andy.doan@linaro.org>
+In-Reply-To: <1309972109-23778-1-git-send-email-andy.doan@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Andy Doan <andy.doan@linaro.org>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-This reverts commit df5d3ed23cf73ee0763a8963003bda9b69d9620f.
+On Wed, 2011-07-06 at 12:08 -0500, Andy Doan wrote:
+> Make the debug message useful by printing the name of the device
+> that no associated driver could be found for.
+> 
+> Signed-off-by: Andy Doan <andy.doan@linaro.org>
+> ---
+>  drivers/video/omap2/omapfb/omapfb-main.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+> index 602b71a..e5a64b3 100644
+> --- a/drivers/video/omap2/omapfb/omapfb-main.c
+> +++ b/drivers/video/omap2/omapfb/omapfb-main.c
+> @@ -2373,7 +2373,8 @@ static int omapfb_probe(struct platform_device *pdev)
+>  		omap_dss_get_device(dssdev);
+>  
+>  		if (!dssdev->driver) {
+> -			dev_err(&pdev->dev, "no driver for display\n");
+> +			dev_err(&pdev->dev, "no driver for display: %s\n",
+> +				dssdev->name);
+>  			r = -ENODEV;
+>  		}
+>  
 
-The HDMI clock name has been fixed in HWMOD data.
+Thanks, applying.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/hdmi.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ Tomi
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 3767323..9353dcf 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -1704,9 +1704,9 @@ static int hdmi_get_clocks(struct platform_device *pdev)
- 
- 	hdmi.sys_clk = clk;
- 
--	clk = clk_get(&pdev->dev, "dss_48mhz_clk");
-+	clk = clk_get(&pdev->dev, "fck");
- 	if (IS_ERR(clk)) {
--		DSSERR("can't get hdmi_clk\n");
-+		DSSERR("can't get fck\n");
- 		clk_put(hdmi.sys_clk);
- 		return PTR_ERR(clk);
- 	}
--- 
-1.7.4.1
 

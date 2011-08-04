@@ -1,58 +1,59 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 31 Aug 2011 13:23:19 +0000
-Subject: [PATCH 08/12] OMAP: DSS2: HDMI: remove error prints in check_timings
-Message-Id: <1314797003-17638-9-git-send-email-tomi.valkeinen@ti.com>
+From: John Stanley <jpsinthemix@verizon.net>
+Date: Thu, 04 Aug 2011 00:41:00 +0000
+Subject: [PATCH] savagedb: Fix savage4 series video chip detection regression
+Message-Id: <4E39EA9C.3040700@verizon.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, adaplas@gmail.com, Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org
 
-check_timings() is supposed to be used to verify if timings are ok or
-not. Currently the HDMI driver prints error messages if the timings are
-not ok. This is not right, as it is no error to give invalid timings to
-check_timings().
+From: John Stanley <jpsinthemix@verizon.net>
 
-Remove the error prints.
+savagedb: Fix typo causing regression in savage4 series video chip detection
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Two additional savage4 variants were added, but the S3_SAVAGE4_SERIES 
+macro was incompletely modified, resulting in a false positive detection 
+of a savage4 card regardless of which savage card is actually present. 
+For non-savage4 series
+cards, such as a Savage/IX-MV card, this results in garbled video and/or 
+a hard-hang at boot time. Fix this by changing an '||' to an '&&' in the 
+S3_SAVAGE4_SERIES macro.
+
+Signed-off-by: John P. Stanley <jpsinthemix@verizon.net>
+Reviewed-by: Tormod Volden <debian.tormod@gmail.com>
+
 ---
- drivers/video/omap2/dss/hdmi.c             |    1 -
- drivers/video/omap2/dss/hdmi_omap4_panel.c |    6 +-----
- 2 files changed, 1 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 34e05ee..55edbd2 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -1105,7 +1105,6 @@ int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
- 
- 	cm = hdmi_get_code(timings);
- 	if (cm.code = -1) {
--		DSSERR("Invalid timing entered\n");
- 		return -EINVAL;
- 	}
- 
-diff --git a/drivers/video/omap2/dss/hdmi_omap4_panel.c b/drivers/video/omap2/dss/hdmi_omap4_panel.c
-index 5e314e8..ffea8d3 100644
---- a/drivers/video/omap2/dss/hdmi_omap4_panel.c
-+++ b/drivers/video/omap2/dss/hdmi_omap4_panel.c
-@@ -170,11 +170,7 @@ static int hdmi_check_timings(struct omap_dss_device *dssdev,
- 	mutex_lock(&hdmi.hdmi_lock);
- 
- 	r = omapdss_hdmi_display_check_timing(dssdev, timings);
--	if (r) {
--		DSSERR("Timing cannot be applied\n");
--		goto err;
--	}
--err:
-+
- 	mutex_unlock(&hdmi.hdmi_lock);
- 	return r;
- }
--- 
-1.7.4.1
+Specifically, prior to linux-3.0, there were two savage4 variants 
+(S3_SAVAGE4 and S3_PROSAVAGE). Hence, S3_SAVAGE4_SERIES was defined as
+
+   S3_SAVAGE4 or S3_PROSAVAGE
+
+In linux-3.0, two additional savage4 variants (S3_TWISTER and 
+S3_PROSAVAGEDDR) have been added. Hence S3_SAVAGE4_SERIES should be 
+defined as
+
+   S3_SAVAGE4, S3_PROSAVAGE, S3_TWISTER, or S3_PROSAVAGEDDR
+
+However, the #define macro for S3_SAVAGE4_SERIES was incompletely 
+updated: the '||' should have been changed to an '&&'.
+
+--- linux-3.0.0/drivers/video/savage/savagefb.h.orig    2011-07-21 
+22:17:23.000000000 -0400
++++ linux-3.0.0/drivers/video/savage/savagefb.h 2011-07-31 
+05:27:47.314798215 -0400
+@@ -55,7 +55,7 @@
+
+  #define S3_SAVAGE3D_SERIES(chip)  ((chip>=S3_SAVAGE3D) && 
+(chip<=S3_SAVAGE_MX))
+
+-#define S3_SAVAGE4_SERIES(chip)   ((chip>=S3_SAVAGE4) || 
+(chip<=S3_PROSAVAGEDDR))
++#define S3_SAVAGE4_SERIES(chip)   ((chip>=S3_SAVAGE4) && 
+(chip<=S3_PROSAVAGEDDR))
+
+  #define S3_SAVAGE_MOBILE_SERIES(chip)  ((chip=S3_SAVAGE_MX) || 
+(chip=S3_SUPERSAVAGE))
 

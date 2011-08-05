@@ -1,126 +1,53 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 31 Aug 2011 13:23:17 +0000
-Subject: [PATCH 06/12] OMAP: DSS2: HDMI: split hdmi_core_ddc_edid
-Message-Id: <1314797003-17638-7-git-send-email-tomi.valkeinen@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Fri, 05 Aug 2011 21:49:53 +0000
+Subject: [PATCH 0/6] viafb modesetting update 1
+Message-Id: <cover.1312578946.git.FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Split the DDC initialization off from hdmi_core_ddc_edid() into a
-separate function hdmi_core_ddc_init().
+Hi all,
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/hdmi.c |   67 +++++++++++++++++++++++++++-------------
- 1 files changed, 45 insertions(+), 22 deletions(-)
+this is the first series containing some stable patches of my 
+modesetting work. Adding the functions for setting the timing 
+parameters in via_modesetting is an important step as well as 
+pushing the strange behaviour that sync end and blanking end 
+contained the length and not the end value one level up.
+Additionally it has some related cleanups.
+All this should be relatively stable, is not expected to cause 
+regressions and was tested on CLE266, VX800 and VX855. These 
+patches will show up in linux-next after the merge window is 
+closed.
+The next step will be to limit the influence of the modetable 
+and hopefully replace parts of it by things provided in the 
+subsystem to get rid of some bugs.
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index b5aca64..04ce105 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -366,12 +366,8 @@ static void hdmi_phy_off(void)
- 	hdmi_set_phy_pwr(HDMI_PHYPWRCMD_OFF);
- }
- 
--static int hdmi_core_ddc_edid(u8 *pedid, int ext)
-+static int hdmi_core_ddc_init(void)
- {
--	u32 i, j;
--	char checksum = 0;
--	u32 offset = 0;
--
- 	/* Turn on CLK for DDC */
- 	REG_FLD_MOD(HDMI_CORE_AV_DPD, 0x7, 2, 0);
- 
-@@ -382,32 +378,55 @@ static int hdmi_core_ddc_edid(u8 *pedid, int ext)
- 	 */
- 	usleep_range(800, 1000);
- 
--	if (!ext) {
--		/* Clk SCL Devices */
--		REG_FLD_MOD(HDMI_CORE_DDC_CMD, 0xA, 3, 0);
-+	/* IN_PROG */
-+	if (REG_GET(HDMI_CORE_DDC_STATUS, 4, 4) = 1) {
-+		/* Abort transaction */
-+		REG_FLD_MOD(HDMI_CORE_DDC_CMD, 0xf, 3, 0);
- 
--		/* HDMI_CORE_DDC_STATUS_IN_PROG */
-+		/* IN_PROG */
- 		if (hdmi_wait_for_bit_change(HDMI_CORE_DDC_STATUS,
--						4, 4, 0) != 0) {
--			DSSERR("Failed to program DDC\n");
-+					4, 4, 0) != 0) {
-+			DSSERR("Timeout aborting DDC transaction\n");
- 			return -ETIMEDOUT;
- 		}
-+	}
- 
--		/* Clear FIFO */
--		REG_FLD_MOD(HDMI_CORE_DDC_CMD, 0x9, 3, 0);
-+	/* Clk SCL Devices */
-+	REG_FLD_MOD(HDMI_CORE_DDC_CMD, 0xA, 3, 0);
- 
--		/* HDMI_CORE_DDC_STATUS_IN_PROG */
--		if (hdmi_wait_for_bit_change(HDMI_CORE_DDC_STATUS,
--						4, 4, 0) != 0) {
--			DSSERR("Failed to program DDC\n");
--			return -ETIMEDOUT;
--		}
-+	/* HDMI_CORE_DDC_STATUS_IN_PROG */
-+	if (hdmi_wait_for_bit_change(HDMI_CORE_DDC_STATUS, 4, 4, 0) != 0) {
-+		DSSERR("Timeout starting SCL clock\n");
-+		return -ETIMEDOUT;
-+	}
- 
--	} else {
--		if (ext % 2 != 0)
--			offset = 0x80;
-+	/* Clear FIFO */
-+	REG_FLD_MOD(HDMI_CORE_DDC_CMD, 0x9, 3, 0);
-+
-+	/* HDMI_CORE_DDC_STATUS_IN_PROG */
-+	if (hdmi_wait_for_bit_change(HDMI_CORE_DDC_STATUS, 4, 4, 0) != 0) {
-+		DSSERR("Timeout clearing DDC fifo\n");
-+		return -ETIMEDOUT;
-+	}
-+
-+	return 0;
-+}
-+
-+static int hdmi_core_ddc_edid(u8 *pedid, int ext)
-+{
-+	u32 i, j;
-+	char checksum = 0;
-+	u32 offset = 0;
-+
-+	/* HDMI_CORE_DDC_STATUS_IN_PROG */
-+	if (hdmi_wait_for_bit_change(HDMI_CORE_DDC_STATUS, 4, 4, 0) != 0) {
-+		DSSERR("Timeout waiting DDC to be ready\n");
-+		return -ETIMEDOUT;
- 	}
- 
-+	if (ext % 2 != 0)
-+		offset = 0x80;
-+
- 	/* Load Segment Address Register */
- 	REG_FLD_MOD(HDMI_CORE_DDC_SEGM, ext/2, 7, 0);
- 
-@@ -468,6 +487,10 @@ static int read_edid(u8 *pedid, u16 max_length)
- 	int max_ext_blocks = (max_length / 128) - 1;
- 	int len;
- 
-+	r = hdmi_core_ddc_init();
-+	if (r)
-+		return r;
-+
- 	r = hdmi_core_ddc_edid(pedid, 0);
- 	if (r)
- 		return r;
--- 
-1.7.4.1
+
+Thanks,
+
+Florian Tobias Schandinat
+
+
+Florian Tobias Schandinat (6):
+  viafb: use more compact modesetting functions
+  viafb: kill viafb_load_crtc_timing
+  viafb: remove superfluous register unlocking/locking
+  viafb: remove superfluous mode lookup
+  viafb: simplify viafb_fill_crtc_timing
+  viafb: remove 640x480-60 CRT special case
+
+ drivers/video/via/dvi.c             |    6 +-
+ drivers/video/via/hw.c              |  341 ++---------------------------------
+ drivers/video/via/hw.h              |  277 +----------------------------
+ drivers/video/via/lcd.c             |   41 ++---
+ drivers/video/via/lcd.h             |    2 -
+ drivers/video/via/share.h           |   19 +--
+ drivers/video/via/via_modesetting.c |  104 +++++++++++
+ drivers/video/via/via_modesetting.h |   18 ++
+ drivers/video/via/viafbdev.c        |    2 -
+ drivers/video/via/viamode.c         |    2 +-
+ 10 files changed, 161 insertions(+), 651 deletions(-)
 

@@ -1,121 +1,44 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 02 Aug 2011 07:47:35 +0000
-Subject: Re: [PATCHv2 16/28] OMAP3: HWMOD: Add DSS opt clocks
-Message-Id: <1312271255.1917.29.camel@deskari>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Fri, 05 Aug 2011 21:46:33 +0000
+Subject: [PATCH 4/6] viafb: remove superfluous mode lookup
+Message-Id: <1312581912-4198-1-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1307627810-3768-17-git-send-email-tomi.valkeinen@ti.com>
-	 <alpine.DEB.2.00.1107150048530.16606@utopia.booyaka.com>
-	 <alpine.DEB.2.00.1108011914280.28427@utopia.booyaka.com>
-In-Reply-To: <alpine.DEB.2.00.1108011914280.28427@utopia.booyaka.com>
+References: <cover.1312578946.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <cover.1312578946.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Walmsley <paul@pwsan.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, b-cousson@ti.com, khilman@ti.com
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-HI,
+As the result is not used anywhere there is no need to perform the
+lookup at all.
 
-On Mon, 2011-08-01 at 19:27 -0600, Paul Walmsley wrote:
-> Hello Tomi,
-> 
-> On Fri, 15 Jul 2011, Paul Walmsley wrote:
-> 
-> > On Thu, 9 Jun 2011, Tomi Valkeinen wrote:
-> > 
-> > > Add DSS optional clocks to HWMOD data for OMAP3xxx.
-> > 
-> > Thanks; queued for 3.1-rc fixes at git://git.pwsan.com/linux-2.6 in the 
-> > branch 'omap2_3_hwmod_dss_fixes_3.1rc'.  
-> 
-> This patch has been updated to remove the temporary hack added to the DSS 
-> driver.  Care to review it before it's sent to Tony?
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+---
+ drivers/video/via/viafbdev.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-My hacks (for the OMAP2 case also) use the clocks from the clockdata,
-thus fixing the hwmod data won't make the hacks break. So I think it's
-cleaner if the HWMOD patches go separately through you, and I'll revert
-the hacks in my tree.
-
-But a few comments inline, which I noticed just now.
-
-> - Paul
-> 
-> From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Date: Fri, 15 Jul 2011 00:54:34 -0600
-> Subject: [PATCH 2/2] OMAP3: HWMOD: Add DSS opt clocks
-> 
-> Add DSS optional clocks to HWMOD data for OMAP3xxx.
-> 
-> Revert OMAP3 portion of commit
-> 9ede365aa6f74428a1f69c21ca1cf21213167576 ("HACK: OMAP: DSS2: clk hack
-> for OMAP2/3").
-> 
-> Cc: Benoit Cousson <b-cousson@ti.com>
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> [paul@pwsan.com: remove temporary DSS driver hack; update changelog]
-> Signed-off-by: Paul Walmsley <paul@pwsan.com>
-> ---
->  arch/arm/mach-omap2/omap_hwmod_3xxx_data.c |   32 ++++++++++++++++++++++++---
->  drivers/video/omap2/dss/dsi.c              |    2 +-
->  drivers/video/omap2/dss/dss.h              |    2 -
->  drivers/video/omap2/dss/rfbi.c             |    5 +---
->  drivers/video/omap2/dss/venc.c             |    5 +---
->  5 files changed, 31 insertions(+), 15 deletions(-)
-> 
-> diff --git a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
-> index 25bf43b..38ee033 100644
-> --- a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
-> +++ b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
-> @@ -1365,9 +1365,14 @@ static struct omap_hwmod_ocp_if *omap3xxx_dss_slaves[] = {
->  };
->  
->  static struct omap_hwmod_opt_clk dss_opt_clks[] = {
-> -	{ .role = "tv_clk", .clk = "dss_tv_fck" },
-> -	{ .role = "video_clk", .clk = "dss_96m_fck" },
-> +	/*
-> +	 * The rest of the clocks are not needed by the driver,
-> +	 * but are needed by the hwmod to reset DSS properly.
-> +	 */
-
-I think this wording should be changed, as with the latest hwmod code
-changes the dss_core does not use any opt clocks, and these all are just
-to make the dss reset work.
-
-Perhaps something like "The DSS HW needs all DSS clocks enabled during
-reset. The dss_core driver does not use these clocks."
-
->  	{ .role = "sys_clk", .clk = "dss2_alwon_fck" },
-> +	{ .role = "tv_clk", .clk = "dss_tv_fck" },
-> +	/* required only on OMAP3430 */
-> +	{ .role = "tv_dac_clk", .clk = "dss_96m_fck" },
->  };
-
-The dss_96m_fck exists only on OMAP3430. What happens when the HWMOD
-code tries to reset DSS on OMAP3630, and it first enables all the opt
-clocks, and encounters the dss_96m_fck which doesn't exist?
-
-Although, looking at the clock3xxx_data.c, it looks like dss_96m_fck is
-there, but I'm not sure what it is controlling. Does the clock exist in
-the HW, but it's just not connected to DSS?
-
-The hwmod code should also set HWMOD_CONTROL_OPT_CLKS_IN_RESET for
-dss_core, shouldn't it?
-
->  static struct omap_hwmod omap3430es1_dss_core_hwmod = {
-> @@ -1504,6 +1509,10 @@ static struct omap_hwmod_ocp_if *omap3xxx_dss_dsi1_slaves[] = {
->  	&omap3xxx_l4_core__dss_dsi1,
->  };
->  
-> +static struct omap_hwmod_opt_clk dss_dsi1_opt_clks[] = {
-> +	{ .role = "sys_clk", .clk = "dss2_alwon_fck" },
-> +};
-> +
-
-DSI is missing the interface clock in omap3xxx_l4_core__dss_dsi1. Should
-it have .clk = "dss_ick" like the other dss modules?
-
-I can make a new patch with these changes if they look correct to you.
-
- Tomi
-
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index bddae58..3eaf607 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1735,7 +1735,6 @@ static struct viafb_pm_hooks viafb_fb_pm_hooks = {
+ int __devinit via_fb_pci_probe(struct viafb_dev *vdev)
+ {
+ 	u32 default_xres, default_yres;
+-	struct VideoModeTable *vmode_entry;
+ 	struct fb_var_screeninfo default_var;
+ 	int rc;
+ 	u32 viafb_par_length;
+@@ -1808,7 +1807,6 @@ int __devinit via_fb_pci_probe(struct viafb_dev *vdev)
+ 	}
+ 
+ 	parse_mode(viafb_mode, &default_xres, &default_yres);
+-	vmode_entry = viafb_get_mode(default_xres, default_yres);
+ 	if (viafb_SAMM_ON = 1)
+ 		parse_mode(viafb_mode1, &viafb_second_xres,
+ 			&viafb_second_yres);
+-- 
+1.6.3.2
 

@@ -1,106 +1,69 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 07 Aug 2011 17:36:50 +0000
-Subject: Re: [PATCH V2] replace strict_strtoul to kstrto[*] and check return
-Message-Id: <4E3ECD32.1050802@gmx.de>
+Date: Fri, 05 Aug 2011 21:47:35 +0000
+Subject: [PATCH 6/6] viafb: remove 640x480-60 CRT special case
+Message-Id: <1312581958-4273-1-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1312730922-1211-1-git-send-email-wangshaoyan.pt@taobao.com>
-In-Reply-To: <1312730922-1211-1-git-send-email-wangshaoyan.pt@taobao.com>
+References: <cover.1312578946.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <cover.1312578946.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: stufever@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, lethal@linux-sh.org, Wang Shaoyan <wangshaoyan.pt@taobao.com>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Hi Wang,
+The timing for 640x480-60 was handled different than all others.
+This patch changes this by changing the blanking start and end.
+The reason for this is that I can't find any reason for the old
+behaviour and it was not consistent anyway as the special case for
+LCD did not always trigger as the LCD code does not use this
+function and it did trigger regardless of whether the display set is
+CRT or LCD but only based whether any DVI/LCD device exists.
+There are no negative effects observed for CRT or DVI devices.
 
-On 08/07/2011 03:28 PM, stufever@gmail.com wrote:
-> From: Wang Shaoyan<wangshaoyan.pt@taobao.com>
->
-> Change since V1:
->    1.use kstrto*, not kstrtoul
->    2.replace&buf[0] to buf
-
-it is good that you wrote what you changed. But it would be better if you write 
-it below the commit message like this
-
-<commit message>
-
-Signed-off-by:
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
-    drivers/video/via/viafbdev.c |  126 ++++++++++++++++++++++-------------------
-    1 files changed, 68 insertions(+), 58 deletions(-)
+ drivers/video/via/hw.c      |   14 --------------
+ drivers/video/via/viamode.c |    2 +-
+ 2 files changed, 1 insertions(+), 15 deletions(-)
 
-Change since V1:
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 2050fb8..c5e7833 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -1488,20 +1488,6 @@ void viafb_fill_crtc_timing(struct VideoModeTable *video_mode, int bpp_byte,
+ 	}
+ 
+ 	crt_reg = crt_table[index].crtc;
+-
+-	/* Mode 640x480 has border, but LCD/DFP didn't have border. */
+-	/* So we would delete border. */
+-	if ((viafb_LCD_ON | viafb_DVI_ON)
+-	    && video_mode->crtc[0].crtc.hor_addr = 640
+-	    && video_mode->crtc[0].crtc.ver_addr = 480
+-	    && refresh = 60) {
+-		/* The border is 8 pixels. */
+-		crt_reg.hor_blank_start = crt_reg.hor_blank_start - 8;
+-
+-		/* Blanking time should add left and right borders. */
+-		crt_reg.hor_blank_end = crt_reg.hor_blank_end + 16;
+-	}
+-
+ 	crt_reg.hor_blank_end += crt_reg.hor_blank_start;
+ 	crt_reg.hor_sync_end += crt_reg.hor_sync_start;
+ 	crt_reg.ver_blank_end += crt_reg.ver_blank_start;
+diff --git a/drivers/video/via/viamode.c b/drivers/video/via/viamode.c
+index 58df74e..8a9f4fc 100644
+--- a/drivers/video/via/viamode.c
++++ b/drivers/video/via/viamode.c
+@@ -281,7 +281,7 @@ static struct crt_mode_table CRTM640x480[] = {
+ 	/*r_rate,hsp,vsp */
+ 	/*HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
+ 	{REFRESH_60, M640X480_R60_HSP, M640X480_R60_VSP,
+-	 {800, 640, 648, 144, 656, 96, 525, 480, 480, 45, 490, 2} },
++	 {800, 640, 640, 160, 656, 96, 525, 480, 480, 45, 490, 2} },
+ 	{REFRESH_75, M640X480_R75_HSP, M640X480_R75_VSP,
+ 	 {840, 640, 640, 200, 656, 64, 500, 480, 480, 20, 481, 3} },
+ 	{REFRESH_85, M640X480_R85_HSP, M640X480_R85_VSP,
+-- 
+1.6.3.2
 
-as nobody really cares what changed in different patch versions once the final 
-version is applied in git. And if you do it this way I could just do "git am -s 
-<patch>" and would get the commit message without the history.
-
-> This commit replace the function strict_strtoul(becasue commit 33ee3b2e), and check the return value to avoid such warning:
->
->    drivers/video/via/viafbdev.c:1992: warning: ignoring return value of 'kstrtoul', declared with attribute warn_unused_result
-
-Thanks this looks much saner. Just 2 little issues before it is good enough, I 
-think.
-
-./scripts/checkpatch.pl ./\[PATCH\ V2\]\ replace\ strict_strtoul\ to\ 
-kstrto\[\*\]\ and\ check\ return\ value.eml
-ERROR: trailing whitespace
-#173: FILE: drivers/video/via/viafbdev.c:1974:
-+^I^I^Iif (kstrtoint(this_opt + 21, 0, $
-
-ERROR: trailing whitespace
-#177: FILE: drivers/video/via/viafbdev.c:1978:
-+^I^I^Iif (kstrtoint(this_opt + 19, 0, $
-
-ERROR: trailing whitespace
-#212: FILE: drivers/video/via/viafbdev.c:1991:
-+^I^I^Iif (kstrtoint(this_opt + 30, 0, $
-
-ERROR: trailing whitespace
-#220: FILE: drivers/video/via/viafbdev.c:1999:
-+^I^I^Iif (kstrtoint(this_opt + 24, 0, $
-
-total: 4 errors, 0 warnings, 173 lines checked
-
-NOTE: whitespace errors detected, you may wish to use scripts/cleanpatch or
-       scripts/cleanfile
-
-./[PATCH V2] replace strict_strtoul to kstrto[*] and check return value.eml has 
-style problems, please review.  If any of these errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
-
-Can you please fix those?
-
-
-> Signed-off-by: Wang Shaoyan<wangshaoyan.pt@taobao.com>
-> ---
->   drivers/video/via/viafbdev.c |  126 ++++++++++++++++++++++-------------------
->   1 files changed, 68 insertions(+), 58 deletions(-)
->
-> diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-> index 53aa443..7074fc7 100644
-> --- a/drivers/video/via/viafbdev.c
-> +++ b/drivers/video/via/viafbdev.c
-
-[snip]
-
-> @@ -1325,7 +1328,8 @@ static ssize_t viafb_dfpl_proc_write(struct file *file,
->   	if (copy_from_user(&buf[0], buffer, length))
->   		return -EFAULT;
->   	buf[length - 1] = '\0';	/*Ensure end string */
-> -	strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
-> +	if (kstrtou8(buf, -1,&reg_val)<  0)
-> +		return -EINVAL;
->   	viafb_write_reg_mask(CR99, VIACR, reg_val, 0x0f);
->   	return count;
->   }
-
-Using -1 instead 0 as base here? Why? What does this cause?
-I assume that it should be 0.
-
-
-Thanks,
-
-Florian Tobias Schandinat

@@ -1,62 +1,92 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 31 Aug 2011 11:18:18 +0000
-Subject: [PATCH v3 0/3] fbdev: Add FOURCC-based format configuration API
-Message-Id: <1314789501-824-1-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Fri, 05 Aug 2011 21:47:05 +0000
+Subject: [PATCH 5/6] viafb: simplify viafb_fill_crtc_timing
+Message-Id: <1312581943-4235-1-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1312578946.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <cover.1312578946.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-media@vger.kernel.org, magnus.damm@gmail.com
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Hi everybody,
+As the first argument is just part of the structure passed as the
+second argument there is no need for it at all.
 
-Here's the third version of the fbdev FOURCC-based format configuration API.
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+---
+ drivers/video/via/dvi.c |    6 ++----
+ drivers/video/via/hw.c  |   12 ++++++------
+ drivers/video/via/hw.h  |    4 ++--
+ 3 files changed, 10 insertions(+), 12 deletions(-)
 
-Compared to the previous version, I've added an FB_TYPE_FOURCC in addition =
-to
-FB_VISUAL_FOURCC, fixed the documentation (thanks to Geert for reviewing it
-and explaining how fbdev bitplanes work) and fixed bugs in the sh_mobile_lc=
-dc
-YUV support.
+diff --git a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
+index b1f3647..c7ff5c0 100644
+--- a/drivers/video/via/dvi.c
++++ b/drivers/video/via/dvi.c
+@@ -190,12 +190,10 @@ void viafb_dvi_set_mode(struct VideoModeTable *mode, int mode_bpp,
+ 	if ((maxPixelClock != 0) && (desirePixelClock > maxPixelClock)) {
+ 		rb_mode = viafb_get_rb_mode(mode->crtc[0].crtc.hor_addr,
+ 			mode->crtc[0].crtc.ver_addr);
+-		if (rb_mode) {
++		if (rb_mode)
+ 			mode = rb_mode;
+-			pDviTiming = rb_mode->crtc;
+-		}
+ 	}
+-	viafb_fill_crtc_timing(pDviTiming, mode, mode_bpp / 8, set_iga);
++	viafb_fill_crtc_timing(mode, mode_bpp / 8, set_iga);
+ }
+ 
+ /* Sense DVI Connector */
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 8b4bdf5..2050fb8 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -1467,9 +1467,10 @@ void viafb_set_vclock(u32 clk, int set_iga)
+ 	via_write_misc_reg_mask(0x0C, 0x0C); /* select external clock */
+ }
+ 
+-void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
+-	struct VideoModeTable *video_mode, int bpp_byte, int set_iga)
++void viafb_fill_crtc_timing(struct VideoModeTable *video_mode, int bpp_byte,
++	int set_iga)
+ {
++	struct crt_mode_table *crt_table = video_mode->crtc;
+ 	struct display_timing crt_reg;
+ 	int i;
+ 	int index = 0;
+@@ -1911,11 +1912,10 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
+ 	if (viafb_CRT_ON) {
+ 		if (viafb_SAMM_ON &&
+ 			viaparinfo->shared->iga2_devices & VIA_CRT) {
+-			viafb_fill_crtc_timing(crt_timing1, vmode_tbl1,
+-				video_bpp1 / 8, IGA2);
++			viafb_fill_crtc_timing(vmode_tbl1, video_bpp1 / 8,
++				IGA2);
+ 		} else {
+-			viafb_fill_crtc_timing(crt_timing, vmode_tbl,
+-				video_bpp / 8,
++			viafb_fill_crtc_timing(vmode_tbl, video_bpp / 8,
+ 				(viaparinfo->shared->iga1_devices & VIA_CRT)
+ 				? IGA1 : IGA2);
+ 		}
+diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
+index 267c669..1fd8d98 100644
+--- a/drivers/video/via/hw.h
++++ b/drivers/video/via/hw.h
+@@ -637,8 +637,8 @@ extern int viafb_LCD_ON;
+ extern int viafb_DVI_ON;
+ extern int viafb_hotplug;
+ 
+-void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
+-	struct VideoModeTable *video_mode, int bpp_byte, int set_iga);
++void viafb_fill_crtc_timing(struct VideoModeTable *video_mode, int bpp_byte,
++	int set_iga);
+ 
+ void viafb_set_vclock(u32 CLK, int set_iga);
+ void viafb_load_reg(int timing_value, int viafb_load_reg_num,
+-- 
+1.6.3.2
 
-The sb_mobile_lcdc patch applies on top of the latest patches that I've sent
-to the list. You can find a consolidated version that includes this patch s=
-et
-at http://git.linuxtv.org/pinchartl/fbdev.git/shortlog/refs/heads/fbdev-yuv.
-
-I've updated the fbdev-test tool to add FOURCC support. The code is availab=
-le
-in the fbdev-test yuv branch at
-http://git.ideasonboard.org/?p=FBdev-test.git;a=3Dshortlog;h=3Drefs/heads/y=
-uv.
-
-Laurent Pinchart (3):
-  fbdev: Add FOURCC-based format configuration API
-  v4l: Add V4L2_PIX_FMT_NV24 and V4L2_PIX_FMT_NV42 formats
-  fbdev: sh_mobile_lcdc: Support FOURCC-based format API
-
- Documentation/DocBook/media/v4l/pixfmt-nv24.xml |  129 ++++++++
- Documentation/DocBook/media/v4l/pixfmt.xml      |    1 +
- Documentation/fb/api.txt                        |  317 ++++++++++++++++++++
- arch/arm/mach-shmobile/board-ag5evm.c           |    2 +-
- arch/arm/mach-shmobile/board-ap4evb.c           |    4 +-
- arch/arm/mach-shmobile/board-mackerel.c         |    4 +-
- arch/sh/boards/mach-ap325rxa/setup.c            |    2 +-
- arch/sh/boards/mach-ecovec24/setup.c            |    2 +-
- arch/sh/boards/mach-kfr2r09/setup.c             |    2 +-
- arch/sh/boards/mach-migor/setup.c               |    4 +-
- arch/sh/boards/mach-se/7724/setup.c             |    2 +-
- drivers/video/sh_mobile_lcdcfb.c                |  362 +++++++++++++++----=
-----
- include/linux/fb.h                              |   28 ++-
- include/linux/videodev2.h                       |    2 +
- include/video/sh_mobile_lcdc.h                  |    4 +-
- 15 files changed, 726 insertions(+), 139 deletions(-)
- create mode 100644 Documentation/DocBook/media/v4l/pixfmt-nv24.xml
- create mode 100644 Documentation/fb/api.txt
-
---=20
-Regards,
-
-Laurent Pinchart

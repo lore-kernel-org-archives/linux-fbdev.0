@@ -1,47 +1,64 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Tue, 16 Aug 2011 06:41:57 +0000
-Subject: Re: [RFC] fbdev: allow multiple concurrent visible consoles
-Message-Id: <4E4A1135.6080502@gmx.de>
+Date: Fri, 05 Aug 2011 21:46:18 +0000
+Subject: [PATCH 3/6] viafb: remove superfluous register unlocking/locking
+Message-Id: <1312581877-4161-1-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1312799864-3468-1-git-send-email-FlorianSchandinat@gmx.de>
-In-Reply-To: <1312799864-3468-1-git-send-email-FlorianSchandinat@gmx.de>
+References: <cover.1312578946.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <cover.1312578946.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Hello Martin,
+The locking is done within the viafb_set_*_timing functions so there
+is no need to do it here. Move a missing hardware reset into the
+modesetting function.
 
-On 08/11/2011 10:57 AM, Martin Decky wrote:
-> Hello Florian,
->
->> This patch allows having multiple visible consoles that receive
->> display updates. For example one can have running "top" to monitor
->> the system on fb0 and at the same time work on a shell on fb1.
->
-> I hate to report this, because I would really appreciate this feature,
-> but your patch (applied against kernel 3.0) breaks my machine.
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+---
+ drivers/video/via/hw.c              |    7 -------
+ drivers/video/via/via_modesetting.c |    4 ++++
+ 2 files changed, 4 insertions(+), 7 deletions(-)
 
-Thank you for testing it. And you do not need to worry, the more feedback I get 
-the more motivated I am to get it mainline.
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 52d41f0..8b4bdf5 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -1507,18 +1507,11 @@ void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
+ 	crt_reg.ver_sync_end += crt_reg.ver_sync_start;
+ 	h_addr = crt_reg.hor_addr;
+ 	v_addr = crt_reg.ver_addr;
+-	if (set_iga = IGA1) {
+-		viafb_unlock_crt();
+-		viafb_write_reg_mask(CR17, VIACR, 0x00, BIT7);
+-	}
+-
+ 	if (set_iga = IGA1)
+ 		via_set_primary_timing(&crt_reg);
+ 	else if (set_iga = IGA2)
+ 		via_set_secondary_timing(&crt_reg);
+ 
+-	viafb_lock_crt();
+-	viafb_write_reg_mask(CR17, VIACR, 0x80, BIT7);
+ 	viafb_load_fetch_count_reg(h_addr, bpp_byte, set_iga);
+ 
+ 	/* load FIFO */
+diff --git a/drivers/video/via/via_modesetting.c b/drivers/video/via/via_modesetting.c
+index 016d457..0e431ae 100644
+--- a/drivers/video/via/via_modesetting.c
++++ b/drivers/video/via/via_modesetting.c
+@@ -82,6 +82,10 @@ void via_set_primary_timing(const struct display_timing *timing)
+ 
+ 	/* lock timing registers */
+ 	via_write_reg_mask(VIACR, 0x11, 0x80, 0x80);
++
++	/* reset timing control */
++	via_write_reg_mask(VIACR, 0x17, 0x00, 0x80);
++	via_write_reg_mask(VIACR, 0x17, 0x80, 0x80);
+ }
+ 
+ void via_set_secondary_timing(const struct display_timing *timing)
+-- 
+1.6.3.2
 
-> I have an x86-64 machine with a dual-GPU ATI Radeon HD 4850 X2 (which
-> acts essentially as two discrete R700s) driven by the "radeon" KMS driver.
->
-> If I use the "fbcon=map:01" boot option to map the even-numbered VCs to
-> the first GPU and the odd-numbered VCs to the second GPU, the kernel
-> patched with your patch encounters some sort of soft-lockup when
-> initializing the second GPU (i.e. creating the fb1) while booting. The
-> is no panic or oops message and I can reset the machine by hitting
-> ctrl+alt+del, but there is no further progress. I can provide further
-> observations if you would like to.
-
-Interesting. With your fbcon option I was able to reproduce it (without it, it 
-boots as expected). Unfortunately I was not yet able too figure out what causes 
-this behavior. I guess it'll take me some time to get it right, probably not for 
-the next merge window, but I'll continue to work on it.
-
-
-Thanks,
-
-Florian Tobias Schandinat

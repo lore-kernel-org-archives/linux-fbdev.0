@@ -1,7 +1,7 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Fri, 05 Aug 2011 21:47:35 +0000
+Date: Fri, 05 Aug 2011 21:59:16 +0000
 Subject: [PATCH 6/6] viafb: remove 640x480-60 CRT special case
-Message-Id: <1312581958-4273-1-git-send-email-FlorianSchandinat@gmx.de>
+Message-Id: <0492262281b82e71c6063e35ef73a33fad93cc6d.1312578946.git.FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1312578946.git.FlorianSchandinat@gmx.de>
 In-Reply-To: <cover.1312578946.git.FlorianSchandinat@gmx.de>
@@ -21,49 +21,10 @@ CRT or LCD but only based whether any DVI/LCD device exists.
 There are no negative effects observed for CRT or DVI devices.
 
 Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
----
+
  drivers/video/via/hw.c      |   14 --------------
  drivers/video/via/viamode.c |    2 +-
  2 files changed, 1 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 2050fb8..c5e7833 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -1488,20 +1488,6 @@ void viafb_fill_crtc_timing(struct VideoModeTable *video_mode, int bpp_byte,
- 	}
- 
- 	crt_reg = crt_table[index].crtc;
--
--	/* Mode 640x480 has border, but LCD/DFP didn't have border. */
--	/* So we would delete border. */
--	if ((viafb_LCD_ON | viafb_DVI_ON)
--	    && video_mode->crtc[0].crtc.hor_addr = 640
--	    && video_mode->crtc[0].crtc.ver_addr = 480
--	    && refresh = 60) {
--		/* The border is 8 pixels. */
--		crt_reg.hor_blank_start = crt_reg.hor_blank_start - 8;
--
--		/* Blanking time should add left and right borders. */
--		crt_reg.hor_blank_end = crt_reg.hor_blank_end + 16;
--	}
--
- 	crt_reg.hor_blank_end += crt_reg.hor_blank_start;
- 	crt_reg.hor_sync_end += crt_reg.hor_sync_start;
- 	crt_reg.ver_blank_end += crt_reg.ver_blank_start;
-diff --git a/drivers/video/via/viamode.c b/drivers/video/via/viamode.c
-index 58df74e..8a9f4fc 100644
---- a/drivers/video/via/viamode.c
-+++ b/drivers/video/via/viamode.c
-@@ -281,7 +281,7 @@ static struct crt_mode_table CRTM640x480[] = {
- 	/*r_rate,hsp,vsp */
- 	/*HT,  HA,  HBS, HBE, HSS, HSE, VT,  VA,  VBS, VBE, VSS, VSE */
- 	{REFRESH_60, M640X480_R60_HSP, M640X480_R60_VSP,
--	 {800, 640, 648, 144, 656, 96, 525, 480, 480, 45, 490, 2} },
-+	 {800, 640, 640, 160, 656, 96, 525, 480, 480, 45, 490, 2} },
- 	{REFRESH_75, M640X480_R75_HSP, M640X480_R75_VSP,
- 	 {840, 640, 640, 200, 656, 64, 500, 480, 480, 20, 481, 3} },
- 	{REFRESH_85, M640X480_R85_HSP, M640X480_R85_VSP,
 -- 
 1.6.3.2
 

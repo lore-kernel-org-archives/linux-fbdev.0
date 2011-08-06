@@ -1,88 +1,37 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 29 Aug 2011 23:43:56 +0000
-Subject: Re: linux-next tree addition request (fbdev)
-Message-Id: <20110830094356.25718bea5e25f0d2c48e0af7@canb.auug.org.au>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Signature=_Tue__30_Aug_2011_09_43_56_+1000_tvXr.ONz2jMyupUY"
+From: stufever@gmail.com
+Date: Sat, 06 Aug 2011 13:26:20 +0000
+Subject: [PATCH] viafb: fix pointer type missmatch
+Message-Id: <1312637180-6107-1-git-send-email-wangshaoyan.pt@taobao.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4E54FF5E.5050308@gmx.de>
-In-Reply-To: <4E54FF5E.5050308@gmx.de>
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-next@vger.kernel.org, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, lethal@linux-sh.org, FlorianSchandinat@gmx.de, Wang Shaoyan <wangshaoyan.pt@taobao.com>
 
---Signature=_Tue__30_Aug_2011_09_43_56_+1000_tvXr.ONz2jMyupUY
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Wang Shaoyan <wangshaoyan.pt@taobao.com>
 
-Hi Florian,
+  drivers/video/via/via-core.c: In function 'via_pci_probe':
+  drivers/video/via/via-core.c:691: warning: assignment discards qualifiers from pointer target type
 
-On Wed, 24 Aug 2011 13:40:46 +0000 Florian Tobias Schandinat <FlorianSchand=
-inat@gmx.de> wrote:
->
-> can you please add
->=20
->     git://github.com/schandinat/linux-2.6.git fbdev-next
->=20
-> to linux-next. It collects patches for the frame buffer subsystem.
-> Can you please add the linux-fbdev@vger.kernel.org mailing list as additi=
-onal
-> contact for warnings/errors/problems?
->=20
-> You probably want to drop Paul's fbdev branches as they contain some outd=
-ated
-> patches that will conflict with the newer versions.
+Signed-off-by: Wang Shaoyan <wangshaoyan.pt@taobao.com>
+---
+ drivers/video/via/via-core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I have replced Paul;s fbdev tree with yours and dropped his fbdev-current t=
-ree.
+diff --git a/drivers/video/via/via-core.c b/drivers/video/via/via-core.c
+index eb112b6..dd58b53 100644
+--- a/drivers/video/via/via-core.c
++++ b/drivers/video/via/via-core.c
+@@ -35,7 +35,7 @@ static struct via_port_cfg adap_configs[] = {
+  * The OLPC XO-1.5 puts the camera power and reset lines onto
+  * GPIO 2C.
+  */
+-static const struct via_port_cfg olpc_adap_configs[] = {
++static struct via_port_cfg olpc_adap_configs[] = {
+ 	[VIA_PORT_26]	= { VIA_PORT_I2C,  VIA_MODE_I2C, VIASR, 0x26 },
+ 	[VIA_PORT_31]	= { VIA_PORT_I2C,  VIA_MODE_I2C, VIASR, 0x31 },
+ 	[VIA_PORT_25]	= { VIA_PORT_GPIO, VIA_MODE_GPIO, VIASR, 0x25 },
+-- 
+1.7.0.4
 
-Thanks for adding your subsystem tree as a participant of linux-next.  As
-you may know, this is not a judgment of your code.  The purpose of
-linux-next is for integration testing and to lower the impact of
-conflicts between subsystems in the next merge window.=20
-
-You will need to ensure that the patches/commits in your tree/series have
-been:
-     * submitted under GPL v2 (or later) and include the Contributor's
-	Signed-off-by,
-     * posted to the relevant mailing list,
-     * reviewed by you (or another maintainer of your subsystem tree),
-     * successfully unit tested, and=20
-     * destined for the current or next Linux merge window.
-
-Basically, this should be just what you would send to Linus (or ask him
-to fetch).  It is allowed to be rebased if you deem it necessary.
-
---=20
-Cheers,
-Stephen Rothwell=20
-sfr@canb.auug.org.au
-
-Legal Stuff:
-By participating in linux-next, your subsystem tree contributions are
-public and will be included in the linux-next trees.  You may be sent
-e-mail messages indicating errors or other issues when the
-patches/commits from your subsystem tree are merged and tested in
-linux-next.  These messages may also be cross-posted to the linux-next
-mailing list, the linux-kernel mailing list, etc.  The linux-next tree
-project and IBM (my employer) make no warranties regarding the linux-next
-project, the testing procedures, the results, the e-mails, etc.  If you
-don't agree to these ground rules, let me know and I'll remove your tree
-from participation in linux-next.
-
---Signature=_Tue__30_Aug_2011_09_43_56_+1000_tvXr.ONz2jMyupUY
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQEcBAEBAgAGBQJOXCQ8AAoJEDMEi1NhKgbsikMH/jTEffmyeGKDcLzpB8+NVqq4
-L3LCzLQzTa35ZPqjqeUjryGVecEaxKOSahbgM4UWO2rwTJTTeGC4nGnlq5HS2rDn
-IBHp/BH70RG4FIkOqvgeUSXjZ9OuPCZwgubvhc9Q0p1+w/sH9vAx3mtTmcEEab92
-qmmCU/O56dGDIA4a8AKvX3N5qmg+zLRr2P1c8SHUH9pUf+THSKfyhcoSIClVs8vy
-TXjdTtcdeMEJyqzIwbrt9E3UanPGEPHTU3tFFQuAaWI6V93yhjMcatiNuzQRhz0W
-zjw3/pJpI/IMYe5UjKAcXN1eNjF/7ZCNjPFfrsMIFArjX9Ntz6pKfIWIiXBRBys=
-=ktAk
------END PGP SIGNATURE-----
-
---Signature=_Tue__30_Aug_2011_09_43_56_+1000_tvXr.ONz2jMyupUY--

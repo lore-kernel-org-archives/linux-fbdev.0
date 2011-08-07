@@ -1,213 +1,106 @@
-From: stufever@gmail.com
-Date: Sun, 07 Aug 2011 15:28:42 +0000
-Subject: [PATCH V2] replace strict_strtoul to kstrto[*] and check return value
-Message-Id: <1312730922-1211-1-git-send-email-wangshaoyan.pt@taobao.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 07 Aug 2011 17:36:50 +0000
+Subject: Re: [PATCH V2] replace strict_strtoul to kstrto[*] and check return
+Message-Id: <4E3ECD32.1050802@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1312730922-1211-1-git-send-email-wangshaoyan.pt@taobao.com>
+In-Reply-To: <1312730922-1211-1-git-send-email-wangshaoyan.pt@taobao.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, FlorianSchandinat@gmx.de, lethal@linux-sh.org, Wang Shaoyan <wangshaoyan.pt@taobao.com>
+To: stufever@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, lethal@linux-sh.org, Wang Shaoyan <wangshaoyan.pt@taobao.com>
 
-From: Wang Shaoyan <wangshaoyan.pt@taobao.com>
+Hi Wang,
+
+On 08/07/2011 03:28 PM, stufever@gmail.com wrote:
+> From: Wang Shaoyan<wangshaoyan.pt@taobao.com>
+>
+> Change since V1:
+>    1.use kstrto*, not kstrtoul
+>    2.replace&buf[0] to buf
+
+it is good that you wrote what you changed. But it would be better if you write 
+it below the commit message like this
+
+<commit message>
+
+Signed-off-by:
+---
+    drivers/video/via/viafbdev.c |  126 ++++++++++++++++++++++-------------------
+    1 files changed, 68 insertions(+), 58 deletions(-)
 
 Change since V1:
-  1.use kstrto*, not kstrtoul
-  2.replace &buf[0] to buf
 
-This commit replace the function strict_strtoul(becasue commit 33ee3b2e), and check the return value to avoid such warning:
+as nobody really cares what changed in different patch versions once the final 
+version is applied in git. And if you do it this way I could just do "git am -s 
+<patch>" and would get the commit message without the history.
 
-  drivers/video/via/viafbdev.c:1992: warning: ignoring return value of 'kstrtoul', declared with attribute warn_unused_result
+> This commit replace the function strict_strtoul(becasue commit 33ee3b2e), and check the return value to avoid such warning:
+>
+>    drivers/video/via/viafbdev.c:1992: warning: ignoring return value of 'kstrtoul', declared with attribute warn_unused_result
 
-Signed-off-by: Wang Shaoyan <wangshaoyan.pt@taobao.com>
----
- drivers/video/via/viafbdev.c |  126 ++++++++++++++++++++++-------------------
- 1 files changed, 68 insertions(+), 58 deletions(-)
+Thanks this looks much saner. Just 2 little issues before it is good enough, I 
+think.
 
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 53aa443..7074fc7 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -1158,7 +1158,8 @@ static ssize_t viafb_dvp0_proc_write(struct file *file,
- 	for (i = 0; i < 3; i++) {
- 		value = strsep(&pbuf, " ");
- 		if (value != NULL) {
--			strict_strtoul(value, 0, (unsigned long *)&reg_val);
-+			if (kstrtou8(value, 0, &reg_val) < 0)
-+				return -EINVAL;
- 			DEBUG_MSG(KERN_INFO "DVP0:reg_val[%l]=:%x\n", i,
- 				  reg_val);
- 			switch (i) {
-@@ -1228,7 +1229,8 @@ static ssize_t viafb_dvp1_proc_write(struct file *file,
- 	for (i = 0; i < 3; i++) {
- 		value = strsep(&pbuf, " ");
- 		if (value != NULL) {
--			strict_strtoul(value, 0, (unsigned long *)&reg_val);
-+			if (kstrtou8(value, 0, &reg_val) < 0)
-+				return -EINVAL;
- 			switch (i) {
- 			case 0:
- 				viafb_write_reg_mask(CR9B, VIACR,
-@@ -1286,7 +1288,8 @@ static ssize_t viafb_dfph_proc_write(struct file *file,
- 	if (copy_from_user(&buf[0], buffer, length))
- 		return -EFAULT;
- 	buf[length - 1] = '\0';	/*Ensure end string */
--	strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
-+	if (kstrtou8(buf, 0, &reg_val) < 0)
-+		return -EINVAL;
- 	viafb_write_reg_mask(CR97, VIACR, reg_val, 0x0f);
- 	return count;
- }
-@@ -1325,7 +1328,8 @@ static ssize_t viafb_dfpl_proc_write(struct file *file,
- 	if (copy_from_user(&buf[0], buffer, length))
- 		return -EFAULT;
- 	buf[length - 1] = '\0';	/*Ensure end string */
--	strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
-+	if (kstrtou8(buf, -1, &reg_val) < 0)
-+		return -EINVAL;
- 	viafb_write_reg_mask(CR99, VIACR, reg_val, 0x0f);
- 	return count;
- }
-@@ -1394,8 +1398,8 @@ static ssize_t viafb_vt1636_proc_write(struct file *file,
- 		for (i = 0; i < 2; i++) {
- 			value = strsep(&pbuf, " ");
- 			if (value != NULL) {
--				strict_strtoul(value, 0,
--					(unsigned long *)&reg_val.Data);
-+				if (kstrtou8(value, 0, &reg_val.Data) < 0)
-+					return -EINVAL;
- 				switch (i) {
- 				case 0:
- 					reg_val.Index = 0x08;
-@@ -1431,8 +1435,8 @@ static ssize_t viafb_vt1636_proc_write(struct file *file,
- 		for (i = 0; i < 2; i++) {
- 			value = strsep(&pbuf, " ");
- 			if (value != NULL) {
--				strict_strtoul(value, 0,
--					(unsigned long *)&reg_val.Data);
-+				if (kstrtou8(value, 0, &reg_val.Data) < 0)
-+					return -EINVAL;
- 				switch (i) {
- 				case 0:
- 					reg_val.Index = 0x08;
-@@ -1950,61 +1954,67 @@ static int __init viafb_setup(void)
- 		if (!*this_opt)
- 			continue;
- 
--		if (!strncmp(this_opt, "viafb_mode1=", 12))
-+		if (!strncmp(this_opt, "viafb_mode1=", 12)) {
- 			viafb_mode1 = kstrdup(this_opt + 12, GFP_KERNEL);
--		else if (!strncmp(this_opt, "viafb_mode=", 11))
-+		} else if (!strncmp(this_opt, "viafb_mode=", 11)) {
- 			viafb_mode = kstrdup(this_opt + 11, GFP_KERNEL);
--		else if (!strncmp(this_opt, "viafb_bpp1=", 11))
--			strict_strtoul(this_opt + 11, 0,
--				(unsigned long *)&viafb_bpp1);
--		else if (!strncmp(this_opt, "viafb_bpp=", 10))
--			strict_strtoul(this_opt + 10, 0,
--				(unsigned long *)&viafb_bpp);
--		else if (!strncmp(this_opt, "viafb_refresh1=", 15))
--			strict_strtoul(this_opt + 15, 0,
--				(unsigned long *)&viafb_refresh1);
--		else if (!strncmp(this_opt, "viafb_refresh=", 14))
--			strict_strtoul(this_opt + 14, 0,
--				(unsigned long *)&viafb_refresh);
--		else if (!strncmp(this_opt, "viafb_lcd_dsp_method=", 21))
--			strict_strtoul(this_opt + 21, 0,
--				(unsigned long *)&viafb_lcd_dsp_method);
--		else if (!strncmp(this_opt, "viafb_lcd_panel_id=", 19))
--			strict_strtoul(this_opt + 19, 0,
--				(unsigned long *)&viafb_lcd_panel_id);
--		else if (!strncmp(this_opt, "viafb_accel=", 12))
--			strict_strtoul(this_opt + 12, 0,
--				(unsigned long *)&viafb_accel);
--		else if (!strncmp(this_opt, "viafb_SAMM_ON=", 14))
--			strict_strtoul(this_opt + 14, 0,
--				(unsigned long *)&viafb_SAMM_ON);
--		else if (!strncmp(this_opt, "viafb_active_dev=", 17))
-+		} else if (!strncmp(this_opt, "viafb_bpp1=", 11)) {
-+			if (kstrtouint(this_opt + 11, 0, &viafb_bpp1) < 0)
-+				return -EINVAL;
-+		} else if (!strncmp(this_opt, "viafb_bpp=", 10)) {
-+			if (kstrtouint(this_opt + 10, 0, &viafb_bpp) < 0)
-+				return -EINVAL;
-+		} else if (!strncmp(this_opt, "viafb_refresh1=", 15)) {
-+			if (kstrtoint(this_opt + 15, 0, &viafb_refresh1) < 0)
-+				return -EINVAL;
-+		} else if (!strncmp(this_opt, "viafb_refresh=", 14)) {
-+			if (kstrtoint(this_opt + 14, 0, &viafb_refresh) < 0)
-+				return -EINVAL;
-+		} else if (!strncmp(this_opt, "viafb_lcd_dsp_method=", 21)) {
-+			if (kstrtoint(this_opt + 21, 0, 
-+				      &viafb_lcd_dsp_method) < 0)
-+				return -EINVAL;
-+		} else if (!strncmp(this_opt, "viafb_lcd_panel_id=", 19)) {
-+			if (kstrtoint(this_opt + 19, 0, 
-+				      &viafb_lcd_panel_id) < 0)
-+				return -EINVAL;
-+		} else if (!strncmp(this_opt, "viafb_accel=", 12)) {
-+			if (kstrtoint(this_opt + 12, 0, &viafb_accel) < 0)
-+				return -EINVAL;
-+		} else if (!strncmp(this_opt, "viafb_SAMM_ON=", 14)) {
-+			if (kstrtoint(this_opt + 14, 0, &viafb_SAMM_ON) < 0)
-+				return -EINVAL;
-+		} else if (!strncmp(this_opt, "viafb_active_dev=", 17)) {
- 			viafb_active_dev = kstrdup(this_opt + 17, GFP_KERNEL);
--		else if (!strncmp(this_opt,
--			"viafb_display_hardware_layout=", 30))
--			strict_strtoul(this_opt + 30, 0,
--			(unsigned long *)&viafb_display_hardware_layout);
--		else if (!strncmp(this_opt, "viafb_second_size=", 18))
--			strict_strtoul(this_opt + 18, 0,
--				(unsigned long *)&viafb_second_size);
--		else if (!strncmp(this_opt,
--			"viafb_platform_epia_dvi=", 24))
--			strict_strtoul(this_opt + 24, 0,
--				(unsigned long *)&viafb_platform_epia_dvi);
--		else if (!strncmp(this_opt,
--			"viafb_device_lcd_dualedge=", 26))
--			strict_strtoul(this_opt + 26, 0,
--				(unsigned long *)&viafb_device_lcd_dualedge);
--		else if (!strncmp(this_opt, "viafb_bus_width=", 16))
--			strict_strtoul(this_opt + 16, 0,
--				(unsigned long *)&viafb_bus_width);
--		else if (!strncmp(this_opt, "viafb_lcd_mode=", 15))
--			strict_strtoul(this_opt + 15, 0,
--				(unsigned long *)&viafb_lcd_mode);
--		else if (!strncmp(this_opt, "viafb_lcd_port=", 15))
-+		} else if (!strncmp(this_opt,
-+			"viafb_display_hardware_layout=", 30)) {
-+			if (kstrtoint(this_opt + 30, 0, 
-+				      &viafb_display_hardware_layout) < 0)
-+				return -EINVAL;
-+		} else if (!strncmp(this_opt, "viafb_second_size=", 18)) {
-+			if (kstrtoint(this_opt + 18, 0, &viafb_second_size) < 0)
-+				return -EINVAL;
-+		} else if (!strncmp(this_opt,
-+			"viafb_platform_epia_dvi=", 24)) {
-+			if (kstrtoint(this_opt + 24, 0, 
-+				      &viafb_platform_epia_dvi) < 0)
-+				return -EINVAL;
-+		} else if (!strncmp(this_opt,
-+			"viafb_device_lcd_dualedge=", 26)) {
-+			if (kstrtoint(this_opt + 26, 0,
-+				      &viafb_device_lcd_dualedge) < 0)
-+				return -EINVAL;
-+		} else if (!strncmp(this_opt, "viafb_bus_width=", 16)) {
-+			if (kstrtoint(this_opt + 16, 0, &viafb_bus_width) < 0)
-+				return -EINVAL;
-+		} else if (!strncmp(this_opt, "viafb_lcd_mode=", 15)) {
-+			if (kstrtoint(this_opt + 15, 0, &viafb_lcd_mode) < 0)
-+				return -EINVAL;
-+		} else if (!strncmp(this_opt, "viafb_lcd_port=", 15)) {
- 			viafb_lcd_port = kstrdup(this_opt + 15, GFP_KERNEL);
--		else if (!strncmp(this_opt, "viafb_dvi_port=", 15))
-+		} else if (!strncmp(this_opt, "viafb_dvi_port=", 15)) {
- 			viafb_dvi_port = kstrdup(this_opt + 15, GFP_KERNEL);
-+		}
- 	}
- 	return 0;
- }
--- 
-1.7.0.4
+./scripts/checkpatch.pl ./\[PATCH\ V2\]\ replace\ strict_strtoul\ to\ 
+kstrto\[\*\]\ and\ check\ return\ value.eml
+ERROR: trailing whitespace
+#173: FILE: drivers/video/via/viafbdev.c:1974:
++^I^I^Iif (kstrtoint(this_opt + 21, 0, $
 
+ERROR: trailing whitespace
+#177: FILE: drivers/video/via/viafbdev.c:1978:
++^I^I^Iif (kstrtoint(this_opt + 19, 0, $
+
+ERROR: trailing whitespace
+#212: FILE: drivers/video/via/viafbdev.c:1991:
++^I^I^Iif (kstrtoint(this_opt + 30, 0, $
+
+ERROR: trailing whitespace
+#220: FILE: drivers/video/via/viafbdev.c:1999:
++^I^I^Iif (kstrtoint(this_opt + 24, 0, $
+
+total: 4 errors, 0 warnings, 173 lines checked
+
+NOTE: whitespace errors detected, you may wish to use scripts/cleanpatch or
+       scripts/cleanfile
+
+./[PATCH V2] replace strict_strtoul to kstrto[*] and check return value.eml has 
+style problems, please review.  If any of these errors
+are false positives report them to the maintainer, see
+CHECKPATCH in MAINTAINERS.
+
+Can you please fix those?
+
+
+> Signed-off-by: Wang Shaoyan<wangshaoyan.pt@taobao.com>
+> ---
+>   drivers/video/via/viafbdev.c |  126 ++++++++++++++++++++++-------------------
+>   1 files changed, 68 insertions(+), 58 deletions(-)
+>
+> diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+> index 53aa443..7074fc7 100644
+> --- a/drivers/video/via/viafbdev.c
+> +++ b/drivers/video/via/viafbdev.c
+
+[snip]
+
+> @@ -1325,7 +1328,8 @@ static ssize_t viafb_dfpl_proc_write(struct file *file,
+>   	if (copy_from_user(&buf[0], buffer, length))
+>   		return -EFAULT;
+>   	buf[length - 1] = '\0';	/*Ensure end string */
+> -	strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
+> +	if (kstrtou8(buf, -1,&reg_val)<  0)
+> +		return -EINVAL;
+>   	viafb_write_reg_mask(CR99, VIACR, reg_val, 0x0f);
+>   	return count;
+>   }
+
+Using -1 instead 0 as base here? Why? What does this cause?
+I assume that it should be 0.
+
+
+Thanks,
+
+Florian Tobias Schandinat

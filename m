@@ -1,185 +1,87 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 22 Aug 2011 08:27:44 +0000
-Subject: [PATCH 03/10] OMAP: DSS2: Add overlay caps to DSS features
-Message-Id: <1314001671-18123-4-git-send-email-tomi.valkeinen@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 07 Aug 2011 15:50:24 +0000
+Subject: [PATCH 2/6] viafb: eliminate viafb_get_pixclock
+Message-Id: <42edcb162d67e8a88c7b873941c19eab689db272.1312730860.git.FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314001671-18123-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314001671-18123-1-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1312730859.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <cover.1312730859.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Add support to define overlay capabilities into dss_features. The
-features are set to overlay->caps at initialization time.
+As there is only one user we can just insert the formula where
+needed. Avoids one lookup in the modetable and
+viafb_fill_var_timing_info does no longer depend on the modetable.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Acked-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/omap2/dss/dss_features.c |   55 ++++++++++++++++++++++++++++++++
- drivers/video/omap2/dss/dss_features.h |    1 +
- drivers/video/omap2/dss/overlay.c      |    4 +--
- 3 files changed, 57 insertions(+), 3 deletions(-)
+ drivers/video/via/hw.c    |   16 ++--------------
+ drivers/video/via/hw.h    |    1 -
+ drivers/video/via/share.h |    4 ----
+ 3 files changed, 2 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index b415c4e..6bf508d 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -47,6 +47,7 @@ struct omap_dss_features {
- 	const int num_ovls;
- 	const enum omap_display_type *supported_displays;
- 	const enum omap_color_mode *supported_color_modes;
-+	const enum omap_overlay_caps *overlay_caps;
- 	const char * const *clksrc_names;
- 	const struct dss_param_range *dss_params;
- 
-@@ -211,6 +212,50 @@ static const enum omap_color_mode omap4_dss_supported_color_modes[] = {
- 	OMAP_DSS_COLOR_RGBX32,
- };
- 
-+static const enum omap_overlay_caps omap2_dss_overlay_caps[] = {
-+	/* OMAP_DSS_GFX */
-+	0,
-+
-+	/* OMAP_DSS_VIDEO1 */
-+	OMAP_DSS_OVL_CAP_SCALE,
-+
-+	/* OMAP_DSS_VIDEO2 */
-+	OMAP_DSS_OVL_CAP_SCALE,
-+};
-+
-+static const enum omap_overlay_caps omap3430_dss_overlay_caps[] = {
-+	/* OMAP_DSS_GFX */
-+	0,
-+
-+	/* OMAP_DSS_VIDEO1 */
-+	OMAP_DSS_OVL_CAP_SCALE,
-+
-+	/* OMAP_DSS_VIDEO2 */
-+	OMAP_DSS_OVL_CAP_SCALE,
-+};
-+
-+static const enum omap_overlay_caps omap3630_dss_overlay_caps[] = {
-+	/* OMAP_DSS_GFX */
-+	0,
-+
-+	/* OMAP_DSS_VIDEO1 */
-+	OMAP_DSS_OVL_CAP_SCALE,
-+
-+	/* OMAP_DSS_VIDEO2 */
-+	OMAP_DSS_OVL_CAP_SCALE,
-+};
-+
-+static const enum omap_overlay_caps omap4_dss_overlay_caps[] = {
-+	/* OMAP_DSS_GFX */
-+	0,
-+
-+	/* OMAP_DSS_VIDEO1 */
-+	OMAP_DSS_OVL_CAP_SCALE,
-+
-+	/* OMAP_DSS_VIDEO2 */
-+	OMAP_DSS_OVL_CAP_SCALE,
-+};
-+
- static const char * const omap2_dss_clk_source_names[] = {
- 	[OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC]	= "N/A",
- 	[OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DSI]	= "N/A",
-@@ -275,6 +320,7 @@ static const struct omap_dss_features omap2_dss_features = {
- 	.num_ovls = 3,
- 	.supported_displays = omap2_dss_supported_displays,
- 	.supported_color_modes = omap2_dss_supported_color_modes,
-+	.overlay_caps = omap2_dss_overlay_caps,
- 	.clksrc_names = omap2_dss_clk_source_names,
- 	.dss_params = omap2_dss_param_range,
- 	.buffer_size_unit = 1,
-@@ -299,6 +345,7 @@ static const struct omap_dss_features omap3430_dss_features = {
- 	.num_ovls = 3,
- 	.supported_displays = omap3430_dss_supported_displays,
- 	.supported_color_modes = omap3_dss_supported_color_modes,
-+	.overlay_caps = omap3430_dss_overlay_caps,
- 	.clksrc_names = omap3_dss_clk_source_names,
- 	.dss_params = omap3_dss_param_range,
- 	.buffer_size_unit = 1,
-@@ -322,6 +369,7 @@ static const struct omap_dss_features omap3630_dss_features = {
- 	.num_ovls = 3,
- 	.supported_displays = omap3630_dss_supported_displays,
- 	.supported_color_modes = omap3_dss_supported_color_modes,
-+	.overlay_caps = omap3630_dss_overlay_caps,
- 	.clksrc_names = omap3_dss_clk_source_names,
- 	.dss_params = omap3_dss_param_range,
- 	.buffer_size_unit = 1,
-@@ -346,6 +394,7 @@ static const struct omap_dss_features omap4430_es1_0_dss_features  = {
- 	.num_ovls = 3,
- 	.supported_displays = omap4_dss_supported_displays,
- 	.supported_color_modes = omap4_dss_supported_color_modes,
-+	.overlay_caps = omap4_dss_overlay_caps,
- 	.clksrc_names = omap4_dss_clk_source_names,
- 	.dss_params = omap4_dss_param_range,
- 	.buffer_size_unit = 16,
-@@ -370,6 +419,7 @@ static const struct omap_dss_features omap4_dss_features = {
- 	.num_ovls = 3,
- 	.supported_displays = omap4_dss_supported_displays,
- 	.supported_color_modes = omap4_dss_supported_color_modes,
-+	.overlay_caps = omap4_dss_overlay_caps,
- 	.clksrc_names = omap4_dss_clk_source_names,
- 	.dss_params = omap4_dss_param_range,
- 	.buffer_size_unit = 16,
-@@ -407,6 +457,11 @@ enum omap_color_mode dss_feat_get_supported_color_modes(enum omap_plane plane)
- 	return omap_current_dss_features->supported_color_modes[plane];
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 5e69c20..d7b9a9f 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -2033,18 +2033,6 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
+ 	return 1;
  }
  
-+enum omap_overlay_caps dss_feat_get_overlay_caps(enum omap_plane plane)
-+{
-+	return omap_current_dss_features->overlay_caps[plane];
-+}
-+
- bool dss_feat_color_mode_supported(enum omap_plane plane,
- 		enum omap_color_mode color_mode)
+-int viafb_get_pixclock(int hres, int vres, int vmode_refresh)
+-{
+-	struct crt_mode_table *best;
+-
+-	best = viafb_get_best_mode(hres, vres, vmode_refresh);
+-	if (!best)
+-		return RES_640X480_60HZ_PIXCLOCK;
+-
+-	return 1000000000 / (best->crtc.hor_total * best->crtc.ver_total)
+-		* 1000 / best->refresh_rate;
+-}
+-
+ int viafb_get_refresh(int hres, int vres, u32 long_refresh)
  {
-diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
-index b7398cb..fd09196 100644
---- a/drivers/video/omap2/dss/dss_features.h
-+++ b/drivers/video/omap2/dss/dss_features.h
-@@ -90,6 +90,7 @@ unsigned long dss_feat_get_param_min(enum dss_range_param param);
- unsigned long dss_feat_get_param_max(enum dss_range_param param);
- enum omap_display_type dss_feat_get_supported_displays(enum omap_channel channel);
- enum omap_color_mode dss_feat_get_supported_color_modes(enum omap_plane plane);
-+enum omap_overlay_caps dss_feat_get_overlay_caps(enum omap_plane plane);
- bool dss_feat_color_mode_supported(enum omap_plane plane,
- 		enum omap_color_mode color_mode);
- const char *dss_feat_get_clk_source_name(enum omap_dss_clk_source id);
-diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
-index bf1abeb..8cbc1ae 100644
---- a/drivers/video/omap2/dss/overlay.c
-+++ b/drivers/video/omap2/dss/overlay.c
-@@ -618,19 +618,16 @@ void dss_init_overlays(struct platform_device *pdev)
- 		case 0:
- 			ovl->name = "gfx";
- 			ovl->id = OMAP_DSS_GFX;
--			ovl->caps = 0;
- 			ovl->info.global_alpha = 255;
- 			break;
- 		case 1:
- 			ovl->name = "vid1";
- 			ovl->id = OMAP_DSS_VIDEO1;
--			ovl->caps = OMAP_DSS_OVL_CAP_SCALE;
- 			ovl->info.global_alpha = 255;
- 			break;
- 		case 2:
- 			ovl->name = "vid2";
- 			ovl->id = OMAP_DSS_VIDEO2;
--			ovl->caps = OMAP_DSS_OVL_CAP_SCALE;
- 			ovl->info.global_alpha = 255;
- 			break;
- 		}
-@@ -641,6 +638,7 @@ void dss_init_overlays(struct platform_device *pdev)
- 		ovl->get_overlay_info = &dss_ovl_get_overlay_info;
- 		ovl->wait_for_go = &dss_ovl_wait_for_go;
+ 	struct crt_mode_table *best;
+@@ -2160,8 +2148,8 @@ void viafb_fill_var_timing_info(struct fb_var_screeninfo *var,
+ 	struct display_timing crt_reg;
  
-+		ovl->caps = dss_feat_get_overlay_caps(ovl->id);
- 		ovl->supported_modes  			dss_feat_get_supported_color_modes(ovl->id);
+ 	crt_reg = mode->crtc;
+-	var->pixclock = viafb_get_pixclock(var->xres, var->yres,
+-		mode->refresh_rate);
++	var->pixclock = 1000000000 / (crt_reg.hor_total * crt_reg.ver_total)
++		* 1000 / mode->refresh_rate;
+ 	var->left_margin  	    crt_reg.hor_total - (crt_reg.hor_sync_start + crt_reg.hor_sync_end);
+ 	var->right_margin = crt_reg.hor_sync_start - crt_reg.hor_addr;
+diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
+index 3b7e149..5516b02 100644
+--- a/drivers/video/via/hw.h
++++ b/drivers/video/via/hw.h
+@@ -665,7 +665,6 @@ void viafb_fill_var_timing_info(struct fb_var_screeninfo *var,
+ 	struct crt_mode_table *mode);
+ void __devinit viafb_init_chip_info(int chip_type);
+ void __devinit viafb_init_dac(int set_iga);
+-int viafb_get_pixclock(int hres, int vres, int vmode_refresh);
+ int viafb_get_refresh(int hres, int vres, u32 float_refresh);
+ void viafb_update_device_setting(int hres, int vres, int bpp, int flag);
  
+diff --git a/drivers/video/via/share.h b/drivers/video/via/share.h
+index 2906b2d..69d882c 100644
+--- a/drivers/video/via/share.h
++++ b/drivers/video/via/share.h
+@@ -636,10 +636,6 @@
+ #define V_SYNC_SATRT_SHADOW_INDEX   18
+ #define V_SYNC_END_SHADOW_INDEX     19
+ 
+-/* Definition Video Mode Pixel Clock (picoseconds)
+-*/
+-#define RES_640X480_60HZ_PIXCLOCK    39722
+-
+ /* LCD display method
+ */
+ #define     LCD_EXPANDSION              0x00
 -- 
-1.7.4.1
+1.6.3.2
 

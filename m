@@ -1,120 +1,134 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 31 Aug 2011 13:23:20 +0000
-Subject: [PATCH 09/12] OMAP: DSS2: HDMI: implement detect()
-Message-Id: <1314797003-17638-10-git-send-email-tomi.valkeinen@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 07 Aug 2011 15:52:17 +0000
+Subject: [PATCH 5/6] viafb: eliminate modetable dependancy of LCD modesetting
+Message-Id: <bfe7d5f9396d5f2607454fd9ff89397fa3ba9a32.1312730860.git.FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
+References: <cover.1312730859.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <cover.1312730859.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Implement detect() by checking the hot plug detect status.
+This patch removes the need for knowing the modetable structure
+within the LCD modesetting function. The magic 60Hz refresh rate was
+already there as always the first entry for a resolution was choosen
+based on the ascending refresh rate ordering in the modetable.
+For all but one this is at least 60Hz, if only higher frequencies
+available we choose those like the code before did. The exception is
+OLPC but that resolution has only one frequency so we get the same
+behaviour there as well.
 
-The implementation is not very good, as it always turns on the HDMI
-output to get the detection working. HDMI driver needs improvements so
-that we could enable only core parts of it.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/omap2/dss/dss.h              |    1 +
- drivers/video/omap2/dss/hdmi.c             |   18 ++++++++++++++++++
- drivers/video/omap2/dss/hdmi_omap4_panel.c |   25 +++++++++++++++++++++++++
- 3 files changed, 44 insertions(+), 0 deletions(-)
+ drivers/video/via/hw.c  |   20 ++++++++------------
+ drivers/video/via/lcd.c |   12 +++++-------
+ drivers/video/via/lcd.h |    5 ++---
+ 3 files changed, 15 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 6102b80..dd7dc19 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -493,6 +493,7 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev);
- int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
- 					struct omap_video_timings *timings);
- int omapdss_hdmi_read_edid(u8 *buf, int len);
-+bool omapdss_hdmi_detect(void);
- int hdmi_panel_init(void);
- void hdmi_panel_exit(void);
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 76fad92..30668bd 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -1937,9 +1937,8 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
+ 		if (viafb_SAMM_ON &&
+ 			(viaparinfo->lvds_setting_info->iga_path = IGA2)) {
+ 			viaparinfo->lvds_setting_info->bpp = video_bpp1;
+-			viafb_lcd_set_mode(crt_timing1, viaparinfo->
+-				lvds_setting_info,
+-				     &viaparinfo->chip_info->lvds_chip_info);
++			viafb_lcd_set_mode(viaparinfo->lvds_setting_info,
++				&viaparinfo->chip_info->lvds_chip_info);
+ 		} else {
+ 			/* IGA1 doesn't have LCD scaling, so set it center. */
+ 			if (viaparinfo->lvds_setting_info->iga_path = IGA1) {
+@@ -1947,18 +1946,16 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
+ 				    LCD_CENTERING;
+ 			}
+ 			viaparinfo->lvds_setting_info->bpp = video_bpp;
+-			viafb_lcd_set_mode(crt_timing, viaparinfo->
+-				lvds_setting_info,
+-				     &viaparinfo->chip_info->lvds_chip_info);
++			viafb_lcd_set_mode(viaparinfo->lvds_setting_info,
++				&viaparinfo->chip_info->lvds_chip_info);
+ 		}
+ 	}
+ 	if (viafb_LCD2_ON) {
+ 		if (viafb_SAMM_ON &&
+ 			(viaparinfo->lvds_setting_info2->iga_path = IGA2)) {
+ 			viaparinfo->lvds_setting_info2->bpp = video_bpp1;
+-			viafb_lcd_set_mode(crt_timing1, viaparinfo->
+-				lvds_setting_info2,
+-				     &viaparinfo->chip_info->lvds_chip_info2);
++			viafb_lcd_set_mode(viaparinfo->lvds_setting_info2,
++				&viaparinfo->chip_info->lvds_chip_info2);
+ 		} else {
+ 			/* IGA1 doesn't have LCD scaling, so set it center. */
+ 			if (viaparinfo->lvds_setting_info2->iga_path = IGA1) {
+@@ -1966,9 +1963,8 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
+ 				    LCD_CENTERING;
+ 			}
+ 			viaparinfo->lvds_setting_info2->bpp = video_bpp;
+-			viafb_lcd_set_mode(crt_timing, viaparinfo->
+-				lvds_setting_info2,
+-				     &viaparinfo->chip_info->lvds_chip_info2);
++			viafb_lcd_set_mode(viaparinfo->lvds_setting_info2,
++				&viaparinfo->chip_info->lvds_chip_info2);
+ 		}
+ 	}
  
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 55edbd2..e8a977e 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -1148,6 +1148,24 @@ int omapdss_hdmi_read_edid(u8 *buf, int len)
- 	return r;
+diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
+index 0a38e4d..5f3b4e3 100644
+--- a/drivers/video/via/lcd.c
++++ b/drivers/video/via/lcd.c
+@@ -548,9 +548,8 @@ static void lcd_patch_skew(struct lvds_setting_information
  }
  
-+bool omapdss_hdmi_detect(void)
-+{
-+	int r;
-+
-+	mutex_lock(&hdmi.lock);
-+
-+	r = hdmi_runtime_get();
-+	BUG_ON(r);
-+
-+	/* HPD */
-+	r = REG_GET(HDMI_CORE_SYS_SYS_STAT, 1, 1);
-+
-+	hdmi_runtime_put();
-+	mutex_unlock(&hdmi.lock);
-+
-+	return r = 1;
-+}
-+
- int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
+ /* LCD Set Mode */
+-void viafb_lcd_set_mode(struct crt_mode_table *mode_crt_table,
+-		  struct lvds_setting_information *plvds_setting_info,
+-		  struct lvds_chip_information *plvds_chip_info)
++void viafb_lcd_set_mode(struct lvds_setting_information *plvds_setting_info,
++	struct lvds_chip_information *plvds_chip_info)
  {
- 	int r = 0;
-diff --git a/drivers/video/omap2/dss/hdmi_omap4_panel.c b/drivers/video/omap2/dss/hdmi_omap4_panel.c
-index ffea8d3..c859421 100644
---- a/drivers/video/omap2/dss/hdmi_omap4_panel.c
-+++ b/drivers/video/omap2/dss/hdmi_omap4_panel.c
-@@ -25,6 +25,7 @@
- #include <linux/mutex.h>
- #include <linux/module.h>
- #include <video/omapdss.h>
-+#include <linux/slab.h>
+ 	int set_iga = plvds_setting_info->iga_path;
+ 	int mode_bpp = plvds_setting_info->bpp;
+@@ -560,15 +559,14 @@ void viafb_lcd_set_mode(struct crt_mode_table *mode_crt_table,
+ 	int panel_vres = plvds_setting_info->lcd_panel_vres;
+ 	u32 clock;
+ 	struct display_timing mode_crt_reg, panel_crt_reg, timing;
+-	struct crt_mode_table *panel_crt_table = NULL;
+-	struct VideoModeTable *vmode_tbl = viafb_get_mode(panel_hres,
+-		panel_vres);
++	struct crt_mode_table *mode_crt_table, *panel_crt_table;
  
- #include "dss.h"
- 
-@@ -198,6 +199,29 @@ err:
- 	return r;
- }
- 
-+static bool hdmi_detect(struct omap_dss_device *dssdev)
-+{
-+	int r;
-+
-+	mutex_lock(&hdmi.hdmi_lock);
-+
-+	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE) {
-+		r = omapdss_hdmi_display_enable(dssdev);
-+		if (r)
-+			goto err;
-+	}
-+
-+	r = omapdss_hdmi_detect();
-+
-+	if (dssdev->state = OMAP_DSS_DISPLAY_DISABLED ||
-+			dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED)
-+		omapdss_hdmi_display_disable(dssdev);
-+err:
-+	mutex_unlock(&hdmi.hdmi_lock);
-+
-+	return r;
-+}
-+
- static struct omap_dss_driver hdmi_driver = {
- 	.probe		= hdmi_panel_probe,
- 	.remove		= hdmi_panel_remove,
-@@ -209,6 +233,7 @@ static struct omap_dss_driver hdmi_driver = {
- 	.set_timings	= hdmi_set_timings,
- 	.check_timings	= hdmi_check_timings,
- 	.read_edid	= hdmi_read_edid,
-+	.detect		= hdmi_detect,
- 	.driver			= {
- 		.name   = "hdmi_panel",
- 		.owner  = THIS_MODULE,
+ 	DEBUG_MSG(KERN_INFO "viafb_lcd_set_mode!!\n");
+ 	/* Get mode table */
++	mode_crt_table = viafb_get_best_mode(set_hres, set_vres, 60);
+ 	mode_crt_reg = mode_crt_table->crtc;
+ 	/* Get panel table Pointer */
+-	panel_crt_table = vmode_tbl->crtc;
++	panel_crt_table = viafb_get_best_mode(panel_hres, panel_vres, 60);
+ 	panel_crt_reg = panel_crt_table->crtc;
+ 	DEBUG_MSG(KERN_INFO "bellow viafb_lcd_set_mode!!\n");
+ 	if (VT1636_LVDS = plvds_chip_info->lvds_chip_name)
+diff --git a/drivers/video/via/lcd.h b/drivers/video/via/lcd.h
+index 3b9e539..77ca7b8 100644
+--- a/drivers/video/via/lcd.h
++++ b/drivers/video/via/lcd.h
+@@ -76,9 +76,8 @@ void __devinit viafb_init_lvds_output_interface(struct lvds_chip_information
+ 				*plvds_chip_info,
+ 				struct lvds_setting_information
+ 				*plvds_setting_info);
+-void viafb_lcd_set_mode(struct crt_mode_table *mode_crt_table,
+-		  struct lvds_setting_information *plvds_setting_info,
+-		  struct lvds_chip_information *plvds_chip_info);
++void viafb_lcd_set_mode(struct lvds_setting_information *plvds_setting_info,
++	struct lvds_chip_information *plvds_chip_info);
+ bool __devinit viafb_lvds_trasmitter_identify(void);
+ void viafb_init_lvds_output_interface(struct lvds_chip_information
+ 				*plvds_chip_info,
 -- 
-1.7.4.1
+1.6.3.2
 

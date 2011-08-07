@@ -1,60 +1,220 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 31 Aug 2011 11:01:32 +0000
-Subject: Re: [PULL] SH mobile LCDC cleanups and fixes
-Message-Id: <201108311301.32869.laurent.pinchart@ideasonboard.com>
+From: stufever@gmail.com
+Date: Sun, 07 Aug 2011 13:31:24 +0000
+Subject: [PATCH] viafb: replace strict_strtoul to kstrtoul and check return value
+Message-Id: <1312723884-21790-1-git-send-email-wangshaoyan.pt@taobao.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201108191044.52130.laurent.pinchart@ideasonboard.com>
-In-Reply-To: <201108191044.52130.laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, FlorianSchandinat@gmx.de, lethal@linux-sh.org, Wang Shaoyan <wangshaoyan.pt@taobao.com>
 
-Hi Florian,
+From: Wang Shaoyan <wangshaoyan.pt@taobao.com>
 
-On Tuesday 30 August 2011 22:41:39 Florian Tobias Schandinat wrote:
-> On 08/19/2011 08:44 AM, Laurent Pinchart wrote:
-> > Hi Florian,
-> > 
-> > Here are the latest SH mobile LCDC and MERAM cleanups and fixes based on
-> > top of v3.1-rc2. All the patches have been posted to the list. I've
-> > incorporated acked-by and tested-by lines when available, but most of
-> > the patches received no comment.
-> > 
-> > The following changes since commit 
-93ee7a9340d64f20295aacc3fb6a22b759323280:
-> >   Linux 3.1-rc2 (2011-08-14 15:09:08 -0700)
-> > 
-> > are available in the git repository at:
-> >   git://linuxtv.org/pinchartl/fbdev.git sh-mobile-lcdc
-> 
-> Pulled, thanks.
+This commit replace the function strict_strtoul(becasue commit 33ee3b2e), and check the return value to avoid such warning:
 
-Thanks you.
+  drivers/video/via/viafbdev.c:1992: warning: ignoring return value of 'kstrtoul', declared with attribute warn_unused_result
 
-Do you plan to pull the "sh_mobile_lcdc: Support format changes at runtime" 
-patch set as well ? I've just submitted a v2 that includes an additional patch 
-to fix a MERAM issue.
+Signed-off-by: Wang Shaoyan <wangshaoyan.pt@taobao.com>
+---
+ drivers/video/via/viafbdev.c |  137 ++++++++++++++++++++++++------------------
+ 1 files changed, 79 insertions(+), 58 deletions(-)
 
-> It looks good to me, as far as I can tell.
-> Just the first commits that were not your own ones should have had more
-> verbose commit messages and I think they should have had your Signed-off
-> as you received them via e-mail?
-
-I've just picked them from the list, as I needed them to build the other 
-patches.
-
-> And on another note:
-> Would you mind adding yourself as maintainer of drivers/video/sh_mobile_*
-> in MAINTAINERS? I can't find any entry for it yet and having me as primary
-> source for review for a driver I don't know is a bad idea, at least if
-> there are people that know it better.
-
-I don't know the driver *that* well :-) I'm not sure how long I will work on 
-that driver, so maybe it would be a better idea to list Magnus as the 
-maintainer. Magnus, what's your opinion ?
-
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 53aa443..5f638d6 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1158,7 +1158,8 @@ static ssize_t viafb_dvp0_proc_write(struct file *file,
+ 	for (i = 0; i < 3; i++) {
+ 		value = strsep(&pbuf, " ");
+ 		if (value != NULL) {
+-			strict_strtoul(value, 0, (unsigned long *)&reg_val);
++			if (kstrtoul(value, 0, (unsigned long *)&reg_val) < 0)
++				return -EINVAL;
+ 			DEBUG_MSG(KERN_INFO "DVP0:reg_val[%l]=:%x\n", i,
+ 				  reg_val);
+ 			switch (i) {
+@@ -1228,7 +1229,8 @@ static ssize_t viafb_dvp1_proc_write(struct file *file,
+ 	for (i = 0; i < 3; i++) {
+ 		value = strsep(&pbuf, " ");
+ 		if (value != NULL) {
+-			strict_strtoul(value, 0, (unsigned long *)&reg_val);
++			if (kstrtoul(value, 0, (unsigned long *)&reg_val) < 0)
++				return -EINVAL;
+ 			switch (i) {
+ 			case 0:
+ 				viafb_write_reg_mask(CR9B, VIACR,
+@@ -1286,7 +1288,8 @@ static ssize_t viafb_dfph_proc_write(struct file *file,
+ 	if (copy_from_user(&buf[0], buffer, length))
+ 		return -EFAULT;
+ 	buf[length - 1] = '\0';	/*Ensure end string */
+-	strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
++	if (kstrtoul(&buf[0], 0, (unsigned long *)&reg_val) < 0)
++		return -EINVAL;
+ 	viafb_write_reg_mask(CR97, VIACR, reg_val, 0x0f);
+ 	return count;
+ }
+@@ -1325,7 +1328,8 @@ static ssize_t viafb_dfpl_proc_write(struct file *file,
+ 	if (copy_from_user(&buf[0], buffer, length))
+ 		return -EFAULT;
+ 	buf[length - 1] = '\0';	/*Ensure end string */
+-	strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
++	if (kstrtoul(&buf[0], 0, (unsigned long *)&reg_val) < 0)
++		return -EINVAL;
+ 	viafb_write_reg_mask(CR99, VIACR, reg_val, 0x0f);
+ 	return count;
+ }
+@@ -1394,8 +1398,9 @@ static ssize_t viafb_vt1636_proc_write(struct file *file,
+ 		for (i = 0; i < 2; i++) {
+ 			value = strsep(&pbuf, " ");
+ 			if (value != NULL) {
+-				strict_strtoul(value, 0,
+-					(unsigned long *)&reg_val.Data);
++				if (kstrtoul(value, 0,
++					(unsigned long *)&reg_val.Data) < 0)
++					return -EINVAL;
+ 				switch (i) {
+ 				case 0:
+ 					reg_val.Index = 0x08;
+@@ -1431,8 +1436,9 @@ static ssize_t viafb_vt1636_proc_write(struct file *file,
+ 		for (i = 0; i < 2; i++) {
+ 			value = strsep(&pbuf, " ");
+ 			if (value != NULL) {
+-				strict_strtoul(value, 0,
+-					(unsigned long *)&reg_val.Data);
++				if (kstrtoul(value, 0,
++					(unsigned long *)&reg_val.Data) < 0)
++					return -EINVAL;
+ 				switch (i) {
+ 				case 0:
+ 					reg_val.Index = 0x08;
+@@ -1950,61 +1956,76 @@ static int __init viafb_setup(void)
+ 		if (!*this_opt)
+ 			continue;
+ 
+-		if (!strncmp(this_opt, "viafb_mode1=", 12))
++		if (!strncmp(this_opt, "viafb_mode1=", 12)) {
+ 			viafb_mode1 = kstrdup(this_opt + 12, GFP_KERNEL);
+-		else if (!strncmp(this_opt, "viafb_mode=", 11))
++		} else if (!strncmp(this_opt, "viafb_mode=", 11)) {
+ 			viafb_mode = kstrdup(this_opt + 11, GFP_KERNEL);
+-		else if (!strncmp(this_opt, "viafb_bpp1=", 11))
+-			strict_strtoul(this_opt + 11, 0,
+-				(unsigned long *)&viafb_bpp1);
+-		else if (!strncmp(this_opt, "viafb_bpp=", 10))
+-			strict_strtoul(this_opt + 10, 0,
+-				(unsigned long *)&viafb_bpp);
+-		else if (!strncmp(this_opt, "viafb_refresh1=", 15))
+-			strict_strtoul(this_opt + 15, 0,
+-				(unsigned long *)&viafb_refresh1);
+-		else if (!strncmp(this_opt, "viafb_refresh=", 14))
+-			strict_strtoul(this_opt + 14, 0,
+-				(unsigned long *)&viafb_refresh);
+-		else if (!strncmp(this_opt, "viafb_lcd_dsp_method=", 21))
+-			strict_strtoul(this_opt + 21, 0,
+-				(unsigned long *)&viafb_lcd_dsp_method);
+-		else if (!strncmp(this_opt, "viafb_lcd_panel_id=", 19))
+-			strict_strtoul(this_opt + 19, 0,
+-				(unsigned long *)&viafb_lcd_panel_id);
+-		else if (!strncmp(this_opt, "viafb_accel=", 12))
+-			strict_strtoul(this_opt + 12, 0,
+-				(unsigned long *)&viafb_accel);
+-		else if (!strncmp(this_opt, "viafb_SAMM_ON=", 14))
+-			strict_strtoul(this_opt + 14, 0,
+-				(unsigned long *)&viafb_SAMM_ON);
+-		else if (!strncmp(this_opt, "viafb_active_dev=", 17))
++		} else if (!strncmp(this_opt, "viafb_bpp1=", 11)) {
++			if (kstrtoul(this_opt + 11, 0,
++				(unsigned long *)&viafb_bpp1) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_bpp=", 10)) {
++			if (kstrtoul(this_opt + 10, 0,
++				(unsigned long *)&viafb_bpp) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_refresh1=", 15)) {
++			if (kstrtoul(this_opt + 15, 0,
++				(unsigned long *)&viafb_refresh1) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_refresh=", 14)) {
++			if (kstrtoul(this_opt + 14, 0,
++				(unsigned long *)&viafb_refresh) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_lcd_dsp_method=", 21)) {
++			if (kstrtoul(this_opt + 21, 0,
++				(unsigned long *)&viafb_lcd_dsp_method) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_lcd_panel_id=", 19)) {
++			if (kstrtoul(this_opt + 19, 0,
++				(unsigned long *)&viafb_lcd_panel_id) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_accel=", 12)) {
++			if (kstrtoul(this_opt + 12, 0,
++				(unsigned long *)&viafb_accel) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_SAMM_ON=", 14)) {
++			if (kstrtoul(this_opt + 14, 0,
++				(unsigned long *)&viafb_SAMM_ON) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_active_dev=", 17)) {
+ 			viafb_active_dev = kstrdup(this_opt + 17, GFP_KERNEL);
+-		else if (!strncmp(this_opt,
+-			"viafb_display_hardware_layout=", 30))
+-			strict_strtoul(this_opt + 30, 0,
+-			(unsigned long *)&viafb_display_hardware_layout);
+-		else if (!strncmp(this_opt, "viafb_second_size=", 18))
+-			strict_strtoul(this_opt + 18, 0,
+-				(unsigned long *)&viafb_second_size);
+-		else if (!strncmp(this_opt,
+-			"viafb_platform_epia_dvi=", 24))
+-			strict_strtoul(this_opt + 24, 0,
+-				(unsigned long *)&viafb_platform_epia_dvi);
+-		else if (!strncmp(this_opt,
+-			"viafb_device_lcd_dualedge=", 26))
+-			strict_strtoul(this_opt + 26, 0,
+-				(unsigned long *)&viafb_device_lcd_dualedge);
+-		else if (!strncmp(this_opt, "viafb_bus_width=", 16))
+-			strict_strtoul(this_opt + 16, 0,
+-				(unsigned long *)&viafb_bus_width);
+-		else if (!strncmp(this_opt, "viafb_lcd_mode=", 15))
+-			strict_strtoul(this_opt + 15, 0,
+-				(unsigned long *)&viafb_lcd_mode);
+-		else if (!strncmp(this_opt, "viafb_lcd_port=", 15))
++		} else if (!strncmp(this_opt,
++			"viafb_display_hardware_layout=", 30)) {
++			if (kstrtoul(this_opt + 30, 0,
++			(unsigned long *)&viafb_display_hardware_layout) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_second_size=", 18)) {
++			if (kstrtoul(this_opt + 18, 0,
++				(unsigned long *)&viafb_second_size) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt,
++			"viafb_platform_epia_dvi=", 24)) {
++			if ( kstrtoul(this_opt + 24, 0,
++				(unsigned long *)&viafb_platform_epia_dvi) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt,
++			"viafb_device_lcd_dualedge=", 26)) {
++			if (kstrtoul(this_opt + 26, 0,
++				(unsigned long *)&viafb_device_lcd_dualedge) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_bus_width=", 16)) {
++			if (kstrtoul(this_opt + 16, 0,
++				(unsigned long *)&viafb_bus_width) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_lcd_mode=", 15)) {
++			if (kstrtoul(this_opt + 15, 0,
++				(unsigned long *)&viafb_lcd_mode) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_lcd_port=", 15)) {
+ 			viafb_lcd_port = kstrdup(this_opt + 15, GFP_KERNEL);
+-		else if (!strncmp(this_opt, "viafb_dvi_port=", 15))
++		} else if (!strncmp(this_opt, "viafb_dvi_port=", 15)) {
+ 			viafb_dvi_port = kstrdup(this_opt + 15, GFP_KERNEL);
++		}
+ 	}
+ 	return 0;
+ }
 -- 
-Regards,
+1.7.0.4
 
-Laurent Pinchart

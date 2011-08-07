@@ -1,139 +1,213 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Wed, 20 Jul 2011 22:54:26 +0000
-Subject: [PATCH V8 5/5] ARM: EXYNOS4: Add platform data for EXYNOS4 FIMD and LTE480WV platform-lcd on SMDKC21
-Message-Id: <1311202466-18267-1-git-send-email-jg1.han@samsung.com>
+From: stufever@gmail.com
+Date: Sun, 07 Aug 2011 15:28:42 +0000
+Subject: [PATCH V2] replace strict_strtoul to kstrto[*] and check return value
+Message-Id: <1312730922-1211-1-git-send-email-wangshaoyan.pt@taobao.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kukjin Kim <kgene.kim@samsung.com>, Paul Mundt <lethal@linux-sh.org>, linux-samsung-soc@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Jonghun Han <jonghun.han@samsung.com>, Ben Dooks <ben-linux@fluff.org>, Jingoo Han <jg1.han@samsung.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, FlorianSchandinat@gmx.de, lethal@linux-sh.org, Wang Shaoyan <wangshaoyan.pt@taobao.com>
 
-This patch adds support EXYNOS4 FIMD0 and LTE480WV LCD pannel
-on SMDKC210 board.
+From: Wang Shaoyan <wangshaoyan.pt@taobao.com>
 
-Signed-off-by: Jonghun Han <jonghun.han@samsung.com>
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Change since V1:
+  1.use kstrto*, not kstrtoul
+  2.replace &buf[0] to buf
+
+This commit replace the function strict_strtoul(becasue commit 33ee3b2e), and check the return value to avoid such warning:
+
+  drivers/video/via/viafbdev.c:1992: warning: ignoring return value of 'kstrtoul', declared with attribute warn_unused_result
+
+Signed-off-by: Wang Shaoyan <wangshaoyan.pt@taobao.com>
 ---
- arch/arm/mach-exynos4/mach-smdkc210.c |   71 +++++++++++++++++++++++++++++++++
- 1 files changed, 71 insertions(+), 0 deletions(-)
+ drivers/video/via/viafbdev.c |  126 ++++++++++++++++++++++-------------------
+ 1 files changed, 68 insertions(+), 58 deletions(-)
 
-diff --git a/arch/arm/mach-exynos4/mach-smdkc210.c b/arch/arm/mach-exynos4/mach-smdkc210.c
-index e645f7a..31cfcd6 100644
---- a/arch/arm/mach-exynos4/mach-smdkc210.c
-+++ b/arch/arm/mach-exynos4/mach-smdkc210.c
-@@ -9,7 +9,9 @@
- */
- 
- #include <linux/serial_core.h>
-+#include <linux/delay.h>
- #include <linux/gpio.h>
-+#include <linux/lcd.h>
- #include <linux/mmc/host.h>
- #include <linux/platform_device.h>
- #include <linux/smsc911x.h>
-@@ -19,11 +21,15 @@
- #include <asm/mach/arch.h>
- #include <asm/mach-types.h>
- 
-+#include <video/platform_lcd.h>
-+
- #include <plat/regs-serial.h>
- #include <plat/regs-srom.h>
-+#include <plat/regs-fb-v4.h>
- #include <plat/exynos4.h>
- #include <plat/cpu.h>
- #include <plat/devs.h>
-+#include <plat/fb.h>
- #include <plat/sdhci.h>
- #include <plat/iic.h>
- #include <plat/pd.h>
-@@ -111,6 +117,67 @@ static struct s3c_sdhci_platdata smdkc210_hsmmc3_pdata __initdata = {
- 	.clk_type		= S3C_SDHCI_CLK_DIV_EXTERNAL,
- };
- 
-+static void lcd_lte480wv_set_power(struct plat_lcd_data *pd,
-+				   unsigned int power)
-+{
-+	if (power) {
-+#if !defined(CONFIG_BACKLIGHT_PWM)
-+		gpio_request_one(EXYNOS4_GPD0(1), GPIOF_OUT_INIT_HIGH, "GPD0");
-+		gpio_free(EXYNOS4_GPD0(1));
-+#endif
-+		/* fire nRESET on power up */
-+		gpio_request(EXYNOS4_GPX0(6), "GPX0");
-+
-+		gpio_direction_output(EXYNOS4_GPX0(6), 1);
-+		mdelay(100);
-+
-+		gpio_set_value(EXYNOS4_GPX0(6), 0);
-+		mdelay(10);
-+
-+		gpio_set_value(EXYNOS4_GPX0(6), 1);
-+		mdelay(10);
-+
-+		gpio_free(EXYNOS4_GPX0(6));
-+	} else {
-+#if !defined(CONFIG_BACKLIGHT_PWM)
-+		gpio_request_one(EXYNOS4_GPD0(1), GPIOF_OUT_INIT_LOW, "GPD0");
-+		gpio_free(EXYNOS4_GPD0(1));
-+#endif
-+	}
-+}
-+
-+static struct plat_lcd_data smdkc210_lcd_lte480wv_data = {
-+	.set_power		= lcd_lte480wv_set_power,
-+};
-+
-+static struct platform_device smdkc210_lcd_lte480wv = {
-+	.name			= "platform-lcd",
-+	.dev.parent		= &s5p_device_fimd0.dev,
-+	.dev.platform_data	= &smdkc210_lcd_lte480wv_data,
-+};
-+
-+static struct s3c_fb_pd_win smdkc210_fb_win0 = {
-+	.win_mode = {
-+		.left_margin	= 13,
-+		.right_margin	= 8,
-+		.upper_margin	= 7,
-+		.lower_margin	= 5,
-+		.hsync_len	= 3,
-+		.vsync_len	= 1,
-+		.xres		= 800,
-+		.yres		= 480,
-+	},
-+	.max_bpp		= 32,
-+	.default_bpp		= 24,
-+};
-+
-+static struct s3c_fb_platdata smdkc210_lcd0_pdata __initdata = {
-+	.win[0]		= &smdkc210_fb_win0,
-+	.vidcon0	= VIDCON0_VIDOUT_RGB | VIDCON0_PNRMODE_RGB,
-+	.vidcon1	= VIDCON1_INV_HSYNC | VIDCON1_INV_VSYNC,
-+	.setup_gpio	= exynos4_fimd0_gpio_setup_24bpp,
-+};
-+
- static struct resource smdkc210_smsc911x_resources[] = {
- 	[0] = {
- 		.start	= EXYNOS4_PA_SROM_BANK(1),
-@@ -165,6 +232,8 @@ static struct platform_device *smdkc210_devices[] __initdata = {
- 	&exynos4_device_pd[PD_GPS],
- 	&exynos4_device_sysmmu,
- 	&samsung_asoc_dma,
-+	&s5p_device_fimd0,
-+	&smdkc210_lcd_lte480wv,
- 	&smdkc210_smsc911x,
- };
- 
-@@ -210,6 +279,8 @@ static void __init smdkc210_machine_init(void)
- 	s3c_sdhci2_set_platdata(&smdkc210_hsmmc2_pdata);
- 	s3c_sdhci3_set_platdata(&smdkc210_hsmmc3_pdata);
- 
-+	s5p_fimd0_set_platdata(&smdkc210_lcd0_pdata);
-+
- 	platform_add_devices(smdkc210_devices, ARRAY_SIZE(smdkc210_devices));
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 53aa443..7074fc7 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1158,7 +1158,8 @@ static ssize_t viafb_dvp0_proc_write(struct file *file,
+ 	for (i = 0; i < 3; i++) {
+ 		value = strsep(&pbuf, " ");
+ 		if (value != NULL) {
+-			strict_strtoul(value, 0, (unsigned long *)&reg_val);
++			if (kstrtou8(value, 0, &reg_val) < 0)
++				return -EINVAL;
+ 			DEBUG_MSG(KERN_INFO "DVP0:reg_val[%l]=:%x\n", i,
+ 				  reg_val);
+ 			switch (i) {
+@@ -1228,7 +1229,8 @@ static ssize_t viafb_dvp1_proc_write(struct file *file,
+ 	for (i = 0; i < 3; i++) {
+ 		value = strsep(&pbuf, " ");
+ 		if (value != NULL) {
+-			strict_strtoul(value, 0, (unsigned long *)&reg_val);
++			if (kstrtou8(value, 0, &reg_val) < 0)
++				return -EINVAL;
+ 			switch (i) {
+ 			case 0:
+ 				viafb_write_reg_mask(CR9B, VIACR,
+@@ -1286,7 +1288,8 @@ static ssize_t viafb_dfph_proc_write(struct file *file,
+ 	if (copy_from_user(&buf[0], buffer, length))
+ 		return -EFAULT;
+ 	buf[length - 1] = '\0';	/*Ensure end string */
+-	strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
++	if (kstrtou8(buf, 0, &reg_val) < 0)
++		return -EINVAL;
+ 	viafb_write_reg_mask(CR97, VIACR, reg_val, 0x0f);
+ 	return count;
  }
+@@ -1325,7 +1328,8 @@ static ssize_t viafb_dfpl_proc_write(struct file *file,
+ 	if (copy_from_user(&buf[0], buffer, length))
+ 		return -EFAULT;
+ 	buf[length - 1] = '\0';	/*Ensure end string */
+-	strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
++	if (kstrtou8(buf, -1, &reg_val) < 0)
++		return -EINVAL;
+ 	viafb_write_reg_mask(CR99, VIACR, reg_val, 0x0f);
+ 	return count;
+ }
+@@ -1394,8 +1398,8 @@ static ssize_t viafb_vt1636_proc_write(struct file *file,
+ 		for (i = 0; i < 2; i++) {
+ 			value = strsep(&pbuf, " ");
+ 			if (value != NULL) {
+-				strict_strtoul(value, 0,
+-					(unsigned long *)&reg_val.Data);
++				if (kstrtou8(value, 0, &reg_val.Data) < 0)
++					return -EINVAL;
+ 				switch (i) {
+ 				case 0:
+ 					reg_val.Index = 0x08;
+@@ -1431,8 +1435,8 @@ static ssize_t viafb_vt1636_proc_write(struct file *file,
+ 		for (i = 0; i < 2; i++) {
+ 			value = strsep(&pbuf, " ");
+ 			if (value != NULL) {
+-				strict_strtoul(value, 0,
+-					(unsigned long *)&reg_val.Data);
++				if (kstrtou8(value, 0, &reg_val.Data) < 0)
++					return -EINVAL;
+ 				switch (i) {
+ 				case 0:
+ 					reg_val.Index = 0x08;
+@@ -1950,61 +1954,67 @@ static int __init viafb_setup(void)
+ 		if (!*this_opt)
+ 			continue;
  
+-		if (!strncmp(this_opt, "viafb_mode1=", 12))
++		if (!strncmp(this_opt, "viafb_mode1=", 12)) {
+ 			viafb_mode1 = kstrdup(this_opt + 12, GFP_KERNEL);
+-		else if (!strncmp(this_opt, "viafb_mode=", 11))
++		} else if (!strncmp(this_opt, "viafb_mode=", 11)) {
+ 			viafb_mode = kstrdup(this_opt + 11, GFP_KERNEL);
+-		else if (!strncmp(this_opt, "viafb_bpp1=", 11))
+-			strict_strtoul(this_opt + 11, 0,
+-				(unsigned long *)&viafb_bpp1);
+-		else if (!strncmp(this_opt, "viafb_bpp=", 10))
+-			strict_strtoul(this_opt + 10, 0,
+-				(unsigned long *)&viafb_bpp);
+-		else if (!strncmp(this_opt, "viafb_refresh1=", 15))
+-			strict_strtoul(this_opt + 15, 0,
+-				(unsigned long *)&viafb_refresh1);
+-		else if (!strncmp(this_opt, "viafb_refresh=", 14))
+-			strict_strtoul(this_opt + 14, 0,
+-				(unsigned long *)&viafb_refresh);
+-		else if (!strncmp(this_opt, "viafb_lcd_dsp_method=", 21))
+-			strict_strtoul(this_opt + 21, 0,
+-				(unsigned long *)&viafb_lcd_dsp_method);
+-		else if (!strncmp(this_opt, "viafb_lcd_panel_id=", 19))
+-			strict_strtoul(this_opt + 19, 0,
+-				(unsigned long *)&viafb_lcd_panel_id);
+-		else if (!strncmp(this_opt, "viafb_accel=", 12))
+-			strict_strtoul(this_opt + 12, 0,
+-				(unsigned long *)&viafb_accel);
+-		else if (!strncmp(this_opt, "viafb_SAMM_ON=", 14))
+-			strict_strtoul(this_opt + 14, 0,
+-				(unsigned long *)&viafb_SAMM_ON);
+-		else if (!strncmp(this_opt, "viafb_active_dev=", 17))
++		} else if (!strncmp(this_opt, "viafb_bpp1=", 11)) {
++			if (kstrtouint(this_opt + 11, 0, &viafb_bpp1) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_bpp=", 10)) {
++			if (kstrtouint(this_opt + 10, 0, &viafb_bpp) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_refresh1=", 15)) {
++			if (kstrtoint(this_opt + 15, 0, &viafb_refresh1) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_refresh=", 14)) {
++			if (kstrtoint(this_opt + 14, 0, &viafb_refresh) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_lcd_dsp_method=", 21)) {
++			if (kstrtoint(this_opt + 21, 0, 
++				      &viafb_lcd_dsp_method) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_lcd_panel_id=", 19)) {
++			if (kstrtoint(this_opt + 19, 0, 
++				      &viafb_lcd_panel_id) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_accel=", 12)) {
++			if (kstrtoint(this_opt + 12, 0, &viafb_accel) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_SAMM_ON=", 14)) {
++			if (kstrtoint(this_opt + 14, 0, &viafb_SAMM_ON) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_active_dev=", 17)) {
+ 			viafb_active_dev = kstrdup(this_opt + 17, GFP_KERNEL);
+-		else if (!strncmp(this_opt,
+-			"viafb_display_hardware_layout=", 30))
+-			strict_strtoul(this_opt + 30, 0,
+-			(unsigned long *)&viafb_display_hardware_layout);
+-		else if (!strncmp(this_opt, "viafb_second_size=", 18))
+-			strict_strtoul(this_opt + 18, 0,
+-				(unsigned long *)&viafb_second_size);
+-		else if (!strncmp(this_opt,
+-			"viafb_platform_epia_dvi=", 24))
+-			strict_strtoul(this_opt + 24, 0,
+-				(unsigned long *)&viafb_platform_epia_dvi);
+-		else if (!strncmp(this_opt,
+-			"viafb_device_lcd_dualedge=", 26))
+-			strict_strtoul(this_opt + 26, 0,
+-				(unsigned long *)&viafb_device_lcd_dualedge);
+-		else if (!strncmp(this_opt, "viafb_bus_width=", 16))
+-			strict_strtoul(this_opt + 16, 0,
+-				(unsigned long *)&viafb_bus_width);
+-		else if (!strncmp(this_opt, "viafb_lcd_mode=", 15))
+-			strict_strtoul(this_opt + 15, 0,
+-				(unsigned long *)&viafb_lcd_mode);
+-		else if (!strncmp(this_opt, "viafb_lcd_port=", 15))
++		} else if (!strncmp(this_opt,
++			"viafb_display_hardware_layout=", 30)) {
++			if (kstrtoint(this_opt + 30, 0, 
++				      &viafb_display_hardware_layout) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_second_size=", 18)) {
++			if (kstrtoint(this_opt + 18, 0, &viafb_second_size) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt,
++			"viafb_platform_epia_dvi=", 24)) {
++			if (kstrtoint(this_opt + 24, 0, 
++				      &viafb_platform_epia_dvi) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt,
++			"viafb_device_lcd_dualedge=", 26)) {
++			if (kstrtoint(this_opt + 26, 0,
++				      &viafb_device_lcd_dualedge) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_bus_width=", 16)) {
++			if (kstrtoint(this_opt + 16, 0, &viafb_bus_width) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_lcd_mode=", 15)) {
++			if (kstrtoint(this_opt + 15, 0, &viafb_lcd_mode) < 0)
++				return -EINVAL;
++		} else if (!strncmp(this_opt, "viafb_lcd_port=", 15)) {
+ 			viafb_lcd_port = kstrdup(this_opt + 15, GFP_KERNEL);
+-		else if (!strncmp(this_opt, "viafb_dvi_port=", 15))
++		} else if (!strncmp(this_opt, "viafb_dvi_port=", 15)) {
+ 			viafb_dvi_port = kstrdup(this_opt + 15, GFP_KERNEL);
++		}
+ 	}
+ 	return 0;
+ }
 -- 
-1.7.1
+1.7.0.4
 

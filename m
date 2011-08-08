@@ -1,103 +1,93 @@
-From: Randy Dunlap <rdunlap@xenotime.net>
-Date: Thu, 04 Aug 2011 15:46:32 +0000
-Subject: Re: [Bugme-new] [Bug 40492] New: FB_BACKLIGHT should be set by
-Message-Id: <20110804084632.347e4b49.rdunlap@xenotime.net>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Mon, 08 Aug 2011 10:37:44 +0000
+Subject: [RFC] fbdev: allow multiple concurrent visible consoles
+Message-Id: <1312799864-3468-1-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20110803175541.7ed2fb24.rdunlap@xenotime.net>
-In-Reply-To: <20110803175541.7ed2fb24.rdunlap@xenotime.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Geert Uytterhoeven <geert@linux-m68k.org>, Paul Mundt <lethal@linux-sh.org>, Andrew Morton <akpm@linux-foundation.org>, Dave Airlie <airlied@redhat.com>
 
-On Thu, 04 Aug 2011 14:04:46 +0200 David wrote:
+This patch allows having multiple visible consoles that receive
+display updates. For example one can have running "top" to monitor
+the system on fb0 and at the same time work on a shell on fb1.
+At the moment that works only with consoles, not with console and
+graphical application nor with two graphical applications.
 
-> On Thursday 04 August 2011 07:55:16 you wrote:
-> > On Mit, 2011-08-03 at 17:55 -0700, Randy Dunlap wrote:
-> > > On Wed, 3 Aug 2011 18:55:41 GMT bugzilla-daemon@bugzilla.kernel.org wrote:
-> > > > https://bugzilla.kernel.org/show_bug.cgi?id@492
-> > > > 
-> > > >            Summary: FB_BACKLIGHT should be set by
-> > > >            BACKLIGHT_CLASS_DEVICE Product: Other
-> > > >            Version: 2.5
-> > > >     
-> > > >     Kernel Version: 3.0.0
-> > > >     
-> > > >           Platform: All
-> > > >         
-> > > >         OS/Version: Linux
-> > > >         
-> > > >               Tree: Mainline
-> > > >             
-> > > >             Status: NEW
-> > > >           
-> > > >           Severity: normal
-> > > >           Priority: P1
-> > > >          
-> > > >          Component: Configuration
-> > > >         
-> > > >         AssignedTo: other_configuration@kernel-bugs.osdl.org
-> > > >         ReportedBy: StormByte@gmail.com
-> > > >         Regression: No
-> > > > 
-> > > > Created an attachment (idg432)
-> > > > 
-> > > >  --> (https://bugzilla.kernel.org/attachment.cgi?idg432)
-> > > > 
-> > > > Kernel's config
-> > > > 
-> > > > I discovered a scenario in which menuconfig fails to set
-> > > > FB_BACKLIGHT symbol when needed.
-> > > > 
-> > > > In my case, I have propietary nvidia drivers once loaded Xorg, but
-> > > > in the meanwhile, I have configured an uvesafb framebuffer (thus,
-> > > > no other framebuffer active nor compiled).
-> > > > 
-> > > > System works ok, but when trying to install nvidiabl[1] (to control
-> > > > nvidia's backlight) I find that FB_BACKLIGHT is not set where it
-> > > > should be because I have BACKLIGHT_CLASS_DEVICE set.
-> > > > 
-> > > > The result is that nvidiabl does not compile.
-> > 
-> > Sounds like an nvidiabl bug. I'm successfully using backlight control
-> > with radeon KMS with
-> > 
-> > # CONFIG_FB_BACKLIGHT is not set
-> > CONFIG_BACKLIGHT_CLASS_DEVICE=m
-> 
-> It does not seem a bug in nvidiabl, it needs this symbol in order to get 2 
-> defines (from include/linux/fb.h)
-> 394 #ifdef CONFIG_FB_BACKLIGHT
-> 395 /* Settings for the generic backlight code */
-> 396 #define FB_BACKLIGHT_LEVELS     128
-> 397 #define FB_BACKLIGHT_MAX        0xFF
-> 398 #endif
-> 
-> I think nvidiabl uses those instead of having them hardcoded in its source, 
-> and thus not a bug really.
-
-David,
-
-You could propose a patch that makes those 2 defines not be conditional
-on the CONFIB_FB_BACKLIGHT symbol.
-
-Or you could propose a patch that makes the FB_BACKLIGHT symbol
-user-configurable.  Currently it is not user-configurable since it
-does not have a prompt string.  I think all it would take is
-changing the "bool" line to include a prompt string and adding some
-help text.  Something like (not tested, probably needs some
-wordsmithing):
-
-config FB_BACKLIGHT
-	bool "Generic video backlight support"
-	depends on FB
-	select BACKLIGHT_LCD_SUPPORT
-	select BACKLIGHT_CLASS_DEVICE
-	default n
-	help
-	  This option provides a little video backlight support.
-	  Most drivers that need it enable it automatically.
-
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+ drivers/video/console/fbcon.c |   13 ++++++++++++-
+ drivers/video/console/fbcon.h |    1 +
+ 2 files changed, 13 insertions(+), 1 deletions(-)
+
+There are probably still some bugs in this and it requires a lot of 
+review and testing before it ready for inclusion. I just want to 
+know whether it looks good and whether the approach taken 
+(it's my 3rd) is acceptable. I think the feature is desirable 
+and I hope that we can avoid the limitation to consoles only one day. 
+The problem that causes it is that the vt.c has a global blanking 
+variable it sets as soon as any graphical application starts and 
+hence no console updates go through anymore.
+
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 8745637..5246a15 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -710,8 +710,11 @@ static int con2fb_acquire_newinfo(struct vc_data *vc, struct fb_info *info,
+ 	if (!err) {
+ 		info->fbcon_par = ops;
+ 
+-		if (vc)
++		if (vc) {
++			ops->vc_fg = vc;
++			vc->vc_display_fg = &ops->vc_fg;
+ 			set_blitting_type(vc, info);
++		}
+ 	}
+ 
+ 	if (err) {
+@@ -814,6 +817,7 @@ static int set_con2fb_map(int unit, int newidx, int user)
+ {
+ 	struct vc_data *vc = vc_cons[unit].d;
+ 	int oldidx = con2fb_map[unit];
++	struct fbcon_ops *ops;
+ 	struct fb_info *info = registered_fb[newidx];
+ 	struct fb_info *oldinfo = NULL;
+  	int found, err = 0;
+@@ -839,6 +843,11 @@ static int set_con2fb_map(int unit, int newidx, int user)
+ 	if (!err && !found)
+  		err = con2fb_acquire_newinfo(vc, info, unit, oldidx);
+ 
++	if (!err && oldinfo) {
++		ops = oldinfo->fbcon_par;
++		if (vc = ops->vc_fg)
++			ops->vc_fg = NULL;
++	}
+ 
+ 	/*
+ 	 * If old fb is not mapped to any of the consoles,
+@@ -849,6 +858,8 @@ static int set_con2fb_map(int unit, int newidx, int user)
+  					     found);
+ 
+  	if (!err) {
++		ops = info->fbcon_par;
++		vc->vc_display_fg = &ops->vc_fg;
+  		int show_logo = (fg_console = 0 && !user &&
+  				 logo_shown != FBCON_LOGO_DONTSHOW);
+ 
+diff --git a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
+index 6bd2e0c..adc7316 100644
+--- a/drivers/video/console/fbcon.h
++++ b/drivers/video/console/fbcon.h
+@@ -69,6 +69,7 @@ struct fbcon_ops {
+ 	struct timer_list cursor_timer; /* Cursor timer */
+ 	struct fb_cursor cursor_state;
+ 	struct display *p;
++	struct vc_data *vc_fg;
+         int    currcon;	                /* Current VC. */
+ 	int    cursor_flash;
+ 	int    cursor_reset;
+-- 
+1.6.3.2
+

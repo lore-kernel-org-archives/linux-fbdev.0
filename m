@@ -1,47 +1,62 @@
 From: Greg KH <gregkh@suse.de>
-Date: Fri, 12 Aug 2011 15:56:02 +0000
+Date: Fri, 12 Aug 2011 19:34:05 +0000
 Subject: Re: [PATCH] Add support for SMSC UFX6000/7000 USB display adapters
-Message-Id: <20110812155602.GA11273@suse.de>
+Message-Id: <20110812193405.GB10770@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1313150823-2527-1-git-send-email-steve.glendinning@smsc.com>
 In-Reply-To: <1313150823-2527-1-git-send-email-steve.glendinning@smsc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-On Fri, Aug 12, 2011 at 01:07:03PM +0100, Steve Glendinning wrote:
-> This patch adds framebuffer suport for SMSC's UFX6000 (USB 2.0) and
-> UFX7000 (USB 3.0) display adapters.
-> 
-> Signed-off-by: Steve Glendinning <steve.glendinning@smsc.com>
+On Fri, Aug 12, 2011 at 12:06:55PM -0700, Bernie Thompson wrote:
+> On Fri, Aug 12, 2011 at 8:56 AM, Greg KH <gregkh@suse.de> wrote:
+>=20
+>     You can do the same for your calls to pr_debug() and other pr_* calls.
+>     If you note in the header file for those functions, it suggests that
+>     drivers should always call the dev_* versions instead of teh "raw" pr=
+_*
+>     functions, as you do have access to a struct device within your drive=
+r.
+>=20
+>=20
+> A little background from udlfb: we weren't able to stick with dev_* calls=
+ 100%,
+> because udlfb needed to survive USB device removal and the freeing of the
+> USB-initiated device structure. This is because the framebuffer device ne=
+eded
+> to outlive it if a client was holding on to it. =A0In other words, it's b=
+orn a
+> two-headed beast (usb and fbdev), but the two faces of the device are kil=
+led
+> off independently based on remaining ref counts. =A0So there are prints i=
+n there
+> which will fault if converted to dev_* without this in mind.
+>=20
+> Because of this, we had originally created our own dl_* wrapper around th=
+e pr_
+> macros.
+>=20
+> Then a later patch initiated by Paul (fbdev maintainer) changed those to
+> uncustomized pr_ macros with a goal of uniformity with other drivers. =A0=
+And that
+> code is what SMSC started from.
+>=20
+> So there's some complexity behind the choices here. =A0It might be good t=
+o keep
+> common strategies between udlfb and smsc's driver, as the issues to consi=
+der
+> are the same.
 
-Very nice job, I only have one very minor suggestion for this code from
-a USB/driver core standpoint (I can't verify that the framebuffer api is
-being used properly as I don't know that at all.):
+Ok, thanks for the background information, that makes sense.
 
-> +/* sets analog bit PLL configuration values */
-> +static int ufx_config_pix_clk(struct ufx_data *dev, u32 pixclock)
-> +{
-> +	struct pll_values asic_pll = {0};
-> +	u32 value, clk_pixel, clk_pixel_pll;
-> +	int status;
-> +
-> +	/* convert pixclock (in ps) to frequency (in Hz) */
-> +	clk_pixel = PICOS2KHZ(pixclock) * 1000;
-> +	pr_info("pixclock %d ps = clk_pixel %d Hz", pixclock, clk_pixel);
+But for stuff like the usb probe() call, that should always be dev_* as
+you really do have a proper pointer.  So when you do have a valid struct
+device, you should use it.
 
-Use call pr_info() a bunch, (especially in your probe() call chain)
-which will get noisy in the kernel log.  How about using dev_dbg()
-instead, which allows you to dynamically turn on/off messages like this,
-and it provides the needed information so that the reader of the
-messages can tell exactly which device is sending the messages (very
-helpful when you attach more than one.)
-
-You can do the same for your calls to pr_debug() and other pr_* calls.
-If you note in the header file for those functions, it suggests that
-drivers should always call the dev_* versions instead of teh "raw" pr_*
-functions, as you do have access to a struct device within your driver.
+Although a lot of the pr_info() calls should be downgraded to pr_debug()
+I imagine, to keep things from being so noisy.
 
 thanks,
 

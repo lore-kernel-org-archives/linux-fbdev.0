@@ -1,54 +1,31 @@
-From: Tormod Volden <lists.tormod@gmail.com>
-Date: Mon, 01 Aug 2011 22:56:11 +0000
-Subject: Re: Patch fixing savagefb driver typo/regression in linux-3.0.0
-Message-Id: <CAArsGaZo8bL2ooPggaFsg04Jr7oQOPMvuVJ65nVqq_nh7XNLuQ@mail.gmail.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Tue, 16 Aug 2011 07:22:25 +0000
+Subject: [ANNOUNCE] fbdev maintainer change
+Message-Id: <4E4A1AB1.6040001@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 
-On Sun, Jul 31, 2011 at 12:04 PM, John Stanley wrote:
-> =A0I have an old T22 Thinkpad with integrated Savage/IX-MV video. As of
-> linux-3.0, the video is non-functional; the PC either hard hangs immediat=
-ely
-> or has totally garbled video, and then hard hangs, as soon as I attempt to
-> edit a file or cat a file with more than a screen-full of text. The
-> foregoing details are actually not important any more as in looking at the
-> code changes I discovered a typo in
-> linux-3.0.0/drivers/video/savage/savagefb.h and have applied the attached
-> patch to fix the issue.
+Hi all,
 
-John, you are absolutely correct. My bad, this was from a commit of
-mine. You may add my
- Reviewed-by: Tormod Volden <debian.tormod@gmail.com>
-to your patch. I'd suggest you change the patch description (mail
-subject) to "[PATCH] Fix typo in savage4 series definition" or
-something similar.
+as Paul hasn't been able to catch up with the patches lately and as already 
+about half of the development cycle passed I decided to take over maintaining 
+the fbdev subsystem, at least for now. So please send all patches you want to go 
+mainline via fbdev also directly to me in addition to sending them to linux-fbdev.
+Please help me to avoid picking up outdated, buggy versions of your patches by 
+resending your final, bug-free ;) version if they are not already included in 
+3.1-rc2. I'll be on vacation for a week now, so do not expect immediate 
+response, I just wanted to give you some time to polish your patches. When I'm 
+back I'll start setting up a fbdev-next branch, probably based on 3.1-rc3, and 
+adding your patches to it. So feel free to drown me in patches.
+I want to say thanks to Paul for his work, as well as all those people who made 
+the fbdev subsystem such a great thing during the past decades and to those who 
+are still working to make it even better.
 
-The patch should also go into the stable series (by cc'ing
-stable@vger.kernel.org if I remember correctly).
 
-> PLEASE NOTE:
-> =A0I realize that the patch does not quite adhere to linux kernel patch
-> coding-style conventions (in particular, spaces around logical operators,
-> and lines not exceeding 80 chars), but I have simply changed an
-> '||' to an '&&' -- and NOT attempted to resolve pre-existing coding-style
-> violations.
+Thanks and happy coding,
 
-I also preserved the old coding style, which is the same in the xorg
-driver which shares much of this code. We can always change it there
-as well if somebody would like to fix it up.
-
->
-> thanks much,
-> John
->
-> P.S. Many, many thanks for lifting the 800x600 resolution limit! I've been
-> using a patch/hack to bump the limit to 1024x768 for an very long time...
-
-Glad to hear that! So there are still other savagefb users around :)
-My apologies to those who were affected by the typo.
-
-Cheers,
-Tormod
+Florian Tobias Schandinat

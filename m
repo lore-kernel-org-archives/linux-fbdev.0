@@ -1,143 +1,46 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 31 Aug 2011 11:00:53 +0000
-Subject: [PATCH v2 2/8] fbdev: sh_mobile_lcdc: Adjust requested parameters in .fb_check_var
-Message-Id: <1314788459-31791-3-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Fri, 19 Aug 2011 09:16:05 +0000
+Subject: [PATCH 0/7] sh_mobile_lcdc: Support format changes at runtime
+Message-Id: <1313745372-20856-1-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-Instead of failing when the requested fb_var_screeninfo parameters are
-not supported, adjust the parameters according to the hardware
-capabilities.
+Hi everybody,
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
----
- drivers/video/sh_mobile_lcdcfb.c |  103 ++++++++++++++++++++++++++++++++------
- 1 files changed, 88 insertions(+), 15 deletions(-)
+This patch set add supports for the .fb_set_par() operation in the
+sh_mobile_lcdc driver, allowing userspace to change the frame buffer format
+and size at runtime. It applies on top of the latest SH mobile LCDC cleanups
+and fixes patches posted to the linux-fbdev list and available at
+http://git.linuxtv.org/pinchartl/fbdev.git/shortlog/refs/heads/sh-mobile-lc=
+dc.
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 088cb17..33b0ff8 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -1055,28 +1055,101 @@ static int sh_mobile_check_var(struct fb_var_screeninfo *var, struct fb_info *in
- {
- 	struct sh_mobile_lcdc_chan *ch = info->par;
- 	struct sh_mobile_lcdc_priv *p = ch->lcdc;
-+	unsigned int best_dist = (unsigned int)-1;
-+	unsigned int best_xres = 0;
-+	unsigned int best_yres = 0;
-+	unsigned int i;
- 
--	if (var->xres > MAX_XRES || var->yres > MAX_YRES ||
--	    var->xres * var->yres * (ch->cfg.bpp / 8) * 2 > info->fix.smem_len) {
--		dev_warn(info->dev, "Invalid info: %u-%u-%u-%u x %u-%u-%u-%u @ %lukHz!\n",
--			 var->left_margin, var->xres, var->right_margin, var->hsync_len,
--			 var->upper_margin, var->yres, var->lower_margin, var->vsync_len,
--			 PICOS2KHZ(var->pixclock));
-+	if (var->xres > MAX_XRES || var->yres > MAX_YRES)
- 		return -EINVAL;
-+
-+	/* If board code provides us with a list of available modes, make sure
-+	 * we use one of them. Find the mode closest to the requested one. The
-+	 * distance between two modes is defined as the size of the
-+	 * non-overlapping parts of the two rectangles.
-+	 */
-+	for (i = 0; i < ch->cfg.num_cfg; ++i) {
-+		const struct fb_videomode *mode = &ch->cfg.lcd_cfg[i];
-+		unsigned int dist;
-+
-+		/* We can only round up. */
-+		if (var->xres > mode->xres || var->yres > mode->yres)
-+			continue;
-+
-+		dist = var->xres * var->yres + mode->xres * mode->yres
-+		     - 2 * min(var->xres, mode->xres)
-+			 * min(var->yres, mode->yres);
-+
-+		if (dist < best_dist) {
-+			best_xres = mode->xres;
-+			best_yres = mode->yres;
-+			best_dist = dist;
-+		}
- 	}
- 
--	/* only accept the forced_bpp for dual channel configurations */
--	if (p->forced_bpp && p->forced_bpp != var->bits_per_pixel)
-+	/* If no available mode can be used, return an error. */
-+	if (ch->cfg.num_cfg != 0) {
-+		if (best_dist = (unsigned int)-1)
-+			return -EINVAL;
-+
-+		var->xres = best_xres;
-+		var->yres = best_yres;
-+	}
-+
-+	/* Make sure the virtual resolution is at least as big as the visible
-+	 * resolution.
-+	 */
-+	if (var->xres_virtual < var->xres)
-+		var->xres_virtual = var->xres;
-+	if (var->yres_virtual < var->yres)
-+		var->yres_virtual = var->yres;
-+
-+	if (var->bits_per_pixel <= 16) {		/* RGB 565 */
-+		var->bits_per_pixel = 16;
-+		var->red.offset = 11;
-+		var->red.length = 5;
-+		var->green.offset = 5;
-+		var->green.length = 6;
-+		var->blue.offset = 0;
-+		var->blue.length = 5;
-+		var->transp.offset = 0;
-+		var->transp.length = 0;
-+	} else if (var->bits_per_pixel <= 24) {		/* RGB 888 */
-+		var->bits_per_pixel = 24;
-+		var->red.offset = 16;
-+		var->red.length = 8;
-+		var->green.offset = 8;
-+		var->green.length = 8;
-+		var->blue.offset = 0;
-+		var->blue.length = 8;
-+		var->transp.offset = 0;
-+		var->transp.length = 0;
-+	} else if (var->bits_per_pixel <= 32) {		/* RGBA 888 */
-+		var->bits_per_pixel = 32;
-+		var->red.offset = 16;
-+		var->red.length = 8;
-+		var->green.offset = 8;
-+		var->green.length = 8;
-+		var->blue.offset = 0;
-+		var->blue.length = 8;
-+		var->transp.offset = 24;
-+		var->transp.length = 8;
-+	} else
- 		return -EINVAL;
- 
--	switch (var->bits_per_pixel) {
--	case 16: /* PKF[4:0] = 00011 - RGB 565 */
--	case 24: /* PKF[4:0] = 01011 - RGB 888 */
--	case 32: /* PKF[4:0] = 00000 - RGBA 888 */
--		break;
--	default:
-+	var->red.msb_right = 0;
-+	var->green.msb_right = 0;
-+	var->blue.msb_right = 0;
-+	var->transp.msb_right = 0;
-+
-+	/* Make sure we don't exceed our allocated memory. */
-+	if (var->xres_virtual * var->yres_virtual * var->bits_per_pixel / 8 >
-+	    info->fix.smem_len)
-+		return -EINVAL;
-+
-+	/* only accept the forced_bpp for dual channel configurations */
-+	if (p->forced_bpp && p->forced_bpp != var->bits_per_pixel)
- 		return -EINVAL;
--	}
- 
- 	return 0;
- }
--- 
-1.7.3.4
+Frame buffer memory reallocation is currently not supported. You will need =
+to
+make sure platform data sets the maximum size and bpp to high enough values
+for all formats and sizes you want to support at runtime.
+
+The patches have been tested with the fbdev-test utility
+(http://git.ideasonboard.org/?p=FBdev-test.git;a=3Dsummary) on a Mackerel b=
+oard.
+
+Laurent Pinchart (7):
+  fbdev: sh_mobile_lcdc: Adjust requested parameters in .fb_check_var
+  fbdev: sh_mobile_lcdc: Add support for format changes at runtime
+  fbdev: sh_mobile_lcdc: use display information in info for panning
+  fbdev: sh_mobile_lcdc: Update fix.line_length in .fb_set_par()
+  fbdev: sh_mobile_lcdc: Avoid forward declarations
+  fbdev: sh_mobile_lcdc: Split channel initialization from probe function
+  fbdev: sh_mobile_lcdc: Remove sh_mobile_lcdc_set_bpp()
+
+ drivers/video/sh_mobile_lcdcfb.c |  570 +++++++++++++++++++++-------------=
+----
+ 1 files changed, 309 insertions(+), 261 deletions(-)
+
+--=20
+Regards,
+
+Laurent Pinchart
 

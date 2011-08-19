@@ -1,83 +1,143 @@
-From: bernie@plugable.com
-Date: Sun, 21 Aug 2011 20:34:13 +0000
-Subject: [PATCH 2/6] udlfb: Search config descriptor if not at device level
-Message-Id: <1313958862-5640-3-git-send-email-bernie@plugable.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Fri, 19 Aug 2011 09:16:06 +0000
+Subject: [PATCH 1/7] fbdev: sh_mobile_lcdc: Adjust requested parameters in .fb_check_var
+Message-Id: <1313745372-20856-2-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-From: Andrew Kephart <akephart@akephart.org>
+Instead of failing when the requested fb_var_screeninfo parameters are
+not supported, adjust the parameters according to the hardware
+capabilities.
 
-For at least one DisplayLink device, the vendor-specific information can
-be found in the config descriptor instead of as a separate, device-level
-descriptor.  This patch searches the current interface (of the current
-config descriptor) for the DL vendor-specific descriptor.
-
-Signed-off-by: Andrew Kephart <akephart@akephart.org>
-Signed-off-by: Bernie Thompson <bernie@plugable.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/udlfb.c |   21 ++++++++++++++++-----
- 1 files changed, 16 insertions(+), 5 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |  103 ++++++++++++++++++++++++++++++++------
+ 1 files changed, 88 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
-index 844b371..bdd21de 100644
---- a/drivers/video/udlfb.c
-+++ b/drivers/video/udlfb.c
-@@ -1489,21 +1489,30 @@ static int dlfb_select_std_channel(struct dlfb_data *dev)
- }
- 
- static int dlfb_parse_vendor_descriptor(struct dlfb_data *dev,
--					struct usb_device *usbdev)
-+					struct usb_interface *interface)
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 088cb17..33b0ff8 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -1055,28 +1055,101 @@ static int sh_mobile_check_var(struct fb_var_screeninfo *var, struct fb_info *in
  {
- 	char *desc;
- 	char *buf;
- 	char *desc_end;
+ 	struct sh_mobile_lcdc_chan *ch = info->par;
+ 	struct sh_mobile_lcdc_priv *p = ch->lcdc;
++	unsigned int best_dist = (unsigned int)-1;
++	unsigned int best_xres = 0;
++	unsigned int best_yres = 0;
++	unsigned int i;
  
--	u8 total_len = 0;
-+	int total_len = 0;
- 
- 	buf = kzalloc(MAX_VENDOR_DESCRIPTOR_SIZE, GFP_KERNEL);
- 	if (!buf)
- 		return false;
- 	desc = buf;
- 
--	total_len = usb_get_descriptor(usbdev, 0x5f, /* vendor specific */
--				    0, desc, MAX_VENDOR_DESCRIPTOR_SIZE);
-+	total_len = usb_get_descriptor(interface_to_usbdev(interface),
-+					0x5f, /* vendor specific */
-+					0, desc, MAX_VENDOR_DESCRIPTOR_SIZE);
+-	if (var->xres > MAX_XRES || var->yres > MAX_YRES ||
+-	    var->xres * var->yres * (ch->cfg.bpp / 8) * 2 > info->fix.smem_len) {
+-		dev_warn(info->dev, "Invalid info: %u-%u-%u-%u x %u-%u-%u-%u @ %lukHz!\n",
+-			 var->left_margin, var->xres, var->right_margin, var->hsync_len,
+-			 var->upper_margin, var->yres, var->lower_margin, var->vsync_len,
+-			 PICOS2KHZ(var->pixclock));
++	if (var->xres > MAX_XRES || var->yres > MAX_YRES)
+ 		return -EINVAL;
 +
-+	/* if not found, look in configuration descriptor */
-+	if (total_len < 0) {
-+		if (0 = usb_get_extra_descriptor(interface->cur_altsetting,
-+			0x5f, &desc))
-+			total_len = (int) desc[0];
++	/* If board code provides us with a list of available modes, make sure
++	 * we use one of them. Find the mode closest to the requested one. The
++	 * distance between two modes is defined as the size of the
++	 * non-overlapping parts of the two rectangles.
++	 */
++	for (i = 0; i < ch->cfg.num_cfg; ++i) {
++		const struct fb_videomode *mode = &ch->cfg.lcd_cfg[i];
++		unsigned int dist;
++
++		/* We can only round up. */
++		if (var->xres > mode->xres || var->yres > mode->yres)
++			continue;
++
++		dist = var->xres * var->yres + mode->xres * mode->yres
++		     - 2 * min(var->xres, mode->xres)
++			 * min(var->yres, mode->yres);
++
++		if (dist < best_dist) {
++			best_xres = mode->xres;
++			best_yres = mode->yres;
++			best_dist = dist;
++		}
+ 	}
+ 
+-	/* only accept the forced_bpp for dual channel configurations */
+-	if (p->forced_bpp && p->forced_bpp != var->bits_per_pixel)
++	/* If no available mode can be used, return an error. */
++	if (ch->cfg.num_cfg != 0) {
++		if (best_dist = (unsigned int)-1)
++			return -EINVAL;
++
++		var->xres = best_xres;
++		var->yres = best_yres;
 +	}
 +
- 	if (total_len > 5) {
- 		pr_info("vendor descriptor length:%x data:%02x %02x %02x %02x" \
- 			"%02x %02x %02x %02x %02x %02x %02x\n",
-@@ -1544,6 +1553,8 @@ static int dlfb_parse_vendor_descriptor(struct dlfb_data *dev,
- 			}
- 			desc += length;
- 		}
-+	} else {
-+		pr_info("vendor descriptor not available (%d)\n", total_len);
- 	}
++	/* Make sure the virtual resolution is at least as big as the visible
++	 * resolution.
++	 */
++	if (var->xres_virtual < var->xres)
++		var->xres_virtual = var->xres;
++	if (var->yres_virtual < var->yres)
++		var->yres_virtual = var->yres;
++
++	if (var->bits_per_pixel <= 16) {		/* RGB 565 */
++		var->bits_per_pixel = 16;
++		var->red.offset = 11;
++		var->red.length = 5;
++		var->green.offset = 5;
++		var->green.length = 6;
++		var->blue.offset = 0;
++		var->blue.length = 5;
++		var->transp.offset = 0;
++		var->transp.length = 0;
++	} else if (var->bits_per_pixel <= 24) {		/* RGB 888 */
++		var->bits_per_pixel = 24;
++		var->red.offset = 16;
++		var->red.length = 8;
++		var->green.offset = 8;
++		var->green.length = 8;
++		var->blue.offset = 0;
++		var->blue.length = 8;
++		var->transp.offset = 0;
++		var->transp.length = 0;
++	} else if (var->bits_per_pixel <= 32) {		/* RGBA 888 */
++		var->bits_per_pixel = 32;
++		var->red.offset = 16;
++		var->red.length = 8;
++		var->green.offset = 8;
++		var->green.length = 8;
++		var->blue.offset = 0;
++		var->blue.length = 8;
++		var->transp.offset = 24;
++		var->transp.length = 8;
++	} else
+ 		return -EINVAL;
  
- 	goto success;
-@@ -1593,7 +1604,7 @@ static int dlfb_usb_probe(struct usb_interface *interface,
+-	switch (var->bits_per_pixel) {
+-	case 16: /* PKF[4:0] = 00011 - RGB 565 */
+-	case 24: /* PKF[4:0] = 01011 - RGB 888 */
+-	case 32: /* PKF[4:0] = 00000 - RGBA 888 */
+-		break;
+-	default:
++	var->red.msb_right = 0;
++	var->green.msb_right = 0;
++	var->blue.msb_right = 0;
++	var->transp.msb_right = 0;
++
++	/* Make sure we don't exceed our allocated memory. */
++	if (var->xres_virtual * var->yres_virtual * var->bits_per_pixel / 8 >
++	    info->fix.smem_len)
++		return -EINVAL;
++
++	/* only accept the forced_bpp for dual channel configurations */
++	if (p->forced_bpp && p->forced_bpp != var->bits_per_pixel)
+ 		return -EINVAL;
+-	}
  
- 	dev->sku_pixel_limit = 2048 * 1152; /* default to maximum */
- 
--	if (!dlfb_parse_vendor_descriptor(dev, usbdev)) {
-+	if (!dlfb_parse_vendor_descriptor(dev, interface)) {
- 		pr_err("firmware not recognized. Assume incompatible device\n");
- 		goto error;
- 	}
+ 	return 0;
+ }
 -- 
-1.7.4.1
+1.7.3.4
 

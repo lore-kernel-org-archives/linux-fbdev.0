@@ -1,95 +1,72 @@
-From: bernie@plugable.com
-Date: Sun, 21 Aug 2011 20:35:38 +0000
-Subject: [PATCH 5/6] udlfb: Enable fb_defio by default
-Message-Id: <1313958939-5681-5-git-send-email-bernie@plugable.com>
+From: Estevam Fabio-R49496 <r49496@freescale.com>
+Date: Fri, 19 Aug 2011 03:58:27 +0000
+Subject: RE: [PATCH] backlight: l4f00242t03: Use gpio_request_one to
+Message-Id: <F09210E57DF486449C294B7BFB8653471B4765@039-SN1MPN1-003.039d.mgd.msft.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-From: Bernie Thompson <bernie@plugable.com>
+Richard,
 
-Enables page fault based detection of mmap writes to the framebuffer,
-which allows standard fbdev apps (like the generic fbdev xorg driver)
-to work on DisplayLink devices.
+Ping?
 
-Not all bugs are shaken out of the fb_defio path of udlfb, but it's
-tantalizingly close, so this seems a good time to enable by default.
+-----Original Message-----
+From: Fabio Estevam [mailto:festevam@gmail.com] 
+Sent: Friday, June 24, 2011 3:26 PM
+To: linux-fbdev@vger.kernel.org
+Cc: rpurdie@rpsys.net; Fabio Estevam; Estevam Fabio-R49496
+Subject: [PATCH] backlight: l4f00242t03: Use gpio_request_one to simplify error handling
 
-Alternatively, option can be disabled when running with an xorg driver
-that can more directly communicate damaged regions of the framebuffer
-via IOCTL. This is a simpler, higher perf option, when available.
+Using gpio_request_one can make the error handling simpler.
 
-Signed-off-by: Bernie Thompson <bernie@plugable.com>
+Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
 ---
- Documentation/fb/udlfb.txt |   24 ++++++++++++++++--------
- drivers/video/udlfb.c      |    4 ++--
- 2 files changed, 18 insertions(+), 10 deletions(-)
+ drivers/video/backlight/l4f00242t03.c |   17 +++++------------
+ 1 files changed, 5 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/fb/udlfb.txt b/Documentation/fb/udlfb.txt
-index 473ceed..c6d90a6 100644
---- a/Documentation/fb/udlfb.txt
-+++ b/Documentation/fb/udlfb.txt
-@@ -87,20 +87,28 @@ Special configuration for udlfb is usually unnecessary. There are a few
- options, however.
+diff --git a/drivers/video/backlight/l4f00242t03.c b/drivers/video/backlight/l4f00242t03.c
+index 98ad3e5..d6b0812 100644
+--- a/drivers/video/backlight/l4f00242t03.c
++++ b/drivers/video/backlight/l4f00242t03.c
+@@ -178,29 +178,22 @@ static int __devinit l4f00242t03_probe(struct spi_device *spi)
  
- From the command line, pass options to modprobe
--modprobe udlfb defio=1 console=1
-+modprobe udlfb fb_defio=0 console=1 shadow=1
+ 	priv->spi = spi;
  
--Or for permanent option, create file like /etc/modprobe.d/options with text
--options udlfb defio=1 console=1
-+Or modify options on the fly at /sys/module/udlfb/parameters directory via
-+sudo nano fb_defio
-+change the parameter in place, and save the file.
+-	ret = gpio_request(pdata->reset_gpio, "lcd l4f00242t03 reset");
++	ret = gpio_request_one(pdata->reset_gpio, GPIOF_OUT_INIT_HIGH,
++						"lcd l4f00242t03 reset");
+ 	if (ret) {
+ 		dev_err(&spi->dev,
+ 			"Unable to get the lcd l4f00242t03 reset gpio.\n");
+ 		goto err;
+ 	}
  
--Accepted options:
-+Unplug/replug USB device to apply with new settings
+-	ret = gpio_direction_output(pdata->reset_gpio, 1);
+-	if (ret)
+-		goto err2;
+-
+-	ret = gpio_request(pdata->data_enable_gpio,
+-				"lcd l4f00242t03 data enable");
++	ret = gpio_request_one(pdata->data_enable_gpio, GPIOF_OUT_INIT_LOW,
++						"lcd l4f00242t03 data enable");
+ 	if (ret) {
+ 		dev_err(&spi->dev,
+ 			"Unable to get the lcd l4f00242t03 data en gpio.\n");
+ 		goto err2;
+ 	}
+-
+-	ret = gpio_direction_output(pdata->data_enable_gpio, 0);
+-	if (ret)
+-		goto err3;
+-
 +
-+Or for permanent option, create file like /etc/modprobe.d/udlfb.conf with text
-+options udlfb fb_defio=0 console=1 shadow=1
-+
-+Accepted boolean options:
+ 	if (pdata->io_supply) {
+ 		priv->io_reg = regulator_get(NULL, pdata->io_supply);
  
- fb_defio	Make use of the fb_defio (CONFIG_FB_DEFERRED_IO) kernel
- 		module to track changed areas of the framebuffer by page faults.
--        	Standard fbdev applications that use mmap but that do not
--		report damage, may be able to work with this enabled.
--		Disabled by default because of overhead and other issues.
-+		Standard fbdev applications that use mmap but that do not
-+		report damage, should be able to work with this enabled.
-+		Disable when running with X server that supports reporting
-+		changed regions via ioctl, as this method is simpler,
-+		more stable, and higher performance.
- 
--console		Allow fbcon to attach to udlfb provided framebuffers. This
-+console	Allow fbcon to attach to udlfb provided framebuffers. This
- 		is disabled by default because fbcon will aggressively consume
- 		the first framebuffer it finds, which isn't usually what the
- 		user wants in the case of USB displays.
-diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
-index 5a13dc5..5207bd2 100644
---- a/drivers/video/udlfb.c
-+++ b/drivers/video/udlfb.c
-@@ -71,7 +71,7 @@ MODULE_DEVICE_TABLE(usb, id_table);
- 
- /* module options */
- static int console;   /* Optionally allow fbcon to consume first framebuffer */
--static int fb_defio;  /* Optionally enable experimental fb_defio mmap support */
-+static int fb_defio = 1;  /* Detect mmap writes using page faults */
- static int shadow = 1; /* Optionally disable shadow framebuffer */
- 
- /* dlfb keeps a list of urbs for efficient bulk transfers */
-@@ -1961,7 +1961,7 @@ module_param(console, bool, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP);
- MODULE_PARM_DESC(console, "Allow fbcon to consume first framebuffer found");
- 
- module_param(fb_defio, bool, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP);
--MODULE_PARM_DESC(fb_defio, "Enable fb_defio mmap support. *Experimental*");
-+MODULE_PARM_DESC(fb_defio, "Page fault detection of mmap writes");
- 
- module_param(shadow, bool, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP);
- MODULE_PARM_DESC(shadow, "Shadow vid mem. Disable to save mem but lose perf");
 -- 
-1.7.4.1
+1.7.1
+
+
 

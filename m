@@ -1,134 +1,52 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 07 Aug 2011 15:52:17 +0000
-Subject: [PATCH 5/6] viafb: eliminate modetable dependancy of LCD modesetting
-Message-Id: <bfe7d5f9396d5f2607454fd9ff89397fa3ba9a32.1312730860.git.FlorianSchandinat@gmx.de>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Fri, 19 Aug 2011 09:16:07 +0000
+Subject: [PATCH 2/7] fbdev: sh_mobile_lcdc: Add support for format changes at runtime
+Message-Id: <1313745372-20856-3-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1312730859.git.FlorianSchandinat@gmx.de>
-In-Reply-To: <cover.1312730859.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-This patch removes the need for knowing the modetable structure
-within the LCD modesetting function. The magic 60Hz refresh rate was
-already there as always the first entry for a resolution was choosen
-based on the ascending refresh rate ordering in the modetable.
-For all but one this is at least 60Hz, if only higher frequencies
-available we choose those like the code before did. The exception is
-OLPC but that resolution has only one frequency so we get the same
-behaviour there as well.
+Implement .fb_set_par to support frame buffer format changes at runtime.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/via/hw.c  |   20 ++++++++------------
- drivers/video/via/lcd.c |   12 +++++-------
- drivers/video/via/lcd.h |    5 ++---
- 3 files changed, 15 insertions(+), 22 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 76fad92..30668bd 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -1937,9 +1937,8 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
- 		if (viafb_SAMM_ON &&
- 			(viaparinfo->lvds_setting_info->iga_path = IGA2)) {
- 			viaparinfo->lvds_setting_info->bpp = video_bpp1;
--			viafb_lcd_set_mode(crt_timing1, viaparinfo->
--				lvds_setting_info,
--				     &viaparinfo->chip_info->lvds_chip_info);
-+			viafb_lcd_set_mode(viaparinfo->lvds_setting_info,
-+				&viaparinfo->chip_info->lvds_chip_info);
- 		} else {
- 			/* IGA1 doesn't have LCD scaling, so set it center. */
- 			if (viaparinfo->lvds_setting_info->iga_path = IGA1) {
-@@ -1947,18 +1946,16 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
- 				    LCD_CENTERING;
- 			}
- 			viaparinfo->lvds_setting_info->bpp = video_bpp;
--			viafb_lcd_set_mode(crt_timing, viaparinfo->
--				lvds_setting_info,
--				     &viaparinfo->chip_info->lvds_chip_info);
-+			viafb_lcd_set_mode(viaparinfo->lvds_setting_info,
-+				&viaparinfo->chip_info->lvds_chip_info);
- 		}
- 	}
- 	if (viafb_LCD2_ON) {
- 		if (viafb_SAMM_ON &&
- 			(viaparinfo->lvds_setting_info2->iga_path = IGA2)) {
- 			viaparinfo->lvds_setting_info2->bpp = video_bpp1;
--			viafb_lcd_set_mode(crt_timing1, viaparinfo->
--				lvds_setting_info2,
--				     &viaparinfo->chip_info->lvds_chip_info2);
-+			viafb_lcd_set_mode(viaparinfo->lvds_setting_info2,
-+				&viaparinfo->chip_info->lvds_chip_info2);
- 		} else {
- 			/* IGA1 doesn't have LCD scaling, so set it center. */
- 			if (viaparinfo->lvds_setting_info2->iga_path = IGA1) {
-@@ -1966,9 +1963,8 @@ int viafb_setmode(struct VideoModeTable *vmode_tbl, int video_bpp,
- 				    LCD_CENTERING;
- 			}
- 			viaparinfo->lvds_setting_info2->bpp = video_bpp;
--			viafb_lcd_set_mode(crt_timing, viaparinfo->
--				lvds_setting_info2,
--				     &viaparinfo->chip_info->lvds_chip_info2);
-+			viafb_lcd_set_mode(viaparinfo->lvds_setting_info2,
-+				&viaparinfo->chip_info->lvds_chip_info2);
- 		}
- 	}
- 
-diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
-index 0a38e4d..5f3b4e3 100644
---- a/drivers/video/via/lcd.c
-+++ b/drivers/video/via/lcd.c
-@@ -548,9 +548,8 @@ static void lcd_patch_skew(struct lvds_setting_information
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 33b0ff8..f9f420d 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -1154,6 +1154,19 @@ static int sh_mobile_check_var(struct fb_var_screeninfo *var, struct fb_info *in
+ 	return 0;
  }
  
- /* LCD Set Mode */
--void viafb_lcd_set_mode(struct crt_mode_table *mode_crt_table,
--		  struct lvds_setting_information *plvds_setting_info,
--		  struct lvds_chip_information *plvds_chip_info)
-+void viafb_lcd_set_mode(struct lvds_setting_information *plvds_setting_info,
-+	struct lvds_chip_information *plvds_chip_info)
- {
- 	int set_iga = plvds_setting_info->iga_path;
- 	int mode_bpp = plvds_setting_info->bpp;
-@@ -560,15 +559,14 @@ void viafb_lcd_set_mode(struct crt_mode_table *mode_crt_table,
- 	int panel_vres = plvds_setting_info->lcd_panel_vres;
- 	u32 clock;
- 	struct display_timing mode_crt_reg, panel_crt_reg, timing;
--	struct crt_mode_table *panel_crt_table = NULL;
--	struct VideoModeTable *vmode_tbl = viafb_get_mode(panel_hres,
--		panel_vres);
-+	struct crt_mode_table *mode_crt_table, *panel_crt_table;
++static int sh_mobile_set_par(struct fb_info *info)
++{
++	struct sh_mobile_lcdc_chan *ch = info->par;
++	int ret;
++
++	sh_mobile_lcdc_stop(ch->lcdc);
++	ret = sh_mobile_lcdc_start(ch->lcdc);
++	if (ret < 0)
++		dev_err(info->dev, "%s: unable to restart LCDC\n", __func__);
++
++	return ret;
++}
++
+ /*
+  * Screen blanking. Behavior is as follows:
+  * FB_BLANK_UNBLANK: screen unblanked, clocks enabled
+@@ -1211,6 +1224,7 @@ static struct fb_ops sh_mobile_lcdc_ops = {
+ 	.fb_open	= sh_mobile_open,
+ 	.fb_release	= sh_mobile_release,
+ 	.fb_check_var	= sh_mobile_check_var,
++	.fb_set_par	= sh_mobile_set_par,
+ };
  
- 	DEBUG_MSG(KERN_INFO "viafb_lcd_set_mode!!\n");
- 	/* Get mode table */
-+	mode_crt_table = viafb_get_best_mode(set_hres, set_vres, 60);
- 	mode_crt_reg = mode_crt_table->crtc;
- 	/* Get panel table Pointer */
--	panel_crt_table = vmode_tbl->crtc;
-+	panel_crt_table = viafb_get_best_mode(panel_hres, panel_vres, 60);
- 	panel_crt_reg = panel_crt_table->crtc;
- 	DEBUG_MSG(KERN_INFO "bellow viafb_lcd_set_mode!!\n");
- 	if (VT1636_LVDS = plvds_chip_info->lvds_chip_name)
-diff --git a/drivers/video/via/lcd.h b/drivers/video/via/lcd.h
-index 3b9e539..77ca7b8 100644
---- a/drivers/video/via/lcd.h
-+++ b/drivers/video/via/lcd.h
-@@ -76,9 +76,8 @@ void __devinit viafb_init_lvds_output_interface(struct lvds_chip_information
- 				*plvds_chip_info,
- 				struct lvds_setting_information
- 				*plvds_setting_info);
--void viafb_lcd_set_mode(struct crt_mode_table *mode_crt_table,
--		  struct lvds_setting_information *plvds_setting_info,
--		  struct lvds_chip_information *plvds_chip_info);
-+void viafb_lcd_set_mode(struct lvds_setting_information *plvds_setting_info,
-+	struct lvds_chip_information *plvds_chip_info);
- bool __devinit viafb_lvds_trasmitter_identify(void);
- void viafb_init_lvds_output_interface(struct lvds_chip_information
- 				*plvds_chip_info,
+ static int sh_mobile_lcdc_update_bl(struct backlight_device *bdev)
 -- 
-1.6.3.2
+1.7.3.4
 

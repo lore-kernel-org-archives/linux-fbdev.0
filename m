@@ -1,72 +1,140 @@
-From: Estevam Fabio-R49496 <r49496@freescale.com>
-Date: Fri, 19 Aug 2011 03:58:27 +0000
-Subject: RE: [PATCH] backlight: l4f00242t03: Use gpio_request_one to
-Message-Id: <F09210E57DF486449C294B7BFB8653471B4765@039-SN1MPN1-003.039d.mgd.msft.net>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Fri, 19 Aug 2011 09:16:10 +0000
+Subject: [PATCH 5/7] fbdev: sh_mobile_lcdc: Avoid forward declarations
+Message-Id: <1313745372-20856-6-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Richard,
+Reorder probe/remove functions to avoid forward declarations.
 
-Ping?
-
------Original Message-----
-From: Fabio Estevam [mailto:festevam@gmail.com] 
-Sent: Friday, June 24, 2011 3:26 PM
-To: linux-fbdev@vger.kernel.org
-Cc: rpurdie@rpsys.net; Fabio Estevam; Estevam Fabio-R49496
-Subject: [PATCH] backlight: l4f00242t03: Use gpio_request_one to simplify error handling
-
-Using gpio_request_one can make the error handling simpler.
-
-Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/backlight/l4f00242t03.c |   17 +++++------------
- 1 files changed, 5 insertions(+), 12 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |  102 ++++++++++++++++++-------------------
+ 1 files changed, 50 insertions(+), 52 deletions(-)
 
-diff --git a/drivers/video/backlight/l4f00242t03.c b/drivers/video/backlight/l4f00242t03.c
-index 98ad3e5..d6b0812 100644
---- a/drivers/video/backlight/l4f00242t03.c
-+++ b/drivers/video/backlight/l4f00242t03.c
-@@ -178,29 +178,22 @@ static int __devinit l4f00242t03_probe(struct spi_device *spi)
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index b6da1d6..366315b 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -1434,7 +1434,56 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
+ 	return NOTIFY_OK;
+ }
  
- 	priv->spi = spi;
- 
--	ret = gpio_request(pdata->reset_gpio, "lcd l4f00242t03 reset");
-+	ret = gpio_request_one(pdata->reset_gpio, GPIOF_OUT_INIT_HIGH,
-+						"lcd l4f00242t03 reset");
- 	if (ret) {
- 		dev_err(&spi->dev,
- 			"Unable to get the lcd l4f00242t03 reset gpio.\n");
- 		goto err;
- 	}
- 
--	ret = gpio_direction_output(pdata->reset_gpio, 1);
--	if (ret)
--		goto err2;
--
--	ret = gpio_request(pdata->data_enable_gpio,
--				"lcd l4f00242t03 data enable");
-+	ret = gpio_request_one(pdata->data_enable_gpio, GPIOF_OUT_INIT_LOW,
-+						"lcd l4f00242t03 data enable");
- 	if (ret) {
- 		dev_err(&spi->dev,
- 			"Unable to get the lcd l4f00242t03 data en gpio.\n");
- 		goto err2;
- 	}
--
--	ret = gpio_direction_output(pdata->data_enable_gpio, 0);
--	if (ret)
--		goto err3;
--
+-static int sh_mobile_lcdc_remove(struct platform_device *pdev);
++static int sh_mobile_lcdc_remove(struct platform_device *pdev)
++{
++	struct sh_mobile_lcdc_priv *priv = platform_get_drvdata(pdev);
++	struct fb_info *info;
++	int i;
 +
- 	if (pdata->io_supply) {
- 		priv->io_reg = regulator_get(NULL, pdata->io_supply);
++	fb_unregister_client(&priv->notifier);
++
++	for (i = 0; i < ARRAY_SIZE(priv->ch); i++)
++		if (priv->ch[i].info && priv->ch[i].info->dev)
++			unregister_framebuffer(priv->ch[i].info);
++
++	sh_mobile_lcdc_stop(priv);
++
++	for (i = 0; i < ARRAY_SIZE(priv->ch); i++) {
++		info = priv->ch[i].info;
++
++		if (!info || !info->device)
++			continue;
++
++		if (priv->ch[i].sglist)
++			vfree(priv->ch[i].sglist);
++
++		if (info->screen_base)
++			dma_free_coherent(&pdev->dev, info->fix.smem_len,
++					  info->screen_base,
++					  priv->ch[i].dma_handle);
++		fb_dealloc_cmap(&info->cmap);
++		framebuffer_release(info);
++	}
++
++	for (i = 0; i < ARRAY_SIZE(priv->ch); i++) {
++		if (priv->ch[i].bl)
++			sh_mobile_lcdc_bl_remove(priv->ch[i].bl);
++	}
++
++	if (priv->dot_clk)
++		clk_put(priv->dot_clk);
++
++	if (priv->dev)
++		pm_runtime_disable(priv->dev);
++
++	if (priv->base)
++		iounmap(priv->base);
++
++	if (priv->irq)
++		free_irq(priv->irq, priv);
++	kfree(priv);
++	return 0;
++}
  
+ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ {
+@@ -1691,57 +1740,6 @@ err1:
+ 	return error;
+ }
+ 
+-static int sh_mobile_lcdc_remove(struct platform_device *pdev)
+-{
+-	struct sh_mobile_lcdc_priv *priv = platform_get_drvdata(pdev);
+-	struct fb_info *info;
+-	int i;
+-
+-	fb_unregister_client(&priv->notifier);
+-
+-	for (i = 0; i < ARRAY_SIZE(priv->ch); i++)
+-		if (priv->ch[i].info && priv->ch[i].info->dev)
+-			unregister_framebuffer(priv->ch[i].info);
+-
+-	sh_mobile_lcdc_stop(priv);
+-
+-	for (i = 0; i < ARRAY_SIZE(priv->ch); i++) {
+-		info = priv->ch[i].info;
+-
+-		if (!info || !info->device)
+-			continue;
+-
+-		if (priv->ch[i].sglist)
+-			vfree(priv->ch[i].sglist);
+-
+-		if (info->screen_base)
+-			dma_free_coherent(&pdev->dev, info->fix.smem_len,
+-					  info->screen_base,
+-					  priv->ch[i].dma_handle);
+-		fb_dealloc_cmap(&info->cmap);
+-		framebuffer_release(info);
+-	}
+-
+-	for (i = 0; i < ARRAY_SIZE(priv->ch); i++) {
+-		if (priv->ch[i].bl)
+-			sh_mobile_lcdc_bl_remove(priv->ch[i].bl);
+-	}
+-
+-	if (priv->dot_clk)
+-		clk_put(priv->dot_clk);
+-
+-	if (priv->dev)
+-		pm_runtime_disable(priv->dev);
+-
+-	if (priv->base)
+-		iounmap(priv->base);
+-
+-	if (priv->irq)
+-		free_irq(priv->irq, priv);
+-	kfree(priv);
+-	return 0;
+-}
+-
+ static struct platform_driver sh_mobile_lcdc_driver = {
+ 	.driver		= {
+ 		.name		= "sh_mobile_lcdc_fb",
 -- 
-1.7.1
-
-
+1.7.3.4
 

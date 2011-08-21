@@ -1,8 +1,10 @@
 From: bernie@plugable.com
-Date: Tue, 02 Aug 2011 05:54:28 +0000
+Date: Sun, 21 Aug 2011 20:34:12 +0000
 Subject: [PATCH 1/5] udlfb: add more comprehensive support for DPMS FB_BLANK_* modes
-Message-Id: <1312264472-2900-1-git-send-email-bernie@plugable.com>
+Message-Id: <1313958862-5640-2-git-send-email-bernie@plugable.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1312264472-2900-1-git-send-email-bernie@plugable.com>
+In-Reply-To: <1312264472-2900-1-git-send-email-bernie@plugable.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

@@ -1,84 +1,95 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 31 Aug 2011 13:21:43 +0000
-Subject: [PATCH 3/8] OMAP: DSS2: HDMI: change regn definition
-Message-Id: <1314796908-17354-4-git-send-email-tomi.valkeinen@ti.com>
+From: bernie@plugable.com
+Date: Sun, 21 Aug 2011 20:34:15 +0000
+Subject: [PATCH 3/6] udlfb: fix issues found with Sparse static analysis
+Message-Id: <1313958862-5640-5-git-send-email-bernie@plugable.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314796908-17354-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314796908-17354-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-regn divider is currently programmed to the registers without change,
-but when calculating clock frequencies it is used as regn+1.
+From: Dr. David Alan Gilbert <linux@treblig.org>
 
-To make this similar to how DSI handles the dividers this patch changes
-the regn value to be used as such for calculations, but the value
-programmed to registers is regn-1.
+Add __user casting, a missing copy_from_user, and proper boolean
 
-This simplifies the clock frequency calculations, makes it similar to
-DSI, and also allows us to use regn value 0 as undefined.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
+Signed-off-by: Bernie Thompson <bernie@plugable.com>
 ---
- drivers/video/omap2/dss/hdmi.c |    8 ++++----
- include/video/omapdss.h        |    1 +
- 2 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/video/udlfb.c |   30 ++++++++++++++++--------------
+ 1 files changed, 16 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index a3b3899..504c507 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -43,7 +43,7 @@
- #include "hdmi.h"
- #include "dss_features.h"
+diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
+index bdd21de..f5df3d3 100644
+--- a/drivers/video/udlfb.c
++++ b/drivers/video/udlfb.c
+@@ -786,14 +786,13 @@ static int dlfb_ops_ioctl(struct fb_info *info, unsigned int cmd,
+ {
  
--#define HDMI_DEFAULT_REGN 15
-+#define HDMI_DEFAULT_REGN 16
- #define HDMI_DEFAULT_REGM2 1
+ 	struct dlfb_data *dev = info->par;
+-	struct dloarea *area = NULL;
  
- static struct {
-@@ -208,7 +208,7 @@ static int hdmi_pll_init(enum hdmi_clk_refsel refsel, int dcofreq,
+ 	if (!atomic_read(&dev->usb_active))
+ 		return 0;
  
- 	r = hdmi_read_reg(PLLCTRL_CFG1);
- 	r = FLD_MOD(r, fmt->regm, 20, 9); /* CFG1_PLL_REGM */
--	r = FLD_MOD(r, fmt->regn, 8, 1);  /* CFG1_PLL_REGN */
-+	r = FLD_MOD(r, fmt->regn - 1, 8, 1);  /* CFG1_PLL_REGN */
+ 	/* TODO: Update X server to get this from sysfs instead */
+ 	if (cmd = DLFB_IOCTL_RETURN_EDID) {
+-		char *edid = (char *)arg;
++		void __user *edid = (void __user *)arg;
+ 		if (copy_to_user(edid, dev->edid, dev->edid_size))
+ 			return -EFAULT;
+ 		return 0;
+@@ -801,6 +800,11 @@ static int dlfb_ops_ioctl(struct fb_info *info, unsigned int cmd,
  
- 	hdmi_write_reg(PLLCTRL_CFG1, r);
+ 	/* TODO: Help propose a standard fb.h ioctl to report mmap damage */
+ 	if (cmd = DLFB_IOCTL_REPORT_DAMAGE) {
++		struct dloarea area;
++
++		if (copy_from_user(&area, (void __user *)arg,
++				  sizeof(struct dloarea)))
++			return -EFAULT;
  
-@@ -1084,7 +1084,7 @@ static void hdmi_compute_pll(struct omap_dss_device *dssdev, int phy,
- 	else
- 		pi->regn = dssdev->clocks.hdmi.regn;
+ 		/*
+ 		 * If we have a damage-aware client, turn fb_defio "off"
+@@ -812,21 +816,19 @@ static int dlfb_ops_ioctl(struct fb_info *info, unsigned int cmd,
+ 		if (info->fbdefio)
+ 			info->fbdefio->delay = DL_DEFIO_WRITE_DISABLE;
  
--	refclk = clkin / (pi->regn + 1);
-+	refclk = clkin / pi->regn;
+-		area = (struct dloarea *)arg;
+-
+-		if (area->x < 0)
+-			area->x = 0;
++		if (area.x < 0)
++			area.x = 0;
  
- 	/*
- 	 * multiplier is pixel_clk/ref_clk
-@@ -1110,7 +1110,7 @@ static void hdmi_compute_pll(struct omap_dss_device *dssdev, int phy,
- 	 * is greater than 1000MHz
+-		if (area->x > info->var.xres)
+-			area->x = info->var.xres;
++		if (area.x > info->var.xres)
++			area.x = info->var.xres;
+ 
+-		if (area->y < 0)
+-			area->y = 0;
++		if (area.y < 0)
++			area.y = 0;
+ 
+-		if (area->y > info->var.yres)
+-			area->y = info->var.yres;
++		if (area.y > info->var.yres)
++			area.y = info->var.yres;
+ 
+-		dlfb_handle_damage(dev, area->x, area->y, area->w, area->h,
++		dlfb_handle_damage(dev, area.x, area.y, area.w, area.h,
+ 			   info->screen_base);
+ 	}
+ 
+@@ -874,7 +876,7 @@ static int dlfb_ops_open(struct fb_info *info, int user)
+ 	 * preventing other clients (X) from working properly. Usually
+ 	 * not what the user wants. Fail by default with option to enable.
  	 */
- 	pi->dcofreq = phy > 1000 * 100;
--	pi->regsd = ((pi->regm * clkin / 10) / ((pi->regn + 1) * 250) + 5) / 10;
-+	pi->regsd = ((pi->regm * clkin / 10) / (pi->regn * 250) + 5) / 10;
+-	if ((user = 0) & (!console))
++	if ((user = 0) && (!console))
+ 		return -EBUSY;
  
- 	DSSDBG("M = %d Mf = %d\n", pi->regm, pi->regmf);
- 	DSSDBG("range = %d sd = %d\n", pi->dcofreq, pi->regsd);
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 9398dd3..534e3d1 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -460,6 +460,7 @@ struct omap_dss_device {
- 		} dsi;
- 
- 		struct {
-+			/* regn is one greater than TRM's REGN value */
- 			u16 regn;
- 			u16 regm2;
- 		} hdmi;
+ 	/* If the USB device is gone, we don't accept new opens */
 -- 
 1.7.4.1
 

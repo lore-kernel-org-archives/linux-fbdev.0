@@ -1,170 +1,95 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 31 Aug 2011 11:00:59 +0000
-Subject: [PATCH v2 8/8] fbdev: sh_mobile_lcdc: Remove sh_mobile_lcdc_set_bpp()
-Message-Id: <1314788459-31791-9-git-send-email-laurent.pinchart@ideasonboard.com>
+From: bernie@plugable.com
+Date: Sun, 21 Aug 2011 20:35:38 +0000
+Subject: [PATCH 5/6] udlfb: Enable fb_defio by default
+Message-Id: <1313958939-5681-5-git-send-email-bernie@plugable.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The function duplicates code found in sh_mobile_check_var(). Remove
-sh_mobile_lcdc_set_bpp() and call sh_mobile_check_var() instead.
+From: Bernie Thompson <bernie@plugable.com>
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Enables page fault based detection of mmap writes to the framebuffer,
+which allows standard fbdev apps (like the generic fbdev xorg driver)
+to work on DisplayLink devices.
+
+Not all bugs are shaken out of the fb_defio path of udlfb, but it's
+tantalizingly close, so this seems a good time to enable by default.
+
+Alternatively, option can be disabled when running with an xorg driver
+that can more directly communicate damaged regions of the framebuffer
+via IOCTL. This is a simpler, higher perf option, when available.
+
+Signed-off-by: Bernie Thompson <bernie@plugable.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |   87 +++++++------------------------------
- 1 files changed, 17 insertions(+), 70 deletions(-)
+ Documentation/fb/udlfb.txt |   24 ++++++++++++++++--------
+ drivers/video/udlfb.c      |    4 ++--
+ 2 files changed, 18 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index d1576e2..97ab8ba 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -1291,66 +1291,6 @@ static void sh_mobile_lcdc_bl_remove(struct backlight_device *bdev)
- 	backlight_device_unregister(bdev);
- }
+diff --git a/Documentation/fb/udlfb.txt b/Documentation/fb/udlfb.txt
+index 473ceed..c6d90a6 100644
+--- a/Documentation/fb/udlfb.txt
++++ b/Documentation/fb/udlfb.txt
+@@ -87,20 +87,28 @@ Special configuration for udlfb is usually unnecessary. There are a few
+ options, however.
  
--static int sh_mobile_lcdc_set_bpp(struct fb_var_screeninfo *var, int bpp,
--				   int nonstd)
--{
--	if (nonstd) {
--		switch (bpp) {
--		case 12:
--		case 16:
--		case 24:
--			var->bits_per_pixel = bpp;
--			var->nonstd = nonstd;
--			return 0;
--		default:
--			return -EINVAL;
--		}
--	}
--
--	switch (bpp) {
--	case 16: /* PKF[4:0] = 00011 - RGB 565 */
--		var->red.offset = 11;
--		var->red.length = 5;
--		var->green.offset = 5;
--		var->green.length = 6;
--		var->blue.offset = 0;
--		var->blue.length = 5;
--		var->transp.offset = 0;
--		var->transp.length = 0;
--		break;
--
--	case 24: /* PKF[4:0] = 01011 - RGB 888 */
--		var->red.offset = 16;
--		var->red.length = 8;
--		var->green.offset = 8;
--		var->green.length = 8;
--		var->blue.offset = 0;
--		var->blue.length = 8;
--		var->transp.offset = 0;
--		var->transp.length = 0;
--		break;
--
--	case 32: /* PKF[4:0] = 00000 - RGBA 888 */
--		var->red.offset = 16;
--		var->red.length = 8;
--		var->green.offset = 8;
--		var->green.length = 8;
--		var->blue.offset = 0;
--		var->blue.length = 8;
--		var->transp.offset = 24;
--		var->transp.length = 8;
--		break;
--	default:
--		return -EINVAL;
--	}
--	var->bits_per_pixel = bpp;
--	var->red.msb_right = 0;
--	var->green.msb_right = 0;
--	var->blue.msb_right = 0;
--	var->transp.msb_right = 0;
--	return 0;
--}
--
- static int sh_mobile_lcdc_suspend(struct device *dev)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
-@@ -1499,6 +1439,9 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
- 	int ret;
- 	int i;
+ From the command line, pass options to modprobe
+-modprobe udlfb defio=1 console=1
++modprobe udlfb fb_defio=0 console=1 shadow=1
  
-+	mutex_init(&ch->open_lock);
+-Or for permanent option, create file like /etc/modprobe.d/options with text
+-options udlfb defio=1 console=1
++Or modify options on the fly at /sys/module/udlfb/parameters directory via
++sudo nano fb_defio
++change the parameter in place, and save the file.
+ 
+-Accepted options:
++Unplug/replug USB device to apply with new settings
 +
-+	/* Allocate the frame buffer device. */
- 	ch->info = framebuffer_alloc(0, dev);
- 	if (!ch->info) {
- 		dev_err(dev, "unable to allocate fb_info\n");
-@@ -1506,11 +1449,10 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
- 	}
++Or for permanent option, create file like /etc/modprobe.d/udlfb.conf with text
++options udlfb fb_defio=0 console=1 shadow=1
++
++Accepted boolean options:
  
- 	info = ch->info;
--	var = &info->var;
- 	info->fbops = &sh_mobile_lcdc_ops;
- 	info->par = ch;
--
--	mutex_init(&ch->open_lock);
-+	info->pseudo_palette = &ch->pseudo_palette;
-+	info->flags = FBINFO_FLAG_DEFAULT;
+ fb_defio	Make use of the fb_defio (CONFIG_FB_DEFERRED_IO) kernel
+ 		module to track changed areas of the framebuffer by page faults.
+-        	Standard fbdev applications that use mmap but that do not
+-		report damage, may be able to work with this enabled.
+-		Disabled by default because of overhead and other issues.
++		Standard fbdev applications that use mmap but that do not
++		report damage, should be able to work with this enabled.
++		Disable when running with X server that supports reporting
++		changed regions via ioctl, as this method is simpler,
++		more stable, and higher performance.
  
- 	/* Iterate through the modes to validate them and find the highest
- 	 * resolution.
-@@ -1541,13 +1483,15 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
- 		dev_dbg(dev, "Found largest videomode %ux%u\n",
- 			max_mode->xres, max_mode->yres);
+-console		Allow fbcon to attach to udlfb provided framebuffers. This
++console	Allow fbcon to attach to udlfb provided framebuffers. This
+ 		is disabled by default because fbcon will aggressively consume
+ 		the first framebuffer it finds, which isn't usually what the
+ 		user wants in the case of USB displays.
+diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
+index 5a13dc5..5207bd2 100644
+--- a/drivers/video/udlfb.c
++++ b/drivers/video/udlfb.c
+@@ -71,7 +71,7 @@ MODULE_DEVICE_TABLE(usb, id_table);
  
-+	/* Initialize fixed screen information. Restrict pan to 2 lines steps
-+	 * for NV12.
-+	 */
- 	info->fix = sh_mobile_lcdc_fix;
- 	info->fix.smem_len = max_size * 2 * cfg->bpp / 8;
--
--	 /* Only pan in 2 line steps for NV12 */
- 	if (cfg->nonstd && cfg->bpp = 12)
- 		info->fix.ypanstep = 2;
+ /* module options */
+ static int console;   /* Optionally allow fbcon to consume first framebuffer */
+-static int fb_defio;  /* Optionally enable experimental fb_defio mmap support */
++static int fb_defio = 1;  /* Detect mmap writes using page faults */
+ static int shadow = 1; /* Optionally disable shadow framebuffer */
  
-+	/* Create the mode list. */
- 	if (cfg->lcd_cfg = NULL) {
- 		mode = &default_720p;
- 		num_cfg = 1;
-@@ -1558,17 +1502,23 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
+ /* dlfb keeps a list of urbs for efficient bulk transfers */
+@@ -1961,7 +1961,7 @@ module_param(console, bool, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP);
+ MODULE_PARM_DESC(console, "Allow fbcon to consume first framebuffer found");
  
- 	fb_videomode_to_modelist(mode, num_cfg, &info->modelist);
+ module_param(fb_defio, bool, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP);
+-MODULE_PARM_DESC(fb_defio, "Enable fb_defio mmap support. *Experimental*");
++MODULE_PARM_DESC(fb_defio, "Page fault detection of mmap writes");
  
-+	/* Initialize variable screen information using the first mode as
-+	 * default. The default Y virtual resolution is twice the panel size to
-+	 * allow for double-buffering.
-+	 */
-+	var = &info->var;
- 	fb_videomode_to_var(var, mode);
-+	var->bits_per_pixel = cfg->bpp;
- 	var->width = cfg->lcd_size_cfg.width;
- 	var->height = cfg->lcd_size_cfg.height;
--	/* Default Y virtual resolution is 2x panel size */
- 	var->yres_virtual = var->yres * 2;
- 	var->activate = FB_ACTIVATE_NOW;
- 
--	ret = sh_mobile_lcdc_set_bpp(var, cfg->bpp, cfg->nonstd);
-+	ret = sh_mobile_check_var(var, info);
- 	if (ret)
- 		return ret;
- 
-+	/* Allocate frame buffer memory and color map. */
- 	buf = dma_alloc_coherent(dev, info->fix.smem_len, &ch->dma_handle,
- 				 GFP_KERNEL);
- 	if (!buf) {
-@@ -1576,9 +1526,6 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
- 		return -ENOMEM;
- 	}
- 
--	info->pseudo_palette = &ch->pseudo_palette;
--	info->flags = FBINFO_FLAG_DEFAULT;
--
- 	ret = fb_alloc_cmap(&info->cmap, PALETTE_NR, 0);
- 	if (ret < 0) {
- 		dev_err(dev, "unable to allocate cmap\n");
+ module_param(shadow, bool, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP);
+ MODULE_PARM_DESC(shadow, "Shadow vid mem. Disable to save mem but lose perf");
 -- 
-1.7.3.4
+1.7.4.1
 

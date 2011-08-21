@@ -1,74 +1,83 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 31 Aug 2011 13:23:14 +0000
-Subject: [PATCH 03/12] OMAP: DSS2: HDMI: make set_timing saner
-Message-Id: <1314797003-17638-4-git-send-email-tomi.valkeinen@ti.com>
+From: bernie@plugable.com
+Date: Sun, 21 Aug 2011 20:34:13 +0000
+Subject: [PATCH 2/6] udlfb: Search config descriptor if not at device level
+Message-Id: <1313958862-5640-3-git-send-email-bernie@plugable.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Currently the set_timings code for hdmi is quite strange. The display is
-disabled in hdmi_omap4_panel.c before setting timings, and enabled in
-hdmi.c after setting the timings. Furthermore, the timings were not
-permanent, and disabling and enabling the display would lose them.
+From: Andrew Kephart <akephart@akephart.org>
 
-This patch makes the set_timings handling a bit better.
+For at least one DisplayLink device, the vendor-specific information can
+be found in the config descriptor instead of as a separate, device-level
+descriptor.  This patch searches the current interface (of the current
+config descriptor) for the DL vendor-specific descriptor.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Andrew Kephart <akephart@akephart.org>
+Signed-off-by: Bernie Thompson <bernie@plugable.com>
 ---
- drivers/video/omap2/dss/hdmi.c             |   13 +++++++++++--
- drivers/video/omap2/dss/hdmi_omap4_panel.c |    7 +------
- 2 files changed, 12 insertions(+), 8 deletions(-)
+ drivers/video/udlfb.c |   21 ++++++++++++++++-----
+ 1 files changed, 16 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index d08096b..8f8ae0e 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -1226,11 +1226,20 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev)
- 	struct hdmi_cm cm;
+diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
+index 844b371..bdd21de 100644
+--- a/drivers/video/udlfb.c
++++ b/drivers/video/udlfb.c
+@@ -1489,21 +1489,30 @@ static int dlfb_select_std_channel(struct dlfb_data *dev)
+ }
  
- 	hdmi.custom_set = 1;
+ static int dlfb_parse_vendor_descriptor(struct dlfb_data *dev,
+-					struct usb_device *usbdev)
++					struct usb_interface *interface)
+ {
+ 	char *desc;
+ 	char *buf;
+ 	char *desc_end;
+ 
+-	u8 total_len = 0;
++	int total_len = 0;
+ 
+ 	buf = kzalloc(MAX_VENDOR_DESCRIPTOR_SIZE, GFP_KERNEL);
+ 	if (!buf)
+ 		return false;
+ 	desc = buf;
+ 
+-	total_len = usb_get_descriptor(usbdev, 0x5f, /* vendor specific */
+-				    0, desc, MAX_VENDOR_DESCRIPTOR_SIZE);
++	total_len = usb_get_descriptor(interface_to_usbdev(interface),
++					0x5f, /* vendor specific */
++					0, desc, MAX_VENDOR_DESCRIPTOR_SIZE);
 +
- 	cm = hdmi_get_code(&dssdev->panel.timings);
- 	hdmi.code = cm.code;
- 	hdmi.mode = cm.mode;
--	omapdss_hdmi_display_enable(dssdev);
--	hdmi.custom_set = 0;
-+
-+	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
-+		int r;
-+
-+		hdmi_power_off(dssdev);
-+
-+		r = hdmi_power_on(dssdev);
-+		if (r)
-+			DSSERR("failed to power on device\n");
++	/* if not found, look in configuration descriptor */
++	if (total_len < 0) {
++		if (0 = usb_get_extra_descriptor(interface->cur_altsetting,
++			0x5f, &desc))
++			total_len = (int) desc[0];
 +	}
- }
++
+ 	if (total_len > 5) {
+ 		pr_info("vendor descriptor length:%x data:%02x %02x %02x %02x" \
+ 			"%02x %02x %02x %02x %02x %02x %02x\n",
+@@ -1544,6 +1553,8 @@ static int dlfb_parse_vendor_descriptor(struct dlfb_data *dev,
+ 			}
+ 			desc += length;
+ 		}
++	} else {
++		pr_info("vendor descriptor not available (%d)\n", total_len);
+ 	}
  
- int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
-diff --git a/drivers/video/omap2/dss/hdmi_omap4_panel.c b/drivers/video/omap2/dss/hdmi_omap4_panel.c
-index 7d4f2bd..25d5fb2 100644
---- a/drivers/video/omap2/dss/hdmi_omap4_panel.c
-+++ b/drivers/video/omap2/dss/hdmi_omap4_panel.c
-@@ -161,12 +161,7 @@ static void hdmi_set_timings(struct omap_dss_device *dssdev,
- 	mutex_lock(&hdmi.hdmi_lock);
+ 	goto success;
+@@ -1593,7 +1604,7 @@ static int dlfb_usb_probe(struct usb_interface *interface,
  
- 	dssdev->panel.timings = *timings;
--
--	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
--		/* turn the hdmi off and on to get new timings to use */
--		omapdss_hdmi_display_disable(dssdev);
--		omapdss_hdmi_display_set_timing(dssdev);
--	}
-+	omapdss_hdmi_display_set_timing(dssdev);
+ 	dev->sku_pixel_limit = 2048 * 1152; /* default to maximum */
  
- 	mutex_unlock(&hdmi.hdmi_lock);
- }
+-	if (!dlfb_parse_vendor_descriptor(dev, usbdev)) {
++	if (!dlfb_parse_vendor_descriptor(dev, interface)) {
+ 		pr_err("firmware not recognized. Assume incompatible device\n");
+ 		goto error;
+ 	}
 -- 
 1.7.4.1
 

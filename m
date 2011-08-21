@@ -1,54 +1,70 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Sun, 21 Aug 2011 21:07:31 +0000
-Subject: fbtest 24bpp bug?
-Message-Id: <201108212307.34480.linux@rainbow-software.org>
+From: bernie@plugable.com
+Date: Sun, 21 Aug 2011 20:35:39 +0000
+Subject: [PATCH 6/6] udlfb: Enable fbcon access to framebuffer by default
+Message-Id: <1313958939-5681-6-git-send-email-bernie@plugable.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hello,
-I have problems testing "new" driver (i740fb) with fbtest. 8bpp, 16bpp and
-32bpp modes work fine. But 24bpp does not. In test003, colors are completely
-wrong - I get 1- or 2-pixel wide vertical lines instead of color bars.
-The same problem appears with matroxfb but not with aty128fb (see below).
+From: Bernie Thompson <bernie@plugable.com>
 
-cfb_fill_rect() in drawops/cfb.c tries to do some magic to speed things up.
-But it seems that it does it wrong. I replaced that code with this:
-    int i,j;
-    for (i =3D y; i < y+height; i++) {
-        for (j =3D x; j < x+width; j++) {
-                fb[(j + i*1280)*3 + 0] =3D pixel & 0xff;
-                fb[(j + i*1280)*3 + 1] =3D (pixel & 0xff00) >> 8;
-                fb[(j + i*1280)*3 + 2] =3D (pixel & 0xff0000) >> 16;
-        }
-    }
-(testing at 1280x1024)
-and it works fine! So next thing: dump fb contents (for the first blue bar)
-in both cases and compare:
+Signed-off-by: Bernie Thompson <bernie@plugable.com>
+---
+ Documentation/fb/udlfb.txt |   10 ++++++----
+ drivers/video/udlfb.c      |    4 ++--
+ 2 files changed, 8 insertions(+), 6 deletions(-)
 
-original code resulted in this:
-cfb_fill_rect x=3D0 y=3D0 w=80 h=1024, pixel=3D0xaa, bpp$, next_line840
-pat=3D0xaa00
-00aa00 000000 aa00aa 0000aa 00aa00 000000 aa00aa 0000aa ...... (by pixels)
-00aa0000 0000aa00 aa0000aa 00aa0000 0000aa00 aa0000aa ........ (by patterns)
+diff --git a/Documentation/fb/udlfb.txt b/Documentation/fb/udlfb.txt
+index c6d90a6..57d2f29 100644
+--- a/Documentation/fb/udlfb.txt
++++ b/Documentation/fb/udlfb.txt
+@@ -107,16 +107,18 @@ fb_defio	Make use of the fb_defio (CONFIG_FB_DEFERRED_IO) kernel
+ 		Disable when running with X server that supports reporting
+ 		changed regions via ioctl, as this method is simpler,
+ 		more stable, and higher performance.
++		default: fb_defio=1
+ 
+-console	Allow fbcon to attach to udlfb provided framebuffers. This
+-		is disabled by default because fbcon will aggressively consume
+-		the first framebuffer it finds, which isn't usually what the
+-		user wants in the case of USB displays.
++console	Allow fbcon to attach to udlfb provided framebuffers.
++		Can be disabled if fbcon and other clients
++		(e.g. X with --shared-vt) are in conflict.
++		default: console=1
+ 
+ shadow		Allocate a 2nd framebuffer to shadow what's currently across
+ 		the USB bus in device memory. If any pixels are unchanged,
+ 		do not transmit. Spends host memory to save USB transfers.
+ 		Enabled by default. Only disable on very low memory systems.
++		default: shadow=1
+ 
+ Sysfs Attributes
+ ========
+diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
+index 5207bd2..c8857da 100644
+--- a/drivers/video/udlfb.c
++++ b/drivers/video/udlfb.c
+@@ -70,7 +70,7 @@ static struct usb_device_id id_table[] = {
+ MODULE_DEVICE_TABLE(usb, id_table);
+ 
+ /* module options */
+-static int console;   /* Optionally allow fbcon to consume first framebuffer */
++static int console = 1; /* Allow fbcon to open framebuffer */
+ static int fb_defio = 1;  /* Detect mmap writes using page faults */
+ static int shadow = 1; /* Optionally disable shadow framebuffer */
+ 
+@@ -1958,7 +1958,7 @@ static int dlfb_submit_urb(struct dlfb_data *dev, struct urb *urb, size_t len)
+ }
+ 
+ module_param(console, bool, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP);
+-MODULE_PARM_DESC(console, "Allow fbcon to consume first framebuffer found");
++MODULE_PARM_DESC(console, "Allow fbcon to open framebuffer");
+ 
+ module_param(fb_defio, bool, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP);
+ MODULE_PARM_DESC(fb_defio, "Page fault detection of mmap writes");
+-- 
+1.7.4.1
 
-my code:
-cfb_fill_rect x=3D0 y=3D0 w=80 h=1024, pixel=3D0xaa, bpp$, next_line840
-aa0000 aa0000 aa0000 aa0000 aa0000 aa0000 aa0000 aa0000 ...... (by pixels)
-aa0000aa 0000aa00 00aa0000 aa0000aa 0000aa00 00aa0000 ........ (by patterns)
-
-So the first pattern is wrong? And seems to rotate the wrong way too?
-
-
-aty128fb seems to use some HW palette?:
-cfb_fill_rect x=3D0 y=3D0 w=80 h=1024, pixel=3D0x10101, bpp$, next_line840
-pat=3D0x1010101
-010101 010101 010101 010101 010101 010101 010101 010101 ...... (by pixels)
-01010101 01010101 01010101 01010101 01010101 01010101 ........ (by patterns)
-
-No matter how you rotate that, it will be always ok!
-
---=20
-Ondrej Zary

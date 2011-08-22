@@ -1,226 +1,296 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 31 Aug 2011 13:23:16 +0000
-Subject: [PATCH 05/12] OMAP: DSS2: HDMI: remove edid parsing
-Message-Id: <1314797003-17638-6-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 22 Aug 2011 08:27:43 +0000
+Subject: [PATCH 02/10] OMAP: DSS2: DISPC: use lookup tables for bit shifts
+Message-Id: <1314001671-18123-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1314001671-18123-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1314001671-18123-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-OMAPFB handles EDID parsing now, using the common helper functions in
-fbdev. We can remove the EDID parsing from HDMI driver.
+Use lookup tables instead of switch/if in some DISPC functions to make
+the code cleaner.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Acked-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/hdmi.c             |  137 ----------------------------
- drivers/video/omap2/dss/hdmi_omap4_panel.c |    8 +--
- 2 files changed, 1 insertions(+), 144 deletions(-)
+ drivers/video/omap2/dss/dispc.c |  204 ++++++++++-----------------------------
+ 1 files changed, 50 insertions(+), 154 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 5e66cb8..b5aca64 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -53,9 +53,6 @@ static struct {
- 	void __iomem *base_wp;	/* HDMI wrapper */
- 	int code;
- 	int mode;
--	u8 edid[HDMI_EDID_MAX_LENGTH];
--	u8 edid_set;
--	bool custom_set;
- 	struct hdmi_config cfg;
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 7c76370..f7451fe 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -737,6 +737,9 @@ static void _dispc_set_pre_mult_alpha(enum omap_plane plane, bool enable)
  
- 	struct clk *sys_clk;
-@@ -146,8 +143,6 @@ static const int code_vesa[85] = {
- 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
- 	-1, 27, 28, -1, 33};
- 
--static const u8 edid_header[8] = {0x0, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x0};
--
- static inline void hdmi_write_reg(const struct hdmi_reg idx, u32 val)
+ static void _dispc_setup_global_alpha(enum omap_plane plane, u8 global_alpha)
  {
- 	__raw_writel(val, hdmi.base_wp + idx.idx);
-@@ -561,129 +556,6 @@ static struct hdmi_cm hdmi_get_code(struct omap_video_timings *timing)
- 	return cm;
++	static const unsigned shifts[] = { 0, 8, 16, };
++	int shift;
++
+ 	if (!dss_has_feature(FEAT_GLOBAL_ALPHA))
+ 		return;
+ 
+@@ -744,10 +747,8 @@ static void _dispc_setup_global_alpha(enum omap_plane plane, u8 global_alpha)
+ 		plane = OMAP_DSS_VIDEO1)
+ 		return;
+ 
+-	if (plane = OMAP_DSS_GFX)
+-		REG_FLD_MOD(DISPC_GLOBAL_ALPHA, global_alpha, 7, 0);
+-	else if (plane = OMAP_DSS_VIDEO2)
+-		REG_FLD_MOD(DISPC_GLOBAL_ALPHA, global_alpha, 23, 16);
++	shift = shifts[plane];
++	REG_FLD_MOD(DISPC_GLOBAL_ALPHA, global_alpha, shift + 7, shift);
  }
  
--static void get_horz_vert_timing_info(int current_descriptor_addrs, u8 *edid ,
--		struct omap_video_timings *timings)
--{
--	/* X and Y resolution */
--	timings->x_res = (((edid[current_descriptor_addrs + 4] & 0xF0) << 4) |
--			 edid[current_descriptor_addrs + 2]);
--	timings->y_res = (((edid[current_descriptor_addrs + 7] & 0xF0) << 4) |
--			 edid[current_descriptor_addrs + 5]);
--
--	timings->pixel_clock = ((edid[current_descriptor_addrs + 1] << 8) |
--				edid[current_descriptor_addrs]);
--
--	timings->pixel_clock = 10 * timings->pixel_clock;
--
--	/* HORIZONTAL FRONT PORCH */
--	timings->hfp = edid[current_descriptor_addrs + 8] |
--			((edid[current_descriptor_addrs + 11] & 0xc0) << 2);
--	/* HORIZONTAL SYNC WIDTH */
--	timings->hsw = edid[current_descriptor_addrs + 9] |
--			((edid[current_descriptor_addrs + 11] & 0x30) << 4);
--	/* HORIZONTAL BACK PORCH */
--	timings->hbp = (((edid[current_descriptor_addrs + 4] & 0x0F) << 8) |
--			edid[current_descriptor_addrs + 3]) -
--			(timings->hfp + timings->hsw);
--	/* VERTICAL FRONT PORCH */
--	timings->vfp = ((edid[current_descriptor_addrs + 10] & 0xF0) >> 4) |
--			((edid[current_descriptor_addrs + 11] & 0x0f) << 2);
--	/* VERTICAL SYNC WIDTH */
--	timings->vsw = (edid[current_descriptor_addrs + 10] & 0x0F) |
--			((edid[current_descriptor_addrs + 11] & 0x03) << 4);
--	/* VERTICAL BACK PORCH */
--	timings->vbp = (((edid[current_descriptor_addrs + 7] & 0x0F) << 8) |
--			edid[current_descriptor_addrs + 6]) -
--			(timings->vfp + timings->vsw);
--
--}
--
--/* Description : This function gets the resolution information from EDID */
--static void get_edid_timing_data(u8 *edid)
--{
--	u8 count;
--	u16 current_descriptor_addrs;
--	struct hdmi_cm cm;
--	struct omap_video_timings edid_timings;
--
--	/* search block 0, there are 4 DTDs arranged in priority order */
--	for (count = 0; count < EDID_SIZE_BLOCK0_TIMING_DESCRIPTOR; count++) {
--		current_descriptor_addrs -			EDID_DESCRIPTOR_BLOCK0_ADDRESS +
--			count * EDID_TIMING_DESCRIPTOR_SIZE;
--		get_horz_vert_timing_info(current_descriptor_addrs,
--				edid, &edid_timings);
--		cm = hdmi_get_code(&edid_timings);
--		DSSDBG("Block0[%d] value matches code = %d , mode = %d\n",
--			count, cm.code, cm.mode);
--		if (cm.code = -1) {
--			continue;
--		} else {
--			hdmi.code = cm.code;
--			hdmi.mode = cm.mode;
--			DSSDBG("code = %d , mode = %d\n",
--				hdmi.code, hdmi.mode);
--			return;
--		}
+ static void _dispc_set_pix_inc(enum omap_plane plane, s32 inc)
+@@ -891,21 +892,10 @@ void dispc_set_channel_out(enum omap_plane plane,
+ static void dispc_set_burst_size(enum omap_plane plane,
+ 		enum omap_burst_size burst_size)
+ {
++	static const unsigned shifts[] = { 6, 14, 14, };
+ 	int shift;
+ 
+-	switch (plane) {
+-	case OMAP_DSS_GFX:
+-		shift = 6;
+-		break;
+-	case OMAP_DSS_VIDEO1:
+-	case OMAP_DSS_VIDEO2:
+-		shift = 14;
+-		break;
+-	default:
+-		BUG();
+-		return;
 -	}
--	if (edid[0x7e] != 0x00) {
--		for (count = 0; count < EDID_SIZE_BLOCK1_TIMING_DESCRIPTOR;
--			count++) {
--			current_descriptor_addrs -			EDID_DESCRIPTOR_BLOCK1_ADDRESS +
--			count * EDID_TIMING_DESCRIPTOR_SIZE;
--			get_horz_vert_timing_info(current_descriptor_addrs,
--						edid, &edid_timings);
--			cm = hdmi_get_code(&edid_timings);
--			DSSDBG("Block1[%d] value matches code = %d, mode = %d",
--				count, cm.code, cm.mode);
--			if (cm.code = -1) {
--				continue;
--			} else {
--				hdmi.code = cm.code;
--				hdmi.mode = cm.mode;
--				DSSDBG("code = %d , mode = %d\n",
--					hdmi.code, hdmi.mode);
--				return;
+-
++	shift = shifts[plane];
+ 	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), burst_size, shift + 1, shift);
+ }
+ 
+@@ -987,14 +977,11 @@ static void _dispc_set_vid_color_conv(enum omap_plane plane, bool enable)
+ 
+ void dispc_enable_replication(enum omap_plane plane, bool enable)
+ {
+-	int bit;
+-
+-	if (plane = OMAP_DSS_GFX)
+-		bit = 5;
+-	else
+-		bit = 10;
++	static const unsigned shifts[] = { 5, 10, 10 };
++	int shift;
+ 
+-	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), enable, bit, bit);
++	shift = shifts[plane];
++	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), enable, shift, shift);
+ }
+ 
+ void dispc_set_lcd_size(enum omap_channel channel, u16 width, u16 height)
+@@ -3042,6 +3029,17 @@ static void dispc_error_worker(struct work_struct *work)
+ 	int i;
+ 	u32 errors;
+ 	unsigned long flags;
++	static const unsigned fifo_underflow_bits[] = {
++		DISPC_IRQ_GFX_FIFO_UNDERFLOW,
++		DISPC_IRQ_VID1_FIFO_UNDERFLOW,
++		DISPC_IRQ_VID2_FIFO_UNDERFLOW,
++	};
++
++	static const unsigned sync_lost_bits[] = {
++		DISPC_IRQ_SYNC_LOST,
++		DISPC_IRQ_SYNC_LOST_DIGIT,
++		DISPC_IRQ_SYNC_LOST2,
++	};
+ 
+ 	spin_lock_irqsave(&dispc.irq_lock, flags);
+ 	errors = dispc.error_irqs;
+@@ -3050,154 +3048,52 @@ static void dispc_error_worker(struct work_struct *work)
+ 
+ 	dispc_runtime_get();
+ 
+-	if (errors & DISPC_IRQ_GFX_FIFO_UNDERFLOW) {
+-		DSSERR("GFX_FIFO_UNDERFLOW, disabling GFX\n");
+-		for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
+-			struct omap_overlay *ovl;
+-			ovl = omap_dss_get_overlay(i);
+-
+-			if (ovl->id = 0) {
+-				dispc_enable_plane(ovl->id, 0);
+-				dispc_go(ovl->manager->id);
+-				mdelay(50);
+-				break;
 -			}
 -		}
 -	}
 -
--	DSSINFO("no valid timing found , falling back to VGA\n");
--	hdmi.code = 4; /* setting default value of 640 480 VGA */
--	hdmi.mode = HDMI_DVI;
--}
+-	if (errors & DISPC_IRQ_VID1_FIFO_UNDERFLOW) {
+-		DSSERR("VID1_FIFO_UNDERFLOW, disabling VID1\n");
+-		for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
+-			struct omap_overlay *ovl;
+-			ovl = omap_dss_get_overlay(i);
 -
--static void hdmi_read_edid(struct omap_video_timings *dp)
--{
--	int ret = 0, code;
--
--	memset(hdmi.edid, 0, HDMI_EDID_MAX_LENGTH);
--
--	if (!hdmi.edid_set)
--		ret = read_edid(hdmi.edid, HDMI_EDID_MAX_LENGTH);
--
--	if (ret > 0) {
--		if (!memcmp(hdmi.edid, edid_header, sizeof(edid_header))) {
--			/* search for timings of default resolution */
--			get_edid_timing_data(hdmi.edid);
--			hdmi.edid_set = true;
+-			if (ovl->id = 1) {
+-				dispc_enable_plane(ovl->id, 0);
+-				dispc_go(ovl->manager->id);
+-				mdelay(50);
+-				break;
+-			}
 -		}
--	} else {
--		DSSWARN("failed to read E-EDID\n");
 -	}
 -
--	if (!hdmi.edid_set) {
--		DSSINFO("fallback to VGA\n");
--		hdmi.code = 4; /* setting default value of 640 480 VGA */
--		hdmi.mode = HDMI_DVI;
+-	if (errors & DISPC_IRQ_VID2_FIFO_UNDERFLOW) {
+-		DSSERR("VID2_FIFO_UNDERFLOW, disabling VID2\n");
+-		for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
+-			struct omap_overlay *ovl;
+-			ovl = omap_dss_get_overlay(i);
+-
+-			if (ovl->id = 2) {
+-				dispc_enable_plane(ovl->id, 0);
+-				dispc_go(ovl->manager->id);
+-				mdelay(50);
+-				break;
+-			}
+-		}
 -	}
 -
--	code = get_timings_index();
+-	if (errors & DISPC_IRQ_SYNC_LOST) {
+-		struct omap_overlay_manager *manager = NULL;
+-		bool enable = false;
 -
--	*dp = cea_vesa_timings[code].timings;
--}
+-		DSSERR("SYNC_LOST, disabling LCD\n");
 -
- static void hdmi_core_init(struct hdmi_core_video_config *video_cfg,
- 			struct hdmi_core_infoframe_avi *avi_cfg,
- 			struct hdmi_core_packet_enable_repeat *repeat_cfg)
-@@ -1138,12 +1010,7 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
- 		dssdev->panel.timings.x_res,
- 		dssdev->panel.timings.y_res);
+-		for (i = 0; i < omap_dss_get_num_overlay_managers(); ++i) {
+-			struct omap_overlay_manager *mgr;
+-			mgr = omap_dss_get_overlay_manager(i);
++	for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
++		struct omap_overlay *ovl;
++		unsigned bit;
  
--	if (!hdmi.custom_set) {
--		DSSDBG("Read EDID as no EDID is not set on poweron\n");
--		hdmi_read_edid(p);
+-			if (mgr->id = OMAP_DSS_CHANNEL_LCD) {
+-				manager = mgr;
+-				enable = mgr->device->state =
+-						OMAP_DSS_DISPLAY_ACTIVE;
+-				mgr->device->driver->disable(mgr->device);
+-				break;
+-			}
+-		}
++		ovl = omap_dss_get_overlay(i);
++		bit = fifo_underflow_bits[i];
+ 
+-		if (manager) {
+-			struct omap_dss_device *dssdev = manager->device;
+-			for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
+-				struct omap_overlay *ovl;
+-				ovl = omap_dss_get_overlay(i);
+-
+-				if (ovl->id != 0 && ovl->manager = manager)
+-					dispc_enable_plane(ovl->id, 0);
+-			}
+-
+-			dispc_go(manager->id);
++		if ((1 << bit) & errors) {
++			DSSERR("FIFO UNDERFLOW on %s, disabling the overlay\n",
++					ovl->name);
++			dispc_enable_plane(ovl->id, false);
++			dispc_go(ovl->manager->id);
+ 			mdelay(50);
+-			if (enable)
+-				dssdev->driver->enable(dssdev);
+ 		}
+ 	}
+ 
+-	if (errors & DISPC_IRQ_SYNC_LOST_DIGIT) {
+-		struct omap_overlay_manager *manager = NULL;
+-		bool enable = false;
+-
+-		DSSERR("SYNC_LOST_DIGIT, disabling TV\n");
+-
+-		for (i = 0; i < omap_dss_get_num_overlay_managers(); ++i) {
+-			struct omap_overlay_manager *mgr;
+-			mgr = omap_dss_get_overlay_manager(i);
+-
+-			if (mgr->id = OMAP_DSS_CHANNEL_DIGIT) {
+-				manager = mgr;
+-				enable = mgr->device->state =
+-						OMAP_DSS_DISPLAY_ACTIVE;
+-				mgr->device->driver->disable(mgr->device);
+-				break;
+-			}
+-		}
+-
+-		if (manager) {
+-			struct omap_dss_device *dssdev = manager->device;
+-			for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
+-				struct omap_overlay *ovl;
+-				ovl = omap_dss_get_overlay(i);
++	for (i = 0; i < omap_dss_get_num_overlay_managers(); ++i) {
++		struct omap_overlay_manager *mgr;
++		unsigned bit;
+ 
+-				if (ovl->id != 0 && ovl->manager = manager)
+-					dispc_enable_plane(ovl->id, 0);
+-			}
++		mgr = omap_dss_get_overlay_manager(i);
++		bit = sync_lost_bits[i];
+ 
+-			dispc_go(manager->id);
+-			mdelay(50);
+-			if (enable)
+-				dssdev->driver->enable(dssdev);
+-		}
 -	}
- 	code = get_timings_index();
--	dssdev->panel.timings = cea_vesa_timings[code].timings;
- 	update_hdmi_timings(&hdmi.cfg, p, code);
- 
- 	phy = p->pixel_clock;
-@@ -1205,8 +1072,6 @@ static void hdmi_power_off(struct omap_dss_device *dssdev)
- 	hdmi_phy_off();
- 	hdmi_set_pll_pwr(HDMI_PLLPWRCMD_ALLOFF);
- 	hdmi_runtime_put();
 -
--	hdmi.edid_set = 0;
- }
- 
- int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
-@@ -1228,8 +1093,6 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev)
- {
- 	struct hdmi_cm cm;
- 
--	hdmi.custom_set = 1;
+-	if (errors & DISPC_IRQ_SYNC_LOST2) {
+-		struct omap_overlay_manager *manager = NULL;
+-		bool enable = false;
 -
- 	cm = hdmi_get_code(&dssdev->panel.timings);
- 	hdmi.code = cm.code;
- 	hdmi.mode = cm.mode;
-diff --git a/drivers/video/omap2/dss/hdmi_omap4_panel.c b/drivers/video/omap2/dss/hdmi_omap4_panel.c
-index 7adaf7a..5e314e8 100644
---- a/drivers/video/omap2/dss/hdmi_omap4_panel.c
-+++ b/drivers/video/omap2/dss/hdmi_omap4_panel.c
-@@ -40,13 +40,7 @@ static int hdmi_panel_probe(struct omap_dss_device *dssdev)
- 	dssdev->panel.config = OMAP_DSS_LCD_TFT |
- 			OMAP_DSS_LCD_IVS | OMAP_DSS_LCD_IHS;
+-		DSSERR("SYNC_LOST for LCD2, disabling LCD2\n");
++		if ((1 << bit) & errors) {
++			struct omap_dss_device *dssdev = mgr->device;
++			bool enable;
  
--	/*
--	 * Initialize the timings to 640 * 480
--	 * This is only for framebuffer update not for TV timing setting
--	 * Setting TV timing will be done only on enable
--	 */
--	dssdev->panel.timings.x_res = 640;
--	dssdev->panel.timings.y_res = 480;
-+	dssdev->panel.timings = (struct omap_video_timings){640, 480, 25175, 96, 16, 48, 2 , 11, 31};
+-		for (i = 0; i < omap_dss_get_num_overlay_managers(); ++i) {
+-			struct omap_overlay_manager *mgr;
+-			mgr = omap_dss_get_overlay_manager(i);
++			DSSERR("SYNC_LOST on channel %s, restarting the output "
++					"with video overlays disabled\n",
++					mgr->name);
  
- 	DSSDBG("hdmi_panel_probe x_res= %d y_res = %d\n",
- 		dssdev->panel.timings.x_res,
+-			if (mgr->id = OMAP_DSS_CHANNEL_LCD2) {
+-				manager = mgr;
+-				enable = mgr->device->state =
+-						OMAP_DSS_DISPLAY_ACTIVE;
+-				mgr->device->driver->disable(mgr->device);
+-				break;
+-			}
+-		}
++			enable = dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
++			dssdev->driver->disable(dssdev);
+ 
+-		if (manager) {
+-			struct omap_dss_device *dssdev = manager->device;
+ 			for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
+ 				struct omap_overlay *ovl;
+ 				ovl = omap_dss_get_overlay(i);
+ 
+-				if (ovl->id != 0 && ovl->manager = manager)
+-					dispc_enable_plane(ovl->id, 0);
++				if (ovl->id != OMAP_DSS_GFX &&
++						ovl->manager = mgr)
++					dispc_enable_plane(ovl->id, false);
+ 			}
+ 
+-			dispc_go(manager->id);
++			dispc_go(mgr->id);
+ 			mdelay(50);
++
+ 			if (enable)
+ 				dssdev->driver->enable(dssdev);
+ 		}
 -- 
 1.7.4.1
 

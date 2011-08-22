@@ -1,46 +1,32 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 19 Aug 2011 09:16:05 +0000
-Subject: [PATCH 0/7] sh_mobile_lcdc: Support format changes at runtime
-Message-Id: <1313745372-20856-1-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 22 Aug 2011 08:26:35 +0000
+Subject: [PATCH 0/4] OMAPDSS: DSI related improvements
+Message-Id: <1314001599-17951-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi everybody,
+These patches add support for the second DSI module on OMAP4 by fixing the DSI device naming and adding necessary powers. Also DSI pad muxing is improved to support OMAP4.
 
-This patch set add supports for the .fb_set_par() operation in the
-sh_mobile_lcdc driver, allowing userspace to change the frame buffer format
-and size at runtime. It applies on top of the latest SH mobile LCDC cleanups
-and fixes patches posted to the linux-fbdev list and available at
-http://git.linuxtv.org/pinchartl/fbdev.git/shortlog/refs/heads/sh-mobile-lc=
-dc.
+ Tomi
 
-Frame buffer memory reallocation is currently not supported. You will need =
-to
-make sure platform data sets the maximum size and bpp to high enough values
-for all formats and sizes you want to support at runtime.
+Tomi Valkeinen (4):
+  OMAP: DSS2: Change DSI device naming
+  OMAP4: TWL: Add common omapdss supplies
+  OMAP: DSS2: DSI: Improve dsi_mux_pads parameters
+  OMAP: DSS2: Implement dsi_mux_pads for OMAP4
 
-The patches have been tested with the fbdev-test utility
-(http://git.ideasonboard.org/?p=FBdev-test.git;a=3Dsummary) on a Mackerel b=
-oard.
+ arch/arm/mach-omap2/board-devkit8000.c   |    2 +-
+ arch/arm/mach-omap2/board-omap3pandora.c |    2 +-
+ arch/arm/mach-omap2/display.c            |   60 +++++++++++++++++++++++++-
+ arch/arm/mach-omap2/twl-common.c         |   11 ++++-
+ drivers/video/omap2/dss/dsi.c            |   67 ++++++++++++++++++-----------
+ include/video/omapdss.h                  |    3 +-
+ 6 files changed, 112 insertions(+), 33 deletions(-)
 
-Laurent Pinchart (7):
-  fbdev: sh_mobile_lcdc: Adjust requested parameters in .fb_check_var
-  fbdev: sh_mobile_lcdc: Add support for format changes at runtime
-  fbdev: sh_mobile_lcdc: use display information in info for panning
-  fbdev: sh_mobile_lcdc: Update fix.line_length in .fb_set_par()
-  fbdev: sh_mobile_lcdc: Avoid forward declarations
-  fbdev: sh_mobile_lcdc: Split channel initialization from probe function
-  fbdev: sh_mobile_lcdc: Remove sh_mobile_lcdc_set_bpp()
-
- drivers/video/sh_mobile_lcdcfb.c |  570 +++++++++++++++++++++-------------=
-----
- 1 files changed, 309 insertions(+), 261 deletions(-)
-
---=20
-Regards,
-
-Laurent Pinchart
+-- 
+1.7.4.1
 

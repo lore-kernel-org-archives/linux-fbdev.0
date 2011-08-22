@@ -1,84 +1,46 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 02 Aug 2011 07:57:55 +0000
-Subject: Re: [PATCHv2 17/28] OMAP2420: HWMOD: Add DSS opt clocks
-Message-Id: <1312271875.1917.34.camel@deskari>
+Date: Mon, 22 Aug 2011 08:27:41 +0000
+Subject: [PATCH 00/10] OMAPDSS: code cleanups
+Message-Id: <1314001671-18123-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1307627810-3768-18-git-send-email-tomi.valkeinen@ti.com>
-	 <alpine.DEB.2.00.1107150047160.16606@utopia.booyaka.com>
-	 <alpine.DEB.2.00.1108011910410.28427@utopia.booyaka.com>
-In-Reply-To: <alpine.DEB.2.00.1108011910410.28427@utopia.booyaka.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Walmsley <paul@pwsan.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, b-cousson@ti.com, khilman@ti.com
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi,
-
-On Mon, 2011-08-01 at 19:14 -0600, Paul Walmsley wrote:
-> Hello Tomi
-> 
-> On Fri, 15 Jul 2011, Paul Walmsley wrote:
-> 
-> > On Thu, 9 Jun 2011, Tomi Valkeinen wrote:
-> > 
-> > > Add DSS optional clocks to HWMOD data for OMAP2420.
-> 
-> This patch has been combined with the 2430 patch and the OMAP2xxx portion 
-> of the temporary hack in the DSS driver has been removed.  Care to review 
-> the new changes before it's sent to Tony?
-
-Same thing here, I can revert the dss hacks separately.
-
-> 
-> - Paul
-> 
-> 
-> From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Date: Mon, 1 Aug 2011 19:02:23 -0600
-> Subject: [PATCH 1/2] OMAP2xxx: HWMOD: Add DSS opt clocks
-> 
-> Add DSS optional clocks to HWMOD data for OMAP2420 and OMAP2430.
-> 
-> Revert OMAP2xxx portion of commit
-> 9ede365aa6f74428a1f69c21ca1cf21213167576 ("HACK: OMAP: DSS2: clk hack
-> for OMAP2/3").
-> 
-> Cc: Benoit Cousson <b-cousson@ti.com>
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> [paul@pwsan.com: merge 2420 and 2430 patches; remove temporary DSS driver hack;
->  update changelog]
-> Signed-off-by: Paul Walmsley <paul@pwsan.com>
-> ---
->  arch/arm/mach-omap2/omap_hwmod_2420_data.c |   17 ++++++++---------
->  arch/arm/mach-omap2/omap_hwmod_2430_data.c |   17 ++++++++---------
->  drivers/video/omap2/dss/rfbi.c             |    2 +-
->  3 files changed, 17 insertions(+), 19 deletions(-)
-> 
-> diff --git a/arch/arm/mach-omap2/omap_hwmod_2420_data.c b/arch/arm/mach-omap2/omap_hwmod_2420_data.c
-> index a015c69..b075188 100644
-> --- a/arch/arm/mach-omap2/omap_hwmod_2420_data.c
-> +++ b/arch/arm/mach-omap2/omap_hwmod_2420_data.c
-> @@ -873,11 +873,6 @@ static struct omap_hwmod_ocp_if *omap2420_dss_slaves[] = {
->  	&omap2420_l4_core__dss,
->  };
->  
-> -static struct omap_hwmod_opt_clk dss_opt_clks[] = {
-> -	{ .role = "tv_clk", .clk = "dss_54m_fck" },
-> -	{ .role = "sys_clk", .clk = "dss2_fck" },
-> -};
-
-I removed the opt clocks as the TRM doesn't say that the clocks need to
-be enabled when resetting the DSS, but now thinking about it, I feel
-it's safer to enable the clocks like we do on OMAP3. I think it's
-unlikely that the HW could finish the reset if the clocks are off.
-
-So let's forget this removal of dss opt clocks and add them back. And
-also I think HWMOD_CONTROL_OPT_CLKS_IN_RESET is needed for dss_core.
-
-I can make a new patch for this also.
+Cleanups for DSS driver, no functionality changed.
 
  Tomi
 
+Tomi Valkeinen (10):
+  OMAP: DSS2: Remove support for non-DISPC overlays
+  OMAP: DSS2: DISPC: use lookup tables for bit shifts
+  OMAP: DSS2: Add overlay caps to DSS features
+  OMAP: DSS2: Add GLOBAL_ALPHA & PRE_MULT_ALPHA to ovl caps
+  OMAP: DSS2: string parsing cleanups
+  OMAP: OMAPFB: string parsing cleanups
+  OMAP: DSS2: DISPC: remove non-existing func prototypes
+  OMAP: DSS2: DISPC: rename overlay related funcs
+  OMAP: DSS2: DISPC: rename manager related funcs
+  OMAP: DSS2: reorganize functions in dss.h
+
+ drivers/video/omap2/dss/dispc.c           |  478 +++++++++++------------------
+ drivers/video/omap2/dss/display.c         |   21 +-
+ drivers/video/omap2/dss/dpi.c             |   16 +-
+ drivers/video/omap2/dss/dsi.c             |  205 ++-----------
+ drivers/video/omap2/dss/dss.h             |   93 +++---
+ drivers/video/omap2/dss/dss_features.c    |   68 ++++-
+ drivers/video/omap2/dss/dss_features.h    |    3 +-
+ drivers/video/omap2/dss/hdmi.c            |    6 +-
+ drivers/video/omap2/dss/manager.c         |  126 +++-----
+ drivers/video/omap2/dss/overlay.c         |   38 +--
+ drivers/video/omap2/dss/rfbi.c            |   33 +--
+ drivers/video/omap2/dss/sdi.c             |   12 +-
+ drivers/video/omap2/omapfb/omapfb-sysfs.c |    6 +-
+ include/video/omapdss.h                   |    9 +-
+ 14 files changed, 396 insertions(+), 718 deletions(-)
+
+-- 
+1.7.4.1
 

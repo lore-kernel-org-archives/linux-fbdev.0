@@ -1,63 +1,94 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 19 Aug 2011 09:37:03 +0000
-Subject: [PATCH/RFC v2 0/3] fbdev: Add FOURCC-based format configuration API
-Message-Id: <1313746626-23845-1-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 22 Aug 2011 08:26:39 +0000
+Subject: [PATCH 4/4] OMAP: DSS2: Implement dsi_mux_pads for OMAP4
+Message-Id: <1314001599-17951-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1314001599-17951-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1314001599-17951-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
-Cc: linux-media@vger.kernel.org, magnus.damm@gmail.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi everybody,
+Implement dsi_mux_pads for OMAP4. On enable the function enables the DSI
+pins and disables pull down. On disable the function disables the pins
+and enables pull down.
 
-Here's the second version of the fbdev FOURCC-based format configuration AP=
-I.
+It is unclear from the TRM whether the pull down is active if the pins
+are disabled, so this implementation may leave the pins floating when
+the DSI device is disabled.
 
-Compared to the previous version, I've removed the FB_VMODE_FOURCC bit (FOU=
-RCC
-mode is now selected by a grayscale value > 1), reorganized the union in the
-fb_var_screeninfo structure, and added a colorspace field used for YUV mode=
-s.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/mach-omap2/display.c |   40 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 40 insertions(+), 0 deletions(-)
 
-This patch set also contains an implementation of the FOURCC-based format A=
-PI
-for the sh_mobile_lcdc driver, based on top of the latest patches I've sent=
- to
-the list. You can find a consolidated version that includes this patch set =
-at
-http://git.linuxtv.org/pinchartl/fbdev.git/shortlog/refs/heads/fbdev-yuv.
-YUV support when MERAM is enabled is currently broken, I'm working on fixing
-that.
-
-I've updated the fbdev-test tool to add FOURCC support. The code is availab=
-le
-in the fbdev-test yuv branch at
-http://git.ideasonboard.org/?p=FBdev-test.git;a=3Dshortlog;h=3Drefs/heads/y=
-uv.
-
-Laurent Pinchart (3):
-  fbdev: Add FOURCC-based format configuration API
-  v4l: Add V4L2_PIX_FMT_NV24 and V4L2_PIX_FMT_NV42 formats
-  fbdev: sh_mobile_lcdc: Support FOURCC-based format API
-
- Documentation/DocBook/media/v4l/pixfmt-nv24.xml |  128 +++++++++
- Documentation/DocBook/media/v4l/pixfmt.xml      |    1 +
- Documentation/fb/api.txt                        |  299 ++++++++++++++++++++
- arch/arm/mach-shmobile/board-ag5evm.c           |    2 +-
- arch/arm/mach-shmobile/board-ap4evb.c           |    4 +-
- arch/arm/mach-shmobile/board-mackerel.c         |    4 +-
- drivers/video/sh_mobile_lcdcfb.c                |  342 +++++++++++++++----=
-----
- include/linux/fb.h                              |   27 ++-
- include/linux/videodev2.h                       |    2 +
- include/video/sh_mobile_lcdc.h                  |    4 +-
- 10 files changed, 681 insertions(+), 132 deletions(-)
- create mode 100644 Documentation/DocBook/media/v4l/pixfmt-nv24.xml
- create mode 100644 Documentation/fb/api.txt
-
---=20
-Regards,
-
-Laurent Pinchart
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index 74f0aff..93db7c1 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -28,6 +28,8 @@
+ #include <plat/omap-pm.h>
+ #include <plat/common.h>
+ 
++#include "control.h"
++
+ static struct platform_device omap_display_device = {
+ 	.name          = "omapdss",
+ 	.id            = -1,
+@@ -75,13 +77,51 @@ static const struct omap_dss_hwmod_data omap4_dss_hwmod_data[] __initdata = {
+ 	{ "dss_hdmi", "omapdss_hdmi", -1 },
+ };
+ 
++static int omap4_dsi_mux_pads(int dsi_id, unsigned lanes)
++{
++	u32 enable_mask, enable_shift;
++	u32 pipd_mask, pipd_shift;
++	u32 reg;
++
++	if (dsi_id = 0) {
++		enable_mask = OMAP4_DSI1_LANEENABLE_MASK;
++		enable_shift = OMAP4_DSI1_LANEENABLE_SHIFT;
++		pipd_mask = OMAP4_DSI1_PIPD_MASK;
++		pipd_shift = OMAP4_DSI1_PIPD_SHIFT;
++	} else if (dsi_id = 1) {
++		enable_mask = OMAP4_DSI2_LANEENABLE_MASK;
++		enable_shift = OMAP4_DSI2_LANEENABLE_SHIFT;
++		pipd_mask = OMAP4_DSI2_PIPD_MASK;
++		pipd_shift = OMAP4_DSI2_PIPD_SHIFT;
++	} else {
++		return -ENODEV;
++	}
++
++	reg = omap4_ctrl_pad_readl(OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_DSIPHY);
++
++	reg &= ~enable_mask;
++	reg &= ~pipd_mask;
++
++	reg |= (lanes << enable_shift) & enable_mask;
++	reg |= (lanes << pipd_shift) & pipd_mask;
++
++	omap4_ctrl_pad_writel(reg, OMAP4_CTRL_MODULE_PAD_CORE_CONTROL_DSIPHY);
++
++	return 0;
++}
++
+ static int omap_dsi_enable_pads(int dsi_id, unsigned lane_mask)
+ {
++	if (cpu_is_omap44xx())
++		return omap4_dsi_mux_pads(dsi_id, lane_mask);
++
+ 	return 0;
+ }
+ 
+ static void omap_dsi_disable_pads(int dsi_id, unsigned lane_mask)
+ {
++	if (cpu_is_omap44xx())
++		omap4_dsi_mux_pads(dsi_id, 0);
+ }
+ 
+ int __init omap_display_init(struct omap_dss_board_info *board_data)
+-- 
+1.7.4.1
 

@@ -1,108 +1,62 @@
-From: Ryan Mallon <rmallon@gmail.com>
-Date: Mon, 22 Aug 2011 00:31:08 +0000
-Subject: Re: [PATCH] video: ep93xx-fb: add missing include of linux/module.h
-Message-Id: <4E51A34C.6060207@gmail.com>
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+Date: Mon, 22 Aug 2011 16:36:15 +0000
+Subject: RE: [PATCH] video: ep93xx-fb: add missing include of linux/module.h
+Message-Id: <ADE657CA350FB648AAC2C43247A983F001F38857524B@AUSP01VMBX24.collaborationhost.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1313937545.13671.5.camel@phoenix> <4E5197B8.8020608@gmail.com> <4E519AC7.3030001@gmail.com> <CAF+7xWkezyMrnt-_0EVtNWtAB2v7pceATB8HEbdC8oqOY0camw@mail.gmail.com>
-In-Reply-To: <CAF+7xWkezyMrnt-_0EVtNWtAB2v7pceATB8HEbdC8oqOY0camw@mail.gmail.com>
+References: <1313937545.13671.5.camel@phoenix>
+In-Reply-To: <1313937545.13671.5.camel@phoenix>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: axel.lin@gmail.com
-Cc: linux-kernel@vger.kernel.org, H Hartley Sweeten <hsweeten@visionengravers.com>, Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: Axel Lin <axel.lin@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-On 22/08/11 10:06, Axel Lin wrote:
-> 2011/8/22 Ryan Mallon<rmallon@gmail.com>:
->> On 22/08/11 09:41, Ryan Mallon wrote:
->>> On 22/08/11 00:39, Axel Lin wrote:
->>>> ep93xx-fb.c uses interfaces from linux/module.h,
->>>> so it should include that file.  This patch fixes below build errors.
->>> What actually changed to make these files broken? Did some other header
->>> previously include module.h for us? How many other drivers are broken?
->>>
->>> Anyway, the change is okay.
->>>
->>> Acked-by: Ryan Mallon<rmallon@gmail.com>
->> Actually, having a second look at this it does not look right.
->>
->> drivers/video/ep93xx-fb.c includes linux/platform.h (as its first include),
->> which includes linux/driver.h, which includes linux/module.h.
->>
->> Just tested on Linus' latest tree and both this driver and the ep93xx
->> backlight driver build fine. What kernel version are you using?
->>
->> ~Ryan
-> hi Ryan,
->
-> The patch is against linux-next tree.
-> I got build error for ep93xx-fb.c and ep93xx_bl.c on linux-next tree.
-> ( next-20110819 )
-
-Ok, I see now. The change which caused the breakage is fdb697c: 
-"include: replace linux/module.h with "struct module" wherever 
-possible". How many other drivers got broken now that device.h does not 
-include module.h?
-
-~Ryan
-
-
->>>>    CC      drivers/video/ep93xx-fb.o
->>>> drivers/video/ep93xx-fb.c:120: error: expected ')' before 'int'
->>>> drivers/video/ep93xx-fb.c:122: error: expected ')' before string constant
->>>> drivers/video/ep93xx-fb.c:409: error: 'THIS_MODULE' undeclared here (not
->>>> in a function)
->>>> drivers/video/ep93xx-fb.c:645: error: expected declaration specifiers or
->>>> '...' before string constant
->>>> drivers/video/ep93xx-fb.c:645: warning: data definition has no type or
->>>> storage class
->>>> drivers/video/ep93xx-fb.c:645: warning: type defaults to 'int' in
->>>> declaration of 'MODULE_DESCRIPTION'
->>>> drivers/video/ep93xx-fb.c:645: warning: function declaration isn't a
->>>> prototype
->>>> drivers/video/ep93xx-fb.c:646: error: expected declaration specifiers or
->>>> '...' before string constant
->>>> drivers/video/ep93xx-fb.c:646: warning: data definition has no type or
->>>> storage class
->>>> drivers/video/ep93xx-fb.c:646: warning: type defaults to 'int' in
->>>> declaration of 'MODULE_ALIAS'
->>>> drivers/video/ep93xx-fb.c:646: warning: function declaration isn't a
->>>> prototype
->>>> drivers/video/ep93xx-fb.c:647: error: expected declaration specifiers or
->>>> '...' before string constant
->>>> drivers/video/ep93xx-fb.c:647: warning: data definition has no type or
->>>> storage class
->>>> drivers/video/ep93xx-fb.c:647: warning: type defaults to 'int' in
->>>> declaration of 'MODULE_AUTHOR'
->>>> drivers/video/ep93xx-fb.c:647: warning: function declaration isn't a
->>>> prototype
->>>> drivers/video/ep93xx-fb.c:649: error: expected declaration specifiers or
->>>> '...' before string constant
->>>> drivers/video/ep93xx-fb.c:649: warning: data definition has no type or
->>>> storage class
->>>> drivers/video/ep93xx-fb.c:649: warning: type defaults to 'int' in
->>>> declaration of 'MODULE_LICENSE'
->>>> drivers/video/ep93xx-fb.c:649: warning: function declaration isn't a
->>>> prototype
->>>> make[2]: *** [drivers/video/ep93xx-fb.o] Error 1
->>>> make[1]: *** [drivers/video] Error 2
->>>> make: *** [drivers] Error 2
->>>>
->>>> Signed-off-by: Axel Lin<axel.lin@gmail.com>
->>>> ---
->>>>   drivers/video/ep93xx-fb.c |    1 +
->>>>   1 files changed, 1 insertions(+), 0 deletions(-)
->>>>
->>>> diff --git a/drivers/video/ep93xx-fb.c b/drivers/video/ep93xx-fb.c
->>>> index 40e5f17..8133a9d 100644
->>>> --- a/drivers/video/ep93xx-fb.c
->>>> +++ b/drivers/video/ep93xx-fb.c
->>>> @@ -17,6 +17,7 @@
->>>>    *
->>>>    */
->>>>
->>>> +#include<linux/module.h>
->>>>   #include<linux/platform_device.h>
->>>>   #include<linux/dma-mapping.h>
->>>>   #include<linux/slab.h>
->>
-
+T24gU3VuZGF5LCBBdWd1c3QgMjEsIDIwMTEgNzozOSBBTSwgQXhlbCBMaW4gd3JvdGU6Cj4KPiBl
+cDkzeHgtZmIuYyB1c2VzIGludGVyZmFjZXMgZnJvbSBsaW51eC9tb2R1bGUuaCwKPiBzbyBpdCBz
+aG91bGQgaW5jbHVkZSB0aGF0IGZpbGUuICBUaGlzIHBhdGNoIGZpeGVzIGJlbG93IGJ1aWxkIGVy
+cm9ycy4KPiAKPiAgIENDICAgICAgZHJpdmVycy92aWRlby9lcDkzeHgtZmIubwo+IGRyaXZlcnMv
+dmlkZW8vZXA5M3h4LWZiLmM6MTIwOiBlcnJvcjogZXhwZWN0ZWQgJyknIGJlZm9yZSAnaW50Jwo+
+IGRyaXZlcnMvdmlkZW8vZXA5M3h4LWZiLmM6MTIyOiBlcnJvcjogZXhwZWN0ZWQgJyknIGJlZm9y
+ZSBzdHJpbmcgY29uc3RhbnQKPiBkcml2ZXJzL3ZpZGVvL2VwOTN4eC1mYi5jOjQwOTogZXJyb3I6
+ICdUSElTX01PRFVMRScgdW5kZWNsYXJlZCBoZXJlIChub3QgaW4gYSBmdW5jdGlvbikKPiBkcml2
+ZXJzL3ZpZGVvL2VwOTN4eC1mYi5jOjY0NTogZXJyb3I6IGV4cGVjdGVkIGRlY2xhcmF0aW9uIHNw
+ZWNpZmllcnMgb3IgJy4uLicgYmVmb3JlIHN0cmluZyBjb25zdGFudAo+IGRyaXZlcnMvdmlkZW8v
+ZXA5M3h4LWZiLmM6NjQ1OiB3YXJuaW5nOiBkYXRhIGRlZmluaXRpb24gaGFzIG5vIHR5cGUgb3Ig
+c3RvcmFnZSBjbGFzcwo+IGRyaXZlcnMvdmlkZW8vZXA5M3h4LWZiLmM6NjQ1OiB3YXJuaW5nOiB0
+eXBlIGRlZmF1bHRzIHRvICdpbnQnIGluIGRlY2xhcmF0aW9uIG9mICdNT0RVTEVfREVTQ1JJUFRJ
+T04nCj4gZHJpdmVycy92aWRlby9lcDkzeHgtZmIuYzo2NDU6IHdhcm5pbmc6IGZ1bmN0aW9uIGRl
+Y2xhcmF0aW9uIGlzbid0IGEgcHJvdG90eXBlCj4gZHJpdmVycy92aWRlby9lcDkzeHgtZmIuYzo2
+NDY6IGVycm9yOiBleHBlY3RlZCBkZWNsYXJhdGlvbiBzcGVjaWZpZXJzIG9yICcuLi4nIGJlZm9y
+ZSBzdHJpbmcgY29uc3RhbnQKPiBkcml2ZXJzL3ZpZGVvL2VwOTN4eC1mYi5jOjY0Njogd2Fybmlu
+ZzogZGF0YSBkZWZpbml0aW9uIGhhcyBubyB0eXBlIG9yIHN0b3JhZ2UgY2xhc3MKPiBkcml2ZXJz
+L3ZpZGVvL2VwOTN4eC1mYi5jOjY0Njogd2FybmluZzogdHlwZSBkZWZhdWx0cyB0byAnaW50JyBp
+biBkZWNsYXJhdGlvbiBvZiAnTU9EVUxFX0FMSUFTJwo+IGRyaXZlcnMvdmlkZW8vZXA5M3h4LWZi
+LmM6NjQ2OiB3YXJuaW5nOiBmdW5jdGlvbiBkZWNsYXJhdGlvbiBpc24ndCBhIHByb3RvdHlwZQo+
+IGRyaXZlcnMvdmlkZW8vZXA5M3h4LWZiLmM6NjQ3OiBlcnJvcjogZXhwZWN0ZWQgZGVjbGFyYXRp
+b24gc3BlY2lmaWVycyBvciAnLi4uJyBiZWZvcmUgc3RyaW5nIGNvbnN0YW50Cj4gZHJpdmVycy92
+aWRlby9lcDkzeHgtZmIuYzo2NDc6IHdhcm5pbmc6IGRhdGEgZGVmaW5pdGlvbiBoYXMgbm8gdHlw
+ZSBvciBzdG9yYWdlIGNsYXNzCj4gZHJpdmVycy92aWRlby9lcDkzeHgtZmIuYzo2NDc6IHdhcm5p
+bmc6IHR5cGUgZGVmYXVsdHMgdG8gJ2ludCcgaW4gZGVjbGFyYXRpb24gb2YgJ01PRFVMRV9BVVRI
+T1InCj4gZHJpdmVycy92aWRlby9lcDkzeHgtZmIuYzo2NDc6IHdhcm5pbmc6IGZ1bmN0aW9uIGRl
+Y2xhcmF0aW9uIGlzbid0IGEgcHJvdG90eXBlCj4gZHJpdmVycy92aWRlby9lcDkzeHgtZmIuYzo2
+NDk6IGVycm9yOiBleHBlY3RlZCBkZWNsYXJhdGlvbiBzcGVjaWZpZXJzIG9yICcuLi4nIGJlZm9y
+ZSBzdHJpbmcgY29uc3RhbnQKPiBkcml2ZXJzL3ZpZGVvL2VwOTN4eC1mYi5jOjY0OTogd2Fybmlu
+ZzogZGF0YSBkZWZpbml0aW9uIGhhcyBubyB0eXBlIG9yIHN0b3JhZ2UgY2xhc3MKPiBkcml2ZXJz
+L3ZpZGVvL2VwOTN4eC1mYi5jOjY0OTogd2FybmluZzogdHlwZSBkZWZhdWx0cyB0byAnaW50JyBp
+biBkZWNsYXJhdGlvbiBvZiAnTU9EVUxFX0xJQ0VOU0UnCj4gZHJpdmVycy92aWRlby9lcDkzeHgt
+ZmIuYzo2NDk6IHdhcm5pbmc6IGZ1bmN0aW9uIGRlY2xhcmF0aW9uIGlzbid0IGEgcHJvdG90eXBl
+Cj4gbWFrZVsyXTogKioqIFtkcml2ZXJzL3ZpZGVvL2VwOTN4eC1mYi5vXSBFcnJvciAxCj4gbWFr
+ZVsxXTogKioqIFtkcml2ZXJzL3ZpZGVvXSBFcnJvciAyCj4gbWFrZTogKioqIFtkcml2ZXJzXSBF
+cnJvciAyCj4gCj4gU2lnbmVkLW9mZi1ieTogQXhlbCBMaW4gPGF4ZWwubGluQGdtYWlsLmNvbT4K
+PiAtLS0KPiAgZHJpdmVycy92aWRlby9lcDkzeHgtZmIuYyB8ICAgIDEgKwo+ICAxIGZpbGVzIGNo
+YW5nZWQsIDEgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKPiAKPiBkaWZmIC0tZ2l0IGEv
+ZHJpdmVycy92aWRlby9lcDkzeHgtZmIuYyBiL2RyaXZlcnMvdmlkZW8vZXA5M3h4LWZiLmMKPiBp
+bmRleCA0MGU1ZjE3Li44MTMzYTlkIDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvdmlkZW8vZXA5M3h4
+LWZiLmMKPiArKysgYi9kcml2ZXJzL3ZpZGVvL2VwOTN4eC1mYi5jCj4gQEAgLTE3LDYgKzE3LDcg
+QEAKPiAgICoKPiAgICovCj4gIAo+ICsjaW5jbHVkZSA8bGludXgvbW9kdWxlLmg+Cj4gICNpbmNs
+dWRlIDxsaW51eC9wbGF0Zm9ybV9kZXZpY2UuaD4KPiAgI2luY2x1ZGUgPGxpbnV4L2RtYS1tYXBw
+aW5nLmg+Cj4gICNpbmNsdWRlIDxsaW51eC9zbGFiLmg+CgpTYW1lIGlzc3VlIGFzIHRoZSBiYWNr
+bGlnaHQgZHJpdmVyLi4uCgpBY2tlZC1ieTogSCBIYXJ0bGV5IFN3ZWV0ZW4gPGhzd2VldGVuQHZp
+c2lvbmVuZ3JhdmVycy5jb20+Cgr/9Oi6ey5uxyuJt5+uia2GKyWKy/+x6d22F6WKd/+6ey5uxyuJ
+t6WKe7H99t16/+Ke2F5uh3Kh9qZ6yxqB62iZqOit2iaj++B6v+R6ud6X+iuAyit6ZqOit2iaiKd+
+hq2G22n//++B6v+R6ud6X+iuD+ZqOit2iaj+Kd+j+G0K

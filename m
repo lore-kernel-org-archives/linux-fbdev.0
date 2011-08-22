@@ -1,70 +1,185 @@
-From: bernie@plugable.com
-Date: Sun, 21 Aug 2011 20:35:39 +0000
-Subject: [PATCH 6/6] udlfb: Enable fbcon access to framebuffer by default
-Message-Id: <1313958939-5681-6-git-send-email-bernie@plugable.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 22 Aug 2011 08:27:44 +0000
+Subject: [PATCH 03/10] OMAP: DSS2: Add overlay caps to DSS features
+Message-Id: <1314001671-18123-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1314001671-18123-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1314001671-18123-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Bernie Thompson <bernie@plugable.com>
+Add support to define overlay capabilities into dss_features. The
+features are set to overlay->caps at initialization time.
 
-Signed-off-by: Bernie Thompson <bernie@plugable.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Acked-by: Archit Taneja <archit@ti.com>
 ---
- Documentation/fb/udlfb.txt |   10 ++++++----
- drivers/video/udlfb.c      |    4 ++--
- 2 files changed, 8 insertions(+), 6 deletions(-)
+ drivers/video/omap2/dss/dss_features.c |   55 ++++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/dss_features.h |    1 +
+ drivers/video/omap2/dss/overlay.c      |    4 +--
+ 3 files changed, 57 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/fb/udlfb.txt b/Documentation/fb/udlfb.txt
-index c6d90a6..57d2f29 100644
---- a/Documentation/fb/udlfb.txt
-+++ b/Documentation/fb/udlfb.txt
-@@ -107,16 +107,18 @@ fb_defio	Make use of the fb_defio (CONFIG_FB_DEFERRED_IO) kernel
- 		Disable when running with X server that supports reporting
- 		changed regions via ioctl, as this method is simpler,
- 		more stable, and higher performance.
-+		default: fb_defio=1
+diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
+index b415c4e..6bf508d 100644
+--- a/drivers/video/omap2/dss/dss_features.c
++++ b/drivers/video/omap2/dss/dss_features.c
+@@ -47,6 +47,7 @@ struct omap_dss_features {
+ 	const int num_ovls;
+ 	const enum omap_display_type *supported_displays;
+ 	const enum omap_color_mode *supported_color_modes;
++	const enum omap_overlay_caps *overlay_caps;
+ 	const char * const *clksrc_names;
+ 	const struct dss_param_range *dss_params;
  
--console	Allow fbcon to attach to udlfb provided framebuffers. This
--		is disabled by default because fbcon will aggressively consume
--		the first framebuffer it finds, which isn't usually what the
--		user wants in the case of USB displays.
-+console	Allow fbcon to attach to udlfb provided framebuffers.
-+		Can be disabled if fbcon and other clients
-+		(e.g. X with --shared-vt) are in conflict.
-+		default: console=1
+@@ -211,6 +212,50 @@ static const enum omap_color_mode omap4_dss_supported_color_modes[] = {
+ 	OMAP_DSS_COLOR_RGBX32,
+ };
  
- shadow		Allocate a 2nd framebuffer to shadow what's currently across
- 		the USB bus in device memory. If any pixels are unchanged,
- 		do not transmit. Spends host memory to save USB transfers.
- 		Enabled by default. Only disable on very low memory systems.
-+		default: shadow=1
- 
- Sysfs Attributes
- ========
-diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
-index 5207bd2..c8857da 100644
---- a/drivers/video/udlfb.c
-+++ b/drivers/video/udlfb.c
-@@ -70,7 +70,7 @@ static struct usb_device_id id_table[] = {
- MODULE_DEVICE_TABLE(usb, id_table);
- 
- /* module options */
--static int console;   /* Optionally allow fbcon to consume first framebuffer */
-+static int console = 1; /* Allow fbcon to open framebuffer */
- static int fb_defio = 1;  /* Detect mmap writes using page faults */
- static int shadow = 1; /* Optionally disable shadow framebuffer */
- 
-@@ -1958,7 +1958,7 @@ static int dlfb_submit_urb(struct dlfb_data *dev, struct urb *urb, size_t len)
++static const enum omap_overlay_caps omap2_dss_overlay_caps[] = {
++	/* OMAP_DSS_GFX */
++	0,
++
++	/* OMAP_DSS_VIDEO1 */
++	OMAP_DSS_OVL_CAP_SCALE,
++
++	/* OMAP_DSS_VIDEO2 */
++	OMAP_DSS_OVL_CAP_SCALE,
++};
++
++static const enum omap_overlay_caps omap3430_dss_overlay_caps[] = {
++	/* OMAP_DSS_GFX */
++	0,
++
++	/* OMAP_DSS_VIDEO1 */
++	OMAP_DSS_OVL_CAP_SCALE,
++
++	/* OMAP_DSS_VIDEO2 */
++	OMAP_DSS_OVL_CAP_SCALE,
++};
++
++static const enum omap_overlay_caps omap3630_dss_overlay_caps[] = {
++	/* OMAP_DSS_GFX */
++	0,
++
++	/* OMAP_DSS_VIDEO1 */
++	OMAP_DSS_OVL_CAP_SCALE,
++
++	/* OMAP_DSS_VIDEO2 */
++	OMAP_DSS_OVL_CAP_SCALE,
++};
++
++static const enum omap_overlay_caps omap4_dss_overlay_caps[] = {
++	/* OMAP_DSS_GFX */
++	0,
++
++	/* OMAP_DSS_VIDEO1 */
++	OMAP_DSS_OVL_CAP_SCALE,
++
++	/* OMAP_DSS_VIDEO2 */
++	OMAP_DSS_OVL_CAP_SCALE,
++};
++
+ static const char * const omap2_dss_clk_source_names[] = {
+ 	[OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC]	= "N/A",
+ 	[OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DSI]	= "N/A",
+@@ -275,6 +320,7 @@ static const struct omap_dss_features omap2_dss_features = {
+ 	.num_ovls = 3,
+ 	.supported_displays = omap2_dss_supported_displays,
+ 	.supported_color_modes = omap2_dss_supported_color_modes,
++	.overlay_caps = omap2_dss_overlay_caps,
+ 	.clksrc_names = omap2_dss_clk_source_names,
+ 	.dss_params = omap2_dss_param_range,
+ 	.buffer_size_unit = 1,
+@@ -299,6 +345,7 @@ static const struct omap_dss_features omap3430_dss_features = {
+ 	.num_ovls = 3,
+ 	.supported_displays = omap3430_dss_supported_displays,
+ 	.supported_color_modes = omap3_dss_supported_color_modes,
++	.overlay_caps = omap3430_dss_overlay_caps,
+ 	.clksrc_names = omap3_dss_clk_source_names,
+ 	.dss_params = omap3_dss_param_range,
+ 	.buffer_size_unit = 1,
+@@ -322,6 +369,7 @@ static const struct omap_dss_features omap3630_dss_features = {
+ 	.num_ovls = 3,
+ 	.supported_displays = omap3630_dss_supported_displays,
+ 	.supported_color_modes = omap3_dss_supported_color_modes,
++	.overlay_caps = omap3630_dss_overlay_caps,
+ 	.clksrc_names = omap3_dss_clk_source_names,
+ 	.dss_params = omap3_dss_param_range,
+ 	.buffer_size_unit = 1,
+@@ -346,6 +394,7 @@ static const struct omap_dss_features omap4430_es1_0_dss_features  = {
+ 	.num_ovls = 3,
+ 	.supported_displays = omap4_dss_supported_displays,
+ 	.supported_color_modes = omap4_dss_supported_color_modes,
++	.overlay_caps = omap4_dss_overlay_caps,
+ 	.clksrc_names = omap4_dss_clk_source_names,
+ 	.dss_params = omap4_dss_param_range,
+ 	.buffer_size_unit = 16,
+@@ -370,6 +419,7 @@ static const struct omap_dss_features omap4_dss_features = {
+ 	.num_ovls = 3,
+ 	.supported_displays = omap4_dss_supported_displays,
+ 	.supported_color_modes = omap4_dss_supported_color_modes,
++	.overlay_caps = omap4_dss_overlay_caps,
+ 	.clksrc_names = omap4_dss_clk_source_names,
+ 	.dss_params = omap4_dss_param_range,
+ 	.buffer_size_unit = 16,
+@@ -407,6 +457,11 @@ enum omap_color_mode dss_feat_get_supported_color_modes(enum omap_plane plane)
+ 	return omap_current_dss_features->supported_color_modes[plane];
  }
  
- module_param(console, bool, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP);
--MODULE_PARM_DESC(console, "Allow fbcon to consume first framebuffer found");
-+MODULE_PARM_DESC(console, "Allow fbcon to open framebuffer");
++enum omap_overlay_caps dss_feat_get_overlay_caps(enum omap_plane plane)
++{
++	return omap_current_dss_features->overlay_caps[plane];
++}
++
+ bool dss_feat_color_mode_supported(enum omap_plane plane,
+ 		enum omap_color_mode color_mode)
+ {
+diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
+index b7398cb..fd09196 100644
+--- a/drivers/video/omap2/dss/dss_features.h
++++ b/drivers/video/omap2/dss/dss_features.h
+@@ -90,6 +90,7 @@ unsigned long dss_feat_get_param_min(enum dss_range_param param);
+ unsigned long dss_feat_get_param_max(enum dss_range_param param);
+ enum omap_display_type dss_feat_get_supported_displays(enum omap_channel channel);
+ enum omap_color_mode dss_feat_get_supported_color_modes(enum omap_plane plane);
++enum omap_overlay_caps dss_feat_get_overlay_caps(enum omap_plane plane);
+ bool dss_feat_color_mode_supported(enum omap_plane plane,
+ 		enum omap_color_mode color_mode);
+ const char *dss_feat_get_clk_source_name(enum omap_dss_clk_source id);
+diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
+index bf1abeb..8cbc1ae 100644
+--- a/drivers/video/omap2/dss/overlay.c
++++ b/drivers/video/omap2/dss/overlay.c
+@@ -618,19 +618,16 @@ void dss_init_overlays(struct platform_device *pdev)
+ 		case 0:
+ 			ovl->name = "gfx";
+ 			ovl->id = OMAP_DSS_GFX;
+-			ovl->caps = 0;
+ 			ovl->info.global_alpha = 255;
+ 			break;
+ 		case 1:
+ 			ovl->name = "vid1";
+ 			ovl->id = OMAP_DSS_VIDEO1;
+-			ovl->caps = OMAP_DSS_OVL_CAP_SCALE;
+ 			ovl->info.global_alpha = 255;
+ 			break;
+ 		case 2:
+ 			ovl->name = "vid2";
+ 			ovl->id = OMAP_DSS_VIDEO2;
+-			ovl->caps = OMAP_DSS_OVL_CAP_SCALE;
+ 			ovl->info.global_alpha = 255;
+ 			break;
+ 		}
+@@ -641,6 +638,7 @@ void dss_init_overlays(struct platform_device *pdev)
+ 		ovl->get_overlay_info = &dss_ovl_get_overlay_info;
+ 		ovl->wait_for_go = &dss_ovl_wait_for_go;
  
- module_param(fb_defio, bool, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP);
- MODULE_PARM_DESC(fb_defio, "Page fault detection of mmap writes");
++		ovl->caps = dss_feat_get_overlay_caps(ovl->id);
+ 		ovl->supported_modes  			dss_feat_get_supported_color_modes(ovl->id);
+ 
 -- 
 1.7.4.1
 

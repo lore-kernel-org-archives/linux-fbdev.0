@@ -1,131 +1,120 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 31 Aug 2011 13:21:41 +0000
-Subject: [PATCH 1/8] OMAP: DSS2: DISPC: Fix minimum PCD value
-Message-Id: <1314796908-17354-2-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 22 Aug 2011 08:27:51 +0000
+Subject: [PATCH 10/10] OMAP: DSS2: reorganize functions in dss.h
+Message-Id: <1314001671-18123-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314796908-17354-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314796908-17354-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1314001671-18123-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1314001671-18123-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The current driver had a hardcoded minimum value of 2 for pixel clock
-divisor (PCD). This doesn't seem to be right.
-
-OMAP4 TRM says that PCD can be 1 when not downscaling, and inverted
-pixel clock (IPC) is off.
-
-OMAP3 TRM says the same, but also in the register descriptions that PCD
-value 1 is invalid.
-
-OMAP2 TRM says PCD 2 is the minimum.
-
-OMAP2 is still untested, but for both OMAP3 and OMAP4 PCD of 1 seems to
-work fine.
-
-This patch adds a new DSS feature, FEAT_PARAM_DSS_PCD, which is used to
-find the minimum and maximum PCD. The minimum is set to 2 for OMAP2, and
-1 for OMAP3/4.
+Group dispc's overlay and manager related functions.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c        |   14 ++++++++++----
- drivers/video/omap2/dss/dss_features.c |    3 +++
- drivers/video/omap2/dss/dss_features.h |    1 +
- 3 files changed, 14 insertions(+), 4 deletions(-)
+ drivers/video/omap2/dss/dss.h |   47 +++++++++++++++++++---------------------
+ 1 files changed, 22 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index de20936..7f3d847 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -2339,7 +2339,7 @@ static void dispc_mgr_set_lcd_divisor(enum omap_channel channel, u16 lck_div,
- 		u16 pck_div)
- {
- 	BUG_ON(lck_div < 1);
--	BUG_ON(pck_div < 2);
-+	BUG_ON(pck_div < 1);
- 
- 	dispc_write_reg(DISPC_DIVISORo(channel),
- 			FLD_VAL(lck_div, 23, 16) | FLD_VAL(pck_div, 7, 0));
-@@ -2726,11 +2726,17 @@ void dispc_mgr_set_pol_freq(enum omap_channel channel,
- void dispc_find_clk_divs(bool is_tft, unsigned long req_pck, unsigned long fck,
- 		struct dispc_clock_info *cinfo)
- {
--	u16 pcd_min = is_tft ? 2 : 3;
-+	u16 pcd_min, pcd_max;
- 	unsigned long best_pck;
- 	u16 best_ld, cur_ld;
- 	u16 best_pd, cur_pd;
- 
-+	pcd_min = dss_feat_get_param_min(FEAT_PARAM_DSS_PCD);
-+	pcd_max = dss_feat_get_param_max(FEAT_PARAM_DSS_PCD);
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 0e95418..3de71c0 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -383,22 +383,24 @@ void dispc_disable_sidle(void);
+ void dispc_lcd_enable_signal_polarity(bool act_high);
+ void dispc_lcd_enable_signal(bool enable);
+ void dispc_pck_free_enable(bool enable);
+-void dispc_mgr_enable_fifohandcheck(enum omap_channel channel, bool enable);
+-
+-void dispc_mgr_set_lcd_size(enum omap_channel channel, u16 width, u16 height);
+ void dispc_set_digit_size(u16 width, u16 height);
++void dispc_enable_fifomerge(bool enable);
++void dispc_enable_gamma_table(bool enable);
++void dispc_set_loadmode(enum omap_dss_load_mode mode);
 +
-+	if (!is_tft)
-+		pcd_min = 3;
++bool dispc_lcd_timings_ok(struct omap_video_timings *timings);
++unsigned long dispc_fclk_rate(void);
++void dispc_find_clk_divs(bool is_tft, unsigned long req_pck, unsigned long fck,
++		struct dispc_clock_info *cinfo);
++int dispc_calc_clock_rates(unsigned long dispc_fclk_rate,
++		struct dispc_clock_info *cinfo);
 +
- 	best_pck = 0;
- 	best_ld = 0;
- 	best_pd = 0;
-@@ -2738,7 +2744,7 @@ void dispc_find_clk_divs(bool is_tft, unsigned long req_pck, unsigned long fck,
- 	for (cur_ld = 1; cur_ld <= 255; ++cur_ld) {
- 		unsigned long lck = fck / cur_ld;
++
+ u32 dispc_ovl_get_fifo_size(enum omap_plane plane);
+ void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high);
+-void dispc_enable_fifomerge(bool enable);
+ u32 dispc_ovl_get_burst_size(enum omap_plane plane);
+-void dispc_mgr_enable_cpr(enum omap_channel channel, bool enable);
+-void dispc_mgr_set_cpr_coef(enum omap_channel channel,
+-		struct omap_dss_cpr_coefs *coefs);
+-
+ void dispc_ovl_set_channel_out(enum omap_plane plane,
+ 		enum omap_channel channel_out);
+-
+-void dispc_enable_gamma_table(bool enable);
+ int dispc_ovl_setup(enum omap_plane plane,
+ 		      u32 paddr, u16 screen_width,
+ 		      u16 pos_x, u16 pos_y,
+@@ -411,21 +413,24 @@ int dispc_ovl_setup(enum omap_plane plane,
+ 		      u8 global_alpha, u8 pre_mult_alpha,
+ 		      enum omap_channel channel,
+ 		      u32 puv_addr);
++int dispc_ovl_enable(enum omap_plane plane, bool enable);
++void dispc_ovl_enable_replication(enum omap_plane plane, bool enable);
  
--		for (cur_pd = pcd_min; cur_pd <= 255; ++cur_pd) {
-+		for (cur_pd = pcd_min; cur_pd <= pcd_max; ++cur_pd) {
- 			unsigned long pck = lck / cur_pd;
- 			long old_delta = abs(best_pck - req_pck);
- 			long new_delta = abs(pck - req_pck);
-@@ -2773,7 +2779,7 @@ int dispc_calc_clock_rates(unsigned long dispc_fclk_rate,
- {
- 	if (cinfo->lck_div > 255 || cinfo->lck_div = 0)
- 		return -EINVAL;
--	if (cinfo->pck_div < 2 || cinfo->pck_div > 255)
-+	if (cinfo->pck_div < 1 || cinfo->pck_div > 255)
- 		return -EINVAL;
++
++void dispc_mgr_enable_fifohandcheck(enum omap_channel channel, bool enable);
++void dispc_mgr_set_lcd_size(enum omap_channel channel, u16 width, u16 height);
++void dispc_mgr_enable_cpr(enum omap_channel channel, bool enable);
++void dispc_mgr_set_cpr_coef(enum omap_channel channel,
++		struct omap_dss_cpr_coefs *coefs);
+ bool dispc_mgr_go_busy(enum omap_channel channel);
+ void dispc_mgr_go(enum omap_channel channel);
+ void dispc_mgr_enable(enum omap_channel channel, bool enable);
+ bool dispc_mgr_is_channel_enabled(enum omap_channel channel);
+-int dispc_ovl_enable(enum omap_plane plane, bool enable);
+-void dispc_ovl_enable_replication(enum omap_plane plane, bool enable);
+-
+ void dispc_mgr_set_parallel_interface_mode(enum omap_channel channel,
+ 		enum omap_parallel_interface_mode mode);
+ void dispc_mgr_set_tft_data_lines(enum omap_channel channel, u8 data_lines);
+ void dispc_mgr_set_lcd_display_type(enum omap_channel channel,
+ 		enum omap_lcd_display_type type);
+-void dispc_set_loadmode(enum omap_dss_load_mode mode);
+-
+ void dispc_mgr_set_default_color(enum omap_channel channel, u32 color);
+ u32 dispc_mgr_get_default_color(enum omap_channel channel);
+ void dispc_mgr_set_trans_key(enum omap_channel ch,
+@@ -438,25 +443,17 @@ void dispc_mgr_enable_trans_key(enum omap_channel ch, bool enable);
+ void dispc_mgr_enable_alpha_blending(enum omap_channel ch, bool enable);
+ bool dispc_mgr_trans_key_enabled(enum omap_channel ch);
+ bool dispc_mgr_alpha_blending_enabled(enum omap_channel ch);
+-
+-bool dispc_lcd_timings_ok(struct omap_video_timings *timings);
+ void dispc_mgr_set_lcd_timings(enum omap_channel channel,
+ 		struct omap_video_timings *timings);
+-unsigned long dispc_fclk_rate(void);
+-unsigned long dispc_mgr_lclk_rate(enum omap_channel channel);
+-unsigned long dispc_mgr_pclk_rate(enum omap_channel channel);
+ void dispc_mgr_set_pol_freq(enum omap_channel channel,
+ 		enum omap_panel_config config, u8 acbi, u8 acb);
+-void dispc_find_clk_divs(bool is_tft, unsigned long req_pck, unsigned long fck,
+-		struct dispc_clock_info *cinfo);
+-int dispc_calc_clock_rates(unsigned long dispc_fclk_rate,
+-		struct dispc_clock_info *cinfo);
++unsigned long dispc_mgr_lclk_rate(enum omap_channel channel);
++unsigned long dispc_mgr_pclk_rate(enum omap_channel channel);
+ int dispc_mgr_set_clock_div(enum omap_channel channel,
+ 		struct dispc_clock_info *cinfo);
+ int dispc_mgr_get_clock_div(enum omap_channel channel,
+ 		struct dispc_clock_info *cinfo);
  
- 	cinfo->lck = dispc_fclk_rate / cinfo->lck_div;
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index b63c5f8..85b07ca 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -281,6 +281,7 @@ static const char * const omap4_dss_clk_source_names[] = {
- 
- static const struct dss_param_range omap2_dss_param_range[] = {
- 	[FEAT_PARAM_DSS_FCK]			= { 0, 173000000 },
-+	[FEAT_PARAM_DSS_PCD]			= { 2, 255 },
- 	[FEAT_PARAM_DSIPLL_REGN]		= { 0, 0 },
- 	[FEAT_PARAM_DSIPLL_REGM]		= { 0, 0 },
- 	[FEAT_PARAM_DSIPLL_REGM_DISPC]		= { 0, 0 },
-@@ -291,6 +292,7 @@ static const struct dss_param_range omap2_dss_param_range[] = {
- 
- static const struct dss_param_range omap3_dss_param_range[] = {
- 	[FEAT_PARAM_DSS_FCK]			= { 0, 173000000 },
-+	[FEAT_PARAM_DSS_PCD]			= { 1, 255 },
- 	[FEAT_PARAM_DSIPLL_REGN]		= { 0, (1 << 7) - 1 },
- 	[FEAT_PARAM_DSIPLL_REGM]		= { 0, (1 << 11) - 1 },
- 	[FEAT_PARAM_DSIPLL_REGM_DISPC]		= { 0, (1 << 4) - 1 },
-@@ -301,6 +303,7 @@ static const struct dss_param_range omap3_dss_param_range[] = {
- 
- static const struct dss_param_range omap4_dss_param_range[] = {
- 	[FEAT_PARAM_DSS_FCK]			= { 0, 186000000 },
-+	[FEAT_PARAM_DSS_PCD]			= { 1, 255 },
- 	[FEAT_PARAM_DSIPLL_REGN]		= { 0, (1 << 8) - 1 },
- 	[FEAT_PARAM_DSIPLL_REGM]		= { 0, (1 << 12) - 1 },
- 	[FEAT_PARAM_DSIPLL_REGM_DISPC]		= { 0, (1 << 5) - 1 },
-diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
-index 4271e96..158d922 100644
---- a/drivers/video/omap2/dss/dss_features.h
-+++ b/drivers/video/omap2/dss/dss_features.h
-@@ -73,6 +73,7 @@ enum dss_feat_reg_field {
- 
- enum dss_range_param {
- 	FEAT_PARAM_DSS_FCK,
-+	FEAT_PARAM_DSS_PCD,
- 	FEAT_PARAM_DSIPLL_REGN,
- 	FEAT_PARAM_DSIPLL_REGM,
- 	FEAT_PARAM_DSIPLL_REGM_DISPC,
+-
+ /* VENC */
+ #ifdef CONFIG_OMAP2_DSS_VENC
+ int venc_init_platform_driver(void);
 -- 
 1.7.4.1
 

@@ -1,35 +1,37 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 31 Aug 2011 13:23:13 +0000
-Subject: [PATCH 02/12] OMAP: DSS2: add detect() to omap_dss_driver struct
-Message-Id: <1314797003-17638-3-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 22 Aug 2011 08:27:12 +0000
+Subject: [PATCH 0/4] OMAPDSS: misc minor fixes
+Message-Id: <1314001636-18036-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-detect() can be used to probe if the display is connected.
+Some minor fixes for DSS. 
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- include/video/omapdss.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ Tomi
 
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 8ed5a6c..a62f49a 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -560,6 +560,7 @@ struct omap_dss_driver {
- 	u32 (*get_wss)(struct omap_dss_device *dssdev);
- 
- 	int (*read_edid)(struct omap_dss_device *dssdev, u8 *buf, int len);
-+	bool (*detect)(struct omap_dss_device *dssdev);
- };
- 
- int omap_dss_register_driver(struct omap_dss_driver *);
+Tomi Valkeinen (4):
+  OMAP: OMAPFB: make omapfb start even when a display is missing a
+    driver
+  OMAP: DSS2: fix clock sources on error and uninit
+  OMAP: DSS2: Handle manager change in apply
+  OMAP: DSS2: Remove "EXPERIMENTAL" from Kconfig
+
+ drivers/video/omap2/dss/Kconfig          |    2 +-
+ drivers/video/omap2/dss/dispc.c          |    4 +++-
+ drivers/video/omap2/dss/dpi.c            |    4 +++-
+ drivers/video/omap2/dss/dsi.c            |    3 +++
+ drivers/video/omap2/dss/dss.h            |    2 --
+ drivers/video/omap2/dss/manager.c        |    5 +++++
+ drivers/video/omap2/dss/overlay.c        |    9 ++-------
+ drivers/video/omap2/omapfb/Kconfig       |    2 +-
+ drivers/video/omap2/omapfb/omapfb-main.c |    5 +++--
+ include/video/omapdss.h                  |    1 +
+ 10 files changed, 22 insertions(+), 15 deletions(-)
+
 -- 
 1.7.4.1
 

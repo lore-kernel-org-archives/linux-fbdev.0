@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 22 Aug 2011 08:27:49 +0000
-Subject: [PATCH 08/10] OMAP: DSS2: DISPC: rename overlay related funcs
-Message-Id: <1314001671-18123-9-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 22 Aug 2011 08:27:42 +0000
+Subject: [PATCH 01/10] OMAP: DSS2: Remove support for non-DISPC overlays
+Message-Id: <1314001671-18123-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1314001671-18123-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1314001671-18123-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,630 +11,511 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Rename dispc's overlay related functions as follows:
+Remove support for non-DISPC overlays and overlay managers.
 
-- Remove prepending underscores, which were originally used to inform
-  that the clocks needs to be enabled. This meaning is no longer valid.
-- Prepend the functions with dispc_ovl_*
-- Remove "plane" from the name, e.g. dispc_set_plane_ba0 ->
-  dispc_ovl_set_ba0
+The support to possibly have non-DISPC overlays and managers was made to
+make it possible to use CPU and/or sDMA to update RFBI or DSI command
+mode displays. It is ok to remove the support, because:
 
-The idea is to group overlay related functions so that it can be deduced
-from the function name that it writes to overlay spesific registers.
-
-All dispc_ovl_* functions have enum omap_plane as the first parameter.
+- No one has used the feature.
+- Display update without DISPC is very slow, so it is debatable if the
+  update would even be usable.
+- Removal cleans up code.
+- If such a feature is needed later, it is better implemented outside
+  omapdss driver.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Acked-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c   |  150 +++++++++++++++++++------------------
- drivers/video/omap2/dss/dss.h     |   14 ++--
- drivers/video/omap2/dss/manager.c |   18 ++--
- drivers/video/omap2/dss/overlay.c |    2 +-
- 4 files changed, 94 insertions(+), 90 deletions(-)
+ drivers/video/omap2/dss/dispc.c   |   22 +----
+ drivers/video/omap2/dss/dsi.c     |  190 ++----------------------------------
+ drivers/video/omap2/dss/manager.c |   47 +---------
+ drivers/video/omap2/dss/overlay.c |    8 +-
+ drivers/video/omap2/dss/rfbi.c    |   23 +----
+ include/video/omapdss.h           |    7 +-
+ 6 files changed, 22 insertions(+), 275 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 2cc6237..7ab3d58 100644
+index 9d9fbeb..7c76370 100644
 --- a/drivers/video/omap2/dss/dispc.c
 +++ b/drivers/video/omap2/dss/dispc.c
-@@ -480,43 +480,44 @@ void dispc_go(enum omap_channel channel)
- 		REG_FLD_MOD(DISPC_CONTROL, 1, bit, bit);
- }
+@@ -3056,9 +3056,6 @@ static void dispc_error_worker(struct work_struct *work)
+ 			struct omap_overlay *ovl;
+ 			ovl = omap_dss_get_overlay(i);
  
--static void _dispc_write_firh_reg(enum omap_plane plane, int reg, u32 value)
-+static void dispc_ovl_write_firh_reg(enum omap_plane plane, int reg, u32 value)
- {
- 	dispc_write_reg(DISPC_OVL_FIR_COEF_H(plane, reg), value);
- }
+-			if (!(ovl->caps & OMAP_DSS_OVL_CAP_DISPC))
+-				continue;
+-
+ 			if (ovl->id = 0) {
+ 				dispc_enable_plane(ovl->id, 0);
+ 				dispc_go(ovl->manager->id);
+@@ -3074,9 +3071,6 @@ static void dispc_error_worker(struct work_struct *work)
+ 			struct omap_overlay *ovl;
+ 			ovl = omap_dss_get_overlay(i);
  
--static void _dispc_write_firhv_reg(enum omap_plane plane, int reg, u32 value)
-+static void dispc_ovl_write_firhv_reg(enum omap_plane plane, int reg, u32 value)
- {
- 	dispc_write_reg(DISPC_OVL_FIR_COEF_HV(plane, reg), value);
- }
+-			if (!(ovl->caps & OMAP_DSS_OVL_CAP_DISPC))
+-				continue;
+-
+ 			if (ovl->id = 1) {
+ 				dispc_enable_plane(ovl->id, 0);
+ 				dispc_go(ovl->manager->id);
+@@ -3092,9 +3086,6 @@ static void dispc_error_worker(struct work_struct *work)
+ 			struct omap_overlay *ovl;
+ 			ovl = omap_dss_get_overlay(i);
  
--static void _dispc_write_firv_reg(enum omap_plane plane, int reg, u32 value)
-+static void dispc_ovl_write_firv_reg(enum omap_plane plane, int reg, u32 value)
- {
- 	dispc_write_reg(DISPC_OVL_FIR_COEF_V(plane, reg), value);
- }
+-			if (!(ovl->caps & OMAP_DSS_OVL_CAP_DISPC))
+-				continue;
+-
+ 			if (ovl->id = 2) {
+ 				dispc_enable_plane(ovl->id, 0);
+ 				dispc_go(ovl->manager->id);
+@@ -3129,9 +3120,6 @@ static void dispc_error_worker(struct work_struct *work)
+ 				struct omap_overlay *ovl;
+ 				ovl = omap_dss_get_overlay(i);
  
--static void _dispc_write_firh2_reg(enum omap_plane plane, int reg, u32 value)
-+static void dispc_ovl_write_firh2_reg(enum omap_plane plane, int reg, u32 value)
- {
- 	BUG_ON(plane = OMAP_DSS_GFX);
+-				if (!(ovl->caps & OMAP_DSS_OVL_CAP_DISPC))
+-					continue;
+-
+ 				if (ovl->id != 0 && ovl->manager = manager)
+ 					dispc_enable_plane(ovl->id, 0);
+ 			}
+@@ -3168,9 +3156,6 @@ static void dispc_error_worker(struct work_struct *work)
+ 				struct omap_overlay *ovl;
+ 				ovl = omap_dss_get_overlay(i);
  
- 	dispc_write_reg(DISPC_OVL_FIR_COEF_H2(plane, reg), value);
- }
+-				if (!(ovl->caps & OMAP_DSS_OVL_CAP_DISPC))
+-					continue;
+-
+ 				if (ovl->id != 0 && ovl->manager = manager)
+ 					dispc_enable_plane(ovl->id, 0);
+ 			}
+@@ -3207,9 +3192,6 @@ static void dispc_error_worker(struct work_struct *work)
+ 				struct omap_overlay *ovl;
+ 				ovl = omap_dss_get_overlay(i);
  
--static void _dispc_write_firhv2_reg(enum omap_plane plane, int reg, u32 value)
-+static void dispc_ovl_write_firhv2_reg(enum omap_plane plane, int reg,
-+		u32 value)
- {
- 	BUG_ON(plane = OMAP_DSS_GFX);
- 
- 	dispc_write_reg(DISPC_OVL_FIR_COEF_HV2(plane, reg), value);
- }
- 
--static void _dispc_write_firv2_reg(enum omap_plane plane, int reg, u32 value)
-+static void dispc_ovl_write_firv2_reg(enum omap_plane plane, int reg, u32 value)
- {
- 	BUG_ON(plane = OMAP_DSS_GFX);
- 
- 	dispc_write_reg(DISPC_OVL_FIR_COEF_V2(plane, reg), value);
- }
- 
--static void _dispc_set_scale_coef(enum omap_plane plane, int hscaleup,
-+static void dispc_ovl_set_scale_coef(enum omap_plane plane, int hscaleup,
- 				  int vscaleup, int five_taps,
- 				  enum omap_color_component color_comp)
- {
-@@ -617,11 +618,11 @@ static void _dispc_set_scale_coef(enum omap_plane plane, int hscaleup,
- 			| FLD_VAL(v_coef[i].vc2, 31, 24);
- 
- 		if (color_comp = DISPC_COLOR_COMPONENT_RGB_Y) {
--			_dispc_write_firh_reg(plane, i, h);
--			_dispc_write_firhv_reg(plane, i, hv);
-+			dispc_ovl_write_firh_reg(plane, i, h);
-+			dispc_ovl_write_firhv_reg(plane, i, hv);
- 		} else {
--			_dispc_write_firh2_reg(plane, i, h);
--			_dispc_write_firhv2_reg(plane, i, hv);
-+			dispc_ovl_write_firh2_reg(plane, i, h);
-+			dispc_ovl_write_firhv2_reg(plane, i, hv);
- 		}
- 
- 	}
-@@ -632,9 +633,9 @@ static void _dispc_set_scale_coef(enum omap_plane plane, int hscaleup,
- 			v = FLD_VAL(v_coef[i].vc00, 7, 0)
- 				| FLD_VAL(v_coef[i].vc22, 15, 8);
- 			if (color_comp = DISPC_COLOR_COMPONENT_RGB_Y)
--				_dispc_write_firv_reg(plane, i, v);
-+				dispc_ovl_write_firv_reg(plane, i, v);
- 			else
--				_dispc_write_firv2_reg(plane, i, v);
-+				dispc_ovl_write_firv2_reg(plane, i, v);
- 		}
- 	}
- }
-@@ -675,34 +676,34 @@ static void _dispc_setup_color_conv_coef(void)
- }
- 
- 
--static void _dispc_set_plane_ba0(enum omap_plane plane, u32 paddr)
-+static void dispc_ovl_set_ba0(enum omap_plane plane, u32 paddr)
- {
- 	dispc_write_reg(DISPC_OVL_BA0(plane), paddr);
- }
- 
--static void _dispc_set_plane_ba1(enum omap_plane plane, u32 paddr)
-+static void dispc_ovl_set_ba1(enum omap_plane plane, u32 paddr)
- {
- 	dispc_write_reg(DISPC_OVL_BA1(plane), paddr);
- }
- 
--static void _dispc_set_plane_ba0_uv(enum omap_plane plane, u32 paddr)
-+static void dispc_ovl_set_ba0_uv(enum omap_plane plane, u32 paddr)
- {
- 	dispc_write_reg(DISPC_OVL_BA0_UV(plane), paddr);
- }
- 
--static void _dispc_set_plane_ba1_uv(enum omap_plane plane, u32 paddr)
-+static void dispc_ovl_set_ba1_uv(enum omap_plane plane, u32 paddr)
- {
- 	dispc_write_reg(DISPC_OVL_BA1_UV(plane), paddr);
- }
- 
--static void _dispc_set_plane_pos(enum omap_plane plane, int x, int y)
-+static void dispc_ovl_set_pos(enum omap_plane plane, int x, int y)
- {
- 	u32 val = FLD_VAL(y, 26, 16) | FLD_VAL(x, 10, 0);
- 
- 	dispc_write_reg(DISPC_OVL_POSITION(plane), val);
- }
- 
--static void _dispc_set_pic_size(enum omap_plane plane, int width, int height)
-+static void dispc_ovl_set_pic_size(enum omap_plane plane, int width, int height)
- {
- 	u32 val = FLD_VAL(height - 1, 26, 16) | FLD_VAL(width - 1, 10, 0);
- 
-@@ -712,7 +713,7 @@ static void _dispc_set_pic_size(enum omap_plane plane, int width, int height)
- 		dispc_write_reg(DISPC_OVL_PICTURE_SIZE(plane), val);
- }
- 
--static void _dispc_set_vid_size(enum omap_plane plane, int width, int height)
-+static void dispc_ovl_set_vid_size(enum omap_plane plane, int width, int height)
- {
- 	u32 val;
- 
-@@ -723,7 +724,7 @@ static void _dispc_set_vid_size(enum omap_plane plane, int width, int height)
- 	dispc_write_reg(DISPC_OVL_SIZE(plane), val);
- }
- 
--static void _dispc_set_pre_mult_alpha(enum omap_plane plane, bool enable)
-+static void dispc_ovl_set_pre_mult_alpha(enum omap_plane plane, bool enable)
- {
- 	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
- 
-@@ -733,7 +734,7 @@ static void _dispc_set_pre_mult_alpha(enum omap_plane plane, bool enable)
- 	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), enable ? 1 : 0, 28, 28);
- }
- 
--static void _dispc_setup_global_alpha(enum omap_plane plane, u8 global_alpha)
-+static void dispc_ovl_setup_global_alpha(enum omap_plane plane, u8 global_alpha)
- {
- 	static const unsigned shifts[] = { 0, 8, 16, };
- 	int shift;
-@@ -746,17 +747,17 @@ static void _dispc_setup_global_alpha(enum omap_plane plane, u8 global_alpha)
- 	REG_FLD_MOD(DISPC_GLOBAL_ALPHA, global_alpha, shift + 7, shift);
- }
- 
--static void _dispc_set_pix_inc(enum omap_plane plane, s32 inc)
-+static void dispc_ovl_set_pix_inc(enum omap_plane plane, s32 inc)
- {
- 	dispc_write_reg(DISPC_OVL_PIXEL_INC(plane), inc);
- }
- 
--static void _dispc_set_row_inc(enum omap_plane plane, s32 inc)
-+static void dispc_ovl_set_row_inc(enum omap_plane plane, s32 inc)
- {
- 	dispc_write_reg(DISPC_OVL_ROW_INC(plane), inc);
- }
- 
--static void _dispc_set_color_mode(enum omap_plane plane,
-+static void dispc_ovl_set_color_mode(enum omap_plane plane,
- 		enum omap_color_mode color_mode)
- {
- 	u32 m = 0;
-@@ -837,7 +838,7 @@ static void _dispc_set_color_mode(enum omap_plane plane,
- 	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), m, 4, 1);
- }
- 
--void dispc_set_channel_out(enum omap_plane plane,
-+void dispc_ovl_set_channel_out(enum omap_plane plane,
- 		enum omap_channel channel)
- {
- 	int shift;
-@@ -884,7 +885,7 @@ void dispc_set_channel_out(enum omap_plane plane,
- 	dispc_write_reg(DISPC_OVL_ATTRIBUTES(plane), val);
- }
- 
--static void dispc_set_burst_size(enum omap_plane plane,
-+static void dispc_ovl_set_burst_size(enum omap_plane plane,
- 		enum omap_burst_size burst_size)
- {
- 	static const unsigned shifts[] = { 6, 14, 14, };
-@@ -901,10 +902,10 @@ static void dispc_configure_burst_sizes(void)
- 
- 	/* Configure burst size always to maximum size */
- 	for (i = 0; i < omap_dss_get_num_overlays(); ++i)
--		dispc_set_burst_size(i, burst_size);
-+		dispc_ovl_set_burst_size(i, burst_size);
- }
- 
--u32 dispc_get_burst_size(enum omap_plane plane)
-+u32 dispc_ovl_get_burst_size(enum omap_plane plane)
- {
- 	unsigned unit = dss_feat_get_burst_size_unit();
- 	/* burst multiplier is always x8 (see dispc_configure_burst_sizes()) */
-@@ -959,7 +960,7 @@ void dispc_set_cpr_coef(enum omap_channel channel,
- 	dispc_write_reg(DISPC_CPR_COEF_B(channel), coef_b);
- }
- 
--static void _dispc_set_vid_color_conv(enum omap_plane plane, bool enable)
-+static void dispc_ovl_set_vid_color_conv(enum omap_plane plane, bool enable)
- {
- 	u32 val;
- 
-@@ -970,7 +971,7 @@ static void _dispc_set_vid_color_conv(enum omap_plane plane, bool enable)
- 	dispc_write_reg(DISPC_OVL_ATTRIBUTES(plane), val);
- }
- 
--void dispc_enable_replication(enum omap_plane plane, bool enable)
-+void dispc_ovl_enable_replication(enum omap_plane plane, bool enable)
- {
- 	static const unsigned shifts[] = { 5, 10, 10 };
- 	int shift;
-@@ -1013,12 +1014,12 @@ static void dispc_read_plane_fifo_sizes(void)
- 	}
- }
- 
--u32 dispc_get_plane_fifo_size(enum omap_plane plane)
-+u32 dispc_ovl_get_fifo_size(enum omap_plane plane)
- {
- 	return dispc.fifo_size[plane];
- }
- 
--void dispc_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high)
-+void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high)
- {
- 	u8 hi_start, hi_end, lo_start, lo_end;
- 	u32 unit;
-@@ -1053,7 +1054,7 @@ void dispc_enable_fifomerge(bool enable)
- 	REG_FLD_MOD(DISPC_CONFIG, enable ? 1 : 0, 14, 14);
- }
- 
--static void _dispc_set_fir(enum omap_plane plane,
-+static void dispc_ovl_set_fir(enum omap_plane plane,
- 				int hinc, int vinc,
- 				enum omap_color_component color_comp)
- {
-@@ -1076,7 +1077,7 @@ static void _dispc_set_fir(enum omap_plane plane,
- 	}
- }
- 
--static void _dispc_set_vid_accu0(enum omap_plane plane, int haccu, int vaccu)
-+static void dispc_ovl_set_vid_accu0(enum omap_plane plane, int haccu, int vaccu)
- {
- 	u32 val;
- 	u8 hor_start, hor_end, vert_start, vert_end;
-@@ -1090,7 +1091,7 @@ static void _dispc_set_vid_accu0(enum omap_plane plane, int haccu, int vaccu)
- 	dispc_write_reg(DISPC_OVL_ACCU0(plane), val);
- }
- 
--static void _dispc_set_vid_accu1(enum omap_plane plane, int haccu, int vaccu)
-+static void dispc_ovl_set_vid_accu1(enum omap_plane plane, int haccu, int vaccu)
- {
- 	u32 val;
- 	u8 hor_start, hor_end, vert_start, vert_end;
-@@ -1104,7 +1105,8 @@ static void _dispc_set_vid_accu1(enum omap_plane plane, int haccu, int vaccu)
- 	dispc_write_reg(DISPC_OVL_ACCU1(plane), val);
- }
- 
--static void _dispc_set_vid_accu2_0(enum omap_plane plane, int haccu, int vaccu)
-+static void dispc_ovl_set_vid_accu2_0(enum omap_plane plane, int haccu,
-+		int vaccu)
- {
- 	u32 val;
- 
-@@ -1112,7 +1114,8 @@ static void _dispc_set_vid_accu2_0(enum omap_plane plane, int haccu, int vaccu)
- 	dispc_write_reg(DISPC_OVL_ACCU2_0(plane), val);
- }
- 
--static void _dispc_set_vid_accu2_1(enum omap_plane plane, int haccu, int vaccu)
-+static void dispc_ovl_set_vid_accu2_1(enum omap_plane plane, int haccu,
-+		int vaccu)
- {
- 	u32 val;
- 
-@@ -1120,7 +1123,7 @@ static void _dispc_set_vid_accu2_1(enum omap_plane plane, int haccu, int vaccu)
- 	dispc_write_reg(DISPC_OVL_ACCU2_1(plane), val);
- }
- 
--static void _dispc_set_scale_param(enum omap_plane plane,
-+static void dispc_ovl_set_scale_param(enum omap_plane plane,
- 		u16 orig_width, u16 orig_height,
- 		u16 out_width, u16 out_height,
- 		bool five_taps, u8 rotation,
-@@ -1132,15 +1135,16 @@ static void _dispc_set_scale_param(enum omap_plane plane,
- 	hscaleup = orig_width <= out_width;
- 	vscaleup = orig_height <= out_height;
- 
--	_dispc_set_scale_coef(plane, hscaleup, vscaleup, five_taps, color_comp);
-+	dispc_ovl_set_scale_coef(plane, hscaleup, vscaleup, five_taps,
-+			color_comp);
- 
- 	fir_hinc = 1024 * orig_width / out_width;
- 	fir_vinc = 1024 * orig_height / out_height;
- 
--	_dispc_set_fir(plane, fir_hinc, fir_vinc, color_comp);
-+	dispc_ovl_set_fir(plane, fir_hinc, fir_vinc, color_comp);
- }
- 
--static void _dispc_set_scaling_common(enum omap_plane plane,
-+static void dispc_ovl_set_scaling_common(enum omap_plane plane,
- 		u16 orig_width, u16 orig_height,
- 		u16 out_width, u16 out_height,
- 		bool ilace, bool five_taps,
-@@ -1151,7 +1155,7 @@ static void _dispc_set_scaling_common(enum omap_plane plane,
- 	int accu1 = 0;
- 	u32 l;
- 
--	_dispc_set_scale_param(plane, orig_width, orig_height,
-+	dispc_ovl_set_scale_param(plane, orig_width, orig_height,
- 				out_width, out_height, five_taps,
- 				rotation, DISPC_COLOR_COMPONENT_RGB_Y);
- 	l = dispc_read_reg(DISPC_OVL_ATTRIBUTES(plane));
-@@ -1190,11 +1194,11 @@ static void _dispc_set_scaling_common(enum omap_plane plane,
+-				if (!(ovl->caps & OMAP_DSS_OVL_CAP_DISPC))
+-					continue;
+-
+ 				if (ovl->id != 0 && ovl->manager = manager)
+ 					dispc_enable_plane(ovl->id, 0);
+ 			}
+@@ -3226,9 +3208,7 @@ static void dispc_error_worker(struct work_struct *work)
+ 		for (i = 0; i < omap_dss_get_num_overlay_managers(); ++i) {
+ 			struct omap_overlay_manager *mgr;
+ 			mgr = omap_dss_get_overlay_manager(i);
+-
+-			if (mgr->caps & OMAP_DSS_OVL_CAP_DISPC)
+-				mgr->device->driver->disable(mgr->device);
++			mgr->device->driver->disable(mgr->device);
  		}
  	}
  
--	_dispc_set_vid_accu0(plane, 0, accu0);
--	_dispc_set_vid_accu1(plane, 0, accu1);
-+	dispc_ovl_set_vid_accu0(plane, 0, accu0);
-+	dispc_ovl_set_vid_accu1(plane, 0, accu1);
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index c951a75..bd0ff1d 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -3648,161 +3648,6 @@ static void dsi_proto_timings(struct omap_dss_device *dssdev)
+ 			enter_hs_mode_lat, exit_hs_mode_lat);
  }
  
--static void _dispc_set_scaling_uv(enum omap_plane plane,
-+static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
- 		u16 orig_width, u16 orig_height,
- 		u16 out_width, u16 out_height,
- 		bool ilace, bool five_taps,
-@@ -1242,7 +1246,7 @@ static void _dispc_set_scaling_uv(enum omap_plane plane,
- 	if (out_height != orig_height)
- 		scale_y = true;
- 
--	_dispc_set_scale_param(plane, orig_width, orig_height,
-+	dispc_ovl_set_scale_param(plane, orig_width, orig_height,
- 			out_width, out_height, five_taps,
- 				rotation, DISPC_COLOR_COMPONENT_UV);
- 
-@@ -1253,11 +1257,11 @@ static void _dispc_set_scaling_uv(enum omap_plane plane,
- 	/* set V scaling */
- 	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), scale_y ? 1 : 0, 6, 6);
- 
--	_dispc_set_vid_accu2_0(plane, 0x80, 0);
--	_dispc_set_vid_accu2_1(plane, 0x80, 0);
-+	dispc_ovl_set_vid_accu2_0(plane, 0x80, 0);
-+	dispc_ovl_set_vid_accu2_1(plane, 0x80, 0);
- }
- 
--static void _dispc_set_scaling(enum omap_plane plane,
-+static void dispc_ovl_set_scaling(enum omap_plane plane,
- 		u16 orig_width, u16 orig_height,
- 		u16 out_width, u16 out_height,
- 		bool ilace, bool five_taps,
-@@ -1266,14 +1270,14 @@ static void _dispc_set_scaling(enum omap_plane plane,
+-
+-#define DSI_DECL_VARS \
+-	int __dsi_cb = 0; u32 __dsi_cv = 0;
+-
+-#define DSI_FLUSH(dsidev, ch) \
+-	if (__dsi_cb > 0) { \
+-		/*DSSDBG("sending long packet %#010x\n", __dsi_cv);*/ \
+-		dsi_write_reg(dsidev, DSI_VC_LONG_PACKET_PAYLOAD(ch), __dsi_cv); \
+-		__dsi_cb = __dsi_cv = 0; \
+-	}
+-
+-#define DSI_PUSH(dsidev, ch, data) \
+-	do { \
+-		__dsi_cv |= (data) << (__dsi_cb * 8); \
+-		/*DSSDBG("cv = %#010x, cb = %d\n", __dsi_cv, __dsi_cb);*/ \
+-		if (++__dsi_cb > 3) \
+-			DSI_FLUSH(dsidev, ch); \
+-	} while (0)
+-
+-static int dsi_update_screen_l4(struct omap_dss_device *dssdev,
+-			int x, int y, int w, int h)
+-{
+-	/* Note: supports only 24bit colors in 32bit container */
+-	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+-	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+-	int first = 1;
+-	int fifo_stalls = 0;
+-	int max_dsi_packet_size;
+-	int max_data_per_packet;
+-	int max_pixels_per_packet;
+-	int pixels_left;
+-	int bytespp = dssdev->ctrl.pixel_size / 8;
+-	int scr_width;
+-	u32 __iomem *data;
+-	int start_offset;
+-	int horiz_inc;
+-	int current_x;
+-	struct omap_overlay *ovl;
+-
+-	debug_irq = 0;
+-
+-	DSSDBG("dsi_update_screen_l4 (%d,%d %dx%d)\n",
+-			x, y, w, h);
+-
+-	ovl = dssdev->manager->overlays[0];
+-
+-	if (ovl->info.color_mode != OMAP_DSS_COLOR_RGB24U)
+-		return -EINVAL;
+-
+-	if (dssdev->ctrl.pixel_size != 24)
+-		return -EINVAL;
+-
+-	scr_width = ovl->info.screen_width;
+-	data = ovl->info.vaddr;
+-
+-	start_offset = scr_width * y + x;
+-	horiz_inc = scr_width - w;
+-	current_x = x;
+-
+-	/* We need header(4) + DCSCMD(1) + pixels(numpix*bytespp) bytes
+-	 * in fifo */
+-
+-	/* When using CPU, max long packet size is TX buffer size */
+-	max_dsi_packet_size = dsi->vc[0].fifo_size * 32 * 4;
+-
+-	/* we seem to get better perf if we divide the tx fifo to half,
+-	   and while the other half is being sent, we fill the other half
+-	   max_dsi_packet_size /= 2; */
+-
+-	max_data_per_packet = max_dsi_packet_size - 4 - 1;
+-
+-	max_pixels_per_packet = max_data_per_packet / bytespp;
+-
+-	DSSDBG("max_pixels_per_packet %d\n", max_pixels_per_packet);
+-
+-	pixels_left = w * h;
+-
+-	DSSDBG("total pixels %d\n", pixels_left);
+-
+-	data += start_offset;
+-
+-	while (pixels_left > 0) {
+-		/* 0x2c = write_memory_start */
+-		/* 0x3c = write_memory_continue */
+-		u8 dcs_cmd = first ? 0x2c : 0x3c;
+-		int pixels;
+-		DSI_DECL_VARS;
+-		first = 0;
+-
+-#if 1
+-		/* using fifo not empty */
+-		/* TX_FIFO_NOT_EMPTY */
+-		while (FLD_GET(dsi_read_reg(dsidev, DSI_VC_CTRL(0)), 5, 5)) {
+-			fifo_stalls++;
+-			if (fifo_stalls > 0xfffff) {
+-				DSSERR("fifo stalls overflow, pixels left %d\n",
+-						pixels_left);
+-				dsi_if_enable(dsidev, 0);
+-				return -EIO;
+-			}
+-			udelay(1);
+-		}
+-#elif 1
+-		/* using fifo emptiness */
+-		while ((REG_GET(dsidev, DSI_TX_FIFO_VC_EMPTINESS, 7, 0)+1)*4 <
+-				max_dsi_packet_size) {
+-			fifo_stalls++;
+-			if (fifo_stalls > 0xfffff) {
+-				DSSERR("fifo stalls overflow, pixels left %d\n",
+-					       pixels_left);
+-				dsi_if_enable(dsidev, 0);
+-				return -EIO;
+-			}
+-		}
+-#else
+-		while ((REG_GET(dsidev, DSI_TX_FIFO_VC_EMPTINESS,
+-				7, 0) + 1) * 4 = 0) {
+-			fifo_stalls++;
+-			if (fifo_stalls > 0xfffff) {
+-				DSSERR("fifo stalls overflow, pixels left %d\n",
+-					       pixels_left);
+-				dsi_if_enable(dsidev, 0);
+-				return -EIO;
+-			}
+-		}
+-#endif
+-		pixels = min(max_pixels_per_packet, pixels_left);
+-
+-		pixels_left -= pixels;
+-
+-		dsi_vc_write_long_header(dsidev, 0, DSI_DT_DCS_LONG_WRITE,
+-				1 + pixels * bytespp, 0);
+-
+-		DSI_PUSH(dsidev, 0, dcs_cmd);
+-
+-		while (pixels-- > 0) {
+-			u32 pix = __raw_readl(data++);
+-
+-			DSI_PUSH(dsidev, 0, (pix >> 16) & 0xff);
+-			DSI_PUSH(dsidev, 0, (pix >> 8) & 0xff);
+-			DSI_PUSH(dsidev, 0, (pix >> 0) & 0xff);
+-
+-			current_x++;
+-			if (current_x = x+w) {
+-				current_x = x;
+-				data += horiz_inc;
+-			}
+-		}
+-
+-		DSI_FLUSH(dsidev, 0);
+-	}
+-
+-	return 0;
+-}
+-
+ static void dsi_update_screen_dispc(struct omap_dss_device *dssdev,
+ 		u16 x, u16 y, u16 w, u16 h)
  {
- 	BUG_ON(plane = OMAP_DSS_GFX);
+@@ -3970,11 +3815,9 @@ int omap_dsi_prepare_update(struct omap_dss_device *dssdev,
  
--	_dispc_set_scaling_common(plane,
-+	dispc_ovl_set_scaling_common(plane,
- 			orig_width, orig_height,
- 			out_width, out_height,
- 			ilace, five_taps,
- 			fieldmode, color_mode,
- 			rotation);
+ 	dsi_perf_mark_setup(dsidev);
  
--	_dispc_set_scaling_uv(plane,
-+	dispc_ovl_set_scaling_uv(plane,
- 		orig_width, orig_height,
- 		out_width, out_height,
- 		ilace, five_taps,
-@@ -1281,7 +1285,7 @@ static void _dispc_set_scaling(enum omap_plane plane,
- 		rotation);
- }
- 
--static void _dispc_set_rotation_attrs(enum omap_plane plane, u8 rotation,
-+static void dispc_ovl_set_rotation_attrs(enum omap_plane plane, u8 rotation,
- 		bool mirroring, enum omap_color_mode color_mode)
- {
- 	bool row_repeat = false;
-@@ -1670,7 +1674,7 @@ static unsigned long calc_fclk(enum omap_channel channel, u16 width,
- 	return dispc_pclk_rate(channel) * vf * hf;
- }
- 
--int dispc_setup_plane(enum omap_plane plane,
-+int dispc_ovl_setup(enum omap_plane plane,
- 		u32 paddr, u16 screen_width,
- 		u16 pos_x, u16 pos_y,
- 		u16 width, u16 height,
-@@ -1692,7 +1696,7 @@ int dispc_setup_plane(enum omap_plane plane,
- 	u16 frame_height = height;
- 	unsigned int field_offset = 0;
- 
--	DSSDBG("dispc_setup_plane %d, pa %x, sw %d, %d,%d, %dx%d -> "
-+	DSSDBG("dispc_ovl_setup %d, pa %x, sw %d, %d,%d, %dx%d -> "
- 	       "%dx%d, ilace %d, cmode %x, rot %d, mir %d chan %d\n",
- 	       plane, paddr, screen_width, pos_x, pos_y,
- 	       width, height,
-@@ -1807,45 +1811,45 @@ int dispc_setup_plane(enum omap_plane plane,
- 	DSSDBG("offset0 %u, offset1 %u, row_inc %d, pix_inc %d\n",
- 			offset0, offset1, row_inc, pix_inc);
- 
--	_dispc_set_color_mode(plane, color_mode);
-+	dispc_ovl_set_color_mode(plane, color_mode);
- 
--	_dispc_set_plane_ba0(plane, paddr + offset0);
--	_dispc_set_plane_ba1(plane, paddr + offset1);
-+	dispc_ovl_set_ba0(plane, paddr + offset0);
-+	dispc_ovl_set_ba1(plane, paddr + offset1);
- 
- 	if (OMAP_DSS_COLOR_NV12 = color_mode) {
--		_dispc_set_plane_ba0_uv(plane, puv_addr + offset0);
--		_dispc_set_plane_ba1_uv(plane, puv_addr + offset1);
-+		dispc_ovl_set_ba0_uv(plane, puv_addr + offset0);
-+		dispc_ovl_set_ba1_uv(plane, puv_addr + offset1);
- 	}
- 
- 
--	_dispc_set_row_inc(plane, row_inc);
--	_dispc_set_pix_inc(plane, pix_inc);
-+	dispc_ovl_set_row_inc(plane, row_inc);
-+	dispc_ovl_set_pix_inc(plane, pix_inc);
- 
- 	DSSDBG("%d,%d %dx%d -> %dx%d\n", pos_x, pos_y, width, height,
- 			out_width, out_height);
- 
--	_dispc_set_plane_pos(plane, pos_x, pos_y);
-+	dispc_ovl_set_pos(plane, pos_x, pos_y);
- 
--	_dispc_set_pic_size(plane, width, height);
-+	dispc_ovl_set_pic_size(plane, width, height);
- 
- 	if (plane != OMAP_DSS_GFX) {
--		_dispc_set_scaling(plane, width, height,
-+		dispc_ovl_set_scaling(plane, width, height,
- 				   out_width, out_height,
- 				   ilace, five_taps, fieldmode,
- 				   color_mode, rotation);
--		_dispc_set_vid_size(plane, out_width, out_height);
--		_dispc_set_vid_color_conv(plane, cconv);
-+		dispc_ovl_set_vid_size(plane, out_width, out_height);
-+		dispc_ovl_set_vid_color_conv(plane, cconv);
- 	}
- 
--	_dispc_set_rotation_attrs(plane, rotation, mirror, color_mode);
-+	dispc_ovl_set_rotation_attrs(plane, rotation, mirror, color_mode);
- 
--	_dispc_set_pre_mult_alpha(plane, pre_mult_alpha);
--	_dispc_setup_global_alpha(plane, global_alpha);
-+	dispc_ovl_set_pre_mult_alpha(plane, pre_mult_alpha);
-+	dispc_ovl_setup_global_alpha(plane, global_alpha);
+-	if (dssdev->manager->caps & OMAP_DSS_OVL_MGR_CAP_DISPC) {
+-		dss_setup_partial_planes(dssdev, x, y, w, h,
+-				enlarge_update_area);
+-		dispc_set_lcd_size(dssdev->manager->id, *w, *h);
+-	}
++	dss_setup_partial_planes(dssdev, x, y, w, h,
++			enlarge_update_area);
++	dispc_set_lcd_size(dssdev->manager->id, *w, *h);
  
  	return 0;
  }
+@@ -3996,27 +3839,16 @@ int omap_dsi_update(struct omap_dss_device *dssdev,
+ 	 * see rather obscure HW error happening, as DSS halts. */
+ 	BUG_ON(x % 2 = 1);
  
--int dispc_enable_plane(enum omap_plane plane, bool enable)
-+int dispc_ovl_enable(enum omap_plane plane, bool enable)
- {
- 	DSSDBG("dispc_enable_plane %d, %d\n", plane, enable);
+-	if (dssdev->manager->caps & OMAP_DSS_OVL_MGR_CAP_DISPC) {
+-		dsi->framedone_callback = callback;
+-		dsi->framedone_data = data;
+-
+-		dsi->update_region.x = x;
+-		dsi->update_region.y = y;
+-		dsi->update_region.w = w;
+-		dsi->update_region.h = h;
+-		dsi->update_region.device = dssdev;
+-
+-		dsi_update_screen_dispc(dssdev, x, y, w, h);
+-	} else {
+-		int r;
++	dsi->framedone_callback = callback;
++	dsi->framedone_data = data;
  
-@@ -3053,7 +3057,7 @@ static void dispc_error_worker(struct work_struct *work)
- 		if ((1 << bit) & errors) {
- 			DSSERR("FIFO UNDERFLOW on %s, disabling the overlay\n",
- 					ovl->name);
--			dispc_enable_plane(ovl->id, false);
-+			dispc_ovl_enable(ovl->id, false);
- 			dispc_go(ovl->manager->id);
- 			mdelay(50);
- 		}
-@@ -3083,7 +3087,7 @@ static void dispc_error_worker(struct work_struct *work)
+-		r = dsi_update_screen_l4(dssdev, x, y, w, h);
+-		if (r)
+-			return r;
++	dsi->update_region.x = x;
++	dsi->update_region.y = y;
++	dsi->update_region.w = w;
++	dsi->update_region.h = h;
++	dsi->update_region.device = dssdev;
  
- 				if (ovl->id != OMAP_DSS_GFX &&
- 						ovl->manager = mgr)
--					dispc_enable_plane(ovl->id, false);
-+					dispc_ovl_enable(ovl->id, false);
- 			}
+-		dsi_perf_show(dsidev, "L4");
+-		callback(0, data);
+-	}
++	dsi_update_screen_dispc(dssdev, x, y, w, h);
  
- 			dispc_go(mgr->id);
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index c9b50af..f2e9eed 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -387,19 +387,19 @@ void dispc_enable_fifohandcheck(enum omap_channel channel, bool enable);
- 
- void dispc_set_lcd_size(enum omap_channel channel, u16 width, u16 height);
- void dispc_set_digit_size(u16 width, u16 height);
--u32 dispc_get_plane_fifo_size(enum omap_plane plane);
--void dispc_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high);
-+u32 dispc_ovl_get_fifo_size(enum omap_plane plane);
-+void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high);
- void dispc_enable_fifomerge(bool enable);
--u32 dispc_get_burst_size(enum omap_plane plane);
-+u32 dispc_ovl_get_burst_size(enum omap_plane plane);
- void dispc_enable_cpr(enum omap_channel channel, bool enable);
- void dispc_set_cpr_coef(enum omap_channel channel,
- 		struct omap_dss_cpr_coefs *coefs);
- 
--void dispc_set_channel_out(enum omap_plane plane,
-+void dispc_ovl_set_channel_out(enum omap_plane plane,
- 		enum omap_channel channel_out);
- 
- void dispc_enable_gamma_table(bool enable);
--int dispc_setup_plane(enum omap_plane plane,
-+int dispc_ovl_setup(enum omap_plane plane,
- 		      u32 paddr, u16 screen_width,
- 		      u16 pos_x, u16 pos_y,
- 		      u16 width, u16 height,
-@@ -416,8 +416,8 @@ bool dispc_go_busy(enum omap_channel channel);
- void dispc_go(enum omap_channel channel);
- void dispc_enable_channel(enum omap_channel channel, bool enable);
- bool dispc_is_channel_enabled(enum omap_channel channel);
--int dispc_enable_plane(enum omap_plane plane, bool enable);
--void dispc_enable_replication(enum omap_plane plane, bool enable);
-+int dispc_ovl_enable(enum omap_plane plane, bool enable);
-+void dispc_ovl_enable_replication(enum omap_plane plane, bool enable);
- 
- void dispc_set_parallel_interface_mode(enum omap_channel channel,
- 		enum omap_parallel_interface_mode mode);
+ 	return 0;
+ }
 diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
-index 2e5d728..b9bdf22 100644
+index 63674b0..b9c4fb0 100644
 --- a/drivers/video/omap2/dss/manager.c
 +++ b/drivers/video/omap2/dss/manager.c
-@@ -823,7 +823,7 @@ static int configure_overlay(enum omap_plane plane)
- 	oi = &c->info;
+@@ -1333,9 +1333,6 @@ static int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
  
- 	if (!c->enabled) {
--		dispc_enable_plane(plane, 0);
-+		dispc_ovl_enable(plane, 0);
- 		return 0;
- 	}
+ 		ovl = omap_dss_get_overlay(i);
  
-@@ -851,7 +851,7 @@ static int configure_overlay(enum omap_plane plane)
- 		/* If the overlay is outside the update region, disable it */
- 		if (!rectangle_intersects(mc->x, mc->y, mc->w, mc->h,
- 					x, y, outw, outh)) {
--			dispc_enable_plane(plane, 0);
-+			dispc_ovl_enable(plane, 0);
- 			return 0;
+-		if (!(ovl->caps & OMAP_DSS_OVL_CAP_DISPC))
+-			continue;
+-
+ 		oc = &dss_cache.overlay_cache[ovl->id];
+ 
+ 		if (!overlay_enabled(ovl)) {
+@@ -1382,9 +1379,6 @@ static int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
+ 	list_for_each_entry(mgr, &manager_list, list) {
+ 		struct omap_dss_device *dssdev;
+ 
+-		if (!(mgr->caps & OMAP_DSS_OVL_MGR_CAP_DISPC))
+-			continue;
+-
+ 		mc = &dss_cache.manager_cache[mgr->id];
+ 
+ 		if (mgr->device_changed) {
+@@ -1430,9 +1424,6 @@ static int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
+ 
+ 		ovl = omap_dss_get_overlay(i);
+ 
+-		if (!(ovl->caps & OMAP_DSS_OVL_CAP_DISPC))
+-			continue;
+-
+ 		oc = &dss_cache.overlay_cache[ovl->id];
+ 
+ 		if (!oc->enabled)
+@@ -1587,7 +1578,7 @@ int dss_init_overlay_managers(struct platform_device *pdev)
+ 		mgr->enable = &dss_mgr_enable;
+ 		mgr->disable = &dss_mgr_disable;
+ 
+-		mgr->caps = OMAP_DSS_OVL_MGR_CAP_DISPC;
++		mgr->caps = 0;
+ 		mgr->supported_displays  			dss_feat_get_supported_displays(mgr->id);
+ 
+@@ -1604,42 +1595,6 @@ int dss_init_overlay_managers(struct platform_device *pdev)
  		}
- 
-@@ -929,7 +929,7 @@ static int configure_overlay(enum omap_plane plane)
- 		}
  	}
  
--	r = dispc_setup_plane(plane,
-+	r = dispc_ovl_setup(plane,
- 			paddr,
- 			oi->screen_width,
- 			x, y,
-@@ -948,15 +948,15 @@ static int configure_overlay(enum omap_plane plane)
- 	if (r) {
- 		/* this shouldn't happen */
- 		DSSERR("dispc_setup_plane failed for ovl %d\n", plane);
--		dispc_enable_plane(plane, 0);
-+		dispc_ovl_enable(plane, 0);
- 		return r;
- 	}
- 
--	dispc_enable_replication(plane, c->replication);
-+	dispc_ovl_enable_replication(plane, c->replication);
- 
--	dispc_set_fifo_threshold(plane, c->fifo_low, c->fifo_high);
-+	dispc_ovl_set_fifo_threshold(plane, c->fifo_low, c->fifo_high);
- 
--	dispc_enable_plane(plane, 1);
-+	dispc_ovl_enable(plane, 1);
- 
+-#ifdef L4_EXAMPLE
+-	{
+-		int omap_dss_mgr_apply_l4(struct omap_overlay_manager *mgr)
+-		{
+-			DSSDBG("omap_dss_mgr_apply_l4(%s)\n", mgr->name);
+-
+-			return 0;
+-		}
+-
+-		struct omap_overlay_manager *mgr;
+-		mgr = kzalloc(sizeof(*mgr), GFP_KERNEL);
+-
+-		BUG_ON(mgr = NULL);
+-
+-		mgr->name = "l4";
+-		mgr->supported_displays -			OMAP_DISPLAY_TYPE_DBI | OMAP_DISPLAY_TYPE_DSI;
+-
+-		mgr->set_device = &omap_dss_set_device;
+-		mgr->unset_device = &omap_dss_unset_device;
+-		mgr->apply = &omap_dss_mgr_apply_l4;
+-		mgr->set_manager_info = &omap_dss_mgr_set_info;
+-		mgr->get_manager_info = &omap_dss_mgr_get_info;
+-
+-		dss_overlay_setup_l4_manager(mgr);
+-
+-		omap_dss_add_overlay_manager(mgr);
+-
+-		r = kobject_init_and_add(&mgr->kobj, &manager_ktype,
+-				&pdev->dev.kobj, "managerl4");
+-
+-		if (r)
+-			DSSERR("failed to create sysfs file\n");
+-	}
+-#endif
+-
  	return 0;
  }
-@@ -1432,11 +1432,11 @@ static int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
  
- 		dssdev = ovl->manager->device;
- 
--		size = dispc_get_plane_fifo_size(ovl->id);
-+		size = dispc_ovl_get_fifo_size(ovl->id);
- 		if (use_fifomerge)
- 			size *= 3;
- 
--		burst_size = dispc_get_burst_size(ovl->id);
-+		burst_size = dispc_ovl_get_burst_size(ovl->id);
- 
- 		switch (dssdev->type) {
- 		case OMAP_DISPLAY_TYPE_DPI:
 diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
-index b2a5685..82a5617 100644
+index c84380c..bf1abeb 100644
 --- a/drivers/video/omap2/dss/overlay.c
 +++ b/drivers/video/omap2/dss/overlay.c
-@@ -517,7 +517,7 @@ static int omap_dss_set_manager(struct omap_overlay *ovl,
- 	 * Userspace workaround for this is to update the LCD after disabling
- 	 * the overlay, but before moving the overlay to TV.
- 	 */
--	dispc_set_channel_out(ovl->id, mgr->id);
-+	dispc_ovl_set_channel_out(ovl->id, mgr->id);
+@@ -618,21 +618,19 @@ void dss_init_overlays(struct platform_device *pdev)
+ 		case 0:
+ 			ovl->name = "gfx";
+ 			ovl->id = OMAP_DSS_GFX;
+-			ovl->caps = OMAP_DSS_OVL_CAP_DISPC;
++			ovl->caps = 0;
+ 			ovl->info.global_alpha = 255;
+ 			break;
+ 		case 1:
+ 			ovl->name = "vid1";
+ 			ovl->id = OMAP_DSS_VIDEO1;
+-			ovl->caps = OMAP_DSS_OVL_CAP_SCALE |
+-				OMAP_DSS_OVL_CAP_DISPC;
++			ovl->caps = OMAP_DSS_OVL_CAP_SCALE;
+ 			ovl->info.global_alpha = 255;
+ 			break;
+ 		case 2:
+ 			ovl->name = "vid2";
+ 			ovl->id = OMAP_DSS_VIDEO2;
+-			ovl->caps = OMAP_DSS_OVL_CAP_SCALE |
+-				OMAP_DSS_OVL_CAP_DISPC;
++			ovl->caps = OMAP_DSS_OVL_CAP_SCALE;
+ 			ovl->info.global_alpha = 255;
+ 			break;
+ 		}
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 50394ba..b605066 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -783,10 +783,8 @@ int omap_rfbi_prepare_update(struct omap_dss_device *dssdev,
+ 	if (*w = 0 || *h = 0)
+ 		return -EINVAL;
+ 
+-	if (dssdev->manager->caps & OMAP_DSS_OVL_MGR_CAP_DISPC) {
+-		dss_setup_partial_planes(dssdev, x, y, w, h, true);
+-		dispc_set_lcd_size(dssdev->manager->id, *w, *h);
+-	}
++	dss_setup_partial_planes(dssdev, x, y, w, h, true);
++	dispc_set_lcd_size(dssdev->manager->id, *w, *h);
  
  	return 0;
  }
+@@ -796,22 +794,7 @@ int omap_rfbi_update(struct omap_dss_device *dssdev,
+ 		u16 x, u16 y, u16 w, u16 h,
+ 		void (*callback)(void *), void *data)
+ {
+-	if (dssdev->manager->caps & OMAP_DSS_OVL_MGR_CAP_DISPC) {
+-		rfbi_transfer_area(dssdev, w, h, callback, data);
+-	} else {
+-		struct omap_overlay *ovl;
+-		void __iomem *addr;
+-		int scr_width;
+-
+-		ovl = dssdev->manager->overlays[0];
+-		scr_width = ovl->info.screen_width;
+-		addr = ovl->info.vaddr;
+-
+-		omap_rfbi_write_pixels(addr, scr_width, x, y, w, h);
+-
+-		callback(data);
+-	}
+-
++	rfbi_transfer_area(dssdev, w, h, callback, data);
+ 	return 0;
+ }
+ EXPORT_SYMBOL(omap_rfbi_update);
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index dd6a580..5721de8 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -162,11 +162,10 @@ enum omap_dss_rotation_angle {
+ 
+ enum omap_overlay_caps {
+ 	OMAP_DSS_OVL_CAP_SCALE = 1 << 0,
+-	OMAP_DSS_OVL_CAP_DISPC = 1 << 1,
+ };
+ 
+ enum omap_overlay_manager_caps {
+-	OMAP_DSS_OVL_MGR_CAP_DISPC = 1 << 0,
++	OMAP_DSS_DUMMY_VALUE, /* add a dummy value to prevent compiler error */
+ };
+ 
+ enum omap_dss_clk_source {
+@@ -315,7 +314,7 @@ struct omap_overlay {
+ 
+ 	/* static fields */
+ 	const char *name;
+-	int id;
++	enum omap_plane id;
+ 	enum omap_color_mode supported_modes;
+ 	enum omap_overlay_caps caps;
+ 
+@@ -357,7 +356,7 @@ struct omap_overlay_manager {
+ 
+ 	/* static fields */
+ 	const char *name;
+-	int id;
++	enum omap_channel id;
+ 	enum omap_overlay_manager_caps caps;
+ 	int num_overlays;
+ 	struct omap_overlay **overlays;
 -- 
 1.7.4.1
 

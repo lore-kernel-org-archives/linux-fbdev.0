@@ -1,58 +1,28 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 22 Aug 2011 12:22:25 +0000
-Subject: Re: [PATCH 05/10] OMAP: DSS2: string parsing cleanups
-Message-Id: <1314015745.2168.41.camel@deskari>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Wed, 24 Aug 2011 13:40:46 +0000
+Subject: linux-next tree addition request (fbdev)
+Message-Id: <4E54FF5E.5050308@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314001671-18123-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1314001671-18123-6-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314001671-18123-6-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>
 
-On Mon, 2011-08-22 at 11:27 +0300, Tomi Valkeinen wrote:
-> Use strtobool and kstrto* functions when parsing sysfs inputs.
-> 
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> ---
->  drivers/video/omap2/dss/display.c |   21 +++++++++------------
->  drivers/video/omap2/dss/manager.c |   37 +++++++++++++++++++------------------
->  drivers/video/omap2/dss/overlay.c |    7 +++----
->  3 files changed, 31 insertions(+), 34 deletions(-)
+Hi Stephen,
 
-<snip>
+can you please add
 
-> diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
-> index a95f25e..b2a5685 100644
-> --- a/drivers/video/omap2/dss/overlay.c
-> +++ b/drivers/video/omap2/dss/overlay.c
-> @@ -211,17 +211,16 @@ static ssize_t overlay_enabled_show(struct omap_overlay *ovl, char *buf)
->  static ssize_t overlay_enabled_store(struct omap_overlay *ovl, const char *buf,
->  		size_t size)
->  {
-> -	int r, enable;
-> +	int r;
-> +	bool enable;
->  	struct omap_overlay_info info;
->  
->  	ovl->get_overlay_info(ovl, &info);
->  
-> -	r = kstrtoint(buf, 0, &enable);
-> +	r = strtobool(buf, &enable);
->  	if (r)
->  		return r;
->  
-> -	info.enabled = !!enable;
-> -
->  	r = ovl->set_overlay_info(ovl, &info);
->  	if (r)
->  		return r;
+    git://github.com/schandinat/linux-2.6.git fbdev-next
 
-Oops. This removes the lines that write the new value to overlay_info,
-thus making it impossible to change the enable-status. I'll fix this.
+to linux-next. It collects patches for the frame buffer subsystem.
+Can you please add the linux-fbdev@vger.kernel.org mailing list as additional
+contact for warnings/errors/problems?
 
- Tomi
+You probably want to drop Paul's fbdev branches as they contain some outdated
+patches that will conflict with the newer versions.
 
 
+Thanks,
+
+Florian Tobias Schandinat

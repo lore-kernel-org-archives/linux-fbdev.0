@@ -1,30 +1,96 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Fri, 05 Aug 2011 21:59:16 +0000
-Subject: [PATCH 6/6] viafb: remove 640x480-60 CRT special case
-Message-Id: <0492262281b82e71c6063e35ef73a33fad93cc6d.1312578946.git.FlorianSchandinat@gmx.de>
+From: Ajay Kumar <ajaykumar.rs@samsung.com>
+Date: Thu, 25 Aug 2011 13:54:51 +0000
+Subject: [PATCH 2/2] video: s3c-fb: Modify s3c-fb driver to support window
+Message-Id: <1314301917-9938-3-git-send-email-ajaykumar.rs@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1312578946.git.FlorianSchandinat@gmx.de>
-In-Reply-To: <cover.1312578946.git.FlorianSchandinat@gmx.de>
+References: <1314301917-9938-1-git-send-email-ajaykumar.rs@samsung.com>
+In-Reply-To: <1314301917-9938-1-git-send-email-ajaykumar.rs@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-arm-kernel@lists.infradead.org
 
-The timing for 640x480-60 was handled different than all others.
-This patch changes this by changing the blanking start and end.
-The reason for this is that I can't find any reason for the old
-behaviour and it was not consistent anyway as the special case for
-LCD did not always trigger as the LCD code does not use this
-function and it did trigger regardless of whether the display set is
-CRT or LCD but only based whether any DVI/LCD device exists.
-There are no negative effects observed for CRT or DVI devices.
+This patch modifies the existing s3c-fb driver to provide
+flexibility to the user to reposition the framebuffer windows.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
+Signed-off-by: Banajit Goswami <banajit.g@samsung.com>
+---
+ drivers/video/s3c-fb.c |   37 ++++++++++++++++++++++++++++++++-----
+ 1 files changed, 32 insertions(+), 5 deletions(-)
 
- drivers/video/via/hw.c      |   14 --------------
- drivers/video/via/viamode.c |    2 +-
- 2 files changed, 1 insertions(+), 15 deletions(-)
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 0fda252..41179d7 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -442,6 +442,7 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 	struct fb_var_screeninfo *var = &info->var;
+ 	struct s3c_fb_win *win = info->par;
+ 	struct s3c_fb *sfb = win->parent;
++	struct s3cfb_window_pos *winpos = &win->windata->winpos;
+ 	void __iomem *regs = sfb->regs;
+ 	void __iomem *buf = regs;
+ 	int win_no = win->index;
+@@ -539,12 +540,13 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 
+ 	/* write 'OSD' registers to control position of framebuffer */
+ 
+-	data = VIDOSDxA_TOPLEFT_X(0) | VIDOSDxA_TOPLEFT_Y(0);
++	data = VIDOSDxA_TOPLEFT_X(winpos->win_pos_x) |
++	       VIDOSDxA_TOPLEFT_Y(winpos->win_pos_y);
+ 	writel(data, regs + VIDOSD_A(win_no, sfb->variant));
+ 
+-	data = VIDOSDxB_BOTRIGHT_X(s3c_fb_align_word(var->bits_per_pixel,
+-						     var->xres - 1)) |
+-	       VIDOSDxB_BOTRIGHT_Y(var->yres - 1);
++	data = VIDOSDxB_BOTRIGHT_X((s3c_fb_align_word(var->bits_per_pixel,
++	       (winpos->win_pos_x + var->xres - 1)))) |
++	       VIDOSDxB_BOTRIGHT_Y((winpos->win_pos_y + var->yres - 1));
+ 
+ 	writel(data, regs + VIDOSD_B(win_no, sfb->variant));
+ 
+@@ -999,8 +1001,10 @@ static int s3c_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ {
+ 	struct s3c_fb_win *win = info->par;
+ 	struct s3c_fb *sfb = win->parent;
+-	int ret;
++	struct s3cfb_window_pos *winpos = &win->windata->winpos;
++	int ret = 0;
+ 	u32 crtc;
++	u32 data;
+ 
+ 	switch (cmd) {
+ 	case FBIO_WAITFORVSYNC:
+@@ -1011,6 +1015,29 @@ static int s3c_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 
+ 		ret = s3c_fb_wait_for_vsync(sfb, crtc);
+ 		break;
++	case S3CFB_WIN_POSITION:
++		if (copy_from_user(winpos, (u32 __user *)arg,
++					sizeof(struct s3cfb_window_pos))) {
++			ret = -EFAULT;
++			break;
++		}
++
++		shadow_protect_win(win, 1);
++
++		/* write 'OSD' registers to set position of the window */
++		data = VIDOSDxA_TOPLEFT_X(winpos->win_pos_x) |
++		       VIDOSDxA_TOPLEFT_Y(winpos->win_pos_y);
++		writel(data, sfb->regs + VIDOSD_A(win->index, sfb->variant));
++
++		data = VIDOSDxB_BOTRIGHT_X(
++				s3c_fb_align_word(info->var.bits_per_pixel,
++				(winpos->win_pos_x + info->var.xres - 1)));
++		data |=	VIDOSDxB_BOTRIGHT_Y(winpos->win_pos_y +
++				info->var.yres - 1);
++		writel(data, sfb->regs + VIDOSD_B(win->index, sfb->variant));
++
++		shadow_protect_win(win, 0);
++		break;
+ 	default:
+ 		ret = -ENOTTY;
+ 	}
 -- 
-1.6.3.2
+1.7.0.4
 

@@ -1,47 +1,57 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 31 Aug 2011 13:21:48 +0000
-Subject: [PATCH 8/8] OMAP: DSS2: HDMI: fix hdmi output enable
-Message-Id: <1314796908-17354-9-git-send-email-tomi.valkeinen@ti.com>
+From: Axel Lin <axel.lin@gmail.com>
+Date: Thu, 25 Aug 2011 07:54:16 +0000
+Subject: [PATCH] video: mxsfb: add missing include of linux/module.h
+Message-Id: <1314258856.1768.0.camel@phoenix>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314796908-17354-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314796908-17354-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-kernel@vger.kernel.org
+Cc: Sascha Hauer <s.hauer@pengutronix.de>, Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org
 
-Enabling HDMI output often causes sync lost errors. The problem seems to
-go away if we first enable the HDMI output, and only then enable the
-DISPC output.
+Include linux/module.h to fix below build error:
 
-This will also fix the dispc's dispc_mgr_enable_digit_out(), as the code
-waits for two VSYNCs after enabling the output. If the HDMI output is
-disabled (as it was previously), there are no VSYNCs and
-dispc_mgr_enable_digit_out() will print timeout errors.
+                 from drivers/video/mxsfb.c:42:
+arch/arm/mach-mxs/include/mach/memory.h:22:1: warning: this is the location of the previous definition
+drivers/video/mxsfb.c:574: error: 'THIS_MODULE' undeclared here (not in a function)
+drivers/video/mxsfb.c:893: warning: data definition has no type or storage class
+drivers/video/mxsfb.c:893: warning: type defaults to 'int' in declaration of 'MODULE_DEVICE_TABLE'
+drivers/video/mxsfb.c:893: warning: parameter names (without types) in function declaration
+drivers/video/mxsfb.c:917: error: expected declaration specifiers or '...' before string constant
+drivers/video/mxsfb.c:917: warning: data definition has no type or storage class
+drivers/video/mxsfb.c:917: warning: type defaults to 'int' in declaration of 'MODULE_DESCRIPTION'
+drivers/video/mxsfb.c:917: warning: function declaration isn't a prototype
+drivers/video/mxsfb.c:918: error: expected declaration specifiers or '...' before string constant
+drivers/video/mxsfb.c:918: warning: data definition has no type or storage class
+drivers/video/mxsfb.c:918: warning: type defaults to 'int' in declaration of 'MODULE_AUTHOR'
+drivers/video/mxsfb.c:918: warning: function declaration isn't a prototype
+drivers/video/mxsfb.c:919: error: expected declaration specifiers or '...' before string constant
+drivers/video/mxsfb.c:919: warning: data definition has no type or storage class
+drivers/video/mxsfb.c:919: warning: type defaults to 'int' in declaration of 'MODULE_LICENSE'
+drivers/video/mxsfb.c:919: warning: function declaration isn't a prototype
+make[2]: *** [drivers/video/mxsfb.o] Error 1
+make[1]: *** [drivers/video] Error 2
+make: *** [drivers] Error 2
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Axel Lin <axel.lin@gmail.com>
 ---
- drivers/video/omap2/dss/hdmi.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/mxsfb.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 504c507..d08096b 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -1184,10 +1184,10 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
- 	dispc_set_digit_size(dssdev->panel.timings.x_res,
- 			dssdev->panel.timings.y_res);
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 0b2f2dd..d837d63 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -39,6 +39,7 @@
+  * the required value in the imx_fb_videomode structure.
+  */
  
--	dispc_mgr_enable(OMAP_DSS_CHANNEL_DIGIT, 1);
--
- 	hdmi_wp_video_start(1);
- 
-+	dispc_mgr_enable(OMAP_DSS_CHANNEL_DIGIT, 1);
-+
- 	return 0;
- err:
- 	hdmi_runtime_put();
++#include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
 -- 
 1.7.4.1
+
+
 

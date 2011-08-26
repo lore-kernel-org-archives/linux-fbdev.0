@@ -1,36 +1,83 @@
 From: Ondrej Zary <linux@rainbow-software.org>
-Date: Tue, 23 Aug 2011 09:58:18 +0000
+Date: Fri, 26 Aug 2011 06:24:38 +0000
 Subject: Re: [RFC PATCH v2] Resurrect Intel740 driver: i740fb
-Message-Id: <201108231158.18173.linux@rainbow-software.org>
+Message-Id: <201108260824.38352.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201108212242.12717.linux@rainbow-software.org> <201108231103.30591.linux@rainbow-software.org> <1314091533.21860.289.camel@thor.local>
-In-Reply-To: <1314091533.21860.289.camel@thor.local>
+References: <201108212242.12717.linux@rainbow-software.org> <CAPM=9tzF7C_gW44csqYwK+wdT9mwWBrA3O_9JQNfg=6aip4kag@mail.gmail.com>
+In-Reply-To: <CAPM=9tzF7C_gW44csqYwK+wdT9mwWBrA3O_9JQNfg=6aip4kag@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Michel =?utf-8?q?D=C3=A4nzer?= <michel@daenzer.net>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: Dave Airlie <airlied@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-On Tuesday 23 August 2011, Michel D=C3=A4nzer wrote:
-> On Die, 2011-08-23 at 11:03 +0200, Ondrej Zary wrote:
-> > On Monday 22 August 2011, Alan Cox wrote:
-> > > > - 24bpp modes still don't work in fbtest but it looks like fbtest
-> > > > bug!
-> > > >
-> > > > Is there any better way to test fb drivers than fbtest?
-> > >
-> > > X11 fbdev driver ?
+On Tuesday 23 August 2011, Dave Airlie wrote:
+> On Sun, Aug 21, 2011 at 9:42 PM, Ondrej Zary <linux@rainbow-software.org>=
+=20
+wrote:
+> > Hello,
+> > this is an v2 attempt to resurrect an old (like 2.4.19) out-of-tree
+> > driver for Intel740 graphics cards and modify it for recent kernels. The
+> > old driver is located at:
+> > http://sourceforge.net/projects/i740fbdev/files/
 > >
-> > Thanks, completely forgot about that. It works fine even in 24bpp.
+> > It was easier to create a new driver based on skeletonfb, using most of
+> > the low level HW code from the old driver. The DDC code is completely
+> > new.
+> >
+> > The driver was tested on two 8MB cards: ManLi and Diamond Stealth II G4=
+60
+> >
+> > The i740_calc_fifo() function formatting is nice but does not pass
+> > checkpatch. Making it checkpatch-compliant makes the code look ugly. How
+> > to make it both nice and compatible with Linux coding style?
+> > (the remaining // comments mark things that need attention - missing xp=
+an
+> > and suspend/resume)
+> >
+> > Changes in v2:
+> > - fixed 15bpp (16bpp 555) mode
+> > - not working 1280x1024-32 is not a bug but card's feature, it's now
+> > handled correctly by the driver
+> > - 24bpp modes still don't work in fbtest but it looks like fbtest bug!
+> >
+> > Is there any better way to test fb drivers than fbtest?
+> >
+> > no signed-off-by yet
+> >
+> > --- linux-2.6.39-rc2-orig/drivers/video/Kconfig 2011-04-06
+> > 03:30:43.000000000 +0200 +++ linux-2.6.39-rc2/drivers/video/Kconfig =A0=
+ =A0
+> > =A02011-07-30 11:34:10.000000000 +0200 @@ -1117,6 +1117,17 @@ config
+> > FB_RIVA_BACKLIGHT
+> > =A0 =A0 =A0 =A0help
+> > =A0 =A0 =A0 =A0 =A0Say Y here if you want to control the backlight of y=
+our display.
+> >
+> > +config FB_I740
+> > + =A0 =A0 =A0 tristate "Intel740 support (EXPERIMENTAL)"
+> > + =A0 =A0 =A0 depends on EXPERIMENTAL && FB && PCI && X86_32 && AGP_INT=
+EL
+> > + =A0 =A0 =A0 select FB_MODE_HELPERS
+> > + =A0 =A0 =A0 select FB_CFB_FILLRECT
+> > + =A0 =A0 =A0 select FB_CFB_COPYAREA
+> > + =A0 =A0 =A0 select FB_CFB_IMAGEBLIT
+> > + =A0 =A0 =A0 select VGASTATE
+> > + =A0 =A0 =A0 help
+> > + =A0 =A0 =A0 =A0 This driver supports graphics cards based on Intel740=
+ chip.
+> > +
 >
-> Beware that Xorg defaults to 32 bpp for depth 24; did you verify in
-> Xorg.0.log that it was really using 24 bpp?
+> It shouldn't need AGP_INTEL, as its an AGP card not an integrated
+> chipset, it might need just AGP.
 
-Yes, found that very quickly as I was testing at 1280x1024 and the card can=
-not=20
-do 32bpp there. I had to set both DefaultDepth and DefaultFbBpp to 24 for X=
-11=20
-to run.
+Oops, I copied that from I810 and then forgot about it...will fix that to=20
+really match the driver requirements.
+
+BTW. i740 cards are really picky, they don't even POST with most boards tha=
+t=20
+don't have i440LX/EX or i440BX/ZX chipsets.
+
 
 --=20
 Ondrej Zary

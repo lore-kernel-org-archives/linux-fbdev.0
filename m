@@ -1,219 +1,92 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Mon, 08 Aug 2011 10:40:38 +0000
-Subject: Re: [PATCH] viafb: replace strict_strtoul to kstrto* and check return
-Message-Id: <4E3FBD26.8050809@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 26 Aug 2011 12:38:48 +0000
+Subject: [PATCH] fbdev: fix parsing of standard timings
+Message-Id: <1314362328-30456-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1312723884-21790-1-git-send-email-wangshaoyan.pt@taobao.com>
-In-Reply-To: <1312723884-21790-1-git-send-email-wangshaoyan.pt@taobao.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hello Wang,
+The standard timings parses uses 1:1 dimensions when the ratio in the
+EDID data is 0. However, for EDID 1.3 and later the dimensions are 16:10
+when the ratio is 0.
 
-On 08/08/2011 02:18 AM, stufever@gmail.com wrote:
-> From: Wang Shaoyan<wangshaoyan.pt@taobao.com>
->
-> This commit replace the function strict_strtoul(becasue commit 33ee3b2e), and check the return value to avoid such warning:
->
->    drivers/video/via/viafbdev.c:1992: warning: ignoring return value of 'kstrtoul', declared with attribute warn_unused_result
->
-> Signed-off-by: Wang Shaoyan<wangshaoyan.pt@taobao.com>
+Pass the version and revision numbers to get_std_timing() which can then
+make the right decision about dimensions.
 
-Thank you, this looks good, I will apply it.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/fbmon.c |   20 ++++++++++++++------
+ 1 files changed, 14 insertions(+), 6 deletions(-)
 
-
-Best regards,
-
-Florian Tobias Schandinat
-
-> ---
->   drivers/video/via/viafbdev.c |  126 ++++++++++++++++++++++-------------------
->   1 files changed, 68 insertions(+), 58 deletions(-)
->
-> diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-> index 53aa443..ddf4a9a 100644
-> --- a/drivers/video/via/viafbdev.c
-> +++ b/drivers/video/via/viafbdev.c
-> @@ -1158,7 +1158,8 @@ static ssize_t viafb_dvp0_proc_write(struct file *file,
->   	for (i = 0; i<  3; i++) {
->   		value = strsep(&pbuf, " ");
->   		if (value != NULL) {
-> -			strict_strtoul(value, 0, (unsigned long *)&reg_val);
-> +			if (kstrtou8(value, 0,&reg_val)<  0)
-> +				return -EINVAL;
->   			DEBUG_MSG(KERN_INFO "DVP0:reg_val[%l]=:%x\n", i,
->   				  reg_val);
->   			switch (i) {
-> @@ -1228,7 +1229,8 @@ static ssize_t viafb_dvp1_proc_write(struct file *file,
->   	for (i = 0; i<  3; i++) {
->   		value = strsep(&pbuf, " ");
->   		if (value != NULL) {
-> -			strict_strtoul(value, 0, (unsigned long *)&reg_val);
-> +			if (kstrtou8(value, 0,&reg_val)<  0)
-> +				return -EINVAL;
->   			switch (i) {
->   			case 0:
->   				viafb_write_reg_mask(CR9B, VIACR,
-> @@ -1286,7 +1288,8 @@ static ssize_t viafb_dfph_proc_write(struct file *file,
->   	if (copy_from_user(&buf[0], buffer, length))
->   		return -EFAULT;
->   	buf[length - 1] = '\0';	/*Ensure end string */
-> -	strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
-> +	if (kstrtou8(buf, 0,&reg_val)<  0)
-> +		return -EINVAL;
->   	viafb_write_reg_mask(CR97, VIACR, reg_val, 0x0f);
->   	return count;
->   }
-> @@ -1325,7 +1328,8 @@ static ssize_t viafb_dfpl_proc_write(struct file *file,
->   	if (copy_from_user(&buf[0], buffer, length))
->   		return -EFAULT;
->   	buf[length - 1] = '\0';	/*Ensure end string */
-> -	strict_strtoul(&buf[0], 0, (unsigned long *)&reg_val);
-> +	if (kstrtou8(buf, 0,&reg_val)<  0)
-> +		return -EINVAL;
->   	viafb_write_reg_mask(CR99, VIACR, reg_val, 0x0f);
->   	return count;
->   }
-> @@ -1394,8 +1398,8 @@ static ssize_t viafb_vt1636_proc_write(struct file *file,
->   		for (i = 0; i<  2; i++) {
->   			value = strsep(&pbuf, " ");
->   			if (value != NULL) {
-> -				strict_strtoul(value, 0,
-> -					(unsigned long *)&reg_val.Data);
-> +				if (kstrtou8(value, 0,&reg_val.Data)<  0)
-> +					return -EINVAL;
->   				switch (i) {
->   				case 0:
->   					reg_val.Index = 0x08;
-> @@ -1431,8 +1435,8 @@ static ssize_t viafb_vt1636_proc_write(struct file *file,
->   		for (i = 0; i<  2; i++) {
->   			value = strsep(&pbuf, " ");
->   			if (value != NULL) {
-> -				strict_strtoul(value, 0,
-> -					(unsigned long *)&reg_val.Data);
-> +				if (kstrtou8(value, 0,&reg_val.Data)<  0)
-> +					return -EINVAL;
->   				switch (i) {
->   				case 0:
->   					reg_val.Index = 0x08;
-> @@ -1950,61 +1954,67 @@ static int __init viafb_setup(void)
->   		if (!*this_opt)
->   			continue;
->
-> -		if (!strncmp(this_opt, "viafb_mode1=", 12))
-> +		if (!strncmp(this_opt, "viafb_mode1=", 12)) {
->   			viafb_mode1 = kstrdup(this_opt + 12, GFP_KERNEL);
-> -		else if (!strncmp(this_opt, "viafb_mode=", 11))
-> +		} else if (!strncmp(this_opt, "viafb_mode=", 11)) {
->   			viafb_mode = kstrdup(this_opt + 11, GFP_KERNEL);
-> -		else if (!strncmp(this_opt, "viafb_bpp1=", 11))
-> -			strict_strtoul(this_opt + 11, 0,
-> -				(unsigned long *)&viafb_bpp1);
-> -		else if (!strncmp(this_opt, "viafb_bpp=", 10))
-> -			strict_strtoul(this_opt + 10, 0,
-> -				(unsigned long *)&viafb_bpp);
-> -		else if (!strncmp(this_opt, "viafb_refresh1=", 15))
-> -			strict_strtoul(this_opt + 15, 0,
-> -				(unsigned long *)&viafb_refresh1);
-> -		else if (!strncmp(this_opt, "viafb_refresh=", 14))
-> -			strict_strtoul(this_opt + 14, 0,
-> -				(unsigned long *)&viafb_refresh);
-> -		else if (!strncmp(this_opt, "viafb_lcd_dsp_method=", 21))
-> -			strict_strtoul(this_opt + 21, 0,
-> -				(unsigned long *)&viafb_lcd_dsp_method);
-> -		else if (!strncmp(this_opt, "viafb_lcd_panel_id=", 19))
-> -			strict_strtoul(this_opt + 19, 0,
-> -				(unsigned long *)&viafb_lcd_panel_id);
-> -		else if (!strncmp(this_opt, "viafb_accel=", 12))
-> -			strict_strtoul(this_opt + 12, 0,
-> -				(unsigned long *)&viafb_accel);
-> -		else if (!strncmp(this_opt, "viafb_SAMM_ON=", 14))
-> -			strict_strtoul(this_opt + 14, 0,
-> -				(unsigned long *)&viafb_SAMM_ON);
-> -		else if (!strncmp(this_opt, "viafb_active_dev=", 17))
-> +		} else if (!strncmp(this_opt, "viafb_bpp1=", 11)) {
-> +			if (kstrtouint(this_opt + 11, 0,&viafb_bpp1)<  0)
-> +				return -EINVAL;
-> +		} else if (!strncmp(this_opt, "viafb_bpp=", 10)) {
-> +			if (kstrtouint(this_opt + 10, 0,&viafb_bpp)<  0)
-> +				return -EINVAL;
-> +		} else if (!strncmp(this_opt, "viafb_refresh1=", 15)) {
-> +			if (kstrtoint(this_opt + 15, 0,&viafb_refresh1)<  0)
-> +				return -EINVAL;
-> +		} else if (!strncmp(this_opt, "viafb_refresh=", 14)) {
-> +			if (kstrtoint(this_opt + 14, 0,&viafb_refresh)<  0)
-> +				return -EINVAL;
-> +		} else if (!strncmp(this_opt, "viafb_lcd_dsp_method=", 21)) {
-> +			if (kstrtoint(this_opt + 21, 0,
-> +				&viafb_lcd_dsp_method)<  0)
-> +				return -EINVAL;
-> +		} else if (!strncmp(this_opt, "viafb_lcd_panel_id=", 19)) {
-> +			if (kstrtoint(this_opt + 19, 0,
-> +				&viafb_lcd_panel_id)<  0)
-> +				return -EINVAL;
-> +		} else if (!strncmp(this_opt, "viafb_accel=", 12)) {
-> +			if (kstrtoint(this_opt + 12, 0,&viafb_accel)<  0)
-> +				return -EINVAL;
-> +		} else if (!strncmp(this_opt, "viafb_SAMM_ON=", 14)) {
-> +			if (kstrtoint(this_opt + 14, 0,&viafb_SAMM_ON)<  0)
-> +				return -EINVAL;
-> +		} else if (!strncmp(this_opt, "viafb_active_dev=", 17)) {
->   			viafb_active_dev = kstrdup(this_opt + 17, GFP_KERNEL);
-> -		else if (!strncmp(this_opt,
-> -			"viafb_display_hardware_layout=", 30))
-> -			strict_strtoul(this_opt + 30, 0,
-> -			(unsigned long *)&viafb_display_hardware_layout);
-> -		else if (!strncmp(this_opt, "viafb_second_size=", 18))
-> -			strict_strtoul(this_opt + 18, 0,
-> -				(unsigned long *)&viafb_second_size);
-> -		else if (!strncmp(this_opt,
-> -			"viafb_platform_epia_dvi=", 24))
-> -			strict_strtoul(this_opt + 24, 0,
-> -				(unsigned long *)&viafb_platform_epia_dvi);
-> -		else if (!strncmp(this_opt,
-> -			"viafb_device_lcd_dualedge=", 26))
-> -			strict_strtoul(this_opt + 26, 0,
-> -				(unsigned long *)&viafb_device_lcd_dualedge);
-> -		else if (!strncmp(this_opt, "viafb_bus_width=", 16))
-> -			strict_strtoul(this_opt + 16, 0,
-> -				(unsigned long *)&viafb_bus_width);
-> -		else if (!strncmp(this_opt, "viafb_lcd_mode=", 15))
-> -			strict_strtoul(this_opt + 15, 0,
-> -				(unsigned long *)&viafb_lcd_mode);
-> -		else if (!strncmp(this_opt, "viafb_lcd_port=", 15))
-> +		} else if (!strncmp(this_opt,
-> +			"viafb_display_hardware_layout=", 30)) {
-> +			if (kstrtoint(this_opt + 30, 0,
-> +				&viafb_display_hardware_layout)<  0)
-> +				return -EINVAL;
-> +		} else if (!strncmp(this_opt, "viafb_second_size=", 18)) {
-> +			if (kstrtoint(this_opt + 18, 0,&viafb_second_size)<  0)
-> +				return -EINVAL;
-> +		} else if (!strncmp(this_opt,
-> +			"viafb_platform_epia_dvi=", 24)) {
-> +			if (kstrtoint(this_opt + 24, 0,
-> +				&viafb_platform_epia_dvi)<  0)
-> +				return -EINVAL;
-> +		} else if (!strncmp(this_opt,
-> +			"viafb_device_lcd_dualedge=", 26)) {
-> +			if (kstrtoint(this_opt + 26, 0,
-> +				&viafb_device_lcd_dualedge)<  0)
-> +				return -EINVAL;
-> +		} else if (!strncmp(this_opt, "viafb_bus_width=", 16)) {
-> +			if (kstrtoint(this_opt + 16, 0,&viafb_bus_width)<  0)
-> +				return -EINVAL;
-> +		} else if (!strncmp(this_opt, "viafb_lcd_mode=", 15)) {
-> +			if (kstrtoint(this_opt + 15, 0,&viafb_lcd_mode)<  0)
-> +				return -EINVAL;
-> +		} else if (!strncmp(this_opt, "viafb_lcd_port=", 15)) {
->   			viafb_lcd_port = kstrdup(this_opt + 15, GFP_KERNEL);
-> -		else if (!strncmp(this_opt, "viafb_dvi_port=", 15))
-> +		} else if (!strncmp(this_opt, "viafb_dvi_port=", 15)) {
->   			viafb_dvi_port = kstrdup(this_opt + 15, GFP_KERNEL);
-> +		}
->   	}
->   	return 0;
->   }
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 4f57485..6a6f92e 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -493,7 +493,8 @@ static int get_est_timing(unsigned char *block, struct fb_videomode *mode)
+ 	return num;
+ }
+ 
+-static int get_std_timing(unsigned char *block, struct fb_videomode *mode)
++static int get_std_timing(unsigned char *block, struct fb_videomode *mode,
++		int ver, int rev)
+ {
+ 	int xres, yres = 0, refresh, ratio, i;
+ 
+@@ -504,7 +505,10 @@ static int get_std_timing(unsigned char *block, struct fb_videomode *mode)
+ 	ratio = (block[1] & 0xc0) >> 6;
+ 	switch (ratio) {
+ 	case 0:
+-		yres = xres;
++		if (ver < 1 || (ver = 1 && rev < 3))
++			yres = xres;
++		else
++			yres = (xres * 10)/16;
+ 		break;
+ 	case 1:
+ 		yres = (xres * 3)/4;
+@@ -533,12 +537,12 @@ static int get_std_timing(unsigned char *block, struct fb_videomode *mode)
+ }
+ 
+ static int get_dst_timing(unsigned char *block,
+-			  struct fb_videomode *mode)
++			  struct fb_videomode *mode, int ver, int rev)
+ {
+ 	int j, num = 0;
+ 
+ 	for (j = 0; j < 6; j++, block += STD_TIMING_DESCRIPTION_SIZE)
+-		num += get_std_timing(block, &mode[num]);
++		num += get_std_timing(block, &mode[num], ver, rev);
+ 
+ 	return num;
+ }
+@@ -599,6 +603,10 @@ static struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize)
+ 	struct fb_videomode *mode, *m;
+ 	unsigned char *block;
+ 	int num = 0, i, first = 1;
++	int ver, rev;
++
++	ver = edid[EDID_STRUCT_VERSION];
++	rev = edid[EDID_STRUCT_REVISION];
+ 
+ 	mode = kzalloc(50 * sizeof(struct fb_videomode), GFP_KERNEL);
+ 	if (mode = NULL)
+@@ -632,12 +640,12 @@ static struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize)
+ 	DPRINTK("   Standard Timings\n");
+ 	block = edid + STD_TIMING_DESCRIPTIONS_START;
+ 	for (i = 0; i < STD_TIMING; i++, block += STD_TIMING_DESCRIPTION_SIZE)
+-		num += get_std_timing(block, &mode[num]);
++		num += get_std_timing(block, &mode[num], ver, rev);
+ 
+ 	block = edid + DETAILED_TIMING_DESCRIPTIONS_START;
+ 	for (i = 0; i < 4; i++, block+= DETAILED_TIMING_DESCRIPTION_SIZE) {
+ 		if (block[0] = 0x00 && block[1] = 0x00 && block[3] = 0xfa)
+-			num += get_dst_timing(block + 5, &mode[num]);
++			num += get_dst_timing(block + 5, &mode[num], ver, rev);
+ 	}
+ 
+ 	/* Yikes, EDID data is totally useless */
+-- 
+1.7.4.1
 

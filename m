@@ -1,57 +1,51 @@
-From: Ajay Kumar <ajaykumar.rs@samsung.com>
-Date: Thu, 25 Aug 2011 13:54:49 +0000
-Subject: [PATCH 1/2] ARM: SAMSUNG: Add Window Positioning Support for s3c-fb
-Message-Id: <1314301917-9938-2-git-send-email-ajaykumar.rs@samsung.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Fri, 26 Aug 2011 05:56:45 +0000
+Subject: RE: [PATCH 1/2] ARM: SAMSUNG: Add Window Positioning Support for
+Message-Id: <21291097.203481314338204818.JavaMail.weblogic@epml27>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314301917-9938-1-git-send-email-ajaykumar.rs@samsung.com>
-In-Reply-To: <1314301917-9938-1-git-send-email-ajaykumar.rs@samsung.com>
+References: <1314301917-9938-2-git-send-email-ajaykumar.rs@samsung.com>
+In-Reply-To: <1314301917-9938-2-git-send-email-ajaykumar.rs@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: AJAY KUMAR RAMAKRISHNA SHYMALAMMA <ajaykumar.rs@samsung.com>
+Cc: "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "FlorianSchandinat@gmx.de" <FlorianSchandinat@gmx.de>, "lethal@linux-sh.org" <lethal@linux-sh.org>, Jingoo Han <jg1.han@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, "ben-linux@fluff.org" <ben-linux@fluff.org>, BANAJIT GOSWAMI <banajit.g@samsung.com>
 
-This patch:
-	--adds a data-structure to hold the current position of windows.
-	--adds an ioctl number to support dynamic positioning the windows.
-
-Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
-Signed-off-by: Banajit Goswami <banajit.g@samsung.com>
----
- arch/arm/plat-samsung/include/plat/fb.h |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
-
-diff --git a/arch/arm/plat-samsung/include/plat/fb.h b/arch/arm/plat-samsung/include/plat/fb.h
-index bd79c0a..77ed75c 100644
---- a/arch/arm/plat-samsung/include/plat/fb.h
-+++ b/arch/arm/plat-samsung/include/plat/fb.h
-@@ -22,6 +22,18 @@
-  */
- #define S3C_FB_MAX_WIN	(5)
- 
-+/* struct s3cfb_window_pos
-+ * @win_pos_x: X-coordinate of window from the left.
-+ * @win_pos_y: Y-coordinate of window from the top.
-+ */
-+struct s3cfb_window_pos {
-+	int	win_pos_x;
-+	int	win_pos_y;
-+};
-+
-+/* Custom ioctl */
-+#define S3CFB_WIN_POSITION	_IOW('F', 1, struct s3cfb_window_pos)
-+
- /**
-  * struct s3c_fb_pd_win - per window setup data
-  * @win_mode: The display parameters to initialise (not for window 0)
-@@ -35,6 +47,8 @@ struct s3c_fb_pd_win {
- 	unsigned short		max_bpp;
- 	unsigned short		virtual_x;
- 	unsigned short		virtual_y;
-+
-+	struct s3cfb_window_pos		winpos;
- };
- 
- /**
--- 
-1.7.0.4
-
+CkhpLCBBamF5Lgo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tCj4gRnJvbTogQWpheSBLdW1h
+ciBbbWFpbHRvOmFqYXlrdW1hci5yc0BzYW1zdW5nLmNvbV0KPiBTZW50OiBGcmlkYXksIEF1Z3Vz
+dCAyNiwgMjAxMSA0OjUyIEFNCj4gVG86IGxpbnV4LXNhbXN1bmctc29jQHZnZXIua2VybmVsLm9y
+ZzsgbGludXgtZmJkZXZAdmdlci5rZXJuZWwub3JnOyBsaW51eC0KPiBhcm0ta2VybmVsQGxpc3Rz
+LmluZnJhZGVhZC5vcmcKPiBDYzogRmxvcmlhblNjaGFuZGluYXRAZ214LmRlOyBsZXRoYWxAbGlu
+dXgtc2gub3JnOyBqZzEuaGFuQHNhbXN1bmcuY29tOwo+IG0uc3p5cHJvd3NraUBzYW1zdW5nLmNv
+bTsgYmVuLWxpbnV4QGZsdWZmLm9yZzsgYmFuYWppdC5nQHNhbXN1bmcuY29tCj4gU3ViamVjdDog
+W1BBVENIIDEvMl0gQVJNOiBTQU1TVU5HOiBBZGQgV2luZG93IFBvc2l0aW9uaW5nIFN1cHBvcnQg
+Zm9yIHMzYy0KPiBmYiBkcml2ZXIKPiAKPiBUaGlzIHBhdGNoOgo+IAktLWFkZHMgYSBkYXRhLXN0
+cnVjdHVyZSB0byBob2xkIHRoZSBjdXJyZW50IHBvc2l0aW9uIG9mIHdpbmRvd3MuCj4gCS0tYWRk
+cyBhbiBpb2N0bCBudW1iZXIgdG8gc3VwcG9ydCBkeW5hbWljIHBvc2l0aW9uaW5nIHRoZSB3aW5k
+b3dzLgo+IAo+IFNpZ25lZC1vZmYtYnk6IEFqYXkgS3VtYXIgPGFqYXlrdW1hci5yc0BzYW1zdW5n
+LmNvbT4KPiBTaWduZWQtb2ZmLWJ5OiBCYW5haml0IEdvc3dhbWkgPGJhbmFqaXQuZ0BzYW1zdW5n
+LmNvbT4KPiAtLS0KPiAgYXJjaC9hcm0vcGxhdC1zYW1zdW5nL2luY2x1ZGUvcGxhdC9mYi5oIHwg
+ICAxNCArKysrKysrKysrKysrKwo+ICAxIGZpbGVzIGNoYW5nZWQsIDE0IGluc2VydGlvbnMoKyks
+IDAgZGVsZXRpb25zKC0pCj4gCj4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtL3BsYXQtc2Ftc3VuZy9p
+bmNsdWRlL3BsYXQvZmIuaCBiL2FyY2gvYXJtL3BsYXQtCj4gc2Ftc3VuZy9pbmNsdWRlL3BsYXQv
+ZmIuaAo+IGluZGV4IGJkNzljMGEuLjc3ZWQ3NWMgMTAwNjQ0Cj4gLS0tIGEvYXJjaC9hcm0vcGxh
+dC1zYW1zdW5nL2luY2x1ZGUvcGxhdC9mYi5oCj4gKysrIGIvYXJjaC9hcm0vcGxhdC1zYW1zdW5n
+L2luY2x1ZGUvcGxhdC9mYi5oCj4gQEAgLTIyLDYgKzIyLDE4IEBACj4gICAqLwo+ICAjZGVmaW5l
+IFMzQ19GQl9NQVhfV0lOCSg1KQo+IAo+ICsvKiBzdHJ1Y3QgczNjZmJfd2luZG93X3Bvcwo+ICsg
+KiBAd2luX3Bvc194OiBYLWNvb3JkaW5hdGUgb2Ygd2luZG93IGZyb20gdGhlIGxlZnQuCj4gKyAq
+IEB3aW5fcG9zX3k6IFktY29vcmRpbmF0ZSBvZiB3aW5kb3cgZnJvbSB0aGUgdG9wLgo+ICsgKi8K
+PiArc3RydWN0IHMzY2ZiX3dpbmRvd19wb3Mgewo+ICsJaW50CXdpbl9wb3NfeDsKPiArCWludAl3
+aW5fcG9zX3k7Cj4gK307Cj4gKwo+ICsvKiBDdXN0b20gaW9jdGwgKi8KPiArI2RlZmluZSBTM0NG
+Ql9XSU5fUE9TSVRJT04JX0lPVygnRicsIDEsIHN0cnVjdCBzM2NmYl93aW5kb3dfcG9zKQpDYW4g
+eW91IGNoYW5nZSB0aGUgbnVtYmVyIGZyb20gMSB0byAyMDMgYXMgZm9sbG93cz8KKyNkZWZpbmUg
+UzNDRkJfV0lOX1BPU0lUSU9OCV9JT1coJ0YnLCAyMDMsIHN0cnVjdCBzM2NmYl93aW5kb3dfcG9z
+KQpXZSBhbHJlYWR5IHVzZSB0aGlzIG51bWJlciBhcyBTM0NGQl9XSU5fUE9TSVRJT04uCj4gKwo+
+ICAvKioKPiAgICogc3RydWN0IHMzY19mYl9wZF93aW4gLSBwZXIgd2luZG93IHNldHVwIGRhdGEK
+PiAgICogQHdpbl9tb2RlOiBUaGUgZGlzcGxheSBwYXJhbWV0ZXJzIHRvIGluaXRpYWxpc2UgKG5v
+dCBmb3Igd2luZG93IDApCj4gQEAgLTM1LDYgKzQ3LDggQEAgc3RydWN0IHMzY19mYl9wZF93aW4g
+ewo+ICAJdW5zaWduZWQgc2hvcnQJCW1heF9icHA7Cj4gIAl1bnNpZ25lZCBzaG9ydAkJdmlydHVh
+bF94Owo+ICAJdW5zaWduZWQgc2hvcnQJCXZpcnR1YWxfeTsKPiArCj4gKwlzdHJ1Y3QgczNjZmJf
+d2luZG93X3BvcwkJd2lucG9zOwo+ICB9Owo+IAo+ICAvKioKPiAtLQo+IDEuNy4wLjQKCgr/9Oi6
+ey5uxyuJt5+uia2GKyWKy/+x6d22F6WKd/+6ey5uxyuJt6WKe7H99t16/+Ke2F5uh3Kh9qZ6yxqB
+62iZqOit2iaj++B6v+R6ud6X+iuAyit6ZqOit2iaiKd+hq2G22n//++B6v+R6ud6X+iuD+ZqOit2
+iaj+Kd+j+G0K

@@ -1,51 +1,42 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Fri, 12 Aug 2011 12:06:06 +0000
-Subject: Re: How should .fb_check_var adjust parameters ?
-Message-Id: <4E45172E.3020409@gmx.de>
+Date: Sat, 27 Aug 2011 19:32:34 +0000
+Subject: [PATCH] MAINTAINERS: change framebuffer maintainer
+Message-Id: <1314473554-3317-1-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201108121308.59532.laurent.pinchart@ideasonboard.com>
-In-Reply-To: <201108121308.59532.laurent.pinchart@ideasonboard.com>
+References: <4E4A1AB1.6040001@gmx.de>
+In-Reply-To: <4E4A1AB1.6040001@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Hi Laurent,
+As Paul has not much time for it I take over maintaining the
+framebuffer subsystem.
 
-On 08/12/2011 11:08 AM, Laurent Pinchart wrote:
-> Hi everybody,
->
-> I'm implementing support for fb_set_par() in a driver, and came to think about
-> how fb_check_var should behave.
->
-> The purpose of that operation is to let drivers verify and adjust a given set
-> of fb_var_screeninfo parameters. Looking at various fbdev drivers, the
-> function behaviour is clearly left to the author's preferences. Some drivers
-> return an error when the parameters don't match the hardware capabilities
-> exactly, other drivers adjust them in pretty much non-standardized ways, and
-> some other drivers mix both behaviours.
->
-> Is anyone aware of guidelines regarding how .fb_char_var should be implemented
-> ? Under which conditions should it return an error, and under which conditions
-> should it adjust parameters ? When adjusting parameters, how should it do so ?
-> For instance, if xres>  xres_virtual, should xres be lowered or xres_virtual
-> raised ?
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+---
+ MAINTAINERS |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-I try to stick to
-drivers/video/skeletonfb.c
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 1d445f5..ac7e485 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2649,11 +2649,11 @@ F:	drivers/net/wan/dlci.c
+ F:	drivers/net/wan/sdla.c
+ 
+ FRAMEBUFFER LAYER
+-M:	Paul Mundt <lethal@linux-sh.org>
++M:	Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+ L:	linux-fbdev@vger.kernel.org
+ W:	http://linux-fbdev.sourceforge.net/
+ Q:	http://patchwork.kernel.org/project/linux-fbdev/list/
+-T:	git git://git.kernel.org/pub/scm/linux/kernel/git/lethal/fbdev-2.6.git
++T:	git git://github.com/schandinat/linux-2.6.git fbdev-next
+ S:	Maintained
+ F:	Documentation/fb/
+ F:	Documentation/devicetree/bindings/fb/
+-- 
+1.6.3.2
 
-  *	If the var passed in is slightly
-  *	off by what the hardware can support then we alter the var PASSED in
-  *	to what we can do.
-  *
-  *      For values that are off, this function must round them _up_ to the
-  *      next value that is supported by the hardware.  If the value is
-  *      greater than the highest value supported by the hardware, then this
-  *      function must return -EINVAL.
-
-Sure that still allows a lot of differences in implementation.
-
-
-Best regards,
-
-Florian Tobias Schandinat

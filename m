@@ -1,44 +1,50 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Sat, 13 Aug 2011 09:42:41 +0000
-Subject: Re: [PATCH/RFC] fbdev: Add FOURCC-based format configuration API
-Message-Id: <CAMuHMdVywgXhfrvGm4QzE79hPX-fRdY4eSFQP45XqAah_YdQ5Q@mail.gmail.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 31 Aug 2011 11:00:51 +0000
+Subject: [PATCH v2 0/8] sh_mobile_lcdc: Support format changes at runtime
+Message-Id: <1314788459-31791-1-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4DDAE63A.3070203@gmx.de>
-	<4E35DD38.7070609@gmx.de>
-	<CAMuHMdUMW3QC_43aKvw2KQqEmzmeXXois8+zFg+S+DG785GwjA@mail.gmail.com>
-	<201108111919.54649.laurent.pinchart@ideasonboard.com>
-In-Reply-To: <201108111919.54649.laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-Hi LAurent,
+Hi everybody,
 
-On Thu, Aug 11, 2011 at 19:19, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
-> On Monday 01 August 2011 11:49:46 Geert Uytterhoeven wrote:
->> As several of the FOURCC formats duplicate formats you can already specify
->> in some other way (e.g. the RGB and greyscale formats), and as FOURCC makes
->> life easier for the application writer, I'm wondering whether it makes sense
->> to add FOURCC support in the generic layer for drivers that don't support
->> it? I.e. the generic layer would fill in fb_var_screeninfo depending on the
->> requested FOURCC mode, if possible.
->
-> That's a good idea, but I'd like to add that in a second step. I'm working on
-> a proof-of-concept by porting a driver to the FOURCC-based API first.
+Here's the second version of the .fb_set_par() support for the sh_mobile_lc=
+dc
+driver patch set. It allows userspace to change the frame buffer format and
+size at runtime. The patches apply on top of Florian's fbdev-next branch
+available at git://github.com/schandinat/linux-2.6.git.
 
-Sure! I was just mentioning it, so we keep it in the back of our head and don't
-make decisions now that would make it impossible to add that later.
+Compared to v1, this version includes an additional MERAM fix.
 
-Gr{oetje,eeting}s,
+Frame buffer memory reallocation is currently not supported. You will need =
+to
+make sure platform data sets the maximum size and bpp to high enough values
+for all formats and sizes you want to support at runtime.
 
-                        Geert
+The patches have been tested with the fbdev-test utility
+(http://git.ideasonboard.org/?p=FBdev-test.git;a=3Dsummary) on a Mackerel b=
+oard.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Laurent Pinchart (8):
+  sh_mobile_meram: Reset ICBs at unregistration time
+  fbdev: sh_mobile_lcdc: Adjust requested parameters in .fb_check_var
+  fbdev: sh_mobile_lcdc: Add support for format changes at runtime
+  fbdev: sh_mobile_lcdc: use display information in info for panning
+  fbdev: sh_mobile_lcdc: Update fix.line_length in .fb_set_par()
+  fbdev: sh_mobile_lcdc: Avoid forward declarations
+  fbdev: sh_mobile_lcdc: Split channel initialization from probe
+    function
+  fbdev: sh_mobile_lcdc: Remove sh_mobile_lcdc_set_bpp()
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+ drivers/video/sh_mobile_lcdcfb.c |  570 +++++++++++++++++++++-------------=
+----
+ drivers/video/sh_mobile_meram.c  |    6 +-
+ 2 files changed, 313 insertions(+), 263 deletions(-)
+
+--=20
+Regards,
+
+Laurent Pinchart
+

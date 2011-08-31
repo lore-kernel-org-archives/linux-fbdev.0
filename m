@@ -1,52 +1,52 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 07 Aug 2011 15:46:54 +0000
-Subject: [PATCH 0/6] viafb modesetting update 2
-Message-Id: <cover.1312730859.git.FlorianSchandinat@gmx.de>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 31 Aug 2011 11:00:54 +0000
+Subject: [PATCH v2 3/8] fbdev: sh_mobile_lcdc: Add support for format changes at runtime
+Message-Id: <1314788459-31791-4-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Hi all,
+Implement .fb_set_par to support frame buffer format changes at runtime.
 
-this is the second patch series. It's a little less stable than the 
-previous one but it contains some great internal improvements.
-We do no longer rely on the modetable structure across all sections 
-and we use the values in var directly for CRT and DVI when possible. 
-Basically this enables us to allow arbitary modes passed in var. 
-That's not implemented yet and probably will never be the default as 
-we want to do some sanity checking in check_var for the devices 
-connected but would allow overriding buggy information.
-Anyway with these patches it will be very simple to avoid the buggy 
-modetable we use at the moment.
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/sh_mobile_lcdcfb.c |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
-
-Best regards,
-
-Florian Tobias Schandinat
-
-
-Florian Tobias Schandinat (6):
-  viafb: add new funcions to select a single mode
-  viafb: eliminate viafb_get_pixclock
-  viafb: use information in var for modesetting
-  viafb: seperate hardware initialization
-  viafb: eliminate modetable dependancy of LCD modesetting
-  viafb: get rid of the remaining modetable structure assumptions
-
- drivers/video/via/dvi.c      |   30 ++----
- drivers/video/via/dvi.h      |    3 +-
- drivers/video/via/global.c   |    2 +
- drivers/video/via/global.h   |    2 +
- drivers/video/via/hw.c       |  229 ++++++++++++++++-------------------------
- drivers/video/via/hw.h       |   12 +--
- drivers/video/via/lcd.c      |   12 +--
- drivers/video/via/lcd.h      |    5 +-
- drivers/video/via/share.h    |    4 -
- drivers/video/via/viafbdev.c |   38 +++----
- drivers/video/via/viamode.c  |   58 ++++++++---
- drivers/video/via/viamode.h  |    4 +-
- 12 files changed, 177 insertions(+), 222 deletions(-)
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 33b0ff8..f9f420d 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -1154,6 +1154,19 @@ static int sh_mobile_check_var(struct fb_var_screeninfo *var, struct fb_info *in
+ 	return 0;
+ }
+ 
++static int sh_mobile_set_par(struct fb_info *info)
++{
++	struct sh_mobile_lcdc_chan *ch = info->par;
++	int ret;
++
++	sh_mobile_lcdc_stop(ch->lcdc);
++	ret = sh_mobile_lcdc_start(ch->lcdc);
++	if (ret < 0)
++		dev_err(info->dev, "%s: unable to restart LCDC\n", __func__);
++
++	return ret;
++}
++
+ /*
+  * Screen blanking. Behavior is as follows:
+  * FB_BLANK_UNBLANK: screen unblanked, clocks enabled
+@@ -1211,6 +1224,7 @@ static struct fb_ops sh_mobile_lcdc_ops = {
+ 	.fb_open	= sh_mobile_open,
+ 	.fb_release	= sh_mobile_release,
+ 	.fb_check_var	= sh_mobile_check_var,
++	.fb_set_par	= sh_mobile_set_par,
+ };
+ 
+ static int sh_mobile_lcdc_update_bl(struct backlight_device *bdev)
+-- 
+1.7.3.4
 

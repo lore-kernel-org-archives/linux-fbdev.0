@@ -1,62 +1,163 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 31 Aug 2011 11:00:56 +0000
-Subject: [PATCH v2 5/8] fbdev: sh_mobile_lcdc: Update fix.line_length in .fb_set_par()
-Message-Id: <1314788459-31791-6-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 31 Aug 2011 13:23:21 +0000
+Subject: [PATCH 10/12] OMAP: DSS2: Generic-dpi: add detect & read_edid support
+Message-Id: <1314797003-17638-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Instead of updating the fixed screen information line length manually
-after calling fb_set_var() in sh_mobile_fb_reconfig(), update the field
-in the .fb_set_par() operation handler.
+Add i2c_bus_num field to panel_generic_dpi_data, and use it in the
+panel-generic-dpi.c to detect if a panel is connected and to read EDID
+from the panel.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Original by: Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |   17 +++++++++++------
- 1 files changed, 11 insertions(+), 6 deletions(-)
+ drivers/video/omap2/displays/panel-generic-dpi.c |   92 ++++++++++++++++++++++
+ include/video/omap-panel-generic-dpi.h           |    2 +
+ 2 files changed, 94 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 1ff215c..b6da1d6 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -998,11 +998,6 @@ static void sh_mobile_fb_reconfig(struct fb_info *info)
- 		/* Couldn't reconfigure, hopefully, can continue as before */
- 		return;
+diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
+index 9c90f75..6ef36ad 100644
+--- a/drivers/video/omap2/displays/panel-generic-dpi.c
++++ b/drivers/video/omap2/displays/panel-generic-dpi.c
+@@ -34,6 +34,8 @@
+ #include <linux/delay.h>
+ #include <linux/slab.h>
+ #include <video/omapdss.h>
++#include <linux/i2c.h>
++#include <drm/drm_edid.h>
  
--	if (info->var.nonstd)
--		info->fix.line_length = mode1.xres;
--	else
--		info->fix.line_length = mode1.xres * (ch->cfg.bpp / 8);
--
- 	/*
- 	 * fb_set_var() calls the notifier change internally, only if
- 	 * FBINFO_MISC_USEREVENT flag is set. Since we do not want to fake a
-@@ -1157,12 +1152,22 @@ static int sh_mobile_check_var(struct fb_var_screeninfo *var, struct fb_info *in
- static int sh_mobile_set_par(struct fb_info *info)
- {
- 	struct sh_mobile_lcdc_chan *ch = info->par;
-+	u32 line_length = info->fix.line_length;
- 	int ret;
+ #include <video/omap-panel-generic-dpi.h>
  
- 	sh_mobile_lcdc_stop(ch->lcdc);
-+
-+	if (info->var.nonstd)
-+		info->fix.line_length = info->var.xres;
-+	else
-+		info->fix.line_length = info->var.xres
-+				      * info->var.bits_per_pixel / 8;
-+
- 	ret = sh_mobile_lcdc_start(ch->lcdc);
--	if (ret < 0)
-+	if (ret < 0) {
- 		dev_err(info->dev, "%s: unable to restart LCDC\n", __func__);
-+		info->fix.line_length = line_length;
-+	}
- 
- 	return ret;
+@@ -407,6 +409,93 @@ static int generic_dpi_panel_check_timings(struct omap_dss_device *dssdev,
+ 	return dpi_check_timings(dssdev, timings);
  }
+ 
++
++static int generic_dpi_ddc_read(struct i2c_adapter *adapter,
++		unsigned char *buf, u16 count, u8 offset)
++{
++	int r, retries;
++
++	for (retries = 3; retries > 0; retries--) {
++		struct i2c_msg msgs[] = {
++			{
++				.addr   = DDC_ADDR,
++				.flags  = 0,
++				.len    = 1,
++				.buf    = &offset,
++			}, {
++				.addr   = DDC_ADDR,
++				.flags  = I2C_M_RD,
++				.len    = count,
++				.buf    = buf,
++			}
++		};
++
++		r = i2c_transfer(adapter, msgs, 2);
++		if (r = 2)
++			return 0;
++
++		if (r != -EAGAIN)
++			break;
++	}
++
++	return r < 0 ? r : -EIO;
++}
++
++static int generic_dpi_panel_read_edid(struct omap_dss_device *dssdev,
++		u8 *edid, int len)
++{
++	struct panel_generic_dpi_data *panel_data = get_panel_data(dssdev);
++	struct i2c_adapter *adapter;
++	int r, l, bytes_read;
++
++	if (panel_data->i2c_bus_num = 0)
++		return -ENODEV;
++
++	adapter = i2c_get_adapter(panel_data->i2c_bus_num);
++	if (!adapter) {
++		dev_err(&dssdev->dev, "Failed to get I2C adapter, bus %d\n",
++				panel_data->i2c_bus_num);
++		return -EINVAL;
++	}
++
++	l = min(EDID_LENGTH, len);
++	r = generic_dpi_ddc_read(adapter, edid, l, 0);
++	if (r)
++		return r;
++
++	bytes_read = l;
++
++	/* if there are extensions, read second block */
++	if (len > EDID_LENGTH && edid[0x7e] > 0) {
++		l = min(EDID_LENGTH, len - EDID_LENGTH);
++
++		r = generic_dpi_ddc_read(adapter, edid + EDID_LENGTH,
++				l, EDID_LENGTH);
++		if (r)
++			return r;
++
++		bytes_read += l;
++	}
++
++	return bytes_read;
++}
++
++static bool generic_dpi_panel_detect(struct omap_dss_device *dssdev)
++{
++	struct panel_generic_dpi_data *panel_data = get_panel_data(dssdev);
++	struct i2c_adapter *adapter;
++	unsigned char out;
++
++	if (panel_data->i2c_bus_num = 0)
++		return true;
++
++	adapter = i2c_get_adapter(panel_data->i2c_bus_num);
++	if (!adapter)
++		return true;
++
++	return generic_dpi_ddc_read(adapter, &out, 1, 0) = 0;
++}
++
+ static struct omap_dss_driver dpi_driver = {
+ 	.probe		= generic_dpi_panel_probe,
+ 	.remove		= __exit_p(generic_dpi_panel_remove),
+@@ -420,6 +509,9 @@ static struct omap_dss_driver dpi_driver = {
+ 	.get_timings	= generic_dpi_panel_get_timings,
+ 	.check_timings	= generic_dpi_panel_check_timings,
+ 
++	.read_edid	= generic_dpi_panel_read_edid,
++	.detect		= generic_dpi_panel_detect,
++
+ 	.driver         = {
+ 		.name   = "generic_dpi_panel",
+ 		.owner  = THIS_MODULE,
+diff --git a/include/video/omap-panel-generic-dpi.h b/include/video/omap-panel-generic-dpi.h
+index 127e3f2..3ab023a 100644
+--- a/include/video/omap-panel-generic-dpi.h
++++ b/include/video/omap-panel-generic-dpi.h
+@@ -27,11 +27,13 @@ struct omap_dss_device;
+  * @name: panel name
+  * @platform_enable: platform specific panel enable function
+  * @platform_disable: platform specific panel disable function
++ * @i2c_bus_num: i2c bus id for the panel
+  */
+ struct panel_generic_dpi_data {
+ 	const char *name;
+ 	int (*platform_enable)(struct omap_dss_device *dssdev);
+ 	void (*platform_disable)(struct omap_dss_device *dssdev);
++	u16 i2c_bus_num;
+ };
+ 
+ #endif /* __OMAP_PANEL_GENERIC_DPI_H */
 -- 
-1.7.3.4
+1.7.4.1
 

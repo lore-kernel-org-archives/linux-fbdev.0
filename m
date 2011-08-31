@@ -1,108 +1,167 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 31 Aug 2011 13:21:47 +0000
-Subject: [PATCH 7/8] OMAP: DSS2: DISPC: improve dispc_mgr_enable_digit_out()
-Message-Id: <1314796908-17354-8-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 31 Aug 2011 13:23:15 +0000
+Subject: [PATCH 04/12] OMAP: DSS2: HDMI: implement read_edid()
+Message-Id: <1314797003-17638-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314796908-17354-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314796908-17354-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-dispc_mgr_enable_digit_out() didn't handle HDMI case very well.
-
-Improve the function to use FRAMEDONETV interrupt to see when HDMI has
-been disabled.
+Implement read_edid() for HDMI by implementing necessary functions to
+hdmi.c and to hdmi_omap4_panel.c.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |   49 +++++++++++++++++++++++----------------
- 1 files changed, 29 insertions(+), 20 deletions(-)
+ drivers/video/omap2/dss/dss.h              |    1 +
+ drivers/video/omap2/dss/hdmi.c             |   60 ++++++++++++++++++---------
+ drivers/video/omap2/dss/hdmi_omap4_panel.c |   24 +++++++++++
+ 3 files changed, 65 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 7f3d847..4af4bd4 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -1924,11 +1924,16 @@ static void _enable_digit_out(bool enable)
- static void dispc_mgr_enable_digit_out(bool enable)
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 57b1a01..6102b80 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -492,6 +492,7 @@ void omapdss_hdmi_display_disable(struct omap_dss_device *dssdev);
+ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev);
+ int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
+ 					struct omap_video_timings *timings);
++int omapdss_hdmi_read_edid(u8 *buf, int len);
+ int hdmi_panel_init(void);
+ void hdmi_panel_exit(void);
+ 
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 8f8ae0e..5e66cb8 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -471,29 +471,32 @@ static int read_edid(u8 *pedid, u16 max_length)
  {
- 	struct completion frame_done_completion;
--	int r;
-+	enum dss_hdmi_venc_clk_source_select src;
-+	int r, i;
-+	u32 irq_mask;
-+	int num_irqs;
+ 	int r = 0, n = 0, i = 0;
+ 	int max_ext_blocks = (max_length / 128) - 1;
++	int len;
  
- 	if (REG_GET(DISPC_CONTROL, 1, 1) = enable)
- 		return;
+ 	r = hdmi_core_ddc_edid(pedid, 0);
+-	if (r) {
++	if (r)
+ 		return r;
+-	} else {
+-		n = pedid[0x7e];
  
-+	src = dss_get_hdmi_venc_clk_source();
+-		/*
+-		 * README: need to comply with max_length set by the caller.
+-		 * Better implementation should be to allocate necessary
+-		 * memory to store EDID according to nb_block field found
+-		 * in first block
+-		 */
+-		if (n > max_ext_blocks)
+-			n = max_ext_blocks;
++	len = 128;
++	n = pedid[0x7e];
+ 
+-		for (i = 1; i <= n; i++) {
+-			r = hdmi_core_ddc_edid(pedid, i);
+-			if (r)
+-				return r;
+-		}
++	/*
++	 * README: need to comply with max_length set by the caller.
++	 * Better implementation should be to allocate necessary
++	 * memory to store EDID according to nb_block field found
++	 * in first block
++	 */
++	if (n > max_ext_blocks)
++		n = max_ext_blocks;
 +
- 	if (enable) {
- 		unsigned long flags;
- 		/* When we enable digit output, we'll get an extra digit
-@@ -1945,36 +1950,40 @@ static void dispc_mgr_enable_digit_out(bool enable)
- 	 * wait for the extra sync losts */
- 	init_completion(&frame_done_completion);
++	for (i = 1; i <= n; i++) {
++		r = hdmi_core_ddc_edid(pedid, i);
++		if (r)
++			return r;
++		len += 128;
+ 	}
+-	return 0;
++
++	return len;
+ }
  
-+	if (src = DSS_HDMI_M_PCLK && enable = false) {
-+		irq_mask = DISPC_IRQ_FRAMEDONETV;
-+		num_irqs = 1;
-+	} else {
-+		irq_mask = DISPC_IRQ_EVSYNC_EVEN | DISPC_IRQ_EVSYNC_ODD;
-+		/* XXX I understand from TRM that we should only wait for the
-+		 * current field to complete. But it seems we have to wait for
-+		 * both fields */
-+		num_irqs = 2;
+ static int get_timings_index(void)
+@@ -660,7 +663,7 @@ static void hdmi_read_edid(struct omap_video_timings *dp)
+ 	if (!hdmi.edid_set)
+ 		ret = read_edid(hdmi.edid, HDMI_EDID_MAX_LENGTH);
+ 
+-	if (!ret) {
++	if (ret > 0) {
+ 		if (!memcmp(hdmi.edid, edid_header, sizeof(edid_header))) {
+ 			/* search for timings of default resolution */
+ 			get_edid_timing_data(hdmi.edid);
+@@ -1242,6 +1245,23 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev)
+ 	}
+ }
+ 
++int omapdss_hdmi_read_edid(u8 *buf, int len)
++{
++	int r;
++
++	mutex_lock(&hdmi.lock);
++
++	r = hdmi_runtime_get();
++	BUG_ON(r);
++
++	r = read_edid(buf, len);
++
++	hdmi_runtime_put();
++	mutex_unlock(&hdmi.lock);
++
++	return r;
++}
++
+ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
+ {
+ 	int r = 0;
+diff --git a/drivers/video/omap2/dss/hdmi_omap4_panel.c b/drivers/video/omap2/dss/hdmi_omap4_panel.c
+index 25d5fb2..7adaf7a 100644
+--- a/drivers/video/omap2/dss/hdmi_omap4_panel.c
++++ b/drivers/video/omap2/dss/hdmi_omap4_panel.c
+@@ -185,6 +185,29 @@ err:
+ 	return r;
+ }
+ 
++static int hdmi_read_edid(struct omap_dss_device *dssdev, u8 *buf, int len)
++{
++	int r;
++
++	mutex_lock(&hdmi.hdmi_lock);
++
++	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE) {
++		r = omapdss_hdmi_display_enable(dssdev);
++		if (r)
++			goto err;
 +	}
 +
- 	r = omap_dispc_register_isr(dispc_disable_isr, &frame_done_completion,
--			DISPC_IRQ_EVSYNC_EVEN | DISPC_IRQ_EVSYNC_ODD);
-+			irq_mask);
- 	if (r)
--		DSSERR("failed to register EVSYNC isr\n");
-+		DSSERR("failed to register %x isr\n", irq_mask);
- 
- 	_enable_digit_out(enable);
- 
--	/* XXX I understand from TRM that we should only wait for the
--	 * current field to complete. But it seems we have to wait
--	 * for both fields */
--	if (!wait_for_completion_timeout(&frame_done_completion,
--				msecs_to_jiffies(100)))
--		DSSERR("timeout waiting for EVSYNC\n");
--
--	if (!wait_for_completion_timeout(&frame_done_completion,
--				msecs_to_jiffies(100)))
--		DSSERR("timeout waiting for EVSYNC\n");
-+	for (i = 0; i < num_irqs; ++i) {
-+		if (!wait_for_completion_timeout(&frame_done_completion,
-+					msecs_to_jiffies(100)))
-+			DSSERR("timeout waiting for digit out to %s\n",
-+					enable ? "start" : "stop");
-+	}
- 
--	r = omap_dispc_unregister_isr(dispc_disable_isr,
--			&frame_done_completion,
--			DISPC_IRQ_EVSYNC_EVEN | DISPC_IRQ_EVSYNC_ODD);
-+	r = omap_dispc_unregister_isr(dispc_disable_isr, &frame_done_completion,
-+			irq_mask);
- 	if (r)
--		DSSERR("failed to unregister EVSYNC isr\n");
-+		DSSERR("failed to unregister %x isr\n", irq_mask);
- 
- 	if (enable) {
- 		unsigned long flags;
- 		spin_lock_irqsave(&dispc.irq_lock, flags);
--		dispc.irq_error_mask = DISPC_IRQ_MASK_ERROR;
--		if (dss_has_feature(FEAT_MGR_LCD2))
--			dispc.irq_error_mask |= DISPC_IRQ_SYNC_LOST2;
-+		dispc.irq_error_mask |= DISPC_IRQ_SYNC_LOST_DIGIT;
- 		dispc_write_reg(DISPC_IRQSTATUS, DISPC_IRQ_SYNC_LOST_DIGIT);
- 		_omap_dispc_set_irqs();
- 		spin_unlock_irqrestore(&dispc.irq_lock, flags);
++	r = omapdss_hdmi_read_edid(buf, len);
++
++	if (dssdev->state = OMAP_DSS_DISPLAY_DISABLED ||
++			dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED)
++		omapdss_hdmi_display_disable(dssdev);
++err:
++	mutex_unlock(&hdmi.hdmi_lock);
++
++	return r;
++}
++
+ static struct omap_dss_driver hdmi_driver = {
+ 	.probe		= hdmi_panel_probe,
+ 	.remove		= hdmi_panel_remove,
+@@ -195,6 +218,7 @@ static struct omap_dss_driver hdmi_driver = {
+ 	.get_timings	= hdmi_get_timings,
+ 	.set_timings	= hdmi_set_timings,
+ 	.check_timings	= hdmi_check_timings,
++	.read_edid	= hdmi_read_edid,
+ 	.driver			= {
+ 		.name   = "hdmi_panel",
+ 		.owner  = THIS_MODULE,
 -- 
 1.7.4.1
 

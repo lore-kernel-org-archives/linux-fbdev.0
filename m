@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 31 Aug 2011 13:23:15 +0000
-Subject: [PATCH 04/12] OMAP: DSS2: HDMI: implement read_edid()
-Message-Id: <1314797003-17638-5-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 31 Aug 2011 13:23:17 +0000
+Subject: [PATCH 06/12] OMAP: DSS2: HDMI: split hdmi_core_ddc_edid
+Message-Id: <1314797003-17638-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,157 +11,116 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Implement read_edid() for HDMI by implementing necessary functions to
-hdmi.c and to hdmi_omap4_panel.c.
+Split the DDC initialization off from hdmi_core_ddc_edid() into a
+separate function hdmi_core_ddc_init().
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dss.h              |    1 +
- drivers/video/omap2/dss/hdmi.c             |   60 ++++++++++++++++++---------
- drivers/video/omap2/dss/hdmi_omap4_panel.c |   24 +++++++++++
- 3 files changed, 65 insertions(+), 20 deletions(-)
+ drivers/video/omap2/dss/hdmi.c |   67 +++++++++++++++++++++++++++-------------
+ 1 files changed, 45 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 57b1a01..6102b80 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -492,6 +492,7 @@ void omapdss_hdmi_display_disable(struct omap_dss_device *dssdev);
- void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev);
- int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
- 					struct omap_video_timings *timings);
-+int omapdss_hdmi_read_edid(u8 *buf, int len);
- int hdmi_panel_init(void);
- void hdmi_panel_exit(void);
- 
 diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 8f8ae0e..5e66cb8 100644
+index b5aca64..04ce105 100644
 --- a/drivers/video/omap2/dss/hdmi.c
 +++ b/drivers/video/omap2/dss/hdmi.c
-@@ -471,29 +471,32 @@ static int read_edid(u8 *pedid, u16 max_length)
+@@ -366,12 +366,8 @@ static void hdmi_phy_off(void)
+ 	hdmi_set_phy_pwr(HDMI_PHYPWRCMD_OFF);
+ }
+ 
+-static int hdmi_core_ddc_edid(u8 *pedid, int ext)
++static int hdmi_core_ddc_init(void)
  {
- 	int r = 0, n = 0, i = 0;
- 	int max_ext_blocks = (max_length / 128) - 1;
-+	int len;
+-	u32 i, j;
+-	char checksum = 0;
+-	u32 offset = 0;
+-
+ 	/* Turn on CLK for DDC */
+ 	REG_FLD_MOD(HDMI_CORE_AV_DPD, 0x7, 2, 0);
  
- 	r = hdmi_core_ddc_edid(pedid, 0);
--	if (r) {
-+	if (r)
- 		return r;
--	} else {
--		n = pedid[0x7e];
+@@ -382,32 +378,55 @@ static int hdmi_core_ddc_edid(u8 *pedid, int ext)
+ 	 */
+ 	usleep_range(800, 1000);
  
--		/*
--		 * README: need to comply with max_length set by the caller.
--		 * Better implementation should be to allocate necessary
--		 * memory to store EDID according to nb_block field found
--		 * in first block
--		 */
--		if (n > max_ext_blocks)
--			n = max_ext_blocks;
-+	len = 128;
-+	n = pedid[0x7e];
+-	if (!ext) {
+-		/* Clk SCL Devices */
+-		REG_FLD_MOD(HDMI_CORE_DDC_CMD, 0xA, 3, 0);
++	/* IN_PROG */
++	if (REG_GET(HDMI_CORE_DDC_STATUS, 4, 4) = 1) {
++		/* Abort transaction */
++		REG_FLD_MOD(HDMI_CORE_DDC_CMD, 0xf, 3, 0);
  
--		for (i = 1; i <= n; i++) {
--			r = hdmi_core_ddc_edid(pedid, i);
--			if (r)
--				return r;
+-		/* HDMI_CORE_DDC_STATUS_IN_PROG */
++		/* IN_PROG */
+ 		if (hdmi_wait_for_bit_change(HDMI_CORE_DDC_STATUS,
+-						4, 4, 0) != 0) {
+-			DSSERR("Failed to program DDC\n");
++					4, 4, 0) != 0) {
++			DSSERR("Timeout aborting DDC transaction\n");
+ 			return -ETIMEDOUT;
+ 		}
++	}
+ 
+-		/* Clear FIFO */
+-		REG_FLD_MOD(HDMI_CORE_DDC_CMD, 0x9, 3, 0);
++	/* Clk SCL Devices */
++	REG_FLD_MOD(HDMI_CORE_DDC_CMD, 0xA, 3, 0);
+ 
+-		/* HDMI_CORE_DDC_STATUS_IN_PROG */
+-		if (hdmi_wait_for_bit_change(HDMI_CORE_DDC_STATUS,
+-						4, 4, 0) != 0) {
+-			DSSERR("Failed to program DDC\n");
+-			return -ETIMEDOUT;
 -		}
-+	/*
-+	 * README: need to comply with max_length set by the caller.
-+	 * Better implementation should be to allocate necessary
-+	 * memory to store EDID according to nb_block field found
-+	 * in first block
-+	 */
-+	if (n > max_ext_blocks)
-+		n = max_ext_blocks;
-+
-+	for (i = 1; i <= n; i++) {
-+		r = hdmi_core_ddc_edid(pedid, i);
-+		if (r)
-+			return r;
-+		len += 128;
- 	}
--	return 0;
-+
-+	return len;
- }
++	/* HDMI_CORE_DDC_STATUS_IN_PROG */
++	if (hdmi_wait_for_bit_change(HDMI_CORE_DDC_STATUS, 4, 4, 0) != 0) {
++		DSSERR("Timeout starting SCL clock\n");
++		return -ETIMEDOUT;
++	}
  
- static int get_timings_index(void)
-@@ -660,7 +663,7 @@ static void hdmi_read_edid(struct omap_video_timings *dp)
- 	if (!hdmi.edid_set)
- 		ret = read_edid(hdmi.edid, HDMI_EDID_MAX_LENGTH);
- 
--	if (!ret) {
-+	if (ret > 0) {
- 		if (!memcmp(hdmi.edid, edid_header, sizeof(edid_header))) {
- 			/* search for timings of default resolution */
- 			get_edid_timing_data(hdmi.edid);
-@@ -1242,6 +1245,23 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev)
- 	}
- }
- 
-+int omapdss_hdmi_read_edid(u8 *buf, int len)
-+{
-+	int r;
+-	} else {
+-		if (ext % 2 != 0)
+-			offset = 0x80;
++	/* Clear FIFO */
++	REG_FLD_MOD(HDMI_CORE_DDC_CMD, 0x9, 3, 0);
 +
-+	mutex_lock(&hdmi.lock);
-+
-+	r = hdmi_runtime_get();
-+	BUG_ON(r);
-+
-+	r = read_edid(buf, len);
-+
-+	hdmi_runtime_put();
-+	mutex_unlock(&hdmi.lock);
-+
-+	return r;
-+}
-+
- int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
- {
- 	int r = 0;
-diff --git a/drivers/video/omap2/dss/hdmi_omap4_panel.c b/drivers/video/omap2/dss/hdmi_omap4_panel.c
-index 25d5fb2..7adaf7a 100644
---- a/drivers/video/omap2/dss/hdmi_omap4_panel.c
-+++ b/drivers/video/omap2/dss/hdmi_omap4_panel.c
-@@ -185,6 +185,29 @@ err:
- 	return r;
- }
- 
-+static int hdmi_read_edid(struct omap_dss_device *dssdev, u8 *buf, int len)
-+{
-+	int r;
-+
-+	mutex_lock(&hdmi.hdmi_lock);
-+
-+	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE) {
-+		r = omapdss_hdmi_display_enable(dssdev);
-+		if (r)
-+			goto err;
++	/* HDMI_CORE_DDC_STATUS_IN_PROG */
++	if (hdmi_wait_for_bit_change(HDMI_CORE_DDC_STATUS, 4, 4, 0) != 0) {
++		DSSERR("Timeout clearing DDC fifo\n");
++		return -ETIMEDOUT;
 +	}
 +
-+	r = omapdss_hdmi_read_edid(buf, len);
-+
-+	if (dssdev->state = OMAP_DSS_DISPLAY_DISABLED ||
-+			dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED)
-+		omapdss_hdmi_display_disable(dssdev);
-+err:
-+	mutex_unlock(&hdmi.hdmi_lock);
-+
-+	return r;
++	return 0;
 +}
 +
- static struct omap_dss_driver hdmi_driver = {
- 	.probe		= hdmi_panel_probe,
- 	.remove		= hdmi_panel_remove,
-@@ -195,6 +218,7 @@ static struct omap_dss_driver hdmi_driver = {
- 	.get_timings	= hdmi_get_timings,
- 	.set_timings	= hdmi_set_timings,
- 	.check_timings	= hdmi_check_timings,
-+	.read_edid	= hdmi_read_edid,
- 	.driver			= {
- 		.name   = "hdmi_panel",
- 		.owner  = THIS_MODULE,
++static int hdmi_core_ddc_edid(u8 *pedid, int ext)
++{
++	u32 i, j;
++	char checksum = 0;
++	u32 offset = 0;
++
++	/* HDMI_CORE_DDC_STATUS_IN_PROG */
++	if (hdmi_wait_for_bit_change(HDMI_CORE_DDC_STATUS, 4, 4, 0) != 0) {
++		DSSERR("Timeout waiting DDC to be ready\n");
++		return -ETIMEDOUT;
+ 	}
+ 
++	if (ext % 2 != 0)
++		offset = 0x80;
++
+ 	/* Load Segment Address Register */
+ 	REG_FLD_MOD(HDMI_CORE_DDC_SEGM, ext/2, 7, 0);
+ 
+@@ -468,6 +487,10 @@ static int read_edid(u8 *pedid, u16 max_length)
+ 	int max_ext_blocks = (max_length / 128) - 1;
+ 	int len;
+ 
++	r = hdmi_core_ddc_init();
++	if (r)
++		return r;
++
+ 	r = hdmi_core_ddc_edid(pedid, 0);
+ 	if (r)
+ 		return r;
 -- 
 1.7.4.1
 

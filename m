@@ -1,106 +1,38 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 22 Aug 2011 08:26:09 +0000
-Subject: [PATCH 1/3] Revert "HACK: OMAP: DSS2: clk hack for OMAP2/3"
-Message-Id: <1314001571-17877-2-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 31 Aug 2011 13:21:40 +0000
+Subject: [PATCH 0/8] OMAP: DSS2: misc improvements
+Message-Id: <1314796908-17354-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314001571-17877-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314001571-17877-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This reverts commit 9ede365aa6f74428a1f69c21ca1cf21213167576.
+Some small DSS improvements, mostly HDMI related.
 
-The hack is no longer needed, as the HWMOD data has been fixed.
+ Tomi
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/dsi.c  |    5 +----
- drivers/video/omap2/dss/dss.c  |    5 -----
- drivers/video/omap2/dss/dss.h  |    2 --
- drivers/video/omap2/dss/rfbi.c |    5 +----
- drivers/video/omap2/dss/venc.c |    5 +----
- 5 files changed, 3 insertions(+), 19 deletions(-)
+Tomi Valkeinen (8):
+  OMAP: DSS2: DISPC: Fix minimum PCD value
+  OMAP: DSS2: HDMI: use default dividers
+  OMAP: DSS2: HDMI: change regn definition
+  OMAP: DSS2: DSI: Add comment about regn
+  OMAP: DSS2: DISPC: Add missing IRQ  definitions
+  OMAP: DSS2: add dss_get_hdmi_venc_clk_source()
+  OMAP: DSS2: DISPC: improve dispc_mgr_enable_digit_out()
+  OMAP: DSS2: HDMI: fix hdmi output enable
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 12da2fb..707e5af 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -4441,10 +4441,7 @@ static int dsi_get_clocks(struct platform_device *dsidev)
- 
- 	dsi->dss_clk = clk;
- 
--	if (cpu_is_omap34xx() || cpu_is_omap3630())
--		clk = clk_get(&dsidev->dev, "dss2_alwon_fck");
--	else
--		clk = clk_get(&dsidev->dev, "sys_clk");
-+	clk = clk_get(&dsidev->dev, "sys_clk");
- 	if (IS_ERR(clk)) {
- 		DSSERR("can't get sys_clk\n");
- 		clk_put(dsi->dss_clk);
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 0f9c3a6..9423a2e 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -691,11 +691,6 @@ static void dss_put_clocks(void)
- 	clk_put(dss.dss_clk);
- }
- 
--struct clk *dss_get_ick(void)
--{
--	return clk_get(&dss.pdev->dev, "ick");
--}
--
- int dss_runtime_get(void)
- {
- 	int r;
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 9c94b11..adeff04 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -209,8 +209,6 @@ void dss_uninit_platform_driver(void);
- int dss_runtime_get(void);
- void dss_runtime_put(void);
- 
--struct clk *dss_get_ick(void);
--
- void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select);
- const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
- void dss_dump_clocks(struct seq_file *s);
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index 1bb8ce1..50394ba 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -957,10 +957,7 @@ static int omap_rfbihw_probe(struct platform_device *pdev)
- 
- 	msleep(10);
- 
--	if (cpu_is_omap24xx() || cpu_is_omap34xx() || cpu_is_omap3630())
--		clk = dss_get_ick();
--	else
--		clk = clk_get(&pdev->dev, "ick");
-+	clk = clk_get(&pdev->dev, "ick");
- 	if (IS_ERR(clk)) {
- 		DSSERR("can't get ick\n");
- 		r = PTR_ERR(clk);
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 173c664..71e005d 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -741,10 +741,7 @@ static int venc_get_clocks(struct platform_device *pdev)
- 	venc.tv_clk = clk;
- 
- 	if (dss_has_feature(FEAT_VENC_REQUIRES_TV_DAC_CLK)) {
--		if (cpu_is_omap34xx() || cpu_is_omap3630())
--			clk = clk_get(&pdev->dev, "dss_96m_fck");
--		else
--			clk = clk_get(&pdev->dev, "tv_dac_clk");
-+		clk = clk_get(&pdev->dev, "tv_dac_clk");
- 		if (IS_ERR(clk)) {
- 			DSSERR("can't get tv_dac_clk\n");
- 			clk_put(venc.tv_clk);
+ arch/arm/mach-omap2/board-4430sdp.c    |    9 -----
+ drivers/video/omap2/dss/dispc.c        |   63 ++++++++++++++++++++------------
+ drivers/video/omap2/dss/dss.c          |   11 ++++++
+ drivers/video/omap2/dss/dss.h          |    1 +
+ drivers/video/omap2/dss/dss_features.c |    3 ++
+ drivers/video/omap2/dss/dss_features.h |    1 +
+ drivers/video/omap2/dss/hdmi.c         |   25 +++++++++----
+ include/video/omapdss.h                |    5 +++
+ 8 files changed, 78 insertions(+), 40 deletions(-)
+
 -- 
 1.7.4.1
 

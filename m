@@ -1,52 +1,47 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 19 Aug 2011 09:16:07 +0000
-Subject: [PATCH 2/7] fbdev: sh_mobile_lcdc: Add support for format changes at runtime
-Message-Id: <1313745372-20856-3-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 31 Aug 2011 13:21:48 +0000
+Subject: [PATCH 8/8] OMAP: DSS2: HDMI: fix hdmi output enable
+Message-Id: <1314796908-17354-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1314796908-17354-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1314796908-17354-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Implement .fb_set_par to support frame buffer format changes at runtime.
+Enabling HDMI output often causes sync lost errors. The problem seems to
+go away if we first enable the HDMI output, and only then enable the
+DISPC output.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+This will also fix the dispc's dispc_mgr_enable_digit_out(), as the code
+waits for two VSYNCs after enabling the output. If the HDMI output is
+disabled (as it was previously), there are no VSYNCs and
+dispc_mgr_enable_digit_out() will print timeout errors.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+), 0 deletions(-)
+ drivers/video/omap2/dss/hdmi.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 33b0ff8..f9f420d 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -1154,6 +1154,19 @@ static int sh_mobile_check_var(struct fb_var_screeninfo *var, struct fb_info *in
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 504c507..d08096b 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -1184,10 +1184,10 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
+ 	dispc_set_digit_size(dssdev->panel.timings.x_res,
+ 			dssdev->panel.timings.y_res);
+ 
+-	dispc_mgr_enable(OMAP_DSS_CHANNEL_DIGIT, 1);
+-
+ 	hdmi_wp_video_start(1);
+ 
++	dispc_mgr_enable(OMAP_DSS_CHANNEL_DIGIT, 1);
++
  	return 0;
- }
- 
-+static int sh_mobile_set_par(struct fb_info *info)
-+{
-+	struct sh_mobile_lcdc_chan *ch = info->par;
-+	int ret;
-+
-+	sh_mobile_lcdc_stop(ch->lcdc);
-+	ret = sh_mobile_lcdc_start(ch->lcdc);
-+	if (ret < 0)
-+		dev_err(info->dev, "%s: unable to restart LCDC\n", __func__);
-+
-+	return ret;
-+}
-+
- /*
-  * Screen blanking. Behavior is as follows:
-  * FB_BLANK_UNBLANK: screen unblanked, clocks enabled
-@@ -1211,6 +1224,7 @@ static struct fb_ops sh_mobile_lcdc_ops = {
- 	.fb_open	= sh_mobile_open,
- 	.fb_release	= sh_mobile_release,
- 	.fb_check_var	= sh_mobile_check_var,
-+	.fb_set_par	= sh_mobile_set_par,
- };
- 
- static int sh_mobile_lcdc_update_bl(struct backlight_device *bdev)
+ err:
+ 	hdmi_runtime_put();
 -- 
-1.7.3.4
+1.7.4.1
 

@@ -1,296 +1,120 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 22 Aug 2011 08:27:43 +0000
-Subject: [PATCH 02/10] OMAP: DSS2: DISPC: use lookup tables for bit shifts
-Message-Id: <1314001671-18123-3-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 31 Aug 2011 13:23:20 +0000
+Subject: [PATCH 09/12] OMAP: DSS2: HDMI: implement detect()
+Message-Id: <1314797003-17638-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314001671-18123-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314001671-18123-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Use lookup tables instead of switch/if in some DISPC functions to make
-the code cleaner.
+Implement detect() by checking the hot plug detect status.
+
+The implementation is not very good, as it always turns on the HDMI
+output to get the detection working. HDMI driver needs improvements so
+that we could enable only core parts of it.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Acked-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |  204 ++++++++++-----------------------------
- 1 files changed, 50 insertions(+), 154 deletions(-)
+ drivers/video/omap2/dss/dss.h              |    1 +
+ drivers/video/omap2/dss/hdmi.c             |   18 ++++++++++++++++++
+ drivers/video/omap2/dss/hdmi_omap4_panel.c |   25 +++++++++++++++++++++++++
+ 3 files changed, 44 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 7c76370..f7451fe 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -737,6 +737,9 @@ static void _dispc_set_pre_mult_alpha(enum omap_plane plane, bool enable)
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 6102b80..dd7dc19 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -493,6 +493,7 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev);
+ int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
+ 					struct omap_video_timings *timings);
+ int omapdss_hdmi_read_edid(u8 *buf, int len);
++bool omapdss_hdmi_detect(void);
+ int hdmi_panel_init(void);
+ void hdmi_panel_exit(void);
  
- static void _dispc_setup_global_alpha(enum omap_plane plane, u8 global_alpha)
- {
-+	static const unsigned shifts[] = { 0, 8, 16, };
-+	int shift;
-+
- 	if (!dss_has_feature(FEAT_GLOBAL_ALPHA))
- 		return;
- 
-@@ -744,10 +747,8 @@ static void _dispc_setup_global_alpha(enum omap_plane plane, u8 global_alpha)
- 		plane = OMAP_DSS_VIDEO1)
- 		return;
- 
--	if (plane = OMAP_DSS_GFX)
--		REG_FLD_MOD(DISPC_GLOBAL_ALPHA, global_alpha, 7, 0);
--	else if (plane = OMAP_DSS_VIDEO2)
--		REG_FLD_MOD(DISPC_GLOBAL_ALPHA, global_alpha, 23, 16);
-+	shift = shifts[plane];
-+	REG_FLD_MOD(DISPC_GLOBAL_ALPHA, global_alpha, shift + 7, shift);
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 55edbd2..e8a977e 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -1148,6 +1148,24 @@ int omapdss_hdmi_read_edid(u8 *buf, int len)
+ 	return r;
  }
  
- static void _dispc_set_pix_inc(enum omap_plane plane, s32 inc)
-@@ -891,21 +892,10 @@ void dispc_set_channel_out(enum omap_plane plane,
- static void dispc_set_burst_size(enum omap_plane plane,
- 		enum omap_burst_size burst_size)
++bool omapdss_hdmi_detect(void)
++{
++	int r;
++
++	mutex_lock(&hdmi.lock);
++
++	r = hdmi_runtime_get();
++	BUG_ON(r);
++
++	/* HPD */
++	r = REG_GET(HDMI_CORE_SYS_SYS_STAT, 1, 1);
++
++	hdmi_runtime_put();
++	mutex_unlock(&hdmi.lock);
++
++	return r = 1;
++}
++
+ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
  {
-+	static const unsigned shifts[] = { 6, 14, 14, };
- 	int shift;
+ 	int r = 0;
+diff --git a/drivers/video/omap2/dss/hdmi_omap4_panel.c b/drivers/video/omap2/dss/hdmi_omap4_panel.c
+index ffea8d3..c859421 100644
+--- a/drivers/video/omap2/dss/hdmi_omap4_panel.c
++++ b/drivers/video/omap2/dss/hdmi_omap4_panel.c
+@@ -25,6 +25,7 @@
+ #include <linux/mutex.h>
+ #include <linux/module.h>
+ #include <video/omapdss.h>
++#include <linux/slab.h>
  
--	switch (plane) {
--	case OMAP_DSS_GFX:
--		shift = 6;
--		break;
--	case OMAP_DSS_VIDEO1:
--	case OMAP_DSS_VIDEO2:
--		shift = 14;
--		break;
--	default:
--		BUG();
--		return;
--	}
--
-+	shift = shifts[plane];
- 	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), burst_size, shift + 1, shift);
+ #include "dss.h"
+ 
+@@ -198,6 +199,29 @@ err:
+ 	return r;
  }
  
-@@ -987,14 +977,11 @@ static void _dispc_set_vid_color_conv(enum omap_plane plane, bool enable)
- 
- void dispc_enable_replication(enum omap_plane plane, bool enable)
- {
--	int bit;
--
--	if (plane = OMAP_DSS_GFX)
--		bit = 5;
--	else
--		bit = 10;
-+	static const unsigned shifts[] = { 5, 10, 10 };
-+	int shift;
- 
--	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), enable, bit, bit);
-+	shift = shifts[plane];
-+	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), enable, shift, shift);
- }
- 
- void dispc_set_lcd_size(enum omap_channel channel, u16 width, u16 height)
-@@ -3042,6 +3029,17 @@ static void dispc_error_worker(struct work_struct *work)
- 	int i;
- 	u32 errors;
- 	unsigned long flags;
-+	static const unsigned fifo_underflow_bits[] = {
-+		DISPC_IRQ_GFX_FIFO_UNDERFLOW,
-+		DISPC_IRQ_VID1_FIFO_UNDERFLOW,
-+		DISPC_IRQ_VID2_FIFO_UNDERFLOW,
-+	};
++static bool hdmi_detect(struct omap_dss_device *dssdev)
++{
++	int r;
 +
-+	static const unsigned sync_lost_bits[] = {
-+		DISPC_IRQ_SYNC_LOST,
-+		DISPC_IRQ_SYNC_LOST_DIGIT,
-+		DISPC_IRQ_SYNC_LOST2,
-+	};
- 
- 	spin_lock_irqsave(&dispc.irq_lock, flags);
- 	errors = dispc.error_irqs;
-@@ -3050,154 +3048,52 @@ static void dispc_error_worker(struct work_struct *work)
- 
- 	dispc_runtime_get();
- 
--	if (errors & DISPC_IRQ_GFX_FIFO_UNDERFLOW) {
--		DSSERR("GFX_FIFO_UNDERFLOW, disabling GFX\n");
--		for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
--			struct omap_overlay *ovl;
--			ovl = omap_dss_get_overlay(i);
--
--			if (ovl->id = 0) {
--				dispc_enable_plane(ovl->id, 0);
--				dispc_go(ovl->manager->id);
--				mdelay(50);
--				break;
--			}
--		}
--	}
--
--	if (errors & DISPC_IRQ_VID1_FIFO_UNDERFLOW) {
--		DSSERR("VID1_FIFO_UNDERFLOW, disabling VID1\n");
--		for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
--			struct omap_overlay *ovl;
--			ovl = omap_dss_get_overlay(i);
--
--			if (ovl->id = 1) {
--				dispc_enable_plane(ovl->id, 0);
--				dispc_go(ovl->manager->id);
--				mdelay(50);
--				break;
--			}
--		}
--	}
--
--	if (errors & DISPC_IRQ_VID2_FIFO_UNDERFLOW) {
--		DSSERR("VID2_FIFO_UNDERFLOW, disabling VID2\n");
--		for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
--			struct omap_overlay *ovl;
--			ovl = omap_dss_get_overlay(i);
--
--			if (ovl->id = 2) {
--				dispc_enable_plane(ovl->id, 0);
--				dispc_go(ovl->manager->id);
--				mdelay(50);
--				break;
--			}
--		}
--	}
--
--	if (errors & DISPC_IRQ_SYNC_LOST) {
--		struct omap_overlay_manager *manager = NULL;
--		bool enable = false;
--
--		DSSERR("SYNC_LOST, disabling LCD\n");
--
--		for (i = 0; i < omap_dss_get_num_overlay_managers(); ++i) {
--			struct omap_overlay_manager *mgr;
--			mgr = omap_dss_get_overlay_manager(i);
-+	for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
-+		struct omap_overlay *ovl;
-+		unsigned bit;
- 
--			if (mgr->id = OMAP_DSS_CHANNEL_LCD) {
--				manager = mgr;
--				enable = mgr->device->state =
--						OMAP_DSS_DISPLAY_ACTIVE;
--				mgr->device->driver->disable(mgr->device);
--				break;
--			}
--		}
-+		ovl = omap_dss_get_overlay(i);
-+		bit = fifo_underflow_bits[i];
- 
--		if (manager) {
--			struct omap_dss_device *dssdev = manager->device;
--			for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
--				struct omap_overlay *ovl;
--				ovl = omap_dss_get_overlay(i);
--
--				if (ovl->id != 0 && ovl->manager = manager)
--					dispc_enable_plane(ovl->id, 0);
--			}
--
--			dispc_go(manager->id);
-+		if ((1 << bit) & errors) {
-+			DSSERR("FIFO UNDERFLOW on %s, disabling the overlay\n",
-+					ovl->name);
-+			dispc_enable_plane(ovl->id, false);
-+			dispc_go(ovl->manager->id);
- 			mdelay(50);
--			if (enable)
--				dssdev->driver->enable(dssdev);
- 		}
- 	}
- 
--	if (errors & DISPC_IRQ_SYNC_LOST_DIGIT) {
--		struct omap_overlay_manager *manager = NULL;
--		bool enable = false;
--
--		DSSERR("SYNC_LOST_DIGIT, disabling TV\n");
--
--		for (i = 0; i < omap_dss_get_num_overlay_managers(); ++i) {
--			struct omap_overlay_manager *mgr;
--			mgr = omap_dss_get_overlay_manager(i);
--
--			if (mgr->id = OMAP_DSS_CHANNEL_DIGIT) {
--				manager = mgr;
--				enable = mgr->device->state =
--						OMAP_DSS_DISPLAY_ACTIVE;
--				mgr->device->driver->disable(mgr->device);
--				break;
--			}
--		}
--
--		if (manager) {
--			struct omap_dss_device *dssdev = manager->device;
--			for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
--				struct omap_overlay *ovl;
--				ovl = omap_dss_get_overlay(i);
-+	for (i = 0; i < omap_dss_get_num_overlay_managers(); ++i) {
-+		struct omap_overlay_manager *mgr;
-+		unsigned bit;
- 
--				if (ovl->id != 0 && ovl->manager = manager)
--					dispc_enable_plane(ovl->id, 0);
--			}
-+		mgr = omap_dss_get_overlay_manager(i);
-+		bit = sync_lost_bits[i];
- 
--			dispc_go(manager->id);
--			mdelay(50);
--			if (enable)
--				dssdev->driver->enable(dssdev);
--		}
--	}
--
--	if (errors & DISPC_IRQ_SYNC_LOST2) {
--		struct omap_overlay_manager *manager = NULL;
--		bool enable = false;
--
--		DSSERR("SYNC_LOST for LCD2, disabling LCD2\n");
-+		if ((1 << bit) & errors) {
-+			struct omap_dss_device *dssdev = mgr->device;
-+			bool enable;
- 
--		for (i = 0; i < omap_dss_get_num_overlay_managers(); ++i) {
--			struct omap_overlay_manager *mgr;
--			mgr = omap_dss_get_overlay_manager(i);
-+			DSSERR("SYNC_LOST on channel %s, restarting the output "
-+					"with video overlays disabled\n",
-+					mgr->name);
- 
--			if (mgr->id = OMAP_DSS_CHANNEL_LCD2) {
--				manager = mgr;
--				enable = mgr->device->state =
--						OMAP_DSS_DISPLAY_ACTIVE;
--				mgr->device->driver->disable(mgr->device);
--				break;
--			}
--		}
-+			enable = dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
-+			dssdev->driver->disable(dssdev);
- 
--		if (manager) {
--			struct omap_dss_device *dssdev = manager->device;
- 			for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
- 				struct omap_overlay *ovl;
- 				ovl = omap_dss_get_overlay(i);
- 
--				if (ovl->id != 0 && ovl->manager = manager)
--					dispc_enable_plane(ovl->id, 0);
-+				if (ovl->id != OMAP_DSS_GFX &&
-+						ovl->manager = mgr)
-+					dispc_enable_plane(ovl->id, false);
- 			}
- 
--			dispc_go(manager->id);
-+			dispc_go(mgr->id);
- 			mdelay(50);
++	mutex_lock(&hdmi.hdmi_lock);
 +
- 			if (enable)
- 				dssdev->driver->enable(dssdev);
- 		}
++	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE) {
++		r = omapdss_hdmi_display_enable(dssdev);
++		if (r)
++			goto err;
++	}
++
++	r = omapdss_hdmi_detect();
++
++	if (dssdev->state = OMAP_DSS_DISPLAY_DISABLED ||
++			dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED)
++		omapdss_hdmi_display_disable(dssdev);
++err:
++	mutex_unlock(&hdmi.hdmi_lock);
++
++	return r;
++}
++
+ static struct omap_dss_driver hdmi_driver = {
+ 	.probe		= hdmi_panel_probe,
+ 	.remove		= hdmi_panel_remove,
+@@ -209,6 +233,7 @@ static struct omap_dss_driver hdmi_driver = {
+ 	.set_timings	= hdmi_set_timings,
+ 	.check_timings	= hdmi_check_timings,
+ 	.read_edid	= hdmi_read_edid,
++	.detect		= hdmi_detect,
+ 	.driver			= {
+ 		.name   = "hdmi_panel",
+ 		.owner  = THIS_MODULE,
 -- 
 1.7.4.1
 

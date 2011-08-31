@@ -1,175 +1,138 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 22 Aug 2011 08:26:38 +0000
-Subject: [PATCH 3/4] OMAP: DSS2: DSI: Improve dsi_mux_pads parameters
-Message-Id: <1314001599-17951-4-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 31 Aug 2011 13:23:18 +0000
+Subject: [PATCH 07/12] OMAP: DSS2: HDMI: clean up edid reading & fix checksum
+Message-Id: <1314797003-17638-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314001599-17951-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314001599-17951-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-dsi_mux_pads() needs to know about the DSI HW module and the DSI lanes
-used. Split the function into two, enable and disable, which take
-necessary arguments, and add empty implementations for both.
+Clean up reading of EDID by passing direct address to the block being
+read, instead of start address of the whole EDID memory area. Rewrite
+the loop which reads the EDID.
+
+This also fixes the checksum calculation, which used to calculate the
+checksum only for the first block.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-omap2/display.c |   14 +++++++++++++
- drivers/video/omap2/dss/dsi.c |   42 ++++++++++++++++++++++++++++++----------
- include/video/omapdss.h       |    3 +-
- 3 files changed, 47 insertions(+), 12 deletions(-)
+ drivers/video/omap2/dss/hdmi.c |   67 ++++++++++++++++++++-------------------
+ 1 files changed, 34 insertions(+), 33 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
-index 0339605..74f0aff 100644
---- a/arch/arm/mach-omap2/display.c
-+++ b/arch/arm/mach-omap2/display.c
-@@ -75,6 +75,15 @@ static const struct omap_dss_hwmod_data omap4_dss_hwmod_data[] __initdata = {
- 	{ "dss_hdmi", "omapdss_hdmi", -1 },
- };
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 04ce105..34e05ee 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -414,8 +414,8 @@ static int hdmi_core_ddc_init(void)
  
-+static int omap_dsi_enable_pads(int dsi_id, unsigned lane_mask)
-+{
-+	return 0;
-+}
-+
-+static void omap_dsi_disable_pads(int dsi_id, unsigned lane_mask)
-+{
-+}
-+
- int __init omap_display_init(struct omap_dss_board_info *board_data)
+ static int hdmi_core_ddc_edid(u8 *pedid, int ext)
  {
- 	int r = 0;
-@@ -97,6 +106,11 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
- 		oh_count = ARRAY_SIZE(omap4_dss_hwmod_data);
+-	u32 i, j;
+-	char checksum = 0;
++	u32 i;
++	char checksum;
+ 	u32 offset = 0;
+ 
+ 	/* HDMI_CORE_DDC_STATUS_IN_PROG */
+@@ -457,21 +457,31 @@ static int hdmi_core_ddc_edid(u8 *pedid, int ext)
+ 		return -EIO;
  	}
  
-+	if (board_data->dsi_enable_pads = NULL)
-+		board_data->dsi_enable_pads = omap_dsi_enable_pads;
-+	if (board_data->dsi_disable_pads = NULL)
-+		board_data->dsi_disable_pads = omap_dsi_disable_pads;
+-	i = ext * 128;
+-	j = 0;
+-	while (((REG_GET(HDMI_CORE_DDC_STATUS, 4, 4) = 1) ||
+-			(REG_GET(HDMI_CORE_DDC_STATUS, 2, 2) = 0)) &&
+-			j < 128) {
++	for (i = 0; i < 0x80; ++i) {
++		int t;
+ 
+-		if (REG_GET(HDMI_CORE_DDC_STATUS, 2, 2) = 0) {
+-			/* FIFO not empty */
+-			pedid[i++] = REG_GET(HDMI_CORE_DDC_DATA, 7, 0);
+-			j++;
++		/* IN_PROG */
++		if (REG_GET(HDMI_CORE_DDC_STATUS, 4, 4) = 0) {
++			DSSERR("operation stopped when reading edid\n");
++			return -EIO;
++		}
 +
- 	pdata.board_data = board_data;
- 	pdata.board_data->get_context_loss_count  		omap_pm_get_dev_context_loss_count;
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 713e1d9..ae6bf1d 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -274,7 +274,8 @@ struct dsi_data {
- 	struct clk *dss_clk;
- 	struct clk *sys_clk;
++		t = 0;
++		/* FIFO_EMPTY */
++		while (REG_GET(HDMI_CORE_DDC_STATUS, 2, 2) = 1) {
++			if (t++ > 10000) {
++				DSSERR("timeout reading edid\n");
++				return -ETIMEDOUT;
++			}
++			udelay(1);
+ 		}
++
++		pedid[i] = REG_GET(HDMI_CORE_DDC_DATA, 7, 0);
+ 	}
  
--	void (*dsi_mux_pads)(bool enable);
-+	int (*enable_pads)(int dsi_id, unsigned lane_mask);
-+	void (*disable_pads)(int dsi_id, unsigned lane_mask);
+-	for (j = 0; j < 128; j++)
+-		checksum += pedid[j];
++	checksum = 0;
++	for (i = 0; i < 0x80; ++i)
++		checksum += pedid[i];
  
- 	struct dsi_clock_info current_cinfo;
- 
-@@ -2355,6 +2356,24 @@ static int dsi_cio_wait_tx_clk_esc_reset(struct omap_dss_device *dssdev)
+ 	if (checksum != 0) {
+ 		DSSERR("E-EDID checksum failed!!\n");
+@@ -481,40 +491,31 @@ static int hdmi_core_ddc_edid(u8 *pedid, int ext)
  	return 0;
  }
  
-+static unsigned dsi_get_lane_mask(struct omap_dss_device *dssdev)
-+{
-+	unsigned lanes = 0;
-+
-+	if (dssdev->phy.dsi.clk_lane != 0)
-+		lanes |= 1 << (dssdev->phy.dsi.clk_lane - 1);
-+	if (dssdev->phy.dsi.data1_lane != 0)
-+		lanes |= 1 << (dssdev->phy.dsi.data1_lane - 1);
-+	if (dssdev->phy.dsi.data2_lane != 0)
-+		lanes |= 1 << (dssdev->phy.dsi.data2_lane - 1);
-+	if (dssdev->phy.dsi.data3_lane != 0)
-+		lanes |= 1 << (dssdev->phy.dsi.data3_lane - 1);
-+	if (dssdev->phy.dsi.data4_lane != 0)
-+		lanes |= 1 << (dssdev->phy.dsi.data4_lane - 1);
-+
-+	return lanes;
-+}
-+
- static int dsi_cio_init(struct omap_dss_device *dssdev)
+-static int read_edid(u8 *pedid, u16 max_length)
++static int read_edid(u8 *edid, int len)
  {
- 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
-@@ -2365,8 +2384,9 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
+-	int r = 0, n = 0, i = 0;
+-	int max_ext_blocks = (max_length / 128) - 1;
+-	int len;
++	int r, l;
++
++	if (len < 128)
++		return -EINVAL;
  
- 	DSSDBGF();
+ 	r = hdmi_core_ddc_init();
+ 	if (r)
+ 		return r;
  
--	if (dsi->dsi_mux_pads)
--		dsi->dsi_mux_pads(true);
-+	r = dsi->enable_pads(dsidev->id, dsi_get_lane_mask(dssdev));
-+	if (r)
-+		return r;
+-	r = hdmi_core_ddc_edid(pedid, 0);
++	r = hdmi_core_ddc_edid(edid, 0);
+ 	if (r)
+ 		return r;
  
- 	dsi_enable_scp_clk(dsidev);
+-	len = 128;
+-	n = pedid[0x7e];
+-
+-	/*
+-	 * README: need to comply with max_length set by the caller.
+-	 * Better implementation should be to allocate necessary
+-	 * memory to store EDID according to nb_block field found
+-	 * in first block
+-	 */
+-	if (n > max_ext_blocks)
+-		n = max_ext_blocks;
++	l = 128;
  
-@@ -2462,19 +2482,18 @@ err_cio_pwr:
- 		dsi_cio_disable_lane_override(dsidev);
- err_scp_clk_dom:
- 	dsi_disable_scp_clk(dsidev);
--	if (dsi->dsi_mux_pads)
--		dsi->dsi_mux_pads(false);
-+	dsi->disable_pads(dsidev->id, dsi_get_lane_mask(dssdev));
- 	return r;
+-	for (i = 1; i <= n; i++) {
+-		r = hdmi_core_ddc_edid(pedid, i);
++	if (len >= 128 * 2 && edid[0x7e] > 0) {
++		r = hdmi_core_ddc_edid(edid + 0x80, 1);
+ 		if (r)
+ 			return r;
+-		len += 128;
++		l += 128;
+ 	}
+ 
+-	return len;
++	return l;
  }
  
--static void dsi_cio_uninit(struct platform_device *dsidev)
-+static void dsi_cio_uninit(struct omap_dss_device *dssdev)
- {
-+	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 
- 	dsi_cio_power(dsidev, DSI_COMPLEXIO_POWER_OFF);
- 	dsi_disable_scp_clk(dsidev);
--	if (dsi->dsi_mux_pads)
--		dsi->dsi_mux_pads(false);
-+	dsi->disable_pads(dsidev->id, dsi_get_lane_mask(dssdev));
- }
- 
- static void dsi_config_tx_fifo(struct platform_device *dsidev,
-@@ -4161,7 +4180,7 @@ static int dsi_display_init_dsi(struct omap_dss_device *dssdev)
- 
- 	return 0;
- err3:
--	dsi_cio_uninit(dsidev);
-+	dsi_cio_uninit(dssdev);
- err2:
- 	dss_select_dispc_clk_source(OMAP_DSS_CLK_SRC_FCK);
- 	dss_select_dsi_clk_source(dsi_module, OMAP_DSS_CLK_SRC_FCK);
-@@ -4190,7 +4209,7 @@ static void dsi_display_uninit_dsi(struct omap_dss_device *dssdev,
- 
- 	dss_select_dispc_clk_source(OMAP_DSS_CLK_SRC_FCK);
- 	dss_select_dsi_clk_source(dsi_module, OMAP_DSS_CLK_SRC_FCK);
--	dsi_cio_uninit(dsidev);
-+	dsi_cio_uninit(dssdev);
- 	dsi_pll_uninit(dsidev, disconnect_lanes);
- }
- 
-@@ -4481,7 +4500,8 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
- 
- 	dss_plat_data = dsidev->dev.platform_data;
- 	board_info = dss_plat_data->board_data;
--	dsi->dsi_mux_pads = board_info->dsi_mux_pads;
-+	dsi->enable_pads = board_info->dsi_enable_pads;
-+	dsi->disable_pads = board_info->dsi_disable_pads;
- 
- 	spin_lock_init(&dsi->irq_lock);
- 	spin_lock_init(&dsi->errors_lock);
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 105b05d..9301805 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -242,7 +242,8 @@ struct omap_dss_board_info {
- 	int num_devices;
- 	struct omap_dss_device **devices;
- 	struct omap_dss_device *default_device;
--	void (*dsi_mux_pads)(bool enable);
-+	int (*dsi_enable_pads)(int dsi_id, unsigned lane_mask);
-+	void (*dsi_disable_pads)(int dsi_id, unsigned lane_mask);
- };
- 
- /* Init with the board info */
+ static int get_timings_index(void)
 -- 
 1.7.4.1
 

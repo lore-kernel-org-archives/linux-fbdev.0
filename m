@@ -1,36 +1,84 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 31 Aug 2011 13:23:12 +0000
-Subject: [PATCH 01/12] OMAP: DSS2: add read_edid() to omap_dss_driver struct
-Message-Id: <1314797003-17638-2-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 31 Aug 2011 13:21:43 +0000
+Subject: [PATCH 3/8] OMAP: DSS2: HDMI: change regn definition
+Message-Id: <1314796908-17354-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1314796908-17354-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1314796908-17354-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-read_edid() can be used to get the EDID information from the display.
+regn divider is currently programmed to the registers without change,
+but when calculating clock frequencies it is used as regn+1.
+
+To make this similar to how DSI handles the dividers this patch changes
+the regn value to be used as such for calculations, but the value
+programmed to registers is regn-1.
+
+This simplifies the clock frequency calculations, makes it similar to
+DSI, and also allows us to use regn value 0 as undefined.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- include/video/omapdss.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/video/omap2/dss/hdmi.c |    8 ++++----
+ include/video/omapdss.h        |    1 +
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index a3b3899..504c507 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -43,7 +43,7 @@
+ #include "hdmi.h"
+ #include "dss_features.h"
+ 
+-#define HDMI_DEFAULT_REGN 15
++#define HDMI_DEFAULT_REGN 16
+ #define HDMI_DEFAULT_REGM2 1
+ 
+ static struct {
+@@ -208,7 +208,7 @@ static int hdmi_pll_init(enum hdmi_clk_refsel refsel, int dcofreq,
+ 
+ 	r = hdmi_read_reg(PLLCTRL_CFG1);
+ 	r = FLD_MOD(r, fmt->regm, 20, 9); /* CFG1_PLL_REGM */
+-	r = FLD_MOD(r, fmt->regn, 8, 1);  /* CFG1_PLL_REGN */
++	r = FLD_MOD(r, fmt->regn - 1, 8, 1);  /* CFG1_PLL_REGN */
+ 
+ 	hdmi_write_reg(PLLCTRL_CFG1, r);
+ 
+@@ -1084,7 +1084,7 @@ static void hdmi_compute_pll(struct omap_dss_device *dssdev, int phy,
+ 	else
+ 		pi->regn = dssdev->clocks.hdmi.regn;
+ 
+-	refclk = clkin / (pi->regn + 1);
++	refclk = clkin / pi->regn;
+ 
+ 	/*
+ 	 * multiplier is pixel_clk/ref_clk
+@@ -1110,7 +1110,7 @@ static void hdmi_compute_pll(struct omap_dss_device *dssdev, int phy,
+ 	 * is greater than 1000MHz
+ 	 */
+ 	pi->dcofreq = phy > 1000 * 100;
+-	pi->regsd = ((pi->regm * clkin / 10) / ((pi->regn + 1) * 250) + 5) / 10;
++	pi->regsd = ((pi->regm * clkin / 10) / (pi->regn * 250) + 5) / 10;
+ 
+ 	DSSDBG("M = %d Mf = %d\n", pi->regm, pi->regmf);
+ 	DSSDBG("range = %d sd = %d\n", pi->dcofreq, pi->regsd);
 diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index f8385ae..8ed5a6c 100644
+index 9398dd3..534e3d1 100644
 --- a/include/video/omapdss.h
 +++ b/include/video/omapdss.h
-@@ -558,6 +558,8 @@ struct omap_dss_driver {
+@@ -460,6 +460,7 @@ struct omap_dss_device {
+ 		} dsi;
  
- 	int (*set_wss)(struct omap_dss_device *dssdev, u32 wss);
- 	u32 (*get_wss)(struct omap_dss_device *dssdev);
-+
-+	int (*read_edid)(struct omap_dss_device *dssdev, u8 *buf, int len);
- };
- 
- int omap_dss_register_driver(struct omap_dss_driver *);
+ 		struct {
++			/* regn is one greater than TRM's REGN value */
+ 			u16 regn;
+ 			u16 regm2;
+ 		} hdmi;
 -- 
 1.7.4.1
 

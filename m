@@ -1,96 +1,58 @@
-From: bernie@plugable.com
-Date: Tue, 02 Aug 2011 05:54:31 +0000
-Subject: [PATCH 4/5] udlfb: Add module option to do without shadow framebuffer
-Message-Id: <1312264472-2900-4-git-send-email-bernie@plugable.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 31 Aug 2011 13:23:19 +0000
+Subject: [PATCH 08/12] OMAP: DSS2: HDMI: remove error prints in check_timings
+Message-Id: <1314797003-17638-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-From: Stuart Hopkins <stuart@linux-depot.com>
+check_timings() is supposed to be used to verify if timings are ok or
+not. Currently the HDMI driver prints error messages if the timings are
+not ok. This is not right, as it is no error to give invalid timings to
+check_timings().
 
-By default, udlfb allocates a 2nd buffer to shadow what's across
-the bus on the USB device.  It can operate without this shadow,
-but then it cannot tell which pixels have changed, and must send all.
+Remove the error prints.
 
-Saves host memory, but worsens the USB 2.0 bus bottleneck.
-
-This option allows users in very low memory situations (e.g.
-bifferboard) to optionally turn off this shadow framebuffer.
-
-Signed-off-by: Bernie Thompson <bernie@plugable.com>
-Signed-off-by: Stuart Hopkins <stuart@linux-depot.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- Documentation/fb/udlfb.txt |    5 +++++
- drivers/video/udlfb.c      |   10 ++++++++--
- 2 files changed, 13 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/hdmi.c             |    1 -
+ drivers/video/omap2/dss/hdmi_omap4_panel.c |    6 +-----
+ 2 files changed, 1 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/fb/udlfb.txt b/Documentation/fb/udlfb.txt
-index 7fdde2a..473ceed 100644
---- a/Documentation/fb/udlfb.txt
-+++ b/Documentation/fb/udlfb.txt
-@@ -105,6 +105,11 @@ console		Allow fbcon to attach to udlfb provided framebuffers. This
- 		the first framebuffer it finds, which isn't usually what the
- 		user wants in the case of USB displays.
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 34e05ee..55edbd2 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -1105,7 +1105,6 @@ int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
  
-+shadow		Allocate a 2nd framebuffer to shadow what's currently across
-+		the USB bus in device memory. If any pixels are unchanged,
-+		do not transmit. Spends host memory to save USB transfers.
-+		Enabled by default. Only disable on very low memory systems.
+ 	cm = hdmi_get_code(timings);
+ 	if (cm.code = -1) {
+-		DSSERR("Invalid timing entered\n");
+ 		return -EINVAL;
+ 	}
+ 
+diff --git a/drivers/video/omap2/dss/hdmi_omap4_panel.c b/drivers/video/omap2/dss/hdmi_omap4_panel.c
+index 5e314e8..ffea8d3 100644
+--- a/drivers/video/omap2/dss/hdmi_omap4_panel.c
++++ b/drivers/video/omap2/dss/hdmi_omap4_panel.c
+@@ -170,11 +170,7 @@ static int hdmi_check_timings(struct omap_dss_device *dssdev,
+ 	mutex_lock(&hdmi.hdmi_lock);
+ 
+ 	r = omapdss_hdmi_display_check_timing(dssdev, timings);
+-	if (r) {
+-		DSSERR("Timing cannot be applied\n");
+-		goto err;
+-	}
+-err:
 +
- Sysfs Attributes
- ========
- 
-diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
-index f5df3d3..5a13dc5 100644
---- a/drivers/video/udlfb.c
-+++ b/drivers/video/udlfb.c
-@@ -72,6 +72,7 @@ MODULE_DEVICE_TABLE(usb, id_table);
- /* module options */
- static int console;   /* Optionally allow fbcon to consume first framebuffer */
- static int fb_defio;  /* Optionally enable experimental fb_defio mmap support */
-+static int shadow = 1; /* Optionally disable shadow framebuffer */
- 
- /* dlfb keeps a list of urbs for efficient bulk transfers */
- static void dlfb_urb_completion(struct urb *urb);
-@@ -1158,7 +1159,7 @@ static int dlfb_realloc_framebuffer(struct dlfb_data *dev, struct fb_info *info)
- 	int new_len;
- 	unsigned char *old_fb = info->screen_base;
- 	unsigned char *new_fb;
--	unsigned char *new_back;
-+	unsigned char *new_back = 0;
- 
- 	pr_warn("Reallocating framebuffer. Addresses will change!\n");
- 
-@@ -1190,7 +1191,8 @@ static int dlfb_realloc_framebuffer(struct dlfb_data *dev, struct fb_info *info)
- 		 * But with imperfect damage info we may send pixels over USB
- 		 * that were, in fact, unchanged - wasting limited USB bandwidth
- 		 */
--		new_back = vzalloc(new_len);
-+		if (shadow)
-+			new_back = vzalloc(new_len);
- 		if (!new_back)
- 			pr_info("No shadow/backing buffer allocated\n");
- 		else {
-@@ -1603,6 +1605,7 @@ static int dlfb_usb_probe(struct usb_interface *interface,
- 		usbdev->descriptor.bcdDevice, dev);
- 	pr_info("console enable=%d\n", console);
- 	pr_info("fb_defio enable=%d\n", fb_defio);
-+	pr_info("shadow enable=%d\n", shadow);
- 
- 	dev->sku_pixel_limit = 2048 * 1152; /* default to maximum */
- 
-@@ -1960,6 +1963,9 @@ MODULE_PARM_DESC(console, "Allow fbcon to consume first framebuffer found");
- module_param(fb_defio, bool, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP);
- MODULE_PARM_DESC(fb_defio, "Enable fb_defio mmap support. *Experimental*");
- 
-+module_param(shadow, bool, S_IWUSR | S_IRUSR | S_IWGRP | S_IRGRP);
-+MODULE_PARM_DESC(shadow, "Shadow vid mem. Disable to save mem but lose perf");
-+
- MODULE_AUTHOR("Roberto De Ioris <roberto@unbit.it>, "
- 	      "Jaya Kumar <jayakumar.lkml@gmail.com>, "
- 	      "Bernie Thompson <bernie@plugable.com>");
+ 	mutex_unlock(&hdmi.hdmi_lock);
+ 	return r;
+ }
 -- 
 1.7.4.1
 

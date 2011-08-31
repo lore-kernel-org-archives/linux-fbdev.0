@@ -1,43 +1,170 @@
-From: Axel Lin <axel.lin@gmail.com>
-Date: Mon, 15 Aug 2011 08:35:23 +0000
-Subject: [PATCH] video: nuc900fb: remove include of mach/clkdev.h
-Message-Id: <1313397323.25061.2.camel@phoenix>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 31 Aug 2011 11:00:59 +0000
+Subject: [PATCH v2 8/8] fbdev: sh_mobile_lcdc: Remove sh_mobile_lcdc_set_bpp()
+Message-Id: <1314788459-31791-9-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Since commit aa3831cf9d29cfeaebd8c2169378b74111364487
-"ARM: Consolidate the clkdev header files",
-the header file arch/arm/mach-nuc93x/include/mach/clkdev.h is removed.
+The function duplicates code found in sh_mobile_check_var(). Remove
+sh_mobile_lcdc_set_bpp() and call sh_mobile_check_var() instead.
 
-This patch fixes below build error:
-
-drivers/video/nuc900fb.c:42:25: error: mach/clkdev.h: No such file or directory
-make[2]: *** [drivers/video/nuc900fb.o] Error 1
-make[1]: *** [drivers/video] Error 2
-make: *** [drivers] Error 2
-
-Signed-off-by: Axel Lin <axel.lin@gmail.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/nuc900fb.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |   87 +++++++------------------------------
+ 1 files changed, 17 insertions(+), 70 deletions(-)
 
-diff --git a/drivers/video/nuc900fb.c b/drivers/video/nuc900fb.c
-index 0fff5978..37dd850 100644
---- a/drivers/video/nuc900fb.c
-+++ b/drivers/video/nuc900fb.c
-@@ -39,7 +39,6 @@
- #include <mach/regs-clock.h>
- #include <mach/regs-ldm.h>
- #include <mach/fb.h>
--#include <mach/clkdev.h>
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index d1576e2..97ab8ba 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -1291,66 +1291,6 @@ static void sh_mobile_lcdc_bl_remove(struct backlight_device *bdev)
+ 	backlight_device_unregister(bdev);
+ }
  
- #include "nuc900fb.h"
+-static int sh_mobile_lcdc_set_bpp(struct fb_var_screeninfo *var, int bpp,
+-				   int nonstd)
+-{
+-	if (nonstd) {
+-		switch (bpp) {
+-		case 12:
+-		case 16:
+-		case 24:
+-			var->bits_per_pixel = bpp;
+-			var->nonstd = nonstd;
+-			return 0;
+-		default:
+-			return -EINVAL;
+-		}
+-	}
+-
+-	switch (bpp) {
+-	case 16: /* PKF[4:0] = 00011 - RGB 565 */
+-		var->red.offset = 11;
+-		var->red.length = 5;
+-		var->green.offset = 5;
+-		var->green.length = 6;
+-		var->blue.offset = 0;
+-		var->blue.length = 5;
+-		var->transp.offset = 0;
+-		var->transp.length = 0;
+-		break;
+-
+-	case 24: /* PKF[4:0] = 01011 - RGB 888 */
+-		var->red.offset = 16;
+-		var->red.length = 8;
+-		var->green.offset = 8;
+-		var->green.length = 8;
+-		var->blue.offset = 0;
+-		var->blue.length = 8;
+-		var->transp.offset = 0;
+-		var->transp.length = 0;
+-		break;
+-
+-	case 32: /* PKF[4:0] = 00000 - RGBA 888 */
+-		var->red.offset = 16;
+-		var->red.length = 8;
+-		var->green.offset = 8;
+-		var->green.length = 8;
+-		var->blue.offset = 0;
+-		var->blue.length = 8;
+-		var->transp.offset = 24;
+-		var->transp.length = 8;
+-		break;
+-	default:
+-		return -EINVAL;
+-	}
+-	var->bits_per_pixel = bpp;
+-	var->red.msb_right = 0;
+-	var->green.msb_right = 0;
+-	var->blue.msb_right = 0;
+-	var->transp.msb_right = 0;
+-	return 0;
+-}
+-
+ static int sh_mobile_lcdc_suspend(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+@@ -1499,6 +1439,9 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
+ 	int ret;
+ 	int i;
  
++	mutex_init(&ch->open_lock);
++
++	/* Allocate the frame buffer device. */
+ 	ch->info = framebuffer_alloc(0, dev);
+ 	if (!ch->info) {
+ 		dev_err(dev, "unable to allocate fb_info\n");
+@@ -1506,11 +1449,10 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
+ 	}
+ 
+ 	info = ch->info;
+-	var = &info->var;
+ 	info->fbops = &sh_mobile_lcdc_ops;
+ 	info->par = ch;
+-
+-	mutex_init(&ch->open_lock);
++	info->pseudo_palette = &ch->pseudo_palette;
++	info->flags = FBINFO_FLAG_DEFAULT;
+ 
+ 	/* Iterate through the modes to validate them and find the highest
+ 	 * resolution.
+@@ -1541,13 +1483,15 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
+ 		dev_dbg(dev, "Found largest videomode %ux%u\n",
+ 			max_mode->xres, max_mode->yres);
+ 
++	/* Initialize fixed screen information. Restrict pan to 2 lines steps
++	 * for NV12.
++	 */
+ 	info->fix = sh_mobile_lcdc_fix;
+ 	info->fix.smem_len = max_size * 2 * cfg->bpp / 8;
+-
+-	 /* Only pan in 2 line steps for NV12 */
+ 	if (cfg->nonstd && cfg->bpp = 12)
+ 		info->fix.ypanstep = 2;
+ 
++	/* Create the mode list. */
+ 	if (cfg->lcd_cfg = NULL) {
+ 		mode = &default_720p;
+ 		num_cfg = 1;
+@@ -1558,17 +1502,23 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
+ 
+ 	fb_videomode_to_modelist(mode, num_cfg, &info->modelist);
+ 
++	/* Initialize variable screen information using the first mode as
++	 * default. The default Y virtual resolution is twice the panel size to
++	 * allow for double-buffering.
++	 */
++	var = &info->var;
+ 	fb_videomode_to_var(var, mode);
++	var->bits_per_pixel = cfg->bpp;
+ 	var->width = cfg->lcd_size_cfg.width;
+ 	var->height = cfg->lcd_size_cfg.height;
+-	/* Default Y virtual resolution is 2x panel size */
+ 	var->yres_virtual = var->yres * 2;
+ 	var->activate = FB_ACTIVATE_NOW;
+ 
+-	ret = sh_mobile_lcdc_set_bpp(var, cfg->bpp, cfg->nonstd);
++	ret = sh_mobile_check_var(var, info);
+ 	if (ret)
+ 		return ret;
+ 
++	/* Allocate frame buffer memory and color map. */
+ 	buf = dma_alloc_coherent(dev, info->fix.smem_len, &ch->dma_handle,
+ 				 GFP_KERNEL);
+ 	if (!buf) {
+@@ -1576,9 +1526,6 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
+ 		return -ENOMEM;
+ 	}
+ 
+-	info->pseudo_palette = &ch->pseudo_palette;
+-	info->flags = FBINFO_FLAG_DEFAULT;
+-
+ 	ret = fb_alloc_cmap(&info->cmap, PALETTE_NR, 0);
+ 	if (ret < 0) {
+ 		dev_err(dev, "unable to allocate cmap\n");
 -- 
-1.7.4.1
-
-
+1.7.3.4
 

@@ -1,37 +1,72 @@
-From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
-Date: Tue, 02 Aug 2011 08:43:51 +0000
-Subject: Re: [PATCH 1/4] fbdev: sh_mobile_meram: Replace hardcoded register
-Message-Id: <4E37B8C7.3050408@igel.co.jp>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 31 Aug 2011 11:00:55 +0000
+Subject: [PATCH v2 4/8] fbdev: sh_mobile_lcdc: use display information in info for panning
+Message-Id: <1314788459-31791-5-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Laurent,
+We must not use any information in the passed var besides xoffset,
+yoffset and vmode as otherwise applications might abuse it.
 
-> -#define MExxCTL 0x0
-> -#define MExxBSIZE 0x4
-> -#define MExxMNCF 0x8
-> -#define MExxSARA 0x10
-> -#define MExxSARB 0x14
-> -#define MExxSBSIZE 0x18
-[snip]
-> +#define MExxCTL			0x400
-> +#define MExxBSIZE		0x404
-> +#define MExxMNCF		0x408
-> +#define MExxSARA		0x410
-> +#define MExxSARB		0x414
-> +#define MExxSBSIZE		0x418
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/sh_mobile_lcdcfb.c |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
 
-One small comment on the definition of these register offsets and
-explanation of what I was originally thinking.  Since each of these
-actually reprents a series of registers, one per ICB, (i.e. ME00CTL,
-ME01CTL, etc.) it makes sense to me to represent them as an offset from
-the base address (0x400) + the start of each ICB address (0x20 * index).
-
-Other than that, looks great.
-
-Thanks very much,
-Damian
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index f9f420d..1ff215c 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -877,12 +877,12 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
+ 	unsigned long base_addr_y, base_addr_c;
+ 	unsigned long c_offset;
+ 
+-	if (!var->nonstd)
+-		new_pan_offset = (var->yoffset * info->fix.line_length) +
+-			(var->xoffset * (info->var.bits_per_pixel / 8));
++	if (!info->var.nonstd)
++		new_pan_offset = var->yoffset * info->fix.line_length
++			       + var->xoffset * (info->var.bits_per_pixel / 8);
+ 	else
+-		new_pan_offset = (var->yoffset * info->fix.line_length) +
+-			(var->xoffset);
++		new_pan_offset = var->yoffset * info->fix.line_length
++			       + var->xoffset;
+ 
+ 	if (new_pan_offset = ch->pan_offset)
+ 		return 0;	/* No change, do nothing */
+@@ -891,13 +891,13 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
+ 
+ 	/* Set the source address for the next refresh */
+ 	base_addr_y = ch->dma_handle + new_pan_offset;
+-	if (var->nonstd) {
++	if (info->var.nonstd) {
+ 		/* Set y offset */
+-		c_offset = (var->yoffset *
+-			info->fix.line_length *
+-			(info->var.bits_per_pixel - 8)) / 8;
+-		base_addr_c = ch->dma_handle + var->xres * var->yres_virtual +
+-			c_offset;
++		c_offset = var->yoffset * info->fix.line_length
++			 * (info->var.bits_per_pixel - 8) / 8;
++		base_addr_c = ch->dma_handle
++			    + info->var.xres * info->var.yres_virtual
++			    + c_offset;
+ 		/* Set x offset */
+ 		if (info->var.bits_per_pixel = 24)
+ 			base_addr_c += 2 * var->xoffset;
+@@ -923,7 +923,7 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
+ 	ch->base_addr_c = base_addr_c;
+ 
+ 	lcdc_write_chan_mirror(ch, LDSA1R, base_addr_y);
+-	if (var->nonstd)
++	if (info->var.nonstd)
+ 		lcdc_write_chan_mirror(ch, LDSA2R, base_addr_c);
+ 
+ 	if (lcdc_chan_is_sublcd(ch))
+-- 
+1.7.3.4
 

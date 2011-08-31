@@ -1,45 +1,140 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 31 Aug 2011 13:23:11 +0000
-Subject: [PATCH 00/12] OMAP: DSS2: EDID & detect support
-Message-Id: <1314797003-17638-1-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Wed, 31 Aug 2011 11:00:57 +0000
+Subject: [PATCH v2 6/8] fbdev: sh_mobile_lcdc: Avoid forward declarations
+Message-Id: <1314788459-31791-7-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, mythripk@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Implement EDID reading and monitor detection support for HDMI and DVI outputs.
+Reorder probe/remove functions to avoid forward declarations.
 
-This set is based on the previously sent "OMAP: DSS2: misc improvements" set.
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/sh_mobile_lcdcfb.c |  102 ++++++++++++++++++-------------------
+ 1 files changed, 50 insertions(+), 52 deletions(-)
 
- Tomi
-
-Tomi Valkeinen (12):
-  OMAP: DSS2: add read_edid() to omap_dss_driver struct
-  OMAP: DSS2: add detect() to omap_dss_driver struct
-  OMAP: DSS2: HDMI: make set_timing saner
-  OMAP: DSS2: HDMI: implement read_edid()
-  OMAP: DSS2: HDMI: remove edid parsing
-  OMAP: DSS2: HDMI: split hdmi_core_ddc_edid
-  OMAP: DSS2: HDMI: clean up edid reading & fix checksum
-  OMAP: DSS2: HDMI: remove error prints in check_timings
-  OMAP: DSS2: HDMI: implement detect()
-  OMAP: DSS2: Generic-dpi: add detect & read_edid support
-  OMAP: Panda & Beagle: DVI: Add i2c_bus_num
-  OMAPFB: find best mode from edid
-
- arch/arm/mach-omap2/board-omap3beagle.c          |    1 +
- arch/arm/mach-omap2/board-omap4panda.c           |    1 +
- drivers/video/omap2/displays/panel-generic-dpi.c |   92 ++++++
- drivers/video/omap2/dss/dss.h                    |    2 +
- drivers/video/omap2/dss/hdmi.c                   |  323 +++++++++-------------
- drivers/video/omap2/dss/hdmi_omap4_panel.c       |   66 ++++-
- drivers/video/omap2/omapfb/omapfb-main.c         |  109 +++++++-
- include/video/omap-panel-generic-dpi.h           |    2 +
- include/video/omapdss.h                          |    3 +
- 9 files changed, 378 insertions(+), 221 deletions(-)
-
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index b6da1d6..366315b 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -1434,7 +1434,56 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
+ 	return NOTIFY_OK;
+ }
+ 
+-static int sh_mobile_lcdc_remove(struct platform_device *pdev);
++static int sh_mobile_lcdc_remove(struct platform_device *pdev)
++{
++	struct sh_mobile_lcdc_priv *priv = platform_get_drvdata(pdev);
++	struct fb_info *info;
++	int i;
++
++	fb_unregister_client(&priv->notifier);
++
++	for (i = 0; i < ARRAY_SIZE(priv->ch); i++)
++		if (priv->ch[i].info && priv->ch[i].info->dev)
++			unregister_framebuffer(priv->ch[i].info);
++
++	sh_mobile_lcdc_stop(priv);
++
++	for (i = 0; i < ARRAY_SIZE(priv->ch); i++) {
++		info = priv->ch[i].info;
++
++		if (!info || !info->device)
++			continue;
++
++		if (priv->ch[i].sglist)
++			vfree(priv->ch[i].sglist);
++
++		if (info->screen_base)
++			dma_free_coherent(&pdev->dev, info->fix.smem_len,
++					  info->screen_base,
++					  priv->ch[i].dma_handle);
++		fb_dealloc_cmap(&info->cmap);
++		framebuffer_release(info);
++	}
++
++	for (i = 0; i < ARRAY_SIZE(priv->ch); i++) {
++		if (priv->ch[i].bl)
++			sh_mobile_lcdc_bl_remove(priv->ch[i].bl);
++	}
++
++	if (priv->dot_clk)
++		clk_put(priv->dot_clk);
++
++	if (priv->dev)
++		pm_runtime_disable(priv->dev);
++
++	if (priv->base)
++		iounmap(priv->base);
++
++	if (priv->irq)
++		free_irq(priv->irq, priv);
++	kfree(priv);
++	return 0;
++}
+ 
+ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ {
+@@ -1691,57 +1740,6 @@ err1:
+ 	return error;
+ }
+ 
+-static int sh_mobile_lcdc_remove(struct platform_device *pdev)
+-{
+-	struct sh_mobile_lcdc_priv *priv = platform_get_drvdata(pdev);
+-	struct fb_info *info;
+-	int i;
+-
+-	fb_unregister_client(&priv->notifier);
+-
+-	for (i = 0; i < ARRAY_SIZE(priv->ch); i++)
+-		if (priv->ch[i].info && priv->ch[i].info->dev)
+-			unregister_framebuffer(priv->ch[i].info);
+-
+-	sh_mobile_lcdc_stop(priv);
+-
+-	for (i = 0; i < ARRAY_SIZE(priv->ch); i++) {
+-		info = priv->ch[i].info;
+-
+-		if (!info || !info->device)
+-			continue;
+-
+-		if (priv->ch[i].sglist)
+-			vfree(priv->ch[i].sglist);
+-
+-		if (info->screen_base)
+-			dma_free_coherent(&pdev->dev, info->fix.smem_len,
+-					  info->screen_base,
+-					  priv->ch[i].dma_handle);
+-		fb_dealloc_cmap(&info->cmap);
+-		framebuffer_release(info);
+-	}
+-
+-	for (i = 0; i < ARRAY_SIZE(priv->ch); i++) {
+-		if (priv->ch[i].bl)
+-			sh_mobile_lcdc_bl_remove(priv->ch[i].bl);
+-	}
+-
+-	if (priv->dot_clk)
+-		clk_put(priv->dot_clk);
+-
+-	if (priv->dev)
+-		pm_runtime_disable(priv->dev);
+-
+-	if (priv->base)
+-		iounmap(priv->base);
+-
+-	if (priv->irq)
+-		free_irq(priv->irq, priv);
+-	kfree(priv);
+-	return 0;
+-}
+-
+ static struct platform_driver sh_mobile_lcdc_driver = {
+ 	.driver		= {
+ 		.name		= "sh_mobile_lcdc_fb",
 -- 
-1.7.4.1
+1.7.3.4
 

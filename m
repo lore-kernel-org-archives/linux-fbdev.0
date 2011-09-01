@@ -1,50 +1,57 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 23 Sep 2011 05:17:03 +0000
-Subject: Re: [PATCH] gma500: gtt based hardware scrolling console
-Message-Id: <CAMuHMdU0Kd2cwaz3F56LywZDqrBJk3_A6PSTgueStAAuwSDtZQ@mail.gmail.com>
+From: Axel Lin <axel.lin@gmail.com>
+Date: Thu, 01 Sep 2011 00:11:59 +0000
+Subject: [PATCH RESEND] video: mxsfb: add missing include of linux/module.h
+Message-Id: <1314835919.2208.1.camel@phoenix>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20110922184316.25068.54702.stgit@localhost.localdomain>
-	<CAMuHMdWBz9+TCBUbaOY3HRv=khiDHkRCKdx5e53HCen54RUBVw@mail.gmail.com>
-	<20110922212146.609065b1@lxorguk.ukuu.org.uk>
-In-Reply-To: <20110922212146.609065b1@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: Sascha Hauer <s.hauer@pengutronix.de>, Paul Mundt <lethal@linux-sh.org>, linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-On Thu, Sep 22, 2011 at 22:21, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> > +       info->fix.ywrapstep = gtt_roll;
->>
->> Do you really want to set this? I didn't see any other wrapping
->> support in your patch.
->> However, I guess you can implement wrapping support using the same
->> mapping trick?
->
-> It is actually wrapping - it writes the low pages back below the high
-> ones so it works the GTT as a circular buffer - or am I misunderstanding
-> this.
+Include linux/module.h to fix below build error:
 
-Then it should not set ypanstep to a non-zero value, and set/handle the other
-various *YWRAP flags, to communicate with the frame buffer console driver.
+                 from drivers/video/mxsfb.c:42:
+arch/arm/mach-mxs/include/mach/memory.h:22:1: warning: this is the location of the previous definition
+drivers/video/mxsfb.c:574: error: 'THIS_MODULE' undeclared here (not in a function)
+drivers/video/mxsfb.c:893: warning: data definition has no type or storage class
+drivers/video/mxsfb.c:893: warning: type defaults to 'int' in declaration of 'MODULE_DEVICE_TABLE'
+drivers/video/mxsfb.c:893: warning: parameter names (without types) in function declaration
+drivers/video/mxsfb.c:917: error: expected declaration specifiers or '...' before string constant
+drivers/video/mxsfb.c:917: warning: data definition has no type or storage class
+drivers/video/mxsfb.c:917: warning: type defaults to 'int' in declaration of 'MODULE_DESCRIPTION'
+drivers/video/mxsfb.c:917: warning: function declaration isn't a prototype
+drivers/video/mxsfb.c:918: error: expected declaration specifiers or '...' before string constant
+drivers/video/mxsfb.c:918: warning: data definition has no type or storage class
+drivers/video/mxsfb.c:918: warning: type defaults to 'int' in declaration of 'MODULE_AUTHOR'
+drivers/video/mxsfb.c:918: warning: function declaration isn't a prototype
+drivers/video/mxsfb.c:919: error: expected declaration specifiers or '...' before string constant
+drivers/video/mxsfb.c:919: warning: data definition has no type or storage class
+drivers/video/mxsfb.c:919: warning: type defaults to 'int' in declaration of 'MODULE_LICENSE'
+drivers/video/mxsfb.c:919: warning: function declaration isn't a prototype
+make[2]: *** [drivers/video/mxsfb.o] Error 1
+make[1]: *** [drivers/video] Error 2
+make: *** [drivers] Error 2
 
-Panning is moving inside a virtual screen bigger than the visible screen size.
+Signed-off-by: Axel Lin <axel.lin@gmail.com>
+---
+ drivers/video/mxsfb.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-> One thing I wasn't sure of on the fb side. If I've got a display width
-> that is annoying and can't fit on a 4Kbyte stride am I right in thinking
-> I can set this to say 8 and use a 512 byte stride and still get
-> acceleration for the usual font choice ?
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 0b2f2dd..d837d63 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -39,6 +39,7 @@
+  * the required value in the imx_fb_videomode structure.
+  */
+ 
++#include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+-- 
+1.7.4.1
 
-Yep, that should work. The console code can use ywrap resp. ypan if the
-font height is a multiple of ywrapstep resp. ypanstep.
 
-Gr{oetje,eeting}s,
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

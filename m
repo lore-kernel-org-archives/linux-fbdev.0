@@ -1,78 +1,202 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 14 Sep 2011 21:19:09 +0000
-Subject: Re: [PATCH V4 RESEND 1/6] video: s3c-fb: Add S5P64X0 specific s3c_fb_driverdata
-Message-Id: <4E711A4D.6020109@gmx.de>
+Date: Thu, 01 Sep 2011 15:42:49 +0000
+Subject: Re: [PATCH] fb: avoid possible deadlock caused by fb_set_suspend
+Message-Id: <4E5FA7F9.9030802@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1315591251-17071-1-git-send-email-ajaykumar.rs@samsung.com>
-In-Reply-To: <1315591251-17071-1-git-send-email-ajaykumar.rs@samsung.com>
+References: <4DF7B0B4.4060002@gmx.de>	<1308337359-3480-1-git-send-email-FlorianSchandinat@gmx.de>	<20110618104311.6d80ba50@neptune.home> <20110618111934.26203dbf@neptune.home>
+In-Reply-To: <20110618111934.26203dbf@neptune.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: =?UTF-8?B?QnJ1bm8gUHLDqW1vbnQ=?= <bonbons@linux-vserver.org>, lethal@linux-sh.org, linux-fbdev@vger.kernel.org, francis.moro@gmail.com, torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, Herton Ronaldo Krzesinski <herton@mandriva.com.br>, stable@kernel.org
 
-On 09/09/2011 06:00 PM, Ajay Kumar wrote:
-> This patch:
-> 	-- Adds s3c_fb_driverdata for S5P64X0, which supports 3 windows.
-> 	-- Also, register "s5p64x0-fb" type driver_data.
-> 
-> Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
-> Acked-by: Jingoo Han <jg1.han@samsung.com>
-> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+ping
 
-Applied.
+Guennadi, I really want this issue fixed. Please have a look at Bruno's patch
+otherwise your driver might remain or get even more broken...
+
+I am scheduling Herton's patch for the next merge window.
 
 
-Thanks,
+Regards,
 
 Florian Tobias Schandinat
 
-> ---
->  drivers/video/s3c-fb.c |   27 +++++++++++++++++++++++++++
->  1 files changed, 27 insertions(+), 0 deletions(-)
+
+On 06/18/2011 09:19 AM, Bruno Prémont wrote:
+> Guennadi, could you have a look at (completely untested) patch which avoids
+> possible deadlock due to inverted lock taking order on hotplug as well
+> as "readding" lock_fb_info() for fb_set_suspend() call after Herton's
+> patch to fb_set_suspend().
 > 
-> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-> index 4aecf21..0fda252 100644
-> --- a/drivers/video/s3c-fb.c
-> +++ b/drivers/video/s3c-fb.c
-> @@ -1859,6 +1859,30 @@ static struct s3c_fb_driverdata s3c_fb_data_s3c2443 = {
->  	},
->  };
+> Thanks,
+> Bruno
+> 
+> 
+> On Sat, 18 June 2011 Bruno Prémont <bonbons@linux-vserver.org> wrote:
+>> On Fri, 17 June 2011 Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
+>>> From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+>>>
+>>> A lock ordering issue can cause deadlocks: in framebuffer/console code,
+>>> all needed struct fb_info locks are taken before acquire_console_sem(),
+>>> in places which need to take console semaphore.
+>>>
+>>> But fb_set_suspend is always called with console semaphore held, and
+>>> inside it we call lock_fb_info which gets the fb_info lock, inverse
+>>> locking order of what the rest of the code does. This causes a real
+>>> deadlock issue, when we write to state fb sysfs attribute (which calls
+>>> fb_set_suspend) while a framebuffer is being unregistered by
+>>> remove_conflicting_framebuffers, as can be shown by following show
+>>> blocked state trace on a test program which loads i915 and runs another
+>>> forked processes writing to state attribute:
+>>>
+>>> Test process with semaphore held and trying to get fb_info lock:
+>>
+>> ...
+>>
+>>> fb-test2 which reproduces above is available on kernel.org bug #26232.
+>>> To solve this issue, avoid calling lock_fb_info inside fb_set_suspend,
+>>> and move it out to where needed (callers of fb_set_suspend must call
+>>> lock_fb_info before if needed). So far, the only place which needs to
+>>> call lock_fb_info is store_fbstate, all other places which calls
+>>> fb_set_suspend are suspend/resume hooks that should not need the lock as
+>>> they should be run only when processes are already frozen in
+>>> suspend/resume.
+>>
+>> From a quick look through FB drivers in 2.6.39 I've found one that would need
+>> more work:
+>> - drivers/video/sh_mobile_hdmi.c: sh_hdmi_edid_work_fn()
+>>   Should get changed to
+>>   a) right locking order in case (hdmi->hp_state = HDMI_HOTPLUG_CONNECTED)
+>>   b) lock fb_info in the other case
+>>   For this one fb_set_suspend() does get call in a hotplug worker,
+>>   thus independently on suspend/resume process.
+>>
+>> The rest does match the suspend/resume hook pattern mentioned.
+>>
+>> Bruno
+>>
+>>
+>>> References: https://bugzilla.kernel.org/show_bug.cgi?id&232
+>>> Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+>>> Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+>>> Cc: stable@kernel.org
+>>> ---
+>>>  drivers/video/fbmem.c   |    3 ---
+>>>  drivers/video/fbsysfs.c |    3 +++
+>>>  2 files changed, 3 insertions(+), 3 deletions(-)
+>>>
+>>> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+>>> index 5aac00e..ad93629 100644
+>>> --- a/drivers/video/fbmem.c
+>>> +++ b/drivers/video/fbmem.c
+>>> @@ -1738,8 +1738,6 @@ void fb_set_suspend(struct fb_info *info, int state)
+>>>  {
+>>>  	struct fb_event event;
+>>>  
+>>> -	if (!lock_fb_info(info))
+>>> -		return;
+>>>  	event.info = info;
+>>>  	if (state) {
+>>>  		fb_notifier_call_chain(FB_EVENT_SUSPEND, &event);
+>>> @@ -1748,7 +1746,6 @@ void fb_set_suspend(struct fb_info *info, int state)
+>>>  		info->state = FBINFO_STATE_RUNNING;
+>>>  		fb_notifier_call_chain(FB_EVENT_RESUME, &event);
+>>>  	}
+>>> -	unlock_fb_info(info);
+>>>  }
+>>>  
+>>>  /**
+>>> diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
+>>> index 04251ce..67afa9c 100644
+>>> --- a/drivers/video/fbsysfs.c
+>>> +++ b/drivers/video/fbsysfs.c
+>>> @@ -399,9 +399,12 @@ static ssize_t store_fbstate(struct device *device,
+>>>  
+>>>  	state = simple_strtoul(buf, &last, 0);
+>>>  
+>>> +	if (!lock_fb_info(fb_info))
+>>> +		return -ENODEV;
+>>>  	console_lock();
+>>>  	fb_set_suspend(fb_info, (int)state);
+>>>  	console_unlock();
+>>> +	unlock_fb_info(fb_info);
+>>>  
+>>>  	return count;
+>>>  }
+> 
+> 
+> diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+> index 2b9e56a..b1a13ab 100644
+> --- a/drivers/video/sh_mobile_hdmi.c
+> +++ b/drivers/video/sh_mobile_hdmi.c
+> @@ -1151,27 +1151,27 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
 >  
-> +static struct s3c_fb_driverdata s3c_fb_data_s5p64x0 = {
-> +	.variant = {
-> +		.nr_windows	= 3,
-> +		.vidtcon	= VIDTCON0,
-> +		.wincon		= WINCON(0),
-> +		.winmap		= WINxMAP(0),
-> +		.keycon		= WKEYCON,
-> +		.osd		= VIDOSD_BASE,
-> +		.osd_stride	= 16,
-> +		.buf_start	= VIDW_BUF_START(0),
-> +		.buf_size	= VIDW_BUF_SIZE(0),
-> +		.buf_end	= VIDW_BUF_END(0),
-> +
-> +		.palette = {
-> +			[0] = 0x2400,
-> +			[1] = 0x2800,
-> +			[2] = 0x2c00,
-> +		},
-> +	},
-> +	.win[0] = &s3c_fb_data_s5p_wins[0],
-> +	.win[1] = &s3c_fb_data_s5p_wins[1],
-> +	.win[2] = &s3c_fb_data_s5p_wins[2],
-> +};
-> +
->  static struct platform_device_id s3c_fb_driver_ids[] = {
->  	{
->  		.name		= "s3c-fb",
-> @@ -1872,6 +1896,9 @@ static struct platform_device_id s3c_fb_driver_ids[] = {
->  	}, {
->  		.name		= "s3c2443-fb",
->  		.driver_data	= (unsigned long)&s3c_fb_data_s3c2443,
-> +	}, {
-> +		.name		= "s5p64x0-fb",
-> +		.driver_data	= (unsigned long)&s3c_fb_data_s5p64x0,
->  	},
->  	{},
->  };
+>  		ch = info->par;
+>  
+> -		console_lock();
+> +		if (lock_fb_info(info)) {
+> +			console_lock();
+>  
+> -		/* HDMI plug in */
+> -		if (!sh_hdmi_must_reconfigure(hdmi) &&
+> -		    info->state = FBINFO_STATE_RUNNING) {
+> -			/*
+> -			 * First activation with the default monitor - just turn
+> -			 * on, if we run a resume here, the logo disappears
+> -			 */
+> -			if (lock_fb_info(info)) {
+> +			/* HDMI plug in */
+> +			if (!sh_hdmi_must_reconfigure(hdmi) &&
+> +			    info->state = FBINFO_STATE_RUNNING) {
+> +				/*
+> +				 * First activation with the default monitor - just turn
+> +				 * on, if we run a resume here, the logo disappears
+> +				 */
+>  				info->var.width = hdmi->var.width;
+>  				info->var.height = hdmi->var.height;
+>  				sh_hdmi_display_on(hdmi, info);
+> -				unlock_fb_info(info);
+> +			} else {
+> +				/* New monitor or have to wake up */
+> +				fb_set_suspend(info, 0);
+>  			}
+> -		} else {
+> -			/* New monitor or have to wake up */
+> -			fb_set_suspend(info, 0);
+> -		}
+>  
+> -		console_unlock();
+> +			console_unlock();
+> +			unlock_fb_info(info);
+> +		}
+>  	} else {
+>  		ret = 0;
+>  		if (!hdmi->info)
+> @@ -1181,12 +1181,15 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+>  		fb_destroy_modedb(hdmi->monspec.modedb);
+>  		hdmi->monspec.modedb = NULL;
+>  
+> -		console_lock();
+> +		if (lock_fb_info(info)) {
+> +			console_lock();
+>  
+> -		/* HDMI disconnect */
+> -		fb_set_suspend(hdmi->info, 1);
+> +			/* HDMI disconnect */
+> +			fb_set_suspend(hdmi->info, 1);
+>  
+> -		console_unlock();
+> +			console_unlock();
+> +			unlock_fb_info(info);
+> +		}
+>  		pm_runtime_put(hdmi->dev);
+>  	}
+>  
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 

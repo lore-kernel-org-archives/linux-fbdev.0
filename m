@@ -1,54 +1,64 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 01 Sep 2011 13:27:03 +0000
-Subject: Re: [PATCH] fbdev: fix parsing of standard timings
-Message-Id: <1314883623.1933.10.camel@deskari>
+From: Archit Taneja <archit@ti.com>
+Date: Fri, 02 Sep 2011 06:52:00 +0000
+Subject: Re: [PATCH 2/4] OMAP4: TWL: Add common omapdss supplies
+Message-Id: <4E607A40.8000707@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314362328-30456-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1314362328-30456-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1314001599-17951-1-git-send-email-tomi.valkeinen@ti.com> <1314001599-17951-3-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1314001599-17951-3-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: "Valkeinen, Tomi" <tomi.valkeinen@ti.com>
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-On Thu, 2011-09-01 at 13:10 +0000, Florian Tobias Schandinat wrote:
-> On 08/30/2011 05:31 AM, Tomi Valkeinen wrote:
-> > Hi Florian,
-> > 
-> > On Fri, 2011-08-26 at 18:02 +0000, Florian Tobias Schandinat wrote:
-> >> Hi Tomi,
-> >>
-> >> On 08/26/2011 12:38 PM, Tomi Valkeinen wrote:
-> >>> The standard timings parses uses 1:1 dimensions when the ratio in the
-> >>> EDID data is 0. However, for EDID 1.3 and later the dimensions are 16:10
-> >>> when the ratio is 0.
-> >>>
-> >>> Pass the version and revision numbers to get_std_timing() which can then
-> >>> make the right decision about dimensions.
-> >>>
-> >>> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> >>
-> >> Thanks, looks good to me.
-> >> I'd be happy if someone with access to the original EDID specs could confirm
-> >> this and add his reviewed by.
-> >> I also think adding a comment explaining this change would be helpful.
-> > 
-> > You can see the same thing done in
-> > drivers/gpu/drm/drm_edid.c:drm_mode_std(). Although they seem to check
-> > only revision, which looks a bit risky to me.
-> > 
-> > The specs seem to be available by just googling them, although I don't
-> > know if it's legal to distribute them or not...
-> > 
-> > I've added your comment, I agree it's good. Patch below.
-> 
-> Looks like your googling is better than mine, I only found references to it.
+Hi,
 
-=). Try "e-edid standard pdf" or "edid standard pdf".
+On Monday 22 August 2011 01:56 PM, Valkeinen, Tomi wrote:
+> OMAP DSS normally gets power from VCXIO on OMAP4. Add configuration for
+> this into twl-common.c
+>
+> Mark VCXIO as always_on, as VCXIO is used by multiple components,
+> including the MPU, and turning it off when DSS doesn't need it would
+> lead the device to halt.
 
-> Anyway, I've applied this patch.
+I had a query. Is this the right place to set always_on to true? Won't 
+this lead to VCXIO being always on all omap4 boards? Is it necessary 
+that VCXIO will be used to power on MPU for all omap4 boards?
 
-Thanks!
+Archit
 
- Tomi
-
+>
+> Signed-off-by: Tomi Valkeinen<tomi.valkeinen@ti.com>
+> ---
+>   arch/arm/mach-omap2/twl-common.c |    9 +++++++++
+>   1 files changed, 9 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/arm/mach-omap2/twl-common.c b/arch/arm/mach-omap2/twl-common.c
+> index 4f6d216..52243577 100644
+> --- a/arch/arm/mach-omap2/twl-common.c
+> +++ b/arch/arm/mach-omap2/twl-common.c
+> @@ -235,6 +235,12 @@ static struct regulator_init_data omap4_vana_idata = {
+>   	},
+>   };
+>
+> +static struct regulator_consumer_supply omap4_vcxio_supply[] = {
+> +	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dss"),
+> +	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dsi.0"),
+> +	REGULATOR_SUPPLY("vdds_dsi", "omapdss_dsi.1"),
+> +};
+> +
+>   static struct regulator_init_data omap4_vcxio_idata = {
+>   	.constraints = {
+>   		.min_uV			= 1800000,
+> @@ -243,7 +249,10 @@ static struct regulator_init_data omap4_vcxio_idata = {
+>   					| REGULATOR_MODE_STANDBY,
+>   		.valid_ops_mask		= REGULATOR_CHANGE_MODE
+>   					| REGULATOR_CHANGE_STATUS,
+> +		.always_on		= true,
+>   	},
+> +	.num_consumer_supplies	= ARRAY_SIZE(omap4_vcxio_supply),
+> +	.consumer_supplies	= omap4_vcxio_supply,
+>   };
+>
+>   static struct regulator_init_data omap4_vusb_idata = {
 

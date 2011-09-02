@@ -1,44 +1,59 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Thu, 15 Sep 2011 21:44:53 +0000
-Subject: [PATCH 08/13] drivers/video: fsl-diu-fb: set the driver name to "fsl-diu-fb"
-Message-Id: <1316123098-30967-9-git-send-email-timur@freescale.com>
+From: Manuel Lauss <manuel.lauss@googlemail.com>
+Date: Fri, 02 Sep 2011 14:40:50 +0000
+Subject: [PATCH 5/6] au1200fb: fix hardcoded IRQ
+Message-Id: <1314974451-8535-6-git-send-email-manuel.lauss@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Use the name "fsl-diu-fb" in the Freescale DIU framebuffer driver
-during registrations.
+Use the IRQ provided by platform resource information.
+Required for Au1300 support.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
+Signed-off-by: Manuel Lauss <manuel.lauss@googlemail.com>
 ---
- drivers/video/fsl-diu-fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/au1200fb.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 4d22399..19bfbf5 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -1274,7 +1274,7 @@ static int request_irq_local(int irq)
- 	/* Read to clear the status */
- 	in_be32(&hw->int_status);
+diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
+index b1b16d9..ed5dcdb2 100644
+--- a/drivers/video/au1200fb.c
++++ b/drivers/video/au1200fb.c
+@@ -1595,7 +1595,7 @@ static int __devinit au1200fb_drv_probe(struct platform_device *dev)
+ 	struct au1200fb_device *fbdev;
+ 	struct fb_info *fbi = NULL;
+ 	unsigned long page;
+-	int bpp, plane, ret;
++	int bpp, plane, ret, irq;
  
--	ret = request_irq(irq, fsl_diu_isr, 0, "diu", NULL);
-+	ret = request_irq(irq, fsl_diu_isr, 0, "fsl-diu-fb", NULL);
- 	if (!ret) {
- 		ints = INT_PARERR | INT_LS_BF_VS;
- #if !defined(CONFIG_NOT_COHERENT_CACHE)
-@@ -1634,7 +1634,7 @@ MODULE_DEVICE_TABLE(of, fsl_diu_match);
+ 	/* shut gcc up */
+ 	ret = 0;
+@@ -1671,10 +1671,12 @@ static int __devinit au1200fb_drv_probe(struct platform_device *dev)
+ 	}
  
- static struct platform_driver fsl_diu_driver = {
- 	.driver = {
--		.name = "fsl_diu",
-+		.name = "fsl-diu-fb",
- 		.owner = THIS_MODULE,
- 		.of_match_table = fsl_diu_match,
- 	},
+ 	/* Now hook interrupt too */
+-	if ((ret = request_irq(AU1200_LCD_INT, au1200fb_handle_irq,
+-		 	  IRQF_DISABLED | IRQF_SHARED, "lcd", (void *)dev)) < 0) {
++	irq = platform_get_irq(dev, 0);
++	ret = request_irq(irq, au1200fb_handle_irq,
++			  IRQF_DISABLED | IRQF_SHARED, "lcd", (void *)dev);
++	if (ret) {
+ 		print_err("fail to request interrupt line %d (err: %d)",
+-			  AU1200_LCD_INT, ret);
++			  irq, ret);
+ 		goto failed;
+ 	}
+ 
+@@ -1722,7 +1724,7 @@ static int __devexit au1200fb_drv_remove(struct platform_device *dev)
+ 		_au1200fb_infos[plane] = NULL;
+ 	}
+ 
+-	free_irq(AU1200_LCD_INT, (void *)dev);
++	free_irq(platform_get_irq(dev, 0), (void *)dev);
+ 
+ 	return 0;
+ }
 -- 
-1.7.3.4
-
+1.7.6
 

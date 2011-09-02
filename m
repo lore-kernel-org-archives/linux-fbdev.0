@@ -1,109 +1,231 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Sep 2011 09:12:52 +0000
-Subject: [PATCHv2 7/8] OMAP: DSS2: DISPC: improve dispc_mgr_enable_digit_out()
-Message-Id: <1315818773-18660-8-git-send-email-tomi.valkeinen@ti.com>
+From: Manuel Lauss <manuel.lauss@googlemail.com>
+Date: Fri, 02 Sep 2011 14:40:46 +0000
+Subject: [PATCH 1/6] au1200fb: use framebuffer_alloc()
+Message-Id: <1314974451-8535-2-git-send-email-manuel.lauss@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1315818773-18660-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1315818773-18660-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mythri P K <mythripk@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-dispc_mgr_enable_digit_out() didn't handle HDMI case very well.
+Convert to use framebuffer_alloc() instead of using fb_info embedded
+into device context (which broke the driver in the past due to un-
+initialized elements).
 
-Improve the function to use FRAMEDONETV interrupt to see when HDMI has
-been disabled.
-
-Cc: Mythri P K <mythripk@ti.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Manuel Lauss <manuel.lauss@googlemail.com>
 ---
- drivers/video/omap2/dss/dispc.c |   49 +++++++++++++++++++++++----------------
- 1 files changed, 29 insertions(+), 20 deletions(-)
+ drivers/video/au1200fb.c |   80 ++++++++++++++++++++++++++-------------------
+ 1 files changed, 46 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 4e9f87f..38d6595 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -1924,11 +1924,16 @@ static void _enable_digit_out(bool enable)
- static void dispc_mgr_enable_digit_out(bool enable)
+diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
+index 5dff32a..442d005 100644
+--- a/drivers/video/au1200fb.c
++++ b/drivers/video/au1200fb.c
+@@ -150,7 +150,7 @@ struct au1200_lcd_iodata_t {
+ 
+ /* Private, per-framebuffer management information (independent of the panel itself) */
+ struct au1200fb_device {
+-	struct fb_info fb_info;			/* FB driver info record */
++	struct fb_info *fb_info;		/* FB driver info record */
+ 
+ 	int					plane;
+ 	unsigned char* 		fb_mem;		/* FrameBuffer memory map */
+@@ -158,7 +158,7 @@ struct au1200fb_device {
+ 	dma_addr_t    		fb_phys;
+ };
+ 
+-static struct au1200fb_device _au1200fb_devices[CONFIG_FB_AU1200_DEVS];
++static struct fb_info *_au1200fb_infos[CONFIG_FB_AU1200_DEVS];
+ /********************************************************************/
+ 
+ /* LCD controller restrictions */
+@@ -713,7 +713,7 @@ static int fbinfo2index (struct fb_info *fb_info)
+ 	int i;
+ 
+ 	for (i = 0; i < CONFIG_FB_AU1200_DEVS; ++i) {
+-		if (fb_info = (struct fb_info *)(&_au1200fb_devices[i].fb_info))
++		if (fb_info = _au1200fb_infos[i])
+ 			return i;
+ 	}
+ 	printk("au1200fb: ERROR: fbinfo2index failed!\n");
+@@ -962,7 +962,7 @@ static void au1200_setmode(struct au1200fb_device *fbdev)
+ 	lcd->window[plane].winctrl2 = ( 0
+ 		| LCD_WINCTRL2_CKMODE_00
+ 		| LCD_WINCTRL2_DBM
+-		| LCD_WINCTRL2_BX_N( fbdev->fb_info.fix.line_length)
++		| LCD_WINCTRL2_BX_N(fbdev->fb_info->fix.line_length)
+ 		| LCD_WINCTRL2_SCX_1
+ 		| LCD_WINCTRL2_SCY_1
+ 		) ;
+@@ -1050,7 +1050,7 @@ static void au1200fb_update_fbinfo(struct fb_info *fbi)
+ static int au1200fb_fb_check_var(struct fb_var_screeninfo *var,
+ 	struct fb_info *fbi)
  {
- 	struct completion frame_done_completion;
--	int r;
-+	enum dss_hdmi_venc_clk_source_select src;
-+	int r, i;
-+	u32 irq_mask;
-+	int num_irqs;
+-	struct au1200fb_device *fbdev = (struct au1200fb_device *)fbi;
++	struct au1200fb_device *fbdev = fbi->par;
+ 	u32 pixclock;
+ 	int screen_size, plane;
  
- 	if (REG_GET(DISPC_CONTROL, 1, 1) = enable)
- 		return;
+@@ -1142,7 +1142,7 @@ static int au1200fb_fb_check_var(struct fb_var_screeninfo *var,
+  */
+ static int au1200fb_fb_set_par(struct fb_info *fbi)
+ {
+-	struct au1200fb_device *fbdev = (struct au1200fb_device *)fbi;
++	struct au1200fb_device *fbdev = fbi->par;
  
-+	src = dss_get_hdmi_venc_clk_source();
+ 	au1200fb_update_fbinfo(fbi);
+ 	au1200_setmode(fbdev);
+@@ -1246,7 +1246,7 @@ static int au1200fb_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ {
+ 	unsigned int len;
+ 	unsigned long start=0, off;
+-	struct au1200fb_device *fbdev = (struct au1200fb_device *) info;
++	struct au1200fb_device *fbdev = info->par;
+ 
+ #ifdef CONFIG_PM
+ 	au1xxx_pm_access(LCD_pm_dev);
+@@ -1561,10 +1561,9 @@ static irqreturn_t au1200fb_handle_irq(int irq, void* dev_id)
+ 
+ static int au1200fb_init_fbinfo(struct au1200fb_device *fbdev)
+ {
+-	struct fb_info *fbi = &fbdev->fb_info;
++	struct fb_info *fbi = fbdev->fb_info;
+ 	int bpp;
+ 
+-	memset(fbi, 0, sizeof(struct fb_info));
+ 	fbi->fbops = &au1200fb_fb_ops;
+ 
+ 	bpp = winbpp(win->w[fbdev->plane].mode_winctrl1);
+@@ -1626,11 +1625,13 @@ static int au1200fb_init_fbinfo(struct au1200fb_device *fbdev)
+ static int au1200fb_drv_probe(struct platform_device *dev)
+ {
+ 	struct au1200fb_device *fbdev;
++	struct fb_info *fbi = NULL;
+ 	unsigned long page;
+ 	int bpp, plane, ret;
+ 
+-	if (!dev)
+-		return -EINVAL;
++	/* shut gcc up */
++	ret = 0;
++	fbdev = NULL;
+ 
+ 	for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane) {
+ 		bpp = winbpp(win->w[plane].mode_winctrl1);
+@@ -1639,8 +1640,15 @@ static int au1200fb_drv_probe(struct platform_device *dev)
+ 		if (win->w[plane].yres = 0)
+ 			win->w[plane].yres = panel->Yres;
+ 
+-		fbdev = &_au1200fb_devices[plane];
+-		memset(fbdev, 0, sizeof(struct au1200fb_device));
++		fbi = framebuffer_alloc(sizeof(struct au1200fb_device),
++					&dev->dev);
++		if (!fbi)
++			goto failed;
 +
- 	if (enable) {
- 		unsigned long flags;
- 		/* When we enable digit output, we'll get an extra digit
-@@ -1945,36 +1950,40 @@ static void dispc_mgr_enable_digit_out(bool enable)
- 	 * wait for the extra sync losts */
- 	init_completion(&frame_done_completion);
- 
-+	if (src = DSS_HDMI_M_PCLK && enable = false) {
-+		irq_mask = DISPC_IRQ_FRAMEDONETV;
-+		num_irqs = 1;
-+	} else {
-+		irq_mask = DISPC_IRQ_EVSYNC_EVEN | DISPC_IRQ_EVSYNC_ODD;
-+		/* XXX I understand from TRM that we should only wait for the
-+		 * current field to complete. But it seems we have to wait for
-+		 * both fields */
-+		num_irqs = 2;
-+	}
++		_au1200fb_infos[plane] = fbi;
++		fbdev = fbi->par;
++		fbdev->fb_info = fbi;
 +
- 	r = omap_dispc_register_isr(dispc_disable_isr, &frame_done_completion,
--			DISPC_IRQ_EVSYNC_EVEN | DISPC_IRQ_EVSYNC_ODD);
-+			irq_mask);
- 	if (r)
--		DSSERR("failed to register EVSYNC isr\n");
-+		DSSERR("failed to register %x isr\n", irq_mask);
+ 		fbdev->plane = plane;
  
- 	_enable_digit_out(enable);
+ 		/* Allocate the framebuffer to the maximum screen size */
+@@ -1673,21 +1681,20 @@ static int au1200fb_drv_probe(struct platform_device *dev)
+ 			goto failed;
  
--	/* XXX I understand from TRM that we should only wait for the
--	 * current field to complete. But it seems we have to wait
--	 * for both fields */
--	if (!wait_for_completion_timeout(&frame_done_completion,
--				msecs_to_jiffies(100)))
--		DSSERR("timeout waiting for EVSYNC\n");
+ 		/* Register new framebuffer */
+-		if ((ret = register_framebuffer(&fbdev->fb_info)) < 0) {
++		ret = register_framebuffer(fbi);
++		if (ret < 0) {
+ 			print_err("cannot register new framebuffer");
+ 			goto failed;
+ 		}
+ 
+-		au1200fb_fb_set_par(&fbdev->fb_info);
++		au1200fb_fb_set_par(fbi);
+ 
+ #if !defined(CONFIG_FRAMEBUFFER_CONSOLE) && defined(CONFIG_LOGO)
+ 		if (plane = 0)
+-			if (fb_prepare_logo(&fbdev->fb_info, FB_ROTATE_UR)) {
++			if (fb_prepare_logo(fbi, FB_ROTATE_UR)) {
+ 				/* Start display and show logo on boot */
+-				fb_set_cmap(&fbdev->fb_info.cmap,
+-						&fbdev->fb_info);
 -
--	if (!wait_for_completion_timeout(&frame_done_completion,
--				msecs_to_jiffies(100)))
--		DSSERR("timeout waiting for EVSYNC\n");
-+	for (i = 0; i < num_irqs; ++i) {
-+		if (!wait_for_completion_timeout(&frame_done_completion,
-+					msecs_to_jiffies(100)))
-+			DSSERR("timeout waiting for digit out to %s\n",
-+					enable ? "start" : "stop");
+-				fb_show_logo(&fbdev->fb_info, FB_ROTATE_UR);
++				fb_set_cmap(&fbi->cmap, fbi);
++				fb_show_logo(fbi, FB_ROTATE_UR);
+ 			}
+ #endif
+ 	}
+@@ -1705,12 +1712,13 @@ static int au1200fb_drv_probe(struct platform_device *dev)
+ failed:
+ 	/* NOTE: This only does the current plane/window that failed; others are still active */
+ 	if (fbdev->fb_mem)
+-		dma_free_noncoherent(dev, PAGE_ALIGN(fbdev->fb_len),
++		dma_free_noncoherent(&dev->dev, PAGE_ALIGN(fbdev->fb_len),
+ 				fbdev->fb_mem, fbdev->fb_phys);
+-	if (fbdev->fb_info.cmap.len != 0)
+-		fb_dealloc_cmap(&fbdev->fb_info.cmap);
+-	if (fbdev->fb_info.pseudo_palette)
+-		kfree(fbdev->fb_info.pseudo_palette);
++	if (fbi) {
++		if (fbi->cmap.len != 0)
++			fb_dealloc_cmap(&fbi->cmap);
++		kfree(fbi->pseudo_palette);
 +	}
+ 	if (plane = 0)
+ 		free_irq(AU1200_LCD_INT, (void*)dev);
+ 	return ret;
+@@ -1719,6 +1727,7 @@ failed:
+ static int au1200fb_drv_remove(struct platform_device *dev)
+ {
+ 	struct au1200fb_device *fbdev;
++	struct fb_info *fbi;
+ 	int plane;
  
--	r = omap_dispc_unregister_isr(dispc_disable_isr,
--			&frame_done_completion,
--			DISPC_IRQ_EVSYNC_EVEN | DISPC_IRQ_EVSYNC_ODD);
-+	r = omap_dispc_unregister_isr(dispc_disable_isr, &frame_done_completion,
-+			irq_mask);
- 	if (r)
--		DSSERR("failed to unregister EVSYNC isr\n");
-+		DSSERR("failed to unregister %x isr\n", irq_mask);
+ 	if (!dev)
+@@ -1727,20 +1736,22 @@ static int au1200fb_drv_remove(struct platform_device *dev)
+ 	/* Turn off the panel */
+ 	au1200_setpanel(NULL);
  
- 	if (enable) {
- 		unsigned long flags;
- 		spin_lock_irqsave(&dispc.irq_lock, flags);
--		dispc.irq_error_mask = DISPC_IRQ_MASK_ERROR;
--		if (dss_has_feature(FEAT_MGR_LCD2))
--			dispc.irq_error_mask |= DISPC_IRQ_SYNC_LOST2;
-+		dispc.irq_error_mask |= DISPC_IRQ_SYNC_LOST_DIGIT;
- 		dispc_write_reg(DISPC_IRQSTATUS, DISPC_IRQ_SYNC_LOST_DIGIT);
- 		_omap_dispc_set_irqs();
- 		spin_unlock_irqrestore(&dispc.irq_lock, flags);
+-	for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane)
+-	{
+-		fbdev = &_au1200fb_devices[plane];
++	for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane)	{
++		fbi = _au1200fb_infos[plane];
++		fbdev = fbi->par;
+ 
+ 		/* Clean up all probe data */
+-		unregister_framebuffer(&fbdev->fb_info);
++		unregister_framebuffer(fbi);
+ 		if (fbdev->fb_mem)
+ 			dma_free_noncoherent(&dev->dev,
+ 					PAGE_ALIGN(fbdev->fb_len),
+ 					fbdev->fb_mem, fbdev->fb_phys);
+-		if (fbdev->fb_info.cmap.len != 0)
+-			fb_dealloc_cmap(&fbdev->fb_info.cmap);
+-		if (fbdev->fb_info.pseudo_palette)
+-			kfree(fbdev->fb_info.pseudo_palette);
++		if (fbi->cmap.len != 0)
++			fb_dealloc_cmap(&fbi->cmap);
++		kfree(fbi->pseudo_palette);
++
++		framebuffer_release(fbi);
++		_au1200fb_infos[plane] = NULL;
+ 	}
+ 
+ 	free_irq(AU1200_LCD_INT, (void *)dev);
+@@ -1749,7 +1760,8 @@ static int au1200fb_drv_remove(struct platform_device *dev)
+ }
+ 
+ #ifdef CONFIG_PM
+-static int au1200fb_drv_suspend(struct platform_device *dev, u32 state)
++static int au1200fb_drv_suspend(struct platform_device *dev,
++				pm_message_t state)
+ {
+ 	/* TODO */
+ 	return 0;
 -- 
-1.7.4.1
+1.7.6
 

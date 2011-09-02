@@ -1,37 +1,154 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Sun, 18 Sep 2011 20:49:35 +0000
-Subject: Re: [PATCH v3 0/3] fbdev: Add FOURCC-based format configuration API
-Message-Id: <201109182249.39536.laurent.pinchart@ideasonboard.com>
+From: Archit Taneja <archit@ti.com>
+Date: Fri, 02 Sep 2011 06:51:43 +0000
+Subject: Re: [PATCH 3/4] OMAP: DSS2: Handle manager change in apply
+Message-Id: <4E607CC3.2000407@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314789501-824-1-git-send-email-laurent.pinchart@ideasonboard.com> <4E764B35.2090009@gmx.de>
-In-Reply-To: <4E764B35.2090009@gmx.de>
+References: <1314001636-18036-1-git-send-email-tomi.valkeinen@ti.com> <1314001636-18036-4-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1314001636-18036-4-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, magnus.damm@gmail.com, Mauro Carvalho Chehab <mchehab@redhat.com>
+To: "Valkeinen, Tomi" <tomi.valkeinen@ti.com>
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-Hi Florian,
+On Monday 22 August 2011 01:57 PM, Valkeinen, Tomi wrote:
+> Currently when changing the manager of an overlay, set_manager() directly
+> calls dispc to set the overlay's destination.
+>
+> Change this to be more in line with other overlay configurations, and
+> this will also remove the need to have dispc clocks enabled when calling
+> set_manager().
+>
+> A new field is added to overlay struct, "manager_changed". This is
+> similar to "display_changed" field in manager struct, and is used to
+> inform apply that the manager has changed and thus write to the
+> registers is needed.
 
-On Sunday 18 September 2011 21:49:09 Florian Tobias Schandinat wrote:
-> Hi all,
-> 
-> as there was no reaction to this patch series I am scheduling it for 3.3
-> merge window (3.2 seems too close to me as this is an API change).
+I was wondering if it would be better to create an overlay_info member 
+called 'channel_out' rather than having 'manager_enabled' at a higher 
+level? This way, we won't need to do some of the things below(I have 
+pointed them out):
 
-That's fine with me.
+>
+> Signed-off-by: Tomi Valkeinen<tomi.valkeinen@ti.com>
+> ---
+>   drivers/video/omap2/dss/dispc.c   |    4 +++-
+>   drivers/video/omap2/dss/dss.h     |    2 --
+>   drivers/video/omap2/dss/manager.c |    5 +++++
+>   drivers/video/omap2/dss/overlay.c |    9 ++-------
+>   include/video/omapdss.h           |    1 +
+>   5 files changed, 11 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+> index 9d9fbeb..003227c 100644
+> --- a/drivers/video/omap2/dss/dispc.c
+> +++ b/drivers/video/omap2/dss/dispc.c
+> @@ -841,7 +841,7 @@ static void _dispc_set_color_mode(enum omap_plane plane,
+>   	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), m, 4, 1);
+>   }
+>
+> -void dispc_set_channel_out(enum omap_plane plane,
+> +static void dispc_set_channel_out(enum omap_plane plane,
+>   		enum omap_channel channel)
+>   {
+>   	int shift;
+> @@ -1860,6 +1860,8 @@ int dispc_setup_plane(enum omap_plane plane,
+>   	_dispc_set_pre_mult_alpha(plane, pre_mult_alpha);
+>   	_dispc_setup_global_alpha(plane, global_alpha);
+>
+> +	dispc_set_channel_out(plane, channel);
+> +
+>   	return 0;
+>   }
+>
+> diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+> index adeff04..ff7ac35 100644
+> --- a/drivers/video/omap2/dss/dss.h
+> +++ b/drivers/video/omap2/dss/dss.h
+> @@ -399,8 +399,6 @@ void dispc_set_plane_ba0(enum omap_plane plane, u32 paddr);
+>   void dispc_set_plane_ba1(enum omap_plane plane, u32 paddr);
+>   void dispc_set_plane_pos(enum omap_plane plane, u16 x, u16 y);
+>   void dispc_set_plane_size(enum omap_plane plane, u16 width, u16 height);
+> -void dispc_set_channel_out(enum omap_plane plane,
+> -		enum omap_channel channel_out);
+>
+>   void dispc_enable_gamma_table(bool enable);
+>   int dispc_setup_plane(enum omap_plane plane,
+> diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+> index 63674b0..a6a909a 100644
+> --- a/drivers/video/omap2/dss/manager.c
+> +++ b/drivers/video/omap2/dss/manager.c
+> @@ -1338,6 +1338,11 @@ static int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
+>
+>   		oc =&dss_cache.overlay_cache[ovl->id];
+>
+> +		if (ovl->manager_changed) {
+> +			ovl->manager_changed = false;
+> +			ovl->info_dirty  = true;
+> +		}
+> +
 
-> As the second patch has nothing to do with fbdev it should go mainline via
-> V4L2. Any problems/comments?
+We won't need to do this if we created channel_out as an overlay_info 
+member. The info will get dirty automatically.
 
-The NV24/42 patch will need to reach mainline before the sh_mobile_lcdc YUV 
-API patch, or compilation will break.
+>   		if (!overlay_enabled(ovl)) {
+>   			if (oc->enabled) {
+>   				oc->enabled = false;
+> diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
+> index c84380c..ab44403 100644
+> --- a/drivers/video/omap2/dss/overlay.c
+> +++ b/drivers/video/omap2/dss/overlay.c
+> @@ -516,6 +516,7 @@ static int omap_dss_set_manager(struct omap_overlay *ovl,
+>   	}
+>
+>   	ovl->manager = mgr;
+> +	ovl->manager_changed = true;
+>
+>   	/* XXX: When there is an overlay on a DSI manual update display, and
+>   	 * the overlay is first disabled, then moved to tv, and enabled, we
+> @@ -529,15 +530,12 @@ static int omap_dss_set_manager(struct omap_overlay *ovl,
+>   	 * Userspace workaround for this is to update the LCD after disabling
+>   	 * the overlay, but before moving the overlay to TV.
+>   	 */
+> -	dispc_set_channel_out(ovl->id, mgr->id);
 
-Mauro, what's your preference ? Should the patch go through the media tree ? 
-If so, how should we synchronize it with the fbdev tree ? Should I push it to 
-3.2 ?
+We would need to do a get_overlay_info/set_overlay_info here, like it is 
+done for other overlay sysfs attributes.
 
--- 
-Regards,
+>
+>   	return 0;
+>   }
+>
+>   static int omap_dss_unset_manager(struct omap_overlay *ovl)
+>   {
+> -	int r;
+> -
+>   	if (!ovl->manager) {
+>   		DSSERR("failed to detach overlay: manager not set\n");
+>   		return -EINVAL;
+> @@ -548,11 +546,8 @@ static int omap_dss_unset_manager(struct omap_overlay *ovl)
+>   		return -EINVAL;
+>   	}
+>
+> -	r = ovl->wait_for_go(ovl);
+> -	if (r)
+> -		return r;
+> -
+>   	ovl->manager = NULL;
+> +	ovl->manager_changed = true;
+>
+>   	return 0;
+>   }
+> diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+> index 9301805..b965f5a 100644
+> --- a/include/video/omapdss.h
+> +++ b/include/video/omapdss.h
+> @@ -326,6 +326,7 @@ struct omap_overlay {
+>   	struct omap_overlay_manager *manager;
+>   	struct omap_overlay_info info;
+>
+> +	bool manager_changed;
+>   	/* if true, info has been changed, but not applied() yet */
+>   	bool info_dirty;
+>
 
-Laurent Pinchart

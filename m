@@ -1,7 +1,7 @@
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Thu, 01 Sep 2011 16:28:13 +0000
+Date: Fri, 02 Sep 2011 16:06:49 +0000
 Subject: Re: [PATCH] fb: avoid possible deadlock caused by fb_set_suspend
-Message-Id: <Pine.LNX.4.64.1109011827090.6316@axis700.grange>
+Message-Id: <Pine.LNX.4.64.1109021802560.4731@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <4DF7B0B4.4060002@gmx.de> <1308337359-3480-1-git-send-email-FlorianSchandinat@gmx.de>
  <20110618104311.6d80ba50@neptune.home> <20110618111934.26203dbf@neptune.home>
@@ -21,14 +21,111 @@ On Thu, 1 Sep 2011, Florian Tobias Schandinat wrote:
 > 
 > Guennadi, I really want this issue fixed. Please have a look at Bruno's patch
 > otherwise your driver might remain or get even more broken...
+> 
+> I am scheduling Herton's patch for the next merge window.
 
-Sorry, somehow this patch excaped my attention. Will test tomorrow.
+So, the patch looks simple and correct, when applied on top of 
+http://marc.info/?l=linux-kernel&m0833638508657&w=2
+But it doesn't apply anymore and after fixing a trivial merge conflict, it 
+fails to build, which is also trivially fixed. Please, add my
+
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+
+to the set and use this updated version:
+
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index 7d54e2c..647ba98 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -1111,6 +1111,7 @@ static long sh_hdmi_clk_configure(struct sh_hdmi *hdmi, unsigned long hdmi_rate,
+ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ {
+ 	struct sh_hdmi *hdmi = container_of(work, struct sh_hdmi, edid_work.work);
++	struct fb_info *info;
+ 	struct sh_mobile_hdmi_info *pdata = hdmi->dev->platform_data;
+ 	struct sh_mobile_lcdc_chan *ch;
+ 	int ret;
+@@ -1123,8 +1124,9 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 
+ 	mutex_lock(&hdmi->mutex);
+ 
++	info = hdmi->info;
++
+ 	if (hdmi->hp_state = HDMI_HOTPLUG_CONNECTED) {
+-		struct fb_info *info = hdmi->info;
+ 		unsigned long parent_rate = 0, hdmi_rate;
+ 
+ 		ret = sh_hdmi_read_edid(hdmi, &hdmi_rate, &parent_rate);
+@@ -1148,42 +1150,45 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 
+ 		ch = info->par;
+ 
+-		console_lock();
++		if (lock_fb_info(info)) {
++			console_lock();
+ 
+-		/* HDMI plug in */
+-		if (!sh_hdmi_must_reconfigure(hdmi) &&
+-		    info->state = FBINFO_STATE_RUNNING) {
+-			/*
+-			 * First activation with the default monitor - just turn
+-			 * on, if we run a resume here, the logo disappears
+-			 */
+-			if (lock_fb_info(info)) {
++			/* HDMI plug in */
++			if (!sh_hdmi_must_reconfigure(hdmi) &&
++			    info->state = FBINFO_STATE_RUNNING) {
++				/*
++				 * First activation with the default monitor - just turn
++				 * on, if we run a resume here, the logo disappears
++				 */
+ 				info->var.width = hdmi->var.width;
+ 				info->var.height = hdmi->var.height;
+ 				sh_hdmi_display_on(hdmi, info);
+-				unlock_fb_info(info);
++			} else {
++				/* New monitor or have to wake up */
++				fb_set_suspend(info, 0);
+ 			}
+-		} else {
+-			/* New monitor or have to wake up */
+-			fb_set_suspend(info, 0);
+-		}
+ 
+-		console_unlock();
++			console_unlock();
++			unlock_fb_info(info);
++		}
+ 	} else {
+ 		ret = 0;
+-		if (!hdmi->info)
++		if (!info)
+ 			goto out;
+ 
+ 		hdmi->monspec.modedb_len = 0;
+ 		fb_destroy_modedb(hdmi->monspec.modedb);
+ 		hdmi->monspec.modedb = NULL;
+ 
+-		console_lock();
++		if (lock_fb_info(info)) {
++			console_lock();
+ 
+-		/* HDMI disconnect */
+-		fb_set_suspend(hdmi->info, 1);
++			/* HDMI disconnect */
++			fb_set_suspend(info, 1);
+ 
+-		console_unlock();
++			console_unlock();
++			unlock_fb_info(info);
++		}
+ 	}
+ 
+ out:
 
 Thanks
 Guennadi
 
-> 
-> I am scheduling Herton's patch for the next merge window.
 > 
 > 
 > Regards,

@@ -1,164 +1,76 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 19 Sep 2011 00:28:03 +0000
-Subject: [WIP/RFC 25/31] sh_mobile_hdmi: Use LCDC notification callback
-Message-Id: <1316392089-27598-26-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 03 Sep 2011 01:29:19 +0000
+Subject: [RFC v2] allow multiple concurrent visible displays
+Message-Id: <1315013361-3191-1-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, Dave Airlie <airlied@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Bernie Thompson <bernie@plugable.com>, Martin Decky <martin@decky.cz>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Instead of accessing the LCDC channel and fb_info structures directly,
-use the LCDC notification callback to inform the LCDC driver about
-display-related events.
+Hi all,
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
----
- drivers/video/sh_mobile_hdmi.c |   88 +++++++---------------------------------
- 1 files changed, 15 insertions(+), 73 deletions(-)
+this is the second version of my multi-display support.
 
-diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-index 4b87c6e..c17e3ad 100644
---- a/drivers/video/sh_mobile_hdmi.c
-+++ b/drivers/video/sh_mobile_hdmi.c
-@@ -733,12 +733,11 @@ static unsigned long sh_hdmi_rate_error(struct sh_hdmi *hdmi,
- static int sh_hdmi_read_edid(struct sh_hdmi *hdmi, unsigned long *hdmi_rate,
- 			     unsigned long *parent_rate)
- {
--	struct fb_info *info = hdmi->entity.lcdc
--			     ? hdmi->entity.lcdc->info : NULL;
--	struct fb_var_screeninfo tmpvar;
--	struct fb_var_screeninfo *var = &tmpvar;
-+	struct sh_mobile_lcdc_chan *ch = hdmi->entity.lcdc;
-+	struct fb_info *info = ch ? ch->info : NULL;
-+	struct fb_var_screeninfo var;
- 	const struct fb_videomode *mode, *found = NULL;
--	struct fb_modelist *modelist = NULL;
-+	const struct fb_modelist *modelist = NULL;
- 	unsigned int f_width = 0, f_height = 0, f_refresh = 0;
- 	unsigned long found_rate_error = ULONG_MAX; /* silly compiler... */
- 	bool scanning = false, preferred_bad = false;
-@@ -856,12 +855,10 @@ static int sh_hdmi_read_edid(struct sh_hdmi *hdmi, unsigned long *hdmi_rate,
- 		}
- 
- 		/* Check if supported: sufficient fb memory, supported clock-rate */
--		fb_videomode_to_var(var, mode);
-+		fb_videomode_to_var(&var, mode);
- 
--		var->bits_per_pixel = info->var.bits_per_pixel;
--
--		if (info && info->fbops->fb_check_var &&
--		    info->fbops->fb_check_var(var, info)) {
-+		if (ch && ch->notify &&
-+		    ch->notify(ch, SH_MOBILE_LCDC_EVENT_DISPLAY_MODE, &var)) {
- 			scanning = true;
- 			preferred_bad = true;
- 			continue;
-@@ -1042,32 +1039,6 @@ static const struct sh_mobile_lcdc_entity_ops sh_hdmi_ops = {
- 	.display_off = sh_hdmi_display_off,
- };
- 
--static bool sh_hdmi_must_reconfigure(struct sh_hdmi *hdmi)
--{
--	struct sh_mobile_lcdc_chan *ch = hdmi->entity.lcdc;
--	struct fb_var_screeninfo *new_var = &hdmi->var, *old_var = &ch->display_var;
--	struct fb_videomode mode1, mode2;
--
--	fb_var_to_videomode(&mode1, old_var);
--	fb_var_to_videomode(&mode2, new_var);
--
--	dev_dbg(hdmi->dev, "Old %ux%u, new %ux%u\n",
--		mode1.xres, mode1.yres, mode2.xres, mode2.yres);
--
--	if (fb_mode_is_equal(&mode1, &mode2)) {
--		/* It can be a different monitor with an equal video-mode */
--		old_var->width = new_var->width;
--		old_var->height = new_var->height;
--		return false;
--	}
--
--	dev_dbg(hdmi->dev, "Switching %u -> %u lines\n",
--		mode1.yres, mode2.yres);
--	*old_var = *new_var;
--
--	return true;
--}
--
- /**
-  * sh_hdmi_clk_configure() - set HDMI clock frequency and enable the clock
-  * @hdmi:		driver context
-@@ -1107,15 +1078,14 @@ static long sh_hdmi_clk_configure(struct sh_hdmi *hdmi, unsigned long hdmi_rate,
- static void sh_hdmi_edid_work_fn(struct work_struct *work)
- {
- 	struct sh_hdmi *hdmi = container_of(work, struct sh_hdmi, edid_work.work);
-+	struct sh_mobile_lcdc_chan *ch = hdmi->entity.lcdc;
- 	int ret;
- 
- 	dev_dbg(hdmi->dev, "%s(%p): begin, hotplug status %d\n", __func__, hdmi,
- 		hdmi->hp_state);
- 
- 	if (hdmi->hp_state = HDMI_HOTPLUG_CONNECTED) {
--		struct sh_mobile_lcdc_chan *ch = hdmi->entity.lcdc;
- 		unsigned long parent_rate = 0, hdmi_rate;
--		struct fb_info *info;
- 
- 		ret = sh_hdmi_read_edid(hdmi, &hdmi_rate, &parent_rate);
- 		if (ret < 0)
-@@ -1133,47 +1103,19 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
- 		/* Switched to another (d) power-save mode */
- 		msleep(10);
- 
--		if (ch = NULL)
--			goto out;
--
--		info = ch->info;
--
--		console_lock();
--
--		/* HDMI plug in */
--		if (!sh_hdmi_must_reconfigure(hdmi) &&
--		    info->state = FBINFO_STATE_RUNNING) {
--			/*
--			 * First activation with the default monitor - just turn
--			 * on, if we run a resume here, the logo disappears
--			 */
--			if (lock_fb_info(info)) {
--				info->var.width = hdmi->var.width;
--				info->var.height = hdmi->var.height;
--				sh_hdmi_display_on(&hdmi->entity);
--				unlock_fb_info(info);
--			}
--		} else {
--			/* New monitor or have to wake up */
--			fb_set_suspend(info, 0);
--		}
--
--		console_unlock();
-+		if (ch && ch->notify)
-+			ch->notify(ch, SH_MOBILE_LCDC_EVENT_DISPLAY_CONNECT,
-+				   &hdmi->var);
- 	} else {
--		ret = 0;
--		if (hdmi->entity.lcdc = NULL)
--			goto out;
--
- 		hdmi->monspec.modedb_len = 0;
- 		fb_destroy_modedb(hdmi->monspec.modedb);
- 		hdmi->monspec.modedb = NULL;
- 
--		console_lock();
--
--		/* HDMI disconnect */
--		fb_set_suspend(hdmi->entity.lcdc->info, 1);
-+		if (ch && ch->notify)
-+			ch->notify(ch, SH_MOBILE_LCDC_EVENT_DISPLAY_DISCONNECT,
-+				   NULL);
- 
--		console_unlock();
-+		ret = 0;
- 	}
- 
- out:
--- 
-1.7.3.4
+Compared to the first version:
+The bug reported in the first patch that prevented booting when 
+"fbcon=cmap:01" was given is fixed (annoying NULL pointer in vc)
+and a dummy vc_display_fg management was added to prevent 
+modifying vc structures we do not "own".
+The second patch is new and a hack that allows graphic and console 
+applications to work concurrently.
+
+Background:
+At the moment only one display (in multi-display setups) will be 
+updated when
+(1) multiple console applications run on different displays
+(2) a graphic application runs in the active vt on one display and a 
+    console application on another display
+(3) multiple graphic (framebuffer) applications run on different
+    displays (usually)
+
+The first patch fixes (1) and I'm pretty happy with it. Works well 
+for me except rarely cursor visibility glitches but that might be a 
+bug somewhere else.
+
+(2) requires some sort of policy change. At the moment we forbid 
+any console from working just because on one vt a graphic 
+application started. Obviously that's not what I want and also not 
+what most applications require. Therefore changing it to only allow 
+the application to use the graphic resource associated with the vt 
+it switches to KD_GRAPHIC seems reasonable to me. If there are 
+concerns about compatiblity we could make this change an option or 
+introduce a new KD_PGRAPHICS which behaves as I want (though the 
+last one would be ugly and require changing all userspace to work).
+My second patch gives this functionality but I do not expect it to 
+be acceptable as is. At first I wanted to revert f700d6e5 but for 
+some reason the result did not even boot so I hacked my way around 
+it. Basically my question here aside the policy change is why do we 
+blank when entering graphics mode and why do we not allow updates 
+to other consoles when one is blanked?
+
+(3) is a completly different beast which will probably require 
+changes in userspace applications. Most framebuffer applications at 
+the moment just access the framebuffer if they are in the current 
+vt and stop on vt change. To make this working concurrently the 
+applications would need a way to get a notification when its 
+visibility changes. As this one requires much more work and thought 
+than the (1) and (2) I'll at first concentrate on solving those.
+But if anyone has any suggestions on this one I'd be verry happy.
+
+
+Best regards,
+
+Florian Tobias Schandinat
+
+
+Florian Tobias Schandinat (2):
+  fbdev: allow multiple concurrent visible consoles
+  vt: dirty hack
+
+ drivers/tty/vt/vt.c           |    4 +---
+ drivers/video/console/fbcon.c |   34 ++++++++++++++++++++++++++++++----
+ drivers/video/console/fbcon.h |    1 +
+ 3 files changed, 32 insertions(+), 7 deletions(-)
 

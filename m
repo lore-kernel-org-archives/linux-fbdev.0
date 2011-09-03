@@ -1,58 +1,49 @@
-From: InKi Dae <daeinki@gmail.com>
-Date: Mon, 01 Aug 2011 04:06:27 +0000
-Subject: Fwd: [PATCH 0/2] video: add Samsung SoC based MIPI-DSI support.
-Message-Id: <CAAQKjZPP3Kr3aGHkjP1PMY+ZugLPeocE4mD=SHX6NLo2s7fajA@mail.gmail.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 03 Sep 2011 01:29:21 +0000
+Subject: [PATCH 2/2] vt: dirty hack
+Message-Id: <1315013361-3191-3-git-send-email-FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4CE5D2BB.2060308@samsung.com>
-	<4DA6E551.1060300@samsung.com>
-In-Reply-To: <4DA6E551.1060300@samsung.com>
+References: <1315013361-3191-1-git-send-email-FlorianSchandinat@gmx.de>
+In-Reply-To: <1315013361-3191-1-git-send-email-FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, Dave Airlie <airlied@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Bernie Thompson <bernie@plugable.com>, Martin Decky <martin@decky.cz>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Hello, Paul.
+---
+ drivers/tty/vt/vt.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-I had posted patch sets below on 15 Apr.
-but there is no any comments.
-please review this patch sets.
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index b3915b7..8332004 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -3740,7 +3740,6 @@ void do_blank_screen(int entering_gfx)
+ 		hide_cursor(vc);
+ 		save_screen(vc);
+ 		vc->vc_sw->con_blank(vc, -1, 1);
+-		console_blanked = fg_console + 1;
+ 		blank_state = blank_off;
+ 		set_origin(vc);
+ 		return;
+@@ -3752,7 +3751,6 @@ void do_blank_screen(int entering_gfx)
+ 
+ 	/* don't blank graphics */
+ 	if (vc->vc_mode != KD_TEXT) {
+-		console_blanked = fg_console + 1;
+ 		return;
+ 	}
+ 
+@@ -3795,7 +3793,7 @@ void do_unblank_screen(int leaving_gfx)
+ 	WARN_CONSOLE_UNLOCKED();
+ 
+ 	ignore_poke = 0;
+-	if (!console_blanked)
++	if (!console_blanked && !leaving_gfx)
+ 		return;
+ 	if (!vc_cons_allocated(fg_console)) {
+ 		/* impossible */
+-- 
+1.6.3.2
 
-thank you.
-
-
----------- Forwarded message ----------
-From: daeinki <inki.dae@samsung.com>
-Date: 2011/4/14
-Subject: [PATCH 0/2] video: add Samsung SoC based MIPI-DSI support.
-To: linux-fbdev@vger.kernel.org, lethal@linux-sh.org
-=C2=FC=C1=B6: kyungmin.park@samsung.com, Kukjin Kim <kgene.kim@samsung.com>,
-akpm@linux-foundation.org, linux-arm-kernel@lists.infradead.org
-
-
-Hello, all.
-
-Samsung S5PV210 and EXYNOS4 SoC platform have one or two MIPI-DSI
-controller and MIPI-DSI based LCD Panel could be used with this one.
-this patch adds Samsung SoC based MIPI-DSI support.
-
-to use MIPI-DSI based LCD Panel driver, mipi_dsim_lcd_device shoule be
-registered to MIPI-DSI driver through s5p_mipi_dsi_register_lcd_device()
-at machine code or machine specific somewhere first, and
-mipi_dsim_lcd_driver should be registered when
-s5p_mipi_dsi_register_driver() is called at init function of lcd driver,
-and then probe() of that driver would be called by MIPI-DSI controller
-driver if lcd panel name and id of mipi_dsim_lcd_device are same as ones
-of mipi_dsim_lcd_driver.
-
-for this, you can refer to sample lcd panel driver.
-please see "Documentation/s5p_mipi_dsim/dsim_sample_lcd.c"
-
-this patch series includes the following.
-
-[PATCH 1/2] video: add Samsung SoC MIPI-DSI controller driver.
-[PATCH 2/2] video: add Samsung SoC MIPI-DSI based sample lcd panel driver.
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel

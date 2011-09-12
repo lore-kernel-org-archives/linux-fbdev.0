@@ -1,58 +1,38 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Sep 2011 09:13:36 +0000
-Subject: [PATCHv2 13/15] OMAP: DSS2: panel-generic-dpi: remove "generic" panel
-Message-Id: <1315818818-18733-14-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 12 Sep 2011 09:12:50 +0000
+Subject: [PATCHv2 5/8] OMAP: DSS2: DISPC: Add missing IRQ  definitions
+Message-Id: <1315818773-18660-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1315818773-18660-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1315818773-18660-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Remove the "generic" panel config entry, which is not used.
+Add IRQ definitions for missing OMAP4 IRQs: FRAMEDONEWB, FRAMEDONETV,
+WBBUFFEROVERFLOW.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/displays/panel-generic-dpi.c |   24 ----------------------
- 1 files changed, 0 insertions(+), 24 deletions(-)
+ include/video/omapdss.h |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
-index b401304..e0399c3 100644
---- a/drivers/video/omap2/displays/panel-generic-dpi.c
-+++ b/drivers/video/omap2/displays/panel-generic-dpi.c
-@@ -58,30 +58,6 @@ struct panel_config {
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index ce1aacd..8120433 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -43,6 +43,9 @@
+ #define DISPC_IRQ_VSYNC2		(1 << 18)
+ #define DISPC_IRQ_ACBIAS_COUNT_STAT2	(1 << 21)
+ #define DISPC_IRQ_FRAMEDONE2		(1 << 22)
++#define DISPC_IRQ_FRAMEDONEWB		(1 << 23)
++#define DISPC_IRQ_FRAMEDONETV		(1 << 24)
++#define DISPC_IRQ_WBBUFFEROVERFLOW	(1 << 25)
  
- /* Panel configurations */
- static struct panel_config generic_dpi_panels[] = {
--	/* Generic Panel */
--	{
--		{
--			.x_res		= 640,
--			.y_res		= 480,
--
--			.pixel_clock	= 23500,
--
--			.hfp		= 48,
--			.hsw		= 32,
--			.hbp		= 80,
--
--			.vfp		= 3,
--			.vsw		= 4,
--			.vbp		= 7,
--		},
--		.acbi			= 0x0,
--		.acb			= 0x0,
--		.config			= OMAP_DSS_LCD_TFT,
--		.power_on_delay		= 0,
--		.power_off_delay	= 0,
--		.name			= "generic",
--	},
--
- 	/* Sharp LQ043T1DG01 */
- 	{
- 		{
+ struct omap_dss_device;
+ struct omap_overlay_manager;
 -- 
 1.7.4.1
 

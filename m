@@ -1,247 +1,165 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 19 Sep 2011 00:28:09 +0000
-Subject: [WIP/RFC 31/31] fbdev: sh_mobile_lcdc: Add media controller support
-Message-Id: <1316392089-27598-32-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 12 Sep 2011 09:13:38 +0000
+Subject: [PATCHv2 15/15] OMAPFB: find best mode from edid
+Message-Id: <1315818818-18733-16-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Use the new read_edid() function to get EDID information from the
+display (when available), and use the information to use a suitable mode
+at initialization time.
+
+Hot-plug is not yet supported, so the timings selected at init time will
+stay even if the monitor would be changed.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/Kconfig            |    1 +
- drivers/video/sh_mobile_lcdcfb.c |  116 ++++++++++++++++++++++++++++++++++++--
- drivers/video/sh_mobile_lcdcfb.h |    8 +++
- 3 files changed, 120 insertions(+), 5 deletions(-)
+ drivers/video/omap2/omapfb/omapfb-main.c |  109 +++++++++++++++++++++++++++---
+ 1 files changed, 99 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 549b960..c18e1b8 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -1977,6 +1977,7 @@ config FB_SH_MOBILE_LCDC
- 	select FB_SYS_FOPS
- 	select FB_DEFERRED_IO
- 	select FB_BACKLIGHT
-+	select MEDIA_CONTROLLER
- 	select SH_MIPI_DSI if SH_LCD_MIPI_DSI
- 	---help---
- 	  Frame buffer driver for the on-chip SH-Mobile LCD controller.
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 19ac3c5..ac8b82d 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -26,6 +26,9 @@
- #include <linux/videodev2.h>
- #include <linux/vmalloc.h>
- 
-+#include <media/media-device.h>
-+#include <media/media-entity.h>
-+
- #include <video/sh_mobile_lcdc.h>
- #include <video/sh_mobile_meram.h>
- 
-@@ -38,17 +41,22 @@
- #define MAX_YRES 1080
- 
- struct sh_mobile_lcdc_priv {
-+	struct media_device mdev;
-+	struct device *dev;
-+	struct sh_mobile_meram_info *meram_dev;
-+
- 	void __iomem *base;
- 	int irq;
--	atomic_t hw_usecnt;
--	struct device *dev;
- 	struct clk *dot_clk;
-+
-+	atomic_t hw_usecnt;
- 	unsigned long lddckr;
-+
- 	struct sh_mobile_lcdc_chan ch[2];
- 	struct notifier_block notifier;
-+
- 	int started;
- 	int forced_fourcc; /* 2 channel LCDC must share fourcc setting */
--	struct sh_mobile_meram_info *meram_dev;
- };
- 
- /* -----------------------------------------------------------------------------
-@@ -1532,6 +1540,84 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index cd2cae8e..c84cc29 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -2276,6 +2276,87 @@ static int omapfb_parse_def_modes(struct omapfb2_device *fbdev)
+ 	return r;
  }
  
- /* -----------------------------------------------------------------------------
-+ * Media controller init/cleanup
-+ */
-+
-+static int __devinit sh_mobile_lcdc_media_init(struct sh_mobile_lcdc_chan *ch)
++static void fb_videomode_to_omap_timings(struct fb_videomode *m,
++		struct omap_video_timings *t)
 +{
-+	int ret;
-+
-+	/* Initialize the panel media entity. */
-+	ch->panel.pad.flags = MEDIA_PAD_FL_SINK;
-+	ret = media_entity_init(&ch->panel.entity, 1, &ch->panel.pad, 0);
-+	if (ret < 0)
-+		return ret;
-+
-+	ch->panel.entity.name = "Panel";
-+
-+	/* Create links. */
-+	if (ch->tx_dev) {
-+		ret = media_entity_create_link(&ch->info->entity, 0,
-+					       &ch->tx_dev->entity, 0,
-+					       MEDIA_LNK_FL_IMMUTABLE |
-+					       MEDIA_LNK_FL_ENABLED);
-+		if (ret < 0)
-+			return ret;
-+
-+		ret = media_entity_create_link(&ch->tx_dev->entity, 1,
-+					       &ch->panel.entity, 0,
-+					       MEDIA_LNK_FL_IMMUTABLE |
-+					       MEDIA_LNK_FL_ENABLED);
-+		if (ret < 0)
-+			return ret;
-+	} else {
-+		ret = media_entity_create_link(&ch->info->entity, 0,
-+					       &ch->panel.entity, 0,
-+					       MEDIA_LNK_FL_IMMUTABLE |
-+					       MEDIA_LNK_FL_ENABLED);
-+		if (ret < 0)
-+			return ret;
-+	}
-+
-+	return 0;
++	t->x_res = m->xres;
++	t->y_res = m->yres;
++	t->pixel_clock = PICOS2KHZ(m->pixclock);
++	t->hsw = m->hsync_len;
++	t->hfp = m->right_margin;
++	t->hbp = m->left_margin;
++	t->vsw = m->vsync_len;
++	t->vfp = m->lower_margin;
++	t->vbp = m->upper_margin;
 +}
 +
-+static int __devinit
-+sh_mobile_lcdc_media_register(struct sh_mobile_lcdc_priv *priv)
++static int omapfb_find_best_mode(struct omap_dss_device *display,
++		struct omap_video_timings *timings)
 +{
-+	unsigned int i;
-+	int ret;
++	struct fb_monspecs *specs;
++	u8 *edid;
++	int r, i, best_xres, best_idx, len;
 +
-+	priv->mdev.dev = priv->dev;
-+	strlcpy(priv->mdev.model, "SH Mobile LCDC", sizeof(priv->mdev.model));
++	if (!display->driver->read_edid)
++		return -ENODEV;
 +
-+	ret = media_device_register(&priv->mdev);
-+	if (ret < 0)
-+		return ret;
++	len = 0x80 * 2;
++	edid = kmalloc(len, GFP_KERNEL);
 +
-+	for (i = 0; i < ARRAY_SIZE(priv->ch); i++) {
-+		struct sh_mobile_lcdc_chan *ch = &priv->ch[i];
++	r = display->driver->read_edid(display, edid, len);
++	if (r < 0)
++		goto err1;
 +
-+		if (ch->info = NULL)
++	specs = kzalloc(sizeof(*specs), GFP_KERNEL);
++
++	fb_edid_to_monspecs(edid, specs);
++
++	if (edid[126] > 0)
++		fb_edid_add_monspecs(edid + 0x80, specs);
++
++	best_xres = 0;
++	best_idx = -1;
++
++	for (i = 0; i < specs->modedb_len; ++i) {
++		struct fb_videomode *m;
++		struct omap_video_timings t;
++
++		m = &specs->modedb[i];
++
++		if (m->pixclock = 0)
 +			continue;
 +
-+		if (ch->tx_dev) {
-+			ret = media_device_register_entity(&priv->mdev,
-+							   &ch->tx_dev->entity);
-+			if (ret < 0)
-+				return ret;
-+		}
++		/* skip repeated pixel modes */
++		if (m->xres = 2880 || m->xres = 1440)
++			continue;
 +
-+		ret = media_device_register_entity(&priv->mdev,
-+						   &ch->panel.entity);
-+		if (ret < 0)
-+			return ret;
++		fb_videomode_to_omap_timings(m, &t);
++
++		r = display->driver->check_timings(display, &t);
++		if (r = 0 && best_xres < m->xres) {
++			best_xres = m->xres;
++			best_idx = i;
++		}
 +	}
 +
-+	return 0;
++	if (best_xres = 0) {
++		r = -ENOENT;
++		goto err2;
++	}
++
++	fb_videomode_to_omap_timings(&specs->modedb[best_idx], timings);
++
++	r = 0;
++
++err2:
++	fb_destroy_modedb(specs->modedb);
++	kfree(specs);
++err1:
++	kfree(edid);
++
++	return r;
 +}
 +
-+/* -----------------------------------------------------------------------------
-  * Probe/remove and driver init/exit
-  */
- 
-@@ -1587,6 +1673,9 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
- 					  info->screen_base, ch->dma_handle);
- 		fb_dealloc_cmap(&info->cmap);
- 		framebuffer_release(info);
-+
-+		media_device_unregister_entity(&ch->panel.entity);
-+		media_entity_cleanup(&ch->panel.entity);
- 	}
- 
- 	for (i = 0; i < ARRAY_SIZE(priv->ch); i++) {
-@@ -1651,8 +1740,9 @@ sh_mobile_lcdc_check_interface(struct sh_mobile_lcdc_chan *ch)
- 
- static int __devinit
- sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
--			    struct sh_mobile_lcdc_chan *ch)
-+			    struct sh_mobile_lcdc_chan *ch, unsigned int index)
+ static int omapfb_init_display(struct omapfb2_device *fbdev,
+ 		struct omap_dss_device *dssdev)
  {
-+	struct platform_device *pdev = to_platform_device(priv->dev);
- 	struct sh_mobile_lcdc_chan_cfg *cfg = &ch->cfg;
- 	const struct fb_videomode *max_mode;
- 	const struct fb_videomode *mode;
-@@ -1679,6 +1769,8 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
- 	info->par = ch;
- 	info->pseudo_palette = &ch->pseudo_palette;
- 	info->flags = FBINFO_FLAG_DEFAULT;
-+	snprintf(info->name, sizeof(info->name), "LCDC %u channel %u", pdev->id,
-+		 index);
+@@ -2404,9 +2485,27 @@ static int omapfb_probe(struct platform_device *pdev)
+ 	for (i = 0; i < fbdev->num_managers; i++)
+ 		fbdev->managers[i] = omap_dss_get_overlay_manager(i);
  
- 	if (cfg->tx_dev) {
- 		if (!cfg->tx_dev->dev.driver ||
-@@ -1691,6 +1783,12 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
- 		ch->tx_dev->lcdc = ch;
- 	}
- 
-+	ret = sh_mobile_lcdc_media_init(ch);
-+	if (ret < 0) {
-+		dev_err(priv->dev, "unable to initialize media entities\n");
-+		return ret;
++	/* gfx overlay should be the default one. find a display
++	 * connected to that, and use it as default display */
++	ovl = omap_dss_get_overlay(0);
++	if (ovl->manager && ovl->manager->device) {
++		def_display = ovl->manager->device;
++	} else {
++		dev_warn(&pdev->dev, "cannot find default display\n");
++		def_display = NULL;
 +	}
 +
- 	/* Iterate through the modes to validate them and find the highest
- 	 * resolution.
- 	 */
-@@ -1907,11 +2005,18 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
- 	for (i = 0; i < num_channels; i++) {
- 		struct sh_mobile_lcdc_chan *ch = priv->ch + i;
- 
--		error = sh_mobile_lcdc_channel_init(priv, ch);
-+		error = sh_mobile_lcdc_channel_init(priv, ch, i);
- 		if (error)
- 			goto err1;
+ 	if (def_mode && strlen(def_mode) > 0) {
+ 		if (omapfb_parse_def_modes(fbdev))
+ 			dev_warn(&pdev->dev, "cannot parse default modes\n");
++	} else if (def_display && def_display->driver->set_timings &&
++			def_display->driver->check_timings) {
++		struct omap_video_timings t;
++
++		r = omapfb_find_best_mode(def_display, &t);
++
++		if (r = 0)
++			def_display->driver->set_timings(def_display, &t);
  	}
  
-+	error = sh_mobile_lcdc_media_register(priv);
-+	if (error) {
-+		dev_err(&pdev->dev, "media device registration failed (%d)\n",
-+			error);
-+		goto err1;
-+	}
-+
- 	error = sh_mobile_lcdc_start(priv);
- 	if (error) {
- 		dev_err(&pdev->dev, "unable to start hardware\n");
-@@ -1931,6 +2036,7 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
- 			}
- 		}
+ 	r = omapfb_create_framebuffers(fbdev);
+@@ -2423,16 +2522,6 @@ static int omapfb_probe(struct platform_device *pdev)
  
-+		info->mdev = &priv->mdev;
- 		info->bl_dev = ch->bl;
+ 	DBG("mgr->apply'ed\n");
  
- 		error = register_framebuffer(info);
-diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
-index fa60d00..98ed5f4 100644
---- a/drivers/video/sh_mobile_lcdcfb.h
-+++ b/drivers/video/sh_mobile_lcdcfb.h
-@@ -79,6 +79,14 @@ struct sh_mobile_lcdc_chan {
- 	int (*notify)(struct sh_mobile_lcdc_chan *ch,
- 		      enum sh_mobile_lcdc_entity_event event,
- 		      struct fb_var_screeninfo *var);
-+
-+	struct media_pad pad;
-+	struct media_entity entity;
-+
-+	struct {
-+		struct media_pad pad;
-+		struct media_entity entity;
-+	} panel;
- };
- 
- #endif
+-	/* gfx overlay should be the default one. find a display
+-	 * connected to that, and use it as default display */
+-	ovl = omap_dss_get_overlay(0);
+-	if (ovl->manager && ovl->manager->device) {
+-		def_display = ovl->manager->device;
+-	} else {
+-		dev_warn(&pdev->dev, "cannot find default display\n");
+-		def_display = NULL;
+-	}
+-
+ 	if (def_display) {
+ 		r = omapfb_init_display(fbdev, def_display);
+ 		if (r) {
 -- 
-1.7.3.4
+1.7.4.1
 

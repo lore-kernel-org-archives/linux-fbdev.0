@@ -1,113 +1,352 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 19 Sep 2011 00:27:38 +0000
-Subject: [WIP/RFC 00/31] sh_mobile_lcdc: Media controller prototype
-Message-Id: <1316392089-27598-1-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 12 Sep 2011 09:13:34 +0000
+Subject: [PATCHv2 11/15] OMAP: use dvi panel driver instead of generic-dpi
+Message-Id: <1315818818-18733-12-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi everybody,
+Multiple OMAP3/4 boards have a DVI framer output. This patch makes the
+boards use the new panel-dvi driver, instead of the panel-generic-dpi
+driver.
 
-I've tried to clean up the sh_mobile_lcdcfb driver and the associated HDMI and
-MIPI transmitters drivers.
+Separate drivers for fixed size panels and DVI framer gives us cleaner
+driver code.
 
-Both transmitter drivers hook up into the LCDC driver by hijacking the display
-on/off operations pointers transparently, and accessing the LCDC fb_info
-structure directly. Beside not being clean and very reusable, that approach is
-prone to race conditions. In other words, I don't really like it.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/mach-omap2/board-3430sdp.c      |    7 +++----
+ arch/arm/mach-omap2/board-am3517evm.c    |    6 +++---
+ arch/arm/mach-omap2/board-cm-t35.c       |    6 +++---
+ arch/arm/mach-omap2/board-devkit8000.c   |    6 +++---
+ arch/arm/mach-omap2/board-igep0020.c     |    7 +++----
+ arch/arm/mach-omap2/board-omap3beagle.c  |    7 +++----
+ arch/arm/mach-omap2/board-omap3evm.c     |    7 +++----
+ arch/arm/mach-omap2/board-omap3stalker.c |    6 +++---
+ arch/arm/mach-omap2/board-omap4panda.c   |    7 +++----
+ arch/arm/mach-omap2/board-overo.c        |    6 +++---
+ 10 files changed, 30 insertions(+), 35 deletions(-)
 
-With my V4L background, I've tried to implement a proof of concept of "fbdev
-entities", currently limited to the sh_mobile_lcdcfb driver (hence the struct
-sh_mobile_lcdc_entity instead of struct fb_entity). Here's the result, with an
-implementation of the media controller API as the icing on the cake.
-
-The idea behind those patches it to isolate the SH mobile HDMI and MIPI
-transmitters drivers from the LCDC driver. To achieve this, the transmitters
-create a struct sh_mobile_lcdc_entity instance and fill it with pointers to
-abstract operations. The LCDC driver gets hold of a pointer to the associated
-sh_mobile_lcdc_entity through platform data (this currently relies on probe
-order and probably needs to be cleaned up), and calls those abstract operations
-to control the display. It also fills the entity structure with a pointer to
-itself (this should be replaced by an abstract fb_host/fb_master/fb_something)
-to provide the transmitter drivers with a notification callback.
-
-The last 6 patches implement the media controller API on top of that. The result
-is the ability for userspace applications to discover the internal device
-topology. Two (rather unimpressive :-)) topology examples generated
-automatically can be found at http://www.ideasonboard.org/media/lcdc0.ps and
-http://www.ideasonboard.org/media/lcdc1.ps. With more complex hardware (or with
-support for more complex hardware features such as multiple overlays in the
-sh_mobile_lcdcfb driver), the MC API will allow discovering overlays and other
-hardware blocks, which is the first step required to control them.
-
-Comments will be very warmly welcomed (provided that you don't start a flame
-war :-)).
-
-Laurent Pinchart (31):
-  fbdev: sh_mobile_lcdc: Reorder code into sections
-  fbdev: sh_mobile_lcdc: Mark init-only symbols with __devinit(const)
-  fbdev: sh_mobile_lcdc: Move pm runtime enable to probe()
-  fbdev: sh_mobile_lcdc: Don't pass struct device around
-  fbdev: sh_mobile_lcdc: Create functions to turn the display on/off
-  sh_mobile_hdmi: Remove platform data lcd_dev field
-  fbdev: sh_mobile_lcdc: Add sh_mobile_lcdc_entity definition
-  fbdev: sh_mobile_hdmi: Implement sh_mobile_lcdc_entity interface
-  fbdev: sh_mipi_dsi: Implement sh_mobile_lcdc_entity interface
-  fbdev: sh_mobile_lcdc: Handle HDMI/MIPI transmitter device directly
-  arm: mach-shmobile: Add LCDC tx_dev field to platform data
-  fbdev: sh_mipi_dsi: Don't hook up into board_cfg display operations
-  fbdev: sh_mobile_hdmi: Don't hook up into board_cfg display
-    operations
-  arm: mach-shmobile: Don't initialize the hdmi_info lcd_chan field
-  fbdev: sh_mobile_hdmi: Remove sh_mobile_hdmi_info lcd_chan field
-  fbdev: sh_mobile_lcdc: Remove board configuration owner field
-  fbdev: sh_mobile_lcdc: Remove board configuration board_data field
-  fbdev: sh_mobile_lcdc: Move brightness ops to sh_mobile_lcdc_bl_info
-  fbdev: sh_mobile_lcdc: Merge board_cfg and lcd_size_cfg into
-    panel_cfg
-  sh_mobile_lcdc: Add an lcdc channel pointer to sh_mobile_lcdc_entity
-  sh_mobile_hdmi: Use sh_mobile_lcdc_entity::channel to access fb_info
-  fbdev: sh_mobile_lcdc: Remove fb_info parameter to display_on
-    operation
-  fbdev: sh_mobile_lcdc: Return display connection state in display_on
-  sh_mobile_lcdc: Add display notify callback to sh_mobile_lcdc_chan
-  sh_mobile_hdmi: Use LCDC notification callback
-  media: Initialize media controller core with subsys_initcall
-  fbdev: Add media controller support
-  fbdev: sh_mobile_lcdc: Make LCDC entity inherit from media_entity
-  fbdev: sh_mipi_dsi: Add media controller support
-  fbdev: sh_mobile_hdmi: Add media controller support
-  fbdev: sh_mobile_lcdc: Add media controller support
-
- arch/arm/mach-shmobile/board-ag5evm.c       |   20 +-
- arch/arm/mach-shmobile/board-ap4evb.c       |  278 +++++-----
- arch/arm/mach-shmobile/board-mackerel.c     |   78 ++--
- arch/sh/boards/mach-ap325rxa/setup.c        |   18 +-
- arch/sh/boards/mach-ecovec24/setup.c        |   12 +-
- arch/sh/boards/mach-kfr2r09/lcd_wqvga.c     |   10 +-
- arch/sh/boards/mach-kfr2r09/setup.c         |    4 +-
- arch/sh/boards/mach-migor/lcd_qvga.c        |    3 +-
- arch/sh/boards/mach-migor/setup.c           |    8 +-
- arch/sh/boards/mach-se/7724/setup.c         |    4 +-
- arch/sh/include/mach-kfr2r09/mach/kfr2r09.h |   16 +-
- arch/sh/include/mach-migor/mach/migor.h     |    2 +-
- drivers/media/media-devnode.c               |    4 +-
- drivers/video/Kconfig                       |    1 +
- drivers/video/fbmem.c                       |   21 +
- drivers/video/fbsysfs.c                     |   11 +
- drivers/video/sh_mipi_dsi.c                 |   72 ++--
- drivers/video/sh_mobile_hdmi.c              |  226 ++------
- drivers/video/sh_mobile_lcdcfb.c            |  744 ++++++++++++++++++---------
- drivers/video/sh_mobile_lcdcfb.h            |   41 ++-
- include/linux/fb.h                          |    8 +
- include/video/sh_mobile_hdmi.h              |    2 -
- include/video/sh_mobile_lcdc.h              |   29 +-
- 23 files changed, 900 insertions(+), 712 deletions(-)
-
+diff --git a/arch/arm/mach-omap2/board-3430sdp.c b/arch/arm/mach-omap2/board-3430sdp.c
+index bd600cf..18c4d19 100644
+--- a/arch/arm/mach-omap2/board-3430sdp.c
++++ b/arch/arm/mach-omap2/board-3430sdp.c
+@@ -37,7 +37,7 @@
+ #include <plat/dma.h>
+ #include <plat/gpmc.h>
+ #include <video/omapdss.h>
+-#include <video/omap-panel-generic-dpi.h>
++#include <video/omap-panel-dvi.h>
+ 
+ #include <plat/gpmc-smc91x.h>
+ 
+@@ -186,8 +186,7 @@ static struct omap_dss_device sdp3430_lcd_device = {
+ 	.platform_disable	= sdp3430_panel_disable_lcd,
+ };
+ 
+-static struct panel_generic_dpi_data dvi_panel = {
+-	.name			= "generic",
++static struct panel_dvi_platform_data dvi_panel = {
+ 	.platform_enable	= sdp3430_panel_enable_dvi,
+ 	.platform_disable	= sdp3430_panel_disable_dvi,
+ };
+@@ -195,7 +194,7 @@ static struct panel_generic_dpi_data dvi_panel = {
+ static struct omap_dss_device sdp3430_dvi_device = {
+ 	.name			= "dvi",
+ 	.type			= OMAP_DISPLAY_TYPE_DPI,
+-	.driver_name		= "generic_dpi_panel",
++	.driver_name		= "dvi",
+ 	.data			= &dvi_panel,
+ 	.phy.dpi.data_lines	= 24,
+ };
+diff --git a/arch/arm/mach-omap2/board-am3517evm.c b/arch/arm/mach-omap2/board-am3517evm.c
+index f3006c3..9a68ef5 100644
+--- a/arch/arm/mach-omap2/board-am3517evm.c
++++ b/arch/arm/mach-omap2/board-am3517evm.c
+@@ -36,6 +36,7 @@
+ #include <plat/usb.h>
+ #include <video/omapdss.h>
+ #include <video/omap-panel-generic-dpi.h>
++#include <video/omap-panel-dvi.h>
+ 
+ #include "mux.h"
+ #include "control.h"
+@@ -333,8 +334,7 @@ static void am3517_evm_panel_disable_dvi(struct omap_dss_device *dssdev)
+ 	dvi_enabled = 0;
+ }
+ 
+-static struct panel_generic_dpi_data dvi_panel = {
+-	.name			= "generic",
++static struct panel_dvi_platform_data dvi_panel = {
+ 	.platform_enable	= am3517_evm_panel_enable_dvi,
+ 	.platform_disable	= am3517_evm_panel_disable_dvi,
+ };
+@@ -342,7 +342,7 @@ static struct panel_generic_dpi_data dvi_panel = {
+ static struct omap_dss_device am3517_evm_dvi_device = {
+ 	.type			= OMAP_DISPLAY_TYPE_DPI,
+ 	.name			= "dvi",
+-	.driver_name		= "generic_dpi_panel",
++	.driver_name		= "dvi",
+ 	.data			= &dvi_panel,
+ 	.phy.dpi.data_lines	= 24,
+ };
+diff --git a/arch/arm/mach-omap2/board-cm-t35.c b/arch/arm/mach-omap2/board-cm-t35.c
+index 3af8aab..2d112bf 100644
+--- a/arch/arm/mach-omap2/board-cm-t35.c
++++ b/arch/arm/mach-omap2/board-cm-t35.c
+@@ -43,6 +43,7 @@
+ #include <plat/usb.h>
+ #include <video/omapdss.h>
+ #include <video/omap-panel-generic-dpi.h>
++#include <video/omap-panel-dvi.h>
+ #include <plat/mcspi.h>
+ 
+ #include <mach/hardware.h>
+@@ -242,8 +243,7 @@ static struct omap_dss_device cm_t35_lcd_device = {
+ 	.phy.dpi.data_lines	= 18,
+ };
+ 
+-static struct panel_generic_dpi_data dvi_panel = {
+-	.name			= "generic",
++static struct panel_dvi_platform_data dvi_panel = {
+ 	.platform_enable	= cm_t35_panel_enable_dvi,
+ 	.platform_disable	= cm_t35_panel_disable_dvi,
+ };
+@@ -251,7 +251,7 @@ static struct panel_generic_dpi_data dvi_panel = {
+ static struct omap_dss_device cm_t35_dvi_device = {
+ 	.name			= "dvi",
+ 	.type			= OMAP_DISPLAY_TYPE_DPI,
+-	.driver_name		= "generic_dpi_panel",
++	.driver_name		= "dvi",
+ 	.data			= &dvi_panel,
+ 	.phy.dpi.data_lines	= 24,
+ };
+diff --git a/arch/arm/mach-omap2/board-devkit8000.c b/arch/arm/mach-omap2/board-devkit8000.c
+index da5057e..44da207 100644
+--- a/arch/arm/mach-omap2/board-devkit8000.c
++++ b/arch/arm/mach-omap2/board-devkit8000.c
+@@ -47,6 +47,7 @@
+ #include <plat/usb.h>
+ #include <video/omapdss.h>
+ #include <video/omap-panel-generic-dpi.h>
++#include <video/omap-panel-dvi.h>
+ 
+ #include <plat/mcspi.h>
+ #include <linux/input/matrix_keypad.h>
+@@ -152,8 +153,7 @@ static struct omap_dss_device devkit8000_lcd_device = {
+ 	.phy.dpi.data_lines     = 24,
+ };
+ 
+-static struct panel_generic_dpi_data dvi_panel = {
+-	.name			= "generic",
++static struct panel_dvi_platform_data dvi_panel = {
+ 	.platform_enable        = devkit8000_panel_enable_dvi,
+ 	.platform_disable       = devkit8000_panel_disable_dvi,
+ };
+@@ -161,7 +161,7 @@ static struct panel_generic_dpi_data dvi_panel = {
+ static struct omap_dss_device devkit8000_dvi_device = {
+ 	.name                   = "dvi",
+ 	.type                   = OMAP_DISPLAY_TYPE_DPI,
+-	.driver_name            = "generic_dpi_panel",
++	.driver_name            = "dvi",
+ 	.data			= &dvi_panel,
+ 	.phy.dpi.data_lines     = 24,
+ };
+diff --git a/arch/arm/mach-omap2/board-igep0020.c b/arch/arm/mach-omap2/board-igep0020.c
+index 35be778..9fda8d8 100644
+--- a/arch/arm/mach-omap2/board-igep0020.c
++++ b/arch/arm/mach-omap2/board-igep0020.c
+@@ -32,7 +32,7 @@
+ #include <plat/gpmc.h>
+ #include <plat/usb.h>
+ #include <video/omapdss.h>
+-#include <video/omap-panel-generic-dpi.h>
++#include <video/omap-panel-dvi.h>
+ #include <plat/onenand.h>
+ 
+ #include "mux.h"
+@@ -455,8 +455,7 @@ static void igep2_disable_dvi(struct omap_dss_device *dssdev)
+ 	gpio_direction_output(IGEP2_GPIO_DVI_PUP, 0);
+ }
+ 
+-static struct panel_generic_dpi_data dvi_panel = {
+-	.name			= "generic",
++static struct panel_dvi_platform_data dvi_panel = {
+ 	.platform_enable	= igep2_enable_dvi,
+ 	.platform_disable	= igep2_disable_dvi,
+ };
+@@ -464,7 +463,7 @@ static struct panel_generic_dpi_data dvi_panel = {
+ static struct omap_dss_device igep2_dvi_device = {
+ 	.type			= OMAP_DISPLAY_TYPE_DPI,
+ 	.name			= "dvi",
+-	.driver_name		= "generic_dpi_panel",
++	.driver_name		= "dvi",
+ 	.data			= &dvi_panel,
+ 	.phy.dpi.data_lines	= 24,
+ };
+diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
+index 3ae16b4..26bc860 100644
+--- a/arch/arm/mach-omap2/board-omap3beagle.c
++++ b/arch/arm/mach-omap2/board-omap3beagle.c
+@@ -42,7 +42,7 @@
+ #include <plat/board.h>
+ #include <plat/common.h>
+ #include <video/omapdss.h>
+-#include <video/omap-panel-generic-dpi.h>
++#include <video/omap-panel-dvi.h>
+ #include <plat/gpmc.h>
+ #include <plat/nand.h>
+ #include <plat/usb.h>
+@@ -203,8 +203,7 @@ static void beagle_disable_dvi(struct omap_dss_device *dssdev)
+ 		gpio_set_value(dssdev->reset_gpio, 0);
+ }
+ 
+-static struct panel_generic_dpi_data dvi_panel = {
+-	.name = "generic",
++static struct panel_dvi_platform_data dvi_panel = {
+ 	.platform_enable = beagle_enable_dvi,
+ 	.platform_disable = beagle_disable_dvi,
+ };
+@@ -212,7 +211,7 @@ static struct panel_generic_dpi_data dvi_panel = {
+ static struct omap_dss_device beagle_dvi_device = {
+ 	.type = OMAP_DISPLAY_TYPE_DPI,
+ 	.name = "dvi",
+-	.driver_name = "generic_dpi_panel",
++	.driver_name = "dvi",
+ 	.data = &dvi_panel,
+ 	.phy.dpi.data_lines = 24,
+ 	.reset_gpio = -EINVAL,
+diff --git a/arch/arm/mach-omap2/board-omap3evm.c b/arch/arm/mach-omap2/board-omap3evm.c
+index c452b3f..82142c5 100644
+--- a/arch/arm/mach-omap2/board-omap3evm.c
++++ b/arch/arm/mach-omap2/board-omap3evm.c
+@@ -45,7 +45,7 @@
+ #include <plat/common.h>
+ #include <plat/mcspi.h>
+ #include <video/omapdss.h>
+-#include <video/omap-panel-generic-dpi.h>
++#include <video/omap-panel-dvi.h>
+ 
+ #include "mux.h"
+ #include "sdram-micron-mt46h32m32lf-6.h"
+@@ -247,8 +247,7 @@ static void omap3_evm_disable_dvi(struct omap_dss_device *dssdev)
+ 	dvi_enabled = 0;
+ }
+ 
+-static struct panel_generic_dpi_data dvi_panel = {
+-	.name			= "generic",
++static struct panel_dvi_platform_data dvi_panel = {
+ 	.platform_enable	= omap3_evm_enable_dvi,
+ 	.platform_disable	= omap3_evm_disable_dvi,
+ };
+@@ -256,7 +255,7 @@ static struct panel_generic_dpi_data dvi_panel = {
+ static struct omap_dss_device omap3_evm_dvi_device = {
+ 	.name			= "dvi",
+ 	.type			= OMAP_DISPLAY_TYPE_DPI,
+-	.driver_name		= "generic_dpi_panel",
++	.driver_name		= "dvi",
+ 	.data			= &dvi_panel,
+ 	.phy.dpi.data_lines	= 24,
+ };
+diff --git a/arch/arm/mach-omap2/board-omap3stalker.c b/arch/arm/mach-omap2/board-omap3stalker.c
+index 8e10498..8ab99f1 100644
+--- a/arch/arm/mach-omap2/board-omap3stalker.c
++++ b/arch/arm/mach-omap2/board-omap3stalker.c
+@@ -41,6 +41,7 @@
+ #include <plat/usb.h>
+ #include <video/omapdss.h>
+ #include <video/omap-panel-generic-dpi.h>
++#include <video/omap-panel-dvi.h>
+ 
+ #include <plat/mcspi.h>
+ #include <linux/input/matrix_keypad.h>
+@@ -179,8 +180,7 @@ static void omap3_stalker_disable_dvi(struct omap_dss_device *dssdev)
+ 	dvi_enabled = 0;
+ }
+ 
+-static struct panel_generic_dpi_data dvi_panel = {
+-	.name			= "generic",
++static struct panel_dvi_platform_data dvi_panel = {
+ 	.platform_enable	= omap3_stalker_enable_dvi,
+ 	.platform_disable	= omap3_stalker_disable_dvi,
+ };
+@@ -188,7 +188,7 @@ static struct panel_generic_dpi_data dvi_panel = {
+ static struct omap_dss_device omap3_stalker_dvi_device = {
+ 	.name			= "dvi",
+ 	.type			= OMAP_DISPLAY_TYPE_DPI,
+-	.driver_name		= "generic_dpi_panel",
++	.driver_name		= "dvi",
+ 	.data			= &dvi_panel,
+ 	.phy.dpi.data_lines	= 24,
+ };
+diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
+index 9aaa960..c35384e 100644
+--- a/arch/arm/mach-omap2/board-omap4panda.c
++++ b/arch/arm/mach-omap2/board-omap4panda.c
+@@ -40,7 +40,7 @@
+ #include <plat/common.h>
+ #include <plat/usb.h>
+ #include <plat/mmc.h>
+-#include <video/omap-panel-generic-dpi.h>
++#include <video/omap-panel-dvi.h>
+ 
+ #include "hsmmc.h"
+ #include "control.h"
+@@ -455,8 +455,7 @@ static void omap4_panda_disable_dvi(struct omap_dss_device *dssdev)
+ }
+ 
+ /* Using generic display panel */
+-static struct panel_generic_dpi_data omap4_dvi_panel = {
+-	.name			= "generic",
++static struct panel_dvi_platform_data omap4_dvi_panel = {
+ 	.platform_enable	= omap4_panda_enable_dvi,
+ 	.platform_disable	= omap4_panda_disable_dvi,
+ };
+@@ -464,7 +463,7 @@ static struct panel_generic_dpi_data omap4_dvi_panel = {
+ struct omap_dss_device omap4_panda_dvi_device = {
+ 	.type			= OMAP_DISPLAY_TYPE_DPI,
+ 	.name			= "dvi",
+-	.driver_name		= "generic_dpi_panel",
++	.driver_name		= "dvi",
+ 	.data			= &omap4_dvi_panel,
+ 	.phy.dpi.data_lines	= 24,
+ 	.reset_gpio		= PANDA_DVI_TFP410_POWER_DOWN_GPIO,
+diff --git a/arch/arm/mach-omap2/board-overo.c b/arch/arm/mach-omap2/board-overo.c
+index f949a99..06064d5 100644
+--- a/arch/arm/mach-omap2/board-overo.c
++++ b/arch/arm/mach-omap2/board-overo.c
+@@ -46,6 +46,7 @@
+ #include <plat/common.h>
+ #include <video/omapdss.h>
+ #include <video/omap-panel-generic-dpi.h>
++#include <video/omap-panel-dvi.h>
+ #include <plat/gpmc.h>
+ #include <mach/hardware.h>
+ #include <plat/nand.h>
+@@ -182,8 +183,7 @@ static void overo_panel_disable_dvi(struct omap_dss_device *dssdev)
+ 	dvi_enabled = 0;
+ }
+ 
+-static struct panel_generic_dpi_data dvi_panel = {
+-	.name			= "generic",
++static struct panel_dvi_platform_data dvi_panel = {
+ 	.platform_enable	= overo_panel_enable_dvi,
+ 	.platform_disable	= overo_panel_disable_dvi,
+ };
+@@ -191,7 +191,7 @@ static struct panel_generic_dpi_data dvi_panel = {
+ static struct omap_dss_device overo_dvi_device = {
+ 	.name			= "dvi",
+ 	.type			= OMAP_DISPLAY_TYPE_DPI,
+-	.driver_name		= "generic_dpi_panel",
++	.driver_name		= "dvi",
+ 	.data			= &dvi_panel,
+ 	.phy.dpi.data_lines	= 24,
+ };
 -- 
-Regards,
-
-Laurent Pinchart
+1.7.4.1
 

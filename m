@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Sep 2011 09:13:35 +0000
-Subject: [PATCHv2 12/15] OMAP: stalker: Remove LCD device from board file
-Message-Id: <1315818818-18733-13-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 12 Sep 2011 09:13:25 +0000
+Subject: [PATCHv2 02/15] OMAP: DSS2: add detect() to omap_dss_driver struct
+Message-Id: <1315818818-18733-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
@@ -9,76 +9,27 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jason Lam <lzg@ema-tech.com>
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-OMAP3 Stalker board has definitions for LCD, but uses the generic driver
-without any information what kind of LCD it has. The board should use a
-particular panel type from panel-generic-dpi driver, not the generic
-one.
+detect() can be used to probe if the display is connected.
 
-As I haven't gotten response the signer-off of stalker board about the
-issue, this patch removes the LCD support from the board file. This will
-allow us to clean up the panel-generic-dpi driver and make it support
-only fixed size panels.
-
-CC: Jason Lam <lzg@ema-tech.com>
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-omap2/board-omap3stalker.c |   34 ------------------------------
- 1 files changed, 0 insertions(+), 34 deletions(-)
+ include/video/omapdss.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-omap3stalker.c b/arch/arm/mach-omap2/board-omap3stalker.c
-index 8ab99f1..106a2ba 100644
---- a/arch/arm/mach-omap2/board-omap3stalker.c
-+++ b/arch/arm/mach-omap2/board-omap3stalker.c
-@@ -108,39 +108,6 @@ static void __init omap3_stalker_display_init(void)
- 	return;
- }
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index cf7ecfb..c62b9a4 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -617,6 +617,7 @@ struct omap_dss_driver {
+ 	u32 (*get_wss)(struct omap_dss_device *dssdev);
  
--static int omap3_stalker_enable_lcd(struct omap_dss_device *dssdev)
--{
--	if (dvi_enabled) {
--		printk(KERN_ERR "cannot enable LCD, DVI is enabled\n");
--		return -EINVAL;
--	}
--	gpio_set_value(DSS_ENABLE_GPIO, 1);
--	gpio_set_value(LCD_PANEL_BKLIGHT_GPIO, 1);
--	lcd_enabled = 1;
--	return 0;
--}
--
--static void omap3_stalker_disable_lcd(struct omap_dss_device *dssdev)
--{
--	gpio_set_value(DSS_ENABLE_GPIO, 0);
--	gpio_set_value(LCD_PANEL_BKLIGHT_GPIO, 0);
--	lcd_enabled = 0;
--}
--
--static struct panel_generic_dpi_data lcd_panel = {
--	.name			= "generic",
--	.platform_enable	= omap3_stalker_enable_lcd,
--	.platform_disable	= omap3_stalker_disable_lcd,
--};
--
--static struct omap_dss_device omap3_stalker_lcd_device = {
--	.name			= "lcd",
--	.driver_name		= "generic_dpi_panel",
--	.data			= &lcd_panel,
--	.phy.dpi.data_lines	= 24,
--	.type			= OMAP_DISPLAY_TYPE_DPI,
--};
--
- static int omap3_stalker_enable_tv(struct omap_dss_device *dssdev)
- {
- 	return 0;
-@@ -194,7 +161,6 @@ static struct omap_dss_device omap3_stalker_dvi_device = {
+ 	int (*read_edid)(struct omap_dss_device *dssdev, u8 *buf, int len);
++	bool (*detect)(struct omap_dss_device *dssdev);
  };
  
- static struct omap_dss_device *omap3_stalker_dss_devices[] = {
--	&omap3_stalker_lcd_device,
- 	&omap3_stalker_tv_device,
- 	&omap3_stalker_dvi_device,
- };
+ int omap_dss_register_driver(struct omap_dss_driver *);
 -- 
 1.7.4.1
 

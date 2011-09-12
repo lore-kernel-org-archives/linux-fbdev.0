@@ -1,134 +1,36 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 19 Sep 2011 00:28:05 +0000
-Subject: [WIP/RFC 27/31] fbdev: Add media controller support
-Message-Id: <1316392089-27598-28-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 12 Sep 2011 09:13:24 +0000
+Subject: [PATCHv2 01/15] OMAP: DSS2: add read_edid() to omap_dss_driver struct
+Message-Id: <1315818818-18733-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Initialize and register a single-pad media entity when media controller
-support is available.
+read_edid() can be used to get the EDID information from the display.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbmem.c   |   21 +++++++++++++++++++++
- drivers/video/fbsysfs.c |   11 +++++++++++
- include/linux/fb.h      |    8 ++++++++
- 3 files changed, 40 insertions(+), 0 deletions(-)
+ include/video/omapdss.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 5aac00e..26154fb 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -35,6 +35,7 @@
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 8120433..cf7ecfb 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -615,6 +615,8 @@ struct omap_dss_driver {
  
- #include <asm/fb.h>
- 
-+#include <media/media-device.h>
- 
-     /*
-      *  Frame buffer device initialization and setup routines
-@@ -1572,6 +1573,7 @@ static int do_register_framebuffer(struct fb_info *fb_info)
- 	int i;
- 	struct fb_event event;
- 	struct fb_videomode mode;
-+	int ret;
- 
- 	if (fb_check_foreignness(fb_info))
- 		return -ENOSYS;
-@@ -1625,6 +1627,21 @@ static int do_register_framebuffer(struct fb_info *fb_info)
- 	fb_add_videomode(&mode, &fb_info->modelist);
- 	registered_fb[i] = fb_info;
- 
-+#if defined(CONFIG_MEDIA_CONTROLLER)
-+	if (fb_info->mdev) {
-+		fb_info->entity.type = MEDIA_ENT_T_DEVNODE_FB;
-+		fb_info->entity.name = fb_info->name;
-+		fb_info->entity.fb.major = FB_MAJOR;
-+		fb_info->entity.fb.minor = i;
-+		ret = media_device_register_entity(fb_info->mdev,
-+						   &fb_info->entity);
-+		if (ret < 0)
-+			printk(KERN_WARNING
-+			       "%s: media_device_register_entity failed\n",
-+			       __func__);
-+	}
-+#endif
+ 	int (*set_wss)(struct omap_dss_device *dssdev, u32 wss);
+ 	u32 (*get_wss)(struct omap_dss_device *dssdev);
 +
- 	event.info = fb_info;
- 	if (!lock_fb_info(fb_info))
- 		return -ENODEV;
-@@ -1651,6 +1668,10 @@ static int do_unregister_framebuffer(struct fb_info *fb_info)
- 	if (ret)
- 		return -EINVAL;
++	int (*read_edid)(struct omap_dss_device *dssdev, u8 *buf, int len);
+ };
  
-+#if defined(CONFIG_MEDIA_CONTROLLER)
-+	if (fb_info->mdev)
-+		media_device_unregister_entity(&fb_info->entity);
-+#endif
- 	if (fb_info->pixmap.addr &&
- 	    (fb_info->pixmap.flags & FB_PIXMAP_DEFAULT))
- 		kfree(fb_info->pixmap.addr);
-diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
-index 04251ce..5d1ce86 100644
---- a/drivers/video/fbsysfs.c
-+++ b/drivers/video/fbsysfs.c
-@@ -63,6 +63,14 @@ struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
- 	mutex_init(&info->bl_curve_mutex);
- #endif
- 
-+#ifdef CONFIG_MEDIA_CONTROLLER
-+	info->pad.flags = MEDIA_PAD_FL_SOURCE;
-+	if (media_entity_init(&info->entity, 1, &info->pad, 0) < 0) {
-+		kfree(info);
-+		return NULL;
-+	}
-+#endif
-+
- 	return info;
- #undef PADDING
- #undef BYTES_PER_LONG
-@@ -80,6 +88,9 @@ EXPORT_SYMBOL(framebuffer_alloc);
-  */
- void framebuffer_release(struct fb_info *info)
- {
-+#ifdef CONFIG_MEDIA_CONTROLLER
-+	media_entity_cleanup(&info->entity);
-+#endif
- 	kfree(info->apertures);
- 	kfree(info);
- }
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 98b23e3..24b7368 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -423,9 +423,11 @@ struct fb_cursor {
- #include <linux/list.h>
- #include <linux/backlight.h>
- #include <linux/slab.h>
-+#include <media/media-entity.h>
- #include <asm/io.h>
- 
- struct vm_area_struct;
-+struct media_device;
- struct fb_info;
- struct device;
- struct file;
-@@ -879,6 +881,12 @@ struct fb_info {
- #endif
- 
- 	struct fb_ops *fbops;
-+#ifdef CONFIG_MEDIA_CONTROLLER
-+	char name[32];			/* Device name */
-+	struct media_pad pad;		/* Output pad */
-+	struct media_device *mdev;	/* Optional media device */
-+	struct media_entity entity;	/* Media entity */
-+#endif
- 	struct device *device;		/* This is the parent */
- 	struct device *dev;		/* This is this fb device */
- 	int class_flag;                    /* private sysfs flags */
+ int omap_dss_register_driver(struct omap_dss_driver *);
 -- 
-1.7.3.4
+1.7.4.1
 

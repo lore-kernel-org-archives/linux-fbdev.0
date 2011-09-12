@@ -1,159 +1,131 @@
-From: Manuel Lauss <manuel.lauss@googlemail.com>
-Date: Fri, 02 Sep 2011 14:40:48 +0000
-Subject: [PATCH 3/6] au1200fb: make number of windows configurable at load time.
-Message-Id: <1314974451-8535-4-git-send-email-manuel.lauss@googlemail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 12 Sep 2011 09:12:46 +0000
+Subject: [PATCHv2 1/8] OMAP: DSS2: DISPC: Fix minimum PCD value
+Message-Id: <1315818773-18660-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1315818773-18660-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1315818773-18660-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Make the number of framebuffer windows and the window configuration
-selectable at the kernel commandline instead of hardcoding it
-in the kernel config.
+The current driver had a hardcoded minimum value of 2 for pixel clock
+divisor (PCD). This doesn't seem to be right.
 
-Signed-off-by: Manuel Lauss <manuel.lauss@googlemail.com>
+OMAP4 TRM says that PCD can be 1 when not downscaling, and inverted
+pixel clock (IPC) is off.
+
+OMAP3 TRM says the same, but also in the register descriptions that PCD
+value 1 is invalid.
+
+OMAP2 TRM says PCD 2 is the minimum.
+
+OMAP2 is still untested, but for both OMAP3 and OMAP4 PCD of 1 seems to
+work fine.
+
+This patch adds a new DSS feature, FEAT_PARAM_DSS_PCD, which is used to
+find the minimum and maximum PCD. The minimum is set to 2 for OMAP2, and
+1 for OMAP3/4.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/au1200fb.c |   53 +++++++++++++++++++++++++++++++++------------
- 1 files changed, 39 insertions(+), 14 deletions(-)
+ drivers/video/omap2/dss/dispc.c        |   14 ++++++++++----
+ drivers/video/omap2/dss/dss_features.c |    3 +++
+ drivers/video/omap2/dss/dss_features.h |    1 +
+ 3 files changed, 14 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
-index 480ecb1..4b58f7b 100644
---- a/drivers/video/au1200fb.c
-+++ b/drivers/video/au1200fb.c
-@@ -46,10 +46,6 @@
- #include <asm/mach-au1x00/au1000.h>
- #include "au1200fb.h"
- 
--#ifndef CONFIG_FB_AU1200_DEVS
--#define CONFIG_FB_AU1200_DEVS 4
--#endif
--
- #define DRIVER_NAME "au1200fb"
- #define DRIVER_DESC "LCD controller driver for AU1200 processors"
- 
-@@ -154,7 +150,6 @@ struct au1200fb_device {
- 	dma_addr_t    		fb_phys;
- };
- 
--static struct fb_info *_au1200fb_infos[CONFIG_FB_AU1200_DEVS];
- /********************************************************************/
- 
- /* LCD controller restrictions */
-@@ -167,10 +162,18 @@ static struct fb_info *_au1200fb_infos[CONFIG_FB_AU1200_DEVS];
- /* Default number of visible screen buffer to allocate */
- #define AU1200FB_NBR_VIDEO_BUFFERS 1
- 
-+/* Default maximum number of fb devices to create */
-+#define MAX_DEVICE_COUNT	4
-+
-+/* Default window configuration entry to use (see windows[]) */
-+#define DEFAULT_WINDOW_INDEX	2
-+
- /********************************************************************/
- 
-+static struct fb_info *_au1200fb_infos[MAX_DEVICE_COUNT];
- static struct au1200_lcd *lcd = (struct au1200_lcd *) AU1200_LCD_ADDR;
--static int window_index = 2; /* default is zero */
-+static int device_count = MAX_DEVICE_COUNT;
-+static int window_index = DEFAULT_WINDOW_INDEX;	/* default is zero */
- static int panel_index = 2; /* default is zero */
- static struct window_settings *win;
- static struct panel_settings *panel;
-@@ -683,7 +686,7 @@ static int fbinfo2index (struct fb_info *fb_info)
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index b4a16cf..4e9f87f 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2334,7 +2334,7 @@ static void dispc_mgr_set_lcd_divisor(enum omap_channel channel, u16 lck_div,
+ 		u16 pck_div)
  {
- 	int i;
+ 	BUG_ON(lck_div < 1);
+-	BUG_ON(pck_div < 2);
++	BUG_ON(pck_div < 1);
  
--	for (i = 0; i < CONFIG_FB_AU1200_DEVS; ++i) {
-+	for (i = 0; i < device_count; ++i) {
- 		if (fb_info = _au1200fb_infos[i])
- 			return i;
- 	}
-@@ -1599,7 +1602,7 @@ static int __devinit au1200fb_drv_probe(struct platform_device *dev)
- 	/* Kickstart the panel */
- 	au1200_setpanel(panel);
- 
--	for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane) {
-+	for (plane = 0; plane < device_count; ++plane) {
- 		bpp = winbpp(win->w[plane].mode_winctrl1);
- 		if (win->w[plane].xres = 0)
- 			win->w[plane].xres = panel->Xres;
-@@ -1699,7 +1702,7 @@ static int __devexit au1200fb_drv_remove(struct platform_device *dev)
- 	/* Turn off the panel */
- 	au1200_setpanel(NULL);
- 
--	for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane)	{
-+	for (plane = 0; plane < device_count; ++plane)	{
- 		fbi = _au1200fb_infos[plane];
- 		fbdev = fbi->par;
- 
-@@ -1741,7 +1744,7 @@ static int au1200fb_drv_resume(struct device *dev)
- 	/* Kickstart the panel */
- 	au1200_setpanel(panel);
- 
--	for (i = 0; i < CONFIG_FB_AU1200_DEVS; i++) {
-+	for (i = 0; i < device_count; i++) {
- 		fbi = _au1200fb_infos[i];
- 		au1200fb_fb_set_par(fbi);
- 	}
-@@ -1776,10 +1779,10 @@ static struct platform_driver au1200fb_driver = {
- 
- /* Kernel driver */
- 
--static void au1200fb_setup(void)
-+static int au1200fb_setup(void)
+ 	dispc_write_reg(DISPC_DIVISORo(channel),
+ 			FLD_VAL(lck_div, 23, 16) | FLD_VAL(pck_div, 7, 0));
+@@ -2721,11 +2721,17 @@ void dispc_mgr_set_pol_freq(enum omap_channel channel,
+ void dispc_find_clk_divs(bool is_tft, unsigned long req_pck, unsigned long fck,
+ 		struct dispc_clock_info *cinfo)
  {
--	char* options = NULL;
--	char* this_opt;
-+	char *options = NULL;
-+	char *this_opt, *endptr;
- 	int num_panels = ARRAY_SIZE(known_lcd_panels);
- 	int panel_idx = -1;
+-	u16 pcd_min = is_tft ? 2 : 3;
++	u16 pcd_min, pcd_max;
+ 	unsigned long best_pck;
+ 	u16 best_ld, cur_ld;
+ 	u16 best_pd, cur_pd;
  
-@@ -1824,12 +1827,33 @@ static void au1200fb_setup(void)
- 				nohwcursor = 1;
- 			}
- 
-+			else if (strncmp(this_opt, "devices:", 8) = 0) {
-+				this_opt += 8;
-+				device_count = simple_strtol(this_opt,
-+							     &endptr, 0);
-+				if ((device_count < 0) ||
-+				    (device_count > MAX_DEVICE_COUNT))
-+					device_count = MAX_DEVICE_COUNT;
-+			}
++	pcd_min = dss_feat_get_param_min(FEAT_PARAM_DSS_PCD);
++	pcd_max = dss_feat_get_param_max(FEAT_PARAM_DSS_PCD);
 +
-+			else if (strncmp(this_opt, "wincfg:", 7) = 0) {
-+				this_opt += 7;
-+				window_index = simple_strtol(this_opt,
-+							     &endptr, 0);
-+				if ((window_index < 0) ||
-+				    (window_index >= ARRAY_SIZE(windows)))
-+					window_index = DEFAULT_WINDOW_INDEX;
-+			}
++	if (!is_tft)
++		pcd_min = 3;
 +
-+			else if (strncmp(this_opt, "off", 3) = 0)
-+				return 1;
- 			/* Unsupported option */
- 			else {
- 				print_warn("Unsupported option \"%s\"", this_opt);
- 			}
- 		}
- 	}
-+	return 0;
- }
+ 	best_pck = 0;
+ 	best_ld = 0;
+ 	best_pd = 0;
+@@ -2733,7 +2739,7 @@ void dispc_find_clk_divs(bool is_tft, unsigned long req_pck, unsigned long fck,
+ 	for (cur_ld = 1; cur_ld <= 255; ++cur_ld) {
+ 		unsigned long lck = fck / cur_ld;
  
- static int __init au1200fb_init(void)
-@@ -1837,7 +1861,8 @@ static int __init au1200fb_init(void)
- 	print_info("" DRIVER_DESC "");
+-		for (cur_pd = pcd_min; cur_pd <= 255; ++cur_pd) {
++		for (cur_pd = pcd_min; cur_pd <= pcd_max; ++cur_pd) {
+ 			unsigned long pck = lck / cur_pd;
+ 			long old_delta = abs(best_pck - req_pck);
+ 			long new_delta = abs(pck - req_pck);
+@@ -2768,7 +2774,7 @@ int dispc_calc_clock_rates(unsigned long dispc_fclk_rate,
+ {
+ 	if (cinfo->lck_div > 255 || cinfo->lck_div = 0)
+ 		return -EINVAL;
+-	if (cinfo->pck_div < 2 || cinfo->pck_div > 255)
++	if (cinfo->pck_div < 1 || cinfo->pck_div > 255)
+ 		return -EINVAL;
  
- 	/* Setup driver with options */
--	au1200fb_setup();
-+	if (au1200fb_setup())
-+		return -ENODEV;
+ 	cinfo->lck = dispc_fclk_rate / cinfo->lck_div;
+diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
+index 8670612..076f399 100644
+--- a/drivers/video/omap2/dss/dss_features.c
++++ b/drivers/video/omap2/dss/dss_features.c
+@@ -281,6 +281,7 @@ static const char * const omap4_dss_clk_source_names[] = {
  
- 	/* Point to the panel selected */
- 	panel = &known_lcd_panels[panel_index];
+ static const struct dss_param_range omap2_dss_param_range[] = {
+ 	[FEAT_PARAM_DSS_FCK]			= { 0, 173000000 },
++	[FEAT_PARAM_DSS_PCD]			= { 2, 255 },
+ 	[FEAT_PARAM_DSIPLL_REGN]		= { 0, 0 },
+ 	[FEAT_PARAM_DSIPLL_REGM]		= { 0, 0 },
+ 	[FEAT_PARAM_DSIPLL_REGM_DISPC]		= { 0, 0 },
+@@ -291,6 +292,7 @@ static const struct dss_param_range omap2_dss_param_range[] = {
+ 
+ static const struct dss_param_range omap3_dss_param_range[] = {
+ 	[FEAT_PARAM_DSS_FCK]			= { 0, 173000000 },
++	[FEAT_PARAM_DSS_PCD]			= { 1, 255 },
+ 	[FEAT_PARAM_DSIPLL_REGN]		= { 0, (1 << 7) - 1 },
+ 	[FEAT_PARAM_DSIPLL_REGM]		= { 0, (1 << 11) - 1 },
+ 	[FEAT_PARAM_DSIPLL_REGM_DISPC]		= { 0, (1 << 4) - 1 },
+@@ -301,6 +303,7 @@ static const struct dss_param_range omap3_dss_param_range[] = {
+ 
+ static const struct dss_param_range omap4_dss_param_range[] = {
+ 	[FEAT_PARAM_DSS_FCK]			= { 0, 186000000 },
++	[FEAT_PARAM_DSS_PCD]			= { 1, 255 },
+ 	[FEAT_PARAM_DSIPLL_REGN]		= { 0, (1 << 8) - 1 },
+ 	[FEAT_PARAM_DSIPLL_REGM]		= { 0, (1 << 12) - 1 },
+ 	[FEAT_PARAM_DSIPLL_REGM_DISPC]		= { 0, (1 << 5) - 1 },
+diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
+index c432190..f73585e 100644
+--- a/drivers/video/omap2/dss/dss_features.h
++++ b/drivers/video/omap2/dss/dss_features.h
+@@ -77,6 +77,7 @@ enum dss_feat_reg_field {
+ 
+ enum dss_range_param {
+ 	FEAT_PARAM_DSS_FCK,
++	FEAT_PARAM_DSS_PCD,
+ 	FEAT_PARAM_DSIPLL_REGN,
+ 	FEAT_PARAM_DSIPLL_REGM,
+ 	FEAT_PARAM_DSIPLL_REGM_DISPC,
 -- 
-1.7.6
+1.7.4.1
 

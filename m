@@ -1,46 +1,62 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 27 Sep 2011 12:22:53 +0000
-Subject: Re: Question on struct fb_videomode.name
-Message-Id: <CAMuHMdVK5KL9vtfQ6ZEKd25hkVR2dY_gC6-C9E9haRAaTddC4A@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 12 Sep 2011 09:13:37 +0000
+Subject: [PATCHv2 14/15] OMAP: Panda, Beagle, Overo: DVI: Add i2c_bus_num
+Message-Id: <1315818818-18733-15-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4E80E6D1.3010907@freescale.com>
-In-Reply-To: <4E80E6D1.3010907@freescale.com>
+References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1253"
-Content-Transfer-Encoding: base64
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-T24gTW9uLCBTZXAgMjYsIDIwMTEgYXQgMjI6NTUsIFRpbXVyIFRhYmkgPHRpbXVyQGZyZWVzY2Fs
-ZS5jb20+IHdyb3RlOgo+IEluIG15IGZiIGRyaXZlciwgSSBoYXZlIGFuIGFycmF5IG9mIGZiX3Zp
-ZGVvbW9kZSBzdHJ1Y3RzLCBsaWtlIHRoaXM6Cj4KPiBzdGF0aWMgc3RydWN0IGZiX3ZpZGVvbW9k
-ZSBfX2RldmluaXRkYXRhIGZzbF9kaXVfbW9kZV9kYltdID0gewo+IMKgIMKgIMKgIMKgewo+IMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgLm5hbWUgwqAgwqAgwqAgwqAgwqAgPSAiMTAyNHg3NjgtNjAi
-LAo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgLnJlZnJlc2ggwqAgwqAgwqAgwqA9IDYwLAo+IMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgLnhyZXMgwqAgwqAgwqAgwqAgwqAgPSAxMDI0LAo+IMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgLnlyZXMgwqAgwqAgwqAgwqAgwqAgPSA3NjgsCj4gwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAucGl4Y2xvY2sgwqAgwqAgwqAgPSAxNTM4NSwKPiDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoC5sZWZ0X21hcmdpbiDCoCDCoD0gMTYwLAo+IMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgLnJpZ2h0X21hcmdpbiDCoCA9IDI0LAo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgLnVwcGVy
-X21hcmdpbiDCoCA9IDI5LAo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgLmxvd2VyX21hcmdpbiDC
-oCA9IDMsCj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAuaHN5bmNfbGVuIMKgIMKgIMKgPSAxMzYs
-Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAudnN5bmNfbGVuIMKgIMKgIMKgPSA2LAo+IMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgLnN5bmMgwqAgwqAgwqAgwqAgwqAgPSBGQl9TWU5DX0NPTVBfSElH
-SF9BQ1QgfCBGQl9TWU5DX1ZFUlRfSElHSF9BQ1QsCj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAu
-dm1vZGUgwqAgwqAgwqAgwqAgwqA9IEZCX1ZNT0RFX05PTklOVEVSTEFDRUQKPiDCoCDCoCDCoCDC
-oH0sCj4gwqAgwqAgwqAgwqAuLi4KPgo+IElzIHRoZXJlIGFueSB2YWx1ZSBpbiBzcGVjaWZ5aW5n
-IHRoZSAubmFtZSBmaWVsZCBhcyAiPHhyZXM+eDx5cmVzPi08cmVmPiI/IMKgSQo+IGtub3cgdGhl
-IC5uYW1lIGZpZWxkIGlzIG9wdGlvbmFsLCBidXQgd2hhdCBoYXBwZW5zIGlmIEkgZG9uJ3Qgc3Bl
-Y2lmeSBpdD8gwqBJdAo+IGp1c3Qgc2VlbXMgcmVkdW5kYW50IHRvIGdlbmVyYXRlIHRoZSBuYW1l
-IGJhc2VkIG9uIG90aGVyIGRhdGEgaW4gdGhlIHNhbWUgc3RydWN0dXJlLgoKSWYgdGhlIG5hbWUg
-aXMganVzdCAiPHhyZXM+eDx5cmVzPi08cmVmPiIsIHlvdSBjYW4gbGVhdmUgaXQgTlVMTC4KVGhl
-IG5hbWUgb25seSBhZGRzIHZhbHVlIGlmIGl0J3Mgc29tZXRoaW5nIGRpZmZlcmVudCwgY2ZyLiB0
-aGUgbW9kZXMKaW4gbWFjbW9kZXMuYywKYW1pZmIuYywgb3IgcHMzZmIuYy4KCkdye29ldGplLGVl
-dGluZ31zLAoKwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgR2VlcnQKCi0tCkdl
-ZXJ0IFV5dHRlcmhvZXZlbiAtLSBUaGVyZSdzIGxvdHMgb2YgTGludXggYmV5b25kIGlhMzIgLS0g
-Z2VlcnRAbGludXgtbTY4ay5vcmcKCkluIHBlcnNvbmFsIGNvbnZlcnNhdGlvbnMgd2l0aCB0ZWNo
-bmljYWwgcGVvcGxlLCBJIGNhbGwgbXlzZWxmIGEgaGFja2VyLiBCdXQKd2hlbiBJJ20gdGFsa2lu
-ZyB0byBqb3VybmFsaXN0cyBJIGp1c3Qgc2F5ICJwcm9ncmFtbWVyIiBvciBzb21ldGhpbmcgbGlr
-ZSB0aGF0LgrCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoMKgIMKgwqAg
-LS0gTGludXMgVG9ydmFsZHMK//Tounsubscribefromthislisv/sendthelinf/unsubscribel
-inux/fbdev/inthebodyofamessagetomajordomo/vger/kernel/orgMoremajordomoinfoat
-http///vger/kernel/org/majordomo/info/htCg==
+Add i2c bus number for DVI output. The driver uses this to detect if a
+panel is connected and to read EDID.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/mach-omap2/board-omap3beagle.c |    1 +
+ arch/arm/mach-omap2/board-omap4panda.c  |    1 +
+ arch/arm/mach-omap2/board-overo.c       |    1 +
+ 3 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
+index 26bc860..742ac45 100644
+--- a/arch/arm/mach-omap2/board-omap3beagle.c
++++ b/arch/arm/mach-omap2/board-omap3beagle.c
+@@ -206,6 +206,7 @@ static void beagle_disable_dvi(struct omap_dss_device *dssdev)
+ static struct panel_dvi_platform_data dvi_panel = {
+ 	.platform_enable = beagle_enable_dvi,
+ 	.platform_disable = beagle_disable_dvi,
++	.i2c_bus_num = 3,
+ };
+ 
+ static struct omap_dss_device beagle_dvi_device = {
+diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
+index c35384e..a38ed273 100644
+--- a/arch/arm/mach-omap2/board-omap4panda.c
++++ b/arch/arm/mach-omap2/board-omap4panda.c
+@@ -458,6 +458,7 @@ static void omap4_panda_disable_dvi(struct omap_dss_device *dssdev)
+ static struct panel_dvi_platform_data omap4_dvi_panel = {
+ 	.platform_enable	= omap4_panda_enable_dvi,
+ 	.platform_disable	= omap4_panda_disable_dvi,
++	.i2c_bus_num = 3,
+ };
+ 
+ struct omap_dss_device omap4_panda_dvi_device = {
+diff --git a/arch/arm/mach-omap2/board-overo.c b/arch/arm/mach-omap2/board-overo.c
+index 06064d5..da94376 100644
+--- a/arch/arm/mach-omap2/board-overo.c
++++ b/arch/arm/mach-omap2/board-overo.c
+@@ -186,6 +186,7 @@ static void overo_panel_disable_dvi(struct omap_dss_device *dssdev)
+ static struct panel_dvi_platform_data dvi_panel = {
+ 	.platform_enable	= overo_panel_enable_dvi,
+ 	.platform_disable	= overo_panel_disable_dvi,
++	.i2c_bus_num		= 3,
+ };
+ 
+ static struct omap_dss_device overo_dvi_device = {
+-- 
+1.7.4.1
+

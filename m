@@ -1,90 +1,173 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Sep 2011 09:12:48 +0000
-Subject: [PATCHv2 3/8] OMAP: DSS2: HDMI: change regn definition
-Message-Id: <1315818773-18660-4-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 12 Sep 2011 09:13:27 +0000
+Subject: [PATCHv2 04/15] OMAP: DSS2: HDMI: implement read_edid()
+Message-Id: <1315818818-18733-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1315818773-18660-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1315818773-18660-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mythri P K <mythripk@ti.com>
 
-regn divider is currently programmed to the registers without change,
-but when calculating clock frequencies it is used as regn+1.
-
-To make this similar to how DSI handles the dividers this patch changes
-the regn value to be used as such for calculations, but the value
-programmed to registers is regn-1.
-
-This simplifies the clock frequency calculations, makes it similar to
-DSI, and also allows us to use regn value 0 as undefined.
+Implement read_edid() for HDMI by implementing necessary functions to
+hdmi.c and to hdmi_omap4_panel.c.
 
 Cc: Mythri P K <mythripk@ti.com>
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/hdmi.c            |    6 +++---
- drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |    2 +-
- include/video/omapdss.h                   |    1 +
- 3 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/video/omap2/dss/dss.h             |    1 +
+ drivers/video/omap2/dss/hdmi.c            |   19 ++++++++++++-
+ drivers/video/omap2/dss/hdmi_panel.c      |   24 +++++++++++++++++
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |   41 +++++++++++++++-------------
+ 4 files changed, 65 insertions(+), 20 deletions(-)
 
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 48bba53..2e7799c 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -494,6 +494,7 @@ void omapdss_hdmi_display_disable(struct omap_dss_device *dssdev);
+ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev);
+ int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
+ 					struct omap_video_timings *timings);
++int omapdss_hdmi_read_edid(u8 *buf, int len);
+ int hdmi_panel_init(void);
+ void hdmi_panel_exit(void);
+ 
 diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 52731b5..4752137 100644
+index f503aa4..8a04ee1 100644
 --- a/drivers/video/omap2/dss/hdmi.c
 +++ b/drivers/video/omap2/dss/hdmi.c
-@@ -60,7 +60,7 @@
+@@ -372,7 +372,7 @@ static void hdmi_read_edid(struct omap_video_timings *dp)
+ 	if (!hdmi.edid_set)
+ 		ret = hdmi.ip_data.ops->read_edid(&hdmi.ip_data, hdmi.edid,
+ 						HDMI_EDID_MAX_LENGTH);
+-	if (!ret) {
++	if (ret > 0) {
+ 		if (!memcmp(hdmi.edid, edid_header, sizeof(edid_header))) {
+ 			/* search for timings of default resolution */
+ 			get_edid_timing_data(hdmi.edid);
+@@ -587,6 +587,23 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev)
+ 	}
+ }
  
- #define OMAP_HDMI_TIMINGS_NB			34
++int omapdss_hdmi_read_edid(u8 *buf, int len)
++{
++	int r;
++
++	mutex_lock(&hdmi.lock);
++
++	r = hdmi_runtime_get();
++	BUG_ON(r);
++
++	r = hdmi.ip_data.ops->read_edid(&hdmi.ip_data, buf, len);
++
++	hdmi_runtime_put();
++	mutex_unlock(&hdmi.lock);
++
++	return r;
++}
++
+ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
+ {
+ 	int r = 0;
+diff --git a/drivers/video/omap2/dss/hdmi_panel.c b/drivers/video/omap2/dss/hdmi_panel.c
+index 8c851e6..624f170 100644
+--- a/drivers/video/omap2/dss/hdmi_panel.c
++++ b/drivers/video/omap2/dss/hdmi_panel.c
+@@ -185,6 +185,29 @@ err:
+ 	return r;
+ }
  
--#define HDMI_DEFAULT_REGN 15
-+#define HDMI_DEFAULT_REGN 16
- #define HDMI_DEFAULT_REGM2 1
- 
- static struct {
-@@ -426,7 +426,7 @@ static void hdmi_compute_pll(struct omap_dss_device *dssdev, int phy,
- 	else
- 		pi->regn = dssdev->clocks.hdmi.regn;
- 
--	refclk = clkin / (pi->regn + 1);
-+	refclk = clkin / pi->regn;
- 
- 	/*
- 	 * multiplier is pixel_clk/ref_clk
-@@ -452,7 +452,7 @@ static void hdmi_compute_pll(struct omap_dss_device *dssdev, int phy,
- 	 * is greater than 1000MHz
- 	 */
- 	pi->dcofreq = phy > 1000 * 100;
--	pi->regsd = ((pi->regm * clkin / 10) / ((pi->regn + 1) * 250) + 5) / 10;
-+	pi->regsd = ((pi->regm * clkin / 10) / (pi->regn * 250) + 5) / 10;
- 
- 	/* Set the reference clock to sysclk reference */
- 	pi->refsel = HDMI_REFSEL_SYSCLK;
++static int hdmi_read_edid(struct omap_dss_device *dssdev, u8 *buf, int len)
++{
++	int r;
++
++	mutex_lock(&hdmi.hdmi_lock);
++
++	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE) {
++		r = omapdss_hdmi_display_enable(dssdev);
++		if (r)
++			goto err;
++	}
++
++	r = omapdss_hdmi_read_edid(buf, len);
++
++	if (dssdev->state = OMAP_DSS_DISPLAY_DISABLED ||
++			dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED)
++		omapdss_hdmi_display_disable(dssdev);
++err:
++	mutex_unlock(&hdmi.hdmi_lock);
++
++	return r;
++}
++
+ static struct omap_dss_driver hdmi_driver = {
+ 	.probe		= hdmi_panel_probe,
+ 	.remove		= hdmi_panel_remove,
+@@ -195,6 +218,7 @@ static struct omap_dss_driver hdmi_driver = {
+ 	.get_timings	= hdmi_get_timings,
+ 	.set_timings	= hdmi_set_timings,
+ 	.check_timings	= hdmi_check_timings,
++	.read_edid	= hdmi_read_edid,
+ 	.driver			= {
+ 		.name   = "hdmi_panel",
+ 		.owner  = THIS_MODULE,
 diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-index cb3a2d6..403c662 100644
+index 403c662..d4cdfc2 100644
 --- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
 +++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-@@ -92,7 +92,7 @@ static int hdmi_pll_init(struct hdmi_ip_data *ip_data)
+@@ -370,29 +370,32 @@ int ti_hdmi_4xxx_read_edid(struct hdmi_ip_data *ip_data,
+ {
+ 	int r = 0, n = 0, i = 0;
+ 	int max_ext_blocks = (max_length / 128) - 1;
++	int len;
  
- 	r = hdmi_read_reg(pll_base, PLLCTRL_CFG1);
- 	r = FLD_MOD(r, fmt->regm, 20, 9); /* CFG1_PLL_REGM */
--	r = FLD_MOD(r, fmt->regn, 8, 1);  /* CFG1_PLL_REGN */
-+	r = FLD_MOD(r, fmt->regn - 1, 8, 1);  /* CFG1_PLL_REGN */
+ 	r = hdmi_core_ddc_edid(ip_data, pedid, 0);
+-	if (r) {
++	if (r)
+ 		return r;
+-	} else {
+-		n = pedid[0x7e];
  
- 	hdmi_write_reg(pll_base, PLLCTRL_CFG1, r);
+-		/*
+-		 * README: need to comply with max_length set by the caller.
+-		 * Better implementation should be to allocate necessary
+-		 * memory to store EDID according to nb_block field found
+-		 * in first block
+-		 */
+-		if (n > max_ext_blocks)
+-			n = max_ext_blocks;
++	len = 128;
++	n = pedid[0x7e];
  
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index c462ed0..528cf79 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -513,6 +513,7 @@ struct omap_dss_device {
- 		} dsi;
+-		for (i = 1; i <= n; i++) {
+-			r = hdmi_core_ddc_edid(ip_data, pedid, i);
+-			if (r)
+-				return r;
+-		}
++	/*
++	 * README: need to comply with max_length set by the caller.
++	 * Better implementation should be to allocate necessary
++	 * memory to store EDID according to nb_block field found
++	 * in first block
++	 */
++	if (n > max_ext_blocks)
++		n = max_ext_blocks;
++
++	for (i = 1; i <= n; i++) {
++		r = hdmi_core_ddc_edid(ip_data, pedid, i);
++		if (r)
++			return r;
++		len += 128;
+ 	}
+-	return 0;
++
++	return len;
+ }
  
- 		struct {
-+			/* regn is one greater than TRM's REGN value */
- 			u16 regn;
- 			u16 regm2;
- 		} hdmi;
+ static void hdmi_core_init(struct hdmi_core_video_config *video_cfg,
 -- 
 1.7.4.1
 

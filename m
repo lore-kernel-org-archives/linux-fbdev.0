@@ -1,61 +1,52 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Thu, 15 Sep 2011 16:19:32 +0000
-Subject: Re: [REPOST][PATCH 2/2] video: miscellaneous minor changes to the
-Message-Id: <4E722594.8060004@freescale.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 12 Sep 2011 09:12:53 +0000
+Subject: [PATCHv2 8/8] OMAP: DSS2: HDMI: improve hdmi output enable
+Message-Id: <1315818773-18660-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1315929909-26311-2-git-send-email-timur@freescale.com>
-In-Reply-To: <1315929909-26311-2-git-send-email-timur@freescale.com>
+References: <1315818773-18660-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1315818773-18660-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mythri P K <mythripk@ti.com>
 
-Tormod Volden wrote:
-> On Tue, Sep 13, 2011 at 6:05 PM, Timur Tabi <timur@freescale.com> wrote:
->> Make several minor, miscellaneous changes to the Freescale DIU framebuffer
->> driver.  These changes "lighten" the code by removing crud, fixing small
->> bugs, and fixing some coding style problems.  These changes will make it
->> easier to make more substantial fixes in the future.
-> 
-> It would be much easier to review this if it is split up into several
-> commits. At least have the whitespace fixes in a separate commit, and
-> also the actual bug fixes. "git add -p" is your friend.
+Enabling HDMI output often causes sync lost errors, and almost always
+causes timeout errors being printed from dispc_mgr_enable_digit_out().
 
-Ok.
+The sync lost problem seems to go lessen greatly if we first enable the
+HDMI output, and only then enable the DISPC output. However, as this is
+only based on observations, the fix may not be perfect as the problem
+may lie somewhere else. Nevertheless, HDMI works better with this patch.
 
-> 
->> 1. Fix incorrect indentation and spacing with some code.
->> 2. Remove debug printks (they don't actually help in debugging the code).
->> 3. Clean up some other printks (e.g. use pr_xxx, clean up the text, etc).
->> 4. Remove the "default" videomode object since it's just a dupe of the
->>   first element in the videomode array.
->> 5. Remove some superfluous local variables.
->> 6. Rename ofdev to pdev, since it's a platform device not an OF device.
->> 7. Fix some device tree operations.
->> 8. Fix some build warnings.
->> 9. Removed some unused structures from the header file.
->> 10. Other minor bug fixes and changes.
-> 
-> I would have found natural to split it up into commits like for
-> example: 1, 2+3, 4, 5+8+9, 10.
+This will also fix the dispc's dispc_mgr_enable_digit_out(), as the code
+waits for two VSYNCs after enabling the output. If the HDMI output is
+disabled (as it was previously), there are no VSYNCs and
+dispc_mgr_enable_digit_out() will print timeout errors.
 
-Ok.
+Cc: Mythri P K <mythripk@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/hdmi.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-> 
->> @@ -217,59 +201,59 @@ struct mfb_info {
->>        int x_aoi_d;            /* aoi display x offset to physical screen */
->>        int y_aoi_d;            /* aoi display y offset to physical screen */
->>        struct fsl_diu_data *parent;
->> -       u8 *edid_data;
->> +       void *edid_data;
->>  };
-> 
-> Why do you convert edid_data from pointer to u8 to pointer to void?
-
-Hmm.. Normally I do that to eliminate a typecast, but that didn't happen in this
-case.  I guess I'll leave it as a u8*.
-
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 4752137..06a78b2 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -529,10 +529,10 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
+ 	dispc_set_digit_size(dssdev->panel.timings.x_res,
+ 			dssdev->panel.timings.y_res);
+ 
+-	dispc_mgr_enable(OMAP_DSS_CHANNEL_DIGIT, 1);
+-
+ 	hdmi.ip_data.ops->video_enable(&hdmi.ip_data, 1);
+ 
++	dispc_mgr_enable(OMAP_DSS_CHANNEL_DIGIT, 1);
++
+ 	return 0;
+ err:
+ 	hdmi_runtime_put();
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.7.4.1
 

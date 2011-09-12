@@ -1,59 +1,64 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Sep 2011 09:13:31 +0000
-Subject: [PATCHv2 08/15] OMAP: DSS2: HDMI: remove error prints in check_timings
-Message-Id: <1315818818-18733-9-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 12 Sep 2011 09:12:51 +0000
+Subject: [PATCHv2 6/8] OMAP: DSS2: add dss_get_hdmi_venc_clk_source()
+Message-Id: <1315818773-18660-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1315818773-18660-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1315818773-18660-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mythri P K <mythripk@ti.com>
 
-check_timings() is supposed to be used to verify if timings are ok or
-not. Currently the HDMI driver prints error messages if the timings are
-not ok. This is not right, as it is no error to give invalid timings to
-check_timings().
+Add dss_get_hdmi_venc_clk_source(), which can be used to get the value
+programmed with dss_select_hdmi_venc_clk_source(). This can be used to
+find out if the digit output is going to VENC or HDMI.
 
-Remove the error prints.
+For OMAP2/3 dss_get_hdmi_venc_clk_source() always returns
+DSS_VENC_TV_CLK.
 
 Cc: Mythri P K <mythripk@ti.com>
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/hdmi.c       |    1 -
- drivers/video/omap2/dss/hdmi_panel.c |    6 +-----
- 2 files changed, 1 insertions(+), 6 deletions(-)
+ drivers/video/omap2/dss/dss.c |   11 +++++++++++
+ drivers/video/omap2/dss/dss.h |    1 +
+ 2 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index bf85cba..fb85ce5 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -406,7 +406,6 @@ int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
- 
- 	cm = hdmi_get_code(timings);
- 	if (cm.code = -1) {
--		DSSERR("Invalid timing entered\n");
- 		return -EINVAL;
- 	}
- 
-diff --git a/drivers/video/omap2/dss/hdmi_panel.c b/drivers/video/omap2/dss/hdmi_panel.c
-index 79a3a5a..71aa813 100644
---- a/drivers/video/omap2/dss/hdmi_panel.c
-+++ b/drivers/video/omap2/dss/hdmi_panel.c
-@@ -170,11 +170,7 @@ static int hdmi_check_timings(struct omap_dss_device *dssdev,
- 	mutex_lock(&hdmi.hdmi_lock);
- 
- 	r = omapdss_hdmi_display_check_timing(dssdev, timings);
--	if (r) {
--		DSSERR("Timing cannot be applied\n");
--		goto err;
--	}
--err:
-+
- 	mutex_unlock(&hdmi.hdmi_lock);
- 	return r;
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 356d3c1..3e09726 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -639,6 +639,17 @@ void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select hdmi)
+ 	REG_FLD_MOD(DSS_CONTROL, hdmi, 15, 15);	/* VENC_HDMI_SWITCH */
  }
+ 
++enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void)
++{
++	enum omap_display_type displays;
++
++	displays = dss_feat_get_supported_displays(OMAP_DSS_CHANNEL_DIGIT);
++	if ((displays & OMAP_DISPLAY_TYPE_HDMI) = 0)
++		return DSS_VENC_TV_CLK;
++
++	return REG_GET(DSS_CONTROL, 15, 15);
++}
++
+ static int dss_get_clocks(void)
+ {
+ 	struct clk *clk;
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index d790580..48bba53 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -205,6 +205,7 @@ int dss_runtime_get(void);
+ void dss_runtime_put(void);
+ 
+ void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select);
++enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void);
+ const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
+ void dss_dump_clocks(struct seq_file *s);
+ 
 -- 
 1.7.4.1
 

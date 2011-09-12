@@ -1,68 +1,75 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Sep 2011 09:13:23 +0000
-Subject: [PATCHv2 00/15] OMAP: DSS2: EDID & detect support
-Message-Id: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 12 Sep 2011 09:13:26 +0000
+Subject: [PATCHv2 03/15] OMAP: DSS2: HDMI: make set_timing saner
+Message-Id: <1315818818-18733-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mythri P K <mythripk@ti.com>
 
-Implement EDID reading and monitor detection support for HDMI and DVI outputs.
+Currently the set_timings code for hdmi is quite strange. The display is
+disabled in hdmi_omap4_panel.c before setting timings, and enabled in
+hdmi.c after setting the timings. Furthermore, the timings were not
+permanent, and disabling and enabling the display would lose them.
 
-This set is based on the previously sent "OMAP: DSS2: misc improvements" set.
+This patch makes the set_timings handling a bit better.
 
- Tomi
+Cc: Mythri P K <mythripk@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/hdmi.c       |   13 +++++++++++--
+ drivers/video/omap2/dss/hdmi_panel.c |    7 +------
+ 2 files changed, 12 insertions(+), 8 deletions(-)
 
-Changes in v2:
-* Rebased on top of latest DSS changes
-* Create a separate DVI driver with DDC support
-
-Tomi Valkeinen (15):
-  OMAP: DSS2: add read_edid() to omap_dss_driver struct
-  OMAP: DSS2: add detect() to omap_dss_driver struct
-  OMAP: DSS2: HDMI: make set_timing saner
-  OMAP: DSS2: HDMI: implement read_edid()
-  OMAP: DSS2: HDMI: remove edid parsing
-  OMAP: DSS2: HDMI: split hdmi_core_ddc_edid
-  OMAP: DSS2: HDMI: clean up edid reading & fix checksum
-  OMAP: DSS2: HDMI: remove error prints in check_timings
-  OMAP: DSS2: HDMI: implement detect()
-  OMAP: DSS2: add panel-dvi driver
-  OMAP: use dvi panel driver instead of generic-dpi
-  OMAP: stalker: Remove LCD device from board file
-  OMAP: DSS2: panel-generic-dpi: remove "generic" panel
-  OMAP: Panda, Beagle, Overo: DVI: Add i2c_bus_num
-  OMAPFB: find best mode from edid
-
- arch/arm/mach-omap2/board-3430sdp.c              |    7 +-
- arch/arm/mach-omap2/board-am3517evm.c            |    6 +-
- arch/arm/mach-omap2/board-cm-t35.c               |    6 +-
- arch/arm/mach-omap2/board-devkit8000.c           |    6 +-
- arch/arm/mach-omap2/board-igep0020.c             |    7 +-
- arch/arm/mach-omap2/board-omap3beagle.c          |    8 +-
- arch/arm/mach-omap2/board-omap3evm.c             |    7 +-
- arch/arm/mach-omap2/board-omap3stalker.c         |   40 +---
- arch/arm/mach-omap2/board-omap4panda.c           |    8 +-
- arch/arm/mach-omap2/board-overo.c                |    7 +-
- drivers/video/omap2/displays/Kconfig             |    7 +
- drivers/video/omap2/displays/Makefile            |    1 +
- drivers/video/omap2/displays/panel-dvi.c         |  363 ++++++++++++++++++++++
- drivers/video/omap2/displays/panel-generic-dpi.c |   24 --
- drivers/video/omap2/dss/dss.h                    |    2 +
- drivers/video/omap2/dss/dss_features.c           |    1 +
- drivers/video/omap2/dss/hdmi.c                   |  200 +++---------
- drivers/video/omap2/dss/hdmi_panel.c             |   66 +++-
- drivers/video/omap2/dss/ti_hdmi.h                |    9 +-
- drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c        |  193 +++++++-----
- drivers/video/omap2/omapfb/omapfb-main.c         |  109 ++++++-
- include/video/omap-panel-dvi.h                   |   37 +++
- include/video/omapdss.h                          |    3 +
- 23 files changed, 758 insertions(+), 359 deletions(-)
- create mode 100644 drivers/video/omap2/displays/panel-dvi.c
- create mode 100644 include/video/omap-panel-dvi.h
-
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 06a78b2..f503aa4 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -571,11 +571,20 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev)
+ 	struct hdmi_cm cm;
+ 
+ 	hdmi.custom_set = 1;
++
+ 	cm = hdmi_get_code(&dssdev->panel.timings);
+ 	hdmi.code = cm.code;
+ 	hdmi.mode = cm.mode;
+-	omapdss_hdmi_display_enable(dssdev);
+-	hdmi.custom_set = 0;
++
++	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
++		int r;
++
++		hdmi_power_off(dssdev);
++
++		r = hdmi_power_on(dssdev);
++		if (r)
++			DSSERR("failed to power on device\n");
++	}
+ }
+ 
+ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
+diff --git a/drivers/video/omap2/dss/hdmi_panel.c b/drivers/video/omap2/dss/hdmi_panel.c
+index e30182f..8c851e6 100644
+--- a/drivers/video/omap2/dss/hdmi_panel.c
++++ b/drivers/video/omap2/dss/hdmi_panel.c
+@@ -161,12 +161,7 @@ static void hdmi_set_timings(struct omap_dss_device *dssdev,
+ 	mutex_lock(&hdmi.hdmi_lock);
+ 
+ 	dssdev->panel.timings = *timings;
+-
+-	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
+-		/* turn the hdmi off and on to get new timings to use */
+-		omapdss_hdmi_display_disable(dssdev);
+-		omapdss_hdmi_display_set_timing(dssdev);
+-	}
++	omapdss_hdmi_display_set_timing(dssdev);
+ 
+ 	mutex_unlock(&hdmi.hdmi_lock);
+ }
 -- 
 1.7.4.1
 

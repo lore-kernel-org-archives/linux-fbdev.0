@@ -1,218 +1,68 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Wed, 28 Sep 2011 21:19:52 +0000
-Subject: [PATCH 6/9] drivers/video: fsl-diu-fb: remove unused panel operating mode support
-Message-Id: <1317244795-24671-6-git-send-email-timur@freescale.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 12 Sep 2011 09:13:23 +0000
+Subject: [PATCHv2 00/15] OMAP: DSS2: EDID & detect support
+Message-Id: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The MFB_TYPE_xxx macros indicate different "operating modes" of each AOI,
-but this feature is not actually used in the driver.  The mfb_index.type
-field is always set to MFB_TYPE_OUTPUT, so just delete it and any code
-that references it.
+Implement EDID reading and monitor detection support for HDMI and DVI outputs.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- drivers/video/fsl-diu-fb.c |  117 +++++++++++++++++--------------------------
- 1 files changed, 46 insertions(+), 71 deletions(-)
+This set is based on the previously sent "OMAP: DSS2: misc improvements" set.
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 712b91c..dd98675 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -49,12 +49,6 @@
- #define INT_PARERR	0x08	/* Display parameters error interrupt */
- #define INT_LS_BF_VS	0x10	/* Lines before vsync. interrupt */
- 
--/* Panels'operation modes */
--#define MFB_TYPE_OUTPUT	0	/* Panel output to display */
--#define MFB_TYPE_OFF	1	/* Panel off */
--#define MFB_TYPE_WB	2	/* Panel written back to memory */
--#define MFB_TYPE_TEST	3	/* Panel generate color bar */
--
- struct diu_hw {
- 	struct diu __iomem *diu_reg;
- 	spinlock_t reg_lock;
-@@ -370,7 +364,6 @@ enum mfb_index {
- 
- struct mfb_info {
- 	enum mfb_index index;
--	int type;
- 	char *id;
- 	int registered;
- 	unsigned long pseudo_palette[16];
-@@ -388,7 +381,6 @@ struct mfb_info {
- static struct mfb_info mfb_template[] = {
- 	{
- 		.index = PLANE0,
--		.type = MFB_TYPE_OUTPUT,
- 		.id = "Panel0",
- 		.registered = 0,
- 		.count = 0,
-@@ -397,7 +389,6 @@ static struct mfb_info mfb_template[] = {
- 	},
- 	{
- 		.index = PLANE1_AOI0,
--		.type = MFB_TYPE_OUTPUT,
- 		.id = "Panel1 AOI0",
- 		.registered = 0,
- 		.g_alpha = 0xff,
-@@ -407,7 +398,6 @@ static struct mfb_info mfb_template[] = {
- 	},
- 	{
- 		.index = PLANE1_AOI1,
--		.type = MFB_TYPE_OUTPUT,
- 		.id = "Panel1 AOI1",
- 		.registered = 0,
- 		.g_alpha = 0xff,
-@@ -417,7 +407,6 @@ static struct mfb_info mfb_template[] = {
- 	},
- 	{
- 		.index = PLANE2_AOI0,
--		.type = MFB_TYPE_OUTPUT,
- 		.id = "Panel2 AOI0",
- 		.registered = 0,
- 		.g_alpha = 0xff,
-@@ -427,7 +416,6 @@ static struct mfb_info mfb_template[] = {
- 	},
- 	{
- 		.index = PLANE2_AOI1,
--		.type = MFB_TYPE_OUTPUT,
- 		.id = "Panel2 AOI1",
- 		.registered = 0,
- 		.g_alpha = 0xff,
-@@ -517,62 +505,57 @@ void wr_reg_wa(u32 *reg, u32 val)
- 	} while (in_be32(reg) != val);
- }
- 
--static int fsl_diu_enable_panel(struct fb_info *info)
-+static void fsl_diu_enable_panel(struct fb_info *info)
- {
- 	struct mfb_info *pmfbi, *cmfbi, *mfbi = info->par;
- 	struct diu *hw = dr.diu_reg;
- 	struct diu_ad *ad = mfbi->ad;
- 	struct fsl_diu_data *machine_data = mfbi->parent;
--	int res = 0;
- 
--	if (mfbi->type != MFB_TYPE_OFF) {
--		switch (mfbi->index) {
--		case PLANE0:
--			if (hw->desc[0] != ad->paddr)
--				wr_reg_wa(&hw->desc[0], ad->paddr);
--			break;
--		case PLANE1_AOI0:
--			cmfbi = machine_data->fsl_diu_info[2]->par;
--			if (hw->desc[1] != ad->paddr) {	/* AOI0 closed */
--				if (cmfbi->count > 0)	/* AOI1 open */
--					ad->next_ad -						cpu_to_le32(cmfbi->ad->paddr);
--				else
--					ad->next_ad = 0;
--				wr_reg_wa(&hw->desc[1], ad->paddr);
--			}
--			break;
--		case PLANE2_AOI0:
--			cmfbi = machine_data->fsl_diu_info[4]->par;
--			if (hw->desc[2] != ad->paddr) {	/* AOI0 closed */
--				if (cmfbi->count > 0)	/* AOI1 open */
--					ad->next_ad -						cpu_to_le32(cmfbi->ad->paddr);
--				else
--					ad->next_ad = 0;
--				wr_reg_wa(&hw->desc[2], ad->paddr);
--			}
--			break;
--		case PLANE1_AOI1:
--			pmfbi = machine_data->fsl_diu_info[1]->par;
--			ad->next_ad = 0;
--			if (hw->desc[1] = machine_data->dummy_ad->paddr)
--				wr_reg_wa(&hw->desc[1], ad->paddr);
--			else					/* AOI0 open */
--				pmfbi->ad->next_ad = cpu_to_le32(ad->paddr);
--			break;
--		case PLANE2_AOI1:
--			pmfbi = machine_data->fsl_diu_info[3]->par;
--			ad->next_ad = 0;
--			if (hw->desc[2] = machine_data->dummy_ad->paddr)
--				wr_reg_wa(&hw->desc[2], ad->paddr);
--			else				/* AOI0 was open */
--				pmfbi->ad->next_ad = cpu_to_le32(ad->paddr);
--			break;
-+	switch (mfbi->index) {
-+	case PLANE0:
-+		if (hw->desc[0] != ad->paddr)
-+			wr_reg_wa(&hw->desc[0], ad->paddr);
-+		break;
-+	case PLANE1_AOI0:
-+		cmfbi = machine_data->fsl_diu_info[2]->par;
-+		if (hw->desc[1] != ad->paddr) {	/* AOI0 closed */
-+			if (cmfbi->count > 0)	/* AOI1 open */
-+				ad->next_ad +					cpu_to_le32(cmfbi->ad->paddr);
-+			else
-+				ad->next_ad = 0;
-+			wr_reg_wa(&hw->desc[1], ad->paddr);
- 		}
--	} else
--		res = -EINVAL;
--	return res;
-+		break;
-+	case PLANE2_AOI0:
-+		cmfbi = machine_data->fsl_diu_info[4]->par;
-+		if (hw->desc[2] != ad->paddr) {	/* AOI0 closed */
-+			if (cmfbi->count > 0)	/* AOI1 open */
-+				ad->next_ad +					cpu_to_le32(cmfbi->ad->paddr);
-+			else
-+				ad->next_ad = 0;
-+			wr_reg_wa(&hw->desc[2], ad->paddr);
-+		}
-+		break;
-+	case PLANE1_AOI1:
-+		pmfbi = machine_data->fsl_diu_info[1]->par;
-+		ad->next_ad = 0;
-+		if (hw->desc[1] = machine_data->dummy_ad->paddr)
-+			wr_reg_wa(&hw->desc[1], ad->paddr);
-+		else					/* AOI0 open */
-+			pmfbi->ad->next_ad = cpu_to_le32(ad->paddr);
-+		break;
-+	case PLANE2_AOI1:
-+		pmfbi = machine_data->fsl_diu_info[3]->par;
-+		ad->next_ad = 0;
-+		if (hw->desc[2] = machine_data->dummy_ad->paddr)
-+			wr_reg_wa(&hw->desc[2], ad->paddr);
-+		else				/* AOI0 was open */
-+			pmfbi->ad->next_ad = cpu_to_le32(ad->paddr);
-+		break;
-+	}
- }
- 
- static void fsl_diu_disable_panel(struct fb_info *info)
-@@ -849,11 +832,6 @@ static void update_lcdc(struct fb_info *info)
- 
- 	hw = dr.diu_reg;
- 
--	if (mfbi->type = MFB_TYPE_OFF) {
--		fsl_diu_disable_panel(info);
--		return;
--	}
--
- 	diu_ops.set_monitor_port(machine_data->monitor_port);
- 	gamma_table_base = pool.gamma.vaddr;
- 	cursor_base = pool.cursor.vaddr;
-@@ -1197,11 +1175,8 @@ static int fsl_diu_open(struct fb_info *info, int user)
- 		res = fsl_diu_set_par(info);
- 		if (res < 0)
- 			mfbi->count--;
--		else {
--			res = fsl_diu_enable_panel(info);
--			if (res < 0)
--				mfbi->count--;
--		}
-+		else
-+			fsl_diu_enable_panel(info);
- 	}
- 
- 	spin_unlock(&diu_lock);
+ Tomi
+
+Changes in v2:
+* Rebased on top of latest DSS changes
+* Create a separate DVI driver with DDC support
+
+Tomi Valkeinen (15):
+  OMAP: DSS2: add read_edid() to omap_dss_driver struct
+  OMAP: DSS2: add detect() to omap_dss_driver struct
+  OMAP: DSS2: HDMI: make set_timing saner
+  OMAP: DSS2: HDMI: implement read_edid()
+  OMAP: DSS2: HDMI: remove edid parsing
+  OMAP: DSS2: HDMI: split hdmi_core_ddc_edid
+  OMAP: DSS2: HDMI: clean up edid reading & fix checksum
+  OMAP: DSS2: HDMI: remove error prints in check_timings
+  OMAP: DSS2: HDMI: implement detect()
+  OMAP: DSS2: add panel-dvi driver
+  OMAP: use dvi panel driver instead of generic-dpi
+  OMAP: stalker: Remove LCD device from board file
+  OMAP: DSS2: panel-generic-dpi: remove "generic" panel
+  OMAP: Panda, Beagle, Overo: DVI: Add i2c_bus_num
+  OMAPFB: find best mode from edid
+
+ arch/arm/mach-omap2/board-3430sdp.c              |    7 +-
+ arch/arm/mach-omap2/board-am3517evm.c            |    6 +-
+ arch/arm/mach-omap2/board-cm-t35.c               |    6 +-
+ arch/arm/mach-omap2/board-devkit8000.c           |    6 +-
+ arch/arm/mach-omap2/board-igep0020.c             |    7 +-
+ arch/arm/mach-omap2/board-omap3beagle.c          |    8 +-
+ arch/arm/mach-omap2/board-omap3evm.c             |    7 +-
+ arch/arm/mach-omap2/board-omap3stalker.c         |   40 +---
+ arch/arm/mach-omap2/board-omap4panda.c           |    8 +-
+ arch/arm/mach-omap2/board-overo.c                |    7 +-
+ drivers/video/omap2/displays/Kconfig             |    7 +
+ drivers/video/omap2/displays/Makefile            |    1 +
+ drivers/video/omap2/displays/panel-dvi.c         |  363 ++++++++++++++++++++++
+ drivers/video/omap2/displays/panel-generic-dpi.c |   24 --
+ drivers/video/omap2/dss/dss.h                    |    2 +
+ drivers/video/omap2/dss/dss_features.c           |    1 +
+ drivers/video/omap2/dss/hdmi.c                   |  200 +++---------
+ drivers/video/omap2/dss/hdmi_panel.c             |   66 +++-
+ drivers/video/omap2/dss/ti_hdmi.h                |    9 +-
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c        |  193 +++++++-----
+ drivers/video/omap2/omapfb/omapfb-main.c         |  109 ++++++-
+ include/video/omap-panel-dvi.h                   |   37 +++
+ include/video/omapdss.h                          |    3 +
+ 23 files changed, 758 insertions(+), 359 deletions(-)
+ create mode 100644 drivers/video/omap2/displays/panel-dvi.c
+ create mode 100644 include/video/omap-panel-dvi.h
+
 -- 
-1.7.3.4
-
+1.7.4.1
 

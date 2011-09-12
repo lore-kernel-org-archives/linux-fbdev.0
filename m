@@ -1,76 +1,109 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sat, 03 Sep 2011 01:29:19 +0000
-Subject: [RFC v2] allow multiple concurrent visible displays
-Message-Id: <1315013361-3191-1-git-send-email-FlorianSchandinat@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 12 Sep 2011 09:12:52 +0000
+Subject: [PATCHv2 7/8] OMAP: DSS2: DISPC: improve dispc_mgr_enable_digit_out()
+Message-Id: <1315818773-18660-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1315818773-18660-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1315818773-18660-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, Dave Airlie <airlied@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Bernie Thompson <bernie@plugable.com>, Martin Decky <martin@decky.cz>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mythri P K <mythripk@ti.com>
 
-Hi all,
+dispc_mgr_enable_digit_out() didn't handle HDMI case very well.
 
-this is the second version of my multi-display support.
+Improve the function to use FRAMEDONETV interrupt to see when HDMI has
+been disabled.
 
-Compared to the first version:
-The bug reported in the first patch that prevented booting when 
-"fbcon=cmap:01" was given is fixed (annoying NULL pointer in vc)
-and a dummy vc_display_fg management was added to prevent 
-modifying vc structures we do not "own".
-The second patch is new and a hack that allows graphic and console 
-applications to work concurrently.
+Cc: Mythri P K <mythripk@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dispc.c |   49 +++++++++++++++++++++++----------------
+ 1 files changed, 29 insertions(+), 20 deletions(-)
 
-Background:
-At the moment only one display (in multi-display setups) will be 
-updated when
-(1) multiple console applications run on different displays
-(2) a graphic application runs in the active vt on one display and a 
-    console application on another display
-(3) multiple graphic (framebuffer) applications run on different
-    displays (usually)
-
-The first patch fixes (1) and I'm pretty happy with it. Works well 
-for me except rarely cursor visibility glitches but that might be a 
-bug somewhere else.
-
-(2) requires some sort of policy change. At the moment we forbid 
-any console from working just because on one vt a graphic 
-application started. Obviously that's not what I want and also not 
-what most applications require. Therefore changing it to only allow 
-the application to use the graphic resource associated with the vt 
-it switches to KD_GRAPHIC seems reasonable to me. If there are 
-concerns about compatiblity we could make this change an option or 
-introduce a new KD_PGRAPHICS which behaves as I want (though the 
-last one would be ugly and require changing all userspace to work).
-My second patch gives this functionality but I do not expect it to 
-be acceptable as is. At first I wanted to revert f700d6e5 but for 
-some reason the result did not even boot so I hacked my way around 
-it. Basically my question here aside the policy change is why do we 
-blank when entering graphics mode and why do we not allow updates 
-to other consoles when one is blanked?
-
-(3) is a completly different beast which will probably require 
-changes in userspace applications. Most framebuffer applications at 
-the moment just access the framebuffer if they are in the current 
-vt and stop on vt change. To make this working concurrently the 
-applications would need a way to get a notification when its 
-visibility changes. As this one requires much more work and thought 
-than the (1) and (2) I'll at first concentrate on solving those.
-But if anyone has any suggestions on this one I'd be verry happy.
-
-
-Best regards,
-
-Florian Tobias Schandinat
-
-
-Florian Tobias Schandinat (2):
-  fbdev: allow multiple concurrent visible consoles
-  vt: dirty hack
-
- drivers/tty/vt/vt.c           |    4 +---
- drivers/video/console/fbcon.c |   34 ++++++++++++++++++++++++++++++----
- drivers/video/console/fbcon.h |    1 +
- 3 files changed, 32 insertions(+), 7 deletions(-)
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 4e9f87f..38d6595 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -1924,11 +1924,16 @@ static void _enable_digit_out(bool enable)
+ static void dispc_mgr_enable_digit_out(bool enable)
+ {
+ 	struct completion frame_done_completion;
+-	int r;
++	enum dss_hdmi_venc_clk_source_select src;
++	int r, i;
++	u32 irq_mask;
++	int num_irqs;
+ 
+ 	if (REG_GET(DISPC_CONTROL, 1, 1) = enable)
+ 		return;
+ 
++	src = dss_get_hdmi_venc_clk_source();
++
+ 	if (enable) {
+ 		unsigned long flags;
+ 		/* When we enable digit output, we'll get an extra digit
+@@ -1945,36 +1950,40 @@ static void dispc_mgr_enable_digit_out(bool enable)
+ 	 * wait for the extra sync losts */
+ 	init_completion(&frame_done_completion);
+ 
++	if (src = DSS_HDMI_M_PCLK && enable = false) {
++		irq_mask = DISPC_IRQ_FRAMEDONETV;
++		num_irqs = 1;
++	} else {
++		irq_mask = DISPC_IRQ_EVSYNC_EVEN | DISPC_IRQ_EVSYNC_ODD;
++		/* XXX I understand from TRM that we should only wait for the
++		 * current field to complete. But it seems we have to wait for
++		 * both fields */
++		num_irqs = 2;
++	}
++
+ 	r = omap_dispc_register_isr(dispc_disable_isr, &frame_done_completion,
+-			DISPC_IRQ_EVSYNC_EVEN | DISPC_IRQ_EVSYNC_ODD);
++			irq_mask);
+ 	if (r)
+-		DSSERR("failed to register EVSYNC isr\n");
++		DSSERR("failed to register %x isr\n", irq_mask);
+ 
+ 	_enable_digit_out(enable);
+ 
+-	/* XXX I understand from TRM that we should only wait for the
+-	 * current field to complete. But it seems we have to wait
+-	 * for both fields */
+-	if (!wait_for_completion_timeout(&frame_done_completion,
+-				msecs_to_jiffies(100)))
+-		DSSERR("timeout waiting for EVSYNC\n");
+-
+-	if (!wait_for_completion_timeout(&frame_done_completion,
+-				msecs_to_jiffies(100)))
+-		DSSERR("timeout waiting for EVSYNC\n");
++	for (i = 0; i < num_irqs; ++i) {
++		if (!wait_for_completion_timeout(&frame_done_completion,
++					msecs_to_jiffies(100)))
++			DSSERR("timeout waiting for digit out to %s\n",
++					enable ? "start" : "stop");
++	}
+ 
+-	r = omap_dispc_unregister_isr(dispc_disable_isr,
+-			&frame_done_completion,
+-			DISPC_IRQ_EVSYNC_EVEN | DISPC_IRQ_EVSYNC_ODD);
++	r = omap_dispc_unregister_isr(dispc_disable_isr, &frame_done_completion,
++			irq_mask);
+ 	if (r)
+-		DSSERR("failed to unregister EVSYNC isr\n");
++		DSSERR("failed to unregister %x isr\n", irq_mask);
+ 
+ 	if (enable) {
+ 		unsigned long flags;
+ 		spin_lock_irqsave(&dispc.irq_lock, flags);
+-		dispc.irq_error_mask = DISPC_IRQ_MASK_ERROR;
+-		if (dss_has_feature(FEAT_MGR_LCD2))
+-			dispc.irq_error_mask |= DISPC_IRQ_SYNC_LOST2;
++		dispc.irq_error_mask |= DISPC_IRQ_SYNC_LOST_DIGIT;
+ 		dispc_write_reg(DISPC_IRQSTATUS, DISPC_IRQ_SYNC_LOST_DIGIT);
+ 		_omap_dispc_set_irqs();
+ 		spin_unlock_irqrestore(&dispc.irq_lock, flags);
+-- 
+1.7.4.1
 

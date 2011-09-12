@@ -1,33 +1,59 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Thu, 15 Sep 2011 21:44:55 +0000
-Subject: [PATCH 10/13] drivers/video: fsl-diu-fb: fix memory leak on error
-Message-Id: <1316123098-30967-11-git-send-email-timur@freescale.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 12 Sep 2011 09:13:31 +0000
+Subject: [PATCHv2 08/15] OMAP: DSS2: HDMI: remove error prints in check_timings
+Message-Id: <1315818818-18733-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mythri P K <mythripk@ti.com>
 
-We were forgetting to unmap the video memory if fsl_diu_check_var() fails.
+check_timings() is supposed to be used to verify if timings are ok or
+not. Currently the HDMI driver prints error messages if the timings are
+not ok. This is not right, as it is no error to give invalid timings to
+check_timings().
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
+Remove the error prints.
+
+Cc: Mythri P K <mythripk@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fsl-diu-fb.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/video/omap2/dss/hdmi.c       |    1 -
+ drivers/video/omap2/dss/hdmi_panel.c |    6 +-----
+ 2 files changed, 1 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 3776949..c66f6ed 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -1200,6 +1200,7 @@ static int __devinit install_fb(struct fb_info *info)
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index bf85cba..fb85ce5 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -406,7 +406,6 @@ int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
  
- 	if (fsl_diu_check_var(&info->var, info)) {
- 		dev_err(info->dev, "fsl_diu_check_var failed\n");
-+		unmap_video_memory(info);
- 		fb_dealloc_cmap(&info->cmap);
+ 	cm = hdmi_get_code(timings);
+ 	if (cm.code = -1) {
+-		DSSERR("Invalid timing entered\n");
  		return -EINVAL;
  	}
+ 
+diff --git a/drivers/video/omap2/dss/hdmi_panel.c b/drivers/video/omap2/dss/hdmi_panel.c
+index 79a3a5a..71aa813 100644
+--- a/drivers/video/omap2/dss/hdmi_panel.c
++++ b/drivers/video/omap2/dss/hdmi_panel.c
+@@ -170,11 +170,7 @@ static int hdmi_check_timings(struct omap_dss_device *dssdev,
+ 	mutex_lock(&hdmi.hdmi_lock);
+ 
+ 	r = omapdss_hdmi_display_check_timing(dssdev, timings);
+-	if (r) {
+-		DSSERR("Timing cannot be applied\n");
+-		goto err;
+-	}
+-err:
++
+ 	mutex_unlock(&hdmi.hdmi_lock);
+ 	return r;
+ }
 -- 
-1.7.3.4
-
+1.7.4.1
 

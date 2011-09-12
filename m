@@ -1,146 +1,251 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 19 Sep 2011 00:27:43 +0000
-Subject: [WIP/RFC 05/31] fbdev: sh_mobile_lcdc: Create functions to turn the display on/off
-Message-Id: <1316392089-27598-6-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 12 Sep 2011 09:13:28 +0000
+Subject: [PATCHv2 05/15] OMAP: DSS2: HDMI: remove edid parsing
+Message-Id: <1315818818-18733-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mythri P K <mythripk@ti.com>
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+OMAPFB handles EDID parsing now, using the common helper functions in
+fbdev. We can remove the EDID parsing from HDMI driver.
+
+Cc: Mythri P K <mythripk@ti.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |   53 ++++++++++++++++++++------------------
- 1 files changed, 28 insertions(+), 25 deletions(-)
+ drivers/video/omap2/dss/hdmi.c       |  154 ----------------------------------
+ drivers/video/omap2/dss/hdmi_panel.c |    8 +--
+ 2 files changed, 1 insertions(+), 161 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index c7e6074..78f531c 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -223,7 +223,7 @@ static int sh_mobile_lcdc_setup_clocks(struct sh_mobile_lcdc_priv *priv,
- }
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 8a04ee1..bf85cba 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -70,9 +70,6 @@ static struct {
+ 	struct hdmi_ip_data ip_data;
+ 	int code;
+ 	int mode;
+-	u8 edid[HDMI_EDID_MAX_LENGTH];
+-	u8 edid_set;
+-	bool custom_set;
  
- /* -----------------------------------------------------------------------------
-- * Sys panel and deferred I/O
-+ * Display, panel and deferred I/O
-  */
+ 	struct clk *sys_clk;
+ } hdmi;
+@@ -162,8 +159,6 @@ static const int code_vesa[85] = {
+ 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+ 	-1, 27, 28, -1, 33};
  
- static void lcdc_sys_write_index(void *handle, unsigned long data)
-@@ -334,6 +334,27 @@ static void sh_mobile_lcdc_deferred_io_touch(struct fb_info *info)
- 		schedule_delayed_work(&info->deferred_work, fbdefio->delay);
- }
- 
-+static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
-+{
-+	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
-+
-+	/* HDMI must be enabled before LCDC configuration */
-+	if (board_cfg->display_on && try_module_get(board_cfg->owner)) {
-+		board_cfg->display_on(board_cfg->board_data, ch->info);
-+		module_put(board_cfg->owner);
-+	}
-+}
-+
-+static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
-+{
-+	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
-+
-+	if (board_cfg->display_off && try_module_get(board_cfg->owner)) {
-+		board_cfg->display_off(board_cfg->board_data);
-+		module_put(board_cfg->owner);
-+	}
-+}
-+
- /* -----------------------------------------------------------------------------
-  * Format helpers
-  */
-@@ -642,7 +663,6 @@ static void __sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- {
- 	struct sh_mobile_meram_info *mdev = priv->meram_dev;
--	struct sh_mobile_lcdc_board_cfg	*board_cfg;
- 	struct sh_mobile_lcdc_chan *ch;
- 	unsigned long tmp;
- 	int ret;
-@@ -659,8 +679,9 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 	lcdc_wait_bit(priv, _LDCNT2R, LDCNT2R_BR, 0);
- 
- 	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
--		ch = &priv->ch[k];
-+		struct sh_mobile_lcdc_board_cfg	*board_cfg;
- 
-+		ch = &priv->ch[k];
- 		if (!ch->enabled)
- 			continue;
- 
-@@ -748,11 +769,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 			fb_deferred_io_init(ch->info);
- 		}
- 
--		board_cfg = &ch->cfg.board_cfg;
--		if (board_cfg->display_on && try_module_get(board_cfg->owner)) {
--			board_cfg->display_on(board_cfg->board_data, ch->info);
--			module_put(board_cfg->owner);
--		}
-+		sh_mobile_lcdc_display_on(ch);
- 
- 		if (ch->bl) {
- 			ch->bl->props.power = FB_BLANK_UNBLANK;
-@@ -766,7 +783,6 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- static void sh_mobile_lcdc_stop(struct sh_mobile_lcdc_priv *priv)
- {
- 	struct sh_mobile_lcdc_chan *ch;
--	struct sh_mobile_lcdc_board_cfg	*board_cfg;
- 	int k;
- 
- 	/* clean up deferred io and ask board code to disable panel */
-@@ -793,11 +809,7 @@ static void sh_mobile_lcdc_stop(struct sh_mobile_lcdc_priv *priv)
- 			backlight_update_status(ch->bl);
- 		}
- 
--		board_cfg = &ch->cfg.board_cfg;
--		if (board_cfg->display_off && try_module_get(board_cfg->owner)) {
--			board_cfg->display_off(board_cfg->board_data);
--			module_put(board_cfg->owner);
--		}
-+		sh_mobile_lcdc_display_off(ch);
- 
- 		/* disable the meram */
- 		if (ch->meram_enabled) {
-@@ -1418,7 +1430,6 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
- 	struct fb_event *event = data;
- 	struct fb_info *info = event->info;
- 	struct sh_mobile_lcdc_chan *ch = info->par;
--	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
- 
- 	if (&ch->lcdc->notifier != nb)
- 		return NOTIFY_DONE;
-@@ -1428,10 +1439,7 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
- 
- 	switch(action) {
- 	case FB_EVENT_SUSPEND:
--		if (board_cfg->display_off && try_module_get(board_cfg->owner)) {
--			board_cfg->display_off(board_cfg->board_data);
--			module_put(board_cfg->owner);
--		}
-+		sh_mobile_lcdc_display_off(ch);
- 		sh_mobile_lcdc_stop(ch->lcdc);
- 		break;
- 	case FB_EVENT_RESUME:
-@@ -1439,12 +1447,7 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
- 		sh_mobile_fb_reconfig(info);
- 		mutex_unlock(&ch->open_lock);
- 
--		/* HDMI must be enabled before LCDC configuration */
--		if (board_cfg->display_on && try_module_get(board_cfg->owner)) {
--			board_cfg->display_on(board_cfg->board_data, info);
--			module_put(board_cfg->owner);
--		}
+-static const u8 edid_header[8] = {0x0, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x0};
 -
-+		sh_mobile_lcdc_display_on(ch);
- 		sh_mobile_lcdc_start(ch->lcdc);
- 	}
+ static int hdmi_runtime_get(void)
+ {
+ 	int r;
+@@ -193,21 +188,6 @@ int hdmi_init_display(struct omap_dss_device *dssdev)
+ 	return 0;
+ }
  
+-static void copy_hdmi_to_dss_timings(
+-		const struct hdmi_video_timings *hdmi_timings,
+-		struct omap_video_timings *timings)
+-{
+-	timings->x_res = hdmi_timings->x_res;
+-	timings->y_res = hdmi_timings->y_res;
+-	timings->pixel_clock = hdmi_timings->pixel_clock;
+-	timings->hbp = hdmi_timings->hbp;
+-	timings->hfp = hdmi_timings->hfp;
+-	timings->hsw = hdmi_timings->hsw;
+-	timings->vbp = hdmi_timings->vbp;
+-	timings->vfp = hdmi_timings->vfp;
+-	timings->vsw = hdmi_timings->vsw;
+-}
+-
+ static int get_timings_index(void)
+ {
+ 	int code;
+@@ -270,130 +250,6 @@ static struct hdmi_cm hdmi_get_code(struct omap_video_timings *timing)
+ 	return cm;
+ }
+ 
+-static void get_horz_vert_timing_info(int current_descriptor_addrs, u8 *edid ,
+-		struct omap_video_timings *timings)
+-{
+-	/* X and Y resolution */
+-	timings->x_res = (((edid[current_descriptor_addrs + 4] & 0xF0) << 4) |
+-			 edid[current_descriptor_addrs + 2]);
+-	timings->y_res = (((edid[current_descriptor_addrs + 7] & 0xF0) << 4) |
+-			 edid[current_descriptor_addrs + 5]);
+-
+-	timings->pixel_clock = ((edid[current_descriptor_addrs + 1] << 8) |
+-				edid[current_descriptor_addrs]);
+-
+-	timings->pixel_clock = 10 * timings->pixel_clock;
+-
+-	/* HORIZONTAL FRONT PORCH */
+-	timings->hfp = edid[current_descriptor_addrs + 8] |
+-			((edid[current_descriptor_addrs + 11] & 0xc0) << 2);
+-	/* HORIZONTAL SYNC WIDTH */
+-	timings->hsw = edid[current_descriptor_addrs + 9] |
+-			((edid[current_descriptor_addrs + 11] & 0x30) << 4);
+-	/* HORIZONTAL BACK PORCH */
+-	timings->hbp = (((edid[current_descriptor_addrs + 4] & 0x0F) << 8) |
+-			edid[current_descriptor_addrs + 3]) -
+-			(timings->hfp + timings->hsw);
+-	/* VERTICAL FRONT PORCH */
+-	timings->vfp = ((edid[current_descriptor_addrs + 10] & 0xF0) >> 4) |
+-			((edid[current_descriptor_addrs + 11] & 0x0f) << 2);
+-	/* VERTICAL SYNC WIDTH */
+-	timings->vsw = (edid[current_descriptor_addrs + 10] & 0x0F) |
+-			((edid[current_descriptor_addrs + 11] & 0x03) << 4);
+-	/* VERTICAL BACK PORCH */
+-	timings->vbp = (((edid[current_descriptor_addrs + 7] & 0x0F) << 8) |
+-			edid[current_descriptor_addrs + 6]) -
+-			(timings->vfp + timings->vsw);
+-
+-}
+-
+-/* Description : This function gets the resolution information from EDID */
+-static void get_edid_timing_data(u8 *edid)
+-{
+-	u8 count;
+-	u16 current_descriptor_addrs;
+-	struct hdmi_cm cm;
+-	struct omap_video_timings edid_timings;
+-
+-	/* search block 0, there are 4 DTDs arranged in priority order */
+-	for (count = 0; count < EDID_SIZE_BLOCK0_TIMING_DESCRIPTOR; count++) {
+-		current_descriptor_addrs -			EDID_DESCRIPTOR_BLOCK0_ADDRESS +
+-			count * EDID_TIMING_DESCRIPTOR_SIZE;
+-		get_horz_vert_timing_info(current_descriptor_addrs,
+-				edid, &edid_timings);
+-		cm = hdmi_get_code(&edid_timings);
+-		DSSDBG("Block0[%d] value matches code = %d , mode = %d\n",
+-			count, cm.code, cm.mode);
+-		if (cm.code = -1) {
+-			continue;
+-		} else {
+-			hdmi.code = cm.code;
+-			hdmi.mode = cm.mode;
+-			DSSDBG("code = %d , mode = %d\n",
+-				hdmi.code, hdmi.mode);
+-			return;
+-		}
+-	}
+-	if (edid[0x7e] != 0x00) {
+-		for (count = 0; count < EDID_SIZE_BLOCK1_TIMING_DESCRIPTOR;
+-			count++) {
+-			current_descriptor_addrs -			EDID_DESCRIPTOR_BLOCK1_ADDRESS +
+-			count * EDID_TIMING_DESCRIPTOR_SIZE;
+-			get_horz_vert_timing_info(current_descriptor_addrs,
+-						edid, &edid_timings);
+-			cm = hdmi_get_code(&edid_timings);
+-			DSSDBG("Block1[%d] value matches code = %d, mode = %d",
+-				count, cm.code, cm.mode);
+-			if (cm.code = -1) {
+-				continue;
+-			} else {
+-				hdmi.code = cm.code;
+-				hdmi.mode = cm.mode;
+-				DSSDBG("code = %d , mode = %d\n",
+-					hdmi.code, hdmi.mode);
+-				return;
+-			}
+-		}
+-	}
+-
+-	DSSINFO("no valid timing found , falling back to VGA\n");
+-	hdmi.code = 4; /* setting default value of 640 480 VGA */
+-	hdmi.mode = HDMI_DVI;
+-}
+-
+-static void hdmi_read_edid(struct omap_video_timings *dp)
+-{
+-	int ret = 0, code;
+-
+-	memset(hdmi.edid, 0, HDMI_EDID_MAX_LENGTH);
+-
+-	if (!hdmi.edid_set)
+-		ret = hdmi.ip_data.ops->read_edid(&hdmi.ip_data, hdmi.edid,
+-						HDMI_EDID_MAX_LENGTH);
+-	if (ret > 0) {
+-		if (!memcmp(hdmi.edid, edid_header, sizeof(edid_header))) {
+-			/* search for timings of default resolution */
+-			get_edid_timing_data(hdmi.edid);
+-			hdmi.edid_set = true;
+-		}
+-	} else {
+-		DSSWARN("failed to read E-EDID\n");
+-	}
+-
+-	if (!hdmi.edid_set) {
+-		DSSINFO("fallback to VGA\n");
+-		hdmi.code = 4; /* setting default value of 640 480 VGA */
+-		hdmi.mode = HDMI_DVI;
+-	}
+-
+-	code = get_timings_index();
+-
+-	copy_hdmi_to_dss_timings(&cea_vesa_timings[code].timings, dp);
+-
+-}
+-
+ static void update_hdmi_timings(struct hdmi_config *cfg,
+ 		struct omap_video_timings *timings, int code)
+ {
+@@ -479,13 +335,7 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
+ 		dssdev->panel.timings.x_res,
+ 		dssdev->panel.timings.y_res);
+ 
+-	if (!hdmi.custom_set) {
+-		DSSDBG("Read EDID as no EDID is not set on poweron\n");
+-		hdmi_read_edid(p);
+-	}
+ 	code = get_timings_index();
+-	copy_hdmi_to_dss_timings(&cea_vesa_timings[code].timings,
+-			&dssdev->panel.timings);
+ 	update_hdmi_timings(&hdmi.ip_data.cfg, p, code);
+ 
+ 	phy = p->pixel_clock;
+@@ -547,8 +397,6 @@ static void hdmi_power_off(struct omap_dss_device *dssdev)
+ 	hdmi.ip_data.ops->phy_disable(&hdmi.ip_data);
+ 	hdmi.ip_data.ops->pll_disable(&hdmi.ip_data);
+ 	hdmi_runtime_put();
+-
+-	hdmi.edid_set = 0;
+ }
+ 
+ int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
+@@ -570,8 +418,6 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev)
+ {
+ 	struct hdmi_cm cm;
+ 
+-	hdmi.custom_set = 1;
+-
+ 	cm = hdmi_get_code(&dssdev->panel.timings);
+ 	hdmi.code = cm.code;
+ 	hdmi.mode = cm.mode;
+diff --git a/drivers/video/omap2/dss/hdmi_panel.c b/drivers/video/omap2/dss/hdmi_panel.c
+index 624f170..79a3a5a 100644
+--- a/drivers/video/omap2/dss/hdmi_panel.c
++++ b/drivers/video/omap2/dss/hdmi_panel.c
+@@ -40,13 +40,7 @@ static int hdmi_panel_probe(struct omap_dss_device *dssdev)
+ 	dssdev->panel.config = OMAP_DSS_LCD_TFT |
+ 			OMAP_DSS_LCD_IVS | OMAP_DSS_LCD_IHS;
+ 
+-	/*
+-	 * Initialize the timings to 640 * 480
+-	 * This is only for framebuffer update not for TV timing setting
+-	 * Setting TV timing will be done only on enable
+-	 */
+-	dssdev->panel.timings.x_res = 640;
+-	dssdev->panel.timings.y_res = 480;
++	dssdev->panel.timings = (struct omap_video_timings){640, 480, 25175, 96, 16, 48, 2 , 11, 31};
+ 
+ 	DSSDBG("hdmi_panel_probe x_res= %d y_res = %d\n",
+ 		dssdev->panel.timings.x_res,
 -- 
-1.7.3.4
+1.7.4.1
 

@@ -1,97 +1,61 @@
-From: "K, Mythri P" <mythripk@ti.com>
-Date: Wed, 14 Sep 2011 08:48:32 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 14 Sep 2011 08:57:10 +0000
 Subject: Re: [PATCHv2 09/15] OMAP: DSS2: HDMI: implement detect()
-Message-Id: <CAP5A+B-GWN+oJhcVbB24swfmH=-dE4sViNqF+hX6=D1owzOLzA@mail.gmail.com>
+Message-Id: <1315990630.2172.51.camel@deskari>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
- <1315818818-18733-10-git-send-email-tomi.valkeinen@ti.com>
- <CAP5A+B9_Jsg23oR49q2bkBGVLDWHBiBZj_=_G1SRf7ftrMt_iw@mail.gmail.com>
- <CAF6AEGuhjZgH9zFuigjfvHGM9r7jSLY2TTCD0LjZbT+Ubrb12A@mail.gmail.com>
- <CAP5A+B87w6Hir-0+SNnckQaDcO=ixgq-U8pFo2U42dwQgtUrZQ@mail.gmail.com>
- <1315984468.2172.10.camel@deskari> <CAP5A+B9uDj4kCowbEKgX1J74zWvBarp64Cn4YVom-a8BYtab4w@mail.gmail.com>
- <1315989282.2172.36.camel@deskari>
-In-Reply-To: <1315989282.2172.36.camel@deskari>
+	 <1315818818-18733-10-git-send-email-tomi.valkeinen@ti.com>
+	 <CAP5A+B9_Jsg23oR49q2bkBGVLDWHBiBZj_=_G1SRf7ftrMt_iw@mail.gmail.com>
+	 <CAF6AEGuhjZgH9zFuigjfvHGM9r7jSLY2TTCD0LjZbT+Ubrb12A@mail.gmail.com>
+	 <CAP5A+B87w6Hir-0+SNnckQaDcO=ixgq-U8pFo2U42dwQgtUrZQ@mail.gmail.com>
+	 <1315984468.2172.10.camel@deskari>
+	 <CAP5A+B9uDj4kCowbEKgX1J74zWvBarp64Cn4YVom-a8BYtab4w@mail.gmail.com>
+	 <1315989282.2172.36.camel@deskari>
+	 <CAP5A+B-GWN+oJhcVbB24swfmH=-dE4sViNqF+hX6=D1owzOLzA@mail.gmail.com>
+In-Reply-To: <CAP5A+B-GWN+oJhcVbB24swfmH=-dE4sViNqF+hX6=D1owzOLzA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "K, Mythri P" <mythripk@ti.com>
 Cc: Rob Clark <robdclark@gmail.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
 
-On Wed, Sep 14, 2011 at 2:04 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wro=
-te:
-> On Wed, 2011-09-14 at 13:57 +0530, K, Mythri P wrote:
->> On Wed, Sep 14, 2011 at 12:44 PM, Tomi Valkeinen <tomi.valkeinen@ti.com>=
- wrote:
->> > On Wed, 2011-09-14 at 11:04 +0530, K, Mythri P wrote:
->> >> Hi,
->> >>
->> >> On Mon, Sep 12, 2011 at 10:16 PM, Rob Clark <robdclark@gmail.com> wro=
-te:
->> >> > On Mon, Sep 12, 2011 at 8:24 AM, K, Mythri P <mythripk@ti.com> wrot=
-e:
->> >> >>> +bool ti_hdmi_4xxx_detect(struct hdmi_ip_data *ip_data)
->> >> >>> +{
->> >> >>> + =A0 =A0 =A0 int r;
->> >> >>> +
->> >> >>> + =A0 =A0 =A0 void __iomem *base =3D hdmi_core_sys_base(ip_data);
->> >> >>> +
->> >> >>> + =A0 =A0 =A0 /* HPD */
->> >> >>> + =A0 =A0 =A0 r =3D REG_GET(base, HDMI_CORE_SYS_SYS_STAT, 1, 1);
->> >> >>> +
->> >> >>> + =A0 =A0 =A0 return r =3D 1;
->> >> >>> +}
->> >> >>> +
->> >> >> For HPD the probe should also be on the core interrupt first , and=
- the
->> >> >> detect should be dynamic, ie based on the cable connect and discon=
-nect
->> >> >> event.So this approach for HPD is not really the way.
->> >> >> Also that should be based on the GPIO(63) , I am planning to push a
->> >> >> patch on that shortly.
->> >> >
->> >> >
->> >> > Fwiw, we do still need a dssdrv->detect() function from omapdrm
->> >> > driver.. =A0if there is another way to implement that function, suc=
-h as
->> >> > with a GPIO, that is great. =A0But somehow or another we need the d=
-etect
->> >> > function. =A0The implementation can always change later.
->> >> Yes we still need a detect , but the implementation would be different
->> >> , from the prior experience with the Hot-plug detection it wad found
->> >> that the interrupt based way to handle HPD was not the best ,but if
->> >> this is just to poll the status then it should be fine.
->> >
->> > I'm not sure I understood. First you say the implementation should be
->> > different, but then you say this should be fine. So is this a valid
->> > implementation for detect() or is there a better way to do it?
->> >
->> There is a better way to handle Hot-plug detection and notification..
->> But depends on what is the purpose of this function, Ideally a detect
->
-> The purpose of the detect function is to return true or false, depending
-> on whether a (preferably powered-on) monitor is connecter via a cable or
-> not. So it tells if there's a display that can be used or not.
->
->> would be the case to dynamically detect whether the cable is connected
->> on not , But all this function does is to see the state of the HPD bit
->> in core state statically.
->
-> I don't understand this one. How could this be more dynamic? The
-> function checks the HPD bit, which (based on my observation) shows the
-> status whether a display is connected or not.
-There is a GPIO which detects the +3.3V on the line and detects the
-cable connect , there is also an interrupt based way.This is ideally
-called a Hot-plug detect event according to the spec in HDMI terms.
-But what you are saying here is that it is just a poll on the state?
->
->> So I said if the purpose of this function is only to check for the HPD
->> state bit it is fine.
->
-> What does HPD bit tell us then?
+On Wed, 2011-09-14 at 14:18 +0530, K, Mythri P wrote:
+> On Wed, Sep 14, 2011 at 2:04 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+> > On Wed, 2011-09-14 at 13:57 +0530, K, Mythri P wrote:
+> >> On Wed, Sep 14, 2011 at 12:44 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
 
-HPD state bit tells whether the cable is connected and whether EDID is
-ready to be read, But this is a static check that is done in this
-function.
+<snip>
 
-Thanks and regards,
-Mythri.
+> > I don't understand this one. How could this be more dynamic? The
+> > function checks the HPD bit, which (based on my observation) shows the
+> > status whether a display is connected or not.
+> There is a GPIO which detects the +3.3V on the line and detects the
+> cable connect , there is also an interrupt based way.This is ideally
+> called a Hot-plug detect event according to the spec in HDMI terms.
+> But what you are saying here is that it is just a poll on the state?
+
+Yes, it's just for polling, but I don't quite see the difference. A
+hot-plug event notifies when the display is connected or disconnected,
+and detect() tells if a display is connected. They are all about the
+same thing.
+
+> >> So I said if the purpose of this function is only to check for the HPD
+> >> state bit it is fine.
+> >
+> > What does HPD bit tell us then?
+> 
+> HPD state bit tells whether the cable is connected and whether EDID is
+
+This sounds like a good bit to test then. So is there something wrong
+with using HPD? How does the GPIO differ from HPD bit?
+
+> ready to be read, But this is a static check that is done in this
+> function.
+
+I don't understand what you mean with "static". The bit changes
+dynamically according to the connect/disconnect state, and the bit is
+checked dynamically when detect() is called.
+
+ Tomi
+
+

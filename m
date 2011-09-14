@@ -1,7 +1,7 @@
 From: Timur Tabi <timur@freescale.com>
-Date: Wed, 14 Sep 2011 21:39:15 +0000
+Date: Wed, 14 Sep 2011 21:47:09 +0000
 Subject: Re: [REPOST][PATCH 1/2] fbdev: fix indentation in modedb.c
-Message-Id: <4E711F03.4050908@freescale.com>
+Message-Id: <4E7120DD.7040600@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1315929909-26311-1-git-send-email-timur@freescale.com>
 In-Reply-To: <1315929909-26311-1-git-send-email-timur@freescale.com>
@@ -14,15 +14,14 @@ Florian Tobias Schandinat wrote:
 > Applied this patch, although I do not like this sort of patches very much. Well,
 > I guess it's an improvement, are you doing some real work on this code?
 
-Yes, but I needed to make it sane first.  The big issue is that it initializes
-the hardware when the driver loads, not when it's open by the framebuffer layer.
+Ugh, please ignore my previous reply.  For some reason, I thought you were
+talking about my second patch.
 
-I understand the complaint against multiple changes combined into one patch, but
-all I was doing was just going through the code line-by-line and looking for
-minor problems.
-
-I do appreciate your applying the patch as-is.  I was not looking forward to
-breaking it up into multiple pieces.
+To answer your question properly: no, I'm not doing any real work on this code.
+ I noticed the bad indentation, and I decided that maybe it was worth fixing.
+Yes, it might cause some pain with diffs, but these functions have been around a
+long time and haven't been touched in while.  Also, a similar patch to mine was
+applied recently: "video: tidy up modedb formatting."
 
 -- 
 Timur Tabi

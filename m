@@ -1,48 +1,66 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Thu, 15 Sep 2011 19:28:00 +0000
+From: Alex Deucher <alexdeucher@gmail.com>
+Date: Thu, 15 Sep 2011 19:45:48 +0000
 Subject: Re: Proposal for a low-level Linux display framework
-Message-Id: <20110915202800.6320826a@lxorguk.ukuu.org.uk>
+Message-Id: <CADnq5_Neey+BOKQPnQe1ur2=izcV7YynHPkGgjz5ZuzZMr4eAQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1316088425.11294.78.camel@lappyti>
 	<yunboul7sx7.fsf@aiko.keithp.com>
 	<1316100594.23214.65.camel@deskari>
-	<yun8vpp7qk7.fsf@aiko.keithp.com> <4E72320B.6020000@gmx.de>
+	<yun8vpp7qk7.fsf@aiko.keithp.com>
+	<4E72320B.6020000@gmx.de>
 	<CADnq5_NnzLtJmSzOgyppnBtv96DRTJ71u6ZSrs56KJ-F5CC-mw@mail.gmail.com>
 	<4E724659.5080709@gmx.de>
 	<20110915195804.4e6d965b@lxorguk.ukuu.org.uk>
 	<4E724F93.1050203@gmx.de>
-In-Reply-To: <4E724F93.1050203-Mmb7MZpHnFY@public.gmane.org>
+In-Reply-To: <4E724F93.1050203@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>
-Cc: Keith Packard <keithp-aN4HjG94KOLQT0dZR+AlfA@public.gmane.org>, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, Alex Deucher <alexdeucher-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Keith Packard <keithp@keithp.com>, linux-fbdev@vger.kernel.org, linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>, "Clark, Rob" <rob@ti.com>
 
+On Thu, Sep 15, 2011 at 3:18 PM, Florian Tobias Schandinat
+<FlorianSchandinat@gmx.de> wrote:
+> On 09/15/2011 06:58 PM, Alan Cox wrote:
+>>> Well, I rather think that the fb API is more user centric to allow every program
+>>> to use it directly in contrast to the KMS/DRM API which aims to support every
+>>> feature the hardware has. For this the fb API should not change much, but I
+>>> understand some additions were needed for some special users, probably limited
+>>> to X and wayland.
+>>
+>> Wayland needs vblank frame buffer switching and the like. Likewise given
+>> you want to composite buffers really any serious accelerated device ends
+>> up needing a full memory manager and that ends up needing a buffer
+>> manager. Wayland needs clients to be doing their own rendering into
+>> objects which means authorisation and management of the render engine
+>> which ends up looking much like DRM.
+>
 > As you have DRM now and as I'm not interested in wayland I won't discuss this,
 > but I guess it might be a good start for Geert's question what would be needed
 > to use it on dumb framebuffers.
-
-GMA500 is basically a 2D or dumb frame buffer setup but with a lot of
-rather complicated output and memory management required due to the
-hardware. With the latest changes to GEM (private objects) it's basically
-trivial to use the frame buffer management interfaces.
-
+>
+>>> One of my biggest problems with KMS is that it has (naturally) a lot more
+>>> complexity than the fb API which leads to instability. Basically it's very
+>>
+>> It shouldn't do - and a sample of one (your machine) is not a
+>> statistically valid set. Fb is pretty much ununsable in contrast on my
+>> main box, but that's not a statistically valid sample either.
+>>
+>> I'm not that convinced by the complexity either. For a simple video card
+>> setup such as those that the fb layer can kind of cope with (ie linear
+>> buffer, simple mode changes, no client rendering, no vblank flipping,
+>> limited mode management, no serious multi-head) a DRM driver is also
+>> pretty tiny and simple.
+>
 > Yes, if you limit DRM to the functionality of the fb API I guess you could reach
 > the same stability level. But where can I do this? Where is a option to forbid
 > all acceleration or at least limit to the acceleration that can be done without
 > any risk?
 
-A driver can provide such module options as it wants.
+Right now most of the KMS DRM drivers do not support accelerated fb,
+so as long as you don't run accelerated X or a 3D app, it should be
+just as stable as an fb driver.  You may run into modesetting fail in
+certain cases due to wonky hardware or driver bugs, but you will hit
+that with an fb driver as well.
 
-> That's a really difficult question. Determining the users is difficult and there
-> are people that use their hardware very long, for example we are about to get a
-> new driver for i740. For the framebuffer infrastructure I guess you have to at
-> least wait for my death.
-
-I doubt it'll be that long - but you are right it will take time and
-there isn't really any need to push or force it. These things take care
-of themselves and in time nobody will care about the old fb stuff, either
-because DRM covers it all or equally possibly because it doesn't support
-3D holographic projection 8)
-
-Alan
+Alex

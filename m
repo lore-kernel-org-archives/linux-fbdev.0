@@ -1,132 +1,96 @@
-From: Rob Clark <rob@ti.com>
-Date: Thu, 15 Sep 2011 18:32:49 +0000
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Thu, 15 Sep 2011 18:39:21 +0000
 Subject: Re: Proposal for a low-level Linux display framework
-Message-Id: <CAF6AEGtPouKEBgrgF_jP+idOtPUJ4iO7wwOADbJ-k4h2mWRVXw@mail.gmail.com>
+Message-Id: <4E724659.5080709@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1316088425.11294.78.camel@lappyti>
-	<yunboul7sx7.fsf@aiko.keithp.com>
-	<1316100594.23214.65.camel@deskari>
-	<yun8vpp7qk7.fsf@aiko.keithp.com>
-	<1316107275.23214.99.camel@deskari>
-In-Reply-To: <1316107275.23214.99.camel@deskari>
+References: <1316088425.11294.78.camel@lappyti>	<yunboul7sx7.fsf@aiko.keithp.com>	<1316100594.23214.65.camel@deskari>	<yun8vpp7qk7.fsf@aiko.keithp.com>	<4E72320B.6020000@gmx.de> <CADnq5_NnzLtJmSzOgyppnBtv96DRTJ71u6ZSrs56KJ-F5CC-mw@mail.gmail.com>
+In-Reply-To: <CADnq5_NnzLtJmSzOgyppnBtv96DRTJ71u6ZSrs56KJ-F5CC-mw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linaro-dev@lists.linaro.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Archit Taneja <archit@ti.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Alex Deucher <alexdeucher@gmail.com>
+Cc: Keith Packard <keithp@keithp.com>, linux-fbdev@vger.kernel.org, linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>, "Clark, Rob" <rob@ti.com>
 
-On Thu, Sep 15, 2011 at 12:21 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wr=
-ote:
-> On Thu, 2011-09-15 at 10:50 -0500, Keith Packard wrote:
->> On Thu, 15 Sep 2011 18:29:54 +0300, Tomi Valkeinen <tomi.valkeinen@ti.co=
-m> wrote:
+On 09/15/2011 05:52 PM, Alex Deucher wrote:
+> On Thu, Sep 15, 2011 at 1:12 PM, Florian Tobias Schandinat
+> <FlorianSchandinat@gmx.de> wrote:
+>> On 09/15/2011 03:50 PM, Keith Packard wrote:
+>>> On Thu, 15 Sep 2011 18:29:54 +0300, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+>>>
+>>>> 1) It's part of DRM, so it doesn't help fb or v4l2 drivers. Except if
+>>>> the plan is to make DRM the core Linux display framework, upon which
+>>>> everything else is built, and fb and v4l2 are changed to use DRM.
+>>>
+>>> I'd like to think we could make DRM the underlying display framework;
+>>> it already exposes an fb interface, and with overlays, a bit more of the
+>>> v4l2 stuff is done as well. Certainly eliminating three copies of mode
+>>> setting infrastructure would be nice...
 >>
->> > 1) It's part of DRM, so it doesn't help fb or v4l2 drivers. Except if
->> > the plan is to make DRM the core Linux display framework, upon which
->> > everything else is built, and fb and v4l2 are changed to use DRM.
->>
->> I'd like to think we could make DRM the underlying display framework;
->> it already exposes an fb interface, and with overlays, a bit more of the
->> v4l2 stuff is done as well. Certainly eliminating three copies of mode
->> setting infrastructure would be nice...
->
-> Ok, sounds good to me. We (as in OMAP display people) are already
-> planning to take DRM into use, so no problem there.
->
->> > But even if it was done like that, I see that it's combining two
->> > separate things: 1) the lower level HW control, and 2) the upper level
->> > buffer management, policies and userspace interfaces.
->>
->> Those are split between the DRM layer and the underlying device driver,
->> which provides both kernel (via fb) and user space interfaces.
->
-> I'm not so familiar with DRM, but with device driver you mean a driver
-> for the the hardware which handles display output (gfx cards or whatever
-> it is on that platform)?
+>> Interesting that this comes from the people that pushed the latest mode setting
+>> code into the kernel. But I don't think that this will happen, the exposed user
+>> interfaces will be around for decades and the infrastructure code could be
+>> shared, in theory.
+>> For fb and V4L2 I think we'll develop some level of interoperability, share
+>> concepts and maybe even some code. The FOURCC pixel formats and overlays are
+>> such examples. As Laurent is really interested in it I think we can get some
+>> nice progress here.
+>> For fb and DRM the situation is entirely different. The last proposal I remember
+>> ended in the DRM people stating that only their implementation is acceptable as
+>> is and we could use it. Such attitude is not helpful and as I don't see any
+>> serious intention of the DRM guys to cooperate I think those subsystems are more
+>> likely to diverge. At least I'll never accept any change to the fb
+>> infrastructure that requires DRM.
+> 
+> Not exactly.  This point was that the drm modesetting and EDID
+> handling was derived from X which has had 20+ years of of quirks and
+> things added to it to deal with tons of wonky monitors and such.  That
+> information should be preserved.  As mode structs and EDID handling
+> are pretty self contained, why not use the DRM variants of that code
+> rather than writing a new version?
 
-I think he is more referring to the DRM core and the individual device driv=
-ers..
+Well, I'm not against sharing the code and not against taking DRM's current
+implementation as a base but the steps required to make it generally acceptable
+would be to split it of, probably as a standalone module and strip all DRM
+specific things off. Than all things that require EDID can use it, DRM can add
+DRM-specific things on top and fb can add fb-specific things.
 
-We are (AFAIK) unique in having a two layer driver, where the DRM part
-is more of a wrapper (for the KMS parts)... but I see that as more of
-a transition thing.. eventually we should be able to merge it all into
-the DRM layer.
+> While the DRM has historically targeted 3D acceleration, that is not a
+> requirement to use the DRM KMS modesetting API.  The current fb API
+> has no concept of display controllers or connectors or overlays, etc.
+> To match it to modern hardware, it needs a major overhaul.  Why create
+> a new modern fb interface that's largely the same as DRM KMS?  What if
+> we just consider the KMS API as the new fb API?  If there are any
+> inadequacies in the DRM KMS API we would be happy to work out any
+> changes.
 
-> If so, it sounds good. That quite well matches what omapdss driver does
-> currently for us. But we still have semi-complex omapdrm between omapdss
-> and the standard drm layer.
->
-> Rob, would you say omapdrm is more of a DRM wrapper for omapdss than a
-> real separate entity? If so, then we could possibly in the future (when
-> nobody else uses omapdss) change omapdss to support DRM natively. (or
-> make omapdrm support omap HW natively, which ever way =3D).
+Well, I rather think that the fb API is more user centric to allow every program
+to use it directly in contrast to the KMS/DRM API which aims to support every
+feature the hardware has. For this the fb API should not change much, but I
+understand some additions were needed for some special users, probably limited
+to X and wayland.
+One of my biggest problems with KMS is that it has (naturally) a lot more
+complexity than the fb API which leads to instability. Basically it's very
+difficult to implement a framebuffer in a way that it crashes your machine
+during operation which is quite a contrast to my KMS/DRM experience on my toy
+(on my work machines I use framebuffer only). And I really hate it when I have
+to type my passwords again just because the KMS/DRM thing allowed a program to
+crash my machine. Yes, those are driver bugs but the API encourages them and I
+did not yet find the feature/config option DOES_NOT_CRASH or SLOW_BUT_STABLE.
+And as I said already, I think the fb API is a lot better for direct interaction
+with userspace programs and certainly has more direct users at the moment.
 
-Yeah, I think eventually it would make sense to merge all into one.
-Although I'm not sure about how best to handle various different
-custom DSI panels..
+> Please don't claim that the DRM developers do not want to cooperate.
+> I realize that people have strong opinions about existing APIs, put
+> there has been just as much, if not more obstinacy from the v4l and fb
+> people.
 
-BR,
--R
+Well, I think it's too late to really fix this thing. We now have 3 APIs in the
+kernel that have to be kept. Probably the best we can do now is figure out how
+we can reduce code duplication and do extensions to those APIs in a way that
+they are compatible with each other or completely independent and can be used
+across the APIs.
 
 
->> > 2) It's missing the panel driver part. This is rather important on
->> > embedded systems, as the panels often are not "dummy" panels, but they
->> > need things like custom initialization, sending commands to adjust
->> > backlight, etc.
->>
->> We integrate the panel (and other video output) drivers into the device
->> drivers. With desktop chips, they're not easily separable. None of the
->> desktop output drivers are simple; things like DisplayPort require link
->> training, and everyone needs EDID. We share some of that code in the DRM
->> layer today, and it would be nice to share even more.
->
-> I don't think we speak of similar panel drivers. I think there are two
-> different drivers here:
->
-> 1) output drivers, handles the output from the SoC / gfx card. For
-> example DVI, DisplayPort, MIPI DPI/DBI/DSI.
->
-> 2) panel drivers, handles panel specific things. Each panel may support
-> custom commands and features, for which we need a dedicated driver. And
-> this driver is not platform specific, but should work with any platform
-> which has the output used with the panel.
->
-> As an example, DSI command mode displays can be quite complex:
->
-> DSI bus is a half-duplex serial bus, and while it's designed for
-> displays you could use it easily for any communication between the SoC
-> and the peripheral.
->
-> The panel could have a feature like content adaptive backlight control,
-> and this would be configured via the DSI bus, sending a particular
-> command to the panel (possibly by first reading something from the
-> panel). The panel driver would accomplish this more or less the same way
-> one uses, say, i2c, so it would use the platform's DSI support to send
-> and receive packets.
->
-> Or a more complex scenario (but still a realistic scenario, been there,
-> done that) is sending the image to the panel in multiple parts, and
-> between each part sending configuration commands to the panel. (and
-> still getting it done in time so we avoid tearing).
->
-> And to complicate things more, there are DSI bus features like LP mode
-> (low power, basically low speed mode) and HS mode (high speed), virtual
-> channel IDs, and whatnot, which each panel may need to be used in
-> particular manner. Some panels may require initial configuration done in
-> LP, or configuration commands sent to a certain virtual channel ID.
->
-> The point is that we cannot have standard "MIPI DSI command mode panel
-> driver" which would work for all DSI cmd mode panels, but we need (in
-> the worst case) separate driver for each panel.
->
-> The same goes to lesser extent for other panels also. Some are
-> configured via i2c or spi.
->
-> =A0Tomi
->
->
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> http://lists.freedesktop.org/mailman/listinfo/dri-devel
->
+Best regards,
+
+Florian Tobias Schandinat

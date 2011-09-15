@@ -1,44 +1,33 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 19 Sep 2011 06:22:51 +0000
-Subject: linux-next: manual merge of the fbdev tree with the mips tree
-Message-Id: <20110919162251.aa920a691f34b76d36acd61b@canb.auug.org.au>
+From: Timur Tabi <timur@freescale.com>
+Date: Thu, 15 Sep 2011 21:44:55 +0000
+Subject: [PATCH 10/13] drivers/video: fsl-diu-fb: fix memory leak on error
+Message-Id: <1316123098-30967-11-git-send-email-timur@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Manuel Lauss <manuel.lauss@googlemail.com>, Ralf Baechle <ralf@linux-mips.org>, Paul Mundt <lethal@linux-sh.org>
+To: linux-fbdev@vger.kernel.org
 
-Hi all,
+We were forgetting to unmap the video memory if fsl_diu_check_var() fails.
 
-Today's linux-next merge of the fbdev tree got a conflict in
-drivers/video/Kconfig between commit 9d7dec27ace1 ("MIPS: Alchemy: remove
-all CONFIG_SOC_AU1??? defines") from the mips tree and commit
-4ee584615102 ("au1200fb: switch to FB_SYS helpers") from the fbdev tree.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ drivers/video/fsl-diu-fb.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Just context changes. I fixed it up (see below) and can carry the fix as
-necessary.
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 3776949..c66f6ed 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -1200,6 +1200,7 @@ static int __devinit install_fb(struct fb_info *info)
+ 
+ 	if (fsl_diu_check_var(&info->var, info)) {
+ 		dev_err(info->dev, "fsl_diu_check_var failed\n");
++		unmap_video_memory(info);
+ 		fb_dealloc_cmap(&info->cmap);
+ 		return -EINVAL;
+ 	}
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+1.7.3.4
 
-diff --cc drivers/video/Kconfig
-index 55a7df4,8165c55..0000000
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@@ -1755,10 -1764,11 +1764,11 @@@ config FB_AU110
-  
-  config FB_AU1200
-  	bool "Au1200 LCD Driver"
- -	depends on (FB = y) && MIPS && SOC_AU1200
- +	depends on (FB = y) && MIPS_ALCHEMY
-- 	select FB_CFB_FILLRECT
-- 	select FB_CFB_COPYAREA
-- 	select FB_CFB_IMAGEBLIT
-+ 	select FB_SYS_FILLRECT
-+ 	select FB_SYS_COPYAREA
-+ 	select FB_SYS_IMAGEBLIT
-+ 	select FB_SYS_FOPS
-  	help
-  	  This is the framebuffer driver for the AMD Au1200 SOC.  It can drive
-  	  various panels and CRTs by passing in kernel cmd line option
+

@@ -1,58 +1,50 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 20 Sep 2011 19:21:28 +0000
-Subject: [PATCH v2 2/4] fbdev: sh_mobile_meram: Validate ICB configuration outside mutex
-Message-Id: <1316546490-4639-3-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Thu, 15 Sep 2011 21:44:56 +0000
+Subject: [PATCH 11/13] drivers/video: fsl-diu-fb: use a normal for-loop to uninstall framebuffers
+Message-Id: <1316123098-30967-12-git-send-email-timur@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Validate as much of the requested ICB configuration as possible outside
-of the mutex-protected region when registering ICBs.
+Uninstalling the framebuffers in reverse order is unnecessary and makes
+the for-loop awkward.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
- drivers/video/sh_mobile_meram.c |   18 ++++++++----------
- 1 files changed, 8 insertions(+), 10 deletions(-)
+ drivers/video/fsl-diu-fb.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
-index 569888c..f7e77f6 100644
---- a/drivers/video/sh_mobile_meram.c
-+++ b/drivers/video/sh_mobile_meram.c
-@@ -413,24 +413,22 @@ static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
- 		xres, yres, (!pixelformat) ? "yuv" : "rgb",
- 		base_addr_y, base_addr_c);
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index c66f6ed..5137fbb 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -1543,9 +1543,9 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 	return 0;
  
--	mutex_lock(&priv->lock);
--
- 	/* we can't handle wider than 8192px */
- 	if (xres > 8192) {
- 		dev_err(&pdev->dev, "width exceeding the limit (> 8192).");
--		error = -EINVAL;
--		goto err;
--	}
--
--	if (priv->used_meram_cache_regions + 2 > SH_MOBILE_MERAM_ICB_NUM) {
--		dev_err(&pdev->dev, "no more ICB available.");
--		error = -EINVAL;
--		goto err;
-+		return -EINVAL;
- 	}
- 
- 	/* do we have at least one ICB config? */
- 	if (cfg->icb[0].marker_icb < 0 || cfg->icb[0].cache_icb < 0) {
- 		dev_err(&pdev->dev, "at least one ICB is required.");
-+		return -EINVAL;
-+	}
+ error:
+-	for (i = ARRAY_SIZE(machine_data->fsl_diu_info);
+-		i > 0; i--)
+-		uninstall_fb(machine_data->fsl_diu_info[i - 1]);
++	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++)
++		uninstall_fb(machine_data->fsl_diu_info[i]);
 +
-+	mutex_lock(&priv->lock);
-+
-+	if (priv->used_meram_cache_regions + 2 > SH_MOBILE_MERAM_ICB_NUM) {
-+		dev_err(&pdev->dev, "no more ICB available.");
- 		error = -EINVAL;
- 		goto err;
- 	}
+ 	if (pool.ad.vaddr)
+ 		free_buf(&pdev->dev, &pool.ad,
+ 			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
+@@ -1575,8 +1575,8 @@ static int fsl_diu_remove(struct platform_device *pdev)
+ 	machine_data = dev_get_drvdata(&pdev->dev);
+ 	disable_lcdc(machine_data->fsl_diu_info[0]);
+ 	free_irq_local(machine_data->irq);
+-	for (i = ARRAY_SIZE(machine_data->fsl_diu_info); i > 0; i--)
+-		uninstall_fb(machine_data->fsl_diu_info[i - 1]);
++	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++)
++		uninstall_fb(machine_data->fsl_diu_info[i]);
+ 	if (pool.ad.vaddr)
+ 		free_buf(&pdev->dev, &pool.ad,
+ 			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
 -- 
 1.7.3.4
+
 

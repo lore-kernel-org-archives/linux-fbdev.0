@@ -1,81 +1,29 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Sun, 18 Sep 2011 20:39:27 +0000
-Subject: Re: [PATCH 0/2] video: s3c-fb: Add window positioning support
-Message-Id: <201109182239.33124.laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 15 Sep 2011 07:47:00 +0000
+Subject: How to use backlight device with fb device
+Message-Id: <1316072820.1880.51.camel@deskari>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314301917-9938-1-git-send-email-ajaykumar.rs@samsung.com>
-	<201109071731.02293.laurent.pinchart@ideasonboard.com>
-	<4E7646B5.6000000@gmx.de>
-In-Reply-To: <4E7646B5.6000000@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Hi Florian,
+Hi,
 
-On Sunday 18 September 2011 21:29:57 Florian Tobias Schandinat wrote:
-> On 09/07/2011 03:31 PM, Laurent Pinchart wrote:
-> > On Thursday 01 September 2011 18:45:18 Florian Tobias Schandinat wrote:
-> >> On 08/25/2011 07:51 PM, Ajay Kumar wrote:
-> >>> Just as a note, there are many drivers like mx3fb.c, au1200fb.c and
-> >>> OMAP seem to be doing window/plane positioning in their driver code.
-> >>> Is it possible to have this window positioning support at a common
-> >>> place?
-> >> 
-> >> Good point. Congratulations for figuring out that I like to standardize
-> >> things. But I think your suggestion is far from being enough to be
-> >> useful for userspace (which is our goal so that applications can be
-> >> reused along drivers and don't need to know about individual drivers).
-> > 
-> > Beside standardizing things, do you also like to take them one level
-> > higher to solve challenging issues ? I know the answer must be yes :-)
-> > 
-> > The problem at hand here is something we have solved in V4L2
-> > (theoretically only for part of it) with the media controller API, the
-> > V4L2 subdevs and their pad-level format API.
-> > 
-> > In a nutshell, the media controller lets drivers model hardware as a
-> > graph of buliding blocks connected through their pads and expose that
-> > description to userspace applications. In V4L2 most of those blocks are
-> > V4L2 subdevs, which are abstract building blocks that implement sets of
-> > standard operations. Those operations are exposed to userspace through
-> > the V4L2 subdevs pad-level format API, allowing application to configure
-> > sizes and selection rectangles at all pads in the graph. Selection
-> > rectangles can be used to configure cropping and composing, which is
-> > exactly what the window positioning API needs to do.
-> > 
-> > Instead of creating a new fbdev-specific API to do the same, shouldn't we
-> > try to join forces ?
-> 
-> Okay, thanks for the pointer. After having a look at your API I understand
-> that it would solve the problem to discover how many windows (in this
-> case) are there and how they can be accessed. It looks fine for this
-> purpose, powerful enough and not too complex. So if I get it correct we
-> still need at least a way to configure the position of the
-> windows/overlays/sink pads similar to what Ajay proposed.
+I'm a bit confused how a backlight device and a fb device should be
+"connected".
 
-Yes, the media controller API can only expose the topology to userspace, it 
-can't be used to configure FB-specific parameters on the pipeline.
+In this particular case the OMAP 4430SDP board has an LCD panel
+controlled by omapfb (and omapdss on the lower level) with a backlight
+controlled by pwm_backlight (and twl6030-pwm on the lower level).
 
-> Additionally a way to get and/or set the z-position of the overlays if
-> multiple overlays overlap and set/get how the overlays work (overdraw,
-> constant alpha, source/destination color keying). Normally I'd consider
-> these link properties but I think implementing them as properties of the
-> source framebuffer or sink pad would work as well.
-> Is this correct or did I miss something?
+Both omapfb and pwm_backlight work fine, but they don't know anything
+about each other, so, for example, blanking the fb via omapfb leaves the
+backlight on.
 
-That's correct.
+Is there something I'm missing, or is the only solution to have some
+custom code to connect the fb and the bl, and handle it that way?
 
-What bothers me is that both V4L2 and DRM/KMS have the exact same needs. I 
-don't think it makes sense to implement three different solutions to the same 
-problem in our three video-related APIs. What's your opinion about that ?
+ Tomi
 
-I've tried to raise the issue on the dri-devel mailing list ("Proposal for a 
-low-level Linux display framework"), but there's still a long way to go before 
-convincing everybody. Feel free to help me :-)
 
--- 
-Regards,
-
-Laurent Pinchart

@@ -1,64 +1,115 @@
-From: Keith Packard <keithp@keithp.com>
-Date: Fri, 16 Sep 2011 04:53:21 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 16 Sep 2011 06:38:59 +0000
 Subject: Re: Proposal for a low-level Linux display framework
-Message-Id: <yunsjnxulz2.fsf@aiko.keithp.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-=-="
+Message-Id: <1316155139.2487.49.camel@deskari>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1316088425.11294.78.camel@lappyti> <yunboul7sx7.fsf@aiko.keithp.com> <1316100594.23214.65.camel@deskari> <yun8vpp7qk7.fsf@aiko.keithp.com> <4E72320B.6020000@gmx.de> <CADnq5_NnzLtJmSzOgyppnBtv96DRTJ71u6ZSrs56KJ-F5CC-mw@mail.gmail.com> <4E724659.5080709@gmx.de>
-In-Reply-To: <4E724659.5080709@gmx.de>
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Alex Deucher <alexdeucher@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>, "Clark, Rob" <rob@ti.com>
+References: <1316088425.11294.78.camel@lappyti>
+	 <yunboul7sx7.fsf@aiko.keithp.com> <1316100594.23214.65.camel@deskari>
+	 <yun8vpp7qk7.fsf@aiko.keithp.com> <1316107275.23214.99.camel@deskari>
+	 <yunfwjxwbjq.fsf@aiko.keithp.com>
+In-Reply-To: <yunfwjxwbjq.fsf@aiko.keithp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Keith Packard <keithp@keithp.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-dev@lists.linaro.org, "Clark, Rob" <rob@ti.com>, Archit Taneja <archit@ti.com>
 
---=-=-=
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2011-09-15 at 19:55 -0500, Keith Packard wrote:
+> On Thu, 15 Sep 2011 20:21:15 +0300, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+> 
+> > 2) panel drivers, handles panel specific things. Each panel may support
+> > custom commands and features, for which we need a dedicated driver. And
+> > this driver is not platform specific, but should work with any platform
+> > which has the output used with the panel.
+> 
+> Right, we've got DDC ports (which are just i2c) and DisplayPort aux
+> channel stuff.
+> 
+> The DDC stuff is abstracted out and shared across the drivers, but the
+> DisplayPort aux channel code is not -- it's duplicated in every output
+> driver. 
 
-On Thu, 15 Sep 2011 18:39:21 +0000, Florian Tobias Schandinat <FlorianSchan=
-dinat@gmx.de> wrote:
+I feel that you are still talking about the output driver, not the
+panel. DDC and DP aux are part of the connector-entity in DRM, right?
+But there's no separate display-entity behind the connector, which would
+handle the peculiarities for a particular panel/display, say DSI panel
+model L33T from AcmeCorp.
 
-> Well, I'm not against sharing the code and not against taking DRM's curre=
-nt
-> implementation as a base but the steps required to make it generally acce=
-ptable
-> would be to split it of, probably as a standalone module and strip all DRM
-> specific things off. Than all things that require EDID can use it, DRM ca=
-n add
-> DRM-specific things on top and fb can add fb-specific things.
+So, as I see it, DDC and DP aux are on the output driver, and the panel
+driver uses those to do whatever is needed for a particular panel.
 
-The rendering portions of the DRM drivers are all device-specific. The
-core DRM ioctls are largely about providing some sharing control over
-the device, mapping memory around and mode setting.
+> > DSI bus is a half-duplex serial bus, and while it's designed for
+> > displays you could use it easily for any communication between the SoC
+> > and the peripheral.
+> 
+> Yeah, HDMI uses DDC for all kinds of crazy stuff in the CE world.
 
-> One of my biggest problems with KMS is that it has (naturally) a lot more
-> complexity than the fb API which leads to instability.
+But that is still more or less standard HDMI stuff, isn't it? So you
+implement it once for HDMI, and then it works with all HDMI monitors?
 
-The mode setting portions are of necessity the same. The KMS API exposes
-more functionality for mode setting, but doesn't actually require any
-additional hardware-specific knowledge. You still have to be able to
-bring the hardware up from power on and light up every connected
-monitor.
+Or is there some way to implement custom behavior for one particular
+HDMI monitor? Is this custom behavior in a kernel driver or handled in
+userspace?
 
-However, if you want acceleration, you're going to run into bugs that
-crash the machine. It's a sad reality that graphics hardware just isn't
-able to recover cleanly in all cases from programmer errors, and that
-includes errors that come from user mode.
+> > The point is that we cannot have standard "MIPI DSI command mode panel
+> > driver" which would work for all DSI cmd mode panels, but we need (in
+> > the worst case) separate driver for each panel.
+> 
+> It sounds like we do want to share code for those bits, much like we
+> have DDC split out now. And, we should do something about the
+> DisplayPort aux channel stuff to avoid duplicating it everywhere.
 
-Hardware is improving in this area, and reset is getting more reliable
-than it used to be. But, until we can context switch the graphics
-hardware at arbitrary points during execution, we're kinda stuck with
-using the really big reset hammer when programs go awry.
+Yep. What I had in mind for DSI with my low-level fmwk would be a
+mipi_dsi component that offers services to use the DSI bus. Each
+platform which supports DSI would implement the DSI support for their
+HW. Then the DSI panel driver could do things like:
 
-=2D-=20
-keith.packard@intel.com
+dsi->write(dev, virtual_channel_id, buf, len);
 
---=-=-=
-Content-Type: application/pgp-signature
+dsi->set_max_return_packet_size(dev, 10);
+dsi->read(dev, virtual_channel_id, read_cmd, recv_buf, len);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+An example DSI command mode panel driver can be found from
+drivers/video/omap2/displays/panel-taal.c, which uses omapdss' dsi
+functions directly but could quite easily use a common DSI interface and
+thus be platform independent.
 
-iD8DBQFOctZBQp8BWwlsTdMRAh50AKCnOL5Xc5vMOOoslnd3Ms+sW2c3EQCg2pls
-Zu8aFtj9cbvUdfEggfd/mgk=
-=fH74
------END PGP SIGNATURE-----
---=-=-=--
+> I'm not sure a common interface to all of these different
+> channels makes sense, but surely a DSI library and an aux channel
+> library would fit nicely alongside the existing DDC library.
+
+What do you mean with "channel"? Any video or command bus going to the
+display? Yes, I think they are quite different and I don't see a point
+in trying to make a common interface for them. 
+
+DSI is in many ways a real bus. You can connect multiple peripherals to
+one DSI bus (but it needs a DSI hub), and communicate with them by using
+their virtual channel ID. And quite often there are DSI chips that
+transform the DSI packets to some other form. Some real example
+configurations:
+
+Plain DSI panel:
+
+[SoC] ---DSI--- [DSI panel]
+
+DSI-2-DisplayPort converter chip:
+
+[SoC] ---DSI--- [DSI chip] ---DP--- [DP monitor]
+
+DSI buffer chip supporting to DSI panels:
+
+[SoC] ---DSI--- [DSI chip] +--DSI--- [DSI panel 1]
+                           |--DSI--- [DSI panel 2]
+
+It would be nice to be able to model this somehow neatly with device
+drivers. For example, the DSI panel from the first example could be used
+in the two-panel configuration, and if (and when) the panel requires
+custom configuration, the same panel driver could be used in both cases.
+In the first case the panel driver would use DSI support from the Soc,
+in the third case the panel driver would use the DSI support from the
+DSI chip (which would, in turn, use DSI support from the SoC).
+
+ Tomi
+
+
+

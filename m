@@ -1,65 +1,52 @@
 From: Keith Packard <keithp@keithp.com>
-Date: Fri, 16 Sep 2011 00:55:37 +0000
+Date: Fri, 16 Sep 2011 04:53:21 +0000
 Subject: Re: Proposal for a low-level Linux display framework
-Message-Id: <yunfwjxwbjq.fsf@aiko.keithp.com>
+Message-Id: <yunsjnxulz2.fsf@aiko.keithp.com>
 MIME-Version: 1
 Content-Type: multipart/mixed; boundary="=-=-="
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1316088425.11294.78.camel@lappyti> <yunboul7sx7.fsf@aiko.keithp.com> <1316100594.23214.65.camel@deskari> <yun8vpp7qk7.fsf@aiko.keithp.com> <1316107275.23214.99.camel@deskari>
-In-Reply-To: <1316107275.23214.99.camel@deskari>
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-dev@lists.linaro.org, "Clark, Rob" <rob@ti.com>, Archit Taneja <archit@ti.com>
+References: <1316088425.11294.78.camel@lappyti> <yunboul7sx7.fsf@aiko.keithp.com> <1316100594.23214.65.camel@deskari> <yun8vpp7qk7.fsf@aiko.keithp.com> <4E72320B.6020000@gmx.de> <CADnq5_NnzLtJmSzOgyppnBtv96DRTJ71u6ZSrs56KJ-F5CC-mw@mail.gmail.com> <4E724659.5080709@gmx.de>
+In-Reply-To: <4E724659.5080709@gmx.de>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Alex Deucher <alexdeucher@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>, "Clark, Rob" <rob@ti.com>
 
 --=-=-=
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 15 Sep 2011 20:21:15 +0300, Tomi Valkeinen <tomi.valkeinen@ti.com> =
-wrote:
+On Thu, 15 Sep 2011 18:39:21 +0000, Florian Tobias Schandinat <FlorianSchan=
+dinat@gmx.de> wrote:
 
-> 2) panel drivers, handles panel specific things. Each panel may support
-> custom commands and features, for which we need a dedicated driver. And
-> this driver is not platform specific, but should work with any platform
-> which has the output used with the panel.
+> Well, I'm not against sharing the code and not against taking DRM's curre=
+nt
+> implementation as a base but the steps required to make it generally acce=
+ptable
+> would be to split it of, probably as a standalone module and strip all DRM
+> specific things off. Than all things that require EDID can use it, DRM ca=
+n add
+> DRM-specific things on top and fb can add fb-specific things.
 
-Right, we've got DDC ports (which are just i2c) and DisplayPort aux
-channel stuff.
+The rendering portions of the DRM drivers are all device-specific. The
+core DRM ioctls are largely about providing some sharing control over
+the device, mapping memory around and mode setting.
 
-The DDC stuff is abstracted out and shared across the drivers, but the
-DisplayPort aux channel code is not -- it's duplicated in every output
-driver.=20
+> One of my biggest problems with KMS is that it has (naturally) a lot more
+> complexity than the fb API which leads to instability.
 
-> DSI bus is a half-duplex serial bus, and while it's designed for
-> displays you could use it easily for any communication between the SoC
-> and the peripheral.
+The mode setting portions are of necessity the same. The KMS API exposes
+more functionality for mode setting, but doesn't actually require any
+additional hardware-specific knowledge. You still have to be able to
+bring the hardware up from power on and light up every connected
+monitor.
 
-Yeah, HDMI uses DDC for all kinds of crazy stuff in the CE world.
+However, if you want acceleration, you're going to run into bugs that
+crash the machine. It's a sad reality that graphics hardware just isn't
+able to recover cleanly in all cases from programmer errors, and that
+includes errors that come from user mode.
 
-> The point is that we cannot have standard "MIPI DSI command mode panel
-> driver" which would work for all DSI cmd mode panels, but we need (in
-> the worst case) separate driver for each panel.
-
-It sounds like we do want to share code for those bits, much like we
-have DDC split out now. And, we should do something about the
-DisplayPort aux channel stuff to avoid duplicating it everywhere.
-
-I'm not sure a common interface to all of these different
-channels makes sense, but surely a DSI library and an aux channel
-library would fit nicely alongside the existing DDC library.
-
-I suspect helper functions would be a good model to follow, rather than
-trying to create a whole new device infrastructure; some of the
-communication paths aren't easily separable from the underlying output
-devices.
-
-Oh, I think you're also trying to get at how we expose some of these
-controls outside of the display driver -- right now, they're mostly
-exposed as properties on the output device. Things like backlight
-brightness, a million analog TV output values, dithering control and
-other more esoteric controls.
-
-DRM properties include booleans, enumerations, integer ranges and chunks
-of binary data. Some are read-only (like EDID data), some are writable
-(like overscan values).
+Hardware is improving in this area, and reset is getting more reliable
+than it used to be. But, until we can context switch the graphics
+hardware at arbitrary points during execution, we're kinda stuck with
+using the really big reset hammer when programs go awry.
 
 =2D-=20
 keith.packard@intel.com
@@ -70,8 +57,8 @@ Content-Type: application/pgp-signature
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iD8DBQFOcp6JQp8BWwlsTdMRAiLoAJ9dqKSIWK/PUo3pI53f0SS8zB3/nwCgvGp7
-fMEoV8AmSOXLkfh8XG7NFVg=
-=SEWx
+iD8DBQFOctZBQp8BWwlsTdMRAh50AKCnOL5Xc5vMOOoslnd3Ms+sW2c3EQCg2pls
+Zu8aFtj9cbvUdfEggfd/mgk=
+=fH74
 -----END PGP SIGNATURE-----
 --=-=-=--

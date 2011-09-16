@@ -1,44 +1,44 @@
-From: Manjunath Hadli <manjunath.hadli@ti.com>
-Date: Mon, 26 Sep 2011 13:47:06 +0000
-Subject: [RFC PATCH 0/3] fbdev driver for dm644x
-Message-Id: <1317044109-7429-1-git-send-email-manjunath.hadli@ti.com>
+From: WESTERN UNION MONEY TRANSFER <mail113985@telkomsa.net>
+Date: Fri, 16 Sep 2011 13:21:16 +0000
+Subject: ***Western Union Payment Alert***
+Message-Id: <604174811.1266468.1316179276174.JavaMail.root@zimbra1-vm1.telkomsa.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-This patch series adds an fbdev driver for Texas
-Instruments Davinci SoC.The display subsystem consists
-of OSD and VENC, with OSD supporting 2 RGb planes and 
-2 video planes.
-http://focus.ti.com/general/docs/lit/
-getliterature.tsp?literatureNumber=sprue37d&fileType=pdf
+Good day,
 
-A good amount of the OSD and VENC enabling code is
-present in the kernel, and this patch series adds the 
-fbdev interface.
+I write to inform you that we have already sent you $5000.00 USD dollars th=
+rough Western Union as we have been given the mandate to transfer your full=
+ compensation payment of $2.5Million Dollars via Western Union by the Unite=
+d Nations Government.So I decided to email you the MTCN and sender's name s=
+o you can pick up this $5000.00 USD to enable us send another $5000.00USD b=
+y tomorrow as you know we will be sending you only $5000.00 USD per day. Pl=
+ease pick up this information and run to any Western Union in your country =
+to pick up the $5000.00 USD and call me back to send you another payment to=
+morrow. However we have noted you as a customer of western union money tran=
+sfer.
 
-The fbdev driver exports 4 nodes representing each
-plane to the user - from fb0 to fb3.
+Manager: Mr Alfred Dennis.
+Email: wumt66655@yahoo.com.hk
 
-Manjunath Hadli (3):
-  davinci: vpbe: enable vpbe for fbdev addition
-  davinci: vpbe: add fbdev driver for dm644x
-  davinci: vpbe: add build infrastructure for fbdev driver
 
- drivers/media/video/davinci/Kconfig         |   13 +
- drivers/media/video/davinci/Makefile        |    1 +
- drivers/media/video/davinci/vpbe_display.c  |    6 +
- drivers/media/video/davinci/vpbe_fb.c       | 2537 +++++++++++++++++++++++++++
- drivers/media/video/davinci/vpbe_fb.h       |   66 +
- drivers/media/video/davinci/vpbe_fb_ioctl.h |  159 ++
- drivers/media/video/davinci/vpbe_osd.c      |  793 +++++++++-
- drivers/media/video/davinci/vpbe_venc.c     |   84 +
- include/media/davinci/vpbe_osd.h            |   64 +-
- include/media/davinci/vpbe_venc.h           |   21 +
- 10 files changed, 3735 insertions(+), 9 deletions(-)
- create mode 100644 drivers/media/video/davinci/vpbe_fb.c
- create mode 100644 drivers/media/video/davinci/vpbe_fb.h
- create mode 100644 drivers/media/video/davinci/vpbe_fb_ioctl.h
+Call or email me once you picked up this $5,000 USD today. Here is the west=
+ern union information below.
 
+SENDERS FIRST NAME :_____EMEKA
+SENDER=E2=80=99S LAST NAME:_____ ONWUESI
+MTCN:__________________ 6210476549
+Amount;=3D___________________$5,000, USD
+Test Question;=3D ___________Honest?
+Test Answer;=3D _____________Trust
+
+You have to track your Payment information on below Western union website b=
+efore you locate any western union office.
+
+https://wumt.westernunion.com/asp/orderStatus.asp?country=3Dglobal
+
+Regards,
+Mr Alfred Dennis.

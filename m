@@ -1,7 +1,7 @@
 From: "K, Mythri P" <mythripk@ti.com>
-Date: Thu, 15 Sep 2011 06:36:43 +0000
+Date: Fri, 16 Sep 2011 12:53:53 +0000
 Subject: Re: [PATCHv2 09/15] OMAP: DSS2: HDMI: implement detect()
-Message-Id: <CAP5A+B_WvtNTi9ckyor-+5bo7n6GkeTSAvhDsrGQxhPZWgXO0w@mail.gmail.com>
+Message-Id: <CAP5A+B9upB3VUaRme84Fm6ewx9KkyOu4hCavMetkEeKcSHORXw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
  <1315818818-18733-10-git-send-email-tomi.valkeinen@ti.com>
@@ -12,50 +12,86 @@ References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
  <1315989282.2172.36.camel@deskari> <CAP5A+B-GWN+oJhcVbB24swfmH=-dE4sViNqF+hX6=D1owzOLzA@mail.gmail.com>
  <1315990630.2172.51.camel@deskari> <CAP5A+B9Me0RX3PY7Uwf=VuaHzaPtoNY0q9gxFg9H-Q3N2giC2Q@mail.gmail.com>
  <1316009509.2118.6.camel@deskari> <CAP5A+B-_19gPDmjJGBHpcDcGPGyt9QvFXFwgjGPUqr-QY9SPJg@mail.gmail.com>
- <1316066265.1880.6.camel@deskari>
-In-Reply-To: <1316066265.1880.6.camel@deskari>
+ <1316066265.1880.6.camel@deskari> <CAP5A+B_WvtNTi9ckyor-+5bo7n6GkeTSAvhDsrGQxhPZWgXO0w@mail.gmail.com>
+ <1316068371.1880.25.camel@deskari>
+In-Reply-To: <1316068371.1880.25.camel@deskari>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: Rob Clark <robdclark@gmail.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
 
 Hi,
 
-On Thu, Sep 15, 2011 at 11:27 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On Thu, 2011-09-15 at 11:11 +0530, K, Mythri P wrote:
+On Thu, Sep 15, 2011 at 12:02 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wr=
+ote:
+> On Thu, 2011-09-15 at 11:54 +0530, K, Mythri P wrote:
 >> Hi,
 >>
->> On Wed, Sep 14, 2011 at 7:41 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
->
->> > Yes, you are right, detect() does not "know" if the monitor has changed
->> > between polls, so both notification and polling are needed. I
->> > implemented only polling as there's no HPD event mechanism yet in
->> > omapdss, and also because this was simple and gives DRM basic ability to
->> > detect a monitor.
+>> On Thu, Sep 15, 2011 at 11:27 AM, Tomi Valkeinen <tomi.valkeinen@ti.com>=
+ wrote:
+>> > On Thu, 2011-09-15 at 11:11 +0530, K, Mythri P wrote:
+>> >> Hi,
+>> >>
+>> >> On Wed, Sep 14, 2011 at 7:41 PM, Tomi Valkeinen <tomi.valkeinen@ti.co=
+m> wrote:
 >> >
->> If it is needed for DRM then it is fine, but with detect renamed to
->> poll. By next week i should have a patch ready for HPD event
->> mechanism.
+>> >> > Yes, you are right, detect() does not "know" if the monitor has cha=
+nged
+>> >> > between polls, so both notification and polling are needed. I
+>> >> > implemented only polling as there's no HPD event mechanism yet in
+>> >> > omapdss, and also because this was simple and gives DRM basic abili=
+ty to
+>> >> > detect a monitor.
+>> >> >
+>> >> If it is needed for DRM then it is fine, but with detect renamed to
+>> >> poll. By next week i should have a patch ready for HPD event
+>> >> mechanism.
+>> >
+>> > What is wrong with "detect"? It detects if there's a display connected.
+>> > It can be used in polling manner, trying it every n seconds, but it
+>> > should also be used even if you use HPD event. I think the normal
+>> > sequence would be something like:
+>> >
+>> > 1) register HPD event
+>> > 2) use detect() to see if a monitor is already connected
+>> >
+>> I guess polling ever few seconds to detect would be waste of CPU
+>> cycles when there is already a mechanism in the H/w to detect the
+>> connection.
 >
-> What is wrong with "detect"? It detects if there's a display connected.
-> It can be used in polling manner, trying it every n seconds, but it
-> should also be used even if you use HPD event. I think the normal
-> sequence would be something like:
+> Obviously. Polling is only used if hot-plug-detect is not available. But
+> detect function can be used even when HPD is available.
 >
-> 1) register HPD event
-> 2) use detect() to see if a monitor is already connected
+>> Current sequence :
+>> Enable display ( Irrespective of whether the cable is connected on not)
+>>
+>> Sequence with HPD:
+>> 1.Register for HPD connect.
+>> 2.Enable display
+>> 3.Notify DRM/Audio/Kernel component that wants to listen to this event.
 >
-I guess polling ever few seconds to detect would be waste of CPU
-cycles when there is already a mechanism in the H/w to detect the
-connection.
-Current sequence :
-Enable display ( Irrespective of whether the cable is connected on not)
+> Why would you enable the display even if there's no monitor connected?
+>
+> And when the DRM starts, how does DRM know if the display was already
+> connected? Would you send a HPD event when DRM registers to the event
+> even if there's no actual plug-in event done (i.e. user actually
+> connecting the cable)?
+>
+HPD event would be triggered only when the cable is connected , and
+the EDID is ready to be read by the monitor. So the question enabling
+display doesnt exist. When HDMI is enabled in the HPD mode it will be
+in minimal power mode.
+Yes then the driver will notify DRM/any module that cable(monitor)  is
+now connected.
 
-Sequence with HPD:
-1.Register for HPD connect.
-2.Enable display
-3.Notify DRM/Audio/Kernel component that wants to listen to this event.
-
+> And just to clarify, my sequence example was from DRM's point of view.
+> The HDMI driver shouldn't do anything before DRM/omapfb asks it to do
+> something.
+>
+> =A0Tomi
+>
+>
+>
 Thanks and regards,
 Mythri.

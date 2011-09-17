@@ -1,72 +1,70 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sat, 17 Sep 2011 19:06:00 +0000
+From: Corbin Simpson <mostawesomedude@gmail.com>
+Date: Sat, 17 Sep 2011 19:25:24 +0000
 Subject: Re: Proposal for a low-level Linux display framework
-Message-Id: <4E74EF98.3060106@gmx.de>
+Message-Id: <CALiqSLe9mV29Qb8c4Kywrcdg702sGjMVHsYPb-Y7v8zKAa4qGQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1316088425.11294.78.camel@lappyti>	<yunboul7sx7.fsf@aiko.keithp.com>	<1316100594.23214.65.camel@deskari>	<yun8vpp7qk7.fsf@aiko.keithp.com>	<4E72320B.6020000@gmx.de>	<CADnq5_NnzLtJmSzOgyppnBtv96DRTJ71u6ZSrs56KJ-F5CC-mw@mail.gmail.com>	<4E724659.5080709@gmx.de>	<20110915195804.4e6d965b@lxorguk.ukuu.org.uk>	<CAMP44s1ywhCV+FaudnwjwJUvj5Cf3_oz1M++kjXxRDGQpJ6-0w@mail.gmail.com>	<CAF6AEGu2-O+2KuCrQPJ6-xejg8TCScrFVZSimgkAV_5Xs-bgkg@mail.gmail.com>	<4E74C6C3.2000704@gmx.de>	<CAPM=9twmPVrBPmUuEuTYHSzjDGHtfsmiVX6cozpAFYEaV-NcCg@mail.gmail.com>	<4E74E3D6.8080401@gmx.de> <CAPM=9txHu7mzH8p8g=FmHsjvmAT-aMy-xEFj4odXEvnbs-bhMw@mail.gmail.com>
-In-Reply-To: <CAPM=9txHu7mzH8p8g=FmHsjvmAT-aMy-xEFj4odXEvnbs-bhMw@mail.gmail.com>
+References: <1316088425.11294.78.camel@lappyti>
+	<yunboul7sx7.fsf@aiko.keithp.com>
+	<1316100594.23214.65.camel@deskari>
+	<yun8vpp7qk7.fsf@aiko.keithp.com>
+	<4E72320B.6020000@gmx.de>
+	<CADnq5_NnzLtJmSzOgyppnBtv96DRTJ71u6ZSrs56KJ-F5CC-mw@mail.gmail.com>
+	<4E724659.5080709@gmx.de>
+	<20110915195804.4e6d965b@lxorguk.ukuu.org.uk>
+	<CAMP44s1ywhCV+FaudnwjwJUvj5Cf3_oz1M++kjXxRDGQpJ6-0w@mail.gmail.com>
+	<CAF6AEGu2-O+2KuCrQPJ6-xejg8TCScrFVZSimgkAV_5Xs-bgkg@mail.gmail.com>
+	<4E74C6C3.2000704@gmx.de>
+	<CAPM=9twmPVrBPmUuEuTYHSzjDGHtfsmiVX6cozpAFYEaV-NcCg@mail.gmail.com>
+	<4E74E3D6.8080401@gmx.de>
+	<CAPM=9txHu7mzH8p8g=FmHsjvmAT-aMy-xEFj4odXEvnbs-bhMw@mail.gmail.com>
+	<4E74EF98.3060106@gmx.de>
+In-Reply-To: <4E74EF98.3060106@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Airlie <airlied@gmail.com>
-Cc: Rob Clark <rob@ti.com>, Felipe Contreras <felipe.contreras@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>, linux-fbdev@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Dave Airlie <airlied@gmail.com>, linux-fbdev@vger.kernel.org, linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
 
-On 09/17/2011 06:23 PM, Dave Airlie wrote:
->>
->> Is it? Well, okay, I don't want to use any acceleration that can crash my
->> machine, where can I select it, preferably as compile time option? I didn't find
->> such a thing for Intel or Radeon. Don't say, I should rely on userspace here or
->> use fbdev for this.
-> 
-> Just tell the X driver to not use acceleration, and it you won't get
-> any acceleration used, then you get complete stability. If a driver
-> writer wants to turn off all accel in the kernel driver, it can, its
-> not an option we've bothered with for intel or radeon since it really
-> makes no sense. To put it simply you don't really seem to understand
-> the driver model around KMS. If no userspace app uses acceleration
-> then no acceleration features will magically happen. If you want to
-> write a simple app against the KMS API like plymouth you can now use
-> the dumb ioctls to create and map a buffer that can be made into a
-> framebuffer. Also you get hw cursors + modesetting.
+On Sat, Sep 17, 2011 at 12:06 PM, Florian Tobias Schandinat
+<FlorianSchandinat@gmx.de> wrote:
+> Again, you seem to not understand my reasoning. The "if" is the problem, it's
+> the kernels job to ensure stability. Allowing the userspace to decide whether it
+> crashes my machine is not acceptable to me.
+> I do not claim that it is impossible to write a KMS driver in a way that it does
+> not crash, but it seems more difficult than writing an fbdev driver.
 
-Again, you seem to not understand my reasoning. The "if" is the problem, it's
-the kernels job to ensure stability. Allowing the userspace to decide whether it
-crashes my machine is not acceptable to me.
-I do not claim that it is impossible to write a KMS driver in a way that it does
-not crash, but it seems more difficult than writing an fbdev driver.
+It is a non-trivial problem, which I would argue is impossible, to
+permit acceleration without also permitting the possibility of a GPU
+lockup. It is completely legal, in every graphics API, to submit
+requests which take multiple seconds to render but are totally valid.
+Differentiating between long-running rendering and GPU lockup is
+difficult. In addition, determining whether or not a permutation of
+register writes will lock up a GPU is a pretty hard problem,
+computationally, not to mention the walls of code that would be
+required to make this happen. At that point, you might as well run
+unaccelerated.
 
->> The thing is that the core fbdev API does not expose any acceleration to
->> userspace, maybe some drivers do via IOCTLs, but I hope that are only things
->> that can be done in a sane way, otherwise I'd consider it a bug. The story is
->> different for DRM/KMS, as I understand, as this was primarily for acceleration
->> and only recently got modesetting capabilities.
-> 
-> The core drm/kms ioctls don't expose acceleration to userspace either,
-> again misinformation seems to drive most of your logic. You can't do
-> generic useful acceleration from the kernel. A lot of modern GPU
-> hardware doesn't even have bitblt engines.
+>> The core drm/kms ioctls don't expose acceleration to userspace either,
+>> again misinformation seems to drive most of your logic. You can't do
+>> generic useful acceleration from the kernel. A lot of modern GPU
+>> hardware doesn't even have bitblt engines.
+>
+> I did not say that it is used directly for acceleration, but wasn't the point of
+> DRM to allow acceleration in the first place?
 
-I did not say that it is used directly for acceleration, but wasn't the point of
-DRM to allow acceleration in the first place?
+In the Voodoo era, sure. DRM really means that userspace can talk
+directly to a card, in a card-specific way; beyond the basic DRM
+ioctls for gathering card info, nearly every ioctl is device-specific.
+You can't command an nV card with Radeon ioctls. It just so happens,
+fortunately, that the only things which differ from card to card and
+cannot be abstracted from kernel to userspace are accelerated
+rendering commands.
 
->> It's true that mmap can be PITA, but I don't see any real alternative given that
->> you want directly map video memory, especially on low end systems. And there are
->> ways around it, you can forbid mapping (though probably most userspace wouldn't
->> like it, I guess) or use any other solution like defio.
->> If you'd stop exposing the fbdev userspace interface it'd just harden my opinion
->> that KMS is a piece of trash and that I should avoid hardware that does not have
->> a native framebuffer driver. I think you shouldn't do this, as it's just a
->> disadvantage for your end users, but I personally do not really care.
-> 
-> We've fixed this in KMS, we don't pass direct mappings to userspace
-> that we can't tear down and refault. We only provide objects via
-> handles. The only place its a problem is where we expose fbdev legacy
-> emulation, since we have to fix the pages.
+You're conflating DRM and KMS. It's possible to provide KMS without
+DRM: Modesetting without acceleration.
 
-I guess we could do the same in fbdev. It's probably just that nobody is
-interested in it as we do not really care about memory management.
+-- 
+When the facts change, I change my mind. What do you do, sir? ~ Keynes
 
-
-Best regards,
-
-Florian Tobias Schandinat
+Corbin Simpson
+<MostAwesomeDude@gmail.com>

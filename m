@@ -1,101 +1,134 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Wed, 28 Sep 2011 21:19:49 +0000
-Subject: [PATCH 3/9] drivers/video: fsl-diu-fb: remove broken screen blanking support
-Message-Id: <1317244795-24671-3-git-send-email-timur@freescale.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Mon, 19 Sep 2011 00:28:05 +0000
+Subject: [WIP/RFC 27/31] fbdev: Add media controller support
+Message-Id: <1316392089-27598-28-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The function which is supposed to provide screen blanking support doesn't
-actually do anything, so the framebuffer layer thinks the screen has
-been blanked when it really isn't.  Remove the code completely for now.
+Initialize and register a single-pad media entity when media controller
+support is available.
 
-A side-effect of this change is that the framebuffer console blanking now
-works correctly.  Presumably this is because the console now receives -EINVAL
-instead of '0' when it asks the driver to blank the screen, so the console
-does it manually now.
-
-A signficant refactoring of the driver is planned, and proper hardware
-blanking support will added afterwards.
-
-Signed-off-by: Timur Tabi <timur@freescale.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/fsl-diu-fb.c |   38 --------------------------------------
- 1 files changed, 0 insertions(+), 38 deletions(-)
+ drivers/video/fbmem.c   |   21 +++++++++++++++++++++
+ drivers/video/fbsysfs.c |   11 +++++++++++
+ include/linux/fb.h      |    8 ++++++++
+ 3 files changed, 40 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 253e93f..555bae0 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -231,7 +231,6 @@ struct mfb_info {
- 	int type;
- 	char *id;
- 	int registered;
--	int blank;
- 	unsigned long pseudo_palette[16];
- 	struct diu_ad *ad;
- 	int cursor_reset;
-@@ -960,37 +959,6 @@ static int fsl_diu_pan_display(struct fb_var_screeninfo *var,
- 	return 0;
- }
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 5aac00e..26154fb 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -35,6 +35,7 @@
  
--/*
-- * Blank the screen if blank_mode != 0, else unblank. Return 0 if blanking
-- * succeeded, != 0 if un-/blanking failed.
-- * blank_mode = 2: suspend vsync
-- * blank_mode = 3: suspend hsync
-- * blank_mode = 4: powerdown
-- */
--static int fsl_diu_blank(int blank_mode, struct fb_info *info)
--{
--	struct mfb_info *mfbi = info->par;
--
--	mfbi->blank = blank_mode;
--
--	switch (blank_mode) {
--	case FB_BLANK_VSYNC_SUSPEND:
--	case FB_BLANK_HSYNC_SUSPEND:
--	/* FIXME: fixes to enable_panel and enable lcdc needed */
--	case FB_BLANK_NORMAL:
--	/*	fsl_diu_disable_panel(info);*/
--		break;
--	case FB_BLANK_POWERDOWN:
--	/*	disable_lcdc(info);	*/
--		break;
--	case FB_BLANK_UNBLANK:
--	/*	fsl_diu_enable_panel(info);*/
--		break;
--	}
--
--	return 0;
--}
--
- static int fsl_diu_ioctl(struct fb_info *info, unsigned int cmd,
- 		       unsigned long arg)
+ #include <asm/fb.h>
+ 
++#include <media/media-device.h>
+ 
+     /*
+      *  Frame buffer device initialization and setup routines
+@@ -1572,6 +1573,7 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+ 	int i;
+ 	struct fb_event event;
+ 	struct fb_videomode mode;
++	int ret;
+ 
+ 	if (fb_check_foreignness(fb_info))
+ 		return -ENOSYS;
+@@ -1625,6 +1627,21 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+ 	fb_add_videomode(&mode, &fb_info->modelist);
+ 	registered_fb[i] = fb_info;
+ 
++#if defined(CONFIG_MEDIA_CONTROLLER)
++	if (fb_info->mdev) {
++		fb_info->entity.type = MEDIA_ENT_T_DEVNODE_FB;
++		fb_info->entity.name = fb_info->name;
++		fb_info->entity.fb.major = FB_MAJOR;
++		fb_info->entity.fb.minor = i;
++		ret = media_device_register_entity(fb_info->mdev,
++						   &fb_info->entity);
++		if (ret < 0)
++			printk(KERN_WARNING
++			       "%s: media_device_register_entity failed\n",
++			       __func__);
++	}
++#endif
++
+ 	event.info = fb_info;
+ 	if (!lock_fb_info(fb_info))
+ 		return -ENODEV;
+@@ -1651,6 +1668,10 @@ static int do_unregister_framebuffer(struct fb_info *fb_info)
+ 	if (ret)
+ 		return -EINVAL;
+ 
++#if defined(CONFIG_MEDIA_CONTROLLER)
++	if (fb_info->mdev)
++		media_device_unregister_entity(&fb_info->entity);
++#endif
+ 	if (fb_info->pixmap.addr &&
+ 	    (fb_info->pixmap.flags & FB_PIXMAP_DEFAULT))
+ 		kfree(fb_info->pixmap.addr);
+diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
+index 04251ce..5d1ce86 100644
+--- a/drivers/video/fbsysfs.c
++++ b/drivers/video/fbsysfs.c
+@@ -63,6 +63,14 @@ struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
+ 	mutex_init(&info->bl_curve_mutex);
+ #endif
+ 
++#ifdef CONFIG_MEDIA_CONTROLLER
++	info->pad.flags = MEDIA_PAD_FL_SOURCE;
++	if (media_entity_init(&info->entity, 1, &info->pad, 0) < 0) {
++		kfree(info);
++		return NULL;
++	}
++#endif
++
+ 	return info;
+ #undef PADDING
+ #undef BYTES_PER_LONG
+@@ -80,6 +88,9 @@ EXPORT_SYMBOL(framebuffer_alloc);
+  */
+ void framebuffer_release(struct fb_info *info)
  {
-@@ -1129,7 +1097,6 @@ static struct fb_ops fsl_diu_ops = {
- 	.fb_check_var = fsl_diu_check_var,
- 	.fb_set_par = fsl_diu_set_par,
- 	.fb_setcolreg = fsl_diu_setcolreg,
--	.fb_blank = fsl_diu_blank,
- 	.fb_pan_display = fsl_diu_pan_display,
- 	.fb_fillrect = cfb_fillrect,
- 	.fb_copyarea = cfb_copyarea,
-@@ -1224,11 +1191,6 @@ static int __devinit install_fb(struct fb_info *info)
- 		fb_videomode_to_var(&info->var, modedb);
- 	}
++#ifdef CONFIG_MEDIA_CONTROLLER
++	media_entity_cleanup(&info->entity);
++#endif
+ 	kfree(info->apertures);
+ 	kfree(info);
+ }
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 98b23e3..24b7368 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -423,9 +423,11 @@ struct fb_cursor {
+ #include <linux/list.h>
+ #include <linux/backlight.h>
+ #include <linux/slab.h>
++#include <media/media-entity.h>
+ #include <asm/io.h>
  
--	if (mfbi->type = MFB_TYPE_OFF)
--		mfbi->blank = FB_BLANK_NORMAL;
--	else
--		mfbi->blank = FB_BLANK_UNBLANK;
--
- 	if (fsl_diu_check_var(&info->var, info)) {
- 		dev_err(info->dev, "fsl_diu_check_var failed\n");
- 		unmap_video_memory(info);
+ struct vm_area_struct;
++struct media_device;
+ struct fb_info;
+ struct device;
+ struct file;
+@@ -879,6 +881,12 @@ struct fb_info {
+ #endif
+ 
+ 	struct fb_ops *fbops;
++#ifdef CONFIG_MEDIA_CONTROLLER
++	char name[32];			/* Device name */
++	struct media_pad pad;		/* Output pad */
++	struct media_device *mdev;	/* Optional media device */
++	struct media_entity entity;	/* Media entity */
++#endif
+ 	struct device *device;		/* This is the parent */
+ 	struct device *dev;		/* This is this fb device */
+ 	int class_flag;                    /* private sysfs flags */
 -- 
 1.7.3.4
-
 

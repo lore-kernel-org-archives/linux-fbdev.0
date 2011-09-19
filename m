@@ -1,197 +1,93 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Sep 2011 09:13:29 +0000
-Subject: [PATCHv2 06/15] OMAP: DSS2: HDMI: split hdmi_core_ddc_edid
-Message-Id: <1315818818-18733-7-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Mon, 19 Sep 2011 00:28:00 +0000
+Subject: [WIP/RFC 22/31] fbdev: sh_mobile_lcdc: Remove fb_info parameter to display_on operation
+Message-Id: <1316392089-27598-23-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mythri P K <mythripk@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Split the DDC initialization off from hdmi_core_ddc_edid() into a
-separate function hdmi_core_ddc_init(). This cleans up the
-implementation.
+The parameter is unused, remove it.
 
-Cc: Mythri P K <mythripk@ti.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |  117 ++++++++++++++++------------
- 1 files changed, 67 insertions(+), 50 deletions(-)
+ drivers/video/sh_mipi_dsi.c      |    3 +--
+ drivers/video/sh_mobile_hdmi.c   |   10 ++--------
+ drivers/video/sh_mobile_lcdcfb.c |    2 +-
+ drivers/video/sh_mobile_lcdcfb.h |    3 +--
+ 4 files changed, 5 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-index d4cdfc2..ecf854e 100644
---- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-+++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-@@ -264,92 +264,105 @@ void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data)
- 	hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
+diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
+index e198067..f5d380c 100644
+--- a/drivers/video/sh_mipi_dsi.c
++++ b/drivers/video/sh_mipi_dsi.c
+@@ -125,8 +125,7 @@ static void sh_mipi_shutdown(struct platform_device *pdev)
+ 	sh_mipi_dsi_enable(mipi, false);
  }
  
--static int hdmi_core_ddc_edid(struct hdmi_ip_data *ip_data,
--						u8 *pedid, int ext)
-+static int hdmi_core_ddc_init(struct hdmi_ip_data *ip_data)
+-static void mipi_display_on(struct sh_mobile_lcdc_entity *entity,
+-			    struct fb_info *info)
++static void mipi_display_on(struct sh_mobile_lcdc_entity *entity)
  {
--	u32 i, j;
--	char checksum = 0;
--	u32 offset = 0;
--	void __iomem *core_sys_base = hdmi_core_sys_base(ip_data);
-+	void __iomem *base = hdmi_core_sys_base(ip_data);
+ 	struct sh_mipi *mipi = to_sh_mipi(entity);
  
- 	/* Turn on CLK for DDC */
--	REG_FLD_MOD(hdmi_av_base(ip_data), HDMI_CORE_AV_DPD, 0x7, 2, 0);
-+	REG_FLD_MOD(base, HDMI_CORE_AV_DPD, 0x7, 2, 0);
-+
-+	/* IN_PROG */
-+	if (REG_GET(base, HDMI_CORE_DDC_STATUS, 4, 4) = 1) {
-+		/* Abort transaction */
-+		REG_FLD_MOD(base, HDMI_CORE_DDC_CMD, 0xf, 3, 0);
-+		/* IN_PROG */
-+		if (hdmi_wait_for_bit_change(base, HDMI_CORE_DDC_STATUS,
-+					4, 4, 0) != 0) {
-+			DSSERR("Timeout aborting DDC transaction\n");
-+			return -ETIMEDOUT;
-+		}
-+	}
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index deca755..88de4e0 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -1000,14 +1000,8 @@ static irqreturn_t sh_hdmi_hotplug(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
  
+-/* locking:	called with info->lock held, or before register_framebuffer() */
+-static void sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity,
+-			       struct fb_info *info)
++static void sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity)
+ {
 -	/*
--	 * SW HACK : Without the Delay DDC(i2c bus) reads 0 values /
--	 * right shifted values( The behavior is not consistent and seen only
--	 * with some TV's)
+-	 * info is guaranteed to be valid, when we are called, because our
+-	 * FB_EVENT_FB_UNBIND notify is also called with info->lock held
 -	 */
--	usleep_range(800, 1000);
-+	/* Clk SCL Devices */
-+	REG_FLD_MOD(base, HDMI_CORE_DDC_CMD, 0xA, 3, 0);
-+
-+	/* HDMI_CORE_DDC_STATUS_IN_PROG */
-+	if (hdmi_wait_for_bit_change(base, HDMI_CORE_DDC_STATUS,
-+				4, 4, 0) != 0) {
-+		DSSERR("Timeout starting SCL clock\n");
-+		return -ETIMEDOUT;
-+	}
+ 	struct sh_hdmi *hdmi = entity_to_sh_hdmi(entity);
+ 	struct sh_mobile_lcdc_chan *ch = entity->lcdc;
+ 	struct fb_info *info = ch->info;
+@@ -1155,7 +1149,7 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 			if (lock_fb_info(info)) {
+ 				info->var.width = hdmi->var.width;
+ 				info->var.height = hdmi->var.height;
+-				sh_hdmi_display_on(&hdmi->entity, info);
++				sh_hdmi_display_on(&hdmi->entity);
+ 				unlock_fb_info(info);
+ 			}
+ 		} else {
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index f8bdbe9..afd00cc 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -337,7 +337,7 @@ static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
+ 	struct sh_mobile_lcdc_panel_cfg *panel = &ch->cfg.panel_cfg;
  
--	if (!ext) {
--		/* Clk SCL Devices */
--		REG_FLD_MOD(core_sys_base, HDMI_CORE_DDC_CMD, 0xA, 3, 0);
-+	/* Clear FIFO */
-+	REG_FLD_MOD(base, HDMI_CORE_DDC_CMD, 0x9, 3, 0);
+ 	if (ch->tx_dev)
+-		ch->tx_dev->ops->display_on(ch->tx_dev, ch->info);
++		ch->tx_dev->ops->display_on(ch->tx_dev);
  
--		/* HDMI_CORE_DDC_STATUS_IN_PROG */
--		if (hdmi_wait_for_bit_change(core_sys_base,
--					HDMI_CORE_DDC_STATUS, 4, 4, 0) != 0) {
--			pr_err("Failed to program DDC\n");
--			return -ETIMEDOUT;
--		}
-+	/* HDMI_CORE_DDC_STATUS_IN_PROG */
-+	if (hdmi_wait_for_bit_change(base, HDMI_CORE_DDC_STATUS,
-+				4, 4, 0) != 0) {
-+		DSSERR("Timeout clearing DDC fifo\n");
-+		return -ETIMEDOUT;
-+	}
+ 	/* HDMI must be enabled before LCDC configuration */
+ 	if (panel->display_on)
+diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
+index b57a847..50c2d1f 100644
+--- a/drivers/video/sh_mobile_lcdcfb.h
++++ b/drivers/video/sh_mobile_lcdcfb.h
+@@ -23,8 +23,7 @@ struct sh_mobile_lcdc_chan;
  
--		/* Clear FIFO */
--		REG_FLD_MOD(core_sys_base, HDMI_CORE_DDC_CMD, 0x9, 3, 0);
-+	return 0;
-+}
+ struct sh_mobile_lcdc_entity_ops {
+ 	/* Display */
+-	void (*display_on)(struct sh_mobile_lcdc_entity *entity,
+-			   struct fb_info *info);
++	void (*display_on)(struct sh_mobile_lcdc_entity *entity);
+ 	void (*display_off)(struct sh_mobile_lcdc_entity *entity);
+ };
  
--		/* HDMI_CORE_DDC_STATUS_IN_PROG */
--		if (hdmi_wait_for_bit_change(core_sys_base,
--					HDMI_CORE_DDC_STATUS, 4, 4, 0) != 0) {
--			pr_err("Failed to program DDC\n");
--			return -ETIMEDOUT;
--		}
-+static int hdmi_core_ddc_edid(struct hdmi_ip_data *ip_data,
-+		u8 *pedid, int ext)
-+{
-+	void __iomem *base = hdmi_core_sys_base(ip_data);
-+	u32 i, j;
-+	char checksum = 0;
-+	u32 offset = 0;
- 
--	} else {
--		if (ext % 2 != 0)
--			offset = 0x80;
-+	/* HDMI_CORE_DDC_STATUS_IN_PROG */
-+	if (hdmi_wait_for_bit_change(base, HDMI_CORE_DDC_STATUS,
-+				4, 4, 0) != 0) {
-+		DSSERR("Timeout waiting DDC to be ready\n");
-+		return -ETIMEDOUT;
- 	}
- 
-+	if (ext % 2 != 0)
-+		offset = 0x80;
-+
- 	/* Load Segment Address Register */
--	REG_FLD_MOD(core_sys_base, HDMI_CORE_DDC_SEGM, ext/2, 7, 0);
-+	REG_FLD_MOD(base, HDMI_CORE_DDC_SEGM, ext / 2, 7, 0);
- 
- 	/* Load Slave Address Register */
--	REG_FLD_MOD(core_sys_base, HDMI_CORE_DDC_ADDR, 0xA0 >> 1, 7, 1);
-+	REG_FLD_MOD(base, HDMI_CORE_DDC_ADDR, 0xA0 >> 1, 7, 1);
- 
- 	/* Load Offset Address Register */
--	REG_FLD_MOD(core_sys_base, HDMI_CORE_DDC_OFFSET, offset, 7, 0);
-+	REG_FLD_MOD(base, HDMI_CORE_DDC_OFFSET, offset, 7, 0);
- 
- 	/* Load Byte Count */
--	REG_FLD_MOD(core_sys_base, HDMI_CORE_DDC_COUNT1, 0x80, 7, 0);
--	REG_FLD_MOD(core_sys_base, HDMI_CORE_DDC_COUNT2, 0x0, 1, 0);
-+	REG_FLD_MOD(base, HDMI_CORE_DDC_COUNT1, 0x80, 7, 0);
-+	REG_FLD_MOD(base, HDMI_CORE_DDC_COUNT2, 0x0, 1, 0);
- 
- 	/* Set DDC_CMD */
- 	if (ext)
--		REG_FLD_MOD(core_sys_base, HDMI_CORE_DDC_CMD, 0x4, 3, 0);
-+		REG_FLD_MOD(base, HDMI_CORE_DDC_CMD, 0x4, 3, 0);
- 	else
--		REG_FLD_MOD(core_sys_base, HDMI_CORE_DDC_CMD, 0x2, 3, 0);
-+		REG_FLD_MOD(base, HDMI_CORE_DDC_CMD, 0x2, 3, 0);
- 
- 	/* HDMI_CORE_DDC_STATUS_BUS_LOW */
--	if (REG_GET(core_sys_base,
--					HDMI_CORE_DDC_STATUS, 6, 6) = 1) {
-+	if (REG_GET(base, HDMI_CORE_DDC_STATUS, 6, 6) = 1) {
- 		pr_err("I2C Bus Low?\n");
- 		return -EIO;
- 	}
- 	/* HDMI_CORE_DDC_STATUS_NO_ACK */
--	if (REG_GET(core_sys_base,
--					HDMI_CORE_DDC_STATUS, 5, 5) = 1) {
-+	if (REG_GET(base, HDMI_CORE_DDC_STATUS, 5, 5) = 1) {
- 		pr_err("I2C No Ack\n");
- 		return -EIO;
- 	}
- 
- 	i = ext * 128;
- 	j = 0;
--	while (((REG_GET(core_sys_base, HDMI_CORE_DDC_STATUS, 4, 4) = 1) ||
--			(REG_GET(core_sys_base,
--			HDMI_CORE_DDC_STATUS, 2, 2) = 0)) && j < 128) {
-+	while (((REG_GET(base, HDMI_CORE_DDC_STATUS, 4, 4) = 1) ||
-+		(REG_GET(base, HDMI_CORE_DDC_STATUS, 2, 2) = 0)) &&
-+			j < 128) {
- 
--		if (REG_GET(core_sys_base, HDMI_CORE_DDC_STATUS, 2, 2) = 0) {
-+		if (REG_GET(base, HDMI_CORE_DDC_STATUS, 2, 2) = 0) {
- 			/* FIFO not empty */
--			pedid[i++] = REG_GET(core_sys_base,
--						HDMI_CORE_DDC_DATA, 7, 0);
-+			pedid[i++] = REG_GET(base, HDMI_CORE_DDC_DATA, 7, 0);
- 			j++;
- 		}
- 	}
-@@ -372,6 +385,10 @@ int ti_hdmi_4xxx_read_edid(struct hdmi_ip_data *ip_data,
- 	int max_ext_blocks = (max_length / 128) - 1;
- 	int len;
- 
-+	r = hdmi_core_ddc_init(ip_data);
-+	if (r)
-+		return r;
-+
- 	r = hdmi_core_ddc_edid(ip_data, pedid, 0);
- 	if (r)
- 		return r;
 -- 
-1.7.4.1
+1.7.3.4
 

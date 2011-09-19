@@ -1,173 +1,112 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Sep 2011 09:13:27 +0000
-Subject: [PATCHv2 04/15] OMAP: DSS2: HDMI: implement read_edid()
-Message-Id: <1315818818-18733-5-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Mon, 19 Sep 2011 00:28:01 +0000
+Subject: [WIP/RFC 23/31] fbdev: sh_mobile_lcdc: Return display connection state in display_on
+Message-Id: <1316392089-27598-24-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mythri P K <mythripk@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Implement read_edid() for HDMI by implementing necessary functions to
-hdmi.c and to hdmi_omap4_panel.c.
+Return true if the display is connected and false otherwise. Set the fb
+info state to FBINFO_STATE_SUSPENDED in the sh_mobile_lcdc driver when
+the display is not connected.
 
-Cc: Mythri P K <mythripk@ti.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/omap2/dss/dss.h             |    1 +
- drivers/video/omap2/dss/hdmi.c            |   19 ++++++++++++-
- drivers/video/omap2/dss/hdmi_panel.c      |   24 +++++++++++++++++
- drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |   41 +++++++++++++++-------------
- 4 files changed, 65 insertions(+), 20 deletions(-)
+ drivers/video/sh_mipi_dsi.c      |    4 +++-
+ drivers/video/sh_mobile_hdmi.c   |    9 +++++----
+ drivers/video/sh_mobile_lcdcfb.c |    8 ++++++--
+ drivers/video/sh_mobile_lcdcfb.h |    2 +-
+ 4 files changed, 15 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 48bba53..2e7799c 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -494,6 +494,7 @@ void omapdss_hdmi_display_disable(struct omap_dss_device *dssdev);
- void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev);
- int omapdss_hdmi_display_check_timing(struct omap_dss_device *dssdev,
- 					struct omap_video_timings *timings);
-+int omapdss_hdmi_read_edid(u8 *buf, int len);
- int hdmi_panel_init(void);
- void hdmi_panel_exit(void);
- 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index f503aa4..8a04ee1 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -372,7 +372,7 @@ static void hdmi_read_edid(struct omap_video_timings *dp)
- 	if (!hdmi.edid_set)
- 		ret = hdmi.ip_data.ops->read_edid(&hdmi.ip_data, hdmi.edid,
- 						HDMI_EDID_MAX_LENGTH);
--	if (!ret) {
-+	if (ret > 0) {
- 		if (!memcmp(hdmi.edid, edid_header, sizeof(edid_header))) {
- 			/* search for timings of default resolution */
- 			get_edid_timing_data(hdmi.edid);
-@@ -587,6 +587,23 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev)
- 	}
+diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
+index f5d380c..3ead395 100644
+--- a/drivers/video/sh_mipi_dsi.c
++++ b/drivers/video/sh_mipi_dsi.c
+@@ -125,12 +125,14 @@ static void sh_mipi_shutdown(struct platform_device *pdev)
+ 	sh_mipi_dsi_enable(mipi, false);
  }
  
-+int omapdss_hdmi_read_edid(u8 *buf, int len)
-+{
-+	int r;
-+
-+	mutex_lock(&hdmi.lock);
-+
-+	r = hdmi_runtime_get();
-+	BUG_ON(r);
-+
-+	r = hdmi.ip_data.ops->read_edid(&hdmi.ip_data, buf, len);
-+
-+	hdmi_runtime_put();
-+	mutex_unlock(&hdmi.lock);
-+
-+	return r;
-+}
-+
- int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
+-static void mipi_display_on(struct sh_mobile_lcdc_entity *entity)
++static bool mipi_display_on(struct sh_mobile_lcdc_entity *entity)
  {
- 	int r = 0;
-diff --git a/drivers/video/omap2/dss/hdmi_panel.c b/drivers/video/omap2/dss/hdmi_panel.c
-index 8c851e6..624f170 100644
---- a/drivers/video/omap2/dss/hdmi_panel.c
-+++ b/drivers/video/omap2/dss/hdmi_panel.c
-@@ -185,6 +185,29 @@ err:
- 	return r;
+ 	struct sh_mipi *mipi = to_sh_mipi(entity);
+ 
+ 	pm_runtime_get_sync(mipi->dev);
+ 	sh_mipi_dsi_enable(mipi, true);
++
++	return true;
  }
  
-+static int hdmi_read_edid(struct omap_dss_device *dssdev, u8 *buf, int len)
-+{
-+	int r;
+ static void mipi_display_off(struct sh_mobile_lcdc_entity *entity)
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index 88de4e0..4b87c6e 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -1000,13 +1000,13 @@ static irqreturn_t sh_hdmi_hotplug(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ 
+-static void sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity)
++static bool sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity)
+ {
+ 	struct sh_hdmi *hdmi = entity_to_sh_hdmi(entity);
+ 	struct sh_mobile_lcdc_chan *ch = entity->lcdc;
+-	struct fb_info *info = ch->info;
+ 
+-	dev_dbg(hdmi->dev, "%s(%p): state %x\n", __func__, hdmi, info->state);
++	dev_dbg(hdmi->dev, "%s(%p): state %x\n", __func__, hdmi,
++		hdmi->hp_state);
+ 
+ 	/*
+ 	 * hp_state can be set to
+@@ -1021,10 +1021,11 @@ static void sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity)
+ 		dev_dbg(hdmi->dev, "HDMI running\n");
+ 		break;
+ 	case HDMI_HOTPLUG_DISCONNECTED:
+-		info->state = FBINFO_STATE_SUSPENDED;
+ 	default:
+ 		hdmi->var = ch->display_var;
+ 	}
 +
-+	mutex_lock(&hdmi.hdmi_lock);
-+
-+	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE) {
-+		r = omapdss_hdmi_display_enable(dssdev);
-+		if (r)
-+			goto err;
++	return hdmi->hp_state != HDMI_HOTPLUG_DISCONNECTED;
+ }
+ 
+ static void sh_hdmi_display_off(struct sh_mobile_lcdc_entity *entity)
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index afd00cc..d6c117b 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -335,9 +335,13 @@ static void sh_mobile_lcdc_deferred_io_touch(struct fb_info *info)
+ static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
+ {
+ 	struct sh_mobile_lcdc_panel_cfg *panel = &ch->cfg.panel_cfg;
++	bool connected;
+ 
+-	if (ch->tx_dev)
+-		ch->tx_dev->ops->display_on(ch->tx_dev);
++	if (ch->tx_dev) {
++		connected = ch->tx_dev->ops->display_on(ch->tx_dev);
++		if (!connected)
++			ch->info->state = FBINFO_STATE_SUSPENDED;
 +	}
-+
-+	r = omapdss_hdmi_read_edid(buf, len);
-+
-+	if (dssdev->state = OMAP_DSS_DISPLAY_DISABLED ||
-+			dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED)
-+		omapdss_hdmi_display_disable(dssdev);
-+err:
-+	mutex_unlock(&hdmi.hdmi_lock);
-+
-+	return r;
-+}
-+
- static struct omap_dss_driver hdmi_driver = {
- 	.probe		= hdmi_panel_probe,
- 	.remove		= hdmi_panel_remove,
-@@ -195,6 +218,7 @@ static struct omap_dss_driver hdmi_driver = {
- 	.get_timings	= hdmi_get_timings,
- 	.set_timings	= hdmi_set_timings,
- 	.check_timings	= hdmi_check_timings,
-+	.read_edid	= hdmi_read_edid,
- 	.driver			= {
- 		.name   = "hdmi_panel",
- 		.owner  = THIS_MODULE,
-diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-index 403c662..d4cdfc2 100644
---- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-+++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-@@ -370,29 +370,32 @@ int ti_hdmi_4xxx_read_edid(struct hdmi_ip_data *ip_data,
- {
- 	int r = 0, n = 0, i = 0;
- 	int max_ext_blocks = (max_length / 128) - 1;
-+	int len;
  
- 	r = hdmi_core_ddc_edid(ip_data, pedid, 0);
--	if (r) {
-+	if (r)
- 		return r;
--	} else {
--		n = pedid[0x7e];
+ 	/* HDMI must be enabled before LCDC configuration */
+ 	if (panel->display_on)
+diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
+index 50c2d1f..8f1e007 100644
+--- a/drivers/video/sh_mobile_lcdcfb.h
++++ b/drivers/video/sh_mobile_lcdcfb.h
+@@ -23,7 +23,7 @@ struct sh_mobile_lcdc_chan;
  
--		/*
--		 * README: need to comply with max_length set by the caller.
--		 * Better implementation should be to allocate necessary
--		 * memory to store EDID according to nb_block field found
--		 * in first block
--		 */
--		if (n > max_ext_blocks)
--			n = max_ext_blocks;
-+	len = 128;
-+	n = pedid[0x7e];
+ struct sh_mobile_lcdc_entity_ops {
+ 	/* Display */
+-	void (*display_on)(struct sh_mobile_lcdc_entity *entity);
++	bool (*display_on)(struct sh_mobile_lcdc_entity *entity);
+ 	void (*display_off)(struct sh_mobile_lcdc_entity *entity);
+ };
  
--		for (i = 1; i <= n; i++) {
--			r = hdmi_core_ddc_edid(ip_data, pedid, i);
--			if (r)
--				return r;
--		}
-+	/*
-+	 * README: need to comply with max_length set by the caller.
-+	 * Better implementation should be to allocate necessary
-+	 * memory to store EDID according to nb_block field found
-+	 * in first block
-+	 */
-+	if (n > max_ext_blocks)
-+		n = max_ext_blocks;
-+
-+	for (i = 1; i <= n; i++) {
-+		r = hdmi_core_ddc_edid(ip_data, pedid, i);
-+		if (r)
-+			return r;
-+		len += 128;
- 	}
--	return 0;
-+
-+	return len;
- }
- 
- static void hdmi_core_init(struct hdmi_core_video_config *video_cfg,
 -- 
-1.7.4.1
+1.7.3.4
 

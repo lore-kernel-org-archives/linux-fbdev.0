@@ -1,99 +1,151 @@
-From: Ajay Kumar <ajaykumar.rs@samsung.com>
-Date: Tue, 20 Sep 2011 09:29:04 +0000
-Subject: [PATCH 3/3] video: s3c-fb: Modify s3c-fb driver to support window
-Message-Id: <1316532641-2657-4-git-send-email-ajaykumar.rs@samsung.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Mon, 19 Sep 2011 00:27:42 +0000
+Subject: [WIP/RFC 04/31] fbdev: sh_mobile_lcdc: Don't pass struct device around
+Message-Id: <1316392089-27598-5-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1316532641-2657-1-git-send-email-ajaykumar.rs@samsung.com>
-In-Reply-To: <1316532641-2657-1-git-send-email-ajaykumar.rs@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Positions the framebuffer window during driver initialization,
-using the platform data.It also adds an ioctl definition
-to change window position dynamically.
+Pass a pointer to a struct sh_mobile_lcdc_priv instead, which stores a
+pointer to the device.
 
-Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
-Signed-off-by: Banajit Goswami <banajit.g@samsung.com>
-Suggested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/s3c-fb.c |   37 ++++++++++++++++++++++++++++++++-----
- 1 files changed, 32 insertions(+), 5 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |   41 +++++++++++++++++++------------------
+ 1 files changed, 21 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 0fda252..b087a12 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -441,6 +441,7 @@ static int s3c_fb_set_par(struct fb_info *info)
- {
- 	struct fb_var_screeninfo *var = &info->var;
- 	struct s3c_fb_win *win = info->par;
-+	struct fb_overlay_win_pos *winpos = &win->windata->winpos;
- 	struct s3c_fb *sfb = win->parent;
- 	void __iomem *regs = sfb->regs;
- 	void __iomem *buf = regs;
-@@ -539,12 +540,13 @@ static int s3c_fb_set_par(struct fb_info *info)
- 
- 	/* write 'OSD' registers to control position of framebuffer */
- 
--	data = VIDOSDxA_TOPLEFT_X(0) | VIDOSDxA_TOPLEFT_Y(0);
-+	data = VIDOSDxA_TOPLEFT_X(winpos->win_pos_x) |
-+	       VIDOSDxA_TOPLEFT_Y(winpos->win_pos_y);
- 	writel(data, regs + VIDOSD_A(win_no, sfb->variant));
- 
--	data = VIDOSDxB_BOTRIGHT_X(s3c_fb_align_word(var->bits_per_pixel,
--						     var->xres - 1)) |
--	       VIDOSDxB_BOTRIGHT_Y(var->yres - 1);
-+	data = VIDOSDxB_BOTRIGHT_X((s3c_fb_align_word(var->bits_per_pixel,
-+	       (winpos->win_pos_x + var->xres - 1)))) |
-+	       VIDOSDxB_BOTRIGHT_Y((winpos->win_pos_y + var->yres - 1));
- 
- 	writel(data, regs + VIDOSD_B(win_no, sfb->variant));
- 
-@@ -998,9 +1000,11 @@ static int s3c_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 			unsigned long arg)
- {
- 	struct s3c_fb_win *win = info->par;
-+	struct fb_overlay_win_pos *winpos = &win->windata->winpos;
- 	struct s3c_fb *sfb = win->parent;
--	int ret;
-+	int ret = 0;
- 	u32 crtc;
-+	u32 data;
- 
- 	switch (cmd) {
- 	case FBIO_WAITFORVSYNC:
-@@ -1011,6 +1015,29 @@ static int s3c_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 
- 		ret = s3c_fb_wait_for_vsync(sfb, crtc);
- 		break;
-+	case FBIOPOS_OVERLAY_WIN:
-+		if (copy_from_user(winpos, (u32 __user *)arg,
-+					sizeof(struct fb_overlay_win_pos))) {
-+			ret = -EFAULT;
-+			break;
-+		}
-+
-+		shadow_protect_win(win, 1);
-+
-+		/* write 'OSD' registers to set position of the window */
-+		data = VIDOSDxA_TOPLEFT_X(winpos->win_pos_x) |
-+		       VIDOSDxA_TOPLEFT_Y(winpos->win_pos_y);
-+		writel(data, sfb->regs + VIDOSD_A(win->index, sfb->variant));
-+
-+		data = VIDOSDxB_BOTRIGHT_X(
-+				s3c_fb_align_word(info->var.bits_per_pixel,
-+				(winpos->win_pos_x + info->var.xres - 1)));
-+		data |=	VIDOSDxB_BOTRIGHT_Y(winpos->win_pos_y +
-+				info->var.yres - 1);
-+		writel(data, sfb->regs + VIDOSD_B(win->index, sfb->variant));
-+
-+		shadow_protect_win(win, 0);
-+		break;
- 	default:
- 		ret = -ENOTTY;
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index ae9c126..c7e6074 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -186,9 +186,8 @@ static void sh_mobile_lcdc_clk_off(struct sh_mobile_lcdc_priv *priv)
  	}
+ }
+ 
+-static int sh_mobile_lcdc_setup_clocks(struct platform_device *pdev,
+-				       int clock_source,
+-				       struct sh_mobile_lcdc_priv *priv)
++static int sh_mobile_lcdc_setup_clocks(struct sh_mobile_lcdc_priv *priv,
++				       int clock_source)
+ {
+ 	struct clk *clk;
+ 	char *str;
+@@ -213,9 +212,9 @@ static int sh_mobile_lcdc_setup_clocks(struct platform_device *pdev,
+ 	if (str = NULL)
+ 		return 0;
+ 
+-	clk = clk_get(&pdev->dev, str);
++	clk = clk_get(priv->dev, str);
+ 	if (IS_ERR(clk)) {
+-		dev_err(&pdev->dev, "cannot get dot clock %s\n", str);
++		dev_err(priv->dev, "cannot get dot clock %s\n", str);
+ 		return PTR_ERR(clk);
+ 	}
+ 
+@@ -1565,8 +1564,9 @@ sh_mobile_lcdc_check_interface(struct sh_mobile_lcdc_chan *ch)
+ 	return 0;
+ }
+ 
+-static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
+-						 struct device *dev)
++static int __devinit
++sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
++			    struct sh_mobile_lcdc_chan *ch)
+ {
+ 	struct sh_mobile_lcdc_chan_cfg *cfg = &ch->cfg;
+ 	const struct fb_videomode *max_mode;
+@@ -1582,9 +1582,9 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
+ 	mutex_init(&ch->open_lock);
+ 
+ 	/* Allocate the frame buffer device. */
+-	ch->info = framebuffer_alloc(0, dev);
++	ch->info = framebuffer_alloc(0, priv->dev);
+ 	if (!ch->info) {
+-		dev_err(dev, "unable to allocate fb_info\n");
++		dev_err(priv->dev, "unable to allocate fb_info\n");
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -1606,8 +1606,8 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
+ 		/* NV12/NV21 buffers must have even number of lines */
+ 		if ((cfg->fourcc = V4L2_PIX_FMT_NV12 ||
+ 		     cfg->fourcc = V4L2_PIX_FMT_NV21) && (mode->yres & 0x1)) {
+-			dev_err(dev, "yres must be multiple of 2 for YCbCr420 "
+-				"mode.\n");
++			dev_err(priv->dev, "yres must be multiple of 2 for "
++				"YCbCr420 mode.\n");
+ 			return -EINVAL;
+ 		}
+ 
+@@ -1620,7 +1620,7 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
+ 	if (!max_size)
+ 		max_size = MAX_XRES * MAX_YRES;
+ 	else
+-		dev_dbg(dev, "Found largest videomode %ux%u\n",
++		dev_dbg(priv->dev, "Found largest videomode %ux%u\n",
+ 			max_mode->xres, max_mode->yres);
+ 
+ 	/* Create the mode list. */
+@@ -1671,16 +1671,17 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
+ 	max_size = max_size * var->bits_per_pixel / 8 * 2;
+ 
+ 	/* Allocate frame buffer memory and color map. */
+-	buf = dma_alloc_coherent(dev, max_size, &ch->dma_handle, GFP_KERNEL);
++	buf = dma_alloc_coherent(priv->dev, max_size, &ch->dma_handle,
++				 GFP_KERNEL);
+ 	if (!buf) {
+-		dev_err(dev, "unable to allocate buffer\n");
++		dev_err(priv->dev, "unable to allocate buffer\n");
+ 		return -ENOMEM;
+ 	}
+ 
+ 	ret = fb_alloc_cmap(&info->cmap, PALETTE_NR, 0);
+ 	if (ret < 0) {
+-		dev_err(dev, "unable to allocate cmap\n");
+-		dma_free_coherent(dev, max_size, buf, ch->dma_handle);
++		dev_err(priv->dev, "unable to allocate cmap\n");
++		dma_free_coherent(priv->dev, max_size, buf, ch->dma_handle);
+ 		return ret;
+ 	}
+ 
+@@ -1703,7 +1704,7 @@ static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
+ 	}
+ 
+ 	info->screen_base = buf;
+-	info->device = dev;
++	info->device = priv->dev;
+ 	ch->display_var = *var;
+ 
+ 	return 0;
+@@ -1797,7 +1798,7 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 	if (!priv->base)
+ 		goto err1;
+ 
+-	error = sh_mobile_lcdc_setup_clocks(pdev, pdata->clock_source, priv);
++	error = sh_mobile_lcdc_setup_clocks(priv, pdata->clock_source);
+ 	if (error) {
+ 		dev_err(&pdev->dev, "unable to setup clocks\n");
+ 		goto err1;
+@@ -1809,7 +1810,7 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 	for (i = 0; i < num_channels; i++) {
+ 		struct sh_mobile_lcdc_chan *ch = priv->ch + i;
+ 
+-		error = sh_mobile_lcdc_channel_init(ch, &pdev->dev);
++		error = sh_mobile_lcdc_channel_init(priv, ch);
+ 		if (error)
+ 			goto err1;
+ 	}
+@@ -1839,7 +1840,7 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 		if (error < 0)
+ 			goto err1;
+ 
+-		dev_info(info->dev, "registered %s/%s as %dx%d %dbpp.\n",
++		dev_info(&pdev->dev, "registered %s/%s as %dx%d %dbpp.\n",
+ 			 pdev->name, (ch->cfg.chan = LCDC_CHAN_MAINLCD) ?
+ 			 "mainlcd" : "sublcd", info->var.xres, info->var.yres,
+ 			 info->var.bits_per_pixel);
 -- 
-1.7.0.4
+1.7.3.4
 

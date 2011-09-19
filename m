@@ -1,48 +1,80 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Sun, 18 Sep 2011 22:23:29 +0000
+From: Rob Clark <rob.clark@linaro.org>
+Date: Mon, 19 Sep 2011 00:09:36 +0000
 Subject: Re: Proposal for a low-level Linux display framework
-Message-Id: <20110918232329.6ff05d56@lxorguk.ukuu.org.uk>
+Message-Id: <CAN_cFWNkdYEFaeCmJcsPnrt+hoiOZuZEQ6qbrcXWQT_3NSNoLw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1316088425.11294.78.camel@lappyti>
 	<CADnq5_NnzLtJmSzOgyppnBtv96DRTJ71u6ZSrs56KJ-F5CC-mw@mail.gmail.com>
 	<4E724659.5080709@gmx.de>
 	<201109180112.15896.laurent.pinchart@ideasonboard.com>
-In-Reply-To: <201109180112.15896.laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
+	<20110918232329.6ff05d56@lxorguk.ukuu.org.uk>
+In-Reply-To: <20110918232329.6ff05d56@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
-Cc: Keith Packard <keithp-aN4HjG94KOLQT0dZR+AlfA@public.gmane.org>, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Archit Taneja <archit-l0cyMroinI0@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alex Deucher <alexdeucher-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Keith Packard <keithp@keithp.com>, linaro-dev@lists.linaro.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>, linux-fbdev@vger.kernel.org, Alex Deucher <alexdeucher@gmail.com>
 
-> This would leave us with the issue of controlling formats and other parameters 
-> on the pipelines. We could keep separate DRM, KMS, FB and V4L APIs for that, 
+On Sun, Sep 18, 2011 at 5:23 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> This would leave us with the issue of controlling formats and other parameters
+>> on the pipelines. We could keep separate DRM, KMS, FB and V4L APIs for that,
+>
+> There are some other differences that matter. The exact state and
+> behaviour of memory, sequencing of accesses, cache control and management
+> are a critical part of DRM for most GPUs, as is the ability to have them
+> in swap backed objects and to do memory management of them. Fences and
+> the like are a big part of the logic of many renderers and the same
+> fencing has to be applied between capture and GPU, and also in some cases
+> between playback accelerators (eg MP4 playback) and GPU.
+>
+> To glue them together I think you'd need to support the use of GEM objects
+> (maybe extended) in V4L. That may actually make life cleaner and simpler
+> in some respects because GEM objects are refcounted nicely and have
+> handles.
 
-There are some other differences that matter. The exact state and
-behaviour of memory, sequencing of accesses, cache control and management
-are a critical part of DRM for most GPUs, as is the ability to have them
-in swap backed objects and to do memory management of them. Fences and
-the like are a big part of the logic of many renderers and the same
-fencing has to be applied between capture and GPU, and also in some cases
-between playback accelerators (eg MP4 playback) and GPU.
+fwiw, I think the dmabuf proposal that linaro GWG is working on should
+be sufficient for V4L to capture directly into a GEM buffer that can
+be scanned out (overlay) or composited by GPU, etc, in cases where the
+different dma initiators can all access some common memory:
 
-To glue them together I think you'd need to support the use of GEM objects
-(maybe extended) in V4L. That may actually make life cleaner and simpler
-in some respects because GEM objects are refcounted nicely and have
-handles.
+http://lists.linaro.org/pipermail/linaro-mm-sig/2011-September/000616.html
 
-DRM and KMS abstract out stuff into what is akin to V4L subdevices for
-the various objects the video card has that matter for display - from
-scanout buffers to the various video outputs, timings and the like.
+The idea is that you could allocate a GEM buffer, export a dmabuf
+handle for that buffer that could be passed to v4l2 camera device (ie.
+V4L2_MEMORY_DMABUF), video encoder, etc..  the importing device should
+bracket DMA to/from the buffer w/ get/put_scatterlist() so an unused
+buffer could be unpinned if needed.
 
-I don't know what it's like with OMAP but for some of the x86 stuff
-particularly low speed/power stuff the capture devices, GPU and overlays
-tend to be fairly incestuous in order to do things like 1080i/p preview
-while recording from the camera.
+> DRM and KMS abstract out stuff into what is akin to V4L subdevices for
+> the various objects the video card has that matter for display - from
+> scanout buffers to the various video outputs, timings and the like.
+>
+> I don't know what it's like with OMAP but for some of the x86 stuff
+> particularly low speed/power stuff the capture devices, GPU and overlays
+> tend to be fairly incestuous in order to do things like 1080i/p preview
+> while recording from the camera.
 
-GPU is also a bit weird in some ways because while its normally
-nonsensical to do things like use the capture facility one card to drive
-part of another, it's actually rather useful (although not supported
-really by DRM) to do exactly that with GPUs. A simple example is a dual
-headed box with a dumb frame buffer and an accelerated output both of
-which are using memory that can be hit by the accelerated card. Classic
-example being a USB plug in monitor.
+We don't like extra memcpy's, but something like dmabuf fits us
+nicely.. and I expect it would work well in any sort of UMA system
+where camera, encoder, GPU, overlay, etc all can share the same memory
+and formats.  I suspect the situation is similar in the x86 SoC
+world.. but would be good to get some feedback on the proposal.  (I
+guess next version of the RFC would go out to more mailing lists for
+broader review.)
+
+BR,
+-R
+
+> GPU is also a bit weird in some ways because while its normally
+> nonsensical to do things like use the capture facility one card to drive
+> part of another, it's actually rather useful (although not supported
+> really by DRM) to do exactly that with GPUs. A simple example is a dual
+> headed box with a dumb frame buffer and an accelerated output both of
+> which are using memory that can be hit by the accelerated card. Classic
+> example being a USB plug in monitor.
+>
+> _______________________________________________
+> linaro-dev mailing list
+> linaro-dev@lists.linaro.org
+> http://lists.linaro.org/mailman/listinfo/linaro-dev
+>

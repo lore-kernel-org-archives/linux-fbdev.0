@@ -1,346 +1,164 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 19 Sep 2011 00:27:55 +0000
-Subject: [WIP/RFC 17/31] fbdev: sh_mobile_lcdc: Remove board configuration board_data field
-Message-Id: <1316392089-27598-18-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Mon, 19 Sep 2011 00:28:03 +0000
+Subject: [WIP/RFC 25/31] sh_mobile_hdmi: Use LCDC notification callback
+Message-Id: <1316392089-27598-26-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The field is unused, remove it. Update board code accordingly.
+Instead of accessing the LCDC channel and fb_info structures directly,
+use the LCDC notification callback to inform the LCDC driver about
+display-related events.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- arch/arm/mach-shmobile/board-ag5evm.c       |   14 ++------------
- arch/arm/mach-shmobile/board-mackerel.c     |    4 ++--
- arch/sh/boards/mach-ap325rxa/setup.c        |    8 ++++----
- arch/sh/boards/mach-ecovec24/setup.c        |    4 ++--
- arch/sh/boards/mach-kfr2r09/lcd_wqvga.c     |   10 ++++------
- arch/sh/boards/mach-migor/lcd_qvga.c        |    3 +--
- arch/sh/boards/mach-se/7724/setup.c         |    2 --
- arch/sh/include/mach-kfr2r09/mach/kfr2r09.h |   16 ++++++++--------
- arch/sh/include/mach-migor/mach/migor.h     |    2 +-
- drivers/video/sh_mobile_lcdcfb.c            |   16 +++++++---------
- include/video/sh_mobile_lcdc.h              |   13 ++++++-------
- 11 files changed, 37 insertions(+), 55 deletions(-)
+ drivers/video/sh_mobile_hdmi.c |   88 +++++++---------------------------------
+ 1 files changed, 15 insertions(+), 73 deletions(-)
 
-diff --git a/arch/arm/mach-shmobile/board-ag5evm.c b/arch/arm/mach-shmobile/board-ag5evm.c
-index d0c30a4..139fbd1 100644
---- a/arch/arm/mach-shmobile/board-ag5evm.c
-+++ b/arch/arm/mach-shmobile/board-ag5evm.c
-@@ -235,16 +235,6 @@ static void lcd_backlight_reset(void)
- 	gpio_set_value(GPIO_PORT235, 1);
- }
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index 4b87c6e..c17e3ad 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -733,12 +733,11 @@ static unsigned long sh_hdmi_rate_error(struct sh_hdmi *hdmi,
+ static int sh_hdmi_read_edid(struct sh_hdmi *hdmi, unsigned long *hdmi_rate,
+ 			     unsigned long *parent_rate)
+ {
+-	struct fb_info *info = hdmi->entity.lcdc
+-			     ? hdmi->entity.lcdc->info : NULL;
+-	struct fb_var_screeninfo tmpvar;
+-	struct fb_var_screeninfo *var = &tmpvar;
++	struct sh_mobile_lcdc_chan *ch = hdmi->entity.lcdc;
++	struct fb_info *info = ch ? ch->info : NULL;
++	struct fb_var_screeninfo var;
+ 	const struct fb_videomode *mode, *found = NULL;
+-	struct fb_modelist *modelist = NULL;
++	const struct fb_modelist *modelist = NULL;
+ 	unsigned int f_width = 0, f_height = 0, f_refresh = 0;
+ 	unsigned long found_rate_error = ULONG_MAX; /* silly compiler... */
+ 	bool scanning = false, preferred_bad = false;
+@@ -856,12 +855,10 @@ static int sh_hdmi_read_edid(struct sh_hdmi *hdmi, unsigned long *hdmi_rate,
+ 		}
  
--static void lcd_on(void *board_data, struct fb_info *info)
+ 		/* Check if supported: sufficient fb memory, supported clock-rate */
+-		fb_videomode_to_var(var, mode);
++		fb_videomode_to_var(&var, mode);
+ 
+-		var->bits_per_pixel = info->var.bits_per_pixel;
+-
+-		if (info && info->fbops->fb_check_var &&
+-		    info->fbops->fb_check_var(var, info)) {
++		if (ch && ch->notify &&
++		    ch->notify(ch, SH_MOBILE_LCDC_EVENT_DISPLAY_MODE, &var)) {
+ 			scanning = true;
+ 			preferred_bad = true;
+ 			continue;
+@@ -1042,32 +1039,6 @@ static const struct sh_mobile_lcdc_entity_ops sh_hdmi_ops = {
+ 	.display_off = sh_hdmi_display_off,
+ };
+ 
+-static bool sh_hdmi_must_reconfigure(struct sh_hdmi *hdmi)
 -{
--	lcd_backlight_on();
+-	struct sh_mobile_lcdc_chan *ch = hdmi->entity.lcdc;
+-	struct fb_var_screeninfo *new_var = &hdmi->var, *old_var = &ch->display_var;
+-	struct fb_videomode mode1, mode2;
+-
+-	fb_var_to_videomode(&mode1, old_var);
+-	fb_var_to_videomode(&mode2, new_var);
+-
+-	dev_dbg(hdmi->dev, "Old %ux%u, new %ux%u\n",
+-		mode1.xres, mode1.yres, mode2.xres, mode2.yres);
+-
+-	if (fb_mode_is_equal(&mode1, &mode2)) {
+-		/* It can be a different monitor with an equal video-mode */
+-		old_var->width = new_var->width;
+-		old_var->height = new_var->height;
+-		return false;
+-	}
+-
+-	dev_dbg(hdmi->dev, "Switching %u -> %u lines\n",
+-		mode1.yres, mode2.yres);
+-	*old_var = *new_var;
+-
+-	return true;
 -}
 -
--static void lcd_off(void *board_data)
--{
--	lcd_backlight_reset();
--}
+ /**
+  * sh_hdmi_clk_configure() - set HDMI clock frequency and enable the clock
+  * @hdmi:		driver context
+@@ -1107,15 +1078,14 @@ static long sh_hdmi_clk_configure(struct sh_hdmi *hdmi, unsigned long hdmi_rate,
+ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ {
+ 	struct sh_hdmi *hdmi = container_of(work, struct sh_hdmi, edid_work.work);
++	struct sh_mobile_lcdc_chan *ch = hdmi->entity.lcdc;
+ 	int ret;
+ 
+ 	dev_dbg(hdmi->dev, "%s(%p): begin, hotplug status %d\n", __func__, hdmi,
+ 		hdmi->hp_state);
+ 
+ 	if (hdmi->hp_state = HDMI_HOTPLUG_CONNECTED) {
+-		struct sh_mobile_lcdc_chan *ch = hdmi->entity.lcdc;
+ 		unsigned long parent_rate = 0, hdmi_rate;
+-		struct fb_info *info;
+ 
+ 		ret = sh_hdmi_read_edid(hdmi, &hdmi_rate, &parent_rate);
+ 		if (ret < 0)
+@@ -1133,47 +1103,19 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 		/* Switched to another (d) power-save mode */
+ 		msleep(10);
+ 
+-		if (ch = NULL)
+-			goto out;
 -
- /* LCDC0 */
- static const struct fb_videomode lcdc0_modes[] = {
- 	{
-@@ -274,8 +264,8 @@ static struct sh_mobile_lcdc_info lcdc0_info = {
- 		.lcd_cfg = lcdc0_modes,
- 		.num_cfg = ARRAY_SIZE(lcdc0_modes),
- 		.board_cfg = {
--			.display_on = lcd_on,
--			.display_off = lcd_off,
-+			.display_on = lcd_backlight_on,
-+			.display_off = lcd_backlight_reset,
- 		},
- 	}
- };
-diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
-index 332f07e..9d0d7b2 100644
---- a/arch/arm/mach-shmobile/board-mackerel.c
-+++ b/arch/arm/mach-shmobile/board-mackerel.c
-@@ -355,14 +355,14 @@ static struct fb_videomode mackerel_lcdc_modes[] = {
- 	},
- };
- 
--static int mackerel_set_brightness(void *board_data, int brightness)
-+static int mackerel_set_brightness(int brightness)
- {
- 	gpio_set_value(GPIO_PORT31, brightness);
- 
- 	return 0;
- }
- 
--static int mackerel_get_brightness(void *board_data)
-+static int mackerel_get_brightness(void)
- {
- 	return gpio_get_value(GPIO_PORT31);
- }
-diff --git a/arch/sh/boards/mach-ap325rxa/setup.c b/arch/sh/boards/mach-ap325rxa/setup.c
-index 0a53ecd..477767e 100644
---- a/arch/sh/boards/mach-ap325rxa/setup.c
-+++ b/arch/sh/boards/mach-ap325rxa/setup.c
-@@ -156,7 +156,7 @@ static struct platform_device nand_flash_device = {
- #define PORT_DRVCRA	0xA405018A
- #define PORT_DRVCRB	0xA405018C
- 
--static int ap320_wvga_set_brightness(void *board_data, int brightness)
-+static int ap320_wvga_set_brightness(int brightness)
- {
- 	if (brightness) {
- 		gpio_set_value(GPIO_PTS3, 0);
-@@ -169,12 +169,12 @@ static int ap320_wvga_set_brightness(void *board_data, int brightness)
- 	return 0;
- }
- 
--static int ap320_wvga_get_brightness(void *board_data)
-+static int ap320_wvga_get_brightness(void)
- {
- 	return gpio_get_value(GPIO_PTS3);
- }
- 
--static void ap320_wvga_power_on(void *board_data, struct fb_info *info)
-+static void ap320_wvga_power_on(void)
- {
- 	msleep(100);
- 
-@@ -182,7 +182,7 @@ static void ap320_wvga_power_on(void *board_data, struct fb_info *info)
- 	__raw_writew(FPGA_LCDREG_VAL, FPGA_LCDREG);
- }
- 
--static void ap320_wvga_power_off(void *board_data)
-+static void ap320_wvga_power_off(void)
- {
- 	/* ASD AP-320/325 LCD OFF */
- 	__raw_writew(0, FPGA_LCDREG);
-diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
-index 75e466f..7c592f8 100644
---- a/arch/sh/boards/mach-ecovec24/setup.c
-+++ b/arch/sh/boards/mach-ecovec24/setup.c
-@@ -310,14 +310,14 @@ static const struct fb_videomode ecovec_dvi_modes[] = {
- 	},
- };
- 
--static int ecovec24_set_brightness(void *board_data, int brightness)
-+static int ecovec24_set_brightness(int brightness)
- {
- 	gpio_set_value(GPIO_PTR1, brightness);
- 
- 	return 0;
- }
- 
--static int ecovec24_get_brightness(void *board_data)
-+static int ecovec24_get_brightness(void)
- {
- 	return gpio_get_value(GPIO_PTR1);
- }
-diff --git a/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c b/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
-index 25e145f..c148b36 100644
---- a/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
-+++ b/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
-@@ -251,8 +251,7 @@ static void display_on(void *sohandle,
- 	write_memory_start(sohandle, so);
- }
- 
--int kfr2r09_lcd_setup(void *board_data, void *sohandle,
--		      struct sh_mobile_lcdc_sys_bus_ops *so)
-+int kfr2r09_lcd_setup(void *sohandle, struct sh_mobile_lcdc_sys_bus_ops *so)
- {
- 	/* power on */
- 	gpio_set_value(GPIO_PTF4, 0);  /* PROTECT/ -> L */
-@@ -273,8 +272,7 @@ int kfr2r09_lcd_setup(void *board_data, void *sohandle,
- 	return 0;
- }
- 
--void kfr2r09_lcd_start(void *board_data, void *sohandle,
--		       struct sh_mobile_lcdc_sys_bus_ops *so)
-+void kfr2r09_lcd_start(void *sohandle, struct sh_mobile_lcdc_sys_bus_ops *so)
- {
- 	write_memory_start(sohandle, so);
- }
-@@ -327,12 +325,12 @@ static int kfr2r09_lcd_backlight(int on)
- 	return 0;
- }
- 
--void kfr2r09_lcd_on(void *board_data, struct fb_info *info)
-+void kfr2r09_lcd_on(void)
- {
- 	kfr2r09_lcd_backlight(1);
- }
- 
--void kfr2r09_lcd_off(void *board_data)
-+void kfr2r09_lcd_off(void)
- {
- 	kfr2r09_lcd_backlight(0);
- }
-diff --git a/arch/sh/boards/mach-migor/lcd_qvga.c b/arch/sh/boards/mach-migor/lcd_qvga.c
-index de9014a..8bccd34 100644
---- a/arch/sh/boards/mach-migor/lcd_qvga.c
-+++ b/arch/sh/boards/mach-migor/lcd_qvga.c
-@@ -113,8 +113,7 @@ static const unsigned short magic3_data[] = {
- 	0x0010, 0x16B0, 0x0011, 0x0111, 0x0007, 0x0061,
- };
- 
--int migor_lcd_qvga_setup(void *board_data, void *sohandle,
--			 struct sh_mobile_lcdc_sys_bus_ops *so)
-+int migor_lcd_qvga_setup(void *sohandle, struct sh_mobile_lcdc_sys_bus_ops *so)
- {
- 	unsigned long xres = 320;
- 	unsigned long yres = 240;
-diff --git a/arch/sh/boards/mach-se/7724/setup.c b/arch/sh/boards/mach-se/7724/setup.c
-index ab81abd..334b463 100644
---- a/arch/sh/boards/mach-se/7724/setup.c
-+++ b/arch/sh/boards/mach-se/7724/setup.c
-@@ -185,8 +185,6 @@ static struct sh_mobile_lcdc_info lcdc_info = {
- 			.width = 152,
- 			.height = 91,
- 		},
--		.board_cfg = {
--		},
- 	}
- };
- 
-diff --git a/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h b/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
-index 07e635b..ba3d93d 100644
---- a/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
-+++ b/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
-@@ -4,21 +4,21 @@
- #include <video/sh_mobile_lcdc.h>
- 
- #if defined(CONFIG_FB_SH_MOBILE_LCDC) || defined(CONFIG_FB_SH_MOBILE_LCDC_MODULE)
--void kfr2r09_lcd_on(void *board_data, struct fb_info *info);
--void kfr2r09_lcd_off(void *board_data);
--int kfr2r09_lcd_setup(void *board_data, void *sys_ops_handle,
-+void kfr2r09_lcd_on(void);
-+void kfr2r09_lcd_off(void);
-+int kfr2r09_lcd_setup(void *sys_ops_handle,
- 		      struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
--void kfr2r09_lcd_start(void *board_data, void *sys_ops_handle,
-+void kfr2r09_lcd_start(void *sys_ops_handle,
- 		       struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
- #else
--static void kfr2r09_lcd_on(void *board_data) {}
--static void kfr2r09_lcd_off(void *board_data) {}
--static int kfr2r09_lcd_setup(void *board_data, void *sys_ops_handle,
-+static void kfr2r09_lcd_on(void) {}
-+static void kfr2r09_lcd_off(void) {}
-+static int kfr2r09_lcd_setup(void *sys_ops_handle,
- 				struct sh_mobile_lcdc_sys_bus_ops *sys_ops)
- {
- 	return -ENODEV;
- }
--static void kfr2r09_lcd_start(void *board_data, void *sys_ops_handle,
-+static void kfr2r09_lcd_start(void *sys_ops_handle,
- 				struct sh_mobile_lcdc_sys_bus_ops *sys_ops)
- {
- }
-diff --git a/arch/sh/include/mach-migor/mach/migor.h b/arch/sh/include/mach-migor/mach/migor.h
-index 42fccf9..7de7bb7 100644
---- a/arch/sh/include/mach-migor/mach/migor.h
-+++ b/arch/sh/include/mach-migor/mach/migor.h
-@@ -9,7 +9,7 @@
- 
- #include <video/sh_mobile_lcdc.h>
- 
--int migor_lcd_qvga_setup(void *board_data, void *sys_ops_handle,
-+int migor_lcd_qvga_setup(void *sys_ops_handle,
- 			 struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
- 
- #endif /* __ASM_SH_MIGOR_H */
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 543f957..cb0d9b6 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -314,14 +314,12 @@ static void sh_mobile_lcdc_deferred_io(struct fb_info *info,
- 		/* trigger panel update */
- 		dma_map_sg(info->dev, ch->sglist, nr_pages, DMA_TO_DEVICE);
- 		if (bcfg->start_transfer)
--			bcfg->start_transfer(bcfg->board_data, ch,
--					     &sh_mobile_lcdc_sys_bus_ops);
-+			bcfg->start_transfer(ch, &sh_mobile_lcdc_sys_bus_ops);
- 		lcdc_write_chan(ch, LDSM2R, LDSM2R_OSTRG);
- 		dma_unmap_sg(info->dev, ch->sglist, nr_pages, DMA_TO_DEVICE);
+-		info = ch->info;
+-
+-		console_lock();
+-
+-		/* HDMI plug in */
+-		if (!sh_hdmi_must_reconfigure(hdmi) &&
+-		    info->state = FBINFO_STATE_RUNNING) {
+-			/*
+-			 * First activation with the default monitor - just turn
+-			 * on, if we run a resume here, the logo disappears
+-			 */
+-			if (lock_fb_info(info)) {
+-				info->var.width = hdmi->var.width;
+-				info->var.height = hdmi->var.height;
+-				sh_hdmi_display_on(&hdmi->entity);
+-				unlock_fb_info(info);
+-			}
+-		} else {
+-			/* New monitor or have to wake up */
+-			fb_set_suspend(info, 0);
+-		}
+-
+-		console_unlock();
++		if (ch && ch->notify)
++			ch->notify(ch, SH_MOBILE_LCDC_EVENT_DISPLAY_CONNECT,
++				   &hdmi->var);
  	} else {
- 		if (bcfg->start_transfer)
--			bcfg->start_transfer(bcfg->board_data, ch,
--					     &sh_mobile_lcdc_sys_bus_ops);
-+			bcfg->start_transfer(ch, &sh_mobile_lcdc_sys_bus_ops);
- 		lcdc_write_chan(ch, LDSM2R, LDSM2R_OSTRG);
+-		ret = 0;
+-		if (hdmi->entity.lcdc = NULL)
+-			goto out;
+-
+ 		hdmi->monspec.modedb_len = 0;
+ 		fb_destroy_modedb(hdmi->monspec.modedb);
+ 		hdmi->monspec.modedb = NULL;
+ 
+-		console_lock();
+-
+-		/* HDMI disconnect */
+-		fb_set_suspend(hdmi->entity.lcdc->info, 1);
++		if (ch && ch->notify)
++			ch->notify(ch, SH_MOBILE_LCDC_EVENT_DISPLAY_DISCONNECT,
++				   NULL);
+ 
+-		console_unlock();
++		ret = 0;
  	}
- }
-@@ -343,7 +341,7 @@ static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
  
- 	/* HDMI must be enabled before LCDC configuration */
- 	if (board_cfg->display_on)
--		board_cfg->display_on(board_cfg->board_data, ch->info);
-+		board_cfg->display_on();
- }
- 
- static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
-@@ -351,7 +349,7 @@ static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
- 	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
- 
- 	if (board_cfg->display_off)
--		board_cfg->display_off(board_cfg->board_data);
-+		board_cfg->display_off();
- 
- 	if (ch->tx_dev)
- 		ch->tx_dev->ops->display_off(ch->tx_dev);
-@@ -689,7 +687,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 
- 		board_cfg = &ch->cfg.board_cfg;
- 		if (board_cfg->setup_sys) {
--			ret = board_cfg->setup_sys(board_cfg->board_data, ch,
-+			ret = board_cfg->setup_sys(ch,
- 						   &sh_mobile_lcdc_sys_bus_ops);
- 			if (ret)
- 				return ret;
-@@ -1325,7 +1323,7 @@ static int sh_mobile_lcdc_update_bl(struct backlight_device *bdev)
- 	    bdev->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
- 		brightness = 0;
- 
--	return cfg->set_brightness(cfg->board_data, brightness);
-+	return cfg->set_brightness(brightness);
- }
- 
- static int sh_mobile_lcdc_get_brightness(struct backlight_device *bdev)
-@@ -1333,7 +1331,7 @@ static int sh_mobile_lcdc_get_brightness(struct backlight_device *bdev)
- 	struct sh_mobile_lcdc_chan *ch = bl_get_data(bdev);
- 	struct sh_mobile_lcdc_board_cfg *cfg = &ch->cfg.board_cfg;
- 
--	return cfg->get_brightness(cfg->board_data);
-+	return cfg->get_brightness();
- }
- 
- static int sh_mobile_lcdc_check_fb(struct backlight_device *bdev,
-diff --git a/include/video/sh_mobile_lcdc.h b/include/video/sh_mobile_lcdc.h
-index b1b3e8d..a1e6596 100644
---- a/include/video/sh_mobile_lcdc.h
-+++ b/include/video/sh_mobile_lcdc.h
-@@ -148,15 +148,14 @@ struct sh_mobile_lcdc_sys_bus_ops {
- };
- 
- struct sh_mobile_lcdc_board_cfg {
--	void *board_data;
--	int (*setup_sys)(void *board_data, void *sys_ops_handle,
-+	int (*setup_sys)(void *sys_ops_handle,
- 			 struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
--	void (*start_transfer)(void *board_data, void *sys_ops_handle,
-+	void (*start_transfer)(void *sys_ops_handle,
- 			       struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
--	void (*display_on)(void *board_data, struct fb_info *info);
--	void (*display_off)(void *board_data);
--	int (*set_brightness)(void *board_data, int brightness);
--	int (*get_brightness)(void *board_data);
-+	void (*display_on)(void);
-+	void (*display_off)(void);
-+	int (*set_brightness)(int brightness);
-+	int (*get_brightness)(void);
- };
- 
- struct sh_mobile_lcdc_lcd_size_cfg { /* width and height of panel in mm */
+ out:
 -- 
 1.7.3.4
 

@@ -1,80 +1,53 @@
-From: Rob Clark <rob.clark@linaro.org>
-Date: Mon, 19 Sep 2011 00:09:36 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 19 Sep 2011 06:33:34 +0000
 Subject: Re: Proposal for a low-level Linux display framework
-Message-Id: <CAN_cFWNkdYEFaeCmJcsPnrt+hoiOZuZEQ6qbrcXWQT_3NSNoLw@mail.gmail.com>
+Message-Id: <1316414014.1978.12.camel@deskari>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1316088425.11294.78.camel@lappyti>
-	<CADnq5_NnzLtJmSzOgyppnBtv96DRTJ71u6ZSrs56KJ-F5CC-mw@mail.gmail.com>
-	<4E724659.5080709@gmx.de>
-	<201109180112.15896.laurent.pinchart@ideasonboard.com>
-	<20110918232329.6ff05d56@lxorguk.ukuu.org.uk>
-In-Reply-To: <20110918232329.6ff05d56@lxorguk.ukuu.org.uk>
+	 <yunboul7sx7.fsf@aiko.keithp.com> <1316100594.23214.65.camel@deskari>
+	 <yun8vpp7qk7.fsf@aiko.keithp.com> <1316107275.23214.99.camel@deskari>
+	 <yunfwjxwbjq.fsf@aiko.keithp.com>
+	 <20110916175326.54567b14@lxorguk.ukuu.org.uk>
+In-Reply-To: <20110916175326.54567b14@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Keith Packard <keithp@keithp.com>, linaro-dev@lists.linaro.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>, linux-fbdev@vger.kernel.org, Alex Deucher <alexdeucher@gmail.com>
+Cc: Keith Packard <keithp@keithp.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-dev@lists.linaro.org, "Clark, Rob" <rob@ti.com>, Archit Taneja <archit@ti.com>
 
-On Sun, Sep 18, 2011 at 5:23 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> This would leave us with the issue of controlling formats and other parameters
->> on the pipelines. We could keep separate DRM, KMS, FB and V4L APIs for that,
->
-> There are some other differences that matter. The exact state and
-> behaviour of memory, sequencing of accesses, cache control and management
-> are a critical part of DRM for most GPUs, as is the ability to have them
-> in swap backed objects and to do memory management of them. Fences and
-> the like are a big part of the logic of many renderers and the same
-> fencing has to be applied between capture and GPU, and also in some cases
-> between playback accelerators (eg MP4 playback) and GPU.
->
-> To glue them together I think you'd need to support the use of GEM objects
-> (maybe extended) in V4L. That may actually make life cleaner and simpler
-> in some respects because GEM objects are refcounted nicely and have
-> handles.
+On Fri, 2011-09-16 at 17:53 +0100, Alan Cox wrote:
+> > I'm not sure a common interface to all of these different
+> > channels makes sense, but surely a DSI library and an aux channel
+> > library would fit nicely alongside the existing DDC library.
+> 
+> DSI and the various other MIPI bits tend to be horribly panel and device
+> specific. In one sense yes its a standard with standard commands,
+> processes, queries etc, on the other a lot of stuff is oriented around
+> the 'its a fixed configuration unit we don't need to have queries' view.
 
-fwiw, I think the dmabuf proposal that linaro GWG is working on should
-be sufficient for V4L to capture directly into a GEM buffer that can
-be scanned out (overlay) or composited by GPU, etc, in cases where the
-different dma initiators can all access some common memory:
+I think it's a bit more complex than that. True, there are MIPI
+standards, for the video there are DPI, DBI, DSI, and for the commands
+there is DCS. And, as you mentioned, many panels need custom
+initialization, or support only parts of the DCS, or have other quirks.
 
-http://lists.linaro.org/pipermail/linaro-mm-sig/2011-September/000616.html
+However, I think the biggest thing to realize here is that DSI
+peripherals can be anything. It's not always so that you have a DSI bus
+and a single panel connected to it. You can have hubs, buffer chips,
+etc.
 
-The idea is that you could allocate a GEM buffer, export a dmabuf
-handle for that buffer that could be passed to v4l2 camera device (ie.
-V4L2_MEMORY_DMABUF), video encoder, etc..  the importing device should
-bracket DMA to/from the buffer w/ get/put_scatterlist() so an unused
-buffer could be unpinned if needed.
+We need DSI peripheral device drivers for those, a single "DSI output"
+driver cannot work. And this is also the most important thing in my
+original proposition.
 
-> DRM and KMS abstract out stuff into what is akin to V4L subdevices for
-> the various objects the video card has that matter for display - from
-> scanout buffers to the various video outputs, timings and the like.
->
-> I don't know what it's like with OMAP but for some of the x86 stuff
-> particularly low speed/power stuff the capture devices, GPU and overlays
-> tend to be fairly incestuous in order to do things like 1080i/p preview
-> while recording from the camera.
+> There also tends to be a lot of vendor magic initialisation logic both
+> chipset and device dependant, and often 'plumbing dependant' on SoC
 
-We don't like extra memcpy's, but something like dmabuf fits us
-nicely.. and I expect it would work well in any sort of UMA system
-where camera, encoder, GPU, overlay, etc all can share the same memory
-and formats.  I suspect the situation is similar in the x86 SoC
-world.. but would be good to get some feedback on the proposal.  (I
-guess next version of the RFC would go out to more mailing lists for
-broader review.)
+While I have DSI experience with only one SoC, I do believe it'd be
+possible to create a DSI API that would allow us to have platform
+independent DSI peripheral drivers.
 
-BR,
--R
+Can you share any SoC side DSI peculiarities on Intel's SoCs?
 
-> GPU is also a bit weird in some ways because while its normally
-> nonsensical to do things like use the capture facility one card to drive
-> part of another, it's actually rather useful (although not supported
-> really by DRM) to do exactly that with GPUs. A simple example is a dual
-> headed box with a dumb frame buffer and an accelerated output both of
-> which are using memory that can be hit by the accelerated card. Classic
-> example being a USB plug in monitor.
->
-> _______________________________________________
-> linaro-dev mailing list
-> linaro-dev@lists.linaro.org
-> http://lists.linaro.org/mailman/listinfo/linaro-dev
->
+ Tomi
+
+

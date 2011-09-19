@@ -1,66 +1,38 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 19 Sep 2011 00:27:58 +0000
-Subject: [WIP/RFC 20/31] sh_mobile_lcdc: Add an lcdc channel pointer to sh_mobile_lcdc_entity
-Message-Id: <1316392089-27598-21-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Mon, 19 Sep 2011 00:28:06 +0000
+Subject: [WIP/RFC 28/31] fbdev: sh_mobile_lcdc: Make LCDC entity inherit from media_entity
+Message-Id: <1316392089-27598-29-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The field will be used by the transmitter drivers to access
-sh_mobile_lcdc_chan fields such as fb_info.
-
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |    5 ++++-
  drivers/video/sh_mobile_lcdcfb.h |    2 ++
- 2 files changed, 6 insertions(+), 1 deletions(-)
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index eff475d..f8bdbe9 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -1494,8 +1494,10 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
- 		if (!info || !info->device)
- 			continue;
- 
--		if (ch->tx_dev)
-+		if (ch->tx_dev) {
-+			ch->tx_dev->lcdc = NULL;
- 			module_put(ch->cfg.tx_dev->dev.driver->owner);
-+		}
- 
- 		if (ch->sglist)
- 			vfree(ch->sglist);
-@@ -1605,6 +1607,7 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
- 			return -EINVAL;
- 		}
- 		ch->tx_dev = platform_get_drvdata(cfg->tx_dev);
-+		ch->tx_dev->lcdc = ch;
- 	}
- 
- 	/* Iterate through the modes to validate them and find the highest
 diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
-index c992a98..b57a847 100644
+index ec57533..fa60d00 100644
 --- a/drivers/video/sh_mobile_lcdcfb.h
 +++ b/drivers/video/sh_mobile_lcdcfb.h
-@@ -19,6 +19,7 @@ struct fb_info;
- struct module;
- struct sh_mobile_lcdc_entity;
- struct sh_mobile_lcdc_priv;
-+struct sh_mobile_lcdc_chan;
+@@ -5,6 +5,7 @@
+ #include <linux/fb.h>
+ #include <linux/mutex.h>
+ #include <linux/wait.h>
++#include <media/media-entity.h>
  
- struct sh_mobile_lcdc_entity_ops {
- 	/* Display */
-@@ -30,6 +31,7 @@ struct sh_mobile_lcdc_entity_ops {
- struct sh_mobile_lcdc_entity {
- 	struct module *owner;
- 	const struct sh_mobile_lcdc_entity_ops *ops;
-+	struct sh_mobile_lcdc_chan *lcdc;
+ /* per-channel registers */
+ enum { LDDCKPAT1R, LDDCKPAT2R, LDMT1R, LDMT2R, LDMT3R, LDDFR, LDSM1R,
+@@ -34,6 +35,7 @@ enum sh_mobile_lcdc_entity_event {
  };
  
- /*
+ struct sh_mobile_lcdc_entity {
++	struct media_entity entity;
+ 	struct module *owner;
+ 	const struct sh_mobile_lcdc_entity_ops *ops;
+ 	struct sh_mobile_lcdc_chan *lcdc;
 -- 
 1.7.3.4
 

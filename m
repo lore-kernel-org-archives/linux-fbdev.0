@@ -1,53 +1,53 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 19 Sep 2011 06:33:34 +0000
+From: Keith Packard <keithp@keithp.com>
+Date: Mon, 19 Sep 2011 06:53:27 +0000
 Subject: Re: Proposal for a low-level Linux display framework
-Message-Id: <1316414014.1978.12.camel@deskari>
+Message-Id: <yunfwjtauqg.fsf@aiko.keithp.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-=-="
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1316088425.11294.78.camel@lappyti>
-	 <yunboul7sx7.fsf@aiko.keithp.com> <1316100594.23214.65.camel@deskari>
-	 <yun8vpp7qk7.fsf@aiko.keithp.com> <1316107275.23214.99.camel@deskari>
-	 <yunfwjxwbjq.fsf@aiko.keithp.com>
-	 <20110916175326.54567b14@lxorguk.ukuu.org.uk>
-In-Reply-To: <20110916175326.54567b14@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Keith Packard <keithp@keithp.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-dev@lists.linaro.org, "Clark, Rob" <rob@ti.com>, Archit Taneja <archit@ti.com>
+	<yunboul7sx7.fsf@aiko.keithp.com>
+	<1316100594.23214.65.camel@deskari>
+	<yun8vpp7qk7.fsf@aiko.keithp.com>
+	<1316107275.23214.99.camel@deskari>
+	<yunfwjxwbjq.fsf@aiko.keithp.com>
+	<20110916175326.54567b14@lxorguk.ukuu.org.uk>
+	<1316414014.1978.12.camel@deskari>
+In-Reply-To: <1316414014.1978.12.camel@deskari>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-fbdev@vger.kernel.org, linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>, "Clark, Rob" <rob@ti.com>
 
-On Fri, 2011-09-16 at 17:53 +0100, Alan Cox wrote:
-> > I'm not sure a common interface to all of these different
-> > channels makes sense, but surely a DSI library and an aux channel
-> > library would fit nicely alongside the existing DDC library.
-> 
-> DSI and the various other MIPI bits tend to be horribly panel and device
-> specific. In one sense yes its a standard with standard commands,
-> processes, queries etc, on the other a lot of stuff is oriented around
-> the 'its a fixed configuration unit we don't need to have queries' view.
+--=-=-=
+Content-Transfer-Encoding: quoted-printable
 
-I think it's a bit more complex than that. True, there are MIPI
-standards, for the video there are DPI, DBI, DSI, and for the commands
-there is DCS. And, as you mentioned, many panels need custom
-initialization, or support only parts of the DCS, or have other quirks.
+On Mon, 19 Sep 2011 09:33:34 +0300, Tomi Valkeinen <tomi.valkeinen@ti.com> =
+wrote:
 
-However, I think the biggest thing to realize here is that DSI
-peripherals can be anything. It's not always so that you have a DSI bus
-and a single panel connected to it. You can have hubs, buffer chips,
-etc.
+> I think it's a bit more complex than that. True, there are MIPI
+> standards, for the video there are DPI, DBI, DSI, and for the commands
+> there is DCS. And, as you mentioned, many panels need custom
+> initialization, or support only parts of the DCS, or have other
+> quirks.
 
-We need DSI peripheral device drivers for those, a single "DSI output"
-driver cannot work. And this is also the most important thing in my
-original proposition.
+So DSI is more like i2c than the DisplayPort aux channel or DDC. That
+seems fine; you can create a DSI infrastructure like the i2c
+infrastructure and then just have your display drivers use it to talk to
+the panel. We might eventually end up with some shared DRM code to deal
+with common DSI functions for display devices, like the EDID code
+today, but that doesn't need to happen before you can write your first
+DSI-using display driver.
 
-> There also tends to be a lot of vendor magic initialisation logic both
-> chipset and device dependant, and often 'plumbing dependant' on SoC
+=2D-=20
+keith.packard@intel.com
 
-While I have DSI experience with only one SoC, I do believe it'd be
-possible to create a DSI API that would allow us to have platform
-independent DSI peripheral drivers.
+--=-=-=
+Content-Type: application/pgp-signature
 
-Can you share any SoC side DSI peculiarities on Intel's SoCs?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
- Tomi
-
-
+iD8DBQFOdubnQp8BWwlsTdMRAusOAKCegZhdtYGIUQrd8gu69/RZ474TigCdFfyS
+YiohI3JOdnyz+UzbK0fRb7A=
+=wU+N
+-----END PGP SIGNATURE-----
+--=-=-=--

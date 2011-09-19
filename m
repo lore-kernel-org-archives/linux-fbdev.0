@@ -1,51 +1,62 @@
-From: Manjunath Hadli <manjunath.hadli@ti.com>
-Date: Mon, 26 Sep 2011 13:47:09 +0000
-Subject: [RFC PATCH 3/3] davinci: vpbe: add build infrastructure for fbdev driver
-Message-Id: <1317044109-7429-4-git-send-email-manjunath.hadli@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Mon, 19 Sep 2011 00:27:54 +0000
+Subject: [WIP/RFC 16/31] fbdev: sh_mobile_lcdc: Remove board configuration owner field
+Message-Id: <1316392089-27598-17-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-add Kconfig and Makefile changes to build the fbdev driver
+The field is unused, remove it.
 
-Signed-off-by: Manjunath Hadli <manjunath.hadli@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/media/video/davinci/Kconfig  |   13 +++++++++++++
- drivers/media/video/davinci/Makefile |    1 +
- 2 files changed, 14 insertions(+), 0 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |    8 ++------
+ include/video/sh_mobile_lcdc.h   |    2 --
+ 2 files changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/media/video/davinci/Kconfig b/drivers/media/video/davinci/Kconfig
-index a7f11e7..0ea27b8 100644
---- a/drivers/media/video/davinci/Kconfig
-+++ b/drivers/media/video/davinci/Kconfig
-@@ -113,3 +113,16 @@ config VIDEO_VPBE_DISPLAY
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 9fd93f7..543f957 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -342,20 +342,16 @@ static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
+ 		ch->tx_dev->ops->display_on(ch->tx_dev, ch->info);
  
- 	    To compile this driver as a module, choose M here: the
- 	    module will be called vpbe_display.
-+
-+config VIDEO_VPBE_FB
-+	tristate "VPBE Framebuffer driver"
-+	depends on FB && ARCH_DAVINCI
-+	select VIDEO_DMXXX_VPBE
-+	select FB_CFB_FILLRECT
-+	select FB_CFB_COPYAREA
-+	select FB_CFB_IMAGEBLIT
-+	default y
-+	help
-+		Enables VPBE Framebuffer driver on a DMXXX device
-+		To compile this driver as a module, choose M here: the
-+		 module will be called vpbe_fb.
-diff --git a/drivers/media/video/davinci/Makefile b/drivers/media/video/davinci/Makefile
-index ae7dafb..da4a5b4 100644
---- a/drivers/media/video/davinci/Makefile
-+++ b/drivers/media/video/davinci/Makefile
-@@ -18,3 +18,4 @@ obj-$(CONFIG_VIDEO_DM355_CCDC) += dm355_ccdc.o
- obj-$(CONFIG_VIDEO_ISIF) += isif.o
- obj-$(CONFIG_VIDEO_DM644X_VPBE) += vpbe.o vpbe_osd.o vpbe_venc.o
- obj-$(CONFIG_VIDEO_VPBE_DISPLAY) += vpbe_display.o
-+obj-$(CONFIG_VIDEO_VPBE_FB) += vpbe_fb.o
+ 	/* HDMI must be enabled before LCDC configuration */
+-	if (board_cfg->display_on && try_module_get(board_cfg->owner)) {
++	if (board_cfg->display_on)
+ 		board_cfg->display_on(board_cfg->board_data, ch->info);
+-		module_put(board_cfg->owner);
+-	}
+ }
+ 
+ static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
+ {
+ 	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
+ 
+-	if (board_cfg->display_off && try_module_get(board_cfg->owner)) {
++	if (board_cfg->display_off)
+ 		board_cfg->display_off(board_cfg->board_data);
+-		module_put(board_cfg->owner);
+-	}
+ 
+ 	if (ch->tx_dev)
+ 		ch->tx_dev->ops->display_off(ch->tx_dev);
+diff --git a/include/video/sh_mobile_lcdc.h b/include/video/sh_mobile_lcdc.h
+index 0ec59e1..b1b3e8d 100644
+--- a/include/video/sh_mobile_lcdc.h
++++ b/include/video/sh_mobile_lcdc.h
+@@ -147,9 +147,7 @@ struct sh_mobile_lcdc_sys_bus_ops {
+ 	unsigned long (*read_data)(void *handle);
+ };
+ 
+-struct module;
+ struct sh_mobile_lcdc_board_cfg {
+-	struct module *owner;
+ 	void *board_data;
+ 	int (*setup_sys)(void *board_data, void *sys_ops_handle,
+ 			 struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
 -- 
-1.6.2.4
+1.7.3.4
 

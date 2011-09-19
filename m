@@ -1,170 +1,114 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 20 Sep 2011 19:21:27 +0000
-Subject: [PATCH v2 1/4] fbdev: sh_mobile_meram: Replace hardcoded register values with macros
-Message-Id: <1316546490-4639-2-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Mon, 19 Sep 2011 00:27:44 +0000
+Subject: [WIP/RFC 06/31] sh_mobile_hdmi: Remove platform data lcd_dev field
+Message-Id: <1316392089-27598-7-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Instead of hardcoding register values through the driver, define macros
-for individual register bits using the register name and the bit name,
-and use the macros.
+The field is used to print debug messages only. Remove it.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mobile_meram.c |  100 +++++++++++++++++++++++++++++------=
-----
- 1 files changed, 74 insertions(+), 26 deletions(-)
+ arch/arm/mach-shmobile/board-ap4evb.c   |    1 -
+ arch/arm/mach-shmobile/board-mackerel.c |    1 -
+ drivers/video/sh_mobile_hdmi.c          |   17 +++++------------
+ include/video/sh_mobile_hdmi.h          |    1 -
+ 4 files changed, 5 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_mera=
-m.c
-index 39f28a1..569888c 100644
---- a/drivers/video/sh_mobile_meram.c
-+++ b/drivers/video/sh_mobile_meram.c
-@@ -20,22 +20,69 @@
- #include "sh_mobile_meram.h"
-=20
- /* meram registers */
--#define MExxCTL 0x0
--#define MExxBSIZE 0x4
--#define MExxMNCF 0x8
--#define MExxSARA 0x10
--#define MExxSARB 0x14
--#define MExxSBSIZE 0x18
--
--#define MERAM_MExxCTL_VAL(ctl, next_icb, addr)	\
--	((ctl) | (((next_icb) & 0x1f) << 11) | (((addr) & 0x7ff) << 16))
--#define	MERAM_MExxBSIZE_VAL(a, b, c) \
--	(((a) << 28) | ((b) << 16) | (c))
--
--#define MEVCR1 0x4
--#define MEACTS 0x10
--#define MEQSEL1 0x40
--#define MEQSEL2 0x44
-+#define MEVCR1			0x0004
-+#define MEVCR1_RST		(1 << 31)
-+#define MEVCR1_WD		(1 << 30)
-+#define MEVCR1_AMD1		(1 << 29)
-+#define MEVCR1_AMD0		(1 << 28)
-+#define MEQSEL1			0x0040
-+#define MEQSEL2			0x0044
-+
-+#define MExx_BASE		0x0400
-+
-+#define MExxCTL			0x0000
-+#define MExxCTL_BV		(1 << 31)
-+#define MExxCTL_BSZ_SHIFT	28
-+#define MExxCTL_MSAR_MASK	(0x7ff << MExxCTL_MSAR_SHIFT)
-+#define MExxCTL_MSAR_SHIFT	16
-+#define MExxCTL_NXT_MASK	(0x1f << MExxCTL_NXT_SHIFT)
-+#define MExxCTL_NXT_SHIFT	11
-+#define MExxCTL_WD1		(1 << 10)
-+#define MExxCTL_WD0		(1 << 9)
-+#define MExxCTL_WS		(1 << 8)
-+#define MExxCTL_CB		(1 << 7)
-+#define MExxCTL_WBF		(1 << 6)
-+#define MExxCTL_WF		(1 << 5)
-+#define MExxCTL_RF		(1 << 4)
-+#define MExxCTL_CM		(1 << 3)
-+#define MExxCTL_MD_READ		(1 << 0)
-+#define MExxCTL_MD_WRITE	(2 << 0)
-+#define MExxCTL_MD_ICB_WB	(3 << 0)
-+#define MExxCTL_MD_ICB		(4 << 0)
-+#define MExxCTL_MD_FB		(7 << 0)
-+#define MExxCTL_MD_MASK		(7 << 0)
-+#define MExxBSIZE		0x0004
-+#define MExxBSIZE_RCNT_SHIFT	28
-+#define MExxBSIZE_YSZM1_SHIFT	16
-+#define MExxBSIZE_XSZM1_SHIFT	0
-+#define MExxMNCF		0x0008
-+#define MExxMNCF_KWBNM_SHIFT	28
-+#define MExxMNCF_KRBNM_SHIFT	24
-+#define MExxMNCF_BNM_SHIFT	16
-+#define MExxMNCF_XBV		(1 << 15)
-+#define MExxMNCF_CPL_YCBCR444	(1 << 12)
-+#define MExxMNCF_CPL_YCBCR420	(2 << 12)
-+#define MExxMNCF_CPL_YCBCR422	(3 << 12)
-+#define MExxMNCF_CPL_MSK	(3 << 12)
-+#define MExxMNCF_BL		(1 << 2)
-+#define MExxMNCF_LNM_SHIFT	0
-+#define MExxSARA		0x0010
-+#define MExxSARB		0x0014
-+#define MExxSBSIZE		0x0018
-+#define MExxSBSIZE_HDV		(1 << 31)
-+#define MExxSBSIZE_HSZ16	(0 << 28)
-+#define MExxSBSIZE_HSZ32	(1 << 28)
-+#define MExxSBSIZE_HSZ64	(2 << 28)
-+#define MExxSBSIZE_HSZ128	(3 << 28)
-+#define MExxSBSIZE_SBSIZZ_SHIFT	0
-+
-+#define MERAM_MExxCTL_VAL(next, addr)	\
-+	((((next) << MExxCTL_NXT_SHIFT) & MExxCTL_NXT_MASK) | \
-+	 (((addr) << MExxCTL_MSAR_SHIFT) & MExxCTL_MSAR_MASK))
-+#define	MERAM_MExxBSIZE_VAL(rcnt, yszm1, xszm1) \
-+	(((rcnt) << MExxBSIZE_RCNT_SHIFT) | \
-+	 ((yszm1) << MExxBSIZE_YSZM1_SHIFT) | \
-+	 ((xszm1) << MExxBSIZE_XSZM1_SHIFT))
-=20
- static unsigned long common_regs[] =3D {
- 	MEVCR1,
-@@ -72,8 +119,8 @@ struct sh_mobile_meram_priv {
-  * MERAM/ICB access functions
-  */
-=20
--#define MERAM_ICB_OFFSET(base, idx, off)	\
--	((base) + (0x400 + ((idx) * 0x20) + (off)))
-+#define MERAM_ICB_OFFSET(base, idx, off) \
-+	(MExx_BASE + (base) + (off) + (idx) * 0x20)
-=20
- static inline void meram_write_icb(void __iomem *base, int idx, int off,
- 	unsigned long val)
-@@ -308,17 +355,18 @@ static int meram_init(struct sh_mobile_meram_priv *pr=
-iv,
- 	/*
- 	 * Set MERAM for framebuffer
- 	 *
--	 * 0x70f:  WD =3D 0x3, WS=3D0x1, CM=3D0x1, MD=FB mode
- 	 * we also chain the cache_icb and the marker_icb.
- 	 * we also split the allocated MERAM buffer between two ICBs.
+diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
+index 1227903..485b151 100644
+--- a/arch/arm/mach-shmobile/board-ap4evb.c
++++ b/arch/arm/mach-shmobile/board-ap4evb.c
+@@ -821,7 +821,6 @@ static long ap4evb_clk_optimize(unsigned long target, unsigned long *best_freq,
+ 
+ static struct sh_mobile_hdmi_info hdmi_info = {
+ 	.lcd_chan = &sh_mobile_lcdc1_info.ch[0],
+-	.lcd_dev = &lcdc1_device.dev,
+ 	.flags = HDMI_SND_SRC_SPDIF,
+ 	.clk_optimize_parent = ap4evb_clk_optimize,
+ };
+diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
+index 199c2f1..6f42cd8 100644
+--- a/arch/arm/mach-shmobile/board-mackerel.c
++++ b/arch/arm/mach-shmobile/board-mackerel.c
+@@ -484,7 +484,6 @@ static struct platform_device hdmi_lcdc_device = {
+ 
+ static struct sh_mobile_hdmi_info hdmi_info = {
+ 	.lcd_chan	= &hdmi_lcdc_info.ch[0],
+-	.lcd_dev	= &hdmi_lcdc_device.dev,
+ 	.flags		= HDMI_SND_SRC_SPDIF,
+ };
+ 
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index 7d54e2c..e888081 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -1006,11 +1006,9 @@ static void sh_hdmi_display_on(void *arg, struct fb_info *info)
+ 	 * FB_EVENT_FB_UNBIND notify is also called with info->lock held
  	 */
- 	meram_write_icb(priv->base, icb->cache_icb, MExxCTL,
--			MERAM_MExxCTL_VAL(0x70f, icb->marker_icb,
--					  icb->meram_offset));
-+			MERAM_MExxCTL_VAL(icb->marker_icb, icb->meram_offset) |
-+			MExxCTL_WD1 | MExxCTL_WD0 | MExxCTL_WS | MExxCTL_CM |
-+			MExxCTL_MD_FB);
- 	meram_write_icb(priv->base, icb->marker_icb, MExxCTL,
--			MERAM_MExxCTL_VAL(0x70f, icb->cache_icb,
--					  icb->meram_offset +
--					  icb->meram_size / 2));
-+			MERAM_MExxCTL_VAL(icb->cache_icb, icb->meram_offset +
-+					  icb->meram_size / 2) |
-+			MExxCTL_WD1 | MExxCTL_WD0 | MExxCTL_WS | MExxCTL_CM |
-+			MExxCTL_MD_FB);
-=20
- 	return 0;
+ 	struct sh_hdmi *hdmi = arg;
+-	struct sh_mobile_hdmi_info *pdata = hdmi->dev->platform_data;
+ 	struct sh_mobile_lcdc_chan *ch = info->par;
+ 
+-	dev_dbg(hdmi->dev, "%s(%p): state %x\n", __func__,
+-		pdata->lcd_dev, info->state);
++	dev_dbg(hdmi->dev, "%s(%p): state %x\n", __func__, hdmi, info->state);
+ 
+ 	/* No need to lock */
+ 	hdmi->info = info;
+@@ -1038,9 +1036,8 @@ static void sh_hdmi_display_on(void *arg, struct fb_info *info)
+ static void sh_hdmi_display_off(void *arg)
+ {
+ 	struct sh_hdmi *hdmi = arg;
+-	struct sh_mobile_hdmi_info *pdata = hdmi->dev->platform_data;
+ 
+-	dev_dbg(hdmi->dev, "%s(%p)\n", __func__, pdata->lcd_dev);
++	dev_dbg(hdmi->dev, "%s(%p)\n", __func__, hdmi);
+ 	/* PS mode e->a */
+ 	hdmi_write(hdmi, 0x10, HDMI_SYSTEM_CTRL);
  }
-@@ -507,7 +555,7 @@ static int sh_mobile_meram_runtime_suspend(struct devic=
-e *dev)
- 			/* Reset ICB on resume */
- 			if (icb_regs[k] =3D MExxCTL)
- 				priv->icb_saved_regs[j * ICB_REGS_SIZE + k] -					0x70;
-+					MExxCTL_WBF | MExxCTL_WF | MExxCTL_RF;
- 		}
- 	}
- 	return 0;
-@@ -592,7 +640,7 @@ static int __devinit sh_mobile_meram_probe(struct platf=
-orm_device *pdev)
-=20
- 	/* initialize ICB addressing mode */
- 	if (pdata->addr_mode =3D SH_MOBILE_MERAM_MODE1)
--		meram_write_reg(priv->base, MEVCR1, 1 << 29);
-+		meram_write_reg(priv->base, MEVCR1, MEVCR1_AMD1);
-=20
- 	pm_runtime_enable(&pdev->dev);
-=20
---=20
+@@ -1111,15 +1108,11 @@ static long sh_hdmi_clk_configure(struct sh_hdmi *hdmi, unsigned long hdmi_rate,
+ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ {
+ 	struct sh_hdmi *hdmi = container_of(work, struct sh_hdmi, edid_work.work);
+-	struct sh_mobile_hdmi_info *pdata = hdmi->dev->platform_data;
+ 	struct sh_mobile_lcdc_chan *ch;
+ 	int ret;
+ 
+-	dev_dbg(hdmi->dev, "%s(%p): begin, hotplug status %d\n", __func__,
+-		pdata->lcd_dev, hdmi->hp_state);
+-
+-	if (!pdata->lcd_dev)
+-		return;
++	dev_dbg(hdmi->dev, "%s(%p): begin, hotplug status %d\n", __func__, hdmi,
++		hdmi->hp_state);
+ 
+ 	mutex_lock(&hdmi->mutex);
+ 
+@@ -1191,7 +1184,7 @@ out:
+ 		hdmi->hp_state = HDMI_HOTPLUG_DISCONNECTED;
+ 	mutex_unlock(&hdmi->mutex);
+ 
+-	dev_dbg(hdmi->dev, "%s(%p): end\n", __func__, pdata->lcd_dev);
++	dev_dbg(hdmi->dev, "%s(%p): end\n", __func__, hdmi);
+ }
+ 
+ static int sh_hdmi_notify(struct notifier_block *nb,
+diff --git a/include/video/sh_mobile_hdmi.h b/include/video/sh_mobile_hdmi.h
+index b569329..0b8d2cf 100644
+--- a/include/video/sh_mobile_hdmi.h
++++ b/include/video/sh_mobile_hdmi.h
+@@ -32,7 +32,6 @@ struct clk;
+ 
+ struct sh_mobile_hdmi_info {
+ 	struct sh_mobile_lcdc_chan_cfg	*lcd_chan;
+-	struct device			*lcd_dev;
+ 	unsigned int			 flags;
+ 	long (*clk_optimize_parent)(unsigned long target, unsigned long *best_freq,
+ 				    unsigned long *parent_freq);
+-- 
 1.7.3.4
 

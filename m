@@ -1,126 +1,146 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 19 Sep 2011 00:27:50 +0000
-Subject: [WIP/RFC 12/31] fbdev: sh_mipi_dsi: Don't hook up into board_cfg display operations
-Message-Id: <1316392089-27598-13-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Mon, 19 Sep 2011 00:27:43 +0000
+Subject: [WIP/RFC 05/31] fbdev: sh_mobile_lcdc: Create functions to turn the display on/off
+Message-Id: <1316392089-27598-6-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The display_on/off operations are now accessed through the
-sh_mobile_lcdc_entity operations.
-
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mipi_dsi.c |   51 +++---------------------------------------
- 1 files changed, 4 insertions(+), 47 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |   53 ++++++++++++++++++++------------------
+ 1 files changed, 28 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
-index 31a403d..e198067 100644
---- a/drivers/video/sh_mipi_dsi.c
-+++ b/drivers/video/sh_mipi_dsi.c
-@@ -56,10 +56,6 @@ struct sh_mipi {
- 	struct clk	*dsit_clk;
- 	struct clk	*dsip_clk;
- 	struct device	*dev;
--
--	void	*next_board_data;
--	void	(*next_display_on)(void *board_data, struct fb_info *info);
--	void	(*next_display_off)(void *board_data);
- };
- 
- #define to_sh_mipi(e)	container_of(e, struct sh_mipi, entity)
-@@ -129,7 +125,7 @@ static void sh_mipi_shutdown(struct platform_device *pdev)
- 	sh_mipi_dsi_enable(mipi, false);
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index c7e6074..78f531c 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -223,7 +223,7 @@ static int sh_mobile_lcdc_setup_clocks(struct sh_mobile_lcdc_priv *priv,
  }
  
--static void __mipi_display_on(struct sh_mobile_lcdc_entity *entity,
-+static void mipi_display_on(struct sh_mobile_lcdc_entity *entity,
- 			    struct fb_info *info)
- {
- 	struct sh_mipi *mipi = to_sh_mipi(entity);
-@@ -138,18 +134,7 @@ static void __mipi_display_on(struct sh_mobile_lcdc_entity *entity,
- 	sh_mipi_dsi_enable(mipi, true);
+ /* -----------------------------------------------------------------------------
+- * Sys panel and deferred I/O
++ * Display, panel and deferred I/O
+  */
+ 
+ static void lcdc_sys_write_index(void *handle, unsigned long data)
+@@ -334,6 +334,27 @@ static void sh_mobile_lcdc_deferred_io_touch(struct fb_info *info)
+ 		schedule_delayed_work(&info->deferred_work, fbdefio->delay);
  }
  
--static void mipi_display_on(void *arg, struct fb_info *info)
--{
--	struct sh_mobile_lcdc_entity *entity = arg;
--	struct sh_mipi *mipi = to_sh_mipi(entity);
--
--	__mipi_display_on(entity, info);
--
--	if (mipi->next_display_on)
--		mipi->next_display_on(mipi->next_board_data, info);
--}
--
--static void __mipi_display_off(struct sh_mobile_lcdc_entity *entity)
-+static void mipi_display_off(struct sh_mobile_lcdc_entity *entity)
++static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
++{
++	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
++
++	/* HDMI must be enabled before LCDC configuration */
++	if (board_cfg->display_on && try_module_get(board_cfg->owner)) {
++		board_cfg->display_on(board_cfg->board_data, ch->info);
++		module_put(board_cfg->owner);
++	}
++}
++
++static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
++{
++	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
++
++	if (board_cfg->display_off && try_module_get(board_cfg->owner)) {
++		board_cfg->display_off(board_cfg->board_data);
++		module_put(board_cfg->owner);
++	}
++}
++
+ /* -----------------------------------------------------------------------------
+  * Format helpers
+  */
+@@ -642,7 +663,6 @@ static void __sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
  {
- 	struct sh_mipi *mipi = to_sh_mipi(entity);
+ 	struct sh_mobile_meram_info *mdev = priv->meram_dev;
+-	struct sh_mobile_lcdc_board_cfg	*board_cfg;
+ 	struct sh_mobile_lcdc_chan *ch;
+ 	unsigned long tmp;
+ 	int ret;
+@@ -659,8 +679,9 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 	lcdc_wait_bit(priv, _LDCNT2R, LDCNT2R_BR, 0);
  
-@@ -157,20 +142,9 @@ static void __mipi_display_off(struct sh_mobile_lcdc_entity *entity)
- 	pm_runtime_put(mipi->dev);
- }
+ 	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
+-		ch = &priv->ch[k];
++		struct sh_mobile_lcdc_board_cfg	*board_cfg;
  
--static void mipi_display_off(void *arg)
--{
--	struct sh_mobile_lcdc_entity *entity = arg;
--	struct sh_mipi *mipi = to_sh_mipi(entity);
--
--	if (mipi->next_display_off)
--		mipi->next_display_off(mipi->next_board_data);
--
--	__mipi_display_off(entity);
--}
--
- static const struct sh_mobile_lcdc_entity_ops mipi_ops = {
--	.display_on = __mipi_display_on,
--	.display_off = __mipi_display_off,
-+	.display_on = mipi_display_on,
-+	.display_off = mipi_display_off,
- };
++		ch = &priv->ch[k];
+ 		if (!ch->enabled)
+ 			continue;
  
- static int __init sh_mipi_setup(struct sh_mipi *mipi,
-@@ -499,17 +473,6 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
- 	mutex_unlock(&array_lock);
- 	platform_set_drvdata(pdev, &mipi->entity);
+@@ -748,11 +769,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 			fb_deferred_io_init(ch->info);
+ 		}
  
--	/* Save original LCDC callbacks */
--	mipi->next_board_data = pdata->lcd_chan->board_cfg.board_data;
--	mipi->next_display_on = pdata->lcd_chan->board_cfg.display_on;
--	mipi->next_display_off = pdata->lcd_chan->board_cfg.display_off;
--
--	/* Set up LCDC callbacks */
--	pdata->lcd_chan->board_cfg.board_data = &mipi->entity;
--	pdata->lcd_chan->board_cfg.display_on = mipi_display_on;
--	pdata->lcd_chan->board_cfg.display_off = mipi_display_off;
--	pdata->lcd_chan->board_cfg.owner = THIS_MODULE;
--
- 	return 0;
+-		board_cfg = &ch->cfg.board_cfg;
+-		if (board_cfg->display_on && try_module_get(board_cfg->owner)) {
+-			board_cfg->display_on(board_cfg->board_data, ch->info);
+-			module_put(board_cfg->owner);
+-		}
++		sh_mobile_lcdc_display_on(ch);
  
- emipisetup:
-@@ -543,7 +506,6 @@ efindslot:
- 
- static int __exit sh_mipi_remove(struct platform_device *pdev)
+ 		if (ch->bl) {
+ 			ch->bl->props.power = FB_BLANK_UNBLANK;
+@@ -766,7 +783,6 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ static void sh_mobile_lcdc_stop(struct sh_mobile_lcdc_priv *priv)
  {
--	struct sh_mipi_dsi_info *pdata = pdev->dev.platform_data;
- 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	struct resource *res2 = platform_get_resource(pdev, IORESOURCE_MEM, 1);
- 	struct sh_mipi *mipi = to_sh_mipi(platform_get_drvdata(pdev));
-@@ -566,11 +528,6 @@ static int __exit sh_mipi_remove(struct platform_device *pdev)
- 	if (ret < 0)
- 		return ret;
+ 	struct sh_mobile_lcdc_chan *ch;
+-	struct sh_mobile_lcdc_board_cfg	*board_cfg;
+ 	int k;
  
--	pdata->lcd_chan->board_cfg.owner = NULL;
--	pdata->lcd_chan->board_cfg.display_on = NULL;
--	pdata->lcd_chan->board_cfg.display_off = NULL;
--	pdata->lcd_chan->board_cfg.board_data = NULL;
+ 	/* clean up deferred io and ask board code to disable panel */
+@@ -793,11 +809,7 @@ static void sh_mobile_lcdc_stop(struct sh_mobile_lcdc_priv *priv)
+ 			backlight_update_status(ch->bl);
+ 		}
+ 
+-		board_cfg = &ch->cfg.board_cfg;
+-		if (board_cfg->display_off && try_module_get(board_cfg->owner)) {
+-			board_cfg->display_off(board_cfg->board_data);
+-			module_put(board_cfg->owner);
+-		}
++		sh_mobile_lcdc_display_off(ch);
+ 
+ 		/* disable the meram */
+ 		if (ch->meram_enabled) {
+@@ -1418,7 +1430,6 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
+ 	struct fb_event *event = data;
+ 	struct fb_info *info = event->info;
+ 	struct sh_mobile_lcdc_chan *ch = info->par;
+-	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
+ 
+ 	if (&ch->lcdc->notifier != nb)
+ 		return NOTIFY_DONE;
+@@ -1428,10 +1439,7 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
+ 
+ 	switch(action) {
+ 	case FB_EVENT_SUSPEND:
+-		if (board_cfg->display_off && try_module_get(board_cfg->owner)) {
+-			board_cfg->display_off(board_cfg->board_data);
+-			module_put(board_cfg->owner);
+-		}
++		sh_mobile_lcdc_display_off(ch);
+ 		sh_mobile_lcdc_stop(ch->lcdc);
+ 		break;
+ 	case FB_EVENT_RESUME:
+@@ -1439,12 +1447,7 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
+ 		sh_mobile_fb_reconfig(info);
+ 		mutex_unlock(&ch->open_lock);
+ 
+-		/* HDMI must be enabled before LCDC configuration */
+-		if (board_cfg->display_on && try_module_get(board_cfg->owner)) {
+-			board_cfg->display_on(board_cfg->board_data, info);
+-			module_put(board_cfg->owner);
+-		}
 -
- 	pm_runtime_disable(&pdev->dev);
- 	clk_disable(mipi->dsip_clk);
- 	clk_disable(mipi->dsit_clk);
++		sh_mobile_lcdc_display_on(ch);
+ 		sh_mobile_lcdc_start(ch->lcdc);
+ 	}
+ 
 -- 
 1.7.3.4
 

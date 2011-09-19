@@ -1,165 +1,346 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Sep 2011 09:13:38 +0000
-Subject: [PATCHv2 15/15] OMAPFB: find best mode from edid
-Message-Id: <1315818818-18733-16-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Mon, 19 Sep 2011 00:27:55 +0000
+Subject: [WIP/RFC 17/31] fbdev: sh_mobile_lcdc: Remove board configuration board_data field
+Message-Id: <1316392089-27598-18-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Use the new read_edid() function to get EDID information from the
-display (when available), and use the information to use a suitable mode
-at initialization time.
+The field is unused, remove it. Update board code accordingly.
 
-Hot-plug is not yet supported, so the timings selected at init time will
-stay even if the monitor would be changed.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c |  109 +++++++++++++++++++++++++++---
- 1 files changed, 99 insertions(+), 10 deletions(-)
+ arch/arm/mach-shmobile/board-ag5evm.c       |   14 ++------------
+ arch/arm/mach-shmobile/board-mackerel.c     |    4 ++--
+ arch/sh/boards/mach-ap325rxa/setup.c        |    8 ++++----
+ arch/sh/boards/mach-ecovec24/setup.c        |    4 ++--
+ arch/sh/boards/mach-kfr2r09/lcd_wqvga.c     |   10 ++++------
+ arch/sh/boards/mach-migor/lcd_qvga.c        |    3 +--
+ arch/sh/boards/mach-se/7724/setup.c         |    2 --
+ arch/sh/include/mach-kfr2r09/mach/kfr2r09.h |   16 ++++++++--------
+ arch/sh/include/mach-migor/mach/migor.h     |    2 +-
+ drivers/video/sh_mobile_lcdcfb.c            |   16 +++++++---------
+ include/video/sh_mobile_lcdc.h              |   13 ++++++-------
+ 11 files changed, 37 insertions(+), 55 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index cd2cae8e..c84cc29 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -2276,6 +2276,87 @@ static int omapfb_parse_def_modes(struct omapfb2_device *fbdev)
- 	return r;
+diff --git a/arch/arm/mach-shmobile/board-ag5evm.c b/arch/arm/mach-shmobile/board-ag5evm.c
+index d0c30a4..139fbd1 100644
+--- a/arch/arm/mach-shmobile/board-ag5evm.c
++++ b/arch/arm/mach-shmobile/board-ag5evm.c
+@@ -235,16 +235,6 @@ static void lcd_backlight_reset(void)
+ 	gpio_set_value(GPIO_PORT235, 1);
  }
  
-+static void fb_videomode_to_omap_timings(struct fb_videomode *m,
-+		struct omap_video_timings *t)
-+{
-+	t->x_res = m->xres;
-+	t->y_res = m->yres;
-+	t->pixel_clock = PICOS2KHZ(m->pixclock);
-+	t->hsw = m->hsync_len;
-+	t->hfp = m->right_margin;
-+	t->hbp = m->left_margin;
-+	t->vsw = m->vsync_len;
-+	t->vfp = m->lower_margin;
-+	t->vbp = m->upper_margin;
-+}
-+
-+static int omapfb_find_best_mode(struct omap_dss_device *display,
-+		struct omap_video_timings *timings)
-+{
-+	struct fb_monspecs *specs;
-+	u8 *edid;
-+	int r, i, best_xres, best_idx, len;
-+
-+	if (!display->driver->read_edid)
-+		return -ENODEV;
-+
-+	len = 0x80 * 2;
-+	edid = kmalloc(len, GFP_KERNEL);
-+
-+	r = display->driver->read_edid(display, edid, len);
-+	if (r < 0)
-+		goto err1;
-+
-+	specs = kzalloc(sizeof(*specs), GFP_KERNEL);
-+
-+	fb_edid_to_monspecs(edid, specs);
-+
-+	if (edid[126] > 0)
-+		fb_edid_add_monspecs(edid + 0x80, specs);
-+
-+	best_xres = 0;
-+	best_idx = -1;
-+
-+	for (i = 0; i < specs->modedb_len; ++i) {
-+		struct fb_videomode *m;
-+		struct omap_video_timings t;
-+
-+		m = &specs->modedb[i];
-+
-+		if (m->pixclock = 0)
-+			continue;
-+
-+		/* skip repeated pixel modes */
-+		if (m->xres = 2880 || m->xres = 1440)
-+			continue;
-+
-+		fb_videomode_to_omap_timings(m, &t);
-+
-+		r = display->driver->check_timings(display, &t);
-+		if (r = 0 && best_xres < m->xres) {
-+			best_xres = m->xres;
-+			best_idx = i;
-+		}
-+	}
-+
-+	if (best_xres = 0) {
-+		r = -ENOENT;
-+		goto err2;
-+	}
-+
-+	fb_videomode_to_omap_timings(&specs->modedb[best_idx], timings);
-+
-+	r = 0;
-+
-+err2:
-+	fb_destroy_modedb(specs->modedb);
-+	kfree(specs);
-+err1:
-+	kfree(edid);
-+
-+	return r;
-+}
-+
- static int omapfb_init_display(struct omapfb2_device *fbdev,
- 		struct omap_dss_device *dssdev)
- {
-@@ -2404,9 +2485,27 @@ static int omapfb_probe(struct platform_device *pdev)
- 	for (i = 0; i < fbdev->num_managers; i++)
- 		fbdev->managers[i] = omap_dss_get_overlay_manager(i);
- 
-+	/* gfx overlay should be the default one. find a display
-+	 * connected to that, and use it as default display */
-+	ovl = omap_dss_get_overlay(0);
-+	if (ovl->manager && ovl->manager->device) {
-+		def_display = ovl->manager->device;
-+	} else {
-+		dev_warn(&pdev->dev, "cannot find default display\n");
-+		def_display = NULL;
-+	}
-+
- 	if (def_mode && strlen(def_mode) > 0) {
- 		if (omapfb_parse_def_modes(fbdev))
- 			dev_warn(&pdev->dev, "cannot parse default modes\n");
-+	} else if (def_display && def_display->driver->set_timings &&
-+			def_display->driver->check_timings) {
-+		struct omap_video_timings t;
-+
-+		r = omapfb_find_best_mode(def_display, &t);
-+
-+		if (r = 0)
-+			def_display->driver->set_timings(def_display, &t);
- 	}
- 
- 	r = omapfb_create_framebuffers(fbdev);
-@@ -2423,16 +2522,6 @@ static int omapfb_probe(struct platform_device *pdev)
- 
- 	DBG("mgr->apply'ed\n");
- 
--	/* gfx overlay should be the default one. find a display
--	 * connected to that, and use it as default display */
--	ovl = omap_dss_get_overlay(0);
--	if (ovl->manager && ovl->manager->device) {
--		def_display = ovl->manager->device;
--	} else {
--		dev_warn(&pdev->dev, "cannot find default display\n");
--		def_display = NULL;
--	}
+-static void lcd_on(void *board_data, struct fb_info *info)
+-{
+-	lcd_backlight_on();
+-}
 -
- 	if (def_display) {
- 		r = omapfb_init_display(fbdev, def_display);
- 		if (r) {
+-static void lcd_off(void *board_data)
+-{
+-	lcd_backlight_reset();
+-}
+-
+ /* LCDC0 */
+ static const struct fb_videomode lcdc0_modes[] = {
+ 	{
+@@ -274,8 +264,8 @@ static struct sh_mobile_lcdc_info lcdc0_info = {
+ 		.lcd_cfg = lcdc0_modes,
+ 		.num_cfg = ARRAY_SIZE(lcdc0_modes),
+ 		.board_cfg = {
+-			.display_on = lcd_on,
+-			.display_off = lcd_off,
++			.display_on = lcd_backlight_on,
++			.display_off = lcd_backlight_reset,
+ 		},
+ 	}
+ };
+diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
+index 332f07e..9d0d7b2 100644
+--- a/arch/arm/mach-shmobile/board-mackerel.c
++++ b/arch/arm/mach-shmobile/board-mackerel.c
+@@ -355,14 +355,14 @@ static struct fb_videomode mackerel_lcdc_modes[] = {
+ 	},
+ };
+ 
+-static int mackerel_set_brightness(void *board_data, int brightness)
++static int mackerel_set_brightness(int brightness)
+ {
+ 	gpio_set_value(GPIO_PORT31, brightness);
+ 
+ 	return 0;
+ }
+ 
+-static int mackerel_get_brightness(void *board_data)
++static int mackerel_get_brightness(void)
+ {
+ 	return gpio_get_value(GPIO_PORT31);
+ }
+diff --git a/arch/sh/boards/mach-ap325rxa/setup.c b/arch/sh/boards/mach-ap325rxa/setup.c
+index 0a53ecd..477767e 100644
+--- a/arch/sh/boards/mach-ap325rxa/setup.c
++++ b/arch/sh/boards/mach-ap325rxa/setup.c
+@@ -156,7 +156,7 @@ static struct platform_device nand_flash_device = {
+ #define PORT_DRVCRA	0xA405018A
+ #define PORT_DRVCRB	0xA405018C
+ 
+-static int ap320_wvga_set_brightness(void *board_data, int brightness)
++static int ap320_wvga_set_brightness(int brightness)
+ {
+ 	if (brightness) {
+ 		gpio_set_value(GPIO_PTS3, 0);
+@@ -169,12 +169,12 @@ static int ap320_wvga_set_brightness(void *board_data, int brightness)
+ 	return 0;
+ }
+ 
+-static int ap320_wvga_get_brightness(void *board_data)
++static int ap320_wvga_get_brightness(void)
+ {
+ 	return gpio_get_value(GPIO_PTS3);
+ }
+ 
+-static void ap320_wvga_power_on(void *board_data, struct fb_info *info)
++static void ap320_wvga_power_on(void)
+ {
+ 	msleep(100);
+ 
+@@ -182,7 +182,7 @@ static void ap320_wvga_power_on(void *board_data, struct fb_info *info)
+ 	__raw_writew(FPGA_LCDREG_VAL, FPGA_LCDREG);
+ }
+ 
+-static void ap320_wvga_power_off(void *board_data)
++static void ap320_wvga_power_off(void)
+ {
+ 	/* ASD AP-320/325 LCD OFF */
+ 	__raw_writew(0, FPGA_LCDREG);
+diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
+index 75e466f..7c592f8 100644
+--- a/arch/sh/boards/mach-ecovec24/setup.c
++++ b/arch/sh/boards/mach-ecovec24/setup.c
+@@ -310,14 +310,14 @@ static const struct fb_videomode ecovec_dvi_modes[] = {
+ 	},
+ };
+ 
+-static int ecovec24_set_brightness(void *board_data, int brightness)
++static int ecovec24_set_brightness(int brightness)
+ {
+ 	gpio_set_value(GPIO_PTR1, brightness);
+ 
+ 	return 0;
+ }
+ 
+-static int ecovec24_get_brightness(void *board_data)
++static int ecovec24_get_brightness(void)
+ {
+ 	return gpio_get_value(GPIO_PTR1);
+ }
+diff --git a/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c b/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
+index 25e145f..c148b36 100644
+--- a/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
++++ b/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
+@@ -251,8 +251,7 @@ static void display_on(void *sohandle,
+ 	write_memory_start(sohandle, so);
+ }
+ 
+-int kfr2r09_lcd_setup(void *board_data, void *sohandle,
+-		      struct sh_mobile_lcdc_sys_bus_ops *so)
++int kfr2r09_lcd_setup(void *sohandle, struct sh_mobile_lcdc_sys_bus_ops *so)
+ {
+ 	/* power on */
+ 	gpio_set_value(GPIO_PTF4, 0);  /* PROTECT/ -> L */
+@@ -273,8 +272,7 @@ int kfr2r09_lcd_setup(void *board_data, void *sohandle,
+ 	return 0;
+ }
+ 
+-void kfr2r09_lcd_start(void *board_data, void *sohandle,
+-		       struct sh_mobile_lcdc_sys_bus_ops *so)
++void kfr2r09_lcd_start(void *sohandle, struct sh_mobile_lcdc_sys_bus_ops *so)
+ {
+ 	write_memory_start(sohandle, so);
+ }
+@@ -327,12 +325,12 @@ static int kfr2r09_lcd_backlight(int on)
+ 	return 0;
+ }
+ 
+-void kfr2r09_lcd_on(void *board_data, struct fb_info *info)
++void kfr2r09_lcd_on(void)
+ {
+ 	kfr2r09_lcd_backlight(1);
+ }
+ 
+-void kfr2r09_lcd_off(void *board_data)
++void kfr2r09_lcd_off(void)
+ {
+ 	kfr2r09_lcd_backlight(0);
+ }
+diff --git a/arch/sh/boards/mach-migor/lcd_qvga.c b/arch/sh/boards/mach-migor/lcd_qvga.c
+index de9014a..8bccd34 100644
+--- a/arch/sh/boards/mach-migor/lcd_qvga.c
++++ b/arch/sh/boards/mach-migor/lcd_qvga.c
+@@ -113,8 +113,7 @@ static const unsigned short magic3_data[] = {
+ 	0x0010, 0x16B0, 0x0011, 0x0111, 0x0007, 0x0061,
+ };
+ 
+-int migor_lcd_qvga_setup(void *board_data, void *sohandle,
+-			 struct sh_mobile_lcdc_sys_bus_ops *so)
++int migor_lcd_qvga_setup(void *sohandle, struct sh_mobile_lcdc_sys_bus_ops *so)
+ {
+ 	unsigned long xres = 320;
+ 	unsigned long yres = 240;
+diff --git a/arch/sh/boards/mach-se/7724/setup.c b/arch/sh/boards/mach-se/7724/setup.c
+index ab81abd..334b463 100644
+--- a/arch/sh/boards/mach-se/7724/setup.c
++++ b/arch/sh/boards/mach-se/7724/setup.c
+@@ -185,8 +185,6 @@ static struct sh_mobile_lcdc_info lcdc_info = {
+ 			.width = 152,
+ 			.height = 91,
+ 		},
+-		.board_cfg = {
+-		},
+ 	}
+ };
+ 
+diff --git a/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h b/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
+index 07e635b..ba3d93d 100644
+--- a/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
++++ b/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
+@@ -4,21 +4,21 @@
+ #include <video/sh_mobile_lcdc.h>
+ 
+ #if defined(CONFIG_FB_SH_MOBILE_LCDC) || defined(CONFIG_FB_SH_MOBILE_LCDC_MODULE)
+-void kfr2r09_lcd_on(void *board_data, struct fb_info *info);
+-void kfr2r09_lcd_off(void *board_data);
+-int kfr2r09_lcd_setup(void *board_data, void *sys_ops_handle,
++void kfr2r09_lcd_on(void);
++void kfr2r09_lcd_off(void);
++int kfr2r09_lcd_setup(void *sys_ops_handle,
+ 		      struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
+-void kfr2r09_lcd_start(void *board_data, void *sys_ops_handle,
++void kfr2r09_lcd_start(void *sys_ops_handle,
+ 		       struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
+ #else
+-static void kfr2r09_lcd_on(void *board_data) {}
+-static void kfr2r09_lcd_off(void *board_data) {}
+-static int kfr2r09_lcd_setup(void *board_data, void *sys_ops_handle,
++static void kfr2r09_lcd_on(void) {}
++static void kfr2r09_lcd_off(void) {}
++static int kfr2r09_lcd_setup(void *sys_ops_handle,
+ 				struct sh_mobile_lcdc_sys_bus_ops *sys_ops)
+ {
+ 	return -ENODEV;
+ }
+-static void kfr2r09_lcd_start(void *board_data, void *sys_ops_handle,
++static void kfr2r09_lcd_start(void *sys_ops_handle,
+ 				struct sh_mobile_lcdc_sys_bus_ops *sys_ops)
+ {
+ }
+diff --git a/arch/sh/include/mach-migor/mach/migor.h b/arch/sh/include/mach-migor/mach/migor.h
+index 42fccf9..7de7bb7 100644
+--- a/arch/sh/include/mach-migor/mach/migor.h
++++ b/arch/sh/include/mach-migor/mach/migor.h
+@@ -9,7 +9,7 @@
+ 
+ #include <video/sh_mobile_lcdc.h>
+ 
+-int migor_lcd_qvga_setup(void *board_data, void *sys_ops_handle,
++int migor_lcd_qvga_setup(void *sys_ops_handle,
+ 			 struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
+ 
+ #endif /* __ASM_SH_MIGOR_H */
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 543f957..cb0d9b6 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -314,14 +314,12 @@ static void sh_mobile_lcdc_deferred_io(struct fb_info *info,
+ 		/* trigger panel update */
+ 		dma_map_sg(info->dev, ch->sglist, nr_pages, DMA_TO_DEVICE);
+ 		if (bcfg->start_transfer)
+-			bcfg->start_transfer(bcfg->board_data, ch,
+-					     &sh_mobile_lcdc_sys_bus_ops);
++			bcfg->start_transfer(ch, &sh_mobile_lcdc_sys_bus_ops);
+ 		lcdc_write_chan(ch, LDSM2R, LDSM2R_OSTRG);
+ 		dma_unmap_sg(info->dev, ch->sglist, nr_pages, DMA_TO_DEVICE);
+ 	} else {
+ 		if (bcfg->start_transfer)
+-			bcfg->start_transfer(bcfg->board_data, ch,
+-					     &sh_mobile_lcdc_sys_bus_ops);
++			bcfg->start_transfer(ch, &sh_mobile_lcdc_sys_bus_ops);
+ 		lcdc_write_chan(ch, LDSM2R, LDSM2R_OSTRG);
+ 	}
+ }
+@@ -343,7 +341,7 @@ static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
+ 
+ 	/* HDMI must be enabled before LCDC configuration */
+ 	if (board_cfg->display_on)
+-		board_cfg->display_on(board_cfg->board_data, ch->info);
++		board_cfg->display_on();
+ }
+ 
+ static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
+@@ -351,7 +349,7 @@ static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
+ 	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
+ 
+ 	if (board_cfg->display_off)
+-		board_cfg->display_off(board_cfg->board_data);
++		board_cfg->display_off();
+ 
+ 	if (ch->tx_dev)
+ 		ch->tx_dev->ops->display_off(ch->tx_dev);
+@@ -689,7 +687,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 
+ 		board_cfg = &ch->cfg.board_cfg;
+ 		if (board_cfg->setup_sys) {
+-			ret = board_cfg->setup_sys(board_cfg->board_data, ch,
++			ret = board_cfg->setup_sys(ch,
+ 						   &sh_mobile_lcdc_sys_bus_ops);
+ 			if (ret)
+ 				return ret;
+@@ -1325,7 +1323,7 @@ static int sh_mobile_lcdc_update_bl(struct backlight_device *bdev)
+ 	    bdev->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
+ 		brightness = 0;
+ 
+-	return cfg->set_brightness(cfg->board_data, brightness);
++	return cfg->set_brightness(brightness);
+ }
+ 
+ static int sh_mobile_lcdc_get_brightness(struct backlight_device *bdev)
+@@ -1333,7 +1331,7 @@ static int sh_mobile_lcdc_get_brightness(struct backlight_device *bdev)
+ 	struct sh_mobile_lcdc_chan *ch = bl_get_data(bdev);
+ 	struct sh_mobile_lcdc_board_cfg *cfg = &ch->cfg.board_cfg;
+ 
+-	return cfg->get_brightness(cfg->board_data);
++	return cfg->get_brightness();
+ }
+ 
+ static int sh_mobile_lcdc_check_fb(struct backlight_device *bdev,
+diff --git a/include/video/sh_mobile_lcdc.h b/include/video/sh_mobile_lcdc.h
+index b1b3e8d..a1e6596 100644
+--- a/include/video/sh_mobile_lcdc.h
++++ b/include/video/sh_mobile_lcdc.h
+@@ -148,15 +148,14 @@ struct sh_mobile_lcdc_sys_bus_ops {
+ };
+ 
+ struct sh_mobile_lcdc_board_cfg {
+-	void *board_data;
+-	int (*setup_sys)(void *board_data, void *sys_ops_handle,
++	int (*setup_sys)(void *sys_ops_handle,
+ 			 struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
+-	void (*start_transfer)(void *board_data, void *sys_ops_handle,
++	void (*start_transfer)(void *sys_ops_handle,
+ 			       struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
+-	void (*display_on)(void *board_data, struct fb_info *info);
+-	void (*display_off)(void *board_data);
+-	int (*set_brightness)(void *board_data, int brightness);
+-	int (*get_brightness)(void *board_data);
++	void (*display_on)(void);
++	void (*display_off)(void);
++	int (*set_brightness)(int brightness);
++	int (*get_brightness)(void);
+ };
+ 
+ struct sh_mobile_lcdc_lcd_size_cfg { /* width and height of panel in mm */
 -- 
-1.7.4.1
+1.7.3.4
 

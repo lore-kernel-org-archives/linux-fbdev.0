@@ -1,43 +1,51 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 02 Sep 2011 07:30:50 +0000
-Subject: Re: [PATCH 2/4] OMAP4: TWL: Add common omapdss supplies
-Message-Id: <1314948650.3374.25.camel@deskari>
+From: Ajay Kumar <ajaykumar.rs@samsung.com>
+Date: Tue, 20 Sep 2011 09:29:04 +0000
+Subject: [PATCH 1/3] include: fb: Add definiton for window positioning structure
+Message-Id: <1316532641-2657-2-git-send-email-ajaykumar.rs@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1314001599-17951-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1314001599-17951-3-git-send-email-tomi.valkeinen@ti.com>
-	 <4E607A40.8000707@ti.com>
-In-Reply-To: <4E607A40.8000707@ti.com>
+References: <1316532641-2657-1-git-send-email-ajaykumar.rs@samsung.com>
+In-Reply-To: <1316532641-2657-1-git-send-email-ajaykumar.rs@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Archit Taneja <archit@ti.com>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-On Fri, 2011-09-02 at 12:10 +0530, Archit Taneja wrote:
-> Hi,
-> 
-> On Monday 22 August 2011 01:56 PM, Valkeinen, Tomi wrote:
-> > OMAP DSS normally gets power from VCXIO on OMAP4. Add configuration
-> for
-> > this into twl-common.c
-> >
-> > Mark VCXIO as always_on, as VCXIO is used by multiple components,
-> > including the MPU, and turning it off when DSS doesn't need it would
-> > lead the device to halt.
-> 
-> I had a query. Is this the right place to set always_on to true?
-> Won't 
-> this lead to VCXIO being always on all omap4 boards? Is it necessary 
-> that VCXIO will be used to power on MPU for all omap4 boards? 
+This patch adds a data structure definiton to hold framebuffer windows/planes.
+An ioctl number is also added to provide user access
+to change window position dynamically.
 
-I don't really know, but TRM's 27.2.1 Power Requirements chapter shows
-vcxio connected to multiple places. It's an example, but I would guess
-it is the common setup, thus setting it to always on in twl-common.c
-sounds ok.
+Signed-off-by: Ajay Kumar <ajaykumar.rs@samsung.com>
+Signed-off-by: Banajit Goswami <banajit.g@samsung.com>
+Suggested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+---
+ include/linux/fb.h |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-If there will be an omap4 board with different setup, then we need to
-revisit this.
-
- Tomi
-
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 1d6836c..2141941 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -39,6 +39,7 @@
+ #define FBIOPUT_MODEINFO        0x4617
+ #define FBIOGET_DISPINFO        0x4618
+ #define FBIO_WAITFORVSYNC	_IOW('F', 0x20, __u32)
++#define FBIOPOS_OVERLAY_WIN	_IOW('F', 0x21, struct fb_overlay_win_pos)
+ 
+ #define FB_TYPE_PACKED_PIXELS		0	/* Packed Pixels	*/
+ #define FB_TYPE_PLANES			1	/* Non interleaved planes */
+@@ -366,6 +367,12 @@ struct fb_image {
+ 	struct fb_cmap cmap;	/* color map info */
+ };
+ 
++/* Window overlaying */
++struct fb_overlay_win_pos {
++	__u32 win_pos_x;	/* x-offset from LCD(0,0) where window starts */
++	__u32 win_pos_y;	/* y-offset from LCD(0,0) where window starts */
++};
++
+ /*
+  * hardware cursor control
+  */
+-- 
+1.7.0.4
 

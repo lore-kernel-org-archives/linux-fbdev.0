@@ -1,77 +1,170 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 19 Sep 2011 00:28:07 +0000
-Subject: [WIP/RFC 29/31] fbdev: sh_mipi_dsi: Add media controller support
-Message-Id: <1316392089-27598-30-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Tue, 20 Sep 2011 19:21:27 +0000
+Subject: [PATCH v2 1/4] fbdev: sh_mobile_meram: Replace hardcoded register values with macros
+Message-Id: <1316546490-4639-2-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-Initialize the entity associated with the MIPI/DSI transmitter.
+Instead of hardcoding register values through the driver, define macros
+for individual register bits using the register name and the bit name,
+and use the macros.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mipi_dsi.c |   17 ++++++++++++++++-
- 1 files changed, 16 insertions(+), 1 deletions(-)
+ drivers/video/sh_mobile_meram.c |  100 +++++++++++++++++++++++++++++------=
+----
+ 1 files changed, 74 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
-index 3ead395..93ee3ee 100644
---- a/drivers/video/sh_mipi_dsi.c
-+++ b/drivers/video/sh_mipi_dsi.c
-@@ -50,6 +50,7 @@
- 
- struct sh_mipi {
- 	struct sh_mobile_lcdc_entity entity;
-+	struct media_pad pads[2];
- 
- 	void __iomem	*base;
- 	void __iomem	*linkbase;
-@@ -364,8 +365,9 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
- 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	struct resource *res2 = platform_get_resource(pdev, IORESOURCE_MEM, 1);
- 	unsigned long rate, f_current;
--	int idx = pdev->id, ret;
-+	int idx = pdev->id;
- 	char dsip_clk[] = "dsi.p_clk";
-+	int ret;
- 
- 	if (!res || !res2 || idx >= ARRAY_SIZE(mipi_dsi) || !pdata)
- 		return -ENODEV;
-@@ -389,6 +391,17 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
- 	mipi->entity.owner = THIS_MODULE;
- 	mipi->entity.ops = &mipi_ops;
- 
-+	/* Initialize the panel media entity. */
-+	mipi->pads[0].flags = MEDIA_PAD_FL_SINK;
-+	mipi->pads[1].flags = MEDIA_PAD_FL_SOURCE;
-+	ret = media_entity_init(&mipi->entity.entity, 2, mipi->pads, 0);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "Unable to initialize MIPI entity\n");
-+		goto ereqreg;
-+	}
+diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_mera=
+m.c
+index 39f28a1..569888c 100644
+--- a/drivers/video/sh_mobile_meram.c
++++ b/drivers/video/sh_mobile_meram.c
+@@ -20,22 +20,69 @@
+ #include "sh_mobile_meram.h"
+=20
+ /* meram registers */
+-#define MExxCTL 0x0
+-#define MExxBSIZE 0x4
+-#define MExxMNCF 0x8
+-#define MExxSARA 0x10
+-#define MExxSARB 0x14
+-#define MExxSBSIZE 0x18
+-
+-#define MERAM_MExxCTL_VAL(ctl, next_icb, addr)	\
+-	((ctl) | (((next_icb) & 0x1f) << 11) | (((addr) & 0x7ff) << 16))
+-#define	MERAM_MExxBSIZE_VAL(a, b, c) \
+-	(((a) << 28) | ((b) << 16) | (c))
+-
+-#define MEVCR1 0x4
+-#define MEACTS 0x10
+-#define MEQSEL1 0x40
+-#define MEQSEL2 0x44
++#define MEVCR1			0x0004
++#define MEVCR1_RST		(1 << 31)
++#define MEVCR1_WD		(1 << 30)
++#define MEVCR1_AMD1		(1 << 29)
++#define MEVCR1_AMD0		(1 << 28)
++#define MEQSEL1			0x0040
++#define MEQSEL2			0x0044
 +
-+	mipi->entity.entity.name = "MIPI/DSI transmitter";
++#define MExx_BASE		0x0400
 +
- 	if (!request_mem_region(res->start, resource_size(res), pdev->name)) {
- 		dev_err(&pdev->dev, "MIPI register region already claimed\n");
- 		ret = -EBUSY;
-@@ -497,6 +510,7 @@ ereqreg2:
- emap:
- 	release_mem_region(res->start, resource_size(res));
- ereqreg:
-+	media_entity_cleanup(&mipi->entity.entity);
- 	kfree(mipi);
- ealloc:
- efindslot:
-@@ -541,6 +555,7 @@ static int __exit sh_mipi_remove(struct platform_device *pdev)
- 	if (res)
- 		release_mem_region(res->start, resource_size(res));
- 	platform_set_drvdata(pdev, NULL);
-+	media_entity_cleanup(&mipi->entity.entity);
- 	kfree(mipi);
- 
++#define MExxCTL			0x0000
++#define MExxCTL_BV		(1 << 31)
++#define MExxCTL_BSZ_SHIFT	28
++#define MExxCTL_MSAR_MASK	(0x7ff << MExxCTL_MSAR_SHIFT)
++#define MExxCTL_MSAR_SHIFT	16
++#define MExxCTL_NXT_MASK	(0x1f << MExxCTL_NXT_SHIFT)
++#define MExxCTL_NXT_SHIFT	11
++#define MExxCTL_WD1		(1 << 10)
++#define MExxCTL_WD0		(1 << 9)
++#define MExxCTL_WS		(1 << 8)
++#define MExxCTL_CB		(1 << 7)
++#define MExxCTL_WBF		(1 << 6)
++#define MExxCTL_WF		(1 << 5)
++#define MExxCTL_RF		(1 << 4)
++#define MExxCTL_CM		(1 << 3)
++#define MExxCTL_MD_READ		(1 << 0)
++#define MExxCTL_MD_WRITE	(2 << 0)
++#define MExxCTL_MD_ICB_WB	(3 << 0)
++#define MExxCTL_MD_ICB		(4 << 0)
++#define MExxCTL_MD_FB		(7 << 0)
++#define MExxCTL_MD_MASK		(7 << 0)
++#define MExxBSIZE		0x0004
++#define MExxBSIZE_RCNT_SHIFT	28
++#define MExxBSIZE_YSZM1_SHIFT	16
++#define MExxBSIZE_XSZM1_SHIFT	0
++#define MExxMNCF		0x0008
++#define MExxMNCF_KWBNM_SHIFT	28
++#define MExxMNCF_KRBNM_SHIFT	24
++#define MExxMNCF_BNM_SHIFT	16
++#define MExxMNCF_XBV		(1 << 15)
++#define MExxMNCF_CPL_YCBCR444	(1 << 12)
++#define MExxMNCF_CPL_YCBCR420	(2 << 12)
++#define MExxMNCF_CPL_YCBCR422	(3 << 12)
++#define MExxMNCF_CPL_MSK	(3 << 12)
++#define MExxMNCF_BL		(1 << 2)
++#define MExxMNCF_LNM_SHIFT	0
++#define MExxSARA		0x0010
++#define MExxSARB		0x0014
++#define MExxSBSIZE		0x0018
++#define MExxSBSIZE_HDV		(1 << 31)
++#define MExxSBSIZE_HSZ16	(0 << 28)
++#define MExxSBSIZE_HSZ32	(1 << 28)
++#define MExxSBSIZE_HSZ64	(2 << 28)
++#define MExxSBSIZE_HSZ128	(3 << 28)
++#define MExxSBSIZE_SBSIZZ_SHIFT	0
++
++#define MERAM_MExxCTL_VAL(next, addr)	\
++	((((next) << MExxCTL_NXT_SHIFT) & MExxCTL_NXT_MASK) | \
++	 (((addr) << MExxCTL_MSAR_SHIFT) & MExxCTL_MSAR_MASK))
++#define	MERAM_MExxBSIZE_VAL(rcnt, yszm1, xszm1) \
++	(((rcnt) << MExxBSIZE_RCNT_SHIFT) | \
++	 ((yszm1) << MExxBSIZE_YSZM1_SHIFT) | \
++	 ((xszm1) << MExxBSIZE_XSZM1_SHIFT))
+=20
+ static unsigned long common_regs[] =3D {
+ 	MEVCR1,
+@@ -72,8 +119,8 @@ struct sh_mobile_meram_priv {
+  * MERAM/ICB access functions
+  */
+=20
+-#define MERAM_ICB_OFFSET(base, idx, off)	\
+-	((base) + (0x400 + ((idx) * 0x20) + (off)))
++#define MERAM_ICB_OFFSET(base, idx, off) \
++	(MExx_BASE + (base) + (off) + (idx) * 0x20)
+=20
+ static inline void meram_write_icb(void __iomem *base, int idx, int off,
+ 	unsigned long val)
+@@ -308,17 +355,18 @@ static int meram_init(struct sh_mobile_meram_priv *pr=
+iv,
+ 	/*
+ 	 * Set MERAM for framebuffer
+ 	 *
+-	 * 0x70f:  WD =3D 0x3, WS=3D0x1, CM=3D0x1, MD=FB mode
+ 	 * we also chain the cache_icb and the marker_icb.
+ 	 * we also split the allocated MERAM buffer between two ICBs.
+ 	 */
+ 	meram_write_icb(priv->base, icb->cache_icb, MExxCTL,
+-			MERAM_MExxCTL_VAL(0x70f, icb->marker_icb,
+-					  icb->meram_offset));
++			MERAM_MExxCTL_VAL(icb->marker_icb, icb->meram_offset) |
++			MExxCTL_WD1 | MExxCTL_WD0 | MExxCTL_WS | MExxCTL_CM |
++			MExxCTL_MD_FB);
+ 	meram_write_icb(priv->base, icb->marker_icb, MExxCTL,
+-			MERAM_MExxCTL_VAL(0x70f, icb->cache_icb,
+-					  icb->meram_offset +
+-					  icb->meram_size / 2));
++			MERAM_MExxCTL_VAL(icb->cache_icb, icb->meram_offset +
++					  icb->meram_size / 2) |
++			MExxCTL_WD1 | MExxCTL_WD0 | MExxCTL_WS | MExxCTL_CM |
++			MExxCTL_MD_FB);
+=20
  	return 0;
--- 
+ }
+@@ -507,7 +555,7 @@ static int sh_mobile_meram_runtime_suspend(struct devic=
+e *dev)
+ 			/* Reset ICB on resume */
+ 			if (icb_regs[k] =3D MExxCTL)
+ 				priv->icb_saved_regs[j * ICB_REGS_SIZE + k] -					0x70;
++					MExxCTL_WBF | MExxCTL_WF | MExxCTL_RF;
+ 		}
+ 	}
+ 	return 0;
+@@ -592,7 +640,7 @@ static int __devinit sh_mobile_meram_probe(struct platf=
+orm_device *pdev)
+=20
+ 	/* initialize ICB addressing mode */
+ 	if (pdata->addr_mode =3D SH_MOBILE_MERAM_MODE1)
+-		meram_write_reg(priv->base, MEVCR1, 1 << 29);
++		meram_write_reg(priv->base, MEVCR1, MEVCR1_AMD1);
+=20
+ 	pm_runtime_enable(&pdev->dev);
+=20
+--=20
 1.7.3.4
 

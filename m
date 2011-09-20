@@ -1,59 +1,103 @@
-From: Manuel Lauss <manuel.lauss@googlemail.com>
-Date: Fri, 02 Sep 2011 14:40:50 +0000
-Subject: [PATCH 5/6] au1200fb: fix hardcoded IRQ
-Message-Id: <1314974451-8535-6-git-send-email-manuel.lauss@googlemail.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 20 Sep 2011 19:21:30 +0000
+Subject: [PATCH v2 4/4] fbdev: sh_mobile_meram: Remove unneeded sh_mobile_meram.h
+Message-Id: <1316546490-4639-5-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Use the IRQ provided by platform resource information.
-Required for Au1300 support.
+The drivers/video/sh_mobile_meram.h header contains unused definitions
+and declarations. Move the only used macro to sh_mobile_meram.c, and
+remove the header.
 
-Signed-off-by: Manuel Lauss <manuel.lauss@googlemail.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/au1200fb.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |    2 +-
+ drivers/video/sh_mobile_meram.c  |    5 +++--
+ drivers/video/sh_mobile_meram.h  |   33 ---------------------------------
+ 3 files changed, 4 insertions(+), 36 deletions(-)
+ delete mode 100644 drivers/video/sh_mobile_meram.h
 
-diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
-index b1b16d9..ed5dcdb2 100644
---- a/drivers/video/au1200fb.c
-+++ b/drivers/video/au1200fb.c
-@@ -1595,7 +1595,7 @@ static int __devinit au1200fb_drv_probe(struct platform_device *dev)
- 	struct au1200fb_device *fbdev;
- 	struct fb_info *fbi = NULL;
- 	unsigned long page;
--	int bpp, plane, ret;
-+	int bpp, plane, ret, irq;
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 0b7b492..088cb17 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -24,10 +24,10 @@
+ #include <linux/backlight.h>
+ #include <linux/gpio.h>
+ #include <video/sh_mobile_lcdc.h>
++#include <video/sh_mobile_meram.h>
+ #include <linux/atomic.h>
  
- 	/* shut gcc up */
- 	ret = 0;
-@@ -1671,10 +1671,12 @@ static int __devinit au1200fb_drv_probe(struct platform_device *dev)
- 	}
+ #include "sh_mobile_lcdcfb.h"
+-#include "sh_mobile_meram.h"
  
- 	/* Now hook interrupt too */
--	if ((ret = request_irq(AU1200_LCD_INT, au1200fb_handle_irq,
--		 	  IRQF_DISABLED | IRQF_SHARED, "lcd", (void *)dev)) < 0) {
-+	irq = platform_get_irq(dev, 0);
-+	ret = request_irq(irq, au1200fb_handle_irq,
-+			  IRQF_DISABLED | IRQF_SHARED, "lcd", (void *)dev);
-+	if (ret) {
- 		print_err("fail to request interrupt line %d (err: %d)",
--			  AU1200_LCD_INT, ret);
-+			  irq, ret);
- 		goto failed;
- 	}
+ #define SIDE_B_OFFSET 0x1000
+ #define MIRROR_OFFSET 0x2000
+diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
+index 4ad083c..48c1828 100644
+--- a/drivers/video/sh_mobile_meram.c
++++ b/drivers/video/sh_mobile_meram.c
+@@ -16,8 +16,7 @@
+ #include <linux/io.h>
+ #include <linux/slab.h>
+ #include <linux/platform_device.h>
+-
+-#include "sh_mobile_meram.h"
++#include <video/sh_mobile_meram.h>
  
-@@ -1722,7 +1724,7 @@ static int __devexit au1200fb_drv_remove(struct platform_device *dev)
- 		_au1200fb_infos[plane] = NULL;
- 	}
+ /* meram registers */
+ #define MEVCR1			0x0004
+@@ -84,6 +83,8 @@
+ 	 ((yszm1) << MExxBSIZE_YSZM1_SHIFT) | \
+ 	 ((xszm1) << MExxBSIZE_XSZM1_SHIFT))
  
--	free_irq(AU1200_LCD_INT, (void *)dev);
-+	free_irq(platform_get_irq(dev, 0), (void *)dev);
- 
- 	return 0;
- }
++#define SH_MOBILE_MERAM_ICB_NUM		32
++
+ static unsigned long common_regs[] = {
+ 	MEVCR1,
+ 	MEQSEL1,
+diff --git a/drivers/video/sh_mobile_meram.h b/drivers/video/sh_mobile_meram.h
+deleted file mode 100644
+index 1615204..0000000
+--- a/drivers/video/sh_mobile_meram.h
++++ /dev/null
+@@ -1,33 +0,0 @@
+-#ifndef __sh_mobile_meram_h__
+-#define __sh_mobile_meram_h__
+-
+-#include <linux/mutex.h>
+-#include <video/sh_mobile_meram.h>
+-
+-/*
+- * MERAM private
+- */
+-
+-#define MERAM_ICB_Y 0x1
+-#define MERAM_ICB_C 0x2
+-
+-/* MERAM cache size */
+-#define SH_MOBILE_MERAM_ICB_NUM		32
+-
+-#define SH_MOBILE_MERAM_CACHE_OFFSET(p)	((p) >> 16)
+-#define SH_MOBILE_MERAM_CACHE_SIZE(p)	((p) & 0xffff)
+-
+-int sh_mobile_meram_alloc_icb(const struct sh_mobile_meram_cfg *cfg,
+-		   int xres,
+-		   int yres,
+-		   unsigned int base_addr,
+-		   int yuv_mode,
+-		   int *marker_icb,
+-		   int *out_pitch);
+-
+-void sh_mobile_meram_free_icb(int marker_icb);
+-
+-#define SH_MOBILE_MERAM_START(ind, ab) \
+-	(0xC0000000 | ((ab & 0x1) << 23) | ((ind & 0x1F) << 24))
+-
+-#endif /* !__sh_mobile_meram_h__ */
 -- 
-1.7.6
+1.7.3.4
 

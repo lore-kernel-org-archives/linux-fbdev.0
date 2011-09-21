@@ -1,97 +1,43 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 20 Sep 2011 23:32:48 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 21 Sep 2011 06:01:15 +0000
 Subject: Re: Proposal for a low-level Linux display framework
-Message-Id: <201109210132.48663.laurent.pinchart@ideasonboard.com>
+Message-Id: <1316584875.1949.4.camel@deskari>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1316088425.11294.78.camel@lappyti> <20110918232329.6ff05d56@lxorguk.ukuu.org.uk> <CAN_cFWNkdYEFaeCmJcsPnrt+hoiOZuZEQ6qbrcXWQT_3NSNoLw@mail.gmail.com>
-In-Reply-To: <CAN_cFWNkdYEFaeCmJcsPnrt+hoiOZuZEQ6qbrcXWQT_3NSNoLw@mail.gmail.com>
+References: <1316088425.11294.78.camel@lappyti>
+	 <yunboul7sx7.fsf@aiko.keithp.com> <1316100594.23214.65.camel@deskari>
+	 <yun8vpp7qk7.fsf@aiko.keithp.com> <1316107275.23214.99.camel@deskari>
+	 <yunfwjxwbjq.fsf@aiko.keithp.com>
+	 <20110916175326.54567b14@lxorguk.ukuu.org.uk>
+	 <1316414014.1978.12.camel@deskari> <yunfwjtauqg.fsf@aiko.keithp.com>
+	 <1316417361.1978.48.camel@deskari>
+	 <CAMeQTsbP-_ut7BA3YQ+qgtqfM1tzM4qn3jxHT8B8_0hdPbP3Jg@mail.gmail.com>
+	 <yunpqivfbtf.fsf@aiko.keithp.com>
+	 <CAMeQTsazfb6xoA6mm8OMVhkx_RDaxogqEa8yDstqmKUP5Ub+yg@mail.gmail.com>
+In-Reply-To: <CAMeQTsazfb6xoA6mm8OMVhkx_RDaxogqEa8yDstqmKUP5Ub+yg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Clark <rob.clark@linaro.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Keith Packard <keithp@keithp.com>, linaro-dev@lists.linaro.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>, linux-fbdev@vger.kernel.org, Alex Deucher <alexdeucher@gmail.com>, linux-media@vger.kernel.org
+To: Patrik Jakobsson <patrik.r.jakobsson@gmail.com>
+Cc: Keith Packard <keithp@keithp.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-dev@lists.linaro.org, "Clark, Rob" <rob@ti.com>, Archit Taneja <archit@ti.com>
 
-Hi Alan and Rob,
+On Tue, 2011-09-20 at 23:20 +0200, Patrik Jakobsson wrote:
 
-On Monday 19 September 2011 02:09:36 Rob Clark wrote:
-> On Sun, Sep 18, 2011 at 5:23 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> >> This would leave us with the issue of controlling formats and other
-> >> parameters on the pipelines. We could keep separate DRM, KMS, FB and
-> >> V4L APIs for that,
-> > 
-> > There are some other differences that matter. The exact state and
-> > behaviour of memory, sequencing of accesses, cache control and management
-> > are a critical part of DRM for most GPUs, as is the ability to have them
-> > in swap backed objects and to do memory management of them. Fences and
-> > the like are a big part of the logic of many renderers and the same
-> > fencing has to be applied between capture and GPU, and also in some cases
-> > between playback accelerators (eg MP4 playback) and GPU.
+> Ok, not sure I understand the complexity of DSI. Can overlay composition
+> occur after/at the DSI stage (through MCS perhaps)? Or is it a matter of
+> panels requiring special scanout buffer formats that for instance V4L needs
+> to know about in order to overlay stuff properly? Or am I getting it all wrong?
 
-That's why I believe the DRM API is our best solution to address all those 
-issues.
+I don't know what MCS is. But DSI is just a bi-directional transfer
+protocol between the SoC and the peripheral, you can send arbitrary data
+over it.
 
-I'm not advocating merging the DRM, FB and V4L APIs for memory management. 
-What I would like to investigate is whether we can use a common API for the 
-common needs, which are (in my opinion):
+Normally the SoC composes a pixel stream using overlays and whatnot,
+which goes to the DSI hardware, which then serializes the data and sends
+it to the peripheral.
 
-- reporting the entities that make up the graphics pipeline (such as planes, 
-overlays, compositors, transmitters,  connectors, ...), especially when 
-pipelines get more complex than the plane->crtc->encoder->connector DRM model
+But you can as well send any data, like commands, and the peripheral can
+respond with any relevant data.
 
-- configuring data routing in those complex pipelines
+ Tomi
 
-- and possibly configuring formats (pixel format, frame size, crop rectangle, 
-composition rectangle, ...) on those entities
 
-> > To glue them together I think you'd need to support the use of GEM
-> > objects (maybe extended) in V4L. That may actually make life cleaner and
-> > simpler in some respects because GEM objects are refcounted nicely and
-> > have handles.
-> 
-> fwiw, I think the dmabuf proposal that linaro GWG is working on should
-> be sufficient for V4L to capture directly into a GEM buffer that can
-> be scanned out (overlay) or composited by GPU, etc, in cases where the
-> different dma initiators can all access some common memory:
-> 
-> http://lists.linaro.org/pipermail/linaro-mm-sig/2011-September/000616.html
-> 
-> The idea is that you could allocate a GEM buffer, export a dmabuf
-> handle for that buffer that could be passed to v4l2 camera device (ie.
-> V4L2_MEMORY_DMABUF), video encoder, etc..  the importing device should
-> bracket DMA to/from the buffer w/ get/put_scatterlist() so an unused
-> buffer could be unpinned if needed.
-
-I second Rob here, I think that API should be enough to solve our memory 
-sharing problems between different devices. This is a bit out of scope though, 
-as neither the low-level Linux display framework proposal nor my comments 
-target that, but it's an important topic worth mentioning.
-
-> > DRM and KMS abstract out stuff into what is akin to V4L subdevices for
-> > the various objects the video card has that matter for display - from
-> > scanout buffers to the various video outputs, timings and the like.
-> > 
-> > I don't know what it's like with OMAP but for some of the x86 stuff
-> > particularly low speed/power stuff the capture devices, GPU and overlays
-> > tend to be fairly incestuous in order to do things like 1080i/p preview
-> > while recording from the camera.
-> 
-> We don't like extra memcpy's, but something like dmabuf fits us
-> nicely.. and I expect it would work well in any sort of UMA system
-> where camera, encoder, GPU, overlay, etc all can share the same memory
-> and formats.  I suspect the situation is similar in the x86 SoC
-> world.. but would be good to get some feedback on the proposal.  (I
-> guess next version of the RFC would go out to more mailing lists for
-> broader review.)
-> 
-> > GPU is also a bit weird in some ways because while its normally
-> > nonsensical to do things like use the capture facility one card to drive
-> > part of another, it's actually rather useful (although not supported
-> > really by DRM) to do exactly that with GPUs. A simple example is a dual
-> > headed box with a dumb frame buffer and an accelerated output both of
-> > which are using memory that can be hit by the accelerated card. Classic
-> > example being a USB plug in monitor.
-
--- 
-Regards,
-
-Laurent Pinchart

@@ -1,164 +1,60 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Sep 2011 09:13:30 +0000
-Subject: [PATCHv2 07/15] OMAP: DSS2: HDMI: clean up edid reading & fix checksum
-Message-Id: <1315818818-18733-8-git-send-email-tomi.valkeinen@ti.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Wed, 21 Sep 2011 07:16:24 +0000
+Subject: [patch] smscufx: change edid data to u8 instead of char
+Message-Id: <20110921071623.GH4999@elgon.mountain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mythri P K <mythripk@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Clean up reading of EDID by passing direct address to the block being
-read, instead of start address of the whole EDID memory area. Rewrite
-the loop which reads the EDID.
+Having "edid" as char caused a problem in ufx_read_edid() where we
+compared "edid[i] != 0xFF".  Because of the type difference, the
+condition was never true and the error checking failed.
 
-This also fixes the checksum calculation, which used to calculate the
-checksum only for the first block.
+Also I added a __user notation to silence a sparse complaint.
 
-Cc: Mythri P K <mythripk@ti.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 ---
- drivers/video/omap2/dss/ti_hdmi.h         |    6 +--
- drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |   67 +++++++++++++++--------------
- 2 files changed, 36 insertions(+), 37 deletions(-)
+Compile tested only.  Please test carefully.
 
-diff --git a/drivers/video/omap2/dss/ti_hdmi.h b/drivers/video/omap2/dss/ti_hdmi.h
-index acf1022..390cd85b 100644
---- a/drivers/video/omap2/dss/ti_hdmi.h
-+++ b/drivers/video/omap2/dss/ti_hdmi.h
-@@ -92,8 +92,7 @@ struct ti_hdmi_ip_ops {
- 
- 	void (*phy_disable)(struct hdmi_ip_data *ip_data);
- 
--	int (*read_edid)(struct hdmi_ip_data *ip_data,
--			u8 *pedid, u16 max_length);
-+	int (*read_edid)(struct hdmi_ip_data *ip_data, u8 *edid, int len);
- 
- 	int (*pll_enable)(struct hdmi_ip_data *ip_data);
- 
-@@ -114,8 +113,7 @@ struct hdmi_ip_data {
+diff --git a/drivers/video/smscufx.c b/drivers/video/smscufx.c
+index 44c8cab..aaccffa 100644
+--- a/drivers/video/smscufx.c
++++ b/drivers/video/smscufx.c
+@@ -103,7 +103,7 @@ struct ufx_data {
+ 	struct delayed_work free_framebuffer_work;
+ 	atomic_t usb_active; /* 0 = update virtual buffer, but no usb traffic */
+ 	atomic_t lost_pixels; /* 1 = a render op failed. Need screen refresh */
+-	char *edid; /* null until we read edid from hw or get from sysfs */
++	u8 *edid; /* null until we read edid from hw or get from sysfs */
+ 	size_t edid_size;
+ 	u32 pseudo_palette[256];
  };
- int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data);
- void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data);
--int ti_hdmi_4xxx_read_edid(struct hdmi_ip_data *ip_data,
--					u8 *pedid, u16 max_length);
-+int ti_hdmi_4xxx_read_edid(struct hdmi_ip_data *ip_data, u8 *edid, int len);
- void ti_hdmi_4xxx_wp_video_start(struct hdmi_ip_data *ip_data, bool start);
- int ti_hdmi_4xxx_pll_enable(struct hdmi_ip_data *ip_data);
- void ti_hdmi_4xxx_pll_disable(struct hdmi_ip_data *ip_data);
-diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-index ecf854e..e9885dc 100644
---- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-+++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-@@ -310,8 +310,8 @@ static int hdmi_core_ddc_edid(struct hdmi_ip_data *ip_data,
- 		u8 *pedid, int ext)
- {
- 	void __iomem *base = hdmi_core_sys_base(ip_data);
--	u32 i, j;
--	char checksum = 0;
-+	u32 i;
-+	char checksum;
- 	u32 offset = 0;
+@@ -993,7 +993,7 @@ static int ufx_ops_ioctl(struct fb_info *info, unsigned int cmd,
  
- 	/* HDMI_CORE_DDC_STATUS_IN_PROG */
-@@ -354,21 +354,31 @@ static int hdmi_core_ddc_edid(struct hdmi_ip_data *ip_data,
- 		return -EIO;
- 	}
- 
--	i = ext * 128;
--	j = 0;
--	while (((REG_GET(base, HDMI_CORE_DDC_STATUS, 4, 4) = 1) ||
--		(REG_GET(base, HDMI_CORE_DDC_STATUS, 2, 2) = 0)) &&
--			j < 128) {
-+	for (i = 0; i < 0x80; ++i) {
-+		int t;
- 
--		if (REG_GET(base, HDMI_CORE_DDC_STATUS, 2, 2) = 0) {
--			/* FIFO not empty */
--			pedid[i++] = REG_GET(base, HDMI_CORE_DDC_DATA, 7, 0);
--			j++;
-+		/* IN_PROG */
-+		if (REG_GET(base, HDMI_CORE_DDC_STATUS, 4, 4) = 0) {
-+			DSSERR("operation stopped when reading edid\n");
-+			return -EIO;
-+		}
-+
-+		t = 0;
-+		/* FIFO_EMPTY */
-+		while (REG_GET(base, HDMI_CORE_DDC_STATUS, 2, 2) = 1) {
-+			if (t++ > 10000) {
-+				DSSERR("timeout reading edid\n");
-+				return -ETIMEDOUT;
-+			}
-+			udelay(1);
- 		}
-+
-+		pedid[i] = REG_GET(base, HDMI_CORE_DDC_DATA, 7, 0);
- 	}
- 
--	for (j = 0; j < 128; j++)
--		checksum += pedid[j];
-+	checksum = 0;
-+	for (i = 0; i < 0x80; ++i)
-+		checksum += pedid[i];
- 
- 	if (checksum != 0) {
- 		pr_err("E-EDID checksum failed!!\n");
-@@ -379,40 +389,31 @@ static int hdmi_core_ddc_edid(struct hdmi_ip_data *ip_data,
+ 	/* TODO: Update X server to get this from sysfs instead */
+ 	if (cmd = UFX_IOCTL_RETURN_EDID) {
+-		char *edid = (char *)arg;
++		u8 __user *edid = (u8 __user *)arg;
+ 		if (copy_to_user(edid, dev->edid, dev->edid_size))
+ 			return -EFAULT;
+ 		return 0;
+@@ -1428,7 +1428,7 @@ static int ufx_i2c_wait_busy(struct ufx_data *dev)
  }
  
- int ti_hdmi_4xxx_read_edid(struct hdmi_ip_data *ip_data,
--				u8 *pedid, u16 max_length)
-+				u8 *edid, int len)
+ /* reads a 128-byte EDID block from the currently selected port and TAR */
+-static int ufx_read_edid(struct ufx_data *dev, char *edid, int edid_len)
++static int ufx_read_edid(struct ufx_data *dev, u8 *edid, int edid_len)
  {
--	int r = 0, n = 0, i = 0;
--	int max_ext_blocks = (max_length / 128) - 1;
--	int len;
-+	int r, l;
-+
-+	if (len < 128)
-+		return -EINVAL;
+ 	int i, j, status;
+ 	u32 *edid_u32 = (u32 *)edid;
+@@ -1491,7 +1491,7 @@ static int ufx_setup_modes(struct ufx_data *dev, struct fb_info *info,
+ 	char *default_edid, size_t default_edid_size)
+ {
+ 	const struct fb_videomode *default_vmode = NULL;
+-	char *edid;
++	u8 *edid;
+ 	int i, result = 0, tries = 3;
  
- 	r = hdmi_core_ddc_init(ip_data);
- 	if (r)
- 		return r;
- 
--	r = hdmi_core_ddc_edid(ip_data, pedid, 0);
-+	r = hdmi_core_ddc_edid(ip_data, edid, 0);
- 	if (r)
- 		return r;
- 
--	len = 128;
--	n = pedid[0x7e];
--
--	/*
--	 * README: need to comply with max_length set by the caller.
--	 * Better implementation should be to allocate necessary
--	 * memory to store EDID according to nb_block field found
--	 * in first block
--	 */
--	if (n > max_ext_blocks)
--		n = max_ext_blocks;
-+	l = 128;
- 
--	for (i = 1; i <= n; i++) {
--		r = hdmi_core_ddc_edid(ip_data, pedid, i);
-+	if (len >= 128 * 2 && edid[0x7e] > 0) {
-+		r = hdmi_core_ddc_edid(ip_data, edid + 0x80, 1);
- 		if (r)
- 			return r;
--		len += 128;
-+		l += 128;
- 	}
- 
--	return len;
-+	return l;
- }
- 
- static void hdmi_core_init(struct hdmi_core_video_config *video_cfg,
--- 
-1.7.4.1
-
+ 	if (info->dev) /* only use mutex if info has been registered */

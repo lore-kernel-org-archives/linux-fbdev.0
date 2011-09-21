@@ -1,43 +1,64 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 21 Sep 2011 06:01:15 +0000
+From: Heiko =?utf-8?q?St=C3=BCbner?= <heiko@sntech.de>
+Date: Wed, 21 Sep 2011 13:26:33 +0000
 Subject: Re: Proposal for a low-level Linux display framework
-Message-Id: <1316584875.1949.4.camel@deskari>
+Message-Id: <201109211526.33687.heiko@sntech.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1316088425.11294.78.camel@lappyti>
-	 <yunboul7sx7.fsf@aiko.keithp.com> <1316100594.23214.65.camel@deskari>
-	 <yun8vpp7qk7.fsf@aiko.keithp.com> <1316107275.23214.99.camel@deskari>
-	 <yunfwjxwbjq.fsf@aiko.keithp.com>
-	 <20110916175326.54567b14@lxorguk.ukuu.org.uk>
-	 <1316414014.1978.12.camel@deskari> <yunfwjtauqg.fsf@aiko.keithp.com>
-	 <1316417361.1978.48.camel@deskari>
-	 <CAMeQTsbP-_ut7BA3YQ+qgtqfM1tzM4qn3jxHT8B8_0hdPbP3Jg@mail.gmail.com>
-	 <yunpqivfbtf.fsf@aiko.keithp.com>
-	 <CAMeQTsazfb6xoA6mm8OMVhkx_RDaxogqEa8yDstqmKUP5Ub+yg@mail.gmail.com>
-In-Reply-To: <CAMeQTsazfb6xoA6mm8OMVhkx_RDaxogqEa8yDstqmKUP5Ub+yg@mail.gmail.com>
+In-Reply-To: <1316088425.11294.78.camel@lappyti>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Patrik Jakobsson <patrik.r.jakobsson@gmail.com>
-Cc: Keith Packard <keithp@keithp.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-dev@lists.linaro.org, "Clark, Rob" <rob@ti.com>, Archit Taneja <archit@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-dev@lists.linaro.org, "Clark, Rob" <rob@ti.com>, Archit Taneja <archit@ti.com>, Nishant Kamat <nskamat@ti.com>
 
-On Tue, 2011-09-20 at 23:20 +0200, Patrik Jakobsson wrote:
+Hi,
 
-> Ok, not sure I understand the complexity of DSI. Can overlay composition
-> occur after/at the DSI stage (through MCS perhaps)? Or is it a matter of
-> panels requiring special scanout buffer formats that for instance V4L needs
-> to know about in order to overlay stuff properly? Or am I getting it all wrong?
+Am Donnerstag, 15. September 2011, 14:07:05 schrieb Tomi Valkeinen:
+> Now, I'm quite sure the above framework could work quite well with any
+> OMAP like hardware, with unified memory (i.e. the video buffers are in
+> SDRAM) and 3D chips and similar components are separate. But what I'm
+> not sure is how desktop world's gfx cards change things. Most probably
+> all the above components can be found from there also in some form, but
+> are there some interdependencies between 3D/buffer management/something
+> else and the video output side?
+If I have read your proposal right, it could also help in better supporting 
+epaper-displays. 
 
-I don't know what MCS is. But DSI is just a bi-directional transfer
-protocol between the SoC and the peripheral, you can send arbitrary data
-over it.
+The current drivers each (re-)implement the deferredIo logic needed to drive 
+such systems (catching and combining updates to the framebuffer) and combine 
+this with the actual display driver which issues specific commands to the 
+display hardware. Also a board-specific driver is needed to implement the 
+actual transport to the display which seems be done via this i80 command 
+protocol over GPIOs or the LCD controllers of SoCs.
 
-Normally the SoC composes a pixel stream using overlays and whatnot,
-which goes to the DSI hardware, which then serializes the data and sends
-it to the peripheral.
+If one were to split this it could be realised like
 
-But you can as well send any data, like commands, and the peripheral can
-respond with any relevant data.
+----------------   ---------------   -------------
+| deferredIOFb | - | DisplayCtrl | - | Transport |
+----------------   ---------------   -------------
 
- Tomi
+An interesting tidbit is that on the ereaders I'm working on the LCD 
+controller should be able to do some sort of pseudo DMA operation.
+The normal way to transmit data to epaper displays is:
+- issue update command with dimension of the regions to update
+- read relevant pixeldata from fb and write it to the i80 in a loop
+- issue stop-update command
+
+On the S3C2416 it could go like:
+- issue update command
+- describe to the lcd controller the source memory region
+- let the lcd controller transmit exactly one frame
+- issue stop update command
+So the transport would need to get the memory addresses of the region to 
+update from the framebuffer driver.
+
+Also this system could possibly use some of the drawing routines from the 
+S3C2416 SoC.
+
+Essentially needed would be a s3c-fb with deferredio-addon and the lcd 
+controller separated from it. I'm still not sure how this all could fit 
+together but I would guess separating framebuffer and display control would 
+help.
 
 
+Heiko 

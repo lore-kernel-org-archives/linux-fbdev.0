@@ -1,64 +1,48 @@
-From: Heiko =?utf-8?q?St=C3=BCbner?= <heiko@sntech.de>
-Date: Wed, 21 Sep 2011 13:26:33 +0000
+From: Patrik Jakobsson <patrik.r.jakobsson@gmail.com>
+Date: Wed, 21 Sep 2011 18:07:15 +0000
 Subject: Re: Proposal for a low-level Linux display framework
-Message-Id: <201109211526.33687.heiko@sntech.de>
+Message-Id: <CAMeQTsbCXEb01C4X3nKdNyE5FJuQojaMKbcY1dSk5y3kKwkiXg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1316088425.11294.78.camel@lappyti>
-In-Reply-To: <1316088425.11294.78.camel@lappyti>
+	<yunboul7sx7.fsf@aiko.keithp.com>
+	<1316100594.23214.65.camel@deskari>
+	<yun8vpp7qk7.fsf@aiko.keithp.com>
+	<1316107275.23214.99.camel@deskari>
+	<yunfwjxwbjq.fsf@aiko.keithp.com>
+	<20110916175326.54567b14@lxorguk.ukuu.org.uk>
+	<1316414014.1978.12.camel@deskari>
+	<yunfwjtauqg.fsf@aiko.keithp.com>
+	<1316417361.1978.48.camel@deskari>
+	<CAMeQTsbP-_ut7BA3YQ+qgtqfM1tzM4qn3jxHT8B8_0hdPbP3Jg@mail.gmail.com>
+	<yunpqivfbtf.fsf@aiko.keithp.com>
+	<CAMeQTsazfb6xoA6mm8OMVhkx_RDaxogqEa8yDstqmKUP5Ub+yg@mail.gmail.com>
+	<1316584875.1949.4.camel@deskari>
+In-Reply-To: <1316584875.1949.4.camel@deskari>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-dev@lists.linaro.org, "Clark, Rob" <rob@ti.com>, Archit Taneja <archit@ti.com>, Nishant Kamat <nskamat@ti.com>
+Cc: linaro-dev@lists.linaro.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Archit Taneja <archit@ti.com>, "Clark, Rob" <rob@ti.com>
 
-Hi,
+On Wed, Sep 21, 2011 at 8:01 AM, Tomi Valkeinen wrote:
+> I don't know what MCS is.
 
-Am Donnerstag, 15. September 2011, 14:07:05 schrieb Tomi Valkeinen:
-> Now, I'm quite sure the above framework could work quite well with any
-> OMAP like hardware, with unified memory (i.e. the video buffers are in
-> SDRAM) and 3D chips and similar components are separate. But what I'm
-> not sure is how desktop world's gfx cards change things. Most probably
-> all the above components can be found from there also in some form, but
-> are there some interdependencies between 3D/buffer management/something
-> else and the video output side?
-If I have read your proposal right, it could also help in better supporting 
-epaper-displays. 
+MCS is manufacturer specific commands (Manufacturer Command Set).
 
-The current drivers each (re-)implement the deferredIo logic needed to drive 
-such systems (catching and combining updates to the framebuffer) and combine 
-this with the actual display driver which issues specific commands to the 
-display hardware. Also a board-specific driver is needed to implement the 
-actual transport to the display which seems be done via this i80 command 
-protocol over GPIOs or the LCD controllers of SoCs.
+> But DSI is just a bi-directional transfer
+> protocol between the SoC and the peripheral, you can send arbitrary data
+> over it.
+>
+> Normally the SoC composes a pixel stream using overlays and whatnot,
+> which goes to the DSI hardware, which then serializes the data and sends
+> it to the peripheral.
+>
+> But you can as well send any data, like commands, and the peripheral can
+> respond with any relevant data.
 
-If one were to split this it could be realised like
+Ok it makes sense now, and I see how it can get more complicated than SDVO.
+A DSI lib is a good idea and interfaces for stuff like backlight and mechanisms
+for queuing commands that need to go in during blanking.
 
-----------------   ---------------   -------------
-| deferredIOFb | - | DisplayCtrl | - | Transport |
-----------------   ---------------   -------------
-
-An interesting tidbit is that on the ereaders I'm working on the LCD 
-controller should be able to do some sort of pseudo DMA operation.
-The normal way to transmit data to epaper displays is:
-- issue update command with dimension of the regions to update
-- read relevant pixeldata from fb and write it to the i80 in a loop
-- issue stop-update command
-
-On the S3C2416 it could go like:
-- issue update command
-- describe to the lcd controller the source memory region
-- let the lcd controller transmit exactly one frame
-- issue stop update command
-So the transport would need to get the memory addresses of the region to 
-update from the framebuffer driver.
-
-Also this system could possibly use some of the drawing routines from the 
-S3C2416 SoC.
-
-Essentially needed would be a s3c-fb with deferredio-addon and the lcd 
-controller separated from it. I'm still not sure how this all could fit 
-together but I would guess separating framebuffer and display control would 
-help.
-
-
-Heiko 
+Thanks for clearing it up
+-Patrik

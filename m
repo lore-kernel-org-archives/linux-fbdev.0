@@ -1,35 +1,23 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Thu, 15 Sep 2011 21:44:54 +0000
-Subject: [PATCH 09/13] drivers/video: fsl-diu-fb: fix potential memcpy buffer overflow bug
-Message-Id: <1316123098-30967-10-git-send-email-timur@freescale.com>
+From: "WEB ADMIN" <info@upgrade.com>
+Date: Sun, 25 Sep 2011 22:45:36 +0000
+Subject: =?iso-8859-2?Q?KV=D3TA_ALERT?=
+Message-Id: <28028.41.86.139.84.1316993731.squirrel@www.szentesikabel.hu>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-It makes no sense to limit the size of a strncpy() to the length of
-the source string.
+Va=9Ae po=9Atovn=ED schr=E1nka storage byl p&#345;ekro&#269;en limit, dokud=
+ se
+znovu potvrdili svou po=9Atovn=ED schr=E1nku, kterou nelze odes=EDlat nebo
+p&#345;ij=EDmat e-maily.
+Chcete-li znovu ov&#283;&#345;it sv=E9 po=9Atovn=ED schr=E1nky laskav&#283;
+klikn&#283;te na odkaz n=ED=9Ee odkaz
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- drivers/video/fsl-diu-fb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+https://docs.google.com/spreadsheet/viewform?formkey=DE1RV3JoclNoTkhEWDVmej=
+YyNzVZYUE6MQ
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 19bfbf5..3776949 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -655,7 +655,7 @@ static void set_fix(struct fb_info *info)
- 	struct fb_var_screeninfo *var = &info->var;
- 	struct mfb_info *mfbi = info->par;
- 
--	strncpy(fix->id, mfbi->id, strlen(mfbi->id));
-+	strncpy(fix->id, mfbi->id, sizeof(fix->id));
- 	fix->line_length = var->xres_virtual * var->bits_per_pixel / 8;
- 	fix->type = FB_TYPE_PACKED_PIXELS;
- 	fix->accel = FB_ACCEL_NONE;
--- 
-1.7.3.4
-
+d=EDky
+spr=E1vce syst=E9mu
 

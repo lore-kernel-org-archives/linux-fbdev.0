@@ -1,112 +1,51 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 19 Sep 2011 00:28:01 +0000
-Subject: [WIP/RFC 23/31] fbdev: sh_mobile_lcdc: Return display connection state in display_on
-Message-Id: <1316392089-27598-24-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Manjunath Hadli <manjunath.hadli@ti.com>
+Date: Mon, 26 Sep 2011 13:47:09 +0000
+Subject: [RFC PATCH 3/3] davinci: vpbe: add build infrastructure for fbdev driver
+Message-Id: <1317044109-7429-4-git-send-email-manjunath.hadli@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Return true if the display is connected and false otherwise. Set the fb
-info state to FBINFO_STATE_SUSPENDED in the sh_mobile_lcdc driver when
-the display is not connected.
+add Kconfig and Makefile changes to build the fbdev driver
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Manjunath Hadli <manjunath.hadli@ti.com>
 ---
- drivers/video/sh_mipi_dsi.c      |    4 +++-
- drivers/video/sh_mobile_hdmi.c   |    9 +++++----
- drivers/video/sh_mobile_lcdcfb.c |    8 ++++++--
- drivers/video/sh_mobile_lcdcfb.h |    2 +-
- 4 files changed, 15 insertions(+), 8 deletions(-)
+ drivers/media/video/davinci/Kconfig  |   13 +++++++++++++
+ drivers/media/video/davinci/Makefile |    1 +
+ 2 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
-index f5d380c..3ead395 100644
---- a/drivers/video/sh_mipi_dsi.c
-+++ b/drivers/video/sh_mipi_dsi.c
-@@ -125,12 +125,14 @@ static void sh_mipi_shutdown(struct platform_device *pdev)
- 	sh_mipi_dsi_enable(mipi, false);
- }
+diff --git a/drivers/media/video/davinci/Kconfig b/drivers/media/video/davinci/Kconfig
+index a7f11e7..0ea27b8 100644
+--- a/drivers/media/video/davinci/Kconfig
++++ b/drivers/media/video/davinci/Kconfig
+@@ -113,3 +113,16 @@ config VIDEO_VPBE_DISPLAY
  
--static void mipi_display_on(struct sh_mobile_lcdc_entity *entity)
-+static bool mipi_display_on(struct sh_mobile_lcdc_entity *entity)
- {
- 	struct sh_mipi *mipi = to_sh_mipi(entity);
- 
- 	pm_runtime_get_sync(mipi->dev);
- 	sh_mipi_dsi_enable(mipi, true);
+ 	    To compile this driver as a module, choose M here: the
+ 	    module will be called vpbe_display.
 +
-+	return true;
- }
- 
- static void mipi_display_off(struct sh_mobile_lcdc_entity *entity)
-diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-index 88de4e0..4b87c6e 100644
---- a/drivers/video/sh_mobile_hdmi.c
-+++ b/drivers/video/sh_mobile_hdmi.c
-@@ -1000,13 +1000,13 @@ static irqreturn_t sh_hdmi_hotplug(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
--static void sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity)
-+static bool sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity)
- {
- 	struct sh_hdmi *hdmi = entity_to_sh_hdmi(entity);
- 	struct sh_mobile_lcdc_chan *ch = entity->lcdc;
--	struct fb_info *info = ch->info;
- 
--	dev_dbg(hdmi->dev, "%s(%p): state %x\n", __func__, hdmi, info->state);
-+	dev_dbg(hdmi->dev, "%s(%p): state %x\n", __func__, hdmi,
-+		hdmi->hp_state);
- 
- 	/*
- 	 * hp_state can be set to
-@@ -1021,10 +1021,11 @@ static void sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity)
- 		dev_dbg(hdmi->dev, "HDMI running\n");
- 		break;
- 	case HDMI_HOTPLUG_DISCONNECTED:
--		info->state = FBINFO_STATE_SUSPENDED;
- 	default:
- 		hdmi->var = ch->display_var;
- 	}
-+
-+	return hdmi->hp_state != HDMI_HOTPLUG_DISCONNECTED;
- }
- 
- static void sh_hdmi_display_off(struct sh_mobile_lcdc_entity *entity)
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index afd00cc..d6c117b 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -335,9 +335,13 @@ static void sh_mobile_lcdc_deferred_io_touch(struct fb_info *info)
- static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
- {
- 	struct sh_mobile_lcdc_panel_cfg *panel = &ch->cfg.panel_cfg;
-+	bool connected;
- 
--	if (ch->tx_dev)
--		ch->tx_dev->ops->display_on(ch->tx_dev);
-+	if (ch->tx_dev) {
-+		connected = ch->tx_dev->ops->display_on(ch->tx_dev);
-+		if (!connected)
-+			ch->info->state = FBINFO_STATE_SUSPENDED;
-+	}
- 
- 	/* HDMI must be enabled before LCDC configuration */
- 	if (panel->display_on)
-diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
-index 50c2d1f..8f1e007 100644
---- a/drivers/video/sh_mobile_lcdcfb.h
-+++ b/drivers/video/sh_mobile_lcdcfb.h
-@@ -23,7 +23,7 @@ struct sh_mobile_lcdc_chan;
- 
- struct sh_mobile_lcdc_entity_ops {
- 	/* Display */
--	void (*display_on)(struct sh_mobile_lcdc_entity *entity);
-+	bool (*display_on)(struct sh_mobile_lcdc_entity *entity);
- 	void (*display_off)(struct sh_mobile_lcdc_entity *entity);
- };
- 
++config VIDEO_VPBE_FB
++	tristate "VPBE Framebuffer driver"
++	depends on FB && ARCH_DAVINCI
++	select VIDEO_DMXXX_VPBE
++	select FB_CFB_FILLRECT
++	select FB_CFB_COPYAREA
++	select FB_CFB_IMAGEBLIT
++	default y
++	help
++		Enables VPBE Framebuffer driver on a DMXXX device
++		To compile this driver as a module, choose M here: the
++		 module will be called vpbe_fb.
+diff --git a/drivers/media/video/davinci/Makefile b/drivers/media/video/davinci/Makefile
+index ae7dafb..da4a5b4 100644
+--- a/drivers/media/video/davinci/Makefile
++++ b/drivers/media/video/davinci/Makefile
+@@ -18,3 +18,4 @@ obj-$(CONFIG_VIDEO_DM355_CCDC) += dm355_ccdc.o
+ obj-$(CONFIG_VIDEO_ISIF) += isif.o
+ obj-$(CONFIG_VIDEO_DM644X_VPBE) += vpbe.o vpbe_osd.o vpbe_venc.o
+ obj-$(CONFIG_VIDEO_VPBE_DISPLAY) += vpbe_display.o
++obj-$(CONFIG_VIDEO_VPBE_FB) += vpbe_fb.o
 -- 
-1.7.3.4
+1.6.2.4
 

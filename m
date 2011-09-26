@@ -1,183 +1,74 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Wed, 28 Sep 2011 21:19:55 +0000
-Subject: [PATCH 9/9] drivers/video: fsl-diu-fb: merge diu_pool into fsl_diu_data
-Message-Id: <1317244795-24671-9-git-send-email-timur@freescale.com>
+From: Inki Dae <inki.dae@samsung.com>
+Date: Mon, 26 Sep 2011 14:36:54 +0000
+Subject: [PATCH v2 1/2] lcd: add callbacks for early fb event blank support.
+Message-Id: <1317047814-12134-1-git-send-email-inki.dae@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The diu_pool structure contains diu_addr objects for various objects
-allocated in DMA space that are used by the DIU, but the only instance
-of this structure is a global variable, 'pool'.  Eliminate 'pool' by
-merging its fields into the fsl_diu_data structure, which is instantiated
-on the heap for each DIU controller found.
+this patch adds early_set_power and r_early_set_power callbacks.
+early_set_power callback is called prior to fb_blank() of fbmem.c and
+r_early_set_power callback is called if fb_blank() was failed to
+revert the effects of the early_set_power call of lcd panel driver.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
+Signed-off-by: Inki Dae <inki.dae@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/video/fsl-diu-fb.c |   72 +++++++++++++++++++++----------------------
- 1 files changed, 35 insertions(+), 37 deletions(-)
+ drivers/video/backlight/lcd.c |   10 ++++++++++
+ include/linux/lcd.h           |   10 ++++++++++
+ 2 files changed, 20 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 728cd9f..83bc825 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -55,13 +55,6 @@ struct diu_addr {
- 	__u32 offset;
- };
- 
--struct diu_pool {
--	struct diu_addr ad;
--	struct diu_addr gamma;
--	struct diu_addr pallete;
--	struct diu_addr cursor;
--};
--
- /*
-  * List of supported video modes
-  *
-@@ -349,6 +342,10 @@ struct fsl_diu_data {
- 	struct diu __iomem *diu_reg;
- 	spinlock_t reg_lock;
- 	unsigned int mode;		/* DIU operation mode */
-+	struct diu_addr ad;
-+	struct diu_addr gamma;
-+	struct diu_addr pallete;
-+	struct diu_addr cursor;
- };
- 
- enum mfb_index {
-@@ -422,8 +419,6 @@ static struct mfb_info mfb_template[] = {
- 	},
- };
- 
--static struct diu_pool pool;
--
- /**
-  * fsl_diu_name_to_port - convert a port name to a monitor port enum
-  *
-@@ -825,22 +820,23 @@ static void update_lcdc(struct fb_info *info)
- 	hw = machine_data->diu_reg;
- 
- 	diu_ops.set_monitor_port(machine_data->monitor_port);
--	gamma_table_base = pool.gamma.vaddr;
--	cursor_base = pool.cursor.vaddr;
-+	gamma_table_base = machine_data->gamma.vaddr;
-+	cursor_base = machine_data->cursor.vaddr;
- 	/* Prep for DIU init  - gamma table, cursor table */
- 
- 	for (i = 0; i <= 2; i++)
- 		for (j = 0; j <= 255; j++)
- 			*gamma_table_base++ = j;
- 
--	diu_ops.set_gamma_table(machine_data->monitor_port, pool.gamma.vaddr);
-+	diu_ops.set_gamma_table(machine_data->monitor_port,
-+				machine_data->gamma.vaddr);
- 
- 	disable_lcdc(info);
- 
- 	/* Program DIU registers */
- 
--	out_be32(&hw->gamma, pool.gamma.paddr);
--	out_be32(&hw->cursor, pool.cursor.paddr);
-+	out_be32(&hw->gamma, machine_data->gamma.paddr);
-+	out_be32(&hw->cursor, machine_data->cursor.paddr);
- 
- 	out_be32(&hw->bgnd, 0x007F7F7F); 	/* BGND */
- 	out_be32(&hw->bgnd_wb, 0); 		/* BGND_WB */
-@@ -1554,27 +1550,27 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
- 	machine_data->monitor_port = monitor_port;
- 
- 	/* Area descriptor memory pool aligns to 64-bit boundary */
--	if (allocate_buf(&pdev->dev, &pool.ad,
-+	if (allocate_buf(&pdev->dev, &machine_data->ad,
- 			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8))
- 		return -ENOMEM;
- 
- 	/* Get memory for Gamma Table  - 32-byte aligned memory */
--	if (allocate_buf(&pdev->dev, &pool.gamma, 768, 32)) {
-+	if (allocate_buf(&pdev->dev, &machine_data->gamma, 768, 32)) {
- 		ret = -ENOMEM;
- 		goto error;
- 	}
- 
- 	/* For performance, cursor bitmap buffer aligns to 32-byte boundary */
--	if (allocate_buf(&pdev->dev, &pool.cursor, MAX_CURS * MAX_CURS * 2,
--			 32)) {
-+	if (allocate_buf(&pdev->dev, &machine_data->cursor,
-+			 MAX_CURS * MAX_CURS * 2, 32)) {
- 		ret = -ENOMEM;
- 		goto error;
- 	}
- 
- 	i = ARRAY_SIZE(machine_data->fsl_diu_info);
--	machine_data->dummy_ad = (struct diu_ad *)
--			((u32)pool.ad.vaddr + pool.ad.offset) + i;
--	machine_data->dummy_ad->paddr = pool.ad.paddr +
-+	machine_data->dummy_ad = (struct diu_ad *)((u32)machine_data->ad.vaddr +
-+			machine_data->ad.offset) + i;
-+	machine_data->dummy_ad->paddr = machine_data->ad.paddr +
- 			i * sizeof(struct diu_ad);
- 	machine_data->dummy_aoi_virt = fsl_diu_alloc(64, &dummy_ad_addr);
- 	if (!machine_data->dummy_aoi_virt) {
-@@ -1603,9 +1599,10 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
- 	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++) {
- 		machine_data->fsl_diu_info[i]->fix.smem_start = 0;
- 		mfbi = machine_data->fsl_diu_info[i]->par;
--		mfbi->ad = (struct diu_ad *)((u32)pool.ad.vaddr
--					+ pool.ad.offset) + i;
--		mfbi->ad->paddr = pool.ad.paddr + i * sizeof(struct diu_ad);
-+		mfbi->ad = (struct diu_ad *)((u32)machine_data->ad.vaddr
-+					+ machine_data->ad.offset) + i;
-+		mfbi->ad->paddr +			machine_data->ad.paddr + i * sizeof(struct diu_ad);
- 		ret = install_fb(machine_data->fsl_diu_info[i]);
- 		if (ret) {
- 			dev_err(&pdev->dev, "could not register fb %d\n", i);
-@@ -1637,14 +1634,14 @@ error:
- 	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++)
- 		uninstall_fb(machine_data->fsl_diu_info[i]);
- 
--	if (pool.ad.vaddr)
--		free_buf(&pdev->dev, &pool.ad,
-+	if (machine_data->ad.vaddr)
-+		free_buf(&pdev->dev, &machine_data->ad,
- 			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
--	if (pool.gamma.vaddr)
--		free_buf(&pdev->dev, &pool.gamma, 768, 32);
--	if (pool.cursor.vaddr)
--		free_buf(&pdev->dev, &pool.cursor, MAX_CURS * MAX_CURS * 2,
--			 32);
-+	if (machine_data->gamma.vaddr)
-+		free_buf(&pdev->dev, &machine_data->gamma, 768, 32);
-+	if (machine_data->cursor.vaddr)
-+		free_buf(&pdev->dev, &machine_data->cursor,
-+			 MAX_CURS * MAX_CURS * 2, 32);
- 	if (machine_data->dummy_aoi_virt)
- 		fsl_diu_free(machine_data->dummy_aoi_virt, 64);
- 	iounmap(machine_data->diu_reg);
-@@ -1668,13 +1665,14 @@ static int fsl_diu_remove(struct platform_device *pdev)
- 	free_irq_local(machine_data);
- 	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++)
- 		uninstall_fb(machine_data->fsl_diu_info[i]);
--	if (pool.ad.vaddr)
--		free_buf(&pdev->dev, &pool.ad,
-+	if (machine_data->ad.vaddr)
-+		free_buf(&pdev->dev, &machine_data->ad,
- 			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
--	if (pool.gamma.vaddr)
--		free_buf(&pdev->dev, &pool.gamma, 768, 32);
--	if (pool.cursor.vaddr)
--		free_buf(&pdev->dev, &pool.cursor, MAX_CURS * MAX_CURS * 2, 32);
-+	if (machine_data->gamma.vaddr)
-+		free_buf(&pdev->dev, &machine_data->gamma, 768, 32);
-+	if (machine_data->cursor.vaddr)
-+		free_buf(&pdev->dev, &machine_data->cursor,
-+			 MAX_CURS * MAX_CURS * 2, 32);
- 	if (machine_data->dummy_aoi_virt)
- 		fsl_diu_free(machine_data->dummy_aoi_virt, 64);
- 	iounmap(machine_data->diu_reg);
+diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
+index 71a11ca..7a03b6c 100644
+--- a/drivers/video/backlight/lcd.c
++++ b/drivers/video/backlight/lcd.c
+@@ -32,6 +32,8 @@ static int fb_notifier_callback(struct notifier_block *self,
+ 	case FB_EVENT_BLANK:
+ 	case FB_EVENT_MODE_CHANGE:
+ 	case FB_EVENT_MODE_CHANGE_ALL:
++	case FB_EARLY_EVENT_BLANK:
++	case FB_R_EARLY_EVENT_BLANK:
+ 		break;
+ 	default:
+ 		return 0;
+@@ -46,6 +48,14 @@ static int fb_notifier_callback(struct notifier_block *self,
+ 		if (event = FB_EVENT_BLANK) {
+ 			if (ld->ops->set_power)
+ 				ld->ops->set_power(ld, *(int *)evdata->data);
++		} else if (event = FB_EARLY_EVENT_BLANK) {
++			if (ld->ops->early_set_power)
++				ld->ops->early_set_power(ld,
++						*(int *)evdata->data);
++		} else if (event = FB_R_EARLY_EVENT_BLANK) {
++			if (ld->ops->r_early_set_power)
++				ld->ops->r_early_set_power(ld,
++						*(int *)evdata->data);
+ 		} else {
+ 			if (ld->ops->set_mode)
+ 				ld->ops->set_mode(ld, evdata->data);
+diff --git a/include/linux/lcd.h b/include/linux/lcd.h
+index 8877123..e00c3b0 100644
+--- a/include/linux/lcd.h
++++ b/include/linux/lcd.h
+@@ -40,6 +40,16 @@ struct lcd_ops {
+ 	/* Get the LCD panel power status (0: full on, 1..3: controller
+ 	   power on, flat panel power off, 4: full off), see FB_BLANK_XXX */
+ 	int (*get_power)(struct lcd_device *);
++	/*
++	 * Enable or disable power to the LCD(0: on; 4: off, see FB_BLANK_XXX)
++	 * and this callback would be called proir to fb driver's callback.
++	 *
++	 * P.S. note that if early_set_power is not NULL then early fb notifier
++	 *	would be registered.
++	 */
++	int (*early_set_power)(struct lcd_device *, int power);
++	/* revert the effects of the early blank event. */
++	int (*r_early_set_power)(struct lcd_device *, int power);
+ 	/* Enable or disable power to the LCD (0: on; 4: off, see FB_BLANK_XXX) */
+ 	int (*set_power)(struct lcd_device *, int power);
+ 	/* Get the current contrast setting (0-max_contrast) */
 -- 
-1.7.3.4
-
+1.7.4.1
 

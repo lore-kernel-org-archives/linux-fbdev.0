@@ -1,38 +1,46 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Mon, 26 Sep 2011 20:55:45 +0000
-Subject: Question on struct fb_videomode.name
-Message-Id: <4E80E6D1.3010907@freescale.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 27 Sep 2011 12:22:53 +0000
+Subject: Re: Question on struct fb_videomode.name
+Message-Id: <CAMuHMdVK5KL9vtfQ6ZEKd25hkVR2dY_gC6-C9E9haRAaTddC4A@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <4E80E6D1.3010907@freescale.com>
+In-Reply-To: <4E80E6D1.3010907@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="windows-1253"
+Content-Transfer-Encoding: base64
 To: linux-fbdev@vger.kernel.org
 
-In my fb driver, I have an array of fb_videomode structs, like this:
-
-static struct fb_videomode __devinitdata fsl_diu_mode_db[] = {
-	{
-		.name		= "1024x768-60",
-		.refresh	= 60,
-		.xres		= 1024,
-		.yres		= 768,
-		.pixclock	= 15385,
-		.left_margin	= 160,
-		.right_margin	= 24,
-		.upper_margin	= 29,
-		.lower_margin	= 3,
-		.hsync_len	= 136,
-		.vsync_len	= 6,
-		.sync		= FB_SYNC_COMP_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
-		.vmode		= FB_VMODE_NONINTERLACED
-	},
-	...
-
-Is there any value in specifying the .name field as "<xres>x<yres>-<ref>"?  I
-know the .name field is optional, but what happens if I don't specify it?  It
-just seems redundant to generate the name based on other data in the same structure.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
-
+T24gTW9uLCBTZXAgMjYsIDIwMTEgYXQgMjI6NTUsIFRpbXVyIFRhYmkgPHRpbXVyQGZyZWVzY2Fs
+ZS5jb20+IHdyb3RlOgo+IEluIG15IGZiIGRyaXZlciwgSSBoYXZlIGFuIGFycmF5IG9mIGZiX3Zp
+ZGVvbW9kZSBzdHJ1Y3RzLCBsaWtlIHRoaXM6Cj4KPiBzdGF0aWMgc3RydWN0IGZiX3ZpZGVvbW9k
+ZSBfX2RldmluaXRkYXRhIGZzbF9kaXVfbW9kZV9kYltdID0gewo+IMKgIMKgIMKgIMKgewo+IMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgLm5hbWUgwqAgwqAgwqAgwqAgwqAgPSAiMTAyNHg3NjgtNjAi
+LAo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgLnJlZnJlc2ggwqAgwqAgwqAgwqA9IDYwLAo+IMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgLnhyZXMgwqAgwqAgwqAgwqAgwqAgPSAxMDI0LAo+IMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgLnlyZXMgwqAgwqAgwqAgwqAgwqAgPSA3NjgsCj4gwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAucGl4Y2xvY2sgwqAgwqAgwqAgPSAxNTM4NSwKPiDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoC5sZWZ0X21hcmdpbiDCoCDCoD0gMTYwLAo+IMKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgLnJpZ2h0X21hcmdpbiDCoCA9IDI0LAo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgLnVwcGVy
+X21hcmdpbiDCoCA9IDI5LAo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgLmxvd2VyX21hcmdpbiDC
+oCA9IDMsCj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAuaHN5bmNfbGVuIMKgIMKgIMKgPSAxMzYs
+Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAudnN5bmNfbGVuIMKgIMKgIMKgPSA2LAo+IMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgLnN5bmMgwqAgwqAgwqAgwqAgwqAgPSBGQl9TWU5DX0NPTVBfSElH
+SF9BQ1QgfCBGQl9TWU5DX1ZFUlRfSElHSF9BQ1QsCj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAu
+dm1vZGUgwqAgwqAgwqAgwqAgwqA9IEZCX1ZNT0RFX05PTklOVEVSTEFDRUQKPiDCoCDCoCDCoCDC
+oH0sCj4gwqAgwqAgwqAgwqAuLi4KPgo+IElzIHRoZXJlIGFueSB2YWx1ZSBpbiBzcGVjaWZ5aW5n
+IHRoZSAubmFtZSBmaWVsZCBhcyAiPHhyZXM+eDx5cmVzPi08cmVmPiI/IMKgSQo+IGtub3cgdGhl
+IC5uYW1lIGZpZWxkIGlzIG9wdGlvbmFsLCBidXQgd2hhdCBoYXBwZW5zIGlmIEkgZG9uJ3Qgc3Bl
+Y2lmeSBpdD8gwqBJdAo+IGp1c3Qgc2VlbXMgcmVkdW5kYW50IHRvIGdlbmVyYXRlIHRoZSBuYW1l
+IGJhc2VkIG9uIG90aGVyIGRhdGEgaW4gdGhlIHNhbWUgc3RydWN0dXJlLgoKSWYgdGhlIG5hbWUg
+aXMganVzdCAiPHhyZXM+eDx5cmVzPi08cmVmPiIsIHlvdSBjYW4gbGVhdmUgaXQgTlVMTC4KVGhl
+IG5hbWUgb25seSBhZGRzIHZhbHVlIGlmIGl0J3Mgc29tZXRoaW5nIGRpZmZlcmVudCwgY2ZyLiB0
+aGUgbW9kZXMKaW4gbWFjbW9kZXMuYywKYW1pZmIuYywgb3IgcHMzZmIuYy4KCkdye29ldGplLGVl
+dGluZ31zLAoKwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgR2VlcnQKCi0tCkdl
+ZXJ0IFV5dHRlcmhvZXZlbiAtLSBUaGVyZSdzIGxvdHMgb2YgTGludXggYmV5b25kIGlhMzIgLS0g
+Z2VlcnRAbGludXgtbTY4ay5vcmcKCkluIHBlcnNvbmFsIGNvbnZlcnNhdGlvbnMgd2l0aCB0ZWNo
+bmljYWwgcGVvcGxlLCBJIGNhbGwgbXlzZWxmIGEgaGFja2VyLiBCdXQKd2hlbiBJJ20gdGFsa2lu
+ZyB0byBqb3VybmFsaXN0cyBJIGp1c3Qgc2F5ICJwcm9ncmFtbWVyIiBvciBzb21ldGhpbmcgbGlr
+ZSB0aGF0LgrCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoMKgIMKgwqAg
+LS0gTGludXMgVG9ydmFsZHMK//Tounsubscribefromthislisv/sendthelinf/unsubscribel
+inux/fbdev/inthebodyofamessagetomajordomo/vger/kernel/orgMoremajordomoinfoat
+http///vger/kernel/org/majordomo/info/htCg==

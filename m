@@ -1,86 +1,183 @@
-From: =?UTF-8?Q?Enric_Balletb=C3=B2_i_Serra?= <eballetbo@gmail.com>
-Date: Mon, 12 Sep 2011 11:13:57 +0000
-Subject: Re: [PATCHv2 14/15] OMAP: Panda, Beagle, Overo: DVI: Add i2c_bus_num
-Message-Id: <CAFqH_53id=7S5B0yWFgp=O7zBH92C6jKQhTsVZzvs9yAjrzLLg@mail.gmail.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Wed, 28 Sep 2011 21:19:55 +0000
+Subject: [PATCH 9/9] drivers/video: fsl-diu-fb: merge diu_pool into fsl_diu_data
+Message-Id: <1317244795-24671-9-git-send-email-timur@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1315818818-18733-1-git-send-email-tomi.valkeinen@ti.com>
-	<1315818818-18733-15-git-send-email-tomi.valkeinen@ti.com>
-	<CAFqH_53ttom-c75NihgmMsckp4RQTpskXhYjAEAee2LWsHXW0g@mail.gmail.com>
-	<1315822645.2177.23.camel@deskari>
-In-Reply-To: <1315822645.2177.23.camel@deskari>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-2011/9/12 Tomi Valkeinen <tomi.valkeinen@ti.com>:
-> On Mon, 2011-09-12 at 11:58 +0200, Enric Balletbò i Serra wrote:
->> 2011/9/12 Tomi Valkeinen <tomi.valkeinen@ti.com>:
->> > Add i2c bus number for DVI output. The driver uses this to detect if a
->> > panel is connected and to read EDID.
->> >
->> > Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->> > ---
->> >  arch/arm/mach-omap2/board-omap3beagle.c |    1 +
->> >  arch/arm/mach-omap2/board-omap4panda.c  |    1 +
->> >  arch/arm/mach-omap2/board-overo.c       |    1 +
->> >  3 files changed, 3 insertions(+), 0 deletions(-)
->> >
->> > diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
->> > index 26bc860..742ac45 100644
->> > --- a/arch/arm/mach-omap2/board-omap3beagle.c
->> > +++ b/arch/arm/mach-omap2/board-omap3beagle.c
->> > @@ -206,6 +206,7 @@ static void beagle_disable_dvi(struct omap_dss_device *dssdev)
->> >  static struct panel_dvi_platform_data dvi_panel = {
->> >        .platform_enable = beagle_enable_dvi,
->> >        .platform_disable = beagle_disable_dvi,
->> > +       .i2c_bus_num = 3,
->> >  };
->> >
->> >  static struct omap_dss_device beagle_dvi_device = {
->> > diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
->> > index c35384e..a38ed273 100644
->> > --- a/arch/arm/mach-omap2/board-omap4panda.c
->> > +++ b/arch/arm/mach-omap2/board-omap4panda.c
->> > @@ -458,6 +458,7 @@ static void omap4_panda_disable_dvi(struct omap_dss_device *dssdev)
->> >  static struct panel_dvi_platform_data omap4_dvi_panel = {
->> >        .platform_enable        = omap4_panda_enable_dvi,
->> >        .platform_disable       = omap4_panda_disable_dvi,
->> > +       .i2c_bus_num = 3,
->> >  };
->> >
->> >  struct omap_dss_device omap4_panda_dvi_device = {
->> > diff --git a/arch/arm/mach-omap2/board-overo.c b/arch/arm/mach-omap2/board-overo.c
->> > index 06064d5..da94376 100644
->> > --- a/arch/arm/mach-omap2/board-overo.c
->> > +++ b/arch/arm/mach-omap2/board-overo.c
->> > @@ -186,6 +186,7 @@ static void overo_panel_disable_dvi(struct omap_dss_device *dssdev)
->> >  static struct panel_dvi_platform_data dvi_panel = {
->> >        .platform_enable        = overo_panel_enable_dvi,
->> >        .platform_disable       = overo_panel_disable_dvi,
->> > +       .i2c_bus_num            = 3,
->> >  };
->> >
->> >  static struct omap_dss_device overo_dvi_device = {
->> > --
->> > 1.7.4.1
->> >
->> > --
->> > To unsubscribe from this list: send the line "unsubscribe linux-omap" in
->> > the body of a message to majordomo@vger.kernel.org
->> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> >
->>
->> Please, can also include the same modification for IGEP v2 board
->> (arch/arm/mach-omap2/board-igep0020.c) ?
->
-> Sure. You have tested that the i2c bus is 3 and it works?
+The diu_pool structure contains diu_addr objects for various objects
+allocated in DMA space that are used by the DIU, but the only instance
+of this structure is a global variable, 'pool'.  Eliminate 'pool' by
+merging its fields into the fsl_diu_data structure, which is instantiated
+on the heap for each DIU controller found.
 
-Yes, the i2c bus is 3 on IGEP v2 board and I'm just testing and seem is working.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ drivers/video/fsl-diu-fb.c |   72 +++++++++++++++++++++----------------------
+ 1 files changed, 35 insertions(+), 37 deletions(-)
 
->
->  Tomi
->
->
->
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 728cd9f..83bc825 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -55,13 +55,6 @@ struct diu_addr {
+ 	__u32 offset;
+ };
+ 
+-struct diu_pool {
+-	struct diu_addr ad;
+-	struct diu_addr gamma;
+-	struct diu_addr pallete;
+-	struct diu_addr cursor;
+-};
+-
+ /*
+  * List of supported video modes
+  *
+@@ -349,6 +342,10 @@ struct fsl_diu_data {
+ 	struct diu __iomem *diu_reg;
+ 	spinlock_t reg_lock;
+ 	unsigned int mode;		/* DIU operation mode */
++	struct diu_addr ad;
++	struct diu_addr gamma;
++	struct diu_addr pallete;
++	struct diu_addr cursor;
+ };
+ 
+ enum mfb_index {
+@@ -422,8 +419,6 @@ static struct mfb_info mfb_template[] = {
+ 	},
+ };
+ 
+-static struct diu_pool pool;
+-
+ /**
+  * fsl_diu_name_to_port - convert a port name to a monitor port enum
+  *
+@@ -825,22 +820,23 @@ static void update_lcdc(struct fb_info *info)
+ 	hw = machine_data->diu_reg;
+ 
+ 	diu_ops.set_monitor_port(machine_data->monitor_port);
+-	gamma_table_base = pool.gamma.vaddr;
+-	cursor_base = pool.cursor.vaddr;
++	gamma_table_base = machine_data->gamma.vaddr;
++	cursor_base = machine_data->cursor.vaddr;
+ 	/* Prep for DIU init  - gamma table, cursor table */
+ 
+ 	for (i = 0; i <= 2; i++)
+ 		for (j = 0; j <= 255; j++)
+ 			*gamma_table_base++ = j;
+ 
+-	diu_ops.set_gamma_table(machine_data->monitor_port, pool.gamma.vaddr);
++	diu_ops.set_gamma_table(machine_data->monitor_port,
++				machine_data->gamma.vaddr);
+ 
+ 	disable_lcdc(info);
+ 
+ 	/* Program DIU registers */
+ 
+-	out_be32(&hw->gamma, pool.gamma.paddr);
+-	out_be32(&hw->cursor, pool.cursor.paddr);
++	out_be32(&hw->gamma, machine_data->gamma.paddr);
++	out_be32(&hw->cursor, machine_data->cursor.paddr);
+ 
+ 	out_be32(&hw->bgnd, 0x007F7F7F); 	/* BGND */
+ 	out_be32(&hw->bgnd_wb, 0); 		/* BGND_WB */
+@@ -1554,27 +1550,27 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 	machine_data->monitor_port = monitor_port;
+ 
+ 	/* Area descriptor memory pool aligns to 64-bit boundary */
+-	if (allocate_buf(&pdev->dev, &pool.ad,
++	if (allocate_buf(&pdev->dev, &machine_data->ad,
+ 			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8))
+ 		return -ENOMEM;
+ 
+ 	/* Get memory for Gamma Table  - 32-byte aligned memory */
+-	if (allocate_buf(&pdev->dev, &pool.gamma, 768, 32)) {
++	if (allocate_buf(&pdev->dev, &machine_data->gamma, 768, 32)) {
+ 		ret = -ENOMEM;
+ 		goto error;
+ 	}
+ 
+ 	/* For performance, cursor bitmap buffer aligns to 32-byte boundary */
+-	if (allocate_buf(&pdev->dev, &pool.cursor, MAX_CURS * MAX_CURS * 2,
+-			 32)) {
++	if (allocate_buf(&pdev->dev, &machine_data->cursor,
++			 MAX_CURS * MAX_CURS * 2, 32)) {
+ 		ret = -ENOMEM;
+ 		goto error;
+ 	}
+ 
+ 	i = ARRAY_SIZE(machine_data->fsl_diu_info);
+-	machine_data->dummy_ad = (struct diu_ad *)
+-			((u32)pool.ad.vaddr + pool.ad.offset) + i;
+-	machine_data->dummy_ad->paddr = pool.ad.paddr +
++	machine_data->dummy_ad = (struct diu_ad *)((u32)machine_data->ad.vaddr +
++			machine_data->ad.offset) + i;
++	machine_data->dummy_ad->paddr = machine_data->ad.paddr +
+ 			i * sizeof(struct diu_ad);
+ 	machine_data->dummy_aoi_virt = fsl_diu_alloc(64, &dummy_ad_addr);
+ 	if (!machine_data->dummy_aoi_virt) {
+@@ -1603,9 +1599,10 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++) {
+ 		machine_data->fsl_diu_info[i]->fix.smem_start = 0;
+ 		mfbi = machine_data->fsl_diu_info[i]->par;
+-		mfbi->ad = (struct diu_ad *)((u32)pool.ad.vaddr
+-					+ pool.ad.offset) + i;
+-		mfbi->ad->paddr = pool.ad.paddr + i * sizeof(struct diu_ad);
++		mfbi->ad = (struct diu_ad *)((u32)machine_data->ad.vaddr
++					+ machine_data->ad.offset) + i;
++		mfbi->ad->paddr +			machine_data->ad.paddr + i * sizeof(struct diu_ad);
+ 		ret = install_fb(machine_data->fsl_diu_info[i]);
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "could not register fb %d\n", i);
+@@ -1637,14 +1634,14 @@ error:
+ 	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++)
+ 		uninstall_fb(machine_data->fsl_diu_info[i]);
+ 
+-	if (pool.ad.vaddr)
+-		free_buf(&pdev->dev, &pool.ad,
++	if (machine_data->ad.vaddr)
++		free_buf(&pdev->dev, &machine_data->ad,
+ 			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
+-	if (pool.gamma.vaddr)
+-		free_buf(&pdev->dev, &pool.gamma, 768, 32);
+-	if (pool.cursor.vaddr)
+-		free_buf(&pdev->dev, &pool.cursor, MAX_CURS * MAX_CURS * 2,
+-			 32);
++	if (machine_data->gamma.vaddr)
++		free_buf(&pdev->dev, &machine_data->gamma, 768, 32);
++	if (machine_data->cursor.vaddr)
++		free_buf(&pdev->dev, &machine_data->cursor,
++			 MAX_CURS * MAX_CURS * 2, 32);
+ 	if (machine_data->dummy_aoi_virt)
+ 		fsl_diu_free(machine_data->dummy_aoi_virt, 64);
+ 	iounmap(machine_data->diu_reg);
+@@ -1668,13 +1665,14 @@ static int fsl_diu_remove(struct platform_device *pdev)
+ 	free_irq_local(machine_data);
+ 	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++)
+ 		uninstall_fb(machine_data->fsl_diu_info[i]);
+-	if (pool.ad.vaddr)
+-		free_buf(&pdev->dev, &pool.ad,
++	if (machine_data->ad.vaddr)
++		free_buf(&pdev->dev, &machine_data->ad,
+ 			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
+-	if (pool.gamma.vaddr)
+-		free_buf(&pdev->dev, &pool.gamma, 768, 32);
+-	if (pool.cursor.vaddr)
+-		free_buf(&pdev->dev, &pool.cursor, MAX_CURS * MAX_CURS * 2, 32);
++	if (machine_data->gamma.vaddr)
++		free_buf(&pdev->dev, &machine_data->gamma, 768, 32);
++	if (machine_data->cursor.vaddr)
++		free_buf(&pdev->dev, &machine_data->cursor,
++			 MAX_CURS * MAX_CURS * 2, 32);
+ 	if (machine_data->dummy_aoi_virt)
+ 		fsl_diu_free(machine_data->dummy_aoi_virt, 64);
+ 	iounmap(machine_data->diu_reg);
+-- 
+1.7.3.4
+
+

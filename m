@@ -1,69 +1,118 @@
-From: Michael Thalmeier <michael.thalmeier@hale.at>
-Date: Fri, 23 Sep 2011 12:09:35 +0000
-Subject: [PATCH] mx3fb: fix NULL pointer dereference in screen blanking.
-Message-Id: <1316779775-12730-1-git-send-email-michael.thalmeier@hale.at>
+From: Timur Tabi <timur@freescale.com>
+Date: Wed, 28 Sep 2011 21:19:53 +0000
+Subject: [PATCH 7/9] drivers/video: fsl-diu-fb: only DIU modes 0 and 1 are supported
+Message-Id: <1317244795-24671-7-git-send-email-timur@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-From: Wolfram Stering <wolfram.stering@hale.at>
+The Freescale DIU video controller supports five video "modes", but only
+the first two are used by the driver.  The other three are special modes
+that don't make sense for a framebuffer driver.  Therefore, there's no
+point in keeping a global variable that indicates which mode we're
+supposed to use.
 
-When blanking an already blanked framebuffer, a kernel NULL pointer
-dereference occurred, because mx3fb driver handles all kinds of screen
-blanking (normal, vsync suspend, powerdown) in the same way.
-Certain programs (Xorg X11 server) first do a normal blank, followed by
-a powerdown blank, which triggered the bug.
-
-Add an additional safeguard and make sdc_disable_channel() safe against
-multiple calls independent of other logic.
-
-Signed-off-by: Michael Thalmeier <michael.thalmeier@hale.at>
+Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
- drivers/video/mx3fb.c |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/512x/mpc512x_shared.c |    2 +-
+ drivers/video/fsl-diu-fb.c                   |   11 +++--------
+ include/linux/fsl-diu-fb.h                   |    8 ++++----
+ 3 files changed, 8 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-index 7e3a490..286be99 100644
---- a/drivers/video/mx3fb.c
-+++ b/drivers/video/mx3fb.c
-@@ -382,6 +382,9 @@ static void sdc_disable_channel(struct mx3fb_info *mx3_fbi)
- 	uint32_t enabled;
- 	unsigned long flags;
+diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
+index 3dc62f9..cfe958e 100644
+--- a/arch/powerpc/platforms/512x/mpc512x_shared.c
++++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
+@@ -253,7 +253,7 @@ void __init mpc512x_init_diu(void)
+ 	}
  
-+	if (mx3_fbi->txd = NULL)
-+		return;
-+
- 	spin_lock_irqsave(&mx3fb->lock, flags);
+ 	mode = in_be32(&diu_reg->diu_mode);
+-	if (mode != MFB_MODE1) {
++	if (mode = MFB_MODE0) {
+ 		pr_info("%s: DIU OFF\n", __func__);
+ 		goto out;
+ 	}
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index dd98675..41f767b 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -52,7 +52,6 @@
+ struct diu_hw {
+ 	struct diu __iomem *diu_reg;
+ 	spinlock_t reg_lock;
+-	unsigned int mode;		/* DIU operation mode */
+ };
  
- 	enabled = sdc_fb_uninit(mx3_fbi);
-@@ -986,9 +989,19 @@ static void __blank(int blank, struct fb_info *fbi)
- {
- 	struct mx3fb_info *mx3_fbi = fbi->par;
- 	struct mx3fb_data *mx3fb = mx3_fbi->mx3fb;
-+	int was_blank = mx3_fbi->blank;
+ struct diu_addr {
+@@ -426,7 +425,6 @@ static struct mfb_info mfb_template[] = {
+ };
  
- 	mx3_fbi->blank = blank;
+ static struct diu_hw dr = {
+-	.mode = MFB_MODE1,
+ 	.reg_lock = __SPIN_LOCK_UNLOCKED(diu_hw.reg_lock),
+ };
  
-+	/* Attention!
-+	 * Do not call sdc_disable_channel() for a channel that is disabled
-+	 * already! This will result in a kernel NULL pointer dereference
-+	 * (mx3_fbi->txd is NULL). Hide the fact, that all blank modes are
-+	 * handled equally by this driver.
-+	 */
-+	if (blank > FB_BLANK_UNBLANK && was_blank > FB_BLANK_UNBLANK)
-+		return;
-+
- 	switch (blank) {
- 	case FB_BLANK_POWERDOWN:
- 	case FB_BLANK_VSYNC_SUSPEND:
+@@ -620,7 +618,7 @@ static void enable_lcdc(struct fb_info *info)
+ 	struct fsl_diu_data *machine_data = mfbi->parent;
+ 
+ 	if (!machine_data->fb_enabled) {
+-		out_be32(&hw->diu_mode, dr.mode);
++		out_be32(&hw->diu_mode, MFB_MODE1);
+ 		machine_data->fb_enabled++;
+ 	}
+ }
+@@ -1382,9 +1380,6 @@ static int request_irq_local(int irq)
+ 		ints |=	INT_VSYNC;
+ #endif
+ 
+-		if (dr.mode = MFB_MODE2 || dr.mode = MFB_MODE3)
+-			ints |= INT_VSYNC_WB;
+-
+ 		/* Read to clear the status */
+ 		in_be32(&hw->int_status);
+ 		out_be32(&hw->int_mask, ints);
+@@ -1550,7 +1545,7 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	diu_mode = in_be32(&dr.diu_reg->diu_mode);
+-	if (diu_mode != MFB_MODE1)
++	if (diu_mode = MFB_MODE0)
+ 		out_be32(&dr.diu_reg->diu_mode, 0);	/* disable DIU */
+ 
+ 	/* Get the IRQ of the DIU */
+@@ -1603,7 +1598,7 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 	 * Let DIU display splash screen if it was pre-initialized
+ 	 * by the bootloader, set dummy area descriptor otherwise.
+ 	 */
+-	if (diu_mode != MFB_MODE1)
++	if (diu_mode = MFB_MODE0)
+ 		out_be32(&dr.diu_reg->desc[0], machine_data->dummy_ad->paddr);
+ 
+ 	out_be32(&dr.diu_reg->desc[1], machine_data->dummy_ad->paddr);
+diff --git a/include/linux/fsl-diu-fb.h b/include/linux/fsl-diu-fb.h
+index 51457ec..17a9097 100644
+--- a/include/linux/fsl-diu-fb.h
++++ b/include/linux/fsl-diu-fb.h
+@@ -144,12 +144,12 @@ struct diu {
+ 	__be32 plut;
+ } __attribute__ ((packed));
+ 
+-/* Modes of operation of DIU */
++/*
++ * Modes of operation of DIU.  The DIU supports five different modes, but
++ * the driver only supports modes 0 and 1.
++ */
+ #define MFB_MODE0	0	/* DIU off */
+ #define MFB_MODE1	1	/* All three planes output to display */
+-#define MFB_MODE2	2	/* Plane 1 to display, planes 2+3 written back*/
+-#define MFB_MODE3	3	/* All three planes written back to memory */
+-#define MFB_MODE4	4	/* Color bar generation */
+ 
+ #endif /* __KERNEL__ */
+ #endif /* __FSL_DIU_FB_H__ */
 -- 
-1.7.6.2
+1.7.3.4
 
-
-
---
-Scanned by MailScanner.
 

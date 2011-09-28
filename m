@@ -1,119 +1,326 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 19 Sep 2011 00:27:51 +0000
-Subject: [WIP/RFC 13/31] fbdev: sh_mobile_hdmi: Don't hook up into board_cfg display operations
-Message-Id: <1316392089-27598-14-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Wed, 28 Sep 2011 21:19:51 +0000
+Subject: [PATCH 5/9] drivers/video: fsl-diu-fb: use an enum for the AOI index
+Message-Id: <1317244795-24671-5-git-send-email-timur@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The display_on/off operations are now accessed through the
-sh_mobile_lcdc_entity operations.
+Each of the five AOIs created by the DIU driver has a special purpose, and
+they're not treated equally.  It makes sense to identify them with an enum
+instead of a hard-coded number.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Since the 'index' is now an enum, it can only contain allowed values, so
+there's no need to check for an invalid value.  This simplifies some other
+code, such as fsl_diu_disable_panel(), which no longer needs to return an
+error code.
+
+Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
- drivers/video/sh_mobile_hdmi.c |   35 +++++------------------------------
- 1 files changed, 5 insertions(+), 30 deletions(-)
+ drivers/video/fsl-diu-fb.c |   94 +++++++++++++++++++++----------------------
+ 1 files changed, 46 insertions(+), 48 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-index ce858d6..d89645e 100644
---- a/drivers/video/sh_mobile_hdmi.c
-+++ b/drivers/video/sh_mobile_hdmi.c
-@@ -1004,7 +1004,7 @@ static irqreturn_t sh_hdmi_hotplug(int irq, void *dev_id)
- }
- 
- /* locking:	called with info->lock held, or before register_framebuffer() */
--static void __sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity,
-+static void sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity,
- 			       struct fb_info *info)
- {
- 	/*
-@@ -1038,13 +1038,8 @@ static void __sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity,
- 	}
- }
- 
--static void sh_hdmi_display_on(void *arg, struct fb_info *info)
--{
--	__sh_hdmi_display_on(arg, info);
--}
--
- /* locking: called with info->lock held */
--static void __sh_hdmi_display_off(struct sh_mobile_lcdc_entity *entity)
-+static void sh_hdmi_display_off(struct sh_mobile_lcdc_entity *entity)
- {
- 	struct sh_hdmi *hdmi = entity_to_sh_hdmi(entity);
- 
-@@ -1053,14 +1048,9 @@ static void __sh_hdmi_display_off(struct sh_mobile_lcdc_entity *entity)
- 	hdmi_write(hdmi, 0x10, HDMI_SYSTEM_CTRL);
- }
- 
--static void sh_hdmi_display_off(void *arg)
--{
--	__sh_hdmi_display_off(arg);
--}
--
- static const struct sh_mobile_lcdc_entity_ops sh_hdmi_ops = {
--	.display_on = __sh_hdmi_display_on,
--	.display_off = __sh_hdmi_display_off,
-+	.display_on = sh_hdmi_display_on,
-+	.display_off = sh_hdmi_display_off,
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 00ad1f4..712b91c 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -360,8 +360,16 @@ struct fsl_diu_data {
+ 	enum fsl_diu_monitor_port monitor_port;
  };
  
- static bool sh_hdmi_must_reconfigure(struct sh_hdmi *hdmi)
-@@ -1174,7 +1164,7 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
- 			if (lock_fb_info(info)) {
- 				info->var.width = hdmi->var.width;
- 				info->var.height = hdmi->var.height;
--				__sh_hdmi_display_on(&hdmi->entity, info);
-+				sh_hdmi_display_on(&hdmi->entity, info);
- 				unlock_fb_info(info);
++enum mfb_index {
++	PLANE0 = 0,	/* Plane 0, only one AOI that fills the screen */
++	PLANE1_AOI0,	/* Plane 1, first AOI */
++	PLANE1_AOI1,	/* Plane 1, second AOI */
++	PLANE2_AOI0,	/* Plane 2, first AOI */
++	PLANE2_AOI1,	/* Plane 2, second AOI */
++};
++
+ struct mfb_info {
+-	int index;
++	enum mfb_index index;
+ 	int type;
+ 	char *id;
+ 	int registered;
+@@ -378,8 +386,8 @@ struct mfb_info {
+ 
+ 
+ static struct mfb_info mfb_template[] = {
+-	{		/* AOI 0 for plane 0 */
+-		.index = 0,
++	{
++		.index = PLANE0,
+ 		.type = MFB_TYPE_OUTPUT,
+ 		.id = "Panel0",
+ 		.registered = 0,
+@@ -387,8 +395,8 @@ static struct mfb_info mfb_template[] = {
+ 		.x_aoi_d = 0,
+ 		.y_aoi_d = 0,
+ 	},
+-	{		/* AOI 0 for plane 1 */
+-		.index = 1,
++	{
++		.index = PLANE1_AOI0,
+ 		.type = MFB_TYPE_OUTPUT,
+ 		.id = "Panel1 AOI0",
+ 		.registered = 0,
+@@ -397,8 +405,8 @@ static struct mfb_info mfb_template[] = {
+ 		.x_aoi_d = 0,
+ 		.y_aoi_d = 0,
+ 	},
+-	{		/* AOI 1 for plane 1 */
+-		.index = 2,
++	{
++		.index = PLANE1_AOI1,
+ 		.type = MFB_TYPE_OUTPUT,
+ 		.id = "Panel1 AOI1",
+ 		.registered = 0,
+@@ -407,8 +415,8 @@ static struct mfb_info mfb_template[] = {
+ 		.x_aoi_d = 0,
+ 		.y_aoi_d = 480,
+ 	},
+-	{		/* AOI 0 for plane 2 */
+-		.index = 3,
++	{
++		.index = PLANE2_AOI0,
+ 		.type = MFB_TYPE_OUTPUT,
+ 		.id = "Panel2 AOI0",
+ 		.registered = 0,
+@@ -417,8 +425,8 @@ static struct mfb_info mfb_template[] = {
+ 		.x_aoi_d = 640,
+ 		.y_aoi_d = 0,
+ 	},
+-	{		/* AOI 1 for plane 2 */
+-		.index = 4,
++	{
++		.index = PLANE2_AOI1,
+ 		.type = MFB_TYPE_OUTPUT,
+ 		.id = "Panel2 AOI1",
+ 		.registered = 0,
+@@ -519,11 +527,11 @@ static int fsl_diu_enable_panel(struct fb_info *info)
+ 
+ 	if (mfbi->type != MFB_TYPE_OFF) {
+ 		switch (mfbi->index) {
+-		case 0:				/* plane 0 */
++		case PLANE0:
+ 			if (hw->desc[0] != ad->paddr)
+ 				wr_reg_wa(&hw->desc[0], ad->paddr);
+ 			break;
+-		case 1:				/* plane 1 AOI 0 */
++		case PLANE1_AOI0:
+ 			cmfbi = machine_data->fsl_diu_info[2]->par;
+ 			if (hw->desc[1] != ad->paddr) {	/* AOI0 closed */
+ 				if (cmfbi->count > 0)	/* AOI1 open */
+@@ -534,7 +542,7 @@ static int fsl_diu_enable_panel(struct fb_info *info)
+ 				wr_reg_wa(&hw->desc[1], ad->paddr);
  			}
- 		} else {
-@@ -1248,7 +1238,6 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
+ 			break;
+-		case 3:				/* plane 2 AOI 0 */
++		case PLANE2_AOI0:
+ 			cmfbi = machine_data->fsl_diu_info[4]->par;
+ 			if (hw->desc[2] != ad->paddr) {	/* AOI0 closed */
+ 				if (cmfbi->count > 0)	/* AOI1 open */
+@@ -545,7 +553,7 @@ static int fsl_diu_enable_panel(struct fb_info *info)
+ 				wr_reg_wa(&hw->desc[2], ad->paddr);
+ 			}
+ 			break;
+-		case 2:				/* plane 1 AOI 1 */
++		case PLANE1_AOI1:
+ 			pmfbi = machine_data->fsl_diu_info[1]->par;
+ 			ad->next_ad = 0;
+ 			if (hw->desc[1] = machine_data->dummy_ad->paddr)
+@@ -553,7 +561,7 @@ static int fsl_diu_enable_panel(struct fb_info *info)
+ 			else					/* AOI0 open */
+ 				pmfbi->ad->next_ad = cpu_to_le32(ad->paddr);
+ 			break;
+-		case 4:				/* plane 2 AOI 1 */
++		case PLANE2_AOI1:
+ 			pmfbi = machine_data->fsl_diu_info[3]->par;
+ 			ad->next_ad = 0;
+ 			if (hw->desc[2] = machine_data->dummy_ad->paddr)
+@@ -561,29 +569,25 @@ static int fsl_diu_enable_panel(struct fb_info *info)
+ 			else				/* AOI0 was open */
+ 				pmfbi->ad->next_ad = cpu_to_le32(ad->paddr);
+ 			break;
+-		default:
+-			res = -EINVAL;
+-			break;
+ 		}
+ 	} else
+ 		res = -EINVAL;
+ 	return res;
+ }
+ 
+-static int fsl_diu_disable_panel(struct fb_info *info)
++static void fsl_diu_disable_panel(struct fb_info *info)
  {
- 	struct sh_mobile_hdmi_info *pdata = pdev->dev.platform_data;
- 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	struct sh_mobile_lcdc_board_cfg	*board_cfg;
- 	int irq = platform_get_irq(pdev, 0), ret;
- 	struct sh_hdmi *hdmi;
- 	long rate;
-@@ -1308,13 +1297,6 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
+ 	struct mfb_info *pmfbi, *cmfbi, *mfbi = info->par;
+ 	struct diu *hw = dr.diu_reg;
+ 	struct diu_ad *ad = mfbi->ad;
+ 	struct fsl_diu_data *machine_data = mfbi->parent;
+-	int res = 0;
  
- 	platform_set_drvdata(pdev, &hdmi->entity);
- 
--	/* Set up LCDC callbacks */
--	board_cfg = &pdata->lcd_chan->board_cfg;
--	board_cfg->owner = THIS_MODULE;
--	board_cfg->board_data = &hdmi->entity;
--	board_cfg->display_on = sh_hdmi_display_on;
--	board_cfg->display_off = sh_hdmi_display_off;
+ 	switch (mfbi->index) {
+-	case 0:					/* plane 0 */
++	case PLANE0:
+ 		if (hw->desc[0] != machine_data->dummy_ad->paddr)
+ 			wr_reg_wa(&hw->desc[0], machine_data->dummy_ad->paddr);
+ 		break;
+-	case 1:					/* plane 1 AOI 0 */
++	case PLANE1_AOI0:
+ 		cmfbi = machine_data->fsl_diu_info[2]->par;
+ 		if (cmfbi->count > 0)	/* AOI1 is open */
+ 			wr_reg_wa(&hw->desc[1], cmfbi->ad->paddr);
+@@ -592,7 +596,7 @@ static int fsl_diu_disable_panel(struct fb_info *info)
+ 			wr_reg_wa(&hw->desc[1], machine_data->dummy_ad->paddr);
+ 					/* close AOI 0 */
+ 		break;
+-	case 3:					/* plane 2 AOI 0 */
++	case PLANE2_AOI0:
+ 		cmfbi = machine_data->fsl_diu_info[4]->par;
+ 		if (cmfbi->count > 0)	/* AOI1 is open */
+ 			wr_reg_wa(&hw->desc[2], cmfbi->ad->paddr);
+@@ -601,7 +605,7 @@ static int fsl_diu_disable_panel(struct fb_info *info)
+ 			wr_reg_wa(&hw->desc[2], machine_data->dummy_ad->paddr);
+ 					/* close AOI 0 */
+ 		break;
+-	case 2:					/* plane 1 AOI 1 */
++	case PLANE1_AOI1:
+ 		pmfbi = machine_data->fsl_diu_info[1]->par;
+ 		if (hw->desc[1] != ad->paddr) {
+ 				/* AOI1 is not the first in the chain */
+@@ -612,7 +616,7 @@ static int fsl_diu_disable_panel(struct fb_info *info)
+ 			wr_reg_wa(&hw->desc[1], machine_data->dummy_ad->paddr);
+ 					/* close AOI 1 */
+ 		break;
+-	case 4:					/* plane 2 AOI 1 */
++	case PLANE2_AOI1:
+ 		pmfbi = machine_data->fsl_diu_info[3]->par;
+ 		if (hw->desc[2] != ad->paddr) {
+ 				/* AOI1 is not the first in the chain */
+@@ -623,12 +627,7 @@ static int fsl_diu_disable_panel(struct fb_info *info)
+ 			wr_reg_wa(&hw->desc[2], machine_data->dummy_ad->paddr);
+ 				/* close AOI 1 */
+ 		break;
+-	default:
+-		res = -EINVAL;
+-		break;
+ 	}
 -
- 	INIT_DELAYED_WORK(&hdmi->edid_work, sh_hdmi_edid_work_fn);
+-	return res;
+ }
  
- 	pm_runtime_enable(&pdev->dev);
-@@ -1364,21 +1346,14 @@ egetclk:
- 
- static int __exit sh_hdmi_remove(struct platform_device *pdev)
+ static void enable_lcdc(struct fb_info *info)
+@@ -660,7 +659,8 @@ static void adjust_aoi_size_position(struct fb_var_screeninfo *var,
  {
--	struct sh_mobile_hdmi_info *pdata = pdev->dev.platform_data;
- 	struct sh_hdmi *hdmi = entity_to_sh_hdmi(platform_get_drvdata(pdev));
- 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	struct sh_mobile_lcdc_board_cfg	*board_cfg = &pdata->lcd_chan->board_cfg;
- 	int irq = platform_get_irq(pdev, 0);
+ 	struct mfb_info *lower_aoi_mfbi, *upper_aoi_mfbi, *mfbi = info->par;
+ 	struct fsl_diu_data *machine_data = mfbi->parent;
+-	int available_height, upper_aoi_bottom, index = mfbi->index;
++	int available_height, upper_aoi_bottom;
++	enum mfb_index index = mfbi->index;
+ 	int lower_aoi_is_open, upper_aoi_is_open;
+ 	__u32 base_plane_width, base_plane_height, upper_aoi_height;
  
- 	snd_soc_unregister_codec(&pdev->dev);
+@@ -672,14 +672,14 @@ static void adjust_aoi_size_position(struct fb_var_screeninfo *var,
+ 	if (mfbi->y_aoi_d < 0)
+ 		mfbi->y_aoi_d = 0;
+ 	switch (index) {
+-	case 0:
++	case PLANE0:
+ 		if (mfbi->x_aoi_d != 0)
+ 			mfbi->x_aoi_d = 0;
+ 		if (mfbi->y_aoi_d != 0)
+ 			mfbi->y_aoi_d = 0;
+ 		break;
+-	case 1:			/* AOI 0 */
+-	case 3:
++	case PLANE1_AOI0:
++	case PLANE2_AOI0:
+ 		lower_aoi_mfbi = machine_data->fsl_diu_info[index+1]->par;
+ 		lower_aoi_is_open = lower_aoi_mfbi->count > 0 ? 1 : 0;
+ 		if (var->xres > base_plane_width)
+@@ -696,8 +696,8 @@ static void adjust_aoi_size_position(struct fb_var_screeninfo *var,
+ 		if ((mfbi->y_aoi_d + var->yres) > available_height)
+ 			mfbi->y_aoi_d = available_height - var->yres;
+ 		break;
+-	case 2:			/* AOI 1 */
+-	case 4:
++	case PLANE1_AOI1:
++	case PLANE2_AOI1:
+ 		upper_aoi_mfbi = machine_data->fsl_diu_info[index-1]->par;
+ 		upper_aoi_height  				machine_data->fsl_diu_info[index-1]->var.yres;
+@@ -1002,7 +1002,7 @@ static int fsl_diu_set_par(struct fb_info *info)
+ 	ad->ckmin_g = 255;
+ 	ad->ckmin_b = 255;
  
- 	fb_unregister_client(&hdmi->notifier);
+-	if (mfbi->index = 0)
++	if (mfbi->index = PLANE0)
+ 		update_lcdc(info);
+ 	return 0;
+ }
+@@ -1187,7 +1187,7 @@ static int fsl_diu_open(struct fb_info *info, int user)
+ 	int res = 0;
  
--	board_cfg->display_on = NULL;
--	board_cfg->display_off = NULL;
--	board_cfg->board_data = NULL;
--	board_cfg->owner = NULL;
--
- 	/* No new work will be scheduled, wait for running ISR */
- 	free_irq(irq, hdmi);
- 	/* Wait for already scheduled work */
+ 	/* free boot splash memory on first /dev/fb0 open */
+-	if (!mfbi->index && diu_ops.release_bootmem)
++	if ((mfbi->index = PLANE0) && diu_ops.release_bootmem)
+ 		diu_ops.release_bootmem();
+ 
+ 	spin_lock(&diu_lock);
+@@ -1217,11 +1217,9 @@ static int fsl_diu_release(struct fb_info *info, int user)
+ 
+ 	spin_lock(&diu_lock);
+ 	mfbi->count--;
+-	if (mfbi->count = 0) {
+-		res = fsl_diu_disable_panel(info);
+-		if (res < 0)
+-			mfbi->count++;
+-	}
++	if (mfbi->count = 0)
++		fsl_diu_disable_panel(info);
++
+ 	spin_unlock(&diu_lock);
+ 	return res;
+ }
+@@ -1267,7 +1265,7 @@ static int __devinit install_fb(struct fb_info *info)
+ 	if (init_fbinfo(info))
+ 		return -EINVAL;
+ 
+-	if (mfbi->index = 0) {	/* plane 0 */
++	if (mfbi->index = PLANE0) {
+ 		if (mfbi->edid_data) {
+ 			/* Now build modedb from EDID */
+ 			fb_edid_to_monspecs(mfbi->edid_data, &info->monspecs);
+@@ -1288,7 +1286,7 @@ static int __devinit install_fb(struct fb_info *info)
+ 		 * For plane 0 we continue and look into
+ 		 * driver's internal modedb.
+ 		 */
+-		if (mfbi->index = 0 && mfbi->edid_data)
++		if ((mfbi->index = PLANE0) && mfbi->edid_data)
+ 			has_default_mode = 0;
+ 		else
+ 			return -EINVAL;
+@@ -1352,7 +1350,7 @@ static void uninstall_fb(struct fb_info *info)
+ 	if (!mfbi->registered)
+ 		return;
+ 
+-	if (mfbi->index = 0)
++	if (mfbi->index = PLANE0)
+ 		kfree(mfbi->edid_data);
+ 
+ 	unregister_framebuffer(info);
+@@ -1557,7 +1555,7 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 		memcpy(mfbi, &mfb_template[i], sizeof(struct mfb_info));
+ 		mfbi->parent = machine_data;
+ 
+-		if (mfbi->index = 0) {
++		if (mfbi->index = PLANE0) {
+ 			const u8 *prop;
+ 			int len;
+ 
 -- 
 1.7.3.4
+
 

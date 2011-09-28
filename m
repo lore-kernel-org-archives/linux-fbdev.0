@@ -1,46 +1,21 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 20 Sep 2011 21:25:47 +0000
-Subject: Re: [PATCH 1/4] fbdev: sh_mobile_meram: Replace hardcoded register values with macros
-Message-Id: <201109202325.47612.laurent.pinchart@ideasonboard.com>
+From: "WEB ADMIN" <info@upgrade.com>
+Date: Wed, 28 Sep 2011 11:30:20 +0000
+Subject: =?iso-8859-2?Q?Kv=F3ta_varovn=E9?=
+Message-Id: <29043.41.86.139.84.1317211933.squirrel@www.szentesikabel.hu>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-Hi Damien,
+Va=9Ae po=9Atovn=ED schr=E1nka storage byl p&#345;ekro&#269;en limit, dokud=
+ se
+znovu potvrdili svou po=9Atovn=ED schr=E1nku, kterou nelze odes=EDlat nebo
+p&#345;ij=EDmat e-mail.To znovu potvrdili svou po=9Atovn=ED schr=E1nku, pro=
+s=EDm
+CLICK
+ZDE <http://is.gd/IemtD7>
 
-On Tuesday 02 August 2011 10:43:51 Damian Hobson-Garcia wrote:
+d=EDky
+spr=E1vce syst=E9mu
 
-Oops, late reply :-/
-
-> > -#define MExxCTL 0x0
-> > -#define MExxBSIZE 0x4
-> > -#define MExxMNCF 0x8
-> > -#define MExxSARA 0x10
-> > -#define MExxSARB 0x14
-> > -#define MExxSBSIZE 0x18
-> 
-> [snip]
-> 
-> > +#define MExxCTL			0x400
-> > +#define MExxBSIZE		0x404
-> > +#define MExxMNCF		0x408
-> > +#define MExxSARA		0x410
-> > +#define MExxSARB		0x414
-> > +#define MExxSBSIZE		0x418
-> 
-> One small comment on the definition of these register offsets and
-> explanation of what I was originally thinking.  Since each of these
-> actually reprents a series of registers, one per ICB, (i.e. ME00CTL,
-> ME01CTL, etc.) it makes sense to me to represent them as an offset from
-> the base address (0x400) + the start of each ICB address (0x20 * index).
-> 
-> Other than that, looks great.
-
-Thanks. I've sent a v2.
-
--- 
-Regards,
-
-Laurent Pinchart

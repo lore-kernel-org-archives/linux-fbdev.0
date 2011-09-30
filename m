@@ -1,291 +1,332 @@
-From: Yong Zhang <yong.zhang0@gmail.com>
-Date: Thu, 22 Sep 2011 08:59:16 +0000
-Subject: [PATCH 49/55] video: irq: Remove IRQF_DISABLED
-Message-Id: <1316681962-8217-50-git-send-email-yong.zhang0@gmail.com>
+From: Manuel Lauss <manuel.lauss@googlemail.com>
+Date: Fri, 30 Sep 2011 18:49:43 +0000
+Subject: [PATCH] fb: fix au1100fb bitrot.
+Message-Id: <1317408583-7264-1-git-send-email-manuel.lauss@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1316681962-8217-1-git-send-email-yong.zhang0@gmail.com>
-In-Reply-To: <1316681962-8217-1-git-send-email-yong.zhang0@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Cc: tglx@linutronix.de, yong.zhang0@gmail.com, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, David Brown <davidb@codeaurora.org>, Daniel Walker <dwalker@fifo99.com>, Bryan Huntsman <bryanh@codeaurora.org>, Wan ZongShun <mcuos.com@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Geoff Levand <geoff@infradead.org>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Anatolij Gustschin <agust@denx.de>, Paul Gortmaker <paul.gortmaker@windriver.com>, Andrew Morton <akpm@linux-foundation.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Jiri Kosina <jkosina@suse.cz>, Archit Taneja <archit@ti.com>, linux-fbdev@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org
+To: linux-fbdev@vger.kernel.org
 
-Since commit [e58aa3d2: genirq: Run irq handlers with interrupts disabled],
-We run all interrupt handlers with interrupts disabled
-and we even check and yell when an interrupt handler
-returns with interrupts enabled (see commit [b738a50a:
-genirq: Warn when handler enables interrupts]).
+Removes some bitrot from the au1100fb driver and fix it up so it works again.
 
-So now this flag is a NOOP and can be removed.
-
-Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
-Acked-by: David Brown <davidb@codeaurora.org>
+Signed-off-by: Manuel Lauss <manuel.lauss@googlemail.com>
 ---
- drivers/video/au1200fb.c                  |    2 +-
- drivers/video/bf54x-lq043fb.c             |    2 +-
- drivers/video/bfin-lq035q1-fb.c           |    2 +-
- drivers/video/bfin-t350mcqb-fb.c          |    2 +-
- drivers/video/bfin_adv7393fb.c            |    2 +-
- drivers/video/mb862xx/mb862xxfbdrv.c      |    4 ++--
- drivers/video/msm/mddi.c                  |    2 +-
- drivers/video/msm/mdp.c                   |    2 +-
- drivers/video/nuc900fb.c                  |    2 +-
- drivers/video/omap2/displays/panel-taal.c |    2 +-
- drivers/video/ps3fb.c                     |    2 +-
- drivers/video/pxa3xx-gcu.c                |    2 +-
- drivers/video/pxafb.c                     |    2 +-
- drivers/video/s3c2410fb.c                 |    2 +-
- drivers/video/sa1100fb.c                  |    3 +--
- drivers/video/sh_mobile_lcdcfb.c          |    2 +-
- drivers/video/tmiofb.c                    |    2 +-
- drivers/video/vt8500lcdfb.c               |    2 +-
- 18 files changed, 19 insertions(+), 20 deletions(-)
+Tested on a DB1100 board.
 
-diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
-index a19a40e..7200559 100644
---- a/drivers/video/au1200fb.c
-+++ b/drivers/video/au1200fb.c
-@@ -1673,7 +1673,7 @@ static int __devinit au1200fb_drv_probe(struct platform_device *dev)
- 	/* Now hook interrupt too */
- 	irq = platform_get_irq(dev, 0);
- 	ret = request_irq(irq, au1200fb_handle_irq,
--			  IRQF_DISABLED | IRQF_SHARED, "lcd", (void *)dev);
-+			  IRQF_SHARED, "lcd", (void *)dev);
- 	if (ret) {
- 		print_err("fail to request interrupt line %d (err: %d)",
- 			  irq, ret);
-diff --git a/drivers/video/bf54x-lq043fb.c b/drivers/video/bf54x-lq043fb.c
-index 2464b91..56720fb 100644
---- a/drivers/video/bf54x-lq043fb.c
-+++ b/drivers/video/bf54x-lq043fb.c
-@@ -633,7 +633,7 @@ static int __devinit bfin_bf54x_probe(struct platform_device *pdev)
- 		goto out7;
+ drivers/video/au1100fb.c |  181 +++++++++++++++-------------------------------
+ drivers/video/au1100fb.h |    6 +--
+ 2 files changed, 61 insertions(+), 126 deletions(-)
+
+diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
+index 93b98bb..de9da67 100644
+--- a/drivers/video/au1100fb.c
++++ b/drivers/video/au1100fb.c
+@@ -98,12 +98,6 @@ static struct fb_var_screeninfo au1100fb_var __devinitdata = {
+ 	.vmode		= FB_VMODE_NONINTERLACED,
+ };
+ 
+-static struct au1100fb_drv_info drv_info;
+-
+-static int nocursor = 0;
+-module_param(nocursor, int, 0644);
+-MODULE_PARM_DESC(nocursor, "cursor enable/disable");
+-
+ /* fb_blank
+  * Blank the screen. Depending on the mode, the screen will be
+  * activated with the backlight color, or desactivated
+@@ -120,7 +114,7 @@ static int au1100fb_fb_blank(int blank_mode, struct fb_info *fbi)
+ 			/* Turn on panel */
+ 			fbdev->regs->lcd_control |= LCD_CONTROL_GO;
+ #ifdef CONFIG_MIPS_PB1100
+-			if (drv_info.panel_idx = 1) {
++			if (fbdev->panel_idx = 1) {
+ 				au_writew(au_readw(PB1100_G_CONTROL)
+ 					  | (PB1100_G_CONTROL_BL | PB1100_G_CONTROL_VDD),
+ 			PB1100_G_CONTROL);
+@@ -135,7 +129,7 @@ static int au1100fb_fb_blank(int blank_mode, struct fb_info *fbi)
+ 			/* Turn off panel */
+ 			fbdev->regs->lcd_control &= ~LCD_CONTROL_GO;
+ #ifdef CONFIG_MIPS_PB1100
+-			if (drv_info.panel_idx = 1) {
++			if (fbdev->panel_idx = 1) {
+ 				au_writew(au_readw(PB1100_G_CONTROL)
+ 				  	  & ~(PB1100_G_CONTROL_BL | PB1100_G_CONTROL_VDD),
+ 			PB1100_G_CONTROL);
+@@ -416,17 +410,6 @@ int au1100fb_fb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
+ 	return 0;
+ }
+ 
+-/* fb_cursor
+- * Used to disable cursor drawing...
+- */
+-int au1100fb_fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+-{
+-	if (nocursor)
+-		return 0;
+-	else
+-		return -EINVAL;	/* just to force soft_cursor() call */
+-}
+-
+ static struct fb_ops au1100fb_ops  {
+ 	.owner			= THIS_MODULE,
+@@ -438,13 +421,53 @@ static struct fb_ops au1100fb_ops  	.fb_imageblit		= cfb_imageblit,
+ 	.fb_rotate		= au1100fb_fb_rotate,
+ 	.fb_mmap		= au1100fb_fb_mmap,
+-	.fb_cursor		= au1100fb_fb_cursor,
+ };
+ 
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+-/* AU1100 LCD controller device driver */
++static int au1100fb_setup(struct au1100fb_device *fbdev)
++{
++	char *this_opt, *options;
++	int num_panels = ARRAY_SIZE(known_lcd_panels);
++
++	if (num_panels <= 0) {
++		print_err("No LCD panels supported by driver!");
++		return -ENODEV;
++	}
++
++	if (fb_get_options(DRIVER_NAME, &options))
++		return -ENODEV;
++	if (!options)
++		return -ENODEV;
++
++	while ((this_opt = strsep(&options, ",")) != NULL) {
++		/* Panel option */
++		if (!strncmp(this_opt, "panel:", 6)) {
++			int i;
++			this_opt += 6;
++			for (i = 0; i < num_panels; i++) {
++				if (!strncmp(this_opt, known_lcd_panels[i].name,
++					     strlen(this_opt))) {
++					fbdev->panel = &known_lcd_panels[i];
++					fbdev->panel_idx = i;
++					break;
++				}
++			}
++			if (i >= num_panels) {
++				print_warn("Panel '%s' not supported!", this_opt);
++				return -ENODEV;
++			}
++		}
++		/* Unsupported option */
++		else
++			print_warn("Unsupported option \"%s\"", this_opt);
++	}
++
++	print_info("Panel=%s", fbdev->panel->name);
++
++	return 0;
++}
+ 
+ static int __devinit au1100fb_drv_probe(struct platform_device *dev)
+ {
+@@ -453,22 +476,21 @@ static int __devinit au1100fb_drv_probe(struct platform_device *dev)
+ 	unsigned long page;
+ 	u32 sys_clksrc;
+ 
+-	if (!dev)
+-			return -EINVAL;
+-
+ 	/* Allocate new device private */
+-	if (!(fbdev = kzalloc(sizeof(struct au1100fb_device), GFP_KERNEL))) {
++	fbdev = kzalloc(sizeof(struct au1100fb_device), GFP_KERNEL);
++	if (!fbdev) {
+ 		print_err("fail to allocate device private record");
+ 		return -ENOMEM;
  	}
  
--	if (request_irq(info->irq, bfin_bf54x_irq_error, IRQF_DISABLED,
-+	if (request_irq(info->irq, bfin_bf54x_irq_error, 0,
- 			"PPI ERROR", info) < 0) {
- 		printk(KERN_ERR DRIVER_NAME
- 		       ": unable to request PPI ERROR IRQ\n");
-diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
-index 23b6c4b..c633068 100644
---- a/drivers/video/bfin-lq035q1-fb.c
-+++ b/drivers/video/bfin-lq035q1-fb.c
-@@ -695,7 +695,7 @@ static int __devinit bfin_lq035q1_probe(struct platform_device *pdev)
- 		goto out7;
+-	fbdev->panel = &known_lcd_panels[drv_info.panel_idx];
++	if (au1100fb_setup(fbdev))
++		goto failed;
+ 
+ 	platform_set_drvdata(dev, (void *)fbdev);
+ 
+ 	/* Allocate region for our registers and map them */
+-	if (!(regs_res = platform_get_resource(to_platform_device(dev),
+-					IORESOURCE_MEM, 0))) {
++	regs_res = platform_get_resource(dev, IORESOURCE_MEM, 0);
++	if (!regs_res) {
+ 		print_err("fail to retrieve registers resource");
+ 		return -EFAULT;
  	}
+@@ -488,13 +510,11 @@ static int __devinit au1100fb_drv_probe(struct platform_device *dev)
+ 	print_dbg("Register memory map at %p", fbdev->regs);
+ 	print_dbg("phys=0x%08x, size=%d", fbdev->regs_phys, fbdev->regs_len);
  
--	ret = request_irq(info->irq, bfin_lq035q1_irq_error, IRQF_DISABLED,
-+	ret = request_irq(info->irq, bfin_lq035q1_irq_error, 0,
- 			DRIVER_NAME" PPI ERROR", info);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "unable to request PPI ERROR IRQ\n");
-diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
-index d8de29f..d5e1267 100644
---- a/drivers/video/bfin-t350mcqb-fb.c
-+++ b/drivers/video/bfin-t350mcqb-fb.c
-@@ -529,7 +529,7 @@ static int __devinit bfin_t350mcqb_probe(struct platform_device *pdev)
- 		goto out7;
+-
+-
+ 	/* Allocate the framebuffer to the maximum screen size * nbr of video buffers */
+ 	fbdev->fb_len = fbdev->panel->xres * fbdev->panel->yres *
+ 		  	(fbdev->panel->bpp >> 3) * AU1100FB_NBR_VIDEO_BUFFERS;
+ 
+-	fbdev->fb_mem = dma_alloc_coherent(dev, PAGE_ALIGN(fbdev->fb_len),
++	fbdev->fb_mem = dma_alloc_coherent(&dev->dev, PAGE_ALIGN(fbdev->fb_len),
+ 					&fbdev->fb_phys, GFP_KERNEL);
+ 	if (!fbdev->fb_mem) {
+ 		print_err("fail to allocate frambuffer (size: %dK))",
+@@ -513,7 +533,7 @@ static int __devinit au1100fb_drv_probe(struct platform_device *dev)
+ 	     page < PAGE_ALIGN((unsigned long)fbdev->fb_mem + fbdev->fb_len);
+ 	     page += PAGE_SIZE) {
+ #if CONFIG_DMA_NONCOHERENT
+-		SetPageReserved(virt_to_page(CAC_ADDR(page)));
++		SetPageReserved(virt_to_page(CAC_ADDR((void *)page)));
+ #else
+ 		SetPageReserved(virt_to_page(page));
+ #endif
+@@ -566,7 +586,8 @@ failed:
+ 		release_mem_region(fbdev->regs_phys, fbdev->regs_len);
  	}
- 
--	ret = request_irq(info->irq, bfin_t350mcqb_irq_error, IRQF_DISABLED,
-+	ret = request_irq(info->irq, bfin_t350mcqb_irq_error, 0,
- 			"PPI ERROR", info);
- 	if (ret < 0) {
- 		printk(KERN_ERR DRIVER_NAME
-diff --git a/drivers/video/bfin_adv7393fb.c b/drivers/video/bfin_adv7393fb.c
-index 8486f54..811dd7f 100644
---- a/drivers/video/bfin_adv7393fb.c
-+++ b/drivers/video/bfin_adv7393fb.c
-@@ -481,7 +481,7 @@ static int __devinit bfin_adv7393_fb_probe(struct i2c_client *client,
- 		goto out_4;
+ 	if (fbdev->fb_mem) {
+-		dma_free_noncoherent(dev, fbdev->fb_len, fbdev->fb_mem, fbdev->fb_phys);
++		dma_free_noncoherent(&dev->dev, fbdev->fb_len, fbdev->fb_mem,
++				     fbdev->fb_phys);
  	}
+ 	if (fbdev->info.cmap.len != 0) {
+ 		fb_dealloc_cmap(&fbdev->info.cmap);
+@@ -596,7 +617,8 @@ int au1100fb_drv_remove(struct platform_device *dev)
  
--	if (request_irq(IRQ_PPI_ERROR, ppi_irq_error, IRQF_DISABLED,
-+	if (request_irq(IRQ_PPI_ERROR, ppi_irq_error, 0,
- 			"PPI ERROR", fbdev) < 0) {
- 		dev_err(&client->dev, "unable to request PPI ERROR IRQ\n");
- 		ret = -EFAULT;
-diff --git a/drivers/video/mb862xx/mb862xxfbdrv.c b/drivers/video/mb862xx/mb862xxfbdrv.c
-index 12a634a..11a7a33 100644
---- a/drivers/video/mb862xx/mb862xxfbdrv.c
-+++ b/drivers/video/mb862xx/mb862xxfbdrv.c
-@@ -738,7 +738,7 @@ static int __devinit of_platform_mb862xx_probe(struct platform_device *ofdev)
- 	if (mb862xx_gdc_init(par))
- 		goto io_unmap;
+ 	release_mem_region(fbdev->regs_phys, fbdev->regs_len);
  
--	if (request_irq(par->irq, mb862xx_intr, IRQF_DISABLED,
-+	if (request_irq(par->irq, mb862xx_intr, 0,
- 			DRV_NAME, (void *)par)) {
- 		dev_err(dev, "Cannot request irq\n");
- 		goto io_unmap;
-@@ -1074,7 +1074,7 @@ static int __devinit mb862xx_pci_probe(struct pci_dev *pdev,
- 	if (mb862xx_pci_gdc_init(par))
- 		goto io_unmap;
+-	dma_free_coherent(dev, PAGE_ALIGN(fbdev->fb_len), fbdev->fb_mem, fbdev->fb_phys);
++	dma_free_coherent(&dev->dev, PAGE_ALIGN(fbdev->fb_len), fbdev->fb_mem,
++			  fbdev->fb_phys);
  
--	if (request_irq(par->irq, mb862xx_intr, IRQF_DISABLED | IRQF_SHARED,
-+	if (request_irq(par->irq, mb862xx_intr, IRQF_SHARED,
- 			DRV_NAME, (void *)par)) {
- 		dev_err(dev, "Cannot request irq\n");
- 		goto io_unmap;
-diff --git a/drivers/video/msm/mddi.c b/drivers/video/msm/mddi.c
-index 178b072..4527cbf 100644
---- a/drivers/video/msm/mddi.c
-+++ b/drivers/video/msm/mddi.c
-@@ -715,7 +715,7 @@ static int __devinit mddi_probe(struct platform_device *pdev)
+ 	fb_dealloc_cmap(&fbdev->info.cmap);
+ 	kfree(fbdev->info.pseudo_palette);
+@@ -663,101 +685,18 @@ static struct platform_driver au1100fb_driver = {
+         .resume		= au1100fb_drv_resume,
+ };
  
- 	mddi->int_enable = 0;
- 	mddi_writel(mddi->int_enable, INTEN);
--	ret = request_irq(mddi->irq, mddi_isr, IRQF_DISABLED, "mddi",
-+	ret = request_irq(mddi->irq, mddi_isr, 0, "mddi",
- 			  &mddi->client_data);
- 	if (ret) {
- 		printk(KERN_ERR "mddi: failed to request enable irq!\n");
-diff --git a/drivers/video/msm/mdp.c b/drivers/video/msm/mdp.c
-index 2750ed2..cb2ddf1 100644
---- a/drivers/video/msm/mdp.c
-+++ b/drivers/video/msm/mdp.c
-@@ -426,7 +426,7 @@ int mdp_probe(struct platform_device *pdev)
- 		goto error_get_clk;
- 	}
+-/*-------------------------------------------------------------------------*/
+-
+-/* Kernel driver */
+-
+-int au1100fb_setup(char *options)
+-{
+-	char* this_opt;
+-	int num_panels = ARRAY_SIZE(known_lcd_panels);
+-	char* mode = NULL;
+-	int panel_idx = 0;
+-
+-	if (num_panels <= 0) {
+-		print_err("No LCD panels supported by driver!");
+-		return -EFAULT;
+-			}
+-
+-	if (options) {
+-		while ((this_opt = strsep(&options,",")) != NULL) {
+-			/* Panel option */
+-			if (!strncmp(this_opt, "panel:", 6)) {
+-				int i;
+-				this_opt += 6;
+-				for (i = 0; i < num_panels; i++) {
+-					if (!strncmp(this_opt,
+-					      	     known_lcd_panels[i].name,
+-							strlen(this_opt))) {
+-						panel_idx = i;
+-						break;
+-					}
+-				}
+-				if (i >= num_panels) {
+- 					print_warn("Panel %s not supported!", this_opt);
+-				}
+-			}
+-			if (!strncmp(this_opt, "nocursor", 8)) {
+-				this_opt += 8;
+-				nocursor = 1;
+-				print_info("Cursor disabled");
+-			}
+-			/* Mode option (only option that start with digit) */
+-			else if (isdigit(this_opt[0])) {
+-				mode = kstrdup(this_opt, GFP_KERNEL);
+-				if (!mode) {
+-					print_err("memory allocation failed");
+-					return -ENOMEM;
+-				}
+-			}
+-			/* Unsupported option */
+-			else {
+-				print_warn("Unsupported option \"%s\"", this_opt);
+-			}
+-		}
+-	}
+-
+-	drv_info.panel_idx = panel_idx;
+-	drv_info.opt_mode = mode;
+-
+-	print_info("Panel=%s Mode=%s",
+-			known_lcd_panels[drv_info.panel_idx].name,
+-		      	drv_info.opt_mode ? drv_info.opt_mode : "default");
+-
+-	return 0;
+-}
+-
+-int __init au1100fb_init(void)
++static int __init au1100fb_load(void)
+ {
+-	char* options;
+-	int ret;
+-
+-	print_info("" DRIVER_DESC "");
+-
+-	memset(&drv_info, 0, sizeof(drv_info));
+-
+-	if (fb_get_options(DRIVER_NAME, &options))
+-		return -ENODEV;
+-
+-	/* Setup driver with options */
+-	ret = au1100fb_setup(options);
+-	if (ret < 0) {
+-		print_err("Fail to setup driver");
+-		return ret;
+-	}
+-
+ 	return platform_driver_register(&au1100fb_driver);
+ }
  
--	ret = request_irq(mdp->irq, mdp_isr, IRQF_DISABLED, "msm_mdp", mdp);
-+	ret = request_irq(mdp->irq, mdp_isr, 0, "msm_mdp", mdp);
- 	if (ret)
- 		goto error_request_irq;
- 	disable_irq(mdp->irq);
-diff --git a/drivers/video/nuc900fb.c b/drivers/video/nuc900fb.c
-index 37dd850..d1fbbd8 100644
---- a/drivers/video/nuc900fb.c
-+++ b/drivers/video/nuc900fb.c
-@@ -587,7 +587,7 @@ static int __devinit nuc900fb_probe(struct platform_device *pdev)
- 	fbinfo->flags			= FBINFO_FLAG_DEFAULT;
- 	fbinfo->pseudo_palette		= &fbi->pseudo_pal;
+-void __exit au1100fb_cleanup(void)
++static void __exit au1100fb_unload(void)
+ {
+ 	platform_driver_unregister(&au1100fb_driver);
+-
+-	kfree(drv_info.opt_mode);
+ }
  
--	ret = request_irq(irq, nuc900fb_irqhandler, IRQF_DISABLED,
-+	ret = request_irq(irq, nuc900fb_irqhandler, 0,
- 			  pdev->name, fbinfo);
- 	if (ret) {
- 		dev_err(&pdev->dev, "cannot register irq handler %d -err %d\n",
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 7f91002..80c3f6a 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -1034,7 +1034,7 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 		gpio_direction_input(gpio);
+-module_init(au1100fb_init);
+-module_exit(au1100fb_cleanup);
++module_init(au1100fb_load);
++module_exit(au1100fb_unload);
  
- 		r = request_irq(gpio_to_irq(gpio), taal_te_isr,
--				IRQF_DISABLED | IRQF_TRIGGER_RISING,
-+				IRQF_TRIGGER_RISING,
- 				"taal vsync", dssdev);
+ MODULE_DESCRIPTION(DRIVER_DESC);
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/video/au1100fb.h b/drivers/video/au1100fb.h
+index 164fe2f..12d9642 100644
+--- a/drivers/video/au1100fb.h
++++ b/drivers/video/au1100fb.h
+@@ -108,6 +108,7 @@ struct au1100fb_device {
+ 	unsigned char* 		fb_mem;		/* FrameBuffer memory map */
+ 	size_t	      		fb_len;
+ 	dma_addr_t    		fb_phys;
++	int			panel_idx;
+ };
  
- 		if (r) {
-diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
-index 65560a1..213fbbc 100644
---- a/drivers/video/ps3fb.c
-+++ b/drivers/video/ps3fb.c
-@@ -1082,7 +1082,7 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
- 	}
+ /********************************************************************/
+@@ -364,11 +365,6 @@ static struct au1100fb_panel known_lcd_panels[]  	},
+ };
  
- 	retval = request_irq(ps3fb.irq_no, ps3fb_vsync_interrupt,
--			     IRQF_DISABLED, DEVICE_NAME, &dev->core);
-+			     0, DEVICE_NAME, &dev->core);
- 	if (retval) {
- 		dev_err(&dev->core, "%s: request_irq failed %d\n", __func__,
- 			retval);
-diff --git a/drivers/video/pxa3xx-gcu.c b/drivers/video/pxa3xx-gcu.c
-index d8de557..1ed8b36 100644
---- a/drivers/video/pxa3xx-gcu.c
-+++ b/drivers/video/pxa3xx-gcu.c
-@@ -676,7 +676,7 @@ pxa3xx_gcu_probe(struct platform_device *dev)
- 	}
+-struct au1100fb_drv_info {
+-	int	panel_idx;
+-	char 	*opt_mode;
+-};
+-
+ /********************************************************************/
  
- 	ret = request_irq(irq, pxa3xx_gcu_handle_irq,
--			  IRQF_DISABLED, DRV_NAME, priv);
-+			  0, DRV_NAME, priv);
- 	if (ret) {
- 		dev_err(&dev->dev, "request_irq failed\n");
- 		ret = -EBUSY;
-diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-index 0f4e8c9..e89778f 100644
---- a/drivers/video/pxafb.c
-+++ b/drivers/video/pxafb.c
-@@ -2191,7 +2191,7 @@ static int __devinit pxafb_probe(struct platform_device *dev)
- 		goto failed_free_mem;
- 	}
- 
--	ret = request_irq(irq, pxafb_handle_irq, IRQF_DISABLED, "LCD", fbi);
-+	ret = request_irq(irq, pxafb_handle_irq, 0, "LCD", fbi);
- 	if (ret) {
- 		dev_err(&dev->dev, "request_irq failed: %d\n", ret);
- 		ret = -EBUSY;
-diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
-index 798144a..ee4c0df 100644
---- a/drivers/video/s3c2410fb.c
-+++ b/drivers/video/s3c2410fb.c
-@@ -910,7 +910,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
- 	for (i = 0; i < 256; i++)
- 		info->palette_buffer[i] = PALETTE_BUFF_CLEAR;
- 
--	ret = request_irq(irq, s3c2410fb_irq, IRQF_DISABLED, pdev->name, info);
-+	ret = request_irq(irq, s3c2410fb_irq, 0, pdev->name, info);
- 	if (ret) {
- 		dev_err(&pdev->dev, "cannot get irq %d - err %d\n", irq, ret);
- 		ret = -EBUSY;
-diff --git a/drivers/video/sa1100fb.c b/drivers/video/sa1100fb.c
-index e8b76d6..98d55d0 100644
---- a/drivers/video/sa1100fb.c
-+++ b/drivers/video/sa1100fb.c
-@@ -1457,8 +1457,7 @@ static int __devinit sa1100fb_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto failed;
- 
--	ret = request_irq(irq, sa1100fb_handle_irq, IRQF_DISABLED,
--			  "LCD", fbi);
-+	ret = request_irq(irq, sa1100fb_handle_irq, 0, "LCD", fbi);
- 	if (ret) {
- 		printk(KERN_ERR "sa1100fb: request_irq failed: %d\n", ret);
- 		goto failed;
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 4636f9d..facffc2 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -1577,7 +1577,7 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, priv);
- 
--	error = request_irq(i, sh_mobile_lcdc_irq, IRQF_DISABLED,
-+	error = request_irq(i, sh_mobile_lcdc_irq, 0,
- 			    dev_name(&pdev->dev), priv);
- 	if (error) {
- 		dev_err(&pdev->dev, "unable to request irq\n");
-diff --git a/drivers/video/tmiofb.c b/drivers/video/tmiofb.c
-index cd1c4dc..8e4a446 100644
---- a/drivers/video/tmiofb.c
-+++ b/drivers/video/tmiofb.c
-@@ -744,7 +744,7 @@ static int __devinit tmiofb_probe(struct platform_device *dev)
- 		goto err_ioremap_vram;
- 	}
- 
--	retval = request_irq(irq, &tmiofb_irq, IRQF_DISABLED,
-+	retval = request_irq(irq, &tmiofb_irq, 0,
- 					dev_name(&dev->dev), info);
- 
- 	if (retval)
-diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
-index c13c246..777c21d 100644
---- a/drivers/video/vt8500lcdfb.c
-+++ b/drivers/video/vt8500lcdfb.c
-@@ -355,7 +355,7 @@ static int __devinit vt8500lcd_probe(struct platform_device *pdev)
- 		goto failed_free_palette;
- 	}
- 
--	ret = request_irq(irq, vt8500lcd_handle_irq, IRQF_DISABLED, "LCD", fbi);
-+	ret = request_irq(irq, vt8500lcd_handle_irq, 0, "LCD", fbi);
- 	if (ret) {
- 		dev_err(&pdev->dev, "request_irq failed: %d\n", ret);
- 		ret = -EBUSY;
+ /* Inline helpers */
 -- 
-1.7.4.1
+1.7.6.1
 

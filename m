@@ -1,97 +1,280 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 30 Oct 2011 11:24:20 +0000
-Subject: Re: [RESENT][PATCH v2 0/2] fb: add early fb blank feature
-Message-Id: <4EAD33E4.1030406@gmx.de>
+Date: Mon, 03 Oct 2011 15:48:01 +0000
+Subject: Re: [PATCH 8/9] drivers/video: fsl-diu-fb: merge diu_hw into fsl_diu_data
+Message-Id: <4E89D931.30305@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <003f01cc8280$7510c5c0$5f325140$%dae@samsung.com>
-In-Reply-To: <003f01cc8280$7510c5c0$5f325140$%dae@samsung.com>
+References: <1317244795-24671-8-git-send-email-timur@freescale.com>
+In-Reply-To: <1317244795-24671-8-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Andrew,
+On 09/28/2011 09:19 PM, Timur Tabi wrote:
+> The diu_hw structure contains two fields used to access the DIU registers,
+> but the only instance of this structure is a global variable, 'dr'.
+> Eliminate 'dr' by merging its fields into the fsl_diu_data structure,
+> which is instantiated on the heap for each DIU controller found.
+> 
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+>  drivers/video/fsl-diu-fb.c |   71 ++++++++++++++++++++-----------------------
+>  1 files changed, 33 insertions(+), 38 deletions(-)
+> 
+> diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+> index 41f767b..728cd9f 100644
+> --- a/drivers/video/fsl-diu-fb.c
+> +++ b/drivers/video/fsl-diu-fb.c
+> @@ -49,11 +49,6 @@
+>  #define INT_PARERR	0x08	/* Display parameters error interrupt */
+>  #define INT_LS_BF_VS	0x10	/* Lines before vsync. interrupt */
+>  
+> -struct diu_hw {
+> -	struct diu __iomem *diu_reg;
+> -	spinlock_t reg_lock;
+> -};
+> -
+>  struct diu_addr {
+>  	void *vaddr;		/* Virtual address */
+>  	dma_addr_t paddr;	/* Physical address */
+> @@ -351,6 +346,9 @@ struct fsl_diu_data {
+>  	unsigned int irq;
+>  	int fb_enabled;
+>  	enum fsl_diu_monitor_port monitor_port;
+> +	struct diu __iomem *diu_reg;
+> +	spinlock_t reg_lock;
+> +	unsigned int mode;		/* DIU operation mode */
 
-can you take care of this patch series?
-It seems like Richard does no longer handle LCD/backlight stuff (why is he
-listed as maintainer?) and I really cannot say whether the patch to the LCD code
-is correct and therefore I do not intend to carry such a patch without any Ack.
-You can add an "Acked-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>"
-to the fb patch 2/2 (well actually I think the order should be swapped as 1 does
-not compile without 2) but I ask you to handle it as well as it is useless
-without the other patch.
+Any reason that you added here a new "mode" var that appears to be useless when
+you just deleted the mode variable in patch 7/9?
 
 
-Thanks,
+Regards,
 
 Florian Tobias Schandinat
 
-On 10/04/2011 10:29 AM, Inki Dae wrote:
-> this patch adds early fb blank feature that a callback of lcd panel driver
-> is called prior to specific fb driver's one. in case of MIPI-DSI based video
-> mode LCD Panel, for lcd power off, the power off commands should be
-> transferred to lcd panel with display and mipi-dsi controller enabled
-> because the commands is set to lcd panel at vsync porch period. and in
-> opposite case, the callback of fb driver should be called prior to lcd panel
-> driver's one because of same issue. and also if fb_blank mode is changed to
-> FB_BLANK_POWERDOWN then display controller would be off(clock disable) but
-> lcd panel would be still on. at this time, you could see some issue like
-> sparkling on lcd panel because video clock to be delivered to ldi module of
-> lcd panel was disabled. this issue could occurs for all lcd panels.
-> 
-> the callback order is as the following:
-> 
-> at fb_blank function of fbmem.c
-> -> fb_notifier_call_chain(FB_EARLY_EVENT_BLANK)
->        -> lcd panel driver's early_set_power()
-> -> info->fbops->fb_blank()
->        -> spcefic fb driver's fb_blank()
-> -> fb_notifier_call_chain(FB_EVENT_BLANK)
->        -> lcd panel driver's set_power()
->    -> fb_notifier_call_chain(FB_R_EARLY_EVENT_BLANK) if
-> info->fops->fb_blank() was failed.
-> 
-> fb_notifier_call_chain(FB_R_EARLY_EVENT_BLANK) would be called to revert the
-> effects of previous FB_EARLY_EVENT_BLANK call. and note that if
-> early_set_power() of lcd_ops is NULL then early fb blank callback would be
-> ignored.
-> 
-> this patch is based on git repository below:
-> git://github.com/schandinat/linux-2.6.git
-> branch: fbdev-next
-> commit-id: 2b7a905dd0d24d14a1099653ba63b7113a82fc54
-> 
-> Links to previous versions of the patchset:
-> v1: < http://lkml.indiana.edu/hypermail/linux/kernel/1109.1/00413.html >
-> 
-> Changelog v2:
-> fb: add fb early blank event instead of early_blank_mode variable.
->        fb notifier can know whether early blank mode is support or not
-> checking if early_set_power callback is NULL or not.
-> 
-> fb: add exception codes at fb_blank().
->        the effects of previous FB_EARLY_EVENT_BLANK call should be reverted
-> if info->fbops->fb_blank() was failed.
-> 
-> fb: add code clean.
-> 
-> Changelog RESEND:
-> fb: fixed condition.
->      this patch changes 'if (early_ret < 0)' to 'if (!early_ret)' of
-> fb_blank function.
-> 
-> these patch series are as the following:
-> [RESEND][PATCH v2 0/2] fb: add early fb blank feature.
->        introduce new early fb blank feature.
-> [RESEND][PATCH v2 1/2] lcd: add callbacks for early fb event blank support.
-> [RESEND][PATCH v2 2/2] fb: add events for early fb event support.
-> 
-> Signed-off-by: Inki Dae <inki.dae@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+>  };
+>  
+>  enum mfb_index {
+> @@ -424,10 +422,6 @@ static struct mfb_info mfb_template[] = {
+>  	},
+>  };
+>  
+> -static struct diu_hw dr = {
+> -	.reg_lock = __SPIN_LOCK_UNLOCKED(diu_hw.reg_lock),
+> -};
+> -
+>  static struct diu_pool pool;
+>  
+>  /**
+> @@ -506,9 +500,9 @@ void wr_reg_wa(u32 *reg, u32 val)
+>  static void fsl_diu_enable_panel(struct fb_info *info)
+>  {
+>  	struct mfb_info *pmfbi, *cmfbi, *mfbi = info->par;
+> -	struct diu *hw = dr.diu_reg;
+>  	struct diu_ad *ad = mfbi->ad;
+>  	struct fsl_diu_data *machine_data = mfbi->parent;
+> +	struct diu __iomem *hw = machine_data->diu_reg;
+>  
+>  	switch (mfbi->index) {
+>  	case PLANE0:
+> @@ -559,9 +553,9 @@ static void fsl_diu_enable_panel(struct fb_info *info)
+>  static void fsl_diu_disable_panel(struct fb_info *info)
+>  {
+>  	struct mfb_info *pmfbi, *cmfbi, *mfbi = info->par;
+> -	struct diu *hw = dr.diu_reg;
+>  	struct diu_ad *ad = mfbi->ad;
+>  	struct fsl_diu_data *machine_data = mfbi->parent;
+> +	struct diu __iomem *hw = machine_data->diu_reg;
+>  
+>  	switch (mfbi->index) {
+>  	case PLANE0:
+> @@ -613,9 +607,9 @@ static void fsl_diu_disable_panel(struct fb_info *info)
+>  
+>  static void enable_lcdc(struct fb_info *info)
+>  {
+> -	struct diu *hw = dr.diu_reg;
+>  	struct mfb_info *mfbi = info->par;
+>  	struct fsl_diu_data *machine_data = mfbi->parent;
+> +	struct diu __iomem *hw = machine_data->diu_reg;
+>  
+>  	if (!machine_data->fb_enabled) {
+>  		out_be32(&hw->diu_mode, MFB_MODE1);
+> @@ -625,9 +619,9 @@ static void enable_lcdc(struct fb_info *info)
+>  
+>  static void disable_lcdc(struct fb_info *info)
+>  {
+> -	struct diu *hw = dr.diu_reg;
+>  	struct mfb_info *mfbi = info->par;
+>  	struct fsl_diu_data *machine_data = mfbi->parent;
+> +	struct diu __iomem *hw = machine_data->diu_reg;
+>  
+>  	if (machine_data->fb_enabled) {
+>  		out_be32(&hw->diu_mode, 0);
+> @@ -822,13 +816,13 @@ static void update_lcdc(struct fb_info *info)
+>  	struct fb_var_screeninfo *var = &info->var;
+>  	struct mfb_info *mfbi = info->par;
+>  	struct fsl_diu_data *machine_data = mfbi->parent;
+> -	struct diu *hw;
+> +	struct diu __iomem *hw;
+>  	int i, j;
+>  	char __iomem *cursor_base, *gamma_table_base;
+>  
+>  	u32 temp;
+>  
+> -	hw = dr.diu_reg;
+> +	hw = machine_data->diu_reg;
+>  
+>  	diu_ops.set_monitor_port(machine_data->monitor_port);
+>  	gamma_table_base = pool.gamma.vaddr;
+> @@ -939,9 +933,9 @@ static int fsl_diu_set_par(struct fb_info *info)
+>  	struct mfb_info *mfbi = info->par;
+>  	struct fsl_diu_data *machine_data = mfbi->parent;
+>  	struct diu_ad *ad = mfbi->ad;
+> -	struct diu *hw;
+> +	struct diu __iomem *hw;
+>  
+> -	hw = dr.diu_reg;
+> +	hw = machine_data->diu_reg;
+>  
+>  	set_fix(info);
+>  	mfbi->cursor_reset = 1;
+> @@ -1336,7 +1330,7 @@ static void uninstall_fb(struct fb_info *info)
+>  
+>  static irqreturn_t fsl_diu_isr(int irq, void *dev_id)
+>  {
+> -	struct diu *hw = dr.diu_reg;
+> +	struct diu __iomem *hw = dev_id;
+>  	unsigned int status = in_be32(&hw->int_status);
+>  
+>  	if (status) {
+> @@ -1362,18 +1356,16 @@ static irqreturn_t fsl_diu_isr(int irq, void *dev_id)
+>  	return IRQ_NONE;
+>  }
+>  
+> -static int request_irq_local(int irq)
+> +static int request_irq_local(struct fsl_diu_data *machine_data)
+>  {
+> +	struct diu __iomem *hw = machine_data->diu_reg;
+>  	u32 ints;
+> -	struct diu *hw;
+>  	int ret;
+>  
+> -	hw = dr.diu_reg;
+> -
+>  	/* Read to clear the status */
+>  	in_be32(&hw->int_status);
+>  
+> -	ret = request_irq(irq, fsl_diu_isr, 0, "fsl-diu-fb", NULL);
+> +	ret = request_irq(machine_data->irq, fsl_diu_isr, 0, "fsl-diu-fb", hw);
+>  	if (!ret) {
+>  		ints = INT_PARERR | INT_LS_BF_VS;
+>  #if !defined(CONFIG_NOT_COHERENT_CACHE)
+> @@ -1388,14 +1380,14 @@ static int request_irq_local(int irq)
+>  	return ret;
+>  }
+>  
+> -static void free_irq_local(int irq)
+> +static void free_irq_local(struct fsl_diu_data *machine_data)
+>  {
+> -	struct diu *hw = dr.diu_reg;
+> +	struct diu __iomem *hw = machine_data->diu_reg;
+>  
+>  	/* Disable all LCDC interrupt */
+>  	out_be32(&hw->int_mask, 0x1f);
+>  
+> -	free_irq(irq, NULL);
+> +	free_irq(machine_data->irq, NULL);
+>  }
+>  
+>  #ifdef CONFIG_PM
+> @@ -1513,6 +1505,9 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+>  	if (!machine_data)
+>  		return -ENOMEM;
+>  
+> +	machine_data->mode = MFB_MODE1;
+> +	spin_lock_init(&machine_data->reg_lock);
+> +
+>  	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++) {
+>  		machine_data->fsl_diu_info[i] >  			framebuffer_alloc(sizeof(struct mfb_info), &pdev->dev);
+> @@ -1537,16 +1532,16 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+>  		}
+>  	}
+>  
+> -	dr.diu_reg = of_iomap(np, 0);
+> -	if (!dr.diu_reg) {
+> +	machine_data->diu_reg = of_iomap(np, 0);
+> +	if (!machine_data->diu_reg) {
+>  		dev_err(&pdev->dev, "cannot map DIU registers\n");
+>  		ret = -EFAULT;
+>  		goto error2;
+>  	}
+>  
+> -	diu_mode = in_be32(&dr.diu_reg->diu_mode);
+> +	diu_mode = in_be32(&machine_data->diu_reg->diu_mode);
+>  	if (diu_mode = MFB_MODE0)
+> -		out_be32(&dr.diu_reg->diu_mode, 0);	/* disable DIU */
+> +		out_be32(&machine_data->diu_reg->diu_mode, 0); /* disable DIU */
+>  
+>  	/* Get the IRQ of the DIU */
+>  	machine_data->irq = irq_of_parse_and_map(np, 0);
+> @@ -1599,10 +1594,11 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+>  	 * by the bootloader, set dummy area descriptor otherwise.
+>  	 */
+>  	if (diu_mode = MFB_MODE0)
+> -		out_be32(&dr.diu_reg->desc[0], machine_data->dummy_ad->paddr);
+> +		out_be32(&machine_data->diu_reg->desc[0],
+> +			 machine_data->dummy_ad->paddr);
+>  
+> -	out_be32(&dr.diu_reg->desc[1], machine_data->dummy_ad->paddr);
+> -	out_be32(&dr.diu_reg->desc[2], machine_data->dummy_ad->paddr);
+> +	out_be32(&machine_data->diu_reg->desc[1], machine_data->dummy_ad->paddr);
+> +	out_be32(&machine_data->diu_reg->desc[2], machine_data->dummy_ad->paddr);
+>  
+>  	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++) {
+>  		machine_data->fsl_diu_info[i]->fix.smem_start = 0;
+> @@ -1617,7 +1613,7 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+>  		}
+>  	}
+>  
+> -	if (request_irq_local(machine_data->irq)) {
+> +	if (request_irq_local(machine_data)) {
+>  		dev_err(&pdev->dev, "could not claim irq\n");
+>  		goto error;
+>  	}
+> @@ -1651,7 +1647,7 @@ error:
+>  			 32);
+>  	if (machine_data->dummy_aoi_virt)
+>  		fsl_diu_free(machine_data->dummy_aoi_virt, 64);
+> -	iounmap(dr.diu_reg);
+> +	iounmap(machine_data->diu_reg);
+>  
+>  error2:
+>  	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++)
+> @@ -1669,7 +1665,7 @@ static int fsl_diu_remove(struct platform_device *pdev)
+>  
+>  	machine_data = dev_get_drvdata(&pdev->dev);
+>  	disable_lcdc(machine_data->fsl_diu_info[0]);
+> -	free_irq_local(machine_data->irq);
+> +	free_irq_local(machine_data);
+>  	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++)
+>  		uninstall_fb(machine_data->fsl_diu_info[i]);
+>  	if (pool.ad.vaddr)
+> @@ -1681,7 +1677,7 @@ static int fsl_diu_remove(struct platform_device *pdev)
+>  		free_buf(&pdev->dev, &pool.cursor, MAX_CURS * MAX_CURS * 2, 32);
+>  	if (machine_data->dummy_aoi_virt)
+>  		fsl_diu_free(machine_data->dummy_aoi_virt, 64);
+> -	iounmap(dr.diu_reg);
+> +	iounmap(machine_data->diu_reg);
+>  	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++)
+>  		if (machine_data->fsl_diu_info[i])
+>  			framebuffer_release(machine_data->fsl_diu_info[i]);
+> @@ -1804,7 +1800,6 @@ static int __init fsl_diu_init(void)
+>  #if defined(CONFIG_NOT_COHERENT_CACHE)
+>  		vfree(coherence_data);
+>  #endif
+> -		iounmap(dr.diu_reg);
+>  	}
+>  	return ret;
+>  }
 

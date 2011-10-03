@@ -1,132 +1,106 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Tue, 04 Oct 2011 20:26:01 +0000
-Subject: Re: [PATCH v3] video: da8xx-fb: Increased resolution configuration
-Message-Id: <4E8B6BD9.6060305@gmx.de>
+Date: Mon, 03 Oct 2011 16:17:47 +0000
+Subject: Re: [PATCH 1/9] drivers/video: fsl-diu-fb: fix some ioctls
+Message-Id: <4E89E02B.9060201@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1310963333-29806-1-git-send-email-prakash.pm@ti.com>
-In-Reply-To: <1310963333-29806-1-git-send-email-prakash.pm@ti.com>
+References: <1317244795-24671-1-git-send-email-timur@freescale.com>
+In-Reply-To: <1317244795-24671-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On 10/04/2011 07:00 AM, Manjunathappa, Prakash wrote:
-> Hi Florian Tobias Schandinat,
-> 
-> Can you please accept below patch? It depends on my earlier patch "video: da8xx-fb: Interrupt configuration of revised LCDC IP" accepted by Paul, but I don't see it main line yet. Please let me know if I have submit both patches again?
-> 
-> Thanks,
-> Prakash
+On 09/28/2011 09:19 PM, Timur Tabi wrote:
+> Use the _IOx macros to define the ioctl commands, instead of hard-coded
+> numbers.  Unfortunately, the original definitions of MFB_SET_PIXFMT and
+> MFB_GET_PIXFMT used the wrong value for the size, so this will break
+> binary compatibility with older applications.
 
-Applied this patch. I already got the dependency when I merged Paul latest tree.
-You can see the result under
-git://github.com/schandinat/linux-2.6.git fbdev-next
-or in the next linux-next build.
+Don't break compatibility without the need to do so. Ask yourself whether using
+those macros is really worth it. If the answer is yes, at least give userspace a
+grace period, some kernel versions where both values work. For example you could
+rename the old numerical ones to MFB_SET_PIXFMT_OLD and then add a compatibility
+IOCTL, for example like this
+
+case MFB_SET_PIXFMT_OLD:
+	/* you could add a warning message here */
+case MFB_SET_PIXFMT:
+	...
+
+Not much work and you could delete the compatibility stuff in a year or two but
+it would it make much easier for users to upgrade.
+
+I don't know your driver, can int be only 32 bit on all plattforms where it can
+be used or is this another thing where compatibility can break?
 
 
-Thanks,
+Best regards,
 
 Florian Tobias Schandinat
 
 > 
-> On Tue, Jul 26, 2011 at 09:50:12, Manjunathappa, Prakash wrote:
->> Hi Paul,
->>
->> Could you please accept this patch as there are no comments?
->>
->> Thanks,
->> Prakash
->> On Mon, Jul 18, 2011 at 09:58:53, Manjunathappa, Prakash wrote:
->>> Revised LCD controller in upcoming TI SoC which is an updated version of
->>> LCDC IP that was found on TI's DA850 SoC supports 2048*2048 resolution.
->>> Below are the encoding details:
->>> Width:
->>> Pixels Per Line = {pplmsb, ppllsb, 4'b1111} + 1
->>> Where pplmsb:1bit=>Raster Timing0[3], ppllsb:6bits=>Raster Timing0[9:4].
->>> And encoded value can range from 16 to 2048 in multiples of 16.
->>>
->>> Height:
->>> Lines Per Panel = {lpp_b10, lpp}
->>> Where lpp:10bits=>Raster Timing1[9:0], lpp_b10:1bit=>Raster Timing2[26].
->>> And encoded value can range from 1 to 2048, programmable range is 0 to
->>> 2047.
->>>
->>> Patch is verified on emulation platform of upcoming SoC for updated
->>> feature and on DA850 platform to make sure nothing existing breaks.
->>>
->>> Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
->>> ---
->>> Since v2:
->>> Corrected comment describing horizontal resolution bits and removed unnecessary
->>> outer parenthesis.
->>> Since v1:
->>> 1)Fixed the bug in configuration of lpp_b10 in Raster Timing2[26] register.
->>> 2)Reframed commit message.
->>>
->>>  drivers/video/da8xx-fb.c |   31 ++++++++++++++++++++++++++++---
->>>  1 files changed, 28 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
->>> index 620f1c3..94b611a 100644
->>> --- a/drivers/video/da8xx-fb.c
->>> +++ b/drivers/video/da8xx-fb.c
->>> @@ -460,18 +460,43 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
->>>  
->>>  	/* Set the Panel Width */
->>>  	/* Pixels per line = (PPL + 1)*16 */
->>> -	/*0x3F in bits 4..9 gives max horisontal resolution = 1024 pixels*/
->>> -	width &= 0x3f0;
->>> +	if (lcd_revision = LCD_VERSION_1) {
->>> +		/*
->>> +		 * 0x3F in bits 4..9 gives max horizontal resolution = 1024
->>> +		 * pixels.
->>> +		 */
->>> +		width &= 0x3f0;
->>> +	} else {
->>> +		/*
->>> +		 * 0x7F in bits 4..10 gives max horizontal resolution = 2048
->>> +		 * pixels.
->>> +		 */
->>> +		width &= 0x7f0;
->>> +	}
->>> +
->>>  	reg = lcdc_read(LCD_RASTER_TIMING_0_REG);
->>>  	reg &= 0xfffffc00;
->>> -	reg |= ((width >> 4) - 1) << 4;
->>> +	if (lcd_revision = LCD_VERSION_1) {
->>> +		reg |= ((width >> 4) - 1) << 4;
->>> +	} else {
->>> +		width = (width >> 4) - 1;
->>> +		reg |= ((width & 0x3f) << 4) | ((width & 0x40) >> 3);
->>> +	}
->>>  	lcdc_write(reg, LCD_RASTER_TIMING_0_REG);
->>>  
->>>  	/* Set the Panel Height */
->>> +	/* Set bits 9:0 of Lines Per Pixel */
->>>  	reg = lcdc_read(LCD_RASTER_TIMING_1_REG);
->>>  	reg = ((height - 1) & 0x3ff) | (reg & 0xfffffc00);
->>>  	lcdc_write(reg, LCD_RASTER_TIMING_1_REG);
->>>  
->>> +	/* Set bit 10 of Lines Per Pixel */
->>> +	if (lcd_revision = LCD_VERSION_2) {
->>> +		reg = lcdc_read(LCD_RASTER_TIMING_2_REG);
->>> +		reg |= ((height - 1) & 0x400) << 16;
->>> +		lcdc_write(reg, LCD_RASTER_TIMING_2_REG);
->>> +	}
->>> +
->>>  	/* Set the Raster Order of the Frame Buffer */
->>>  	reg = lcdc_read(LCD_RASTER_CTRL_REG) & ~(1 << 8);
->>>  	if (raster_order)
->>> -- 
->>> 1.7.1
->>>
->>>
->>
->> _______________________________________________
->> Davinci-linux-open-source mailing list
->> Davinci-linux-open-source@linux.davincidsp.com
->> http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source
->>
+> Also remove the FBIOGET_GWINFO and FBIOPUT_GWINFO ioctls.  FBIOPUT_GWINFO
+> was never implemented, and FBIOGET_GWINFO was never used by any
+> application.
 > 
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+>  drivers/video/fsl-diu-fb.c |    8 --------
+>  include/linux/fsl-diu-fb.h |   20 ++++++++------------
+>  2 files changed, 8 insertions(+), 20 deletions(-)
 > 
+> diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+> index 5137fbb..e5905b7 100644
+> --- a/drivers/video/fsl-diu-fb.c
+> +++ b/drivers/video/fsl-diu-fb.c
+> @@ -1030,14 +1030,6 @@ static int fsl_diu_ioctl(struct fb_info *info, unsigned int cmd,
+>  			ad->ckmin_b = ck.blue_min;
+>  		}
+>  		break;
+> -	case FBIOGET_GWINFO:
+> -		if (mfbi->type = MFB_TYPE_OFF)
+> -			return -ENODEV;
+> -		/* get graphic window information */
+> -		if (copy_to_user(buf, ad, sizeof(*ad)))
+> -			return -EFAULT;
+> -		break;
+> -
+>  	default:
+>  		dev_err(info->dev, "unknown ioctl command (0x%08X)\n", cmd);
+>  		return -ENOIOCTLCMD;
+> diff --git a/include/linux/fsl-diu-fb.h b/include/linux/fsl-diu-fb.h
+> index df23f59..5efb407 100644
+> --- a/include/linux/fsl-diu-fb.h
+> +++ b/include/linux/fsl-diu-fb.h
+> @@ -33,22 +33,18 @@ struct mfb_chroma_key {
+>  };
+>  
+>  struct aoi_display_offset {
+> -	int x_aoi_d;
+> -	int y_aoi_d;
+> +	__s32 x_aoi_d;
+> +	__s32 y_aoi_d;
+>  };
+>  
+>  #define MFB_SET_CHROMA_KEY	_IOW('M', 1, struct mfb_chroma_key)
+>  #define MFB_SET_BRIGHTNESS	_IOW('M', 3, __u8)
+> -
+> -#define MFB_SET_ALPHA		0x80014d00
+> -#define MFB_GET_ALPHA		0x40014d00
+> -#define MFB_SET_AOID		0x80084d04
+> -#define MFB_GET_AOID		0x40084d04
+> -#define MFB_SET_PIXFMT		0x80014d08
+> -#define MFB_GET_PIXFMT		0x40014d08
+> -
+> -#define FBIOGET_GWINFO		0x46E0
+> -#define FBIOPUT_GWINFO		0x46E1
+> +#define MFB_SET_ALPHA		_IOW('M', 0, __u8)
+> +#define MFB_GET_ALPHA		_IOR('M', 0, __u8)
+> +#define MFB_SET_AOID		_IOW('M', 4, struct aoi_display_offset)
+> +#define MFB_GET_AOID		_IOR('M', 4, struct aoi_display_offset)
+> +#define MFB_SET_PIXFMT		_IOW('M', 8, __u32)
+> +#define MFB_GET_PIXFMT		_IOR('M', 8, __u32)
+>  
+>  #ifdef __KERNEL__
+>  #include <linux/spinlock.h>
 

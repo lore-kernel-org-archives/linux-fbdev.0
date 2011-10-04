@@ -1,113 +1,118 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Date: Mon, 31 Oct 2011 20:24:37 +0000
-Subject: Re: Proposal for a low-level Linux display framework
-Message-Id: <20111031132437.23eae6b8@jbarnes-desktop>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Sig_/5KDHxCc=pf2uSdbbooXRJUj"
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Tue, 04 Oct 2011 07:12:31 +0000
+Subject: RE: [PATCH v3] video: da8xx-fb: Increased resolution configuration
+Message-Id: <B85A65D85D7EB246BE421B3FB0FBB59302578FA3C7@dbde02.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1316088425.11294.78.camel@lappyti>
-	<yunboul7sx7.fsf@aiko.keithp.com>
-	<1316100594.23214.65.camel@deskari>
-	<yun8vpp7qk7.fsf@aiko.keithp.com>
-	<4E72320B.6020000@gmx.de>
-	<CADnq5_NnzLtJmSzOgyppnBtv96DRTJ71u6ZSrs56KJ-F5CC-mw@mail.gmail.com>
-	<4E724659.5080709@gmx.de>
-	<20110915195804.4e6d965b@lxorguk.ukuu.org.uk>
-	<CAMP44s1ywhCV+FaudnwjwJUvj5Cf3_oz1M++kjXxRDGQpJ6-0w@mail.gmail.com>
-	<CAF6AEGu2-O+2KuCrQPJ6-xejg8TCScrFVZSimgkAV_5Xs-bgkg@mail.gmail.com>
-	<4E74C6C3.2000704@gmx.de>
-	<CAPM=9twmPVrBPmUuEuTYHSzjDGHtfsmiVX6cozpAFYEaV-NcCg@mail.gmail.com>
-	<4E74E3D6.8080401@gmx.de>
-	<CAPM=9txHu7mzH8p8g=FmHsjvmAT-aMy-xEFj4odXEvnbs-bhMw@mail.gmail.com>
-	<20110917212529.6b452bf2@lxorguk.ukuu.org.uk>
-In-Reply-To: <20110917212529.6b452bf2@lxorguk.ukuu.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Dave Airlie <airlied@gmail.com>, linux-fbdev@vger.kernel.org, linaro-dev@lists.linaro.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
+References: <1310963333-29806-1-git-send-email-prakash.pm@ti.com>
+In-Reply-To: <1310963333-29806-1-git-send-email-prakash.pm@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---Sig_/5KDHxCc=pf2uSdbbooXRJUj
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hi Florian Tobias Schandinat,
 
-On Sat, 17 Sep 2011 21:25:29 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Can you please accept below patch? It depends on my earlier patch "video: da8xx-fb: Interrupt configuration of revised LCDC IP" accepted by Paul, but I don't see it main line yet. Please let me know if I have submit both patches again?
 
-> > Just tell the X driver to not use acceleration, and it you won't get
-> > any acceleration used, then you get complete stability. If a driver
-> > writer wants to turn off all accel in the kernel driver, it can, its
->=20
-> In fact one thing we actually need really is a "dumb" KMS X server to
-> replace the fbdev X server that unaccel stuff depends upon and which
-> can't do proper mode handling, multi-head or resizing as a result. A dumb
-> fb generic request for a back to front copy might also be useful for
-> shadowfb, or at least indicators so you know what the cache behaviour is
-> so the X server can pick the right policy.
->=20
-> > We've fixed this in KMS, we don't pass direct mappings to userspace
-> > that we can't tear down and refault. We only provide objects via
-> > handles. The only place its a problem is where we expose fbdev legacy
-> > emulation, since we have to fix the pages.
->=20
-> Which is doable. Horrible but doable. The usb framebuffer code has to
-> play games like this with the virtual framebuffer in order to track
-> changes by faulting.
->=20
-> There are still some architectural screwups however. DRM continues the
-> fbdev worldview that outputs, memory and accelerators are tied together
-> in lumps we call video cards. That isn't really true for all cases and
-> with capture/overlay it gets even less true.
+Thanks,
+Prakash
 
-Sorry for re-opening this ancient thread; I'm catching up from the past
-2 months of travel & misc.
+On Tue, Jul 26, 2011 at 09:50:12, Manjunathappa, Prakash wrote:
+> Hi Paul,
+> 
+> Could you please accept this patch as there are no comments?
+> 
+> Thanks,
+> Prakash
+> On Mon, Jul 18, 2011 at 09:58:53, Manjunathappa, Prakash wrote:
+> > Revised LCD controller in upcoming TI SoC which is an updated version of
+> > LCDC IP that was found on TI's DA850 SoC supports 2048*2048 resolution.
+> > Below are the encoding details:
+> > Width:
+> > Pixels Per Line = {pplmsb, ppllsb, 4'b1111} + 1
+> > Where pplmsb:1bit=>Raster Timing0[3], ppllsb:6bits=>Raster Timing0[9:4].
+> > And encoded value can range from 16 to 2048 in multiples of 16.
+> > 
+> > Height:
+> > Lines Per Panel = {lpp_b10, lpp}
+> > Where lpp:10bits=>Raster Timing1[9:0], lpp_b10:1bit=>Raster Timing2[26].
+> > And encoded value can range from 1 to 2048, programmable range is 0 to
+> > 2047.
+> > 
+> > Patch is verified on emulation platform of upcoming SoC for updated
+> > feature and on DA850 platform to make sure nothing existing breaks.
+> > 
+> > Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+> > ---
+> > Since v2:
+> > Corrected comment describing horizontal resolution bits and removed unnecessary
+> > outer parenthesis.
+> > Since v1:
+> > 1)Fixed the bug in configuration of lpp_b10 in Raster Timing2[26] register.
+> > 2)Reframed commit message.
+> > 
+> >  drivers/video/da8xx-fb.c |   31 ++++++++++++++++++++++++++++---
+> >  1 files changed, 28 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+> > index 620f1c3..94b611a 100644
+> > --- a/drivers/video/da8xx-fb.c
+> > +++ b/drivers/video/da8xx-fb.c
+> > @@ -460,18 +460,43 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+> >  
+> >  	/* Set the Panel Width */
+> >  	/* Pixels per line = (PPL + 1)*16 */
+> > -	/*0x3F in bits 4..9 gives max horisontal resolution = 1024 pixels*/
+> > -	width &= 0x3f0;
+> > +	if (lcd_revision = LCD_VERSION_1) {
+> > +		/*
+> > +		 * 0x3F in bits 4..9 gives max horizontal resolution = 1024
+> > +		 * pixels.
+> > +		 */
+> > +		width &= 0x3f0;
+> > +	} else {
+> > +		/*
+> > +		 * 0x7F in bits 4..10 gives max horizontal resolution = 2048
+> > +		 * pixels.
+> > +		 */
+> > +		width &= 0x7f0;
+> > +	}
+> > +
+> >  	reg = lcdc_read(LCD_RASTER_TIMING_0_REG);
+> >  	reg &= 0xfffffc00;
+> > -	reg |= ((width >> 4) - 1) << 4;
+> > +	if (lcd_revision = LCD_VERSION_1) {
+> > +		reg |= ((width >> 4) - 1) << 4;
+> > +	} else {
+> > +		width = (width >> 4) - 1;
+> > +		reg |= ((width & 0x3f) << 4) | ((width & 0x40) >> 3);
+> > +	}
+> >  	lcdc_write(reg, LCD_RASTER_TIMING_0_REG);
+> >  
+> >  	/* Set the Panel Height */
+> > +	/* Set bits 9:0 of Lines Per Pixel */
+> >  	reg = lcdc_read(LCD_RASTER_TIMING_1_REG);
+> >  	reg = ((height - 1) & 0x3ff) | (reg & 0xfffffc00);
+> >  	lcdc_write(reg, LCD_RASTER_TIMING_1_REG);
+> >  
+> > +	/* Set bit 10 of Lines Per Pixel */
+> > +	if (lcd_revision = LCD_VERSION_2) {
+> > +		reg = lcdc_read(LCD_RASTER_TIMING_2_REG);
+> > +		reg |= ((height - 1) & 0x400) << 16;
+> > +		lcdc_write(reg, LCD_RASTER_TIMING_2_REG);
+> > +	}
+> > +
+> >  	/* Set the Raster Order of the Frame Buffer */
+> >  	reg = lcdc_read(LCD_RASTER_CTRL_REG) & ~(1 << 8);
+> >  	if (raster_order)
+> > -- 
+> > 1.7.1
+> > 
+> > 
+> 
+> _______________________________________________
+> Davinci-linux-open-source mailing list
+> Davinci-linux-open-source@linux.davincidsp.com
+> http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source
+> 
 
-I definitely agree about the PC card centric architecture of DRM KMS
-(and before it, X).  But we have a path out of it now, and lots of
-interest from vendors and developers, so I don't think it's an
-insurmountable problem by any means.
-
-I definitely understand Florian's worries about DRM vs fb.  If nothing
-else, there's certainly a perception that fb is simpler and easier to
-get right.  But really, as others have pointed out, it's solving a
-different set of problems than the DRM layer.  The latter is actually
-trying to expose the features of contemporary hardware in a way that's
-as portable as possible.  That portability comes at a cost though: the
-APIs we add need to get lots of review, and there's no doubt we'll need
-to add more as newer, weirder hardware comes along.
-
-Really, I see no reason why fb and DRM can't continue to live side by
-side.  If a vendor really only needs the features provided by the fb
-layer, they're free to stick with a simple fb driver.  However, I
-expect most vendors making phones, tablets, notebooks, etc will need
-and want an architecture that looks a lot like the DRM layer, with
-authentication for rendering clients, an command submission ioctl for
-acceleration, and memory management, so I expect most of the driver
-growth to be in DRM in the near future.
-
-And I totally agree with Dave about having a kmscon.  I really wish
-someone would implement it so I could have my VTs spinning on a cube.
-
---=20
-Jesse Barnes, Intel Open Source Technology Center
-
---Sig_/5KDHxCc=pf2uSdbbooXRJUj
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAEBAgAGBQJOrwQFAAoJEIEoDkX4Qk9h9gUP/1z1Cg073nOfPG8acxdk00jX
-wn30vGUwDutNIdi0et+flDOJQtaoiCtgTPDmZLykXmxLBuyl5VdHk5dg2LdEiQWB
-lpPQ5S1VM/Zd1N0AYI5H2TP+UwiXElW7e75F8y+18EZdVGuFAL5b98T+oUtoT4Xw
-iENJc5fKpyxWEnCdWIIr1SIB2hSSAdyiOvCC62jxMtC2PQg7FzYYi9DMoZO2//Qg
-pDnR/aJMnAR+nldK/t084gpWJHMKvVgIQjepu2b8qC+YEoTxEDuTHpBsAGwLEi3R
-p/vWstJ3H+ISvnHHEzme5b59e+RA+iCwgJJadoe8GtZ+6hYDx4wx5bxoUz381Ssf
-3+2PPjuXxOVMXgHHJysAccVhmgNzQMvidUTHI42s3DrI/lfxQblQAiMKPaLTvuc/
-eq0j9SRl4qz1tz3EvEUKXOxlsAGTxKlGyOHeFbrJTPFswvC1JCYcGjFUV10HFI3X
-4KBLFgNNGeOefC9tqkUXhrKW/XdN3uZEGbq9htlSlHjPoAsgbvEXvzY1VUZq1eLL
-EPFmlJ1XdMfUp9oUDK1YxkONz4Ve0io6eiskw8U9vK7WCZo9vWODfeQoObPIEyS1
-1gPiYuzRTxSPEj8jl4lTwBppdd1SHXdJ4OIiG8Tysjcs+ntB7Les3JtfAqZn6Re6
-F41UUvgeOZfHx2+vA7BU
-=nSsT
------END PGP SIGNATURE-----
-
---Sig_/5KDHxCc=pf2uSdbbooXRJUj--

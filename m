@@ -1,21 +1,29 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Tue, 04 Oct 2011 20:19:20 +0000
-Subject: Re: [patch] smscufx: change edid data to u8 instead of char
-Message-Id: <4E8B6A48.8060003@gmx.de>
+Date: Tue, 04 Oct 2011 20:22:02 +0000
+Subject: Re: [PATCH] mx3fb: fix NULL pointer dereference in screen blanking.
+Message-Id: <4E8B6AEA.2060608@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1316779775-12730-1-git-send-email-michael.thalmeier@hale.at>
+In-Reply-To: <1316779775-12730-1-git-send-email-michael.thalmeier@hale.at>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Michael Thalmeier <michael.thalmeier@hale.at>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 09/21/2011 07:16 AM, Dan Carpenter wrote:
-> Having "edid" as char caused a problem in ufx_read_edid() where we
-> compared "edid[i] != 0xFF".  Because of the type difference, the
-> condition was never true and the error checking failed.
+On 09/23/2011 12:09 PM, Michael Thalmeier wrote:
+> From: Wolfram Stering <wolfram.stering@hale.at>
 > 
-> Also I added a __user notation to silence a sparse complaint.
+> When blanking an already blanked framebuffer, a kernel NULL pointer
+> dereference occurred, because mx3fb driver handles all kinds of screen
+> blanking (normal, vsync suspend, powerdown) in the same way.
+> Certain programs (Xorg X11 server) first do a normal blank, followed by
+> a powerdown blank, which triggered the bug.
 > 
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Add an additional safeguard and make sdc_disable_channel() safe against
+> multiple calls independent of other logic.
+> 
+> Signed-off-by: Michael Thalmeier <michael.thalmeier@hale.at>
 
 Applied.
 
@@ -25,47 +33,41 @@ Thanks,
 Florian Tobias Schandinat
 
 > ---
-> Compile tested only.  Please test carefully.
+>  drivers/video/mx3fb.c |   13 +++++++++++++
+>  1 files changed, 13 insertions(+), 0 deletions(-)
 > 
-> diff --git a/drivers/video/smscufx.c b/drivers/video/smscufx.c
-> index 44c8cab..aaccffa 100644
-> --- a/drivers/video/smscufx.c
-> +++ b/drivers/video/smscufx.c
-> @@ -103,7 +103,7 @@ struct ufx_data {
->  	struct delayed_work free_framebuffer_work;
->  	atomic_t usb_active; /* 0 = update virtual buffer, but no usb traffic */
->  	atomic_t lost_pixels; /* 1 = a render op failed. Need screen refresh */
-> -	char *edid; /* null until we read edid from hw or get from sysfs */
-> +	u8 *edid; /* null until we read edid from hw or get from sysfs */
->  	size_t edid_size;
->  	u32 pseudo_palette[256];
->  };
-> @@ -993,7 +993,7 @@ static int ufx_ops_ioctl(struct fb_info *info, unsigned int cmd,
+> diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+> index 7e3a490..286be99 100644
+> --- a/drivers/video/mx3fb.c
+> +++ b/drivers/video/mx3fb.c
+> @@ -382,6 +382,9 @@ static void sdc_disable_channel(struct mx3fb_info *mx3_fbi)
+>  	uint32_t enabled;
+>  	unsigned long flags;
 >  
->  	/* TODO: Update X server to get this from sysfs instead */
->  	if (cmd = UFX_IOCTL_RETURN_EDID) {
-> -		char *edid = (char *)arg;
-> +		u8 __user *edid = (u8 __user *)arg;
->  		if (copy_to_user(edid, dev->edid, dev->edid_size))
->  			return -EFAULT;
->  		return 0;
-> @@ -1428,7 +1428,7 @@ static int ufx_i2c_wait_busy(struct ufx_data *dev)
->  }
+> +	if (mx3_fbi->txd = NULL)
+> +		return;
+> +
+>  	spin_lock_irqsave(&mx3fb->lock, flags);
 >  
->  /* reads a 128-byte EDID block from the currently selected port and TAR */
-> -static int ufx_read_edid(struct ufx_data *dev, char *edid, int edid_len)
-> +static int ufx_read_edid(struct ufx_data *dev, u8 *edid, int edid_len)
+>  	enabled = sdc_fb_uninit(mx3_fbi);
+> @@ -986,9 +989,19 @@ static void __blank(int blank, struct fb_info *fbi)
 >  {
->  	int i, j, status;
->  	u32 *edid_u32 = (u32 *)edid;
-> @@ -1491,7 +1491,7 @@ static int ufx_setup_modes(struct ufx_data *dev, struct fb_info *info,
->  	char *default_edid, size_t default_edid_size)
->  {
->  	const struct fb_videomode *default_vmode = NULL;
-> -	char *edid;
-> +	u8 *edid;
->  	int i, result = 0, tries = 3;
+>  	struct mx3fb_info *mx3_fbi = fbi->par;
+>  	struct mx3fb_data *mx3fb = mx3_fbi->mx3fb;
+> +	int was_blank = mx3_fbi->blank;
 >  
->  	if (info->dev) /* only use mutex if info has been registered */
-> 
+>  	mx3_fbi->blank = blank;
+>  
+> +	/* Attention!
+> +	 * Do not call sdc_disable_channel() for a channel that is disabled
+> +	 * already! This will result in a kernel NULL pointer dereference
+> +	 * (mx3_fbi->txd is NULL). Hide the fact, that all blank modes are
+> +	 * handled equally by this driver.
+> +	 */
+> +	if (blank > FB_BLANK_UNBLANK && was_blank > FB_BLANK_UNBLANK)
+> +		return;
+> +
+>  	switch (blank) {
+>  	case FB_BLANK_POWERDOWN:
+>  	case FB_BLANK_VSYNC_SUSPEND:
 

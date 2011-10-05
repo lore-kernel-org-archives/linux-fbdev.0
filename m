@@ -1,73 +1,44 @@
-From: Dave Martin <dave.martin@linaro.org>
-Date: Wed, 05 Oct 2011 16:04:51 +0000
-Subject: [PATCH 00/16] ARM: amba: Enable module alias autogeneration for AMBA drivers
-Message-Id: <1317830707-17517-1-git-send-email-dave.martin@linaro.org>
+From: Alexander Stein <alexander.stein@systec-electronic.com>
+Date: Wed, 05 Oct 2011 07:59:58 +0000
+Subject: [PATCH 2/2] atmel_lcdfb: Use proper blanking on negative contrast polarity
+Message-Id: <1317801598-23757-2-git-send-email-alexander.stein@systec-electronic.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1317801598-23757-1-git-send-email-alexander.stein@systec-electronic.com>
+In-Reply-To: <1317801598-23757-1-git-send-email-alexander.stein@systec-electronic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
-Cc: patches@linaro.org, =?UTF-8?q?Pawe=C5=82=20Moll?= <Pawel.Moll@arm.com>, Alan Cox <alan@linux.intel.com>, Alessandro Rubini <rubini@unipv.it>, Alessandro Zummo <a.zummo@towertech.it>, alsa-devel@alsa-project.org, Chris Ball <cjb@laptop.org>, Dan Williams <dan.j.williams@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Grant Likely <grant.likely@secretlab.ca>, Jaroslav Kysela <perex@perex.cz>, Julia Lawall <julia@diku.dk>, Linus Walleij <linus.walleij@linaro.org>, linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org, linux-mmc@vger.kernel.org, linux-serial@vger.kernel.org, linux-watchdog@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>, rtc-linux@googlegroups.com, Russell King <linux@arm.linux.org.uk>, spi-devel-general@lists.sourceforge.net, Takashi Iwai <tiwai@suse.de>, Vinod Koul <vinod.koul@intel.com>, Wim Van Sebroeck <wim@iguana.be>
 
-There's no special reason why AMBA device drivers should not be
-auto-loadable via udev, but udev currently has no way to map AMBA
-device IDs to drivers.
+If used with negative polarity the PWM unit cannot be disabled. This would
+result in a full contrast screen.
+Instead let the PWM unit enabled using 0x0 as compare value which darkens
+the display.
+In result no power saving is possible if inverted contrast polarity
+is used.
 
-As part of the effort to help enable the building of multiple
-ARM platforms into a single kernel image in the future, it's desirable
-to be able to build any non-critical platform-specific drivers as
-modules.
+Signed-off-by: Alexander Stein <alexander.stein@systec-electronic.com>
+---
+ drivers/video/atmel_lcdfb.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-A straightforward solution is to use modaliases to allow udev to
-identify the correct driver module to load.
-
-This series enables the general infrastructure for modalias generation
-to work for AMBA devices, and enables it in the affected drivers.
-
-Briefly tested on Versatile Express, including aaci, mmci and amba-clcd
-(which appears to have the most interesting modalias match pattern).
-For me, the appropiate modules now get loaded at udev trigger time.
-
-Any comments and feedback are welcome.
-
-Dave Martin (16):
-  ARM: amba: Move definition of struct amba_id to mod_devicetable.h
-  ARM: amba: Auto-generate AMBA driver module aliases during modpost
-  hwrng: nomadik: Enable module alias autogeneration for AMBA drivers
-  dmaengine: pl08x: Enable module alias autogeneration for AMBA drivers
-  dmaengine: pl330: Enable module alias autogeneration for AMBA drivers
-  gpio: pl061: Enable module alias autogeneration for AMBA drivers
-  input: ambakmi: Enable module alias autogeneration for AMBA drivers
-  mmc: mmci: Enable module alias autogeneration for AMBA drivers
-  rtc: pl030: Enable module alias autogeneration for AMBA drivers
-  rtc: pl031: Enable module alias autogeneration for AMBA drivers
-  spi: pl022: Enable module alias autogeneration for AMBA drivers
-  serial: pl010: Enable module alias autogeneration for AMBA drivers
-  serial: pl011: Enable module alias autogeneration for AMBA drivers
-  fbdev: amba: Enable module alias autogeneration for AMBA drivers
-  watchdog: sp805: Enable module alias autogeneration for AMBA drivers
-  sound: aaci: Enable module alias autogeneration for AMBA drivers
-
- drivers/amba/bus.c                   |    9 ++++-
- drivers/char/hw_random/nomadik-rng.c |    2 +
- drivers/dma/amba-pl08x.c             |    2 +
- drivers/dma/pl330.c                  |    2 +
- drivers/gpio/gpio-pl061.c            |    2 +
- drivers/input/serio/ambakmi.c        |    2 +
- drivers/mmc/host/mmci.c              |    2 +
- drivers/rtc/rtc-pl030.c              |    2 +
- drivers/rtc/rtc-pl031.c              |    2 +
- drivers/spi/spi-pl022.c              |    2 +
- drivers/tty/serial/amba-pl010.c      |    2 +
- drivers/tty/serial/amba-pl011.c      |    2 +
- drivers/video/amba-clcd.c            |    2 +
- drivers/watchdog/sp805_wdt.c         |    2 +
- include/linux/amba/bus.h             |    7 +---
- include/linux/mod_devicetable.h      |   18 ++++++++
- scripts/mod/file2alias.c             |   72 ++++++++++++++++++++++++++++++++++
- sound/arm/aaci.c                     |    2 +
- 18 files changed, 127 insertions(+), 7 deletions(-)
-
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 816d528..2bd75b5 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -96,8 +96,11 @@ static int atmel_bl_update_status(struct backlight_device *bl)
+ 		brightness = 0;
+ 
+ 	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, brightness);
+-	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR,
++	if (contrast_ctr & ATMEL_LCDC_POL_POSITIVE)
++		lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR,
+ 			brightness ? contrast_ctr : 0);
++	else
++		lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, contrast_ctr);
+ 
+ 	bl->props.fb_blank = bl->props.power = sinfo->bl_power = power;
+ 
 -- 
-1.7.4.1
+1.7.3.4
 

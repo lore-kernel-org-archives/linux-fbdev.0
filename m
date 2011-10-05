@@ -1,193 +1,154 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Sun, 23 Oct 2011 14:11:10 +0000
-Subject: [PATCH 02/16] macfb: fix black and white modes
-Message-Id: <20111023141119.848736612@telegraphics.com.au>
+From: Timur Tabi <timur@freescale.com>
+Date: Wed, 05 Oct 2011 00:36:45 +0000
+Subject: [PATCH 2/9] drivers/video: fsl-diu-fb: move some definitions out of the header file
+Message-Id: <1317775012-9797-2-git-send-email-timur@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20111023141108.856998818@telegraphics.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-m68k@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-macfb won't init in black & white modes since fb_alloc_cmap() no longer works for zero cmap length. Fix this and also clean up a few printk's and some stylistic inconsistencies.
+Move several macros and structures from the Freescale DIU driver's header
+file into the source file, because they're only used by that file.  Also
+delete a few unused macros.
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+The diu and diu_ad structures cannot be moved because they're being used
+by the MPC5121 platform file.  A future patch eliminate the need for
+the platform file to access these structs, so they'll be moved also.
 
-Index: linux-m68k/drivers/video/macfb.c
-=================================--- linux-m68k.orig/drivers/video/macfb.c	2011-10-22 23:02:22.000000000 +1100
-+++ linux-m68k/drivers/video/macfb.c	2011-10-23 00:50:51.000000000 +1100
-@@ -592,12 +592,12 @@ static int __init macfb_init(void)
- 	if (!fb_info.screen_base)
- 		return -ENODEV;
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ drivers/video/fsl-diu-fb.c |   39 ++++++++++++++++++++++++++++++++++++
+ include/linux/fsl-diu-fb.h |   47 --------------------------------------------
+ 2 files changed, 39 insertions(+), 47 deletions(-)
+
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 9a1f6d2..9b3891a 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -30,11 +30,50 @@
+ #include <linux/clk.h>
+ #include <linux/uaccess.h>
+ #include <linux/vmalloc.h>
++#include <linux/spinlock.h>
  
--	printk("macfb: framebuffer at 0x%08lx, mapped to 0x%p, size %dk\n",
--	       macfb_fix.smem_start, fb_info.screen_base,
--	       macfb_fix.smem_len / 1024);
--	printk("macfb: mode is %dx%dx%d, linelength=%d\n",
--	       macfb_defined.xres, macfb_defined.yres,
--	       macfb_defined.bits_per_pixel, macfb_fix.line_length);
-+	pr_info("macfb: framebuffer at 0x%08lx, mapped to 0x%p, size %dk\n",
-+	        macfb_fix.smem_start, fb_info.screen_base,
-+	        macfb_fix.smem_len / 1024);
-+	pr_info("macfb: mode is %dx%dx%d, linelength=%d\n",
-+	        macfb_defined.xres, macfb_defined.yres,
-+	        macfb_defined.bits_per_pixel, macfb_fix.line_length);
+ #include <sysdev/fsl_soc.h>
+ #include <linux/fsl-diu-fb.h>
+ #include "edid.h"
  
- 	/* Fill in the available video resolution */
- 	macfb_defined.xres_virtual = macfb_defined.xres;
-@@ -613,14 +613,10 @@ static int __init macfb_init(void)
- 
- 	switch (macfb_defined.bits_per_pixel) {
- 	case 1:
--		/*
--		 * XXX: I think this will catch any program that tries
--		 * to do FBIO_PUTCMAP when the visual is monochrome.
--		 */
- 		macfb_defined.red.length = macfb_defined.bits_per_pixel;
- 		macfb_defined.green.length = macfb_defined.bits_per_pixel;
- 		macfb_defined.blue.length = macfb_defined.bits_per_pixel;
--		video_cmap_len = 0;
-+		video_cmap_len = 2;
- 		macfb_fix.visual = FB_VISUAL_MONO01;
- 		break;
- 	case 2:
-@@ -660,11 +656,10 @@ static int __init macfb_init(void)
- 		macfb_fix.visual = FB_VISUAL_TRUECOLOR;
- 		break;
- 	default:
--		video_cmap_len = 0;
--		macfb_fix.visual = FB_VISUAL_MONO01;
--		printk("macfb: unknown or unsupported bit depth: %d\n",
-+		pr_err("macfb: unknown or unsupported bit depth: %d\n",
- 		       macfb_defined.bits_per_pixel);
--		break;
-+		err = -EINVAL;
-+		goto fail_unmap;
- 	}
- 	
- 	/*
-@@ -734,8 +729,8 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_Q950:
- 			strcpy(macfb_fix.id, "DAFB");
- 			macfb_setpalette = dafb_setpalette;
--			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			dafb_cmap_regs = ioremap(DAFB_BASE, 0x1000);
-+			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 
- 		/*
-@@ -744,8 +739,8 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_LCII:
- 			strcpy(macfb_fix.id, "V8");
- 			macfb_setpalette = v8_brazil_setpalette;
--			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
-+			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 
- 		/*
-@@ -758,8 +753,8 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_P600:
- 			strcpy(macfb_fix.id, "Brazil");
- 			macfb_setpalette = v8_brazil_setpalette;
--			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
-+			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 
- 		/*
-@@ -773,10 +768,10 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_P520:
- 		case MAC_MODEL_P550:
- 		case MAC_MODEL_P460:
--			macfb_setpalette = v8_brazil_setpalette;
--			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			strcpy(macfb_fix.id, "Sonora");
-+			macfb_setpalette = v8_brazil_setpalette;
- 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
-+			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 
- 		/*
-@@ -786,10 +781,10 @@ static int __init macfb_init(void)
- 		 */
- 		case MAC_MODEL_IICI:
- 		case MAC_MODEL_IISI:
--			macfb_setpalette = rbv_setpalette;
--			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			strcpy(macfb_fix.id, "RBV");
-+			macfb_setpalette = rbv_setpalette;
- 			rbv_cmap_regs = ioremap(DAC_BASE, 0x1000);
-+			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 
- 		/*
-@@ -797,10 +792,10 @@ static int __init macfb_init(void)
- 		 */
- 		case MAC_MODEL_Q840:
- 		case MAC_MODEL_C660:
--			macfb_setpalette = civic_setpalette;
--			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			strcpy(macfb_fix.id, "Civic");
-+			macfb_setpalette = civic_setpalette;
- 			civic_cmap_regs = ioremap(CIVIC_BASE, 0x1000);
-+			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 
- 		
-@@ -809,26 +804,26 @@ static int __init macfb_init(void)
- 		 * We think this may be like the LC II
- 		 */
- 		case MAC_MODEL_LC:
-+			strcpy(macfb_fix.id, "LC");
- 			if (vidtest) {
- 				macfb_setpalette = v8_brazil_setpalette;
--				macfb_defined.activate = FB_ACTIVATE_NOW;
- 				v8_brazil_cmap_regs  					ioremap(DAC_BASE, 0x1000);
-+				macfb_defined.activate = FB_ACTIVATE_NOW;
- 			}
--			strcpy(macfb_fix.id, "LC");
- 			break;
- 
- 		/*
- 		 * We think this may be like the LC II
- 		 */
- 		case MAC_MODEL_CCL:
-+			strcpy(macfb_fix.id, "Color Classic");
- 			if (vidtest) {
- 				macfb_setpalette = v8_brazil_setpalette;
--				macfb_defined.activate = FB_ACTIVATE_NOW;
- 				v8_brazil_cmap_regs  					ioremap(DAC_BASE, 0x1000);
-+				macfb_defined.activate = FB_ACTIVATE_NOW;
- 			}
--			strcpy(macfb_fix.id, "Color Classic");
- 			break;
- 
- 		/*
-@@ -893,10 +888,10 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_PB270C:
- 		case MAC_MODEL_PB280:
- 		case MAC_MODEL_PB280C:
--			macfb_setpalette = csc_setpalette;
--			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			strcpy(macfb_fix.id, "CSC");
-+			macfb_setpalette = csc_setpalette;
- 			csc_cmap_regs = ioremap(CSC_BASE, 0x1000);
-+			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 
- 		default:
-@@ -918,8 +913,9 @@ static int __init macfb_init(void)
- 	if (err)
- 		goto fail_dealloc;
- 
--	printk("fb%d: %s frame buffer device\n",
--	       fb_info.node, fb_info.fix.id);
-+	pr_info("fb%d: %s frame buffer device\n",
-+	        fb_info.node, fb_info.fix.id);
++#define FSL_AOI_NUM	6	/* 5 AOIs and one dummy AOI */
++				/* 1 for plane 0, 2 for plane 1&2 each */
 +
- 	return 0;
++/* HW cursor parameters */
++#define MAX_CURS		32
++
++/* INT_STATUS/INT_MASK field descriptions */
++#define INT_VSYNC	0x01	/* Vsync interrupt  */
++#define INT_VSYNC_WB	0x02	/* Vsync interrupt for write back operation */
++#define INT_UNDRUN	0x04	/* Under run exception interrupt */
++#define INT_PARERR	0x08	/* Display parameters error interrupt */
++#define INT_LS_BF_VS	0x10	/* Lines before vsync. interrupt */
++
++/* Panels'operation modes */
++#define MFB_TYPE_OUTPUT	0	/* Panel output to display */
++#define MFB_TYPE_OFF	1	/* Panel off */
++#define MFB_TYPE_WB	2	/* Panel written back to memory */
++#define MFB_TYPE_TEST	3	/* Panel generate color bar */
++
++struct diu_hw {
++	struct diu __iomem *diu_reg;
++	spinlock_t reg_lock;
++	unsigned int mode;		/* DIU operation mode */
++};
++
++struct diu_addr {
++	void *vaddr;		/* Virtual address */
++	dma_addr_t paddr;	/* Physical address */
++	__u32 offset;
++};
++
++struct diu_pool {
++	struct diu_addr ad;
++	struct diu_addr gamma;
++	struct diu_addr pallete;
++	struct diu_addr cursor;
++};
++
+ /*
+  * List of supported video modes
+  *
+diff --git a/include/linux/fsl-diu-fb.h b/include/linux/fsl-diu-fb.h
+index e19c531..363d5e2 100644
+--- a/include/linux/fsl-diu-fb.h
++++ b/include/linux/fsl-diu-fb.h
+@@ -56,7 +56,6 @@ struct aoi_display_offset {
+ #define MFB_GET_PIXFMT_OLD	0x40014d08
  
- fail_dealloc:
+ #ifdef __KERNEL__
+-#include <linux/spinlock.h>
+ 
+ /*
+  * These are the fields of area descriptor(in DDR memory) for every plane
+@@ -154,39 +153,6 @@ struct diu {
+ 	__be32 plut;
+ } __attribute__ ((packed));
+ 
+-struct diu_hw {
+-	struct diu *diu_reg;
+-	spinlock_t reg_lock;
+-
+-	__u32 mode;		/* DIU operation mode */
+-};
+-
+-struct diu_addr {
+-	void *vaddr;		/* Virtual address */
+-	dma_addr_t paddr;	/* Physical address */
+-	__u32 	   offset;
+-};
+-
+-struct diu_pool {
+-	struct diu_addr ad;
+-	struct diu_addr gamma;
+-	struct diu_addr pallete;
+-	struct diu_addr cursor;
+-};
+-
+-#define FSL_DIU_BASE_OFFSET	0x2C000	/* Offset of DIU */
+-#define INT_LCDC		64	/* DIU interrupt number */
+-
+-#define FSL_AOI_NUM	6	/* 5 AOIs and one dummy AOI */
+-				/* 1 for plane 0, 2 for plane 1&2 each */
+-
+-/* Minimum X and Y resolutions */
+-#define MIN_XRES	64
+-#define MIN_YRES	64
+-
+-/* HW cursor parameters */
+-#define MAX_CURS		32
+-
+ /* Modes of operation of DIU */
+ #define MFB_MODE0	0	/* DIU off */
+ #define MFB_MODE1	1	/* All three planes output to display */
+@@ -194,18 +160,5 @@ struct diu_pool {
+ #define MFB_MODE3	3	/* All three planes written back to memory */
+ #define MFB_MODE4	4	/* Color bar generation */
+ 
+-/* INT_STATUS/INT_MASK field descriptions */
+-#define INT_VSYNC	0x01	/* Vsync interrupt  */
+-#define INT_VSYNC_WB	0x02	/* Vsync interrupt for write back operation */
+-#define INT_UNDRUN	0x04	/* Under run exception interrupt */
+-#define INT_PARERR	0x08	/* Display parameters error interrupt */
+-#define INT_LS_BF_VS	0x10	/* Lines before vsync. interrupt */
+-
+-/* Panels'operation modes */
+-#define MFB_TYPE_OUTPUT	0	/* Panel output to display */
+-#define MFB_TYPE_OFF	1	/* Panel off */
+-#define MFB_TYPE_WB	2	/* Panel written back to memory */
+-#define MFB_TYPE_TEST	3	/* Panel generate color bar */
+-
+ #endif /* __KERNEL__ */
+ #endif /* __FSL_DIU_FB_H__ */
+-- 
+1.7.4.4
+
 

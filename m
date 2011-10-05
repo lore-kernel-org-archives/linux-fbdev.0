@@ -1,44 +1,113 @@
-From: Alexander Stein <alexander.stein@systec-electronic.com>
-Date: Wed, 05 Oct 2011 07:59:58 +0000
-Subject: [PATCH 2/2] atmel_lcdfb: Use proper blanking on negative contrast polarity
-Message-Id: <1317801598-23757-2-git-send-email-alexander.stein@systec-electronic.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Wed, 05 Oct 2011 00:36:44 +0000
+Subject: [PATCH 1/9] [v2] drivers/video: fsl-diu-fb: fix some ioctls
+Message-Id: <1317775012-9797-1-git-send-email-timur@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1317801598-23757-1-git-send-email-alexander.stein@systec-electronic.com>
-In-Reply-To: <1317801598-23757-1-git-send-email-alexander.stein@systec-electronic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-If used with negative polarity the PWM unit cannot be disabled. This would
-result in a full contrast screen.
-Instead let the PWM unit enabled using 0x0 as compare value which darkens
-the display.
-In result no power saving is possible if inverted contrast polarity
-is used.
+Use the _IOx macros to define the ioctl commands, instead of hard-coded
+numbers.  Unfortunately, the original definitions of MFB_SET_PIXFMT and
+MFB_GET_PIXFMT used the wrong value for the size, so these macros have
+new values now.  To avoid breaking binary compatibility with older
+applications, we retain support for the original values, but the driver
+displays a warning message if they're used.
 
-Signed-off-by: Alexander Stein <alexander.stein@systec-electronic.com>
+Also remove the FBIOGET_GWINFO and FBIOPUT_GWINFO ioctls.  FBIOPUT_GWINFO
+was never implemented, and FBIOGET_GWINFO was never used by any
+application.
+
+Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
- drivers/video/atmel_lcdfb.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ drivers/video/fsl-diu-fb.c |   16 ++++++++--------
+ include/linux/fsl-diu-fb.h |   27 ++++++++++++++++-----------
+ 2 files changed, 24 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 816d528..2bd75b5 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -96,8 +96,11 @@ static int atmel_bl_update_status(struct backlight_device *bl)
- 		brightness = 0;
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 5137fbb..9a1f6d2 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -966,11 +966,19 @@ static int fsl_diu_ioctl(struct fb_info *info, unsigned int cmd,
+ 	if (!arg)
+ 		return -EINVAL;
+ 	switch (cmd) {
++	case MFB_SET_PIXFMT_OLD:
++		dev_warn(info->dev,
++			 "MFB_SET_PIXFMT value of 0x%08x is deprecated.\n",
++			 MFB_SET_PIXFMT_OLD);
+ 	case MFB_SET_PIXFMT:
+ 		if (copy_from_user(&pix_fmt, buf, sizeof(pix_fmt)))
+ 			return -EFAULT;
+ 		ad->pix_fmt = pix_fmt;
+ 		break;
++	case MFB_GET_PIXFMT_OLD:
++		dev_warn(info->dev,
++			 "MFB_GET_PIXFMT value of 0x%08x is deprecated.\n",
++			 MFB_GET_PIXFMT_OLD);
+ 	case MFB_GET_PIXFMT:
+ 		pix_fmt = ad->pix_fmt;
+ 		if (copy_to_user(buf, &pix_fmt, sizeof(pix_fmt)))
+@@ -1030,14 +1038,6 @@ static int fsl_diu_ioctl(struct fb_info *info, unsigned int cmd,
+ 			ad->ckmin_b = ck.blue_min;
+ 		}
+ 		break;
+-	case FBIOGET_GWINFO:
+-		if (mfbi->type = MFB_TYPE_OFF)
+-			return -ENODEV;
+-		/* get graphic window information */
+-		if (copy_to_user(buf, ad, sizeof(*ad)))
+-			return -EFAULT;
+-		break;
+-
+ 	default:
+ 		dev_err(info->dev, "unknown ioctl command (0x%08X)\n", cmd);
+ 		return -ENOIOCTLCMD;
+diff --git a/include/linux/fsl-diu-fb.h b/include/linux/fsl-diu-fb.h
+index df23f59..e19c531 100644
+--- a/include/linux/fsl-diu-fb.h
++++ b/include/linux/fsl-diu-fb.h
+@@ -33,22 +33,27 @@ struct mfb_chroma_key {
+ };
  
- 	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, brightness);
--	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR,
-+	if (contrast_ctr & ATMEL_LCDC_POL_POSITIVE)
-+		lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR,
- 			brightness ? contrast_ctr : 0);
-+	else
-+		lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, contrast_ctr);
+ struct aoi_display_offset {
+-	int x_aoi_d;
+-	int y_aoi_d;
++	__s32 x_aoi_d;
++	__s32 y_aoi_d;
+ };
  
- 	bl->props.fb_blank = bl->props.power = sinfo->bl_power = power;
+ #define MFB_SET_CHROMA_KEY	_IOW('M', 1, struct mfb_chroma_key)
+ #define MFB_SET_BRIGHTNESS	_IOW('M', 3, __u8)
++#define MFB_SET_ALPHA		_IOW('M', 0, __u8)
++#define MFB_GET_ALPHA		_IOR('M', 0, __u8)
++#define MFB_SET_AOID		_IOW('M', 4, struct aoi_display_offset)
++#define MFB_GET_AOID		_IOR('M', 4, struct aoi_display_offset)
++#define MFB_SET_PIXFMT		_IOW('M', 8, __u32)
++#define MFB_GET_PIXFMT		_IOR('M', 8, __u32)
  
+-#define MFB_SET_ALPHA		0x80014d00
+-#define MFB_GET_ALPHA		0x40014d00
+-#define MFB_SET_AOID		0x80084d04
+-#define MFB_GET_AOID		0x40084d04
+-#define MFB_SET_PIXFMT		0x80014d08
+-#define MFB_GET_PIXFMT		0x40014d08
+-
+-#define FBIOGET_GWINFO		0x46E0
+-#define FBIOPUT_GWINFO		0x46E1
++/*
++ * The original definitions of MFB_SET_PIXFMT and MFB_GET_PIXFMT used the
++ * wrong value for 'size' field of the ioctl.  The current macros above use the
++ * right size, but we still need to provide backwards compatibility, at least
++ * for a while.
++*/
++#define MFB_SET_PIXFMT_OLD	0x80014d08
++#define MFB_GET_PIXFMT_OLD	0x40014d08
+ 
+ #ifdef __KERNEL__
+ #include <linux/spinlock.h>
 -- 
-1.7.3.4
+1.7.4.4
+
 

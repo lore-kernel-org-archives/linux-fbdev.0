@@ -1,90 +1,269 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Thu, 27 Oct 2011 20:31:12 +0000
-Subject: [PATCH] fbtest: fix test011 with xpanstep or ypanstep greater than 1
-Message-Id: <201110272231.16202.linux@rainbow-software.org>
+From: Timur Tabi <timur@freescale.com>
+Date: Wed, 05 Oct 2011 00:36:51 +0000
+Subject: [PATCH 8/9] [v2] drivers/video: fsl-diu-fb: merge diu_hw into fsl_diu_data
+Message-Id: <1317775012-9797-8-git-send-email-timur@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hello,
-this patch fixes test011 in fbtest if framebuffer driver requires xpanstep or
-ypanstep to be greater than 1. Without this, test011 fails on savagefb:
+The diu_hw structure contains two fields used to access the DIU registers,
+but the only instance of this structure is a global variable, 'dr'.
+Eliminate 'dr' by merging its fields into the fsl_diu_data structure,
+which is instantiated on the heap for each DIU controller found.
 
-ioctl FBIOPAN_DISPLAY: Invalid argument
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ drivers/video/fsl-diu-fb.c |   69 +++++++++++++++++++------------------------
+ 1 files changed, 31 insertions(+), 38 deletions(-)
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-
---- fbtest-orig/tests/test011.c	2011-10-27 22:20:47.000000000 +0200
-+++ fbtest/tests/test011.c	2011-10-27 22:22:16.000000000 +0200
-@@ -93,16 +93,25 @@ static int linegen_next(struct linegen *
-     return 1;
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 6539e70..f9a95ab 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -49,11 +49,6 @@
+ #define INT_PARERR	0x08	/* Display parameters error interrupt */
+ #define INT_LS_BF_VS	0x10	/* Lines before vsync. interrupt */
+ 
+-struct diu_hw {
+-	struct diu __iomem *diu_reg;
+-	spinlock_t reg_lock;
+-};
+-
+ struct diu_addr {
+ 	void *vaddr;		/* Virtual address */
+ 	dma_addr_t paddr;	/* Physical address */
+@@ -351,6 +346,8 @@ struct fsl_diu_data {
+ 	unsigned int irq;
+ 	int fb_enabled;
+ 	enum fsl_diu_monitor_port monitor_port;
++	struct diu __iomem *diu_reg;
++	spinlock_t reg_lock;
+ };
+ 
+ enum mfb_index {
+@@ -424,10 +421,6 @@ static struct mfb_info mfb_template[] = {
+ 	},
+ };
+ 
+-static struct diu_hw dr = {
+-	.reg_lock = __SPIN_LOCK_UNLOCKED(diu_hw.reg_lock),
+-};
+-
+ static struct diu_pool pool;
+ 
+ /**
+@@ -506,9 +499,9 @@ void wr_reg_wa(u32 *reg, u32 val)
+ static void fsl_diu_enable_panel(struct fb_info *info)
+ {
+ 	struct mfb_info *pmfbi, *cmfbi, *mfbi = info->par;
+-	struct diu *hw = dr.diu_reg;
+ 	struct diu_ad *ad = mfbi->ad;
+ 	struct fsl_diu_data *machine_data = mfbi->parent;
++	struct diu __iomem *hw = machine_data->diu_reg;
+ 
+ 	switch (mfbi->index) {
+ 	case PLANE0:
+@@ -559,9 +552,9 @@ static void fsl_diu_enable_panel(struct fb_info *info)
+ static void fsl_diu_disable_panel(struct fb_info *info)
+ {
+ 	struct mfb_info *pmfbi, *cmfbi, *mfbi = info->par;
+-	struct diu *hw = dr.diu_reg;
+ 	struct diu_ad *ad = mfbi->ad;
+ 	struct fsl_diu_data *machine_data = mfbi->parent;
++	struct diu __iomem *hw = machine_data->diu_reg;
+ 
+ 	switch (mfbi->index) {
+ 	case PLANE0:
+@@ -613,9 +606,9 @@ static void fsl_diu_disable_panel(struct fb_info *info)
+ 
+ static void enable_lcdc(struct fb_info *info)
+ {
+-	struct diu *hw = dr.diu_reg;
+ 	struct mfb_info *mfbi = info->par;
+ 	struct fsl_diu_data *machine_data = mfbi->parent;
++	struct diu __iomem *hw = machine_data->diu_reg;
+ 
+ 	if (!machine_data->fb_enabled) {
+ 		out_be32(&hw->diu_mode, MFB_MODE1);
+@@ -625,9 +618,9 @@ static void enable_lcdc(struct fb_info *info)
+ 
+ static void disable_lcdc(struct fb_info *info)
+ {
+-	struct diu *hw = dr.diu_reg;
+ 	struct mfb_info *mfbi = info->par;
+ 	struct fsl_diu_data *machine_data = mfbi->parent;
++	struct diu __iomem *hw = machine_data->diu_reg;
+ 
+ 	if (machine_data->fb_enabled) {
+ 		out_be32(&hw->diu_mode, 0);
+@@ -822,13 +815,13 @@ static void update_lcdc(struct fb_info *info)
+ 	struct fb_var_screeninfo *var = &info->var;
+ 	struct mfb_info *mfbi = info->par;
+ 	struct fsl_diu_data *machine_data = mfbi->parent;
+-	struct diu *hw;
++	struct diu __iomem *hw;
+ 	int i, j;
+ 	char __iomem *cursor_base, *gamma_table_base;
+ 
+ 	u32 temp;
+ 
+-	hw = dr.diu_reg;
++	hw = machine_data->diu_reg;
+ 
+ 	diu_ops.set_monitor_port(machine_data->monitor_port);
+ 	gamma_table_base = pool.gamma.vaddr;
+@@ -939,9 +932,9 @@ static int fsl_diu_set_par(struct fb_info *info)
+ 	struct mfb_info *mfbi = info->par;
+ 	struct fsl_diu_data *machine_data = mfbi->parent;
+ 	struct diu_ad *ad = mfbi->ad;
+-	struct diu *hw;
++	struct diu __iomem *hw;
+ 
+-	hw = dr.diu_reg;
++	hw = machine_data->diu_reg;
+ 
+ 	set_fix(info);
+ 	mfbi->cursor_reset = 1;
+@@ -1344,7 +1337,7 @@ static void uninstall_fb(struct fb_info *info)
+ 
+ static irqreturn_t fsl_diu_isr(int irq, void *dev_id)
+ {
+-	struct diu *hw = dr.diu_reg;
++	struct diu __iomem *hw = dev_id;
+ 	unsigned int status = in_be32(&hw->int_status);
+ 
+ 	if (status) {
+@@ -1370,18 +1363,16 @@ static irqreturn_t fsl_diu_isr(int irq, void *dev_id)
+ 	return IRQ_NONE;
  }
  
--static void move(u32 cx, u32 cy, u32 x1, u32 y1, u32 x2, u32 y2)
-+static void move(u32 cx, u32 cy, u32 x1, u32 y1, u32 x2, u32 y2, u32 xpanstep, u32 ypanstep)
+-static int request_irq_local(int irq)
++static int request_irq_local(struct fsl_diu_data *machine_data)
  {
-     struct linegen gen;
-     u32 x, y;
-     static int cnt = 0;
++	struct diu __iomem *hw = machine_data->diu_reg;
+ 	u32 ints;
+-	struct diu *hw;
+ 	int ret;
  
-+    if (xpanstep = 0)
-+    	xpanstep = 1;
-+    if (ypanstep = 0)
-+        ypanstep = 1;
-+    x1 /= xpanstep;
-+    x2 /= xpanstep;
-+    y1 /= ypanstep;
-+    y2 /= ypanstep;
+-	hw = dr.diu_reg;
+-
+ 	/* Read to clear the status */
+ 	in_be32(&hw->int_status);
+ 
+-	ret = request_irq(irq, fsl_diu_isr, 0, "fsl-diu-fb", NULL);
++	ret = request_irq(machine_data->irq, fsl_diu_isr, 0, "fsl-diu-fb", hw);
+ 	if (!ret) {
+ 		ints = INT_PARERR | INT_LS_BF_VS;
+ #if !defined(CONFIG_NOT_COHERENT_CACHE)
+@@ -1396,14 +1387,14 @@ static int request_irq_local(int irq)
+ 	return ret;
+ }
+ 
+-static void free_irq_local(int irq)
++static void free_irq_local(struct fsl_diu_data *machine_data)
+ {
+-	struct diu *hw = dr.diu_reg;
++	struct diu __iomem *hw = machine_data->diu_reg;
+ 
+ 	/* Disable all LCDC interrupt */
+ 	out_be32(&hw->int_mask, 0x1f);
+ 
+-	free_irq(irq, NULL);
++	free_irq(machine_data->irq, NULL);
+ }
+ 
+ #ifdef CONFIG_PM
+@@ -1521,6 +1512,8 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 	if (!machine_data)
+ 		return -ENOMEM;
+ 
++	spin_lock_init(&machine_data->reg_lock);
 +
-     linegen_init(&gen, x1, y1, x2, y2);
-     while (linegen_next(&gen, &x, &y)) {
- 	fill_circle(cx+x, cy+y, 2, cnt & 4 ? black_pixel : white_pixel);
--	fb_pan(x, y);
-+	fb_pan(x * xpanstep, y * ypanstep);
- 	wait_ms(SLEEP_MS);
- 	cnt++;
-     }
-@@ -137,29 +146,29 @@ static enum test_res test011_func(void)
-     dy = fb_fix.ypanstep ? fb_var.yres_virtual-fb_var.yres : 0;
+ 	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++) {
+ 		machine_data->fsl_diu_info[i]  			framebuffer_alloc(sizeof(struct mfb_info), &pdev->dev);
+@@ -1545,16 +1538,16 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 		}
+ 	}
  
-     /* move right */
--    move(cx, cy, 0, 0, dx, 0);
-+    move(cx, cy, 0, 0, dx, 0, fb_fix.xpanstep, fb_fix.ypanstep);
+-	dr.diu_reg = of_iomap(np, 0);
+-	if (!dr.diu_reg) {
++	machine_data->diu_reg = of_iomap(np, 0);
++	if (!machine_data->diu_reg) {
+ 		dev_err(&pdev->dev, "cannot map DIU registers\n");
+ 		ret = -EFAULT;
+ 		goto error2;
+ 	}
  
-     /* move down */
--    move(cx, cy, dx, 0, dx, dy);
-+    move(cx, cy, dx, 0, dx, dy, fb_fix.xpanstep, fb_fix.ypanstep);
+-	diu_mode = in_be32(&dr.diu_reg->diu_mode);
++	diu_mode = in_be32(&machine_data->diu_reg->diu_mode);
+ 	if (diu_mode = MFB_MODE0)
+-		out_be32(&dr.diu_reg->diu_mode, 0);	/* disable DIU */
++		out_be32(&machine_data->diu_reg->diu_mode, 0); /* disable DIU */
  
-     /* move left */
--    move(cx, cy, dx, dy, 0, dy);
-+    move(cx, cy, dx, dy, 0, dy, fb_fix.xpanstep, fb_fix.ypanstep);
+ 	/* Get the IRQ of the DIU */
+ 	machine_data->irq = irq_of_parse_and_map(np, 0);
+@@ -1607,10 +1600,11 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 	 * by the bootloader, set dummy area descriptor otherwise.
+ 	 */
+ 	if (diu_mode = MFB_MODE0)
+-		out_be32(&dr.diu_reg->desc[0], machine_data->dummy_ad->paddr);
++		out_be32(&machine_data->diu_reg->desc[0],
++			 machine_data->dummy_ad->paddr);
  
-     if (dx >= 2 && dy >= 2) {
- 	/* move up and right */
--	move(cx, cy, 0, dy, dx/2, 0);
-+	move(cx, cy, 0, dy, dx/2, 0, fb_fix.xpanstep, fb_fix.ypanstep);
+-	out_be32(&dr.diu_reg->desc[1], machine_data->dummy_ad->paddr);
+-	out_be32(&dr.diu_reg->desc[2], machine_data->dummy_ad->paddr);
++	out_be32(&machine_data->diu_reg->desc[1], machine_data->dummy_ad->paddr);
++	out_be32(&machine_data->diu_reg->desc[2], machine_data->dummy_ad->paddr);
  
- 	/* move right and down */
--	move(cx, cy, dx/2, 0, dx, dy/2);
-+	move(cx, cy, dx/2, 0, dx, dy/2, fb_fix.xpanstep, fb_fix.ypanstep);
+ 	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++) {
+ 		machine_data->fsl_diu_info[i]->fix.smem_start = 0;
+@@ -1625,7 +1619,7 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
+ 		}
+ 	}
  
- 	/* move left and down */
--	move(cx, cy, dx, dy/2, dx/2, dy);
-+	move(cx, cy, dx, dy/2, dx/2, dy, fb_fix.xpanstep, fb_fix.ypanstep);
+-	if (request_irq_local(machine_data->irq)) {
++	if (request_irq_local(machine_data)) {
+ 		dev_err(&pdev->dev, "could not claim irq\n");
+ 		goto error;
+ 	}
+@@ -1659,7 +1653,7 @@ error:
+ 			 32);
+ 	if (machine_data->dummy_aoi_virt)
+ 		fsl_diu_free(machine_data->dummy_aoi_virt, 64);
+-	iounmap(dr.diu_reg);
++	iounmap(machine_data->diu_reg);
  
- 	/* move up and left */
--	move(cx, cy, dx/2, dy, 0, 0);
-+	move(cx, cy, dx/2, dy, 0, 0, fb_fix.xpanstep, fb_fix.ypanstep);
-     } else {
- 	/* move up */
--	move(cx, cy, 0, dy, 0, 0);
-+	move(cx, cy, 0, dy, 0, 0, fb_fix.xpanstep, fb_fix.ypanstep);
-     }
+ error2:
+ 	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++)
+@@ -1677,7 +1671,7 @@ static int fsl_diu_remove(struct platform_device *pdev)
  
-     wait_for_key(10);
-
-
+ 	machine_data = dev_get_drvdata(&pdev->dev);
+ 	disable_lcdc(machine_data->fsl_diu_info[0]);
+-	free_irq_local(machine_data->irq);
++	free_irq_local(machine_data);
+ 	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++)
+ 		uninstall_fb(machine_data->fsl_diu_info[i]);
+ 	if (pool.ad.vaddr)
+@@ -1689,7 +1683,7 @@ static int fsl_diu_remove(struct platform_device *pdev)
+ 		free_buf(&pdev->dev, &pool.cursor, MAX_CURS * MAX_CURS * 2, 32);
+ 	if (machine_data->dummy_aoi_virt)
+ 		fsl_diu_free(machine_data->dummy_aoi_virt, 64);
+-	iounmap(dr.diu_reg);
++	iounmap(machine_data->diu_reg);
+ 	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++)
+ 		if (machine_data->fsl_diu_info[i])
+ 			framebuffer_release(machine_data->fsl_diu_info[i]);
+@@ -1812,7 +1806,6 @@ static int __init fsl_diu_init(void)
+ #if defined(CONFIG_NOT_COHERENT_CACHE)
+ 		vfree(coherence_data);
+ #endif
+-		iounmap(dr.diu_reg);
+ 	}
+ 	return ret;
+ }
 -- 
-Ondrej Zary
+1.7.4.4
+
+

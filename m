@@ -1,33 +1,34 @@
-From: Jeff Garzik <jeff@garzik.org>
-Date: Thu, 20 Oct 2011 17:03:09 +0000
-Subject: Re: [PATCH 2/4] fbdev/cirrusfb: Rewrite Zorro graphics card probing
-Message-Id: <4EA0544D.3070705@garzik.org>
+From: Paul Walmsley <paul@pwsan.com>
+Date: Thu, 06 Oct 2011 23:11:10 +0000
+Subject: Re: [PATCHv2 01/28] OMAP: change get_context_loss_count ret value
+Message-Id: <alpine.DEB.2.00.1110061710510.4611@utopia.booyaka.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1319110945-25684-1-git-send-email-geert@linux-m68k.org> <1319110945-25684-2-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1319110945-25684-2-git-send-email-geert@linux-m68k.org>
+References: <1307627810-3768-1-git-send-email-tomi.valkeinen@ti.com> <1307627810-3768-2-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1307627810-3768-2-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-m68k@vger.kernel.org, "Christian T. Steigies" <cts@debian.org>, linux-kernel@vger.kernel.org, =?ISO-8859-1?Q?Ingo_J=FCrgensmann?= <ij@2011.bluespice.org>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, b-cousson@ti.com, khilman@ti.com
 
-On 10/20/2011 07:42 AM, Geert Uytterhoeven wrote:
-> As indicated by commit a7f4d00a82feb5b311f765bf9522bc55bee0684f ("zorro:
-> Defer device_register() until all devices have been identified"), cirrusfb
-> crashes if zorro_find_device() cannot find an expected device.
->
-> Rewrite the Zorro device probe code to make it more robust, easier to
-> understand, and more extensible.
->
-> Other logical changes:
->    - For cards that show up as 2 Zorro devices, autoprobe graphics memory
->      sizes based on the size of the Zorro device containing the graphics
->      memory.
->      Acording to the NetBSD sources, this is safe.
->
-> Signed-off-by: Geert Uytterhoeven<geert@linux-m68k.org>
+On Thu, 9 Jun 2011, Tomi Valkeinen wrote:
 
-Acked-by: Jeff Garzik <jgarzik@redhat.com>
+> get_context_loss_count functions return context loss count as u32, and
+> zero means an error. However, zero is also returned when context has
+> never been lost and could also be returned when the context loss count
+> has wrapped and goes to zero.
+> 
+> Change the functions to return an int, with negative value meaning an
+> error.
+> 
+> OMAP HSMMC code uses omap_pm_get_dev_context_loss_count(), but as the
+> hsmmc code handles the returned value as an int, with negative value
+> meaning an error, this patch actually fixes hsmmc code also.
+> 
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Acked-by: Kevin Hilman <khilman@ti.com>
+
+Acked-by: Paul Walmsley <paul@pwsan.com>> 
 
 
-
+- Paul

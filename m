@@ -1,28 +1,54 @@
-From: Jeff Garzik <jeff@garzik.org>
-Date: Thu, 20 Oct 2011 17:03:29 +0000
-Subject: Re: [PATCH 3/4] fbdev/cirrusfb: Add support for Picasso IV in Zorro
-Message-Id: <4EA05461.7090205@garzik.org>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Thu, 13 Oct 2011 14:52:50 +0000
+Subject: [PATCH] atmel_lcdfb: support 16bit BGR:565 mode, remove unsupported 15bit modes
+Message-Id: <1318517570-28459-1-git-send-email-jacmet@sunsite.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1319110945-25684-1-git-send-email-geert@linux-m68k.org> <1319110945-25684-3-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1319110945-25684-3-git-send-email-geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-m68k@vger.kernel.org, "Christian T. Steigies" <cts@debian.org>, linux-kernel@vger.kernel.org, =?ISO-8859-1?Q?Ingo_J=FCrgensmann?= <ij@2011.bluespice.org>
+To: linux-arm-kernel@lists.infradead.org
 
-On 10/20/2011 07:42 AM, Geert Uytterhoeven wrote:
-> In Zorro II mode, the Village Tronic Picasso IV graphics card shows up as
-> either 2 or 3 Zorro devices:
->    - One for the registers of the Cirrus Logic graphics chip,
->    - One for the first bank of 2 MiB of graphics memory,
->    - An optional one for the second bank of 2 MiB of graphics memory,
->      if there was enough free Zorro II address space.
->
-> Based on src/sys/arch/amiga/dev/grf_cl.c from NetBSD.
->
-> Signed-off-by: Geert Uytterhoeven<geert@linux-m68k.org>
+Allow framebuffer to be configured in 16bit mode when panel is wired in
+(the default) BGR configuration, and don't claim to support 15bit input
+modes, which the LCD controller cannot handle.
 
-Acked-by: Jeff Garzik <jgarzik@redhat.com>
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+---
+ drivers/video/atmel_lcdfb.c |   12 +++---------
+ 1 files changed, 3 insertions(+), 9 deletions(-)
 
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 7ca3eaf..143f6d9 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -418,24 +418,18 @@ static int atmel_lcdfb_check_var(struct fb_var_screeninfo *var,
+ 		var->red.length = var->green.length = var->blue.length
+ 			= var->bits_per_pixel;
+ 		break;
+-	case 15:
+ 	case 16:
+ 		if (sinfo->lcd_wiring_mode = ATMEL_LCDC_WIRING_RGB) {
+ 			/* RGB:565 mode */
+ 			var->red.offset = 11;
+ 			var->blue.offset = 0;
+-			var->green.length = 6;
+-		} else if (sinfo->lcd_wiring_mode = ATMEL_LCDC_WIRING_RGB555) {
+-			var->red.offset = 10;
+-			var->blue.offset = 0;
+-			var->green.length = 5;
+ 		} else {
+-			/* BGR:555 mode */
++			/* BGR:565 mode */
+ 			var->red.offset = 0;
+-			var->blue.offset = 10;
+-			var->green.length = 5;
++			var->blue.offset = 11;
+ 		}
+ 		var->green.offset = 5;
++		var->green.length = 6;
+ 		var->red.length = var->blue.length = 5;
+ 		break;
+ 	case 32:
+-- 
+1.7.6.3
 

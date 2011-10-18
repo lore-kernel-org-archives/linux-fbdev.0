@@ -1,34 +1,48 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 20 Oct 2011 11:42:22 +0000
-Subject: [PATCH 1/4] zorro: Rename Picasso IV Z2 "MEM" to "RAM" for consistency
-Message-Id: <1319110945-25684-1-git-send-email-geert@linux-m68k.org>
+From: Western Union Money Transfer <pamelachoy@netvigator.com>
+Date: Tue, 18 Oct 2011 07:25:57 +0000
+Subject: PAYMENT INFORMATION
+Message-Id: <1358062586.117791.1318922757463.JavaMail.root@yzbmbs10>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-m68k@vger.kernel.org, "Christian T. Steigies" <cts@debian.org>
-Cc: linux-kernel@vger.kernel.org, =?UTF-8?q?Ingo=20J=C3=BCrgensmann?= <ij@2011.bluespice.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- include/linux/zorro_ids.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+How are you today?
 
-diff --git a/include/linux/zorro_ids.h b/include/linux/zorro_ids.h
-index 7e74908..74bc53b 100644
---- a/include/linux/zorro_ids.h
-+++ b/include/linux/zorro_ids.h
-@@ -360,8 +360,8 @@
- #define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_II_II_PLUS_RAM	ZORRO_ID(VILLAGE_TRONIC, 0x0B, 0)
- #define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_II_II_PLUS_REG	ZORRO_ID(VILLAGE_TRONIC, 0x0C, 0)
- #define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_II_II_PLUS_SEGMENTED_MODE	ZORRO_ID(VILLAGE_TRONIC, 0x0D, 0)
--#define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z2_MEM1		ZORRO_ID(VILLAGE_TRONIC, 0x15, 0)
--#define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z2_MEM2		ZORRO_ID(VILLAGE_TRONIC, 0x16, 0)
-+#define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z2_RAM1		ZORRO_ID(VILLAGE_TRONIC, 0x15, 0)
-+#define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z2_RAM2		ZORRO_ID(VILLAGE_TRONIC, 0x16, 0)
- #define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z2_REG		ZORRO_ID(VILLAGE_TRONIC, 0x17, 0)
- #define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z3		ZORRO_ID(VILLAGE_TRONIC, 0x18, 0)
- #define  ZORRO_PROD_VILLAGE_TRONIC_ARIADNE			ZORRO_ID(VILLAGE_TRONIC, 0xC9, 0)
--- 
-1.7.0.4
+I write to inform you that we have already sent you $5,000.00USD through We=
+stern Union as we have been given the mandate to transfer your full compens=
+ation payment of $1.800, 000.00USD via Western Union Money Transfer by the =
+United Nations (ECOWAS). This is because the United Nations and (ECOWAS) ar=
+e supporting individuals due to the worldwide economy meltdown.
+
+I would have requested for your phone number to give you the information th=
+rough phone but Internet hackers were many. So i decided to email you the M=
+TCN and sender name so that you can pick up this $5,000.00USD to enable us =
+send another $5,000.00USD by tomorrow as you know that we will be sending y=
+ou only $5,000.00USD per day. The fund was sent in the name which you use i=
+n opening your e-mail address.
+
+Please pick up this information and rush to any Western Union to pick up th=
+e $5,000.00USD and send us an email back to enable us send you another paym=
+ent by tomorrow.
+
+Below is the western union information to pick up the USD5000.00 to pick up.
+
+Payment Information.
+MTCN: _______________4661-297-503
+Sender's Name: _________Alice Johnson
+Text Question: __________How Long
+Answer: _______________Immediately
+Amount Sent___________$5000.00USD
+Country: _______________Nigeria
+
+Email me once you picked up this USD5000.00 today.
+
+Thanks
+Mrs. Anita Daniel.
+Email: westernunionmoneytransfer_w@yahoo.cn
+=C2=AEWestern Union Office.
+
+
 

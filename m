@@ -1,70 +1,193 @@
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Thu, 13 Oct 2011 14:45:52 +0000
-Subject: [PATCHv2] atmel_lcdfb: support new-style palette format
-Message-Id: <1318517152-27578-1-git-send-email-jacmet@sunsite.dk>
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Sun, 23 Oct 2011 14:11:10 +0000
+Subject: [PATCH 02/16] macfb: fix black and white modes
+Message-Id: <20111023141119.848736612@telegraphics.com.au>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20111023141108.856998818@telegraphics.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-m68k@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
 
-The newer Atmel SoCs use normal 16bit 565 BGR/RGB for the palette data,
-rather than the special intensity + 555 format.
+macfb won't init in black & white modes since fb_alloc_cmap() no longer works for zero cmap length. Fix this and also clean up a few printk's and some stylistic inconsistencies.
 
-Fill out palette data correctly on these devices, and at the same time
-respect the RGB/BGR wiring mode.
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
-Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
----
-Changes since v1:
- - ATMEL_LCDC_WIRING_RGB/BGR was swapped
-
- drivers/video/atmel_lcdfb.c |   32 ++++++++++++++++++++++++--------
- 1 files changed, 24 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-index 63409c1..7ca3eaf 100644
---- a/drivers/video/atmel_lcdfb.c
-+++ b/drivers/video/atmel_lcdfb.c
-@@ -682,14 +682,30 @@ static int atmel_lcdfb_setcolreg(unsigned int regno, unsigned int red,
+Index: linux-m68k/drivers/video/macfb.c
+=================================--- linux-m68k.orig/drivers/video/macfb.c	2011-10-22 23:02:22.000000000 +1100
++++ linux-m68k/drivers/video/macfb.c	2011-10-23 00:50:51.000000000 +1100
+@@ -592,12 +592,12 @@ static int __init macfb_init(void)
+ 	if (!fb_info.screen_base)
+ 		return -ENODEV;
  
- 	case FB_VISUAL_PSEUDOCOLOR:
- 		if (regno < 256) {
--			val  = ((red   >> 11) & 0x001f);
--			val |= ((green >>  6) & 0x03e0);
--			val |= ((blue  >>  1) & 0x7c00);
--
--			/*
--			 * TODO: intensity bit. Maybe something like
--			 *   ~(red[10] ^ green[10] ^ blue[10]) & 1
--			 */
-+			if (cpu_is_at91sam9261() || cpu_is_at91sam9263()
-+			    || cpu_is_at91sam9rl()) {
-+				/* old style I+BGR:555 */
-+				val  = ((red   >> 11) & 0x001f);
-+				val |= ((green >>  6) & 0x03e0);
-+				val |= ((blue  >>  1) & 0x7c00);
-+
-+				/*
-+				 * TODO: intensity bit. Maybe something like
-+				 *   ~(red[10] ^ green[10] ^ blue[10]) & 1
-+				 */
-+			} else {
-+				/* new style BGR:565 / RGB:565 */
-+				if (sinfo->lcd_wiring_mode =
-+				    ATMEL_LCDC_WIRING_RGB) {
-+					val  = ((blue >> 11) & 0x001f);
-+					val |= ((red  >>  0) & 0xf800);
-+				} else {
-+					val  = ((red  >> 11) & 0x001f);
-+					val |= ((blue >>  0) & 0xf800);
-+				}
-+
-+				val |= ((green >>  5) & 0x07e0);
-+			}
+-	printk("macfb: framebuffer at 0x%08lx, mapped to 0x%p, size %dk\n",
+-	       macfb_fix.smem_start, fb_info.screen_base,
+-	       macfb_fix.smem_len / 1024);
+-	printk("macfb: mode is %dx%dx%d, linelength=%d\n",
+-	       macfb_defined.xres, macfb_defined.yres,
+-	       macfb_defined.bits_per_pixel, macfb_fix.line_length);
++	pr_info("macfb: framebuffer at 0x%08lx, mapped to 0x%p, size %dk\n",
++	        macfb_fix.smem_start, fb_info.screen_base,
++	        macfb_fix.smem_len / 1024);
++	pr_info("macfb: mode is %dx%dx%d, linelength=%d\n",
++	        macfb_defined.xres, macfb_defined.yres,
++	        macfb_defined.bits_per_pixel, macfb_fix.line_length);
  
- 			lcdc_writel(sinfo, ATMEL_LCDC_LUT(regno), val);
- 			ret = 0;
--- 
-1.7.6.3
+ 	/* Fill in the available video resolution */
+ 	macfb_defined.xres_virtual = macfb_defined.xres;
+@@ -613,14 +613,10 @@ static int __init macfb_init(void)
+ 
+ 	switch (macfb_defined.bits_per_pixel) {
+ 	case 1:
+-		/*
+-		 * XXX: I think this will catch any program that tries
+-		 * to do FBIO_PUTCMAP when the visual is monochrome.
+-		 */
+ 		macfb_defined.red.length = macfb_defined.bits_per_pixel;
+ 		macfb_defined.green.length = macfb_defined.bits_per_pixel;
+ 		macfb_defined.blue.length = macfb_defined.bits_per_pixel;
+-		video_cmap_len = 0;
++		video_cmap_len = 2;
+ 		macfb_fix.visual = FB_VISUAL_MONO01;
+ 		break;
+ 	case 2:
+@@ -660,11 +656,10 @@ static int __init macfb_init(void)
+ 		macfb_fix.visual = FB_VISUAL_TRUECOLOR;
+ 		break;
+ 	default:
+-		video_cmap_len = 0;
+-		macfb_fix.visual = FB_VISUAL_MONO01;
+-		printk("macfb: unknown or unsupported bit depth: %d\n",
++		pr_err("macfb: unknown or unsupported bit depth: %d\n",
+ 		       macfb_defined.bits_per_pixel);
+-		break;
++		err = -EINVAL;
++		goto fail_unmap;
+ 	}
+ 	
+ 	/*
+@@ -734,8 +729,8 @@ static int __init macfb_init(void)
+ 		case MAC_MODEL_Q950:
+ 			strcpy(macfb_fix.id, "DAFB");
+ 			macfb_setpalette = dafb_setpalette;
+-			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			dafb_cmap_regs = ioremap(DAFB_BASE, 0x1000);
++			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			break;
+ 
+ 		/*
+@@ -744,8 +739,8 @@ static int __init macfb_init(void)
+ 		case MAC_MODEL_LCII:
+ 			strcpy(macfb_fix.id, "V8");
+ 			macfb_setpalette = v8_brazil_setpalette;
+-			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
++			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			break;
+ 
+ 		/*
+@@ -758,8 +753,8 @@ static int __init macfb_init(void)
+ 		case MAC_MODEL_P600:
+ 			strcpy(macfb_fix.id, "Brazil");
+ 			macfb_setpalette = v8_brazil_setpalette;
+-			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
++			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			break;
+ 
+ 		/*
+@@ -773,10 +768,10 @@ static int __init macfb_init(void)
+ 		case MAC_MODEL_P520:
+ 		case MAC_MODEL_P550:
+ 		case MAC_MODEL_P460:
+-			macfb_setpalette = v8_brazil_setpalette;
+-			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			strcpy(macfb_fix.id, "Sonora");
++			macfb_setpalette = v8_brazil_setpalette;
+ 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
++			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			break;
+ 
+ 		/*
+@@ -786,10 +781,10 @@ static int __init macfb_init(void)
+ 		 */
+ 		case MAC_MODEL_IICI:
+ 		case MAC_MODEL_IISI:
+-			macfb_setpalette = rbv_setpalette;
+-			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			strcpy(macfb_fix.id, "RBV");
++			macfb_setpalette = rbv_setpalette;
+ 			rbv_cmap_regs = ioremap(DAC_BASE, 0x1000);
++			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			break;
+ 
+ 		/*
+@@ -797,10 +792,10 @@ static int __init macfb_init(void)
+ 		 */
+ 		case MAC_MODEL_Q840:
+ 		case MAC_MODEL_C660:
+-			macfb_setpalette = civic_setpalette;
+-			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			strcpy(macfb_fix.id, "Civic");
++			macfb_setpalette = civic_setpalette;
+ 			civic_cmap_regs = ioremap(CIVIC_BASE, 0x1000);
++			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			break;
+ 
+ 		
+@@ -809,26 +804,26 @@ static int __init macfb_init(void)
+ 		 * We think this may be like the LC II
+ 		 */
+ 		case MAC_MODEL_LC:
++			strcpy(macfb_fix.id, "LC");
+ 			if (vidtest) {
+ 				macfb_setpalette = v8_brazil_setpalette;
+-				macfb_defined.activate = FB_ACTIVATE_NOW;
+ 				v8_brazil_cmap_regs  					ioremap(DAC_BASE, 0x1000);
++				macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			}
+-			strcpy(macfb_fix.id, "LC");
+ 			break;
+ 
+ 		/*
+ 		 * We think this may be like the LC II
+ 		 */
+ 		case MAC_MODEL_CCL:
++			strcpy(macfb_fix.id, "Color Classic");
+ 			if (vidtest) {
+ 				macfb_setpalette = v8_brazil_setpalette;
+-				macfb_defined.activate = FB_ACTIVATE_NOW;
+ 				v8_brazil_cmap_regs  					ioremap(DAC_BASE, 0x1000);
++				macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			}
+-			strcpy(macfb_fix.id, "Color Classic");
+ 			break;
+ 
+ 		/*
+@@ -893,10 +888,10 @@ static int __init macfb_init(void)
+ 		case MAC_MODEL_PB270C:
+ 		case MAC_MODEL_PB280:
+ 		case MAC_MODEL_PB280C:
+-			macfb_setpalette = csc_setpalette;
+-			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			strcpy(macfb_fix.id, "CSC");
++			macfb_setpalette = csc_setpalette;
+ 			csc_cmap_regs = ioremap(CSC_BASE, 0x1000);
++			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			break;
+ 
+ 		default:
+@@ -918,8 +913,9 @@ static int __init macfb_init(void)
+ 	if (err)
+ 		goto fail_dealloc;
+ 
+-	printk("fb%d: %s frame buffer device\n",
+-	       fb_info.node, fb_info.fix.id);
++	pr_info("fb%d: %s frame buffer device\n",
++	        fb_info.node, fb_info.fix.id);
++
+ 	return 0;
+ 
+ fail_dealloc:
 

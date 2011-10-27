@@ -1,154 +1,90 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Wed, 05 Oct 2011 00:36:45 +0000
-Subject: [PATCH 2/9] drivers/video: fsl-diu-fb: move some definitions out of the header file
-Message-Id: <1317775012-9797-2-git-send-email-timur@freescale.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Thu, 27 Oct 2011 20:31:12 +0000
+Subject: [PATCH] fbtest: fix test011 with xpanstep or ypanstep greater than 1
+Message-Id: <201110272231.16202.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Move several macros and structures from the Freescale DIU driver's header
-file into the source file, because they're only used by that file.  Also
-delete a few unused macros.
+Hello,
+this patch fixes test011 in fbtest if framebuffer driver requires xpanstep or
+ypanstep to be greater than 1. Without this, test011 fails on savagefb:
 
-The diu and diu_ad structures cannot be moved because they're being used
-by the MPC5121 platform file.  A future patch eliminate the need for
-the platform file to access these structs, so they'll be moved also.
+ioctl FBIOPAN_DISPLAY: Invalid argument
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- drivers/video/fsl-diu-fb.c |   39 ++++++++++++++++++++++++++++++++++++
- include/linux/fsl-diu-fb.h |   47 --------------------------------------------
- 2 files changed, 39 insertions(+), 47 deletions(-)
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 9a1f6d2..9b3891a 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -30,11 +30,50 @@
- #include <linux/clk.h>
- #include <linux/uaccess.h>
- #include <linux/vmalloc.h>
-+#include <linux/spinlock.h>
+--- fbtest-orig/tests/test011.c	2011-10-27 22:20:47.000000000 +0200
++++ fbtest/tests/test011.c	2011-10-27 22:22:16.000000000 +0200
+@@ -93,16 +93,25 @@ static int linegen_next(struct linegen *
+     return 1;
+ }
  
- #include <sysdev/fsl_soc.h>
- #include <linux/fsl-diu-fb.h>
- #include "edid.h"
+-static void move(u32 cx, u32 cy, u32 x1, u32 y1, u32 x2, u32 y2)
++static void move(u32 cx, u32 cy, u32 x1, u32 y1, u32 x2, u32 y2, u32 xpanstep, u32 ypanstep)
+ {
+     struct linegen gen;
+     u32 x, y;
+     static int cnt = 0;
  
-+#define FSL_AOI_NUM	6	/* 5 AOIs and one dummy AOI */
-+				/* 1 for plane 0, 2 for plane 1&2 each */
++    if (xpanstep = 0)
++    	xpanstep = 1;
++    if (ypanstep = 0)
++        ypanstep = 1;
++    x1 /= xpanstep;
++    x2 /= xpanstep;
++    y1 /= ypanstep;
++    y2 /= ypanstep;
 +
-+/* HW cursor parameters */
-+#define MAX_CURS		32
-+
-+/* INT_STATUS/INT_MASK field descriptions */
-+#define INT_VSYNC	0x01	/* Vsync interrupt  */
-+#define INT_VSYNC_WB	0x02	/* Vsync interrupt for write back operation */
-+#define INT_UNDRUN	0x04	/* Under run exception interrupt */
-+#define INT_PARERR	0x08	/* Display parameters error interrupt */
-+#define INT_LS_BF_VS	0x10	/* Lines before vsync. interrupt */
-+
-+/* Panels'operation modes */
-+#define MFB_TYPE_OUTPUT	0	/* Panel output to display */
-+#define MFB_TYPE_OFF	1	/* Panel off */
-+#define MFB_TYPE_WB	2	/* Panel written back to memory */
-+#define MFB_TYPE_TEST	3	/* Panel generate color bar */
-+
-+struct diu_hw {
-+	struct diu __iomem *diu_reg;
-+	spinlock_t reg_lock;
-+	unsigned int mode;		/* DIU operation mode */
-+};
-+
-+struct diu_addr {
-+	void *vaddr;		/* Virtual address */
-+	dma_addr_t paddr;	/* Physical address */
-+	__u32 offset;
-+};
-+
-+struct diu_pool {
-+	struct diu_addr ad;
-+	struct diu_addr gamma;
-+	struct diu_addr pallete;
-+	struct diu_addr cursor;
-+};
-+
- /*
-  * List of supported video modes
-  *
-diff --git a/include/linux/fsl-diu-fb.h b/include/linux/fsl-diu-fb.h
-index e19c531..363d5e2 100644
---- a/include/linux/fsl-diu-fb.h
-+++ b/include/linux/fsl-diu-fb.h
-@@ -56,7 +56,6 @@ struct aoi_display_offset {
- #define MFB_GET_PIXFMT_OLD	0x40014d08
+     linegen_init(&gen, x1, y1, x2, y2);
+     while (linegen_next(&gen, &x, &y)) {
+ 	fill_circle(cx+x, cy+y, 2, cnt & 4 ? black_pixel : white_pixel);
+-	fb_pan(x, y);
++	fb_pan(x * xpanstep, y * ypanstep);
+ 	wait_ms(SLEEP_MS);
+ 	cnt++;
+     }
+@@ -137,29 +146,29 @@ static enum test_res test011_func(void)
+     dy = fb_fix.ypanstep ? fb_var.yres_virtual-fb_var.yres : 0;
  
- #ifdef __KERNEL__
--#include <linux/spinlock.h>
+     /* move right */
+-    move(cx, cy, 0, 0, dx, 0);
++    move(cx, cy, 0, 0, dx, 0, fb_fix.xpanstep, fb_fix.ypanstep);
  
- /*
-  * These are the fields of area descriptor(in DDR memory) for every plane
-@@ -154,39 +153,6 @@ struct diu {
- 	__be32 plut;
- } __attribute__ ((packed));
+     /* move down */
+-    move(cx, cy, dx, 0, dx, dy);
++    move(cx, cy, dx, 0, dx, dy, fb_fix.xpanstep, fb_fix.ypanstep);
  
--struct diu_hw {
--	struct diu *diu_reg;
--	spinlock_t reg_lock;
--
--	__u32 mode;		/* DIU operation mode */
--};
--
--struct diu_addr {
--	void *vaddr;		/* Virtual address */
--	dma_addr_t paddr;	/* Physical address */
--	__u32 	   offset;
--};
--
--struct diu_pool {
--	struct diu_addr ad;
--	struct diu_addr gamma;
--	struct diu_addr pallete;
--	struct diu_addr cursor;
--};
--
--#define FSL_DIU_BASE_OFFSET	0x2C000	/* Offset of DIU */
--#define INT_LCDC		64	/* DIU interrupt number */
--
--#define FSL_AOI_NUM	6	/* 5 AOIs and one dummy AOI */
--				/* 1 for plane 0, 2 for plane 1&2 each */
--
--/* Minimum X and Y resolutions */
--#define MIN_XRES	64
--#define MIN_YRES	64
--
--/* HW cursor parameters */
--#define MAX_CURS		32
--
- /* Modes of operation of DIU */
- #define MFB_MODE0	0	/* DIU off */
- #define MFB_MODE1	1	/* All three planes output to display */
-@@ -194,18 +160,5 @@ struct diu_pool {
- #define MFB_MODE3	3	/* All three planes written back to memory */
- #define MFB_MODE4	4	/* Color bar generation */
+     /* move left */
+-    move(cx, cy, dx, dy, 0, dy);
++    move(cx, cy, dx, dy, 0, dy, fb_fix.xpanstep, fb_fix.ypanstep);
  
--/* INT_STATUS/INT_MASK field descriptions */
--#define INT_VSYNC	0x01	/* Vsync interrupt  */
--#define INT_VSYNC_WB	0x02	/* Vsync interrupt for write back operation */
--#define INT_UNDRUN	0x04	/* Under run exception interrupt */
--#define INT_PARERR	0x08	/* Display parameters error interrupt */
--#define INT_LS_BF_VS	0x10	/* Lines before vsync. interrupt */
--
--/* Panels'operation modes */
--#define MFB_TYPE_OUTPUT	0	/* Panel output to display */
--#define MFB_TYPE_OFF	1	/* Panel off */
--#define MFB_TYPE_WB	2	/* Panel written back to memory */
--#define MFB_TYPE_TEST	3	/* Panel generate color bar */
--
- #endif /* __KERNEL__ */
- #endif /* __FSL_DIU_FB_H__ */
+     if (dx >= 2 && dy >= 2) {
+ 	/* move up and right */
+-	move(cx, cy, 0, dy, dx/2, 0);
++	move(cx, cy, 0, dy, dx/2, 0, fb_fix.xpanstep, fb_fix.ypanstep);
+ 
+ 	/* move right and down */
+-	move(cx, cy, dx/2, 0, dx, dy/2);
++	move(cx, cy, dx/2, 0, dx, dy/2, fb_fix.xpanstep, fb_fix.ypanstep);
+ 
+ 	/* move left and down */
+-	move(cx, cy, dx, dy/2, dx/2, dy);
++	move(cx, cy, dx, dy/2, dx/2, dy, fb_fix.xpanstep, fb_fix.ypanstep);
+ 
+ 	/* move up and left */
+-	move(cx, cy, dx/2, dy, 0, 0);
++	move(cx, cy, dx/2, dy, 0, 0, fb_fix.xpanstep, fb_fix.ypanstep);
+     } else {
+ 	/* move up */
+-	move(cx, cy, 0, dy, 0, 0);
++	move(cx, cy, 0, dy, 0, 0, fb_fix.xpanstep, fb_fix.ypanstep);
+     }
+ 
+     wait_for_key(10);
+
+
 -- 
-1.7.4.4
-
-
+Ondrej Zary

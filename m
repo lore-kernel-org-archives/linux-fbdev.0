@@ -1,37 +1,35 @@
-From: Joshua Kinard <kumba@gentoo.org>
-Date: Sun, 30 Oct 2011 20:43:45 +0000
+From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Date: Sun, 30 Oct 2011 22:34:18 +0000
 Subject: Re: [PATCH v2] GIO bus support for SGI IP22/28
-Message-Id: <4EADB701.9040506@gentoo.org>
+Message-Id: <20111030223418.GA16346@alpha.franken.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20111020221928.0C2191DA27@solo.franken.de>
-In-Reply-To: <20111020221928.0C2191DA27@solo.franken.de>
+ <4EADB701.9040506@gentoo.org>
+In-Reply-To: <4EADB701.9040506@gentoo.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+To: Joshua Kinard <kumba@gentoo.org>
 Cc: linux-mips@linux-mips.org, linux-fbdev@vger.kernel.org, ralf@linux-mips.org, FlorianSchandinat@gmx.de
 
-On 10/20/2011 18:19, Thomas Bogendoerfer wrote:
+On Sun, Oct 30, 2011 at 04:43:45PM -0400, Joshua Kinard wrote:
+> Does this handle any glue logic for add-on NIC cards found for Indy and I2?
 
-> SGI IP22/IP28 machines have GIO busses for adding graphics and other
-> extension cards. This patch adds support for GIO driver/device
-> handling and converts the newport console driver to a GIO driver.
-> 
-> Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+no, but it will make live a lot easier, because address and interrupts don't
+need to be probed by the driver. Right now interrupts are on my todo, since
+there is some weirdness between guiness and fullhouse boxes...
 
+>  I have a G130 Phobus and a rare ThunderLAN card in my Indy.  The Phobus has
+> an Altera GIO/PCI glue chip.  Not sure about the ThunderLAN.  Both have
+> normal driver support in the kernel (Phobus is just a Tulip chip).
 
-Does this handle any glue logic for add-on NIC cards found for Indy and I2?
- I have a G130 Phobus and a rare ThunderLAN card in my Indy.  The Phobus has
-an Altera GIO/PCI glue chip.  Not sure about the ThunderLAN.  Both have
-normal driver support in the kernel (Phobus is just a Tulip chip).
+it still needs something to setup the PCI bus on the card and issue
+the probing. The problem with the Tulip Phobos cards is, that they
+messed up the endianess, so that none of the Linux Tulip drivers will
+work out of the box...
+
+Thomas.
 
 -- 
-Joshua Kinard
-Gentoo/MIPS
-kumba@gentoo.org
-4096R/D25D95E3 2011-03-28
-
-"The past tempts us, the present confuses us, the future frightens us.  And
-our lives slip away, moment by moment, lost in that vast, terrible in-between."
-
---Emperor Turhan, Centauri Republic
+Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
+good idea.                                                [ RFC1925, 2.3 ]

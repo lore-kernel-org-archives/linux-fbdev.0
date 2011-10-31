@@ -1,68 +1,113 @@
-From: Rabin Vincent <rabin@rab.in>
-Date: Tue, 25 Oct 2011 15:25:39 +0000
-Subject: Re: fb_setcolreg(), CNVT_TOHW() and chan_to_field()
-Message-Id: <20111025151300.GA11517@debian>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Date: Mon, 31 Oct 2011 20:24:37 +0000
+Subject: Re: Proposal for a low-level Linux display framework
+Message-Id: <20111031132437.23eae6b8@jbarnes-desktop>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Sig_/5KDHxCc=pf2uSdbbooXRJUj"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20111025073349.GB6027@debian>
-In-Reply-To: <20111025073349.GB6027@debian>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+References: <1316088425.11294.78.camel@lappyti>
+	<yunboul7sx7.fsf@aiko.keithp.com>
+	<1316100594.23214.65.camel@deskari>
+	<yun8vpp7qk7.fsf@aiko.keithp.com>
+	<4E72320B.6020000@gmx.de>
+	<CADnq5_NnzLtJmSzOgyppnBtv96DRTJ71u6ZSrs56KJ-F5CC-mw@mail.gmail.com>
+	<4E724659.5080709@gmx.de>
+	<20110915195804.4e6d965b@lxorguk.ukuu.org.uk>
+	<CAMP44s1ywhCV+FaudnwjwJUvj5Cf3_oz1M++kjXxRDGQpJ6-0w@mail.gmail.com>
+	<CAF6AEGu2-O+2KuCrQPJ6-xejg8TCScrFVZSimgkAV_5Xs-bgkg@mail.gmail.com>
+	<4E74C6C3.2000704@gmx.de>
+	<CAPM=9twmPVrBPmUuEuTYHSzjDGHtfsmiVX6cozpAFYEaV-NcCg@mail.gmail.com>
+	<4E74E3D6.8080401@gmx.de>
+	<CAPM=9txHu7mzH8p8g=FmHsjvmAT-aMy-xEFj4odXEvnbs-bhMw@mail.gmail.com>
+	<20110917212529.6b452bf2@lxorguk.ukuu.org.uk>
+In-Reply-To: <20110917212529.6b452bf2@lxorguk.ukuu.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Dave Airlie <airlied@gmail.com>, linux-fbdev@vger.kernel.org, linaro-dev@lists.linaro.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Archit Taneja <archit@ti.com>, Rob Clark <rob@ti.com>
+
+--Sig_/5KDHxCc=pf2uSdbbooXRJUj
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
 
-On Tue, Oct 25, 2011 at 01:15:41PM +0200, Geert Uytterhoeven wrote:
-> On Tue, Oct 25, 2011 at 09:34, Rabin Vincent <rabin@rab.in> wrote:
-> > I'm trying to figure out the best way to implement fb_setcolreg() for
-> > FB_VISUAL_TRUECOLOR.
+On Sat, 17 Sep 2011 21:25:29 +0100
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+
+> > Just tell the X driver to not use acceleration, and it you won't get
+> > any acceleration used, then you get complete stability. If a driver
+> > writer wants to turn off all accel in the kernel driver, it can, its
 >=20
-> FB_VISUAL_TRUECOLOR implies the colormap is read-only.
-> Perhaps you meant FB_VISUAL_DIRECTCOLOR?
-
-I was referring to the pseudo palette usage for FB_VISUAL_TRUECOLOR, which =
-is
-where most of the drivers use chan_to_field(), for example in s3c2410fb.c:
-
-	switch (info->fix.visual) {
-	case FB_VISUAL_TRUECOLOR:
-		/* true-colour, use pseudo-palette */
-
-		if (regno < 16) {
-			u32 *pal =3D info->pseudo_palette;
-
-			val  =3D chan_to_field(red,   &info->var.red);
-
+> In fact one thing we actually need really is a "dumb" KMS X server to
+> replace the fbdev X server that unaccel stuff depends upon and which
+> can't do proper mode handling, multi-head or resizing as a result. A dumb
+> fb generic request for a back to front copy might also be useful for
+> shadowfb, or at least indicators so you know what the cache behaviour is
+> so the X server can pick the right policy.
 >=20
-> > 14 or so drivers copy/paste the CNVT_TOHW from skeletonfb.c:
-> >
-> > =A0#define CNVT_TOHW(val,width) ((((val)<<(width))+0x7FFF-(val))>>16)
-> > =A0...
-> > =A0red =3D CNVT_TOHW(red, info->var.red.length);
-> >
-> > Another 18 or so drivers copy/paste a chan_to_field() function which has
-> > a straightforward shift:
-> >
-> > =A0static inline u_int chan_to_field(u_int chan, struct fb_bitfield *bf)
-> > =A0{
-> > =A0 =A0 =A0 =A0chan &=3D 0xffff;
-> > =A0 =A0 =A0 =A0chan >>=3D 16 - bf->length;
-> > =A0 =A0 =A0 =A0return chan << bf->offset;
-> > =A0}
-> > =A0...
-> > =A0val =3D chan_to_field(red, &info->var.red);
-> >
-> > Both methods return similar values, except that with CNVT_TOHW() the
-> > extreme values seem to have a smaller range than the other values, while
-> > with the chan_to_field() shift all the values have an equal range.
-> >
-> > What's the reason behind choosing one over the other? =A0Could/should a
-> > common function be provided for all the drivers to use?
+> > We've fixed this in KMS, we don't pass direct mappings to userspace
+> > that we can't tear down and refault. We only provide objects via
+> > handles. The only place its a problem is where we expose fbdev legacy
+> > emulation, since we have to fix the pages.
 >=20
-> The idea is to use the full dynamic range of the 16-bit values. I.e. 'all=
- ones'
-> in the hardware-specific value should map to 'all ones' in the 16-bit exp=
-anded
-> value. So the macros are preferred.
+> Which is doable. Horrible but doable. The usb framebuffer code has to
+> play games like this with the virtual framebuffer in order to track
+> changes by faulting.
+>=20
+> There are still some architectural screwups however. DRM continues the
+> fbdev worldview that outputs, memory and accelerators are tied together
+> in lumps we call video cards. That isn't really true for all cases and
+> with capture/overlay it gets even less true.
 
-I'm not sure I follow.  In the pseudo palette, where the bf->length is less
-than 16, both CNVT_TOHW() and the plain shift return the same values for the
-all-ones case.
+Sorry for re-opening this ancient thread; I'm catching up from the past
+2 months of travel & misc.
+
+I definitely agree about the PC card centric architecture of DRM KMS
+(and before it, X).  But we have a path out of it now, and lots of
+interest from vendors and developers, so I don't think it's an
+insurmountable problem by any means.
+
+I definitely understand Florian's worries about DRM vs fb.  If nothing
+else, there's certainly a perception that fb is simpler and easier to
+get right.  But really, as others have pointed out, it's solving a
+different set of problems than the DRM layer.  The latter is actually
+trying to expose the features of contemporary hardware in a way that's
+as portable as possible.  That portability comes at a cost though: the
+APIs we add need to get lots of review, and there's no doubt we'll need
+to add more as newer, weirder hardware comes along.
+
+Really, I see no reason why fb and DRM can't continue to live side by
+side.  If a vendor really only needs the features provided by the fb
+layer, they're free to stick with a simple fb driver.  However, I
+expect most vendors making phones, tablets, notebooks, etc will need
+and want an architecture that looks a lot like the DRM layer, with
+authentication for rendering clients, an command submission ioctl for
+acceleration, and memory management, so I expect most of the driver
+growth to be in DRM in the near future.
+
+And I totally agree with Dave about having a kmscon.  I really wish
+someone would implement it so I could have my VTs spinning on a cube.
+
+--=20
+Jesse Barnes, Intel Open Source Technology Center
+
+--Sig_/5KDHxCc=pf2uSdbbooXRJUj
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAEBAgAGBQJOrwQFAAoJEIEoDkX4Qk9h9gUP/1z1Cg073nOfPG8acxdk00jX
+wn30vGUwDutNIdi0et+flDOJQtaoiCtgTPDmZLykXmxLBuyl5VdHk5dg2LdEiQWB
+lpPQ5S1VM/Zd1N0AYI5H2TP+UwiXElW7e75F8y+18EZdVGuFAL5b98T+oUtoT4Xw
+iENJc5fKpyxWEnCdWIIr1SIB2hSSAdyiOvCC62jxMtC2PQg7FzYYi9DMoZO2//Qg
+pDnR/aJMnAR+nldK/t084gpWJHMKvVgIQjepu2b8qC+YEoTxEDuTHpBsAGwLEi3R
+p/vWstJ3H+ISvnHHEzme5b59e+RA+iCwgJJadoe8GtZ+6hYDx4wx5bxoUz381Ssf
+3+2PPjuXxOVMXgHHJysAccVhmgNzQMvidUTHI42s3DrI/lfxQblQAiMKPaLTvuc/
+eq0j9SRl4qz1tz3EvEUKXOxlsAGTxKlGyOHeFbrJTPFswvC1JCYcGjFUV10HFI3X
+4KBLFgNNGeOefC9tqkUXhrKW/XdN3uZEGbq9htlSlHjPoAsgbvEXvzY1VUZq1eLL
+EPFmlJ1XdMfUp9oUDK1YxkONz4Ve0io6eiskw8U9vK7WCZo9vWODfeQoObPIEyS1
+1gPiYuzRTxSPEj8jl4lTwBppdd1SHXdJ4OIiG8Tysjcs+ntB7Les3JtfAqZn6Re6
+F41UUvgeOZfHx2+vA7BU
+=nSsT
+-----END PGP SIGNATURE-----
+
+--Sig_/5KDHxCc=pf2uSdbbooXRJUj--

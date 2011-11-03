@@ -1,46 +1,37 @@
-From: David Airlie <airlied@redhat.com>
-Date: Thu, 03 Nov 2011 17:27:59 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Date: Thu, 03 Nov 2011 17:53:46 +0000
 Subject: Re: [RFC] Virtual CRTCs (proposal + experimental code)
-Message-Id: <e80977e3-0992-454e-8ee2-2944560d3b3d@zmail16.collab.prod.int.phx2.redhat.com>
+Message-Id: <20111103175346.61da8612@lxorguk.ukuu.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CA+4h6Hk3gE+8ou6NSMhoGJWZJ-5aM1OgC0HFoKs55fjfQ-qN8g@mail.gmail.com>
-In-Reply-To: <CA+4h6Hk3gE+8ou6NSMhoGJWZJ-5aM1OgC0HFoKs55fjfQ-qN8g@mail.gmail.com>
+	<e80977e3-0992-454e-8ee2-2944560d3b3d@zmail16.collab.prod.int.phx2.redhat.com>
+In-Reply-To: <e80977e3-0992-454e-8ee2-2944560d3b3d@zmail16.collab.prod.int.phx2.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ilija Hadzic <ilijahadzic@gmail.com>
+To: David Airlie <airlied@redhat.com>
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
+> Well the current plan I had for this was to do it in userspace, I don't think the kernel
+> has any business doing it and I think for the simple USB case its fine but will fallover
+> when you get to the non-trivial cases where some sort of acceleration is required to move
+> pixels around. But in saying that its good you've done what something, and I'll try and spend
+> some time reviewing it.
 
-> 
-> Hi everyone,
-> 
-> I would like to bring to the attention of dri-devel and linux-fbdev
-> community a set of hopefully useful and interesting patches that
-> I (and a few other colleagues) have been working on during the past
-> few months. Here, I will provide a short abstract, so that you can
-> decide whether this is of interest for you. At the end, I will
-> provide the pointers to the code and documentation.
-> 
-> The code is based on Dave Arilie's tree, drm-next branch and it
-> allows a GPU driver to have an arbitrary number of CRTCs
-> (configurable by user) instead of only those CRTCs that represent
-> real hardware.
+There are some clear advantages in the kernel doing bits of this I think.
+The kernel understands device to device DMA, and has a better idea than
+userspace about things like buffer alignment internals. It also means
+this ultimately can work without X running which is a plus for some
+applications (I want a displaylink gadget for my phone but thats another
+story 8)).
 
-Well the current plan I had for this was to do it in userspace, I don't think the kernel
-has any business doing it and I think for the simple USB case its fine but will fallover
-when you get to the non-trivial cases where some sort of acceleration is required to move
-pixels around. But in saying that its good you've done what something, and I'll try and spend
-some time reviewing it.
+> I'm also not sure how you deal with tiling etc, you can also start hitting rendering limits,
+> where a GPU can render to 4kx4k but you can plug in more USB devices, again I'm hoping to
+> solve this in userspace as well.
 
-The current plan from my POV is to add hotplug support to the X server and just hotplug USB
-devices up there, and not mess up the kernel with lots of extra state that really the drivers
-don't need to know about.
+Tiling has to be handled by the recipient (at least when the fb is shared). The nastier end of
+it that I don't see convered in the documentation is the handling of
+fencing between cards. Eg if you wanted to do display on one card fed
+into a second to do effects processing (think about TV type stuff)
 
-I'm also not sure how you deal with tiling etc, you can also start hitting rendering limits,
-where a GPU can render to 4kx4k but you can plug in more USB devices, again I'm hoping to
-solve this in userspace as well.
-
-But I'll take some time if I can find it to look over it.
-
-Dave.
+Alan

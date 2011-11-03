@@ -1,195 +1,92 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Fri, 25 Nov 2011 21:28:51 +0000
-Subject: Re: [PATCH] video:da8xx-fb: Add 24bpp LCD configuration support
-Message-Id: <4ED00893.2070809@gmx.de>
+From: Ilija Hadzic <ilijahadzic@gmail.com>
+Date: Thu, 03 Nov 2011 15:59:21 +0000
+Subject: [RFC] Virtual CRTCs (proposal + experimental code)
+Message-Id: <CA+4h6Hk3gE+8ou6NSMhoGJWZJ-5aM1OgC0HFoKs55fjfQ-qN8g@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321358479-20390-1-git-send-email-prakash.pm@ti.com>
-In-Reply-To: <1321358479-20390-1-git-send-email-prakash.pm@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-On 11/25/2011 07:45 AM, Manjunathappa, Prakash wrote:
-> Hi Florian Tobias Schandinat
-> 
-> On Sun, Nov 20, 2011 at 06:11:44, Florian Tobias Schandinat wrote:
->> On 11/15/2011 12:01 PM, Manjunathappa, Prakash wrote:
->>> LCD controller on am335x supports 24bpp raster configuration
->>> in addition to ones on da850. LCDC also supports 24bpp in unpacked
->>> format having ARGB:8888 32bpp format data in DDR, but it doesn't
->>> interpret Alpha component of the data.
->>>
->>> Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
->>> ---
->>>  drivers/video/da8xx-fb.c |   57 +++++++++++++++++++++++++++++++++++++++++++++-
->>>  1 files changed, 56 insertions(+), 1 deletions(-)
->>>
->>> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
->>> index 55f91d9..e111971 100644
->>> --- a/drivers/video/da8xx-fb.c
->>> +++ b/drivers/video/da8xx-fb.c
->>> @@ -82,6 +82,8 @@
->>>  #define LCD_V2_LIDD_CLK_EN		BIT(1)
->>>  #define LCD_V2_CORE_CLK_EN		BIT(0)
->>>  #define LCD_V2_LPP_B10			26
->>> +#define LCD_V2_TFT_24BPP_MODE		BIT(25)
->>> +#define LCD_V2_TFT_24BPP_UNPACK		BIT(26)
->>>  
->>>  /* LCD Raster Timing 2 Register */
->>>  #define LCD_AC_BIAS_TRANSITIONS_PER_INT(x)	((x) << 16)
->>> @@ -151,7 +153,7 @@ struct da8xx_fb_par {
->>>  	unsigned int		dma_end;
->>>  	struct clk *lcdc_clk;
->>>  	int irq;
->>> -	unsigned short pseudo_palette[16];
->>> +	unsigned short pseudo_palette[32];
->>
->> This looks wrong, include/linux/fb.h says:
->> "void *pseudo_palette;           /* Fake palette of 16 colors */"
->> This will probably also simplify the code below to write to the pseudo palette.
->> But I think you have to increase the data type of the palette, maybe to u32?
->>
->>
-> 
-> Yes, I accept that data type has to be changed to u32. But how does it simplify updating of pseudo palette.
+Hi everyone,
 
-Your code is even buggier than I saw. Where did you get the information how to
-write fb_setcolreg?
-First, as I wrote in my last mail, the pseudo_palette has always exactly 16
-colors, regardless of the color depth.
-Second, the existing code is some sort of wrong to check for bpp the only thing
-that really matters is whether it is Truecolor or not, the code for handling the
-Truecolor case will very likely be always the same regardless of the bpp, just
-the values in {red,green,blue}{length,offset} differ.
-Third your patch is wrong in using 24 in things like
-red >>= (24 - info->var.red.length);
-skeletonfb.c: "The values supplied have a 16 bit magnitude which needs to be
-scaled in this function for the hardware."
-So it has to be 16, always.
+I would like to bring to the attention of dri-devel and linux-fbdev
+community a set of hopefully useful and interesting patches that
+I (and a few other colleagues) have been working on during the past
+few months. Here, I will provide a short abstract, so that you can
+decide whether this is of interest for you. At the end, I will
+provide the pointers to the code and documentation.
 
-Just have a look at drivers/video/skeletonfb.c, it contains much useful information.
+The code is based on Dave Arilie's tree, drm-next branch and it
+allows a GPU driver to have an arbitrary number of CRTCs
+(configurable by user) instead of only those CRTCs that represent
+real hardware.
 
+The new CRTCs, that we call Virtual CRTCs can be attached to a
+foreign device, that we call CTD device (short for Compression
+Transmission and Display), and pixels can be streamed out of the GPU
+to the device.
 
-Best regards,
+In one example, we use AMD/ATI Radeon GPU to do 3D rendering
+(accelerated, of course) and we use our code to add additional
+monitor heads using DisplayLink devices. In other words, we achieve
+accelerated 3D rendering on a DisplayLink monitor. In another example
+we funnel rendered pixels to userland by emulating a Video-for-Linux
+device (and then userland can do whatever it wants with it). While
+doing all this, GPU has no idea that we are doing this, the entire DRI
+"thinks" that it is just dealing with a GPU that has a few "extra"
+connectors and CRTCs. So everything ports without the need to modify
+anything in the userland.
 
-Florian Tobias Schandinat
+In general any device that can do something good with rendered pixels
+can act as a CTD device, allowing a GPU to be an acceleration device
+for a less capable display device or (the opposite) a frame-buffer-based
+display device to be an expansion card for a GPU. Of course, for
+each display device, a driver would have to be made compatible with our
+new infrastructure (which is what we have done with DisplayLink driver
+and also wrote one "synthetic" driver to fake out a V4L2 device as a
+CTD device).
 
-> 
-> Thanks,
-> Prakash
-> 
->> Best regards,
->>
->> Florian Tobias Schandinat
->>
->>>  	unsigned int palette_sz;
->>>  	unsigned int pxl_clk;
->>>  	int blank;
->>> @@ -458,6 +460,9 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
->>>  {
->>>  	u32 reg;
->>>  
->>> +	if ((bpp > 16) && (lcd_revision = LCD_VERSION_1))
->>> +		return -EINVAL;
->>> +
->>>  	/* Set the Panel Width */
->>>  	/* Pixels per line = (PPL + 1)*16 */
->>>  	if (lcd_revision = LCD_VERSION_1) {
->>> @@ -501,6 +506,13 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
->>>  	reg = lcdc_read(LCD_RASTER_CTRL_REG) & ~(1 << 8);
->>>  	if (raster_order)
->>>  		reg |= LCD_RASTER_ORDER;
->>> +
->>> +	if (bpp = 24)
->>> +		reg |= (LCD_TFT_MODE | LCD_V2_TFT_24BPP_MODE);
->>> +	else if (bpp = 32)
->>> +		reg |= (LCD_TFT_MODE | LCD_V2_TFT_24BPP_MODE
->>> +				| LCD_V2_TFT_24BPP_UNPACK);
->>> +
->>>  	lcdc_write(reg, LCD_RASTER_CTRL_REG);
->>>  
->>>  	switch (bpp) {
->>> @@ -508,6 +520,8 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
->>>  	case 2:
->>>  	case 4:
->>>  	case 16:
->>> +	case 24:
->>> +	case 32:
->>>  		par->palette_sz = 16 * 2;
->>>  		break;
->>>  
->>> @@ -537,6 +551,9 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
->>>  	if (info->fix.visual = FB_VISUAL_DIRECTCOLOR)
->>>  		return 1;
->>>  
->>> +	if ((info->var.bits_per_pixel > 16) && (lcd_revision = LCD_VERSION_1))
->>> +		return 1;
->>> +
->>>  	if (info->var.bits_per_pixel = 8) {
->>>  		red >>= 4;
->>>  		green >>= 8;
->>> @@ -566,6 +583,23 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
->>>  			update_hw = 1;
->>>  			palette[0] = 0x4000;
->>>  		}
->>> +	} else if (((info->var.bits_per_pixel = 32) && regno < 32) ||
->>> +		    ((info->var.bits_per_pixel = 24) && regno < 24)) {
->>> +		red >>= (24 - info->var.red.length);
->>> +		red <<= info->var.red.offset;
->>> +
->>> +		green >>= (24 - info->var.green.length);
->>> +		green <<= info->var.green.offset;
->>> +
->>> +		blue >>= (24 - info->var.blue.length);
->>> +		blue <<= info->var.blue.offset;
->>> +
->>> +		par->pseudo_palette[regno] = red | green | blue;
->>> +
->>> +		if (palette[0] != 0x4000) {
->>> +			update_hw = 1;
->>> +			palette[0] = 0x4000;
->>> +		}
->>>  	}
->>>  
->>>  	/* Update the palette in the h/w as needed. */
->>> @@ -777,6 +811,9 @@ static int fb_check_var(struct fb_var_screeninfo *var,
->>>  {
->>>  	int err = 0;
->>>  
->>> +	if ((var->bits_per_pixel > 16) && (lcd_revision = LCD_VERSION_1))
->>> +		return -EINVAL;
->>> +
->>>  	switch (var->bits_per_pixel) {
->>>  	case 1:
->>>  	case 8:
->>> @@ -809,6 +846,24 @@ static int fb_check_var(struct fb_var_screeninfo *var,
->>>  		var->transp.offset = 0;
->>>  		var->transp.length = 0;
->>>  		break;
->>> +	case 24:
->>> +		var->red.offset = 16;
->>> +		var->red.length = 8;
->>> +		var->green.offset = 8;
->>> +		var->green.length = 8;
->>> +		var->blue.offset = 0;
->>> +		var->blue.length = 8;
->>> +		break;
->>> +	case 32:
->>> +		var->transp.offset = 24;
->>> +		var->transp.length = 8;
->>> +		var->red.offset = 16;
->>> +		var->red.length = 8;
->>> +		var->green.offset = 8;
->>> +		var->green.length = 8;
->>> +		var->blue.offset = 0;
->>> +		var->blue.length = 8;
->>> +		break;
->>>  	default:
->>>  		err = -EINVAL;
->>>  	}
->>
->>
-> 
-> 
+The newly introduced kernel module that we call VCRTCM (short for
+Virtual CRTC Manager) handles the "traffic" between GPUs (actually
+their CRTCs) and CTDs. The code makes use of DMA wherever possible
+and also deals with specifics of CRTCs like modes, vblanks, page
+flips, hardware cursor, etc. (just for kick, we played OpenArena
+and watched Unigine Heaven demo on a DisplayLink monitor).
 
+At this time, we would like to solicit feedback, comments, and
+possibly contributions. The code is on github (pointers below)
+and is based on the current state of drm-next branch from Dave's
+tree. The code is very experimental, but complete and stable enough
+that you can do something useful with it. We will be adding more
+CTD drivers and updates to current ones in the near future and will
+continue to maintain the code on github.
+
+If the community finds this useful, we would be glad to work with
+the maintainers on merging this upstream. So we would especially like
+to hear what you would like to see changed to make this code acceptable
+for the mainline of development.
+
+My Github page is at https://github.com/ihadzic. To access the kernel
+code type:
+
+$ git clone git://github.com/ihadzic/linux-vcrtcm.git
+$ git branch drm-next-vcrtcm origin/drm-next-vcrtcm
+$ git checkout drm-next-vcrtcm
+
+You will get all that's currently on Dave's drm-next plus our patches on
+the top. We kept the development history preserved without squashing patches
+(unless we had to due to merge/rebase conflicts), so you can see (and laugh
+at) all our goofs and fixes to them.
+
+To access the documentation, type:
+
+$ git clone git://github.com/ihadzic/vcrtcm-doc.git
+
+Then read the HOWTO.txt file. The first few sections provide some
+general overview, and the sections that come later provide instructions
+how to use our stuff.
+
+Again, all comments, positive or negative, are very welcome.
+
+-- Ilija

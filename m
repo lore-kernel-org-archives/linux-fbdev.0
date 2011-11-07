@@ -1,88 +1,35 @@
-From: Christian Gmeiner <christian.gmeiner@gmail.com>
-Date: Tue, 22 Nov 2011 13:52:14 +0000
-Subject: Re: QVGA on a hardware which supports only >= VGA
-Message-Id: <CAH9NwWd=UabV3z94pkpn83Wa6RTvf+dsR0x2_ALBFDOG16BSkg@mail.gmail.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 07 Nov 2011 06:03:01 +0000
+Subject: [PATCH] video: s3c-fb: fix transparency length for pixel blending
+Message-Id: <1320645781-9528-1-git-send-email-jg1.han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAH9NwWdUZHfhqpNwcfxK_EnsMLeEazB50rQ=m65U3+tjhpwGJQ@mail.gmail.com>
-In-Reply-To: <CAH9NwWdUZHfhqpNwcfxK_EnsMLeEazB50rQ=m65U3+tjhpwGJQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-ping
---
-Christian Gmeiner, MSc
+Transparency length is fixed for pixel blending in order to support
+ARGB 8888 format.
 
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/s3c-fb.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 0753b1c..12eaee0 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -621,7 +621,8 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 		} else if (var->transp.length = 1)
+ 			data |= WINCON1_BPPMODE_25BPP_A1888
+ 				| WINCON1_BLD_PIX;
+-		else if (var->transp.length = 4)
++		else if ((var->transp.length = 4) ||
++			(var->transp.length = 8))
+ 			data |= WINCON1_BPPMODE_28BPP_A4888
+ 				| WINCON1_BLD_PIX | WINCON1_ALPHA_SEL;
+ 		else
+-- 
+1.7.1
 
-2011/11/18 Christian Gmeiner <christian.gmeiner@gmail.com>:
-> Hi all,
->
-> I am currently in the process to get some local patches into mainline
-> and/or fix my
-> problems the right way. At the moment I am stuck with this problem:
->
-> I am on a device (x86), which is Geode lx800 based and there is a
-> panel connected to
-> it. The problem is that two different screen resolutions are used. QVGA and VGA.
-> Should not sound like a problem, but the lx800 can only do VGA. So get
-> it working,
-> I need to pass the correct resolution via kernel cmd to the lxfb
-> driver and I am using
-> this patch (based on 2.6.36.4 kernel):
->
-> --- a/drivers/video/fbmem.c
-> +++ b/drivers/video/fbmem.c
-> @@ -1050,6 +1050,7 @@ static long do_fb_ioctl(struct fb_info *info,
-> unsigned int cmd,
->                ret = copy_to_user(argp, &var, sizeof(var)) ? -EFAULT : 0;
->                break;
->        case FBIOPUT_VSCREENINFO:
-> +#if 0
->                if (copy_from_user(&var, argp, sizeof(var)))
->                        return -EFAULT;
->                if (!lock_fb_info(info))
-> @@ -1062,6 +1063,8 @@ static long do_fb_ioctl(struct fb_info *info,
-> unsigned int cmd,
->                unlock_fb_info(info);
->                if (!ret && copy_to_user(argp, &var, sizeof(var)))
->                        ret = -EFAULT;
-> +#endif
-> +               ret = 0;
->                break;
->        case FBIOGET_FSCREENINFO:
->                if (!lock_fb_info(info))
-> @@ -1086,6 +1089,7 @@ static long do_fb_ioctl(struct fb_info *info,
-> unsigned int cmd,
->                ret = fb_cmap_to_user(&cmap_from, &cmap);
->                break;
->        case FBIOPAN_DISPLAY:
-> +#if 0
->                if (copy_from_user(&var, argp, sizeof(var)))
->                        return -EFAULT;
->                if (!lock_fb_info(info))
-> @@ -1096,6 +1100,8 @@ static long do_fb_ioctl(struct fb_info *info,
-> unsigned int cmd,
->                unlock_fb_info(info);
->                if (ret = 0 && copy_to_user(argp, &var, sizeof(var)))
->                        return -EFAULT;
-> +#endif
-> +               ret = 0;
->                break;
->        case FBIO_CURSOR:
->                ret = -EINVAL;
->
-> I need to mention that I am using a custom BIOS and Linux based
-> bootloader (kexec) in the
-> boot process. At the moment I am looking into coreboot, but I wanted
-> to know how to
-> solve this "problem" the correct way.
->
-> To sum it up: I want to use a QVGA panel with a hardware that only
-> supports >= VGA.
->
-> Thanks
-> --
-> Christian Gmeiner, MSc
->

@@ -1,68 +1,94 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:22:01 +0000
-Subject: [PATCH 62/65] OMAPDSS: APPLY: add dss_mgr_simple_check()
-Message-Id: <1321953724-6350-63-git-send-email-tomi.valkeinen@ti.com>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Wed, 09 Nov 2011 04:34:55 +0000
+Subject: [PATCH 08/15] fbdev: sh_mipi_dsi: add sync_pulses/sync_events/burst mode
+Message-Id: <87sjlxap77.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Add dss_mgr_simple_check() which is used to check the validity of
-certain manager attributes. Only attributes that can be checked
-independently, without knowing the display being used, is done here
-(thus "simple").
-
-We can use this function in dss_mgr_set_info().
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 ---
- drivers/video/omap2/dss/apply.c |   24 ++++++++++++++++++++++++
- 1 files changed, 24 insertions(+), 0 deletions(-)
+ arch/arm/mach-shmobile/board-ag5evm.c |    3 ++-
+ arch/arm/mach-shmobile/board-ap4evb.c |    1 +
+ drivers/video/sh_mipi_dsi.c           |    9 ++++++++-
+ include/video/sh_mipi_dsi.h           |    9 +++++++++
+ 4 files changed, 20 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index c1c4597..5d933b9 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -834,11 +834,35 @@ out:
- 	mutex_unlock(&apply_lock);
- }
+diff --git a/arch/arm/mach-shmobile/board-ag5evm.c b/arch/arm/mach-shmobile/board-ag5evm.c
+index dd3881a..0895671 100644
+--- a/arch/arm/mach-shmobile/board-ag5evm.c
++++ b/arch/arm/mach-shmobile/board-ag5evm.c
+@@ -327,7 +327,8 @@ static struct sh_mipi_dsi_info mipidsi0_info = {
+ 	.lane		= 2,
+ 	.vsynw_offset	= 20,
+ 	.clksrc		= 1,
+-	.flags		= SH_MIPI_DSI_HSABM,
++	.flags		= SH_MIPI_DSI_HSABM |
++			  SH_MIPI_DSI_SYNC_PULSES_MODE,
+ };
  
-+static int dss_mgr_simple_check(struct omap_overlay_manager *mgr,
-+		const struct omap_overlay_manager_info *info)
-+{
-+	if (dss_has_feature(FEAT_ALPHA_FIXED_ZORDER)) {
-+		/*
-+		 * OMAP3 supports only graphics source transparency color key
-+		 * and alpha blending simultaneously. See TRM 15.4.2.4.2.2
-+		 * Alpha Mode.
-+		 */
-+		if (info->partial_alpha_enabled && info->trans_enabled
-+			&& info->trans_key_type != OMAP_DSS_COLOR_KEY_GFX_DST) {
-+			DSSERR("check_manager: illegal transparency key\n");
-+			return -EINVAL;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- int dss_mgr_set_info(struct omap_overlay_manager *mgr,
- 		struct omap_overlay_manager_info *info)
+ static struct platform_device mipidsi0_device = {
+diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
+index 187d6fc..9b39e86 100644
+--- a/arch/arm/mach-shmobile/board-ap4evb.c
++++ b/arch/arm/mach-shmobile/board-ap4evb.c
+@@ -582,6 +582,7 @@ static struct sh_mipi_dsi_info mipidsi0_info = {
+ 	.lcd_chan	= &lcdc_info.ch[0],
+ 	.lane		= 2,
+ 	.vsynw_offset	= 17,
++	.flags		= SH_MIPI_DSI_SYNC_PULSES_MODE,
+ };
+ 
+ static struct platform_device mipidsi0_device = {
+diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
+index af6bec2..b8c4873 100644
+--- a/drivers/video/sh_mipi_dsi.c
++++ b/drivers/video/sh_mipi_dsi.c
+@@ -152,7 +152,7 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
  {
- 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
- 	unsigned long flags;
-+	int r;
+ 	void __iomem *base = mipi->base;
+ 	struct sh_mobile_lcdc_chan_cfg *ch = pdata->lcd_chan;
+-	u32 pctype, datatype, pixfmt, linelength, vmctr2 = 0x00e00000;
++	u32 pctype, datatype, pixfmt, linelength, vmctr2;
+ 	bool yuv;
+ 	u32 tmp;
+ 
+@@ -324,6 +324,13 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
+ 	 * Non-burst mode with sync pulses: VSE and HSE are output,
+ 	 * HSA period allowed, no commands in LP
+ 	 */
++	vmctr2 = 0;
++	if (pdata->flags & SH_MIPI_DSI_VSEE)
++		vmctr2 |= 1 << 23;
++	if (pdata->flags & SH_MIPI_DSI_HSEE)
++		vmctr2 |= 1 << 22;
++	if (pdata->flags & SH_MIPI_DSI_HSAE)
++		vmctr2 |= 1 << 21;
+ 	if (pdata->flags & SH_MIPI_DSI_BL2E)
+ 		vmctr2 |= 1 << 17;
+ 	if (pdata->flags & SH_MIPI_DSI_HSABM)
+diff --git a/include/video/sh_mipi_dsi.h b/include/video/sh_mipi_dsi.h
+index 3d0ec50..c8225b4 100644
+--- a/include/video/sh_mipi_dsi.h
++++ b/include/video/sh_mipi_dsi.h
+@@ -31,6 +31,15 @@ struct sh_mobile_lcdc_chan_cfg;
+ #define SH_MIPI_DSI_HBPBM	(1 << 1)
+ #define SH_MIPI_DSI_HFPBM	(1 << 2)
+ #define SH_MIPI_DSI_BL2E	(1 << 3)
++#define SH_MIPI_DSI_VSEE	(1 << 4)
++#define SH_MIPI_DSI_HSEE	(1 << 5)
++#define SH_MIPI_DSI_HSAE	(1 << 6)
 +
-+	r = dss_mgr_simple_check(mgr, info);
-+	if (r)
-+		return r;
++#define SH_MIPI_DSI_SYNC_PULSES_MODE	(SH_MIPI_DSI_VSEE | \
++					 SH_MIPI_DSI_HSEE | \
++					 SH_MIPI_DSI_HSAE)
++#define SH_MIPI_DSI_SYNC_EVENTS_MODE	(0)
++#define SH_MIPI_DSI_SYNC_BURST_MODE	(SH_MIPI_DSI_BL2E)
  
- 	spin_lock_irqsave(&data_lock, flags);
- 
+ struct sh_mipi_dsi_info {
+ 	enum sh_mipi_dsi_data_fmt	data_format;
 -- 
-1.7.4.1
+1.7.5.4
 

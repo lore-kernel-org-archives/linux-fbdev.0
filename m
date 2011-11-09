@@ -1,48 +1,106 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Nov 2011 13:29:29 +0000
-Subject: [PATCH 01/13] OMAPDSS: DSI: flush posted write when entering ULPS
-Message-Id: <1322141381-5395-2-git-send-email-tomi.valkeinen@ti.com>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Wed, 09 Nov 2011 04:35:05 +0000
+Subject: [PATCH 09/15] fbdev: sh_mipi_dsi: add VMLEN1/VMLEN2 calculation
+Message-Id: <87r51hap6y.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Flush posted write between writing the ULPS enable bits and waiting for
-the interrupt.
+VMLEN1/VMLEN2 needs blanking length which is calculated from
+video image size.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+The calculation methods are explained on
+[SH MIPI] - [Video Mode] - [Blanking Packet setting]
+But HFPLEN (= VMLEN2) is un-understandable.
+
+For example, if SH-MIPI input was RGB888 (3byte),
+output was RGB888 (3byte)
+and 3lane connection, the date goes straight.
+
+But if SH-MIPI input was RGB888 (3byte),
+output was RGB565 (2byte)
+and 4lane connection, it needs delay in HFPLEN.
+Then (input cycle - output cycle) * lane is necessary the delay
+
+Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 ---
- drivers/video/omap2/dss/dsi.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ drivers/video/sh_mipi_dsi.c |   45 ++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 40 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 5abf8e7..1331f92 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -3561,6 +3561,9 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
- 	REG_FLD_MOD(dsidev, DSI_COMPLEXIO_CFG2, (1 << 0) | (1 << 1) | (1 << 2),
- 		7, 5);
+diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
+index b8c4873..190e941 100644
+--- a/drivers/video/sh_mipi_dsi.c
++++ b/drivers/video/sh_mipi_dsi.c
+@@ -42,6 +42,7 @@
+ #define VMCTR1		0x0020
+ #define VMCTR2		0x0024
+ #define VMLEN1		0x0028
++#define VMLEN2		0x002c
+ #define CMTSRTREQ	0x0070
+ #define CMTSRTCTR	0x00d0
  
-+	/* flush posted write and wait for SCP interface to finish the write */
-+	dsi_read_reg(dsidev, DSI_COMPLEXIO_CFG2);
+@@ -153,8 +154,9 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
+ 	void __iomem *base = mipi->base;
+ 	struct sh_mobile_lcdc_chan_cfg *ch = pdata->lcd_chan;
+ 	u32 pctype, datatype, pixfmt, linelength, vmctr2;
++	u32 tmp, top, bottom, delay;
+ 	bool yuv;
+-	u32 tmp;
++	int bpp;
+ 
+ 	/*
+ 	 * Select data format. MIPI DSI is not hot-pluggable, so, we just use
+@@ -342,11 +344,44 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
+ 	iowrite32(vmctr2, mipi->linkbase + VMCTR2);
+ 
+ 	/*
+-	 * 0x660 = 1632 bytes per line (RGB24, 544 pixels: see
+-	 * sh_mobile_lcdc_info.ch[0].lcd_cfg[0].xres), HSALEN = 1 - default
+-	 * (unused if VMCTR2[HSABM] = 0)
++	 * VMLEN1 = RGBLEN | HSALEN
++	 *
++	 * see
++	 *  Video mode - Blanking Packet setting
+ 	 */
+-	iowrite32(1 | (linelength << 16), mipi->linkbase + VMLEN1);
++	top = linelength << 16; /* RGBLEN */
++	bottom = 0x00000001;
++	if (pdata->flags & SH_MIPI_DSI_HSABM) /* HSALEN */
++		bottom = (pdata->lane * ch->lcd_cfg[0].hsync_len) - 10;
++	iowrite32(top | bottom , mipi->linkbase + VMLEN1);
 +
- 	if (wait_for_completion_timeout(&completion,
- 				msecs_to_jiffies(1000)) = 0) {
- 		DSSERR("ULPS enable timeout\n");
-@@ -3575,6 +3578,9 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
- 	REG_FLD_MOD(dsidev, DSI_COMPLEXIO_CFG2, (0 << 0) | (0 << 1) | (0 << 2),
- 		7, 5);
- 
-+	/* flush posted write and wait for SCP interface to finish the write */
-+	dsi_read_reg(dsidev, DSI_COMPLEXIO_CFG2);
++	/*
++	 * VMLEN2 = HBPLEN | HFPLEN
++	 *
++	 * see
++	 *  Video mode - Blanking Packet setting
++	 */
++	top	= 0x00010000;
++	bottom	= 0x00000001;
++	delay	= 0;
 +
- 	dsi_cio_power(dsidev, DSI_COMPLEXIO_POWER_ULPS);
++	if (pdata->flags & SH_MIPI_DSI_HFPBM) {	/* HBPLEN */
++		top = ch->lcd_cfg[0].hsync_len + ch->lcd_cfg[0].left_margin;
++		top = ((pdata->lane * top) - 10) << 16;
++	}
++	if (pdata->flags & SH_MIPI_DSI_HBPBM) { /* HFPLEN */
++		bottom = ch->lcd_cfg[0].right_margin;
++		bottom = (pdata->lane * bottom) - 12;
++	}
++
++	bpp = linelength / ch->lcd_cfg[0].xres; /* byte / pixel */
++	if (pdata->lane > bpp) {
++		tmp = ch->lcd_cfg[0].xres / bpp; /* output cycle */
++		tmp = ch->lcd_cfg[0].xres - tmp; /* (input - output) cycle */
++		delay = (pdata->lane * tmp);
++	}
++
++	iowrite32(top | (bottom + delay) , mipi->linkbase + VMLEN2);
  
- 	dsi_if_enable(dsidev, false);
+ 	msleep(5);
+ 
 -- 
-1.7.4.1
+1.7.5.4
 

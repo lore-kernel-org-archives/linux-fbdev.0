@@ -1,91 +1,44 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Nov 2011 13:29:38 +0000
-Subject: [PATCH 10/13] OMAPDSS: DSI: remove dsi_get_num_lanes_used
-Message-Id: <1322141381-5395-11-git-send-email-tomi.valkeinen@ti.com>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Wed, 09 Nov 2011 04:34:24 +0000
+Subject: [PATCH 05/15] fbdev: sh_mipi_dsi: add SH_MIPI_DSI_HFPBM flag
+Message-Id: <87wrb9ap82.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-There's no longer need for the dsi_get_num_lanes_used function, so it
-can be removed. The lane check in dsi_init_display() can be removed as
-the validity of the config will be verified when parsing it.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 ---
- drivers/video/omap2/dss/dsi.c |   27 ++-------------------------
- 1 files changed, 2 insertions(+), 25 deletions(-)
+ drivers/video/sh_mipi_dsi.c |    2 ++
+ include/video/sh_mipi_dsi.h |    1 +
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index dee9525..2b375c6 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -2034,23 +2034,6 @@ static int dsi_cio_power(struct platform_device *dsidev,
- 	return 0;
- }
+diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
+index 20ccc23..c9fac13 100644
+--- a/drivers/video/sh_mipi_dsi.c
++++ b/drivers/video/sh_mipi_dsi.c
+@@ -320,6 +320,8 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
+ 		vmctr2 |= 1 << 5;
+ 	if (pdata->flags & SH_MIPI_DSI_HBPBM)
+ 		vmctr2 |= 1 << 4;
++	if (pdata->flags & SH_MIPI_DSI_HFPBM)
++		vmctr2 |= 1 << 3;
+ 	iowrite32(vmctr2, mipi->linkbase + VMCTR2);
  
--/* Number of lanes used by the dss device */
--static inline int dsi_get_num_lanes_used(struct omap_dss_device *dssdev)
--{
--	int num_data_lanes = 0;
--
--	if (dssdev->phy.dsi.data1_lane != 0)
--		num_data_lanes++;
--	if (dssdev->phy.dsi.data2_lane != 0)
--		num_data_lanes++;
--	if (dssdev->phy.dsi.data3_lane != 0)
--		num_data_lanes++;
--	if (dssdev->phy.dsi.data4_lane != 0)
--		num_data_lanes++;
--
--	return num_data_lanes + 1;
--}
--
- static unsigned dsi_get_line_buf_size(struct platform_device *dsidev)
- {
- 	int val;
-@@ -3863,6 +3846,7 @@ static int dsi_proto_config(struct omap_dss_device *dssdev)
- static void dsi_proto_timings(struct omap_dss_device *dssdev)
- {
- 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
-+	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 	unsigned tlpx, tclk_zero, tclk_prepare, tclk_trail;
- 	unsigned tclk_pre, tclk_post;
- 	unsigned ths_prepare, ths_prepare_ths_zero, ths_zero;
-@@ -3870,7 +3854,7 @@ static void dsi_proto_timings(struct omap_dss_device *dssdev)
- 	unsigned ddr_clk_pre, ddr_clk_post;
- 	unsigned enter_hs_mode_lat, exit_hs_mode_lat;
- 	unsigned ths_eot;
--	int ndl = dsi_get_num_lanes_used(dssdev) - 1;
-+	int ndl = dsi->num_lanes_used - 1;
- 	u32 r;
+ 	/*
+diff --git a/include/video/sh_mipi_dsi.h b/include/video/sh_mipi_dsi.h
+index 4e2bcb5..86a72c0 100644
+--- a/include/video/sh_mipi_dsi.h
++++ b/include/video/sh_mipi_dsi.h
+@@ -29,6 +29,7 @@ struct sh_mobile_lcdc_chan_cfg;
  
- 	r = dsi_read_reg(dsidev, DSI_DSIPHY_CFG0);
-@@ -4554,7 +4538,6 @@ int dsi_init_display(struct omap_dss_device *dssdev)
- {
- 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
--	int dsi_module = dsi_get_dsidev_id(dsidev);
+ #define SH_MIPI_DSI_HSABM	(1 << 0)
+ #define SH_MIPI_DSI_HBPBM	(1 << 1)
++#define SH_MIPI_DSI_HFPBM	(1 << 2)
  
- 	DSSDBG("DSI init\n");
- 
-@@ -4576,12 +4559,6 @@ int dsi_init_display(struct omap_dss_device *dssdev)
- 		dsi->vdds_dsi_reg = vdds_dsi;
- 	}
- 
--	if (dsi_get_num_lanes_used(dssdev) > dsi->num_lanes_supported) {
--		DSSERR("DSI%d can't support more than %d lanes\n",
--			dsi_module + 1, dsi->num_lanes_supported);
--		return -EINVAL;
--	}
--
- 	return 0;
- }
- 
+ struct sh_mipi_dsi_info {
+ 	enum sh_mipi_dsi_data_fmt	data_format;
 -- 
-1.7.4.1
+1.7.5.4
 

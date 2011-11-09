@@ -1,105 +1,75 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 23 Nov 2011 10:17:00 +0000
-Subject: Re: [PATCH 40/65] OMAPDSS: APPLY: add mutex
-Message-Id: <1322043420.28917.39.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-p9YWrJoAHLqXlN4AIukh"
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Wed, 09 Nov 2011 04:33:47 +0000
+Subject: [PATCH 02/15] fbdev: sh_mipi_dsi: tidyup dsip_clk
+Message-Id: <871uthc3tj.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1321953724-6350-41-git-send-email-tomi.valkeinen@ti.com>
-	 <4ECCC158.80902@ti.com>
-In-Reply-To: <4ECCC158.80902@ti.com>
-To: Archit Taneja <a0393947@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, archit@ti.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
+dsipck clock is controled by CLKDEV_ICK_ID() in clock-shxxx.
+dsi0p_clk/dsi1p_clk naming is not needed.
 
---=-p9YWrJoAHLqXlN4AIukh
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+---
+ arch/arm/mach-shmobile/clock-sh7372.c |    4 ++--
+ arch/arm/mach-shmobile/clock-sh73a0.c |    4 ++--
+ drivers/video/sh_mipi_dsi.c           |    4 +---
+ 3 files changed, 5 insertions(+), 7 deletions(-)
 
-On Wed, 2011-11-23 at 15:18 +0530, Archit Taneja wrote:
-> Hi,
->=20
-> On Tuesday 22 November 2011 02:51 PM, Tomi Valkeinen wrote:
-> > The functions in apply.c, called mostly via function pointers in overla=
-y
-> > and overlay_manager structs, will be divided into two groups. The other
-> > group will not sleep and can be called from interrupts, and the other
-> > group may sleep.
->=20
-> Small sentence issue above, both groups are called the 'other group'.
-
-Thanks, fixed.
-
-> >
-> > The idea is that the non-sleeping functions may only change certain
-> > settings in overlays and managers, and those settings may only affect
-> > the particular overlay/manager. For example, set the base address of th=
-e
-> > overlay.
-> >
-> > The blocking functions, however, will handle more complex configuration
-> > changes. For example, when an overlay is enabled and fifo-merge feature
-> > is used, we need to do the enable in multiple steps, waiting in between=
-,
-> > and the change affects multiple overlays and managers.
-> >
-> > This patch adds the mutex which is used in the blocking functions to
-> > have exclusive access to overlays and overlay managers.
->=20
-> Previously, when we changed the links between 'overlay->managers' and=20
-> 'manager->devices', it wasn't protected by a lock. Why is it needed now?
-
-Previously many places were missing a lock =3D).
-
-> As an example, suppose we are changing a manager's device to some other=
-=20
-> display. Is this lock preventing someone else to get the older=20
-> 'mgr->device' rather than the new one?
-
-Hmm. We need some lock there, that's for sure, as set/unset manager are
-changing the manager's list of overlays. However, it is also protected
-by the spinlock, so in that sense mutex is not necessary.
-
-I have to say I'm not sure if mutex is needed at this point. However,
-consider the end result when fifo-merge is used:
-
-dss_ovl_enable() will take the mutex, then it does the configuration in
-multiple steps, doing multiple spin_lock & spin_unlocks, waiting in
-between.
-
-If we had only a spinlock in set/unset_manager, the manager could be
-changed while dss_ovl_enable is doing the process of enabling the
-overlay.
-
-So I may have added mutexes or spinlocks a bit early in the series to
-some places, but I don't see any harm in that. It'd be rather difficult
-to try to find the exact spots where a lock becomes a requirement.
-
- Tomi
-
-
---=-p9YWrJoAHLqXlN4AIukh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJOzMgcAAoJEPo9qoy8lh71R+0P/3rytH7j0Tk7O/Z/g+nUpEBA
-ANTqBb65H2czgBRaF+2QOL72UwVhJkmB0ZM5YD9f6DyHCswvh3crHXx35WYsbggs
-sscskPvjAgwMeFc2qF6IDP5wJJt2rKN/5g56qQ+3vR8B4DbbAcFj4Oqee1WqbQqa
-2jb9hLwoJ5nvYlz5LnZQyD4ks3sKMhj4pfgM+S9daExfLr3rkdPjJ8ohOLkza6U7
-T3v0q+xlFJzugkzyiOhu/orsW5GxFDblYkQI3VUdFkrKKiXAlkPFC6y5R4h9l4OE
-+bu110mx98FRjQPKBclhy2pV6wIlTsONn0JUeXqzmmqVU/ejYCvLu5TAHlNYKC1M
-1W/uQZU1sv6W/wGX900jzI2KMZbf+SwebsA5L0rqjcctEWtOZ4gTdxM/LvpJwchg
-QpAHmcI49mwZ4qH9TYUzKMRMpQtavTb8zGM4cow6y892qeBmUSDkaeTb/PJLSzD3
-P2FOFBQqppDrRyEfilCXULQK3bcAH6Fhm9uZa4DUxbcgTtGRyfRYChXC+hKSPPTy
-X91aUxiJnvomKPpaP2cd4hdmEUw2vQ5VS0/flytztbYl9ZwOH75XOiQYgSmlvGUT
-Tpdp+b4UfP5b5VNxVBNZojSivLPwMR9ePvfyxm6scdagL+KWCrDrf6kqmpm9gmEJ
-3ZV9N84Dh8zhBNMjmRPt
-=4SW+
------END PGP SIGNATURE-----
-
---=-p9YWrJoAHLqXlN4AIukh--
+diff --git a/arch/arm/mach-shmobile/clock-sh7372.c b/arch/arm/mach-shmobile/clock-sh7372.c
+index 6697592..a736d94 100644
+--- a/arch/arm/mach-shmobile/clock-sh7372.c
++++ b/arch/arm/mach-shmobile/clock-sh7372.c
+@@ -612,8 +612,8 @@ static struct clk_lookup lookups[] = {
+ 	CLKDEV_CON_ID("hdmi_clk", &div6_reparent_clks[DIV6_HDMI]),
+ 	CLKDEV_ICK_ID("dsit_clk", "sh-mipi-dsi.0", &div6_clks[DIV6_DSIT]),
+ 	CLKDEV_ICK_ID("dsit_clk", "sh-mipi-dsi.1", &div6_clks[DIV6_DSIT]),
+-	CLKDEV_ICK_ID("dsi0p_clk", "sh-mipi-dsi.0", &div6_clks[DIV6_DSI0P]),
+-	CLKDEV_ICK_ID("dsi1p_clk", "sh-mipi-dsi.1", &div6_clks[DIV6_DSI1P]),
++	CLKDEV_ICK_ID("dsip_clk", "sh-mipi-dsi.0", &div6_clks[DIV6_DSI0P]),
++	CLKDEV_ICK_ID("dsip_clk", "sh-mipi-dsi.1", &div6_clks[DIV6_DSI1P]),
+ 
+ 	/* MSTP32 clocks */
+ 	CLKDEV_DEV_ID("i2c-sh_mobile.2", &mstp_clks[MSTP001]), /* IIC2 */
+diff --git a/arch/arm/mach-shmobile/clock-sh73a0.c b/arch/arm/mach-shmobile/clock-sh73a0.c
+index 61a846b..3da30ba 100644
+--- a/arch/arm/mach-shmobile/clock-sh73a0.c
++++ b/arch/arm/mach-shmobile/clock-sh73a0.c
+@@ -319,8 +319,8 @@ static struct clk_lookup lookups[] = {
+ 	CLKDEV_CON_ID("sdhi2_clk", &div6_clks[DIV6_SDHI2]),
+ 	CLKDEV_ICK_ID("dsit_clk", "sh-mipi-dsi.0", &div6_clks[DIV6_DSIT]),
+ 	CLKDEV_ICK_ID("dsit_clk", "sh-mipi-dsi.1", &div6_clks[DIV6_DSIT]),
+-	CLKDEV_ICK_ID("dsi0p_clk", "sh-mipi-dsi.0", &div6_clks[DIV6_DSI0P]),
+-	CLKDEV_ICK_ID("dsi1p_clk", "sh-mipi-dsi.1", &div6_clks[DIV6_DSI1P]),
++	CLKDEV_ICK_ID("dsip_clk", "sh-mipi-dsi.0", &div6_clks[DIV6_DSI0P]),
++	CLKDEV_ICK_ID("dsip_clk", "sh-mipi-dsi.1", &div6_clks[DIV6_DSI1P]),
+ 
+ 	/* MSTP32 clocks */
+ 	CLKDEV_DEV_ID("i2c-sh_mobile.2", &mstp_clks[MSTP001]), /* I2C2 */
+diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
+index 72ee96b..4aa5053 100644
+--- a/drivers/video/sh_mipi_dsi.c
++++ b/drivers/video/sh_mipi_dsi.c
+@@ -363,7 +363,6 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
+ 	struct resource *res2 = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+ 	unsigned long rate, f_current;
+ 	int idx = pdev->id, ret;
+-	char dsip_clk[] = "dsi.p_clk";
+ 
+ 	if (!res || !res2 || idx >= ARRAY_SIZE(mipi_dsi) || !pdata)
+ 		return -ENODEV;
+@@ -428,8 +427,7 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
+ 
+ 	dev_dbg(&pdev->dev, "DSI-T clk %lu -> %lu\n", f_current, rate);
+ 
+-	sprintf(dsip_clk, "dsi%1.1dp_clk", idx);
+-	mipi->dsip_clk = clk_get(&pdev->dev, dsip_clk);
++	mipi->dsip_clk = clk_get(&pdev->dev, "dsip_clk");
+ 	if (IS_ERR(mipi->dsip_clk)) {
+ 		ret = PTR_ERR(mipi->dsip_clk);
+ 		goto eclkpget;
+-- 
+1.7.5.4
 

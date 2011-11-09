@@ -1,117 +1,61 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:21:28 +0000
-Subject: [PATCH 29/65] OMAPDSS: APPLY: separate vsync isr register/unregister
-Message-Id: <1321953724-6350-30-git-send-email-tomi.valkeinen@ti.com>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Wed, 09 Nov 2011 04:35:56 +0000
+Subject: [PATCH 14/15] fbdev: sh_mipi_dsi: fixup setup timing of SYSCONF
+Message-Id: <87k479ap5i.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Create separate functions for the vsync isr register/unregister code for
-cleaner code.
+SYSCONF should be set after PHYCTRL
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 ---
- drivers/video/omap2/dss/apply.c |   61 +++++++++++++++++++++++---------------
- 1 files changed, 37 insertions(+), 24 deletions(-)
+ drivers/video/sh_mipi_dsi.c |   23 +++++++++++------------
+ 1 files changed, 11 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index cca5732..6aad0fd 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -417,6 +417,40 @@ void dss_start_update(struct omap_overlay_manager *mgr)
- 	dispc_mgr_enable(mgr->id, true);
- }
+diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
+index f2c3f94..187e127 100644
+--- a/drivers/video/sh_mipi_dsi.c
++++ b/drivers/video/sh_mipi_dsi.c
+@@ -246,18 +246,6 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
+ 	/* setup DSI link */
  
-+static void dss_apply_irq_handler(void *data, u32 mask);
-+
-+static void dss_register_vsync_isr(void)
-+{
-+	u32 mask;
-+	int r;
-+
-+	mask = DISPC_IRQ_VSYNC	| DISPC_IRQ_EVSYNC_ODD |
-+		DISPC_IRQ_EVSYNC_EVEN;
-+	if (dss_has_feature(FEAT_MGR_LCD2))
-+		mask |= DISPC_IRQ_VSYNC2;
-+
-+	r = omap_dispc_register_isr(dss_apply_irq_handler, NULL, mask);
-+	WARN_ON(r);
-+
-+	dss_cache.irq_enabled = true;
-+}
-+
-+static void dss_unregister_vsync_isr(void)
-+{
-+	u32 mask;
-+	int r;
-+
-+	mask = DISPC_IRQ_VSYNC | DISPC_IRQ_EVSYNC_ODD |
-+			DISPC_IRQ_EVSYNC_EVEN;
-+	if (dss_has_feature(FEAT_MGR_LCD2))
-+		mask |= DISPC_IRQ_VSYNC2;
-+
-+	r = omap_dispc_unregister_isr(dss_apply_irq_handler, NULL, mask);
-+	WARN_ON(r);
-+
-+	dss_cache.irq_enabled = false;
-+}
-+
- static void dss_apply_irq_handler(void *data, u32 mask)
- {
- 	struct manager_cache_data *mc;
-@@ -425,7 +459,6 @@ static void dss_apply_irq_handler(void *data, u32 mask)
- 	const int num_mgrs = dss_feat_get_num_mgrs();
- 	int i, r;
- 	bool mgr_busy[MAX_DSS_MANAGERS];
--	u32 irq_mask;
- 
- 	for (i = 0; i < num_mgrs; i++)
- 		mgr_busy[i] = dispc_mgr_go_busy(i);
-@@ -459,13 +492,7 @@ static void dss_apply_irq_handler(void *data, u32 mask)
- 			goto end;
- 	}
- 
--	irq_mask = DISPC_IRQ_VSYNC | DISPC_IRQ_EVSYNC_ODD |
--			DISPC_IRQ_EVSYNC_EVEN;
--	if (dss_has_feature(FEAT_MGR_LCD2))
--		irq_mask |= DISPC_IRQ_VSYNC2;
+ 	/*
+-	 * Default = ULPS enable |
+-	 *	Contention detection enabled |
+-	 *	EoT packet transmission enable |
+-	 *	CRC check enable |
+-	 *	ECC check enable
+-	 * additionally enable first two lanes
+-	 */
+-	bitmap_fill((unsigned long *)&tmp, pdata->lane);
+-	tmp |= 0x00003700;
+-	iowrite32(tmp, base + SYSCONF);
 -
--	omap_dispc_unregister_isr(dss_apply_irq_handler, NULL, irq_mask);
--	dss_cache.irq_enabled = false;
-+	dss_unregister_vsync_isr();
+-	/*
+ 	 * T_wakeup = 0x7000
+ 	 * T_hs-trail = 3
+ 	 * T_hs-prepare = 3
+@@ -287,6 +275,17 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
+ 	/* Deassert resets, power on */
+ 	iowrite32(0x03070001, base + PHYCTRL);
  
- end:
- 	spin_unlock(&dss_cache.lock);
-@@ -605,22 +632,8 @@ int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
++	/*
++	 * Default = ULPS enable |
++	 *	Contention detection enabled |
++	 *	EoT packet transmission enable |
++	 *	CRC check enable |
++	 *	ECC check enable
++	 */
++	bitmap_fill((unsigned long *)&tmp, pdata->lane);
++	tmp |= 0x00003700;
++	iowrite32(tmp, base + SYSCONF);
++
+ 	/* setup l-bridge */
  
- 	r = 0;
- 	if (mgr->enabled && !mgr_manual_update(mgr)) {
--		if (!dss_cache.irq_enabled) {
--			u32 mask;
--
--			mask = DISPC_IRQ_VSYNC	| DISPC_IRQ_EVSYNC_ODD |
--				DISPC_IRQ_EVSYNC_EVEN;
--			if (dss_has_feature(FEAT_MGR_LCD2))
--				mask |= DISPC_IRQ_VSYNC2;
--
--			r = omap_dispc_register_isr(dss_apply_irq_handler,
--					NULL, mask);
--
--			if (r)
--				DSSERR("failed to register apply isr\n");
--
--			dss_cache.irq_enabled = true;
--		}
-+		if (!dss_cache.irq_enabled)
-+			dss_register_vsync_isr();
- 
- 		configure_dispc();
- 	}
+ 	/*
 -- 
-1.7.4.1
+1.7.5.4
 

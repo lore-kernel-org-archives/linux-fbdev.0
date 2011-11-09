@@ -1,70 +1,44 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:21:54 +0000
-Subject: [PATCH 55/65] OMAPDSS: APPLY: remove device_changed field
-Message-Id: <1321953724-6350-56-git-send-email-tomi.valkeinen@ti.com>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Wed, 09 Nov 2011 04:34:33 +0000
+Subject: [PATCH 06/15] fbdev: sh_mipi_dsi: add SH_MIPI_DSI_BL2E flag
+Message-Id: <87vcqtap7t.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-omap_overlay_manager contains device_changed field, which no longer has
-any use. So remove the field and the few places where it is touched.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 ---
- drivers/video/omap2/dss/apply.c |    7 -------
- include/video/omapdss.h         |    2 --
- 2 files changed, 0 insertions(+), 9 deletions(-)
+ drivers/video/sh_mipi_dsi.c |    2 ++
+ include/video/sh_mipi_dsi.h |    1 +
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index fdd53b6..916acd7 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -608,11 +608,6 @@ static void omap_dss_mgr_apply_mgr(struct omap_overlay_manager *mgr)
+diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
+index c9fac13..dfd5154 100644
+--- a/drivers/video/sh_mipi_dsi.c
++++ b/drivers/video/sh_mipi_dsi.c
+@@ -316,6 +316,8 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
+ 	 * Non-burst mode with sync pulses: VSE and HSE are output,
+ 	 * HSA period allowed, no commands in LP
+ 	 */
++	if (pdata->flags & SH_MIPI_DSI_BL2E)
++		vmctr2 |= 1 << 17;
+ 	if (pdata->flags & SH_MIPI_DSI_HSABM)
+ 		vmctr2 |= 1 << 5;
+ 	if (pdata->flags & SH_MIPI_DSI_HBPBM)
+diff --git a/include/video/sh_mipi_dsi.h b/include/video/sh_mipi_dsi.h
+index 86a72c0..58b78f8 100644
+--- a/include/video/sh_mipi_dsi.h
++++ b/include/video/sh_mipi_dsi.h
+@@ -30,6 +30,7 @@ struct sh_mobile_lcdc_chan_cfg;
+ #define SH_MIPI_DSI_HSABM	(1 << 0)
+ #define SH_MIPI_DSI_HBPBM	(1 << 1)
+ #define SH_MIPI_DSI_HFPBM	(1 << 2)
++#define SH_MIPI_DSI_BL2E	(1 << 3)
  
- 	mp = get_mgr_priv(mgr);
- 
--	if (mgr->device_changed) {
--		mgr->device_changed = false;
--		mp->user_info_dirty  = true;
--	}
--
- 	if (!mp->user_info_dirty)
- 		return;
- 
-@@ -807,7 +802,6 @@ int dss_mgr_set_device(struct omap_overlay_manager *mgr,
- 
- 	dssdev->manager = mgr;
- 	mgr->device = dssdev;
--	mgr->device_changed = true;
- 
- 	mutex_unlock(&apply_lock);
- 
-@@ -840,7 +834,6 @@ int dss_mgr_unset_device(struct omap_overlay_manager *mgr)
- 
- 	mgr->device->manager = NULL;
- 	mgr->device = NULL;
--	mgr->device_changed = true;
- 
- 	mutex_unlock(&apply_lock);
- 
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index e629b0d..98fc026 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -426,8 +426,6 @@ struct omap_overlay_manager {
- 	/* dynamic fields */
- 	struct omap_dss_device *device;
- 
--	bool device_changed;
--
- 	int (*set_device)(struct omap_overlay_manager *mgr,
- 		struct omap_dss_device *dssdev);
- 	int (*unset_device)(struct omap_overlay_manager *mgr);
+ struct sh_mipi_dsi_info {
+ 	enum sh_mipi_dsi_data_fmt	data_format;
 -- 
-1.7.4.1
+1.7.5.4
 

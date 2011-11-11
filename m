@@ -1,101 +1,189 @@
-From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Date: Wed, 09 Nov 2011 04:34:43 +0000
-Subject: [PATCH 07/15] fbdev: sh_mipi_dsi: add lane control support
-Message-Id: <87ty6dap7k.wl%kuninori.morimoto.gx@renesas.com>
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+Date: Fri, 11 Nov 2011 18:41:53 +0000
+Subject: Re: [PATCH v3 2/3] v4l: Add V4L2_PIX_FMT_NV24 and V4L2_PIX_FMT_NV42
+Message-Id: <4EBD6C71.4040604@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1314789501-824-1-git-send-email-laurent.pinchart@ideasonboard.com> <1314789501-824-3-git-send-email-laurent.pinchart@ideasonboard.com>
+In-Reply-To: <1314789501-824-3-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, magnus.damm@gmail.com
 
-SH MIPI DSI can use 0-4 lane
+Em 31-08-2011 08:18, Laurent Pinchart escreveu:
+> NV24 and NV42 are planar YCbCr 4:4:4 and YCrCb 4:4:4 formats with a
+> luma plane followed by an interleaved chroma plane.
+> 
+> Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
----
- arch/arm/mach-shmobile/board-ag5evm.c |    1 +
- arch/arm/mach-shmobile/board-ap4evb.c |    1 +
- drivers/video/sh_mipi_dsi.c           |   10 +++++++++-
- include/video/sh_mipi_dsi.h           |    1 +
- 4 files changed, 12 insertions(+), 1 deletions(-)
+Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 
-diff --git a/arch/arm/mach-shmobile/board-ag5evm.c b/arch/arm/mach-shmobile/board-ag5evm.c
-index 83624e2..dd3881a 100644
---- a/arch/arm/mach-shmobile/board-ag5evm.c
-+++ b/arch/arm/mach-shmobile/board-ag5evm.c
-@@ -324,6 +324,7 @@ static struct resource mipidsi0_resources[] = {
- static struct sh_mipi_dsi_info mipidsi0_info = {
- 	.data_format	= MIPI_RGB888,
- 	.lcd_chan	= &lcdc0_info.ch[0],
-+	.lane		= 2,
- 	.vsynw_offset	= 20,
- 	.clksrc		= 1,
- 	.flags		= SH_MIPI_DSI_HSABM,
-diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
-index a3aa0f6..187d6fc 100644
---- a/arch/arm/mach-shmobile/board-ap4evb.c
-+++ b/arch/arm/mach-shmobile/board-ap4evb.c
-@@ -580,6 +580,7 @@ static struct resource mipidsi0_resources[] = {
- static struct sh_mipi_dsi_info mipidsi0_info = {
- 	.data_format	= MIPI_RGB888,
- 	.lcd_chan	= &lcdc_info.ch[0],
-+	.lane		= 2,
- 	.vsynw_offset	= 17,
- };
- 
-diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
-index dfd5154..af6bec2 100644
---- a/drivers/video/sh_mipi_dsi.c
-+++ b/drivers/video/sh_mipi_dsi.c
-@@ -8,6 +8,7 @@
-  * published by the Free Software Foundation.
-  */
- 
-+#include <linux/bitmap.h>
- #include <linux/clk.h>
- #include <linux/delay.h>
- #include <linux/init.h>
-@@ -153,6 +154,7 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
- 	struct sh_mobile_lcdc_chan_cfg *ch = pdata->lcd_chan;
- 	u32 pctype, datatype, pixfmt, linelength, vmctr2 = 0x00e00000;
- 	bool yuv;
-+	u32 tmp;
- 
- 	/*
- 	 * Select data format. MIPI DSI is not hot-pluggable, so, we just use
-@@ -253,6 +255,9 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
- 	    (!yuv && ch->interface_type != RGB24))
- 		return -EINVAL;
- 
-+	if (!pdata->lane)
-+		return -EINVAL;
-+
- 	/* reset DSI link */
- 	iowrite32(0x00000001, base + SYSCTRL);
- 	/* Hold reset for 100 cycles of the slowest of bus, HS byte and LP clock */
-@@ -269,7 +274,10 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
- 	 *	ECC check enable
- 	 * additionally enable first two lanes
- 	 */
--	iowrite32(0x00003703, base + SYSCONF);
-+	bitmap_fill((unsigned long *)&tmp, pdata->lane);
-+	tmp |= 0x00003700;
-+	iowrite32(tmp, base + SYSCONF);
-+
- 	/*
- 	 * T_wakeup = 0x7000
- 	 * T_hs-trail = 3
-diff --git a/include/video/sh_mipi_dsi.h b/include/video/sh_mipi_dsi.h
-index 58b78f8..3d0ec50 100644
---- a/include/video/sh_mipi_dsi.h
-+++ b/include/video/sh_mipi_dsi.h
-@@ -35,6 +35,7 @@ struct sh_mobile_lcdc_chan_cfg;
- struct sh_mipi_dsi_info {
- 	enum sh_mipi_dsi_data_fmt	data_format;
- 	struct sh_mobile_lcdc_chan_cfg	*lcd_chan;
-+	int				lane;
- 	unsigned long			flags;
- 	u32				clksrc;
- 	unsigned int			vsynw_offset;
--- 
-1.7.5.4
+> ---
+>  Documentation/DocBook/media/v4l/pixfmt-nv24.xml |  129 +++++++++++++++++++++++
+>  Documentation/DocBook/media/v4l/pixfmt.xml      |    1 +
+>  include/linux/videodev2.h                       |    2 +
+>  3 files changed, 132 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/DocBook/media/v4l/pixfmt-nv24.xml
+> 
+> diff --git a/Documentation/DocBook/media/v4l/pixfmt-nv24.xml b/Documentation/DocBook/media/v4l/pixfmt-nv24.xml
+> new file mode 100644
+> index 0000000..939c803
+> --- /dev/null
+> +++ b/Documentation/DocBook/media/v4l/pixfmt-nv24.xml
+> @@ -0,0 +1,129 @@
+> +    <refentry>
+> +      <refmeta>
+> +	<refentrytitle>V4L2_PIX_FMT_NV24 ('NV24'), V4L2_PIX_FMT_NV42 ('NV42')</refentrytitle>
+> +	&manvol;
+> +      </refmeta>
+> +      <refnamediv>
+> +	<refname id="V4L2-PIX-FMT-NV24"><constant>V4L2_PIX_FMT_NV24</constant></refname>
+> +	<refname id="V4L2-PIX-FMT-NV42"><constant>V4L2_PIX_FMT_NV42</constant></refname>
+> +	<refpurpose>Formats with full horizontal and vertical
+> +chroma resolutions, also known as YUV 4:4:4. One luminance and one
+> +chrominance plane with alternating chroma samples as opposed to
+> +<constant>V4L2_PIX_FMT_YVU420</constant></refpurpose>
+> +      </refnamediv>
+> +      <refsect1>
+> +	<title>Description</title>
+> +
+> +	<para>These are two-plane versions of the YUV 4:4:4 format. The three
+> +	components are separated into two sub-images or planes. The Y plane is
+> +	first, with each Y sample stored in one byte per pixel. For
+> +	<constant>V4L2_PIX_FMT_NV24</constant>, a combined CbCr plane
+> +	immediately follows the Y plane in memory. The CbCr plane has the same
+> +	width and height, in pixels, as the Y plane (and the image). Each line
+> +	contains one CbCr pair per pixel, with each Cb and Cr sample stored in
+> +	one byte. <constant>V4L2_PIX_FMT_NV42</constant> is the same except that
+> +	the Cb and Cr samples are swapped, the CrCb plane starts with a Cr
+> +	sample.</para>
+> +
+> +	<para>If the Y plane has pad bytes after each row, then the CbCr plane
+> +	has twice as many pad bytes after its rows.</para>
+> +
+> +	<example>
+> +	  <title><constant>V4L2_PIX_FMT_NV24</constant> 4 &times; 4
+> +pixel image</title>
+> +
+> +	  <formalpara>
+> +	    <title>Byte Order.</title>
+> +	    <para>Each cell is one byte.
+> +		<informaltable frame="none">
+> +		<tgroup cols="9" align="center">
+> +		  <colspec align="left" colwidth="2*" />
+> +		  <tbody valign="top">
+> +		    <row>
+> +		      <entry>start&nbsp;+&nbsp;0:</entry>
+> +		      <entry>Y'<subscript>00</subscript></entry>
+> +		      <entry>Y'<subscript>01</subscript></entry>
+> +		      <entry>Y'<subscript>02</subscript></entry>
+> +		      <entry>Y'<subscript>03</subscript></entry>
+> +		    </row>
+> +		    <row>
+> +		      <entry>start&nbsp;+&nbsp;4:</entry>
+> +		      <entry>Y'<subscript>10</subscript></entry>
+> +		      <entry>Y'<subscript>11</subscript></entry>
+> +		      <entry>Y'<subscript>12</subscript></entry>
+> +		      <entry>Y'<subscript>13</subscript></entry>
+> +		    </row>
+> +		    <row>
+> +		      <entry>start&nbsp;+&nbsp;8:</entry>
+> +		      <entry>Y'<subscript>20</subscript></entry>
+> +		      <entry>Y'<subscript>21</subscript></entry>
+> +		      <entry>Y'<subscript>22</subscript></entry>
+> +		      <entry>Y'<subscript>23</subscript></entry>
+> +		    </row>
+> +		    <row>
+> +		      <entry>start&nbsp;+&nbsp;12:</entry>
+> +		      <entry>Y'<subscript>30</subscript></entry>
+> +		      <entry>Y'<subscript>31</subscript></entry>
+> +		      <entry>Y'<subscript>32</subscript></entry>
+> +		      <entry>Y'<subscript>33</subscript></entry>
+> +		    </row>
+> +		    <row>
+> +		      <entry>start&nbsp;+&nbsp;16:</entry>
+> +		      <entry>Cb<subscript>00</subscript></entry>
+> +		      <entry>Cr<subscript>00</subscript></entry>
+> +		      <entry>Cb<subscript>01</subscript></entry>
+> +		      <entry>Cr<subscript>01</subscript></entry>
+> +		      <entry>Cb<subscript>02</subscript></entry>
+> +		      <entry>Cr<subscript>02</subscript></entry>
+> +		      <entry>Cb<subscript>03</subscript></entry>
+> +		      <entry>Cr<subscript>03</subscript></entry>
+> +		    </row>
+> +		    <row>
+> +		      <entry>start&nbsp;+&nbsp;24:</entry>
+> +		      <entry>Cb<subscript>10</subscript></entry>
+> +		      <entry>Cr<subscript>10</subscript></entry>
+> +		      <entry>Cb<subscript>11</subscript></entry>
+> +		      <entry>Cr<subscript>11</subscript></entry>
+> +		      <entry>Cb<subscript>12</subscript></entry>
+> +		      <entry>Cr<subscript>12</subscript></entry>
+> +		      <entry>Cb<subscript>13</subscript></entry>
+> +		      <entry>Cr<subscript>13</subscript></entry>
+> +		    </row>
+> +		    <row>
+> +		      <entry>start&nbsp;+&nbsp;32:</entry>
+> +		      <entry>Cb<subscript>20</subscript></entry>
+> +		      <entry>Cr<subscript>20</subscript></entry>
+> +		      <entry>Cb<subscript>21</subscript></entry>
+> +		      <entry>Cr<subscript>21</subscript></entry>
+> +		      <entry>Cb<subscript>22</subscript></entry>
+> +		      <entry>Cr<subscript>22</subscript></entry>
+> +		      <entry>Cb<subscript>23</subscript></entry>
+> +		      <entry>Cr<subscript>23</subscript></entry>
+> +		    </row>
+> +		    <row>
+> +		      <entry>start&nbsp;+&nbsp;40:</entry>
+> +		      <entry>Cb<subscript>30</subscript></entry>
+> +		      <entry>Cr<subscript>30</subscript></entry>
+> +		      <entry>Cb<subscript>31</subscript></entry>
+> +		      <entry>Cr<subscript>31</subscript></entry>
+> +		      <entry>Cb<subscript>32</subscript></entry>
+> +		      <entry>Cr<subscript>32</subscript></entry>
+> +		      <entry>Cb<subscript>33</subscript></entry>
+> +		      <entry>Cr<subscript>33</subscript></entry>
+> +		    </row>
+> +		  </tbody>
+> +		</tgroup>
+> +		</informaltable>
+> +	      </para>
+> +	  </formalpara>
+> +	</example>
+> +      </refsect1>
+> +    </refentry>
+> +
+> +  <!--
+> +Local Variables:
+> +mode: sgml
+> +sgml-parent-document: "pixfmt.sgml"
+> +indent-tabs-mode: nil
+> +End:
+> +  -->
+> diff --git a/Documentation/DocBook/media/v4l/pixfmt.xml b/Documentation/DocBook/media/v4l/pixfmt.xml
+> index 2ff6b77..aef4615 100644
+> --- a/Documentation/DocBook/media/v4l/pixfmt.xml
+> +++ b/Documentation/DocBook/media/v4l/pixfmt.xml
+> @@ -714,6 +714,7 @@ information.</para>
+>      &sub-nv12m;
+>      &sub-nv12mt;
+>      &sub-nv16;
+> +    &sub-nv24;
+>      &sub-m420;
+>    </section>
+>  
+> diff --git a/include/linux/videodev2.h b/include/linux/videodev2.h
+> index fca24cc..8225163 100644
+> --- a/include/linux/videodev2.h
+> +++ b/include/linux/videodev2.h
+> @@ -343,6 +343,8 @@ struct v4l2_pix_format {
+>  #define V4L2_PIX_FMT_NV21    v4l2_fourcc('N', 'V', '2', '1') /* 12  Y/CrCb 4:2:0  */
+>  #define V4L2_PIX_FMT_NV16    v4l2_fourcc('N', 'V', '1', '6') /* 16  Y/CbCr 4:2:2  */
+>  #define V4L2_PIX_FMT_NV61    v4l2_fourcc('N', 'V', '6', '1') /* 16  Y/CrCb 4:2:2  */
+> +#define V4L2_PIX_FMT_NV24    v4l2_fourcc('N', 'V', '2', '4') /* 24  Y/CbCr 4:4:4  */
+> +#define V4L2_PIX_FMT_NV42    v4l2_fourcc('N', 'V', '4', '2') /* 24  Y/CrCb 4:4:4  */
+>  
+>  /* two non contiguous planes - one Y, one Cr + Cb interleaved  */
+>  #define V4L2_PIX_FMT_NV12M   v4l2_fourcc('N', 'M', '1', '2') /* 12  Y/CbCr 4:2:0  */
 

@@ -1,199 +1,42 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:21:27 +0000
-Subject: [PATCH 28/65] OMAPDSS: store overlays in a list for each manager
-Message-Id: <1321953724-6350-29-git-send-email-tomi.valkeinen@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 12 Nov 2011 00:20:23 +0000
+Subject: Re: [PATCH 1/4] zorro: Rename Picasso IV Z2 "MEM" to "RAM" for consistency
+Message-Id: <4EBDBBC7.1010207@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1319110945-25684-1-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1319110945-25684-1-git-send-email-geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev@vger.kernel.org, linux-m68k@vger.kernel.org, "Christian T. Steigies" <cts@debian.org>, linux-kernel@vger.kernel.org, =?ISO-8859-1?Q?Ingo_J=FCrgensmann?= <ij@2011.bluespice.org>
 
-Current way of handling overlay-manager links is a bit strange: each
-manager has a static array, containing pointers to all the overlays
-(even those used by other managers). The overlays contain a pointer to
-the manager being used.
+Applied all four patches.
 
-This patch makes the system a bit saner: each manager has a linked list
-of overlays, and only the overlays linked to that manager are in the
-list.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/apply.c   |   33 +++++++--------------------------
- drivers/video/omap2/dss/manager.c |   10 ++++------
- drivers/video/omap2/dss/overlay.c |   12 ++----------
- include/video/omapdss.h           |    3 +--
- 4 files changed, 14 insertions(+), 44 deletions(-)
+Thanks,
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index cfcf816..cca5732 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -398,8 +398,7 @@ void dss_start_update(struct omap_overlay_manager *mgr)
- {
- 	struct manager_cache_data *mc;
- 	struct overlay_cache_data *oc;
--	const int num_ovls = dss_feat_get_num_ovls();
--	int i;
-+	struct omap_overlay *ovl;
- 
- 	mc = &dss_cache.manager_cache[mgr->id];
- 
-@@ -407,11 +406,8 @@ void dss_start_update(struct omap_overlay_manager *mgr)
- 	configure_dispc();
- 	mc->do_manual_update = false;
- 
--	for (i = 0; i < num_ovls; ++i) {
--		oc = &dss_cache.overlay_cache[i];
--		if (oc->channel != mgr->id)
--			continue;
--
-+	list_for_each_entry(ovl, &mgr->overlays, list) {
-+		oc = &dss_cache.overlay_cache[ovl->id];
- 		oc->shadow_dirty = false;
- 	}
- 
-@@ -584,8 +580,9 @@ static void omap_dss_mgr_apply_ovl_fifos(struct omap_overlay *ovl)
- 
- int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
- {
--	int i, r;
-+	int r;
- 	unsigned long flags;
-+	struct omap_overlay *ovl;
- 
- 	DSSDBG("omap_dss_mgr_apply(%s)\n", mgr->name);
- 
-@@ -596,31 +593,15 @@ int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
- 	spin_lock_irqsave(&dss_cache.lock, flags);
- 
- 	/* Configure overlays */
--	for (i = 0; i < mgr->num_overlays; ++i) {
--		struct omap_overlay *ovl;
--
--		ovl = mgr->overlays[i];
--
--		if (ovl->manager != mgr)
--			continue;
--
-+	list_for_each_entry(ovl, &mgr->overlays, list)
- 		omap_dss_mgr_apply_ovl(ovl);
--	}
- 
- 	/* Configure manager */
- 	omap_dss_mgr_apply_mgr(mgr);
- 
- 	/* Configure overlay fifos */
--	for (i = 0; i < mgr->num_overlays; ++i) {
--		struct omap_overlay *ovl;
--
--		ovl = mgr->overlays[i];
--
--		if (ovl->manager != mgr)
--			continue;
--
-+	list_for_each_entry(ovl, &mgr->overlays, list)
- 		omap_dss_mgr_apply_ovl_fifos(ovl);
--	}
- 
- 	r = 0;
- 	if (mgr->enabled && !mgr_manual_update(mgr)) {
-diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
-index a08cc6e..62bcc38 100644
---- a/drivers/video/omap2/dss/manager.c
-+++ b/drivers/video/omap2/dss/manager.c
-@@ -470,8 +470,8 @@ static struct kobj_type manager_ktype = {
- static int omap_dss_set_device(struct omap_overlay_manager *mgr,
- 		struct omap_dss_device *dssdev)
- {
--	int i;
- 	int r;
-+	struct omap_overlay *ovl;
- 
- 	if (dssdev->manager) {
- 		DSSERR("display '%s' already has a manager '%s'\n",
-@@ -485,10 +485,8 @@ static int omap_dss_set_device(struct omap_overlay_manager *mgr,
- 		return -EINVAL;
- 	}
- 
--	for (i = 0; i < mgr->num_overlays; i++) {
--		struct omap_overlay *ovl = mgr->overlays[i];
--
--		if (ovl->manager != mgr || !ovl->info.enabled)
-+	list_for_each_entry(ovl, &mgr->overlays, list) {
-+		if (!ovl->info.enabled)
- 			continue;
- 
- 		r = dss_check_overlay(ovl, dssdev);
-@@ -626,7 +624,7 @@ int dss_init_overlay_managers(struct platform_device *pdev)
- 		mgr->supported_displays  			dss_feat_get_supported_displays(mgr->id);
- 
--		dss_overlay_setup_dispc_manager(mgr);
-+		INIT_LIST_HEAD(&mgr->overlays);
- 
- 		r = kobject_init_and_add(&mgr->kobj, &manager_ktype,
- 				&pdev->dev.kobj, "manager%d", i);
-diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
-index ccd6127..3c94065 100644
---- a/drivers/video/omap2/dss/overlay.c
-+++ b/drivers/video/omap2/dss/overlay.c
-@@ -566,6 +566,7 @@ static int omap_dss_set_manager(struct omap_overlay *ovl,
- 	}
- 
- 	ovl->manager = mgr;
-+	list_add_tail(&ovl->list, &mgr->overlays);
- 	ovl->manager_changed = true;
- 
- 	/* XXX: When there is an overlay on a DSI manual update display, and
-@@ -597,6 +598,7 @@ static int omap_dss_unset_manager(struct omap_overlay *ovl)
- 	}
- 
- 	ovl->manager = NULL;
-+	list_del(&ovl->list);
- 	ovl->manager_changed = true;
- 
- 	return 0;
-@@ -617,14 +619,6 @@ struct omap_overlay *omap_dss_get_overlay(int num)
- }
- EXPORT_SYMBOL(omap_dss_get_overlay);
- 
--static struct omap_overlay *dispc_overlays[MAX_DSS_OVERLAYS];
--
--void dss_overlay_setup_dispc_manager(struct omap_overlay_manager *mgr)
--{
--	mgr->num_overlays = dss_feat_get_num_ovls();
--	mgr->overlays = dispc_overlays;
--}
--
- void dss_init_overlays(struct platform_device *pdev)
- {
- 	int i, r;
-@@ -684,8 +678,6 @@ void dss_init_overlays(struct platform_device *pdev)
- 
- 		if (r)
- 			DSSERR("failed to create sysfs file\n");
--
--		dispc_overlays[i] = ovl;
- 	}
- }
- 
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index fd5a96c..eaeca89 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -423,8 +423,7 @@ struct omap_overlay_manager {
- 	const char *name;
- 	enum omap_channel id;
- 	enum omap_overlay_manager_caps caps;
--	int num_overlays;
--	struct omap_overlay **overlays;
-+	struct list_head overlays;
- 	enum omap_display_type supported_displays;
- 
- 	/* dynamic fields */
--- 
-1.7.4.1
+Florian Tobias Schandinat
+
+On 10/20/2011 11:42 AM, Geert Uytterhoeven wrote:
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> ---
+>  include/linux/zorro_ids.h |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/zorro_ids.h b/include/linux/zorro_ids.h
+> index 7e74908..74bc53b 100644
+> --- a/include/linux/zorro_ids.h
+> +++ b/include/linux/zorro_ids.h
+> @@ -360,8 +360,8 @@
+>  #define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_II_II_PLUS_RAM	ZORRO_ID(VILLAGE_TRONIC, 0x0B, 0)
+>  #define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_II_II_PLUS_REG	ZORRO_ID(VILLAGE_TRONIC, 0x0C, 0)
+>  #define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_II_II_PLUS_SEGMENTED_MODE	ZORRO_ID(VILLAGE_TRONIC, 0x0D, 0)
+> -#define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z2_MEM1		ZORRO_ID(VILLAGE_TRONIC, 0x15, 0)
+> -#define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z2_MEM2		ZORRO_ID(VILLAGE_TRONIC, 0x16, 0)
+> +#define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z2_RAM1		ZORRO_ID(VILLAGE_TRONIC, 0x15, 0)
+> +#define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z2_RAM2		ZORRO_ID(VILLAGE_TRONIC, 0x16, 0)
+>  #define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z2_REG		ZORRO_ID(VILLAGE_TRONIC, 0x17, 0)
+>  #define  ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z3		ZORRO_ID(VILLAGE_TRONIC, 0x18, 0)
+>  #define  ZORRO_PROD_VILLAGE_TRONIC_ARIADNE			ZORRO_ID(VILLAGE_TRONIC, 0xC9, 0)
 

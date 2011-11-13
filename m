@@ -1,49 +1,43 @@
-From: David J Ring Jr <n1ea@arrl.net>
-Date: Sun, 13 Nov 2011 21:21:09 +0000
+From: Anatolij Gustschin <agust@denx.de>
+Date: Sun, 13 Nov 2011 21:39:25 +0000
 Subject: Re: Getting FB to work in Console
-Message-Id: <alpine.DEB.2.00.1111132119440.2138@localhost.localdomain>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="8323328-590414482-1321237219=:2138"
+Message-Id: <20111113223925.7be809ec@wker>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CADO5RbhunU1X7mWwGDbVRc1FSPKBaLudAVav0TMkBoQ_1zp0Mw@mail.gmail.com>
 In-Reply-To: <CADO5RbhunU1X7mWwGDbVRc1FSPKBaLudAVav0TMkBoQ_1zp0Mw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sun, 13 Nov 2011 21:16:52 -0500 (EST)
+David J Ring Jr <n1ea@arrl.net> wrote:
 
---8323328-590414482-1321237219=:2138
-Content-Type: TEXT/PLAIN; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
+> OK so how do I get a frame buffer driver loaded?
 
-I do not know, how do I find this out Geert?
+Check if some frame buffer drivers are installed
+in your system, so e.g. run
 
-Thank you,
+ls /lib/modules/`uname -r`/kernel/drivers/video
 
-David
+to see if there are any frame buffer driver modules
+installed.
+
+Then you have to select the suitable driver for your
+graphic card and load it by running
+
+modprobe drivername
+
+> I don't have any backlisted framebuffer drivers, what is stopping me from 
+> loading a frame buffer driver?
+>
+> Does anyone know what I have to do?
 
 
-On Sun, 13 Nov 2011, Geert Uytterhoeven wrote:
+Usually the driver should be loaded automatically if
+it is installed. Maybe some error happened while loading
+the driver. Dump the kernel log messages by running dmesg
+and check if there was an attempt to load the driver for
+your graphic card.
 
-> Hi David,
->
-> On Mon, Nov 14, 2011 at 00:57, David J Ring Jr <n1ea@arrl.net> wrote:
->> Output of cat /proc/fb
->>
->> No output.
->
-> Hence your kernel is not using a frame buffer device.
-> Do you have a frame buffer device driver for your hardware in the kernel?
->
-> Gr{oetje,eeting}s,
->
->                         Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
->
---8323328-590414482-1321237219=:2138--
+Anatolij

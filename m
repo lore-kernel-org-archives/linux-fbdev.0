@@ -1,71 +1,49 @@
 From: David J Ring Jr <n1ea@arrl.net>
-Date: Sun, 13 Nov 2011 21:17:45 +0000
+Date: Sun, 13 Nov 2011 21:21:09 +0000
 Subject: Re: Getting FB to work in Console
-Message-Id: <alpine.DEB.2.00.1111132106180.2425@localhost.localdomain>
+Message-Id: <alpine.DEB.2.00.1111132119440.2138@localhost.localdomain>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="8323328-590414482-1321237219=:2138"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CADO5RbhunU1X7mWwGDbVRc1FSPKBaLudAVav0TMkBoQ_1zp0Mw@mail.gmail.com>
 In-Reply-To: <CADO5RbhunU1X7mWwGDbVRc1FSPKBaLudAVav0TMkBoQ_1zp0Mw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-OK so how do I get a frame buffer driver loaded?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I don't have any backlisted framebuffer drivers, what is stopping me from 
-loading a frame buffer driver?
+--8323328-590414482-1321237219=:2138
+Content-Type: TEXT/PLAIN; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
 
-Does anyone know what I have to do?
+I do not know, how do I find this out Geert?
+
+Thank you,
 
 David
 
-On Sun, 13 Nov 2011, Anatolij Gustschin wrote:
 
-> Hello David,
+On Sun, 13 Nov 2011, Geert Uytterhoeven wrote:
+
+> Hi David,
 >
-> On Sun, 13 Nov 2011 19:10:59 -0500 (EST)
-> David J Ring Jr <n1ea@arrl.net> wrote:
->
->> Hello Anatolij,
+> On Mon, Nov 14, 2011 at 00:57, David J Ring Jr <n1ea@arrl.net> wrote:
+>> Output of cat /proc/fb
 >>
->> And when I reboot /dev/fb0 disappears again.
+>> No output.
 >
-> Yes, this is expected since there is no frame buffer
-> driver loaded in your system.
+> Hence your kernel is not using a frame buffer device.
+> Do you have a frame buffer device driver for your hardware in the kernel?
 >
->> What is very strange to me is that when I run links2 -g the error message
->> says that /dev/fb0 does not exist, while if I list the file it says that
->> it is there ls /dev/fb0 says the file is there.
+> Gr{oetje,eeting}s,
 >
-> I'll try to explain my understanding of the issue.
-> The device node file /dev/fb0 is only an interface to the frame
-> buffer driver. It can be created by the kernel automatically if
-> there is a graphic chip in the system and the appropriate frame
-> buffer driver is loaded and some device filesystem is initialized
-> and mounted, e.g. devtmpfs device filesystem.
+>                         Geert
 >
-> Or /dev/fb0 can be created by the user, but if it has been created
-> by the user and there is no frame buffer driver running, then the
-> driver interface cannot be opened since no corresponding driver
-> responds when an application tries to open the device. This is
-> the error message that you currently see.
->
-> When you create the device node file under /dev at runtime, it will
-> disappear when rebooting, since the device file system under /dev
-> will be unmounted. Even if there is a /dev directory on your hard
-> disk with some existing device nodes, e.g. fb0 existing, there
-> is still a possibility that you won't see these nodes at runtime.
-> If the kernel creates device system at runtime and it is mounted
-> under /dev, the content of this device system will be populated
-> with device nodes for registered devices. When there is no frame
-> buffer driver loaded, no fb0 device will be registered, no device
-> node will be created.
->
-> Hope this helps,
->
-> Anatolij
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 >
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
+>
+--8323328-590414482-1321237219=:2138--

@@ -1,107 +1,38 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:21:48 +0000
-Subject: [PATCH 49/65] OMAPDSS: APPLY: clean up isr_handler
-Message-Id: <1321953724-6350-50-git-send-email-tomi.valkeinen@ti.com>
+Date: Mon, 14 Nov 2011 15:01:43 +0000
+Subject: [PATCH 1/3] OMAPDSS: HDMI: fix returned HDMI pixel clock
+Message-Id: <1321282905-12939-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1321282905-12939-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1321282905-12939-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add a helper function mgr_clear_shadow_dirty(), which clears the
-shadow_dirty flags for the given manager and for the overlays on that
-manager.
-
-This lets us simplify the code in the dss_apply_irq_handler().
+hdmi_get_pixel_clock() returns the pixel clock in Hz, but the pck is
+stored as kHz. This means the return value has to be multiplied by 1000,
+not by 10000 as the code did.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/apply.c |   52 +++++++++++++++++++++------------------
- 1 files changed, 28 insertions(+), 24 deletions(-)
+ drivers/video/omap2/dss/hdmi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index b2c0462..601dbc7 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -508,47 +508,51 @@ static void dss_unregister_vsync_isr(void)
- 	dss_data.irq_enabled = false;
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 3262f0f..c56378c 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -269,7 +269,7 @@ static void update_hdmi_timings(struct hdmi_config *cfg,
+ unsigned long hdmi_get_pixel_clock(void)
+ {
+ 	/* HDMI Pixel Clock in Mhz */
+-	return hdmi.ip_data.cfg.timings.timings.pixel_clock * 10000;
++	return hdmi.ip_data.cfg.timings.timings.pixel_clock * 1000;
  }
  
--static void dss_apply_irq_handler(void *data, u32 mask)
-+static void mgr_clear_shadow_dirty(struct omap_overlay_manager *mgr)
- {
- 	struct omap_overlay *ovl;
--	struct omap_overlay_manager *mgr;
- 	struct mgr_priv_data *mp;
- 	struct ovl_priv_data *op;
--	const int num_ovls = dss_feat_get_num_ovls();
-+
-+	mp = get_mgr_priv(mgr);
-+	mp->shadow_dirty = false;
-+
-+	list_for_each_entry(ovl, &mgr->overlays, list) {
-+		op = get_ovl_priv(ovl);
-+		op->shadow_dirty = false;
-+		op->shadow_extra_info_dirty = false;
-+	}
-+}
-+
-+static void dss_apply_irq_handler(void *data, u32 mask)
-+{
- 	const int num_mgrs = dss_feat_get_num_mgrs();
- 	int i;
- 
- 	spin_lock(&data_lock);
- 
-+	/* clear busy, updating flags, shadow_dirty flags */
- 	for (i = 0; i < num_mgrs; i++) {
-+		struct omap_overlay_manager *mgr;
-+		struct mgr_priv_data *mp;
-+
- 		mgr = omap_dss_get_overlay_manager(i);
- 		mp = get_mgr_priv(mgr);
- 
--		mp->busy = dispc_mgr_go_busy(i);
--		mp->updating = dispc_mgr_is_enabled(i);
--	}
--
--	for (i = 0; i < num_ovls; ++i) {
--		ovl = omap_dss_get_overlay(i);
--		op = get_ovl_priv(ovl);
--
--		if (!op->enabled)
-+		if (!mp->enabled)
- 			continue;
- 
--		mp = get_mgr_priv(ovl->manager);
--
--		if (!mp->busy) {
--			op->shadow_dirty = false;
--			op->shadow_extra_info_dirty = false;
--		}
--	}
-+		mp->updating = dispc_mgr_is_enabled(i);
- 
--	for (i = 0; i < num_mgrs; ++i) {
--		mgr = omap_dss_get_overlay_manager(i);
--		mp = get_mgr_priv(mgr);
-+		if (!mgr_manual_update(mgr)) {
-+			mp->busy = dispc_mgr_go_busy(i);
- 
--		if (!mp->busy)
--			mp->shadow_dirty = false;
-+			if (!mp->busy)
-+				mgr_clear_shadow_dirty(mgr);
-+		} else {
-+			if (!mp->updating)
-+				mgr_clear_shadow_dirty(mgr);
-+		}
- 	}
- 
- 	dss_write_regs();
+ static void hdmi_compute_pll(struct omap_dss_device *dssdev, int phy,
 -- 
 1.7.4.1
 

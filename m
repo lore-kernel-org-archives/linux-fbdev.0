@@ -1,97 +1,147 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 23 Nov 2011 10:12:23 +0000
-Subject: Re: [PATCH 41/65] OMAPDSS: APPLY: add missing uses of spinlock
-Message-Id: <1322043143.28917.33.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-Gp0/w26QbZtIc+V2JnvU"
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Tue, 15 Nov 2011 12:13:19 +0000
+Subject: [PATCH] video:da8xx-fb: Add 24bpp LCD configuration support
+Message-Id: <1321358479-20390-1-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1321953724-6350-42-git-send-email-tomi.valkeinen@ti.com>
-	 <4ECCC332.4050608@ti.com>
-In-Reply-To: <4ECCC332.4050608@ti.com>
-To: Archit Taneja <a0393947@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, archit@ti.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
+LCD controller on am335x supports 24bpp raster configuration
+in addition to ones on da850. LCDC also supports 24bpp in unpacked
+format having ARGB:8888 32bpp format data in DDR, but it doesn't
+interpret Alpha component of the data.
 
---=-Gp0/w26QbZtIc+V2JnvU
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+---
+ drivers/video/da8xx-fb.c |   57 +++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 56 insertions(+), 1 deletions(-)
 
-On Wed, 2011-11-23 at 15:26 +0530, Archit Taneja wrote:
-> On Tuesday 22 November 2011 02:51 PM, Tomi Valkeinen wrote:
-
-> >   int dss_mgr_set_device(struct omap_overlay_manager *mgr,
-> > @@ -745,16 +762,28 @@ err:
-> >   int dss_ovl_set_info(struct omap_overlay *ovl,
-> >   		struct omap_overlay_info *info)
-> >   {
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&data_lock, flags);
-> > +
-> >   	ovl->info =3D *info;
-> >   	ovl->info_dirty =3D true;
-> >
-> > +	spin_unlock_irqrestore(&data_lock, flags);
-> > +
-> >   	return 0;
-> >   }
-> >
-> >   void dss_ovl_get_info(struct omap_overlay *ovl,
-> >   		struct omap_overlay_info *info)
-> >   {
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&data_lock, flags);
-> > +
-> >   	*info =3D ovl->info;
-> > +
-> > +	spin_unlock_irqrestore(&data_lock, flags);
-> >   }
->=20
-> The get/set info functions for overlays and managers only modify the=20
-> omap_overlay_info or manager_info structs, these aren't really a part of=
-=20
-> 'dss_data', they only become a part of dss_data only when we call=20
-> mgr->apply().
->=20
-> So, are we protecting these functions so that 2 users of the same=20
-> overlay don't see incorrect info values?
-
-True, at this point the data_lock is a bit vague, and is protecting also
-the info fields in omap_overlay and omap_overlay_manager.
-
-A lock is needed, though, as otherwise the info struct may be only
-partial. E.g. somebody calls set_info, which is half way copying the
-values, and somebody else calls apply or get_info.
-
-In the next patches the infos will be moved into the dss_data, and then
-using dss_lock spin lock makes more sense.
-
- Tomi
-
-
---=-Gp0/w26QbZtIc+V2JnvU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJOzMcHAAoJEPo9qoy8lh71B3YP/A56TyVkP3QSmaCIg9wzQqCg
-Z1/p1APU4PddFlL/M00dTSC+lH41Qpjsa4g4E+aTRCjST3ObwC14DoZw8t5+X2Bv
-t2GMJGPpTUCXhsG/V3Ia+1G2IJeY0CZsvOeCbIlvRmUGD6euLvpVeEX+TjDrtTN5
-cPDl4XV8b0y8KN5VmwtREz6QZ3x+ncMiRomRCQqrNbkAu+e+FmTce9TLb8moiiH0
-+RbMWq+u7EP8DHGyv0sVxyWIb9Tk9Nj9PiBO1sA7bP2w2xKWu6nCphriZGOlo61s
-KFJcNyb5TeZb1iJdcemNC+jN9b2so5wmGg4YQw8ugEUHJuI4ca0S9Lu/2vJQbUMK
-x5PRGxGo/CTI798RF3BBxeLcmVBIgGsheSm9Hz1/brZFth9KMl3WK5ju4RbUisUt
-y2K3rqlu+B4N/Wwroz7FC7+AIfkYxN6+zz0saruZaloGViBSAuxc7PctxDq2fkt4
-RDSy3F6UBti/VmHaKEjhmgJcQs7LA+oFiQEmJD7/EsYQH0QO/8fk58kPx5PIwlxm
-ktiXu5hTaJj7Z9gWGye5CM/Pkc9Z1y8IDPM6YbqO0K5HD0juY1EZ/3x+0+gQ+m2M
-h9Kj+XI9BfnruWZ/YaLPwzo28YVM2EMzBDbc+1sjYmaTVGj5dNPXS0t9T4KXUwdK
-8KClTUVEb/qWO0Zb++ap
-=VsZe
------END PGP SIGNATURE-----
-
---=-Gp0/w26QbZtIc+V2JnvU--
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 55f91d9..e111971 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -82,6 +82,8 @@
+ #define LCD_V2_LIDD_CLK_EN		BIT(1)
+ #define LCD_V2_CORE_CLK_EN		BIT(0)
+ #define LCD_V2_LPP_B10			26
++#define LCD_V2_TFT_24BPP_MODE		BIT(25)
++#define LCD_V2_TFT_24BPP_UNPACK		BIT(26)
+ 
+ /* LCD Raster Timing 2 Register */
+ #define LCD_AC_BIAS_TRANSITIONS_PER_INT(x)	((x) << 16)
+@@ -151,7 +153,7 @@ struct da8xx_fb_par {
+ 	unsigned int		dma_end;
+ 	struct clk *lcdc_clk;
+ 	int irq;
+-	unsigned short pseudo_palette[16];
++	unsigned short pseudo_palette[32];
+ 	unsigned int palette_sz;
+ 	unsigned int pxl_clk;
+ 	int blank;
+@@ -458,6 +460,9 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+ {
+ 	u32 reg;
+ 
++	if ((bpp > 16) && (lcd_revision = LCD_VERSION_1))
++		return -EINVAL;
++
+ 	/* Set the Panel Width */
+ 	/* Pixels per line = (PPL + 1)*16 */
+ 	if (lcd_revision = LCD_VERSION_1) {
+@@ -501,6 +506,13 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+ 	reg = lcdc_read(LCD_RASTER_CTRL_REG) & ~(1 << 8);
+ 	if (raster_order)
+ 		reg |= LCD_RASTER_ORDER;
++
++	if (bpp = 24)
++		reg |= (LCD_TFT_MODE | LCD_V2_TFT_24BPP_MODE);
++	else if (bpp = 32)
++		reg |= (LCD_TFT_MODE | LCD_V2_TFT_24BPP_MODE
++				| LCD_V2_TFT_24BPP_UNPACK);
++
+ 	lcdc_write(reg, LCD_RASTER_CTRL_REG);
+ 
+ 	switch (bpp) {
+@@ -508,6 +520,8 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+ 	case 2:
+ 	case 4:
+ 	case 16:
++	case 24:
++	case 32:
+ 		par->palette_sz = 16 * 2;
+ 		break;
+ 
+@@ -537,6 +551,9 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 	if (info->fix.visual = FB_VISUAL_DIRECTCOLOR)
+ 		return 1;
+ 
++	if ((info->var.bits_per_pixel > 16) && (lcd_revision = LCD_VERSION_1))
++		return 1;
++
+ 	if (info->var.bits_per_pixel = 8) {
+ 		red >>= 4;
+ 		green >>= 8;
+@@ -566,6 +583,23 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 			update_hw = 1;
+ 			palette[0] = 0x4000;
+ 		}
++	} else if (((info->var.bits_per_pixel = 32) && regno < 32) ||
++		    ((info->var.bits_per_pixel = 24) && regno < 24)) {
++		red >>= (24 - info->var.red.length);
++		red <<= info->var.red.offset;
++
++		green >>= (24 - info->var.green.length);
++		green <<= info->var.green.offset;
++
++		blue >>= (24 - info->var.blue.length);
++		blue <<= info->var.blue.offset;
++
++		par->pseudo_palette[regno] = red | green | blue;
++
++		if (palette[0] != 0x4000) {
++			update_hw = 1;
++			palette[0] = 0x4000;
++		}
+ 	}
+ 
+ 	/* Update the palette in the h/w as needed. */
+@@ -777,6 +811,9 @@ static int fb_check_var(struct fb_var_screeninfo *var,
+ {
+ 	int err = 0;
+ 
++	if ((var->bits_per_pixel > 16) && (lcd_revision = LCD_VERSION_1))
++		return -EINVAL;
++
+ 	switch (var->bits_per_pixel) {
+ 	case 1:
+ 	case 8:
+@@ -809,6 +846,24 @@ static int fb_check_var(struct fb_var_screeninfo *var,
+ 		var->transp.offset = 0;
+ 		var->transp.length = 0;
+ 		break;
++	case 24:
++		var->red.offset = 16;
++		var->red.length = 8;
++		var->green.offset = 8;
++		var->green.length = 8;
++		var->blue.offset = 0;
++		var->blue.length = 8;
++		break;
++	case 32:
++		var->transp.offset = 24;
++		var->transp.length = 8;
++		var->red.offset = 16;
++		var->red.length = 8;
++		var->green.offset = 8;
++		var->green.length = 8;
++		var->blue.offset = 0;
++		var->blue.length = 8;
++		break;
+ 	default:
+ 		err = -EINVAL;
+ 	}
+-- 
+1.7.1
 

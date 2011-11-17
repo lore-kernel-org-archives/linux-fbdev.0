@@ -1,158 +1,54 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Nov 2011 13:29:37 +0000
-Subject: [PATCH 09/13] OMAPDSS: DSI: use lane config in dsi_cio_enable_lane_override
-Message-Id: <1322141381-5395-10-git-send-email-tomi.valkeinen@ti.com>
+From: Marc Kleine-Budde <mkl@pengutronix.de>
+Date: Thu, 17 Nov 2011 16:47:50 +0000
+Subject: [PATCH] ARM: pxafb: fix overwriting of pixel clock and output enable polarity
+Message-Id: <1321548470-20279-1-git-send-email-mkl@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Use the new lane config in dsi_cio_enable_lane_override(). The function
-parameters are also slightly changed.
+When loading the pxafb driver as a module it's possible to overwrite the
+platform data via module parameters. When overwriting the pixel clock or
+output enable polarity the parse_opt() function modifies the lccr3 member
+of the platform data struct. Later on in pxafb_decode_mach_info() lccr3
+is only evaluated if lcd_conn lcd type is not used.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+This patch fixes the problem by setting pixel clock and output enable
+polarity in inf->lcd_conn, too (which is handled the correct way in
+pxafb_decode_mach_info()).
+
+Signed-off-by: Marc Kleine-Budde <mkl@pengutronix.de>
 ---
- drivers/video/omap2/dss/dsi.c |   85 +++++++++++++----------------------------
- 1 files changed, 27 insertions(+), 58 deletions(-)
+ drivers/video/pxafb.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 52cf97f..dee9525 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -238,19 +238,6 @@ enum dsi_vc_source {
- 	DSI_VC_SOURCE_VP,
- };
- 
--enum dsi_lane {
--	DSI_CLK_P	= 1 << 0,
--	DSI_CLK_N	= 1 << 1,
--	DSI_DATA1_P	= 1 << 2,
--	DSI_DATA1_N	= 1 << 3,
--	DSI_DATA2_P	= 1 << 4,
--	DSI_DATA2_N	= 1 << 5,
--	DSI_DATA3_P	= 1 << 6,
--	DSI_DATA3_N	= 1 << 7,
--	DSI_DATA4_P	= 1 << 8,
--	DSI_DATA4_N	= 1 << 9,
--};
--
- struct dsi_update_region {
- 	u16 x, y, w, h;
- 	struct omap_dss_device *device;
-@@ -2290,49 +2277,28 @@ static void dsi_cio_timings(struct platform_device *dsidev)
- 	dsi_write_reg(dsidev, DSI_DSIPHY_CFG2, r);
- }
- 
-+/* lane masks have lane 0 at lsb. mask_p for positive lines, n for negative */
- static void dsi_cio_enable_lane_override(struct omap_dss_device *dssdev,
--		enum dsi_lane lanes)
-+		unsigned mask_p, unsigned mask_n)
- {
- 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
--	int clk_lane   = dssdev->phy.dsi.clk_lane;
--	int data1_lane = dssdev->phy.dsi.data1_lane;
--	int data2_lane = dssdev->phy.dsi.data2_lane;
--	int data3_lane = dssdev->phy.dsi.data3_lane;
--	int data4_lane = dssdev->phy.dsi.data4_lane;
--	int clk_pol    = dssdev->phy.dsi.clk_pol;
--	int data1_pol  = dssdev->phy.dsi.data1_pol;
--	int data2_pol  = dssdev->phy.dsi.data2_pol;
--	int data3_pol  = dssdev->phy.dsi.data3_pol;
--	int data4_pol  = dssdev->phy.dsi.data4_pol;
--
--	u32 l = 0;
-+	int i;
-+	u32 l;
- 	u8 lptxscp_start = dsi->num_lanes_supported = 3 ? 22 : 26;
- 
--	if (lanes & DSI_CLK_P)
--		l |= 1 << ((clk_lane - 1) * 2 + (clk_pol ? 0 : 1));
--	if (lanes & DSI_CLK_N)
--		l |= 1 << ((clk_lane - 1) * 2 + (clk_pol ? 1 : 0));
--
--	if (lanes & DSI_DATA1_P)
--		l |= 1 << ((data1_lane - 1) * 2 + (data1_pol ? 0 : 1));
--	if (lanes & DSI_DATA1_N)
--		l |= 1 << ((data1_lane - 1) * 2 + (data1_pol ? 1 : 0));
--
--	if (lanes & DSI_DATA2_P)
--		l |= 1 << ((data2_lane - 1) * 2 + (data2_pol ? 0 : 1));
--	if (lanes & DSI_DATA2_N)
--		l |= 1 << ((data2_lane - 1) * 2 + (data2_pol ? 1 : 0));
--
--	if (lanes & DSI_DATA3_P)
--		l |= 1 << ((data3_lane - 1) * 2 + (data3_pol ? 0 : 1));
--	if (lanes & DSI_DATA3_N)
--		l |= 1 << ((data3_lane - 1) * 2 + (data3_pol ? 1 : 0));
--
--	if (lanes & DSI_DATA4_P)
--		l |= 1 << ((data4_lane - 1) * 2 + (data4_pol ? 0 : 1));
--	if (lanes & DSI_DATA4_N)
--		l |= 1 << ((data4_lane - 1) * 2 + (data4_pol ? 1 : 0));
-+	l = 0;
-+
-+	for (i = 0; i < dsi->num_lanes_supported; ++i) {
-+		unsigned p = dsi->lanes[i].polarity;
-+
-+		if (mask_p & (1 << i))
-+			l |= 1 << (i * 2 + (p ? 0 : 1));
-+
-+		if (mask_n & (1 << i))
-+			l |= 1 << (i * 2 + (p ? 1 : 0));
-+	}
-+
- 	/*
- 	 * Bits in REGLPTXSCPDAT4TO0DXDY:
- 	 * 17: DY0 18: DX0
-@@ -2432,7 +2398,6 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
- 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 	int r;
--	int num_lanes_used = dsi_get_num_lanes_used(dssdev);
- 	u32 l;
- 
- 	DSSDBGF();
-@@ -2467,7 +2432,8 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
- 	dsi_write_reg(dsidev, DSI_TIMING1, l);
- 
- 	if (dsi->ulps_enabled) {
--		u32 lane_mask = DSI_CLK_P | DSI_DATA1_P | DSI_DATA2_P;
-+		unsigned mask_p;
-+		int i;
- 
- 		DSSDBG("manual ulps exit\n");
- 
-@@ -2476,16 +2442,19 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
- 		 * ULPS exit sequence, as after reset the DSS HW thinks
- 		 * that we are not in ULPS mode, and refuses to send the
- 		 * sequence. So we need to send the ULPS exit sequence
--		 * manually.
-+		 * manually by setting positive lines high and negative lines
-+		 * low for 1ms.
- 		 */
- 
--		if (num_lanes_used > 3)
--			lane_mask |= DSI_DATA3_P;
-+		mask_p = 0;
- 
--		if (num_lanes_used > 4)
--			lane_mask |= DSI_DATA4_P;
-+		for (i = 0; i < dsi->num_lanes_supported; ++i) {
-+			if (dsi->lanes[i].function = DSI_LANE_UNUSED)
-+				continue;
-+			mask_p |= 1 << i;
-+		}
- 
--		dsi_cio_enable_lane_override(dssdev, lane_mask);
-+		dsi_cio_enable_lane_override(dssdev, mask_p, 0);
- 	}
- 
- 	r = dsi_cio_power(dsidev, DSI_COMPLEXIO_POWER_ON);
+diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
+index 0f4e8c9..119c0a1 100644
+--- a/drivers/video/pxafb.c
++++ b/drivers/video/pxafb.c
+@@ -1979,17 +1979,21 @@ static int __devinit parse_opt(struct device *dev, char *this_opt)
+ 		if (simple_strtoul(this_opt+9, NULL, 0) = 0) {
+ 			sprintf(s, "output enable: active low\n");
+ 			inf->lccr3 = (inf->lccr3 & ~LCCR3_OEP) | LCCR3_OutEnL;
++			inf->lcd_conn |= LCD_BIAS_ACTIVE_LOW;
+ 		} else {
+ 			sprintf(s, "output enable: active high\n");
+ 			inf->lccr3 = (inf->lccr3 & ~LCCR3_OEP) | LCCR3_OutEnH;
++			inf->lcd_conn &= ~LCD_BIAS_ACTIVE_LOW;
+ 		}
+ 	} else if (!strncmp(this_opt, "pixclockpol:", 12)) {
+ 		if (simple_strtoul(this_opt+12, NULL, 0) = 0) {
+ 			sprintf(s, "pixel clock polarity: falling edge\n");
+ 			inf->lccr3 = (inf->lccr3 & ~LCCR3_PCP) | LCCR3_PixFlEdg;
++			inf->lcd_conn |= LCD_PCLK_EDGE_FALL;
+ 		} else {
+ 			sprintf(s, "pixel clock polarity: rising edge\n");
+ 			inf->lccr3 = (inf->lccr3 & ~LCCR3_PCP) | LCCR3_PixRsEdg;
++			inf->lcd_conn &= ~LCD_PCLK_EDGE_FALL;
+ 		}
+ 	} else if (!strncmp(this_opt, "color", 5)) {
+ 		inf->lccr0 = (inf->lccr0 & ~LCCR0_CMS) | LCCR0_Color;
 -- 
 1.7.4.1
 

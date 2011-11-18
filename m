@@ -1,55 +1,67 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 23 Nov 2011 06:53:42 +0000
-Subject: Re: [PATCH] viafb: correct sync polarity for OLPC DCON
-Message-Id: <4ECC9876.3030701@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 18 Nov 2011 08:16:14 +0000
+Subject: [GIT PULL] OMAP DSS fixes for 3.2-rc
+Message-Id: <1321604174.1814.41.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-VZlG8pqj5o/4tn85btBI"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20111121150557.9EB9D9D401E@zog.reactivated.net>
-In-Reply-To: <20111121150557.9EB9D9D401E@zog.reactivated.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-
-On 11/21/2011 03:05 PM, Daniel Drake wrote:
-> While the OLPC display appears to be able to handle either positive
-> or negative sync, the Display Controller only recognises positive sync.
-> 
-> This brings viafb (for XO-1.5) in line with lxfb (for XO-1) and
-> fixes a recent regression where the XO-1.5 DCON could no longer be
-> frozen. Thanks to Florian Tobias Schandinat for helping identify
-> the fix.
-> 
-> Test case: from a vt,
-> 	echo 1 > /sys/devices/platform/dcon/freeze
-> should cause the current screen contents to freeze, rather than garbage being
-> displayed.
-> 
-> Signed-off-by: Daniel Drake <dsd@laptop.org>
-
-Applied.
+To: florianschandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-omap mailing list <linux-omap@vger.kernel.org>
 
 
-Thanks,
+--=-VZlG8pqj5o/4tn85btBI
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Florian Tobias Schandinat
+Hi Florian,
 
-> ---
->  drivers/video/via/share.h |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/via/share.h b/drivers/video/via/share.h
-> index 69d882c..c01c1c1 100644
-> --- a/drivers/video/via/share.h
-> +++ b/drivers/video/via/share.h
-> @@ -559,8 +559,8 @@
->  #define M1200X720_R60_VSP       POSITIVE
->  
->  /* 1200x900@60 Sync Polarity (DCON) */
-> -#define M1200X900_R60_HSP       NEGATIVE
-> -#define M1200X900_R60_VSP       NEGATIVE
-> +#define M1200X900_R60_HSP       POSITIVE
-> +#define M1200X900_R60_VSP       POSITIVE
->  
->  /* 1280x600@60 Sync Polarity (GTF Mode) */
->  #define M1280x600_R60_HSP       NEGATIVE
+Here are a few OMAP display subsystem fixes for 3.2-rc.
+
+One for the old omapfb, which was missing include module.h, and two for
+the omapdss fixing issues related to HDMI.
+
+ Tomi
+
+The following changes since commit cfcfc9eca2bcbd26a8e206baeb005b055dbf8e37=
+:
+
+  Linux 3.2-rc2 (2011-11-15 15:02:59 -0200)
+
+are available in the git repository at:
+  git://gitorious.org/linux-omap-dss2/linux.git for-3.2-rc
+
+Tomi Valkeinen (3):
+      OMAPDSS: HDMI: fix returned HDMI pixel clock
+      OMAPFB: fix compilation warnings due to missing include
+      OMAPDSS: DISPC: skip scaling calculations when not scaling
+
+ drivers/video/omap/dispc.c      |    1 +
+ drivers/video/omap2/dss/dispc.c |   11 +++++------
+ drivers/video/omap2/dss/hdmi.c  |    2 +-
+ 3 files changed, 7 insertions(+), 7 deletions(-)
+
+
+--=-VZlG8pqj5o/4tn85btBI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJOxhROAAoJEPo9qoy8lh71Z+8P/3Owarp5fEEr+6YRGiQkkTig
+KaPMbnynEk/RexHL73Fqy2u+I/tK7fht+P9qNc6Z+23NQrUL5w75mpnJOkSBs05V
+NsqOYfEHqKTBerIuL8EIiL2xMkEqE4yoYLrgvDOtVW6QJ9ikzLR+OOcKqne1FfWh
+yXSUyZ0SX0LN8LHsMGXdYw1ZPGlYeGU+tUnOfreLz2whcYE31GgDO9lLpN971udT
+ZLNnbH2bOKVNQJgRkYSLhoosEmZXFnEQnaztnu1K35Xq03UKhq/ZnXDvBVTF7cI+
+rWyBl3EwCS+B80nDZ9puHuLCC+qm9P3FJKpBcIeOzDtSp2l4l03gs9SfmKEzINHn
+Ca5LpZeyvJbwlVV3jC0dU4BOFHfB8NGi44vcf8HanjcQ28fk0eskGBRVXl26+UY5
+gvcg3SAXYwO2j+BJzC78moW8BM5jA8EU4jFG3HPv78RcS6MKkzMmzVk41SzxuIwr
+moXWEZwDdLv40zUzOjpp4WPNrWsLDjWUP2fNtNfikhIbc21mx1zNB5c8MOcprcZU
+jqP1UjjhKM/EDgMinrdTgPUm07JQlnWE8ZC7Zz8QhMbydMx8cSShjCEgsxt2iKPd
+romkaWbqG5PoW2JEN/yzQNZAe3Z00NA/t7sBZqGUtxXqw3Nkenv3yVsq42xbNsBM
+8skW6MVvL4IRhWJXu6KE
+=bumW
+-----END PGP SIGNATURE-----
+
+--=-VZlG8pqj5o/4tn85btBI--
 

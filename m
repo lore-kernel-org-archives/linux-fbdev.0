@@ -1,71 +1,34 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:21:22 +0000
-Subject: [PATCH 23/65] OMAPDSS: APPLY: skip isr register and config for manual update displays
-Message-Id: <1321953724-6350-24-git-send-email-tomi.valkeinen@ti.com>
+From: Zac Storer <zac.3.14159@gmail.com>
+Date: Fri, 18 Nov 2011 04:50:45 +0000
+Subject: [PATCH 6/6] Drivers: video: riva: riva_hw: fixed a brace coding style issue
+Message-Id: <1321591845-8610-1-git-send-email-zac.3.14159@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: adaplas@gmail.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Zac Storer <zac.3.14159@gmail.com>
 
-The mechanism to cache manager and overlay settings and configure them
-into the HW registers in VSYNC is meant only for auto-update displays,
-as it doesn't make sense (and doesn't work) for manual-update displays.
+Fixed a brace coding style issue.
 
-This patchs adds a check so that we skip the above for manual update
-displays.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Zac Storer <zac.3.14159@gmail.com>
 ---
- drivers/video/omap2/dss/apply.c |   27 +++++++++++++++------------
- 1 files changed, 15 insertions(+), 12 deletions(-)
+ drivers/video/riva/riva_hw.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 9af5809..04f3ff5 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -629,23 +629,26 @@ int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
- 	}
- 
- 	r = 0;
--	if (!dss_cache.irq_enabled) {
--		u32 mask;
-+	if (!mgr_manual_update(mgr)) {
-+		if (!dss_cache.irq_enabled) {
-+			u32 mask;
- 
--		mask = DISPC_IRQ_VSYNC	| DISPC_IRQ_EVSYNC_ODD |
--			DISPC_IRQ_EVSYNC_EVEN;
--		if (dss_has_feature(FEAT_MGR_LCD2))
--			mask |= DISPC_IRQ_VSYNC2;
-+			mask = DISPC_IRQ_VSYNC	| DISPC_IRQ_EVSYNC_ODD |
-+				DISPC_IRQ_EVSYNC_EVEN;
-+			if (dss_has_feature(FEAT_MGR_LCD2))
-+				mask |= DISPC_IRQ_VSYNC2;
- 
--		r = omap_dispc_register_isr(dss_apply_irq_handler, NULL, mask);
-+			r = omap_dispc_register_isr(dss_apply_irq_handler,
-+					NULL, mask);
- 
--		if (r)
--			DSSERR("failed to register apply isr\n");
-+			if (r)
-+				DSSERR("failed to register apply isr\n");
- 
--		dss_cache.irq_enabled = true;
--	}
-+			dss_cache.irq_enabled = true;
-+		}
- 
--	configure_dispc();
-+		configure_dispc();
-+	}
- 
- 	spin_unlock_irqrestore(&dss_cache.lock, flags);
- 
+diff --git a/drivers/video/riva/riva_hw.c b/drivers/video/riva/riva_hw.c
+index c4b8a6f..5cd1d71 100644
+--- a/drivers/video/riva/riva_hw.c
++++ b/drivers/video/riva/riva_hw.c
+@@ -1038,7 +1038,7 @@ static void nv10CalcArbitration
+             min_mclk_extra--;
+           }
+       } else {
+-        if (clwm > 1023){ /* Have some margin */
++        if (clwm > 1023) { /* Have some margin */
+           fifo->valid = 0;
+           found = 0;
+           if(min_mclk_extra = 0)   
 -- 
-1.7.4.1
+1.7.7.3
 

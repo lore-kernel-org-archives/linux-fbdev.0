@@ -1,59 +1,78 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 23 Nov 2011 07:32:43 +0000
-Subject: Re: [PATCH 09/65] OMAPDSS: pass ovl manager to dss_start_update
-Message-Id: <1322033563.3015.4.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-STdWqOCvpm0sGvDx3WXr"
+From: Christian Gmeiner <christian.gmeiner@gmail.com>
+Date: Fri, 18 Nov 2011 12:01:00 +0000
+Subject: QVGA on a hardware which supports only >= VGA
+Message-Id: <CAH9NwWdUZHfhqpNwcfxK_EnsMLeEazB50rQ=m65U3+tjhpwGJQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1321953724-6350-10-git-send-email-tomi.valkeinen@ti.com>
-	 <4ECC8A6D.5050000@ti.com>
-In-Reply-To: <4ECC8A6D.5050000@ti.com>
-To: Archit Taneja <a0393947@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, archit@ti.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
+Hi all,
 
---=-STdWqOCvpm0sGvDx3WXr
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I am currently in the process to get some local patches into mainline
+and/or fix my
+problems the right way. At the moment I am stuck with this problem:
 
-On Wed, 2011-11-23 at 11:23 +0530, Archit Taneja wrote:
-> On Tuesday 22 November 2011 02:51 PM, Tomi Valkeinen wrote:
-> > dss_start_update() takes currently the dss device as a parameter. Chang=
-e
-> > the parameter to ovl manager, as that is what the dss_start_update()
-> > actually needs.
->=20
-> Minor comment: We could rename dss_start_update() to=20
-> dss_mgr_start_update() to stick to the new way of telling if this=20
-> function is meant for an overlay or a manager.
+I am on a device (x86), which is Geode lx800 based and there is a
+panel connected to
+it. The problem is that two different screen resolutions are used. QVGA and VGA.
+Should not sound like a problem, but the lx800 can only do VGA. So get
+it working,
+I need to pass the correct resolution via kernel cmd to the lxfb
+driver and I am using
+this patch (based on 2.6.36.4 kernel):
 
-Good point, I'll make the change.
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1050,6 +1050,7 @@ static long do_fb_ioctl(struct fb_info *info,
+unsigned int cmd,
+ 		ret = copy_to_user(argp, &var, sizeof(var)) ? -EFAULT : 0;
+ 		break;
+ 	case FBIOPUT_VSCREENINFO:
++#if 0
+ 		if (copy_from_user(&var, argp, sizeof(var)))
+ 			return -EFAULT;
+ 		if (!lock_fb_info(info))
+@@ -1062,6 +1063,8 @@ static long do_fb_ioctl(struct fb_info *info,
+unsigned int cmd,
+ 		unlock_fb_info(info);
+ 		if (!ret && copy_to_user(argp, &var, sizeof(var)))
+ 			ret = -EFAULT;
++#endif
++		ret = 0;
+ 		break;
+ 	case FBIOGET_FSCREENINFO:
+ 		if (!lock_fb_info(info))
+@@ -1086,6 +1089,7 @@ static long do_fb_ioctl(struct fb_info *info,
+unsigned int cmd,
+ 		ret = fb_cmap_to_user(&cmap_from, &cmap);
+ 		break;
+ 	case FBIOPAN_DISPLAY:
++#if 0
+ 		if (copy_from_user(&var, argp, sizeof(var)))
+ 			return -EFAULT;
+ 		if (!lock_fb_info(info))
+@@ -1096,6 +1100,8 @@ static long do_fb_ioctl(struct fb_info *info,
+unsigned int cmd,
+ 		unlock_fb_info(info);
+ 		if (ret = 0 && copy_to_user(argp, &var, sizeof(var)))
+ 			return -EFAULT;
++#endif
++		ret = 0;
+ 		break;
+ 	case FBIO_CURSOR:
+ 		ret = -EINVAL;
 
- Tomi
+I need to mention that I am using a custom BIOS and Linux based
+bootloader (kexec) in the
+boot process. At the moment I am looking into coreboot, but I wanted
+to know how to
+solve this "problem" the correct way.
 
+To sum it up: I want to use a QVGA panel with a hardware that only
+supports >= VGA.
 
---=-STdWqOCvpm0sGvDx3WXr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJOzKGbAAoJEPo9qoy8lh71DSsP/3dwZL/iktG7e7NMwMAVvqmZ
-XtJhLyoqo0Qmes2KxiTxTiCTaQogl8P89dQ+9jjAtlmQ82V+L8ZdYLYp0m7peXtN
-ZRXNy8ROlsgG4fDZgKzob0WvoICj2lIQ0vWEvQ95B2VOaTsqnqSKxqNS0vcSPq38
-DE3Bp51MluB6jXFBUzz19BuJSi1FQSOA/CS4rT/7ELldHrHvH+rN/j7oobaD0rTq
-pXjG3VvQCDZ8rKft04HHB8deuddE/soEWQJ2CBPBRfVgO3PWohOsXcFu6CZZGsNW
-ytRCGwFl4Rl8XL5byXElJ8WVxsErHTn+1CVawI5e32RvOdubEAqt7sMBDu5Hsx15
-IN6TelHQhGh+uu3AAqQFT37sHA6zsGFZBBZFrmxJpDn5PP7Ux7629v3MBQsslfXF
-TilHmy8oRuctlnFj+QaTgpHZ0SaxdrCFohgofo9BbGlWQkHGBRc4pVcyQQpaC6vX
-/QXbNvGMiuLAFXvBQ469MM+BQrUwwnznDQtEx0nxlhlEl8SdfV3qS0AQY9727r56
-KA7kMVVYx6a97sUfWrFfjtH4VwZKIXKqb0QsYyhpBli+tGtMeXzBd7kJQpI2w8dV
-upw8F6CKba9HIlqx7v2+rcHV9aNe7TbFrCpPgOwSv8tZbv9O4JX717tTzSz7vUV6
-4m7lHdmzgo5jUWxcO3zv
-=ZTN5
------END PGP SIGNATURE-----
-
---=-STdWqOCvpm0sGvDx3WXr--
-
+Thanks
+--
+Christian Gmeiner, MSc

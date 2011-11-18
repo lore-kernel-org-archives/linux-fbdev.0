@@ -1,43 +1,34 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 23 Nov 2011 06:52:47 +0000
-Subject: Re: [PATCH 4/4] Drivers: video: sbuslib: fixed a brace coding style
-Message-Id: <4ECC983F.1080602@gmx.de>
+From: Zac Storer <zac.3.14159@gmail.com>
+Date: Fri, 18 Nov 2011 04:45:37 +0000
+Subject: [PATCH 5/5] Drivers: video: riva: riva_hw: fixed a brace coding style issue
+Message-Id: <1321591537-8475-1-git-send-email-zac.3.14159@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321591138-8334-1-git-send-email-zac.3.14159@gmail.com>
-In-Reply-To: <1321591138-8334-1-git-send-email-zac.3.14159@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Zac Storer <zac.3.14159@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Zac Storer <zac.3.14159@gmail.com>
 
-On 11/18/2011 04:38 AM, Zac Storer wrote:
-> Fixed a brace coding style issue.
-> 
-> Signed-off-by: Zac Storer <zac.3.14159@gmail.com>
+Fixed a brace coding style issue.
 
-Applied.
+Signed-off-by: Zac Storer <zac.3.14159@gmail.com>
+---
+ drivers/video/riva/riva_hw.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/sbuslib.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/sbuslib.c b/drivers/video/sbuslib.c
-> index 37d764a..3c1de98 100644
-> --- a/drivers/video/sbuslib.c
-> +++ b/drivers/video/sbuslib.c
-> @@ -76,7 +76,7 @@ int sbusfb_mmap_helper(struct sbus_mmap_map *map,
->  				map_offset = (physbase + map[i].poff) & POFF_MASK;
->  				break;
->  			}
-> -		if (!map_size){
-> +		if (!map_size) {
->  			page += PAGE_SIZE;
->  			continue;
->  		}
+diff --git a/drivers/video/riva/riva_hw.c b/drivers/video/riva/riva_hw.c
+index 78fdbf5..c4b8a6f 100644
+--- a/drivers/video/riva/riva_hw.c
++++ b/drivers/video/riva/riva_hw.c
+@@ -994,7 +994,7 @@ static void nv10CalcArbitration
+               clwm = clwm_mt;
+   */
+           /* Finally, a heuristic check when width = 64 bits */
+-          if(width = 1){
++          if(width = 1) {
+               nvclk_fill = nvclk_freq * 8;
+               if(crtc_drain_rate * 100 >= nvclk_fill * 102)
+                       clwm = 0xfff; /*Large number to fail */
+-- 
+1.7.7.3
 

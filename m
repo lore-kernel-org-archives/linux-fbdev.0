@@ -1,79 +1,46 @@
-From: Carlos Chinea <carlos.chinea@nokia.com>
-Date: Tue, 29 Nov 2011 09:09:07 +0000
-Subject: Re: [PATCH 06/13] OMAPDSS: DSI: Use new lane config in
-Message-Id: <1322557747.17335.77.camel@groo>
+From: Daniel Drake <dsd@laptop.org>
+Date: Mon, 21 Nov 2011 15:05:56 +0000
+Subject: [PATCH] viafb: correct sync polarity for OLPC DCON
+Message-Id: <20111121150557.9EB9D9D401E@zog.reactivated.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1322141381-5395-7-git-send-email-tomi.valkeinen@ti.com>
-	 <1322471339.17335.73.camel@groo> <1322495015.2364.12.camel@deskari>
-In-Reply-To: <1322495015.2364.12.camel@deskari>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: ext Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, archit@ti.com
+To: linux-fbdev@vger.kernel.org
 
-On Mon, 2011-11-28 at 17:43 +0200, ext Tomi Valkeinen wrote:
-> On Mon, 2011-11-28 at 11:08 +0200, Carlos Chinea wrote:
-> > Hi Tomi,
-> > 
-> > Just a question/suggestion, bellow:
-> > 
-> > On Thu, 2011-11-24 at 15:29 +0200, ext Tomi Valkeinen wrote:
-> > > Use the new lane config in dsi_set_lane_config().
-> > > 
-> > > Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> > > ---
-> > >  drivers/video/omap2/dss/dsi.c |   84 +++++++++++++++++++---------------------
-> > >  1 files changed, 40 insertions(+), 44 deletions(-)
-> > > 
-> > > diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-> > > index aea110c..ba8d6b3 100644
-> > > --- a/drivers/video/omap2/dss/dsi.c
-> > > +++ b/drivers/video/omap2/dss/dsi.c
-> > > @@ -2154,59 +2154,53 @@ static int dsi_parse_lane_config(struct omap_dss_device *dssdev)
-> > >  	return 0;
-> > >  }
-> > >  
-> > > -static void dsi_set_lane_config(struct omap_dss_device *dssdev)
-> > > +static int dsi_set_lane_config(struct omap_dss_device *dssdev)
-> > >  {
-> > >  	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
-> > > +	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
-> > > +	static const u8 offsets[] = { 0, 4, 8, 12, 16 };
-> > > +	static const enum dsi_lane_function functions[] = {
-> > > +		DSI_LANE_CLK,
-> > > +		DSI_LANE_DATA1,
-> > > +		DSI_LANE_DATA2,
-> > > +		DSI_LANE_DATA3,
-> > > +		DSI_LANE_DATA4,
-> > > +	};
-> > 
-> > Patch 05 of the series has a function (dsi_parse_lane_config) with
-> > exactly the same static local declaration. Wouldn't be better to have an
-> > static global declaration instead to save some space ? or are the values
-> > from those functions going to differ in the near future ? 
-> 
-> True, the array could be a global, and no, I don't think they'll change
-> in the near future.
-> 
-> But the data is more like function internal stuff than global data. The
-> functions want to parse and set the lane configs in particular order,
-> and use the array for that.
-> 
-> While the order happens to be the same in both functions, I still felt
-> the array is internal to each function rather than global data.
+While the OLPC display appears to be able to handle either positive
+or negative sync, the Display Controller only recognises positive sync.
 
-Fine for me then.
+This brings viafb (for XO-1.5) in line with lxfb (for XO-1) and
+fixes a recent regression where the XO-1.5 DCON could no longer be
+frozen. Thanks to Florian Tobias Schandinat for helping identify
+the fix.
 
-Br,
-Carlos
+Test case: from a vt,
+	echo 1 > /sys/devices/platform/dcon/freeze
+should cause the current screen contents to freeze, rather than garbage being
+displayed.
 
->  Looking
-> from outside the function, the order doesn't matter. It's just an
-> internal detail.
-> 
->  Tomi
-> 
+Signed-off-by: Daniel Drake <dsd@laptop.org>
+---
+ drivers/video/via/share.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/video/via/share.h b/drivers/video/via/share.h
+index 69d882c..c01c1c1 100644
+--- a/drivers/video/via/share.h
++++ b/drivers/video/via/share.h
+@@ -559,8 +559,8 @@
+ #define M1200X720_R60_VSP       POSITIVE
+ 
+ /* 1200x900@60 Sync Polarity (DCON) */
+-#define M1200X900_R60_HSP       NEGATIVE
+-#define M1200X900_R60_VSP       NEGATIVE
++#define M1200X900_R60_HSP       POSITIVE
++#define M1200X900_R60_VSP       POSITIVE
+ 
+ /* 1280x600@60 Sync Polarity (GTF Mode) */
+ #define M1280x600_R60_HSP       NEGATIVE
+-- 
+1.7.7.3
 

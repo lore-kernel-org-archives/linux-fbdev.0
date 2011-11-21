@@ -1,8 +1,10 @@
 From: Joonyoung Shim <jy0922.shim@samsung.com>
-Date: Mon, 21 Nov 2011 06:03:31 +0000
+Date: Mon, 21 Nov 2011 06:55:24 +0000
 Subject: [PATCH] video: Fix return value of fb_notifier_call_chain
-Message-Id: <1321855411-13730-1-git-send-email-jy0922.shim@samsung.com>
+Message-Id: <1321858524-19368-1-git-send-email-jy0922.shim@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1321855411-13730-1-git-send-email-jy0922.shim@samsung.com>
+In-Reply-To: <1321855411-13730-1-git-send-email-jy0922.shim@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

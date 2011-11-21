@@ -1,107 +1,110 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Sat, 19 Nov 2011 12:35:52 +0000
-Subject: Re: [PATCH] fb: split out framebuffer initialization from
-Message-Id: <20111119133552.6585fd2a@neptune.home>
+From: Timur Tabi <timur@freescale.com>
+Date: Mon, 21 Nov 2011 16:22:30 +0000
+Subject: Re: [PATCH] fb: split out framebuffer initialization from allocation
+Message-Id: <4ECA7AC6.2080206@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1321308088-6327-1-git-send-email-timur@freescale.com>
 In-Reply-To: <1321308088-6327-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Florian,
+Florian Tobias Schandinat wrote:
 
-On Sat, 19 November 2011 Florian Tobias Schandinat <FlorianSchandinat@gmx.d=
-e> wrote:
-> On 11/19/2011 11:47 AM, Bruno Pr=C3=A9mont wrote:
-> > On Sat, 19 November 2011 Florian Tobias Schandinat <FlorianSchandinat@g=
-mx.de> wrote:
-> >> On 11/17/2011 08:19 PM, Timur Tabi wrote:
-> >>> Timur Tabi wrote:
-> >>>> Introduce functions framebuffer_init() and framebuffer_cleanup() to =
-allow
-> >>>> the initialization of a user-allocated fb_info object.
-> >>>>
-> >>>> framebuffer_alloc() allows for appending a private data structure wh=
-en it
-> >>>> allocates the fb_info object.  However, a driver that registers mult=
-iple
-> >>>> framebuffers for one device may also need another private data struc=
-ture
-> >>>> for the device itself.  framebuffer_init() allows such drivers to st=
-ore
-> >>>> the fb_info objects in the device-specific private data structure,
-> >>>> thereby simplifying memory allocation.
-> >>>>
-> >>>> Signed-off-by: Timur Tabi <timur@freescale.com>
-> >>>
-> >>> Florian,
-> >>>
-> >>> Any comments on this patch?  If you're okay with the change, I want t=
-o take
-> >>> advantage of it in my framebuffer driver.
-> >>
-> >> Of course you want, otherwise I'd be wondering why you are sending thi=
-s patch
-> >> at all.
-> >>
-> >> But I don't see any advantages of your approach. Instead of pointers t=
-o fb_info
-> >> with this patch you could embed fb_info directly in your data structur=
-e but that
-> >> is barely a difference for a programmer I'd think. You'd still have to=
- call your
-> >> new functions on init/exit so the amount of function calls needed is t=
-he same
-> >> with or without the patch (I could see an advantage if alloc and relea=
-se were
-> >> pure memory allocations). Or is this all about handling the case when =
-fb_alloc
-> >> fails?
-> >> Historically some drivers don't even call alloc but have their own fb_=
-info and
-> >> call only register. I do not want to add yet another way of doing fram=
-ebuffer
-> >> initialization unless you can clearly show its benefits.
-> >=20
-> > Wouldn't it even make sense to move some more of the initialization of =
-fb_info
-> > out of fb registration into this new init funtion? (I'm thinking about =
-initializing
-> > mutexes and the like)
->=20
-> This would require someone going through all framebuffers and change them=
- to use
-> the new fb_init function if they don't use fb_alloc. I'd accept this patc=
-h as an
-> improvement iff someone would do this. Than the number of variation of do=
-ing
-> framebuffer initialization would remain the same. Of course the same shou=
-ld be
-> done for fb_cleanup.
+>> Any comments on this patch?  If you're okay with the change, I want to take
+>> advantage of it in my framebuffer driver.
+> 
+> Of course you want, otherwise I'd be wondering why you are sending this patch
+> at all.
 
-I agree, though (in a first step) alloc_framebuffer() could call init_frame=
-buffer()
-by itself (same goes for cleanup on release) so that only those doing the m=
-emory
-allocation manually have to be changed (though I'm wondering if those are n=
-ot already
-wrong with regard to fb_info.bl_curve_mutex which is being initialized in
-alloc_framebuffer() - but then again they will not use backlight).
+I frequently have to ping maintainers on patches that I've posted.  I've lost count how many times I've been told, "Oh sorry, I forgot all about your patch".
 
-I might give it a try once I'm no more busy with system administration.
+> But I don't see any advantages of your approach. Instead of pointers to fb_info
+> with this patch you could embed fb_info directly in your data structure but that
+> is barely a difference for a programmer I'd think. You'd still have to call your
+> new functions on init/exit so the amount of function calls needed is the same
+> with or without the patch (I could see an advantage if alloc and release were
+> pure memory allocations). Or is this all about handling the case when fb_alloc
+> fails?
 
-Bruno
+It's all about reducing the number of kmalloc calls.  Here's an example of what my per-device data structure looks like:
 
-> > This way fb_info could be used before being registered. Registration wo=
-uld then
-> > be reduced to makeing the framebuffer visible to userspace and listed in
-> > registered_fb[].
-> >=20
-> > This way framebuffer_alloc() would be no more that kzalloc(), framebuff=
-er_init()
-> > would setup all "non-zero" fields of fb_info (including setup of all mu=
-texes, one
-> > of which is currently being done by framebuffer_alloc() and the rest by
-> > do_register_framebuffer()!).
+struct fsl_diu_data {
+	dma_addr_t phys;
+	struct fb_info fsl_diu_info[NUM_AOIS];	<-----
+	struct mfb_info mfb[NUM_AOIS];
+	struct device_attribute dev_attr;
+	unsigned int irq;
+	int fb_enabled;
+	enum fsl_diu_monitor_port monitor_port;
+	struct diu __iomem *diu_reg;
+	spinlock_t reg_lock;
+	u8 dummy_aoi[4 * 4 * 4];
+	struct diu_ad dummy_ad __aligned(8);
+	struct diu_ad ad[NUM_AOIS] __aligned(8);
+	u8 gamma[256 * 3] __aligned(32);
+	u8 cursor[MAX_CURS * MAX_CURS * 2] __aligned(32);
+} __aligned(32);
+
+So this way, I have all of the memory I need allocated in one spot.  I know need to allocate one block of memory.
+
+> Historically some drivers don't even call alloc but have their own fb_info and
+> call only register.
+
+That's exactly the same thing I want to do.  Do these drivers also initialize info->device and info->bl_curve_mutex by themselves?  How would they know if the fb_info structure got new members that also need to be initialized?
+
+Perhaps we need to move the fb_info initialization code from framebuffer_alloc() into register_framebuffer()?  
+
+> I do not want to add yet another way of doing framebuffer
+> initialization unless you can clearly show its benefits.
+
+I think the problem is that we already have two ways that framebuffers are initialized.
+
+What do you think about this:
+
+
+diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
+index 67afa9c..ba47a38 100644
+--- a/drivers/video/fbsysfs.c
++++ b/drivers/video/fbsysfs.c
+@@ -57,12 +57,6 @@ struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
+ 	if (size)
+ 		info->par = p + fb_info_size;
+ 
+-	info->device = dev;
+-
+-#ifdef CONFIG_FB_BACKLIGHT
+-	mutex_init(&info->bl_curve_mutex);
+-#endif
+-
+ 	return info;
+ #undef PADDING
+ #undef BYTES_PER_LONG
+
+
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index ad93629..ea35bf8 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1591,6 +1591,12 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+ 	mutex_init(&fb_info->lock);
+ 	mutex_init(&fb_info->mm_lock);
+ 
++	fb_info->device = dev;
++
++#ifdef CONFIG_FB_BACKLIGHT
++	mutex_init(&fb_info->bl_curve_mutex);
++#endif
++
+ 	fb_info->dev = device_create(fb_class, fb_info->device,
+ 				     MKDEV(FB_MAJOR, i), NULL, "fb%d", i);
+ 	if (IS_ERR(fb_info->dev)) {
+
+
+There are a few instances where drivers use info->device after calling framebuffer_alloc() but before calling register_framebuffer().  These drivers will need to be fixed.  But otherwise, I think this is a good idea.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
+

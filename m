@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:21:09 +0000
-Subject: [PATCH 10/65] OMAPDSS: DISPC: handle 0 out_width/out_height in ovl_setup()
-Message-Id: <1321953724-6350-11-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:21:10 +0000
+Subject: [PATCH 11/65] OMAPDSS: handle ilace/replication when configuring overlay
+Message-Id: <1321953724-6350-12-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,99 +11,67 @@ Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Overlay out_width/height are set to 0 when scaling is not used by the
-users of omapdss. Currently ovl_setup() expects the caller of
-ovl_setup() to convert those zero values to width or height.
-
-This patch makes ovl_setup() accept zero values for out_width/height,
-making calling ovl_setup() a bit simpler as the overlay_info can be
-just passed to this function without modifications.
+Move the configuration of interlace and replication from
+omap_dss_mgr_apply() to configure_overlay(). This removes the need to
+store the values into the cache data.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |   22 +++++++++++++---------
- 1 files changed, 13 insertions(+), 9 deletions(-)
+ drivers/video/omap2/dss/manager.c |   19 ++++++++++---------
+ 1 files changed, 10 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 7387e23..49f97db 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -1781,6 +1781,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
- 	s32 pix_inc;
- 	u16 frame_height = oi->height;
- 	unsigned int field_offset = 0;
-+	u16 outw, outh;
+diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+index bc28bfa..626f6b7 100644
+--- a/drivers/video/omap2/dss/manager.c
++++ b/drivers/video/omap2/dss/manager.c
+@@ -510,8 +510,6 @@ struct overlay_cache_data {
+ 	struct omap_overlay_info info;
  
- 	DSSDBG("dispc_ovl_setup %d, pa %x, pa_uv %x, sw %d, %d,%d, %dx%d -> "
- 		"%dx%d, cmode %x, rot %d, mir %d, ilace %d chan %d repl %d "
-@@ -1792,25 +1793,28 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
- 	if (oi->paddr = 0)
- 		return -EINVAL;
+ 	enum omap_channel channel;
+-	bool replication;
+-	bool ilace;
  
--	if (ilace && oi->height = oi->out_height)
-+	outw = oi->out_width = 0 ? oi->width : oi->out_width;
-+	outh = oi->out_height = 0 ? oi->height : oi->out_height;
+ 	u32 fifo_low;
+ 	u32 fifo_high;
+@@ -757,8 +755,10 @@ static int overlay_enabled(struct omap_overlay *ovl)
+ 
+ static int configure_overlay(enum omap_plane plane)
+ {
++	struct omap_overlay *ovl;
+ 	struct overlay_cache_data *c;
+ 	struct omap_overlay_info *oi;
++	bool ilace, replication;
+ 	int r;
+ 
+ 	DSSDBGF("%d", plane);
+@@ -771,8 +771,14 @@ static int configure_overlay(enum omap_plane plane)
+ 		return 0;
+ 	}
+ 
+-	r = dispc_ovl_setup(plane, oi, c->ilace, c->channel,
+-		c->replication, c->fifo_low, c->fifo_high);
++	ovl = omap_dss_get_overlay(plane);
 +
-+	if (ilace && oi->height = outh)
- 		fieldmode = 1;
++	replication = dss_use_replication(ovl->manager->device, oi->color_mode);
++
++	ilace = ovl->manager->device->type = OMAP_DISPLAY_TYPE_VENC;
++
++	r = dispc_ovl_setup(plane, oi, ilace, c->channel,
++		replication, c->fifo_low, c->fifo_high);
+ 	if (r) {
+ 		/* this shouldn't happen */
+ 		DSSERR("dispc_ovl_setup failed for ovl %d\n", plane);
+@@ -1038,11 +1044,6 @@ static int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
+ 		oc->dirty = true;
+ 		oc->info = ovl->info;
  
- 	if (ilace) {
- 		if (fieldmode)
- 			oi->height /= 2;
- 		oi->pos_y /= 2;
--		oi->out_height /= 2;
-+		outh /= 2;
+-		oc->replication -			dss_use_replication(dssdev, ovl->info.color_mode);
+-
+-		oc->ilace = dssdev->type = OMAP_DISPLAY_TYPE_VENC;
+-
+ 		oc->channel = ovl->manager->id;
  
- 		DSSDBG("adjusting for ilace: height %d, pos_y %d, "
- 				"out_height %d\n",
--				oi->height, oi->pos_y, oi->out_height);
-+				oi->height, oi->pos_y, outh);
- 	}
- 
- 	if (!dss_feat_color_mode_supported(plane, oi->color_mode))
- 		return -EINVAL;
- 
- 	r = dispc_ovl_calc_scaling(plane, channel, oi->width, oi->height,
--			oi->out_width, oi->out_height, oi->color_mode,
-+			outw, outh, oi->color_mode,
- 			&five_taps);
- 	if (r)
- 		return r;
-@@ -1828,10 +1832,10 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
- 		 * so the integer part must be added to the base address of the
- 		 * bottom field.
- 		 */
--		if (!oi->height || oi->height = oi->out_height)
-+		if (!oi->height || oi->height = outh)
- 			field_offset = 0;
- 		else
--			field_offset = oi->height / oi->out_height / 2;
-+			field_offset = oi->height / outh / 2;
- 	}
- 
- 	/* Fields are independent but interleaved in memory. */
-@@ -1867,7 +1871,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
- 	dispc_ovl_set_pix_inc(plane, pix_inc);
- 
- 	DSSDBG("%d,%d %dx%d -> %dx%d\n", oi->pos_x, oi->pos_y, oi->width,
--			oi->height, oi->out_width, oi->out_height);
-+			oi->height, outw, outh);
- 
- 	dispc_ovl_set_pos(plane, oi->pos_x, oi->pos_y);
- 
-@@ -1875,10 +1879,10 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
- 
- 	if (ovl->caps & OMAP_DSS_OVL_CAP_SCALE) {
- 		dispc_ovl_set_scaling(plane, oi->width, oi->height,
--				   oi->out_width, oi->out_height,
-+				   outw, outh,
- 				   ilace, five_taps, fieldmode,
- 				   oi->color_mode, oi->rotation);
--		dispc_ovl_set_vid_size(plane, oi->out_width, oi->out_height);
-+		dispc_ovl_set_vid_size(plane, outw, outh);
- 		dispc_ovl_set_vid_color_conv(plane, cconv);
- 	}
- 
+ 		oc->enabled = true;
 -- 
 1.7.4.1
 

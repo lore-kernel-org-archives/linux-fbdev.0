@@ -1,67 +1,326 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 29 Nov 2011 10:26:56 +0000
-Subject: [PATCH v4 0/3] fbdev: Add FOURCC-based format configuration API
-Message-Id: <1322562419-9934-1-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:22:02 +0000
+Subject: [PATCH 63/65] OMAPDSS: APPLY: add checking of ovls/mgrs settings
+Message-Id: <1321953724-6350-64-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
-Cc: linux-media@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi everybody,
+Add checks for overlay and manager settings. The checks are a bit
+complex, as we need to observe the bigger picture instead of overlays
+and managers independently. Things like the used display and the zorder
+of other overlays affect the validity of the settings.
 
-Here's the fourth version of the fbdev FOURCC-based format configuration AP=
-I.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/apply.c |  215 ++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 212 insertions(+), 3 deletions(-)
 
-The third version nearly got merged, but we noticed that gcc choked on
-anonymous union initializers. This has been fixed in gcc 4.6, but I don't h=
-ave
-the power to force Linux to set the base gcc version to 4.6 :-)
-
-There were two ways to fix the issue, neither of which was particularly
-attractive to me. The first one involved a 10k lines patch that modified all
-the drivers, and the second one required using one of the reserved fields in
-the fb_var_screeninfo structure. After discussing this with Florian, I've
-decided to go for the second fix.
-
-The colorspace field is thus now stored in a previously reserved field. The
-fourcc field is still shared with the grayscale field, but doesn't have its
-own name anymore.
-
-I've updated the fbdev-test tool to this new API. The code is available in =
-the
-fbdev-test yuv branch at
-http://git.ideasonboard.org/?p=FBdev-test.git;a=3Dshortlog;h=3Drefs/heads/y=
-uv.
-
-Laurent Pinchart (3):
-  fbdev: Add FOURCC-based format configuration API
-  v4l: Add V4L2_PIX_FMT_NV24 and V4L2_PIX_FMT_NV42 formats
-  fbdev: sh_mobile_lcdc: Support FOURCC-based format API
-
- Documentation/DocBook/media/v4l/pixfmt-nv24.xml |  129 ++++++++
- Documentation/DocBook/media/v4l/pixfmt.xml      |    1 +
- Documentation/fb/api.txt                        |  306 +++++++++++++++++++
- arch/arm/mach-shmobile/board-ag5evm.c           |    2 +-
- arch/arm/mach-shmobile/board-ap4evb.c           |    4 +-
- arch/arm/mach-shmobile/board-mackerel.c         |    4 +-
- arch/sh/boards/mach-ap325rxa/setup.c            |    2 +-
- arch/sh/boards/mach-ecovec24/setup.c            |    2 +-
- arch/sh/boards/mach-kfr2r09/setup.c             |    2 +-
- arch/sh/boards/mach-migor/setup.c               |    4 +-
- arch/sh/boards/mach-se/7724/setup.c             |    2 +-
- drivers/video/sh_mobile_lcdcfb.c                |  360 +++++++++++++++----=
-----
- include/linux/fb.h                              |   14 +-
- include/linux/videodev2.h                       |    2 +
- include/video/sh_mobile_lcdc.h                  |    4 +-
- 15 files changed, 701 insertions(+), 137 deletions(-)
- create mode 100644 Documentation/DocBook/media/v4l/pixfmt-nv24.xml
- create mode 100644 Documentation/fb/api.txt
-
---=20
-Regards,
-
-Laurent Pinchart
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 5d933b9..72afa85 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -166,6 +166,169 @@ static bool mgr_manual_update(struct omap_overlay_manager *mgr)
+ 	return mgr->device->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE;
+ }
+ 
++/* Check if overlay parameters are compatible with display */
++static int dss_ovl_check(struct omap_overlay *ovl,
++		struct omap_overlay_info *info, struct omap_dss_device *dssdev)
++{
++	u16 outw, outh;
++	u16 dw, dh;
++
++	if (dssdev = NULL)
++		return 0;
++
++	dssdev->driver->get_resolution(dssdev, &dw, &dh);
++
++	if ((ovl->caps & OMAP_DSS_OVL_CAP_SCALE) = 0) {
++		outw = info->width;
++		outh = info->height;
++	} else {
++		if (info->out_width = 0)
++			outw = info->width;
++		else
++			outw = info->out_width;
++
++		if (info->out_height = 0)
++			outh = info->height;
++		else
++			outh = info->out_height;
++	}
++
++	if (dw < info->pos_x + outw) {
++		DSSERR("overlay %d horizontally not inside the display area "
++				"(%d + %d >= %d)\n",
++				ovl->id, info->pos_x, outw, dw);
++		return -EINVAL;
++	}
++
++	if (dh < info->pos_y + outh) {
++		DSSERR("overlay %d vertically not inside the display area "
++				"(%d + %d >= %d)\n",
++				ovl->id, info->pos_y, outh, dh);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int dss_mgr_check_zorder(struct omap_overlay_manager *mgr,
++		struct omap_overlay_info **overlay_infos)
++{
++	struct omap_overlay *ovl1, *ovl2;
++	struct ovl_priv_data *op1, *op2;
++	struct omap_overlay_info *info1, *info2;
++
++	list_for_each_entry(ovl1, &mgr->overlays, list) {
++		op1 = get_ovl_priv(ovl1);
++		info1 = overlay_infos[ovl1->id];
++
++		if (info1 = NULL)
++			continue;
++
++		list_for_each_entry(ovl2, &mgr->overlays, list) {
++			if (ovl1 = ovl2)
++				continue;
++
++			op2 = get_ovl_priv(ovl2);
++			info2 = overlay_infos[ovl2->id];
++
++			if (info2 = NULL)
++				continue;
++
++			if (info1->zorder = info2->zorder) {
++				DSSERR("overlays %d and %d have the same "
++						"zorder %d\n",
++					ovl1->id, ovl2->id, info1->zorder);
++				return -EINVAL;
++			}
++		}
++	}
++
++	return 0;
++}
++
++static int dss_mgr_check(struct omap_overlay_manager *mgr,
++		struct omap_dss_device *dssdev,
++		struct omap_overlay_manager_info *info,
++		struct omap_overlay_info **overlay_infos)
++{
++	struct omap_overlay *ovl;
++	int r;
++
++	if (dss_has_feature(FEAT_ALPHA_FREE_ZORDER)) {
++		r = dss_mgr_check_zorder(mgr, overlay_infos);
++		if (r)
++			return r;
++	}
++
++	list_for_each_entry(ovl, &mgr->overlays, list) {
++		struct omap_overlay_info *oi;
++		int r;
++
++		oi = overlay_infos[ovl->id];
++
++		if (oi = NULL)
++			continue;
++
++		r = dss_ovl_check(ovl, oi, dssdev);
++		if (r)
++			return r;
++	}
++
++	return 0;
++}
++static int dss_check_settings_low(struct omap_overlay_manager *mgr,
++		struct omap_dss_device *dssdev, bool applying)
++{
++	struct omap_overlay_info *oi;
++	struct omap_overlay_manager_info *mi;
++	struct omap_overlay *ovl;
++	struct omap_overlay_info *ois[MAX_DSS_OVERLAYS];
++	struct ovl_priv_data *op;
++	struct mgr_priv_data *mp;
++
++	mp = get_mgr_priv(mgr);
++
++	if (applying && mp->user_info_dirty)
++		mi = &mp->user_info;
++	else
++		mi = &mp->info;
++
++	/* collect the infos to be tested into the array */
++	list_for_each_entry(ovl, &mgr->overlays, list) {
++		op = get_ovl_priv(ovl);
++
++		if (!op->enabled)
++			oi = NULL;
++		else if (applying && op->user_info_dirty)
++			oi = &op->user_info;
++		else
++			oi = &op->info;
++
++		ois[ovl->id] = oi;
++	}
++
++	return dss_mgr_check(mgr, dssdev, mi, ois);
++}
++
++/*
++ * check manager and overlay settings using overlay_info from data->info
++ */
++static int dss_check_settings(struct omap_overlay_manager *mgr,
++		struct omap_dss_device *dssdev)
++{
++	return dss_check_settings_low(mgr, dssdev, false);
++}
++
++/*
++ * check manager and overlay settings using overlay_info from ovl->info if
++ * dirty and from data->info otherwise
++ */
++static int dss_check_settings_apply(struct omap_overlay_manager *mgr,
++		struct omap_dss_device *dssdev)
++{
++	return dss_check_settings_low(mgr, dssdev, true);
++}
++
+ static bool need_isr(void)
+ {
+ 	const int num_mgrs = dss_feat_get_num_mgrs();
+@@ -517,6 +680,7 @@ static void dss_write_regs(void)
+ 	for (i = 0; i < num_mgrs; ++i) {
+ 		struct omap_overlay_manager *mgr;
+ 		struct mgr_priv_data *mp;
++		int r;
+ 
+ 		mgr = omap_dss_get_overlay_manager(i);
+ 		mp = get_mgr_priv(mgr);
+@@ -524,6 +688,13 @@ static void dss_write_regs(void)
+ 		if (!mp->enabled || mgr_manual_update(mgr) || mp->busy)
+ 			continue;
+ 
++		r = dss_check_settings(mgr, mgr->device);
++		if (r) {
++			DSSERR("cannot write registers for manager %s: "
++					"illegal configuration\n", mgr->name);
++			continue;
++		}
++
+ 		dss_mgr_write_regs(mgr);
+ 
+ 		if (need_go(mgr)) {
+@@ -541,11 +712,19 @@ void dss_start_update(struct omap_overlay_manager *mgr)
+ {
+ 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
+ 	unsigned long flags;
++	int r;
+ 
+ 	spin_lock_irqsave(&data_lock, flags);
+ 
+ 	WARN_ON(mp->updating);
+ 
++	r = dss_check_settings(mgr, mgr->device);
++	if (r) {
++		DSSERR("cannot start manual update: illegal configuration\n");
++		spin_unlock_irqrestore(&data_lock, flags);
++		return;
++	}
++
+ 	dss_mgr_write_regs(mgr);
+ 
+ 	mp->updating = true;
+@@ -690,11 +869,19 @@ int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
+ {
+ 	unsigned long flags;
+ 	struct omap_overlay *ovl;
++	int r;
+ 
+ 	DSSDBG("omap_dss_mgr_apply(%s)\n", mgr->name);
+ 
+ 	spin_lock_irqsave(&data_lock, flags);
+ 
++	r = dss_check_settings_apply(mgr, mgr->device);
++	if (r) {
++		spin_unlock_irqrestore(&data_lock, flags);
++		DSSERR("failed to apply settings: illegal configuration.\n");
++		return r;
++	}
++
+ 	/* Configure overlays */
+ 	list_for_each_entry(ovl, &mgr->overlays, list)
+ 		omap_dss_mgr_apply_ovl(ovl);
+@@ -784,6 +971,7 @@ void dss_mgr_enable(struct omap_overlay_manager *mgr)
+ {
+ 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
+ 	unsigned long flags;
++	int r;
+ 
+ 	mutex_lock(&apply_lock);
+ 
+@@ -793,6 +981,16 @@ void dss_mgr_enable(struct omap_overlay_manager *mgr)
+ 	spin_lock_irqsave(&data_lock, flags);
+ 
+ 	mp->enabled = true;
++	r = dss_check_settings(mgr, mgr->device);
++	mp->enabled = false;
++	if (r) {
++		DSSERR("failed to enable manager %d: check_settings failed\n",
++				mgr->id);
++		spin_unlock_irqrestore(&data_lock, flags);
++		goto out;
++	}
++
++	mp->enabled = true;
+ 
+ 	dss_mgr_setup_fifos(mgr);
+ 
+@@ -1142,16 +1340,25 @@ int dss_ovl_enable(struct omap_overlay *ovl)
+ 
+ 	if (op->enabled) {
+ 		r = 0;
+-		goto err;
++		goto err1;
+ 	}
+ 
+ 	if (ovl->manager = NULL || ovl->manager->device = NULL) {
+ 		r = -EINVAL;
+-		goto err;
++		goto err1;
+ 	}
+ 
+ 	spin_lock_irqsave(&data_lock, flags);
+ 
++	op->enabled = true;
++	r = dss_check_settings(ovl->manager, ovl->manager->device);
++	op->enabled = false;
++	if (r) {
++		DSSERR("failed to enable overlay %d: check_settings failed\n",
++				ovl->id);
++		goto err2;
++	}
++
+ 	dss_apply_ovl_enable(ovl, true);
+ 
+ 	dss_ovl_setup_fifo(ovl);
+@@ -1163,7 +1370,9 @@ int dss_ovl_enable(struct omap_overlay *ovl)
+ 	mutex_unlock(&apply_lock);
+ 
+ 	return 0;
+-err:
++err2:
++	spin_unlock_irqrestore(&data_lock, flags);
++err1:
+ 	mutex_unlock(&apply_lock);
+ 	return r;
+ }
+-- 
+1.7.4.1
 

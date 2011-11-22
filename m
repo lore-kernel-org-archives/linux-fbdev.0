@@ -1,79 +1,178 @@
-From: Igor Grinberg <grinberg@compulab.co.il>
-Date: Thu, 17 Nov 2011 06:52:54 +0000
-Subject: Re: [PATCH 2/4] omap_dss: add FocalTech ETM070003DH6 display support
-Message-Id: <4EC4AF46.3080601@compulab.co.il>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:22:04 +0000
+Subject: [PATCH 65/65] OMAPDSS: check the return value of dss_mgr_enable()
+Message-Id: <1321953724-6350-66-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1320797568-11169-1-git-send-email-yanok@emcraft.com> <1320797568-11169-3-git-send-email-yanok@emcraft.com> <4EC45535.9060708@emcraft.com>
-In-Reply-To: <4EC45535.9060708@emcraft.com>
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ilya Yanok <yanok@emcraft.com>
-Cc: linux-omap@vger.kernel.org, wd@denx.de, dzu@denx.de, sasha_d@emcraft.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi Ilya,
+Now that dss_mgr_enable returns an error value, check it in all the
+places dss_mgr_enable is used, and bail out properly.
 
-You should have CC'd Tomi and linux-fbdev - done now.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dpi.c  |    5 ++++-
+ drivers/video/omap2/dss/dsi.c  |   11 ++++++++++-
+ drivers/video/omap2/dss/hdmi.c |    9 ++++++++-
+ drivers/video/omap2/dss/sdi.c  |    6 +++++-
+ drivers/video/omap2/dss/venc.c |   26 +++++++++++++++++++++++---
+ 5 files changed, 50 insertions(+), 7 deletions(-)
 
-On 11/17/11 02:28, Ilya Yanok wrote:
-> Hi guys,
-> 
-> what about this patch? Can it be applied? It's pretty independent from
-> other ones.
-> 
-> Regards, Ilya.
-> 
-> On 09.11.2011 04:12, Ilya Yanok wrote:
->> Add data for the FocalTech ETM070003DH6 display to the generic_dpi_panel
->> display driver.
->>
->> Signed-off-by: Ilya Yanok <yanok@emcraft.com>
->> ---
->>  drivers/video/omap2/displays/panel-generic-dpi.c |   24 ++++++++++++++++++++++
->>  1 files changed, 24 insertions(+), 0 deletions(-)
->>
->> diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
->> index 519c47d..42bfe47 100644
->> --- a/drivers/video/omap2/displays/panel-generic-dpi.c
->> +++ b/drivers/video/omap2/displays/panel-generic-dpi.c
->> @@ -297,6 +297,30 @@ static struct panel_config generic_dpi_panels[] = {
->>  
->>  		.name			= "apollon",
->>  	},
->> +	/* FocalTech ETM070003DH6 */
->> +	{
->> +		{
->> +			.x_res		= 800,
->> +			.y_res		= 480,
->> +
->> +			.pixel_clock	= 28000,
->> +
->> +			.hsw		= 48,
->> +			.hfp		= 40,
->> +			.hbp		= 40,
->> +
->> +			.vsw		= 3,
->> +			.vfp		= 13,
->> +			.vbp		= 29,
->> +		},
->> +		.acbi			= 0x0,
->> +		.acb			= 0x28,
->> +		.config			= OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
->> +					  OMAP_DSS_LCD_IHS,
->> +		.power_on_delay		= 50,
->> +		.power_off_delay	= 100,
->> +		.name			= "focaltech_etm070003dh6",
->> +	},
->>  };
->>  
->>  struct panel_drv_data {
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 79c4df3..395d658 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -223,10 +223,13 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
+ 
+ 	mdelay(2);
+ 
+-	dss_mgr_enable(dssdev->manager);
++	r = dss_mgr_enable(dssdev->manager);
++	if (r)
++		goto err_mgr_enable;
+ 
+ 	return 0;
+ 
++err_mgr_enable:
+ err_set_mode:
+ 	if (dpi_use_dsi_pll(dssdev))
+ 		dsi_pll_uninit(dpi.dsidev, true);
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index a35f3fb..57fda24 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -3945,6 +3945,7 @@ int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel)
+ 	int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
+ 	u8 data_type;
+ 	u16 word_count;
++	int r;
+ 
+ 	if (dssdev->panel.dsi_mode = OMAP_DSS_DSI_VIDEO_MODE) {
+ 		switch (dssdev->panel.dsi_pix_fmt) {
+@@ -3979,7 +3980,15 @@ int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel)
+ 		dsi_if_enable(dsidev, true);
+ 	}
+ 
+-	dss_mgr_enable(dssdev->manager);
++	r = dss_mgr_enable(dssdev->manager);
++	if (r) {
++		if (dssdev->panel.dsi_mode = OMAP_DSS_DSI_VIDEO_MODE) {
++			dsi_if_enable(dsidev, false);
++			dsi_vc_enable(dsidev, channel, false);
++		}
++
++		return r;
++	}
+ 
+ 	return 0;
+ }
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index e245a2b..b064762 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -387,9 +387,16 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
+ 
+ 	hdmi.ip_data.ops->video_enable(&hdmi.ip_data, 1);
+ 
+-	dss_mgr_enable(dssdev->manager);
++	r = dss_mgr_enable(dssdev->manager);
++	if (r)
++		goto err_mgr_enable;
+ 
+ 	return 0;
++
++err_mgr_enable:
++	hdmi.ip_data.ops->video_enable(&hdmi.ip_data, 0);
++	hdmi.ip_data.ops->phy_disable(&hdmi.ip_data);
++	hdmi.ip_data.ops->pll_disable(&hdmi.ip_data);
+ err:
+ 	hdmi_runtime_put();
+ 	return -EIO;
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 02da8be..8266ca0 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -123,10 +123,14 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+ 		goto err_sdi_enable;
+ 	mdelay(2);
+ 
+-	dss_mgr_enable(dssdev->manager);
++	r = dss_mgr_enable(dssdev->manager);
++	if (r)
++		goto err_mgr_enable;
+ 
+ 	return 0;
+ 
++err_mgr_enable:
++	dss_sdi_disable();
+ err_sdi_enable:
+ err_set_dispc_clock_div:
+ err_set_dss_clock_div:
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 101fcd7..b3e9f90 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -417,9 +417,10 @@ static const struct venc_config *venc_timings_to_config(
+ 	BUG();
+ }
+ 
+-static void venc_power_on(struct omap_dss_device *dssdev)
++static int venc_power_on(struct omap_dss_device *dssdev)
+ {
+ 	u32 l;
++	int r;
+ 
+ 	venc_reset();
+ 	venc_write_config(venc_timings_to_config(&dssdev->panel.timings));
+@@ -447,7 +448,22 @@ static void venc_power_on(struct omap_dss_device *dssdev)
+ 	if (dssdev->platform_enable)
+ 		dssdev->platform_enable(dssdev);
+ 
+-	dss_mgr_enable(dssdev->manager);
++	r = dss_mgr_enable(dssdev->manager);
++	if (r)
++		goto err;
++
++	return 0;
++
++err:
++	venc_write_reg(VENC_OUTPUT_CONTROL, 0);
++	dss_set_dac_pwrdn_bgz(0);
++
++	if (dssdev->platform_disable)
++		dssdev->platform_disable(dssdev);
++
++	regulator_disable(venc.vdda_dac_reg);
++
++	return r;
+ }
+ 
+ static void venc_power_off(struct omap_dss_device *dssdev)
+@@ -504,7 +520,9 @@ static int venc_panel_enable(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err1;
+ 
+-	venc_power_on(dssdev);
++	r = venc_power_on(dssdev);
++	if (r)
++		goto err2;
+ 
+ 	venc.wss_data = 0;
+ 
+@@ -512,6 +530,8 @@ static int venc_panel_enable(struct omap_dss_device *dssdev)
+ 
+ 	mutex_unlock(&venc.venc_lock);
+ 	return 0;
++err2:
++	venc_runtime_put();
+ err1:
+ 	omap_dss_stop_device(dssdev);
+ err0:
 -- 
-Regards,
-Igor.
+1.7.4.1
+

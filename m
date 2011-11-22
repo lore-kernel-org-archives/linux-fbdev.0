@@ -1,77 +1,217 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 29 Nov 2011 16:13:27 +0000
-Subject: Re: drm pixel formats update
-Message-Id: <1322583207.1869.194.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-z3v8gCpLmUyq26DXkzIu"
+Date: Tue, 22 Nov 2011 09:21:39 +0000
+Subject: [PATCH 40/65] OMAPDSS: APPLY: add mutex
+Message-Id: <1321953724-6350-41-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321468945-28224-1-git-send-email-ville.syrjala@linux.intel.com>
-	 <201111291310.36589.laurent.pinchart@ideasonboard.com>
-In-Reply-To: <201111291310.36589.laurent.pinchart@ideasonboard.com>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: dri-devel@lists.freedesktop.org, ville.syrjala@linux.intel.com, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
+The functions in apply.c, called mostly via function pointers in overlay
+and overlay_manager structs, will be divided into two groups. The other
+group will not sleep and can be called from interrupts, and the other
+group may sleep.
 
---=-z3v8gCpLmUyq26DXkzIu
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+The idea is that the non-sleeping functions may only change certain
+settings in overlays and managers, and those settings may only affect
+the particular overlay/manager. For example, set the base address of the
+overlay.
 
-On Tue, 2011-11-29 at 13:10 +0100, Laurent Pinchart wrote:
+The blocking functions, however, will handle more complex configuration
+changes. For example, when an overlay is enabled and fifo-merge feature
+is used, we need to do the enable in multiple steps, waiting in between,
+and the change affects multiple overlays and managers.
 
-> To make it perfectly clear, I want to emphasize that I'm not trying to re=
-place=20
-> DRM, FBDEV and V4L2 with a new shared subsystem. What I would like to see=
- in=20
-> the (near future) is collaboration and sharing of core features that make=
-=20
-> sense to share. I believe we should address this from a "pain point" poin=
-t of=20
-> view. The one that lead me to writing this e-mail is that developing a dr=
-iver=20
-> that implements both the DRM and FBDEV APIs for video output currently=
-=20
-> requires various similar structures, and code to translate between all of=
-=20
-> them. That code can't be shared between multiple drivers, is error-prone,=
- and=20
-> painful to maintin.
+This patch adds the mutex which is used in the blocking functions to
+have exclusive access to overlays and overlay managers.
 
-We've been in the same situation with OMAP display driver for years. The
-same low level display driver is used by FB, V4L2 and now DRM drivers,
-so I didn't have much choice but to implement omapdss versions for
-things like video timings and color formats.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/apply.c |   71 ++++++++++++++++++++++++++++++++++-----
+ 1 files changed, 62 insertions(+), 9 deletions(-)
 
-I've been planning to write code for this almost as long as omapdss has
-had this problem, but there's always been
-yet-another-important-thing-to-do. So good that somebody finally brought
-this up =3D).
-
-I'm happy to test any code related to this with omapdss.
-
- Tomi
-
-
---=-z3v8gCpLmUyq26DXkzIu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJO1QSnAAoJEPo9qoy8lh71X24P/0XGlVuXd2O0ouJ9bZB2vI+u
-ho0VLx7hOZlfyOwa/cJu2dylcSnK86/N9RiRlb/5iyCmqazVeJXhUTvlTiPS30kL
-KRgv4ScrNFVfDUHZc3mgH7bI/sXKOi2jXC8dOIiQ9MDLYcpzPWtEW0Wq32Q5uufY
-9yztLCQXF8G0DGfyIMjNPNiRbZm8v37YbPG9yRgaiZn8yhAG2eb9vJt7U5xGtYo9
-XYhrbKLhwgvyAjjQaPW7OP2huXmUNCf4mT0pI9Y+4hzT5TgCI7qwDCOFzdnSxQEV
-s2KBxLP3hUmp+OWKoKUOg3XXZCfEsqh5AMbRSPAaiB/ewyDvQpF8hQYpANTA7C3L
-8v02zuKYFyzUj+1BuUtq1yU+UgrFWWf9eJgL28x0gS0Hexz33IBEBq9gdpmPFUzh
-Hr0mKWrXIaMZPTTGuqtJma6kccDAXc2ka5Rb1EmAVTCjdrKmQ21o4PeY/uyYfPVW
-CP61tkBmt+1RGhJ3qk3vRf6TIwv/Zned8YQunN5ZSSrhSGrFqua3Tec7h7QIIDWM
-s3J/A4AndDjkJoTUnSp4ms+muywavtSej9hV5cEuM8mT/K054skIryTMHX+FF2VZ
-bwFYcttwFe9gODLwAiWOD/N8oXJnkOCMz+GSBmvyhH7TooK26l5lKguzY3kC1hHl
-QQMsX/JYBOA/b6jH3xjz
-=mIIU
------END PGP SIGNATURE-----
-
---=-z3v8gCpLmUyq26DXkzIu--
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index b935264..fb6d3c2 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -97,6 +97,8 @@ static struct {
+ 
+ /* protects dss_data */
+ static spinlock_t data_lock;
++/* lock for blocking functions */
++static DEFINE_MUTEX(apply_lock);
+ 
+ static struct ovl_priv_data *get_ovl_priv(struct omap_overlay *ovl)
+ {
+@@ -639,14 +641,22 @@ int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
+ 
+ void dss_mgr_enable(struct omap_overlay_manager *mgr)
+ {
++	mutex_lock(&apply_lock);
++
+ 	dispc_mgr_enable(mgr->id, true);
+ 	mgr->enabled = true;
++
++	mutex_unlock(&apply_lock);
+ }
+ 
+ void dss_mgr_disable(struct omap_overlay_manager *mgr)
+ {
++	mutex_lock(&apply_lock);
++
+ 	dispc_mgr_enable(mgr->id, false);
+ 	mgr->enabled = false;
++
++	mutex_unlock(&apply_lock);
+ }
+ 
+ int dss_mgr_set_info(struct omap_overlay_manager *mgr,
+@@ -669,44 +679,65 @@ int dss_mgr_set_device(struct omap_overlay_manager *mgr,
+ {
+ 	int r;
+ 
++	mutex_lock(&apply_lock);
++
+ 	if (dssdev->manager) {
+ 		DSSERR("display '%s' already has a manager '%s'\n",
+ 			       dssdev->name, dssdev->manager->name);
+-		return -EINVAL;
++		r = -EINVAL;
++		goto err;
+ 	}
+ 
+ 	if ((mgr->supported_displays & dssdev->type) = 0) {
+ 		DSSERR("display '%s' does not support manager '%s'\n",
+ 			       dssdev->name, mgr->name);
+-		return -EINVAL;
++		r = -EINVAL;
++		goto err;
+ 	}
+ 
+ 	dssdev->manager = mgr;
+ 	mgr->device = dssdev;
+ 	mgr->device_changed = true;
+ 
++	mutex_unlock(&apply_lock);
++
+ 	return 0;
++err:
++	mutex_unlock(&apply_lock);
++	return r;
+ }
+ 
+ int dss_mgr_unset_device(struct omap_overlay_manager *mgr)
+ {
++	int r;
++
++	mutex_lock(&apply_lock);
++
+ 	if (!mgr->device) {
+ 		DSSERR("failed to unset display, display not set.\n");
+-		return -EINVAL;
++		r = -EINVAL;
++		goto err;
+ 	}
+ 
+ 	/*
+ 	 * Don't allow currently enabled displays to have the overlay manager
+ 	 * pulled out from underneath them
+ 	 */
+-	if (mgr->device->state != OMAP_DSS_DISPLAY_DISABLED)
+-		return -EINVAL;
++	if (mgr->device->state != OMAP_DSS_DISPLAY_DISABLED) {
++		r = -EINVAL;
++		goto err;
++	}
+ 
+ 	mgr->device->manager = NULL;
+ 	mgr->device = NULL;
+ 	mgr->device_changed = true;
+ 
++	mutex_unlock(&apply_lock);
++
+ 	return 0;
++err:
++	mutex_unlock(&apply_lock);
++	return r;
+ }
+ 
+ 
+@@ -729,18 +760,24 @@ void dss_ovl_get_info(struct omap_overlay *ovl,
+ int dss_ovl_set_manager(struct omap_overlay *ovl,
+ 		struct omap_overlay_manager *mgr)
+ {
++	int r;
++
+ 	if (!mgr)
+ 		return -EINVAL;
+ 
++	mutex_lock(&apply_lock);
++
+ 	if (ovl->manager) {
+ 		DSSERR("overlay '%s' already has a manager '%s'\n",
+ 				ovl->name, ovl->manager->name);
+-		return -EINVAL;
++		r = -EINVAL;
++		goto err;
+ 	}
+ 
+ 	if (ovl->info.enabled) {
+ 		DSSERR("overlay has to be disabled to change the manager\n");
+-		return -EINVAL;
++		r = -EINVAL;
++		goto err;
+ 	}
+ 
+ 	ovl->manager = mgr;
+@@ -760,25 +797,41 @@ int dss_ovl_set_manager(struct omap_overlay *ovl,
+ 	 * the overlay, but before moving the overlay to TV.
+ 	 */
+ 
++	mutex_unlock(&apply_lock);
++
+ 	return 0;
++err:
++	mutex_unlock(&apply_lock);
++	return r;
+ }
+ 
+ int dss_ovl_unset_manager(struct omap_overlay *ovl)
+ {
++	int r;
++
++	mutex_lock(&apply_lock);
++
+ 	if (!ovl->manager) {
+ 		DSSERR("failed to detach overlay: manager not set\n");
+-		return -EINVAL;
++		r = -EINVAL;
++		goto err;
+ 	}
+ 
+ 	if (ovl->info.enabled) {
+ 		DSSERR("overlay has to be disabled to unset the manager\n");
+-		return -EINVAL;
++		r = -EINVAL;
++		goto err;
+ 	}
+ 
+ 	ovl->manager = NULL;
+ 	list_del(&ovl->list);
+ 	ovl->manager_changed = true;
+ 
++	mutex_unlock(&apply_lock);
++
+ 	return 0;
++err:
++	mutex_unlock(&apply_lock);
++	return r;
+ }
+ 
+-- 
+1.7.4.1
 

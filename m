@@ -1,79 +1,85 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sat, 12 Nov 2011 00:16:57 +0000
-Subject: Re: [PATCHv2] atmel_lcdfb: support new-style palette format
-Message-Id: <4EBDBAF9.3090805@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:22:00 +0000
+Subject: [PATCH 61/65] OMAPDSS: APPLY: add dss_ovl_simple_check()
+Message-Id: <1321953724-6350-62-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1318517152-27578-1-git-send-email-jacmet@sunsite.dk>
-In-Reply-To: <1318517152-27578-1-git-send-email-jacmet@sunsite.dk>
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 10/13/2011 02:45 PM, Peter Korsgaard wrote:
-> The newer Atmel SoCs use normal 16bit 565 BGR/RGB for the palette data,
-> rather than the special intensity + 555 format.
-> 
-> Fill out palette data correctly on these devices, and at the same time
-> respect the RGB/BGR wiring mode.
+Add dss_ovl_simple_check() which is used to check the validity of
+certain overlay attributes. Only attributes that can be checked
+independently, without knowing the display being used, is done here
+(thus "simple").
 
-Applied this patch.
+We can use this function in dss_ovl_set_info().
 
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/apply.c |   40 +++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 40 insertions(+), 0 deletions(-)
 
-Thanks,
-
-Florian Tobias Schandinat
-
-> 
-> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
-> ---
-> Changes since v1:
->  - ATMEL_LCDC_WIRING_RGB/BGR was swapped
-> 
->  drivers/video/atmel_lcdfb.c |   32 ++++++++++++++++++++++++--------
->  1 files changed, 24 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-> index 63409c1..7ca3eaf 100644
-> --- a/drivers/video/atmel_lcdfb.c
-> +++ b/drivers/video/atmel_lcdfb.c
-> @@ -682,14 +682,30 @@ static int atmel_lcdfb_setcolreg(unsigned int regno, unsigned int red,
->  
->  	case FB_VISUAL_PSEUDOCOLOR:
->  		if (regno < 256) {
-> -			val  = ((red   >> 11) & 0x001f);
-> -			val |= ((green >>  6) & 0x03e0);
-> -			val |= ((blue  >>  1) & 0x7c00);
-> -
-> -			/*
-> -			 * TODO: intensity bit. Maybe something like
-> -			 *   ~(red[10] ^ green[10] ^ blue[10]) & 1
-> -			 */
-> +			if (cpu_is_at91sam9261() || cpu_is_at91sam9263()
-> +			    || cpu_is_at91sam9rl()) {
-> +				/* old style I+BGR:555 */
-> +				val  = ((red   >> 11) & 0x001f);
-> +				val |= ((green >>  6) & 0x03e0);
-> +				val |= ((blue  >>  1) & 0x7c00);
-> +
-> +				/*
-> +				 * TODO: intensity bit. Maybe something like
-> +				 *   ~(red[10] ^ green[10] ^ blue[10]) & 1
-> +				 */
-> +			} else {
-> +				/* new style BGR:565 / RGB:565 */
-> +				if (sinfo->lcd_wiring_mode =
-> +				    ATMEL_LCDC_WIRING_RGB) {
-> +					val  = ((blue >> 11) & 0x001f);
-> +					val |= ((red  >>  0) & 0xf800);
-> +				} else {
-> +					val  = ((red  >> 11) & 0x001f);
-> +					val |= ((blue >>  0) & 0xf800);
-> +				}
-> +
-> +				val |= ((green >>  5) & 0x07e0);
-> +			}
->  
->  			lcdc_writel(sinfo, ATMEL_LCDC_LUT(regno), val);
->  			ret = 0;
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 6a50ee0..c1c4597 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -928,12 +928,52 @@ err:
+ }
+ 
+ 
++static int dss_ovl_simple_check(struct omap_overlay *ovl,
++		const struct omap_overlay_info *info)
++{
++	if (info->paddr = 0) {
++		DSSERR("check_overlay: paddr cannot be 0\n");
++		return -EINVAL;
++	}
++
++	if ((ovl->caps & OMAP_DSS_OVL_CAP_SCALE) = 0) {
++		if (info->out_width != 0 && info->width != info->out_width) {
++			DSSERR("check_overlay: overlay %d doesn't support "
++					"scaling\n", ovl->id);
++			return -EINVAL;
++		}
++
++		if (info->out_height != 0 && info->height != info->out_height) {
++			DSSERR("check_overlay: overlay %d doesn't support "
++					"scaling\n", ovl->id);
++			return -EINVAL;
++		}
++	}
++
++	if ((ovl->supported_modes & info->color_mode) = 0) {
++		DSSERR("check_overlay: overlay %d doesn't support mode %d\n",
++				ovl->id, info->color_mode);
++		return -EINVAL;
++	}
++
++	if (info->zorder >= omap_dss_get_num_overlays()) {
++		DSSERR("check_overlay: zorder %d too high\n", info->zorder);
++		return -EINVAL;
++	}
++
++	return 0;
++}
+ 
+ int dss_ovl_set_info(struct omap_overlay *ovl,
+ 		struct omap_overlay_info *info)
+ {
+ 	struct ovl_priv_data *op = get_ovl_priv(ovl);
+ 	unsigned long flags;
++	int r;
++
++	r = dss_ovl_simple_check(ovl, info);
++	if (r)
++		return r;
+ 
+ 	spin_lock_irqsave(&data_lock, flags);
+ 
+-- 
+1.7.4.1
 

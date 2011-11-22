@@ -1,43 +1,107 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Nov 2011 13:29:28 +0000
-Subject: [PATCH 00/13] OMAPDSS: DSI fixes
-Message-Id: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:21:48 +0000
+Subject: [PATCH 49/65] OMAPDSS: APPLY: clean up isr_handler
+Message-Id: <1321953724-6350-50-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-First a few patches to flush posted writes, and then DSI patches related to the
-DSI lane handling. I'm not sure if the lane handling is still as clean as it
-could be, but at least it feels cleaner than currently.
+Add a helper function mgr_clear_shadow_dirty(), which clears the
+shadow_dirty flags for the given manager and for the overlays on that
+manager.
 
-Tested entering ULPS on display disable on blaze tablet, and it seems to work.
-However, I have no way to ensure that ULPS was actually entered, as I would
-need a scope for that.
+This lets us simplify the code in the dss_apply_irq_handler().
 
- Tomi
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/apply.c |   52 +++++++++++++++++++++------------------
+ 1 files changed, 28 insertions(+), 24 deletions(-)
 
-Tomi Valkeinen (13):
-  OMAPDSS: DSI: flush posted write when entering ULPS
-  OMAPDSS: DSI: flush posted write in send_bta
-  OMAPDSS: DISPC: Flush posted writes when enabling outputs
-  OMAPDSS: DSI: count with number of lanes
-  OMAPDSS: DSI: Parse lane config
-  OMAPDSS: DSI: Use new lane config in dsi_set_lane_config
-  OMAPDSS: DSI: use lane config in dsi_get_lane_mask
-  OMAPDSS: DSI: use lane config in dsi_cio_wait_tx_clk_esc_reset
-  OMAPDSS: DSI: use lane config in dsi_cio_enable_lane_override
-  OMAPDSS: DSI: remove dsi_get_num_lanes_used
-  OMAPDSS: DSI: fix lane handling when entering ULPS
-  OMAPDSS: DSI: improve wait_for_bit_change
-  OMAPDSS: DSI: disable DDR_CLK_ALWAYS_ON when entering ULPS
-
- drivers/video/omap2/dss/dispc.c |   10 +-
- drivers/video/omap2/dss/dsi.c   |  429 +++++++++++++++++++++------------------
- 2 files changed, 242 insertions(+), 197 deletions(-)
-
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index b2c0462..601dbc7 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -508,47 +508,51 @@ static void dss_unregister_vsync_isr(void)
+ 	dss_data.irq_enabled = false;
+ }
+ 
+-static void dss_apply_irq_handler(void *data, u32 mask)
++static void mgr_clear_shadow_dirty(struct omap_overlay_manager *mgr)
+ {
+ 	struct omap_overlay *ovl;
+-	struct omap_overlay_manager *mgr;
+ 	struct mgr_priv_data *mp;
+ 	struct ovl_priv_data *op;
+-	const int num_ovls = dss_feat_get_num_ovls();
++
++	mp = get_mgr_priv(mgr);
++	mp->shadow_dirty = false;
++
++	list_for_each_entry(ovl, &mgr->overlays, list) {
++		op = get_ovl_priv(ovl);
++		op->shadow_dirty = false;
++		op->shadow_extra_info_dirty = false;
++	}
++}
++
++static void dss_apply_irq_handler(void *data, u32 mask)
++{
+ 	const int num_mgrs = dss_feat_get_num_mgrs();
+ 	int i;
+ 
+ 	spin_lock(&data_lock);
+ 
++	/* clear busy, updating flags, shadow_dirty flags */
+ 	for (i = 0; i < num_mgrs; i++) {
++		struct omap_overlay_manager *mgr;
++		struct mgr_priv_data *mp;
++
+ 		mgr = omap_dss_get_overlay_manager(i);
+ 		mp = get_mgr_priv(mgr);
+ 
+-		mp->busy = dispc_mgr_go_busy(i);
+-		mp->updating = dispc_mgr_is_enabled(i);
+-	}
+-
+-	for (i = 0; i < num_ovls; ++i) {
+-		ovl = omap_dss_get_overlay(i);
+-		op = get_ovl_priv(ovl);
+-
+-		if (!op->enabled)
++		if (!mp->enabled)
+ 			continue;
+ 
+-		mp = get_mgr_priv(ovl->manager);
+-
+-		if (!mp->busy) {
+-			op->shadow_dirty = false;
+-			op->shadow_extra_info_dirty = false;
+-		}
+-	}
++		mp->updating = dispc_mgr_is_enabled(i);
+ 
+-	for (i = 0; i < num_mgrs; ++i) {
+-		mgr = omap_dss_get_overlay_manager(i);
+-		mp = get_mgr_priv(mgr);
++		if (!mgr_manual_update(mgr)) {
++			mp->busy = dispc_mgr_go_busy(i);
+ 
+-		if (!mp->busy)
+-			mp->shadow_dirty = false;
++			if (!mp->busy)
++				mgr_clear_shadow_dirty(mgr);
++		} else {
++			if (!mp->updating)
++				mgr_clear_shadow_dirty(mgr);
++		}
+ 	}
+ 
+ 	dss_write_regs();
 -- 
 1.7.4.1
 

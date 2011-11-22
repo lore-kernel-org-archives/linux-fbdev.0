@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:21:42 +0000
-Subject: [PATCH 43/65] OMAPDSS: APPLY: move mgr->enabled to mgr_priv_data
-Message-Id: <1321953724-6350-44-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:21:11 +0000
+Subject: [PATCH 12/65] OMAPDSS: separate FIFO threshold setup from ovl_setup
+Message-Id: <1321953724-6350-13-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,103 +11,91 @@ Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-struct omap_overlay_manager contains "enabled"-field, used to track if
-the manager is enabled or not. This field should be internal to apply.c.
-
-This patch moves the field to mgr_priv_data, and applies the necessary
-locking when accessing the field.
+Overlay FIFO thresholds are configured with ovl_setup, with all the
+other overlay attributes. This patch separates FIFO threshold setup so
+that we can later configure FIFO thresholds only when needed.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/apply.c |   26 +++++++++++++++++++++++---
- include/video/omapdss.h         |    2 --
- 2 files changed, 23 insertions(+), 5 deletions(-)
+ drivers/video/omap2/dss/dispc.c   |   10 ++++------
+ drivers/video/omap2/dss/dss.h     |    3 +--
+ drivers/video/omap2/dss/manager.c |    5 +++--
+ 3 files changed, 8 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 66f4c56..c38bd76 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -86,6 +86,9 @@ struct mgr_priv_data {
- 
- 	bool manual_update;
- 	bool do_manual_update;
-+
-+	/* If true, a display is enabled using this manager */
-+	bool enabled;
- };
- 
- static struct {
-@@ -609,6 +612,7 @@ int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
- 	int r;
- 	unsigned long flags;
- 	struct omap_overlay *ovl;
-+	struct mgr_priv_data *mp = get_mgr_priv(mgr);
- 
- 	DSSDBG("omap_dss_mgr_apply(%s)\n", mgr->name);
- 
-@@ -630,7 +634,7 @@ int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
- 		omap_dss_mgr_apply_ovl_fifos(ovl);
- 
- 	r = 0;
--	if (mgr->enabled && !mgr_manual_update(mgr)) {
-+	if (mp->enabled && !mgr_manual_update(mgr)) {
- 		if (!dss_data.irq_enabled)
- 			dss_register_vsync_isr();
- 
-@@ -646,22 +650,38 @@ int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
- 
- void dss_mgr_enable(struct omap_overlay_manager *mgr)
- {
-+	struct mgr_priv_data *mp = get_mgr_priv(mgr);
-+	unsigned long flags;
-+
- 	mutex_lock(&apply_lock);
- 
- 	if (!mgr_manual_update(mgr))
- 		dispc_mgr_enable(mgr->id, true);
--	mgr->enabled = true;
-+
-+	spin_lock_irqsave(&data_lock, flags);
-+
-+	mp->enabled = true;
-+
-+	spin_unlock_irqrestore(&data_lock, flags);
- 
- 	mutex_unlock(&apply_lock);
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 49f97db..55cfbc9 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -1769,8 +1769,7 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
  }
  
- void dss_mgr_disable(struct omap_overlay_manager *mgr)
+ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+-		bool ilace, enum omap_channel channel, bool replication,
+-		u32 fifo_low, u32 fifo_high)
++		bool ilace, enum omap_channel channel, bool replication)
  {
-+	struct mgr_priv_data *mp = get_mgr_priv(mgr);
-+	unsigned long flags;
-+
- 	mutex_lock(&apply_lock);
+ 	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
+ 	bool five_taps = false;
+@@ -1784,11 +1783,11 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 	u16 outw, outh;
  
- 	if (!mgr_manual_update(mgr))
- 		dispc_mgr_enable(mgr->id, false);
--	mgr->enabled = false;
-+
-+	spin_lock_irqsave(&data_lock, flags);
-+
-+	mp->enabled = false;
-+
-+	spin_unlock_irqrestore(&data_lock, flags);
+ 	DSSDBG("dispc_ovl_setup %d, pa %x, pa_uv %x, sw %d, %d,%d, %dx%d -> "
+-		"%dx%d, cmode %x, rot %d, mir %d, ilace %d chan %d repl %d "
+-		"fifo_low %d fifo high %d\n", plane, oi->paddr, oi->p_uv_addr,
++		"%dx%d, cmode %x, rot %d, mir %d, ilace %d chan %d repl %d\n",
++		plane, oi->paddr, oi->p_uv_addr,
+ 		oi->screen_width, oi->pos_x, oi->pos_y, oi->width, oi->height,
+ 		oi->out_width, oi->out_height, oi->color_mode, oi->rotation,
+-		oi->mirror, ilace, channel, replication, fifo_low, fifo_high);
++		oi->mirror, ilace, channel, replication);
  
- 	mutex_unlock(&apply_lock);
+ 	if (oi->paddr = 0)
+ 		return -EINVAL;
+@@ -1896,7 +1895,6 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 	dispc_ovl_set_channel_out(plane, channel);
+ 
+ 	dispc_ovl_enable_replication(plane, replication);
+-	dispc_ovl_set_fifo_threshold(plane, fifo_low, fifo_high);
+ 
+ 	return 0;
  }
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 25ef771..6e3e7a7 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -430,8 +430,6 @@ struct omap_overlay_manager {
- 	struct omap_dss_device *device;
- 	struct omap_overlay_manager_info info;
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 0937bd8..61001c3 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -397,8 +397,7 @@ void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high);
+ u32 dispc_ovl_get_fifo_size(enum omap_plane plane);
+ u32 dispc_ovl_get_burst_size(enum omap_plane plane);
+ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+-		bool ilace, enum omap_channel channel, bool replication,
+-		u32 fifo_low, u32 fifo_high);
++		bool ilace, enum omap_channel channel, bool replication);
+ int dispc_ovl_enable(enum omap_plane plane, bool enable);
+ void dispc_ovl_set_channel_out(enum omap_plane plane,
+ 		enum omap_channel channel);
+diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+index 626f6b7..b47c1fa 100644
+--- a/drivers/video/omap2/dss/manager.c
++++ b/drivers/video/omap2/dss/manager.c
+@@ -777,8 +777,7 @@ static int configure_overlay(enum omap_plane plane)
  
--	bool enabled;
--
- 	bool device_changed;
- 	/* if true, info has been changed but not applied() yet */
- 	bool info_dirty;
+ 	ilace = ovl->manager->device->type = OMAP_DISPLAY_TYPE_VENC;
+ 
+-	r = dispc_ovl_setup(plane, oi, ilace, c->channel,
+-		replication, c->fifo_low, c->fifo_high);
++	r = dispc_ovl_setup(plane, oi, ilace, c->channel, replication);
+ 	if (r) {
+ 		/* this shouldn't happen */
+ 		DSSERR("dispc_ovl_setup failed for ovl %d\n", plane);
+@@ -786,6 +785,8 @@ static int configure_overlay(enum omap_plane plane)
+ 		return r;
+ 	}
+ 
++	dispc_ovl_set_fifo_threshold(plane, c->fifo_low, c->fifo_high);
++
+ 	dispc_ovl_enable(plane, 1);
+ 
+ 	return 0;
 -- 
 1.7.4.1
 

@@ -1,34 +1,85 @@
-From: Tabi Timur-B04825 <B04825@freescale.com>
-Date: Fri, 11 Nov 2011 16:41:25 +0000
-Subject: Re: [RFC] drivers/video: fsl-diu-fb: combine several allocated
-Message-Id: <4EBD5033.2020603@freescale.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:21:08 +0000
+Subject: [PATCH 09/65] OMAPDSS: pass ovl manager to dss_start_update
+Message-Id: <1321953724-6350-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1320793445-29562-1-git-send-email-timur@freescale.com>
-In-Reply-To: <1320793445-29562-1-git-send-email-timur@freescale.com>
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Florian Tobias Schandinat wrote:
+dss_start_update() takes currently the dss device as a parameter. Change
+the parameter to ovl manager, as that is what the dss_start_update()
+actually needs.
 
-> The idea to merge multiple DMA objects sounds good. But I think you might want
-> to have a look at what you put in the DMA area. I think it would be better and
-> cleaner to put things that should be never accessed by the device, like
-> fsl_diu_info, irq, reg_lock and so on, in a separate structure.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dsi.c     |    2 +-
+ drivers/video/omap2/dss/dss.h     |    2 +-
+ drivers/video/omap2/dss/manager.c |    7 ++-----
+ 3 files changed, 4 insertions(+), 7 deletions(-)
 
-Hmmm... you have a valid point, but I'm not keen on the idea of having two 
-memory blocks.  I was even hoping to put mfb_info objects in fsl_diu_info, 
-but framebuffer_alloc() won't let me.
-
->> Documentation for some affected data structures and variables is added.
->
-> You could do this in an separate patch as it's independent of your idea to merge
-> the DMA objects. Well, I do not care very much in this case.
-
-I can split it out.  It will give me the chance to add even more 
-documentation.
-
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 9ef04ff..e5a2dcc 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -4063,7 +4063,7 @@ static void dsi_update_screen_dispc(struct omap_dss_device *dssdev,
+ 		msecs_to_jiffies(250));
+ 	BUG_ON(r = 0);
+ 
+-	dss_start_update(dssdev);
++	dss_start_update(dssdev->manager);
+ 
+ 	if (dsi->te_enabled) {
+ 		/* disable LP_RX_TO, so that we can receive TE.  Time to wait
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 7f6a612..0937bd8 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -182,7 +182,7 @@ void default_get_overlay_fifo_thresholds(enum omap_plane plane,
+ int dss_init_overlay_managers(struct platform_device *pdev);
+ void dss_uninit_overlay_managers(struct platform_device *pdev);
+ int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl);
+-void dss_start_update(struct omap_dss_device *dssdev);
++void dss_start_update(struct omap_overlay_manager *mgr);
+ 
+ /* overlay */
+ void dss_init_overlays(struct platform_device *pdev);
+diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+index c616f85..bc28bfa 100644
+--- a/drivers/video/omap2/dss/manager.c
++++ b/drivers/video/omap2/dss/manager.c
+@@ -896,17 +896,14 @@ static int configure_dispc(void)
+ 	return r;
+ }
+ 
+-void dss_start_update(struct omap_dss_device *dssdev)
++void dss_start_update(struct omap_overlay_manager *mgr)
+ {
+ 	struct manager_cache_data *mc;
+ 	struct overlay_cache_data *oc;
+ 	const int num_ovls = dss_feat_get_num_ovls();
+ 	const int num_mgrs = dss_feat_get_num_mgrs();
+-	struct omap_overlay_manager *mgr;
+ 	int i;
+ 
+-	mgr = dssdev->manager;
+-
+ 	mc = &dss_cache.manager_cache[mgr->id];
+ 
+ 	mc->do_manual_update = true;
+@@ -929,7 +926,7 @@ void dss_start_update(struct omap_dss_device *dssdev)
+ 		mc->shadow_dirty = false;
+ 	}
+ 
+-	dssdev->manager->enable(dssdev->manager);
++	mgr->enable(mgr);
+ }
+ 
+ static void dss_apply_irq_handler(void *data, u32 mask)
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.7.4.1
+

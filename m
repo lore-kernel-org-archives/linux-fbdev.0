@@ -1,75 +1,117 @@
-From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Date: Wed, 09 Nov 2011 04:33:47 +0000
-Subject: [PATCH 02/15] fbdev: sh_mipi_dsi: tidyup dsip_clk
-Message-Id: <871uthc3tj.wl%kuninori.morimoto.gx@renesas.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:21:28 +0000
+Subject: [PATCH 29/65] OMAPDSS: APPLY: separate vsync isr register/unregister
+Message-Id: <1321953724-6350-30-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-dsipck clock is controled by CLKDEV_ICK_ID() in clock-shxxx.
-dsi0p_clk/dsi1p_clk naming is not needed.
+Create separate functions for the vsync isr register/unregister code for
+cleaner code.
 
-Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-shmobile/clock-sh7372.c |    4 ++--
- arch/arm/mach-shmobile/clock-sh73a0.c |    4 ++--
- drivers/video/sh_mipi_dsi.c           |    4 +---
- 3 files changed, 5 insertions(+), 7 deletions(-)
+ drivers/video/omap2/dss/apply.c |   61 +++++++++++++++++++++++---------------
+ 1 files changed, 37 insertions(+), 24 deletions(-)
 
-diff --git a/arch/arm/mach-shmobile/clock-sh7372.c b/arch/arm/mach-shmobile/clock-sh7372.c
-index 6697592..a736d94 100644
---- a/arch/arm/mach-shmobile/clock-sh7372.c
-+++ b/arch/arm/mach-shmobile/clock-sh7372.c
-@@ -612,8 +612,8 @@ static struct clk_lookup lookups[] = {
- 	CLKDEV_CON_ID("hdmi_clk", &div6_reparent_clks[DIV6_HDMI]),
- 	CLKDEV_ICK_ID("dsit_clk", "sh-mipi-dsi.0", &div6_clks[DIV6_DSIT]),
- 	CLKDEV_ICK_ID("dsit_clk", "sh-mipi-dsi.1", &div6_clks[DIV6_DSIT]),
--	CLKDEV_ICK_ID("dsi0p_clk", "sh-mipi-dsi.0", &div6_clks[DIV6_DSI0P]),
--	CLKDEV_ICK_ID("dsi1p_clk", "sh-mipi-dsi.1", &div6_clks[DIV6_DSI1P]),
-+	CLKDEV_ICK_ID("dsip_clk", "sh-mipi-dsi.0", &div6_clks[DIV6_DSI0P]),
-+	CLKDEV_ICK_ID("dsip_clk", "sh-mipi-dsi.1", &div6_clks[DIV6_DSI1P]),
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index cca5732..6aad0fd 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -417,6 +417,40 @@ void dss_start_update(struct omap_overlay_manager *mgr)
+ 	dispc_mgr_enable(mgr->id, true);
+ }
  
- 	/* MSTP32 clocks */
- 	CLKDEV_DEV_ID("i2c-sh_mobile.2", &mstp_clks[MSTP001]), /* IIC2 */
-diff --git a/arch/arm/mach-shmobile/clock-sh73a0.c b/arch/arm/mach-shmobile/clock-sh73a0.c
-index 61a846b..3da30ba 100644
---- a/arch/arm/mach-shmobile/clock-sh73a0.c
-+++ b/arch/arm/mach-shmobile/clock-sh73a0.c
-@@ -319,8 +319,8 @@ static struct clk_lookup lookups[] = {
- 	CLKDEV_CON_ID("sdhi2_clk", &div6_clks[DIV6_SDHI2]),
- 	CLKDEV_ICK_ID("dsit_clk", "sh-mipi-dsi.0", &div6_clks[DIV6_DSIT]),
- 	CLKDEV_ICK_ID("dsit_clk", "sh-mipi-dsi.1", &div6_clks[DIV6_DSIT]),
--	CLKDEV_ICK_ID("dsi0p_clk", "sh-mipi-dsi.0", &div6_clks[DIV6_DSI0P]),
--	CLKDEV_ICK_ID("dsi1p_clk", "sh-mipi-dsi.1", &div6_clks[DIV6_DSI1P]),
-+	CLKDEV_ICK_ID("dsip_clk", "sh-mipi-dsi.0", &div6_clks[DIV6_DSI0P]),
-+	CLKDEV_ICK_ID("dsip_clk", "sh-mipi-dsi.1", &div6_clks[DIV6_DSI1P]),
++static void dss_apply_irq_handler(void *data, u32 mask);
++
++static void dss_register_vsync_isr(void)
++{
++	u32 mask;
++	int r;
++
++	mask = DISPC_IRQ_VSYNC	| DISPC_IRQ_EVSYNC_ODD |
++		DISPC_IRQ_EVSYNC_EVEN;
++	if (dss_has_feature(FEAT_MGR_LCD2))
++		mask |= DISPC_IRQ_VSYNC2;
++
++	r = omap_dispc_register_isr(dss_apply_irq_handler, NULL, mask);
++	WARN_ON(r);
++
++	dss_cache.irq_enabled = true;
++}
++
++static void dss_unregister_vsync_isr(void)
++{
++	u32 mask;
++	int r;
++
++	mask = DISPC_IRQ_VSYNC | DISPC_IRQ_EVSYNC_ODD |
++			DISPC_IRQ_EVSYNC_EVEN;
++	if (dss_has_feature(FEAT_MGR_LCD2))
++		mask |= DISPC_IRQ_VSYNC2;
++
++	r = omap_dispc_unregister_isr(dss_apply_irq_handler, NULL, mask);
++	WARN_ON(r);
++
++	dss_cache.irq_enabled = false;
++}
++
+ static void dss_apply_irq_handler(void *data, u32 mask)
+ {
+ 	struct manager_cache_data *mc;
+@@ -425,7 +459,6 @@ static void dss_apply_irq_handler(void *data, u32 mask)
+ 	const int num_mgrs = dss_feat_get_num_mgrs();
+ 	int i, r;
+ 	bool mgr_busy[MAX_DSS_MANAGERS];
+-	u32 irq_mask;
  
- 	/* MSTP32 clocks */
- 	CLKDEV_DEV_ID("i2c-sh_mobile.2", &mstp_clks[MSTP001]), /* I2C2 */
-diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
-index 72ee96b..4aa5053 100644
---- a/drivers/video/sh_mipi_dsi.c
-+++ b/drivers/video/sh_mipi_dsi.c
-@@ -363,7 +363,6 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
- 	struct resource *res2 = platform_get_resource(pdev, IORESOURCE_MEM, 1);
- 	unsigned long rate, f_current;
- 	int idx = pdev->id, ret;
--	char dsip_clk[] = "dsi.p_clk";
+ 	for (i = 0; i < num_mgrs; i++)
+ 		mgr_busy[i] = dispc_mgr_go_busy(i);
+@@ -459,13 +492,7 @@ static void dss_apply_irq_handler(void *data, u32 mask)
+ 			goto end;
+ 	}
  
- 	if (!res || !res2 || idx >= ARRAY_SIZE(mipi_dsi) || !pdata)
- 		return -ENODEV;
-@@ -428,8 +427,7 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
+-	irq_mask = DISPC_IRQ_VSYNC | DISPC_IRQ_EVSYNC_ODD |
+-			DISPC_IRQ_EVSYNC_EVEN;
+-	if (dss_has_feature(FEAT_MGR_LCD2))
+-		irq_mask |= DISPC_IRQ_VSYNC2;
+-
+-	omap_dispc_unregister_isr(dss_apply_irq_handler, NULL, irq_mask);
+-	dss_cache.irq_enabled = false;
++	dss_unregister_vsync_isr();
  
- 	dev_dbg(&pdev->dev, "DSI-T clk %lu -> %lu\n", f_current, rate);
+ end:
+ 	spin_unlock(&dss_cache.lock);
+@@ -605,22 +632,8 @@ int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
  
--	sprintf(dsip_clk, "dsi%1.1dp_clk", idx);
--	mipi->dsip_clk = clk_get(&pdev->dev, dsip_clk);
-+	mipi->dsip_clk = clk_get(&pdev->dev, "dsip_clk");
- 	if (IS_ERR(mipi->dsip_clk)) {
- 		ret = PTR_ERR(mipi->dsip_clk);
- 		goto eclkpget;
+ 	r = 0;
+ 	if (mgr->enabled && !mgr_manual_update(mgr)) {
+-		if (!dss_cache.irq_enabled) {
+-			u32 mask;
+-
+-			mask = DISPC_IRQ_VSYNC	| DISPC_IRQ_EVSYNC_ODD |
+-				DISPC_IRQ_EVSYNC_EVEN;
+-			if (dss_has_feature(FEAT_MGR_LCD2))
+-				mask |= DISPC_IRQ_VSYNC2;
+-
+-			r = omap_dispc_register_isr(dss_apply_irq_handler,
+-					NULL, mask);
+-
+-			if (r)
+-				DSSERR("failed to register apply isr\n");
+-
+-			dss_cache.irq_enabled = true;
+-		}
++		if (!dss_cache.irq_enabled)
++			dss_register_vsync_isr();
+ 
+ 		configure_dispc();
+ 	}
 -- 
-1.7.5.4
+1.7.4.1
 

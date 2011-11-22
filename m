@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:21:30 +0000
-Subject: [PATCH 31/65] OMAPDSS: APPLY: use dispc_mgr_get_vsync_irq()
-Message-Id: <1321953724-6350-32-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:21:37 +0000
+Subject: [PATCH 38/65] OMAPDSS: APPLY: move mgr funcs to apply.c
+Message-Id: <1321953724-6350-39-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,86 +11,264 @@ Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Use dispc_mgr_get_vsync_irq() to get the interrupt numbers for vsync,
-instead of hardcoding the values depending on the display type.
+apply.c will handle the management of dispc in the future patches. This
+patch moves overlay manager related functions to apply.c so that they
+will have access to the private data and functions of apply.c.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/apply.c |   36 ++++++++++++------------------------
- 1 files changed, 12 insertions(+), 24 deletions(-)
+ drivers/video/omap2/dss/apply.c   |   83 +++++++++++++++++++++++++++++++++
+ drivers/video/omap2/dss/dss.h     |    9 ++++
+ drivers/video/omap2/dss/manager.c |   91 ++-----------------------------------
+ 3 files changed, 97 insertions(+), 86 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 6aad0fd..84ac2d4 100644
+index b120f95..543a10b 100644
 --- a/drivers/video/omap2/dss/apply.c
 +++ b/drivers/video/omap2/dss/apply.c
-@@ -131,13 +131,7 @@ int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr)
- 	if (mgr_manual_update(mgr))
- 		return 0;
+@@ -662,6 +662,89 @@ void dss_mgr_disable(struct omap_overlay_manager *mgr)
+ 	mgr->enabled = false;
+ }
  
--	if (dssdev->type = OMAP_DISPLAY_TYPE_VENC
--			|| dssdev->type = OMAP_DISPLAY_TYPE_HDMI) {
--		irq = DISPC_IRQ_EVSYNC_ODD | DISPC_IRQ_EVSYNC_EVEN;
--	} else {
--		irq = (dssdev->manager->id = OMAP_DSS_CHANNEL_LCD) ?
--			DISPC_IRQ_VSYNC : DISPC_IRQ_VSYNC2;
--	}
-+	irq = dispc_mgr_get_vsync_irq(mgr->id);
- 
- 	mc = &dss_cache.manager_cache[mgr->id];
- 	i = 0;
-@@ -200,13 +194,7 @@ int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl)
- 	if (ovl_manual_update(ovl))
- 		return 0;
- 
--	if (dssdev->type = OMAP_DISPLAY_TYPE_VENC
--			|| dssdev->type = OMAP_DISPLAY_TYPE_HDMI) {
--		irq = DISPC_IRQ_EVSYNC_ODD | DISPC_IRQ_EVSYNC_EVEN;
--	} else {
--		irq = (dssdev->manager->id = OMAP_DSS_CHANNEL_LCD) ?
--			DISPC_IRQ_VSYNC : DISPC_IRQ_VSYNC2;
--	}
-+	irq = dispc_mgr_get_vsync_irq(ovl->manager->id);
- 
- 	oc = &dss_cache.overlay_cache[ovl->id];
- 	i = 0;
-@@ -421,13 +409,13 @@ static void dss_apply_irq_handler(void *data, u32 mask);
- 
- static void dss_register_vsync_isr(void)
++int dss_mgr_set_info(struct omap_overlay_manager *mgr,
++		struct omap_overlay_manager_info *info)
++{
++	int r;
++	struct omap_overlay_manager_info old_info;
++
++	old_info = mgr->info;
++	mgr->info = *info;
++
++	r = dss_check_manager(mgr);
++	if (r) {
++		mgr->info = old_info;
++		return r;
++	}
++
++	mgr->info_dirty = true;
++
++	return 0;
++}
++
++void dss_mgr_get_info(struct omap_overlay_manager *mgr,
++		struct omap_overlay_manager_info *info)
++{
++	*info = mgr->info;
++}
++
++int dss_mgr_set_device(struct omap_overlay_manager *mgr,
++		struct omap_dss_device *dssdev)
++{
++	int r;
++	struct omap_overlay *ovl;
++
++	if (dssdev->manager) {
++		DSSERR("display '%s' already has a manager '%s'\n",
++			       dssdev->name, dssdev->manager->name);
++		return -EINVAL;
++	}
++
++	if ((mgr->supported_displays & dssdev->type) = 0) {
++		DSSERR("display '%s' does not support manager '%s'\n",
++			       dssdev->name, mgr->name);
++		return -EINVAL;
++	}
++
++	list_for_each_entry(ovl, &mgr->overlays, list) {
++		if (!ovl->info.enabled)
++			continue;
++
++		r = dss_check_overlay(ovl, dssdev);
++		if (r)
++			return r;
++	}
++
++	dssdev->manager = mgr;
++	mgr->device = dssdev;
++	mgr->device_changed = true;
++
++	return 0;
++}
++
++int dss_mgr_unset_device(struct omap_overlay_manager *mgr)
++{
++	if (!mgr->device) {
++		DSSERR("failed to unset display, display not set.\n");
++		return -EINVAL;
++	}
++
++	/*
++	 * Don't allow currently enabled displays to have the overlay manager
++	 * pulled out from underneath them
++	 */
++	if (mgr->device->state != OMAP_DSS_DISPLAY_DISABLED)
++		return -EINVAL;
++
++	mgr->device->manager = NULL;
++	mgr->device = NULL;
++	mgr->device_changed = true;
++
++	return 0;
++}
++
++
++
+ int dss_ovl_set_info(struct omap_overlay *ovl,
+ 		struct omap_overlay_info *info)
  {
-+	const int num_mgrs = dss_feat_get_num_mgrs();
- 	u32 mask;
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index ee155a1..afe9713 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -169,8 +169,16 @@ int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr);
+ int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl);
+ void dss_start_update(struct omap_overlay_manager *mgr);
+ int omap_dss_mgr_apply(struct omap_overlay_manager *mgr);
++
+ void dss_mgr_enable(struct omap_overlay_manager *mgr);
+ void dss_mgr_disable(struct omap_overlay_manager *mgr);
++int dss_mgr_set_info(struct omap_overlay_manager *mgr,
++		struct omap_overlay_manager_info *info);
++void dss_mgr_get_info(struct omap_overlay_manager *mgr,
++		struct omap_overlay_manager_info *info);
++int dss_mgr_set_device(struct omap_overlay_manager *mgr,
++		struct omap_dss_device *dssdev);
++int dss_mgr_unset_device(struct omap_overlay_manager *mgr);
+ 
+ int dss_ovl_set_info(struct omap_overlay *ovl,
+ 		struct omap_overlay_info *info);
+@@ -198,6 +206,7 @@ void default_get_overlay_fifo_thresholds(enum omap_plane plane,
+ /* manager */
+ int dss_init_overlay_managers(struct platform_device *pdev);
+ void dss_uninit_overlay_managers(struct platform_device *pdev);
++int dss_check_manager(struct omap_overlay_manager *mgr);
+ 
+ /* overlay */
+ void dss_init_overlays(struct platform_device *pdev);
+diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+index 62bcc38..ab0b61b 100644
+--- a/drivers/video/omap2/dss/manager.c
++++ b/drivers/video/omap2/dss/manager.c
+@@ -467,61 +467,6 @@ static struct kobj_type manager_ktype = {
+ 	.default_attrs = manager_sysfs_attrs,
+ };
+ 
+-static int omap_dss_set_device(struct omap_overlay_manager *mgr,
+-		struct omap_dss_device *dssdev)
+-{
 -	int r;
-+	int r, i;
- 
--	mask = DISPC_IRQ_VSYNC	| DISPC_IRQ_EVSYNC_ODD |
--		DISPC_IRQ_EVSYNC_EVEN;
--	if (dss_has_feature(FEAT_MGR_LCD2))
--		mask |= DISPC_IRQ_VSYNC2;
-+	mask = 0;
-+	for (i = 0; i < num_mgrs; ++i)
-+		mask |= dispc_mgr_get_vsync_irq(i);
- 
- 	r = omap_dispc_register_isr(dss_apply_irq_handler, NULL, mask);
- 	WARN_ON(r);
-@@ -437,13 +425,13 @@ static void dss_register_vsync_isr(void)
- 
- static void dss_unregister_vsync_isr(void)
+-	struct omap_overlay *ovl;
+-
+-	if (dssdev->manager) {
+-		DSSERR("display '%s' already has a manager '%s'\n",
+-			       dssdev->name, dssdev->manager->name);
+-		return -EINVAL;
+-	}
+-
+-	if ((mgr->supported_displays & dssdev->type) = 0) {
+-		DSSERR("display '%s' does not support manager '%s'\n",
+-			       dssdev->name, mgr->name);
+-		return -EINVAL;
+-	}
+-
+-	list_for_each_entry(ovl, &mgr->overlays, list) {
+-		if (!ovl->info.enabled)
+-			continue;
+-
+-		r = dss_check_overlay(ovl, dssdev);
+-		if (r)
+-			return r;
+-	}
+-
+-	dssdev->manager = mgr;
+-	mgr->device = dssdev;
+-	mgr->device_changed = true;
+-
+-	return 0;
+-}
+-
+-static int omap_dss_unset_device(struct omap_overlay_manager *mgr)
+-{
+-	if (!mgr->device) {
+-		DSSERR("failed to unset display, display not set.\n");
+-		return -EINVAL;
+-	}
+-
+-	/*
+-	 * Don't allow currently enabled displays to have the overlay manager
+-	 * pulled out from underneath them
+-	 */
+-	if (mgr->device->state != OMAP_DSS_DISPLAY_DISABLED)
+-		return -EINVAL;
+-
+-	mgr->device->manager = NULL;
+-	mgr->device = NULL;
+-	mgr->device_changed = true;
+-
+-	return 0;
+-}
+-
+ static int dss_mgr_wait_for_vsync(struct omap_overlay_manager *mgr)
  {
-+	const int num_mgrs = dss_feat_get_num_mgrs();
- 	u32 mask;
+ 	unsigned long timeout = msecs_to_jiffies(500);
+@@ -540,7 +485,7 @@ static int dss_mgr_wait_for_vsync(struct omap_overlay_manager *mgr)
+ 	return omap_dispc_wait_for_irq_interruptible_timeout(irq, timeout);
+ }
+ 
+-static int dss_check_manager(struct omap_overlay_manager *mgr)
++int dss_check_manager(struct omap_overlay_manager *mgr)
+ {
+ 	if (dss_has_feature(FEAT_ALPHA_FIXED_ZORDER)) {
+ 		/*
+@@ -557,32 +502,6 @@ static int dss_check_manager(struct omap_overlay_manager *mgr)
+ 	return 0;
+ }
+ 
+-static int omap_dss_mgr_set_info(struct omap_overlay_manager *mgr,
+-		struct omap_overlay_manager_info *info)
+-{
 -	int r;
-+	int r, i;
+-	struct omap_overlay_manager_info old_info;
+-
+-	old_info = mgr->info;
+-	mgr->info = *info;
+-
+-	r = dss_check_manager(mgr);
+-	if (r) {
+-		mgr->info = old_info;
+-		return r;
+-	}
+-
+-	mgr->info_dirty = true;
+-
+-	return 0;
+-}
+-
+-static void omap_dss_mgr_get_info(struct omap_overlay_manager *mgr,
+-		struct omap_overlay_manager_info *info)
+-{
+-	*info = mgr->info;
+-}
+-
+ int dss_init_overlay_managers(struct platform_device *pdev)
+ {
+ 	int i, r;
+@@ -612,11 +531,11 @@ int dss_init_overlay_managers(struct platform_device *pdev)
+ 			break;
+ 		}
  
--	mask = DISPC_IRQ_VSYNC | DISPC_IRQ_EVSYNC_ODD |
--			DISPC_IRQ_EVSYNC_EVEN;
--	if (dss_has_feature(FEAT_MGR_LCD2))
--		mask |= DISPC_IRQ_VSYNC2;
-+	mask = 0;
-+	for (i = 0; i < num_mgrs; ++i)
-+		mask |= dispc_mgr_get_vsync_irq(i);
+-		mgr->set_device = &omap_dss_set_device;
+-		mgr->unset_device = &omap_dss_unset_device;
++		mgr->set_device = &dss_mgr_set_device;
++		mgr->unset_device = &dss_mgr_unset_device;
+ 		mgr->apply = &omap_dss_mgr_apply;
+-		mgr->set_manager_info = &omap_dss_mgr_set_info;
+-		mgr->get_manager_info = &omap_dss_mgr_get_info;
++		mgr->set_manager_info = &dss_mgr_set_info;
++		mgr->get_manager_info = &dss_mgr_get_info;
+ 		mgr->wait_for_go = &dss_mgr_wait_for_go;
+ 		mgr->wait_for_vsync = &dss_mgr_wait_for_vsync;
  
- 	r = omap_dispc_unregister_isr(dss_apply_irq_handler, NULL, mask);
- 	WARN_ON(r);
 -- 
 1.7.4.1
 

@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:21:57 +0000
-Subject: [PATCH 58/65] OMAPDSS: APPLY: add wait_pending_extra_info_updates()
-Message-Id: <1321953724-6350-59-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:21:15 +0000
+Subject: [PATCH 16/65] OMAPDSS: remove unneeded dss_ovl_wait_for_go()
+Message-Id: <1321953724-6350-17-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,120 +11,39 @@ Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add wait_pending_extra_info_updates() function which can be used to wait
-until any extra_info changes have been taken into use by the hardware.
-This can be only called when holding the apply mutex, so that other
-threads cannot insert new extra_info changes.
-
-This will be used to handle fifo-configurations.
+There's an unnecessary wrapper function, dss_ovl_wait_for_go(), which
+does nothing else than call dss_mgr_wait_for_go_ovl(). The
+dss_ovl_wait_for_go() function can be removed.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/apply.c |   70 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 70 insertions(+), 0 deletions(-)
+ drivers/video/omap2/dss/overlay.c |    7 +------
+ 1 files changed, 1 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 76b5b02..75db522 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -106,6 +106,7 @@ static struct {
- static spinlock_t data_lock;
- /* lock for blocking functions */
- static DEFINE_MUTEX(apply_lock);
-+static DECLARE_COMPLETION(extra_updated_completion);
- 
- static void dss_register_vsync_isr(void);
- 
-@@ -232,6 +233,70 @@ static bool need_go(struct omap_overlay_manager *mgr)
- 	return false;
+diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
+index d15b826..0ab14fa 100644
+--- a/drivers/video/omap2/dss/overlay.c
++++ b/drivers/video/omap2/dss/overlay.c
+@@ -548,11 +548,6 @@ static void dss_ovl_get_overlay_info(struct omap_overlay *ovl,
+ 	*info = ovl->info;
  }
  
-+/* returns true if an extra_info field is currently being updated */
-+static bool extra_info_update_ongoing(void)
-+{
-+	const int num_ovls = omap_dss_get_num_overlays();
-+	struct ovl_priv_data *op;
-+	struct omap_overlay *ovl;
-+	struct mgr_priv_data *mp;
-+	int i;
-+	bool eid;
-+
-+	for (i = 0; i < num_ovls; ++i) {
-+		ovl = omap_dss_get_overlay(i);
-+		op = get_ovl_priv(ovl);
-+
-+		if (!op->enabled)
-+			continue;
-+
-+		mp = get_mgr_priv(ovl->manager);
-+
-+		if (!mp->enabled)
-+			continue;
-+
-+		eid = op->extra_info_dirty || op->shadow_extra_info_dirty;
-+
-+		if (!eid)
-+			continue;
-+
-+		if (ovl_manual_update(ovl) && !mp->updating)
-+			continue;
-+
-+		return true;
-+	}
-+
-+	return false;
-+}
-+
-+/* wait until no extra_info updates are pending */
-+static void wait_pending_extra_info_updates(void)
-+{
-+	bool updating;
-+	unsigned long flags;
-+	unsigned long t;
-+
-+	spin_lock_irqsave(&data_lock, flags);
-+
-+	updating = extra_info_update_ongoing();
-+
-+	if (!updating) {
-+		spin_unlock_irqrestore(&data_lock, flags);
-+		return;
-+	}
-+
-+	init_completion(&extra_updated_completion);
-+
-+	spin_unlock_irqrestore(&data_lock, flags);
-+
-+	t = msecs_to_jiffies(500);
-+	wait_for_completion_timeout(&extra_updated_completion, t);
-+
-+	updating = extra_info_update_ongoing();
-+
-+	WARN_ON(updating);
-+}
-+
- int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr)
+-static int dss_ovl_wait_for_go(struct omap_overlay *ovl)
+-{
+-	return dss_mgr_wait_for_go_ovl(ovl);
+-}
+-
+ static int omap_dss_set_manager(struct omap_overlay *ovl,
+ 		struct omap_overlay_manager *mgr)
  {
- 	unsigned long timeout = msecs_to_jiffies(500);
-@@ -553,6 +618,7 @@ static void dss_apply_irq_handler(void *data, u32 mask)
- {
- 	const int num_mgrs = dss_feat_get_num_mgrs();
- 	int i;
-+	bool extra_updating;
+@@ -689,7 +684,7 @@ void dss_init_overlays(struct platform_device *pdev)
+ 		ovl->unset_manager = &omap_dss_unset_manager;
+ 		ovl->set_overlay_info = &dss_ovl_set_overlay_info;
+ 		ovl->get_overlay_info = &dss_ovl_get_overlay_info;
+-		ovl->wait_for_go = &dss_ovl_wait_for_go;
++		ovl->wait_for_go = &dss_mgr_wait_for_go_ovl;
  
- 	spin_lock(&data_lock);
- 
-@@ -582,6 +648,10 @@ static void dss_apply_irq_handler(void *data, u32 mask)
- 
- 	dss_write_regs();
- 
-+	extra_updating = extra_info_update_ongoing();
-+	if (!extra_updating)
-+		complete_all(&extra_updated_completion);
-+
- 	if (!need_isr())
- 		dss_unregister_vsync_isr();
- 
--- 
+ 		ovl->caps = dss_feat_get_overlay_caps(ovl->id);
+ 		ovl->supported_modes -- 
 1.7.4.1
 

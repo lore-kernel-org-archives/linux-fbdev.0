@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:21:52 +0000
-Subject: [PATCH 53/65] OMAPDSS: APPLY: move fifo thresholds to extra_info set
-Message-Id: <1321953724-6350-54-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:21:46 +0000
+Subject: [PATCH 47/65] OMAPDSS: DISPC: add dispc_mgr_get_framedone_irq
+Message-Id: <1321953724-6350-48-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,197 +11,62 @@ Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Setting overlay's fifo thresholds is currently handled at the same time
-as other overlay attributes. This is not right, as the normal attributes
-should only affect one overlay and manager, but changing the fifo
-thresholds are needed in cases like fifo-merge, where multiple managers
-are affected.
+Add dispc_mgr_get_framedone_irq() which returns the irq number for
+FRAMEDONE for the given channel.
 
-This patch moves the channel field into the "extra_info" set, handled
-together with channel and enabled-status.
+Note that the function returns always 0 for DIGIT channel, even if OMAP4
+does have FRAMEDONE_TV interrupt. The reason for this is that this
+function is currently used only to track manual updates, and thus
+FRAMEDONE_TV is not needed.
 
-This also lets us to calculate the fifos only when needed, specifically,
-when an overlay or a manager is enabled.
+If there's need in the future to also get the FRAMEDONE_TV this needs
+revisiting. However, as FRAMEDONE_TV doesn't exist on OMAP2/3, the use
+of this function for that purpose needs some extra code to handle the
+OMAP2/3 case.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/apply.c |   95 +++++++++++++++++++++++---------------
- 1 files changed, 57 insertions(+), 38 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   14 ++++++++++++++
+ drivers/video/omap2/dss/dss.h   |    1 +
+ 2 files changed, 15 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 3e345d7..0e93ae5 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -69,14 +69,12 @@ struct ovl_priv_data {
- 
- 	struct omap_overlay_info info;
- 
--	u32 fifo_low;
--	u32 fifo_high;
--
- 	bool extra_info_dirty;
- 	bool shadow_extra_info_dirty;
- 
- 	bool enabled;
- 	enum omap_channel channel;
-+	u32 fifo_low, fifo_high;
- };
- 
- struct mgr_priv_data {
-@@ -396,8 +394,6 @@ static void dss_ovl_write_regs(struct omap_overlay *ovl)
- 		return;
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 27a2cff..8ce0c81 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -452,6 +452,20 @@ u32 dispc_mgr_get_vsync_irq(enum omap_channel channel)
  	}
- 
--	dispc_ovl_set_fifo_threshold(ovl->id, op->fifo_low, op->fifo_high);
--
- 	mp = get_mgr_priv(ovl->manager);
- 
- 	op->dirty = false;
-@@ -420,6 +416,7 @@ static void dss_ovl_write_regs_extra(struct omap_overlay *ovl)
- 
- 	dispc_ovl_enable(ovl->id, op->enabled);
- 	dispc_ovl_set_channel_out(ovl->id, op->channel);
-+	dispc_ovl_set_fifo_threshold(ovl->id, op->fifo_low, op->fifo_high);
- 
- 	mp = get_mgr_priv(ovl->manager);
- 
-@@ -632,13 +629,42 @@ static void omap_dss_mgr_apply_mgr(struct omap_overlay_manager *mgr)
- 	mp->info = mp->user_info;
  }
  
--static void omap_dss_mgr_apply_ovl_fifos(struct omap_overlay *ovl)
-+int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
- {
--	struct ovl_priv_data *op;
-+	int r;
-+	unsigned long flags;
-+	struct omap_overlay *ovl;
-+
-+	DSSDBG("omap_dss_mgr_apply(%s)\n", mgr->name);
-+
-+	r = dispc_runtime_get();
-+	if (r)
-+		return r;
-+
-+	spin_lock_irqsave(&data_lock, flags);
-+
-+	/* Configure overlays */
-+	list_for_each_entry(ovl, &mgr->overlays, list)
-+		omap_dss_mgr_apply_ovl(ovl);
-+
-+	/* Configure manager */
-+	omap_dss_mgr_apply_mgr(mgr);
-+
-+	dss_write_regs();
-+
-+	spin_unlock_irqrestore(&data_lock, flags);
-+
-+	dispc_runtime_put();
-+
-+	return r;
++u32 dispc_mgr_get_framedone_irq(enum omap_channel channel)
++{
++	switch (channel) {
++	case OMAP_DSS_CHANNEL_LCD:
++		return DISPC_IRQ_FRAMEDONE;
++	case OMAP_DSS_CHANNEL_LCD2:
++		return DISPC_IRQ_FRAMEDONE2;
++	case OMAP_DSS_CHANNEL_DIGIT:
++		return 0;
++	default:
++		BUG();
++	}
 +}
 +
-+static void dss_ovl_setup_fifo(struct omap_overlay *ovl)
-+{
-+	struct ovl_priv_data *op = get_ovl_priv(ovl);
- 	struct omap_dss_device *dssdev;
- 	u32 size, burst_size;
--
--	op = get_ovl_priv(ovl);
-+	u32 fifo_low, fifo_high;
- 
- 	dssdev = ovl->manager->device;
- 
-@@ -653,53 +679,42 @@ static void omap_dss_mgr_apply_ovl_fifos(struct omap_overlay *ovl)
- 	case OMAP_DISPLAY_TYPE_VENC:
- 	case OMAP_DISPLAY_TYPE_HDMI:
- 		default_get_overlay_fifo_thresholds(ovl->id, size,
--				burst_size, &op->fifo_low,
--				&op->fifo_high);
-+				burst_size, &fifo_low, &fifo_high);
- 		break;
- #ifdef CONFIG_OMAP2_DSS_DSI
- 	case OMAP_DISPLAY_TYPE_DSI:
- 		dsi_get_overlay_fifo_thresholds(ovl->id, size,
--				burst_size, &op->fifo_low,
--				&op->fifo_high);
-+				burst_size, &fifo_low, &fifo_high);
- 		break;
- #endif
- 	default:
- 		BUG();
- 	}
-+
-+	op->fifo_low = fifo_low;
-+	op->fifo_high = fifo_high;
-+	op->extra_info_dirty = true;
- }
- 
--int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
-+static void dss_mgr_setup_fifos(struct omap_overlay_manager *mgr)
+ bool dispc_mgr_go_busy(enum omap_channel channel)
  {
--	int r;
--	unsigned long flags;
- 	struct omap_overlay *ovl;
-+	struct ovl_priv_data *op;
-+	struct mgr_priv_data *mp;
- 
--	DSSDBG("omap_dss_mgr_apply(%s)\n", mgr->name);
--
--	r = dispc_runtime_get();
--	if (r)
--		return r;
--
--	spin_lock_irqsave(&data_lock, flags);
--
--	/* Configure overlays */
--	list_for_each_entry(ovl, &mgr->overlays, list)
--		omap_dss_mgr_apply_ovl(ovl);
--
--	/* Configure manager */
--	omap_dss_mgr_apply_mgr(mgr);
--
--	/* Configure overlay fifos */
--	list_for_each_entry(ovl, &mgr->overlays, list)
--		omap_dss_mgr_apply_ovl_fifos(ovl);
-+	mp = get_mgr_priv(mgr);
- 
--	dss_write_regs();
-+	if (!mp->enabled)
-+		return;
- 
--	spin_unlock_irqrestore(&data_lock, flags);
-+	list_for_each_entry(ovl, &mgr->overlays, list) {
-+		op = get_ovl_priv(ovl);
- 
--	dispc_runtime_put();
-+		if (!op->enabled)
-+			continue;
- 
--	return r;
-+		dss_ovl_setup_fifo(ovl);
-+	}
- }
- 
- void dss_mgr_enable(struct omap_overlay_manager *mgr)
-@@ -713,6 +728,8 @@ void dss_mgr_enable(struct omap_overlay_manager *mgr)
- 
- 	mp->enabled = true;
- 
-+	dss_mgr_setup_fifos(mgr);
-+
- 	dss_write_regs();
- 
- 	if (!mgr_manual_update(mgr))
-@@ -1000,6 +1017,8 @@ int dss_ovl_enable(struct omap_overlay *ovl)
- 	op->enabled = true;
- 	op->extra_info_dirty = true;
- 
-+	dss_ovl_setup_fifo(ovl);
-+
- 	dss_write_regs();
- 
- 	spin_unlock_irqrestore(&data_lock, flags);
+ 	int bit;
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index b597485..c6caf2f 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -430,6 +430,7 @@ void dispc_ovl_set_channel_out(enum omap_plane plane,
+ void dispc_mgr_enable_fifohandcheck(enum omap_channel channel, bool enable);
+ void dispc_mgr_set_lcd_size(enum omap_channel channel, u16 width, u16 height);
+ u32 dispc_mgr_get_vsync_irq(enum omap_channel channel);
++u32 dispc_mgr_get_framedone_irq(enum omap_channel channel);
+ bool dispc_mgr_go_busy(enum omap_channel channel);
+ void dispc_mgr_go(enum omap_channel channel);
+ bool dispc_mgr_is_enabled(enum omap_channel channel);
 -- 
 1.7.4.1
 

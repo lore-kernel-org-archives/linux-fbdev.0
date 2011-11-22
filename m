@@ -1,69 +1,93 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Nov 2011 13:29:39 +0000
-Subject: [PATCH 11/13] OMAPDSS: DSI: fix lane handling when entering ULPS
-Message-Id: <1322141381-5395-12-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:21:02 +0000
+Subject: [PATCH 03/65] OMAPDSS: remove L4_EXAMPLE code
+Message-Id: <1321953724-6350-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The current code always enters ULPS for 3 lanes. This is not right, as
-there could be only 2 lanes used, and on OMAP4 we have 5 lanes.
-
-Fix the code to put all used lanes into ULPS.
+Some old example code has been left lying around. Remove the example
+code.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dsi.c |   16 +++++++++++-----
- 1 files changed, 11 insertions(+), 5 deletions(-)
+ drivers/video/omap2/dss/dss.h     |    3 ---
+ drivers/video/omap2/dss/overlay.c |   36 ------------------------------------
+ 2 files changed, 0 insertions(+), 39 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 2b375c6..22055db 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -3517,7 +3517,8 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 3310f10..7d2b6dd 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -192,9 +192,6 @@ void dss_init_overlays(struct platform_device *pdev);
+ void dss_uninit_overlays(struct platform_device *pdev);
+ int dss_check_overlay(struct omap_overlay *ovl, struct omap_dss_device *dssdev);
+ void dss_overlay_setup_dispc_manager(struct omap_overlay_manager *mgr);
+-#ifdef L4_EXAMPLE
+-void dss_overlay_setup_l4_manager(struct omap_overlay_manager *mgr);
+-#endif
+ void dss_recheck_connections(struct omap_dss_device *dssdev, bool force);
+ 
+ /* DSS */
+diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
+index ab8e40e..d15b826 100644
+--- a/drivers/video/omap2/dss/overlay.c
++++ b/drivers/video/omap2/dss/overlay.c
+@@ -641,15 +641,6 @@ void dss_overlay_setup_dispc_manager(struct omap_overlay_manager *mgr)
+ 	mgr->overlays = dispc_overlays;
+ }
+ 
+-#ifdef L4_EXAMPLE
+-static struct omap_overlay *l4_overlays[1];
+-void dss_overlay_setup_l4_manager(struct omap_overlay_manager *mgr)
+-{
+-	mgr->num_overlays = 1;
+-	mgr->overlays = l4_overlays;
+-}
+-#endif
+-
+ void dss_init_overlays(struct platform_device *pdev)
  {
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 	DECLARE_COMPLETION_ONSTACK(completion);
--	int r;
-+	int r, i;
-+	unsigned mask;
+ 	int i, r;
+@@ -716,33 +707,6 @@ void dss_init_overlays(struct platform_device *pdev)
  
- 	DSSDBGF();
+ 		dispc_overlays[i] = ovl;
+ 	}
+-
+-#ifdef L4_EXAMPLE
+-	{
+-		struct omap_overlay *ovl;
+-		ovl = kzalloc(sizeof(*ovl), GFP_KERNEL);
+-
+-		BUG_ON(ovl = NULL);
+-
+-		ovl->name = "l4";
+-		ovl->supported_modes = OMAP_DSS_COLOR_RGB24U;
+-
+-		ovl->set_manager = &omap_dss_set_manager;
+-		ovl->unset_manager = &omap_dss_unset_manager;
+-		ovl->set_overlay_info = &dss_ovl_set_overlay_info;
+-		ovl->get_overlay_info = &dss_ovl_get_overlay_info;
+-
+-		omap_dss_add_overlay(ovl);
+-
+-		r = kobject_init_and_add(&ovl->kobj, &overlay_ktype,
+-				&pdev->dev.kobj, "overlayl4");
+-
+-		if (r)
+-			DSSERR("failed to create sysfs file\n");
+-
+-		l4_overlays[0] = ovl;
+-	}
+-#endif
+ }
  
-@@ -3560,10 +3561,16 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
- 	if (r)
- 		return r;
- 
-+	mask = 0;
-+
-+	for (i = 0; i < dsi->num_lanes_supported; ++i) {
-+		if (dsi->lanes[i].function = DSI_LANE_UNUSED)
-+			continue;
-+		mask |= 1 << i;
-+	}
- 	/* Assert TxRequestEsc for data lanes and TxUlpsClk for clk lane */
- 	/* LANEx_ULPS_SIG2 */
--	REG_FLD_MOD(dsidev, DSI_COMPLEXIO_CFG2, (1 << 0) | (1 << 1) | (1 << 2),
--		7, 5);
-+	REG_FLD_MOD(dsidev, DSI_COMPLEXIO_CFG2, mask, 9, 5);
- 
- 	/* flush posted write and wait for SCP interface to finish the write */
- 	dsi_read_reg(dsidev, DSI_COMPLEXIO_CFG2);
-@@ -3579,8 +3586,7 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
- 			DSI_CIO_IRQ_ULPSACTIVENOT_ALL0);
- 
- 	/* Reset LANEx_ULPS_SIG2 */
--	REG_FLD_MOD(dsidev, DSI_COMPLEXIO_CFG2, (0 << 0) | (0 << 1) | (0 << 2),
--		7, 5);
-+	REG_FLD_MOD(dsidev, DSI_COMPLEXIO_CFG2, 0, 9, 5);
- 
- 	/* flush posted write and wait for SCP interface to finish the write */
- 	dsi_read_reg(dsidev, DSI_COMPLEXIO_CFG2);
+ /* connect overlays to the new device, if not already connected. if force
 -- 
 1.7.4.1
 

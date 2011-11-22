@@ -1,95 +1,121 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Tue, 22 Nov 2011 01:20:27 +0000
-Subject: Re: [PATCH] video: Fix return value of fb_notifier_call_chain
-Message-Id: <4ECAF8DB.4020909@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:21:40 +0000
+Subject: [PATCH 41/65] OMAPDSS: APPLY: add missing uses of spinlock
+Message-Id: <1321953724-6350-42-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321858524-19368-1-git-send-email-jy0922.shim@samsung.com> <4ECAD9F0.9050508@gmx.de> <4ECAF3C6.4010507@samsung.com>
-In-Reply-To: <4ECAF3C6.4010507@samsung.com>
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Joonyoung Shim <jy0922.shim@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 11/22/2011 12:58 AM, Joonyoung Shim wrote:
-> 11/22/2011 08:08 AM, Florian Tobias Schandinat 쓴 글:
->> On 11/21/2011 06:55 AM, Joonyoung Shim wrote:
->>> The return value of blocking_notifier_call_chain isn't errno value, it
->>> is just notify return value. The ret of fb_notifier_call_chain should is
->>> restored to error value from notify return value using
->>> notifier_to_errno().
->> If I'm not wrong this patch would rather break things than fix them. As I
->> understand the notifier_calls would be required to encode the return
->> value with
->> notifier_from_errno. This does not happen at the moment for fb
->> clients, for
->> example fbcon_event_notify in drivers/video/console/fbcon.c, so this
->> patch would
->> screw up the return values, I think.
-> 
-> OK, but it is wrong to return error value than notify value many
-> callback of fb notify clients and some fb notify clients returns notify
-> value, please see sh_mobile_lcdc_notify() and sh_hdmi_notify().
-> 
-> We should use only one, notify value or error value, i think it's right
-> to use notify value.
+The functions in apply.c, called mostly via function pointers in overlay
+and overlay_manager structs, will be divided into two groups. The other
+group will not sleep and can be called from interrupts, and the other
+group may sleep.
 
-I agree. But all fb clients need to be checked and fixed up if needed at the
-same time you do the change you proposed, otherwise things are likely to break.
+The idea is that the non-sleeping functions may only change certain
+settings in overlays and managers, and those settings may only affect
+the particular overlay/manager. For example, set the base address of the
+overlay.
 
-$ grep -r fb_register_client .
-./include/linux/fb.h:extern int fb_register_client(struct notifier_block *nb);
-./arch/arm/mach-pxa/am200epd.c: fb_register_client(&am200_fb_notif);
-./drivers/leds/ledtrig-backlight.c:     ret = fb_register_client(&n->notifier);
-./drivers/video/sh_mobile_hdmi.c:       fb_register_client(&hdmi->notifier);
-./drivers/video/fb_notify.c: *  fb_register_client - register a client notifier
-./drivers/video/fb_notify.c:int fb_register_client(struct notifier_block *nb)
-./drivers/video/fb_notify.c:EXPORT_SYMBOL(fb_register_client);
-./drivers/video/console/fbcon.c:        fb_register_client(&fbcon_event_notifier);
-./drivers/video/sh_mobile_lcdcfb.c:     fb_register_client(&priv->notifier);
-./drivers/video/omap/omapfb_main.c:int omapfb_register_client(struct
-omapfb_notifier_block *omapfb_nb,
-./drivers/video/omap/omapfb_main.c:EXPORT_SYMBOL(omapfb_register_client);
-./drivers/video/omap/omapfb.h:extern int  omapfb_register_client(struct
-omapfb_notifier_block *nb,
-./drivers/video/backlight/backlight.c:  return fb_register_client(&bd->fb_notif);
-./drivers/video/backlight/lcd.c:        return fb_register_client(&ld->fb_notif);
-./drivers/staging/olpc_dcon/olpc_dcon.c:
-fb_register_client(&dcon->fbevent_nb);
+The blocking functions, however, will handle more complex configuration
+changes. For example, when an overlay is enabled and fifo-merge feature
+is used, we need to do the enable in multiple steps, waiting in between,
+and the change affects multiple overlays and managers.
 
+apply.c already contains a spinlock, which has been used to protect
+(badly) the dss_data. This patch adds locks/unlocks of the spinlock to
+the missing places, and the lock should now properly protect dss_data.
 
-Best regards,
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/apply.c |   29 +++++++++++++++++++++++++++++
+ 1 files changed, 29 insertions(+), 0 deletions(-)
 
-Florian Tobias Schandinat
-
-> 
-> Thanks.
-> 
->>
->> Best regards,
->>
->> Florian Tobias Schandinat
->>
->>> Signed-off-by: Joonyoung Shim<jy0922.shim@samsung.com>
->>> ---
->>>   drivers/video/fb_notify.c |    4 +++-
->>>   1 files changed, 3 insertions(+), 1 deletions(-)
->>>
->>> diff --git a/drivers/video/fb_notify.c b/drivers/video/fb_notify.c
->>> index 74c2da5..49a64a3 100644
->>> --- a/drivers/video/fb_notify.c
->>> +++ b/drivers/video/fb_notify.c
->>> @@ -42,6 +42,8 @@ EXPORT_SYMBOL(fb_unregister_client);
->>>    */
->>>   int fb_notifier_call_chain(unsigned long val, void *v)
->>>   {
->>> -    return blocking_notifier_call_chain(&fb_notifier_list, val, v);
->>> +    int ret = blocking_notifier_call_chain(&fb_notifier_list, val, v);
->>> +
->>> +    return notifier_to_errno(ret);
->>>   }
->>>   EXPORT_SYMBOL_GPL(fb_notifier_call_chain);
->>
-> 
-> 
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index fb6d3c2..9ad2a36 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -405,6 +405,9 @@ void dss_start_update(struct omap_overlay_manager *mgr)
+ 	struct mgr_priv_data *mp = get_mgr_priv(mgr);
+ 	struct ovl_priv_data *op;
+ 	struct omap_overlay *ovl;
++	unsigned long flags;
++
++	spin_lock_irqsave(&data_lock, flags);
+ 
+ 	mp->do_manual_update = true;
+ 	dss_write_regs();
+@@ -418,6 +421,8 @@ void dss_start_update(struct omap_overlay_manager *mgr)
+ 	mp->shadow_dirty = false;
+ 
+ 	dispc_mgr_enable(mgr->id, true);
++
++	spin_unlock_irqrestore(&data_lock, flags);
+ }
+ 
+ static void dss_apply_irq_handler(void *data, u32 mask);
+@@ -662,16 +667,28 @@ void dss_mgr_disable(struct omap_overlay_manager *mgr)
+ int dss_mgr_set_info(struct omap_overlay_manager *mgr,
+ 		struct omap_overlay_manager_info *info)
+ {
++	unsigned long flags;
++
++	spin_lock_irqsave(&data_lock, flags);
++
+ 	mgr->info = *info;
+ 	mgr->info_dirty = true;
+ 
++	spin_unlock_irqrestore(&data_lock, flags);
++
+ 	return 0;
+ }
+ 
+ void dss_mgr_get_info(struct omap_overlay_manager *mgr,
+ 		struct omap_overlay_manager_info *info)
+ {
++	unsigned long flags;
++
++	spin_lock_irqsave(&data_lock, flags);
++
+ 	*info = mgr->info;
++
++	spin_unlock_irqrestore(&data_lock, flags);
+ }
+ 
+ int dss_mgr_set_device(struct omap_overlay_manager *mgr,
+@@ -745,16 +762,28 @@ err:
+ int dss_ovl_set_info(struct omap_overlay *ovl,
+ 		struct omap_overlay_info *info)
+ {
++	unsigned long flags;
++
++	spin_lock_irqsave(&data_lock, flags);
++
+ 	ovl->info = *info;
+ 	ovl->info_dirty = true;
+ 
++	spin_unlock_irqrestore(&data_lock, flags);
++
+ 	return 0;
+ }
+ 
+ void dss_ovl_get_info(struct omap_overlay *ovl,
+ 		struct omap_overlay_info *info)
+ {
++	unsigned long flags;
++
++	spin_lock_irqsave(&data_lock, flags);
++
+ 	*info = ovl->info;
++
++	spin_unlock_irqrestore(&data_lock, flags);
+ }
+ 
+ int dss_ovl_set_manager(struct omap_overlay *ovl,
+-- 
+1.7.4.1
 

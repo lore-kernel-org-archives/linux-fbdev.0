@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:21:43 +0000
-Subject: [PATCH 44/65] OMAPDSS: APPLY: add busy field to mgr_priv_data
-Message-Id: <1321953724-6350-45-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:21:31 +0000
+Subject: [PATCH 32/65] OMAPDSS: APPLY: configure_* funcs take ovl/manager as args
+Message-Id: <1321953724-6350-33-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,146 +11,179 @@ Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add a new field to mgr_priv data, "busy", which is used to track the
-status of GO bit with the manager. As manual update displays never use
-the GO bit, the field is always false for managers used for manual
-update displays.
+Make configure_overlay() and configure_manager() take overlay/manager
+pointer as an argument, instead of the ovl/mgr id. This will be useful
+with the future patches.
+
+Also rename the functions to be a bit more informative:
+dss_ovl_write_regs, dss_mgr_write_regs, dss_write_regs.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/apply.c |   55 +++++++++++++++++++++++++-------------
- 1 files changed, 36 insertions(+), 19 deletions(-)
+ drivers/video/omap2/dss/apply.c |   54 +++++++++++++++++++-------------------
+ 1 files changed, 27 insertions(+), 27 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index c38bd76..323cffa 100644
+index 84ac2d4..1c97069 100644
 --- a/drivers/video/omap2/dss/apply.c
 +++ b/drivers/video/omap2/dss/apply.c
-@@ -87,6 +87,10 @@ struct mgr_priv_data {
- 	bool manual_update;
- 	bool do_manual_update;
+@@ -41,7 +41,7 @@
+  * |     dss_cache      |
+  * +--------------------+
+  *          v
+- *      configure()
++ *      write_regs()
+  *          v
+  * +--------------------+
+  * |  shadow registers  |
+@@ -237,65 +237,63 @@ int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl)
+ 	return r;
+ }
  
-+	/* If true, GO bit is up and shadow registers cannot be written.
-+	 * Never true for manual update displays */
-+	bool busy;
-+
- 	/* If true, a display is enabled using this manager */
- 	bool enabled;
- };
-@@ -319,18 +323,12 @@ static int dss_write_regs(void)
- 	const int num_mgrs = dss_feat_get_num_mgrs();
- 	int i;
+-static int configure_overlay(enum omap_plane plane)
++static int dss_ovl_write_regs(struct omap_overlay *ovl)
+ {
+-	struct omap_overlay *ovl;
+ 	struct overlay_cache_data *c;
+ 	struct omap_overlay_info *oi;
+ 	bool ilace, replication;
  	int r;
--	bool mgr_busy[MAX_DSS_MANAGERS];
--	bool mgr_go[MAX_DSS_MANAGERS];
-+	bool mgr_go[MAX_DSS_MANAGERS] = { false };
- 	bool busy;
  
- 	r = 0;
- 	busy = false;
+-	DSSDBGF("%d", plane);
++	DSSDBGF("%d", ovl->id);
  
--	for (i = 0; i < num_mgrs; i++) {
--		mgr_busy[i] = dispc_mgr_go_busy(i);
--		mgr_go[i] = false;
--	}
+-	c = &dss_cache.overlay_cache[plane];
++	c = &dss_cache.overlay_cache[ovl->id];
+ 	oi = &c->info;
+ 
+ 	if (!c->enabled) {
+-		dispc_ovl_enable(plane, 0);
++		dispc_ovl_enable(ovl->id, 0);
+ 		return 0;
+ 	}
+ 
+-	ovl = omap_dss_get_overlay(plane);
 -
+ 	replication = dss_use_replication(ovl->manager->device, oi->color_mode);
+ 
+ 	ilace = ovl->manager->device->type = OMAP_DISPLAY_TYPE_VENC;
+ 
+-	dispc_ovl_set_channel_out(plane, c->channel);
++	dispc_ovl_set_channel_out(ovl->id, c->channel);
+ 
+-	r = dispc_ovl_setup(plane, oi, ilace, replication);
++	r = dispc_ovl_setup(ovl->id, oi, ilace, replication);
+ 	if (r) {
+ 		/* this shouldn't happen */
+-		DSSERR("dispc_ovl_setup failed for ovl %d\n", plane);
+-		dispc_ovl_enable(plane, 0);
++		DSSERR("dispc_ovl_setup failed for ovl %d\n", ovl->id);
++		dispc_ovl_enable(ovl->id, 0);
+ 		return r;
+ 	}
+ 
+-	dispc_ovl_set_fifo_threshold(plane, c->fifo_low, c->fifo_high);
++	dispc_ovl_set_fifo_threshold(ovl->id, c->fifo_low, c->fifo_high);
+ 
+-	dispc_ovl_enable(plane, 1);
++	dispc_ovl_enable(ovl->id, 1);
+ 
+ 	return 0;
+ }
+ 
+-static void configure_manager(enum omap_channel channel)
++static void dss_mgr_write_regs(struct omap_overlay_manager *mgr)
+ {
+ 	struct omap_overlay_manager_info *mi;
+ 
+-	DSSDBGF("%d", channel);
++	DSSDBGF("%d", mgr->id);
+ 
+-	/* picking info from the cache */
+-	mi = &dss_cache.manager_cache[channel].info;
++	mi = &dss_cache.manager_cache[mgr->id].info;
+ 
+-	dispc_mgr_setup(channel, mi);
++	dispc_mgr_setup(mgr->id, mi);
+ }
+ 
+-/* configure_dispc() tries to write values from cache to shadow registers.
++/* dss_write_regs() tries to write values from cache to shadow registers.
+  * It writes only to those managers/overlays that are not busy.
+  * returns 0 if everything could be written to shadow registers.
+  * returns 1 if not everything could be written to shadow registers. */
+-static int configure_dispc(void)
++static int dss_write_regs(void)
+ {
++	struct omap_overlay *ovl;
++	struct omap_overlay_manager *mgr;
+ 	struct overlay_cache_data *oc;
+ 	struct manager_cache_data *mc;
+ 	const int num_ovls = dss_feat_get_num_ovls();
+@@ -316,6 +314,7 @@ static int configure_dispc(void)
+ 
  	/* Commit overlay settings */
  	for (i = 0; i < num_ovls; ++i) {
- 		ovl = omap_dss_get_overlay(i);
-@@ -344,7 +342,7 @@ static int dss_write_regs(void)
- 		if (mp->manual_update && !mp->do_manual_update)
- 			continue;
++		ovl = omap_dss_get_overlay(i);
+ 		oc = &dss_cache.overlay_cache[i];
+ 		mc = &dss_cache.manager_cache[oc->channel];
  
--		if (mgr_busy[op->channel]) {
-+		if (mp->busy) {
- 			busy = true;
+@@ -330,9 +329,9 @@ static int configure_dispc(void)
  			continue;
  		}
-@@ -369,7 +367,7 @@ static int dss_write_regs(void)
- 		if (mp->manual_update && !mp->do_manual_update)
- 			continue;
  
--		if (mgr_busy[i]) {
-+		if (mp->busy) {
- 			busy = true;
- 			continue;
- 		}
-@@ -391,8 +389,10 @@ static int dss_write_regs(void)
- 		/* We don't need GO with manual update display. LCD iface will
- 		 * always be turned off after frame, and new settings will be
- 		 * taken in to use at next update */
--		if (!mp->manual_update)
-+		if (!mp->manual_update) {
-+			mp->busy = true;
- 			dispc_mgr_go(i);
-+		}
- 	}
+-		r = configure_overlay(i);
++		r = dss_ovl_write_regs(ovl);
+ 		if (r)
+-			DSSERR("configure_overlay %d failed\n", i);
++			DSSERR("dss_ovl_write_regs %d failed\n", i);
  
- 	if (busy)
-@@ -471,24 +471,34 @@ static void dss_apply_irq_handler(void *data, u32 mask)
- 	const int num_ovls = dss_feat_get_num_ovls();
- 	const int num_mgrs = dss_feat_get_num_mgrs();
- 	int i, r;
--	bool mgr_busy[MAX_DSS_MANAGERS];
--
--	for (i = 0; i < num_mgrs; i++)
--		mgr_busy[i] = dispc_mgr_go_busy(i);
+ 		oc->dirty = false;
+ 		oc->shadow_dirty = true;
+@@ -341,6 +340,7 @@ static int configure_dispc(void)
  
- 	spin_lock(&data_lock);
- 
-+	for (i = 0; i < num_mgrs; i++) {
-+		mgr = omap_dss_get_overlay_manager(i);
-+		mp = get_mgr_priv(mgr);
-+
-+		mp->busy = dispc_mgr_go_busy(i);
-+	}
-+
- 	for (i = 0; i < num_ovls; ++i) {
- 		ovl = omap_dss_get_overlay(i);
- 		op = get_ovl_priv(ovl);
--		if (!mgr_busy[op->channel])
-+
-+		if (!op->enabled)
-+			continue;
-+
-+		mp = get_mgr_priv(ovl->manager);
-+
-+		if (!mp->busy)
- 			op->shadow_dirty = false;
- 	}
- 
+ 	/* Commit manager settings */
  	for (i = 0; i < num_mgrs; ++i) {
- 		mgr = omap_dss_get_overlay_manager(i);
- 		mp = get_mgr_priv(mgr);
--		if (!mgr_busy[i])
-+
-+		if (!mp->busy)
- 			mp->shadow_dirty = false;
++		mgr = omap_dss_get_overlay_manager(i);
+ 		mc = &dss_cache.manager_cache[i];
+ 
+ 		if (!mc->dirty)
+@@ -354,7 +354,7 @@ static int configure_dispc(void)
+ 			continue;
+ 		}
+ 
+-		configure_manager(i);
++		dss_mgr_write_regs(mgr);
+ 		mc->dirty = false;
+ 		mc->shadow_dirty = true;
+ 		mgr_go[i] = true;
+@@ -391,7 +391,7 @@ void dss_start_update(struct omap_overlay_manager *mgr)
+ 	mc = &dss_cache.manager_cache[mgr->id];
+ 
+ 	mc->do_manual_update = true;
+-	configure_dispc();
++	dss_write_regs();
+ 	mc->do_manual_update = false;
+ 
+ 	list_for_each_entry(ovl, &mgr->overlays, list) {
+@@ -465,7 +465,7 @@ static void dss_apply_irq_handler(void *data, u32 mask)
+ 			mc->shadow_dirty = false;
  	}
  
-@@ -497,13 +507,20 @@ static void dss_apply_irq_handler(void *data, u32 mask)
+-	r = configure_dispc();
++	r = dss_write_regs();
+ 	if (r = 1)
  		goto end;
  
- 	/* re-read busy flags */
--	for (i = 0; i < num_mgrs; i++)
--		mgr_busy[i] = dispc_mgr_go_busy(i);
-+	for (i = 0; i < num_mgrs; i++) {
-+		mgr = omap_dss_get_overlay_manager(i);
-+		mp = get_mgr_priv(mgr);
-+
-+		mp->busy = dispc_mgr_go_busy(i);
-+	}
+@@ -623,7 +623,7 @@ int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
+ 		if (!dss_cache.irq_enabled)
+ 			dss_register_vsync_isr();
  
- 	/* keep running as long as there are busy managers, so that
- 	 * we can collect overlay-applied information */
- 	for (i = 0; i < num_mgrs; ++i) {
--		if (mgr_busy[i])
-+		mgr = omap_dss_get_overlay_manager(i);
-+		mp = get_mgr_priv(mgr);
-+
-+		if (mp->busy)
- 			goto end;
+-		configure_dispc();
++		dss_write_regs();
  	}
  
+ 	spin_unlock_irqrestore(&dss_cache.lock, flags);
 -- 
 1.7.4.1
 

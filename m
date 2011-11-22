@@ -1,60 +1,207 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Nov 2011 13:29:35 +0000
-Subject: [PATCH 07/13] OMAPDSS: DSI: use lane config in dsi_get_lane_mask
-Message-Id: <1322141381-5395-8-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:21:52 +0000
+Subject: [PATCH 53/65] OMAPDSS: APPLY: move fifo thresholds to extra_info set
+Message-Id: <1321953724-6350-54-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Use the new lane config in dsi_get_lane_mask().
+Setting overlay's fifo thresholds is currently handled at the same time
+as other overlay attributes. This is not right, as the normal attributes
+should only affect one overlay and manager, but changing the fifo
+thresholds are needed in cases like fifo-merge, where multiple managers
+are affected.
+
+This patch moves the channel field into the "extra_info" set, handled
+together with channel and enabled-status.
+
+This also lets us to calculate the fifos only when needed, specifically,
+when an overlay or a manager is enabled.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dsi.c |   22 ++++++++++------------
- 1 files changed, 10 insertions(+), 12 deletions(-)
+ drivers/video/omap2/dss/apply.c |   95 +++++++++++++++++++++++---------------
+ 1 files changed, 57 insertions(+), 38 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index ba8d6b3..1a209a2 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -2422,22 +2422,20 @@ static int dsi_cio_wait_tx_clk_esc_reset(struct omap_dss_device *dssdev)
- 	return 0;
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 3e345d7..0e93ae5 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -69,14 +69,12 @@ struct ovl_priv_data {
+ 
+ 	struct omap_overlay_info info;
+ 
+-	u32 fifo_low;
+-	u32 fifo_high;
+-
+ 	bool extra_info_dirty;
+ 	bool shadow_extra_info_dirty;
+ 
+ 	bool enabled;
+ 	enum omap_channel channel;
++	u32 fifo_low, fifo_high;
+ };
+ 
+ struct mgr_priv_data {
+@@ -396,8 +394,6 @@ static void dss_ovl_write_regs(struct omap_overlay *ovl)
+ 		return;
+ 	}
+ 
+-	dispc_ovl_set_fifo_threshold(ovl->id, op->fifo_low, op->fifo_high);
+-
+ 	mp = get_mgr_priv(ovl->manager);
+ 
+ 	op->dirty = false;
+@@ -420,6 +416,7 @@ static void dss_ovl_write_regs_extra(struct omap_overlay *ovl)
+ 
+ 	dispc_ovl_enable(ovl->id, op->enabled);
+ 	dispc_ovl_set_channel_out(ovl->id, op->channel);
++	dispc_ovl_set_fifo_threshold(ovl->id, op->fifo_low, op->fifo_high);
+ 
+ 	mp = get_mgr_priv(ovl->manager);
+ 
+@@ -632,13 +629,42 @@ static void omap_dss_mgr_apply_mgr(struct omap_overlay_manager *mgr)
+ 	mp->info = mp->user_info;
  }
  
-+/* return bitmask of enabled lanes, lane0 being the lsb */
- static unsigned dsi_get_lane_mask(struct omap_dss_device *dssdev)
+-static void omap_dss_mgr_apply_ovl_fifos(struct omap_overlay *ovl)
++int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
  {
--	unsigned lanes = 0;
-+	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
-+	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
-+	unsigned mask = 0;
-+	int i;
+-	struct ovl_priv_data *op;
++	int r;
++	unsigned long flags;
++	struct omap_overlay *ovl;
++
++	DSSDBG("omap_dss_mgr_apply(%s)\n", mgr->name);
++
++	r = dispc_runtime_get();
++	if (r)
++		return r;
++
++	spin_lock_irqsave(&data_lock, flags);
++
++	/* Configure overlays */
++	list_for_each_entry(ovl, &mgr->overlays, list)
++		omap_dss_mgr_apply_ovl(ovl);
++
++	/* Configure manager */
++	omap_dss_mgr_apply_mgr(mgr);
++
++	dss_write_regs();
++
++	spin_unlock_irqrestore(&data_lock, flags);
++
++	dispc_runtime_put();
++
++	return r;
++}
++
++static void dss_ovl_setup_fifo(struct omap_overlay *ovl)
++{
++	struct ovl_priv_data *op = get_ovl_priv(ovl);
+ 	struct omap_dss_device *dssdev;
+ 	u32 size, burst_size;
+-
+-	op = get_ovl_priv(ovl);
++	u32 fifo_low, fifo_high;
  
--	if (dssdev->phy.dsi.clk_lane != 0)
--		lanes |= 1 << (dssdev->phy.dsi.clk_lane - 1);
--	if (dssdev->phy.dsi.data1_lane != 0)
--		lanes |= 1 << (dssdev->phy.dsi.data1_lane - 1);
--	if (dssdev->phy.dsi.data2_lane != 0)
--		lanes |= 1 << (dssdev->phy.dsi.data2_lane - 1);
--	if (dssdev->phy.dsi.data3_lane != 0)
--		lanes |= 1 << (dssdev->phy.dsi.data3_lane - 1);
--	if (dssdev->phy.dsi.data4_lane != 0)
--		lanes |= 1 << (dssdev->phy.dsi.data4_lane - 1);
-+	for (i = 0; i < dsi->num_lanes_supported; ++i) {
-+		if (dsi->lanes[i].function != DSI_LANE_UNUSED)
-+			mask |= 1 << i;
-+	}
+ 	dssdev = ovl->manager->device;
  
--	return lanes;
-+	return mask;
+@@ -653,53 +679,42 @@ static void omap_dss_mgr_apply_ovl_fifos(struct omap_overlay *ovl)
+ 	case OMAP_DISPLAY_TYPE_VENC:
+ 	case OMAP_DISPLAY_TYPE_HDMI:
+ 		default_get_overlay_fifo_thresholds(ovl->id, size,
+-				burst_size, &op->fifo_low,
+-				&op->fifo_high);
++				burst_size, &fifo_low, &fifo_high);
+ 		break;
+ #ifdef CONFIG_OMAP2_DSS_DSI
+ 	case OMAP_DISPLAY_TYPE_DSI:
+ 		dsi_get_overlay_fifo_thresholds(ovl->id, size,
+-				burst_size, &op->fifo_low,
+-				&op->fifo_high);
++				burst_size, &fifo_low, &fifo_high);
+ 		break;
+ #endif
+ 	default:
+ 		BUG();
+ 	}
++
++	op->fifo_low = fifo_low;
++	op->fifo_high = fifo_high;
++	op->extra_info_dirty = true;
  }
  
- static int dsi_cio_init(struct omap_dss_device *dssdev)
+-int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
++static void dss_mgr_setup_fifos(struct omap_overlay_manager *mgr)
+ {
+-	int r;
+-	unsigned long flags;
+ 	struct omap_overlay *ovl;
++	struct ovl_priv_data *op;
++	struct mgr_priv_data *mp;
+ 
+-	DSSDBG("omap_dss_mgr_apply(%s)\n", mgr->name);
+-
+-	r = dispc_runtime_get();
+-	if (r)
+-		return r;
+-
+-	spin_lock_irqsave(&data_lock, flags);
+-
+-	/* Configure overlays */
+-	list_for_each_entry(ovl, &mgr->overlays, list)
+-		omap_dss_mgr_apply_ovl(ovl);
+-
+-	/* Configure manager */
+-	omap_dss_mgr_apply_mgr(mgr);
+-
+-	/* Configure overlay fifos */
+-	list_for_each_entry(ovl, &mgr->overlays, list)
+-		omap_dss_mgr_apply_ovl_fifos(ovl);
++	mp = get_mgr_priv(mgr);
+ 
+-	dss_write_regs();
++	if (!mp->enabled)
++		return;
+ 
+-	spin_unlock_irqrestore(&data_lock, flags);
++	list_for_each_entry(ovl, &mgr->overlays, list) {
++		op = get_ovl_priv(ovl);
+ 
+-	dispc_runtime_put();
++		if (!op->enabled)
++			continue;
+ 
+-	return r;
++		dss_ovl_setup_fifo(ovl);
++	}
+ }
+ 
+ void dss_mgr_enable(struct omap_overlay_manager *mgr)
+@@ -713,6 +728,8 @@ void dss_mgr_enable(struct omap_overlay_manager *mgr)
+ 
+ 	mp->enabled = true;
+ 
++	dss_mgr_setup_fifos(mgr);
++
+ 	dss_write_regs();
+ 
+ 	if (!mgr_manual_update(mgr))
+@@ -1000,6 +1017,8 @@ int dss_ovl_enable(struct omap_overlay *ovl)
+ 	op->enabled = true;
+ 	op->extra_info_dirty = true;
+ 
++	dss_ovl_setup_fifo(ovl);
++
+ 	dss_write_regs();
+ 
+ 	spin_unlock_irqrestore(&data_lock, flags);
 -- 
 1.7.4.1
 

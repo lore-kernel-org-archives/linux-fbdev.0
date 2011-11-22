@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:21:17 +0000
-Subject: [PATCH 18/65] OMAPDSS: split omap_dss_mgr_apply() to smaller funcs
-Message-Id: <1321953724-6350-19-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:21:09 +0000
+Subject: [PATCH 10/65] OMAPDSS: DISPC: handle 0 out_width/out_height in ovl_setup()
+Message-Id: <1321953724-6350-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,227 +11,99 @@ Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Split omap_dss_mgr_apply() into smaller functions for clarity.
+Overlay out_width/height are set to 0 when scaling is not used by the
+users of omapdss. Currently ovl_setup() expects the caller of
+ovl_setup() to convert those zero values to width or height.
+
+This patch makes ovl_setup() accept zero values for out_width/height,
+making calling ovl_setup() a bit simpler as the overlay_info can be
+just passed to this function without modifications.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/manager.c |  168 +++++++++++++++++++++----------------
- 1 files changed, 94 insertions(+), 74 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   22 +++++++++++++---------
+ 1 files changed, 13 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
-index e8838d3..3aca2b4 100644
---- a/drivers/video/omap2/dss/manager.c
-+++ b/drivers/video/omap2/dss/manager.c
-@@ -993,107 +993,92 @@ end:
- 	spin_unlock(&dss_cache.lock);
- }
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 7387e23..49f97db 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -1781,6 +1781,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 	s32 pix_inc;
+ 	u16 frame_height = oi->height;
+ 	unsigned int field_offset = 0;
++	u16 outw, outh;
  
--static int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
-+static int omap_dss_mgr_apply_ovl(struct omap_overlay *ovl)
- {
- 	struct overlay_cache_data *oc;
--	struct manager_cache_data *mc;
--	int i;
--	struct omap_overlay *ovl;
--	unsigned long flags;
--	int r;
--
--	DSSDBG("omap_dss_mgr_apply(%s)\n", mgr->name);
-+	struct omap_dss_device *dssdev;
+ 	DSSDBG("dispc_ovl_setup %d, pa %x, pa_uv %x, sw %d, %d,%d, %dx%d -> "
+ 		"%dx%d, cmode %x, rot %d, mir %d, ilace %d chan %d repl %d "
+@@ -1792,25 +1793,28 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 	if (oi->paddr = 0)
+ 		return -EINVAL;
  
--	r = dispc_runtime_get();
--	if (r)
--		return r;
-+	oc = &dss_cache.overlay_cache[ovl->id];
+-	if (ilace && oi->height = oi->out_height)
++	outw = oi->out_width = 0 ? oi->width : oi->out_width;
++	outh = oi->out_height = 0 ? oi->height : oi->out_height;
++
++	if (ilace && oi->height = outh)
+ 		fieldmode = 1;
  
--	spin_lock_irqsave(&dss_cache.lock, flags);
-+	if (ovl->manager_changed) {
-+		ovl->manager_changed = false;
-+		ovl->info_dirty  = true;
-+	}
+ 	if (ilace) {
+ 		if (fieldmode)
+ 			oi->height /= 2;
+ 		oi->pos_y /= 2;
+-		oi->out_height /= 2;
++		outh /= 2;
  
--	/* Configure overlays */
--	for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
--		struct omap_dss_device *dssdev;
-+	if (!overlay_enabled(ovl)) {
-+		if (oc->enabled) {
-+			oc->enabled = false;
-+			oc->dirty = true;
-+		}
-+		return 0;
-+	}
- 
--		ovl = omap_dss_get_overlay(i);
-+	if (!ovl->info_dirty)
-+		return 0;
- 
--		oc = &dss_cache.overlay_cache[ovl->id];
-+	dssdev = ovl->manager->device;
- 
--		if (ovl->manager_changed) {
--			ovl->manager_changed = false;
--			ovl->info_dirty  = true;
-+	if (dss_check_overlay(ovl, dssdev)) {
-+		if (oc->enabled) {
-+			oc->enabled = false;
-+			oc->dirty = true;
- 		}
-+		return -EINVAL;
-+	}
- 
--		if (!overlay_enabled(ovl)) {
--			if (oc->enabled) {
--				oc->enabled = false;
--				oc->dirty = true;
--			}
--			continue;
--		}
-+	ovl->info_dirty = false;
-+	oc->dirty = true;
-+	oc->info = ovl->info;
- 
--		if (!ovl->info_dirty)
--			continue;
-+	oc->channel = ovl->manager->id;
- 
--		dssdev = ovl->manager->device;
-+	oc->enabled = true;
- 
--		if (dss_check_overlay(ovl, dssdev)) {
--			if (oc->enabled) {
--				oc->enabled = false;
--				oc->dirty = true;
--			}
--			continue;
--		}
-+	return 0;
-+}
- 
--		ovl->info_dirty = false;
--		oc->dirty = true;
--		oc->info = ovl->info;
-+static void omap_dss_mgr_apply_mgr(struct omap_overlay_manager *mgr)
-+{
-+	struct manager_cache_data *mc;
- 
--		oc->channel = ovl->manager->id;
-+	mc = &dss_cache.manager_cache[mgr->id];
- 
--		oc->enabled = true;
-+	if (mgr->device_changed) {
-+		mgr->device_changed = false;
-+		mgr->info_dirty  = true;
+ 		DSSDBG("adjusting for ilace: height %d, pos_y %d, "
+ 				"out_height %d\n",
+-				oi->height, oi->pos_y, oi->out_height);
++				oi->height, oi->pos_y, outh);
  	}
  
--	/* Configure managers */
--	list_for_each_entry(mgr, &manager_list, list) {
--		mc = &dss_cache.manager_cache[mgr->id];
--
--		if (mgr->device_changed) {
--			mgr->device_changed = false;
--			mgr->info_dirty  = true;
--		}
-+	if (!mgr->info_dirty)
-+		return;
+ 	if (!dss_feat_color_mode_supported(plane, oi->color_mode))
+ 		return -EINVAL;
  
--		if (!mgr->info_dirty)
--			continue;
-+	if (!mgr->device)
-+		return;
- 
--		if (!mgr->device)
--			continue;
-+	mgr->info_dirty = false;
-+	mc->dirty = true;
-+	mc->info = mgr->info;
- 
--		mgr->info_dirty = false;
--		mc->dirty = true;
--		mc->info = mgr->info;
--
--		mc->manual_update = mgr_manual_update(mgr);
--	}
--
--	/* Configure overlay fifos */
--	for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
--		struct omap_dss_device *dssdev;
--		u32 size, burst_size;
-+	mc->manual_update = mgr_manual_update(mgr);
-+}
- 
--		ovl = omap_dss_get_overlay(i);
-+static void omap_dss_mgr_apply_ovl_fifos(struct omap_overlay *ovl)
-+{
-+	struct overlay_cache_data *oc;
-+	struct omap_dss_device *dssdev;
-+	u32 size, burst_size;
- 
--		oc = &dss_cache.overlay_cache[ovl->id];
-+	oc = &dss_cache.overlay_cache[ovl->id];
- 
--		if (!oc->enabled)
--			continue;
-+	if (!oc->enabled)
-+		return;
- 
--		dssdev = ovl->manager->device;
-+	dssdev = ovl->manager->device;
- 
--		size = dispc_ovl_get_fifo_size(ovl->id);
-+	size = dispc_ovl_get_fifo_size(ovl->id);
- 
--		burst_size = dispc_ovl_get_burst_size(ovl->id);
-+	burst_size = dispc_ovl_get_burst_size(ovl->id);
- 
--		switch (dssdev->type) {
-+	switch (dssdev->type) {
- 		case OMAP_DISPLAY_TYPE_DPI:
- 		case OMAP_DISPLAY_TYPE_DBI:
- 		case OMAP_DISPLAY_TYPE_SDI:
-@@ -1112,7 +1097,42 @@ static int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
- #endif
- 		default:
- 			BUG();
--		}
-+	}
-+}
-+
-+static int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
-+{
-+	int i, r;
-+	unsigned long flags;
-+
-+	DSSDBG("omap_dss_mgr_apply(%s)\n", mgr->name);
-+
-+	r = dispc_runtime_get();
-+	if (r)
-+		return r;
-+
-+	spin_lock_irqsave(&dss_cache.lock, flags);
-+
-+	/* Configure overlays */
-+	for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
-+		struct omap_overlay *ovl;
-+
-+		ovl = omap_dss_get_overlay(i);
-+
-+		omap_dss_mgr_apply_ovl(ovl);
-+	}
-+
-+	/* Configure managers */
-+	list_for_each_entry(mgr, &manager_list, list)
-+		omap_dss_mgr_apply_mgr(mgr);
-+
-+	/* Configure overlay fifos */
-+	for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
-+		struct omap_overlay *ovl;
-+
-+		ovl = omap_dss_get_overlay(i);
-+
-+		omap_dss_mgr_apply_ovl_fifos(ovl);
+ 	r = dispc_ovl_calc_scaling(plane, channel, oi->width, oi->height,
+-			oi->out_width, oi->out_height, oi->color_mode,
++			outw, outh, oi->color_mode,
+ 			&five_taps);
+ 	if (r)
+ 		return r;
+@@ -1828,10 +1832,10 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 		 * so the integer part must be added to the base address of the
+ 		 * bottom field.
+ 		 */
+-		if (!oi->height || oi->height = oi->out_height)
++		if (!oi->height || oi->height = outh)
+ 			field_offset = 0;
+ 		else
+-			field_offset = oi->height / oi->out_height / 2;
++			field_offset = oi->height / outh / 2;
  	}
  
- 	r = 0;
+ 	/* Fields are independent but interleaved in memory. */
+@@ -1867,7 +1871,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 	dispc_ovl_set_pix_inc(plane, pix_inc);
+ 
+ 	DSSDBG("%d,%d %dx%d -> %dx%d\n", oi->pos_x, oi->pos_y, oi->width,
+-			oi->height, oi->out_width, oi->out_height);
++			oi->height, outw, outh);
+ 
+ 	dispc_ovl_set_pos(plane, oi->pos_x, oi->pos_y);
+ 
+@@ -1875,10 +1879,10 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 
+ 	if (ovl->caps & OMAP_DSS_OVL_CAP_SCALE) {
+ 		dispc_ovl_set_scaling(plane, oi->width, oi->height,
+-				   oi->out_width, oi->out_height,
++				   outw, outh,
+ 				   ilace, five_taps, fieldmode,
+ 				   oi->color_mode, oi->rotation);
+-		dispc_ovl_set_vid_size(plane, oi->out_width, oi->out_height);
++		dispc_ovl_set_vid_size(plane, outw, outh);
+ 		dispc_ovl_set_vid_color_conv(plane, cconv);
+ 	}
+ 
 -- 
 1.7.4.1
 

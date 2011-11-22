@@ -1,74 +1,210 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 28 Nov 2011 07:38:51 +0000
-Subject: Re: [PATCH 1/2] video: s3c-fb: Unify runtime and system PM functions
-Message-Id: <23357853.79861322465930397.JavaMail.weblogic@epml23>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:21:41 +0000
+Subject: [PATCH 42/65] OMAPDSS: DSI: call mgr_enable/disable for cmd mode displays
+Message-Id: <1321953724-6350-43-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1322434268-25525-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1322434268-25525-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBNYXJrIEJyb3duIDxicm9vbmll
-QG9wZW5zb3VyY2Uud29sZnNvbm1pY3JvLmNvbT4NCj4gU3ViamVjdDogW1BBVENIIDEvMl0gdmlk
-ZW86IHMzYy1mYjogVW5pZnkgcnVudGltZSBhbmQgc3lzdGVtIFBNIGZ1bmN0aW9ucw0KPiANCj4g
-VGhlIHMzYy1mYiBkcml2ZXIgaGFzIHNlcGFyYXRlIHJ1bnRpbWUgYW5kIHN5c3RlbSBQTSBmdW5j
-dGlvbnMgYnV0IHRoZQ0KPiBpbXBsZW1lbnRhdGlvbnMgYXJlIGlkZW50aWNhbCBzbyBmYXIgYXMg
-SSBjYW4gdGVsbCBzbyB1bmlmeSB0aGVtIGZvcg0KPiBzaW1wbGljaXR5Lg0KPiANCj4gU2lnbmVk
-LW9mZi1ieTogTWFyayBCcm93biA8YnJvb25pZUBvcGVuc291cmNlLndvbGZzb25taWNyby5jb20+
-DQpBY2tlZC1ieTogSmluZ29vIEhhbiA8amcxLmhhbkBzYW1zdW5nLmNvbT4NClRoYW5rIHlvdS4N
-Cj4gLS0tDQo+ICBkcml2ZXJzL3ZpZGVvL3MzYy1mYi5jIHwgICA3NSArLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KPiAtLS0tDQo+ICAxIGZpbGVzIGNoYW5nZWQs
-IDEgaW5zZXJ0aW9ucygrKSwgNzQgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJp
-dmVycy92aWRlby9zM2MtZmIuYyBiL2RyaXZlcnMvdmlkZW8vczNjLWZiLmMNCj4gaW5kZXggY2Yx
-ZDExZi4uZTg0Njc3ZSAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9zM2MtZmIuYw0KPiAr
-KysgYi9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jDQo+IEBAIC0xNTkwLDc3ICsxNTkwLDkgQEAgc3Rh
-dGljIGludCBzM2NfZmJfcmVzdW1lKHN0cnVjdCBkZXZpY2UgKmRldikNCj4gDQo+ICAJcmV0dXJu
-IDA7DQo+ICB9DQo+IC0NCj4gLXN0YXRpYyBpbnQgczNjX2ZiX3J1bnRpbWVfc3VzcGVuZChzdHJ1
-Y3QgZGV2aWNlICpkZXYpDQo+IC17DQo+IC0Jc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldiA9
-IHRvX3BsYXRmb3JtX2RldmljZShkZXYpOw0KPiAtCXN0cnVjdCBzM2NfZmIgKnNmYiA9IHBsYXRm
-b3JtX2dldF9kcnZkYXRhKHBkZXYpOw0KPiAtCXN0cnVjdCBzM2NfZmJfd2luICp3aW47DQo+IC0J
-aW50IHdpbl9ubzsNCj4gLQ0KPiAtCWZvciAod2luX25vID0gUzNDX0ZCX01BWF9XSU4gLSAxOyB3
-aW5fbm8gPj0gMDsgd2luX25vLS0pIHsNCj4gLQkJd2luID0gc2ZiLT53aW5kb3dzW3dpbl9ub107
-DQo+IC0JCWlmICghd2luKQ0KPiAtCQkJY29udGludWU7DQo+IC0NCj4gLQkJLyogdXNlIHRoZSBi
-bGFuayBmdW5jdGlvbiB0byBwdXNoIGludG8gcG93ZXItZG93biAqLw0KPiAtCQlzM2NfZmJfYmxh
-bmsoRkJfQkxBTktfUE9XRVJET1dOLCB3aW4tPmZiaW5mbyk7DQo+IC0JfQ0KPiAtDQo+IC0JaWYg
-KCFzZmItPnZhcmlhbnQuaGFzX2Nsa3NlbCkNCj4gLQkJY2xrX2Rpc2FibGUoc2ZiLT5sY2RfY2xr
-KTsNCj4gLQ0KPiAtCWNsa19kaXNhYmxlKHNmYi0+YnVzX2Nsayk7DQo+IC0JcmV0dXJuIDA7DQo+
-IC19DQo+IC0NCj4gLXN0YXRpYyBpbnQgczNjX2ZiX3J1bnRpbWVfcmVzdW1lKHN0cnVjdCBkZXZp
-Y2UgKmRldikNCj4gLXsNCj4gLQlzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2ID0gdG9fcGxh
-dGZvcm1fZGV2aWNlKGRldik7DQo+IC0Jc3RydWN0IHMzY19mYiAqc2ZiID0gcGxhdGZvcm1fZ2V0
-X2RydmRhdGEocGRldik7DQo+IC0Jc3RydWN0IHMzY19mYl9wbGF0ZGF0YSAqcGQgPSBzZmItPnBk
-YXRhOw0KPiAtCXN0cnVjdCBzM2NfZmJfd2luICp3aW47DQo+IC0JaW50IHdpbl9ubzsNCj4gLQ0K
-PiAtCWNsa19lbmFibGUoc2ZiLT5idXNfY2xrKTsNCj4gLQ0KPiAtCWlmICghc2ZiLT52YXJpYW50
-Lmhhc19jbGtzZWwpDQo+IC0JCWNsa19lbmFibGUoc2ZiLT5sY2RfY2xrKTsNCj4gLQ0KPiAtCS8q
-IHNldHVwIGdwaW8gYW5kIG91dHB1dCBwb2xhcml0eSBjb250cm9scyAqLw0KPiAtCXBkLT5zZXR1
-cF9ncGlvKCk7DQo+IC0Jd3JpdGVsKHBkLT52aWRjb24xLCBzZmItPnJlZ3MgKyBWSURDT04xKTsN
-Cj4gLQ0KPiAtCS8qIHplcm8gYWxsIHdpbmRvd3MgYmVmb3JlIHdlIGRvIGFueXRoaW5nICovDQo+
-IC0JZm9yICh3aW5fbm8gPSAwOyB3aW5fbm8gPCBzZmItPnZhcmlhbnQubnJfd2luZG93czsgd2lu
-X25vKyspDQo+IC0JCXMzY19mYl9jbGVhcl93aW4oc2ZiLCB3aW5fbm8pOw0KPiAtDQo+IC0JZm9y
-ICh3aW5fbm8gPSAwOyB3aW5fbm8gPCBzZmItPnZhcmlhbnQubnJfd2luZG93cyAtIDE7IHdpbl9u
-bysrKSB7DQo+IC0JCXZvaWQgX19pb21lbSAqcmVncyA9IHNmYi0+cmVncyArIHNmYi0+dmFyaWFu
-dC5rZXljb247DQo+IC0NCj4gLQkJcmVncyArPSAod2luX25vICogOCk7DQo+IC0JCXdyaXRlbCgw
-eGZmZmZmZiwgcmVncyArIFdLRVlDT04wKTsNCj4gLQkJd3JpdGVsKDB4ZmZmZmZmLCByZWdzICsg
-V0tFWUNPTjEpOw0KPiAtCX0NCj4gLQ0KPiAtCS8qIHJlc3RvcmUgZnJhbWVidWZmZXJzICovDQo+
-IC0JZm9yICh3aW5fbm8gPSAwOyB3aW5fbm8gPCBTM0NfRkJfTUFYX1dJTjsgd2luX25vKyspIHsN
-Cj4gLQkJd2luID0gc2ZiLT53aW5kb3dzW3dpbl9ub107DQo+IC0JCWlmICghd2luKQ0KPiAtCQkJ
-Y29udGludWU7DQo+IC0NCj4gLQkJZGV2X2RiZygmcGRldi0+ZGV2LCAicmVzdW1pbmcgd2luZG93
-ICVkXG4iLCB3aW5fbm8pOw0KPiAtCQlzM2NfZmJfc2V0X3Bhcih3aW4tPmZiaW5mbyk7DQo+IC0J
-fQ0KPiAtDQo+IC0JcmV0dXJuIDA7DQo+IC19DQo+IC0NCj4gICNlbHNlDQo+ICAjZGVmaW5lIHMz
-Y19mYl9zdXNwZW5kIE5VTEwNCj4gICNkZWZpbmUgczNjX2ZiX3Jlc3VtZSAgTlVMTA0KPiAtI2Rl
-ZmluZSBzM2NfZmJfcnVudGltZV9zdXNwZW5kIE5VTEwNCj4gLSNkZWZpbmUgczNjX2ZiX3J1bnRp
-bWVfcmVzdW1lIE5VTEwNCj4gICNlbmRpZg0KPiANCj4gDQo+IEBAIC0xOTg1LDEyICsxOTE3LDcg
-QEAgc3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2VfaWQgczNjX2ZiX2RyaXZlcl9pZHNbXQ0K
-PiA9IHsNCj4gIH07DQo+ICBNT0RVTEVfREVWSUNFX1RBQkxFKHBsYXRmb3JtLCBzM2NfZmJfZHJp
-dmVyX2lkcyk7DQo+IA0KPiAtc3RhdGljIGNvbnN0IHN0cnVjdCBkZXZfcG1fb3BzIHMzY2ZiX3Bt
-X29wcyA9IHsNCj4gLQkuc3VzcGVuZAk9IHMzY19mYl9zdXNwZW5kLA0KPiAtCS5yZXN1bWUJCT0g
-czNjX2ZiX3Jlc3VtZSwNCj4gLQkucnVudGltZV9zdXNwZW5kCT0gczNjX2ZiX3J1bnRpbWVfc3Vz
-cGVuZCwNCj4gLQkucnVudGltZV9yZXN1bWUJCT0gczNjX2ZiX3J1bnRpbWVfcmVzdW1lLA0KPiAt
-fTsNCj4gK3N0YXRpYyBVTklWRVJTQUxfREVWX1BNX09QUyhzM2NmYl9wbV9vcHMsIHMzY19mYl9z
-dXNwZW5kLCBzM2NfZmJfcmVzdW1lLA0KPiBOVUxMKTsNCj4gDQo+ICBzdGF0aWMgc3RydWN0IHBs
-YXRmb3JtX2RyaXZlciBzM2NfZmJfZHJpdmVyID0gew0KPiAgCS5wcm9iZQkJPSBzM2NfZmJfcHJv
-YmUsDQo+IC0tDQo+IDEuNy4xDQoNCg0KDQo
+The current code uses dsi_video_mode_enable/disable functions to
+enable/disable DISPC output for video mode displays. For command mode
+displays we have no notion in the DISPC side of whether the panel is
+enabled, except when a dss_start_update() call is made.
+
+However, to properly maintain the DISPC state in apply.c, we need to
+know if a manager used for a manual update display is currently in use.
+
+This patch achieves that by changing dsi_video_mode_enable/disable to
+dsi_enable/disable_video_output, which is called by both video and
+command mode displays. For video mode displays it starts the actual
+pixel stream, as it did before. For command mode displays it doesn't do
+anything else than mark that the manager is currently in use.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/displays/panel-taal.c |    6 ++
+ drivers/video/omap2/dss/apply.c           |    6 ++-
+ drivers/video/omap2/dss/dsi.c             |   73 +++++++++++++++-------------
+ include/video/omapdss.h                   |    4 +-
+ 4 files changed, 51 insertions(+), 38 deletions(-)
+
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index dd64bd1..00c5c61 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -1182,6 +1182,10 @@ static int taal_power_on(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err;
+ 
++	r = dsi_enable_video_output(dssdev, td->channel);
++	if (r)
++		goto err;
++
+ 	td->enabled = 1;
+ 
+ 	if (!td->intro_printed) {
+@@ -1211,6 +1215,8 @@ static void taal_power_off(struct omap_dss_device *dssdev)
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+ 	int r;
+ 
++	dsi_disable_video_output(dssdev, td->channel);
++
+ 	r = taal_dcs_write_0(td, MIPI_DCS_SET_DISPLAY_OFF);
+ 	if (!r)
+ 		r = taal_sleep_in(td);
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 9ad2a36..66f4c56 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -648,7 +648,8 @@ void dss_mgr_enable(struct omap_overlay_manager *mgr)
+ {
+ 	mutex_lock(&apply_lock);
+ 
+-	dispc_mgr_enable(mgr->id, true);
++	if (!mgr_manual_update(mgr))
++		dispc_mgr_enable(mgr->id, true);
+ 	mgr->enabled = true;
+ 
+ 	mutex_unlock(&apply_lock);
+@@ -658,7 +659,8 @@ void dss_mgr_disable(struct omap_overlay_manager *mgr)
+ {
+ 	mutex_lock(&apply_lock);
+ 
+-	dispc_mgr_enable(mgr->id, false);
++	if (!mgr_manual_update(mgr))
++		dispc_mgr_enable(mgr->id, false);
+ 	mgr->enabled = false;
+ 
+ 	mutex_unlock(&apply_lock);
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 08d3de90..a35f3fb 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -3939,65 +3939,70 @@ static void dsi_proto_timings(struct omap_dss_device *dssdev)
+ 	}
+ }
+ 
+-int dsi_video_mode_enable(struct omap_dss_device *dssdev, int channel)
++int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel)
+ {
+ 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+ 	int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
+ 	u8 data_type;
+ 	u16 word_count;
+ 
+-	switch (dssdev->panel.dsi_pix_fmt) {
+-	case OMAP_DSS_DSI_FMT_RGB888:
+-		data_type = MIPI_DSI_PACKED_PIXEL_STREAM_24;
+-		break;
+-	case OMAP_DSS_DSI_FMT_RGB666:
+-		data_type = MIPI_DSI_PIXEL_STREAM_3BYTE_18;
+-		break;
+-	case OMAP_DSS_DSI_FMT_RGB666_PACKED:
+-		data_type = MIPI_DSI_PACKED_PIXEL_STREAM_18;
+-		break;
+-	case OMAP_DSS_DSI_FMT_RGB565:
+-		data_type = MIPI_DSI_PACKED_PIXEL_STREAM_16;
+-		break;
+-	default:
+-		BUG();
+-	};
++	if (dssdev->panel.dsi_mode = OMAP_DSS_DSI_VIDEO_MODE) {
++		switch (dssdev->panel.dsi_pix_fmt) {
++		case OMAP_DSS_DSI_FMT_RGB888:
++			data_type = MIPI_DSI_PACKED_PIXEL_STREAM_24;
++			break;
++		case OMAP_DSS_DSI_FMT_RGB666:
++			data_type = MIPI_DSI_PIXEL_STREAM_3BYTE_18;
++			break;
++		case OMAP_DSS_DSI_FMT_RGB666_PACKED:
++			data_type = MIPI_DSI_PACKED_PIXEL_STREAM_18;
++			break;
++		case OMAP_DSS_DSI_FMT_RGB565:
++			data_type = MIPI_DSI_PACKED_PIXEL_STREAM_16;
++			break;
++		default:
++			BUG();
++		};
+ 
+-	dsi_if_enable(dsidev, false);
+-	dsi_vc_enable(dsidev, channel, false);
++		dsi_if_enable(dsidev, false);
++		dsi_vc_enable(dsidev, channel, false);
+ 
+-	/* MODE, 1 = video mode */
+-	REG_FLD_MOD(dsidev, DSI_VC_CTRL(channel), 1, 4, 4);
++		/* MODE, 1 = video mode */
++		REG_FLD_MOD(dsidev, DSI_VC_CTRL(channel), 1, 4, 4);
+ 
+-	word_count = DIV_ROUND_UP(dssdev->panel.timings.x_res * bpp, 8);
++		word_count = DIV_ROUND_UP(dssdev->panel.timings.x_res * bpp, 8);
+ 
+-	dsi_vc_write_long_header(dsidev, channel, data_type, word_count, 0);
++		dsi_vc_write_long_header(dsidev, channel, data_type,
++				word_count, 0);
+ 
+-	dsi_vc_enable(dsidev, channel, true);
+-	dsi_if_enable(dsidev, true);
++		dsi_vc_enable(dsidev, channel, true);
++		dsi_if_enable(dsidev, true);
++	}
+ 
+ 	dss_mgr_enable(dssdev->manager);
+ 
+ 	return 0;
+ }
+-EXPORT_SYMBOL(dsi_video_mode_enable);
++EXPORT_SYMBOL(dsi_enable_video_output);
+ 
+-void dsi_video_mode_disable(struct omap_dss_device *dssdev, int channel)
++void dsi_disable_video_output(struct omap_dss_device *dssdev, int channel)
+ {
+ 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+ 
+-	dsi_if_enable(dsidev, false);
+-	dsi_vc_enable(dsidev, channel, false);
++	if (dssdev->panel.dsi_mode = OMAP_DSS_DSI_VIDEO_MODE) {
++		dsi_if_enable(dsidev, false);
++		dsi_vc_enable(dsidev, channel, false);
+ 
+-	/* MODE, 0 = command mode */
+-	REG_FLD_MOD(dsidev, DSI_VC_CTRL(channel), 0, 4, 4);
++		/* MODE, 0 = command mode */
++		REG_FLD_MOD(dsidev, DSI_VC_CTRL(channel), 0, 4, 4);
+ 
+-	dsi_vc_enable(dsidev, channel, true);
+-	dsi_if_enable(dsidev, true);
++		dsi_vc_enable(dsidev, channel, true);
++		dsi_if_enable(dsidev, true);
++	}
+ 
+ 	dss_mgr_disable(dssdev->manager);
+ }
+-EXPORT_SYMBOL(dsi_video_mode_disable);
++EXPORT_SYMBOL(dsi_disable_video_output);
+ 
+ static void dsi_update_screen_dispc(struct omap_dss_device *dssdev,
+ 		u16 w, u16 h)
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index eaeca89..25ef771 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -294,8 +294,8 @@ int dsi_vc_set_max_rx_packet_size(struct omap_dss_device *dssdev, int channel,
+ 		u16 len);
+ int dsi_vc_send_null(struct omap_dss_device *dssdev, int channel);
+ int dsi_vc_send_bta_sync(struct omap_dss_device *dssdev, int channel);
+-int dsi_video_mode_enable(struct omap_dss_device *dssdev, int channel);
+-void dsi_video_mode_disable(struct omap_dss_device *dssdev, int channel);
++int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel);
++void dsi_disable_video_output(struct omap_dss_device *dssdev, int channel);
+ 
+ /* Board specific data */
+ struct omap_dss_board_info {
+-- 
+1.7.4.1
 

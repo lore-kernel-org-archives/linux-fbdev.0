@@ -1,98 +1,87 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 24 Nov 2011 13:29:36 +0000
-Subject: [PATCH 08/13] OMAPDSS: DSI: use lane config in dsi_cio_wait_tx_clk_esc_reset
-Message-Id: <1322141381-5395-9-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:21:16 +0000
+Subject: [PATCH 17/65] OMAPDSS: add ovl/mgr_manual_update() helpers
+Message-Id: <1321953724-6350-18-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Use the new lane config in dsi_cio_wait_tx_clk_esc_reset(). This also
-extends the function to support 5 lanes on OMAP4, instead of 3 lanes.
+Add helper functions ovl_manual_update() and mgr_manual_update() which
+return whether the overlay or manager is used with a manual update
+display.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dsi.c |   47 +++++++++++++++-------------------------
- 1 files changed, 18 insertions(+), 29 deletions(-)
+ drivers/video/omap2/dss/manager.c |   19 +++++++++++--------
+ 1 files changed, 11 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 1a209a2..52cf97f 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -2365,51 +2365,40 @@ static void dsi_cio_disable_lane_override(struct platform_device *dsidev)
- static int dsi_cio_wait_tx_clk_esc_reset(struct omap_dss_device *dssdev)
- {
- 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
--	int t;
--	int bits[3];
--	bool in_use[3];
+diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+index fc19f01..e8838d3 100644
+--- a/drivers/video/omap2/dss/manager.c
++++ b/drivers/video/omap2/dss/manager.c
+@@ -538,7 +538,15 @@ static struct {
+ 	bool irq_enabled;
+ } dss_cache;
+ 
++static bool ovl_manual_update(struct omap_overlay *ovl)
++{
++	return ovl->manager->device->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE;
++}
+ 
++static bool mgr_manual_update(struct omap_overlay_manager *mgr)
++{
++	return mgr->device->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE;
++}
+ 
+ static int omap_dss_set_device(struct omap_overlay_manager *mgr,
+ 		struct omap_dss_device *dssdev)
+@@ -627,7 +635,7 @@ static int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr)
+ 	if (!dssdev || dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
+ 		return 0;
+ 
+-	if (dssdev->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE)
++	if (mgr_manual_update(mgr))
+ 		return 0;
+ 
+ 	if (dssdev->type = OMAP_DISPLAY_TYPE_VENC
+@@ -696,7 +704,7 @@ int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl)
+ 	if (!dssdev || dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
+ 		return 0;
+ 
+-	if (dssdev->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE)
++	if (ovl_manual_update(ovl))
+ 		return 0;
+ 
+ 	if (dssdev->type = OMAP_DISPLAY_TYPE_VENC
+@@ -1047,8 +1055,6 @@ static int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
+ 
+ 	/* Configure managers */
+ 	list_for_each_entry(mgr, &manager_list, list) {
+-		struct omap_dss_device *dssdev;
 -
--	if (dss_has_feature(FEAT_DSI_REVERSE_TXCLKESC)) {
--		bits[0] = 28;
--		bits[1] = 27;
--		bits[2] = 26;
--	} else {
--		bits[0] = 24;
--		bits[1] = 25;
--		bits[2] = 26;
--	}
+ 		mc = &dss_cache.manager_cache[mgr->id];
+ 
+ 		if (mgr->device_changed) {
+@@ -1062,14 +1068,11 @@ static int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
+ 		if (!mgr->device)
+ 			continue;
+ 
+-		dssdev = mgr->device;
 -
--	in_use[0] = false;
--	in_use[1] = false;
--	in_use[2] = false;
-+	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
-+	int t, i;
-+	bool in_use[DSI_MAX_NR_LANES];
-+	static const u8 offsets_old[] = { 28, 27, 26 };
-+	static const u8 offsets_new[] = { 24, 25, 26, 27, 28 };
-+	const u8 *offsets;
-+
-+	if (dss_has_feature(FEAT_DSI_REVERSE_TXCLKESC))
-+		offsets = offsets_old;
-+	else
-+		offsets = offsets_new;
+ 		mgr->info_dirty = false;
+ 		mc->dirty = true;
+ 		mc->info = mgr->info;
  
--	if (dssdev->phy.dsi.clk_lane != 0)
--		in_use[dssdev->phy.dsi.clk_lane - 1] = true;
--	if (dssdev->phy.dsi.data1_lane != 0)
--		in_use[dssdev->phy.dsi.data1_lane - 1] = true;
--	if (dssdev->phy.dsi.data2_lane != 0)
--		in_use[dssdev->phy.dsi.data2_lane - 1] = true;
-+	for (i = 0; i < dsi->num_lanes_supported; ++i)
-+		in_use[i] = dsi->lanes[i].function != DSI_LANE_UNUSED;
+-		mc->manual_update -			dssdev->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE;
++		mc->manual_update = mgr_manual_update(mgr);
+ 	}
  
- 	t = 100000;
- 	while (true) {
- 		u32 l;
--		int i;
- 		int ok;
- 
- 		l = dsi_read_reg(dsidev, DSI_DSIPHY_CFG5);
- 
- 		ok = 0;
--		for (i = 0; i < 3; ++i) {
--			if (!in_use[i] || (l & (1 << bits[i])))
-+		for (i = 0; i < dsi->num_lanes_supported; ++i) {
-+			if (!in_use[i] || (l & (1 << offsets[i])))
- 				ok++;
- 		}
- 
--		if (ok = 3)
-+		if (ok = dsi->num_lanes_supported)
- 			break;
- 
- 		if (--t = 0) {
--			for (i = 0; i < 3; ++i) {
--				if (!in_use[i] || (l & (1 << bits[i])))
-+			for (i = 0; i < dsi->num_lanes_supported; ++i) {
-+				if (!in_use[i] || (l & (1 << offsets[i])))
- 					continue;
- 
- 				DSSERR("CIO TXCLKESC%d domain not coming " \
+ 	/* Configure overlay fifos */
 -- 
 1.7.4.1
 

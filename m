@@ -1,43 +1,72 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 23 Nov 2011 06:52:14 +0000
-Subject: Re: [PATCH 3/3] Drivers: video: controlfb: fixed a brace coding style
-Message-Id: <4ECC981E.9030703@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 09:21:07 +0000
+Subject: [PATCH 08/65] OMAPDSS: remove partial update from panel-taal
+Message-Id: <1321953724-6350-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321590896-8249-1-git-send-email-zac.3.14159@gmail.com>
-In-Reply-To: <1321590896-8249-1-git-send-email-zac.3.14159@gmail.com>
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Zac Storer <zac.3.14159@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 11/18/2011 04:34 AM, Zac Storer wrote:
-> Fixed a brace coding style issue.
-> 
-> Signed-off-by: Zac Storer <zac.3.14159@gmail.com>
+Partial update for manual update displays has never worked quite well:
+* The HW has limitations on the update area, and the x and width need to
+  be even.
+* Showing a part of a scaled overlay causes artifacts.
+* Makes the management of dispc very complex
 
-Applied.
+Considering the above points and the fact that partial update is not
+used anywhere, this and the following patches remove the partial update
+support. This will greatly simplify the following re-write of the apply
+mechanism to get proper locking and additional features like fifo-merge.
 
+This patch removes the partial update from the panel-taal.c.
 
-Thanks,
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/displays/panel-taal.c |   16 ++++------------
+ 1 files changed, 4 insertions(+), 12 deletions(-)
 
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/controlfb.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/controlfb.c b/drivers/video/controlfb.c
-> index 7b2c40a..0c189b3 100644
-> --- a/drivers/video/controlfb.c
-> +++ b/drivers/video/controlfb.c
-> @@ -420,7 +420,7 @@ static int __init init_control(struct fb_info_control *p)
->  
->  	/* Try to pick a video mode out of NVRAM if we have one. */
->  #ifdef CONFIG_NVRAM
-> -	if (default_cmode = CMODE_NVRAM){
-> +	if (default_cmode = CMODE_NVRAM) {
->  		cmode = nvram_read_byte(NV_CMODE);
->  		if(cmode < CMODE_8 || cmode > CMODE_32)
->  			cmode = CMODE_8;
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 0aa6c5d..dd64bd1 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -198,12 +198,6 @@ struct taal_data {
+ 	bool te_enabled;
+ 
+ 	atomic_t do_update;
+-	struct {
+-		u16 x;
+-		u16 y;
+-		u16 w;
+-		u16 h;
+-	} update_region;
+ 	int channel;
+ 
+ 	struct delayed_work te_timeout_work;
+@@ -1440,16 +1434,14 @@ static int taal_update(struct omap_dss_device *dssdev,
+ 		goto err;
+ 	}
+ 
+-	r = taal_set_update_window(td, x, y, w, h);
++	/* XXX no need to send this every frame, but dsi break if not done */
++	r = taal_set_update_window(td, 0, 0,
++			td->panel_config->timings.x_res,
++			td->panel_config->timings.y_res);
+ 	if (r)
+ 		goto err;
+ 
+ 	if (td->te_enabled && panel_data->use_ext_te) {
+-		td->update_region.x = x;
+-		td->update_region.y = y;
+-		td->update_region.w = w;
+-		td->update_region.h = h;
+-		barrier();
+ 		schedule_delayed_work(&td->te_timeout_work,
+ 				msecs_to_jiffies(250));
+ 		atomic_set(&td->do_update, 1);
+-- 
+1.7.4.1
 

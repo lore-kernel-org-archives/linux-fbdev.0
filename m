@@ -1,81 +1,65 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Tue, 22 Nov 2011 11:55:04 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 22 Nov 2011 12:32:10 +0000
 Subject: Re: [PATCH 08/65] OMAPDSS: remove partial update from panel-taal
-Message-Id: <4ECB8D39.4000005@ti.com>
+Message-Id: <1321965130.1887.46.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-Hw62SVb8fVt252pLSmQF"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com> <1321953724-6350-9-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1321953724-6350-9-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+	 <1321953724-6350-9-git-send-email-tomi.valkeinen@ti.com>
+	 <4ECB8D39.4000005@ti.com>
+In-Reply-To: <4ECB8D39.4000005@ti.com>
+To: Archit Taneja <a0393947@ti.com>
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, archit@ti.com
 
-On Tuesday 22 November 2011 02:51 PM, Tomi Valkeinen wrote:
-> Partial update for manual update displays has never worked quite well:
-> * The HW has limitations on the update area, and the x and width need to
->    be even.
-> * Showing a part of a scaled overlay causes artifacts.
-> * Makes the management of dispc very complex
->
-> Considering the above points and the fact that partial update is not
-> used anywhere, this and the following patches remove the partial update
-> support. This will greatly simplify the following re-write of the apply
-> mechanism to get proper locking and additional features like fifo-merge.
->
-> This patch removes the partial update from the panel-taal.c.
->
-> Signed-off-by: Tomi Valkeinen<tomi.valkeinen@ti.com>
-> ---
->   drivers/video/omap2/displays/panel-taal.c |   16 ++++------------
->   1 files changed, 4 insertions(+), 12 deletions(-)
->
-> diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-> index 0aa6c5d..dd64bd1 100644
-> --- a/drivers/video/omap2/displays/panel-taal.c
-> +++ b/drivers/video/omap2/displays/panel-taal.c
-> @@ -198,12 +198,6 @@ struct taal_data {
->   	bool te_enabled;
->
->   	atomic_t do_update;
-> -	struct {
-> -		u16 x;
-> -		u16 y;
-> -		u16 w;
-> -		u16 h;
-> -	} update_region;
->   	int channel;
->
->   	struct delayed_work te_timeout_work;
-> @@ -1440,16 +1434,14 @@ static int taal_update(struct omap_dss_device *dssdev,
->   		goto err;
->   	}
->
-> -	r = taal_set_update_window(td, x, y, w, h);
-> +	/* XXX no need to send this every frame, but dsi break if not done */
-> +	r = taal_set_update_window(td, 0, 0,
-> +			td->panel_config->timings.x_res,
-> +			td->panel_config->timings.y_res);
 
-How about sending a null short packet, and a BTA after that. This will 
-keep automatic TE mode in place, and we'll need to send 1 short packet 
-instead of 2 long packets every frame.
+--=-Hw62SVb8fVt252pLSmQF
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-We should of course do this if we aren't planning to get partial update 
-back in the near future.
+On Tue, 2011-11-22 at 17:23 +0530, Archit Taneja wrote:
+> > -     r =3D taal_set_update_window(td, x, y, w, h);
+> > +     /* XXX no need to send this every frame, but dsi break if not
+> done */
+> > +     r =3D taal_set_update_window(td, 0, 0,
+> > +                     td->panel_config->timings.x_res,
+> > +                     td->panel_config->timings.y_res);
+>=20
+> How about sending a null short packet, and a BTA after that. This
+> will=20
+> keep automatic TE mode in place, and we'll need to send 1 short
+> packet=20
+> instead of 2 long packets every frame.
 
-Archit
+To be honest, I didn't spend any time with this. True, sending a null
+packet and BTA instead of the 2 long packets is possible. But probably
+even better would be to track the TE status, and send a BTA only when
+needed.
 
->   	if (r)
->   		goto err;
->
->   	if (td->te_enabled&&  panel_data->use_ext_te) {
-> -		td->update_region.x = x;
-> -		td->update_region.y = y;
-> -		td->update_region.w = w;
-> -		td->update_region.h = h;
-> -		barrier();
->   		schedule_delayed_work(&td->te_timeout_work,
->   				msecs_to_jiffies(250));
->   		atomic_set(&td->do_update, 1);
+ Tomi
+
+
+--=-Hw62SVb8fVt252pLSmQF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJOy5ZKAAoJEPo9qoy8lh71euYP/2oabFOKxDkjqxTbCCBVSB6t
+Q7loyosJLTtoK0JI4M8A5YRHmglCo6BGeUSvXFLdC9b62qJ1Z/e+GXXLXW2NEawo
+5y98M6QmcIkwtLS/wLy8oeTFnIdXZJOGfKA0VoDR2vQ8mRQVPybottsLW0NgVW1y
+gP+62CPo+cCMAfjbtn+dIpOA6fDJPy2BdodnyJg+o4thtuYRCKZcxQJwTJghWHfV
+bsbWSHKgebS7U2LvqTEhWASTQN0rKm+tBqYErDEMtEV3WRrInM8IWYn6aWj+0yvB
+2eXw9ol0PORYa6q9Afv/d8jRDlMYjSqHl6yzcqJnCLDx4/WRpFIYUHY0nxsODN7c
+oPYACrAvmS51GJr+O0h2Sqv6FqQOq9l2VgTB2Q6j/TCVVF1ZKJ2wEU6aeraYF62s
+eDDLGLWD972hVYNHc3aZt76+xoIOK2HcByvJvVDibBmb32cqn6N/BGhvRFrvKc1B
+yYH19irbpnxNfbBABSHySwJ6S2xy6YOPTWorN3lQ/xPldJyTC/BON6AVws5pCeyi
+DQhKokRvSb1/mkkAcmqLdUwzMooSCbBR1iFP0s9fkKmDD4TXOxAS/DsAQrLbJNGt
+3M3OHLvr1/6wpwwBt6qeEOorpMms8S6/oOrfvCZrVtk3jQI+8Tsg4Njxn3lHbVqD
+s5+zp1uDM7e9UYlug6nD
+=cTqZ
+-----END PGP SIGNATURE-----
+
+--=-Hw62SVb8fVt252pLSmQF--
 

@@ -1,54 +1,74 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 23 Nov 2011 07:15:59 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 23 Nov 2011 07:31:16 +0000
 Subject: Re: [GIT PULL] OMAP DSS fixes for 3.2-rc
-Message-Id: <4ECC9DAF.3000005@gmx.de>
+Message-Id: <1322033476.3015.3.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-7Rk2Gjm34tA4g+NRAmLn"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321604174.1814.41.camel@deskari>
-In-Reply-To: <1321604174.1814.41.camel@deskari>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1321604174.1814.41.camel@deskari>  <4ECC9DAF.3000005@gmx.de>
+In-Reply-To: <4ECC9DAF.3000005@gmx.de>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Cc: linux-fbdev@vger.kernel.org, linux-omap mailing list <linux-omap@vger.kernel.org>
 
-Hi Tomi,
 
-On 11/18/2011 08:16 AM, Tomi Valkeinen wrote:
-> Hi Florian,
-> 
-> Here are a few OMAP display subsystem fixes for 3.2-rc.
-> 
-> One for the old omapfb, which was missing include module.h, and two for
-> the omapdss fixing issues related to HDMI.
+--=-7Rk2Gjm34tA4g+NRAmLn
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Pulled, but...
+On Wed, 2011-11-23 at 07:15 +0000, Florian Tobias Schandinat wrote:
+> Hi Tomi,
+>=20
+> On 11/18/2011 08:16 AM, Tomi Valkeinen wrote:
+> > Hi Florian,
+> >=20
+> > Here are a few OMAP display subsystem fixes for 3.2-rc.
+> >=20
+> > One for the old omapfb, which was missing include module.h, and two for
+> > the omapdss fixing issues related to HDMI.
+>=20
+> Pulled, but...
 
-> The following changes since commit cfcfc9eca2bcbd26a8e206baeb005b055dbf8e37:
-> 
->   Linux 3.2-rc2 (2011-11-15 15:02:59 -0200)
+Thanks!
 
-...could you please try to base on something that is already in my tree, perhaps
-just add patches on top of the last pull request you sent me. If you need
-something more recent, that is okay, but don't force me to needlessly update my
-tree.
+> > The following changes since commit cfcfc9eca2bcbd26a8e206baeb005b055dbf=
+8e37:
+> >=20
+> >   Linux 3.2-rc2 (2011-11-15 15:02:59 -0200)
+>=20
+> ...could you please try to base on something that is already in my tree, =
+perhaps
+> just add patches on top of the last pull request you sent me. If you need
+> something more recent, that is okay, but don't force me to needlessly upd=
+ate my
+> tree.
+
+Ah, of course. I didn't think of that. I'll base the patches on top of
+your tree from now on.
+
+ Tomi
 
 
-Thanks,
+--=-7Rk2Gjm34tA4g+NRAmLn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-Florian Tobias Schandinat
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-> 
-> are available in the git repository at:
->   git://gitorious.org/linux-omap-dss2/linux.git for-3.2-rc
-> 
-> Tomi Valkeinen (3):
->       OMAPDSS: HDMI: fix returned HDMI pixel clock
->       OMAPFB: fix compilation warnings due to missing include
->       OMAPDSS: DISPC: skip scaling calculations when not scaling
-> 
->  drivers/video/omap/dispc.c      |    1 +
->  drivers/video/omap2/dss/dispc.c |   11 +++++------
->  drivers/video/omap2/dss/hdmi.c  |    2 +-
->  3 files changed, 7 insertions(+), 7 deletions(-)
-> 
+iQIcBAABAgAGBQJOzKFEAAoJEPo9qoy8lh71PpMQAIqDnGXv9i/P3VGcb1CHDxrC
+aOemktqygJ0PhCQxAGF93vs8j49h6nzXgeSYQCKQTFCAthWPM+OBBZAH97BDU8Eb
+umCV1zr3wIhjRmpU2Y65FrJuJZAVGl56KL8LX14tJQea9KZlXjmK/Pb8Z3CTdOIs
+ad4xQg4SHs/MxHg6hucGaL1S9V1GU+J2XWeTkDCGPbbt8vyNhs7slU6yEbyXIKvq
+Nafs/YWvDpAJ9fZCFreipGpN9kdUo4T0MY3pF+eGM0QQUig56tomFJy8VZnRvXJS
+zrm9wZuxcRWpKfaM9REXXGFYU7R/j5JMi+HU0vW9KzR1CAlBzuS3VpkOt0R7FEk1
+Jjlac1rF5+Hs4FMdDIVToPZmv3zyJC2v7+5ikqS+PumqwSvMwDfMKzVVmPumU4F9
+sqrfuRqCa5ytKN6uel5jYodAgQa1Id3sqrpv4E1CQWMj2b1AuSTgbxddwEuIXr0S
+isTYv44+KJ0F3gIDfNd2ynXmZdFqgEuV3waLYJXUX8zaN2mQbiHOqwClCzLL7YG8
+5z9kWVRtuRoV3byql620FHp3iB5fv1FW/RJnALOdI7c/VtE19CqQ3ZlKdW9yk4Au
+RzRxXTC1NhWLK0FUgVVIKSXWz4XRANU3uxDc+9dnSQMWniTo5ldxUnLFcjU2ydoc
+lrugf28jlNUKNxwsA+sc
+=woKA
+-----END PGP SIGNATURE-----
+
+--=-7Rk2Gjm34tA4g+NRAmLn--
 

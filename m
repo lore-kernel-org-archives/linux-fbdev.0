@@ -1,67 +1,54 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 18 Nov 2011 08:16:14 +0000
-Subject: [GIT PULL] OMAP DSS fixes for 3.2-rc
-Message-Id: <1321604174.1814.41.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-VZlG8pqj5o/4tn85btBI"
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Wed, 23 Nov 2011 07:15:59 +0000
+Subject: Re: [GIT PULL] OMAP DSS fixes for 3.2-rc
+Message-Id: <4ECC9DAF.3000005@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: florianschandinat@gmx.de
+References: <1321604174.1814.41.camel@deskari>
+In-Reply-To: <1321604174.1814.41.camel@deskari>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-fbdev@vger.kernel.org, linux-omap mailing list <linux-omap@vger.kernel.org>
 
+Hi Tomi,
 
---=-VZlG8pqj5o/4tn85btBI
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+On 11/18/2011 08:16 AM, Tomi Valkeinen wrote:
+> Hi Florian,
+> 
+> Here are a few OMAP display subsystem fixes for 3.2-rc.
+> 
+> One for the old omapfb, which was missing include module.h, and two for
+> the omapdss fixing issues related to HDMI.
 
-Hi Florian,
+Pulled, but...
 
-Here are a few OMAP display subsystem fixes for 3.2-rc.
+> The following changes since commit cfcfc9eca2bcbd26a8e206baeb005b055dbf8e37:
+> 
+>   Linux 3.2-rc2 (2011-11-15 15:02:59 -0200)
 
-One for the old omapfb, which was missing include module.h, and two for
-the omapdss fixing issues related to HDMI.
-
- Tomi
-
-The following changes since commit cfcfc9eca2bcbd26a8e206baeb005b055dbf8e37=
-:
-
-  Linux 3.2-rc2 (2011-11-15 15:02:59 -0200)
-
-are available in the git repository at:
-  git://gitorious.org/linux-omap-dss2/linux.git for-3.2-rc
-
-Tomi Valkeinen (3):
-      OMAPDSS: HDMI: fix returned HDMI pixel clock
-      OMAPFB: fix compilation warnings due to missing include
-      OMAPDSS: DISPC: skip scaling calculations when not scaling
-
- drivers/video/omap/dispc.c      |    1 +
- drivers/video/omap2/dss/dispc.c |   11 +++++------
- drivers/video/omap2/dss/hdmi.c  |    2 +-
- 3 files changed, 7 insertions(+), 7 deletions(-)
+...could you please try to base on something that is already in my tree, perhaps
+just add patches on top of the last pull request you sent me. If you need
+something more recent, that is okay, but don't force me to needlessly update my
+tree.
 
 
---=-VZlG8pqj5o/4tn85btBI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Thanks,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+Florian Tobias Schandinat
 
-iQIcBAABAgAGBQJOxhROAAoJEPo9qoy8lh71Z+8P/3Owarp5fEEr+6YRGiQkkTig
-KaPMbnynEk/RexHL73Fqy2u+I/tK7fht+P9qNc6Z+23NQrUL5w75mpnJOkSBs05V
-NsqOYfEHqKTBerIuL8EIiL2xMkEqE4yoYLrgvDOtVW6QJ9ikzLR+OOcKqne1FfWh
-yXSUyZ0SX0LN8LHsMGXdYw1ZPGlYeGU+tUnOfreLz2whcYE31GgDO9lLpN971udT
-ZLNnbH2bOKVNQJgRkYSLhoosEmZXFnEQnaztnu1K35Xq03UKhq/ZnXDvBVTF7cI+
-rWyBl3EwCS+B80nDZ9puHuLCC+qm9P3FJKpBcIeOzDtSp2l4l03gs9SfmKEzINHn
-Ca5LpZeyvJbwlVV3jC0dU4BOFHfB8NGi44vcf8HanjcQ28fk0eskGBRVXl26+UY5
-gvcg3SAXYwO2j+BJzC78moW8BM5jA8EU4jFG3HPv78RcS6MKkzMmzVk41SzxuIwr
-moXWEZwDdLv40zUzOjpp4WPNrWsLDjWUP2fNtNfikhIbc21mx1zNB5c8MOcprcZU
-jqP1UjjhKM/EDgMinrdTgPUm07JQlnWE8ZC7Zz8QhMbydMx8cSShjCEgsxt2iKPd
-romkaWbqG5PoW2JEN/yzQNZAe3Z00NA/t7sBZqGUtxXqw3Nkenv3yVsq42xbNsBM
-8skW6MVvL4IRhWJXu6KE
-=bumW
------END PGP SIGNATURE-----
-
---=-VZlG8pqj5o/4tn85btBI--
+> 
+> are available in the git repository at:
+>   git://gitorious.org/linux-omap-dss2/linux.git for-3.2-rc
+> 
+> Tomi Valkeinen (3):
+>       OMAPDSS: HDMI: fix returned HDMI pixel clock
+>       OMAPFB: fix compilation warnings due to missing include
+>       OMAPDSS: DISPC: skip scaling calculations when not scaling
+> 
+>  drivers/video/omap/dispc.c      |    1 +
+>  drivers/video/omap2/dss/dispc.c |   11 +++++------
+>  drivers/video/omap2/dss/hdmi.c  |    2 +-
+>  3 files changed, 7 insertions(+), 7 deletions(-)
+> 
 

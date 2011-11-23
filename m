@@ -1,233 +1,105 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Wed, 23 Nov 2011 09:49:44 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 23 Nov 2011 10:17:00 +0000
 Subject: Re: [PATCH 40/65] OMAPDSS: APPLY: add mutex
-Message-Id: <4ECCC158.80902@ti.com>
+Message-Id: <1322043420.28917.39.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-p9YWrJoAHLqXlN4AIukh"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com> <1321953724-6350-41-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1321953724-6350-41-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+	 <1321953724-6350-41-git-send-email-tomi.valkeinen@ti.com>
+	 <4ECCC158.80902@ti.com>
+In-Reply-To: <4ECCC158.80902@ti.com>
+To: Archit Taneja <a0393947@ti.com>
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, archit@ti.com
 
-Hi,
 
-On Tuesday 22 November 2011 02:51 PM, Tomi Valkeinen wrote:
-> The functions in apply.c, called mostly via function pointers in overlay
-> and overlay_manager structs, will be divided into two groups. The other
-> group will not sleep and can be called from interrupts, and the other
-> group may sleep.
+--=-p9YWrJoAHLqXlN4AIukh
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Small sentence issue above, both groups are called the 'other group'.
+On Wed, 2011-11-23 at 15:18 +0530, Archit Taneja wrote:
+> Hi,
+>=20
+> On Tuesday 22 November 2011 02:51 PM, Tomi Valkeinen wrote:
+> > The functions in apply.c, called mostly via function pointers in overla=
+y
+> > and overlay_manager structs, will be divided into two groups. The other
+> > group will not sleep and can be called from interrupts, and the other
+> > group may sleep.
+>=20
+> Small sentence issue above, both groups are called the 'other group'.
 
->
-> The idea is that the non-sleeping functions may only change certain
-> settings in overlays and managers, and those settings may only affect
-> the particular overlay/manager. For example, set the base address of the
-> overlay.
->
-> The blocking functions, however, will handle more complex configuration
-> changes. For example, when an overlay is enabled and fifo-merge feature
-> is used, we need to do the enable in multiple steps, waiting in between,
-> and the change affects multiple overlays and managers.
->
-> This patch adds the mutex which is used in the blocking functions to
-> have exclusive access to overlays and overlay managers.
+Thanks, fixed.
 
-Previously, when we changed the links between 'overlay->managers' and 
-'manager->devices', it wasn't protected by a lock. Why is it needed now?
+> >
+> > The idea is that the non-sleeping functions may only change certain
+> > settings in overlays and managers, and those settings may only affect
+> > the particular overlay/manager. For example, set the base address of th=
+e
+> > overlay.
+> >
+> > The blocking functions, however, will handle more complex configuration
+> > changes. For example, when an overlay is enabled and fifo-merge feature
+> > is used, we need to do the enable in multiple steps, waiting in between=
+,
+> > and the change affects multiple overlays and managers.
+> >
+> > This patch adds the mutex which is used in the blocking functions to
+> > have exclusive access to overlays and overlay managers.
+>=20
+> Previously, when we changed the links between 'overlay->managers' and=20
+> 'manager->devices', it wasn't protected by a lock. Why is it needed now?
 
-As an example, suppose we are changing a manager's device to some other 
-display. Is this lock preventing someone else to get the older 
-'mgr->device' rather than the new one?
+Previously many places were missing a lock =3D).
 
-Archit
+> As an example, suppose we are changing a manager's device to some other=
+=20
+> display. Is this lock preventing someone else to get the older=20
+> 'mgr->device' rather than the new one?
 
->
-> Signed-off-by: Tomi Valkeinen<tomi.valkeinen@ti.com>
-> ---
->   drivers/video/omap2/dss/apply.c |   71 ++++++++++++++++++++++++++++++++++-----
->   1 files changed, 62 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-> index b935264..fb6d3c2 100644
-> --- a/drivers/video/omap2/dss/apply.c
-> +++ b/drivers/video/omap2/dss/apply.c
-> @@ -97,6 +97,8 @@ static struct {
->
->   /* protects dss_data */
->   static spinlock_t data_lock;
-> +/* lock for blocking functions */
-> +static DEFINE_MUTEX(apply_lock);
->
->   static struct ovl_priv_data *get_ovl_priv(struct omap_overlay *ovl)
->   {
-> @@ -639,14 +641,22 @@ int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
->
->   void dss_mgr_enable(struct omap_overlay_manager *mgr)
->   {
-> +	mutex_lock(&apply_lock);
-> +
->   	dispc_mgr_enable(mgr->id, true);
->   	mgr->enabled = true;
-> +
-> +	mutex_unlock(&apply_lock);
->   }
->
->   void dss_mgr_disable(struct omap_overlay_manager *mgr)
->   {
-> +	mutex_lock(&apply_lock);
-> +
->   	dispc_mgr_enable(mgr->id, false);
->   	mgr->enabled = false;
-> +
-> +	mutex_unlock(&apply_lock);
->   }
+Hmm. We need some lock there, that's for sure, as set/unset manager are
+changing the manager's list of overlays. However, it is also protected
+by the spinlock, so in that sense mutex is not necessary.
+
+I have to say I'm not sure if mutex is needed at this point. However,
+consider the end result when fifo-merge is used:
+
+dss_ovl_enable() will take the mutex, then it does the configuration in
+multiple steps, doing multiple spin_lock & spin_unlocks, waiting in
+between.
+
+If we had only a spinlock in set/unset_manager, the manager could be
+changed while dss_ovl_enable is doing the process of enabling the
+overlay.
+
+So I may have added mutexes or spinlocks a bit early in the series to
+some places, but I don't see any harm in that. It'd be rather difficult
+to try to find the exact spots where a lock becomes a requirement.
+
+ Tomi
 
 
->
->   int dss_mgr_set_info(struct omap_overlay_manager *mgr,
-> @@ -669,44 +679,65 @@ int dss_mgr_set_device(struct omap_overlay_manager *mgr,
->   {
->   	int r;
->
-> +	mutex_lock(&apply_lock);
-> +
->   	if (dssdev->manager) {
->   		DSSERR("display '%s' already has a manager '%s'\n",
->   			       dssdev->name, dssdev->manager->name);
-> -		return -EINVAL;
-> +		r = -EINVAL;
-> +		goto err;
->   	}
->
->   	if ((mgr->supported_displays&  dssdev->type) = 0) {
->   		DSSERR("display '%s' does not support manager '%s'\n",
->   			       dssdev->name, mgr->name);
-> -		return -EINVAL;
-> +		r = -EINVAL;
-> +		goto err;
->   	}
->
->   	dssdev->manager = mgr;
->   	mgr->device = dssdev;
->   	mgr->device_changed = true;
->
-> +	mutex_unlock(&apply_lock);
-> +
->   	return 0;
-> +err:
-> +	mutex_unlock(&apply_lock);
-> +	return r;
->   }
->
->   int dss_mgr_unset_device(struct omap_overlay_manager *mgr)
->   {
-> +	int r;
-> +
-> +	mutex_lock(&apply_lock);
-> +
->   	if (!mgr->device) {
->   		DSSERR("failed to unset display, display not set.\n");
-> -		return -EINVAL;
-> +		r = -EINVAL;
-> +		goto err;
->   	}
->
->   	/*
->   	 * Don't allow currently enabled displays to have the overlay manager
->   	 * pulled out from underneath them
->   	 */
-> -	if (mgr->device->state != OMAP_DSS_DISPLAY_DISABLED)
-> -		return -EINVAL;
-> +	if (mgr->device->state != OMAP_DSS_DISPLAY_DISABLED) {
-> +		r = -EINVAL;
-> +		goto err;
-> +	}
->
->   	mgr->device->manager = NULL;
->   	mgr->device = NULL;
->   	mgr->device_changed = true;
->
-> +	mutex_unlock(&apply_lock);
-> +
->   	return 0;
-> +err:
-> +	mutex_unlock(&apply_lock);
-> +	return r;
->   }
->
->
-> @@ -729,18 +760,24 @@ void dss_ovl_get_info(struct omap_overlay *ovl,
->   int dss_ovl_set_manager(struct omap_overlay *ovl,
->   		struct omap_overlay_manager *mgr)
->   {
-> +	int r;
-> +
->   	if (!mgr)
->   		return -EINVAL;
->
-> +	mutex_lock(&apply_lock);
-> +
->   	if (ovl->manager) {
->   		DSSERR("overlay '%s' already has a manager '%s'\n",
->   				ovl->name, ovl->manager->name);
-> -		return -EINVAL;
-> +		r = -EINVAL;
-> +		goto err;
->   	}
->
->   	if (ovl->info.enabled) {
->   		DSSERR("overlay has to be disabled to change the manager\n");
-> -		return -EINVAL;
-> +		r = -EINVAL;
-> +		goto err;
->   	}
->
->   	ovl->manager = mgr;
-> @@ -760,25 +797,41 @@ int dss_ovl_set_manager(struct omap_overlay *ovl,
->   	 * the overlay, but before moving the overlay to TV.
->   	 */
->
-> +	mutex_unlock(&apply_lock);
-> +
->   	return 0;
-> +err:
-> +	mutex_unlock(&apply_lock);
-> +	return r;
->   }
->
->   int dss_ovl_unset_manager(struct omap_overlay *ovl)
->   {
-> +	int r;
-> +
-> +	mutex_lock(&apply_lock);
-> +
->   	if (!ovl->manager) {
->   		DSSERR("failed to detach overlay: manager not set\n");
-> -		return -EINVAL;
-> +		r = -EINVAL;
-> +		goto err;
->   	}
->
->   	if (ovl->info.enabled) {
->   		DSSERR("overlay has to be disabled to unset the manager\n");
-> -		return -EINVAL;
-> +		r = -EINVAL;
-> +		goto err;
->   	}
->
->   	ovl->manager = NULL;
->   	list_del(&ovl->list);
->   	ovl->manager_changed = true;
->
-> +	mutex_unlock(&apply_lock);
-> +
->   	return 0;
-> +err:
-> +	mutex_unlock(&apply_lock);
-> +	return r;
->   }
->
+--=-p9YWrJoAHLqXlN4AIukh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJOzMgcAAoJEPo9qoy8lh71R+0P/3rytH7j0Tk7O/Z/g+nUpEBA
+ANTqBb65H2czgBRaF+2QOL72UwVhJkmB0ZM5YD9f6DyHCswvh3crHXx35WYsbggs
+sscskPvjAgwMeFc2qF6IDP5wJJt2rKN/5g56qQ+3vR8B4DbbAcFj4Oqee1WqbQqa
+2jb9hLwoJ5nvYlz5LnZQyD4ks3sKMhj4pfgM+S9daExfLr3rkdPjJ8ohOLkza6U7
+T3v0q+xlFJzugkzyiOhu/orsW5GxFDblYkQI3VUdFkrKKiXAlkPFC6y5R4h9l4OE
++bu110mx98FRjQPKBclhy2pV6wIlTsONn0JUeXqzmmqVU/ejYCvLu5TAHlNYKC1M
+1W/uQZU1sv6W/wGX900jzI2KMZbf+SwebsA5L0rqjcctEWtOZ4gTdxM/LvpJwchg
+QpAHmcI49mwZ4qH9TYUzKMRMpQtavTb8zGM4cow6y892qeBmUSDkaeTb/PJLSzD3
+P2FOFBQqppDrRyEfilCXULQK3bcAH6Fhm9uZa4DUxbcgTtGRyfRYChXC+hKSPPTy
+X91aUxiJnvomKPpaP2cd4hdmEUw2vQ5VS0/flytztbYl9ZwOH75XOiQYgSmlvGUT
+Tpdp+b4UfP5b5VNxVBNZojSivLPwMR9ePvfyxm6scdagL+KWCrDrf6kqmpm9gmEJ
+3ZV9N84Dh8zhBNMjmRPt
+=4SW+
+-----END PGP SIGNATURE-----
+
+--=-p9YWrJoAHLqXlN4AIukh--
 

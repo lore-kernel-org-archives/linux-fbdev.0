@@ -1,131 +1,97 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Wed, 23 Nov 2011 09:57:36 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 23 Nov 2011 10:12:23 +0000
 Subject: Re: [PATCH 41/65] OMAPDSS: APPLY: add missing uses of spinlock
-Message-Id: <4ECCC332.4050608@ti.com>
+Message-Id: <1322043143.28917.33.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-Gp0/w26QbZtIc+V2JnvU"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com> <1321953724-6350-42-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1321953724-6350-42-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+	 <1321953724-6350-42-git-send-email-tomi.valkeinen@ti.com>
+	 <4ECCC332.4050608@ti.com>
+In-Reply-To: <4ECCC332.4050608@ti.com>
+To: Archit Taneja <a0393947@ti.com>
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, archit@ti.com
 
-On Tuesday 22 November 2011 02:51 PM, Tomi Valkeinen wrote:
-> The functions in apply.c, called mostly via function pointers in overlay
-> and overlay_manager structs, will be divided into two groups. The other
-> group will not sleep and can be called from interrupts, and the other
-> group may sleep.
->
-> The idea is that the non-sleeping functions may only change certain
-> settings in overlays and managers, and those settings may only affect
-> the particular overlay/manager. For example, set the base address of the
-> overlay.
->
-> The blocking functions, however, will handle more complex configuration
-> changes. For example, when an overlay is enabled and fifo-merge feature
-> is used, we need to do the enable in multiple steps, waiting in between,
-> and the change affects multiple overlays and managers.
->
-> apply.c already contains a spinlock, which has been used to protect
-> (badly) the dss_data. This patch adds locks/unlocks of the spinlock to
-> the missing places, and the lock should now properly protect dss_data.
->
-> Signed-off-by: Tomi Valkeinen<tomi.valkeinen@ti.com>
-> ---
->   drivers/video/omap2/dss/apply.c |   29 +++++++++++++++++++++++++++++
->   1 files changed, 29 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-> index fb6d3c2..9ad2a36 100644
-> --- a/drivers/video/omap2/dss/apply.c
-> +++ b/drivers/video/omap2/dss/apply.c
-> @@ -405,6 +405,9 @@ void dss_start_update(struct omap_overlay_manager *mgr)
->   	struct mgr_priv_data *mp = get_mgr_priv(mgr);
->   	struct ovl_priv_data *op;
->   	struct omap_overlay *ovl;
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&data_lock, flags);
->
->   	mp->do_manual_update = true;
->   	dss_write_regs();
-> @@ -418,6 +421,8 @@ void dss_start_update(struct omap_overlay_manager *mgr)
->   	mp->shadow_dirty = false;
->
->   	dispc_mgr_enable(mgr->id, true);
-> +
-> +	spin_unlock_irqrestore(&data_lock, flags);
->   }
->
->   static void dss_apply_irq_handler(void *data, u32 mask);
-> @@ -662,16 +667,28 @@ void dss_mgr_disable(struct omap_overlay_manager *mgr)
->   int dss_mgr_set_info(struct omap_overlay_manager *mgr,
->   		struct omap_overlay_manager_info *info)
->   {
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&data_lock, flags);
-> +
->   	mgr->info = *info;
->   	mgr->info_dirty = true;
->
-> +	spin_unlock_irqrestore(&data_lock, flags);
-> +
->   	return 0;
->   }
->
->   void dss_mgr_get_info(struct omap_overlay_manager *mgr,
->   		struct omap_overlay_manager_info *info)
->   {
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&data_lock, flags);
-> +
->   	*info = mgr->info;
-> +
-> +	spin_unlock_irqrestore(&data_lock, flags);
->   }
->
->   int dss_mgr_set_device(struct omap_overlay_manager *mgr,
-> @@ -745,16 +762,28 @@ err:
->   int dss_ovl_set_info(struct omap_overlay *ovl,
->   		struct omap_overlay_info *info)
->   {
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&data_lock, flags);
-> +
->   	ovl->info = *info;
->   	ovl->info_dirty = true;
->
-> +	spin_unlock_irqrestore(&data_lock, flags);
-> +
->   	return 0;
->   }
->
->   void dss_ovl_get_info(struct omap_overlay *ovl,
->   		struct omap_overlay_info *info)
->   {
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&data_lock, flags);
-> +
->   	*info = ovl->info;
-> +
-> +	spin_unlock_irqrestore(&data_lock, flags);
->   }
 
-The get/set info functions for overlays and managers only modify the 
-omap_overlay_info or manager_info structs, these aren't really a part of 
-'dss_data', they only become a part of dss_data only when we call 
-mgr->apply().
+--=-Gp0/w26QbZtIc+V2JnvU
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-So, are we protecting these functions so that 2 users of the same 
-overlay don't see incorrect info values?
+On Wed, 2011-11-23 at 15:26 +0530, Archit Taneja wrote:
+> On Tuesday 22 November 2011 02:51 PM, Tomi Valkeinen wrote:
 
-Archit
+> >   int dss_mgr_set_device(struct omap_overlay_manager *mgr,
+> > @@ -745,16 +762,28 @@ err:
+> >   int dss_ovl_set_info(struct omap_overlay *ovl,
+> >   		struct omap_overlay_info *info)
+> >   {
+> > +	unsigned long flags;
+> > +
+> > +	spin_lock_irqsave(&data_lock, flags);
+> > +
+> >   	ovl->info =3D *info;
+> >   	ovl->info_dirty =3D true;
+> >
+> > +	spin_unlock_irqrestore(&data_lock, flags);
+> > +
+> >   	return 0;
+> >   }
+> >
+> >   void dss_ovl_get_info(struct omap_overlay *ovl,
+> >   		struct omap_overlay_info *info)
+> >   {
+> > +	unsigned long flags;
+> > +
+> > +	spin_lock_irqsave(&data_lock, flags);
+> > +
+> >   	*info =3D ovl->info;
+> > +
+> > +	spin_unlock_irqrestore(&data_lock, flags);
+> >   }
+>=20
+> The get/set info functions for overlays and managers only modify the=20
+> omap_overlay_info or manager_info structs, these aren't really a part of=
+=20
+> 'dss_data', they only become a part of dss_data only when we call=20
+> mgr->apply().
+>=20
+> So, are we protecting these functions so that 2 users of the same=20
+> overlay don't see incorrect info values?
 
->
->   int dss_ovl_set_manager(struct omap_overlay *ovl,
+True, at this point the data_lock is a bit vague, and is protecting also
+the info fields in omap_overlay and omap_overlay_manager.
+
+A lock is needed, though, as otherwise the info struct may be only
+partial. E.g. somebody calls set_info, which is half way copying the
+values, and somebody else calls apply or get_info.
+
+In the next patches the infos will be moved into the dss_data, and then
+using dss_lock spin lock makes more sense.
+
+ Tomi
+
+
+--=-Gp0/w26QbZtIc+V2JnvU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJOzMcHAAoJEPo9qoy8lh71B3YP/A56TyVkP3QSmaCIg9wzQqCg
+Z1/p1APU4PddFlL/M00dTSC+lH41Qpjsa4g4E+aTRCjST3ObwC14DoZw8t5+X2Bv
+t2GMJGPpTUCXhsG/V3Ia+1G2IJeY0CZsvOeCbIlvRmUGD6euLvpVeEX+TjDrtTN5
+cPDl4XV8b0y8KN5VmwtREz6QZ3x+ncMiRomRCQqrNbkAu+e+FmTce9TLb8moiiH0
++RbMWq+u7EP8DHGyv0sVxyWIb9Tk9Nj9PiBO1sA7bP2w2xKWu6nCphriZGOlo61s
+KFJcNyb5TeZb1iJdcemNC+jN9b2so5wmGg4YQw8ugEUHJuI4ca0S9Lu/2vJQbUMK
+x5PRGxGo/CTI798RF3BBxeLcmVBIgGsheSm9Hz1/brZFth9KMl3WK5ju4RbUisUt
+y2K3rqlu+B4N/Wwroz7FC7+AIfkYxN6+zz0saruZaloGViBSAuxc7PctxDq2fkt4
+RDSy3F6UBti/VmHaKEjhmgJcQs7LA+oFiQEmJD7/EsYQH0QO/8fk58kPx5PIwlxm
+ktiXu5hTaJj7Z9gWGye5CM/Pkc9Z1y8IDPM6YbqO0K5HD0juY1EZ/3x+0+gQ+m2M
+h9Kj+XI9BfnruWZ/YaLPwzo28YVM2EMzBDbc+1sjYmaTVGj5dNPXS0t9T4KXUwdK
+8KClTUVEb/qWO0Zb++ap
+=VsZe
+-----END PGP SIGNATURE-----
+
+--=-Gp0/w26QbZtIc+V2JnvU--
 

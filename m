@@ -1,227 +1,106 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Wed, 23 Nov 2011 10:22:20 +0000
-Subject: Re: [PATCH 42/65] OMAPDSS: DSI: call mgr_enable/disable for cmd mode
-Message-Id: <4ECCC68C.7070106@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 23 Nov 2011 10:42:57 +0000
+Subject: Re: [PATCH 42/65] OMAPDSS: DSI: call mgr_enable/disable for cmd
+Message-Id: <1322044977.28917.57.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-zYfjCvmJNk3D+hndusZF"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com> <1321953724-6350-43-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1321953724-6350-43-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+	 <1321953724-6350-43-git-send-email-tomi.valkeinen@ti.com>
+	 <4ECCC68C.7070106@ti.com>
+In-Reply-To: <4ECCC68C.7070106@ti.com>
+To: Archit Taneja <a0393947@ti.com>
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, archit@ti.com
 
-On Tuesday 22 November 2011 02:51 PM, Tomi Valkeinen wrote:
-> The current code uses dsi_video_mode_enable/disable functions to
-> enable/disable DISPC output for video mode displays. For command mode
-> displays we have no notion in the DISPC side of whether the panel is
-> enabled, except when a dss_start_update() call is made.
->
-> However, to properly maintain the DISPC state in apply.c, we need to
-> know if a manager used for a manual update display is currently in use.
->
-> This patch achieves that by changing dsi_video_mode_enable/disable to
-> dsi_enable/disable_video_output, which is called by both video and
-> command mode displays. For video mode displays it starts the actual
-> pixel stream, as it did before. For command mode displays it doesn't do
-> anything else than mark that the manager is currently in use.
 
-dsi_video_mode_enable() doesn't only enable the DISPC output, it also 
-sends the long packet header to start video mode transfer.
+--=-zYfjCvmJNk3D+hndusZF
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-I think it would be better if we had 2 separate functions, one which 
-starts/stops DSI video mode, and the other which enables/disables the 
-DISPC video port.
+On Wed, 2011-11-23 at 15:40 +0530, Archit Taneja wrote:
+> On Tuesday 22 November 2011 02:51 PM, Tomi Valkeinen wrote:
+> > The current code uses dsi_video_mode_enable/disable functions to
+> > enable/disable DISPC output for video mode displays. For command mode
+> > displays we have no notion in the DISPC side of whether the panel is
+> > enabled, except when a dss_start_update() call is made.
+> >
+> > However, to properly maintain the DISPC state in apply.c, we need to
+> > know if a manager used for a manual update display is currently in use.
+> >
+> > This patch achieves that by changing dsi_video_mode_enable/disable to
+> > dsi_enable/disable_video_output, which is called by both video and
+> > command mode displays. For video mode displays it starts the actual
+> > pixel stream, as it did before. For command mode displays it doesn't do
+> > anything else than mark that the manager is currently in use.
+>=20
+> dsi_video_mode_enable() doesn't only enable the DISPC output, it also=20
+> sends the long packet header to start video mode transfer.
+>=20
+> I think it would be better if we had 2 separate functions, one which=20
+> starts/stops DSI video mode, and the other which enables/disables the=20
+> DISPC video port.
+>=20
+> This way, a manual update panel would need to call only=20
+> dsi_enable/disable_video_output(which just enables or disables the=20
+> manager), whereas a video mode panel will need to call both.
+>=20
+> This is just a suggestion though. It's probably okay to have both in the=
+=20
+> same function too. We might have to separate them out later if we were=
+=20
+> planning to standardise mipi dsi across SoCs.
 
-This way, a manual update panel would need to call only 
-dsi_enable/disable_video_output(which just enables or disables the 
-manager), whereas a video mode panel will need to call both.
+If you think from the panel driver's point of view, it doesn't know
+about DISPC. It just wants to enable the video stream (on video mode
+displays).
 
-This is just a suggestion though. It's probably okay to have both in the 
-same function too. We might have to separate them out later if we were 
-planning to standardise mipi dsi across SoCs.
+If we had two functions, could only the first be used? I.e. is it
+possible to just enable the video mode transfer, without enabling DISPC?
+If not, I'm not sure what would be the use for two separate functions.
+And even if it can, I'm not sure what use it would be to enable only the
+video mode output without the actual pixel data from DISPC.
 
-Archit
+It is true that the function in thsi patch is not the best one. For
+command mode display it's more about reserving the ovl manager for use
+than actually enabling it. Then again, how I thought the function's
+purpose was that it enables the DSI video output, but because for
+command mode there's need to trigger the actual frame transfer later,
+the function doesn't start the pixel feed for command mode displays. It
+just "prepares" the output.
 
->
-> Signed-off-by: Tomi Valkeinen<tomi.valkeinen@ti.com>
-> ---
->   drivers/video/omap2/displays/panel-taal.c |    6 ++
->   drivers/video/omap2/dss/apply.c           |    6 ++-
->   drivers/video/omap2/dss/dsi.c             |   73 +++++++++++++++-------------
->   include/video/omapdss.h                   |    4 +-
->   4 files changed, 51 insertions(+), 38 deletions(-)
->
-> diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-> index dd64bd1..00c5c61 100644
-> --- a/drivers/video/omap2/displays/panel-taal.c
-> +++ b/drivers/video/omap2/displays/panel-taal.c
-> @@ -1182,6 +1182,10 @@ static int taal_power_on(struct omap_dss_device *dssdev)
->   	if (r)
->   		goto err;
->
-> +	r = dsi_enable_video_output(dssdev, td->channel);
-> +	if (r)
-> +		goto err;
-> +
->   	td->enabled = 1;
->
->   	if (!td->intro_printed) {
-> @@ -1211,6 +1215,8 @@ static void taal_power_off(struct omap_dss_device *dssdev)
->   	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
->   	int r;
->
-> +	dsi_disable_video_output(dssdev, td->channel);
-> +
->   	r = taal_dcs_write_0(td, MIPI_DCS_SET_DISPLAY_OFF);
->   	if (!r)
->   		r = taal_sleep_in(td);
-> diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-> index 9ad2a36..66f4c56 100644
-> --- a/drivers/video/omap2/dss/apply.c
-> +++ b/drivers/video/omap2/dss/apply.c
-> @@ -648,7 +648,8 @@ void dss_mgr_enable(struct omap_overlay_manager *mgr)
->   {
->   	mutex_lock(&apply_lock);
->
-> -	dispc_mgr_enable(mgr->id, true);
-> +	if (!mgr_manual_update(mgr))
-> +		dispc_mgr_enable(mgr->id, true);
->   	mgr->enabled = true;
->
->   	mutex_unlock(&apply_lock);
-> @@ -658,7 +659,8 @@ void dss_mgr_disable(struct omap_overlay_manager *mgr)
->   {
->   	mutex_lock(&apply_lock);
->
-> -	dispc_mgr_enable(mgr->id, false);
-> +	if (!mgr_manual_update(mgr))
-> +		dispc_mgr_enable(mgr->id, false);
->   	mgr->enabled = false;
->
->   	mutex_unlock(&apply_lock);
-> diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-> index 08d3de90..a35f3fb 100644
-> --- a/drivers/video/omap2/dss/dsi.c
-> +++ b/drivers/video/omap2/dss/dsi.c
-> @@ -3939,65 +3939,70 @@ static void dsi_proto_timings(struct omap_dss_device *dssdev)
->   	}
->   }
->
-> -int dsi_video_mode_enable(struct omap_dss_device *dssdev, int channel)
-> +int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel)
->   {
->   	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
->   	int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
->   	u8 data_type;
->   	u16 word_count;
->
-> -	switch (dssdev->panel.dsi_pix_fmt) {
-> -	case OMAP_DSS_DSI_FMT_RGB888:
-> -		data_type = MIPI_DSI_PACKED_PIXEL_STREAM_24;
-> -		break;
-> -	case OMAP_DSS_DSI_FMT_RGB666:
-> -		data_type = MIPI_DSI_PIXEL_STREAM_3BYTE_18;
-> -		break;
-> -	case OMAP_DSS_DSI_FMT_RGB666_PACKED:
-> -		data_type = MIPI_DSI_PACKED_PIXEL_STREAM_18;
-> -		break;
-> -	case OMAP_DSS_DSI_FMT_RGB565:
-> -		data_type = MIPI_DSI_PACKED_PIXEL_STREAM_16;
-> -		break;
-> -	default:
-> -		BUG();
-> -	};
-> +	if (dssdev->panel.dsi_mode = OMAP_DSS_DSI_VIDEO_MODE) {
-> +		switch (dssdev->panel.dsi_pix_fmt) {
-> +		case OMAP_DSS_DSI_FMT_RGB888:
-> +			data_type = MIPI_DSI_PACKED_PIXEL_STREAM_24;
-> +			break;
-> +		case OMAP_DSS_DSI_FMT_RGB666:
-> +			data_type = MIPI_DSI_PIXEL_STREAM_3BYTE_18;
-> +			break;
-> +		case OMAP_DSS_DSI_FMT_RGB666_PACKED:
-> +			data_type = MIPI_DSI_PACKED_PIXEL_STREAM_18;
-> +			break;
-> +		case OMAP_DSS_DSI_FMT_RGB565:
-> +			data_type = MIPI_DSI_PACKED_PIXEL_STREAM_16;
-> +			break;
-> +		default:
-> +			BUG();
-> +		};
->
-> -	dsi_if_enable(dsidev, false);
-> -	dsi_vc_enable(dsidev, channel, false);
-> +		dsi_if_enable(dsidev, false);
-> +		dsi_vc_enable(dsidev, channel, false);
->
-> -	/* MODE, 1 = video mode */
-> -	REG_FLD_MOD(dsidev, DSI_VC_CTRL(channel), 1, 4, 4);
-> +		/* MODE, 1 = video mode */
-> +		REG_FLD_MOD(dsidev, DSI_VC_CTRL(channel), 1, 4, 4);
->
-> -	word_count = DIV_ROUND_UP(dssdev->panel.timings.x_res * bpp, 8);
-> +		word_count = DIV_ROUND_UP(dssdev->panel.timings.x_res * bpp, 8);
->
-> -	dsi_vc_write_long_header(dsidev, channel, data_type, word_count, 0);
-> +		dsi_vc_write_long_header(dsidev, channel, data_type,
-> +				word_count, 0);
->
-> -	dsi_vc_enable(dsidev, channel, true);
-> -	dsi_if_enable(dsidev, true);
-> +		dsi_vc_enable(dsidev, channel, true);
-> +		dsi_if_enable(dsidev, true);
-> +	}
->
->   	dss_mgr_enable(dssdev->manager);
->
->   	return 0;
->   }
-> -EXPORT_SYMBOL(dsi_video_mode_enable);
-> +EXPORT_SYMBOL(dsi_enable_video_output);
->
-> -void dsi_video_mode_disable(struct omap_dss_device *dssdev, int channel)
-> +void dsi_disable_video_output(struct omap_dss_device *dssdev, int channel)
->   {
->   	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
->
-> -	dsi_if_enable(dsidev, false);
-> -	dsi_vc_enable(dsidev, channel, false);
-> +	if (dssdev->panel.dsi_mode = OMAP_DSS_DSI_VIDEO_MODE) {
-> +		dsi_if_enable(dsidev, false);
-> +		dsi_vc_enable(dsidev, channel, false);
->
-> -	/* MODE, 0 = command mode */
-> -	REG_FLD_MOD(dsidev, DSI_VC_CTRL(channel), 0, 4, 4);
-> +		/* MODE, 0 = command mode */
-> +		REG_FLD_MOD(dsidev, DSI_VC_CTRL(channel), 0, 4, 4);
->
-> -	dsi_vc_enable(dsidev, channel, true);
-> -	dsi_if_enable(dsidev, true);
-> +		dsi_vc_enable(dsidev, channel, true);
-> +		dsi_if_enable(dsidev, true);
-> +	}
->
->   	dss_mgr_disable(dssdev->manager);
->   }
-> -EXPORT_SYMBOL(dsi_video_mode_disable);
-> +EXPORT_SYMBOL(dsi_disable_video_output);
->
->   static void dsi_update_screen_dispc(struct omap_dss_device *dssdev,
->   		u16 w, u16 h)
-> diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-> index eaeca89..25ef771 100644
-> --- a/include/video/omapdss.h
-> +++ b/include/video/omapdss.h
-> @@ -294,8 +294,8 @@ int dsi_vc_set_max_rx_packet_size(struct omap_dss_device *dssdev, int channel,
->   		u16 len);
->   int dsi_vc_send_null(struct omap_dss_device *dssdev, int channel);
->   int dsi_vc_send_bta_sync(struct omap_dss_device *dssdev, int channel);
-> -int dsi_video_mode_enable(struct omap_dss_device *dssdev, int channel);
-> -void dsi_video_mode_disable(struct omap_dss_device *dssdev, int channel);
-> +int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel);
-> +void dsi_disable_video_output(struct omap_dss_device *dssdev, int channel);
->
->   /* Board specific data */
->   struct omap_dss_board_info {
+But even if we had the functions separated, the function called by video
+mode and command mode displays would be different, as for the former one
+it enables the pixel stream, and for latter one it just reserves the
+output.
+
+So, I'm fine with changing the function, but the reasoning for what
+functions we have and what they do should come from the panel driver's
+perspective, not because of OMAP DSS's HW details.
+
+ Tomi
+
+
+--=-zYfjCvmJNk3D+hndusZF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJOzM4xAAoJEPo9qoy8lh71XMYP/jyNA7Gr/w0FrrHvrqYRUmPQ
+RlM6tWwqJk809iC6Yjdn0UseN0GqXaT1nogGjC1T1NgZF9DHWgweshYlERe38tv2
+y3WOoM2ydgnui+yot7RXyAQU51q4CbrIKuSVnaTR8/FTFvnxBVqCE4VYsnZZdXb1
+XacAOW65bHioP+VlCKyXJkofkCOyCTFpzx+4g33p4C2tCOh9fyxILKznsAXj3f/u
+er6l6Cx3mNEOrnRWUbdvx5kn5Gon3aK5idVnOh9/mO/snG0CabKdkvXjKaBKWlWk
+ffxQVNsJEoG2ggaSQ8ujlFtQp3bdpMDp/qgs2bimpiJV8kuKZktB1nWmx2wIxwks
+P7IfGKgAAHYv/BLM18edhP8u7b08pNtyaAR9AWa+MoMSxbz32ZlGrD/TgWFSWZ8r
+ETVxFlgr1kg5faSEK1fDfMb0Mm5fc2besPn4T+m0dsou3LLb44TXf/OmRHggod9T
+EdYOoDNm756HhC1GVcoeq+5SNCe4YIFdor5PKSovtKca/7ZFuLRcO/9/yJa3mIZA
+M6CcupvXAF64tIRboAlJFKPcSgaG639OTT6NN+5S5E8lok6Tbqr41uiR+ADM6PY5
+NKYia5mSJUy3petV0y+L6uGMBmPj2P+C6qb4pc+pvWbDAR0cj1CFWtI3DqkMz3at
+/afBNTtaS+LTHM5ZW3OC
+=8bhc
+-----END PGP SIGNATURE-----
+
+--=-zYfjCvmJNk3D+hndusZF--
 

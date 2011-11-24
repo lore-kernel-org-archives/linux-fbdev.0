@@ -1,150 +1,69 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sat, 12 Nov 2011 00:14:16 +0000
-Subject: Re: [PATCH 1/2] atmel_lcdfb: Adjust HFP calculation so it matches
-Message-Id: <4EBDBA58.9020208@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 24 Nov 2011 13:29:39 +0000
+Subject: [PATCH 11/13] OMAPDSS: DSI: fix lane handling when entering ULPS
+Message-Id: <1322141381-5395-12-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1317801598-23757-1-git-send-email-alexander.stein@systec-electronic.com>
-In-Reply-To: <1317801598-23757-1-git-send-email-alexander.stein@systec-electronic.com>
+References: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 10/05/2011 07:59 AM, Alexander Stein wrote:
-> In the AT91SAM9263 Manual the HFP part in LCDTIM2 is described as follows:
->   * HFP: Horizontal Front Porch
->   Number of idle LCDDOTCK cycles at the end of the line.
->   Idle period is (HFP+2) LCDDOTCK cycles.
-> 
-> It is only a minor issue. I also changed all boards using atmel_lcdfb
-> I found to respect the new calculation.
+The current code always enters ULPS for 3 lanes. This is not right, as
+there could be only 2 lanes used, and on OMAP4 we have 5 lanes.
 
-Applied both patches of this series.
+Fix the code to put all used lanes into ULPS.
 
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/dsi.c |   16 +++++++++++-----
+ 1 files changed, 11 insertions(+), 5 deletions(-)
 
-Thanks,
-
-Florian Tobias Schandinat
-
-> 
-> Signed-off-by: Alexander Stein <alexander.stein@systec-electronic.com>
-> ---
->  arch/arm/mach-at91/board-cap9adk.c      |    2 +-
->  arch/arm/mach-at91/board-neocore926.c   |    2 +-
->  arch/arm/mach-at91/board-sam9261ek.c    |    4 ++--
->  arch/arm/mach-at91/board-sam9263ek.c    |    2 +-
->  arch/arm/mach-at91/board-sam9m10g45ek.c |    2 +-
->  arch/arm/mach-at91/board-sam9rlek.c     |    2 +-
->  drivers/video/atmel_lcdfb.c             |    4 ++--
->  7 files changed, 9 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/arm/mach-at91/board-cap9adk.c b/arch/arm/mach-at91/board-cap9adk.c
-> index 679b0b7..ae962bf 100644
-> --- a/arch/arm/mach-at91/board-cap9adk.c
-> +++ b/arch/arm/mach-at91/board-cap9adk.c
-> @@ -304,7 +304,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->  		.xres		= 240,		.yres		= 320,
->  		.pixclock	= KHZ2PICOS(4965),
->  
-> -		.left_margin	= 1,		.right_margin	= 33,
-> +		.left_margin	= 1,		.right_margin	= 34,
->  		.upper_margin	= 1,		.lower_margin	= 0,
->  		.hsync_len	= 5,		.vsync_len	= 1,
->  
-> diff --git a/arch/arm/mach-at91/board-neocore926.c b/arch/arm/mach-at91/board-neocore926.c
-> index 9bc6ab3..583878e 100644
-> --- a/arch/arm/mach-at91/board-neocore926.c
-> +++ b/arch/arm/mach-at91/board-neocore926.c
-> @@ -235,7 +235,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->  		.xres		= 240,		.yres		= 320,
->  		.pixclock	= KHZ2PICOS(5000),
->  
-> -		.left_margin	= 1,		.right_margin	= 33,
-> +		.left_margin	= 1,		.right_margin	= 34,
->  		.upper_margin	= 1,		.lower_margin	= 0,
->  		.hsync_len	= 5,		.vsync_len	= 1,
->  
-> diff --git a/arch/arm/mach-at91/board-sam9261ek.c b/arch/arm/mach-at91/board-sam9261ek.c
-> index 5096a0e..8dda83b 100644
-> --- a/arch/arm/mach-at91/board-sam9261ek.c
-> +++ b/arch/arm/mach-at91/board-sam9261ek.c
-> @@ -370,7 +370,7 @@ static struct fb_videomode at91_stn_modes[] = {
->  		.xres           = 320,          .yres           = 240,
->  		.pixclock       = KHZ2PICOS(1440),
->  
-> -		.left_margin    = 1,            .right_margin   = 1,
-> +		.left_margin    = 1,            .right_margin   = 2,
->  		.upper_margin   = 0,            .lower_margin   = 0,
->  		.hsync_len      = 1,            .vsync_len      = 1,
->  
-> @@ -431,7 +431,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->  		.xres		= 240,		.yres		= 320,
->  		.pixclock	= KHZ2PICOS(4965),
->  
-> -		.left_margin	= 1,		.right_margin	= 33,
-> +		.left_margin	= 1,		.right_margin	= 34,
->  		.upper_margin	= 1,		.lower_margin	= 0,
->  		.hsync_len	= 5,		.vsync_len	= 1,
->  
-> diff --git a/arch/arm/mach-at91/board-sam9263ek.c b/arch/arm/mach-at91/board-sam9263ek.c
-> index ea8f185..e260070 100644
-> --- a/arch/arm/mach-at91/board-sam9263ek.c
-> +++ b/arch/arm/mach-at91/board-sam9263ek.c
-> @@ -258,7 +258,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->  		.xres		= 240,		.yres		= 320,
->  		.pixclock	= KHZ2PICOS(4965),
->  
-> -		.left_margin	= 1,		.right_margin	= 33,
-> +		.left_margin	= 1,		.right_margin	= 34,
->  		.upper_margin	= 1,		.lower_margin	= 0,
->  		.hsync_len	= 5,		.vsync_len	= 1,
->  
-> diff --git a/arch/arm/mach-at91/board-sam9m10g45ek.c b/arch/arm/mach-at91/board-sam9m10g45ek.c
-> index ad234cc..5e9a5ca 100644
-> --- a/arch/arm/mach-at91/board-sam9m10g45ek.c
-> +++ b/arch/arm/mach-at91/board-sam9m10g45ek.c
-> @@ -197,7 +197,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->  		.xres		= 480,		.yres		= 272,
->  		.pixclock	= KHZ2PICOS(9000),
->  
-> -		.left_margin	= 1,		.right_margin	= 1,
-> +		.left_margin	= 1,		.right_margin	= 2,
->  		.upper_margin	= 40,		.lower_margin	= 1,
->  		.hsync_len	= 45,		.vsync_len	= 1,
->  
-> diff --git a/arch/arm/mach-at91/board-sam9rlek.c b/arch/arm/mach-at91/board-sam9rlek.c
-> index 4f14b54..ad9e5c9 100644
-> --- a/arch/arm/mach-at91/board-sam9rlek.c
-> +++ b/arch/arm/mach-at91/board-sam9rlek.c
-> @@ -154,7 +154,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->  		.xres		= 240,		.yres		= 320,
->  		.pixclock	= KHZ2PICOS(4965),
->  
-> -		.left_margin	= 1,		.right_margin	= 33,
-> +		.left_margin	= 1,		.right_margin	= 34,
->  		.upper_margin	= 1,		.lower_margin	= 0,
->  		.hsync_len	= 5,		.vsync_len	= 1,
->  
-> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-> index 817ab60..816d528 100644
-> --- a/drivers/video/atmel_lcdfb.c
-> +++ b/drivers/video/atmel_lcdfb.c
-> @@ -393,7 +393,7 @@ static int atmel_lcdfb_check_var(struct fb_var_screeninfo *var,
->  	var->lower_margin = min_t(u32, var->lower_margin,
->  			ATMEL_LCDC_VFP);
->  	var->right_margin = min_t(u32, var->right_margin,
-> -			(ATMEL_LCDC_HFP >> ATMEL_LCDC_HFP_OFFSET) + 1);
-> +			(ATMEL_LCDC_HFP >> ATMEL_LCDC_HFP_OFFSET) + 2);
->  	var->hsync_len = min_t(u32, var->hsync_len,
->  			(ATMEL_LCDC_HPW >> ATMEL_LCDC_HPW_OFFSET) + 1);
->  	var->left_margin = min_t(u32, var->left_margin,
-> @@ -578,7 +578,7 @@ static int atmel_lcdfb_set_par(struct fb_info *info)
->  	lcdc_writel(sinfo, ATMEL_LCDC_TIM1, value);
->  
->  	/* Horizontal timing */
-> -	value = (info->var.right_margin - 1) << ATMEL_LCDC_HFP_OFFSET;
-> +	value = (info->var.right_margin - 2) << ATMEL_LCDC_HFP_OFFSET;
->  	value |= (info->var.hsync_len - 1) << ATMEL_LCDC_HPW_OFFSET;
->  	value |= (info->var.left_margin - 1);
->  	dev_dbg(info->device, "  * LCDTIM2 = %08lx\n", value);
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 2b375c6..22055db 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -3517,7 +3517,8 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
+ {
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	DECLARE_COMPLETION_ONSTACK(completion);
+-	int r;
++	int r, i;
++	unsigned mask;
+ 
+ 	DSSDBGF();
+ 
+@@ -3560,10 +3561,16 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
+ 	if (r)
+ 		return r;
+ 
++	mask = 0;
++
++	for (i = 0; i < dsi->num_lanes_supported; ++i) {
++		if (dsi->lanes[i].function = DSI_LANE_UNUSED)
++			continue;
++		mask |= 1 << i;
++	}
+ 	/* Assert TxRequestEsc for data lanes and TxUlpsClk for clk lane */
+ 	/* LANEx_ULPS_SIG2 */
+-	REG_FLD_MOD(dsidev, DSI_COMPLEXIO_CFG2, (1 << 0) | (1 << 1) | (1 << 2),
+-		7, 5);
++	REG_FLD_MOD(dsidev, DSI_COMPLEXIO_CFG2, mask, 9, 5);
+ 
+ 	/* flush posted write and wait for SCP interface to finish the write */
+ 	dsi_read_reg(dsidev, DSI_COMPLEXIO_CFG2);
+@@ -3579,8 +3586,7 @@ static int dsi_enter_ulps(struct platform_device *dsidev)
+ 			DSI_CIO_IRQ_ULPSACTIVENOT_ALL0);
+ 
+ 	/* Reset LANEx_ULPS_SIG2 */
+-	REG_FLD_MOD(dsidev, DSI_COMPLEXIO_CFG2, (0 << 0) | (0 << 1) | (0 << 2),
+-		7, 5);
++	REG_FLD_MOD(dsidev, DSI_COMPLEXIO_CFG2, 0, 9, 5);
+ 
+ 	/* flush posted write and wait for SCP interface to finish the write */
+ 	dsi_read_reg(dsidev, DSI_COMPLEXIO_CFG2);
+-- 
+1.7.4.1
 

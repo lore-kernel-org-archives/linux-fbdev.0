@@ -1,274 +1,98 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:21:37 +0000
-Subject: [PATCH 38/65] OMAPDSS: APPLY: move mgr funcs to apply.c
-Message-Id: <1321953724-6350-39-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 24 Nov 2011 13:29:36 +0000
+Subject: [PATCH 08/13] OMAPDSS: DSI: use lane config in dsi_cio_wait_tx_clk_esc_reset
+Message-Id: <1322141381-5395-9-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-apply.c will handle the management of dispc in the future patches. This
-patch moves overlay manager related functions to apply.c so that they
-will have access to the private data and functions of apply.c.
+Use the new lane config in dsi_cio_wait_tx_clk_esc_reset(). This also
+extends the function to support 5 lanes on OMAP4, instead of 3 lanes.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/apply.c   |   83 +++++++++++++++++++++++++++++++++
- drivers/video/omap2/dss/dss.h     |    9 ++++
- drivers/video/omap2/dss/manager.c |   91 ++-----------------------------------
- 3 files changed, 97 insertions(+), 86 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   47 +++++++++++++++-------------------------
+ 1 files changed, 18 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index b120f95..543a10b 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -662,6 +662,89 @@ void dss_mgr_disable(struct omap_overlay_manager *mgr)
- 	mgr->enabled = false;
- }
- 
-+int dss_mgr_set_info(struct omap_overlay_manager *mgr,
-+		struct omap_overlay_manager_info *info)
-+{
-+	int r;
-+	struct omap_overlay_manager_info old_info;
-+
-+	old_info = mgr->info;
-+	mgr->info = *info;
-+
-+	r = dss_check_manager(mgr);
-+	if (r) {
-+		mgr->info = old_info;
-+		return r;
-+	}
-+
-+	mgr->info_dirty = true;
-+
-+	return 0;
-+}
-+
-+void dss_mgr_get_info(struct omap_overlay_manager *mgr,
-+		struct omap_overlay_manager_info *info)
-+{
-+	*info = mgr->info;
-+}
-+
-+int dss_mgr_set_device(struct omap_overlay_manager *mgr,
-+		struct omap_dss_device *dssdev)
-+{
-+	int r;
-+	struct omap_overlay *ovl;
-+
-+	if (dssdev->manager) {
-+		DSSERR("display '%s' already has a manager '%s'\n",
-+			       dssdev->name, dssdev->manager->name);
-+		return -EINVAL;
-+	}
-+
-+	if ((mgr->supported_displays & dssdev->type) = 0) {
-+		DSSERR("display '%s' does not support manager '%s'\n",
-+			       dssdev->name, mgr->name);
-+		return -EINVAL;
-+	}
-+
-+	list_for_each_entry(ovl, &mgr->overlays, list) {
-+		if (!ovl->info.enabled)
-+			continue;
-+
-+		r = dss_check_overlay(ovl, dssdev);
-+		if (r)
-+			return r;
-+	}
-+
-+	dssdev->manager = mgr;
-+	mgr->device = dssdev;
-+	mgr->device_changed = true;
-+
-+	return 0;
-+}
-+
-+int dss_mgr_unset_device(struct omap_overlay_manager *mgr)
-+{
-+	if (!mgr->device) {
-+		DSSERR("failed to unset display, display not set.\n");
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * Don't allow currently enabled displays to have the overlay manager
-+	 * pulled out from underneath them
-+	 */
-+	if (mgr->device->state != OMAP_DSS_DISPLAY_DISABLED)
-+		return -EINVAL;
-+
-+	mgr->device->manager = NULL;
-+	mgr->device = NULL;
-+	mgr->device_changed = true;
-+
-+	return 0;
-+}
-+
-+
-+
- int dss_ovl_set_info(struct omap_overlay *ovl,
- 		struct omap_overlay_info *info)
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 1a209a2..52cf97f 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -2365,51 +2365,40 @@ static void dsi_cio_disable_lane_override(struct platform_device *dsidev)
+ static int dsi_cio_wait_tx_clk_esc_reset(struct omap_dss_device *dssdev)
  {
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index ee155a1..afe9713 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -169,8 +169,16 @@ int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr);
- int dss_mgr_wait_for_go_ovl(struct omap_overlay *ovl);
- void dss_start_update(struct omap_overlay_manager *mgr);
- int omap_dss_mgr_apply(struct omap_overlay_manager *mgr);
+ 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+-	int t;
+-	int bits[3];
+-	bool in_use[3];
+-
+-	if (dss_has_feature(FEAT_DSI_REVERSE_TXCLKESC)) {
+-		bits[0] = 28;
+-		bits[1] = 27;
+-		bits[2] = 26;
+-	} else {
+-		bits[0] = 24;
+-		bits[1] = 25;
+-		bits[2] = 26;
+-	}
+-
+-	in_use[0] = false;
+-	in_use[1] = false;
+-	in_use[2] = false;
++	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
++	int t, i;
++	bool in_use[DSI_MAX_NR_LANES];
++	static const u8 offsets_old[] = { 28, 27, 26 };
++	static const u8 offsets_new[] = { 24, 25, 26, 27, 28 };
++	const u8 *offsets;
 +
- void dss_mgr_enable(struct omap_overlay_manager *mgr);
- void dss_mgr_disable(struct omap_overlay_manager *mgr);
-+int dss_mgr_set_info(struct omap_overlay_manager *mgr,
-+		struct omap_overlay_manager_info *info);
-+void dss_mgr_get_info(struct omap_overlay_manager *mgr,
-+		struct omap_overlay_manager_info *info);
-+int dss_mgr_set_device(struct omap_overlay_manager *mgr,
-+		struct omap_dss_device *dssdev);
-+int dss_mgr_unset_device(struct omap_overlay_manager *mgr);
++	if (dss_has_feature(FEAT_DSI_REVERSE_TXCLKESC))
++		offsets = offsets_old;
++	else
++		offsets = offsets_new;
  
- int dss_ovl_set_info(struct omap_overlay *ovl,
- 		struct omap_overlay_info *info);
-@@ -198,6 +206,7 @@ void default_get_overlay_fifo_thresholds(enum omap_plane plane,
- /* manager */
- int dss_init_overlay_managers(struct platform_device *pdev);
- void dss_uninit_overlay_managers(struct platform_device *pdev);
-+int dss_check_manager(struct omap_overlay_manager *mgr);
+-	if (dssdev->phy.dsi.clk_lane != 0)
+-		in_use[dssdev->phy.dsi.clk_lane - 1] = true;
+-	if (dssdev->phy.dsi.data1_lane != 0)
+-		in_use[dssdev->phy.dsi.data1_lane - 1] = true;
+-	if (dssdev->phy.dsi.data2_lane != 0)
+-		in_use[dssdev->phy.dsi.data2_lane - 1] = true;
++	for (i = 0; i < dsi->num_lanes_supported; ++i)
++		in_use[i] = dsi->lanes[i].function != DSI_LANE_UNUSED;
  
- /* overlay */
- void dss_init_overlays(struct platform_device *pdev);
-diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
-index 62bcc38..ab0b61b 100644
---- a/drivers/video/omap2/dss/manager.c
-+++ b/drivers/video/omap2/dss/manager.c
-@@ -467,61 +467,6 @@ static struct kobj_type manager_ktype = {
- 	.default_attrs = manager_sysfs_attrs,
- };
+ 	t = 100000;
+ 	while (true) {
+ 		u32 l;
+-		int i;
+ 		int ok;
  
--static int omap_dss_set_device(struct omap_overlay_manager *mgr,
--		struct omap_dss_device *dssdev)
--{
--	int r;
--	struct omap_overlay *ovl;
--
--	if (dssdev->manager) {
--		DSSERR("display '%s' already has a manager '%s'\n",
--			       dssdev->name, dssdev->manager->name);
--		return -EINVAL;
--	}
--
--	if ((mgr->supported_displays & dssdev->type) = 0) {
--		DSSERR("display '%s' does not support manager '%s'\n",
--			       dssdev->name, mgr->name);
--		return -EINVAL;
--	}
--
--	list_for_each_entry(ovl, &mgr->overlays, list) {
--		if (!ovl->info.enabled)
--			continue;
--
--		r = dss_check_overlay(ovl, dssdev);
--		if (r)
--			return r;
--	}
--
--	dssdev->manager = mgr;
--	mgr->device = dssdev;
--	mgr->device_changed = true;
--
--	return 0;
--}
--
--static int omap_dss_unset_device(struct omap_overlay_manager *mgr)
--{
--	if (!mgr->device) {
--		DSSERR("failed to unset display, display not set.\n");
--		return -EINVAL;
--	}
--
--	/*
--	 * Don't allow currently enabled displays to have the overlay manager
--	 * pulled out from underneath them
--	 */
--	if (mgr->device->state != OMAP_DSS_DISPLAY_DISABLED)
--		return -EINVAL;
--
--	mgr->device->manager = NULL;
--	mgr->device = NULL;
--	mgr->device_changed = true;
--
--	return 0;
--}
--
- static int dss_mgr_wait_for_vsync(struct omap_overlay_manager *mgr)
- {
- 	unsigned long timeout = msecs_to_jiffies(500);
-@@ -540,7 +485,7 @@ static int dss_mgr_wait_for_vsync(struct omap_overlay_manager *mgr)
- 	return omap_dispc_wait_for_irq_interruptible_timeout(irq, timeout);
- }
+ 		l = dsi_read_reg(dsidev, DSI_DSIPHY_CFG5);
  
--static int dss_check_manager(struct omap_overlay_manager *mgr)
-+int dss_check_manager(struct omap_overlay_manager *mgr)
- {
- 	if (dss_has_feature(FEAT_ALPHA_FIXED_ZORDER)) {
- 		/*
-@@ -557,32 +502,6 @@ static int dss_check_manager(struct omap_overlay_manager *mgr)
- 	return 0;
- }
- 
--static int omap_dss_mgr_set_info(struct omap_overlay_manager *mgr,
--		struct omap_overlay_manager_info *info)
--{
--	int r;
--	struct omap_overlay_manager_info old_info;
--
--	old_info = mgr->info;
--	mgr->info = *info;
--
--	r = dss_check_manager(mgr);
--	if (r) {
--		mgr->info = old_info;
--		return r;
--	}
--
--	mgr->info_dirty = true;
--
--	return 0;
--}
--
--static void omap_dss_mgr_get_info(struct omap_overlay_manager *mgr,
--		struct omap_overlay_manager_info *info)
--{
--	*info = mgr->info;
--}
--
- int dss_init_overlay_managers(struct platform_device *pdev)
- {
- 	int i, r;
-@@ -612,11 +531,11 @@ int dss_init_overlay_managers(struct platform_device *pdev)
- 			break;
+ 		ok = 0;
+-		for (i = 0; i < 3; ++i) {
+-			if (!in_use[i] || (l & (1 << bits[i])))
++		for (i = 0; i < dsi->num_lanes_supported; ++i) {
++			if (!in_use[i] || (l & (1 << offsets[i])))
+ 				ok++;
  		}
  
--		mgr->set_device = &omap_dss_set_device;
--		mgr->unset_device = &omap_dss_unset_device;
-+		mgr->set_device = &dss_mgr_set_device;
-+		mgr->unset_device = &dss_mgr_unset_device;
- 		mgr->apply = &omap_dss_mgr_apply;
--		mgr->set_manager_info = &omap_dss_mgr_set_info;
--		mgr->get_manager_info = &omap_dss_mgr_get_info;
-+		mgr->set_manager_info = &dss_mgr_set_info;
-+		mgr->get_manager_info = &dss_mgr_get_info;
- 		mgr->wait_for_go = &dss_mgr_wait_for_go;
- 		mgr->wait_for_vsync = &dss_mgr_wait_for_vsync;
+-		if (ok = 3)
++		if (ok = dsi->num_lanes_supported)
+ 			break;
  
+ 		if (--t = 0) {
+-			for (i = 0; i < 3; ++i) {
+-				if (!in_use[i] || (l & (1 << bits[i])))
++			for (i = 0; i < dsi->num_lanes_supported; ++i) {
++				if (!in_use[i] || (l & (1 << offsets[i])))
+ 					continue;
+ 
+ 				DSSERR("CIO TXCLKESC%d domain not coming " \
 -- 
 1.7.4.1
 

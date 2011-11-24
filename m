@@ -1,49 +1,60 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:21:15 +0000
-Subject: [PATCH 16/65] OMAPDSS: remove unneeded dss_ovl_wait_for_go()
-Message-Id: <1321953724-6350-17-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 24 Nov 2011 13:29:35 +0000
+Subject: [PATCH 07/13] OMAPDSS: DSI: use lane config in dsi_get_lane_mask
+Message-Id: <1322141381-5395-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-There's an unnecessary wrapper function, dss_ovl_wait_for_go(), which
-does nothing else than call dss_mgr_wait_for_go_ovl(). The
-dss_ovl_wait_for_go() function can be removed.
+Use the new lane config in dsi_get_lane_mask().
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/overlay.c |    7 +------
- 1 files changed, 1 insertions(+), 6 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   22 ++++++++++------------
+ 1 files changed, 10 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
-index d15b826..0ab14fa 100644
---- a/drivers/video/omap2/dss/overlay.c
-+++ b/drivers/video/omap2/dss/overlay.c
-@@ -548,11 +548,6 @@ static void dss_ovl_get_overlay_info(struct omap_overlay *ovl,
- 	*info = ovl->info;
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index ba8d6b3..1a209a2 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -2422,22 +2422,20 @@ static int dsi_cio_wait_tx_clk_esc_reset(struct omap_dss_device *dssdev)
+ 	return 0;
  }
  
--static int dss_ovl_wait_for_go(struct omap_overlay *ovl)
--{
--	return dss_mgr_wait_for_go_ovl(ovl);
--}
--
- static int omap_dss_set_manager(struct omap_overlay *ovl,
- 		struct omap_overlay_manager *mgr)
++/* return bitmask of enabled lanes, lane0 being the lsb */
+ static unsigned dsi_get_lane_mask(struct omap_dss_device *dssdev)
  {
-@@ -689,7 +684,7 @@ void dss_init_overlays(struct platform_device *pdev)
- 		ovl->unset_manager = &omap_dss_unset_manager;
- 		ovl->set_overlay_info = &dss_ovl_set_overlay_info;
- 		ovl->get_overlay_info = &dss_ovl_get_overlay_info;
--		ovl->wait_for_go = &dss_ovl_wait_for_go;
-+		ovl->wait_for_go = &dss_mgr_wait_for_go_ovl;
+-	unsigned lanes = 0;
++	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
++	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
++	unsigned mask = 0;
++	int i;
  
- 		ovl->caps = dss_feat_get_overlay_caps(ovl->id);
- 		ovl->supported_modes -- 
+-	if (dssdev->phy.dsi.clk_lane != 0)
+-		lanes |= 1 << (dssdev->phy.dsi.clk_lane - 1);
+-	if (dssdev->phy.dsi.data1_lane != 0)
+-		lanes |= 1 << (dssdev->phy.dsi.data1_lane - 1);
+-	if (dssdev->phy.dsi.data2_lane != 0)
+-		lanes |= 1 << (dssdev->phy.dsi.data2_lane - 1);
+-	if (dssdev->phy.dsi.data3_lane != 0)
+-		lanes |= 1 << (dssdev->phy.dsi.data3_lane - 1);
+-	if (dssdev->phy.dsi.data4_lane != 0)
+-		lanes |= 1 << (dssdev->phy.dsi.data4_lane - 1);
++	for (i = 0; i < dsi->num_lanes_supported; ++i) {
++		if (dsi->lanes[i].function != DSI_LANE_UNUSED)
++			mask |= 1 << i;
++	}
+ 
+-	return lanes;
++	return mask;
+ }
+ 
+ static int dsi_cio_init(struct omap_dss_device *dssdev)
+-- 
 1.7.4.1
 

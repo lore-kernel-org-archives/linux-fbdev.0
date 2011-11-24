@@ -1,178 +1,140 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:22:04 +0000
-Subject: [PATCH 65/65] OMAPDSS: check the return value of dss_mgr_enable()
-Message-Id: <1321953724-6350-66-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 24 Nov 2011 13:29:33 +0000
+Subject: [PATCH 05/13] OMAPDSS: DSI: Parse lane config
+Message-Id: <1322141381-5395-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Now that dss_mgr_enable returns an error value, check it in all the
-places dss_mgr_enable is used, and bail out properly.
+Parse the lane configuration from the device data into internal lane
+config format. This will be used in the following patches to clean up
+the lane handling.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dpi.c  |    5 ++++-
- drivers/video/omap2/dss/dsi.c  |   11 ++++++++++-
- drivers/video/omap2/dss/hdmi.c |    9 ++++++++-
- drivers/video/omap2/dss/sdi.c  |    6 +++++-
- drivers/video/omap2/dss/venc.c |   26 +++++++++++++++++++++++---
- 5 files changed, 50 insertions(+), 7 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   83 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 83 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index 79c4df3..395d658 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -223,10 +223,13 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
- 
- 	mdelay(2);
- 
--	dss_mgr_enable(dssdev->manager);
-+	r = dss_mgr_enable(dssdev->manager);
-+	if (r)
-+		goto err_mgr_enable;
- 
- 	return 0;
- 
-+err_mgr_enable:
- err_set_mode:
- 	if (dpi_use_dsi_pll(dssdev))
- 		dsi_pll_uninit(dpi.dsidev, true);
 diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index a35f3fb..57fda24 100644
+index 6a110b2..aea110c 100644
 --- a/drivers/video/omap2/dss/dsi.c
 +++ b/drivers/video/omap2/dss/dsi.c
-@@ -3945,6 +3945,7 @@ int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel)
- 	int bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
- 	u8 data_type;
- 	u16 word_count;
-+	int r;
+@@ -203,6 +203,21 @@ struct dsi_reg { u16 idx; };
+ typedef void (*omap_dsi_isr_t) (void *arg, u32 mask);
  
- 	if (dssdev->panel.dsi_mode = OMAP_DSS_DSI_VIDEO_MODE) {
- 		switch (dssdev->panel.dsi_pix_fmt) {
-@@ -3979,7 +3980,15 @@ int dsi_enable_video_output(struct omap_dss_device *dssdev, int channel)
- 		dsi_if_enable(dsidev, true);
+ #define DSI_MAX_NR_ISRS                2
++#define DSI_MAX_NR_LANES	5
++
++enum dsi_lane_function {
++	DSI_LANE_UNUSED	= 0,
++	DSI_LANE_CLK,
++	DSI_LANE_DATA1,
++	DSI_LANE_DATA2,
++	DSI_LANE_DATA3,
++	DSI_LANE_DATA4,
++};
++
++struct dsi_lane_config {
++	enum dsi_lane_function function;
++	u8 polarity;
++};
+ 
+ struct dsi_isr_data {
+ 	omap_dsi_isr_t	isr;
+@@ -329,6 +344,9 @@ struct dsi_data {
+ 
+ 	unsigned num_lanes_supported;
+ 
++	struct dsi_lane_config lanes[DSI_MAX_NR_LANES];
++	unsigned num_lanes_used;
++
+ 	unsigned scp_clk_refcount;
+ };
+ 
+@@ -2077,6 +2095,65 @@ static unsigned dsi_get_line_buf_size(struct platform_device *dsidev)
  	}
+ }
  
--	dss_mgr_enable(dssdev->manager);
-+	r = dss_mgr_enable(dssdev->manager);
-+	if (r) {
-+		if (dssdev->panel.dsi_mode = OMAP_DSS_DSI_VIDEO_MODE) {
-+			dsi_if_enable(dsidev, false);
-+			dsi_vc_enable(dsidev, channel, false);
-+		}
++static int dsi_parse_lane_config(struct omap_dss_device *dssdev)
++{
++	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
++	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
++	u8 lanes[DSI_MAX_NR_LANES];
++	u8 polarities[DSI_MAX_NR_LANES];
++	int num_lanes, i;
 +
-+		return r;
++	static const enum dsi_lane_function functions[] = {
++		DSI_LANE_CLK,
++		DSI_LANE_DATA1,
++		DSI_LANE_DATA2,
++		DSI_LANE_DATA3,
++		DSI_LANE_DATA4,
++	};
++
++	lanes[0] = dssdev->phy.dsi.clk_lane;
++	lanes[1] = dssdev->phy.dsi.data1_lane;
++	lanes[2] = dssdev->phy.dsi.data2_lane;
++	lanes[3] = dssdev->phy.dsi.data3_lane;
++	lanes[4] = dssdev->phy.dsi.data4_lane;
++	polarities[0] = dssdev->phy.dsi.clk_pol;
++	polarities[1] = dssdev->phy.dsi.data1_pol;
++	polarities[2] = dssdev->phy.dsi.data2_pol;
++	polarities[3] = dssdev->phy.dsi.data3_pol;
++	polarities[4] = dssdev->phy.dsi.data4_pol;
++
++	num_lanes = 0;
++
++	for (i = 0; i < dsi->num_lanes_supported; ++i)
++		dsi->lanes[i].function = DSI_LANE_UNUSED;
++
++	for (i = 0; i < dsi->num_lanes_supported; ++i) {
++		int num;
++
++		if (lanes[i] = DSI_LANE_UNUSED)
++			break;
++
++		num = lanes[i] - 1;
++
++		if (num >= dsi->num_lanes_supported)
++			return -EINVAL;
++
++		if (dsi->lanes[num].function != DSI_LANE_UNUSED)
++			return -EINVAL;
++
++		dsi->lanes[num].function = functions[i];
++		dsi->lanes[num].polarity = polarities[i];
++		num_lanes++;
 +	}
- 
- 	return 0;
- }
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index e245a2b..b064762 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -387,9 +387,16 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
- 
- 	hdmi.ip_data.ops->video_enable(&hdmi.ip_data, 1);
- 
--	dss_mgr_enable(dssdev->manager);
-+	r = dss_mgr_enable(dssdev->manager);
-+	if (r)
-+		goto err_mgr_enable;
- 
- 	return 0;
 +
-+err_mgr_enable:
-+	hdmi.ip_data.ops->video_enable(&hdmi.ip_data, 0);
-+	hdmi.ip_data.ops->phy_disable(&hdmi.ip_data);
-+	hdmi.ip_data.ops->pll_disable(&hdmi.ip_data);
- err:
- 	hdmi_runtime_put();
- 	return -EIO;
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index 02da8be..8266ca0 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -123,10 +123,14 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- 		goto err_sdi_enable;
- 	mdelay(2);
- 
--	dss_mgr_enable(dssdev->manager);
-+	r = dss_mgr_enable(dssdev->manager);
-+	if (r)
-+		goto err_mgr_enable;
- 
- 	return 0;
- 
-+err_mgr_enable:
-+	dss_sdi_disable();
- err_sdi_enable:
- err_set_dispc_clock_div:
- err_set_dss_clock_div:
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 101fcd7..b3e9f90 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -417,9 +417,10 @@ static const struct venc_config *venc_timings_to_config(
- 	BUG();
- }
- 
--static void venc_power_on(struct omap_dss_device *dssdev)
-+static int venc_power_on(struct omap_dss_device *dssdev)
- {
- 	u32 l;
-+	int r;
- 
- 	venc_reset();
- 	venc_write_config(venc_timings_to_config(&dssdev->panel.timings));
-@@ -447,7 +448,22 @@ static void venc_power_on(struct omap_dss_device *dssdev)
- 	if (dssdev->platform_enable)
- 		dssdev->platform_enable(dssdev);
- 
--	dss_mgr_enable(dssdev->manager);
-+	r = dss_mgr_enable(dssdev->manager);
-+	if (r)
-+		goto err;
++	if (num_lanes < 2 || num_lanes > dsi->num_lanes_supported)
++		return -EINVAL;
++
++	dsi->num_lanes_used = num_lanes;
 +
 +	return 0;
++}
 +
-+err:
-+	venc_write_reg(VENC_OUTPUT_CONTROL, 0);
-+	dss_set_dac_pwrdn_bgz(0);
-+
-+	if (dssdev->platform_disable)
-+		dssdev->platform_disable(dssdev);
-+
-+	regulator_disable(venc.vdda_dac_reg);
-+
-+	return r;
- }
+ static void dsi_set_lane_config(struct omap_dss_device *dssdev)
+ {
+ 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+@@ -4328,6 +4405,12 @@ static int dsi_display_init_dsi(struct omap_dss_device *dssdev)
+ 	int dsi_module = dsi_get_dsidev_id(dsidev);
+ 	int r;
  
- static void venc_power_off(struct omap_dss_device *dssdev)
-@@ -504,7 +520,9 @@ static int venc_panel_enable(struct omap_dss_device *dssdev)
++	r = dsi_parse_lane_config(dssdev);
++	if (r) {
++		DSSERR("illegal lane config");
++		goto err0;
++	}
++
+ 	r = dsi_pll_init(dsidev, true, true);
  	if (r)
- 		goto err1;
- 
--	venc_power_on(dssdev);
-+	r = venc_power_on(dssdev);
-+	if (r)
-+		goto err2;
- 
- 	venc.wss_data = 0;
- 
-@@ -512,6 +530,8 @@ static int venc_panel_enable(struct omap_dss_device *dssdev)
- 
- 	mutex_unlock(&venc.venc_lock);
- 	return 0;
-+err2:
-+	venc_runtime_put();
- err1:
- 	omap_dss_stop_device(dssdev);
- err0:
+ 		goto err0;
 -- 
 1.7.4.1
 

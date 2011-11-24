@@ -1,34 +1,73 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 21 Nov 2011 20:53:55 +0000
-Subject: [PATCH 4/8] fbdev/amifb: Make amifb_setup() static
-Message-Id: <1321908839-11419-4-git-send-email-geert@linux-m68k.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 24 Nov 2011 13:29:40 +0000
+Subject: [PATCH 12/13] OMAPDSS: DSI: improve wait_for_bit_change
+Message-Id: <1322141381-5395-13-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321908839-11419-1-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1321908839-11419-1-git-send-email-geert@linux-m68k.org>
+References: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+We sometimes get timeout when disabling the DSI interface with video
+mode. It looks like the disable will stall until the current frame has
+been finished, and this can take multiple milliseconds.
+
+wait_for_bit_change() currently uses a busyloop to wait for a bit to
+change. This is used in multiple places. The problem is, we don't have
+clear understanding how long particular operations can take, so the
+function needs to support longer waits.
+
+Improve wait_for_bit_change() to first busy loop for 100 times to see if
+the bit changes almost right away. If the bit hasn't changed, move to a
+loop with a sleep of 1ms, and poll for 500ms.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/amifb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   25 ++++++++++++++++++++-----
+ 1 files changed, 20 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
-index d7961bd..d3847e7 100644
---- a/drivers/video/amifb.c
-+++ b/drivers/video/amifb.c
-@@ -2363,7 +2363,7 @@ static void __init amifb_setup_mcap(char *spec)
- 	fb_info.monspecs.hfmax = hmax;
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 22055db..a01a011 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -418,14 +418,29 @@ static void dsi_completion_handler(void *data, u32 mask)
+ static inline int wait_for_bit_change(struct platform_device *dsidev,
+ 		const struct dsi_reg idx, int bitnum, int value)
+ {
+-	int t = 100000;
++	unsigned long timeout;
++	ktime_t wait;
++	int t;
++
++	/* first busyloop to see if the bit changes right away */
++	t = 100;
++	while (t-- > 0) {
++		if (REG_GET(dsidev, idx, bitnum, bitnum) = value)
++			return value;
++	}
++
++	/* then loop for 500ms, sleeping for 1ms in between */
++	timeout = jiffies + msecs_to_jiffies(500);
++	while (time_before(jiffies, timeout)) {
++		if (REG_GET(dsidev, idx, bitnum, bitnum) = value)
++			return value;
+ 
+-	while (REG_GET(dsidev, idx, bitnum, bitnum) != value) {
+-		if (--t = 0)
+-			return !value;
++		wait = ns_to_ktime(1000 * 1000);
++		set_current_state(TASK_UNINTERRUPTIBLE);
++		schedule_hrtimeout(&wait, HRTIMER_MODE_REL);
+ 	}
+ 
+-	return value;
++	return !value;
  }
  
--int __init amifb_setup(char *options)
-+static int __init amifb_setup(char *options)
- {
- 	char *this_opt;
- 
+ u8 dsi_get_pixel_size(enum omap_dss_dsi_pixel_format fmt)
 -- 
-1.7.0.4
+1.7.4.1
 

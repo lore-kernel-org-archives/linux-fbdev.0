@@ -1,85 +1,158 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:22:00 +0000
-Subject: [PATCH 61/65] OMAPDSS: APPLY: add dss_ovl_simple_check()
-Message-Id: <1321953724-6350-62-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 24 Nov 2011 13:29:37 +0000
+Subject: [PATCH 09/13] OMAPDSS: DSI: use lane config in dsi_cio_enable_lane_override
+Message-Id: <1322141381-5395-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Add dss_ovl_simple_check() which is used to check the validity of
-certain overlay attributes. Only attributes that can be checked
-independently, without knowing the display being used, is done here
-(thus "simple").
-
-We can use this function in dss_ovl_set_info().
+Use the new lane config in dsi_cio_enable_lane_override(). The function
+parameters are also slightly changed.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/apply.c |   40 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 40 insertions(+), 0 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   85 +++++++++++++----------------------------
+ 1 files changed, 27 insertions(+), 58 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 6a50ee0..c1c4597 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -928,12 +928,52 @@ err:
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 52cf97f..dee9525 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -238,19 +238,6 @@ enum dsi_vc_source {
+ 	DSI_VC_SOURCE_VP,
+ };
+ 
+-enum dsi_lane {
+-	DSI_CLK_P	= 1 << 0,
+-	DSI_CLK_N	= 1 << 1,
+-	DSI_DATA1_P	= 1 << 2,
+-	DSI_DATA1_N	= 1 << 3,
+-	DSI_DATA2_P	= 1 << 4,
+-	DSI_DATA2_N	= 1 << 5,
+-	DSI_DATA3_P	= 1 << 6,
+-	DSI_DATA3_N	= 1 << 7,
+-	DSI_DATA4_P	= 1 << 8,
+-	DSI_DATA4_N	= 1 << 9,
+-};
+-
+ struct dsi_update_region {
+ 	u16 x, y, w, h;
+ 	struct omap_dss_device *device;
+@@ -2290,49 +2277,28 @@ static void dsi_cio_timings(struct platform_device *dsidev)
+ 	dsi_write_reg(dsidev, DSI_DSIPHY_CFG2, r);
  }
  
- 
-+static int dss_ovl_simple_check(struct omap_overlay *ovl,
-+		const struct omap_overlay_info *info)
-+{
-+	if (info->paddr = 0) {
-+		DSSERR("check_overlay: paddr cannot be 0\n");
-+		return -EINVAL;
-+	}
-+
-+	if ((ovl->caps & OMAP_DSS_OVL_CAP_SCALE) = 0) {
-+		if (info->out_width != 0 && info->width != info->out_width) {
-+			DSSERR("check_overlay: overlay %d doesn't support "
-+					"scaling\n", ovl->id);
-+			return -EINVAL;
-+		}
-+
-+		if (info->out_height != 0 && info->height != info->out_height) {
-+			DSSERR("check_overlay: overlay %d doesn't support "
-+					"scaling\n", ovl->id);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	if ((ovl->supported_modes & info->color_mode) = 0) {
-+		DSSERR("check_overlay: overlay %d doesn't support mode %d\n",
-+				ovl->id, info->color_mode);
-+		return -EINVAL;
-+	}
-+
-+	if (info->zorder >= omap_dss_get_num_overlays()) {
-+		DSSERR("check_overlay: zorder %d too high\n", info->zorder);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
- 
- int dss_ovl_set_info(struct omap_overlay *ovl,
- 		struct omap_overlay_info *info)
++/* lane masks have lane 0 at lsb. mask_p for positive lines, n for negative */
+ static void dsi_cio_enable_lane_override(struct omap_dss_device *dssdev,
+-		enum dsi_lane lanes)
++		unsigned mask_p, unsigned mask_n)
  {
- 	struct ovl_priv_data *op = get_ovl_priv(ovl);
- 	unsigned long flags;
-+	int r;
+ 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+-	int clk_lane   = dssdev->phy.dsi.clk_lane;
+-	int data1_lane = dssdev->phy.dsi.data1_lane;
+-	int data2_lane = dssdev->phy.dsi.data2_lane;
+-	int data3_lane = dssdev->phy.dsi.data3_lane;
+-	int data4_lane = dssdev->phy.dsi.data4_lane;
+-	int clk_pol    = dssdev->phy.dsi.clk_pol;
+-	int data1_pol  = dssdev->phy.dsi.data1_pol;
+-	int data2_pol  = dssdev->phy.dsi.data2_pol;
+-	int data3_pol  = dssdev->phy.dsi.data3_pol;
+-	int data4_pol  = dssdev->phy.dsi.data4_pol;
+-
+-	u32 l = 0;
++	int i;
++	u32 l;
+ 	u8 lptxscp_start = dsi->num_lanes_supported = 3 ? 22 : 26;
+ 
+-	if (lanes & DSI_CLK_P)
+-		l |= 1 << ((clk_lane - 1) * 2 + (clk_pol ? 0 : 1));
+-	if (lanes & DSI_CLK_N)
+-		l |= 1 << ((clk_lane - 1) * 2 + (clk_pol ? 1 : 0));
+-
+-	if (lanes & DSI_DATA1_P)
+-		l |= 1 << ((data1_lane - 1) * 2 + (data1_pol ? 0 : 1));
+-	if (lanes & DSI_DATA1_N)
+-		l |= 1 << ((data1_lane - 1) * 2 + (data1_pol ? 1 : 0));
+-
+-	if (lanes & DSI_DATA2_P)
+-		l |= 1 << ((data2_lane - 1) * 2 + (data2_pol ? 0 : 1));
+-	if (lanes & DSI_DATA2_N)
+-		l |= 1 << ((data2_lane - 1) * 2 + (data2_pol ? 1 : 0));
+-
+-	if (lanes & DSI_DATA3_P)
+-		l |= 1 << ((data3_lane - 1) * 2 + (data3_pol ? 0 : 1));
+-	if (lanes & DSI_DATA3_N)
+-		l |= 1 << ((data3_lane - 1) * 2 + (data3_pol ? 1 : 0));
+-
+-	if (lanes & DSI_DATA4_P)
+-		l |= 1 << ((data4_lane - 1) * 2 + (data4_pol ? 0 : 1));
+-	if (lanes & DSI_DATA4_N)
+-		l |= 1 << ((data4_lane - 1) * 2 + (data4_pol ? 1 : 0));
++	l = 0;
 +
-+	r = dss_ovl_simple_check(ovl, info);
-+	if (r)
-+		return r;
++	for (i = 0; i < dsi->num_lanes_supported; ++i) {
++		unsigned p = dsi->lanes[i].polarity;
++
++		if (mask_p & (1 << i))
++			l |= 1 << (i * 2 + (p ? 0 : 1));
++
++		if (mask_n & (1 << i))
++			l |= 1 << (i * 2 + (p ? 1 : 0));
++	}
++
+ 	/*
+ 	 * Bits in REGLPTXSCPDAT4TO0DXDY:
+ 	 * 17: DY0 18: DX0
+@@ -2432,7 +2398,6 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
+ 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	int r;
+-	int num_lanes_used = dsi_get_num_lanes_used(dssdev);
+ 	u32 l;
  
- 	spin_lock_irqsave(&data_lock, flags);
+ 	DSSDBGF();
+@@ -2467,7 +2432,8 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
+ 	dsi_write_reg(dsidev, DSI_TIMING1, l);
  
+ 	if (dsi->ulps_enabled) {
+-		u32 lane_mask = DSI_CLK_P | DSI_DATA1_P | DSI_DATA2_P;
++		unsigned mask_p;
++		int i;
+ 
+ 		DSSDBG("manual ulps exit\n");
+ 
+@@ -2476,16 +2442,19 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
+ 		 * ULPS exit sequence, as after reset the DSS HW thinks
+ 		 * that we are not in ULPS mode, and refuses to send the
+ 		 * sequence. So we need to send the ULPS exit sequence
+-		 * manually.
++		 * manually by setting positive lines high and negative lines
++		 * low for 1ms.
+ 		 */
+ 
+-		if (num_lanes_used > 3)
+-			lane_mask |= DSI_DATA3_P;
++		mask_p = 0;
+ 
+-		if (num_lanes_used > 4)
+-			lane_mask |= DSI_DATA4_P;
++		for (i = 0; i < dsi->num_lanes_supported; ++i) {
++			if (dsi->lanes[i].function = DSI_LANE_UNUSED)
++				continue;
++			mask_p |= 1 << i;
++		}
+ 
+-		dsi_cio_enable_lane_override(dssdev, lane_mask);
++		dsi_cio_enable_lane_override(dssdev, mask_p, 0);
+ 	}
+ 
+ 	r = dsi_cio_power(dsidev, DSI_COMPLEXIO_POWER_ON);
 -- 
 1.7.4.1
 

@@ -1,250 +1,164 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:21:33 +0000
-Subject: [PATCH 34/65] OMAPDSS: APPLY: rename manager_cache_data
-Message-Id: <1321953724-6350-35-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 24 Nov 2011 13:29:32 +0000
+Subject: [PATCH 04/13] OMAPDSS: DSI: count with number of lanes
+Message-Id: <1322141381-5395-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1322141381-5395-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-manager_cache_data is not a suitable name for the struct. It is more of
-a private data for the manager.
-
-Rename the struct to mgr_priv_data, and add a function,
-get_mgr_priv(mgr), to get a pointer to the data.
+DSI driver currently counts used lanes and number of supported lanes by
+using the number of data lanes (i.e. excluding clock lane). This patch
+changes this to use the number of all lanes so that the following lane
+config patches are cleaner.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/apply.c |   72 +++++++++++++++++++++-----------------
- 1 files changed, 40 insertions(+), 32 deletions(-)
+ drivers/video/omap2/dss/dsi.c |   49 ++++++++++++++++++----------------------
+ 1 files changed, 22 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index d07bcc9..23c723a 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -73,7 +73,7 @@ struct ovl_priv_data {
- 	u32 fifo_high;
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 4b1c074..6a110b2 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -327,7 +327,7 @@ struct dsi_data {
+ 	unsigned long  fint_min, fint_max;
+ 	unsigned long lpdiv_max;
+ 
+-	int num_data_lanes;
++	unsigned num_lanes_supported;
+ 
+ 	unsigned scp_clk_refcount;
  };
- 
--struct manager_cache_data {
-+struct mgr_priv_data {
- 	/* If true, cache changed, but not written to shadow registers. Set
- 	 * in apply(), cleared when registers written. */
- 	bool dirty;
-@@ -91,7 +91,7 @@ struct manager_cache_data {
- static struct {
- 	spinlock_t lock;
- 	struct ovl_priv_data ovl_priv_data_array[MAX_DSS_OVERLAYS];
--	struct manager_cache_data manager_cache[MAX_DSS_MANAGERS];
-+	struct mgr_priv_data mgr_priv_data_array[MAX_DSS_MANAGERS];
- 
- 	bool irq_enabled;
- } dss_cache;
-@@ -101,6 +101,11 @@ static struct ovl_priv_data *get_ovl_priv(struct omap_overlay *ovl)
- 	return &dss_cache.ovl_priv_data_array[ovl->id];
+@@ -2029,19 +2029,8 @@ static int dsi_cio_power(struct platform_device *dsidev,
+ 	return 0;
  }
  
-+static struct mgr_priv_data *get_mgr_priv(struct omap_overlay_manager *mgr)
-+{
-+	return &dss_cache.mgr_priv_data_array[mgr->id];
-+}
-+
- void dss_apply_init(void)
- {
- 	spin_lock_init(&dss_cache.lock);
-@@ -124,7 +129,7 @@ static int overlay_enabled(struct omap_overlay *ovl)
- int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr)
- {
- 	unsigned long timeout = msecs_to_jiffies(500);
--	struct manager_cache_data *mc;
-+	struct mgr_priv_data *mp;
- 	u32 irq;
- 	int r;
- 	int i;
-@@ -138,15 +143,15 @@ int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr)
- 
- 	irq = dispc_mgr_get_vsync_irq(mgr->id);
- 
--	mc = &dss_cache.manager_cache[mgr->id];
-+	mp = get_mgr_priv(mgr);
- 	i = 0;
- 	while (1) {
- 		unsigned long flags;
- 		bool shadow_dirty, dirty;
- 
- 		spin_lock_irqsave(&dss_cache.lock, flags);
--		dirty = mc->dirty;
--		shadow_dirty = mc->shadow_dirty;
-+		dirty = mp->dirty;
-+		shadow_dirty = mp->shadow_dirty;
- 		spin_unlock_irqrestore(&dss_cache.lock, flags);
- 
- 		if (!dirty && !shadow_dirty) {
-@@ -282,11 +287,13 @@ static int dss_ovl_write_regs(struct omap_overlay *ovl)
- 
- static void dss_mgr_write_regs(struct omap_overlay_manager *mgr)
- {
-+	struct mgr_priv_data *mp;
- 	struct omap_overlay_manager_info *mi;
- 
- 	DSSDBGF("%d", mgr->id);
- 
--	mi = &dss_cache.manager_cache[mgr->id].info;
-+	mp = get_mgr_priv(mgr);
-+	mi = &mp->info;
- 
- 	dispc_mgr_setup(mgr->id, mi);
- }
-@@ -300,7 +307,7 @@ static int dss_write_regs(void)
- 	struct omap_overlay *ovl;
- 	struct omap_overlay_manager *mgr;
- 	struct ovl_priv_data *op;
--	struct manager_cache_data *mc;
-+	struct mgr_priv_data *mp;
- 	const int num_ovls = dss_feat_get_num_ovls();
- 	const int num_mgrs = dss_feat_get_num_mgrs();
- 	int i;
-@@ -321,12 +328,13 @@ static int dss_write_regs(void)
- 	for (i = 0; i < num_ovls; ++i) {
- 		ovl = omap_dss_get_overlay(i);
- 		op = get_ovl_priv(ovl);
--		mc = &dss_cache.manager_cache[op->channel];
- 
- 		if (!op->dirty)
- 			continue;
- 
--		if (mc->manual_update && !mc->do_manual_update)
-+		mp = get_mgr_priv(ovl->manager);
-+
-+		if (mp->manual_update && !mp->do_manual_update)
- 			continue;
- 
- 		if (mgr_busy[op->channel]) {
-@@ -346,12 +354,12 @@ static int dss_write_regs(void)
- 	/* Commit manager settings */
- 	for (i = 0; i < num_mgrs; ++i) {
- 		mgr = omap_dss_get_overlay_manager(i);
--		mc = &dss_cache.manager_cache[i];
-+		mp = get_mgr_priv(mgr);
- 
--		if (!mc->dirty)
-+		if (!mp->dirty)
- 			continue;
- 
--		if (mc->manual_update && !mc->do_manual_update)
-+		if (mp->manual_update && !mp->do_manual_update)
- 			continue;
- 
- 		if (mgr_busy[i]) {
-@@ -360,14 +368,15 @@ static int dss_write_regs(void)
- 		}
- 
- 		dss_mgr_write_regs(mgr);
--		mc->dirty = false;
--		mc->shadow_dirty = true;
-+		mp->dirty = false;
-+		mp->shadow_dirty = true;
- 		mgr_go[i] = true;
- 	}
- 
- 	/* set GO */
- 	for (i = 0; i < num_mgrs; ++i) {
--		mc = &dss_cache.manager_cache[i];
-+		mgr = omap_dss_get_overlay_manager(i);
-+		mp = get_mgr_priv(mgr);
- 
- 		if (!mgr_go[i])
- 			continue;
-@@ -375,7 +384,7 @@ static int dss_write_regs(void)
- 		/* We don't need GO with manual update display. LCD iface will
- 		 * always be turned off after frame, and new settings will be
- 		 * taken in to use at next update */
--		if (!mc->manual_update)
-+		if (!mp->manual_update)
- 			dispc_mgr_go(i);
- 	}
- 
-@@ -389,23 +398,20 @@ static int dss_write_regs(void)
- 
- void dss_start_update(struct omap_overlay_manager *mgr)
- {
--	struct manager_cache_data *mc;
-+	struct mgr_priv_data *mp = get_mgr_priv(mgr);
- 	struct ovl_priv_data *op;
- 	struct omap_overlay *ovl;
- 
--	mc = &dss_cache.manager_cache[mgr->id];
+-/* Number of data lanes present on DSI interface */
+-static inline int dsi_get_num_data_lanes(struct platform_device *dsidev)
+-{
+-	/* DSI on OMAP3 doesn't have register DSI_GNQ, set number
+-	 * of data lanes as 2 by default */
+-	if (dss_has_feature(FEAT_DSI_GNQ))
+-		return REG_GET(dsidev, DSI_GNQ, 11, 9);	/* NB_DATA_LANES */
+-	else
+-		return 2;
+-}
 -
--	mc->do_manual_update = true;
-+	mp->do_manual_update = true;
- 	dss_write_regs();
--	mc->do_manual_update = false;
-+	mp->do_manual_update = false;
- 
- 	list_for_each_entry(ovl, &mgr->overlays, list) {
- 		op = get_ovl_priv(ovl);
- 		op->shadow_dirty = false;
- 	}
- 
--	mc = &dss_cache.manager_cache[mgr->id];
--	mc->shadow_dirty = false;
-+	mp->shadow_dirty = false;
- 
- 	dispc_mgr_enable(mgr->id, true);
- }
-@@ -447,7 +453,8 @@ static void dss_unregister_vsync_isr(void)
- static void dss_apply_irq_handler(void *data, u32 mask)
+-/* Number of data lanes used by the dss device */
+-static inline int dsi_get_num_data_lanes_dssdev(struct omap_dss_device *dssdev)
++/* Number of lanes used by the dss device */
++static inline int dsi_get_num_lanes_used(struct omap_dss_device *dssdev)
  {
- 	struct omap_overlay *ovl;
--	struct manager_cache_data *mc;
-+	struct omap_overlay_manager *mgr;
-+	struct mgr_priv_data *mp;
- 	struct ovl_priv_data *op;
- 	const int num_ovls = dss_feat_get_num_ovls();
- 	const int num_mgrs = dss_feat_get_num_mgrs();
-@@ -467,9 +474,10 @@ static void dss_apply_irq_handler(void *data, u32 mask)
- 	}
+ 	int num_data_lanes = 0;
  
- 	for (i = 0; i < num_mgrs; ++i) {
--		mc = &dss_cache.manager_cache[i];
-+		mgr = omap_dss_get_overlay_manager(i);
-+		mp = get_mgr_priv(mgr);
- 		if (!mgr_busy[i])
--			mc->shadow_dirty = false;
-+			mp->shadow_dirty = false;
- 	}
+@@ -2054,7 +2043,7 @@ static inline int dsi_get_num_data_lanes_dssdev(struct omap_dss_device *dssdev)
+ 	if (dssdev->phy.dsi.data4_lane != 0)
+ 		num_data_lanes++;
  
- 	r = dss_write_regs();
-@@ -539,9 +547,9 @@ static int omap_dss_mgr_apply_ovl(struct omap_overlay *ovl)
- 
- static void omap_dss_mgr_apply_mgr(struct omap_overlay_manager *mgr)
- {
--	struct manager_cache_data *mc;
-+	struct mgr_priv_data *mp;
- 
--	mc = &dss_cache.manager_cache[mgr->id];
-+	mp = get_mgr_priv(mgr);
- 
- 	if (mgr->device_changed) {
- 		mgr->device_changed = false;
-@@ -555,10 +563,10 @@ static void omap_dss_mgr_apply_mgr(struct omap_overlay_manager *mgr)
- 		return;
- 
- 	mgr->info_dirty = false;
--	mc->dirty = true;
--	mc->info = mgr->info;
-+	mp->dirty = true;
-+	mp->info = mgr->info;
- 
--	mc->manual_update = mgr_manual_update(mgr);
-+	mp->manual_update = mgr_manual_update(mgr);
+-	return num_data_lanes;
++	return num_data_lanes + 1;
  }
  
- static void omap_dss_mgr_apply_ovl_fifos(struct omap_overlay *ovl)
+ static unsigned dsi_get_line_buf_size(struct platform_device *dsidev)
+@@ -2092,7 +2081,7 @@ static void dsi_set_lane_config(struct omap_dss_device *dssdev)
+ {
+ 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+ 	u32 r;
+-	int num_data_lanes_dssdev = dsi_get_num_data_lanes_dssdev(dssdev);
++	int num_lanes_used = dsi_get_num_lanes_used(dssdev);
+ 
+ 	int clk_lane   = dssdev->phy.dsi.clk_lane;
+ 	int data1_lane = dssdev->phy.dsi.data1_lane;
+@@ -2108,14 +2097,14 @@ static void dsi_set_lane_config(struct omap_dss_device *dssdev)
+ 	r = FLD_MOD(r, data1_pol, 7, 7);
+ 	r = FLD_MOD(r, data2_lane, 10, 8);
+ 	r = FLD_MOD(r, data2_pol, 11, 11);
+-	if (num_data_lanes_dssdev > 2) {
++	if (num_lanes_used > 3) {
+ 		int data3_lane  = dssdev->phy.dsi.data3_lane;
+ 		int data3_pol  = dssdev->phy.dsi.data3_pol;
+ 
+ 		r = FLD_MOD(r, data3_lane, 14, 12);
+ 		r = FLD_MOD(r, data3_pol, 15, 15);
+ 	}
+-	if (num_data_lanes_dssdev > 3) {
++	if (num_lanes_used > 4) {
+ 		int data4_lane  = dssdev->phy.dsi.data4_lane;
+ 		int data4_pol  = dssdev->phy.dsi.data4_pol;
+ 
+@@ -2247,7 +2236,7 @@ static void dsi_cio_enable_lane_override(struct omap_dss_device *dssdev,
+ 	int data4_pol  = dssdev->phy.dsi.data4_pol;
+ 
+ 	u32 l = 0;
+-	u8 lptxscp_start = dsi->num_data_lanes = 2 ? 22 : 26;
++	u8 lptxscp_start = dsi->num_lanes_supported = 3 ? 22 : 26;
+ 
+ 	if (lanes & DSI_CLK_P)
+ 		l |= 1 << ((clk_lane - 1) * 2 + (clk_pol ? 0 : 1));
+@@ -2385,7 +2374,7 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
+ 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	int r;
+-	int num_data_lanes_dssdev = dsi_get_num_data_lanes_dssdev(dssdev);
++	int num_lanes_used = dsi_get_num_lanes_used(dssdev);
+ 	u32 l;
+ 
+ 	DSSDBGF();
+@@ -2430,10 +2419,10 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
+ 		 * manually.
+ 		 */
+ 
+-		if (num_data_lanes_dssdev > 2)
++		if (num_lanes_used > 3)
+ 			lane_mask |= DSI_DATA3_P;
+ 
+-		if (num_data_lanes_dssdev > 3)
++		if (num_lanes_used > 4)
+ 			lane_mask |= DSI_DATA4_P;
+ 
+ 		dsi_cio_enable_lane_override(dssdev, lane_mask);
+@@ -3852,7 +3841,7 @@ static void dsi_proto_timings(struct omap_dss_device *dssdev)
+ 	unsigned ddr_clk_pre, ddr_clk_post;
+ 	unsigned enter_hs_mode_lat, exit_hs_mode_lat;
+ 	unsigned ths_eot;
+-	int ndl = dsi_get_num_data_lanes_dssdev(dssdev);
++	int ndl = dsi_get_num_lanes_used(dssdev) - 1;
+ 	u32 r;
+ 
+ 	r = dsi_read_reg(dsidev, DSI_DSIPHY_CFG0);
+@@ -4552,9 +4541,9 @@ int dsi_init_display(struct omap_dss_device *dssdev)
+ 		dsi->vdds_dsi_reg = vdds_dsi;
+ 	}
+ 
+-	if (dsi_get_num_data_lanes_dssdev(dssdev) > dsi->num_data_lanes) {
+-		DSSERR("DSI%d can't support more than %d data lanes\n",
+-			dsi_module + 1, dsi->num_data_lanes);
++	if (dsi_get_num_lanes_used(dssdev) > dsi->num_lanes_supported) {
++		DSSERR("DSI%d can't support more than %d lanes\n",
++			dsi_module + 1, dsi->num_lanes_supported);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -4780,7 +4769,13 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
+ 	dev_dbg(&dsidev->dev, "OMAP DSI rev %d.%d\n",
+ 	       FLD_GET(rev, 7, 4), FLD_GET(rev, 3, 0));
+ 
+-	dsi->num_data_lanes = dsi_get_num_data_lanes(dsidev);
++	/* DSI on OMAP3 doesn't have register DSI_GNQ, set number
++	 * of data to 3 by default */
++	if (dss_has_feature(FEAT_DSI_GNQ))
++		/* NB_DATA_LANES */
++		dsi->num_lanes_supported = 1 + REG_GET(dsidev, DSI_GNQ, 11, 9);
++	else
++		dsi->num_lanes_supported = 3;
+ 
+ 	dsi_runtime_put(dsidev);
+ 
 -- 
 1.7.4.1
 

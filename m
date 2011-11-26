@@ -1,65 +1,51 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 22 Nov 2011 09:21:29 +0000
-Subject: [PATCH 30/65] OMAPDSS: DISPC: Add dispc_mgr_get_vsync_irq()
-Message-Id: <1321953724-6350-31-git-send-email-tomi.valkeinen@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 26 Nov 2011 19:14:02 +0000
+Subject: [GIT PULL] fbdev fixes for 3.2
+Message-Id: <4ED13A7A.1090504@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-Add dispc_mgr_get_vsync_irq() which returns the irq number for vsync on
-the given channel.
+Hi Linus,
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/dispc.c |   14 ++++++++++++++
- drivers/video/omap2/dss/dss.h   |    2 +-
- 2 files changed, 15 insertions(+), 1 deletions(-)
+please pull the following changes to the fbdev subsystem.
+Nothing exciting here, just one regression fix for viafb, 3 trivial patches for
+OMAP and one patch to fix the reset sequence for da8xx-fb.
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 5ac00a2..27a2cff 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -438,6 +438,20 @@ static struct omap_dss_device *dispc_mgr_get_device(enum omap_channel channel)
- 	return mgr ? mgr->device : NULL;
- }
- 
-+u32 dispc_mgr_get_vsync_irq(enum omap_channel channel)
-+{
-+	switch (channel) {
-+	case OMAP_DSS_CHANNEL_LCD:
-+		return DISPC_IRQ_VSYNC;
-+	case OMAP_DSS_CHANNEL_LCD2:
-+		return DISPC_IRQ_VSYNC2;
-+	case OMAP_DSS_CHANNEL_DIGIT:
-+		return DISPC_IRQ_EVSYNC_ODD | DISPC_IRQ_EVSYNC_EVEN;
-+	default:
-+		BUG();
-+	}
-+}
-+
- bool dispc_mgr_go_busy(enum omap_channel channel)
- {
- 	int bit;
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 66fed79..5a6f1db 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -409,9 +409,9 @@ int dispc_ovl_enable(enum omap_plane plane, bool enable);
- void dispc_ovl_set_channel_out(enum omap_plane plane,
- 		enum omap_channel channel);
- 
--
- void dispc_mgr_enable_fifohandcheck(enum omap_channel channel, bool enable);
- void dispc_mgr_set_lcd_size(enum omap_channel channel, u16 width, u16 height);
-+u32 dispc_mgr_get_vsync_irq(enum omap_channel channel);
- bool dispc_mgr_go_busy(enum omap_channel channel);
- void dispc_mgr_go(enum omap_channel channel);
- bool dispc_mgr_is_enabled(enum omap_channel channel);
--- 
-1.7.4.1
 
+Thanks,
+
+Florian Tobias Schandinat
+
+
+The following changes since commit cfcfc9eca2bcbd26a8e206baeb005b055dbf8e37:
+
+  Linux 3.2-rc2 (2011-11-15 15:02:59 -0200)
+
+are available in the git repository at:
+  git://github.com/schandinat/linux-2.6.git fbdev-for-linus
+
+Daniel Drake (1):
+      viafb: correct sync polarity for OLPC DCON
+
+Florian Tobias Schandinat (1):
+      Merge branch 'for-3.2-rc' of git://gitorious.org/linux-omap-dss2/linux
+into fbdev-for-linus
+
+Manjunathappa, Prakash (1):
+      video:da8xx-fb: Disable and reset sequence on version2 of LCDC
+
+Tomi Valkeinen (3):
+      OMAPDSS: HDMI: fix returned HDMI pixel clock
+      OMAPFB: fix compilation warnings due to missing include
+      OMAPDSS: DISPC: skip scaling calculations when not scaling
+
+ drivers/video/da8xx-fb.c        |   15 ++++++++++++++-
+ drivers/video/omap/dispc.c      |    1 +
+ drivers/video/omap2/dss/dispc.c |   11 +++++------
+ drivers/video/omap2/dss/hdmi.c  |    2 +-
+ drivers/video/via/share.h       |    4 ++--
+ 5 files changed, 23 insertions(+), 10 deletions(-)

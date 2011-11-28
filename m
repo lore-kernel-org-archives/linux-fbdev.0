@@ -1,226 +1,414 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 28 Nov 2011 02:41:16 +0000
-Subject: Re: [PATCH] video: convert drivers/video/* to use
-Message-Id: <7292227.67261322448071939.JavaMail.weblogic@epml18>
+From: Wan ZongShun <mcuos.com@gmail.com>
+Date: Mon, 28 Nov 2011 02:46:48 +0000
+Subject: Re: [PATCH] video: convert drivers/video/* to use module_platform_driver()
+Message-Id: <CAKT61h8U=WqRa5BwxDijxV-3rE7bqkS7kCgsgccnUYxN73QM4A@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1322274354.10633.3.camel@phoenix>
 In-Reply-To: <1322274354.10633.3.camel@phoenix>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: linux-fbdev@vger.kernel.org
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBTdWJqZWN0OiBbUEFUQ0hdIHZpZGVvOiBj
-b252ZXJ0IGRyaXZlcnMvdmlkZW8vKiB0byB1c2UNCj4gbW9kdWxlX3BsYXRmb3JtX2RyaXZlcigp
-DQo+IA0KPiBUaGlzIHBhdGNoIGNvbnZlcnRzIHRoZSBkcml2ZXJzIGluIGRyaXZlcnMvdmlkZW8v
-KiB0byB1c2UgdGhlDQo+IG1vZHVsZV9wbGF0Zm9ybV9kcml2ZXIoKSBtYWNybyB3aGljaCBtYWtl
-cyB0aGUgY29kZSBzbWFsbGVyIGFuZCBhIGJpdA0KPiBzaW1wbGVyLg0KPiANCj4gQ2M6IFdhbiBa
-b25nU2h1biA8bWN1b3MuY29tQGdtYWlsLmNvbT4NCj4gQ2M6IFNhc2NoYSBIYXVlciA8cy5oYXVl
-ckBwZW5ndXRyb25peC5kZT4NCj4gQ2M6IExlbm5lcnQgQnV5dGVuaGVrIDxidXl0ZW5oQHdhbnRz
-dG9mbHkub3JnPg0KPiBDYzogQmVuIERvb2tzIDxiZW4tbGludXhAZmx1ZmYub3JnPg0KPiBDYzog
-QWxleGV5IENoYXJrb3YgPGFsY2hhcmtAZ21haWwuY29tPg0KPiBDYzogRGFtaWFuIEhvYnNvbi1H
-YXJjaWEgPGRob2Jzb25nQGlnZWwuY28uanA+DQo+IENjOiBNYW51ZWwgTGF1c3MgPG1hbm9Acm9h
-cmluZWxrLmhvbWVsaW51eC5uZXQ+DQo+IFNpZ25lZC1vZmYtYnk6IEF4ZWwgTGluIDxheGVsLmxp
-bkBnbWFpbC5jb20+DQpBY2tlZC1ieTogSmluZ29vIEhhbiA8amcxLmhhbkBzYW1zdW5nLmNvbT4N
-CkkgcmV2aWV3ZWQgYW5kIHRlc3RlZCBkcml2ZXJzL3ZpZGVvL3MzYy1mYi5jLg0KSXQgbG9va3Mg
-Z29vZC4NClRoYW5rIHlvdS4NCj4gLS0tDQo+ICBkcml2ZXJzL3ZpZGVvL214c2ZiLmMgICAgICAg
-ICAgICB8ICAgMTMgKy0tLS0tLS0tLS0tLQ0KPiAgZHJpdmVycy92aWRlby9udWM5MDBmYi5jICAg
-ICAgICAgfCAgIDEzICstLS0tLS0tLS0tLS0NCj4gIGRyaXZlcnMvdmlkZW8vcHhhMTY4ZmIuYyAg
-ICAgICAgIHwgICAxMiArLS0tLS0tLS0tLS0NCj4gIGRyaXZlcnMvdmlkZW8vcHhhM3h4LWdjdS5j
-ICAgICAgIHwgICAxNSArLS0tLS0tLS0tLS0tLS0NCj4gIGRyaXZlcnMvdmlkZW8vczNjLWZiLmMg
-ICAgICAgICAgIHwgICAxMyArLS0tLS0tLS0tLS0tDQo+ICBkcml2ZXJzL3ZpZGVvL3NoNzc2MGZi
-LmMgICAgICAgICB8ICAgMTMgKy0tLS0tLS0tLS0tLQ0KPiAgZHJpdmVycy92aWRlby9zaF9tb2Jp
-bGVfbGNkY2ZiLmMgfCAgIDEzICstLS0tLS0tLS0tLS0NCj4gIGRyaXZlcnMvdmlkZW8vc2hfbW9i
-aWxlX21lcmFtLmMgIHwgICAxMyArLS0tLS0tLS0tLS0tDQo+ICBkcml2ZXJzL3ZpZGVvL3NtNTAx
-ZmIuYyAgICAgICAgICB8ICAgMTMgKy0tLS0tLS0tLS0tLQ0KPiAgZHJpdmVycy92aWRlby92dDg1
-MDBsY2RmYi5jICAgICAgfCAgIDEzICstLS0tLS0tLS0tLS0NCj4gIGRyaXZlcnMvdmlkZW8vdzEw
-MGZiLmMgICAgICAgICAgIHwgICAxMyArLS0tLS0tLS0tLS0tDQo+ICBkcml2ZXJzL3ZpZGVvL3dt
-ODUwNWZiLmMgICAgICAgICB8ICAgMTMgKy0tLS0tLS0tLS0tLQ0KPiAgZHJpdmVycy92aWRlby93
-bXRfZ2Vfcm9wcy5jICAgICAgfCAgIDEzICstLS0tLS0tLS0tLS0NCj4gIGRyaXZlcnMvdmlkZW8v
-eGlsaW54ZmIuYyAgICAgICAgIHwgICAyMCArLS0tLS0tLS0tLS0tLS0tLS0tLQ0KPiAgMTQgZmls
-ZXMgY2hhbmdlZCwgMTQgaW5zZXJ0aW9ucygrKSwgMTc2IGRlbGV0aW9ucygtKQ0KPiANCj4gZGlm
-ZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vbXhzZmIuYyBiL2RyaXZlcnMvdmlkZW8vbXhzZmIuYw0K
-PiBpbmRleCBkODM3ZDYzLi4xODc0MmMyIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL214
-c2ZiLmMNCj4gKysrIGIvZHJpdmVycy92aWRlby9teHNmYi5jDQo+IEBAIC05MDIsMTggKzkwMiw3
-IEBAIHN0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyIG14c2ZiX2RyaXZlciA9IHsNCj4gIAl9
-LA0KPiAgfTsNCj4gDQo+IC1zdGF0aWMgaW50IF9faW5pdCBteHNmYl9pbml0KHZvaWQpDQo+IC17
-DQo+IC0JcmV0dXJuIHBsYXRmb3JtX2RyaXZlcl9yZWdpc3RlcigmbXhzZmJfZHJpdmVyKTsNCj4g
-LX0NCj4gLQ0KPiAtc3RhdGljIHZvaWQgX19leGl0IG14c2ZiX2V4aXQodm9pZCkNCj4gLXsNCj4g
-LQlwbGF0Zm9ybV9kcml2ZXJfdW5yZWdpc3RlcigmbXhzZmJfZHJpdmVyKTsNCj4gLX0NCj4gLQ0K
-PiAtbW9kdWxlX2luaXQobXhzZmJfaW5pdCk7DQo+IC1tb2R1bGVfZXhpdChteHNmYl9leGl0KTsN
-Cj4gK21vZHVsZV9wbGF0Zm9ybV9kcml2ZXIobXhzZmJfZGV2dHlwZSk7DQo+IA0KPiAgTU9EVUxF
-X0RFU0NSSVBUSU9OKCJGcmVlc2NhbGUgbXhzIGZyYW1lYnVmZmVyIGRyaXZlciIpOw0KPiAgTU9E
-VUxFX0FVVEhPUigiU2FzY2hhIEhhdWVyLCBQZW5ndXRyb25peCIpOw0KPiBkaWZmIC0tZ2l0IGEv
-ZHJpdmVycy92aWRlby9udWM5MDBmYi5jIGIvZHJpdmVycy92aWRlby9udWM5MDBmYi5jDQo+IGlu
-ZGV4IGQxZmJiZDguLmUxMGY1NTEgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvdmlkZW8vbnVjOTAw
-ZmIuYw0KPiArKysgYi9kcml2ZXJzL3ZpZGVvL251YzkwMGZiLmMNCj4gQEAgLTc2MiwxOCArNzYy
-LDcgQEAgc3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9kcml2ZXIgbnVjOTAwZmJfZHJpdmVyID0gew0K
-PiAgCX0sDQo+ICB9Ow0KPiANCj4gLWludCBfX2RldmluaXQgbnVjOTAwZmJfaW5pdCh2b2lkKQ0K
-PiAtew0KPiAtCXJldHVybiBwbGF0Zm9ybV9kcml2ZXJfcmVnaXN0ZXIoJm51YzkwMGZiX2RyaXZl
-cik7DQo+IC19DQo+IC0NCj4gLXN0YXRpYyB2b2lkIF9fZXhpdCBudWM5MDBmYl9jbGVhbnVwKHZv
-aWQpDQo+IC17DQo+IC0JcGxhdGZvcm1fZHJpdmVyX3VucmVnaXN0ZXIoJm51YzkwMGZiX2RyaXZl
-cik7DQo+IC19DQo+IC0NCj4gLW1vZHVsZV9pbml0KG51YzkwMGZiX2luaXQpOw0KPiAtbW9kdWxl
-X2V4aXQobnVjOTAwZmJfY2xlYW51cCk7DQo+ICttb2R1bGVfcGxhdGZvcm1fZHJpdmVyKG51Yzkw
-MGZiX2RyaXZlcik7DQo+IA0KPiAgTU9EVUxFX0RFU0NSSVBUSU9OKCJGcmFtZWJ1ZmZlciBkcml2
-ZXIgZm9yIHRoZSBOVUM5MDAiKTsNCj4gIE1PRFVMRV9MSUNFTlNFKCJHUEwiKTsNCj4gZGlmZiAt
-LWdpdCBhL2RyaXZlcnMvdmlkZW8vcHhhMTY4ZmIuYyBiL2RyaXZlcnMvdmlkZW8vcHhhMTY4ZmIu
-Yw0KPiBpbmRleCAxOGVhZDZmLi44Mzg0Yjk0IDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3ZpZGVv
-L3B4YTE2OGZiLmMNCj4gKysrIGIvZHJpdmVycy92aWRlby9weGExNjhmYi5jDQo+IEBAIC04MzIs
-MTcgKzgzMiw3IEBAIHN0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyIHB4YTE2OGZiX2RyaXZl
-ciA9IHsNCj4gIAkucmVtb3ZlCQk9IF9fZGV2ZXhpdF9wKHB4YTE2OGZiX3JlbW92ZSksDQo+ICB9
-Ow0KPiANCj4gLXN0YXRpYyBpbnQgX19pbml0IHB4YTE2OGZiX2luaXQodm9pZCkNCj4gLXsNCj4g
-LQlyZXR1cm4gcGxhdGZvcm1fZHJpdmVyX3JlZ2lzdGVyKCZweGExNjhmYl9kcml2ZXIpOw0KPiAt
-fQ0KPiAtbW9kdWxlX2luaXQocHhhMTY4ZmJfaW5pdCk7DQo+IC0NCj4gLXN0YXRpYyB2b2lkIF9f
-ZXhpdCBweGExNjhmYl9leGl0KHZvaWQpDQo+IC17DQo+IC0JcGxhdGZvcm1fZHJpdmVyX3VucmVn
-aXN0ZXIoJnB4YTE2OGZiX2RyaXZlcik7DQo+IC19DQo+IC1tb2R1bGVfZXhpdChweGExNjhmYl9l
-eGl0KTsNCj4gK21vZHVsZV9wbGF0Zm9ybV9kcml2ZXIocHhhMTY4ZmJfZHJpdmVyKTsNCj4gDQo+
-ICBNT0RVTEVfQVVUSE9SKCJMZW5uZXJ0IEJ1eXRlbmhlayA8YnV5dGVuaEBtYXJ2ZWxsLmNvbT4g
-Ig0KPiAgCSAgICAgICJHcmVlbiBXYW4gPGd3YW5AbWFydmVsbC5jb20+Iik7DQo+IGRpZmYgLS1n
-aXQgYS9kcml2ZXJzL3ZpZGVvL3B4YTN4eC1nY3UuYyBiL2RyaXZlcnMvdmlkZW8vcHhhM3h4LWdj
-dS5jDQo+IGluZGV4IDFlZDhiMzYuLjFkNzFjMDggMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvdmlk
-ZW8vcHhhM3h4LWdjdS5jDQo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vcHhhM3h4LWdjdS5jDQo+IEBA
-IC03NDcsMjAgKzc0Nyw3IEBAIHN0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyIHB4YTN4eF9n
-Y3VfZHJpdmVyID0gew0KPiAgCX0sDQo+ICB9Ow0KPiANCj4gLXN0YXRpYyBpbnQgX19pbml0DQo+
-IC1weGEzeHhfZ2N1X2luaXQodm9pZCkNCj4gLXsNCj4gLQlyZXR1cm4gcGxhdGZvcm1fZHJpdmVy
-X3JlZ2lzdGVyKCZweGEzeHhfZ2N1X2RyaXZlcik7DQo+IC19DQo+IC0NCj4gLXN0YXRpYyB2b2lk
-IF9fZXhpdA0KPiAtcHhhM3h4X2djdV9leGl0KHZvaWQpDQo+IC17DQo+IC0JcGxhdGZvcm1fZHJp
-dmVyX3VucmVnaXN0ZXIoJnB4YTN4eF9nY3VfZHJpdmVyKTsNCj4gLX0NCj4gLQ0KPiAtbW9kdWxl
-X2luaXQocHhhM3h4X2djdV9pbml0KTsNCj4gLW1vZHVsZV9leGl0KHB4YTN4eF9nY3VfZXhpdCk7
-DQo+ICttb2R1bGVfcGxhdGZvcm1fZHJpdmVyKHB4YTN4eF9nY3VfZHJpdmVyKTsNCj4gDQo+ICBN
-T0RVTEVfREVTQ1JJUFRJT04oIlBYQTN4eCBncmFwaGljcyBjb250cm9sbGVyIHVuaXQgZHJpdmVy
-Iik7DQo+ICBNT0RVTEVfTElDRU5TRSgiR1BMIik7DQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3Zp
-ZGVvL3MzYy1mYi5jIGIvZHJpdmVycy92aWRlby9zM2MtZmIuYw0KPiBpbmRleCAwODYwNTkwLi5i
-Y2FkMGVlIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jDQo+ICsrKyBiL2Ry
-aXZlcnMvdmlkZW8vczNjLWZiLmMNCj4gQEAgLTE5MzAsMTggKzE5MzAsNyBAQCBzdGF0aWMgc3Ry
-dWN0IHBsYXRmb3JtX2RyaXZlciBzM2NfZmJfZHJpdmVyID0gew0KPiAgCX0sDQo+ICB9Ow0KPiAN
-Cj4gLXN0YXRpYyBpbnQgX19pbml0IHMzY19mYl9pbml0KHZvaWQpDQo+IC17DQo+IC0JcmV0dXJu
-IHBsYXRmb3JtX2RyaXZlcl9yZWdpc3RlcigmczNjX2ZiX2RyaXZlcik7DQo+IC19DQo+IC0NCj4g
-LXN0YXRpYyB2b2lkIF9fZXhpdCBzM2NfZmJfY2xlYW51cCh2b2lkKQ0KPiAtew0KPiAtCXBsYXRm
-b3JtX2RyaXZlcl91bnJlZ2lzdGVyKCZzM2NfZmJfZHJpdmVyKTsNCj4gLX0NCj4gLQ0KPiAtbW9k
-dWxlX2luaXQoczNjX2ZiX2luaXQpOw0KPiAtbW9kdWxlX2V4aXQoczNjX2ZiX2NsZWFudXApOw0K
-PiArbW9kdWxlX3BsYXRmb3JtX2RyaXZlcihzM2NfZmJfZHJpdmVyKTsNCj4gDQo+ICBNT0RVTEVf
-QVVUSE9SKCJCZW4gRG9va3MgPGJlbkBzaW10ZWMuY28udWs+Iik7DQo+ICBNT0RVTEVfREVTQ1JJ
-UFRJT04oIlNhbXN1bmcgUzNDIFNvQyBGcmFtZWJ1ZmZlciBkcml2ZXIiKTsNCj4gZGlmZiAtLWdp
-dCBhL2RyaXZlcnMvdmlkZW8vc2g3NzYwZmIuYyBiL2RyaXZlcnMvdmlkZW8vc2g3NzYwZmIuYw0K
-PiBpbmRleCA0NWU0N2Q4Li44M2IxNmUyIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL3No
-Nzc2MGZiLmMNCj4gKysrIGIvZHJpdmVycy92aWRlby9zaDc3NjBmYi5jDQo+IEBAIC01ODUsMTgg
-KzU4NSw3IEBAIHN0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyIHNoNzc2MF9sY2RjX2RyaXZl
-ciA9IHsNCj4gIAkucmVtb3ZlID0gX19kZXZleGl0X3Aoc2g3NzYwZmJfcmVtb3ZlKSwNCj4gIH07
-DQo+IA0KPiAtc3RhdGljIGludCBfX2luaXQgc2g3NzYwZmJfaW5pdCh2b2lkKQ0KPiAtew0KPiAt
-CXJldHVybiBwbGF0Zm9ybV9kcml2ZXJfcmVnaXN0ZXIoJnNoNzc2MF9sY2RjX2RyaXZlcik7DQo+
-IC19DQo+IC0NCj4gLXN0YXRpYyB2b2lkIF9fZXhpdCBzaDc3NjBmYl9leGl0KHZvaWQpDQo+IC17
-DQo+IC0JcGxhdGZvcm1fZHJpdmVyX3VucmVnaXN0ZXIoJnNoNzc2MF9sY2RjX2RyaXZlcik7DQo+
-IC19DQo+IC0NCj4gLW1vZHVsZV9pbml0KHNoNzc2MGZiX2luaXQpOw0KPiAtbW9kdWxlX2V4aXQo
-c2g3NzYwZmJfZXhpdCk7DQo+ICttb2R1bGVfcGxhdGZvcm1fZHJpdmVyKHNoNzc2MF9sY2RjX2Ry
-aXZlcik7DQo+IA0KPiAgTU9EVUxFX0FVVEhPUigiTm9idWhpcm8gSXdhbWF0c3UsIE1hbnVlbCBM
-YXVzcyIpOw0KPiAgTU9EVUxFX0RFU0NSSVBUSU9OKCJGQmRldiBmb3IgU0g3NzYwLzYzIGludGVn
-cmF0ZWQgTENEIENvbnRyb2xsZXIiKTsNCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vc2hf
-bW9iaWxlX2xjZGNmYi5jDQo+IGIvZHJpdmVycy92aWRlby9zaF9tb2JpbGVfbGNkY2ZiLmMNCj4g
-aW5kZXggMWY0OWFiNC4uYTI2NGViZiAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9zaF9t
-b2JpbGVfbGNkY2ZiLmMNCj4gKysrIGIvZHJpdmVycy92aWRlby9zaF9tb2JpbGVfbGNkY2ZiLmMN
-Cj4gQEAgLTE3MDksMTggKzE3MDksNyBAQCBzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2RyaXZlciBz
-aF9tb2JpbGVfbGNkY19kcml2ZXINCj4gPSB7DQo+ICAJLnJlbW92ZQkJPSBzaF9tb2JpbGVfbGNk
-Y19yZW1vdmUsDQo+ICB9Ow0KPiANCj4gLXN0YXRpYyBpbnQgX19pbml0IHNoX21vYmlsZV9sY2Rj
-X2luaXQodm9pZCkNCj4gLXsNCj4gLQlyZXR1cm4gcGxhdGZvcm1fZHJpdmVyX3JlZ2lzdGVyKCZz
-aF9tb2JpbGVfbGNkY19kcml2ZXIpOw0KPiAtfQ0KPiAtDQo+IC1zdGF0aWMgdm9pZCBfX2V4aXQg
-c2hfbW9iaWxlX2xjZGNfZXhpdCh2b2lkKQ0KPiAtew0KPiAtCXBsYXRmb3JtX2RyaXZlcl91bnJl
-Z2lzdGVyKCZzaF9tb2JpbGVfbGNkY19kcml2ZXIpOw0KPiAtfQ0KPiAtDQo+IC1tb2R1bGVfaW5p
-dChzaF9tb2JpbGVfbGNkY19pbml0KTsNCj4gLW1vZHVsZV9leGl0KHNoX21vYmlsZV9sY2RjX2V4
-aXQpOw0KPiArbW9kdWxlX3BsYXRmb3JtX2RyaXZlcihzaF9tb2JpbGVfbGNkY19kcml2ZXIpOw0K
-PiANCj4gIE1PRFVMRV9ERVNDUklQVElPTigiU3VwZXJIIE1vYmlsZSBMQ0RDIEZyYW1lYnVmZmVy
-IGRyaXZlciIpOw0KPiAgTU9EVUxFX0FVVEhPUigiTWFnbnVzIERhbW0gPGRhbW1Ab3BlbnNvdXJj
-ZS5zZT4iKTsNCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vc2hfbW9iaWxlX21lcmFtLmMN
-Cj4gYi9kcml2ZXJzL3ZpZGVvL3NoX21vYmlsZV9tZXJhbS5jDQo+IGluZGV4IDRkNjM0OTAuLmY0
-NWQ4M2UgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvdmlkZW8vc2hfbW9iaWxlX21lcmFtLmMNCj4g
-KysrIGIvZHJpdmVycy92aWRlby9zaF9tb2JpbGVfbWVyYW0uYw0KPiBAQCAtNjc5LDE4ICs2Nzks
-NyBAQCBzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2RyaXZlciBzaF9tb2JpbGVfbWVyYW1fZHJpdmVy
-DQo+ID0gew0KPiAgCS5yZW1vdmUJCT0gc2hfbW9iaWxlX21lcmFtX3JlbW92ZSwNCj4gIH07DQo+
-IA0KPiAtc3RhdGljIGludCBfX2luaXQgc2hfbW9iaWxlX21lcmFtX2luaXQodm9pZCkNCj4gLXsN
-Cj4gLQlyZXR1cm4gcGxhdGZvcm1fZHJpdmVyX3JlZ2lzdGVyKCZzaF9tb2JpbGVfbWVyYW1fZHJp
-dmVyKTsNCj4gLX0NCj4gLQ0KPiAtc3RhdGljIHZvaWQgX19leGl0IHNoX21vYmlsZV9tZXJhbV9l
-eGl0KHZvaWQpDQo+IC17DQo+IC0JcGxhdGZvcm1fZHJpdmVyX3VucmVnaXN0ZXIoJnNoX21vYmls
-ZV9tZXJhbV9kcml2ZXIpOw0KPiAtfQ0KPiAtDQo+IC1tb2R1bGVfaW5pdChzaF9tb2JpbGVfbWVy
-YW1faW5pdCk7DQo+IC1tb2R1bGVfZXhpdChzaF9tb2JpbGVfbWVyYW1fZXhpdCk7DQo+ICttb2R1
-bGVfcGxhdGZvcm1fZHJpdmVyKHNoX21vYmlsZV9tZXJhbV9kcml2ZXIpOw0KPiANCj4gIE1PRFVM
-RV9ERVNDUklQVElPTigiU3VwZXJIIE1vYmlsZSBNRVJBTSBkcml2ZXIiKTsNCj4gIE1PRFVMRV9B
-VVRIT1IoIkRhbWlhbiBIb2Jzb24tR2FyY2lhIC8gVGFrYW5hcmkgSGF5YW1hIik7DQo+IGRpZmYg
-LS1naXQgYS9kcml2ZXJzL3ZpZGVvL3NtNTAxZmIuYyBiL2RyaXZlcnMvdmlkZW8vc201MDFmYi5j
-DQo+IGluZGV4IGE3ODI1NGMuLjM2OTBlZmYgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvdmlkZW8v
-c201MDFmYi5jDQo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vc201MDFmYi5jDQo+IEBAIC0yMjMwLDE4
-ICsyMjMwLDcgQEAgc3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9kcml2ZXIgc201MDFmYl9kcml2ZXIg
-PSB7DQo+ICAJfSwNCj4gIH07DQo+IA0KPiAtc3RhdGljIGludCBfX2RldmluaXQgc201MDFmYl9p
-bml0KHZvaWQpDQo+IC17DQo+IC0JcmV0dXJuIHBsYXRmb3JtX2RyaXZlcl9yZWdpc3Rlcigmc201
-MDFmYl9kcml2ZXIpOw0KPiAtfQ0KPiAtDQo+IC1zdGF0aWMgdm9pZCBfX2V4aXQgc201MDFmYl9j
-bGVhbnVwKHZvaWQpDQo+IC17DQo+IC0JcGxhdGZvcm1fZHJpdmVyX3VucmVnaXN0ZXIoJnNtNTAx
-ZmJfZHJpdmVyKTsNCj4gLX0NCj4gLQ0KPiAtbW9kdWxlX2luaXQoc201MDFmYl9pbml0KTsNCj4g
-LW1vZHVsZV9leGl0KHNtNTAxZmJfY2xlYW51cCk7DQo+ICttb2R1bGVfcGxhdGZvcm1fZHJpdmVy
-KHNtNTAxZmJfZHJpdmVyKTsNCj4gDQo+ICBtb2R1bGVfcGFyYW1fbmFtZWQobW9kZSwgZmJfbW9k
-ZSwgY2hhcnAsIDApOw0KPiAgTU9EVUxFX1BBUk1fREVTQyhtb2RlLA0KPiBkaWZmIC0tZ2l0IGEv
-ZHJpdmVycy92aWRlby92dDg1MDBsY2RmYi5jIGIvZHJpdmVycy92aWRlby92dDg1MDBsY2RmYi5j
-DQo+IGluZGV4IDc3N2MyMWQuLjJhNWZlNmUgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvdmlkZW8v
-dnQ4NTAwbGNkZmIuYw0KPiArKysgYi9kcml2ZXJzL3ZpZGVvL3Z0ODUwMGxjZGZiLmMNCj4gQEAg
-LTQ1NywxOCArNDU3LDcgQEAgc3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9kcml2ZXIgdnQ4NTAwbGNk
-X2RyaXZlciA9IHsNCj4gIAl9LA0KPiAgfTsNCj4gDQo+IC1zdGF0aWMgaW50IF9faW5pdCB2dDg1
-MDBsY2RfaW5pdCh2b2lkKQ0KPiAtew0KPiAtCXJldHVybiBwbGF0Zm9ybV9kcml2ZXJfcmVnaXN0
-ZXIoJnZ0ODUwMGxjZF9kcml2ZXIpOw0KPiAtfQ0KPiAtDQo+IC1zdGF0aWMgdm9pZCBfX2V4aXQg
-dnQ4NTAwbGNkX2V4aXQodm9pZCkNCj4gLXsNCj4gLQlwbGF0Zm9ybV9kcml2ZXJfdW5yZWdpc3Rl
-cigmdnQ4NTAwbGNkX2RyaXZlcik7DQo+IC19DQo+IC0NCj4gLW1vZHVsZV9pbml0KHZ0ODUwMGxj
-ZF9pbml0KTsNCj4gLW1vZHVsZV9leGl0KHZ0ODUwMGxjZF9leGl0KTsNCj4gK21vZHVsZV9wbGF0
-Zm9ybV9kcml2ZXIodnQ4NTAwbGNkX2RyaXZlcik7DQo+IA0KPiAgTU9EVUxFX0FVVEhPUigiQWxl
-eGV5IENoYXJrb3YgPGFsY2hhcmtAZ21haWwuY29tPiIpOw0KPiAgTU9EVUxFX0RFU0NSSVBUSU9O
-KCJMQ0QgY29udHJvbGxlciBkcml2ZXIgZm9yIFZJQSBWVDg1MDAiKTsNCj4gZGlmZiAtLWdpdCBh
-L2RyaXZlcnMvdmlkZW8vdzEwMGZiLmMgYi9kcml2ZXJzL3ZpZGVvL3cxMDBmYi5jDQo+IGluZGV4
-IDIzNzVlNWIuLjkwYTJlMzAgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvdmlkZW8vdzEwMGZiLmMN
-Cj4gKysrIGIvZHJpdmVycy92aWRlby93MTAwZmIuYw0KPiBAQCAtMTYyMCwxOCArMTYyMCw3IEBA
-IHN0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyIHcxMDBmYl9kcml2ZXIgPSB7DQo+ICAJfSwN
-Cj4gIH07DQo+IA0KPiAtaW50IF9faW5pdCB3MTAwZmJfaW5pdCh2b2lkKQ0KPiAtew0KPiAtCXJl
-dHVybiBwbGF0Zm9ybV9kcml2ZXJfcmVnaXN0ZXIoJncxMDBmYl9kcml2ZXIpOw0KPiAtfQ0KPiAt
-DQo+IC12b2lkIF9fZXhpdCB3MTAwZmJfY2xlYW51cCh2b2lkKQ0KPiAtew0KPiAtCXBsYXRmb3Jt
-X2RyaXZlcl91bnJlZ2lzdGVyKCZ3MTAwZmJfZHJpdmVyKTsNCj4gLX0NCj4gLQ0KPiAtbW9kdWxl
-X2luaXQodzEwMGZiX2luaXQpOw0KPiAtbW9kdWxlX2V4aXQodzEwMGZiX2NsZWFudXApOw0KPiAr
-bW9kdWxlX3BsYXRmb3JtX2RyaXZlcih3MTAwZmJfZHJpdmVyKTsNCj4gDQo+ICBNT0RVTEVfREVT
-Q1JJUFRJT04oIkFUSSBJbWFnZW9uIHcxMDAgZnJhbWVidWZmZXIgZHJpdmVyIik7DQo+ICBNT0RV
-TEVfTElDRU5TRSgiR1BMIik7DQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL3dtODUwNWZi
-LmMgYi9kcml2ZXJzL3ZpZGVvL3dtODUwNWZiLmMNCj4gaW5kZXggOTZlMzRhNS4uYzg3MDNiZCAx
-MDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby93bTg1MDVmYi5jDQo+ICsrKyBiL2RyaXZlcnMv
-dmlkZW8vd204NTA1ZmIuYw0KPiBAQCAtNDA0LDE4ICs0MDQsNyBAQCBzdGF0aWMgc3RydWN0IHBs
-YXRmb3JtX2RyaXZlciB3bTg1MDVmYl9kcml2ZXIgPSB7DQo+ICAJfSwNCj4gIH07DQo+IA0KPiAt
-c3RhdGljIGludCBfX2luaXQgd204NTA1ZmJfaW5pdCh2b2lkKQ0KPiAtew0KPiAtCXJldHVybiBw
-bGF0Zm9ybV9kcml2ZXJfcmVnaXN0ZXIoJndtODUwNWZiX2RyaXZlcik7DQo+IC19DQo+IC0NCj4g
-LXN0YXRpYyB2b2lkIF9fZXhpdCB3bTg1MDVmYl9leGl0KHZvaWQpDQo+IC17DQo+IC0JcGxhdGZv
-cm1fZHJpdmVyX3VucmVnaXN0ZXIoJndtODUwNWZiX2RyaXZlcik7DQo+IC19DQo+IC0NCj4gLW1v
-ZHVsZV9pbml0KHdtODUwNWZiX2luaXQpOw0KPiAtbW9kdWxlX2V4aXQod204NTA1ZmJfZXhpdCk7
-DQo+ICttb2R1bGVfcGxhdGZvcm1fZHJpdmVyKHdtODUwNWZiX2RyaXZlcik7DQo+IA0KPiAgTU9E
-VUxFX0FVVEhPUigiRWQgU3Bpcmlkb25vdiA8ZWRvLnJ1c0BnbWFpbC5jb20+Iik7DQo+ICBNT0RV
-TEVfREVTQ1JJUFRJT04oIkZyYW1lYnVmZmVyIGRyaXZlciBmb3IgV01UIFdNODUwNSIpOw0KPiBk
-aWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby93bXRfZ2Vfcm9wcy5jIGIvZHJpdmVycy92aWRlby93
-bXRfZ2Vfcm9wcy5jDQo+IGluZGV4IDQ1ODMyYjcuLjU1YmUzODYgMTAwNjQ0DQo+IC0tLSBhL2Ry
-aXZlcnMvdmlkZW8vd210X2dlX3JvcHMuYw0KPiArKysgYi9kcml2ZXJzL3ZpZGVvL3dtdF9nZV9y
-b3BzLmMNCj4gQEAgLTE2NywxOCArMTY3LDcgQEAgc3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9kcml2
-ZXIgd210X2dlX3JvcHNfZHJpdmVyID0gew0KPiAgCX0sDQo+ICB9Ow0KPiANCj4gLXN0YXRpYyBp
-bnQgX19pbml0IHdtdF9nZV9yb3BzX2luaXQodm9pZCkNCj4gLXsNCj4gLQlyZXR1cm4gcGxhdGZv
-cm1fZHJpdmVyX3JlZ2lzdGVyKCZ3bXRfZ2Vfcm9wc19kcml2ZXIpOw0KPiAtfQ0KPiAtDQo+IC1z
-dGF0aWMgdm9pZCBfX2V4aXQgd210X2dlX3JvcHNfZXhpdCh2b2lkKQ0KPiAtew0KPiAtCXBsYXRm
-b3JtX2RyaXZlcl91bnJlZ2lzdGVyKCZ3bXRfZ2Vfcm9wc19kcml2ZXIpOw0KPiAtfQ0KPiAtDQo+
-IC1tb2R1bGVfaW5pdCh3bXRfZ2Vfcm9wc19pbml0KTsNCj4gLW1vZHVsZV9leGl0KHdtdF9nZV9y
-b3BzX2V4aXQpOw0KPiArbW9kdWxlX3BsYXRmb3JtX2RyaXZlcih3bXRfZ2Vfcm9wc19kcml2ZXIp
-Ow0KPiANCj4gIE1PRFVMRV9BVVRIT1IoIkFsZXhleSBDaGFya292IDxhbGNoYXJrQGdtYWlsLmNv
-bSIpOw0KPiAgTU9EVUxFX0RFU0NSSVBUSU9OKCJBY2NlbGVyYXRvcnMgZm9yIHJhc3RlciBvcGVy
-YXRpb25zIHVzaW5nICINCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8veGlsaW54ZmIuYyBi
-L2RyaXZlcnMvdmlkZW8veGlsaW54ZmIuYw0KPiBpbmRleCBmY2I2Y2Q5Li4xODA4NDUyIDEwMDY0
-NA0KPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL3hpbGlueGZiLmMNCj4gKysrIGIvZHJpdmVycy92aWRl
-by94aWxpbnhmYi5jDQo+IEBAIC01MTEsMjUgKzUxMSw3IEBAIHN0YXRpYyBzdHJ1Y3QgcGxhdGZv
-cm1fZHJpdmVyIHhpbGlueGZiX29mX2RyaXZlciA9IHsNCj4gIAl9LA0KPiAgfTsNCj4gDQo+IC0N
-Cj4gLS8qIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLQ0KPiAtICogTW9kdWxlIHNldHVwIGFuZCB0ZWFyZG93bg0KPiAt
-ICovDQo+IC0NCj4gLXN0YXRpYyBpbnQgX19pbml0DQo+IC14aWxpbnhmYl9pbml0KHZvaWQpDQo+
-IC17DQo+IC0JcmV0dXJuIHBsYXRmb3JtX2RyaXZlcl9yZWdpc3RlcigmeGlsaW54ZmJfb2ZfZHJp
-dmVyKTsNCj4gLX0NCj4gLQ0KPiAtc3RhdGljIHZvaWQgX19leGl0DQo+IC14aWxpbnhmYl9jbGVh
-bnVwKHZvaWQpDQo+IC17DQo+IC0JcGxhdGZvcm1fZHJpdmVyX3VucmVnaXN0ZXIoJnhpbGlueGZi
-X29mX2RyaXZlcik7DQo+IC19DQo+IC0NCj4gLW1vZHVsZV9pbml0KHhpbGlueGZiX2luaXQpOw0K
-PiAtbW9kdWxlX2V4aXQoeGlsaW54ZmJfY2xlYW51cCk7DQo+ICttb2R1bGVfcGxhdGZvcm1fZHJp
-dmVyKHhpbGlueGZiX29mX2RyaXZlcik7DQo+IA0KPiAgTU9EVUxFX0FVVEhPUigiTW9udGFWaXN0
-YSBTb2Z0d2FyZSwgSW5jLiA8c291cmNlQG12aXN0YS5jb20+Iik7DQo+ICBNT0RVTEVfREVTQ1JJ
-UFRJT04oIlhpbGlueCBURlQgZnJhbWUgYnVmZmVyIGRyaXZlciIpOw0KPiAtLQ0KPiAxLjcuMQ0K
-DQo
+2011/11/28 Jingoo Han <jg1.han@samsung.com>:
+>> -----Original Message-----
+>> Subject: [PATCH] video: convert drivers/video/* to use
+>> module_platform_driver()
+>>
+>> This patch converts the drivers in drivers/video/* to use the
+>> module_platform_driver() macro which makes the code smaller and a bit
+>> simpler.
+>>
+>> Cc: Wan ZongShun <mcuos.com@gmail.com>
+>> Cc: Sascha Hauer <s.hauer@pengutronix.de>
+>> Cc: Lennert Buytenhek <buytenh@wantstofly.org>
+>> Cc: Ben Dooks <ben-linux@fluff.org>
+>> Cc: Alexey Charkov <alchark@gmail.com>
+>> Cc: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+>> Cc: Manuel Lauss <mano@roarinelk.homelinux.net>
+>> Signed-off-by: Axel Lin <axel.lin@gmail.com>
+> Acked-by: Jingoo Han <jg1.han@samsung.com>
+> I reviewed and tested drivers/video/s3c-fb.c.
+> It looks good.
+> Thank you.
+>> ---
+>>  drivers/video/mxsfb.c            |   13 +------------
+>>  drivers/video/nuc900fb.c         |   13 +------------
+>>  drivers/video/pxa168fb.c         |   12 +-----------
+>>  drivers/video/pxa3xx-gcu.c       |   15 +--------------
+>>  drivers/video/s3c-fb.c           |   13 +------------
+>>  drivers/video/sh7760fb.c         |   13 +------------
+>>  drivers/video/sh_mobile_lcdcfb.c |   13 +------------
+>>  drivers/video/sh_mobile_meram.c  |   13 +------------
+>>  drivers/video/sm501fb.c          |   13 +------------
+>>  drivers/video/vt8500lcdfb.c      |   13 +------------
+>>  drivers/video/w100fb.c           |   13 +------------
+>>  drivers/video/wm8505fb.c         |   13 +------------
+>>  drivers/video/wmt_ge_rops.c      |   13 +------------
+>>  drivers/video/xilinxfb.c         |   20 +-------------------
+>>  14 files changed, 14 insertions(+), 176 deletions(-)
+>>
+>> diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+>> index d837d63..18742c2 100644
+>> --- a/drivers/video/mxsfb.c
+>> +++ b/drivers/video/mxsfb.c
+>> @@ -902,18 +902,7 @@ static struct platform_driver mxsfb_driver = {
+>>       },
+>>  };
+>>
+>> -static int __init mxsfb_init(void)
+>> -{
+>> -     return platform_driver_register(&mxsfb_driver);
+>> -}
+>> -
+>> -static void __exit mxsfb_exit(void)
+>> -{
+>> -     platform_driver_unregister(&mxsfb_driver);
+>> -}
+>> -
+>> -module_init(mxsfb_init);
+>> -module_exit(mxsfb_exit);
+>> +module_platform_driver(mxsfb_devtype);
+>>
+>>  MODULE_DESCRIPTION("Freescale mxs framebuffer driver");
+>>  MODULE_AUTHOR("Sascha Hauer, Pengutronix");
+>> diff --git a/drivers/video/nuc900fb.c b/drivers/video/nuc900fb.c
+>> index d1fbbd8..e10f551 100644
+>> --- a/drivers/video/nuc900fb.c
+>> +++ b/drivers/video/nuc900fb.c
+>> @@ -762,18 +762,7 @@ static struct platform_driver nuc900fb_driver = {
+>>       },
+>>  };
+>>
+>> -int __devinit nuc900fb_init(void)
+>> -{
+>> -     return platform_driver_register(&nuc900fb_driver);
+>> -}
+>> -
+>> -static void __exit nuc900fb_cleanup(void)
+>> -{
+>> -     platform_driver_unregister(&nuc900fb_driver);
+>> -}
+>> -
+>> -module_init(nuc900fb_init);
+>> -module_exit(nuc900fb_cleanup);
+>> +module_platform_driver(nuc900fb_driver);
+>>
+>>  MODULE_DESCRIPTION("Framebuffer driver for the NUC900");
+>>  MODULE_LICENSE("GPL");
+>> diff --git a/drivers/video/pxa168fb.c b/drivers/video/pxa168fb.c
+>> index 18ead6f..8384b94 100644
+>> --- a/drivers/video/pxa168fb.c
+>> +++ b/drivers/video/pxa168fb.c
+>> @@ -832,17 +832,7 @@ static struct platform_driver pxa168fb_driver = {
+>>       .remove         = __devexit_p(pxa168fb_remove),
+>>  };
+>>
+>> -static int __init pxa168fb_init(void)
+>> -{
+>> -     return platform_driver_register(&pxa168fb_driver);
+>> -}
+>> -module_init(pxa168fb_init);
+>> -
+>> -static void __exit pxa168fb_exit(void)
+>> -{
+>> -     platform_driver_unregister(&pxa168fb_driver);
+>> -}
+>> -module_exit(pxa168fb_exit);
+>> +module_platform_driver(pxa168fb_driver);
+>>
+>>  MODULE_AUTHOR("Lennert Buytenhek <buytenh@marvell.com> "
+>>             "Green Wan <gwan@marvell.com>");
+>> diff --git a/drivers/video/pxa3xx-gcu.c b/drivers/video/pxa3xx-gcu.c
+>> index 1ed8b36..1d71c08 100644
+>> --- a/drivers/video/pxa3xx-gcu.c
+>> +++ b/drivers/video/pxa3xx-gcu.c
+>> @@ -747,20 +747,7 @@ static struct platform_driver pxa3xx_gcu_driver = {
+>>       },
+>>  };
+>>
+>> -static int __init
+>> -pxa3xx_gcu_init(void)
+>> -{
+>> -     return platform_driver_register(&pxa3xx_gcu_driver);
+>> -}
+>> -
+>> -static void __exit
+>> -pxa3xx_gcu_exit(void)
+>> -{
+>> -     platform_driver_unregister(&pxa3xx_gcu_driver);
+>> -}
+>> -
+>> -module_init(pxa3xx_gcu_init);
+>> -module_exit(pxa3xx_gcu_exit);
+>> +module_platform_driver(pxa3xx_gcu_driver);
+>>
+>>  MODULE_DESCRIPTION("PXA3xx graphics controller unit driver");
+>>  MODULE_LICENSE("GPL");
+>> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+>> index 0860590..bcad0ee 100644
+>> --- a/drivers/video/s3c-fb.c
+>> +++ b/drivers/video/s3c-fb.c
+>> @@ -1930,18 +1930,7 @@ static struct platform_driver s3c_fb_driver = {
+>>       },
+>>  };
+>>
+>> -static int __init s3c_fb_init(void)
+>> -{
+>> -     return platform_driver_register(&s3c_fb_driver);
+>> -}
+>> -
+>> -static void __exit s3c_fb_cleanup(void)
+>> -{
+>> -     platform_driver_unregister(&s3c_fb_driver);
+>> -}
+>> -
+>> -module_init(s3c_fb_init);
+>> -module_exit(s3c_fb_cleanup);
+>> +module_platform_driver(s3c_fb_driver);
+>>
+>>  MODULE_AUTHOR("Ben Dooks <ben@simtec.co.uk>");
+>>  MODULE_DESCRIPTION("Samsung S3C SoC Framebuffer driver");
+>> diff --git a/drivers/video/sh7760fb.c b/drivers/video/sh7760fb.c
+>> index 45e47d8..83b16e2 100644
+>> --- a/drivers/video/sh7760fb.c
+>> +++ b/drivers/video/sh7760fb.c
+>> @@ -585,18 +585,7 @@ static struct platform_driver sh7760_lcdc_driver = {
+>>       .remove = __devexit_p(sh7760fb_remove),
+>>  };
+>>
+>> -static int __init sh7760fb_init(void)
+>> -{
+>> -     return platform_driver_register(&sh7760_lcdc_driver);
+>> -}
+>> -
+>> -static void __exit sh7760fb_exit(void)
+>> -{
+>> -     platform_driver_unregister(&sh7760_lcdc_driver);
+>> -}
+>> -
+>> -module_init(sh7760fb_init);
+>> -module_exit(sh7760fb_exit);
+>> +module_platform_driver(sh7760_lcdc_driver);
+>>
+>>  MODULE_AUTHOR("Nobuhiro Iwamatsu, Manuel Lauss");
+>>  MODULE_DESCRIPTION("FBdev for SH7760/63 integrated LCD Controller");
+>> diff --git a/drivers/video/sh_mobile_lcdcfb.c
+>> b/drivers/video/sh_mobile_lcdcfb.c
+>> index 1f49ab4..a264ebf 100644
+>> --- a/drivers/video/sh_mobile_lcdcfb.c
+>> +++ b/drivers/video/sh_mobile_lcdcfb.c
+>> @@ -1709,18 +1709,7 @@ static struct platform_driver sh_mobile_lcdc_driver
+>> = {
+>>       .remove         = sh_mobile_lcdc_remove,
+>>  };
+>>
+>> -static int __init sh_mobile_lcdc_init(void)
+>> -{
+>> -     return platform_driver_register(&sh_mobile_lcdc_driver);
+>> -}
+>> -
+>> -static void __exit sh_mobile_lcdc_exit(void)
+>> -{
+>> -     platform_driver_unregister(&sh_mobile_lcdc_driver);
+>> -}
+>> -
+>> -module_init(sh_mobile_lcdc_init);
+>> -module_exit(sh_mobile_lcdc_exit);
+>> +module_platform_driver(sh_mobile_lcdc_driver);
+>>
+>>  MODULE_DESCRIPTION("SuperH Mobile LCDC Framebuffer driver");
+>>  MODULE_AUTHOR("Magnus Damm <damm@opensource.se>");
+>> diff --git a/drivers/video/sh_mobile_meram.c
+>> b/drivers/video/sh_mobile_meram.c
+>> index 4d63490..f45d83e 100644
+>> --- a/drivers/video/sh_mobile_meram.c
+>> +++ b/drivers/video/sh_mobile_meram.c
+>> @@ -679,18 +679,7 @@ static struct platform_driver sh_mobile_meram_driver
+>> = {
+>>       .remove         = sh_mobile_meram_remove,
+>>  };
+>>
+>> -static int __init sh_mobile_meram_init(void)
+>> -{
+>> -     return platform_driver_register(&sh_mobile_meram_driver);
+>> -}
+>> -
+>> -static void __exit sh_mobile_meram_exit(void)
+>> -{
+>> -     platform_driver_unregister(&sh_mobile_meram_driver);
+>> -}
+>> -
+>> -module_init(sh_mobile_meram_init);
+>> -module_exit(sh_mobile_meram_exit);
+>> +module_platform_driver(sh_mobile_meram_driver);
+>>
+>>  MODULE_DESCRIPTION("SuperH Mobile MERAM driver");
+>>  MODULE_AUTHOR("Damian Hobson-Garcia / Takanari Hayama");
+>> diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
+>> index a78254c..3690eff 100644
+>> --- a/drivers/video/sm501fb.c
+>> +++ b/drivers/video/sm501fb.c
+>> @@ -2230,18 +2230,7 @@ static struct platform_driver sm501fb_driver = {
+>>       },
+>>  };
+>>
+>> -static int __devinit sm501fb_init(void)
+>> -{
+>> -     return platform_driver_register(&sm501fb_driver);
+>> -}
+>> -
+>> -static void __exit sm501fb_cleanup(void)
+>> -{
+>> -     platform_driver_unregister(&sm501fb_driver);
+>> -}
+>> -
+>> -module_init(sm501fb_init);
+>> -module_exit(sm501fb_cleanup);
+>> +module_platform_driver(sm501fb_driver);
+>>
+>>  module_param_named(mode, fb_mode, charp, 0);
+>>  MODULE_PARM_DESC(mode,
+>> diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
+>> index 777c21d..2a5fe6e 100644
+>> --- a/drivers/video/vt8500lcdfb.c
+>> +++ b/drivers/video/vt8500lcdfb.c
+>> @@ -457,18 +457,7 @@ static struct platform_driver vt8500lcd_driver = {
+>>       },
+>>  };
+>>
+>> -static int __init vt8500lcd_init(void)
+>> -{
+>> -     return platform_driver_register(&vt8500lcd_driver);
+>> -}
+>> -
+>> -static void __exit vt8500lcd_exit(void)
+>> -{
+>> -     platform_driver_unregister(&vt8500lcd_driver);
+>> -}
+>> -
+>> -module_init(vt8500lcd_init);
+>> -module_exit(vt8500lcd_exit);
+>> +module_platform_driver(vt8500lcd_driver);
+>>
+>>  MODULE_AUTHOR("Alexey Charkov <alchark@gmail.com>");
+>>  MODULE_DESCRIPTION("LCD controller driver for VIA VT8500");
+>> diff --git a/drivers/video/w100fb.c b/drivers/video/w100fb.c
+>> index 2375e5b..90a2e30 100644
+>> --- a/drivers/video/w100fb.c
+>> +++ b/drivers/video/w100fb.c
+>> @@ -1620,18 +1620,7 @@ static struct platform_driver w100fb_driver = {
+>>       },
+>>  };
+>>
+>> -int __init w100fb_init(void)
+>> -{
+>> -     return platform_driver_register(&w100fb_driver);
+>> -}
+>> -
+>> -void __exit w100fb_cleanup(void)
+>> -{
+>> -     platform_driver_unregister(&w100fb_driver);
+>> -}
+>> -
+>> -module_init(w100fb_init);
+>> -module_exit(w100fb_cleanup);
+>> +module_platform_driver(w100fb_driver);
+>>
+>>  MODULE_DESCRIPTION("ATI Imageon w100 framebuffer driver");
+>>  MODULE_LICENSE("GPL");
+>> diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+>> index 96e34a5..c8703bd 100644
+>> --- a/drivers/video/wm8505fb.c
+>> +++ b/drivers/video/wm8505fb.c
+>> @@ -404,18 +404,7 @@ static struct platform_driver wm8505fb_driver = {
+>>       },
+>>  };
+>>
+>> -static int __init wm8505fb_init(void)
+>> -{
+>> -     return platform_driver_register(&wm8505fb_driver);
+>> -}
+>> -
+>> -static void __exit wm8505fb_exit(void)
+>> -{
+>> -     platform_driver_unregister(&wm8505fb_driver);
+>> -}
+>> -
+>> -module_init(wm8505fb_init);
+>> -module_exit(wm8505fb_exit);
+>> +module_platform_driver(wm8505fb_driver);
+>>
+>>  MODULE_AUTHOR("Ed Spiridonov <edo.rus@gmail.com>");
+>>  MODULE_DESCRIPTION("Framebuffer driver for WMT WM8505");
+>> diff --git a/drivers/video/wmt_ge_rops.c b/drivers/video/wmt_ge_rops.c
+>> index 45832b7..55be386 100644
+>> --- a/drivers/video/wmt_ge_rops.c
+>> +++ b/drivers/video/wmt_ge_rops.c
+>> @@ -167,18 +167,7 @@ static struct platform_driver wmt_ge_rops_driver = {
+>>       },
+>>  };
+>>
+>> -static int __init wmt_ge_rops_init(void)
+>> -{
+>> -     return platform_driver_register(&wmt_ge_rops_driver);
+>> -}
+>> -
+>> -static void __exit wmt_ge_rops_exit(void)
+>> -{
+>> -     platform_driver_unregister(&wmt_ge_rops_driver);
+>> -}
+>> -
+>> -module_init(wmt_ge_rops_init);
+>> -module_exit(wmt_ge_rops_exit);
+>> +module_platform_driver(wmt_ge_rops_driver);
+>>
+>>  MODULE_AUTHOR("Alexey Charkov <alchark@gmail.com");
+>>  MODULE_DESCRIPTION("Accelerators for raster operations using "
+>> diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+>> index fcb6cd9..1808452 100644
+>> --- a/drivers/video/xilinxfb.c
+>> +++ b/drivers/video/xilinxfb.c
+>> @@ -511,25 +511,7 @@ static struct platform_driver xilinxfb_of_driver = {
+>>       },
+>>  };
+>>
+>> -
+>> -/* ---------------------------------------------------------------------
+>> - * Module setup and teardown
+>> - */
+>> -
+>> -static int __init
+>> -xilinxfb_init(void)
+>> -{
+>> -     return platform_driver_register(&xilinxfb_of_driver);
+>> -}
+>> -
+>> -static void __exit
+>> -xilinxfb_cleanup(void)
+>> -{
+>> -     platform_driver_unregister(&xilinxfb_of_driver);
+>> -}
+>> -
+>> -module_init(xilinxfb_init);
+>> -module_exit(xilinxfb_cleanup);
+>> +module_platform_driver(xilinxfb_of_driver);
+>>
+>>  MODULE_AUTHOR("MontaVista Software, Inc. <source@mvista.com>");
+>>  MODULE_DESCRIPTION("Xilinx TFT frame buffer driver");
 
+for nuc900fb
+
+Acked-by: Wan ZongShun <mcuos.com@gmail.com>
+
+thanks!
+>> --
+>> 1.7.1
+>
+>
+
+
+
+-- 
+Wan ZongShun.
+www.mcuos.com

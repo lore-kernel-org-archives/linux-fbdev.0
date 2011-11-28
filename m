@@ -1,122 +1,74 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Sun, 27 Nov 2011 22:51:07 +0000
-Subject: [PATCH 1/2] video: s3c-fb: Unify runtime and system PM functions
-Message-Id: <1322434268-25525-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 28 Nov 2011 07:38:51 +0000
+Subject: Re: [PATCH 1/2] video: s3c-fb: Unify runtime and system PM functions
+Message-Id: <23357853.79861322465930397.JavaMail.weblogic@epml23>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1322434268-25525-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1322434268-25525-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The s3c-fb driver has separate runtime and system PM functions but the
-implementations are identical so far as I can tell so unify them for
-simplicity.
-
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
-
-This is a slightly updated version of the patch, previously I forgot to
-staticise the pm_ops.
-
- drivers/video/s3c-fb.c |   75 +-----------------------------------------------
- 1 files changed, 1 insertions(+), 74 deletions(-)
-
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 12eaee0..27971bc 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -1590,77 +1590,9 @@ static int s3c_fb_resume(struct device *dev)
- 
- 	return 0;
- }
--
--static int s3c_fb_runtime_suspend(struct device *dev)
--{
--	struct platform_device *pdev = to_platform_device(dev);
--	struct s3c_fb *sfb = platform_get_drvdata(pdev);
--	struct s3c_fb_win *win;
--	int win_no;
--
--	for (win_no = S3C_FB_MAX_WIN - 1; win_no >= 0; win_no--) {
--		win = sfb->windows[win_no];
--		if (!win)
--			continue;
--
--		/* use the blank function to push into power-down */
--		s3c_fb_blank(FB_BLANK_POWERDOWN, win->fbinfo);
--	}
--
--	if (!sfb->variant.has_clksel)
--		clk_disable(sfb->lcd_clk);
--
--	clk_disable(sfb->bus_clk);
--	return 0;
--}
--
--static int s3c_fb_runtime_resume(struct device *dev)
--{
--	struct platform_device *pdev = to_platform_device(dev);
--	struct s3c_fb *sfb = platform_get_drvdata(pdev);
--	struct s3c_fb_platdata *pd = sfb->pdata;
--	struct s3c_fb_win *win;
--	int win_no;
--
--	clk_enable(sfb->bus_clk);
--
--	if (!sfb->variant.has_clksel)
--		clk_enable(sfb->lcd_clk);
--
--	/* setup gpio and output polarity controls */
--	pd->setup_gpio();
--	writel(pd->vidcon1, sfb->regs + VIDCON1);
--
--	/* zero all windows before we do anything */
--	for (win_no = 0; win_no < sfb->variant.nr_windows; win_no++)
--		s3c_fb_clear_win(sfb, win_no);
--
--	for (win_no = 0; win_no < sfb->variant.nr_windows - 1; win_no++) {
--		void __iomem *regs = sfb->regs + sfb->variant.keycon;
--
--		regs += (win_no * 8);
--		writel(0xffffff, regs + WKEYCON0);
--		writel(0xffffff, regs + WKEYCON1);
--	}
--
--	/* restore framebuffers */
--	for (win_no = 0; win_no < S3C_FB_MAX_WIN; win_no++) {
--		win = sfb->windows[win_no];
--		if (!win)
--			continue;
--
--		dev_dbg(&pdev->dev, "resuming window %d\n", win_no);
--		s3c_fb_set_par(win->fbinfo);
--	}
--
--	return 0;
--}
--
- #else
- #define s3c_fb_suspend NULL
- #define s3c_fb_resume  NULL
--#define s3c_fb_runtime_suspend NULL
--#define s3c_fb_runtime_resume NULL
- #endif
- 
- 
-@@ -1985,12 +1917,7 @@ static struct platform_device_id s3c_fb_driver_ids[] = {
- };
- MODULE_DEVICE_TABLE(platform, s3c_fb_driver_ids);
- 
--static const struct dev_pm_ops s3cfb_pm_ops = {
--	.suspend	= s3c_fb_suspend,
--	.resume		= s3c_fb_resume,
--	.runtime_suspend	= s3c_fb_runtime_suspend,
--	.runtime_resume		= s3c_fb_runtime_resume,
--};
-+static UNIVERSAL_DEV_PM_OPS(s3cfb_pm_ops, s3c_fb_suspend, s3c_fb_resume, NULL);
- 
- static struct platform_driver s3c_fb_driver = {
- 	.probe		= s3c_fb_probe,
--- 
-1.7.7.3
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBNYXJrIEJyb3duIDxicm9vbmll
+QG9wZW5zb3VyY2Uud29sZnNvbm1pY3JvLmNvbT4NCj4gU3ViamVjdDogW1BBVENIIDEvMl0gdmlk
+ZW86IHMzYy1mYjogVW5pZnkgcnVudGltZSBhbmQgc3lzdGVtIFBNIGZ1bmN0aW9ucw0KPiANCj4g
+VGhlIHMzYy1mYiBkcml2ZXIgaGFzIHNlcGFyYXRlIHJ1bnRpbWUgYW5kIHN5c3RlbSBQTSBmdW5j
+dGlvbnMgYnV0IHRoZQ0KPiBpbXBsZW1lbnRhdGlvbnMgYXJlIGlkZW50aWNhbCBzbyBmYXIgYXMg
+SSBjYW4gdGVsbCBzbyB1bmlmeSB0aGVtIGZvcg0KPiBzaW1wbGljaXR5Lg0KPiANCj4gU2lnbmVk
+LW9mZi1ieTogTWFyayBCcm93biA8YnJvb25pZUBvcGVuc291cmNlLndvbGZzb25taWNyby5jb20+
+DQpBY2tlZC1ieTogSmluZ29vIEhhbiA8amcxLmhhbkBzYW1zdW5nLmNvbT4NClRoYW5rIHlvdS4N
+Cj4gLS0tDQo+ICBkcml2ZXJzL3ZpZGVvL3MzYy1mYi5jIHwgICA3NSArLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KPiAtLS0tDQo+ICAxIGZpbGVzIGNoYW5nZWQs
+IDEgaW5zZXJ0aW9ucygrKSwgNzQgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJp
+dmVycy92aWRlby9zM2MtZmIuYyBiL2RyaXZlcnMvdmlkZW8vczNjLWZiLmMNCj4gaW5kZXggY2Yx
+ZDExZi4uZTg0Njc3ZSAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9zM2MtZmIuYw0KPiAr
+KysgYi9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jDQo+IEBAIC0xNTkwLDc3ICsxNTkwLDkgQEAgc3Rh
+dGljIGludCBzM2NfZmJfcmVzdW1lKHN0cnVjdCBkZXZpY2UgKmRldikNCj4gDQo+ICAJcmV0dXJu
+IDA7DQo+ICB9DQo+IC0NCj4gLXN0YXRpYyBpbnQgczNjX2ZiX3J1bnRpbWVfc3VzcGVuZChzdHJ1
+Y3QgZGV2aWNlICpkZXYpDQo+IC17DQo+IC0Jc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldiA9
+IHRvX3BsYXRmb3JtX2RldmljZShkZXYpOw0KPiAtCXN0cnVjdCBzM2NfZmIgKnNmYiA9IHBsYXRm
+b3JtX2dldF9kcnZkYXRhKHBkZXYpOw0KPiAtCXN0cnVjdCBzM2NfZmJfd2luICp3aW47DQo+IC0J
+aW50IHdpbl9ubzsNCj4gLQ0KPiAtCWZvciAod2luX25vID0gUzNDX0ZCX01BWF9XSU4gLSAxOyB3
+aW5fbm8gPj0gMDsgd2luX25vLS0pIHsNCj4gLQkJd2luID0gc2ZiLT53aW5kb3dzW3dpbl9ub107
+DQo+IC0JCWlmICghd2luKQ0KPiAtCQkJY29udGludWU7DQo+IC0NCj4gLQkJLyogdXNlIHRoZSBi
+bGFuayBmdW5jdGlvbiB0byBwdXNoIGludG8gcG93ZXItZG93biAqLw0KPiAtCQlzM2NfZmJfYmxh
+bmsoRkJfQkxBTktfUE9XRVJET1dOLCB3aW4tPmZiaW5mbyk7DQo+IC0JfQ0KPiAtDQo+IC0JaWYg
+KCFzZmItPnZhcmlhbnQuaGFzX2Nsa3NlbCkNCj4gLQkJY2xrX2Rpc2FibGUoc2ZiLT5sY2RfY2xr
+KTsNCj4gLQ0KPiAtCWNsa19kaXNhYmxlKHNmYi0+YnVzX2Nsayk7DQo+IC0JcmV0dXJuIDA7DQo+
+IC19DQo+IC0NCj4gLXN0YXRpYyBpbnQgczNjX2ZiX3J1bnRpbWVfcmVzdW1lKHN0cnVjdCBkZXZp
+Y2UgKmRldikNCj4gLXsNCj4gLQlzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2ID0gdG9fcGxh
+dGZvcm1fZGV2aWNlKGRldik7DQo+IC0Jc3RydWN0IHMzY19mYiAqc2ZiID0gcGxhdGZvcm1fZ2V0
+X2RydmRhdGEocGRldik7DQo+IC0Jc3RydWN0IHMzY19mYl9wbGF0ZGF0YSAqcGQgPSBzZmItPnBk
+YXRhOw0KPiAtCXN0cnVjdCBzM2NfZmJfd2luICp3aW47DQo+IC0JaW50IHdpbl9ubzsNCj4gLQ0K
+PiAtCWNsa19lbmFibGUoc2ZiLT5idXNfY2xrKTsNCj4gLQ0KPiAtCWlmICghc2ZiLT52YXJpYW50
+Lmhhc19jbGtzZWwpDQo+IC0JCWNsa19lbmFibGUoc2ZiLT5sY2RfY2xrKTsNCj4gLQ0KPiAtCS8q
+IHNldHVwIGdwaW8gYW5kIG91dHB1dCBwb2xhcml0eSBjb250cm9scyAqLw0KPiAtCXBkLT5zZXR1
+cF9ncGlvKCk7DQo+IC0Jd3JpdGVsKHBkLT52aWRjb24xLCBzZmItPnJlZ3MgKyBWSURDT04xKTsN
+Cj4gLQ0KPiAtCS8qIHplcm8gYWxsIHdpbmRvd3MgYmVmb3JlIHdlIGRvIGFueXRoaW5nICovDQo+
+IC0JZm9yICh3aW5fbm8gPSAwOyB3aW5fbm8gPCBzZmItPnZhcmlhbnQubnJfd2luZG93czsgd2lu
+X25vKyspDQo+IC0JCXMzY19mYl9jbGVhcl93aW4oc2ZiLCB3aW5fbm8pOw0KPiAtDQo+IC0JZm9y
+ICh3aW5fbm8gPSAwOyB3aW5fbm8gPCBzZmItPnZhcmlhbnQubnJfd2luZG93cyAtIDE7IHdpbl9u
+bysrKSB7DQo+IC0JCXZvaWQgX19pb21lbSAqcmVncyA9IHNmYi0+cmVncyArIHNmYi0+dmFyaWFu
+dC5rZXljb247DQo+IC0NCj4gLQkJcmVncyArPSAod2luX25vICogOCk7DQo+IC0JCXdyaXRlbCgw
+eGZmZmZmZiwgcmVncyArIFdLRVlDT04wKTsNCj4gLQkJd3JpdGVsKDB4ZmZmZmZmLCByZWdzICsg
+V0tFWUNPTjEpOw0KPiAtCX0NCj4gLQ0KPiAtCS8qIHJlc3RvcmUgZnJhbWVidWZmZXJzICovDQo+
+IC0JZm9yICh3aW5fbm8gPSAwOyB3aW5fbm8gPCBTM0NfRkJfTUFYX1dJTjsgd2luX25vKyspIHsN
+Cj4gLQkJd2luID0gc2ZiLT53aW5kb3dzW3dpbl9ub107DQo+IC0JCWlmICghd2luKQ0KPiAtCQkJ
+Y29udGludWU7DQo+IC0NCj4gLQkJZGV2X2RiZygmcGRldi0+ZGV2LCAicmVzdW1pbmcgd2luZG93
+ICVkXG4iLCB3aW5fbm8pOw0KPiAtCQlzM2NfZmJfc2V0X3Bhcih3aW4tPmZiaW5mbyk7DQo+IC0J
+fQ0KPiAtDQo+IC0JcmV0dXJuIDA7DQo+IC19DQo+IC0NCj4gICNlbHNlDQo+ICAjZGVmaW5lIHMz
+Y19mYl9zdXNwZW5kIE5VTEwNCj4gICNkZWZpbmUgczNjX2ZiX3Jlc3VtZSAgTlVMTA0KPiAtI2Rl
+ZmluZSBzM2NfZmJfcnVudGltZV9zdXNwZW5kIE5VTEwNCj4gLSNkZWZpbmUgczNjX2ZiX3J1bnRp
+bWVfcmVzdW1lIE5VTEwNCj4gICNlbmRpZg0KPiANCj4gDQo+IEBAIC0xOTg1LDEyICsxOTE3LDcg
+QEAgc3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2VfaWQgczNjX2ZiX2RyaXZlcl9pZHNbXQ0K
+PiA9IHsNCj4gIH07DQo+ICBNT0RVTEVfREVWSUNFX1RBQkxFKHBsYXRmb3JtLCBzM2NfZmJfZHJp
+dmVyX2lkcyk7DQo+IA0KPiAtc3RhdGljIGNvbnN0IHN0cnVjdCBkZXZfcG1fb3BzIHMzY2ZiX3Bt
+X29wcyA9IHsNCj4gLQkuc3VzcGVuZAk9IHMzY19mYl9zdXNwZW5kLA0KPiAtCS5yZXN1bWUJCT0g
+czNjX2ZiX3Jlc3VtZSwNCj4gLQkucnVudGltZV9zdXNwZW5kCT0gczNjX2ZiX3J1bnRpbWVfc3Vz
+cGVuZCwNCj4gLQkucnVudGltZV9yZXN1bWUJCT0gczNjX2ZiX3J1bnRpbWVfcmVzdW1lLA0KPiAt
+fTsNCj4gK3N0YXRpYyBVTklWRVJTQUxfREVWX1BNX09QUyhzM2NmYl9wbV9vcHMsIHMzY19mYl9z
+dXNwZW5kLCBzM2NfZmJfcmVzdW1lLA0KPiBOVUxMKTsNCj4gDQo+ICBzdGF0aWMgc3RydWN0IHBs
+YXRmb3JtX2RyaXZlciBzM2NfZmJfZHJpdmVyID0gew0KPiAgCS5wcm9iZQkJPSBzM2NfZmJfcHJv
+YmUsDQo+IC0tDQo+IDEuNy4xDQoNCg0KDQo
 

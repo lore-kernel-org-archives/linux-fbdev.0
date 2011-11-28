@@ -1,131 +1,91 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Sun, 27 Nov 2011 22:51:08 +0000
-Subject: [PATCH 2/2] video: s3c-fb: Convert to devm style allocation
-Message-Id: <1322434268-25525-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 28 Nov 2011 07:59:28 +0000
+Subject: Re: [PATCH 2/2] video: s3c-fb: Convert to devm style allocation
+Message-Id: <6099881.81141322467167431.JavaMail.weblogic@epml23>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1322434268-25525-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1322434268-25525-2-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Saves some code, especially useful as the code saved is mostly in the
-infrequently tested error paths.
+SGksIE1hcmsgQnJvd24uDQoNCllvdXIgcGF0Y2ggbWFrZXMgYnVpbGQgZXJyb3IgYXMgZm9sbG93
+czoNCmRyaXZlcnMvdmlkZW8vczNjLWZiLmM6IEluIGZ1bmN0aW9uICdzM2NfZmJfcHJvYmUnOg0K
+ZHJpdmVycy92aWRlby9zM2MtZmIuYzoxMzg1OiBlcnJvcjogaW1wbGljaXQgZGVjbGFyYXRpb24g
+b2YgZnVuY3Rpb24gJ2Rldm1fcmVxdWVzdF9hbmRfaW9yZW1hcCcNCmRyaXZlcnMvdmlkZW8vczNj
+LWZiLmM6MTM4NTogd2FybmluZzogYXNzaWdubWVudCBtYWtlcyBwb2ludGVyIGZyb20gaW50ZWdl
+ciB3aXRob3V0IGEgY2FzdA0KbWFrZVsyXTogKioqIFtkcml2ZXJzL3ZpZGVvL3MzYy1mYi5vXSBF
+cnJvciAxDQptYWtlWzFdOiAqKiogW2RyaXZlcnMvdmlkZW9dIEVycm9yIDINCg0KPiAtLS0tLU9y
+aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBNYXJrIEJyb3duIDxicm9vbmllQG9wZW5zb3Vy
+Y2Uud29sZnNvbm1pY3JvLmNvbT4NCj4gU3ViamVjdDogW1BBVENIIDIvMl0gdmlkZW86IHMzYy1m
+YjogQ29udmVydCB0byBkZXZtIHN0eWxlIGFsbG9jYXRpb24NCj4gDQo+IFNhdmVzIHNvbWUgY29k
+ZSwgZXNwZWNpYWxseSB1c2VmdWwgYXMgdGhlIGNvZGUgc2F2ZWQgaXMgbW9zdGx5IGluIHRoZQ0K
+PiBpbmZyZXF1ZW50bHkgdGVzdGVkIGVycm9yIHBhdGhzLg0KPiANCj4gU2lnbmVkLW9mZi1ieTog
+TWFyayBCcm93biA8YnJvb25pZUBvcGVuc291cmNlLndvbGZzb25taWNyby5jb20+DQo+IC0tLQ0K
+PiAgZHJpdmVycy92aWRlby9zM2MtZmIuYyB8ICAgMzIgKysrKystLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0NCj4gIDEgZmlsZXMgY2hhbmdlZCwgNSBpbnNlcnRpb25zKCspLCAyNyBkZWxldGlv
+bnMoLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jIGIvZHJpdmVy
+cy92aWRlby9zM2MtZmIuYw0KPiBpbmRleCBlODQ2NzdlLi4xMDhiNDY5IDEwMDY0NA0KPiAtLS0g
+YS9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jDQo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vczNjLWZiLmMN
+Cj4gQEAgLTE4Niw3ICsxODYsNiBAQCBzdHJ1Y3QgczNjX2ZiX3ZzeW5jIHsNCj4gICAqIHN0cnVj
+dCBzM2NfZmIgLSBvdmVyYWxsIGhhcmR3YXJlIHN0YXRlIG9mIHRoZSBoYXJkd2FyZQ0KPiAgICog
+QHNsb2NrOiBUaGUgc3BpbmxvY2sgcHJvdGVjdGlvbiBmb3IgdGhpcyBkYXRhIHN0dXJjdHVyZS4N
+Cj4gICAqIEBkZXY6IFRoZSBkZXZpY2UgdGhhdCB3ZSBib3VuZCB0bywgZm9yIHByaW50aW5nLCBl
+dGMuDQo+IC0gKiBAcmVnc19yZXM6IFRoZSByZXNvdXJjZSB3ZSBjbGFpbWVkIGZvciB0aGUgSU8g
+cmVnaXN0ZXJzLg0KPiAgICogQGJ1c19jbGs6IFRoZSBjbGsgKGhjbGspIGZlZWRpbmcgb3VyIGlu
+dGVyZmFjZSBhbmQgcG9zc2libHkgcGl4Y2xrLg0KPiAgICogQGxjZF9jbGs6IFRoZSBjbGsgKHNj
+bGspIGZlZWRpbmcgcGl4Y2xrLg0KPiAgICogQHJlZ3M6IFRoZSBtYXBwZWQgaGFyZHdhcmUgcmVn
+aXN0ZXJzLg0KPiBAQCAtMjAxLDcgKzIwMCw2IEBAIHN0cnVjdCBzM2NfZmJfdnN5bmMgew0KPiAg
+c3RydWN0IHMzY19mYiB7DQo+ICAJc3BpbmxvY2tfdAkJc2xvY2s7DQo+ICAJc3RydWN0IGRldmlj
+ZQkJKmRldjsNCj4gLQlzdHJ1Y3QgcmVzb3VyY2UJCSpyZWdzX3JlczsNCj4gIAlzdHJ1Y3QgY2xr
+CQkqYnVzX2NsazsNCj4gIAlzdHJ1Y3QgY2xrCQkqbGNkX2NsazsNCj4gIAl2b2lkIF9faW9tZW0J
+CSpyZWdzOw0KPiBAQCAtMTM0MSw3ICsxMzM5LDcgQEAgc3RhdGljIGludCBfX2RldmluaXQgczNj
+X2ZiX3Byb2JlKHN0cnVjdA0KPiBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICAJCXJldHVybiAt
+RUlOVkFMOw0KPiAgCX0NCj4gDQo+IC0Jc2ZiID0ga3phbGxvYyhzaXplb2Yoc3RydWN0IHMzY19m
+YiksIEdGUF9LRVJORUwpOw0KPiArCXNmYiA9IGRldm1fa3phbGxvYyhkZXYsIHNpemVvZihzdHJ1
+Y3QgczNjX2ZiKSwgR0ZQX0tFUk5FTCk7DQo+ICAJaWYgKCFzZmIpIHsNCj4gIAkJZGV2X2Vycihk
+ZXYsICJubyBtZW1vcnkgZm9yIGZyYW1lYnVmZmVyc1xuIik7DQo+ICAJCXJldHVybiAtRU5PTUVN
+Ow0KPiBAQCAtMTM4NCwzMyArMTM4MiwyNSBAQCBzdGF0aWMgaW50IF9fZGV2aW5pdCBzM2NfZmJf
+cHJvYmUoc3RydWN0DQo+IHBsYXRmb3JtX2RldmljZSAqcGRldikNCj4gIAkJZ290byBlcnJfbGNk
+X2NsazsNCj4gIAl9DQo+IA0KPiAtCXNmYi0+cmVnc19yZXMgPSByZXF1ZXN0X21lbV9yZWdpb24o
+cmVzLT5zdGFydCwgcmVzb3VyY2Vfc2l6ZShyZXMpLA0KPiAtCQkJCQkgICBkZXZfbmFtZShkZXYp
+KTsNCj4gLQlpZiAoIXNmYi0+cmVnc19yZXMpIHsNCj4gLQkJZGV2X2VycihkZXYsICJmYWlsZWQg
+dG8gY2xhaW0gcmVnaXN0ZXIgcmVnaW9uXG4iKTsNCj4gLQkJcmV0ID0gLUVOT0VOVDsNCj4gLQkJ
+Z290byBlcnJfbGNkX2NsazsNCj4gLQl9DQo+IC0NCj4gLQlzZmItPnJlZ3MgPSBpb3JlbWFwKHJl
+cy0+c3RhcnQsIHJlc291cmNlX3NpemUocmVzKSk7DQo+ICsJc2ZiLT5yZWdzID0gZGV2bV9yZXF1
+ZXN0X2FuZF9pb3JlbWFwKGRldiwgcmVzKTsNCj4gIAlpZiAoIXNmYi0+cmVncykgew0KPiAgCQlk
+ZXZfZXJyKGRldiwgImZhaWxlZCB0byBtYXAgcmVnaXN0ZXJzXG4iKTsNCj4gIAkJcmV0ID0gLUVO
+WElPOw0KPiAtCQlnb3RvIGVycl9yZXFfcmVnaW9uOw0KPiArCQlnb3RvIGVycl9sY2RfY2xrOw0K
+PiAgCX0NCj4gDQo+ICAJcmVzID0gcGxhdGZvcm1fZ2V0X3Jlc291cmNlKHBkZXYsIElPUkVTT1VS
+Q0VfSVJRLCAwKTsNCj4gIAlpZiAoIXJlcykgew0KPiAgCQlkZXZfZXJyKGRldiwgImZhaWxlZCB0
+byBhY3F1aXJlIGlycSByZXNvdXJjZVxuIik7DQo+ICAJCXJldCA9IC1FTk9FTlQ7DQo+IC0JCWdv
+dG8gZXJyX2lvcmVtYXA7DQo+ICsJCWdvdG8gZXJyX2xjZF9jbGs7DQo+ICAJfQ0KPiAgCXNmYi0+
+aXJxX25vID0gcmVzLT5zdGFydDsNCj4gIAlyZXQgPSByZXF1ZXN0X2lycShzZmItPmlycV9ubywg
+czNjX2ZiX2lycSwNCj4gIAkJCSAgMCwgInMzY19mYiIsIHNmYik7DQo+ICAJaWYgKHJldCkgew0K
+PiAgCQlkZXZfZXJyKGRldiwgImlycSByZXF1ZXN0IGZhaWxlZFxuIik7DQo+IC0JCWdvdG8gZXJy
+X2lvcmVtYXA7DQo+ICsJCWdvdG8gZXJyX2xjZF9jbGs7DQo+ICAJfQ0KPiANCj4gIAlkZXZfZGJn
+KGRldiwgImdvdCByZXNvdXJjZXMgKHJlZ3MgJXApLCBwcm9iaW5nIHdpbmRvd3NcbiIsIHNmYi0N
+Cj4gPnJlZ3MpOw0KPiBAQCAtMTQ2NSwxMiArMTQ1NSw2IEBAIHN0YXRpYyBpbnQgX19kZXZpbml0
+IHMzY19mYl9wcm9iZShzdHJ1Y3QNCj4gcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiAgZXJyX2ly
+cToNCj4gIAlmcmVlX2lycShzZmItPmlycV9ubywgc2ZiKTsNCj4gDQo+IC1lcnJfaW9yZW1hcDoN
+Cj4gLQlpb3VubWFwKHNmYi0+cmVncyk7DQo+IC0NCj4gLWVycl9yZXFfcmVnaW9uOg0KPiAtCXJl
+bGVhc2VfbWVtX3JlZ2lvbihzZmItPnJlZ3NfcmVzLT5zdGFydCwgcmVzb3VyY2Vfc2l6ZShzZmIt
+DQo+ID5yZWdzX3JlcykpOw0KPiAtDQo+ICBlcnJfbGNkX2NsazoNCj4gIAlpZiAoIXNmYi0+dmFy
+aWFudC5oYXNfY2xrc2VsKSB7DQo+ICAJCWNsa19kaXNhYmxlKHNmYi0+bGNkX2Nsayk7DQo+IEBA
+IC0xNDgyLDcgKzE0NjYsNiBAQCBlcnJfYnVzX2NsazoNCj4gIAljbGtfcHV0KHNmYi0+YnVzX2Ns
+ayk7DQo+IA0KPiAgZXJyX3NmYjoNCj4gLQlrZnJlZShzZmIpOw0KPiAgCXJldHVybiByZXQ7DQo+
+ICB9DQo+IA0KPiBAQCAtMTUwNiw4ICsxNDg5LDYgQEAgc3RhdGljIGludCBfX2RldmV4aXQgczNj
+X2ZiX3JlbW92ZShzdHJ1Y3QNCj4gcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiANCj4gIAlmcmVl
+X2lycShzZmItPmlycV9ubywgc2ZiKTsNCj4gDQo+IC0JaW91bm1hcChzZmItPnJlZ3MpOw0KPiAt
+DQo+ICAJaWYgKCFzZmItPnZhcmlhbnQuaGFzX2Nsa3NlbCkgew0KPiAgCQljbGtfZGlzYWJsZShz
+ZmItPmxjZF9jbGspOw0KPiAgCQljbGtfcHV0KHNmYi0+bGNkX2Nsayk7DQo+IEBAIC0xNTE2LDEy
+ICsxNDk3LDkgQEAgc3RhdGljIGludCBfX2RldmV4aXQgczNjX2ZiX3JlbW92ZShzdHJ1Y3QNCj4g
+cGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiAgCWNsa19kaXNhYmxlKHNmYi0+YnVzX2Nsayk7DQo+
+ICAJY2xrX3B1dChzZmItPmJ1c19jbGspOw0KPiANCj4gLQlyZWxlYXNlX21lbV9yZWdpb24oc2Zi
+LT5yZWdzX3Jlcy0+c3RhcnQsIHJlc291cmNlX3NpemUoc2ZiLQ0KPiA+cmVnc19yZXMpKTsNCj4g
+LQ0KPiAgCXBtX3J1bnRpbWVfcHV0X3N5bmMoc2ZiLT5kZXYpOw0KPiAgCXBtX3J1bnRpbWVfZGlz
+YWJsZShzZmItPmRldik7DQo+IA0KPiAtCWtmcmVlKHNmYik7DQo+ICAJcmV0dXJuIDA7DQo+ICB9
+DQo+IA0KPiAtLQ0KPiAxLjcuMQ0KPiANCj4gDQoNCg=
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/video/s3c-fb.c |   32 +++++---------------------------
- 1 files changed, 5 insertions(+), 27 deletions(-)
-
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 27971bc..c8e822b 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -186,7 +186,6 @@ struct s3c_fb_vsync {
-  * struct s3c_fb - overall hardware state of the hardware
-  * @slock: The spinlock protection for this data sturcture.
-  * @dev: The device that we bound to, for printing, etc.
-- * @regs_res: The resource we claimed for the IO registers.
-  * @bus_clk: The clk (hclk) feeding our interface and possibly pixclk.
-  * @lcd_clk: The clk (sclk) feeding pixclk.
-  * @regs: The mapped hardware registers.
-@@ -201,7 +200,6 @@ struct s3c_fb_vsync {
- struct s3c_fb {
- 	spinlock_t		slock;
- 	struct device		*dev;
--	struct resource		*regs_res;
- 	struct clk		*bus_clk;
- 	struct clk		*lcd_clk;
- 	void __iomem		*regs;
-@@ -1341,7 +1339,7 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
--	sfb = kzalloc(sizeof(struct s3c_fb), GFP_KERNEL);
-+	sfb = devm_kzalloc(dev, sizeof(struct s3c_fb), GFP_KERNEL);
- 	if (!sfb) {
- 		dev_err(dev, "no memory for framebuffers\n");
- 		return -ENOMEM;
-@@ -1384,33 +1382,25 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
- 		goto err_lcd_clk;
- 	}
- 
--	sfb->regs_res = request_mem_region(res->start, resource_size(res),
--					   dev_name(dev));
--	if (!sfb->regs_res) {
--		dev_err(dev, "failed to claim register region\n");
--		ret = -ENOENT;
--		goto err_lcd_clk;
--	}
--
--	sfb->regs = ioremap(res->start, resource_size(res));
-+	sfb->regs = devm_request_and_ioremap(dev, res);
- 	if (!sfb->regs) {
- 		dev_err(dev, "failed to map registers\n");
- 		ret = -ENXIO;
--		goto err_req_region;
-+		goto err_lcd_clk;
- 	}
- 
- 	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
- 	if (!res) {
- 		dev_err(dev, "failed to acquire irq resource\n");
- 		ret = -ENOENT;
--		goto err_ioremap;
-+		goto err_lcd_clk;
- 	}
- 	sfb->irq_no = res->start;
- 	ret = request_irq(sfb->irq_no, s3c_fb_irq,
- 			  0, "s3c_fb", sfb);
- 	if (ret) {
- 		dev_err(dev, "irq request failed\n");
--		goto err_ioremap;
-+		goto err_lcd_clk;
- 	}
- 
- 	dev_dbg(dev, "got resources (regs %p), probing windows\n", sfb->regs);
-@@ -1465,12 +1455,6 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
- err_irq:
- 	free_irq(sfb->irq_no, sfb);
- 
--err_ioremap:
--	iounmap(sfb->regs);
--
--err_req_region:
--	release_mem_region(sfb->regs_res->start, resource_size(sfb->regs_res));
--
- err_lcd_clk:
- 	if (!sfb->variant.has_clksel) {
- 		clk_disable(sfb->lcd_clk);
-@@ -1482,7 +1466,6 @@ err_bus_clk:
- 	clk_put(sfb->bus_clk);
- 
- err_sfb:
--	kfree(sfb);
- 	return ret;
- }
- 
-@@ -1506,8 +1489,6 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
- 
- 	free_irq(sfb->irq_no, sfb);
- 
--	iounmap(sfb->regs);
--
- 	if (!sfb->variant.has_clksel) {
- 		clk_disable(sfb->lcd_clk);
- 		clk_put(sfb->lcd_clk);
-@@ -1516,12 +1497,9 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
- 	clk_disable(sfb->bus_clk);
- 	clk_put(sfb->bus_clk);
- 
--	release_mem_region(sfb->regs_res->start, resource_size(sfb->regs_res));
--
- 	pm_runtime_put_sync(sfb->dev);
- 	pm_runtime_disable(sfb->dev);
- 
--	kfree(sfb);
- 	return 0;
- }
- 
--- 
-1.7.7.3
 

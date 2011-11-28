@@ -1,118 +1,74 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Fri, 25 Nov 2011 18:55:42 +0000
-Subject: [PATCH] video: s3c-fb: Unify runtime and system PM functions
-Message-Id: <1322247342-17309-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 28 Nov 2011 01:49:36 +0000
+Subject: Re: [PATCH] video: s3c-fb: Unify runtime and system PM functions
+Message-Id: <29615678.64041322444975102.JavaMail.weblogic@epml18>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1322247342-17309-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1322247342-17309-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The s3c-fb driver has separate runtime and system PM functions but the
-implementations are identical so far as I can tell so unify them for
-simplicity.
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBTdWJqZWN0OiBbUEFUQ0hdIHZpZGVvOiBz
+M2MtZmI6IFVuaWZ5IHJ1bnRpbWUgYW5kIHN5c3RlbSBQTSBmdW5jdGlvbnMNCj4gDQo+IFRoZSBz
+M2MtZmIgZHJpdmVyIGhhcyBzZXBhcmF0ZSBydW50aW1lIGFuZCBzeXN0ZW0gUE0gZnVuY3Rpb25z
+IGJ1dCB0aGUNCj4gaW1wbGVtZW50YXRpb25zIGFyZSBpZGVudGljYWwgc28gZmFyIGFzIEkgY2Fu
+IHRlbGwgc28gdW5pZnkgdGhlbSBmb3INCj4gc2ltcGxpY2l0eS4NCj4gDQo+IFNpZ25lZC1vZmYt
+Ynk6IE1hcmsgQnJvd24gPGJyb29uaWVAb3BlbnNvdXJjZS53b2xmc29ubWljcm8uY29tPg0KQWNr
+ZWQtYnk6IEppbmdvbyBIYW4gPGpnMS5oYW5Ac2Ftc3VuZy5jb20+DQoNCkl0IGxvb2tzIGdvb2Qu
+IA0KVGhhbmsgeW91Lg0KPiAtLS0NCj4gIGRyaXZlcnMvdmlkZW8vczNjLWZiLmMgfCAgIDc1ICst
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+IC0tLS0NCj4gIDEg
+ZmlsZXMgY2hhbmdlZCwgMSBpbnNlcnRpb25zKCspLCA3NCBkZWxldGlvbnMoLSkNCj4gDQo+IGRp
+ZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jIGIvZHJpdmVycy92aWRlby9zM2MtZmIu
+Yw0KPiBpbmRleCAxMmVhZWUwLi4wODYwNTkwIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3ZpZGVv
+L3MzYy1mYi5jDQo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vczNjLWZiLmMNCj4gQEAgLTE1OTAsNzcg
+KzE1OTAsOSBAQCBzdGF0aWMgaW50IHMzY19mYl9yZXN1bWUoc3RydWN0IGRldmljZSAqZGV2KQ0K
+PiANCj4gIAlyZXR1cm4gMDsNCj4gIH0NCj4gLQ0KPiAtc3RhdGljIGludCBzM2NfZmJfcnVudGlt
+ZV9zdXNwZW5kKHN0cnVjdCBkZXZpY2UgKmRldikNCj4gLXsNCj4gLQlzdHJ1Y3QgcGxhdGZvcm1f
+ZGV2aWNlICpwZGV2ID0gdG9fcGxhdGZvcm1fZGV2aWNlKGRldik7DQo+IC0Jc3RydWN0IHMzY19m
+YiAqc2ZiID0gcGxhdGZvcm1fZ2V0X2RydmRhdGEocGRldik7DQo+IC0Jc3RydWN0IHMzY19mYl93
+aW4gKndpbjsNCj4gLQlpbnQgd2luX25vOw0KPiAtDQo+IC0JZm9yICh3aW5fbm8gPSBTM0NfRkJf
+TUFYX1dJTiAtIDE7IHdpbl9ubyA+PSAwOyB3aW5fbm8tLSkgew0KPiAtCQl3aW4gPSBzZmItPndp
+bmRvd3Nbd2luX25vXTsNCj4gLQkJaWYgKCF3aW4pDQo+IC0JCQljb250aW51ZTsNCj4gLQ0KPiAt
+CQkvKiB1c2UgdGhlIGJsYW5rIGZ1bmN0aW9uIHRvIHB1c2ggaW50byBwb3dlci1kb3duICovDQo+
+IC0JCXMzY19mYl9ibGFuayhGQl9CTEFOS19QT1dFUkRPV04sIHdpbi0+ZmJpbmZvKTsNCj4gLQl9
+DQo+IC0NCj4gLQlpZiAoIXNmYi0+dmFyaWFudC5oYXNfY2xrc2VsKQ0KPiAtCQljbGtfZGlzYWJs
+ZShzZmItPmxjZF9jbGspOw0KPiAtDQo+IC0JY2xrX2Rpc2FibGUoc2ZiLT5idXNfY2xrKTsNCj4g
+LQlyZXR1cm4gMDsNCj4gLX0NCj4gLQ0KPiAtc3RhdGljIGludCBzM2NfZmJfcnVudGltZV9yZXN1
+bWUoc3RydWN0IGRldmljZSAqZGV2KQ0KPiAtew0KPiAtCXN0cnVjdCBwbGF0Zm9ybV9kZXZpY2Ug
+KnBkZXYgPSB0b19wbGF0Zm9ybV9kZXZpY2UoZGV2KTsNCj4gLQlzdHJ1Y3QgczNjX2ZiICpzZmIg
+PSBwbGF0Zm9ybV9nZXRfZHJ2ZGF0YShwZGV2KTsNCj4gLQlzdHJ1Y3QgczNjX2ZiX3BsYXRkYXRh
+ICpwZCA9IHNmYi0+cGRhdGE7DQo+IC0Jc3RydWN0IHMzY19mYl93aW4gKndpbjsNCj4gLQlpbnQg
+d2luX25vOw0KPiAtDQo+IC0JY2xrX2VuYWJsZShzZmItPmJ1c19jbGspOw0KPiAtDQo+IC0JaWYg
+KCFzZmItPnZhcmlhbnQuaGFzX2Nsa3NlbCkNCj4gLQkJY2xrX2VuYWJsZShzZmItPmxjZF9jbGsp
+Ow0KPiAtDQo+IC0JLyogc2V0dXAgZ3BpbyBhbmQgb3V0cHV0IHBvbGFyaXR5IGNvbnRyb2xzICov
+DQo+IC0JcGQtPnNldHVwX2dwaW8oKTsNCj4gLQl3cml0ZWwocGQtPnZpZGNvbjEsIHNmYi0+cmVn
+cyArIFZJRENPTjEpOw0KPiAtDQo+IC0JLyogemVybyBhbGwgd2luZG93cyBiZWZvcmUgd2UgZG8g
+YW55dGhpbmcgKi8NCj4gLQlmb3IgKHdpbl9ubyA9IDA7IHdpbl9ubyA8IHNmYi0+dmFyaWFudC5u
+cl93aW5kb3dzOyB3aW5fbm8rKykNCj4gLQkJczNjX2ZiX2NsZWFyX3dpbihzZmIsIHdpbl9ubyk7
+DQo+IC0NCj4gLQlmb3IgKHdpbl9ubyA9IDA7IHdpbl9ubyA8IHNmYi0+dmFyaWFudC5ucl93aW5k
+b3dzIC0gMTsgd2luX25vKyspIHsNCj4gLQkJdm9pZCBfX2lvbWVtICpyZWdzID0gc2ZiLT5yZWdz
+ICsgc2ZiLT52YXJpYW50LmtleWNvbjsNCj4gLQ0KPiAtCQlyZWdzICs9ICh3aW5fbm8gKiA4KTsN
+Cj4gLQkJd3JpdGVsKDB4ZmZmZmZmLCByZWdzICsgV0tFWUNPTjApOw0KPiAtCQl3cml0ZWwoMHhm
+ZmZmZmYsIHJlZ3MgKyBXS0VZQ09OMSk7DQo+IC0JfQ0KPiAtDQo+IC0JLyogcmVzdG9yZSBmcmFt
+ZWJ1ZmZlcnMgKi8NCj4gLQlmb3IgKHdpbl9ubyA9IDA7IHdpbl9ubyA8IFMzQ19GQl9NQVhfV0lO
+OyB3aW5fbm8rKykgew0KPiAtCQl3aW4gPSBzZmItPndpbmRvd3Nbd2luX25vXTsNCj4gLQkJaWYg
+KCF3aW4pDQo+IC0JCQljb250aW51ZTsNCj4gLQ0KPiAtCQlkZXZfZGJnKCZwZGV2LT5kZXYsICJy
+ZXN1bWluZyB3aW5kb3cgJWRcbiIsIHdpbl9ubyk7DQo+IC0JCXMzY19mYl9zZXRfcGFyKHdpbi0+
+ZmJpbmZvKTsNCj4gLQl9DQo+IC0NCj4gLQlyZXR1cm4gMDsNCj4gLX0NCj4gLQ0KPiAgI2Vsc2UN
+Cj4gICNkZWZpbmUgczNjX2ZiX3N1c3BlbmQgTlVMTA0KPiAgI2RlZmluZSBzM2NfZmJfcmVzdW1l
+ICBOVUxMDQo+IC0jZGVmaW5lIHMzY19mYl9ydW50aW1lX3N1c3BlbmQgTlVMTA0KPiAtI2RlZmlu
+ZSBzM2NfZmJfcnVudGltZV9yZXN1bWUgTlVMTA0KPiAgI2VuZGlmDQo+IA0KPiANCj4gQEAgLTE5
+ODUsMTIgKzE5MTcsNyBAQCBzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2RldmljZV9pZCBzM2NfZmJf
+ZHJpdmVyX2lkc1tdDQo+ID0gew0KPiAgfTsNCj4gIE1PRFVMRV9ERVZJQ0VfVEFCTEUocGxhdGZv
+cm0sIHMzY19mYl9kcml2ZXJfaWRzKTsNCj4gDQo+IC1zdGF0aWMgY29uc3Qgc3RydWN0IGRldl9w
+bV9vcHMgczNjZmJfcG1fb3BzID0gew0KPiAtCS5zdXNwZW5kCT0gczNjX2ZiX3N1c3BlbmQsDQo+
+IC0JLnJlc3VtZQkJPSBzM2NfZmJfcmVzdW1lLA0KPiAtCS5ydW50aW1lX3N1c3BlbmQJPSBzM2Nf
+ZmJfcnVudGltZV9zdXNwZW5kLA0KPiAtCS5ydW50aW1lX3Jlc3VtZQkJPSBzM2NfZmJfcnVudGlt
+ZV9yZXN1bWUsDQo+IC19Ow0KPiArVU5JVkVSU0FMX0RFVl9QTV9PUFMoczNjZmJfcG1fb3BzLCBz
+M2NfZmJfc3VzcGVuZCwgczNjX2ZiX3Jlc3VtZSwgTlVMTCk7DQo+IA0KPiAgc3RhdGljIHN0cnVj
+dCBwbGF0Zm9ybV9kcml2ZXIgczNjX2ZiX2RyaXZlciA9IHsNCj4gIAkucHJvYmUJCT0gczNjX2Zi
+X3Byb2JlLA0KPiAtLQ0KPiAxLjcuNy4zDQo+IA0KPiAtLQ0K
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/video/s3c-fb.c |   75 +-----------------------------------------------
- 1 files changed, 1 insertions(+), 74 deletions(-)
-
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 12eaee0..0860590 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -1590,77 +1590,9 @@ static int s3c_fb_resume(struct device *dev)
- 
- 	return 0;
- }
--
--static int s3c_fb_runtime_suspend(struct device *dev)
--{
--	struct platform_device *pdev = to_platform_device(dev);
--	struct s3c_fb *sfb = platform_get_drvdata(pdev);
--	struct s3c_fb_win *win;
--	int win_no;
--
--	for (win_no = S3C_FB_MAX_WIN - 1; win_no >= 0; win_no--) {
--		win = sfb->windows[win_no];
--		if (!win)
--			continue;
--
--		/* use the blank function to push into power-down */
--		s3c_fb_blank(FB_BLANK_POWERDOWN, win->fbinfo);
--	}
--
--	if (!sfb->variant.has_clksel)
--		clk_disable(sfb->lcd_clk);
--
--	clk_disable(sfb->bus_clk);
--	return 0;
--}
--
--static int s3c_fb_runtime_resume(struct device *dev)
--{
--	struct platform_device *pdev = to_platform_device(dev);
--	struct s3c_fb *sfb = platform_get_drvdata(pdev);
--	struct s3c_fb_platdata *pd = sfb->pdata;
--	struct s3c_fb_win *win;
--	int win_no;
--
--	clk_enable(sfb->bus_clk);
--
--	if (!sfb->variant.has_clksel)
--		clk_enable(sfb->lcd_clk);
--
--	/* setup gpio and output polarity controls */
--	pd->setup_gpio();
--	writel(pd->vidcon1, sfb->regs + VIDCON1);
--
--	/* zero all windows before we do anything */
--	for (win_no = 0; win_no < sfb->variant.nr_windows; win_no++)
--		s3c_fb_clear_win(sfb, win_no);
--
--	for (win_no = 0; win_no < sfb->variant.nr_windows - 1; win_no++) {
--		void __iomem *regs = sfb->regs + sfb->variant.keycon;
--
--		regs += (win_no * 8);
--		writel(0xffffff, regs + WKEYCON0);
--		writel(0xffffff, regs + WKEYCON1);
--	}
--
--	/* restore framebuffers */
--	for (win_no = 0; win_no < S3C_FB_MAX_WIN; win_no++) {
--		win = sfb->windows[win_no];
--		if (!win)
--			continue;
--
--		dev_dbg(&pdev->dev, "resuming window %d\n", win_no);
--		s3c_fb_set_par(win->fbinfo);
--	}
--
--	return 0;
--}
--
- #else
- #define s3c_fb_suspend NULL
- #define s3c_fb_resume  NULL
--#define s3c_fb_runtime_suspend NULL
--#define s3c_fb_runtime_resume NULL
- #endif
- 
- 
-@@ -1985,12 +1917,7 @@ static struct platform_device_id s3c_fb_driver_ids[] = {
- };
- MODULE_DEVICE_TABLE(platform, s3c_fb_driver_ids);
- 
--static const struct dev_pm_ops s3cfb_pm_ops = {
--	.suspend	= s3c_fb_suspend,
--	.resume		= s3c_fb_resume,
--	.runtime_suspend	= s3c_fb_runtime_suspend,
--	.runtime_resume		= s3c_fb_runtime_resume,
--};
-+UNIVERSAL_DEV_PM_OPS(s3cfb_pm_ops, s3c_fb_suspend, s3c_fb_resume, NULL);
- 
- static struct platform_driver s3c_fb_driver = {
- 	.probe		= s3c_fb_probe,
--- 
-1.7.7.3
 

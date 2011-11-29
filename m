@@ -1,106 +1,72 @@
-From: Lars-Peter Clausen <lars@metafoo.de>
-Date: Thu, 24 Nov 2011 15:29:19 +0000
-Subject: [PATCH 09/11] video: Remove redundant spi driver bus initialization
-Message-Id: <1322148561-25138-9-git-send-email-lars@metafoo.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 29 Nov 2011 10:19:14 +0000
+Subject: Re: [PATCH 09/11] video: Remove redundant spi driver bus
+Message-Id: <1322561954.1869.44.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-iZQzh1wzB1frnepnjzrw"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1322148561-25138-1-git-send-email-lars@metafoo.de>
-In-Reply-To: <1322148561-25138-1-git-send-email-lars@metafoo.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Lars-Peter Clausen <lars@metafoo.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+	 <1322148561-25138-9-git-send-email-lars@metafoo.de>
+In-Reply-To: <1322148561-25138-9-git-send-email-lars@metafoo.de>
+To: Lars-Peter Clausen <lars@metafoo.de>
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-In ancient times it was necessary to manually initialize the bus field of an
-spi_driver to spi_bus_type. These days this is done in spi_driver_register(),
-so we can drop the manual assignment.
 
-The patch was generated using the following coccinelle semantic patch:
-// <smpl>
-@@
-identifier _driver;
-@@
-struct spi_driver _driver = {
-	.driver = {
--		.bus = &spi_bus_type,
-	},
-};
-// </smpl>
+--=-iZQzh1wzB1frnepnjzrw
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-omap@vger.kernel.org
----
- drivers/video/omap/lcd_mipid.c                     |    1 -
- drivers/video/omap2/displays/panel-acx565akm.c     |    1 -
- drivers/video/omap2/displays/panel-n8x0.c          |    1 -
- .../omap2/displays/panel-nec-nl8048hl11-01b.c      |    1 -
- .../video/omap2/displays/panel-tpo-td043mtea1.c    |    1 -
- 5 files changed, 0 insertions(+), 5 deletions(-)
+On Thu, 2011-11-24 at 16:29 +0100, Lars-Peter Clausen wrote:
+> In ancient times it was necessary to manually initialize the bus field of=
+ an
+> spi_driver to spi_bus_type. These days this is done in spi_driver_registe=
+r(),
+> so we can drop the manual assignment.
+>=20
+> The patch was generated using the following coccinelle semantic patch:
+> // <smpl>
+> @@
+> identifier _driver;
+> @@
+> struct spi_driver _driver =3D {
+> 	.driver =3D {
+> -		.bus =3D &spi_bus_type,
+> 	},
+> };
+> // </smpl>
+>=20
+> Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: linux-omap@vger.kernel.org
 
-diff --git a/drivers/video/omap/lcd_mipid.c b/drivers/video/omap/lcd_mipid.c
-index eb381db..8d546dd 100644
---- a/drivers/video/omap/lcd_mipid.c
-+++ b/drivers/video/omap/lcd_mipid.c
-@@ -603,7 +603,6 @@ static int mipid_spi_remove(struct spi_device *spi)
- static struct spi_driver mipid_spi_driver = {
- 	.driver = {
- 		.name	= MIPID_MODULE_NAME,
--		.bus	= &spi_bus_type,
- 		.owner	= THIS_MODULE,
- 	},
- 	.probe	= mipid_spi_probe,
-diff --git a/drivers/video/omap2/displays/panel-acx565akm.c b/drivers/video/omap2/displays/panel-acx565akm.c
-index dbd59b8..51a87e1 100644
---- a/drivers/video/omap2/displays/panel-acx565akm.c
-+++ b/drivers/video/omap2/displays/panel-acx565akm.c
-@@ -803,7 +803,6 @@ static int acx565akm_spi_remove(struct spi_device *spi)
- static struct spi_driver acx565akm_spi_driver = {
- 	.driver = {
- 		.name	= "acx565akm",
--		.bus	= &spi_bus_type,
- 		.owner	= THIS_MODULE,
- 	},
- 	.probe	= acx565akm_spi_probe,
-diff --git a/drivers/video/omap2/displays/panel-n8x0.c b/drivers/video/omap2/displays/panel-n8x0.c
-index 150e8ba..dc9408d 100644
---- a/drivers/video/omap2/displays/panel-n8x0.c
-+++ b/drivers/video/omap2/displays/panel-n8x0.c
-@@ -708,7 +708,6 @@ static int mipid_spi_remove(struct spi_device *spi)
- static struct spi_driver mipid_spi_driver = {
- 	.driver = {
- 		.name	= "lcd_mipid",
--		.bus	= &spi_bus_type,
- 		.owner	= THIS_MODULE,
- 	},
- 	.probe	= mipid_spi_probe,
-diff --git a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-index 2ba9d0c..8365e77 100644
---- a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-+++ b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-@@ -303,7 +303,6 @@ static struct spi_driver nec_8048_spi_driver = {
- 	.resume		= nec_8048_spi_resume,
- 	.driver		= {
- 		.name	= "nec_8048_spi",
--		.bus	= &spi_bus_type,
- 		.owner	= THIS_MODULE,
- 	},
- };
-diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-index 2462b9e..e6649aa 100644
---- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-+++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-@@ -512,7 +512,6 @@ static int __devexit tpo_td043_spi_remove(struct spi_device *spi)
- static struct spi_driver tpo_td043_spi_driver = {
- 	.driver = {
- 		.name	= "tpo_td043mtea1_panel_spi",
--		.bus	= &spi_bus_type,
- 		.owner	= THIS_MODULE,
- 	},
- 	.probe	= tpo_td043_spi_probe,
--- 
-1.7.7.1
+Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
+ Tomi
+
+
+--=-iZQzh1wzB1frnepnjzrw
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJO1LGiAAoJEPo9qoy8lh71JNoP/1a7hTOHWDHBm6YRo+vrSUEl
+ct2ULN8iXn85Ry/R9Cvjab5c6/j1uMxWii90UlCA32JYwNeGtv9K1QbW09LEFRsC
+ucRZEvETbHk5RXyRWnZIQlzmbSa/czlmn4lPnH+T5ZpBIrtq9H3JJmzUKmhUwkbm
+FXfOtKmiRP0ZcHtxYehYJw8PO1AeOgl9yLlErqofalnbfOWmXiNOHyNx33avvy8Q
+eK+zUCggZPvuNYiLLTAEQ/uOw236t/hcARy76LoCOYT8mVnz3gcLC2f6eGIIrQJB
+lKuNV7PQaAJfukj1tXIbTf5xNhSwjmXdsYqn70uqZairvXi7JtT45rK0tD+9562z
+QvxHv6r/cHYW6IYs93waRpo92jiPRMl0cvXUIzIac/ud8Br/S9+YrrNQV0BtYtVW
+ixj1Unx4bz/Waobxjwt529FZXMMBnSu2evtP4NKiBXDosRvNXNDi8prCx8g3F12V
+6m/Zfr9ScgWvZ8AX47vNQs/eNnVM9oSUGCrqPM/hXuOlYJezwBMoVW78P02Tf8Un
+dlcuZYdelMCz403Nw8wVoTM5vIcZFrJ+VY/Quz32Aem2efPl8epfLQopCOSpnzKn
+ohgR0kihhjgCL9cnQYM2Ya7hdHeFiMpt1/g/+RWTy40oKH2MEDB+sVrDxt/rJ3qt
+ogp91Pi01yqlMRGB1WjM
+=oJgf
+-----END PGP SIGNATURE-----
+
+--=-iZQzh1wzB1frnepnjzrw--
 

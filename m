@@ -1,53 +1,58 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Date: Tue, 29 Nov 2011 17:19:09 +0000
-Subject: Re: [PATCH v4 2/3] v4l: Add V4L2_PIX_FMT_NV24 and V4L2_PIX_FMT_NV42
-Message-Id: <4ED5140D.4080200@samsung.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 29 Nov 2011 18:11:13 +0000
+Subject: Re: [PATCH v4 2/3] v4l: Add V4L2_PIX_FMT_NV24 and V4L2_PIX_FMT_NV42 formats
+Message-Id: <201111291911.14082.laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1322562419-9934-1-git-send-email-laurent.pinchart@ideasonboard.com>
- <1322562419-9934-3-git-send-email-laurent.pinchart@ideasonboard.com>
-In-Reply-To: <1322562419-9934-3-git-send-email-laurent.pinchart@ideasonboard.com>
+References: <1322562419-9934-1-git-send-email-laurent.pinchart@ideasonboard.com> <1322562419-9934-3-git-send-email-laurent.pinchart@ideasonboard.com> <4ED5140D.4080200@samsung.com>
+In-Reply-To: <4ED5140D.4080200@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Sylwester Nawrocki <s.nawrocki@samsung.com>
 Cc: linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
 
-Hi Laurent,
+Hi Sylwester,
 
-On 11/29/2011 11:26 AM, Laurent Pinchart wrote:
-> NV24 and NV42 are planar YCbCr 4:4:4 and YCrCb 4:4:4 formats with a
-> luma plane followed by an interleaved chroma plane.
+On Tuesday 29 November 2011 18:19:09 Sylwester Nawrocki wrote:
+> On 11/29/2011 11:26 AM, Laurent Pinchart wrote:
+> > NV24 and NV42 are planar YCbCr 4:4:4 and YCrCb 4:4:4 formats with a
+> > luma plane followed by an interleaved chroma plane.
+> > 
+> > Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> > ---
 > 
-> Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> ---
-...
-> +	</example>
-> +      </refsect1>
-> +    </refentry>
-> +
+> ...
+> 
+> > +	</example>
+> > +      </refsect1>
+> > +    </refentry>
+> > +
+> > 
+> > +  <!--
+> > +Local Variables:
+> > +mode: sgml
+> > +sgml-parent-document: "pixfmt.sgml"
+> > +indent-tabs-mode: nil
+> > +End:
+> > +  -->
+> 
+> I think this comment chunk is redundant, it's just for emacs configuration.
+> Every time I open the file containing litter like this I get a
+> not-so-useful message, asking if I want to load the variables defined
+> there or not.
 
-> +  <!--
-> +Local Variables:
-> +mode: sgml
-> +sgml-parent-document: "pixfmt.sgml"
-> +indent-tabs-mode: nil
-> +End:
-> +  -->
+I agree. I'll remove it. Thanks for pointing it out.
 
-I think this comment chunk is redundant, it's just for emacs configuration.
-Every time I open the file containing litter like this I get a not-so-useful
-message, asking if I want to load the variables defined there or not.
+> I'm considering a patch cleaning up the Docbook from this emacs stuff, as I
+> also made a mistake copying this comment when adding NV12M, NV12MT formats.
+> 
+> Looks like most of people are doing that, e.g. see
+> 
+> http://www.mail-archive.com/linux-media@vger.kernel.org/msg38637.html
+> 
+> ;)
 
-I'm considering a patch cleaning up the Docbook from this emacs stuff, as I
-also made a mistake copying this comment when adding NV12M, NV12MT formats.
-
-Looks like most of people are doing that, e.g. see
-
-http://www.mail-archive.com/linux-media@vger.kernel.org/msg38637.html
-
-;)
-
---
-
+-- 
 Regards,
-Sylwester
+
+Laurent Pinchart

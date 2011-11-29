@@ -1,33 +1,137 @@
-From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Date: Wed, 09 Nov 2011 04:33:29 +0000
-Subject: [PATCH 01/15] fbdev: sh_mobile_lcdcfb: fixup LDHAJR :: HSYNPAJ needs mask
-Message-Id: <8739dxc3u1.wl%kuninori.morimoto.gx@renesas.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 29 Nov 2011 09:48:25 +0000
+Subject: [PATCH] video: s3c2410: fix checkpatch error and warnings
+Message-Id: <1322560105-32652-1-git-send-email-jg1.han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-LDHAJR register will be broken by hsync_pos without this patch
+This patch fixes the checkpatch errors listed below:
 
-Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+ERROR: do not initialise statics to 0 or NULL
+WARNING: Use #include <linux/io.h> instead of <asm/io.h>
+WARNING: braces {} are not necessary for single statement blocks
+WARNING: braces {} are not necessary for any arm of this statement
+WARNING: static char array declaration should probably be static const char
+WARNING: line over 80 characters
+WARNING: msleep < 20ms can sleep for up to 20ms; see Documentation/timers/timers-howto.txt
+
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/s3c2410fb.c |   29 +++++++++++++++--------------
+ 1 files changed, 15 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index facffc2..1f49ab4 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -420,7 +420,7 @@ static void sh_mobile_lcdc_geometry(struct sh_mobile_lcdc_chan *ch)
- 	tmp = ((display_var->xres & 7) << 24) |
- 		((display_h_total & 7) << 16) |
- 		((display_var->hsync_len & 7) << 8) |
--		hsync_pos;
-+		(hsync_pos & 7);
- 	lcdc_write_chan(ch, LDHAJR, tmp);
- }
+diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
+index ee4c0df..77f34c6 100644
+--- a/drivers/video/s3c2410fb.c
++++ b/drivers/video/s3c2410fb.c
+@@ -26,8 +26,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+ #include <linux/cpufreq.h>
++#include <linux/io.h>
+ 
+-#include <asm/io.h>
+ #include <asm/div64.h>
+ 
+ #include <asm/mach/map.h>
+@@ -45,10 +45,10 @@
+ #ifdef CONFIG_FB_S3C2410_DEBUG
+ static int debug	= 1;
+ #else
+-static int debug	= 0;
++static int debug;
+ #endif
+ 
+-#define dprintk(msg...)	if (debug) { printk(KERN_DEBUG "s3c2410fb: " msg); }
++#define dprintk(msg...)	if (debug) printk(KERN_DEBUG "s3c2410fb: " msg);
+ 
+ /* useful functions */
+ 
+@@ -567,11 +567,10 @@ static int s3c2410fb_blank(int blank_mode, struct fb_info *info)
+ 
+ 	tpal_reg += is_s3c2412(fbi) ? S3C2412_TPAL : S3C2410_TPAL;
+ 
+-	if (blank_mode = FB_BLANK_POWERDOWN) {
++	if (blank_mode = FB_BLANK_POWERDOWN)
+ 		s3c2410fb_lcd_enable(fbi, 0);
+-	} else {
++	else
+ 		s3c2410fb_lcd_enable(fbi, 1);
+-	}
+ 
+ 	if (blank_mode = FB_BLANK_UNBLANK)
+ 		writel(0x0, tpal_reg);
+@@ -812,7 +811,7 @@ static inline void s3c2410fb_cpufreq_deregister(struct s3c2410fb_info *info)
+ #endif
+ 
+ 
+-static char driver_name[] = "s3c2410fb";
++static const char driver_name[] = "s3c2410fb";
+ 
+ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+ 				  enum s3c_drv_type drv_type)
+@@ -881,7 +880,10 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+ 		goto release_mem;
+ 	}
+ 
+-	info->irq_base = info->io + ((drv_type = DRV_S3C2412) ? S3C2412_LCDINTBASE : S3C2410_LCDINTBASE);
++	if (drv_type = DRV_S3C2412)
++		info->irq_base = info->io + S3C2412_LCDINTBASE;
++	else
++		info->irq_base = info->io + S3C2410_LCDINTBASE;
+ 
+ 	dprintk("devinit\n");
+ 
+@@ -927,7 +929,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+ 	clk_enable(info->clk);
+ 	dprintk("got and enabled clock\n");
+ 
+-	msleep(1);
++	usleep_range(1000, 1000);
+ 
+ 	info->clk_rate = clk_get_rate(info->clk);
+ 
+@@ -975,9 +977,8 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+ 
+ 	/* create device files */
+ 	ret = device_create_file(&pdev->dev, &dev_attr_debug);
+-	if (ret) {
++	if (ret)
+ 		printk(KERN_ERR "failed to add debug attribute\n");
+-	}
+ 
+ 	printk(KERN_INFO "fb%d: %s frame buffer device\n",
+ 		fbinfo->node, fbinfo->fix.id);
+@@ -1027,7 +1028,7 @@ static int __devexit s3c2410fb_remove(struct platform_device *pdev)
+ 	s3c2410fb_cpufreq_deregister(info);
+ 
+ 	s3c2410fb_lcd_enable(info, 0);
+-	msleep(1);
++	usleep_range(1000, 1000);
+ 
+ 	s3c2410fb_unmap_video_memory(fbinfo);
+ 
+@@ -1064,7 +1065,7 @@ static int s3c2410fb_suspend(struct platform_device *dev, pm_message_t state)
+ 	 * the LCD DMA engine is not going to get back on the bus
+ 	 * before the clock goes off again (bjd) */
+ 
+-	msleep(1);
++	usleep_range(1000, 1000);
+ 	clk_disable(info->clk);
+ 
+ 	return 0;
+@@ -1076,7 +1077,7 @@ static int s3c2410fb_resume(struct platform_device *dev)
+ 	struct s3c2410fb_info *info = fbinfo->par;
+ 
+ 	clk_enable(info->clk);
+-	msleep(1);
++	usleep_range(1000, 1000);
+ 
+ 	s3c2410fb_init_registers(fbinfo);
  
 -- 
-1.7.5.4
+1.7.1
 

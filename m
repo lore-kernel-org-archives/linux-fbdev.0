@@ -1,43 +1,67 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Wed, 23 Nov 2011 05:51:26 +0000
-Subject: Re: [PATCH 08/65] OMAPDSS: remove partial update from panel-taal
-Message-Id: <4ECC8979.2080905@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 29 Nov 2011 10:26:56 +0000
+Subject: [PATCH v4 0/3] fbdev: Add FOURCC-based format configuration API
+Message-Id: <1322562419-9934-1-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>	 <1321953724-6350-9-git-send-email-tomi.valkeinen@ti.com>	 <4ECB8D39.4000005@ti.com> <1321965130.1887.46.camel@deskari>
-In-Reply-To: <1321965130.1887.46.camel@deskari>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, archit@ti.com
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
+Cc: linux-media@vger.kernel.org
 
-On Tuesday 22 November 2011 06:02 PM, Tomi Valkeinen wrote:
-> On Tue, 2011-11-22 at 17:23 +0530, Archit Taneja wrote:
->>> -     r = taal_set_update_window(td, x, y, w, h);
->>> +     /* XXX no need to send this every frame, but dsi break if not
->> done */
->>> +     r = taal_set_update_window(td, 0, 0,
->>> +                     td->panel_config->timings.x_res,
->>> +                     td->panel_config->timings.y_res);
->>
->> How about sending a null short packet, and a BTA after that. This
->> will
->> keep automatic TE mode in place, and we'll need to send 1 short
->> packet
->> instead of 2 long packets every frame.
->
-> To be honest, I didn't spend any time with this. True, sending a null
-> packet and BTA instead of the 2 long packets is possible. But probably
-> even better would be to track the TE status, and send a BTA only when
-> needed.
+Hi everybody,
 
-Right, if we maintain the TE status, we may not need to send a packet at 
-all, so I guess we could stick with this for now, and remove it once we 
-start maintaining the number of BTAs we have sent to the panel.
+Here's the fourth version of the fbdev FOURCC-based format configuration AP=
+I.
 
-Archit
+The third version nearly got merged, but we noticed that gcc choked on
+anonymous union initializers. This has been fixed in gcc 4.6, but I don't h=
+ave
+the power to force Linux to set the base gcc version to 4.6 :-)
 
->
->   Tomi
->
+There were two ways to fix the issue, neither of which was particularly
+attractive to me. The first one involved a 10k lines patch that modified all
+the drivers, and the second one required using one of the reserved fields in
+the fb_var_screeninfo structure. After discussing this with Florian, I've
+decided to go for the second fix.
+
+The colorspace field is thus now stored in a previously reserved field. The
+fourcc field is still shared with the grayscale field, but doesn't have its
+own name anymore.
+
+I've updated the fbdev-test tool to this new API. The code is available in =
+the
+fbdev-test yuv branch at
+http://git.ideasonboard.org/?p=FBdev-test.git;a=3Dshortlog;h=3Drefs/heads/y=
+uv.
+
+Laurent Pinchart (3):
+  fbdev: Add FOURCC-based format configuration API
+  v4l: Add V4L2_PIX_FMT_NV24 and V4L2_PIX_FMT_NV42 formats
+  fbdev: sh_mobile_lcdc: Support FOURCC-based format API
+
+ Documentation/DocBook/media/v4l/pixfmt-nv24.xml |  129 ++++++++
+ Documentation/DocBook/media/v4l/pixfmt.xml      |    1 +
+ Documentation/fb/api.txt                        |  306 +++++++++++++++++++
+ arch/arm/mach-shmobile/board-ag5evm.c           |    2 +-
+ arch/arm/mach-shmobile/board-ap4evb.c           |    4 +-
+ arch/arm/mach-shmobile/board-mackerel.c         |    4 +-
+ arch/sh/boards/mach-ap325rxa/setup.c            |    2 +-
+ arch/sh/boards/mach-ecovec24/setup.c            |    2 +-
+ arch/sh/boards/mach-kfr2r09/setup.c             |    2 +-
+ arch/sh/boards/mach-migor/setup.c               |    4 +-
+ arch/sh/boards/mach-se/7724/setup.c             |    2 +-
+ drivers/video/sh_mobile_lcdcfb.c                |  360 +++++++++++++++----=
+----
+ include/linux/fb.h                              |   14 +-
+ include/linux/videodev2.h                       |    2 +
+ include/video/sh_mobile_lcdc.h                  |    4 +-
+ 15 files changed, 701 insertions(+), 137 deletions(-)
+ create mode 100644 Documentation/DocBook/media/v4l/pixfmt-nv24.xml
+ create mode 100644 Documentation/fb/api.txt
+
+--=20
+Regards,
+
+Laurent Pinchart
 

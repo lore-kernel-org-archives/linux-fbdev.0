@@ -1,116 +1,77 @@
-From: Hans Verkuil <hverkuil@xs4all.nl>
-Date: Tue, 29 Nov 2011 13:30:42 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 29 Nov 2011 16:13:27 +0000
 Subject: Re: drm pixel formats update
-Message-Id: <201111291430.42608.hverkuil@xs4all.nl>
+Message-Id: <1322583207.1869.194.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-z3v8gCpLmUyq26DXkzIu"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321468945-28224-1-git-send-email-ville.syrjala@linux.intel.com> <201111291310.36589.laurent.pinchart@ideasonboard.com>
+References: <1321468945-28224-1-git-send-email-ville.syrjala@linux.intel.com>
+	 <201111291310.36589.laurent.pinchart@ideasonboard.com>
 In-Reply-To: <201111291310.36589.laurent.pinchart@ideasonboard.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: dri-devel@lists.freedesktop.org, ville.syrjala@linux.intel.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, Jesse Barker <jesse.barker@linaro.org>
+Cc: dri-devel@lists.freedesktop.org, ville.syrjala@linux.intel.com, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
 
-On Tuesday 29 November 2011 13:10:35 Laurent Pinchart wrote:
-> Hi Ville,
-> 
-> Sorry for the late reply.
-> 
-> (Cross-posting to the linux-fbdev and linux-media mailing lists, as the
-> topics I'm about to discuss are of interest to everybody)
-> 
-> On Wednesday 16 November 2011 19:42:23 ville.syrjala@linux.intel.com wrote:
-> > I decided to go all out with the pixel format definitions. Added pretty
-> > much all of the possible RGB/BGR variations. Just left out ones with
-> > 16bit components and floats. Also added a whole bunch of YUV formats,
-> > and 8 bit pseudocolor for good measure.
-> > 
-> > I'm sure some of the fourccs now clash with the ones used by v4l2,
-> > but that's life.
-> 
-> Disclaimer: I realize this is a somehow controversial topic, and I'm not
-> trying to start a flame war :-)
-> 
-> What about defining a common set of fourccs for both subsystem (and using
-> them in FBDEV, which currently uses the V4L2 fourccs) ?
-> 
-> There's more and more overlap between DRM, FBDEV and V4L2, which results in
-> confusion for the user and mess in the kernel. I believe cleaning this up
-> will become more and more important with time, and also probably more and
-> more difficult if we don't act now.
-> 
-> There's no way we will all quickly agree on a big picture unified
-> architecture (I don't even know what it should look like), so I'm thinking
-> about starting small and see where it will lead us. Sharing fourccs would
-> be such a first step, and would make it easier for drivers to implement
-> several of the DRM, FBDEV and V4L2 APIs.
-> 
-> Another step I'd like to take would be working on sharing the video mode
-> definitions between subsystems. DRM has struct drm_mode_modeinfo and FBDEV
-> has struct fb_videomode. The former can't be modified as it's used in
-> userspace APIs, but I believe we should create a common in-kernel
-> structure to represent modes. This would also make it easier to share the
-> EDID parser between DRM and FBDEV.
-> 
-> One issue here is names. I understand that using names from another
-> subsystem in a driver that has nothing to do with it (like using
-> V4L2_PIX_FMT_* in DRM, or drm_mode_modeinfo in FBDEV) can be frustrating
-> for many developers, so I'd like to propose an alternative. We have a
-> media-related kernel API that is cross-subsystem, that's the media
-> controller. It uses the prefix media_. We could use more specific versions
-> of that preview (such as media_video_ and media_display_) as a neutral
-> ground.
 
-I agree.
+--=-z3v8gCpLmUyq26DXkzIu
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> Another issue is control. It's quite natural to be suspicious about
-> subsystems we're not familiar with, and giving up control on things we
-> consider as highly important to other subsystems feels dangerous and
-> wrong. Once again, media_* could be an answer to this problem. Instead of
-> trying to push other subsystems to use our APIs (which are, obviously, the
-> best possible ever, as they're the ones we work on :-)) with the promise
-> that we will extend them to fullfill their needs if necessary, we could
-> design new shared structures and core functions together with a media_
-> prefix, and make sure they fullfill all the needs from the start. What I
-> like about this approach is that each of the 3 video-related subsystems
-> would then benefit from the experience of the other 2.
-> 
-> To make it perfectly clear, I want to emphasize that I'm not trying to
-> replace DRM, FBDEV and V4L2 with a new shared subsystem. What I would like
-> to see in the (near future) is collaboration and sharing of core features
-> that make sense to share. I believe we should address this from a "pain
-> point" point of view. The one that lead me to writing this e-mail is that
-> developing a driver that implements both the DRM and FBDEV APIs for video
-> output currently requires various similar structures, and code to
-> translate between all of them. That code can't be shared between multiple
-> drivers, is error-prone, and painful to maintin.
-> 
-> I can (and actually would like to) submit an RFC, but I would first like to
-> hear your opinion on the topic.
+On Tue, 2011-11-29 at 13:10 +0100, Laurent Pinchart wrote:
 
-I have added Jesse Barker to the CC list. I think that to achieve closer
-cooperation between the various subsystems we need to organize a few days
-of talks between the main developers to 1) understand each others subsystem,
-2) to discover what functionality would be good to share, and 3) figure out
-some sort of roadmap on how to do this.
+> To make it perfectly clear, I want to emphasize that I'm not trying to re=
+place=20
+> DRM, FBDEV and V4L2 with a new shared subsystem. What I would like to see=
+ in=20
+> the (near future) is collaboration and sharing of core features that make=
+=20
+> sense to share. I believe we should address this from a "pain point" poin=
+t of=20
+> view. The one that lead me to writing this e-mail is that developing a dr=
+iver=20
+> that implements both the DRM and FBDEV APIs for video output currently=
+=20
+> requires various similar structures, and code to translate between all of=
+=20
+> them. That code can't be shared between multiple drivers, is error-prone,=
+ and=20
+> painful to maintin.
 
-Linaro might be a suitable organization that can assist with at least the
-organizational part of setting up such a meeting. They did a good job in the
-past (in Budapest and Cambourne) with the buffer sharing discussions.
+We've been in the same situation with OMAP display driver for years. The
+same low level display driver is used by FB, V4L2 and now DRM drivers,
+so I didn't have much choice but to implement omapdss versions for
+things like video timings and color formats.
 
-One week of discussions/brainstorming between a small(ish) group of developers
-can be very, very productive in my experience.
+I've been planning to write code for this almost as long as omapdss has
+had this problem, but there's always been
+yet-another-important-thing-to-do. So good that somebody finally brought
+this up =3D).
 
-Regards,
+I'm happy to test any code related to this with omapdss.
 
-	Hans
+ Tomi
 
-> 
-> > If anyone has problems with the way the formats are defined, please
-> > speak up now! Since only Jesse has bothered to comment on my rantings
-> > I can only assume people are happy with my approach to things.
-> > 
-> > These patches should apply on top of Jesse's v3+v5 set... I think.
-> > I sort of lost track of things when the patches started having
-> > different version numbers. At least we're not yet into two digits
-> > numbers ;)
+
+--=-z3v8gCpLmUyq26DXkzIu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJO1QSnAAoJEPo9qoy8lh71X24P/0XGlVuXd2O0ouJ9bZB2vI+u
+ho0VLx7hOZlfyOwa/cJu2dylcSnK86/N9RiRlb/5iyCmqazVeJXhUTvlTiPS30kL
+KRgv4ScrNFVfDUHZc3mgH7bI/sXKOi2jXC8dOIiQ9MDLYcpzPWtEW0Wq32Q5uufY
+9yztLCQXF8G0DGfyIMjNPNiRbZm8v37YbPG9yRgaiZn8yhAG2eb9vJt7U5xGtYo9
+XYhrbKLhwgvyAjjQaPW7OP2huXmUNCf4mT0pI9Y+4hzT5TgCI7qwDCOFzdnSxQEV
+s2KBxLP3hUmp+OWKoKUOg3XXZCfEsqh5AMbRSPAaiB/ewyDvQpF8hQYpANTA7C3L
+8v02zuKYFyzUj+1BuUtq1yU+UgrFWWf9eJgL28x0gS0Hexz33IBEBq9gdpmPFUzh
+Hr0mKWrXIaMZPTTGuqtJma6kccDAXc2ka5Rb1EmAVTCjdrKmQ21o4PeY/uyYfPVW
+CP61tkBmt+1RGhJ3qk3vRf6TIwv/Zned8YQunN5ZSSrhSGrFqua3Tec7h7QIIDWM
+s3J/A4AndDjkJoTUnSp4ms+muywavtSej9hV5cEuM8mT/K054skIryTMHX+FF2VZ
+bwFYcttwFe9gODLwAiWOD/N8oXJnkOCMz+GSBmvyhH7TooK26l5lKguzY3kC1hHl
+QQMsX/JYBOA/b6jH3xjz
+=mIIU
+-----END PGP SIGNATURE-----
+
+--=-z3v8gCpLmUyq26DXkzIu--
+

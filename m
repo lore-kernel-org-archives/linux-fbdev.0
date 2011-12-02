@@ -1,23 +1,50 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Thu, 22 Dec 2011 18:50:59 +0000
-Subject: Re: [GIT PULL] ARM: amba: Enable module alias autogeneration for
-Message-Id: <20111222185059.GA3551@n2100.arm.linux.org.uk>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Fri, 02 Dec 2011 08:49:16 +0000
+Subject: Re: backlight/ld9040.c: regulator control in the lcd driver
+Message-Id: <CACRpkdbRdtsw-3FXtevuJL7G=tcE+1s11iRw=zou1G25hufBSA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20111206151541.GA13774@linaro.org> <1321961573-4562-1-git-send-email-dave.martin@linaro.org> <20111206155911.GA11902@mail.gnudd.com> <20111206161815.GD13769@linaro.org> <20111219132409.GB2031@linaro.org> <20111219213942.GM14542@n2100.arm.linux.org.uk> <20111222112125.GA2573@localhost>
-In-Reply-To: <20111222112125.GA2573@localhost>
+References: <000c01ccb0c6$697c2aa0$3c747fe0$%lee@samsung.com>
+In-Reply-To: <000c01ccb0c6$697c2aa0$3c747fe0$%lee@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dave Martin <dave.martin@linaro.org>
-Cc: Alessandro Rubini <rubini@unipv.it>, patches@linaro.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, alan@linux.intel.com, a.zummo@towertech.it, alsa-devel@alsa-project.org, cjb@laptop.org, dan.j.williams@intel.com, dmitry.torokhov@gmail.com, grant.likely@secretlab.ca, perex@perex.cz, jassisinghbrar@gmail.com, julia@diku.dk, linus.walleij@linaro.org, linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org, linux-mmc@vger.kernel.org, linux-serial@vger.kernel.org, linux-watchdog@vger.kernel.org, lethal@linux-sh.org, Pawel.Moll@arm.com, rtc-linux@googlegroups.com, spi-devel-general@lists.sourceforge.net, tiwai@suse.de, vinod.koul@intel.com, wim@iguana.be
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-On Thu, Dec 22, 2011 at 11:21:25AM +0000, Dave Martin wrote:
-> On Mon, Dec 19, 2011 at 09:39:42PM +0000, Russell King - ARM Linux wrote:
-> > I have pulled it, I just haven't merged it in anywhere yet.
-> 
-> OK, great -- thanks.
-> 
-> I wasn't too familiar with the procedure, so I just wanted
-> to be sure that I hadn't done things wrong.
+On Fri, Dec 2, 2011 at 8:45 AM, leedonghwa <dh09.lee@samsung.com> wrote:
 
-FYI, I'll be pushing out an update to my tree Friday evening.
+[From your mail headers]
+> X-Mailer: Microsoft Office Outlook 12.0
+
+No please. That mailer does not work, all your whitespace is screwed up.
+Consult: Documentation/email-clients.txt
+
+> This patch supports regulator power control in the driver.
+
+Always CC the regulator maintainers on patches like this please.
+
+> +=A0=A0=A0=A0=A0=A0=A0=A0 lcd->reg_vdd3 =3D regulator_get(lcd->dev, "vdd"=
+);
+> +=A0=A0=A0=A0=A0=A0=A0=A0 if (IS_ERR(lcd->reg_vdd3)) {
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 dev_info(lcd->dev=
+, "no %s regulator found\n", "vdd");
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 lcd->reg_vdd3 =3D=
+ NULL;
+> +=A0=A0=A0=A0=A0=A0=A0=A0 }
+> +
+> +=A0=A0=A0=A0=A0=A0=A0=A0 lcd->reg_vci =3D regulator_get(lcd->dev, "vci");
+> +=A0=A0=A0=A0=A0=A0=A0=A0 if (IS_ERR(lcd->reg_vci)) {
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 dev_info(lcd->dev=
+, "no %s regulator found\n", "vci");
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 lcd->reg_vci =3D =
+NULL;
+> +=A0=A0=A0=A0=A0=A0=A0=A0 }
+
+As explained in earlier discussion with Mark regarding the SMSC911x
+driver regulator, treat these as errors and do not fail
+"gracefully" like this.
+
+Reference:
+http://marc.info/?l=3Dlinux-netdev&m=131914562120725&w=3D2
+
+Yours,
+Linus Walleij

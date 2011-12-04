@@ -1,198 +1,396 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Sat, 17 Dec 2011 01:12:16 +0000
-Subject: Re: [PATCH v4] Resurrect Intel740 driver: i740fb
-Message-Id: <20111216171216.f307b3fe.akpm@linux-foundation.org>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 04 Dec 2011 00:38:27 +0000
+Subject: Re: [PATCH] video: convert drivers/video/* to use module_platform_driver()
+Message-Id: <4EDAC103.7060503@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201112080024.24383.linux@rainbow-software.org>
-In-Reply-To: <201112080024.24383.linux@rainbow-software.org>
+References: <1322274354.10633.3.camel@phoenix>
+In-Reply-To: <1322274354.10633.3.camel@phoenix>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Paul Mundt <lethal@linux-sh.org>, Kernel development list <linux-kernel@vger.kernel.org>
+To: Axel Lin <axel.lin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Wan ZongShun <mcuos.com@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, Lennert Buytenhek <buytenh@marvell.com>, Ben Dooks <ben@simtec.co.uk>, Alexey Charkov <alchark@gmail.com>, Damian Hobson-Garcia <dhobsong@igel.co.jp>, Manuel Lauss <mano@roarinelk.homelinux.net>, linux-fbdev@vger.kernel.org
 
-On Thu, 8 Dec 2011 00:24:18 +0100
-Ondrej Zary <linux@rainbow-software.org> wrote:
-
-> This is a resurrection of an old (like 2.4.19) out-of-tree driver for
-> Intel740 graphics cards and modify it for recent kernels. The old driver is
-> located at: http://sourceforge.net/projects/i740fbdev/files/
+On 11/26/2011 02:25 AM, Axel Lin wrote:
+> This patch converts the drivers in drivers/video/* to use the
+> module_platform_driver() macro which makes the code smaller and a bit
+> simpler.
 > 
-> This is a new driver based on skeletonfb, using most of the low level HW code
-> from the old driver. The DDC code is completely new.
+> Cc: Wan ZongShun <mcuos.com@gmail.com>
+> Cc: Sascha Hauer <s.hauer@pengutronix.de>
+> Cc: Lennert Buytenhek <buytenh@marvell.com>
+> Cc: Ben Dooks <ben@simtec.co.uk>
+> Cc: Alexey Charkov <alchark@gmail.com>
+> Cc: Damian Hobson-Garcia <dhobsong@igel.co.jp>
+> Cc: Manuel Lauss <mano@roarinelk.homelinux.net>
+> Signed-off-by: Axel Lin <axel.lin@gmail.com>
+
+Applied this patch.
+
+
+Thanks,
+
+Florian Tobias Schandinat
+
+> ---
+>  drivers/video/mxsfb.c            |   13 +------------
+>  drivers/video/nuc900fb.c         |   13 +------------
+>  drivers/video/pxa168fb.c         |   12 +-----------
+>  drivers/video/pxa3xx-gcu.c       |   15 +--------------
+>  drivers/video/s3c-fb.c           |   13 +------------
+>  drivers/video/sh7760fb.c         |   13 +------------
+>  drivers/video/sh_mobile_lcdcfb.c |   13 +------------
+>  drivers/video/sh_mobile_meram.c  |   13 +------------
+>  drivers/video/sm501fb.c          |   13 +------------
+>  drivers/video/vt8500lcdfb.c      |   13 +------------
+>  drivers/video/w100fb.c           |   13 +------------
+>  drivers/video/wm8505fb.c         |   13 +------------
+>  drivers/video/wmt_ge_rops.c      |   13 +------------
+>  drivers/video/xilinxfb.c         |   20 +-------------------
+>  14 files changed, 14 insertions(+), 176 deletions(-)
 > 
-> The driver was tested on two 8MB cards: Protac AG240D and Diamond Stealth II
-> G460.
-> 
-> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-
-The original driver appears to have been written by Andrey Ulanov.  It
-would be nice to mention that in the changelog and it is desirable that
-you seek his Signed-off-by:, please.
-
-> Changes in v4:
->  - shortened many lines to fit 80-char limit
->  - removed useless inb_p and outb_p functions
->  - converted DDC (and some other) code to i740outreg_mask
->  - removed useless wm initialization in i740_calc_fifo()
->  - ALIGN macro is used instead of manual alignment
->  - removed inactive code
->  - simplified i740_setcolreg()
->  - info->var used for panning
->  - fixed out-of-video-memory checking
-
-It still generates a large number of checkpatch errors.  If you've
-reviewed those and made the decision to ignore them then OK(ish). 
-Otherwise, please check.
-
->
-> ...
->
-> +#include <linux/module.h>
-> +#include <linux/kernel.h>
-> +#include <linux/errno.h>
-> +#include <linux/string.h>
-> +#include <linux/mm.h>
-> +#include <linux/slab.h>
-> +#include <linux/delay.h>
-> +#include <linux/fb.h>
-> +#include <linux/init.h>
-> +#include <linux/pci.h>
-> +#include <linux/pci_ids.h>
-> +#include <linux/i2c.h>
-> +#include <linux/i2c-algo-bit.h>
-
-Should there have been a dependency on i2c in the Kconfig entry?  If
-not, has the driver been tested with is2 disabled?
-
-> +#include <linux/console.h>
-> +#include <video/vga.h>
-> +
->
-> ...
->
-> +#define I740_RFREQ (1e6)
-> +#define TARGET_MAX_N 30
-> +
-> +#define I740_FFIX		8
-> +#define I740_REF_FREQ		(u32) (66.66666666667 * (1 << I740_FFIX) + 0.5)
-> +#define I740_MAX_VCO_FREQ	(u32)(450.00000000000 * (1 << I740_FFIX) + 0.5)
-
-There should be no floating point in the kernel, normally.  Given the
-casts, these will obviously not get any further than the compiler.  But
-if these could be redone to avoid the float, that would be nice.
-
-> +#define I740_CALC_VCLKfix(m, n, p, d)   ((((((m) * I740_REF_FREQ * (4 << ((d) << 1)))) / (n)) + ((1 << (p)) / 2)) / (1 << (p)))
-
-This macro should be dragged out and shot.  And it will cause bugs if
-invoked using an expression with side-effects.  There's no need to do
-this to ourselves - please turn it into a nice, lower-case-named C
-function with proper identifiers, code comments, etc.
-
-> +static void i740_calc_vclk(u32 freq_hz, struct i740fb_par *par)
-> +{
-> +	u32 freq = freq_hz / (u32)(1e6 / I740_RFREQ);
-> +	const u32 err_max > +		freq / (u32)(I740_RFREQ / 0.005 / (1 << I740_FFIX) + 0.5);
-> +	const u32 err_target > +		freq / (u32)(I740_RFREQ / 0.001 / (1 << I740_FFIX) + 0.5);
-> +	u32 err_best = (u32)(512.0 * (1 << I740_FFIX));
-> +	u32 f_err, f_vco;
-> +	int m_best = 0, n_best = 0, p_best = 0, d_best = 0;
-> +	int m, n, i;
-> +
-> +	/* find log2(MAX_VCO_FREQ/f_target) */
-> +	for (i = 0; i < 16; i++)
-> +		if ((I740_MAX_VCO_FREQ) / (1 << i) < freq / (u32)(I740_RFREQ / (1 << I740_FFIX)))
-
-Use the existing ilog2()?
-
-> +			break;
-> +	i--;
-> +	p_best = i;
-> +
-> +	d_best = 0;
-> +	f_vco = (freq * (1 << p_best)) / (u32)(I740_RFREQ / (1 << I740_FFIX));
-> +	freq = freq / (u32)(I740_RFREQ / (1 << I740_FFIX));
-> +
-> +	n = 2;
-> +	do {
-> +		n++;
-> +		m = ((f_vco * n) / I740_REF_FREQ + 2) / 4;
-> +
-> +		if (m < 3)
-> +			m = 3;
-> +
-> +		{
-> +			u32 f_out = I740_CALC_VCLKfix(m, n, p_best, d_best);
-> +
-> +			f_err = (freq - f_out);
-> +
-> +			if (abs(f_err) < err_max) {
-> +				m_best = m;
-> +				n_best = n;
-> +				err_best = f_err;
-> +			}
-> +		}
-> +	} while ((abs(f_err) >= err_target) &&
-> +		 ((n <= TARGET_MAX_N) || (abs(err_best) > err_max)));
-> +
-> +	if (abs(f_err) < err_target) {
-> +		m_best = m;
-> +		n_best = n;
-> +	}
-> +
-> +	par->video_clk2_m = (m_best-2) & 0xFF;
-> +	par->video_clk2_n = (n_best-2) & 0xFF;
-> +	par->video_clk2_mn_msbs = ((((n_best-2) >> 4) & VCO_N_MSBS)
-> +				 | (((m_best-2) >> 8) & VCO_M_MSBS));
-> +	par->video_clk2_div_sel > +		((p_best << 4) | (d_best ? 4 : 0) | REF_DIV_1);
-> +}
-> +
->
-> ...
->
-> +#ifndef MODULE
-> +static int  __init i740fb_setup(char *options)
-> +{
-> +	char *opt;
-> +
-> +	if (!options || !*options)
-> +		return 0;
-> +
-> +	while ((opt = strsep(&options, ",")) != NULL) {
-> +		if (!*opt)
-> +			continue;
-> +#ifdef CONFIG_MTRR
-> +		else if (!strncmp(opt, "mtrr:", 5))
-> +			mtrr = simple_strtoul(opt + 5, NULL, 0);
-> +#endif
-> +		else
-> +			mode_option = opt;
-> +	}
-> +
-> +	return 0;
-> +}
-> +#endif
-> +
-> +int __init i740fb_init(void)
-> +{
-> +#ifndef MODULE
-> +	char *option = NULL;
-> +
-> +	if (fb_get_options("i740fb", &option))
-> +		return -ENODEV;
-> +	i740fb_setup(option);
-> +#endif
-> +
-> +	return pci_register_driver(&i740fb_driver);
-> +}
-
-hm, the "ifdef MODULE" stuff looks old-fashioned, but quite a few fbdev
-drivers appear to be doing it.
-
->
-> ...
->
-
-Should we also be adding a documentation file for thei driver?  Tell
-people what the various module options do?
+> diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+> index d837d63..18742c2 100644
+> --- a/drivers/video/mxsfb.c
+> +++ b/drivers/video/mxsfb.c
+> @@ -902,18 +902,7 @@ static struct platform_driver mxsfb_driver = {
+>  	},
+>  };
+>  
+> -static int __init mxsfb_init(void)
+> -{
+> -	return platform_driver_register(&mxsfb_driver);
+> -}
+> -
+> -static void __exit mxsfb_exit(void)
+> -{
+> -	platform_driver_unregister(&mxsfb_driver);
+> -}
+> -
+> -module_init(mxsfb_init);
+> -module_exit(mxsfb_exit);
+> +module_platform_driver(mxsfb_devtype);
+>  
+>  MODULE_DESCRIPTION("Freescale mxs framebuffer driver");
+>  MODULE_AUTHOR("Sascha Hauer, Pengutronix");
+> diff --git a/drivers/video/nuc900fb.c b/drivers/video/nuc900fb.c
+> index d1fbbd8..e10f551 100644
+> --- a/drivers/video/nuc900fb.c
+> +++ b/drivers/video/nuc900fb.c
+> @@ -762,18 +762,7 @@ static struct platform_driver nuc900fb_driver = {
+>  	},
+>  };
+>  
+> -int __devinit nuc900fb_init(void)
+> -{
+> -	return platform_driver_register(&nuc900fb_driver);
+> -}
+> -
+> -static void __exit nuc900fb_cleanup(void)
+> -{
+> -	platform_driver_unregister(&nuc900fb_driver);
+> -}
+> -
+> -module_init(nuc900fb_init);
+> -module_exit(nuc900fb_cleanup);
+> +module_platform_driver(nuc900fb_driver);
+>  
+>  MODULE_DESCRIPTION("Framebuffer driver for the NUC900");
+>  MODULE_LICENSE("GPL");
+> diff --git a/drivers/video/pxa168fb.c b/drivers/video/pxa168fb.c
+> index 18ead6f..8384b94 100644
+> --- a/drivers/video/pxa168fb.c
+> +++ b/drivers/video/pxa168fb.c
+> @@ -832,17 +832,7 @@ static struct platform_driver pxa168fb_driver = {
+>  	.remove		= __devexit_p(pxa168fb_remove),
+>  };
+>  
+> -static int __init pxa168fb_init(void)
+> -{
+> -	return platform_driver_register(&pxa168fb_driver);
+> -}
+> -module_init(pxa168fb_init);
+> -
+> -static void __exit pxa168fb_exit(void)
+> -{
+> -	platform_driver_unregister(&pxa168fb_driver);
+> -}
+> -module_exit(pxa168fb_exit);
+> +module_platform_driver(pxa168fb_driver);
+>  
+>  MODULE_AUTHOR("Lennert Buytenhek <buytenh@marvell.com> "
+>  	      "Green Wan <gwan@marvell.com>");
+> diff --git a/drivers/video/pxa3xx-gcu.c b/drivers/video/pxa3xx-gcu.c
+> index 1ed8b36..1d71c08 100644
+> --- a/drivers/video/pxa3xx-gcu.c
+> +++ b/drivers/video/pxa3xx-gcu.c
+> @@ -747,20 +747,7 @@ static struct platform_driver pxa3xx_gcu_driver = {
+>  	},
+>  };
+>  
+> -static int __init
+> -pxa3xx_gcu_init(void)
+> -{
+> -	return platform_driver_register(&pxa3xx_gcu_driver);
+> -}
+> -
+> -static void __exit
+> -pxa3xx_gcu_exit(void)
+> -{
+> -	platform_driver_unregister(&pxa3xx_gcu_driver);
+> -}
+> -
+> -module_init(pxa3xx_gcu_init);
+> -module_exit(pxa3xx_gcu_exit);
+> +module_platform_driver(pxa3xx_gcu_driver);
+>  
+>  MODULE_DESCRIPTION("PXA3xx graphics controller unit driver");
+>  MODULE_LICENSE("GPL");
+> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+> index 12eaee0..cf1d11f 100644
+> --- a/drivers/video/s3c-fb.c
+> +++ b/drivers/video/s3c-fb.c
+> @@ -2003,18 +2003,7 @@ static struct platform_driver s3c_fb_driver = {
+>  	},
+>  };
+>  
+> -static int __init s3c_fb_init(void)
+> -{
+> -	return platform_driver_register(&s3c_fb_driver);
+> -}
+> -
+> -static void __exit s3c_fb_cleanup(void)
+> -{
+> -	platform_driver_unregister(&s3c_fb_driver);
+> -}
+> -
+> -module_init(s3c_fb_init);
+> -module_exit(s3c_fb_cleanup);
+> +module_platform_driver(s3c_fb_driver);
+>  
+>  MODULE_AUTHOR("Ben Dooks <ben@simtec.co.uk>");
+>  MODULE_DESCRIPTION("Samsung S3C SoC Framebuffer driver");
+> diff --git a/drivers/video/sh7760fb.c b/drivers/video/sh7760fb.c
+> index 45e47d8..83b16e2 100644
+> --- a/drivers/video/sh7760fb.c
+> +++ b/drivers/video/sh7760fb.c
+> @@ -585,18 +585,7 @@ static struct platform_driver sh7760_lcdc_driver = {
+>  	.remove = __devexit_p(sh7760fb_remove),
+>  };
+>  
+> -static int __init sh7760fb_init(void)
+> -{
+> -	return platform_driver_register(&sh7760_lcdc_driver);
+> -}
+> -
+> -static void __exit sh7760fb_exit(void)
+> -{
+> -	platform_driver_unregister(&sh7760_lcdc_driver);
+> -}
+> -
+> -module_init(sh7760fb_init);
+> -module_exit(sh7760fb_exit);
+> +module_platform_driver(sh7760_lcdc_driver);
+>  
+>  MODULE_AUTHOR("Nobuhiro Iwamatsu, Manuel Lauss");
+>  MODULE_DESCRIPTION("FBdev for SH7760/63 integrated LCD Controller");
+> diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+> index 1f49ab4..a264ebf 100644
+> --- a/drivers/video/sh_mobile_lcdcfb.c
+> +++ b/drivers/video/sh_mobile_lcdcfb.c
+> @@ -1709,18 +1709,7 @@ static struct platform_driver sh_mobile_lcdc_driver = {
+>  	.remove		= sh_mobile_lcdc_remove,
+>  };
+>  
+> -static int __init sh_mobile_lcdc_init(void)
+> -{
+> -	return platform_driver_register(&sh_mobile_lcdc_driver);
+> -}
+> -
+> -static void __exit sh_mobile_lcdc_exit(void)
+> -{
+> -	platform_driver_unregister(&sh_mobile_lcdc_driver);
+> -}
+> -
+> -module_init(sh_mobile_lcdc_init);
+> -module_exit(sh_mobile_lcdc_exit);
+> +module_platform_driver(sh_mobile_lcdc_driver);
+>  
+>  MODULE_DESCRIPTION("SuperH Mobile LCDC Framebuffer driver");
+>  MODULE_AUTHOR("Magnus Damm <damm@opensource.se>");
+> diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
+> index 4d63490..f45d83e 100644
+> --- a/drivers/video/sh_mobile_meram.c
+> +++ b/drivers/video/sh_mobile_meram.c
+> @@ -679,18 +679,7 @@ static struct platform_driver sh_mobile_meram_driver = {
+>  	.remove		= sh_mobile_meram_remove,
+>  };
+>  
+> -static int __init sh_mobile_meram_init(void)
+> -{
+> -	return platform_driver_register(&sh_mobile_meram_driver);
+> -}
+> -
+> -static void __exit sh_mobile_meram_exit(void)
+> -{
+> -	platform_driver_unregister(&sh_mobile_meram_driver);
+> -}
+> -
+> -module_init(sh_mobile_meram_init);
+> -module_exit(sh_mobile_meram_exit);
+> +module_platform_driver(sh_mobile_meram_driver);
+>  
+>  MODULE_DESCRIPTION("SuperH Mobile MERAM driver");
+>  MODULE_AUTHOR("Damian Hobson-Garcia / Takanari Hayama");
+> diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
+> index a78254c..3690eff 100644
+> --- a/drivers/video/sm501fb.c
+> +++ b/drivers/video/sm501fb.c
+> @@ -2230,18 +2230,7 @@ static struct platform_driver sm501fb_driver = {
+>  	},
+>  };
+>  
+> -static int __devinit sm501fb_init(void)
+> -{
+> -	return platform_driver_register(&sm501fb_driver);
+> -}
+> -
+> -static void __exit sm501fb_cleanup(void)
+> -{
+> -	platform_driver_unregister(&sm501fb_driver);
+> -}
+> -
+> -module_init(sm501fb_init);
+> -module_exit(sm501fb_cleanup);
+> +module_platform_driver(sm501fb_driver);
+>  
+>  module_param_named(mode, fb_mode, charp, 0);
+>  MODULE_PARM_DESC(mode,
+> diff --git a/drivers/video/vt8500lcdfb.c b/drivers/video/vt8500lcdfb.c
+> index 777c21d..2a5fe6e 100644
+> --- a/drivers/video/vt8500lcdfb.c
+> +++ b/drivers/video/vt8500lcdfb.c
+> @@ -457,18 +457,7 @@ static struct platform_driver vt8500lcd_driver = {
+>  	},
+>  };
+>  
+> -static int __init vt8500lcd_init(void)
+> -{
+> -	return platform_driver_register(&vt8500lcd_driver);
+> -}
+> -
+> -static void __exit vt8500lcd_exit(void)
+> -{
+> -	platform_driver_unregister(&vt8500lcd_driver);
+> -}
+> -
+> -module_init(vt8500lcd_init);
+> -module_exit(vt8500lcd_exit);
+> +module_platform_driver(vt8500lcd_driver);
+>  
+>  MODULE_AUTHOR("Alexey Charkov <alchark@gmail.com>");
+>  MODULE_DESCRIPTION("LCD controller driver for VIA VT8500");
+> diff --git a/drivers/video/w100fb.c b/drivers/video/w100fb.c
+> index 2375e5b..90a2e30 100644
+> --- a/drivers/video/w100fb.c
+> +++ b/drivers/video/w100fb.c
+> @@ -1620,18 +1620,7 @@ static struct platform_driver w100fb_driver = {
+>  	},
+>  };
+>  
+> -int __init w100fb_init(void)
+> -{
+> -	return platform_driver_register(&w100fb_driver);
+> -}
+> -
+> -void __exit w100fb_cleanup(void)
+> -{
+> -	platform_driver_unregister(&w100fb_driver);
+> -}
+> -
+> -module_init(w100fb_init);
+> -module_exit(w100fb_cleanup);
+> +module_platform_driver(w100fb_driver);
+>  
+>  MODULE_DESCRIPTION("ATI Imageon w100 framebuffer driver");
+>  MODULE_LICENSE("GPL");
+> diff --git a/drivers/video/wm8505fb.c b/drivers/video/wm8505fb.c
+> index 96e34a5..c8703bd 100644
+> --- a/drivers/video/wm8505fb.c
+> +++ b/drivers/video/wm8505fb.c
+> @@ -404,18 +404,7 @@ static struct platform_driver wm8505fb_driver = {
+>  	},
+>  };
+>  
+> -static int __init wm8505fb_init(void)
+> -{
+> -	return platform_driver_register(&wm8505fb_driver);
+> -}
+> -
+> -static void __exit wm8505fb_exit(void)
+> -{
+> -	platform_driver_unregister(&wm8505fb_driver);
+> -}
+> -
+> -module_init(wm8505fb_init);
+> -module_exit(wm8505fb_exit);
+> +module_platform_driver(wm8505fb_driver);
+>  
+>  MODULE_AUTHOR("Ed Spiridonov <edo.rus@gmail.com>");
+>  MODULE_DESCRIPTION("Framebuffer driver for WMT WM8505");
+> diff --git a/drivers/video/wmt_ge_rops.c b/drivers/video/wmt_ge_rops.c
+> index 45832b7..55be386 100644
+> --- a/drivers/video/wmt_ge_rops.c
+> +++ b/drivers/video/wmt_ge_rops.c
+> @@ -167,18 +167,7 @@ static struct platform_driver wmt_ge_rops_driver = {
+>  	},
+>  };
+>  
+> -static int __init wmt_ge_rops_init(void)
+> -{
+> -	return platform_driver_register(&wmt_ge_rops_driver);
+> -}
+> -
+> -static void __exit wmt_ge_rops_exit(void)
+> -{
+> -	platform_driver_unregister(&wmt_ge_rops_driver);
+> -}
+> -
+> -module_init(wmt_ge_rops_init);
+> -module_exit(wmt_ge_rops_exit);
+> +module_platform_driver(wmt_ge_rops_driver);
+>  
+>  MODULE_AUTHOR("Alexey Charkov <alchark@gmail.com");
+>  MODULE_DESCRIPTION("Accelerators for raster operations using "
+> diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+> index fcb6cd9..1808452 100644
+> --- a/drivers/video/xilinxfb.c
+> +++ b/drivers/video/xilinxfb.c
+> @@ -511,25 +511,7 @@ static struct platform_driver xilinxfb_of_driver = {
+>  	},
+>  };
+>  
+> -
+> -/* ---------------------------------------------------------------------
+> - * Module setup and teardown
+> - */
+> -
+> -static int __init
+> -xilinxfb_init(void)
+> -{
+> -	return platform_driver_register(&xilinxfb_of_driver);
+> -}
+> -
+> -static void __exit
+> -xilinxfb_cleanup(void)
+> -{
+> -	platform_driver_unregister(&xilinxfb_of_driver);
+> -}
+> -
+> -module_init(xilinxfb_init);
+> -module_exit(xilinxfb_cleanup);
+> +module_platform_driver(xilinxfb_of_driver);
+>  
+>  MODULE_AUTHOR("MontaVista Software, Inc. <source@mvista.com>");
+>  MODULE_DESCRIPTION("Xilinx TFT frame buffer driver");
 

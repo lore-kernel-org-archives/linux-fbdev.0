@@ -1,28 +1,23 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Mon, 19 Dec 2011 23:16:04 +0000
-Subject: Re: [PATCH 3/15] i810: fix module_param bool abuse.
-Message-Id: <4EEFC5B4.9000704@gmx.de>
+Date: Sun, 04 Dec 2011 00:39:27 +0000
+Subject: Re: [PATCH 1/2] video: s3c-fb: Unify runtime and system PM functions
+Message-Id: <4EDAC13F.4060102@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <874nx2tu1v.fsf@rustcorp.com.au>
-In-Reply-To: <874nx2tu1v.fsf@rustcorp.com.au>
+References: <1322434268-25525-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1322434268-25525-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>, Antonino Daplas <adaplas@gmail.com>, linux-fbdev@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>
+To: linux-fbdev@vger.kernel.org
 
-On 12/15/2011 03:03 AM, Rusty Russell wrote:
-> The driver says "module_param(ddc3, bool, 0);".  But it's not a used
-> as a bool, it's used as a count.
+On 11/27/2011 10:51 PM, Mark Brown wrote:
+> The s3c-fb driver has separate runtime and system PM functions but the
+> implementations are identical so far as I can tell so unify them for
+> simplicity.
 > 
-> Make it a bool.
-> 
-> Cc: Antonino Daplas <adaplas@gmail.com>
-> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-Applied.
+Applied this patch.
 
 
 Thanks,
@@ -30,38 +25,107 @@ Thanks,
 Florian Tobias Schandinat
 
 > ---
->  drivers/video/i810/i810_main.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
-> --- a/drivers/video/i810/i810_main.c
-> +++ b/drivers/video/i810/i810_main.c
-> @@ -147,7 +147,7 @@ static int vyres      __devinitdata;
->  static int sync       __devinitdata;
->  static int extvga     __devinitdata;
->  static int dcolor     __devinitdata;
-> -static int ddc3       __devinitdata = 2;
-> +static bool ddc3      __devinitdata;
->  
->  /*------------------------------------------------------------*/
->  
-> @@ -1776,7 +1776,7 @@ static void __devinit i810_init_defaults
->  	if (sync) 
->  		par->dev_flags |= ALWAYS_SYNC;
->  
-> -	par->ddc_num = ddc3;
-> +	par->ddc_num = (ddc3 ? 3 : 2);
->  
->  	if (bpp < 8)
->  		bpp = 8;
-> @@ -1999,7 +1999,7 @@ static int __devinit i810fb_setup(char *
->  		else if (!strncmp(this_opt, "dcolor", 6))
->  			dcolor = 1;
->  		else if (!strncmp(this_opt, "ddc3", 4))
-> -			ddc3 = 3;
-> +			ddc3 = true;
->  		else
->  			mode_option = this_opt;
->  	}
+> This is a slightly updated version of the patch, previously I forgot to
+> staticise the pm_ops.
 > 
+>  drivers/video/s3c-fb.c |   75 +-----------------------------------------------
+>  1 files changed, 1 insertions(+), 74 deletions(-)
+> 
+> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+> index 12eaee0..27971bc 100644
+> --- a/drivers/video/s3c-fb.c
+> +++ b/drivers/video/s3c-fb.c
+> @@ -1590,77 +1590,9 @@ static int s3c_fb_resume(struct device *dev)
+>  
+>  	return 0;
+>  }
+> -
+> -static int s3c_fb_runtime_suspend(struct device *dev)
+> -{
+> -	struct platform_device *pdev = to_platform_device(dev);
+> -	struct s3c_fb *sfb = platform_get_drvdata(pdev);
+> -	struct s3c_fb_win *win;
+> -	int win_no;
+> -
+> -	for (win_no = S3C_FB_MAX_WIN - 1; win_no >= 0; win_no--) {
+> -		win = sfb->windows[win_no];
+> -		if (!win)
+> -			continue;
+> -
+> -		/* use the blank function to push into power-down */
+> -		s3c_fb_blank(FB_BLANK_POWERDOWN, win->fbinfo);
+> -	}
+> -
+> -	if (!sfb->variant.has_clksel)
+> -		clk_disable(sfb->lcd_clk);
+> -
+> -	clk_disable(sfb->bus_clk);
+> -	return 0;
+> -}
+> -
+> -static int s3c_fb_runtime_resume(struct device *dev)
+> -{
+> -	struct platform_device *pdev = to_platform_device(dev);
+> -	struct s3c_fb *sfb = platform_get_drvdata(pdev);
+> -	struct s3c_fb_platdata *pd = sfb->pdata;
+> -	struct s3c_fb_win *win;
+> -	int win_no;
+> -
+> -	clk_enable(sfb->bus_clk);
+> -
+> -	if (!sfb->variant.has_clksel)
+> -		clk_enable(sfb->lcd_clk);
+> -
+> -	/* setup gpio and output polarity controls */
+> -	pd->setup_gpio();
+> -	writel(pd->vidcon1, sfb->regs + VIDCON1);
+> -
+> -	/* zero all windows before we do anything */
+> -	for (win_no = 0; win_no < sfb->variant.nr_windows; win_no++)
+> -		s3c_fb_clear_win(sfb, win_no);
+> -
+> -	for (win_no = 0; win_no < sfb->variant.nr_windows - 1; win_no++) {
+> -		void __iomem *regs = sfb->regs + sfb->variant.keycon;
+> -
+> -		regs += (win_no * 8);
+> -		writel(0xffffff, regs + WKEYCON0);
+> -		writel(0xffffff, regs + WKEYCON1);
+> -	}
+> -
+> -	/* restore framebuffers */
+> -	for (win_no = 0; win_no < S3C_FB_MAX_WIN; win_no++) {
+> -		win = sfb->windows[win_no];
+> -		if (!win)
+> -			continue;
+> -
+> -		dev_dbg(&pdev->dev, "resuming window %d\n", win_no);
+> -		s3c_fb_set_par(win->fbinfo);
+> -	}
+> -
+> -	return 0;
+> -}
+> -
+>  #else
+>  #define s3c_fb_suspend NULL
+>  #define s3c_fb_resume  NULL
+> -#define s3c_fb_runtime_suspend NULL
+> -#define s3c_fb_runtime_resume NULL
+>  #endif
+>  
+>  
+> @@ -1985,12 +1917,7 @@ static struct platform_device_id s3c_fb_driver_ids[] = {
+>  };
+>  MODULE_DEVICE_TABLE(platform, s3c_fb_driver_ids);
+>  
+> -static const struct dev_pm_ops s3cfb_pm_ops = {
+> -	.suspend	= s3c_fb_suspend,
+> -	.resume		= s3c_fb_resume,
+> -	.runtime_suspend	= s3c_fb_runtime_suspend,
+> -	.runtime_resume		= s3c_fb_runtime_resume,
+> -};
+> +static UNIVERSAL_DEV_PM_OPS(s3cfb_pm_ops, s3c_fb_suspend, s3c_fb_resume, NULL);
+>  
+>  static struct platform_driver s3c_fb_driver = {
+>  	.probe		= s3c_fb_probe,
 

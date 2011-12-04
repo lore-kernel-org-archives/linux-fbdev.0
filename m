@@ -1,105 +1,144 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Mon, 19 Dec 2011 22:26:18 +0000
-Subject: [PATCH 5/5] drivers/video: fsl-diu-fb: merge fsl_diu_alloc() into map_video_memory()
-Message-Id: <1324333578-23992-5-git-send-email-timur@freescale.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 04 Dec 2011 00:40:46 +0000
+Subject: Re: [PATCH] video: s3c2410: fix checkpatch error and warnings
+Message-Id: <4EDAC18E.20106@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Functions fsl_diu_alloc() and fsl_diu_free() were only being called by
-map_video_memory() and unmap_video_memory(), respectively.
+On 11/29/2011 09:48 AM, Jingoo Han wrote:
+> This patch fixes the checkpatch errors listed below:
+> 
+> ERROR: do not initialise statics to 0 or NULL
+> WARNING: Use #include <linux/io.h> instead of <asm/io.h>
+> WARNING: braces {} are not necessary for single statement blocks
+> WARNING: braces {} are not necessary for any arm of this statement
+> WARNING: static char array declaration should probably be static const char
+> WARNING: line over 80 characters
+> WARNING: msleep < 20ms can sleep for up to 20ms; see Documentation/timers/timers-howto.txt
+> 
+> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- drivers/video/fsl-diu-fb.c |   47 ++++++++++---------------------------------
- 1 files changed, 11 insertions(+), 36 deletions(-)
+Applied this patch.
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index e2f4f32..acf292b 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -461,37 +461,6 @@ static enum fsl_diu_monitor_port fsl_diu_name_to_port(const char *s)
- 	return diu_ops.valid_monitor_port(port);
- }
- 
--/**
-- * fsl_diu_alloc - allocate memory for the DIU
-- * @size: number of bytes to allocate
-- * @param: returned physical address of memory
-- *
-- * This function allocates a physically-contiguous block of memory.
-- */
--static void *fsl_diu_alloc(size_t size, phys_addr_t *phys)
--{
--	void *virt;
--
--	virt = alloc_pages_exact(size, GFP_DMA | __GFP_ZERO);
--	if (virt)
--		*phys = virt_to_phys(virt);
--
--	return virt;
--}
--
--/**
-- * fsl_diu_free - release DIU memory
-- * @virt: pointer returned by fsl_diu_alloc()
-- * @size: number of bytes allocated by fsl_diu_alloc()
-- *
-- * This function releases memory allocated by fsl_diu_alloc().
-- */
--static void fsl_diu_free(void *virt, size_t size)
--{
--	if (virt && size)
--		free_pages_exact(virt, size);
--}
--
- /*
-  * Workaround for failed writing desc register of planes.
-  * Needed with MPC5121 DIU rev 2.0 silicon.
-@@ -875,16 +844,17 @@ static void update_lcdc(struct fb_info *info)
- 
- static int map_video_memory(struct fb_info *info)
- {
--	phys_addr_t phys;
- 	u32 smem_len = info->fix.line_length * info->var.yres_virtual;
-+	void *p;
- 
--	info->screen_base = fsl_diu_alloc(smem_len, &phys);
--	if (info->screen_base = NULL) {
-+	p = alloc_pages_exact(smem_len, GFP_DMA | __GFP_ZERO);
-+	if (!p) {
- 		dev_err(info->dev, "unable to allocate fb memory\n");
- 		return -ENOMEM;
- 	}
- 	mutex_lock(&info->mm_lock);
--	info->fix.smem_start = (unsigned long) phys;
-+	info->screen_base = p;
-+	info->fix.smem_start = virt_to_phys(info->screen_base);
- 	info->fix.smem_len = smem_len;
- 	mutex_unlock(&info->mm_lock);
- 	info->screen_size = info->fix.smem_len;
-@@ -894,12 +864,17 @@ static int map_video_memory(struct fb_info *info)
- 
- static void unmap_video_memory(struct fb_info *info)
- {
--	fsl_diu_free(info->screen_base, info->fix.smem_len);
-+	void *p = info->screen_base;
-+	size_t l = info->fix.smem_len;
-+
- 	mutex_lock(&info->mm_lock);
- 	info->screen_base = NULL;
- 	info->fix.smem_start = 0;
- 	info->fix.smem_len = 0;
- 	mutex_unlock(&info->mm_lock);
-+
-+	if (p)
-+		free_pages_exact(p, l);
- }
- 
- /*
--- 
-1.7.3.4
 
+Thanks,
+
+Florian Tobias Schandinat
+
+> ---
+>  drivers/video/s3c2410fb.c |   29 +++++++++++++++--------------
+>  1 files changed, 15 insertions(+), 14 deletions(-)
+> 
+> diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
+> index ee4c0df..77f34c6 100644
+> --- a/drivers/video/s3c2410fb.c
+> +++ b/drivers/video/s3c2410fb.c
+> @@ -26,8 +26,8 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/clk.h>
+>  #include <linux/cpufreq.h>
+> +#include <linux/io.h>
+>  
+> -#include <asm/io.h>
+>  #include <asm/div64.h>
+>  
+>  #include <asm/mach/map.h>
+> @@ -45,10 +45,10 @@
+>  #ifdef CONFIG_FB_S3C2410_DEBUG
+>  static int debug	= 1;
+>  #else
+> -static int debug	= 0;
+> +static int debug;
+>  #endif
+>  
+> -#define dprintk(msg...)	if (debug) { printk(KERN_DEBUG "s3c2410fb: " msg); }
+> +#define dprintk(msg...)	if (debug) printk(KERN_DEBUG "s3c2410fb: " msg);
+>  
+>  /* useful functions */
+>  
+> @@ -567,11 +567,10 @@ static int s3c2410fb_blank(int blank_mode, struct fb_info *info)
+>  
+>  	tpal_reg += is_s3c2412(fbi) ? S3C2412_TPAL : S3C2410_TPAL;
+>  
+> -	if (blank_mode = FB_BLANK_POWERDOWN) {
+> +	if (blank_mode = FB_BLANK_POWERDOWN)
+>  		s3c2410fb_lcd_enable(fbi, 0);
+> -	} else {
+> +	else
+>  		s3c2410fb_lcd_enable(fbi, 1);
+> -	}
+>  
+>  	if (blank_mode = FB_BLANK_UNBLANK)
+>  		writel(0x0, tpal_reg);
+> @@ -812,7 +811,7 @@ static inline void s3c2410fb_cpufreq_deregister(struct s3c2410fb_info *info)
+>  #endif
+>  
+>  
+> -static char driver_name[] = "s3c2410fb";
+> +static const char driver_name[] = "s3c2410fb";
+>  
+>  static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+>  				  enum s3c_drv_type drv_type)
+> @@ -881,7 +880,10 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+>  		goto release_mem;
+>  	}
+>  
+> -	info->irq_base = info->io + ((drv_type = DRV_S3C2412) ? S3C2412_LCDINTBASE : S3C2410_LCDINTBASE);
+> +	if (drv_type = DRV_S3C2412)
+> +		info->irq_base = info->io + S3C2412_LCDINTBASE;
+> +	else
+> +		info->irq_base = info->io + S3C2410_LCDINTBASE;
+>  
+>  	dprintk("devinit\n");
+>  
+> @@ -927,7 +929,7 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+>  	clk_enable(info->clk);
+>  	dprintk("got and enabled clock\n");
+>  
+> -	msleep(1);
+> +	usleep_range(1000, 1000);
+>  
+>  	info->clk_rate = clk_get_rate(info->clk);
+>  
+> @@ -975,9 +977,8 @@ static int __devinit s3c24xxfb_probe(struct platform_device *pdev,
+>  
+>  	/* create device files */
+>  	ret = device_create_file(&pdev->dev, &dev_attr_debug);
+> -	if (ret) {
+> +	if (ret)
+>  		printk(KERN_ERR "failed to add debug attribute\n");
+> -	}
+>  
+>  	printk(KERN_INFO "fb%d: %s frame buffer device\n",
+>  		fbinfo->node, fbinfo->fix.id);
+> @@ -1027,7 +1028,7 @@ static int __devexit s3c2410fb_remove(struct platform_device *pdev)
+>  	s3c2410fb_cpufreq_deregister(info);
+>  
+>  	s3c2410fb_lcd_enable(info, 0);
+> -	msleep(1);
+> +	usleep_range(1000, 1000);
+>  
+>  	s3c2410fb_unmap_video_memory(fbinfo);
+>  
+> @@ -1064,7 +1065,7 @@ static int s3c2410fb_suspend(struct platform_device *dev, pm_message_t state)
+>  	 * the LCD DMA engine is not going to get back on the bus
+>  	 * before the clock goes off again (bjd) */
+>  
+> -	msleep(1);
+> +	usleep_range(1000, 1000);
+>  	clk_disable(info->clk);
+>  
+>  	return 0;
+> @@ -1076,7 +1077,7 @@ static int s3c2410fb_resume(struct platform_device *dev)
+>  	struct s3c2410fb_info *info = fbinfo->par;
+>  
+>  	clk_enable(info->clk);
+> -	msleep(1);
+> +	usleep_range(1000, 1000);
+>  
+>  	s3c2410fb_init_registers(fbinfo);
+>  
 

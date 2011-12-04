@@ -1,53 +1,112 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Tue, 27 Dec 2011 10:32:28 +0000
-Subject: Re: [PATCH] video: s3c-fb: Make runtime PM functional again
-Message-Id: <20111227103227.GA2870@opensource.wolfsonmicro.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 04 Dec 2011 00:36:47 +0000
+Subject: Re: [PATCH 09/11] video: Remove redundant spi driver bus initialization
+Message-Id: <4EDAC09F.5090401@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1324911505-31715-1-git-send-email-broonie@opensource.wolfsonmicro.com>
- <000801ccc451$b3a853d0$1af8fb70$%han@samsung.com>
-In-Reply-To: <000801ccc451$b3a853d0$1af8fb70$%han@samsung.com>
+References: <1322148561-25138-1-git-send-email-lars@metafoo.de> <1322148561-25138-9-git-send-email-lars@metafoo.de>
+In-Reply-To: <1322148561-25138-9-git-send-email-lars@metafoo.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>
-Cc: 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Lars-Peter Clausen <lars@metafoo.de>
+Cc: linux-kernel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Tue, Dec 27, 2011 at 01:40:47PM +0900, Jingoo Han wrote:
+On 11/24/2011 03:29 PM, Lars-Peter Clausen wrote:
+> In ancient times it was necessary to manually initialize the bus field of an
+> spi_driver to spi_bus_type. These days this is done in spi_driver_register(),
+> so we can drop the manual assignment.
+> 
+> The patch was generated using the following coccinelle semantic patch:
+> // <smpl>
+> @@
+> identifier _driver;
+> @@
+> struct spi_driver _driver = {
+> 	.driver = {
+> -		.bus = &spi_bus_type,
+> 	},
+> };
+> // </smpl>
+> 
+> Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: linux-omap@vger.kernel.org
 
-> > While this does make things simpler (the main motivation for the
-> > original change) it will not only cause us to use more power in the
-> > framebuffer controller but will also prevent us entering lower power
-> > domain and SoC wide states as we can never power down the domain
-> > containing the device.  Since neither of these things is desirable
-> > revert the change.
+Applied this patch.
 
-> The main difference is as follows:
-> If no fb windows are opened.
-> 	- Your patch: LCD block power is off
-> 	- My patch: LCD block power is on still.
 
-By holding the LCD block power on your patch will also prevent the SoC
-using lower power modes like STOP and DEEP-STOP on the S3C6410.
+Thanks,
 
-> However, after booting, probing, open is called from platform system, soon.
-> And, the default window is always opened. This means that at least one window
+Florian Tobias Schandinat
 
-This only happens if you enable CONFIG_FRAMEBUFFER_CONSOLE as that
-causes the console code to become a framebuffer client.
+> ---
+>  drivers/video/omap/lcd_mipid.c                     |    1 -
+>  drivers/video/omap2/displays/panel-acx565akm.c     |    1 -
+>  drivers/video/omap2/displays/panel-n8x0.c          |    1 -
+>  .../omap2/displays/panel-nec-nl8048hl11-01b.c      |    1 -
+>  .../video/omap2/displays/panel-tpo-td043mtea1.c    |    1 -
+>  5 files changed, 0 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/video/omap/lcd_mipid.c b/drivers/video/omap/lcd_mipid.c
+> index eb381db..8d546dd 100644
+> --- a/drivers/video/omap/lcd_mipid.c
+> +++ b/drivers/video/omap/lcd_mipid.c
+> @@ -603,7 +603,6 @@ static int mipid_spi_remove(struct spi_device *spi)
+>  static struct spi_driver mipid_spi_driver = {
+>  	.driver = {
+>  		.name	= MIPID_MODULE_NAME,
+> -		.bus	= &spi_bus_type,
+>  		.owner	= THIS_MODULE,
+>  	},
+>  	.probe	= mipid_spi_probe,
+> diff --git a/drivers/video/omap2/displays/panel-acx565akm.c b/drivers/video/omap2/displays/panel-acx565akm.c
+> index dbd59b8..51a87e1 100644
+> --- a/drivers/video/omap2/displays/panel-acx565akm.c
+> +++ b/drivers/video/omap2/displays/panel-acx565akm.c
+> @@ -803,7 +803,6 @@ static int acx565akm_spi_remove(struct spi_device *spi)
+>  static struct spi_driver acx565akm_spi_driver = {
+>  	.driver = {
+>  		.name	= "acx565akm",
+> -		.bus	= &spi_bus_type,
+>  		.owner	= THIS_MODULE,
+>  	},
+>  	.probe	= acx565akm_spi_probe,
+> diff --git a/drivers/video/omap2/displays/panel-n8x0.c b/drivers/video/omap2/displays/panel-n8x0.c
+> index 150e8ba..dc9408d 100644
+> --- a/drivers/video/omap2/displays/panel-n8x0.c
+> +++ b/drivers/video/omap2/displays/panel-n8x0.c
+> @@ -708,7 +708,6 @@ static int mipid_spi_remove(struct spi_device *spi)
+>  static struct spi_driver mipid_spi_driver = {
+>  	.driver = {
+>  		.name	= "lcd_mipid",
+> -		.bus	= &spi_bus_type,
+>  		.owner	= THIS_MODULE,
+>  	},
+>  	.probe	= mipid_spi_probe,
+> diff --git a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+> index 2ba9d0c..8365e77 100644
+> --- a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+> +++ b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+> @@ -303,7 +303,6 @@ static struct spi_driver nec_8048_spi_driver = {
+>  	.resume		= nec_8048_spi_resume,
+>  	.driver		= {
+>  		.name	= "nec_8048_spi",
+> -		.bus	= &spi_bus_type,
+>  		.owner	= THIS_MODULE,
+>  	},
+>  };
+> diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+> index 2462b9e..e6649aa 100644
+> --- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+> +++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+> @@ -512,7 +512,6 @@ static int __devexit tpo_td043_spi_remove(struct spi_device *spi)
+>  static struct spi_driver tpo_td043_spi_driver = {
+>  	.driver = {
+>  		.name	= "tpo_td043mtea1_panel_spi",
+> -		.bus	= &spi_bus_type,
+>  		.owner	= THIS_MODULE,
+>  	},
+>  	.probe	= tpo_td043_spi_probe,
 
-> is opened after booting. So, I don't think that "video: s3c-fb: modify runtime
-> pm functions" (commit: 35784b) cause us to use more power in the framebuffer
-> controller.
-
-If the console isn't using the framebuffer then whenever userspace
-releases we'll be able to runtime suspend the framebuffer.  This isn't
-ideal as what userspace expects is that it can hold the device open and
-use blanking to save power - I'm working on patches to do this - but
-it's a start.
-
-> My intention is that runtime pm is used only for LCD block power off when
-> suspend and resume are called.
-
-This isn't runtime PM at all, it's system PM which for some reason calls
-runtime PM functions.  At best the runtime PM calls won't do anything as
-they're inhibited during system PM.

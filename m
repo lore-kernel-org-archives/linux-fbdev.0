@@ -1,57 +1,38 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 21 Dec 2011 21:44:41 +0000
-Subject: Re: [PATCH] fbdev: matroxfb: Fix compilation after fb_var_screeninfo
-Message-Id: <4EF25349.1090002@gmx.de>
+From: =?utf-8?q?Lothar=20Wa=C3=9Fmann?= <LW@KARO-electronics.de>
+Date: Tue, 06 Dec 2011 12:27:05 +0000
+Subject: [BUGFIX] video/mxsfb: fix crash when unblanking the display
+Message-Id: <1323174425-24038-1-git-send-email-LW@KARO-electronics.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1324407611-6886-1-git-send-email-laurent.pinchart@ideasonboard.com>
-In-Reply-To: <1324407611-6886-1-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-fbdev@vger.kernel.org, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-On 12/20/2011 07:00 PM, Laurent Pinchart wrote:
-> Commit fb21c2f42879 ("fbdev: Add FOURCC-based format configuration API")
-> modified the layout of the fb_var_screeninfo structure. Remove zero
-> fields from the static initializers in the matroxfb driver accordingly.
-> 
-> Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+The VDCTRL4 register does not provide the MXS SET/CLR/TOGGLE feature.
+The write in mxsfb_disable_controller() sets the data_cnt for the LCD
+DMA to 0 which obviously means the max. count for the LCD DMA and
+leads to overwriting arbitrary memory when the display is unblanked.
 
-Applied.
+Signed-off-by: Lothar Wa=C3=9Fmann <LW@KARO-electronics.de>
+---
+ drivers/video/mxsfb.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/matrox/matroxfb_base.c  |    1 -
->  drivers/video/matrox/matroxfb_crtc2.c |    1 -
->  2 files changed, 0 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
-> index 44bf8d4..401a56e 100644
-> --- a/drivers/video/matrox/matroxfb_base.c
-> +++ b/drivers/video/matrox/matroxfb_base.c
-> @@ -147,7 +147,6 @@ static struct fb_var_screeninfo vesafb_defined = {
->  	39721L,48L,16L,33L,10L,
->  	96L,2L,~0,	/* No sync info */
->  	FB_VMODE_NONINTERLACED,
-> -	0, {0,0,0,0,0}
->  };
->  
->  
-> diff --git a/drivers/video/matrox/matroxfb_crtc2.c b/drivers/video/matrox/matroxfb_crtc2.c
-> index d7112c3..02796a4 100644
-> --- a/drivers/video/matrox/matroxfb_crtc2.c
-> +++ b/drivers/video/matrox/matroxfb_crtc2.c
-> @@ -593,7 +593,6 @@ static struct fb_var_screeninfo matroxfb_dh_defined = {
->  		39721L,48L,16L,33L,10L,
->  		96L,2,0,	/* no sync info */
->  		FB_VMODE_NONINTERLACED,
-> -		0, {0,0,0,0,0}
->  };
->  
->  static int matroxfb_dh_regit(const struct matrox_fb_info *minfo,
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index d837d63..03cb95a 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -366,7 +366,8 @@ static void mxsfb_disable_controller(struct fb_info *fb=
+_info)
+ 		loop--;
+ 	}
+=20
+-	writel(VDCTRL4_SYNC_SIGNALS_ON, host->base + LCDC_VDCTRL4 + REG_CLR);
++	reg =3D readl(host->base + LCDC_VDCTRL4);
++	writel(reg & ~VDCTRL4_SYNC_SIGNALS_ON, host->base + LCDC_VDCTRL4);
+=20
+ 	clk_disable(host->clk);
+=20
+--=20
+1.5.6.5
 

@@ -1,74 +1,83 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Tue, 27 Dec 2011 21:57:49 +0000
-Subject: [PATCH] grvga: fix section mismatch warnings
-Message-Id: <20111227215748.GA18904@merkur.ravnborg.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 07 Dec 2011 13:15:10 +0000
+Subject: Re: [PATCH 58/65] OMAPDSS: APPLY: add
+Message-Id: <1323263710.1915.24.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-tpwuKkWQoxurDlP1F1Q4"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
+	 <1321953724-6350-59-git-send-email-tomi.valkeinen@ti.com>
+	 <4EDF651E.3060703@ti.com>
+In-Reply-To: <4EDF651E.3060703@ti.com>
+To: Archit Taneja <a0393947@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-From 7368b53b755a66c69b2b5ede30e2effe960ad59a Mon Sep 17 00:00:00 2001
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Tue, 27 Dec 2011 22:55:49 +0100
-Subject: [PATCH] grvga: fix section mismatch warnings
 
-Fix following section mismatch warnings:
+--=-tpwuKkWQoxurDlP1F1Q4
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-WARNING: drivers/video/built-in.o(.devinit.text+0x110): Section mismatch in reference from the function grvga_probe() to the function .init.text:grvga_parse_custom()
-The function __devinit grvga_probe() references
-a function __init grvga_parse_custom().
-If grvga_parse_custom is only used by grvga_probe then
-annotate grvga_parse_custom with a matching annotation.
+On Wed, 2011-12-07 at 18:37 +0530, Archit Taneja wrote:
+> On Tuesday 22 November 2011 02:51 PM, Tomi Valkeinen wrote:
 
-WARNING: drivers/video/built-in.o(.devinit.text+0x1f8): Section mismatch in reference from the function grvga_probe() to the variable .init.data:grvga_fix
-The function __devinit grvga_probe() references
-a variable __initdata grvga_fix.
-If grvga_fix is only used by grvga_probe then
-annotate grvga_fix with a matching annotation.
+> > +/* wait until no extra_info updates are pending */
+> > +static void wait_pending_extra_info_updates(void)
+> > +{
+> > +	bool updating;
+> > +	unsigned long flags;
+> > +	unsigned long t;
+> > +
+> > +	spin_lock_irqsave(&data_lock, flags);
+> > +
+> > +	updating =3D extra_info_update_ongoing();
+> > +
+> > +	if (!updating) {
+> > +		spin_unlock_irqrestore(&data_lock, flags);
+> > +		return;
+> > +	}
+> > +
+> > +	init_completion(&extra_updated_completion);
+> > +
+> > +	spin_unlock_irqrestore(&data_lock, flags);
+> > +
+> > +	t =3D msecs_to_jiffies(500);
+> > +	wait_for_completion_timeout(&extra_updated_completion, t);
+> > +
+> > +	updating =3D extra_info_update_ongoing();
+> > +
+> > +	WARN_ON(updating);
+> > +}
+>=20
+> This function isn't used, are you planning to use it later?
 
-WARNING: drivers/video/built-in.o(.devinit.text+0x204): Section mismatch in reference from the function grvga_probe() to the variable .init.data:grvga_fix
-The function __devinit grvga_probe() references
-a variable __initdata grvga_fix.
-If grvga_fix is only used by grvga_probe then
-annotate grvga_fix with a matching annotation.
+Yes, it's used with the fifo-merge stuff. It could be added later, but
+as it's related to the extra_info stuff, I think it fits better here
+than with the fifo merge series.
 
-grvga_fix is used in a function annotated __devinit - so
-match this using a __devinitdata annotation on grvga_fix.
+ Tomi
 
-grvga_parse_custom() is used in a function annotated
-__devinit - so match this by annotating grvga_parse_custom()
-with __devinit too.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Kristoffer Glembo <kristoffer@gaisler.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
----
- drivers/video/grvga.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+--=-tpwuKkWQoxurDlP1F1Q4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-diff --git a/drivers/video/grvga.c b/drivers/video/grvga.c
-index f37e025..da066c2 100644
---- a/drivers/video/grvga.c
-+++ b/drivers/video/grvga.c
-@@ -70,7 +70,7 @@ static const struct fb_videomode grvga_modedb[] = {
-     }
-  };
- 
--static struct fb_fix_screeninfo grvga_fix __initdata = {
-+static struct fb_fix_screeninfo grvga_fix __devinitdata = {
- 	.id =		"AG SVGACTRL",
- 	.type =		FB_TYPE_PACKED_PIXELS,
- 	.visual =       FB_VISUAL_PSEUDOCOLOR,
-@@ -267,7 +267,7 @@ static struct fb_ops grvga_ops = {
- 	.fb_imageblit	= cfb_imageblit
- };
- 
--static int __init grvga_parse_custom(char *options,
-+static int __devinit grvga_parse_custom(char *options,
- 				     struct fb_var_screeninfo *screendata)
- {
- 	char *this_opt;
--- 
-1.6.0.6
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJO32beAAoJEPo9qoy8lh71occP/jHnVK7r7GL6QUQWszLm6CIM
+E8KoZ6z7ykp/Zd1BvmZ82ZrFgSks2znZRqF8wCKhJ0ZDufoiPNEIGqzVxd2McG5A
+DhpjuC4Cm/AfSBdy666J3bDeRtUjKuURfqAP/iVjK7ErxwTqkSwax/A5QFk6iIgj
+z5aQxtke5gWPLSDE32VyPVZfq1dp/2LN6kPHodqWeXk3iOluZUsndB8axqPHDvnR
+TOIYXnvOLzzMy/OKqoIQDUKx7T92+Y+vpWEnvjOJZwfeMqWmgRu70/GwaEglKW7X
+DnFtT+7OwqKywqW1i7sgQ+pyofq/+Z10DFYIQmQ6alhUuU1R0C/PvN820TPkvqEb
+KEKQKnbTX6cb6rmkR8jtF1LSM65iHxSDbHLGMdj2knmCnvj13ZQziek0r2k57IGB
+o7geooXfF031gKoc6IO4VjS3WBp1i6sOJebSyH/QiwwpFX5BupopClgeD5vbJ7W0
+9d/hUgEygRO1Nragl7Wk2bDeKCdP3m/2dO1dcX2g463MKeeHYy6u3TnNh4LILBYu
+57sdQBCGXAN9qKIJOblX329D1sHDHEi6zvjFv86WdI02pdOkQ1NLVoLV0b3cWIQb
+zdkGJhkEL0nwVeNSnCaJJltF/dDXCx6CaG8zcRqRYo+zrPoxg8U+kz4By08HNjlb
+ecUUwbmHJOBKQ6gDebUr
+=fK7W
+-----END PGP SIGNATURE-----
+
+--=-tpwuKkWQoxurDlP1F1Q4--
 

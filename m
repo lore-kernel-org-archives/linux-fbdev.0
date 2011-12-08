@@ -1,67 +1,83 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Tue, 20 Dec 2011 08:28:02 +0000
-Subject: Re: [PATCH v3] video: support MIPI-DSI controller driver
-Message-Id: <20111220082802.GR14542@n2100.arm.linux.org.uk>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 08 Dec 2011 09:08:00 +0000
+Subject: [PATCH] video: s3c-fb: add shadow register protect
+Message-Id: <002901ccb588$e2d43700$a87ca500$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4EF00557.2000201@samsung.com>
-In-Reply-To: <4EF00557.2000201@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-On Tue, Dec 20, 2011 at 12:47:35PM +0900, Donghwa Lee wrote:
-> 
-> Samsung S5PC210 and EXYNOS SoC platform has MIPI-DSI controller and MIPI-DSI
-> based LCD Panel could be used with it. This patch supports MIPI-DSI driver
-> based Samsung SoC chip.
-> 
-> LCD panel driver based MIPI-DSI should be registered to MIPI-DSI driver at
-> machine code and LCD panel driver specific function registered to mipi_dsim_ddi
-> structure at lcd panel init function called system init.
-> In the MIPI-DSI driver, find lcd panel driver by using registered
-> lcd panel name, and then initialize lcd panel driver.
-> 
-> Changes since v2:
-> 	- support regulators control in the driver.
-> 	- avoid type casting and use array to read easily in data write
-> 	  function.
-> 	- etc.
-> 
-> Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
-> Signed-off-by: Inki Dae <inki.dae@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> ---
->  drivers/video/Kconfig                 |    7 +
->  drivers/video/Makefile                |    2 +
->  drivers/video/s5p_mipi_dsi.c          |  619 ++++++++++++++++++++++
->  drivers/video/s5p_mipi_dsi_common.c   |  902 +++++++++++++++++++++++++++++++++
->  drivers/video/s5p_mipi_dsi_common.h   |   46 ++
->  drivers/video/s5p_mipi_dsi_lowlevel.c |  627 +++++++++++++++++++++++
->  drivers/video/s5p_mipi_dsi_lowlevel.h |  112 ++++
->  drivers/video/s5p_mipi_dsi_regs.h     |  156 ++++++
->  include/linux/mipi_dsim.h             |  361 +++++++++++++
->  9 files changed, 2832 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/video/s5p_mipi_dsi.c
->  create mode 100644 drivers/video/s5p_mipi_dsi_common.c
->  create mode 100644 drivers/video/s5p_mipi_dsi_common.h
->  create mode 100644 drivers/video/s5p_mipi_dsi_lowlevel.c
->  create mode 100644 drivers/video/s5p_mipi_dsi_lowlevel.h
->  create mode 100644 drivers/video/s5p_mipi_dsi_regs.h
->  create mode 100644 include/linux/mipi_dsim.h
-> 
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index d83e967..879177b 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -2082,6 +2082,13 @@ config FB_S3C2410_DEBUG
->  	  Turn on debugging messages. Note that you can set/unset at run time
->  	  through sysfs
->  
-> +config S5P_MIPI_DSI
-> +	tristate "Samsung SoC MIPI-DSI support."
-> +	depends on FB_S3C && (ARCH_S5PV210 || ARCH_S5PV310 || ARCH_EXYNOS)
-> +	default n
+Shadow registers should be protectd whenever the registers are
+updated. Shadow registers are updated after SHADOWCON shadow
+register is cleared.
 
-default n is the default default, so there's no point explicltly
-specifying the default default default.
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/s3c-fb.c |   16 +++++++++++++++-
+ 1 files changed, 15 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index e84677e..e04c2ab 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -811,12 +811,16 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
+ 
+ 	case FB_BLANK_NORMAL:
+ 		/* disable the DMA and display 0x0 (black) */
++		shadow_protect_win(win, 1);
+ 		writel(WINxMAP_MAP | WINxMAP_MAP_COLOUR(0x0),
+ 		       sfb->regs + sfb->variant.winmap + (index * 4));
++		shadow_protect_win(win, 0);
+ 		break;
+ 
+ 	case FB_BLANK_UNBLANK:
++		shadow_protect_win(win, 1);
+ 		writel(0x0, sfb->regs + sfb->variant.winmap + (index * 4));
++		shadow_protect_win(win, 0);
+ 		wincon |= WINCONx_ENWIN;
+ 		sfb->enabled |= (1 << index);
+ 		break;
+@@ -827,7 +831,9 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
+ 		return 1;
+ 	}
+ 
++	shadow_protect_win(win, 1);
+ 	writel(wincon, sfb->regs + sfb->variant.wincon + (index * 4));
++	shadow_protect_win(win, 0);
+ 
+ 	/* Check the enabled state to see if we need to be running the
+ 	 * main LCD interface, as if there are no active windows then
+@@ -846,8 +852,11 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
+ 	/* we're stuck with this until we can do something about overriding
+ 	 * the power control using the blanking event for a single fb.
+ 	 */
+-	if (index = sfb->pdata->default_win)
++	if (index = sfb->pdata->default_win) {
++		shadow_protect_win(win, 1);
+ 		s3c_fb_enable(sfb, blank_mode != FB_BLANK_POWERDOWN ? 1 : 0);
++		shadow_protect_win(win, 0);
++	}
+ 
+ 	return 0;
+ }
+@@ -1572,10 +1581,15 @@ static int s3c_fb_resume(struct device *dev)
+ 
+ 	for (win_no = 0; win_no < sfb->variant.nr_windows - 1; win_no++) {
+ 		void __iomem *regs = sfb->regs + sfb->variant.keycon;
++		win = sfb->windows[win_no];
++		if (!win)
++			continue;
+ 
++		shadow_protect_win(win, 1);
+ 		regs += (win_no * 8);
+ 		writel(0xffffff, regs + WKEYCON0);
+ 		writel(0xffffff, regs + WKEYCON1);
++		shadow_protect_win(win, 0);
+ 	}
+ 
+ 	/* restore framebuffers */
+-- 
+1.7.1
+
+

@@ -1,46 +1,149 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 15 Dec 2011 11:39:31 +0000
-Subject: Re: [PATCH 48/57] fbdev: sh_mobile_meram: Allocate ICBs automatically
-Message-Id: <201112151239.32084.laurent.pinchart@ideasonboard.com>
+From: Axel Lin <axel.lin@gmail.com>
+Date: Fri, 09 Dec 2011 01:37:57 +0000
+Subject: [PATCH 1/2] video: omap: Staticise non-exported symbols
+Message-Id: <1323394677.3740.2.camel@phoenix>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1323784972-24205-49-git-send-email-laurent.pinchart@ideasonboard.com>
-In-Reply-To: <1323784972-24205-49-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Jonathan McDowell <noodles@earth.li>, Imre Deak <imre.deak@nokia.com>, Cory Maccarrone <darkstar6262@gmail.com>, Laurent Gonzalez <palmte.linux@free.fr>, Marek Vasut <marek.vasut@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-Hi Damian,
+These symbols are not used outside it's driver so no need to
+make the symbol global.
 
-On Thursday 15 December 2011 03:58:12 Damian Hobson-Garcia wrote:
-> Hi Laurent,
-> 
-> On 2011/12/13 23:02, Laurent Pinchart wrote:
-> > Instead of manually specifying the ICBs to use in platform data,
-> > allocate them automatically at runtime.
-> > 
-> > The MERAM registration function now returns a pointer to an opaque MERAM
-> > object, which is passed to the update and unregistration functions.
-> > 
-> > Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> > ---
-> 
-> So one concern that I have about this is in regards to sharing ICBs with
-> user-space drivers. Since there are user space drivers (via UIO) for blocks
-> like the VEU, that may want to have access to MERAM, we need a way to
-> communicate which ICBs are free to user space. With the hard-coded platform
-> data we could easily assume that kernel drivers would use, for example, the
-> upper 16 ICBs and so user-space drivers were free to use the lower 16.
+Signed-off-by: Axel Lin <axel.lin@gmail.com>
+---
+ drivers/video/omap/lcd_ams_delta.c |    2 +-
+ drivers/video/omap/lcd_h3.c        |    2 +-
+ drivers/video/omap/lcd_htcherald.c |    2 +-
+ drivers/video/omap/lcd_inn1510.c   |    2 +-
+ drivers/video/omap/lcd_inn1610.c   |    2 +-
+ drivers/video/omap/lcd_osk.c       |    2 +-
+ drivers/video/omap/lcd_palmte.c    |    2 +-
+ drivers/video/omap/lcd_palmtt.c    |    2 +-
+ drivers/video/omap/lcd_palmz71.c   |    2 +-
+ 9 files changed, 9 insertions(+), 9 deletions(-)
 
-You're right, I forgot about that :-/
-
-> One simple temporary workaround might be to provide a range of useable ICBs
-> in the platform data. The MERAM memory allocation range can always easily be
-> tweaked by using the meram_resources structure.
-
-That sounds good to me. I'll implement that.
-
+diff --git a/drivers/video/omap/lcd_ams_delta.c b/drivers/video/omap/lcd_ams_delta.c
+index 6978ae4..eb50a95 100644
+--- a/drivers/video/omap/lcd_ams_delta.c
++++ b/drivers/video/omap/lcd_ams_delta.c
+@@ -198,7 +198,7 @@ static int ams_delta_panel_resume(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-struct platform_driver ams_delta_panel_driver = {
++static struct platform_driver ams_delta_panel_driver = {
+ 	.probe		= ams_delta_panel_probe,
+ 	.remove		= ams_delta_panel_remove,
+ 	.suspend	= ams_delta_panel_suspend,
+diff --git a/drivers/video/omap/lcd_h3.c b/drivers/video/omap/lcd_h3.c
+index 622ad83..baec34e 100644
+--- a/drivers/video/omap/lcd_h3.c
++++ b/drivers/video/omap/lcd_h3.c
+@@ -113,7 +113,7 @@ static int h3_panel_resume(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-struct platform_driver h3_panel_driver = {
++static struct platform_driver h3_panel_driver = {
+ 	.probe		= h3_panel_probe,
+ 	.remove		= h3_panel_remove,
+ 	.suspend	= h3_panel_suspend,
+diff --git a/drivers/video/omap/lcd_htcherald.c b/drivers/video/omap/lcd_htcherald.c
+index 4802419..b1a022f 100644
+--- a/drivers/video/omap/lcd_htcherald.c
++++ b/drivers/video/omap/lcd_htcherald.c
+@@ -104,7 +104,7 @@ static int htcherald_panel_resume(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-struct platform_driver htcherald_panel_driver = {
++static struct platform_driver htcherald_panel_driver = {
+ 	.probe		= htcherald_panel_probe,
+ 	.remove		= htcherald_panel_remove,
+ 	.suspend	= htcherald_panel_suspend,
+diff --git a/drivers/video/omap/lcd_inn1510.c b/drivers/video/omap/lcd_inn1510.c
+index 3271f16..d129946 100644
+--- a/drivers/video/omap/lcd_inn1510.c
++++ b/drivers/video/omap/lcd_inn1510.c
+@@ -98,7 +98,7 @@ static int innovator1510_panel_resume(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-struct platform_driver innovator1510_panel_driver = {
++static struct platform_driver innovator1510_panel_driver = {
+ 	.probe		= innovator1510_panel_probe,
+ 	.remove		= innovator1510_panel_remove,
+ 	.suspend	= innovator1510_panel_suspend,
+diff --git a/drivers/video/omap/lcd_inn1610.c b/drivers/video/omap/lcd_inn1610.c
+index 12cc52a..a95756b 100644
+--- a/drivers/video/omap/lcd_inn1610.c
++++ b/drivers/video/omap/lcd_inn1610.c
+@@ -122,7 +122,7 @@ static int innovator1610_panel_resume(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-struct platform_driver innovator1610_panel_driver = {
++static struct platform_driver innovator1610_panel_driver = {
+ 	.probe		= innovator1610_panel_probe,
+ 	.remove		= innovator1610_panel_remove,
+ 	.suspend	= innovator1610_panel_suspend,
+diff --git a/drivers/video/omap/lcd_osk.c b/drivers/video/omap/lcd_osk.c
+index 6f8d13c..b985997 100644
+--- a/drivers/video/omap/lcd_osk.c
++++ b/drivers/video/omap/lcd_osk.c
+@@ -116,7 +116,7 @@ static int osk_panel_resume(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-struct platform_driver osk_panel_driver = {
++static struct platform_driver osk_panel_driver = {
+ 	.probe		= osk_panel_probe,
+ 	.remove		= osk_panel_remove,
+ 	.suspend	= osk_panel_suspend,
+diff --git a/drivers/video/omap/lcd_palmte.c b/drivers/video/omap/lcd_palmte.c
+index 4cb3017..d79f436 100644
+--- a/drivers/video/omap/lcd_palmte.c
++++ b/drivers/video/omap/lcd_palmte.c
+@@ -97,7 +97,7 @@ static int palmte_panel_resume(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-struct platform_driver palmte_panel_driver = {
++static struct platform_driver palmte_panel_driver = {
+ 	.probe		= palmte_panel_probe,
+ 	.remove		= palmte_panel_remove,
+ 	.suspend	= palmte_panel_suspend,
+diff --git a/drivers/video/omap/lcd_palmtt.c b/drivers/video/omap/lcd_palmtt.c
+index b51b332..c2e96a7 100644
+--- a/drivers/video/omap/lcd_palmtt.c
++++ b/drivers/video/omap/lcd_palmtt.c
+@@ -102,7 +102,7 @@ static int palmtt_panel_resume(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-struct platform_driver palmtt_panel_driver = {
++static struct platform_driver palmtt_panel_driver = {
+ 	.probe		= palmtt_panel_probe,
+ 	.remove		= palmtt_panel_remove,
+ 	.suspend	= palmtt_panel_suspend,
+diff --git a/drivers/video/omap/lcd_palmz71.c b/drivers/video/omap/lcd_palmz71.c
+index 2334e56..1ab4847 100644
+--- a/drivers/video/omap/lcd_palmz71.c
++++ b/drivers/video/omap/lcd_palmz71.c
+@@ -98,7 +98,7 @@ static int palmz71_panel_resume(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-struct platform_driver palmz71_panel_driver = {
++static struct platform_driver palmz71_panel_driver = {
+ 	.probe		= palmz71_panel_probe,
+ 	.remove		= palmz71_panel_remove,
+ 	.suspend	= palmz71_panel_suspend,
 -- 
-Regards,
+1.7.5.4
 
-Laurent Pinchart
+
+

@@ -1,42 +1,75 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Tue, 06 Dec 2011 14:37:16 +0000
-Subject: Re: [PATCH 2/2] video: s3c-fb: Convert to devm style allocation
-Message-Id: <20111206143715.GH17731@opensource.wolfsonmicro.com>
+From: Axel Lin <axel.lin@gmail.com>
+Date: Fri, 09 Dec 2011 02:01:15 +0000
+Subject: [PATCH 3/3] video: pnx4008: convert drivers/video/pnx4008/* to use
+Message-Id: <1323396075.3740.8.camel@phoenix>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1322434268-25525-2-git-send-email-broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1322434268-25525-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1323395873.3740.4.camel@phoenix>
+In-Reply-To: <1323395873.3740.4.camel@phoenix>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Grigory Tolstolytkin <gtolstolytkin@ru.mvista.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
 
-On Tue, Dec 06, 2011 at 09:04:43PM +0900, Kukjin Kim wrote:
+This patch converts the drivers in drivers/video/pnx4008/* to use the
+module_platform_driver() macro which makes the code smaller and a bit
+simpler.
 
-> > -	sfb->regs = ioremap(res->start, resource_size(res));
-> > +	sfb->regs = devm_request_and_ioremap(dev, res);
-> >  	if (!sfb->regs) {
-> >  		dev_err(dev, "failed to map registers\n");
+Cc: Grigory Tolstolytkin <gtolstolytkin@ru.mvista.com>
+Signed-off-by: Axel Lin <axel.lin@gmail.com>
+---
+ drivers/video/pnx4008/pnxrgbfb.c |   13 +------------
+ drivers/video/pnx4008/sdum.c     |   13 +------------
+ 2 files changed, 2 insertions(+), 24 deletions(-)
 
-> Don't we need dev_err here because the devm_request_and_ioremap() includes
-> dev_err() for each error case?
+diff --git a/drivers/video/pnx4008/pnxrgbfb.c b/drivers/video/pnx4008/pnxrgbfb.c
+index b2252fe..6d30428 100644
+--- a/drivers/video/pnx4008/pnxrgbfb.c
++++ b/drivers/video/pnx4008/pnxrgbfb.c
+@@ -193,17 +193,6 @@ static struct platform_driver rgbfb_driver = {
+ 	.remove = rgbfb_remove,
+ };
+ 
+-static int __init rgbfb_init(void)
+-{
+-	return platform_driver_register(&rgbfb_driver);
+-}
+-
+-static void __exit rgbfb_exit(void)
+-{
+-	platform_driver_unregister(&rgbfb_driver);
+-}
+-
+-module_init(rgbfb_init);
+-module_exit(rgbfb_exit);
++module_platform_driver(rgbfb_driver);
+ 
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/video/pnx4008/sdum.c b/drivers/video/pnx4008/sdum.c
+index 50e0039..c5c7414 100644
+--- a/drivers/video/pnx4008/sdum.c
++++ b/drivers/video/pnx4008/sdum.c
+@@ -856,17 +856,6 @@ static struct platform_driver sdum_driver = {
+ 	.resume = sdum_resume,
+ };
+ 
+-int __init sdum_init(void)
+-{
+-	return platform_driver_register(&sdum_driver);
+-}
+-
+-static void __exit sdum_exit(void)
+-{
+-	platform_driver_unregister(&sdum_driver);
+-};
+-
+-module_init(sdum_init);
+-module_exit(sdum_exit);
++module_platform_driver(sdum_driver);
+ 
+ MODULE_LICENSE("GPL");
+-- 
+1.7.5.4
 
-Oh, if it already logs we can just drop that.  I was just doing the
-transformation based on the API, I didn't actually look at the
-implementation.
 
-> And don't we need devm_release_mem_region() or devm_iounmap() in error
-> handling?
 
-My expectation was that this was only if you needed to release at
-runtime, if the driver fails to bind then devm_ ought to clean up after
-you otherwise there's little win from using it.  Unless there's a reason
-I can't think of right now I'd expect that if we need those we should
-fix the core rather than the driver.
-
-> >  err_sfb:
-> > -	kfree(sfb);
-
-> Maybe we need devm_kfree here?
-
-Similarly here, I'd expect us to only need that if we need to free at
-runtime for some reason.

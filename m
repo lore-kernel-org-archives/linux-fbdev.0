@@ -1,129 +1,199 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:02:35 +0000
-Subject: [PATCH 40/57] fbdev: sh_mobile_meram: Request memory regions for memory resources
-Message-Id: <1323784972-24205-41-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Sat, 10 Dec 2011 05:23:13 +0000
+Subject: [PATCH 02/16] macfb: fix black and white modes
+Message-Id: <alpine.LNX.2.00.1112101604310.13274@nippy.intranet>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20111023141108.856998818@telegraphics.com.au> <20111023141119.848736612@telegraphics.com.au>
+In-Reply-To: <20111023141119.848736612@telegraphics.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, linux-m68k@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-Make sure the registers and MERAM spaces are reserved before using them.
+macfb won't init in black & white modes since fb_alloc_cmap() no longer 
+works for zero cmap length. Fix this and also clean up a few printk's 
+and some stylistic inconsistencies.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+
 ---
- drivers/video/sh_mobile_meram.c |   53 +++++++++++++++++++++++++++-----------
- 1 files changed, 37 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
-index f45d83e..dbf5c43 100644
---- a/drivers/video/sh_mobile_meram.c
-+++ b/drivers/video/sh_mobile_meram.c
-@@ -596,13 +596,12 @@ static struct sh_mobile_meram_ops sh_mobile_meram_ops = {
-  * initialize MERAM
-  */
+Re-sending unchanged. Still needs the right ack.
+
+Index: linux-m68k/drivers/video/macfb.c
+=================================--- linux-m68k.orig/drivers/video/macfb.c	2011-10-22 23:02:22.000000000 +1100
++++ linux-m68k/drivers/video/macfb.c	2011-10-23 00:50:51.000000000 +1100
+@@ -592,12 +592,12 @@ static int __init macfb_init(void)
+ 	if (!fb_info.screen_base)
+ 		return -ENODEV;
  
--static int sh_mobile_meram_remove(struct platform_device *pdev);
--
- static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
- {
- 	struct sh_mobile_meram_priv *priv;
- 	struct sh_mobile_meram_info *pdata = pdev->dev.platform_data;
--	struct resource *res;
-+	struct resource *regs;
-+	struct resource *meram;
- 	int error;
+-	printk("macfb: framebuffer at 0x%08lx, mapped to 0x%p, size %dk\n",
+-	       macfb_fix.smem_start, fb_info.screen_base,
+-	       macfb_fix.smem_len / 1024);
+-	printk("macfb: mode is %dx%dx%d, linelength=%d\n",
+-	       macfb_defined.xres, macfb_defined.yres,
+-	       macfb_defined.bits_per_pixel, macfb_fix.line_length);
++	pr_info("macfb: framebuffer at 0x%08lx, mapped to 0x%p, size %dk\n",
++	        macfb_fix.smem_start, fb_info.screen_base,
++	        macfb_fix.smem_len / 1024);
++	pr_info("macfb: mode is %dx%dx%d, linelength=%d\n",
++	        macfb_defined.xres, macfb_defined.yres,
++	        macfb_defined.bits_per_pixel, macfb_fix.line_length);
  
- 	if (!pdata) {
-@@ -610,8 +609,9 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
- 		return -EINVAL;
+ 	/* Fill in the available video resolution */
+ 	macfb_defined.xres_virtual = macfb_defined.xres;
+@@ -613,14 +613,10 @@ static int __init macfb_init(void)
+ 
+ 	switch (macfb_defined.bits_per_pixel) {
+ 	case 1:
+-		/*
+-		 * XXX: I think this will catch any program that tries
+-		 * to do FBIO_PUTCMAP when the visual is monochrome.
+-		 */
+ 		macfb_defined.red.length = macfb_defined.bits_per_pixel;
+ 		macfb_defined.green.length = macfb_defined.bits_per_pixel;
+ 		macfb_defined.blue.length = macfb_defined.bits_per_pixel;
+-		video_cmap_len = 0;
++		video_cmap_len = 2;
+ 		macfb_fix.visual = FB_VISUAL_MONO01;
+ 		break;
+ 	case 2:
+@@ -660,11 +656,10 @@ static int __init macfb_init(void)
+ 		macfb_fix.visual = FB_VISUAL_TRUECOLOR;
+ 		break;
+ 	default:
+-		video_cmap_len = 0;
+-		macfb_fix.visual = FB_VISUAL_MONO01;
+-		printk("macfb: unknown or unsupported bit depth: %d\n",
++		pr_err("macfb: unknown or unsupported bit depth: %d\n",
+ 		       macfb_defined.bits_per_pixel);
+-		break;
++		err = -EINVAL;
++		goto fail_unmap;
  	}
+ 	
+ 	/*
+@@ -734,8 +729,8 @@ static int __init macfb_init(void)
+ 		case MAC_MODEL_Q950:
+ 			strcpy(macfb_fix.id, "DAFB");
+ 			macfb_setpalette = dafb_setpalette;
+-			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			dafb_cmap_regs = ioremap(DAFB_BASE, 0x1000);
++			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			break;
  
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	if (!res) {
-+	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	meram = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-+	if (regs = NULL || meram = NULL) {
- 		dev_err(&pdev->dev, "cannot get platform resources\n");
- 		return -ENOENT;
- 	}
-@@ -622,32 +622,50 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 	}
+ 		/*
+@@ -744,8 +739,8 @@ static int __init macfb_init(void)
+ 		case MAC_MODEL_LCII:
+ 			strcpy(macfb_fix.id, "V8");
+ 			macfb_setpalette = v8_brazil_setpalette;
+-			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
++			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			break;
  
--	platform_set_drvdata(pdev, priv);
--
- 	/* initialize private data */
- 	mutex_init(&priv->lock);
--	priv->base = ioremap_nocache(res->start, resource_size(res));
-+	pdata->ops = &sh_mobile_meram_ops;
-+	pdata->priv = priv;
-+	pdata->pdev = pdev;
+ 		/*
+@@ -758,8 +753,8 @@ static int __init macfb_init(void)
+ 		case MAC_MODEL_P600:
+ 			strcpy(macfb_fix.id, "Brazil");
+ 			macfb_setpalette = v8_brazil_setpalette;
+-			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
++			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			break;
+ 
+ 		/*
+@@ -773,10 +768,10 @@ static int __init macfb_init(void)
+ 		case MAC_MODEL_P520:
+ 		case MAC_MODEL_P550:
+ 		case MAC_MODEL_P460:
+-			macfb_setpalette = v8_brazil_setpalette;
+-			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			strcpy(macfb_fix.id, "Sonora");
++			macfb_setpalette = v8_brazil_setpalette;
+ 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
++			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			break;
+ 
+ 		/*
+@@ -786,10 +781,10 @@ static int __init macfb_init(void)
+ 		 */
+ 		case MAC_MODEL_IICI:
+ 		case MAC_MODEL_IISI:
+-			macfb_setpalette = rbv_setpalette;
+-			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			strcpy(macfb_fix.id, "RBV");
++			macfb_setpalette = rbv_setpalette;
+ 			rbv_cmap_regs = ioremap(DAC_BASE, 0x1000);
++			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			break;
+ 
+ 		/*
+@@ -797,10 +792,10 @@ static int __init macfb_init(void)
+ 		 */
+ 		case MAC_MODEL_Q840:
+ 		case MAC_MODEL_C660:
+-			macfb_setpalette = civic_setpalette;
+-			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			strcpy(macfb_fix.id, "Civic");
++			macfb_setpalette = civic_setpalette;
+ 			civic_cmap_regs = ioremap(CIVIC_BASE, 0x1000);
++			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			break;
+ 
+ 		
+@@ -809,26 +804,26 @@ static int __init macfb_init(void)
+ 		 * We think this may be like the LC II
+ 		 */
+ 		case MAC_MODEL_LC:
++			strcpy(macfb_fix.id, "LC");
+ 			if (vidtest) {
+ 				macfb_setpalette = v8_brazil_setpalette;
+-				macfb_defined.activate = FB_ACTIVATE_NOW;
+ 				v8_brazil_cmap_regs  					ioremap(DAC_BASE, 0x1000);
++				macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			}
+-			strcpy(macfb_fix.id, "LC");
+ 			break;
+ 
+ 		/*
+ 		 * We think this may be like the LC II
+ 		 */
+ 		case MAC_MODEL_CCL:
++			strcpy(macfb_fix.id, "Color Classic");
+ 			if (vidtest) {
+ 				macfb_setpalette = v8_brazil_setpalette;
+-				macfb_defined.activate = FB_ACTIVATE_NOW;
+ 				v8_brazil_cmap_regs  					ioremap(DAC_BASE, 0x1000);
++				macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			}
+-			strcpy(macfb_fix.id, "Color Classic");
+ 			break;
+ 
+ 		/*
+@@ -893,10 +888,10 @@ static int __init macfb_init(void)
+ 		case MAC_MODEL_PB270C:
+ 		case MAC_MODEL_PB280:
+ 		case MAC_MODEL_PB280C:
+-			macfb_setpalette = csc_setpalette;
+-			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			strcpy(macfb_fix.id, "CSC");
++			macfb_setpalette = csc_setpalette;
+ 			csc_cmap_regs = ioremap(CSC_BASE, 0x1000);
++			macfb_defined.activate = FB_ACTIVATE_NOW;
+ 			break;
+ 
+ 		default:
+@@ -918,8 +913,9 @@ static int __init macfb_init(void)
+ 	if (err)
+ 		goto fail_dealloc;
+ 
+-	printk("fb%d: %s frame buffer device\n",
+-	       fb_info.node, fb_info.fix.id);
++	pr_info("fb%d: %s frame buffer device\n",
++	        fb_info.node, fb_info.fix.id);
 +
-+	if (!request_mem_region(regs->start, resource_size(regs), pdev->name)) {
-+		dev_err(&pdev->dev, "MERAM registers region already claimed\n");
-+		error = -EBUSY;
-+		goto err_req_regs;
-+	}
-+
-+	if (!request_mem_region(meram->start, resource_size(meram),
-+				pdev->name)) {
-+		dev_err(&pdev->dev, "MERAM memory region already claimed\n");
-+		error = -EBUSY;
-+		goto err_req_meram;
-+	}
-+
-+	priv->base = ioremap_nocache(regs->start, resource_size(regs));
- 	if (!priv->base) {
- 		dev_err(&pdev->dev, "ioremap failed\n");
- 		error = -EFAULT;
--		goto err;
-+		goto err_ioremap;
- 	}
--	pdata->ops = &sh_mobile_meram_ops;
--	pdata->priv = priv;
--	pdata->pdev = pdev;
- 
- 	/* initialize ICB addressing mode */
- 	if (pdata->addr_mode = SH_MOBILE_MERAM_MODE1)
- 		meram_write_reg(priv->base, MEVCR1, MEVCR1_AMD1);
- 
-+	platform_set_drvdata(pdev, priv);
- 	pm_runtime_enable(&pdev->dev);
- 
- 	dev_info(&pdev->dev, "sh_mobile_meram initialized.");
- 
  	return 0;
  
--err:
--	sh_mobile_meram_remove(pdev);
-+err_ioremap:
-+	release_mem_region(meram->start, resource_size(meram));
-+err_req_meram:
-+	release_mem_region(regs->start, resource_size(regs));
-+err_req_regs:
-+	mutex_destroy(&priv->lock);
-+	kfree(priv);
- 
- 	return error;
- }
-@@ -656,11 +674,14 @@ err:
- static int sh_mobile_meram_remove(struct platform_device *pdev)
- {
- 	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
-+	struct resource *regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	struct resource *meram = platform_get_resource(pdev, IORESOURCE_MEM, 1);
- 
- 	pm_runtime_disable(&pdev->dev);
- 
--	if (priv->base)
--		iounmap(priv->base);
-+	iounmap(priv->base);
-+	release_mem_region(meram->start, resource_size(meram));
-+	release_mem_region(regs->start, resource_size(regs));
- 
- 	mutex_destroy(&priv->lock);
- 
--- 
-1.7.3.4
-
+ fail_dealloc:

@@ -1,124 +1,123 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 27 Dec 2011 01:02:05 +0000
-Subject: RE: [PATCH] video: s3c-fb: Use s3c_fb_enable() to enable the
-Message-Id: <000301ccc433$26bf4ff0$743defd0$%han@samsung.com>
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Date: Sun, 11 Dec 2011 20:12:06 +0000
+Subject: [PATCH 08/10] omapfb: lcd_ams_delta: Drive control lines over GPIO
+Message-Id: <1323634328-856-9-git-send-email-jkrzyszt@tis.icnet.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1324925318-10022-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1324925318-10022-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1323634328-856-1-git-send-email-jkrzyszt@tis.icnet.pl>
+In-Reply-To: <1323634328-856-1-git-send-email-jkrzyszt@tis.icnet.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Hi, Mark.
+Don't use Amstrad Delta custom I/O functions any longer, use GPIO API
+instead.
 
-> -----Original Message-----
-> From: Mark Brown [mailto:broonie@opensource.wolfsonmicro.com]
-> Sent: Tuesday, December 27, 2011 3:49 AM
-> To: Jingoo Han; Florian Tobias Schandinat
-> Cc: linux-fbdev@vger.kernel.org; Mark Brown
-> Subject: [PATCH] video: s3c-fb: Use s3c_fb_enable() to enable the framebuffer
-> 
-> The s3c-fb driver has a function called s3c_fb_enable() which turns on
-> and off the physical output. However it is only actually used in paths
-> which disable the screen, the enabling just writes to the register. Make
-> the code less confusing by ensuring that the enable also goes through
-> the same path.
-> 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Depends on patch 5/10 "MTD: NAND: ams-delta: Use GPIO instead of custom
+I/O".
 
-It looks good to me.
+Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+---
+ arch/arm/mach-omap1/board-ams-delta.c             |   10 -------
+ arch/arm/plat-omap/include/plat/board-ams-delta.h |    2 -
+ drivers/video/omap/lcd_ams_delta.c                |   27 +++++++++++++++-----
+ 3 files changed, 20 insertions(+), 19 deletions(-)
 
-	Acked-by: Jingoo Han <jg1.han@samsung.com>
-
-Thanks.
-
-> ---
->  drivers/video/s3c-fb.c |   55 ++++++++++++++++++++++++-----------------------
->  1 files changed, 28 insertions(+), 27 deletions(-)
-> 
-> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-> index 690b44e..76f6155 100644
-> --- a/drivers/video/s3c-fb.c
-> +++ b/drivers/video/s3c-fb.c
-> @@ -439,6 +439,32 @@ static void shadow_protect_win(struct s3c_fb_win *win, bool protect)
->  }
-> 
->  /**
-> + * s3c_fb_enable() - Set the state of the main LCD output
-> + * @sfb: The main framebuffer state.
-> + * @enable: The state to set.
-> + */
-> +static void s3c_fb_enable(struct s3c_fb *sfb, int enable)
-> +{
-> +	u32 vidcon0 = readl(sfb->regs + VIDCON0);
-> +
-> +	if (enable)
-> +		vidcon0 |= VIDCON0_ENVID | VIDCON0_ENVID_F;
-> +	else {
-> +		/* see the note in the framebuffer datasheet about
-> +		 * why you cannot take both of these bits down at the
-> +		 * same time. */
-> +
-> +		if (!(vidcon0 & VIDCON0_ENVID))
-> +			return;
-> +
-> +		vidcon0 |= VIDCON0_ENVID;
-> +		vidcon0 &= ~VIDCON0_ENVID_F;
-> +	}
-> +
-> +	writel(vidcon0, sfb->regs + VIDCON0);
-> +}
-> +
-> +/**
->   * s3c_fb_set_par() - framebuffer request to set new framebuffer state.
->   * @info: The framebuffer to change.
->   *
-> @@ -508,9 +534,10 @@ static int s3c_fb_set_par(struct fb_info *info)
->  		if (sfb->variant.is_2443)
->  			data |= (1 << 5);
-> 
-> -		data |= VIDCON0_ENVID | VIDCON0_ENVID_F;
->  		writel(data, regs + VIDCON0);
-> 
-> +		s3c_fb_enable(sfb, 1);
-> +
->  		data = VIDTCON0_VBPD(var->upper_margin - 1) |
->  		       VIDTCON0_VFPD(var->lower_margin - 1) |
->  		       VIDTCON0_VSPW(var->vsync_len - 1);
-> @@ -759,32 +786,6 @@ static int s3c_fb_setcolreg(unsigned regno,
->  }
-> 
->  /**
-> - * s3c_fb_enable() - Set the state of the main LCD output
-> - * @sfb: The main framebuffer state.
-> - * @enable: The state to set.
-> - */
-> -static void s3c_fb_enable(struct s3c_fb *sfb, int enable)
-> -{
-> -	u32 vidcon0 = readl(sfb->regs + VIDCON0);
-> -
-> -	if (enable)
-> -		vidcon0 |= VIDCON0_ENVID | VIDCON0_ENVID_F;
-> -	else {
-> -		/* see the note in the framebuffer datasheet about
-> -		 * why you cannot take both of these bits down at the
-> -		 * same time. */
-> -
-> -		if (!(vidcon0 & VIDCON0_ENVID))
-> -			return;
-> -
-> -		vidcon0 |= VIDCON0_ENVID;
-> -		vidcon0 &= ~VIDCON0_ENVID_F;
-> -	}
-> -
-> -	writel(vidcon0, sfb->regs + VIDCON0);
-> -}
-> -
-> -/**
->   * s3c_fb_blank() - blank or unblank the given window
->   * @blank_mode: The blank state from FB_BLANK_*
->   * @info: The framebuffer to blank.
-> --
-> 1.7.7.3
+diff --git a/arch/arm/mach-omap1/board-ams-delta.c b/arch/arm/mach-omap1/board-ams-delta.c
+index 5705481..b7422e3 100644
+--- a/arch/arm/mach-omap1/board-ams-delta.c
++++ b/arch/arm/mach-omap1/board-ams-delta.c
+@@ -232,16 +232,6 @@ static struct gpio _latch_gpios[] __initconst = {
+ 		.label	= "dockit2",
+ 	},
+ 	{
+-		.gpio	= AMS_DELTA_GPIO_PIN_LCD_VBLEN,
+-		.flags	= GPIOF_OUT_INIT_LOW,
+-		.label	= "lcd_vblen",
+-	},
+-	{
+-		.gpio	= AMS_DELTA_GPIO_PIN_LCD_NDISP,
+-		.flags	= GPIOF_OUT_INIT_LOW,
+-		.label	= "lcd_ndisp",
+-	},
+-	{
+ 		.gpio	= AMS_DELTA_GPIO_PIN_KEYBRD_PWR,
+ 		.flags	= GPIOF_OUT_INIT_LOW,
+ 		.label	= "keybrd_pwr",
+diff --git a/arch/arm/plat-omap/include/plat/board-ams-delta.h b/arch/arm/plat-omap/include/plat/board-ams-delta.h
+index 73fdab9..1d0706e 100644
+--- a/arch/arm/plat-omap/include/plat/board-ams-delta.h
++++ b/arch/arm/plat-omap/include/plat/board-ams-delta.h
+@@ -28,8 +28,6 @@
+ 
+ #if defined (CONFIG_MACH_AMS_DELTA)
+ 
+-#define AMS_DELTA_LATCH2_LCD_VBLEN	0x0001
+-#define AMS_DELTA_LATCH2_LCD_NDISP	0x0002
+ #define AMD_DELTA_LATCH2_KEYBRD_PWR	0x0100
+ #define AMD_DELTA_LATCH2_KEYBRD_DATA	0x0200
+ #define AMD_DELTA_LATCH2_SCARD_RSTIN	0x0400
+diff --git a/drivers/video/omap/lcd_ams_delta.c b/drivers/video/omap/lcd_ams_delta.c
+index 6978ae4..73b211b 100644
+--- a/drivers/video/omap/lcd_ams_delta.c
++++ b/drivers/video/omap/lcd_ams_delta.c
+@@ -25,6 +25,7 @@
+ #include <linux/io.h>
+ #include <linux/delay.h>
+ #include <linux/lcd.h>
++#include <linux/gpio.h>
+ 
+ #include <plat/board-ams-delta.h>
+ #include <mach/hardware.h>
+@@ -98,29 +99,41 @@ static struct lcd_ops ams_delta_lcd_ops = {
+ 
+ /* omapfb panel section */
+ 
++static struct gpio _gpios[] __initconst_or_module = {
++	{
++		.gpio	= AMS_DELTA_GPIO_PIN_LCD_VBLEN,
++		.flags	= GPIOF_OUT_INIT_LOW,
++		.label	= "lcd_vblen",
++	},
++	{
++		.gpio	= AMS_DELTA_GPIO_PIN_LCD_NDISP,
++		.flags	= GPIOF_OUT_INIT_LOW,
++		.label	= "lcd_ndisp",
++	},
++};
++
+ static int ams_delta_panel_init(struct lcd_panel *panel,
+ 		struct omapfb_device *fbdev)
+ {
+-	return 0;
++	return gpio_request_array(_gpios, ARRAY_SIZE(_gpios));
+ }
+ 
+ static void ams_delta_panel_cleanup(struct lcd_panel *panel)
+ {
++	gpio_free_array(_gpios, ARRAY_SIZE(_gpios));
+ }
+ 
+ static int ams_delta_panel_enable(struct lcd_panel *panel)
+ {
+-	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_NDISP,
+-			AMS_DELTA_LATCH2_LCD_NDISP);
+-	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_VBLEN,
+-			AMS_DELTA_LATCH2_LCD_VBLEN);
++	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_NDISP, 1);
++	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_VBLEN, 1);
+ 	return 0;
+ }
+ 
+ static void ams_delta_panel_disable(struct lcd_panel *panel)
+ {
+-	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_VBLEN, 0);
+-	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_NDISP, 0);
++	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_VBLEN, 0);
++	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_NDISP, 0);
+ }
+ 
+ static unsigned long ams_delta_panel_get_caps(struct lcd_panel *panel)
+-- 
+1.7.3.4
 

@@ -1,175 +1,441 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:02:05 +0000
-Subject: [PATCH 10/57] fbdev: sh_mipi_dsi: Implement sh_mobile_lcdc_entity interface
-Message-Id: <1323784972-24205-11-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Tue, 13 Dec 2011 14:02:39 +0000
+Subject: [PATCH 44/57] fbdev: sh_mobile_meram: Add struct sh_mobile_meram_icb
+Message-Id: <1323784972-24205-45-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
+The new structure stores ICB parameters for ICBs.
+
+Instead of modifying the struct sh_mobile_meram_cfg instances passed by
+callers, store the ICB parameters internally and make the public API
+take const pointers to sh_mobile_meram_cfg.
+
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mipi_dsi.c |   66 +++++++++++++++++++++++++++++++++----------
- 1 files changed, 51 insertions(+), 15 deletions(-)
+ drivers/video/sh_mobile_meram.c |  178 ++++++++++++++++++++-------------------
+ include/video/sh_mobile_meram.h |   12 +--
+ 2 files changed, 94 insertions(+), 96 deletions(-)
 
-diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
-index 05151b8..58744fe 100644
---- a/drivers/video/sh_mipi_dsi.c
-+++ b/drivers/video/sh_mipi_dsi.c
-@@ -24,6 +24,8 @@
- #include <video/sh_mipi_dsi.h>
- #include <video/sh_mobile_lcdc.h>
+diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
+index 7af2ffe..cddb180 100644
+--- a/drivers/video/sh_mobile_meram.c
++++ b/drivers/video/sh_mobile_meram.c
+@@ -100,14 +100,38 @@ static unsigned long icb_regs[] = {
+ };
+ #define ICB_REGS_SIZE ARRAY_SIZE(icb_regs)
  
-+#include "sh_mobile_lcdcfb.h"
++/*
++ * sh_mobile_meram_icb - MERAM ICB information
++ * @regs: Registers cache
++ * @region: Start and end addresses of the MERAM region
++ * @cache_unit: Bytes to cache per ICB
++ * @pixelformat: Video pixel format of the data stored in the ICB
++ * @current_reg: Which of Start Address Register A (0) or B (1) is in use
++ */
++struct sh_mobile_meram_icb {
++	unsigned long regs[ICB_REGS_SIZE];
 +
- #define SYSCTRL		0x0000
- #define SYSCONF		0x0004
- #define TIMSET		0x0008
-@@ -50,6 +52,8 @@
- #define MAX_SH_MIPI_DSI 2
- 
- struct sh_mipi {
-+	struct sh_mobile_lcdc_entity entity;
++	unsigned long region;
++	unsigned int cache_unit;
++	unsigned int pixelformat;
++	unsigned int current_reg;
++};
 +
- 	void __iomem	*base;
- 	void __iomem	*linkbase;
- 	struct clk	*dsit_clk;
-@@ -60,6 +64,8 @@ struct sh_mipi {
- 	void	(*next_display_off)(void *board_data);
++/*
++ * sh_mobile_meram_priv - MERAM device
++ * @base: Registers base address
++ * @regs: Registers cache
++ * @lock: Protects used_icb and icbs
++ * @used_icb: Bitmask of used ICBs
++ * @icbs: ICBs
++ */
+ struct sh_mobile_meram_priv {
+-	void __iomem	*base;
+-	struct mutex	lock;
+-	unsigned long	used_icb;
+-	unsigned int	used_meram_cache_regions;
+-	unsigned long	used_meram_cache[SH_MOBILE_MERAM_ICB_NUM];
+-	unsigned long	cmn_saved_regs[CMN_REGS_SIZE];
+-	unsigned long	icb_saved_regs[ICB_REGS_SIZE * SH_MOBILE_MERAM_ICB_NUM];
++	void __iomem *base;
++	unsigned long regs[CMN_REGS_SIZE];
++
++	struct mutex lock;
++	unsigned long used_icb;
++	struct sh_mobile_meram_icb icbs[SH_MOBILE_MERAM_ICB_NUM];
  };
  
-+#define to_sh_mipi(e)	container_of(e, struct sh_mipi, entity)
-+
- static struct sh_mipi *mipi_dsi[MAX_SH_MIPI_DSI];
+ /* settings */
+@@ -157,7 +181,7 @@ static inline unsigned long meram_read_reg(void __iomem *base, unsigned int off)
+  */
  
- /* Protect the above array */
-@@ -120,7 +126,7 @@ static void sh_mipi_dsi_enable(struct sh_mipi *mipi, bool enable)
- 
- static void sh_mipi_shutdown(struct platform_device *pdev)
+ static inline int meram_check_overlap(struct sh_mobile_meram_priv *priv,
+-				      struct sh_mobile_meram_icb_cfg *new)
++				      const struct sh_mobile_meram_icb_cfg *new)
  {
--	struct sh_mipi *mipi = platform_get_drvdata(pdev);
-+	struct sh_mipi *mipi = to_sh_mipi(platform_get_drvdata(pdev));
+ 	unsigned int used_start, used_end, meram_start, meram_end;
+ 	unsigned int i;
+@@ -167,17 +191,20 @@ static inline int meram_check_overlap(struct sh_mobile_meram_priv *priv,
+ 		return 1;
  
- 	sh_mipi_dsi_enable(mipi, false);
+ 	if (test_bit(new->marker_icb, &priv->used_icb) ||
+-			test_bit(new->cache_icb,  &priv->used_icb))
++	    test_bit(new->cache_icb,  &priv->used_icb))
+ 		return  1;
+ 
+-	for (i = 0; i < priv->used_meram_cache_regions; i++) {
+-		used_start = MERAM_CACHE_START(priv->used_meram_cache[i]);
+-		used_end   = MERAM_CACHE_END(priv->used_meram_cache[i]);
++	for (i = 0; i < SH_MOBILE_MERAM_ICB_NUM; i++) {
++		if (!test_bit(i, &priv->used_icb))
++			continue;
++
++		used_start = MERAM_CACHE_START(priv->icbs[i].region);
++		used_end   = MERAM_CACHE_END(priv->icbs[i].region);
+ 		meram_start = new->meram_offset;
+ 		meram_end   = new->meram_offset + new->meram_size;
+ 
+ 		if ((meram_start >= used_start && meram_start < used_end) ||
+-			(meram_end > used_start && meram_end < used_end))
++		    (meram_end > used_start && meram_end < used_end))
+ 			return 1;
+ 	}
+ 
+@@ -189,22 +216,18 @@ static inline int meram_check_overlap(struct sh_mobile_meram_priv *priv,
+  */
+ 
+ static inline void meram_mark(struct sh_mobile_meram_priv *priv,
+-			      struct sh_mobile_meram_icb_cfg *new)
++			      const struct sh_mobile_meram_icb_cfg *new,
++			      int pixelformat)
+ {
+-	unsigned int n;
+-
+-	if (new->marker_icb < 0 || new->cache_icb < 0)
+-		return;
+-
+ 	__set_bit(new->marker_icb, &priv->used_icb);
+ 	__set_bit(new->cache_icb, &priv->used_icb);
+ 
+-	n = priv->used_meram_cache_regions;
+-
+-	priv->used_meram_cache[n] = MERAM_CACHE_SET(new->meram_offset,
+-						    new->meram_size);
+-
+-	priv->used_meram_cache_regions++;
++	priv->icbs[new->marker_icb].region = MERAM_CACHE_SET(new->meram_offset,
++							     new->meram_size);
++	priv->icbs[new->cache_icb].region = MERAM_CACHE_SET(new->meram_offset,
++							    new->meram_size);
++	priv->icbs[new->marker_icb].current_reg = 1;
++	priv->icbs[new->marker_icb].pixelformat = pixelformat;
  }
-@@ -392,9 +398,10 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
+ 
+ /*
+@@ -212,30 +235,10 @@ static inline void meram_mark(struct sh_mobile_meram_priv *priv,
+  */
+ 
+ static inline void meram_unmark(struct sh_mobile_meram_priv *priv,
+-				struct sh_mobile_meram_icb_cfg *icb)
++				const struct sh_mobile_meram_icb_cfg *icb)
+ {
+-	unsigned long pattern;
+-	unsigned int i;
+-
+-	if (icb->marker_icb < 0 || icb->cache_icb < 0)
+-		return;
+-
+ 	__clear_bit(icb->marker_icb, &priv->used_icb);
+ 	__clear_bit(icb->cache_icb, &priv->used_icb);
+-
+-	pattern = MERAM_CACHE_SET(icb->meram_offset, icb->meram_size);
+-	for (i = 0; i < priv->used_meram_cache_regions; i++) {
+-		if (priv->used_meram_cache[i] = pattern) {
+-			while (i < priv->used_meram_cache_regions - 1) {
+-				priv->used_meram_cache[i] -					priv->used_meram_cache[i + 1] ;
+-				i++;
+-			}
+-			priv->used_meram_cache[i] = 0;
+-			priv->used_meram_cache_regions--;
+-			break;
+-		}
+-	}
+ }
+ 
+ /*
+@@ -244,7 +247,7 @@ static inline void meram_unmark(struct sh_mobile_meram_priv *priv,
+ static inline int is_nvcolor(int cspace)
+ {
+ 	if (cspace = SH_MOBILE_MERAM_PF_NV ||
+-			cspace = SH_MOBILE_MERAM_PF_NV24)
++	    cspace = SH_MOBILE_MERAM_PF_NV24)
+ 		return 1;
+ 	return 0;
+ }
+@@ -253,46 +256,51 @@ static inline int is_nvcolor(int cspace)
+  * set the next address to fetch
+  */
+ static inline void meram_set_next_addr(struct sh_mobile_meram_priv *priv,
+-				       struct sh_mobile_meram_cfg *cfg,
++				       const struct sh_mobile_meram_cfg *cfg,
+ 				       unsigned long base_addr_y,
+ 				       unsigned long base_addr_c)
+ {
++	struct sh_mobile_meram_icb *icb = &priv->icbs[cfg->icb[0].marker_icb];
+ 	unsigned long target;
+ 
+-	cfg->current_reg ^= 1;
+-	target = cfg->current_reg ? MExxSARB : MExxSARA;
++	icb->current_reg ^= 1;
++	target = icb->current_reg ? MExxSARB : MExxSARA;
+ 
+ 	/* set the next address to fetch */
+-	meram_write_icb(priv->base, cfg->icb[0].cache_icb,  target,
++	meram_write_icb(priv->base, cfg->icb[0].cache_icb, target,
+ 			base_addr_y);
+ 	meram_write_icb(priv->base, cfg->icb[0].marker_icb, target,
+-			base_addr_y + cfg->icb[0].cache_unit);
++			base_addr_y +
++			priv->icbs[cfg->icb[0].marker_icb].cache_unit);
+ 
+-	if (is_nvcolor(cfg->pixelformat)) {
++	if (is_nvcolor(icb->pixelformat)) {
+ 		meram_write_icb(priv->base, cfg->icb[1].cache_icb,  target,
+ 				base_addr_c);
+ 		meram_write_icb(priv->base, cfg->icb[1].marker_icb, target,
+-				base_addr_c + cfg->icb[1].cache_unit);
++				base_addr_c +
++				priv->icbs[cfg->icb[1].marker_icb].cache_unit);
+ 	}
+ }
+ 
+ /*
+  * get the next ICB address
+  */
+-static inline void meram_get_next_icb_addr(struct sh_mobile_meram_info *pdata,
+-					   struct sh_mobile_meram_cfg *cfg,
+-					   unsigned long *icb_addr_y,
+-					   unsigned long *icb_addr_c)
++static inline void
++meram_get_next_icb_addr(struct sh_mobile_meram_info *pdata,
++			const struct sh_mobile_meram_cfg *cfg,
++			unsigned long *icb_addr_y, unsigned long *icb_addr_c)
+ {
++	struct sh_mobile_meram_priv *priv = pdata->priv;
++	struct sh_mobile_meram_icb *icb = &priv->icbs[cfg->icb[0].marker_icb];
+ 	unsigned long icb_offset;
+ 
+ 	if (pdata->addr_mode = SH_MOBILE_MERAM_MODE0)
+-		icb_offset = 0x80000000 | (cfg->current_reg << 29);
++		icb_offset = 0x80000000 | (icb->current_reg << 29);
+ 	else
+-		icb_offset = 0xc0000000 | (cfg->current_reg << 23);
++		icb_offset = 0xc0000000 | (icb->current_reg << 23);
+ 
+ 	*icb_addr_y = icb_offset | (cfg->icb[0].marker_icb << 24);
+-	if (is_nvcolor(cfg->pixelformat))
++	if (is_nvcolor(icb->pixelformat))
+ 		*icb_addr_c = icb_offset | (cfg->icb[1].marker_icb << 24);
+ }
+ 
+@@ -304,7 +312,7 @@ static inline void meram_get_next_icb_addr(struct sh_mobile_meram_info *pdata,
+  */
+ 
+ static int meram_init(struct sh_mobile_meram_priv *priv,
+-		      struct sh_mobile_meram_icb_cfg *icb,
++		      const struct sh_mobile_meram_icb_cfg *icb,
+ 		      unsigned int xres, unsigned int yres,
+ 		      unsigned int *out_pitch)
+ {
+@@ -352,7 +360,8 @@ static int meram_init(struct sh_mobile_meram_priv *priv,
+ 	meram_write_icb(priv->base, icb->marker_icb, MExxSBSIZE, xpitch);
+ 
+ 	/* save a cache unit size */
+-	icb->cache_unit = xres * save_lines;
++	priv->icbs[icb->cache_icb].cache_unit = xres * save_lines;
++	priv->icbs[icb->marker_icb].cache_unit = xres * save_lines;
+ 
+ 	/*
+ 	 * Set MERAM for framebuffer
+@@ -374,14 +383,16 @@ static int meram_init(struct sh_mobile_meram_priv *priv,
+ }
+ 
+ static void meram_deinit(struct sh_mobile_meram_priv *priv,
+-			 struct sh_mobile_meram_icb_cfg *icb)
++			 const struct sh_mobile_meram_icb_cfg *icb)
+ {
+ 	/* disable ICB */
+ 	meram_write_icb(priv->base, icb->cache_icb,  MExxCTL,
+ 			MExxCTL_WBF | MExxCTL_WF | MExxCTL_RF);
+ 	meram_write_icb(priv->base, icb->marker_icb, MExxCTL,
+ 			MExxCTL_WBF | MExxCTL_WF | MExxCTL_RF);
+-	icb->cache_unit = 0;
++
++	priv->icbs[icb->cache_icb].cache_unit = 0;
++	priv->icbs[icb->marker_icb].cache_unit = 0;
+ }
+ 
+ /*
+@@ -389,7 +400,7 @@ static void meram_deinit(struct sh_mobile_meram_priv *priv,
+  */
+ 
+ static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
+-				    struct sh_mobile_meram_cfg *cfg,
++				    const struct sh_mobile_meram_cfg *cfg,
+ 				    unsigned int xres, unsigned int yres,
+ 				    unsigned int pixelformat,
+ 				    unsigned long base_addr_y,
+@@ -433,12 +444,6 @@ static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
+ 
+ 	mutex_lock(&priv->lock);
+ 
+-	if (priv->used_meram_cache_regions + 2 > SH_MOBILE_MERAM_ICB_NUM) {
+-		dev_err(&pdev->dev, "no more ICB available.");
+-		error = -EINVAL;
+-		goto err;
+-	}
+-
+ 	/* make sure that there's no overlaps */
+ 	if (meram_check_overlap(priv, &cfg->icb[0])) {
+ 		dev_err(&pdev->dev, "conflicting config detected.");
+@@ -464,10 +469,9 @@ static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
+ 	}
+ 
+ 	/* we now register the ICB */
+-	cfg->pixelformat = pixelformat;
+-	meram_mark(priv, &cfg->icb[0]);
++	meram_mark(priv, &cfg->icb[0], pixelformat);
+ 	if (is_nvcolor(pixelformat))
+-		meram_mark(priv, &cfg->icb[1]);
++		meram_mark(priv, &cfg->icb[1], pixelformat);
+ 
+ 	/* initialize MERAM */
+ 	meram_init(priv, &cfg->icb[0], xres, yres, &out_pitch);
+@@ -479,7 +483,6 @@ static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
+ 		meram_init(priv, &cfg->icb[1], 2 * xres, (yres + 1) / 2,
+ 			&out_pitch);
+ 
+-	cfg->current_reg = 1;
+ 	meram_set_next_addr(priv, cfg, base_addr_y, base_addr_c);
+ 	meram_get_next_icb_addr(pdata, cfg, icb_addr_y, icb_addr_c);
+ 
+@@ -492,19 +495,21 @@ err:
+ }
+ 
+ static int sh_mobile_meram_unregister(struct sh_mobile_meram_info *pdata,
+-				      struct sh_mobile_meram_cfg *cfg)
++				      const struct sh_mobile_meram_cfg *cfg)
+ {
+ 	struct sh_mobile_meram_priv *priv;
++	struct sh_mobile_meram_icb *icb;
+ 
+ 	if (!pdata || !pdata->priv || !cfg)
+ 		return -EINVAL;
+ 
+ 	priv = pdata->priv;
++	icb = &priv->icbs[cfg->icb[0].marker_icb];
+ 
+ 	mutex_lock(&priv->lock);
+ 
+ 	/* deinit & unmark */
+-	if (is_nvcolor(cfg->pixelformat)) {
++	if (is_nvcolor(icb->pixelformat)) {
+ 		meram_deinit(priv, &cfg->icb[1]);
+ 		meram_unmark(priv, &cfg->icb[1]);
+ 	}
+@@ -517,7 +522,7 @@ static int sh_mobile_meram_unregister(struct sh_mobile_meram_info *pdata,
+ }
+ 
+ static int sh_mobile_meram_update(struct sh_mobile_meram_info *pdata,
+-				  struct sh_mobile_meram_cfg *cfg,
++				  const struct sh_mobile_meram_cfg *cfg,
+ 				  unsigned long base_addr_y,
+ 				  unsigned long base_addr_c,
+ 				  unsigned long *icb_addr_y,
+@@ -547,18 +552,17 @@ static int sh_mobile_meram_runtime_suspend(struct device *dev)
+ 	unsigned int i, j;
+ 
+ 	for (i = 0; i < CMN_REGS_SIZE; i++)
+-		priv->cmn_saved_regs[i] = meram_read_reg(priv->base,
+-			common_regs[i]);
++		priv->regs[i] = meram_read_reg(priv->base, common_regs[i]);
+ 
+ 	for (i = 0; i < 32; i++) {
+ 		if (!test_bit(i, &priv->used_icb))
+ 			continue;
+ 		for (j = 0; j < ICB_REGS_SIZE; j++) {
+-			priv->icb_saved_regs[i * ICB_REGS_SIZE + j] +			priv->icbs[i].regs[j]  				meram_read_icb(priv->base, i, icb_regs[j]);
+ 			/* Reset ICB on resume */
+ 			if (icb_regs[j] = MExxCTL)
+-				priv->icb_saved_regs[i * ICB_REGS_SIZE + j] |+				priv->icbs[i].regs[j] | 					MExxCTL_WBF | MExxCTL_WF | MExxCTL_RF;
+ 		}
+ 	}
+@@ -574,15 +578,13 @@ static int sh_mobile_meram_runtime_resume(struct device *dev)
+ 	for (i = 0; i < 32; i++) {
+ 		if (!test_bit(i, &priv->used_icb))
+ 			continue;
+-		for (j = 0; j < ICB_REGS_SIZE; j++) {
++		for (j = 0; j < ICB_REGS_SIZE; j++)
+ 			meram_write_icb(priv->base, i, icb_regs[j],
+-			priv->icb_saved_regs[i * ICB_REGS_SIZE + j]);
+-		}
++					priv->icbs[i].regs[j]);
+ 	}
+ 
+ 	for (i = 0; i < CMN_REGS_SIZE; i++)
+-		meram_write_reg(priv->base, common_regs[i],
+-				priv->cmn_saved_regs[i]);
++		meram_write_reg(priv->base, common_regs[i], priv->regs[i]);
  	return 0;
  }
  
--static void mipi_display_on(void *arg, struct fb_info *info)
-+static int __mipi_display_on(struct sh_mobile_lcdc_entity *entity,
-+			     struct fb_info *info)
- {
--	struct sh_mipi *mipi = arg;
-+	struct sh_mipi *mipi = to_sh_mipi(entity);
- 	struct sh_mipi_dsi_info *pdata = mipi->pdev->dev.platform_data;
- 	int ret;
- 
-@@ -410,24 +417,34 @@ static void mipi_display_on(void *arg, struct fb_info *info)
- 
- 	sh_mipi_dsi_enable(mipi, true);
- 
--	if (mipi->next_display_on)
--		mipi->next_display_on(mipi->next_board_data, info);
+diff --git a/include/video/sh_mobile_meram.h b/include/video/sh_mobile_meram.h
+index 6755e3f..05ca3f9 100644
+--- a/include/video/sh_mobile_meram.h
++++ b/include/video/sh_mobile_meram.h
+@@ -30,14 +30,10 @@ struct sh_mobile_meram_icb_cfg {
+ 	unsigned int cache_icb;		/* ICB # for Cache ICB */
+ 	unsigned int meram_offset;	/* MERAM Buffer Offset to use */
+ 	unsigned int meram_size;	/* MERAM Buffer Size to use */
 -
--	return;
-+	return 0;
+-	unsigned int cache_unit;	/* bytes to cache per ICB */
+ };
  
- mipi_display_on_fail1:
- 	pm_runtime_put_sync(&mipi->pdev->dev);
- mipi_display_on_fail2:
- 	pdata->set_dot_clock(mipi->pdev, mipi->base, 0);
-+
-+	return ret;
- }
+ struct sh_mobile_meram_cfg {
+-	struct sh_mobile_meram_icb_cfg	icb[2];
+-	int				pixelformat;
+-	int				current_reg;
++	struct sh_mobile_meram_icb_cfg icb[2];
+ };
  
--static void mipi_display_off(void *arg)
-+static void mipi_display_on(void *arg, struct fb_info *info)
- {
--	struct sh_mipi *mipi = arg;
--	struct sh_mipi_dsi_info *pdata = mipi->pdev->dev.platform_data;
-+	struct sh_mobile_lcdc_entity *entity = arg;
-+	struct sh_mipi *mipi = to_sh_mipi(entity);
-+	int ret;
+ struct module;
+@@ -45,7 +41,7 @@ struct sh_mobile_meram_ops {
+ 	struct module	*module;
+ 	/* register usage of meram */
+ 	int (*meram_register)(struct sh_mobile_meram_info *meram_dev,
+-			      struct sh_mobile_meram_cfg *cfg,
++			      const struct sh_mobile_meram_cfg *cfg,
+ 			      unsigned int xres, unsigned int yres,
+ 			      unsigned int pixelformat,
+ 			      unsigned long base_addr_y,
+@@ -56,11 +52,11 @@ struct sh_mobile_meram_ops {
  
--	if (mipi->next_display_off)
--		mipi->next_display_off(mipi->next_board_data);
-+	ret = __mipi_display_on(entity, info);
-+	if (ret < 0)
-+		return;
-+
-+	if (mipi->next_display_on)
-+		mipi->next_display_on(mipi->next_board_data, info);
-+}
-+
-+static void __mipi_display_off(struct sh_mobile_lcdc_entity *entity)
-+{
-+	struct sh_mipi *mipi = to_sh_mipi(entity);
-+	struct sh_mipi_dsi_info *pdata = mipi->pdev->dev.platform_data;
+ 	/* unregister usage of meram */
+ 	int (*meram_unregister)(struct sh_mobile_meram_info *meram_dev,
+-				struct sh_mobile_meram_cfg *cfg);
++				const struct sh_mobile_meram_cfg *cfg);
  
- 	sh_mipi_dsi_enable(mipi, false);
- 
-@@ -436,6 +453,22 @@ static void mipi_display_off(void *arg)
- 	pm_runtime_put_sync(&mipi->pdev->dev);
- }
- 
-+static void mipi_display_off(void *arg)
-+{
-+	struct sh_mobile_lcdc_entity *entity = arg;
-+	struct sh_mipi *mipi = to_sh_mipi(entity);
-+
-+	if (mipi->next_display_off)
-+		mipi->next_display_off(mipi->next_board_data);
-+
-+	__mipi_display_off(entity);
-+}
-+
-+static const struct sh_mobile_lcdc_entity_ops mipi_ops = {
-+	.display_on = __mipi_display_on,
-+	.display_off = __mipi_display_off,
-+};
-+
- static int __init sh_mipi_probe(struct platform_device *pdev)
- {
- 	struct sh_mipi *mipi;
-@@ -467,6 +500,9 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
- 		goto ealloc;
- 	}
- 
-+	mipi->entity.owner = THIS_MODULE;
-+	mipi->entity.ops = &mipi_ops;
-+
- 	if (!request_mem_region(res->start, resource_size(res), pdev->name)) {
- 		dev_err(&pdev->dev, "MIPI register region already claimed\n");
- 		ret = -EBUSY;
-@@ -521,7 +557,7 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
- 	pm_runtime_resume(&pdev->dev);
- 
- 	mutex_unlock(&array_lock);
--	platform_set_drvdata(pdev, mipi);
-+	platform_set_drvdata(pdev, &mipi->entity);
- 
- 	/* Save original LCDC callbacks */
- 	mipi->next_board_data = pdata->lcd_chan->board_cfg.board_data;
-@@ -529,7 +565,7 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
- 	mipi->next_display_off = pdata->lcd_chan->board_cfg.display_off;
- 
- 	/* Set up LCDC callbacks */
--	pdata->lcd_chan->board_cfg.board_data = mipi;
-+	pdata->lcd_chan->board_cfg.board_data = &mipi->entity;
- 	pdata->lcd_chan->board_cfg.display_on = mipi_display_on;
- 	pdata->lcd_chan->board_cfg.display_off = mipi_display_off;
- 	pdata->lcd_chan->board_cfg.owner = THIS_MODULE;
-@@ -561,7 +597,7 @@ static int __exit sh_mipi_remove(struct platform_device *pdev)
- 	struct sh_mipi_dsi_info *pdata = pdev->dev.platform_data;
- 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	struct resource *res2 = platform_get_resource(pdev, IORESOURCE_MEM, 1);
--	struct sh_mipi *mipi = platform_get_drvdata(pdev);
-+	struct sh_mipi *mipi = to_sh_mipi(platform_get_drvdata(pdev));
- 	int i, ret;
- 
- 	mutex_lock(&array_lock);
+ 	/* update meram settings */
+ 	int (*meram_update)(struct sh_mobile_meram_info *meram_dev,
+-			    struct sh_mobile_meram_cfg *cfg,
++			    const struct sh_mobile_meram_cfg *cfg,
+ 			    unsigned long base_addr_y,
+ 			    unsigned long base_addr_c,
+ 			    unsigned long *icb_addr_y,
 -- 
 1.7.3.4
 

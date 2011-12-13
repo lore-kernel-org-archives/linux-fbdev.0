@@ -1,199 +1,101 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Sat, 10 Dec 2011 05:23:13 +0000
-Subject: [PATCH 02/16] macfb: fix black and white modes
-Message-Id: <alpine.LNX.2.00.1112101604310.13274@nippy.intranet>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 13 Dec 2011 14:02:33 +0000
+Subject: [PATCH 38/57] fbdev: sh_mobile_lcdc: Pass channel pointer to sh_mobile_wait_for_vsync
+Message-Id: <1323784972-24205-39-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20111023141108.856998818@telegraphics.com.au> <20111023141119.848736612@telegraphics.com.au>
-In-Reply-To: <20111023141119.848736612@telegraphics.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-m68k@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-fbdev@vger.kernel.org
 
-macfb won't init in black & white modes since fb_alloc_cmap() no longer 
-works for zero cmap length. Fix this and also clean up a few printk's 
-and some stylistic inconsistencies.
+The sh_mobile_wait_for_vsync() function isn't related to the fbdev API,
+make it generic by passing a channel pointer instead of an fb_info
+pointer.
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
+ drivers/video/sh_mobile_lcdcfb.c |   47 ++++++++++++++++++-------------------
+ 1 files changed, 23 insertions(+), 24 deletions(-)
 
-Re-sending unchanged. Still needs the right ack.
-
-Index: linux-m68k/drivers/video/macfb.c
-=================================--- linux-m68k.orig/drivers/video/macfb.c	2011-10-22 23:02:22.000000000 +1100
-+++ linux-m68k/drivers/video/macfb.c	2011-10-23 00:50:51.000000000 +1100
-@@ -592,12 +592,12 @@ static int __init macfb_init(void)
- 	if (!fb_info.screen_base)
- 		return -ENODEV;
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 8e85b3c..453fc92 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -583,6 +583,26 @@ static irqreturn_t sh_mobile_lcdc_irq(int irq, void *data)
+ 	return IRQ_HANDLED;
+ }
  
--	printk("macfb: framebuffer at 0x%08lx, mapped to 0x%p, size %dk\n",
--	       macfb_fix.smem_start, fb_info.screen_base,
--	       macfb_fix.smem_len / 1024);
--	printk("macfb: mode is %dx%dx%d, linelength=%d\n",
--	       macfb_defined.xres, macfb_defined.yres,
--	       macfb_defined.bits_per_pixel, macfb_fix.line_length);
-+	pr_info("macfb: framebuffer at 0x%08lx, mapped to 0x%p, size %dk\n",
-+	        macfb_fix.smem_start, fb_info.screen_base,
-+	        macfb_fix.smem_len / 1024);
-+	pr_info("macfb: mode is %dx%dx%d, linelength=%d\n",
-+	        macfb_defined.xres, macfb_defined.yres,
-+	        macfb_defined.bits_per_pixel, macfb_fix.line_length);
- 
- 	/* Fill in the available video resolution */
- 	macfb_defined.xres_virtual = macfb_defined.xres;
-@@ -613,14 +613,10 @@ static int __init macfb_init(void)
- 
- 	switch (macfb_defined.bits_per_pixel) {
- 	case 1:
--		/*
--		 * XXX: I think this will catch any program that tries
--		 * to do FBIO_PUTCMAP when the visual is monochrome.
--		 */
- 		macfb_defined.red.length = macfb_defined.bits_per_pixel;
- 		macfb_defined.green.length = macfb_defined.bits_per_pixel;
- 		macfb_defined.blue.length = macfb_defined.bits_per_pixel;
--		video_cmap_len = 0;
-+		video_cmap_len = 2;
- 		macfb_fix.visual = FB_VISUAL_MONO01;
- 		break;
- 	case 2:
-@@ -660,11 +656,10 @@ static int __init macfb_init(void)
- 		macfb_fix.visual = FB_VISUAL_TRUECOLOR;
- 		break;
- 	default:
--		video_cmap_len = 0;
--		macfb_fix.visual = FB_VISUAL_MONO01;
--		printk("macfb: unknown or unsupported bit depth: %d\n",
-+		pr_err("macfb: unknown or unsupported bit depth: %d\n",
- 		       macfb_defined.bits_per_pixel);
--		break;
-+		err = -EINVAL;
-+		goto fail_unmap;
- 	}
- 	
- 	/*
-@@ -734,8 +729,8 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_Q950:
- 			strcpy(macfb_fix.id, "DAFB");
- 			macfb_setpalette = dafb_setpalette;
--			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			dafb_cmap_regs = ioremap(DAFB_BASE, 0x1000);
-+			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 
- 		/*
-@@ -744,8 +739,8 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_LCII:
- 			strcpy(macfb_fix.id, "V8");
- 			macfb_setpalette = v8_brazil_setpalette;
--			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
-+			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 
- 		/*
-@@ -758,8 +753,8 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_P600:
- 			strcpy(macfb_fix.id, "Brazil");
- 			macfb_setpalette = v8_brazil_setpalette;
--			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
-+			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 
- 		/*
-@@ -773,10 +768,10 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_P520:
- 		case MAC_MODEL_P550:
- 		case MAC_MODEL_P460:
--			macfb_setpalette = v8_brazil_setpalette;
--			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			strcpy(macfb_fix.id, "Sonora");
-+			macfb_setpalette = v8_brazil_setpalette;
- 			v8_brazil_cmap_regs = ioremap(DAC_BASE, 0x1000);
-+			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 
- 		/*
-@@ -786,10 +781,10 @@ static int __init macfb_init(void)
- 		 */
- 		case MAC_MODEL_IICI:
- 		case MAC_MODEL_IISI:
--			macfb_setpalette = rbv_setpalette;
--			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			strcpy(macfb_fix.id, "RBV");
-+			macfb_setpalette = rbv_setpalette;
- 			rbv_cmap_regs = ioremap(DAC_BASE, 0x1000);
-+			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 
- 		/*
-@@ -797,10 +792,10 @@ static int __init macfb_init(void)
- 		 */
- 		case MAC_MODEL_Q840:
- 		case MAC_MODEL_C660:
--			macfb_setpalette = civic_setpalette;
--			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			strcpy(macfb_fix.id, "Civic");
-+			macfb_setpalette = civic_setpalette;
- 			civic_cmap_regs = ioremap(CIVIC_BASE, 0x1000);
-+			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 
- 		
-@@ -809,26 +804,26 @@ static int __init macfb_init(void)
- 		 * We think this may be like the LC II
- 		 */
- 		case MAC_MODEL_LC:
-+			strcpy(macfb_fix.id, "LC");
- 			if (vidtest) {
- 				macfb_setpalette = v8_brazil_setpalette;
--				macfb_defined.activate = FB_ACTIVATE_NOW;
- 				v8_brazil_cmap_regs  					ioremap(DAC_BASE, 0x1000);
-+				macfb_defined.activate = FB_ACTIVATE_NOW;
- 			}
--			strcpy(macfb_fix.id, "LC");
- 			break;
- 
- 		/*
- 		 * We think this may be like the LC II
- 		 */
- 		case MAC_MODEL_CCL:
-+			strcpy(macfb_fix.id, "Color Classic");
- 			if (vidtest) {
- 				macfb_setpalette = v8_brazil_setpalette;
--				macfb_defined.activate = FB_ACTIVATE_NOW;
- 				v8_brazil_cmap_regs  					ioremap(DAC_BASE, 0x1000);
-+				macfb_defined.activate = FB_ACTIVATE_NOW;
- 			}
--			strcpy(macfb_fix.id, "Color Classic");
- 			break;
- 
- 		/*
-@@ -893,10 +888,10 @@ static int __init macfb_init(void)
- 		case MAC_MODEL_PB270C:
- 		case MAC_MODEL_PB280:
- 		case MAC_MODEL_PB280C:
--			macfb_setpalette = csc_setpalette;
--			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			strcpy(macfb_fix.id, "CSC");
-+			macfb_setpalette = csc_setpalette;
- 			csc_cmap_regs = ioremap(CSC_BASE, 0x1000);
-+			macfb_defined.activate = FB_ACTIVATE_NOW;
- 			break;
- 
- 		default:
-@@ -918,8 +913,9 @@ static int __init macfb_init(void)
- 	if (err)
- 		goto fail_dealloc;
- 
--	printk("fb%d: %s frame buffer device\n",
--	       fb_info.node, fb_info.fix.id);
-+	pr_info("fb%d: %s frame buffer device\n",
-+	        fb_info.node, fb_info.fix.id);
++static int sh_mobile_wait_for_vsync(struct sh_mobile_lcdc_chan *ch)
++{
++	unsigned long ldintr;
++	int ret;
 +
++	/* Enable VSync End interrupt and be careful not to acknowledge any
++	 * pending interrupt.
++	 */
++	ldintr = lcdc_read(ch->lcdc, _LDINTR);
++	ldintr |= LDINTR_VEE | LDINTR_STATUS_MASK;
++	lcdc_write(ch->lcdc, _LDINTR, ldintr);
++
++	ret = wait_for_completion_interruptible_timeout(&ch->vsync_completion,
++							msecs_to_jiffies(100));
++	if (!ret)
++		return -ETIMEDOUT;
++
++	return 0;
++}
++
+ static void sh_mobile_lcdc_start_stop(struct sh_mobile_lcdc_priv *priv,
+ 				      int start)
+ {
+@@ -1081,27 +1101,6 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
  	return 0;
+ }
  
- fail_dealloc:
+-static int sh_mobile_wait_for_vsync(struct fb_info *info)
+-{
+-	struct sh_mobile_lcdc_chan *ch = info->par;
+-	unsigned long ldintr;
+-	int ret;
+-
+-	/* Enable VSync End interrupt and be careful not to acknowledge any
+-	 * pending interrupt.
+-	 */
+-	ldintr = lcdc_read(ch->lcdc, _LDINTR);
+-	ldintr |= LDINTR_VEE | LDINTR_STATUS_MASK;
+-	lcdc_write(ch->lcdc, _LDINTR, ldintr);
+-
+-	ret = wait_for_completion_interruptible_timeout(&ch->vsync_completion,
+-							msecs_to_jiffies(100));
+-	if (!ret)
+-		return -ETIMEDOUT;
+-
+-	return 0;
+-}
+-
+ static int sh_mobile_ioctl(struct fb_info *info, unsigned int cmd,
+ 		       unsigned long arg)
+ {
+@@ -1109,7 +1108,7 @@ static int sh_mobile_ioctl(struct fb_info *info, unsigned int cmd,
+ 
+ 	switch (cmd) {
+ 	case FBIO_WAITFORVSYNC:
+-		retval = sh_mobile_wait_for_vsync(info);
++		retval = sh_mobile_wait_for_vsync(info->par);
+ 		break;
+ 
+ 	default:
+@@ -1385,8 +1384,8 @@ static int sh_mobile_lcdc_blank(int blank, struct fb_info *info)
+ 		 * mode will reenable the clocks and update the screen in time,
+ 		 * so it does not need this. */
+ 		if (!info->fbdefio) {
+-			sh_mobile_wait_for_vsync(info);
+-			sh_mobile_wait_for_vsync(info);
++			sh_mobile_wait_for_vsync(ch);
++			sh_mobile_wait_for_vsync(ch);
+ 		}
+ 		sh_mobile_lcdc_clk_off(p);
+ 	}
+-- 
+1.7.3.4
+

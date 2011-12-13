@@ -1,56 +1,155 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Mon, 19 Dec 2011 23:14:55 +0000
-Subject: Re: [PATCH 1/3] video: convert mbxfb to use module_platform_driver()
-Message-Id: <4EEFC56F.3000409@gmx.de>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 13 Dec 2011 14:02:20 +0000
+Subject: [PATCH 25/57] sh_mobile_lcdc: Add display notify callback to sh_mobile_lcdc_chan
+Message-Id: <1323784972-24205-26-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1323395873.3740.4.camel@phoenix>
-In-Reply-To: <1323395873.3740.4.camel@phoenix>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Axel Lin <axel.lin@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Mike Rapoport <mike@compulab.co.il>, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On 12/09/2011 01:57 AM, Axel Lin wrote:
-> This patch converts mbxfb to use the module_platform_driver() macro
-> which makes the code smaller and a bit simpler.
-> 
-> Cc: Mike Rapoport <mike@compulab.co.il>
-> Signed-off-by: Axel Lin <axel.lin@gmail.com>
+The callback implements 3 notification events:
 
-Applied.
+- SH_MOBILE_LCDC_EVENT_DISPLAY_CONNECT notifies the LCDC that the
+  display has been connected
+- SH_MOBILE_LCDC_EVENT_DISPLAY_DISCONNECT notifies the LCDC that the
+  display has been disconnected
+- SH_MOBILE_LCDC_EVENT_DISPLAY_MODE notifies that LCDC that a display
+  mode has been detected
 
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/sh_mobile_lcdcfb.c |   81 ++++++++++++++++++++++++++++++++++++++
+ drivers/video/sh_mobile_lcdcfb.h |   10 +++++
+ 2 files changed, 91 insertions(+), 0 deletions(-)
 
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/mbx/mbxfb.c |   13 +------------
->  1 files changed, 1 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/video/mbx/mbxfb.c b/drivers/video/mbx/mbxfb.c
-> index 6ce3416..55bf619 100644
-> --- a/drivers/video/mbx/mbxfb.c
-> +++ b/drivers/video/mbx/mbxfb.c
-> @@ -1053,18 +1053,7 @@ static struct platform_driver mbxfb_driver = {
->  	},
->  };
->  
-> -int __devinit mbxfb_init(void)
-> -{
-> -	return platform_driver_register(&mbxfb_driver);
-> -}
-> -
-> -static void __devexit mbxfb_exit(void)
-> -{
-> -	platform_driver_unregister(&mbxfb_driver);
-> -}
-> -
-> -module_init(mbxfb_init);
-> -module_exit(mbxfb_exit);
-> +module_platform_driver(mbxfb_driver);
->  
->  MODULE_DESCRIPTION("loadable framebuffer driver for Marathon device");
->  MODULE_AUTHOR("Mike Rapoport, Compulab");
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 4b03aa5..21e5f10 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -363,6 +363,86 @@ static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
+ 		ch->tx_dev->ops->display_off(ch->tx_dev);
+ }
+ 
++static bool
++sh_mobile_lcdc_must_reconfigure(struct sh_mobile_lcdc_chan *ch,
++				const struct fb_var_screeninfo *new_var)
++{
++	struct fb_var_screeninfo *old_var = &ch->display_var;
++	struct fb_videomode old_mode;
++	struct fb_videomode new_mode;
++
++	fb_var_to_videomode(&old_mode, old_var);
++	fb_var_to_videomode(&new_mode, new_var);
++
++	dev_dbg(ch->info->dev, "Old %ux%u, new %ux%u\n",
++		old_mode.xres, old_mode.yres, new_mode.xres, new_mode.yres);
++
++	if (fb_mode_is_equal(&old_mode, &new_mode)) {
++		/* It can be a different monitor with an equal video-mode */
++		old_var->width = new_var->width;
++		old_var->height = new_var->height;
++		return false;
++	}
++
++	dev_dbg(ch->info->dev, "Switching %u -> %u lines\n",
++		old_mode.yres, new_mode.yres);
++	*old_var = *new_var;
++
++	return true;
++}
++
++static int sh_mobile_lcdc_display_notify(struct sh_mobile_lcdc_chan *ch,
++					 enum sh_mobile_lcdc_entity_event event,
++					 struct fb_var_screeninfo *var)
++{
++	struct fb_info *info = ch->info;
++	int ret = 0;
++
++	switch (event) {
++	case SH_MOBILE_LCDC_EVENT_DISPLAY_CONNECT:
++		/* HDMI plug in */
++		if (lock_fb_info(info)) {
++			console_lock();
++
++			if (!sh_mobile_lcdc_must_reconfigure(ch, var) &&
++			    info->state = FBINFO_STATE_RUNNING) {
++				/* First activation with the default monitor.
++				 * Just turn on, if we run a resume here, the
++				 * logo disappears.
++				 */
++				info->var.width = var->width;
++				info->var.height = var->height;
++				sh_mobile_lcdc_display_on(ch);
++			} else {
++				/* New monitor or have to wake up */
++				fb_set_suspend(info, 0);
++			}
++
++			console_unlock();
++			unlock_fb_info(info);
++		}
++		break;
++
++	case SH_MOBILE_LCDC_EVENT_DISPLAY_DISCONNECT:
++		/* HDMI disconnect */
++		if (lock_fb_info(info)) {
++			console_lock();
++			fb_set_suspend(info, 1);
++			console_unlock();
++			unlock_fb_info(info);
++		}
++		break;
++
++	case SH_MOBILE_LCDC_EVENT_DISPLAY_MODE:
++		/* Validate a proposed new mode */
++		var->bits_per_pixel = info->var.bits_per_pixel;
++		ret = info->fbops->fb_check_var(var, info);
++		break;
++	}
++
++	return ret;
++}
++
+ /* -----------------------------------------------------------------------------
+  * Format helpers
+  */
+@@ -1591,6 +1671,7 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
+ 	int i;
+ 
+ 	mutex_init(&ch->open_lock);
++	ch->notify = sh_mobile_lcdc_display_notify;
+ 
+ 	/* Allocate the frame buffer device. */
+ 	ch->info = framebuffer_alloc(0, priv->dev);
+diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
+index 6fb956c..e2eb7af 100644
+--- a/drivers/video/sh_mobile_lcdcfb.h
++++ b/drivers/video/sh_mobile_lcdcfb.h
+@@ -30,6 +30,12 @@ struct sh_mobile_lcdc_entity_ops {
+ 	void (*display_off)(struct sh_mobile_lcdc_entity *entity);
+ };
+ 
++enum sh_mobile_lcdc_entity_event {
++	SH_MOBILE_LCDC_EVENT_DISPLAY_CONNECT,
++	SH_MOBILE_LCDC_EVENT_DISPLAY_DISCONNECT,
++	SH_MOBILE_LCDC_EVENT_DISPLAY_MODE,
++};
++
+ struct sh_mobile_lcdc_entity {
+ 	struct module *owner;
+ 	const struct sh_mobile_lcdc_entity_ops *ops;
+@@ -70,6 +76,10 @@ struct sh_mobile_lcdc_chan {
+ 	unsigned long base_addr_y;
+ 	unsigned long base_addr_c;
+ 	unsigned int pitch;
++
++	int (*notify)(struct sh_mobile_lcdc_chan *ch,
++		      enum sh_mobile_lcdc_entity_event event,
++		      struct fb_var_screeninfo *var);
+ };
+ 
+ #endif
+-- 
+1.7.3.4
 

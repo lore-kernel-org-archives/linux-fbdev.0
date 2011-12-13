@@ -1,147 +1,317 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:02:24 +0000
-Subject: [PATCH 29/57] fbdev: sh_mobile_hdmi: Don't access LCDC fb_info
-Message-Id: <1323784972-24205-30-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Tue, 13 Dec 2011 14:02:46 +0000
+Subject: [PATCH 51/57] fbdev: sh_mobile_lcdc: Don't store copy of platform data
+Message-Id: <1323784972-24205-52-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The LCDC fb_info structure is only used to retrieve the default video
-mode in case none of the modes advertised by EDID information is
-acceptable. Pass a pointer to the default mode through the
-sh_mobile_lcdc_entity structure instead.
+Instead of copying the whole platform data structure to struct
+sh_mobile_lcdc_chan, store a const pointer to the channel platform data.
+
+MERAM configuration information needs to be changed at runtime, so copy
+it to struct sh_mobile_lcdc_chan.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mobile_hdmi.c   |   34 ++++++++++++++--------------------
- drivers/video/sh_mobile_lcdcfb.c |   24 +++++++++++++-----------
- drivers/video/sh_mobile_lcdcfb.h |    1 +
- 3 files changed, 28 insertions(+), 31 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |   71 ++++++++++++++++++-------------------
+ drivers/video/sh_mobile_lcdcfb.h |    3 +-
+ include/video/sh_mobile_lcdc.h   |    2 +-
+ 3 files changed, 38 insertions(+), 38 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-index 37f935f..eafb19d 100644
---- a/drivers/video/sh_mobile_hdmi.c
-+++ b/drivers/video/sh_mobile_hdmi.c
-@@ -734,12 +734,11 @@ static int sh_hdmi_read_edid(struct sh_hdmi *hdmi, unsigned long *hdmi_rate,
- 			     unsigned long *parent_rate)
- {
- 	struct sh_mobile_lcdc_chan *ch = hdmi->entity.lcdc;
--	struct fb_info *info = ch ? ch->info : NULL;
- 	const struct fb_videomode *mode, *found = NULL;
--	const struct fb_modelist *modelist = NULL;
- 	unsigned int f_width = 0, f_height = 0, f_refresh = 0;
- 	unsigned long found_rate_error = ULONG_MAX; /* silly compiler... */
- 	bool scanning = false, preferred_bad = false;
-+	bool use_edid_mode = false;
- 	u8 edid[128];
- 	char *forced;
- 	int i;
-@@ -864,25 +863,19 @@ static int sh_hdmi_read_edid(struct sh_hdmi *hdmi, unsigned long *hdmi_rate,
- 
- 		found = mode;
- 		found_rate_error = rate_error;
-+		use_edid_mode = true;
- 	}
- 
- 	/*
--	 * TODO 1: if no ->info is present, postpone running the config until
--	 * after ->info first gets registered.
-+	 * TODO 1: if no default mode is present, postpone running the config
-+	 * until after the LCDC channel is initialized.
- 	 * TODO 2: consider registering the HDMI platform device from the LCDC
--	 * driver, and passing ->info with HDMI platform data.
-+	 * driver.
- 	 */
--	if (info && !found) {
--		modelist = info->modelist.next &&
--			!list_empty(&info->modelist) ?
--			list_entry(info->modelist.next,
--				   struct fb_modelist, list) :
--			NULL;
--
--		if (modelist) {
--			found = &modelist->mode;
--			found_rate_error = sh_hdmi_rate_error(hdmi, found, hdmi_rate, parent_rate);
--		}
-+	if (!found && hdmi->entity.def_mode.xres != 0) {
-+		found = &hdmi->entity.def_mode;
-+		found_rate_error = sh_hdmi_rate_error(hdmi, found, hdmi_rate,
-+						      parent_rate);
- 	}
- 
- 	/* No cookie today */
-@@ -906,10 +899,11 @@ static int sh_hdmi_read_edid(struct sh_hdmi *hdmi, unsigned long *hdmi_rate,
- 	else
- 		hdmi->preprogrammed_vic = 0;
- 
--	dev_dbg(hdmi->dev, "Using %s %s mode %ux%u@%uHz (%luHz), clock error %luHz\n",
--		modelist ? "default" : "EDID", hdmi->preprogrammed_vic ? "VIC" : "external",
--		found->xres, found->yres, found->refresh,
--		PICOS2KHZ(found->pixclock) * 1000, found_rate_error);
-+	dev_dbg(hdmi->dev, "Using %s %s mode %ux%u@%uHz (%luHz), "
-+		"clock error %luHz\n", use_edid_mode ? "EDID" : "default",
-+		hdmi->preprogrammed_vic ? "VIC" : "external", found->xres,
-+		found->yres, found->refresh, PICOS2KHZ(found->pixclock) * 1000,
-+		found_rate_error);
- 
- 	hdmi->mode = *found;
- 	sh_hdmi_external_video_param(hdmi);
 diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 4ec216e..c5acae7 100644
+index c1f1e03..4e9572c 100644
 --- a/drivers/video/sh_mobile_lcdcfb.c
 +++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -1690,17 +1690,6 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
- 	info->pseudo_palette = &ch->pseudo_palette;
- 	info->flags = FBINFO_FLAG_DEFAULT;
+@@ -116,7 +116,7 @@ static bool banked(int reg_nr)
  
--	if (cfg->tx_dev) {
--		if (!cfg->tx_dev->dev.driver ||
--		    !try_module_get(cfg->tx_dev->dev.driver->owner)) {
--			dev_warn(priv->dev, "unable to get transmitter "
--				 "device\n");
--			return -EINVAL;
--		}
--		ch->tx_dev = platform_get_drvdata(cfg->tx_dev);
--		ch->tx_dev->lcdc = ch;
--	}
--
- 	/* Iterate through the modes to validate them and find the highest
- 	 * resolution.
+ static int lcdc_chan_is_sublcd(struct sh_mobile_lcdc_chan *chan)
+ {
+-	return chan->cfg.chan = LCDC_CHAN_SUBLCD;
++	return chan->cfg->chan = LCDC_CHAN_SUBLCD;
+ }
+ 
+ static void lcdc_write_chan(struct sh_mobile_lcdc_chan *chan,
+@@ -289,7 +289,7 @@ static void sh_mobile_lcdc_deferred_io(struct fb_info *info,
+ 				       struct list_head *pagelist)
+ {
+ 	struct sh_mobile_lcdc_chan *ch = info->par;
+-	struct sh_mobile_lcdc_panel_cfg *panel = &ch->cfg.panel_cfg;
++	const struct sh_mobile_lcdc_panel_cfg *panel = &ch->cfg->panel_cfg;
+ 
+ 	/* enable clocks before accessing hardware */
+ 	sh_mobile_lcdc_clk_on(ch->lcdc);
+@@ -336,7 +336,7 @@ static void sh_mobile_lcdc_deferred_io_touch(struct fb_info *info)
+ 
+ static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
+ {
+-	struct sh_mobile_lcdc_panel_cfg *panel = &ch->cfg.panel_cfg;
++	const struct sh_mobile_lcdc_panel_cfg *panel = &ch->cfg->panel_cfg;
+ 	int ret;
+ 
+ 	if (ch->tx_dev) {
+@@ -355,7 +355,7 @@ static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
+ 
+ static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
+ {
+-	struct sh_mobile_lcdc_panel_cfg *panel = &ch->cfg.panel_cfg;
++	const struct sh_mobile_lcdc_panel_cfg *panel = &ch->cfg->panel_cfg;
+ 
+ 	if (panel->display_off)
+ 		panel->display_off();
+@@ -642,16 +642,16 @@ static void sh_mobile_lcdc_geometry(struct sh_mobile_lcdc_chan *ch)
+ 	tmp = ch->ldmt1r_value;
+ 	tmp |= (var->sync & FB_SYNC_VERT_HIGH_ACT) ? 0 : LDMT1R_VPOL;
+ 	tmp |= (var->sync & FB_SYNC_HOR_HIGH_ACT) ? 0 : LDMT1R_HPOL;
+-	tmp |= (ch->cfg.flags & LCDC_FLAGS_DWPOL) ? LDMT1R_DWPOL : 0;
+-	tmp |= (ch->cfg.flags & LCDC_FLAGS_DIPOL) ? LDMT1R_DIPOL : 0;
+-	tmp |= (ch->cfg.flags & LCDC_FLAGS_DAPOL) ? LDMT1R_DAPOL : 0;
+-	tmp |= (ch->cfg.flags & LCDC_FLAGS_HSCNT) ? LDMT1R_HSCNT : 0;
+-	tmp |= (ch->cfg.flags & LCDC_FLAGS_DWCNT) ? LDMT1R_DWCNT : 0;
++	tmp |= (ch->cfg->flags & LCDC_FLAGS_DWPOL) ? LDMT1R_DWPOL : 0;
++	tmp |= (ch->cfg->flags & LCDC_FLAGS_DIPOL) ? LDMT1R_DIPOL : 0;
++	tmp |= (ch->cfg->flags & LCDC_FLAGS_DAPOL) ? LDMT1R_DAPOL : 0;
++	tmp |= (ch->cfg->flags & LCDC_FLAGS_HSCNT) ? LDMT1R_HSCNT : 0;
++	tmp |= (ch->cfg->flags & LCDC_FLAGS_DWCNT) ? LDMT1R_DWCNT : 0;
+ 	lcdc_write_chan(ch, LDMT1R, tmp);
+ 
+ 	/* setup SYS bus */
+-	lcdc_write_chan(ch, LDMT2R, ch->cfg.sys_bus_cfg.ldmt2r);
+-	lcdc_write_chan(ch, LDMT3R, ch->cfg.sys_bus_cfg.ldmt3r);
++	lcdc_write_chan(ch, LDMT2R, ch->cfg->sys_bus_cfg.ldmt2r);
++	lcdc_write_chan(ch, LDMT3R, ch->cfg->sys_bus_cfg.ldmt3r);
+ 
+ 	/* horizontal configuration */
+ 	h_total = mode->xres + mode->hsync_len + mode->left_margin
+@@ -715,7 +715,7 @@ static void __sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 		/* Power supply */
+ 		lcdc_write_chan(ch, LDPMR, 0);
+ 
+-		m = ch->cfg.clock_divider;
++		m = ch->cfg->clock_divider;
+ 		if (!m)
+ 			continue;
+ 
+@@ -766,7 +766,7 @@ static void __sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 		 * continuous read mode.
+ 		 */
+ 		if (ch->ldmt1r_value & LDMT1R_IFM &&
+-		    ch->cfg.sys_bus_cfg.deferred_io_msec) {
++		    ch->cfg->sys_bus_cfg.deferred_io_msec) {
+ 			lcdc_write_chan(ch, LDSM1R, LDSM1R_OS);
+ 			lcdc_write(priv, _LDINTR, LDINTR_FE);
+ 		} else {
+@@ -820,13 +820,13 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 	lcdc_wait_bit(priv, _LDCNT2R, LDCNT2R_BR, 0);
+ 
+ 	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
+-		struct sh_mobile_lcdc_panel_cfg *panel;
++		const struct sh_mobile_lcdc_panel_cfg *panel;
+ 
+ 		ch = &priv->ch[k];
+ 		if (!ch->enabled)
+ 			continue;
+ 
+-		panel = &ch->cfg.panel_cfg;
++		panel = &ch->cfg->panel_cfg;
+ 		if (panel->setup_sys) {
+ 			ret = panel->setup_sys(ch, &sh_mobile_lcdc_sys_bus_ops);
+ 			if (ret)
+@@ -836,7 +836,6 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 
+ 	/* Compute frame buffer base address and pitch for each channel. */
+ 	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
+-		struct sh_mobile_meram_cfg *cfg;
+ 		int pixelformat;
+ 		void *meram;
+ 
+@@ -848,8 +847,8 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 		ch->base_addr_c = ch->base_addr_y + ch->xres * ch->yres_virtual;
+ 
+ 		/* Enable MERAM if possible. */
+-		cfg = ch->cfg.meram_cfg;
+-		if (mdev = NULL || mdev->ops = NULL || cfg = NULL)
++		if (mdev = NULL || mdev->ops = NULL ||
++		    ch->cfg->meram_cfg = NULL)
+ 			continue;
+ 
+ 		/* we need to de-init configured ICBs before we can
+@@ -879,8 +878,8 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 			break;
+ 		}
+ 
+-		meram = mdev->ops->meram_register(mdev, cfg, ch->pitch,
+-					ch->yres, pixelformat,
++		meram = mdev->ops->meram_register(mdev, ch->cfg->meram_cfg,
++					ch->pitch, ch->yres, pixelformat,
+ 					ch->base_addr_y, ch->base_addr_c,
+ 					&ch->base_addr_y, &ch->base_addr_c,
+ 					&ch->pitch);
+@@ -899,7 +898,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 		if (!ch->enabled)
+ 			continue;
+ 
+-		tmp = ch->cfg.sys_bus_cfg.deferred_io_msec;
++		tmp = ch->cfg->sys_bus_cfg.deferred_io_msec;
+ 		if (ch->ldmt1r_value & LDMT1R_IFM && tmp) {
+ 			ch->defio.deferred_io = sh_mobile_lcdc_deferred_io;
+ 			ch->defio.delay = msecs_to_jiffies(tmp);
+@@ -1207,8 +1206,8 @@ static int sh_mobile_check_var(struct fb_var_screeninfo *var, struct fb_info *in
+ 	 * distance between two modes is defined as the size of the
+ 	 * non-overlapping parts of the two rectangles.
  	 */
-@@ -1741,6 +1730,19 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
+-	for (i = 0; i < ch->cfg.num_modes; ++i) {
+-		const struct fb_videomode *mode = &ch->cfg.lcd_modes[i];
++	for (i = 0; i < ch->cfg->num_modes; ++i) {
++		const struct fb_videomode *mode = &ch->cfg->lcd_modes[i];
+ 		unsigned int dist;
  
- 	fb_videomode_to_modelist(mode, num_cfg, &info->modelist);
+ 		/* We can only round up. */
+@@ -1227,7 +1226,7 @@ static int sh_mobile_check_var(struct fb_var_screeninfo *var, struct fb_info *in
+ 	}
  
-+	/* Initialize the transmitter device if present. */
-+	if (cfg->tx_dev) {
-+		if (!cfg->tx_dev->dev.driver ||
-+		    !try_module_get(cfg->tx_dev->dev.driver->owner)) {
-+			dev_warn(priv->dev, "unable to get transmitter "
-+				 "device\n");
-+			return -EINVAL;
-+		}
-+		ch->tx_dev = platform_get_drvdata(cfg->tx_dev);
-+		ch->tx_dev->lcdc = ch;
-+		ch->tx_dev->def_mode = *mode;
-+	}
-+
- 	/* Initialize variable screen information using the first mode as
- 	 * default. The default Y virtual resolution is twice the panel size to
- 	 * allow for double-buffering.
+ 	/* If no available mode can be used, return an error. */
+-	if (ch->cfg.num_modes != 0) {
++	if (ch->cfg->num_modes != 0) {
+ 		if (best_dist = (unsigned int)-1)
+ 			return -EINVAL;
+ 
+@@ -1437,7 +1436,7 @@ sh_mobile_lcdc_channel_fb_register(struct sh_mobile_lcdc_chan *ch)
+ 		return ret;
+ 
+ 	dev_info(ch->lcdc->dev, "registered %s/%s as %dx%d %dbpp.\n",
+-		 dev_name(ch->lcdc->dev), (ch->cfg.chan = LCDC_CHAN_MAINLCD) ?
++		 dev_name(ch->lcdc->dev), (ch->cfg->chan = LCDC_CHAN_MAINLCD) ?
+ 		 "mainlcd" : "sublcd", info->var.xres, info->var.yres,
+ 		 info->var.bits_per_pixel);
+ 
+@@ -1522,8 +1521,8 @@ sh_mobile_lcdc_channel_fb_init(struct sh_mobile_lcdc_chan *ch,
+ 	 */
+ 	var = &info->var;
+ 	fb_videomode_to_var(var, mode);
+-	var->width = ch->cfg.panel_cfg.width;
+-	var->height = ch->cfg.panel_cfg.height;
++	var->width = ch->cfg->panel_cfg.width;
++	var->height = ch->cfg->panel_cfg.height;
+ 	var->yres_virtual = var->yres * 2;
+ 	var->activate = FB_ACTIVATE_NOW;
+ 
+@@ -1555,14 +1554,14 @@ static int sh_mobile_lcdc_update_bl(struct backlight_device *bdev)
+ 	    bdev->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
+ 		brightness = 0;
+ 
+-	return ch->cfg.bl_info.set_brightness(brightness);
++	return ch->cfg->bl_info.set_brightness(brightness);
+ }
+ 
+ static int sh_mobile_lcdc_get_brightness(struct backlight_device *bdev)
+ {
+ 	struct sh_mobile_lcdc_chan *ch = bl_get_data(bdev);
+ 
+-	return ch->cfg.bl_info.get_brightness();
++	return ch->cfg->bl_info.get_brightness();
+ }
+ 
+ static int sh_mobile_lcdc_check_fb(struct backlight_device *bdev,
+@@ -1583,7 +1582,7 @@ static struct backlight_device *sh_mobile_lcdc_bl_probe(struct device *parent,
+ {
+ 	struct backlight_device *bl;
+ 
+-	bl = backlight_device_register(ch->cfg.bl_info.name, parent, ch,
++	bl = backlight_device_register(ch->cfg->bl_info.name, parent, ch,
+ 				       &sh_mobile_lcdc_bl_ops, NULL);
+ 	if (IS_ERR(bl)) {
+ 		dev_err(parent, "unable to register backlight device: %ld\n",
+@@ -1591,7 +1590,7 @@ static struct backlight_device *sh_mobile_lcdc_bl_probe(struct device *parent,
+ 		return NULL;
+ 	}
+ 
+-	bl->props.max_brightness = ch->cfg.bl_info.max_brightness;
++	bl->props.max_brightness = ch->cfg->bl_info.max_brightness;
+ 	bl->props.brightness = bl->props.max_brightness;
+ 	backlight_update_status(bl);
+ 
+@@ -1724,7 +1723,7 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
+ 
+ 		if (ch->tx_dev) {
+ 			ch->tx_dev->lcdc = NULL;
+-			module_put(ch->cfg.tx_dev->dev.driver->owner);
++			module_put(ch->cfg->tx_dev->dev.driver->owner);
+ 		}
+ 
+ 		sh_mobile_lcdc_channel_fb_cleanup(ch);
+@@ -1756,7 +1755,7 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
+ static int __devinit
+ sh_mobile_lcdc_check_interface(struct sh_mobile_lcdc_chan *ch)
+ {
+-	int interface_type = ch->cfg.interface_type;
++	int interface_type = ch->cfg->interface_type;
+ 
+ 	switch (interface_type) {
+ 	case RGB8:
+@@ -1799,7 +1798,7 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
+ 			    struct sh_mobile_lcdc_chan *ch)
+ {
+ 	const struct sh_mobile_lcdc_format_info *format;
+-	struct sh_mobile_lcdc_chan_cfg *cfg = &ch->cfg;
++	const struct sh_mobile_lcdc_chan_cfg *cfg = ch->cfg;
+ 	const struct fb_videomode *max_mode;
+ 	const struct fb_videomode *mode;
+ 	unsigned int num_modes;
+@@ -1942,7 +1941,7 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 		struct sh_mobile_lcdc_chan *ch = priv->ch + num_channels;
+ 
+ 		ch->lcdc = priv;
+-		memcpy(&ch->cfg, &pdata->ch[i], sizeof(pdata->ch[i]));
++		ch->cfg = &pdata->ch[i];
+ 
+ 		error = sh_mobile_lcdc_check_interface(ch);
+ 		if (error) {
+@@ -1954,7 +1953,7 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 		ch->pan_offset = 0;
+ 
+ 		/* probe the backlight is there is one defined */
+-		if (ch->cfg.bl_info.max_brightness)
++		if (ch->cfg->bl_info.max_brightness)
+ 			ch->bl = sh_mobile_lcdc_bl_probe(&pdev->dev, ch);
+ 
+ 		switch (pdata->ch[i].chan) {
 diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
-index 10086ae..9c91fae 100644
+index bf1707c..da1c26e 100644
 --- a/drivers/video/sh_mobile_lcdcfb.h
 +++ b/drivers/video/sh_mobile_lcdcfb.h
-@@ -40,6 +40,7 @@ struct sh_mobile_lcdc_entity {
- 	struct module *owner;
- 	const struct sh_mobile_lcdc_entity_ops *ops;
- 	struct sh_mobile_lcdc_chan *lcdc;
-+	struct fb_videomode def_mode;
- };
+@@ -54,7 +54,7 @@ struct sh_mobile_lcdc_entity {
+ struct sh_mobile_lcdc_chan {
+ 	struct sh_mobile_lcdc_priv *lcdc;
+ 	struct sh_mobile_lcdc_entity *tx_dev;
+-	struct sh_mobile_lcdc_chan_cfg cfg;
++	const struct sh_mobile_lcdc_chan_cfg *cfg;
  
- /*
+ 	unsigned long *reg_offs;
+ 	unsigned long ldmt1r_value;
+@@ -66,6 +66,7 @@ struct sh_mobile_lcdc_chan {
+ 
+ 	void *fb_mem;
+ 	unsigned long fb_size;
++
+ 	dma_addr_t dma_handle;
+ 	unsigned long pan_offset;
+ 
+diff --git a/include/video/sh_mobile_lcdc.h b/include/video/sh_mobile_lcdc.h
+index 5a6991d..53cbbd4 100644
+--- a/include/video/sh_mobile_lcdc.h
++++ b/include/video/sh_mobile_lcdc.h
+@@ -178,7 +178,7 @@ struct sh_mobile_lcdc_chan_cfg {
+ 	struct sh_mobile_lcdc_panel_cfg panel_cfg;
+ 	struct sh_mobile_lcdc_bl_info bl_info;
+ 	struct sh_mobile_lcdc_sys_bus_cfg sys_bus_cfg; /* only for SYSn I/F */
+-	struct sh_mobile_meram_cfg *meram_cfg;
++	const struct sh_mobile_meram_cfg *meram_cfg;
+ 
+ 	struct platform_device *tx_dev;	/* HDMI/MIPI transmitter device */
+ };
 -- 
 1.7.3.4
 

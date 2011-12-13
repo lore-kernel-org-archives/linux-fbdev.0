@@ -1,98 +1,99 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:01:58 +0000
-Subject: [PATCH 03/57] fbdev: sh_mobile_lcdc: Move pm runtime enable to probe()
-Message-Id: <1323784972-24205-4-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Tue, 13 Dec 2011 14:02:48 +0000
+Subject: [PATCH 53/57] fbdev: sh_mobile_meram: Don't perform update in register operation
+Message-Id: <1323784972-24205-54-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The pm_runtime_enable() and pm_runtime_resume() calls don't belong to
-sh_mobile_lcdc_setup_clocks(). Move them to the probe function. Remove
-the unneeded pm_runtime_resume() call.
+Remove the RGB or Y/C base address update from the meram_register()
+operation, as this belongs to the meram_update() operation.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |   34 ++++++++++++++++------------------
- 1 files changed, 16 insertions(+), 18 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |    8 +++++---
+ drivers/video/sh_mobile_meram.c  |   15 ++-------------
+ include/video/sh_mobile_meram.h  |    4 ----
+ 3 files changed, 7 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index a6bf4fb..7ceeed4 100644
+index 4e9572c..e10a78a 100644
 --- a/drivers/video/sh_mobile_lcdcfb.c
 +++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -191,6 +191,7 @@ static int sh_mobile_lcdc_setup_clocks(struct platform_device *pdev,
- 				       int clock_source,
- 				       struct sh_mobile_lcdc_priv *priv)
+@@ -880,11 +880,13 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 
+ 		meram = mdev->ops->meram_register(mdev, ch->cfg->meram_cfg,
+ 					ch->pitch, ch->yres, pixelformat,
+-					ch->base_addr_y, ch->base_addr_c,
+-					&ch->base_addr_y, &ch->base_addr_c,
+ 					&ch->pitch);
+-		if (!IS_ERR(meram))
++		if (!IS_ERR(meram)) {
++			mdev->ops->meram_update(mdev, meram,
++					ch->base_addr_y, ch->base_addr_c,
++					&ch->base_addr_y, &ch->base_addr_c);
+ 			ch->meram = meram;
++		}
+ 	}
+ 
+ 	/* Start the LCDC. */
+diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
+index 01ae5b6..aad8b0b 100644
+--- a/drivers/video/sh_mobile_meram.c
++++ b/drivers/video/sh_mobile_meram.c
+@@ -447,10 +447,6 @@ static void *sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
+ 				      const struct sh_mobile_meram_cfg *cfg,
+ 				      unsigned int xres, unsigned int yres,
+ 				      unsigned int pixelformat,
+-				      unsigned long base_addr_y,
+-				      unsigned long base_addr_c,
+-				      unsigned long *icb_addr_y,
+-				      unsigned long *icb_addr_c,
+ 				      unsigned int *pitch)
  {
-+	struct clk *clk;
- 	char *str;
+ 	struct sh_mobile_meram_fb_cache *cache;
+@@ -469,9 +465,8 @@ static void *sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
+ 	priv = pdata->priv;
+ 	pdev = pdata->pdev;
  
- 	switch (clock_source) {
-@@ -210,21 +211,16 @@ static int sh_mobile_lcdc_setup_clocks(struct platform_device *pdev,
- 		return -EINVAL;
- 	}
+-	dev_dbg(&pdev->dev, "registering %dx%d (%s) (y=%08lx, c=%08lx)",
+-		xres, yres, (!pixelformat) ? "yuv" : "rgb",
+-		base_addr_y, base_addr_c);
++	dev_dbg(&pdev->dev, "registering %dx%d (%s)", xres, yres,
++		!pixelformat ? "yuv" : "rgb");
  
--	if (str) {
--		priv->dot_clk = clk_get(&pdev->dev, str);
--		if (IS_ERR(priv->dot_clk)) {
--			dev_err(&pdev->dev, "cannot get dot clock %s\n", str);
--			return PTR_ERR(priv->dot_clk);
--		}
-+	if (str = NULL)
-+		return 0;
-+
-+	clk = clk_get(&pdev->dev, str);
-+	if (IS_ERR(clk)) {
-+		dev_err(&pdev->dev, "cannot get dot clock %s\n", str);
-+		return PTR_ERR(clk);
- 	}
+ 	/* we can't handle wider than 8192px */
+ 	if (xres > 8192) {
+@@ -499,12 +494,6 @@ static void *sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
+ 		meram_init(priv, &cache->planes[1], 2 * xres, (yres + 1) / 2,
+ 			&out_pitch);
  
--	/* Runtime PM support involves two step for this driver:
--	 * 1) Enable Runtime PM
--	 * 2) Force Runtime PM Resume since hardware is accessed from probe()
--	 */
--	priv->dev = &pdev->dev;
--	pm_runtime_enable(priv->dev);
--	pm_runtime_resume(priv->dev);
-+	priv->dot_clk = clk;
- 	return 0;
- }
- 
-@@ -1513,11 +1509,10 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
- 			sh_mobile_lcdc_bl_remove(priv->ch[i].bl);
- 	}
- 
--	if (priv->dot_clk)
-+	if (priv->dot_clk) {
-+		pm_runtime_disable(&pdev->dev);
- 		clk_put(priv->dot_clk);
+-	meram_set_next_addr(priv, cache, base_addr_y, base_addr_c);
+-	meram_get_next_icb_addr(pdata, cache, icb_addr_y, icb_addr_c);
 -
--	if (priv->dev)
--		pm_runtime_disable(priv->dev);
-+	}
+-	dev_dbg(&pdev->dev, "registered - can access via y=%08lx, c=%08lx",
+-		*icb_addr_y, *icb_addr_c);
+-
+ err:
+ 	mutex_unlock(&priv->lock);
+ 	return cache;
+diff --git a/include/video/sh_mobile_meram.h b/include/video/sh_mobile_meram.h
+index 8ff98eb..51c98ca 100644
+--- a/include/video/sh_mobile_meram.h
++++ b/include/video/sh_mobile_meram.h
+@@ -41,10 +41,6 @@ struct sh_mobile_meram_ops {
+ 				const struct sh_mobile_meram_cfg *cfg,
+ 				unsigned int xres, unsigned int yres,
+ 				unsigned int pixelformat,
+-				unsigned long base_addr_y,
+-				unsigned long base_addr_c,
+-				unsigned long *icb_addr_y,
+-				unsigned long *icb_addr_c,
+ 				unsigned int *pitch);
  
- 	if (priv->base)
- 		iounmap(priv->base);
-@@ -1740,6 +1735,8 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 	}
- 
-+	priv->dev = &pdev->dev;
-+	priv->meram_dev = pdata->meram_dev;
- 	platform_set_drvdata(pdev, priv);
- 
- 	error = request_irq(i, sh_mobile_lcdc_irq, 0,
-@@ -1805,7 +1802,8 @@ static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
- 		goto err1;
- 	}
- 
--	priv->meram_dev = pdata->meram_dev;
-+	/* Enable runtime PM. */
-+	pm_runtime_enable(&pdev->dev);
- 
- 	for (i = 0; i < num_channels; i++) {
- 		struct sh_mobile_lcdc_chan *ch = priv->ch + i;
+ 	/* unregister usage of meram */
 -- 
 1.7.3.4
 

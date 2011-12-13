@@ -1,115 +1,179 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 27 Dec 2011 12:48:59 +0000
-Subject: [RFC PATCH 16/29] OMAPDSS: OVERLAY: Add position and replication as overlay caps
-Message-Id: <1324989432-3625-17-git-send-email-archit@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 13 Dec 2011 13:02:27 +0000
+Subject: [PATCH v5 2/3] v4l: Add V4L2_PIX_FMT_NV24 and V4L2_PIX_FMT_NV42 formats
+Message-Id: <1323781348-9884-3-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1324989432-3625-1-git-send-email-archit@ti.com>
-In-Reply-To: <1324989432-3625-1-git-send-email-archit@ti.com>
+References: <1323781348-9884-1-git-send-email-laurent.pinchart@ideasonboard.com>
+In-Reply-To: <1323781348-9884-1-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: rohitkc@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-media@vger.kernel.org
 
-Add position and replication as overlay caps. Pass overlay caps as an argument
-to the corresponding functions.
+NV24 and NV42 are planar YCbCr 4:4:4 and YCrCb 4:4:4 formats with a
+luma plane followed by an interleaved chroma plane.
 
-These caps will be set for all overlays, but not for writeback. This is done
-so writeback can reuse dispc_ovl_setup() to the maximum.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/omap2/dss/dispc.c   |   20 +++++++++++++++-----
- drivers/video/omap2/dss/overlay.c |    6 ++++++
- include/video/omapdss.h           |    2 ++
- 3 files changed, 23 insertions(+), 5 deletions(-)
+ Documentation/DocBook/media/v4l/pixfmt-nv24.xml |  121 +++++++++++++++++++++++
+ Documentation/DocBook/media/v4l/pixfmt.xml      |    1 +
+ include/linux/videodev2.h                       |    2 +
+ 3 files changed, 124 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/DocBook/media/v4l/pixfmt-nv24.xml
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index d9e04f0..58de7d7 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -656,9 +656,15 @@ static void dispc_ovl_set_ba1_uv(enum omap_plane plane, u32 paddr)
- 	dispc_write_reg(DISPC_OVL_BA1_UV(plane), paddr);
- }
- 
--static void dispc_ovl_set_pos(enum omap_plane plane, int x, int y)
-+static void dispc_ovl_set_pos(enum omap_plane plane,
-+		enum omap_overlay_caps caps, int x, int y)
- {
--	u32 val = FLD_VAL(y, 26, 16) | FLD_VAL(x, 10, 0);
-+	u32 val;
+diff --git a/Documentation/DocBook/media/v4l/pixfmt-nv24.xml b/Documentation/DocBook/media/v4l/pixfmt-nv24.xml
+new file mode 100644
+index 0000000..fb255f2
+--- /dev/null
++++ b/Documentation/DocBook/media/v4l/pixfmt-nv24.xml
+@@ -0,0 +1,121 @@
++    <refentry>
++      <refmeta>
++	<refentrytitle>V4L2_PIX_FMT_NV24 ('NV24'), V4L2_PIX_FMT_NV42 ('NV42')</refentrytitle>
++	&manvol;
++      </refmeta>
++      <refnamediv>
++	<refname id="V4L2-PIX-FMT-NV24"><constant>V4L2_PIX_FMT_NV24</constant></refname>
++	<refname id="V4L2-PIX-FMT-NV42"><constant>V4L2_PIX_FMT_NV42</constant></refname>
++	<refpurpose>Formats with full horizontal and vertical
++chroma resolutions, also known as YUV 4:4:4. One luminance and one
++chrominance plane with alternating chroma samples as opposed to
++<constant>V4L2_PIX_FMT_YVU420</constant></refpurpose>
++      </refnamediv>
++      <refsect1>
++	<title>Description</title>
 +
-+	if ((caps & OMAP_DSS_OVL_CAP_POS) = 0)
-+		return;
++	<para>These are two-plane versions of the YUV 4:4:4 format. The three
++	components are separated into two sub-images or planes. The Y plane is
++	first, with each Y sample stored in one byte per pixel. For
++	<constant>V4L2_PIX_FMT_NV24</constant>, a combined CbCr plane
++	immediately follows the Y plane in memory. The CbCr plane has the same
++	width and height, in pixels, as the Y plane (and the image). Each line
++	contains one CbCr pair per pixel, with each Cb and Cr sample stored in
++	one byte. <constant>V4L2_PIX_FMT_NV42</constant> is the same except that
++	the Cb and Cr samples are swapped, the CrCb plane starts with a Cr
++	sample.</para>
 +
-+	val = FLD_VAL(y, 26, 16) | FLD_VAL(x, 10, 0);
- 
- 	dispc_write_reg(DISPC_OVL_POSITION(plane), val);
- }
-@@ -988,11 +994,15 @@ static void dispc_ovl_set_vid_color_conv(enum omap_plane plane, bool enable)
- 	dispc_write_reg(DISPC_OVL_ATTRIBUTES(plane), val);
- }
- 
--static void dispc_ovl_enable_replication(enum omap_plane plane, bool enable)
-+static void dispc_ovl_enable_replication(enum omap_plane plane,
-+		enum omap_overlay_caps caps, bool enable)
- {
- 	static const unsigned shifts[] = { 5, 10, 10, 10 };
- 	int shift;
- 
-+	if ((caps & OMAP_DSS_OVL_CAP_REPLICATION) = 0)
-+		return;
++	<para>If the Y plane has pad bytes after each row, then the CbCr plane
++	has twice as many pad bytes after its rows.</para>
 +
- 	shift = shifts[plane];
- 	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), enable, shift, shift);
- }
-@@ -1881,7 +1891,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
- 	DSSDBG("%d,%d %dx%d -> %dx%d\n", oi->pos_x, oi->pos_y, oi->width,
- 			oi->height, outw, outh);
- 
--	dispc_ovl_set_pos(plane, oi->pos_x, oi->pos_y);
-+	dispc_ovl_set_pos(plane, caps, oi->pos_x, oi->pos_y);
- 
- 	dispc_ovl_set_pic_size(plane, oi->width, oi->height);
- 
-@@ -1901,7 +1911,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
- 	dispc_ovl_set_pre_mult_alpha(plane, caps, oi->pre_mult_alpha);
- 	dispc_ovl_setup_global_alpha(plane, caps, oi->global_alpha);
- 
--	dispc_ovl_enable_replication(plane, replication);
-+	dispc_ovl_enable_replication(plane, caps, replication);
- 
- 	return 0;
- }
-diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
-index dc0cc52..cb548c0 100644
---- a/drivers/video/omap2/dss/overlay.c
-+++ b/drivers/video/omap2/dss/overlay.c
-@@ -509,6 +509,12 @@ void dss_init_overlays(struct platform_device *pdev)
- 		ovl->wait_for_go = &dss_mgr_wait_for_go_ovl;
- 
- 		ovl->caps = dss_feat_get_overlay_caps(ovl->id);
++	<example>
++	  <title><constant>V4L2_PIX_FMT_NV24</constant> 4 &times; 4
++pixel image</title>
 +
-+		/* these caps are common to all ovelays across all OMAPs, they
-+		 * are used to differentiate between an overlay and writeback */
-+		ovl->caps |= OMAP_DSS_OVL_CAP_POS |
-+				OMAP_DSS_OVL_CAP_REPLICATION;
-+
- 		ovl->supported_modes  			dss_feat_get_supported_color_modes(ovl->id);
++	  <formalpara>
++	    <title>Byte Order.</title>
++	    <para>Each cell is one byte.
++		<informaltable frame="none">
++		<tgroup cols="9" align="center">
++		  <colspec align="left" colwidth="2*" />
++		  <tbody valign="top">
++		    <row>
++		      <entry>start&nbsp;+&nbsp;0:</entry>
++		      <entry>Y'<subscript>00</subscript></entry>
++		      <entry>Y'<subscript>01</subscript></entry>
++		      <entry>Y'<subscript>02</subscript></entry>
++		      <entry>Y'<subscript>03</subscript></entry>
++		    </row>
++		    <row>
++		      <entry>start&nbsp;+&nbsp;4:</entry>
++		      <entry>Y'<subscript>10</subscript></entry>
++		      <entry>Y'<subscript>11</subscript></entry>
++		      <entry>Y'<subscript>12</subscript></entry>
++		      <entry>Y'<subscript>13</subscript></entry>
++		    </row>
++		    <row>
++		      <entry>start&nbsp;+&nbsp;8:</entry>
++		      <entry>Y'<subscript>20</subscript></entry>
++		      <entry>Y'<subscript>21</subscript></entry>
++		      <entry>Y'<subscript>22</subscript></entry>
++		      <entry>Y'<subscript>23</subscript></entry>
++		    </row>
++		    <row>
++		      <entry>start&nbsp;+&nbsp;12:</entry>
++		      <entry>Y'<subscript>30</subscript></entry>
++		      <entry>Y'<subscript>31</subscript></entry>
++		      <entry>Y'<subscript>32</subscript></entry>
++		      <entry>Y'<subscript>33</subscript></entry>
++		    </row>
++		    <row>
++		      <entry>start&nbsp;+&nbsp;16:</entry>
++		      <entry>Cb<subscript>00</subscript></entry>
++		      <entry>Cr<subscript>00</subscript></entry>
++		      <entry>Cb<subscript>01</subscript></entry>
++		      <entry>Cr<subscript>01</subscript></entry>
++		      <entry>Cb<subscript>02</subscript></entry>
++		      <entry>Cr<subscript>02</subscript></entry>
++		      <entry>Cb<subscript>03</subscript></entry>
++		      <entry>Cr<subscript>03</subscript></entry>
++		    </row>
++		    <row>
++		      <entry>start&nbsp;+&nbsp;24:</entry>
++		      <entry>Cb<subscript>10</subscript></entry>
++		      <entry>Cr<subscript>10</subscript></entry>
++		      <entry>Cb<subscript>11</subscript></entry>
++		      <entry>Cr<subscript>11</subscript></entry>
++		      <entry>Cb<subscript>12</subscript></entry>
++		      <entry>Cr<subscript>12</subscript></entry>
++		      <entry>Cb<subscript>13</subscript></entry>
++		      <entry>Cr<subscript>13</subscript></entry>
++		    </row>
++		    <row>
++		      <entry>start&nbsp;+&nbsp;32:</entry>
++		      <entry>Cb<subscript>20</subscript></entry>
++		      <entry>Cr<subscript>20</subscript></entry>
++		      <entry>Cb<subscript>21</subscript></entry>
++		      <entry>Cr<subscript>21</subscript></entry>
++		      <entry>Cb<subscript>22</subscript></entry>
++		      <entry>Cr<subscript>22</subscript></entry>
++		      <entry>Cb<subscript>23</subscript></entry>
++		      <entry>Cr<subscript>23</subscript></entry>
++		    </row>
++		    <row>
++		      <entry>start&nbsp;+&nbsp;40:</entry>
++		      <entry>Cb<subscript>30</subscript></entry>
++		      <entry>Cr<subscript>30</subscript></entry>
++		      <entry>Cb<subscript>31</subscript></entry>
++		      <entry>Cr<subscript>31</subscript></entry>
++		      <entry>Cb<subscript>32</subscript></entry>
++		      <entry>Cr<subscript>32</subscript></entry>
++		      <entry>Cb<subscript>33</subscript></entry>
++		      <entry>Cr<subscript>33</subscript></entry>
++		    </row>
++		  </tbody>
++		</tgroup>
++		</informaltable>
++	      </para>
++	  </formalpara>
++	</example>
++      </refsect1>
++    </refentry>
+diff --git a/Documentation/DocBook/media/v4l/pixfmt.xml b/Documentation/DocBook/media/v4l/pixfmt.xml
+index 2ff6b77..aef4615 100644
+--- a/Documentation/DocBook/media/v4l/pixfmt.xml
++++ b/Documentation/DocBook/media/v4l/pixfmt.xml
+@@ -714,6 +714,7 @@ information.</para>
+     &sub-nv12m;
+     &sub-nv12mt;
+     &sub-nv16;
++    &sub-nv24;
+     &sub-m420;
+   </section>
  
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 6bf84b2..49e3ccb 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -185,6 +185,8 @@ enum omap_overlay_caps {
- 	OMAP_DSS_OVL_CAP_GLOBAL_ALPHA = 1 << 1,
- 	OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA = 1 << 2,
- 	OMAP_DSS_OVL_CAP_ZORDER = 1 << 3,
-+	OMAP_DSS_OVL_CAP_POS = 1 << 4,
-+	OMAP_DSS_OVL_CAP_REPLICATION = 1 << 5,
- };
+diff --git a/include/linux/videodev2.h b/include/linux/videodev2.h
+index 4b752d5..d2f74f8 100644
+--- a/include/linux/videodev2.h
++++ b/include/linux/videodev2.h
+@@ -343,6 +343,8 @@ struct v4l2_pix_format {
+ #define V4L2_PIX_FMT_NV21    v4l2_fourcc('N', 'V', '2', '1') /* 12  Y/CrCb 4:2:0  */
+ #define V4L2_PIX_FMT_NV16    v4l2_fourcc('N', 'V', '1', '6') /* 16  Y/CbCr 4:2:2  */
+ #define V4L2_PIX_FMT_NV61    v4l2_fourcc('N', 'V', '6', '1') /* 16  Y/CrCb 4:2:2  */
++#define V4L2_PIX_FMT_NV24    v4l2_fourcc('N', 'V', '2', '4') /* 24  Y/CbCr 4:4:4  */
++#define V4L2_PIX_FMT_NV42    v4l2_fourcc('N', 'V', '4', '2') /* 24  Y/CrCb 4:4:4  */
  
- enum omap_overlay_manager_caps {
+ /* two non contiguous planes - one Y, one Cr + Cb interleaved  */
+ #define V4L2_PIX_FMT_NV12M   v4l2_fourcc('N', 'M', '1', '2') /* 12  Y/CbCr 4:2:0  */
 -- 
-1.7.4.1
+1.7.3.4
 

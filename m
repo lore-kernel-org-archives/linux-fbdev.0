@@ -1,103 +1,217 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:02:36 +0000
-Subject: [PATCH 41/57] fbdev: sh_mobile_meram: Add _cfg suffix to struct sh_mobile_meram_icb
-Message-Id: <1323784972-24205-42-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Tue, 13 Dec 2011 14:02:37 +0000
+Subject: [PATCH 42/57] fbdev: sh_mobile_meram: Make variables unsigned where applicable
+Message-Id: <1323784972-24205-43-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The structure describe ICB configuration, no ICB objects themselves.
-Rename it to sh_mobile_meram_icb_cfg in preparation for the addition of
-an ICB structure.
-
-All the structure fields are unsigned integers, make them so.
+Many variables, such as loop counters, sizes and offsets, should be
+unsigned integers. Make them so.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mobile_meram.c |   10 +++++-----
- include/video/sh_mobile_meram.h |   14 +++++++-------
- 2 files changed, 12 insertions(+), 12 deletions(-)
+ drivers/video/sh_mobile_meram.c |   80 +++++++++++++++++++++------------------
+ include/video/sh_mobile_meram.h |    6 ++-
+ 2 files changed, 47 insertions(+), 39 deletions(-)
 
 diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
-index dbf5c43..2ad5a45 100644
+index 2ad5a45..548f700 100644
 --- a/drivers/video/sh_mobile_meram.c
 +++ b/drivers/video/sh_mobile_meram.c
-@@ -156,7 +156,7 @@ static inline unsigned long meram_read_reg(void __iomem *base, int off)
-  */
+@@ -104,7 +104,7 @@ struct sh_mobile_meram_priv {
+ 	void __iomem	*base;
+ 	struct mutex	lock;
+ 	unsigned long	used_icb;
+-	int		used_meram_cache_regions;
++	unsigned int	used_meram_cache_regions;
+ 	unsigned long	used_meram_cache[SH_MOBILE_MERAM_ICB_NUM];
+ 	unsigned long	cmn_saved_regs[CMN_REGS_SIZE];
+ 	unsigned long	icb_saved_regs[ICB_REGS_SIZE * SH_MOBILE_MERAM_ICB_NUM];
+@@ -120,24 +120,25 @@ struct sh_mobile_meram_priv {
  
- static inline int meram_check_overlap(struct sh_mobile_meram_priv *priv,
--				      struct sh_mobile_meram_icb *new)
-+				      struct sh_mobile_meram_icb_cfg *new)
+ #define MERAM_ICB_OFFSET(base, idx, off)	((base) + (off) + (idx) * 0x20)
+ 
+-static inline void meram_write_icb(void __iomem *base, int idx, int off,
+-	unsigned long val)
++static inline void meram_write_icb(void __iomem *base, unsigned int idx,
++				   unsigned int off, unsigned long val)
  {
- 	int i;
- 	int used_start, used_end, meram_start, meram_end;
-@@ -188,7 +188,7 @@ static inline int meram_check_overlap(struct sh_mobile_meram_priv *priv,
-  */
- 
- static inline void meram_mark(struct sh_mobile_meram_priv *priv,
--			      struct sh_mobile_meram_icb *new)
-+			      struct sh_mobile_meram_icb_cfg *new)
- {
- 	int n;
- 
-@@ -211,7 +211,7 @@ static inline void meram_mark(struct sh_mobile_meram_priv *priv,
-  */
- 
- static inline void meram_unmark(struct sh_mobile_meram_priv *priv,
--				struct sh_mobile_meram_icb *icb)
-+				struct sh_mobile_meram_icb_cfg *icb)
- {
- 	int i;
- 	unsigned long pattern;
-@@ -303,7 +303,7 @@ static inline void meram_get_next_icb_addr(struct sh_mobile_meram_info *pdata,
-  */
- 
- static int meram_init(struct sh_mobile_meram_priv *priv,
--		      struct sh_mobile_meram_icb *icb,
-+		      struct sh_mobile_meram_icb_cfg *icb,
- 		      int xres, int yres, int *out_pitch)
- {
- 	unsigned long total_byte_count = MERAM_CALC_BYTECOUNT(xres, yres);
-@@ -370,7 +370,7 @@ static int meram_init(struct sh_mobile_meram_priv *priv,
+ 	iowrite32(val, MERAM_ICB_OFFSET(base, idx, off));
  }
  
- static void meram_deinit(struct sh_mobile_meram_priv *priv,
--			struct sh_mobile_meram_icb *icb)
-+			 struct sh_mobile_meram_icb_cfg *icb)
+-static inline unsigned long meram_read_icb(void __iomem *base, int idx, int off)
++static inline unsigned long meram_read_icb(void __iomem *base, unsigned int idx,
++					   unsigned int off)
  {
- 	/* disable ICB */
- 	meram_write_icb(priv->base, icb->cache_icb,  MExxCTL,
+ 	return ioread32(MERAM_ICB_OFFSET(base, idx, off));
+ }
+ 
+-static inline void meram_write_reg(void __iomem *base, int off,
+-		unsigned long val)
++static inline void meram_write_reg(void __iomem *base, unsigned int off,
++				   unsigned long val)
+ {
+ 	iowrite32(val, base + off);
+ }
+ 
+-static inline unsigned long meram_read_reg(void __iomem *base, int off)
++static inline unsigned long meram_read_reg(void __iomem *base, unsigned int off)
+ {
+ 	return ioread32(base + off);
+ }
+@@ -158,8 +159,8 @@ static inline unsigned long meram_read_reg(void __iomem *base, int off)
+ static inline int meram_check_overlap(struct sh_mobile_meram_priv *priv,
+ 				      struct sh_mobile_meram_icb_cfg *new)
+ {
+-	int i;
+-	int used_start, used_end, meram_start, meram_end;
++	unsigned int used_start, used_end, meram_start, meram_end;
++	unsigned int i;
+ 
+ 	/* valid ICB? */
+ 	if (new->marker_icb & ~0x1f || new->cache_icb & ~0x1f)
+@@ -190,7 +191,7 @@ static inline int meram_check_overlap(struct sh_mobile_meram_priv *priv,
+ static inline void meram_mark(struct sh_mobile_meram_priv *priv,
+ 			      struct sh_mobile_meram_icb_cfg *new)
+ {
+-	int n;
++	unsigned int n;
+ 
+ 	if (new->marker_icb < 0 || new->cache_icb < 0)
+ 		return;
+@@ -213,8 +214,8 @@ static inline void meram_mark(struct sh_mobile_meram_priv *priv,
+ static inline void meram_unmark(struct sh_mobile_meram_priv *priv,
+ 				struct sh_mobile_meram_icb_cfg *icb)
+ {
+-	int i;
+ 	unsigned long pattern;
++	unsigned int i;
+ 
+ 	if (icb->marker_icb < 0 || icb->cache_icb < 0)
+ 		return;
+@@ -304,12 +305,15 @@ static inline void meram_get_next_icb_addr(struct sh_mobile_meram_info *pdata,
+ 
+ static int meram_init(struct sh_mobile_meram_priv *priv,
+ 		      struct sh_mobile_meram_icb_cfg *icb,
+-		      int xres, int yres, int *out_pitch)
++		      unsigned int xres, unsigned int yres,
++		      unsigned int *out_pitch)
+ {
+ 	unsigned long total_byte_count = MERAM_CALC_BYTECOUNT(xres, yres);
+ 	unsigned long bnm;
+-	int lcdc_pitch, xpitch, line_cnt;
+-	int save_lines;
++	unsigned int lcdc_pitch;
++	unsigned int xpitch;
++	unsigned int line_cnt;
++	unsigned int save_lines;
+ 
+ 	/* adjust pitch to 1024, 2048, 4096 or 8192 */
+ 	lcdc_pitch = (xres - 1) | 1023;
+@@ -386,16 +390,18 @@ static void meram_deinit(struct sh_mobile_meram_priv *priv,
+ 
+ static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
+ 				    struct sh_mobile_meram_cfg *cfg,
+-				    int xres, int yres, int pixelformat,
++				    unsigned int xres, unsigned int yres,
++				    unsigned int pixelformat,
+ 				    unsigned long base_addr_y,
+ 				    unsigned long base_addr_c,
+ 				    unsigned long *icb_addr_y,
+ 				    unsigned long *icb_addr_c,
+-				    int *pitch)
++				    unsigned int *pitch)
+ {
+ 	struct platform_device *pdev;
+ 	struct sh_mobile_meram_priv *priv;
+-	int n, out_pitch;
++	unsigned int out_pitch;
++	unsigned int n;
+ 	int error = 0;
+ 
+ 	if (!pdata || !pdata->priv || !pdata->pdev || !cfg)
+@@ -538,21 +544,21 @@ static int sh_mobile_meram_runtime_suspend(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
+-	int k, j;
++	unsigned int i, j;
+ 
+-	for (k = 0; k < CMN_REGS_SIZE; k++)
+-		priv->cmn_saved_regs[k] = meram_read_reg(priv->base,
+-			common_regs[k]);
++	for (i = 0; i < CMN_REGS_SIZE; i++)
++		priv->cmn_saved_regs[i] = meram_read_reg(priv->base,
++			common_regs[i]);
+ 
+-	for (j = 0; j < 32; j++) {
+-		if (!test_bit(j, &priv->used_icb))
++	for (i = 0; i < 32; i++) {
++		if (!test_bit(i, &priv->used_icb))
+ 			continue;
+-		for (k = 0; k < ICB_REGS_SIZE; k++) {
+-			priv->icb_saved_regs[j * ICB_REGS_SIZE + k] -				meram_read_icb(priv->base, j, icb_regs[k]);
++		for (j = 0; j < ICB_REGS_SIZE; j++) {
++			priv->icb_saved_regs[i * ICB_REGS_SIZE + j] +				meram_read_icb(priv->base, i, icb_regs[j]);
+ 			/* Reset ICB on resume */
+-			if (icb_regs[k] = MExxCTL)
+-				priv->icb_saved_regs[j * ICB_REGS_SIZE + k] |+			if (icb_regs[j] = MExxCTL)
++				priv->icb_saved_regs[i * ICB_REGS_SIZE + j] | 					MExxCTL_WBF | MExxCTL_WF | MExxCTL_RF;
+ 		}
+ 	}
+@@ -563,20 +569,20 @@ static int sh_mobile_meram_runtime_resume(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
+-	int k, j;
++	unsigned int i, j;
+ 
+-	for (j = 0; j < 32; j++) {
+-		if (!test_bit(j, &priv->used_icb))
++	for (i = 0; i < 32; i++) {
++		if (!test_bit(i, &priv->used_icb))
+ 			continue;
+-		for (k = 0; k < ICB_REGS_SIZE; k++) {
+-			meram_write_icb(priv->base, j, icb_regs[k],
+-			priv->icb_saved_regs[j * ICB_REGS_SIZE + k]);
++		for (j = 0; j < ICB_REGS_SIZE; j++) {
++			meram_write_icb(priv->base, i, icb_regs[j],
++			priv->icb_saved_regs[i * ICB_REGS_SIZE + j]);
+ 		}
+ 	}
+ 
+-	for (k = 0; k < CMN_REGS_SIZE; k++)
+-		meram_write_reg(priv->base, common_regs[k],
+-			priv->cmn_saved_regs[k]);
++	for (i = 0; i < CMN_REGS_SIZE; i++)
++		meram_write_reg(priv->base, common_regs[i],
++				priv->cmn_saved_regs[i]);
+ 	return 0;
+ }
+ 
 diff --git a/include/video/sh_mobile_meram.h b/include/video/sh_mobile_meram.h
-index af602d6..caae558 100644
+index caae558..6755e3f 100644
 --- a/include/video/sh_mobile_meram.h
 +++ b/include/video/sh_mobile_meram.h
-@@ -25,17 +25,17 @@ struct sh_mobile_meram_info {
- };
+@@ -46,11 +46,13 @@ struct sh_mobile_meram_ops {
+ 	/* register usage of meram */
+ 	int (*meram_register)(struct sh_mobile_meram_info *meram_dev,
+ 			      struct sh_mobile_meram_cfg *cfg,
+-			      int xres, int yres, int pixelformat,
++			      unsigned int xres, unsigned int yres,
++			      unsigned int pixelformat,
+ 			      unsigned long base_addr_y,
+ 			      unsigned long base_addr_c,
+ 			      unsigned long *icb_addr_y,
+-			      unsigned long *icb_addr_c, int *pitch);
++			      unsigned long *icb_addr_c,
++			      unsigned int *pitch);
  
- /* icb config */
--struct sh_mobile_meram_icb {
--	int marker_icb;		/* ICB # for Marker ICB */
--	int cache_icb;		/* ICB # for Cache ICB */
--	int meram_offset;	/* MERAM Buffer Offset to use */
--	int meram_size;		/* MERAM Buffer Size to use */
-+struct sh_mobile_meram_icb_cfg {
-+	unsigned int marker_icb;	/* ICB # for Marker ICB */
-+	unsigned int cache_icb;		/* ICB # for Cache ICB */
-+	unsigned int meram_offset;	/* MERAM Buffer Offset to use */
-+	unsigned int meram_size;	/* MERAM Buffer Size to use */
- 
--	int cache_unit;		/* bytes to cache per ICB */
-+	unsigned int cache_unit;	/* bytes to cache per ICB */
- };
- 
- struct sh_mobile_meram_cfg {
--	struct sh_mobile_meram_icb	icb[2];
-+	struct sh_mobile_meram_icb_cfg	icb[2];
- 	int				pixelformat;
- 	int				current_reg;
- };
+ 	/* unregister usage of meram */
+ 	int (*meram_unregister)(struct sh_mobile_meram_info *meram_dev,
 -- 
 1.7.3.4
 

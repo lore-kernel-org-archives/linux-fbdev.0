@@ -1,7 +1,7 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:02:08 +0000
-Subject: [PATCH 13/57] fbdev: sh_mipi_dsi: Don't hook up into board_cfg display operations
-Message-Id: <1323784972-24205-14-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Tue, 13 Dec 2011 14:02:09 +0000
+Subject: [PATCH 14/57] fbdev: sh_mobile_hdmi: Don't hook up into board_cfg display operations
+Message-Id: <1323784972-24205-15-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,119 +13,109 @@ sh_mobile_lcdc_entity operations.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mipi_dsi.c |   56 ++++---------------------------------------
- 1 files changed, 5 insertions(+), 51 deletions(-)
+ drivers/video/sh_mobile_hdmi.c |   37 ++++++-------------------------------
+ 1 files changed, 6 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
-index 58744fe..ad09a05 100644
---- a/drivers/video/sh_mipi_dsi.c
-+++ b/drivers/video/sh_mipi_dsi.c
-@@ -58,10 +58,6 @@ struct sh_mipi {
- 	void __iomem	*linkbase;
- 	struct clk	*dsit_clk;
- 	struct platform_device *pdev;
--
--	void	*next_board_data;
--	void	(*next_display_on)(void *board_data, struct fb_info *info);
--	void	(*next_display_off)(void *board_data);
- };
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index f961fa2..1e78100 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -1004,8 +1004,8 @@ static irqreturn_t sh_hdmi_hotplug(int irq, void *dev_id)
+ }
  
- #define to_sh_mipi(e)	container_of(e, struct sh_mipi, entity)
-@@ -398,8 +394,8 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
+ /* locking:	called with info->lock held, or before register_framebuffer() */
+-static int __sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity,
+-				struct fb_info *info)
++static int sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity,
++			      struct fb_info *info)
+ {
+ 	/*
+ 	 * info is guaranteed to be valid, when we are called, because our
+@@ -1040,13 +1040,8 @@ static int __sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity,
  	return 0;
  }
  
--static int __mipi_display_on(struct sh_mobile_lcdc_entity *entity,
--			     struct fb_info *info)
-+static int mipi_display_on(struct sh_mobile_lcdc_entity *entity,
-+			   struct fb_info *info)
- {
- 	struct sh_mipi *mipi = to_sh_mipi(entity);
- 	struct sh_mipi_dsi_info *pdata = mipi->pdev->dev.platform_data;
-@@ -427,21 +423,7 @@ mipi_display_on_fail2:
- 	return ret;
- }
- 
--static void mipi_display_on(void *arg, struct fb_info *info)
+-static void sh_hdmi_display_on(void *arg, struct fb_info *info)
 -{
--	struct sh_mobile_lcdc_entity *entity = arg;
--	struct sh_mipi *mipi = to_sh_mipi(entity);
--	int ret;
--
--	ret = __mipi_display_on(entity, info);
--	if (ret < 0)
--		return;
--
--	if (mipi->next_display_on)
--		mipi->next_display_on(mipi->next_board_data, info);
+-	__sh_hdmi_display_on(arg, info);
 -}
 -
--static void __mipi_display_off(struct sh_mobile_lcdc_entity *entity)
-+static void mipi_display_off(struct sh_mobile_lcdc_entity *entity)
+ /* locking: called with info->lock held */
+-static void __sh_hdmi_display_off(struct sh_mobile_lcdc_entity *entity)
++static void sh_hdmi_display_off(struct sh_mobile_lcdc_entity *entity)
  {
- 	struct sh_mipi *mipi = to_sh_mipi(entity);
- 	struct sh_mipi_dsi_info *pdata = mipi->pdev->dev.platform_data;
-@@ -453,20 +435,9 @@ static void __mipi_display_off(struct sh_mobile_lcdc_entity *entity)
- 	pm_runtime_put_sync(&mipi->pdev->dev);
+ 	struct sh_hdmi *hdmi = entity_to_sh_hdmi(entity);
+ 
+@@ -1055,14 +1050,9 @@ static void __sh_hdmi_display_off(struct sh_mobile_lcdc_entity *entity)
+ 	hdmi_write(hdmi, 0x10, HDMI_SYSTEM_CTRL);
  }
  
--static void mipi_display_off(void *arg)
+-static void sh_hdmi_display_off(void *arg)
 -{
--	struct sh_mobile_lcdc_entity *entity = arg;
--	struct sh_mipi *mipi = to_sh_mipi(entity);
--
--	if (mipi->next_display_off)
--		mipi->next_display_off(mipi->next_board_data);
--
--	__mipi_display_off(entity);
+-	__sh_hdmi_display_off(arg);
 -}
 -
- static const struct sh_mobile_lcdc_entity_ops mipi_ops = {
--	.display_on = __mipi_display_on,
--	.display_off = __mipi_display_off,
-+	.display_on = mipi_display_on,
-+	.display_off = mipi_display_off,
+ static const struct sh_mobile_lcdc_entity_ops sh_hdmi_ops = {
+-	.display_on = __sh_hdmi_display_on,
+-	.display_off = __sh_hdmi_display_off,
++	.display_on = sh_hdmi_display_on,
++	.display_off = sh_hdmi_display_off,
  };
  
- static int __init sh_mipi_probe(struct platform_device *pdev)
-@@ -559,17 +530,6 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
- 	mutex_unlock(&array_lock);
- 	platform_set_drvdata(pdev, &mipi->entity);
- 
--	/* Save original LCDC callbacks */
--	mipi->next_board_data = pdata->lcd_chan->board_cfg.board_data;
--	mipi->next_display_on = pdata->lcd_chan->board_cfg.display_on;
--	mipi->next_display_off = pdata->lcd_chan->board_cfg.display_off;
--
--	/* Set up LCDC callbacks */
--	pdata->lcd_chan->board_cfg.board_data = &mipi->entity;
--	pdata->lcd_chan->board_cfg.display_on = mipi_display_on;
--	pdata->lcd_chan->board_cfg.display_off = mipi_display_off;
--	pdata->lcd_chan->board_cfg.owner = THIS_MODULE;
--
- 	return 0;
- 
- eclkton:
-@@ -594,7 +554,6 @@ efindslot:
- 
- static int __exit sh_mipi_remove(struct platform_device *pdev)
+ static bool sh_hdmi_must_reconfigure(struct sh_hdmi *hdmi)
+@@ -1178,7 +1168,7 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 				 */
+ 				info->var.width = hdmi->var.width;
+ 				info->var.height = hdmi->var.height;
+-				__sh_hdmi_display_on(&hdmi->entity, info);
++				sh_hdmi_display_on(&hdmi->entity, info);
+ 			} else {
+ 				/* New monitor or have to wake up */
+ 				fb_set_suspend(info, 0);
+@@ -1255,7 +1245,6 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
  {
--	struct sh_mipi_dsi_info *pdata = pdev->dev.platform_data;
+ 	struct sh_mobile_hdmi_info *pdata = pdev->dev.platform_data;
  	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	struct resource *res2 = platform_get_resource(pdev, IORESOURCE_MEM, 1);
- 	struct sh_mipi *mipi = to_sh_mipi(platform_get_drvdata(pdev));
-@@ -617,11 +576,6 @@ static int __exit sh_mipi_remove(struct platform_device *pdev)
- 	if (ret < 0)
- 		return ret;
+-	struct sh_mobile_lcdc_board_cfg	*board_cfg;
+ 	int irq = platform_get_irq(pdev, 0), ret;
+ 	struct sh_hdmi *hdmi;
+ 	long rate;
+@@ -1315,13 +1304,6 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
  
--	pdata->lcd_chan->board_cfg.owner = NULL;
--	pdata->lcd_chan->board_cfg.display_on = NULL;
--	pdata->lcd_chan->board_cfg.display_off = NULL;
--	pdata->lcd_chan->board_cfg.board_data = NULL;
+ 	platform_set_drvdata(pdev, &hdmi->entity);
+ 
+-	/* Set up LCDC callbacks */
+-	board_cfg = &pdata->lcd_chan->board_cfg;
+-	board_cfg->owner = THIS_MODULE;
+-	board_cfg->board_data = &hdmi->entity;
+-	board_cfg->display_on = sh_hdmi_display_on;
+-	board_cfg->display_off = sh_hdmi_display_off;
 -
- 	pm_runtime_disable(&pdev->dev);
- 	clk_disable(mipi->dsit_clk);
- 	clk_put(mipi->dsit_clk);
+ 	INIT_DELAYED_WORK(&hdmi->edid_work, sh_hdmi_edid_work_fn);
+ 
+ 	pm_runtime_enable(&pdev->dev);
+@@ -1371,21 +1353,14 @@ egetclk:
+ 
+ static int __exit sh_hdmi_remove(struct platform_device *pdev)
+ {
+-	struct sh_mobile_hdmi_info *pdata = pdev->dev.platform_data;
+ 	struct sh_hdmi *hdmi = entity_to_sh_hdmi(platform_get_drvdata(pdev));
+ 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	struct sh_mobile_lcdc_board_cfg	*board_cfg = &pdata->lcd_chan->board_cfg;
+ 	int irq = platform_get_irq(pdev, 0);
+ 
+ 	snd_soc_unregister_codec(&pdev->dev);
+ 
+ 	fb_unregister_client(&hdmi->notifier);
+ 
+-	board_cfg->display_on = NULL;
+-	board_cfg->display_off = NULL;
+-	board_cfg->board_data = NULL;
+-	board_cfg->owner = NULL;
+-
+ 	/* No new work will be scheduled, wait for running ISR */
+ 	free_irq(irq, hdmi);
+ 	/* Wait for already scheduled work */
 -- 
 1.7.3.4
 

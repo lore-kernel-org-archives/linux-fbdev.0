@@ -1,43 +1,41 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 00:40:44 +0000
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 13 Dec 2011 10:47:02 +0000
 Subject: Re: [PATCH v4 0/3] fbdev: Add FOURCC-based format configuration API
-Message-Id: <201112130140.45045.laurent.pinchart@ideasonboard.com>
+Message-Id: <CAMuHMdVggt5wqKjBFjHYT4GH5M8rFUG_sOMB2aH5YrzEGH_VSA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1322562419-9934-1-git-send-email-laurent.pinchart@ideasonboard.com> <201112121708.30839.laurent.pinchart@ideasonboard.com> <4EE64CC2.5090906@gmx.de>
-In-Reply-To: <4EE64CC2.5090906@gmx.de>
+References: <1322562419-9934-1-git-send-email-laurent.pinchart@ideasonboard.com>
+	<201112121708.30839.laurent.pinchart@ideasonboard.com>
+	<4EE64CC2.5090906@gmx.de>
+	<201112130140.45045.laurent.pinchart@ideasonboard.com>
+In-Reply-To: <201112130140.45045.laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
 
-Hi Florian,
+On Tue, Dec 13, 2011 at 01:40, Laurent Pinchart
+<laurent.pinchart@ideasonboard.com> wrote:
+>> I think you also want to do something with red, green, blue, transp when
+>> entering FOURCC mode, at least setting them to zero or maybe even requiring
+>> that they are zero to enter FOURCC mode (as additional safety barrier).
+>
+> Agreed. The FOURCC mode documentation already requires those fields to be set
+> to 0 by applications.
+>
+> I'll enforce this in fb_set_var() if info->fix has the FB_CAP_FOURCC
+> capability flag set.
 
-On Monday 12 December 2011 19:49:38 Florian Tobias Schandinat wrote:
-> On 12/12/2011 04:08 PM, Laurent Pinchart wrote:
-> > On Tuesday 29 November 2011 11:26:56 Laurent Pinchart wrote:
-> >> Hi everybody,
-> >> 
-> >> Here's the fourth version of the fbdev FOURCC-based format configuration
-> >> API.
-> > 
-> > Is there a chance this will make it to v3.3 ?
-> 
-> Yes, that's likely. I thought you wanted to post a new version of 2/3?
+So when info->fix has the FB_CAP_FOURCC capability flag set, you can no longer
+enter legacy mode?
 
-Oops, seems I forgot to send it. Sorry :-/ I'll post a new version tomorrow.
+Gr{oetje,eeting}s,
 
-> I think you also want to do something with red, green, blue, transp when
-> entering FOURCC mode, at least setting them to zero or maybe even requiring
-> that they are zero to enter FOURCC mode (as additional safety barrier).
+                        Geert
 
-Agreed. The FOURCC mode documentation already requires those fields to be set 
-to 0 by applications.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-I'll enforce this in fb_set_var() if info->fix has the FB_CAP_FOURCC 
-capability flag set.
-
--- 
-Regards,
-
-Laurent Pinchart
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

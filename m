@@ -1,599 +1,427 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Mon, 19 Dec 2011 23:11:39 +0000
-Subject: Re: [PATCH] drivers/video: fsl-diu-fb: merge all allocated data into
-Message-Id: <4EEFC4AB.3070009@gmx.de>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 13 Dec 2011 13:02:26 +0000
+Subject: [PATCH v5 1/3] fbdev: Add FOURCC-based format configuration API
+Message-Id: <1323781348-9884-2-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1322867007-14827-1-git-send-email-timur@freescale.com>
-In-Reply-To: <1322867007-14827-1-git-send-email-timur@freescale.com>
+References: <1323781348-9884-1-git-send-email-laurent.pinchart@ideasonboard.com>
+In-Reply-To: <1323781348-9884-1-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-media@vger.kernel.org
 
-On 12/02/2011 11:03 PM, Timur Tabi wrote:
-> The Freescale DIU driver allocates multiple blocks of memory, including
-> multiple DMA buffers.  Merge all of these blocks into one data structure.
-> 
-> Specifically:
-> 
-> 1) struct fsl_diu_data now contains everything that needs to be allocated,
-> except for the framebuffers themselves.  DMA'able objects are aligned correctly
-> within the structure.
-> 
-> 2) struct diu_addr is no longer needed, because we don't have to manage
-> multiple blocks of DMA memory.
-> 
-> 3) Since there's no diu_addr any more, macro DMA_ADDR is used to calculate
-> the DMA address of any field in fsl_diu_data.
-> 
-> 4) Functions allocate_buf() and free_buf() are no longer needed, because we
-> now assume that dma_alloc_coherent() will allocate a page-aligned block,
-> and everything is properly aligned with fsl_diu_data already, so we no longer
-> need to align any memory blocks ourselves.
-> 
-> 5) The "dummy" area descriptor is now defined separately from the other
-> five ADs, so NUM_AOIS (previously called FSL_AOI_NUM) is now set to five
-> instead of six.  Previously, all six were combined together to avoid a
-> separate call to allocate_buf() just for the dummy AD.
-> 
-> 6) framebuffer_alloc() and framebuffer_release() are no longer used.  The
-> framebuffer is initialized manually.
-> 
-> 7) Error handling is simplified since there's only one memory buffer
-> allocated.
-> 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+This API will be used to support YUV frame buffer formats in a standard
+way.
 
-As you like the idea, applied.
+Last but not least, create a much needed fbdev API documentation and
+document the format setting APIs.
 
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ Documentation/fb/api.txt |  306 ++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/video/fbmem.c    |   14 ++
+ include/linux/fb.h       |   14 ++-
+ 3 files changed, 330 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/fb/api.txt
 
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/fsl-diu-fb.c |  326 +++++++++++++++++++-------------------------
->  1 files changed, 139 insertions(+), 187 deletions(-)
-> 
-> diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-> index a16beeb..4d54188 100644
-> --- a/drivers/video/fsl-diu-fb.c
-> +++ b/drivers/video/fsl-diu-fb.c
-> @@ -36,8 +36,7 @@
->  #include <linux/fsl-diu-fb.h>
->  #include "edid.h"
->  
-> -#define FSL_AOI_NUM	6	/* 5 AOIs and one dummy AOI */
-> -				/* 1 for plane 0, 2 for plane 1&2 each */
-> +#define NUM_AOIS	5	/* 1 for plane 0, 2 for planes 1 & 2 each */
->  
->  /* HW cursor parameters */
->  #define MAX_CURS		32
-> @@ -49,12 +48,6 @@
->  #define INT_PARERR	0x08	/* Display parameters error interrupt */
->  #define INT_LS_BF_VS	0x10	/* Lines before vsync. interrupt */
->  
-> -struct diu_addr {
-> -	void *vaddr;		/* Virtual address */
-> -	dma_addr_t paddr;	/* Physical address */
-> -	__u32 offset;
-> -};
-> -
->  /*
->   * List of supported video modes
->   *
-> @@ -330,23 +323,6 @@ static unsigned int d_cache_line_size;
->  
->  static DEFINE_SPINLOCK(diu_lock);
->  
-> -struct fsl_diu_data {
-> -	struct fb_info *fsl_diu_info[FSL_AOI_NUM - 1];
-> -				/*FSL_AOI_NUM has one dummy AOI */
-> -	struct device_attribute dev_attr;
-> -	struct diu_ad *dummy_ad;
-> -	void *dummy_aoi_virt;
-> -	unsigned int irq;
-> -	int fb_enabled;
-> -	enum fsl_diu_monitor_port monitor_port;
-> -	struct diu __iomem *diu_reg;
-> -	spinlock_t reg_lock;
-> -	struct diu_addr ad;
-> -	struct diu_addr gamma;
-> -	struct diu_addr pallete;
-> -	struct diu_addr cursor;
-> -};
-> -
->  enum mfb_index {
->  	PLANE0 = 0,	/* Plane 0, only one AOI that fills the screen */
->  	PLANE1_AOI0,	/* Plane 1, first AOI */
-> @@ -370,6 +346,44 @@ struct mfb_info {
->  	u8 *edid_data;
->  };
->  
-> +/**
-> + * struct fsl_diu_data - per-DIU data structure
-> + * @dma_addr: DMA address of this structure
-> + * @fsl_diu_info: fb_info objects, one per AOI
-> + * @dev_attr: sysfs structure
-> + * @irq: IRQ
-> + * @fb_enabled: TRUE if the DIU is enabled, FALSE if not
-> + * @monitor_port: the monitor port this DIU is connected to
-> + * @diu_reg: pointer to the DIU hardware registers
-> + * @reg_lock: spinlock for register access
-> + * @dummy_aoi: video buffer for the 4x4 32-bit dummy AOI
-> + * dummy_ad: DIU Area Descriptor for the dummy AOI
-> + * @ad[]: Area Descriptors for each real AOI
-> + * @gamma: gamma color table
-> + * @cursor: hardware cursor data
-> + *
-> + * This data structure must be allocated with 32-byte alignment, so that the
-> + * internal fields can be aligned properly.
-> + */
-> +struct fsl_diu_data {
-> +	dma_addr_t dma_addr;
-> +	struct fb_info fsl_diu_info[NUM_AOIS];
-> +	struct mfb_info mfb[NUM_AOIS];
-> +	struct device_attribute dev_attr;
-> +	unsigned int irq;
-> +	int fb_enabled;
-> +	enum fsl_diu_monitor_port monitor_port;
-> +	struct diu __iomem *diu_reg;
-> +	spinlock_t reg_lock;
-> +	u8 dummy_aoi[4 * 4 * 4];
-> +	struct diu_ad dummy_ad __aligned(8);
-> +	struct diu_ad ad[NUM_AOIS] __aligned(8);
-> +	u8 gamma[256 * 3] __aligned(32);
-> +	u8 cursor[MAX_CURS * MAX_CURS * 2] __aligned(32);
-> +} __aligned(32);
-> +
-> +/* Determine the DMA address of a member of the fsl_diu_data structure */
-> +#define DMA_ADDR(p, f) ((p)->dma_addr + offsetof(struct fsl_diu_data, f))
->  
->  static struct mfb_info mfb_template[] = {
->  	{
-> @@ -504,7 +518,7 @@ static void fsl_diu_enable_panel(struct fb_info *info)
->  			wr_reg_wa(&hw->desc[0], ad->paddr);
->  		break;
->  	case PLANE1_AOI0:
-> -		cmfbi = machine_data->fsl_diu_info[2]->par;
-> +		cmfbi = &machine_data->mfb[2];
->  		if (hw->desc[1] != ad->paddr) {	/* AOI0 closed */
->  			if (cmfbi->count > 0)	/* AOI1 open */
->  				ad->next_ad > @@ -515,7 +529,7 @@ static void fsl_diu_enable_panel(struct fb_info *info)
->  		}
->  		break;
->  	case PLANE2_AOI0:
-> -		cmfbi = machine_data->fsl_diu_info[4]->par;
-> +		cmfbi = &machine_data->mfb[4];
->  		if (hw->desc[2] != ad->paddr) {	/* AOI0 closed */
->  			if (cmfbi->count > 0)	/* AOI1 open */
->  				ad->next_ad > @@ -526,17 +540,17 @@ static void fsl_diu_enable_panel(struct fb_info *info)
->  		}
->  		break;
->  	case PLANE1_AOI1:
-> -		pmfbi = machine_data->fsl_diu_info[1]->par;
-> +		pmfbi = &machine_data->mfb[1];
->  		ad->next_ad = 0;
-> -		if (hw->desc[1] = machine_data->dummy_ad->paddr)
-> +		if (hw->desc[1] = machine_data->dummy_ad.paddr)
->  			wr_reg_wa(&hw->desc[1], ad->paddr);
->  		else					/* AOI0 open */
->  			pmfbi->ad->next_ad = cpu_to_le32(ad->paddr);
->  		break;
->  	case PLANE2_AOI1:
-> -		pmfbi = machine_data->fsl_diu_info[3]->par;
-> +		pmfbi = &machine_data->mfb[3];
->  		ad->next_ad = 0;
-> -		if (hw->desc[2] = machine_data->dummy_ad->paddr)
-> +		if (hw->desc[2] = machine_data->dummy_ad.paddr)
->  			wr_reg_wa(&hw->desc[2], ad->paddr);
->  		else				/* AOI0 was open */
->  			pmfbi->ad->next_ad = cpu_to_le32(ad->paddr);
-> @@ -553,47 +567,47 @@ static void fsl_diu_disable_panel(struct fb_info *info)
->  
->  	switch (mfbi->index) {
->  	case PLANE0:
-> -		if (hw->desc[0] != machine_data->dummy_ad->paddr)
-> -			wr_reg_wa(&hw->desc[0], machine_data->dummy_ad->paddr);
-> +		if (hw->desc[0] != machine_data->dummy_ad.paddr)
-> +			wr_reg_wa(&hw->desc[0], machine_data->dummy_ad.paddr);
->  		break;
->  	case PLANE1_AOI0:
-> -		cmfbi = machine_data->fsl_diu_info[2]->par;
-> +		cmfbi = &machine_data->mfb[2];
->  		if (cmfbi->count > 0)	/* AOI1 is open */
->  			wr_reg_wa(&hw->desc[1], cmfbi->ad->paddr);
->  					/* move AOI1 to the first */
->  		else			/* AOI1 was closed */
-> -			wr_reg_wa(&hw->desc[1], machine_data->dummy_ad->paddr);
-> +			wr_reg_wa(&hw->desc[1], machine_data->dummy_ad.paddr);
->  					/* close AOI 0 */
->  		break;
->  	case PLANE2_AOI0:
-> -		cmfbi = machine_data->fsl_diu_info[4]->par;
-> +		cmfbi = &machine_data->mfb[4];
->  		if (cmfbi->count > 0)	/* AOI1 is open */
->  			wr_reg_wa(&hw->desc[2], cmfbi->ad->paddr);
->  					/* move AOI1 to the first */
->  		else			/* AOI1 was closed */
-> -			wr_reg_wa(&hw->desc[2], machine_data->dummy_ad->paddr);
-> +			wr_reg_wa(&hw->desc[2], machine_data->dummy_ad.paddr);
->  					/* close AOI 0 */
->  		break;
->  	case PLANE1_AOI1:
-> -		pmfbi = machine_data->fsl_diu_info[1]->par;
-> +		pmfbi = &machine_data->mfb[1];
->  		if (hw->desc[1] != ad->paddr) {
->  				/* AOI1 is not the first in the chain */
->  			if (pmfbi->count > 0)
->  					/* AOI0 is open, must be the first */
->  				pmfbi->ad->next_ad = 0;
->  		} else			/* AOI1 is the first in the chain */
-> -			wr_reg_wa(&hw->desc[1], machine_data->dummy_ad->paddr);
-> +			wr_reg_wa(&hw->desc[1], machine_data->dummy_ad.paddr);
->  					/* close AOI 1 */
->  		break;
->  	case PLANE2_AOI1:
-> -		pmfbi = machine_data->fsl_diu_info[3]->par;
-> +		pmfbi = &machine_data->mfb[3];
->  		if (hw->desc[2] != ad->paddr) {
->  				/* AOI1 is not the first in the chain */
->  			if (pmfbi->count > 0)
->  				/* AOI0 is open, must be the first */
->  				pmfbi->ad->next_ad = 0;
->  		} else		/* AOI1 is the first in the chain */
-> -			wr_reg_wa(&hw->desc[2], machine_data->dummy_ad->paddr);
-> +			wr_reg_wa(&hw->desc[2], machine_data->dummy_ad.paddr);
->  				/* close AOI 1 */
->  		break;
->  	}
-> @@ -633,8 +647,8 @@ static void adjust_aoi_size_position(struct fb_var_screeninfo *var,
->  	int lower_aoi_is_open, upper_aoi_is_open;
->  	__u32 base_plane_width, base_plane_height, upper_aoi_height;
->  
-> -	base_plane_width = machine_data->fsl_diu_info[0]->var.xres;
-> -	base_plane_height = machine_data->fsl_diu_info[0]->var.yres;
-> +	base_plane_width = machine_data->fsl_diu_info[0].var.xres;
-> +	base_plane_height = machine_data->fsl_diu_info[0].var.yres;
->  
->  	if (mfbi->x_aoi_d < 0)
->  		mfbi->x_aoi_d = 0;
-> @@ -649,7 +663,7 @@ static void adjust_aoi_size_position(struct fb_var_screeninfo *var,
->  		break;
->  	case PLANE1_AOI0:
->  	case PLANE2_AOI0:
-> -		lower_aoi_mfbi = machine_data->fsl_diu_info[index+1]->par;
-> +		lower_aoi_mfbi = machine_data->fsl_diu_info[index+1].par;
->  		lower_aoi_is_open = lower_aoi_mfbi->count > 0 ? 1 : 0;
->  		if (var->xres > base_plane_width)
->  			var->xres = base_plane_width;
-> @@ -667,9 +681,9 @@ static void adjust_aoi_size_position(struct fb_var_screeninfo *var,
->  		break;
->  	case PLANE1_AOI1:
->  	case PLANE2_AOI1:
-> -		upper_aoi_mfbi = machine_data->fsl_diu_info[index-1]->par;
-> +		upper_aoi_mfbi = machine_data->fsl_diu_info[index-1].par;
->  		upper_aoi_height > -				machine_data->fsl_diu_info[index-1]->var.yres;
-> +				machine_data->fsl_diu_info[index-1].var.yres;
->  		upper_aoi_bottom = upper_aoi_mfbi->y_aoi_d + upper_aoi_height;
->  		upper_aoi_is_open = upper_aoi_mfbi->count > 0 ? 1 : 0;
->  		if (var->xres > base_plane_width)
-> @@ -812,15 +826,15 @@ static void update_lcdc(struct fb_info *info)
->  	struct fsl_diu_data *machine_data = mfbi->parent;
->  	struct diu __iomem *hw;
->  	int i, j;
-> -	char __iomem *cursor_base, *gamma_table_base;
-> +	u8 *gamma_table_base;
->  
->  	u32 temp;
->  
->  	hw = machine_data->diu_reg;
->  
->  	diu_ops.set_monitor_port(machine_data->monitor_port);
-> -	gamma_table_base = machine_data->gamma.vaddr;
-> -	cursor_base = machine_data->cursor.vaddr;
-> +	gamma_table_base = machine_data->gamma;
-> +
->  	/* Prep for DIU init  - gamma table, cursor table */
->  
->  	for (i = 0; i <= 2; i++)
-> @@ -828,14 +842,14 @@ static void update_lcdc(struct fb_info *info)
->  			*gamma_table_base++ = j;
->  
->  	diu_ops.set_gamma_table(machine_data->monitor_port,
-> -				machine_data->gamma.vaddr);
-> +		machine_data->gamma);
->  
->  	disable_lcdc(info);
->  
->  	/* Program DIU registers */
->  
-> -	out_be32(&hw->gamma, machine_data->gamma.paddr);
-> -	out_be32(&hw->cursor, machine_data->cursor.paddr);
-> +	out_be32(&hw->gamma, DMA_ADDR(machine_data, gamma));
-> +	out_be32(&hw->cursor, DMA_ADDR(machine_data, cursor));
->  
->  	out_be32(&hw->bgnd, 0x007F7F7F); 	/* BGND */
->  	out_be32(&hw->bgnd_wb, 0); 		/* BGND_WB */
-> @@ -1423,37 +1437,6 @@ static int fsl_diu_resume(struct platform_device *ofdev)
->  #define fsl_diu_resume NULL
->  #endif				/* CONFIG_PM */
->  
-> -/* Align to 64-bit(8-byte), 32-byte, etc. */
-> -static int allocate_buf(struct device *dev, struct diu_addr *buf, u32 size,
-> -			u32 bytes_align)
-> -{
-> -	u32 offset;
-> -	dma_addr_t mask;
-> -
-> -	buf->vaddr > -		dma_alloc_coherent(dev, size + bytes_align, &buf->paddr,
-> -				   GFP_DMA | __GFP_ZERO);
-> -	if (!buf->vaddr)
-> -		return -ENOMEM;
-> -
-> -	mask = bytes_align - 1;
-> -	offset = buf->paddr & mask;
-> -	if (offset) {
-> -		buf->offset = bytes_align - offset;
-> -		buf->paddr = buf->paddr + offset;
-> -	} else
-> -		buf->offset = 0;
-> -
-> -	return 0;
-> -}
-> -
-> -static void free_buf(struct device *dev, struct diu_addr *buf, u32 size,
-> -		     u32 bytes_align)
-> -{
-> -	dma_free_coherent(dev, size + bytes_align, buf->vaddr,
-> -			  buf->paddr - buf->offset);
-> -}
-> -
->  static ssize_t store_monitor(struct device *device,
->  	struct device_attribute *attr, const char *buf, size_t count)
->  {
-> @@ -1468,11 +1451,10 @@ static ssize_t store_monitor(struct device *device,
->  		/* All AOIs need adjust pixel format
->  		 * fsl_diu_set_par only change the pixsel format here
->  		 * unlikely to fail. */
-> -		fsl_diu_set_par(machine_data->fsl_diu_info[0]);
-> -		fsl_diu_set_par(machine_data->fsl_diu_info[1]);
-> -		fsl_diu_set_par(machine_data->fsl_diu_info[2]);
-> -		fsl_diu_set_par(machine_data->fsl_diu_info[3]);
-> -		fsl_diu_set_par(machine_data->fsl_diu_info[4]);
-> +		unsigned int i;
-> +
-> +		for (i=0; i < NUM_AOIS; i++)
-> +			fsl_diu_set_par(&machine_data->fsl_diu_info[i]);
->  	}
->  	return count;
->  }
-> @@ -1499,28 +1481,52 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
->  {
->  	struct device_node *np = pdev->dev.of_node;
->  	struct mfb_info *mfbi;
-> -	phys_addr_t dummy_ad_addr = 0;
-> -	int ret, i, error = 0;
->  	struct fsl_diu_data *machine_data;
->  	int diu_mode;
-> +	dma_addr_t dma_addr; /* DMA addr of machine_data struct */
-> +	unsigned int i;
-> +	int ret;
->  
-> -	machine_data = kzalloc(sizeof(struct fsl_diu_data), GFP_KERNEL);
-> +	machine_data = dma_alloc_coherent(&pdev->dev,
-> +		sizeof(struct fsl_diu_data), &dma_addr, GFP_DMA | __GFP_ZERO);
->  	if (!machine_data)
->  		return -ENOMEM;
-> +	machine_data->dma_addr = dma_addr;
-> +
-> +	/*
-> +	 * dma_alloc_coherent() uses a page allocator, so the address is
-> +	 * always page-aligned.  We need the memory to be 32-byte aligned,
-> +	 * so that's good.  However, if one day the allocator changes, we
-> +	 * need to catch that.  It's not worth the effort to handle unaligned
-> +	 * alloctions now because it's highly unlikely to ever be a problem.
-> +	 */
-> +	if ((unsigned long)machine_data & 31) {
-> +		dev_err(&pdev->dev, "misaligned allocation");
-> +		ret = -ENOMEM;
-> +		goto error;
-> +	}
->  
->  	spin_lock_init(&machine_data->reg_lock);
->  
-> -	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++) {
-> -		machine_data->fsl_diu_info[i] > -			framebuffer_alloc(sizeof(struct mfb_info), &pdev->dev);
-> -		if (!machine_data->fsl_diu_info[i]) {
-> -			dev_err(&pdev->dev, "cannot allocate memory\n");
-> -			ret = -ENOMEM;
-> -			goto error2;
-> -		}
-> -		mfbi = machine_data->fsl_diu_info[i]->par;
-> +	for (i = 0; i < NUM_AOIS; i++) {
-> +		struct fb_info *info = &machine_data->fsl_diu_info[i];
-> +
-> +		info->device = &pdev->dev;
-> +		info->par = &machine_data->mfb[i];
-> +
-> +		/*
-> +		 * We store the physical address of the AD in the reserved
-> +		 * 'paddr' field of the AD itself.
-> +		 */
-> +		machine_data->ad[i].paddr = DMA_ADDR(machine_data, ad[i]);
-> +
-> +		info->fix.smem_start = 0;
-> +
-> +		/* Initialize the AOI data structure */
-> +		mfbi = info->par;
->  		memcpy(mfbi, &mfb_template[i], sizeof(struct mfb_info));
->  		mfbi->parent = machine_data;
-> +		mfbi->ad = &machine_data->ad[i];
->  
->  		if (mfbi->index = PLANE0) {
->  			const u8 *prop;
-> @@ -1538,7 +1544,7 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
->  	if (!machine_data->diu_reg) {
->  		dev_err(&pdev->dev, "cannot map DIU registers\n");
->  		ret = -EFAULT;
-> -		goto error2;
-> +		goto error;
->  	}
->  
->  	diu_mode = in_be32(&machine_data->diu_reg->diu_mode);
-> @@ -1555,41 +1561,16 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
->  	}
->  	machine_data->monitor_port = monitor_port;
->  
-> -	/* Area descriptor memory pool aligns to 64-bit boundary */
-> -	if (allocate_buf(&pdev->dev, &machine_data->ad,
-> -			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8))
-> -		return -ENOMEM;
-> -
-> -	/* Get memory for Gamma Table  - 32-byte aligned memory */
-> -	if (allocate_buf(&pdev->dev, &machine_data->gamma, 768, 32)) {
-> -		ret = -ENOMEM;
-> -		goto error;
-> -	}
-> -
-> -	/* For performance, cursor bitmap buffer aligns to 32-byte boundary */
-> -	if (allocate_buf(&pdev->dev, &machine_data->cursor,
-> -			 MAX_CURS * MAX_CURS * 2, 32)) {
-> -		ret = -ENOMEM;
-> -		goto error;
-> -	}
-> -
-> -	i = ARRAY_SIZE(machine_data->fsl_diu_info);
-> -	machine_data->dummy_ad = (struct diu_ad *)((u32)machine_data->ad.vaddr +
-> -			machine_data->ad.offset) + i;
-> -	machine_data->dummy_ad->paddr = machine_data->ad.paddr +
-> -			i * sizeof(struct diu_ad);
-> -	machine_data->dummy_aoi_virt = fsl_diu_alloc(64, &dummy_ad_addr);
-> -	if (!machine_data->dummy_aoi_virt) {
-> -		ret = -ENOMEM;
-> -		goto error;
-> -	}
-> -	machine_data->dummy_ad->addr = cpu_to_le32(dummy_ad_addr);
-> -	machine_data->dummy_ad->pix_fmt = 0x88882317;
-> -	machine_data->dummy_ad->src_size_g_alpha = cpu_to_le32((4 << 12) | 4);
-> -	machine_data->dummy_ad->aoi_size = cpu_to_le32((4 << 16) |  2);
-> -	machine_data->dummy_ad->offset_xyi = 0;
-> -	machine_data->dummy_ad->offset_xyd = 0;
-> -	machine_data->dummy_ad->next_ad = 0;
-> +	/* Initialize the dummy Area Descriptor */
-> +	machine_data->dummy_ad.addr > +		cpu_to_le32(DMA_ADDR(machine_data, dummy_aoi));
-> +	machine_data->dummy_ad.pix_fmt = 0x88882317;
-> +	machine_data->dummy_ad.src_size_g_alpha = cpu_to_le32((4 << 12) | 4);
-> +	machine_data->dummy_ad.aoi_size = cpu_to_le32((4 << 16) |  2);
-> +	machine_data->dummy_ad.offset_xyi = 0;
-> +	machine_data->dummy_ad.offset_xyd = 0;
-> +	machine_data->dummy_ad.next_ad = 0;
-> +	machine_data->dummy_ad.paddr = DMA_ADDR(machine_data, dummy_ad);
->  
->  	/*
->  	 * Let DIU display splash screen if it was pre-initialized
-> @@ -1597,19 +1578,13 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
->  	 */
->  	if (diu_mode = MFB_MODE0)
->  		out_be32(&machine_data->diu_reg->desc[0],
-> -			 machine_data->dummy_ad->paddr);
-> -
-> -	out_be32(&machine_data->diu_reg->desc[1], machine_data->dummy_ad->paddr);
-> -	out_be32(&machine_data->diu_reg->desc[2], machine_data->dummy_ad->paddr);
-> -
-> -	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++) {
-> -		machine_data->fsl_diu_info[i]->fix.smem_start = 0;
-> -		mfbi = machine_data->fsl_diu_info[i]->par;
-> -		mfbi->ad = (struct diu_ad *)((u32)machine_data->ad.vaddr
-> -					+ machine_data->ad.offset) + i;
-> -		mfbi->ad->paddr > -			machine_data->ad.paddr + i * sizeof(struct diu_ad);
-> -		ret = install_fb(machine_data->fsl_diu_info[i]);
-> +			 machine_data->dummy_ad.paddr);
-> +
-> +	out_be32(&machine_data->diu_reg->desc[1], machine_data->dummy_ad.paddr);
-> +	out_be32(&machine_data->diu_reg->desc[2], machine_data->dummy_ad.paddr);
-> +
-> +	for (i = 0; i < NUM_AOIS; i++) {
-> +		ret = install_fb(&machine_data->fsl_diu_info[i]);
->  		if (ret) {
->  			dev_err(&pdev->dev, "could not register fb %d\n", i);
->  			goto error;
-> @@ -1626,9 +1601,8 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
->  	machine_data->dev_attr.attr.mode = S_IRUGO|S_IWUSR;
->  	machine_data->dev_attr.show = show_monitor;
->  	machine_data->dev_attr.store = store_monitor;
-> -	error = device_create_file(machine_data->fsl_diu_info[0]->dev,
-> -				  &machine_data->dev_attr);
-> -	if (error) {
-> +	ret = device_create_file(&pdev->dev, &machine_data->dev_attr);
-> +	if (ret) {
->  		dev_err(&pdev->dev, "could not create sysfs file %s\n",
->  			machine_data->dev_attr.attr.name);
->  	}
-> @@ -1637,26 +1611,13 @@ static int __devinit fsl_diu_probe(struct platform_device *pdev)
->  	return 0;
->  
->  error:
-> -	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++)
-> -		uninstall_fb(machine_data->fsl_diu_info[i]);
-> -
-> -	if (machine_data->ad.vaddr)
-> -		free_buf(&pdev->dev, &machine_data->ad,
-> -			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
-> -	if (machine_data->gamma.vaddr)
-> -		free_buf(&pdev->dev, &machine_data->gamma, 768, 32);
-> -	if (machine_data->cursor.vaddr)
-> -		free_buf(&pdev->dev, &machine_data->cursor,
-> -			 MAX_CURS * MAX_CURS * 2, 32);
-> -	if (machine_data->dummy_aoi_virt)
-> -		fsl_diu_free(machine_data->dummy_aoi_virt, 64);
-> +	for (i = 0; i < NUM_AOIS; i++)
-> +		uninstall_fb(&machine_data->fsl_diu_info[i]);
-> +
->  	iounmap(machine_data->diu_reg);
->  
-> -error2:
-> -	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++)
-> -		if (machine_data->fsl_diu_info[i])
-> -			framebuffer_release(machine_data->fsl_diu_info[i]);
-> -	kfree(machine_data);
-> +	dma_free_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
-> +		machine_data, machine_data->dma_addr);
->  
->  	return ret;
->  }
-> @@ -1667,25 +1628,16 @@ static int fsl_diu_remove(struct platform_device *pdev)
->  	int i;
->  
->  	machine_data = dev_get_drvdata(&pdev->dev);
-> -	disable_lcdc(machine_data->fsl_diu_info[0]);
-> +	disable_lcdc(&machine_data->fsl_diu_info[0]);
->  	free_irq_local(machine_data);
-> -	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++)
-> -		uninstall_fb(machine_data->fsl_diu_info[i]);
-> -	if (machine_data->ad.vaddr)
-> -		free_buf(&pdev->dev, &machine_data->ad,
-> -			 sizeof(struct diu_ad) * FSL_AOI_NUM, 8);
-> -	if (machine_data->gamma.vaddr)
-> -		free_buf(&pdev->dev, &machine_data->gamma, 768, 32);
-> -	if (machine_data->cursor.vaddr)
-> -		free_buf(&pdev->dev, &machine_data->cursor,
-> -			 MAX_CURS * MAX_CURS * 2, 32);
-> -	if (machine_data->dummy_aoi_virt)
-> -		fsl_diu_free(machine_data->dummy_aoi_virt, 64);
-> +
-> +	for (i = 0; i < NUM_AOIS; i++)
-> +		uninstall_fb(&machine_data->fsl_diu_info[i]);
-> +
->  	iounmap(machine_data->diu_reg);
-> -	for (i = 0; i < ARRAY_SIZE(machine_data->fsl_diu_info); i++)
-> -		if (machine_data->fsl_diu_info[i])
-> -			framebuffer_release(machine_data->fsl_diu_info[i]);
-> -	kfree(machine_data);
-> +
-> +	dma_free_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
-> +		machine_data, machine_data->dma_addr);
->  
->  	return 0;
->  }
+diff --git a/Documentation/fb/api.txt b/Documentation/fb/api.txt
+new file mode 100644
+index 0000000..d4ff7de
+--- /dev/null
++++ b/Documentation/fb/api.txt
+@@ -0,0 +1,306 @@
++			The Frame Buffer Device API
++			---------------------------
++
++Last revised: June 21, 2011
++
++
++0. Introduction
++---------------
++
++This document describes the frame buffer API used by applications to interact
++with frame buffer devices. In-kernel APIs between device drivers and the frame
++buffer core are not described.
++
++Due to a lack of documentation in the original frame buffer API, drivers
++behaviours differ in subtle (and not so subtle) ways. This document describes
++the recommended API implementation, but applications should be prepared to
++deal with different behaviours.
++
++
++1. Capabilities
++---------------
++
++Device and driver capabilities are reported in the fixed screen information
++capabilities field.
++
++struct fb_fix_screeninfo {
++	...
++	__u16 capabilities;		/* see FB_CAP_*			*/
++	...
++};
++
++Application should use those capabilities to find out what features they can
++expect from the device and driver.
++
++- FB_CAP_FOURCC
++
++The driver supports the four character code (FOURCC) based format setting API.
++When supported, formats are configured using a FOURCC instead of manually
++specifying color components layout.
++
++
++2. Types and visuals
++--------------------
++
++Pixels are stored in memory in hardware-dependent formats. Applications need
++to be aware of the pixel storage format in order to write image data to the
++frame buffer memory in the format expected by the hardware.
++
++Formats are described by frame buffer types and visuals. Some visuals require
++additional information, which are stored in the variable screen information
++bits_per_pixel, grayscale, red, green, blue and transp fields.
++
++Visuals describe how color information is encoded and assembled to create
++macropixels. Types describe how macropixels are stored in memory. The following
++types and visuals are supported.
++
++- FB_TYPE_PACKED_PIXELS
++
++Macropixels are stored contiguously in a single plane. If the number of bits
++per macropixel is not a multiple of 8, whether macropixels are padded to the
++next multiple of 8 bits or packed together into bytes depends on the visual.
++
++Padding at end of lines may be present and is then reported through the fixed
++screen information line_length field.
++
++- FB_TYPE_PLANES
++
++Macropixels are split across multiple planes. The number of planes is equal to
++the number of bits per macropixel, with plane i'th storing i'th bit from all
++macropixels.
++
++Planes are located contiguously in memory.
++
++- FB_TYPE_INTERLEAVED_PLANES
++
++Macropixels are split across multiple planes. The number of planes is equal to
++the number of bits per macropixel, with plane i'th storing i'th bit from all
++macropixels.
++
++Planes are interleaved in memory. The interleave factor, defined as the
++distance in bytes between the beginning of two consecutive interleaved blocks
++belonging to different planes, is stored in the fixed screen information
++type_aux field.
++
++- FB_TYPE_FOURCC
++
++Macropixels are stored in memory as described by the format FOURCC identifier
++stored in the variable screen information grayscale field.
++
++- FB_VISUAL_MONO01
++
++Pixels are black or white and stored on a number of bits (typically one)
++specified by the variable screen information bpp field.
++
++Black pixels are represented by all bits set to 1 and white pixels by all bits
++set to 0. When the number of bits per pixel is smaller than 8, several pixels
++are packed together in a byte.
++
++FB_VISUAL_MONO01 is currently used with FB_TYPE_PACKED_PIXELS only.
++
++- FB_VISUAL_MONO10
++
++Pixels are black or white and stored on a number of bits (typically one)
++specified by the variable screen information bpp field.
++
++Black pixels are represented by all bits set to 0 and white pixels by all bits
++set to 1. When the number of bits per pixel is smaller than 8, several pixels
++are packed together in a byte.
++
++FB_VISUAL_MONO01 is currently used with FB_TYPE_PACKED_PIXELS only.
++
++- FB_VISUAL_TRUECOLOR
++
++Pixels are broken into red, green and blue components, and each component
++indexes a read-only lookup table for the corresponding value. Lookup tables
++are device-dependent, and provide linear or non-linear ramps.
++
++Each component is stored in a macropixel according to the variable screen
++information red, green, blue and transp fields.
++
++- FB_VISUAL_PSEUDOCOLOR and FB_VISUAL_STATIC_PSEUDOCOLOR
++
++Pixel values are encoded as indices into a colormap that stores red, green and
++blue components. The colormap is read-only for FB_VISUAL_STATIC_PSEUDOCOLOR
++and read-write for FB_VISUAL_PSEUDOCOLOR.
++
++Each pixel value is stored in the number of bits reported by the variable
++screen information bits_per_pixel field.
++
++- FB_VISUAL_DIRECTCOLOR
++
++Pixels are broken into red, green and blue components, and each component
++indexes a programmable lookup table for the corresponding value.
++
++Each component is stored in a macropixel according to the variable screen
++information red, green, blue and transp fields.
++
++- FB_VISUAL_FOURCC
++
++Pixels are encoded and  interpreted as described by the format FOURCC
++identifier stored in the variable screen information grayscale field.
++
++
++3. Screen information
++---------------------
++
++Screen information are queried by applications using the FBIOGET_FSCREENINFO
++and FBIOGET_VSCREENINFO ioctls. Those ioctls take a pointer to a
++fb_fix_screeninfo and fb_var_screeninfo structure respectively.
++
++struct fb_fix_screeninfo stores device independent unchangeable information
++about the frame buffer device and the current format. Those information can't
++be directly modified by applications, but can be changed by the driver when an
++application modifies the format.
++
++struct fb_fix_screeninfo {
++	char id[16];			/* identification string eg "TT Builtin" */
++	unsigned long smem_start;	/* Start of frame buffer mem */
++					/* (physical address) */
++	__u32 smem_len;			/* Length of frame buffer mem */
++	__u32 type;			/* see FB_TYPE_*		*/
++	__u32 type_aux;			/* Interleave for interleaved Planes */
++	__u32 visual;			/* see FB_VISUAL_*		*/
++	__u16 xpanstep;			/* zero if no hardware panning  */
++	__u16 ypanstep;			/* zero if no hardware panning  */
++	__u16 ywrapstep;		/* zero if no hardware ywrap    */
++	__u32 line_length;		/* length of a line in bytes    */
++	unsigned long mmio_start;	/* Start of Memory Mapped I/O   */
++					/* (physical address) */
++	__u32 mmio_len;			/* Length of Memory Mapped I/O  */
++	__u32 accel;			/* Indicate to driver which	*/
++					/*  specific chip/card we have	*/
++	__u16 capabilities;		/* see FB_CAP_*			*/
++	__u16 reserved[2];		/* Reserved for future compatibility */
++};
++
++struct fb_var_screeninfo stores device independent changeable information
++about a frame buffer device, its current format and video mode, as well as
++other miscellaneous parameters.
++
++struct fb_var_screeninfo {
++	__u32 xres;			/* visible resolution		*/
++	__u32 yres;
++	__u32 xres_virtual;		/* virtual resolution		*/
++	__u32 yres_virtual;
++	__u32 xoffset;			/* offset from virtual to visible */
++	__u32 yoffset;			/* resolution			*/
++
++	__u32 bits_per_pixel;		/* guess what			*/
++	__u32 grayscale;		/* 0 = color, 1 = grayscale,	*/
++					/* >1 = FOURCC			*/
++	struct fb_bitfield red;		/* bitfield in fb mem if true color, */
++	struct fb_bitfield green;	/* else only length is significant */
++	struct fb_bitfield blue;
++	struct fb_bitfield transp;	/* transparency			*/
++
++	__u32 nonstd;			/* != 0 Non standard pixel format */
++
++	__u32 activate;			/* see FB_ACTIVATE_*		*/
++
++	__u32 height;			/* height of picture in mm    */
++	__u32 width;			/* width of picture in mm     */
++
++	__u32 accel_flags;		/* (OBSOLETE) see fb_info.flags */
++
++	/* Timing: All values in pixclocks, except pixclock (of course) */
++	__u32 pixclock;			/* pixel clock in ps (pico seconds) */
++	__u32 left_margin;		/* time from sync to picture	*/
++	__u32 right_margin;		/* time from picture to sync	*/
++	__u32 upper_margin;		/* time from sync to picture	*/
++	__u32 lower_margin;
++	__u32 hsync_len;		/* length of horizontal sync	*/
++	__u32 vsync_len;		/* length of vertical sync	*/
++	__u32 sync;			/* see FB_SYNC_*		*/
++	__u32 vmode;			/* see FB_VMODE_*		*/
++	__u32 rotate;			/* angle we rotate counter clockwise */
++	__u32 colorspace;		/* colorspace for FOURCC-based modes */
++	__u32 reserved[4];		/* Reserved for future compatibility */
++};
++
++To modify variable information, applications call the FBIOPUT_VSCREENINFO
++ioctl with a pointer to a fb_var_screeninfo structure. If the call is
++successful, the driver will update the fixed screen information accordingly.
++
++Instead of filling the complete fb_var_screeninfo structure manually,
++applications should call the FBIOGET_VSCREENINFO ioctl and modify only the
++fields they care about.
++
++
++4. Format configuration
++-----------------------
++
++Frame buffer devices offer two ways to configure the frame buffer format: the
++legacy API and the FOURCC-based API.
++
++
++The legacy API has been the only frame buffer format configuration API for a
++long time and is thus widely used by application. It is the recommended API
++for applications when using RGB and grayscale formats, as well as legacy
++non-standard formats.
++
++To select a format, applications set the fb_var_screeninfo bits_per_pixel field
++to the desired frame buffer depth. Values up to 8 will usually map to
++monochrome, grayscale or pseudocolor visuals, although this is not required.
++
++- For grayscale formats, applications set the grayscale field to one. The red,
++  blue, green and transp fields must be set to 0 by applications and ignored by
++  drivers. Drivers must fill the red, blue and green offsets to 0 and lengths
++  to the bits_per_pixel value.
++
++- For pseudocolor formats, applications set the grayscale field to zero. The
++  red, blue, green and transp fields must be set to 0 by applications and
++  ignored by drivers. Drivers must fill the red, blue and green offsets to 0
++  and lengths to the bits_per_pixel value.
++
++- For truecolor and directcolor formats, applications set the grayscale field
++  to zero, and the red, blue, green and transp fields to describe the layout of
++  color components in memory.
++
++struct fb_bitfield {
++	__u32 offset;			/* beginning of bitfield	*/
++	__u32 length;			/* length of bitfield		*/
++	__u32 msb_right;		/* != 0 : Most significant bit is */
++					/* right */
++};
++
++  Pixel values are bits_per_pixel wide and are split in non-overlapping red,
++  green, blue and alpha (transparency) components. Location and size of each
++  component in the pixel value are described by the fb_bitfield offset and
++  length fields. Offset are computed from the right.
++
++  Pixels are always stored in an integer number of bytes. If the number of
++  bits per pixel is not a multiple of 8, pixel values are padded to the next
++  multiple of 8 bits.
++
++Upon successful format configuration, drivers update the fb_fix_screeninfo
++type, visual and line_length fields depending on the selected format.
++
++
++The FOURCC-based API replaces format descriptions by four character codes
++(FOURCC). FOURCCs are abstract identifiers that uniquely define a format
++without explicitly describing it. This is the only API that supports YUV
++formats. Drivers are also encouraged to implement the FOURCC-based API for RGB
++and grayscale formats.
++
++Drivers that support the FOURCC-based API report this capability by setting
++the FB_CAP_FOURCC bit in the fb_fix_screeninfo capabilities field.
++
++FOURCC definitions are located in the linux/videodev2.h header. However, and
++despite starting with the V4L2_PIX_FMT_prefix, they are not restricted to V4L2
++and don't require usage of the V4L2 subsystem. FOURCC documentation is
++available in Documentation/DocBook/v4l/pixfmt.xml.
++
++To select a format, applications set the grayscale field to the desired FOURCC.
++For YUV formats, they should also select the appropriate colorspace by setting
++the colorspace field to one of the colorspaces listed in linux/videodev2.h and
++documented in Documentation/DocBook/v4l/colorspaces.xml.
++
++The red, green, blue and transp fields are not used with the FOURCC-based API.
++For forward compatibility reasons applications must zero those fields, and
++drivers must ignore them. Values other than 0 may get a meaning in future
++extensions.
++
++Upon successful format configuration, drivers update the fb_fix_screeninfo
++type, visual and line_length fields depending on the selected format. The type
++and visual fields are set to FB_TYPE_FOURCC and FB_VISUAL_FOURCC respectively.
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index ad93629..ac9141b 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -967,6 +967,20 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+ 	    memcmp(&info->var, var, sizeof(struct fb_var_screeninfo))) {
+ 		u32 activate = var->activate;
+ 
++		/* When using FOURCC mode, make sure the red, green, blue and
++		 * transp fields are set to 0.
++		 */
++		if ((info->fix.capabilities & FB_CAP_FOURCC) &&
++		    var->grayscale > 1) {
++			if (var->red.offset     || var->green.offset    ||
++			    var->blue.offset    || var->transp.offset   ||
++			    var->red.length     || var->green.length    ||
++			    var->blue.length    || var->transp.length   ||
++			    var->red.msb_right  || var->green.msb_right ||
++			    var->blue.msb_right || var->transp.msb_right)
++				return -EINVAL;
++		}
++
+ 		if (!info->fbops->fb_check_var) {
+ 			*var = info->var;
+ 			goto done;
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 1d6836c..c18122f 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -45,6 +45,7 @@
+ #define FB_TYPE_INTERLEAVED_PLANES	2	/* Interleaved planes	*/
+ #define FB_TYPE_TEXT			3	/* Text/attributes	*/
+ #define FB_TYPE_VGA_PLANES		4	/* EGA/VGA planes	*/
++#define FB_TYPE_FOURCC			5	/* Type identified by a V4L2 FOURCC */
+ 
+ #define FB_AUX_TEXT_MDA		0	/* Monochrome text */
+ #define FB_AUX_TEXT_CGA		1	/* CGA/EGA/VGA Color text */
+@@ -69,6 +70,7 @@
+ #define FB_VISUAL_PSEUDOCOLOR		3	/* Pseudo color (like atari) */
+ #define FB_VISUAL_DIRECTCOLOR		4	/* Direct color */
+ #define FB_VISUAL_STATIC_PSEUDOCOLOR	5	/* Pseudo color readonly */
++#define FB_VISUAL_FOURCC		6	/* Visual identified by a V4L2 FOURCC */
+ 
+ #define FB_ACCEL_NONE		0	/* no hardware accelerator	*/
+ #define FB_ACCEL_ATARIBLITT	1	/* Atari Blitter		*/
+@@ -154,6 +156,8 @@
+ 
+ #define FB_ACCEL_PUV3_UNIGFX	0xa0	/* PKUnity-v3 Unigfx		*/
+ 
++#define FB_CAP_FOURCC		1	/* Device supports FOURCC-based formats */
++
+ struct fb_fix_screeninfo {
+ 	char id[16];			/* identification string eg "TT Builtin" */
+ 	unsigned long smem_start;	/* Start of frame buffer mem */
+@@ -171,7 +175,8 @@ struct fb_fix_screeninfo {
+ 	__u32 mmio_len;			/* Length of Memory Mapped I/O  */
+ 	__u32 accel;			/* Indicate to driver which	*/
+ 					/*  specific chip/card we have	*/
+-	__u16 reserved[3];		/* Reserved for future compatibility */
++	__u16 capabilities;		/* see FB_CAP_*			*/
++	__u16 reserved[2];		/* Reserved for future compatibility */
+ };
+ 
+ /* Interpretation of offset for color fields: All offsets are from the right,
+@@ -246,8 +251,8 @@ struct fb_var_screeninfo {
+ 	__u32 yoffset;			/* resolution			*/
+ 
+ 	__u32 bits_per_pixel;		/* guess what			*/
+-	__u32 grayscale;		/* != 0 Graylevels instead of colors */
+-
++	__u32 grayscale;		/* 0 = color, 1 = grayscale,	*/
++					/* >1 = FOURCC			*/
+ 	struct fb_bitfield red;		/* bitfield in fb mem if true color, */
+ 	struct fb_bitfield green;	/* else only length is significant */
+ 	struct fb_bitfield blue;
+@@ -273,7 +278,8 @@ struct fb_var_screeninfo {
+ 	__u32 sync;			/* see FB_SYNC_*		*/
+ 	__u32 vmode;			/* see FB_VMODE_*		*/
+ 	__u32 rotate;			/* angle we rotate counter clockwise */
+-	__u32 reserved[5];		/* Reserved for future compatibility */
++	__u32 colorspace;		/* colorspace for FOURCC-based modes */
++	__u32 reserved[4];		/* Reserved for future compatibility */
+ };
+ 
+ struct fb_cmap {
+-- 
+1.7.3.4
 

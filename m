@@ -1,167 +1,146 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 05 Dec 2011 02:32:03 +0000
-Subject: [PATCH] video: s3c-fb: modify runtime pm functions
-Message-Id: <002601ccb2f6$12b08900$38119b00$%han@samsung.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 13 Dec 2011 14:02:00 +0000
+Subject: [PATCH 05/57] fbdev: sh_mobile_lcdc: Create functions to turn the display on/off
+Message-Id: <1323784972-24205-6-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Runtime suspend and runtime resume are modified in order to
-reduce the complexity and improve the usability of runtime pm.
-After probe function, s3c-fb driver is not suspended until
-suspend or remove is called.
-
-The scheme is changed as follows:
- runtime_get is only called in probe and resume.
- runtime_put is only called in remove and suspend.
- open/close cannot call the runtime_get/put.
-
-Also, runtime_susepnd/resume are just called by runtime pm,
-not doing suspend/resume routine any longer. This is because
-open/close cannot call the runtime_get/put; the suspend/resume
-routine in runtime_suspend/resume were previously used when
-open and close were called.
-
-The name of s3c-fb dev_pm_ops is changed from s3cfb_pm_ops to
-s3c_fb_pm_ops in order to use more consistent naming.
-
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/s3c-fb.c |   51
-++++++++++++++++++-----------------------------
- 1 files changed, 20 insertions(+), 31 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |   53 ++++++++++++++++++++------------------
+ 1 files changed, 28 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index e84677e..91e629a 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -1028,30 +1028,8 @@ static int s3c_fb_ioctl(struct fb_info *info,
-unsigned int cmd,
- 	return ret;
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 8b78487..afa1fac 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -224,7 +224,7 @@ static int sh_mobile_lcdc_setup_clocks(struct sh_mobile_lcdc_priv *priv,
  }
  
--static int s3c_fb_open(struct fb_info *info, int user)
--{
--	struct s3c_fb_win *win = info->par;
--	struct s3c_fb *sfb = win->parent;
+ /* -----------------------------------------------------------------------------
+- * Sys panel and deferred I/O
++ * Display, panel and deferred I/O
+  */
+ 
+ static void lcdc_sys_write_index(void *handle, unsigned long data)
+@@ -335,6 +335,27 @@ static void sh_mobile_lcdc_deferred_io_touch(struct fb_info *info)
+ 		schedule_delayed_work(&info->deferred_work, fbdefio->delay);
+ }
+ 
++static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
++{
++	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
++
++	/* HDMI must be enabled before LCDC configuration */
++	if (board_cfg->display_on && try_module_get(board_cfg->owner)) {
++		board_cfg->display_on(board_cfg->board_data, ch->info);
++		module_put(board_cfg->owner);
++	}
++}
++
++static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
++{
++	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
++
++	if (board_cfg->display_off && try_module_get(board_cfg->owner)) {
++		board_cfg->display_off(board_cfg->board_data);
++		module_put(board_cfg->owner);
++	}
++}
++
+ /* -----------------------------------------------------------------------------
+  * Format helpers
+  */
+@@ -648,7 +669,6 @@ static void __sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ {
+ 	struct sh_mobile_meram_info *mdev = priv->meram_dev;
+-	struct sh_mobile_lcdc_board_cfg	*board_cfg;
+ 	struct sh_mobile_lcdc_chan *ch;
+ 	unsigned long tmp;
+ 	int ret;
+@@ -665,8 +685,9 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 	lcdc_wait_bit(priv, _LDCNT2R, LDCNT2R_BR, 0);
+ 
+ 	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
+-		ch = &priv->ch[k];
++		struct sh_mobile_lcdc_board_cfg	*board_cfg;
+ 
++		ch = &priv->ch[k];
+ 		if (!ch->enabled)
+ 			continue;
+ 
+@@ -754,11 +775,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 			fb_deferred_io_init(ch->info);
+ 		}
+ 
+-		board_cfg = &ch->cfg.board_cfg;
+-		if (board_cfg->display_on && try_module_get(board_cfg->owner)) {
+-			board_cfg->display_on(board_cfg->board_data, ch->info);
+-			module_put(board_cfg->owner);
+-		}
++		sh_mobile_lcdc_display_on(ch);
+ 
+ 		if (ch->bl) {
+ 			ch->bl->props.power = FB_BLANK_UNBLANK;
+@@ -772,7 +789,6 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ static void sh_mobile_lcdc_stop(struct sh_mobile_lcdc_priv *priv)
+ {
+ 	struct sh_mobile_lcdc_chan *ch;
+-	struct sh_mobile_lcdc_board_cfg	*board_cfg;
+ 	int k;
+ 
+ 	/* clean up deferred io and ask board code to disable panel */
+@@ -799,11 +815,7 @@ static void sh_mobile_lcdc_stop(struct sh_mobile_lcdc_priv *priv)
+ 			backlight_update_status(ch->bl);
+ 		}
+ 
+-		board_cfg = &ch->cfg.board_cfg;
+-		if (board_cfg->display_off && try_module_get(board_cfg->owner)) {
+-			board_cfg->display_off(board_cfg->board_data);
+-			module_put(board_cfg->owner);
+-		}
++		sh_mobile_lcdc_display_off(ch);
+ 
+ 		/* disable the meram */
+ 		if (ch->meram_enabled) {
+@@ -1417,7 +1429,6 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
+ 	struct fb_event *event = data;
+ 	struct fb_info *info = event->info;
+ 	struct sh_mobile_lcdc_chan *ch = info->par;
+-	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
+ 
+ 	if (&ch->lcdc->notifier != nb)
+ 		return NOTIFY_DONE;
+@@ -1427,10 +1438,7 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
+ 
+ 	switch(action) {
+ 	case FB_EVENT_SUSPEND:
+-		if (board_cfg->display_off && try_module_get(board_cfg->owner)) {
+-			board_cfg->display_off(board_cfg->board_data);
+-			module_put(board_cfg->owner);
+-		}
++		sh_mobile_lcdc_display_off(ch);
+ 		sh_mobile_lcdc_stop(ch->lcdc);
+ 		break;
+ 	case FB_EVENT_RESUME:
+@@ -1438,12 +1446,7 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
+ 		sh_mobile_fb_reconfig(info);
+ 		mutex_unlock(&ch->open_lock);
+ 
+-		/* HDMI must be enabled before LCDC configuration */
+-		if (board_cfg->display_on && try_module_get(board_cfg->owner)) {
+-			board_cfg->display_on(board_cfg->board_data, info);
+-			module_put(board_cfg->owner);
+-		}
 -
--	pm_runtime_get_sync(sfb->dev);
--
--	return 0;
--}
--
--static int s3c_fb_release(struct fb_info *info, int user)
--{
--	struct s3c_fb_win *win = info->par;
--	struct s3c_fb *sfb = win->parent;
--
--	pm_runtime_put_sync(sfb->dev);
--
--	return 0;
--}
--
- static struct fb_ops s3c_fb_ops = {
- 	.owner		= THIS_MODULE,
--	.fb_open	= s3c_fb_open,
--	.fb_release	= s3c_fb_release,
- 	.fb_check_var	= s3c_fb_check_var,
- 	.fb_set_par	= s3c_fb_set_par,
- 	.fb_blank	= s3c_fb_blank,
-@@ -1458,7 +1436,6 @@ static int __devinit s3c_fb_probe(struct
-platform_device *pdev)
++		sh_mobile_lcdc_display_on(ch);
+ 		sh_mobile_lcdc_start(ch->lcdc);
  	}
  
- 	platform_set_drvdata(pdev, sfb);
--	pm_runtime_put_sync(sfb->dev);
- 
- 	return 0;
- 
-@@ -1498,8 +1475,6 @@ static int __devexit s3c_fb_remove(struct
-platform_device *pdev)
- 	struct s3c_fb *sfb = platform_get_drvdata(pdev);
- 	int win;
- 
--	pm_runtime_get_sync(sfb->dev);
--
- 	for (win = 0; win < S3C_FB_MAX_WIN; win++)
- 		if (sfb->windows[win])
- 			s3c_fb_release_win(sfb, sfb->windows[win]);
-@@ -1525,7 +1500,7 @@ static int __devexit s3c_fb_remove(struct
-platform_device *pdev)
- 	return 0;
- }
- 
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- static int s3c_fb_suspend(struct device *dev)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
-@@ -1546,6 +1521,8 @@ static int s3c_fb_suspend(struct device *dev)
- 		clk_disable(sfb->lcd_clk);
- 
- 	clk_disable(sfb->bus_clk);
-+	pm_runtime_put_sync(sfb->dev);
-+
- 	return 0;
- }
- 
-@@ -1557,6 +1534,7 @@ static int s3c_fb_resume(struct device *dev)
- 	struct s3c_fb_win *win;
- 	int win_no;
- 
-+	pm_runtime_get_sync(sfb->dev);
- 	clk_enable(sfb->bus_clk);
- 
- 	if (!sfb->variant.has_clksel)
-@@ -1590,11 +1568,19 @@ static int s3c_fb_resume(struct device *dev)
- 
- 	return 0;
- }
--#else
--#define s3c_fb_suspend NULL
--#define s3c_fb_resume  NULL
- #endif
- 
-+#ifdef CONFIG_PM_RUNTIME
-+static int s3c_fb_runtime_suspend(struct device *dev)
-+{
-+	return 0;
-+}
-+
-+static int s3c_fb_runtime_resume(struct device *dev)
-+{
-+	return 0;
-+}
-+#endif
- 
- #define VALID_BPP124 (VALID_BPP(1) | VALID_BPP(2) | VALID_BPP(4))
- #define VALID_BPP1248 (VALID_BPP124 | VALID_BPP(8))
-@@ -1917,7 +1903,10 @@ static struct platform_device_id s3c_fb_driver_ids[]
-= {
- };
- MODULE_DEVICE_TABLE(platform, s3c_fb_driver_ids);
- 
--static UNIVERSAL_DEV_PM_OPS(s3cfb_pm_ops, s3c_fb_suspend, s3c_fb_resume,
-NULL);
-+static const struct dev_pm_ops s3c_fb_pm_ops = {
-+	SET_SYSTEM_SLEEP_PM_OPS(s3c_fb_suspend, s3c_fb_resume)
-+	SET_RUNTIME_PM_OPS(s3c_fb_runtime_suspend, s3c_fb_runtime_resume,
-NULL)
-+};
- 
- static struct platform_driver s3c_fb_driver = {
- 	.probe		= s3c_fb_probe,
-@@ -1926,7 +1915,7 @@ static struct platform_driver s3c_fb_driver = {
- 	.driver		= {
- 		.name	= "s3c-fb",
- 		.owner	= THIS_MODULE,
--		.pm	= &s3cfb_pm_ops,
-+		.pm	= &s3c_fb_pm_ops,
- 	},
- };
- 
 -- 
-1.7.1
+1.7.3.4
 

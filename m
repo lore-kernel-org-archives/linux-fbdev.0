@@ -1,45 +1,67 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:01:57 +0000
-Subject: [PATCH 02/57] fbdev: sh_mobile_lcdc: Mark init-only symbols with __devinit(const)
-Message-Id: <1323784972-24205-3-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Tue, 13 Dec 2011 22:23:32 +0000
+Subject: Re: [PATCH 02/57] fbdev: sh_mobile_lcdc: Mark init-only symbols with
+Message-Id: <Pine.LNX.4.64.1112132317420.20293@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1323784972-24205-3-git-send-email-laurent.pinchart@ideasonboard.com>
+In-Reply-To: <1323784972-24205-3-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-default_720p and sh_mobile_lcdc_check_interface are used at device
-initialization time only. Mark them as __devinitconst and __devinit
-respectively.
+Hi Laurent
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+On Tue, 13 Dec 2011, Laurent Pinchart wrote:
+
+> default_720p and sh_mobile_lcdc_check_interface are used at device
+> initialization time only. Mark them as __devinitconst and __devinit
+> respectively.
+> 
+> Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> ---
+>  drivers/video/sh_mobile_lcdcfb.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+> index 8b18360..a6bf4fb 100644
+> --- a/drivers/video/sh_mobile_lcdcfb.c
+> +++ b/drivers/video/sh_mobile_lcdcfb.c
+> @@ -1459,7 +1459,7 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
+>   * Probe/remove and driver init/exit
+>   */
+>  
+> -static const struct fb_videomode default_720p = {
+> +static const struct fb_videomode default_720p __devinitconst = {
+>  	.name = "HDMI 720p",
+>  	.xres = 1280,
+>  	.yres = 720,
+> @@ -1528,7 +1528,8 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
+>  	return 0;
+>  }
+>  
+> -static int sh_mobile_lcdc_check_interface(struct sh_mobile_lcdc_chan *ch)
+> +static int __devinit
+> +sh_mobile_lcdc_check_interface(struct sh_mobile_lcdc_chan *ch)
+
+Personally, I don't like this type of line splitting very much, I prefer 
+the grep output to show the function type and all attributes, but this, 
+certainly, would not be the reason to change this specific hunk:-) But 
+this might be: the whole file so far has all function definitions at least 
+up to and including the first parameter on one line, so, I find, this 
+change would introduce an inconsistency in the file style. The line would 
+__only__ be 83 characters long if you put it all on one line. I think, it 
+would look better then:-)
+
+>  {
+>  	int interface_type = ch->cfg.interface_type;
+>  
+> -- 
+> 1.7.3.4
+
+Thanks
+Guennadi
 ---
- drivers/video/sh_mobile_lcdcfb.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 8b18360..a6bf4fb 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -1459,7 +1459,7 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
-  * Probe/remove and driver init/exit
-  */
- 
--static const struct fb_videomode default_720p = {
-+static const struct fb_videomode default_720p __devinitconst = {
- 	.name = "HDMI 720p",
- 	.xres = 1280,
- 	.yres = 720,
-@@ -1528,7 +1528,8 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
--static int sh_mobile_lcdc_check_interface(struct sh_mobile_lcdc_chan *ch)
-+static int __devinit
-+sh_mobile_lcdc_check_interface(struct sh_mobile_lcdc_chan *ch)
- {
- 	int interface_type = ch->cfg.interface_type;
- 
--- 
-1.7.3.4
-
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/

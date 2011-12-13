@@ -1,54 +1,45 @@
-From: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
-Date: Tue, 20 Dec 2011 12:28:51 +0000
-Subject: Re: [PATCH V2 0/2] OMAPDSS: DISPC: Peformance improvement of DISPC Scaling
-Message-Id: <CAF0AtAu8bHRhKv0so49NiCbT2eyfAHn6+Rp74h+r2pK7wXqYqA@mail.gmail.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 13 Dec 2011 14:02:01 +0000
+Subject: [PATCH 06/57] fbdev: sh_mobile_hdmi: Don't access LCDC channel in notifier callback
+Message-Id: <1323784972-24205-7-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1324283602-6383-1-git-send-email-cmahapatra@ti.com>
-	<1324370169.2042.2.camel@deskari>
-In-Reply-To: <1324370169.2042.2.camel@deskari>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap <linux-omap@vger.kernel.org>, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-On Tue, Dec 20, 2011 at 2:06 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wro=
-te:
-> On Mon, 2011-12-19 at 14:03 +0530, Chandrabhanu Mahapatra wrote:
->> Hi everyone,
->> the following patch set directs to improve the scaling performance of DI=
-SPC
->> module which consists of two pacthes.
->>
->> The first patch is based on code of Lajos Molnar <lajos@ti.com> from And=
-roid
->> Kernel, which updates the code with new set of coefficients to improve t=
-he
->> scaling performance.
->>
->> The second patch is based on some very valuable suggestions by
->> Sebastien Fagard <s-fagard@ti.com> and directs to modify the clock
->> requirements for scaling to support OMAP4 and avoid clock failure issues.
->>
->> I have tested these patches on OMAP2, OMAP3 AND OMAP4. To test on 2430SDP
->> board I have created a patch to enable the display which will follow lat=
-er.
->>
->> All your comments and suggestions are welcome.
->
-> Thanks, this looks good. Applied to DSS master branch. There was a minor
-> conflict with the Makefile, but I fixed that.
->
-> Btw, when doing new versions of a patch series, it would be good to have
-> a short history of the series in the introduction email, so that the
-> reviewers can easily see what's new in each version.
->
-> =A0Tomi
->
-Thanks Tomi ! Its a good idea to including history of the series in
-the introduction. I will do so in further patches to come.
+Instead of relying on info->par being a pointer to an LCDC channel, cast
+the notifier block pointer to an sh_hdmi pointer.
 
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/sh_mobile_hdmi.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
---=20
-Chandrabhanu Mahapatra
-Texas Instruments India Pvt. Ltd.
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index 647ba98..b1e90f5 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -225,6 +225,8 @@ struct sh_hdmi {
+ 	struct notifier_block notifier;
+ };
+ 
++#define notifier_to_hdmi(n)	container_of(n, struct sh_hdmi, notifier)
++
+ static void hdmi_write(struct sh_hdmi *hdmi, u8 data, u8 reg)
+ {
+ 	iowrite8(data, hdmi->base + reg);
+@@ -1204,9 +1206,7 @@ static int sh_hdmi_notify(struct notifier_block *nb,
+ {
+ 	struct fb_event *event = data;
+ 	struct fb_info *info = event->info;
+-	struct sh_mobile_lcdc_chan *ch = info->par;
+-	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
+-	struct sh_hdmi *hdmi = board_cfg->board_data;
++	struct sh_hdmi *hdmi = notifier_to_hdmi(nb);
+ 
+ 	if (!hdmi || nb != &hdmi->notifier || hdmi->info != info)
+ 		return NOTIFY_DONE;
+-- 
+1.7.3.4
+

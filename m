@@ -1,280 +1,134 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:02:32 +0000
-Subject: [PATCH 37/57] fbdev: sh_mobile_lcdc: Store configuration in channel structure
-Message-Id: <1323784972-24205-38-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Tue, 13 Dec 2011 14:02:14 +0000
+Subject: [PATCH 19/57] fbdev: sh_mobile_lcdc: Move brightness ops to sh_mobile_lcdc_bl_info
+Message-Id: <1323784972-24205-20-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Store the frame buffer configuration (colorspace, visible/virtual
-horizontal and vertical resolutions and line pitch) in the
-sh_mobile_lcdc_chan structure, and use it instead of accessing fb_info.
+Update board code accordingly.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |  109 +++++++++++++++++++-------------------
- drivers/video/sh_mobile_lcdcfb.h |    8 +++-
- 2 files changed, 61 insertions(+), 56 deletions(-)
+ arch/arm/mach-shmobile/board-mackerel.c |    6 ++----
+ arch/sh/boards/mach-ap325rxa/setup.c    |    4 ++--
+ arch/sh/boards/mach-ecovec24/setup.c    |    6 ++----
+ drivers/video/sh_mobile_lcdcfb.c        |    6 ++----
+ include/video/sh_mobile_lcdc.h          |    4 ++--
+ 5 files changed, 10 insertions(+), 16 deletions(-)
 
+diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
+index 4446398..3460f54 100644
+--- a/arch/arm/mach-shmobile/board-mackerel.c
++++ b/arch/arm/mach-shmobile/board-mackerel.c
+@@ -396,13 +396,11 @@ static struct sh_mobile_lcdc_info lcdc_info = {
+ 		.flags			= 0,
+ 		.lcd_size_cfg.width	= 152,
+ 		.lcd_size_cfg.height	= 91,
+-		.board_cfg = {
+-			.set_brightness = mackerel_set_brightness,
+-			.get_brightness = mackerel_get_brightness,
+-		},
+ 		.bl_info = {
+ 			.name = "sh_mobile_lcdc_bl",
+ 			.max_brightness = 1,
++			.set_brightness = mackerel_set_brightness,
++			.get_brightness = mackerel_get_brightness,
+ 		},
+ 		.meram_cfg = &lcd_meram_cfg,
+ 	}
+diff --git a/arch/sh/boards/mach-ap325rxa/setup.c b/arch/sh/boards/mach-ap325rxa/setup.c
+index d43a96c..1413c65 100644
+--- a/arch/sh/boards/mach-ap325rxa/setup.c
++++ b/arch/sh/boards/mach-ap325rxa/setup.c
+@@ -219,12 +219,12 @@ static struct sh_mobile_lcdc_info lcdc_info = {
+ 		.board_cfg = {
+ 			.display_on = ap320_wvga_power_on,
+ 			.display_off = ap320_wvga_power_off,
+-			.set_brightness = ap320_wvga_set_brightness,
+-			.get_brightness = ap320_wvga_get_brightness,
+ 		},
+ 		.bl_info = {
+ 			.name = "sh_mobile_lcdc_bl",
+ 			.max_brightness = 1,
++			.set_brightness = ap320_wvga_set_brightness,
++			.get_brightness = ap320_wvga_get_brightness,
+ 		},
+ 	}
+ };
+diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
+index 24c2c14..2adc78e 100644
+--- a/arch/sh/boards/mach-ecovec24/setup.c
++++ b/arch/sh/boards/mach-ecovec24/setup.c
+@@ -335,13 +335,11 @@ static struct sh_mobile_lcdc_info lcdc_info = {
+ 			.width = 152,
+ 			.height = 91,
+ 		},
+-		.board_cfg = {
+-			.set_brightness = ecovec24_set_brightness,
+-			.get_brightness = ecovec24_get_brightness,
+-		},
+ 		.bl_info = {
+ 			.name = "sh_mobile_lcdc_bl",
+ 			.max_brightness = 1,
++			.set_brightness = ecovec24_set_brightness,
++			.get_brightness = ecovec24_get_brightness,
+ 		},
+ 	}
+ };
 diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index d00774b..8e85b3c 100644
+index 108b62d..0c358b0 100644
 --- a/drivers/video/sh_mobile_lcdcfb.c
 +++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -273,7 +273,7 @@ static int sh_mobile_lcdc_sginit(struct fb_info *info,
- 				  struct list_head *pagelist)
+@@ -1319,22 +1319,20 @@ static struct fb_ops sh_mobile_lcdc_ops = {
+ static int sh_mobile_lcdc_update_bl(struct backlight_device *bdev)
  {
- 	struct sh_mobile_lcdc_chan *ch = info->par;
--	unsigned int nr_pages_max = info->fix.smem_len >> PAGE_SHIFT;
-+	unsigned int nr_pages_max = ch->fb_size >> PAGE_SHIFT;
- 	struct page *page;
- 	int nr_pages = 0;
+ 	struct sh_mobile_lcdc_chan *ch = bl_get_data(bdev);
+-	struct sh_mobile_lcdc_board_cfg *cfg = &ch->cfg.board_cfg;
+ 	int brightness = bdev->props.brightness;
  
-@@ -539,17 +539,6 @@ static int sh_mobile_format_is_fourcc(const struct fb_var_screeninfo *var)
- 	return var->grayscale > 1;
+ 	if (bdev->props.power != FB_BLANK_UNBLANK ||
+ 	    bdev->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
+ 		brightness = 0;
+ 
+-	return cfg->set_brightness(brightness);
++	return ch->cfg.bl_info.set_brightness(brightness);
  }
  
--static bool sh_mobile_format_is_yuv(const struct fb_var_screeninfo *var)
--{
--	const struct sh_mobile_lcdc_format_info *format;
--
--	if (var->grayscale <= 1)
--		return false;
--
--	format = sh_mobile_format_info(var->grayscale);
--	return format ? format->yuv : false;
--}
--
- /* -----------------------------------------------------------------------------
-  * Start, stop and IRQ
-  */
-@@ -648,7 +637,7 @@ static void sh_mobile_lcdc_geometry(struct sh_mobile_lcdc_chan *ch)
- 	h_total = mode->xres + mode->hsync_len + mode->left_margin
- 		+ mode->right_margin;
- 	tmp = h_total / 8; /* HTCN */
--	tmp |= (min(mode->xres, var->xres) / 8) << 16; /* HDCN */
-+	tmp |= (min(mode->xres, ch->xres) / 8) << 16; /* HDCN */
- 	lcdc_write_chan(ch, LDHCNR, tmp);
- 
- 	hsync_pos = mode->xres + mode->right_margin;
-@@ -659,7 +648,7 @@ static void sh_mobile_lcdc_geometry(struct sh_mobile_lcdc_chan *ch)
- 	/* vertical configuration */
- 	tmp = mode->yres + mode->vsync_len + mode->upper_margin
- 	    + mode->lower_margin; /* VTLN */
--	tmp |= min(mode->yres, var->yres) << 16; /* VDLN */
-+	tmp |= min(mode->yres, ch->yres) << 16; /* VDLN */
- 	lcdc_write_chan(ch, LDVLNR, tmp);
- 
- 	tmp = mode->yres + mode->lower_margin; /* VSYNP */
-@@ -736,7 +725,7 @@ static void __sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 		tmp = ch->format->lddfr;
- 
- 		if (ch->format->yuv) {
--			switch (ch->info->var.colorspace) {
-+			switch (ch->colorspace) {
- 			case V4L2_COLORSPACE_REC709:
- 				tmp |= LDDFR_CF1;
- 				break;
-@@ -834,11 +823,8 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 		if (!ch->enabled)
- 			continue;
- 
--		ch->base_addr_y = ch->info->fix.smem_start;
--		ch->base_addr_c = ch->base_addr_y
--				+ ch->info->var.xres
--				* ch->info->var.yres_virtual;
--		ch->pitch = ch->info->fix.line_length;
-+		ch->base_addr_y = ch->dma_handle;
-+		ch->base_addr_c = ch->base_addr_y + ch->xres * ch->yres_virtual;
- 
- 		/* Enable MERAM if possible. */
- 		cfg = ch->cfg.meram_cfg;
-@@ -873,7 +859,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 		}
- 
- 		ret = mdev->ops->meram_register(mdev, cfg, ch->pitch,
--					ch->info->var.yres, pixelformat,
-+					ch->yres, pixelformat,
- 					ch->base_addr_y, ch->base_addr_c,
- 					&ch->base_addr_y, &ch->base_addr_c,
- 					&ch->pitch);
-@@ -1035,14 +1021,12 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
- 	unsigned long new_pan_offset;
- 	unsigned long base_addr_y, base_addr_c;
- 	unsigned long c_offset;
--	bool yuv = sh_mobile_format_is_yuv(&info->var);
- 
--	if (!yuv)
--		new_pan_offset = var->yoffset * info->fix.line_length
--			       + var->xoffset * (info->var.bits_per_pixel / 8);
-+	if (!ch->format->yuv)
-+		new_pan_offset = var->yoffset * ch->pitch
-+			       + var->xoffset * (ch->format->bpp / 8);
- 	else
--		new_pan_offset = var->yoffset * info->fix.line_length
--			       + var->xoffset;
-+		new_pan_offset = var->yoffset * ch->pitch + var->xoffset;
- 
- 	if (new_pan_offset = ch->pan_offset)
- 		return 0;	/* No change, do nothing */
-@@ -1051,12 +1035,11 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
- 
- 	/* Set the source address for the next refresh */
- 	base_addr_y = ch->dma_handle + new_pan_offset;
--	if (yuv) {
-+	if (ch->format->yuv) {
- 		/* Set y offset */
--		c_offset = var->yoffset * info->fix.line_length
--			 * (info->var.bits_per_pixel - 8) / 8;
--		base_addr_c = ch->dma_handle
--			    + info->var.xres * info->var.yres_virtual
-+		c_offset = var->yoffset * ch->pitch
-+			 * (ch->format->bpp - 8) / 8;
-+		base_addr_c = ch->dma_handle + ch->xres * ch->yres_virtual
- 			    + c_offset;
- 		/* Set x offset */
- 		if (ch->format->fourcc = V4L2_PIX_FMT_NV24)
-@@ -1083,7 +1066,7 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
- 	ch->base_addr_c = base_addr_c;
- 
- 	lcdc_write_chan_mirror(ch, LDSA1R, base_addr_y);
--	if (yuv)
-+	if (ch->format->yuv)
- 		lcdc_write_chan_mirror(ch, LDSA2R, base_addr_c);
- 
- 	if (lcdc_chan_is_sublcd(ch))
-@@ -1335,24 +1318,28 @@ static int sh_mobile_check_var(struct fb_var_screeninfo *var, struct fb_info *in
- static int sh_mobile_set_par(struct fb_info *info)
+ static int sh_mobile_lcdc_get_brightness(struct backlight_device *bdev)
  {
- 	struct sh_mobile_lcdc_chan *ch = info->par;
--	u32 line_length = info->fix.line_length;
- 	int ret;
+ 	struct sh_mobile_lcdc_chan *ch = bl_get_data(bdev);
+-	struct sh_mobile_lcdc_board_cfg *cfg = &ch->cfg.board_cfg;
  
- 	sh_mobile_lcdc_stop(ch->lcdc);
- 
--	if (sh_mobile_format_is_yuv(&info->var))
--		info->fix.line_length = info->var.xres;
--	else
--		info->fix.line_length = info->var.xres
--				      * info->var.bits_per_pixel / 8;
--
- 	ch->format = sh_mobile_format_info(sh_mobile_format_fourcc(&info->var));
-+	ch->colorspace = info->var.colorspace;
-+
-+	ch->xres = info->var.xres;
-+	ch->xres_virtual = info->var.xres_virtual;
-+	ch->yres = info->var.yres;
-+	ch->yres_virtual = info->var.yres_virtual;
-+
-+	if (ch->format->yuv)
-+		ch->pitch = info->var.xres;
-+	else
-+		ch->pitch = info->var.xres * ch->format->bpp / 8;
- 
- 	ret = sh_mobile_lcdc_start(ch->lcdc);
--	if (ret < 0) {
-+	if (ret < 0)
- 		dev_err(info->dev, "%s: unable to restart LCDC\n", __func__);
--		info->fix.line_length = line_length;
--	}
-+
-+	info->fix.line_length = ch->pitch;
- 
- 	if (sh_mobile_format_is_fourcc(&info->var)) {
- 		info->fix.type = FB_TYPE_FOURCC;
-@@ -1381,8 +1368,8 @@ static int sh_mobile_lcdc_blank(int blank, struct fb_info *info)
- 	/* blank the screen? */
- 	if (blank > FB_BLANK_UNBLANK && ch->blank_status = FB_BLANK_UNBLANK) {
- 		struct fb_fillrect rect = {
--			.width = info->var.xres,
--			.height = info->var.yres,
-+			.width = ch->xres,
-+			.height = ch->yres,
- 		};
- 		sh_mobile_lcdc_fillrect(info, &rect);
- 	}
-@@ -1522,6 +1509,13 @@ sh_mobile_lcdc_channel_fb_init(struct sh_mobile_lcdc_chan *ch,
- 	info->fix = sh_mobile_lcdc_fix;
- 	info->fix.smem_start = ch->dma_handle;
- 	info->fix.smem_len = ch->fb_size;
-+	info->fix.line_length = ch->pitch;
-+
-+	if (ch->format->yuv)
-+		info->fix.visual = FB_VISUAL_FOURCC;
-+	else
-+		info->fix.visual = FB_VISUAL_TRUECOLOR;
-+
- 	if (ch->format->fourcc = V4L2_PIX_FMT_NV12 ||
- 	    ch->format->fourcc = V4L2_PIX_FMT_NV21)
- 		info->fix.ypanstep = 2;
-@@ -1549,14 +1543,6 @@ sh_mobile_lcdc_channel_fb_init(struct sh_mobile_lcdc_chan *ch,
- 	if (ret)
- 		return ret;
- 
--	if (ch->format->yuv) {
--		info->fix.line_length = var->xres;
--		info->fix.visual = FB_VISUAL_FOURCC;
--	} else {
--		info->fix.line_length = var->xres * ch->format->bpp / 8;
--		info->fix.visual = FB_VISUAL_TRUECOLOR;
--	}
--
- 	return 0;
+-	return cfg->get_brightness();
++	return ch->cfg.bl_info.get_brightness();
  }
  
-@@ -1834,8 +1820,6 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
- 		return -EINVAL;
- 	}
+ static int sh_mobile_lcdc_check_fb(struct backlight_device *bdev,
+diff --git a/include/video/sh_mobile_lcdc.h b/include/video/sh_mobile_lcdc.h
+index a1e6596..541b2b3 100644
+--- a/include/video/sh_mobile_lcdc.h
++++ b/include/video/sh_mobile_lcdc.h
+@@ -154,8 +154,6 @@ struct sh_mobile_lcdc_board_cfg {
+ 			       struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
+ 	void (*display_on)(void);
+ 	void (*display_off)(void);
+-	int (*set_brightness)(int brightness);
+-	int (*get_brightness)(void);
+ };
  
--	ch->format = format;
--
- 	/* Iterate through the modes to validate them and find the highest
- 	 * resolution.
- 	 */
-@@ -1873,6 +1857,21 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
- 		num_modes = cfg->num_modes;
- 	}
+ struct sh_mobile_lcdc_lcd_size_cfg { /* width and height of panel in mm */
+@@ -167,6 +165,8 @@ struct sh_mobile_lcdc_lcd_size_cfg { /* width and height of panel in mm */
+ struct sh_mobile_lcdc_bl_info {
+ 	const char *name;
+ 	int max_brightness;
++	int (*set_brightness)(int brightness);
++	int (*get_brightness)(void);
+ };
  
-+	/* Use the first mode as default. */
-+	ch->format = format;
-+	ch->xres = mode->xres;
-+	ch->xres_virtual = mode->xres;
-+	ch->yres = mode->yres;
-+	ch->yres_virtual = mode->yres * 2;
-+
-+	if (!format->yuv) {
-+		ch->colorspace = V4L2_COLORSPACE_SRGB;
-+		ch->pitch = ch->xres * format->bpp / 8;
-+	} else {
-+		ch->colorspace = V4L2_COLORSPACE_REC709;
-+		ch->pitch = ch->xres;
-+	}
-+
- 	ch->display.width = cfg->panel_cfg.width;
- 	ch->display.height = cfg->panel_cfg.height;
- 	ch->display.mode = *mode;
-diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
-index cc22b9e..19a4cd7 100644
---- a/drivers/video/sh_mobile_lcdcfb.h
-+++ b/drivers/video/sh_mobile_lcdcfb.h
-@@ -74,9 +74,15 @@ struct sh_mobile_lcdc_chan {
- 	struct completion vsync_completion;
- 
- 	const struct sh_mobile_lcdc_format_info *format;
-+	u32 colorspace;
-+	unsigned int xres;
-+	unsigned int xres_virtual;
-+	unsigned int yres;
-+	unsigned int yres_virtual;
-+	unsigned int pitch;
-+
- 	unsigned long base_addr_y;
- 	unsigned long base_addr_c;
--	unsigned int pitch;
- 
- 	int (*notify)(struct sh_mobile_lcdc_chan *ch,
- 		      enum sh_mobile_lcdc_entity_event event,
+ struct sh_mobile_lcdc_chan_cfg {
 -- 
 1.7.3.4
 

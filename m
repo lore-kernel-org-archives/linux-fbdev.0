@@ -1,66 +1,86 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Mon, 19 Dec 2011 22:26:14 +0000
-Subject: [PATCH 1/5] drivers/video: fsl-diu-fb: merge init_fbinfo() into install_fb()
-Message-Id: <1324333578-23992-1-git-send-email-timur@freescale.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 13 Dec 2011 14:02:44 +0000
+Subject: [PATCH 49/57] arm: mach-shmobile: Don't set MERAM ICB numbers in platform data
+Message-Id: <1323784972-24205-50-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Function init_fbinfo() is called only from install_fb(), and it's only a few
-lines long.  Plus, it ignores the return code from fb_alloc_cmap().  Merge
-its contents into install_fb() and handle errors properly.
+The marker and cache ICBs are now allocated automatically, there's no
+need to specify them manually anymore.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/fsl-diu-fb.c |   25 ++++++++-----------------
- 1 files changed, 8 insertions(+), 17 deletions(-)
+ arch/arm/mach-shmobile/board-ap4evb.c   |    8 --------
+ arch/arm/mach-shmobile/board-mackerel.c |    8 --------
+ 2 files changed, 0 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index 408272c..411a7b3 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -1220,21 +1220,6 @@ static struct fb_ops fsl_diu_ops = {
- 	.fb_release = fsl_diu_release,
+diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
+index d3896dc..d6d9e0f 100644
+--- a/arch/arm/mach-shmobile/board-ap4evb.c
++++ b/arch/arm/mach-shmobile/board-ap4evb.c
+@@ -589,13 +589,9 @@ static const struct fb_videomode ap4evb_lcdc_modes[] = {
  };
+ static struct sh_mobile_meram_cfg lcd_meram_cfg = {
+ 	.icb[0] = {
+-		.marker_icb     = 28,
+-		.cache_icb      = 24,
+ 		.meram_size     = 0x40,
+ 	},
+ 	.icb[1] = {
+-		.marker_icb     = 29,
+-		.cache_icb      = 25,
+ 		.meram_size     = 0x40,
+ 	},
+ };
+@@ -858,13 +854,9 @@ static long ap4evb_clk_optimize(unsigned long target, unsigned long *best_freq,
  
--static int init_fbinfo(struct fb_info *info)
--{
--	struct mfb_info *mfbi = info->par;
--
--	info->device = NULL;
--	info->var.activate = FB_ACTIVATE_NOW;
--	info->fbops = &fsl_diu_ops;
--	info->flags = FBINFO_FLAG_DEFAULT;
--	info->pseudo_palette = &mfbi->pseudo_palette;
--
--	/* Allocate colormap */
--	fb_alloc_cmap(&info->cmap, 16, 0);
--	return 0;
--}
--
- static int __devinit install_fb(struct fb_info *info)
- {
- 	int rc;
-@@ -1244,8 +1229,14 @@ static int __devinit install_fb(struct fb_info *info)
- 	unsigned int dbsize = ARRAY_SIZE(fsl_diu_mode_db);
- 	int has_default_mode = 1;
+ static struct sh_mobile_meram_cfg hdmi_meram_cfg = {
+ 	.icb[0] = {
+-		.marker_icb     = 30,
+-		.cache_icb      = 26,
+ 		.meram_size     = 0x100,
+ 	},
+ 	.icb[1] = {
+-		.marker_icb     = 31,
+-		.cache_icb      = 27,
+ 		.meram_size     = 0x100,
+ 	},
+ };
+diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
+index d555d9e..6e0db88 100644
+--- a/arch/arm/mach-shmobile/board-mackerel.c
++++ b/arch/arm/mach-shmobile/board-mackerel.c
+@@ -376,13 +376,9 @@ static int mackerel_get_brightness(void)
  
--	if (init_fbinfo(info))
--		return -EINVAL;
-+	info->var.activate = FB_ACTIVATE_NOW;
-+	info->fbops = &fsl_diu_ops;
-+	info->flags = FBINFO_DEFAULT;
-+	info->pseudo_palette = mfbi->pseudo_palette;
-+
-+	rc = fb_alloc_cmap(&info->cmap, 16, 0);
-+	if (rc)
-+		return rc;
+ static struct sh_mobile_meram_cfg lcd_meram_cfg = {
+ 	.icb[0] = {
+-		.marker_icb     = 28,
+-		.cache_icb      = 24,
+ 		.meram_size     = 0x40,
+ 	},
+ 	.icb[1] = {
+-		.marker_icb     = 29,
+-		.cache_icb      = 25,
+ 		.meram_size     = 0x40,
+ 	},
+ };
+@@ -466,13 +462,9 @@ static struct platform_device hdmi_device = {
  
- 	if (mfbi->index = PLANE0) {
- 		if (mfbi->edid_data) {
+ static struct sh_mobile_meram_cfg hdmi_meram_cfg = {
+ 	.icb[0] = {
+-		.marker_icb     = 30,
+-		.cache_icb      = 26,
+ 		.meram_size     = 0x100,
+ 	},
+ 	.icb[1] = {
+-		.marker_icb     = 31,
+-		.cache_icb      = 27,
+ 		.meram_size     = 0x100,
+ 	},
+ };
 -- 
 1.7.3.4
-
 

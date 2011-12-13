@@ -1,217 +1,149 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:02:37 +0000
-Subject: [PATCH 42/57] fbdev: sh_mobile_meram: Make variables unsigned where applicable
-Message-Id: <1323784972-24205-43-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Tue, 13 Dec 2011 14:02:51 +0000
+Subject: [PATCH 56/57] fbdev: sh_mobile_lcdc: Rename fb operation handlers with a common prefix
+Message-Id: <1323784972-24205-57-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Many variables, such as loop counters, sizes and offsets, should be
-unsigned integers. Make them so.
+Make all fb operation handlers start with sh_mobile_lcdc_ in preparation
+for the multi-plane support.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mobile_meram.c |   80 +++++++++++++++++++++------------------
- include/video/sh_mobile_meram.h |    6 ++-
- 2 files changed, 47 insertions(+), 39 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |   42 +++++++++++++++++++------------------
+ 1 files changed, 22 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
-index 2ad5a45..548f700 100644
---- a/drivers/video/sh_mobile_meram.c
-+++ b/drivers/video/sh_mobile_meram.c
-@@ -104,7 +104,7 @@ struct sh_mobile_meram_priv {
- 	void __iomem	*base;
- 	struct mutex	lock;
- 	unsigned long	used_icb;
--	int		used_meram_cache_regions;
-+	unsigned int	used_meram_cache_regions;
- 	unsigned long	used_meram_cache[SH_MOBILE_MERAM_ICB_NUM];
- 	unsigned long	cmn_saved_regs[CMN_REGS_SIZE];
- 	unsigned long	icb_saved_regs[ICB_REGS_SIZE * SH_MOBILE_MERAM_ICB_NUM];
-@@ -120,24 +120,25 @@ struct sh_mobile_meram_priv {
- 
- #define MERAM_ICB_OFFSET(base, idx, off)	((base) + (off) + (idx) * 0x20)
- 
--static inline void meram_write_icb(void __iomem *base, int idx, int off,
--	unsigned long val)
-+static inline void meram_write_icb(void __iomem *base, unsigned int idx,
-+				   unsigned int off, unsigned long val)
- {
- 	iowrite32(val, MERAM_ICB_OFFSET(base, idx, off));
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 357cdc1..4b4e81e 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -583,7 +583,7 @@ static irqreturn_t sh_mobile_lcdc_irq(int irq, void *data)
+ 	return IRQ_HANDLED;
  }
  
--static inline unsigned long meram_read_icb(void __iomem *base, int idx, int off)
-+static inline unsigned long meram_read_icb(void __iomem *base, unsigned int idx,
-+					   unsigned int off)
+-static int sh_mobile_wait_for_vsync(struct sh_mobile_lcdc_chan *ch)
++static int sh_mobile_lcdc_wait_for_vsync(struct sh_mobile_lcdc_chan *ch)
  {
- 	return ioread32(MERAM_ICB_OFFSET(base, idx, off));
+ 	unsigned long ldintr;
+ 	int ret;
+@@ -684,7 +684,7 @@ static void sh_mobile_lcdc_geometry(struct sh_mobile_lcdc_chan *ch)
  }
  
--static inline void meram_write_reg(void __iomem *base, int off,
--		unsigned long val)
-+static inline void meram_write_reg(void __iomem *base, unsigned int off,
-+				   unsigned long val)
- {
- 	iowrite32(val, base + off);
+ /*
+- * __sh_mobile_lcdc_start - Configure and tart the LCDC
++ * __sh_mobile_lcdc_start - Configure and start the LCDC
+  * @priv: LCDC device
+  *
+  * Configure all enabled channels and start the LCDC device. All external
+@@ -1032,8 +1032,8 @@ static void sh_mobile_lcdc_imageblit(struct fb_info *info,
+ 	sh_mobile_lcdc_deferred_io_touch(info);
  }
  
--static inline unsigned long meram_read_reg(void __iomem *base, int off)
-+static inline unsigned long meram_read_reg(void __iomem *base, unsigned int off)
+-static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
+-				     struct fb_info *info)
++static int sh_mobile_lcdc_pan(struct fb_var_screeninfo *var,
++			      struct fb_info *info)
  {
- 	return ioread32(base + off);
- }
-@@ -158,8 +159,8 @@ static inline unsigned long meram_read_reg(void __iomem *base, int off)
- static inline int meram_check_overlap(struct sh_mobile_meram_priv *priv,
- 				      struct sh_mobile_meram_icb_cfg *new)
- {
--	int i;
--	int used_start, used_end, meram_start, meram_end;
-+	unsigned int used_start, used_end, meram_start, meram_end;
-+	unsigned int i;
- 
- 	/* valid ICB? */
- 	if (new->marker_icb & ~0x1f || new->cache_icb & ~0x1f)
-@@ -190,7 +191,7 @@ static inline int meram_check_overlap(struct sh_mobile_meram_priv *priv,
- static inline void meram_mark(struct sh_mobile_meram_priv *priv,
- 			      struct sh_mobile_meram_icb_cfg *new)
- {
--	int n;
-+	unsigned int n;
- 
- 	if (new->marker_icb < 0 || new->cache_icb < 0)
- 		return;
-@@ -213,8 +214,8 @@ static inline void meram_mark(struct sh_mobile_meram_priv *priv,
- static inline void meram_unmark(struct sh_mobile_meram_priv *priv,
- 				struct sh_mobile_meram_icb_cfg *icb)
- {
--	int i;
- 	unsigned long pattern;
-+	unsigned int i;
- 
- 	if (icb->marker_icb < 0 || icb->cache_icb < 0)
- 		return;
-@@ -304,12 +305,15 @@ static inline void meram_get_next_icb_addr(struct sh_mobile_meram_info *pdata,
- 
- static int meram_init(struct sh_mobile_meram_priv *priv,
- 		      struct sh_mobile_meram_icb_cfg *icb,
--		      int xres, int yres, int *out_pitch)
-+		      unsigned int xres, unsigned int yres,
-+		      unsigned int *out_pitch)
- {
- 	unsigned long total_byte_count = MERAM_CALC_BYTECOUNT(xres, yres);
- 	unsigned long bnm;
--	int lcdc_pitch, xpitch, line_cnt;
--	int save_lines;
-+	unsigned int lcdc_pitch;
-+	unsigned int xpitch;
-+	unsigned int line_cnt;
-+	unsigned int save_lines;
- 
- 	/* adjust pitch to 1024, 2048, 4096 or 8192 */
- 	lcdc_pitch = (xres - 1) | 1023;
-@@ -386,16 +390,18 @@ static void meram_deinit(struct sh_mobile_meram_priv *priv,
- 
- static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
- 				    struct sh_mobile_meram_cfg *cfg,
--				    int xres, int yres, int pixelformat,
-+				    unsigned int xres, unsigned int yres,
-+				    unsigned int pixelformat,
- 				    unsigned long base_addr_y,
- 				    unsigned long base_addr_c,
- 				    unsigned long *icb_addr_y,
- 				    unsigned long *icb_addr_c,
--				    int *pitch)
-+				    unsigned int *pitch)
- {
- 	struct platform_device *pdev;
- 	struct sh_mobile_meram_priv *priv;
--	int n, out_pitch;
-+	unsigned int out_pitch;
-+	unsigned int n;
- 	int error = 0;
- 
- 	if (!pdata || !pdata->priv || !pdata->pdev || !cfg)
-@@ -538,21 +544,21 @@ static int sh_mobile_meram_runtime_suspend(struct device *dev)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
--	int k, j;
-+	unsigned int i, j;
- 
--	for (k = 0; k < CMN_REGS_SIZE; k++)
--		priv->cmn_saved_regs[k] = meram_read_reg(priv->base,
--			common_regs[k]);
-+	for (i = 0; i < CMN_REGS_SIZE; i++)
-+		priv->cmn_saved_regs[i] = meram_read_reg(priv->base,
-+			common_regs[i]);
- 
--	for (j = 0; j < 32; j++) {
--		if (!test_bit(j, &priv->used_icb))
-+	for (i = 0; i < 32; i++) {
-+		if (!test_bit(i, &priv->used_icb))
- 			continue;
--		for (k = 0; k < ICB_REGS_SIZE; k++) {
--			priv->icb_saved_regs[j * ICB_REGS_SIZE + k] -				meram_read_icb(priv->base, j, icb_regs[k]);
-+		for (j = 0; j < ICB_REGS_SIZE; j++) {
-+			priv->icb_saved_regs[i * ICB_REGS_SIZE + j] +				meram_read_icb(priv->base, i, icb_regs[j]);
- 			/* Reset ICB on resume */
--			if (icb_regs[k] = MExxCTL)
--				priv->icb_saved_regs[j * ICB_REGS_SIZE + k] |+			if (icb_regs[j] = MExxCTL)
-+				priv->icb_saved_regs[i * ICB_REGS_SIZE + j] | 					MExxCTL_WBF | MExxCTL_WF | MExxCTL_RF;
- 		}
- 	}
-@@ -563,20 +569,20 @@ static int sh_mobile_meram_runtime_resume(struct device *dev)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
--	int k, j;
-+	unsigned int i, j;
- 
--	for (j = 0; j < 32; j++) {
--		if (!test_bit(j, &priv->used_icb))
-+	for (i = 0; i < 32; i++) {
-+		if (!test_bit(i, &priv->used_icb))
- 			continue;
--		for (k = 0; k < ICB_REGS_SIZE; k++) {
--			meram_write_icb(priv->base, j, icb_regs[k],
--			priv->icb_saved_regs[j * ICB_REGS_SIZE + k]);
-+		for (j = 0; j < ICB_REGS_SIZE; j++) {
-+			meram_write_icb(priv->base, i, icb_regs[j],
-+			priv->icb_saved_regs[i * ICB_REGS_SIZE + j]);
- 		}
- 	}
- 
--	for (k = 0; k < CMN_REGS_SIZE; k++)
--		meram_write_reg(priv->base, common_regs[k],
--			priv->cmn_saved_regs[k]);
-+	for (i = 0; i < CMN_REGS_SIZE; i++)
-+		meram_write_reg(priv->base, common_regs[i],
-+				priv->cmn_saved_regs[i]);
+ 	struct sh_mobile_lcdc_chan *ch = info->par;
+ 	struct sh_mobile_lcdc_priv *priv = ch->lcdc;
+@@ -1096,14 +1096,15 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
  	return 0;
  }
  
-diff --git a/include/video/sh_mobile_meram.h b/include/video/sh_mobile_meram.h
-index caae558..6755e3f 100644
---- a/include/video/sh_mobile_meram.h
-+++ b/include/video/sh_mobile_meram.h
-@@ -46,11 +46,13 @@ struct sh_mobile_meram_ops {
- 	/* register usage of meram */
- 	int (*meram_register)(struct sh_mobile_meram_info *meram_dev,
- 			      struct sh_mobile_meram_cfg *cfg,
--			      int xres, int yres, int pixelformat,
-+			      unsigned int xres, unsigned int yres,
-+			      unsigned int pixelformat,
- 			      unsigned long base_addr_y,
- 			      unsigned long base_addr_c,
- 			      unsigned long *icb_addr_y,
--			      unsigned long *icb_addr_c, int *pitch);
-+			      unsigned long *icb_addr_c,
-+			      unsigned int *pitch);
+-static int sh_mobile_ioctl(struct fb_info *info, unsigned int cmd,
+-		       unsigned long arg)
++static int sh_mobile_lcdc_ioctl(struct fb_info *info, unsigned int cmd,
++				unsigned long arg)
+ {
++	struct sh_mobile_lcdc_chan *ch = info->par;
+ 	int retval;
  
- 	/* unregister usage of meram */
- 	int (*meram_unregister)(struct sh_mobile_meram_info *meram_dev,
+ 	switch (cmd) {
+ 	case FBIO_WAITFORVSYNC:
+-		retval = sh_mobile_wait_for_vsync(info->par);
++		retval = sh_mobile_lcdc_wait_for_vsync(ch);
+ 		break;
+ 
+ 	default:
+@@ -1154,7 +1155,7 @@ static void sh_mobile_fb_reconfig(struct fb_info *info)
+  * Locking: both .fb_release() and .fb_open() are called with info->lock held if
+  * user = 1, or with console sem held, if user = 0.
+  */
+-static int sh_mobile_release(struct fb_info *info, int user)
++static int sh_mobile_lcdc_release(struct fb_info *info, int user)
+ {
+ 	struct sh_mobile_lcdc_chan *ch = info->par;
+ 
+@@ -1175,7 +1176,7 @@ static int sh_mobile_release(struct fb_info *info, int user)
+ 	return 0;
+ }
+ 
+-static int sh_mobile_open(struct fb_info *info, int user)
++static int sh_mobile_lcdc_open(struct fb_info *info, int user)
+ {
+ 	struct sh_mobile_lcdc_chan *ch = info->par;
+ 
+@@ -1188,7 +1189,8 @@ static int sh_mobile_open(struct fb_info *info, int user)
+ 	return 0;
+ }
+ 
+-static int sh_mobile_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
++static int sh_mobile_lcdc_check_var(struct fb_var_screeninfo *var,
++				    struct fb_info *info)
+ {
+ 	struct sh_mobile_lcdc_chan *ch = info->par;
+ 	struct sh_mobile_lcdc_priv *p = ch->lcdc;
+@@ -1309,7 +1311,7 @@ static int sh_mobile_check_var(struct fb_var_screeninfo *var, struct fb_info *in
+ 	return 0;
+ }
+ 
+-static int sh_mobile_set_par(struct fb_info *info)
++static int sh_mobile_lcdc_set_par(struct fb_info *info)
+ {
+ 	struct sh_mobile_lcdc_chan *ch = info->par;
+ 	int ret;
+@@ -1379,8 +1381,8 @@ static int sh_mobile_lcdc_blank(int blank, struct fb_info *info)
+ 		 * mode will reenable the clocks and update the screen in time,
+ 		 * so it does not need this. */
+ 		if (!info->fbdefio) {
+-			sh_mobile_wait_for_vsync(ch);
+-			sh_mobile_wait_for_vsync(ch);
++			sh_mobile_lcdc_wait_for_vsync(ch);
++			sh_mobile_lcdc_wait_for_vsync(ch);
+ 		}
+ 		sh_mobile_lcdc_clk_off(p);
+ 	}
+@@ -1398,12 +1400,12 @@ static struct fb_ops sh_mobile_lcdc_ops = {
+ 	.fb_copyarea	= sh_mobile_lcdc_copyarea,
+ 	.fb_imageblit	= sh_mobile_lcdc_imageblit,
+ 	.fb_blank	= sh_mobile_lcdc_blank,
+-	.fb_pan_display = sh_mobile_fb_pan_display,
+-	.fb_ioctl       = sh_mobile_ioctl,
+-	.fb_open	= sh_mobile_open,
+-	.fb_release	= sh_mobile_release,
+-	.fb_check_var	= sh_mobile_check_var,
+-	.fb_set_par	= sh_mobile_set_par,
++	.fb_pan_display = sh_mobile_lcdc_pan,
++	.fb_ioctl       = sh_mobile_lcdc_ioctl,
++	.fb_open	= sh_mobile_lcdc_open,
++	.fb_release	= sh_mobile_lcdc_release,
++	.fb_check_var	= sh_mobile_lcdc_check_var,
++	.fb_set_par	= sh_mobile_lcdc_set_par,
+ };
+ 
+ static void
+@@ -1533,7 +1535,7 @@ sh_mobile_lcdc_channel_fb_init(struct sh_mobile_lcdc_chan *ch,
+ 	else
+ 		var->grayscale = ch->format->fourcc;
+ 
+-	ret = sh_mobile_check_var(var, info);
++	ret = sh_mobile_lcdc_check_var(var, info);
+ 	if (ret)
+ 		return ret;
+ 
 -- 
 1.7.3.4
 

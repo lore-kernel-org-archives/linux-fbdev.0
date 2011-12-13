@@ -1,61 +1,88 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Dec 2011 11:24:47 +0000
-Subject: Re: [PATCH 08/10] omapfb: lcd_ams_delta: Drive control lines over
-Message-Id: <1323689087.3852.19.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-HrrbFEKLHQnNz2ugs0wK"
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Tue, 13 Dec 2011 14:45:33 +0000
+Subject: RE: [PATCH] video:da8xx-fb: Add 24bpp LCD configuration support
+Message-Id: <A73F36158E33644199EB82C5EC81C7BC022B95@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1323634328-856-1-git-send-email-jkrzyszt@tis.icnet.pl>
- <1323634328-856-9-git-send-email-jkrzyszt@tis.icnet.pl>
-In-Reply-To: <1323634328-856-9-git-send-email-jkrzyszt@tis.icnet.pl>
-To: linux-arm-kernel@lists.infradead.org
+References: <1321358479-20390-1-git-send-email-prakash.pm@ti.com>
+In-Reply-To: <1321358479-20390-1-git-send-email-prakash.pm@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
+Hi Florian Tobias Schandinat,
 
---=-HrrbFEKLHQnNz2ugs0wK
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+On Sat, Nov 26, 2011 at 02:58:51, Florian Tobias Schandinat wrote:
+> On 11/25/2011 07:45 AM, Manjunathappa, Prakash wrote:
+> > Hi Florian Tobias Schandinat
+> > 
+> > On Sun, Nov 20, 2011 at 06:11:44, Florian Tobias Schandinat wrote:
+> >> On 11/15/2011 12:01 PM, Manjunathappa, Prakash wrote:
+> >>> LCD controller on am335x supports 24bpp raster configuration
+> >>> in addition to ones on da850. LCDC also supports 24bpp in unpacked
+> >>> format having ARGB:8888 32bpp format data in DDR, but it doesn't
+> >>> interpret Alpha component of the data.
+> >>>
+> >>> Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+> >>> ---
+> >>>  drivers/video/da8xx-fb.c |   57 +++++++++++++++++++++++++++++++++++++++++++++-
+> >>>  1 files changed, 56 insertions(+), 1 deletions(-)
+> >>>
+> >>> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+> >>> index 55f91d9..e111971 100644
+> >>> --- a/drivers/video/da8xx-fb.c
+> >>> +++ b/drivers/video/da8xx-fb.c
+> >>> @@ -82,6 +82,8 @@
+> >>>  #define LCD_V2_LIDD_CLK_EN		BIT(1)
+> >>>  #define LCD_V2_CORE_CLK_EN		BIT(0)
+> >>>  #define LCD_V2_LPP_B10			26
+> >>> +#define LCD_V2_TFT_24BPP_MODE		BIT(25)
+> >>> +#define LCD_V2_TFT_24BPP_UNPACK		BIT(26)
+> >>>  
+> >>>  /* LCD Raster Timing 2 Register */
+> >>>  #define LCD_AC_BIAS_TRANSITIONS_PER_INT(x)	((x) << 16)
+> >>> @@ -151,7 +153,7 @@ struct da8xx_fb_par {
+> >>>  	unsigned int		dma_end;
+> >>>  	struct clk *lcdc_clk;
+> >>>  	int irq;
+> >>> -	unsigned short pseudo_palette[16];
+> >>> +	unsigned short pseudo_palette[32];
+> >>
+> >> This looks wrong, include/linux/fb.h says:
+> >> "void *pseudo_palette;           /* Fake palette of 16 colors */"
+> >> This will probably also simplify the code below to write to the pseudo palette.
+> >> But I think you have to increase the data type of the palette, maybe to u32?
+> >>
+> >>
+> > 
+> > Yes, I accept that data type has to be changed to u32. But how does it simplify updating of pseudo palette.
+> 
+> Your code is even buggier than I saw. Where did you get the information how to
+> write fb_setcolreg?
+> First, as I wrote in my last mail, the pseudo_palette has always exactly 16
+> colors, regardless of the color depth.
+> Second, the existing code is some sort of wrong to check for bpp the only thing
+> that really matters is whether it is Truecolor or not, the code for handling the
+> Truecolor case will very likely be always the same regardless of the bpp, just
+> the values in {red,green,blue}{length,offset} differ.
+> Third your patch is wrong in using 24 in things like
+> red >>= (24 - info->var.red.length);
+> skeletonfb.c: "The values supplied have a 16 bit magnitude which needs to be
+> scaled in this function for the hardware."
+> So it has to be 16, always.
+> 
+> Just have a look at drivers/video/skeletonfb.c, it contains much useful information.
+> 
+> 
+> Best regards,
+> 
+> Florian Tobias Schandinat
+> 
 
-On Sun, 2011-12-11 at 21:12 +0100, Janusz Krzysztofik wrote:
-> Don't use Amstrad Delta custom I/O functions any longer, use GPIO API
-> instead.
->=20
-> Depends on patch 5/10 "MTD: NAND: ams-delta: Use GPIO instead of custom
-> I/O".
->=20
-> Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-> ---
->  arch/arm/mach-omap1/board-ams-delta.c             |   10 -------
->  arch/arm/plat-omap/include/plat/board-ams-delta.h |    2 -
->  drivers/video/omap/lcd_ams_delta.c                |   27 +++++++++++++++=
------
->  3 files changed, 20 insertions(+), 19 deletions(-)
+Thanks for pointing out to skeletonfb.c. I will submit next version based on this.
 
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Thanks,
+Prakash
 
- Tomi
-
-
---=-HrrbFEKLHQnNz2ugs0wK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJO5eR/AAoJEPo9qoy8lh71y4AP/36ymwGQfo0/xUblq852gGHK
-tddm2t7IxPa246K8pshBAskSuCLlmL9lDmjj3r5NWnU4HxHxfLtoRRjfyCBS+RtV
-YvKaWwHIdbx5fpiIsMiWlmuqHdZGST3RGPSqR/k/niT+PSHnk25iCIdOvCi9TM9/
-b4/uKGvR0A6bC2Q1JmhWVaTt2jsYtsCbYSd/vd2EAqxd/QwU6MI/q92YxWG8k3Np
-fSGSvRC3Y6eCJIwav5SF1+dX4Wnr/d1etWWJ696etdG1AU6/hxp3zHcNQd0LBqyd
-THRvM05HsLmETf4dcQFy4CIS13F41gkjaR8OtqEpJ6wYrWd8ygmSdv6GdCpR4Z8/
-Y5zcBcPrwI9/2MgqdoRblqGfuaYPZ6V1kdMHrZlk4Jz3UUluiTBdEQy0bBneiSqp
-yGAxx6goIYcTc94NIp8hr5+DH7qmNcroMRkhgEbGaerF01+p0gwj+Xe5ER4rW8Az
-nQgfTpWk3mUohTWs92XYIlrpjvWv5AnuNTfEe7yzcetIUw3y4b4wbriTzZA/a/ir
-8UqKyFnduoTu2BAUOSsZrzok2/diRAvuvqQC0ByEf7yewg/uwFUyv5YhclHTUXOP
-MBZwDY7U2VXEbF+lLagrAud/dsDR7OA+rfi3izWBcvJ3RI0z0i9cBTEbrxEzIUvQ
-1rjc4B7YLHQ/HMw3JSfk
-=ca/Q
------END PGP SIGNATURE-----
-
---=-HrrbFEKLHQnNz2ugs0wK--
+[...] 
 

@@ -1,73 +1,122 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Wed, 28 Dec 2011 23:55:12 +0000
-Subject: RE: [PATCH 6/6] video: s3c-fb: Don't keep device runtime active when
-Message-Id: <000b01ccc5bc$235c0b20$6a142160$%han@samsung.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 13 Dec 2011 14:02:06 +0000
+Subject: [PATCH 11/57] fbdev: sh_mobile_lcdc: Handle HDMI/MIPI transmitter device directly
+Message-Id: <1323784972-24205-12-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20111227141550.GA3331@opensource.wolfsonmicro.com>
- <1324995372-3410-1-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1324995372-3410-6-git-send-email-broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1324995372-3410-6-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Mark Brown' <broonie@opensource.wolfsonmicro.com>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-> -----Original Message-----
-> From: Mark Brown [mailto:broonie@opensource.wolfsonmicro.com]
-> Sent: Tuesday, December 27, 2011 11:16 PM
-> To: Jingoo Han; Florian Tobias Schandinat
-> Cc: linux-fbdev@vger.kernel.org; linux-kernel@vger.kernel.org; Mark Brown
-> Subject: [PATCH 6/6] video: s3c-fb: Don't keep device runtime active when open
-> 
-> Allow the controller to be runtime suspended when the screen is blanked
-> by not taking a runtime reference while the device is open. This allows
-> greater system wide power savings when used with a standard application
-> layer and ensures that the screen does not blank unless requested.
-> 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Pass a pointer to the transmitter device through platform data, retrieve
+the corresponding sh_mobile_lcdc_entity structure in the probe method
+and call the transmitter display_on/off methods directly.
 
-		Acked-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/sh_mobile_lcdcfb.c |   33 ++++++++++++++++++++++++++++-----
+ drivers/video/sh_mobile_lcdcfb.h |    2 ++
+ include/video/sh_mobile_lcdc.h   |    2 ++
+ 3 files changed, 32 insertions(+), 5 deletions(-)
 
-> ---
->  drivers/video/s3c-fb.c |   22 ----------------------
->  1 files changed, 0 insertions(+), 22 deletions(-)
-> 
-> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-> index 84cf631..0c63b69 100644
-> --- a/drivers/video/s3c-fb.c
-> +++ b/drivers/video/s3c-fb.c
-> @@ -1070,30 +1070,8 @@ static int s3c_fb_ioctl(struct fb_info *info, unsigned int cmd,
->  	return ret;
->  }
-> 
-> -static int s3c_fb_open(struct fb_info *info, int user)
-> -{
-> -	struct s3c_fb_win *win = info->par;
-> -	struct s3c_fb *sfb = win->parent;
-> -
-> -	pm_runtime_get_sync(sfb->dev);
-> -
-> -	return 0;
-> -}
-> -
-> -static int s3c_fb_release(struct fb_info *info, int user)
-> -{
-> -	struct s3c_fb_win *win = info->par;
-> -	struct s3c_fb *sfb = win->parent;
-> -
-> -	pm_runtime_put_sync(sfb->dev);
-> -
-> -	return 0;
-> -}
-> -
->  static struct fb_ops s3c_fb_ops = {
->  	.owner		= THIS_MODULE,
-> -	.fb_open	= s3c_fb_open,
-> -	.fb_release	= s3c_fb_release,
->  	.fb_check_var	= s3c_fb_check_var,
->  	.fb_set_par	= s3c_fb_set_par,
->  	.fb_blank	= s3c_fb_blank,
-> --
-> 1.7.7.3
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index afa1fac..f1bbae6 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -338,6 +338,13 @@ static void sh_mobile_lcdc_deferred_io_touch(struct fb_info *info)
+ static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
+ {
+ 	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
++	int ret;
++
++	if (ch->tx_dev) {
++		ret = ch->tx_dev->ops->display_on(ch->tx_dev, ch->info);
++		if (ret < 0)
++			return;
++	}
+ 
+ 	/* HDMI must be enabled before LCDC configuration */
+ 	if (board_cfg->display_on && try_module_get(board_cfg->owner)) {
+@@ -354,6 +361,9 @@ static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
+ 		board_cfg->display_off(board_cfg->board_data);
+ 		module_put(board_cfg->owner);
+ 	}
++
++	if (ch->tx_dev)
++		ch->tx_dev->ops->display_off(ch->tx_dev);
+ }
+ 
+ /* -----------------------------------------------------------------------------
+@@ -1490,18 +1500,21 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
+ 	sh_mobile_lcdc_stop(priv);
+ 
+ 	for (i = 0; i < ARRAY_SIZE(priv->ch); i++) {
+-		info = priv->ch[i].info;
++		struct sh_mobile_lcdc_chan *ch = &priv->ch[i];
+ 
++		info = ch->info;
+ 		if (!info || !info->device)
+ 			continue;
+ 
+-		if (priv->ch[i].sglist)
+-			vfree(priv->ch[i].sglist);
++		if (ch->tx_dev)
++			module_put(ch->cfg.tx_dev->dev.driver->owner);
++
++		if (ch->sglist)
++			vfree(ch->sglist);
+ 
+ 		if (info->screen_base)
+ 			dma_free_coherent(&pdev->dev, info->fix.smem_len,
+-					  info->screen_base,
+-					  priv->ch[i].dma_handle);
++					  info->screen_base, ch->dma_handle);
+ 		fb_dealloc_cmap(&info->cmap);
+ 		framebuffer_release(info);
+ 	}
+@@ -1596,6 +1609,16 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
+ 	info->pseudo_palette = &ch->pseudo_palette;
+ 	info->flags = FBINFO_FLAG_DEFAULT;
+ 
++	if (cfg->tx_dev) {
++		if (!cfg->tx_dev->dev.driver ||
++		    !try_module_get(cfg->tx_dev->dev.driver->owner)) {
++			dev_warn(priv->dev, "unable to get transmitter "
++				 "device\n");
++			return -EINVAL;
++		}
++		ch->tx_dev = platform_get_drvdata(cfg->tx_dev);
++	}
++
+ 	/* Iterate through the modes to validate them and find the highest
+ 	 * resolution.
+ 	 */
+diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
+index d79e5aa..9601b92 100644
+--- a/drivers/video/sh_mobile_lcdcfb.h
++++ b/drivers/video/sh_mobile_lcdcfb.h
+@@ -41,6 +41,8 @@ struct sh_mobile_lcdc_entity {
+  */
+ struct sh_mobile_lcdc_chan {
+ 	struct sh_mobile_lcdc_priv *lcdc;
++	struct sh_mobile_lcdc_entity *tx_dev;
++
+ 	unsigned long *reg_offs;
+ 	unsigned long ldmt1r_value;
+ 	unsigned long enabled; /* ME and SE in LDCNT2R */
+diff --git a/include/video/sh_mobile_lcdc.h b/include/video/sh_mobile_lcdc.h
+index fe30b75..0ec59e1 100644
+--- a/include/video/sh_mobile_lcdc.h
++++ b/include/video/sh_mobile_lcdc.h
+@@ -186,6 +186,8 @@ struct sh_mobile_lcdc_chan_cfg {
+ 	struct sh_mobile_lcdc_bl_info bl_info;
+ 	struct sh_mobile_lcdc_sys_bus_cfg sys_bus_cfg; /* only for SYSn I/F */
+ 	struct sh_mobile_meram_cfg *meram_cfg;
++
++	struct platform_device *tx_dev;	/* HDMI/MIPI transmitter device */
+ };
+ 
+ struct sh_mobile_lcdc_info {
+-- 
+1.7.3.4
 

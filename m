@@ -1,131 +1,66 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 04 Dec 2011 00:39:27 +0000
-Subject: Re: [PATCH 1/2] video: s3c-fb: Unify runtime and system PM functions
-Message-Id: <4EDAC13F.4060102@gmx.de>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 13 Dec 2011 14:02:16 +0000
+Subject: [PATCH 21/57] sh_mobile_lcdc: Add an lcdc channel pointer to sh_mobile_lcdc_entity
+Message-Id: <1323784972-24205-22-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1322434268-25525-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1322434268-25525-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On 11/27/2011 10:51 PM, Mark Brown wrote:
-> The s3c-fb driver has separate runtime and system PM functions but the
-> implementations are identical so far as I can tell so unify them for
-> simplicity.
-> 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+The field will be used by the transmitter drivers to access
+sh_mobile_lcdc_chan fields such as fb_info.
 
-Applied this patch.
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/sh_mobile_lcdcfb.c |    5 ++++-
+ drivers/video/sh_mobile_lcdcfb.h |    2 ++
+ 2 files changed, 6 insertions(+), 1 deletions(-)
 
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
-> 
-> This is a slightly updated version of the patch, previously I forgot to
-> staticise the pm_ops.
-> 
->  drivers/video/s3c-fb.c |   75 +-----------------------------------------------
->  1 files changed, 1 insertions(+), 74 deletions(-)
-> 
-> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-> index 12eaee0..27971bc 100644
-> --- a/drivers/video/s3c-fb.c
-> +++ b/drivers/video/s3c-fb.c
-> @@ -1590,77 +1590,9 @@ static int s3c_fb_resume(struct device *dev)
->  
->  	return 0;
->  }
-> -
-> -static int s3c_fb_runtime_suspend(struct device *dev)
-> -{
-> -	struct platform_device *pdev = to_platform_device(dev);
-> -	struct s3c_fb *sfb = platform_get_drvdata(pdev);
-> -	struct s3c_fb_win *win;
-> -	int win_no;
-> -
-> -	for (win_no = S3C_FB_MAX_WIN - 1; win_no >= 0; win_no--) {
-> -		win = sfb->windows[win_no];
-> -		if (!win)
-> -			continue;
-> -
-> -		/* use the blank function to push into power-down */
-> -		s3c_fb_blank(FB_BLANK_POWERDOWN, win->fbinfo);
-> -	}
-> -
-> -	if (!sfb->variant.has_clksel)
-> -		clk_disable(sfb->lcd_clk);
-> -
-> -	clk_disable(sfb->bus_clk);
-> -	return 0;
-> -}
-> -
-> -static int s3c_fb_runtime_resume(struct device *dev)
-> -{
-> -	struct platform_device *pdev = to_platform_device(dev);
-> -	struct s3c_fb *sfb = platform_get_drvdata(pdev);
-> -	struct s3c_fb_platdata *pd = sfb->pdata;
-> -	struct s3c_fb_win *win;
-> -	int win_no;
-> -
-> -	clk_enable(sfb->bus_clk);
-> -
-> -	if (!sfb->variant.has_clksel)
-> -		clk_enable(sfb->lcd_clk);
-> -
-> -	/* setup gpio and output polarity controls */
-> -	pd->setup_gpio();
-> -	writel(pd->vidcon1, sfb->regs + VIDCON1);
-> -
-> -	/* zero all windows before we do anything */
-> -	for (win_no = 0; win_no < sfb->variant.nr_windows; win_no++)
-> -		s3c_fb_clear_win(sfb, win_no);
-> -
-> -	for (win_no = 0; win_no < sfb->variant.nr_windows - 1; win_no++) {
-> -		void __iomem *regs = sfb->regs + sfb->variant.keycon;
-> -
-> -		regs += (win_no * 8);
-> -		writel(0xffffff, regs + WKEYCON0);
-> -		writel(0xffffff, regs + WKEYCON1);
-> -	}
-> -
-> -	/* restore framebuffers */
-> -	for (win_no = 0; win_no < S3C_FB_MAX_WIN; win_no++) {
-> -		win = sfb->windows[win_no];
-> -		if (!win)
-> -			continue;
-> -
-> -		dev_dbg(&pdev->dev, "resuming window %d\n", win_no);
-> -		s3c_fb_set_par(win->fbinfo);
-> -	}
-> -
-> -	return 0;
-> -}
-> -
->  #else
->  #define s3c_fb_suspend NULL
->  #define s3c_fb_resume  NULL
-> -#define s3c_fb_runtime_suspend NULL
-> -#define s3c_fb_runtime_resume NULL
->  #endif
->  
->  
-> @@ -1985,12 +1917,7 @@ static struct platform_device_id s3c_fb_driver_ids[] = {
->  };
->  MODULE_DEVICE_TABLE(platform, s3c_fb_driver_ids);
->  
-> -static const struct dev_pm_ops s3cfb_pm_ops = {
-> -	.suspend	= s3c_fb_suspend,
-> -	.resume		= s3c_fb_resume,
-> -	.runtime_suspend	= s3c_fb_runtime_suspend,
-> -	.runtime_resume		= s3c_fb_runtime_resume,
-> -};
-> +static UNIVERSAL_DEV_PM_OPS(s3cfb_pm_ops, s3c_fb_suspend, s3c_fb_resume, NULL);
->  
->  static struct platform_driver s3c_fb_driver = {
->  	.probe		= s3c_fb_probe,
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index cb5ea3c..2dccfde 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -1497,8 +1497,10 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
+ 		if (!info || !info->device)
+ 			continue;
+ 
+-		if (ch->tx_dev)
++		if (ch->tx_dev) {
++			ch->tx_dev->lcdc = NULL;
+ 			module_put(ch->cfg.tx_dev->dev.driver->owner);
++		}
+ 
+ 		if (ch->sglist)
+ 			vfree(ch->sglist);
+@@ -1608,6 +1610,7 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
+ 			return -EINVAL;
+ 		}
+ 		ch->tx_dev = platform_get_drvdata(cfg->tx_dev);
++		ch->tx_dev->lcdc = ch;
+ 	}
+ 
+ 	/* Iterate through the modes to validate them and find the highest
+diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
+index 9601b92..36cd564 100644
+--- a/drivers/video/sh_mobile_lcdcfb.h
++++ b/drivers/video/sh_mobile_lcdcfb.h
+@@ -19,6 +19,7 @@ struct fb_info;
+ struct module;
+ struct sh_mobile_lcdc_entity;
+ struct sh_mobile_lcdc_priv;
++struct sh_mobile_lcdc_chan;
+ 
+ struct sh_mobile_lcdc_entity_ops {
+ 	/* Display */
+@@ -30,6 +31,7 @@ struct sh_mobile_lcdc_entity_ops {
+ struct sh_mobile_lcdc_entity {
+ 	struct module *owner;
+ 	const struct sh_mobile_lcdc_entity_ops *ops;
++	struct sh_mobile_lcdc_chan *lcdc;
+ };
+ 
+ /*
+-- 
+1.7.3.4
 

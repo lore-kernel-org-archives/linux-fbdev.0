@@ -1,7 +1,7 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 14 Dec 2011 10:41:34 +0000
+Date: Wed, 14 Dec 2011 10:47:16 +0000
 Subject: Re: [PATCH 06/57] fbdev: sh_mobile_hdmi: Don't access LCDC channel in notifier callback
-Message-Id: <201112141141.35159.laurent.pinchart@ideasonboard.com>
+Message-Id: <201112141147.22166.laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1323784972-24205-7-git-send-email-laurent.pinchart@ideasonboard.com>
 In-Reply-To: <1323784972-24205-7-git-send-email-laurent.pinchart@ideasonboard.com>
@@ -9,6 +9,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+
+Hi Guennadi,
 
 On Wednesday 14 December 2011 00:02:11 Guennadi Liakhovetski wrote:
 > On Tue, 13 Dec 2011, Laurent Pinchart wrote:
@@ -59,15 +61,11 @@ On Wednesday 14 December 2011 00:02:11 Guennadi Liakhovetski wrote:
 > panel, hdmi will wtill point to the HDMI-related sh_hdmi object, whose
 > ->info will then mismatch the info pointer, derived from the notifier
 > "data" pointer.
-> 
+
+That's correct. The first two checks don't hurt, but will always be false. 
+I'll remove them.
+
 > >  		return NOTIFY_DONE;
-> 
-> Thanks
-> Guennadi
-> ---
-> Guennadi Liakhovetski, Ph.D.
-> Freelance Open-Source Software Developer
-> http://www.open-technology.de/
 
 -- 
 Regards,

@@ -1,112 +1,94 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 04 Dec 2011 00:36:47 +0000
-Subject: Re: [PATCH 09/11] video: Remove redundant spi driver bus initialization
-Message-Id: <4EDAC09F.5090401@gmx.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 14 Dec 2011 23:58:29 +0000
+Subject: [PATCH 2/2] offb: Add palette hack for qemu "standard vga"
+Message-Id: <1323907109.21839.28.camel@pasglop>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1322148561-25138-1-git-send-email-lars@metafoo.de> <1322148561-25138-9-git-send-email-lars@metafoo.de>
-In-Reply-To: <1322148561-25138-9-git-send-email-lars@metafoo.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lars-Peter Clausen <lars@metafoo.de>
-Cc: linux-kernel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, kvm-ppc@vger.kernel.org
 
-On 11/24/2011 03:29 PM, Lars-Peter Clausen wrote:
-> In ancient times it was necessary to manually initialize the bus field of an
-> spi_driver to spi_bus_type. These days this is done in spi_driver_register(),
-> so we can drop the manual assignment.
-> 
-> The patch was generated using the following coccinelle semantic patch:
-> // <smpl>
-> @@
-> identifier _driver;
-> @@
-> struct spi_driver _driver = {
-> 	.driver = {
-> -		.bus = &spi_bus_type,
-> 	},
-> };
-> // </smpl>
-> 
-> Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: linux-omap@vger.kernel.org
+We rename the mach64 hack to "simple" since that's also applicable
+to anything using VGA-style DAC IO ports (set to 8-bit DAC) and we
+use it for qemu vga.
 
-Applied this patch.
+Note that this is keyed on a device-tree "compatible" property that
+is currently only set by an upcoming version of SLOF when using the
+qemu "pseries" platform. This is on purpose as other qemu ppc platforms
+using OpenBIOS aren't properly setting the DAC to 8-bit at the time of
+the writing of this patch.
 
+We can fix OpenBIOS later to do that and add the required property, in
+which case it will be matched by this change.
 
-Thanks,
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ drivers/video/offb.c |   19 +++++++++++++++----
+ 1 files changed, 15 insertions(+), 4 deletions(-)
 
-Florian Tobias Schandinat
+diff --git a/drivers/video/offb.c b/drivers/video/offb.c
+index 915acae..da7cf79 100644
+--- a/drivers/video/offb.c
++++ b/drivers/video/offb.c
+@@ -41,13 +41,14 @@
+ /* Supported palette hacks */
+ enum {
+ 	cmap_unknown,
+-	cmap_m64,		/* ATI Mach64 */
++	cmap_simple,		/* ATI Mach64 */
+ 	cmap_r128,		/* ATI Rage128 */
+ 	cmap_M3A,		/* ATI Rage Mobility M3 Head A */
+ 	cmap_M3B,		/* ATI Rage Mobility M3 Head B */
+ 	cmap_radeon,		/* ATI Radeon */
+ 	cmap_gxt2000,		/* IBM GXT2000 */
+ 	cmap_avivo,		/* ATI R5xx */
++	cmap_qemu,		/* qemu vga */
+ };
+ 
+ struct offb_par {
+@@ -138,7 +139,7 @@ static int offb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 		return 0;
+ 
+ 	switch (par->cmap_type) {
+-	case cmap_m64:
++	case cmap_simple:
+ 		writeb(regno, par->cmap_adr);
+ 		writeb(red, par->cmap_data);
+ 		writeb(green, par->cmap_data);
+@@ -208,7 +209,7 @@ static int offb_blank(int blank, struct fb_info *info)
+ 	if (blank)
+ 		for (i = 0; i < 256; i++) {
+ 			switch (par->cmap_type) {
+-			case cmap_m64:
++			case cmap_simple:
+ 				writeb(i, par->cmap_adr);
+ 				for (j = 0; j < 3; j++)
+ 					writeb(0, par->cmap_data);
+@@ -350,7 +351,7 @@ static void offb_init_palette_hacks(struct fb_info *info, struct device_node *dp
+ 		par->cmap_adr  			ioremap(base + 0x7ff000, 0x1000) + 0xcc0;
+ 		par->cmap_data = par->cmap_adr + 1;
+-		par->cmap_type = cmap_m64;
++		par->cmap_type = cmap_simple;
+ 	} else if (dp && (of_device_is_compatible(dp, "pci1014,b7") ||
+ 			  of_device_is_compatible(dp, "pci1014,21c"))) {
+ 		par->cmap_adr = offb_map_reg(dp, 0, 0x6000, 0x1000);
+@@ -371,6 +372,16 @@ static void offb_init_palette_hacks(struct fb_info *info, struct device_node *dp
+ 				par->cmap_type = cmap_avivo;
+ 		}
+ 		of_node_put(pciparent);
++	} else if (dp && of_device_is_compatible(dp, "qemu,std-vga")) {
++		const u32 io_of_addr[3] = { 0x01000000, 0x0, 0x0 };
++		u64 io_addr = of_translate_address(dp, io_of_addr);
++		if (io_addr != OF_BAD_ADDR) {
++			par->cmap_adr = ioremap(io_addr + 0x3c8, 2);
++			if (par->cmap_adr) {
++				par->cmap_type = cmap_simple;
++				par->cmap_data = par->cmap_adr + 1;
++			}
++		}
+ 	}
+ 	info->fix.visual = (par->cmap_type != cmap_unknown) ?
+ 		FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_STATIC_PSEUDOCOLOR;
 
-> ---
->  drivers/video/omap/lcd_mipid.c                     |    1 -
->  drivers/video/omap2/displays/panel-acx565akm.c     |    1 -
->  drivers/video/omap2/displays/panel-n8x0.c          |    1 -
->  .../omap2/displays/panel-nec-nl8048hl11-01b.c      |    1 -
->  .../video/omap2/displays/panel-tpo-td043mtea1.c    |    1 -
->  5 files changed, 0 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/video/omap/lcd_mipid.c b/drivers/video/omap/lcd_mipid.c
-> index eb381db..8d546dd 100644
-> --- a/drivers/video/omap/lcd_mipid.c
-> +++ b/drivers/video/omap/lcd_mipid.c
-> @@ -603,7 +603,6 @@ static int mipid_spi_remove(struct spi_device *spi)
->  static struct spi_driver mipid_spi_driver = {
->  	.driver = {
->  		.name	= MIPID_MODULE_NAME,
-> -		.bus	= &spi_bus_type,
->  		.owner	= THIS_MODULE,
->  	},
->  	.probe	= mipid_spi_probe,
-> diff --git a/drivers/video/omap2/displays/panel-acx565akm.c b/drivers/video/omap2/displays/panel-acx565akm.c
-> index dbd59b8..51a87e1 100644
-> --- a/drivers/video/omap2/displays/panel-acx565akm.c
-> +++ b/drivers/video/omap2/displays/panel-acx565akm.c
-> @@ -803,7 +803,6 @@ static int acx565akm_spi_remove(struct spi_device *spi)
->  static struct spi_driver acx565akm_spi_driver = {
->  	.driver = {
->  		.name	= "acx565akm",
-> -		.bus	= &spi_bus_type,
->  		.owner	= THIS_MODULE,
->  	},
->  	.probe	= acx565akm_spi_probe,
-> diff --git a/drivers/video/omap2/displays/panel-n8x0.c b/drivers/video/omap2/displays/panel-n8x0.c
-> index 150e8ba..dc9408d 100644
-> --- a/drivers/video/omap2/displays/panel-n8x0.c
-> +++ b/drivers/video/omap2/displays/panel-n8x0.c
-> @@ -708,7 +708,6 @@ static int mipid_spi_remove(struct spi_device *spi)
->  static struct spi_driver mipid_spi_driver = {
->  	.driver = {
->  		.name	= "lcd_mipid",
-> -		.bus	= &spi_bus_type,
->  		.owner	= THIS_MODULE,
->  	},
->  	.probe	= mipid_spi_probe,
-> diff --git a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-> index 2ba9d0c..8365e77 100644
-> --- a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-> +++ b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
-> @@ -303,7 +303,6 @@ static struct spi_driver nec_8048_spi_driver = {
->  	.resume		= nec_8048_spi_resume,
->  	.driver		= {
->  		.name	= "nec_8048_spi",
-> -		.bus	= &spi_bus_type,
->  		.owner	= THIS_MODULE,
->  	},
->  };
-> diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-> index 2462b9e..e6649aa 100644
-> --- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-> +++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-> @@ -512,7 +512,6 @@ static int __devexit tpo_td043_spi_remove(struct spi_device *spi)
->  static struct spi_driver tpo_td043_spi_driver = {
->  	.driver = {
->  		.name	= "tpo_td043mtea1_panel_spi",
-> -		.bus	= &spi_bus_type,
->  		.owner	= THIS_MODULE,
->  	},
->  	.probe	= tpo_td043_spi_probe,
 

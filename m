@@ -1,94 +1,36 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 14 Dec 2011 23:58:29 +0000
-Subject: [PATCH 2/2] offb: Add palette hack for qemu "standard vga"
-Message-Id: <1323907109.21839.28.camel@pasglop>
+From: =?UTF-8?B?QW5kcmVhcyBGw6RyYmVy?= <afaerber@suse.de>
+Date: Thu, 15 Dec 2011 07:49:57 +0000
+Subject: Re: [PATCH 2/2] offb: Add palette hack for qemu "standard vga" framebuffer
+Message-Id: <4EE9A6A5.2050600@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1323907109.21839.28.camel@pasglop>
+In-Reply-To: <1323907109.21839.28.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, kvm-ppc@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-fbdev@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, kvm-ppc@vger.kernel.org
 
-We rename the mach64 hack to "simple" since that's also applicable
-to anything using VGA-style DAC IO ports (set to 8-bit DAC) and we
-use it for qemu vga.
+Am 15.12.2011 00:58, schrieb Benjamin Herrenschmidt:
+> We rename the mach64 hack to "simple" since that's also applicable
+> to anything using VGA-style DAC IO ports (set to 8-bit DAC) and we
+> use it for qemu vga.
+> 
+> Note that this is keyed on a device-tree "compatible" property that
+> is currently only set by an upcoming version of SLOF when using the
+> qemu "pseries" platform. This is on purpose as other qemu ppc platforms
+> using OpenBIOS aren't properly setting the DAC to 8-bit at the time of
+> the writing of this patch.
+> 
+> We can fix OpenBIOS later to do that and add the required property, in
+> which case it will be matched by this change.
 
-Note that this is keyed on a device-tree "compatible" property that
-is currently only set by an upcoming version of SLOF when using the
-qemu "pseries" platform. This is on purpose as other qemu ppc platforms
-using OpenBIOS aren't properly setting the DAC to 8-bit at the time of
-the writing of this patch.
+Just let me know what's needed for OpenBIOS.
+Is this just for -vga std as opposed to the default cirrus?
 
-We can fix OpenBIOS later to do that and add the required property, in
-which case it will be matched by this change.
+Cheers,
+Andreas
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- drivers/video/offb.c |   19 +++++++++++++++----
- 1 files changed, 15 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/offb.c b/drivers/video/offb.c
-index 915acae..da7cf79 100644
---- a/drivers/video/offb.c
-+++ b/drivers/video/offb.c
-@@ -41,13 +41,14 @@
- /* Supported palette hacks */
- enum {
- 	cmap_unknown,
--	cmap_m64,		/* ATI Mach64 */
-+	cmap_simple,		/* ATI Mach64 */
- 	cmap_r128,		/* ATI Rage128 */
- 	cmap_M3A,		/* ATI Rage Mobility M3 Head A */
- 	cmap_M3B,		/* ATI Rage Mobility M3 Head B */
- 	cmap_radeon,		/* ATI Radeon */
- 	cmap_gxt2000,		/* IBM GXT2000 */
- 	cmap_avivo,		/* ATI R5xx */
-+	cmap_qemu,		/* qemu vga */
- };
- 
- struct offb_par {
-@@ -138,7 +139,7 @@ static int offb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- 		return 0;
- 
- 	switch (par->cmap_type) {
--	case cmap_m64:
-+	case cmap_simple:
- 		writeb(regno, par->cmap_adr);
- 		writeb(red, par->cmap_data);
- 		writeb(green, par->cmap_data);
-@@ -208,7 +209,7 @@ static int offb_blank(int blank, struct fb_info *info)
- 	if (blank)
- 		for (i = 0; i < 256; i++) {
- 			switch (par->cmap_type) {
--			case cmap_m64:
-+			case cmap_simple:
- 				writeb(i, par->cmap_adr);
- 				for (j = 0; j < 3; j++)
- 					writeb(0, par->cmap_data);
-@@ -350,7 +351,7 @@ static void offb_init_palette_hacks(struct fb_info *info, struct device_node *dp
- 		par->cmap_adr  			ioremap(base + 0x7ff000, 0x1000) + 0xcc0;
- 		par->cmap_data = par->cmap_adr + 1;
--		par->cmap_type = cmap_m64;
-+		par->cmap_type = cmap_simple;
- 	} else if (dp && (of_device_is_compatible(dp, "pci1014,b7") ||
- 			  of_device_is_compatible(dp, "pci1014,21c"))) {
- 		par->cmap_adr = offb_map_reg(dp, 0, 0x6000, 0x1000);
-@@ -371,6 +372,16 @@ static void offb_init_palette_hacks(struct fb_info *info, struct device_node *dp
- 				par->cmap_type = cmap_avivo;
- 		}
- 		of_node_put(pciparent);
-+	} else if (dp && of_device_is_compatible(dp, "qemu,std-vga")) {
-+		const u32 io_of_addr[3] = { 0x01000000, 0x0, 0x0 };
-+		u64 io_addr = of_translate_address(dp, io_of_addr);
-+		if (io_addr != OF_BAD_ADDR) {
-+			par->cmap_adr = ioremap(io_addr + 0x3c8, 2);
-+			if (par->cmap_adr) {
-+				par->cmap_type = cmap_simple;
-+				par->cmap_data = par->cmap_adr + 1;
-+			}
-+		}
- 	}
- 	info->fix.visual = (par->cmap_type != cmap_unknown) ?
- 		FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_STATIC_PSEUDOCOLOR;
-
-
+-- 
+SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg, Germany
+GF: Jeff Hawn, Jennifer Guild, Felix Imendörffer; HRB 16746 AG Nürnberg

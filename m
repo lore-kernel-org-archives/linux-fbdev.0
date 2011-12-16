@@ -1,37 +1,32 @@
 From: Timur Tabi <timur@freescale.com>
-Date: Fri, 16 Dec 2011 21:49:30 +0000
-Subject: "ls > /dev/fb0" generates weird ioctls if panning is set
-Message-Id: <4EEBBCEA.9020104@freescale.com>
+Date: Fri, 16 Dec 2011 22:31:22 +0000
+Subject: Re: "ls > /dev/fb0" generates weird ioctls if panning is set
+Message-Id: <4EEBC6BA.1060905@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <4EEBBCEA.9020104@freescale.com>
+In-Reply-To: <4EEBBCEA.9020104@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-If I do this:
+Timur Tabi wrote:
 
-	echo "0,100" > /sys/devices/soc.0/fffe10000.display/graphics/fb0/pan
+> graphics fb0: unknown ioctl command (0x402C7413)                                                                                                   
+> graphics fb0: dir=2 type='t' (74) nr sizeD                                                                                                    
+> graphics fb0: unknown ioctl command (0x40087468)                                                                                                   
+> graphics fb0: dir=2 type='t' (74) nr4 size=8                                                                                                    
+> graphics fb0: unknown ioctl command (0x402C7413)                                                                                                   
+> graphics fb0: dir=2 type='t' (74) nr sizeD   
 
-then whenever I do this:
+I figured it out.  These ioctls are:
 
-	ls > /dev/fb0
+#define TCGETS		_IOR('t', 19, struct termios)
+#define TIOCGWINSZ	_IOR('t', 104, struct winsize)
 
-my driver receives the following three ioctls:
+I'm guessing that since I redirect stdout to /dev/fb0, Linux is treating /dev/fb0 as a terminal, and therefore it's receiving terminal ioctls.
 
-graphics fb0: unknown ioctl command (0x402C7413)                                                                                                   
-graphics fb0: dir=2 type='t' (74) nr sizeD                                                                                                    
-graphics fb0: unknown ioctl command (0x40087468)                                                                                                   
-graphics fb0: dir=2 type='t' (74) nr4 size=8                                                                                                    
-graphics fb0: unknown ioctl command (0x402C7413)                                                                                                   
-graphics fb0: dir=2 type='t' (74) nr sizeD   
-
-This is on PowerPC, where dir=2 means read.
-
-The "echo" and "cat" commands don't generate these ioctls, so there's something special about the "ls" command.  Does anyone know what's going on?  ioctl-number.txt lists these ioctls for type 't':
-
-'t'	00-7F	linux/if_ppp.h
-'t'	80-8F	linux/isdn_ppp.h
-'t'	90	linux/toshiba.h
+Is this something that fbdev should be supporting, or am I wrong to use /dev/fb0 as a terminal?
 
 -- 
 Timur Tabi

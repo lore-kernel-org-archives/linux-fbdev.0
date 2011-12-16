@@ -1,48 +1,50 @@
-From: Timur Tabi <timur@freescale.com>
-Date: Thu, 15 Dec 2011 22:10:42 +0000
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 16 Dec 2011 11:53:06 +0000
 Subject: Re: Should I use FBINFO_VIRTFB?
-Message-Id: <4EEA7062.9050807@freescale.com>
+Message-Id: <CAMuHMdX0io+0VoA-a=9N9RQpnv1RuovFMnAgAnqhRsQcMhXxtg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <4EEA5DA7.3010406@freescale.com>
 In-Reply-To: <4EEA5DA7.3010406@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: linux-fbdev@vger.kernel.org
 
-Konrad Rzeszutek Wilk wrote:
->> > #define FBINFO_PARTIAL_PAN_OK	0x0040 /* otw use pan only for double-buffering */
->> > #define FBINFO_READS_FAST	0x0080 /* soft-copy faster than rendering */
+On Thu, Dec 15, 2011 at 23:10, Timur Tabi <timur@freescale.com> wrote:
+> Konrad Rzeszutek Wilk wrote:
+>>> > #define FBINFO_PARTIAL_PAN_OK      0x0040 /* otw use pan only for double-buffering */
+>>> > #define FBINFO_READS_FAST  0x0080 /* soft-copy faster than rendering */
+>
+>> Not really. They have a different function, but you are better of looking in the code
+>> to see how they are used.
 
-> Not really. They have a different function, but you are better of looking in the code
-> to see how they are used.
+> I can't parse this, and I can't figure out if my driver is better off with or without FBINFO_PARTIAL_PAN_OK.
 
-Well, I tried that, which is why I said, "I don't see any good documentation."  FBINFO_PARTIAL_PAN_OK appears to be only used in one place:
+This depends on which of these two is fastest for scrolling the console:
+  - panning the virtual screen and redrawing the missing part: set
+FBINFO_PARTIAL_PAN_OK
+  - copying or redrawing the screen: don't set FBINFO_PARTIAL_PAN_OK
 
-case SCROLL_PAN_REDRAW:
-	if ((p->yscroll + count <	     2 * (p->vrows - vc->vc_rows))
-	    && ((!scroll_partial && (b - t = vc->vc_rows))
-		|| (scroll_partial
-		    && (b - t - count >
-			3 * vc->vc_rows >> 2)))) {
-		if (t > 0)
-			fbcon_redraw_move(vc, p, 0, t, count);
-		ypan_up_redraw(vc, t, count);
-		if (vc->vc_rows - b > 0)
-			fbcon_redraw_move(vc, p, b,
-				  vc->vc_rows - b, b);
-	} else
-		fbcon_redraw_move(vc, p, t + count, b - t - count, t);
-	fbcon_clear(vc, b - count, 0, count, vc->vc_cols);
-break;
+> I have the same problem with FBINFO_READS_FAST.
 
-I can't parse this, and I can't figure out if my driver is better off with or without FBINFO_PARTIAL_PAN_OK.
+You should set this flag if reading from frame buffer memory is a fast
+operation.
+On many graphics devices, reading from frame buffer memory is much slower
+than writing. As you use system RAM, you probably want to set it.
 
-I have the same problem with FBINFO_READS_FAST.  
+If this flag is set, scrolling is implemented by copying memory around.
+If not set, scrolling is implemented by redrawing the whole screen.
 
-So I really would like someone explain these macros to me.
+A simple way to find the optimal settings of both flags (all 4 combinations) is
+running "clear; time cat big_text_file" and comparing the timing results
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Gr{oetje,eeting}s,
 
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

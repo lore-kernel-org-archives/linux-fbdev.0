@@ -1,134 +1,40 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:02:14 +0000
-Subject: [PATCH 19/57] fbdev: sh_mobile_lcdc: Move brightness ops to sh_mobile_lcdc_bl_info
-Message-Id: <1323784972-24205-20-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Timur Tabi <timur@freescale.com>
+Date: Mon, 19 Dec 2011 22:26:15 +0000
+Subject: [PATCH 2/5] drivers/video: fsl-diu-fb: set correct framebuffer flags
+Message-Id: <1324333578-23992-2-git-send-email-timur@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Update board code accordingly.
+The DIU uses system RAM for the framebuffer, so FBINFO_VIRTFB should be set.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Since the framebuffer is in system RAM, it can be read from more quickly
+than written to, so FBINFO_READS_FAST should be set.
+
+We can also set FBINFO_PARTIAL_PAN_OK for the same reasons.
+
+Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
- arch/arm/mach-shmobile/board-mackerel.c |    6 ++----
- arch/sh/boards/mach-ap325rxa/setup.c    |    4 ++--
- arch/sh/boards/mach-ecovec24/setup.c    |    6 ++----
- drivers/video/sh_mobile_lcdcfb.c        |    6 ++----
- include/video/sh_mobile_lcdc.h          |    4 ++--
- 5 files changed, 10 insertions(+), 16 deletions(-)
+ drivers/video/fsl-diu-fb.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
-index 4446398..3460f54 100644
---- a/arch/arm/mach-shmobile/board-mackerel.c
-+++ b/arch/arm/mach-shmobile/board-mackerel.c
-@@ -396,13 +396,11 @@ static struct sh_mobile_lcdc_info lcdc_info = {
- 		.flags			= 0,
- 		.lcd_size_cfg.width	= 152,
- 		.lcd_size_cfg.height	= 91,
--		.board_cfg = {
--			.set_brightness = mackerel_set_brightness,
--			.get_brightness = mackerel_get_brightness,
--		},
- 		.bl_info = {
- 			.name = "sh_mobile_lcdc_bl",
- 			.max_brightness = 1,
-+			.set_brightness = mackerel_set_brightness,
-+			.get_brightness = mackerel_get_brightness,
- 		},
- 		.meram_cfg = &lcd_meram_cfg,
- 	}
-diff --git a/arch/sh/boards/mach-ap325rxa/setup.c b/arch/sh/boards/mach-ap325rxa/setup.c
-index d43a96c..1413c65 100644
---- a/arch/sh/boards/mach-ap325rxa/setup.c
-+++ b/arch/sh/boards/mach-ap325rxa/setup.c
-@@ -219,12 +219,12 @@ static struct sh_mobile_lcdc_info lcdc_info = {
- 		.board_cfg = {
- 			.display_on = ap320_wvga_power_on,
- 			.display_off = ap320_wvga_power_off,
--			.set_brightness = ap320_wvga_set_brightness,
--			.get_brightness = ap320_wvga_get_brightness,
- 		},
- 		.bl_info = {
- 			.name = "sh_mobile_lcdc_bl",
- 			.max_brightness = 1,
-+			.set_brightness = ap320_wvga_set_brightness,
-+			.get_brightness = ap320_wvga_get_brightness,
- 		},
- 	}
- };
-diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
-index 24c2c14..2adc78e 100644
---- a/arch/sh/boards/mach-ecovec24/setup.c
-+++ b/arch/sh/boards/mach-ecovec24/setup.c
-@@ -335,13 +335,11 @@ static struct sh_mobile_lcdc_info lcdc_info = {
- 			.width = 152,
- 			.height = 91,
- 		},
--		.board_cfg = {
--			.set_brightness = ecovec24_set_brightness,
--			.get_brightness = ecovec24_get_brightness,
--		},
- 		.bl_info = {
- 			.name = "sh_mobile_lcdc_bl",
- 			.max_brightness = 1,
-+			.set_brightness = ecovec24_set_brightness,
-+			.get_brightness = ecovec24_get_brightness,
- 		},
- 	}
- };
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 108b62d..0c358b0 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -1319,22 +1319,20 @@ static struct fb_ops sh_mobile_lcdc_ops = {
- static int sh_mobile_lcdc_update_bl(struct backlight_device *bdev)
- {
- 	struct sh_mobile_lcdc_chan *ch = bl_get_data(bdev);
--	struct sh_mobile_lcdc_board_cfg *cfg = &ch->cfg.board_cfg;
- 	int brightness = bdev->props.brightness;
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 411a7b3..231752e 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -1231,7 +1231,8 @@ static int __devinit install_fb(struct fb_info *info)
  
- 	if (bdev->props.power != FB_BLANK_UNBLANK ||
- 	    bdev->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
- 		brightness = 0;
+ 	info->var.activate = FB_ACTIVATE_NOW;
+ 	info->fbops = &fsl_diu_ops;
+-	info->flags = FBINFO_DEFAULT;
++	info->flags = FBINFO_DEFAULT | FBINFO_VIRTFB | FBINFO_PARTIAL_PAN_OK |
++		FBINFO_READS_FAST;
+ 	info->pseudo_palette = mfbi->pseudo_palette;
  
--	return cfg->set_brightness(brightness);
-+	return ch->cfg.bl_info.set_brightness(brightness);
- }
- 
- static int sh_mobile_lcdc_get_brightness(struct backlight_device *bdev)
- {
- 	struct sh_mobile_lcdc_chan *ch = bl_get_data(bdev);
--	struct sh_mobile_lcdc_board_cfg *cfg = &ch->cfg.board_cfg;
- 
--	return cfg->get_brightness();
-+	return ch->cfg.bl_info.get_brightness();
- }
- 
- static int sh_mobile_lcdc_check_fb(struct backlight_device *bdev,
-diff --git a/include/video/sh_mobile_lcdc.h b/include/video/sh_mobile_lcdc.h
-index a1e6596..541b2b3 100644
---- a/include/video/sh_mobile_lcdc.h
-+++ b/include/video/sh_mobile_lcdc.h
-@@ -154,8 +154,6 @@ struct sh_mobile_lcdc_board_cfg {
- 			       struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
- 	void (*display_on)(void);
- 	void (*display_off)(void);
--	int (*set_brightness)(int brightness);
--	int (*get_brightness)(void);
- };
- 
- struct sh_mobile_lcdc_lcd_size_cfg { /* width and height of panel in mm */
-@@ -167,6 +165,8 @@ struct sh_mobile_lcdc_lcd_size_cfg { /* width and height of panel in mm */
- struct sh_mobile_lcdc_bl_info {
- 	const char *name;
- 	int max_brightness;
-+	int (*set_brightness)(int brightness);
-+	int (*get_brightness)(void);
- };
- 
- struct sh_mobile_lcdc_chan_cfg {
+ 	rc = fb_alloc_cmap(&info->cmap, 16, 0);
 -- 
 1.7.3.4
+
 

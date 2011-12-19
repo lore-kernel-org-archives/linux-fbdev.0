@@ -1,111 +1,71 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Tue, 27 Dec 2011 14:16:08 +0000
-Subject: [PATCH 2/6] video: s3c-fb: Use s3c_fb_enable() to enable the framebuffer
-Message-Id: <1324995372-3410-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Date: Mon, 19 Dec 2011 23:08:50 +0000
+Subject: [PATCH v2 0/7] ARM: OMAP1: ams-delta: replace custom I/O with GPIO
+Message-Id: <cover.1324331816.git.jkrzyszt@tis.icnet.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20111227141550.GA3331@opensource.wolfsonmicro.com>
- <1324995372-3410-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1324995372-3410-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1323634328-856-1-git-send-email-jkrzyszt@tis.icnet.pl>
+In-Reply-To: <1323634328-856-1-git-send-email-jkrzyszt@tis.icnet.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>, Grant Likely <grant.likely@secretlab.ca>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, David Woodhouse <dwmw2@infradead.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jarkko Nikula <jarkko.nikula@bitmer.com>, Liam Girdwood <lrg@ti.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-input@vger.kernel.org, linux-mtd@lists.infradead.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
 
-The s3c-fb driver has a function called s3c_fb_enable() which turns on
-and off the physical output. However it is only actually used in paths
-which disable the screen, the enabling just writes to the register. Make
-the code less confusing by ensuring that the enable also goes through
-the same path.
+The Amstrad Delta board has two extra output ports used for driving
+input lines of different on-board devices. Those ports are now
+controlled with custom functions, provided by the board arch code and
+used by several device drivers.
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Acked-by: Jingoo Han <jg1.han@samsung.com>
----
- drivers/video/s3c-fb.c |   55 ++++++++++++++++++++++++-----------------------
- 1 files changed, 28 insertions(+), 27 deletions(-)
+The idea behind the series is to replace those custom I/O functions
+with gpiolib API. This way, existing drivers can be made less platform
+dependent, and some of them perhaps even superseded with generic GPIO
+based drivers after the board platform device descriptions are
+converted. Moreover, should a new driver for the on-board Smart Card
+controller ever be created, it could be designed as a generic GPIO
+based driver, not a custom one.
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index b1a75a0..be4c218 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -441,6 +441,32 @@ static void shadow_protect_win(struct s3c_fb_win *win, bool protect)
- }
- 
- /**
-+ * s3c_fb_enable() - Set the state of the main LCD output
-+ * @sfb: The main framebuffer state.
-+ * @enable: The state to set.
-+ */
-+static void s3c_fb_enable(struct s3c_fb *sfb, int enable)
-+{
-+	u32 vidcon0 = readl(sfb->regs + VIDCON0);
-+
-+	if (enable)
-+		vidcon0 |= VIDCON0_ENVID | VIDCON0_ENVID_F;
-+	else {
-+		/* see the note in the framebuffer datasheet about
-+		 * why you cannot take both of these bits down at the
-+		 * same time. */
-+
-+		if (!(vidcon0 & VIDCON0_ENVID))
-+			return;
-+
-+		vidcon0 |= VIDCON0_ENVID;
-+		vidcon0 &= ~VIDCON0_ENVID_F;
-+	}
-+
-+	writel(vidcon0, sfb->regs + VIDCON0);
-+}
-+
-+/**
-  * s3c_fb_set_par() - framebuffer request to set new framebuffer state.
-  * @info: The framebuffer to change.
-  *
-@@ -510,9 +536,10 @@ static int s3c_fb_set_par(struct fb_info *info)
- 		if (sfb->variant.is_2443)
- 			data |= (1 << 5);
- 
--		data |= VIDCON0_ENVID | VIDCON0_ENVID_F;
- 		writel(data, regs + VIDCON0);
- 
-+		s3c_fb_enable(sfb, 1);
-+
- 		data = VIDTCON0_VBPD(var->upper_margin - 1) |
- 		       VIDTCON0_VFPD(var->lower_margin - 1) |
- 		       VIDTCON0_VSPW(var->vsync_len - 1);
-@@ -761,32 +788,6 @@ static int s3c_fb_setcolreg(unsigned regno,
- }
- 
- /**
-- * s3c_fb_enable() - Set the state of the main LCD output
-- * @sfb: The main framebuffer state.
-- * @enable: The state to set.
-- */
--static void s3c_fb_enable(struct s3c_fb *sfb, int enable)
--{
--	u32 vidcon0 = readl(sfb->regs + VIDCON0);
--
--	if (enable)
--		vidcon0 |= VIDCON0_ENVID | VIDCON0_ENVID_F;
--	else {
--		/* see the note in the framebuffer datasheet about
--		 * why you cannot take both of these bits down at the
--		 * same time. */
--
--		if (!(vidcon0 & VIDCON0_ENVID))
--			return;
--
--		vidcon0 |= VIDCON0_ENVID;
--		vidcon0 &= ~VIDCON0_ENVID_F;
--	}
--
--	writel(vidcon0, sfb->regs + VIDCON0);
--}
--
--/**
-  * s3c_fb_blank() - blank or unblank the given window
-  * @blank_mode: The blank state from FB_BLANK_*
-  * @info: The framebuffer to blank.
+Changes against initial version:
+* the initial patch, which tried to move the gpio-generic driver
+  initialization up to the postcore_initcall level, replaced with an
+  alternative solution, moving the on-board devices initialization down
+  to late_initcall; thanks to Tony Lindgren who suggested this solution,
+* dropped patches introducing changes to the modem and ASoC device
+  handling; those will be addressed in a separate patch series,
+* final cleanups also dropped until those remaining devices are updated,
+* the serio driver now takes care of one more GPIO pin which, even if
+  not used, belongs to the device interface and affects its functioning,
+* misc code and changelog cosmetic cleanups,
+* rebased on top of 3.2-rc6.
+
+
+Thanks to those who reviewed the initial submission and responded with
+their comments or Acks.
+
+Janusz
+
+
+Janusz Krzysztofik (7):
+  ARM: OMAP1: ams-delta: register latch dependent devices later
+  ARM: OMAP1: ams-delta: convert latches to basic_mmio_gpio
+  ARM: OMAP1: ams-delta: supersede custom led device by leds-gpio
+  LED: drop leds-ams-delta driver
+  MTD: NAND: ams-delta: use GPIO instead of custom I/O
+  omapfb: lcd_ams_delta: drive control lines over GPIO
+  input: serio: ams-delta: toggle keyboard power over GPIO
+
+ arch/arm/mach-omap1/Kconfig                       |    2 +
+ arch/arm/mach-omap1/board-ams-delta.c             |  226 +++++++++++++++++----
+ arch/arm/plat-omap/include/plat/board-ams-delta.h |   48 ++---
+ drivers/input/serio/ams_delta_serio.c             |   51 +++--
+ drivers/leds/Kconfig                              |    7 -
+ drivers/leds/Makefile                             |    1 -
+ drivers/leds/leds-ams-delta.c                     |  137 -------------
+ drivers/mtd/nand/ams-delta.c                      |   74 +++++--
+ drivers/video/omap/lcd_ams_delta.c                |   27 ++-
+ sound/soc/omap/ams-delta.c                        |    4 +
+ 10 files changed, 318 insertions(+), 259 deletions(-)
+ delete mode 100644 drivers/leds/leds-ams-delta.c
+
 -- 
-1.7.7.3
+1.7.3.4
 

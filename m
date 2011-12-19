@@ -1,58 +1,79 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 12 Dec 2011 10:46:16 +0000
-Subject: Re: [PATCH 2/3] video: omap: convert drivers/video/omap/* to use
-Message-Id: <1323686776.3852.13.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-/QLa9Q3qWruYqmM5KY9b"
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Mon, 19 Dec 2011 22:39:47 +0000
+Subject: [PATCH] s3fb: fix Virge/VX
+Message-Id: <201112192339.52676.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1323395873.3740.4.camel@phoenix>
-	 <1323395996.3740.6.camel@phoenix>
-In-Reply-To: <1323395996.3740.6.camel@phoenix>
-To: Axel Lin <axel.lin@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jonathan McDowell <noodles@earth.li>, Cory Maccarrone <darkstar6262@gmail.com>, Laurent Gonzalez <palmte.linux@free.fr>, Marek Vasut <marek.vasut@gmail.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Paul Mundt <lethal@linux-sh.org>, Ondrej Zajicek <santiago@crfreenet.org>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+
+Add memory size detection for Virge/VX and small delay in mode setting (same
+as in X.org driver) to fix blank screen problem.
+
+Also adjust DTPC position to fix garbled screen in some modes (tested that
+this adjustment does not break other cards - at least Trio32, Trio64V+,
+Trio64V2/DX, Virge, Virge/DX).
+
+Tested on ELSA Winner 2000AVI/3D.
+
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+
+--- linux-3.1-orig/drivers/video/s3fb.c	2011-10-24 09:10:05.000000000 +0200
++++ linux-3.1/drivers/video/s3fb.c	2011-12-19 23:28:34.000000000 +0100
+@@ -727,7 +727,7 @@
+ 	if (par->chip = CHIP_988_VIRGE_VX) {
+ 		vga_wcrt(par->state.vgabase, 0x50, 0x00);
+ 		vga_wcrt(par->state.vgabase, 0x67, 0x50);
+-
++		msleep(10); /* screen remains blank sometimes without this */
+ 		vga_wcrt(par->state.vgabase, 0x63, (mode <= 2) ? 0x90 : 0x09);
+ 		vga_wcrt(par->state.vgabase, 0x66, 0x90);
+ 	}
+@@ -901,7 +901,8 @@
+ 
+ 	/* Set Data Transfer Position */
+ 	hsstart = ((info->var.xres + info->var.right_margin) * hmul) / 8;
+-	value = clamp((htotal + hsstart + 1) / 2, hsstart + 4, htotal + 1);
++	/* + 2 is needed for Virge/VX, does no harm on other cards */
++	value = clamp((htotal + hsstart + 1) / 2 + 2, hsstart + 4, htotal + 1);
+ 	svga_wcrt_multi(par->state.vgabase, s3_dtpc_regs, value);
+ 
+ 	memset_io(info->screen_base, 0x00, screen_size);
+@@ -1215,6 +1216,31 @@
+ 			info->screen_size = 2 << 20;
+ 			break;
+ 		}
++	} else if (par->chip = CHIP_988_VIRGE_VX) {
++		switch ((regval & 0x60) >> 5) {
++		case 0: /* 2MB */
++			info->screen_size = 2 << 20;
++			break;
++		case 1: /* 4MB */
++			info->screen_size = 4 << 20;
++			break;
++		case 2: /* 6MB */
++			info->screen_size = 6 << 20;
++			break;
++		case 3: /* 8MB */
++			info->screen_size = 8 << 20;
++			break;
++		}
++		/* off-screen memory */
++		regval = vga_rcrt(par->state.vgabase, 0x37);
++		switch ((regval & 0x60) >> 5) {
++		case 1: /* 4MB */
++			info->screen_size -= 4 << 20;
++			break;
++		case 2: /* 2MB */
++			info->screen_size -= 2 << 20;
++			break;
++		}
+ 	} else
+ 		info->screen_size = s3_memsizes[regval >> 5] << 10;
+ 	info->fix.smem_len = info->screen_size;
 
 
---=-/QLa9Q3qWruYqmM5KY9b
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2011-12-09 at 09:59 +0800, Axel Lin wrote:
-> This patch converts the drivers in drivers/video/omap/* to use the
-> module_platform_driver() macro which makes the code smaller and a bit
-> simpler.
->=20
-> Cc: Jonathan McDowell <noodles@earth.li>
-> Cc: Cory Maccarrone <darkstar6262@gmail.com>
-> Cc: Laurent Gonzalez <palmte.linux@free.fr>
-> Cc: Marek Vasut <marek.vasut@gmail.com>
-> Signed-off-by: Axel Lin <axel.lin@gmail.com>
-
-Thanks, applied to DSS tree.
-
- Tomi
-
-
---=-/QLa9Q3qWruYqmM5KY9b
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJO5dt4AAoJEPo9qoy8lh71RvYQAKizsrDkI7U4w17BBf4uYcmA
-JBll+gSWM15GdXXf4p/XdIrriTdj9ft/wDS173a2fauiRth25cQKaWuKAOxCriTV
-NAKz5wWvcEGJg1eV7pyOypE6pjPO3kc33dGDeXU2dEW4SNzY0KTtyqJ5rs4USKsV
-ook/GYzgh6B2tD2pm6c2RQ3bukBk3jSiAuyMK6j+xGamkz/TSGdFCYrCMA6rFi/v
-YADE0UbfvvT24klvmUV6ipyGA4BCYFzzQMv4gB5jq0XyOrfxHA089nNTMX5pcBzd
-7/vDtLX+w9Yku4s2y6wPiSmoYQ8hB2QizAX35M9nLoAlbVPUx3ueHKI/WyTozIMQ
-1KdLqvVkaaMMDECAyFhnNCSVP373oov55qxEZTM2t8HCpJWv3kCvb5lvBl5qevYu
-1lzF5CJQ4rA6B//bvx7Lu7bu15zWIDO4IK9lPxNRYS47vCVp6abogP3zUXCWE9x/
-pzCrzPepkmUdk4gIrOEF1vAxeEQ172BcMoeqACmyQph0yKTLd9+ZncmgKMbv5W8Y
-9Ku1ht8NVc0Qtjt/LzeKKVAPx8IZFQ4dJgT8waA5ubS6KG+AAKikLPahR9BkWX7q
-Ok18xV9Xs7FSceZcnbuoNvgdQ1vm6yM/m8nxEKiwqEmMOWJ57Fp3Pkzdrfgo/Ofk
-SjtpdHNuMu82k1F+AsDS
-=yvqC
------END PGP SIGNATURE-----
-
---=-/QLa9Q3qWruYqmM5KY9b--
-
+-- 
+Ondrej Zary

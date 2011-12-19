@@ -1,34 +1,43 @@
-From: Jonathan McDowell <noodles@earth.li>
-Date: Mon, 12 Dec 2011 05:00:22 +0000
-Subject: Re: [PATCH 00/10] ARM: OMAP1: ams-delta: replace custom I/O with
-Message-Id: <20111212050022.GI16333@earth.li>
+From: Marek Vasut <marek.vasut@gmail.com>
+Date: Mon, 19 Dec 2011 15:37:59 +0000
+Subject: [PATCH RESEND] MXSFB: Fix driver registration
+Message-Id: <1324309079-10739-1-git-send-email-marek.vasut@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1323634328-856-1-git-send-email-jkrzyszt@tis.icnet.pl>
-In-Reply-To: <1323634328-856-1-git-send-email-jkrzyszt@tis.icnet.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Cc: Tony Lindgren <tony@atomide.com>, Grant Likely <grant.likely@secretlab.ca>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, David Woodhouse <dwmw2@infradead.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jarkko Nikula <jarkko.nikula@bitmer.com>, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org, linux-input@vger.kernel.org, linux-omap@vger.kernel.org, Liam Girdwood <lrg@ti.com>, linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, FlorianSchandinat@gmx.de, Marek Vasut <marek.vasut@gmail.com>, Wolfgang Denk <wd@denx.de>, Stefano Babic <sbabic@denx.de>, Shawn Guo <shawn.guo@linaro.org>, Huang Shijie <b32955@freescale.com>, Axel Lin <axel.lin@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
 
-On Sun, Dec 11, 2011 at 09:11:58PM +0100, Janusz Krzysztofik wrote:
-> The Amstrad Delta board has two extra output ports used for driving
-> input lines of different on-board devices. Those ports are now
-> controlled with custom functions, provided by the board arch code and
-> used by several device drivers.
-> 
-> The idea behind the series is to replace those custom I/O functions
-> with gpiolib API. This way, existing drivers can be made less platform
-> dependent, and some of them perhaps even superseded with generic GPIO
-> based drivers after the board platform device descriptions are
-> converted. Moreover, should a new driver for the on-board Smart Card
-> controller ever be created, it could be designed as a generic GPIO
-> based driver, not a custom one.
+The driver should be registered with mxsfb_driver, not with mxsfb_devtype.
+This caused obvious null pointer dereference and crash.
 
-Nice work; moving ams-delta over to gpiolib has been on my todo list for
-a while (albeit quite low down).
+Signed-off-by: Marek Vasut <marek.vasut@gmail.com>
+Cc: Wolfgang Denk <wd@denx.de>
+Cc: Stefano Babic <sbabic@denx.de>
+Cc: Shawn Guo <shawn.guo@linaro.org>
+Cc: Huang Shijie <b32955@freescale.com>
+Cc: Axel Lin <axel.lin@gmail.com>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Acked-by: Axel Lin <axel.lin@gmail.com>
+Acked-by: Sascha Hauer <s.hauer@pengutronix.de>
+---
+ drivers/video/mxsfb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-J.
-
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 18742c2..d29c7c0 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -902,7 +902,7 @@ static struct platform_driver mxsfb_driver = {
+ 	},
+ };
+ 
+-module_platform_driver(mxsfb_devtype);
++module_platform_driver(mxsfb_driver);
+ 
+ MODULE_DESCRIPTION("Freescale mxs framebuffer driver");
+ MODULE_AUTHOR("Sascha Hauer, Pengutronix");
 -- 
-I just Fedexed my soul to hell. I'm *real* clever.
+1.7.6.4
+

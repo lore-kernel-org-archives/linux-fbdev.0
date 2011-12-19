@@ -1,114 +1,131 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:02:02 +0000
-Subject: [PATCH 07/57] sh_mobile_hdmi: Remove platform data lcd_dev field
-Message-Id: <1323784972-24205-8-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Date: Mon, 19 Dec 2011 23:08:56 +0000
+Subject: [PATCH v2 6/7] omapfb: lcd_ams_delta: drive control lines over GPIO
+Message-Id: <1d2229480159aef54d28bb0260012b5dc887e4e6.1324331816.git.jkrzyszt@tis.icnet.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1323634328-856-1-git-send-email-jkrzyszt@tis.icnet.pl>
+In-Reply-To: <1323634328-856-1-git-send-email-jkrzyszt@tis.icnet.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-The field is used to print debug messages only. Remove it.
+Don't use Amstrad Delta custom I/O functions any longer, use GPIO API
+instead.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Depends on patch 2/7 "ARM: OMAP1: ams-delta: convert latches to
+basic_mmio_gpio".
+
+Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-shmobile/board-ap4evb.c   |    1 -
- arch/arm/mach-shmobile/board-mackerel.c |    1 -
- drivers/video/sh_mobile_hdmi.c          |   17 +++++------------
- include/video/sh_mobile_hdmi.h          |    1 -
- 4 files changed, 5 insertions(+), 15 deletions(-)
+Changes against initial version:
+* was 8/10,
+* no functional changes,
+* rebased on top of v2 of patch 2/7, just in case.
 
-diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
-index 42b4dda..dca4860 100644
---- a/arch/arm/mach-shmobile/board-ap4evb.c
-+++ b/arch/arm/mach-shmobile/board-ap4evb.c
-@@ -851,7 +851,6 @@ static long ap4evb_clk_optimize(unsigned long target, unsigned long *best_freq,
+
+ arch/arm/mach-omap1/board-ams-delta.c             |   10 -------
+ arch/arm/plat-omap/include/plat/board-ams-delta.h |    2 -
+ drivers/video/omap/lcd_ams_delta.c                |   27 +++++++++++++++-----
+ 3 files changed, 20 insertions(+), 19 deletions(-)
+
+diff --git a/arch/arm/mach-omap1/board-ams-delta.c b/arch/arm/mach-omap1/board-ams-delta.c
+index cc6f962..3aba8f9 100644
+--- a/arch/arm/mach-omap1/board-ams-delta.c
++++ b/arch/arm/mach-omap1/board-ams-delta.c
+@@ -227,16 +227,6 @@ static struct gpio latch_gpios[] __initconst = {
+ 		.label	= "dockit2",
+ 	},
+ 	{
+-		.gpio	= AMS_DELTA_GPIO_PIN_LCD_VBLEN,
+-		.flags	= GPIOF_OUT_INIT_LOW,
+-		.label	= "lcd_vblen",
+-	},
+-	{
+-		.gpio	= AMS_DELTA_GPIO_PIN_LCD_NDISP,
+-		.flags	= GPIOF_OUT_INIT_LOW,
+-		.label	= "lcd_ndisp",
+-	},
+-	{
+ 		.gpio	= AMS_DELTA_GPIO_PIN_KEYBRD_PWR,
+ 		.flags	= GPIOF_OUT_INIT_LOW,
+ 		.label	= "keybrd_pwr",
+diff --git a/arch/arm/plat-omap/include/plat/board-ams-delta.h b/arch/arm/plat-omap/include/plat/board-ams-delta.h
+index 3e57833..e9ad673 100644
+--- a/arch/arm/plat-omap/include/plat/board-ams-delta.h
++++ b/arch/arm/plat-omap/include/plat/board-ams-delta.h
+@@ -28,8 +28,6 @@
  
- static struct sh_mobile_hdmi_info hdmi_info = {
- 	.lcd_chan = &sh_mobile_lcdc1_info.ch[0],
--	.lcd_dev = &lcdc1_device.dev,
- 	.flags = HDMI_SND_SRC_SPDIF,
- 	.clk_optimize_parent = ap4evb_clk_optimize,
- };
-diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
-index 7db6a17..4ed0138 100644
---- a/arch/arm/mach-shmobile/board-mackerel.c
-+++ b/arch/arm/mach-shmobile/board-mackerel.c
-@@ -485,7 +485,6 @@ static struct platform_device hdmi_lcdc_device = {
+ #if defined (CONFIG_MACH_AMS_DELTA)
  
- static struct sh_mobile_hdmi_info hdmi_info = {
- 	.lcd_chan	= &hdmi_lcdc_info.ch[0],
--	.lcd_dev	= &hdmi_lcdc_device.dev,
- 	.flags		= HDMI_SND_SRC_SPDIF,
- };
+-#define AMS_DELTA_LATCH2_LCD_VBLEN	0x0001
+-#define AMS_DELTA_LATCH2_LCD_NDISP	0x0002
+ #define AMD_DELTA_LATCH2_KEYBRD_PWR	0x0100
+ #define AMD_DELTA_LATCH2_KEYBRD_DATA	0x0200
+ #define AMD_DELTA_LATCH2_SCARD_RSTIN	0x0400
+diff --git a/drivers/video/omap/lcd_ams_delta.c b/drivers/video/omap/lcd_ams_delta.c
+index 6978ae4..73b211b 100644
+--- a/drivers/video/omap/lcd_ams_delta.c
++++ b/drivers/video/omap/lcd_ams_delta.c
+@@ -25,6 +25,7 @@
+ #include <linux/io.h>
+ #include <linux/delay.h>
+ #include <linux/lcd.h>
++#include <linux/gpio.h>
  
-diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-index b1e90f5..1ff3baf 100644
---- a/drivers/video/sh_mobile_hdmi.c
-+++ b/drivers/video/sh_mobile_hdmi.c
-@@ -1008,11 +1008,9 @@ static void sh_hdmi_display_on(void *arg, struct fb_info *info)
- 	 * FB_EVENT_FB_UNBIND notify is also called with info->lock held
- 	 */
- 	struct sh_hdmi *hdmi = arg;
--	struct sh_mobile_hdmi_info *pdata = hdmi->dev->platform_data;
- 	struct sh_mobile_lcdc_chan *ch = info->par;
+ #include <plat/board-ams-delta.h>
+ #include <mach/hardware.h>
+@@ -98,29 +99,41 @@ static struct lcd_ops ams_delta_lcd_ops = {
  
--	dev_dbg(hdmi->dev, "%s(%p): state %x\n", __func__,
--		pdata->lcd_dev, info->state);
-+	dev_dbg(hdmi->dev, "%s(%p): state %x\n", __func__, hdmi, info->state);
+ /* omapfb panel section */
  
- 	/* No need to lock */
- 	hdmi->info = info;
-@@ -1040,9 +1038,8 @@ static void sh_hdmi_display_on(void *arg, struct fb_info *info)
- static void sh_hdmi_display_off(void *arg)
++static struct gpio _gpios[] __initconst_or_module = {
++	{
++		.gpio	= AMS_DELTA_GPIO_PIN_LCD_VBLEN,
++		.flags	= GPIOF_OUT_INIT_LOW,
++		.label	= "lcd_vblen",
++	},
++	{
++		.gpio	= AMS_DELTA_GPIO_PIN_LCD_NDISP,
++		.flags	= GPIOF_OUT_INIT_LOW,
++		.label	= "lcd_ndisp",
++	},
++};
++
+ static int ams_delta_panel_init(struct lcd_panel *panel,
+ 		struct omapfb_device *fbdev)
  {
- 	struct sh_hdmi *hdmi = arg;
--	struct sh_mobile_hdmi_info *pdata = hdmi->dev->platform_data;
- 
--	dev_dbg(hdmi->dev, "%s(%p)\n", __func__, pdata->lcd_dev);
-+	dev_dbg(hdmi->dev, "%s(%p)\n", __func__, hdmi);
- 	/* PS mode e->a */
- 	hdmi_write(hdmi, 0x10, HDMI_SYSTEM_CTRL);
- }
-@@ -1114,15 +1111,11 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
- {
- 	struct sh_hdmi *hdmi = container_of(work, struct sh_hdmi, edid_work.work);
- 	struct fb_info *info;
--	struct sh_mobile_hdmi_info *pdata = hdmi->dev->platform_data;
- 	struct sh_mobile_lcdc_chan *ch;
- 	int ret;
- 
--	dev_dbg(hdmi->dev, "%s(%p): begin, hotplug status %d\n", __func__,
--		pdata->lcd_dev, hdmi->hp_state);
--
--	if (!pdata->lcd_dev)
--		return;
-+	dev_dbg(hdmi->dev, "%s(%p): begin, hotplug status %d\n", __func__, hdmi,
-+		hdmi->hp_state);
- 
- 	mutex_lock(&hdmi->mutex);
- 
-@@ -1198,7 +1191,7 @@ out:
- 		hdmi->hp_state = HDMI_HOTPLUG_DISCONNECTED;
- 	mutex_unlock(&hdmi->mutex);
- 
--	dev_dbg(hdmi->dev, "%s(%p): end\n", __func__, pdata->lcd_dev);
-+	dev_dbg(hdmi->dev, "%s(%p): end\n", __func__, hdmi);
+-	return 0;
++	return gpio_request_array(_gpios, ARRAY_SIZE(_gpios));
  }
  
- static int sh_hdmi_notify(struct notifier_block *nb,
-diff --git a/include/video/sh_mobile_hdmi.h b/include/video/sh_mobile_hdmi.h
-index b569329..0b8d2cf 100644
---- a/include/video/sh_mobile_hdmi.h
-+++ b/include/video/sh_mobile_hdmi.h
-@@ -32,7 +32,6 @@ struct clk;
+ static void ams_delta_panel_cleanup(struct lcd_panel *panel)
+ {
++	gpio_free_array(_gpios, ARRAY_SIZE(_gpios));
+ }
  
- struct sh_mobile_hdmi_info {
- 	struct sh_mobile_lcdc_chan_cfg	*lcd_chan;
--	struct device			*lcd_dev;
- 	unsigned int			 flags;
- 	long (*clk_optimize_parent)(unsigned long target, unsigned long *best_freq,
- 				    unsigned long *parent_freq);
+ static int ams_delta_panel_enable(struct lcd_panel *panel)
+ {
+-	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_NDISP,
+-			AMS_DELTA_LATCH2_LCD_NDISP);
+-	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_VBLEN,
+-			AMS_DELTA_LATCH2_LCD_VBLEN);
++	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_NDISP, 1);
++	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_VBLEN, 1);
+ 	return 0;
+ }
+ 
+ static void ams_delta_panel_disable(struct lcd_panel *panel)
+ {
+-	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_VBLEN, 0);
+-	ams_delta_latch2_write(AMS_DELTA_LATCH2_LCD_NDISP, 0);
++	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_VBLEN, 0);
++	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_NDISP, 0);
+ }
+ 
+ static unsigned long ams_delta_panel_get_caps(struct lcd_panel *panel)
 -- 
 1.7.3.4
 

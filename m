@@ -1,147 +1,48 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Wed, 28 Dec 2011 23:55:00 +0000
-Subject: RE: [PATCH 5/6] video: s3c-fb: Hold runtime PM references when
-Message-Id: <000a01ccc5bc$1c4d4010$54e7c030$%han@samsung.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Date: Mon, 19 Dec 2011 13:51:24 +0000
+Subject: Re: [PATCH] MXSFB: Fix driver registration
+Message-Id: <CAAQ0ZWSJ0Yzr2Gk9MBQ0nvVCWxr0yWF_RFTy3isqc0pgEDdRxw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20111227141550.GA3331@opensource.wolfsonmicro.com>
- <1324995372-3410-1-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1324995372-3410-5-git-send-email-broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1324995372-3410-5-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1324169888-6687-1-git-send-email-marek.vasut@gmail.com>
+In-Reply-To: <1324169888-6687-1-git-send-email-marek.vasut@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: 'Mark Brown' <broonie@opensource.wolfsonmicro.com>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Marek Vasut <marek.vasut@gmail.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-kernel@vger.kernel.org, Wolfgang Denk <wd@denx.de>, Stefano Babic <sbabic@denx.de>, Huang Shijie <b32955@freescale.com>, Axel Lin <axel.lin@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, linux-fbdev@vger.kernel.org
 
-> -----Original Message-----
-> From: Mark Brown [mailto:broonie@opensource.wolfsonmicro.com]
-> Sent: Tuesday, December 27, 2011 11:16 PM
-> To: Jingoo Han; Florian Tobias Schandinat
-> Cc: linux-fbdev@vger.kernel.org; linux-kernel@vger.kernel.org; Mark Brown
-> Subject: [PATCH 5/6] video: s3c-fb: Hold runtime PM references when touching registers
-> 
-> Take a runtime PM reference whenever updating registers in preparation
-> for suspending the device when the framebuffer is blanked.
-> 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc-ed Florian and linux-fbdev@vger.kernel.org, as I guess Florian is
+the person who will take this patch.
 
-		Acked-by: Jingoo Han <jg1.han@samsung.com>
-
+--=A0Regards,Shawn
+On 18 December 2011 08:58, Marek Vasut <marek.vasut@gmail.com> wrote:
+> The driver should be registered with mxsfb_driver, not with mxsfb_devtype.
+> This caused obvious null pointer dereference and crash.
+>
+> Signed-off-by: Marek Vasut <marek.vasut@gmail.com>
+> Cc: Wolfgang Denk <wd@denx.de>
+> Cc: Stefano Babic <sbabic@denx.de>
+> Cc: Shawn Guo <shawn.guo@linaro.org>
+> Cc: Huang Shijie <b32955@freescale.com>
+> Cc: Axel Lin <axel.lin@gmail.com>
+> Cc: Sascha Hauer <s.hauer@pengutronix.de>
 > ---
->  drivers/video/s3c-fb.c |   22 ++++++++++++++++++++++
->  1 files changed, 22 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-> index 688b9d8..84cf631 100644
-> --- a/drivers/video/s3c-fb.c
-> +++ b/drivers/video/s3c-fb.c
-> @@ -496,6 +496,8 @@ static int s3c_fb_set_par(struct fb_info *info)
-> 
->  	dev_dbg(sfb->dev, "setting framebuffer parameters\n");
-> 
-> +	pm_runtime_get_sync(sfb->dev);
-> +
->  	shadow_protect_win(win, 1);
-> 
->  	switch (var->bits_per_pixel) {
-> @@ -692,6 +694,8 @@ static int s3c_fb_set_par(struct fb_info *info)
-> 
->  	shadow_protect_win(win, 0);
-> 
-> +	pm_runtime_put_sync(sfb->dev);
-> +
->  	return 0;
->  }
-> 
-> @@ -763,6 +767,8 @@ static int s3c_fb_setcolreg(unsigned regno,
->  	dev_dbg(sfb->dev, "%s: win %d: %d => rgb=%d/%d/%d\n",
->  		__func__, win->index, regno, red, green, blue);
-> 
-> +	pm_runtime_get_sync(sfb->dev);
-> +
->  	switch (info->fix.visual) {
->  	case FB_VISUAL_TRUECOLOR:
->  		/* true-colour, use pseudo-palette */
-> @@ -790,9 +796,11 @@ static int s3c_fb_setcolreg(unsigned regno,
->  		break;
-> 
->  	default:
-> +		pm_runtime_put_sync(sfb->dev);
->  		return 1;	/* unknown type */
->  	}
-> 
-> +	pm_runtime_put_sync(sfb->dev);
->  	return 0;
->  }
-> 
-> @@ -812,6 +820,8 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
-> 
->  	dev_dbg(sfb->dev, "blank mode %d\n", blank_mode);
-> 
-> +	pm_runtime_get_sync(sfb->dev);
-> +
->  	wincon = readl(sfb->regs + sfb->variant.wincon + (index * 4));
-> 
->  	switch (blank_mode) {
-> @@ -839,6 +849,7 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
->  	case FB_BLANK_VSYNC_SUSPEND:
->  	case FB_BLANK_HSYNC_SUSPEND:
->  	default:
-> +		pm_runtime_put_sync(sfb->dev);
->  		return 1;
->  	}
-> 
-> @@ -869,6 +880,8 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
->  		shadow_protect_win(win, 0);
->  	}
-> 
-> +	pm_runtime_put_sync(sfb->dev);
-> +
->  	return 0;
->  }
-> 
-> @@ -891,6 +904,8 @@ static int s3c_fb_pan_display(struct fb_var_screeninfo *var,
->  	void __iomem *buf	= sfb->regs + win->index * 8;
->  	unsigned int start_boff, end_boff;
-> 
-> +	pm_runtime_get_sync(sfb->dev);
-> +
->  	/* Offset in bytes to the start of the displayed area */
->  	start_boff = var->yoffset * info->fix.line_length;
->  	/* X offset depends on the current bpp */
-> @@ -909,6 +924,7 @@ static int s3c_fb_pan_display(struct fb_var_screeninfo *var,
->  			break;
->  		default:
->  			dev_err(sfb->dev, "invalid bpp\n");
-> +			pm_runtime_put_sync(sfb->dev);
->  			return -EINVAL;
->  		}
->  	}
-> @@ -924,6 +940,7 @@ static int s3c_fb_pan_display(struct fb_var_screeninfo *var,
-> 
->  	shadow_protect_win(win, 0);
-> 
-> +	pm_runtime_put_sync(sfb->dev);
->  	return 0;
->  }
-> 
-> @@ -1013,11 +1030,16 @@ static int s3c_fb_wait_for_vsync(struct s3c_fb *sfb, u32 crtc)
->  	if (crtc != 0)
->  		return -ENODEV;
-> 
-> +	pm_runtime_get_sync(sfb->dev);
-> +
->  	count = sfb->vsync_info.count;
->  	s3c_fb_enable_irq(sfb);
->  	ret = wait_event_interruptible_timeout(sfb->vsync_info.wait,
->  				       count != sfb->vsync_info.count,
->  				       msecs_to_jiffies(VSYNC_TIMEOUT_MSEC));
-> +
-> +	pm_runtime_put_sync(sfb->dev);
-> +
->  	if (ret = 0)
->  		return -ETIMEDOUT;
-> 
+> =A0drivers/video/mxsfb.c | =A0 =A02 +-
+> =A01 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+> index 18742c2..d29c7c0 100644
+> --- a/drivers/video/mxsfb.c
+> +++ b/drivers/video/mxsfb.c
+> @@ -902,7 +902,7 @@ static struct platform_driver mxsfb_driver =3D {
+> =A0 =A0 =A0 =A0},
+> =A0};
+>
+> -module_platform_driver(mxsfb_devtype);
+> +module_platform_driver(mxsfb_driver);
+>
+> =A0MODULE_DESCRIPTION("Freescale mxs framebuffer driver");
+> =A0MODULE_AUTHOR("Sascha Hauer, Pengutronix");
 > --
-> 1.7.7.3
-
+> 1.7.6.4
+>

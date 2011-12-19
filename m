@@ -1,40 +1,33 @@
 From: Dave Martin <dave.martin@linaro.org>
-Date: Tue, 06 Dec 2011 16:18:15 +0000
+Date: Mon, 19 Dec 2011 13:24:09 +0000
 Subject: Re: [GIT PULL] ARM: amba: Enable module alias autogeneration for
-Message-Id: <20111206161815.GD13769@linaro.org>
+Message-Id: <20111219132409.GB2031@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20111206151541.GA13774@linaro.org>
  <1321961573-4562-1-git-send-email-dave.martin@linaro.org>
  <20111206155911.GA11902@mail.gnudd.com>
-In-Reply-To: <20111206155911.GA11902@mail.gnudd.com>
+ <20111206161815.GD13769@linaro.org>
+In-Reply-To: <20111206161815.GD13769@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Alessandro Rubini <rubini@unipv.it>
 Cc: linux@arm.linux.org.uk, patches@linaro.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, alan@linux.intel.com, a.zummo@towertech.it, alsa-devel@alsa-project.org, cjb@laptop.org, dan.j.williams@intel.com, dmitry.torokhov@gmail.com, grant.likely@secretlab.ca, perex@perex.cz, jassisinghbrar@gmail.com, julia@diku.dk, linus.walleij@linaro.org, linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org, linux-mmc@vger.kernel.org, linux-serial@vger.kernel.org, linux-watchdog@vger.kernel.org, lethal@linux-sh.org, Pawel.Moll@arm.com, rtc-linux@googlegroups.com, spi-devel-general@lists.sourceforge.net, tiwai@suse.de, vinod.koul@intel.com, wim@iguana.be
 
-On Tue, Dec 06, 2011 at 04:59:11PM +0100, Alessandro Rubini wrote:
-> > ... it looks like Alessandro's proposed change to tidy up scripts/mod/
-> > ile2alias.c may get merged soon
-> 
-> No, I don't think it will happen. Rusty disagrees, and his own
-> suggestion is in the queue. I'm waiting a while to understand
-> what is happening.
-> 
-> Anyways, I think it's better for me to wait for amba to come in, and
-> work on scripts/mod later on. After all, it's meant to ease adding new
-> buses later, not to make it more difficult for already scheduled ones.
+Hi Russell,
 
-OK -- thanks for the clarification.
+This one isn't urgent, but I'm not seeing the amba modalias patches
+anywhere yet.  Did you have any outstanding concerns which need to be
+resolved?
 
+If you can suggest when/if these are likely to merge that would be great.
 
-Russell, it sounds like you shouldn't get a merge conflict with the
-original version of the series after all.
+Since Alessandro is now expecting to have to rebase on top of the amba
+additions anyway, we shouldn't need to worry about conflicting with his
+patches.
 
-For reference, the original pull request is here:
-
-http://lists.infradead.org/pipermail/linux-arm-kernel/2011-November/073619.html
-
+Of course, if you've already merged these somewhere, then there's no
+problem.
 
 Cheers
 ---Dave

@@ -1,135 +1,187 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 27 Dec 2011 12:48:43 +0000
-Subject: [RFC PATCH 00/29] OMAPDSS: Initial Writeback Capture mode support
-Message-Id: <1324989432-3625-1-git-send-email-archit@ti.com>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Mon, 19 Dec 2011 08:45:56 +0000
+Subject: [PATCH V2 2/2] OMAPDSS: DISPC: Update Scaling Clock Logic
+Message-Id: <1324283636-6458-1-git-send-email-cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: rohitkc@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-DSS HW on OMAP4 supports a new pipeline called writeback. Unlike other
-pipelines(called overlays in DSS2 SW), writeback takes pixel data from an
-overlay output or a overlay manager output and writes it back into a specified
-address in memory.
+Clock requirements for scaling in OMAP2, OMAP3 and OMAP4 are different. In
+OMAP2 and OMAP3 the required clock rate is a function of pixel clock, vertical
+downscale ratio and horizontal downscale ratio whereas in OMAP4 it is a
+function of pixel clock and horizontal downscale ratio only. Selection of 3-tap
+vs 5-tap coefficients depends on clock rate line buffer width in OMAP3 whereas
+in OMAP4 it is independent of clock rate and line buffer width. In OMAP2 3-tap
+for vertical and 5-tap for horizontal scaling is used. In OMAP4 5-tap is used
+both for horizontal and vertical scaling for better performance. Also, the
+number and width of line buffers differs in OMAP3 and OMAP4.
 
-writeback allows us to take benefit of the hardware processing available inside
-the DISPC like color space conversion, rescaling, compositing etc and do either
-a) perform memory-to-memory transfer with data processing, b) capture a
-displayed frame. The former is known as memory to memory mode of the writeback
-pipeline, and the latter is known as capture mode. More details about writeback
-can be found in the Display Subsystem section of the OMAP4 TRM.
+So, clock functions have been fined tuned for OMAP3 and support has been added
+added for OMAP4. This code has been tested on OMAP2, OMAP3 and OMAP4, and
+scaling issues due to clock errors have been resolved.
 
-In the current DSS2 design, there are 3 major entities: overlay(represents
-pipelines), overlay manager(represents a compositor of pipelines and the output
-going to a display) and a omap_dss_device(to represent a display). These
-entities can be linked to each other. One or more overlays can connect to a
-manager, and a manager connects to a display.
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+---
+ drivers/video/omap2/dss/dispc.c        |   66 ++++++++++++++++++++++----------
+ drivers/video/omap2/dss/dss_features.c |    7 +++
+ drivers/video/omap2/dss/dss_features.h |    1 +
+ 3 files changed, 54 insertions(+), 20 deletions(-)
 
-Writeback HW has some properties of an overlay, and some of an overlay manager.
-But as far as DSS2 design is concerned, it best fits as a special panel. This
-panel connects to a manager and displays/writes the content back to memory after
-doing some optional data processing.
-
-The design adopted for writeback support in DSS2 is as follows:
-- Writeback exists as an entity of its own, this entity is used to configure and
-  represent the actual writeback HW.
-- This entity doesn't connect itself directly to a manager, it connects to a
-  manager via a dummy writeback panel.
-- The dummy writeback panel is just a place holder of the actual writeback
-  entity. To do any writeback configuration, we extract the writeback pointer
-  through the dummy writeback panel pointer. 
-- In capture mode, an overlay manager needs to be connected to 2 outputs at the
-  same time. The first output is the display device, and the second is the
-  writeback panel. For this requirement, managers don't connect to a dss device,
-  they now connect to an entity called output. This entity is just a container
-  for 2 omap_dss_devices, one for display and one for writeback.
-
-With the design mentioned above. The three different ways writeback is used is
-explained:
-- capture mode: A manager is connected to both display and writeback
-  dss_devices.
-- memory to memory mode(connected to a manager): A manager is connected to only
-  the writeback dss_device.
-- memory to memory mode(connected to an overlay): A dummy writeback manager is
-  connect to the writeback dss_device.
-
-This patch series only enables capture mode support, i.e., allowing us to write
-to the memory a processed version of the frame that we display onto a panel
-through an overlay manager. The memory to memory mode support will be extended
-later.
-
-In order to use writeback, we need a capture device driver of some sort, a v4l2
-capture device is currently in the works. The patches are currently tested by
-extending writeback panel's sysfs attributes to allow us to configure the
-destination addresses and other parameters via sysfs.
-
-This can be tried out here:
-
-git://gitorious.org:~boddob/linux-omap-dss2/archit-dss2-clone.git wb-v1
-
-The patches are based on the following tree:
-
-git://gitorious.org/linux-omap-dss2/linux.git master
-
-Tested on a OMAP4 based blaze tablet. Note that this isn't tested thoroughly for
-all possible writeback configurations, the aim is to get comments on the design.
-
-Archit Taneja (29):
-  omapdss/omapfb/omap_vout: Introduce manager output struct
-  OMAPDSS: Add writeback to omap_dss_mgr_output
-  OMAPDSS: Writeback: Add writeback interface and panel driver
-  OMAPDSS: APPLY/Writeback: Add writeback_info
-  OMAPDSS: APPLY/Writeback: Apply writeback configurations
-  OMAPDSS: APPLY: Add writeback enable/disable functions
-  OMAPDSS: APPLY: Add extra_info for writeback
-  OMAPDSS: APPLY: Modify manager unset device op
-  OMAPDSS: APPLY: Allow manager set/unset_device ops to set/unset
-    writeback
-  OMAPDSS: APPLY: Calculate channel_in for writeback
-  OMAPDSS: DISPC: Add writeback as a new plane
-  OMAPDSS: Writeback: Add check for color_mode in dss_wb_simple_check()
-  OMAPDSS: APPLY: Configure writeback FIFOs
-  OMAPDSS: DISPC: Allow both upscaling and downscaling of chroma
-  OMAPDSS: DISPC: Pass overlay caps as a parameter to dispc overlay
-    related functions
-  OMAPDSS: OVERLAY: Add position and replication as overlay caps
-  OMAPDSS: DISPC: Make dispc_ovl_setup call dispc_plane_setup
-  OMAPDSS: DISPC: Make chroma_upscale an argument to dispc_plane_setup
-  OMAPDSS: DISPC: Don't set chroma resampling bit for writeback
-  OMAPDSS: Writeback: Add writeback capabilities
-  OMAPDSS: DISPC: Configure overlay-like parameters in dispc_wb_setup
-  OMAPDSS: DISPC: Setup writeback go, enable and channel_in functions
-  OMAPDSS: Writeback: Configure writeback specific parameters
-  OMAPDSS: Writeback: Use panel driver ops to configure mirroring
-    rotation and buffer size
-  OMAPDSS: Writeback: Add sysfs attributes to writeback panel
-  OMAPDSS: DISPLAY: Add a manager apply to sysfs store attributes for
-    writeback
-  OMAPDSS: MANAGER: Split manager_display_store into smaller functions
-  OMAPDSS: MANAGER: Add writeback as a sysfs attribute
-  OMAPDSS: FEATURES: Allow WB panels to attach to managers
-
- drivers/media/video/omap/omap_vout.c     |   78 +++--
- drivers/video/omap2/dss/Makefile         |    2 +-
- drivers/video/omap2/dss/apply.c          |  549 +++++++++++++++++++++++++--
- drivers/video/omap2/dss/core.c           |    2 +
- drivers/video/omap2/dss/dispc.c          |  343 ++++++++++++-----
- drivers/video/omap2/dss/dispc.h          |   36 ++
- drivers/video/omap2/dss/display.c        |   23 +-
- drivers/video/omap2/dss/dss.h            |   39 ++-
- drivers/video/omap2/dss/dss_features.c   |   24 +-
- drivers/video/omap2/dss/dss_features.h   |    2 +
- drivers/video/omap2/dss/manager.c        |  125 ++++++-
- drivers/video/omap2/dss/overlay.c        |   27 +-
- drivers/video/omap2/dss/writeback.c      |  615 ++++++++++++++++++++++++++++++
- drivers/video/omap2/omapfb/omapfb-main.c |    7 +-
- drivers/video/omap2/omapfb/omapfb.h      |    5 +-
- include/video/omapdss.h                  |   52 +++-
- 16 files changed, 1749 insertions(+), 180 deletions(-)
- create mode 100644 drivers/video/omap2/dss/writeback.c
-
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index b981983..6c3feb4 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -1554,6 +1554,9 @@ static unsigned long calc_fclk_five_taps(enum omap_channel channel, u16 width,
+ 	u32 fclk = 0;
+ 	u64 tmp, pclk = dispc_mgr_pclk_rate(channel);
+ 
++	if (height <= out_height && width <= out_width)
++		return (unsigned long) pclk;
++
+ 	if (height > out_height) {
+ 		struct omap_dss_device *dssdev = dispc_mgr_get_device(channel);
+ 		unsigned int ppl = dssdev->panel.timings.x_res;
+@@ -1608,7 +1611,16 @@ static unsigned long calc_fclk(enum omap_channel channel, u16 width,
+ 	else
+ 		vf = 1;
+ 
+-	return dispc_mgr_pclk_rate(channel) * vf * hf;
++	if (cpu_is_omap24xx()) {
++		if (vf > 1 && hf > 1)
++			return dispc_mgr_pclk_rate(channel) * 4;
++		else
++			return dispc_mgr_pclk_rate(channel) * 2;
++	} else if (cpu_is_omap34xx()) {
++		return dispc_mgr_pclk_rate(channel) * vf * hf;
++	} else {
++		return dispc_mgr_pclk_rate(channel) * hf;
++	}
+ }
+ 
+ static int dispc_ovl_calc_scaling(enum omap_plane plane,
+@@ -1618,6 +1630,8 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
+ {
+ 	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
+ 	const int maxdownscale = dss_feat_get_param_max(FEAT_PARAM_DOWNSCALE);
++	const int maxsinglelinewidth +				dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
+ 	unsigned long fclk = 0;
+ 
+ 	if ((ovl->caps & OMAP_DSS_OVL_CAP_SCALE) = 0) {
+@@ -1635,28 +1649,40 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
+ 			out_height > height * 8)
+ 		return -EINVAL;
+ 
+-	/* Must use 5-tap filter? */
+-	*five_taps = height > out_height * 2;
+-
+-	if (!*five_taps) {
++	if (cpu_is_omap24xx()) {
++		if (width > maxsinglelinewidth)
++			DSSERR("Cannot scale max input width exceeded");
++		*five_taps = false;
++		fclk = calc_fclk(channel, width, height, out_width,
++								out_height);
++	} else if (cpu_is_omap34xx()) {
++		if (width > (maxsinglelinewidth * 2)) {
++			DSSERR("Cannot setup scaling");
++			DSSERR("width exceeds maximum width possible");
++			return -EINVAL;
++		}
++		fclk = calc_fclk_five_taps(channel, width, height, out_width,
++						out_height, color_mode);
++		if (width > maxsinglelinewidth) {
++			if (height > out_height && height < out_height * 2)
++				*five_taps = false;
++			else {
++				DSSERR("cannot setup scaling with five taps");
++				return -EINVAL;
++			}
++		}
++		if (!*five_taps)
++			fclk = calc_fclk(channel, width, height, out_width,
++					out_height);
++	} else {
++		if (width > maxsinglelinewidth) {
++			DSSERR("Cannot scale width exceeds max line width");
++			return -EINVAL;
++		}
+ 		fclk = calc_fclk(channel, width, height, out_width,
+ 				out_height);
+-
+-		/* Try 5-tap filter if 3-tap fclk is too high */
+-		if (cpu_is_omap34xx() && height > out_height &&
+-				fclk > dispc_fclk_rate())
+-			*five_taps = true;
+ 	}
+ 
+-	if (width > (2048 >> *five_taps)) {
+-		DSSERR("failed to set up scaling, fclk too low\n");
+-		return -EINVAL;
+-	}
+-
+-	if (*five_taps)
+-		fclk = calc_fclk_five_taps(channel, width, height,
+-				out_width, out_height, color_mode);
+-
+ 	DSSDBG("required fclk rate = %lu Hz\n", fclk);
+ 	DSSDBG("current fclk rate = %lu Hz\n", dispc_fclk_rate());
+ 
+@@ -1676,7 +1702,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 		u32 fifo_low, u32 fifo_high)
+ {
+ 	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
+-	bool five_taps = false;
++	bool five_taps = true;
+ 	bool fieldmode = 0;
+ 	int r, cconv = 0;
+ 	unsigned offset0, offset1;
+diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
+index b402699..5e4b829 100644
+--- a/drivers/video/omap2/dss/dss_features.c
++++ b/drivers/video/omap2/dss/dss_features.c
+@@ -304,6 +304,11 @@ static const struct dss_param_range omap2_dss_param_range[] = {
+ 	[FEAT_PARAM_DSIPLL_FINT]		= { 0, 0 },
+ 	[FEAT_PARAM_DSIPLL_LPDIV]		= { 0, 0 },
+ 	[FEAT_PARAM_DOWNSCALE]			= { 1, 2 },
++	/*
++	 * Assuming the line width buffer to be 768 pixels as OMAP2 DISPC
++	 * scaler cannot scale a image with width more than 768.
++	 */
++	[FEAT_PARAM_LINEWIDTH]			= { 1, 768 },
+ };
+ 
+ static const struct dss_param_range omap3_dss_param_range[] = {
+@@ -316,6 +321,7 @@ static const struct dss_param_range omap3_dss_param_range[] = {
+ 	[FEAT_PARAM_DSIPLL_FINT]		= { 750000, 2100000 },
+ 	[FEAT_PARAM_DSIPLL_LPDIV]		= { 1, (1 << 13) - 1},
+ 	[FEAT_PARAM_DOWNSCALE]			= { 1, 4 },
++	[FEAT_PARAM_LINEWIDTH]			= { 1, 1024 },
+ };
+ 
+ static const struct dss_param_range omap4_dss_param_range[] = {
+@@ -328,6 +334,7 @@ static const struct dss_param_range omap4_dss_param_range[] = {
+ 	[FEAT_PARAM_DSIPLL_FINT]		= { 500000, 2500000 },
+ 	[FEAT_PARAM_DSIPLL_LPDIV]		= { 0, (1 << 13) - 1 },
+ 	[FEAT_PARAM_DOWNSCALE]			= { 1, 4 },
++	[FEAT_PARAM_LINEWIDTH]			= { 1, 2048 },
+ };
+ 
+ /* OMAP2 DSS Features */
+diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
+index 6a6c05d..cd833bb 100644
+--- a/drivers/video/omap2/dss/dss_features.h
++++ b/drivers/video/omap2/dss/dss_features.h
+@@ -86,6 +86,7 @@ enum dss_range_param {
+ 	FEAT_PARAM_DSIPLL_FINT,
+ 	FEAT_PARAM_DSIPLL_LPDIV,
+ 	FEAT_PARAM_DOWNSCALE,
++	FEAT_PARAM_LINEWIDTH,
+ };
+ 
+ /* DSS Feature Functions */
 -- 
-1.7.4.1
+1.7.1
 

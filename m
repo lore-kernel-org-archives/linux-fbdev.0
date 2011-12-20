@@ -1,67 +1,89 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Tue, 20 Dec 2011 05:32:14 +0000
-Subject: linux-next: build warning after merge of the fbdev tree
-Message-Id: <20111220163214.351b13b464c46f506f329b30@canb.auug.org.au>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Signature=_Tue__20_Dec_2011_16_32_14_+1100_dRa3gys=dCN8KbZf"
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 20 Dec 2011 10:37:05 +0000
+Subject: Re: linux-next: build warning after merge of the fbdev tree
+Message-Id: <201112201137.12003.laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+References: <20111220163214.351b13b464c46f506f329b30@canb.auug.org.au>
+In-Reply-To: <20111220163214.351b13b464c46f506f329b30@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
 
---Signature=_Tue__20_Dec_2011_16_32_14_+1100_dRa3gys=dCN8KbZf
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Stephen,
 
-Hi all,
+On Tuesday 20 December 2011 06:32:14 Stephen Rothwell wrote:
+> Hi all,
+> 
+> After merging the fbdev tree, today's linux-next build (powerpc
+> ppc64_defconfig) produced this warning:
+> 
+> drivers/video/matrox/matroxfb_base.c:150:2: warning: braces around scalar
+> initializer [enabled by default]
+> drivers/video/matrox/matroxfb_base.c:150:2: warning: (near initialization
+> for 'vesafb_defined.colorspace') [enabled by default]
+> drivers/video/matrox/matroxfb_base.c:150:2: warning: excess elements in
+> scalar initializer [enabled by default]
+> drivers/video/matrox/matroxfb_base.c:150:2: warning: (near initialization
+> for 'vesafb_defined.colorspace') [enabled by default]
+> drivers/video/matrox/matroxfb_crtc2.c:596:3: warning: braces around scalar
+> initializer [enabled by default]
+> drivers/video/matrox/matroxfb_crtc2.c:596:3: warning: (near initialization
+> for 'matroxfb_dh_defined.colorspace') [enabled by default]
+> drivers/video/matrox/matroxfb_crtc2.c:596:3: warning: excess elements in
+> scalar initializer [enabled by default]
+> drivers/video/matrox/matroxfb_crtc2.c:596:3: warning: (near initialization
+> for 'matroxfb_dh_defined.colorspace') [enabled by default]
+> 
+> Introduced by commit fb21c2f42879 ("fbdev: Add FOURCC-based format
+> configuration API").
 
-After merging the fbdev tree, today's linux-next build (powerpc ppc64_defco=
-nfig)
-produced this warning:
+The following patch should fix the issue. Florian, are you fine with it, or
+would you rather modify the initializers to be name-based ?
 
-drivers/video/matrox/matroxfb_base.c:150:2: warning: braces around scalar i=
-nitializer [enabled by default]
-drivers/video/matrox/matroxfb_base.c:150:2: warning: (near initialization f=
-or 'vesafb_defined.colorspace') [enabled by default]
-drivers/video/matrox/matroxfb_base.c:150:2: warning: excess elements in sca=
-lar initializer [enabled by default]
-drivers/video/matrox/matroxfb_base.c:150:2: warning: (near initialization f=
-or 'vesafb_defined.colorspace') [enabled by default]
-drivers/video/matrox/matroxfb_crtc2.c:596:3: warning: braces around scalar =
-initializer [enabled by default]
-drivers/video/matrox/matroxfb_crtc2.c:596:3: warning: (near initialization =
-for 'matroxfb_dh_defined.colorspace') [enabled by default]
-drivers/video/matrox/matroxfb_crtc2.c:596:3: warning: excess elements in sc=
-alar initializer [enabled by default]
-drivers/video/matrox/matroxfb_crtc2.c:596:3: warning: (near initialization =
-for 'matroxfb_dh_defined.colorspace') [enabled by default]
+From 078987fc14dba806fc1bc628e3e5c371db3cf1b8 Mon Sep 17 00:00:00 2001
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 20 Dec 2011 11:30:53 +0100
+Subject: [PATCH] fbdev: matroxfb: Fix compilation after fb_var_screeninfo change
 
-Introduced by commit fb21c2f42879 ("fbdev: Add FOURCC-based format
-configuration API").
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Commit fb21c2f42879 ("fbdev: Add FOURCC-based format configuration API")
+modified the layout of the fb_var_screeninfo structure. Update the
+static initializers in the matroxfb driver accordingly.
 
---Signature=_Tue__20_Dec_2011_16_32_14_+1100_dRa3gys=dCN8KbZf
-Content-Type: application/pgp-signature
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/matrox/matroxfb_base.c  |    2 +-
+ drivers/video/matrox/matroxfb_crtc2.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+diff --git a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
+index 44bf8d4..f98aad5 100644
+--- a/drivers/video/matrox/matroxfb_base.c
++++ b/drivers/video/matrox/matroxfb_base.c
+@@ -147,7 +147,7 @@ static struct fb_var_screeninfo vesafb_defined = {
+ 	39721L,48L,16L,33L,10L,
+ 	96L,2L,~0,	/* No sync info */
+ 	FB_VMODE_NONINTERLACED,
+-	0, {0,0,0,0,0}
++	0, 0, {0,0,0,0}
+ };
+ 
+ 
+diff --git a/drivers/video/matrox/matroxfb_crtc2.c b/drivers/video/matrox/matroxfb_crtc2.c
+index d7112c3..d0c1abc 100644
+--- a/drivers/video/matrox/matroxfb_crtc2.c
++++ b/drivers/video/matrox/matroxfb_crtc2.c
+@@ -593,7 +593,7 @@ static struct fb_var_screeninfo matroxfb_dh_defined = {
+ 		39721L,48L,16L,33L,10L,
+ 		96L,2,0,	/* no sync info */
+ 		FB_VMODE_NONINTERLACED,
+-		0, {0,0,0,0,0}
++		0, 0, {0,0,0,0}
+ };
+ 
+ static int matroxfb_dh_regit(const struct matrox_fb_info *minfo,
+-- 
+Regards,
 
-iQIcBAEBCAAGBQJO8B3eAAoJEECxmPOUX5FEvqkP/R8ANSkaz3Lb7RAbs0chnNQD
-rXyjbarmgGC0QBKal8392nS2Vkj6Z4/VQ7nj7ArXC5I74sw2r+8cbEcrkJx7QFy0
-r5JlTEPCMPY6HN87yuBg/JRARym/bJGzlffD+qPnerq6noh7a7fj1ONANWjNGJZz
-hirp+EwGjx7+EvPkWKeU8pqn8fjF0tXdKeuKG5Bdwfa8tSy0Jwj2XQmu2ptC/NTW
-Ilt0lYN9XCxTvifJCdzw314wbwL73nM72lMLFB4Ixs04nUv9i/W+BwcCxeoy+r/8
-KmRI3ITYVbPAxyBIuyQCvGY5Oi8ALpSHQLZ4//kMBTgvM0BJbLwFFfFFJhzNoQiK
-4pgFcFSELYQEhlA5KUeh9bWvuW8h56zVrWKF7EKNH+2+Lcq9B6dEo5PFnmPAmjAK
-9mvmp2v4piMUv+/Y3XI/OwKIUGNzRUd3xiEKclWIhHasBuNRwNiU4bG4F+ZwN2hS
-K5TUHyMK2yjDl+gmecOtizu4jWI+FvDMcG6GJ4aq1BisY+EpoP3CgnaSl07vG1qc
-OISdzjdsGpmPcZ8UxHDHfgWfvSFUR6EP1CHsH0OhPgFjB+sia9UezBUTX0g/7bbt
-UjF9iKE4p3PXfzOPgz4cMBa37UxMT2IFsN1APi4MDU9+OMGqMH3/W9G3O8fC+i/I
-kWAY9vHUykQEvKQDDT2z
-=g6TW
------END PGP SIGNATURE-----
-
---Signature=_Tue__20_Dec_2011_16_32_14_+1100_dRa3gys=dCN8KbZf--
+Laurent Pinchart

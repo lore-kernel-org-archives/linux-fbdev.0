@@ -1,57 +1,50 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 15 Dec 2011 08:09:41 +0000
-Subject: Re: [PATCH 2/2] offb: Add palette hack for qemu "standard vga"
-Message-Id: <1323936581.21839.68.camel@pasglop>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 20 Dec 2011 19:00:11 +0000
+Subject: [PATCH] fbdev: matroxfb: Fix compilation after fb_var_screeninfo change
+Message-Id: <1324407611-6886-1-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1323907109.21839.28.camel@pasglop> <4EE9A6A5.2050600@suse.de>
-In-Reply-To: <4EE9A6A5.2050600@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Andreas =?ISO-8859-1?Q?F=E4rber?= <afaerber@suse.de>
-Cc: linux-fbdev@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, kvm-ppc@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, 2011-12-15 at 08:49 +0100, Andreas F=C3=A4rber wrote:
-> Am 15.12.2011 00:58, schrieb Benjamin Herrenschmidt:
-> > We rename the mach64 hack to "simple" since that's also applicable
-> > to anything using VGA-style DAC IO ports (set to 8-bit DAC) and we
-> > use it for qemu vga.
-> >=20
-> > Note that this is keyed on a device-tree "compatible" property that
-> > is currently only set by an upcoming version of SLOF when using the
-> > qemu "pseries" platform. This is on purpose as other qemu ppc platforms
-> > using OpenBIOS aren't properly setting the DAC to 8-bit at the time of
-> > the writing of this patch.
-> >=20
-> > We can fix OpenBIOS later to do that and add the required property, in
-> > which case it will be matched by this change.
->=20
-> Just let me know what's needed for OpenBIOS.
-> Is this just for -vga std as opposed to the default cirrus?
+Commit fb21c2f42879 ("fbdev: Add FOURCC-based format configuration API")
+modified the layout of the fb_var_screeninfo structure. Remove zero
+fields from the static initializers in the matroxfb driver accordingly.
 
-Yes. Cirrus isn't the default on mac99 and on pseries (tho I will
-eventually add a SLOF driver for it as well).
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/matrox/matroxfb_base.c  |    1 -
+ drivers/video/matrox/matroxfb_crtc2.c |    1 -
+ 2 files changed, 0 insertions(+), 2 deletions(-)
 
-For OpenBIOS I was thinking about just sending you a patch :-) But if
-you have more time than I do, what is needed is:
+diff --git a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
+index 44bf8d4..401a56e 100644
+--- a/drivers/video/matrox/matroxfb_base.c
++++ b/drivers/video/matrox/matroxfb_base.c
+@@ -147,7 +147,6 @@ static struct fb_var_screeninfo vesafb_defined = {
+ 	39721L,48L,16L,33L,10L,
+ 	96L,2L,~0,	/* No sync info */
+ 	FB_VMODE_NONINTERLACED,
+-	0, {0,0,0,0,0}
+ };
+ 
+ 
+diff --git a/drivers/video/matrox/matroxfb_crtc2.c b/drivers/video/matrox/matroxfb_crtc2.c
+index d7112c3..02796a4 100644
+--- a/drivers/video/matrox/matroxfb_crtc2.c
++++ b/drivers/video/matrox/matroxfb_crtc2.c
+@@ -593,7 +593,6 @@ static struct fb_var_screeninfo matroxfb_dh_defined = {
+ 		39721L,48L,16L,33L,10L,
+ 		96L,2,0,	/* no sync info */
+ 		FB_VMODE_NONINTERLACED,
+-		0, {0,0,0,0,0}
+ };
+ 
+ static int matroxfb_dh_regit(const struct matrox_fb_info *minfo,
+-- 
+Regards,
 
- - Set the 8-bit DAC bit in the VBE enable register when initializing
-the card (0x20 off the top of my mind but dbl check). Remove your >> 2
-in your palette setting.
-
- - Implement color! so prom_init can set the initial palette (but that's
-not strictly necessary).
-
- - I assume that the VGA device already has a device_type of "display",
-can be open()'ed from the client interface and will have the necessary
-properties to be used by offb (width, height, linebytes, depth, and
-address if fits in 32-bit (if not, ignore it, offb will pick the largest
-BAR)).=20
-
- - Stick "qemu,std-vga" into the compatible property of the vga PCI
-device.
-
-Cheers,
-Ben.
-
+Laurent Pinchart
 

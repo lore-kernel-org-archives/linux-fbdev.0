@@ -1,80 +1,68 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Mon, 19 Dec 2011 23:15:27 +0000
-Subject: Re: [PATCH 3/3] video: pnx4008: convert drivers/video/pnx4008/* to
-Message-Id: <4EEFC58F.5020106@gmx.de>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Wed, 21 Dec 2011 07:39:40 +0000
+Subject: [PATCH] video: da8xx-fb: reset LCDC only if functional clock changes with DVFS
+Message-Id: <1324452460-10646-1-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1323395873.3740.4.camel@phoenix> <1323396075.3740.8.camel@phoenix>
-In-Reply-To: <1323396075.3740.8.camel@phoenix>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Axel Lin <axel.lin@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Grigory Tolstolytkin <gtolstolytkin@ru.mvista.com>, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On 12/09/2011 02:01 AM, Axel Lin wrote:
-> This patch converts the drivers in drivers/video/pnx4008/* to use the
-> module_platform_driver() macro which makes the code smaller and a bit
-> simpler.
-> 
-> Cc: Grigory Tolstolytkin <gtolstolytkin@ru.mvista.com>
-> Signed-off-by: Axel Lin <axel.lin@gmail.com>
+LCDC functional clock may or may not be derived from CPU/MPU DPLL,
+For example,
+AM335x => Separate independent DPLL for LCDC
+Davinci => Same DPLL as MPU
 
-Applied.
+So, on platforms where LCDC functional clock is not derived from CPU/MPU
+PLL it is not required to reset LCDC module, if CPU frequency does not
+change with DVFS.
 
+This patch adds check to do reset only if functional clock changes
+between pre and post notifier callbacks with DVFS.
 
-Thanks,
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+---
+ drivers/video/da8xx-fb.c |   13 ++++++++-----
+ 1 files changed, 8 insertions(+), 5 deletions(-)
 
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/pnx4008/pnxrgbfb.c |   13 +------------
->  drivers/video/pnx4008/sdum.c     |   13 +------------
->  2 files changed, 2 insertions(+), 24 deletions(-)
-> 
-> diff --git a/drivers/video/pnx4008/pnxrgbfb.c b/drivers/video/pnx4008/pnxrgbfb.c
-> index b2252fe..6d30428 100644
-> --- a/drivers/video/pnx4008/pnxrgbfb.c
-> +++ b/drivers/video/pnx4008/pnxrgbfb.c
-> @@ -193,17 +193,6 @@ static struct platform_driver rgbfb_driver = {
->  	.remove = rgbfb_remove,
->  };
->  
-> -static int __init rgbfb_init(void)
-> -{
-> -	return platform_driver_register(&rgbfb_driver);
-> -}
-> -
-> -static void __exit rgbfb_exit(void)
-> -{
-> -	platform_driver_unregister(&rgbfb_driver);
-> -}
-> -
-> -module_init(rgbfb_init);
-> -module_exit(rgbfb_exit);
-> +module_platform_driver(rgbfb_driver);
->  
->  MODULE_LICENSE("GPL");
-> diff --git a/drivers/video/pnx4008/sdum.c b/drivers/video/pnx4008/sdum.c
-> index 50e0039..c5c7414 100644
-> --- a/drivers/video/pnx4008/sdum.c
-> +++ b/drivers/video/pnx4008/sdum.c
-> @@ -856,17 +856,6 @@ static struct platform_driver sdum_driver = {
->  	.resume = sdum_resume,
->  };
->  
-> -int __init sdum_init(void)
-> -{
-> -	return platform_driver_register(&sdum_driver);
-> -}
-> -
-> -static void __exit sdum_exit(void)
-> -{
-> -	platform_driver_unregister(&sdum_driver);
-> -};
-> -
-> -module_init(sdum_init);
-> -module_exit(sdum_exit);
-> +module_platform_driver(sdum_driver);
->  
->  MODULE_LICENSE("GPL");
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 29577bf..1334a68 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -161,6 +161,7 @@ struct da8xx_fb_par {
+ 	int			vsync_timeout;
+ #ifdef CONFIG_CPU_FREQ
+ 	struct notifier_block	freq_transition;
++	unsigned int		lcd_fck_rate;
+ #endif
+ 	void (*panel_power_ctrl)(int);
+ };
+@@ -840,11 +841,12 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
+ 	struct da8xx_fb_par *par;
+ 
+ 	par = container_of(nb, struct da8xx_fb_par, freq_transition);
+-	if (val = CPUFREQ_PRECHANGE) {
+-		lcd_disable_raster();
+-	} else if (val = CPUFREQ_POSTCHANGE) {
+-		lcd_calc_clk_divider(par);
+-		lcd_enable_raster();
++	if (val = CPUFREQ_POSTCHANGE) {
++		if (par->lcd_fck_rate != clk_get_rate(par->lcdc_clk)) {
++			lcd_disable_raster();
++			lcd_calc_clk_divider(par);
++			lcd_enable_raster();
++		}
+ 	}
+ 
+ 	return 0;
+@@ -1137,6 +1139,7 @@ static int __devinit fb_probe(struct platform_device *device)
+ 
+ 	par = da8xx_fb_info->par;
+ 	par->lcdc_clk = fb_clk;
++	par->lcd_fck_rate = clk_get_rate(fb_clk);
+ 	par->pxl_clk = lcdc_info->pxl_clk;
+ 	if (fb_pdata->panel_power_ctrl) {
+ 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
+-- 
+1.7.1
 

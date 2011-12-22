@@ -1,86 +1,70 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:02:27 +0000
-Subject: [PATCH 32/57] fbdev: sh_mobile_lcdc: Reorganize the sh_mobile_lcdc_chan structure
-Message-Id: <1323784972-24205-33-git-send-email-laurent.pinchart@ideasonboard.com>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Thu, 22 Dec 2011 09:31:14 +0000
+Subject: [PATCH v2] video: da8xx-fb: reset LCDC only if functional clock changes with DVFS
+Message-Id: <1324545554-20543-1-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Group fields by purpose, and make the separation between core fields and
-FB-related fields clear.
+LCDC functional clock may or may not be derived from CPU/MPU DPLL,
+For example,
+AM335x => Separate independent DPLL for LCDC
+Davinci => Same DPLL as MPU
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+So, on platforms where LCDC functional clock is not derived from CPU/MPU
+PLL it is not required to reset LCDC module as its functional clock does
+not change with DVFS.
+
+This patch adds check to do reset only if functional clock changes
+between pre and post notifier callbacks with DVFS.
+
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
 ---
- drivers/video/sh_mobile_lcdcfb.h |   39 ++++++++++++++++++++++---------------
- 1 files changed, 23 insertions(+), 16 deletions(-)
+ drivers/video/da8xx-fb.c |   15 ++++++++++-----
+ 1 files changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
-index c175387..8e0d009 100644
---- a/drivers/video/sh_mobile_lcdcfb.h
-+++ b/drivers/video/sh_mobile_lcdcfb.h
-@@ -53,30 +53,22 @@ struct sh_mobile_lcdc_entity {
- struct sh_mobile_lcdc_chan {
- 	struct sh_mobile_lcdc_priv *lcdc;
- 	struct sh_mobile_lcdc_entity *tx_dev;
-+	struct sh_mobile_lcdc_chan_cfg cfg;
- 
- 	unsigned long *reg_offs;
- 	unsigned long ldmt1r_value;
- 	unsigned long enabled; /* ME and SE in LDCNT2R */
--	struct sh_mobile_lcdc_chan_cfg cfg;
--	u32 pseudo_palette[PALETTE_NR];
--	struct fb_info *info;
--	struct backlight_device *bl;
-+	int meram_enabled;
-+
-+	struct mutex open_lock;		/* protects the use counter */
-+	int use_count;
-+
- 	dma_addr_t dma_handle;
--	struct fb_deferred_io defio;
--	struct scatterlist *sglist;
--	unsigned long frame_end;
- 	unsigned long pan_offset;
-+
-+	unsigned long frame_end;
- 	wait_queue_head_t frame_end_wait;
- 	struct completion vsync_completion;
--	struct {
--		unsigned int width;
--		unsigned int height;
--		struct fb_videomode mode;
--	} display;
--	int use_count;
--	int blank_status;
--	struct mutex open_lock;		/* protects the use counter */
--	int meram_enabled;
- 
- 	unsigned long base_addr_y;
- 	unsigned long base_addr_c;
-@@ -86,6 +78,21 @@ struct sh_mobile_lcdc_chan {
- 		      enum sh_mobile_lcdc_entity_event event,
- 		      const struct fb_videomode *mode,
- 		      const struct fb_monspecs *monspec);
-+
-+	/* Backlight */
-+	struct backlight_device *bl;
-+
-+	/* FB */
-+	struct fb_info *info;
-+	u32 pseudo_palette[PALETTE_NR];
-+	struct {
-+		unsigned int width;
-+		unsigned int height;
-+		struct fb_videomode mode;
-+	} display;
-+	struct fb_deferred_io defio;
-+	struct scatterlist *sglist;
-+	int blank_status;
- };
- 
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 6b27751..6146186 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -163,6 +163,7 @@ struct da8xx_fb_par {
+ 	int			vsync_timeout;
+ #ifdef CONFIG_CPU_FREQ
+ 	struct notifier_block	freq_transition;
++	unsigned int		lcd_fck_rate;
  #endif
+ 	void (*panel_power_ctrl)(int);
+ };
+@@ -895,11 +896,12 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
+ 	struct da8xx_fb_par *par;
+ 
+ 	par = container_of(nb, struct da8xx_fb_par, freq_transition);
+-	if (val = CPUFREQ_PRECHANGE) {
+-		lcd_disable_raster();
+-	} else if (val = CPUFREQ_POSTCHANGE) {
+-		lcd_calc_clk_divider(par);
+-		lcd_enable_raster();
++	if (val = CPUFREQ_POSTCHANGE) {
++		if (par->lcd_fck_rate != clk_get_rate(par->lcdc_clk)) {
++			lcd_disable_raster();
++			lcd_calc_clk_divider(par);
++			lcd_enable_raster();
++		}
+ 	}
+ 
+ 	return 0;
+@@ -1192,6 +1194,9 @@ static int __devinit fb_probe(struct platform_device *device)
+ 
+ 	par = da8xx_fb_info->par;
+ 	par->lcdc_clk = fb_clk;
++#ifdef CONFIG_CPU_FREQ
++	par->lcd_fck_rate = clk_get_rate(fb_clk);
++#endif
+ 	par->pxl_clk = lcdc_info->pxl_clk;
+ 	if (fb_pdata->panel_power_ctrl) {
+ 		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
 -- 
-1.7.3.4
+1.7.1
 

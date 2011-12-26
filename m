@@ -1,91 +1,54 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 27 Dec 2011 12:48:57 +0000
-Subject: [RFC PATCH 14/29] OMAPDSS: DISPC: Allow both upscaling and downscaling of chroma
-Message-Id: <1324989432-3625-15-git-send-email-archit@ti.com>
+From: Ilya Yanok <yanok@emcraft.com>
+Date: Mon, 26 Dec 2011 22:56:41 +0000
+Subject: [PATCH] OMAPDSS: add OrtusTech COM43H4M10XTC display support
+Message-Id: <1324940201-16079-1-git-send-email-yanok@emcraft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1324989432-3625-1-git-send-email-archit@ti.com>
-In-Reply-To: <1324989432-3625-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: rohitkc@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: sasha_d@emcraft.com, Ilya Yanok <yanok@emcraft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Make the function dispc_ovl_set_scaling_uv() take a boolean argument which tells
-if we want to upscale or downscale the chroma plane.
+dd data for the OrtusTech COM43H4M10XTC display to the
+generic_dpi_panel driver.
 
-Downscaling of chroma is required by writeback pipeline for converting the input
-YUV444 color format to YUV422 or NV12.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+CC: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
 ---
- drivers/video/omap2/dss/dispc.c |   17 ++++++++++-------
- 1 files changed, 10 insertions(+), 7 deletions(-)
+ drivers/video/omap2/displays/panel-generic-dpi.c |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 231369a..dfbb39b 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -1219,7 +1219,7 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
- 		u16 out_width, u16 out_height,
- 		bool ilace, bool five_taps,
- 		bool fieldmode, enum omap_color_mode color_mode,
--		u8 rotation)
-+		u8 rotation, bool chroma_upscale)
- {
- 	int scale_x = out_width != orig_width;
- 	int scale_y = out_height != orig_height;
-@@ -1236,9 +1236,11 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
- 	switch (color_mode) {
- 	case OMAP_DSS_COLOR_NV12:
- 		/* UV is subsampled by 2 vertically*/
--		orig_height >>= 1;
-+		orig_height = chroma_upscale ?
-+			orig_height >> 1 : orig_height << 1;
- 		/* UV is subsampled by 2 horz.*/
--		orig_width >>= 1;
-+		orig_width = chroma_upscale ?
-+			orig_width >> 1 : orig_width << 1;
- 		break;
- 	case OMAP_DSS_COLOR_YUV2:
- 	case OMAP_DSS_COLOR_UYVY:
-@@ -1248,7 +1250,8 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
- 		if (rotation = OMAP_DSS_ROT_0 ||
- 			rotation = OMAP_DSS_ROT_180)
- 			/* UV is subsampled by 2 hrz*/
--			orig_width >>= 1;
-+			orig_width = chroma_upscale ?
-+				orig_width >> 1 : orig_width << 1;
- 		/* must use FIR for YUV422 if rotated */
- 		if (rotation != OMAP_DSS_ROT_0)
- 			scale_x = scale_y = true;
-@@ -1282,7 +1285,7 @@ static void dispc_ovl_set_scaling(enum omap_plane plane,
- 		u16 out_width, u16 out_height,
- 		bool ilace, bool five_taps,
- 		bool fieldmode, enum omap_color_mode color_mode,
--		u8 rotation)
-+		u8 rotation, bool chroma_upscale)
- {
- 	BUG_ON(plane = OMAP_DSS_GFX);
+diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
+index 593f831..99669ae 100644
+--- a/drivers/video/omap2/displays/panel-generic-dpi.c
++++ b/drivers/video/omap2/displays/panel-generic-dpi.c
+@@ -317,6 +317,26 @@ static struct panel_config generic_dpi_panels[] = {
+ 					  OMAP_DSS_LCD_IHS,
+ 		.name			= "focaltech_etm070003dh6",
+ 	},
++	/* OrtusTech COM43H4M10XTC */
++	{
++		{
++			.x_res		= 480,
++			.y_res		= 272,
++
++			.pixel_clock	= 8000,
++
++			.hsw		= 41,
++			.hfp		= 8,
++			.hbp		= 4,
++
++			.vsw		= 10,
++			.vfp		= 4,
++			.vbp		= 2,
++		},
++		.config			= OMAP_DSS_LCD_TFT,
++
++		.name			= "ortustech_com43h4m10xtc",
++	},
+ };
  
-@@ -1298,7 +1301,7 @@ static void dispc_ovl_set_scaling(enum omap_plane plane,
- 		out_width, out_height,
- 		ilace, five_taps,
- 		fieldmode, color_mode,
--		rotation);
-+		rotation, chroma_upscale);
- }
- 
- static void dispc_ovl_set_rotation_attrs(enum omap_plane plane, u8 rotation,
-@@ -1888,7 +1891,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
- 		dispc_ovl_set_scaling(plane, oi->width, oi->height,
- 				   outw, outh,
- 				   ilace, five_taps, fieldmode,
--				   oi->color_mode, oi->rotation);
-+				   oi->color_mode, oi->rotation, true);
- 		dispc_ovl_set_vid_size(plane, outw, outh);
- 		dispc_ovl_set_vid_color_conv(plane, cconv);
- 	}
+ struct panel_drv_data {
 -- 
-1.7.4.1
+1.7.6.4
 

@@ -1,89 +1,106 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 21 Dec 2011 21:44:02 +0000
-Subject: Re: [PATCH] s3fb: fix Virge/VX
-Message-Id: <4EF25322.1000408@gmx.de>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Mon, 26 Dec 2011 18:48:38 +0000
+Subject: [PATCH] video: s3c-fb: Use s3c_fb_enable() to enable the framebuffer
+Message-Id: <1324925318-10022-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201112192339.52676.linux@rainbow-software.org>
-In-Reply-To: <201112192339.52676.linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, Ondrej Zajicek <santiago@crfreenet.org>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-On 12/19/2011 10:39 PM, Ondrej Zary wrote:
-> Add memory size detection for Virge/VX and small delay in mode setting (same
-> as in X.org driver) to fix blank screen problem.
-> 
-> Also adjust DTPC position to fix garbled screen in some modes (tested that
-> this adjustment does not break other cards - at least Trio32, Trio64V+,
-> Trio64V2/DX, Virge, Virge/DX).
-> 
-> Tested on ELSA Winner 2000AVI/3D.
-> 
-> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+The s3c-fb driver has a function called s3c_fb_enable() which turns on
+and off the physical output. However it is only actually used in paths
+which disable the screen, the enabling just writes to the register. Make
+the code less confusing by ensuring that the enable also goes through
+the same path.
 
-Applied.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/video/s3c-fb.c |   55 ++++++++++++++++++++++++-----------------------
+ 1 files changed, 28 insertions(+), 27 deletions(-)
 
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> 
-> --- linux-3.1-orig/drivers/video/s3fb.c	2011-10-24 09:10:05.000000000 +0200
-> +++ linux-3.1/drivers/video/s3fb.c	2011-12-19 23:28:34.000000000 +0100
-> @@ -727,7 +727,7 @@
->  	if (par->chip = CHIP_988_VIRGE_VX) {
->  		vga_wcrt(par->state.vgabase, 0x50, 0x00);
->  		vga_wcrt(par->state.vgabase, 0x67, 0x50);
-> -
-> +		msleep(10); /* screen remains blank sometimes without this */
->  		vga_wcrt(par->state.vgabase, 0x63, (mode <= 2) ? 0x90 : 0x09);
->  		vga_wcrt(par->state.vgabase, 0x66, 0x90);
->  	}
-> @@ -901,7 +901,8 @@
->  
->  	/* Set Data Transfer Position */
->  	hsstart = ((info->var.xres + info->var.right_margin) * hmul) / 8;
-> -	value = clamp((htotal + hsstart + 1) / 2, hsstart + 4, htotal + 1);
-> +	/* + 2 is needed for Virge/VX, does no harm on other cards */
-> +	value = clamp((htotal + hsstart + 1) / 2 + 2, hsstart + 4, htotal + 1);
->  	svga_wcrt_multi(par->state.vgabase, s3_dtpc_regs, value);
->  
->  	memset_io(info->screen_base, 0x00, screen_size);
-> @@ -1215,6 +1216,31 @@
->  			info->screen_size = 2 << 20;
->  			break;
->  		}
-> +	} else if (par->chip = CHIP_988_VIRGE_VX) {
-> +		switch ((regval & 0x60) >> 5) {
-> +		case 0: /* 2MB */
-> +			info->screen_size = 2 << 20;
-> +			break;
-> +		case 1: /* 4MB */
-> +			info->screen_size = 4 << 20;
-> +			break;
-> +		case 2: /* 6MB */
-> +			info->screen_size = 6 << 20;
-> +			break;
-> +		case 3: /* 8MB */
-> +			info->screen_size = 8 << 20;
-> +			break;
-> +		}
-> +		/* off-screen memory */
-> +		regval = vga_rcrt(par->state.vgabase, 0x37);
-> +		switch ((regval & 0x60) >> 5) {
-> +		case 1: /* 4MB */
-> +			info->screen_size -= 4 << 20;
-> +			break;
-> +		case 2: /* 2MB */
-> +			info->screen_size -= 2 << 20;
-> +			break;
-> +		}
->  	} else
->  		info->screen_size = s3_memsizes[regval >> 5] << 10;
->  	info->fix.smem_len = info->screen_size;
-> 
-> 
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 690b44e..76f6155 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -439,6 +439,32 @@ static void shadow_protect_win(struct s3c_fb_win *win, bool protect)
+ }
+ 
+ /**
++ * s3c_fb_enable() - Set the state of the main LCD output
++ * @sfb: The main framebuffer state.
++ * @enable: The state to set.
++ */
++static void s3c_fb_enable(struct s3c_fb *sfb, int enable)
++{
++	u32 vidcon0 = readl(sfb->regs + VIDCON0);
++
++	if (enable)
++		vidcon0 |= VIDCON0_ENVID | VIDCON0_ENVID_F;
++	else {
++		/* see the note in the framebuffer datasheet about
++		 * why you cannot take both of these bits down at the
++		 * same time. */
++
++		if (!(vidcon0 & VIDCON0_ENVID))
++			return;
++
++		vidcon0 |= VIDCON0_ENVID;
++		vidcon0 &= ~VIDCON0_ENVID_F;
++	}
++
++	writel(vidcon0, sfb->regs + VIDCON0);
++}
++
++/**
+  * s3c_fb_set_par() - framebuffer request to set new framebuffer state.
+  * @info: The framebuffer to change.
+  *
+@@ -508,9 +534,10 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 		if (sfb->variant.is_2443)
+ 			data |= (1 << 5);
+ 
+-		data |= VIDCON0_ENVID | VIDCON0_ENVID_F;
+ 		writel(data, regs + VIDCON0);
+ 
++		s3c_fb_enable(sfb, 1);
++
+ 		data = VIDTCON0_VBPD(var->upper_margin - 1) |
+ 		       VIDTCON0_VFPD(var->lower_margin - 1) |
+ 		       VIDTCON0_VSPW(var->vsync_len - 1);
+@@ -759,32 +786,6 @@ static int s3c_fb_setcolreg(unsigned regno,
+ }
+ 
+ /**
+- * s3c_fb_enable() - Set the state of the main LCD output
+- * @sfb: The main framebuffer state.
+- * @enable: The state to set.
+- */
+-static void s3c_fb_enable(struct s3c_fb *sfb, int enable)
+-{
+-	u32 vidcon0 = readl(sfb->regs + VIDCON0);
+-
+-	if (enable)
+-		vidcon0 |= VIDCON0_ENVID | VIDCON0_ENVID_F;
+-	else {
+-		/* see the note in the framebuffer datasheet about
+-		 * why you cannot take both of these bits down at the
+-		 * same time. */
+-
+-		if (!(vidcon0 & VIDCON0_ENVID))
+-			return;
+-
+-		vidcon0 |= VIDCON0_ENVID;
+-		vidcon0 &= ~VIDCON0_ENVID_F;
+-	}
+-
+-	writel(vidcon0, sfb->regs + VIDCON0);
+-}
+-
+-/**
+  * s3c_fb_blank() - blank or unblank the given window
+  * @blank_mode: The blank state from FB_BLANK_*
+  * @info: The framebuffer to blank.
+-- 
+1.7.7.3
 

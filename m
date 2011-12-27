@@ -1,7 +1,7 @@
 From: Archit Taneja <archit@ti.com>
-Date: Tue, 27 Dec 2011 12:48:45 +0000
-Subject: [RFC PATCH 02/29] OMAPDSS: Add writeback to omap_dss_mgr_output
-Message-Id: <1324989432-3625-3-git-send-email-archit@ti.com>
+Date: Tue, 27 Dec 2011 12:48:59 +0000
+Subject: [RFC PATCH 16/29] OMAPDSS: OVERLAY: Add position and replication as overlay caps
+Message-Id: <1324989432-3625-17-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1324989432-3625-1-git-send-email-archit@ti.com>
 In-Reply-To: <1324989432-3625-1-git-send-email-archit@ti.com>
@@ -11,105 +11,105 @@ Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
 Cc: rohitkc@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Add a omap_dss_device pointer in omap_dss_mgr_output to represent a writeback
-device. The writeback device is a dummy omap_dss_device pointer connected to
-the manager. It is a place holder for the actual writeback entity and is used
-for compatibility with the existing DSS2 code.
+Add position and replication as overlay caps. Pass overlay caps as an argument
+to the corresponding functions.
 
-Create helper overlay manager functions get_display() and get_writeback() which
-return mgr->output->device and mgr->output->writeback devices. Modify
-get_output() to return the display device if both device and writeback pointers
-are set. Otherwise, return the omap_dss_device pointer which is set.
-
-If writeback is in use, get_output() returns the display device if we are in
-capture mode, and it returns the writeback device if we are in memory to memory
-mode. This is beneficial as most checks/configurations for overlays and managers
-should be done on the basis of the manager's output display in capture mode, and
-the writeback device in case of memory to memory mode.
-
-get_display() should be used when we are interested specifically in the
-connected display, the same holds for get_writeback().
+These caps will be set for all overlays, but not for writeback. This is done
+so writeback can reuse dispc_ovl_setup() to the maximum.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/manager.c |   19 +++++++++++++++++--
- include/video/omapdss.h           |    3 +++
- 2 files changed, 20 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/dispc.c   |   20 +++++++++++++++-----
+ drivers/video/omap2/dss/overlay.c |    6 ++++++
+ include/video/omapdss.h           |    2 ++
+ 3 files changed, 23 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
-index 094c96c..4962f7b 100644
---- a/drivers/video/omap2/dss/manager.c
-+++ b/drivers/video/omap2/dss/manager.c
-@@ -43,7 +43,7 @@ static ssize_t manager_name_show(struct omap_overlay_manager *mgr, char *buf)
- 
- static ssize_t manager_display_show(struct omap_overlay_manager *mgr, char *buf)
- {
--	struct omap_dss_device *dssdev = mgr->get_output(mgr);
-+	struct omap_dss_device *dssdev = mgr->get_display(mgr);
- 
- 	return snprintf(buf, PAGE_SIZE, "%s\n", dssdev ?
- 			dssdev->name : "<none>");
-@@ -74,7 +74,7 @@ static ssize_t manager_display_store(struct omap_overlay_manager *mgr,
- 	if (dssdev)
- 		DSSDBG("display %s found\n", dssdev->name);
- 
--	if (mgr->get_output(mgr)) {
-+	if (mgr->get_display(mgr)) {
- 		r = mgr->unset_device(mgr);
- 		if (r) {
- 			DSSERR("failed to unset display\n");
-@@ -494,9 +494,22 @@ static struct kobj_type manager_ktype = {
- 
- static inline struct omap_dss_device *dss_mgr_get_output(struct omap_overlay_manager *mgr)
- {
-+	if (mgr->output->device)
-+		return mgr->output->device;
-+
-+	return mgr->output->writeback;
-+}
-+
-+static inline struct omap_dss_device *dss_mgr_get_display(struct omap_overlay_manager *mgr)
-+{
- 	return mgr->output->device;
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index d9e04f0..58de7d7 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -656,9 +656,15 @@ static void dispc_ovl_set_ba1_uv(enum omap_plane plane, u32 paddr)
+ 	dispc_write_reg(DISPC_OVL_BA1_UV(plane), paddr);
  }
  
-+static inline struct omap_dss_device *dss_mgr_get_writeback(struct omap_overlay_manager *mgr)
-+{
-+	return mgr->output->writeback;
-+}
-+
- static int dss_mgr_wait_for_vsync(struct omap_overlay_manager *mgr)
+-static void dispc_ovl_set_pos(enum omap_plane plane, int x, int y)
++static void dispc_ovl_set_pos(enum omap_plane plane,
++		enum omap_overlay_caps caps, int x, int y)
  {
- 	unsigned long timeout = msecs_to_jiffies(500);
-@@ -562,6 +575,8 @@ int dss_init_overlay_managers(struct platform_device *pdev)
- 		mgr->wait_for_vsync = &dss_mgr_wait_for_vsync;
+-	u32 val = FLD_VAL(y, 26, 16) | FLD_VAL(x, 10, 0);
++	u32 val;
++
++	if ((caps & OMAP_DSS_OVL_CAP_POS) = 0)
++		return;
++
++	val = FLD_VAL(y, 26, 16) | FLD_VAL(x, 10, 0);
  
- 		mgr->get_output = &dss_mgr_get_output;
-+		mgr->get_display = &dss_mgr_get_display;
-+		mgr->get_writeback = &dss_mgr_get_writeback;
+ 	dispc_write_reg(DISPC_OVL_POSITION(plane), val);
+ }
+@@ -988,11 +994,15 @@ static void dispc_ovl_set_vid_color_conv(enum omap_plane plane, bool enable)
+ 	dispc_write_reg(DISPC_OVL_ATTRIBUTES(plane), val);
+ }
  
- 		mgr->caps = 0;
- 		mgr->supported_displays diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 1b968bb..93a1cd3 100644
+-static void dispc_ovl_enable_replication(enum omap_plane plane, bool enable)
++static void dispc_ovl_enable_replication(enum omap_plane plane,
++		enum omap_overlay_caps caps, bool enable)
+ {
+ 	static const unsigned shifts[] = { 5, 10, 10, 10 };
+ 	int shift;
+ 
++	if ((caps & OMAP_DSS_OVL_CAP_REPLICATION) = 0)
++		return;
++
+ 	shift = shifts[plane];
+ 	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), enable, shift, shift);
+ }
+@@ -1881,7 +1891,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 	DSSDBG("%d,%d %dx%d -> %dx%d\n", oi->pos_x, oi->pos_y, oi->width,
+ 			oi->height, outw, outh);
+ 
+-	dispc_ovl_set_pos(plane, oi->pos_x, oi->pos_y);
++	dispc_ovl_set_pos(plane, caps, oi->pos_x, oi->pos_y);
+ 
+ 	dispc_ovl_set_pic_size(plane, oi->width, oi->height);
+ 
+@@ -1901,7 +1911,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 	dispc_ovl_set_pre_mult_alpha(plane, caps, oi->pre_mult_alpha);
+ 	dispc_ovl_setup_global_alpha(plane, caps, oi->global_alpha);
+ 
+-	dispc_ovl_enable_replication(plane, replication);
++	dispc_ovl_enable_replication(plane, caps, replication);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
+index dc0cc52..cb548c0 100644
+--- a/drivers/video/omap2/dss/overlay.c
++++ b/drivers/video/omap2/dss/overlay.c
+@@ -509,6 +509,12 @@ void dss_init_overlays(struct platform_device *pdev)
+ 		ovl->wait_for_go = &dss_mgr_wait_for_go_ovl;
+ 
+ 		ovl->caps = dss_feat_get_overlay_caps(ovl->id);
++
++		/* these caps are common to all ovelays across all OMAPs, they
++		 * are used to differentiate between an overlay and writeback */
++		ovl->caps |= OMAP_DSS_OVL_CAP_POS |
++				OMAP_DSS_OVL_CAP_REPLICATION;
++
+ 		ovl->supported_modes  			dss_feat_get_supported_color_modes(ovl->id);
+ 
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 6bf84b2..49e3ccb 100644
 --- a/include/video/omapdss.h
 +++ b/include/video/omapdss.h
-@@ -413,6 +413,7 @@ struct omap_overlay {
- 
- struct omap_dss_mgr_output {
- 	struct omap_dss_device *device;
-+	struct omap_dss_device *writeback;
+@@ -185,6 +185,8 @@ enum omap_overlay_caps {
+ 	OMAP_DSS_OVL_CAP_GLOBAL_ALPHA = 1 << 1,
+ 	OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA = 1 << 2,
+ 	OMAP_DSS_OVL_CAP_ZORDER = 1 << 3,
++	OMAP_DSS_OVL_CAP_POS = 1 << 4,
++	OMAP_DSS_OVL_CAP_REPLICATION = 1 << 5,
  };
  
- struct omap_overlay_manager_info {
-@@ -466,6 +467,8 @@ struct omap_overlay_manager {
- 	int (*wait_for_vsync)(struct omap_overlay_manager *mgr);
- 
- 	struct omap_dss_device *(*get_output)(struct omap_overlay_manager *mgr);
-+	struct omap_dss_device *(*get_display)(struct omap_overlay_manager *mgr);
-+	struct omap_dss_device *(*get_writeback)(struct omap_overlay_manager *mgr);
- };
- 
- struct omap_dss_device {
+ enum omap_overlay_manager_caps {
 -- 
 1.7.4.1
 

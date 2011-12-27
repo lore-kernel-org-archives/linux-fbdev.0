@@ -1,346 +1,135 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:02:13 +0000
-Subject: [PATCH 18/57] fbdev: sh_mobile_lcdc: Remove board configuration board_data field
-Message-Id: <1323784972-24205-19-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 27 Dec 2011 12:48:43 +0000
+Subject: [RFC PATCH 00/29] OMAPDSS: Initial Writeback Capture mode support
+Message-Id: <1324989432-3625-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: rohitkc@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The field is unused, remove it. Update board code accordingly.
+DSS HW on OMAP4 supports a new pipeline called writeback. Unlike other
+pipelines(called overlays in DSS2 SW), writeback takes pixel data from an
+overlay output or a overlay manager output and writes it back into a specified
+address in memory.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
----
- arch/arm/mach-shmobile/board-ag5evm.c       |   14 ++------------
- arch/arm/mach-shmobile/board-mackerel.c     |    4 ++--
- arch/sh/boards/mach-ap325rxa/setup.c        |    8 ++++----
- arch/sh/boards/mach-ecovec24/setup.c        |    4 ++--
- arch/sh/boards/mach-kfr2r09/lcd_wqvga.c     |   10 ++++------
- arch/sh/boards/mach-migor/lcd_qvga.c        |    3 +--
- arch/sh/boards/mach-se/7724/setup.c         |    2 --
- arch/sh/include/mach-kfr2r09/mach/kfr2r09.h |   16 ++++++++--------
- arch/sh/include/mach-migor/mach/migor.h     |    2 +-
- drivers/video/sh_mobile_lcdcfb.c            |   16 +++++++---------
- include/video/sh_mobile_lcdc.h              |   13 ++++++-------
- 11 files changed, 37 insertions(+), 55 deletions(-)
+writeback allows us to take benefit of the hardware processing available inside
+the DISPC like color space conversion, rescaling, compositing etc and do either
+a) perform memory-to-memory transfer with data processing, b) capture a
+displayed frame. The former is known as memory to memory mode of the writeback
+pipeline, and the latter is known as capture mode. More details about writeback
+can be found in the Display Subsystem section of the OMAP4 TRM.
 
-diff --git a/arch/arm/mach-shmobile/board-ag5evm.c b/arch/arm/mach-shmobile/board-ag5evm.c
-index 80319f2..490cb78 100644
---- a/arch/arm/mach-shmobile/board-ag5evm.c
-+++ b/arch/arm/mach-shmobile/board-ag5evm.c
-@@ -236,16 +236,6 @@ static void lcd_backlight_reset(void)
- 	gpio_set_value(GPIO_PORT235, 1);
- }
- 
--static void lcd_on(void *board_data, struct fb_info *info)
--{
--	lcd_backlight_on();
--}
--
--static void lcd_off(void *board_data)
--{
--	lcd_backlight_reset();
--}
--
- /* LCDC0 */
- static const struct fb_videomode lcdc0_modes[] = {
- 	{
-@@ -275,8 +265,8 @@ static struct sh_mobile_lcdc_info lcdc0_info = {
- 		.lcd_cfg = lcdc0_modes,
- 		.num_cfg = ARRAY_SIZE(lcdc0_modes),
- 		.board_cfg = {
--			.display_on = lcd_on,
--			.display_off = lcd_off,
-+			.display_on = lcd_backlight_on,
-+			.display_off = lcd_backlight_reset,
- 		},
- 	}
- };
-diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
-index 5d3be90..4446398 100644
---- a/arch/arm/mach-shmobile/board-mackerel.c
-+++ b/arch/arm/mach-shmobile/board-mackerel.c
-@@ -356,14 +356,14 @@ static struct fb_videomode mackerel_lcdc_modes[] = {
- 	},
- };
- 
--static int mackerel_set_brightness(void *board_data, int brightness)
-+static int mackerel_set_brightness(int brightness)
- {
- 	gpio_set_value(GPIO_PORT31, brightness);
- 
- 	return 0;
- }
- 
--static int mackerel_get_brightness(void *board_data)
-+static int mackerel_get_brightness(void)
- {
- 	return gpio_get_value(GPIO_PORT31);
- }
-diff --git a/arch/sh/boards/mach-ap325rxa/setup.c b/arch/sh/boards/mach-ap325rxa/setup.c
-index 7977911..d43a96c 100644
---- a/arch/sh/boards/mach-ap325rxa/setup.c
-+++ b/arch/sh/boards/mach-ap325rxa/setup.c
-@@ -156,7 +156,7 @@ static struct platform_device nand_flash_device = {
- #define PORT_DRVCRA	0xA405018A
- #define PORT_DRVCRB	0xA405018C
- 
--static int ap320_wvga_set_brightness(void *board_data, int brightness)
-+static int ap320_wvga_set_brightness(int brightness)
- {
- 	if (brightness) {
- 		gpio_set_value(GPIO_PTS3, 0);
-@@ -169,12 +169,12 @@ static int ap320_wvga_set_brightness(void *board_data, int brightness)
- 	return 0;
- }
- 
--static int ap320_wvga_get_brightness(void *board_data)
-+static int ap320_wvga_get_brightness(void)
- {
- 	return gpio_get_value(GPIO_PTS3);
- }
- 
--static void ap320_wvga_power_on(void *board_data, struct fb_info *info)
-+static void ap320_wvga_power_on(void)
- {
- 	msleep(100);
- 
-@@ -182,7 +182,7 @@ static void ap320_wvga_power_on(void *board_data, struct fb_info *info)
- 	__raw_writew(FPGA_LCDREG_VAL, FPGA_LCDREG);
- }
- 
--static void ap320_wvga_power_off(void *board_data)
-+static void ap320_wvga_power_off(void)
- {
- 	/* ASD AP-320/325 LCD OFF */
- 	__raw_writew(0, FPGA_LCDREG);
-diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
-index 1d4a706..24c2c14 100644
---- a/arch/sh/boards/mach-ecovec24/setup.c
-+++ b/arch/sh/boards/mach-ecovec24/setup.c
-@@ -314,14 +314,14 @@ static const struct fb_videomode ecovec_dvi_modes[] = {
- 	},
- };
- 
--static int ecovec24_set_brightness(void *board_data, int brightness)
-+static int ecovec24_set_brightness(int brightness)
- {
- 	gpio_set_value(GPIO_PTR1, brightness);
- 
- 	return 0;
- }
- 
--static int ecovec24_get_brightness(void *board_data)
-+static int ecovec24_get_brightness(void)
- {
- 	return gpio_get_value(GPIO_PTR1);
- }
-diff --git a/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c b/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
-index 25e145f..c148b36 100644
---- a/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
-+++ b/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
-@@ -251,8 +251,7 @@ static void display_on(void *sohandle,
- 	write_memory_start(sohandle, so);
- }
- 
--int kfr2r09_lcd_setup(void *board_data, void *sohandle,
--		      struct sh_mobile_lcdc_sys_bus_ops *so)
-+int kfr2r09_lcd_setup(void *sohandle, struct sh_mobile_lcdc_sys_bus_ops *so)
- {
- 	/* power on */
- 	gpio_set_value(GPIO_PTF4, 0);  /* PROTECT/ -> L */
-@@ -273,8 +272,7 @@ int kfr2r09_lcd_setup(void *board_data, void *sohandle,
- 	return 0;
- }
- 
--void kfr2r09_lcd_start(void *board_data, void *sohandle,
--		       struct sh_mobile_lcdc_sys_bus_ops *so)
-+void kfr2r09_lcd_start(void *sohandle, struct sh_mobile_lcdc_sys_bus_ops *so)
- {
- 	write_memory_start(sohandle, so);
- }
-@@ -327,12 +325,12 @@ static int kfr2r09_lcd_backlight(int on)
- 	return 0;
- }
- 
--void kfr2r09_lcd_on(void *board_data, struct fb_info *info)
-+void kfr2r09_lcd_on(void)
- {
- 	kfr2r09_lcd_backlight(1);
- }
- 
--void kfr2r09_lcd_off(void *board_data)
-+void kfr2r09_lcd_off(void)
- {
- 	kfr2r09_lcd_backlight(0);
- }
-diff --git a/arch/sh/boards/mach-migor/lcd_qvga.c b/arch/sh/boards/mach-migor/lcd_qvga.c
-index de9014a..8bccd34 100644
---- a/arch/sh/boards/mach-migor/lcd_qvga.c
-+++ b/arch/sh/boards/mach-migor/lcd_qvga.c
-@@ -113,8 +113,7 @@ static const unsigned short magic3_data[] = {
- 	0x0010, 0x16B0, 0x0011, 0x0111, 0x0007, 0x0061,
- };
- 
--int migor_lcd_qvga_setup(void *board_data, void *sohandle,
--			 struct sh_mobile_lcdc_sys_bus_ops *so)
-+int migor_lcd_qvga_setup(void *sohandle, struct sh_mobile_lcdc_sys_bus_ops *so)
- {
- 	unsigned long xres = 320;
- 	unsigned long yres = 240;
-diff --git a/arch/sh/boards/mach-se/7724/setup.c b/arch/sh/boards/mach-se/7724/setup.c
-index 3aab70c..933d252 100644
---- a/arch/sh/boards/mach-se/7724/setup.c
-+++ b/arch/sh/boards/mach-se/7724/setup.c
-@@ -185,8 +185,6 @@ static struct sh_mobile_lcdc_info lcdc_info = {
- 			.width = 152,
- 			.height = 91,
- 		},
--		.board_cfg = {
--		},
- 	}
- };
- 
-diff --git a/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h b/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
-index 07e635b..ba3d93d 100644
---- a/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
-+++ b/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
-@@ -4,21 +4,21 @@
- #include <video/sh_mobile_lcdc.h>
- 
- #if defined(CONFIG_FB_SH_MOBILE_LCDC) || defined(CONFIG_FB_SH_MOBILE_LCDC_MODULE)
--void kfr2r09_lcd_on(void *board_data, struct fb_info *info);
--void kfr2r09_lcd_off(void *board_data);
--int kfr2r09_lcd_setup(void *board_data, void *sys_ops_handle,
-+void kfr2r09_lcd_on(void);
-+void kfr2r09_lcd_off(void);
-+int kfr2r09_lcd_setup(void *sys_ops_handle,
- 		      struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
--void kfr2r09_lcd_start(void *board_data, void *sys_ops_handle,
-+void kfr2r09_lcd_start(void *sys_ops_handle,
- 		       struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
- #else
--static void kfr2r09_lcd_on(void *board_data) {}
--static void kfr2r09_lcd_off(void *board_data) {}
--static int kfr2r09_lcd_setup(void *board_data, void *sys_ops_handle,
-+static void kfr2r09_lcd_on(void) {}
-+static void kfr2r09_lcd_off(void) {}
-+static int kfr2r09_lcd_setup(void *sys_ops_handle,
- 				struct sh_mobile_lcdc_sys_bus_ops *sys_ops)
- {
- 	return -ENODEV;
- }
--static void kfr2r09_lcd_start(void *board_data, void *sys_ops_handle,
-+static void kfr2r09_lcd_start(void *sys_ops_handle,
- 				struct sh_mobile_lcdc_sys_bus_ops *sys_ops)
- {
- }
-diff --git a/arch/sh/include/mach-migor/mach/migor.h b/arch/sh/include/mach-migor/mach/migor.h
-index 42fccf9..7de7bb7 100644
---- a/arch/sh/include/mach-migor/mach/migor.h
-+++ b/arch/sh/include/mach-migor/mach/migor.h
-@@ -9,7 +9,7 @@
- 
- #include <video/sh_mobile_lcdc.h>
- 
--int migor_lcd_qvga_setup(void *board_data, void *sys_ops_handle,
-+int migor_lcd_qvga_setup(void *sys_ops_handle,
- 			 struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
- 
- #endif /* __ASM_SH_MIGOR_H */
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 3734faf..108b62d 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -315,14 +315,12 @@ static void sh_mobile_lcdc_deferred_io(struct fb_info *info,
- 		/* trigger panel update */
- 		dma_map_sg(info->dev, ch->sglist, nr_pages, DMA_TO_DEVICE);
- 		if (bcfg->start_transfer)
--			bcfg->start_transfer(bcfg->board_data, ch,
--					     &sh_mobile_lcdc_sys_bus_ops);
-+			bcfg->start_transfer(ch, &sh_mobile_lcdc_sys_bus_ops);
- 		lcdc_write_chan(ch, LDSM2R, LDSM2R_OSTRG);
- 		dma_unmap_sg(info->dev, ch->sglist, nr_pages, DMA_TO_DEVICE);
- 	} else {
- 		if (bcfg->start_transfer)
--			bcfg->start_transfer(bcfg->board_data, ch,
--					     &sh_mobile_lcdc_sys_bus_ops);
-+			bcfg->start_transfer(ch, &sh_mobile_lcdc_sys_bus_ops);
- 		lcdc_write_chan(ch, LDSM2R, LDSM2R_OSTRG);
- 	}
- }
-@@ -348,7 +346,7 @@ static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
- 
- 	/* HDMI must be enabled before LCDC configuration */
- 	if (board_cfg->display_on)
--		board_cfg->display_on(board_cfg->board_data, ch->info);
-+		board_cfg->display_on();
- }
- 
- static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
-@@ -356,7 +354,7 @@ static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
- 	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
- 
- 	if (board_cfg->display_off)
--		board_cfg->display_off(board_cfg->board_data);
-+		board_cfg->display_off();
- 
- 	if (ch->tx_dev)
- 		ch->tx_dev->ops->display_off(ch->tx_dev);
-@@ -699,7 +697,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 
- 		board_cfg = &ch->cfg.board_cfg;
- 		if (board_cfg->setup_sys) {
--			ret = board_cfg->setup_sys(board_cfg->board_data, ch,
-+			ret = board_cfg->setup_sys(ch,
- 						   &sh_mobile_lcdc_sys_bus_ops);
- 			if (ret)
- 				return ret;
-@@ -1328,7 +1326,7 @@ static int sh_mobile_lcdc_update_bl(struct backlight_device *bdev)
- 	    bdev->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
- 		brightness = 0;
- 
--	return cfg->set_brightness(cfg->board_data, brightness);
-+	return cfg->set_brightness(brightness);
- }
- 
- static int sh_mobile_lcdc_get_brightness(struct backlight_device *bdev)
-@@ -1336,7 +1334,7 @@ static int sh_mobile_lcdc_get_brightness(struct backlight_device *bdev)
- 	struct sh_mobile_lcdc_chan *ch = bl_get_data(bdev);
- 	struct sh_mobile_lcdc_board_cfg *cfg = &ch->cfg.board_cfg;
- 
--	return cfg->get_brightness(cfg->board_data);
-+	return cfg->get_brightness();
- }
- 
- static int sh_mobile_lcdc_check_fb(struct backlight_device *bdev,
-diff --git a/include/video/sh_mobile_lcdc.h b/include/video/sh_mobile_lcdc.h
-index b1b3e8d..a1e6596 100644
---- a/include/video/sh_mobile_lcdc.h
-+++ b/include/video/sh_mobile_lcdc.h
-@@ -148,15 +148,14 @@ struct sh_mobile_lcdc_sys_bus_ops {
- };
- 
- struct sh_mobile_lcdc_board_cfg {
--	void *board_data;
--	int (*setup_sys)(void *board_data, void *sys_ops_handle,
-+	int (*setup_sys)(void *sys_ops_handle,
- 			 struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
--	void (*start_transfer)(void *board_data, void *sys_ops_handle,
-+	void (*start_transfer)(void *sys_ops_handle,
- 			       struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
--	void (*display_on)(void *board_data, struct fb_info *info);
--	void (*display_off)(void *board_data);
--	int (*set_brightness)(void *board_data, int brightness);
--	int (*get_brightness)(void *board_data);
-+	void (*display_on)(void);
-+	void (*display_off)(void);
-+	int (*set_brightness)(int brightness);
-+	int (*get_brightness)(void);
- };
- 
- struct sh_mobile_lcdc_lcd_size_cfg { /* width and height of panel in mm */
+In the current DSS2 design, there are 3 major entities: overlay(represents
+pipelines), overlay manager(represents a compositor of pipelines and the output
+going to a display) and a omap_dss_device(to represent a display). These
+entities can be linked to each other. One or more overlays can connect to a
+manager, and a manager connects to a display.
+
+Writeback HW has some properties of an overlay, and some of an overlay manager.
+But as far as DSS2 design is concerned, it best fits as a special panel. This
+panel connects to a manager and displays/writes the content back to memory after
+doing some optional data processing.
+
+The design adopted for writeback support in DSS2 is as follows:
+- Writeback exists as an entity of its own, this entity is used to configure and
+  represent the actual writeback HW.
+- This entity doesn't connect itself directly to a manager, it connects to a
+  manager via a dummy writeback panel.
+- The dummy writeback panel is just a place holder of the actual writeback
+  entity. To do any writeback configuration, we extract the writeback pointer
+  through the dummy writeback panel pointer. 
+- In capture mode, an overlay manager needs to be connected to 2 outputs at the
+  same time. The first output is the display device, and the second is the
+  writeback panel. For this requirement, managers don't connect to a dss device,
+  they now connect to an entity called output. This entity is just a container
+  for 2 omap_dss_devices, one for display and one for writeback.
+
+With the design mentioned above. The three different ways writeback is used is
+explained:
+- capture mode: A manager is connected to both display and writeback
+  dss_devices.
+- memory to memory mode(connected to a manager): A manager is connected to only
+  the writeback dss_device.
+- memory to memory mode(connected to an overlay): A dummy writeback manager is
+  connect to the writeback dss_device.
+
+This patch series only enables capture mode support, i.e., allowing us to write
+to the memory a processed version of the frame that we display onto a panel
+through an overlay manager. The memory to memory mode support will be extended
+later.
+
+In order to use writeback, we need a capture device driver of some sort, a v4l2
+capture device is currently in the works. The patches are currently tested by
+extending writeback panel's sysfs attributes to allow us to configure the
+destination addresses and other parameters via sysfs.
+
+This can be tried out here:
+
+git://gitorious.org:~boddob/linux-omap-dss2/archit-dss2-clone.git wb-v1
+
+The patches are based on the following tree:
+
+git://gitorious.org/linux-omap-dss2/linux.git master
+
+Tested on a OMAP4 based blaze tablet. Note that this isn't tested thoroughly for
+all possible writeback configurations, the aim is to get comments on the design.
+
+Archit Taneja (29):
+  omapdss/omapfb/omap_vout: Introduce manager output struct
+  OMAPDSS: Add writeback to omap_dss_mgr_output
+  OMAPDSS: Writeback: Add writeback interface and panel driver
+  OMAPDSS: APPLY/Writeback: Add writeback_info
+  OMAPDSS: APPLY/Writeback: Apply writeback configurations
+  OMAPDSS: APPLY: Add writeback enable/disable functions
+  OMAPDSS: APPLY: Add extra_info for writeback
+  OMAPDSS: APPLY: Modify manager unset device op
+  OMAPDSS: APPLY: Allow manager set/unset_device ops to set/unset
+    writeback
+  OMAPDSS: APPLY: Calculate channel_in for writeback
+  OMAPDSS: DISPC: Add writeback as a new plane
+  OMAPDSS: Writeback: Add check for color_mode in dss_wb_simple_check()
+  OMAPDSS: APPLY: Configure writeback FIFOs
+  OMAPDSS: DISPC: Allow both upscaling and downscaling of chroma
+  OMAPDSS: DISPC: Pass overlay caps as a parameter to dispc overlay
+    related functions
+  OMAPDSS: OVERLAY: Add position and replication as overlay caps
+  OMAPDSS: DISPC: Make dispc_ovl_setup call dispc_plane_setup
+  OMAPDSS: DISPC: Make chroma_upscale an argument to dispc_plane_setup
+  OMAPDSS: DISPC: Don't set chroma resampling bit for writeback
+  OMAPDSS: Writeback: Add writeback capabilities
+  OMAPDSS: DISPC: Configure overlay-like parameters in dispc_wb_setup
+  OMAPDSS: DISPC: Setup writeback go, enable and channel_in functions
+  OMAPDSS: Writeback: Configure writeback specific parameters
+  OMAPDSS: Writeback: Use panel driver ops to configure mirroring
+    rotation and buffer size
+  OMAPDSS: Writeback: Add sysfs attributes to writeback panel
+  OMAPDSS: DISPLAY: Add a manager apply to sysfs store attributes for
+    writeback
+  OMAPDSS: MANAGER: Split manager_display_store into smaller functions
+  OMAPDSS: MANAGER: Add writeback as a sysfs attribute
+  OMAPDSS: FEATURES: Allow WB panels to attach to managers
+
+ drivers/media/video/omap/omap_vout.c     |   78 +++--
+ drivers/video/omap2/dss/Makefile         |    2 +-
+ drivers/video/omap2/dss/apply.c          |  549 +++++++++++++++++++++++++--
+ drivers/video/omap2/dss/core.c           |    2 +
+ drivers/video/omap2/dss/dispc.c          |  343 ++++++++++++-----
+ drivers/video/omap2/dss/dispc.h          |   36 ++
+ drivers/video/omap2/dss/display.c        |   23 +-
+ drivers/video/omap2/dss/dss.h            |   39 ++-
+ drivers/video/omap2/dss/dss_features.c   |   24 +-
+ drivers/video/omap2/dss/dss_features.h   |    2 +
+ drivers/video/omap2/dss/manager.c        |  125 ++++++-
+ drivers/video/omap2/dss/overlay.c        |   27 +-
+ drivers/video/omap2/dss/writeback.c      |  615 ++++++++++++++++++++++++++++++
+ drivers/video/omap2/omapfb/omapfb-main.c |    7 +-
+ drivers/video/omap2/omapfb/omapfb.h      |    5 +-
+ include/video/omapdss.h                  |   52 +++-
+ 16 files changed, 1749 insertions(+), 180 deletions(-)
+ create mode 100644 drivers/video/omap2/dss/writeback.c
+
 -- 
-1.7.3.4
+1.7.4.1
 

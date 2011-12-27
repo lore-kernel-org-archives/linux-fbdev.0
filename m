@@ -1,441 +1,252 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:02:39 +0000
-Subject: [PATCH 44/57] fbdev: sh_mobile_meram: Add struct sh_mobile_meram_icb
-Message-Id: <1323784972-24205-45-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 27 Dec 2011 12:49:08 +0000
+Subject: [RFC PATCH 25/29] OMAPDSS: Writeback: Add sysfs attributes to writeback panel
+Message-Id: <1324989432-3625-26-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1324989432-3625-1-git-send-email-archit@ti.com>
+In-Reply-To: <1324989432-3625-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: rohitkc@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The new structure stores ICB parameters for ICBs.
+Add the following sysfs attributes to the writeback panel driver:
+- paddr
+- p_uv_addr
+- rotation_type
+- color_mode
+- pre_mult_alpha
+- capture_rate
 
-Instead of modifying the struct sh_mobile_meram_cfg instances passed by
-callers, store the ICB parameters internally and make the public API
-take const pointers to sh_mobile_meram_cfg.
-
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/sh_mobile_meram.c |  178 ++++++++++++++++++++-------------------
- include/video/sh_mobile_meram.h |   12 +--
- 2 files changed, 94 insertions(+), 96 deletions(-)
+ drivers/video/omap2/dss/writeback.c |  210 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 210 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
-index 7af2ffe..cddb180 100644
---- a/drivers/video/sh_mobile_meram.c
-+++ b/drivers/video/sh_mobile_meram.c
-@@ -100,14 +100,38 @@ static unsigned long icb_regs[] = {
- };
- #define ICB_REGS_SIZE ARRAY_SIZE(icb_regs)
+diff --git a/drivers/video/omap2/dss/writeback.c b/drivers/video/omap2/dss/writeback.c
+index 215958e..c6450e7 100644
+--- a/drivers/video/omap2/dss/writeback.c
++++ b/drivers/video/omap2/dss/writeback.c
+@@ -214,8 +214,218 @@ int dss_wb_simple_check(struct omap_dss_writeback *wb,
  
-+/*
-+ * sh_mobile_meram_icb - MERAM ICB information
-+ * @regs: Registers cache
-+ * @region: Start and end addresses of the MERAM region
-+ * @cache_unit: Bytes to cache per ICB
-+ * @pixelformat: Video pixel format of the data stored in the ICB
-+ * @current_reg: Which of Start Address Register A (0) or B (1) is in use
-+ */
-+struct sh_mobile_meram_icb {
-+	unsigned long regs[ICB_REGS_SIZE];
+ /* Dummy Writeback Panel driver */
+ 
++static ssize_t writeback_panel_paddr_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct omap_dss_writeback_info info;
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_writeback *wb = dssdev->wbdev;
 +
-+	unsigned long region;
-+	unsigned int cache_unit;
-+	unsigned int pixelformat;
-+	unsigned int current_reg;
++	wb->get_wb_info(wb, &info);
++
++	return snprintf(buf, PAGE_SIZE, "%x\n", info.paddr);
++}
++
++static ssize_t writeback_panel_p_uv_addr_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct omap_dss_writeback_info info;
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_writeback *wb = dssdev->wbdev;
++
++	wb->get_wb_info(wb, &info);
++
++	return snprintf(buf, PAGE_SIZE, "%x\n", info.p_uv_addr);
++}
++
++static ssize_t writeback_panel_rotation_type_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct omap_dss_writeback_info info;
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_writeback *wb = dssdev->wbdev;
++
++	wb->get_wb_info(wb, &info);
++
++	return snprintf(buf, PAGE_SIZE, "%d\n", info.rotation_type);
++}
++
++static ssize_t writeback_panel_color_mode_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct omap_dss_writeback_info info;
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_writeback *wb = dssdev->wbdev;
++
++	wb->get_wb_info(wb, &info);
++
++	return snprintf(buf, PAGE_SIZE, "%d\n", info.color_mode);
++}
++
++static ssize_t writeback_panel_color_mode_store(struct device *dev,
++		struct device_attribute *attr, const char *buf,
++		size_t size)
++{
++	int r;
++	int color_mode;
++	struct omap_dss_writeback_info info;
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_writeback *wb = dssdev->wbdev;
++
++	r = kstrtoint(buf, 0, &color_mode);
++	if (r)
++		return r;
++
++	wb->get_wb_info(wb, &info);
++
++	info.color_mode = color_mode;
++
++	r = wb->set_wb_info(wb, &info);
++	if (r) {
++		dev_err(&dssdev->dev, "failed to set color mode %d\n",
++			color_mode);
++		return r;
++	}
++
++	if (dssdev->manager) {
++		r = dssdev->manager->apply(dssdev->manager);
++		if (r)
++			return r;
++	}
++
++	return size;
++}
++
++static ssize_t writeback_panel_pre_mult_alpha_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct omap_dss_writeback_info info;
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_writeback *wb = dssdev->wbdev;
++
++	wb->get_wb_info(wb, &info);
++
++	return snprintf(buf, PAGE_SIZE, "%d\n", info.pre_mult_alpha);
++}
++
++static ssize_t writeback_panel_pre_mult_alpha_store(struct device *dev,
++		struct device_attribute *attr, const char *buf,
++		size_t size)
++{
++	int r;
++	u8 pre_mult_alpha;
++	struct omap_dss_writeback_info info;
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_writeback *wb = dssdev->wbdev;
++
++	r = kstrtou8(buf, 0, &pre_mult_alpha);
++	if (r)
++		return r;
++
++	wb->get_wb_info(wb, &info);
++
++	info.pre_mult_alpha = pre_mult_alpha;
++
++	r = wb->set_wb_info(wb, &info);
++	if (r) {
++		dev_err(&dssdev->dev, "failed to set pre_mult_alpha %d\n",
++			pre_mult_alpha);
++		return r;
++	}
++
++	if (dssdev->manager) {
++		r = dssdev->manager->apply(dssdev->manager);
++		if (r)
++			return r;
++	}
++
++	return size;
++}
++
++static ssize_t writeback_panel_capture_rate_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct omap_dss_writeback_info info;
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_writeback *wb = dssdev->wbdev;
++
++	wb->get_wb_info(wb, &info);
++
++	return snprintf(buf, PAGE_SIZE, "%d\n", info.capture_rate);
++}
++
++static ssize_t writeback_panel_capture_rate_store(struct device *dev,
++		struct device_attribute *attr, const char *buf,
++		size_t size)
++{
++	int r;
++	int capture_rate;
++	struct omap_dss_writeback_info info;
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	struct omap_dss_writeback *wb = dssdev->wbdev;
++
++	r = kstrtoint(buf, 0, &capture_rate);
++	if (r)
++		return r;
++
++	wb->get_wb_info(wb, &info);
++
++	info.capture_rate = capture_rate;
++
++	r = wb->set_wb_info(wb, &info);
++	if (r) {
++		dev_err(&dssdev->dev, "failed to set capture_rate %d\n",
++			capture_rate);
++		return r;
++	}
++
++	if (dssdev->manager) {
++		r = dssdev->manager->apply(dssdev->manager);
++		if (r)
++			return r;
++	}
++
++	return size;
++}
++
++static DEVICE_ATTR(paddr, S_IRUGO, writeback_panel_paddr_show, NULL);
++static DEVICE_ATTR(p_uv_addr, S_IRUGO, writeback_panel_p_uv_addr_show, NULL);
++static DEVICE_ATTR(rotation_type, S_IRUGO, writeback_panel_rotation_type_show,
++		NULL);
++static DEVICE_ATTR(color_mode, S_IRUGO | S_IWUSR,
++		writeback_panel_color_mode_show,
++		writeback_panel_color_mode_store);
++static DEVICE_ATTR(pre_mult_alpha, S_IRUGO | S_IWUSR,
++		writeback_panel_pre_mult_alpha_show,
++		writeback_panel_pre_mult_alpha_store);
++static DEVICE_ATTR(capture_rate, S_IRUGO | S_IWUSR,
++		writeback_panel_capture_rate_show,
++		writeback_panel_capture_rate_store);
++
++static struct attribute *writeback_attrs[] = {
++	&dev_attr_paddr.attr,
++	&dev_attr_p_uv_addr.attr,
++	&dev_attr_rotation_type.attr,
++	&dev_attr_color_mode.attr,
++	&dev_attr_pre_mult_alpha.attr,
++	&dev_attr_capture_rate.attr,
++	NULL,
 +};
 +
-+/*
-+ * sh_mobile_meram_priv - MERAM device
-+ * @base: Registers base address
-+ * @regs: Registers cache
-+ * @lock: Protects used_icb and icbs
-+ * @used_icb: Bitmask of used ICBs
-+ * @icbs: ICBs
-+ */
- struct sh_mobile_meram_priv {
--	void __iomem	*base;
--	struct mutex	lock;
--	unsigned long	used_icb;
--	unsigned int	used_meram_cache_regions;
--	unsigned long	used_meram_cache[SH_MOBILE_MERAM_ICB_NUM];
--	unsigned long	cmn_saved_regs[CMN_REGS_SIZE];
--	unsigned long	icb_saved_regs[ICB_REGS_SIZE * SH_MOBILE_MERAM_ICB_NUM];
-+	void __iomem *base;
-+	unsigned long regs[CMN_REGS_SIZE];
++static struct attribute_group writeback_attr_group = {
++	.attrs = writeback_attrs,
++};
 +
-+	struct mutex lock;
-+	unsigned long used_icb;
-+	struct sh_mobile_meram_icb icbs[SH_MOBILE_MERAM_ICB_NUM];
- };
- 
- /* settings */
-@@ -157,7 +181,7 @@ static inline unsigned long meram_read_reg(void __iomem *base, unsigned int off)
-  */
- 
- static inline int meram_check_overlap(struct sh_mobile_meram_priv *priv,
--				      struct sh_mobile_meram_icb_cfg *new)
-+				      const struct sh_mobile_meram_icb_cfg *new)
+ static int writeback_panel_probe(struct omap_dss_device *dssdev)
  {
- 	unsigned int used_start, used_end, meram_start, meram_end;
- 	unsigned int i;
-@@ -167,17 +191,20 @@ static inline int meram_check_overlap(struct sh_mobile_meram_priv *priv,
- 		return 1;
- 
- 	if (test_bit(new->marker_icb, &priv->used_icb) ||
--			test_bit(new->cache_icb,  &priv->used_icb))
-+	    test_bit(new->cache_icb,  &priv->used_icb))
- 		return  1;
- 
--	for (i = 0; i < priv->used_meram_cache_regions; i++) {
--		used_start = MERAM_CACHE_START(priv->used_meram_cache[i]);
--		used_end   = MERAM_CACHE_END(priv->used_meram_cache[i]);
-+	for (i = 0; i < SH_MOBILE_MERAM_ICB_NUM; i++) {
-+		if (!test_bit(i, &priv->used_icb))
-+			continue;
++	int r;
 +
-+		used_start = MERAM_CACHE_START(priv->icbs[i].region);
-+		used_end   = MERAM_CACHE_END(priv->icbs[i].region);
- 		meram_start = new->meram_offset;
- 		meram_end   = new->meram_offset + new->meram_size;
- 
- 		if ((meram_start >= used_start && meram_start < used_end) ||
--			(meram_end > used_start && meram_end < used_end))
-+		    (meram_end > used_start && meram_end < used_end))
- 			return 1;
- 	}
- 
-@@ -189,22 +216,18 @@ static inline int meram_check_overlap(struct sh_mobile_meram_priv *priv,
-  */
- 
- static inline void meram_mark(struct sh_mobile_meram_priv *priv,
--			      struct sh_mobile_meram_icb_cfg *new)
-+			      const struct sh_mobile_meram_icb_cfg *new,
-+			      int pixelformat)
- {
--	unsigned int n;
--
--	if (new->marker_icb < 0 || new->cache_icb < 0)
--		return;
--
- 	__set_bit(new->marker_icb, &priv->used_icb);
- 	__set_bit(new->cache_icb, &priv->used_icb);
- 
--	n = priv->used_meram_cache_regions;
--
--	priv->used_meram_cache[n] = MERAM_CACHE_SET(new->meram_offset,
--						    new->meram_size);
--
--	priv->used_meram_cache_regions++;
-+	priv->icbs[new->marker_icb].region = MERAM_CACHE_SET(new->meram_offset,
-+							     new->meram_size);
-+	priv->icbs[new->cache_icb].region = MERAM_CACHE_SET(new->meram_offset,
-+							    new->meram_size);
-+	priv->icbs[new->marker_icb].current_reg = 1;
-+	priv->icbs[new->marker_icb].pixelformat = pixelformat;
- }
- 
- /*
-@@ -212,30 +235,10 @@ static inline void meram_mark(struct sh_mobile_meram_priv *priv,
-  */
- 
- static inline void meram_unmark(struct sh_mobile_meram_priv *priv,
--				struct sh_mobile_meram_icb_cfg *icb)
-+				const struct sh_mobile_meram_icb_cfg *icb)
- {
--	unsigned long pattern;
--	unsigned int i;
--
--	if (icb->marker_icb < 0 || icb->cache_icb < 0)
--		return;
--
- 	__clear_bit(icb->marker_icb, &priv->used_icb);
- 	__clear_bit(icb->cache_icb, &priv->used_icb);
--
--	pattern = MERAM_CACHE_SET(icb->meram_offset, icb->meram_size);
--	for (i = 0; i < priv->used_meram_cache_regions; i++) {
--		if (priv->used_meram_cache[i] = pattern) {
--			while (i < priv->used_meram_cache_regions - 1) {
--				priv->used_meram_cache[i] -					priv->used_meram_cache[i + 1] ;
--				i++;
--			}
--			priv->used_meram_cache[i] = 0;
--			priv->used_meram_cache_regions--;
--			break;
--		}
--	}
- }
- 
- /*
-@@ -244,7 +247,7 @@ static inline void meram_unmark(struct sh_mobile_meram_priv *priv,
- static inline int is_nvcolor(int cspace)
- {
- 	if (cspace = SH_MOBILE_MERAM_PF_NV ||
--			cspace = SH_MOBILE_MERAM_PF_NV24)
-+	    cspace = SH_MOBILE_MERAM_PF_NV24)
- 		return 1;
- 	return 0;
- }
-@@ -253,46 +256,51 @@ static inline int is_nvcolor(int cspace)
-  * set the next address to fetch
-  */
- static inline void meram_set_next_addr(struct sh_mobile_meram_priv *priv,
--				       struct sh_mobile_meram_cfg *cfg,
-+				       const struct sh_mobile_meram_cfg *cfg,
- 				       unsigned long base_addr_y,
- 				       unsigned long base_addr_c)
- {
-+	struct sh_mobile_meram_icb *icb = &priv->icbs[cfg->icb[0].marker_icb];
- 	unsigned long target;
- 
--	cfg->current_reg ^= 1;
--	target = cfg->current_reg ? MExxSARB : MExxSARA;
-+	icb->current_reg ^= 1;
-+	target = icb->current_reg ? MExxSARB : MExxSARA;
- 
- 	/* set the next address to fetch */
--	meram_write_icb(priv->base, cfg->icb[0].cache_icb,  target,
-+	meram_write_icb(priv->base, cfg->icb[0].cache_icb, target,
- 			base_addr_y);
- 	meram_write_icb(priv->base, cfg->icb[0].marker_icb, target,
--			base_addr_y + cfg->icb[0].cache_unit);
-+			base_addr_y +
-+			priv->icbs[cfg->icb[0].marker_icb].cache_unit);
- 
--	if (is_nvcolor(cfg->pixelformat)) {
-+	if (is_nvcolor(icb->pixelformat)) {
- 		meram_write_icb(priv->base, cfg->icb[1].cache_icb,  target,
- 				base_addr_c);
- 		meram_write_icb(priv->base, cfg->icb[1].marker_icb, target,
--				base_addr_c + cfg->icb[1].cache_unit);
-+				base_addr_c +
-+				priv->icbs[cfg->icb[1].marker_icb].cache_unit);
- 	}
- }
- 
- /*
-  * get the next ICB address
-  */
--static inline void meram_get_next_icb_addr(struct sh_mobile_meram_info *pdata,
--					   struct sh_mobile_meram_cfg *cfg,
--					   unsigned long *icb_addr_y,
--					   unsigned long *icb_addr_c)
-+static inline void
-+meram_get_next_icb_addr(struct sh_mobile_meram_info *pdata,
-+			const struct sh_mobile_meram_cfg *cfg,
-+			unsigned long *icb_addr_y, unsigned long *icb_addr_c)
- {
-+	struct sh_mobile_meram_priv *priv = pdata->priv;
-+	struct sh_mobile_meram_icb *icb = &priv->icbs[cfg->icb[0].marker_icb];
- 	unsigned long icb_offset;
- 
- 	if (pdata->addr_mode = SH_MOBILE_MERAM_MODE0)
--		icb_offset = 0x80000000 | (cfg->current_reg << 29);
-+		icb_offset = 0x80000000 | (icb->current_reg << 29);
- 	else
--		icb_offset = 0xc0000000 | (cfg->current_reg << 23);
-+		icb_offset = 0xc0000000 | (icb->current_reg << 23);
- 
- 	*icb_addr_y = icb_offset | (cfg->icb[0].marker_icb << 24);
--	if (is_nvcolor(cfg->pixelformat))
-+	if (is_nvcolor(icb->pixelformat))
- 		*icb_addr_c = icb_offset | (cfg->icb[1].marker_icb << 24);
- }
- 
-@@ -304,7 +312,7 @@ static inline void meram_get_next_icb_addr(struct sh_mobile_meram_info *pdata,
-  */
- 
- static int meram_init(struct sh_mobile_meram_priv *priv,
--		      struct sh_mobile_meram_icb_cfg *icb,
-+		      const struct sh_mobile_meram_icb_cfg *icb,
- 		      unsigned int xres, unsigned int yres,
- 		      unsigned int *out_pitch)
- {
-@@ -352,7 +360,8 @@ static int meram_init(struct sh_mobile_meram_priv *priv,
- 	meram_write_icb(priv->base, icb->marker_icb, MExxSBSIZE, xpitch);
- 
- 	/* save a cache unit size */
--	icb->cache_unit = xres * save_lines;
-+	priv->icbs[icb->cache_icb].cache_unit = xres * save_lines;
-+	priv->icbs[icb->marker_icb].cache_unit = xres * save_lines;
- 
- 	/*
- 	 * Set MERAM for framebuffer
-@@ -374,14 +383,16 @@ static int meram_init(struct sh_mobile_meram_priv *priv,
- }
- 
- static void meram_deinit(struct sh_mobile_meram_priv *priv,
--			 struct sh_mobile_meram_icb_cfg *icb)
-+			 const struct sh_mobile_meram_icb_cfg *icb)
- {
- 	/* disable ICB */
- 	meram_write_icb(priv->base, icb->cache_icb,  MExxCTL,
- 			MExxCTL_WBF | MExxCTL_WF | MExxCTL_RF);
- 	meram_write_icb(priv->base, icb->marker_icb, MExxCTL,
- 			MExxCTL_WBF | MExxCTL_WF | MExxCTL_RF);
--	icb->cache_unit = 0;
++	r = sysfs_create_group(&dssdev->dev.kobj, &writeback_attr_group);
++	if (r) {
++		dev_err(&dssdev->dev, "failed to create sysfs files\n");
++		return r;
++	}
 +
-+	priv->icbs[icb->cache_icb].cache_unit = 0;
-+	priv->icbs[icb->marker_icb].cache_unit = 0;
- }
- 
- /*
-@@ -389,7 +400,7 @@ static void meram_deinit(struct sh_mobile_meram_priv *priv,
-  */
- 
- static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
--				    struct sh_mobile_meram_cfg *cfg,
-+				    const struct sh_mobile_meram_cfg *cfg,
- 				    unsigned int xres, unsigned int yres,
- 				    unsigned int pixelformat,
- 				    unsigned long base_addr_y,
-@@ -433,12 +444,6 @@ static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
- 
- 	mutex_lock(&priv->lock);
- 
--	if (priv->used_meram_cache_regions + 2 > SH_MOBILE_MERAM_ICB_NUM) {
--		dev_err(&pdev->dev, "no more ICB available.");
--		error = -EINVAL;
--		goto err;
--	}
--
- 	/* make sure that there's no overlaps */
- 	if (meram_check_overlap(priv, &cfg->icb[0])) {
- 		dev_err(&pdev->dev, "conflicting config detected.");
-@@ -464,10 +469,9 @@ static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
- 	}
- 
- 	/* we now register the ICB */
--	cfg->pixelformat = pixelformat;
--	meram_mark(priv, &cfg->icb[0]);
-+	meram_mark(priv, &cfg->icb[0], pixelformat);
- 	if (is_nvcolor(pixelformat))
--		meram_mark(priv, &cfg->icb[1]);
-+		meram_mark(priv, &cfg->icb[1], pixelformat);
- 
- 	/* initialize MERAM */
- 	meram_init(priv, &cfg->icb[0], xres, yres, &out_pitch);
-@@ -479,7 +483,6 @@ static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
- 		meram_init(priv, &cfg->icb[1], 2 * xres, (yres + 1) / 2,
- 			&out_pitch);
- 
--	cfg->current_reg = 1;
- 	meram_set_next_addr(priv, cfg, base_addr_y, base_addr_c);
- 	meram_get_next_icb_addr(pdata, cfg, icb_addr_y, icb_addr_c);
- 
-@@ -492,19 +495,21 @@ err:
- }
- 
- static int sh_mobile_meram_unregister(struct sh_mobile_meram_info *pdata,
--				      struct sh_mobile_meram_cfg *cfg)
-+				      const struct sh_mobile_meram_cfg *cfg)
- {
- 	struct sh_mobile_meram_priv *priv;
-+	struct sh_mobile_meram_icb *icb;
- 
- 	if (!pdata || !pdata->priv || !cfg)
- 		return -EINVAL;
- 
- 	priv = pdata->priv;
-+	icb = &priv->icbs[cfg->icb[0].marker_icb];
- 
- 	mutex_lock(&priv->lock);
- 
- 	/* deinit & unmark */
--	if (is_nvcolor(cfg->pixelformat)) {
-+	if (is_nvcolor(icb->pixelformat)) {
- 		meram_deinit(priv, &cfg->icb[1]);
- 		meram_unmark(priv, &cfg->icb[1]);
- 	}
-@@ -517,7 +522,7 @@ static int sh_mobile_meram_unregister(struct sh_mobile_meram_info *pdata,
- }
- 
- static int sh_mobile_meram_update(struct sh_mobile_meram_info *pdata,
--				  struct sh_mobile_meram_cfg *cfg,
-+				  const struct sh_mobile_meram_cfg *cfg,
- 				  unsigned long base_addr_y,
- 				  unsigned long base_addr_c,
- 				  unsigned long *icb_addr_y,
-@@ -547,18 +552,17 @@ static int sh_mobile_meram_runtime_suspend(struct device *dev)
- 	unsigned int i, j;
- 
- 	for (i = 0; i < CMN_REGS_SIZE; i++)
--		priv->cmn_saved_regs[i] = meram_read_reg(priv->base,
--			common_regs[i]);
-+		priv->regs[i] = meram_read_reg(priv->base, common_regs[i]);
- 
- 	for (i = 0; i < 32; i++) {
- 		if (!test_bit(i, &priv->used_icb))
- 			continue;
- 		for (j = 0; j < ICB_REGS_SIZE; j++) {
--			priv->icb_saved_regs[i * ICB_REGS_SIZE + j] +			priv->icbs[i].regs[j]  				meram_read_icb(priv->base, i, icb_regs[j]);
- 			/* Reset ICB on resume */
- 			if (icb_regs[j] = MExxCTL)
--				priv->icb_saved_regs[i * ICB_REGS_SIZE + j] |+				priv->icbs[i].regs[j] | 					MExxCTL_WBF | MExxCTL_WF | MExxCTL_RF;
- 		}
- 	}
-@@ -574,15 +578,13 @@ static int sh_mobile_meram_runtime_resume(struct device *dev)
- 	for (i = 0; i < 32; i++) {
- 		if (!test_bit(i, &priv->used_icb))
- 			continue;
--		for (j = 0; j < ICB_REGS_SIZE; j++) {
-+		for (j = 0; j < ICB_REGS_SIZE; j++)
- 			meram_write_icb(priv->base, i, icb_regs[j],
--			priv->icb_saved_regs[i * ICB_REGS_SIZE + j]);
--		}
-+					priv->icbs[i].regs[j]);
- 	}
- 
- 	for (i = 0; i < CMN_REGS_SIZE; i++)
--		meram_write_reg(priv->base, common_regs[i],
--				priv->cmn_saved_regs[i]);
-+		meram_write_reg(priv->base, common_regs[i], priv->regs[i]);
  	return 0;
  }
  
-diff --git a/include/video/sh_mobile_meram.h b/include/video/sh_mobile_meram.h
-index 6755e3f..05ca3f9 100644
---- a/include/video/sh_mobile_meram.h
-+++ b/include/video/sh_mobile_meram.h
-@@ -30,14 +30,10 @@ struct sh_mobile_meram_icb_cfg {
- 	unsigned int cache_icb;		/* ICB # for Cache ICB */
- 	unsigned int meram_offset;	/* MERAM Buffer Offset to use */
- 	unsigned int meram_size;	/* MERAM Buffer Size to use */
--
--	unsigned int cache_unit;	/* bytes to cache per ICB */
- };
- 
- struct sh_mobile_meram_cfg {
--	struct sh_mobile_meram_icb_cfg	icb[2];
--	int				pixelformat;
--	int				current_reg;
-+	struct sh_mobile_meram_icb_cfg icb[2];
- };
- 
- struct module;
-@@ -45,7 +41,7 @@ struct sh_mobile_meram_ops {
- 	struct module	*module;
- 	/* register usage of meram */
- 	int (*meram_register)(struct sh_mobile_meram_info *meram_dev,
--			      struct sh_mobile_meram_cfg *cfg,
-+			      const struct sh_mobile_meram_cfg *cfg,
- 			      unsigned int xres, unsigned int yres,
- 			      unsigned int pixelformat,
- 			      unsigned long base_addr_y,
-@@ -56,11 +52,11 @@ struct sh_mobile_meram_ops {
- 
- 	/* unregister usage of meram */
- 	int (*meram_unregister)(struct sh_mobile_meram_info *meram_dev,
--				struct sh_mobile_meram_cfg *cfg);
-+				const struct sh_mobile_meram_cfg *cfg);
- 
- 	/* update meram settings */
- 	int (*meram_update)(struct sh_mobile_meram_info *meram_dev,
--			    struct sh_mobile_meram_cfg *cfg,
-+			    const struct sh_mobile_meram_cfg *cfg,
- 			    unsigned long base_addr_y,
- 			    unsigned long base_addr_c,
- 			    unsigned long *icb_addr_y,
 -- 
-1.7.3.4
+1.7.4.1
 

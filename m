@@ -1,252 +1,74 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 27 Dec 2011 12:49:08 +0000
-Subject: [RFC PATCH 25/29] OMAPDSS: Writeback: Add sysfs attributes to writeback panel
-Message-Id: <1324989432-3625-26-git-send-email-archit@ti.com>
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Tue, 27 Dec 2011 21:57:49 +0000
+Subject: [PATCH] grvga: fix section mismatch warnings
+Message-Id: <20111227215748.GA18904@merkur.ravnborg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1324989432-3625-1-git-send-email-archit@ti.com>
-In-Reply-To: <1324989432-3625-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: rohitkc@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Add the following sysfs attributes to the writeback panel driver:
-- paddr
-- p_uv_addr
-- rotation_type
-- color_mode
-- pre_mult_alpha
-- capture_rate
+From 7368b53b755a66c69b2b5ede30e2effe960ad59a Mon Sep 17 00:00:00 2001
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Tue, 27 Dec 2011 22:55:49 +0100
+Subject: [PATCH] grvga: fix section mismatch warnings
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+Fix following section mismatch warnings:
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x110): Section mismatch in reference from the function grvga_probe() to the function .init.text:grvga_parse_custom()
+The function __devinit grvga_probe() references
+a function __init grvga_parse_custom().
+If grvga_parse_custom is only used by grvga_probe then
+annotate grvga_parse_custom with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x1f8): Section mismatch in reference from the function grvga_probe() to the variable .init.data:grvga_fix
+The function __devinit grvga_probe() references
+a variable __initdata grvga_fix.
+If grvga_fix is only used by grvga_probe then
+annotate grvga_fix with a matching annotation.
+
+WARNING: drivers/video/built-in.o(.devinit.text+0x204): Section mismatch in reference from the function grvga_probe() to the variable .init.data:grvga_fix
+The function __devinit grvga_probe() references
+a variable __initdata grvga_fix.
+If grvga_fix is only used by grvga_probe then
+annotate grvga_fix with a matching annotation.
+
+grvga_fix is used in a function annotated __devinit - so
+match this using a __devinitdata annotation on grvga_fix.
+
+grvga_parse_custom() is used in a function annotated
+__devinit - so match this by annotating grvga_parse_custom()
+with __devinit too.
+
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Kristoffer Glembo <kristoffer@gaisler.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/omap2/dss/writeback.c |  210 +++++++++++++++++++++++++++++++++++
- 1 files changed, 210 insertions(+), 0 deletions(-)
+ drivers/video/grvga.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/writeback.c b/drivers/video/omap2/dss/writeback.c
-index 215958e..c6450e7 100644
---- a/drivers/video/omap2/dss/writeback.c
-+++ b/drivers/video/omap2/dss/writeback.c
-@@ -214,8 +214,218 @@ int dss_wb_simple_check(struct omap_dss_writeback *wb,
+diff --git a/drivers/video/grvga.c b/drivers/video/grvga.c
+index f37e025..da066c2 100644
+--- a/drivers/video/grvga.c
++++ b/drivers/video/grvga.c
+@@ -70,7 +70,7 @@ static const struct fb_videomode grvga_modedb[] = {
+     }
+  };
  
- /* Dummy Writeback Panel driver */
+-static struct fb_fix_screeninfo grvga_fix __initdata = {
++static struct fb_fix_screeninfo grvga_fix __devinitdata = {
+ 	.id =		"AG SVGACTRL",
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =       FB_VISUAL_PSEUDOCOLOR,
+@@ -267,7 +267,7 @@ static struct fb_ops grvga_ops = {
+ 	.fb_imageblit	= cfb_imageblit
+ };
  
-+static ssize_t writeback_panel_paddr_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct omap_dss_writeback_info info;
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_writeback *wb = dssdev->wbdev;
-+
-+	wb->get_wb_info(wb, &info);
-+
-+	return snprintf(buf, PAGE_SIZE, "%x\n", info.paddr);
-+}
-+
-+static ssize_t writeback_panel_p_uv_addr_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct omap_dss_writeback_info info;
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_writeback *wb = dssdev->wbdev;
-+
-+	wb->get_wb_info(wb, &info);
-+
-+	return snprintf(buf, PAGE_SIZE, "%x\n", info.p_uv_addr);
-+}
-+
-+static ssize_t writeback_panel_rotation_type_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct omap_dss_writeback_info info;
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_writeback *wb = dssdev->wbdev;
-+
-+	wb->get_wb_info(wb, &info);
-+
-+	return snprintf(buf, PAGE_SIZE, "%d\n", info.rotation_type);
-+}
-+
-+static ssize_t writeback_panel_color_mode_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct omap_dss_writeback_info info;
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_writeback *wb = dssdev->wbdev;
-+
-+	wb->get_wb_info(wb, &info);
-+
-+	return snprintf(buf, PAGE_SIZE, "%d\n", info.color_mode);
-+}
-+
-+static ssize_t writeback_panel_color_mode_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf,
-+		size_t size)
-+{
-+	int r;
-+	int color_mode;
-+	struct omap_dss_writeback_info info;
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_writeback *wb = dssdev->wbdev;
-+
-+	r = kstrtoint(buf, 0, &color_mode);
-+	if (r)
-+		return r;
-+
-+	wb->get_wb_info(wb, &info);
-+
-+	info.color_mode = color_mode;
-+
-+	r = wb->set_wb_info(wb, &info);
-+	if (r) {
-+		dev_err(&dssdev->dev, "failed to set color mode %d\n",
-+			color_mode);
-+		return r;
-+	}
-+
-+	if (dssdev->manager) {
-+		r = dssdev->manager->apply(dssdev->manager);
-+		if (r)
-+			return r;
-+	}
-+
-+	return size;
-+}
-+
-+static ssize_t writeback_panel_pre_mult_alpha_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct omap_dss_writeback_info info;
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_writeback *wb = dssdev->wbdev;
-+
-+	wb->get_wb_info(wb, &info);
-+
-+	return snprintf(buf, PAGE_SIZE, "%d\n", info.pre_mult_alpha);
-+}
-+
-+static ssize_t writeback_panel_pre_mult_alpha_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf,
-+		size_t size)
-+{
-+	int r;
-+	u8 pre_mult_alpha;
-+	struct omap_dss_writeback_info info;
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_writeback *wb = dssdev->wbdev;
-+
-+	r = kstrtou8(buf, 0, &pre_mult_alpha);
-+	if (r)
-+		return r;
-+
-+	wb->get_wb_info(wb, &info);
-+
-+	info.pre_mult_alpha = pre_mult_alpha;
-+
-+	r = wb->set_wb_info(wb, &info);
-+	if (r) {
-+		dev_err(&dssdev->dev, "failed to set pre_mult_alpha %d\n",
-+			pre_mult_alpha);
-+		return r;
-+	}
-+
-+	if (dssdev->manager) {
-+		r = dssdev->manager->apply(dssdev->manager);
-+		if (r)
-+			return r;
-+	}
-+
-+	return size;
-+}
-+
-+static ssize_t writeback_panel_capture_rate_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct omap_dss_writeback_info info;
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_writeback *wb = dssdev->wbdev;
-+
-+	wb->get_wb_info(wb, &info);
-+
-+	return snprintf(buf, PAGE_SIZE, "%d\n", info.capture_rate);
-+}
-+
-+static ssize_t writeback_panel_capture_rate_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf,
-+		size_t size)
-+{
-+	int r;
-+	int capture_rate;
-+	struct omap_dss_writeback_info info;
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	struct omap_dss_writeback *wb = dssdev->wbdev;
-+
-+	r = kstrtoint(buf, 0, &capture_rate);
-+	if (r)
-+		return r;
-+
-+	wb->get_wb_info(wb, &info);
-+
-+	info.capture_rate = capture_rate;
-+
-+	r = wb->set_wb_info(wb, &info);
-+	if (r) {
-+		dev_err(&dssdev->dev, "failed to set capture_rate %d\n",
-+			capture_rate);
-+		return r;
-+	}
-+
-+	if (dssdev->manager) {
-+		r = dssdev->manager->apply(dssdev->manager);
-+		if (r)
-+			return r;
-+	}
-+
-+	return size;
-+}
-+
-+static DEVICE_ATTR(paddr, S_IRUGO, writeback_panel_paddr_show, NULL);
-+static DEVICE_ATTR(p_uv_addr, S_IRUGO, writeback_panel_p_uv_addr_show, NULL);
-+static DEVICE_ATTR(rotation_type, S_IRUGO, writeback_panel_rotation_type_show,
-+		NULL);
-+static DEVICE_ATTR(color_mode, S_IRUGO | S_IWUSR,
-+		writeback_panel_color_mode_show,
-+		writeback_panel_color_mode_store);
-+static DEVICE_ATTR(pre_mult_alpha, S_IRUGO | S_IWUSR,
-+		writeback_panel_pre_mult_alpha_show,
-+		writeback_panel_pre_mult_alpha_store);
-+static DEVICE_ATTR(capture_rate, S_IRUGO | S_IWUSR,
-+		writeback_panel_capture_rate_show,
-+		writeback_panel_capture_rate_store);
-+
-+static struct attribute *writeback_attrs[] = {
-+	&dev_attr_paddr.attr,
-+	&dev_attr_p_uv_addr.attr,
-+	&dev_attr_rotation_type.attr,
-+	&dev_attr_color_mode.attr,
-+	&dev_attr_pre_mult_alpha.attr,
-+	&dev_attr_capture_rate.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group writeback_attr_group = {
-+	.attrs = writeback_attrs,
-+};
-+
- static int writeback_panel_probe(struct omap_dss_device *dssdev)
+-static int __init grvga_parse_custom(char *options,
++static int __devinit grvga_parse_custom(char *options,
+ 				     struct fb_var_screeninfo *screendata)
  {
-+	int r;
-+
-+	r = sysfs_create_group(&dssdev->dev.kobj, &writeback_attr_group);
-+	if (r) {
-+		dev_err(&dssdev->dev, "failed to create sysfs files\n");
-+		return r;
-+	}
-+
- 	return 0;
- }
- 
+ 	char *this_opt;
 -- 
-1.7.4.1
+1.6.0.6
 

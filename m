@@ -1,83 +1,51 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 07 Dec 2011 13:15:10 +0000
-Subject: Re: [PATCH 58/65] OMAPDSS: APPLY: add
-Message-Id: <1323263710.1915.24.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-tpwuKkWQoxurDlP1F1Q4"
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 27 Dec 2011 12:49:02 +0000
+Subject: [RFC PATCH 19/29] OMAPDSS: DISPC: Don't set chroma resampling bit for writeback
+Message-Id: <1324989432-3625-20-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1321953724-6350-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1321953724-6350-59-git-send-email-tomi.valkeinen@ti.com>
-	 <4EDF651E.3060703@ti.com>
-In-Reply-To: <4EDF651E.3060703@ti.com>
-To: Archit Taneja <a0393947@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+References: <1324989432-3625-1-git-send-email-archit@ti.com>
+In-Reply-To: <1324989432-3625-1-git-send-email-archit@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: rohitkc@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
+The bit YUVCHROMARESAMPLING isn't there for writeback in DISPC_WB_ATTRIBUTES2.
+Ignore this bit in dispc_ovl_set_scaling_uv() if the plane is OMAP_DSS_WB.
 
---=-tpwuKkWQoxurDlP1F1Q4
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/dispc.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
-On Wed, 2011-12-07 at 18:37 +0530, Archit Taneja wrote:
-> On Tuesday 22 November 2011 02:51 PM, Tomi Valkeinen wrote:
-
-> > +/* wait until no extra_info updates are pending */
-> > +static void wait_pending_extra_info_updates(void)
-> > +{
-> > +	bool updating;
-> > +	unsigned long flags;
-> > +	unsigned long t;
-> > +
-> > +	spin_lock_irqsave(&data_lock, flags);
-> > +
-> > +	updating =3D extra_info_update_ongoing();
-> > +
-> > +	if (!updating) {
-> > +		spin_unlock_irqrestore(&data_lock, flags);
-> > +		return;
-> > +	}
-> > +
-> > +	init_completion(&extra_updated_completion);
-> > +
-> > +	spin_unlock_irqrestore(&data_lock, flags);
-> > +
-> > +	t =3D msecs_to_jiffies(500);
-> > +	wait_for_completion_timeout(&extra_updated_completion, t);
-> > +
-> > +	updating =3D extra_info_update_ongoing();
-> > +
-> > +	WARN_ON(updating);
-> > +}
->=20
-> This function isn't used, are you planning to use it later?
-
-Yes, it's used with the fifo-merge stuff. It could be added later, but
-as it's related to the extra_info stuff, I think it fits better here
-than with the fifo merge series.
-
- Tomi
-
-
---=-tpwuKkWQoxurDlP1F1Q4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJO32beAAoJEPo9qoy8lh71occP/jHnVK7r7GL6QUQWszLm6CIM
-E8KoZ6z7ykp/Zd1BvmZ82ZrFgSks2znZRqF8wCKhJ0ZDufoiPNEIGqzVxd2McG5A
-DhpjuC4Cm/AfSBdy666J3bDeRtUjKuURfqAP/iVjK7ErxwTqkSwax/A5QFk6iIgj
-z5aQxtke5gWPLSDE32VyPVZfq1dp/2LN6kPHodqWeXk3iOluZUsndB8axqPHDvnR
-TOIYXnvOLzzMy/OKqoIQDUKx7T92+Y+vpWEnvjOJZwfeMqWmgRu70/GwaEglKW7X
-DnFtT+7OwqKywqW1i7sgQ+pyofq/+Z10DFYIQmQ6alhUuU1R0C/PvN820TPkvqEb
-KEKQKnbTX6cb6rmkR8jtF1LSM65iHxSDbHLGMdj2knmCnvj13ZQziek0r2k57IGB
-o7geooXfF031gKoc6IO4VjS3WBp1i6sOJebSyH/QiwwpFX5BupopClgeD5vbJ7W0
-9d/hUgEygRO1Nragl7Wk2bDeKCdP3m/2dO1dcX2g463MKeeHYy6u3TnNh4LILBYu
-57sdQBCGXAN9qKIJOblX329D1sHDHEi6zvjFv86WdI02pdOkQ1NLVoLV0b3cWIQb
-zdkGJhkEL0nwVeNSnCaJJltF/dDXCx6CaG8zcRqRYo+zrPoxg8U+kz4By08HNjlb
-ecUUwbmHJOBKQ6gDebUr
-=fK7W
------END PGP SIGNATURE-----
-
---=-tpwuKkWQoxurDlP1F1Q4--
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 21d6286..3a40f8e 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -1238,7 +1238,8 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
+ 			color_mode != OMAP_DSS_COLOR_UYVY &&
+ 			color_mode != OMAP_DSS_COLOR_NV12)) {
+ 		/* reset chroma resampling for RGB formats  */
+-		REG_FLD_MOD(DISPC_OVL_ATTRIBUTES2(plane), 0, 8, 8);
++		if (plane != OMAP_DSS_WB)
++			REG_FLD_MOD(DISPC_OVL_ATTRIBUTES2(plane), 0, 8, 8);
+ 		return;
+ 	}
+ 	switch (color_mode) {
+@@ -1277,8 +1278,10 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
+ 			out_width, out_height, five_taps,
+ 				rotation, DISPC_COLOR_COMPONENT_UV);
+ 
+-	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES2(plane),
+-		(scale_x || scale_y) ? 1 : 0, 8, 8);
++	if (plane != OMAP_DSS_WB)
++		REG_FLD_MOD(DISPC_OVL_ATTRIBUTES2(plane),
++			(scale_x || scale_y) ? 1 : 0, 8, 8);
++
+ 	/* set H scaling */
+ 	REG_FLD_MOD(DISPC_OVL_ATTRIBUTES(plane), scale_x ? 1 : 0, 5, 5);
+ 	/* set V scaling */
+-- 
+1.7.4.1
 

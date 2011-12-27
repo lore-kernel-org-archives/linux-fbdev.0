@@ -1,32 +1,47 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:02:11 +0000
-Subject: [PATCH 16/57] fbdev: sh_mobile_hdmi: Remove sh_mobile_hdmi_info lcd_chan field
-Message-Id: <1323784972-24205-17-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 27 Dec 2011 12:49:12 +0000
+Subject: [RFC PATCH 29/29] OMAPDSS: FEATURES: Allow WB panels to attach to managers
+Message-Id: <1324989432-3625-30-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1324989432-3625-1-git-send-email-archit@ti.com>
+In-Reply-To: <1324989432-3625-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: rohitkc@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The field is unused, remove it.
+Add WB panel type in supported displays for all managers of OMAP4. A manager can
+now use set/unset ops on the dummy writeback panel.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- include/video/sh_mobile_hdmi.h |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ drivers/video/omap2/dss/dss_features.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/include/video/sh_mobile_hdmi.h b/include/video/sh_mobile_hdmi.h
-index 0b8d2cf..728f9de 100644
---- a/include/video/sh_mobile_hdmi.h
-+++ b/include/video/sh_mobile_hdmi.h
-@@ -31,7 +31,6 @@ struct clk;
- #define HDMI_SND_SRC_HBR	(3 << 0)
+diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
+index 9478ed8..dbde3b9 100644
+--- a/drivers/video/omap2/dss/dss_features.c
++++ b/drivers/video/omap2/dss/dss_features.c
+@@ -132,14 +132,16 @@ static const enum omap_display_type omap3630_dss_supported_displays[] = {
  
- struct sh_mobile_hdmi_info {
--	struct sh_mobile_lcdc_chan_cfg	*lcd_chan;
- 	unsigned int			 flags;
- 	long (*clk_optimize_parent)(unsigned long target, unsigned long *best_freq,
- 				    unsigned long *parent_freq);
+ static const enum omap_display_type omap4_dss_supported_displays[] = {
+ 	/* OMAP_DSS_CHANNEL_LCD */
+-	OMAP_DISPLAY_TYPE_DBI | OMAP_DISPLAY_TYPE_DSI,
++	OMAP_DISPLAY_TYPE_DBI | OMAP_DISPLAY_TYPE_DSI |
++	OMAP_DISPLAY_TYPE_WB,
+ 
+ 	/* OMAP_DSS_CHANNEL_DIGIT */
+ 	OMAP_DISPLAY_TYPE_VENC | OMAP_DISPLAY_TYPE_HDMI,
++	OMAP_DISPLAY_TYPE_WB,
+ 
+ 	/* OMAP_DSS_CHANNEL_LCD2 */
+ 	OMAP_DISPLAY_TYPE_DPI | OMAP_DISPLAY_TYPE_DBI |
+-	OMAP_DISPLAY_TYPE_DSI,
++	OMAP_DISPLAY_TYPE_DSI | OMAP_DISPLAY_TYPE_WB,
+ };
+ 
+ static const enum omap_color_mode omap2_dss_supported_color_modes[] = {
 -- 
-1.7.3.4
+1.7.4.1
 

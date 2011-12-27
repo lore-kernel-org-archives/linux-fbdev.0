@@ -1,74 +1,136 @@
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Thu, 29 Dec 2011 18:20:38 +0000
-Subject: [PATCH 2/2] backlight: Convert pwm_bl to dev_pm_ops
-Message-Id: <1325182838-25729-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+Date: Tue, 27 Dec 2011 14:16:11 +0000
+Subject: [PATCH 5/6] video: s3c-fb: Hold runtime PM references when touching registers
+Message-Id: <1324995372-3410-5-git-send-email-broonie@opensource.wolfsonmicro.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20111227141550.GA3331@opensource.wolfsonmicro.com>
+ <1324995372-3410-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1324995372-3410-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Jingoo Han <jg1.han@samsung.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-Should be no functional changes, mainly a reorganisation to support
-future work.
+Take a runtime PM reference whenever updating registers in preparation
+for suspending the device when the framebuffer is blanked.
 
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- drivers/video/backlight/pwm_bl.c |   19 ++++++++++---------
- 1 files changed, 10 insertions(+), 9 deletions(-)
+ drivers/video/s3c-fb.c |   22 ++++++++++++++++++++++
+ 1 files changed, 22 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index b811e8f..13ba95b 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -169,10 +169,9 @@ static int pwm_backlight_remove(struct platform_device *pdev)
- }
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 688b9d8..84cf631 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -496,6 +496,8 @@ static int s3c_fb_set_par(struct fb_info *info)
  
- #ifdef CONFIG_PM
--static int pwm_backlight_suspend(struct platform_device *pdev,
--				 pm_message_t state)
-+static int pwm_backlight_suspend(struct device *dev)
- {
--	struct backlight_device *bl = platform_get_drvdata(pdev);
-+	struct backlight_device *bl = dev_get_drvdata(dev);
- 	struct pwm_bl_data *pb = dev_get_drvdata(&bl->dev);
+ 	dev_dbg(sfb->dev, "setting framebuffer parameters\n");
  
- 	if (pb->notify)
-@@ -184,27 +183,29 @@ static int pwm_backlight_suspend(struct platform_device *pdev,
++	pm_runtime_get_sync(sfb->dev);
++
+ 	shadow_protect_win(win, 1);
+ 
+ 	switch (var->bits_per_pixel) {
+@@ -692,6 +694,8 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 
+ 	shadow_protect_win(win, 0);
+ 
++	pm_runtime_put_sync(sfb->dev);
++
  	return 0;
  }
  
--static int pwm_backlight_resume(struct platform_device *pdev)
-+static int pwm_backlight_resume(struct device *dev)
- {
--	struct backlight_device *bl = platform_get_drvdata(pdev);
-+	struct backlight_device *bl = dev_get_drvdata(dev);
+@@ -763,6 +767,8 @@ static int s3c_fb_setcolreg(unsigned regno,
+ 	dev_dbg(sfb->dev, "%s: win %d: %d => rgb=%d/%d/%d\n",
+ 		__func__, win->index, regno, red, green, blue);
  
- 	backlight_update_status(bl);
++	pm_runtime_get_sync(sfb->dev);
++
+ 	switch (info->fix.visual) {
+ 	case FB_VISUAL_TRUECOLOR:
+ 		/* true-colour, use pseudo-palette */
+@@ -790,9 +796,11 @@ static int s3c_fb_setcolreg(unsigned regno,
+ 		break;
+ 
+ 	default:
++		pm_runtime_put_sync(sfb->dev);
+ 		return 1;	/* unknown type */
+ 	}
+ 
++	pm_runtime_put_sync(sfb->dev);
  	return 0;
  }
-+
-+static SIMPLE_DEV_PM_OPS(pwm_backlight_pm_ops, pwm_backlight_suspend,
-+			 pwm_backlight_resume);
-+
- #else
--#define pwm_backlight_suspend	NULL
--#define pwm_backlight_resume	NULL
-+#define pwm_backlight_pm_ops	NULL
- #endif
  
- static struct platform_driver pwm_backlight_driver = {
- 	.driver		= {
- 		.name	= "pwm-backlight",
- 		.owner	= THIS_MODULE,
-+		.pm	= &pwm_backlight_pm_ops,
- 	},
- 	.probe		= pwm_backlight_probe,
- 	.remove		= pwm_backlight_remove,
--	.suspend	= pwm_backlight_suspend,
--	.resume		= pwm_backlight_resume,
- };
+@@ -812,6 +820,8 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
  
- module_platform_driver(pwm_backlight_driver);
+ 	dev_dbg(sfb->dev, "blank mode %d\n", blank_mode);
+ 
++	pm_runtime_get_sync(sfb->dev);
++
+ 	wincon = readl(sfb->regs + sfb->variant.wincon + (index * 4));
+ 
+ 	switch (blank_mode) {
+@@ -839,6 +849,7 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
+ 	case FB_BLANK_VSYNC_SUSPEND:
+ 	case FB_BLANK_HSYNC_SUSPEND:
+ 	default:
++		pm_runtime_put_sync(sfb->dev);
+ 		return 1;
+ 	}
+ 
+@@ -869,6 +880,8 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
+ 		shadow_protect_win(win, 0);
+ 	}
+ 
++	pm_runtime_put_sync(sfb->dev);
++
+ 	return 0;
+ }
+ 
+@@ -891,6 +904,8 @@ static int s3c_fb_pan_display(struct fb_var_screeninfo *var,
+ 	void __iomem *buf	= sfb->regs + win->index * 8;
+ 	unsigned int start_boff, end_boff;
+ 
++	pm_runtime_get_sync(sfb->dev);
++
+ 	/* Offset in bytes to the start of the displayed area */
+ 	start_boff = var->yoffset * info->fix.line_length;
+ 	/* X offset depends on the current bpp */
+@@ -909,6 +924,7 @@ static int s3c_fb_pan_display(struct fb_var_screeninfo *var,
+ 			break;
+ 		default:
+ 			dev_err(sfb->dev, "invalid bpp\n");
++			pm_runtime_put_sync(sfb->dev);
+ 			return -EINVAL;
+ 		}
+ 	}
+@@ -924,6 +940,7 @@ static int s3c_fb_pan_display(struct fb_var_screeninfo *var,
+ 
+ 	shadow_protect_win(win, 0);
+ 
++	pm_runtime_put_sync(sfb->dev);
+ 	return 0;
+ }
+ 
+@@ -1013,11 +1030,16 @@ static int s3c_fb_wait_for_vsync(struct s3c_fb *sfb, u32 crtc)
+ 	if (crtc != 0)
+ 		return -ENODEV;
+ 
++	pm_runtime_get_sync(sfb->dev);
++
+ 	count = sfb->vsync_info.count;
+ 	s3c_fb_enable_irq(sfb);
+ 	ret = wait_event_interruptible_timeout(sfb->vsync_info.wait,
+ 				       count != sfb->vsync_info.count,
+ 				       msecs_to_jiffies(VSYNC_TIMEOUT_MSEC));
++
++	pm_runtime_put_sync(sfb->dev);
++
+ 	if (ret = 0)
+ 		return -ETIMEDOUT;
+ 
 -- 
 1.7.7.3
 

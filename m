@@ -1,121 +1,91 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:02:09 +0000
-Subject: [PATCH 14/57] fbdev: sh_mobile_hdmi: Don't hook up into board_cfg display operations
-Message-Id: <1323784972-24205-15-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 27 Dec 2011 12:48:57 +0000
+Subject: [RFC PATCH 14/29] OMAPDSS: DISPC: Allow both upscaling and downscaling of chroma
+Message-Id: <1324989432-3625-15-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1324989432-3625-1-git-send-email-archit@ti.com>
+In-Reply-To: <1324989432-3625-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: rohitkc@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The display_on/off operations are now accessed through the
-sh_mobile_lcdc_entity operations.
+Make the function dispc_ovl_set_scaling_uv() take a boolean argument which tells
+if we want to upscale or downscale the chroma plane.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Downscaling of chroma is required by writeback pipeline for converting the input
+YUV444 color format to YUV422 or NV12.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/sh_mobile_hdmi.c |   37 ++++++-------------------------------
- 1 files changed, 6 insertions(+), 31 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   17 ++++++++++-------
+ 1 files changed, 10 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-index f961fa2..1e78100 100644
---- a/drivers/video/sh_mobile_hdmi.c
-+++ b/drivers/video/sh_mobile_hdmi.c
-@@ -1004,8 +1004,8 @@ static irqreturn_t sh_hdmi_hotplug(int irq, void *dev_id)
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 231369a..dfbb39b 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -1219,7 +1219,7 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
+ 		u16 out_width, u16 out_height,
+ 		bool ilace, bool five_taps,
+ 		bool fieldmode, enum omap_color_mode color_mode,
+-		u8 rotation)
++		u8 rotation, bool chroma_upscale)
+ {
+ 	int scale_x = out_width != orig_width;
+ 	int scale_y = out_height != orig_height;
+@@ -1236,9 +1236,11 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
+ 	switch (color_mode) {
+ 	case OMAP_DSS_COLOR_NV12:
+ 		/* UV is subsampled by 2 vertically*/
+-		orig_height >>= 1;
++		orig_height = chroma_upscale ?
++			orig_height >> 1 : orig_height << 1;
+ 		/* UV is subsampled by 2 horz.*/
+-		orig_width >>= 1;
++		orig_width = chroma_upscale ?
++			orig_width >> 1 : orig_width << 1;
+ 		break;
+ 	case OMAP_DSS_COLOR_YUV2:
+ 	case OMAP_DSS_COLOR_UYVY:
+@@ -1248,7 +1250,8 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
+ 		if (rotation = OMAP_DSS_ROT_0 ||
+ 			rotation = OMAP_DSS_ROT_180)
+ 			/* UV is subsampled by 2 hrz*/
+-			orig_width >>= 1;
++			orig_width = chroma_upscale ?
++				orig_width >> 1 : orig_width << 1;
+ 		/* must use FIR for YUV422 if rotated */
+ 		if (rotation != OMAP_DSS_ROT_0)
+ 			scale_x = scale_y = true;
+@@ -1282,7 +1285,7 @@ static void dispc_ovl_set_scaling(enum omap_plane plane,
+ 		u16 out_width, u16 out_height,
+ 		bool ilace, bool five_taps,
+ 		bool fieldmode, enum omap_color_mode color_mode,
+-		u8 rotation)
++		u8 rotation, bool chroma_upscale)
+ {
+ 	BUG_ON(plane = OMAP_DSS_GFX);
+ 
+@@ -1298,7 +1301,7 @@ static void dispc_ovl_set_scaling(enum omap_plane plane,
+ 		out_width, out_height,
+ 		ilace, five_taps,
+ 		fieldmode, color_mode,
+-		rotation);
++		rotation, chroma_upscale);
  }
  
- /* locking:	called with info->lock held, or before register_framebuffer() */
--static int __sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity,
--				struct fb_info *info)
-+static int sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity,
-+			      struct fb_info *info)
- {
- 	/*
- 	 * info is guaranteed to be valid, when we are called, because our
-@@ -1040,13 +1040,8 @@ static int __sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity,
- 	return 0;
- }
- 
--static void sh_hdmi_display_on(void *arg, struct fb_info *info)
--{
--	__sh_hdmi_display_on(arg, info);
--}
--
- /* locking: called with info->lock held */
--static void __sh_hdmi_display_off(struct sh_mobile_lcdc_entity *entity)
-+static void sh_hdmi_display_off(struct sh_mobile_lcdc_entity *entity)
- {
- 	struct sh_hdmi *hdmi = entity_to_sh_hdmi(entity);
- 
-@@ -1055,14 +1050,9 @@ static void __sh_hdmi_display_off(struct sh_mobile_lcdc_entity *entity)
- 	hdmi_write(hdmi, 0x10, HDMI_SYSTEM_CTRL);
- }
- 
--static void sh_hdmi_display_off(void *arg)
--{
--	__sh_hdmi_display_off(arg);
--}
--
- static const struct sh_mobile_lcdc_entity_ops sh_hdmi_ops = {
--	.display_on = __sh_hdmi_display_on,
--	.display_off = __sh_hdmi_display_off,
-+	.display_on = sh_hdmi_display_on,
-+	.display_off = sh_hdmi_display_off,
- };
- 
- static bool sh_hdmi_must_reconfigure(struct sh_hdmi *hdmi)
-@@ -1178,7 +1168,7 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
- 				 */
- 				info->var.width = hdmi->var.width;
- 				info->var.height = hdmi->var.height;
--				__sh_hdmi_display_on(&hdmi->entity, info);
-+				sh_hdmi_display_on(&hdmi->entity, info);
- 			} else {
- 				/* New monitor or have to wake up */
- 				fb_set_suspend(info, 0);
-@@ -1255,7 +1245,6 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
- {
- 	struct sh_mobile_hdmi_info *pdata = pdev->dev.platform_data;
- 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	struct sh_mobile_lcdc_board_cfg	*board_cfg;
- 	int irq = platform_get_irq(pdev, 0), ret;
- 	struct sh_hdmi *hdmi;
- 	long rate;
-@@ -1315,13 +1304,6 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, &hdmi->entity);
- 
--	/* Set up LCDC callbacks */
--	board_cfg = &pdata->lcd_chan->board_cfg;
--	board_cfg->owner = THIS_MODULE;
--	board_cfg->board_data = &hdmi->entity;
--	board_cfg->display_on = sh_hdmi_display_on;
--	board_cfg->display_off = sh_hdmi_display_off;
--
- 	INIT_DELAYED_WORK(&hdmi->edid_work, sh_hdmi_edid_work_fn);
- 
- 	pm_runtime_enable(&pdev->dev);
-@@ -1371,21 +1353,14 @@ egetclk:
- 
- static int __exit sh_hdmi_remove(struct platform_device *pdev)
- {
--	struct sh_mobile_hdmi_info *pdata = pdev->dev.platform_data;
- 	struct sh_hdmi *hdmi = entity_to_sh_hdmi(platform_get_drvdata(pdev));
- 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	struct sh_mobile_lcdc_board_cfg	*board_cfg = &pdata->lcd_chan->board_cfg;
- 	int irq = platform_get_irq(pdev, 0);
- 
- 	snd_soc_unregister_codec(&pdev->dev);
- 
- 	fb_unregister_client(&hdmi->notifier);
- 
--	board_cfg->display_on = NULL;
--	board_cfg->display_off = NULL;
--	board_cfg->board_data = NULL;
--	board_cfg->owner = NULL;
--
- 	/* No new work will be scheduled, wait for running ISR */
- 	free_irq(irq, hdmi);
- 	/* Wait for already scheduled work */
+ static void dispc_ovl_set_rotation_attrs(enum omap_plane plane, u8 rotation,
+@@ -1888,7 +1891,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 		dispc_ovl_set_scaling(plane, oi->width, oi->height,
+ 				   outw, outh,
+ 				   ilace, five_taps, fieldmode,
+-				   oi->color_mode, oi->rotation);
++				   oi->color_mode, oi->rotation, true);
+ 		dispc_ovl_set_vid_size(plane, outw, outh);
+ 		dispc_ovl_set_vid_color_conv(plane, cconv);
+ 	}
 -- 
-1.7.3.4
+1.7.4.1
 

@@ -1,61 +1,69 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Thu, 29 Dec 2011 18:20:37 +0000
-Subject: [PATCH 1/2] backlight: Convert platform_lcd to devm_kzalloc()
-Message-Id: <1325182838-25729-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 27 Dec 2011 12:49:01 +0000
+Subject: [RFC PATCH 18/29] OMAPDSS: DISPC: Make chroma_upscale an argument to dispc_plane_setup
+Message-Id: <1324989432-3625-19-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1324989432-3625-1-git-send-email-archit@ti.com>
+In-Reply-To: <1324989432-3625-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: rohitkc@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Saves some error handling code and eliminates a class of leaks.
+Pass chroma_upscale boolean parameter to dispc_plane_setup(), this will be set
+to true when dispc_plane_setup() is called from dispc_ovl_setup() and false when
+called from dispc_wb_setup().
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/backlight/platform_lcd.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/backlight/platform_lcd.c b/drivers/video/backlight/platform_lcd.c
-index 187da59..f0bf491 100644
---- a/drivers/video/backlight/platform_lcd.c
-+++ b/drivers/video/backlight/platform_lcd.c
-@@ -85,7 +85,8 @@ static int __devinit platform_lcd_probe(struct platform_device *pdev)
- 		return -EINVAL;
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index eca6157..21d6286 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -1789,7 +1789,7 @@ static int dispc_plane_setup(enum omap_plane plane, enum omap_channel channel,
+ 		u16 out_width, u16 out_height, enum omap_color_mode color_mode,
+ 		u8 rotation, bool mirror, u8 zorder, u8 pre_mult_alpha,
+ 		u8 global_alpha, enum omap_dss_rotation_type rotation_type,
+-		bool ilace, bool replication)
++		bool chroma_upscale, bool ilace, bool replication)
+ {
+ 	bool five_taps = true;
+ 	bool fieldmode = 0;
+@@ -1887,10 +1887,9 @@ static int dispc_plane_setup(enum omap_plane plane, enum omap_channel channel,
+ 	dispc_ovl_set_pic_size(plane, width, height);
+ 
+ 	if (caps & OMAP_DSS_OVL_CAP_SCALE) {
+-		dispc_ovl_set_scaling(plane, width, height,
+-				   outw, outh,
+-				   ilace, five_taps, fieldmode,
+-				   color_mode, rotation, true);
++		dispc_ovl_set_scaling(plane, width, height, outw, outh,
++				ilace, five_taps, fieldmode, color_mode,
++				rotation, chroma_upscale);
+ 		dispc_ovl_set_vid_size(plane, outw, outh);
+ 		dispc_ovl_set_vid_color_conv(plane, cconv);
  	}
+@@ -1911,6 +1910,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ {
+ 	int r;
+ 	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
++	const bool chroma_upscale = true;
+ 	enum omap_channel channel;
  
--	plcd = kzalloc(sizeof(struct platform_lcd), GFP_KERNEL);
-+	plcd = devm_kzalloc(&pdev->dev, sizeof(struct platform_lcd),
-+			    GFP_KERNEL);
- 	if (!plcd) {
- 		dev_err(dev, "no memory for state\n");
- 		return -ENOMEM;
-@@ -98,7 +99,7 @@ static int __devinit platform_lcd_probe(struct platform_device *pdev)
- 	if (IS_ERR(plcd->lcd)) {
- 		dev_err(dev, "cannot register lcd device\n");
- 		err = PTR_ERR(plcd->lcd);
--		goto err_mem;
-+		goto err;
- 	}
+ 	channel = dispc_ovl_get_channel_out(plane);
+@@ -1927,7 +1927,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 		oi->width, oi->height, oi->out_width, oi->out_height,
+ 		oi->color_mode, oi->rotation, oi->mirror, oi->zorder,
+ 		oi->pre_mult_alpha, oi->global_alpha, oi->rotation_type,
+-		ilace, replication);
++		chroma_upscale, ilace, replication);
  
- 	platform_set_drvdata(pdev, plcd);
-@@ -106,8 +107,7 @@ static int __devinit platform_lcd_probe(struct platform_device *pdev)
- 
- 	return 0;
- 
-- err_mem:
--	kfree(plcd);
-+ err:
- 	return err;
- }
- 
-@@ -116,7 +116,6 @@ static int __devexit platform_lcd_remove(struct platform_device *pdev)
- 	struct platform_lcd *plcd = platform_get_drvdata(pdev);
- 
- 	lcd_device_unregister(plcd->lcd);
--	kfree(plcd);
- 
- 	return 0;
+ 	return r;
  }
 -- 
-1.7.7.3
+1.7.4.1
 

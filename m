@@ -1,40 +1,161 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Tue, 13 Dec 2011 14:02:31 +0000
-Subject: [PATCH 36/57] fbdev: sh_mobile_lcdc: Pass physical device pointer to DMA functions
-Message-Id: <1323784972-24205-37-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 27 Dec 2011 12:49:04 +0000
+Subject: [RFC PATCH 21/29] OMAPDSS: DISPC: Configure overlay-like parameters in dispc_wb_setup
+Message-Id: <1324989432-3625-22-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1324989432-3625-1-git-send-email-archit@ti.com>
+In-Reply-To: <1324989432-3625-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: rohitkc@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The dma_map_sg() and dma_unmap_sg() functions need a pointer to the
-physical device.
+Call dispc_plane_setup() through dispc_wb_setup() to configure overlay-like
+parameters. Create a helper function in writeback.c called dss_wb_calc_params()
+which for now calculates the input width and height which goes to writeback.
+Create a dummy dispc function which returns the channel of the manager to which
+the writeback pipeline is connected.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+The parameters in dispc_plane_setup() which do not hold for writeback are filled
+passed as zeroes or false, dispc_plane_setup() takes care of not configuring
+them if the plane is writeback.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/video/omap2/dss/apply.c     |    5 ++++-
+ drivers/video/omap2/dss/dispc.c     |   33 +++++++++++++++++++++++++++++++--
+ drivers/video/omap2/dss/dss.h       |    6 +++++-
+ drivers/video/omap2/dss/writeback.c |   17 +++++++++++++++++
+ 4 files changed, 57 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index f6bc18e..d00774b 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -313,11 +313,12 @@ static void sh_mobile_lcdc_deferred_io(struct fb_info *info,
- 		unsigned int nr_pages = sh_mobile_lcdc_sginit(info, pagelist);
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index a17cc47..dd1fd419 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -661,6 +661,7 @@ static void dss_wb_write_regs(struct omap_dss_writeback *wb)
+ {
+ 	struct wb_priv_data *wp = get_wb_priv(wb);
+ 	struct omap_dss_writeback_info *wi;
++	u16 in_width, in_height;
+ 	int r;
  
- 		/* trigger panel update */
--		dma_map_sg(info->dev, ch->sglist, nr_pages, DMA_TO_DEVICE);
-+		dma_map_sg(ch->lcdc->dev, ch->sglist, nr_pages, DMA_TO_DEVICE);
- 		if (panel->start_transfer)
- 			panel->start_transfer(ch, &sh_mobile_lcdc_sys_bus_ops);
- 		lcdc_write_chan(ch, LDSM2R, LDSM2R_OSTRG);
--		dma_unmap_sg(info->dev, ch->sglist, nr_pages, DMA_TO_DEVICE);
-+		dma_unmap_sg(ch->lcdc->dev, ch->sglist, nr_pages,
-+			     DMA_TO_DEVICE);
- 	} else {
- 		if (panel->start_transfer)
- 			panel->start_transfer(ch, &sh_mobile_lcdc_sys_bus_ops);
+ 	if (!wp->enabled || !wp->info_dirty)
+@@ -670,7 +671,9 @@ static void dss_wb_write_regs(struct omap_dss_writeback *wb)
+ 
+ 	wi = &wp->info;
+ 
+-	r = dispc_wb_setup(wb->id, wi);
++	dss_wb_calc_params(wb, wi, &in_width, &in_height);
++
++	r = dispc_wb_setup(wb->id, wi, in_width, in_height);
+ 	if (r) {
+ 		DSSERR("dispc_wb_setup failed\n");
+ 		return;
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 3a40f8e..c7de56d 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -908,6 +908,13 @@ void dispc_wb_set_channel_in(int id, enum dss_writeback_channel_in ch_in)
+ 	return;
+ }
+ 
++static enum omap_channel dispc_wb_get_channel_in(int plane)
++{
++	/* Return LCD channel for now */
++
++	return OMAP_DSS_CHANNEL_LCD;
++}
++
+ static void dispc_ovl_set_burst_size(enum omap_plane plane,
+ 		enum omap_burst_size burst_size)
+ {
+@@ -1935,9 +1942,31 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 	return r;
+ }
+ 
+-int dispc_wb_setup(int id, struct omap_dss_writeback_info *wi)
++int dispc_wb_setup(int id, struct omap_dss_writeback_info *wi,
++		u16 in_width, u16 in_height)
+ {
+-	return 0;
++	int r;
++	struct omap_dss_writeback *wb = omap_dss_get_writeback(id);
++	const int pos_x = 0, pos_y = 0;
++	const u8 zorder = 0, global_alpha = 0;
++	const bool chroma_upscale = false, ilace = false, replication = false;
++	enum omap_channel channel;
++
++	channel = dispc_wb_get_channel_in(wb->plane_id);
++
++	DSSDBG("dispc_wb_setup %d, pa %x, pa_uv %x, %d,%d -> %dx%d, cmode %x, "
++		"rot %d, mir %d, chan %d\n",
++		wb->id, wi->paddr, wi->p_uv_addr, in_width, in_height,
++		wi->buf_width, wi->buf_height, wi->color_mode, wi->rotation,
++		wi->mirror, channel);
++
++	r = dispc_plane_setup(wb->plane_id, channel, wb->caps, wi->paddr,
++		wi->p_uv_addr, in_width, pos_x, pos_y, in_width, in_height,
++		wi->buf_width, wi->buf_height, wi->color_mode, wi->rotation,
++		wi->mirror, zorder, wi->pre_mult_alpha, global_alpha,
++		wi->rotation_type, chroma_upscale, ilace, replication);
++
++	return r;
+ }
+ 
+ int dispc_ovl_enable(enum omap_plane plane, bool enable)
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 1b128f1..69b4793 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -249,6 +249,9 @@ void dss_init_writeback(void);
+ void dss_uninit_writeback(void);
+ int writeback_init_display(struct omap_dss_device *dssdev);
+ enum dss_writeback_channel_in dss_wb_calc_channel_in(struct omap_dss_writeback *wb);
++void dss_wb_calc_params(struct omap_dss_writeback *wb,
++		struct omap_dss_writeback_info *wi, u16 *in_width,
++		u16 *in_height);
+ int dss_wb_simple_check(struct omap_dss_writeback *wb,
+ 		const struct omap_dss_writeback_info *info);
+ 
+@@ -492,7 +495,8 @@ void dispc_mgr_setup(enum omap_channel channel,
+ 
+ bool dispc_wb_go_busy(int id);
+ void dispc_wb_go(int id);
+-int dispc_wb_setup(int id, struct omap_dss_writeback_info *wi);
++int dispc_wb_setup(int id, struct omap_dss_writeback_info *wi,
++		u16 in_width, u16 in_height);
+ void dispc_wb_enable(int id, bool enable);
+ void dispc_wb_set_channel_in(int id, enum dss_writeback_channel_in ch_in);
+ 
+diff --git a/drivers/video/omap2/dss/writeback.c b/drivers/video/omap2/dss/writeback.c
+index 14103bf..7c4e9c0 100644
+--- a/drivers/video/omap2/dss/writeback.c
++++ b/drivers/video/omap2/dss/writeback.c
+@@ -141,6 +141,23 @@ enum dss_writeback_channel_in dss_wb_calc_channel_in(struct omap_dss_writeback *
+ 	}
+ }
+ 
++void dss_wb_calc_params(struct omap_dss_writeback *wb,
++		struct omap_dss_writeback_info *wi, u16 *in_width,
++		u16 *in_height)
++{
++	struct omap_video_timings timings;
++	struct omap_dss_device *dssdev;
++	struct omap_overlay_manager *mgr;
++
++	mgr = wb->dssdev->manager;
++	dssdev = mgr->get_display(mgr);
++
++	dssdev->driver->get_timings(dssdev, &timings);
++
++	*in_width = timings.x_res;
++	*in_height = timings.y_res;
++}
++
+ int dss_wb_simple_check(struct omap_dss_writeback *wb,
+ 		const struct omap_dss_writeback_info *info)
+ {
 -- 
-1.7.3.4
+1.7.4.1
 

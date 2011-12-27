@@ -1,122 +1,156 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 20 Dec 2011 15:48:52 +0000
-Subject: Re: linux-next: build warning after merge of the fbdev tree
-Message-Id: <CAMuHMdVWsYAJkcrMd5yWBHMFhzAqgUyyFfrsi7RYx2hjquB=gA@mail.gmail.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Tue, 27 Dec 2011 14:16:10 +0000
+Subject: [PATCH 4/6] video: s3c-fb: Take a runtime PM reference when unblanked
+Message-Id: <1324995372-3410-4-git-send-email-broonie@opensource.wolfsonmicro.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20111220163214.351b13b464c46f506f329b30@canb.auug.org.au>
-	<201112201619.43001.laurent.pinchart@ideasonboard.com>
-	<CAMuHMdVx+T8X3tkP+OVM-sxKLeJdsuz=0jBSxuNte_5JK4vTBQ@mail.gmail.com>
-	<201112201642.15822.laurent.pinchart@ideasonboard.com>
-In-Reply-To: <201112201642.15822.laurent.pinchart@ideasonboard.com>
+References: <20111227141550.GA3331@opensource.wolfsonmicro.com>
+ <1324995372-3410-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1324995372-3410-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jingoo Han <jg1.han@samsung.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-Hi Laurent,
+When the framebuffer is unblanked hold a runtime PM reference. This
+prevents us powering down when userspace has left an image on the
+framebuffer and prepares the way for being able to power down the hardware
+when an application still has the device open.
 
-On Tue, Dec 20, 2011 at 16:42, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
-> On Tuesday 20 December 2011 16:24:30 Geert Uytterhoeven wrote:
->> On Tue, Dec 20, 2011 at 16:19, Laurent Pinchart wrote:
->> > On Tuesday 20 December 2011 14:48:33 Geert Uytterhoeven wrote:
->> >> On Tue, Dec 20, 2011 at 11:37, Laurent Pinchart wrote:
->> >> > On Tuesday 20 December 2011 06:32:14 Stephen Rothwell wrote:
->> >> >> After merging the fbdev tree, today's linux-next build (powerpc
->> >> >> ppc64_defconfig) produced this warning:
->> >> >>
->> >> >> drivers/video/matrox/matroxfb_base.c:150:2: warning: braces around
->> >> >> scalar initializer [enabled by default]
->> >> >> drivers/video/matrox/matroxfb_base.c:150:2: warning: (near
->> >> >> initialization for 'vesafb_defined.colorspace') [enabled by default]
->> >> >> drivers/video/matrox/matroxfb_base.c:150:2: warning: excess elements
->> >> >> in scalar initializer [enabled by default]
->> >> >> drivers/video/matrox/matroxfb_base.c:150:2: warning: (near
->> >> >> initialization for 'vesafb_defined.colorspace') [enabled by default]
->> >> >> drivers/video/matrox/matroxfb_crtc2.c:596:3: warning: braces around
->> >> >> scalar initializer [enabled by default]
->> >> >> drivers/video/matrox/matroxfb_crtc2.c:596:3: warning: (near
->> >> >> initialization for 'matroxfb_dh_defined.colorspace') [enabled by
->> >> >> default]
->> >> >> drivers/video/matrox/matroxfb_crtc2.c:596:3: warning: excess elements
->> >> >> in scalar initializer [enabled by default]
->> >> >> drivers/video/matrox/matroxfb_crtc2.c:596:3: warning: (near
->> >> >> initialization for 'matroxfb_dh_defined.colorspace') [enabled by
->> >> >> default]
->> >> >>
->> >> >> Introduced by commit fb21c2f42879 ("fbdev: Add FOURCC-based format
->> >> >> configuration API").
->> >> >
->> >> > The following patch should fix the issue. Florian, are you fine with
->> >> > it, or would you rather modify the initializers to be name-based ?
->> >> >
->> >> > From 078987fc14dba806fc1bc628e3e5c371db3cf1b8 Mon Sep 17 00:00:00 2001
->> >> > From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
->> >> > Date: Tue, 20 Dec 2011 11:30:53 +0100
->> >> > Subject: [PATCH] fbdev: matroxfb: Fix compilation after
->> >> > fb_var_screeninfo change
->> >> >
->> >> > Commit fb21c2f42879 ("fbdev: Add FOURCC-based format configuration
->> >> > API") modified the layout of the fb_var_screeninfo structure. Update
->> >> > the static initializers in the matroxfb driver accordingly.
->> >> >
->> >> > Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
->> >> > ---
->> >> >  drivers/video/matrox/matroxfb_base.c  |    2 +-
->> >> >  drivers/video/matrox/matroxfb_crtc2.c |    2 +-
->> >> >  2 files changed, 2 insertions(+), 2 deletions(-)
->> >> >
->> >> > diff --git a/drivers/video/matrox/matroxfb_base.c
->> >> > b/drivers/video/matrox/matroxfb_base.c index 44bf8d4..f98aad5 100644
->> >> > --- a/drivers/video/matrox/matroxfb_base.c
->> >> > +++ b/drivers/video/matrox/matroxfb_base.c
->> >> > @@ -147,7 +147,7 @@ static struct fb_var_screeninfo vesafb_defined = {
->> >> >        39721L,48L,16L,33L,10L,
->> >> >        96L,2L,~0,      /* No sync info */
->> >> >        FB_VMODE_NONINTERLACED,
->> >> > -       0, {0,0,0,0,0}
->> >> > +       0, 0, {0,0,0,0}
->> >>
->> >> All these zeroes should not be specified, the compiler will do the
->> >> right thing for
->> >> static variables anyway.
->> >>
->> >> Else they have to be updated manually everytime one of the reserved
->> >> fields is consumed for a new feature.
->> >
->> > I agree. Should I just remove them, or switch the structures to named
->> > initializers while I'm at it ?
->>
->> I would just remove them. What do they buy you?
->>
->> Even with named initializers
->>
->>     .reserved = { 0, 0, 0, 0 }
->>
->> will break once we consume one more reserved field, unless you write
->>
->>     .reserved = { 0, }
->>
->> to let the compiler handle it, but then you could just not specify the
->> field at all.
->
-> Sure. In both cases I would remove them, but I was wondering if I should
-> switch the whole structure to named initializers in addition to removing them.
-> I don't know if the common practice to solve issues in the -next tree is to
-> apply patches that are as little intrusive as possible, or if bigger patches
-> are allowed.
+Since we now hold a runtime PM reference whenever the display is unblanked
+there is no need for the runtime power management to disable and enable
+the display, and doing so would lead to runtime PM trying to recurse into
+itself when called from the blanking code, so split the runtime PM into
+separate functions which only deal with the clocks.  The PM core will
+runtime resume the device prior to system suspend.
 
-I'd fix the build error first.
-The conversion to named initializers can be separate cleanup patch.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/video/s3c-fb.c |   66 +++++++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 54 insertions(+), 12 deletions(-)
 
-Gr{oetje,eeting}s,
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 2e0eef0..688b9d8 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -192,6 +192,7 @@ struct s3c_fb_vsync {
+  * @regs: The mapped hardware registers.
+  * @variant: Variant information for this hardware.
+  * @enabled: A bitmask of enabled hardware windows.
++ * @output_on: Flag if the physical output is enabled.
+  * @pdata: The platform configuration data passed with the device.
+  * @windows: The hardware windows that have been claimed.
+  * @irq_no: IRQ line number
+@@ -208,6 +209,7 @@ struct s3c_fb {
+ 	struct s3c_fb_variant	 variant;
+ 
+ 	unsigned char		 enabled;
++	bool			 output_on;
+ 
+ 	struct s3c_fb_platdata	*pdata;
+ 	struct s3c_fb_win	*windows[S3C_FB_MAX_WIN];
+@@ -449,21 +451,28 @@ static void s3c_fb_enable(struct s3c_fb *sfb, int enable)
+ {
+ 	u32 vidcon0 = readl(sfb->regs + VIDCON0);
+ 
+-	if (enable)
++	if (enable && !sfb->output_on)
++		pm_runtime_get_sync(sfb->dev);
++
++	if (enable) {
+ 		vidcon0 |= VIDCON0_ENVID | VIDCON0_ENVID_F;
+-	else {
++	} else {
+ 		/* see the note in the framebuffer datasheet about
+ 		 * why you cannot take both of these bits down at the
+ 		 * same time. */
+ 
+-		if (!(vidcon0 & VIDCON0_ENVID))
+-			return;
+-
+-		vidcon0 |= VIDCON0_ENVID;
+-		vidcon0 &= ~VIDCON0_ENVID_F;
++		if (vidcon0 & VIDCON0_ENVID) {
++			vidcon0 |= VIDCON0_ENVID;
++			vidcon0 &= ~VIDCON0_ENVID_F;
++		}
+ 	}
+ 
+ 	writel(vidcon0, sfb->regs + VIDCON0);
++
++	if (!enable && sfb->output_on)
++		pm_runtime_put_sync(sfb->dev);
++
++	sfb->output_on = enable;
+ }
+ 
+ /**
+@@ -1539,7 +1548,7 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_PM
++#ifdef CONFIG_PM_SLEEP
+ static int s3c_fb_suspend(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+@@ -1609,11 +1618,40 @@ static int s3c_fb_resume(struct device *dev)
+ 
+ 	return 0;
+ }
+-#else
+-#define s3c_fb_suspend NULL
+-#define s3c_fb_resume  NULL
+ #endif
+ 
++#ifdef CONFIG_PM_RUNTIME
++static int s3c_fb_runtime_suspend(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct s3c_fb *sfb = platform_get_drvdata(pdev);
++
++	if (!sfb->variant.has_clksel)
++		clk_disable(sfb->lcd_clk);
++
++	clk_disable(sfb->bus_clk);
++
++	return 0;
++}
++
++static int s3c_fb_runtime_resume(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct s3c_fb *sfb = platform_get_drvdata(pdev);
++	struct s3c_fb_platdata *pd = sfb->pdata;
++
++	clk_enable(sfb->bus_clk);
++
++	if (!sfb->variant.has_clksel)
++		clk_enable(sfb->lcd_clk);
++
++	/* setup gpio and output polarity controls */
++	pd->setup_gpio();
++	writel(pd->vidcon1, sfb->regs + VIDCON1);
++
++	return 0;
++}
++#endif
+ 
+ #define VALID_BPP124 (VALID_BPP(1) | VALID_BPP(2) | VALID_BPP(4))
+ #define VALID_BPP1248 (VALID_BPP124 | VALID_BPP(8))
+@@ -1936,7 +1974,11 @@ static struct platform_device_id s3c_fb_driver_ids[] = {
+ };
+ MODULE_DEVICE_TABLE(platform, s3c_fb_driver_ids);
+ 
+-static UNIVERSAL_DEV_PM_OPS(s3cfb_pm_ops, s3c_fb_suspend, s3c_fb_resume, NULL);
++static const struct dev_pm_ops s3cfb_pm_ops = {
++	SET_SYSTEM_SLEEP_PM_OPS(s3c_fb_suspend, s3c_fb_resume)
++	SET_RUNTIME_PM_OPS(s3c_fb_runtime_suspend, s3c_fb_runtime_resume,
++			   NULL)
++};
+ 
+ static struct platform_driver s3c_fb_driver = {
+ 	.probe		= s3c_fb_probe,
+-- 
+1.7.7.3
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

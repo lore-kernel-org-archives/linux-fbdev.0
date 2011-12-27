@@ -1,71 +1,54 @@
-From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Date: Mon, 19 Dec 2011 23:08:50 +0000
-Subject: [PATCH v2 0/7] ARM: OMAP1: ams-delta: replace custom I/O with GPIO
-Message-Id: <cover.1324331816.git.jkrzyszt@tis.icnet.pl>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 27 Dec 2011 12:49:03 +0000
+Subject: [RFC PATCH 20/29] OMAPDSS: Writeback: Add writeback capabilities
+Message-Id: <1324989432-3625-21-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1323634328-856-1-git-send-email-jkrzyszt@tis.icnet.pl>
-In-Reply-To: <1323634328-856-1-git-send-email-jkrzyszt@tis.icnet.pl>
+References: <1324989432-3625-1-git-send-email-archit@ti.com>
+In-Reply-To: <1324989432-3625-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>, Grant Likely <grant.likely@secretlab.ca>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, David Woodhouse <dwmw2@infradead.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jarkko Nikula <jarkko.nikula@bitmer.com>, Liam Girdwood <lrg@ti.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-input@vger.kernel.org, linux-mtd@lists.infradead.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+To: tomi.valkeinen@ti.com
+Cc: rohitkc@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The Amstrad Delta board has two extra output ports used for driving
-input lines of different on-board devices. Those ports are now
-controlled with custom functions, provided by the board arch code and
-used by several device drivers.
+Add a capabilities parameter of type omap_overlay_caps to omap_dss_writeback.
+These caps let us reuse some of the DISPC overlay functions. Set the
+capabilities so the writeback supports scaling and pre multiplied alpha.
 
-The idea behind the series is to replace those custom I/O functions
-with gpiolib API. This way, existing drivers can be made less platform
-dependent, and some of them perhaps even superseded with generic GPIO
-based drivers after the board platform device descriptions are
-converted. Moreover, should a new driver for the on-board Smart Card
-controller ever be created, it could be designed as a generic GPIO
-based driver, not a custom one.
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/writeback.c |    3 +++
+ include/video/omapdss.h             |    3 +++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-Changes against initial version:
-* the initial patch, which tried to move the gpio-generic driver
-  initialization up to the postcore_initcall level, replaced with an
-  alternative solution, moving the on-board devices initialization down
-  to late_initcall; thanks to Tony Lindgren who suggested this solution,
-* dropped patches introducing changes to the modem and ASoC device
-  handling; those will be addressed in a separate patch series,
-* final cleanups also dropped until those remaining devices are updated,
-* the serio driver now takes care of one more GPIO pin which, even if
-  not used, belongs to the device interface and affects its functioning,
-* misc code and changelog cosmetic cleanups,
-* rebased on top of 3.2-rc6.
-
-
-Thanks to those who reviewed the initial submission and responded with
-their comments or Acks.
-
-Janusz
-
-
-Janusz Krzysztofik (7):
-  ARM: OMAP1: ams-delta: register latch dependent devices later
-  ARM: OMAP1: ams-delta: convert latches to basic_mmio_gpio
-  ARM: OMAP1: ams-delta: supersede custom led device by leds-gpio
-  LED: drop leds-ams-delta driver
-  MTD: NAND: ams-delta: use GPIO instead of custom I/O
-  omapfb: lcd_ams_delta: drive control lines over GPIO
-  input: serio: ams-delta: toggle keyboard power over GPIO
-
- arch/arm/mach-omap1/Kconfig                       |    2 +
- arch/arm/mach-omap1/board-ams-delta.c             |  226 +++++++++++++++++----
- arch/arm/plat-omap/include/plat/board-ams-delta.h |   48 ++---
- drivers/input/serio/ams_delta_serio.c             |   51 +++--
- drivers/leds/Kconfig                              |    7 -
- drivers/leds/Makefile                             |    1 -
- drivers/leds/leds-ams-delta.c                     |  137 -------------
- drivers/mtd/nand/ams-delta.c                      |   74 +++++--
- drivers/video/omap/lcd_ams_delta.c                |   27 ++-
- sound/soc/omap/ams-delta.c                        |    4 +
- 10 files changed, 318 insertions(+), 259 deletions(-)
- delete mode 100644 drivers/leds/leds-ams-delta.c
-
+diff --git a/drivers/video/omap2/dss/writeback.c b/drivers/video/omap2/dss/writeback.c
+index 540e61d..14103bf 100644
+--- a/drivers/video/omap2/dss/writeback.c
++++ b/drivers/video/omap2/dss/writeback.c
+@@ -90,6 +90,9 @@ void dss_init_writeback(void)
+ 		wb->id = i;
+ 		wb->plane_id = OMAP_DSS_WB + i;
+ 
++		wb->caps = OMAP_DSS_OVL_CAP_SCALE |
++				OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA;
++
+ 		wb->set_wb_info = &dss_wb_set_info;
+ 		wb->get_wb_info = &dss_wb_get_info;
+ 	}
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 49e3ccb..291457c 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -493,6 +493,9 @@ struct omap_dss_writeback {
+ 	int id;
+ 	int plane_id;
+ 
++	/* overlay-like capabilities writeback supports */
++	enum omap_overlay_caps caps;
++
+ 	/* dummy panel we are connected to */
+ 	struct omap_dss_device *dssdev;
+ 
 -- 
-1.7.3.4
+1.7.4.1
 

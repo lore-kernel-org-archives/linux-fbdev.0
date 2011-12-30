@@ -1,39 +1,65 @@
-From: Anatolij Gustschin <agust@denx.de>
-Date: Fri, 16 Dec 2011 23:03:02 +0000
-Subject: Re: "ls > /dev/fb0" generates weird ioctls if panning is set
-Message-Id: <20111217000302.48e92bd9@wker>
+From: NeilBrown <neilb@suse.de>
+Date: Fri, 30 Dec 2011 01:37:55 +0000
+Subject: [PATCH] video/omap2. dispc_mgr_enable needs runtime PM
+Message-Id: <20111230123755.384a5b5c@notabene.brown>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Sig_/wGzbW0Y_+gpCRYgxyEygNw0"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4EEBBCEA.9020104@freescale.com>
-In-Reply-To: <4EEBBCEA.9020104@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Kevin Hilman <khilman@ti.com>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
 
-On Fri, 16 Dec 2011 16:31:22 -0600
-Timur Tabi <timur@freescale.com> wrote:
+--Sig_/wGzbW0Y_+gpCRYgxyEygNw0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> Timur Tabi wrote:
-> 
-> > graphics fb0: unknown ioctl command (0x402C7413)                                                                                                   
-> > graphics fb0: dir=2 type='t' (74) nr sizeD                                                                                                    
-> > graphics fb0: unknown ioctl command (0x40087468)                                                                                                   
-> > graphics fb0: dir=2 type='t' (74) nr4 size=8                                                                                                    
-> > graphics fb0: unknown ioctl command (0x402C7413)                                                                                                   
-> > graphics fb0: dir=2 type='t' (74) nr sizeD   
-> 
-> I figured it out.  These ioctls are:
-> 
-> #define TCGETS		_IOR('t', 19, struct termios)
-> #define TIOCGWINSZ	_IOR('t', 104, struct winsize)
-> 
-> I'm guessing that since I redirect stdout to /dev/fb0, Linux is
-> treating /dev/fb0 as a terminal, and therefore it's receiving
-> terminal ioctls.
-> 
-> Is this something that fbdev should be supporting, or am I wrong
-> to use /dev/fb0 as a terminal?
 
-No. Do not redirect to /dev/fb0, use /dev/tty1 instead.
 
-Anatolij
+When dispc_mgr_enable is called during shutdown the device might
+be asleep, which causes problems.  So ensure it is awake.
+
+Signed-off-by: NeilBrown <neilb@suse.de>
+
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/disp=
+c.c
+index 5c81533..75a767f 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2052,12 +2052,14 @@ bool dispc_mgr_is_enabled(enum omap_channel channel)
+=20
+ void dispc_mgr_enable(enum omap_channel channel, bool enable)
+ {
++	dispc_runtime_get();
+ 	if (dispc_mgr_is_lcd(channel))
+ 		dispc_mgr_enable_lcd_out(channel, enable);
+ 	else if (channel =3D=3D OMAP_DSS_CHANNEL_DIGIT)
+ 		dispc_mgr_enable_digit_out(enable);
+ 	else
+ 		BUG();
++	dispc_runtime_put();
+ }
+=20
+ void dispc_lcd_enable_signal_polarity(bool act_high)
+
+--Sig_/wGzbW0Y_+gpCRYgxyEygNw0
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.18 (GNU/Linux)
+
+iQIVAwUBTv0V8znsnt1WYoG5AQJOeQ//ff5wFhUil4DE7DmX0LIydZaxbtYCLqiB
+tffzPhhkKK4FYb02rmBMHqbkPR9XMS8zxSBIJHY4YC1/aPD8NRDlYVA31f6uZWx2
+Fa8iI1AzFGQZk3NZlo8UzQJbY26lCSmqKh7sC5R+XK+yr2Ed9UbngyJPoYqOfqNp
+/2+Vn+AGb048gRMJAj+lSBuAPLh6L2Qt1LgSOWC2Jk/sHB2Nd2JghwY7S8teIAjG
+azMAgYGufzuYmimr31H5n3b3jcTdDJPUH4uRLnef0gBDgQ8lgEv5oNC7Jh2Ifb8l
+Vfts5b+ZHL0j1G+b8MtXkdrWHiLiydbLRpT4oJIeAUI72D2UMCeJ00WWW2I2sPZa
+7IVhzj9TV7T3O8H81FIIgor8X2p1TRHwAlP0ddImT9yqBFrFe+uYY3/28b976neE
+74cSUpqv8SLfp1HMCJevRveqw+7yoA8XxdUayJOW07Xo4Vf0TarHV+izLQFDfuSK
+uoyx9EenlNGCgAiYngmGM6vpYj6CSanmEFu5f7CEV7LFXhfIrfVsFkLpsmSXDD3J
+MXKD51G8GsiUHQ9p3Dh2fdFwPaulORiKW16ZGkoVwXc9Bc92SGyA6i97X/TB9Jjg
+LRad5D4lRIkSbsK0iYN/Arbo4dftltrcS6m1i5mMYewksM7EQu6vGYU4/Ad4BkEj
+snbXXVQ24yI=
+=2wFU
+-----END PGP SIGNATURE-----
+
+--Sig_/wGzbW0Y_+gpCRYgxyEygNw0--

@@ -1,157 +1,90 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Date: Mon, 09 Jan 2012 14:21:44 +0000
-Subject: Re: [PATCH 1/2] atmel_lcdfb: Adjust HFP calculation so it matches
-Message-Id: <4F0AF7F8.8040300@atmel.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 03 Jan 2012 09:30:22 +0000
+Subject: Re: [PATCH] OMAPDSS: add OrtusTech COM43H4M10XTC display support
+Message-Id: <1325583022.1973.9.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-21tz4qj160QGJfEQmE+p"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1317801598-23757-1-git-send-email-alexander.stein@systec-electronic.com>
-In-Reply-To: <1317801598-23757-1-git-send-email-alexander.stein@systec-electronic.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+References: <1324940201-16079-1-git-send-email-yanok@emcraft.com>
+In-Reply-To: <1324940201-16079-1-git-send-email-yanok@emcraft.com>
+To: Ilya Yanok <yanok@emcraft.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, sasha_d@emcraft.com
 
-On 10/05/2011 09:59 AM, Alexander Stein :
-> In the AT91SAM9263 Manual the HFP part in LCDTIM2 is described as follows:
->   * HFP: Horizontal Front Porch
->   Number of idle LCDDOTCK cycles at the end of the line.
->   Idle period is (HFP+2) LCDDOTCK cycles.
 
-Hi Alexander,
+--=-21tz4qj160QGJfEQmE+p
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Unfortunately this is not true for all the SoC that embed the
-atmel_lcdfb... So I may need to rework this patch but it is certainly
-not applicable in the current form.
-
-Florian, can you please remove it from your git tree?
-
-Thanks,
-
-Best regards,
-
-> It is only a minor issue. I also changed all boards using atmel_lcdfb
-> I found to respect the new calculation.
-> 
-> Signed-off-by: Alexander Stein <alexander.stein@systec-electronic.com>
+On Mon, 2011-12-26 at 23:56 +0100, Ilya Yanok wrote:
+> dd data for the OrtusTech COM43H4M10XTC display to the
+> generic_dpi_panel driver.
+>=20
+> CC: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Signed-off-by: Ilya Yanok <yanok@emcraft.com>
 > ---
->  arch/arm/mach-at91/board-cap9adk.c      |    2 +-
->  arch/arm/mach-at91/board-neocore926.c   |    2 +-
->  arch/arm/mach-at91/board-sam9261ek.c    |    4 ++-
->  arch/arm/mach-at91/board-sam9263ek.c    |    2 +-
->  arch/arm/mach-at91/board-sam9m10g45ek.c |    2 +-
->  arch/arm/mach-at91/board-sam9rlek.c     |    2 +-
->  drivers/video/atmel_lcdfb.c             |    4 ++--
->  7 files changed, 9 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/arm/mach-at91/board-cap9adk.c b/arch/arm/mach-at91/board-cap9adk.c
-> index 679b0b7..ae962bf 100644
-> --- a/arch/arm/mach-at91/board-cap9adk.c
-> +++ b/arch/arm/mach-at91/board-cap9adk.c
-> @@ -304,7 +304,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->  		.xres		= 240,		.yres		= 320,
->  		.pixclock	= KHZ2PICOS(4965),
->  
-> -		.left_margin	= 1,		.right_margin	= 33,
-> +		.left_margin	= 1,		.right_margin	= 34,
->  		.upper_margin	= 1,		.lower_margin	= 0,
->  		.hsync_len	= 5,		.vsync_len	= 1,
->  
-> diff --git a/arch/arm/mach-at91/board-neocore926.c b/arch/arm/mach-at91/board-neocore926.c
-> index 9bc6ab3..583878e 100644
-> --- a/arch/arm/mach-at91/board-neocore926.c
-> +++ b/arch/arm/mach-at91/board-neocore926.c
-> @@ -235,7 +235,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->  		.xres		= 240,		.yres		= 320,
->  		.pixclock	= KHZ2PICOS(5000),
->  
-> -		.left_margin	= 1,		.right_margin	= 33,
-> +		.left_margin	= 1,		.right_margin	= 34,
->  		.upper_margin	= 1,		.lower_margin	= 0,
->  		.hsync_len	= 5,		.vsync_len	= 1,
->  
-> diff --git a/arch/arm/mach-at91/board-sam9261ek.c b/arch/arm/mach-at91/board-sam9261ek.c
-> index 5096a0e..8dda83b 100644
-> --- a/arch/arm/mach-at91/board-sam9261ek.c
-> +++ b/arch/arm/mach-at91/board-sam9261ek.c
-> @@ -370,7 +370,7 @@ static struct fb_videomode at91_stn_modes[] = {
->  		.xres           = 320,          .yres           = 240,
->  		.pixclock       = KHZ2PICOS(1440),
->  
-> -		.left_margin    = 1,            .right_margin   = 1,
-> +		.left_margin    = 1,            .right_margin   = 2,
->  		.upper_margin   = 0,            .lower_margin   = 0,
->  		.hsync_len      = 1,            .vsync_len      = 1,
->  
-> @@ -431,7 +431,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->  		.xres		= 240,		.yres		= 320,
->  		.pixclock	= KHZ2PICOS(4965),
->  
-> -		.left_margin	= 1,		.right_margin	= 33,
-> +		.left_margin	= 1,		.right_margin	= 34,
->  		.upper_margin	= 1,		.lower_margin	= 0,
->  		.hsync_len	= 5,		.vsync_len	= 1,
->  
-> diff --git a/arch/arm/mach-at91/board-sam9263ek.c b/arch/arm/mach-at91/board-sam9263ek.c
-> index ea8f185..e260070 100644
-> --- a/arch/arm/mach-at91/board-sam9263ek.c
-> +++ b/arch/arm/mach-at91/board-sam9263ek.c
-> @@ -258,7 +258,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->  		.xres		= 240,		.yres		= 320,
->  		.pixclock	= KHZ2PICOS(4965),
->  
-> -		.left_margin	= 1,		.right_margin	= 33,
-> +		.left_margin	= 1,		.right_margin	= 34,
->  		.upper_margin	= 1,		.lower_margin	= 0,
->  		.hsync_len	= 5,		.vsync_len	= 1,
->  
-> diff --git a/arch/arm/mach-at91/board-sam9m10g45ek.c b/arch/arm/mach-at91/board-sam9m10g45ek.c
-> index ad234cc..5e9a5ca 100644
-> --- a/arch/arm/mach-at91/board-sam9m10g45ek.c
-> +++ b/arch/arm/mach-at91/board-sam9m10g45ek.c
-> @@ -197,7 +197,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->  		.xres		= 480,		.yres		= 272,
->  		.pixclock	= KHZ2PICOS(9000),
->  
-> -		.left_margin	= 1,		.right_margin	= 1,
-> +		.left_margin	= 1,		.right_margin	= 2,
->  		.upper_margin	= 40,		.lower_margin	= 1,
->  		.hsync_len	= 45,		.vsync_len	= 1,
->  
-> diff --git a/arch/arm/mach-at91/board-sam9rlek.c b/arch/arm/mach-at91/board-sam9rlek.c
-> index 4f14b54..ad9e5c9 100644
-> --- a/arch/arm/mach-at91/board-sam9rlek.c
-> +++ b/arch/arm/mach-at91/board-sam9rlek.c
-> @@ -154,7 +154,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->  		.xres		= 240,		.yres		= 320,
->  		.pixclock	= KHZ2PICOS(4965),
->  
-> -		.left_margin	= 1,		.right_margin	= 33,
-> +		.left_margin	= 1,		.right_margin	= 34,
->  		.upper_margin	= 1,		.lower_margin	= 0,
->  		.hsync_len	= 5,		.vsync_len	= 1,
->  
-> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-> index 817ab60..816d528 100644
-> --- a/drivers/video/atmel_lcdfb.c
-> +++ b/drivers/video/atmel_lcdfb.c
-> @@ -393,7 +393,7 @@ static int atmel_lcdfb_check_var(struct fb_var_screeninfo *var,
->  	var->lower_margin = min_t(u32, var->lower_margin,
->  			ATMEL_LCDC_VFP);
->  	var->right_margin = min_t(u32, var->right_margin,
-> -			(ATMEL_LCDC_HFP >> ATMEL_LCDC_HFP_OFFSET) + 1);
-> +			(ATMEL_LCDC_HFP >> ATMEL_LCDC_HFP_OFFSET) + 2);
->  	var->hsync_len = min_t(u32, var->hsync_len,
->  			(ATMEL_LCDC_HPW >> ATMEL_LCDC_HPW_OFFSET) + 1);
->  	var->left_margin = min_t(u32, var->left_margin,
-> @@ -578,7 +578,7 @@ static int atmel_lcdfb_set_par(struct fb_info *info)
->  	lcdc_writel(sinfo, ATMEL_LCDC_TIM1, value);
->  
->  	/* Horizontal timing */
-> -	value = (info->var.right_margin - 1) << ATMEL_LCDC_HFP_OFFSET;
-> +	value = (info->var.right_margin - 2) << ATMEL_LCDC_HFP_OFFSET;
->  	value |= (info->var.hsync_len - 1) << ATMEL_LCDC_HPW_OFFSET;
->  	value |= (info->var.left_margin - 1);
->  	dev_dbg(info->device, "  * LCDTIM2 = %08lx\n", value);
+>  drivers/video/omap2/displays/panel-generic-dpi.c |   20 ++++++++++++++++=
+++++
+>  1 files changed, 20 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/v=
+ideo/omap2/displays/panel-generic-dpi.c
+> index 593f831..99669ae 100644
+> --- a/drivers/video/omap2/displays/panel-generic-dpi.c
+> +++ b/drivers/video/omap2/displays/panel-generic-dpi.c
+> @@ -317,6 +317,26 @@ static struct panel_config generic_dpi_panels[] =3D =
+{
+>  					  OMAP_DSS_LCD_IHS,
+>  		.name			=3D "focaltech_etm070003dh6",
+>  	},
+> +	/* OrtusTech COM43H4M10XTC */
+> +	{
+> +		{
+> +			.x_res		=3D 480,
+> +			.y_res		=3D 272,
+> +
+> +			.pixel_clock	=3D 8000,
+> +
+> +			.hsw		=3D 41,
+> +			.hfp		=3D 8,
+> +			.hbp		=3D 4,
+> +
+> +			.vsw		=3D 10,
+> +			.vfp		=3D 4,
+> +			.vbp		=3D 2,
+> +		},
+> +		.config			=3D OMAP_DSS_LCD_TFT,
+> +
+> +		.name			=3D "ortustech_com43h4m10xtc",
+> +	},
+>  };
+> =20
+
+Thanks, I'll apply to DSS tree.
+
+ Tomi
 
 
--- 
-Nicolas Ferre
+--=-21tz4qj160QGJfEQmE+p
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJPAsquAAoJEPo9qoy8lh71T6MQAILIOhNIdXMbot3P6m2xR/hl
+gjTT68HImSiTSxAcWQThVAy9E/0ICaXD9P7tXtyY1EnknDHEC0Waz+gB+cZcjhFL
+PYwDFNJatdoE5PW0Bncr/PMrMk1KXkPb03DNp6GdH25lUFiDah4aqiFAkDTV2ohG
+B1kLU7Yj+edMED81bgZJJMHUQMvn4MDb9qF8B9ZiK0lK5360LxxuYIHbLnTATtqK
+smh+7UQGzoMla3CHmbK246UnixmIiUG4+9BAEl6oINz8No+2O8wpbM7ZnUjZarVB
+zGLIym0VAZl6CoAYMUTf40jO2tSgjBNHXZozBXZyr1R5aXBuBLdqrqxVF8F9YEcU
+CjmibBWTYt0NC0n6P92vzgHEbKDemW8MchO2LBz8cSfEOnQIbgQwe/oNOg+ZSvNC
+f2HD087J/xVABhsX13irIavOuuQRPW0tB/Cod5uaKNRI3EQkxBeW5pleEhMdDuOI
+yWvOgyZfnbP24MrgLINMS6MT/fIJhegdqUCgimiZ87N37N96C7Ah2yStMkHaYsmy
+cDRGXJNALlw249iN3jtppvDcDXceyVd21+/q5Cv0P1SV9q7vjb+/4wsa55H0hvMq
+RvaoApjaf/HMP4nUC4I5Qe3yRaHJKFvtHeKA7wABbgS3JQGg/uRt3N9Yp6vh1IAc
+L40KEyxMWj6svUIamU6Q
+=EonG
+-----END PGP SIGNATURE-----
+
+--=-21tz4qj160QGJfEQmE+p--
+

@@ -1,57 +1,76 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 18 Jan 2012 06:39:49 +0000
-Subject: Re: [PATCH 5/6] OMAP: 4430SDP/Panda: add HDMI HPD gpio
-Message-Id: <1326868789.1954.0.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-lw/F4/jDhFbERLOwNtRn"
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Wed, 04 Jan 2012 22:34:22 +0000
+Subject: Re: [PATCH 2/2] backlight: Convert pwm_bl to dev_pm_ops
+Message-Id: <20120104143422.ca9896b0.akpm@linux-foundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1326804542-22285-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1326804542-22285-6-git-send-email-tomi.valkeinen@ti.com>
-	 <4F15DAFB.40203@ti.com>
-In-Reply-To: <4F15DAFB.40203@ti.com>
-To: Archit <a0393947@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, mythripk@ti.com, archit@ti.com, x0132446@ti.com
+References: <1325182838-25729-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1325182838-25729-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
+On Thu, 29 Dec 2011 18:20:38 +0000
+Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 
---=-lw/F4/jDhFbERLOwNtRn
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> Should be no functional changes, mainly a reorganisation to support
+> future work.
+> 
+> ...
+>
+> -#define pwm_backlight_suspend	NULL
+> -#define pwm_backlight_resume	NULL
+> +#define pwm_backlight_pm_ops	NULL
+>  #endif
+>  
+>  static struct platform_driver pwm_backlight_driver = {
+>  	.driver		= {
+>  		.name	= "pwm-backlight",
+>  		.owner	= THIS_MODULE,
+> +		.pm	= &pwm_backlight_pm_ops,
 
-On Wed, 2012-01-18 at 02:02 +0530, Archit wrote:
-> On Tuesday 17 January 2012 06:19 PM, Tomi Valkeinen wrote:
-> > Both Panda and 4430SDP use GPIO 64 as HDMI hot-plug-detect. Configure
-> > this GPIO in the board files.
->=20
-> Minor comment: the commit message says GPIO 64, and the macros use gpio=
-=20
-> 63. Is this done intentionally?
+This:
 
-Thanks, it's a typo. HPD gpio is 63.
+	.pm = &NULL,
 
- Tomi
+will not compile.
 
+Please review and test:
 
---=-lw/F4/jDhFbERLOwNtRn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: backlight-convert-pwm_bl-to-dev_pm_ops-fix
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+Fix CONFIG_PM=n build
 
-iQIcBAABAgAGBQJPFmkwAAoJEPo9qoy8lh71FRIP+wfR8T732YgDmw6t7X59C4/5
-D9qkXpExXQbu0aNRC5KygQ32r7IeTCVeb6rIe1o8bL5+rD/T5uv24/p2CnGWrR3p
-tpzpPvyTbXNsL+nbJFjfXG5g3tLV4F6SlFtywGNAjkDjmil1fJgsV8av0b7ghlCV
-4Nix6YdySsP8GqPrjbVDvvPy7SRN/y8tSMOTEo347dWoUN4B22x0PjwHsQJJHnne
-9B3nDcFO4QZGt4VmV+1exW0Uv6wwYFTeb9txq1iXB0UnZy/ThI8HDRc3gt/BlTW/
-T0FFFFTXCER8yg4OilDhhgOpW5T1wYw8z+OlfiSDdlzIKGTAPgRdKmTnH4fW/CkX
-HCZo/NxqhcG1kc5ORU1l1lMmNDLJTBrkEKdN/OnSZz8tDbbVmr0BLLuKbECi06fY
-g9/sTvtnUKCaxMgasywVoCpK70vcIM8t6POg9b+Nq00aSejQ8W6QBO2Ok08moJEC
-6Y9DuLBWXR7RDe3nuLAR20Lbp+Wq8mr2peSv2BNK0+Ms3ffRFnBF/pGC4dwmryvW
-fibr9SI5dv3mdyPdb/ZtK9Ns3oSEgvrJCRfb8iWe43BtZwn0CrxxJ8HJBu/6uu2u
-XBZVj6xpeTvxo/nkoO8rvM2lCKZyECHeTPAEqND8ZLhAvvipTItf+grog2CBPc3s
-3tzASlXnwqsfFS5VoHqm
-=txRr
------END PGP SIGNATURE-----
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Richard Purdie <rpurdie@rpsys.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
---=-lw/F4/jDhFbERLOwNtRn--
+ drivers/video/backlight/pwm_bl.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff -puN drivers/video/backlight/pwm_bl.c~backlight-convert-pwm_bl-to-dev_pm_ops-fix drivers/video/backlight/pwm_bl.c
+--- a/drivers/video/backlight/pwm_bl.c~backlight-convert-pwm_bl-to-dev_pm_ops-fix
++++ a/drivers/video/backlight/pwm_bl.c
+@@ -194,15 +194,15 @@ static int pwm_backlight_resume(struct d
+ static SIMPLE_DEV_PM_OPS(pwm_backlight_pm_ops, pwm_backlight_suspend,
+ 			 pwm_backlight_resume);
+ 
+-#else
+-#define pwm_backlight_pm_ops	NULL
+ #endif
+ 
+ static struct platform_driver pwm_backlight_driver = {
+ 	.driver		= {
+ 		.name	= "pwm-backlight",
+ 		.owner	= THIS_MODULE,
++#ifdef CONFIG_PM
+ 		.pm	= &pwm_backlight_pm_ops,
++#endif
+ 	},
+ 	.probe		= pwm_backlight_probe,
+ 	.remove		= pwm_backlight_remove,
+_
 

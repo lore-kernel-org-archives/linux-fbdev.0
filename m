@@ -1,58 +1,43 @@
-From: Archit Taneja <archit@ti.com>
-Date: Mon, 30 Jan 2012 05:36:17 +0000
-Subject: [PATCH 2/2] OMAPDSS: DISPC: Fix scaling constraints for OMAP4
-Message-Id: <1327901057-29287-1-git-send-email-archit@ti.com>
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Wed, 04 Jan 2012 02:41:26 +0000
+Subject: [PATCH] intelfbdrv.c: bailearly is an int module_param
+Message-Id: <8739bwdwu1.fsf@rustcorp.com.au>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20120103131748.GA11575@elgon.mountain>
+In-Reply-To: <20120103131748.GA11575@elgon.mountain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, cmahapatra@ti.com, Archit Taneja <archit@ti.com>
+To: Maik Broemme <mbroemme@plusserver.de>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The calculation of required DISPC_FCLK for downscaling is done by multplying the
-pixel clock with an integer factor. This isn't true for OMAP4 where the required
-clock is calculated using the exact ratio of downscaling done.
+Dan Carpenter points out that it's an int, not a bool:
+intelfbdrv.c:818:	if (bailearly = 1)
+intelfbdrv.c:828:	if (bailearly = 2)
+intelfbdrv.c:836:	if (bailearly = 3)
+intelfbdrv.c:842:	if (bailearly = 4)
+intelfbdrv.c:851:	if (bailearly = 5)
+intelfbdrv.c:859:	if (bailearly = 6)
+intelfbdrv.c:866:				    bailearly > 6 ? bailearly - 6 : 0);
+intelfbdrv.c:874:	if (bailearly = 18)
+intelfbdrv.c:886:	if (bailearly = 19)
+intelfbdrv.c:893:	if (bailearly = 20)
 
-Fix this calculation for OMAP4. Also, do a minor clean up of calc_fclk().
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Dan Carpenter <dan.carpenter@oracle.com>
 ---
- drivers/video/omap2/dss/dispc.c |   12 ++++++++----
- 1 files changed, 8 insertions(+), 4 deletions(-)
+ drivers/video/intelfb/intelfbdrv.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 3deb982..14b1f54 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -1694,6 +1694,7 @@ static unsigned long calc_fclk(enum omap_channel channel, u16 width,
- 		u16 height, u16 out_width, u16 out_height)
- {
- 	unsigned int hf, vf;
-+	unsigned long pclk = dispc_mgr_pclk_rate(channel);
- 
- 	/*
- 	 * FIXME how to determine the 'A' factor
-@@ -1716,13 +1717,16 @@ static unsigned long calc_fclk(enum omap_channel channel, u16 width,
- 
- 	if (cpu_is_omap24xx()) {
- 		if (vf > 1 && hf > 1)
--			return dispc_mgr_pclk_rate(channel) * 4;
-+			return pclk * 4;
- 		else
--			return dispc_mgr_pclk_rate(channel) * 2;
-+			return pclk * 2;
- 	} else if (cpu_is_omap34xx()) {
--		return dispc_mgr_pclk_rate(channel) * vf * hf;
-+		return pclk * vf * hf;
- 	} else {
--		return dispc_mgr_pclk_rate(channel) * hf;
-+		if (hf > 1)
-+			return DIV_ROUND_UP(pclk, out_width) * width;
-+		else
-+			return pclk;
- 	}
- }
- 
--- 
-1.7.4.1
-
+diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
+--- a/drivers/video/intelfb/intelfbdrv.c
++++ b/drivers/video/intelfb/intelfbdrv.c
+@@ -263,7 +263,7 @@ module_param(probeonly, bool, 0);
+ MODULE_PARM_DESC(probeonly, "Do a minimal probe (debug)");
+ module_param(idonly, bool, 0);
+ MODULE_PARM_DESC(idonly, "Just identify without doing anything else (debug)");
+-module_param(bailearly, bool, 0);
++module_param(bailearly, int, 0);
+ MODULE_PARM_DESC(bailearly, "Bail out early, depending on value (debug)");
+ module_param(mode, charp, S_IRUGO);
+ MODULE_PARM_DESC(mode,

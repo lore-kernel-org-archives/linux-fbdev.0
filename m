@@ -1,56 +1,103 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 04 Jan 2012 07:50:56 +0000
+From: NeilBrown <neilb@suse.de>
+Date: Thu, 05 Jan 2012 07:32:41 +0000
 Subject: Re: [PATCH] video/omap2. dispc_mgr_enable needs runtime PM
-Message-Id: <1325663456.1875.14.camel@deskari>
+Message-Id: <20120105183241.751b8086@notabene.brown>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-np/MFQNWjF2ymvqJZL8H"
+Content-Type: multipart/mixed; boundary="Sig_/h/lmwTIPJ4dCSbL0zIIIknV"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20111230123755.384a5b5c@notabene.brown>
-In-Reply-To: <20111230123755.384a5b5c@notabene.brown>
-To: NeilBrown <neilb@suse.de>
+	<1325663456.1875.14.camel@deskari>
+In-Reply-To: <1325663456.1875.14.camel@deskari>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-
---=-np/MFQNWjF2ymvqJZL8H
-Content-Type: text/plain; charset="UTF-8"
+--Sig_/h/lmwTIPJ4dCSbL0zIIIknV
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-(dropping the Tony and Kevin, as they're probably not interested in
-this)
+On Wed, 04 Jan 2012 09:50:56 +0200 Tomi Valkeinen <tomi.valkeinen@ti.com>
+wrote:
 
-On Fri, 2011-12-30 at 12:37 +1100, NeilBrown wrote:
+> (dropping the Tony and Kevin, as they're probably not interested in
+> this)
+
+Thanks.... takes a while to figure who cares about what :-)
+
 >=20
-> When dispc_mgr_enable is called during shutdown the device might
-> be asleep, which causes problems.  So ensure it is awake.
+> On Fri, 2011-12-30 at 12:37 +1100, NeilBrown wrote:
+> >=20
+> > When dispc_mgr_enable is called during shutdown the device might
+> > be asleep, which causes problems.  So ensure it is awake.
+>=20
+> How does this problem happen? dispc_mgr_enable(channel, false) shouldn't
+> be called if the device is asleep, and thus dispc_mgr_enable() shouldn't
+> use dispc_runtime_get.
+>=20
+>  Tomi
+>=20
 
-How does this problem happen? dispc_mgr_enable(channel, false) shouldn't
-be called if the device is asleep, and thus dispc_mgr_enable() shouldn't
-use dispc_runtime_get.
+The stack trace shows:
 
- Tomi
+[  101.764556] [<c0205b3c>] (dispc_mgr_enable+0x40/0x2e0) from [<c020c10c>]=
+ (dss_mgr_disable+0x14/0x20)
+[  101.774078] [<c020c10c>] (dss_mgr_disable+0x14/0x20) from [<c020e500>] (=
+omapdss_dpi_display_disable+0x1c/0x88)
+[  101.784484] [<c020e500>] (omapdss_dpi_display_disable+0x1c/0x88) from [<=
+c021efa4>] (td028ttec1_panel_suspend+0x1c/0x88)
+[  101.795684] [<c021efa4>] (td028ttec1_panel_suspend+0x1c/0x88) from [<c02=
+1f03c>] (td028ttec1_panel_disable+0x2c/0x50)
+[  101.806640] [<c021f03c>] (td028ttec1_panel_disable+0x2c/0x50) from [<c02=
+0ab6c>] (dss_disable_device+0x20/0x2c)
+[  101.817047] [<c020ab6c>] (dss_disable_device+0x20/0x2c) from [<c024ad08>=
+] (bus_for_each_dev+0x4c/0x8c)
+[  101.826751] [<c024ad08>] (bus_for_each_dev+0x4c/0x8c) from [<c024ca0c>] =
+(platform_drv_shutdown+0x1c/0x24)
+[  101.836700] [<c024ca0c>] (platform_drv_shutdown+0x1c/0x24) from [<c02481=
+64>] (device_shutdown+0xcc/0x10c)
+[  101.846679] [<c0248164>] (device_shutdown+0xcc/0x10c) from [<c004c134>] =
+(kernel_power_off+0x10/0x4c)
+[  101.856170] [<c004c134>] (kernel_power_off+0x10/0x4c) from [<c004c420>] =
+(sys_reboot+0x124/0x1e0)
+[  101.865325] [<c004c420>] (sys_reboot+0x124/0x1e0) from [<c000e9c0>] (ret=
+_fast_syscall+0x0/0x3c)
 
 
---=-np/MFQNWjF2ymvqJZL8H
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+td028ttec1_panel_* are in a non-mainline driver that could well be buggy.
+.....
+yep, that looks likely.  The 'disable' routines of other panels only call
+omapdss_dpi_display_disable() if (dssdev->state =3D=3D OMAP_DSS_DISPLAY_ACT=
+IVE).
+This panel calls it unconditionally.  I guess that is the real bug? (and
+putting an appropriate test in fixes it).
+
+Thanks for your help.
+
+(If/when I get this td028ttec driver cleaned up, would you be the one I send
+it to?)
+
+Thanks,
+NeilBrown
+
+--Sig_/h/lmwTIPJ4dCSbL0zIIIknV
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+Version: GnuPG v2.0.18 (GNU/Linux)
 
-iQIcBAABAgAGBQJPBATgAAoJEPo9qoy8lh71jgIP/0yvVpmxrWdfFy42uHDZTGA+
-toPqFy0swbf729slqWArBUyxsnke/0fjp62xolyH+vXCDwnwP3PujL2qgF6emcLn
-uhHjgI3g2AQopApYjGx4GAZoHVuzjKlEbW/jDY7e5It2p+5NOQDTnyyxC6WfsbgD
-1S8Wna36G+oOX3Qgbzflz0w5x4CucSIxMvcgIYstmA5HSrOXiHSMLP5sSFyuAmcc
-T+gYt8Mc28kLFsreX+UR+coZrq+Yj9Vpqpj3CAMVZEiuTY/8DsCshptUjFzt4x7Z
-DFRmRc7N9EDA518vnXAwa1lUEcYIgCANuur3WJPPDd7oigx1aK49XoRE6t7Eza+B
-IATWPptunY+Oq7clCfZFznCYmNAjWVqV+twmSx4WA7luqYC6d2km/JH4P98ZOwcs
-pyaDH6zONOfXhoWFgfEQ3MImWaGfbAprAF/xPky8+fir1uYpR2nRi9mVeyTTSq/V
-UdbUB/hRjbJ/dCqCoJC1ZJOoSwT78GdJKYlV/QCsM07+QdsKiqWOs+wjkuvMbvLb
-7ehROYkjT0rui+KL2hzk6mNtXaEdK777xoQeGh/5Z/NyLKxtiW2HpWpFYSnBZvaA
-DxTDv8NLlW02ZgtQefNWcYiJYX1OKoK/SHQ7cBfpKHtjgYEejs8TsNXDVVFORHmu
-ErGxbKHInQr2zbpiv3dr
-=8gY6
+iQIVAwUBTwVSGTnsnt1WYoG5AQLL+A/9HGJSHzYRfXs6Xc9vfExx7Iazn1BDFL1h
+xrZElQQWYErv1yfMaf/xg/kmpl7RPik8OHgV3zkdjmBjnR5eKKlb17f9t4PDVQGZ
+/0ysYwEIz0fEIqvVFV4X/QhL+lSJ+36VrD54cwhoun301SvEdyXMKQ97V37dNIhg
+IeSFUqvrQiwtcO/yu/YuOb7qLxSGRhqWlGEou+KpjVH2XUbmVfiEW4qXih+X0oDr
+KJw2OWuWaRe6gNABgHyzUtuHY2K/nxBexblYdcf2ZhyZtcY8BTzQeN20TF3KdjE5
+yIbqtJcRaKNNxPudHFMgGYVlB0Ig92rRrK72qqiI+al7kGkcre+UcE0UWluiOcQP
+gg0gNqsoIgg2HJlDLMqr1BihYo2k0Kiymie6SwkJd6lEGUUHUqSu11IcPQTKgIx7
+2weGTD5EZXHdt3qMqXi+KTTQ8sjP52HS57aTaX8JsRfkJGicxgOX863RNyCyfX5I
+MITYQqrIE+T51+7ReOZaL+Lcp2qGg4rwucoxqTO8gwTJyjhvS+CHaP9WJxwGvTsi
+/0wBvmcRbRiRRbpCIkgykW0wrwnGQG0jMxhdgc33vnnHfzOSstYF/NdZrgAb6+YT
+qMdeYXK4q1JtUGkPDFVYZ7H/Yd258ePjZSb1JN2AGgWnVZ+Dg6eco1XULsfY1ZR7
+HFQj81aGcUo=
+=hOH0
 -----END PGP SIGNATURE-----
 
---=-np/MFQNWjF2ymvqJZL8H--
-
+--Sig_/h/lmwTIPJ4dCSbL0zIIIknV--

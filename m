@@ -1,92 +1,235 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 12 Jan 2012 23:36:05 +0000
-Subject: Re: [PATCH 3/15] i810: fix module_param bool abuse.
-Message-Id: <4F0F6E65.7020009@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 05 Jan 2012 08:56:32 +0000
+Subject: [GIT PULL] OMAP DSS for v3.3
+Message-Id: <1325753792.2045.42.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-E2vbcV5MyHoZX/Lx9LxI"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <874nx2tu1v.fsf@rustcorp.com.au> <4EEFC5B4.9000704@gmx.de> <87sjjk34wx.fsf@rustcorp.com.au>
-In-Reply-To: <87sjjk34wx.fsf@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>, Antonino Daplas <adaplas@gmail.com>, linux-fbdev@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>
-
-Hi Rusty,
-
-On 01/12/2012 10:57 PM, Rusty Russell wrote:
-> On Mon, 19 Dec 2011 23:16:04 +0000, Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
->> On 12/15/2011 03:03 AM, Rusty Russell wrote:
->>> The driver says "module_param(ddc3, bool, 0);".  But it's not a used
->>> as a bool, it's used as a count.
->>>
->>> Make it a bool.
->>>
->>> Cc: Antonino Daplas <adaplas@gmail.com>
->>> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
->>> Cc: linux-fbdev@vger.kernel.org
->>> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
->>
->> Applied.
-> 
-> Hmm, I don't see this in Linus' tree yet, and it's a context-clash
-> pre-requisite for part of the general driver bool conversion.  I want to
-> push today since I have linux.conf.au next week, so I've split the i810
-> conversion into a separate patch, below.
-
-Sorry for the delay, but with an OMAP pull and a revert this merge window is not
-as quiet as I wished.
-
-> It's been over a week in linux-next, can you push this please?
-
-Sure, I've taken it and also fixed the subject.
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
 
-Best regards,
+--=-E2vbcV5MyHoZX/Lx9LxI
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Florian Tobias Schandinat
+Hi Florian,
 
-> 
-> From: Rusty Russell <rusty@rustcorp.com.au>
-> Subject: module_param: make bool parameters really bool (drivers/vidio/i810)
-> 
-> module_param(bool) used to counter-intuitively take an int.  In
-> fddd5201 (mid-2009) we allowed bool or int/unsigned int using a messy
-> trick.
-> 
-> It's time to remove the int/unsigned int option.  For this version
-> it'll simply give a warning, but it'll break next kernel version.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> 
-> diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
-> --- a/drivers/video/i810/i810_main.c
-> +++ b/drivers/video/i810/i810_main.c
-> @@ -135,8 +135,8 @@ static struct pci_driver i810fb_driver >  static char *mode_option __devinitdata = NULL;
->  static int vram       __devinitdata = 4;
->  static int bpp        __devinitdata = 8;
-> -static int mtrr       __devinitdata;
-> -static int accel      __devinitdata;
-> +static bool mtrr      __devinitdata;
-> +static bool accel     __devinitdata;
->  static int hsync1     __devinitdata;
->  static int hsync2     __devinitdata;
->  static int vsync1     __devinitdata;
-> @@ -144,9 +144,9 @@ static int vsync2     __devinitdata;
->  static int xres       __devinitdata;
->  static int yres;
->  static int vyres      __devinitdata;
-> -static int sync       __devinitdata;
-> -static int extvga     __devinitdata;
-> -static int dcolor     __devinitdata;
-> +static bool sync      __devinitdata;
-> +static bool extvga    __devinitdata;
-> +static bool dcolor    __devinitdata;
->  static bool ddc3      __devinitdata;
->  
->  /*------------------------------------------------------------*/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Here are changes to OMAP display subsystem driver for the merge window.
+
+This merges and works fine with v3.2, and also merges fine with
+linux-next. I haven't been able to test with linux-next as there seems
+to be other brokenness there.
+
+ Tomi
+
+The following changes since commit 5611cc4572e889b62a7b4c72a413536bf6a9c416=
+:
+
+  Linux 3.2-rc4 (2011-12-01 14:56:01 -0800)
+
+are available in the git repository at:
+  git://gitorious.org/linux-omap-dss2/linux.git for-florian
+
+Archit Taneja (3):
+      OMAPDSS: DSI: Fix HSDIV related PLL info in dsi_dump_clocks()
+      OMAPDSS: Panel NEC: Set omap_dss_device states correctly
+      OMAPDSS: Displays: Make PICODLP driver depend on DPI
+
+Axel Lin (2):
+      video: omap: Staticise non-exported symbols
+      video: omap: convert drivers/video/omap/* to use module_platform_driv=
+er()
+
+Chandrabhanu Mahapatra (2):
+      OMAPDSS: DISPC: Update Fir Coefficients
+      OMAPDSS: DISPC: Update Scaling Clock Logic
+
+Daniel Mack (1):
+      OMAP: DSS2: Support for UMSH-8173MD TFT panel
+
+Ilya Yanok (2):
+      OMAPDSS: add FocalTech ETM070003DH6 display support
+      OMAPDSS: add OrtusTech COM43H4M10XTC display support
+
+Mythri P K (2):
+      OMAPDSS: HDMI: Move duplicate code from boardfile
+      OMAPDSS: HDMI: Disable DDC internal pull up
+
+Ricardo Neri (4):
+      ASoC: OMAP: HDMI: Introduce driver data for audio codec
+      ASoC: OMAP: HDMI: Correct signature of ASoC functions
+      OMAPDSS: HDMI: Create function to enable HDMI audio
+      ASoC: OMAP: HDMI: Move HDMI codec trigger function to generic HDMI dr=
+iver
+
+Rob Clark (2):
+      OMAPDSS: fix potential NULL pointer ref in OCP_ERR handling path
+      OMAPDSS: APPLY: fix NULL pointer deref when mgr is not set
+
+Tomi Valkeinen (90):
+      OMAPDSS: DSI: flush posted write when entering ULPS
+      OMAPDSS: DSI: flush posted write in send_bta
+      OMAPDSS: DISPC: Flush posted writes when enabling outputs
+      OMAPDSS: DSI: count with number of lanes
+      OMAPDSS: DSI: Parse lane config
+      OMAPDSS: DSI: Use new lane config in dsi_set_lane_config
+      OMAPDSS: DSI: use lane config in dsi_get_lane_mask
+      OMAPDSS: DSI: use lane config in dsi_cio_wait_tx_clk_esc_reset
+      OMAPDSS: DSI: use lane config in dsi_cio_enable_lane_override
+      OMAPDSS: DSI: remove dsi_get_num_lanes_used
+      OMAPDSS: DSI: fix lane handling when entering ULPS
+      OMAPDSS: DSI: improve wait_for_bit_change
+      OMAPDSS: DSI: disable DDR_CLK_ALWAYS_ON when entering ULPS
+      OMAPDSS: DISPC: add missing prototype
+      OMAPDSS: Remove old fifomerge hacks
+      OMAPDSS: remove L4_EXAMPLE code
+      OMAPDSS: DISPC: make dispc_ovl_set_channel_out() public
+      OMAPDSS: DISPC: make dispc_ovl_set_fifo_threshold() public
+      OMAPDSS: remove partial update from the overlay manager
+      OMAPDSS: remove partial update from DSI
+      OMAPDSS: remove partial update from panel-taal
+      OMAPDSS: pass ovl manager to dss_start_update
+      OMAPDSS: DISPC: handle 0 out_width/out_height in ovl_setup()
+      OMAPDSS: handle ilace/replication when configuring overlay
+      OMAPDSS: separate FIFO threshold setup from ovl_setup
+      OMAPDSS: separate overlay channel from ovl_setup
+      OMAPDSS: setup manager with dispc_mgr_setup()
+      OMAPDSS: DISPC: remove unused functions
+      OMAPDSS: remove unneeded dss_ovl_wait_for_go()
+      OMAPDSS: add ovl/mgr_manual_update() helpers
+      OMAPDSS: split omap_dss_mgr_apply() to smaller funcs
+      OMAPDSS: apply affects only one overlay manager
+      OMAPDSS: create apply.c
+      OMAPDSS: hide manager's enable/disable()
+      OMAPDSS: APPLY: track whether a manager is enabled
+      OMAPDSS: APPLY: skip isr register and config for manual update displa=
+ys
+      OMAPDSS: APPLY: skip isr register and config for disabled displays
+      OMAPDSS: APPLY: cleanup dss_mgr_start_update
+      OMAPDSS: store overlays in an array
+      OMAPDSS: store managers in an array
+      OMAPDSS: store overlays in a list for each manager
+      OMAPDSS: APPLY: separate vsync isr register/unregister
+      OMAPDSS: DISPC: Add dispc_mgr_get_vsync_irq()
+      OMAPDSS: APPLY: use dispc_mgr_get_vsync_irq()
+      OMAPDSS: APPLY: configure_* funcs take ovl/manager as args
+      OMAPDSS: APPLY: rename overlay_cache_data
+      OMAPDSS: APPLY: rename manager_cache_data
+      OMAPDSS: APPLY: move spinlock outside the struct
+      OMAPDSS: APPLY: rename dss_cache to dss_data
+      OMAPDSS: APPLY: move ovl funcs to apply.c
+      OMAPDSS: APPLY: move mgr funcs to apply.c
+      OMAPDSS: remove ovl/mgr check-code temporarily
+      OMAPDSS: APPLY: add mutex
+      OMAPDSS: APPLY: add missing uses of spinlock
+      OMAPDSS: DSI: call mgr_enable/disable for cmd mode displays
+      OMAPDSS: APPLY: move mgr->enabled to mgr_priv_data
+      OMAPDSS: APPLY: add busy field to mgr_priv_data
+      OMAPDSS: APPLY: rewrite overlay enable/disable
+      OMAPDSS: APPLY: rewrite register writing
+      OMAPDSS: DISPC: add dispc_mgr_get_framedone_irq
+      OMAPDSS: APPLY: add updating flag
+      OMAPDSS: APPLY: clean up isr_handler
+      OMAPDSS: APPLY: move mgr->info to apply.c
+      OMAPDSS: APPLY: move ovl->info to apply.c
+      OMAPDSS: APPLY: move channel-field to extra_info set
+      OMAPDSS: APPLY: move fifo thresholds to extra_info set
+      OMAPDSS: APPLY: rename dirty & shadow_dirty
+      OMAPDSS: APPLY: remove device_changed field
+      OMAPDSS: APPLY: add dss_apply_ovl_enable()
+      OMAPDSS: APPLY: skip enable/disable if already enabled/disabled
+      OMAPDSS: APPLY: add wait_pending_extra_info_updates()
+      OMAPDSS: APPLY: remove runtime_get
+      OMAPDSS: Add comments about blocking of ovl/mgr functions
+      OMAPDSS: APPLY: add dss_ovl_simple_check()
+      OMAPDSS: APPLY: add dss_mgr_simple_check()
+      OMAPDSS: APPLY: add checking of ovls/mgrs settings
+      OMAPDSS: APPLY: add return value to dss_mgr_enable()
+      OMAPDSS: check the return value of dss_mgr_enable()
+      OMAPDSS: APPLY: fix extra_info_update_ongoing
+      OMAPDSS: APPLY: fix need_isr
+      OMAPDSS: APPLY: clear shadow dirty flags only if GO had been set
+      OMAPDSS: APPLY: add dss_set_go_bits()
+      OMAPDSS: APPLY: cleanup extra_info_update_ongoing
+      OMAPDSS: APPLY: add op->enabling
+      OMAPDSS: APPLY: simplify dss_mgr_enable
+      OMAPDSS: APPLY: add dss_setup_fifos
+      OMAPDSS: APPLY: write fifo thresholds only if changed
+      OMAPDSS: APPLY: remove unused variables
+      OMAPDSS: APPLY: move check functions
+      OMAPDSS: APPLY: move simple_check functions
+
+ arch/arm/mach-omap2/board-4430sdp.c                |   23 +-
+ arch/arm/mach-omap2/board-omap4panda.c             |   25 +-
+ arch/arm/mach-omap2/display.c                      |   39 +
+ drivers/media/video/omap/omap_vout.c               |   33 +-
+ drivers/video/omap/lcd_ams_delta.c                 |   15 +-
+ drivers/video/omap/lcd_h3.c                        |   16 +-
+ drivers/video/omap/lcd_htcherald.c                 |   16 +-
+ drivers/video/omap/lcd_inn1510.c                   |   16 +-
+ drivers/video/omap/lcd_inn1610.c                   |   16 +-
+ drivers/video/omap/lcd_osk.c                       |   16 +-
+ drivers/video/omap/lcd_palmte.c                    |   16 +-
+ drivers/video/omap/lcd_palmtt.c                    |   15 +-
+ drivers/video/omap/lcd_palmz71.c                   |   15 +-
+ drivers/video/omap2/displays/Kconfig               |    2 +-
+ drivers/video/omap2/displays/panel-generic-dpi.c   |   66 +
+ .../omap2/displays/panel-nec-nl8048hl11-01b.c      |   61 +-
+ drivers/video/omap2/displays/panel-taal.c          |   38 +-
+ drivers/video/omap2/dss/Makefile                   |    3 +-
+ drivers/video/omap2/dss/apply.c                    | 1324 ++++++++++++++++=
+++++
+ drivers/video/omap2/dss/core.c                     |    2 +
+ drivers/video/omap2/dss/dispc.c                    |  407 +++----
+ drivers/video/omap2/dss/dispc.h                    |   11 +
+ drivers/video/omap2/dss/dispc_coefs.c              |  326 +++++
+ drivers/video/omap2/dss/dpi.c                      |    7 +-
+ drivers/video/omap2/dss/dsi.c                      |  612 +++++-----
+ drivers/video/omap2/dss/dss.h                      |   74 +-
+ drivers/video/omap2/dss/dss_features.c             |   11 +
+ drivers/video/omap2/dss/dss_features.h             |    1 +
+ drivers/video/omap2/dss/hdmi.c                     |   59 +-
+ drivers/video/omap2/dss/manager.c                  | 1221 ++--------------=
+--
+ drivers/video/omap2/dss/overlay.c                  |  435 +++-----
+ drivers/video/omap2/dss/rfbi.c                     |    1 -
+ drivers/video/omap2/dss/sdi.c                      |    8 +-
+ drivers/video/omap2/dss/ti_hdmi.h                  |   10 +-
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c          |   37 +-
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h          |    3 -
+ drivers/video/omap2/dss/venc.c                     |   28 +-
+ drivers/video/omap2/omapfb/omapfb-ioctl.c          |   42 +-
+ drivers/video/omap2/omapfb/omapfb-main.c           |   14 +-
+ drivers/video/omap2/omapfb/omapfb-sysfs.c          |    4 +-
+ drivers/video/omap2/omapfb/omapfb.h                |   11 +-
+ include/video/omapdss.h                            |   58 +-
+ 42 files changed, 2883 insertions(+), 2254 deletions(-)
+ create mode 100644 drivers/video/omap2/dss/apply.c
+ create mode 100644 drivers/video/omap2/dss/dispc_coefs.c
+
+
+--=-E2vbcV5MyHoZX/Lx9LxI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJPBWXAAAoJEPo9qoy8lh71ubQQAJjv56t3Muf9kt+Tj5Kv2EDb
+vq2vlf48SM8Df+qwImiWg9DxizBsT6jBmWVv8ZqztuoLTaDLKgXxaJRBXYH4FXiz
+qDXJKoNDHsrc4PsrqgEyu6q0j8SQxP9RrgY2Liw9Le+RI2kAETo3dNWmUIDs/Vae
+Gmpq4jkXDjfllD/P1SzHTFQQCnKKam6fWkJbFYEFtc876JqoTahJgMZDikLXzvMu
+e7ggXRd5RNSnXzQjRru/JZ5B4eUYqChNxQWt5FS2ABISOjW4XJfIZeJ8EbJgVnWO
+x2bUdNADkp7g9GnLrKq2pDn7ULhtooobdjbl3g1Q94LvIWUlAxB7MGfkPH0TF9PO
+AaZQvvaVChZfqAVtux2T+VlPsO1K7EAxOvtMAm+n0Edbyt41BWovaHK8UjxuZHdm
+ZM0kjTCZ1AUmjqtkfrvPELLH2hSfK0Q2ybNuaJ1iD/1pBEPt1+Mirb3hWqFnfln+
+uKpVUriJVsiTAvDGltBIVTEi6ujI9ZASwE431woQLb7SKGmN4i6VlG32xv6vzRcb
+hqQNrF95wMiAk85hgJV/zcAHOxFFLnBcLRatKz1ukSW1sXdb41GOxiBuXg5ngxQp
+U2EsvKiZVJxpCTle2bVo1PgNZla7uUhe2NH2LLwnJoXessBAtqk650RdnM0jUV1+
+Be8jQ8YtuWasI5LbV/2L
+=phD1
+-----END PGP SIGNATURE-----
+
+--=-E2vbcV5MyHoZX/Lx9LxI--
 

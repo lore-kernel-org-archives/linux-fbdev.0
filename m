@@ -1,89 +1,40 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 27 Jan 2012 03:06:51 +0000
-Subject: RE: [PATCH v7 1/2] video: support MIPI-DSI controller driver
-Message-Id: <006c01ccdca0$b77ecb80$267c6280$%han@samsung.com>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Date: Mon, 09 Jan 2012 16:23:57 +0000
+Subject: [PATCH v2] atmel_lcdfb: fix usage of CONTRAST_CTR in suspend/resume
+Message-Id: <1326126237-4355-1-git-send-email-nicolas.ferre@atmel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4F17AA10.7080604@samsung.com> <4F182ACF.8010302@ti.com>
- <20120120155121.18880dff.akpm@linux-foundation.org>
- <4F1F4982.5050000@samsung.com> <1327592757.2843.1.camel@lappy>
-In-Reply-To: <1327592757.2843.1.camel@lappy>
+References: <1307350251-5767-1-git-send-email-h.feurstein@gmail.com>
+In-Reply-To: <1307350251-5767-1-git-send-email-h.feurstein@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi, Tomi.
+From: Hubert Feurstein <h.feurstein@gmail.com>
 
-> -----Original Message-----
-> From: linux-fbdev-owner@vger.kernel.org [mailto:linux-fbdev-owner@vger.kernel.org] On Behalf Of Tomi
-> Valkeinen
-> Sent: Friday, January 27, 2012 12:46 AM
-> To: Donghwa Lee
-> Cc: Andrew Morton; Archit; linux-fbdev@vger.kernel.org; linux-arm-kernel@lists.infradead.org; Florian
-> Tobias Schandinat; rpurdie@linux.intel.com; inki.dae@samsung.com; kyungmin.park@samsung.com
-> Subject: Re: [PATCH v7 1/2] video: support MIPI-DSI controller driver
-> 
-> Hi,
-> 
-> On Wed, 2012-01-25 at 09:14 +0900, Donghwa Lee wrote:
-> > On Sat, 21 Jan 2012 08:51, Andrew Morton wrote:
-> >
-> > > On Thu, 19 Jan 2012 20:08:07 +0530
-> > > Archit <a0393947@ti.com> wrote:
-> > >
-> > >> On Thursday 19 January 2012 10:58 AM, Donghwa Lee wrote:
-> > >>> Samsung S5PC210 and EXYNOS SoC platform has MIPI-DSI controller and MIPI-DSI
-> > >>> based LCD Panel could be used with it. This patch supports MIPI-DSI driver
-> > >>> based Samsung SoC chip.
-> > >>>
-> > >>> LCD panel driver based MIPI-DSI should be registered to MIPI-DSI driver at
-> > >>> machine code and LCD panel driver specific function registered to mipi_dsim_ddi
-> > >>> structure at lcd panel init function called system init.
-> > >>> In the MIPI-DSI driver, find lcd panel driver by using registered
-> > >>> lcd panel name, and then initialize lcd panel driver.
-> > >>>
-> > >>> Changes since v6:
-> > >>> 	- remove obscure compile problems.
-> > >>> 	- remove useless codes.
-> > >>> 	- modify return errno codes properly
-> > >>
-> > >> One more comment about 'mipi_dsim.h', it would be better to put it in
-> > >> include/video and not 'include/linux'.
-> > >
-> > > Yes, that is desirable.
-> > >
-> > >>> ---
-> > >>>   drivers/video/Kconfig                 |    6 +
-> > >>>   drivers/video/Makefile                |    2 +
-> > >>>   drivers/video/s5p_mipi_dsi.c          |  599 ++++++++++++++++++++++
-> > >>>   drivers/video/s5p_mipi_dsi_common.c   |  896 +++++++++++++++++++++++++++++++++
-> > >>>   drivers/video/s5p_mipi_dsi_common.h   |   46 ++
-> > >>>   drivers/video/s5p_mipi_dsi_lowlevel.c |  617 +++++++++++++++++++++++
-> > >>>   drivers/video/s5p_mipi_dsi_lowlevel.h |  112 ++++
-> > >>>   drivers/video/s5p_mipi_dsi_regs.h     |  149 ++++++
-> > >>>   include/linux/mipi_dsim.h             |  359 +++++++++++++
-> > >>>   9 files changed, 2786 insertions(+), 0 deletions(-)
-> > >
-> > > or we could put it in drivers/video/.  It all depends on which other
-> > > drivers we expect will need access to this header.
-> > >
-> >
-> > No, mipi_dsim.h file includes global interface data, callback function called by machine
-> > file, platform data for mipi-dsi driver and so on. So I think it would be better to put
-> > in 'include/video' or 'include/linux'.
-> > Of course it is much better to change name to 's5p_mipi_dsim.h'
-> 
-> The header file looks like a platform specific header, so I agree that
-> it should start with s5p.
-> 
-> I think we should finally start working on a common DSI framework =).
+An error was existing in the saving of CONTRAST_CTR register
+across suspend/resume.
 
-I agree with you in your opinion.
-The common DSI framework would be useful.
+Signed-off-by: Hubert Feurstein <h.feurstein@gmail.com>
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: stable <stable@vger.kernel.org>
+---
+ drivers/video/atmel_lcdfb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thank you.
-
-> 
->  Tomi
-
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index d7e3712..d99505b 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -1102,7 +1102,7 @@ static int atmel_lcdfb_suspend(struct platform_device *pdev, pm_message_t mesg)
+ 	 */
+ 	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0UL);
+ 
+-	sinfo->saved_lcdcon = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_VAL);
++	sinfo->saved_lcdcon = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_CTR);
+ 	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, 0);
+ 	if (sinfo->atmel_lcdfb_power_control)
+ 		sinfo->atmel_lcdfb_power_control(0);
+-- 
+1.7.5.4
 

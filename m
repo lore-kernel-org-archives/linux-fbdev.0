@@ -1,98 +1,72 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 13 Jan 2012 11:46:28 +0000
-Subject: [PATCH 1/6] OMAPDSS: FEAT: Add FIFO_MERGE feature
-Message-Id: <1326455193-19716-2-git-send-email-tomi.valkeinen@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Mon, 09 Jan 2012 02:33:01 +0000
+Subject: Re: [PATCH 1/5] drivers/video: fsl-diu-fb: merge init_fbinfo() into
+Message-Id: <4F0A51DD.6020107@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1326455193-19716-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1326455193-19716-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, rob@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Add feature flag for fifo merge. OMAP2 doesn't contain fifo merge, later
-OMAPs do.
+On 12/19/2011 10:26 PM, Timur Tabi wrote:
+> Function init_fbinfo() is called only from install_fb(), and it's only a few
+> lines long.  Plus, it ignores the return code from fb_alloc_cmap().  Merge
+> its contents into install_fb() and handle errors properly.
+> 
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 
-dispc_enable_fifomerge() checks for the flag when called, and gives a
-WARN if fifo merge is being enabled when it is not supported.
+Applied all 5 patches of this series.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap2/dss/dispc.c        |    5 +++++
- drivers/video/omap2/dss/dss_features.c |    9 +++++----
- drivers/video/omap2/dss/dss_features.h |    1 +
- 3 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index a5ec7f3..d711518 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -1054,6 +1054,11 @@ void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high)
- 
- void dispc_enable_fifomerge(bool enable)
- {
-+	if (!dss_has_feature(FEAT_FIFO_MERGE)) {
-+		WARN_ON(enable);
-+		return;
-+	}
-+
- 	DSSDBG("FIFO merge %s\n", enable ? "enabled" : "disabled");
- 	REG_FLD_MOD(DISPC_CONFIG, enable ? 1 : 0, 14, 14);
- }
-diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
-index afcb593..c2456c5 100644
---- a/drivers/video/omap2/dss/dss_features.c
-+++ b/drivers/video/omap2/dss/dss_features.c
-@@ -370,7 +370,7 @@ static const struct omap_dss_features omap3430_dss_features = {
- 		FEAT_LINEBUFFERSPLIT | FEAT_RESIZECONF |
- 		FEAT_DSI_PLL_FREQSEL | FEAT_DSI_REVERSE_TXCLKESC |
- 		FEAT_VENC_REQUIRES_TV_DAC_CLK | FEAT_CPR | FEAT_PRELOAD |
--		FEAT_FIR_COEF_V | FEAT_ALPHA_FIXED_ZORDER,
-+		FEAT_FIR_COEF_V | FEAT_ALPHA_FIXED_ZORDER | FEAT_FIFO_MERGE,
- 
- 	.num_mgrs = 2,
- 	.num_ovls = 3,
-@@ -394,7 +394,7 @@ static const struct omap_dss_features omap3630_dss_features = {
- 		FEAT_ROWREPEATENABLE | FEAT_LINEBUFFERSPLIT |
- 		FEAT_RESIZECONF | FEAT_DSI_PLL_PWR_BUG |
- 		FEAT_DSI_PLL_FREQSEL | FEAT_CPR | FEAT_PRELOAD |
--		FEAT_FIR_COEF_V | FEAT_ALPHA_FIXED_ZORDER,
-+		FEAT_FIR_COEF_V | FEAT_ALPHA_FIXED_ZORDER | FEAT_FIFO_MERGE,
- 
- 	.num_mgrs = 2,
- 	.num_ovls = 3,
-@@ -419,7 +419,7 @@ static const struct omap_dss_features omap4430_es1_0_dss_features  = {
- 		FEAT_DSI_DCS_CMD_CONFIG_VC | FEAT_DSI_VC_OCP_WIDTH |
- 		FEAT_DSI_GNQ | FEAT_HANDLE_UV_SEPARATE | FEAT_ATTR2 |
- 		FEAT_CPR | FEAT_PRELOAD | FEAT_FIR_COEF_V |
--		FEAT_ALPHA_FREE_ZORDER,
-+		FEAT_ALPHA_FREE_ZORDER | FEAT_FIFO_MERGE,
- 
- 	.num_mgrs = 3,
- 	.num_ovls = 4,
-@@ -443,7 +443,8 @@ static const struct omap_dss_features omap4_dss_features = {
- 		FEAT_DSI_DCS_CMD_CONFIG_VC | FEAT_DSI_VC_OCP_WIDTH |
- 		FEAT_DSI_GNQ | FEAT_HDMI_CTS_SWMODE |
- 		FEAT_HANDLE_UV_SEPARATE | FEAT_ATTR2 | FEAT_CPR |
--		FEAT_PRELOAD | FEAT_FIR_COEF_V | FEAT_ALPHA_FREE_ZORDER,
-+		FEAT_PRELOAD | FEAT_FIR_COEF_V | FEAT_ALPHA_FREE_ZORDER |
-+		FEAT_FIFO_MERGE,
- 
- 	.num_mgrs = 3,
- 	.num_ovls = 4,
-diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
-index cd833bb..50caee9 100644
---- a/drivers/video/omap2/dss/dss_features.h
-+++ b/drivers/video/omap2/dss/dss_features.h
-@@ -58,6 +58,7 @@ enum dss_feat_id {
- 	FEAT_FIR_COEF_V			= 1 << 25,
- 	FEAT_ALPHA_FIXED_ZORDER		= 1 << 26,
- 	FEAT_ALPHA_FREE_ZORDER		= 1 << 27,
-+	FEAT_FIFO_MERGE			= 1 << 28,
- };
- 
- /* DSS register field id */
--- 
-1.7.4.1
+Thanks,
+
+Florian Tobias Schandinat
+
+> ---
+>  drivers/video/fsl-diu-fb.c |   25 ++++++++-----------------
+>  1 files changed, 8 insertions(+), 17 deletions(-)
+> 
+> diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+> index 408272c..411a7b3 100644
+> --- a/drivers/video/fsl-diu-fb.c
+> +++ b/drivers/video/fsl-diu-fb.c
+> @@ -1220,21 +1220,6 @@ static struct fb_ops fsl_diu_ops = {
+>  	.fb_release = fsl_diu_release,
+>  };
+>  
+> -static int init_fbinfo(struct fb_info *info)
+> -{
+> -	struct mfb_info *mfbi = info->par;
+> -
+> -	info->device = NULL;
+> -	info->var.activate = FB_ACTIVATE_NOW;
+> -	info->fbops = &fsl_diu_ops;
+> -	info->flags = FBINFO_FLAG_DEFAULT;
+> -	info->pseudo_palette = &mfbi->pseudo_palette;
+> -
+> -	/* Allocate colormap */
+> -	fb_alloc_cmap(&info->cmap, 16, 0);
+> -	return 0;
+> -}
+> -
+>  static int __devinit install_fb(struct fb_info *info)
+>  {
+>  	int rc;
+> @@ -1244,8 +1229,14 @@ static int __devinit install_fb(struct fb_info *info)
+>  	unsigned int dbsize = ARRAY_SIZE(fsl_diu_mode_db);
+>  	int has_default_mode = 1;
+>  
+> -	if (init_fbinfo(info))
+> -		return -EINVAL;
+> +	info->var.activate = FB_ACTIVATE_NOW;
+> +	info->fbops = &fsl_diu_ops;
+> +	info->flags = FBINFO_DEFAULT;
+> +	info->pseudo_palette = mfbi->pseudo_palette;
+> +
+> +	rc = fb_alloc_cmap(&info->cmap, 16, 0);
+> +	if (rc)
+> +		return rc;
+>  
+>  	if (mfbi->index = PLANE0) {
+>  		if (mfbi->edid_data) {
 

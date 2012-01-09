@@ -1,26 +1,86 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sat, 14 Jan 2012 23:13:41 +0000
-Subject: Re: [GIT PULL] fbdev updates for 3.3
-Message-Id: <CA+55aFz62XPPjnbvdvUAgXRnjaiekwEeNQm-t8KUXgQKZZNeNQ@mail.gmail.com>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Date: Mon, 09 Jan 2012 15:45:55 +0000
+Subject: Re: [PATCH] atmel_lcdfb: fix usage of wrong registers in suspend/resume
+Message-Id: <4F0B0BB3.7020508@atmel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4F10751E.8040906@gmx.de>
-In-Reply-To: <4F10751E.8040906@gmx.de>
+References: <1307350251-5767-1-git-send-email-h.feurstein@gmail.com>
+In-Reply-To: <1307350251-5767-1-git-send-email-h.feurstein@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-On Fri, Jan 13, 2012 at 10:17 AM, Florian Tobias Schandinat
-<FlorianSchandinat@gmx.de> wrote:
->
-> are available in the git repository at:
-> =A0git://github.com/schandinat/linux-2.6.git fbdev-next
+On 06/06/2011 03:24 PM, Hubert Feurstein :
+> Or it must be this way:
+> ---
+> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+> index 4484c72..c2ceae4 100644
+> --- a/drivers/video/atmel_lcdfb.c
+> +++ b/drivers/video/atmel_lcdfb.c
+> @@ -1085,7 +1085,7 @@ static int atmel_lcdfb_suspend(struct
+> platform_device *pdev, pm_message_t mesg)
+>  	 */
+>  	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0UL);
+> 
+> -	sinfo->saved_lcdcon = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_VAL);
+> +	sinfo->saved_lcdcon = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_CTR);
+>  	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, 0);
+>  	if (sinfo->atmel_lcdfb_power_control)
+>  		sinfo->atmel_lcdfb_power_control(0);
+> --
+> So which solution was originally intended?
 
-Btw, especially since you are using github, I'd *really* like you to
-start using signed tags for your pull requests. Even an unsigned gpg
-key is better than none, since it at least shows that it's the same
-person doing it over time. And I'm sure you can find people who can
-sign your key..
+Yes exactly: this solution is the preferred one.
 
-               Linus
+I rebuild the patch with your authorship and send it again.
+
+Thanks Hubert, best regards,
+
+
+> 
+> Best regards
+> Hubert
+> 
+> 2011/6/6 Hubert Feurstein <h.feurstein@gmail.com>:
+>> I assume the intention was to set the contrast value to 0 and not
+>> the contrast control register (in atmel_lcdfb_suspend). And in
+>> atmel_lcdfb_resume the contrast value should be restored.
+>>
+>> Signed-off-by: Hubert Feurstein <h.feurstein@gmail.com>
+>> Cc: Nicolas Ferre <nicolas.ferre@atmel.com>
+>> Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+>> ---
+>>  drivers/video/atmel_lcdfb.c |    4 ++--
+>>  1 files changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+>> index 4484c72..2ed7ec1 100644
+>> --- a/drivers/video/atmel_lcdfb.c
+>> +++ b/drivers/video/atmel_lcdfb.c
+>> @@ -1086,7 +1086,7 @@ static int atmel_lcdfb_suspend(struct platform_device *pdev, pm_message_t mesg)
+>>        lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0UL);
+>>
+>>        sinfo->saved_lcdcon = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_VAL);
+>> -       lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, 0);
+>> +       lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, 0);
+>>        if (sinfo->atmel_lcdfb_power_control)
+>>                sinfo->atmel_lcdfb_power_control(0);
+>>
+>> @@ -1105,7 +1105,7 @@ static int atmel_lcdfb_resume(struct platform_device *pdev)
+>>        atmel_lcdfb_start(sinfo);
+>>        if (sinfo->atmel_lcdfb_power_control)
+>>                sinfo->atmel_lcdfb_power_control(1);
+>> -       lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, sinfo->saved_lcdcon);
+>> +       lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, sinfo->saved_lcdcon);
+>>
+>>        /* Enable FIFO & DMA errors */
+>>        lcdc_writel(sinfo, ATMEL_LCDC_IER, ATMEL_LCDC_UFLWI
+>> --
+>> 1.7.1
+>>
+>>
+> 
+
+
+-- 
+Nicolas Ferre

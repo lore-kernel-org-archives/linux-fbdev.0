@@ -1,122 +1,81 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 24 Jan 2012 10:00:24 +0000
-Subject: [PATCH 09/16] OMAPFB: remove mem info from platform_data
-Message-Id: <1327399231-20826-10-git-send-email-tomi.valkeinen@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Mon, 09 Jan 2012 02:36:47 +0000
+Subject: Re: [PATCH] grvga: fix section mismatch warnings
+Message-Id: <4F0A52BF.8020408@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, tony@atomide.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-omapfb driver used platform_data to get fb memory areas and formats
-defined by the board file.
+On 12/27/2011 09:57 PM, Sam Ravnborg wrote:
+>>From 7368b53b755a66c69b2b5ede30e2effe960ad59a Mon Sep 17 00:00:00 2001
+> From: Sam Ravnborg <sam@ravnborg.org>
+> Date: Tue, 27 Dec 2011 22:55:49 +0100
+> Subject: [PATCH] grvga: fix section mismatch warnings
+> 
+> Fix following section mismatch warnings:
+> 
+> WARNING: drivers/video/built-in.o(.devinit.text+0x110): Section mismatch in reference from the function grvga_probe() to the function .init.text:grvga_parse_custom()
+> The function __devinit grvga_probe() references
+> a function __init grvga_parse_custom().
+> If grvga_parse_custom is only used by grvga_probe then
+> annotate grvga_parse_custom with a matching annotation.
+> 
+> WARNING: drivers/video/built-in.o(.devinit.text+0x1f8): Section mismatch in reference from the function grvga_probe() to the variable .init.data:grvga_fix
+> The function __devinit grvga_probe() references
+> a variable __initdata grvga_fix.
+> If grvga_fix is only used by grvga_probe then
+> annotate grvga_fix with a matching annotation.
+> 
+> WARNING: drivers/video/built-in.o(.devinit.text+0x204): Section mismatch in reference from the function grvga_probe() to the variable .init.data:grvga_fix
+> The function __devinit grvga_probe() references
+> a variable __initdata grvga_fix.
+> If grvga_fix is only used by grvga_probe then
+> annotate grvga_fix with a matching annotation.
+> 
+> grvga_fix is used in a function annotated __devinit - so
+> match this using a __devinitdata annotation on grvga_fix.
+> 
+> grvga_parse_custom() is used in a function annotated
+> __devinit - so match this by annotating grvga_parse_custom()
+> with __devinit too.
+> 
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Kristoffer Glembo <kristoffer@gaisler.com>
+> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-This patch removes omapfb's (both old and new omapfb) use of the
-memory data in platform_data, because:
+Applied this patch.
 
-- No board uses them currently
-- It's not board file's job to define things like amount of default
-  framebuffer memory. These should come from the bootloader via command
-  line parameters.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- drivers/video/omap/omapfb_main.c         |    5 ---
- drivers/video/omap2/omapfb/omapfb-main.c |   43 ------------------------------
- include/linux/omapfb.h                   |    1 -
- 3 files changed, 0 insertions(+), 49 deletions(-)
+Thanks,
 
-diff --git a/drivers/video/omap/omapfb_main.c b/drivers/video/omap/omapfb_main.c
-index aaf0990..3d2e147 100644
---- a/drivers/video/omap/omapfb_main.c
-+++ b/drivers/video/omap/omapfb_main.c
-@@ -157,11 +157,6 @@ static int ctrl_init(struct omapfb_device *fbdev)
- 			fbdev->mem_desc.region[i].size  				PAGE_ALIGN(def_vram[i]);
- 		fbdev->mem_desc.region_cnt = i;
--	} else {
--		struct omapfb_platform_data *conf;
--
--		conf = fbdev->dev->platform_data;
--		fbdev->mem_desc = conf->mem_desc;
- 	}
- 
- 	if (!fbdev->mem_desc.region_cnt) {
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 17e7320b..4c28d57 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -1614,23 +1614,6 @@ static int omapfb_allocate_all_fbs(struct omapfb2_device *fbdev)
- 		memset(&vram_paddrs, 0, sizeof(vram_paddrs));
- 	}
- 
--	if (fbdev->dev->platform_data) {
--		struct omapfb_platform_data *opd;
--		opd = fbdev->dev->platform_data;
--		for (i = 0; i < opd->mem_desc.region_cnt; ++i) {
--			if (!vram_sizes[i]) {
--				unsigned long size;
--				unsigned long paddr;
--
--				size = opd->mem_desc.region[i].size;
--				paddr = opd->mem_desc.region[i].paddr;
--
--				vram_sizes[i] = size;
--				vram_paddrs[i] = paddr;
--			}
--		}
--	}
--
- 	for (i = 0; i < fbdev->num_fbs; i++) {
- 		/* allocate memory automatically only for fb0, or if
- 		 * excplicitly defined with vram or plat data option */
-@@ -1828,32 +1811,6 @@ static int omapfb_fb_init(struct omapfb2_device *fbdev, struct fb_info *fbi)
- 
- 	var->rotate = def_rotate;
- 
--	/*
--	 * Check if there is a default color format set in the board file,
--	 * and use this format instead the default deducted from the
--	 * display bpp.
--	 */
--	if (fbdev->dev->platform_data) {
--		struct omapfb_platform_data *opd;
--		int id = ofbi->id;
--
--		opd = fbdev->dev->platform_data;
--		if (opd->mem_desc.region[id].format_used) {
--			enum omap_color_mode mode;
--			enum omapfb_color_format format;
--
--			format = opd->mem_desc.region[id].format;
--			mode = fb_format_to_dss_mode(format);
--			if (mode < 0) {
--				r = mode;
--				goto err;
--			}
--			r = dss_mode_to_fb_mode(mode, var);
--			if (r < 0)
--				goto err;
--		}
--	}
--
- 	if (display) {
- 		u16 w, h;
- 		int rotation = (var->rotate + ofbi->rotation[0]) % 4;
-diff --git a/include/linux/omapfb.h b/include/linux/omapfb.h
-index 7ab9ceb..03f5255 100644
---- a/include/linux/omapfb.h
-+++ b/include/linux/omapfb.h
-@@ -249,7 +249,6 @@ struct omapfb_mem_desc {
- 
- struct omapfb_platform_data {
- 	struct omap_lcd_config		lcd;
--	struct omapfb_mem_desc		mem_desc;
- };
- 
- /* in arch/arm/plat-omap/fb.c */
--- 
-1.7.4.1
+Florian Tobias Schandinat
+
+> ---
+>  drivers/video/grvga.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/grvga.c b/drivers/video/grvga.c
+> index f37e025..da066c2 100644
+> --- a/drivers/video/grvga.c
+> +++ b/drivers/video/grvga.c
+> @@ -70,7 +70,7 @@ static const struct fb_videomode grvga_modedb[] = {
+>      }
+>   };
+>  
+> -static struct fb_fix_screeninfo grvga_fix __initdata = {
+> +static struct fb_fix_screeninfo grvga_fix __devinitdata = {
+>  	.id =		"AG SVGACTRL",
+>  	.type =		FB_TYPE_PACKED_PIXELS,
+>  	.visual =       FB_VISUAL_PSEUDOCOLOR,
+> @@ -267,7 +267,7 @@ static struct fb_ops grvga_ops = {
+>  	.fb_imageblit	= cfb_imageblit
+>  };
+>  
+> -static int __init grvga_parse_custom(char *options,
+> +static int __devinit grvga_parse_custom(char *options,
+>  				     struct fb_var_screeninfo *screendata)
+>  {
+>  	char *this_opt;
 

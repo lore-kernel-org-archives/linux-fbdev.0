@@ -1,35 +1,84 @@
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Mon, 09 Jan 2012 12:20:13 +0000
-Subject: Re: [PATCH] atmel_lcdfb: support 16bit BGR:565 mode, remove unsupported 15bit modes
-Message-Id: <87mx9xdq4i.fsf@macbook.be.48ers.dk>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Date: Mon, 09 Jan 2012 13:32:46 +0000
+Subject: Re: [PATCH] atmel_lcdfb: support 16bit BGR:565 mode, remove unsupported
+Message-Id: <4F0AEC7E.5050403@atmel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1318517570-28459-1-git-send-email-jacmet@sunsite.dk>
- <4F0AC2B1.8010601@atmel.com>
- <20120109121322.GM21765@n2100.arm.linux.org.uk>
-In-Reply-To: <20120109121322.GM21765@n2100.arm.linux.org.uk> (Russell King's
- message of "Mon, 9 Jan 2012 12:13:22 +0000")
+ <4F0AC2B1.8010601@atmel.com> <87ty45dt89.fsf@macbook.be.48ers.dk>
+In-Reply-To: <87ty45dt89.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
->>>>> "Russell" = Russell King <- ARM Linux <linux@arm.linux.org.uk>> writes:
+On 01/09/2012 12:13 PM, Peter Korsgaard :
+>>>>>> "Nicolas" = Nicolas Ferre <nicolas.ferre@atmel.com> writes:
+> 
+>  Nicolas> On 10/13/2011 04:52 PM, Peter Korsgaard :
+>  >> Allow framebuffer to be configured in 16bit mode when panel is wired in
+>  >> (the default) BGR configuration, and don't claim to support 15bit input
+>  >> modes, which the LCD controller cannot handle.
+>  >> 
+>  >> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+> 
+>  Nicolas> Hi Peter,
+> 
+>  Nicolas> Sorry for not having more responsive concerning the two
+>  Nicolas> patches that you posted about atmel_lcdfb driver.
+> 
+> No problem.
+> 
+>  Nicolas> I have a question though about this one...
+> 
+>  >> -		} else if (sinfo->lcd_wiring_mode = ATMEL_LCDC_WIRING_RGB555) {
+>  >> -			var->red.offset = 10;
+>  >> -			var->blue.offset = 0;
+>  >> -			var->green.length = 5;
+> 
+>  Nicolas> Maybe I have missed something but I do not know why you are removing
+>  Nicolas> this part of the configuration? A board at least is using this wiring
+>  Nicolas> mode...
+> 
+> Because it is arguable wrong as far as I understand the HW.
+> There's two parts here:
+> 
+> - 1: Format of framebuffer memory
+> - 2: Wiring of LCD (RGB/BGR order and number of bits)
+> 
+>>From the datasheet, the following framebuffer formats are supported:
+> 
+> 1, 2, 4, 8 bits per pixel (palletized), 16, 24 bits per pixel
+> (non-palletized) for TFT.
+> 
+> So it doesn't really support RGB555 mode. The controller reads up to
+> 32bit of framebuffer data and outputs 24bit on the LCD pins. You CAN
+> wire up a RGB555 panel by just skipping the LSB green of a RGB565
+> wiring, but that is independent of the framebufffer format. The
+> controller/driver doesn't do any RGB/BGR swapping, so the RBG/BGR wiring
+> settings are just used as a software hint (in FBIOGET_VSCREENINFO) about
+> the meaning of the individual bits of a pixel in the framebuffer.
+> 
+> Similar you can connect a 12bit 4:4:4 panel by just connecting it to the
+> MSB LCD pins.
 
-Hi,
+Yes. Thanks to Russell and you for the explanation.
 
- Russell> You describe the RGB555 vs RGB565 via the bitfield values in
- Russell> var->red, var-> green and var->blue.  So, RGB(or BGR)565 has
- Russell> var->green.length with 6, and RGB(or BGR)555 has this as 5.
- Russell> In both cases, bits_per_pixel is 16 as that's the width of a
- Russell> pixel in the frame buffer.
+I acknowledge your two patches right now.
 
- Russell> If the bitfield can't be interpreted by the driver as
- Russell> identifying one of these combinations, then you're supposed to
- Russell> chose one (and in the case where it's fixed by hardware, you
- Russell> set the bitfields according to what the hardware supports.)
+> So in conclusion, I think we should just have:
+> 
+> - ATMEL_LCDC_WIRING_RGB
+> - ATMEL_LCDC_WIRING_BGR
+> - ATMEL_LCDC_WIRING_RGB565
+> - ATMEL_LCDC_WIRING_BGR565
+> 
+> These simply define framebuffer bit order (RGB/BGR) and preferred
+> default bit depth (16/24).
 
-Indeed, and as the hardware can only interprete 1/2/4/8 paletted and
-16/24 RGB, we shouldn't claim to support 15bit.
+Maybe we can think about a patch that removes the RGB555 variable from
+the header (include/video/atmel_lcdc.h) and the board file that is using
+it (board-neocore926.c).
 
+Best regards,
 -- 
-Bye, Peter Korsgaard
+Nicolas Ferre

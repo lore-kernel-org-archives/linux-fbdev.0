@@ -1,32 +1,43 @@
 From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Tue, 10 Jan 2012 14:19:18 +0000
+Date: Tue, 10 Jan 2012 16:42:36 +0000
 Subject: Re: [PATCH] atmel_lcdfb: support 16bit BGR:565 mode, remove unsupported 15bit modes
-Message-Id: <87pqerd4ih.fsf@macbook.be.48ers.dk>
+Message-Id: <8762gjcxvn.fsf@macbook.be.48ers.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1318517570-28459-1-git-send-email-jacmet@sunsite.dk>
  <4F0AC2B1.8010601@atmel.com> <87ty45dt89.fsf@macbook.be.48ers.dk>
- <20120110140218.GB7180@jl-vm1.vm.bytemark.co.uk>
-In-Reply-To: <20120110140218.GB7180@jl-vm1.vm.bytemark.co.uk> (Jamie Lokier's
- message of "Tue, 10 Jan 2012 14:02:18 +0000")
+ <20120110130146.GC2057@taskit.de>
+In-Reply-To: <20120110130146.GC2057@taskit.de> (Christian Glindkamp's message
+ of "Tue, 10 Jan 2012 14:01:46 +0100")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
->>>>> "Jamie" = Jamie Lokier <jamie@shareable.org> writes:
+>>>>> "Christian" = Christian Glindkamp <christian.glindkamp@taskit.de> writes:
 
- >> Similar you can connect a 12bit 4:4:4 panel by just connecting it to the
- >> MSB LCD pins.
+Hi,
 
- Jamie> If you're connecting an RGB555 or RGB444 panel, don't you want
- Jamie> the software using the framebuffer to know this so it will
- Jamie> dither appropriately?
+ >> So it doesn't really support RGB555 mode. The controller reads up to
+ >> 32bit of framebuffer data and outputs 24bit on the LCD pins. You CAN
+ >> wire up a RGB555 panel by just skipping the LSB green of a RGB565
+ >> wiring, but that is independent of the framebufffer format.
 
-Potentially. This is similar to the issues with cheap 18bit laptop
-LCDs. We somewhat do this (E.G. default to 565 mode if a 16bit panel is
-used), but as the hardware doesn't support anything bwteen 8bit paletted
-and RGB565 modes, there's not much else we can do (fbdev doesn't provide
-any info about the panel specs).
+ Christian> But the AT91SAM9261/AT91SAM9263 do not have a native RGB565
+ Christian> format if it is configured for 16bit (so it does not read
+ Christian> 32bit and output 24bit but just 16bit) but uses BGR555 with
+ Christian> an additional intensity bit in the MSB like the palette
+ Christian> where you also kept the BGR555 format. How can you get
+ Christian> correct colors on these processors if this code above is
+ Christian> removed?
+
+I now had a look at the 9261/9263 datasheets, and don't find any
+explicit mention of the bit layout of the 16bit/24bit modes. Just to be
+completely sure:
+
+- 16bit mode is IBGR-1555 (independently of little/big/wince mode?)
+- 24bit is BGR-888 (packed) or XBGR-8888 (unpacked)
+
+Right?
 
 -- 
 Bye, Peter Korsgaard

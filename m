@@ -1,119 +1,114 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 24 Jan 2012 10:00:30 +0000
-Subject: [PATCH 15/16] OMAP1: Remove unused LCD devices from board files
-Message-Id: <1327399231-20826-16-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 13 Jan 2012 11:46:29 +0000
+Subject: [PATCH 2/6] OMAPDSS: APPLY: add fifo merge support funcs
+Message-Id: <1326455193-19716-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1326455193-19716-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1326455193-19716-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, tony@atomide.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: archit@ti.com, rob@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Some OMAP1 board files define LCD platform_devices, but there are no
-corresponding LCD drivers for those in the kernel. Thus remove these LCD
-devices.
+Add mechanism to set/unset the DISPC fifo-merge:
+
+Add new fields to dss_data, fifo_merge and fifo_merge_dirty. These are
+similar to the other info/dirty flags in ovl_priv_data and ovl_mgr_data,
+but fifo merge is a common attribute to all managers and thus outside
+the ovl_mgr_data.
+
+The fifo-merge field is used in the dss_write_regs_common, which handles
+writing the register.
+
+dss_apply_fifo_merge() can be used to set/unset the fifo merge field in
+the dss_data.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-omap1/board-fsample.c  |    6 ------
- arch/arm/mach-omap1/board-h2.c       |    6 ------
- arch/arm/mach-omap1/board-perseus2.c |    6 ------
- arch/arm/mach-omap1/board-sx1.c      |    6 ------
- 4 files changed, 0 insertions(+), 24 deletions(-)
+ drivers/video/omap2/dss/apply.c |   43 +++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 43 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/mach-omap1/board-fsample.c b/arch/arm/mach-omap1/board-fsample.c
-index b00844f..7afaf3c 100644
---- a/arch/arm/mach-omap1/board-fsample.c
-+++ b/arch/arm/mach-omap1/board-fsample.c
-@@ -274,17 +274,11 @@ static struct platform_device kp_device = {
- 	.resource	= kp_resources,
- };
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 052dc87..604737f 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -105,6 +105,9 @@ static struct {
+ 	struct ovl_priv_data ovl_priv_data_array[MAX_DSS_OVERLAYS];
+ 	struct mgr_priv_data mgr_priv_data_array[MAX_DSS_MANAGERS];
  
--static struct platform_device lcd_device = {
--	.name		= "lcd_p2",
--	.id		= -1,
--};
--
- static struct platform_device *devices[] __initdata = {
- 	&nor_device,
- 	&nand_device,
- 	&smc91x_device,
- 	&kp_device,
--	&lcd_device,
- };
++	bool fifo_merge_dirty;
++	bool fifo_merge;
++
+ 	bool irq_enabled;
+ } dss_data;
  
- static struct omap_lcd_config fsample_lcd_config = {
-diff --git a/arch/arm/mach-omap1/board-h2.c b/arch/arm/mach-omap1/board-h2.c
-index 471233f..af2be8c 100644
---- a/arch/arm/mach-omap1/board-h2.c
-+++ b/arch/arm/mach-omap1/board-h2.c
-@@ -326,18 +326,12 @@ static struct platform_device h2_irda_device = {
- 	.resource	= h2_irda_resources,
- };
+@@ -585,11 +588,40 @@ static void dss_mgr_write_regs(struct omap_overlay_manager *mgr)
+ 	}
+ }
  
--static struct platform_device h2_lcd_device = {
--	.name		= "lcd_h2",
--	.id		= -1,
--};
--
- static struct platform_device *h2_devices[] __initdata = {
- 	&h2_nor_device,
- 	&h2_nand_device,
- 	&h2_smc91x_device,
- 	&h2_irda_device,
- 	&h2_kp_device,
--	&h2_lcd_device,
- };
++static void dss_write_regs_common(void)
++{
++	const int num_mgrs = omap_dss_get_num_overlay_managers();
++	int i;
++
++	if (!dss_data.fifo_merge_dirty)
++		return;
++
++	for (i = 0; i < num_mgrs; ++i) {
++		struct omap_overlay_manager *mgr;
++		struct mgr_priv_data *mp;
++
++		mgr = omap_dss_get_overlay_manager(i);
++		mp = get_mgr_priv(mgr);
++
++		if (mp->enabled) {
++			if (dss_data.fifo_merge_dirty) {
++				dispc_enable_fifomerge(dss_data.fifo_merge);
++				dss_data.fifo_merge_dirty = false;
++			}
++
++			if (mp->updating)
++				mp->shadow_info_dirty = true;
++		}
++	}
++}
++
+ static void dss_write_regs(void)
+ {
+ 	const int num_mgrs = omap_dss_get_num_overlay_managers();
+ 	int i;
  
- static void __init h2_init_smc91x(void)
-diff --git a/arch/arm/mach-omap1/board-perseus2.c b/arch/arm/mach-omap1/board-perseus2.c
-index 44df931..8e01534 100644
---- a/arch/arm/mach-omap1/board-perseus2.c
-+++ b/arch/arm/mach-omap1/board-perseus2.c
-@@ -233,17 +233,11 @@ static struct platform_device kp_device = {
- 	.resource	= kp_resources,
- };
++	dss_write_regs_common();
++
+ 	for (i = 0; i < num_mgrs; ++i) {
+ 		struct omap_overlay_manager *mgr;
+ 		struct mgr_priv_data *mp;
+@@ -659,6 +691,8 @@ void dss_mgr_start_update(struct omap_overlay_manager *mgr)
  
--static struct platform_device lcd_device = {
--	.name		= "lcd_p2",
--	.id		= -1,
--};
--
- static struct platform_device *devices[] __initdata = {
- 	&nor_device,
- 	&nand_device,
- 	&smc91x_device,
- 	&kp_device,
--	&lcd_device,
- };
+ 	dss_mgr_write_regs(mgr);
  
- static struct omap_lcd_config perseus2_lcd_config __initdata = {
-diff --git a/arch/arm/mach-omap1/board-sx1.c b/arch/arm/mach-omap1/board-sx1.c
-index 0c880be..0c76e12 100644
---- a/arch/arm/mach-omap1/board-sx1.c
-+++ b/arch/arm/mach-omap1/board-sx1.c
-@@ -356,11 +356,6 @@ static struct omap_usb_config sx1_usb_config __initdata = {
++	dss_write_regs_common();
++
+ 	mp->updating = true;
  
- /*----------- LCD -------------------------*/
+ 	if (!dss_data.irq_enabled && need_isr())
+@@ -859,6 +893,15 @@ static void dss_apply_ovl_fifo_thresholds(struct omap_overlay *ovl,
+ 	op->extra_info_dirty = true;
+ }
  
--static struct platform_device sx1_lcd_device = {
--	.name		= "lcd_sx1",
--	.id		= -1,
--};
--
- static struct omap_lcd_config sx1_lcd_config __initdata = {
- 	.ctrl_name	= "internal",
- };
-@@ -369,7 +364,6 @@ static struct omap_lcd_config sx1_lcd_config __initdata = {
- static struct platform_device *sx1_devices[] __initdata = {
- 	&sx1_flash_device,
- 	&sx1_kp_device,
--	&sx1_lcd_device,
- 	&sx1_irda_device,
- };
- 
++static void dss_apply_fifo_merge(bool use_fifo_merge)
++{
++	if (dss_data.fifo_merge = use_fifo_merge)
++		return;
++
++	dss_data.fifo_merge = use_fifo_merge;
++	dss_data.fifo_merge_dirty = true;
++}
++
+ static void dss_ovl_setup_fifo(struct omap_overlay *ovl)
+ {
+ 	struct ovl_priv_data *op = get_ovl_priv(ovl);
 -- 
 1.7.4.1
 

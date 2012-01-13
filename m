@@ -1,29 +1,69 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Wed, 11 Jan 2012 17:40:48 +0000
+From: Sylwester Nawrocki <snjw23@gmail.com>
+Date: Fri, 13 Jan 2012 21:03:00 +0000
 Subject: Re: [PATCH] video: s3c-fb: Add device tree support
-Message-Id: <20120111174048.GC24213@opensource.wolfsonmicro.com>
+Message-Id: <4F109C04.5090600@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1326139307-25112-1-git-send-email-thomas.abraham@linaro.org>
- <20120110045219.GA5433@sirena.org.uk>
- <CAJuYYwRSO9OuiLNddOa+KLSkGwOAp3yHcrQZXSk_k2+oxtEDPQ@mail.gmail.com>
-In-Reply-To: <CAJuYYwRSO9OuiLNddOa+KLSkGwOAp3yHcrQZXSk_k2+oxtEDPQ@mail.gmail.com>
+In-Reply-To: <1326139307-25112-1-git-send-email-thomas.abraham@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Jan 11, 2012 at 04:34:28PM +0530, Thomas Abraham wrote:
-> On 10 January 2012 10:22, Mark Brown
+On 01/09/2012 09:01 PM, Thomas Abraham wrote:
+>
+> +	for (idx = 0; idx<  nr_gpios; idx++) {
+> +		gpio = of_get_gpio(dev->of_node, idx);
+> +		if (!gpio_is_valid(gpio)) {
+> +			dev_err(dev, "invalid gpio[%d]: %d\n", idx, gpio);
+> +			return -EINVAL;
+> +		}
+> +
+> +		if (!request)
+> +			continue;
+> +
+> +		ret = gpio_request(gpio, "fimd");
 
-> > This isn't terribly informative for the user - which GPIOs and in what
-> > order are they specified? =A0Looking at the code it looks like pin mux
-> > configuration so just some wording saying it's a list of pins to be used
-> > for the framebuffer function.
+Is it how it normally is supposed to be done, i.e. configuring a gpio
+_before_ it has been requested ? of_get_gpio() indirectly touches the
+gpio controller and gpio_request() doesn't seem to serve its purpose
+in this case, i.e. if there is situation like:
 
-> Ok. I will modify the sentence to mean that it is list of gpios used
-> by framebuffer controller for data/timing interface with the lcd
-> panel. Thanks for your review.
+driver A                        driver B
 
-You probably want to mention that it's for pin muxing, the reason I
-didn't get what it meant on first read was that normally GPIO means
-specifically the sort of stuff handled by gpiolib.
+of_get_gpio(nodeA, gpioA);
+                                of_get_gpio(nodeB, gpioA);
+gpio_request(gpioA);
+                                gpio_request(gpioB);
+
+driver B will end up with configuration of gpioA from nodeA, not from 
+nodeB. 
+
+As there are few drivers doing that I must be missing something,
+not sure what..
+I realize the GPIO number needs to be known in order for a GPIO to be
+requested. Shouldn't of_get_gpio() be extended to allow locking gpio
+controller's module and marking a GPIO as requested in advance ?
+
+> +		if (ret) {
+> +			dev_err(dev, "gpio [%d] request failed\n", gpio);
+> +			goto gpio_free;
+> +		}
+> +		sfb->gpios[idx] = gpio;
+> +	}
+> +	return 0;
+> +
+> +gpio_free:
+> +	while (--idx>= 0)
+> +		gpio_free(sfb->gpios[idx]);
+> +	return ret;
+> +}
+> +
+> +static void s3c_fb_dt_free_gpios(struct s3c_fb *sfb)
+> +{
+> +	unsigned int idx, nr_gpio;
+> +
+> +	nr_gpio = sfb->pdata->win[0]->max_bpp + 4;
+> +	for (idx = 0; idx<  nr_gpio; idx++)
+> +		gpio_free(sfb->gpios[idx]);
+> +}

@@ -1,48 +1,98 @@
-From: Danny Kukawka <danny.kukawka@bisect.de>
-Date: Mon, 30 Jan 2012 22:00:17 +0000
-Subject: [PATCH 13/16] riva/fbdev: fix several -Wuninitialized
-Message-Id: <1327960820-11867-14-git-send-email-danny.kukawka@bisect.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 13 Jan 2012 11:46:28 +0000
+Subject: [PATCH 1/6] OMAPDSS: FEAT: Add FIFO_MERGE feature
+Message-Id: <1326455193-19716-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1327960820-11867-1-git-send-email-danny.kukawka@bisect.de>
-In-Reply-To: <1327960820-11867-1-git-send-email-danny.kukawka@bisect.de>
+References: <1326455193-19716-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1326455193-19716-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@gmail.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, rob@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Fix several -Wuninitialized compiler warnings by changing the
-order of getting modedb in riva_update_default_var() to set
-first the fallback and then the prefered timing.
+Add feature flag for fifo merge. OMAP2 doesn't contain fifo merge, later
+OMAPs do.
 
-Signed-off-by: Danny Kukawka <danny.kukawka@bisect.de>
+dispc_enable_fifomerge() checks for the flag when called, and gives a
+WARN if fifo merge is being enabled when it is not supported.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/riva/fbdev.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ drivers/video/omap2/dss/dispc.c        |    5 +++++
+ drivers/video/omap2/dss/dss_features.c |    9 +++++----
+ drivers/video/omap2/dss/dss_features.h |    1 +
+ 3 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
-index 2f58cf9..90df1a6 100644
---- a/drivers/video/riva/fbdev.c
-+++ b/drivers/video/riva/fbdev.c
-@@ -1816,6 +1816,8 @@ static void __devinit riva_update_default_var(struct fb_var_screeninfo *var,
- 			     specs->modedb, specs->modedb_len,
- 			     NULL, 8);
- 	} else if (specs->modedb != NULL) {
-+		/* get first mode in database as fallback */
-+		modedb = specs->modedb[0];
- 		/* get preferred timing */
- 		if (info->monspecs.misc & FB_MISC_1ST_DETAIL) {
- 			int i;
-@@ -1826,9 +1828,6 @@ static void __devinit riva_update_default_var(struct fb_var_screeninfo *var,
- 					break;
- 				}
- 			}
--		} else {
--			/* otherwise, get first mode in database */
--			modedb = specs->modedb[0];
- 		}
- 		var->bits_per_pixel = 8;
- 		riva_update_var(var, &modedb);
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index a5ec7f3..d711518 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -1054,6 +1054,11 @@ void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high)
+ 
+ void dispc_enable_fifomerge(bool enable)
+ {
++	if (!dss_has_feature(FEAT_FIFO_MERGE)) {
++		WARN_ON(enable);
++		return;
++	}
++
+ 	DSSDBG("FIFO merge %s\n", enable ? "enabled" : "disabled");
+ 	REG_FLD_MOD(DISPC_CONFIG, enable ? 1 : 0, 14, 14);
+ }
+diff --git a/drivers/video/omap2/dss/dss_features.c b/drivers/video/omap2/dss/dss_features.c
+index afcb593..c2456c5 100644
+--- a/drivers/video/omap2/dss/dss_features.c
++++ b/drivers/video/omap2/dss/dss_features.c
+@@ -370,7 +370,7 @@ static const struct omap_dss_features omap3430_dss_features = {
+ 		FEAT_LINEBUFFERSPLIT | FEAT_RESIZECONF |
+ 		FEAT_DSI_PLL_FREQSEL | FEAT_DSI_REVERSE_TXCLKESC |
+ 		FEAT_VENC_REQUIRES_TV_DAC_CLK | FEAT_CPR | FEAT_PRELOAD |
+-		FEAT_FIR_COEF_V | FEAT_ALPHA_FIXED_ZORDER,
++		FEAT_FIR_COEF_V | FEAT_ALPHA_FIXED_ZORDER | FEAT_FIFO_MERGE,
+ 
+ 	.num_mgrs = 2,
+ 	.num_ovls = 3,
+@@ -394,7 +394,7 @@ static const struct omap_dss_features omap3630_dss_features = {
+ 		FEAT_ROWREPEATENABLE | FEAT_LINEBUFFERSPLIT |
+ 		FEAT_RESIZECONF | FEAT_DSI_PLL_PWR_BUG |
+ 		FEAT_DSI_PLL_FREQSEL | FEAT_CPR | FEAT_PRELOAD |
+-		FEAT_FIR_COEF_V | FEAT_ALPHA_FIXED_ZORDER,
++		FEAT_FIR_COEF_V | FEAT_ALPHA_FIXED_ZORDER | FEAT_FIFO_MERGE,
+ 
+ 	.num_mgrs = 2,
+ 	.num_ovls = 3,
+@@ -419,7 +419,7 @@ static const struct omap_dss_features omap4430_es1_0_dss_features  = {
+ 		FEAT_DSI_DCS_CMD_CONFIG_VC | FEAT_DSI_VC_OCP_WIDTH |
+ 		FEAT_DSI_GNQ | FEAT_HANDLE_UV_SEPARATE | FEAT_ATTR2 |
+ 		FEAT_CPR | FEAT_PRELOAD | FEAT_FIR_COEF_V |
+-		FEAT_ALPHA_FREE_ZORDER,
++		FEAT_ALPHA_FREE_ZORDER | FEAT_FIFO_MERGE,
+ 
+ 	.num_mgrs = 3,
+ 	.num_ovls = 4,
+@@ -443,7 +443,8 @@ static const struct omap_dss_features omap4_dss_features = {
+ 		FEAT_DSI_DCS_CMD_CONFIG_VC | FEAT_DSI_VC_OCP_WIDTH |
+ 		FEAT_DSI_GNQ | FEAT_HDMI_CTS_SWMODE |
+ 		FEAT_HANDLE_UV_SEPARATE | FEAT_ATTR2 | FEAT_CPR |
+-		FEAT_PRELOAD | FEAT_FIR_COEF_V | FEAT_ALPHA_FREE_ZORDER,
++		FEAT_PRELOAD | FEAT_FIR_COEF_V | FEAT_ALPHA_FREE_ZORDER |
++		FEAT_FIFO_MERGE,
+ 
+ 	.num_mgrs = 3,
+ 	.num_ovls = 4,
+diff --git a/drivers/video/omap2/dss/dss_features.h b/drivers/video/omap2/dss/dss_features.h
+index cd833bb..50caee9 100644
+--- a/drivers/video/omap2/dss/dss_features.h
++++ b/drivers/video/omap2/dss/dss_features.h
+@@ -58,6 +58,7 @@ enum dss_feat_id {
+ 	FEAT_FIR_COEF_V			= 1 << 25,
+ 	FEAT_ALPHA_FIXED_ZORDER		= 1 << 26,
+ 	FEAT_ALPHA_FREE_ZORDER		= 1 << 27,
++	FEAT_FIFO_MERGE			= 1 << 28,
+ };
+ 
+ /* DSS register field id */
 -- 
-1.7.7.3
+1.7.4.1
 

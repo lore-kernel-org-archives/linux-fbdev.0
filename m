@@ -1,44 +1,44 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 17 Jan 2012 12:48:59 +0000
-Subject: [PATCH 3/6] OMAPDSS: remove wrong HDMI HPD muxing
-Message-Id: <1326804542-22285-4-git-send-email-tomi.valkeinen@ti.com>
+Date: Fri, 13 Jan 2012 11:46:27 +0000
+Subject: [PATCH 0/6] OMAPDSS: naive fifomerge support
+Message-Id: <1326455193-19716-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1326804542-22285-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1326804542-22285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, mythripk@ti.com
-Cc: archit@ti.com, x0132446@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, rob@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-"hdmi_hpd" pin is muxed to INPUT and PULLUP, but the pin is not
-currently used, and in the future when it is used, the pin is used as a
-GPIO and is board specific, not an OMAP4 wide thing.
+This patch set implements fifomerge and a naive version for fifo threshold
+calculation when fifomerge is in use. The strategy is simple: keep the low
+threshold the same for both fifomerge and non-fifomerge cases, but calculate
+the high threshold using the combined fifo size when fifomerge is in use.
 
-So remove the muxing for now.
+This should give some power savings, as the usable fifo size is much larger
+when only one overlay is in use. It probably won't help fifo underflow cases,
+as the low threshold is kept the same.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- arch/arm/mach-omap2/display.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+Tested on OMAP4 Blaze (DSI cmd mode) and OMAP3 Overo (DPI).
 
-diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
-index ffd9bd9..d6e65e2 100644
---- a/arch/arm/mach-omap2/display.c
-+++ b/arch/arm/mach-omap2/display.c
-@@ -102,12 +102,8 @@ static void omap4_hdmi_mux_pads(enum omap_hdmi_flags flags)
- 	u32 reg;
- 	u16 control_i2c_1;
- 
--	/* PAD0_HDMI_HPD_PAD1_HDMI_CEC */
--	omap_mux_init_signal("hdmi_hpd",
--			OMAP_PIN_INPUT_PULLUP);
- 	omap_mux_init_signal("hdmi_cec",
- 			OMAP_PIN_INPUT_PULLUP);
--	/* PAD0_HDMI_DDC_SCL_PAD1_HDMI_DDC_SDA */
- 	omap_mux_init_signal("hdmi_ddc_scl",
- 			OMAP_PIN_INPUT_PULLUP);
- 	omap_mux_init_signal("hdmi_ddc_sda",
+ Tomi
+
+Tomi Valkeinen (6):
+  OMAPDSS: FEAT: Add FIFO_MERGE feature
+  OMAPDSS: APPLY: add fifo merge support funcs
+  OMAPDSS: APPLY: add fifo-merge support
+  OMAPDSS: DISPC: print fifo threshold values in bytes
+  OMAPDSS: DISPC: move fifo threhold calc to dispc.c
+  OMAPDSS: DISPC: Add naive threshold calc for fifomerge
+
+ drivers/video/omap2/dss/apply.c        |  221 +++++++++++++++++++++++++++-----
+ drivers/video/omap2/dss/dispc.c        |   51 +++++++-
+ drivers/video/omap2/dss/display.c      |   10 --
+ drivers/video/omap2/dss/dsi.c          |    8 -
+ drivers/video/omap2/dss/dss.h          |   10 +-
+ drivers/video/omap2/dss/dss_features.c |    9 +-
+ drivers/video/omap2/dss/dss_features.h |    1 +
+ 7 files changed, 244 insertions(+), 66 deletions(-)
+
 -- 
 1.7.4.1
 

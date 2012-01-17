@@ -1,36 +1,53 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 24 Jan 2012 10:45:17 +0000
-Subject: [PATCH 0/3]: ARM: OMAP2/3: HWMOD fixes for DSS
-Message-Id: <1327401920-5617-1-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 17 Jan 2012 12:49:00 +0000
+Subject: [PATCH 4/6] OMAP: 4430SDP/Panda: setup HDMI GPIO muxes
+Message-Id: <1326804542-22285-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1326804542-22285-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1326804542-22285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, paul@pwsan.com
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, mythripk@ti.com
+Cc: archit@ti.com, x0132446@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-There are some sysconfig flags missing for OMAP2/3 DSS hwmods. This series adds
-those.
+The HDMI GPIO pins LS_OE and CT_CP_HPD are not currently configured.
+This patch configures them as output pins.
 
-This series is based on the earlier series "[PATCH 0/3] OMAP: DSS PM fixes",
-but is sent separately here as the first series is inteded to go into the next
-rc, and this can be left to next merge window.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/mach-omap2/board-4430sdp.c    |    3 +++
+ arch/arm/mach-omap2/board-omap4panda.c |    3 +++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-Tested on OMAP3 Overo. I don't have OMAP3 DSI or RFBI boards, so I haven't been
-able to test those.
-
- Tomi
-
-Tomi Valkeinen (3):
-  ARM: OMAP2/3: HWMOD: Add missing flags for dispc class
-  ARM: OMAP2/3: HWMOD: Add missing flag for rfbi class
-  ARM: OMAP3: HWMOD: Add omap_hwmod_class_sysconfig for dsi
-
- .../mach-omap2/omap_hwmod_2xxx_3xxx_ipblock_data.c |    2 +-
- arch/arm/mach-omap2/omap_hwmod_2xxx_ipblock_data.c |    3 ++-
- arch/arm/mach-omap2/omap_hwmod_3xxx_data.c         |   15 ++++++++++++++-
- 3 files changed, 17 insertions(+), 3 deletions(-)
-
+diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+index ae0c09f..5dcc8df 100644
+--- a/arch/arm/mach-omap2/board-4430sdp.c
++++ b/arch/arm/mach-omap2/board-4430sdp.c
+@@ -833,6 +833,9 @@ static void omap_4430sdp_display_init(void)
+ 		omap_hdmi_init(OMAP_HDMI_SDA_SCL_EXTERNAL_PULLUP);
+ 	else
+ 		omap_hdmi_init(0);
++
++	omap_mux_init_gpio(HDMI_GPIO_LS_OE, OMAP_PIN_OUTPUT);
++	omap_mux_init_gpio(HDMI_GPIO_CT_CP_HPD, OMAP_PIN_OUTPUT);
+ }
+ 
+ #ifdef CONFIG_OMAP_MUX
+diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
+index 133b5a7..06a7075 100644
+--- a/arch/arm/mach-omap2/board-omap4panda.c
++++ b/arch/arm/mach-omap2/board-omap4panda.c
+@@ -549,6 +549,9 @@ void omap4_panda_display_init(void)
+ 		omap_hdmi_init(OMAP_HDMI_SDA_SCL_EXTERNAL_PULLUP);
+ 	else
+ 		omap_hdmi_init(0);
++
++	omap_mux_init_gpio(HDMI_GPIO_LS_OE, OMAP_PIN_OUTPUT);
++	omap_mux_init_gpio(HDMI_GPIO_CT_CP_HPD, OMAP_PIN_OUTPUT);
+ }
+ 
+ static void __init omap4_panda_init(void)
 -- 
 1.7.4.1
 

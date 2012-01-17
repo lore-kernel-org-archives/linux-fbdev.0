@@ -1,100 +1,81 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] offb: Fix setting of the pseudo-palette for >8bpp
-Date: Wed, 28 Dec 2011 21:08:07 +1100
-Message-ID: <1325066887.6632.37.camel@pasglop>
-Mime-Version: 1.0
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 17 Jan 2012 12:49:01 +0000
+Subject: [PATCH 5/6] OMAP: 4430SDP/Panda: add HDMI HPD gpio
+Message-Id: <1326804542-22285-6-git-send-email-tomi.valkeinen@ti.com>
+List-Id: <linux-fbdev.vger.kernel.org>
+References: <1326804542-22285-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1326804542-22285-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, mythripk@ti.com
+Cc: archit@ti.com, x0132446@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-When using a >8bpp framebuffer, offb advertises truecolor, not directcolor,
-and doesn't touch the color map even if it has a corresponding access method
-for the real hardware.
+Both Panda and 4430SDP use GPIO 64 as HDMI hot-plug-detect. Configure
+this GPIO in the board files.
 
-Thus it needs to set the pseudo-palette with all 3 components of the color,
-like other truecolor framebuffers, not with copies of the color index like
-a directcolor framebuffer would do.
-
-This went unnoticed for a long time because it's pretty hard to get offb
-to kick in with anything but 8bpp (old BootX under MacOS will do that and
-qemu does it).
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
+ arch/arm/mach-omap2/board-4430sdp.c    |    3 +++
+ arch/arm/mach-omap2/board-omap4panda.c |    3 +++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/offb.c b/drivers/video/offb.c
-index cb163a5..24e1fc6 100644
---- a/drivers/video/offb.c
-+++ b/drivers/video/offb.c
-@@ -100,36 +100,32 @@ static int offb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
- 			  u_int transp, struct fb_info *info)
- {
- 	struct offb_par *par = (struct offb_par *) info->par;
--	int i, depth;
--	u32 *pal = info->pseudo_palette;
--
--	depth = info->var.bits_per_pixel;
--	if (depth == 16)
--		depth = (info->var.green.length == 5) ? 15 : 16;
--
--	if (regno > 255 ||
--	    (depth == 16 && regno > 63) ||
--	    (depth == 15 && regno > 31))
--		return 1;
--
--	if (regno < 16) {
--		switch (depth) {
--		case 15:
--			pal[regno] = (regno << 10) | (regno << 5) | regno;
--			break;
--		case 16:
--			pal[regno] = (regno << 11) | (regno << 5) | regno;
--			break;
--		case 24:
--			pal[regno] = (regno << 16) | (regno << 8) | regno;
--			break;
--		case 32:
--			i = (regno << 8) | regno;
--			pal[regno] = (i << 16) | i;
--			break;
-+
-+	if (info->fix.visual == FB_VISUAL_TRUECOLOR) {
-+		u32 *pal = info->pseudo_palette;
-+		u32 cr = red >> (16 - info->var.red.length);
-+		u32 cg = green >> (16 - info->var.green.length);
-+		u32 cb = blue >> (16 - info->var.blue.length);
-+		u32 value;
-+
-+		if (regno >= 16)
-+			return -EINVAL;
-+
-+		value = (cr << info->var.red.offset) |
-+			(cg << info->var.green.offset) |
-+			(cb << info->var.blue.offset);
-+		if (info->var.transp.length > 0) {
-+			u32 mask = (1 << info->var.transp.length) - 1;
-+			mask <<= info->var.transp.offset;
-+			value |= mask;
- 		}
-+		pal[regno] = value;
-+		return 0;
- 	}
+diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+index 5dcc8df..a776c26 100644
+--- a/arch/arm/mach-omap2/board-4430sdp.c
++++ b/arch/arm/mach-omap2/board-4430sdp.c
+@@ -54,6 +54,7 @@
+ #define OMAP4_SFH7741_ENABLE_GPIO		188
+ #define HDMI_GPIO_CT_CP_HPD 60 /* HPD mode enable/disable */
+ #define HDMI_GPIO_LS_OE 41 /* Level shifter for HDMI */
++#define HDMI_GPIO_HPD  63 /* Hotplug detect */
+ #define DISPLAY_SEL_GPIO	59	/* LCD2/PicoDLP switch */
+ #define DLP_POWER_ON_GPIO	40
  
-+	if (regno > 255)
-+		return -EINVAL;
-+
- 	red >>= 8;
- 	green >>= 8;
- 	blue >>= 8;
+@@ -598,6 +599,7 @@ static void __init omap_sfh7741prox_init(void)
+ static struct gpio sdp4430_hdmi_gpios[] = {
+ 	{ HDMI_GPIO_CT_CP_HPD, GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ct_cp_hpd" },
+ 	{ HDMI_GPIO_LS_OE,	GPIOF_OUT_INIT_HIGH,	"hdmi_gpio_ls_oe" },
++	{ HDMI_GPIO_HPD, GPIOF_DIR_IN, "hdmi_gpio_hpd" },
+ };
+ 
+ static int sdp4430_panel_enable_hdmi(struct omap_dss_device *dssdev)
+@@ -836,6 +838,7 @@ static void omap_4430sdp_display_init(void)
+ 
+ 	omap_mux_init_gpio(HDMI_GPIO_LS_OE, OMAP_PIN_OUTPUT);
+ 	omap_mux_init_gpio(HDMI_GPIO_CT_CP_HPD, OMAP_PIN_OUTPUT);
++	omap_mux_init_gpio(HDMI_GPIO_HPD, OMAP_PIN_INPUT_PULLDOWN);
+ }
+ 
+ #ifdef CONFIG_OMAP_MUX
+diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
+index 06a7075..b22a288 100644
+--- a/arch/arm/mach-omap2/board-omap4panda.c
++++ b/arch/arm/mach-omap2/board-omap4panda.c
+@@ -53,6 +53,7 @@
+ #define GPIO_WIFI_IRQ		53
+ #define HDMI_GPIO_CT_CP_HPD 60 /* HPD mode enable/disable */
+ #define HDMI_GPIO_LS_OE 41 /* Level shifter for HDMI */
++#define HDMI_GPIO_HPD  63 /* Hotplug detect */
+ 
+ /* wl127x BT, FM, GPS connectivity chip */
+ static int wl1271_gpios[] = {46, -1, -1};
+@@ -481,6 +482,7 @@ int __init omap4_panda_dvi_init(void)
+ static struct gpio panda_hdmi_gpios[] = {
+ 	{ HDMI_GPIO_CT_CP_HPD, GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ct_cp_hpd" },
+ 	{ HDMI_GPIO_LS_OE,	GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ls_oe" },
++	{ HDMI_GPIO_HPD, GPIOF_DIR_IN, "hdmi_gpio_hpd" },
+ };
+ 
+ static int omap4_panda_panel_enable_hdmi(struct omap_dss_device *dssdev)
+@@ -552,6 +554,7 @@ void omap4_panda_display_init(void)
+ 
+ 	omap_mux_init_gpio(HDMI_GPIO_LS_OE, OMAP_PIN_OUTPUT);
+ 	omap_mux_init_gpio(HDMI_GPIO_CT_CP_HPD, OMAP_PIN_OUTPUT);
++	omap_mux_init_gpio(HDMI_GPIO_HPD, OMAP_PIN_INPUT_PULLDOWN);
+ }
+ 
+ static void __init omap4_panda_init(void)
+-- 
+1.7.4.1
+

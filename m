@@ -1,171 +1,251 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 11 Jan 2012 22:39:41 +0000
-Subject: Re: [PATCH 1/2] atmel_lcdfb: Adjust HFP calculation so it matches the manual.
-Message-Id: <4F0E0FAD.6080404@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 17 Jan 2012 13:04:30 +0000
+Subject: [PATCH 6/6] OMAPDSS: HDMI: PHY burnout fix
+Message-Id: <1326805470-25575-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1317801598-23757-1-git-send-email-alexander.stein@systec-electronic.com>
- <4F0AF7F8.8040300@atmel.com>
-In-Reply-To: <4F0AF7F8.8040300@atmel.com>
+References: <1326804542-22285-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1326804542-22285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, mythripk@ti.com
+Cc: archit@ti.com, x0132446@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi Nicolas, Alexander,
+A hardware bug in the OMAP4 HDMI PHY causes physical damage to the board
+if the HDMI PHY is powered on when the cable is not connected.
 
-On 01/09/2012 02:21 PM, Nicolas Ferre wrote:
-> On 10/05/2011 09:59 AM, Alexander Stein :
->> In the AT91SAM9263 Manual the HFP part in LCDTIM2 is described as follows:
->>   * HFP: Horizontal Front Porch
->>   Number of idle LCDDOTCK cycles at the end of the line.
->>   Idle period is (HFP+2) LCDDOTCK cycles.
-> 
-> Hi Alexander,
-> 
-> Unfortunately this is not true for all the SoC that embed the
-> atmel_lcdfb... So I may need to rework this patch but it is certainly
-> not applicable in the current form.
-> 
-> Florian, can you please remove it from your git tree?
+This patch solves the problem by adding hot-plug-detection into the HDMI
+IP driver. This is not a real HPD support in the sense that nobody else
+than the IP driver gets to know about the HPD events, but is only meant
+to fix the HW bug.
 
-Done, I reverted this patch for now.
-For the other patches, those that are currently in my tree, I will ask Linus to
-pull them really soon. For the others I'll take care of them after the merge
-window is closed.
+The strategy is simple: If the display device is turned off by the user,
+the PHY power is set to OFF. When the display device is turned on by the
+user, the PHY power is set either to LDOON or TXON, depending on whether
+the HDMI cable is connected.
 
+The reason to avoid PHY OFF when the display device is on, but the cable
+is disconnected, is that when the PHY is turned OFF, the HDMI IP is not
+"ticking" and thus the DISPC does not receive pixel clock from the HDMI
+IP. This would, for example, prevent any VSYNCs from happening, and
+would thus affect the users of omapdss. By using LDOON when the cable is
+disconnected we'll avoid the HW bug, but keep the HDMI working as usual
+from the user's point of view.
 
-Best regards,
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/mach-omap2/board-4430sdp.c       |    5 ++
+ arch/arm/mach-omap2/board-omap4panda.c    |    5 ++
+ drivers/video/omap2/dss/hdmi.c            |    3 +
+ drivers/video/omap2/dss/ti_hdmi.h         |    4 ++
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |   68 +++++++++++++++++++++++++++--
+ include/video/omapdss.h                   |    5 ++
+ 6 files changed, 86 insertions(+), 4 deletions(-)
 
-Florian Tobias Schandinat
-
-> 
-> Thanks,
-> 
-> Best regards,
-> 
->> It is only a minor issue. I also changed all boards using atmel_lcdfb
->> I found to respect the new calculation.
->>
->> Signed-off-by: Alexander Stein <alexander.stein@systec-electronic.com>
->> ---
->>  arch/arm/mach-at91/board-cap9adk.c      |    2 +-
->>  arch/arm/mach-at91/board-neocore926.c   |    2 +-
->>  arch/arm/mach-at91/board-sam9261ek.c    |    4 ++-
->>  arch/arm/mach-at91/board-sam9263ek.c    |    2 +-
->>  arch/arm/mach-at91/board-sam9m10g45ek.c |    2 +-
->>  arch/arm/mach-at91/board-sam9rlek.c     |    2 +-
->>  drivers/video/atmel_lcdfb.c             |    4 ++--
->>  7 files changed, 9 insertions(+), 9 deletions(-)
->>
->> diff --git a/arch/arm/mach-at91/board-cap9adk.c b/arch/arm/mach-at91/board-cap9adk.c
->> index 679b0b7..ae962bf 100644
->> --- a/arch/arm/mach-at91/board-cap9adk.c
->> +++ b/arch/arm/mach-at91/board-cap9adk.c
->> @@ -304,7 +304,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->>  		.xres		= 240,		.yres		= 320,
->>  		.pixclock	= KHZ2PICOS(4965),
->>  
->> -		.left_margin	= 1,		.right_margin	= 33,
->> +		.left_margin	= 1,		.right_margin	= 34,
->>  		.upper_margin	= 1,		.lower_margin	= 0,
->>  		.hsync_len	= 5,		.vsync_len	= 1,
->>  
->> diff --git a/arch/arm/mach-at91/board-neocore926.c b/arch/arm/mach-at91/board-neocore926.c
->> index 9bc6ab3..583878e 100644
->> --- a/arch/arm/mach-at91/board-neocore926.c
->> +++ b/arch/arm/mach-at91/board-neocore926.c
->> @@ -235,7 +235,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->>  		.xres		= 240,		.yres		= 320,
->>  		.pixclock	= KHZ2PICOS(5000),
->>  
->> -		.left_margin	= 1,		.right_margin	= 33,
->> +		.left_margin	= 1,		.right_margin	= 34,
->>  		.upper_margin	= 1,		.lower_margin	= 0,
->>  		.hsync_len	= 5,		.vsync_len	= 1,
->>  
->> diff --git a/arch/arm/mach-at91/board-sam9261ek.c b/arch/arm/mach-at91/board-sam9261ek.c
->> index 5096a0e..8dda83b 100644
->> --- a/arch/arm/mach-at91/board-sam9261ek.c
->> +++ b/arch/arm/mach-at91/board-sam9261ek.c
->> @@ -370,7 +370,7 @@ static struct fb_videomode at91_stn_modes[] = {
->>  		.xres           = 320,          .yres           = 240,
->>  		.pixclock       = KHZ2PICOS(1440),
->>  
->> -		.left_margin    = 1,            .right_margin   = 1,
->> +		.left_margin    = 1,            .right_margin   = 2,
->>  		.upper_margin   = 0,            .lower_margin   = 0,
->>  		.hsync_len      = 1,            .vsync_len      = 1,
->>  
->> @@ -431,7 +431,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->>  		.xres		= 240,		.yres		= 320,
->>  		.pixclock	= KHZ2PICOS(4965),
->>  
->> -		.left_margin	= 1,		.right_margin	= 33,
->> +		.left_margin	= 1,		.right_margin	= 34,
->>  		.upper_margin	= 1,		.lower_margin	= 0,
->>  		.hsync_len	= 5,		.vsync_len	= 1,
->>  
->> diff --git a/arch/arm/mach-at91/board-sam9263ek.c b/arch/arm/mach-at91/board-sam9263ek.c
->> index ea8f185..e260070 100644
->> --- a/arch/arm/mach-at91/board-sam9263ek.c
->> +++ b/arch/arm/mach-at91/board-sam9263ek.c
->> @@ -258,7 +258,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->>  		.xres		= 240,		.yres		= 320,
->>  		.pixclock	= KHZ2PICOS(4965),
->>  
->> -		.left_margin	= 1,		.right_margin	= 33,
->> +		.left_margin	= 1,		.right_margin	= 34,
->>  		.upper_margin	= 1,		.lower_margin	= 0,
->>  		.hsync_len	= 5,		.vsync_len	= 1,
->>  
->> diff --git a/arch/arm/mach-at91/board-sam9m10g45ek.c b/arch/arm/mach-at91/board-sam9m10g45ek.c
->> index ad234cc..5e9a5ca 100644
->> --- a/arch/arm/mach-at91/board-sam9m10g45ek.c
->> +++ b/arch/arm/mach-at91/board-sam9m10g45ek.c
->> @@ -197,7 +197,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->>  		.xres		= 480,		.yres		= 272,
->>  		.pixclock	= KHZ2PICOS(9000),
->>  
->> -		.left_margin	= 1,		.right_margin	= 1,
->> +		.left_margin	= 1,		.right_margin	= 2,
->>  		.upper_margin	= 40,		.lower_margin	= 1,
->>  		.hsync_len	= 45,		.vsync_len	= 1,
->>  
->> diff --git a/arch/arm/mach-at91/board-sam9rlek.c b/arch/arm/mach-at91/board-sam9rlek.c
->> index 4f14b54..ad9e5c9 100644
->> --- a/arch/arm/mach-at91/board-sam9rlek.c
->> +++ b/arch/arm/mach-at91/board-sam9rlek.c
->> @@ -154,7 +154,7 @@ static struct fb_videomode at91_tft_vga_modes[] = {
->>  		.xres		= 240,		.yres		= 320,
->>  		.pixclock	= KHZ2PICOS(4965),
->>  
->> -		.left_margin	= 1,		.right_margin	= 33,
->> +		.left_margin	= 1,		.right_margin	= 34,
->>  		.upper_margin	= 1,		.lower_margin	= 0,
->>  		.hsync_len	= 5,		.vsync_len	= 1,
->>  
->> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
->> index 817ab60..816d528 100644
->> --- a/drivers/video/atmel_lcdfb.c
->> +++ b/drivers/video/atmel_lcdfb.c
->> @@ -393,7 +393,7 @@ static int atmel_lcdfb_check_var(struct fb_var_screeninfo *var,
->>  	var->lower_margin = min_t(u32, var->lower_margin,
->>  			ATMEL_LCDC_VFP);
->>  	var->right_margin = min_t(u32, var->right_margin,
->> -			(ATMEL_LCDC_HFP >> ATMEL_LCDC_HFP_OFFSET) + 1);
->> +			(ATMEL_LCDC_HFP >> ATMEL_LCDC_HFP_OFFSET) + 2);
->>  	var->hsync_len = min_t(u32, var->hsync_len,
->>  			(ATMEL_LCDC_HPW >> ATMEL_LCDC_HPW_OFFSET) + 1);
->>  	var->left_margin = min_t(u32, var->left_margin,
->> @@ -578,7 +578,7 @@ static int atmel_lcdfb_set_par(struct fb_info *info)
->>  	lcdc_writel(sinfo, ATMEL_LCDC_TIM1, value);
->>  
->>  	/* Horizontal timing */
->> -	value = (info->var.right_margin - 1) << ATMEL_LCDC_HFP_OFFSET;
->> +	value = (info->var.right_margin - 2) << ATMEL_LCDC_HFP_OFFSET;
->>  	value |= (info->var.hsync_len - 1) << ATMEL_LCDC_HPW_OFFSET;
->>  	value |= (info->var.left_margin - 1);
->>  	dev_dbg(info->device, "  * LCDTIM2 = %08lx\n", value);
-> 
-> 
+diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+index a776c26..d4fe511 100644
+--- a/arch/arm/mach-omap2/board-4430sdp.c
++++ b/arch/arm/mach-omap2/board-4430sdp.c
+@@ -732,6 +732,10 @@ static void sdp4430_lcd_init(void)
+ 		pr_err("%s: Could not get lcd2_reset_gpio\n", __func__);
+ }
+ 
++static struct omap_dss_hdmi_data sdp4430_hdmi_data = {
++	.hpd_gpio = HDMI_GPIO_HPD,
++};
++
+ static struct omap_dss_device sdp4430_hdmi_device = {
+ 	.name = "hdmi",
+ 	.driver_name = "hdmi_panel",
+@@ -739,6 +743,7 @@ static struct omap_dss_device sdp4430_hdmi_device = {
+ 	.platform_enable = sdp4430_panel_enable_hdmi,
+ 	.platform_disable = sdp4430_panel_disable_hdmi,
+ 	.channel = OMAP_DSS_CHANNEL_DIGIT,
++	.data = &sdp4430_hdmi_data,
+ };
+ 
+ static struct picodlp_panel_data sdp4430_picodlp_pdata = {
+diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
+index b22a288..c28ef20 100644
+--- a/arch/arm/mach-omap2/board-omap4panda.c
++++ b/arch/arm/mach-omap2/board-omap4panda.c
+@@ -502,6 +502,10 @@ static void omap4_panda_panel_disable_hdmi(struct omap_dss_device *dssdev)
+ 	gpio_free_array(panda_hdmi_gpios, ARRAY_SIZE(panda_hdmi_gpios));
+ }
+ 
++static struct omap_dss_hdmi_data omap4_panda_hdmi_data = {
++	.hpd_gpio = HDMI_GPIO_HPD,
++};
++
+ static struct omap_dss_device  omap4_panda_hdmi_device = {
+ 	.name = "hdmi",
+ 	.driver_name = "hdmi_panel",
+@@ -509,6 +513,7 @@ static struct omap_dss_device  omap4_panda_hdmi_device = {
+ 	.platform_enable = omap4_panda_panel_enable_hdmi,
+ 	.platform_disable = omap4_panda_panel_disable_hdmi,
+ 	.channel = OMAP_DSS_CHANNEL_DIGIT,
++	.data = &omap4_panda_hdmi_data,
+ };
+ 
+ static struct omap_dss_device *omap4_panda_dss_devices[] = {
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 92a6679..3b76a20 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -469,6 +469,7 @@ bool omapdss_hdmi_detect(void)
+ 
+ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
+ {
++	struct omap_dss_hdmi_data *priv = dssdev->data;
+ 	int r = 0;
+ 
+ 	DSSDBG("ENTER hdmi_display_enable\n");
+@@ -481,6 +482,8 @@ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
+ 		goto err0;
+ 	}
+ 
++	hdmi.ip_data.hpd_gpio = priv->hpd_gpio;
++
+ 	r = omap_dss_start_device(dssdev);
+ 	if (r) {
+ 		DSSERR("failed to start device\n");
+diff --git a/drivers/video/omap2/dss/ti_hdmi.h b/drivers/video/omap2/dss/ti_hdmi.h
+index 26ec6d1..cb6f0f2 100644
+--- a/drivers/video/omap2/dss/ti_hdmi.h
++++ b/drivers/video/omap2/dss/ti_hdmi.h
+@@ -122,6 +122,10 @@ struct hdmi_ip_data {
+ 	const struct ti_hdmi_ip_ops *ops;
+ 	struct hdmi_config cfg;
+ 	struct hdmi_pll_info pll_data;
++
++	/* ti_hdmi_4xxx_ip private data. These should be in a separate struct */
++	int hpd_gpio;
++	bool phy_tx_enabled;
+ };
+ int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data);
+ void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data);
+diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+index a229ae7..34e58dd 100644
+--- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
++++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+@@ -28,6 +28,7 @@
+ #include <linux/delay.h>
+ #include <linux/string.h>
+ #include <linux/seq_file.h>
++#include <linux/gpio.h>
+ 
+ #include "ti_hdmi_4xxx_ip.h"
+ #include "dss.h"
+@@ -223,6 +224,49 @@ void ti_hdmi_4xxx_pll_disable(struct hdmi_ip_data *ip_data)
+ 	hdmi_set_pll_pwr(ip_data, HDMI_PLLPWRCMD_ALLOFF);
+ }
+ 
++static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
++{
++	unsigned long flags;
++	bool hpd;
++	int r;
++	/* this should be in ti_hdmi_4xxx_ip private data */
++	static DEFINE_SPINLOCK(phy_tx_lock);
++
++	spin_lock_irqsave(&phy_tx_lock, flags);
++
++	hpd = gpio_get_value(ip_data->hpd_gpio);
++
++	if (hpd = ip_data->phy_tx_enabled) {
++		spin_unlock_irqrestore(&phy_tx_lock, flags);
++		return 0;
++	}
++
++	if (hpd)
++		r = hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_TXON);
++	else
++		r = hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_LDOON);
++
++	if (r) {
++		DSSERR("Failed to %s PHY TX power\n",
++				hpd ? "enable" : "disable");
++		goto err;
++	}
++
++	ip_data->phy_tx_enabled = hpd;
++err:
++	spin_unlock_irqrestore(&phy_tx_lock, flags);
++	return r;
++}
++
++static irqreturn_t hpd_irq_handler(int irq, void *data)
++{
++	struct hdmi_ip_data *ip_data = data;
++
++	hdmi_check_hpd_state(ip_data);
++
++	return IRQ_HANDLED;
++}
++
+ int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data)
+ {
+ 	u16 r = 0;
+@@ -232,10 +276,6 @@ int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data)
+ 	if (r)
+ 		return r;
+ 
+-	r = hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_TXON);
+-	if (r)
+-		return r;
+-
+ 	/*
+ 	 * Read address 0 in order to get the SCP reset done completed
+ 	 * Dummy access performed to make sure reset is done
+@@ -257,12 +297,32 @@ int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data)
+ 	/* Write to phy address 3 to change the polarity control */
+ 	REG_FLD_MOD(phy_base, HDMI_TXPHY_PAD_CFG_CTRL, 0x1, 27, 27);
+ 
++	r = request_threaded_irq(gpio_to_irq(ip_data->hpd_gpio),
++			NULL, hpd_irq_handler,
++			IRQF_DISABLED | IRQF_TRIGGER_RISING |
++			IRQF_TRIGGER_FALLING, "hpd", ip_data);
++	if (r) {
++		DSSERR("HPD IRQ request failed\n");
++		hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
++		return r;
++	}
++
++	r = hdmi_check_hpd_state(ip_data);
++	if (r) {
++		free_irq(gpio_to_irq(ip_data->hpd_gpio), ip_data);
++		hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
++		return r;
++	}
++
+ 	return 0;
+ }
+ 
+ void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data)
+ {
++	free_irq(gpio_to_irq(ip_data->hpd_gpio), ip_data);
++
+ 	hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
++	ip_data->phy_tx_enabled = false;
+ }
+ 
+ static int hdmi_core_ddc_init(struct hdmi_ip_data *ip_data)
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 062b3b2..483f67c 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -590,6 +590,11 @@ struct omap_dss_device {
+ 	int (*get_backlight)(struct omap_dss_device *dssdev);
+ };
+ 
++struct omap_dss_hdmi_data
++{
++	int hpd_gpio;
++};
++
+ struct omap_dss_driver {
+ 	struct device_driver driver;
+ 
+-- 
+1.7.4.1
 

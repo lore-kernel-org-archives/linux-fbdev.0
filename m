@@ -1,81 +1,44 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Mon, 09 Jan 2012 02:36:47 +0000
-Subject: Re: [PATCH] grvga: fix section mismatch warnings
-Message-Id: <4F0A52BF.8020408@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 17 Jan 2012 12:48:59 +0000
+Subject: [PATCH 3/6] OMAPDSS: remove wrong HDMI HPD muxing
+Message-Id: <1326804542-22285-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1326804542-22285-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1326804542-22285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, mythripk@ti.com
+Cc: archit@ti.com, x0132446@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 12/27/2011 09:57 PM, Sam Ravnborg wrote:
->>From 7368b53b755a66c69b2b5ede30e2effe960ad59a Mon Sep 17 00:00:00 2001
-> From: Sam Ravnborg <sam@ravnborg.org>
-> Date: Tue, 27 Dec 2011 22:55:49 +0100
-> Subject: [PATCH] grvga: fix section mismatch warnings
-> 
-> Fix following section mismatch warnings:
-> 
-> WARNING: drivers/video/built-in.o(.devinit.text+0x110): Section mismatch in reference from the function grvga_probe() to the function .init.text:grvga_parse_custom()
-> The function __devinit grvga_probe() references
-> a function __init grvga_parse_custom().
-> If grvga_parse_custom is only used by grvga_probe then
-> annotate grvga_parse_custom with a matching annotation.
-> 
-> WARNING: drivers/video/built-in.o(.devinit.text+0x1f8): Section mismatch in reference from the function grvga_probe() to the variable .init.data:grvga_fix
-> The function __devinit grvga_probe() references
-> a variable __initdata grvga_fix.
-> If grvga_fix is only used by grvga_probe then
-> annotate grvga_fix with a matching annotation.
-> 
-> WARNING: drivers/video/built-in.o(.devinit.text+0x204): Section mismatch in reference from the function grvga_probe() to the variable .init.data:grvga_fix
-> The function __devinit grvga_probe() references
-> a variable __initdata grvga_fix.
-> If grvga_fix is only used by grvga_probe then
-> annotate grvga_fix with a matching annotation.
-> 
-> grvga_fix is used in a function annotated __devinit - so
-> match this using a __devinitdata annotation on grvga_fix.
-> 
-> grvga_parse_custom() is used in a function annotated
-> __devinit - so match this by annotating grvga_parse_custom()
-> with __devinit too.
-> 
-> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Kristoffer Glembo <kristoffer@gaisler.com>
-> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+"hdmi_hpd" pin is muxed to INPUT and PULLUP, but the pin is not
+currently used, and in the future when it is used, the pin is used as a
+GPIO and is board specific, not an OMAP4 wide thing.
 
-Applied this patch.
+So remove the muxing for now.
 
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/mach-omap2/display.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/grvga.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/grvga.c b/drivers/video/grvga.c
-> index f37e025..da066c2 100644
-> --- a/drivers/video/grvga.c
-> +++ b/drivers/video/grvga.c
-> @@ -70,7 +70,7 @@ static const struct fb_videomode grvga_modedb[] = {
->      }
->   };
->  
-> -static struct fb_fix_screeninfo grvga_fix __initdata = {
-> +static struct fb_fix_screeninfo grvga_fix __devinitdata = {
->  	.id =		"AG SVGACTRL",
->  	.type =		FB_TYPE_PACKED_PIXELS,
->  	.visual =       FB_VISUAL_PSEUDOCOLOR,
-> @@ -267,7 +267,7 @@ static struct fb_ops grvga_ops = {
->  	.fb_imageblit	= cfb_imageblit
->  };
->  
-> -static int __init grvga_parse_custom(char *options,
-> +static int __devinit grvga_parse_custom(char *options,
->  				     struct fb_var_screeninfo *screendata)
->  {
->  	char *this_opt;
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index ffd9bd9..d6e65e2 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -102,12 +102,8 @@ static void omap4_hdmi_mux_pads(enum omap_hdmi_flags flags)
+ 	u32 reg;
+ 	u16 control_i2c_1;
+ 
+-	/* PAD0_HDMI_HPD_PAD1_HDMI_CEC */
+-	omap_mux_init_signal("hdmi_hpd",
+-			OMAP_PIN_INPUT_PULLUP);
+ 	omap_mux_init_signal("hdmi_cec",
+ 			OMAP_PIN_INPUT_PULLUP);
+-	/* PAD0_HDMI_DDC_SCL_PAD1_HDMI_DDC_SDA */
+ 	omap_mux_init_signal("hdmi_ddc_scl",
+ 			OMAP_PIN_INPUT_PULLUP);
+ 	omap_mux_init_signal("hdmi_ddc_sda",
+-- 
+1.7.4.1
 

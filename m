@@ -1,7 +1,7 @@
-From: Archit <a0393947@ti.com>
-Date: Wed, 18 Jan 2012 09:45:22 +0000
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Wed, 18 Jan 2012 21:05:50 +0000
 Subject: Re: [PATCH v6 1/2] video: support MIPI-DSI controller driver
-Message-Id: <4F1691E2.9050502@ti.com>
+Message-Id: <20120118130550.0bdb227e.akpm@linux-foundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <4F16288C.5020406@samsung.com>
 In-Reply-To: <4F16288C.5020406@samsung.com>
@@ -10,9 +10,9 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+On Wed, 18 Jan 2012 11:03:56 +0900
+Donghwa Lee <dh09.lee@samsung.com> wrote:
 
-On Wednesday 18 January 2012 07:33 AM, Donghwa Lee wrote:
 > Samsung S5PC210 and EXYNOS SoC platform has MIPI-DSI controller and MIPI-DSI
 > based LCD Panel could be used with it. This patch supports MIPI-DSI driver
 > based Samsung SoC chip.
@@ -22,385 +22,274 @@ On Wednesday 18 January 2012 07:33 AM, Donghwa Lee wrote:
 > structure at lcd panel init function called system init.
 > In the MIPI-DSI driver, find lcd panel driver by using registered
 > lcd panel name, and then initialize lcd panel driver.
+> 
 
-<snip>
+The code looks nice to me.  I assume that Florian will be processing
+the patch?
 
-The header 'mipi_dsim.h'  below has a lot of generic content which could
-be used by other DSI controllers too. But there are things which seem
-specific to the Samsung SoC.
+A few minor comments:
 
-'mipi_dsim.h' makes it sound like a header for a generic DSI controller.
-Since that's not the case,  you might want to consider renaming this as
-'s5p_mipi_dsim.h'.
+>
+> ...
+>
+> +#define master_to_driver(a)	(a->dsim_lcd_drv)
+> +#define master_to_device(a)	(a->dsim_lcd_dev)
+> +#define dev_to_dsim(a)		platform_get_drvdata(to_platform_device(a))
 
-Sorry for not commenting on an earlier revision.
+These aren't very type-safe: can be called on any struct whcih has a
+field called "dsim_lcd_drv".  Also the "a" should be parenthesized to
+prevent obscure compile problems.
 
-Regards,
-Archit
+Really, it's best to do away with all such problems by implementing
+these helpers in C rather than in cpp!
 
-> +#endif /* _REGS_DSIM_H */
-> diff --git a/include/linux/mipi_dsim.h b/include/linux/mipi_dsim.h
-> new file mode 100644
-> index 0000000..f54da24
-> --- /dev/null
-> +++ b/include/linux/mipi_dsim.h
-> @@ -0,0 +1,359 @@
-> +/* include/linux/mipi_dsim.h
-> + *
-> + * Platform data header for Samsung SoC MIPI-DSIM.
-> + *
-> + * Copyright (c) 2011 Samsung Electronics Co., Ltd
-> + *
-> + * InKi Dae<inki.dae@samsung.com>
-> + * Donghwa Lee<dh09.lee@samsung.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> +*/
+>
+> ...
+>
+> +int s5p_mipi_dsi_register_lcd_device(struct mipi_dsim_lcd_device *lcd_dev)
+> +{
+> +	struct mipi_dsim_ddi *dsim_ddi;
 > +
-> +#ifndef _LINUX_MIPI_DSIM_H
-> +#define _LINUX_MIPI_DSIM_H
+> +	if (!lcd_dev) {
+> +		pr_err("mipi_dsim_lcd_device is NULL.\n");
+> +		return -EFAULT;
+> +	}
+
+Can this happen?  If not then BUG() is more appropriate.  Or just
+remove the code altogether and let the kernel oops.
+
+
+> +	if (!lcd_dev->name) {
+> +		pr_err("dsim_lcd_device name is NULL.\n");
+> +		return -EFAULT;
+> +	}
+
+Ditto.
+
+> +	dsim_ddi = kzalloc(sizeof(struct mipi_dsim_ddi), GFP_KERNEL);
+> +	if (!dsim_ddi) {
+> +		pr_err("failed to allocate dsim_ddi object.\n");
+> +		return -EFAULT;
+
+Should be ENOMEM.
+
+> +	}
 > +
-> +#include<linux/device.h>
-> +#include<linux/fb.h>
+> +	dsim_ddi->dsim_lcd_dev = lcd_dev;
 > +
-> +#define PANEL_NAME_SIZE		(32)
+> +	mutex_lock(&mipi_dsim_lock);
+> +	list_add_tail(&dsim_ddi->list, &dsim_ddi_list);
+> +	mutex_unlock(&mipi_dsim_lock);
 > +
-> +/*
-> + * Enumerate display interface type.
-> + *
-> + * DSIM_COMMAND means cpu interface and rgb interface for DSIM_VIDEO.
-> + *
-> + * P.S. MIPI DSI Master has two display controller intefaces, RGB Interface
-> + *	for main display and CPU Interface(same as I80 Interface) for main
-> + *	and sub display.
-> + */
-> +enum mipi_dsim_interface_type {
-> +	DSIM_COMMAND,
-> +	DSIM_VIDEO
-> +};
+> +	return 0;
+> +}
 > +
-> +enum mipi_dsim_virtual_ch_no {
-> +	DSIM_VIRTUAL_CH_0,
-> +	DSIM_VIRTUAL_CH_1,
-> +	DSIM_VIRTUAL_CH_2,
-> +	DSIM_VIRTUAL_CH_3
-> +};
+> +struct mipi_dsim_ddi
+> +	*s5p_mipi_dsi_find_lcd_device(struct mipi_dsim_lcd_driver *lcd_drv)
+
+Strange code layout.
+
+> +{
+> +	struct mipi_dsim_ddi *dsim_ddi, *next;
+> +	struct mipi_dsim_lcd_device *lcd_dev;
 > +
-> +enum mipi_dsim_burst_mode_type {
-> +	DSIM_NON_BURST_SYNC_EVENT,
-> +	DSIM_BURST_SYNC_EVENT,
-> +	DSIM_NON_BURST_SYNC_PULSE,
-> +	DSIM_BURST,
-> +	DSIM_NON_VIDEO_MODE
-> +};
+> +	mutex_lock(&mipi_dsim_lock);
 > +
-> +enum mipi_dsim_no_of_data_lane {
-> +	DSIM_DATA_LANE_1,
-> +	DSIM_DATA_LANE_2,
-> +	DSIM_DATA_LANE_3,
-> +	DSIM_DATA_LANE_4
-> +};
+> +	list_for_each_entry_safe(dsim_ddi, next, &dsim_ddi_list, list) {
+> +		if (!dsim_ddi)
+> +			goto out;
 > +
-> +enum mipi_dsim_byte_clk_src {
-> +	DSIM_PLL_OUT_DIV8,
-> +	DSIM_EXT_CLK_DIV8,
-> +	DSIM_EXT_CLK_BYPASS
-> +};
+> +		lcd_dev = dsim_ddi->dsim_lcd_dev;
+> +		if (!lcd_dev)
+> +			continue;
 > +
-> +enum mipi_dsim_pixel_format {
-> +	DSIM_CMD_3BPP,
-> +	DSIM_CMD_8BPP,
-> +	DSIM_CMD_12BPP,
-> +	DSIM_CMD_16BPP,
-> +	DSIM_VID_16BPP_565,
-> +	DSIM_VID_18BPP_666PACKED,
-> +	DSIM_18BPP_666LOOSELYPACKED,
-> +	DSIM_24BPP_888
-> +};
+> +		if ((strcmp(lcd_drv->name, lcd_dev->name)) = 0) {
+
+hm, using strcmp() to compare devices in this way looks fishy.  But I
+don't know what is going on here.
+
+> +			/**
+> +			 * bus_id would be used to identify
+> +			 * connected bus.
+> +			 */
+> +			dsim_ddi->bus_id = lcd_dev->bus_id;
+> +			mutex_unlock(&mipi_dsim_lock);
 > +
-> +/*
-> + * struct mipi_dsim_config - interface for configuring mipi-dsi controller.
-> + *
-> + * @auto_flush: enable or disable Auto flush of MD FIFO using VSYNC pulse.
-> + * @eot_disable: enable or disable EoT packet in HS mode.
-> + * @auto_vertical_cnt: specifies auto vertical count mode.
-> + *	in Video mode, the vertical line transition uses line counter
-> + *	configured by VSA, VBP, and Vertical resolution.
-> + *	If this bit is set to '1', the line counter does not use VSA and VBP
-> + *	registers.(in command mode, this variable is ignored)
-> + * @hse: set horizontal sync event mode.
-> + *	In VSYNC pulse and Vporch area, MIPI DSI master transfers only HSYNC
-> + *	start packet to MIPI DSI slave at MIPI DSI spec1.1r02.
-> + *	this bit transfers HSYNC end packet in VSYNC pulse and Vporch area
-> + *	(in mommand mode, this variable is ignored)
-> + * @hfp: specifies HFP disable mode.
-> + *	if this variable is set, DSI master ignores HFP area in VIDEO mode.
-> + *	(in command mode, this variable is ignored)
-> + * @hbp: specifies HBP disable mode.
-> + *	if this variable is set, DSI master ignores HBP area in VIDEO mode.
-> + *	(in command mode, this variable is ignored)
-> + * @hsa: specifies HSA disable mode.
-> + *	if this variable is set, DSI master ignores HSA area in VIDEO mode.
-> + *	(in command mode, this variable is ignored)
-> + * @cma_allow: specifies the number of horizontal lines, where command packet
-> + *	transmission is allowed after Stable VFP period.
-> + * @e_interface: specifies interface to be used.(CPU or RGB interface)
-> + * @e_virtual_ch: specifies virtual channel number that main or
-> + *	sub diaplsy uses.
-> + * @e_pixel_format: specifies pixel stream format for main or sub display.
-> + * @e_burst_mode: selects Burst mode in Video mode.
-> + *	in Non-burst mode, RGB data area is filled with RGB data and NULL
-> + *	packets, according to input bandwidth of RGB interface.
-> + *	In Burst mode, RGB data area is filled with RGB data only.
-> + * @e_no_data_lane: specifies data lane count to be used by Master.
-> + * @e_byte_clk: select byte clock source. (it must be DSIM_PLL_OUT_DIV8)
-> + *	DSIM_EXT_CLK_DIV8 and DSIM_EXT_CLK_BYPASSS are not supported.
-> + * @pll_stable_time: specifies the PLL Timer for stability of the ganerated
-> + *	clock(System clock cycle base)
-> + *	if the timer value goes to 0x00000000, the clock stable bit of status
-> + *	and interrupt register is set.
-> + * @esc_clk: specifies escape clock frequency for getting the escape clock
-> + *	prescaler value.
-> + * @stop_holding_cnt: specifies the interval value between transmitting
-> + *	read packet(or write "set_tear_on" command) and BTA request.
-> + *	after transmitting read packet or write "set_tear_on" command,
-> + *	BTA requests to D-PHY automatically. this counter value specifies
-> + *	the interval between them.
-> + * @bta_timeout: specifies the timer for BTA.
-> + *	this register specifies time out from BTA request to change
-> + *	the direction with respect to Tx escape clock.
-> + * @rx_timeout: specifies the timer for LP Rx mode timeout.
-> + *	this register specifies time out on how long RxValid deasserts,
-> + *	after RxLpdt asserts with respect to Tx escape clock.
-> + *	- RxValid specifies Rx data valid indicator.
-> + *	- RxLpdt specifies an indicator that D-PHY is under RxLpdt mode.
-> + *	- RxValid and RxLpdt specifies signal from D-PHY.
-> + */
-> +struct mipi_dsim_config {
-> +	unsigned char			auto_flush;
-> +	unsigned char			eot_disable;
+> +			return dsim_ddi;
+> +		}
 > +
-> +	unsigned char			auto_vertical_cnt;
-> +	unsigned char			hse;
-> +	unsigned char			hfp;
-> +	unsigned char			hbp;
-> +	unsigned char			hsa;
-> +	unsigned char			cmd_allow;
+> +		list_del(&dsim_ddi->list);
+> +		kfree(dsim_ddi);
+> +	}
 > +
-> +	enum mipi_dsim_interface_type	e_interface;
-> +	enum mipi_dsim_virtual_ch_no	e_virtual_ch;
-> +	enum mipi_dsim_pixel_format	e_pixel_format;
-> +	enum mipi_dsim_burst_mode_type	e_burst_mode;
-> +	enum mipi_dsim_no_of_data_lane	e_no_data_lane;
-> +	enum mipi_dsim_byte_clk_src	e_byte_clk;
+> +out:
+> +	mutex_unlock(&mipi_dsim_lock);
 > +
-> +	/*
-> +	 * =====================> +	 * |    P    |    M    |    S    |    MHz    |
-> +	 * -------------------------------------------
-> +	 * |    3    |   100   |    3    |    100    |
-> +	 * |    3    |   100   |    2    |    200    |
-> +	 * |    3    |    63   |    1    |    252    |
-> +	 * |    4    |   100   |    1    |    300    |
-> +	 * |    4    |   110   |    1    |    330    |
-> +	 * |   12    |   350   |    1    |    350    |
-> +	 * |    3    |   100   |    1    |    400    |
-> +	 * |    4    |   150   |    1    |    450    |
-> +	 * |    6    |   118   |    1    |    472    |
-> +	 * |	3    |   120   |    1    |    480    |
-> +	 * |   12    |   250   |    0    |    500    |
-> +	 * |    4    |   100   |    0    |    600    |
-> +	 * |    3    |    81   |    0    |    648    |
-> +	 * |    3    |    88   |    0    |    704    |
-> +	 * |    3    |    90   |    0    |    720    |
-> +	 * |    3    |   100   |    0    |    800    |
-> +	 * |   12    |   425   |    0    |    850    |
-> +	 * |    4    |   150   |    0    |    900    |
-> +	 * |   12    |   475   |    0    |    950    |
-> +	 * |    6    |   250   |    0    |   1000    |
-> +	 * -------------------------------------------
-> +	 */
+> +	return NULL;
+> +}
 > +
-> +	/*
-> +	 * pms could be calculated as the following.
-> +	 * M * 24 / P * 2 ^ S = MHz
-> +	 */
-> +	unsigned char			p;
-> +	unsigned short			m;
-> +	unsigned char			s;
+> +int s5p_mipi_dsi_register_lcd_driver(struct mipi_dsim_lcd_driver *lcd_drv)
+> +{
+> +	struct mipi_dsim_ddi *dsim_ddi;
 > +
-> +	unsigned int			pll_stable_time;
-> +	unsigned long			esc_clk;
+> +	if (!lcd_drv) {
+> +		pr_err("mipi_dsim_lcd_driver is NULL.\n");
+> +		return -EFAULT;
+> +	}
 > +
-> +	unsigned short			stop_holding_cnt;
-> +	unsigned char			bta_timeout;
-> +	unsigned short			rx_timeout;
-> +};
+> +	if (!lcd_drv->name) {
+> +		pr_err("dsim_lcd_driver name is NULL.\n");
+> +		return -EFAULT;
+> +	}
 > +
-> +/*
-> + * struct mipi_dsim_device - global interface for mipi-dsi driver.
-> + *
-> + * @dev: driver model representation of the device.
-> + * @id: unique device id.
-> + * @clock: pointer to MIPI-DSI clock of clock framework.
-> + * @irq: interrupt number to MIPI-DSI controller.
-> + * @reg_base: base address to memory mapped SRF of MIPI-DSI controller.
-> + *	(virtual address)
-> + * @lock: the mutex protecting this data structure.
-> + * @dsim_info: infomation for configuring mipi-dsi controller.
-> + * @master_ops: callbacks to mipi-dsi operations.
-> + * @dsim_lcd_dev: pointer to activated ddi device.
-> + *	(it would be registered by mipi-dsi driver.)
-> + * @dsim_lcd_drv: pointer to activated_ddi driver.
-> + *	(it would be registered by mipi-dsi driver.)
-> + * @lcd_info: pointer to mipi_lcd_info structure.
-> + * @state: specifies status of MIPI-DSI controller.
-> + *	the status could be RESET, INIT, STOP, HSCLKEN and ULPS.
-> + * @data_lane: specifiec enabled data lane number.
-> + *	this variable would be set by driver according to e_no_data_lane
-> + *	automatically.
-> + * @e_clk_src: select byte clock source.
-> + * @pd: pointer to MIPI-DSI driver platform data.
-> + */
-> +struct mipi_dsim_device {
-> +	struct device			*dev;
-> +	int				id;
-> +	struct resource			*res;
-> +	struct clk			*clock;
-> +	unsigned int			irq;
-> +	void __iomem			*reg_base;
-> +	struct mutex			lock;
+> +	dsim_ddi = s5p_mipi_dsi_find_lcd_device(lcd_drv);
+> +	if (!dsim_ddi) {
+> +		pr_err("mipi_dsim_ddi object not found.\n");
+> +		return -EFAULT;
+> +	}
+
+Boy, someone really likes EFAULT!
+
+> +	dsim_ddi->dsim_lcd_drv = lcd_drv;
 > +
-> +	struct mipi_dsim_config		*dsim_config;
-> +	struct mipi_dsim_master_ops	*master_ops;
-> +	struct mipi_dsim_lcd_device	*dsim_lcd_dev;
-> +	struct mipi_dsim_lcd_driver	*dsim_lcd_drv;
+> +	pr_info("registered panel driver(%s) to mipi-dsi driver.\n",
+> +		lcd_drv->name);
 > +
-> +	unsigned int			state;
-> +	unsigned int			data_lane;
-> +	unsigned int			e_clk_src;
-> +	bool				suspended;
+> +	return 0;
 > +
-> +	struct mipi_dsim_platform_data	*pd;
-> +};
+> +}
 > +
-> +/*
-> + * struct mipi_dsim_platform_data - interface to platform data
-> + *	for mipi-dsi driver.
-> + *
-> + * @lcd_panel_name: specifies lcd panel name registered to mipi-dsi driver.
-> + *	lcd panel driver searched would be actived.
-> + * @dsim_config: pointer of structure for configuring mipi-dsi controller.
-> + * @enabled: indicate whether mipi controller got enabled or not.
-> + * @lcd_panel_info: pointer for lcd panel specific structure.
-> + *	this structure specifies width, height, timing and polarity and so on.
-> + * @phy_enable: pointer to a callback controlling D-PHY enable/reset
-> + */
-> +struct mipi_dsim_platform_data {
-> +	char				lcd_panel_name[PANEL_NAME_SIZE];
+> +struct mipi_dsim_ddi
+> +	*s5p_mipi_dsi_bind_lcd_ddi(struct mipi_dsim_device *dsim,
+> +			const char *name)
+
+More code layout oddness.
+
+> +{
+> +	struct mipi_dsim_ddi *dsim_ddi, *next;
+> +	struct mipi_dsim_lcd_driver *lcd_drv;
+> +	struct mipi_dsim_lcd_device *lcd_dev;
+> +	int ret;
 > +
-> +	struct mipi_dsim_config		*dsim_config;
-> +	unsigned int			enabled;
-> +	void				*lcd_panel_info;
+> +	mutex_lock(&dsim->lock);
 > +
-> +	int (*phy_enable)(struct platform_device *pdev, bool on);
-> +};
+> +	list_for_each_entry_safe(dsim_ddi, next, &dsim_ddi_list, list) {
+> +		lcd_drv = dsim_ddi->dsim_lcd_drv;
+> +		lcd_dev = dsim_ddi->dsim_lcd_dev;
+> +		if (!lcd_drv || !lcd_dev ||
+> +			(dsim->id != dsim_ddi->bus_id))
+> +				continue;
 > +
-> +/*
-> + * struct mipi_dsim_master_ops - callbacks to mipi-dsi operations.
-> + *
-> + * @cmd_write: transfer command to lcd panel at LP mode.
-> + * @cmd_read: read command from rx register.
-> + * @get_dsim_frame_done: get the status that all screen data have been
-> + *	transferred to mipi-dsi.
-> + * @clear_dsim_frame_done: clear frame done status.
-> + * @get_fb_frame_done: get frame done status of display controller.
-> + * @trigger: trigger display controller.
-> + *	- this one would be used only in case of CPU mode.
-> + *  @set_early_blank_mode: set framebuffer blank mode.
-> + *	- this callback should be called prior to fb_blank() by a client driver
-> + *	only if needing.
-> + *  @set_blank_mode: set framebuffer blank mode.
-> + *	- this callback should be called after fb_blank() by a client driver
-> + *	only if needing.
-> + */
+> +		dev_dbg(dsim->dev, "lcd_drv->id = %d, lcd_dev->id = %d\n",
+> +				lcd_drv->id, lcd_dev->id);
+> +		dev_dbg(dsim->dev, "lcd_dev->bus_id = %d, dsim->id = %d\n",
+> +				lcd_dev->bus_id, dsim->id);
 > +
-> +struct mipi_dsim_master_ops {
-> +	int (*cmd_write)(struct mipi_dsim_device *dsim, unsigned int data_id,
-> +		const unsigned char *data0, unsigned int data1);
-> +	int (*cmd_read)(struct mipi_dsim_device *dsim, unsigned int data_id,
-> +		unsigned int data0, unsigned int req_size, u8 *rx_buf);
-> +	int (*get_dsim_frame_done)(struct mipi_dsim_device *dsim);
-> +	int (*clear_dsim_frame_done)(struct mipi_dsim_device *dsim);
+> +		if ((strcmp(lcd_drv->name, name) = 0)) {
+> +			lcd_dev->master = dsim;
 > +
-> +	int (*get_fb_frame_done)(struct fb_info *info);
-> +	void (*trigger)(struct fb_info *info);
-> +	int (*set_early_blank_mode)(struct mipi_dsim_device *dsim, int power);
-> +	int (*set_blank_mode)(struct mipi_dsim_device *dsim, int power);
-> +};
+> +			lcd_dev->dev.parent = dsim->dev;
+> +			dev_set_name(&lcd_dev->dev, "%s", lcd_drv->name);
 > +
-> +/*
-> + * device structure for mipi-dsi based lcd panel.
-> + *
-> + * @name: name of the device to use with this device, or an
-> + *	alias for that name.
-> + * @dev: driver model representation of the device.
-> + * @id: id of device to be registered.
-> + * @bus_id: bus id for identifing connected bus
-> + *	and this bus id should be same as id of mipi_dsim_device.
-> + * @irq: irq number for signaling when framebuffer transfer of
-> + *	lcd panel module is completed.
-> + *	this irq would be used only for MIPI-DSI based CPU mode lcd panel.
-> + * @master: pointer to mipi-dsi master device object.
-> + * @platform_data: lcd panel specific platform data.
-> + */
-> +struct mipi_dsim_lcd_device {
-> +	char			*name;
-> +	struct device		dev;
-> +	int			id;
-> +	int			bus_id;
-> +	int			irq;
+> +			ret = device_register(&lcd_dev->dev);
+> +			if (ret < 0) {
+> +				dev_err(dsim->dev,
+> +					"can't register %s, status %d\n",
+> +					dev_name(&lcd_dev->dev), ret);
+> +				mutex_unlock(&dsim->lock);
 > +
-> +	struct mipi_dsim_device *master;
-> +	void			*platform_data;
-> +};
+> +				return NULL;
+> +			}
 > +
-> +/*
-> + * driver structure for mipi-dsi based lcd panel.
-> + *
-> + * this structure should be registered by lcd panel driver.
-> + * mipi-dsi driver seeks lcd panel registered through name field
-> + * and calls these callback functions in appropriate time.
-> + *
-> + * @name: name of the driver to use with this device, or an
-> + *	alias for that name.
-> + * @id: id of driver to be registered.
-> + *	this id would be used for finding device object registered.
-> + */
-> +struct mipi_dsim_lcd_driver {
-> +	char			*name;
-> +	int			id;
+> +			dsim->dsim_lcd_dev = lcd_dev;
+> +			dsim->dsim_lcd_drv = lcd_drv;
 > +
-> +	void	(*power_on)(struct mipi_dsim_lcd_device *dsim_dev, int enable);
-> +	void	(*set_sequence)(struct mipi_dsim_lcd_device *dsim_dev);
-> +	int	(*probe)(struct mipi_dsim_lcd_device *dsim_dev);
-> +	int	(*remove)(struct mipi_dsim_lcd_device *dsim_dev);
-> +	void	(*shutdown)(struct mipi_dsim_lcd_device *dsim_dev);
-> +	int	(*suspend)(struct mipi_dsim_lcd_device *dsim_dev);
-> +	int	(*resume)(struct mipi_dsim_lcd_device *dsim_dev);
-> +};
+> +			mutex_unlock(&dsim->lock);
 > +
-> +/*
-> + * register mipi_dsim_lcd_device to mipi-dsi master.
-> + */
-> +int s5p_mipi_dsi_register_lcd_device(struct mipi_dsim_lcd_device
-> +						*lcd_dev);
-> +/**
-> + * register mipi_dsim_lcd_driver object defined by lcd panel driver
-> + * to mipi-dsi driver.
-> + */
-> +int s5p_mipi_dsi_register_lcd_driver(struct mipi_dsim_lcd_driver
-> +						*lcd_drv);
-> +#endif /* _LINUX_MIPI_DSIM_H */
+> +			return dsim_ddi;
+> +		}
+> +	}
+> +
+> +	mutex_unlock(&dsim->lock);
+> +
+> +	return NULL;
+> +}
+>
+> ...
+>
+> +static int s5p_mipi_dsi_probe(struct platform_device *pdev)
+> +{
+> +	struct resource *res;
+> +	struct mipi_dsim_device *dsim;
+> +	struct mipi_dsim_config *dsim_config;
+> +	struct mipi_dsim_platform_data *dsim_pd;
+> +	struct mipi_dsim_ddi *dsim_ddi;
+> +	int ret = -EINVAL;
+> +
+> +	dsim = kzalloc(sizeof(struct mipi_dsim_device), GFP_KERNEL);
+> +	if (!dsim) {
+> +		dev_err(&pdev->dev, "failed to allocate dsim object.\n");
+> +		return -EFAULT;
+
+ENOMEM!
+
+> +	}
+> +
+> +	dsim->pd = to_dsim_plat(pdev);
+> +	dsim->dev = &pdev->dev;
+> +	dsim->id = pdev->id;
+> +
+> +	/* get mipi_dsim_platform_data. */
+> +	dsim_pd = (struct mipi_dsim_platform_data *)dsim->pd;
+> +	if (dsim_pd = NULL) {
+> +		dev_err(&pdev->dev, "failed to get platform data for dsim.\n");
+> +		goto err_clock_get;
+> +	}
+>
+> ...
+>
+> +irqreturn_t s5p_mipi_dsi_interrupt_handler(int irq, void *dev_id)
+> +{
+> +	unsigned int intsrc = 0;
+> +	unsigned int intmsk = 0;
+> +	struct mipi_dsim_device *dsim = NULL;
+> +
+> +	dsim = (struct mipi_dsim_device *)dev_id;
+
+unneeded and undesirable cast of void*
+
+> +	if (!dsim) {
+> +		dev_dbg(dsim->dev, KERN_ERR "%s:error: wrong parameter\n",
+> +							__func__);
+> +		return IRQ_HANDLED;
+> +	}
+> +
+> +	intsrc = s5p_mipi_dsi_read_interrupt(dsim);
+> +	intmsk = s5p_mipi_dsi_read_interrupt_mask(dsim);
+> +
+> +	intmsk = ~(intmsk) & intsrc;
+> +
+> +	switch (intmsk) {
+> +	case INTMSK_RX_DONE:
+> +		complete(&dsim_rd_comp);
+> +		dev_dbg(dsim->dev, "MIPI INTMSK_RX_DONE\n");
+> +		break;
+> +	case INTMSK_FIFO_EMPTY:
+> +		complete(&dsim_wr_comp);
+> +		dev_dbg(dsim->dev, "MIPI INTMSK_FIFO_EMPTY\n");
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +
+> +	s5p_mipi_dsi_clear_interrupt(dsim, intmsk);
+> +
+> +	return IRQ_HANDLED;
+> +}
+>
+> ...
+>
+
+Generally: the use of the Efoo errno codes is chaotic.  Please check it
+all over.
 

@@ -1,86 +1,57 @@
-From: Archit <a0393947@ti.com>
-Date: Tue, 17 Jan 2012 20:44:59 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 18 Jan 2012 06:39:49 +0000
 Subject: Re: [PATCH 5/6] OMAP: 4430SDP/Panda: add HDMI HPD gpio
-Message-Id: <4F15DAFB.40203@ti.com>
+Message-Id: <1326868789.1954.0.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-lw/F4/jDhFbERLOwNtRn"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1326804542-22285-1-git-send-email-tomi.valkeinen@ti.com> <1326804542-22285-6-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1326804542-22285-6-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1326804542-22285-1-git-send-email-tomi.valkeinen@ti.com>
+	 <1326804542-22285-6-git-send-email-tomi.valkeinen@ti.com>
+	 <4F15DAFB.40203@ti.com>
+In-Reply-To: <4F15DAFB.40203@ti.com>
+To: Archit <a0393947@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, mythripk@ti.com, archit@ti.com, x0132446@ti.com
 
-On Tuesday 17 January 2012 06:19 PM, Tomi Valkeinen wrote:
-> Both Panda and 4430SDP use GPIO 64 as HDMI hot-plug-detect. Configure
-> this GPIO in the board files.
 
-Minor comment: the commit message says GPIO 64, and the macros use gpio 
-63. Is this done intentionally?
+--=-lw/F4/jDhFbERLOwNtRn
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Archit
+On Wed, 2012-01-18 at 02:02 +0530, Archit wrote:
+> On Tuesday 17 January 2012 06:19 PM, Tomi Valkeinen wrote:
+> > Both Panda and 4430SDP use GPIO 64 as HDMI hot-plug-detect. Configure
+> > this GPIO in the board files.
+>=20
+> Minor comment: the commit message says GPIO 64, and the macros use gpio=
+=20
+> 63. Is this done intentionally?
 
->
-> Signed-off-by: Tomi Valkeinen<tomi.valkeinen@ti.com>
-> ---
->   arch/arm/mach-omap2/board-4430sdp.c    |    3 +++
->   arch/arm/mach-omap2/board-omap4panda.c |    3 +++
->   2 files changed, 6 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
-> index 5dcc8df..a776c26 100644
-> --- a/arch/arm/mach-omap2/board-4430sdp.c
-> +++ b/arch/arm/mach-omap2/board-4430sdp.c
-> @@ -54,6 +54,7 @@
->   #define OMAP4_SFH7741_ENABLE_GPIO		188
->   #define HDMI_GPIO_CT_CP_HPD 60 /* HPD mode enable/disable */
->   #define HDMI_GPIO_LS_OE 41 /* Level shifter for HDMI */
-> +#define HDMI_GPIO_HPD  63 /* Hotplug detect */
->   #define DISPLAY_SEL_GPIO	59	/* LCD2/PicoDLP switch */
->   #define DLP_POWER_ON_GPIO	40
->
-> @@ -598,6 +599,7 @@ static void __init omap_sfh7741prox_init(void)
->   static struct gpio sdp4430_hdmi_gpios[] = {
->   	{ HDMI_GPIO_CT_CP_HPD, GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ct_cp_hpd" },
->   	{ HDMI_GPIO_LS_OE,	GPIOF_OUT_INIT_HIGH,	"hdmi_gpio_ls_oe" },
-> +	{ HDMI_GPIO_HPD, GPIOF_DIR_IN, "hdmi_gpio_hpd" },
->   };
->
->   static int sdp4430_panel_enable_hdmi(struct omap_dss_device *dssdev)
-> @@ -836,6 +838,7 @@ static void omap_4430sdp_display_init(void)
->
->   	omap_mux_init_gpio(HDMI_GPIO_LS_OE, OMAP_PIN_OUTPUT);
->   	omap_mux_init_gpio(HDMI_GPIO_CT_CP_HPD, OMAP_PIN_OUTPUT);
-> +	omap_mux_init_gpio(HDMI_GPIO_HPD, OMAP_PIN_INPUT_PULLDOWN);
->   }
->
->   #ifdef CONFIG_OMAP_MUX
-> diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
-> index 06a7075..b22a288 100644
-> --- a/arch/arm/mach-omap2/board-omap4panda.c
-> +++ b/arch/arm/mach-omap2/board-omap4panda.c
-> @@ -53,6 +53,7 @@
->   #define GPIO_WIFI_IRQ		53
->   #define HDMI_GPIO_CT_CP_HPD 60 /* HPD mode enable/disable */
->   #define HDMI_GPIO_LS_OE 41 /* Level shifter for HDMI */
-> +#define HDMI_GPIO_HPD  63 /* Hotplug detect */
->
->   /* wl127x BT, FM, GPS connectivity chip */
->   static int wl1271_gpios[] = {46, -1, -1};
-> @@ -481,6 +482,7 @@ int __init omap4_panda_dvi_init(void)
->   static struct gpio panda_hdmi_gpios[] = {
->   	{ HDMI_GPIO_CT_CP_HPD, GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ct_cp_hpd" },
->   	{ HDMI_GPIO_LS_OE,	GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ls_oe" },
-> +	{ HDMI_GPIO_HPD, GPIOF_DIR_IN, "hdmi_gpio_hpd" },
->   };
->
->   static int omap4_panda_panel_enable_hdmi(struct omap_dss_device *dssdev)
-> @@ -552,6 +554,7 @@ void omap4_panda_display_init(void)
->
->   	omap_mux_init_gpio(HDMI_GPIO_LS_OE, OMAP_PIN_OUTPUT);
->   	omap_mux_init_gpio(HDMI_GPIO_CT_CP_HPD, OMAP_PIN_OUTPUT);
-> +	omap_mux_init_gpio(HDMI_GPIO_HPD, OMAP_PIN_INPUT_PULLDOWN);
->   }
->
->   static void __init omap4_panda_init(void)
+Thanks, it's a typo. HPD gpio is 63.
+
+ Tomi
+
+
+--=-lw/F4/jDhFbERLOwNtRn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJPFmkwAAoJEPo9qoy8lh71FRIP+wfR8T732YgDmw6t7X59C4/5
+D9qkXpExXQbu0aNRC5KygQ32r7IeTCVeb6rIe1o8bL5+rD/T5uv24/p2CnGWrR3p
+tpzpPvyTbXNsL+nbJFjfXG5g3tLV4F6SlFtywGNAjkDjmil1fJgsV8av0b7ghlCV
+4Nix6YdySsP8GqPrjbVDvvPy7SRN/y8tSMOTEo347dWoUN4B22x0PjwHsQJJHnne
+9B3nDcFO4QZGt4VmV+1exW0Uv6wwYFTeb9txq1iXB0UnZy/ThI8HDRc3gt/BlTW/
+T0FFFFTXCER8yg4OilDhhgOpW5T1wYw8z+OlfiSDdlzIKGTAPgRdKmTnH4fW/CkX
+HCZo/NxqhcG1kc5ORU1l1lMmNDLJTBrkEKdN/OnSZz8tDbbVmr0BLLuKbECi06fY
+g9/sTvtnUKCaxMgasywVoCpK70vcIM8t6POg9b+Nq00aSejQ8W6QBO2Ok08moJEC
+6Y9DuLBWXR7RDe3nuLAR20Lbp+Wq8mr2peSv2BNK0+Ms3ffRFnBF/pGC4dwmryvW
+fibr9SI5dv3mdyPdb/ZtK9Ns3oSEgvrJCRfb8iWe43BtZwn0CrxxJ8HJBu/6uu2u
+XBZVj6xpeTvxo/nkoO8rvM2lCKZyECHeTPAEqND8ZLhAvvipTItf+grog2CBPc3s
+3tzASlXnwqsfFS5VoHqm
+=txRr
+-----END PGP SIGNATURE-----
+
+--=-lw/F4/jDhFbERLOwNtRn--
 

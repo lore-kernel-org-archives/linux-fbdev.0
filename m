@@ -1,7 +1,7 @@
-From: Kyungmin Park <kyungmin.park@samsung.com>
-Date: Thu, 19 Jan 2012 00:15:22 +0000
+From: Donghwa Lee <dh09.lee@samsung.com>
+Date: Thu, 19 Jan 2012 01:59:35 +0000
 Subject: Re: [PATCH v6 1/2] video: support MIPI-DSI controller driver
-Message-Id: <CAH9JG2XXSqYQRZHpCBg-gUfy4N8aEJYj9Nrpn5vLKafMMHJ_Lg@mail.gmail.com>
+Message-Id: <4F177907.4000806@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <4F16288C.5020406@samsung.com>
  <20120118130550.0bdb227e.akpm@linux-foundation.org>
@@ -11,56 +11,53 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On 1/19/12, Andrew Morton <akpm@linux-foundation.org> wrote:
+On Thu, 19 Jan 2012, Andrew Morton wrote:
+
 > On Wed, 18 Jan 2012 11:03:56 +0900
 > Donghwa Lee <dh09.lee@samsung.com> wrote:
->
->> Samsung S5PC210 and EXYNOS SoC platform has MIPI-DSI controller and
->> MIPI-DSI
+> 
+>> Samsung S5PC210 and EXYNOS SoC platform has MIPI-DSI controller and MIPI-DSI
 >> based LCD Panel could be used with it. This patch supports MIPI-DSI driver
 >> based Samsung SoC chip.
 >>
 >> LCD panel driver based MIPI-DSI should be registered to MIPI-DSI driver at
->> machine code and LCD panel driver specific function registered to
->> mipi_dsim_ddi
+>> machine code and LCD panel driver specific function registered to mipi_dsim_ddi
 >> structure at lcd panel init function called system init.
 >> In the MIPI-DSI driver, find lcd panel driver by using registered
 >> lcd panel name, and then initialize lcd panel driver.
 >>
->
+> 
 > The code looks nice to me.  I assume that Florian will be processing
 > the patch?
-
-Hi,
-As I know today is the last day for merge, So if you don't mind and
-it's okay. we hope to merge it first and fix it at rc period as you
-commented.
-And another patch from Andrew, it's also helpful if it's merge also
-
-Thank you,
-Kyungmin Park
->
+> 
 > A few minor comments:
->
+> 
+
+
+Thank you for your comments. I will send corrected next version patch set.
+
 >>
 >> ...
 >>
 >> +#define master_to_driver(a)	(a->dsim_lcd_drv)
 >> +#define master_to_device(a)	(a->dsim_lcd_dev)
 >> +#define dev_to_dsim(a)		platform_get_drvdata(to_platform_device(a))
->
+> 
 > These aren't very type-safe: can be called on any struct whcih has a
 > field called "dsim_lcd_drv".  Also the "a" should be parenthesized to
 > prevent obscure compile problems.
->
+> 
 > Really, it's best to do away with all such problems by implementing
 > these helpers in C rather than in cpp!
->
+> 
+
+
+Yes, you're right. I will fix it next version patch set.
+
 >>
 >> ...
 >>
->> +int s5p_mipi_dsi_register_lcd_device(struct mipi_dsim_lcd_device
->> *lcd_dev)
+>> +int s5p_mipi_dsi_register_lcd_device(struct mipi_dsim_lcd_device *lcd_dev)
 >> +{
 >> +	struct mipi_dsim_ddi *dsim_ddi;
 >> +
@@ -68,25 +65,33 @@ Kyungmin Park
 >> +		pr_err("mipi_dsim_lcd_device is NULL.\n");
 >> +		return -EFAULT;
 >> +	}
->
+> 
 > Can this happen?  If not then BUG() is more appropriate.  Or just
 > remove the code altogether and let the kernel oops.
->
->
+> 
+
+
+Maybe I think it can't happen. I will remove it.
+
+> 
 >> +	if (!lcd_dev->name) {
 >> +		pr_err("dsim_lcd_device name is NULL.\n");
 >> +		return -EFAULT;
 >> +	}
->
+> 
 > Ditto.
->
+> 
 >> +	dsim_ddi = kzalloc(sizeof(struct mipi_dsim_ddi), GFP_KERNEL);
 >> +	if (!dsim_ddi) {
 >> +		pr_err("failed to allocate dsim_ddi object.\n");
 >> +		return -EFAULT;
->
+> 
 > Should be ENOMEM.
->
+> 
+
+
+Yes, I agree with you. 
+
 >> +	}
 >> +
 >> +	dsim_ddi->dsim_lcd_dev = lcd_dev;
@@ -100,9 +105,13 @@ Kyungmin Park
 >> +
 >> +struct mipi_dsim_ddi
 >> +	*s5p_mipi_dsi_find_lcd_device(struct mipi_dsim_lcd_driver *lcd_drv)
->
+> 
 > Strange code layout.
->
+> 
+
+
+Yes, 
+
 >> +{
 >> +	struct mipi_dsim_ddi *dsim_ddi, *next;
 >> +	struct mipi_dsim_lcd_device *lcd_dev;
@@ -118,10 +127,15 @@ Kyungmin Park
 >> +			continue;
 >> +
 >> +		if ((strcmp(lcd_drv->name, lcd_dev->name)) = 0) {
->
+> 
 > hm, using strcmp() to compare devices in this way looks fishy.  But I
 > don't know what is going on here.
->
+> 
+
+
+This mipi dsi driver may have one or more lcd driver. So, this function can find 
+appropriate lcd driver by using strcmp().
+
 >> +			/**
 >> +			 * bus_id would be used to identify
 >> +			 * connected bus.
@@ -142,8 +156,7 @@ Kyungmin Park
 >> +	return NULL;
 >> +}
 >> +
->> +int s5p_mipi_dsi_register_lcd_driver(struct mipi_dsim_lcd_driver
->> *lcd_drv)
+>> +int s5p_mipi_dsi_register_lcd_driver(struct mipi_dsim_lcd_driver *lcd_drv)
 >> +{
 >> +	struct mipi_dsim_ddi *dsim_ddi;
 >> +
@@ -162,9 +175,13 @@ Kyungmin Park
 >> +		pr_err("mipi_dsim_ddi object not found.\n");
 >> +		return -EFAULT;
 >> +	}
->
+> 
 > Boy, someone really likes EFAULT!
->
+> 
+
+
+Ok, I will fix it.
+
 >> +	dsim_ddi->dsim_lcd_drv = lcd_drv;
 >> +
 >> +	pr_info("registered panel driver(%s) to mipi-dsi driver.\n",
@@ -177,9 +194,9 @@ Kyungmin Park
 >> +struct mipi_dsim_ddi
 >> +	*s5p_mipi_dsi_bind_lcd_ddi(struct mipi_dsim_device *dsim,
 >> +			const char *name)
->
+> 
 > More code layout oddness.
->
+> 
 >> +{
 >> +	struct mipi_dsim_ddi *dsim_ddi, *next;
 >> +	struct mipi_dsim_lcd_driver *lcd_drv;
@@ -245,9 +262,9 @@ Kyungmin Park
 >> +	if (!dsim) {
 >> +		dev_err(&pdev->dev, "failed to allocate dsim object.\n");
 >> +		return -EFAULT;
->
+> 
 > ENOMEM!
->
+> 
 >> +	}
 >> +
 >> +	dsim->pd = to_dsim_plat(pdev);
@@ -270,9 +287,13 @@ Kyungmin Park
 >> +	struct mipi_dsim_device *dsim = NULL;
 >> +
 >> +	dsim = (struct mipi_dsim_device *)dev_id;
->
+> 
 > unneeded and undesirable cast of void*
->
+> 
+
+
+Yes, I will fix it.
+
 >> +	if (!dsim) {
 >> +		dev_dbg(dsim->dev, KERN_ERR "%s:error: wrong parameter\n",
 >> +							__func__);
@@ -304,13 +325,10 @@ Kyungmin Park
 >>
 >> ...
 >>
->
+> 
 > Generally: the use of the Efoo errno codes is chaotic.  Please check it
 > all over.
->
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
->
+> 
+> 
+
+

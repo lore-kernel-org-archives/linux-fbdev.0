@@ -1,74 +1,51 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Mon, 30 Jan 2012 05:22:42 +0000
-Subject: Re: [GIT PULL] OMAP DSS fixes for 3.3-rc
-Message-Id: <4F262922.5090109@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 23 Jan 2012 12:15:27 +0000
+Subject: [PATCH 0/3] OMAP: DSS PM fixes
+Message-Id: <1327320930-14550-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1327579651.1895.34.camel@deskari>
-In-Reply-To: <1327579651.1895.34.camel@deskari>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-omap mailing list <linux-omap@vger.kernel.org>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, paul@pwsan.com
+Cc: archit@ti.com, neilb@suse.de, jean.pihet@newoldbits.com, khilman@ti.com, jw@terrafix.co.uk, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi Tomi,
+Here are two fixes to get DSS work better with PM on OMAP3.
 
-On 01/26/2012 12:07 PM, Tomi Valkeinen wrote:
-> Hi Florian,
-> 
-> Here are two major fixes for OMAP DSS driver.
-> 
-> The first (OMAPDSS: use sync versions...) fixes problem with system
-> suspend, which causes omapdss power management to give WARNs and
-> generally malfunction on system suspend/resume.
-> 
-> The second (the rest of the patches) implements a workaround for HW bug,
-> which causes physical damage to the board if the HDMI cable is
-> disconnected at a "wrong" time. The actual fix is in the last patch, but
-> the board files needed some cleanups and a new GPIO, which is what the
-> smaller patches do.
-> 
-> The branch is based on fbdev/fbdev-next. Is that ok?
+The first two patches fix the missing SYSC_HAS_ENAWAKEUP flag, which removes
+the SYNC_LOST problem.
 
-Yes, that worked well, as I didn't start to collect 3.4 material there. Merged.
+The third patch changes omapdss to use pm_runtime_put_sync functions, which
+fixes the system suspend.
 
+I've tested both only on v3.3-rc1, OMAP3 Overo. I get problems on system
+suspend from TWL and MTD drivers (also without my patches =), but disabling MTD
+and ignoring TWL errors shows that the warning from omapdss has disappeared,
+and I get an image on the screen on resume.
 
-Thanks,
+The two fixes are independent, so either I can take them through dss tree (with
+appropriate Acks), or the hwmod patches can go through some other tree.
 
-Florian Tobias Schandinat
+The fixes should also work directly on v3.2, even though I haven't tested them
+yet.
 
-> 
->  Tomi
-> 
-> 
-> The following changes since commit f787f32e67e00b072f46b2ae3c454d2c0a1fcdb7:
-> 
->   module_param: make bool parameters really bool (drivers/video/i810) (2012-01-12 23:28:59 +0000)
-> 
-> are available in the git repository at:
->   git://gitorious.org/linux-omap-dss2/linux.git for-3.3-rc
-> 
-> Tomi Valkeinen (7):
->       OMAPDSS: use sync versions of pm_runtime_put
->       OMAP: 4430SDP/Panda: use gpio_free_array to free HDMI gpios
->       OMAP: 4430SDP/Panda: rename HPD GPIO to CT_CP_HPD
->       OMAPDSS: remove wrong HDMI HPD muxing
->       OMAP: 4430SDP/Panda: setup HDMI GPIO muxes
->       OMAP: 4430SDP/Panda: add HDMI HPD gpio
->       OMAPDSS: HDMI: PHY burnout fix
-> 
->  arch/arm/mach-omap2/board-4430sdp.c       |   18 ++++++--
->  arch/arm/mach-omap2/board-omap4panda.c    |   18 ++++++--
->  arch/arm/mach-omap2/display.c             |    4 --
->  drivers/video/omap2/dss/dispc.c           |    2 +-
->  drivers/video/omap2/dss/dsi.c             |    2 +-
->  drivers/video/omap2/dss/dss.c             |    2 +-
->  drivers/video/omap2/dss/hdmi.c            |    5 ++-
->  drivers/video/omap2/dss/rfbi.c            |    2 +-
->  drivers/video/omap2/dss/ti_hdmi.h         |    4 ++
->  drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |   68 +++++++++++++++++++++++++++--
->  drivers/video/omap2/dss/venc.c            |    2 +-
->  include/video/omapdss.h                   |    5 ++
->  12 files changed, 110 insertions(+), 22 deletions(-)
-> 
+ Tomi
+
+Tomi Valkeinen (3):
+  ARM: OMAP: HWMOD: split omap2/3 dispc hwmod class
+  ARM: OMAP3: HWMOD: add SYSC_HAS_ENAWAKEUP for dispc
+  OMAPDSS: use sync versions of pm_runtime_put
+
+ .../mach-omap2/omap_hwmod_2xxx_3xxx_ipblock_data.c |   21 -----------------
+ arch/arm/mach-omap2/omap_hwmod_2xxx_ipblock_data.c |   22 ++++++++++++++++++
+ arch/arm/mach-omap2/omap_hwmod_3xxx_data.c         |   24 +++++++++++++++++++-
+ drivers/video/omap2/dss/dispc.c                    |    2 +-
+ drivers/video/omap2/dss/dsi.c                      |    2 +-
+ drivers/video/omap2/dss/dss.c                      |    2 +-
+ drivers/video/omap2/dss/hdmi.c                     |    2 +-
+ drivers/video/omap2/dss/rfbi.c                     |    2 +-
+ drivers/video/omap2/dss/venc.c                     |    2 +-
+ 9 files changed, 51 insertions(+), 28 deletions(-)
+
+-- 
+1.7.4.1
 

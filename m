@@ -1,90 +1,49 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 03 Jan 2012 09:30:22 +0000
-Subject: Re: [PATCH] OMAPDSS: add OrtusTech COM43H4M10XTC display support
-Message-Id: <1325583022.1973.9.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-21tz4qj160QGJfEQmE+p"
+Date: Tue, 24 Jan 2012 10:45:20 +0000
+Subject: [PATCH 3/3] ARM: OMAP3: HWMOD: Add omap_hwmod_class_sysconfig for dsi
+Message-Id: <1327401920-5617-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1324940201-16079-1-git-send-email-yanok@emcraft.com>
-In-Reply-To: <1324940201-16079-1-git-send-email-yanok@emcraft.com>
-To: Ilya Yanok <yanok@emcraft.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, sasha_d@emcraft.com
+References: <1327401920-5617-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1327401920-5617-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, paul@pwsan.com
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
+hwmod data for OMAP3 does not define sysconfig for DSI. This patch adds
+it.
 
---=-21tz4qj160QGJfEQmE+p
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/mach-omap2/omap_hwmod_3xxx_data.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-On Mon, 2011-12-26 at 23:56 +0100, Ilya Yanok wrote:
-> dd data for the OrtusTech COM43H4M10XTC display to the
-> generic_dpi_panel driver.
->=20
-> CC: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Signed-off-by: Ilya Yanok <yanok@emcraft.com>
-> ---
->  drivers/video/omap2/displays/panel-generic-dpi.c |   20 ++++++++++++++++=
-++++
->  1 files changed, 20 insertions(+), 0 deletions(-)
->=20
-> diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/v=
-ideo/omap2/displays/panel-generic-dpi.c
-> index 593f831..99669ae 100644
-> --- a/drivers/video/omap2/displays/panel-generic-dpi.c
-> +++ b/drivers/video/omap2/displays/panel-generic-dpi.c
-> @@ -317,6 +317,26 @@ static struct panel_config generic_dpi_panels[] =3D =
-{
->  					  OMAP_DSS_LCD_IHS,
->  		.name			=3D "focaltech_etm070003dh6",
->  	},
-> +	/* OrtusTech COM43H4M10XTC */
-> +	{
-> +		{
-> +			.x_res		=3D 480,
-> +			.y_res		=3D 272,
-> +
-> +			.pixel_clock	=3D 8000,
-> +
-> +			.hsw		=3D 41,
-> +			.hfp		=3D 8,
-> +			.hbp		=3D 4,
-> +
-> +			.vsw		=3D 10,
-> +			.vfp		=3D 4,
-> +			.vbp		=3D 2,
-> +		},
-> +		.config			=3D OMAP_DSS_LCD_TFT,
-> +
-> +		.name			=3D "ortustech_com43h4m10xtc",
-> +	},
->  };
-> =20
-
-Thanks, I'll apply to DSS tree.
-
- Tomi
-
-
---=-21tz4qj160QGJfEQmE+p
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJPAsquAAoJEPo9qoy8lh71T6MQAILIOhNIdXMbot3P6m2xR/hl
-gjTT68HImSiTSxAcWQThVAy9E/0ICaXD9P7tXtyY1EnknDHEC0Waz+gB+cZcjhFL
-PYwDFNJatdoE5PW0Bncr/PMrMk1KXkPb03DNp6GdH25lUFiDah4aqiFAkDTV2ohG
-B1kLU7Yj+edMED81bgZJJMHUQMvn4MDb9qF8B9ZiK0lK5360LxxuYIHbLnTATtqK
-smh+7UQGzoMla3CHmbK246UnixmIiUG4+9BAEl6oINz8No+2O8wpbM7ZnUjZarVB
-zGLIym0VAZl6CoAYMUTf40jO2tSgjBNHXZozBXZyr1R5aXBuBLdqrqxVF8F9YEcU
-CjmibBWTYt0NC0n6P92vzgHEbKDemW8MchO2LBz8cSfEOnQIbgQwe/oNOg+ZSvNC
-f2HD087J/xVABhsX13irIavOuuQRPW0tB/Cod5uaKNRI3EQkxBeW5pleEhMdDuOI
-yWvOgyZfnbP24MrgLINMS6MT/fIJhegdqUCgimiZ87N37N96C7Ah2yStMkHaYsmy
-cDRGXJNALlw249iN3jtppvDcDXceyVd21+/q5Cv0P1SV9q7vjb+/4wsa55H0hvMq
-RvaoApjaf/HMP4nUC4I5Qe3yRaHJKFvtHeKA7wABbgS3JQGg/uRt3N9Yp6vh1IAc
-L40KEyxMWj6svUIamU6Q
-=EonG
------END PGP SIGNATURE-----
-
---=-21tz4qj160QGJfEQmE+p--
+diff --git a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
+index 76e6498..c3ab5e4 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
+@@ -1547,8 +1547,20 @@ static struct omap_hwmod omap3xxx_dss_dispc_hwmod = {
+  * display serial interface controller
+  */
+ 
++static struct omap_hwmod_class_sysconfig omap3xxx_dsi_sysc = {
++	.rev_offs	= 0x0000,
++	.sysc_offs	= 0x0010,
++	.syss_offs	= 0x0014,
++	.sysc_flags	= (SYSC_HAS_AUTOIDLE | SYSC_HAS_CLOCKACTIVITY |
++			   SYSC_HAS_ENAWAKEUP | SYSC_HAS_SIDLEMODE |
++			   SYSC_HAS_SOFTRESET | SYSS_HAS_RESET_STATUS),
++	.idlemodes	= (SIDLE_FORCE | SIDLE_NO | SIDLE_SMART),
++	.sysc_fields	= &omap_hwmod_sysc_type1,
++};
++
+ static struct omap_hwmod_class omap3xxx_dsi_hwmod_class = {
+ 	.name = "dsi",
++	.sysc = &omap3xxx_dsi_sysc,
+ };
+ 
+ static struct omap_hwmod_irq_info omap3xxx_dsi1_irqs[] = {
+-- 
+1.7.4.1
 

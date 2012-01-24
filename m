@@ -1,251 +1,511 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 17 Jan 2012 13:04:30 +0000
-Subject: [PATCH 6/6] OMAPDSS: HDMI: PHY burnout fix
-Message-Id: <1326805470-25575-1-git-send-email-tomi.valkeinen@ti.com>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Tue, 24 Jan 2012 13:00:44 +0000
+Subject: [PATCH] use devm_ functions
+Message-Id: <1327410045-3906-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1326804542-22285-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1326804542-22285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, mythripk@ti.com
-Cc: archit@ti.com, x0132446@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: kernel-janitors@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-A hardware bug in the OMAP4 HDMI PHY causes physical damage to the board
-if the HDMI PHY is powered on when the cable is not connected.
+The semantic patch (http://coccinelle.lip6.fr/) used in generating this
+patch is as follows.  Some manual cleanup was required.
 
-This patch solves the problem by adding hot-plug-detection into the HDMI
-IP driver. This is not a real HPD support in the sense that nobody else
-than the IP driver gets to know about the HPD events, but is only meant
-to fix the HW bug.
+virtual after_start
+virtual returned
+virtual arg
+virtual get
 
-The strategy is simple: If the display device is turned off by the user,
-the PHY power is set to OFF. When the display device is turned on by the
-user, the PHY power is set either to LDOON or TXON, depending on whether
-the HDMI cable is connected.
+virtual drop_labels
 
-The reason to avoid PHY OFF when the display device is on, but the cable
-is disconnected, is that when the PHY is turned OFF, the HDMI IP is not
-"ticking" and thus the DISPC does not receive pixel clock from the HDMI
-IP. This would, for example, prevent any VSYNCs from happening, and
-would thus affect the users of omapdss. By using LDOON when the cable is
-disconnected we'll avoid the HW bug, but keep the HDMI working as usual
-from the user's point of view.
+// ---------------------------------------------------------------------
+// find functions
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- arch/arm/mach-omap2/board-4430sdp.c       |    5 ++
- arch/arm/mach-omap2/board-omap4panda.c    |    5 ++
- drivers/video/omap2/dss/hdmi.c            |    3 +
- drivers/video/omap2/dss/ti_hdmi.h         |    4 ++
- drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |   68 +++++++++++++++++++++++++++--
- include/video/omapdss.h                   |    5 ++
- 6 files changed, 86 insertions(+), 4 deletions(-)
+@plat depends on !after_start@
+identifier i,pfn,rfn;
+position p;
+@@
 
-diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
-index a776c26..d4fe511 100644
---- a/arch/arm/mach-omap2/board-4430sdp.c
-+++ b/arch/arm/mach-omap2/board-4430sdp.c
-@@ -732,6 +732,10 @@ static void sdp4430_lcd_init(void)
- 		pr_err("%s: Could not get lcd2_reset_gpio\n", __func__);
- }
- 
-+static struct omap_dss_hdmi_data sdp4430_hdmi_data = {
-+	.hpd_gpio = HDMI_GPIO_HPD,
-+};
-+
- static struct omap_dss_device sdp4430_hdmi_device = {
- 	.name = "hdmi",
- 	.driver_name = "hdmi_panel",
-@@ -739,6 +743,7 @@ static struct omap_dss_device sdp4430_hdmi_device = {
- 	.platform_enable = sdp4430_panel_enable_hdmi,
- 	.platform_disable = sdp4430_panel_disable_hdmi,
- 	.channel = OMAP_DSS_CHANNEL_DIGIT,
-+	.data = &sdp4430_hdmi_data,
- };
- 
- static struct picodlp_panel_data sdp4430_picodlp_pdata = {
-diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
-index b22a288..c28ef20 100644
---- a/arch/arm/mach-omap2/board-omap4panda.c
-+++ b/arch/arm/mach-omap2/board-omap4panda.c
-@@ -502,6 +502,10 @@ static void omap4_panda_panel_disable_hdmi(struct omap_dss_device *dssdev)
- 	gpio_free_array(panda_hdmi_gpios, ARRAY_SIZE(panda_hdmi_gpios));
- }
- 
-+static struct omap_dss_hdmi_data omap4_panda_hdmi_data = {
-+	.hpd_gpio = HDMI_GPIO_HPD,
-+};
-+
- static struct omap_dss_device  omap4_panda_hdmi_device = {
- 	.name = "hdmi",
- 	.driver_name = "hdmi_panel",
-@@ -509,6 +513,7 @@ static struct omap_dss_device  omap4_panda_hdmi_device = {
- 	.platform_enable = omap4_panda_panel_enable_hdmi,
- 	.platform_disable = omap4_panda_panel_disable_hdmi,
- 	.channel = OMAP_DSS_CHANNEL_DIGIT,
-+	.data = &omap4_panda_hdmi_data,
- };
- 
- static struct omap_dss_device *omap4_panda_dss_devices[] = {
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 92a6679..3b76a20 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -469,6 +469,7 @@ bool omapdss_hdmi_detect(void)
- 
- int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
- {
-+	struct omap_dss_hdmi_data *priv = dssdev->data;
- 	int r = 0;
- 
- 	DSSDBG("ENTER hdmi_display_enable\n");
-@@ -481,6 +482,8 @@ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
- 		goto err0;
- 	}
- 
-+	hdmi.ip_data.hpd_gpio = priv->hpd_gpio;
-+
- 	r = omap_dss_start_device(dssdev);
- 	if (r) {
- 		DSSERR("failed to start device\n");
-diff --git a/drivers/video/omap2/dss/ti_hdmi.h b/drivers/video/omap2/dss/ti_hdmi.h
-index 26ec6d1..cb6f0f2 100644
---- a/drivers/video/omap2/dss/ti_hdmi.h
-+++ b/drivers/video/omap2/dss/ti_hdmi.h
-@@ -122,6 +122,10 @@ struct hdmi_ip_data {
- 	const struct ti_hdmi_ip_ops *ops;
- 	struct hdmi_config cfg;
- 	struct hdmi_pll_info pll_data;
-+
-+	/* ti_hdmi_4xxx_ip private data. These should be in a separate struct */
-+	int hpd_gpio;
-+	bool phy_tx_enabled;
- };
- int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data);
- void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data);
-diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-index a229ae7..34e58dd 100644
---- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-+++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-@@ -28,6 +28,7 @@
- #include <linux/delay.h>
- #include <linux/string.h>
- #include <linux/seq_file.h>
-+#include <linux/gpio.h>
- 
- #include "ti_hdmi_4xxx_ip.h"
- #include "dss.h"
-@@ -223,6 +224,49 @@ void ti_hdmi_4xxx_pll_disable(struct hdmi_ip_data *ip_data)
- 	hdmi_set_pll_pwr(ip_data, HDMI_PLLPWRCMD_ALLOFF);
- }
- 
-+static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
-+{
-+	unsigned long flags;
-+	bool hpd;
-+	int r;
-+	/* this should be in ti_hdmi_4xxx_ip private data */
-+	static DEFINE_SPINLOCK(phy_tx_lock);
-+
-+	spin_lock_irqsave(&phy_tx_lock, flags);
-+
-+	hpd = gpio_get_value(ip_data->hpd_gpio);
-+
-+	if (hpd = ip_data->phy_tx_enabled) {
-+		spin_unlock_irqrestore(&phy_tx_lock, flags);
-+		return 0;
-+	}
-+
-+	if (hpd)
-+		r = hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_TXON);
-+	else
-+		r = hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_LDOON);
-+
-+	if (r) {
-+		DSSERR("Failed to %s PHY TX power\n",
-+				hpd ? "enable" : "disable");
-+		goto err;
-+	}
-+
-+	ip_data->phy_tx_enabled = hpd;
-+err:
-+	spin_unlock_irqrestore(&phy_tx_lock, flags);
-+	return r;
-+}
-+
-+static irqreturn_t hpd_irq_handler(int irq, void *data)
-+{
-+	struct hdmi_ip_data *ip_data = data;
-+
-+	hdmi_check_hpd_state(ip_data);
-+
-+	return IRQ_HANDLED;
-+}
-+
- int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data)
- {
- 	u16 r = 0;
-@@ -232,10 +276,6 @@ int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data)
- 	if (r)
- 		return r;
- 
--	r = hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_TXON);
--	if (r)
--		return r;
--
- 	/*
- 	 * Read address 0 in order to get the SCP reset done completed
- 	 * Dummy access performed to make sure reset is done
-@@ -257,12 +297,32 @@ int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data)
- 	/* Write to phy address 3 to change the polarity control */
- 	REG_FLD_MOD(phy_base, HDMI_TXPHY_PAD_CFG_CTRL, 0x1, 27, 27);
- 
-+	r = request_threaded_irq(gpio_to_irq(ip_data->hpd_gpio),
-+			NULL, hpd_irq_handler,
-+			IRQF_DISABLED | IRQF_TRIGGER_RISING |
-+			IRQF_TRIGGER_FALLING, "hpd", ip_data);
-+	if (r) {
-+		DSSERR("HPD IRQ request failed\n");
-+		hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
-+		return r;
-+	}
-+
-+	r = hdmi_check_hpd_state(ip_data);
-+	if (r) {
-+		free_irq(gpio_to_irq(ip_data->hpd_gpio), ip_data);
-+		hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
-+		return r;
-+	}
-+
- 	return 0;
- }
- 
- void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data)
- {
-+	free_irq(gpio_to_irq(ip_data->hpd_gpio), ip_data);
-+
- 	hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
-+	ip_data->phy_tx_enabled = false;
- }
- 
- static int hdmi_core_ddc_init(struct hdmi_ip_data *ip_data)
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 062b3b2..483f67c 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -590,6 +590,11 @@ struct omap_dss_device {
- 	int (*get_backlight)(struct omap_dss_device *dssdev);
- };
- 
-+struct omap_dss_hdmi_data
-+{
-+	int hpd_gpio;
-+};
-+
- struct omap_dss_driver {
- 	struct device_driver driver;
- 
--- 
-1.7.4.1
+struct platform_driver i@p = {
+  .probe = pfn,
+  .remove = (<+...rfn...+>),
+};
+
+// ---------------------------------------------------------------------
+// set up iteration
+
+@initialize:ocaml@
+
+let drop_labels = ref false
+
+type ret = UseReturned | UseReturned2 of string | UseArg | UseGet
+
+let add pfn rfn alloc free devm_alloc file rule    let it = new iteration() in
+   it#set_files [file];
+   it#add_virtual_rule After_start;
+   (if !drop_labels then it#add_virtual_rule Drop_labels);
+   (match rule with
+      UseReturned -> it#add_virtual_rule Returned
+    | UseReturned2(free) -> it#add_virtual_rule Returned;
+      it#add_virtual_identifier Second_free free
+    | UseArg -> it#add_virtual_rule Arg
+    | UseGet -> it#add_virtual_rule Get);
+   it#add_virtual_identifier Pfn pfn;
+   it#add_virtual_identifier Rfn rfn;
+   it#add_virtual_identifier Alloc alloc;
+   it#add_virtual_identifier Free free;
+   it#add_virtual_identifier Devm_alloc devm_alloc;
+   it#register()
+
+@script:ocaml depends on drop_labels@
+@@
+
+drop_labels := true
+
+@script:ocaml@
+pfn << plat.pfn;
+rfn << plat.rfn;
+p << plat.p;
+@@
+
+let file = (List.hd p).file in
+add pfn rfn "kmalloc" "kfree" "devm_kzalloc" file UseReturned;
+add pfn rfn "kzalloc" "kfree" "devm_kzalloc" file UseReturned;
+add pfn rfn "ioremap" "iounmap" "devm_ioremap" file UseReturned;
+add pfn rfn "ioremap_nocache" "iounmap" "devm_ioremap_nocache" file
+   UseReturned;
+
+add pfn rfn "request_irq" "free_irq" "devm_request_irq" file UseArg;
+add pfn rfn "request_threaded_irq" "free_irq" "devm_request_threaded_irq" file
+  UseArg;
+add pfn rfn "dma_alloc_coherent" "dma_free_coherent" "dmam_alloc_coherent"
+  file UseArg;
+add pfn rfn "dma_alloc_noncoherent" "dma_free_noncoherent"
+  "dmam_alloc_noncoherent" file UseArg;
+
+(* several possibilities... *)
+add pfn rfn "request_region" "release_region" "devm_request_region" file
+  UseGet;
+add pfn rfn "request_mem_region" "release_mem_region"
+  "devm_request_mem_region" file UseGet;
+add pfn rfn "request_region" "release_region" "devm_request_region" file
+  UseArg;
+add pfn rfn "request_mem_region" "release_mem_region"
+  "devm_request_mem_region" file UseArg;
+(* fix a bug at the same time *)
+add pfn rfn "request_region" "release_resource" "devm_request_region" file
+  (UseReturned2("kfree"));
+add pfn rfn "request_mem_region" "release_resource"
+  "devm_request_mem_region" file (UseReturned2("kfree"));
+add pfn rfn "ioport_map" "ioport_unmap" "devm_ioport_map" file UseReturned
+
+// ---------------------------------------------------------------------
+// process the initial definition of the probe function
+
+@preprobe@
+identifier virtual.pfn;
+position p;
+@@
+
+pfn@p(...) { ... }
+
+@probe@
+identifier pfn;
+position preprobe.p;
+@@
+
+pfn@p(...) { ... }
+
+@labelled_return@
+identifier probe.pfn,l;
+expression e;
+@@
+
+pfn(...) { <+... l: return e; ...+> }
+
+// ---------------------------------------------------------------------
+// transform functions where free uses the result
+
+@prb depends on returned exists@
+identifier probe.pfn,pdev,virtual.alloc,virtual.free,virtual.second_free;
+expression x;
+expression list args;
+position p1,p2,p3;
+type T1,T2,T3;
+@@
+
+pfn(struct platform_device *pdev) { ... when any
+x = (T1)alloc@p1(args)
+<... when strict
+     when any
+     when forall
+(
+free@p2((T2)x,...);
+... when != x
+second_free@p3((T3)x,...);
+|
+free@p2((T2)x,...);
+)
+...>
+}
+
+@reme exists@
+identifier virtual.rfn,virtual.free;
+expression prb.x;
+type T;
+@@
+
+rfn(...) { ... free((T)x,...); ... }
+
+@rem depends on reme@
+identifier virtual.rfn,virtual.free,virtual.second_free;
+expression prb.x;
+position p4,p5;
+type T,T1;
+@@
+
+rfn(...) {
+<... when strict
+(
+free@p4((T)x,...);
+... when != x
+second_free@p5((T1)x,...);
+|
+free@p4((T)x,...);
+)
+...>
+}
+
+@bad@
+identifier virtual.free;
+expression prb.x;
+position p != {prb.p2,rem.p4};
+type T;
+@@
+
+free@p((T)x,...)
+
+@modif depends on rem && !bad@
+expression x;
+identifier prb.pdev,virtual.alloc,virtual.free,virtual.devm_alloc;
+identifier virtual.second_free;
+expression list args;
+position prb.p1,prb.p2,prb.p3,rem.p4,rem.p5;
+type T;
+@@
+
+(
+- free@p2(...);
+|
+- second_free@p3(...);
+|
+- free@p4(...);
+|
+- second_free@p5(...);
+|
+  x - alloc@p1(
++ devm_alloc(&pdev->dev,
+    args)
+|
+  x = 
+- (T)alloc@p1(
++ (T)devm_alloc(&pdev->dev,
+    args)
+)
+
+// ---------------------------------------------------------------------
+// transform functions where free uses the first argument
+
+@prbx depends on arg exists@
+identifier probe.pfn,pdev,virtual.alloc,virtual.free;
+expression x;
+expression list args;
+position p1,p2;
+@@
+
+pfn(struct platform_device *pdev) { ... when any
+alloc@p1(x,args)
+<... when strict
+     when any
+     when forall
+free@p2(x,...)
+...>
+}
+
+@remxe exists@
+identifier virtual.rfn, virtual.free;
+expression prbx.x;
+@@
+
+rfn(...) { ... free(x,...); ... }
+
+@remx depends on remxe@
+identifier virtual.rfn, virtual.free;
+expression prbx.x;
+position p3;
+@@
+
+rfn(...) {
+<... when strict
+free@p3(x,...)
+...>
+}
+
+@badx@
+identifier virtual.free;
+expression prbx.x;
+position p != {prbx.p2,remx.p3};
+@@
+
+free@p(x,...)
+
+@modifx depends on remx && !badx@
+expression x;
+identifier prbx.pdev,virtual.alloc,virtual.free,virtual.devm_alloc;
+expression list args;
+position prbx.p1,prbx.p2,remx.p3;
+@@
+
+(
+- free@p2(...);
+|
+- free@p3(...);
+|
+- alloc@p1(
++ devm_alloc(&pdev->dev,
+   x,args)
+)
+
+// ---------------------------------------------------------------------
+// transform functions where free uses the result of platform_get_resource
+
+@prbg depends on get exists@
+identifier probe.pfn,pdev,virtual.alloc,virtual.free;
+expression x;
+expression list args;
+position p1,p2;
+@@
+
+pfn(struct platform_device *pdev) { ... when any
+alloc@p1(x,args)
+<... when strict
+     when any
+     when forall
+free@p2(x,...)
+...>
+}
+
+@remge exists@
+identifier virtual.rfn, virtual.free;
+identifier y;
+identifier pdev;
+@@
+
+rfn(struct platform_device *pdev) { ... when any
+y = platform_get_resource(pdev, IORESOURCE_MEM, 0)
+...
+free(y->start,...)
+...
+}
+
+@remg depends on remge@
+identifier virtual.rfn, virtual.free;
+identifier y;
+identifier pdev;
+position p3;
+@@
+
+rfn(struct platform_device *pdev) {
+<... when strict
+y = platform_get_resource(pdev, IORESOURCE_MEM, 0)
+... when strict
+free@p3(y->start,...)
+...>
+}
+
+@badg@
+identifier virtual.free;
+position p != {prbg.p2,remg.p3};
+@@
+
+free@p(...)
+
+@modifg depends on remg && !badg@
+expression x;
+identifier prbg.pdev,virtual.alloc,virtual.free,virtual.devm_alloc;
+expression list args;
+position prbg.p1,prbg.p2,remg.p3;
+@@
+
+(
+- free@p2(...);
+|
+- free@p3(...);
+|
+- alloc@p1(
++ devm_alloc(&pdev->dev,
+   x,args)
+)
+
+// ---------------------------------------------------------------------
+// cleanup, if the drvdata was only used to enable the free
+// probably only relevant for kmalloc/kzalloc
+
+@dclean depends on modif || modifx || modifg@
+identifier virtual.rfn, pdev, i;
+type T;
+@@
+
+rfn(struct platform_device *pdev) { ...
+(
+- T i = platform_get_drvdata(pdev);
+|
+- T i = dev_get_drvdata(&pdev->drv);
+|
+- T i;
+  ... when != i
+(
+- i = platform_get_drvdata(pdev);
+|
+- i = dev_get_drvdata(&pdev->drv);
+)
+)
+... when != i
+}
+
+@rclean depends on modif || modifx || modifg@
+identifier virtual.rfn, pdev, i;
+type T;
+@@
+
+rfn(struct platform_device *pdev) { ...
+(
+- T i = platform_get_resource(pdev,...);
+|
+- T i;
+  ... when != i
+- i = platform_get_resource(pdev,...);
+)
+... when != i
+}
+
+// ---------------------------------------------------------------------
+// cleanup empty ifs, etc
+
+@depends on modif || modifx || modifg@
+identifier probe.pfn;
+@@
+
+pfn(...) { <...
+- if (...) {}
+...> }
+
+@depends on modif || modifx || modifg@
+identifier virtual.rfn;
+@@
+
+rfn(...) { <...
+- if (...) {}
+...> }
+
+@depends on modif || modifx || modifg@
+identifier probe.pfn;
+expression ret,e;
+@@
+
+pfn(...) { <...
++ return
+- ret  e;
+- return ret;
+...> }
+
+@depends on modif || modifx || modifg@
+identifier virtual.rfn;
+expression ret,e;
+@@
+
+rfn(...) { <...
++ return
+- ret  e;
+- return ret;
+...> }
+
+// ---------------------------------------------------------------------
+
+// this is likely to leave dead code, if l: is preceded by a return
+// because we are control-flow based, there is no way to match on that
+@depends on drop_labels && labelled_return && (modif || modifx || modifg)@
+identifier l,l1,l2;
+expression e;
+statement S;
+identifier probe.pfn;
+identifier i;
+statement S1,S2;
+@@
+
+pfn(...) { <...
+- goto l;
++ goto l2;
+...
+-l:
+<... when != S
+     when any
+l1:
+...>
+l2:
+(
+ (<+...i...+>);
+|
+ if (...) S1 else S2
+|
+ while (...) S1
+|
+ for (...;...;...) S1
+|
+ return e;
+)
+...> }
+
+@depends on drop_labels && !labelled_return && (modif || modifx || modifg)@
+identifier l,l1,l2;
+expression e;
+statement S;
+identifier probe.pfn;
+identifier i;
+statement S1,S2;
+@@
+
+pfn(...) { <...
+(
+- goto l;
++ goto l2;
+...
+-l:
+<... when != S
+     when any
+l1:
+...>
+l2:
+(
+ (<+...i...+>);
+|
+ if (...) S1 else S2
+|
+ while (...) S1
+|
+ for (...;...;...) S1
+)
+|
+- goto l;
++ return e;
+...
+-l:
+<... when != S
+     when any
+l1:
+...>
+return e;
+)
+...> }
 

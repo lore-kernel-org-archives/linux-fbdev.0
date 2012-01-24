@@ -1,85 +1,100 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Mon, 30 Jan 2012 05:12:57 +0000
-Subject: Re: [PATCH v3] video: da8xx-fb: reset LCDC only if functional clock changes with DVFS
-Message-Id: <4F2626D9.8070808@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 24 Jan 2012 10:00:15 +0000
+Subject: [PATCH 00/16] OMAPDSS: old OMAPFB cleanup
+Message-Id: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1325594451-11963-1-git-send-email-prakash.pm@ti.com>
-In-Reply-To: <1325594451-11963-1-git-send-email-prakash.pm@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, tony@atomide.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On 01/03/2012 12:40 PM, Manjunathappa, Prakash wrote:
-> LCDC functional clock may or may not be derived from CPU/MPU DPLL,
-> For example,
-> AM335x => Separate independent DPLL for LCDC
-> Davinci => Same DPLL as MPU
-> 
-> So, on platforms where LCDC functional clock is not derived from CPU/MPU
-> PLL it is not required to reset LCDC module as its functional clock does
-> not change with DVFS.
-> 
-> This patch adds check to do reset only if functional clock changes
-> between pre and post notifier callbacks with DVFS.
-> 
-> Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+Now that all omap2+ boards have been changed to use the newer omapdss driver,
+this patch series removes omap2+ support from the old omapfb driver
+(drivers/video/omap), and thus makes it an omap1 dss/fb driver.
 
-Applied.
+The use of SRAM for video ram had earlier been disabled by removing the SRAM
+allocation (fee926bb0d399b1eaaf38f9f694bbf2747c4b8a2), and now this series also
+removes the support from the omap fb drivers.
 
+Also various cleanup patches allow us to remove remove OMAP_TAG_LCD and
+OMAP_TAG_FBMEM.
 
-Thanks,
+All in all, the series removes quite a bit of unneeded code and cleans up the
+links between the board files and the display drivers, and this should help
+with device tree adaptation.
 
-Florian Tobias Schandinat
+Some of the patches affect the newer omapdss and omapfb drivers, but mostly the
+patches deal with omap1. I have compile tested the series for both omap1 and
+omap2, but I have only tested this on OMAP3 and OMAP4 boards, as I don't have
+OMAP1/2 boards. I think N770's display won't work after these patches, but
+other OMAP1 boards should be ok. To fix N770's display requires knowledge of
+the hardware setup, which is currently passed from the bootloader.
 
-> ---
-> Since v2:
-> Fix, update lcd_fck_rate with current LCD functional clock rate.
-> Since v1:
-> Fixed the commit message.
-> 
->  drivers/video/da8xx-fb.c |   16 +++++++++++-----
->  1 files changed, 11 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index 6b27751..dee1918 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -163,6 +163,7 @@ struct da8xx_fb_par {
->  	int			vsync_timeout;
->  #ifdef CONFIG_CPU_FREQ
->  	struct notifier_block	freq_transition;
-> +	unsigned int		lcd_fck_rate;
->  #endif
->  	void (*panel_power_ctrl)(int);
->  };
-> @@ -895,11 +896,13 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
->  	struct da8xx_fb_par *par;
->  
->  	par = container_of(nb, struct da8xx_fb_par, freq_transition);
-> -	if (val = CPUFREQ_PRECHANGE) {
-> -		lcd_disable_raster();
-> -	} else if (val = CPUFREQ_POSTCHANGE) {
-> -		lcd_calc_clk_divider(par);
-> -		lcd_enable_raster();
-> +	if (val = CPUFREQ_POSTCHANGE) {
-> +		if (par->lcd_fck_rate != clk_get_rate(par->lcdc_clk)) {
-> +			par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
-> +			lcd_disable_raster();
-> +			lcd_calc_clk_divider(par);
-> +			lcd_enable_raster();
-> +		}
->  	}
->  
->  	return 0;
-> @@ -1192,6 +1195,9 @@ static int __devinit fb_probe(struct platform_device *device)
->  
->  	par = da8xx_fb_info->par;
->  	par->lcdc_clk = fb_clk;
-> +#ifdef CONFIG_CPU_FREQ
-> +	par->lcd_fck_rate = clk_get_rate(fb_clk);
-> +#endif
->  	par->pxl_clk = lcdc_info->pxl_clk;
->  	if (fb_pdata->panel_power_ctrl) {
->  		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
+ Tomi
+
+Tomi Valkeinen (16):
+  OMAPFB: remove old blizzard driver
+  OMAPFB: Remove OMAP2/3 support from old omapfb driver
+  OMAPDSS: Remove video SRAM support
+  OMAPFB: Remove video SRAM support (old omapfb)
+  OMAP2+: remove unneeded #include omapfb.h
+  OMAP: N770: remove HWA742 platform data
+  OAMPFB: remove unused omapfb_set_ctrl_platform_data()
+  OMAPFB: remove early mem alloc from old omapfb
+  OMAPFB: remove mem info from platform_data
+  OMAPFB: remove unused fb_format_to_dss_mode()
+  OMAPFB: Move old omapfb private structs to a private include file
+  OMAPFB: remove omapfb_set_platform_data()
+  OMAP1: pass LCD config with omapfb_set_lcd_config()
+  OMAP: Remove OMAP_TAG_LCD and OMAP_TAG_FBMEM
+  OMAP1: Remove unused LCD devices from board files
+  OMAPFB: remove remaining OMAP arch checks
+
+ arch/arm/mach-omap1/board-ams-delta.c      |    9 +-
+ arch/arm/mach-omap1/board-fsample.c        |   15 +-
+ arch/arm/mach-omap1/board-h2.c             |   15 +-
+ arch/arm/mach-omap1/board-h3.c             |    9 +-
+ arch/arm/mach-omap1/board-htcherald.c      |    9 +-
+ arch/arm/mach-omap1/board-innovator.c      |   11 +-
+ arch/arm/mach-omap1/board-nokia770.c       |   19 +-
+ arch/arm/mach-omap1/board-osk.c            |   14 +-
+ arch/arm/mach-omap1/board-palmte.c         |   10 +-
+ arch/arm/mach-omap1/board-palmtt.c         |   10 +-
+ arch/arm/mach-omap1/board-palmz71.c        |   10 +-
+ arch/arm/mach-omap1/board-perseus2.c       |   15 +-
+ arch/arm/mach-omap1/board-sx1.c            |   16 +-
+ arch/arm/mach-omap2/io.c                   |    1 -
+ arch/arm/plat-omap/common.c                |    2 -
+ arch/arm/plat-omap/fb.c                    |  336 +------
+ arch/arm/plat-omap/fb.h                    |   10 -
+ arch/arm/plat-omap/include/plat/blizzard.h |   12 -
+ arch/arm/plat-omap/include/plat/board.h    |    2 -
+ arch/arm/plat-omap/include/plat/hwa742.h   |    8 -
+ arch/arm/plat-omap/include/plat/vram.h     |   21 +-
+ drivers/video/omap/Kconfig                 |   16 +-
+ drivers/video/omap/Makefile                |   12 +-
+ drivers/video/omap/blizzard.c              | 1648 ----------------------------
+ drivers/video/omap/dispc.c                 | 1547 --------------------------
+ drivers/video/omap/dispc.h                 |   46 -
+ drivers/video/omap/hwa742.c                |   21 +-
+ drivers/video/omap/omapfb.h                |   25 +-
+ drivers/video/omap/omapfb_main.c           |   30 +-
+ drivers/video/omap/rfbi.c                  |  598 ----------
+ drivers/video/omap2/dss/dispc.c            |    1 -
+ drivers/video/omap2/omapfb/omapfb-ioctl.c  |    2 +-
+ drivers/video/omap2/omapfb/omapfb-main.c   |  101 +--
+ drivers/video/omap2/vram.c                 |   99 +--
+ include/linux/omapfb.h                     |   32 +-
+ 35 files changed, 100 insertions(+), 4632 deletions(-)
+ delete mode 100644 arch/arm/plat-omap/fb.h
+ delete mode 100644 arch/arm/plat-omap/include/plat/blizzard.h
+ delete mode 100644 arch/arm/plat-omap/include/plat/hwa742.h
+ delete mode 100644 drivers/video/omap/blizzard.c
+ delete mode 100644 drivers/video/omap/dispc.c
+ delete mode 100644 drivers/video/omap/dispc.h
+ delete mode 100644 drivers/video/omap/rfbi.c
+
+-- 
+1.7.4.1
 

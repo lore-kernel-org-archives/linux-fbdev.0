@@ -1,69 +1,75 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 17 Jan 2012 12:48:58 +0000
-Subject: [PATCH 2/6] OMAP: 4430SDP/Panda: rename HPD GPIO to CT_CP_HPD
-Message-Id: <1326804542-22285-3-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 24 Jan 2012 10:00:31 +0000
+Subject: [PATCH 16/16] OMAPFB: remove remaining OMAP arch checks
+Message-Id: <1327399231-20826-17-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, tony@atomide.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The GPIO 60 on 4430sdp and Panda is not HPD GPIO, as currently marked in
-the board files, but CT_CP_HPD, which is used to enable/disable HPD
-functionality.
-
-This patch renames the GPIO.
+Now that the old omapfb driver is only omap1 display driver, there's no
+need to check if the arch is omap1. This patch removes the few remaining
+checks for the arch.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-omap2/board-4430sdp.c    |    4 ++--
- arch/arm/mach-omap2/board-omap4panda.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/video/omap/Makefile      |    6 ++----
+ drivers/video/omap/omapfb.h      |    4 ----
+ drivers/video/omap/omapfb_main.c |    3 +--
+ 3 files changed, 3 insertions(+), 10 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
-index d7017f2..ae0c09f 100644
---- a/arch/arm/mach-omap2/board-4430sdp.c
-+++ b/arch/arm/mach-omap2/board-4430sdp.c
-@@ -52,7 +52,7 @@
- #define ETH_KS8851_QUART		138
- #define OMAP4_SFH7741_SENSOR_OUTPUT_GPIO	184
- #define OMAP4_SFH7741_ENABLE_GPIO		188
--#define HDMI_GPIO_HPD 60 /* Hot plug pin for HDMI */
-+#define HDMI_GPIO_CT_CP_HPD 60 /* HPD mode enable/disable */
- #define HDMI_GPIO_LS_OE 41 /* Level shifter for HDMI */
- #define DISPLAY_SEL_GPIO	59	/* LCD2/PicoDLP switch */
- #define DLP_POWER_ON_GPIO	40
-@@ -596,7 +596,7 @@ static void __init omap_sfh7741prox_init(void)
- }
+diff --git a/drivers/video/omap/Makefile b/drivers/video/omap/Makefile
+index 7965375..1927faf 100644
+--- a/drivers/video/omap/Makefile
++++ b/drivers/video/omap/Makefile
+@@ -4,11 +4,9 @@
  
- static struct gpio sdp4430_hdmi_gpios[] = {
--	{ HDMI_GPIO_HPD,	GPIOF_OUT_INIT_HIGH,	"hdmi_gpio_hpd"   },
-+	{ HDMI_GPIO_CT_CP_HPD, GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ct_cp_hpd" },
- 	{ HDMI_GPIO_LS_OE,	GPIOF_OUT_INIT_HIGH,	"hdmi_gpio_ls_oe" },
- };
+ obj-$(CONFIG_FB_OMAP) += omapfb.o
  
-diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
-index b9f90ba..133b5a7 100644
---- a/arch/arm/mach-omap2/board-omap4panda.c
-+++ b/arch/arm/mach-omap2/board-omap4panda.c
-@@ -51,7 +51,7 @@
- #define GPIO_HUB_NRESET		62
- #define GPIO_WIFI_PMENA		43
- #define GPIO_WIFI_IRQ		53
--#define HDMI_GPIO_HPD 60 /* Hot plug pin for HDMI */
-+#define HDMI_GPIO_CT_CP_HPD 60 /* HPD mode enable/disable */
- #define HDMI_GPIO_LS_OE 41 /* Level shifter for HDMI */
+-objs-yy := omapfb_main.o
++objs-yy := omapfb_main.o lcdc.o
  
- /* wl127x BT, FM, GPS connectivity chip */
-@@ -479,7 +479,7 @@ int __init omap4_panda_dvi_init(void)
- }
+-objs-y$(CONFIG_ARCH_OMAP1) += lcdc.o
+-
+-objs-$(CONFIG_ARCH_OMAP1)$(CONFIG_FB_OMAP_LCDC_EXTERNAL) += sossi.o
++objs-y$(CONFIG_FB_OMAP_LCDC_EXTERNAL) += sossi.o
  
- static struct gpio panda_hdmi_gpios[] = {
--	{ HDMI_GPIO_HPD,	GPIOF_OUT_INIT_HIGH, "hdmi_gpio_hpd"   },
-+	{ HDMI_GPIO_CT_CP_HPD, GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ct_cp_hpd" },
- 	{ HDMI_GPIO_LS_OE,	GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ls_oe" },
- };
+ objs-y$(CONFIG_FB_OMAP_LCDC_HWA742) += hwa742.o
  
+diff --git a/drivers/video/omap/omapfb.h b/drivers/video/omap/omapfb.h
+index 07fe498..2921d20 100644
+--- a/drivers/video/omap/omapfb.h
++++ b/drivers/video/omap/omapfb.h
+@@ -47,11 +47,7 @@
+ 
+ struct omapfb_device;
+ 
+-#ifdef CONFIG_ARCH_OMAP1
+ #define OMAPFB_PLANE_NUM		1
+-#else
+-#define OMAPFB_PLANE_NUM		3
+-#endif
+ 
+ struct omapfb_mem_region {
+ 	u32		paddr;
+diff --git a/drivers/video/omap/omapfb_main.c b/drivers/video/omap/omapfb_main.c
+index 3d2e147..f54b463 100644
+--- a/drivers/video/omap/omapfb_main.c
++++ b/drivers/video/omap/omapfb_main.c
+@@ -1741,8 +1741,7 @@ static int omapfb_do_probe(struct platform_device *pdev,
+ 
+ #ifdef CONFIG_FB_OMAP_DMA_TUNE
+ 	/* Set DMA priority for EMIFF access to highest */
+-	if (cpu_class_is_omap1())
+-		omap_set_dma_priority(0, OMAP_DMA_PORT_EMIFF, 15);
++	omap_set_dma_priority(0, OMAP_DMA_PORT_EMIFF, 15);
+ #endif
+ 
+ 	r = ctrl_change_mode(fbdev->fb_info[0]);
 -- 
 1.7.4.1
 

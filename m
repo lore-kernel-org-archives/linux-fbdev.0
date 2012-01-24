@@ -1,72 +1,97 @@
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Thu, 12 Jan 2012 23:09:34 +0000
-Subject: Re: [PATCH 3/15] i810: fix module_param bool abuse.
-Message-Id: <87sjjk34wx.fsf@rustcorp.com.au>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 24 Jan 2012 10:00:26 +0000
+Subject: [PATCH 11/16] OMAPFB: Move old omapfb private structs to a private include file
+Message-Id: <1327399231-20826-12-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <874nx2tu1v.fsf@rustcorp.com.au> <4EEFC5B4.9000704@gmx.de>
-In-Reply-To: <4EEFC5B4.9000704@gmx.de>
+References: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>, Antonino Daplas <adaplas@gmail.com>, linux-fbdev@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, tony@atomide.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Mon, 19 Dec 2011 23:16:04 +0000, Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
-> On 12/15/2011 03:03 AM, Rusty Russell wrote:
-> > The driver says "module_param(ddc3, bool, 0);".  But it's not a used
-> > as a bool, it's used as a count.
-> > 
-> > Make it a bool.
-> > 
-> > Cc: Antonino Daplas <adaplas@gmail.com>
-> > Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-> > Cc: linux-fbdev@vger.kernel.org
-> > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> 
-> Applied.
+include/linux/omapfb.h contains structs that are used only by the
+omapfb driver. Move the structs into drivers/video/omap/omapfb.h.
 
-Hmm, I don't see this in Linus' tree yet, and it's a context-clash
-pre-requisite for part of the general driver bool conversion.  I want to
-push today since I have linux.conf.au next week, so I've split the i810
-conversion into a separate patch, below.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap/omapfb.h |   25 +++++++++++++++++++++++++
+ include/linux/omapfb.h      |   25 -------------------------
+ 2 files changed, 25 insertions(+), 25 deletions(-)
 
-It's been over a week in linux-next, can you push this please?
-
-From: Rusty Russell <rusty@rustcorp.com.au>
-Subject: module_param: make bool parameters really bool (drivers/vidio/i810)
-
-module_param(bool) used to counter-intuitively take an int.  In
-fddd5201 (mid-2009) we allowed bool or int/unsigned int using a messy
-trick.
-
-It's time to remove the int/unsigned int option.  For this version
-it'll simply give a warning, but it'll break next kernel version.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
-diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
---- a/drivers/video/i810/i810_main.c
-+++ b/drivers/video/i810/i810_main.c
-@@ -135,8 +135,8 @@ static struct pci_driver i810fb_driver  static char *mode_option __devinitdata = NULL;
- static int vram       __devinitdata = 4;
- static int bpp        __devinitdata = 8;
--static int mtrr       __devinitdata;
--static int accel      __devinitdata;
-+static bool mtrr      __devinitdata;
-+static bool accel     __devinitdata;
- static int hsync1     __devinitdata;
- static int hsync2     __devinitdata;
- static int vsync1     __devinitdata;
-@@ -144,9 +144,9 @@ static int vsync2     __devinitdata;
- static int xres       __devinitdata;
- static int yres;
- static int vyres      __devinitdata;
--static int sync       __devinitdata;
--static int extvga     __devinitdata;
--static int dcolor     __devinitdata;
-+static bool sync      __devinitdata;
-+static bool extvga    __devinitdata;
-+static bool dcolor    __devinitdata;
- static bool ddc3      __devinitdata;
+diff --git a/drivers/video/omap/omapfb.h b/drivers/video/omap/omapfb.h
+index 3a5ab13..07fe498 100644
+--- a/drivers/video/omap/omapfb.h
++++ b/drivers/video/omap/omapfb.h
+@@ -47,6 +47,31 @@
  
- /*------------------------------------------------------------*/
+ struct omapfb_device;
+ 
++#ifdef CONFIG_ARCH_OMAP1
++#define OMAPFB_PLANE_NUM		1
++#else
++#define OMAPFB_PLANE_NUM		3
++#endif
++
++struct omapfb_mem_region {
++	u32		paddr;
++	void __iomem	*vaddr;
++	unsigned long	size;
++	u8		type;		/* OMAPFB_PLANE_MEM_* */
++	enum omapfb_color_format format;/* OMAPFB_COLOR_* */
++	unsigned	format_used:1;	/* Must be set when format is set.
++					 * Needed b/c of the badly chosen 0
++					 * base for OMAPFB_COLOR_* values
++					 */
++	unsigned	alloc:1;	/* allocated by the driver */
++	unsigned	map:1;		/* kernel mapped by the driver */
++};
++
++struct omapfb_mem_desc {
++	int				region_cnt;
++	struct omapfb_mem_region	region[OMAPFB_PLANE_NUM];
++};
++
+ struct lcd_panel {
+ 	const char	*name;
+ 	int		config;		/* TFT/STN, signal inversion */
+diff --git a/include/linux/omapfb.h b/include/linux/omapfb.h
+index 03f5255..7a8e0ea 100644
+--- a/include/linux/omapfb.h
++++ b/include/linux/omapfb.h
+@@ -222,31 +222,6 @@ struct omapfb_display_info {
+ 
+ #include <plat/board.h>
+ 
+-#ifdef CONFIG_ARCH_OMAP1
+-#define OMAPFB_PLANE_NUM		1
+-#else
+-#define OMAPFB_PLANE_NUM		3
+-#endif
+-
+-struct omapfb_mem_region {
+-	u32		paddr;
+-	void __iomem	*vaddr;
+-	unsigned long	size;
+-	u8		type;		/* OMAPFB_PLANE_MEM_* */
+-	enum omapfb_color_format format;/* OMAPFB_COLOR_* */
+-	unsigned	format_used:1;	/* Must be set when format is set.
+-					 * Needed b/c of the badly chosen 0
+-					 * base for OMAPFB_COLOR_* values
+-					 */
+-	unsigned	alloc:1;	/* allocated by the driver */
+-	unsigned	map:1;		/* kernel mapped by the driver */
+-};
+-
+-struct omapfb_mem_desc {
+-	int				region_cnt;
+-	struct omapfb_mem_region	region[OMAPFB_PLANE_NUM];
+-};
+-
+ struct omapfb_platform_data {
+ 	struct omap_lcd_config		lcd;
+ };
+-- 
+1.7.4.1
+

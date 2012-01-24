@@ -1,44 +1,119 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 13 Jan 2012 11:46:27 +0000
-Subject: [PATCH 0/6] OMAPDSS: naive fifomerge support
-Message-Id: <1326455193-19716-1-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 24 Jan 2012 10:00:30 +0000
+Subject: [PATCH 15/16] OMAP1: Remove unused LCD devices from board files
+Message-Id: <1327399231-20826-16-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, rob@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: archit@ti.com, tony@atomide.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This patch set implements fifomerge and a naive version for fifo threshold
-calculation when fifomerge is in use. The strategy is simple: keep the low
-threshold the same for both fifomerge and non-fifomerge cases, but calculate
-the high threshold using the combined fifo size when fifomerge is in use.
+Some OMAP1 board files define LCD platform_devices, but there are no
+corresponding LCD drivers for those in the kernel. Thus remove these LCD
+devices.
 
-This should give some power savings, as the usable fifo size is much larger
-when only one overlay is in use. It probably won't help fifo underflow cases,
-as the low threshold is kept the same.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ arch/arm/mach-omap1/board-fsample.c  |    6 ------
+ arch/arm/mach-omap1/board-h2.c       |    6 ------
+ arch/arm/mach-omap1/board-perseus2.c |    6 ------
+ arch/arm/mach-omap1/board-sx1.c      |    6 ------
+ 4 files changed, 0 insertions(+), 24 deletions(-)
 
-Tested on OMAP4 Blaze (DSI cmd mode) and OMAP3 Overo (DPI).
-
- Tomi
-
-Tomi Valkeinen (6):
-  OMAPDSS: FEAT: Add FIFO_MERGE feature
-  OMAPDSS: APPLY: add fifo merge support funcs
-  OMAPDSS: APPLY: add fifo-merge support
-  OMAPDSS: DISPC: print fifo threshold values in bytes
-  OMAPDSS: DISPC: move fifo threhold calc to dispc.c
-  OMAPDSS: DISPC: Add naive threshold calc for fifomerge
-
- drivers/video/omap2/dss/apply.c        |  221 +++++++++++++++++++++++++++-----
- drivers/video/omap2/dss/dispc.c        |   51 +++++++-
- drivers/video/omap2/dss/display.c      |   10 --
- drivers/video/omap2/dss/dsi.c          |    8 -
- drivers/video/omap2/dss/dss.h          |   10 +-
- drivers/video/omap2/dss/dss_features.c |    9 +-
- drivers/video/omap2/dss/dss_features.h |    1 +
- 7 files changed, 244 insertions(+), 66 deletions(-)
-
+diff --git a/arch/arm/mach-omap1/board-fsample.c b/arch/arm/mach-omap1/board-fsample.c
+index b00844f..7afaf3c 100644
+--- a/arch/arm/mach-omap1/board-fsample.c
++++ b/arch/arm/mach-omap1/board-fsample.c
+@@ -274,17 +274,11 @@ static struct platform_device kp_device = {
+ 	.resource	= kp_resources,
+ };
+ 
+-static struct platform_device lcd_device = {
+-	.name		= "lcd_p2",
+-	.id		= -1,
+-};
+-
+ static struct platform_device *devices[] __initdata = {
+ 	&nor_device,
+ 	&nand_device,
+ 	&smc91x_device,
+ 	&kp_device,
+-	&lcd_device,
+ };
+ 
+ static struct omap_lcd_config fsample_lcd_config = {
+diff --git a/arch/arm/mach-omap1/board-h2.c b/arch/arm/mach-omap1/board-h2.c
+index 471233f..af2be8c 100644
+--- a/arch/arm/mach-omap1/board-h2.c
++++ b/arch/arm/mach-omap1/board-h2.c
+@@ -326,18 +326,12 @@ static struct platform_device h2_irda_device = {
+ 	.resource	= h2_irda_resources,
+ };
+ 
+-static struct platform_device h2_lcd_device = {
+-	.name		= "lcd_h2",
+-	.id		= -1,
+-};
+-
+ static struct platform_device *h2_devices[] __initdata = {
+ 	&h2_nor_device,
+ 	&h2_nand_device,
+ 	&h2_smc91x_device,
+ 	&h2_irda_device,
+ 	&h2_kp_device,
+-	&h2_lcd_device,
+ };
+ 
+ static void __init h2_init_smc91x(void)
+diff --git a/arch/arm/mach-omap1/board-perseus2.c b/arch/arm/mach-omap1/board-perseus2.c
+index 44df931..8e01534 100644
+--- a/arch/arm/mach-omap1/board-perseus2.c
++++ b/arch/arm/mach-omap1/board-perseus2.c
+@@ -233,17 +233,11 @@ static struct platform_device kp_device = {
+ 	.resource	= kp_resources,
+ };
+ 
+-static struct platform_device lcd_device = {
+-	.name		= "lcd_p2",
+-	.id		= -1,
+-};
+-
+ static struct platform_device *devices[] __initdata = {
+ 	&nor_device,
+ 	&nand_device,
+ 	&smc91x_device,
+ 	&kp_device,
+-	&lcd_device,
+ };
+ 
+ static struct omap_lcd_config perseus2_lcd_config __initdata = {
+diff --git a/arch/arm/mach-omap1/board-sx1.c b/arch/arm/mach-omap1/board-sx1.c
+index 0c880be..0c76e12 100644
+--- a/arch/arm/mach-omap1/board-sx1.c
++++ b/arch/arm/mach-omap1/board-sx1.c
+@@ -356,11 +356,6 @@ static struct omap_usb_config sx1_usb_config __initdata = {
+ 
+ /*----------- LCD -------------------------*/
+ 
+-static struct platform_device sx1_lcd_device = {
+-	.name		= "lcd_sx1",
+-	.id		= -1,
+-};
+-
+ static struct omap_lcd_config sx1_lcd_config __initdata = {
+ 	.ctrl_name	= "internal",
+ };
+@@ -369,7 +364,6 @@ static struct omap_lcd_config sx1_lcd_config __initdata = {
+ static struct platform_device *sx1_devices[] __initdata = {
+ 	&sx1_flash_device,
+ 	&sx1_kp_device,
+-	&sx1_lcd_device,
+ 	&sx1_irda_device,
+ };
+ 
 -- 
 1.7.4.1
 

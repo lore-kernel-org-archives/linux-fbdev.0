@@ -1,57 +1,36 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 24 Jan 2012 10:00:22 +0000
-Subject: [PATCH 07/16] OAMPFB: remove unused omapfb_set_ctrl_platform_data()
-Message-Id: <1327399231-20826-8-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 24 Jan 2012 10:45:17 +0000
+Subject: [PATCH 0/3]: ARM: OMAP2/3: HWMOD fixes for DSS
+Message-Id: <1327401920-5617-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, tony@atomide.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, paul@pwsan.com
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-omapfb_set_ctrl_platform_data() is no longer used, so it can be removed.
+There are some sysconfig flags missing for OMAP2/3 DSS hwmods. This series adds
+those.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- arch/arm/plat-omap/fb.c |    5 -----
- include/linux/omapfb.h  |    2 --
- 2 files changed, 0 insertions(+), 7 deletions(-)
+This series is based on the earlier series "[PATCH 0/3] OMAP: DSS PM fixes",
+but is sent separately here as the first series is inteded to go into the next
+rc, and this can be left to next merge window.
 
-diff --git a/arch/arm/plat-omap/fb.c b/arch/arm/plat-omap/fb.c
-index 15d4d16..a05ab56 100644
---- a/arch/arm/plat-omap/fb.c
-+++ b/arch/arm/plat-omap/fb.c
-@@ -175,11 +175,6 @@ void __init omapfb_reserve_sdram_memblock(void)
- 			 reserved);
- }
- 
--void omapfb_set_ctrl_platform_data(void *data)
--{
--	omapfb_config.ctrl_platform_data = data;
--}
--
- static int __init omap_init_fb(void)
- {
- 	const struct omap_lcd_config *conf;
-diff --git a/include/linux/omapfb.h b/include/linux/omapfb.h
-index c0b0187..85cad31 100644
---- a/include/linux/omapfb.h
-+++ b/include/linux/omapfb.h
-@@ -250,12 +250,10 @@ struct omapfb_mem_desc {
- struct omapfb_platform_data {
- 	struct omap_lcd_config		lcd;
- 	struct omapfb_mem_desc		mem_desc;
--	void				*ctrl_platform_data;
- };
- 
- /* in arch/arm/plat-omap/fb.c */
- extern void omapfb_set_platform_data(struct omapfb_platform_data *data);
--extern void omapfb_set_ctrl_platform_data(void *pdata);
- extern void omapfb_reserve_sdram_memblock(void);
- 
- #endif
+Tested on OMAP3 Overo. I don't have OMAP3 DSI or RFBI boards, so I haven't been
+able to test those.
+
+ Tomi
+
+Tomi Valkeinen (3):
+  ARM: OMAP2/3: HWMOD: Add missing flags for dispc class
+  ARM: OMAP2/3: HWMOD: Add missing flag for rfbi class
+  ARM: OMAP3: HWMOD: Add omap_hwmod_class_sysconfig for dsi
+
+ .../mach-omap2/omap_hwmod_2xxx_3xxx_ipblock_data.c |    2 +-
+ arch/arm/mach-omap2/omap_hwmod_2xxx_ipblock_data.c |    3 ++-
+ arch/arm/mach-omap2/omap_hwmod_3xxx_data.c         |   15 ++++++++++++++-
+ 3 files changed, 17 insertions(+), 3 deletions(-)
+
 -- 
 1.7.4.1
 

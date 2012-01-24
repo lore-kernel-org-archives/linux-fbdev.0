@@ -1,85 +1,88 @@
-From: "Joe Woodward" <jw@terrafix.co.uk>
-Date: Wed, 11 Jan 2012 13:57:42 +0000
-Subject: OMAP DSS2/PM on 3.2 broken?
-Message-Id: <WC20120111135742.2002AC@terrafix.co.uk>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 24 Jan 2012 10:00:25 +0000
+Subject: [PATCH 10/16] OMAPFB: remove unused fb_format_to_dss_mode()
+Message-Id: <1327399231-20826-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, tony@atomide.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-[origianlly sent to the Linux OMAP mailing list, but forwarded as suggested (see http://marc.info/?l=linux-omap&m2611662919592&w=2)]
+fb_format_to_dss_mode() function is no longer used, so remove it.
 
-I'm running on a Gumstix Overo (OMAP3530) with an 24-bit LCD panel connected via the DSS2 DPI interface (using the generic panel driver).
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/omapfb/omapfb-main.c |   54 ------------------------------
+ 1 files changed, 0 insertions(+), 54 deletions(-)
 
-Entering standby used to work just fine on 3.0, but on 3.2 I get the following:
-
-# echo mem > /sys/power/state
-[   23.186279] PM: Syncing filesystems ... done.
-[   23.194244] Freezing user space processes ... (elapsed 0.01 seconds)
-done.
-[   23.219543] Freezing remaining freezable tasks ... (elapsed 0.02
-seconds) done.
-[   23.251037] Suspending console(s) (use no_console_suspend to debug)
-[   23.554656] PM: suspend of devices complete after 296.417 msecs
-[   23.561859] PM: late suspend of devices complete after 6.957 msecs
-[   24.464813] Successfully put all powerdomains to target state
-[   24.466674] ------------[ cut here ]------------
-[   24.466857] WARNING: at drivers/video/omap2/dss/dss.c:713 0xc01350f8()
-[   24.467010] Modules linked in:
-[   24.467132] Backtrace:
-[   24.467254] Function entered at [<c0010c3c>] from [<c02c4a60>]
-[   24.467407]  r6:c02ffdaa r5:000002c9 r4:00000000 r3:00000000
-[   24.467651] Function entered at [<c02c4a48>] from [<c00344d0>]
-[   24.467803] Function entered at [<c003447c>] from [<c003450c>]
-[   24.467926]  r8:00000000 r7:c0390a84 r6:c00288a4 r5:c037b85c
-r4:fffffff3
-[   24.468200] r3:00000009
-[   24.468322] Function entered at [<c00344e8>] from [<c01350f8>]
-[   24.468475] Function entered at [<c01350ac>] from [<c013595c>]
-[   24.468597]  r4:dec50208 r3:c013594c
-[   24.468780] Function entered at [<c013594c>] from [<c0182724>]
-[   24.468902]  r6:c00288a4 r5:c037b85c r4:dec50208 r3:c013594c
-[   24.469177] Function entered at [<c01826f0>] from [<c0028900>]
-[   24.469299] Function entered at [<c00288a4>] from [<c01836f4>]
-[   24.469421]  r4:dec50208 r3:00000000
-[   24.469604] Function entered at [<c0183614>] from [<c0183d20>]
-[   24.469726]  r9:c02d7044 r8:00000000 r6:dec5025c r5:00000010
-r4:dec50208
-[   24.470031] Function entered at [<c0183c54>] from [<c0063aa4>]
-[   24.470153]  r8:c02ca888 r7:00000000 r6:00000003 r5:00000000
-r4:00000000
-[   24.470458] Function entered at [<c006391c>] from [<c0063c60>]
-[   24.470581]  r7:00000004 r6:00000000 r5:c02ca87c r4:00000003
-[   24.471130] Function entered at [<c0063b50>] from [<c0062ad4>]
-[   24.471282]  r6:00000003 r5:00000003 r4:c6a87000 r3:0000006d
-[   24.471557] Function entered at [<c0062a2c>] from [<c0117728>]
-[   24.471679] Function entered at [<c011770c>] from [<c00e2ab0>]
-[   24.471832] Function entered at [<c00e29a0>] from [<c0098c98>]
-[   24.471954] Function entered at [<c0098be4>] from [<c0098f14>]
-[   24.472076]  r8:00000004 r7:00000000 r6:00000000 r5:000ac750
-r4:d8a70dc0
-[   24.472412] Function entered at [<c0098ed0>] from [<c000dcc0>]
-[   24.472534]  r8:c000de44 r7:00000004 r6:000ac750 r5:00000004
-r4:000a8e38
-[   24.472839] ---[ end trace 9f4f3053f6637dae ]---
-[   24.475006] PM: early resume of devices complete after 8.666 msecs
-[   25.040344] PM: resume of devices complete after 560.943 msecs
-[   25.277801] Restarting tasks ... done.
-
-At which point the screen either restarts, or sometimes flickers and I get the following:
-[   22.578796] omapdss DISPC error: SYNC_LOST on channel lcd, restarting the output with video overlays disabled
-[   23.391571] omapdss DISPC error: SYNC_LOST on channel lcd, restarting the output with video overlays disabled
-[   24.391571] omapdss DISPC error: SYNC_LOST on channel lcd, restarting the output with video overlays disabled
-
-It normally recovers after doing this for a while...
-
-I'm assuming the problems started when DSS2 was adapted to runtime PM by Tomi as the warning comes from dss_runtime_get()?
-
-Anyone have any ideas?
-
-Cheers,
-Joe
-
-
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index 4c28d57..b00db40 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -1487,60 +1487,6 @@ static int omapfb_alloc_fbmem_display(struct fb_info *fbi, unsigned long size,
+ 	return omapfb_alloc_fbmem(fbi, size, paddr);
+ }
+ 
+-static enum omap_color_mode fb_format_to_dss_mode(enum omapfb_color_format fmt)
+-{
+-	enum omap_color_mode mode;
+-
+-	switch (fmt) {
+-	case OMAPFB_COLOR_RGB565:
+-		mode = OMAP_DSS_COLOR_RGB16;
+-		break;
+-	case OMAPFB_COLOR_YUV422:
+-		mode = OMAP_DSS_COLOR_YUV2;
+-		break;
+-	case OMAPFB_COLOR_CLUT_8BPP:
+-		mode = OMAP_DSS_COLOR_CLUT8;
+-		break;
+-	case OMAPFB_COLOR_CLUT_4BPP:
+-		mode = OMAP_DSS_COLOR_CLUT4;
+-		break;
+-	case OMAPFB_COLOR_CLUT_2BPP:
+-		mode = OMAP_DSS_COLOR_CLUT2;
+-		break;
+-	case OMAPFB_COLOR_CLUT_1BPP:
+-		mode = OMAP_DSS_COLOR_CLUT1;
+-		break;
+-	case OMAPFB_COLOR_RGB444:
+-		mode = OMAP_DSS_COLOR_RGB12U;
+-		break;
+-	case OMAPFB_COLOR_YUY422:
+-		mode = OMAP_DSS_COLOR_UYVY;
+-		break;
+-	case OMAPFB_COLOR_ARGB16:
+-		mode = OMAP_DSS_COLOR_ARGB16;
+-		break;
+-	case OMAPFB_COLOR_RGB24U:
+-		mode = OMAP_DSS_COLOR_RGB24U;
+-		break;
+-	case OMAPFB_COLOR_RGB24P:
+-		mode = OMAP_DSS_COLOR_RGB24P;
+-		break;
+-	case OMAPFB_COLOR_ARGB32:
+-		mode = OMAP_DSS_COLOR_ARGB32;
+-		break;
+-	case OMAPFB_COLOR_RGBA32:
+-		mode = OMAP_DSS_COLOR_RGBA32;
+-		break;
+-	case OMAPFB_COLOR_RGBX32:
+-		mode = OMAP_DSS_COLOR_RGBX32;
+-		break;
+-	default:
+-		mode = -EINVAL;
+-	}
+-
+-	return mode;
+-}
+-
+ static int omapfb_parse_vram_param(const char *param, int max_entries,
+ 		unsigned long *sizes, unsigned long *paddrs)
+ {
+-- 
+1.7.4.1
 

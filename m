@@ -1,68 +1,41 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 05 Jan 2012 07:40:22 +0000
-Subject: Re: [PATCH] video/omap2. dispc_mgr_enable needs runtime PM
-Message-Id: <1325749222.2045.31.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-4hW20yH2Idor9ZbixMOX"
+From: Danny Kukawka <danny.kukawka@bisect.de>
+Date: Tue, 24 Jan 2012 15:44:42 +0000
+Subject: [PATCH] fix NULL pointer dereference in DSS2 VENC sysfs debug attr on OMAP4
+Message-Id: <1327419882-13578-1-git-send-email-danny.kukawka@bisect.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20111230123755.384a5b5c@notabene.brown>
-	 <1325663456.1875.14.camel@deskari> <20120105183241.751b8086@notabene.brown>
-In-Reply-To: <20120105183241.751b8086@notabene.brown>
-To: NeilBrown <neilb@suse.de>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
+Commit ba02fa37de80bea10d706f39f076dd848348320a disabled the
+venc driver registration on OMAP4. Since the driver never gets
+probed/initialised your get a dereferenceed NULL pointer if you
+try to get info from /sys/kernel/debug/omapdss/venc
 
---=-4hW20yH2Idor9ZbixMOX
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Return info message about disabled venc if venc_dump_regs() gets called.
 
-On Thu, 2012-01-05 at 18:32 +1100, NeilBrown wrote:
-> On Wed, 04 Jan 2012 09:50:56 +0200 Tomi Valkeinen <tomi.valkeinen@ti.com>
-> wrote:
->=20
+Signed-off-by: Danny Kukawka <danny.kukawka@bisect.de>
+---
+ drivers/video/omap2/dss/venc.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-> yep, that looks likely.  The 'disable' routines of other panels only call
-> omapdss_dpi_display_disable() if (dssdev->state =3D=3D OMAP_DSS_DISPLAY_A=
-CTIVE).
-> This panel calls it unconditionally.  I guess that is the real bug? (and
-> putting an appropriate test in fixes it).
-
-Yes, that's the bug then. The enable and disable calls must match.
-
-> Thanks for your help.
->=20
-> (If/when I get this td028ttec driver cleaned up, would you be the one I s=
-end
-> it to?)
-
-Yep. However, I'm currently working on device tree support for omapdss,
-which will affect all panel drivers, and I may reject any new panel
-patches until the dev tree stuff is in. But please send anyway =3D).
-
- Tomi
-
-
---=-4hW20yH2Idor9ZbixMOX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJPBVPmAAoJEPo9qoy8lh71uhQP/0zLJhfvZ0eFM9At+qGIgpMo
-TK++Jj01PWk8G+h/zaRQIpl0pYsWbaPTlzywpfvqKnUl0bw4nmYSm63UKB3SxwlL
-UkoCPn0Tu8Wr0yC3syfStJqwIiGjlgLfWPIRWoq69SgRnKCHaQUBevIfHGTRK4DZ
-UGzxN+3qElsgEk0eMRtm6BU0pGhsOfKLEX8CD6J0iLrZVVMnL8imoh8yAYa23YiE
-iejUPkIPLZTuE5gA7M0A6/M7+a+knfCfwlk/DYFIkzKxy8WeM2A6QKAXPRIKjEc4
-he7rO3vx8uhTyX5TP/8YG0YDfpkPOy8yj4SWARo6jEuUgFDh6ZnaOwBjHKL+bEDx
-AHkQMt7ZOkE8fgYeX2PhlElFe8VGNJNcRQknOUJpm4jlubkZSL9DaPowUpX/fRzb
-Z2HVqCYCBDf/lXmCd+SPiN82j4ifgaeKIXIAcIvOFqAJWHWxYMfASpoImX4R4eO0
-7H163x9h+01ztu9Up7nLkPWBTuBfitRSMZcM8AT9hXlPqkCYkjbTpHuGK9JKD9AI
-Xn0LlhoDg1DN5exh637CCr21DR2nirn1IFKilQm822AiOlTQwaiCI1MnXyZsqTDw
-/eH94VtL9T+6MYFHqq0LwDzp4S7djJ2Ysgfgm6oUwnHN1b01Jc5rUDj06c0aA6uj
-O1Npy/mpuXNrspEUOrsa
-=jALi
------END PGP SIGNATURE-----
-
---=-4hW20yH2Idor9ZbixMOX--
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index b3e9f90..82865be 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -699,6 +699,11 @@ void venc_dump_regs(struct seq_file *s)
+ {
+ #define DUMPREG(r) seq_printf(s, "%-35s %08x\n", #r, venc_read_reg(r))
+ 
++	if (cpu_is_omap44xx()) {
++		seq_printf(s, "VENC currently disabled on OMAP44xx\n");
++		return;
++	}
++
+ 	if (venc_runtime_get())
+ 		return;
+ 
+-- 
+1.7.7.3
 

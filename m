@@ -1,88 +1,52 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 24 Jan 2012 10:00:25 +0000
-Subject: [PATCH 10/16] OMAPFB: remove unused fb_format_to_dss_mode()
-Message-Id: <1327399231-20826-11-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 24 Jan 2012 10:45:18 +0000
+Subject: [PATCH 1/3] ARM: OMAP2/3: HWMOD: Add missing flags for dispc class
+Message-Id: <1327401920-5617-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1327401920-5617-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1327401920-5617-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, tony@atomide.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, paul@pwsan.com
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-fb_format_to_dss_mode() function is no longer used, so remove it.
+hwmod class for dispc is missing sysc flags, which this patch adds.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/omapfb/omapfb-main.c |   54 ------------------------------
- 1 files changed, 0 insertions(+), 54 deletions(-)
+ arch/arm/mach-omap2/omap_hwmod_2xxx_ipblock_data.c |    3 ++-
+ arch/arm/mach-omap2/omap_hwmod_3xxx_data.c         |    3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 4c28d57..b00db40 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -1487,60 +1487,6 @@ static int omapfb_alloc_fbmem_display(struct fb_info *fbi, unsigned long size,
- 	return omapfb_alloc_fbmem(fbi, size, paddr);
- }
- 
--static enum omap_color_mode fb_format_to_dss_mode(enum omapfb_color_format fmt)
--{
--	enum omap_color_mode mode;
--
--	switch (fmt) {
--	case OMAPFB_COLOR_RGB565:
--		mode = OMAP_DSS_COLOR_RGB16;
--		break;
--	case OMAPFB_COLOR_YUV422:
--		mode = OMAP_DSS_COLOR_YUV2;
--		break;
--	case OMAPFB_COLOR_CLUT_8BPP:
--		mode = OMAP_DSS_COLOR_CLUT8;
--		break;
--	case OMAPFB_COLOR_CLUT_4BPP:
--		mode = OMAP_DSS_COLOR_CLUT4;
--		break;
--	case OMAPFB_COLOR_CLUT_2BPP:
--		mode = OMAP_DSS_COLOR_CLUT2;
--		break;
--	case OMAPFB_COLOR_CLUT_1BPP:
--		mode = OMAP_DSS_COLOR_CLUT1;
--		break;
--	case OMAPFB_COLOR_RGB444:
--		mode = OMAP_DSS_COLOR_RGB12U;
--		break;
--	case OMAPFB_COLOR_YUY422:
--		mode = OMAP_DSS_COLOR_UYVY;
--		break;
--	case OMAPFB_COLOR_ARGB16:
--		mode = OMAP_DSS_COLOR_ARGB16;
--		break;
--	case OMAPFB_COLOR_RGB24U:
--		mode = OMAP_DSS_COLOR_RGB24U;
--		break;
--	case OMAPFB_COLOR_RGB24P:
--		mode = OMAP_DSS_COLOR_RGB24P;
--		break;
--	case OMAPFB_COLOR_ARGB32:
--		mode = OMAP_DSS_COLOR_ARGB32;
--		break;
--	case OMAPFB_COLOR_RGBA32:
--		mode = OMAP_DSS_COLOR_RGBA32;
--		break;
--	case OMAPFB_COLOR_RGBX32:
--		mode = OMAP_DSS_COLOR_RGBX32;
--		break;
--	default:
--		mode = -EINVAL;
--	}
--
--	return mode;
--}
--
- static int omapfb_parse_vram_param(const char *param, int max_entries,
- 		unsigned long *sizes, unsigned long *paddrs)
- {
+diff --git a/arch/arm/mach-omap2/omap_hwmod_2xxx_ipblock_data.c b/arch/arm/mach-omap2/omap_hwmod_2xxx_ipblock_data.c
+index 2a67297..7d1f71a 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_2xxx_ipblock_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_2xxx_ipblock_data.c
+@@ -39,7 +39,8 @@ static struct omap_hwmod_class_sysconfig omap2_dispc_sysc = {
+ 	.sysc_offs	= 0x0010,
+ 	.syss_offs	= 0x0014,
+ 	.sysc_flags	= (SYSC_HAS_SIDLEMODE | SYSC_HAS_MIDLEMODE |
+-			   SYSC_HAS_SOFTRESET | SYSC_HAS_AUTOIDLE),
++			   SYSC_HAS_SOFTRESET | SYSC_HAS_AUTOIDLE |
++			   SYSS_HAS_RESET_STATUS),
+ 	.idlemodes	= (SIDLE_FORCE | SIDLE_NO | SIDLE_SMART |
+ 			   MSTANDBY_FORCE | MSTANDBY_NO | MSTANDBY_SMART),
+ 	.sysc_fields	= &omap_hwmod_sysc_type1,
+diff --git a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
+index b176d44..76e6498 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
+@@ -1491,7 +1491,8 @@ static struct omap_hwmod_class_sysconfig omap3_dispc_sysc = {
+ 	.syss_offs	= 0x0014,
+ 	.sysc_flags	= (SYSC_HAS_SIDLEMODE | SYSC_HAS_MIDLEMODE |
+ 			   SYSC_HAS_SOFTRESET | SYSC_HAS_AUTOIDLE |
+-			   SYSC_HAS_ENAWAKEUP),
++			   SYSC_HAS_ENAWAKEUP | SYSC_HAS_CLOCKACTIVITY |
++			   SYSS_HAS_RESET_STATUS),
+ 	.idlemodes	= (SIDLE_FORCE | SIDLE_NO | SIDLE_SMART |
+ 			   MSTANDBY_FORCE | MSTANDBY_NO | MSTANDBY_SMART),
+ 	.sysc_fields	= &omap_hwmod_sysc_type1,
 -- 
 1.7.4.1
 

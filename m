@@ -1,49 +1,76 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 24 Jan 2012 10:45:20 +0000
-Subject: [PATCH 3/3] ARM: OMAP3: HWMOD: Add omap_hwmod_class_sysconfig for dsi
-Message-Id: <1327401920-5617-4-git-send-email-tomi.valkeinen@ti.com>
+Date: Tue, 24 Jan 2012 10:00:27 +0000
+Subject: [PATCH 12/16] OMAPFB: remove omapfb_set_platform_data()
+Message-Id: <1327399231-20826-13-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1327401920-5617-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1327401920-5617-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, paul@pwsan.com
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, tony@atomide.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-hwmod data for OMAP3 does not define sysconfig for DSI. This patch adds
-it.
+omapfb_set_platform_data() is no longer used, so remove it.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-omap2/omap_hwmod_3xxx_data.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+ arch/arm/plat-omap/fb.c |   15 ---------------
+ include/linux/omapfb.h  |    3 ---
+ 2 files changed, 0 insertions(+), 18 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
-index 76e6498..c3ab5e4 100644
---- a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
-+++ b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
-@@ -1547,8 +1547,20 @@ static struct omap_hwmod omap3xxx_dss_dispc_hwmod = {
-  * display serial interface controller
-  */
- 
-+static struct omap_hwmod_class_sysconfig omap3xxx_dsi_sysc = {
-+	.rev_offs	= 0x0000,
-+	.sysc_offs	= 0x0010,
-+	.syss_offs	= 0x0014,
-+	.sysc_flags	= (SYSC_HAS_AUTOIDLE | SYSC_HAS_CLOCKACTIVITY |
-+			   SYSC_HAS_ENAWAKEUP | SYSC_HAS_SIDLEMODE |
-+			   SYSC_HAS_SOFTRESET | SYSS_HAS_RESET_STATUS),
-+	.idlemodes	= (SIDLE_FORCE | SIDLE_NO | SIDLE_SMART),
-+	.sysc_fields	= &omap_hwmod_sysc_type1,
-+};
-+
- static struct omap_hwmod_class omap3xxx_dsi_hwmod_class = {
- 	.name = "dsi",
-+	.sysc = &omap3xxx_dsi_sysc,
+diff --git a/arch/arm/plat-omap/fb.c b/arch/arm/plat-omap/fb.c
+index a742b60..45f35c9 100644
+--- a/arch/arm/plat-omap/fb.c
++++ b/arch/arm/plat-omap/fb.c
+@@ -52,10 +52,6 @@ static struct platform_device omap_fb_device = {
+ 	.num_resources = 0,
  };
  
- static struct omap_hwmod_irq_info omap3xxx_dsi1_irqs[] = {
+-void omapfb_set_platform_data(struct omapfb_platform_data *data)
+-{
+-}
+-
+ static int __init omap_init_fb(void)
+ {
+ 	const struct omap_lcd_config *conf;
+@@ -87,11 +83,6 @@ static struct platform_device omap_fb_device = {
+ 	.num_resources = 0,
+ };
+ 
+-void omapfb_set_platform_data(struct omapfb_platform_data *data)
+-{
+-	omapfb_config = *data;
+-}
+-
+ static int __init omap_init_fb(void)
+ {
+ 	return platform_device_register(&omap_fb_device);
+@@ -99,10 +90,4 @@ static int __init omap_init_fb(void)
+ 
+ arch_initcall(omap_init_fb);
+ 
+-#else
+-
+-void omapfb_set_platform_data(struct omapfb_platform_data *data)
+-{
+-}
+-
+ #endif
+diff --git a/include/linux/omapfb.h b/include/linux/omapfb.h
+index 7a8e0ea..a575706 100644
+--- a/include/linux/omapfb.h
++++ b/include/linux/omapfb.h
+@@ -226,9 +226,6 @@ struct omapfb_platform_data {
+ 	struct omap_lcd_config		lcd;
+ };
+ 
+-/* in arch/arm/plat-omap/fb.c */
+-extern void omapfb_set_platform_data(struct omapfb_platform_data *data);
+-
+ #endif
+ 
+ #endif /* __OMAPFB_H */
 -- 
 1.7.4.1
 

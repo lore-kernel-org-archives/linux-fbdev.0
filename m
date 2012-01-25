@@ -1,43 +1,29 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 23 Jan 2012 12:15:29 +0000
-Subject: [PATCH 2/3] ARM: OMAP3: HWMOD: add SYSC_HAS_ENAWAKEUP for dispc
-Message-Id: <1327320930-14550-3-git-send-email-tomi.valkeinen@ti.com>
+From: Paul Walmsley <paul@pwsan.com>
+Date: Wed, 25 Jan 2012 19:02:54 +0000
+Subject: Re: [PATCH 2/3] ARM: OMAP3: HWMOD: add SYSC_HAS_ENAWAKEUP for dispc
+Message-Id: <alpine.DEB.2.00.1201251202400.5324@utopia.booyaka.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1327320930-14550-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1327320930-14550-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1327320930-14550-1-git-send-email-tomi.valkeinen@ti.com> <1327320930-14550-3-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1327320930-14550-3-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, paul@pwsan.com
-Cc: archit@ti.com, neilb@suse.de, jean.pihet@newoldbits.com, khilman@ti.com, jw@terrafix.co.uk, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com, neilb@suse.de, jean.pihet@newoldbits.com, khilman@ti.com, jw@terrafix.co.uk
 
-dispc's sysc_flags is missing SYSC_HAS_ENAWAKEUP flag. This seems to
-cause SYNC_LOST errors from the DSS when the power management is
-enabled.
+On Mon, 23 Jan 2012, Tomi Valkeinen wrote:
 
-This patch adds the missing SYSC_HAS_ENAWAKEUP flag. Note that there are
-other flags missing also (clock activity, DSI's sysc flags), but as they
-are not critical, they will be fixed in the next merge window.
+> dispc's sysc_flags is missing SYSC_HAS_ENAWAKEUP flag. This seems to
+> cause SYNC_LOST errors from the DSS when the power management is
+> enabled.
+> 
+> This patch adds the missing SYSC_HAS_ENAWAKEUP flag. Note that there are
+> other flags missing also (clock activity, DSI's sysc flags), but as they
+> are not critical, they will be fixed in the next merge window.
+> 
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- arch/arm/mach-omap2/omap_hwmod_3xxx_data.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Thanks, queued for 3.3-rc.
 
-diff --git a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
-index c965309..b176d44 100644
---- a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
-+++ b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
-@@ -1490,7 +1490,8 @@ static struct omap_hwmod_class_sysconfig omap3_dispc_sysc = {
- 	.sysc_offs	= 0x0010,
- 	.syss_offs	= 0x0014,
- 	.sysc_flags	= (SYSC_HAS_SIDLEMODE | SYSC_HAS_MIDLEMODE |
--			   SYSC_HAS_SOFTRESET | SYSC_HAS_AUTOIDLE),
-+			   SYSC_HAS_SOFTRESET | SYSC_HAS_AUTOIDLE |
-+			   SYSC_HAS_ENAWAKEUP),
- 	.idlemodes	= (SIDLE_FORCE | SIDLE_NO | SIDLE_SMART |
- 			   MSTANDBY_FORCE | MSTANDBY_NO | MSTANDBY_SMART),
- 	.sysc_fields	= &omap_hwmod_sysc_type1,
--- 
-1.7.4.1
 
+- Paul

@@ -1,136 +1,28 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 23 Jan 2012 12:15:28 +0000
-Subject: [PATCH 1/3] ARM: OMAP: HWMOD: split omap2/3 dispc hwmod class
-Message-Id: <1327320930-14550-2-git-send-email-tomi.valkeinen@ti.com>
+From: Paul Walmsley <paul@pwsan.com>
+Date: Wed, 25 Jan 2012 19:02:38 +0000
+Subject: Re: [PATCH 1/3] ARM: OMAP: HWMOD: split omap2/3 dispc hwmod class
+Message-Id: <alpine.DEB.2.00.1201251202250.5324@utopia.booyaka.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1327320930-14550-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1327320930-14550-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1327320930-14550-1-git-send-email-tomi.valkeinen@ti.com> <1327320930-14550-2-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1327320930-14550-2-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, paul@pwsan.com
-Cc: archit@ti.com, neilb@suse.de, jean.pihet@newoldbits.com, khilman@ti.com, jw@terrafix.co.uk, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com, neilb@suse.de, jean.pihet@newoldbits.com, khilman@ti.com, jw@terrafix.co.uk
 
-Currently OMAP2 and 3 share the same omap_hwmod_class and
-omap_hwmod_class_sysconfig for dispc. However, OMAP3 has sysconfig
-bits that OMAP2 doesn't have, so we need to split those structs into
-OMAP2 and OMAP3 specific versions.
+On Mon, 23 Jan 2012, Tomi Valkeinen wrote:
 
-This patch only splits the structs, without changing the contents.
+> Currently OMAP2 and 3 share the same omap_hwmod_class and
+> omap_hwmod_class_sysconfig for dispc. However, OMAP3 has sysconfig
+> bits that OMAP2 doesn't have, so we need to split those structs into
+> OMAP2 and OMAP3 specific versions.
+> 
+> This patch only splits the structs, without changing the contents.
+> 
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- .../mach-omap2/omap_hwmod_2xxx_3xxx_ipblock_data.c |   21 ------------------
- arch/arm/mach-omap2/omap_hwmod_2xxx_ipblock_data.c |   22 +++++++++++++++++++
- arch/arm/mach-omap2/omap_hwmod_3xxx_data.c         |   23 +++++++++++++++++++-
- 3 files changed, 44 insertions(+), 22 deletions(-)
+Thanks, queued for 3.3-rc.
 
-diff --git a/arch/arm/mach-omap2/omap_hwmod_2xxx_3xxx_ipblock_data.c b/arch/arm/mach-omap2/omap_hwmod_2xxx_3xxx_ipblock_data.c
-index c11273d..f08e442 100644
---- a/arch/arm/mach-omap2/omap_hwmod_2xxx_3xxx_ipblock_data.c
-+++ b/arch/arm/mach-omap2/omap_hwmod_2xxx_3xxx_ipblock_data.c
-@@ -56,27 +56,6 @@ struct omap_hwmod_class omap2_dss_hwmod_class = {
- };
- 
- /*
-- * 'dispc' class
-- * display controller
-- */
--
--static struct omap_hwmod_class_sysconfig omap2_dispc_sysc = {
--	.rev_offs	= 0x0000,
--	.sysc_offs	= 0x0010,
--	.syss_offs	= 0x0014,
--	.sysc_flags	= (SYSC_HAS_SIDLEMODE | SYSC_HAS_MIDLEMODE |
--			   SYSC_HAS_SOFTRESET | SYSC_HAS_AUTOIDLE),
--	.idlemodes	= (SIDLE_FORCE | SIDLE_NO | SIDLE_SMART |
--			   MSTANDBY_FORCE | MSTANDBY_NO | MSTANDBY_SMART),
--	.sysc_fields	= &omap_hwmod_sysc_type1,
--};
--
--struct omap_hwmod_class omap2_dispc_hwmod_class = {
--	.name	= "dispc",
--	.sysc	= &omap2_dispc_sysc,
--};
--
--/*
-  * 'rfbi' class
-  * remote frame buffer interface
-  */
-diff --git a/arch/arm/mach-omap2/omap_hwmod_2xxx_ipblock_data.c b/arch/arm/mach-omap2/omap_hwmod_2xxx_ipblock_data.c
-index 177dee2..2a67297 100644
---- a/arch/arm/mach-omap2/omap_hwmod_2xxx_ipblock_data.c
-+++ b/arch/arm/mach-omap2/omap_hwmod_2xxx_ipblock_data.c
-@@ -28,6 +28,28 @@ struct omap_hwmod_dma_info omap2xxx_dss_sdma_chs[] = {
- 	{ .name = "dispc", .dma_req = 5 },
- 	{ .dma_req = -1 }
- };
-+
-+/*
-+ * 'dispc' class
-+ * display controller
-+ */
-+
-+static struct omap_hwmod_class_sysconfig omap2_dispc_sysc = {
-+	.rev_offs	= 0x0000,
-+	.sysc_offs	= 0x0010,
-+	.syss_offs	= 0x0014,
-+	.sysc_flags	= (SYSC_HAS_SIDLEMODE | SYSC_HAS_MIDLEMODE |
-+			   SYSC_HAS_SOFTRESET | SYSC_HAS_AUTOIDLE),
-+	.idlemodes	= (SIDLE_FORCE | SIDLE_NO | SIDLE_SMART |
-+			   MSTANDBY_FORCE | MSTANDBY_NO | MSTANDBY_SMART),
-+	.sysc_fields	= &omap_hwmod_sysc_type1,
-+};
-+
-+struct omap_hwmod_class omap2_dispc_hwmod_class = {
-+	.name	= "dispc",
-+	.sysc	= &omap2_dispc_sysc,
-+};
-+
- /* OMAP2xxx Timer Common */
- static struct omap_hwmod_class_sysconfig omap2xxx_timer_sysc = {
- 	.rev_offs	= 0x0000,
-diff --git a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
-index 5324e8d..c965309 100644
---- a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
-+++ b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
-@@ -1480,6 +1480,27 @@ static struct omap_hwmod omap3xxx_dss_core_hwmod = {
- 	.masters_cnt	= ARRAY_SIZE(omap3xxx_dss_masters),
- };
- 
-+/*
-+ * 'dispc' class
-+ * display controller
-+ */
-+
-+static struct omap_hwmod_class_sysconfig omap3_dispc_sysc = {
-+	.rev_offs	= 0x0000,
-+	.sysc_offs	= 0x0010,
-+	.syss_offs	= 0x0014,
-+	.sysc_flags	= (SYSC_HAS_SIDLEMODE | SYSC_HAS_MIDLEMODE |
-+			   SYSC_HAS_SOFTRESET | SYSC_HAS_AUTOIDLE),
-+	.idlemodes	= (SIDLE_FORCE | SIDLE_NO | SIDLE_SMART |
-+			   MSTANDBY_FORCE | MSTANDBY_NO | MSTANDBY_SMART),
-+	.sysc_fields	= &omap_hwmod_sysc_type1,
-+};
-+
-+static struct omap_hwmod_class omap3_dispc_hwmod_class = {
-+	.name	= "dispc",
-+	.sysc	= &omap3_dispc_sysc,
-+};
-+
- /* l4_core -> dss_dispc */
- static struct omap_hwmod_ocp_if omap3xxx_l4_core__dss_dispc = {
- 	.master		= &omap3xxx_l4_core_hwmod,
-@@ -1503,7 +1524,7 @@ static struct omap_hwmod_ocp_if *omap3xxx_dss_dispc_slaves[] = {
- 
- static struct omap_hwmod omap3xxx_dss_dispc_hwmod = {
- 	.name		= "dss_dispc",
--	.class		= &omap2_dispc_hwmod_class,
-+	.class		= &omap3_dispc_hwmod_class,
- 	.mpu_irqs	= omap2_dispc_irqs,
- 	.main_clk	= "dss1_alwon_fck",
- 	.prcm		= {
--- 
-1.7.4.1
 
+- Paul

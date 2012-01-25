@@ -1,51 +1,72 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 23 Jan 2012 12:15:27 +0000
-Subject: [PATCH 0/3] OMAP: DSS PM fixes
-Message-Id: <1327320930-14550-1-git-send-email-tomi.valkeinen@ti.com>
+Date: Wed, 25 Jan 2012 08:04:05 +0000
+Subject: Re: [PATCH 0/3] OMAP: DSS PM fixes
+Message-Id: <1327478645.1858.17.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-01GAiiYwBNCINR6XS67H"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, paul@pwsan.com
-Cc: archit@ti.com, neilb@suse.de, jean.pihet@newoldbits.com, khilman@ti.com, jw@terrafix.co.uk, Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1327320930-14550-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1327320930-14550-1-git-send-email-tomi.valkeinen@ti.com>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: linux-fbdev@vger.kernel.org, archit@ti.com, neilb@suse.de, jean.pihet@newoldbits.com, khilman@ti.com, jw@terrafix.co.uk, linux-omap mailing list <linux-omap@vger.kernel.org>
 
-Here are two fixes to get DSS work better with PM on OMAP3.
 
-The first two patches fix the missing SYSC_HAS_ENAWAKEUP flag, which removes
-the SYNC_LOST problem.
+--=-01GAiiYwBNCINR6XS67H
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The third patch changes omapdss to use pm_runtime_put_sync functions, which
-fixes the system suspend.
+Hi Paul,
 
-I've tested both only on v3.3-rc1, OMAP3 Overo. I get problems on system
-suspend from TWL and MTD drivers (also without my patches =), but disabling MTD
-and ignoring TWL errors shows that the warning from omapdss has disappeared,
-and I get an image on the screen on resume.
+On Mon, 2012-01-23 at 14:15 +0200, Tomi Valkeinen wrote:
+> Here are two fixes to get DSS work better with PM on OMAP3.
+>=20
+> The first two patches fix the missing SYSC_HAS_ENAWAKEUP flag, which remo=
+ves
+> the SYNC_LOST problem.
+>=20
+> The third patch changes omapdss to use pm_runtime_put_sync functions, whi=
+ch
+> fixes the system suspend.
+>=20
+> I've tested both only on v3.3-rc1, OMAP3 Overo. I get problems on system
+> suspend from TWL and MTD drivers (also without my patches =3D), but disab=
+ling MTD
+> and ignoring TWL errors shows that the warning from omapdss has disappear=
+ed,
+> and I get an image on the screen on resume.
+>=20
+> The two fixes are independent, so either I can take them through dss tree=
+ (with
+> appropriate Acks), or the hwmod patches can go through some other tree.
 
-The two fixes are independent, so either I can take them through dss tree (with
-appropriate Acks), or the hwmod patches can go through some other tree.
-
-The fixes should also work directly on v3.2, even though I haven't tested them
-yet.
+Ping. Sorry to be hurrying with this, but I'd like to get these into the
+next rc. Can you ack these (perhaps the first two patches?) or do you
+want to take them through your tree?
 
  Tomi
 
-Tomi Valkeinen (3):
-  ARM: OMAP: HWMOD: split omap2/3 dispc hwmod class
-  ARM: OMAP3: HWMOD: add SYSC_HAS_ENAWAKEUP for dispc
-  OMAPDSS: use sync versions of pm_runtime_put
 
- .../mach-omap2/omap_hwmod_2xxx_3xxx_ipblock_data.c |   21 -----------------
- arch/arm/mach-omap2/omap_hwmod_2xxx_ipblock_data.c |   22 ++++++++++++++++++
- arch/arm/mach-omap2/omap_hwmod_3xxx_data.c         |   24 +++++++++++++++++++-
- drivers/video/omap2/dss/dispc.c                    |    2 +-
- drivers/video/omap2/dss/dsi.c                      |    2 +-
- drivers/video/omap2/dss/dss.c                      |    2 +-
- drivers/video/omap2/dss/hdmi.c                     |    2 +-
- drivers/video/omap2/dss/rfbi.c                     |    2 +-
- drivers/video/omap2/dss/venc.c                     |    2 +-
- 9 files changed, 51 insertions(+), 28 deletions(-)
+--=-01GAiiYwBNCINR6XS67H
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
--- 
-1.7.4.1
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJPH7d1AAoJEPo9qoy8lh71MOEQAJQXPDdBLkVlWCylP5DwjhKW
+PsQm1vXIlPX3C04L8iyso2LSYi89Tw9bFWxKPnSYhsQn+03XGVO5g56GvpnfBDne
+n7/7ndZILwGc119aZMeIbTmj8U3tz7TlMe4m1GJR3Olxj46TvFgoJe0r2Ii5j5k7
++KjBcxQUWrjdH71vJCfJ6zq2tZd8Vj1IYpA+MjC/nPpx8to7vqFeGml3rGPIjp9Q
+0MuS2oY7mQbAZtYK3t79N7mI6Pd4eUY+0nYu+kVfnHAdofeMgv89xYQehsliS/Og
+nOoZG2hLfYFMI7WXRZYN+uzEfDbChzOpmCp9SBUpiI1oUGY6eVtyK9YAbC6PblHs
+dpNnzJRZGP8WLFvKGIPHdW8A1AkLiOft/ern0EDitVMZOc2oPyQbpcIxq2NYr8xc
+1SGeQFaTD7gT01bWdjpvwu1qBLc1yaOypqvvcjCA/w9jNGHG+BbyyMgWTvgSOW1L
+93Aq0aSaiDvRfZICPpBiC8NbY8j6xx2lroV5wg4bVQ7Jq/aS+Uc/r9VG8ax4SyO0
+j7LRikrA+OjFP6IGmdHJOHxDz5SPjY07bxi1NYcLroJ4eAx/qCQZgFj3kZHL/hEU
+1nXU/c/P0aUQYfLCnHYFXBDfuESlsCRjYsSAEg+MdpHXNUg9k56qC8iSToE/teOx
+q7iDQaRs/U8HmSdiBgsS
+=RNi2
+-----END PGP SIGNATURE-----
+
+--=-01GAiiYwBNCINR6XS67H--
 

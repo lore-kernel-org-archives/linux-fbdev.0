@@ -1,100 +1,92 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Fri, 27 Jan 2012 03:00:54 +0000
-Subject: RE: [PATCH v7 2/2] video: backlight: support s6e8ax0 panel driver based on MIPI DSI
-Message-Id: <006801ccdc9f$e28b42f0$a7a1c8d0$%han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 26 Jan 2012 12:07:31 +0000
+Subject: [GIT PULL] OMAP DSS fixes for 3.3-rc
+Message-Id: <1327579651.1895.34.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-uv+y4aZZGxEI6FQpPSXd"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4F17AA14.8030100@samsung.com> <1327593179.2843.5.camel@lappy>
- <001901ccdc98$755d4bd0$6017e370$%dae@samsung.com>
-In-Reply-To: <001901ccdc98$755d4bd0$6017e370$%dae@samsung.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-omap mailing list <linux-omap@vger.kernel.org>
 
-Hi, Inki Dae.
-> -----Original Message-----
-> From: linux-fbdev-owner@vger.kernel.org [mailto:linux-fbdev-owner@vger.kernel.org] On Behalf Of Inki
-> Dae
-> Sent: Friday, January 27, 2012 11:08 AM
-> To: 'Tomi Valkeinen'; 'Donghwa Lee'
-> Cc: linux-fbdev@vger.kernel.org; linux-arm-kernel@lists.infradead.org; 'Florian Tobias Schandinat';
-> 'Andrew Morton'; rpurdie@linux.intel.com; kyungmin.park@samsung.com
-> Subject: RE: [PATCH v7 2/2] video: backlight: support s6e8ax0 panel driver based on MIPI DSI
-> 
-> Hi, Tomi.
-> 
-> Below is my comments.
-> 
-> > -----Original Message-----
-> > From: Tomi Valkeinen [mailto:tomi.valkeinen@ti.com]
-> > Sent: Friday, January 27, 2012 12:53 AM
-> > To: Donghwa Lee
-> > Cc: linux-fbdev@vger.kernel.org; linux-arm-kernel@lists.infradead.org;
-> > Florian Tobias Schandinat; Andrew Morton; rpurdie@linux.intel.com;
-> > inki.dae@samsung.com; kyungmin.park@samsung.com
-> > Subject: Re: [PATCH v7 2/2] video: backlight: support s6e8ax0 panel driver
-> > based on MIPI DSI
-> >
-> > Hi,
-> >
-> > On Thu, 2012-01-19 at 14:28 +0900, Donghwa Lee wrote:
-> > > This patch is amoled panel driver based MIPI DSI interface.
-> > > S6E8AX0 means it may includes many other ldi controllers, for example,
-> > > S6E8AA0, S6E8AB0, and so on.
-> > >
-> > > This patch can be modified depending on each panel properites. For
-> > > example, second parameter of panel condition register can be changed
-> > > depending on ldi controller or amoled type.
-> > >
-> > > Changes since v6:
-> > > 	- change data type from const to static const
-> > >
-> > > Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
-> > > Signed-off-by: Inki Dae <inki.dae@samsung.com>
-> > > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> > > ---
-> > >  drivers/video/backlight/Kconfig   |    7 +
-> > >  drivers/video/backlight/Makefile  |    1 +
-> > >  drivers/video/backlight/s6e8ax0.c |  898
-> > +++++++++++++++++++++++++++++++++++++
-> > >  drivers/video/backlight/s6e8ax0.h |   21 +
-> > >  4 files changed, 927 insertions(+), 0 deletions(-)  create mode
-> > > 100644 drivers/video/backlight/s6e8ax0.c  create mode 100644
-> > > drivers/video/backlight/s6e8ax0.h
-> >
-> > Why is this in backlight directory? It's a panel driver, not a backlight
-> > driver.
-> >
-> 
-> Yes, right. this backlight driver is specific to our mipi dsi driver because this uses the interface
-> of mipi dsi driver to send some commands to real lcd panel.
-> 
-> > And the driver is s5p specific, wouldn't a directory like
-> > drivers/video/s5p/, where both the s5p DSI driver from the previous patch
-> > and this panel driver could be?
-> >
-> 
-> Ok, we will create new directory, "exynos" instead of "s5p" because our SoC chip doesn't use such
-> prefix(s5p, and s3c) anymore. and also as you mentioned, we should working on a common DSI framework.
-> do you have any plan for this?
 
-I think so. New directory, "exynos" is necessary.
-The "exynos" directory can include IPs such as MIPI, which are related to FB stack
-and are used for exynos SoC series.
+--=-uv+y4aZZGxEI6FQpPSXd
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-However, s3c-fb.c will remain in "drivers/video" directory, because s3c-fb.c can be
-used for s3c24xx, s5p64xx SoC series as well as exynos series.
+Hi Florian,
 
-Thank you.
-> 
-> Thanks,
-> Inki Dae.
-> 
-> >  Tomi
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Here are two major fixes for OMAP DSS driver.
+
+The first (OMAPDSS: use sync versions...) fixes problem with system
+suspend, which causes omapdss power management to give WARNs and
+generally malfunction on system suspend/resume.
+
+The second (the rest of the patches) implements a workaround for HW bug,
+which causes physical damage to the board if the HDMI cable is
+disconnected at a "wrong" time. The actual fix is in the last patch, but
+the board files needed some cleanups and a new GPIO, which is what the
+smaller patches do.
+
+The branch is based on fbdev/fbdev-next. Is that ok?
+
+ Tomi
+
+
+The following changes since commit f787f32e67e00b072f46b2ae3c454d2c0a1fcdb7=
+:
+
+  module_param: make bool parameters really bool (drivers/video/i810) (2012=
+-01-12 23:28:59 +0000)
+
+are available in the git repository at:
+  git://gitorious.org/linux-omap-dss2/linux.git for-3.3-rc
+
+Tomi Valkeinen (7):
+      OMAPDSS: use sync versions of pm_runtime_put
+      OMAP: 4430SDP/Panda: use gpio_free_array to free HDMI gpios
+      OMAP: 4430SDP/Panda: rename HPD GPIO to CT_CP_HPD
+      OMAPDSS: remove wrong HDMI HPD muxing
+      OMAP: 4430SDP/Panda: setup HDMI GPIO muxes
+      OMAP: 4430SDP/Panda: add HDMI HPD gpio
+      OMAPDSS: HDMI: PHY burnout fix
+
+ arch/arm/mach-omap2/board-4430sdp.c       |   18 ++++++--
+ arch/arm/mach-omap2/board-omap4panda.c    |   18 ++++++--
+ arch/arm/mach-omap2/display.c             |    4 --
+ drivers/video/omap2/dss/dispc.c           |    2 +-
+ drivers/video/omap2/dss/dsi.c             |    2 +-
+ drivers/video/omap2/dss/dss.c             |    2 +-
+ drivers/video/omap2/dss/hdmi.c            |    5 ++-
+ drivers/video/omap2/dss/rfbi.c            |    2 +-
+ drivers/video/omap2/dss/ti_hdmi.h         |    4 ++
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |   68 +++++++++++++++++++++++++=
+++--
+ drivers/video/omap2/dss/venc.c            |    2 +-
+ include/video/omapdss.h                   |    5 ++
+ 12 files changed, 110 insertions(+), 22 deletions(-)
+
+
+--=-uv+y4aZZGxEI6FQpPSXd
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJPIUIDAAoJEPo9qoy8lh71SYMQAIhNl/or2Yx/11XxcrHGgbu7
+4ASFkj/STChuTMGWQ5hU4SZfuSRU8DaW+a/sDxIZxpPTfHNVmGs2EVsUtuF0FNCJ
+stY2A5yBqouBJ5f33npvklIf2kk29/wLhR7QmOOqyi/sKmu+JKw3a/wE2Js+1nXV
+upkqm+zCgEnBtpCZ0/5Z8jGXBR/u9yaeEutWUbbiHWgEP7TCmoEnSh1S4CVR39oE
+AU5QB+2jsuqHj8G6yrwpiTm0h/v0QDBMW1+1vZgZPs8OcFfKou23UfuEOxchJA/1
+TobNHrE7novxVu3XyYoOn3y/B+OJ0PQOGW7XUCd3UWnryqcm8gAU+OVCiRIHjiHl
+vvzoKILI+9ninBzq4YjuWGQdpxZga/zGyq83kR88e6Rw76xC7Ha1PTH6kXSEfjE8
+UVAKuzsHju+Gdsc//IUqJgEoSGTBtpoqctye5f6rd0ku57tNJF9Qgg3g3Yxm6AY6
+NnRhcijhqoXENJ2tvGYhMIOk46Afd55MHpbR13jyJFaRRVImnSm1pXPUqdWJB5Rb
+MIRVZB7ir9GGgTAaaSkS7MvoWNzT/NbFx3gDM64vuG0+U+394TOJ2F8VMXULlgQB
+ZgXypR6n9n5G9XL7T6W1kNOZTrkeNU1k7Yd4PYiJV1NVG08/BpBPfP3EscBy8l0j
+C5KXp2ff+ESfIzW2rK+D
+=34Ww
+-----END PGP SIGNATURE-----
+
+--=-uv+y4aZZGxEI6FQpPSXd--
 

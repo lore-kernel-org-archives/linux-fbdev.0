@@ -1,86 +1,27 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Date: Mon, 09 Jan 2012 15:45:55 +0000
-Subject: Re: [PATCH] atmel_lcdfb: fix usage of wrong registers in suspend/resume
-Message-Id: <4F0B0BB3.7020508@atmel.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 27 Jan 2012 12:45:36 +0000
+Subject: [patch] intelfb: remove some dead code
+Message-Id: <20120127124536.GA14136@elgon.mountain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1307350251-5767-1-git-send-email-h.feurstein@gmail.com>
-In-Reply-To: <1307350251-5767-1-git-send-email-h.feurstein@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On 06/06/2011 03:24 PM, Hubert Feurstein :
-> Or it must be this way:
-> ---
-> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-> index 4484c72..c2ceae4 100644
-> --- a/drivers/video/atmel_lcdfb.c
-> +++ b/drivers/video/atmel_lcdfb.c
-> @@ -1085,7 +1085,7 @@ static int atmel_lcdfb_suspend(struct
-> platform_device *pdev, pm_message_t mesg)
->  	 */
->  	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0UL);
-> 
-> -	sinfo->saved_lcdcon = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_VAL);
-> +	sinfo->saved_lcdcon = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_CTR);
->  	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, 0);
->  	if (sinfo->atmel_lcdfb_power_control)
->  		sinfo->atmel_lcdfb_power_control(0);
-> --
-> So which solution was originally intended?
+The goto on the line before means the return is unreachable.  The goto
+also returns -ENOMEM so no changes are needed there.
 
-Yes exactly: this solution is the preferred one.
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-I rebuild the patch with your authorship and send it again.
-
-Thanks Hubert, best regards,
-
-
-> 
-> Best regards
-> Hubert
-> 
-> 2011/6/6 Hubert Feurstein <h.feurstein@gmail.com>:
->> I assume the intention was to set the contrast value to 0 and not
->> the contrast control register (in atmel_lcdfb_suspend). And in
->> atmel_lcdfb_resume the contrast value should be restored.
->>
->> Signed-off-by: Hubert Feurstein <h.feurstein@gmail.com>
->> Cc: Nicolas Ferre <nicolas.ferre@atmel.com>
->> Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
->> ---
->>  drivers/video/atmel_lcdfb.c |    4 ++--
->>  1 files changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
->> index 4484c72..2ed7ec1 100644
->> --- a/drivers/video/atmel_lcdfb.c
->> +++ b/drivers/video/atmel_lcdfb.c
->> @@ -1086,7 +1086,7 @@ static int atmel_lcdfb_suspend(struct platform_device *pdev, pm_message_t mesg)
->>        lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0UL);
->>
->>        sinfo->saved_lcdcon = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_VAL);
->> -       lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, 0);
->> +       lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, 0);
->>        if (sinfo->atmel_lcdfb_power_control)
->>                sinfo->atmel_lcdfb_power_control(0);
->>
->> @@ -1105,7 +1105,7 @@ static int atmel_lcdfb_resume(struct platform_device *pdev)
->>        atmel_lcdfb_start(sinfo);
->>        if (sinfo->atmel_lcdfb_power_control)
->>                sinfo->atmel_lcdfb_power_control(1);
->> -       lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, sinfo->saved_lcdcon);
->> +       lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, sinfo->saved_lcdcon);
->>
->>        /* Enable FIFO & DMA errors */
->>        lcdc_writel(sinfo, ATMEL_LCDC_IER, ATMEL_LCDC_UFLWI
->> --
->> 1.7.1
->>
->>
-> 
-
-
--- 
-Nicolas Ferre
+diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
+index c6afa33..02fd226 100644
+--- a/drivers/video/intelfb/intelfbdrv.c
++++ b/drivers/video/intelfb/intelfbdrv.c
+@@ -529,7 +529,6 @@ static int __devinit intelfb_pci_register(struct pci_dev *pdev,
+ 	if (fb_alloc_cmap(&info->cmap, 256, 1) < 0) {
+ 		ERR_MSG("Could not allocate cmap for intelfb_info.\n");
+ 		goto err_out_cmap;
+-		return -ENODEV;
+ 	}
+ 
+ 	dinfo = info->par;

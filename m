@@ -1,59 +1,152 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 13 Jan 2012 11:46:33 +0000
-Subject: [PATCH 6/6] OMAPDSS: DISPC: Add naive threshold calc for fifomerge
-Message-Id: <1326455193-19716-7-git-send-email-tomi.valkeinen@ti.com>
+From: Axel Lin <axel.lin@gmail.com>
+Date: Fri, 27 Jan 2012 08:02:54 +0000
+Subject: [PATCH] video: convert drivers/video/* to use module_spi_driver()
+Message-Id: <1327651374.7772.1.camel@phoenix>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1326455193-19716-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1326455193-19716-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, rob@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Cc: Imre Deak <imre.deak@nokia.com>, Roger Quadros <roger.quadros@nokia.com>, Steve Sakoman <steve@sakoman.com>, Erik Gilling <konkers@android.com>, Gra Ignotas <notasas@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-Take fifo merge into use by implementing a rather naive fifo merge
-threshold calculation: keep the low threshold always the same, but
-increase the high threshold when fifo merge is used.
+This patch converts the drivers in drivers/video/* to use the
+module_spi_driver() macro which makes the code smaller and a bit simpler.
 
-This should greatly increase the time between pixel data fetches from
-SDRAM, as the usable fifo size is much larger. However, it probably
-won't help for fifo underflows, as the low threshols is kept the same.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Axel Lin <axel.lin@gmail.com>
+Cc: Imre Deak <imre.deak@nokia.com>
+Cc: Roger Quadros <roger.quadros@nokia.com>
+Cc: Steve Sakoman <steve@sakoman.com>
+Cc: Erik Gilling <konkers@android.com>
+Cc: Gražvydas Ignotas <notasas@gmail.com>
 ---
- drivers/video/omap2/dss/dispc.c |   18 +++++++++++++++++-
- 1 files changed, 17 insertions(+), 1 deletions(-)
+ drivers/video/omap/lcd_mipid.c                     |   14 +-------------
+ drivers/video/omap2/displays/panel-acx565akm.c     |   13 +------------
+ .../omap2/displays/panel-lgphilips-lb035q02.c      |   12 +-----------
+ .../omap2/displays/panel-nec-nl8048hl11-01b.c      |   12 +-----------
+ .../video/omap2/displays/panel-tpo-td043mtea1.c    |   13 +------------
+ 5 files changed, 5 insertions(+), 59 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index a759722..6451321 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -1077,8 +1077,24 @@ void dispc_ovl_compute_fifo_thresholds(enum omap_plane plane,
- 	burst_size = dispc_ovl_get_burst_size(plane);
- 	fifo_size = dispc_ovl_get_fifo_size(plane);
+diff --git a/drivers/video/omap/lcd_mipid.c b/drivers/video/omap/lcd_mipid.c
+index 8d546dd..e3880c4 100644
+--- a/drivers/video/omap/lcd_mipid.c
++++ b/drivers/video/omap/lcd_mipid.c
+@@ -609,19 +609,7 @@ static struct spi_driver mipid_spi_driver = {
+ 	.remove	= __devexit_p(mipid_spi_remove),
+ };
  
-+	/*
-+	 * We use the same low threshold for both fifomerge and non-fifomerge
-+	 * cases, but for fifomerge we calculate the high threshold using the
-+	 * combined fifo size
-+	 */
- 	*fifo_low = fifo_size - burst_size;
--	*fifo_high = fifo_size - buf_unit;
-+
-+	if (use_fifomerge) {
-+		int i;
-+
-+		fifo_size = 0;
-+		for (i = 0; i < omap_dss_get_num_overlays(); ++i)
-+			fifo_size += dispc_ovl_get_fifo_size(i);
-+
-+		*fifo_high = fifo_size - buf_unit;
-+	} else {
-+		*fifo_high = fifo_size - buf_unit;
-+	}
- }
+-static int __init mipid_drv_init(void)
+-{
+-	spi_register_driver(&mipid_spi_driver);
+-
+-	return 0;
+-}
+-module_init(mipid_drv_init);
+-
+-static void __exit mipid_drv_cleanup(void)
+-{
+-	spi_unregister_driver(&mipid_spi_driver);
+-}
+-module_exit(mipid_drv_cleanup);
++module_spi_driver(mipid_spi_driver);
  
- static void dispc_ovl_set_fir(enum omap_plane plane,
+ MODULE_DESCRIPTION("MIPI display driver");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/video/omap2/displays/panel-acx565akm.c b/drivers/video/omap2/displays/panel-acx565akm.c
+index 51a87e1..d26f37a 100644
+--- a/drivers/video/omap2/displays/panel-acx565akm.c
++++ b/drivers/video/omap2/displays/panel-acx565akm.c
+@@ -809,18 +809,7 @@ static struct spi_driver acx565akm_spi_driver = {
+ 	.remove	= __devexit_p(acx565akm_spi_remove),
+ };
+ 
+-static int __init acx565akm_init(void)
+-{
+-	return spi_register_driver(&acx565akm_spi_driver);
+-}
+-
+-static void __exit acx565akm_exit(void)
+-{
+-	spi_unregister_driver(&acx565akm_spi_driver);
+-}
+-
+-module_init(acx565akm_init);
+-module_exit(acx565akm_exit);
++module_spi_driver(acx565akm_spi_driver);
+ 
+ MODULE_AUTHOR("Nokia Corporation");
+ MODULE_DESCRIPTION("acx565akm LCD Driver");
+diff --git a/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c b/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
+index e0eb35b..0841cc2 100644
+--- a/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
++++ b/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
+@@ -264,16 +264,6 @@ static struct spi_driver lb035q02_spi_driver = {
+ 	.remove		= __devexit_p(lb035q02_panel_spi_remove),
+ };
+ 
+-static int __init lb035q02_panel_drv_init(void)
+-{
+-	return spi_register_driver(&lb035q02_spi_driver);
+-}
+-
+-static void __exit lb035q02_panel_drv_exit(void)
+-{
+-	spi_unregister_driver(&lb035q02_spi_driver);
+-}
++module_spi_driver(lb035q02_spi_driver);
+ 
+-module_init(lb035q02_panel_drv_init);
+-module_exit(lb035q02_panel_drv_exit);
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+index 0eb31ca..8b38b39 100644
+--- a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
++++ b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+@@ -350,18 +350,8 @@ static struct spi_driver nec_8048_spi_driver = {
+ 	},
+ };
+ 
+-static int __init nec_8048_lcd_init(void)
+-{
+-	return spi_register_driver(&nec_8048_spi_driver);
+-}
+-
+-static void __exit nec_8048_lcd_exit(void)
+-{
+-	return spi_unregister_driver(&nec_8048_spi_driver);
+-}
++module_spi_driver(nec_8048_spi_driver);
+ 
+-module_init(nec_8048_lcd_init);
+-module_exit(nec_8048_lcd_exit);
+ MODULE_AUTHOR("Erik Gilling <konkers@android.com>");
+ MODULE_DESCRIPTION("NEC-nl8048hl11-01b Driver");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+index e6649aa..1d6b7fb 100644
+--- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
++++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+@@ -518,18 +518,7 @@ static struct spi_driver tpo_td043_spi_driver = {
+ 	.remove	= __devexit_p(tpo_td043_spi_remove),
+ };
+ 
+-static int __init tpo_td043_init(void)
+-{
+-	return spi_register_driver(&tpo_td043_spi_driver);
+-}
+-
+-static void __exit tpo_td043_exit(void)
+-{
+-	spi_unregister_driver(&tpo_td043_spi_driver);
+-}
+-
+-module_init(tpo_td043_init);
+-module_exit(tpo_td043_exit);
++module_spi_driver(tpo_td043_spi_driver);
+ 
+ MODULE_AUTHOR("Gražvydas Ignotas <notasas@gmail.com>");
+ MODULE_DESCRIPTION("TPO TD043MTEA1 LCD Driver");
 -- 
-1.7.4.1
+1.7.5.4
+
+
 

@@ -1,78 +1,159 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 25 Jan 2012 10:49:53 +0000
-Subject: Re: [PATCH] fix NULL pointer dereference in DSS2 VENC sysfs debug attr on OMAP4
-Message-Id: <1327488593.1858.22.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-KmMn3KwoIS7xzRTTbZFH"
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Mon, 30 Jan 2012 05:24:40 +0000
+Subject: Re: [PATCH] video: convert drivers/video/* to use module_spi_driver()
+Message-Id: <4F262998.4090207@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1327419882-13578-1-git-send-email-danny.kukawka@bisect.de>
-In-Reply-To: <1327419882-13578-1-git-send-email-danny.kukawka@bisect.de>
-To: Danny Kukawka <danny.kukawka@bisect.de>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <1327651374.7772.1.camel@phoenix>
+In-Reply-To: <1327651374.7772.1.camel@phoenix>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Axel Lin <axel.lin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Imre Deak <imre.deak@nokia.com>, Roger Quadros <roger.quadros@nokia.com>, Steve Sakoman <steve@sakoman.com>, Erik Gilling <konkers@android.com>, Gra Ignotas <notasas@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+
+On 01/27/2012 08:02 AM, Axel Lin wrote:
+> This patch converts the drivers in drivers/video/* to use the
+> module_spi_driver() macro which makes the code smaller and a bit simpler.
+> 
+> Signed-off-by: Axel Lin <axel.lin@gmail.com>
+> Cc: Imre Deak <imre.deak@nokia.com>
+> Cc: Roger Quadros <roger.quadros@nokia.com>
+> Cc: Steve Sakoman <steve@sakoman.com>
+> Cc: Erik Gilling <konkers@android.com>
+> Cc: Gražvydas Ignotas <notasas@gmail.com>
+
+Applied.
 
 
---=-KmMn3KwoIS7xzRTTbZFH
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Thanks,
 
-On Tue, 2012-01-24 at 16:44 +0100, Danny Kukawka wrote:
-> Commit ba02fa37de80bea10d706f39f076dd848348320a disabled the
-> venc driver registration on OMAP4. Since the driver never gets
-> probed/initialised your get a dereferenceed NULL pointer if you
-> try to get info from /sys/kernel/debug/omapdss/venc
->=20
-> Return info message about disabled venc if venc_dump_regs() gets called.
->=20
-> Signed-off-by: Danny Kukawka <danny.kukawka@bisect.de>
+Florian Tobias Schandinat
+
 > ---
->  drivers/video/omap2/dss/venc.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
->=20
-> diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/ven=
-c.c
-> index b3e9f90..82865be 100644
-> --- a/drivers/video/omap2/dss/venc.c
-> +++ b/drivers/video/omap2/dss/venc.c
-> @@ -699,6 +699,11 @@ void venc_dump_regs(struct seq_file *s)
->  {
->  #define DUMPREG(r) seq_printf(s, "%-35s %08x\n", #r, venc_read_reg(r))
-> =20
-> +	if (cpu_is_omap44xx()) {
-> +		seq_printf(s, "VENC currently disabled on OMAP44xx\n");
-> +		return;
-> +	}
-> +
->  	if (venc_runtime_get())
->  		return;
-> =20
-
-Thanks. A bit hacky, but so is the whole omap4/venc problem. I'll apply
-to dss tree.
-
- Tomi
-
-
---=-KmMn3KwoIS7xzRTTbZFH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJPH95RAAoJEPo9qoy8lh71FysP/2OIsyMeX7pf+o/atOdqgDqz
-QNnSuJyZKqt+7Ld2LQdSCj/auJr72gTlTt9PQfHUqBPjYtbAtUIl3eWGHLTL6qDS
-vvnyW+jGNODiMG8RpFGB+7F+SsSZ8iyjXLk32WAQquerxLNEhNnwyLp21B0A7PmI
-wT4prZFYLjstx1DqwYQo6jmlXcdn6U3/LAdoq8FLN27qd6MwN2Bv+EUaE/fMUyUp
-FDShqjV6cvywbVTe/sT63OjCns9p5L8MEab9z4/UuywqCv31ET37zQDTegfzLBSi
-5kLTmDri8l4lJlIcxyDVb3b3IlLbsUv/ke92chlqTHT82hVgOscZYFLw9neM9HwY
-AhOsYa8jQqC3ItzgNZpUf1okfI2BfYBy4CMDzqzYszsWaWQ41PUVFJGMunamI/XS
-pueAUX8gr7aCaMUgdKwQD7Zw+X57Rn0fSnXAFp95RN2Vh9XfP0qToeYlZ11CpQcb
-cMereSe0OddKRvLlTRmlLAE3ea83pLgEfgpHXxf3j9Kf51e2yWeFIwqZ1l8sHTuO
-LX9nzzxJMFa51ivZucLu6Y/jjTWD3EpDrh0snsSaAGBrTPFMFoutwqF/Ze3VwzgB
-Z/NMPKSrT3oEPb/IpmuKA+BQ0CgnDbFNsKPaygmgWqtUmkdzPhK/xrlx9U8aJn5t
-6u8FH2IuiJYImxQh1a0s
-=Y2zd
------END PGP SIGNATURE-----
-
---=-KmMn3KwoIS7xzRTTbZFH--
+>  drivers/video/omap/lcd_mipid.c                     |   14 +-------------
+>  drivers/video/omap2/displays/panel-acx565akm.c     |   13 +------------
+>  .../omap2/displays/panel-lgphilips-lb035q02.c      |   12 +-----------
+>  .../omap2/displays/panel-nec-nl8048hl11-01b.c      |   12 +-----------
+>  .../video/omap2/displays/panel-tpo-td043mtea1.c    |   13 +------------
+>  5 files changed, 5 insertions(+), 59 deletions(-)
+> 
+> diff --git a/drivers/video/omap/lcd_mipid.c b/drivers/video/omap/lcd_mipid.c
+> index 8d546dd..e3880c4 100644
+> --- a/drivers/video/omap/lcd_mipid.c
+> +++ b/drivers/video/omap/lcd_mipid.c
+> @@ -609,19 +609,7 @@ static struct spi_driver mipid_spi_driver = {
+>  	.remove	= __devexit_p(mipid_spi_remove),
+>  };
+>  
+> -static int __init mipid_drv_init(void)
+> -{
+> -	spi_register_driver(&mipid_spi_driver);
+> -
+> -	return 0;
+> -}
+> -module_init(mipid_drv_init);
+> -
+> -static void __exit mipid_drv_cleanup(void)
+> -{
+> -	spi_unregister_driver(&mipid_spi_driver);
+> -}
+> -module_exit(mipid_drv_cleanup);
+> +module_spi_driver(mipid_spi_driver);
+>  
+>  MODULE_DESCRIPTION("MIPI display driver");
+>  MODULE_LICENSE("GPL");
+> diff --git a/drivers/video/omap2/displays/panel-acx565akm.c b/drivers/video/omap2/displays/panel-acx565akm.c
+> index 51a87e1..d26f37a 100644
+> --- a/drivers/video/omap2/displays/panel-acx565akm.c
+> +++ b/drivers/video/omap2/displays/panel-acx565akm.c
+> @@ -809,18 +809,7 @@ static struct spi_driver acx565akm_spi_driver = {
+>  	.remove	= __devexit_p(acx565akm_spi_remove),
+>  };
+>  
+> -static int __init acx565akm_init(void)
+> -{
+> -	return spi_register_driver(&acx565akm_spi_driver);
+> -}
+> -
+> -static void __exit acx565akm_exit(void)
+> -{
+> -	spi_unregister_driver(&acx565akm_spi_driver);
+> -}
+> -
+> -module_init(acx565akm_init);
+> -module_exit(acx565akm_exit);
+> +module_spi_driver(acx565akm_spi_driver);
+>  
+>  MODULE_AUTHOR("Nokia Corporation");
+>  MODULE_DESCRIPTION("acx565akm LCD Driver");
+> diff --git a/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c b/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
+> index e0eb35b..0841cc2 100644
+> --- a/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
+> +++ b/drivers/video/omap2/displays/panel-lgphilips-lb035q02.c
+> @@ -264,16 +264,6 @@ static struct spi_driver lb035q02_spi_driver = {
+>  	.remove		= __devexit_p(lb035q02_panel_spi_remove),
+>  };
+>  
+> -static int __init lb035q02_panel_drv_init(void)
+> -{
+> -	return spi_register_driver(&lb035q02_spi_driver);
+> -}
+> -
+> -static void __exit lb035q02_panel_drv_exit(void)
+> -{
+> -	spi_unregister_driver(&lb035q02_spi_driver);
+> -}
+> +module_spi_driver(lb035q02_spi_driver);
+>  
+> -module_init(lb035q02_panel_drv_init);
+> -module_exit(lb035q02_panel_drv_exit);
+>  MODULE_LICENSE("GPL");
+> diff --git a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+> index 0eb31ca..8b38b39 100644
+> --- a/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+> +++ b/drivers/video/omap2/displays/panel-nec-nl8048hl11-01b.c
+> @@ -350,18 +350,8 @@ static struct spi_driver nec_8048_spi_driver = {
+>  	},
+>  };
+>  
+> -static int __init nec_8048_lcd_init(void)
+> -{
+> -	return spi_register_driver(&nec_8048_spi_driver);
+> -}
+> -
+> -static void __exit nec_8048_lcd_exit(void)
+> -{
+> -	return spi_unregister_driver(&nec_8048_spi_driver);
+> -}
+> +module_spi_driver(nec_8048_spi_driver);
+>  
+> -module_init(nec_8048_lcd_init);
+> -module_exit(nec_8048_lcd_exit);
+>  MODULE_AUTHOR("Erik Gilling <konkers@android.com>");
+>  MODULE_DESCRIPTION("NEC-nl8048hl11-01b Driver");
+>  MODULE_LICENSE("GPL");
+> diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+> index e6649aa..1d6b7fb 100644
+> --- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+> +++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+> @@ -518,18 +518,7 @@ static struct spi_driver tpo_td043_spi_driver = {
+>  	.remove	= __devexit_p(tpo_td043_spi_remove),
+>  };
+>  
+> -static int __init tpo_td043_init(void)
+> -{
+> -	return spi_register_driver(&tpo_td043_spi_driver);
+> -}
+> -
+> -static void __exit tpo_td043_exit(void)
+> -{
+> -	spi_unregister_driver(&tpo_td043_spi_driver);
+> -}
+> -
+> -module_init(tpo_td043_init);
+> -module_exit(tpo_td043_exit);
+> +module_spi_driver(tpo_td043_spi_driver);
+>  
+>  MODULE_AUTHOR("Gražvydas Ignotas <notasas@gmail.com>");
+>  MODULE_DESCRIPTION("TPO TD043MTEA1 LCD Driver");
 

@@ -1,75 +1,34 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Mon, 06 Feb 2012 11:51:56 +0000
-Subject: Re: [PATCH 1/2] OMAPDSS: Features: Maintain dss_feats as a list
-Message-Id: <4F2FBC0C.1000905@ti.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Wed, 01 Feb 2012 14:39:10 +0000
+Subject: [patch] backlight: lp855x_bl: silence a compiler warning
+Message-Id: <20120201143910.GA5359@elgon.mountain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1327900959-29198-1-git-send-email-archit@ti.com>  <1328524943.1898.38.camel@deskari> <4F2FB86D.2090205@ti.com> <1328527692.1997.2.camel@lappy>
-In-Reply-To: <1328527692.1997.2.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-fbdev@vger.kernel.org
 
-On Monday 06 February 2012 04:58 PM, Tomi Valkeinen wrote:
-> On Mon, 2012-02-06 at 16:54 +0530, Archit Taneja wrote:
->> On Monday 06 February 2012 04:12 PM, Tomi Valkeinen wrote:
->>> Hi,
->>>
->>> On Mon, 2012-01-30 at 10:52 +0530, Archit Taneja wrote:
->>>> The number of dss_feat_id members has increased to a large value, the current
->>>> way of assigning a subset of these features (for a particular OMAP) as a mask
->>>> is no longer feasible.
->>>>
->>>> Maintain the subset of features supported as lists. Make the function
->>>> dss_has_feature() traverse through this list.
->>>
->>> I think this makes the code easier to maintain, so in that sense it is
->>> good. But I do hesitate a bit, I think many features are checked in
->>> often used code paths (the configuration done on each frame when
->>> swapping/panning), and bit compare versus finding an item in a list
->>> could have performance impact.
->>>
->>> Then again, I'm purely guessing here, as it could well be that compared
->>> to the other code, checking the features is insignificant. Thus, I'm
->>> fine with this patch, and we can optimize it later if need be.
->>>
->>> However, I'm anyway giving a few ideas how this could also be handled:
->>>
->>> - 64 bit mask. Would be simple, but we'd still have a hard limit there.
->>>
->>> - Variable length bitmask, i.e. an int or byte array from which a
->>> particular bit is checked. There could be a ready made datatype for this
->>> in the kernel.
->>>
->>
->> There seems to be a bitmask library:
->>
->> tools/power/cpupower/utils/helpers/bitmask.c
->>
->> I don't know how easy it would be to access this though.
->>
->>> - Lists like in this patch, but in sorted order. Then, if we're looking
->>> for a feat which has, say, number 4 assigned to it, we can stop
->>> iterating the list when we hit a feat>   4 in the list. Quite simple
->>> optimization, but needs extra maintenance to keep the feat lists sorted.
->>
->> This sounds fine. It shouldn't be too much of an effort to maintain
->> sorted lists. We'll just need to ensure that a new feature added has the
->> largest integer value, and is always added at the end of the list(s).
->
-> Not necessarily. As we always search the list from index 0 forward, the
-> most often needed features could be in the beginning of the list so they
-> are found faster. At least some features are clearly needed only in some
-> enable/disable paths or similar, and they could clearly be low priority.
+Gcc 4.6.2 complains that "end" can be used without being initialized:
 
-Right, it would be harder to maintain sorted lists in this case, and it 
-wouldn't be always straight forward to decide which feature has more 
-priority over other :)
+drivers/video/backlight/lp855x_bl.c: In function ‘lp855x_init_registers’:
+drivers/video/backlight/lp855x_bl.c:78:32: warning: ‘end’ may be used uninitialized in this function [-Wuninitialized]
+drivers/video/backlight/lp855x_bl.c:67:12: note: ‘end’ was declared here
 
-Archit
+I've modified the function to return invalid if we don't recognize the
+id string.
 
->
->   Tomi
->
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
+diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
+index 8f628b8..5e8153d 100644
+--- a/drivers/video/backlight/lp855x_bl.c
++++ b/drivers/video/backlight/lp855x_bl.c
+@@ -73,6 +73,8 @@ static int lp855x_is_valid_rom_area(struct lp855x *lp, u8 addr)
+ 	} else if (strstr(id, "lp8556")) {
+ 		start = EPROM_START;
+ 		end = EPROM_END;
++	} else {
++		return 0;
+ 	}
+ 
+ 	return (addr >= start && addr <= end) ? 1 : 0;

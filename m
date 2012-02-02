@@ -1,34 +1,30 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Wed, 01 Feb 2012 14:39:10 +0000
-Subject: [patch] backlight: lp855x_bl: silence a compiler warning
-Message-Id: <20120201143910.GA5359@elgon.mountain>
+From: "Kim, Milo" <Milo.Kim@ti.com>
+Date: Thu, 02 Feb 2012 01:21:42 +0000
+Subject: RE: [patch] backlight: lp855x_bl: silence a compiler warning
+Message-Id: <B567DBAB974C0544994013492B949F8E3812DED50B@EXMAIL03.scwf.nsc.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20120201143910.GA5359@elgon.mountain>
+In-Reply-To: <20120201143910.GA5359@elgon.mountain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Gcc 4.6.2 complains that "end" can be used without being initialized:
-
-drivers/video/backlight/lp855x_bl.c: In function ‘lp855x_init_registers’:
-drivers/video/backlight/lp855x_bl.c:78:32: warning: ‘end’ may be used uninitialized in this function [-Wuninitialized]
-drivers/video/backlight/lp855x_bl.c:67:12: note: ‘end’ was declared here
-
-I've modified the function to return invalid if we don't recognize the
-id string.
-
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-
-diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-index 8f628b8..5e8153d 100644
---- a/drivers/video/backlight/lp855x_bl.c
-+++ b/drivers/video/backlight/lp855x_bl.c
-@@ -73,6 +73,8 @@ static int lp855x_is_valid_rom_area(struct lp855x *lp, u8 addr)
- 	} else if (strstr(id, "lp8556")) {
- 		start = EPROM_START;
- 		end = EPROM_END;
-+	} else {
-+		return 0;
- 	}
- 
- 	return (addr >= start && addr <= end) ? 1 : 0;
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IERhbiBDYXJwZW50ZXIgW21h
+aWx0bzpkYW4uY2FycGVudGVyQG9yYWNsZS5jb21dDQo+IFNlbnQ6IFdlZG5lc2RheSwgRmVicnVh
+cnkgMDEsIDIwMTIgMTE6MzkgUE0NCj4gVG86IFJpY2hhcmQgUHVyZGllOyBLaW1AZWxnb24ubW91
+bnRhaW47IEtpbSwgTWlsbw0KPiBDYzogRmxvcmlhbiBUb2JpYXMgU2NoYW5kaW5hdDsgbGludXgt
+ZmJkZXZAdmdlci5rZXJuZWwub3JnOyBrZXJuZWwtDQo+IGphbml0b3JzQHZnZXIua2VybmVsLm9y
+Zw0KPiBTdWJqZWN0OiBbcGF0Y2hdIGJhY2tsaWdodDogbHA4NTV4X2JsOiBzaWxlbmNlIGEgY29t
+cGlsZXIgd2FybmluZw0KPiANCj4gR2NjIDQuNi4yIGNvbXBsYWlucyB0aGF0ICJlbmQiIGNhbiBi
+ZSB1c2VkIHdpdGhvdXQgYmVpbmcgaW5pdGlhbGl6ZWQ6DQo+IA0KPiBkcml2ZXJzL3ZpZGVvL2Jh
+Y2tsaWdodC9scDg1NXhfYmwuYzogSW4gZnVuY3Rpb24NCj4g4oCYbHA4NTV4X2luaXRfcmVnaXN0
+ZXJz4oCZOg0KPiBkcml2ZXJzL3ZpZGVvL2JhY2tsaWdodC9scDg1NXhfYmwuYzo3ODozMjogd2Fy
+bmluZzog4oCYZW5k4oCZIG1heSBiZSB1c2VkDQo+IHVuaW5pdGlhbGl6ZWQgaW4gdGhpcyBmdW5j
+dGlvbiBbLVd1bmluaXRpYWxpemVkXQ0KPiBkcml2ZXJzL3ZpZGVvL2JhY2tsaWdodC9scDg1NXhf
+YmwuYzo2NzoxMjogbm90ZTog4oCYZW5k4oCZIHdhcyBkZWNsYXJlZA0KPiBoZXJlDQo+IA0KPiBJ
+J3ZlIG1vZGlmaWVkIHRoZSBmdW5jdGlvbiB0byByZXR1cm4gaW52YWxpZCBpZiB3ZSBkb24ndCBy
+ZWNvZ25pemUgdGhlDQo+IGlkIHN0cmluZy4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IERhbiBDYXJw
+ZW50ZXIgPGRhbi5jYXJwZW50ZXJAb3JhY2xlLmNvbT4NCg0KQWNrZWQtYnk6IE1pbG8oV29vZ3lv
+bSkgS2ltIDxtaWxvLmtpbUB0aS5jb20+DQoNClRoYW5rcyAhDQoNCkJlc3QgUmVnYXJkcywNCk1p
+bG8gLQ0KIA0KDQo

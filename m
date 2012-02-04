@@ -1,188 +1,75 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Tue, 14 Feb 2012 05:52:31 +0000
-Subject: [PATCH 4/4] viafb: make SAMM to also work on LCD
-Message-Id: <4e5527c9d1f373cb7dda6eec3af1d7b9659cdf85.1329194838.git.FlorianSchandinat@gmx.de>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Sat, 04 Feb 2012 09:39:05 +0000
+Subject: [PATCH 03/13] FB: sa1100: constify rgb structures
+Message-Id: <E1Rtc5J-0000aS-Ui@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1329194838.git.FlorianSchandinat@gmx.de>
-In-Reply-To: <cover.1329194838.git.FlorianSchandinat@gmx.de>
+References: <20120204093744.GQ889@n2100.arm.linux.org.uk>
+In-Reply-To: <20120204093744.GQ889@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-arm-kernel@lists.infradead.org
 
-This patch enables LCD to handle SAMM without dual fb.
+The rgb structures should only be read and never written.  Constify
+them.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/video/via/chip.h |    2 --
- drivers/video/via/hw.c   |   27 +++++++++++----------------
- drivers/video/via/lcd.c  |   18 +++++++++---------
- drivers/video/via/lcd.h  |    3 ++-
- 4 files changed, 22 insertions(+), 28 deletions(-)
+ drivers/video/sa1100fb.c |    8 ++++----
+ drivers/video/sa1100fb.h |    2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/via/chip.h b/drivers/video/via/chip.h
-index 3ebf20c..c2ecdb5 100644
---- a/drivers/video/via/chip.h
-+++ b/drivers/video/via/chip.h
-@@ -146,8 +146,6 @@ struct tmds_setting_information {
+diff --git a/drivers/video/sa1100fb.c b/drivers/video/sa1100fb.c
+index bac9d4f..a797220 100644
+--- a/drivers/video/sa1100fb.c
++++ b/drivers/video/sa1100fb.c
+@@ -199,21 +199,21 @@
+ extern void (*sa1100fb_backlight_power)(int on);
+ extern void (*sa1100fb_lcd_power)(int on);
  
- struct lvds_setting_information {
- 	int iga_path;
--	int h_active;
--	int v_active;
- 	int bpp;
- 	int lcd_panel_hres;
- 	int lcd_panel_vres;
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index e8725c5..d35ced7 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -1530,11 +1530,7 @@ void viafb_update_device_setting(int hres, int vres, int bpp, int flag)
- 		viaparinfo->tmds_setting_info->h_active = hres;
- 		viaparinfo->tmds_setting_info->v_active = vres;
+-static struct sa1100fb_rgb rgb_4 = {
++static const struct sa1100fb_rgb rgb_4 = {
+ 	.red	= { .offset = 0,  .length = 4, },
+ 	.green	= { .offset = 0,  .length = 4, },
+ 	.blue	= { .offset = 0,  .length = 4, },
+ 	.transp	= { .offset = 0,  .length = 0, },
+ };
  
--		viaparinfo->lvds_setting_info->h_active = hres;
--		viaparinfo->lvds_setting_info->v_active = vres;
- 		viaparinfo->lvds_setting_info->bpp = bpp;
--		viaparinfo->lvds_setting_info2->h_active = hres;
--		viaparinfo->lvds_setting_info2->v_active = vres;
- 		viaparinfo->lvds_setting_info2->bpp = bpp;
- 	} else {
+-static struct sa1100fb_rgb rgb_8 = {
++static const struct sa1100fb_rgb rgb_8 = {
+ 	.red	= { .offset = 0,  .length = 8, },
+ 	.green	= { .offset = 0,  .length = 8, },
+ 	.blue	= { .offset = 0,  .length = 8, },
+ 	.transp	= { .offset = 0,  .length = 0, },
+ };
  
-@@ -1543,16 +1539,11 @@ void viafb_update_device_setting(int hres, int vres, int bpp, int flag)
- 			viaparinfo->tmds_setting_info->v_active = vres;
- 		}
+-static struct sa1100fb_rgb def_rgb_16 = {
++static const struct sa1100fb_rgb def_rgb_16 = {
+ 	.red	= { .offset = 11, .length = 5, },
+ 	.green	= { .offset = 5,  .length = 6, },
+ 	.blue	= { .offset = 0,  .length = 5, },
+@@ -270,7 +270,7 @@ static struct sa1100fb_mach_info h3600_info __devinitdata = {
+ 	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
+ };
  
--		if (viaparinfo->lvds_setting_info->iga_path = IGA2) {
--			viaparinfo->lvds_setting_info->h_active = hres;
--			viaparinfo->lvds_setting_info->v_active = vres;
-+		if (viaparinfo->lvds_setting_info->iga_path = IGA2)
- 			viaparinfo->lvds_setting_info->bpp = bpp;
--		}
--		if (IGA2 = viaparinfo->lvds_setting_info2->iga_path) {
--			viaparinfo->lvds_setting_info2->h_active = hres;
--			viaparinfo->lvds_setting_info2->v_active = vres;
-+
-+		if (IGA2 = viaparinfo->lvds_setting_info2->iga_path)
- 			viaparinfo->lvds_setting_info2->bpp = bpp;
--		}
- 	}
- }
+-static struct sa1100fb_rgb h3600_rgb_16 = {
++static const struct sa1100fb_rgb h3600_rgb_16 = {
+ 	.red	= { .offset = 12, .length = 4, },
+ 	.green	= { .offset = 7,  .length = 4, },
+ 	.blue	= { .offset = 1,  .length = 4, },
+diff --git a/drivers/video/sa1100fb.h b/drivers/video/sa1100fb.h
+index 1c3b459..7a3d66a 100644
+--- a/drivers/video/sa1100fb.h
++++ b/drivers/video/sa1100fb.h
+@@ -65,7 +65,7 @@ struct sa1100fb_lcd_reg {
+ struct sa1100fb_info {
+ 	struct fb_info		fb;
+ 	struct device		*dev;
+-	struct sa1100fb_rgb	*rgb[NR_RGB];
++	const struct sa1100fb_rgb *rgb[NR_RGB];
  
-@@ -1933,7 +1924,8 @@ int viafb_setmode(int video_bpp, int video_bpp1)
- 		if (viafb_SAMM_ON &&
- 			(viaparinfo->lvds_setting_info->iga_path = IGA2)) {
- 			viaparinfo->lvds_setting_info->bpp = video_bpp1;
--			viafb_lcd_set_mode(viaparinfo->lvds_setting_info,
-+			viafb_lcd_set_mode(&var2, cxres, cyres,
-+				viaparinfo->lvds_setting_info,
- 				&viaparinfo->chip_info->lvds_chip_info);
- 		} else {
- 			/* IGA1 doesn't have LCD scaling, so set it center. */
-@@ -1942,7 +1934,8 @@ int viafb_setmode(int video_bpp, int video_bpp1)
- 				    LCD_CENTERING;
- 			}
- 			viaparinfo->lvds_setting_info->bpp = video_bpp;
--			viafb_lcd_set_mode(viaparinfo->lvds_setting_info,
-+			viafb_lcd_set_mode(&viafbinfo->var, 0, 0,
-+				viaparinfo->lvds_setting_info,
- 				&viaparinfo->chip_info->lvds_chip_info);
- 		}
- 	}
-@@ -1950,7 +1943,8 @@ int viafb_setmode(int video_bpp, int video_bpp1)
- 		if (viafb_SAMM_ON &&
- 			(viaparinfo->lvds_setting_info2->iga_path = IGA2)) {
- 			viaparinfo->lvds_setting_info2->bpp = video_bpp1;
--			viafb_lcd_set_mode(viaparinfo->lvds_setting_info2,
-+			viafb_lcd_set_mode(&var2, cxres, cyres,
-+				viaparinfo->lvds_setting_info2,
- 				&viaparinfo->chip_info->lvds_chip_info2);
- 		} else {
- 			/* IGA1 doesn't have LCD scaling, so set it center. */
-@@ -1959,7 +1953,8 @@ int viafb_setmode(int video_bpp, int video_bpp1)
- 				    LCD_CENTERING;
- 			}
- 			viaparinfo->lvds_setting_info2->bpp = video_bpp;
--			viafb_lcd_set_mode(viaparinfo->lvds_setting_info2,
-+			viafb_lcd_set_mode(&viafbinfo->var, 0, 0,
-+				viaparinfo->lvds_setting_info2,
- 				&viaparinfo->chip_info->lvds_chip_info2);
- 		}
- 	}
-diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
-index 5f3b4e3..02cfdc8 100644
---- a/drivers/video/via/lcd.c
-+++ b/drivers/video/via/lcd.c
-@@ -55,8 +55,7 @@ static void load_lcd_scaling(int set_hres, int set_vres, int panel_hres,
- 		      int panel_vres);
- static void via_pitch_alignment_patch_lcd(
- 	struct lvds_setting_information *plvds_setting_info,
--				   struct lvds_chip_information
--				   *plvds_chip_info);
-+	struct lvds_chip_information *plvds_chip_info, int hres);
- static void lcd_patch_skew_dvp0(struct lvds_setting_information
- 			 *plvds_setting_info,
- 			 struct lvds_chip_information *plvds_chip_info);
-@@ -456,14 +455,13 @@ static void load_lcd_scaling(int set_hres, int set_vres, int panel_hres,
- 
- static void via_pitch_alignment_patch_lcd(
- 	struct lvds_setting_information *plvds_setting_info,
--				   struct lvds_chip_information
--				   *plvds_chip_info)
-+	struct lvds_chip_information *plvds_chip_info, int hres)
- {
- 	unsigned char cr13, cr35, cr65, cr66, cr67;
- 	unsigned long dwScreenPitch = 0;
- 	unsigned long dwPitch;
- 
--	dwPitch = plvds_setting_info->h_active * (plvds_setting_info->bpp >> 3);
-+	dwPitch = hres * (plvds_setting_info->bpp >> 3);
- 	if (dwPitch & 0x1F) {
- 		dwScreenPitch = ((dwPitch + 31) & ~31) >> 3;
- 		if (plvds_setting_info->iga_path = IGA2) {
-@@ -548,13 +546,14 @@ static void lcd_patch_skew(struct lvds_setting_information
- }
- 
- /* LCD Set Mode */
--void viafb_lcd_set_mode(struct lvds_setting_information *plvds_setting_info,
-+void viafb_lcd_set_mode(const struct fb_var_screeninfo *var, u16 cxres,
-+	u16 cyres, struct lvds_setting_information *plvds_setting_info,
- 	struct lvds_chip_information *plvds_chip_info)
- {
- 	int set_iga = plvds_setting_info->iga_path;
- 	int mode_bpp = plvds_setting_info->bpp;
--	int set_hres = plvds_setting_info->h_active;
--	int set_vres = plvds_setting_info->v_active;
-+	int set_hres = cxres ? cxres : var->xres;
-+	int set_vres = cyres ? cyres : var->yres;
- 	int panel_hres = plvds_setting_info->lcd_panel_hres;
- 	int panel_vres = plvds_setting_info->lcd_panel_vres;
- 	u32 clock;
-@@ -613,7 +612,8 @@ void viafb_lcd_set_mode(struct lvds_setting_information *plvds_setting_info,
- 		viafb_write_reg_mask(CR6A, VIACR, 0x01, BIT0);
- 
- 	/* Patch for non 32bit alignment mode */
--	via_pitch_alignment_patch_lcd(plvds_setting_info, plvds_chip_info);
-+	via_pitch_alignment_patch_lcd(plvds_setting_info, plvds_chip_info,
-+		set_hres);
- }
- 
- static void integrated_lvds_disable(struct lvds_setting_information
-diff --git a/drivers/video/via/lcd.h b/drivers/video/via/lcd.h
-index 77ca7b8..8f3e4e0 100644
---- a/drivers/video/via/lcd.h
-+++ b/drivers/video/via/lcd.h
-@@ -76,7 +76,8 @@ void __devinit viafb_init_lvds_output_interface(struct lvds_chip_information
- 				*plvds_chip_info,
- 				struct lvds_setting_information
- 				*plvds_setting_info);
--void viafb_lcd_set_mode(struct lvds_setting_information *plvds_setting_info,
-+void viafb_lcd_set_mode(const struct fb_var_screeninfo *var, u16 cxres,
-+	u16 cyres, struct lvds_setting_information *plvds_setting_info,
- 	struct lvds_chip_information *plvds_chip_info);
- bool __devinit viafb_lvds_trasmitter_identify(void);
- void viafb_init_lvds_output_interface(struct lvds_chip_information
+ 	u_int			max_bpp;
+ 	u_int			max_xres;
 -- 
-1.7.9
+1.7.4.4
 

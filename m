@@ -1,27 +1,46 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Wed, 22 Feb 2012 18:06:01 +0000
-Subject: Re: [PATCH 03/16] OMAPDSS: Remove video SRAM support
-Message-Id: <20120222180601.GX18185@atomide.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Sat, 04 Feb 2012 09:42:09 +0000
+Subject: [PATCH 12/13] FB: sa11x0: fix shannon GPSR/GPCR accesses
+Message-Id: <E1Rtc8H-0000b7-Nr@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
- <1327399231-20826-4-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1327399231-20826-4-git-send-email-tomi.valkeinen@ti.com>
+References: <20120204093744.GQ889@n2100.arm.linux.org.uk>
+In-Reply-To: <20120204093744.GQ889@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
+To: linux-arm-kernel@lists.infradead.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [120124 01:30]:
-> OMAP SRAM can be used as video memory on OMAP1 and 2. However, there
-> usually is very little SRAM available, thus limiting its use, and no
-> board supported by the kernel currently uses it.
-> 
-> This patch removes the use of SRAM as video ram for the omapdss driver
-> to simplify memory handling.
-> 
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+The GPIO set and clear registers should only be written, rather than
+read, modified, and written.  A read-modify-write will have undesired
+side effects.
 
-For the arch/arm/*omap*/* parts:
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ drivers/video/sa1100fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+diff --git a/drivers/video/sa1100fb.c b/drivers/video/sa1100fb.c
+index b644f0f..f3f55eb 100644
+--- a/drivers/video/sa1100fb.c
++++ b/drivers/video/sa1100fb.c
+@@ -798,7 +798,7 @@ static void sa1100fb_enable_controller(struct sa1100fb_info *fbi)
+ 
+ 	if (machine_is_shannon()) {
+ 		GPDR |= SHANNON_GPIO_DISP_EN;
+-		GPSR |= SHANNON_GPIO_DISP_EN;
++		GPSR = SHANNON_GPIO_DISP_EN;
+ 	}
+ 
+ 	dev_dbg(fbi->dev, "DBAR1 = 0x%08lx\n", DBAR1);
+@@ -816,7 +816,7 @@ static void sa1100fb_disable_controller(struct sa1100fb_info *fbi)
+ 	dev_dbg(fbi->dev, "Disabling LCD controller\n");
+ 
+ 	if (machine_is_shannon()) {
+-		GPCR |= SHANNON_GPIO_DISP_EN;
++		GPCR = SHANNON_GPIO_DISP_EN;
+ 	}	
+ 
+ 	set_current_state(TASK_UNINTERRUPTIBLE);
+-- 
+1.7.4.4
+

@@ -1,7 +1,7 @@
 From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Sat, 04 Feb 2012 09:39:05 +0000
-Subject: [PATCH 03/13] FB: sa1100: constify rgb structures
-Message-Id: <E1Rtc5J-0000aS-Ui@rmk-PC.arm.linux.org.uk>
+Date: Sat, 04 Feb 2012 09:40:07 +0000
+Subject: [PATCH 06/13] FB: sa1100: move machine inf structures to <video/sa1100fb.h>
+Message-Id: <E1Rtc6J-0000ah-76@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20120204093744.GQ889@n2100.arm.linux.org.uk>
 In-Reply-To: <20120204093744.GQ889@n2100.arm.linux.org.uk>
@@ -10,66 +10,159 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-The rgb structures should only be read and never written.  Constify
-them.
+Move the LCD data structures to an include file which can be shared
+with the board code in arch/arm/mach-sa1100.
 
 Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/video/sa1100fb.c |    8 ++++----
- drivers/video/sa1100fb.h |    2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/video/sa1100fb.c |    6 ++++-
+ drivers/video/sa1100fb.h |   42 --------------------------------
+ include/video/sa1100fb.h |   59 ++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 64 insertions(+), 43 deletions(-)
+ create mode 100644 include/video/sa1100fb.h
 
 diff --git a/drivers/video/sa1100fb.c b/drivers/video/sa1100fb.c
-index bac9d4f..a797220 100644
+index a905e20..8f5557a 100644
 --- a/drivers/video/sa1100fb.c
 +++ b/drivers/video/sa1100fb.c
-@@ -199,21 +199,21 @@
- extern void (*sa1100fb_backlight_power)(int on);
- extern void (*sa1100fb_lcd_power)(int on);
+@@ -178,6 +178,8 @@
+ #include <linux/mutex.h>
+ #include <linux/io.h>
  
--static struct sa1100fb_rgb rgb_4 = {
-+static const struct sa1100fb_rgb rgb_4 = {
- 	.red	= { .offset = 0,  .length = 4, },
- 	.green	= { .offset = 0,  .length = 4, },
- 	.blue	= { .offset = 0,  .length = 4, },
- 	.transp	= { .offset = 0,  .length = 0, },
- };
++#include <video/sa1100fb.h>
++
+ #include <mach/hardware.h>
+ #include <asm/mach-types.h>
+ #include <mach/assabet.h>
+@@ -1388,7 +1390,9 @@ static struct sa1100fb_info * __devinit sa1100fb_init_fbinfo(struct device *dev)
+ 	fbi->rgb[RGB_8]		= &rgb_8;
+ 	fbi->rgb[RGB_16]	= &def_rgb_16;
  
--static struct sa1100fb_rgb rgb_8 = {
-+static const struct sa1100fb_rgb rgb_8 = {
- 	.red	= { .offset = 0,  .length = 8, },
- 	.green	= { .offset = 0,  .length = 8, },
- 	.blue	= { .offset = 0,  .length = 8, },
- 	.transp	= { .offset = 0,  .length = 0, },
- };
+-	inf = sa1100fb_get_machine_info(fbi);
++	inf = dev->platform_data;
++	if (!inf)
++		inf = sa1100fb_get_machine_info(fbi);
  
--static struct sa1100fb_rgb def_rgb_16 = {
-+static const struct sa1100fb_rgb def_rgb_16 = {
- 	.red	= { .offset = 11, .length = 5, },
- 	.green	= { .offset = 5,  .length = 6, },
- 	.blue	= { .offset = 0,  .length = 5, },
-@@ -270,7 +270,7 @@ static struct sa1100fb_mach_info h3600_info __devinitdata = {
- 	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
- };
- 
--static struct sa1100fb_rgb h3600_rgb_16 = {
-+static const struct sa1100fb_rgb h3600_rgb_16 = {
- 	.red	= { .offset = 12, .length = 4, },
- 	.green	= { .offset = 7,  .length = 4, },
- 	.blue	= { .offset = 1,  .length = 4, },
+ 	/*
+ 	 * People just don't seem to get this.  We don't support
 diff --git a/drivers/video/sa1100fb.h b/drivers/video/sa1100fb.h
-index 1c3b459..7a3d66a 100644
+index 77239b7..9ff9ba9 100644
 --- a/drivers/video/sa1100fb.h
 +++ b/drivers/video/sa1100fb.h
-@@ -65,7 +65,7 @@ struct sa1100fb_lcd_reg {
- struct sa1100fb_info {
- 	struct fb_info		fb;
- 	struct device		*dev;
--	struct sa1100fb_rgb	*rgb[NR_RGB];
-+	const struct sa1100fb_rgb *rgb[NR_RGB];
+@@ -10,48 +10,6 @@
+  * for more details.
+  */
  
- 	u_int			max_bpp;
- 	u_int			max_xres;
+-#define RGB_4	0
+-#define RGB_8	1
+-#define RGB_16	2
+-#define NR_RGB	3
+-
+-/* These are the bitfields for each display depth that we support. */
+-struct sa1100fb_rgb {
+-	struct fb_bitfield	red;
+-	struct fb_bitfield	green;
+-	struct fb_bitfield	blue;
+-	struct fb_bitfield	transp;
+-};
+-
+-/* This structure describes the machine which we are running on. */
+-struct sa1100fb_mach_info {
+-	u_long		pixclock;
+-
+-	u_short		xres;
+-	u_short		yres;
+-
+-	u_char		bpp;
+-	u_char		hsync_len;
+-	u_char		left_margin;
+-	u_char		right_margin;
+-
+-	u_char		vsync_len;
+-	u_char		upper_margin;
+-	u_char		lower_margin;
+-	u_char		sync;
+-
+-	u_int		cmap_greyscale:1,
+-			cmap_inverse:1,
+-			cmap_static:1,
+-			unused:29;
+-
+-	u_int		lccr0;
+-	u_int		lccr3;
+-
+-	/* Overrides for the default RGB maps */
+-	const struct sa1100fb_rgb *rgb[NR_RGB];
+-};
+-
+ /* Shadows for LCD controller registers */
+ struct sa1100fb_lcd_reg {
+ 	unsigned long lccr0;
+diff --git a/include/video/sa1100fb.h b/include/video/sa1100fb.h
+new file mode 100644
+index 0000000..e73c813
+--- /dev/null
++++ b/include/video/sa1100fb.h
+@@ -0,0 +1,59 @@
++/*
++ * StrongARM 1100 LCD Controller Frame Buffer Device
++ *
++ * Copyright (C) 1999 Eric A. Thomas
++ *  Based on acornfb.c Copyright (C) Russell King.
++ *  
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file COPYING in the main directory of this archive
++ * for more details.
++ */
++#ifndef _VIDEO_SA1100FB_H
++#define _VIDEO_SA1100FB_H
++
++#include <linux/fb.h>
++#include <linux/types.h>
++
++#define RGB_4	0
++#define RGB_8	1
++#define RGB_16	2
++#define NR_RGB	3
++
++/* These are the bitfields for each display depth that we support. */
++struct sa1100fb_rgb {
++	struct fb_bitfield	red;
++	struct fb_bitfield	green;
++	struct fb_bitfield	blue;
++	struct fb_bitfield	transp;
++};
++
++/* This structure describes the machine which we are running on. */
++struct sa1100fb_mach_info {
++	u_long		pixclock;
++
++	u_short		xres;
++	u_short		yres;
++
++	u_char		bpp;
++	u_char		hsync_len;
++	u_char		left_margin;
++	u_char		right_margin;
++
++	u_char		vsync_len;
++	u_char		upper_margin;
++	u_char		lower_margin;
++	u_char		sync;
++
++	u_int		cmap_greyscale:1,
++			cmap_inverse:1,
++			cmap_static:1,
++			unused:29;
++
++	u_int		lccr0;
++	u_int		lccr3;
++
++	/* Overrides for the default RGB maps */
++	const struct sa1100fb_rgb *rgb[NR_RGB];
++};
++
++#endif
 -- 
 1.7.4.4
 

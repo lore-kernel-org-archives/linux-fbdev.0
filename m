@@ -1,233 +1,701 @@
-From: Grazvydas Ignotas <notasas@gmail.com>
-Date: Sat, 04 Feb 2012 20:35:25 +0000
-Subject: [PATCH] backlight: add support for Pandora backlight
-Message-Id: <1328387725-31274-1-git-send-email-notasas@gmail.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Sat, 04 Feb 2012 09:40:27 +0000
+Subject: [PATCH 07/13] FB: sa1100: move platform data to platform files
+Message-Id: <E1Rtc6d-0000al-KV@rmk-PC.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20120204093744.GQ889@n2100.arm.linux.org.uk>
+In-Reply-To: <20120204093744.GQ889@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-This patch adds support for pandora (openpandora.org) backlight.
+Move platform data out of the sa1100fb driver into the various
+platform files themselves.
 
-It might look like all this could be done using pwm_bl.c instead,
-but there is a need of special programming sequence when turning
-on the LED driver chip or else it will misbehave. Doing this using
-pwm_bl.c would require to use some register programming and pwm
-functions from platform code, and ARM maintainers are allergic to
-driver-like code in /arch/arm nowadays. The PMIC PWM driver is
-currently missing too, so pwm_bl.c can't be used anyway.
-
-Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/video/backlight/Kconfig      |    7 ++
- drivers/video/backlight/Makefile     |    1 +
- drivers/video/backlight/pandora_bl.c |  168 ++++++++++++++++++++++++++++++++++
- 3 files changed, 176 insertions(+), 0 deletions(-)
- create mode 100644 drivers/video/backlight/pandora_bl.c
+ arch/arm/mach-sa1100/assabet.c |   40 +++++++
+ arch/arm/mach-sa1100/collie.c  |   17 +++
+ arch/arm/mach-sa1100/generic.c |    8 +-
+ arch/arm/mach-sa1100/generic.h |    3 +
+ arch/arm/mach-sa1100/h3100.c   |   22 ++++-
+ arch/arm/mach-sa1100/h3600.c   |   31 +++++-
+ arch/arm/mach-sa1100/lart.c    |   79 +++++++++++++
+ arch/arm/mach-sa1100/shannon.c |   17 +++
+ drivers/video/sa1100fb.c       |  239 +---------------------------------------
+ 9 files changed, 218 insertions(+), 238 deletions(-)
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 681b369..3f03954 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -334,6 +334,13 @@ config BACKLIGHT_AAT2870
- 	  If you have a AnalogicTech AAT2870 say Y to enable the
- 	  backlight driver.
+diff --git a/arch/arm/mach-sa1100/assabet.c b/arch/arm/mach-sa1100/assabet.c
+index 0c4b76a..37fb0cd 100644
+--- a/arch/arm/mach-sa1100/assabet.c
++++ b/arch/arm/mach-sa1100/assabet.c
+@@ -20,6 +20,8 @@
+ #include <linux/delay.h>
+ #include <linux/mm.h>
  
-+config BACKLIGHT_PANDORA
-+	tristate "Backlight driver for Pandora console"
-+	depends on TWL4030_CORE
-+	help
-+	  If you have a Pandora console, say Y to enable the
-+	  backlight driver.
++#include <video/sa1100fb.h>
 +
- endif # BACKLIGHT_CLASS_DEVICE
+ #include <mach/hardware.h>
+ #include <asm/mach-types.h>
+ #include <asm/irq.h>
+@@ -204,6 +206,39 @@ static struct mcp_plat_data assabet_mcp_data = {
+ 	.sclk_rate	= 11981000,
+ };
  
- endif # BACKLIGHT_LCD_SUPPORT
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index af5cf65..c73169c 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -38,4 +38,5 @@ obj-$(CONFIG_BACKLIGHT_ADP8870)	+= adp8870_bl.o
- obj-$(CONFIG_BACKLIGHT_88PM860X) += 88pm860x_bl.o
- obj-$(CONFIG_BACKLIGHT_PCF50633)	+= pcf50633-backlight.o
- obj-$(CONFIG_BACKLIGHT_AAT2870) += aat2870_bl.o
-+obj-$(CONFIG_BACKLIGHT_PANDORA)	+= pandora_bl.o
- 
-diff --git a/drivers/video/backlight/pandora_bl.c b/drivers/video/backlight/pandora_bl.c
-new file mode 100644
-index 0000000..63d1c4a
---- /dev/null
-+++ b/drivers/video/backlight/pandora_bl.c
-@@ -0,0 +1,168 @@
++#ifndef ASSABET_PAL_VIDEO
 +/*
-+ * Backlight driver for Pandora handheld.
-+ * Pandora uses TWL4030 PWM0 -> TPS61161 combo for control backlight.
-+ * Based on pwm_bl.c
-+ *
-+ * Copyright 2009,2012 Gražvydas Ignotas <notasas@gmail.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
++ * The assabet uses a sharp LQ039Q2DS54 LCD module.  It is actually
++ * takes an RGB666 signal, but we provide it with an RGB565 signal
++ * instead (def_rgb_16).
 + */
++static struct sa1100fb_mach_info lq039q2ds54_info = {
++	.pixclock	= 171521,	.bpp		= 16,
++	.xres		= 320,		.yres		= 240,
 +
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/platform_device.h>
-+#include <linux/delay.h>
-+#include <linux/fb.h>
-+#include <linux/backlight.h>
-+#include <linux/i2c/twl.h>
-+#include <linux/err.h>
++	.hsync_len	= 5,		.vsync_len	= 1,
++	.left_margin	= 61,		.upper_margin	= 3,
++	.right_margin	= 9,		.lower_margin	= 0,
 +
-+#define TWL_PWM0_ON		0x00
-+#define TWL_PWM0_OFF		0x01
++	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
 +
-+#define TWL_INTBR_GPBR1		0x0c
-+#define TWL_INTBR_PMBR1		0x0d
++	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
++	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
++};
++#else
++static struct sa1100fb_mach_info pal_info = {
++	.pixclock	= 67797,	.bpp		= 16,
++	.xres		= 640,		.yres		= 512,
 +
-+#define TWL_PMBR1_PWM0_MUXMASK	0x0c
-+#define TWL_PMBR1_PWM0		0x04
-+#define PWM0_CLK_ENABLE		BIT(0)
-+#define PWM0_ENABLE		BIT(2)
++	.hsync_len	= 64,		.vsync_len	= 6,
++	.left_margin	= 125,		.upper_margin	= 70,
++	.right_margin	= 115,		.lower_margin	= 36,
 +
-+/* range accepted by hardware */
-+#define MIN_VALUE 9
-+#define MAX_VALUE 63
-+#define MAX_USER_VALUE (MAX_VALUE - MIN_VALUE)
++	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
++	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(512),
++};
++#endif
 +
-+#define PANDORABL_WAS_OFF BL_CORE_DRIVER1
+ static void __init assabet_init(void)
+ {
+ 	/*
+@@ -249,6 +284,11 @@ static void __init assabet_init(void)
+ #endif
+ 	}
+ 
++#ifndef ASSABET_PAL_VIDEO
++	sa11x0_register_lcd(&lq039q2ds54_info);
++#else
++	sa11x0_register_lcd(&pal_video);
++#endif
+ 	sa11x0_register_mtd(&assabet_flash_data, assabet_flash_resources,
+ 			    ARRAY_SIZE(assabet_flash_resources));
+ 	sa11x0_register_irda(&assabet_irda_data);
+diff --git a/arch/arm/mach-sa1100/collie.c b/arch/arm/mach-sa1100/collie.c
+index fd56521..70f6cdc 100644
+--- a/arch/arm/mach-sa1100/collie.c
++++ b/arch/arm/mach-sa1100/collie.c
+@@ -28,6 +28,8 @@
+ #include <linux/gpio.h>
+ #include <linux/pda_power.h>
+ 
++#include <video/sa1100fb.h>
 +
-+static int pandora_backlight_update_status(struct backlight_device *bl)
-+{
-+	int brightness = bl->props.brightness;
-+	u8 r;
+ #include <mach/hardware.h>
+ #include <asm/mach-types.h>
+ #include <asm/irq.h>
+@@ -310,6 +312,20 @@ static struct resource collie_flash_resources[] = {
+ 	}
+ };
+ 
++static struct sa1100fb_mach_info collie_lcd_info = {
++	.pixclock	= 171521,	.bpp		= 16,
++	.xres		= 320,		.yres		= 240,
 +
-+	if (bl->props.power != FB_BLANK_UNBLANK)
-+		brightness = 0;
-+	if (bl->props.state & BL_CORE_FBBLANK)
-+		brightness = 0;
-+	if (bl->props.state & BL_CORE_SUSPENDED)
-+		brightness = 0;
++	.hsync_len	= 5,		.vsync_len	= 1,
++	.left_margin	= 11,		.upper_margin	= 2,
++	.right_margin	= 30,		.lower_margin	= 0,
 +
-+	if ((unsigned int)brightness > MAX_USER_VALUE)
-+		brightness = MAX_USER_VALUE;
++	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
 +
-+	if (brightness = 0 && !(bl->props.state & PANDORABL_WAS_OFF)) {
-+		/* first disable PWM0 output, then clock */
-+		twl_i2c_read_u8(TWL4030_MODULE_INTBR, &r, TWL_INTBR_GPBR1);
-+		r &= ~PWM0_ENABLE;
-+		twl_i2c_write_u8(TWL4030_MODULE_INTBR, r, TWL_INTBR_GPBR1);
-+		r &= ~PWM0_CLK_ENABLE;
-+		twl_i2c_write_u8(TWL4030_MODULE_INTBR, r, TWL_INTBR_GPBR1);
-+
-+		goto done;
-+	}
-+
-+	if (bl->props.state & PANDORABL_WAS_OFF) {
-+		/*
-+		 * set PWM duty cycle to max. TPS61161 seems to use this
-+		 * to calibrate it's PWM sensitivity when it starts.
-+		 */
-+		twl_i2c_write_u8(TWL4030_MODULE_PWM0, MAX_VALUE,
-+					TWL_PWM0_OFF);
-+
-+		/* first enable clock, then PWM0 out */
-+		twl_i2c_read_u8(TWL4030_MODULE_INTBR, &r, TWL_INTBR_GPBR1);
-+		r &= ~PWM0_ENABLE;
-+		r |= PWM0_CLK_ENABLE;
-+		twl_i2c_write_u8(TWL4030_MODULE_INTBR, r, TWL_INTBR_GPBR1);
-+		r |= PWM0_ENABLE;
-+		twl_i2c_write_u8(TWL4030_MODULE_INTBR, r, TWL_INTBR_GPBR1);
-+
-+		/*
-+		 * TI made it very easy to enable digital control, so easy that
-+		 * it often triggers unintentionally and disabes PWM control,
-+		 * so wait until 1 wire mode detection window ends.
-+		 */
-+		usleep_range(2000, 10000);
-+	}
-+
-+	twl_i2c_write_u8(TWL4030_MODULE_PWM0, MIN_VALUE + brightness,
-+				TWL_PWM0_OFF);
-+
-+done:
-+	if (brightness != 0)
-+		bl->props.state &= ~PANDORABL_WAS_OFF;
-+	else
-+		bl->props.state |= PANDORABL_WAS_OFF;
-+
-+	return 0;
-+}
-+
-+static int pandora_backlight_get_brightness(struct backlight_device *bl)
-+{
-+	return bl->props.brightness;
-+}
-+
-+static const struct backlight_ops pandora_backlight_ops = {
-+	.options	= BL_CORE_SUSPENDRESUME,
-+	.update_status	= pandora_backlight_update_status,
-+	.get_brightness	= pandora_backlight_get_brightness,
++	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
++	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
 +};
 +
-+static int pandora_backlight_probe(struct platform_device *pdev)
+ static void __init collie_init(void)
+ {
+ 	int ret = 0;
+@@ -348,6 +364,7 @@ static void __init collie_init(void)
+ 		printk(KERN_WARNING "collie: Unable to register LoCoMo device\n");
+ 	}
+ 
++	sa11x0_register_lcd(&collie_lcd_info);
+ 	sa11x0_register_mtd(&collie_flash_data, collie_flash_resources,
+ 			    ARRAY_SIZE(collie_flash_resources));
+ 	sa11x0_register_mcp(&collie_mcp_data);
+diff --git a/arch/arm/mach-sa1100/generic.c b/arch/arm/mach-sa1100/generic.c
+index bb10ee2..f57808f 100644
+--- a/arch/arm/mach-sa1100/generic.c
++++ b/arch/arm/mach-sa1100/generic.c
+@@ -19,6 +19,8 @@
+ #include <linux/ioport.h>
+ #include <linux/platform_device.h>
+ 
++#include <video/sa1100fb.h>
++
+ #include <asm/div64.h>
+ #include <mach/hardware.h>
+ #include <asm/system.h>
+@@ -294,6 +296,11 @@ static struct platform_device sa11x0fb_device = {
+ 	.resource	= sa11x0fb_resources,
+ };
+ 
++void sa11x0_register_lcd(struct sa1100fb_mach_info *inf)
 +{
-+	struct backlight_properties props;
-+	struct backlight_device *bl;
-+	u8 r;
-+
-+	memset(&props, 0, sizeof(props));
-+	props.max_brightness = MAX_USER_VALUE;
-+	props.type = BACKLIGHT_RAW;
-+	bl = backlight_device_register(pdev->name, &pdev->dev,
-+			NULL, &pandora_backlight_ops, &props);
-+	if (IS_ERR(bl)) {
-+		dev_err(&pdev->dev, "failed to register backlight\n");
-+		return PTR_ERR(bl);
-+	}
-+
-+	platform_set_drvdata(pdev, bl);
-+
-+	/* 64 cycle period, ON position 0 */
-+	twl_i2c_write_u8(TWL4030_MODULE_PWM0, 0x80, TWL_PWM0_ON);
-+
-+	bl->props.state |= PANDORABL_WAS_OFF;
-+	bl->props.brightness = MAX_USER_VALUE;
-+	backlight_update_status(bl);
-+
-+	/* enable PWM function in pin mux */
-+	twl_i2c_read_u8(TWL4030_MODULE_INTBR, &r, TWL_INTBR_PMBR1);
-+	r &= ~TWL_PMBR1_PWM0_MUXMASK;
-+	r |= TWL_PMBR1_PWM0;
-+	twl_i2c_write_u8(TWL4030_MODULE_INTBR, r, TWL_INTBR_PMBR1);
-+
-+	return 0;
++	sa11x0_register_device(&sa11x0fb_device, inf);
 +}
 +
-+static int pandora_backlight_remove(struct platform_device *pdev)
-+{
-+	struct backlight_device *bl = platform_get_drvdata(pdev);
-+	backlight_device_unregister(bl);
-+	return 0;
-+}
+ static struct platform_device sa11x0pcmcia_device = {
+ 	.name		= "sa11x0-pcmcia",
+ 	.id		= -1,
+@@ -356,7 +363,6 @@ static struct platform_device *sa11x0_devices[] __initdata = {
+ 	&sa11x0uart3_device,
+ 	&sa11x0ssp_device,
+ 	&sa11x0pcmcia_device,
+-	&sa11x0fb_device,
+ 	&sa11x0rtc_device,
+ };
+ 
+diff --git a/arch/arm/mach-sa1100/generic.h b/arch/arm/mach-sa1100/generic.h
+index 33268cf..3b903f4 100644
+--- a/arch/arm/mach-sa1100/generic.h
++++ b/arch/arm/mach-sa1100/generic.h
+@@ -40,3 +40,6 @@ void sa11x0_register_irda(struct irda_platform_data *irda);
+ 
+ struct mcp_plat_data;
+ void sa11x0_register_mcp(struct mcp_plat_data *data);
 +
-+static struct platform_driver pandora_backlight_driver = {
-+	.driver		= {
-+		.name	= "pandora-backlight",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= pandora_backlight_probe,
-+	.remove		= pandora_backlight_remove,
++struct sa1100fb_mach_info;
++void sa11x0_register_lcd(struct sa1100fb_mach_info *inf);
+diff --git a/arch/arm/mach-sa1100/h3100.c b/arch/arm/mach-sa1100/h3100.c
+index 1e6b3c1..1f8a271 100644
+--- a/arch/arm/mach-sa1100/h3100.c
++++ b/arch/arm/mach-sa1100/h3100.c
+@@ -14,6 +14,8 @@
+ #include <linux/kernel.h>
+ #include <linux/gpio.h>
+ 
++#include <video/sa1100fb.h>
++
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+ #include <asm/mach/irda.h>
+@@ -36,13 +38,26 @@ static void h3100_lcd_power(int enable)
+ 	}
+ }
+ 
++static struct sa1100fb_mach_info h3100_lcd_info = {
++	.pixclock	= 406977, 	.bpp		= 4,
++	.xres		= 320,		.yres		= 240,
++
++	.hsync_len	= 26,		.vsync_len	= 41,
++	.left_margin	= 4,		.upper_margin	= 0,
++	.right_margin	= 4,		.lower_margin	= 0,
++
++	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++	.cmap_greyscale	= 1,
++	.cmap_inverse	= 1,
++
++	.lccr0		= LCCR0_Mono | LCCR0_4PixMono | LCCR0_Sngl | LCCR0_Pas,
++	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
++};
+ 
+ static void __init h3100_map_io(void)
+ {
+ 	h3xxx_map_io();
+ 
+-	sa1100fb_lcd_power = h3100_lcd_power;
+-
+ 	/* Older bootldrs put GPIO2-9 in alternate mode on the
+ 	   assumption that they are used for video */
+ 	GAFR &= ~0x000001fb;
+@@ -80,6 +95,9 @@ static void __init h3100_mach_init(void)
+ {
+ 	h3xxx_init_gpio(h3100_default_gpio, ARRAY_SIZE(h3100_default_gpio));
+ 	h3xxx_mach_init();
++
++	sa1100fb_lcd_power = h3100_lcd_power;
++	sa11x0_register_lcd(&h3100_lcd_info);
+ 	sa11x0_register_irda(&h3100_irda_data);
+ }
+ 
+diff --git a/arch/arm/mach-sa1100/h3600.c b/arch/arm/mach-sa1100/h3600.c
+index 6b58e74..3dd39bf 100644
+--- a/arch/arm/mach-sa1100/h3600.c
++++ b/arch/arm/mach-sa1100/h3600.c
+@@ -14,6 +14,8 @@
+ #include <linux/kernel.h>
+ #include <linux/gpio.h>
+ 
++#include <video/sa1100fb.h>
++
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+ #include <asm/mach/irda.h>
+@@ -56,11 +58,33 @@ err2:	gpio_free(H3XXX_EGPIO_LCD_ON);
+ err1:	return;
+ }
+ 
++static const struct sa1100fb_rgb h3600_rgb_16 = {
++	.red	= { .offset = 12, .length = 4, },
++	.green	= { .offset = 7,  .length = 4, },
++	.blue	= { .offset = 1,  .length = 4, },
++	.transp	= { .offset = 0,  .length = 0, },
 +};
 +
-+module_platform_driver(pandora_backlight_driver);
++static struct sa1100fb_mach_info h3600_lcd_info = {
++	.pixclock	= 174757, 	.bpp		= 16,
++	.xres		= 320,		.yres		= 240,
 +
-+MODULE_AUTHOR("Gražvydas Ignotas <notasas@gmail.com>");
-+MODULE_DESCRIPTION("Pandora Backlight Driver");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:pandora-backlight");
++	.hsync_len	= 3,		.vsync_len	= 3,
++	.left_margin	= 12,		.upper_margin	= 10,
++	.right_margin	= 17,		.lower_margin	= 1,
++
++	.cmap_static	= 1,
++
++	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
++	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
++
++	.rgb[RGB_16] = &h3600_rgb_16,
++};
++
++
+ static void __init h3600_map_io(void)
+ {
+ 	h3xxx_map_io();
+-
+-	sa1100fb_lcd_power = h3600_lcd_power;
+ }
+ 
+ /*
+@@ -121,6 +145,9 @@ static void __init h3600_mach_init(void)
+ {
+ 	h3xxx_init_gpio(h3600_default_gpio, ARRAY_SIZE(h3600_default_gpio));
+ 	h3xxx_mach_init();
++
++	sa1100fb_lcd_power = h3600_lcd_power;
++	sa11x0_register_lcd(&h3600_lcd_info);
+ 	sa11x0_register_irda(&h3600_irda_data);
+ }
+ 
+diff --git a/arch/arm/mach-sa1100/lart.c b/arch/arm/mach-sa1100/lart.c
+index af4e276..463a322 100644
+--- a/arch/arm/mach-sa1100/lart.c
++++ b/arch/arm/mach-sa1100/lart.c
+@@ -6,6 +6,8 @@
+ #include <linux/kernel.h>
+ #include <linux/tty.h>
+ 
++#include <video/sa1100fb.h>
++
+ #include <mach/hardware.h>
+ #include <asm/setup.h>
+ #include <asm/mach-types.h>
+@@ -26,8 +28,85 @@ static struct mcp_plat_data lart_mcp_data = {
+ 	.sclk_rate	= 11981000,
+ };
+ 
++#ifdef LART_GREY_LCD
++static struct sa1100fb_mach_info lart_grey_info = {
++	.pixclock	= 150000,	.bpp		= 4,
++	.xres		= 320,		.yres		= 240,
++
++	.hsync_len	= 1,		.vsync_len	= 1,
++	.left_margin	= 4,		.upper_margin	= 0,
++	.right_margin	= 2,		.lower_margin	= 0,
++
++	.cmap_greyscale	= 1,
++	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++
++	.lccr0		= LCCR0_Mono | LCCR0_Sngl | LCCR0_Pas | LCCR0_4PixMono,
++	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(512),
++};
++#endif
++#ifdef LART_COLOR_LCD
++static struct sa1100fb_mach_info lart_color_info = {
++	.pixclock	= 150000,	.bpp		= 16,
++	.xres		= 320,		.yres		= 240,
++
++	.hsync_len	= 2,		.vsync_len	= 3,
++	.left_margin	= 69,		.upper_margin	= 14,
++	.right_margin	= 8,		.lower_margin	= 4,
++
++	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
++	.lccr3		= LCCR3_OutEnH | LCCR3_PixFlEdg | LCCR3_ACBsDiv(512),
++};
++#endif
++#ifdef LART_VIDEO_OUT
++static struct sa1100fb_mach_info lart_video_info = {
++	.pixclock	= 39721,	.bpp		= 16,
++	.xres		= 640,		.yres		= 480,
++
++	.hsync_len	= 95,		.vsync_len	= 2,
++	.left_margin	= 40,		.upper_margin	= 32,
++	.right_margin	= 24,		.lower_margin	= 11,
++
++	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++
++	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
++	.lccr3		= LCCR3_OutEnL | LCCR3_PixFlEdg | LCCR3_ACBsDiv(512),
++};
++#endif
++
++#ifdef LART_KIT01_LCD
++static struct sa1100fb_mach_info lart_kit01_info = {
++	.pixclock	= 63291,	.bpp		= 16,
++	.xres		= 640,		.yres		= 480,
++
++	.hsync_len	= 64,		.vsync_len	= 3,
++	.left_margin	= 122,		.upper_margin	= 45,
++	.right_margin	= 10,		.lower_margin	= 10,
++
++	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
++	.lccr3		= LCCR3_OutEnH | LCCR3_PixFlEdg
++};
++#endif
++
+ static void __init lart_init(void)
+ {
++	struct sa1100fb_mach_info *inf = NULL;
++
++#ifdef LART_GREY_LCD
++	inf = &lart_grey_info;
++#endif
++#ifdef LART_COLOR_LCD
++	inf = &lart_color_info;
++#endif
++#ifdef LART_VIDEO_OUT
++	inf = &lart_video_info;
++#endif
++#ifdef LART_KIT01_LCD
++	inf = &lart_kit01_info;
++#endif
++
++	if (inf)
++		sa11x0_register_lcd(inf);
++
+ 	sa11x0_register_mcp(&lart_mcp_data);
+ }
+ 
+diff --git a/arch/arm/mach-sa1100/shannon.c b/arch/arm/mach-sa1100/shannon.c
+index 318b2b7..c695b73 100644
+--- a/arch/arm/mach-sa1100/shannon.c
++++ b/arch/arm/mach-sa1100/shannon.c
+@@ -9,6 +9,8 @@
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/partitions.h>
+ 
++#include <video/sa1100fb.h>
++
+ #include <mach/hardware.h>
+ #include <asm/mach-types.h>
+ #include <asm/setup.h>
+@@ -57,8 +59,23 @@ static struct mcp_plat_data shannon_mcp_data = {
+ 	.sclk_rate	= 11981000,
+ };
+ 
++static struct sa1100fb_mach_info shannon_lcd_info = {
++	.pixclock	= 152500,	.bpp		= 8,
++	.xres		= 640,		.yres		= 480,
++
++	.hsync_len	= 4,		.vsync_len	= 3,
++	.left_margin	= 2,		.upper_margin	= 0,
++	.right_margin	= 1,		.lower_margin	= 0,
++
++	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
++
++	.lccr0		= LCCR0_Color | LCCR0_Dual | LCCR0_Pas,
++	.lccr3		= LCCR3_ACBsDiv(512),
++};
++
+ static void __init shannon_init(void)
+ {
++	sa11x0_register_lcd(&shannon_lcd_info);
+ 	sa11x0_register_mtd(&shannon_flash_data, &shannon_flash_resource, 1);
+ 	sa11x0_register_mcp(&shannon_mcp_data);
+ }
+diff --git a/drivers/video/sa1100fb.c b/drivers/video/sa1100fb.c
+index 8f5557a..d645c6d 100644
+--- a/drivers/video/sa1100fb.c
++++ b/drivers/video/sa1100fb.c
+@@ -218,235 +218,7 @@ static const struct sa1100fb_rgb def_rgb_16 = {
+ 	.transp	= { .offset = 0,  .length = 0, },
+ };
+ 
+-#ifdef CONFIG_SA1100_ASSABET
+-#ifndef ASSABET_PAL_VIDEO
+-/*
+- * The assabet uses a sharp LQ039Q2DS54 LCD module.  It is actually
+- * takes an RGB666 signal, but we provide it with an RGB565 signal
+- * instead (def_rgb_16).
+- */
+-static struct sa1100fb_mach_info lq039q2ds54_info __devinitdata = {
+-	.pixclock	= 171521,	.bpp		= 16,
+-	.xres		= 320,		.yres		= 240,
+-
+-	.hsync_len	= 5,		.vsync_len	= 1,
+-	.left_margin	= 61,		.upper_margin	= 3,
+-	.right_margin	= 9,		.lower_margin	= 0,
+-
+-	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+-
+-	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
+-	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
+-};
+-#else
+-static struct sa1100fb_mach_info pal_info __devinitdata = {
+-	.pixclock	= 67797,	.bpp		= 16,
+-	.xres		= 640,		.yres		= 512,
+-
+-	.hsync_len	= 64,		.vsync_len	= 6,
+-	.left_margin	= 125,		.upper_margin	= 70,
+-	.right_margin	= 115,		.lower_margin	= 36,
+-
+-	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
+-	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(512),
+-};
+-#endif
+-#endif
+-
+-#ifdef CONFIG_SA1100_H3600
+-static const struct sa1100fb_rgb h3600_rgb_16 = {
+-	.red	= { .offset = 12, .length = 4, },
+-	.green	= { .offset = 7,  .length = 4, },
+-	.blue	= { .offset = 1,  .length = 4, },
+-	.transp	= { .offset = 0,  .length = 0, },
+-};
+-
+-static struct sa1100fb_mach_info h3600_info __devinitdata = {
+-	.pixclock	= 174757, 	.bpp		= 16,
+-	.xres		= 320,		.yres		= 240,
+-
+-	.hsync_len	= 3,		.vsync_len	= 3,
+-	.left_margin	= 12,		.upper_margin	= 10,
+-	.right_margin	= 17,		.lower_margin	= 1,
+-
+-	.cmap_static	= 1,
+-
+-	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
+-	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
+-
+-	.rgb[RGB_16] = &h3600_rgb_16,
+-};
+-#endif
+-
+-#ifdef CONFIG_SA1100_H3100
+-static struct sa1100fb_mach_info h3100_info __devinitdata = {
+-	.pixclock	= 406977, 	.bpp		= 4,
+-	.xres		= 320,		.yres		= 240,
+ 
+-	.hsync_len	= 26,		.vsync_len	= 41,
+-	.left_margin	= 4,		.upper_margin	= 0,
+-	.right_margin	= 4,		.lower_margin	= 0,
+-
+-	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+-	.cmap_greyscale	= 1,
+-	.cmap_inverse	= 1,
+-
+-	.lccr0		= LCCR0_Mono | LCCR0_4PixMono | LCCR0_Sngl | LCCR0_Pas,
+-	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
+-};
+-#endif
+-
+-#ifdef CONFIG_SA1100_COLLIE
+-static struct sa1100fb_mach_info collie_info __devinitdata = {
+-	.pixclock	= 171521,	.bpp		= 16,
+-	.xres		= 320,		.yres		= 240,
+-
+-	.hsync_len	= 5,		.vsync_len	= 1,
+-	.left_margin	= 11,		.upper_margin	= 2,
+-	.right_margin	= 30,		.lower_margin	= 0,
+-
+-	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+-
+-	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
+-	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
+-};
+-#endif
+-
+-#ifdef LART_GREY_LCD
+-static struct sa1100fb_mach_info lart_grey_info __devinitdata = {
+-	.pixclock	= 150000,	.bpp		= 4,
+-	.xres		= 320,		.yres		= 240,
+-
+-	.hsync_len	= 1,		.vsync_len	= 1,
+-	.left_margin	= 4,		.upper_margin	= 0,
+-	.right_margin	= 2,		.lower_margin	= 0,
+-
+-	.cmap_greyscale	= 1,
+-	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+-
+-	.lccr0		= LCCR0_Mono | LCCR0_Sngl | LCCR0_Pas | LCCR0_4PixMono,
+-	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(512),
+-};
+-#endif
+-#ifdef LART_COLOR_LCD
+-static struct sa1100fb_mach_info lart_color_info __devinitdata = {
+-	.pixclock	= 150000,	.bpp		= 16,
+-	.xres		= 320,		.yres		= 240,
+-
+-	.hsync_len	= 2,		.vsync_len	= 3,
+-	.left_margin	= 69,		.upper_margin	= 14,
+-	.right_margin	= 8,		.lower_margin	= 4,
+-
+-	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
+-	.lccr3		= LCCR3_OutEnH | LCCR3_PixFlEdg | LCCR3_ACBsDiv(512),
+-};
+-#endif
+-#ifdef LART_VIDEO_OUT
+-static struct sa1100fb_mach_info lart_video_info __devinitdata = {
+-	.pixclock	= 39721,	.bpp		= 16,
+-	.xres		= 640,		.yres		= 480,
+-
+-	.hsync_len	= 95,		.vsync_len	= 2,
+-	.left_margin	= 40,		.upper_margin	= 32,
+-	.right_margin	= 24,		.lower_margin	= 11,
+-
+-	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+-
+-	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
+-	.lccr3		= LCCR3_OutEnL | LCCR3_PixFlEdg | LCCR3_ACBsDiv(512),
+-};
+-#endif
+-
+-#ifdef LART_KIT01_LCD
+-static struct sa1100fb_mach_info lart_kit01_info __devinitdata = {
+-	.pixclock	= 63291,	.bpp		= 16,
+-	.xres		= 640,		.yres		= 480,
+-
+-	.hsync_len	= 64,		.vsync_len	= 3,
+-	.left_margin	= 122,		.upper_margin	= 45,
+-	.right_margin	= 10,		.lower_margin	= 10,
+-
+-	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
+-	.lccr3		= LCCR3_OutEnH | LCCR3_PixFlEdg
+-};
+-#endif
+-
+-#ifdef CONFIG_SA1100_SHANNON
+-static struct sa1100fb_mach_info shannon_info __devinitdata = {
+-	.pixclock	= 152500,	.bpp		= 8,
+-	.xres		= 640,		.yres		= 480,
+-
+-	.hsync_len	= 4,		.vsync_len	= 3,
+-	.left_margin	= 2,		.upper_margin	= 0,
+-	.right_margin	= 1,		.lower_margin	= 0,
+-
+-	.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+-
+-	.lccr0		= LCCR0_Color | LCCR0_Dual | LCCR0_Pas,
+-	.lccr3		= LCCR3_ACBsDiv(512),
+-};
+-#endif
+-
+-
+-
+-static struct sa1100fb_mach_info * __devinit
+-sa1100fb_get_machine_info(struct sa1100fb_info *fbi)
+-{
+-	struct sa1100fb_mach_info *inf = NULL;
+-
+-	/*
+-	 *            R        G       B       T
+-	 * default  {11,5}, { 5,6}, { 0,5}, { 0,0}
+-	 * h3600    {12,4}, { 7,4}, { 1,4}, { 0,0}
+-	 * freebird { 8,4}, { 4,4}, { 0,4}, {12,4}
+-	 */
+-#ifdef CONFIG_SA1100_ASSABET
+-	if (machine_is_assabet()) {
+-#ifndef ASSABET_PAL_VIDEO
+-		inf = &lq039q2ds54_info;
+-#else
+-		inf = &pal_info;
+-#endif
+-	}
+-#endif
+-#ifdef CONFIG_SA1100_H3100
+-	if (machine_is_h3100()) {
+-		inf = &h3100_info;
+-	}
+-#endif
+-#ifdef CONFIG_SA1100_H3600
+-	if (machine_is_h3600()) {
+-		inf = &h3600_info;
+-	}
+-#endif
+-#ifdef CONFIG_SA1100_COLLIE
+-	if (machine_is_collie()) {
+-		inf = &collie_info;
+-	}
+-#endif
+-#ifdef CONFIG_SA1100_LART
+-	if (machine_is_lart()) {
+-#ifdef LART_GREY_LCD
+-		inf = &lart_grey_info;
+-#endif
+-#ifdef LART_COLOR_LCD
+-		inf = &lart_color_info;
+-#endif
+-#ifdef LART_VIDEO_OUT
+-		inf = &lart_video_info;
+-#endif
+-#ifdef LART_KIT01_LCD
+-		inf = &lart_kit01_info;
+-#endif
+-	}
+-#endif
+-#ifdef CONFIG_SA1100_SHANNON
+-	if (machine_is_shannon()) {
+-		inf = &shannon_info;
+-	}
+-#endif
+-	return inf;
+-}
+ 
+ static int sa1100fb_activate_var(struct fb_var_screeninfo *var, struct sa1100fb_info *);
+ static void set_ctrlr_state(struct sa1100fb_info *fbi, u_int state);
+@@ -1353,7 +1125,7 @@ static struct fb_monspecs monspecs __devinitdata = {
+ 
+ static struct sa1100fb_info * __devinit sa1100fb_init_fbinfo(struct device *dev)
+ {
+-	struct sa1100fb_mach_info *inf;
++	struct sa1100fb_mach_info *inf = dev->platform_data;
+ 	struct sa1100fb_info *fbi;
+ 	unsigned i;
+ 
+@@ -1390,10 +1162,6 @@ static struct sa1100fb_info * __devinit sa1100fb_init_fbinfo(struct device *dev)
+ 	fbi->rgb[RGB_8]		= &rgb_8;
+ 	fbi->rgb[RGB_16]	= &def_rgb_16;
+ 
+-	inf = dev->platform_data;
+-	if (!inf)
+-		inf = sa1100fb_get_machine_info(fbi);
+-
+ 	/*
+ 	 * People just don't seem to get this.  We don't support
+ 	 * anything but correct entries now, so panic if someone
+@@ -1447,6 +1215,11 @@ static int __devinit sa1100fb_probe(struct platform_device *pdev)
+ 	struct sa1100fb_info *fbi;
+ 	int ret, irq;
+ 
++	if (!pdev->dev.platform_data) {
++		dev_err(&pdev->dev, "no platform LCD data\n");
++		return -EINVAL;
++	}
++
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq < 0)
+ 		return -EINVAL;
 -- 
-1.7.0.4
+1.7.4.4
 

@@ -1,25 +1,37 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Wed, 22 Feb 2012 18:06:58 +0000
-Subject: Re: [PATCH 04/16] OMAPFB: Remove video SRAM support (old omapfb)
-Message-Id: <20120222180658.GY18185@atomide.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 06 Feb 2012 02:30:39 +0000
+Subject: [PATCH] MAINTAINERS: add maintainer entry for Exynos DP driver
+Message-Id: <001501cce477$50eaad60$f2c00820$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
- <1327399231-20826-5-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1327399231-20826-5-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
+To: linux-fbdev@vger.kernel.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [120124 01:30]:
-> OMAP SRAM can be used as video memory on OMAP1 and 2. However, there
-> usually is very little SRAM available, thus limiting its use, and no
-> board supported by the kernel currently uses it.
-> 
-> This patch removes the use of SRAM as video ram for the old omapfb
-> driver to simplify memory handling.
-> 
-> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Add maintainer entry for Exynos DP driver which can be used for
+Samsung Exynos SoC series.
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ MAINTAINERS |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index ebb1936..f685bfd 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2639,6 +2639,12 @@ M:	Mimi Zohar <zohar@us.ibm.com>
+ S:	Supported
+ F:	security/integrity/evm/
+ 
++EXYNOS DP DRIVER
++M:	Jingoo Han <jg1.han@samsung.com>
++L:	linux-fbdev@vger.kernel.org
++S:	Maintained
++F:	drivers/video/exynos/exynos_dp*
++
+ F71805F HARDWARE MONITORING DRIVER
+ M:	Jean Delvare <khali@linux-fr.org>
+ L:	lm-sensors@lm-sensors.org
+--
+

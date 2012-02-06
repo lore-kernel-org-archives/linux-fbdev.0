@@ -1,79 +1,102 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 06 Feb 2012 10:42:23 +0000
+Date: Mon, 06 Feb 2012 11:28:12 +0000
 Subject: Re: [PATCH 1/2] OMAPDSS: Features: Maintain dss_feats as a list
-Message-Id: <1328524943.1898.38.camel@deskari>
+Message-Id: <1328527692.1997.2.camel@lappy>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-R6sTr4EDDnKZHApkvFSc"
+Content-Type: multipart/mixed; boundary="=-Onqe9geXVbzzIgzf3/tf"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1327900959-29198-1-git-send-email-archit@ti.com>
-In-Reply-To: <1327900959-29198-1-git-send-email-archit@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+	 <1328524943.1898.38.camel@deskari> <4F2FB86D.2090205@ti.com>
+In-Reply-To: <4F2FB86D.2090205@ti.com>
+To: Archit Taneja <a0393947@ti.com>
+Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
 
---=-R6sTr4EDDnKZHApkvFSc
+--=-Onqe9geXVbzzIgzf3/tf
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-On Mon, 2012-01-30 at 10:52 +0530, Archit Taneja wrote:
-> The number of dss_feat_id members has increased to a large value, the cur=
-rent
-> way of assigning a subset of these features (for a particular OMAP) as a =
-mask
-> is no longer feasible.
+On Mon, 2012-02-06 at 16:54 +0530, Archit Taneja wrote:
+> On Monday 06 February 2012 04:12 PM, Tomi Valkeinen wrote:
+> > Hi,
+> >
+> > On Mon, 2012-01-30 at 10:52 +0530, Archit Taneja wrote:
+> >> The number of dss_feat_id members has increased to a large value, the =
+current
+> >> way of assigning a subset of these features (for a particular OMAP) as=
+ a mask
+> >> is no longer feasible.
+> >>
+> >> Maintain the subset of features supported as lists. Make the function
+> >> dss_has_feature() traverse through this list.
+> >
+> > I think this makes the code easier to maintain, so in that sense it is
+> > good. But I do hesitate a bit, I think many features are checked in
+> > often used code paths (the configuration done on each frame when
+> > swapping/panning), and bit compare versus finding an item in a list
+> > could have performance impact.
+> >
+> > Then again, I'm purely guessing here, as it could well be that compared
+> > to the other code, checking the features is insignificant. Thus, I'm
+> > fine with this patch, and we can optimize it later if need be.
+> >
+> > However, I'm anyway giving a few ideas how this could also be handled:
+> >
+> > - 64 bit mask. Would be simple, but we'd still have a hard limit there.
+> >
+> > - Variable length bitmask, i.e. an int or byte array from which a
+> > particular bit is checked. There could be a ready made datatype for thi=
+s
+> > in the kernel.
+> >
 >=20
-> Maintain the subset of features supported as lists. Make the function
-> dss_has_feature() traverse through this list.
+> There seems to be a bitmask library:
+>=20
+> tools/power/cpupower/utils/helpers/bitmask.c
+>=20
+> I don't know how easy it would be to access this though.
+>=20
+> > - Lists like in this patch, but in sorted order. Then, if we're looking
+> > for a feat which has, say, number 4 assigned to it, we can stop
+> > iterating the list when we hit a feat>  4 in the list. Quite simple
+> > optimization, but needs extra maintenance to keep the feat lists sorted=
+.
+>=20
+> This sounds fine. It shouldn't be too much of an effort to maintain=20
+> sorted lists. We'll just need to ensure that a new feature added has the=
+=20
+> largest integer value, and is always added at the end of the list(s).
 
-I think this makes the code easier to maintain, so in that sense it is
-good. But I do hesitate a bit, I think many features are checked in
-often used code paths (the configuration done on each frame when
-swapping/panning), and bit compare versus finding an item in a list
-could have performance impact.
-
-Then again, I'm purely guessing here, as it could well be that compared
-to the other code, checking the features is insignificant. Thus, I'm
-fine with this patch, and we can optimize it later if need be.
-
-However, I'm anyway giving a few ideas how this could also be handled:
-
-- 64 bit mask. Would be simple, but we'd still have a hard limit there.
-
-- Variable length bitmask, i.e. an int or byte array from which a
-particular bit is checked. There could be a ready made datatype for this
-in the kernel.
-
-- Lists like in this patch, but in sorted order. Then, if we're looking
-for a feat which has, say, number 4 assigned to it, we can stop
-iterating the list when we hit a feat > 4 in the list. Quite simple
-optimization, but needs extra maintenance to keep the feat lists sorted.
+Not necessarily. As we always search the list from index 0 forward, the
+most often needed features could be in the beginning of the list so they
+are found faster. At least some features are clearly needed only in some
+enable/disable paths or similar, and they could clearly be low priority.
 
  Tomi
 
 
---=-R6sTr4EDDnKZHApkvFSc
+--=-Onqe9geXVbzzIgzf3/tf
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABAgAGBQJPL66PAAoJEPo9qoy8lh711YYP/0CptROhzbVsda3e7jV16KXC
-id4qAqpddQgkuD1zr8UYLnYtSSXByA2qjEeVewLds3yRbN1iDzUQziHIuXVGtWVB
-Rmf/wnlFWvTFYo06jKZQ2dXLpHSDURZl7VFvVcokFL2+GF8Wo47rWAZkWM2fOQjh
-v4x5noRX4jTZtntekx76MSIoV7JeGqouqkO4ehfzz3br81zlbuwzKNVNuglShSSU
-sOq5FTHZVfQnt4jQWFccZ6o9S9q8kQ1LVjM8reB502gTrksRVflqdSRs96uzQ516
-3yh2Cq8LuHFRxeJL/3z4eZTS1Nbc+voargLbdZlAxVQca6RRdREUYZOoGLPpYLa9
-KTHaAfdFBsW4khTQyZruVsv609sEpravxggaOLFI7JAqWWug1KTFanUq8ueCa6Jq
-pMu4a5bgBwn5E4LEMDcjuJFDBYreFEGAnuwix3Ld47ivG5f2Jqe8MF+ftWM7LtSx
-+qdmaOuE3nc0ueQlmPSMHdmYoY2+G0kLFRp7ShYLM/hIUEO/k+Z0tebtAmgnLwRT
-d3c5jIIbCRbqc2V9zm4sYPxrgw19BYpMeFttrE57Sz4pScYtKxHOzcAGjLKmCvTG
-XcQ4vUkeHSwJNff5hcxzCH9eBh793OTgjGHuLft75gdhlm5YGBtNs5ZPV/sYJEGC
-FBFr1aw0ByumUJxdMB+b
-=HJcS
+iQIcBAABAgAGBQJPL7lMAAoJEPo9qoy8lh71rBEP/2nhgjtmSOcjzAWmjOfWIpDx
+Rhqbv7OFwStSZ+7rcDRB9hosFbHF3SEPwi0Ccqt7mXbjy6TwT0RK8/CPunwrhF3z
+EqBvwWFyGDTMciezgULW2O0qC4S4vQnBPIPNCEv7hvB3Smt3+PYrZjowWxAhLbJY
+SSB4WGKasVmbcPsqQD/QQTwlTJZUDleIS/gcZ61/DJt4tFMIAlIf6HCgJ7p/dBjB
+nELPa4wLlUVLOyVj5AuJfnZjHd4P8WZLs/Y8BZKh7c01rKZSWwipWtWb7b7i1YcS
+MhD5FLn3zgoXRql475RwFyl/OCRo5rSeurIH5xseD/BkeHGkHid+rH2rbILskyUg
+NnlS1SbRUmFx9JqlfaZ1ywVFFe5ysmesQ7jE0OSBagAg9pwYMYnH2SisBuS6Gwyr
+ewPWpRP9+KZXS/1Nnz2PaZconBmzOgr81udhfTXLyc0fJ/7EoOvHj9IRYlrk9r6Y
+bb6xnPzGW+Ggh1pwN1YjAUlIDzn6U9cUMSdEo3jqkqbD8x08FmIhHyEHsjxHUhsF
+Am2WyfgzuiDxmSsk8hJjPyQvDY9/QsiP1WnJIpNP2H/Nn7BWg0ggbeV0o5M/HJsL
+ioKrFAToK5VqsDOzPW7w/2zphbM20X/S6pHyy2qN1KVqTfdKB6OeRdEEbxIQ+9Wy
+Wyj0CjdnQfZMjZvVQJ3Z
+=s8eE
 -----END PGP SIGNATURE-----
 
---=-R6sTr4EDDnKZHApkvFSc--
+--=-Onqe9geXVbzzIgzf3/tf--
 

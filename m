@@ -1,210 +1,275 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 28 Feb 2012 11:41:31 +0000
-Subject: PATCH V2] video: s3c-fb: Add support EXYNOS5 FIMD
-Message-Id: <000001ccf60d$ea8bcce0$bfa366a0$%han@samsung.com>
+From: Grazvydas Ignotas <notasas@gmail.com>
+Date: Tue, 07 Feb 2012 00:13:49 +0000
+Subject: [PATCH] OMAP: DSS2: TPO-TD03MTEA1: fix suspend hang
+Message-Id: <1328573630-7348-1-git-send-email-notasas@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, Grazvydas Ignotas <notasas@gmail.com>
 
-This patch adds s3c_fb_driverdata s3c_fb_data_exynos5 for EXYNOS5
-and adds extended timing control setting.
+During system suspend, at the time DSS is being suspended, SPI is
+already suspended and it's clocks are cut. Because of this trying to
+communicate with the LCD controller results in a deadlock.
 
-EXYNOS5 FIMD needs extended setting for video timing control.
-Additional bits are added to VIDTCON2, VIDWxxADD2, VIDOSDxA and
-VIDOSDxB registers in order to set timing value for lager resolution.
+To fix this, split out LCD programming parts of display enable/disable
+functions and perform them from SPI PM callbacks instead when system is
+being suspended. If the display is just being enabled/disabled, do it
+from DSS callbacks as before.
 
-Also, address offset of VIDTCONx registers is changed from 0x0
-to 0x20000, thus variable type should be changed to int type
-to handle the address offset of VIDTCONx registers for EXYNOS5 FIMD.
-
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
 ---
-v2: fix commit message from VIDCONx to VIDTCONx.
+rather invasive so best for upcoming merge window I guess..
 
- arch/arm/plat-samsung/include/plat/regs-fb.h |   24 ++++++++----
- drivers/video/s3c-fb.c                       |   52 +++++++++++++++++++++++--
- 2 files changed, 63 insertions(+), 13 deletions(-)
+ .../video/omap2/displays/panel-tpo-td043mtea1.c    |  151 ++++++++++++++------
+ 1 files changed, 108 insertions(+), 43 deletions(-)
 
-diff --git a/arch/arm/plat-samsung/include/plat/regs-fb.h b/arch/arm/plat-samsung/include/plat/regs-fb.h
-index bbb16e0..9a78012 100644
---- a/arch/arm/plat-samsung/include/plat/regs-fb.h
-+++ b/arch/arm/plat-samsung/include/plat/regs-fb.h
-@@ -167,15 +167,17 @@
- #define VIDTCON1_HSPW(_x)			((_x) << 0)
- 
- #define VIDTCON2				(0x18)
-+#define VIDTCON2_LINEVAL_E(_x)			((((_x) & 0x800) >> 11) << 23)
- #define VIDTCON2_LINEVAL_MASK			(0x7ff << 11)
- #define VIDTCON2_LINEVAL_SHIFT			(11)
- #define VIDTCON2_LINEVAL_LIMIT			(0x7ff)
--#define VIDTCON2_LINEVAL(_x)			((_x) << 11)
-+#define VIDTCON2_LINEVAL(_x)			(((_x) & 0x7ff) << 11)
- 
-+#define VIDTCON2_HOZVAL_E(_x)			((((_x) & 0x800) >> 11) << 22)
- #define VIDTCON2_HOZVAL_MASK			(0x7ff << 0)
- #define VIDTCON2_HOZVAL_SHIFT			(0)
- #define VIDTCON2_HOZVAL_LIMIT			(0x7ff)
--#define VIDTCON2_HOZVAL(_x)			((_x) << 0)
-+#define VIDTCON2_HOZVAL(_x)			(((_x) & 0x7ff) << 0)
- 
- /* WINCONx */
- 
-@@ -231,25 +233,29 @@
- /* Local input channels (windows 0-2) */
- #define SHADOWCON_CHx_LOCAL_ENABLE(_win)	(1 << (5 + (_win)))
- 
-+#define VIDOSDxA_TOPLEFT_X_E(_x)		((((_x) & 0x800) >> 11) << 23)
- #define VIDOSDxA_TOPLEFT_X_MASK			(0x7ff << 11)
- #define VIDOSDxA_TOPLEFT_X_SHIFT		(11)
- #define VIDOSDxA_TOPLEFT_X_LIMIT		(0x7ff)
--#define VIDOSDxA_TOPLEFT_X(_x)			((_x) << 11)
-+#define VIDOSDxA_TOPLEFT_X(_x)			(((_x) & 0x7ff) << 11)
- 
-+#define VIDOSDxA_TOPLEFT_Y_E(_x)		((((_x) & 0x800) >> 11) << 22)
- #define VIDOSDxA_TOPLEFT_Y_MASK			(0x7ff << 0)
- #define VIDOSDxA_TOPLEFT_Y_SHIFT		(0)
- #define VIDOSDxA_TOPLEFT_Y_LIMIT		(0x7ff)
--#define VIDOSDxA_TOPLEFT_Y(_x)			((_x) << 0)
-+#define VIDOSDxA_TOPLEFT_Y(_x)			(((_x) & 0x7ff) << 0)
- 
-+#define VIDOSDxB_BOTRIGHT_X_E(_x)		((((_x) & 0x800) >> 11) << 23)
- #define VIDOSDxB_BOTRIGHT_X_MASK		(0x7ff << 11)
- #define VIDOSDxB_BOTRIGHT_X_SHIFT		(11)
- #define VIDOSDxB_BOTRIGHT_X_LIMIT		(0x7ff)
--#define VIDOSDxB_BOTRIGHT_X(_x)			((_x) << 11)
-+#define VIDOSDxB_BOTRIGHT_X(_x)			(((_x) & 0x7ff) << 11)
- 
-+#define VIDOSDxB_BOTRIGHT_Y_E(_x)		((((_x) & 0x800) >> 11) << 22)
- #define VIDOSDxB_BOTRIGHT_Y_MASK		(0x7ff << 0)
- #define VIDOSDxB_BOTRIGHT_Y_SHIFT		(0)
- #define VIDOSDxB_BOTRIGHT_Y_LIMIT		(0x7ff)
--#define VIDOSDxB_BOTRIGHT_Y(_x)			((_x) << 0)
-+#define VIDOSDxB_BOTRIGHT_Y(_x)			(((_x) & 0x7ff) << 0)
- 
- /* For VIDOSD[1..4]C */
- #define VIDISD14C_ALPHA0_R(_x)			((_x) << 20)
-@@ -281,15 +287,17 @@
- #define VIDW_BUF_END1(_buff)			(0xD4 + ((_buff) * 8))
- #define VIDW_BUF_SIZE(_buff)			(0x100 + ((_buff) * 4))
- 
-+#define VIDW_BUF_SIZE_OFFSET_E(_x)		((((_x) & 0x2000) >> 13) << 27)
- #define VIDW_BUF_SIZE_OFFSET_MASK		(0x1fff << 13)
- #define VIDW_BUF_SIZE_OFFSET_SHIFT		(13)
- #define VIDW_BUF_SIZE_OFFSET_LIMIT		(0x1fff)
--#define VIDW_BUF_SIZE_OFFSET(_x)		((_x) << 13)
-+#define VIDW_BUF_SIZE_OFFSET(_x)		(((_x) & 0x1fff) << 13)
- 
-+#define VIDW_BUF_SIZE_PAGEWIDTH_E(_x)		((((_x) & 0x2000) >> 13) << 26)
- #define VIDW_BUF_SIZE_PAGEWIDTH_MASK		(0x1fff << 0)
- #define VIDW_BUF_SIZE_PAGEWIDTH_SHIFT		(0)
- #define VIDW_BUF_SIZE_PAGEWIDTH_LIMIT		(0x1fff)
--#define VIDW_BUF_SIZE_PAGEWIDTH(_x)		((_x) << 0)
-+#define VIDW_BUF_SIZE_PAGEWIDTH(_x)		(((_x) & 0x1fff) << 0)
- 
- /* Interrupt controls and status */
- 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 1fb7ddf..f310516 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -89,7 +89,7 @@ struct s3c_fb;
- struct s3c_fb_variant {
- 	unsigned int	is_2443:1;
- 	unsigned short	nr_windows;
--	unsigned short	vidtcon;
-+	unsigned int	vidtcon;
- 	unsigned short	wincon;
- 	unsigned short	winmap;
- 	unsigned short	keycon;
-@@ -568,7 +568,9 @@ static int s3c_fb_set_par(struct fb_info *info)
- 		writel(data, regs + sfb->variant.vidtcon + 4);
- 
- 		data = VIDTCON2_LINEVAL(var->yres - 1) |
--		       VIDTCON2_HOZVAL(var->xres - 1);
-+		       VIDTCON2_HOZVAL(var->xres - 1) |
-+		       VIDTCON2_LINEVAL_E(var->yres - 1) |
-+		       VIDTCON2_HOZVAL_E(var->xres - 1);
- 		writel(data, regs + sfb->variant.vidtcon + 8);
- 	}
- 
-@@ -584,17 +586,23 @@ static int s3c_fb_set_par(struct fb_info *info)
- 
- 	pagewidth = (var->xres * var->bits_per_pixel) >> 3;
- 	data = VIDW_BUF_SIZE_OFFSET(info->fix.line_length - pagewidth) |
--	       VIDW_BUF_SIZE_PAGEWIDTH(pagewidth);
-+	       VIDW_BUF_SIZE_PAGEWIDTH(pagewidth) |
-+	       VIDW_BUF_SIZE_OFFSET_E(info->fix.line_length - pagewidth) |
-+	       VIDW_BUF_SIZE_PAGEWIDTH_E(pagewidth);
- 	writel(data, regs + sfb->variant.buf_size + (win_no * 4));
- 
- 	/* write 'OSD' registers to control position of framebuffer */
- 
--	data = VIDOSDxA_TOPLEFT_X(0) | VIDOSDxA_TOPLEFT_Y(0);
-+	data = VIDOSDxA_TOPLEFT_X(0) | VIDOSDxA_TOPLEFT_Y(0) |
-+	       VIDOSDxA_TOPLEFT_X_E(0) | VIDOSDxA_TOPLEFT_Y_E(0);
- 	writel(data, regs + VIDOSD_A(win_no, sfb->variant));
- 
- 	data = VIDOSDxB_BOTRIGHT_X(s3c_fb_align_word(var->bits_per_pixel,
- 						     var->xres - 1)) |
--	       VIDOSDxB_BOTRIGHT_Y(var->yres - 1);
-+	       VIDOSDxB_BOTRIGHT_Y(var->yres - 1) |
-+	       VIDOSDxB_BOTRIGHT_X_E(s3c_fb_align_word(var->bits_per_pixel,
-+						     var->xres - 1)) |
-+	       VIDOSDxB_BOTRIGHT_Y_E(var->yres - 1);
- 
- 	writel(data, regs + VIDOSD_B(win_no, sfb->variant));
- 
-@@ -1903,6 +1911,37 @@ static struct s3c_fb_driverdata s3c_fb_data_exynos4 = {
- 	.win[4]	= &s3c_fb_data_s5p_wins[4],
+diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+index e6649aa..741e9d7 100644
+--- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
++++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+@@ -53,10 +53,14 @@ static const u16 tpo_td043_def_gamma[12] = {
+ struct tpo_td043_device {
+ 	struct spi_device *spi;
+ 	struct regulator *vcc_reg;
++	int nreset_gpio;
+ 	u16 gamma[12];
+ 	u32 mode;
+ 	u32 hmirror:1;
+ 	u32 vmirror:1;
++	u32 powered_on:1;
++	u32 spi_suspended:1;
++	u32 power_on_resume:1;
  };
  
-+static struct s3c_fb_driverdata s3c_fb_data_exynos5 = {
-+	.variant = {
-+		.nr_windows	= 5,
-+		.vidtcon	= VIDTCON0,
-+		.wincon		= WINCON(0),
-+		.winmap		= WINxMAP(0),
-+		.keycon		= WKEYCON,
-+		.osd		= VIDOSD_BASE,
-+		.osd_stride	= 16,
-+		.buf_start	= VIDW_BUF_START(0),
-+		.buf_size	= VIDW_BUF_SIZE(0),
-+		.buf_end	= VIDW_BUF_END(0),
+ static int tpo_td043_write(struct spi_device *spi, u8 addr, u8 data)
+@@ -265,28 +269,16 @@ static const struct omap_video_timings tpo_td043_timings = {
+ 	.vbp		= 34,
+ };
+ 
+-static int tpo_td043_power_on(struct omap_dss_device *dssdev)
++static int tpo_td043_power_on(struct tpo_td043_device *tpo_td043)
+ {
+-	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(&dssdev->dev);
+-	int nreset_gpio = dssdev->reset_gpio;
+-	int r;
++	int nreset_gpio = tpo_td043->nreset_gpio;
+ 
+-	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
++	if (tpo_td043->powered_on)
+ 		return 0;
+ 
+-	r = omapdss_dpi_display_enable(dssdev);
+-	if (r)
+-		goto err0;
+-
+-	if (dssdev->platform_enable) {
+-		r = dssdev->platform_enable(dssdev);
+-		if (r)
+-			goto err1;
+-	}
+-
+ 	regulator_enable(tpo_td043->vcc_reg);
+ 
+-	/* wait for power up */
++	/* wait for regulator to stabilize */
+ 	msleep(160);
+ 
+ 	if (gpio_is_valid(nreset_gpio))
+@@ -301,19 +293,15 @@ static int tpo_td043_power_on(struct omap_dss_device *dssdev)
+ 			tpo_td043->vmirror);
+ 	tpo_td043_write_gamma(tpo_td043->spi, tpo_td043->gamma);
+ 
++	tpo_td043->powered_on = 1;
+ 	return 0;
+-err1:
+-	omapdss_dpi_display_disable(dssdev);
+-err0:
+-	return r;
+ }
+ 
+-static void tpo_td043_power_off(struct omap_dss_device *dssdev)
++static void tpo_td043_power_off(struct tpo_td043_device *tpo_td043)
+ {
+-	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(&dssdev->dev);
+-	int nreset_gpio = dssdev->reset_gpio;
++	int nreset_gpio = tpo_td043->nreset_gpio;
+ 
+-	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
++	if (!tpo_td043->powered_on)
+ 		return;
+ 
+ 	tpo_td043_write(tpo_td043->spi, 3,
+@@ -329,54 +317,94 @@ static void tpo_td043_power_off(struct omap_dss_device *dssdev)
+ 
+ 	regulator_disable(tpo_td043->vcc_reg);
+ 
++	tpo_td043->powered_on = 0;
++}
 +
-+		.palette = {
-+			[0] = 0x2400,
-+			[1] = 0x2800,
-+			[2] = 0x2c00,
-+			[3] = 0x3000,
-+			[4] = 0x3400,
-+		},
-+		.has_shadowcon	= 1,
-+		.has_blendcon	= 1,
-+		.has_fixvclk	= 1,
-+	},
-+	.win[0]	= &s3c_fb_data_s5p_wins[0],
-+	.win[1]	= &s3c_fb_data_s5p_wins[1],
-+	.win[2]	= &s3c_fb_data_s5p_wins[2],
-+	.win[3]	= &s3c_fb_data_s5p_wins[3],
-+	.win[4]	= &s3c_fb_data_s5p_wins[4],
-+};
++static int tpo_td043_enable_dss(struct omap_dss_device *dssdev)
++{
++	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(&dssdev->dev);
++	int r;
 +
- /* S3C2443/S3C2416 style hardware */
- static struct s3c_fb_driverdata s3c_fb_data_s3c2443 = {
- 	.variant = {
-@@ -1981,6 +2020,9 @@ static struct platform_device_id s3c_fb_driver_ids[] = {
- 		.name		= "exynos4-fb",
- 		.driver_data	= (unsigned long)&s3c_fb_data_exynos4,
- 	}, {
-+		.name		= "exynos5-fb",
-+		.driver_data	= (unsigned long)&s3c_fb_data_exynos5,
-+	}, {
- 		.name		= "s3c2443-fb",
- 		.driver_data	= (unsigned long)&s3c_fb_data_s3c2443,
- 	}, {
++	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
++		return 0;
++
++	r = omapdss_dpi_display_enable(dssdev);
++	if (r)
++		goto err0;
++
++	if (dssdev->platform_enable) {
++		r = dssdev->platform_enable(dssdev);
++		if (r)
++			goto err1;
++	}
++
++	/*
++	 * If we are resuming from system suspend, SPI clocks might not be
++	 * enabled yet, so we'll program the LCD from SPI PM resume callback.
++	 */
++	if (!tpo_td043->spi_suspended) {
++		r = tpo_td043_power_on(tpo_td043);
++		if (r)
++			goto err1;
++	}
++
++	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
++
++	return 0;
++err1:
++	omapdss_dpi_display_disable(dssdev);
++err0:
++	return r;
++}
++
++static void tpo_td043_disable_dss(struct omap_dss_device *dssdev)
++{
++	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(&dssdev->dev);
++
++	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
++		return;
++
+ 	if (dssdev->platform_disable)
+ 		dssdev->platform_disable(dssdev);
+ 
+ 	omapdss_dpi_display_disable(dssdev);
++
++	if (!tpo_td043->spi_suspended)
++		tpo_td043_power_off(tpo_td043);
+ }
+ 
+ static int tpo_td043_enable(struct omap_dss_device *dssdev)
+ {
+-	int ret;
+-
+ 	dev_dbg(&dssdev->dev, "enable\n");
+ 
+-	ret = tpo_td043_power_on(dssdev);
+-	if (ret)
+-		return ret;
+-
+-	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
+-
+-	return 0;
++	return tpo_td043_enable_dss(dssdev);
+ }
+ 
+ static void tpo_td043_disable(struct omap_dss_device *dssdev)
+ {
+ 	dev_dbg(&dssdev->dev, "disable\n");
+ 
+-	tpo_td043_power_off(dssdev);
++	tpo_td043_disable_dss(dssdev);
+ 
+ 	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
+ }
+ 
+ static int tpo_td043_suspend(struct omap_dss_device *dssdev)
+ {
+-	tpo_td043_power_off(dssdev);
++	dev_dbg(&dssdev->dev, "suspend\n");
++
++	tpo_td043_disable_dss(dssdev);
++
+ 	dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED;
++
+ 	return 0;
+ }
+ 
+ static int tpo_td043_resume(struct omap_dss_device *dssdev)
+ {
+-	int r = 0;
+-
+-	r = tpo_td043_power_on(dssdev);
+-	if (r)
+-		return r;
+-
+-	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
++	dev_dbg(&dssdev->dev, "resume\n");
+ 
+-	return 0;
++	return tpo_td043_enable_dss(dssdev);
+ }
+ 
+ static int tpo_td043_probe(struct omap_dss_device *dssdev)
+@@ -491,6 +519,7 @@ static int tpo_td043_spi_probe(struct spi_device *spi)
+ 		return -ENOMEM;
+ 
+ 	tpo_td043->spi = spi;
++	tpo_td043->nreset_gpio = dssdev->reset_gpio;
+ 	dev_set_drvdata(&spi->dev, tpo_td043);
+ 	dev_set_drvdata(&dssdev->dev, tpo_td043);
+ 
+@@ -509,10 +538,46 @@ static int __devexit tpo_td043_spi_remove(struct spi_device *spi)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PM_SLEEP
++static int tpo_td043_spi_suspend(struct device *dev)
++{
++	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(dev);
++
++	dev_dbg(dev, "tpo_td043_spi_suspend, tpo %p\n", tpo_td043);
++
++	tpo_td043->power_on_resume = tpo_td043->powered_on;
++	tpo_td043_power_off(tpo_td043);
++	tpo_td043->spi_suspended = 1;
++
++	return 0;
++}
++
++static int tpo_td043_spi_resume(struct device *dev)
++{
++	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(dev);
++	int ret;
++
++	dev_dbg(dev, "tpo_td043_spi_resume\n");
++
++	if (tpo_td043->power_on_resume) {
++		ret = tpo_td043_power_on(tpo_td043);
++		if (ret)
++			return ret;
++	}
++	tpo_td043->spi_suspended = 0;
++
++	return 0;
++}
++#endif
++
++static SIMPLE_DEV_PM_OPS(tpo_td043_spi_pm,
++	tpo_td043_spi_suspend, tpo_td043_spi_resume);
++
+ static struct spi_driver tpo_td043_spi_driver = {
+ 	.driver = {
+ 		.name	= "tpo_td043mtea1_panel_spi",
+ 		.owner	= THIS_MODULE,
++		.pm	= &tpo_td043_spi_pm,
+ 	},
+ 	.probe	= tpo_td043_spi_probe,
+ 	.remove	= __devexit_p(tpo_td043_spi_remove),
 -- 
-1.7.1
-
+1.7.0.4
 

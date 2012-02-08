@@ -1,83 +1,33 @@
-From: Rob Clark <rob.clark@linaro.org>
-Date: Wed, 29 Feb 2012 14:52:18 +0000
-Subject: Re: [PATCH 2/2] OMAPDSS: APPLY: make ovl_enable/disable synchronous
-Message-Id: <CAF6AEGtaRwdSYsOh9qgBWmcOP5nm3hkkjbfT=BJFpgBZFwCS4w@mail.gmail.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Date: Wed, 08 Feb 2012 16:35:47 +0000
+Subject: [PATCH 00/16] rmk's patch series for fixing OMAP
+Message-Id: <20120208163546.GA15849@n2100.arm.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1330505302-8258-1-git-send-email-tomi.valkeinen@ti.com>
-	<1330505302-8258-3-git-send-email-tomi.valkeinen@ti.com>
-	<4F4DFA30.2040503@gmx.de>
-	<1330511438.1934.95.camel@deskari>
-	<4F4E0294.6000406@gmx.de>
-In-Reply-To: <4F4E0294.6000406@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Feb 29, 2012 at 4:48 AM, Florian Tobias Schandinat
-<FlorianSchandinat@gmx.de> wrote:
-> Hi Tomi,
->
-> On 02/29/2012 10:30 AM, Tomi Valkeinen wrote:
->> On Wed, 2012-02-29 at 10:13 +0000, Florian Tobias Schandinat wrote:
->>> On 02/29/2012 08:48 AM, Tomi Valkeinen wrote:
->>>> ovl->enable/disable are meant to be synchronous so that they can handle
->>>> the configuration of fifo sizes. The current kernel doesn't configure
->>>> fifo sizes yet, and so the code doesn't need to block to function (from
->>>> omapdss driver's perspective).
->>>>
->>>> However, for the users of omapdss a non-blocking ovl->disable is
->>>> confusing, because they don't know when the memory area is not used
->>>> any more.
->>>>
->>>> Furthermore, when the fifo size configuration is added in the next mer=
-ge
->>>> window, the change from non-blocking to blocking could cause side
->>>> effects to the users of omapdss. So by making the functions block
->>>> already will keep them behaving in the same manner.
->>>
->>> Is there any difference to doing it now?
->>> I agree that this should be fixed but if we can't avoid breaking users =
-I'd
->>> prefer to break them in a merge window not in late rc stage. Or did we =
-introduce
->>> these functions just in the last merge window?
->>
->> Yes, these were introduced in the merge window. And I explicitly said
->> the functions are blocking so that they can perform their job. And just
->> to clarify, the functions already use a mutex, so in that sense they are
->> blocking. They just don't currently wait until the HW has finished with
->> the overlay.
->
-> okay, than I'll apply this patch as is. I was just worried about asking L=
-inus to
-> pull something that is labled as "Breaks existing users" now, but that do=
-esn't
-> look like an issue here.
->
+This is my set of patches for fixing OMAP for v3.3.
 
-I don't expect this change should break any existing users.. I think
-it is safe to call this a bug fix
+This is the complete series of patches I'm currently applying to _my_
+tree to get v3.3-rc2 into a usable and sane state.
 
-BR,
--R
+I want to see most of the problems uncovered in this series fixed sooner
+rather than later, and certainly not taking three plus weeks to get into
+mainline like this rather serious looking commit did:
 
-> Best regards,
->
-> Florian Tobias Schandinat
->
->>
->> The problem was raised by Rob Clark, who's writing the omapdrm driver,
->> as he doesn't have a way to ensure that the overlay has been truly
->> disabled and the memory is is no longer in use.
->>
->> (I forgot to cc him for the patch, adding him now).
->>
->> =A0Tomi
->>
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+commit c49d005b6cc8491fad5b24f82805be2d6bcbd3dd
+Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date:   Tue Jan 17 11:09:57 2012 +0200
+
+    OMAPDSS: HDMI: PHY burnout fix
+    
+    A hardware bug in the OMAP4 HDMI PHY causes physical damage to the board
+    if the HDMI PHY is kept powered on when the cable is not connected.
+
+which now has me wondering if, by trying to boot v3.3-rc2 on this board
+during the past week, I have a destroyed HDMI interface on it.
+
+So, a big thanks for sitting on that fix and exposing peoples hardware
+to damage, that shows real professionalism.

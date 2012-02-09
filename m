@@ -1,68 +1,62 @@
-From: Teresa Gamez <T.Gamez@phytec.de>
-Date: Thu, 09 Feb 2012 08:30:20 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 09 Feb 2012 10:24:35 +0000
 Subject: Re: [PATCH 00/16] rmk's patch series for fixing OMAP
-Message-Id: <1328776220.12747.5.camel@lws-gamez>
+Message-Id: <1328783075.1909.44.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-a6NjbueeR9aAlqe0l7uS"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20120208163546.GA15849@n2100.arm.linux.org.uk>
  <4F32DBB5.4010004@gmx.de>  <20120209005334.GG25414@n2100.arm.linux.org.uk>
- <1328770969.1909.11.camel@deskari>
-In-Reply-To: <1328770969.1909.11.camel@deskari>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <1328770969.1909.11.camel@deskari>  <1328776220.12747.5.camel@lws-gamez>
+In-Reply-To: <1328776220.12747.5.camel@lws-gamez>
 To: linux-arm-kernel@lists.infradead.org
 
-Am Donnerstag, den 09.02.2012, 09:02 +0200 schrieb Tomi Valkeinen:
-> On Thu, 2012-02-09 at 00:53 +0000, Russell King - ARM Linux wrote:
-> 
-> > Moreover, only last Monday did I enable the OMAP2 DSS subsystem on the
-> > 4430 SDP platform, _including_ the HDMI code, and looking at the commit
-> > it could be one of those platforms which is affected.
-> > 
-> > As I don't have a HDMI cable connected to the system, and I ran that
-> > kernel overnight, and I tried opening each /dev/fb* device, what I'm now
-> > wondering is: have I destroyed the HDMI PHY on my 4430SDP?
-> 
-> Probably not. I don't know the exact details of the HW bug (I wrote the
-> patch as it took too long for the person responsible for it to come up
-> with a decent patch), but my understanding is that the cable needs to be
-> plugged in at some point, and then removed.
-> 
-> Thinking about this now, I guess I should've sent queries to get a
-> proper description of the situation where the bug happens.
-> 
-> > However, you raise another point, a much more serious one at that.  Is
-> > this problem also present in 3.2?  The patch seems to apply almost cleanly
-> > to that kernel version, so I guess it is.  It fails to apply to v3.1
-> > because of missing files, so I guess 3.1 is unaffected.
-> > 
-> > So, why isn't this patch copied to the stable people?
-> 
-> Good point, I'll take it to the stable people.
-> 
-> The problem is present in all kernels where we have the HDMI driver, so
-> 2.6.39+.
 
-Are there already backported patches out there for 3.0/3.1?
-We are quite interested in this.
+--=-a6NjbueeR9aAlqe0l7uS
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Regards,
-Teresa
+On Thu, 2012-02-09 at 09:30 +0100, Teresa Gamez wrote:
+> Am Donnerstag, den 09.02.2012, 09:02 +0200 schrieb Tomi Valkeinen:
 
-> 
-> > For hardware destruction issues, once the problem has been identified, it
-> > should be shouted about very loudly to get it upstream as quickly as
-> > possible.  I'm sure Linus would've even taken it in patch form.
-> > 
-> > (You do realise that Linus does apply patches as well as pulling trees?)
-> 
-> Yes, I should've taken this directly to Linus.
-> 
->  Tomi
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> > The problem is present in all kernels where we have the HDMI driver, so
+> > 2.6.39+.
+>=20
+> Are there already backported patches out there for 3.0/3.1?
+> We are quite interested in this.
 
+I pushed three branches to git://gitorious.org/linux-omap-dss2/linux.git
+
+fixes/for-3.0-stable
+fixes/for-3.1-stable
+fixes/for-3.2-stable
+
+Which contain the necessary backported patches for each version.
+
+ Tomi
+
+
+--=-a6NjbueeR9aAlqe0l7uS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJPM57jAAoJEPo9qoy8lh71Q+YP+QGiLpSnbmhKwjfu9Q1XshTX
+tAg2iQVHtiKJM61dTemLO91ulhNlPhMzO8SeWhNz8EiVQzsHynaD7dxvZhLj6Vy6
+moFulF68ayu8Wb18WWsFgeMiRwEMtvBo5CGqrah35fzzCOUEoEQt0XVzfz/q9Xep
+9FhMgYyJ4wv34Na6YzhMC7qXgA02iITiVYtMK1/NZwAlBxJVuHJoWxn/S6WcbIB+
+vGXIpC83cjj/51eq9LSOa+/5MRHna+T2frFklw41sCnUWn2zXVy+pyJ4A0ZcVd8H
+UmVG2tQWcMUdhHVCoj6GBoBImYqS//6uNS4bcbhxzNzEO3faY+mWZwcCBfBEXjrP
+yfN+K+vRO87KdZ1ggGq6WdEVVjy2/j0NzSCMgmGADk+HP5SU4/q7607VkHwC687P
+XCs8lrjc33y2uVDAM8zaPGy9mxOv1XzUAHTyuLawxsy7XpeXIg83WiObD2vKxCGh
+KT685ioywrz1p+CToa+79/pBfIj5aasLw6AGjuwLg8ok2DlVH9hjPO0XIoxSHFKY
+XRlPiGvUWQv0HKpaysYcLs9ksNzRvwF4es6Nnt4HdVBgi2U9Uje9ekq+ocA1i/t0
+OjFxf2m69UBPxPZH6iK5FWQva37r80k21G5QXFbkQcrp9/e5/VbUqdftZ93tTtFA
+lT9sOM+DsVT2G/rR0B6A
+=dSzd
+-----END PGP SIGNATURE-----
+
+--=-a6NjbueeR9aAlqe0l7uS--
 

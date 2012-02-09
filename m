@@ -1,168 +1,77 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Sat, 04 Feb 2012 09:40:07 +0000
-Subject: [PATCH 06/13] FB: sa1100: move machine inf structures to <video/sa1100fb.h>
-Message-Id: <E1Rtc6J-0000ah-76@rmk-PC.arm.linux.org.uk>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Thu, 09 Feb 2012 05:16:39 +0000
+Subject: [PATCH] video:da8xx-fb: calculate pixel clock period for the panel
+Message-Id: <1328763879-16345-2-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120204093744.GQ889@n2100.arm.linux.org.uk>
-In-Reply-To: <20120204093744.GQ889@n2100.arm.linux.org.uk>
+References: <1328763879-16345-1-git-send-email-prakash.pm@ti.com>
+In-Reply-To: <1328763879-16345-1-git-send-email-prakash.pm@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, davinci-linux-open-source@linux.davincidsp.com, linux-kernel@vger.kernel.org, "Manjunathappa, Prakash" <prakash.pm@ti.com>
 
-Move the LCD data structures to an include file which can be shared
-with the board code in arch/arm/mach-sa1100.
+Patch calculates pixel clock period in pico seconds and updates
+the same in variable screen information structure. fbset utility
+uses this information.
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
 ---
- drivers/video/sa1100fb.c |    6 ++++-
- drivers/video/sa1100fb.h |   42 --------------------------------
- include/video/sa1100fb.h |   59 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 64 insertions(+), 43 deletions(-)
- create mode 100644 include/video/sa1100fb.h
+ drivers/video/da8xx-fb.c |   21 ++++++++++++++++++++-
+ 1 files changed, 20 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/sa1100fb.c b/drivers/video/sa1100fb.c
-index a905e20..8f5557a 100644
---- a/drivers/video/sa1100fb.c
-+++ b/drivers/video/sa1100fb.c
-@@ -178,6 +178,8 @@
- #include <linux/mutex.h>
- #include <linux/io.h>
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index f360d62..8b0a174 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -32,6 +32,7 @@
+ #include <linux/console.h>
+ #include <linux/slab.h>
+ #include <video/da8xx-fb.h>
++#include <asm/div64.h>
  
-+#include <video/sa1100fb.h>
-+
- #include <mach/hardware.h>
- #include <asm/mach-types.h>
- #include <mach/assabet.h>
-@@ -1388,7 +1390,9 @@ static struct sa1100fb_info * __devinit sa1100fb_init_fbinfo(struct device *dev)
- 	fbi->rgb[RGB_8]		= &rgb_8;
- 	fbi->rgb[RGB_16]	= &def_rgb_16;
+ #define DRIVER_NAME "da8xx_lcdc"
  
--	inf = sa1100fb_get_machine_info(fbi);
-+	inf = dev->platform_data;
-+	if (!inf)
-+		inf = sa1100fb_get_machine_info(fbi);
+@@ -174,7 +175,6 @@ static struct fb_var_screeninfo da8xx_fb_var __devinitdata = {
+ 	.activate = 0,
+ 	.height = -1,
+ 	.width = -1,
+-	.pixclock = 46666,	/* 46us - AUO display */
+ 	.accel_flags = 0,
+ 	.left_margin = LEFT_MARGIN,
+ 	.right_margin = RIGHT_MARGIN,
+@@ -1048,6 +1048,24 @@ static struct fb_ops da8xx_fb_ops = {
+ 	.fb_blank = cfb_blank,
+ };
  
- 	/*
- 	 * People just don't seem to get this.  We don't support
-diff --git a/drivers/video/sa1100fb.h b/drivers/video/sa1100fb.h
-index 77239b7..9ff9ba9 100644
---- a/drivers/video/sa1100fb.h
-+++ b/drivers/video/sa1100fb.h
-@@ -10,48 +10,6 @@
-  * for more details.
-  */
- 
--#define RGB_4	0
--#define RGB_8	1
--#define RGB_16	2
--#define NR_RGB	3
--
--/* These are the bitfields for each display depth that we support. */
--struct sa1100fb_rgb {
--	struct fb_bitfield	red;
--	struct fb_bitfield	green;
--	struct fb_bitfield	blue;
--	struct fb_bitfield	transp;
--};
--
--/* This structure describes the machine which we are running on. */
--struct sa1100fb_mach_info {
--	u_long		pixclock;
--
--	u_short		xres;
--	u_short		yres;
--
--	u_char		bpp;
--	u_char		hsync_len;
--	u_char		left_margin;
--	u_char		right_margin;
--
--	u_char		vsync_len;
--	u_char		upper_margin;
--	u_char		lower_margin;
--	u_char		sync;
--
--	u_int		cmap_greyscale:1,
--			cmap_inverse:1,
--			cmap_static:1,
--			unused:29;
--
--	u_int		lccr0;
--	u_int		lccr3;
--
--	/* Overrides for the default RGB maps */
--	const struct sa1100fb_rgb *rgb[NR_RGB];
--};
--
- /* Shadows for LCD controller registers */
- struct sa1100fb_lcd_reg {
- 	unsigned long lccr0;
-diff --git a/include/video/sa1100fb.h b/include/video/sa1100fb.h
-new file mode 100644
-index 0000000..e73c813
---- /dev/null
-+++ b/include/video/sa1100fb.h
-@@ -0,0 +1,59 @@
 +/*
-+ * StrongARM 1100 LCD Controller Frame Buffer Device
-+ *
-+ * Copyright (C) 1999 Eric A. Thomas
-+ *  Based on acornfb.c Copyright (C) Russell King.
-+ *  
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file COPYING in the main directory of this archive
-+ * for more details.
++ * Calculate and return pixel clock period in pico secods
 + */
-+#ifndef _VIDEO_SA1100FB_H
-+#define _VIDEO_SA1100FB_H
++static unsigned int da8xxfb_pixel_clk_period(struct da8xx_fb_par *par)
++{
++	unsigned int lcd_clk, div;
++	unsigned int configured_pix_clk;
++	unsigned long long pix_clk_period_picosec = 1000000000000ULL;
 +
-+#include <linux/fb.h>
-+#include <linux/types.h>
++	lcd_clk = clk_get_rate(par->lcdc_clk);
++	div = lcd_clk / par->pxl_clk;
++	configured_pix_clk = (lcd_clk / div);
 +
-+#define RGB_4	0
-+#define RGB_8	1
-+#define RGB_16	2
-+#define NR_RGB	3
++	do_div(pix_clk_period_picosec, configured_pix_clk);
 +
-+/* These are the bitfields for each display depth that we support. */
-+struct sa1100fb_rgb {
-+	struct fb_bitfield	red;
-+	struct fb_bitfield	green;
-+	struct fb_bitfield	blue;
-+	struct fb_bitfield	transp;
-+};
++	return pix_clk_period_picosec;
++}
 +
-+/* This structure describes the machine which we are running on. */
-+struct sa1100fb_mach_info {
-+	u_long		pixclock;
-+
-+	u_short		xres;
-+	u_short		yres;
-+
-+	u_char		bpp;
-+	u_char		hsync_len;
-+	u_char		left_margin;
-+	u_char		right_margin;
-+
-+	u_char		vsync_len;
-+	u_char		upper_margin;
-+	u_char		lower_margin;
-+	u_char		sync;
-+
-+	u_int		cmap_greyscale:1,
-+			cmap_inverse:1,
-+			cmap_static:1,
-+			unused:29;
-+
-+	u_int		lccr0;
-+	u_int		lccr3;
-+
-+	/* Overrides for the default RGB maps */
-+	const struct sa1100fb_rgb *rgb[NR_RGB];
-+};
-+
-+#endif
+ static int __devinit fb_probe(struct platform_device *device)
+ {
+ 	struct da8xx_lcdc_platform_data *fb_pdata @@ -1209,6 +1227,7 @@ static int __devinit fb_probe(struct platform_device *device)
+ 
+ 	da8xx_fb_var.hsync_len = lcdc_info->hsw;
+ 	da8xx_fb_var.vsync_len = lcdc_info->vsw;
++	da8xx_fb_var.pixclock = da8xxfb_pixel_clk_period(par);
+ 
+ 	/* Initialize fbinfo */
+ 	da8xx_fb_info->flags = FBINFO_FLAG_DEFAULT;
 -- 
-1.7.4.4
+1.7.1
 

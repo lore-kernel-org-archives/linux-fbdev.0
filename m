@@ -1,85 +1,81 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Mon, 13 Feb 2012 21:28:06 +0000
-Subject: Re: [PATCH v2] video:da8xx-fb: calculate pixel clock period for the panel
-Message-Id: <4F398066.1050602@gmx.de>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 09 Feb 2012 06:56:48 +0000
+Subject: [PATCH] OMAPDSS: HACK: Ensure DSS clock domain gets out of idle when HDMI is enabled
+Message-Id: <1328769888-24790-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1328768646-25169-1-git-send-email-prakash.pm@ti.com>
-In-Reply-To: <1328768646-25169-1-git-send-email-prakash.pm@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Cc: linux-fbdev@vger.kernel.org, davinci-linux-open-source@linux.davincidsp.com, linux-kernel@vger.kernel.org
+To: linux-omap@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, linux@arm.linux.org.uk, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-On 02/09/2012 06:24 AM, Manjunathappa, Prakash wrote:
-> Patch calculates pixel clock period in pico seconds and updates
-> the same in variable screen information structure. fbset utility
-> uses this information.
-> 
-> Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+For DSS clock domain to transition from idle to active state, it's necessary
+to enable the optional clock DSS_FCLK before we enable the module using the
+MODULEMODE bits in the DSS clock domain's CM_DSS_DSS_CLKCTRL register.
 
-Applied.
+This sequence was not followed correctly for the 'dss_hdmi' hwmod and it led
+to DSS clock domain not getting out of idle when pm_runtime_get_sync() was
+called for hdmi's platform device.
 
+Since the clock domain failed to change it's state to active, the hwmod code
+disables any clocks it had enabled before for this hwmod. This led to the clock
+'dss_48mhz_clk' getting disabled.
 
-Thanks,
+When hdmi's runtime_resume() op is called, the call to dss_runtime_get()
+correctly enables the DSS clock domain this time. But the clock 'dss_48mhz_clk'
+disabled before is needed for HDMI's PHY to function. Hence, the driver fails
+when it tries to enable HDMI's PHY.
 
-Florian Tobias Schandinat
+Fix this for now by ensuring that dss_runtime_get() is called before we call
+pm_runtime_get_sync() for hdmi's platform device. A correct fix for later would
+be to modify the DSS related hwmod's mainclks, and also some changes in how
+opt clocks are handled in the DSS driver.
 
-> ---
-> Since v1:
-> Fixed the spelling mistake.
-> 
->  drivers/video/da8xx-fb.c |   19 ++++++++++++++++++-
->  1 files changed, 18 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index f360d62..882dd67 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -32,6 +32,7 @@
->  #include <linux/console.h>
->  #include <linux/slab.h>
->  #include <video/da8xx-fb.h>
-> +#include <asm/div64.h>
->  
->  #define DRIVER_NAME "da8xx_lcdc"
->  
-> @@ -174,7 +175,6 @@ static struct fb_var_screeninfo da8xx_fb_var __devinitdata = {
->  	.activate = 0,
->  	.height = -1,
->  	.width = -1,
-> -	.pixclock = 46666,	/* 46us - AUO display */
->  	.accel_flags = 0,
->  	.left_margin = LEFT_MARGIN,
->  	.right_margin = RIGHT_MARGIN,
-> @@ -1048,6 +1048,22 @@ static struct fb_ops da8xx_fb_ops = {
->  	.fb_blank = cfb_blank,
->  };
->  
-> +/* Calculate and return pixel clock period in pico seconds */
-> +static unsigned int da8xxfb_pixel_clk_period(struct da8xx_fb_par *par)
-> +{
-> +	unsigned int lcd_clk, div;
-> +	unsigned int configured_pix_clk;
-> +	unsigned long long pix_clk_period_picosec = 1000000000000ULL;
-> +
-> +	lcd_clk = clk_get_rate(par->lcdc_clk);
-> +	div = lcd_clk / par->pxl_clk;
-> +	configured_pix_clk = (lcd_clk / div);
-> +
-> +	do_div(pix_clk_period_picosec, configured_pix_clk);
-> +
-> +	return pix_clk_period_picosec;
-> +}
-> +
->  static int __devinit fb_probe(struct platform_device *device)
->  {
->  	struct da8xx_lcdc_platform_data *fb_pdata > @@ -1209,6 +1225,7 @@ static int __devinit fb_probe(struct platform_device *device)
->  
->  	da8xx_fb_var.hsync_len = lcdc_info->hsw;
->  	da8xx_fb_var.vsync_len = lcdc_info->vsw;
-> +	da8xx_fb_var.pixclock = da8xxfb_pixel_clk_period(par);
->  
->  	/* Initialize fbinfo */
->  	da8xx_fb_info->flags = FBINFO_FLAG_DEFAULT;
+This fixes the issue of HDMI not working when it's the default display. The
+issue is not seen if any other display is already enabled as the first display
+would have already correctly enabled the DSS clock domain.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/hdmi.c |   16 +++++++++++++++-
+ 1 files changed, 15 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index d7aa3b0..ce16a91 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -165,9 +165,21 @@ static int hdmi_runtime_get(void)
+ 
+ 	DSSDBG("hdmi_runtime_get\n");
+ 
++	r = dss_runtime_get();
++	if (r < 0)
++		goto err_get_dss;
++
+ 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
+ 	WARN_ON(r < 0);
+-	return r < 0 ? r : 0;
++	if (r < 0)
++		goto err_get_hdmi;
++
++	return 0;
++
++err_get_hdmi:
++	dss_runtime_put();
++err_get_dss:
++	return r;
+ }
+ 
+ static void hdmi_runtime_put(void)
+@@ -178,6 +190,8 @@ static void hdmi_runtime_put(void)
+ 
+ 	r = pm_runtime_put_sync(&hdmi.pdev->dev);
+ 	WARN_ON(r < 0);
++
++	dss_runtime_put();
+ }
+ 
+ int hdmi_init_display(struct omap_dss_device *dssdev)
+-- 
+1.7.5.4
 

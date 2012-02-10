@@ -1,82 +1,93 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Wed, 29 Feb 2012 01:33:23 +0000
-Subject: RE: [PATCH] udlfb: Fix invalid return codes in edid sysfs entry store function
-Message-Id: <005401ccf682$2034e2e0$609ea8a0$%han@samsung.com>
+From: Archit Taneja <archit@ti.com>
+Date: Fri, 10 Feb 2012 06:27:52 +0000
+Subject: [PATCH v2] OMAPDSS: HACK: Ensure DSS clock domain gets out of idle when HDMI is enabled
+Message-Id: <1328854552-30714-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1329983601-25335-1-git-send-email-olivier@sobrie.be>
-In-Reply-To: <1329983601-25335-1-git-send-email-olivier@sobrie.be>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, linux@arm.linux.org.uk, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
+For DSS clock domain to transition from idle to active state. It's necessary
+to enable the optional clock DSS_FCLK before we enable the module using the
+MODULEMODE bits in the clock domain's CM_DSS_DSS_CLKCTRL register.
 
-Hi.
-> -----Original Message-----
-> From: linux-fbdev-owner@vger.kernel.org [mailto:linux-fbdev-owner@vger.kernel.org] On Behalf Of Florian
-> Tobias Schandinat
-> Sent: Wednesday, February 29, 2012 1:14 AM
-> To: Olivier Sobrie
-> Cc: linux-fbdev@vger.kernel.org; Bernie Thompson
-> Subject: Re: [PATCH] udlfb: Fix invalid return codes in edid sysfs entry store function
-> 
-> [Cc'ing Bernie Thompson, the udlfb maintainer]
-> @Bernie: Why don't you add an entry for it in MAINTAINERS?
+This sequence was not followed correctly for the 'dss_hdmi' hwmod and it led
+to DSS clock domain not getting out of idle when pm_runtime_get_sync() was
+called for hdmi's platform device.
 
-I think so, too. :)
-Bernie, it would be good to add you to MAINTAINERS as udlfb maintainer.
+Since the clock domain failed to change it's state to active, the hwmod code
+disables any clocks it had enabled before for this hwmod. This led to the clock
+'dss_48mhz_clk' gettind disabled.
 
-> 
-> On 02/23/2012 07:53 AM, Olivier Sobrie wrote:
-> > Return a negative errno instead of zero in the write function of
-> > the sysfs entry in case of error.
-> > Also add a check on the return value of dlfb_setup_modes().
-> >
-> > Signed-off-by: Olivier Sobrie <olivier@sobrie.be>
-> > ---
-> >  drivers/video/udlfb.c |    9 ++++++---
-> >  1 files changed, 6 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
-> > index a197731..abbc3fe 100644
-> > --- a/drivers/video/udlfb.c
-> > +++ b/drivers/video/udlfb.c
-> > @@ -1427,19 +1427,22 @@ static ssize_t edid_store(
-> >  	struct device *fbdev = container_of(kobj, struct device, kobj);
-> >  	struct fb_info *fb_info = dev_get_drvdata(fbdev);
-> >  	struct dlfb_data *dev = fb_info->par;
-> > +	int ret;
-> >
-> >  	/* We only support write of entire EDID at once, no offset*/
-> >  	if ((src_size != EDID_LENGTH) || (src_off != 0))
-> > -		return 0;
-> > +		return -EINVAL;
-> >
-> > -	dlfb_setup_modes(dev, fb_info, src, src_size);
-> > +	ret = dlfb_setup_modes(dev, fb_info, src, src_size);
-> > +	if (ret)
-> > +		return ret;
-> >
-> >  	if (dev->edid && (memcmp(src, dev->edid, src_size) = 0)) {
-> >  		pr_info("sysfs written EDID is new default\n");
-> >  		dlfb_ops_set_par(fb_info);
-> >  		return src_size;
-> >  	} else
-> > -		return 0;
-> > +		return -EINVAL;
-How about this? According to the coding style, it is more desirable to use braces.
-Sorry for nitpicking. :)
- -  	} else
- -		return 0;
- +  	} else {
- +		return -EINVAL;
- +	}
-> >  }
-> >
-> >  static ssize_t metrics_reset_store(struct device *fbdev,
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+When hdmi's runtime_resume() op is called, the call to dss_runtime_get()
+correctly enables the DSS clock domain this time. However, the clock
+'dss_48mhz_clk' is needed for HDMI's PHY to function correctly. Since it was
+disabled previously, the driver fails when it tries to enable HDMI's PHY.
+
+Fix this for now by ensuring that dss_runtime_get() is called before we call
+pm_runtime_get_sync() for hdmi's platform device. A correct fix for later would
+be to modify the DSS related hwmod's mainclks, and also some changes in how
+opt clocks are handled in the DSS driver.
+
+This fixes the issue of HDMI not working when it's the default display. The
+issue is not seen if any other display is already enabled as the first display
+would have correctly enabled the DSS clockdomain.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+Changes in v2:
+- Rewrite an unclear paragraph in the commit message
+- Add comments mentioning that this is a hack
+
+ drivers/video/omap2/dss/hdmi.c |   24 +++++++++++++++++++++++-
+ 1 files changed, 23 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index d7aa3b0..a36b934 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -165,9 +165,25 @@ static int hdmi_runtime_get(void)
+ 
+ 	DSSDBG("hdmi_runtime_get\n");
+ 
++	/*
++	 * HACK: Add dss_runtime_get() to ensure DSS clock domain is enabled.
++	 * This should be removed later.
++	 */
++	r = dss_runtime_get();
++	if (r < 0)
++		goto err_get_dss;
++
+ 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
+ 	WARN_ON(r < 0);
+-	return r < 0 ? r : 0;
++	if (r < 0)
++		goto err_get_hdmi;
++
++	return 0;
++
++err_get_hdmi:
++	dss_runtime_put();
++err_get_dss:
++	return r;
+ }
+ 
+ static void hdmi_runtime_put(void)
+@@ -178,6 +194,12 @@ static void hdmi_runtime_put(void)
+ 
+ 	r = pm_runtime_put_sync(&hdmi.pdev->dev);
+ 	WARN_ON(r < 0);
++
++	/*
++	 * HACK: This is added to complement the dss_runtime_get() call in
++	 * hdmi_runtime_get(). This should be removed later.
++	 */
++	dss_runtime_put();
+ }
+ 
+ int hdmi_init_display(struct omap_dss_device *dssdev)
+-- 
+1.7.5.4
 

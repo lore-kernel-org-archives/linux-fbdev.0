@@ -1,76 +1,85 @@
-From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Date: Thu, 09 Feb 2012 06:36:06 +0000
-Subject: [PATCH v2] video:da8xx-fb: calculate pixel clock period for the panel
-Message-Id: <1328768646-25169-1-git-send-email-prakash.pm@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Mon, 13 Feb 2012 21:28:06 +0000
+Subject: Re: [PATCH v2] video:da8xx-fb: calculate pixel clock period for the panel
+Message-Id: <4F398066.1050602@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1328768646-25169-1-git-send-email-prakash.pm@ti.com>
+In-Reply-To: <1328768646-25169-1-git-send-email-prakash.pm@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, davinci-linux-open-source@linux.davincidsp.com, linux-kernel@vger.kernel.org, "Manjunathappa, Prakash" <prakash.pm@ti.com>
+To: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Cc: linux-fbdev@vger.kernel.org, davinci-linux-open-source@linux.davincidsp.com, linux-kernel@vger.kernel.org
 
-Patch calculates pixel clock period in pico seconds and updates
-the same in variable screen information structure. fbset utility
-uses this information.
+On 02/09/2012 06:24 AM, Manjunathappa, Prakash wrote:
+> Patch calculates pixel clock period in pico seconds and updates
+> the same in variable screen information structure. fbset utility
+> uses this information.
+> 
+> Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
 
-Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
----
-Since v1:
-Fixed the spelling mistake.
+Applied.
 
- drivers/video/da8xx-fb.c |   19 ++++++++++++++++++-
- 1 files changed, 18 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index f360d62..882dd67 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -32,6 +32,7 @@
- #include <linux/console.h>
- #include <linux/slab.h>
- #include <video/da8xx-fb.h>
-+#include <asm/div64.h>
- 
- #define DRIVER_NAME "da8xx_lcdc"
- 
-@@ -174,7 +175,6 @@ static struct fb_var_screeninfo da8xx_fb_var __devinitdata = {
- 	.activate = 0,
- 	.height = -1,
- 	.width = -1,
--	.pixclock = 46666,	/* 46us - AUO display */
- 	.accel_flags = 0,
- 	.left_margin = LEFT_MARGIN,
- 	.right_margin = RIGHT_MARGIN,
-@@ -1048,6 +1048,22 @@ static struct fb_ops da8xx_fb_ops = {
- 	.fb_blank = cfb_blank,
- };
- 
-+/* Calculate and return pixel clock period in pico seconds */
-+static unsigned int da8xxfb_pixel_clk_period(struct da8xx_fb_par *par)
-+{
-+	unsigned int lcd_clk, div;
-+	unsigned int configured_pix_clk;
-+	unsigned long long pix_clk_period_picosec = 1000000000000ULL;
-+
-+	lcd_clk = clk_get_rate(par->lcdc_clk);
-+	div = lcd_clk / par->pxl_clk;
-+	configured_pix_clk = (lcd_clk / div);
-+
-+	do_div(pix_clk_period_picosec, configured_pix_clk);
-+
-+	return pix_clk_period_picosec;
-+}
-+
- static int __devinit fb_probe(struct platform_device *device)
- {
- 	struct da8xx_lcdc_platform_data *fb_pdata @@ -1209,6 +1225,7 @@ static int __devinit fb_probe(struct platform_device *device)
- 
- 	da8xx_fb_var.hsync_len = lcdc_info->hsw;
- 	da8xx_fb_var.vsync_len = lcdc_info->vsw;
-+	da8xx_fb_var.pixclock = da8xxfb_pixel_clk_period(par);
- 
- 	/* Initialize fbinfo */
- 	da8xx_fb_info->flags = FBINFO_FLAG_DEFAULT;
--- 
-1.7.1
+Thanks,
+
+Florian Tobias Schandinat
+
+> ---
+> Since v1:
+> Fixed the spelling mistake.
+> 
+>  drivers/video/da8xx-fb.c |   19 ++++++++++++++++++-
+>  1 files changed, 18 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+> index f360d62..882dd67 100644
+> --- a/drivers/video/da8xx-fb.c
+> +++ b/drivers/video/da8xx-fb.c
+> @@ -32,6 +32,7 @@
+>  #include <linux/console.h>
+>  #include <linux/slab.h>
+>  #include <video/da8xx-fb.h>
+> +#include <asm/div64.h>
+>  
+>  #define DRIVER_NAME "da8xx_lcdc"
+>  
+> @@ -174,7 +175,6 @@ static struct fb_var_screeninfo da8xx_fb_var __devinitdata = {
+>  	.activate = 0,
+>  	.height = -1,
+>  	.width = -1,
+> -	.pixclock = 46666,	/* 46us - AUO display */
+>  	.accel_flags = 0,
+>  	.left_margin = LEFT_MARGIN,
+>  	.right_margin = RIGHT_MARGIN,
+> @@ -1048,6 +1048,22 @@ static struct fb_ops da8xx_fb_ops = {
+>  	.fb_blank = cfb_blank,
+>  };
+>  
+> +/* Calculate and return pixel clock period in pico seconds */
+> +static unsigned int da8xxfb_pixel_clk_period(struct da8xx_fb_par *par)
+> +{
+> +	unsigned int lcd_clk, div;
+> +	unsigned int configured_pix_clk;
+> +	unsigned long long pix_clk_period_picosec = 1000000000000ULL;
+> +
+> +	lcd_clk = clk_get_rate(par->lcdc_clk);
+> +	div = lcd_clk / par->pxl_clk;
+> +	configured_pix_clk = (lcd_clk / div);
+> +
+> +	do_div(pix_clk_period_picosec, configured_pix_clk);
+> +
+> +	return pix_clk_period_picosec;
+> +}
+> +
+>  static int __devinit fb_probe(struct platform_device *device)
+>  {
+>  	struct da8xx_lcdc_platform_data *fb_pdata > @@ -1209,6 +1225,7 @@ static int __devinit fb_probe(struct platform_device *device)
+>  
+>  	da8xx_fb_var.hsync_len = lcdc_info->hsw;
+>  	da8xx_fb_var.vsync_len = lcdc_info->vsw;
+> +	da8xx_fb_var.pixclock = da8xxfb_pixel_clk_period(par);
+>  
+>  	/* Initialize fbinfo */
+>  	da8xx_fb_info->flags = FBINFO_FLAG_DEFAULT;
 

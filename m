@@ -1,92 +1,69 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 14 Feb 2012 11:57:58 +0000
+From: "Cousson, Benoit" <b-cousson@ti.com>
+Date: Tue, 14 Feb 2012 12:58:05 +0000
 Subject: Re: [PATCH v2] OMAPDSS: HACK: Ensure DSS clock domain gets out of idle when HDMI is enabled
-Message-Id: <1329220678.1845.68.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-HTNS9QhKm8GCyImYZaWG"
+Message-Id: <4F3A5A5D.4020906@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1328854552-30714-1-git-send-email-archit@ti.com>
-In-Reply-To: <1328854552-30714-1-git-send-email-archit@ti.com>
-To: Archit Taneja <archit@ti.com>, Benoit Cousson <b-cousson@ti.com>
-Cc: linux-omap@vger.kernel.org, linux@arm.linux.org.uk, linux-fbdev@vger.kernel.org
+References: <1328854552-30714-1-git-send-email-archit@ti.com> <1329220678.1845.68.camel@deskari>
+In-Reply-To: <1329220678.1845.68.camel@deskari>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux@arm.linux.org.uk, linux-fbdev@vger.kernel.org
+
+Hi Tomi,
+
+On 2/14/2012 12:57 PM, Tomi Valkeinen wrote:
+> Hi,
+>
+> On Fri, 2012-02-10 at 11:45 +0530, Archit Taneja wrote:
+>> For DSS clock domain to transition from idle to active state. It's necessary
+>> to enable the optional clock DSS_FCLK before we enable the module using the
+>> MODULEMODE bits in the clock domain's CM_DSS_DSS_CLKCTRL register.
+>>
+>> This sequence was not followed correctly for the 'dss_hdmi' hwmod and it led
+>> to DSS clock domain not getting out of idle when pm_runtime_get_sync() was
+>> called for hdmi's platform device.
+>>
+>> Since the clock domain failed to change it's state to active, the hwmod code
+>> disables any clocks it had enabled before for this hwmod. This led to the clock
+>> 'dss_48mhz_clk' gettind disabled.
+>>
+>> When hdmi's runtime_resume() op is called, the call to dss_runtime_get()
+>> correctly enables the DSS clock domain this time. However, the clock
+>> 'dss_48mhz_clk' is needed for HDMI's PHY to function correctly. Since it was
+>> disabled previously, the driver fails when it tries to enable HDMI's PHY.
+>>
+>> Fix this for now by ensuring that dss_runtime_get() is called before we call
+>> pm_runtime_get_sync() for hdmi's platform device. A correct fix for later would
+>> be to modify the DSS related hwmod's mainclks, and also some changes in how
+>> opt clocks are handled in the DSS driver.
+>>
+>> This fixes the issue of HDMI not working when it's the default display. The
+>> issue is not seen if any other display is already enabled as the first display
+>> would have correctly enabled the DSS clockdomain.
+>
+> I think this looks fine, it's shouldn't have any side effects and is
+> easy to remove later.
+>
+> Benoit, do you think we'll get the MODULEMODE mess cleaned up in the
+> hwmod/clk framework at some point, and the drivers could do without
+> these kinds of hacks? =)
+
+The best way to fix that for my point of view is to go to device tree 
+or/and to consider the DSS as the parent of all the DSS modules.
+pm_runtime will then always ensure that the parent is enabled before any 
+of the child are used.
+
+Implementing that with hwmod is not the right approach since is will 
+require to add some more complex OMAP custom stuff in the hwmod fmwk 
+whereas the LDM is already able to handle that.
+
+The whole point is that going to device tree, we will have to change the 
+responsibility of hwmod to make it focus mainly on OMAP PRCM stuff and 
+let the device handles the IRQ/DMA/REG/CLKS resources since it is the 
+correct place to do that.
 
 
---=-HTNS9QhKm8GCyImYZaWG
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Fri, 2012-02-10 at 11:45 +0530, Archit Taneja wrote:
-> For DSS clock domain to transition from idle to active state. It's necess=
-ary
-> to enable the optional clock DSS_FCLK before we enable the module using t=
-he
-> MODULEMODE bits in the clock domain's CM_DSS_DSS_CLKCTRL register.
->=20
-> This sequence was not followed correctly for the 'dss_hdmi' hwmod and it =
-led
-> to DSS clock domain not getting out of idle when pm_runtime_get_sync() wa=
-s
-> called for hdmi's platform device.
->=20
-> Since the clock domain failed to change it's state to active, the hwmod c=
-ode
-> disables any clocks it had enabled before for this hwmod. This led to the=
- clock
-> 'dss_48mhz_clk' gettind disabled.
->=20
-> When hdmi's runtime_resume() op is called, the call to dss_runtime_get()
-> correctly enables the DSS clock domain this time. However, the clock
-> 'dss_48mhz_clk' is needed for HDMI's PHY to function correctly. Since it =
-was
-> disabled previously, the driver fails when it tries to enable HDMI's PHY.
->=20
-> Fix this for now by ensuring that dss_runtime_get() is called before we c=
-all
-> pm_runtime_get_sync() for hdmi's platform device. A correct fix for later=
- would
-> be to modify the DSS related hwmod's mainclks, and also some changes in h=
-ow
-> opt clocks are handled in the DSS driver.
->=20
-> This fixes the issue of HDMI not working when it's the default display. T=
-he
-> issue is not seen if any other display is already enabled as the first di=
-splay
-> would have correctly enabled the DSS clockdomain.
-
-I think this looks fine, it's shouldn't have any side effects and is
-easy to remove later.
-
-Benoit, do you think we'll get the MODULEMODE mess cleaned up in the
-hwmod/clk framework at some point, and the drivers could do without
-these kinds of hacks? =3D)
-
- Tomi
-
-
---=-HTNS9QhKm8GCyImYZaWG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJPOkxGAAoJEPo9qoy8lh71zl0QAJ5JO5N9Y6yP66d6GUr9OP67
-a2Cu3OmPB+7gXG1sHdYXA7mF1quI3hNjocvGOkDxPEHkZYF2K5JUSAiBZDdwqBWD
-rGBtRX4aKa67UuqRnx4yF30WDBaPk1lKabqEStOmV51TQNXOALaAookpYIJfBrqS
-2qiDj8Xlcqb1OkpGHE96fnKJe9y7XTdcSWGqnwy5MJ3oJVv79ELvEjEG9BwmYbsO
-NcC+AwmWSgF08Gb6aiOvfbbiRTm9FjDmZeneTWXRrKiVwlSdiQ1+Zkdubeu+Rp/V
-7Halo1maat+W65xHXSjlqRGSQ45l4zPpH6lvpzqbi4OR0ikT2NrrSGhUn/JPSdCN
-rubj4o+wCW1Fz70bX0vnSM7AMfptIXUi68K18dWPkFtdme71DM67IwVD7i7S/J1o
-5ZLbHIdWFz6Fi1bxH11OU0k1VbsIlFeeh1oCZ+Cn7Po6im987rkgwJiOyGBijJfp
-MB3fnLGUHNfOnl9BkyXwvSHFZJKSaiKn3weWTNn9iRmJDblJKcEMMJHD81vYk4iD
-e2fnobG5goJdDvYS1/bFiEDT6DfUdUHB6XJSsZuXIytYeSZIZ22sB1c6b+m0WPAk
-SESUMurrF9j8UhToRCOieSWhSEZEYs++7gvOK+t1EKG7tWkSPPJjZ9qr50BoLjI4
-OVZ/JQu79v7kC8FcmxP/
-=vEpQ
------END PGP SIGNATURE-----
-
---=-HTNS9QhKm8GCyImYZaWG--
-
+Regards,
+Benoit

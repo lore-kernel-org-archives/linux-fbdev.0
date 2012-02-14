@@ -1,275 +1,228 @@
-From: Grazvydas Ignotas <notasas@gmail.com>
-Date: Tue, 07 Feb 2012 00:13:49 +0000
-Subject: [PATCH] OMAP: DSS2: TPO-TD03MTEA1: fix suspend hang
-Message-Id: <1328573630-7348-1-git-send-email-notasas@gmail.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Tue, 14 Feb 2012 06:35:03 +0000
+Subject: [PATCH 3/3] viafb: add initial EDID support
+Message-Id: <5dc5f61813a9c3ab7dd0a6982ad044834134db5a.1329200232.git.FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1329200232.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <cover.1329200232.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, Grazvydas Ignotas <notasas@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-During system suspend, at the time DSS is being suspended, SPI is
-already suspended and it's clocks are cut. Because of this trying to
-communicate with the LCD controller results in a deadlock.
+This patch adds support for using EDID data on CRT and DVP1 for
+initial configuration if viafb_mode or viafb_mode1 are not present.
 
-To fix this, split out LCD programming parts of display enable/disable
-functions and perform them from SPI PM callbacks instead when system is
-being suspended. If the display is just being enabled/disabled, do it
-from DSS callbacks as before.
-
-Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
-rather invasive so best for upcoming merge window I guess..
+ drivers/video/via/via_aux.c      |   20 +++++++++++++
+ drivers/video/via/via_aux.h      |    6 ++++
+ drivers/video/via/via_aux_edid.c |   59 +++++++++++++++++++++++++++++++++++++-
+ drivers/video/via/viafbdev.c     |   26 ++++++++++++----
+ 4 files changed, 103 insertions(+), 8 deletions(-)
 
- .../video/omap2/displays/panel-tpo-td043mtea1.c    |  151 ++++++++++++++------
- 1 files changed, 108 insertions(+), 43 deletions(-)
-
-diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-index e6649aa..741e9d7 100644
---- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-+++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-@@ -53,10 +53,14 @@ static const u16 tpo_td043_def_gamma[12] = {
- struct tpo_td043_device {
- 	struct spi_device *spi;
- 	struct regulator *vcc_reg;
-+	int nreset_gpio;
- 	u16 gamma[12];
- 	u32 mode;
- 	u32 hmirror:1;
- 	u32 vmirror:1;
-+	u32 powered_on:1;
-+	u32 spi_suspended:1;
-+	u32 power_on_resume:1;
- };
- 
- static int tpo_td043_write(struct spi_device *spi, u8 addr, u8 data)
-@@ -265,28 +269,16 @@ static const struct omap_video_timings tpo_td043_timings = {
- 	.vbp		= 34,
- };
- 
--static int tpo_td043_power_on(struct omap_dss_device *dssdev)
-+static int tpo_td043_power_on(struct tpo_td043_device *tpo_td043)
- {
--	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(&dssdev->dev);
--	int nreset_gpio = dssdev->reset_gpio;
--	int r;
-+	int nreset_gpio = tpo_td043->nreset_gpio;
- 
--	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
-+	if (tpo_td043->powered_on)
- 		return 0;
- 
--	r = omapdss_dpi_display_enable(dssdev);
--	if (r)
--		goto err0;
--
--	if (dssdev->platform_enable) {
--		r = dssdev->platform_enable(dssdev);
--		if (r)
--			goto err1;
--	}
--
- 	regulator_enable(tpo_td043->vcc_reg);
- 
--	/* wait for power up */
-+	/* wait for regulator to stabilize */
- 	msleep(160);
- 
- 	if (gpio_is_valid(nreset_gpio))
-@@ -301,19 +293,15 @@ static int tpo_td043_power_on(struct omap_dss_device *dssdev)
- 			tpo_td043->vmirror);
- 	tpo_td043_write_gamma(tpo_td043->spi, tpo_td043->gamma);
- 
-+	tpo_td043->powered_on = 1;
- 	return 0;
--err1:
--	omapdss_dpi_display_disable(dssdev);
--err0:
--	return r;
- }
- 
--static void tpo_td043_power_off(struct omap_dss_device *dssdev)
-+static void tpo_td043_power_off(struct tpo_td043_device *tpo_td043)
- {
--	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(&dssdev->dev);
--	int nreset_gpio = dssdev->reset_gpio;
-+	int nreset_gpio = tpo_td043->nreset_gpio;
- 
--	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
-+	if (!tpo_td043->powered_on)
+diff --git a/drivers/video/via/via_aux.c b/drivers/video/via/via_aux.c
+index e728b9b..4a0a55c 100644
+--- a/drivers/video/via/via_aux.c
++++ b/drivers/video/via/via_aux.c
+@@ -60,9 +60,29 @@ void via_aux_free(struct via_aux_bus *bus)
  		return;
  
- 	tpo_td043_write(tpo_td043->spi, 3,
-@@ -329,54 +317,94 @@ static void tpo_td043_power_off(struct omap_dss_device *dssdev)
- 
- 	regulator_disable(tpo_td043->vcc_reg);
- 
-+	tpo_td043->powered_on = 0;
-+}
+ 	list_for_each_entry_safe(pos, n, &bus->drivers, chain) {
++		if (pos->cleanup)
++			pos->cleanup(pos);
 +
-+static int tpo_td043_enable_dss(struct omap_dss_device *dssdev)
+ 		list_del(&pos->chain);
++		kfree(pos->data);
+ 		kfree(pos);
+ 	}
+ 
+ 	kfree(bus);
+ }
++
++const struct fb_videomode *via_aux_get_preferred_mode(struct via_aux_bus *bus)
 +{
-+	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(&dssdev->dev);
-+	int r;
++	struct via_aux_drv *pos;
++	const struct fb_videomode *mode = NULL;
 +
-+	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
-+		return 0;
++	if (!bus)
++		return NULL;
 +
-+	r = omapdss_dpi_display_enable(dssdev);
-+	if (r)
-+		goto err0;
-+
-+	if (dssdev->platform_enable) {
-+		r = dssdev->platform_enable(dssdev);
-+		if (r)
-+			goto err1;
++	list_for_each_entry(pos, &bus->drivers, chain) {
++		if (pos->get_preferred_mode)
++			mode = pos->get_preferred_mode(pos);
 +	}
 +
-+	/*
-+	 * If we are resuming from system suspend, SPI clocks might not be
-+	 * enabled yet, so we'll program the LCD from SPI PM resume callback.
-+	 */
-+	if (!tpo_td043->spi_suspended) {
-+		r = tpo_td043_power_on(tpo_td043);
-+		if (r)
-+			goto err1;
++	return mode;
++}
+diff --git a/drivers/video/via/via_aux.h b/drivers/video/via/via_aux.h
+index 5a4867a..a8de3f0 100644
+--- a/drivers/video/via/via_aux.h
++++ b/drivers/video/via/via_aux.h
+@@ -27,6 +27,7 @@
+ 
+ #include <linux/list.h>
+ #include <linux/i2c.h>
++#include <linux/fb.h>
+ 
+ 
+ struct via_aux_bus {
+@@ -42,11 +43,16 @@ struct via_aux_drv {
+ 
+ 	const char *name;	/* human readable name of the driver */
+ 	void *data;		/* private data of this driver */
++
++	void (*cleanup)(struct via_aux_drv *drv);
++	const struct fb_videomode* (*get_preferred_mode)
++		(struct via_aux_drv *drv);
+ };
+ 
+ 
+ struct via_aux_bus *via_aux_probe(struct i2c_adapter *adap);
+ void via_aux_free(struct via_aux_bus *bus);
++const struct fb_videomode *via_aux_get_preferred_mode(struct via_aux_bus *bus);
+ 
+ 
+ static inline bool via_aux_add(struct via_aux_drv *drv)
+diff --git a/drivers/video/via/via_aux_edid.c b/drivers/video/via/via_aux_edid.c
+index 547bff5..03f7a41 100644
+--- a/drivers/video/via/via_aux_edid.c
++++ b/drivers/video/via/via_aux_edid.c
+@@ -22,18 +22,75 @@
+  */
+ 
+ #include <linux/slab.h>
++#include <linux/fb.h>
+ #include "via_aux.h"
++#include "../edid.h"
+ 
+ 
+ static const char *name = "EDID";
+ 
+ 
++static void query_edid(struct via_aux_drv *drv)
++{
++	struct fb_monspecs *spec = drv->data;
++	unsigned char edid[EDID_LENGTH];
++	bool valid = false;
++
++	if (spec)
++		fb_destroy_modedb(spec->modedb);
++	else
++		spec = kmalloc(sizeof(*spec), GFP_KERNEL);
++
++	spec->version = spec->revision = 0;
++	if (via_aux_read(drv, 0x00, edid, EDID_LENGTH)) {
++		fb_edid_to_monspecs(edid, spec);
++		valid = spec->version || spec->revision;
 +	}
 +
-+	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
++	if (!valid) {
++		kfree(spec);
++		spec = NULL;
++	} else
++		printk(KERN_DEBUG "EDID: %s %s\n", spec->manufacturer, spec->monitor);
 +
-+	return 0;
-+err1:
-+	omapdss_dpi_display_disable(dssdev);
-+err0:
-+	return r;
++	drv->data = spec;
 +}
 +
-+static void tpo_td043_disable_dss(struct omap_dss_device *dssdev)
++static const struct fb_videomode *get_preferred_mode(struct via_aux_drv *drv)
 +{
-+	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(&dssdev->dev);
++	struct fb_monspecs *spec = drv->data;
++	int i;
 +
-+	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
-+		return;
++	if (!spec || !spec->modedb || !(spec->misc & FB_MISC_1ST_DETAIL))
++		return NULL;
 +
- 	if (dssdev->platform_disable)
- 		dssdev->platform_disable(dssdev);
- 
- 	omapdss_dpi_display_disable(dssdev);
-+
-+	if (!tpo_td043->spi_suspended)
-+		tpo_td043_power_off(tpo_td043);
- }
- 
- static int tpo_td043_enable(struct omap_dss_device *dssdev)
- {
--	int ret;
--
- 	dev_dbg(&dssdev->dev, "enable\n");
- 
--	ret = tpo_td043_power_on(dssdev);
--	if (ret)
--		return ret;
--
--	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
--
--	return 0;
-+	return tpo_td043_enable_dss(dssdev);
- }
- 
- static void tpo_td043_disable(struct omap_dss_device *dssdev)
- {
- 	dev_dbg(&dssdev->dev, "disable\n");
- 
--	tpo_td043_power_off(dssdev);
-+	tpo_td043_disable_dss(dssdev);
- 
- 	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
- }
- 
- static int tpo_td043_suspend(struct omap_dss_device *dssdev)
- {
--	tpo_td043_power_off(dssdev);
-+	dev_dbg(&dssdev->dev, "suspend\n");
-+
-+	tpo_td043_disable_dss(dssdev);
-+
- 	dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED;
-+
- 	return 0;
- }
- 
- static int tpo_td043_resume(struct omap_dss_device *dssdev)
- {
--	int r = 0;
--
--	r = tpo_td043_power_on(dssdev);
--	if (r)
--		return r;
--
--	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
-+	dev_dbg(&dssdev->dev, "resume\n");
- 
--	return 0;
-+	return tpo_td043_enable_dss(dssdev);
- }
- 
- static int tpo_td043_probe(struct omap_dss_device *dssdev)
-@@ -491,6 +519,7 @@ static int tpo_td043_spi_probe(struct spi_device *spi)
- 		return -ENOMEM;
- 
- 	tpo_td043->spi = spi;
-+	tpo_td043->nreset_gpio = dssdev->reset_gpio;
- 	dev_set_drvdata(&spi->dev, tpo_td043);
- 	dev_set_drvdata(&dssdev->dev, tpo_td043);
- 
-@@ -509,10 +538,46 @@ static int __devexit tpo_td043_spi_remove(struct spi_device *spi)
- 	return 0;
- }
- 
-+#ifdef CONFIG_PM_SLEEP
-+static int tpo_td043_spi_suspend(struct device *dev)
-+{
-+	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(dev);
-+
-+	dev_dbg(dev, "tpo_td043_spi_suspend, tpo %p\n", tpo_td043);
-+
-+	tpo_td043->power_on_resume = tpo_td043->powered_on;
-+	tpo_td043_power_off(tpo_td043);
-+	tpo_td043->spi_suspended = 1;
-+
-+	return 0;
-+}
-+
-+static int tpo_td043_spi_resume(struct device *dev)
-+{
-+	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(dev);
-+	int ret;
-+
-+	dev_dbg(dev, "tpo_td043_spi_resume\n");
-+
-+	if (tpo_td043->power_on_resume) {
-+		ret = tpo_td043_power_on(tpo_td043);
-+		if (ret)
-+			return ret;
++	for (i = 0; i < spec->modedb_len; i++) {
++		if (spec->modedb[i].flag & FB_MODE_IS_FIRST &&
++			spec->modedb[i].flag & FB_MODE_IS_DETAILED)
++			return &spec->modedb[i];
 +	}
-+	tpo_td043->spi_suspended = 0;
 +
-+	return 0;
++	return NULL;
 +}
-+#endif
 +
-+static SIMPLE_DEV_PM_OPS(tpo_td043_spi_pm,
-+	tpo_td043_spi_suspend, tpo_td043_spi_resume);
++static void cleanup(struct via_aux_drv *drv)
++{
++	struct fb_monspecs *spec = drv->data;
 +
- static struct spi_driver tpo_td043_spi_driver = {
- 	.driver = {
- 		.name	= "tpo_td043mtea1_panel_spi",
- 		.owner	= THIS_MODULE,
-+		.pm	= &tpo_td043_spi_pm,
- 	},
- 	.probe	= tpo_td043_spi_probe,
- 	.remove	= __devexit_p(tpo_td043_spi_remove),
++	if (spec)
++		fb_destroy_modedb(spec->modedb);
++}
++
+ void via_aux_edid_probe(struct via_aux_bus *bus)
+ {
+ 	struct via_aux_drv drv = {
+ 		.bus	=	bus,
+ 		.addr	=	0x50,
+-		.name	=	name};
++		.name	=	name,
++		.cleanup	=	cleanup,
++		.get_preferred_mode	=	get_preferred_mode};
++
++	query_edid(&drv);
+ 
+ 	/* as EDID devices can be connected/disconnected just add the driver */
+ 	via_aux_add(&drv);
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 6d5b649..4791165 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1671,12 +1671,23 @@ static void viafb_remove_proc(struct viafb_shared *shared)
+ }
+ #undef IS_VT1636
+ 
+-static int parse_mode(const char *str, u32 *xres, u32 *yres)
++static int parse_mode(const char *str, u32 devices, u32 *xres, u32 *yres)
+ {
++	const struct fb_videomode *mode = NULL;
+ 	char *ptr;
+ 
+ 	if (!str) {
+-		if (machine_is_olpc()) {
++		if (devices = VIA_CRT)
++			mode = via_aux_get_preferred_mode(
++				viaparinfo->shared->i2c_26);
++		else if (devices = VIA_DVP1)
++			mode = via_aux_get_preferred_mode(
++				viaparinfo->shared->i2c_31);
++
++		if (mode) {
++			*xres = mode->xres;
++			*yres = mode->yres;
++		} else if (machine_is_olpc()) {
+ 			*xres = 1200;
+ 			*yres = 900;
+ 		} else {
+@@ -1829,10 +1840,11 @@ int __devinit via_fb_pci_probe(struct viafb_dev *vdev)
+ 			viafb_second_size * 1024 * 1024;
+ 	}
+ 
+-	parse_mode(viafb_mode, &default_xres, &default_yres);
++	parse_mode(viafb_mode, viaparinfo->shared->iga1_devices,
++		&default_xres, &default_yres);
+ 	if (viafb_SAMM_ON = 1)
+-		parse_mode(viafb_mode1, &viafb_second_xres,
+-			&viafb_second_yres);
++		parse_mode(viafb_mode1, viaparinfo->shared->iga2_devices,
++			&viafb_second_xres, &viafb_second_yres);
+ 
+ 	default_var.xres = default_xres;
+ 	default_var.yres = default_yres;
+@@ -2060,9 +2072,9 @@ int __init viafb_init(void)
+ 	if (r < 0)
+ 		return r;
+ #endif
+-	if (parse_mode(viafb_mode, &dummy_x, &dummy_y)
++	if (parse_mode(viafb_mode, 0, &dummy_x, &dummy_y)
+ 		|| !viafb_get_best_mode(dummy_x, dummy_y, viafb_refresh)
+-		|| parse_mode(viafb_mode1, &dummy_x, &dummy_y)
++		|| parse_mode(viafb_mode1, 0, &dummy_x, &dummy_y)
+ 		|| !viafb_get_best_mode(dummy_x, dummy_y, viafb_refresh1)
+ 		|| viafb_bpp < 0 || viafb_bpp > 32
+ 		|| viafb_bpp1 < 0 || viafb_bpp1 > 32
 -- 
-1.7.0.4
+1.7.9
 

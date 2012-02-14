@@ -1,140 +1,64 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Sat, 04 Feb 2012 09:39:46 +0000
-Subject: [PATCH 05/13] FB: sa1100: combine RGB bitfield overrides into sa1100fb_mach_info
-Message-Id: <E1Rtc5y-0000ad-Pa@rmk-PC.arm.linux.org.uk>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Tue, 14 Feb 2012 05:51:35 +0000
+Subject: [PATCH 1/4] viafb: set correct polarity for second adapter
+Message-Id: <e0e12a9282a879577ba8e35c73ff5d94ae1f50b9.1329194838.git.FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120204093744.GQ889@n2100.arm.linux.org.uk>
-In-Reply-To: <20120204093744.GQ889@n2100.arm.linux.org.uk>
+References: <cover.1329194838.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <cover.1329194838.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Allow the sa1100fb_mach_info structure to carry the RGB bitfield
-overrides, rather than requiring them to be separately initialized
-in sa1100fb_get_machine_info().
+This patch sets the correct polarity for the second adapter when
+viafb_SAMM_ON is set and viafb_dual_fb is not set. Just one step to
+make this mode useful.
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/sa1100fb.c |   21 ++++++++++++++-------
- drivers/video/sa1100fb.h |   22 ++++++++++------------
- 2 files changed, 24 insertions(+), 19 deletions(-)
+ drivers/video/via/hw.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/sa1100fb.c b/drivers/video/sa1100fb.c
-index ecd7cd4..a905e20 100644
---- a/drivers/video/sa1100fb.c
-+++ b/drivers/video/sa1100fb.c
-@@ -252,6 +252,13 @@ static struct sa1100fb_mach_info pal_info __devinitdata = {
- #endif
- 
- #ifdef CONFIG_SA1100_H3600
-+static const struct sa1100fb_rgb h3600_rgb_16 = {
-+	.red	= { .offset = 12, .length = 4, },
-+	.green	= { .offset = 7,  .length = 4, },
-+	.blue	= { .offset = 1,  .length = 4, },
-+	.transp	= { .offset = 0,  .length = 0, },
-+};
-+
- static struct sa1100fb_mach_info h3600_info __devinitdata = {
- 	.pixclock	= 174757, 	.bpp		= 16,
- 	.xres		= 320,		.yres		= 240,
-@@ -264,13 +271,8 @@ static struct sa1100fb_mach_info h3600_info __devinitdata = {
- 
- 	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
- 	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
--};
- 
--static const struct sa1100fb_rgb h3600_rgb_16 = {
--	.red	= { .offset = 12, .length = 4, },
--	.green	= { .offset = 7,  .length = 4, },
--	.blue	= { .offset = 1,  .length = 4, },
--	.transp	= { .offset = 0,  .length = 0, },
-+	.rgb[RGB_16] = &h3600_rgb_16,
- };
- #endif
- 
-@@ -413,7 +415,6 @@ sa1100fb_get_machine_info(struct sa1100fb_info *fbi)
- #ifdef CONFIG_SA1100_H3600
- 	if (machine_is_h3600()) {
- 		inf = &h3600_info;
--		fbi->rgb[RGB_16] = &h3600_rgb_16;
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index d5aaca9..08c1036 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -1758,13 +1758,13 @@ static void set_display_channel(void)
  	}
- #endif
- #ifdef CONFIG_SA1100_COLLIE
-@@ -1352,6 +1353,7 @@ static struct sa1100fb_info * __devinit sa1100fb_init_fbinfo(struct device *dev)
+ }
+ 
+-static u8 get_sync(struct fb_info *info)
++static u8 get_sync(struct fb_var_screeninfo *var)
  {
- 	struct sa1100fb_mach_info *inf;
- 	struct sa1100fb_info *fbi;
-+	unsigned i;
+ 	u8 polarity = 0;
  
- 	fbi = kmalloc(sizeof(struct sa1100fb_info) + sizeof(u32) * 16,
- 		      GFP_KERNEL);
-@@ -1424,6 +1426,11 @@ static struct sa1100fb_info * __devinit sa1100fb_init_fbinfo(struct device *dev)
- 	fbi->fb.fix.smem_len		= fbi->max_xres * fbi->max_yres *
- 					  fbi->max_bpp / 8;
+-	if (!(info->var.sync & FB_SYNC_HOR_HIGH_ACT))
++	if (!(var->sync & FB_SYNC_HOR_HIGH_ACT))
+ 		polarity |= VIA_HSYNC_NEGATIVE;
+-	if (!(info->var.sync & FB_SYNC_VERT_HIGH_ACT))
++	if (!(var->sync & FB_SYNC_VERT_HIGH_ACT))
+ 		polarity |= VIA_VSYNC_NEGATIVE;
+ 	return polarity;
+ }
+@@ -1976,13 +1976,13 @@ int viafb_setmode(int video_bpp, int video_bpp1)
+ 			viafb_DeviceStatus = CRT_Device;
+ 	}
+ 	device_on();
+-	if (!viafb_dual_fb)
+-		via_set_sync_polarity(devices, get_sync(viafbinfo));
++	if (!viafb_SAMM_ON)
++		via_set_sync_polarity(devices, get_sync(&viafbinfo->var));
+ 	else {
+ 		via_set_sync_polarity(viaparinfo->shared->iga1_devices,
+-			get_sync(viafbinfo));
++			get_sync(&viafbinfo->var));
+ 		via_set_sync_polarity(viaparinfo->shared->iga2_devices,
+-			get_sync(viafbinfo1));
++			get_sync(&var2));
+ 	}
  
-+	/* Copy the RGB bitfield overrides */
-+	for (i = 0; i < NR_RGB; i++)
-+		if (inf->rgb[i])
-+			fbi->rgb[i] = inf->rgb[i];
-+
- 	init_waitqueue_head(&fbi->ctrlr_wait);
- 	INIT_WORK(&fbi->task, sa1100fb_task);
- 	mutex_init(&fbi->ctrlr_lock);
-diff --git a/drivers/video/sa1100fb.h b/drivers/video/sa1100fb.h
-index b1d5b08..77239b7 100644
---- a/drivers/video/sa1100fb.h
-+++ b/drivers/video/sa1100fb.h
-@@ -10,10 +10,12 @@
-  * for more details.
-  */
- 
--/*
-- * These are the bitfields for each
-- * display depth that we support.
-- */
-+#define RGB_4	0
-+#define RGB_8	1
-+#define RGB_16	2
-+#define NR_RGB	3
-+
-+/* These are the bitfields for each display depth that we support. */
- struct sa1100fb_rgb {
- 	struct fb_bitfield	red;
- 	struct fb_bitfield	green;
-@@ -21,9 +23,7 @@ struct sa1100fb_rgb {
- 	struct fb_bitfield	transp;
- };
- 
--/*
-- * This structure describes the machine which we are running on.
-- */
-+/* This structure describes the machine which we are running on. */
- struct sa1100fb_mach_info {
- 	u_long		pixclock;
- 
-@@ -47,6 +47,9 @@ struct sa1100fb_mach_info {
- 
- 	u_int		lccr0;
- 	u_int		lccr3;
-+
-+	/* Overrides for the default RGB maps */
-+	const struct sa1100fb_rgb *rgb[NR_RGB];
- };
- 
- /* Shadows for LCD controller registers */
-@@ -57,11 +60,6 @@ struct sa1100fb_lcd_reg {
- 	unsigned long lccr3;
- };
- 
--#define RGB_4	(0)
--#define RGB_8	(1)
--#define RGB_16	(2)
--#define NR_RGB	3
--
- struct sa1100fb_info {
- 	struct fb_info		fb;
- 	struct device		*dev;
+ 	clock.set_engine_pll_state(VIA_STATE_ON);
 -- 
-1.7.4.4
+1.7.9
 

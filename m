@@ -1,82 +1,155 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 29 Feb 2012 11:10:26 +0000
-Subject: Re: [PATCH 1/2] OMAPDSS: panel-dvi: Add Kconfig dependency on I2C
-Message-Id: <4F4E07A2.5030008@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 14 Feb 2012 11:52:23 +0000
+Subject: Re: [PATCH 00/16] OMAPDSS: old OMAPFB cleanup
+Message-Id: <1329220343.1845.65.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-tQ+yPTMpVogF2sJAh83r"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1330505302-8258-1-git-send-email-tomi.valkeinen@ti.com>	 <1330505302-8258-2-git-send-email-tomi.valkeinen@ti.com>	 <4F4DF801.3000905@gmx.de> <1330510902.1934.76.camel@deskari>
-In-Reply-To: <1330510902.1934.76.camel@deskari>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-
-Hi Tomi,
-
-On 02/29/2012 10:21 AM, Tomi Valkeinen wrote:
-> On Wed, 2012-02-29 at 10:03 +0000, Florian Tobias Schandinat wrote:
->> On 02/29/2012 08:48 AM, Tomi Valkeinen wrote:
->>> panel-dvi uses i2c, but the Kconfig didn't have dependency on I2C. Add
->>> it.
->>>
->>> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
->>> ---
->>>  drivers/video/omap2/displays/Kconfig |    2 +-
->>>  1 files changed, 1 insertions(+), 1 deletions(-)
->>>
->>> diff --git a/drivers/video/omap2/displays/Kconfig b/drivers/video/omap2/displays/Kconfig
->>> index 74d29b5..408a992 100644
->>> --- a/drivers/video/omap2/displays/Kconfig
->>> +++ b/drivers/video/omap2/displays/Kconfig
->>> @@ -12,7 +12,7 @@ config PANEL_GENERIC_DPI
->>>  
->>>  config PANEL_DVI
->>>  	tristate "DVI output"
->>> -	depends on OMAP2_DSS_DPI
->>> +	depends on OMAP2_DSS_DPI && I2C
->>
->> It's just a matter of taste, but are you sure you want to "depend" on it and not
->> "select" it? Other drivers tend to use select for I2C, for me it doesn't really
->> matter.
-> 
-> Well, I'd like to "select", but I don't think that's correct. From
-> Documentation/kbuild/kconfig-language.txt:
-> 
->         In general use select only for non-visible symbols
->         (no prompts anywhere) and for symbols with no dependencies.
-> 
-> But I do see quite many selects for I2C, so I'm not sure if all those
-> are wrong, or has it just been decided that I2C is a valid target for
-> select.
-
-I'd say that the above is only a guideline but not absolute rule. For I2C I'd
-argue that I probably wouldn't even know that my hardware has it if I weren't
-the one writing the driver using it.
-But it's true that select should be used with care as it is much easier to get
-the config messed up by using it.
-
-> Using depend is in line with the other panel drivers in the same
-> directory. I've been thinking about the same thing from time to time,
-> and I'd rather select I2C, SPI and BACKLIGHT_CLASS_DEVICE than use
-> depend.
-> 
-> But, for example, using select to BACKLIGHT_CLASS_DEVICE is broken: if I
-> change a panel driver to select BACKLIGHT_CLASS_DEVICE, but then I
-> manually disable CONFIG_BACKLIGHT_LCD_SUPPORT (which the
-> BACKLIGHT_CLASS_DEVICE depends on) from the kernel config, this leads to
-> BACKLIGHT_CLASS_DEVICE being enabled, but CONFIG_BACKLIGHT_LCD_SUPPORT
-> being disabled, which is clearly broken.
-
-Yes, as far as I understand the problem here is that we don't have any mechanism
-to handle transitive dependencies (probably because we don't want it). So if one
-wants to do select something I think the right way to do it would be to inherit
-all its select/depend statements in the option.
-
-> So... As I see it, depending is a bit awkward, but it's correct.
-
-Yes, it certainly is correct.
+References: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
+To: tony@atomide.com
+Cc: linux-fbdev@vger.kernel.org, archit@ti.com, linux-omap@vger.kernel.org
 
 
-Best regards,
+--=-tQ+yPTMpVogF2sJAh83r
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Florian Tobias Schandinat
+Hi Tony,
+
+On Tue, 2012-01-24 at 12:00 +0200, Tomi Valkeinen wrote:
+> Now that all omap2+ boards have been changed to use the newer omapdss dri=
+ver,
+> this patch series removes omap2+ support from the old omapfb driver
+> (drivers/video/omap), and thus makes it an omap1 dss/fb driver.
+>=20
+> The use of SRAM for video ram had earlier been disabled by removing the S=
+RAM
+> allocation (fee926bb0d399b1eaaf38f9f694bbf2747c4b8a2), and now this serie=
+s also
+> removes the support from the omap fb drivers.
+>=20
+> Also various cleanup patches allow us to remove remove OMAP_TAG_LCD and
+> OMAP_TAG_FBMEM.
+>=20
+> All in all, the series removes quite a bit of unneeded code and cleans up=
+ the
+> links between the board files and the display drivers, and this should he=
+lp
+> with device tree adaptation.
+>=20
+> Some of the patches affect the newer omapdss and omapfb drivers, but most=
+ly the
+> patches deal with omap1. I have compile tested the series for both omap1 =
+and
+> omap2, but I have only tested this on OMAP3 and OMAP4 boards, as I don't =
+have
+> OMAP1/2 boards. I think N770's display won't work after these patches, bu=
+t
+> other OMAP1 boards should be ok. To fix N770's display requires knowledge=
+ of
+> the hardware setup, which is currently passed from the bootloader.
+
+Tony, do you have any feedback on this? I think the arch/arm changes are
+quite clean as such, but are you ok with (possibly) breaking N770's
+display? The other OMAP1 boards should, at least in theory, work as well
+as before.
+
+For N770, the bootloader passes the reset GPIO number and number of
+datalines, and I have no idea what those are.
+
+ Tomi
+
+
+>  Tomi
+>=20
+> Tomi Valkeinen (16):
+>   OMAPFB: remove old blizzard driver
+>   OMAPFB: Remove OMAP2/3 support from old omapfb driver
+>   OMAPDSS: Remove video SRAM support
+>   OMAPFB: Remove video SRAM support (old omapfb)
+>   OMAP2+: remove unneeded #include omapfb.h
+>   OMAP: N770: remove HWA742 platform data
+>   OAMPFB: remove unused omapfb_set_ctrl_platform_data()
+>   OMAPFB: remove early mem alloc from old omapfb
+>   OMAPFB: remove mem info from platform_data
+>   OMAPFB: remove unused fb_format_to_dss_mode()
+>   OMAPFB: Move old omapfb private structs to a private include file
+>   OMAPFB: remove omapfb_set_platform_data()
+>   OMAP1: pass LCD config with omapfb_set_lcd_config()
+>   OMAP: Remove OMAP_TAG_LCD and OMAP_TAG_FBMEM
+>   OMAP1: Remove unused LCD devices from board files
+>   OMAPFB: remove remaining OMAP arch checks
+>=20
+>  arch/arm/mach-omap1/board-ams-delta.c      |    9 +-
+>  arch/arm/mach-omap1/board-fsample.c        |   15 +-
+>  arch/arm/mach-omap1/board-h2.c             |   15 +-
+>  arch/arm/mach-omap1/board-h3.c             |    9 +-
+>  arch/arm/mach-omap1/board-htcherald.c      |    9 +-
+>  arch/arm/mach-omap1/board-innovator.c      |   11 +-
+>  arch/arm/mach-omap1/board-nokia770.c       |   19 +-
+>  arch/arm/mach-omap1/board-osk.c            |   14 +-
+>  arch/arm/mach-omap1/board-palmte.c         |   10 +-
+>  arch/arm/mach-omap1/board-palmtt.c         |   10 +-
+>  arch/arm/mach-omap1/board-palmz71.c        |   10 +-
+>  arch/arm/mach-omap1/board-perseus2.c       |   15 +-
+>  arch/arm/mach-omap1/board-sx1.c            |   16 +-
+>  arch/arm/mach-omap2/io.c                   |    1 -
+>  arch/arm/plat-omap/common.c                |    2 -
+>  arch/arm/plat-omap/fb.c                    |  336 +------
+>  arch/arm/plat-omap/fb.h                    |   10 -
+>  arch/arm/plat-omap/include/plat/blizzard.h |   12 -
+>  arch/arm/plat-omap/include/plat/board.h    |    2 -
+>  arch/arm/plat-omap/include/plat/hwa742.h   |    8 -
+>  arch/arm/plat-omap/include/plat/vram.h     |   21 +-
+>  drivers/video/omap/Kconfig                 |   16 +-
+>  drivers/video/omap/Makefile                |   12 +-
+>  drivers/video/omap/blizzard.c              | 1648 ----------------------=
+------
+>  drivers/video/omap/dispc.c                 | 1547 ----------------------=
+----
+>  drivers/video/omap/dispc.h                 |   46 -
+>  drivers/video/omap/hwa742.c                |   21 +-
+>  drivers/video/omap/omapfb.h                |   25 +-
+>  drivers/video/omap/omapfb_main.c           |   30 +-
+>  drivers/video/omap/rfbi.c                  |  598 ----------
+>  drivers/video/omap2/dss/dispc.c            |    1 -
+>  drivers/video/omap2/omapfb/omapfb-ioctl.c  |    2 +-
+>  drivers/video/omap2/omapfb/omapfb-main.c   |  101 +--
+>  drivers/video/omap2/vram.c                 |   99 +--
+>  include/linux/omapfb.h                     |   32 +-
+>  35 files changed, 100 insertions(+), 4632 deletions(-)
+>  delete mode 100644 arch/arm/plat-omap/fb.h
+>  delete mode 100644 arch/arm/plat-omap/include/plat/blizzard.h
+>  delete mode 100644 arch/arm/plat-omap/include/plat/hwa742.h
+>  delete mode 100644 drivers/video/omap/blizzard.c
+>  delete mode 100644 drivers/video/omap/dispc.c
+>  delete mode 100644 drivers/video/omap/dispc.h
+>  delete mode 100644 drivers/video/omap/rfbi.c
+>=20
+
+
+--=-tQ+yPTMpVogF2sJAh83r
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJPOkr3AAoJEPo9qoy8lh71lxwP/0M74uZfm3nwID8zSYwCohpe
+2hr/q8T4IA/LePYdnjnYblBKuFPRse/+QWN8Kk5AHUOVLaG4c/1ZrF1oomgfrOW5
+bDyuBYahLoqKxNk2bQ6Yea1517nDL3CeOTrlhL1RnfNLf6MnZRtF+lO9HY5hlxyo
+FF+nXrTfJryEnQzdxAFnl8cwE2zkdflx+aZAN5VxP9MM5o/t7sbdSo9ZUALiiT5l
+UinpB/L/5w8eM+7JoLM4RbE0gO6MTpiLLJnBeTDrZP5+ODlwicheRFS8uMJC9aUL
+5hw92c0FPOsuWoLxyMUhB3EcxRYBoF/RZ8+YX6f5aifcUeIeBL3knqTcwxa4UmmF
+l8JJSiZ9glLAt1CnRQkkIVYaqQjYsEHq76bjk8H5r4t8RrE/zAqt1YjpR5LXDNpd
+Yklf8zD51fmtYvg0CTHeNg6Rf3hyWDR332AXJSlP901q8B4RZG++y6GTQ1MWrU6Z
+41iY3KIv+baecI9PcDsCbRUoXVadhZYrIGdo52s/xuX8yWGXuVlpXjq+N+GaIkPR
+zzXC02krUn/ABkJgfWDtgmMl+1odo5oqi3KGHumluaWDtpb+DoqJvJlKmJfZyW3V
+wX93Q9E4t2DXPwi63AvTX+r96VAJKOa1z0qGUmP7PFcRz6RjQINKJiiWm1CXasDb
+edZJOzS4eabMAMI3SPsl
+=TXGq
+-----END PGP SIGNATURE-----
+
+--=-tQ+yPTMpVogF2sJAh83r--
+

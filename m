@@ -1,56 +1,80 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Wed, 29 Feb 2012 01:42:35 +0000
-Subject: RE: [GIT PULL] OMAP DSS fixes for 3.3-rc
-Message-Id: <005a01ccf683$6964e3b0$3c2eab10$%han@samsung.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Thu, 16 Feb 2012 02:27:25 +0000
+Subject: Re: [PATCH] fb_defio: add first_io callback
+Message-Id: <4F3C698D.7070207@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1329988974.1820.62.camel@deskari> <4F4CFAD1.1000301@gmx.de>
- <1330445287.2123.236.camel@deskari>
-In-Reply-To: <1330445287.2123.236.camel@deskari>
+References: <201112311145.47717.heiko@sntech.de>
+In-Reply-To: <201112311145.47717.heiko@sntech.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, 'linux-omap mailing list' <linux-omap@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
+Hi Heiko,
 
-> -----Original Message-----
-> From: linux-fbdev-owner@vger.kernel.org [mailto:linux-fbdev-owner@vger.kernel.org] On Behalf Of Tomi
-> Valkeinen
-> Sent: Wednesday, February 29, 2012 1:08 AM
-> To: Florian Tobias Schandinat
-> Cc: linux-fbdev@vger.kernel.org; linux-omap mailing list
-> Subject: Re: [GIT PULL] OMAP DSS fixes for 3.3-rc
-> 
-> On Tue, 2012-02-28 at 16:03 +0000, Florian Tobias Schandinat wrote:
-> > On 02/23/2012 09:22 AM, Tomi Valkeinen wrote:
-> > > Hi Florian,
-> > >
-> > > Two fixes for OMAP DSS for 3.3:
-> > >
-> > > First one gets the HDMI output working again. Managing the clocks for
-> > > OMAP4 is not very simple, and this patch circumvents the problems we
-> > > have in the clock framework. It's a clean but rather hacky fix, but it
-> > > shouldn't cause any side-effects. The issue will hopefully be fixed
-> > > properly with DT when we'll get proper parent-child hierarchy for DSS HW
-> > > submodules.
-> > >
-> > > The second one is a simple fix for HDMI hotplug detection, which I
-> > > missed when I wrote the HDMI PHY fix
-> > > (c49d005b6cc8491fad5b24f82805be2d6bcbd3dd).
-> >
-> > Merged. You would add
-> > Cc: stable@vger.kernel.org
-> > to patches if appropriate?
-> 
-> Thanks. Yes, I have sent a separate mail to stable list, as the patches
-> needed some tuning to apply.
+sorry for the long delay.
 
-Tomi, sorry.
-You have already sent a mail to stable@vger.kernel.org.
-Good luck.
+On 12/31/2011 10:45 AM, Heiko St=FCbner wrote:
+> With this optional callback the driver is notified when the first page
+> is entered into the pagelist and a new deferred_io call is scheduled.
+>=20
+> A possible use-case for this is runtime-pm. In the first_io call
+> 	pm_runtime_get()
+> could be called, which starts an asynchronous runtime_resume of the
+> device. In the deferred_io callback a call to
+> 	pm_runtime_barrier()
+> makes the sure, the device is resumed by then and a
+> 	pm_runtime_put()
+> may put the device back to sleep.
+>=20
+> Also, some SoCs may use the runtime-pm system to determine if they
+> are able to enter deeper idle states. Therefore it is necessary to
+> keep the use-count from the first written page until the conclusion
+> of the screen update, to prevent the system from going to sleep before
+> completing the pending update.
+>=20
+> Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+
+while I consider this patch acceptable, I don't see any reason to apply it =
+as
+long as there is no driver actually using it.
+
 
 Best regards,
-Jingoo Han
-> 
->  Tomi
+
+Florian Tobias Schandinat
+
+> ---
+>  drivers/video/fb_defio.c |    4 ++++
+>  include/linux/fb.h       |    1 +
+>  2 files changed, 5 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
+> index c27e153..070f26f 100644
+> --- a/drivers/video/fb_defio.c
+> +++ b/drivers/video/fb_defio.c
+> @@ -107,6 +107,10 @@ static int fb_deferred_io_mkwrite(struct vm_area_str=
+uct *vma,
+>  	/* protect against the workqueue changing the page list */
+>  	mutex_lock(&fbdefio->lock);
+> =20
+> +	/* first write in this cycle, notify the driver */
+> +	if (fbdefio->first_io && list_empty(&fbdefio->pagelist))
+> +		fbdefio->first_io(info);
+> +
+>  	/*
+>  	 * We want the page to remain locked from ->page_mkwrite until
+>  	 * the PTE is marked dirty to avoid page_mkclean() being called
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index 1d6836c..b86cd41 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -602,6 +602,7 @@ struct fb_deferred_io {
+>  	struct mutex lock; /* mutex that protects the page list */
+>  	struct list_head pagelist; /* list of touched pages */
+>  	/* callback */
+> +	void (*first_io)(struct fb_info *info);
+>  	void (*deferred_io)(struct fb_info *info, struct list_head *pagelist);
+>  };
+>  #endif
 

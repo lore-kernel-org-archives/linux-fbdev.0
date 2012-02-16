@@ -1,105 +1,56 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Wed, 22 Feb 2012 22:17:10 +0000
-Subject: Re: [PATCH 1/8] ARM: OMAP2+: Move DISPC L3 firewall to happen in omap_display_init()
-Message-Id: <20120222221710.GN18185@atomide.com>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 16 Feb 2012 05:29:00 +0000
+Subject: linux-next: build failure after merge of the final tree (fbdev tree related)
+Message-Id: <20120216162900.e2dd164732084f48e5b239f0@canb.auug.org.au>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Signature=_Thu__16_Feb_2012_16_29_00_+1100_xAQJtgvzlUsJ2MKl"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120221233619.18709.87982.stgit@kaulin.local>
- <20120221234035.18709.40664.stgit@kaulin.local>
- <1329898191.2070.6.camel@deskari>
- <20120222190531.GK18185@atomide.com>
-In-Reply-To: <20120222190531.GK18185@atomide.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+References: <20110520163233.abcabd67.sfr@canb.auug.org.au>
+In-Reply-To: <20110520163233.abcabd67.sfr@canb.auug.org.au>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Ondrej Zary <linux@rainbow-software.org>
 
-* Tony Lindgren <tony@atomide.com> [120222 10:34]:
-> * Tomi Valkeinen <tomi.valkeinen@ti.com> [120221 23:38]:
-> > Hi,
-> > 
-> > On Tue, 2012-02-21 at 15:40 -0800, Tony Lindgren wrote:
-> > > Otherwise we cannot move most of plat/io.h to be a local
-> > > iomap.h for mach-omap2.
-> > > 
-> > > Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> > > Cc: linux-fbdev@vger.kernel.org
-> > > Signed-off-by: Tony Lindgren <tony@atomide.com>
-> > > ---
-> > >  arch/arm/mach-omap2/display.c   |    3 +++
-> > >  drivers/video/omap2/dss/dispc.c |    5 -----
-> > >  2 files changed, 3 insertions(+), 5 deletions(-)
-> > > 
-> > > diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
-> > > index 3677b1f..5a7f12f 100644
-> > > --- a/arch/arm/mach-omap2/display.c
-> > > +++ b/arch/arm/mach-omap2/display.c
-> > > @@ -191,6 +191,9 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
-> > >  	memset(&pdata, 0, sizeof(pdata));
-> > >  
-> > >  	if (cpu_is_omap24xx()) {
-> > > +		/* L3 firewall setting: enable access to OCM RAM */
-> > > +		__raw_writel(0x402000b0, OMAP2_L3_IO_ADDRESS(0x680050a0));
-> > > +
-> > >  		curr_dss_hwmod = omap2_dss_hwmod_data;
-> > >  		oh_count = ARRAY_SIZE(omap2_dss_hwmod_data);
-> > >  	} else if (cpu_is_omap34xx()) {
-> > > diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-> > > index e1626a1..cce0820 100644
-> > > --- a/drivers/video/omap2/dss/dispc.c
-> > > +++ b/drivers/video/omap2/dss/dispc.c
-> > > @@ -3272,11 +3272,6 @@ static void _omap_dispc_initial_config(void)
-> > >  	if (dss_has_feature(FEAT_FUNCGATED))
-> > >  		REG_FLD_MOD(DISPC_CONFIG, 1, 9, 9);
-> > >  
-> > > -	/* L3 firewall setting: enable access to OCM RAM */
-> > > -	/* XXX this should be somewhere in plat-omap */
-> > > -	if (cpu_is_omap24xx())
-> > > -		__raw_writel(0x402000b0, OMAP2_L3_IO_ADDRESS(0x680050a0));
-> > > -
-> > >  	_dispc_setup_color_conv_coef();
-> > >  
-> > >  	dispc_set_loadmode(OMAP_DSS_LOAD_FRAME_ONLY);
-> > > 
-> > 
-> > I think the whole raw_writel line can be removed. It's been copied from
-> > the old omapfb, and my understanding is that it's about using SRAM for
-> > framebuffer. Using SRAM for fb is no longer supported, and I have a
-> > patch set that removes the remaining SRAM code from omapfb/omapdss.
-> 
-> OK, I'll remove those from drivers/video/omap2/dss/dispc.c so this
-> series keeps building.
+--Signature=_Thu__16_Feb_2012_16_29_00_+1100_xAQJtgvzlUsJ2MKl
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Here's this one updated.
+Hi all,
 
-Tony
+After merging the final tree, today's linux-next build (powerpc
+allyesconfig) failed like this:
 
+drivers/video/i740fb.c: In function 'i740fb_remove':
+drivers/video/i740fb.c:1192:7: error: 'par' undeclared (first use in this f=
+unction)
 
-From: Tony Lindgren <tony@atomide.com>
-Date: Mon, 20 Feb 2012 12:55:07 -0800
-Subject: [PATCH] ARM: OMAP2+: Drop DISPC L3 firewall code
+Caused by commit 5350c65f4f15 ("Resurrect Intel740 driver: i740fb") from
+the fbdev tree.  CONFIG_MTRR is not defined for this build ...
 
-This is only needed when using SRAM for framebuffer,
-and the support for SRAM framebuffer is about to get
-removed.
+I have reverted that commit for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Otherwise we cannot move most of plat/io.h to be a local
-iomap.h for mach-omap2.
+--Signature=_Thu__16_Feb_2012_16_29_00_+1100_xAQJtgvzlUsJ2MKl
+Content-Type: application/pgp-signature
 
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Tony Lindgren <tony@atomide.com>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -3272,11 +3272,6 @@ static void _omap_dispc_initial_config(void)
- 	if (dss_has_feature(FEAT_FUNCGATED))
- 		REG_FLD_MOD(DISPC_CONFIG, 1, 9, 9);
- 
--	/* L3 firewall setting: enable access to OCM RAM */
--	/* XXX this should be somewhere in plat-omap */
--	if (cpu_is_omap24xx())
--		__raw_writel(0x402000b0, OMAP2_L3_IO_ADDRESS(0x680050a0));
--
- 	_dispc_setup_color_conv_coef();
- 
- 	dispc_set_loadmode(OMAP_DSS_LOAD_FRAME_ONLY);
+iQIcBAEBCAAGBQJPPJQcAAoJEECxmPOUX5FEoWUP/35QFVh8eV6jSARbZKmJHXsc
+CQsmKf2GRBd678ZVFTyZfP7q7S2dYn61y1NnGG0cgJMi5Yr8LCbLD9jcU0pnZxB1
+qetP9nQsWRBXK8my8/ICBHJ2C4D2hCv8ZL2X1SsCL14z8EluaAbQ0bItSXMX9gpJ
+Ele/6bCcgrgLQ/a1Dn7iClfnXW0HjDSdK1eZ4T65gIiJX1uV5/GdakJGCbAIXakF
+dVSbI9Tp017j2yPMxcODH82kJ5A6pxzZ6CKPRfE03oR7zqPR4ntiwMzepZ8Mpy0Z
+7pVYY8HuZvDoYFGaPvheC3hlb78V1zTi6EptdXjQfqP6fdrnomZ6ekSSA6D4YX3w
+URSpgMYD1+FfoWmMtid2fBWxAJA8c+D+9eRZ33wEP1rnffyLS+RMwQOx95H6aSC8
+oS39L5qbF+pLrVrIDLP5g1/ecF9owDRHffFtKSe5X1ZRju7XyOwu6BxDIeH4Hjco
+YaDmAJD2Ye+LzELfjxsBmfWZ1brz8dp7fV8YrLopBwULNe8ZiOLg8Aeob8XfQDJi
+BTnWEiY1PRMLpwRYoYlzgiM4jR6FYna6totb0iFS4GKaK9HUP9RVxOnxOIiVDtT7
+dmc39l/L5MuKQuBJ5eWTcFOd9YEoz24snBbs2cucZtUklUsiBFj4XPgfdiRkO79x
+IDW6JTjCZkeHti/8cFjc
+=hKgu
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__16_Feb_2012_16_29_00_+1100_xAQJtgvzlUsJ2MKl--

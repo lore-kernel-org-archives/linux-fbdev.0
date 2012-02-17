@@ -1,60 +1,35 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Tue, 28 Feb 2012 15:55:28 +0000
-Subject: Re: [PATCH] video: s3c-fb: use devm_request_irq()
-Message-Id: <4F4CF8F0.2090701@gmx.de>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 17 Feb 2012 06:45:01 +0000
+Subject: [patch] viafb: NULL dereference on allocation failure in query_edid()
+Message-Id: <20120217064501.GD3666@elgon.mountain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <017101ccefbc$0ab90710$202b1530$%han@samsung.com>
-In-Reply-To: <017101ccefbc$0ab90710$202b1530$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On 02/20/2012 10:40 AM, Jingoo Han wrote:
-> The devm_ functions allocate memory that is released when a driver
-> detaches. This patch uses devm_request_irq of these functions.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+We should handle the allocation here, if only to keep the static
+checkers happy.
 
-Applied.
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/s3c-fb.c |    5 +----
->  1 files changed, 1 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-> index e22bf9d..1fb7ddf 100644
-> --- a/drivers/video/s3c-fb.c
-> +++ b/drivers/video/s3c-fb.c
-> @@ -1433,7 +1433,7 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
->  		goto err_lcd_clk;
->  	}
->  	sfb->irq_no = res->start;
-> -	ret = request_irq(sfb->irq_no, s3c_fb_irq,
-> +	ret = devm_request_irq(dev, sfb->irq_no, s3c_fb_irq,
->  			  0, "s3c_fb", sfb);
->  	if (ret) {
->  		dev_err(dev, "irq request failed\n");
-> @@ -1499,7 +1499,6 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
->  
->  err_pm_runtime:
->  	pm_runtime_put_sync(sfb->dev);
-> -	free_irq(sfb->irq_no, sfb);
->  
->  err_lcd_clk:
->  	pm_runtime_disable(sfb->dev);
-> @@ -1535,8 +1534,6 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
->  		if (sfb->windows[win])
->  			s3c_fb_release_win(sfb, sfb->windows[win]);
->  
-> -	free_irq(sfb->irq_no, sfb);
-> -
->  	if (!sfb->variant.has_clksel) {
->  		clk_disable(sfb->lcd_clk);
->  		clk_put(sfb->lcd_clk);
-
+diff --git a/drivers/video/via/via_aux_edid.c b/drivers/video/via/via_aux_edid.c
+index 03f7a41..754d450 100644
+--- a/drivers/video/via/via_aux_edid.c
++++ b/drivers/video/via/via_aux_edid.c
+@@ -36,10 +36,13 @@ static void query_edid(struct via_aux_drv *drv)
+ 	unsigned char edid[EDID_LENGTH];
+ 	bool valid = false;
+ 
+-	if (spec)
++	if (spec) {
+ 		fb_destroy_modedb(spec->modedb);
+-	else
++	} else {
+ 		spec = kmalloc(sizeof(*spec), GFP_KERNEL);
++		if (!spec)
++			return;
++	}
+ 
+ 	spec->version = spec->revision = 0;
+ 	if (via_aux_read(drv, 0x00, edid, EDID_LENGTH)) {

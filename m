@@ -1,73 +1,114 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 17 Feb 2012 18:49:01 +0000
+From: Adam Jackson <ajax@redhat.com>
+Date: Fri, 17 Feb 2012 19:42:34 +0000
 Subject: Re: Kernel Display and Video API Consolidation mini-summit at ELC 2012 - Notes
-Message-Id: <20147090.P4saEu3B42@avalon>
+Message-Id: <4F3EADAA.9090702@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201201171126.42675.laurent.pinchart@ideasonboard.com> <1775349.d0yvHiVdjB@avalon> <CAB2ybb_-ULCsfS48u7HQiRDLG5y-X2rmyXvHBcCRtc=m-732hQ@mail.gmail.com>
-In-Reply-To: <CAB2ybb_-ULCsfS48u7HQiRDLG5y-X2rmyXvHBcCRtc=m-732hQ@mail.gmail.com>
+References: <201201171126.42675.laurent.pinchart@ideasonboard.com> <1654816.MX2JJ87BEo@avalon> <1775349.d0yvHiVdjB@avalon>
+In-Reply-To: <1775349.d0yvHiVdjB@avalon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Semwal, Sumit" <sumit.semwal@ti.com>
-Cc: Sakari Ailus <sakari.ailus@maxwell.research.nokia.com>, Jesse Barker <jesse.barker@linaro.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Rob Clark <rob@ti.com>, Pawel Osciak <pawel@osciak.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Tomasz Stanislawski <t.stanislaws@samsung.com>, Magnus Damm <magnus.damm@gmail.com>, Marcus Lorentzon <marcus.lorentzon@linaro.org>, Alexander Deucher <alexander.deucher@amd.com>, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Tomasz Stanislawski <t.stanislaws@samsung.com>, linux-fbdev@vger.kernel.org, Sakari Ailus <sakari.ailus@maxwell.research.nokia.com>, Pawel Osciak <pawel@osciak.com>, Magnus Damm <magnus.damm@gmail.com>, Marcus Lorentzon <marcus.lorentzon@linaro.org>, dri-devel@lists.freedesktop.org, Alexander Deucher <alexander.deucher@amd.com>, Rob Clark <rob@ti.com>, linux-media@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>
 
-Hi Sumit,
+On 2/16/12 6:25 PM, Laurent Pinchart wrote:
 
-On Friday 17 February 2012 16:37:35 Semwal, Sumit wrote:
-> On Fri, Feb 17, 2012 at 4:55 AM, Laurent Pinchart wrote: 
-> > Hello everybody,
-> > 
-> > First of all, I would like to thank all the attendees for their
-> > participation in the mini-summit that helped make the meeting a success.
-> 
-> <snip>
-> 
-> > ***  dma-buf Implementation in V4L2 ***
-> > 
-> >  Goal: Implement the dma-buf API in V4L2.
-> > 
-> >  Sumit Semwal has submitted patches to implement the dma-buf importer role
-> > in videobuf2. Tomasz Stanislawski has then submitted incremental patches
-> > to add exporter role support.
-> > 
-> >  Action points:
-> >  - Create a git branch to host all the latest patches. Sumit will provide
-> >    that.
-> 
-> Against my Action Item: I have created the following branch at my
-> github (obviously, it is an RFC branch only)
+> ***  Common video mode data structure and EDID parser ***
+>
+>    Goal: Sharing an EDID parser between DRM/KMS, FBDEV and V4L2.
+>
+>    The DRM EDID parser is currently the most advanced implementation and will
+>    be taken as a starting point.
+>
+>    Different subsystems use different data structures to describe video
+>    mode/timing information:
+>
+>    - struct drm_mode_modeinfo in DRM/KMS
+>    - struct fb_videomode in FBDEV
+>    - struct v4l2_bt_timings in V4L2
+>
+>    A new common video mode/timing data structure (struct media_video_mode_info,
+>    exact name is to be defined), not tied to any specific subsystem, is
+>    required to share the EDID parser. That structure won't be exported to
+>    userspace.
+>
+>    Helper functions will be implemented in the subsystems to convert between
+>    that generic structure and the various subsystem-specific structures.
 
-That was very fast :-) Thank you for your work on this.
+I guess.  I don't really see a reason not to unify the structs too, but 
+then I don't have binary blobs to pretend to be ABI-compatible with.
 
-> tree: git://github.com/sumitsemwal/kernel-omap4.git
-> branch: 3.3rc3-v4l2-dmabuf-RFCv1
-> 
-> As the name partially suggests, it is based out of:
-> 3.3-rc3 +
-> dmav6 [1] +
-> some minor dma-buf updates [2] +
-> my v4l2-as-importer RFC [3] +
-> Tomasz' RFC for v4l2-as-exporter (and related patches) [4]
-> 
-> Since Tomasz' RFC had a patch-pair which first removed and then added
-> drivers/media/video/videobuf2-dma-contig.c file, I 'combined' these
-> into one - but since the patch-pair heavily refactored the file, I am
-> not able to take responsibility of completeness / correctness of the
-> same.
+>    The mode list is stored in the DRM connector in the EDID parser. A new mode
+>    list data structure can be added, or a callback function can be used by the
+>    parser to give modes one at a time to the caller.
+>
+>    3D needs to be taken into account (this is similar to interlacing).
 
-No worries. The branch's main purpose is to provide people with a starting 
-point to use dma-buf, patch review will go through mailing lists anyway.
+Would also be pleasant if the new mode structure had a reasonable way of 
+representing borders, we copied that mistake from xserver and have been 
+regretting it.
 
-> [1]:
-> http://git.infradead.org/users/kmpark/linux-samsung/shortlog/refs/heads/3.3
-> -rc2-dma-v6 [2]: git://git.linaro.org/people/sumitsemwal/linux-3.x.git 'dev'
-> branch [3]:
-> http://thread.gmane.org/gmane.linux.drivers.video-input-infrastructure/4296
-> 6/focusB968 [4]:
-> http://thread.gmane.org/gmane.linux.drivers.video-input-infrastructure/4379
-> 3
+>    Action points:
+>    - Laurent to work on a proposal. The DRM/KMS EDID parser will be reused.
 
--- 
-Regards,
+I'm totally in favor of this.  I've long loathed fbdev having such a 
+broken parser, I just never got around to fixing it since we don't use 
+fbdev in any real way.
 
-Laurent Pinchart
+The existing drm_edid.c needs a little detangling, DDC fetch and EDID 
+parse should be better split.  Shouldn't be too terrible though.
+
+Has the embedded world seen any adoption of DisplayID?  I wrote a fair 
+bit of a parser for it at one point [1] but I've yet to find a machine 
+that's required it.
+
+> ***  Split KMS and GPU Drivers ***
+>
+>    Goal: Split KMS and GPU drivers with in kernel API inbetween.
+>
+>    In most (all ?) SoCs, the GPU and the display controller are separate
+>    devices. Splitting them into separate drivers would allow reusing the GPU
+>    driver with different devices (e.g. using a single common PowerVR kernel
+>    module with different display controller drivers). The same approach can be
+>    used on the desktop for the multi-GPU case and the USB display case.
+>
+>    - OMAP already separates the GPU and DSS drivers, but the GPU driver is some
+>    kind of DSS plugin. This isn't a long-term approach.
+>    - Exynos also separates the GPU and FIMD drivers. It's hard to merge GPU
+>    into  display subsystem since UMP, GPU has own memory management codes.
+>
+>    One of the biggest challenges would be to get GPU vendors to use this new
+>    model. ARM could help here, by making the Mali kernel driver split from the
+>    display controller drivers. Once one vendor jumps onboard, others could have
+>    a bigger incentive to follow.
+
+Honestly I want this for Intel already, given how identical Poulsbo's 
+display block is to gen3.
+
+> ***  HDMI CEC Support ***
+>
+>    Goal: Support HDMI CEC and offer a userspace API for applications.
+>
+>    A new kernel API is needed and must be usable by KMS, V4L2 and possibly
+>    LIRC. There's ongoing effort from Cisco to implement HDMI CEC support. Given
+>    their background, V4L2 is their initial target. A proposal is available at
+>    http://www.mail-archive.com/linux-media@vger.kernel.org/msg29241.html with a
+>    sample implementation at
+>    http://git.linuxtv.org/hverkuil/cisco.git/shortlog/refs/heads/cobalt-
+> mainline
+>    (drivers/media/video/adv7604.c and ad9389b.c.
+>
+>    In order to avoid API duplication, a new CEC subsystem is probably needed.
+>    CEC could be modeled as a bus, or as a network device. With the network
+>    device approach, we could have both kernel and userspace protocol handlers.
+
+I'm not a huge fan of userspace protocol for this.  Seems like it'd just 
+give people more license to do their own subtly-incompatible things that 
+only work between devices of the same vendor.  Interoperability is the 
+_whole_ point of CEC.  (Yes I know every vendor tries to spin it as 
+their own magical branded thing, but I'd appreciate it if they grew up.)
+
+[1] - 
+http://cgit.freedesktop.org/xorg/xserver/tree/hw/xfree86/modes/xf86DisplayIDModes.c
+
+- ajax

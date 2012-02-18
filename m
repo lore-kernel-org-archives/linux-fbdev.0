@@ -1,114 +1,91 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 13 Jan 2012 11:46:29 +0000
-Subject: [PATCH 2/6] OMAPDSS: APPLY: add fifo merge support funcs
-Message-Id: <1326455193-19716-3-git-send-email-tomi.valkeinen@ti.com>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Sat, 18 Feb 2012 18:19:29 +0000
+Subject: [PATCH] drivers/video/pxa168fb.c: use devm_ functions
+Message-Id: <1329589169-18235-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1326455193-19716-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1326455193-19716-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, rob@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Add mechanism to set/unset the DISPC fifo-merge:
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-Add new fields to dss_data, fifo_merge and fifo_merge_dirty. These are
-similar to the other info/dirty flags in ovl_priv_data and ovl_mgr_data,
-but fifo merge is a common attribute to all managers and thus outside
-the ovl_mgr_data.
+The various devm_ functions allocate memory that is released when a driver
+detaches.  This patch uses these functions for data that is allocated in
+the probe function of a platform device and is only freed in the remove
+function.
 
-The fifo-merge field is used in the dss_write_regs_common, which handles
-writing the register.
+By using devm_ioremap, it also removes a potential memory leak, because
+there was no call to iounmap in the probe function.
 
-dss_apply_fifo_merge() can be used to set/unset the fifo merge field in
-the dss_data.
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/apply.c |   43 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 43 insertions(+), 0 deletions(-)
+ drivers/video/pxa168fb.c |   15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 052dc87..604737f 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -105,6 +105,9 @@ static struct {
- 	struct ovl_priv_data ovl_priv_data_array[MAX_DSS_OVERLAYS];
- 	struct mgr_priv_data mgr_priv_data_array[MAX_DSS_MANAGERS];
- 
-+	bool fifo_merge_dirty;
-+	bool fifo_merge;
-+
- 	bool irq_enabled;
- } dss_data;
- 
-@@ -585,11 +588,40 @@ static void dss_mgr_write_regs(struct omap_overlay_manager *mgr)
+diff --git a/drivers/video/pxa168fb.c b/drivers/video/pxa168fb.c
+index 8384b94..f146089 100644
+--- a/drivers/video/pxa168fb.c
++++ b/drivers/video/pxa168fb.c
+@@ -21,6 +21,7 @@
+ #include <linux/fb.h>
+ #include <linux/delay.h>
+ #include <linux/init.h>
++#include <linux/io.h>
+ #include <linux/ioport.h>
+ #include <linux/platform_device.h>
+ #include <linux/dma-mapping.h>
+@@ -670,7 +671,8 @@ static int __devinit pxa168fb_probe(struct platform_device *pdev)
+ 	/*
+ 	 * Map LCD controller registers.
+ 	 */
+-	fbi->reg_base = ioremap_nocache(res->start, resource_size(res));
++	fbi->reg_base = devm_ioremap_nocache(&pdev->dev, res->start,
++					     resource_size(res));
+ 	if (fbi->reg_base = NULL) {
+ 		ret = -ENOMEM;
+ 		goto failed_free_info;
+@@ -739,8 +741,8 @@ static int __devinit pxa168fb_probe(struct platform_device *pdev)
+ 	/*
+ 	 * Register irq handler.
+ 	 */
+-	ret = request_irq(irq, pxa168fb_handle_irq, IRQF_SHARED,
+-					info->fix.id, fbi);
++	ret = devm_request_irq(&pdev->dev, irq, pxa168fb_handle_irq,
++			       IRQF_SHARED, info->fix.id, fbi);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "unable to request IRQ\n");
+ 		ret = -ENXIO;
+@@ -759,14 +761,12 @@ static int __devinit pxa168fb_probe(struct platform_device *pdev)
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "Failed to register pxa168-fb: %d\n", ret);
+ 		ret = -ENXIO;
+-		goto failed_free_irq;
++		goto failed_free_cmap;
  	}
- }
  
-+static void dss_write_regs_common(void)
-+{
-+	const int num_mgrs = omap_dss_get_num_overlay_managers();
-+	int i;
-+
-+	if (!dss_data.fifo_merge_dirty)
-+		return;
-+
-+	for (i = 0; i < num_mgrs; ++i) {
-+		struct omap_overlay_manager *mgr;
-+		struct mgr_priv_data *mp;
-+
-+		mgr = omap_dss_get_overlay_manager(i);
-+		mp = get_mgr_priv(mgr);
-+
-+		if (mp->enabled) {
-+			if (dss_data.fifo_merge_dirty) {
-+				dispc_enable_fifomerge(dss_data.fifo_merge);
-+				dss_data.fifo_merge_dirty = false;
-+			}
-+
-+			if (mp->updating)
-+				mp->shadow_info_dirty = true;
-+		}
-+	}
-+}
-+
- static void dss_write_regs(void)
- {
- 	const int num_mgrs = omap_dss_get_num_overlay_managers();
- 	int i;
+ 	platform_set_drvdata(pdev, fbi);
+ 	return 0;
  
-+	dss_write_regs_common();
-+
- 	for (i = 0; i < num_mgrs; ++i) {
- 		struct omap_overlay_manager *mgr;
- 		struct mgr_priv_data *mp;
-@@ -659,6 +691,8 @@ void dss_mgr_start_update(struct omap_overlay_manager *mgr)
+-failed_free_irq:
+-	free_irq(irq, fbi);
+ failed_free_cmap:
+ 	fb_dealloc_cmap(&info->cmap);
+ failed_free_clk:
+@@ -808,13 +808,10 @@ static int __devexit pxa168fb_remove(struct platform_device *pdev)
+ 		fb_dealloc_cmap(&info->cmap);
  
- 	dss_mgr_write_regs(mgr);
+ 	irq = platform_get_irq(pdev, 0);
+-	free_irq(irq, fbi);
  
-+	dss_write_regs_common();
-+
- 	mp->updating = true;
+ 	dma_free_writecombine(fbi->dev, PAGE_ALIGN(info->fix.smem_len),
+ 				info->screen_base, info->fix.smem_start);
  
- 	if (!dss_data.irq_enabled && need_isr())
-@@ -859,6 +893,15 @@ static void dss_apply_ovl_fifo_thresholds(struct omap_overlay *ovl,
- 	op->extra_info_dirty = true;
- }
+-	iounmap(fbi->reg_base);
+-
+ 	clk_disable(fbi->clk);
+ 	clk_put(fbi->clk);
  
-+static void dss_apply_fifo_merge(bool use_fifo_merge)
-+{
-+	if (dss_data.fifo_merge = use_fifo_merge)
-+		return;
-+
-+	dss_data.fifo_merge = use_fifo_merge;
-+	dss_data.fifo_merge_dirty = true;
-+}
-+
- static void dss_ovl_setup_fifo(struct omap_overlay *ovl)
- {
- 	struct ovl_priv_data *op = get_ovl_priv(ovl);
--- 
-1.7.4.1
 

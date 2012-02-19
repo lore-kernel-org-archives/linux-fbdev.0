@@ -1,56 +1,36 @@
-From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
-Date: Thu, 16 Feb 2012 07:34:09 +0000
-Subject: Re: [PATCH] fb_defio: add first_io callback
-Message-Id: <201202160834.10972.heiko@sntech.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Sun, 19 Feb 2012 15:11:59 +0000
+Subject: [PATCH 5/5] fbdev: s/#if CONFIG/#ifdef CONFIG/
+Message-Id: <1329664319-3128-5-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201112311145.47717.heiko@sntech.de>
-In-Reply-To: <201112311145.47717.heiko@sntech.de>
+References: <1329664319-3128-1-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1329664319-3128-1-git-send-email-geert@linux-m68k.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jiri Kosina <trivial@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
 
-Hi Florian,
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org
+---
+ drivers/video/au1100fb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Am Donnerstag, 16. Februar 2012, 03:27:25 schrieb Florian Tobias Schandinat:
-> Hi Heiko,
->=20
-> sorry for the long delay.
-no problem
+diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
+index de9da67..4da1895 100644
+--- a/drivers/video/au1100fb.c
++++ b/drivers/video/au1100fb.c
+@@ -532,7 +532,7 @@ static int __devinit au1100fb_drv_probe(struct platform_device *dev)
+ 	for (page = (unsigned long)fbdev->fb_mem;
+ 	     page < PAGE_ALIGN((unsigned long)fbdev->fb_mem + fbdev->fb_len);
+ 	     page += PAGE_SIZE) {
+-#if CONFIG_DMA_NONCOHERENT
++#ifdef CONFIG_DMA_NONCOHERENT
+ 		SetPageReserved(virt_to_page(CAC_ADDR((void *)page)));
+ #else
+ 		SetPageReserved(virt_to_page(page));
+-- 
+1.7.0.4
 
-
-> On 12/31/2011 10:45 AM, Heiko St=FCbner wrote:
-> > With this optional callback the driver is notified when the first page
-> > is entered into the pagelist and a new deferred_io call is scheduled.
-> >=20
-> > A possible use-case for this is runtime-pm. In the first_io call
-> >=20
-> > 	pm_runtime_get()
-> >=20
-> > could be called, which starts an asynchronous runtime_resume of the
-> > device. In the deferred_io callback a call to
-> >=20
-> > 	pm_runtime_barrier()
-> >=20
-> > makes the sure, the device is resumed by then and a
-> >=20
-> > 	pm_runtime_put()
-> >=20
-> > may put the device back to sleep.
-> >=20
-> > Also, some SoCs may use the runtime-pm system to determine if they
-> > are able to enter deeper idle states. Therefore it is necessary to
-> > keep the use-count from the first written page until the conclusion
-> > of the screen update, to prevent the system from going to sleep before
-> > completing the pending update.
-> >=20
-> > Signed-off-by: Heiko Stuebner <heiko@sntech.de>
->=20
-> while I consider this patch acceptable, I don't see any reason to apply it
-> as long as there is no driver actually using it.
-ok, so I will keep sitting on it until my driver for the AUO-K190x epd=20
-controller is ready for primetime and resubmit this patch in conjunction wi=
-th=20
-it.
-
-Heiko

@@ -1,58 +1,87 @@
-From: David Airlie <airlied@redhat.com>
-Date: Mon, 20 Feb 2012 16:19:09 +0000
-Subject: Re: Kernel Display and Video API Consolidation mini-summit at ELC	2012 - Notes
-Message-Id: <23a20eb7-2ce0-447a-a991-100dfaeb8571@zmail16.collab.prod.int.phx2.redhat.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date: Mon, 20 Feb 2012 16:40:02 +0000
+Subject: Re: Kernel Display and Video API Consolidation mini-summit at ELC 2012 - Notes
+Message-Id: <Pine.LNX.4.64.1202201709470.2836@axis700.grange>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1202201633100.2836@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1202201633100.2836@axis700.grange>
+References: <201201171126.42675.laurent.pinchart@ideasonboard.com>
+ <1654816.MX2JJ87BEo@avalon> <1775349.d0yvHiVdjB@avalon>
+In-Reply-To: <1775349.d0yvHiVdjB@avalon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Tomasz Stanislawski <t.stanislaws@samsung.com>, linux-fbdev@vger.kernel.org, Sakari Ailus <sakari.ailus@maxwell.research.nokia.com>, Marcus Lorentzon <marcus.lorentzon@linaro.org>, Pawel Osciak <pawel@osciak.com>, Magnus Damm <magnus.damm@gmail.com>, dri-devel@lists.freedesktop.org, Alexander Deucher <alexander.deucher@amd.com>, Rob Clark <rob@ti.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-media@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Sakari Ailus <sakari.ailus@maxwell.research.nokia.com>, Sumit Semwal <sumit.semwal@ti.com>, Jesse Barker <jesse.barker@linaro.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Rob Clark <rob@ti.com>, Pawel Osciak <pawel@osciak.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Tomasz Stanislawski <t.stanislaws@samsung.com>, Magnus Damm <magnus.damm@gmail.com>, Marcus Lorentzon <marcus.lorentzon@linaro.org>, Alexander Deucher <alexander.deucher@amd.com>, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
+On Fri, 17 Feb 2012, Laurent Pinchart wrote:
 
+[snip]
+
+> ***  Synchronous pipeline changes ***
 > 
-> I'm certainly absolutely in favour of creating a common EDID parser,
-> and
-> the DRM/KMS implementation might indeed be the most complete /
-> advanced
-> one, but at least back in 2010 as I was working on the sh-mobile HDMI
-> driver, some functinality was still missing there, which I had to add
-> to
-> fbdev independently. Unless those features have been added to DRM /
-> KMS
-> since then you might want to use the fbdev version. See
+>   Goal: Create an API to apply complex changes to a video pipeline atomically.
 > 
-> http://thread.gmane.org/gmane.linux.ports.arm.omap/55193/focusU337
+>   Needed for complex camera use cases. On the DRM/KMS side, the approach is to
+>   use one big ioctl to configure the whole pipeline.
 > 
-> as well as possibly some other discussions from that period
+>   One solution is a commit ioctl, through the media controller device, that
+>   would be dispatched to entities internally with a prepare step and a commit
+>   step.
 > 
-> http://marc.info/?l=linux-fbdev&r=1&b 1010&w=4
-
-One feature missing from the drm EDID parser doesn't mean the fbdev one is better in all cases.
-
-Whoever takes over the merging process will have to check for missing bits anyways to avoid regressions.
-
-> > 
-> > I think we should include kernel cmdline video mode parsing here,
-> > afaik
-> > kms and fbdev are rather similar (won't work if they're too
-> > different,
-> > obviously).
+>   Parameters to be committed need to be stored in a context. We can either use
+>   one cross-device context, or per-device contexts that would then need to be
+>   associated with the commit operation.
 > 
-> This has been a pretty hot discussion topic wrt sh-mobile LCDC / HDMI
-> too:-) The goal was to (1) take into account driver's capabilities:
-> not
-> all standard HDMI modes were working properly, (2) use EDID data, (3)
-> give
-> the user a chance to select a specific mode. Also here a generic
-> solution
-> would be very welcome, without breaking existing configurations, of
-> course:)
+>   Action points:
+>   - Sakari will provide a proof-of-concept and/or proposal if needed.
 
-The reason the drm has a more enhanced command line parser is to allow
-for multiple devices otherwise it should parse mostly the same I thought
-I based the drm one directly on the fbdev one + connector specifiers.
+I actually have been toying with a related idea, namely replacing the 
+current ACTIVE / TRY configuration pair as not sufficiently clearly defined 
+and too restrictive with a more flexible concept of an arbitrary number of 
+configuration contexts. The idea was to allow the user to create such 
+contexts and use atomic commands to instruct the pipeline to switch between 
+them. However, as I started writing down an RFC, this was exactly the point, 
+where I stopped: what defines a configuration and in which order shall 
+configuration commands be executed when switching between them?
 
-Dave.
+In short, my idea was to allow contexts to contain any configuration 
+options: not only geometry and pixel format as what TRY is using ATM, but 
+also any controls. The API would add commands like
+
+	handle = context_alloc(mode);
+	/*
+	 * mode can be DEFAULT to start a new configuration, based on
+	 * driver defaults, or CLONE to start with the currently active
+	 * configuration
+	 */
+	context_configure(handle);
+	/*
+	 * all configuration commands from now on happen in the background
+	 * and only affect the specified context
+	 */
+	/* perform any configuration */
+	context_switch(handle);
+	/* activate one of pre-configured contexts */
+
+The problem, however, is, how to store contexts and how to perform the 
+switch. We would, probably, have to define a notion of a "complete 
+configuration," which would consist of some generic parameters and, 
+optionally, driver-specific ones. Then the drivers (in the downstream 
+order?) would just be instructed to switch to a specific configuration 
+and each of them would then decide in which order they have to commit 
+specific parameters. This must assume, that regardless in what state a 
+device currently is, switching to context X always produces the same 
+result.
+
+Alternative approaches, like, store each context as a sequence of 
+user-provided configuration commands, and play them back, when switching, 
+would produce unpredictable results, depending on the state, before the 
+switch, especially when using the CLONE context-creation mode.
+
+Anyway, my tuppence to consider.
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/

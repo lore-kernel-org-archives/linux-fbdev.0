@@ -1,62 +1,52 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 09 Feb 2012 10:24:35 +0000
-Subject: Re: [PATCH 00/16] rmk's patch series for fixing OMAP
-Message-Id: <1328783075.1909.44.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-a6NjbueeR9aAlqe0l7uS"
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 20 Feb 2012 10:40:19 +0000
+Subject: [PATCH] video: s3c-fb: use devm_request_irq()
+Message-Id: <017101ccefbc$0ab90710$202b1530$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120208163546.GA15849@n2100.arm.linux.org.uk>
- <4F32DBB5.4010004@gmx.de>  <20120209005334.GG25414@n2100.arm.linux.org.uk>
- <1328770969.1909.11.camel@deskari>  <1328776220.12747.5.camel@lws-gamez>
-In-Reply-To: <1328776220.12747.5.camel@lws-gamez>
-To: linux-arm-kernel@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
+The devm_ functions allocate memory that is released when a driver
+detaches. This patch uses devm_request_irq of these functions.
 
---=-a6NjbueeR9aAlqe0l7uS
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/s3c-fb.c |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
 
-On Thu, 2012-02-09 at 09:30 +0100, Teresa Gamez wrote:
-> Am Donnerstag, den 09.02.2012, 09:02 +0200 schrieb Tomi Valkeinen:
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index e22bf9d..1fb7ddf 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -1433,7 +1433,7 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 		goto err_lcd_clk;
+ 	}
+ 	sfb->irq_no = res->start;
+-	ret = request_irq(sfb->irq_no, s3c_fb_irq,
++	ret = devm_request_irq(dev, sfb->irq_no, s3c_fb_irq,
+ 			  0, "s3c_fb", sfb);
+ 	if (ret) {
+ 		dev_err(dev, "irq request failed\n");
+@@ -1499,7 +1499,6 @@ static int __devinit s3c_fb_probe(struct platform_device *pdev)
+ 
+ err_pm_runtime:
+ 	pm_runtime_put_sync(sfb->dev);
+-	free_irq(sfb->irq_no, sfb);
+ 
+ err_lcd_clk:
+ 	pm_runtime_disable(sfb->dev);
+@@ -1535,8 +1534,6 @@ static int __devexit s3c_fb_remove(struct platform_device *pdev)
+ 		if (sfb->windows[win])
+ 			s3c_fb_release_win(sfb, sfb->windows[win]);
+ 
+-	free_irq(sfb->irq_no, sfb);
+-
+ 	if (!sfb->variant.has_clksel) {
+ 		clk_disable(sfb->lcd_clk);
+ 		clk_put(sfb->lcd_clk);
+-- 
+1.7.1
 
-> > The problem is present in all kernels where we have the HDMI driver, so
-> > 2.6.39+.
->=20
-> Are there already backported patches out there for 3.0/3.1?
-> We are quite interested in this.
-
-I pushed three branches to git://gitorious.org/linux-omap-dss2/linux.git
-
-fixes/for-3.0-stable
-fixes/for-3.1-stable
-fixes/for-3.2-stable
-
-Which contain the necessary backported patches for each version.
-
- Tomi
-
-
---=-a6NjbueeR9aAlqe0l7uS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJPM57jAAoJEPo9qoy8lh71Q+YP+QGiLpSnbmhKwjfu9Q1XshTX
-tAg2iQVHtiKJM61dTemLO91ulhNlPhMzO8SeWhNz8EiVQzsHynaD7dxvZhLj6Vy6
-moFulF68ayu8Wb18WWsFgeMiRwEMtvBo5CGqrah35fzzCOUEoEQt0XVzfz/q9Xep
-9FhMgYyJ4wv34Na6YzhMC7qXgA02iITiVYtMK1/NZwAlBxJVuHJoWxn/S6WcbIB+
-vGXIpC83cjj/51eq9LSOa+/5MRHna+T2frFklw41sCnUWn2zXVy+pyJ4A0ZcVd8H
-UmVG2tQWcMUdhHVCoj6GBoBImYqS//6uNS4bcbhxzNzEO3faY+mWZwcCBfBEXjrP
-yfN+K+vRO87KdZ1ggGq6WdEVVjy2/j0NzSCMgmGADk+HP5SU4/q7607VkHwC687P
-XCs8lrjc33y2uVDAM8zaPGy9mxOv1XzUAHTyuLawxsy7XpeXIg83WiObD2vKxCGh
-KT685ioywrz1p+CToa+79/pBfIj5aasLw6AGjuwLg8ok2DlVH9hjPO0XIoxSHFKY
-XRlPiGvUWQv0HKpaysYcLs9ksNzRvwF4es6Nnt4HdVBgi2U9Uje9ekq+ocA1i/t0
-OjFxf2m69UBPxPZH6iK5FWQva37r80k21G5QXFbkQcrp9/e5/VbUqdftZ93tTtFA
-lT9sOM+DsVT2G/rR0B6A
-=dSzd
------END PGP SIGNATURE-----
-
---=-a6NjbueeR9aAlqe0l7uS--
 

@@ -1,37 +1,54 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 19 Feb 2012 22:40:05 +0000
-Subject: Re: [PATCH 00/13] sa1100fb cleanups
-Message-Id: <4F417A45.8040106@gmx.de>
+From: Tony Lindgren <tony@atomide.com>
+Date: Tue, 21 Feb 2012 23:40:35 +0000
+Subject: [PATCH 1/8] ARM: OMAP2+: Move DISPC L3 firewall to happen in omap_display_init()
+Message-Id: <20120221234035.18709.40664.stgit@kaulin.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120204093744.GQ889@n2100.arm.linux.org.uk>
-In-Reply-To: <20120204093744.GQ889@n2100.arm.linux.org.uk>
+References: <20120221233619.18709.87982.stgit@kaulin.local>
+In-Reply-To: <20120221233619.18709.87982.stgit@kaulin.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Russell,
+Otherwise we cannot move most of plat/io.h to be a local
+iomap.h for mach-omap2.
 
-On 02/04/2012 09:37 AM, Russell King - ARM Linux wrote:
-> Here's another bunch of SA11x0 stuff - its framebuffer driver.  This
-> set of patches fixes some section mismatch warnings, moves the board
-> configuration out to the board files, converts the Shannon stuff to
-> use gpiolib rather than poking at GPDR/GPSR/GPCR directly.
-> 
-> The function hooks for LCD and backlight power control are moved into
-> the platform data passed from the board, eliminating the global function
-> pointers.
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/display.c   |    3 +++
+ drivers/video/omap2/dss/dispc.c |    5 -----
+ 2 files changed, 3 insertions(+), 5 deletions(-)
 
-This series looks good to me.
-Acked-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index 3677b1f..5a7f12f 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -191,6 +191,9 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
+ 	memset(&pdata, 0, sizeof(pdata));
+ 
+ 	if (cpu_is_omap24xx()) {
++		/* L3 firewall setting: enable access to OCM RAM */
++		__raw_writel(0x402000b0, OMAP2_L3_IO_ADDRESS(0x680050a0));
++
+ 		curr_dss_hwmod = omap2_dss_hwmod_data;
+ 		oh_count = ARRAY_SIZE(omap2_dss_hwmod_data);
+ 	} else if (cpu_is_omap34xx()) {
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index e1626a1..cce0820 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -3272,11 +3272,6 @@ static void _omap_dispc_initial_config(void)
+ 	if (dss_has_feature(FEAT_FUNCGATED))
+ 		REG_FLD_MOD(DISPC_CONFIG, 1, 9, 9);
+ 
+-	/* L3 firewall setting: enable access to OCM RAM */
+-	/* XXX this should be somewhere in plat-omap */
+-	if (cpu_is_omap24xx())
+-		__raw_writel(0x402000b0, OMAP2_L3_IO_ADDRESS(0x680050a0));
+-
+ 	_dispc_setup_color_conv_coef();
+ 
+ 	dispc_set_loadmode(OMAP_DSS_LOAD_FRAME_ONLY);
 
-> This series will conflict with the previous series (in the case of
-> Assabet, the conflict is quite large) so I'd prefer to keep this in my
-> tree for the next merge window.
-
-Sure, feel free to proceed with this series as you like.
-
-
-Best regards,
-
-Florian Tobias Schandinat

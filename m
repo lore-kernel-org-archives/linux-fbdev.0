@@ -1,78 +1,176 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 14 Feb 2012 13:17:52 +0000
-Subject: Re: [PATCH] OMAP: DSS2: TPO-TD03MTEA1: update default gamma
-Message-Id: <1329225472.1845.112.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-fXajKhxR0BLTeee8nK4Y"
+From: Tony Lindgren <tony@atomide.com>
+Date: Tue, 21 Feb 2012 23:40:51 +0000
+Subject: [PATCH 8/8] ARM: OMAP2+: Limit omap_read/write usage to legacy USB drivers
+Message-Id: <20120221234051.18709.3571.stgit@kaulin.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1328573630-7348-1-git-send-email-notasas@gmail.com>
-	 <1328573630-7348-2-git-send-email-notasas@gmail.com>
-	 <1329222910.1845.90.camel@deskari>
-	 <CANOLnONLHgRzZ-rez4p9Ou6qCtoWVhZWPXNEgsQarBRVFstTaw@mail.gmail.com>
-In-Reply-To: <CANOLnONLHgRzZ-rez4p9Ou6qCtoWVhZWPXNEgsQarBRVFstTaw@mail.gmail.com>
-To: Grazvydas Ignotas <notasas@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+References: <20120221233619.18709.87982.stgit@kaulin.local>
+In-Reply-To: <20120221233619.18709.87982.stgit@kaulin.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
+Drivers should no longer use omap_read/write functions
+but instead use ioremap + read/write functions.
 
---=-fXajKhxR0BLTeee8nK4Y
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+As some USB legacy code is still shared between omap1 and
+omap2420, let's limit the omap_read/write to plat/usb.h.
 
-On Tue, 2012-02-14 at 15:14 +0200, Grazvydas Ignotas wrote:
-> On Tue, Feb 14, 2012 at 2:35 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> w=
-rote:
-> > Hi,
-> >
-> > On Tue, 2012-02-07 at 02:13 +0200, Grazvydas Ignotas wrote:
-> >> Over time better gamma has been determined and tuned with some
-> >> equipment so update the defaults. From subjective point of view
-> >> dark shades should be better visible.
-> >
-> > Is there even need for default gamma? I'd guess the panel has a default
-> > gamma in its firmware, so it should work fine without setting it. And
-> > there's sysfs interface to set the gamma from userspace.
-> >
-> > And, as you said, it's subjective, i.e. there's no right value for it,
-> > so I'm a bit inclined to say that the driver shouldn't even set a
-> > default gamma, and just leave it to userspace.
->=20
-> Well for pandora, we encourage people to run custom Linux distros on
-> the device, people reported running Debian, Arch and Slackware on the
-> device, so we don't have control over everyone's userspace. To reduce
-> the need for everyone to hack userspace of their distro of choice, it
-> would be great to have nice display just from the kernel,
-> out-of-the-box (this gamma has been tuned with some TV studio
-> equipment so is not totally subjective). Still if you don't want it,
-> we can keep carrying that in pandora's kernel tree too.
+Also, let's make drivers/video/omap/lcdc.c depend on
+ARCH_OMAP1 as it is not needed for omap2+.
 
-Ok, fair enough. It's not a problem, just a few lines of code. But I
-don't want to get patches every now and that adjust the default gamma to
-whatever is subjectively best at that point of time =3D).
+Note that the long term fix is to update the drivers to
+use ioremap and read/write functions. That can now be
+done as a separate patch series that is limited to the
+USB drivers.
 
- Tomi
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/common.h          |   10 --------
+ arch/arm/mach-omap2/io.c              |   40 ---------------------------------
+ arch/arm/plat-omap/include/plat/usb.h |   40 +++++++++++++++++++++++++++++++++
+ drivers/video/omap/Kconfig            |    2 +-
+ 4 files changed, 41 insertions(+), 51 deletions(-)
 
-
---=-fXajKhxR0BLTeee8nK4Y
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJPOl8AAAoJEPo9qoy8lh71BSUP/10XoPsHDlRi7zNH/0wwCfW9
-k3ObCa49+IVRj+OkNI38ODY+m3IH1Y6M0jW/f7bi2eQCYhlGD2bkJJKJlURDB4TO
-h1SCU9NnDHsLLQLZFE/3LUEvGoOoIecm+PMc4BKRPAd7f8ko1xz2l69FIb4OpfHP
-IfOzliz1klmYF838UojYJnRjAZ1b2NQrd5Q6TBPmPIYoKr0kG9VwDu9VPt7T9Rcw
-ZL3RjmtKkNUcjWUaHQqMyT6kzIyo3JiKNtrRuRqMVY0QdlpeZLPgI/0Pyz1oPF1u
-zglpkSb1556nyFkEJ9YONl/p8sXxZyRVUpbKE62+N93+cxpnj/Mv3CuPAchE9N7N
-CexHB3zi3KoeBJjHlLC1hjU32jYqpvpnkrlh3qHZZfs9pnZgtvN3ztYwz6N+ba2O
-oNfoqRIQ0O888jSJzQyvljpIZ7t3RW/kpuvyx9dyWBxZ9iAyuYK+9zuH0wb0j5v7
-xg8KXG1NQvmoFHoSoQyOpWhT8tOlErYOMvszvpXe1mqh4eliChuYkInwaSLSQ6R8
-jhlYg8dRsPjwTbiB04Be2B58NkO/7NFmkJvTE0nm1UESBwqRryfuRBwUoUj/Mt6M
-uiOuXrQKisDue/RAXE8/g08f1/aWOA5Rkj4EEpkAJM6gC03L/UfabYUfjOvx5vb0
-vDxmd7xuWEeGQRPW0D0G
-=gIq+
------END PGP SIGNATURE-----
-
---=-fXajKhxR0BLTeee8nK4Y--
+diff --git a/arch/arm/mach-omap2/common.h b/arch/arm/mach-omap2/common.h
+index 09ca9e9..f78ec4e 100644
+--- a/arch/arm/mach-omap2/common.h
++++ b/arch/arm/mach-omap2/common.h
+@@ -242,15 +242,5 @@ struct omap_sdrc_params;
+ extern void omap_sdrc_init(struct omap_sdrc_params *sdrc_cs0,
+ 				      struct omap_sdrc_params *sdrc_cs1);
+ 
+-/*
+- * NOTE: Please use ioremap + __raw_read/write where possible instead of these
+- */
+-extern u8 omap_readb(u32 pa);
+-extern u16 omap_readw(u32 pa);
+-extern u32 omap_readl(u32 pa);
+-extern void omap_writeb(u8 v, u32 pa);
+-extern void omap_writew(u16 v, u32 pa);
+-extern void omap_writel(u32 v, u32 pa);
+-
+ #endif /* __ASSEMBLER__ */
+ #endif /* __ARCH_ARM_MACH_OMAP2PLUS_COMMON_H */
+diff --git a/arch/arm/mach-omap2/io.c b/arch/arm/mach-omap2/io.c
+index 0119807..3203128 100644
+--- a/arch/arm/mach-omap2/io.c
++++ b/arch/arm/mach-omap2/io.c
+@@ -487,43 +487,3 @@ void __init omap_sdrc_init(struct omap_sdrc_params *sdrc_cs0,
+ 		_omap2_init_reprogram_sdrc();
+ 	}
+ }
+-
+-/*
+- * NOTE: Please use ioremap + __raw_read/write where possible instead of these
+- */
+-
+-u8 omap_readb(u32 pa)
+-{
+-	return __raw_readb(OMAP2_L4_IO_ADDRESS(pa));
+-}
+-EXPORT_SYMBOL(omap_readb);
+-
+-u16 omap_readw(u32 pa)
+-{
+-	return __raw_readw(OMAP2_L4_IO_ADDRESS(pa));
+-}
+-EXPORT_SYMBOL(omap_readw);
+-
+-u32 omap_readl(u32 pa)
+-{
+-	return __raw_readl(OMAP2_L4_IO_ADDRESS(pa));
+-}
+-EXPORT_SYMBOL(omap_readl);
+-
+-void omap_writeb(u8 v, u32 pa)
+-{
+-	__raw_writeb(v, OMAP2_L4_IO_ADDRESS(pa));
+-}
+-EXPORT_SYMBOL(omap_writeb);
+-
+-void omap_writew(u16 v, u32 pa)
+-{
+-	__raw_writew(v, OMAP2_L4_IO_ADDRESS(pa));
+-}
+-EXPORT_SYMBOL(omap_writew);
+-
+-void omap_writel(u32 v, u32 pa)
+-{
+-	__raw_writel(v, OMAP2_L4_IO_ADDRESS(pa));
+-}
+-EXPORT_SYMBOL(omap_writel);
+diff --git a/arch/arm/plat-omap/include/plat/usb.h b/arch/arm/plat-omap/include/plat/usb.h
+index dc864b5..5f6ced4 100644
+--- a/arch/arm/plat-omap/include/plat/usb.h
++++ b/arch/arm/plat-omap/include/plat/usb.h
+@@ -3,6 +3,7 @@
+ #ifndef	__ASM_ARCH_OMAP_USB_H
+ #define	__ASM_ARCH_OMAP_USB_H
+ 
++#include <linux/io.h>
+ #include <linux/usb/musb.h>
+ #include <plat/board.h>
+ 
+@@ -105,6 +106,45 @@ extern int omap4430_phy_set_clk(struct device *dev, int on);
+ extern int omap4430_phy_init(struct device *dev);
+ extern int omap4430_phy_exit(struct device *dev);
+ extern int omap4430_phy_suspend(struct device *dev, int suspend);
++
++/*
++ * NOTE: Please update omap USB drivers to use ioremap + read/write
++ */
++
++#define OMAP2_L4_IO_OFFSET		0xb2000000
++#define OMAP2_L4_IO_ADDRESS(pa)		IOMEM((pa) + OMAP2_L4_IO_OFFSET)
++
++static inline u8 omap_readb(u32 pa)
++{
++	return __raw_readb(OMAP2_L4_IO_ADDRESS(pa));
++}
++
++static inline u16 omap_readw(u32 pa)
++{
++	return __raw_readw(OMAP2_L4_IO_ADDRESS(pa));
++}
++
++static inline u32 omap_readl(u32 pa)
++{
++	return __raw_readl(OMAP2_L4_IO_ADDRESS(pa));
++}
++
++static inline void omap_writeb(u8 v, u32 pa)
++{
++	__raw_writeb(v, OMAP2_L4_IO_ADDRESS(pa));
++}
++
++
++static inline void omap_writew(u16 v, u32 pa)
++{
++	__raw_writew(v, OMAP2_L4_IO_ADDRESS(pa));
++}
++
++static inline void omap_writel(u32 v, u32 pa)
++{
++	__raw_writel(v, OMAP2_L4_IO_ADDRESS(pa));
++}
++
+ #endif
+ 
+ extern void am35x_musb_reset(void);
+diff --git a/drivers/video/omap/Kconfig b/drivers/video/omap/Kconfig
+index 84ff232..295d1cc 100644
+--- a/drivers/video/omap/Kconfig
++++ b/drivers/video/omap/Kconfig
+@@ -11,7 +11,7 @@ config FB_OMAP
+ 
+ config FB_OMAP_LCDC_EXTERNAL
+ 	bool "External LCD controller support"
+-	depends on FB_OMAP
++	depends on FB_OMAP && ARCH_OMAP1
+ 	help
+ 	  Say Y here, if you want to have support for boards with an
+ 	  external LCD controller connected to the SoSSI/RFBI interface.
 

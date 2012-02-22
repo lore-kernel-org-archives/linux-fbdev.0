@@ -1,176 +1,60 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Tue, 21 Feb 2012 23:40:51 +0000
-Subject: [PATCH 8/8] ARM: OMAP2+: Limit omap_read/write usage to legacy USB drivers
-Message-Id: <20120221234051.18709.3571.stgit@kaulin.local>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 22 Feb 2012 08:14:01 +0000
+Subject: Re: [PATCH 8/8] ARM: OMAP2+: Limit omap_read/write usage to legacy USB drivers
+Message-Id: <1329898441.2070.10.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-hGaf9HnPqA6s91vrxpYC"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20120221233619.18709.87982.stgit@kaulin.local>
-In-Reply-To: <20120221233619.18709.87982.stgit@kaulin.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <20120221234051.18709.3571.stgit@kaulin.local>
+In-Reply-To: <20120221234051.18709.3571.stgit@kaulin.local>
 To: linux-arm-kernel@lists.infradead.org
 
-Drivers should no longer use omap_read/write functions
-but instead use ioremap + read/write functions.
 
-As some USB legacy code is still shared between omap1 and
-omap2420, let's limit the omap_read/write to plat/usb.h.
+--=-hGaf9HnPqA6s91vrxpYC
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Also, let's make drivers/video/omap/lcdc.c depend on
-ARCH_OMAP1 as it is not needed for omap2+.
+On Tue, 2012-02-21 at 15:40 -0800, Tony Lindgren wrote:
+> Drivers should no longer use omap_read/write functions
+> but instead use ioremap + read/write functions.
+>=20
+> As some USB legacy code is still shared between omap1 and
+> omap2420, let's limit the omap_read/write to plat/usb.h.
+>=20
+> Also, let's make drivers/video/omap/lcdc.c depend on
+> ARCH_OMAP1 as it is not needed for omap2+.
 
-Note that the long term fix is to update the drivers to
-use ioremap and read/write functions. That can now be
-done as a separate patch series that is limited to the
-USB drivers.
+I'm ok with the lcdc.c change, but I also have a patch series that makes
+the same change, plus removes the omap2 code from drivers/video/omap/.
 
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- arch/arm/mach-omap2/common.h          |   10 --------
- arch/arm/mach-omap2/io.c              |   40 ---------------------------------
- arch/arm/plat-omap/include/plat/usb.h |   40 +++++++++++++++++++++++++++++++++
- drivers/video/omap/Kconfig            |    2 +-
- 4 files changed, 41 insertions(+), 51 deletions(-)
+Can you check the series, and give ack if the arch/arm side looks fine?
+It's this one: [PATCH 00/16] OMAPDSS: old OMAPFB cleanup
 
-diff --git a/arch/arm/mach-omap2/common.h b/arch/arm/mach-omap2/common.h
-index 09ca9e9..f78ec4e 100644
---- a/arch/arm/mach-omap2/common.h
-+++ b/arch/arm/mach-omap2/common.h
-@@ -242,15 +242,5 @@ struct omap_sdrc_params;
- extern void omap_sdrc_init(struct omap_sdrc_params *sdrc_cs0,
- 				      struct omap_sdrc_params *sdrc_cs1);
- 
--/*
-- * NOTE: Please use ioremap + __raw_read/write where possible instead of these
-- */
--extern u8 omap_readb(u32 pa);
--extern u16 omap_readw(u32 pa);
--extern u32 omap_readl(u32 pa);
--extern void omap_writeb(u8 v, u32 pa);
--extern void omap_writew(u16 v, u32 pa);
--extern void omap_writel(u32 v, u32 pa);
--
- #endif /* __ASSEMBLER__ */
- #endif /* __ARCH_ARM_MACH_OMAP2PLUS_COMMON_H */
-diff --git a/arch/arm/mach-omap2/io.c b/arch/arm/mach-omap2/io.c
-index 0119807..3203128 100644
---- a/arch/arm/mach-omap2/io.c
-+++ b/arch/arm/mach-omap2/io.c
-@@ -487,43 +487,3 @@ void __init omap_sdrc_init(struct omap_sdrc_params *sdrc_cs0,
- 		_omap2_init_reprogram_sdrc();
- 	}
- }
--
--/*
-- * NOTE: Please use ioremap + __raw_read/write where possible instead of these
-- */
--
--u8 omap_readb(u32 pa)
--{
--	return __raw_readb(OMAP2_L4_IO_ADDRESS(pa));
--}
--EXPORT_SYMBOL(omap_readb);
--
--u16 omap_readw(u32 pa)
--{
--	return __raw_readw(OMAP2_L4_IO_ADDRESS(pa));
--}
--EXPORT_SYMBOL(omap_readw);
--
--u32 omap_readl(u32 pa)
--{
--	return __raw_readl(OMAP2_L4_IO_ADDRESS(pa));
--}
--EXPORT_SYMBOL(omap_readl);
--
--void omap_writeb(u8 v, u32 pa)
--{
--	__raw_writeb(v, OMAP2_L4_IO_ADDRESS(pa));
--}
--EXPORT_SYMBOL(omap_writeb);
--
--void omap_writew(u16 v, u32 pa)
--{
--	__raw_writew(v, OMAP2_L4_IO_ADDRESS(pa));
--}
--EXPORT_SYMBOL(omap_writew);
--
--void omap_writel(u32 v, u32 pa)
--{
--	__raw_writel(v, OMAP2_L4_IO_ADDRESS(pa));
--}
--EXPORT_SYMBOL(omap_writel);
-diff --git a/arch/arm/plat-omap/include/plat/usb.h b/arch/arm/plat-omap/include/plat/usb.h
-index dc864b5..5f6ced4 100644
---- a/arch/arm/plat-omap/include/plat/usb.h
-+++ b/arch/arm/plat-omap/include/plat/usb.h
-@@ -3,6 +3,7 @@
- #ifndef	__ASM_ARCH_OMAP_USB_H
- #define	__ASM_ARCH_OMAP_USB_H
- 
-+#include <linux/io.h>
- #include <linux/usb/musb.h>
- #include <plat/board.h>
- 
-@@ -105,6 +106,45 @@ extern int omap4430_phy_set_clk(struct device *dev, int on);
- extern int omap4430_phy_init(struct device *dev);
- extern int omap4430_phy_exit(struct device *dev);
- extern int omap4430_phy_suspend(struct device *dev, int suspend);
-+
-+/*
-+ * NOTE: Please update omap USB drivers to use ioremap + read/write
-+ */
-+
-+#define OMAP2_L4_IO_OFFSET		0xb2000000
-+#define OMAP2_L4_IO_ADDRESS(pa)		IOMEM((pa) + OMAP2_L4_IO_OFFSET)
-+
-+static inline u8 omap_readb(u32 pa)
-+{
-+	return __raw_readb(OMAP2_L4_IO_ADDRESS(pa));
-+}
-+
-+static inline u16 omap_readw(u32 pa)
-+{
-+	return __raw_readw(OMAP2_L4_IO_ADDRESS(pa));
-+}
-+
-+static inline u32 omap_readl(u32 pa)
-+{
-+	return __raw_readl(OMAP2_L4_IO_ADDRESS(pa));
-+}
-+
-+static inline void omap_writeb(u8 v, u32 pa)
-+{
-+	__raw_writeb(v, OMAP2_L4_IO_ADDRESS(pa));
-+}
-+
-+
-+static inline void omap_writew(u16 v, u32 pa)
-+{
-+	__raw_writew(v, OMAP2_L4_IO_ADDRESS(pa));
-+}
-+
-+static inline void omap_writel(u32 v, u32 pa)
-+{
-+	__raw_writel(v, OMAP2_L4_IO_ADDRESS(pa));
-+}
-+
- #endif
- 
- extern void am35x_musb_reset(void);
-diff --git a/drivers/video/omap/Kconfig b/drivers/video/omap/Kconfig
-index 84ff232..295d1cc 100644
---- a/drivers/video/omap/Kconfig
-+++ b/drivers/video/omap/Kconfig
-@@ -11,7 +11,7 @@ config FB_OMAP
- 
- config FB_OMAP_LCDC_EXTERNAL
- 	bool "External LCD controller support"
--	depends on FB_OMAP
-+	depends on FB_OMAP && ARCH_OMAP1
- 	help
- 	  Say Y here, if you want to have support for boards with an
- 	  external LCD controller connected to the SoSSI/RFBI interface.
+ Tomi
+
+
+--=-hGaf9HnPqA6s91vrxpYC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJPRKPJAAoJEPo9qoy8lh7190YP/09+OkEGMJuQBQp/ypauztt5
+BnUm9E7Kw47mubN+8tisiB6G6Hup5CbJgX3vCyarYNI7bJ4PWdjqVU36UxWEyiRP
+Rs8LFDN8W5dKQ83wURPLBP4MsXj716mc07rPw1duxfs+fLmtPSAqR7UxaZ2QjEeJ
+Hjz+/mGE4h9CZKmKLPYIRLr6cn/gomj57m07sdX94fseTC3q36YzztlcdljQADvm
+aTEzthVxs+rFDeghklhgl1lpeAYEDnaj/hSX8V6cUnKxgXumltOoT6y7u+DaLeFr
+kC+jrxF3w6BG+HIrHZzR4I441UO/WvBYOEhazax8zNRVTV3j56gMyJOV0Qpk0j2B
+w0sv6TA08Lk4nfEdKdbgB7P5ShmeTX5QbfEZuzFIMI+GLOdTqKI8uNXVcQV60DPd
+C69L18lu0pkfXkGZLe0YTJ1GNKifPf/JXGEIZlhkpg5opX4lXz7tNc7YYDDQbbhB
+cMkTUVlvBOYCyfmfpc7aTCUUA4e+hmgUWjaN4/2OoaASkeYt3JgUrpPyhthj6iXv
+sCJrU8p8fpaKuz0og680MzScqxBFsS1647Awa6r36gI2d4gXgTMK34FonGaMegHm
+AOpTOk80eWrcCdzaQOklamRBwuxtdpKH85b0EhUIvIDJ1hxJHzVm/EN/Qm1RT0u9
+IoAct649PmdKFkKS3b0q
+=n3pr
+-----END PGP SIGNATURE-----
+
+--=-hGaf9HnPqA6s91vrxpYC--
 

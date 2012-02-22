@@ -1,46 +1,25 @@
-From: Vasily Khoruzhick <anarsoul@gmail.com>
-Date: Sun, 26 Feb 2012 13:52:02 +0000
-Subject: [PATCH] pxafb: do console locking before calling fb_blank()
-Message-Id: <1330264322-5938-1-git-send-email-anarsoul@gmail.com>
+From: Tony Lindgren <tony@atomide.com>
+Date: Wed, 22 Feb 2012 18:06:58 +0000
+Subject: Re: [PATCH 04/16] OMAPFB: Remove video SRAM support (old omapfb)
+Message-Id: <20120222180658.GY18185@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
+ <1327399231-20826-5-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1327399231-20826-5-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
 
-Otherwise we hit WARN_CONSOLE_UNLOCKED in do_unblank_screen
+* Tomi Valkeinen <tomi.valkeinen@ti.com> [120124 01:30]:
+> OMAP SRAM can be used as video memory on OMAP1 and 2. However, there
+> usually is very little SRAM available, thus limiting its use, and no
+> board supported by the kernel currently uses it.
+> 
+> This patch removes the use of SRAM as video ram for the old omapfb
+> driver to simplify memory handling.
+> 
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Signed-off-by: Vasily Khoruzhick <anarsoul@gmail.com>
----
- drivers/video/pxafb.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
-index 1d1e4f1..c176561 100644
---- a/drivers/video/pxafb.c
-+++ b/drivers/video/pxafb.c
-@@ -54,6 +54,7 @@
- #include <linux/mutex.h>
- #include <linux/kthread.h>
- #include <linux/freezer.h>
-+#include <linux/console.h>
- 
- #include <mach/hardware.h>
- #include <asm/io.h>
-@@ -730,9 +731,12 @@ static int overlayfb_open(struct fb_info *info, int user)
- 	if (user = 0)
- 		return -ENODEV;
- 
--	if (ofb->usage++ = 0)
-+	if (ofb->usage++ = 0) {
- 		/* unblank the base framebuffer */
-+		console_lock();
- 		fb_blank(&ofb->fbi->fb, FB_BLANK_UNBLANK);
-+		console_unlock();
-+	}
- 
- 	return 0;
- }
--- 
-1.7.9.2
-
+Acked-by: Tony Lindgren <tony@atomide.com>

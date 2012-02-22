@@ -1,67 +1,40 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Tue, 14 Feb 2012 06:35:02 +0000
-Subject: [PATCH 2/3] viafb: fix I2C emulation on GPIO ports
-Message-Id: <2c4c8a8a73b64a8ea86ad85d8a59a5914d2f81ea.1329200232.git.FlorianSchandinat@gmx.de>
+Date: Wed, 22 Feb 2012 18:53:05 +0000
+Subject: [PATCH 1/5] viafb: another workaround for OLPCs weird wiring
+Message-Id: <78145b7a343fe2950478e649e905f557054df884.1329936280.git.FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1329200232.git.FlorianSchandinat@gmx.de>
-In-Reply-To: <cover.1329200232.git.FlorianSchandinat@gmx.de>
+References: <cover.1329936280.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <cover.1329936280.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-This patch fixes the I2C emulation on GPIO ports by enabling it
-(software controlled) and disabling the output on a GPIO line before
-reading it.
+On OLPC we must not touch this I2C bus or it will hang.
 
 Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/via/via_i2c.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+ drivers/video/via/viafbdev.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/via/via_i2c.c b/drivers/video/via/via_i2c.c
-index 78f1405..dd53058 100644
---- a/drivers/video/via/via_i2c.c
-+++ b/drivers/video/via/via_i2c.c
-@@ -51,7 +51,7 @@ static void via_i2c_setscl(void *data, int state)
- 		val |= 0x01;
- 		break;
- 	case VIA_PORT_GPIO:
--		val |= 0x80;
-+		val |= 0x82;
- 		break;
- 	default:
- 		printk(KERN_ERR "viafb_i2c: specify wrong i2c type.\n");
-@@ -67,6 +67,9 @@ static int via_i2c_getscl(void *data)
- 	int ret = 0;
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 4791165..9cfa92e 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1752,8 +1752,10 @@ static void __devinit i2c_bus_probe(struct viafb_shared *shared)
+ 	shared->i2c_31 = via_aux_probe(viafb_find_i2c_adapter(VIA_PORT_31));
  
- 	spin_lock_irqsave(&i2c_vdev->reg_lock, flags);
-+	if (adap_data->type = VIA_PORT_GPIO)
-+		via_write_reg_mask(adap_data->io_port, adap_data->ioport_index,
-+			0, 0x80);
- 	if (via_read_reg(adap_data->io_port, adap_data->ioport_index) & 0x08)
- 		ret = 1;
- 	spin_unlock_irqrestore(&i2c_vdev->reg_lock, flags);
-@@ -80,6 +83,9 @@ static int via_i2c_getsda(void *data)
- 	int ret = 0;
+ 	/* FIXME: what is this? */
+-	printk(KERN_INFO "viafb: Probing I2C bus 0x2C\n");
+-	shared->i2c_2C = via_aux_probe(viafb_find_i2c_adapter(VIA_PORT_2C));
++	if (!machine_is_olpc()) {
++		printk(KERN_INFO "viafb: Probing I2C bus 0x2C\n");
++		shared->i2c_2C = via_aux_probe(viafb_find_i2c_adapter(VIA_PORT_2C));
++	}
  
- 	spin_lock_irqsave(&i2c_vdev->reg_lock, flags);
-+	if (adap_data->type = VIA_PORT_GPIO)
-+		via_write_reg_mask(adap_data->io_port, adap_data->ioport_index,
-+			0, 0x40);
- 	if (via_read_reg(adap_data->io_port, adap_data->ioport_index) & 0x04)
- 		ret = 1;
- 	spin_unlock_irqrestore(&i2c_vdev->reg_lock, flags);
-@@ -103,7 +109,7 @@ static void via_i2c_setsda(void *data, int state)
- 		val |= 0x01;
- 		break;
- 	case VIA_PORT_GPIO:
--		val |= 0x40;
-+		val |= 0x42;
- 		break;
- 	default:
- 		printk(KERN_ERR "viafb_i2c: specify wrong i2c type.\n");
+ 	printk(KERN_INFO "viafb: Finished I2C bus probing");
+ }
 -- 
 1.7.9
 

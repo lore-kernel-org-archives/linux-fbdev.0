@@ -1,37 +1,22 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 06 Feb 2012 02:30:39 +0000
-Subject: [PATCH] MAINTAINERS: add maintainer entry for Exynos DP driver
-Message-Id: <001501cce477$50eaad60$f2c00820$%han@samsung.com>
+From: Tony Lindgren <tony@atomide.com>
+Date: Wed, 22 Feb 2012 18:11:28 +0000
+Subject: Re: [PATCH 15/16] OMAP1: Remove unused LCD devices from board files
+Message-Id: <20120222181128.GG18185@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1327399231-20826-1-git-send-email-tomi.valkeinen@ti.com>
+ <1327399231-20826-16-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1327399231-20826-16-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
 
-Add maintainer entry for Exynos DP driver which can be used for
-Samsung Exynos SoC series.
+* Tomi Valkeinen <tomi.valkeinen@ti.com> [120124 01:30]:
+> Some OMAP1 board files define LCD platform_devices, but there are no
+> corresponding LCD drivers for those in the kernel. Thus remove these LCD
+> devices.
+> 
+> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
----
- MAINTAINERS |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index ebb1936..f685bfd 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2639,6 +2639,12 @@ M:	Mimi Zohar <zohar@us.ibm.com>
- S:	Supported
- F:	security/integrity/evm/
- 
-+EXYNOS DP DRIVER
-+M:	Jingoo Han <jg1.han@samsung.com>
-+L:	linux-fbdev@vger.kernel.org
-+S:	Maintained
-+F:	drivers/video/exynos/exynos_dp*
-+
- F71805F HARDWARE MONITORING DRIVER
- M:	Jean Delvare <khali@linux-fr.org>
- L:	lm-sensors@lm-sensors.org
---
-
+Acked-by: Tony Lindgren <tony@atomide.com>

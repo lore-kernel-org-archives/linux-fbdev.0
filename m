@@ -1,60 +1,39 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 22 Feb 2012 08:14:01 +0000
+From: Tony Lindgren <tony@atomide.com>
+Date: Wed, 22 Feb 2012 18:57:28 +0000
 Subject: Re: [PATCH 8/8] ARM: OMAP2+: Limit omap_read/write usage to legacy USB drivers
-Message-Id: <1329898441.2070.10.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-hGaf9HnPqA6s91vrxpYC"
+Message-Id: <20120222185728.GJ18185@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20120221233619.18709.87982.stgit@kaulin.local>
  <20120221234051.18709.3571.stgit@kaulin.local>
-In-Reply-To: <20120221234051.18709.3571.stgit@kaulin.local>
+ <1329898441.2070.10.camel@deskari>
+In-Reply-To: <1329898441.2070.10.camel@deskari>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
+* Tomi Valkeinen <tomi.valkeinen@ti.com> [120221 23:42]:
+> On Tue, 2012-02-21 at 15:40 -0800, Tony Lindgren wrote:
+> > Drivers should no longer use omap_read/write functions
+> > but instead use ioremap + read/write functions.
+> > 
+> > As some USB legacy code is still shared between omap1 and
+> > omap2420, let's limit the omap_read/write to plat/usb.h.
+> > 
+> > Also, let's make drivers/video/omap/lcdc.c depend on
+> > ARCH_OMAP1 as it is not needed for omap2+.
+> 
+> I'm ok with the lcdc.c change, but I also have a patch series that makes
+> the same change, plus removes the omap2 code from drivers/video/omap/.
 
---=-hGaf9HnPqA6s91vrxpYC
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+OK, I'll drop the lcdc.c change from my series as that should
+only affect randconfig builds.
+ 
+> Can you check the series, and give ack if the arch/arm side looks fine?
+> It's this one: [PATCH 00/16] OMAPDSS: old OMAPFB cleanup
 
-On Tue, 2012-02-21 at 15:40 -0800, Tony Lindgren wrote:
-> Drivers should no longer use omap_read/write functions
-> but instead use ioremap + read/write functions.
->=20
-> As some USB legacy code is still shared between omap1 and
-> omap2420, let's limit the omap_read/write to plat/usb.h.
->=20
-> Also, let's make drivers/video/omap/lcdc.c depend on
-> ARCH_OMAP1 as it is not needed for omap2+.
+Yeah great, I've acked those. Let's do a test merge when I
+have these in cleanup branch, looks like the conflicts should
+be trivial.
 
-I'm ok with the lcdc.c change, but I also have a patch series that makes
-the same change, plus removes the omap2 code from drivers/video/omap/.
-
-Can you check the series, and give ack if the arch/arm side looks fine?
-It's this one: [PATCH 00/16] OMAPDSS: old OMAPFB cleanup
-
- Tomi
-
-
---=-hGaf9HnPqA6s91vrxpYC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJPRKPJAAoJEPo9qoy8lh7190YP/09+OkEGMJuQBQp/ypauztt5
-BnUm9E7Kw47mubN+8tisiB6G6Hup5CbJgX3vCyarYNI7bJ4PWdjqVU36UxWEyiRP
-Rs8LFDN8W5dKQ83wURPLBP4MsXj716mc07rPw1duxfs+fLmtPSAqR7UxaZ2QjEeJ
-Hjz+/mGE4h9CZKmKLPYIRLr6cn/gomj57m07sdX94fseTC3q36YzztlcdljQADvm
-aTEzthVxs+rFDeghklhgl1lpeAYEDnaj/hSX8V6cUnKxgXumltOoT6y7u+DaLeFr
-kC+jrxF3w6BG+HIrHZzR4I441UO/WvBYOEhazax8zNRVTV3j56gMyJOV0Qpk0j2B
-w0sv6TA08Lk4nfEdKdbgB7P5ShmeTX5QbfEZuzFIMI+GLOdTqKI8uNXVcQV60DPd
-C69L18lu0pkfXkGZLe0YTJ1GNKifPf/JXGEIZlhkpg5opX4lXz7tNc7YYDDQbbhB
-cMkTUVlvBOYCyfmfpc7aTCUUA4e+hmgUWjaN4/2OoaASkeYt3JgUrpPyhthj6iXv
-sCJrU8p8fpaKuz0og680MzScqxBFsS1647Awa6r36gI2d4gXgTMK34FonGaMegHm
-AOpTOk80eWrcCdzaQOklamRBwuxtdpKH85b0EhUIvIDJ1hxJHzVm/EN/Qm1RT0u9
-IoAct649PmdKFkKS3b0q
-=n3pr
------END PGP SIGNATURE-----
-
---=-hGaf9HnPqA6s91vrxpYC--
-
+Tony

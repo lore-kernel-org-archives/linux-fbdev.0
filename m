@@ -1,58 +1,40 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Sat, 04 Feb 2012 09:41:08 +0000
-Subject: [PATCH 09/13] FB: sa1100: remove assabet specific initialization
-Message-Id: <E1Rtc7I-0000at-EL@rmk-PC.arm.linux.org.uk>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Wed, 22 Feb 2012 18:53:07 +0000
+Subject: [PATCH 3/5] viafb: select HW scaling on VX900 for IGA2
+Message-Id: <a2ef94234a7d5794359f8246c44d1e3503eda89d.1329936280.git.FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120204093744.GQ889@n2100.arm.linux.org.uk>
-In-Reply-To: <20120204093744.GQ889@n2100.arm.linux.org.uk>
+References: <cover.1329936280.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <cover.1329936280.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, stable@vger.kernel.org
 
-Remove the assabet specific initialization for PAL output mode -
-we call the lcd_power function before we enable the LCD controller,
-which will disable the LCD panel to prevent it receiving incorrect
-timings.  Therefore, this setup here is redundant.
+VX900 can do hardware scaling for both IGAs in contrast to previous
+hardware which could do it only for IGA2. This patch ensures that
+we set the parameter for IGA2 and not for IGA1. This fixes hardware
+scaling on VX900 until we have the infrastructure to support it for
+both IGAs.
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: stable@vger.kernel.org
 ---
- drivers/video/sa1100fb.c |    8 --------
- 1 files changed, 0 insertions(+), 8 deletions(-)
+ drivers/video/via/hw.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/sa1100fb.c b/drivers/video/sa1100fb.c
-index c9f1e7c..f6e27f4 100644
---- a/drivers/video/sa1100fb.c
-+++ b/drivers/video/sa1100fb.c
-@@ -182,7 +182,6 @@
- 
- #include <mach/hardware.h>
- #include <asm/mach-types.h>
--#include <mach/assabet.h>
- #include <mach/shannon.h>
- 
- /*
-@@ -190,8 +189,6 @@
-  */
- #define DEBUG_VAR 1
- 
--#undef ASSABET_PAL_VIDEO
--
- #include "sa1100fb.h"
- 
- static const struct sa1100fb_rgb rgb_4 = {
-@@ -1229,11 +1226,6 @@ static int __devinit sa1100fb_probe(struct platform_device *pdev)
- 		goto failed;
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 4d799c8..e6e7a8f 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -1805,6 +1805,7 @@ static void hw_init(void)
  	}
  
--#ifdef ASSABET_PAL_VIDEO
--	if (machine_is_assabet())
--		ASSABET_BCR_clear(ASSABET_BCR_LCD_ON);
--#endif
--
- 	/*
- 	 * This makes sure that our colour bitfield
- 	 * descriptors are correctly initialised.
+ 	/* probably this should go to the scaling code one day */
++	via_write_reg_mask(VIACR, 0xFD, 0, 0x80); /* VX900 hw scale on IGA2 */
+ 	viafb_write_regx(scaling_parameters, ARRAY_SIZE(scaling_parameters));
+ 
+ 	/* Fill VPIT Parameters */
 -- 
-1.7.4.4
+1.7.9
 

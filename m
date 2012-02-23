@@ -1,53 +1,78 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 01 Feb 2012 06:11:31 +0000
-Subject: RE: [PATCH v7 2/2] video: backlight: support s6e8ax0 panel driver based on MIPI DSI
-Message-Id: <1328076691.1884.2.camel@deskari>
+Date: Thu, 23 Feb 2012 09:22:54 +0000
+Subject: [GIT PULL] OMAP DSS fixes for 3.3-rc
+Message-Id: <1329988974.1820.62.camel@deskari>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-448zMrdZD+ntFloQvviX"
+Content-Type: multipart/mixed; boundary="=-cT6G/ftoWqHnW8ShkM/x"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4F17AA14.8030100@samsung.com> <1327593179.2843.5.camel@lappy>
- <001901ccdc98$755d4bd0$6017e370$%dae@samsung.com>
-In-Reply-To: <001901ccdc98$755d4bd0$6017e370$%dae@samsung.com>
-To: linux-arm-kernel@lists.infradead.org
+References: <1327579651.1895.34.camel@deskari>
+In-Reply-To: <1327579651.1895.34.camel@deskari>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-omap mailing list <linux-omap@vger.kernel.org>
 
 
---=-448zMrdZD+ntFloQvviX
+--=-cT6G/ftoWqHnW8ShkM/x
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2012-01-27 at 11:07 +0900, Inki Dae wrote:
+Hi Florian,
 
->  as you mentioned, we should working on a common DSI framework.  do
-> you have any plan for this?
+Two fixes for OMAP DSS for 3.3:
 
-I have plans to do plans =3D). So no. This is related to the low-level
-display framework, of which I sent post to fbdev some months ago. I've
-been planning to revise that also.
+First one gets the HDMI output working again. Managing the clocks for
+OMAP4 is not very simple, and this patch circumvents the problems we
+have in the clock framework. It's a clean but rather hacky fix, but it
+shouldn't cause any side-effects. The issue will hopefully be fixed
+properly with DT when we'll get proper parent-child hierarchy for DSS HW
+submodules.
+
+The second one is a simple fix for HDMI hotplug detection, which I
+missed when I wrote the HDMI PHY fix
+(c49d005b6cc8491fad5b24f82805be2d6bcbd3dd).
 
  Tomi
 
+The following changes since commit d65b4e98d7ea3038b767b70fe8be959b2913f16d=
+:
 
---=-448zMrdZD+ntFloQvviX
+  Linux 3.3-rc3 (2012-02-08 19:21:53 -0800)
+
+are available in the git repository at:
+  git://gitorious.org/linux-omap-dss2/linux.git for-3.3-rc
+
+Archit Taneja (1):
+      OMAPDSS: HACK: Ensure DSS clock domain gets out of idle when HDMI is =
+enabled
+
+Rob Clark (1):
+      OMAPDSS: HDMI: hot plug detect fix
+
+ drivers/video/omap2/dss/hdmi.c            |   24 +++++++++++++++++++++++-
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |    9 +--------
+ 2 files changed, 24 insertions(+), 9 deletions(-)
+
+
+--=-cT6G/ftoWqHnW8ShkM/x
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABAgAGBQJPKNeOAAoJEPo9qoy8lh71o9UP/2z/gp2u3dqo018WH33dQeFk
-ZCrXm9b4Xk7zM3PUN1PZTY6lAPRtUAiT8UI6h6SHs2UsU6pOvln7uC0xk72KzmYD
-0Nh7qWEa9IkOzyPWwCtxTnUzsHuqJRcV4RIU79bWCRbol6Xe2H8C/uDtxoREJWM5
-gyzgUpnANjR/ZuOr8jQYijs4uAjRe0KvwogP8KqYi0buwqxrOntTQz2M4DkPywCT
-NiZ2OqvEb+qmoR0pUXI9R9i82sWXApKO1WmkALkjypfGvIdW+mcdD+Mq7eq5/vSs
-j5g7Fk95ORE6jTndwMkKIxSueGR+MdvKGq2AQD0uCBRguIoKIB3ssR+hS3zbLL4c
-umj0DZj7nzUqK6PgCWbjh4Td1+I/nBygr1RLWWN4XHGbE4r2bqoq2d+egiFL1ytz
-Tpu6Wsb9pLLRPPGEJ2M897bGaV1HXpTqZ4hvIM9MMSwGkjEPQEaWrOpqxOMLXmqK
-pEMNIm4unIhEv9qBS0xk8DhSULgQQpI3PNvo07aAY8p4Yec80MqEkdWFRQOo0Aqh
-CuCtj8q2m3HGTh24bpizN20xUGceXNOj7q3OeQArZlRWrrCv1N+jSu6gXStRdQ2R
-TLmxHblo5DxQa7jZElxIMJ7XTLUzubgcYzdYGnu0z/ktVoIham8bRXSek/kSk3n0
-bTl8oEuRWDd+oOfuYrdI
-=rBUd
+iQIcBAABAgAGBQJPRgVuAAoJEPo9qoy8lh715UgP/i5+oaeqINt0F64p0yD3kBKN
+IOPyeAvFwTACWX74efQ50cXBzw7rLK3UFSEMd6xgPigUevJL5l+3Yt8yp27yI3ks
+IxWDXRz+ACVqPH9kVF1imJUWCq4CPruOIqowL6bHQgFneZASKKBV1OGUCza0y8dV
+oPWTIx6nB9TXYNkrKDoDalkyLpOmzYxM0kxvie2DdZp52GJL2UlVtaUjYgQC3/VD
+rR4tsCRJVsgrdnWND0olkfO8N3HbKaKBal64zIxh+4kjeNWf8+LW+aOk6E97nRxN
+iB/EqoUCmAY/jJVQAaqC+XNl5ePChJdR2ShjOJFvjd59Au0QCISpdHTVORmtd94v
+G/gY+3C47PeKGoWmff/Z5IjXovlLeZRNLxI1026nhDncXSdrgTPkLYveWZWzkFA7
+JzmjJSnpxQLiwdorPzaZ6rynT7VBbPB/CaJO/aVRHBZzMulBC/PKF9oV/LpFGm16
+jH/yBrDBhKGq+QplUiiXqDmpHMdKD9lb11G99D//+YgEfIjo86823V6kPMszlNI8
+NTugGChwZRnvW8vZyot4StMSvXczayzgkZGSoAGYIS8nMgY5LLFxQtU19le5h7Z3
+Yp9zPqi4owtXM1DHNA/eEruhmvaz0+H1tkq7Cb0WjsZctT24DB6QmILBQ4ELBGXU
+5JKjxg7JrsrzVEx76J1S
+=VNu3
 -----END PGP SIGNATURE-----
 
---=-448zMrdZD+ntFloQvviX--
+--=-cT6G/ftoWqHnW8ShkM/x--
 

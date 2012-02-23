@@ -1,48 +1,52 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Wed, 08 Feb 2012 23:32:20 +0000
-Subject: Re: [PATCH 02/16] ARM: omap: fix oops in drivers/video/omap2/dss/dpi.c
-Message-Id: <20120208233220.GB16877@atomide.com>
+From: Olivier Sobrie <olivier@sobrie.be>
+Date: Thu, 23 Feb 2012 07:53:21 +0000
+Subject: [PATCH] udlfb: Fix invalid return codes in edid sysfs entry store function
+Message-Id: <1329983601-25335-1-git-send-email-olivier@sobrie.be>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120208163546.GA15849@n2100.arm.linux.org.uk>
- <E1RvAVQ-0006Gp-Is@rmk-PC.arm.linux.org.uk>
- <20120208183607.GB29796@atomide.com>
- <20120208225012.GA25414@n2100.arm.linux.org.uk>
-In-Reply-To: <20120208225012.GA25414@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-* Russell King - ARM Linux <linux@arm.linux.org.uk> [120208 14:19]:
-> On Wed, Feb 08, 2012 at 10:36:07AM -0800, Tony Lindgren wrote:
-> > * Russell King - ARM Linux <linux@arm.linux.org.uk> [120208 08:05]:
-> > > When a PMIC is not found, this driver is unable to obtain its
-> > > 'vdds_dsi_reg' regulator.  Even through its initialization function
-> > > fails, other code still calls its enable function, which fails to
-> > > check whether it has this regulator before asking for it to be enabled.
-> > > 
-> > > This fixes the oops, however a better fix would be to sort out the
-> > > upper layers to prevent them calling into a module which failed to
-> > > initialize.
-> > > 
-> > > Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> > 
-> > Tomi can look into fixing this properly for v3.4:
-> > 
-> > Acked-by: Tony Lindgren <tony@atomide.com>
-> 
-> No, it's a thing for v3.3, because you can still get this oops.
-> 
-> I expect _most_ of these patches will go into v3.3, and anything with
-> 'fix' or 'oops' in especially I want to see in v3.3.
+Return a negative errno instead of zero in the write function of
+the sysfs entry in case of error.
+Also add a check on the return value of dlfb_setup_modes().
 
-I acked your patch for -rc. Then Tomi can work on  the "better fix part"
-you mention above for v3.4 and that's what I meant by my comment
-above.
+Signed-off-by: Olivier Sobrie <olivier@sobrie.be>
+---
+ drivers/video/udlfb.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
-Or is there something else that needs fixing for the -rc series there?
+diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
+index a197731..abbc3fe 100644
+--- a/drivers/video/udlfb.c
++++ b/drivers/video/udlfb.c
+@@ -1427,19 +1427,22 @@ static ssize_t edid_store(
+ 	struct device *fbdev = container_of(kobj, struct device, kobj);
+ 	struct fb_info *fb_info = dev_get_drvdata(fbdev);
+ 	struct dlfb_data *dev = fb_info->par;
++	int ret;
+ 
+ 	/* We only support write of entire EDID at once, no offset*/
+ 	if ((src_size != EDID_LENGTH) || (src_off != 0))
+-		return 0;
++		return -EINVAL;
+ 
+-	dlfb_setup_modes(dev, fb_info, src, src_size);
++	ret = dlfb_setup_modes(dev, fb_info, src, src_size);
++	if (ret)
++		return ret;
+ 
+ 	if (dev->edid && (memcmp(src, dev->edid, src_size) = 0)) {
+ 		pr_info("sysfs written EDID is new default\n");
+ 		dlfb_ops_set_par(fb_info);
+ 		return src_size;
+ 	} else
+-		return 0;
++		return -EINVAL;
+ }
+ 
+ static ssize_t metrics_reset_store(struct device *fbdev,
+-- 
+1.7.5.4
 
-Regards,
-
-Tony

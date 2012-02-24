@@ -1,45 +1,51 @@
 From: Tony Lindgren <tony@atomide.com>
-Date: Wed, 22 Feb 2012 22:44:11 +0000
+Date: Fri, 24 Feb 2012 18:25:51 +0000
 Subject: Re: [PATCH 8/8] ARM: OMAP2+: Limit omap_read/write usage to legacy USB drivers
-Message-Id: <20120222224411.GO18185@atomide.com>
+Message-Id: <20120224182551.GM18185@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20120221233619.18709.87982.stgit@kaulin.local>
  <20120221234051.18709.3571.stgit@kaulin.local>
  <1329898441.2070.10.camel@deskari>
  <20120222185728.GJ18185@atomide.com>
-In-Reply-To: <20120222185728.GJ18185@atomide.com>
+ <20120222224411.GO18185@atomide.com>
+In-Reply-To: <20120222224411.GO18185@atomide.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-* Tony Lindgren <tony@atomide.com> [120222 10:27]:
-> * Tomi Valkeinen <tomi.valkeinen@ti.com> [120221 23:42]:
-> > On Tue, 2012-02-21 at 15:40 -0800, Tony Lindgren wrote:
-> > > Drivers should no longer use omap_read/write functions
-> > > but instead use ioremap + read/write functions.
+* Tony Lindgren <tony@atomide.com> [120222 14:13]:
+> * Tony Lindgren <tony@atomide.com> [120222 10:27]:
+> > * Tomi Valkeinen <tomi.valkeinen@ti.com> [120221 23:42]:
+> > > On Tue, 2012-02-21 at 15:40 -0800, Tony Lindgren wrote:
+> > > > Drivers should no longer use omap_read/write functions
+> > > > but instead use ioremap + read/write functions.
+> > > > 
+> > > > As some USB legacy code is still shared between omap1 and
+> > > > omap2420, let's limit the omap_read/write to plat/usb.h.
+> > > > 
+> > > > Also, let's make drivers/video/omap/lcdc.c depend on
+> > > > ARCH_OMAP1 as it is not needed for omap2+.
 > > > 
-> > > As some USB legacy code is still shared between omap1 and
-> > > omap2420, let's limit the omap_read/write to plat/usb.h.
-> > > 
-> > > Also, let's make drivers/video/omap/lcdc.c depend on
-> > > ARCH_OMAP1 as it is not needed for omap2+.
+> > > I'm ok with the lcdc.c change, but I also have a patch series that makes
+> > > the same change, plus removes the omap2 code from drivers/video/omap/.
 > > 
-> > I'm ok with the lcdc.c change, but I also have a patch series that makes
-> > the same change, plus removes the omap2 code from drivers/video/omap/.
+> > OK, I'll drop the lcdc.c change from my series as that should
+> > only affect randconfig builds.
 > 
-> OK, I'll drop the lcdc.c change from my series as that should
-> only affect randconfig builds.
+> Here's this one updated. Noticed one more legacy driver
+> that needs omap_read/write defined to build on 2420.
 
-Here's this one updated. Noticed one more legacy driver
-that needs omap_read/write defined to build on 2420.
+This one needed some updates for usb.h after updating patch 7/8
+in this series. Updated patch below.
 
 Regards,
 
 Tony
 
 
-Date: Tue, 21 Feb 2012 13:27:33 -0800
+From: Tony Lindgren <tony@atomide.com>
+Date: Wed, 22 Feb 2012 14:52:41 -0800
 Subject: [PATCH] ARM: OMAP2+: Limit omap_read/write usage to legacy USB drivers
 
 Drivers should no longer use omap_read/write functions
@@ -128,7 +134,7 @@ index 0119807..3203128 100644
 -}
 -EXPORT_SYMBOL(omap_writel);
 diff --git a/arch/arm/plat-omap/include/plat/keypad.h b/arch/arm/plat-omap/include/plat/keypad.h
-index 793ce9d..4b35555 100644
+index 793ce9d..a6b21ed 100644
 --- a/arch/arm/plat-omap/include/plat/keypad.h
 +++ b/arch/arm/plat-omap/include/plat/keypad.h
 @@ -12,6 +12,8 @@
@@ -136,12 +142,12 @@ index 793ce9d..4b35555 100644
  #ifndef CONFIG_ARCH_OMAP1
  #warning Please update the board to use matrix-keypad driver
 +#define omap_readw(reg)		0
-+#define omap_writew(val, reg)	do {} while(0)
++#define omap_writew(val, reg)	do {} while (0)
  #endif
  #include <linux/input/matrix_keypad.h>
  
 diff --git a/arch/arm/plat-omap/include/plat/usb.h b/arch/arm/plat-omap/include/plat/usb.h
-index dc864b5..5f6ced4 100644
+index dc864b5..d0fc9f4 100644
 --- a/arch/arm/plat-omap/include/plat/usb.h
 +++ b/arch/arm/plat-omap/include/plat/usb.h
 @@ -3,6 +3,7 @@
@@ -152,7 +158,7 @@ index dc864b5..5f6ced4 100644
  #include <linux/usb/musb.h>
  #include <plat/board.h>
  
-@@ -105,6 +106,45 @@ extern int omap4430_phy_set_clk(struct device *dev, int on);
+@@ -105,6 +106,46 @@ extern int omap4430_phy_set_clk(struct device *dev, int on);
  extern int omap4430_phy_init(struct device *dev);
  extern int omap4430_phy_exit(struct device *dev);
  extern int omap4430_phy_suspend(struct device *dev, int suspend);
@@ -161,8 +167,9 @@ index dc864b5..5f6ced4 100644
 + * NOTE: Please update omap USB drivers to use ioremap + read/write
 + */
 +
-+#define OMAP2_L4_IO_OFFSET		0xb2000000
-+#define OMAP2_L4_IO_ADDRESS(pa)		IOMEM((pa) + OMAP2_L4_IO_OFFSET)
++#define OMAP2_L4_IO_OFFSET	0xb2000000
++#define IOMEM(x)		((void __force __iomem *)(x))
++#define OMAP2_L4_IO_ADDRESS(pa)	IOMEM((pa) + OMAP2_L4_IO_OFFSET)
 +
 +static inline u8 omap_readb(u32 pa)
 +{

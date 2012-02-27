@@ -1,64 +1,35 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Tue, 14 Feb 2012 05:51:35 +0000
-Subject: [PATCH 1/4] viafb: set correct polarity for second adapter
-Message-Id: <e0e12a9282a879577ba8e35c73ff5d94ae1f50b9.1329194838.git.FlorianSchandinat@gmx.de>
+From: Masanari Iida <standby24x7@gmail.com>
+Date: Mon, 27 Feb 2012 14:28:38 +0000
+Subject: [PATCH] [trivial] radeon: Fix typo in radeon_gem.c
+Message-Id: <1330352918-1738-1-git-send-email-standby24x7@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1329194838.git.FlorianSchandinat@gmx.de>
-In-Reply-To: <cover.1329194838.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: benh@kernel.crashing.org, linux-fbdev@vger.kernel.org
+Cc: trivial@kernel.org, linux-kernel@vger.kernel.org, Masanari Iida <standby24x7@gmail.com>
 
-This patch sets the correct polarity for the second adapter when
-viafb_SAMM_ON is set and viafb_dual_fb is not set. Just one step to
-make this mode useful.
+Correct spelling "withou" to "without" in
+drivers/gpu/drm/radeon/radeon_gem.c
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Signed-off-by: Masanari Iida <standby24x7@gmail.com>
 ---
- drivers/video/via/hw.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/gpu/drm/radeon/radeon_gem.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index d5aaca9..08c1036 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -1758,13 +1758,13 @@ static void set_display_channel(void)
+diff --git a/drivers/gpu/drm/radeon/radeon_gem.c b/drivers/gpu/drm/radeon/radeon_gem.c
+index 7337850..ff4ff23 100644
+--- a/drivers/gpu/drm/radeon/radeon_gem.c
++++ b/drivers/gpu/drm/radeon/radeon_gem.c
+@@ -117,7 +117,7 @@ int radeon_gem_set_domain(struct drm_gem_object *gobj,
  	}
- }
- 
--static u8 get_sync(struct fb_info *info)
-+static u8 get_sync(struct fb_var_screeninfo *var)
- {
- 	u8 polarity = 0;
- 
--	if (!(info->var.sync & FB_SYNC_HOR_HIGH_ACT))
-+	if (!(var->sync & FB_SYNC_HOR_HIGH_ACT))
- 		polarity |= VIA_HSYNC_NEGATIVE;
--	if (!(info->var.sync & FB_SYNC_VERT_HIGH_ACT))
-+	if (!(var->sync & FB_SYNC_VERT_HIGH_ACT))
- 		polarity |= VIA_VSYNC_NEGATIVE;
- 	return polarity;
- }
-@@ -1976,13 +1976,13 @@ int viafb_setmode(int video_bpp, int video_bpp1)
- 			viafb_DeviceStatus = CRT_Device;
+ 	if (!domain) {
+ 		/* Do nothings */
+-		printk(KERN_WARNING "Set domain withou domain !\n");
++		printk(KERN_WARNING "Set domain without domain !\n");
+ 		return 0;
  	}
- 	device_on();
--	if (!viafb_dual_fb)
--		via_set_sync_polarity(devices, get_sync(viafbinfo));
-+	if (!viafb_SAMM_ON)
-+		via_set_sync_polarity(devices, get_sync(&viafbinfo->var));
- 	else {
- 		via_set_sync_polarity(viaparinfo->shared->iga1_devices,
--			get_sync(viafbinfo));
-+			get_sync(&viafbinfo->var));
- 		via_set_sync_polarity(viaparinfo->shared->iga2_devices,
--			get_sync(viafbinfo1));
-+			get_sync(&var2));
- 	}
- 
- 	clock.set_engine_pll_state(VIA_STATE_ON);
+ 	if (domain = RADEON_GEM_DOMAIN_CPU) {
 -- 
-1.7.9
+1.7.9.2.262.gba998
 

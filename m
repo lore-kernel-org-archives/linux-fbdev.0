@@ -1,342 +1,210 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Sat, 04 Feb 2012 09:40:48 +0000
-Subject: [PATCH 08/13] FB: sa1100: remove global sa1100fb_.*_power function pointers
-Message-Id: <E1Rtc6y-0000ap-1S@rmk-PC.arm.linux.org.uk>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 28 Feb 2012 11:41:31 +0000
+Subject: PATCH V2] video: s3c-fb: Add support EXYNOS5 FIMD
+Message-Id: <000001ccf60d$ea8bcce0$bfa366a0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120204093744.GQ889@n2100.arm.linux.org.uk>
-In-Reply-To: <20120204093744.GQ889@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Now that we have platform data contained within the individual board
-code, we can get rid of the global function pointers, placing them
-inside the platform data instead.
+This patch adds s3c_fb_driverdata s3c_fb_data_exynos5 for EXYNOS5
+and adds extended timing control setting.
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+EXYNOS5 FIMD needs extended setting for video timing control.
+Additional bits are added to VIDTCON2, VIDWxxADD2, VIDOSDxA and
+VIDOSDxB registers in order to set timing value for lager resolution.
+
+Also, address offset of VIDTCONx registers is changed from 0x0
+to 0x20000, thus variable type should be changed to int type
+to handle the address offset of VIDTCONx registers for EXYNOS5 FIMD.
+
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- arch/arm/mach-sa1100/assabet.c |   90 ++++++++++++++++++++++++++-------------
- arch/arm/mach-sa1100/generic.c |    6 ---
- arch/arm/mach-sa1100/generic.h |    3 -
- arch/arm/mach-sa1100/h3100.c   |    3 +-
- arch/arm/mach-sa1100/h3600.c   |    3 +-
- drivers/video/sa1100fb.c       |   32 ++++----------
- drivers/video/sa1100fb.h       |    2 +
- include/video/sa1100fb.h       |    4 ++
- 8 files changed, 79 insertions(+), 64 deletions(-)
+v2: fix commit message from VIDCONx to VIDTCONx.
 
-diff --git a/arch/arm/mach-sa1100/assabet.c b/arch/arm/mach-sa1100/assabet.c
-index 37fb0cd..65b0a9a 100644
---- a/arch/arm/mach-sa1100/assabet.c
-+++ b/arch/arm/mach-sa1100/assabet.c
-@@ -71,33 +71,6 @@ void ASSABET_BCR_frob(unsigned int mask, unsigned int val)
+ arch/arm/plat-samsung/include/plat/regs-fb.h |   24 ++++++++----
+ drivers/video/s3c-fb.c                       |   52 +++++++++++++++++++++++--
+ 2 files changed, 63 insertions(+), 13 deletions(-)
+
+diff --git a/arch/arm/plat-samsung/include/plat/regs-fb.h b/arch/arm/plat-samsung/include/plat/regs-fb.h
+index bbb16e0..9a78012 100644
+--- a/arch/arm/plat-samsung/include/plat/regs-fb.h
++++ b/arch/arm/plat-samsung/include/plat/regs-fb.h
+@@ -167,15 +167,17 @@
+ #define VIDTCON1_HSPW(_x)			((_x) << 0)
  
- EXPORT_SYMBOL(ASSABET_BCR_frob);
+ #define VIDTCON2				(0x18)
++#define VIDTCON2_LINEVAL_E(_x)			((((_x) & 0x800) >> 11) << 23)
+ #define VIDTCON2_LINEVAL_MASK			(0x7ff << 11)
+ #define VIDTCON2_LINEVAL_SHIFT			(11)
+ #define VIDTCON2_LINEVAL_LIMIT			(0x7ff)
+-#define VIDTCON2_LINEVAL(_x)			((_x) << 11)
++#define VIDTCON2_LINEVAL(_x)			(((_x) & 0x7ff) << 11)
  
--static void assabet_backlight_power(int on)
--{
--#ifndef ASSABET_PAL_VIDEO
--	if (on)
--		ASSABET_BCR_set(ASSABET_BCR_LIGHT_ON);
--	else
--#endif
--		ASSABET_BCR_clear(ASSABET_BCR_LIGHT_ON);
--}
--
--/*
-- * Turn on/off the backlight.  When turning the backlight on,
-- * we wait 500us after turning it on so we don't cause the
-- * supplies to droop when we enable the LCD controller (and
-- * cause a hard reset.)
-- */
--static void assabet_lcd_power(int on)
--{
--#ifndef ASSABET_PAL_VIDEO
--	if (on) {
--		ASSABET_BCR_set(ASSABET_BCR_LCD_ON);
--		udelay(500);
--	} else
--#endif
--		ASSABET_BCR_clear(ASSABET_BCR_LCD_ON);
--}
--
++#define VIDTCON2_HOZVAL_E(_x)			((((_x) & 0x800) >> 11) << 22)
+ #define VIDTCON2_HOZVAL_MASK			(0x7ff << 0)
+ #define VIDTCON2_HOZVAL_SHIFT			(0)
+ #define VIDTCON2_HOZVAL_LIMIT			(0x7ff)
+-#define VIDTCON2_HOZVAL(_x)			((_x) << 0)
++#define VIDTCON2_HOZVAL(_x)			(((_x) & 0x7ff) << 0)
  
- /*
-  * Assabet flash support code.
-@@ -206,7 +179,49 @@ static struct mcp_plat_data assabet_mcp_data = {
- 	.sclk_rate	= 11981000,
+ /* WINCONx */
+ 
+@@ -231,25 +233,29 @@
+ /* Local input channels (windows 0-2) */
+ #define SHADOWCON_CHx_LOCAL_ENABLE(_win)	(1 << (5 + (_win)))
+ 
++#define VIDOSDxA_TOPLEFT_X_E(_x)		((((_x) & 0x800) >> 11) << 23)
+ #define VIDOSDxA_TOPLEFT_X_MASK			(0x7ff << 11)
+ #define VIDOSDxA_TOPLEFT_X_SHIFT		(11)
+ #define VIDOSDxA_TOPLEFT_X_LIMIT		(0x7ff)
+-#define VIDOSDxA_TOPLEFT_X(_x)			((_x) << 11)
++#define VIDOSDxA_TOPLEFT_X(_x)			(((_x) & 0x7ff) << 11)
+ 
++#define VIDOSDxA_TOPLEFT_Y_E(_x)		((((_x) & 0x800) >> 11) << 22)
+ #define VIDOSDxA_TOPLEFT_Y_MASK			(0x7ff << 0)
+ #define VIDOSDxA_TOPLEFT_Y_SHIFT		(0)
+ #define VIDOSDxA_TOPLEFT_Y_LIMIT		(0x7ff)
+-#define VIDOSDxA_TOPLEFT_Y(_x)			((_x) << 0)
++#define VIDOSDxA_TOPLEFT_Y(_x)			(((_x) & 0x7ff) << 0)
+ 
++#define VIDOSDxB_BOTRIGHT_X_E(_x)		((((_x) & 0x800) >> 11) << 23)
+ #define VIDOSDxB_BOTRIGHT_X_MASK		(0x7ff << 11)
+ #define VIDOSDxB_BOTRIGHT_X_SHIFT		(11)
+ #define VIDOSDxB_BOTRIGHT_X_LIMIT		(0x7ff)
+-#define VIDOSDxB_BOTRIGHT_X(_x)			((_x) << 11)
++#define VIDOSDxB_BOTRIGHT_X(_x)			(((_x) & 0x7ff) << 11)
+ 
++#define VIDOSDxB_BOTRIGHT_Y_E(_x)		((((_x) & 0x800) >> 11) << 22)
+ #define VIDOSDxB_BOTRIGHT_Y_MASK		(0x7ff << 0)
+ #define VIDOSDxB_BOTRIGHT_Y_SHIFT		(0)
+ #define VIDOSDxB_BOTRIGHT_Y_LIMIT		(0x7ff)
+-#define VIDOSDxB_BOTRIGHT_Y(_x)			((_x) << 0)
++#define VIDOSDxB_BOTRIGHT_Y(_x)			(((_x) & 0x7ff) << 0)
+ 
+ /* For VIDOSD[1..4]C */
+ #define VIDISD14C_ALPHA0_R(_x)			((_x) << 20)
+@@ -281,15 +287,17 @@
+ #define VIDW_BUF_END1(_buff)			(0xD4 + ((_buff) * 8))
+ #define VIDW_BUF_SIZE(_buff)			(0x100 + ((_buff) * 4))
+ 
++#define VIDW_BUF_SIZE_OFFSET_E(_x)		((((_x) & 0x2000) >> 13) << 27)
+ #define VIDW_BUF_SIZE_OFFSET_MASK		(0x1fff << 13)
+ #define VIDW_BUF_SIZE_OFFSET_SHIFT		(13)
+ #define VIDW_BUF_SIZE_OFFSET_LIMIT		(0x1fff)
+-#define VIDW_BUF_SIZE_OFFSET(_x)		((_x) << 13)
++#define VIDW_BUF_SIZE_OFFSET(_x)		(((_x) & 0x1fff) << 13)
+ 
++#define VIDW_BUF_SIZE_PAGEWIDTH_E(_x)		((((_x) & 0x2000) >> 13) << 26)
+ #define VIDW_BUF_SIZE_PAGEWIDTH_MASK		(0x1fff << 0)
+ #define VIDW_BUF_SIZE_PAGEWIDTH_SHIFT		(0)
+ #define VIDW_BUF_SIZE_PAGEWIDTH_LIMIT		(0x1fff)
+-#define VIDW_BUF_SIZE_PAGEWIDTH(_x)		((_x) << 0)
++#define VIDW_BUF_SIZE_PAGEWIDTH(_x)		(((_x) & 0x1fff) << 0)
+ 
+ /* Interrupt controls and status */
+ 
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index 1fb7ddf..f310516 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -89,7 +89,7 @@ struct s3c_fb;
+ struct s3c_fb_variant {
+ 	unsigned int	is_2443:1;
+ 	unsigned short	nr_windows;
+-	unsigned short	vidtcon;
++	unsigned int	vidtcon;
+ 	unsigned short	wincon;
+ 	unsigned short	winmap;
+ 	unsigned short	keycon;
+@@ -568,7 +568,9 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 		writel(data, regs + sfb->variant.vidtcon + 4);
+ 
+ 		data = VIDTCON2_LINEVAL(var->yres - 1) |
+-		       VIDTCON2_HOZVAL(var->xres - 1);
++		       VIDTCON2_HOZVAL(var->xres - 1) |
++		       VIDTCON2_LINEVAL_E(var->yres - 1) |
++		       VIDTCON2_HOZVAL_E(var->xres - 1);
+ 		writel(data, regs + sfb->variant.vidtcon + 8);
+ 	}
+ 
+@@ -584,17 +586,23 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 
+ 	pagewidth = (var->xres * var->bits_per_pixel) >> 3;
+ 	data = VIDW_BUF_SIZE_OFFSET(info->fix.line_length - pagewidth) |
+-	       VIDW_BUF_SIZE_PAGEWIDTH(pagewidth);
++	       VIDW_BUF_SIZE_PAGEWIDTH(pagewidth) |
++	       VIDW_BUF_SIZE_OFFSET_E(info->fix.line_length - pagewidth) |
++	       VIDW_BUF_SIZE_PAGEWIDTH_E(pagewidth);
+ 	writel(data, regs + sfb->variant.buf_size + (win_no * 4));
+ 
+ 	/* write 'OSD' registers to control position of framebuffer */
+ 
+-	data = VIDOSDxA_TOPLEFT_X(0) | VIDOSDxA_TOPLEFT_Y(0);
++	data = VIDOSDxA_TOPLEFT_X(0) | VIDOSDxA_TOPLEFT_Y(0) |
++	       VIDOSDxA_TOPLEFT_X_E(0) | VIDOSDxA_TOPLEFT_Y_E(0);
+ 	writel(data, regs + VIDOSD_A(win_no, sfb->variant));
+ 
+ 	data = VIDOSDxB_BOTRIGHT_X(s3c_fb_align_word(var->bits_per_pixel,
+ 						     var->xres - 1)) |
+-	       VIDOSDxB_BOTRIGHT_Y(var->yres - 1);
++	       VIDOSDxB_BOTRIGHT_Y(var->yres - 1) |
++	       VIDOSDxB_BOTRIGHT_X_E(s3c_fb_align_word(var->bits_per_pixel,
++						     var->xres - 1)) |
++	       VIDOSDxB_BOTRIGHT_Y_E(var->yres - 1);
+ 
+ 	writel(data, regs + VIDOSD_B(win_no, sfb->variant));
+ 
+@@ -1903,6 +1911,37 @@ static struct s3c_fb_driverdata s3c_fb_data_exynos4 = {
+ 	.win[4]	= &s3c_fb_data_s5p_wins[4],
  };
  
-+static void assabet_lcd_set_visual(u32 visual)
-+{
-+	u_int is_true_color = visual = FB_VISUAL_TRUECOLOR;
++static struct s3c_fb_driverdata s3c_fb_data_exynos5 = {
++	.variant = {
++		.nr_windows	= 5,
++		.vidtcon	= VIDTCON0,
++		.wincon		= WINCON(0),
++		.winmap		= WINxMAP(0),
++		.keycon		= WKEYCON,
++		.osd		= VIDOSD_BASE,
++		.osd_stride	= 16,
++		.buf_start	= VIDW_BUF_START(0),
++		.buf_size	= VIDW_BUF_SIZE(0),
++		.buf_end	= VIDW_BUF_END(0),
 +
-+	if (machine_is_assabet()) {
-+#if 1		// phase 4 or newer Assabet's
-+		if (is_true_color)
-+			ASSABET_BCR_set(ASSABET_BCR_LCD_12RGB);
-+		else
-+			ASSABET_BCR_clear(ASSABET_BCR_LCD_12RGB);
-+#else
-+		// older Assabet's
-+		if (is_true_color)
-+			ASSABET_BCR_clear(ASSABET_BCR_LCD_12RGB);
-+		else
-+			ASSABET_BCR_set(ASSABET_BCR_LCD_12RGB);
-+#endif
-+	}
-+}
++		.palette = {
++			[0] = 0x2400,
++			[1] = 0x2800,
++			[2] = 0x2c00,
++			[3] = 0x3000,
++			[4] = 0x3400,
++		},
++		.has_shadowcon	= 1,
++		.has_blendcon	= 1,
++		.has_fixvclk	= 1,
++	},
++	.win[0]	= &s3c_fb_data_s5p_wins[0],
++	.win[1]	= &s3c_fb_data_s5p_wins[1],
++	.win[2]	= &s3c_fb_data_s5p_wins[2],
++	.win[3]	= &s3c_fb_data_s5p_wins[3],
++	.win[4]	= &s3c_fb_data_s5p_wins[4],
++};
 +
- #ifndef ASSABET_PAL_VIDEO
-+static void assabet_lcd_backlight_power(int on)
-+{
-+	if (on)
-+		ASSABET_BCR_set(ASSABET_BCR_LIGHT_ON);
-+	else
-+		ASSABET_BCR_clear(ASSABET_BCR_LIGHT_ON);
-+}
-+
-+/*
-+ * Turn on/off the backlight.  When turning the backlight on, we wait
-+ * 500us after turning it on so we don't cause the supplies to droop
-+ * when we enable the LCD controller (and cause a hard reset.)
-+ */
-+static void assabet_lcd_power(int on)
-+{
-+	if (on) {
-+		ASSABET_BCR_set(ASSABET_BCR_LCD_ON);
-+		udelay(500);
-+	} else
-+		ASSABET_BCR_clear(ASSABET_BCR_LCD_ON);
-+}
-+
- /*
-  * The assabet uses a sharp LQ039Q2DS54 LCD module.  It is actually
-  * takes an RGB666 signal, but we provide it with an RGB565 signal
-@@ -224,8 +239,22 @@ static struct sa1100fb_mach_info lq039q2ds54_info = {
- 
- 	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
- 	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
-+
-+	.backlight_power = assabet_lcd_backlight_power,
-+	.lcd_power = assabet_lcd_power,
-+	.set_visual = assabet_lcd_set_visual,
- };
- #else
-+static void assabet_pal_backlight_power(int on)
-+{
-+	ASSABET_BCR_clear(ASSABET_BCR_LIGHT_ON);
-+}
-+
-+static void assabet_pal_power(int on)
-+{
-+	ASSABET_BCR_clear(ASSABET_BCR_LCD_ON);
-+}
-+
- static struct sa1100fb_mach_info pal_info = {
- 	.pixclock	= 67797,	.bpp		= 16,
- 	.xres		= 640,		.yres		= 512,
-@@ -236,6 +265,10 @@ static struct sa1100fb_mach_info pal_info = {
- 
- 	.lccr0		= LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
- 	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(512),
-+
-+	.backlight_power = assabet_pal_backlight_power,
-+	.lcd_power = assabet_pal_power,
-+	.set_visual = assabet_lcd_set_visual,
- };
- #endif
- 
-@@ -266,9 +299,6 @@ static void __init assabet_init(void)
- 	PPDR |= PPC_TXD3 | PPC_TXD1;
- 	PPSR |= PPC_TXD3 | PPC_TXD1;
- 
--	sa1100fb_lcd_power = assabet_lcd_power;
--	sa1100fb_backlight_power = assabet_backlight_power;
--
- 	if (machine_has_neponset()) {
- 		/*
- 		 * Angel sets this, but other bootloaders may not.
-diff --git a/arch/arm/mach-sa1100/generic.c b/arch/arm/mach-sa1100/generic.c
-index f57808f..9cb4062 100644
---- a/arch/arm/mach-sa1100/generic.c
-+++ b/arch/arm/mach-sa1100/generic.c
-@@ -374,12 +374,6 @@ static int __init sa1100_init(void)
- 
- arch_initcall(sa1100_init);
- 
--void (*sa1100fb_backlight_power)(int on);
--void (*sa1100fb_lcd_power)(int on);
--
--EXPORT_SYMBOL(sa1100fb_backlight_power);
--EXPORT_SYMBOL(sa1100fb_lcd_power);
--
- 
- /*
-  * Common I/O mapping:
-diff --git a/arch/arm/mach-sa1100/generic.h b/arch/arm/mach-sa1100/generic.h
-index 3b903f4..5c68be8 100644
---- a/arch/arm/mach-sa1100/generic.h
-+++ b/arch/arm/mach-sa1100/generic.h
-@@ -16,9 +16,6 @@ extern void sa11x0_restart(char, const char *);
- 	mi->bank[__nr].start = (__start), \
- 	mi->bank[__nr].size = (__size)
- 
--extern void (*sa1100fb_backlight_power)(int on);
--extern void (*sa1100fb_lcd_power)(int on);
--
- extern void sa1110_mb_enable(void);
- extern void sa1110_mb_disable(void);
- 
-diff --git a/arch/arm/mach-sa1100/h3100.c b/arch/arm/mach-sa1100/h3100.c
-index 1f8a271..f23e7d0 100644
---- a/arch/arm/mach-sa1100/h3100.c
-+++ b/arch/arm/mach-sa1100/h3100.c
-@@ -52,6 +52,8 @@ static struct sa1100fb_mach_info h3100_lcd_info = {
- 
- 	.lccr0		= LCCR0_Mono | LCCR0_4PixMono | LCCR0_Sngl | LCCR0_Pas,
- 	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
-+
-+	.lcd_power = h3100_lcd_power,
- };
- 
- static void __init h3100_map_io(void)
-@@ -96,7 +98,6 @@ static void __init h3100_mach_init(void)
- 	h3xxx_init_gpio(h3100_default_gpio, ARRAY_SIZE(h3100_default_gpio));
- 	h3xxx_mach_init();
- 
--	sa1100fb_lcd_power = h3100_lcd_power;
- 	sa11x0_register_lcd(&h3100_lcd_info);
- 	sa11x0_register_irda(&h3100_irda_data);
- }
-diff --git a/arch/arm/mach-sa1100/h3600.c b/arch/arm/mach-sa1100/h3600.c
-index 3dd39bf..2feac56 100644
---- a/arch/arm/mach-sa1100/h3600.c
-+++ b/arch/arm/mach-sa1100/h3600.c
-@@ -79,6 +79,8 @@ static struct sa1100fb_mach_info h3600_lcd_info = {
- 	.lccr3		= LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
- 
- 	.rgb[RGB_16] = &h3600_rgb_16,
-+
-+	.lcd_power = h3600_lcd_power,
- };
- 
- 
-@@ -146,7 +148,6 @@ static void __init h3600_mach_init(void)
- 	h3xxx_init_gpio(h3600_default_gpio, ARRAY_SIZE(h3600_default_gpio));
- 	h3xxx_mach_init();
- 
--	sa1100fb_lcd_power = h3600_lcd_power;
- 	sa11x0_register_lcd(&h3600_lcd_info);
- 	sa11x0_register_irda(&h3600_irda_data);
- }
-diff --git a/drivers/video/sa1100fb.c b/drivers/video/sa1100fb.c
-index d645c6d..c9f1e7c 100644
---- a/drivers/video/sa1100fb.c
-+++ b/drivers/video/sa1100fb.c
-@@ -194,9 +194,6 @@
- 
- #include "sa1100fb.h"
- 
--extern void (*sa1100fb_backlight_power)(int on);
--extern void (*sa1100fb_lcd_power)(int on);
--
- static const struct sa1100fb_rgb rgb_4 = {
- 	.red	= { .offset = 0,  .length = 4, },
- 	.green	= { .offset = 0,  .length = 4, },
-@@ -426,22 +423,10 @@ sa1100fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 	return 0;
- }
- 
--static inline void sa1100fb_set_truecolor(u_int is_true_color)
-+static void sa1100fb_set_visual(struct sa1100fb_info *fbi, u32 visual)
- {
--	if (machine_is_assabet()) {
--#if 1		// phase 4 or newer Assabet's
--		if (is_true_color)
--			ASSABET_BCR_set(ASSABET_BCR_LCD_12RGB);
--		else
--			ASSABET_BCR_clear(ASSABET_BCR_LCD_12RGB);
--#else
--		// older Assabet's
--		if (is_true_color)
--			ASSABET_BCR_clear(ASSABET_BCR_LCD_12RGB);
--		else
--			ASSABET_BCR_set(ASSABET_BCR_LCD_12RGB);
--#endif
--	}
-+	if (fbi->inf->set_visual)
-+		fbi->inf->set_visual(visual);
- }
- 
- /*
-@@ -483,7 +468,7 @@ static int sa1100fb_set_par(struct fb_info *info)
- 	/*
- 	 * Set (any) board control register to handle new color depth
- 	 */
--	sa1100fb_set_truecolor(fbi->fb.fix.visual = FB_VISUAL_TRUECOLOR);
-+	sa1100fb_set_visual(fbi, fbi->fb.fix.visual);
- 	sa1100fb_activate_var(var, fbi);
- 
- 	return 0;
-@@ -740,16 +725,16 @@ static inline void __sa1100fb_backlight_power(struct sa1100fb_info *fbi, int on)
- {
- 	dev_dbg(fbi->dev, "backlight o%s\n", on ? "n" : "ff");
- 
--	if (sa1100fb_backlight_power)
--		sa1100fb_backlight_power(on);
-+	if (fbi->inf->backlight_power)
-+		fbi->inf->backlight_power(on);
- }
- 
- static inline void __sa1100fb_lcd_power(struct sa1100fb_info *fbi, int on)
- {
- 	dev_dbg(fbi->dev, "LCD power o%s\n", on ? "n" : "ff");
- 
--	if (sa1100fb_lcd_power)
--		sa1100fb_lcd_power(on);
-+	if (fbi->inf->lcd_power)
-+		fbi->inf->lcd_power(on);
- }
- 
- static void sa1100fb_setup_gpio(struct sa1100fb_info *fbi)
-@@ -1197,6 +1182,7 @@ static struct sa1100fb_info * __devinit sa1100fb_init_fbinfo(struct device *dev)
- 	fbi->task_state			= (u_char)-1;
- 	fbi->fb.fix.smem_len		= fbi->max_xres * fbi->max_yres *
- 					  fbi->max_bpp / 8;
-+	fbi->inf			= inf;
- 
- 	/* Copy the RGB bitfield overrides */
- 	for (i = 0; i < NR_RGB; i++)
-diff --git a/drivers/video/sa1100fb.h b/drivers/video/sa1100fb.h
-index 9ff9ba9..3a634ab 100644
---- a/drivers/video/sa1100fb.h
-+++ b/drivers/video/sa1100fb.h
-@@ -65,6 +65,8 @@ struct sa1100fb_info {
- 	struct notifier_block	freq_transition;
- 	struct notifier_block	freq_policy;
- #endif
-+
-+	const struct sa1100fb_mach_info *inf;
- };
- 
- #define TO_INF(ptr,member)	container_of(ptr,struct sa1100fb_info,member)
-diff --git a/include/video/sa1100fb.h b/include/video/sa1100fb.h
-index e73c813..4ab4096 100644
---- a/include/video/sa1100fb.h
-+++ b/include/video/sa1100fb.h
-@@ -54,6 +54,10 @@ struct sa1100fb_mach_info {
- 
- 	/* Overrides for the default RGB maps */
- 	const struct sa1100fb_rgb *rgb[NR_RGB];
-+
-+	void (*backlight_power)(int);
-+	void (*lcd_power)(int);
-+	void (*set_visual)(u32);
- };
- 
- #endif
+ /* S3C2443/S3C2416 style hardware */
+ static struct s3c_fb_driverdata s3c_fb_data_s3c2443 = {
+ 	.variant = {
+@@ -1981,6 +2020,9 @@ static struct platform_device_id s3c_fb_driver_ids[] = {
+ 		.name		= "exynos4-fb",
+ 		.driver_data	= (unsigned long)&s3c_fb_data_exynos4,
+ 	}, {
++		.name		= "exynos5-fb",
++		.driver_data	= (unsigned long)&s3c_fb_data_exynos5,
++	}, {
+ 		.name		= "s3c2443-fb",
+ 		.driver_data	= (unsigned long)&s3c_fb_data_s3c2443,
+ 	}, {
 -- 
-1.7.4.4
+1.7.1
+
 

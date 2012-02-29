@@ -1,56 +1,65 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Thu, 16 Feb 2012 05:29:00 +0000
-Subject: linux-next: build failure after merge of the final tree (fbdev tree related)
-Message-Id: <20120216162900.e2dd164732084f48e5b239f0@canb.auug.org.au>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Signature=_Thu__16_Feb_2012_16_29_00_+1100_xAQJtgvzlUsJ2MKl"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 29 Feb 2012 08:48:22 +0000
+Subject: [PATCH 2/2] OMAPDSS: APPLY: make ovl_enable/disable synchronous
+Message-Id: <1330505302-8258-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20110520163233.abcabd67.sfr@canb.auug.org.au>
-In-Reply-To: <20110520163233.abcabd67.sfr@canb.auug.org.au>
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Ondrej Zary <linux@rainbow-software.org>
+References: <1330505302-8258-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1330505302-8258-1-git-send-email-tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: FlorianSchandinat@gmx.de, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
---Signature=_Thu__16_Feb_2012_16_29_00_+1100_xAQJtgvzlUsJ2MKl
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ovl->enable/disable are meant to be synchronous so that they can handle
+the configuration of fifo sizes. The current kernel doesn't configure
+fifo sizes yet, and so the code doesn't need to block to function (from
+omapdss driver's perspective).
 
-Hi all,
+However, for the users of omapdss a non-blocking ovl->disable is
+confusing, because they don't know when the memory area is not used
+any more.
 
-After merging the final tree, today's linux-next build (powerpc
-allyesconfig) failed like this:
+Furthermore, when the fifo size configuration is added in the next merge
+window, the change from non-blocking to blocking could cause side
+effects to the users of omapdss. So by making the functions block
+already will keep them behaving in the same manner.
 
-drivers/video/i740fb.c: In function 'i740fb_remove':
-drivers/video/i740fb.c:1192:7: error: 'par' undeclared (first use in this f=
-unction)
+And, while not the main purpose of this patch, this will also remove the
+compile warning:
 
-Caused by commit 5350c65f4f15 ("Resurrect Intel740 driver: i740fb") from
-the fbdev tree.  CONFIG_MTRR is not defined for this build ...
+drivers/video/omap2/dss/apply.c:350: warning:
+'wait_pending_extra_info_updates' defined but not used
 
-I have reverted that commit for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/apply.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
---Signature=_Thu__16_Feb_2012_16_29_00_+1100_xAQJtgvzlUsJ2MKl
-Content-Type: application/pgp-signature
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 052dc87..87b3e25 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -1276,6 +1276,9 @@ int dss_ovl_enable(struct omap_overlay *ovl)
+ 
+ 	spin_unlock_irqrestore(&data_lock, flags);
+ 
++	/* wait for overlay to be enabled */
++	wait_pending_extra_info_updates();
++
+ 	mutex_unlock(&apply_lock);
+ 
+ 	return 0;
+@@ -1313,6 +1316,9 @@ int dss_ovl_disable(struct omap_overlay *ovl)
+ 
+ 	spin_unlock_irqrestore(&data_lock, flags);
+ 
++	/* wait for the overlay to be disabled */
++	wait_pending_extra_info_updates();
++
+ 	mutex_unlock(&apply_lock);
+ 
+ 	return 0;
+-- 
+1.7.4.1
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJPPJQcAAoJEECxmPOUX5FEoWUP/35QFVh8eV6jSARbZKmJHXsc
-CQsmKf2GRBd678ZVFTyZfP7q7S2dYn61y1NnGG0cgJMi5Yr8LCbLD9jcU0pnZxB1
-qetP9nQsWRBXK8my8/ICBHJ2C4D2hCv8ZL2X1SsCL14z8EluaAbQ0bItSXMX9gpJ
-Ele/6bCcgrgLQ/a1Dn7iClfnXW0HjDSdK1eZ4T65gIiJX1uV5/GdakJGCbAIXakF
-dVSbI9Tp017j2yPMxcODH82kJ5A6pxzZ6CKPRfE03oR7zqPR4ntiwMzepZ8Mpy0Z
-7pVYY8HuZvDoYFGaPvheC3hlb78V1zTi6EptdXjQfqP6fdrnomZ6ekSSA6D4YX3w
-URSpgMYD1+FfoWmMtid2fBWxAJA8c+D+9eRZ33wEP1rnffyLS+RMwQOx95H6aSC8
-oS39L5qbF+pLrVrIDLP5g1/ecF9owDRHffFtKSe5X1ZRju7XyOwu6BxDIeH4Hjco
-YaDmAJD2Ye+LzELfjxsBmfWZ1brz8dp7fV8YrLopBwULNe8ZiOLg8Aeob8XfQDJi
-BTnWEiY1PRMLpwRYoYlzgiM4jR6FYna6totb0iFS4GKaK9HUP9RVxOnxOIiVDtT7
-dmc39l/L5MuKQuBJ5eWTcFOd9YEoz24snBbs2cucZtUklUsiBFj4XPgfdiRkO79x
-IDW6JTjCZkeHti/8cFjc
-=hKgu
------END PGP SIGNATURE-----
-
---Signature=_Thu__16_Feb_2012_16_29_00_+1100_xAQJtgvzlUsJ2MKl--

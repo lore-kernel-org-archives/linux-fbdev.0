@@ -1,69 +1,77 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 28 Feb 2012 16:08:07 +0000
-Subject: Re: [GIT PULL] OMAP DSS fixes for 3.3-rc
-Message-Id: <1330445287.2123.236.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-PkRWy3OTXlk5L3T8z7Mf"
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Wed, 29 Feb 2012 01:18:08 +0000
+Subject: RE: [GIT PULL] OMAP DSS fixes for 3.3-rc
+Message-Id: <004b01ccf67f$ff175360$fd45fa20$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1329988974.1820.62.camel@deskari>  <4F4CFAD1.1000301@gmx.de>
+References: <1329988974.1820.62.camel@deskari> <4F4CFAD1.1000301@gmx.de>
 In-Reply-To: <4F4CFAD1.1000301@gmx.de>
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-omap mailing list <linux-omap@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, 'linux-omap mailing list' <linux-omap@vger.kernel.org>
 
-
---=-PkRWy3OTXlk5L3T8z7Mf
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2012-02-28 at 16:03 +0000, Florian Tobias Schandinat wrote:
+Hi.
+> -----Original Message-----
+> From: linux-fbdev-owner@vger.kernel.org [mailto:linux-fbdev-owner@vger.kernel.org] On Behalf Of Florian
+> Tobias Schandinat
+> Sent: Wednesday, February 29, 2012 1:03 AM
+> To: Tomi Valkeinen
+> Cc: linux-fbdev@vger.kernel.org; linux-omap mailing list
+> Subject: Re: [GIT PULL] OMAP DSS fixes for 3.3-rc
+> 
 > On 02/23/2012 09:22 AM, Tomi Valkeinen wrote:
 > > Hi Florian,
-> >=20
+> >
 > > Two fixes for OMAP DSS for 3.3:
-> >=20
+> >
 > > First one gets the HDMI output working again. Managing the clocks for
 > > OMAP4 is not very simple, and this patch circumvents the problems we
 > > have in the clock framework. It's a clean but rather hacky fix, but it
 > > shouldn't cause any side-effects. The issue will hopefully be fixed
-> > properly with DT when we'll get proper parent-child hierarchy for DSS H=
-W
+> > properly with DT when we'll get proper parent-child hierarchy for DSS HW
 > > submodules.
-> >=20
+> >
 > > The second one is a simple fix for HDMI hotplug detection, which I
 > > missed when I wrote the HDMI PHY fix
 > > (c49d005b6cc8491fad5b24f82805be2d6bcbd3dd).
->=20
+> 
 > Merged. You would add
 > Cc: stable@vger.kernel.org
 > to patches if appropriate?
 
-Thanks. Yes, I have sent a separate mail to stable list, as the patches
-needed some tuning to apply.
+I agree on Florian's opinion.
+It would be good to add this patch to stable kernel. :)
 
- Tomi
-
-
---=-PkRWy3OTXlk5L3T8z7Mf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJPTPvnAAoJEPo9qoy8lh719ysQAKcVVtyLkQfRxcMdM1rYNGEK
-izki5y9joXjLVC0yfadTsMUMP0cICDBi7Mh65PkcLnigJylQFRimK/EMfZyQsXYf
-hFfU6pVmOkb5udahwvd22+uv0fvUUzBK3mwQyVCqOYdCacbf2fdJBOq1R+6e3g3o
-myVrNs0LnYmSERKSzT1tLfKQ4KiSrA2XajvVytPGl53mlA5ExdTP6exmIFQKjdh+
-zSwMlI0Yt5LjSt3hyfMF91y1SZqIqfplS+Wb6MRM7F6wf6ClbREtYp+Y83UFcbJG
-3ZnQhwT7OBFNFkoVT/wDwRfJ/HpQZU0PN5UTr05trw5gDfjDh/XuZWOwppUXozOK
-TgI3wsVu6+cWzYHzfaRs+2j9ypHn1NAcgHn2hcL6NPE5mKscrnFONHHkTzBsZQl1
-v/1A5KxRhUi8BvNFsADG+rAv1u2hyeCuh65Lyhm8PzhE9fCrTbNhqNW041lyCHRz
-lOCLzkh/W6/hDIrTKR7kIjnpUE+8jjA7x1h1EZbDD6sKA0Ef70Ns5oHtcZ8/lVEK
-4OqKJb1q9GY/lViILxO9ZMm3pjTH/AKH5jULiM1bBIotjmu+syXKrrgBuLCqJhjg
-nAOtGrL0dv6/jQQSMIaELDPDY0AvQi6aGHpJqjOu0ceDTGsqob5sTDW0rlC3jFeR
-OqclZHALCeff3luwqVrT
-=oGe8
------END PGP SIGNATURE-----
-
---=-PkRWy3OTXlk5L3T8z7Mf--
+> 
+> 
+> Thanks,
+> 
+> Florian Tobias Schandinat
+> 
+> >
+> >  Tomi
+> >
+> > The following changes since commit d65b4e98d7ea3038b767b70fe8be959b2913f16d:
+> >
+> >   Linux 3.3-rc3 (2012-02-08 19:21:53 -0800)
+> >
+> > are available in the git repository at:
+> >   git://gitorious.org/linux-omap-dss2/linux.git for-3.3-rc
+> >
+> > Archit Taneja (1):
+> >       OMAPDSS: HACK: Ensure DSS clock domain gets out of idle when HDMI is enabled
+> >
+> > Rob Clark (1):
+> >       OMAPDSS: HDMI: hot plug detect fix
+> >
+> >  drivers/video/omap2/dss/hdmi.c            |   24 +++++++++++++++++++++++-
+> >  drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |    9 +--------
+> >  2 files changed, 24 insertions(+), 9 deletions(-)
+> >
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 

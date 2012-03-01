@@ -1,191 +1,364 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 07 Mar 2012 12:44:34 +0000
-Subject: [PATCH 05/21] OMAPDSS: TFP410: pdata rewrite
-Message-Id: <1331124290-6285-6-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 01 Mar 2012 15:08:00 +0000
+Subject: [PATCH v2 47/57] fbdev: sh_mobile_meram: Use genalloc to manage MERAM allocation
+Message-Id: <1330614490-14149-48-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-To ease device tree adaptation in the future, rewrite TFP410 platform
-data handling to be done inside probe(), so that probe() is the only
-place where we need to handle the DT/pdata choice.
+Instead of requiring the users to hardcode MERAM allocation in platform
+data, allocate blocks at runtime using genalloc.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/omap2/displays/panel-tfp410.c |   72 ++++++++++++++-------------
- 1 files changed, 38 insertions(+), 34 deletions(-)
+ arch/arm/mach-shmobile/board-ap4evb.c   |    4 -
+ arch/arm/mach-shmobile/board-mackerel.c |    4 -
+ drivers/video/Kconfig                   |    1 +
+ drivers/video/sh_mobile_meram.c         |  112 +++++++++++++++++++------------
+ include/video/sh_mobile_meram.h         |    1 -
+ 5 files changed, 71 insertions(+), 51 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-tfp410.c b/drivers/video/omap2/displays/panel-tfp410.c
-index 4b867bf..a369d2c 100644
---- a/drivers/video/omap2/displays/panel-tfp410.c
-+++ b/drivers/video/omap2/displays/panel-tfp410.c
-@@ -47,13 +47,9 @@ struct panel_drv_data {
+diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
+index 17282bc..f215818 100644
+--- a/arch/arm/mach-shmobile/board-ap4evb.c
++++ b/arch/arm/mach-shmobile/board-ap4evb.c
+@@ -591,13 +591,11 @@ static struct sh_mobile_meram_cfg lcd_meram_cfg = {
+ 	.icb[0] = {
+ 		.marker_icb     = 28,
+ 		.cache_icb      = 24,
+-		.meram_offset   = 0x0,
+ 		.meram_size     = 0x40,
+ 	},
+ 	.icb[1] = {
+ 		.marker_icb     = 29,
+ 		.cache_icb      = 25,
+-		.meram_offset   = 0x40,
+ 		.meram_size     = 0x40,
+ 	},
+ };
+@@ -874,13 +872,11 @@ static struct sh_mobile_meram_cfg hdmi_meram_cfg = {
+ 	.icb[0] = {
+ 		.marker_icb     = 30,
+ 		.cache_icb      = 26,
+-		.meram_offset   = 0x80,
+ 		.meram_size     = 0x100,
+ 	},
+ 	.icb[1] = {
+ 		.marker_icb     = 31,
+ 		.cache_icb      = 27,
+-		.meram_offset   = 0x180,
+ 		.meram_size     = 0x100,
+ 	},
+ };
+diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
+index c566f8c..3b85509 100644
+--- a/arch/arm/mach-shmobile/board-mackerel.c
++++ b/arch/arm/mach-shmobile/board-mackerel.c
+@@ -378,13 +378,11 @@ static struct sh_mobile_meram_cfg lcd_meram_cfg = {
+ 	.icb[0] = {
+ 		.marker_icb     = 28,
+ 		.cache_icb      = 24,
+-		.meram_offset   = 0x0,
+ 		.meram_size     = 0x40,
+ 	},
+ 	.icb[1] = {
+ 		.marker_icb     = 29,
+ 		.cache_icb      = 25,
+-		.meram_offset   = 0x40,
+ 		.meram_size     = 0x40,
+ 	},
+ };
+@@ -470,13 +468,11 @@ static struct sh_mobile_meram_cfg hdmi_meram_cfg = {
+ 	.icb[0] = {
+ 		.marker_icb     = 30,
+ 		.cache_icb      = 26,
+-		.meram_offset   = 0x80,
+ 		.meram_size     = 0x100,
+ 	},
+ 	.icb[1] = {
+ 		.marker_icb     = 31,
+ 		.cache_icb      = 27,
+-		.meram_offset   = 0x180,
+ 		.meram_size     = 0x100,
+ 	},
+ };
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 8951cbd..a435942 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2016,6 +2016,7 @@ config FB_SH_MOBILE_HDMI
+ config FB_SH_MOBILE_MERAM
+ 	tristate "SuperH Mobile MERAM read ahead support for LCDC"
+ 	depends on FB_SH_MOBILE_LCDC
++	select GENERIC_ALLOCATOR
+ 	default y
+ 	---help---
+ 	  Enable MERAM support for the SH-Mobile LCD controller.
+diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
+index 30a3305..92dc9bd 100644
+--- a/drivers/video/sh_mobile_meram.c
++++ b/drivers/video/sh_mobile_meram.c
+@@ -10,6 +10,7 @@
+  */
+ 
+ #include <linux/device.h>
++#include <linux/genalloc.h>
+ #include <linux/io.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+@@ -105,15 +106,17 @@ static const unsigned long icb_regs[] = {
+ /*
+  * sh_mobile_meram_icb - MERAM ICB information
+  * @regs: Registers cache
+- * @region: Start and end addresses of the MERAM region
++ * @offset: MERAM block offset
++ * @size: MERAM block size in bytes
+  * @cache_unit: Bytes to cache per ICB
+  * @pixelformat: Video pixel format of the data stored in the ICB
+  * @current_reg: Which of Start Address Register A (0) or B (1) is in use
+  */
+ struct sh_mobile_meram_icb {
+ 	unsigned long regs[ICB_REGS_SIZE];
++	unsigned long offset;
++	unsigned int size;
+ 
+-	unsigned long region;
+ 	unsigned int cache_unit;
+ 	unsigned int pixelformat;
+ 	unsigned int current_reg;
+@@ -124,21 +127,27 @@ struct sh_mobile_meram_icb {
+ /*
+  * sh_mobile_meram_priv - MERAM device
+  * @base: Registers base address
++ * @meram: MERAM physical address
+  * @regs: Registers cache
+  * @lock: Protects used_icb and icbs
+  * @used_icb: Bitmask of used ICBs
+  * @icbs: ICBs
++ * @pool: Allocation pool to manage the MERAM
+  */
+ struct sh_mobile_meram_priv {
+ 	void __iomem *base;
++	unsigned long meram;
+ 	unsigned long regs[MERAM_REGS_SIZE];
+ 
  	struct mutex lock;
- 
- 	int pd_gpio;
--};
- 
--static inline struct tfp410_platform_data
--*get_pdata(const struct omap_dss_device *dssdev)
--{
--	return dssdev->data;
--}
-+	struct i2c_adapter *i2c_adapter;
-+};
- 
- static int tfp410_power_on(struct omap_dss_device *dssdev)
- {
-@@ -90,11 +86,11 @@ static void tfp410_power_off(struct omap_dss_device *dssdev)
- 
- static int tfp410_probe(struct omap_dss_device *dssdev)
- {
--	struct tfp410_platform_data *pdata = get_pdata(dssdev);
- 	struct panel_drv_data *ddata;
- 	int r;
-+	int i2c_bus_num;
- 
--	ddata = kzalloc(sizeof(*ddata), GFP_KERNEL);
-+	ddata = devm_kzalloc(&dssdev->dev, sizeof(*ddata), GFP_KERNEL);
- 	if (!ddata)
- 		return -ENOMEM;
- 
-@@ -104,10 +100,15 @@ static int tfp410_probe(struct omap_dss_device *dssdev)
- 	ddata->dssdev = dssdev;
- 	mutex_init(&ddata->lock);
- 
--	if (pdata)
-+	if (dssdev->data) {
-+		struct tfp410_platform_data *pdata = dssdev->data;
+ 	unsigned long used_icb;
+ 	struct sh_mobile_meram_icb icbs[MERAM_ICB_NUM];
 +
- 		ddata->pd_gpio = pdata->power_down_gpio;
--	else
-+		i2c_bus_num = pdata->i2c_bus_num;
-+	} else {
- 		ddata->pd_gpio = -1;
-+		i2c_bus_num = -1;
-+	}
++	struct gen_pool *pool;
+ };
  
- 	if (gpio_is_valid(ddata->pd_gpio)) {
- 		r = gpio_request_one(ddata->pd_gpio, GPIOF_OUT_INIT_LOW,
-@@ -115,13 +116,31 @@ static int tfp410_probe(struct omap_dss_device *dssdev)
- 		if (r) {
- 			dev_err(&dssdev->dev, "Failed to request PD GPIO %d\n",
- 					ddata->pd_gpio);
--			ddata->pd_gpio = -1;
-+			return r;
- 		}
- 	}
+ /* settings */
++#define MERAM_GRANULARITY		1024
+ #define MERAM_SEC_LINE			15
+ #define MERAM_LINE_WIDTH		2048
  
-+	if (i2c_bus_num != -1) {
-+		struct i2c_adapter *adapter;
-+
-+		adapter = i2c_get_adapter(i2c_bus_num);
-+		if (!adapter) {
-+			dev_err(&dssdev->dev, "Failed to get I2C adapter, bus %d\n",
-+					i2c_bus_num);
-+			r = -EINVAL;
-+			goto err_i2c;
-+		}
-+
-+		ddata->i2c_adapter = adapter;
-+	}
-+
- 	dev_set_drvdata(&dssdev->dev, ddata);
+@@ -175,18 +184,10 @@ static inline unsigned long meram_read_reg(void __iomem *base, unsigned int off)
+  * Allocation
+  */
  
- 	return 0;
-+err_i2c:
-+	if (gpio_is_valid(ddata->pd_gpio))
-+		gpio_free(ddata->pd_gpio);
-+	return r;
- }
- 
- static void __exit tfp410_remove(struct omap_dss_device *dssdev)
-@@ -130,14 +149,15 @@ static void __exit tfp410_remove(struct omap_dss_device *dssdev)
- 
- 	mutex_lock(&ddata->lock);
- 
-+	if (ddata->i2c_adapter)
-+		i2c_put_adapter(ddata->i2c_adapter);
-+
- 	if (gpio_is_valid(ddata->pd_gpio))
- 		gpio_free(ddata->pd_gpio);
- 
- 	dev_set_drvdata(&dssdev->dev, NULL);
- 
- 	mutex_unlock(&ddata->lock);
+-#define MERAM_CACHE_START(p)	 ((p) >> 16)
+-#define MERAM_CACHE_END(p)	 ((p) & 0xffff)
+-#define MERAM_CACHE_SET(o, s)	 ((((o) & 0xffff) << 16) | \
+-				  (((o) + (s) - 1) & 0xffff))
 -
--	kfree(ddata);
- }
- 
- static int tfp410_enable(struct omap_dss_device *dssdev)
-@@ -269,27 +289,17 @@ static int tfp410_read_edid(struct omap_dss_device *dssdev,
- 		u8 *edid, int len)
+ /* Check if there's no overlaps in MERAM allocation. */
+ static int meram_check_overlap(struct sh_mobile_meram_priv *priv,
+ 			       const struct sh_mobile_meram_icb_cfg *new)
  {
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--	struct tfp410_platform_data *pdata = get_pdata(dssdev);
--	struct i2c_adapter *adapter;
- 	int r, l, bytes_read;
+-	unsigned int used_start, used_end, meram_start, meram_end;
+-	unsigned int i;
+-
+ 	/* valid ICB? */
+ 	if (new->marker_icb & ~0x1f || new->cache_icb & ~0x1f)
+ 		return 1;
+@@ -195,43 +196,40 @@ static int meram_check_overlap(struct sh_mobile_meram_priv *priv,
+ 	    test_bit(new->cache_icb,  &priv->used_icb))
+ 		return  1;
  
- 	mutex_lock(&ddata->lock);
- 
--	if (pdata->i2c_bus_num = 0) {
-+	if (!ddata->i2c_adapter) {
- 		r = -ENODEV;
- 		goto err;
- 	}
- 
--	adapter = i2c_get_adapter(pdata->i2c_bus_num);
--	if (!adapter) {
--		dev_err(&dssdev->dev, "Failed to get I2C adapter, bus %d\n",
--				pdata->i2c_bus_num);
--		r = -EINVAL;
--		goto err;
+-	for (i = 0; i < MERAM_ICB_NUM; i++) {
+-		if (!test_bit(i, &priv->used_icb))
+-			continue;
+-
+-		used_start = MERAM_CACHE_START(priv->icbs[i].region);
+-		used_end   = MERAM_CACHE_END(priv->icbs[i].region);
+-		meram_start = new->meram_offset;
+-		meram_end   = new->meram_offset + new->meram_size;
+-
+-		if ((meram_start >= used_start && meram_start < used_end) ||
+-		    (meram_end > used_start && meram_end < used_end))
+-			return 1;
 -	}
 -
- 	l = min(EDID_LENGTH, len);
--	r = tfp410_ddc_read(adapter, edid, l, 0);
-+	r = tfp410_ddc_read(ddata->i2c_adapter, edid, l, 0);
- 	if (r)
- 		goto err;
+ 	return 0;
+ }
  
-@@ -299,7 +309,7 @@ static int tfp410_read_edid(struct omap_dss_device *dssdev,
- 	if (len > EDID_LENGTH && edid[0x7e] > 0) {
- 		l = min(EDID_LENGTH, len - EDID_LENGTH);
- 
--		r = tfp410_ddc_read(adapter, edid + EDID_LENGTH,
-+		r = tfp410_ddc_read(ddata->i2c_adapter, edid + EDID_LENGTH,
- 				l, EDID_LENGTH);
- 		if (r)
- 			goto err;
-@@ -319,21 +329,15 @@ err:
- static bool tfp410_detect(struct omap_dss_device *dssdev)
+-/* Mark the specified ICB as used. */
+-static void meram_mark(struct sh_mobile_meram_priv *priv,
++/* Allocate memory for the ICBs and mark them as used. */
++static int meram_alloc(struct sh_mobile_meram_priv *priv,
+ 		       const struct sh_mobile_meram_icb_cfg *new,
+ 		       int pixelformat)
  {
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--	struct tfp410_platform_data *pdata = get_pdata(dssdev);
--	struct i2c_adapter *adapter;
- 	unsigned char out;
- 	int r;
++	struct sh_mobile_meram_icb *marker = &priv->icbs[new->marker_icb];
++	unsigned long mem;
++
++	mem = gen_pool_alloc(priv->pool, new->meram_size * 1024);
++	if (mem = 0)
++		return -ENOMEM;
++
+ 	__set_bit(new->marker_icb, &priv->used_icb);
+ 	__set_bit(new->cache_icb, &priv->used_icb);
  
- 	mutex_lock(&ddata->lock);
+-	priv->icbs[new->marker_icb].region = MERAM_CACHE_SET(new->meram_offset,
+-							     new->meram_size);
+-	priv->icbs[new->cache_icb].region = MERAM_CACHE_SET(new->meram_offset,
+-							    new->meram_size);
+-	priv->icbs[new->marker_icb].current_reg = 1;
+-	priv->icbs[new->marker_icb].pixelformat = pixelformat;
++	marker->offset = mem - priv->meram;
++	marker->size = new->meram_size * 1024;
++	marker->current_reg = 1;
++	marker->pixelformat = pixelformat;
++
++	return 0;
+ }
  
--	if (pdata->i2c_bus_num = 0)
--		goto out;
--
--	adapter = i2c_get_adapter(pdata->i2c_bus_num);
--	if (!adapter)
-+	if (!ddata->i2c_adapter)
- 		goto out;
+ /* Unmark the specified ICB as used. */
+-static void meram_unmark(struct sh_mobile_meram_priv *priv,
+-			 const struct sh_mobile_meram_icb_cfg *icb)
++static void meram_free(struct sh_mobile_meram_priv *priv,
++		       const struct sh_mobile_meram_icb_cfg *icb)
+ {
++	struct sh_mobile_meram_icb *marker = &priv->icbs[icb->marker_icb];
++
++	gen_pool_free(priv->pool, priv->meram + marker->offset, marker->size);
++
+ 	__clear_bit(icb->marker_icb, &priv->used_icb);
+ 	__clear_bit(icb->cache_icb, &priv->used_icb);
+ }
+@@ -302,6 +300,7 @@ static int meram_init(struct sh_mobile_meram_priv *priv,
+ 		      unsigned int xres, unsigned int yres,
+ 		      unsigned int *out_pitch)
+ {
++	struct sh_mobile_meram_icb *marker = &priv->icbs[icb->marker_icb];
+ 	unsigned long total_byte_count = MERAM_CALC_BYTECOUNT(xres, yres);
+ 	unsigned long bnm;
+ 	unsigned int lcdc_pitch;
+@@ -356,11 +355,11 @@ static int meram_init(struct sh_mobile_meram_priv *priv,
+ 	 * we also split the allocated MERAM buffer between two ICBs.
+ 	 */
+ 	meram_write_icb(priv->base, icb->cache_icb, MExxCTL,
+-			MERAM_MExxCTL_VAL(icb->marker_icb, icb->meram_offset) |
++			MERAM_MExxCTL_VAL(icb->marker_icb, marker->offset) |
+ 			MExxCTL_WD1 | MExxCTL_WD0 | MExxCTL_WS | MExxCTL_CM |
+ 			MExxCTL_MD_FB);
+ 	meram_write_icb(priv->base, icb->marker_icb, MExxCTL,
+-			MERAM_MExxCTL_VAL(icb->cache_icb, icb->meram_offset +
++			MERAM_MExxCTL_VAL(icb->cache_icb, marker->offset +
+ 					  icb->meram_size / 2) |
+ 			MExxCTL_WD1 | MExxCTL_WD0 | MExxCTL_WS | MExxCTL_CM |
+ 			MExxCTL_MD_FB);
+@@ -454,10 +453,18 @@ static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
+ 		goto err;
+ 	}
  
--	r = tfp410_ddc_read(adapter, &out, 1, 0);
-+	r = tfp410_ddc_read(ddata->i2c_adapter, &out, 1, 0);
+-	/* we now register the ICB */
+-	meram_mark(priv, &cfg->icb[0], pixelformat);
+-	if (is_nvcolor(pixelformat))
+-		meram_mark(priv, &cfg->icb[1], pixelformat);
++	/* We now register the ICBs and allocate the MERAM regions. */
++	error = meram_alloc(priv, &cfg->icb[0], pixelformat);
++	if (error < 0)
++		goto err;
++
++	if (is_nvcolor(pixelformat)) {
++		error = meram_alloc(priv, &cfg->icb[1], pixelformat);
++		if (error < 0) {
++			meram_free(priv, &cfg->icb[0]);
++			goto err;
++		}
++	}
  
- 	mutex_unlock(&ddata->lock);
+ 	/* initialize MERAM */
+ 	meram_init(priv, &cfg->icb[0], xres, yres, &out_pitch);
+@@ -497,10 +504,10 @@ static int sh_mobile_meram_unregister(struct sh_mobile_meram_info *pdata,
+ 	/* deinit & unmark */
+ 	if (is_nvcolor(icb->pixelformat)) {
+ 		meram_deinit(priv, &cfg->icb[1]);
+-		meram_unmark(priv, &cfg->icb[1]);
++		meram_free(priv, &cfg->icb[1]);
+ 	}
+ 	meram_deinit(priv, &cfg->icb[0]);
+-	meram_unmark(priv, &cfg->icb[0]);
++	meram_free(priv, &cfg->icb[0]);
+ 
+ 	mutex_unlock(&priv->lock);
+ 
+@@ -626,6 +633,7 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
+ 	pdata->priv = priv;
+ 	pdata->pdev = pdev;
+ 
++	/* Request memory regions and remap the registers. */
+ 	if (!request_mem_region(regs->start, resource_size(regs), pdev->name)) {
+ 		dev_err(&pdev->dev, "MERAM registers region already claimed\n");
+ 		error = -EBUSY;
+@@ -646,6 +654,20 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
+ 		goto err_ioremap;
+ 	}
+ 
++	priv->meram = meram->start;
++
++	/* Create and initialize the MERAM memory pool. */
++	priv->pool = gen_pool_create(ilog2(MERAM_GRANULARITY), -1);
++	if (priv->pool = NULL) {
++		error = -ENOMEM;
++		goto err_genpool;
++	}
++
++	error = gen_pool_add(priv->pool, meram->start, resource_size(meram),
++			     -1);
++	if (error < 0)
++		goto err_genpool;
++
+ 	/* initialize ICB addressing mode */
+ 	if (pdata->addr_mode = SH_MOBILE_MERAM_MODE1)
+ 		meram_write_reg(priv->base, MEVCR1, MEVCR1_AMD1);
+@@ -657,6 +679,10 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
++err_genpool:
++	if (priv->pool)
++		gen_pool_destroy(priv->pool);
++	iounmap(priv->base);
+ err_ioremap:
+ 	release_mem_region(meram->start, resource_size(meram));
+ err_req_meram:
+@@ -677,6 +703,8 @@ static int sh_mobile_meram_remove(struct platform_device *pdev)
+ 
+ 	pm_runtime_disable(&pdev->dev);
+ 
++	gen_pool_destroy(priv->pool);
++
+ 	iounmap(priv->base);
+ 	release_mem_region(meram->start, resource_size(meram));
+ 	release_mem_region(regs->start, resource_size(regs));
+diff --git a/include/video/sh_mobile_meram.h b/include/video/sh_mobile_meram.h
+index 05ca3f9..f7700fc 100644
+--- a/include/video/sh_mobile_meram.h
++++ b/include/video/sh_mobile_meram.h
+@@ -28,7 +28,6 @@ struct sh_mobile_meram_info {
+ struct sh_mobile_meram_icb_cfg {
+ 	unsigned int marker_icb;	/* ICB # for Marker ICB */
+ 	unsigned int cache_icb;		/* ICB # for Cache ICB */
+-	unsigned int meram_offset;	/* MERAM Buffer Offset to use */
+ 	unsigned int meram_size;	/* MERAM Buffer Size to use */
+ };
  
 -- 
-1.7.4.1
+1.7.3.4
 

@@ -1,100 +1,104 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 07 Mar 2012 12:44:36 +0000
-Subject: [PATCH 07/21] OMAPDSS: Taal: move reset gpio handling to taal driver
-Message-Id: <1331124290-6285-8-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 01 Mar 2012 15:07:37 +0000
+Subject: [PATCH v2 24/57] fbdev: sh_mobile_lcdc: Return display connection state in display_on
+Message-Id: <1330614490-14149-25-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-The reset GPIO for Taal panel driver is currently requested in the
-4430sdp board file. This patch moves the gpio request/free into the Taal
-driver, where it should be.
+Return true if the display is connected and false otherwise. Set the fb
+info state to FBINFO_STATE_SUSPENDED in the sh_mobile_lcdc driver when
+the display is not connected.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- arch/arm/mach-omap2/board-4430sdp.c       |   16 ----------------
- drivers/video/omap2/displays/panel-taal.c |   15 +++++++++++++++
- 2 files changed, 15 insertions(+), 16 deletions(-)
+ drivers/video/sh_mipi_dsi.c      |    2 +-
+ drivers/video/sh_mobile_hdmi.c   |    9 +++++----
+ drivers/video/sh_mobile_lcdcfb.c |    8 +++++++-
+ drivers/video/sh_mobile_lcdcfb.h |    3 +++
+ 4 files changed, 16 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
-index 4e90715..3a05173 100644
---- a/arch/arm/mach-omap2/board-4430sdp.c
-+++ b/arch/arm/mach-omap2/board-4430sdp.c
-@@ -724,21 +724,6 @@ static struct omap_dss_device sdp4430_lcd2_device = {
- 	.channel		= OMAP_DSS_CHANNEL_LCD2,
- };
+diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
+index 1ede247..5ff3742 100644
+--- a/drivers/video/sh_mipi_dsi.c
++++ b/drivers/video/sh_mipi_dsi.c
+@@ -412,7 +412,7 @@ static int mipi_display_on(struct sh_mobile_lcdc_entity *entity)
  
--static void sdp4430_lcd_init(void)
--{
--	int r;
--
--	r = gpio_request_one(dsi1_panel.reset_gpio, GPIOF_DIR_OUT,
--		"lcd1_reset_gpio");
--	if (r)
--		pr_err("%s: Could not get lcd1_reset_gpio\n", __func__);
--
--	r = gpio_request_one(dsi2_panel.reset_gpio, GPIOF_DIR_OUT,
--		"lcd2_reset_gpio");
--	if (r)
--		pr_err("%s: Could not get lcd2_reset_gpio\n", __func__);
--}
--
- static struct omap_dss_hdmi_data sdp4430_hdmi_data = {
- 	.hpd_gpio = HDMI_GPIO_HPD,
- };
-@@ -824,7 +809,6 @@ static void __init omap_4430sdp_display_init(void)
- 	if (r)
- 		pr_err("%s: Could not get display_sel GPIO\n", __func__);
+ 	sh_mipi_dsi_enable(mipi, true);
  
--	sdp4430_lcd_init();
- 	sdp4430_picodlp_init();
- 	omap_display_init(&sdp4430_dss_data);
+-	return 0;
++	return SH_MOBILE_LCDC_DISPLAY_CONNECTED;
+ 
+ mipi_display_on_fail1:
+ 	pm_runtime_put_sync(&mipi->pdev->dev);
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index c22e123..1464abf 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -1004,9 +1004,9 @@ static int sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity)
+ {
+ 	struct sh_hdmi *hdmi = entity_to_sh_hdmi(entity);
+ 	struct sh_mobile_lcdc_chan *ch = entity->lcdc;
+-	struct fb_info *info = ch->info;
+ 
+-	dev_dbg(hdmi->dev, "%s(%p): state %x\n", __func__, hdmi, info->state);
++	dev_dbg(hdmi->dev, "%s(%p): state %x\n", __func__, hdmi,
++		hdmi->hp_state);
+ 
  	/*
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 00c5c61..6e240fe 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -993,6 +993,15 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 	 * hp_state can be set to
+@@ -1021,12 +1021,13 @@ static int sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity)
+ 		dev_dbg(hdmi->dev, "HDMI running\n");
+ 		break;
+ 	case HDMI_HOTPLUG_DISCONNECTED:
+-		info->state = FBINFO_STATE_SUSPENDED;
+ 	default:
+ 		hdmi->var = ch->display_var;
+ 	}
  
- 	dev_set_drvdata(&dssdev->dev, td);
+-	return 0;
++	return hdmi->hp_state = HDMI_HOTPLUG_DISCONNECTED
++		? SH_MOBILE_LCDC_DISPLAY_DISCONNECTED
++		: SH_MOBILE_LCDC_DISPLAY_CONNECTED;
+ }
  
-+	if (gpio_is_valid(panel_data->reset_gpio)) {
-+		r = gpio_request_one(panel_data->reset_gpio, GPIOF_OUT_INIT_LOW,
-+				"taal rst");
-+		if (r) {
-+			dev_err(&dssdev->dev, "failed to request reset gpio\n");
-+			goto err_rst_gpio;
-+		}
-+	}
+ static void sh_hdmi_display_off(struct sh_mobile_lcdc_entity *entity)
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 03ee382..5a19ef3 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -338,8 +338,14 @@ static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
+ 	struct sh_mobile_lcdc_panel_cfg *panel = &ch->cfg.panel_cfg;
+ 
+ 	if (ch->tx_dev) {
+-		if (ch->tx_dev->ops->display_on(ch->tx_dev) < 0)
++		int ret;
 +
- 	taal_hw_reset(dssdev);
- 
- 	if (panel_data->use_dsi_backlight) {
-@@ -1075,6 +1084,9 @@ err_gpio:
- 	if (bldev != NULL)
- 		backlight_device_unregister(bldev);
- err_bl:
-+	if (gpio_is_valid(panel_data->reset_gpio))
-+		gpio_free(panel_data->reset_gpio);
-+err_rst_gpio:
- 	destroy_workqueue(td->workqueue);
- err_wq:
- 	free_regulators(panel_config->regulators, panel_config->num_regulators);
-@@ -1115,6 +1127,9 @@ static void __exit taal_remove(struct omap_dss_device *dssdev)
- 	/* reset, to be sure that the panel is in a valid state */
- 	taal_hw_reset(dssdev);
- 
-+	if (gpio_is_valid(panel_data->reset_gpio))
-+		gpio_free(panel_data->reset_gpio);
++		ret = ch->tx_dev->ops->display_on(ch->tx_dev);
++		if (ret < 0)
+ 			return;
 +
- 	free_regulators(td->panel_config->regulators,
- 			td->panel_config->num_regulators);
++		if (ret = SH_MOBILE_LCDC_DISPLAY_DISCONNECTED)
++			ch->info->state = FBINFO_STATE_SUSPENDED;
+ 	}
  
+ 	/* HDMI must be enabled before LCDC configuration */
+diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
+index b2cb8e6..6fb956c 100644
+--- a/drivers/video/sh_mobile_lcdcfb.h
++++ b/drivers/video/sh_mobile_lcdcfb.h
+@@ -21,6 +21,9 @@ struct sh_mobile_lcdc_entity;
+ struct sh_mobile_lcdc_priv;
+ struct sh_mobile_lcdc_chan;
+ 
++#define SH_MOBILE_LCDC_DISPLAY_DISCONNECTED	0
++#define SH_MOBILE_LCDC_DISPLAY_CONNECTED	1
++
+ struct sh_mobile_lcdc_entity_ops {
+ 	/* Display */
+ 	int (*display_on)(struct sh_mobile_lcdc_entity *entity);
 -- 
-1.7.4.1
+1.7.3.4
 

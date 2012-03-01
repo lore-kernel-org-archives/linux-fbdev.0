@@ -1,77 +1,346 @@
-From: Thomas Abraham <thomas.abraham@linaro.org>
-Date: Mon, 12 Mar 2012 20:56:56 +0000
-Subject: [PATCH v2 0/3] video: s3c-fb: Rearrange the elements in platform data
-Message-Id: <1331585999-8604-1-git-send-email-thomas.abraham@linaro.org>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 01 Mar 2012 15:07:31 +0000
+Subject: [PATCH v2 18/57] fbdev: sh_mobile_lcdc: Remove board configuration board_data field
+Message-Id: <1330614490-14149-19-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-Changes since v1:
-- Includes all changes suggested by Jingoo Han.
-- Reworked s3c-fb platform data in all Samsung SoC based board files.
+The field is unused, remove it. Update board code accordingly.
 
-This patchset rearranges the elements in the platform data of the s3c-fb
-driver with the intent of adding device tree support to the driver in
-subsequent patches.
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ arch/arm/mach-shmobile/board-ag5evm.c       |   14 ++------------
+ arch/arm/mach-shmobile/board-mackerel.c     |    4 ++--
+ arch/sh/boards/mach-ap325rxa/setup.c        |    8 ++++----
+ arch/sh/boards/mach-ecovec24/setup.c        |    4 ++--
+ arch/sh/boards/mach-kfr2r09/lcd_wqvga.c     |   10 ++++------
+ arch/sh/boards/mach-migor/lcd_qvga.c        |    3 +--
+ arch/sh/boards/mach-se/7724/setup.c         |    2 --
+ arch/sh/include/mach-kfr2r09/mach/kfr2r09.h |   16 ++++++++--------
+ arch/sh/include/mach-migor/mach/migor.h     |    2 +-
+ drivers/video/sh_mobile_lcdcfb.c            |   16 +++++++---------
+ include/video/sh_mobile_lcdc.h              |   13 ++++++-------
+ 11 files changed, 37 insertions(+), 55 deletions(-)
 
-The first patch moves the video timing information from the individual window
-setup data into the platform specific configuration section in the platform
-data. The video timing is independent of the window setup. The resolution of
-the window could be smaller than that of the lcd panel attached. So the video
-timing data is removed from window configuration data.
-
-The second patch removes the need for the 'default_win' element in the
-platform data. This element was used to decide whether the video data
-output from the controller should be enabled or disabled when the window
-specified by 'default_win' is enabled or disabled. With the first patch
-removing the need for atleast one window to be of the same resolution as
-that of the lcd panel, it is now possible to decide when to enable/disable
-the video data output based on the state of each window. If any of the
-window is active, the lcd data output is enabled. Otherwise, the lcd data
-output is disabled. Hence, the 'default_win' parameter from the platform
-data can be removed, which anyways cannot be specified when using
-device tree.
-
-For all the Samsung SoC based boards, the third patch reworks the platform
-data of the display controller based on the changes introduced in the first
-two patches.
-
-This patch series is based on
-http://git.kernel.org/pub/scm/linux/kernel/git/kgene/linux-samsung.git [for-next]
-
-with all patches merged from
-https://github.com/schandinat/linux-2.6.git [fbdev-next]
-
-and tested one Exynos4210 based Origen board (only compile tested for
-other boards)
-
-Thomas Abraham (3):
-  video: s3c-fb: move video interface timing out of window setup data
-  video: s3c-fb: remove 'default_win' element from platform data
-  ARM: Samsung: Rework platform data of s3c-fb driver
-
- arch/arm/mach-exynos/mach-nuri.c           |   26 +++---
- arch/arm/mach-exynos/mach-origen.c         |   24 +++--
- arch/arm/mach-exynos/mach-smdkv310.c       |   28 ++++---
- arch/arm/mach-exynos/mach-universal_c210.c |   26 +++---
- arch/arm/mach-s3c24xx/mach-smdk2416.c      |   27 +++---
- arch/arm/mach-s3c64xx/mach-anw6410.c       |   25 +++---
- arch/arm/mach-s3c64xx/mach-crag6410.c      |   25 +++---
- arch/arm/mach-s3c64xx/mach-hmt.c           |   24 +++--
- arch/arm/mach-s3c64xx/mach-mini6410.c      |   40 ++++-----
- arch/arm/mach-s3c64xx/mach-real6410.c      |   40 ++++-----
- arch/arm/mach-s3c64xx/mach-smartq5.c       |   26 +++---
- arch/arm/mach-s3c64xx/mach-smartq7.c       |   26 +++---
- arch/arm/mach-s3c64xx/mach-smdk6410.c      |   25 +++---
- arch/arm/mach-s5p64x0/mach-smdk6440.c      |   24 +++--
- arch/arm/mach-s5p64x0/mach-smdk6450.c      |   24 +++--
- arch/arm/mach-s5pc100/mach-smdkc100.c      |   27 +++---
- arch/arm/mach-s5pv210/mach-aquila.c        |   36 ++++----
- arch/arm/mach-s5pv210/mach-goni.c          |   26 +++---
- arch/arm/mach-s5pv210/mach-smdkv210.c      |   24 +++--
- arch/arm/plat-samsung/include/plat/fb.h    |   11 ++-
- drivers/video/s3c-fb.c                     |  136 +++++++++++++---------------
- 21 files changed, 356 insertions(+), 314 deletions(-)
+diff --git a/arch/arm/mach-shmobile/board-ag5evm.c b/arch/arm/mach-shmobile/board-ag5evm.c
+index cfce040..0b79fe2 100644
+--- a/arch/arm/mach-shmobile/board-ag5evm.c
++++ b/arch/arm/mach-shmobile/board-ag5evm.c
+@@ -236,16 +236,6 @@ static void lcd_backlight_reset(void)
+ 	gpio_set_value(GPIO_PORT235, 1);
+ }
+ 
+-static void lcd_on(void *board_data, struct fb_info *info)
+-{
+-	lcd_backlight_on();
+-}
+-
+-static void lcd_off(void *board_data)
+-{
+-	lcd_backlight_reset();
+-}
+-
+ /* LCDC0 */
+ static const struct fb_videomode lcdc0_modes[] = {
+ 	{
+@@ -275,8 +265,8 @@ static struct sh_mobile_lcdc_info lcdc0_info = {
+ 		.lcd_cfg = lcdc0_modes,
+ 		.num_cfg = ARRAY_SIZE(lcdc0_modes),
+ 		.board_cfg = {
+-			.display_on = lcd_on,
+-			.display_off = lcd_off,
++			.display_on = lcd_backlight_on,
++			.display_off = lcd_backlight_reset,
+ 		},
+ 	}
+ };
+diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
+index 52b7cb7..fdc88dc 100644
+--- a/arch/arm/mach-shmobile/board-mackerel.c
++++ b/arch/arm/mach-shmobile/board-mackerel.c
+@@ -356,14 +356,14 @@ static struct fb_videomode mackerel_lcdc_modes[] = {
+ 	},
+ };
+ 
+-static int mackerel_set_brightness(void *board_data, int brightness)
++static int mackerel_set_brightness(int brightness)
+ {
+ 	gpio_set_value(GPIO_PORT31, brightness);
+ 
+ 	return 0;
+ }
+ 
+-static int mackerel_get_brightness(void *board_data)
++static int mackerel_get_brightness(void)
+ {
+ 	return gpio_get_value(GPIO_PORT31);
+ }
+diff --git a/arch/sh/boards/mach-ap325rxa/setup.c b/arch/sh/boards/mach-ap325rxa/setup.c
+index 6418e95..1f68241 100644
+--- a/arch/sh/boards/mach-ap325rxa/setup.c
++++ b/arch/sh/boards/mach-ap325rxa/setup.c
+@@ -156,7 +156,7 @@ static struct platform_device nand_flash_device = {
+ #define PORT_DRVCRA	0xA405018A
+ #define PORT_DRVCRB	0xA405018C
+ 
+-static int ap320_wvga_set_brightness(void *board_data, int brightness)
++static int ap320_wvga_set_brightness(int brightness)
+ {
+ 	if (brightness) {
+ 		gpio_set_value(GPIO_PTS3, 0);
+@@ -169,12 +169,12 @@ static int ap320_wvga_set_brightness(void *board_data, int brightness)
+ 	return 0;
+ }
+ 
+-static int ap320_wvga_get_brightness(void *board_data)
++static int ap320_wvga_get_brightness(void)
+ {
+ 	return gpio_get_value(GPIO_PTS3);
+ }
+ 
+-static void ap320_wvga_power_on(void *board_data, struct fb_info *info)
++static void ap320_wvga_power_on(void)
+ {
+ 	msleep(100);
+ 
+@@ -182,7 +182,7 @@ static void ap320_wvga_power_on(void *board_data, struct fb_info *info)
+ 	__raw_writew(FPGA_LCDREG_VAL, FPGA_LCDREG);
+ }
+ 
+-static void ap320_wvga_power_off(void *board_data)
++static void ap320_wvga_power_off(void)
+ {
+ 	/* ASD AP-320/325 LCD OFF */
+ 	__raw_writew(0, FPGA_LCDREG);
+diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
+index 033ef2b..62a2691 100644
+--- a/arch/sh/boards/mach-ecovec24/setup.c
++++ b/arch/sh/boards/mach-ecovec24/setup.c
+@@ -308,14 +308,14 @@ static const struct fb_videomode ecovec_dvi_modes[] = {
+ 	},
+ };
+ 
+-static int ecovec24_set_brightness(void *board_data, int brightness)
++static int ecovec24_set_brightness(int brightness)
+ {
+ 	gpio_set_value(GPIO_PTR1, brightness);
+ 
+ 	return 0;
+ }
+ 
+-static int ecovec24_get_brightness(void *board_data)
++static int ecovec24_get_brightness(void)
+ {
+ 	return gpio_get_value(GPIO_PTR1);
+ }
+diff --git a/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c b/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
+index 25e145f..c148b36 100644
+--- a/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
++++ b/arch/sh/boards/mach-kfr2r09/lcd_wqvga.c
+@@ -251,8 +251,7 @@ static void display_on(void *sohandle,
+ 	write_memory_start(sohandle, so);
+ }
+ 
+-int kfr2r09_lcd_setup(void *board_data, void *sohandle,
+-		      struct sh_mobile_lcdc_sys_bus_ops *so)
++int kfr2r09_lcd_setup(void *sohandle, struct sh_mobile_lcdc_sys_bus_ops *so)
+ {
+ 	/* power on */
+ 	gpio_set_value(GPIO_PTF4, 0);  /* PROTECT/ -> L */
+@@ -273,8 +272,7 @@ int kfr2r09_lcd_setup(void *board_data, void *sohandle,
+ 	return 0;
+ }
+ 
+-void kfr2r09_lcd_start(void *board_data, void *sohandle,
+-		       struct sh_mobile_lcdc_sys_bus_ops *so)
++void kfr2r09_lcd_start(void *sohandle, struct sh_mobile_lcdc_sys_bus_ops *so)
+ {
+ 	write_memory_start(sohandle, so);
+ }
+@@ -327,12 +325,12 @@ static int kfr2r09_lcd_backlight(int on)
+ 	return 0;
+ }
+ 
+-void kfr2r09_lcd_on(void *board_data, struct fb_info *info)
++void kfr2r09_lcd_on(void)
+ {
+ 	kfr2r09_lcd_backlight(1);
+ }
+ 
+-void kfr2r09_lcd_off(void *board_data)
++void kfr2r09_lcd_off(void)
+ {
+ 	kfr2r09_lcd_backlight(0);
+ }
+diff --git a/arch/sh/boards/mach-migor/lcd_qvga.c b/arch/sh/boards/mach-migor/lcd_qvga.c
+index de9014a..8bccd34 100644
+--- a/arch/sh/boards/mach-migor/lcd_qvga.c
++++ b/arch/sh/boards/mach-migor/lcd_qvga.c
+@@ -113,8 +113,7 @@ static const unsigned short magic3_data[] = {
+ 	0x0010, 0x16B0, 0x0011, 0x0111, 0x0007, 0x0061,
+ };
+ 
+-int migor_lcd_qvga_setup(void *board_data, void *sohandle,
+-			 struct sh_mobile_lcdc_sys_bus_ops *so)
++int migor_lcd_qvga_setup(void *sohandle, struct sh_mobile_lcdc_sys_bus_ops *so)
+ {
+ 	unsigned long xres = 320;
+ 	unsigned long yres = 240;
+diff --git a/arch/sh/boards/mach-se/7724/setup.c b/arch/sh/boards/mach-se/7724/setup.c
+index 036fe1a..090b686 100644
+--- a/arch/sh/boards/mach-se/7724/setup.c
++++ b/arch/sh/boards/mach-se/7724/setup.c
+@@ -185,8 +185,6 @@ static struct sh_mobile_lcdc_info lcdc_info = {
+ 			.width = 152,
+ 			.height = 91,
+ 		},
+-		.board_cfg = {
+-		},
+ 	}
+ };
+ 
+diff --git a/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h b/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
+index 07e635b..ba3d93d 100644
+--- a/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
++++ b/arch/sh/include/mach-kfr2r09/mach/kfr2r09.h
+@@ -4,21 +4,21 @@
+ #include <video/sh_mobile_lcdc.h>
+ 
+ #if defined(CONFIG_FB_SH_MOBILE_LCDC) || defined(CONFIG_FB_SH_MOBILE_LCDC_MODULE)
+-void kfr2r09_lcd_on(void *board_data, struct fb_info *info);
+-void kfr2r09_lcd_off(void *board_data);
+-int kfr2r09_lcd_setup(void *board_data, void *sys_ops_handle,
++void kfr2r09_lcd_on(void);
++void kfr2r09_lcd_off(void);
++int kfr2r09_lcd_setup(void *sys_ops_handle,
+ 		      struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
+-void kfr2r09_lcd_start(void *board_data, void *sys_ops_handle,
++void kfr2r09_lcd_start(void *sys_ops_handle,
+ 		       struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
+ #else
+-static void kfr2r09_lcd_on(void *board_data) {}
+-static void kfr2r09_lcd_off(void *board_data) {}
+-static int kfr2r09_lcd_setup(void *board_data, void *sys_ops_handle,
++static void kfr2r09_lcd_on(void) {}
++static void kfr2r09_lcd_off(void) {}
++static int kfr2r09_lcd_setup(void *sys_ops_handle,
+ 				struct sh_mobile_lcdc_sys_bus_ops *sys_ops)
+ {
+ 	return -ENODEV;
+ }
+-static void kfr2r09_lcd_start(void *board_data, void *sys_ops_handle,
++static void kfr2r09_lcd_start(void *sys_ops_handle,
+ 				struct sh_mobile_lcdc_sys_bus_ops *sys_ops)
+ {
+ }
+diff --git a/arch/sh/include/mach-migor/mach/migor.h b/arch/sh/include/mach-migor/mach/migor.h
+index 42fccf9..7de7bb7 100644
+--- a/arch/sh/include/mach-migor/mach/migor.h
++++ b/arch/sh/include/mach-migor/mach/migor.h
+@@ -9,7 +9,7 @@
+ 
+ #include <video/sh_mobile_lcdc.h>
+ 
+-int migor_lcd_qvga_setup(void *board_data, void *sys_ops_handle,
++int migor_lcd_qvga_setup(void *sys_ops_handle,
+ 			 struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
+ 
+ #endif /* __ASM_SH_MIGOR_H */
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index a899b6d..c54eb97 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -315,14 +315,12 @@ static void sh_mobile_lcdc_deferred_io(struct fb_info *info,
+ 		/* trigger panel update */
+ 		dma_map_sg(info->dev, ch->sglist, nr_pages, DMA_TO_DEVICE);
+ 		if (bcfg->start_transfer)
+-			bcfg->start_transfer(bcfg->board_data, ch,
+-					     &sh_mobile_lcdc_sys_bus_ops);
++			bcfg->start_transfer(ch, &sh_mobile_lcdc_sys_bus_ops);
+ 		lcdc_write_chan(ch, LDSM2R, LDSM2R_OSTRG);
+ 		dma_unmap_sg(info->dev, ch->sglist, nr_pages, DMA_TO_DEVICE);
+ 	} else {
+ 		if (bcfg->start_transfer)
+-			bcfg->start_transfer(bcfg->board_data, ch,
+-					     &sh_mobile_lcdc_sys_bus_ops);
++			bcfg->start_transfer(ch, &sh_mobile_lcdc_sys_bus_ops);
+ 		lcdc_write_chan(ch, LDSM2R, LDSM2R_OSTRG);
+ 	}
+ }
+@@ -346,7 +344,7 @@ static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
+ 
+ 	/* HDMI must be enabled before LCDC configuration */
+ 	if (board_cfg->display_on)
+-		board_cfg->display_on(board_cfg->board_data, ch->info);
++		board_cfg->display_on();
+ }
+ 
+ static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
+@@ -354,7 +352,7 @@ static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
+ 	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
+ 
+ 	if (board_cfg->display_off)
+-		board_cfg->display_off(board_cfg->board_data);
++		board_cfg->display_off();
+ 
+ 	if (ch->tx_dev)
+ 		ch->tx_dev->ops->display_off(ch->tx_dev);
+@@ -697,7 +695,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 
+ 		board_cfg = &ch->cfg.board_cfg;
+ 		if (board_cfg->setup_sys) {
+-			ret = board_cfg->setup_sys(board_cfg->board_data, ch,
++			ret = board_cfg->setup_sys(ch,
+ 						   &sh_mobile_lcdc_sys_bus_ops);
+ 			if (ret)
+ 				return ret;
+@@ -1326,7 +1324,7 @@ static int sh_mobile_lcdc_update_bl(struct backlight_device *bdev)
+ 	    bdev->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
+ 		brightness = 0;
+ 
+-	return cfg->set_brightness(cfg->board_data, brightness);
++	return cfg->set_brightness(brightness);
+ }
+ 
+ static int sh_mobile_lcdc_get_brightness(struct backlight_device *bdev)
+@@ -1334,7 +1332,7 @@ static int sh_mobile_lcdc_get_brightness(struct backlight_device *bdev)
+ 	struct sh_mobile_lcdc_chan *ch = bl_get_data(bdev);
+ 	struct sh_mobile_lcdc_board_cfg *cfg = &ch->cfg.board_cfg;
+ 
+-	return cfg->get_brightness(cfg->board_data);
++	return cfg->get_brightness();
+ }
+ 
+ static int sh_mobile_lcdc_check_fb(struct backlight_device *bdev,
+diff --git a/include/video/sh_mobile_lcdc.h b/include/video/sh_mobile_lcdc.h
+index 163f4b7..62be2c9 100644
+--- a/include/video/sh_mobile_lcdc.h
++++ b/include/video/sh_mobile_lcdc.h
+@@ -148,15 +148,14 @@ struct sh_mobile_lcdc_sys_bus_ops {
+ };
+ 
+ struct sh_mobile_lcdc_board_cfg {
+-	void *board_data;
+-	int (*setup_sys)(void *board_data, void *sys_ops_handle,
++	int (*setup_sys)(void *sys_ops_handle,
+ 			 struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
+-	void (*start_transfer)(void *board_data, void *sys_ops_handle,
++	void (*start_transfer)(void *sys_ops_handle,
+ 			       struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
+-	void (*display_on)(void *board_data, struct fb_info *info);
+-	void (*display_off)(void *board_data);
+-	int (*set_brightness)(void *board_data, int brightness);
+-	int (*get_brightness)(void *board_data);
++	void (*display_on)(void);
++	void (*display_off)(void);
++	int (*set_brightness)(int brightness);
++	int (*get_brightness)(void);
+ };
+ 
+ struct sh_mobile_lcdc_lcd_size_cfg { /* width and height of panel in mm */
+-- 
+1.7.3.4
 

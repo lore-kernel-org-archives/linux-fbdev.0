@@ -1,89 +1,92 @@
-From: Thomas Abraham <thomas.abraham@linaro.org>
-Date: Mon, 26 Mar 2012 08:58:40 +0000
-Subject: [PATCH v3 2/2] ARM: Exynos: Use lcd power control driver for lcd panel
-Message-Id: <1332751600-11371-3-git-send-email-thomas.abraham@linaro.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 01 Mar 2012 12:34:40 +0000
+Subject: [PATCH 1/7] OMAP: DSS2: HDMI: use default dividers
+Message-Id: <1330605286-24166-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1332751600-11371-1-git-send-email-thomas.abraham@linaro.org>
-In-Reply-To: <1332751600-11371-1-git-send-email-thomas.abraham@linaro.org>
+References: <1330605286-24166-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1330605286-24166-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: stable@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mythri P K <mythripk@ti.com>
 
-The Hydis hv070wsa lcd panel used with the Origen board uses a gpio
-for reset and the Vcc supply to the panel can be controlled using
-a voltage regulator. Switch to using the lcd power control driver
-for controlling the power to the lcd panel.
+Use default regn and regm2 dividers in the hdmi driver if the board file
+does not define them.
 
-Signed-off-by: Thomas Abraham <thomas.abraham@linaro.org>
+Pandaboard's board file was missing the dividers, causing HDMI output
+not to work, so this patch fixes the problem.
+
+Backported from 8d88767a4377171752c22ac39bcb2b505eb751da
+
+Cc: Mythri P K <mythripk@ti.com>
+Acked-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-exynos/mach-origen.c |   29 ++++++-----------------------
- 1 files changed, 6 insertions(+), 23 deletions(-)
+ arch/arm/mach-omap2/board-4430sdp.c |    9 ---------
+ drivers/video/omap2/dss/hdmi.c      |   15 +++++++++++++--
+ 2 files changed, 13 insertions(+), 11 deletions(-)
 
-diff --git a/arch/arm/mach-exynos/mach-origen.c b/arch/arm/mach-exynos/mach-origen.c
-index d3b2e9d..6c4997c 100644
---- a/arch/arm/mach-exynos/mach-origen.c
-+++ b/arch/arm/mach-exynos/mach-origen.c
-@@ -26,7 +26,7 @@
- #include <asm/hardware/gic.h>
- #include <asm/mach-types.h>
+diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+index 63de2d3..f515fa2 100644
+--- a/arch/arm/mach-omap2/board-4430sdp.c
++++ b/arch/arm/mach-omap2/board-4430sdp.c
+@@ -617,15 +617,6 @@ static struct omap_dss_device sdp4430_hdmi_device = {
+ 	.name = "hdmi",
+ 	.driver_name = "hdmi_panel",
+ 	.type = OMAP_DISPLAY_TYPE_HDMI,
+-	.clocks	= {
+-		.dispc	= {
+-			.dispc_fclk_src	= OMAP_DSS_CLK_SRC_FCK,
+-		},
+-		.hdmi	= {
+-			.regn	= 15,
+-			.regm2	= 1,
+-		},
+-	},
+ 	.platform_enable = sdp4430_panel_enable_hdmi,
+ 	.platform_disable = sdp4430_panel_disable_hdmi,
+ 	.channel = OMAP_DSS_CHANNEL_DIGIT,
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index b0555f4..f3369cf 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -40,6 +40,9 @@
+ #include "hdmi.h"
+ #include "dss_features.h"
  
--#include <video/platform_lcd.h>
-+#include <video/lcd_pwrctrl.h>
++#define HDMI_DEFAULT_REGN 15
++#define HDMI_DEFAULT_REGM2 1
++
+ static struct {
+ 	struct mutex lock;
+ 	struct omap_display_platform_data *pdata;
+@@ -1069,7 +1072,11 @@ static void hdmi_compute_pll(struct omap_dss_device *dssdev, int phy,
+ 	 * Input clock is predivided by N + 1
+ 	 * out put of which is reference clk
+ 	 */
+-	pi->regn = dssdev->clocks.hdmi.regn;
++	if (dssdev->clocks.hdmi.regn = 0)
++		pi->regn = HDMI_DEFAULT_REGN;
++	else
++		pi->regn = dssdev->clocks.hdmi.regn;
++
+ 	refclk = clkin / (pi->regn + 1);
  
- #include <plat/regs-serial.h>
- #include <plat/regs-fb-v4.h>
-@@ -129,7 +129,7 @@ static struct regulator_consumer_supply __initdata buck3_consumer[] = {
- 	REGULATOR_SUPPLY("vdd_g3d", "mali_drm"), /* G3D */
- };
- static struct regulator_consumer_supply __initdata buck7_consumer[] = {
--	REGULATOR_SUPPLY("vcc", "platform-lcd"), /* LCD */
-+	REGULATOR_SUPPLY("vcc-lcd", "lcd-pwrctrl.0"), /* LCD */
- };
+ 	/*
+@@ -1077,7 +1084,11 @@ static void hdmi_compute_pll(struct omap_dss_device *dssdev, int phy,
+ 	 * Multiplying by 100 to avoid fractional part removal
+ 	 */
+ 	pi->regm = (phy * 100 / (refclk)) / 100;
+-	pi->regm2 = dssdev->clocks.hdmi.regm2;
++
++	if (dssdev->clocks.hdmi.regm2 = 0)
++		pi->regm2 = HDMI_DEFAULT_REGM2;
++	else
++		pi->regm2 = dssdev->clocks.hdmi.regm2;
  
- static struct regulator_init_data __initdata max8997_ldo1_data = {
-@@ -384,7 +384,7 @@ static struct regulator_init_data __initdata max8997_buck7_data = {
- 		.name		= "VDD_LCD_3.3V",
- 		.min_uV		= 3300000,
- 		.max_uV		= 3300000,
--		.boot_on	= 1,
-+		.boot_on	= 0,
- 		.apply_uV	= 1,
- 		.valid_ops_mask	= REGULATOR_CHANGE_STATUS,
- 		.state_mem	= {
-@@ -553,29 +553,12 @@ static struct platform_device origen_device_gpiokeys = {
- 	},
- };
- 
--static void lcd_hv070wsa_set_power(struct plat_lcd_data *pd, unsigned int power)
--{
--	int ret;
--
--	if (power)
--		ret = gpio_request_one(EXYNOS4_GPE3(4),
--					GPIOF_OUT_INIT_HIGH, "GPE3_4");
--	else
--		ret = gpio_request_one(EXYNOS4_GPE3(4),
--					GPIOF_OUT_INIT_LOW, "GPE3_4");
--
--	gpio_free(EXYNOS4_GPE3(4));
--
--	if (ret)
--		pr_err("failed to request gpio for LCD power: %d\n", ret);
--}
--
--static struct plat_lcd_data origen_lcd_hv070wsa_data = {
--	.set_power = lcd_hv070wsa_set_power,
-+static struct lcd_pwrctrl_data origen_lcd_hv070wsa_data = {
-+	.gpio	= EXYNOS4_GPE3(4),
- };
- 
- static struct platform_device origen_lcd_hv070wsa = {
--	.name			= "platform-lcd",
-+	.name			= "lcd-pwrctrl",
- 	.dev.parent		= &s5p_device_fimd0.dev,
- 	.dev.platform_data	= &origen_lcd_hv070wsa_data,
- };
+ 	/*
+ 	 * fractional multiplier is remainder of the difference between
 -- 
-1.6.6.rc2
+1.7.4.1
 

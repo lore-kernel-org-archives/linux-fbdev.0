@@ -1,86 +1,146 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 07 Mar 2012 12:44:29 +0000
-Subject: [PATCH 00/21] OMAPDSS: DT preparation patches
-Message-Id: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 01 Mar 2012 15:07:18 +0000
+Subject: [PATCH v2 05/57] fbdev: sh_mobile_lcdc: Create functions to turn the display on/off
+Message-Id: <1330614490-14149-6-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-Hi,
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/sh_mobile_lcdcfb.c |   53 ++++++++++++++++++++------------------
+ 1 files changed, 28 insertions(+), 25 deletions(-)
 
-I started cleaning up and restructuring omapdss for device tree, and here's the
-first set of patches from that ordeal. There's nothing DT specific in these
-patches, but they are mostly generic cleanups that make sense even without DT.
-
-The custom pdev creation depends on the following patches posted on l-o:
-
-ARM: OMAP: remove omap_device_parent
-ARM: OMAP: omap_device: Expose omap_device_{alloc, delete, register}
-
-This series can also be found from:
-git://gitorious.org/linux-omap-dss2/linux.git work/devtree-base
-
- Tomi
-
-Tomi Valkeinen (21):
-  OMAPDSS: panel-dvi: add PD gpio handling
-  OMAP: board-files: remove custom PD GPIO handling for DVI output
-  OMAPDSS: TFP410: rename dvi -> tfp410
-  OMAPDSS: TFP410: rename dvi files to tfp410
-  OMAPDSS: TFP410: pdata rewrite
-  OMAPDSS: DSI: use dsi_get_dsidev_id(dsidev) instead of dsidev->id
-  OMAPDSS: Taal: move reset gpio handling to taal driver
-  OMAPDSS: clean up the omapdss platform data mess
-  OMAPDSS: remove return from platform_driver_unreg
-  OMAPDSS: use platform_driver_probe for core/dispc/dss
-  OMAPDSS: register dss drivers in module init
-  OMAPDSS: create custom pdevs for DSS omap_devices
-  OMAPDSS: create DPI & SDI devices
-  OMAPDSS: create DPI & SDI drivers
-  OMAPDSS: remove uses of dss_runtime_get/put
-  OMAPDSS: handle output-driver reg/unreg more dynamically
-  OMAPDSS: move the creation of debugfs files
-  OMAPDSS: use platform_driver_probe for dsi/hdmi/rfbi/venc/dpi/sdi
-  OMAPDSS: add __init & __exit
-  OMAPFB: add __init & __exit
-  OMAPDSS: change default_device handling
-
- arch/arm/mach-omap2/board-3430sdp.c                |   38 +---
- arch/arm/mach-omap2/board-4430sdp.c                |   16 --
- arch/arm/mach-omap2/board-am3517evm.c              |   25 +--
- arch/arm/mach-omap2/board-cm-t35.c                 |   30 +--
- arch/arm/mach-omap2/board-devkit8000.c             |   30 +--
- arch/arm/mach-omap2/board-igep0020.c               |   32 +--
- arch/arm/mach-omap2/board-omap3beagle.c            |   37 +---
- arch/arm/mach-omap2/board-omap3evm.c               |   29 +--
- arch/arm/mach-omap2/board-omap3stalker.c           |   29 +--
- arch/arm/mach-omap2/board-omap4panda.c             |   39 +---
- arch/arm/mach-omap2/board-overo.c                  |   25 +--
- arch/arm/mach-omap2/display.c                      |  172 +++++++++++--
- drivers/video/omap2/displays/Kconfig               |    8 +-
- drivers/video/omap2/displays/Makefile              |    2 +-
- drivers/video/omap2/displays/panel-taal.c          |   15 ++
- .../omap2/displays/{panel-dvi.c => panel-tfp410.c} |  186 ++++++++------
- drivers/video/omap2/dss/core.c                     |  260 +++++++++++++-------
- drivers/video/omap2/dss/dispc.c                    |   50 ++---
- drivers/video/omap2/dss/dpi.c                      |   38 ++--
- drivers/video/omap2/dss/dsi.c                      |   86 ++-----
- drivers/video/omap2/dss/dss.c                      |   46 ++---
- drivers/video/omap2/dss/dss.h                      |   76 +-----
- drivers/video/omap2/dss/hdmi.c                     |   55 +----
- drivers/video/omap2/dss/rfbi.c                     |   31 +--
- drivers/video/omap2/dss/sdi.c                      |   31 ++-
- drivers/video/omap2/dss/venc.c                     |   31 +--
- drivers/video/omap2/omapfb/omapfb-main.c           |    9 +-
- .../{omap-panel-dvi.h => omap-panel-tfp410.h}      |   18 +-
- include/video/omapdss.h                            |    5 -
- 29 files changed, 628 insertions(+), 821 deletions(-)
- rename drivers/video/omap2/displays/{panel-dvi.c => panel-tfp410.c} (56%)
- rename include/video/{omap-panel-dvi.h => omap-panel-tfp410.h} (63%)
-
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index a805f96..bd725a4 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -224,7 +224,7 @@ static int sh_mobile_lcdc_setup_clocks(struct sh_mobile_lcdc_priv *priv,
+ }
+ 
+ /* -----------------------------------------------------------------------------
+- * Sys panel and deferred I/O
++ * Display, panel and deferred I/O
+  */
+ 
+ static void lcdc_sys_write_index(void *handle, unsigned long data)
+@@ -335,6 +335,27 @@ static void sh_mobile_lcdc_deferred_io_touch(struct fb_info *info)
+ 		schedule_delayed_work(&info->deferred_work, fbdefio->delay);
+ }
+ 
++static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
++{
++	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
++
++	/* HDMI must be enabled before LCDC configuration */
++	if (board_cfg->display_on && try_module_get(board_cfg->owner)) {
++		board_cfg->display_on(board_cfg->board_data, ch->info);
++		module_put(board_cfg->owner);
++	}
++}
++
++static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
++{
++	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
++
++	if (board_cfg->display_off && try_module_get(board_cfg->owner)) {
++		board_cfg->display_off(board_cfg->board_data);
++		module_put(board_cfg->owner);
++	}
++}
++
+ /* -----------------------------------------------------------------------------
+  * Format helpers
+  */
+@@ -648,7 +669,6 @@ static void __sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ {
+ 	struct sh_mobile_meram_info *mdev = priv->meram_dev;
+-	struct sh_mobile_lcdc_board_cfg	*board_cfg;
+ 	struct sh_mobile_lcdc_chan *ch;
+ 	unsigned long tmp;
+ 	int ret;
+@@ -665,8 +685,9 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 	lcdc_wait_bit(priv, _LDCNT2R, LDCNT2R_BR, 0);
+ 
+ 	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
+-		ch = &priv->ch[k];
++		struct sh_mobile_lcdc_board_cfg	*board_cfg;
+ 
++		ch = &priv->ch[k];
+ 		if (!ch->enabled)
+ 			continue;
+ 
+@@ -754,11 +775,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 			fb_deferred_io_init(ch->info);
+ 		}
+ 
+-		board_cfg = &ch->cfg.board_cfg;
+-		if (board_cfg->display_on && try_module_get(board_cfg->owner)) {
+-			board_cfg->display_on(board_cfg->board_data, ch->info);
+-			module_put(board_cfg->owner);
+-		}
++		sh_mobile_lcdc_display_on(ch);
+ 
+ 		if (ch->bl) {
+ 			ch->bl->props.power = FB_BLANK_UNBLANK;
+@@ -772,7 +789,6 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ static void sh_mobile_lcdc_stop(struct sh_mobile_lcdc_priv *priv)
+ {
+ 	struct sh_mobile_lcdc_chan *ch;
+-	struct sh_mobile_lcdc_board_cfg	*board_cfg;
+ 	int k;
+ 
+ 	/* clean up deferred io and ask board code to disable panel */
+@@ -799,11 +815,7 @@ static void sh_mobile_lcdc_stop(struct sh_mobile_lcdc_priv *priv)
+ 			backlight_update_status(ch->bl);
+ 		}
+ 
+-		board_cfg = &ch->cfg.board_cfg;
+-		if (board_cfg->display_off && try_module_get(board_cfg->owner)) {
+-			board_cfg->display_off(board_cfg->board_data);
+-			module_put(board_cfg->owner);
+-		}
++		sh_mobile_lcdc_display_off(ch);
+ 
+ 		/* disable the meram */
+ 		if (ch->meram_enabled) {
+@@ -1417,7 +1429,6 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
+ 	struct fb_event *event = data;
+ 	struct fb_info *info = event->info;
+ 	struct sh_mobile_lcdc_chan *ch = info->par;
+-	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
+ 
+ 	if (&ch->lcdc->notifier != nb)
+ 		return NOTIFY_DONE;
+@@ -1427,10 +1438,7 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
+ 
+ 	switch(action) {
+ 	case FB_EVENT_SUSPEND:
+-		if (board_cfg->display_off && try_module_get(board_cfg->owner)) {
+-			board_cfg->display_off(board_cfg->board_data);
+-			module_put(board_cfg->owner);
+-		}
++		sh_mobile_lcdc_display_off(ch);
+ 		sh_mobile_lcdc_stop(ch->lcdc);
+ 		break;
+ 	case FB_EVENT_RESUME:
+@@ -1438,12 +1446,7 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
+ 		sh_mobile_fb_reconfig(info);
+ 		mutex_unlock(&ch->open_lock);
+ 
+-		/* HDMI must be enabled before LCDC configuration */
+-		if (board_cfg->display_on && try_module_get(board_cfg->owner)) {
+-			board_cfg->display_on(board_cfg->board_data, info);
+-			module_put(board_cfg->owner);
+-		}
+-
++		sh_mobile_lcdc_display_on(ch);
+ 		sh_mobile_lcdc_start(ch->lcdc);
+ 	}
+ 
 -- 
-1.7.4.1
+1.7.3.4
 

@@ -1,113 +1,127 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:07:13 +0000
-Subject: [PATCH v2 00/57] SH Mobile LCDC: rework DSI/HDMI interface and add overlays support
-Message-Id: <1330614490-14149-1-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Thu, 01 Mar 2012 15:07:47 +0000
+Subject: [PATCH v2 34/57] fbdev: sh_mobile_lcdc: Store the format in struct sh_mobile_lcdc_chan
+Message-Id: <1330614490-14149-35-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi everybody,
+Store the active format in the channel structure, and use it instead of
+parsing info->var all over the place when the format is needed.
 
-Here's the second version of the patch SH Mobile LCDC rework patch set. I've
-taken the review into account and rebased the patches on top of fbdev-next.
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/sh_mobile_lcdcfb.c |   21 ++++++++++-----------
+ drivers/video/sh_mobile_lcdcfb.h |    4 +++-
+ 2 files changed, 13 insertions(+), 12 deletions(-)
 
-I would still like to push patches 01 to 54 (after review of course) to v3.4.
-
-Laurent Pinchart (57):
-  fbdev: sh_mobile_lcdc: Reorder code into sections
-  fbdev: sh_mobile_lcdc: Mark init-only symbols with __devinit(const)
-  fbdev: sh_mobile_lcdc: Move pm runtime enable to probe()
-  fbdev: sh_mobile_lcdc: Don't pass struct device around
-  fbdev: sh_mobile_lcdc: Create functions to turn the display on/off
-  fbdev: sh_mobile_hdmi: Don't access LCDC channel in notifier callback
-  sh_mobile_hdmi: Remove platform data lcd_dev field
-  fbdev: sh_mobile_lcdc: Add sh_mobile_lcdc_entity definition
-  fbdev: sh_mobile_hdmi: Implement sh_mobile_lcdc_entity interface
-  fbdev: sh_mipi_dsi: Implement sh_mobile_lcdc_entity interface
-  fbdev: sh_mobile_lcdc: Handle HDMI/MIPI transmitter device directly
-  arm: mach-shmobile: Add LCDC tx_dev field to platform data
-  fbdev: sh_mipi_dsi: Don't hook up into board_cfg display operations
-  fbdev: sh_mobile_hdmi: Don't hook up into board_cfg display
-    operations
-  arm: mach-shmobile: Don't initialize the hdmi_info lcd_chan field
-  fbdev: sh_mobile_hdmi: Remove sh_mobile_hdmi_info lcd_chan field
-  fbdev: sh_mobile_lcdc: Remove board configuration owner field
-  fbdev: sh_mobile_lcdc: Remove board configuration board_data field
-  fbdev: sh_mobile_lcdc: Move brightness ops to sh_mobile_lcdc_bl_info
-  fbdev: sh_mobile_lcdc: Merge board_cfg and lcd_size_cfg into
-    panel_cfg
-  sh_mobile_lcdc: Add an lcdc channel pointer to sh_mobile_lcdc_entity
-  sh_mobile_hdmi: Use sh_mobile_lcdc_entity::channel to access fb_info
-  fbdev: sh_mobile_lcdc: Remove fb_info parameter to display_on
-    operation
-  fbdev: sh_mobile_lcdc: Return display connection state in display_on
-  sh_mobile_lcdc: Add display notify callback to sh_mobile_lcdc_chan
-  sh_mobile_hdmi: Use LCDC notification callback
-  fbdev: sh_mobile_lcdc: Pass a video mode to the notify callback
-  fbdev: sh_mobile_hdmi: Don't set sh_hdmi::mode in the display on
-    handler
-  fbdev: sh_mobile_hdmi: Don't access LCDC fb_info
-  fbdev: sh_mobile_lcdc: Store display mode in a struct fb_videomode
-  fbdev: sh_mobile_lcdc: Rename (lcd|num)_cfg (lcd|num)_modes
-  fbdev: sh_mobile_lcdc: Reorganize the sh_mobile_lcdc_chan structure
-  fbdev: sh_mobile_lcdc: Add sh_mobile_format_info() function
-  fbdev: sh_mobile_lcdc: Store the format in struct sh_mobile_lcdc_chan
-  fbdev: sh_mobile_lcdc: Split fb init/cleanup from channel
-    init/cleanup
-  fbdev: sh_mobile_lcdc: Pass physical device pointer to DMA functions
-  fbdev: sh_mobile_lcdc: Store configuration in channel structure
-  fbdev: sh_mobile_lcdc: Pass channel pointer to
-    sh_mobile_wait_for_vsync
-  arm: mach-shmobile: Split MERAM resources into regs and meram
-  fbdev: sh_mobile_meram: Request memory regions for memory resources
-  fbdev: sh_mobile_meram: Add _cfg suffix to struct sh_mobile_meram_icb
-  fbdev: sh_mobile_meram: Make variables unsigned where applicable
-  fbdev: sh_mobile_meram: Make current_reg field store the current reg
-    set
-  fbdev: sh_mobile_meram: Add struct sh_mobile_meram_icb
-  fbdev: sh_mobile_meram: Don't inline everything
-  fbdev: sh_mobile_meram: Divide the code into sections
-  fbdev: sh_mobile_meram: Use genalloc to manage MERAM allocation
-  fbdev: sh_mobile_meram: Allocate ICBs automatically
-  arm: mach-shmobile: Don't set MERAM ICB numbers in platform data
-  fbdev: sh_mobile_meram: Remove unused sh_mobile_meram_icb_cfg fields
-  fbdev: sh_mobile_lcdc: Don't store copy of platform data
-  arm: mach-shmobile: Constify sh_mobile_meram_cfg structures
-  fbdev: sh_mobile_meram: Don't perform update in register operation
-  fbdev: sh_mobile_meram: Remove unneeded sanity checks
-  fbdev: sh_mobile_lcdc: Constify sh_mobile_lcdc_fix structure
-  fbdev: sh_mobile_lcdc: Rename fb operation handlers with a common
-    prefix
-  fbdev: sh_mobile_lcdc: Implement overlays support
-
- arch/arm/mach-shmobile/board-ag5evm.c       |   24 +-
- arch/arm/mach-shmobile/board-ap4evb.c       |  290 ++--
- arch/arm/mach-shmobile/board-bonito.c       |    6 +-
- arch/arm/mach-shmobile/board-mackerel.c     |  106 +-
- arch/sh/boards/mach-ap325rxa/setup.c        |   22 +-
- arch/sh/boards/mach-ecovec24/setup.c        |   20 +-
- arch/sh/boards/mach-kfr2r09/lcd_wqvga.c     |   10 +-
- arch/sh/boards/mach-kfr2r09/setup.c         |    8 +-
- arch/sh/boards/mach-migor/lcd_qvga.c        |    3 +-
- arch/sh/boards/mach-migor/setup.c           |   16 +-
- arch/sh/boards/mach-se/7724/setup.c         |   12 +-
- arch/sh/include/mach-kfr2r09/mach/kfr2r09.h |   16 +-
- arch/sh/include/mach-migor/mach/migor.h     |    2 +-
- drivers/video/Kconfig                       |    1 +
- drivers/video/sh_mipi_dsi.c                 |   97 +-
- drivers/video/sh_mobile_hdmi.c              |  297 +---
- drivers/video/sh_mobile_lcdcfb.c            | 2359 +++++++++++++++++++--------
- drivers/video/sh_mobile_lcdcfb.h            |   84 +-
- drivers/video/sh_mobile_meram.c             |  679 ++++----
- include/video/sh_mobile_hdmi.h              |    2 -
- include/video/sh_mobile_lcdc.h              |   42 +-
- include/video/sh_mobile_meram.h             |   45 +-
- 22 files changed, 2533 insertions(+), 1608 deletions(-)
-
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index c66f0f4..6d8c30b 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -728,20 +728,15 @@ static void __sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 
+ 	/* Setup geometry, format, frame buffer memory and operation mode. */
+ 	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
+-		const struct sh_mobile_lcdc_format_info *format;
+-		u32 fourcc;
+-
+ 		ch = &priv->ch[k];
+ 		if (!ch->enabled)
+ 			continue;
+ 
+ 		sh_mobile_lcdc_geometry(ch);
+ 
+-		fourcc = sh_mobile_format_fourcc(&ch->info->var);
+-		format = sh_mobile_format_info(fourcc);
+-		tmp = format->lddfr;
++		tmp = ch->format->lddfr;
+ 
+-		if (format->yuv) {
++		if (ch->format->yuv) {
+ 			switch (ch->info->var.colorspace) {
+ 			case V4L2_COLORSPACE_REC709:
+ 				tmp |= LDDFR_CF1;
+@@ -755,7 +750,7 @@ static void __sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 		lcdc_write_chan(ch, LDDFR, tmp);
+ 		lcdc_write_chan(ch, LDMLSR, ch->pitch);
+ 		lcdc_write_chan(ch, LDSA1R, ch->base_addr_y);
+-		if (format->yuv)
++		if (ch->format->yuv)
+ 			lcdc_write_chan(ch, LDSA2R, ch->base_addr_c);
+ 
+ 		/* When using deferred I/O mode, configure the LCDC for one-shot
+@@ -772,7 +767,7 @@ static void __sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 	}
+ 
+ 	/* Word and long word swap. */
+-	switch (sh_mobile_format_fourcc(&priv->ch[0].info->var)) {
++	switch (priv->ch[0].format->fourcc) {
+ 	case V4L2_PIX_FMT_RGB565:
+ 	case V4L2_PIX_FMT_NV21:
+ 	case V4L2_PIX_FMT_NV61:
+@@ -859,7 +854,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 			ch->meram_enabled = 0;
+ 		}
+ 
+-		switch (sh_mobile_format_fourcc(&ch->info->var)) {
++		switch (ch->format->fourcc) {
+ 		case V4L2_PIX_FMT_NV12:
+ 		case V4L2_PIX_FMT_NV21:
+ 		case V4L2_PIX_FMT_NV16:
+@@ -1065,7 +1060,7 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
+ 			    + info->var.xres * info->var.yres_virtual
+ 			    + c_offset;
+ 		/* Set x offset */
+-		if (sh_mobile_format_fourcc(&info->var) = V4L2_PIX_FMT_NV24)
++		if (ch->format->fourcc = V4L2_PIX_FMT_NV24)
+ 			base_addr_c += 2 * var->xoffset;
+ 		else
+ 			base_addr_c += var->xoffset;
+@@ -1353,6 +1348,8 @@ static int sh_mobile_set_par(struct fb_info *info)
+ 		info->fix.line_length = info->var.xres
+ 				      * info->var.bits_per_pixel / 8;
+ 
++	ch->format = sh_mobile_format_info(sh_mobile_format_fourcc(&info->var));
++
+ 	ret = sh_mobile_lcdc_start(ch->lcdc);
+ 	if (ret < 0) {
+ 		dev_err(info->dev, "%s: unable to restart LCDC\n", __func__);
+@@ -1716,6 +1713,8 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
+ 		return -EINVAL;
+ 	}
+ 
++	ch->format = format;
++
+ 	/* Allocate the frame buffer device. */
+ 	ch->info = framebuffer_alloc(0, priv->dev);
+ 	if (!ch->info) {
+diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
+index 8e0d009..5ef7559 100644
+--- a/drivers/video/sh_mobile_lcdcfb.h
++++ b/drivers/video/sh_mobile_lcdcfb.h
+@@ -17,9 +17,10 @@ enum { LDDCKPAT1R, LDDCKPAT2R, LDMT1R, LDMT2R, LDMT3R, LDDFR, LDSM1R,
+ struct backlight_device;
+ struct fb_info;
+ struct module;
++struct sh_mobile_lcdc_chan;
+ struct sh_mobile_lcdc_entity;
++struct sh_mobile_lcdc_format_info;
+ struct sh_mobile_lcdc_priv;
+-struct sh_mobile_lcdc_chan;
+ 
+ #define SH_MOBILE_LCDC_DISPLAY_DISCONNECTED	0
+ #define SH_MOBILE_LCDC_DISPLAY_CONNECTED	1
+@@ -70,6 +71,7 @@ struct sh_mobile_lcdc_chan {
+ 	wait_queue_head_t frame_end_wait;
+ 	struct completion vsync_completion;
+ 
++	const struct sh_mobile_lcdc_format_info *format;
+ 	unsigned long base_addr_y;
+ 	unsigned long base_addr_c;
+ 	unsigned int pitch;
 -- 
-Regards,
-
-Laurent Pinchart
+1.7.3.4
 

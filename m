@@ -1,59 +1,103 @@
-From: Manuel Lauss <manuel.lauss@googlemail.com>
-Date: Sat, 24 Mar 2012 10:38:02 +0000
-Subject: [PATCH] fbdev: fix au1*fb builds
-Message-Id: <1332585482-6607-1-git-send-email-manuel.lauss@googlemail.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 01 Mar 2012 15:07:54 +0000
+Subject: [PATCH v2 41/57] fbdev: sh_mobile_meram: Add _cfg suffix to struct sh_mobile_meram_icb
+Message-Id: <1330614490-14149-42-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Commit 1c16697bf9d5b206cb0d2b905a54de5e077296be
-("drivers/video/au*fb.c: use devm_ functions) introduced 2 build failures
-in the au1100fb and au1200fb drivers, fix them.
+The structure describe ICB configuration, no ICB objects themselves.
+Rename it to sh_mobile_meram_icb_cfg in preparation for the addition of
+an ICB structure.
 
-Signed-off-by: Manuel Lauss <manuel.lauss@googlemail.com>
+All the structure fields are unsigned integers, make them so.
+
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/au1100fb.c |    5 +++--
- drivers/video/au1200fb.c |    2 +-
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ drivers/video/sh_mobile_meram.c |   10 +++++-----
+ include/video/sh_mobile_meram.h |   14 +++++++-------
+ 2 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
-index befcbd8..ffbce45 100644
---- a/drivers/video/au1100fb.c
-+++ b/drivers/video/au1100fb.c
-@@ -499,7 +499,8 @@ static int __devinit au1100fb_drv_probe(struct platform_device *dev)
- 	au1100fb_fix.mmio_start = regs_res->start;
- 	au1100fb_fix.mmio_len = resource_size(regs_res);
+diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
+index dbf5c43..2ad5a45 100644
+--- a/drivers/video/sh_mobile_meram.c
++++ b/drivers/video/sh_mobile_meram.c
+@@ -156,7 +156,7 @@ static inline unsigned long meram_read_reg(void __iomem *base, int off)
+  */
  
--	if (!devm_request_mem_region(au1100fb_fix.mmio_start,
-+	if (!devm_request_mem_region(&dev->dev,
-+				     au1100fb_fix.mmio_start,
- 				     au1100fb_fix.mmio_len,
- 				     DRIVER_NAME)) {
- 		print_err("fail to lock memory region at 0x%08lx",
-@@ -516,7 +517,7 @@ static int __devinit au1100fb_drv_probe(struct platform_device *dev)
- 	fbdev->fb_len = fbdev->panel->xres * fbdev->panel->yres *
- 		  	(fbdev->panel->bpp >> 3) * AU1100FB_NBR_VIDEO_BUFFERS;
+ static inline int meram_check_overlap(struct sh_mobile_meram_priv *priv,
+-				      struct sh_mobile_meram_icb *new)
++				      struct sh_mobile_meram_icb_cfg *new)
+ {
+ 	int i;
+ 	int used_start, used_end, meram_start, meram_end;
+@@ -188,7 +188,7 @@ static inline int meram_check_overlap(struct sh_mobile_meram_priv *priv,
+  */
  
--	fbdev->fb_mem = dmam_alloc_coherent(&dev->dev, &dev->dev,
-+	fbdev->fb_mem = dmam_alloc_coherent(&dev->dev,
- 					    PAGE_ALIGN(fbdev->fb_len),
- 					    &fbdev->fb_phys, GFP_KERNEL);
- 	if (!fbdev->fb_mem) {
-diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
-index 3e9a773..7ca79f0 100644
---- a/drivers/video/au1200fb.c
-+++ b/drivers/video/au1200fb.c
-@@ -1724,7 +1724,7 @@ static int __devinit au1200fb_drv_probe(struct platform_device *dev)
- 		/* Allocate the framebuffer to the maximum screen size */
- 		fbdev->fb_len = (win->w[plane].xres * win->w[plane].yres * bpp) / 8;
+ static inline void meram_mark(struct sh_mobile_meram_priv *priv,
+-			      struct sh_mobile_meram_icb *new)
++			      struct sh_mobile_meram_icb_cfg *new)
+ {
+ 	int n;
  
--		fbdev->fb_mem = dmam_alloc_noncoherent(&dev->dev, &dev->dev,
-+		fbdev->fb_mem = dmam_alloc_noncoherent(&dev->dev,
- 				PAGE_ALIGN(fbdev->fb_len),
- 				&fbdev->fb_phys, GFP_KERNEL);
- 		if (!fbdev->fb_mem) {
+@@ -211,7 +211,7 @@ static inline void meram_mark(struct sh_mobile_meram_priv *priv,
+  */
+ 
+ static inline void meram_unmark(struct sh_mobile_meram_priv *priv,
+-				struct sh_mobile_meram_icb *icb)
++				struct sh_mobile_meram_icb_cfg *icb)
+ {
+ 	int i;
+ 	unsigned long pattern;
+@@ -303,7 +303,7 @@ static inline void meram_get_next_icb_addr(struct sh_mobile_meram_info *pdata,
+  */
+ 
+ static int meram_init(struct sh_mobile_meram_priv *priv,
+-		      struct sh_mobile_meram_icb *icb,
++		      struct sh_mobile_meram_icb_cfg *icb,
+ 		      int xres, int yres, int *out_pitch)
+ {
+ 	unsigned long total_byte_count = MERAM_CALC_BYTECOUNT(xres, yres);
+@@ -370,7 +370,7 @@ static int meram_init(struct sh_mobile_meram_priv *priv,
+ }
+ 
+ static void meram_deinit(struct sh_mobile_meram_priv *priv,
+-			struct sh_mobile_meram_icb *icb)
++			 struct sh_mobile_meram_icb_cfg *icb)
+ {
+ 	/* disable ICB */
+ 	meram_write_icb(priv->base, icb->cache_icb,  MExxCTL,
+diff --git a/include/video/sh_mobile_meram.h b/include/video/sh_mobile_meram.h
+index af602d6..caae558 100644
+--- a/include/video/sh_mobile_meram.h
++++ b/include/video/sh_mobile_meram.h
+@@ -25,17 +25,17 @@ struct sh_mobile_meram_info {
+ };
+ 
+ /* icb config */
+-struct sh_mobile_meram_icb {
+-	int marker_icb;		/* ICB # for Marker ICB */
+-	int cache_icb;		/* ICB # for Cache ICB */
+-	int meram_offset;	/* MERAM Buffer Offset to use */
+-	int meram_size;		/* MERAM Buffer Size to use */
++struct sh_mobile_meram_icb_cfg {
++	unsigned int marker_icb;	/* ICB # for Marker ICB */
++	unsigned int cache_icb;		/* ICB # for Cache ICB */
++	unsigned int meram_offset;	/* MERAM Buffer Offset to use */
++	unsigned int meram_size;	/* MERAM Buffer Size to use */
+ 
+-	int cache_unit;		/* bytes to cache per ICB */
++	unsigned int cache_unit;	/* bytes to cache per ICB */
+ };
+ 
+ struct sh_mobile_meram_cfg {
+-	struct sh_mobile_meram_icb	icb[2];
++	struct sh_mobile_meram_icb_cfg	icb[2];
+ 	int				pixelformat;
+ 	int				current_reg;
+ };
 -- 
-1.7.8.5
+1.7.3.4
 

@@ -1,51 +1,33 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:07:21 +0000
-Subject: [PATCH v2 08/57] fbdev: sh_mobile_lcdc: Add sh_mobile_lcdc_entity definition
-Message-Id: <1330614490-14149-9-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Thu, 01 Mar 2012 15:08:03 +0000
+Subject: [PATCH v2 50/57] fbdev: sh_mobile_meram: Remove unused sh_mobile_meram_icb_cfg fields
+Message-Id: <1330614490-14149-51-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The sh_mobile_lcdc_entity structure will be used to abstract operations
-performed by transceivers (such as MIPI/DSI and HDMI).
+The marker_icb and cache_icb fields are not used anymore, remove them.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mobile_lcdcfb.h |   18 ++++++++++++++++--
- 1 files changed, 16 insertions(+), 2 deletions(-)
+ include/video/sh_mobile_meram.h |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
-index a58a0f3..d79e5aa 100644
---- a/drivers/video/sh_mobile_lcdcfb.h
-+++ b/drivers/video/sh_mobile_lcdcfb.h
-@@ -14,9 +14,23 @@ enum { LDDCKPAT1R, LDDCKPAT2R, LDMT1R, LDMT2R, LDMT3R, LDDFR, LDSM1R,
+diff --git a/include/video/sh_mobile_meram.h b/include/video/sh_mobile_meram.h
+index e0f650c..8979607 100644
+--- a/include/video/sh_mobile_meram.h
++++ b/include/video/sh_mobile_meram.h
+@@ -31,8 +31,6 @@ struct sh_mobile_meram_info {
  
- #define PALETTE_NR 16
+ /* icb config */
+ struct sh_mobile_meram_icb_cfg {
+-	unsigned int marker_icb;	/* ICB # for Marker ICB */
+-	unsigned int cache_icb;		/* ICB # for Cache ICB */
+ 	unsigned int meram_size;	/* MERAM Buffer Size to use */
+ };
  
--struct sh_mobile_lcdc_priv;
--struct fb_info;
- struct backlight_device;
-+struct fb_info;
-+struct module;
-+struct sh_mobile_lcdc_entity;
-+struct sh_mobile_lcdc_priv;
-+
-+struct sh_mobile_lcdc_entity_ops {
-+	/* Display */
-+	int (*display_on)(struct sh_mobile_lcdc_entity *entity,
-+			  struct fb_info *info);
-+	void (*display_off)(struct sh_mobile_lcdc_entity *entity);
-+};
-+
-+struct sh_mobile_lcdc_entity {
-+	struct module *owner;
-+	const struct sh_mobile_lcdc_entity_ops *ops;
-+};
- 
- /*
-  * struct sh_mobile_lcdc_chan - LCDC display channel
 -- 
 1.7.3.4
 

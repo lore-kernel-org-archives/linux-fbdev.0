@@ -1,129 +1,56 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:07:53 +0000
-Subject: [PATCH v2 40/57] fbdev: sh_mobile_meram: Request memory regions for memory resources
-Message-Id: <1330614490-14149-41-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 01 Mar 2012 12:26:32 +0000
+Subject: [PATCH 4/7] OMAP: 4430SDP/Panda: setup HDMI GPIO muxes
+Message-Id: <1330604795-29156-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1330604795-29156-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1330604795-29156-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: stable@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Make sure the registers and MERAM spaces are reserved before using them.
+The HDMI GPIO pins LS_OE and CT_CP_HPD are not currently configured.
+This patch configures them as output pins.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Backported from 78a1ad8f12db70b8b0a4548b90704de08ee216ce
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Acked-by: Tony Lindgren <tony@atomide.com>
 ---
- drivers/video/sh_mobile_meram.c |   53 +++++++++++++++++++++++++++-----------
- 1 files changed, 37 insertions(+), 16 deletions(-)
+ arch/arm/mach-omap2/board-4430sdp.c    |    3 +++
+ arch/arm/mach-omap2/board-omap4panda.c |    3 +++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
-index f45d83e..dbf5c43 100644
---- a/drivers/video/sh_mobile_meram.c
-+++ b/drivers/video/sh_mobile_meram.c
-@@ -596,13 +596,12 @@ static struct sh_mobile_meram_ops sh_mobile_meram_ops = {
-  * initialize MERAM
-  */
- 
--static int sh_mobile_meram_remove(struct platform_device *pdev);
--
- static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
- {
- 	struct sh_mobile_meram_priv *priv;
- 	struct sh_mobile_meram_info *pdata = pdev->dev.platform_data;
--	struct resource *res;
-+	struct resource *regs;
-+	struct resource *meram;
- 	int error;
- 
- 	if (!pdata) {
-@@ -610,8 +609,9 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	if (!res) {
-+	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	meram = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-+	if (regs = NULL || meram = NULL) {
- 		dev_err(&pdev->dev, "cannot get platform resources\n");
- 		return -ENOENT;
- 	}
-@@ -622,32 +622,50 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 	}
- 
--	platform_set_drvdata(pdev, priv);
--
- 	/* initialize private data */
- 	mutex_init(&priv->lock);
--	priv->base = ioremap_nocache(res->start, resource_size(res));
-+	pdata->ops = &sh_mobile_meram_ops;
-+	pdata->priv = priv;
-+	pdata->pdev = pdev;
+diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+index 385c1fd..7bcafb9 100644
+--- a/arch/arm/mach-omap2/board-4430sdp.c
++++ b/arch/arm/mach-omap2/board-4430sdp.c
+@@ -824,6 +824,9 @@ static void omap_4430sdp_display_init(void)
+ 	sdp4430_hdmi_mux_init();
+ 	sdp4430_picodlp_init();
+ 	omap_display_init(&sdp4430_dss_data);
 +
-+	if (!request_mem_region(regs->start, resource_size(regs), pdev->name)) {
-+		dev_err(&pdev->dev, "MERAM registers region already claimed\n");
-+		error = -EBUSY;
-+		goto err_req_regs;
-+	}
-+
-+	if (!request_mem_region(meram->start, resource_size(meram),
-+				pdev->name)) {
-+		dev_err(&pdev->dev, "MERAM memory region already claimed\n");
-+		error = -EBUSY;
-+		goto err_req_meram;
-+	}
-+
-+	priv->base = ioremap_nocache(regs->start, resource_size(regs));
- 	if (!priv->base) {
- 		dev_err(&pdev->dev, "ioremap failed\n");
- 		error = -EFAULT;
--		goto err;
-+		goto err_ioremap;
- 	}
--	pdata->ops = &sh_mobile_meram_ops;
--	pdata->priv = priv;
--	pdata->pdev = pdev;
- 
- 	/* initialize ICB addressing mode */
- 	if (pdata->addr_mode = SH_MOBILE_MERAM_MODE1)
- 		meram_write_reg(priv->base, MEVCR1, MEVCR1_AMD1);
- 
-+	platform_set_drvdata(pdev, priv);
- 	pm_runtime_enable(&pdev->dev);
- 
- 	dev_info(&pdev->dev, "sh_mobile_meram initialized.");
- 
- 	return 0;
- 
--err:
--	sh_mobile_meram_remove(pdev);
-+err_ioremap:
-+	release_mem_region(meram->start, resource_size(meram));
-+err_req_meram:
-+	release_mem_region(regs->start, resource_size(regs));
-+err_req_regs:
-+	mutex_destroy(&priv->lock);
-+	kfree(priv);
- 
- 	return error;
++	omap_mux_init_gpio(HDMI_GPIO_LS_OE, OMAP_PIN_OUTPUT);
++	omap_mux_init_gpio(HDMI_GPIO_CT_CP_HPD, OMAP_PIN_OUTPUT);
  }
-@@ -656,11 +674,14 @@ err:
- static int sh_mobile_meram_remove(struct platform_device *pdev)
- {
- 	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
-+	struct resource *regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	struct resource *meram = platform_get_resource(pdev, IORESOURCE_MEM, 1);
  
- 	pm_runtime_disable(&pdev->dev);
+ #ifdef CONFIG_OMAP_MUX
+diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
+index e0d0abc..27fc162 100644
+--- a/arch/arm/mach-omap2/board-omap4panda.c
++++ b/arch/arm/mach-omap2/board-omap4panda.c
+@@ -541,6 +541,9 @@ void omap4_panda_display_init(void)
  
--	if (priv->base)
--		iounmap(priv->base);
-+	iounmap(priv->base);
-+	release_mem_region(meram->start, resource_size(meram));
-+	release_mem_region(regs->start, resource_size(regs));
+ 	omap4_panda_hdmi_mux_init();
+ 	omap_display_init(&omap4_panda_dss_data);
++
++	omap_mux_init_gpio(HDMI_GPIO_LS_OE, OMAP_PIN_OUTPUT);
++	omap_mux_init_gpio(HDMI_GPIO_CT_CP_HPD, OMAP_PIN_OUTPUT);
+ }
  
- 	mutex_destroy(&priv->lock);
- 
+ static void __init omap4_panda_init(void)
 -- 
-1.7.3.4
+1.7.4.1
 

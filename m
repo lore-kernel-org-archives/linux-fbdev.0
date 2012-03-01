@@ -1,68 +1,65 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:07:52 +0000
-Subject: [PATCH v2 39/57] arm: mach-shmobile: Split MERAM resources into regs and meram
-Message-Id: <1330614490-14149-40-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 01 Mar 2012 12:26:31 +0000
+Subject: [PATCH 3/7] OMAPDSS: remove wrong HDMI HPD muxing
+Message-Id: <1330604795-29156-4-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1330604795-29156-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1330604795-29156-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: stable@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The MERAM resource currently combines both the registers space and the
-MERAM space. Only the register space needs to be ioremapped, split the
-resource to make that possible.
+"hdmi_hpd" pin is muxed to INPUT and PULLUP, but the pin is not
+currently used, and in the future when it is used, the pin is used as a
+GPIO and is board specific, not an OMAP4 wide thing.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+So remove the muxing for now.
+
+Backported from 7bb122d155f742fe2d79849090c825be7b4a247e
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Acked-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-shmobile/board-ap4evb.c   |   14 ++++++++++----
- arch/arm/mach-shmobile/board-mackerel.c |    8 +++++++-
- 2 files changed, 17 insertions(+), 5 deletions(-)
+ arch/arm/mach-omap2/board-4430sdp.c    |    4 ----
+ arch/arm/mach-omap2/board-omap4panda.c |    4 ----
+ 2 files changed, 0 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
-index 505d4e6..17282bc 100644
---- a/arch/arm/mach-shmobile/board-ap4evb.c
-+++ b/arch/arm/mach-shmobile/board-ap4evb.c
-@@ -258,10 +258,16 @@ static struct sh_mobile_meram_info meram_info = {
+diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+index 4333115..385c1fd 100644
+--- a/arch/arm/mach-omap2/board-4430sdp.c
++++ b/arch/arm/mach-omap2/board-4430sdp.c
+@@ -597,12 +597,8 @@ static void __init omap_sfh7741prox_init(void)
  
- static struct resource meram_resources[] = {
- 	[0] = {
--		.name   = "MERAM",
--		.start  = 0xe8000000,
--		.end    = 0xe81fffff,
--		.flags  = IORESOURCE_MEM,
-+		.name	= "regs",
-+		.start	= 0xe8000000,
-+		.end	= 0xe807ffff,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.name	= "meram",
-+		.start	= 0xe8080000,
-+		.end	= 0xe81fffff,
-+		.flags	= IORESOURCE_MEM,
- 	},
- };
+ static void sdp4430_hdmi_mux_init(void)
+ {
+-	/* PAD0_HDMI_HPD_PAD1_HDMI_CEC */
+-	omap_mux_init_signal("hdmi_hpd",
+-			OMAP_PIN_INPUT_PULLUP);
+ 	omap_mux_init_signal("hdmi_cec",
+ 			OMAP_PIN_INPUT_PULLUP);
+-	/* PAD0_HDMI_DDC_SCL_PAD1_HDMI_DDC_SDA */
+ 	omap_mux_init_signal("hdmi_ddc_scl",
+ 			OMAP_PIN_INPUT_PULLUP);
+ 	omap_mux_init_signal("hdmi_ddc_sda",
+diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
+index d8e20f1..e0d0abc 100644
+--- a/arch/arm/mach-omap2/board-omap4panda.c
++++ b/arch/arm/mach-omap2/board-omap4panda.c
+@@ -481,12 +481,8 @@ int __init omap4_panda_dvi_init(void)
  
-diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
-index f22135e..c566f8c 100644
---- a/arch/arm/mach-shmobile/board-mackerel.c
-+++ b/arch/arm/mach-shmobile/board-mackerel.c
-@@ -323,8 +323,14 @@ static struct sh_mobile_meram_info mackerel_meram_info = {
- 
- static struct resource meram_resources[] = {
- 	[0] = {
--		.name	= "MERAM",
-+		.name	= "regs",
- 		.start	= 0xe8000000,
-+		.end	= 0xe807ffff,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.name	= "meram",
-+		.start	= 0xe8080000,
- 		.end	= 0xe81fffff,
- 		.flags	= IORESOURCE_MEM,
- 	},
+ static void omap4_panda_hdmi_mux_init(void)
+ {
+-	/* PAD0_HDMI_HPD_PAD1_HDMI_CEC */
+-	omap_mux_init_signal("hdmi_hpd",
+-			OMAP_PIN_INPUT_PULLUP);
+ 	omap_mux_init_signal("hdmi_cec",
+ 			OMAP_PIN_INPUT_PULLUP);
+-	/* PAD0_HDMI_DDC_SCL_PAD1_HDMI_DDC_SDA */
+ 	omap_mux_init_signal("hdmi_ddc_scl",
+ 			OMAP_PIN_INPUT_PULLUP);
+ 	omap_mux_init_signal("hdmi_ddc_sda",
 -- 
-1.7.3.4
+1.7.4.1
 

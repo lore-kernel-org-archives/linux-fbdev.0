@@ -1,269 +1,157 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 15 Mar 2012 17:43:54 +0000
-Subject: [RFC/PATCH 6/6] fbdev: sh_mobile_lcdc: Added MERAM-backed frame buffer support
-Message-Id: <1331833434-11934-7-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Thu, 01 Mar 2012 15:08:07 +0000
+Subject: [PATCH v2 54/57] fbdev: sh_mobile_meram: Remove unneeded sanity checks
+Message-Id: <1330614490-14149-55-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Storing the frame buffer in the MERAM allows system memory to be put to
-a low power state (assuming the CPU is idle). However, the MERAM size
-doesn't allow for double-buffering of large frame buffers in a high bit
-per pixel format. The frame buffer can't thus be permanently stored in
-MERAM.
+The meram_register(), meram_unregister() and meram_update() operations
+check that the pointers they get from the caller are not NULL. Those
+checks can be remove, as the caller already ensures that the pointers
+are valid.
 
-The optional frame buffer MERAM backing store allows switching between
-system memory and MERAM at runtime. The backing store is selected by
-userspace through the backingstore sysfs property. When switching to
-MERAM to frame buffer contents are copied to the allocated MERAM backing
-store. This freezes the display until switching back to system memory,
-or panning which triggers a display update.
+The platform sanity checks can also be removed, as the operations can't
+be accessed without valid platform data anyway.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |  145 +++++++++++++++++++++++++++++++++++---
- drivers/video/sh_mobile_lcdcfb.h |    3 +
- include/video/sh_mobile_lcdc.h   |    1 +
- 3 files changed, 139 insertions(+), 10 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |    5 +----
+ drivers/video/sh_mobile_meram.c  |   32 ++++++--------------------------
+ include/video/sh_mobile_meram.h  |   15 +++++++--------
+ 3 files changed, 14 insertions(+), 38 deletions(-)
 
 diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 23d0446..a443592 100644
+index 4b54cd5..7a0b301 100644
 --- a/drivers/video/sh_mobile_lcdcfb.c
 +++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -971,6 +971,117 @@ static void sh_mobile_lcdc_stop(struct sh_mobile_lcdc_priv *priv)
- }
+@@ -1072,14 +1072,11 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
  
- /* -----------------------------------------------------------------------------
-+ * MERAM backing store
-+ */
-+
-+static void sh_mobile_lcdc_set_fb_addr(struct sh_mobile_lcdc_chan *ch,
-+				       unsigned long addr_y,
-+				       unsigned long addr_c)
-+{
-+	struct sh_mobile_lcdc_priv *priv = ch->lcdc;
-+	unsigned long ldrcntr;
-+
-+	lcdc_write_chan_mirror(ch, LDSA1R, addr_y);
-+	if (ch->format->yuv)
-+		lcdc_write_chan_mirror(ch, LDSA2R, addr_c);
-+
-+	ldrcntr = lcdc_read(priv, _LDRCNTR);
-+	if (lcdc_chan_is_sublcd(ch))
-+		lcdc_write(ch->lcdc, _LDRCNTR, ldrcntr ^ LDRCNTR_SRS);
-+	else
-+		lcdc_write(ch->lcdc, _LDRCNTR, ldrcntr ^ LDRCNTR_MRS);
-+}
-+
-+/*
-+ * sh_mobile_lcdc_copy_fb_memory - Copy frame buffer from system memory to MERAM
-+ *
-+ * Copy the visible frame buffer content (taking pan offsets into account) from
-+ * system memory to a contiguous memory block in MERAM.
-+ */
-+static void sh_mobile_lcdc_copy_fb_memory(struct sh_mobile_lcdc_chan *ch)
-+{
-+	void *fb_mem = ch->fb_mem;
-+	void __iomem *mem;
-+	size_t size;
-+
-+	if (ch->fb_meram = 0)
-+		return;
-+
-+	size = ch->xres * ch->yres * ch->format->bpp / 8;
-+	mem = ioremap_wc(ch->fb_meram, size);
-+	if (mem = NULL)
-+		return;
-+
-+	memcpy_toio(mem, fb_mem + ch->pan_y_offset, size);
-+	if (ch->format->yuv) {
-+		fb_mem = ch->fb_mem + ch->xres_virtual * ch->yres_virtual;
-+		memcpy_toio(mem + ch->xres * ch->yres,
-+			    fb_mem + ch->pan_c_offset,
-+			    size - ch->xres * ch->yres);
-+	}
-+
-+	iounmap(mem);
-+}
-+
-+static ssize_t lcdc_backing_store_show(struct device *dev,
-+				       struct device_attribute *attr, char *buf)
-+{
-+	struct fb_info *info = dev_get_drvdata(dev);
-+	struct sh_mobile_lcdc_chan *ch = info->par;
-+
-+	return scnprintf(buf, PAGE_SIZE, "%s\n",
-+			 ch->fb_in_meram ? "meram" : "system");
-+}
-+
-+static ssize_t lcdc_backing_store_store(struct device *dev,
-+					struct device_attribute *attr,
-+					const char *buf, size_t count)
-+{
-+	struct fb_info *info = dev_get_drvdata(dev);
-+	struct sh_mobile_lcdc_chan *ch = info->par;
-+	bool fb_in_meram;
-+
-+	if (strncmp(buf, "system", 6) = 0)
-+		fb_in_meram = false;
-+	else if (strncmp(buf, "meram", 5) = 0)
-+		fb_in_meram = true;
-+	else
-+		return -EINVAL;
-+
-+	mutex_lock(&ch->meram_lock);
-+
-+	printk(KERN_INFO "%s: fb_in_meram is %s, wants %s\n", __func__,
-+		ch->fb_in_meram ? "true" : "false",
-+		fb_in_meram ? "true" : "false");
-+	if (ch->fb_in_meram = fb_in_meram)
-+		goto done;
-+
-+	if (fb_in_meram) {
-+		unsigned long base_addr_y;
-+		unsigned long base_addr_c;
-+
-+		base_addr_y = ch->fb_meram;
-+		base_addr_c = ch->fb_meram + ch->xres * ch->yres;
-+
-+		sh_mobile_lcdc_copy_fb_memory(ch);
-+		sh_mobile_lcdc_set_fb_addr(ch, base_addr_y, base_addr_c);
-+	} else {
-+		sh_mobile_lcdc_set_fb_addr(ch, ch->base_addr_y,
-+					   ch->base_addr_c);
-+	}
-+
-+	ch->fb_in_meram = fb_in_meram;
-+
-+done:
-+	mutex_unlock(&ch->meram_lock);
-+	return count;
-+}
-+
-+static const struct device_attribute lcdc_backing_store_attr +	__ATTR(backingstore, S_IRUGO|S_IWUSR,
-+	       lcdc_backing_store_show, lcdc_backing_store_store);
-+
-+/* -----------------------------------------------------------------------------
-  * Frame buffer operations
-  */
+ 	if (ch->meram) {
+ 		struct sh_mobile_meram_info *mdev;
+-		int ret;
  
-@@ -1035,7 +1146,6 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
+ 		mdev = priv->meram_dev;
+-		ret = mdev->ops->meram_update(mdev, ch->meram,
++		mdev->ops->meram_update(mdev, ch->meram,
+ 					base_addr_y, base_addr_c,
+ 					&base_addr_y, &base_addr_c);
+-		if (ret)
+-			return ret;
+ 	}
+ 
+ 	ch->base_addr_y = base_addr_y;
+diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
+index 2ce0d8f..d9f7a44 100644
+--- a/drivers/video/sh_mobile_meram.c
++++ b/drivers/video/sh_mobile_meram.c
+@@ -451,21 +451,15 @@ static void *sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
+ 				      unsigned int *pitch)
  {
- 	struct sh_mobile_lcdc_chan *ch = info->par;
- 	struct sh_mobile_lcdc_priv *priv = ch->lcdc;
--	unsigned long ldrcntr;
- 	unsigned long base_addr_y, base_addr_c = 0;
- 	unsigned long y_offset;
- 	unsigned long c_offset;
-@@ -1071,16 +1181,16 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
- 	ch->pan_y_offset = y_offset;
- 	ch->pan_c_offset = c_offset;
+ 	struct sh_mobile_meram_fb_cache *cache;
+-	struct sh_mobile_meram_priv *priv;
+-	struct platform_device *pdev;
++	struct sh_mobile_meram_priv *priv = pdata->priv;
++	struct platform_device *pdev = pdata->pdev;
+ 	unsigned int out_pitch;
  
--	lcdc_write_chan_mirror(ch, LDSA1R, base_addr_y);
--	if (ch->format->yuv)
--		lcdc_write_chan_mirror(ch, LDSA2R, base_addr_c);
-+	sh_mobile_lcdc_set_fb_addr(ch, base_addr_y, base_addr_c);
+-	if (!pdata || !pdata->priv || !pdata->pdev || !cfg)
+-		return ERR_PTR(-EINVAL);
+-
+ 	if (pixelformat != SH_MOBILE_MERAM_PF_NV &&
+ 	    pixelformat != SH_MOBILE_MERAM_PF_NV24 &&
+ 	    pixelformat != SH_MOBILE_MERAM_PF_RGB)
+ 		return ERR_PTR(-EINVAL);
  
--	ldrcntr = lcdc_read(priv, _LDRCNTR);
--	if (lcdc_chan_is_sublcd(ch))
--		lcdc_write(ch->lcdc, _LDRCNTR, ldrcntr ^ LDRCNTR_SRS);
--	else
--		lcdc_write(ch->lcdc, _LDRCNTR, ldrcntr ^ LDRCNTR_MRS);
-+	if (ch->fb_in_meram) {
-+		sh_mobile_wait_for_vsync(ch);
-+		sh_mobile_lcdc_copy_fb_memory(ch);
+-	priv = pdata->priv;
+-	pdev = pdata->pdev;
+-
+ 	dev_dbg(&pdev->dev, "registering %dx%d (%s)", xres, yres,
+ 		!pixelformat ? "yuv" : "rgb");
  
-+		base_addr_y = ch->fb_meram;
-+		base_addr_c = ch->fb_meram + ch->xres * ch->yres;
-+		sh_mobile_lcdc_set_fb_addr(ch, base_addr_y, base_addr_c);
-+	}
- 
- 	sh_mobile_lcdc_deferred_io_touch(info);
- 
-@@ -1431,11 +1541,17 @@ sh_mobile_lcdc_channel_fb_register(struct sh_mobile_lcdc_chan *ch)
- 		 "mainlcd" : "sublcd", info->var.xres, info->var.yres,
- 		 info->var.bits_per_pixel);
- 
-+	if (ch->fb_meram) {
-+		ret = device_create_file(info->dev, &lcdc_backing_store_attr);
-+		if (ret < 0)
-+			return ret;
-+	}
-+
- 	/* deferred io mode: disable clock to save power */
- 	if (info->fbdefio || info->state = FBINFO_STATE_SUSPENDED)
- 		sh_mobile_lcdc_clk_off(ch->lcdc);
- 
--	return ret;
-+	return 0;
+@@ -500,16 +494,11 @@ err:
+ 	return cache;
  }
  
- static void
-@@ -1722,6 +1838,9 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
- 		if (ch->fb_mem)
- 			dma_free_coherent(&pdev->dev, ch->fb_size,
- 					  ch->fb_mem, ch->dma_handle);
-+		if (ch->fb_meram)
-+			sh_mobile_meram_free(priv->meram_dev, ch->fb_meram,
-+					     ch->fb_size / 2);
- 	}
+-static int
++static void
+ sh_mobile_meram_unregister(struct sh_mobile_meram_info *pdata, void *data)
+ {
+ 	struct sh_mobile_meram_fb_cache *cache = data;
+-	struct sh_mobile_meram_priv *priv;
+-
+-	if (!pdata || !pdata->priv || !data)
+-		return -EINVAL;
+-
+-	priv = pdata->priv;
++	struct sh_mobile_meram_priv *priv = pdata->priv;
  
- 	for (i = 0; i < ARRAY_SIZE(priv->ch); i++) {
-@@ -1730,6 +1849,7 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
- 		if (ch->bl)
- 			sh_mobile_lcdc_bl_remove(ch->bl);
- 		mutex_destroy(&ch->open_lock);
-+		mutex_destroy(&ch->meram_lock);
- 	}
+ 	mutex_lock(&priv->lock);
  
- 	if (priv->dot_clk) {
-@@ -1799,6 +1919,7 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
- 	unsigned int i;
+@@ -521,22 +510,15 @@ sh_mobile_meram_unregister(struct sh_mobile_meram_info *pdata, void *data)
+ 	meram_free(priv, cache);
  
- 	mutex_init(&ch->open_lock);
-+	mutex_init(&ch->meram_lock);
- 	ch->notify = sh_mobile_lcdc_display_notify;
+ 	mutex_unlock(&priv->lock);
+-
+-	return 0;
+ }
  
- 	/* Validate the format. */
-@@ -1873,6 +1994,10 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
- 		return -ENOMEM;
- 	}
+-static int
++static void
+ sh_mobile_meram_update(struct sh_mobile_meram_info *pdata, void *data,
+ 		       unsigned long base_addr_y, unsigned long base_addr_c,
+ 		       unsigned long *icb_addr_y, unsigned long *icb_addr_c)
+ {
+ 	struct sh_mobile_meram_fb_cache *cache = data;
+-	struct sh_mobile_meram_priv *priv;
+-
+-	if (!pdata || !pdata->priv || !data)
+-		return -EINVAL;
+-
+-	priv = pdata->priv;
++	struct sh_mobile_meram_priv *priv = pdata->priv;
  
-+	if (cfg->meram_backing_store)
-+		ch->fb_meram = sh_mobile_meram_alloc(priv->meram_dev,
-+						     ch->fb_size / 2);
-+
- 	/* Initialize the transmitter device if present. */
- 	if (cfg->tx_dev) {
- 		if (!cfg->tx_dev->dev.driver ||
-diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
-index 5320ad4..9796740 100644
---- a/drivers/video/sh_mobile_lcdcfb.h
-+++ b/drivers/video/sh_mobile_lcdcfb.h
-@@ -68,6 +68,9 @@ struct sh_mobile_lcdc_chan {
+ 	mutex_lock(&priv->lock);
  
- 	void *fb_mem;
- 	unsigned long fb_size;
-+	unsigned long fb_meram;
-+	bool fb_in_meram;
-+	struct mutex meram_lock;	/* protects fb_in_meram */
+@@ -544,8 +526,6 @@ sh_mobile_meram_update(struct sh_mobile_meram_info *pdata, void *data,
+ 	meram_get_next_icb_addr(pdata, cache, icb_addr_y, icb_addr_c);
  
- 	dma_addr_t dma_handle;
- 	unsigned long pan_y_offset;
-diff --git a/include/video/sh_mobile_lcdc.h b/include/video/sh_mobile_lcdc.h
-index 7571b27..3ceb221 100644
---- a/include/video/sh_mobile_lcdc.h
-+++ b/include/video/sh_mobile_lcdc.h
-@@ -179,6 +179,7 @@ struct sh_mobile_lcdc_chan_cfg {
- 	struct sh_mobile_lcdc_bl_info bl_info;
- 	struct sh_mobile_lcdc_sys_bus_cfg sys_bus_cfg; /* only for SYSn I/F */
- 	const struct sh_mobile_meram_cfg *meram_cfg;
-+	bool meram_backing_store;
+ 	mutex_unlock(&priv->lock);
+-
+-	return 0;
+ }
  
- 	struct platform_device *tx_dev;	/* HDMI/DSI transmitter device */
+ static struct sh_mobile_meram_ops sh_mobile_meram_ops = {
+diff --git a/include/video/sh_mobile_meram.h b/include/video/sh_mobile_meram.h
+index 553335c..29b2fd3 100644
+--- a/include/video/sh_mobile_meram.h
++++ b/include/video/sh_mobile_meram.h
+@@ -49,16 +49,15 @@ struct sh_mobile_meram_ops {
+ 				unsigned int *pitch);
+ 
+ 	/* unregister usage of meram */
+-	int (*meram_unregister)(struct sh_mobile_meram_info *meram_dev,
+-				void *data);
++	void (*meram_unregister)(struct sh_mobile_meram_info *meram_dev,
++				 void *data);
+ 
+ 	/* update meram settings */
+-	int (*meram_update)(struct sh_mobile_meram_info *meram_dev,
+-			    void *data,
+-			    unsigned long base_addr_y,
+-			    unsigned long base_addr_c,
+-			    unsigned long *icb_addr_y,
+-			    unsigned long *icb_addr_c);
++	void (*meram_update)(struct sh_mobile_meram_info *meram_dev, void *data,
++			     unsigned long base_addr_y,
++			     unsigned long base_addr_c,
++			     unsigned long *icb_addr_y,
++			     unsigned long *icb_addr_c);
  };
+ 
+ #endif /* __VIDEO_SH_MOBILE_MERAM_H__  */
 -- 
 1.7.3.4
 

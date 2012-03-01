@@ -1,549 +1,160 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:07:14 +0000
-Subject: [PATCH v2 01/57] fbdev: sh_mobile_lcdc: Reorder code into sections
-Message-Id: <1330614490-14149-2-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Thu, 01 Mar 2012 15:07:39 +0000
+Subject: [PATCH v2 26/57] sh_mobile_hdmi: Use LCDC notification callback
+Message-Id: <1330614490-14149-27-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Make the driver more readable by reordering code and splitting it into
-logical sections. Reorder the headers alphabetically.
-
-No modification to the code have been performed.
+Instead of accessing the LCDC channel and fb_info structures directly,
+use the LCDC notification callback to inform the LCDC driver about
+display-related events.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |  421 +++++++++++++++++++++-----------------
- 1 files changed, 231 insertions(+), 190 deletions(-)
+ drivers/video/sh_mobile_hdmi.c |   91 ++++++---------------------------------
+ 1 files changed, 14 insertions(+), 77 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index aac5b36..8b18360 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -8,26 +8,27 @@
-  * for more details.
-  */
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index 1464abf..055cd92 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -733,12 +733,11 @@ static unsigned long sh_hdmi_rate_error(struct sh_hdmi *hdmi,
+ static int sh_hdmi_read_edid(struct sh_hdmi *hdmi, unsigned long *hdmi_rate,
+ 			     unsigned long *parent_rate)
+ {
+-	struct fb_info *info = hdmi->entity.lcdc
+-			     ? hdmi->entity.lcdc->info : NULL;
+-	struct fb_var_screeninfo tmpvar;
+-	struct fb_var_screeninfo *var = &tmpvar;
++	struct sh_mobile_lcdc_chan *ch = hdmi->entity.lcdc;
++	struct fb_info *info = ch ? ch->info : NULL;
++	struct fb_var_screeninfo var;
+ 	const struct fb_videomode *mode, *found = NULL;
+-	struct fb_modelist *modelist = NULL;
++	const struct fb_modelist *modelist = NULL;
+ 	unsigned int f_width = 0, f_height = 0, f_refresh = 0;
+ 	unsigned long found_rate_error = ULONG_MAX; /* silly compiler... */
+ 	bool scanning = false, preferred_bad = false;
+@@ -856,12 +855,10 @@ static int sh_hdmi_read_edid(struct sh_hdmi *hdmi, unsigned long *hdmi_rate,
+ 		}
  
--#include <linux/kernel.h>
--#include <linux/init.h>
--#include <linux/delay.h>
--#include <linux/mm.h>
-+#include <linux/atomic.h>
-+#include <linux/backlight.h>
- #include <linux/clk.h>
--#include <linux/pm_runtime.h>
--#include <linux/platform_device.h>
-+#include <linux/console.h>
- #include <linux/dma-mapping.h>
-+#include <linux/delay.h>
-+#include <linux/gpio.h>
-+#include <linux/init.h>
- #include <linux/interrupt.h>
--#include <linux/videodev2.h>
--#include <linux/vmalloc.h>
- #include <linux/ioctl.h>
--#include <linux/slab.h>
--#include <linux/console.h>
--#include <linux/backlight.h>
--#include <linux/gpio.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
- #include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_runtime.h>
-+#include <linux/slab.h>
-+#include <linux/videodev2.h>
-+#include <linux/vmalloc.h>
-+
- #include <video/sh_mobile_lcdc.h>
- #include <video/sh_mobile_meram.h>
--#include <linux/atomic.h>
+ 		/* Check if supported: sufficient fb memory, supported clock-rate */
+-		fb_videomode_to_var(var, mode);
++		fb_videomode_to_var(&var, mode);
  
- #include "sh_mobile_lcdcfb.h"
- 
-@@ -37,6 +38,24 @@
- #define MAX_XRES 1920
- #define MAX_YRES 1080
- 
-+struct sh_mobile_lcdc_priv {
-+	void __iomem *base;
-+	int irq;
-+	atomic_t hw_usecnt;
-+	struct device *dev;
-+	struct clk *dot_clk;
-+	unsigned long lddckr;
-+	struct sh_mobile_lcdc_chan ch[2];
-+	struct notifier_block notifier;
-+	int started;
-+	int forced_fourcc; /* 2 channel LCDC must share fourcc setting */
-+	struct sh_mobile_meram_info *meram_dev;
-+};
-+
-+/* -----------------------------------------------------------------------------
-+ * Registers access
-+ */
-+
- static unsigned long lcdc_offs_mainlcd[NR_CH_REGS] = {
- 	[LDDCKPAT1R] = 0x400,
- 	[LDDCKPAT2R] = 0x404,
-@@ -75,38 +94,6 @@ static unsigned long lcdc_offs_sublcd[NR_CH_REGS] = {
- 	[LDPMR] = 0x63c,
+-		var->bits_per_pixel = info->var.bits_per_pixel;
+-
+-		if (info && info->fbops->fb_check_var &&
+-		    info->fbops->fb_check_var(var, info)) {
++		if (ch && ch->notify &&
++		    ch->notify(ch, SH_MOBILE_LCDC_EVENT_DISPLAY_MODE, &var)) {
+ 			scanning = true;
+ 			preferred_bad = true;
+ 			continue;
+@@ -1044,32 +1041,6 @@ static const struct sh_mobile_lcdc_entity_ops sh_hdmi_ops = {
+ 	.display_off = sh_hdmi_display_off,
  };
  
--static const struct fb_videomode default_720p = {
--	.name = "HDMI 720p",
--	.xres = 1280,
--	.yres = 720,
--
--	.left_margin = 220,
--	.right_margin = 110,
--	.hsync_len = 40,
--
--	.upper_margin = 20,
--	.lower_margin = 5,
--	.vsync_len = 5,
--
--	.pixclock = 13468,
--	.refresh = 60,
--	.sync = FB_SYNC_VERT_HIGH_ACT | FB_SYNC_HOR_HIGH_ACT,
--};
--
--struct sh_mobile_lcdc_priv {
--	void __iomem *base;
--	int irq;
--	atomic_t hw_usecnt;
--	struct device *dev;
--	struct clk *dot_clk;
--	unsigned long lddckr;
--	struct sh_mobile_lcdc_chan ch[2];
--	struct notifier_block notifier;
--	int started;
--	int forced_fourcc; /* 2 channel LCDC must share fourcc setting */
--	struct sh_mobile_meram_info *meram_dev;
--};
--
- static bool banked(int reg_nr)
- {
- 	switch (reg_nr) {
-@@ -127,6 +114,11 @@ static bool banked(int reg_nr)
- 	return false;
- }
- 
-+static int lcdc_chan_is_sublcd(struct sh_mobile_lcdc_chan *chan)
-+{
-+	return chan->cfg.chan = LCDC_CHAN_SUBLCD;
-+}
-+
- static void lcdc_write_chan(struct sh_mobile_lcdc_chan *chan,
- 			    int reg_nr, unsigned long data)
- {
-@@ -169,11 +161,77 @@ static void lcdc_wait_bit(struct sh_mobile_lcdc_priv *priv,
- 		cpu_relax();
- }
- 
--static int lcdc_chan_is_sublcd(struct sh_mobile_lcdc_chan *chan)
-+/* -----------------------------------------------------------------------------
-+ * Clock management
-+ */
-+
-+static void sh_mobile_lcdc_clk_on(struct sh_mobile_lcdc_priv *priv)
- {
--	return chan->cfg.chan = LCDC_CHAN_SUBLCD;
-+	if (atomic_inc_and_test(&priv->hw_usecnt)) {
-+		if (priv->dot_clk)
-+			clk_enable(priv->dot_clk);
-+		pm_runtime_get_sync(priv->dev);
-+		if (priv->meram_dev && priv->meram_dev->pdev)
-+			pm_runtime_get_sync(&priv->meram_dev->pdev->dev);
-+	}
- }
- 
-+static void sh_mobile_lcdc_clk_off(struct sh_mobile_lcdc_priv *priv)
-+{
-+	if (atomic_sub_return(1, &priv->hw_usecnt) = -1) {
-+		if (priv->meram_dev && priv->meram_dev->pdev)
-+			pm_runtime_put_sync(&priv->meram_dev->pdev->dev);
-+		pm_runtime_put(priv->dev);
-+		if (priv->dot_clk)
-+			clk_disable(priv->dot_clk);
-+	}
-+}
-+
-+static int sh_mobile_lcdc_setup_clocks(struct platform_device *pdev,
-+				       int clock_source,
-+				       struct sh_mobile_lcdc_priv *priv)
-+{
-+	char *str;
-+
-+	switch (clock_source) {
-+	case LCDC_CLK_BUS:
-+		str = "bus_clk";
-+		priv->lddckr = LDDCKR_ICKSEL_BUS;
-+		break;
-+	case LCDC_CLK_PERIPHERAL:
-+		str = "peripheral_clk";
-+		priv->lddckr = LDDCKR_ICKSEL_MIPI;
-+		break;
-+	case LCDC_CLK_EXTERNAL:
-+		str = NULL;
-+		priv->lddckr = LDDCKR_ICKSEL_HDMI;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	if (str) {
-+		priv->dot_clk = clk_get(&pdev->dev, str);
-+		if (IS_ERR(priv->dot_clk)) {
-+			dev_err(&pdev->dev, "cannot get dot clock %s\n", str);
-+			return PTR_ERR(priv->dot_clk);
-+		}
-+	}
-+
-+	/* Runtime PM support involves two step for this driver:
-+	 * 1) Enable Runtime PM
-+	 * 2) Force Runtime PM Resume since hardware is accessed from probe()
-+	 */
-+	priv->dev = &pdev->dev;
-+	pm_runtime_enable(priv->dev);
-+	pm_runtime_resume(priv->dev);
-+	return 0;
-+}
-+
-+/* -----------------------------------------------------------------------------
-+ * Sys panel and deferred I/O
-+ */
-+
- static void lcdc_sys_write_index(void *handle, unsigned long data)
- {
- 	struct sh_mobile_lcdc_chan *ch = handle;
-@@ -216,69 +274,6 @@ struct sh_mobile_lcdc_sys_bus_ops sh_mobile_lcdc_sys_bus_ops = {
- 	lcdc_sys_read_data,
- };
- 
--static int sh_mobile_format_fourcc(const struct fb_var_screeninfo *var)
+-static bool sh_hdmi_must_reconfigure(struct sh_hdmi *hdmi)
 -{
--	if (var->grayscale > 1)
--		return var->grayscale;
+-	struct sh_mobile_lcdc_chan *ch = hdmi->entity.lcdc;
+-	struct fb_var_screeninfo *new_var = &hdmi->var, *old_var = &ch->display_var;
+-	struct fb_videomode mode1, mode2;
 -
--	switch (var->bits_per_pixel) {
--	case 16:
--		return V4L2_PIX_FMT_RGB565;
--	case 24:
--		return V4L2_PIX_FMT_BGR24;
--	case 32:
--		return V4L2_PIX_FMT_BGR32;
--	default:
--		return 0;
--	}
--}
+-	fb_var_to_videomode(&mode1, old_var);
+-	fb_var_to_videomode(&mode2, new_var);
 -
--static int sh_mobile_format_is_fourcc(const struct fb_var_screeninfo *var)
--{
--	return var->grayscale > 1;
--}
+-	dev_dbg(hdmi->dev, "Old %ux%u, new %ux%u\n",
+-		mode1.xres, mode1.yres, mode2.xres, mode2.yres);
 -
--static bool sh_mobile_format_is_yuv(const struct fb_var_screeninfo *var)
--{
--	if (var->grayscale <= 1)
--		return false;
--
--	switch (var->grayscale) {
--	case V4L2_PIX_FMT_NV12:
--	case V4L2_PIX_FMT_NV21:
--	case V4L2_PIX_FMT_NV16:
--	case V4L2_PIX_FMT_NV61:
--	case V4L2_PIX_FMT_NV24:
--	case V4L2_PIX_FMT_NV42:
--		return true;
--
--	default:
+-	if (fb_mode_is_equal(&mode1, &mode2)) {
+-		/* It can be a different monitor with an equal video-mode */
+-		old_var->width = new_var->width;
+-		old_var->height = new_var->height;
 -		return false;
 -	}
+-
+-	dev_dbg(hdmi->dev, "Switching %u -> %u lines\n",
+-		mode1.yres, mode2.yres);
+-	*old_var = *new_var;
+-
+-	return true;
 -}
 -
--static void sh_mobile_lcdc_clk_on(struct sh_mobile_lcdc_priv *priv)
--{
--	if (atomic_inc_and_test(&priv->hw_usecnt)) {
--		if (priv->dot_clk)
--			clk_enable(priv->dot_clk);
--		pm_runtime_get_sync(priv->dev);
--		if (priv->meram_dev && priv->meram_dev->pdev)
--			pm_runtime_get_sync(&priv->meram_dev->pdev->dev);
--	}
--}
--
--static void sh_mobile_lcdc_clk_off(struct sh_mobile_lcdc_priv *priv)
--{
--	if (atomic_sub_return(1, &priv->hw_usecnt) = -1) {
--		if (priv->meram_dev && priv->meram_dev->pdev)
--			pm_runtime_put_sync(&priv->meram_dev->pdev->dev);
--		pm_runtime_put(priv->dev);
--		if (priv->dot_clk)
--			clk_disable(priv->dot_clk);
--	}
--}
--
- static int sh_mobile_lcdc_sginit(struct fb_info *info,
- 				  struct list_head *pagelist)
+ /**
+  * sh_hdmi_clk_configure() - set HDMI clock frequency and enable the clock
+  * @hdmi:		driver context
+@@ -1110,7 +1081,6 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
  {
-@@ -345,6 +340,55 @@ static void sh_mobile_lcdc_deferred_io_touch(struct fb_info *info)
- 		schedule_delayed_work(&info->deferred_work, fbdefio->delay);
- }
+ 	struct sh_hdmi *hdmi = container_of(work, struct sh_hdmi, edid_work.work);
+ 	struct sh_mobile_lcdc_chan *ch = hdmi->entity.lcdc;
+-	struct fb_info *info;
+ 	int ret;
  
-+/* -----------------------------------------------------------------------------
-+ * Format helpers
-+ */
-+
-+static int sh_mobile_format_fourcc(const struct fb_var_screeninfo *var)
-+{
-+	if (var->grayscale > 1)
-+		return var->grayscale;
-+
-+	switch (var->bits_per_pixel) {
-+	case 16:
-+		return V4L2_PIX_FMT_RGB565;
-+	case 24:
-+		return V4L2_PIX_FMT_BGR24;
-+	case 32:
-+		return V4L2_PIX_FMT_BGR32;
-+	default:
-+		return 0;
-+	}
-+}
-+
-+static int sh_mobile_format_is_fourcc(const struct fb_var_screeninfo *var)
-+{
-+	return var->grayscale > 1;
-+}
-+
-+static bool sh_mobile_format_is_yuv(const struct fb_var_screeninfo *var)
-+{
-+	if (var->grayscale <= 1)
-+		return false;
-+
-+	switch (var->grayscale) {
-+	case V4L2_PIX_FMT_NV12:
-+	case V4L2_PIX_FMT_NV21:
-+	case V4L2_PIX_FMT_NV16:
-+	case V4L2_PIX_FMT_NV61:
-+	case V4L2_PIX_FMT_NV24:
-+	case V4L2_PIX_FMT_NV42:
-+		return true;
-+
-+	default:
-+		return false;
-+	}
-+}
-+
-+/* -----------------------------------------------------------------------------
-+ * Start, stop and IRQ
-+ */
-+
- static irqreturn_t sh_mobile_lcdc_irq(int irq, void *data)
- {
- 	struct sh_mobile_lcdc_priv *priv = data;
-@@ -790,86 +834,9 @@ static void sh_mobile_lcdc_stop(struct sh_mobile_lcdc_priv *priv)
- 			sh_mobile_lcdc_clk_off(priv);
- }
+ 	dev_dbg(hdmi->dev, "%s(%p): begin, hotplug status %d\n", __func__, hdmi,
+@@ -1135,52 +1105,19 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
+ 		/* Switched to another (d) power-save mode */
+ 		msleep(10);
  
--static int sh_mobile_lcdc_check_interface(struct sh_mobile_lcdc_chan *ch)
--{
--	int interface_type = ch->cfg.interface_type;
+-		if (ch = NULL)
+-			goto out;
 -
--	switch (interface_type) {
--	case RGB8:
--	case RGB9:
--	case RGB12A:
--	case RGB12B:
--	case RGB16:
--	case RGB18:
--	case RGB24:
--	case SYS8A:
--	case SYS8B:
--	case SYS8C:
--	case SYS8D:
--	case SYS9:
--	case SYS12:
--	case SYS16A:
--	case SYS16B:
--	case SYS16C:
--	case SYS18:
--	case SYS24:
--		break;
--	default:
--		return -EINVAL;
--	}
+-		info = ch->info;
 -
--	/* SUBLCD only supports SYS interface */
--	if (lcdc_chan_is_sublcd(ch)) {
--		if (!(interface_type & LDMT1R_IFM))
--			return -EINVAL;
+-		if (lock_fb_info(info)) {
+-			console_lock();
 -
--		interface_type &= ~LDMT1R_IFM;
--	}
+-			/* HDMI plug in */
+-			if (!sh_hdmi_must_reconfigure(hdmi) &&
+-			    info->state = FBINFO_STATE_RUNNING) {
+-				/*
+-				 * First activation with the default monitor - just turn
+-				 * on, if we run a resume here, the logo disappears
+-				 */
+-				info->var.width = hdmi->var.width;
+-				info->var.height = hdmi->var.height;
+-				sh_hdmi_display_on(&hdmi->entity);
+-			} else {
+-				/* New monitor or have to wake up */
+-				fb_set_suspend(info, 0);
+-			}
 -
--	ch->ldmt1r_value = interface_type;
--	return 0;
--}
--
--static int sh_mobile_lcdc_setup_clocks(struct platform_device *pdev,
--				       int clock_source,
--				       struct sh_mobile_lcdc_priv *priv)
--{
--	char *str;
--
--	switch (clock_source) {
--	case LCDC_CLK_BUS:
--		str = "bus_clk";
--		priv->lddckr = LDDCKR_ICKSEL_BUS;
--		break;
--	case LCDC_CLK_PERIPHERAL:
--		str = "peripheral_clk";
--		priv->lddckr = LDDCKR_ICKSEL_MIPI;
--		break;
--	case LCDC_CLK_EXTERNAL:
--		str = NULL;
--		priv->lddckr = LDDCKR_ICKSEL_HDMI;
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	if (str) {
--		priv->dot_clk = clk_get(&pdev->dev, str);
--		if (IS_ERR(priv->dot_clk)) {
--			dev_err(&pdev->dev, "cannot get dot clock %s\n", str);
--			return PTR_ERR(priv->dot_clk);
+-			console_unlock();
+-			unlock_fb_info(info);
 -		}
--	}
++		if (ch && ch->notify)
++			ch->notify(ch, SH_MOBILE_LCDC_EVENT_DISPLAY_CONNECT,
++				   &hdmi->var);
+ 	} else {
+-		ret = 0;
+-		if (ch = NULL)
+-			goto out;
 -
--	/* Runtime PM support involves two step for this driver:
--	 * 1) Enable Runtime PM
--	 * 2) Force Runtime PM Resume since hardware is accessed from probe()
--	 */
--	priv->dev = &pdev->dev;
--	pm_runtime_enable(priv->dev);
--	pm_runtime_resume(priv->dev);
--	return 0;
--}
-+/* -----------------------------------------------------------------------------
-+ * Frame buffer operations
-+ */
+-		info = ch->info;
+-
+ 		hdmi->monspec.modedb_len = 0;
+ 		fb_destroy_modedb(hdmi->monspec.modedb);
+ 		hdmi->monspec.modedb = NULL;
  
- static int sh_mobile_lcdc_setcolreg(u_int regno,
- 				    u_int red, u_int green, u_int blue,
-@@ -1334,6 +1301,10 @@ static struct fb_ops sh_mobile_lcdc_ops = {
- 	.fb_set_par	= sh_mobile_set_par,
- };
+-		if (lock_fb_info(info)) {
+-			console_lock();
++		if (ch && ch->notify)
++			ch->notify(ch, SH_MOBILE_LCDC_EVENT_DISPLAY_DISCONNECT,
++				   NULL);
  
-+/* -----------------------------------------------------------------------------
-+ * Backlight
-+ */
-+
- static int sh_mobile_lcdc_update_bl(struct backlight_device *bdev)
- {
- 	struct sh_mobile_lcdc_chan *ch = bl_get_data(bdev);
-@@ -1393,6 +1364,10 @@ static void sh_mobile_lcdc_bl_remove(struct backlight_device *bdev)
- 	backlight_device_unregister(bdev);
- }
+-			/* HDMI disconnect */
+-			fb_set_suspend(info, 1);
+-
+-			console_unlock();
+-			unlock_fb_info(info);
+-		}
++		ret = 0;
+ 	}
  
-+/* -----------------------------------------------------------------------------
-+ * Power management
-+ */
-+
- static int sh_mobile_lcdc_suspend(struct device *dev)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
-@@ -1436,6 +1411,10 @@ static const struct dev_pm_ops sh_mobile_lcdc_dev_pm_ops = {
- 	.runtime_resume = sh_mobile_lcdc_runtime_resume,
- };
- 
-+/* -----------------------------------------------------------------------------
-+ * Framebuffer notifier
-+ */
-+
- /* locking: called with info->lock held */
- static int sh_mobile_lcdc_notify(struct notifier_block *nb,
- 				 unsigned long action, void *data)
-@@ -1476,6 +1455,28 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
- 	return NOTIFY_OK;
- }
- 
-+/* -----------------------------------------------------------------------------
-+ * Probe/remove and driver init/exit
-+ */
-+
-+static const struct fb_videomode default_720p = {
-+	.name = "HDMI 720p",
-+	.xres = 1280,
-+	.yres = 720,
-+
-+	.left_margin = 220,
-+	.right_margin = 110,
-+	.hsync_len = 40,
-+
-+	.upper_margin = 20,
-+	.lower_margin = 5,
-+	.vsync_len = 5,
-+
-+	.pixclock = 13468,
-+	.refresh = 60,
-+	.sync = FB_SYNC_VERT_HIGH_ACT | FB_SYNC_HOR_HIGH_ACT,
-+};
-+
- static int sh_mobile_lcdc_remove(struct platform_device *pdev)
- {
- 	struct sh_mobile_lcdc_priv *priv = platform_get_drvdata(pdev);
-@@ -1527,6 +1528,46 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int sh_mobile_lcdc_check_interface(struct sh_mobile_lcdc_chan *ch)
-+{
-+	int interface_type = ch->cfg.interface_type;
-+
-+	switch (interface_type) {
-+	case RGB8:
-+	case RGB9:
-+	case RGB12A:
-+	case RGB12B:
-+	case RGB16:
-+	case RGB18:
-+	case RGB24:
-+	case SYS8A:
-+	case SYS8B:
-+	case SYS8C:
-+	case SYS8D:
-+	case SYS9:
-+	case SYS12:
-+	case SYS16A:
-+	case SYS16B:
-+	case SYS16C:
-+	case SYS18:
-+	case SYS24:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	/* SUBLCD only supports SYS interface */
-+	if (lcdc_chan_is_sublcd(ch)) {
-+		if (!(interface_type & LDMT1R_IFM))
-+			return -EINVAL;
-+
-+		interface_type &= ~LDMT1R_IFM;
-+	}
-+
-+	ch->ldmt1r_value = interface_type;
-+	return 0;
-+}
-+
- static int __devinit sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_chan *ch,
- 						 struct device *dev)
- {
+ out:
 -- 
 1.7.3.4
 

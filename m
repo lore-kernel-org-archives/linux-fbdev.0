@@ -1,97 +1,101 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 07 Mar 2012 12:44:38 +0000
-Subject: [PATCH 09/21] OMAPDSS: remove return from platform_driver_unreg
-Message-Id: <1331124290-6285-10-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 01 Mar 2012 15:07:51 +0000
+Subject: [PATCH v2 38/57] fbdev: sh_mobile_lcdc: Pass channel pointer to sh_mobile_wait_for_vsync
+Message-Id: <1330614490-14149-39-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-For unknown reasons we seem to have a return in each of the omapdss's
-uninit functions, which is a void function.
+The sh_mobile_wait_for_vsync() function isn't related to the fbdev API,
+make it generic by passing a channel pointer instead of an fb_info
+pointer.
 
-Remove the returns.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/omap2/dss/dispc.c |    2 +-
- drivers/video/omap2/dss/dsi.c   |    2 +-
- drivers/video/omap2/dss/dss.c   |    2 +-
- drivers/video/omap2/dss/hdmi.c  |    2 +-
- drivers/video/omap2/dss/rfbi.c  |    2 +-
- drivers/video/omap2/dss/venc.c  |    2 +-
- 6 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |   47 ++++++++++++++++++-------------------
+ 1 files changed, 23 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 703bb20..5985c3c 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -3447,5 +3447,5 @@ int dispc_init_platform_driver(void)
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 6d377b4..adc911f 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -585,6 +585,26 @@ static irqreturn_t sh_mobile_lcdc_irq(int irq, void *data)
+ 	return IRQ_HANDLED;
+ }
  
- void dispc_uninit_platform_driver(void)
++static int sh_mobile_wait_for_vsync(struct sh_mobile_lcdc_chan *ch)
++{
++	unsigned long ldintr;
++	int ret;
++
++	/* Enable VSync End interrupt and be careful not to acknowledge any
++	 * pending interrupt.
++	 */
++	ldintr = lcdc_read(ch->lcdc, _LDINTR);
++	ldintr |= LDINTR_VEE | LDINTR_STATUS_MASK;
++	lcdc_write(ch->lcdc, _LDINTR, ldintr);
++
++	ret = wait_for_completion_interruptible_timeout(&ch->vsync_completion,
++							msecs_to_jiffies(100));
++	if (!ret)
++		return -ETIMEDOUT;
++
++	return 0;
++}
++
+ static void sh_mobile_lcdc_start_stop(struct sh_mobile_lcdc_priv *priv,
+ 				      int start)
  {
--	return platform_driver_unregister(&omap_dispchw_driver);
-+	platform_driver_unregister(&omap_dispchw_driver);
+@@ -1083,27 +1103,6 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
+ 	return 0;
  }
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 4e2f7ff..cf59f40 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -4849,5 +4849,5 @@ int dsi_init_platform_driver(void)
  
- void dsi_uninit_platform_driver(void)
+-static int sh_mobile_wait_for_vsync(struct fb_info *info)
+-{
+-	struct sh_mobile_lcdc_chan *ch = info->par;
+-	unsigned long ldintr;
+-	int ret;
+-
+-	/* Enable VSync End interrupt and be careful not to acknowledge any
+-	 * pending interrupt.
+-	 */
+-	ldintr = lcdc_read(ch->lcdc, _LDINTR);
+-	ldintr |= LDINTR_VEE | LDINTR_STATUS_MASK;
+-	lcdc_write(ch->lcdc, _LDINTR, ldintr);
+-
+-	ret = wait_for_completion_interruptible_timeout(&ch->vsync_completion,
+-							msecs_to_jiffies(100));
+-	if (!ret)
+-		return -ETIMEDOUT;
+-
+-	return 0;
+-}
+-
+ static int sh_mobile_ioctl(struct fb_info *info, unsigned int cmd,
+ 		       unsigned long arg)
  {
--	return platform_driver_unregister(&omap_dsihw_driver);
-+	platform_driver_unregister(&omap_dsihw_driver);
- }
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 4a6b5ee..7d3facc 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -857,5 +857,5 @@ int dss_init_platform_driver(void)
+@@ -1111,7 +1110,7 @@ static int sh_mobile_ioctl(struct fb_info *info, unsigned int cmd,
  
- void dss_uninit_platform_driver(void)
- {
--	return platform_driver_unregister(&omap_dsshw_driver);
-+	platform_driver_unregister(&omap_dsshw_driver);
- }
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index cacf856..b4ad13b 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -915,5 +915,5 @@ int hdmi_init_platform_driver(void)
+ 	switch (cmd) {
+ 	case FBIO_WAITFORVSYNC:
+-		retval = sh_mobile_wait_for_vsync(info);
++		retval = sh_mobile_wait_for_vsync(info->par);
+ 		break;
  
- void hdmi_uninit_platform_driver(void)
- {
--	return platform_driver_unregister(&omapdss_hdmihw_driver);
-+	platform_driver_unregister(&omapdss_hdmihw_driver);
- }
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index 788a0ef..dfd8ec5 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -1019,5 +1019,5 @@ int rfbi_init_platform_driver(void)
- 
- void rfbi_uninit_platform_driver(void)
- {
--	return platform_driver_unregister(&omap_rfbihw_driver);
-+	platform_driver_unregister(&omap_rfbihw_driver);
- }
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 9c3daf7..c933733 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -909,5 +909,5 @@ void venc_uninit_platform_driver(void)
- 	if (cpu_is_omap44xx())
- 		return;
- 
--	return platform_driver_unregister(&omap_venchw_driver);
-+	platform_driver_unregister(&omap_venchw_driver);
- }
+ 	default:
+@@ -1388,8 +1387,8 @@ static int sh_mobile_lcdc_blank(int blank, struct fb_info *info)
+ 		 * mode will reenable the clocks and update the screen in time,
+ 		 * so it does not need this. */
+ 		if (!info->fbdefio) {
+-			sh_mobile_wait_for_vsync(info);
+-			sh_mobile_wait_for_vsync(info);
++			sh_mobile_wait_for_vsync(ch);
++			sh_mobile_wait_for_vsync(ch);
+ 		}
+ 		sh_mobile_lcdc_clk_off(p);
+ 	}
 -- 
-1.7.4.1
+1.7.3.4
 

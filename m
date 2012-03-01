@@ -1,129 +1,65 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 15 Mar 2012 17:43:51 +0000
-Subject: [RFC/PATCH 3/6] sh_mobile_meram: Add direct MERAM allocation API
-Message-Id: <1331833434-11934-4-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 01 Mar 2012 12:34:43 +0000
+Subject: [PATCH 4/7] OMAPDSS: remove wrong HDMI HPD muxing
+Message-Id: <1330605286-24166-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1330605286-24166-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1330605286-24166-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: stable@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The API can be used to allocate and free MERAM blocks directly, without
-going through ICBs.
+"hdmi_hpd" pin is muxed to INPUT and PULLUP, but the pin is not
+currently used, and in the future when it is used, the pin is used as a
+GPIO and is board specific, not an OMAP4 wide thing.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+So remove the muxing for now.
+
+Backported from 7bb122d155f742fe2d79849090c825be7b4a247e
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Acked-by: Tony Lindgren <tony@atomide.com>
 ---
- drivers/video/sh_mobile_meram.c |   39 +++++++++++++++++++++++++++++++++++----
- include/video/sh_mobile_meram.h |   16 ++++++++++++++++
- 2 files changed, 51 insertions(+), 4 deletions(-)
+ arch/arm/mach-omap2/board-4430sdp.c    |    4 ----
+ arch/arm/mach-omap2/board-omap4panda.c |    4 ----
+ 2 files changed, 0 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
-index 843fb29..ae9dc3b 100644
---- a/drivers/video/sh_mobile_meram.c
-+++ b/drivers/video/sh_mobile_meram.c
-@@ -194,6 +194,21 @@ static inline unsigned long meram_read_reg(void __iomem *base, unsigned int off)
- }
+diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+index d0a49c3..9bc418e 100644
+--- a/arch/arm/mach-omap2/board-4430sdp.c
++++ b/arch/arm/mach-omap2/board-4430sdp.c
+@@ -578,12 +578,8 @@ static void __init omap_sfh7741prox_init(void)
  
- /* -----------------------------------------------------------------------------
-+ * MERAM allocation and free
-+ */
-+
-+static unsigned long meram_alloc(struct sh_mobile_meram_priv *priv, size_t size)
-+{
-+	return gen_pool_alloc(priv->pool, size);
-+}
-+
-+static void meram_free(struct sh_mobile_meram_priv *priv, unsigned long mem,
-+		       size_t size)
-+{
-+	gen_pool_free(priv->pool, mem, size);
-+}
-+
-+/* -----------------------------------------------------------------------------
-  * LCDC cache planes allocation, init, cleanup and free
-  */
- 
-@@ -215,7 +230,7 @@ static int meram_plane_alloc(struct sh_mobile_meram_priv *priv,
- 		return -ENOMEM;
- 	plane->marker = &priv->icbs[idx];
- 
--	mem = gen_pool_alloc(priv->pool, size * 1024);
-+	mem = meram_alloc(priv, size * 1024);
- 	if (mem = 0)
- 		return -ENOMEM;
- 
-@@ -232,8 +247,8 @@ static int meram_plane_alloc(struct sh_mobile_meram_priv *priv,
- static void meram_plane_free(struct sh_mobile_meram_priv *priv,
- 			     struct sh_mobile_meram_fb_plane *plane)
+ static void sdp4430_hdmi_mux_init(void)
  {
--	gen_pool_free(priv->pool, priv->meram + plane->marker->offset,
--		      plane->marker->size * 1024);
-+	meram_free(priv, priv->meram + plane->marker->offset,
-+		   plane->marker->size * 1024);
+-	/* PAD0_HDMI_HPD_PAD1_HDMI_CEC */
+-	omap_mux_init_signal("hdmi_hpd",
+-			OMAP_PIN_INPUT_PULLUP);
+ 	omap_mux_init_signal("hdmi_cec",
+ 			OMAP_PIN_INPUT_PULLUP);
+-	/* PAD0_HDMI_DDC_SCL_PAD1_HDMI_DDC_SDA */
+ 	omap_mux_init_signal("hdmi_ddc_scl",
+ 			OMAP_PIN_INPUT_PULLUP);
+ 	omap_mux_init_signal("hdmi_ddc_sda",
+diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
+index bc98749..86a2d30 100644
+--- a/arch/arm/mach-omap2/board-omap4panda.c
++++ b/arch/arm/mach-omap2/board-omap4panda.c
+@@ -614,12 +614,8 @@ int __init omap4_panda_dvi_init(void)
  
- 	__clear_bit(plane->marker->index, &priv->used_icb);
- 	__clear_bit(plane->cache->index, &priv->used_icb);
-@@ -385,9 +400,25 @@ static void meram_plane_cleanup(struct sh_mobile_meram_priv *priv,
- }
- 
- /* -----------------------------------------------------------------------------
-- * LCDC cache operations
-+ * MERAM operations
-  */
- 
-+unsigned long sh_mobile_meram_alloc(struct sh_mobile_meram_info *pdata,
-+				    size_t size)
-+{
-+	struct sh_mobile_meram_priv *priv = pdata->priv;
-+
-+	return meram_alloc(priv, size);
-+}
-+
-+void sh_mobile_meram_free(struct sh_mobile_meram_info *pdata, unsigned long mem,
-+			  size_t size)
-+{
-+	struct sh_mobile_meram_priv *priv = pdata->priv;
-+
-+	meram_free(priv, mem, size);
-+}
-+
- /* Allocate memory for the ICBs and mark them as used. */
- static struct sh_mobile_meram_fb_cache *
- meram_cache_alloc(struct sh_mobile_meram_priv *priv,
-diff --git a/include/video/sh_mobile_meram.h b/include/video/sh_mobile_meram.h
-index 1134837..062e6e7 100644
---- a/include/video/sh_mobile_meram.h
-+++ b/include/video/sh_mobile_meram.h
-@@ -38,6 +38,10 @@ struct sh_mobile_meram_cfg {
- 
- #if defined(CONFIG_FB_SH_MOBILE_MERAM) || \
-     defined(CONFIG_FB_SH_MOBILE_MERAM_MODULE)
-+unsigned long sh_mobile_meram_alloc(struct sh_mobile_meram_info *meram_dev,
-+				    size_t size);
-+void sh_mobile_meram_free(struct sh_mobile_meram_info *meram_dev,
-+			  unsigned long mem, size_t size);
- void *sh_mobile_meram_cache_alloc(struct sh_mobile_meram_info *dev,
- 				  const struct sh_mobile_meram_cfg *cfg,
- 				  unsigned int xres, unsigned int yres,
-@@ -50,6 +54,18 @@ void sh_mobile_meram_cache_update(struct sh_mobile_meram_info *dev, void *data,
- 				  unsigned long *icb_addr_y,
- 				  unsigned long *icb_addr_c);
- #else
-+static inline unsigned long
-+sh_mobile_meram_alloc(struct sh_mobile_meram_info *meram_dev, size_t size)
-+{
-+	return 0;
-+}
-+
-+static inline void
-+sh_mobile_meram_free(struct sh_mobile_meram_info *meram_dev,
-+		     unsigned long mem, size_t size)
-+{
-+}
-+
- static inline void *
- sh_mobile_meram_cache_alloc(struct sh_mobile_meram_info *dev,
- 			    const struct sh_mobile_meram_cfg *cfg,
+ static void omap4_panda_hdmi_mux_init(void)
+ {
+-	/* PAD0_HDMI_HPD_PAD1_HDMI_CEC */
+-	omap_mux_init_signal("hdmi_hpd",
+-			OMAP_PIN_INPUT_PULLUP);
+ 	omap_mux_init_signal("hdmi_cec",
+ 			OMAP_PIN_INPUT_PULLUP);
+-	/* PAD0_HDMI_DDC_SCL_PAD1_HDMI_DDC_SDA */
+ 	omap_mux_init_signal("hdmi_ddc_scl",
+ 			OMAP_PIN_INPUT_PULLUP);
+ 	omap_mux_init_signal("hdmi_ddc_sda",
 -- 
-1.7.3.4
+1.7.4.1
 

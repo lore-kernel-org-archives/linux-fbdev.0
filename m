@@ -1,742 +1,325 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:08:01 +0000
-Subject: [PATCH v2 48/57] fbdev: sh_mobile_meram: Allocate ICBs automatically
-Message-Id: <1330614490-14149-49-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Thu, 01 Mar 2012 15:07:33 +0000
+Subject: [PATCH v2 20/57] fbdev: sh_mobile_lcdc: Merge board_cfg and lcd_size_cfg into panel_cfg
+Message-Id: <1330614490-14149-21-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Instead of manually specifying the ICBs to use in platform data,
-allocate them automatically at runtime. The range of reserved ICBs (for
-instance to be used through UIO), if any, is passed in the platform data
-reserved_icbs field as a bitmask.
-
-The MERAM registration function now returns a pointer to an opaque MERAM
-object, which is passed to the update and unregistration functions.
+Update board code accordingly.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |   27 ++--
- drivers/video/sh_mobile_lcdcfb.h |    2 +-
- drivers/video/sh_mobile_meram.c  |  345 ++++++++++++++++++++-----------------
- include/video/sh_mobile_meram.h  |   27 ++--
- 4 files changed, 215 insertions(+), 186 deletions(-)
+ arch/arm/mach-shmobile/board-ag5evm.c   |    6 ++--
+ arch/arm/mach-shmobile/board-ap4evb.c   |    8 +++---
+ arch/arm/mach-shmobile/board-bonito.c   |    2 +-
+ arch/arm/mach-shmobile/board-mackerel.c |    6 +++-
+ arch/sh/boards/mach-ap325rxa/setup.c    |    6 +---
+ arch/sh/boards/mach-ecovec24/setup.c    |    2 +-
+ arch/sh/boards/mach-kfr2r09/setup.c     |    4 +--
+ arch/sh/boards/mach-migor/setup.c       |    8 ++----
+ arch/sh/boards/mach-se/7724/setup.c     |    2 +-
+ drivers/video/sh_mobile_lcdcfb.c        |   35 +++++++++++++++----------------
+ include/video/sh_mobile_lcdc.h          |   12 +++-------
+ 11 files changed, 41 insertions(+), 50 deletions(-)
 
+diff --git a/arch/arm/mach-shmobile/board-ag5evm.c b/arch/arm/mach-shmobile/board-ag5evm.c
+index 0b79fe2..19c91ab 100644
+--- a/arch/arm/mach-shmobile/board-ag5evm.c
++++ b/arch/arm/mach-shmobile/board-ag5evm.c
+@@ -259,12 +259,12 @@ static struct sh_mobile_lcdc_info lcdc0_info = {
+ 		.interface_type = RGB24,
+ 		.clock_divider = 1,
+ 		.flags = LCDC_FLAGS_DWPOL,
+-		.lcd_size_cfg.width = 44,
+-		.lcd_size_cfg.height = 79,
+ 		.fourcc = V4L2_PIX_FMT_RGB565,
+ 		.lcd_cfg = lcdc0_modes,
+ 		.num_cfg = ARRAY_SIZE(lcdc0_modes),
+-		.board_cfg = {
++		.panel_cfg = {
++			.width = 44,
++			.height = 79,
+ 			.display_on = lcd_backlight_on,
+ 			.display_off = lcd_backlight_reset,
+ 		},
+diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
+index 21f4fa8..a93b797 100644
+--- a/arch/arm/mach-shmobile/board-ap4evb.c
++++ b/arch/arm/mach-shmobile/board-ap4evb.c
+@@ -1368,8 +1368,8 @@ static void __init ap4evb_init(void)
+ 	lcdc_info.ch[0].interface_type		= RGB24;
+ 	lcdc_info.ch[0].clock_divider		= 1;
+ 	lcdc_info.ch[0].flags			= LCDC_FLAGS_DWPOL;
+-	lcdc_info.ch[0].lcd_size_cfg.width	= 44;
+-	lcdc_info.ch[0].lcd_size_cfg.height	= 79;
++	lcdc_info.ch[0].panel_cfg.width		= 44;
++	lcdc_info.ch[0].panel_cfg.height	= 79;
+ 
+ 	platform_add_devices(qhd_devices, ARRAY_SIZE(qhd_devices));
+ 
+@@ -1410,8 +1410,8 @@ static void __init ap4evb_init(void)
+ 	lcdc_info.ch[0].interface_type		= RGB18;
+ 	lcdc_info.ch[0].clock_divider		= 3;
+ 	lcdc_info.ch[0].flags			= 0;
+-	lcdc_info.ch[0].lcd_size_cfg.width	= 152;
+-	lcdc_info.ch[0].lcd_size_cfg.height	= 91;
++	lcdc_info.ch[0].panel_cfg.width		= 152;
++	lcdc_info.ch[0].panel_cfg.height	= 91;
+ 
+ 	/* enable TouchScreen */
+ 	irq_set_irq_type(IRQ7, IRQ_TYPE_LEVEL_LOW);
+diff --git a/arch/arm/mach-shmobile/board-bonito.c b/arch/arm/mach-shmobile/board-bonito.c
+index 4bd1162..2c21579 100644
+--- a/arch/arm/mach-shmobile/board-bonito.c
++++ b/arch/arm/mach-shmobile/board-bonito.c
+@@ -248,7 +248,7 @@ static struct sh_mobile_lcdc_info lcdc0_info = {
+ 		.flags			= 0,
+ 		.lcd_cfg		= &lcdc0_mode,
+ 		.num_cfg		= 1,
+-		.lcd_size_cfg = {
++		.panel_cfg = {
+ 			.width	= 152,
+ 			.height = 91,
+ 		},
+diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
+index 00f72ed..fc50d1b 100644
+--- a/arch/arm/mach-shmobile/board-mackerel.c
++++ b/arch/arm/mach-shmobile/board-mackerel.c
+@@ -394,8 +394,10 @@ static struct sh_mobile_lcdc_info lcdc_info = {
+ 		.interface_type		= RGB24,
+ 		.clock_divider		= 3,
+ 		.flags			= 0,
+-		.lcd_size_cfg.width	= 152,
+-		.lcd_size_cfg.height	= 91,
++		.panel_cfg = {
++			.width		= 152,
++			.height		= 91,
++		},
+ 		.bl_info = {
+ 			.name = "sh_mobile_lcdc_bl",
+ 			.max_brightness = 1,
+diff --git a/arch/sh/boards/mach-ap325rxa/setup.c b/arch/sh/boards/mach-ap325rxa/setup.c
+index b321ba8..728cebe 100644
+--- a/arch/sh/boards/mach-ap325rxa/setup.c
++++ b/arch/sh/boards/mach-ap325rxa/setup.c
+@@ -212,11 +212,9 @@ static struct sh_mobile_lcdc_info lcdc_info = {
+ 		.clock_divider = 1,
+ 		.lcd_cfg = ap325rxa_lcdc_modes,
+ 		.num_cfg = ARRAY_SIZE(ap325rxa_lcdc_modes),
+-		.lcd_size_cfg = { /* 7.0 inch */
+-			.width = 152,
++		.panel_cfg = {
++			.width = 152,	/* 7.0 inch */
+ 			.height = 91,
+-		},
+-		.board_cfg = {
+ 			.display_on = ap320_wvga_power_on,
+ 			.display_off = ap320_wvga_power_off,
+ 		},
+diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
+index 62cdd27..5fa7264 100644
+--- a/arch/sh/boards/mach-ecovec24/setup.c
++++ b/arch/sh/boards/mach-ecovec24/setup.c
+@@ -325,7 +325,7 @@ static struct sh_mobile_lcdc_info lcdc_info = {
+ 		.interface_type = RGB18,
+ 		.chan = LCDC_CHAN_MAINLCD,
+ 		.fourcc = V4L2_PIX_FMT_RGB565,
+-		.lcd_size_cfg = { /* 7.0 inch */
++		.panel_cfg = { /* 7.0 inch */
+ 			.width = 152,
+ 			.height = 91,
+ 		},
+diff --git a/arch/sh/boards/mach-kfr2r09/setup.c b/arch/sh/boards/mach-kfr2r09/setup.c
+index 2a18b06..0139c70 100644
+--- a/arch/sh/boards/mach-kfr2r09/setup.c
++++ b/arch/sh/boards/mach-kfr2r09/setup.c
+@@ -149,11 +149,9 @@ static struct sh_mobile_lcdc_info kfr2r09_sh_lcdc_info = {
+ 		.flags = LCDC_FLAGS_DWPOL,
+ 		.lcd_cfg = kfr2r09_lcdc_modes,
+ 		.num_cfg = ARRAY_SIZE(kfr2r09_lcdc_modes),
+-		.lcd_size_cfg = {
++		.panel_cfg = {
+ 			.width = 35,
+ 			.height = 58,
+-		},
+-		.board_cfg = {
+ 			.setup_sys = kfr2r09_lcd_setup,
+ 			.start_transfer = kfr2r09_lcd_start,
+ 			.display_on = kfr2r09_lcd_on,
+diff --git a/arch/sh/boards/mach-migor/setup.c b/arch/sh/boards/mach-migor/setup.c
+index 68c3d6f..f37f497 100644
+--- a/arch/sh/boards/mach-migor/setup.c
++++ b/arch/sh/boards/mach-migor/setup.c
+@@ -246,7 +246,7 @@ static struct sh_mobile_lcdc_info sh_mobile_lcdc_info = {
+ 		.clock_divider = 2,
+ 		.lcd_cfg = migor_lcd_modes,
+ 		.num_cfg = ARRAY_SIZE(migor_lcd_modes),
+-		.lcd_size_cfg = { /* 7.0 inch */
++		.panel_cfg = { /* 7.0 inch */
+ 			.width = 152,
+ 			.height = 91,
+ 		},
+@@ -260,11 +260,9 @@ static struct sh_mobile_lcdc_info sh_mobile_lcdc_info = {
+ 		.clock_divider = 10,
+ 		.lcd_cfg = migor_lcd_modes,
+ 		.num_cfg = ARRAY_SIZE(migor_lcd_modes),
+-		.lcd_size_cfg = { /* 2.4 inch */
+-			.width = 49,
++		.panel_cfg = {
++			.width = 49,	/* 2.4 inch */
+ 			.height = 37,
+-		},
+-		.board_cfg = {
+ 			.setup_sys = migor_lcd_qvga_setup,
+ 		},
+ 		.sys_bus_cfg = {
+diff --git a/arch/sh/boards/mach-se/7724/setup.c b/arch/sh/boards/mach-se/7724/setup.c
+index 090b686..9edbdc8 100644
+--- a/arch/sh/boards/mach-se/7724/setup.c
++++ b/arch/sh/boards/mach-se/7724/setup.c
+@@ -181,7 +181,7 @@ static struct sh_mobile_lcdc_info lcdc_info = {
+ 		.chan = LCDC_CHAN_MAINLCD,
+ 		.fourcc = V4L2_PIX_FMT_RGB565,
+ 		.clock_divider = 1,
+-		.lcd_size_cfg = { /* 7.0 inch */
++		.panel_cfg = { /* 7.0 inch */
+ 			.width = 152,
+ 			.height = 91,
+ 		},
 diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index adc911f..d0c9026 100644
+index adfffd6..9e44988 100644
 --- a/drivers/video/sh_mobile_lcdcfb.c
 +++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -840,6 +840,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+@@ -289,7 +289,7 @@ static void sh_mobile_lcdc_deferred_io(struct fb_info *info,
+ 				       struct list_head *pagelist)
+ {
+ 	struct sh_mobile_lcdc_chan *ch = info->par;
+-	struct sh_mobile_lcdc_board_cfg	*bcfg = &ch->cfg.board_cfg;
++	struct sh_mobile_lcdc_panel_cfg *panel = &ch->cfg.panel_cfg;
+ 
+ 	/* enable clocks before accessing hardware */
+ 	sh_mobile_lcdc_clk_on(ch->lcdc);
+@@ -314,13 +314,13 @@ static void sh_mobile_lcdc_deferred_io(struct fb_info *info,
+ 
+ 		/* trigger panel update */
+ 		dma_map_sg(info->dev, ch->sglist, nr_pages, DMA_TO_DEVICE);
+-		if (bcfg->start_transfer)
+-			bcfg->start_transfer(ch, &sh_mobile_lcdc_sys_bus_ops);
++		if (panel->start_transfer)
++			panel->start_transfer(ch, &sh_mobile_lcdc_sys_bus_ops);
+ 		lcdc_write_chan(ch, LDSM2R, LDSM2R_OSTRG);
+ 		dma_unmap_sg(info->dev, ch->sglist, nr_pages, DMA_TO_DEVICE);
+ 	} else {
+-		if (bcfg->start_transfer)
+-			bcfg->start_transfer(ch, &sh_mobile_lcdc_sys_bus_ops);
++		if (panel->start_transfer)
++			panel->start_transfer(ch, &sh_mobile_lcdc_sys_bus_ops);
+ 		lcdc_write_chan(ch, LDSM2R, LDSM2R_OSTRG);
+ 	}
+ }
+@@ -335,7 +335,7 @@ static void sh_mobile_lcdc_deferred_io_touch(struct fb_info *info)
+ 
+ static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
+ {
+-	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
++	struct sh_mobile_lcdc_panel_cfg *panel = &ch->cfg.panel_cfg;
+ 
+ 	if (ch->tx_dev) {
+ 		if (ch->tx_dev->ops->display_on(ch->tx_dev, ch->info) < 0)
+@@ -343,16 +343,16 @@ static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
+ 	}
+ 
+ 	/* HDMI must be enabled before LCDC configuration */
+-	if (board_cfg->display_on)
+-		board_cfg->display_on();
++	if (panel->display_on)
++		panel->display_on();
+ }
+ 
+ static void sh_mobile_lcdc_display_off(struct sh_mobile_lcdc_chan *ch)
+ {
+-	struct sh_mobile_lcdc_board_cfg	*board_cfg = &ch->cfg.board_cfg;
++	struct sh_mobile_lcdc_panel_cfg *panel = &ch->cfg.panel_cfg;
+ 
+-	if (board_cfg->display_off)
+-		board_cfg->display_off();
++	if (panel->display_off)
++		panel->display_off();
+ 
+ 	if (ch->tx_dev)
+ 		ch->tx_dev->ops->display_off(ch->tx_dev);
+@@ -687,16 +687,15 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 	lcdc_wait_bit(priv, _LDCNT2R, LDCNT2R_BR, 0);
+ 
  	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
- 		struct sh_mobile_meram_cfg *cfg;
- 		int pixelformat;
-+		void *meram;
+-		struct sh_mobile_lcdc_board_cfg	*board_cfg;
++		struct sh_mobile_lcdc_panel_cfg *panel;
  
  		ch = &priv->ch[k];
  		if (!ch->enabled)
-@@ -856,9 +857,9 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 		/* we need to de-init configured ICBs before we can
- 		 * re-initialize them.
- 		 */
--		if (ch->meram_enabled) {
--			mdev->ops->meram_unregister(mdev, cfg);
--			ch->meram_enabled = 0;
-+		if (ch->meram) {
-+			mdev->ops->meram_unregister(mdev, ch->meram);
-+			ch->meram = NULL;
+ 			continue;
+ 
+-		board_cfg = &ch->cfg.board_cfg;
+-		if (board_cfg->setup_sys) {
+-			ret = board_cfg->setup_sys(ch,
+-						   &sh_mobile_lcdc_sys_bus_ops);
++		panel = &ch->cfg.panel_cfg;
++		if (panel->setup_sys) {
++			ret = panel->setup_sys(ch, &sh_mobile_lcdc_sys_bus_ops);
+ 			if (ret)
+ 				return ret;
  		}
- 
- 		switch (ch->format->fourcc) {
-@@ -880,13 +881,13 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 			break;
- 		}
- 
--		ret = mdev->ops->meram_register(mdev, cfg, ch->pitch,
-+		meram = mdev->ops->meram_register(mdev, cfg, ch->pitch,
- 					ch->yres, pixelformat,
- 					ch->base_addr_y, ch->base_addr_c,
- 					&ch->base_addr_y, &ch->base_addr_c,
- 					&ch->pitch);
--		if (!ret)
--			ch->meram_enabled = 1;
-+		if (!IS_ERR(meram))
-+			ch->meram = meram;
- 	}
- 
- 	/* Start the LCDC. */
-@@ -951,13 +952,11 @@ static void sh_mobile_lcdc_stop(struct sh_mobile_lcdc_priv *priv)
- 		sh_mobile_lcdc_display_off(ch);
- 
- 		/* disable the meram */
--		if (ch->meram_enabled) {
--			struct sh_mobile_meram_cfg *cfg;
-+		if (ch->meram) {
- 			struct sh_mobile_meram_info *mdev;
--			cfg = ch->cfg.meram_cfg;
- 			mdev = priv->meram_dev;
--			mdev->ops->meram_unregister(mdev, cfg);
--			ch->meram_enabled = 0;
-+			mdev->ops->meram_unregister(mdev, ch->meram);
-+			ch->meram = 0;
- 		}
- 
- 	}
-@@ -1070,14 +1069,12 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
- 			base_addr_c += var->xoffset;
- 	}
- 
--	if (ch->meram_enabled) {
--		struct sh_mobile_meram_cfg *cfg;
-+	if (ch->meram) {
- 		struct sh_mobile_meram_info *mdev;
- 		int ret;
- 
--		cfg = ch->cfg.meram_cfg;
- 		mdev = priv->meram_dev;
--		ret = mdev->ops->meram_update(mdev, cfg,
-+		ret = mdev->ops->meram_update(mdev, ch->meram,
- 					base_addr_y, base_addr_c,
- 					&base_addr_y, &base_addr_c);
- 		if (ret)
-diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
-index 19a4cd7..bf1707c 100644
---- a/drivers/video/sh_mobile_lcdcfb.h
-+++ b/drivers/video/sh_mobile_lcdcfb.h
-@@ -59,7 +59,7 @@ struct sh_mobile_lcdc_chan {
- 	unsigned long *reg_offs;
- 	unsigned long ldmt1r_value;
- 	unsigned long enabled; /* ME and SE in LDCNT2R */
--	int meram_enabled;
-+	void *meram;
- 
- 	struct mutex open_lock;		/* protects the use counter */
- 	int use_count;
-diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
-index 92dc9bd..085c49a 100644
---- a/drivers/video/sh_mobile_meram.c
-+++ b/drivers/video/sh_mobile_meram.c
-@@ -10,6 +10,7 @@
-  */
- 
- #include <linux/device.h>
-+#include <linux/err.h>
- #include <linux/genalloc.h>
- #include <linux/io.h>
- #include <linux/kernel.h>
-@@ -106,14 +107,16 @@ static const unsigned long icb_regs[] = {
- /*
-  * sh_mobile_meram_icb - MERAM ICB information
-  * @regs: Registers cache
-+ * @index: ICB index
-  * @offset: MERAM block offset
-- * @size: MERAM block size in bytes
-+ * @size: MERAM block size in KiB
-  * @cache_unit: Bytes to cache per ICB
-  * @pixelformat: Video pixel format of the data stored in the ICB
-  * @current_reg: Which of Start Address Register A (0) or B (1) is in use
-  */
- struct sh_mobile_meram_icb {
- 	unsigned long regs[ICB_REGS_SIZE];
-+	unsigned int index;
- 	unsigned long offset;
- 	unsigned int size;
- 
-@@ -124,6 +127,16 @@ struct sh_mobile_meram_icb {
- 
- #define MERAM_ICB_NUM			32
- 
-+struct sh_mobile_meram_fb_plane {
-+	struct sh_mobile_meram_icb *marker;
-+	struct sh_mobile_meram_icb *cache;
-+};
-+
-+struct sh_mobile_meram_fb_cache {
-+	unsigned int nplanes;
-+	struct sh_mobile_meram_fb_plane planes[2];
-+};
-+
- /*
-  * sh_mobile_meram_priv - MERAM device
-  * @base: Registers base address
-@@ -184,54 +197,46 @@ static inline unsigned long meram_read_reg(void __iomem *base, unsigned int off)
-  * Allocation
-  */
- 
--/* Check if there's no overlaps in MERAM allocation. */
--static int meram_check_overlap(struct sh_mobile_meram_priv *priv,
--			       const struct sh_mobile_meram_icb_cfg *new)
-+/* Allocate ICBs and MERAM for a plane. */
-+static int __meram_alloc(struct sh_mobile_meram_priv *priv,
-+			 struct sh_mobile_meram_fb_plane *plane,
-+			 size_t size)
- {
--	/* valid ICB? */
--	if (new->marker_icb & ~0x1f || new->cache_icb & ~0x1f)
--		return 1;
--
--	if (test_bit(new->marker_icb, &priv->used_icb) ||
--	    test_bit(new->cache_icb,  &priv->used_icb))
--		return  1;
-+	unsigned long mem;
-+	unsigned long idx;
- 
--	return 0;
--}
-+	idx = find_first_zero_bit(&priv->used_icb, 28);
-+	if (idx = 28)
-+		return -ENOMEM;
-+	plane->cache = &priv->icbs[idx];
- 
--/* Allocate memory for the ICBs and mark them as used. */
--static int meram_alloc(struct sh_mobile_meram_priv *priv,
--		       const struct sh_mobile_meram_icb_cfg *new,
--		       int pixelformat)
--{
--	struct sh_mobile_meram_icb *marker = &priv->icbs[new->marker_icb];
--	unsigned long mem;
-+	idx = find_next_zero_bit(&priv->used_icb, 32, 28);
-+	if (idx = 32)
-+		return -ENOMEM;
-+	plane->marker = &priv->icbs[idx];
- 
--	mem = gen_pool_alloc(priv->pool, new->meram_size * 1024);
-+	mem = gen_pool_alloc(priv->pool, size * 1024);
- 	if (mem = 0)
- 		return -ENOMEM;
- 
--	__set_bit(new->marker_icb, &priv->used_icb);
--	__set_bit(new->cache_icb, &priv->used_icb);
-+	__set_bit(plane->marker->index, &priv->used_icb);
-+	__set_bit(plane->cache->index, &priv->used_icb);
- 
--	marker->offset = mem - priv->meram;
--	marker->size = new->meram_size * 1024;
--	marker->current_reg = 1;
--	marker->pixelformat = pixelformat;
-+	plane->marker->offset = mem - priv->meram;
-+	plane->marker->size = size;
- 
- 	return 0;
- }
- 
--/* Unmark the specified ICB as used. */
--static void meram_free(struct sh_mobile_meram_priv *priv,
--		       const struct sh_mobile_meram_icb_cfg *icb)
-+/* Free ICBs and MERAM for a plane. */
-+static void __meram_free(struct sh_mobile_meram_priv *priv,
-+			 struct sh_mobile_meram_fb_plane *plane)
- {
--	struct sh_mobile_meram_icb *marker = &priv->icbs[icb->marker_icb];
-+	gen_pool_free(priv->pool, priv->meram + plane->marker->offset,
-+		      plane->marker->size * 1024);
- 
--	gen_pool_free(priv->pool, priv->meram + marker->offset, marker->size);
--
--	__clear_bit(icb->marker_icb, &priv->used_icb);
--	__clear_bit(icb->cache_icb, &priv->used_icb);
-+	__clear_bit(plane->marker->index, &priv->used_icb);
-+	__clear_bit(plane->cache->index, &priv->used_icb);
- }
- 
- /* Is this a YCbCr(NV12, NV16 or NV24) colorspace? */
-@@ -243,42 +248,96 @@ static int is_nvcolor(int cspace)
- 	return 0;
- }
- 
-+/* Allocate memory for the ICBs and mark them as used. */
-+static struct sh_mobile_meram_fb_cache *
-+meram_alloc(struct sh_mobile_meram_priv *priv,
-+	    const struct sh_mobile_meram_cfg *cfg,
-+	    int pixelformat)
-+{
-+	struct sh_mobile_meram_fb_cache *cache;
-+	unsigned int nplanes = is_nvcolor(pixelformat) ? 2 : 1;
-+	int ret;
-+
-+	if (cfg->icb[0].meram_size = 0)
-+		return ERR_PTR(-EINVAL);
-+
-+	if (nplanes = 2 && cfg->icb[1].meram_size = 0)
-+		return ERR_PTR(-EINVAL);
-+
-+	cache = kzalloc(sizeof(*cache), GFP_KERNEL);
-+	if (cache = NULL)
-+		return ERR_PTR(-ENOMEM);
-+
-+	cache->nplanes = nplanes;
-+
-+	ret = __meram_alloc(priv, &cache->planes[0], cfg->icb[0].meram_size);
-+	if (ret < 0)
-+		goto error;
-+
-+	cache->planes[0].marker->current_reg = 1;
-+	cache->planes[0].marker->pixelformat = pixelformat;
-+
-+	if (cache->nplanes = 1)
-+		return cache;
-+
-+	ret = __meram_alloc(priv, &cache->planes[1], cfg->icb[1].meram_size);
-+	if (ret < 0) {
-+		__meram_free(priv, &cache->planes[0]);
-+		goto error;
-+	}
-+
-+	return cache;
-+
-+error:
-+	kfree(cache);
-+	return ERR_PTR(-ENOMEM);
-+}
-+
-+/* Unmark the specified ICB as used. */
-+static void meram_free(struct sh_mobile_meram_priv *priv,
-+		       struct sh_mobile_meram_fb_cache *cache)
-+{
-+	__meram_free(priv, &cache->planes[0]);
-+	if (cache->nplanes = 2)
-+		__meram_free(priv, &cache->planes[1]);
-+
-+	kfree(cache);
-+}
-+
- /* Set the next address to fetch. */
- static void meram_set_next_addr(struct sh_mobile_meram_priv *priv,
--				const struct sh_mobile_meram_cfg *cfg,
-+				struct sh_mobile_meram_fb_cache *cache,
- 				unsigned long base_addr_y,
- 				unsigned long base_addr_c)
- {
--	struct sh_mobile_meram_icb *icb = &priv->icbs[cfg->icb[0].marker_icb];
-+	struct sh_mobile_meram_icb *icb = cache->planes[0].marker;
- 	unsigned long target;
- 
- 	icb->current_reg ^= 1;
- 	target = icb->current_reg ? MExxSARB : MExxSARA;
- 
- 	/* set the next address to fetch */
--	meram_write_icb(priv->base, cfg->icb[0].cache_icb, target,
-+	meram_write_icb(priv->base, cache->planes[0].cache->index, target,
- 			base_addr_y);
--	meram_write_icb(priv->base, cfg->icb[0].marker_icb, target,
--			base_addr_y +
--			priv->icbs[cfg->icb[0].marker_icb].cache_unit);
--
--	if (is_nvcolor(icb->pixelformat)) {
--		meram_write_icb(priv->base, cfg->icb[1].cache_icb,  target,
--				base_addr_c);
--		meram_write_icb(priv->base, cfg->icb[1].marker_icb, target,
--				base_addr_c +
--				priv->icbs[cfg->icb[1].marker_icb].cache_unit);
-+	meram_write_icb(priv->base, cache->planes[0].marker->index, target,
-+			base_addr_y + cache->planes[0].marker->cache_unit);
-+
-+	if (cache->nplanes = 2) {
-+		meram_write_icb(priv->base, cache->planes[1].cache->index,
-+				target, base_addr_c);
-+		meram_write_icb(priv->base, cache->planes[1].marker->index,
-+				target, base_addr_c +
-+				cache->planes[1].marker->cache_unit);
- 	}
- }
- 
- /* Get the next ICB address. */
- static void
- meram_get_next_icb_addr(struct sh_mobile_meram_info *pdata,
--			const struct sh_mobile_meram_cfg *cfg,
-+			struct sh_mobile_meram_fb_cache *cache,
- 			unsigned long *icb_addr_y, unsigned long *icb_addr_c)
- {
--	struct sh_mobile_meram_priv *priv = pdata->priv;
--	struct sh_mobile_meram_icb *icb = &priv->icbs[cfg->icb[0].marker_icb];
-+	struct sh_mobile_meram_icb *icb = cache->planes[0].marker;
- 	unsigned long icb_offset;
- 
- 	if (pdata->addr_mode = SH_MOBILE_MERAM_MODE0)
-@@ -286,9 +345,10 @@ meram_get_next_icb_addr(struct sh_mobile_meram_info *pdata,
- 	else
- 		icb_offset = 0xc0000000 | (icb->current_reg << 23);
- 
--	*icb_addr_y = icb_offset | (cfg->icb[0].marker_icb << 24);
--	if (is_nvcolor(icb->pixelformat))
--		*icb_addr_c = icb_offset | (cfg->icb[1].marker_icb << 24);
-+	*icb_addr_y = icb_offset | (cache->planes[0].marker->index << 24);
-+	if (cache->nplanes = 2)
-+		*icb_addr_c = icb_offset
-+			    | (cache->planes[1].marker->index << 24);
- }
- 
- #define MERAM_CALC_BYTECOUNT(x, y) \
-@@ -296,11 +356,11 @@ meram_get_next_icb_addr(struct sh_mobile_meram_info *pdata,
- 
- /* Initialize MERAM. */
- static int meram_init(struct sh_mobile_meram_priv *priv,
--		      const struct sh_mobile_meram_icb_cfg *icb,
-+		      struct sh_mobile_meram_fb_plane *plane,
- 		      unsigned int xres, unsigned int yres,
- 		      unsigned int *out_pitch)
- {
--	struct sh_mobile_meram_icb *marker = &priv->icbs[icb->marker_icb];
-+	struct sh_mobile_meram_icb *marker = plane->marker;
- 	unsigned long total_byte_count = MERAM_CALC_BYTECOUNT(xres, yres);
- 	unsigned long bnm;
- 	unsigned int lcdc_pitch;
-@@ -319,13 +379,13 @@ static int meram_init(struct sh_mobile_meram_priv *priv,
- 		lcdc_pitch = xpitch = MERAM_LINE_WIDTH;
- 		line_cnt = total_byte_count >> 11;
- 		*out_pitch = xres;
--		save_lines = (icb->meram_size / 16 / MERAM_SEC_LINE);
-+		save_lines = plane->marker->size / 16 / MERAM_SEC_LINE;
- 		save_lines *= MERAM_SEC_LINE;
- 	} else {
- 		xpitch = xres;
- 		line_cnt = yres;
- 		*out_pitch = lcdc_pitch;
--		save_lines = icb->meram_size / (lcdc_pitch >> 10) / 2;
-+		save_lines = plane->marker->size / (lcdc_pitch >> 10) / 2;
- 		save_lines &= 0xff;
- 	}
- 	bnm = (save_lines - 1) << 16;
-@@ -333,20 +393,20 @@ static int meram_init(struct sh_mobile_meram_priv *priv,
- 	/* TODO: we better to check if we have enough MERAM buffer size */
- 
- 	/* set up ICB */
--	meram_write_icb(priv->base, icb->cache_icb,  MExxBSIZE,
-+	meram_write_icb(priv->base, plane->cache->index,  MExxBSIZE,
- 			MERAM_MExxBSIZE_VAL(0x0, line_cnt - 1, xpitch - 1));
--	meram_write_icb(priv->base, icb->marker_icb, MExxBSIZE,
-+	meram_write_icb(priv->base, plane->marker->index, MExxBSIZE,
- 			MERAM_MExxBSIZE_VAL(0xf, line_cnt - 1, xpitch - 1));
- 
--	meram_write_icb(priv->base, icb->cache_icb,  MExxMNCF, bnm);
--	meram_write_icb(priv->base, icb->marker_icb, MExxMNCF, bnm);
-+	meram_write_icb(priv->base, plane->cache->index,  MExxMNCF, bnm);
-+	meram_write_icb(priv->base, plane->marker->index, MExxMNCF, bnm);
- 
--	meram_write_icb(priv->base, icb->cache_icb,  MExxSBSIZE, xpitch);
--	meram_write_icb(priv->base, icb->marker_icb, MExxSBSIZE, xpitch);
-+	meram_write_icb(priv->base, plane->cache->index,  MExxSBSIZE, xpitch);
-+	meram_write_icb(priv->base, plane->marker->index, MExxSBSIZE, xpitch);
- 
- 	/* save a cache unit size */
--	priv->icbs[icb->cache_icb].cache_unit = xres * save_lines;
--	priv->icbs[icb->marker_icb].cache_unit = xres * save_lines;
-+	plane->cache->cache_unit = xres * save_lines;
-+	plane->marker->cache_unit = xres * save_lines;
- 
- 	/*
- 	 * Set MERAM for framebuffer
-@@ -354,13 +414,13 @@ static int meram_init(struct sh_mobile_meram_priv *priv,
- 	 * we also chain the cache_icb and the marker_icb.
- 	 * we also split the allocated MERAM buffer between two ICBs.
+@@ -1654,8 +1653,8 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
  	 */
--	meram_write_icb(priv->base, icb->cache_icb, MExxCTL,
--			MERAM_MExxCTL_VAL(icb->marker_icb, marker->offset) |
--			MExxCTL_WD1 | MExxCTL_WD0 | MExxCTL_WS | MExxCTL_CM |
-+	meram_write_icb(priv->base, plane->cache->index, MExxCTL,
-+			MERAM_MExxCTL_VAL(plane->marker->index, marker->offset)
-+			| MExxCTL_WD1 | MExxCTL_WD0 | MExxCTL_WS | MExxCTL_CM |
- 			MExxCTL_MD_FB);
--	meram_write_icb(priv->base, icb->marker_icb, MExxCTL,
--			MERAM_MExxCTL_VAL(icb->cache_icb, marker->offset +
--					  icb->meram_size / 2) |
-+	meram_write_icb(priv->base, plane->marker->index, MExxCTL,
-+			MERAM_MExxCTL_VAL(plane->cache->index, marker->offset +
-+					  plane->marker->size / 2) |
- 			MExxCTL_WD1 | MExxCTL_WD0 | MExxCTL_WS | MExxCTL_CM |
- 			MExxCTL_MD_FB);
+ 	var = &info->var;
+ 	fb_videomode_to_var(var, mode);
+-	var->width = cfg->lcd_size_cfg.width;
+-	var->height = cfg->lcd_size_cfg.height;
++	var->width = cfg->panel_cfg.width;
++	var->height = cfg->panel_cfg.height;
+ 	var->yres_virtual = var->yres * 2;
+ 	var->activate = FB_ACTIVATE_NOW;
  
-@@ -368,45 +428,44 @@ static int meram_init(struct sh_mobile_meram_priv *priv,
- }
+diff --git a/include/video/sh_mobile_lcdc.h b/include/video/sh_mobile_lcdc.h
+index ecde6aa..4f0fb55 100644
+--- a/include/video/sh_mobile_lcdc.h
++++ b/include/video/sh_mobile_lcdc.h
+@@ -147,7 +147,9 @@ struct sh_mobile_lcdc_sys_bus_ops {
+ 	unsigned long (*read_data)(void *handle);
+ };
  
- static void meram_deinit(struct sh_mobile_meram_priv *priv,
--			 const struct sh_mobile_meram_icb_cfg *icb)
-+			 struct sh_mobile_meram_fb_plane *plane)
- {
- 	/* disable ICB */
--	meram_write_icb(priv->base, icb->cache_icb,  MExxCTL,
-+	meram_write_icb(priv->base, plane->cache->index,  MExxCTL,
- 			MExxCTL_WBF | MExxCTL_WF | MExxCTL_RF);
--	meram_write_icb(priv->base, icb->marker_icb, MExxCTL,
-+	meram_write_icb(priv->base, plane->marker->index, MExxCTL,
- 			MExxCTL_WBF | MExxCTL_WF | MExxCTL_RF);
+-struct sh_mobile_lcdc_board_cfg {
++struct sh_mobile_lcdc_panel_cfg {
++	unsigned long width;		/* Panel width in mm */
++	unsigned long height;		/* Panel height in mm */
+ 	int (*setup_sys)(void *sys_ops_handle,
+ 			 struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
+ 	void (*start_transfer)(void *sys_ops_handle,
+@@ -156,11 +158,6 @@ struct sh_mobile_lcdc_board_cfg {
+ 	void (*display_off)(void);
+ };
  
--	priv->icbs[icb->cache_icb].cache_unit = 0;
--	priv->icbs[icb->marker_icb].cache_unit = 0;
-+	plane->cache->cache_unit = 0;
-+	plane->marker->cache_unit = 0;
- }
- 
- /* -----------------------------------------------------------------------------
-  * Registration/unregistration
-  */
- 
--static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
--				    const struct sh_mobile_meram_cfg *cfg,
--				    unsigned int xres, unsigned int yres,
--				    unsigned int pixelformat,
--				    unsigned long base_addr_y,
--				    unsigned long base_addr_c,
--				    unsigned long *icb_addr_y,
--				    unsigned long *icb_addr_c,
--				    unsigned int *pitch)
-+static void *sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
-+				      const struct sh_mobile_meram_cfg *cfg,
-+				      unsigned int xres, unsigned int yres,
-+				      unsigned int pixelformat,
-+				      unsigned long base_addr_y,
-+				      unsigned long base_addr_c,
-+				      unsigned long *icb_addr_y,
-+				      unsigned long *icb_addr_c,
-+				      unsigned int *pitch)
- {
--	struct platform_device *pdev;
-+	struct sh_mobile_meram_fb_cache *cache;
- 	struct sh_mobile_meram_priv *priv;
-+	struct platform_device *pdev;
- 	unsigned int out_pitch;
--	unsigned int n;
--	int error = 0;
- 
- 	if (!pdata || !pdata->priv || !pdata->pdev || !cfg)
--		return -EINVAL;
-+		return ERR_PTR(-EINVAL);
- 
- 	if (pixelformat != SH_MOBILE_MERAM_PF_NV &&
- 	    pixelformat != SH_MOBILE_MERAM_PF_NV24 &&
- 	    pixelformat != SH_MOBILE_MERAM_PF_RGB)
--		return -EINVAL;
-+		return ERR_PTR(-EINVAL);
- 
- 	priv = pdata->priv;
- 	pdev = pdata->pdev;
-@@ -418,120 +477,82 @@ static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
- 	/* we can't handle wider than 8192px */
- 	if (xres > 8192) {
- 		dev_err(&pdev->dev, "width exceeding the limit (> 8192).");
--		return -EINVAL;
--	}
+-struct sh_mobile_lcdc_lcd_size_cfg { /* width and height of panel in mm */
+-	unsigned long width;
+-	unsigned long height;
+-};
 -
--	/* do we have at least one ICB config? */
--	if (cfg->icb[0].marker_icb < 0 || cfg->icb[0].cache_icb < 0) {
--		dev_err(&pdev->dev, "at least one ICB is required.");
--		return -EINVAL;
-+		return ERR_PTR(-EINVAL);
- 	}
- 
- 	mutex_lock(&priv->lock);
- 
--	/* make sure that there's no overlaps */
--	if (meram_check_overlap(priv, &cfg->icb[0])) {
--		dev_err(&pdev->dev, "conflicting config detected.");
--		error = -EINVAL;
--		goto err;
--	}
--	n = 1;
--
--	/* do the same if we have the second ICB set */
--	if (cfg->icb[1].marker_icb >= 0 && cfg->icb[1].cache_icb >= 0) {
--		if (meram_check_overlap(priv, &cfg->icb[1])) {
--			dev_err(&pdev->dev, "conflicting config detected.");
--			error = -EINVAL;
--			goto err;
--		}
--		n = 2;
--	}
--
--	if (is_nvcolor(pixelformat) && n != 2) {
--		dev_err(&pdev->dev, "requires two ICB sets for planar Y/C.");
--		error =  -EINVAL;
--		goto err;
--	}
--
- 	/* We now register the ICBs and allocate the MERAM regions. */
--	error = meram_alloc(priv, &cfg->icb[0], pixelformat);
--	if (error < 0)
-+	cache = meram_alloc(priv, cfg, pixelformat);
-+	if (IS_ERR(cache)) {
-+		dev_err(&pdev->dev, "MERAM allocation failed (%ld).",
-+			PTR_ERR(cache));
- 		goto err;
--
--	if (is_nvcolor(pixelformat)) {
--		error = meram_alloc(priv, &cfg->icb[1], pixelformat);
--		if (error < 0) {
--			meram_free(priv, &cfg->icb[0]);
--			goto err;
--		}
- 	}
- 
- 	/* initialize MERAM */
--	meram_init(priv, &cfg->icb[0], xres, yres, &out_pitch);
-+	meram_init(priv, &cache->planes[0], xres, yres, &out_pitch);
- 	*pitch = out_pitch;
- 	if (pixelformat = SH_MOBILE_MERAM_PF_NV)
--		meram_init(priv, &cfg->icb[1], xres, (yres + 1) / 2,
-+		meram_init(priv, &cache->planes[1], xres, (yres + 1) / 2,
- 			&out_pitch);
- 	else if (pixelformat = SH_MOBILE_MERAM_PF_NV24)
--		meram_init(priv, &cfg->icb[1], 2 * xres, (yres + 1) / 2,
-+		meram_init(priv, &cache->planes[1], 2 * xres, (yres + 1) / 2,
- 			&out_pitch);
- 
--	meram_set_next_addr(priv, cfg, base_addr_y, base_addr_c);
--	meram_get_next_icb_addr(pdata, cfg, icb_addr_y, icb_addr_c);
-+	meram_set_next_addr(priv, cache, base_addr_y, base_addr_c);
-+	meram_get_next_icb_addr(pdata, cache, icb_addr_y, icb_addr_c);
- 
- 	dev_dbg(&pdev->dev, "registered - can access via y=%08lx, c=%08lx",
- 		*icb_addr_y, *icb_addr_c);
- 
- err:
- 	mutex_unlock(&priv->lock);
--	return error;
-+	return cache;
- }
- 
--static int sh_mobile_meram_unregister(struct sh_mobile_meram_info *pdata,
--				      const struct sh_mobile_meram_cfg *cfg)
-+static int
-+sh_mobile_meram_unregister(struct sh_mobile_meram_info *pdata, void *data)
- {
-+	struct sh_mobile_meram_fb_cache *cache = data;
- 	struct sh_mobile_meram_priv *priv;
--	struct sh_mobile_meram_icb *icb;
- 
--	if (!pdata || !pdata->priv || !cfg)
-+	if (!pdata || !pdata->priv || !data)
- 		return -EINVAL;
- 
- 	priv = pdata->priv;
--	icb = &priv->icbs[cfg->icb[0].marker_icb];
- 
- 	mutex_lock(&priv->lock);
- 
--	/* deinit & unmark */
--	if (is_nvcolor(icb->pixelformat)) {
--		meram_deinit(priv, &cfg->icb[1]);
--		meram_free(priv, &cfg->icb[1]);
--	}
--	meram_deinit(priv, &cfg->icb[0]);
--	meram_free(priv, &cfg->icb[0]);
-+	/* deinit & free */
-+	meram_deinit(priv, &cache->planes[0]);
-+	if (cache->nplanes = 2)
-+		meram_deinit(priv, &cache->planes[1]);
-+
-+	meram_free(priv, cache);
- 
- 	mutex_unlock(&priv->lock);
- 
- 	return 0;
- }
- 
--static int sh_mobile_meram_update(struct sh_mobile_meram_info *pdata,
--				  const struct sh_mobile_meram_cfg *cfg,
--				  unsigned long base_addr_y,
--				  unsigned long base_addr_c,
--				  unsigned long *icb_addr_y,
--				  unsigned long *icb_addr_c)
-+static int
-+sh_mobile_meram_update(struct sh_mobile_meram_info *pdata, void *data,
-+		       unsigned long base_addr_y, unsigned long base_addr_c,
-+		       unsigned long *icb_addr_y, unsigned long *icb_addr_c)
- {
-+	struct sh_mobile_meram_fb_cache *cache = data;
- 	struct sh_mobile_meram_priv *priv;
- 
--	if (!pdata || !pdata->priv || !cfg)
-+	if (!pdata || !pdata->priv || !data)
- 		return -EINVAL;
- 
- 	priv = pdata->priv;
- 
- 	mutex_lock(&priv->lock);
- 
--	meram_set_next_addr(priv, cfg, base_addr_y, base_addr_c);
--	meram_get_next_icb_addr(pdata, cfg, icb_addr_y, icb_addr_c);
-+	meram_set_next_addr(priv, cache, base_addr_y, base_addr_c);
-+	meram_get_next_icb_addr(pdata, cache, icb_addr_y, icb_addr_c);
- 
- 	mutex_unlock(&priv->lock);
- 
-@@ -607,6 +628,7 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
- 	struct sh_mobile_meram_info *pdata = pdev->dev.platform_data;
- 	struct resource *regs;
- 	struct resource *meram;
-+	unsigned int i;
- 	int error;
- 
- 	if (!pdata) {
-@@ -627,8 +649,13 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 	}
- 
--	/* initialize private data */
-+	/* Initialize private data. */
- 	mutex_init(&priv->lock);
-+	priv->used_icb = pdata->reserved_icbs;
-+
-+	for (i = 0; i < MERAM_ICB_NUM; ++i)
-+		priv->icbs[i].index = i;
-+
- 	pdata->ops = &sh_mobile_meram_ops;
- 	pdata->priv = priv;
- 	pdata->pdev = pdev;
-diff --git a/include/video/sh_mobile_meram.h b/include/video/sh_mobile_meram.h
-index f7700fc..e0f650c 100644
---- a/include/video/sh_mobile_meram.h
-+++ b/include/video/sh_mobile_meram.h
-@@ -17,8 +17,13 @@ enum {
- struct sh_mobile_meram_priv;
- struct sh_mobile_meram_ops;
- 
-+/*
-+ * struct sh_mobile_meram_info - MERAM platform data
-+ * @reserved_icbs: Bitmask of reserved ICBs (for instance used through UIO)
-+ */
- struct sh_mobile_meram_info {
- 	int				addr_mode;
-+	u32				reserved_icbs;
- 	struct sh_mobile_meram_ops	*ops;
- 	struct sh_mobile_meram_priv	*priv;
- 	struct platform_device		*pdev;
-@@ -39,23 +44,23 @@ struct module;
- struct sh_mobile_meram_ops {
- 	struct module	*module;
- 	/* register usage of meram */
--	int (*meram_register)(struct sh_mobile_meram_info *meram_dev,
--			      const struct sh_mobile_meram_cfg *cfg,
--			      unsigned int xres, unsigned int yres,
--			      unsigned int pixelformat,
--			      unsigned long base_addr_y,
--			      unsigned long base_addr_c,
--			      unsigned long *icb_addr_y,
--			      unsigned long *icb_addr_c,
--			      unsigned int *pitch);
-+	void *(*meram_register)(struct sh_mobile_meram_info *meram_dev,
-+				const struct sh_mobile_meram_cfg *cfg,
-+				unsigned int xres, unsigned int yres,
-+				unsigned int pixelformat,
-+				unsigned long base_addr_y,
-+				unsigned long base_addr_c,
-+				unsigned long *icb_addr_y,
-+				unsigned long *icb_addr_c,
-+				unsigned int *pitch);
- 
- 	/* unregister usage of meram */
- 	int (*meram_unregister)(struct sh_mobile_meram_info *meram_dev,
--				const struct sh_mobile_meram_cfg *cfg);
-+				void *data);
- 
- 	/* update meram settings */
- 	int (*meram_update)(struct sh_mobile_meram_info *meram_dev,
--			    const struct sh_mobile_meram_cfg *cfg,
-+			    void *data,
- 			    unsigned long base_addr_y,
- 			    unsigned long base_addr_c,
- 			    unsigned long *icb_addr_y,
+ /* backlight info */
+ struct sh_mobile_lcdc_bl_info {
+ 	const char *name;
+@@ -178,8 +175,7 @@ struct sh_mobile_lcdc_chan_cfg {
+ 	unsigned long flags; /* LCDC_FLAGS_... */
+ 	const struct fb_videomode *lcd_cfg;
+ 	int num_cfg;
+-	struct sh_mobile_lcdc_lcd_size_cfg lcd_size_cfg;
+-	struct sh_mobile_lcdc_board_cfg board_cfg;
++	struct sh_mobile_lcdc_panel_cfg panel_cfg;
+ 	struct sh_mobile_lcdc_bl_info bl_info;
+ 	struct sh_mobile_lcdc_sys_bus_cfg sys_bus_cfg; /* only for SYSn I/F */
+ 	struct sh_mobile_meram_cfg *meram_cfg;
 -- 
 1.7.3.4
 

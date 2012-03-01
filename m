@@ -1,48 +1,51 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 07 Mar 2012 10:08:01 +0000
-Subject: Re: [PATCH] MAINTAINERS: add maintainer entry for Exynos DP driver
-Message-Id: <4F573381.2060900@gmx.de>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 01 Mar 2012 15:07:21 +0000
+Subject: [PATCH v2 08/57] fbdev: sh_mobile_lcdc: Add sh_mobile_lcdc_entity definition
+Message-Id: <1330614490-14149-9-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On 02/06/2012 02:30 AM, Jingoo Han wrote:
-> Add maintainer entry for Exynos DP driver which can be used for
-> Samsung Exynos SoC series.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+The sh_mobile_lcdc_entity structure will be used to abstract operations
+performed by transceivers (such as MIPI/DSI and HDMI).
 
-Applied.
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/sh_mobile_lcdcfb.h |   18 ++++++++++++++++--
+ 1 files changed, 16 insertions(+), 2 deletions(-)
 
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  MAINTAINERS |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index ebb1936..f685bfd 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2639,6 +2639,12 @@ M:	Mimi Zohar <zohar@us.ibm.com>
->  S:	Supported
->  F:	security/integrity/evm/
->  
-> +EXYNOS DP DRIVER
-> +M:	Jingoo Han <jg1.han@samsung.com>
-> +L:	linux-fbdev@vger.kernel.org
-> +S:	Maintained
-> +F:	drivers/video/exynos/exynos_dp*
-> +
->  F71805F HARDWARE MONITORING DRIVER
->  M:	Jean Delvare <khali@linux-fr.org>
->  L:	lm-sensors@lm-sensors.org
-> --
-> 
-> 
+diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
+index a58a0f3..d79e5aa 100644
+--- a/drivers/video/sh_mobile_lcdcfb.h
++++ b/drivers/video/sh_mobile_lcdcfb.h
+@@ -14,9 +14,23 @@ enum { LDDCKPAT1R, LDDCKPAT2R, LDMT1R, LDMT2R, LDMT3R, LDDFR, LDSM1R,
+ 
+ #define PALETTE_NR 16
+ 
+-struct sh_mobile_lcdc_priv;
+-struct fb_info;
+ struct backlight_device;
++struct fb_info;
++struct module;
++struct sh_mobile_lcdc_entity;
++struct sh_mobile_lcdc_priv;
++
++struct sh_mobile_lcdc_entity_ops {
++	/* Display */
++	int (*display_on)(struct sh_mobile_lcdc_entity *entity,
++			  struct fb_info *info);
++	void (*display_off)(struct sh_mobile_lcdc_entity *entity);
++};
++
++struct sh_mobile_lcdc_entity {
++	struct module *owner;
++	const struct sh_mobile_lcdc_entity_ops *ops;
++};
+ 
+ /*
+  * struct sh_mobile_lcdc_chan - LCDC display channel
+-- 
+1.7.3.4
 

@@ -1,61 +1,84 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 05 Mar 2012 14:53:39 +0000
-Subject: [PATCH] fbdev: sh_mobile_meram: Implement system suspend/resume
-Message-Id: <1330959219-16176-1-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 01 Mar 2012 12:26:33 +0000
+Subject: [PATCH 5/7] OMAP: 4430SDP/Panda: add HDMI HPD gpio
+Message-Id: <1330604795-29156-6-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1330604795-29156-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1330604795-29156-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: stable@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Supporting runtime PM is very nice, but that's not a reason not to
-implement system suspend/resume properly.
+Both Panda and 4430SDP use GPIO 63 as HDMI hot-plug-detect. Configure
+this GPIO in the board files.
 
-Reported-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Backported from aa74274b464d4aa24703963ac89a0ee942d5d267
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Acked-by: Tony Lindgren <tony@atomide.com>
 ---
- drivers/video/sh_mobile_meram.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+ arch/arm/mach-omap2/board-4430sdp.c    |    3 +++
+ arch/arm/mach-omap2/board-omap4panda.c |    3 +++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-I'll add this patch to my LCDC patch series.
-
-diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
-index d9f7a44..0d9bc2d 100644
---- a/drivers/video/sh_mobile_meram.c
-+++ b/drivers/video/sh_mobile_meram.c
-@@ -539,7 +539,7 @@ static struct sh_mobile_meram_ops sh_mobile_meram_ops = {
-  * Power management
-  */
+diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+index 7bcafb9..5c2aaa0 100644
+--- a/arch/arm/mach-omap2/board-4430sdp.c
++++ b/arch/arm/mach-omap2/board-4430sdp.c
+@@ -54,6 +54,7 @@
+ #define OMAP4_SFH7741_ENABLE_GPIO		188
+ #define HDMI_GPIO_CT_CP_HPD 60 /* HPD mode enable/disable */
+ #define HDMI_GPIO_LS_OE 41 /* Level shifter for HDMI */
++#define HDMI_GPIO_HPD  63 /* Hotplug detect */
+ #define DISPLAY_SEL_GPIO	59	/* LCD2/PicoDLP switch */
+ #define DLP_POWER_ON_GPIO	40
  
--static int sh_mobile_meram_runtime_suspend(struct device *dev)
-+static int sh_mobile_meram_suspend(struct device *dev)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
-@@ -563,7 +563,7 @@ static int sh_mobile_meram_runtime_suspend(struct device *dev)
- 	return 0;
- }
- 
--static int sh_mobile_meram_runtime_resume(struct device *dev)
-+static int sh_mobile_meram_resume(struct device *dev)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
-@@ -583,8 +583,10 @@ static int sh_mobile_meram_runtime_resume(struct device *dev)
- }
- 
- static const struct dev_pm_ops sh_mobile_meram_dev_pm_ops = {
--	.runtime_suspend = sh_mobile_meram_runtime_suspend,
--	.runtime_resume = sh_mobile_meram_runtime_resume,
-+	.suspend = sh_mobile_meram_suspend,
-+	.resume = sh_mobile_meram_resume,
-+	.runtime_suspend = sh_mobile_meram_suspend,
-+	.runtime_resume = sh_mobile_meram_resume,
+@@ -608,6 +609,7 @@ static void sdp4430_hdmi_mux_init(void)
+ static struct gpio sdp4430_hdmi_gpios[] = {
+ 	{ HDMI_GPIO_CT_CP_HPD, GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ct_cp_hpd" },
+ 	{ HDMI_GPIO_LS_OE,	GPIOF_OUT_INIT_HIGH,	"hdmi_gpio_ls_oe" },
++	{ HDMI_GPIO_HPD, GPIOF_DIR_IN, "hdmi_gpio_hpd" },
  };
  
- /* -----------------------------------------------------------------------------
+ static int sdp4430_panel_enable_hdmi(struct omap_dss_device *dssdev)
+@@ -827,6 +829,7 @@ static void omap_4430sdp_display_init(void)
+ 
+ 	omap_mux_init_gpio(HDMI_GPIO_LS_OE, OMAP_PIN_OUTPUT);
+ 	omap_mux_init_gpio(HDMI_GPIO_CT_CP_HPD, OMAP_PIN_OUTPUT);
++	omap_mux_init_gpio(HDMI_GPIO_HPD, OMAP_PIN_INPUT_PULLDOWN);
+ }
+ 
+ #ifdef CONFIG_OMAP_MUX
+diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
+index 27fc162..e913c80 100644
+--- a/arch/arm/mach-omap2/board-omap4panda.c
++++ b/arch/arm/mach-omap2/board-omap4panda.c
+@@ -53,6 +53,7 @@
+ #define GPIO_WIFI_IRQ		53
+ #define HDMI_GPIO_CT_CP_HPD 60 /* HPD mode enable/disable */
+ #define HDMI_GPIO_LS_OE 41 /* Level shifter for HDMI */
++#define HDMI_GPIO_HPD  63 /* Hotplug detect */
+ 
+ /* wl127x BT, FM, GPS connectivity chip */
+ static int wl1271_gpios[] = {46, -1, -1};
+@@ -492,6 +493,7 @@ static void omap4_panda_hdmi_mux_init(void)
+ static struct gpio panda_hdmi_gpios[] = {
+ 	{ HDMI_GPIO_CT_CP_HPD, GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ct_cp_hpd" },
+ 	{ HDMI_GPIO_LS_OE,	GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ls_oe" },
++	{ HDMI_GPIO_HPD, GPIOF_DIR_IN, "hdmi_gpio_hpd" },
+ };
+ 
+ static int omap4_panda_panel_enable_hdmi(struct omap_dss_device *dssdev)
+@@ -544,6 +546,7 @@ void omap4_panda_display_init(void)
+ 
+ 	omap_mux_init_gpio(HDMI_GPIO_LS_OE, OMAP_PIN_OUTPUT);
+ 	omap_mux_init_gpio(HDMI_GPIO_CT_CP_HPD, OMAP_PIN_OUTPUT);
++	omap_mux_init_gpio(HDMI_GPIO_HPD, OMAP_PIN_INPUT_PULLDOWN);
+ }
+ 
+ static void __init omap4_panda_init(void)
 -- 
-Regards,
-
-Laurent Pinchart
+1.7.4.1
 

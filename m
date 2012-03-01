@@ -1,96 +1,51 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:07:36 +0000
-Subject: [PATCH v2 23/57] fbdev: sh_mobile_lcdc: Remove fb_info parameter to display_on operation
-Message-Id: <1330614490-14149-24-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Thu, 01 Mar 2012 15:07:41 +0000
+Subject: [PATCH v2 28/57] fbdev: sh_mobile_hdmi: Don't set sh_hdmi::mode in the display on handler
+Message-Id: <1330614490-14149-29-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The parameter is unused, remove it.
+The struct sh_hdmi mode field is only used after being assigned by the
+EDID read code. There is thus no need to initialize it from the LCDC
+display var in the display on handler.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/sh_mipi_dsi.c      |    3 +--
- drivers/video/sh_mobile_hdmi.c   |   11 +++--------
- drivers/video/sh_mobile_lcdcfb.c |    2 +-
- drivers/video/sh_mobile_lcdcfb.h |    3 +--
- 4 files changed, 6 insertions(+), 13 deletions(-)
+ drivers/video/sh_mobile_hdmi.c |    8 +-------
+ 1 files changed, 1 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
-index ad09a05..1ede247 100644
---- a/drivers/video/sh_mipi_dsi.c
-+++ b/drivers/video/sh_mipi_dsi.c
-@@ -394,8 +394,7 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
- 	return 0;
- }
- 
--static int mipi_display_on(struct sh_mobile_lcdc_entity *entity,
--			   struct fb_info *info)
-+static int mipi_display_on(struct sh_mobile_lcdc_entity *entity)
- {
- 	struct sh_mipi *mipi = to_sh_mipi(entity);
- 	struct sh_mipi_dsi_info *pdata = mipi->pdev->dev.platform_data;
 diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-index bd885ee..c22e123 100644
+index 2617609..37f935f 100644
 --- a/drivers/video/sh_mobile_hdmi.c
 +++ b/drivers/video/sh_mobile_hdmi.c
-@@ -1000,16 +1000,11 @@ static irqreturn_t sh_hdmi_hotplug(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
--/* locking:	called with info->lock held, or before register_framebuffer() */
--static int sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity,
--			      struct fb_info *info)
-+static int sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity)
+@@ -995,7 +995,6 @@ static irqreturn_t sh_hdmi_hotplug(int irq, void *dev_id)
+ static int sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity)
  {
--	/*
--	 * info is guaranteed to be valid, when we are called, because our
--	 * FB_EVENT_FB_UNBIND notify is also called with info->lock held
--	 */
  	struct sh_hdmi *hdmi = entity_to_sh_hdmi(entity);
- 	struct sh_mobile_lcdc_chan *ch = entity->lcdc;
-+	struct fb_info *info = ch->info;
+-	struct sh_mobile_lcdc_chan *ch = entity->lcdc;
  
- 	dev_dbg(hdmi->dev, "%s(%p): state %x\n", __func__, hdmi, info->state);
- 
-@@ -1156,7 +1151,7 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
- 				 */
- 				info->var.width = hdmi->var.width;
- 				info->var.height = hdmi->var.height;
--				sh_hdmi_display_on(&hdmi->entity, info);
-+				sh_hdmi_display_on(&hdmi->entity);
- 			} else {
- 				/* New monitor or have to wake up */
- 				fb_set_suspend(info, 0);
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 1ecc71e..03ee382 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -338,7 +338,7 @@ static void sh_mobile_lcdc_display_on(struct sh_mobile_lcdc_chan *ch)
- 	struct sh_mobile_lcdc_panel_cfg *panel = &ch->cfg.panel_cfg;
- 
- 	if (ch->tx_dev) {
--		if (ch->tx_dev->ops->display_on(ch->tx_dev, ch->info) < 0)
-+		if (ch->tx_dev->ops->display_on(ch->tx_dev) < 0)
- 			return;
+ 	dev_dbg(hdmi->dev, "%s(%p): state %x\n", __func__, hdmi,
+ 		hdmi->hp_state);
+@@ -1006,15 +1005,10 @@ static int sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity)
+ 	 * HDMI_HOTPLUG_CONNECTED:	on monitor plug-in
+ 	 * HDMI_HOTPLUG_EDID_DONE:	on EDID read completion
+ 	 */
+-	switch (hdmi->hp_state) {
+-	case HDMI_HOTPLUG_EDID_DONE:
++	if (hdmi->hp_state = HDMI_HOTPLUG_EDID_DONE) {
+ 		/* PS mode d->e. All functions are active */
+ 		hdmi_write(hdmi, 0x80, HDMI_SYSTEM_CTRL);
+ 		dev_dbg(hdmi->dev, "HDMI running\n");
+-		break;
+-	default:
+-		fb_var_to_videomode(&hdmi->mode, &ch->display_var);
+-		break;
  	}
  
-diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
-index 36cd564..b2cb8e6 100644
---- a/drivers/video/sh_mobile_lcdcfb.h
-+++ b/drivers/video/sh_mobile_lcdcfb.h
-@@ -23,8 +23,7 @@ struct sh_mobile_lcdc_chan;
- 
- struct sh_mobile_lcdc_entity_ops {
- 	/* Display */
--	int (*display_on)(struct sh_mobile_lcdc_entity *entity,
--			  struct fb_info *info);
-+	int (*display_on)(struct sh_mobile_lcdc_entity *entity);
- 	void (*display_off)(struct sh_mobile_lcdc_entity *entity);
- };
- 
+ 	return hdmi->hp_state = HDMI_HOTPLUG_DISCONNECTED
 -- 
 1.7.3.4
 

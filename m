@@ -1,108 +1,129 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 07 Mar 2012 12:44:42 +0000
-Subject: [PATCH 13/21] OMAPDSS: create DPI & SDI devices
-Message-Id: <1331124290-6285-14-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 01 Mar 2012 15:07:53 +0000
+Subject: [PATCH v2 40/57] fbdev: sh_mobile_meram: Request memory regions for memory resources
+Message-Id: <1330614490-14149-41-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-We currently have separate device/driver for each DSS HW module. The DPI
-and SDI outputs are more or less parts of the DSS or DISPC hardware
-modules, but in SW it makes sense to represent them as device/driver
-pairs similarly to all the other outputs. This also makes sense for
-device tree, as each node under dss will be a platform device, and
-handling DPI & SDI somehow differently than the rest would just make the
-code more complex.
+Make sure the registers and MERAM spaces are reserved before using them.
 
-This patch modifies arch/arm/mach-omap2/display.c to create platform
-devices for DPI and SDI, and later patches will implement driver for
-them.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- arch/arm/mach-omap2/display.c |   57 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 57 insertions(+), 0 deletions(-)
+ drivers/video/sh_mobile_meram.c |   53 +++++++++++++++++++++++++++-----------
+ 1 files changed, 37 insertions(+), 16 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
-index 3227eca..f102d1f 100644
---- a/arch/arm/mach-omap2/display.c
-+++ b/arch/arm/mach-omap2/display.c
-@@ -237,6 +237,46 @@ err:
- 	return ERR_PTR(r);
- }
+diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
+index f45d83e..dbf5c43 100644
+--- a/drivers/video/sh_mobile_meram.c
++++ b/drivers/video/sh_mobile_meram.c
+@@ -596,13 +596,12 @@ static struct sh_mobile_meram_ops sh_mobile_meram_ops = {
+  * initialize MERAM
+  */
  
-+static struct platform_device *create_simple_dss_pdev(const char *pdev_name,
-+		int pdev_id, void *pdata, int pdata_len,
-+		struct platform_device *parent)
-+{
-+	struct platform_device *pdev;
-+	int r;
-+
-+	pdev = platform_device_alloc(pdev_name, pdev_id);
-+	if (!pdev) {
-+		pr_err("Could not create pdev for %s\n", pdev_name);
-+		r = -ENOMEM;
-+		goto err;
-+	}
-+
-+	if (parent != NULL)
-+		pdev->dev.parent = &parent->dev;
-+
-+	if (pdev->id != -1)
-+		dev_set_name(&pdev->dev, "%s.%d", pdev->name, pdev->id);
-+	else
-+		dev_set_name(&pdev->dev, "%s", pdev->name);
-+
-+	r = platform_device_add_data(pdev, pdata, pdata_len);
-+	if (r) {
-+		pr_err("Could not set pdata for %s\n", pdev_name);
-+		goto err;
-+	}
-+
-+	r = omap_device_register(pdev);
-+	if (r) {
-+		pr_err("Could not register omap_device for %s\n", pdev_name);
-+		goto err;
-+	}
-+
-+	return pdev;
-+
-+err:
-+	return ERR_PTR(r);
-+}
-+
- int __init omap_display_init(struct omap_dss_board_info *board_data)
+-static int sh_mobile_meram_remove(struct platform_device *pdev);
+-
+ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
  {
- 	int r = 0;
-@@ -292,6 +332,23 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
- 			dss_pdev = pdev;
+ 	struct sh_mobile_meram_priv *priv;
+ 	struct sh_mobile_meram_info *pdata = pdev->dev.platform_data;
+-	struct resource *res;
++	struct resource *regs;
++	struct resource *meram;
+ 	int error;
+ 
+ 	if (!pdata) {
+@@ -610,8 +609,9 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
+ 		return -EINVAL;
  	}
  
-+	/* Create devices for DPI and SDI */
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (!res) {
++	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	meram = platform_get_resource(pdev, IORESOURCE_MEM, 1);
++	if (regs = NULL || meram = NULL) {
+ 		dev_err(&pdev->dev, "cannot get platform resources\n");
+ 		return -ENOENT;
+ 	}
+@@ -622,32 +622,50 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 	}
+ 
+-	platform_set_drvdata(pdev, priv);
+-
+ 	/* initialize private data */
+ 	mutex_init(&priv->lock);
+-	priv->base = ioremap_nocache(res->start, resource_size(res));
++	pdata->ops = &sh_mobile_meram_ops;
++	pdata->priv = priv;
++	pdata->pdev = pdev;
 +
-+	pdev = create_simple_dss_pdev("omapdss_dpi", -1, NULL, 0, dss_pdev);
-+	if (IS_ERR(pdev)) {
-+		pr_err("Could not build platform_device for omapdss_dpi\n");
-+		return PTR_ERR(pdev);
++	if (!request_mem_region(regs->start, resource_size(regs), pdev->name)) {
++		dev_err(&pdev->dev, "MERAM registers region already claimed\n");
++		error = -EBUSY;
++		goto err_req_regs;
 +	}
 +
-+	if (cpu_is_omap34xx()) {
-+		pdev = create_simple_dss_pdev("omapdss_sdi", -1, NULL, 0,
-+				dss_pdev);
-+		if (IS_ERR(pdev)) {
-+			pr_err("Could not build platform_device for omapdss_sdi\n");
-+			return PTR_ERR(pdev);
-+		}
++	if (!request_mem_region(meram->start, resource_size(meram),
++				pdev->name)) {
++		dev_err(&pdev->dev, "MERAM memory region already claimed\n");
++		error = -EBUSY;
++		goto err_req_meram;
 +	}
 +
++	priv->base = ioremap_nocache(regs->start, resource_size(regs));
+ 	if (!priv->base) {
+ 		dev_err(&pdev->dev, "ioremap failed\n");
+ 		error = -EFAULT;
+-		goto err;
++		goto err_ioremap;
+ 	}
+-	pdata->ops = &sh_mobile_meram_ops;
+-	pdata->priv = priv;
+-	pdata->pdev = pdev;
+ 
+ 	/* initialize ICB addressing mode */
+ 	if (pdata->addr_mode = SH_MOBILE_MERAM_MODE1)
+ 		meram_write_reg(priv->base, MEVCR1, MEVCR1_AMD1);
+ 
++	platform_set_drvdata(pdev, priv);
+ 	pm_runtime_enable(&pdev->dev);
+ 
+ 	dev_info(&pdev->dev, "sh_mobile_meram initialized.");
+ 
  	return 0;
+ 
+-err:
+-	sh_mobile_meram_remove(pdev);
++err_ioremap:
++	release_mem_region(meram->start, resource_size(meram));
++err_req_meram:
++	release_mem_region(regs->start, resource_size(regs));
++err_req_regs:
++	mutex_destroy(&priv->lock);
++	kfree(priv);
+ 
+ 	return error;
  }
+@@ -656,11 +674,14 @@ err:
+ static int sh_mobile_meram_remove(struct platform_device *pdev)
+ {
+ 	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
++	struct resource *regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	struct resource *meram = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+ 
+ 	pm_runtime_disable(&pdev->dev);
+ 
+-	if (priv->base)
+-		iounmap(priv->base);
++	iounmap(priv->base);
++	release_mem_region(meram->start, resource_size(meram));
++	release_mem_region(regs->start, resource_size(regs));
+ 
+ 	mutex_destroy(&priv->lock);
  
 -- 
-1.7.4.1
+1.7.3.4
 

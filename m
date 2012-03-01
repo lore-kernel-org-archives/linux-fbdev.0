@@ -1,280 +1,242 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:07:50 +0000
-Subject: [PATCH v2 37/57] fbdev: sh_mobile_lcdc: Store configuration in channel structure
-Message-Id: <1330614490-14149-38-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 01 Mar 2012 12:34:46 +0000
+Subject: [PATCH 7/7] OMAPDSS: HDMI: PHY burnout fix
+Message-Id: <1330605286-24166-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1330605286-24166-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1330605286-24166-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: stable@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Store the frame buffer configuration (colorspace, visible/virtual
-horizontal and vertical resolutions and line pitch) in the
-sh_mobile_lcdc_chan structure, and use it instead of accessing fb_info.
+A hardware bug in the OMAP4 HDMI PHY may cause physical damage to the
+board if the HDMI PHY is already enabled when the HDMI cable is plugged
+in. The possible damage breaks HDMI output, otherwise the board is
+unaffected.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+This patch solves the problem by adding hot-plug-detection into the HDMI
+IP driver. This is not a real HPD support in the sense that nobody else
+than the IP driver gets to know about the HPD events, but is only meant
+to fix the HW bug.
+
+The strategy is simple: If the display device is turned off by the user,
+the PHY power is set to OFF. When the display device is turned on by the
+user, the PHY power is set either to LDOON or TXON, depending on whether
+the HDMI cable is connected.
+
+The reason to avoid PHY OFF when the display device is on, but the cable
+is disconnected, is that when the PHY is turned OFF, the HDMI IP is not
+"ticking" and thus the DISPC does not receive pixel clock from the HDMI
+IP. This would, for example, prevent any VSYNCs from happening, and
+would thus affect the users of omapdss. By using LDOON when the cable is
+disconnected we'll avoid the HW bug, but keep the HDMI working as usual
+from the user's point of view.
+
+Backported from c49d005b6cc8491fad5b24f82805be2d6bcbd3dd
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |  109 +++++++++++++++++++-------------------
- drivers/video/sh_mobile_lcdcfb.h |    8 +++-
- 2 files changed, 61 insertions(+), 56 deletions(-)
+ arch/arm/mach-omap2/board-4430sdp.c    |    5 ++
+ arch/arm/mach-omap2/board-omap4panda.c |    5 ++
+ drivers/video/omap2/dss/hdmi.c         |   71 ++++++++++++++++++++++++++++++--
+ include/video/omapdss.h                |    5 ++
+ 4 files changed, 82 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index fc12e37..6d377b4 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -273,7 +273,7 @@ static int sh_mobile_lcdc_sginit(struct fb_info *info,
- 				  struct list_head *pagelist)
- {
- 	struct sh_mobile_lcdc_chan *ch = info->par;
--	unsigned int nr_pages_max = info->fix.smem_len >> PAGE_SHIFT;
-+	unsigned int nr_pages_max = ch->fb_size >> PAGE_SHIFT;
- 	struct page *page;
- 	int nr_pages = 0;
- 
-@@ -541,17 +541,6 @@ static int sh_mobile_format_is_fourcc(const struct fb_var_screeninfo *var)
- 	return var->grayscale > 1;
+diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+index 0ee578a..14a5971 100644
+--- a/arch/arm/mach-omap2/board-4430sdp.c
++++ b/arch/arm/mach-omap2/board-4430sdp.c
+@@ -610,6 +610,10 @@ static void sdp4430_panel_disable_hdmi(struct omap_dss_device *dssdev)
+ 	gpio_free_array(sdp4430_hdmi_gpios, ARRAY_SIZE(sdp4430_hdmi_gpios));
  }
  
--static bool sh_mobile_format_is_yuv(const struct fb_var_screeninfo *var)
--{
--	const struct sh_mobile_lcdc_format_info *format;
--
--	if (var->grayscale <= 1)
--		return false;
--
--	format = sh_mobile_format_info(var->grayscale);
--	return format ? format->yuv : false;
--}
--
- /* -----------------------------------------------------------------------------
-  * Start, stop and IRQ
-  */
-@@ -650,7 +639,7 @@ static void sh_mobile_lcdc_geometry(struct sh_mobile_lcdc_chan *ch)
- 	h_total = mode->xres + mode->hsync_len + mode->left_margin
- 		+ mode->right_margin;
- 	tmp = h_total / 8; /* HTCN */
--	tmp |= (min(mode->xres, var->xres) / 8) << 16; /* HDCN */
-+	tmp |= (min(mode->xres, ch->xres) / 8) << 16; /* HDCN */
- 	lcdc_write_chan(ch, LDHCNR, tmp);
- 
- 	hsync_pos = mode->xres + mode->right_margin;
-@@ -661,7 +650,7 @@ static void sh_mobile_lcdc_geometry(struct sh_mobile_lcdc_chan *ch)
- 	/* vertical configuration */
- 	tmp = mode->yres + mode->vsync_len + mode->upper_margin
- 	    + mode->lower_margin; /* VTLN */
--	tmp |= min(mode->yres, var->yres) << 16; /* VDLN */
-+	tmp |= min(mode->yres, ch->yres) << 16; /* VDLN */
- 	lcdc_write_chan(ch, LDVLNR, tmp);
- 
- 	tmp = mode->yres + mode->lower_margin; /* VSYNP */
-@@ -738,7 +727,7 @@ static void __sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 		tmp = ch->format->lddfr;
- 
- 		if (ch->format->yuv) {
--			switch (ch->info->var.colorspace) {
-+			switch (ch->colorspace) {
- 			case V4L2_COLORSPACE_REC709:
- 				tmp |= LDDFR_CF1;
- 				break;
-@@ -836,11 +825,8 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 		if (!ch->enabled)
- 			continue;
- 
--		ch->base_addr_y = ch->info->fix.smem_start;
--		ch->base_addr_c = ch->base_addr_y
--				+ ch->info->var.xres
--				* ch->info->var.yres_virtual;
--		ch->pitch = ch->info->fix.line_length;
-+		ch->base_addr_y = ch->dma_handle;
-+		ch->base_addr_c = ch->base_addr_y + ch->xres * ch->yres_virtual;
- 
- 		/* Enable MERAM if possible. */
- 		cfg = ch->cfg.meram_cfg;
-@@ -875,7 +861,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 		}
- 
- 		ret = mdev->ops->meram_register(mdev, cfg, ch->pitch,
--					ch->info->var.yres, pixelformat,
-+					ch->yres, pixelformat,
- 					ch->base_addr_y, ch->base_addr_c,
- 					&ch->base_addr_y, &ch->base_addr_c,
- 					&ch->pitch);
-@@ -1037,14 +1023,12 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
- 	unsigned long new_pan_offset;
- 	unsigned long base_addr_y, base_addr_c;
- 	unsigned long c_offset;
--	bool yuv = sh_mobile_format_is_yuv(&info->var);
- 
--	if (!yuv)
--		new_pan_offset = var->yoffset * info->fix.line_length
--			       + var->xoffset * (info->var.bits_per_pixel / 8);
-+	if (!ch->format->yuv)
-+		new_pan_offset = var->yoffset * ch->pitch
-+			       + var->xoffset * (ch->format->bpp / 8);
- 	else
--		new_pan_offset = var->yoffset * info->fix.line_length
--			       + var->xoffset;
-+		new_pan_offset = var->yoffset * ch->pitch + var->xoffset;
- 
- 	if (new_pan_offset = ch->pan_offset)
- 		return 0;	/* No change, do nothing */
-@@ -1053,12 +1037,11 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
- 
- 	/* Set the source address for the next refresh */
- 	base_addr_y = ch->dma_handle + new_pan_offset;
--	if (yuv) {
-+	if (ch->format->yuv) {
- 		/* Set y offset */
--		c_offset = var->yoffset * info->fix.line_length
--			 * (info->var.bits_per_pixel - 8) / 8;
--		base_addr_c = ch->dma_handle
--			    + info->var.xres * info->var.yres_virtual
-+		c_offset = var->yoffset * ch->pitch
-+			 * (ch->format->bpp - 8) / 8;
-+		base_addr_c = ch->dma_handle + ch->xres * ch->yres_virtual
- 			    + c_offset;
- 		/* Set x offset */
- 		if (ch->format->fourcc = V4L2_PIX_FMT_NV24)
-@@ -1085,7 +1068,7 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
- 	ch->base_addr_c = base_addr_c;
- 
- 	lcdc_write_chan_mirror(ch, LDSA1R, base_addr_y);
--	if (yuv)
-+	if (ch->format->yuv)
- 		lcdc_write_chan_mirror(ch, LDSA2R, base_addr_c);
- 
- 	if (lcdc_chan_is_sublcd(ch))
-@@ -1338,24 +1321,28 @@ static int sh_mobile_check_var(struct fb_var_screeninfo *var, struct fb_info *in
- static int sh_mobile_set_par(struct fb_info *info)
- {
- 	struct sh_mobile_lcdc_chan *ch = info->par;
--	u32 line_length = info->fix.line_length;
- 	int ret;
- 
- 	sh_mobile_lcdc_stop(ch->lcdc);
- 
--	if (sh_mobile_format_is_yuv(&info->var))
--		info->fix.line_length = info->var.xres;
--	else
--		info->fix.line_length = info->var.xres
--				      * info->var.bits_per_pixel / 8;
--
- 	ch->format = sh_mobile_format_info(sh_mobile_format_fourcc(&info->var));
-+	ch->colorspace = info->var.colorspace;
++static struct omap_dss_hdmi_data sdp4430_hdmi_data = {
++	.hpd_gpio = HDMI_GPIO_HPD,
++};
 +
-+	ch->xres = info->var.xres;
-+	ch->xres_virtual = info->var.xres_virtual;
-+	ch->yres = info->var.yres;
-+	ch->yres_virtual = info->var.yres_virtual;
-+
-+	if (ch->format->yuv)
-+		ch->pitch = info->var.xres;
-+	else
-+		ch->pitch = info->var.xres * ch->format->bpp / 8;
+ static struct omap_dss_device sdp4430_hdmi_device = {
+ 	.name = "hdmi",
+ 	.driver_name = "hdmi_panel",
+@@ -617,6 +621,7 @@ static struct omap_dss_device sdp4430_hdmi_device = {
+ 	.platform_enable = sdp4430_panel_enable_hdmi,
+ 	.platform_disable = sdp4430_panel_disable_hdmi,
+ 	.channel = OMAP_DSS_CHANNEL_DIGIT,
++	.data = &sdp4430_hdmi_data,
+ };
  
- 	ret = sh_mobile_lcdc_start(ch->lcdc);
--	if (ret < 0) {
-+	if (ret < 0)
- 		dev_err(info->dev, "%s: unable to restart LCDC\n", __func__);
--		info->fix.line_length = line_length;
--	}
-+
-+	info->fix.line_length = ch->pitch;
+ static struct omap_dss_device *sdp4430_dss_devices[] = {
+diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
+index 2b3f7e0..107dfc3 100644
+--- a/arch/arm/mach-omap2/board-omap4panda.c
++++ b/arch/arm/mach-omap2/board-omap4panda.c
+@@ -646,6 +646,10 @@ static void omap4_panda_panel_disable_hdmi(struct omap_dss_device *dssdev)
+ 	gpio_free_array(panda_hdmi_gpios, ARRAY_SIZE(panda_hdmi_gpios));
+ }
  
- 	if (sh_mobile_format_is_fourcc(&info->var)) {
- 		info->fix.type = FB_TYPE_FOURCC;
-@@ -1384,8 +1371,8 @@ static int sh_mobile_lcdc_blank(int blank, struct fb_info *info)
- 	/* blank the screen? */
- 	if (blank > FB_BLANK_UNBLANK && ch->blank_status = FB_BLANK_UNBLANK) {
- 		struct fb_fillrect rect = {
--			.width = info->var.xres,
--			.height = info->var.yres,
-+			.width = ch->xres,
-+			.height = ch->yres,
- 		};
- 		sh_mobile_lcdc_fillrect(info, &rect);
- 	}
-@@ -1525,6 +1512,13 @@ sh_mobile_lcdc_channel_fb_init(struct sh_mobile_lcdc_chan *ch,
- 	info->fix = sh_mobile_lcdc_fix;
- 	info->fix.smem_start = ch->dma_handle;
- 	info->fix.smem_len = ch->fb_size;
-+	info->fix.line_length = ch->pitch;
++static struct omap_dss_hdmi_data omap4_panda_hdmi_data = {
++	.hpd_gpio = HDMI_GPIO_HPD,
++};
 +
-+	if (ch->format->yuv)
-+		info->fix.visual = FB_VISUAL_FOURCC;
-+	else
-+		info->fix.visual = FB_VISUAL_TRUECOLOR;
-+
- 	if (ch->format->fourcc = V4L2_PIX_FMT_NV12 ||
- 	    ch->format->fourcc = V4L2_PIX_FMT_NV21)
- 		info->fix.ypanstep = 2;
-@@ -1552,14 +1546,6 @@ sh_mobile_lcdc_channel_fb_init(struct sh_mobile_lcdc_chan *ch,
- 	if (ret)
- 		return ret;
+ static struct omap_dss_device  omap4_panda_hdmi_device = {
+ 	.name = "hdmi",
+ 	.driver_name = "hdmi_panel",
+@@ -653,6 +657,7 @@ static struct omap_dss_device  omap4_panda_hdmi_device = {
+ 	.platform_enable = omap4_panda_panel_enable_hdmi,
+ 	.platform_disable = omap4_panda_panel_disable_hdmi,
+ 	.channel = OMAP_DSS_CHANNEL_DIGIT,
++	.data = &omap4_panda_hdmi_data,
+ };
  
--	if (ch->format->yuv) {
--		info->fix.line_length = var->xres;
--		info->fix.visual = FB_VISUAL_FOURCC;
--	} else {
--		info->fix.line_length = var->xres * ch->format->bpp / 8;
--		info->fix.visual = FB_VISUAL_TRUECOLOR;
--	}
--
+ static struct omap_dss_device *omap4_panda_dss_devices[] = {
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index f3369cf..fadd6a0 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -29,6 +29,7 @@
+ #include <linux/mutex.h>
+ #include <linux/delay.h>
+ #include <linux/string.h>
++#include <linux/gpio.h>
+ #include <video/omapdss.h>
+ #if defined(CONFIG_SND_OMAP_SOC_OMAP4_HDMI) || \
+ 	defined(CONFIG_SND_OMAP_SOC_OMAP4_HDMI_MODULE)
+@@ -54,6 +55,9 @@ static struct {
+ 	u8 edid_set;
+ 	bool custom_set;
+ 	struct hdmi_config cfg;
++
++	int hpd_gpio;
++	bool phy_tx_enabled;
+ } hdmi;
+ 
+ /*
+@@ -278,6 +282,47 @@ static int hdmi_pll_reset(void)
  	return 0;
  }
  
-@@ -1836,8 +1822,6 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
- 		return -EINVAL;
- 	}
- 
--	ch->format = format;
--
- 	/* Iterate through the modes to validate them and find the highest
- 	 * resolution.
- 	 */
-@@ -1875,6 +1859,21 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
- 		num_modes = cfg->num_modes;
- 	}
- 
-+	/* Use the first mode as default. */
-+	ch->format = format;
-+	ch->xres = mode->xres;
-+	ch->xres_virtual = mode->xres;
-+	ch->yres = mode->yres;
-+	ch->yres_virtual = mode->yres * 2;
++static int hdmi_check_hpd_state(void)
++{
++	unsigned long flags;
++	bool hpd;
++	int r;
++	/* this should be in ti_hdmi_4xxx_ip private data */
++	static DEFINE_SPINLOCK(phy_tx_lock);
 +
-+	if (!format->yuv) {
-+		ch->colorspace = V4L2_COLORSPACE_SRGB;
-+		ch->pitch = ch->xres * format->bpp / 8;
-+	} else {
-+		ch->colorspace = V4L2_COLORSPACE_REC709;
-+		ch->pitch = ch->xres;
++	spin_lock_irqsave(&phy_tx_lock, flags);
++
++	hpd = gpio_get_value(hdmi.hpd_gpio);
++
++	if (hpd = hdmi.phy_tx_enabled) {
++		spin_unlock_irqrestore(&phy_tx_lock, flags);
++		return 0;
 +	}
 +
- 	ch->display.width = cfg->panel_cfg.width;
- 	ch->display.height = cfg->panel_cfg.height;
- 	ch->display.mode = *mode;
-diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
-index cc22b9e..19a4cd7 100644
---- a/drivers/video/sh_mobile_lcdcfb.h
-+++ b/drivers/video/sh_mobile_lcdcfb.h
-@@ -74,9 +74,15 @@ struct sh_mobile_lcdc_chan {
- 	struct completion vsync_completion;
- 
- 	const struct sh_mobile_lcdc_format_info *format;
-+	u32 colorspace;
-+	unsigned int xres;
-+	unsigned int xres_virtual;
-+	unsigned int yres;
-+	unsigned int yres_virtual;
-+	unsigned int pitch;
++	if (hpd)
++		r = hdmi_set_phy_pwr(HDMI_PHYPWRCMD_TXON);
++	else
++		r = hdmi_set_phy_pwr(HDMI_PHYPWRCMD_LDOON);
 +
- 	unsigned long base_addr_y;
- 	unsigned long base_addr_c;
--	unsigned int pitch;
++	if (r) {
++		DSSERR("Failed to %s PHY TX power\n",
++				hpd ? "enable" : "disable");
++		goto err;
++	}
++
++	hdmi.phy_tx_enabled = hpd;
++err:
++	spin_unlock_irqrestore(&phy_tx_lock, flags);
++	return r;
++}
++
++static irqreturn_t hpd_irq_handler(int irq, void *data)
++{
++	hdmi_check_hpd_state();
++
++	return IRQ_HANDLED;
++}
++
+ static int hdmi_phy_init(void)
+ {
+ 	u16 r = 0;
+@@ -286,10 +331,6 @@ static int hdmi_phy_init(void)
+ 	if (r)
+ 		return r;
  
- 	int (*notify)(struct sh_mobile_lcdc_chan *ch,
- 		      enum sh_mobile_lcdc_entity_event event,
+-	r = hdmi_set_phy_pwr(HDMI_PHYPWRCMD_TXON);
+-	if (r)
+-		return r;
+-
+ 	/*
+ 	 * Read address 0 in order to get the SCP reset done completed
+ 	 * Dummy access performed to make sure reset is done
+@@ -311,6 +352,23 @@ static int hdmi_phy_init(void)
+ 	/* Write to phy address 3 to change the polarity control */
+ 	REG_FLD_MOD(HDMI_TXPHY_PAD_CFG_CTRL, 0x1, 27, 27);
+ 
++	r = request_threaded_irq(gpio_to_irq(hdmi.hpd_gpio),
++			NULL, hpd_irq_handler,
++			IRQF_DISABLED | IRQF_TRIGGER_RISING |
++			IRQF_TRIGGER_FALLING, "hpd", NULL);
++	if (r) {
++		DSSERR("HPD IRQ request failed\n");
++		hdmi_set_phy_pwr(HDMI_PHYPWRCMD_OFF);
++		return r;
++	}
++
++	r = hdmi_check_hpd_state();
++	if (r) {
++		free_irq(gpio_to_irq(hdmi.hpd_gpio), NULL);
++		hdmi_set_phy_pwr(HDMI_PHYPWRCMD_OFF);
++		return r;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -361,7 +419,9 @@ static int hdmi_pll_program(struct hdmi_pll_info *fmt)
+ 
+ static void hdmi_phy_off(void)
+ {
++	free_irq(gpio_to_irq(hdmi.hpd_gpio), NULL);
+ 	hdmi_set_phy_pwr(HDMI_PHYPWRCMD_OFF);
++	hdmi.phy_tx_enabled = false;
+ }
+ 
+ static int hdmi_core_ddc_edid(u8 *pedid, int ext)
+@@ -1236,12 +1296,15 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev)
+ 
+ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
+ {
++	struct omap_dss_hdmi_data *priv = dssdev->data;
+ 	int r = 0;
+ 
+ 	DSSDBG("ENTER hdmi_display_enable\n");
+ 
+ 	mutex_lock(&hdmi.lock);
+ 
++	hdmi.hpd_gpio = priv->hpd_gpio;
++
+ 	r = omap_dss_start_device(dssdev);
+ 	if (r) {
+ 		DSSERR("failed to start device\n");
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 892b97f..c0d8014 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -514,6 +514,11 @@ struct omap_dss_device {
+ 	int (*get_backlight)(struct omap_dss_device *dssdev);
+ };
+ 
++struct omap_dss_hdmi_data
++{
++	int hpd_gpio;
++};
++
+ struct omap_dss_driver {
+ 	struct device_driver driver;
+ 
 -- 
-1.7.3.4
+1.7.4.1
 

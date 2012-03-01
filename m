@@ -1,261 +1,255 @@
-From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
-Date: Wed, 28 Mar 2012 17:35:21 +0000
-Subject: [PATCH 3/4] video: auo_k190x: add driver for AUO-K1900 variant
-Message-Id: <201203281935.22273.heiko@sntech.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 01 Mar 2012 12:26:34 +0000
+Subject: [PATCH 6/7] OMAPDSS: HDMI: PHY burnout fix
+Message-Id: <1330604795-29156-7-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1330604795-29156-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1330604795-29156-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: stable@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This controller only supports smaller resolutions and only serial
-updates, i.e. it has to wait for an update to finish before
-starting another one.
+A hardware bug in the OMAP4 HDMI PHY may cause physical damage to the
+board if the HDMI PHY is already enabled when the HDMI cable is plugged
+in. The possible damage breaks HDMI output, otherwise the board is
+unaffected.
 
-Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+This patch solves the problem by adding hot-plug-detection into the HDMI
+IP driver. This is not a real HPD support in the sense that nobody else
+than the IP driver gets to know about the HPD events, but is only meant
+to fix the HW bug.
+
+The strategy is simple: If the display device is turned off by the user,
+the PHY power is set to OFF. When the display device is turned on by the
+user, the PHY power is set either to LDOON or TXON, depending on whether
+the HDMI cable is connected.
+
+The reason to avoid PHY OFF when the display device is on, but the cable
+is disconnected, is that when the PHY is turned OFF, the HDMI IP is not
+"ticking" and thus the DISPC does not receive pixel clock from the HDMI
+IP. This would, for example, prevent any VSYNCs from happening, and
+would thus affect the users of omapdss. By using LDOON when the cable is
+disconnected we'll avoid the HW bug, but keep the HDMI working as usual
+from the user's point of view.
+
+Backported from c49d005b6cc8491fad5b24f82805be2d6bcbd3dd
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/Kconfig       |    9 ++
- drivers/video/Makefile      |    1 +
- drivers/video/auo_k1900fb.c |  198 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 208 insertions(+), 0 deletions(-)
- create mode 100644 drivers/video/auo_k1900fb.c
+ arch/arm/mach-omap2/board-4430sdp.c       |    5 ++
+ arch/arm/mach-omap2/board-omap4panda.c    |    5 ++
+ drivers/video/omap2/dss/hdmi.c            |    3 +
+ drivers/video/omap2/dss/ti_hdmi.h         |    4 ++
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |   68 +++++++++++++++++++++++++++--
+ include/video/omapdss.h                   |    5 ++
+ 6 files changed, 86 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 89c7394..d9d1e44 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2392,6 +2392,15 @@ config FB_AUO_K190X
- 	help
- 	  Internal config node for K190X common code
+diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+index 5c2aaa0..02cd29a 100644
+--- a/arch/arm/mach-omap2/board-4430sdp.c
++++ b/arch/arm/mach-omap2/board-4430sdp.c
+@@ -742,6 +742,10 @@ static void sdp4430_lcd_init(void)
+ 		pr_err("%s: Could not get lcd2_reset_gpio\n", __func__);
+ }
  
-+config FB_AUO_K1900
-+	tristate "AUO K1900 controller support for Sipix displays"
-+	depends on FB
-+	select FB_AUO_K190X
-+	help
-+	  This driver implements support for the AUO K1900 epd-controller.
-+	  This controller can drive Sipix epaper displays but can only do
-+	  serial updates, reducing the number of possible frames per second.
-+
- config FB_JZ4740
- 	tristate "JZ4740 LCD framebuffer support"
- 	depends on FB && MACH_JZ4740
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index d5406f2..e84df73 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -119,6 +119,7 @@ obj-$(CONFIG_FB_MAXINE)		  += maxinefb.o
- obj-$(CONFIG_FB_METRONOME)        += metronomefb.o
- obj-$(CONFIG_FB_BROADSHEET)       += broadsheetfb.o
- obj-$(CONFIG_FB_AUO_K190X)	  += auo_k190x.o
-+obj-$(CONFIG_FB_AUO_K1900)	  += auo_k1900fb.o
- obj-$(CONFIG_FB_S1D13XXX)	  += s1d13xxxfb.o
- obj-$(CONFIG_FB_SH7760)		  += sh7760fb.o
- obj-$(CONFIG_FB_IMX)              += imxfb.o
-diff --git a/drivers/video/auo_k1900fb.c b/drivers/video/auo_k1900fb.c
-new file mode 100644
-index 0000000..c36cf96
---- /dev/null
-+++ b/drivers/video/auo_k1900fb.c
-@@ -0,0 +1,198 @@
-+/*
-+ * auok190xfb.c -- FB driver for AUO-K1900 controllers
-+ *
-+ * Copyright (C) 2011, 2012 Heiko Stuebner <heiko@sntech.de>
-+ *
-+ * based on broadsheetfb.c
-+ *
-+ * Copyright (C) 2008, Jaya Kumar
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * Layout is based on skeletonfb.c by James Simmons and Geert Uytterhoeven.
-+ *
-+ * This driver is written to be used with the AUO-K1900 display controller.
-+ *
-+ * It is intended to be architecture independent. A board specific driver
-+ * must be used to perform all the physical IO interactions.
-+ *
-+ * The controller supports different update modes:
-+ * mode0+1 16 step gray (4bit)
-+ * mode2 4 step gray (2bit) - FIXME: add strange refresh
-+ * mode3 2 step gray (1bit) - FIXME: add strange refresh
-+ * mode4 handwriting mode (strange behaviour)
-+ * mode5 automatic selection of update mode
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/string.h>
-+#include <linux/mm.h>
-+#include <linux/slab.h>
-+#include <linux/delay.h>
-+#include <linux/interrupt.h>
-+#include <linux/fb.h>
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/list.h>
-+#include <linux/firmware.h>
-+#include <linux/gpio.h>
-+#include <linux/pm_runtime.h>
-+
-+#include <video/auo_k190xfb.h>
-+
-+#include "auo_k190x.h"
-+
-+/*
-+ * AUO-K1900 specific commands
-+ */
-+
-+#define AUOK1900_CMD_PARTIALDISP	0x1001
-+#define AUOK1900_CMD_ROTATION		0x1006
-+#define AUOK1900_CMD_LUT_STOP		0x1009
-+
-+#define AUOK1900_INIT_TEMP_AVERAGE	(1 << 13)
-+#define AUOK1900_INIT_ROTATE(_x)	((_x & 0x3) << 10)
-+#define AUOK1900_INIT_RESOLUTION(_res)	((_res & 0x7) << 2)
-+
-+static void auok1900_init(struct auok190xfb_par *par)
-+{
-+	struct auok190x_board *board = par->board;
-+	u16 init_param = 0;
-+
-+	init_param |= AUOK1900_INIT_TEMP_AVERAGE;
-+	init_param |= AUOK1900_INIT_ROTATE(par->rotation);
-+	init_param |= AUOK190X_INIT_INVERSE_WHITE;
-+	init_param |= AUOK190X_INIT_FORMAT0;
-+	init_param |= AUOK1900_INIT_RESOLUTION(par->resolution);
-+	init_param |= AUOK190X_INIT_SHIFT_RIGHT;
-+
-+	auok190x_send_cmdargs(par, AUOK190X_CMD_INIT, 1, &init_param);
-+
-+	/* let the controller finish */
-+	board->wait_for_rdy(par);
-+}
-+
-+static void auok1900_update_region(struct auok190xfb_par *par, int mode,
-+						u16 y1, u16 y2)
-+{
-+	struct device *dev = par->info->device;
-+	unsigned char *buf = (unsigned char *)par->info->screen_base;
-+	int xres = par->info->var.xres;
-+	u16 args[4];
-+
-+	pm_runtime_get_sync(dev);
-+
-+	mutex_lock(&(par->io_lock));
-+
-+	/* y1 and y2 must be a multiple of 2 so drop the lowest bit */
-+	y1 &= 0xfffe;
-+	y2 &= 0xfffe;
-+
-+	dev_dbg(dev, "update (x,y,w,h,mode)=(%d,%d,%d,%d,%d)\n",
-+		1, y1+1, xres, y2-y1, mode);
-+
-+	/* to FIX handle different partial update modes */
-+	args[0] = mode | 1;
-+	args[1] = y1 + 1;
-+	args[2] = xres;
-+	args[3] = y2 - y1;
-+	buf += y1 * xres;
-+	auok190x_send_cmdargs_pixels(par, AUOK1900_CMD_PARTIALDISP, 4, args,
-+				     ((y2 - y1) * xres)/2, (u16 *) buf);
-+	auok190x_send_command(par, AUOK190X_CMD_DATA_STOP);
-+
-+	par->update_cnt++;
-+
-+	mutex_unlock(&(par->io_lock));
-+
-+	pm_runtime_mark_last_busy(dev);
-+	pm_runtime_put_autosuspend(dev);
-+}
-+
-+static void auok1900fb_dpy_update_pages(struct auok190xfb_par *par,
-+						u16 y1, u16 y2)
-+{
-+	int mode;
-+
-+	if (par->update_mode < 0) {
-+		mode = AUOK190X_UPDATE_MODE(1);
-+		par->last_mode = -1;
-+	} else {
-+		mode = AUOK190X_UPDATE_MODE(par->update_mode);
-+		par->last_mode = par->update_mode;
-+	}
-+
-+	if (par->flash)
-+		mode |= AUOK190X_UPDATE_NONFLASH;
-+
-+	auok1900_update_region(par, mode, y1, y2);
-+}
-+
-+static void auok1900fb_dpy_update(struct auok190xfb_par *par)
-+{
-+	int mode;
-+
-+	if (par->update_mode < 0) {
-+		mode = AUOK190X_UPDATE_MODE(0);
-+		par->last_mode = -1;
-+	} else {
-+		mode = AUOK190X_UPDATE_MODE(par->update_mode);
-+		par->last_mode = par->update_mode;
-+	}
-+
-+	if (par->flash)
-+		mode |= AUOK190X_UPDATE_NONFLASH;
-+
-+	auok1900_update_region(par, mode, 0, par->info->var.yres);
-+	par->update_cnt = 0;
-+}
-+
-+static bool auok1900fb_need_refresh(struct auok190xfb_par *par)
-+{
-+	return (par->update_cnt > 10);
-+}
-+
-+static int __devinit auok1900fb_probe(struct platform_device *pdev)
-+{
-+	struct auok190x_init_data init;
-+	struct auok190x_board *board;
-+
-+	/* pick up board specific routines */
-+	board = pdev->dev.platform_data;
-+	if (!board)
-+		return -EINVAL;
-+
-+	/* fill temporary init struct for common init */
-+	init.id = "auo_k1900fb";
-+	init.board = board;
-+	init.update_partial = auok1900fb_dpy_update_pages;
-+	init.update_all = auok1900fb_dpy_update;
-+	init.need_refresh = auok1900fb_need_refresh;
-+	init.init = auok1900_init;
-+
-+	return auok190x_common_probe(pdev, &init);
-+}
-+
-+static int __devexit auok1900fb_remove(struct platform_device *pdev)
-+{
-+	return auok190x_common_remove(pdev);
-+}
-+
-+static struct platform_driver auok1900fb_driver = {
-+	.probe	= auok1900fb_probe,
-+	.remove = __devexit_p(auok1900fb_remove),
-+	.driver	= {
-+		.owner	= THIS_MODULE,
-+		.name	= "auo_k1900fb",
-+		.pm = &auok190x_pm,
-+	},
++static struct omap_dss_hdmi_data sdp4430_hdmi_data = {
++	.hpd_gpio = HDMI_GPIO_HPD,
 +};
-+module_platform_driver(auok1900fb_driver);
 +
-+MODULE_DESCRIPTION("framebuffer driver for the AUO-K1900 EPD controller");
-+MODULE_AUTHOR("Heiko Stuebner <heiko@sntech.de>");
-+MODULE_LICENSE("GPL");
+ static struct omap_dss_device sdp4430_hdmi_device = {
+ 	.name = "hdmi",
+ 	.driver_name = "hdmi_panel",
+@@ -749,6 +753,7 @@ static struct omap_dss_device sdp4430_hdmi_device = {
+ 	.platform_enable = sdp4430_panel_enable_hdmi,
+ 	.platform_disable = sdp4430_panel_disable_hdmi,
+ 	.channel = OMAP_DSS_CHANNEL_DIGIT,
++	.data = &sdp4430_hdmi_data,
+ };
+ 
+ static struct picodlp_panel_data sdp4430_picodlp_pdata = {
+diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
+index e913c80..51b1c93 100644
+--- a/arch/arm/mach-omap2/board-omap4panda.c
++++ b/arch/arm/mach-omap2/board-omap4panda.c
+@@ -513,6 +513,10 @@ static void omap4_panda_panel_disable_hdmi(struct omap_dss_device *dssdev)
+ 	gpio_free_array(panda_hdmi_gpios, ARRAY_SIZE(panda_hdmi_gpios));
+ }
+ 
++static struct omap_dss_hdmi_data omap4_panda_hdmi_data = {
++	.hpd_gpio = HDMI_GPIO_HPD,
++};
++
+ static struct omap_dss_device  omap4_panda_hdmi_device = {
+ 	.name = "hdmi",
+ 	.driver_name = "hdmi_panel",
+@@ -520,6 +524,7 @@ static struct omap_dss_device  omap4_panda_hdmi_device = {
+ 	.platform_enable = omap4_panda_panel_enable_hdmi,
+ 	.platform_disable = omap4_panda_panel_disable_hdmi,
+ 	.channel = OMAP_DSS_CHANNEL_DIGIT,
++	.data = &omap4_panda_hdmi_data,
+ };
+ 
+ static struct omap_dss_device *omap4_panda_dss_devices[] = {
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index c56378c..7099c31 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -490,6 +490,7 @@ bool omapdss_hdmi_detect(void)
+ 
+ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
+ {
++	struct omap_dss_hdmi_data *priv = dssdev->data;
+ 	int r = 0;
+ 
+ 	DSSDBG("ENTER hdmi_display_enable\n");
+@@ -502,6 +503,8 @@ int omapdss_hdmi_display_enable(struct omap_dss_device *dssdev)
+ 		goto err0;
+ 	}
+ 
++	hdmi.ip_data.hpd_gpio = priv->hpd_gpio;
++
+ 	r = omap_dss_start_device(dssdev);
+ 	if (r) {
+ 		DSSERR("failed to start device\n");
+diff --git a/drivers/video/omap2/dss/ti_hdmi.h b/drivers/video/omap2/dss/ti_hdmi.h
+index 2c3443d..ec337b5d 100644
+--- a/drivers/video/omap2/dss/ti_hdmi.h
++++ b/drivers/video/omap2/dss/ti_hdmi.h
+@@ -121,6 +121,10 @@ struct hdmi_ip_data {
+ 	const struct ti_hdmi_ip_ops *ops;
+ 	struct hdmi_config cfg;
+ 	struct hdmi_pll_info pll_data;
++
++	/* ti_hdmi_4xxx_ip private data. These should be in a separate struct */
++	int hpd_gpio;
++	bool phy_tx_enabled;
+ };
+ int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data);
+ void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data);
+diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+index e1a6ce5..3683404 100644
+--- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
++++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+@@ -28,6 +28,7 @@
+ #include <linux/delay.h>
+ #include <linux/string.h>
+ #include <linux/seq_file.h>
++#include <linux/gpio.h>
+ 
+ #include "ti_hdmi_4xxx_ip.h"
+ #include "dss.h"
+@@ -223,6 +224,49 @@ void ti_hdmi_4xxx_pll_disable(struct hdmi_ip_data *ip_data)
+ 	hdmi_set_pll_pwr(ip_data, HDMI_PLLPWRCMD_ALLOFF);
+ }
+ 
++static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
++{
++	unsigned long flags;
++	bool hpd;
++	int r;
++	/* this should be in ti_hdmi_4xxx_ip private data */
++	static DEFINE_SPINLOCK(phy_tx_lock);
++
++	spin_lock_irqsave(&phy_tx_lock, flags);
++
++	hpd = gpio_get_value(ip_data->hpd_gpio);
++
++	if (hpd = ip_data->phy_tx_enabled) {
++		spin_unlock_irqrestore(&phy_tx_lock, flags);
++		return 0;
++	}
++
++	if (hpd)
++		r = hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_TXON);
++	else
++		r = hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_LDOON);
++
++	if (r) {
++		DSSERR("Failed to %s PHY TX power\n",
++				hpd ? "enable" : "disable");
++		goto err;
++	}
++
++	ip_data->phy_tx_enabled = hpd;
++err:
++	spin_unlock_irqrestore(&phy_tx_lock, flags);
++	return r;
++}
++
++static irqreturn_t hpd_irq_handler(int irq, void *data)
++{
++	struct hdmi_ip_data *ip_data = data;
++
++	hdmi_check_hpd_state(ip_data);
++
++	return IRQ_HANDLED;
++}
++
+ int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data)
+ {
+ 	u16 r = 0;
+@@ -232,10 +276,6 @@ int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data)
+ 	if (r)
+ 		return r;
+ 
+-	r = hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_TXON);
+-	if (r)
+-		return r;
+-
+ 	/*
+ 	 * Read address 0 in order to get the SCP reset done completed
+ 	 * Dummy access performed to make sure reset is done
+@@ -257,12 +297,32 @@ int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data)
+ 	/* Write to phy address 3 to change the polarity control */
+ 	REG_FLD_MOD(phy_base, HDMI_TXPHY_PAD_CFG_CTRL, 0x1, 27, 27);
+ 
++	r = request_threaded_irq(gpio_to_irq(ip_data->hpd_gpio),
++			NULL, hpd_irq_handler,
++			IRQF_DISABLED | IRQF_TRIGGER_RISING |
++			IRQF_TRIGGER_FALLING, "hpd", ip_data);
++	if (r) {
++		DSSERR("HPD IRQ request failed\n");
++		hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
++		return r;
++	}
++
++	r = hdmi_check_hpd_state(ip_data);
++	if (r) {
++		free_irq(gpio_to_irq(ip_data->hpd_gpio), ip_data);
++		hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
++		return r;
++	}
++
+ 	return 0;
+ }
+ 
+ void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data)
+ {
++	free_irq(gpio_to_irq(ip_data->hpd_gpio), ip_data);
++
+ 	hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
++	ip_data->phy_tx_enabled = false;
+ }
+ 
+ static int hdmi_core_ddc_init(struct hdmi_ip_data *ip_data)
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 378c7ed..6582c45 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -575,6 +575,11 @@ struct omap_dss_device {
+ 	int (*get_backlight)(struct omap_dss_device *dssdev);
+ };
+ 
++struct omap_dss_hdmi_data
++{
++	int hpd_gpio;
++};
++
+ struct omap_dss_driver {
+ 	struct device_driver driver;
+ 
 -- 
-1.7.5.4
+1.7.4.1
 

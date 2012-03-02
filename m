@@ -1,35 +1,34 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Sun, 11 Mar 2012 18:24:57 +0000
-Subject: Re: [PATCH] Video : Amba: Use in_interrupt() in clcdfb_sleep().
-Message-Id: <20120311182457.29d3e42c@pyramind.ukuu.org.uk>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Fri, 02 Mar 2012 09:06:53 +0000
+Subject: [PATCH] fbdev: remove "default y" from FB_SH_MOBILE_MERAM
+Message-Id: <874nu7bcd3.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331471665-22226-1-git-send-email-santoshprasadnayak@gmail.com>
-	<20120311132746.GA13336@n2100.arm.linux.org.uk>
-	<CAOD=uF7kQHABCmxUL3-J-hZ1E2mXrb7dgsYq7msHhiPJ4Gm-Ew@mail.gmail.com>
-	<20120311143615.GB13336@n2100.arm.linux.org.uk>
-	<CAOD=uF5GbsyHS5iXjJ1YcqJyGLHwT8Wjhiie1daJAVqu527Umg@mail.gmail.com>
-	<20120311150311.GC13336@n2100.arm.linux.org.uk>
-	<CAOD=uF5F4tOG0Y2tZdDeMgqs4-46HXYzA3RR-t8KuNuYRarJbg@mail.gmail.com>
-	<20120311154846.GD13336@n2100.arm.linux.org.uk>
-In-Reply-To: <20120311154846.GD13336@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: santosh prasad nayak <santoshprasadnayak@gmail.com>, FlorianSchandinat@gmx.de, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-> As I've said, if we aren't going to use this, then the only solution is
-> to completely omit the msleep() there and just say "sod you to running
-> anything else for 20ms while this driver busy-spins."  That's
-> ultimately the safe thing to do, and at the moment I see no other
-> alternative there.
+"default y" of FB_SH_MOBILE_MERAM was overkill option.
+"depends on FB_SH_MOBILE_LCDC" is very enough here.
+This patch remove it.
 
-Anyone having this argument is also right now peeing into the wind. Quite
-a few console drivers do this including some the big name x86 ones. We
-don't seem to be getting any resulting problem reports.
+Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+---
+ drivers/video/Kconfig |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-Architecturally we really need a way to help console drivers separate the
-civilised acceleration friendly, lock friendly output paths from printk.
-That's the real fix, but a whole different matter to solve cleanly.
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 549b960..dfec9b7 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1994,7 +1994,6 @@ config FB_SH_MOBILE_HDMI
+ config FB_SH_MOBILE_MERAM
+ 	tristate "SuperH Mobile MERAM read ahead support for LCDC"
+ 	depends on FB_SH_MOBILE_LCDC
+-	default y
+ 	---help---
+ 	  Enable MERAM support for the SH-Mobile LCD controller.
+ 
+-- 
+1.7.5.4
 
-Alan

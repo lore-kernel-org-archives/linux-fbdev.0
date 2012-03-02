@@ -1,39 +1,65 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 15 Mar 2012 17:43:53 +0000
-Subject: [RFC/PATCH 5/6] fbdev: sh_mobile_lcdc: Destroy mutex at remove time
-Message-Id: <1331833434-11934-6-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Fri, 02 Mar 2012 20:36:41 +0000
+Subject: [GIT PULL] fbdev fixes#2 for 3.3
+Message-Id: <4F512F59.9080901@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-Add a missing mutex_destroy() call when the driver is unbound from the
-device.
+Hi Linus,
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
----
- drivers/video/sh_mobile_lcdcfb.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+please pull these fixes for OMAP and viafb.
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 2009432..23d0446 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -1725,8 +1725,11 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
- 	}
- 
- 	for (i = 0; i < ARRAY_SIZE(priv->ch); i++) {
--		if (priv->ch[i].bl)
--			sh_mobile_lcdc_bl_remove(priv->ch[i].bl);
-+		struct sh_mobile_lcdc_chan *ch = &priv->ch[i];
-+
-+		if (ch->bl)
-+			sh_mobile_lcdc_bl_remove(ch->bl);
-+		mutex_destroy(&ch->open_lock);
- 	}
- 
- 	if (priv->dot_clk) {
--- 
-1.7.3.4
 
+Thanks,
+
+Florian Tobias Schandinat
+
+
+The following changes since commit b01543dfe67bb1d191998e90d20534dc354de059:
+
+  Linux 3.3-rc4 (2012-02-18 15:53:33 -0800)
+
+are available in the git repository at:
+
+  git://github.com/schandinat/linux-2.6.git fbdev-fixes-for-3.3-2
+
+for you to fetch changes up to a3d0e4aecaa32001e02d5ce860d38f14095d06d2:
+
+  OMAPDSS: APPLY: make ovl_enable/disable synchronous (2012-02-29 22:42:28 +0000)
+
+----------------------------------------------------------------
+fbdev fixes for 3.3
+
+It includes:
+- two fixes for OMAP HDMI
+- one fix to make new OMAP functions behave as they are supposed to
+- one Kconfig dependency fix
+- two fixes for viafb for modesetting on VX900 hardware
+
+----------------------------------------------------------------
+Archit Taneja (1):
+      OMAPDSS: HACK: Ensure DSS clock domain gets out of idle when HDMI is enabled
+
+Florian Tobias Schandinat (3):
+      Merge branch 'for-3.3-rc' of git://gitorious.org/linux-omap-dss2/linux
+into fbdev-for-linus
+      viafb: select HW scaling on VX900 for IGA2
+      viafb: fix IGA1 modesetting on VX900
+
+Rob Clark (1):
+      OMAPDSS: HDMI: hot plug detect fix
+
+Tomi Valkeinen (2):
+      OMAPDSS: panel-dvi: Add Kconfig dependency on I2C
+      OMAPDSS: APPLY: make ovl_enable/disable synchronous
+
+ drivers/video/omap2/displays/Kconfig      |    2 +-
+ drivers/video/omap2/dss/apply.c           |    6 ++++++
+ drivers/video/omap2/dss/hdmi.c            |   24 +++++++++++++++++++++++-
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |    9 +--------
+ drivers/video/via/hw.c                    |    4 ++++
+ 5 files changed, 35 insertions(+), 10 deletions(-)

@@ -1,63 +1,67 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 21 Mar 2012 13:11:59 +0000
-Subject: Re: [PATCH 1/2] OMAPDSS: provide default get_timings function for panels
-Message-Id: <1332335519.2236.19.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-2a+ZuUqCmfQEdx6vq5pM"
+From: Thomas Abraham <thomas.abraham@linaro.org>
+Date: Sat, 03 Mar 2012 15:46:21 +0000
+Subject: [PATCH 3/3] ARM: Exynos: Rework platform data for lcd controller for Origen board
+Message-Id: <1330789808-8253-4-git-send-email-thomas.abraham@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331834424-485-1-git-send-email-notasas@gmail.com>
-In-Reply-To: <1331834424-485-1-git-send-email-notasas@gmail.com>
-To: Grazvydas Ignotas <notasas@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+References: <1330789808-8253-1-git-send-email-thomas.abraham@linaro.org>
+In-Reply-To: <1330789808-8253-1-git-send-email-thomas.abraham@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: FlorianSchandinat@gmx.de, linux-samsung-soc@vger.kernel.org, kgene.kim@samsung.com, jg1.han@samsung.com, ben-linux@fluff.org, patches@linaro.org
 
+The 'default_win' element in the platform data is removed and the lcd panel
+video timing values are moved out of individual window configuration data.
 
---=-2a+ZuUqCmfQEdx6vq5pM
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Cc: Ben Dooks <ben-linux@fluff.org>
+Cc: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Thomas Abraham <thomas.abraham@linaro.org>
+---
+ arch/arm/mach-exynos/mach-origen.c |   24 ++++++++++++++----------
+ 1 files changed, 14 insertions(+), 10 deletions(-)
 
-On Thu, 2012-03-15 at 20:00 +0200, Grazvydas Ignotas wrote:
-> With this we can eliminate some duplicate code in panel drivers.
-> Also lgphilips-lb035q02, nec-nl8048hl11-01b, picodlp and
-> tpo-td043mtea1 gain support of reading timings over sysfs.
->=20
-> Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
-> ---
->  drivers/video/omap2/displays/panel-acx565akm.c   |    7 -------
->  drivers/video/omap2/displays/panel-generic-dpi.c |    7 -------
->  drivers/video/omap2/displays/panel-n8x0.c        |    8 --------
->  drivers/video/omap2/displays/panel-taal.c        |    8 --------
->  drivers/video/omap2/dss/core.c                   |    2 ++
->  drivers/video/omap2/dss/display.c                |    7 +++++++
->  drivers/video/omap2/dss/venc.c                   |    7 -------
->  include/video/omapdss.h                          |    2 ++
->  8 files changed, 11 insertions(+), 37 deletions(-)
-
-These two patches look fine to me, I'll apply to omapdss tree. Thanks!
-
- Tomi
-
-
---=-2a+ZuUqCmfQEdx6vq5pM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJPadOfAAoJEPo9qoy8lh71Kr4P/1x0kyB8fv1hO+xRl1jehqwF
-OeYg2e+gi6Y0R/KmtFptSEh3uq4X0pggVdtZtjj7luPXl2aWYisc6iumB2WGTG15
-i6VR+ps2JfFN8INFEDzDmn4Sj4vgqU/7qjdXM0acTTj3Ks9jdhAaCtg3dtB3Y+zR
-EQjxXNJVSlCXyj4rIY7HgXBwCqkWVUMogijrWI3UjC5NgXmR5AqzmlCSH0GleQHQ
-ea2a6ruDNdzj2bKJ5ys4vRi/jUZhkq+HicgBw9Ss4fuGUM9mHiz2cituiEo+k5DC
-G8slBRhlnNc9nP2NBY7Ja6UIXtnccqH1NzJde5hqb0Q3Bw04P4aktSN6wA5GELXL
-v5ZzYn4l0U0wgfOybTrGv384bkLNSo29FSox9jXnFS0rsHNLPdlVB+pynCEnfRSZ
-QsxNeXsuD9yCXjzXR1FvOaBuGznQJewChJw+8gN58Gfz56pVuAoZQI1CZetbfZfQ
-B/xaqxZVmTfw/hd28mzM/ajzPQF35SWEFh111bhGHVQSmc/XvzH+wmGakniZBHEU
-UllDJpf4neWpbG853HAwlmeBcw90vJhMmaVMtGGjey08+fZm7daSB4xDzTosiGTy
-s9txNhyjwttv456JSvTw51qxdwu34VgasXfTff7CCbY/6FPuNedhkBQ6aEd353H3
-ioMAx8aLeT6cQmz0A9TB
-=HzVT
------END PGP SIGNATURE-----
-
---=-2a+ZuUqCmfQEdx6vq5pM--
+diff --git a/arch/arm/mach-exynos/mach-origen.c b/arch/arm/mach-exynos/mach-origen.c
+index f57aed4..dc4ecc3 100644
+--- a/arch/arm/mach-exynos/mach-origen.c
++++ b/arch/arm/mach-exynos/mach-origen.c
+@@ -583,22 +583,26 @@ static struct platform_device origen_lcd_hv070wsa = {
+ };
+ 
+ static struct s3c_fb_pd_win origen_fb_win0 = {
+-	.win_mode = {
+-		.left_margin	= 64,
+-		.right_margin	= 16,
+-		.upper_margin	= 64,
+-		.lower_margin	= 16,
+-		.hsync_len	= 48,
+-		.vsync_len	= 3,
+-		.xres		= 1024,
+-		.yres		= 600,
+-	},
++	.xres			= 512,
++	.yres			= 300,
+ 	.max_bpp		= 32,
+ 	.default_bpp		= 24,
+ };
+ 
++static struct fb_videomode lcd_hv070wsa_timing = {
++	.left_margin	= 64,
++	.right_margin	= 16,
++	.upper_margin	= 64,
++	.lower_margin	= 16,
++	.hsync_len	= 48,
++	.vsync_len	= 3,
++	.xres		= 1024,
++	.yres		= 600,
++};
++
+ static struct s3c_fb_platdata origen_lcd_pdata __initdata = {
+ 	.win[0]		= &origen_fb_win0,
++	.vtiming	= &lcd_hv070wsa_timing,
+ 	.vidcon0	= VIDCON0_VIDOUT_RGB | VIDCON0_PNRMODE_RGB,
+ 	.vidcon1	= VIDCON1_INV_HSYNC | VIDCON1_INV_VSYNC |
+ 				VIDCON1_INV_VCLK,
+-- 
+1.6.6.rc2
 

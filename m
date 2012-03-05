@@ -1,200 +1,61 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 07 Mar 2012 12:44:33 +0000
-Subject: [PATCH 04/21] OMAPDSS: TFP410: rename dvi files to tfp410
-Message-Id: <1331124290-6285-5-git-send-email-tomi.valkeinen@ti.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Mon, 05 Mar 2012 14:53:39 +0000
+Subject: [PATCH] fbdev: sh_mobile_meram: Implement system suspend/resume
+Message-Id: <1330959219-16176-1-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Tony Lindgren <tony@atomide.com>
+To: linux-fbdev@vger.kernel.org
 
-Now that the tfp410 driver has been renamed in the code, this patch
-finishes the renaming by renaming the files.
+Supporting runtime PM is very nice, but that's not a reason not to
+implement system suspend/resume properly.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>
+Reported-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- arch/arm/mach-omap2/board-3430sdp.c                |    2 +-
- arch/arm/mach-omap2/board-am3517evm.c              |    2 +-
- arch/arm/mach-omap2/board-cm-t35.c                 |    2 +-
- arch/arm/mach-omap2/board-devkit8000.c             |    2 +-
- arch/arm/mach-omap2/board-igep0020.c               |    2 +-
- arch/arm/mach-omap2/board-omap3beagle.c            |    2 +-
- arch/arm/mach-omap2/board-omap3evm.c               |    2 +-
- arch/arm/mach-omap2/board-omap3stalker.c           |    2 +-
- arch/arm/mach-omap2/board-omap4panda.c             |    2 +-
- arch/arm/mach-omap2/board-overo.c                  |    2 +-
- drivers/video/omap2/displays/Makefile              |    2 +-
- .../omap2/displays/{panel-dvi.c => panel-tfp410.c} |    2 +-
- .../{omap-panel-dvi.h => omap-panel-tfp410.h}      |    0
- 13 files changed, 12 insertions(+), 12 deletions(-)
- rename drivers/video/omap2/displays/{panel-dvi.c => panel-tfp410.c} (99%)
- rename include/video/{omap-panel-dvi.h => omap-panel-tfp410.h} (100%)
+ drivers/video/sh_mobile_meram.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-3430sdp.c b/arch/arm/mach-omap2/board-3430sdp.c
-index 2c153bb..fdcbaaf 100644
---- a/arch/arm/mach-omap2/board-3430sdp.c
-+++ b/arch/arm/mach-omap2/board-3430sdp.c
-@@ -37,7 +37,7 @@
- #include <plat/dma.h>
- #include <plat/gpmc.h>
- #include <video/omapdss.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
+I'll add this patch to my LCDC patch series.
+
+diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
+index d9f7a44..0d9bc2d 100644
+--- a/drivers/video/sh_mobile_meram.c
++++ b/drivers/video/sh_mobile_meram.c
+@@ -539,7 +539,7 @@ static struct sh_mobile_meram_ops sh_mobile_meram_ops = {
+  * Power management
+  */
  
- #include <plat/gpmc-smc91x.h>
+-static int sh_mobile_meram_runtime_suspend(struct device *dev)
++static int sh_mobile_meram_suspend(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
+@@ -563,7 +563,7 @@ static int sh_mobile_meram_runtime_suspend(struct device *dev)
+ 	return 0;
+ }
  
-diff --git a/arch/arm/mach-omap2/board-am3517evm.c b/arch/arm/mach-omap2/board-am3517evm.c
-index c38dac1..fadd25f 100644
---- a/arch/arm/mach-omap2/board-am3517evm.c
-+++ b/arch/arm/mach-omap2/board-am3517evm.c
-@@ -37,7 +37,7 @@
- #include <plat/usb.h>
- #include <video/omapdss.h>
- #include <video/omap-panel-generic-dpi.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
+-static int sh_mobile_meram_runtime_resume(struct device *dev)
++static int sh_mobile_meram_resume(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
+@@ -583,8 +583,10 @@ static int sh_mobile_meram_runtime_resume(struct device *dev)
+ }
  
- #include "mux.h"
- #include "control.h"
-diff --git a/arch/arm/mach-omap2/board-cm-t35.c b/arch/arm/mach-omap2/board-cm-t35.c
-index 94d5167..54d8f0f 100644
---- a/arch/arm/mach-omap2/board-cm-t35.c
-+++ b/arch/arm/mach-omap2/board-cm-t35.c
-@@ -43,7 +43,7 @@
- #include <plat/usb.h>
- #include <video/omapdss.h>
- #include <video/omap-panel-generic-dpi.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
- #include <plat/mcspi.h>
+ static const struct dev_pm_ops sh_mobile_meram_dev_pm_ops = {
+-	.runtime_suspend = sh_mobile_meram_runtime_suspend,
+-	.runtime_resume = sh_mobile_meram_runtime_resume,
++	.suspend = sh_mobile_meram_suspend,
++	.resume = sh_mobile_meram_resume,
++	.runtime_suspend = sh_mobile_meram_suspend,
++	.runtime_resume = sh_mobile_meram_resume,
+ };
  
- #include <mach/hardware.h>
-diff --git a/arch/arm/mach-omap2/board-devkit8000.c b/arch/arm/mach-omap2/board-devkit8000.c
-index d1bead0..677f16e 100644
---- a/arch/arm/mach-omap2/board-devkit8000.c
-+++ b/arch/arm/mach-omap2/board-devkit8000.c
-@@ -47,7 +47,7 @@
- #include <plat/usb.h>
- #include <video/omapdss.h>
- #include <video/omap-panel-generic-dpi.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
- 
- #include <plat/mcspi.h>
- #include <linux/input/matrix_keypad.h>
-diff --git a/arch/arm/mach-omap2/board-igep0020.c b/arch/arm/mach-omap2/board-igep0020.c
-index ae1b157..6e56ccc 100644
---- a/arch/arm/mach-omap2/board-igep0020.c
-+++ b/arch/arm/mach-omap2/board-igep0020.c
-@@ -32,7 +32,7 @@
- #include <plat/gpmc.h>
- #include <plat/usb.h>
- #include <video/omapdss.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
- #include <plat/onenand.h>
- 
- #include "mux.h"
-diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-index 5f858e9..df6acae 100644
---- a/arch/arm/mach-omap2/board-omap3beagle.c
-+++ b/arch/arm/mach-omap2/board-omap3beagle.c
-@@ -42,7 +42,7 @@
- #include <plat/board.h>
- #include "common.h"
- #include <video/omapdss.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
- #include <plat/gpmc.h>
- #include <plat/nand.h>
- #include <plat/usb.h>
-diff --git a/arch/arm/mach-omap2/board-omap3evm.c b/arch/arm/mach-omap2/board-omap3evm.c
-index 840fb99..1a34bee 100644
---- a/arch/arm/mach-omap2/board-omap3evm.c
-+++ b/arch/arm/mach-omap2/board-omap3evm.c
-@@ -46,7 +46,7 @@
- #include "common.h"
- #include <plat/mcspi.h>
- #include <video/omapdss.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
- 
- #include "mux.h"
- #include "sdram-micron-mt46h32m32lf-6.h"
-diff --git a/arch/arm/mach-omap2/board-omap3stalker.c b/arch/arm/mach-omap2/board-omap3stalker.c
-index 8a292cc..d05e7a7 100644
---- a/arch/arm/mach-omap2/board-omap3stalker.c
-+++ b/arch/arm/mach-omap2/board-omap3stalker.c
-@@ -41,7 +41,7 @@
- #include <plat/usb.h>
- #include <video/omapdss.h>
- #include <video/omap-panel-generic-dpi.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
- 
- #include <plat/mcspi.h>
- #include <linux/input/matrix_keypad.h>
-diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
-index 8196d6e..959b4ed 100644
---- a/arch/arm/mach-omap2/board-omap4panda.c
-+++ b/arch/arm/mach-omap2/board-omap4panda.c
-@@ -40,7 +40,7 @@
- #include "common.h"
- #include <plat/usb.h>
- #include <plat/mmc.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
- 
- #include "hsmmc.h"
- #include "control.h"
-diff --git a/arch/arm/mach-omap2/board-overo.c b/arch/arm/mach-omap2/board-overo.c
-index 76e06e4..ceb7187 100644
---- a/arch/arm/mach-omap2/board-overo.c
-+++ b/arch/arm/mach-omap2/board-overo.c
-@@ -46,7 +46,7 @@
- #include "common.h"
- #include <video/omapdss.h>
- #include <video/omap-panel-generic-dpi.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
- #include <plat/gpmc.h>
- #include <mach/hardware.h>
- #include <plat/nand.h>
-diff --git a/drivers/video/omap2/displays/Makefile b/drivers/video/omap2/displays/Makefile
-index 58905ef0..58a5176 100644
---- a/drivers/video/omap2/displays/Makefile
-+++ b/drivers/video/omap2/displays/Makefile
-@@ -1,5 +1,5 @@
- obj-$(CONFIG_PANEL_GENERIC_DPI) += panel-generic-dpi.o
--obj-$(CONFIG_PANEL_TFP410) += panel-dvi.o
-+obj-$(CONFIG_PANEL_TFP410) += panel-tfp410.o
- obj-$(CONFIG_PANEL_LGPHILIPS_LB035Q02) += panel-lgphilips-lb035q02.o
- obj-$(CONFIG_PANEL_SHARP_LS037V7DW01) += panel-sharp-ls037v7dw01.o
- obj-$(CONFIG_PANEL_NEC_NL8048HL11_01B) += panel-nec-nl8048hl11-01b.o
-diff --git a/drivers/video/omap2/displays/panel-dvi.c b/drivers/video/omap2/displays/panel-tfp410.c
-similarity index 99%
-rename from drivers/video/omap2/displays/panel-dvi.c
-rename to drivers/video/omap2/displays/panel-tfp410.c
-index 1ec996d..4b867bf 100644
---- a/drivers/video/omap2/displays/panel-dvi.c
-+++ b/drivers/video/omap2/displays/panel-tfp410.c
-@@ -24,7 +24,7 @@
- #include <linux/gpio.h>
- #include <drm/drm_edid.h>
- 
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
- 
- static const struct omap_video_timings tfp410_default_timings = {
- 	.x_res		= 640,
-diff --git a/include/video/omap-panel-dvi.h b/include/video/omap-panel-tfp410.h
-similarity index 100%
-rename from include/video/omap-panel-dvi.h
-rename to include/video/omap-panel-tfp410.h
+ /* -----------------------------------------------------------------------------
 -- 
-1.7.4.1
+Regards,
+
+Laurent Pinchart
 

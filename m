@@ -1,60 +1,42 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Sat, 10 Mar 2012 07:29:24 +0000
-Subject: Re: [PATCH 7/7] OMAPDSS: HDMI: hot plug detect fix
-Message-Id: <1331364564.1623.3.camel@lappy>
+From: Bernie Thompson <bernie@plugable.com>
+Date: Mon, 05 Mar 2012 02:33:10 +0000
+Subject: [GIT PULL] udlfb patches for fbdev-next
+Message-Id: <CAO1w=s86ykpLJC8KkTbUn1qhvO52CJnzCKz5+rhS7mQtnwR4_w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1330604795-29156-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1330604795-29156-8-git-send-email-tomi.valkeinen@ti.com>
-	 <20120307200146.GA26451@kroah.com> <1331192113.2354.2.camel@deskari>
-	 <20120308152949.GB5277@kroah.com>
-In-Reply-To: <20120308152949.GB5277@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: stable@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Rob Clark <rob@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-On Thu, 2012-03-08 at 07:29 -0800, Greg KH wrote:
-> On Thu, Mar 08, 2012 at 09:35:13AM +0200, Tomi Valkeinen wrote:
-> > On Wed, 2012-03-07 at 12:01 -0800, Greg KH wrote:
-> > > On Thu, Mar 01, 2012 at 02:26:35PM +0200, Tomi Valkeinen wrote:
-> > > > From: Rob Clark <rob@ti.com>
-> > > > 
-> > > > The "OMAPDSS: HDMI: PHY burnout fix" commit switched the HDMI driver
-> > > > over to using a GPIO for plug detect.  Unfortunately the ->detect()
-> > > > method was not also updated, causing HDMI to no longer work for the
-> > > > omapdrm driver (because it would actually check if a connection was
-> > > > detected before attempting to enable display).
-> > > > 
-> > > > Signed-off-by: Rob Clark <rob@ti.com>
-> > > > Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> > > 
-> > > You forgot to tell me what the git commit id is for this patch (it's
-> > > ca888a7958b3d808e4efd08ceff88913f4212c69, right?)
-> > 
-> > Yes, that's the one. It wasn't in Linus's tree yet, only in fbdev tree,
-> > so I wasn't sure what the commit id is.
-> 
-> Then you should not have sent it to me, as if I were to take it then, I
-> could not have :(
+Hi Florian,
 
-Oh, ok. I thought the "patch-must-be-in-mainline"-rule was not a totally
-strict one, so I decided to include it in this case as the patch was a
-rather trivial one and already in the fbdev tree (I mentioned it in the
-intro mail).
+These are udlfb patches for fbdev-next (assume 3.4; compatible with 3.3)
 
-I guess I got lucky and the patch got into mainline before you took the
-patches.
+Testing use of github to try to make patch submission easier.  1st
+time. Be kind.
+Not yet on git 1.7.9 for signed requests. Happy to send github pull requests.
 
-> > > And why isn't this needed for the 3.0 kernel as well?
-> > 
-> > The detect() function is not present in 3.0, so there was nothing to
-> > break.
-> 
-> Ok, so everything I've queued up is all that is needed, right?
+All 5 patches are independent of each other.   Feedback welcome.
 
-Yes, looks correct. Thanks!
+The following changes since commit 327e27681c27d3ed5ea470ec483904d1a318cb7f:
 
- Tomi
+  video: s3c-fb: use devm_request_irq() (2012-02-24 00:50:07 +0000)
 
+are available in the git repository at:
+  git@github.com:bernieplug/linux-2.6.git fbdev-next
 
+Ben Collins (2):
+      udlfb: Make sure to get correct endian keys from vendor descriptor
+      udlfb: Add module_param to allow forcing pixel_limit
+
+Bernie Thompson (2):
+      udlfb: add maintainer
+      udlfb: fix hcd_buffer_free panic on unplug/replug
+
+Martin Decky (1):
+      udlfb: Improve debugging printouts with refresh rate
+
+ MAINTAINERS           |    9 +++
+ drivers/video/udlfb.c |  163 ++++++++++++++++++++++++++++--------------------
+ include/video/udlfb.h |    1 +
+ 3 files changed, 105 insertions(+), 68 deletions(-)

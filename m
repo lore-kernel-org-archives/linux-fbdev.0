@@ -1,63 +1,67 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Wed, 21 Mar 2012 09:29:50 +0000
-Subject: Re: [PATCH v2] x86: export 'pcibios_enabled' as GPL
-Message-Id: <20120321092950.7fc07d84@pyramind.ukuu.org.uk>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Tue, 06 Mar 2012 01:23:29 +0000
+Subject: [PATCH v3] fbdev: remove dependency of FB_SH_MOBILE_MERAM from FB_SH_MOBILE_LCDC
+Message-Id: <87d38qwmi9.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120313204114.e160849af7dbe5a4b4e5c0ad@canb.auug.org.au>
-	<4F5FAE63.3090908@xenotime.net>
-	<20120319003044.GA3744@udknight>
-	<4F6685ED.7040000@xenotime.net>
-	<20120321043721.GA927@udknight>
-In-Reply-To: <20120321043721.GA927@udknight>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wang YanQing <udknight@gmail.com>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Michal Januszewski <spock@gentoo.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, x86@kernel.org, Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+To: linux-fbdev@vger.kernel.org
 
-On Wed, 21 Mar 2012 12:37:21 +0800
-Wang YanQing <udknight@gmail.com> wrote:
+MERAM can be used for other IP blocks as well in the future.
+It doesn't necessarily mean that the MERAM driver depends on the LCDC.
+This patch corrects dependency.
 
-> On Sun, Mar 18, 2012 at 06:03:41PM -0700, Randy Dunlap wrote:
-> > From: Randy Dunlap <rdunlap@xenotime.net>
-> > 
-> > Export 'pcibios_enabled' so that when uvesafb is built as a
-> > loadable module (on X86_32), the build will succeed.
-> > 
-> > ERROR: "pcibios_enabled" [drivers/video/uvesafb.ko] undefined!
-> > 
-> > Patch v2 uses EXPORT_SYMBOL_GPL() as requested.
-> > 
-> > Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
-> > Cc:	Michal Januszewski <spock@gentoo.org>
-> > Cc:	Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-> > Cc:	linux-fbdev@vger.kernel.org
-> > Cc:	x86@kernel.org
-> > ---
-> >  arch/x86/pci/pcbios.c |    1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > --- linux-next-20120313.orig/arch/x86/pci/pcbios.c
-> > +++ linux-next-20120313/arch/x86/pci/pcbios.c
-> > @@ -27,6 +27,7 @@
-> >  #define PCIBIOS_HW_TYPE2_SPEC		0x20
-> >  
-> >  int pcibios_enabled;
-> > +EXPORT_SYMBOL_GPL(pcibios_enabled);
-> >  
-> >  /* According to the BIOS specification at:
-> >   * http://members.datafast.net.au/dft0802/specs/bios21.pdf, we could
-> Acked-by: Wang YanQing <udknight@gmail.com>
+Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+---
+v2 -> v3
 
-NAKked again by Alan Cox <alan@linux.intel.com>
+- move config FB_SH_MOBILE_MERAM out of "choice"
 
-The fb code shouldn't be playing guessing games with thsi variable.
-I've pointed out both how to check if NX is enabled and how to set pages
-NX/non-NX.
+ drivers/video/Kconfig |   23 +++++++++++------------
+ 1 files changed, 11 insertions(+), 12 deletions(-)
 
-Even if you wanted to check the pci bios state we should export a helper
-method.
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 8951cbd..36e8b06 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2013,18 +2013,6 @@ config FB_SH_MOBILE_HDMI
+ 	---help---
+ 	  Driver for the on-chip SH-Mobile HDMI controller.
+ 
+-config FB_SH_MOBILE_MERAM
+-	tristate "SuperH Mobile MERAM read ahead support for LCDC"
+-	depends on FB_SH_MOBILE_LCDC
+-	default y
+-	---help---
+-	  Enable MERAM support for the SH-Mobile LCD controller.
+-
+-	  This will allow for caching of the framebuffer to provide more
+-	  reliable access under heavy main memory bus traffic situations.
+-	  Up to 4 memory channels can be configured, allowing 4 RGB or
+-	  2 YCbCr framebuffers to be configured.
+-
+ config FB_TMIO
+ 	tristate "Toshiba Mobile IO FrameBuffer support"
+ 	depends on FB && MFD_CORE
+@@ -2332,6 +2320,17 @@ config FB_MB862XX_LIME
+ 
+ endchoice
+ 
++config FB_SH_MOBILE_MERAM
++	tristate "SuperH Mobile MERAM read ahead support"
++	depends on (SUPERH || ARCH_SHMOBILE)
++	---help---
++	  Enable MERAM support for the SuperH controller.
++
++	  This will allow for caching of the framebuffer to provide more
++	  reliable access under heavy main memory bus traffic situations.
++	  Up to 4 memory channels can be configured, allowing 4 RGB or
++	  2 YCbCr framebuffers to be configured.
++
+ config FB_MB862XX_I2C
+ 	bool "Support I2C bus on MB862XX GDC"
+ 	depends on FB_MB862XX && I2C
+-- 
+1.7.5.4
 
-So NAK.
-
-Alan

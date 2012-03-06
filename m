@@ -1,70 +1,47 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 21 Mar 2012 12:49:07 +0000
-Subject: Re: [PATCH] OMAP: DSS2: Remove suspicous and unused TAAL regulator API usage
-Message-Id: <1332334147.2236.11.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-A2LF/KjG3I8b+yQJOW+O"
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Tue, 06 Mar 2012 00:29:56 +0000
+Subject: [PATCH v2] fbdev: remove dependency of FB_SH_MOBILE_MERAM from FB_SH_MOBILE_LCDC
+Message-Id: <87fwdmwozi.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1332168646-4391-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1332168646-4391-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
+MERAM can be used for other IP blocks as well in the future.
+It doesn't necessarily mean that the MERAM driver depends on the LCDC.
+This patch corrects dependency.
 
---=-A2LF/KjG3I8b+yQJOW+O
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+---
+This patch is v2 of [PATCH] fbdev: remove "default y" from FB_SH_MOBILE_MERAM
 
-On Mon, 2012-03-19 at 14:50 +0000, Mark Brown wrote:
-> The TAAL driver contains some regulator support which is currently unused
-> (the code is there but the one panel supported by the driver doesn't have
-> any regulators provided). This code mostly looks like an open coded
-> version of the regulator core bulk API.
->=20
-> The only additional feature is that a voltage range can be set once when
-> the device is opened, though this is never varied at runtime. The general
-> expectation is that if the device is not actively managing the voltage of
-> the device (eg, doing DVFS) then any configuration will be done using the
-> constraints rather than by drivers, saving them code and ensuring that
-> they work well with systems where the voltage is not configurable.
->=20
-> If systems are added needing regulator support this can be added back in,
-> though it should be based on core features rather than open coding things=
-.
->=20
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+v1 -> v2
+- corrects dependency
+- modify transfate and help too
 
-Looks fine to me, I'll apply to omapdss tree.
+ drivers/video/Kconfig |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-We had multiple panels in Nokia, almost the same but with slightly
-different regulator needs, so we wrote the code removed in this patch.
-But as it seems there are no more linux devices coming from Nokia, let's
-just remove the regulator code.
-
- Tomi
-
-
---=-A2LF/KjG3I8b+yQJOW+O
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJPac5DAAoJEPo9qoy8lh71A2kP/Av5OTAKYZFocDrqTVckDM46
-QV728yOXeAGwLdfKF9UbQM4iOBiFXmSyq7bXkcZPunsGvSy6SkBptwzE8ShfcIaF
-n1GMMntOrLt5hbmRX4DUC0eGhs9heG0P5zk49/VC7XdcB87rSRm0ZylJ/Fy5dONX
-R2OUIfScyLVRsvJCCnCSKhmwBLswaKNH/PLFKkTGF5hPIwjEI0sd5jvWnxx9GLPd
-xmFkqHv6EAMPcNMJy1aQePcc7E4aEjD/pZPqcZLfos2Gm+ZDAr0cjpZfjGYOFi1A
-E0Hpx1wmzTVlLoswOBMoRzz78bBoC+Ts6yvYup9h8wXkmP4TDz3zBmDAFaqLTjOI
-XVsOph5wDqrWv+vl1WcL3xL54D3TmKTzlZJV6KKX9Uk+lCPiGjYIsJNaIn/csJpM
-lqNjFDZb+dCvbBW2U3UFqv/uYIsbK+iupPivQ5Ly8K1hoRlZu0e/bLrG/CL/GJrq
-X9teCRtPm/M3zPyOzSrCMg4tm/O7S4TAArg/awo+66TZQj+OrQvxkpZmGmBQIRhA
-dB6ocP36QLwYyeDA05q2ITnJgyPKOpXTT4u2i+XMKfdMA4357W4w4g1njStzhyxG
-vI3J2TCByMzP+Rew8YDFrhlNerdzFJZfT9xGikgkxkhFXwEJFOpN9sql1LexgzKl
-HNjQbzuPLuR8QQLSDB5G
-=QGa2
------END PGP SIGNATURE-----
-
---=-A2LF/KjG3I8b+yQJOW+O--
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 6ca0c40..11594ea 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2002,11 +2002,10 @@ config FB_SH_MOBILE_HDMI
+ 	  Driver for the on-chip SH-Mobile HDMI controller.
+ 
+ config FB_SH_MOBILE_MERAM
+-	tristate "SuperH Mobile MERAM read ahead support for LCDC"
+-	depends on FB_SH_MOBILE_LCDC
+-	default y
++	tristate "SuperH Mobile MERAM read ahead support"
++	depends on (SUPERH || ARCH_SHMOBILE)
+ 	---help---
+-	  Enable MERAM support for the SH-Mobile LCD controller.
++	  Enable MERAM support for the SuperH controller.
+ 
+ 	  This will allow for caching of the framebuffer to provide more
+ 	  reliable access under heavy main memory bus traffic situations.
+-- 
+1.7.5.4
 

@@ -1,52 +1,45 @@
-From: Inki Dae <inki.dae@samsung.com>
-Date: Mon, 05 Mar 2012 01:20:02 +0000
-Subject: RE: [patch] backlight: s6e63m0: corruption storing gamma mode
-Message-Id: <001c01ccfa6e$170a0160$451e0420$%dae@samsung.com>
+From: Donghwa Lee <dh09.lee@samsung.com>
+Date: Tue, 06 Mar 2012 02:44:58 +0000
+Subject: [PATCH] MAINTAINERS: add entry for exynos mipi display drivers
+Message-Id: <4F557A2A.2080108@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120302065620.GC24508@elgon.mountain>
-In-Reply-To: <20120302065620.GC24508@elgon.mountain>
+References: <4F2667EE.2090902@samsung.com>
+In-Reply-To: <4F2667EE.2090902@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Acked-by: Inki Dae <inki.dae@samsung.com>
+Hi, I'd like to add Inki Dae, Donghwa Lee and Kyungmin Park as 
+maintainers who developers for exynos mipi display drivers for
+video/driver/exynos/exynos_mipi* and include/video/exynos_mipi*.
 
-Thanks.
+Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
+Signed-off-by: Inki Dae <inki.dae@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ MAINTAINERS |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-> -----Original Message-----
-> From: linux-fbdev-owner@vger.kernel.org [mailto:linux-fbdev-
-> owner@vger.kernel.org] On Behalf Of Dan Carpenter
-> Sent: Friday, March 02, 2012 3:56 PM
-> To: Richard Purdie; InKi Dae
-> Cc: Florian Tobias Schandinat; linux-fbdev@vger.kernel.org; kernel-
-> janitors@vger.kernel.org
-> Subject: [patch] backlight: s6e63m0: corruption storing gamma mode
-> 
-> strict_strtoul() writes a long but ->gamma_mode only has space to store
-> an int, so on 64 bit systems we end up scribbling over
-> ->gamma_table_count as well.  I've changed it to use kstrtouint()
-> instead.
-> 
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> 
-> diff --git a/drivers/video/backlight/s6e63m0.c
-> b/drivers/video/backlight/s6e63m0.c
-> index 9b0092e..e264f55 100644
-> --- a/drivers/video/backlight/s6e63m0.c
-> +++ b/drivers/video/backlight/s6e63m0.c
-> @@ -690,7 +690,7 @@ static ssize_t s6e63m0_sysfs_store_gamma_mode(struct
-> device *dev,
->  	struct backlight_device *bd = NULL;
->  	int brightness, rc;
-> 
-> -	rc = strict_strtoul(buf, 0, (unsigned long *)&lcd->gamma_mode);
-> +	rc = kstrtouint(buf, 0, &lcd->gamma_mode);
->  	if (rc < 0)
->  		return rc;
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+diff --git a/MAINTAINERS b/MAINTAINERS
+index b087b3bc..eb5fbcb 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2351,6 +2351,15 @@ S:	Supported
+ F:	drivers/gpu/drm/exynos
+ F:	include/drm/exynos*
+ 
++EXYNOS MIPI DISPLAY DRIVERS
++M:	Inki Dae <inki.dae@samsung.com>
++M:	Donghwa Lee <dh09.lee@samsung.com>
++M:	Kyungmin Park <kyungmin.park@samsung.com>
++L:	linux-fbdev@vger.kernel.org
++S:	Maintained
++F:	drivers/video/exynos/exynos_mipi*
++F:	include/video/exynos_mipi*
++
+ DSCC4 DRIVER
+ M:	Francois Romieu <romieu@fr.zoreil.com>
+ L:	netdev@vger.kernel.org
+-- 
+1.7.4.1

@@ -1,131 +1,90 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:07:26 +0000
-Subject: [PATCH v2 13/57] fbdev: sh_mipi_dsi: Don't hook up into board_cfg display operations
-Message-Id: <1330614490-14149-14-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 07 Mar 2012 12:44:39 +0000
+Subject: [PATCH 10/21] OMAPDSS: use platform_driver_probe for core/dispc/dss
+Message-Id: <1331124290-6285-11-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The display_on/off operations are now accessed through the
-sh_mobile_lcdc_entity operations.
+The platform devices for omapdss, dss and dispc drivers are always
+present, so we can use platform_driver_probe instead of
+platform_driver_register.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/sh_mipi_dsi.c |   56 ++++---------------------------------------
- 1 files changed, 5 insertions(+), 51 deletions(-)
+ drivers/video/omap2/dss/core.c  |    3 +--
+ drivers/video/omap2/dss/dispc.c |    3 +--
+ drivers/video/omap2/dss/dss.c   |    3 +--
+ 3 files changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
-index 58744fe..ad09a05 100644
---- a/drivers/video/sh_mipi_dsi.c
-+++ b/drivers/video/sh_mipi_dsi.c
-@@ -58,10 +58,6 @@ struct sh_mipi {
- 	void __iomem	*linkbase;
- 	struct clk	*dsit_clk;
- 	struct platform_device *pdev;
--
--	void	*next_board_data;
--	void	(*next_display_on)(void *board_data, struct fb_info *info);
--	void	(*next_display_off)(void *board_data);
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 3efd473..80fbfd7 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -341,7 +341,6 @@ static int omap_dss_resume(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver omap_dss_driver = {
+-	.probe          = omap_dss_probe,
+ 	.remove         = omap_dss_remove,
+ 	.shutdown	= omap_dss_shutdown,
+ 	.suspend	= omap_dss_suspend,
+@@ -576,7 +575,7 @@ static int __init omap_dss_init(void)
+ 	if (r)
+ 		return r;
+ 
+-	r = platform_driver_register(&omap_dss_driver);
++	r = platform_driver_probe(&omap_dss_driver, omap_dss_probe);
+ 	if (r) {
+ 		omap_dss_bus_unregister();
+ 		return r;
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 5985c3c..c71d4c5 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -3431,7 +3431,6 @@ static const struct dev_pm_ops dispc_pm_ops = {
  };
  
- #define to_sh_mipi(e)	container_of(e, struct sh_mipi, entity)
-@@ -398,8 +394,8 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
- 	return 0;
- }
+ static struct platform_driver omap_dispchw_driver = {
+-	.probe          = omap_dispchw_probe,
+ 	.remove         = omap_dispchw_remove,
+ 	.driver         = {
+ 		.name   = "omapdss_dispc",
+@@ -3442,7 +3441,7 @@ static struct platform_driver omap_dispchw_driver = {
  
--static int __mipi_display_on(struct sh_mobile_lcdc_entity *entity,
--			     struct fb_info *info)
-+static int mipi_display_on(struct sh_mobile_lcdc_entity *entity,
-+			   struct fb_info *info)
+ int dispc_init_platform_driver(void)
  {
- 	struct sh_mipi *mipi = to_sh_mipi(entity);
- 	struct sh_mipi_dsi_info *pdata = mipi->pdev->dev.platform_data;
-@@ -427,21 +423,7 @@ mipi_display_on_fail2:
- 	return ret;
+-	return platform_driver_register(&omap_dispchw_driver);
++	return platform_driver_probe(&omap_dispchw_driver, omap_dispchw_probe);
  }
  
--static void mipi_display_on(void *arg, struct fb_info *info)
--{
--	struct sh_mobile_lcdc_entity *entity = arg;
--	struct sh_mipi *mipi = to_sh_mipi(entity);
--	int ret;
--
--	ret = __mipi_display_on(entity, info);
--	if (ret < 0)
--		return;
--
--	if (mipi->next_display_on)
--		mipi->next_display_on(mipi->next_board_data, info);
--}
--
--static void __mipi_display_off(struct sh_mobile_lcdc_entity *entity)
-+static void mipi_display_off(struct sh_mobile_lcdc_entity *entity)
- {
- 	struct sh_mipi *mipi = to_sh_mipi(entity);
- 	struct sh_mipi_dsi_info *pdata = mipi->pdev->dev.platform_data;
-@@ -453,20 +435,9 @@ static void __mipi_display_off(struct sh_mobile_lcdc_entity *entity)
- 	pm_runtime_put_sync(&mipi->pdev->dev);
- }
- 
--static void mipi_display_off(void *arg)
--{
--	struct sh_mobile_lcdc_entity *entity = arg;
--	struct sh_mipi *mipi = to_sh_mipi(entity);
--
--	if (mipi->next_display_off)
--		mipi->next_display_off(mipi->next_board_data);
--
--	__mipi_display_off(entity);
--}
--
- static const struct sh_mobile_lcdc_entity_ops mipi_ops = {
--	.display_on = __mipi_display_on,
--	.display_off = __mipi_display_off,
-+	.display_on = mipi_display_on,
-+	.display_off = mipi_display_off,
+ void dispc_uninit_platform_driver(void)
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 7d3facc..34cc84f 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -841,7 +841,6 @@ static const struct dev_pm_ops dss_pm_ops = {
  };
  
- static int __init sh_mipi_probe(struct platform_device *pdev)
-@@ -559,17 +530,6 @@ static int __init sh_mipi_probe(struct platform_device *pdev)
- 	mutex_unlock(&array_lock);
- 	platform_set_drvdata(pdev, &mipi->entity);
+ static struct platform_driver omap_dsshw_driver = {
+-	.probe          = omap_dsshw_probe,
+ 	.remove         = omap_dsshw_remove,
+ 	.driver         = {
+ 		.name   = "omapdss_dss",
+@@ -852,7 +851,7 @@ static struct platform_driver omap_dsshw_driver = {
  
--	/* Save original LCDC callbacks */
--	mipi->next_board_data = pdata->lcd_chan->board_cfg.board_data;
--	mipi->next_display_on = pdata->lcd_chan->board_cfg.display_on;
--	mipi->next_display_off = pdata->lcd_chan->board_cfg.display_off;
--
--	/* Set up LCDC callbacks */
--	pdata->lcd_chan->board_cfg.board_data = &mipi->entity;
--	pdata->lcd_chan->board_cfg.display_on = mipi_display_on;
--	pdata->lcd_chan->board_cfg.display_off = mipi_display_off;
--	pdata->lcd_chan->board_cfg.owner = THIS_MODULE;
--
- 	return 0;
- 
- eclkton:
-@@ -594,7 +554,6 @@ efindslot:
- 
- static int __exit sh_mipi_remove(struct platform_device *pdev)
+ int dss_init_platform_driver(void)
  {
--	struct sh_mipi_dsi_info *pdata = pdev->dev.platform_data;
- 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	struct resource *res2 = platform_get_resource(pdev, IORESOURCE_MEM, 1);
- 	struct sh_mipi *mipi = to_sh_mipi(platform_get_drvdata(pdev));
-@@ -617,11 +576,6 @@ static int __exit sh_mipi_remove(struct platform_device *pdev)
- 	if (ret < 0)
- 		return ret;
+-	return platform_driver_register(&omap_dsshw_driver);
++	return platform_driver_probe(&omap_dsshw_driver, omap_dsshw_probe);
+ }
  
--	pdata->lcd_chan->board_cfg.owner = NULL;
--	pdata->lcd_chan->board_cfg.display_on = NULL;
--	pdata->lcd_chan->board_cfg.display_off = NULL;
--	pdata->lcd_chan->board_cfg.board_data = NULL;
--
- 	pm_runtime_disable(&pdev->dev);
- 	clk_disable(mipi->dsit_clk);
- 	clk_put(mipi->dsit_clk);
+ void dss_uninit_platform_driver(void)
 -- 
-1.7.3.4
+1.7.4.1
 

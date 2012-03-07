@@ -1,127 +1,100 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:07:47 +0000
-Subject: [PATCH v2 34/57] fbdev: sh_mobile_lcdc: Store the format in struct sh_mobile_lcdc_chan
-Message-Id: <1330614490-14149-35-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 07 Mar 2012 12:44:36 +0000
+Subject: [PATCH 07/21] OMAPDSS: Taal: move reset gpio handling to taal driver
+Message-Id: <1331124290-6285-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Store the active format in the channel structure, and use it instead of
-parsing info->var all over the place when the format is needed.
+The reset GPIO for Taal panel driver is currently requested in the
+4430sdp board file. This patch moves the gpio request/free into the Taal
+driver, where it should be.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |   21 ++++++++++-----------
- drivers/video/sh_mobile_lcdcfb.h |    4 +++-
- 2 files changed, 13 insertions(+), 12 deletions(-)
+ arch/arm/mach-omap2/board-4430sdp.c       |   16 ----------------
+ drivers/video/omap2/displays/panel-taal.c |   15 +++++++++++++++
+ 2 files changed, 15 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index c66f0f4..6d8c30b 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -728,20 +728,15 @@ static void __sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+index 4e90715..3a05173 100644
+--- a/arch/arm/mach-omap2/board-4430sdp.c
++++ b/arch/arm/mach-omap2/board-4430sdp.c
+@@ -724,21 +724,6 @@ static struct omap_dss_device sdp4430_lcd2_device = {
+ 	.channel		= OMAP_DSS_CHANNEL_LCD2,
+ };
  
- 	/* Setup geometry, format, frame buffer memory and operation mode. */
- 	for (k = 0; k < ARRAY_SIZE(priv->ch); k++) {
--		const struct sh_mobile_lcdc_format_info *format;
--		u32 fourcc;
+-static void sdp4430_lcd_init(void)
+-{
+-	int r;
 -
- 		ch = &priv->ch[k];
- 		if (!ch->enabled)
- 			continue;
+-	r = gpio_request_one(dsi1_panel.reset_gpio, GPIOF_DIR_OUT,
+-		"lcd1_reset_gpio");
+-	if (r)
+-		pr_err("%s: Could not get lcd1_reset_gpio\n", __func__);
+-
+-	r = gpio_request_one(dsi2_panel.reset_gpio, GPIOF_DIR_OUT,
+-		"lcd2_reset_gpio");
+-	if (r)
+-		pr_err("%s: Could not get lcd2_reset_gpio\n", __func__);
+-}
+-
+ static struct omap_dss_hdmi_data sdp4430_hdmi_data = {
+ 	.hpd_gpio = HDMI_GPIO_HPD,
+ };
+@@ -824,7 +809,6 @@ static void __init omap_4430sdp_display_init(void)
+ 	if (r)
+ 		pr_err("%s: Could not get display_sel GPIO\n", __func__);
  
- 		sh_mobile_lcdc_geometry(ch);
+-	sdp4430_lcd_init();
+ 	sdp4430_picodlp_init();
+ 	omap_display_init(&sdp4430_dss_data);
+ 	/*
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 00c5c61..6e240fe 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -993,6 +993,15 @@ static int taal_probe(struct omap_dss_device *dssdev)
  
--		fourcc = sh_mobile_format_fourcc(&ch->info->var);
--		format = sh_mobile_format_info(fourcc);
--		tmp = format->lddfr;
-+		tmp = ch->format->lddfr;
+ 	dev_set_drvdata(&dssdev->dev, td);
  
--		if (format->yuv) {
-+		if (ch->format->yuv) {
- 			switch (ch->info->var.colorspace) {
- 			case V4L2_COLORSPACE_REC709:
- 				tmp |= LDDFR_CF1;
-@@ -755,7 +750,7 @@ static void __sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 		lcdc_write_chan(ch, LDDFR, tmp);
- 		lcdc_write_chan(ch, LDMLSR, ch->pitch);
- 		lcdc_write_chan(ch, LDSA1R, ch->base_addr_y);
--		if (format->yuv)
-+		if (ch->format->yuv)
- 			lcdc_write_chan(ch, LDSA2R, ch->base_addr_c);
- 
- 		/* When using deferred I/O mode, configure the LCDC for one-shot
-@@ -772,7 +767,7 @@ static void __sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 	}
- 
- 	/* Word and long word swap. */
--	switch (sh_mobile_format_fourcc(&priv->ch[0].info->var)) {
-+	switch (priv->ch[0].format->fourcc) {
- 	case V4L2_PIX_FMT_RGB565:
- 	case V4L2_PIX_FMT_NV21:
- 	case V4L2_PIX_FMT_NV61:
-@@ -859,7 +854,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 			ch->meram_enabled = 0;
- 		}
- 
--		switch (sh_mobile_format_fourcc(&ch->info->var)) {
-+		switch (ch->format->fourcc) {
- 		case V4L2_PIX_FMT_NV12:
- 		case V4L2_PIX_FMT_NV21:
- 		case V4L2_PIX_FMT_NV16:
-@@ -1065,7 +1060,7 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
- 			    + info->var.xres * info->var.yres_virtual
- 			    + c_offset;
- 		/* Set x offset */
--		if (sh_mobile_format_fourcc(&info->var) = V4L2_PIX_FMT_NV24)
-+		if (ch->format->fourcc = V4L2_PIX_FMT_NV24)
- 			base_addr_c += 2 * var->xoffset;
- 		else
- 			base_addr_c += var->xoffset;
-@@ -1353,6 +1348,8 @@ static int sh_mobile_set_par(struct fb_info *info)
- 		info->fix.line_length = info->var.xres
- 				      * info->var.bits_per_pixel / 8;
- 
-+	ch->format = sh_mobile_format_info(sh_mobile_format_fourcc(&info->var));
++	if (gpio_is_valid(panel_data->reset_gpio)) {
++		r = gpio_request_one(panel_data->reset_gpio, GPIOF_OUT_INIT_LOW,
++				"taal rst");
++		if (r) {
++			dev_err(&dssdev->dev, "failed to request reset gpio\n");
++			goto err_rst_gpio;
++		}
++	}
 +
- 	ret = sh_mobile_lcdc_start(ch->lcdc);
- 	if (ret < 0) {
- 		dev_err(info->dev, "%s: unable to restart LCDC\n", __func__);
-@@ -1716,6 +1713,8 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
- 		return -EINVAL;
- 	}
+ 	taal_hw_reset(dssdev);
  
-+	ch->format = format;
+ 	if (panel_data->use_dsi_backlight) {
+@@ -1075,6 +1084,9 @@ err_gpio:
+ 	if (bldev != NULL)
+ 		backlight_device_unregister(bldev);
+ err_bl:
++	if (gpio_is_valid(panel_data->reset_gpio))
++		gpio_free(panel_data->reset_gpio);
++err_rst_gpio:
+ 	destroy_workqueue(td->workqueue);
+ err_wq:
+ 	free_regulators(panel_config->regulators, panel_config->num_regulators);
+@@ -1115,6 +1127,9 @@ static void __exit taal_remove(struct omap_dss_device *dssdev)
+ 	/* reset, to be sure that the panel is in a valid state */
+ 	taal_hw_reset(dssdev);
+ 
++	if (gpio_is_valid(panel_data->reset_gpio))
++		gpio_free(panel_data->reset_gpio);
 +
- 	/* Allocate the frame buffer device. */
- 	ch->info = framebuffer_alloc(0, priv->dev);
- 	if (!ch->info) {
-diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
-index 8e0d009..5ef7559 100644
---- a/drivers/video/sh_mobile_lcdcfb.h
-+++ b/drivers/video/sh_mobile_lcdcfb.h
-@@ -17,9 +17,10 @@ enum { LDDCKPAT1R, LDDCKPAT2R, LDMT1R, LDMT2R, LDMT3R, LDDFR, LDSM1R,
- struct backlight_device;
- struct fb_info;
- struct module;
-+struct sh_mobile_lcdc_chan;
- struct sh_mobile_lcdc_entity;
-+struct sh_mobile_lcdc_format_info;
- struct sh_mobile_lcdc_priv;
--struct sh_mobile_lcdc_chan;
+ 	free_regulators(td->panel_config->regulators,
+ 			td->panel_config->num_regulators);
  
- #define SH_MOBILE_LCDC_DISPLAY_DISCONNECTED	0
- #define SH_MOBILE_LCDC_DISPLAY_CONNECTED	1
-@@ -70,6 +71,7 @@ struct sh_mobile_lcdc_chan {
- 	wait_queue_head_t frame_end_wait;
- 	struct completion vsync_completion;
- 
-+	const struct sh_mobile_lcdc_format_info *format;
- 	unsigned long base_addr_y;
- 	unsigned long base_addr_c;
- 	unsigned int pitch;
 -- 
-1.7.3.4
+1.7.4.1
 

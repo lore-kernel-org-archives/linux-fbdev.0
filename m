@@ -1,314 +1,347 @@
-From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
-Date: Wed, 28 Mar 2012 17:36:14 +0000
-Subject: [PATCH 4/4] video: auo_k190x: add driver for the AUO-K1901 variant
-Message-Id: <201203281936.14643.heiko@sntech.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 07 Mar 2012 12:44:46 +0000
+Subject: [PATCH 17/21] OMAPDSS: move the creation of debugfs files
+Message-Id: <1331124290-6285-18-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This controller not only supports higher resolutions than the K1900
-but concurrent updates as well. This results in a generally higher
-display speed.
+Instead of having an ugly #ifdef mess in the core.c for creating debugfs
+files, add a dss_debugfs_create_file() function that the dss drivers
+can use to create the debugfs files.
 
-Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/Kconfig       |    9 ++
- drivers/video/Makefile      |    1 +
- drivers/video/auo_k1901fb.c |  251 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 261 insertions(+), 0 deletions(-)
- create mode 100644 drivers/video/auo_k1901fb.c
+ drivers/video/omap2/dss/core.c  |   46 +++++++++++++++-----------------------
+ drivers/video/omap2/dss/dispc.c |    7 +++++-
+ drivers/video/omap2/dss/dsi.c   |   42 +++++++++--------------------------
+ drivers/video/omap2/dss/dss.c   |    4 ++-
+ drivers/video/omap2/dss/dss.h   |   11 +--------
+ drivers/video/omap2/dss/hdmi.c  |    4 ++-
+ drivers/video/omap2/dss/rfbi.c  |    4 ++-
+ drivers/video/omap2/dss/venc.c  |    4 ++-
+ 8 files changed, 48 insertions(+), 74 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index d9d1e44..28f7ca3 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2401,6 +2401,15 @@ config FB_AUO_K1900
- 	  This controller can drive Sipix epaper displays but can only do
- 	  serial updates, reducing the number of possible frames per second.
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index ac4f2cb..a744474 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -156,34 +156,6 @@ static int dss_initialize_debugfs(void)
+ 	debugfs_create_file("clk", S_IRUGO, dss_debugfs_dir,
+ 			&dss_debug_dump_clocks, &dss_debug_fops);
  
-+config FB_AUO_K1901
-+	tristate "AUO K1901 controller support for Sipix displays"
-+	depends on FB
-+	select FB_AUO_K190X
-+	help
-+	  This driver implements support for the AUO K1901 epd-controller.
-+	  This controller can drive Sipix epaper displays and supports
-+	  concurrent updates, making higher frames per second possible.
+-#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
+-	debugfs_create_file("dispc_irq", S_IRUGO, dss_debugfs_dir,
+-			&dispc_dump_irqs, &dss_debug_fops);
+-#endif
+-
+-#if defined(CONFIG_OMAP2_DSS_DSI) && defined(CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS)
+-	dsi_create_debugfs_files_irq(dss_debugfs_dir, &dss_debug_fops);
+-#endif
+-
+-	debugfs_create_file("dss", S_IRUGO, dss_debugfs_dir,
+-			&dss_dump_regs, &dss_debug_fops);
+-	debugfs_create_file("dispc", S_IRUGO, dss_debugfs_dir,
+-			&dispc_dump_regs, &dss_debug_fops);
+-#ifdef CONFIG_OMAP2_DSS_RFBI
+-	debugfs_create_file("rfbi", S_IRUGO, dss_debugfs_dir,
+-			&rfbi_dump_regs, &dss_debug_fops);
+-#endif
+-#ifdef CONFIG_OMAP2_DSS_DSI
+-	dsi_create_debugfs_files_reg(dss_debugfs_dir, &dss_debug_fops);
+-#endif
+-#ifdef CONFIG_OMAP2_DSS_VENC
+-	debugfs_create_file("venc", S_IRUGO, dss_debugfs_dir,
+-			&venc_dump_regs, &dss_debug_fops);
+-#endif
+-#ifdef CONFIG_OMAP4_DSS_HDMI
+-	debugfs_create_file("hdmi", S_IRUGO, dss_debugfs_dir,
+-			&hdmi_dump_regs, &dss_debug_fops);
+-#endif
+ 	return 0;
+ }
+ 
+@@ -192,6 +164,19 @@ static void dss_uninitialize_debugfs(void)
+ 	if (dss_debugfs_dir)
+ 		debugfs_remove_recursive(dss_debugfs_dir);
+ }
 +
- config FB_JZ4740
- 	tristate "JZ4740 LCD framebuffer support"
- 	depends on FB && MACH_JZ4740
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index e84df73..ee8dafb 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -120,6 +120,7 @@ obj-$(CONFIG_FB_METRONOME)        += metronomefb.o
- obj-$(CONFIG_FB_BROADSHEET)       += broadsheetfb.o
- obj-$(CONFIG_FB_AUO_K190X)	  += auo_k190x.o
- obj-$(CONFIG_FB_AUO_K1900)	  += auo_k1900fb.o
-+obj-$(CONFIG_FB_AUO_K1901)	  += auo_k1901fb.o
- obj-$(CONFIG_FB_S1D13XXX)	  += s1d13xxxfb.o
- obj-$(CONFIG_FB_SH7760)		  += sh7760fb.o
- obj-$(CONFIG_FB_IMX)              += imxfb.o
-diff --git a/drivers/video/auo_k1901fb.c b/drivers/video/auo_k1901fb.c
-new file mode 100644
-index 0000000..1c054c1
---- /dev/null
-+++ b/drivers/video/auo_k1901fb.c
-@@ -0,0 +1,251 @@
-+/*
-+ * auok190xfb.c -- FB driver for AUO-K1901 controllers
-+ *
-+ * Copyright (C) 2011, 2012 Heiko Stuebner <heiko@sntech.de>
-+ *
-+ * based on broadsheetfb.c
-+ *
-+ * Copyright (C) 2008, Jaya Kumar
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * Layout is based on skeletonfb.c by James Simmons and Geert Uytterhoeven.
-+ *
-+ * This driver is written to be used with the AUO-K1901 display controller.
-+ *
-+ * It is intended to be architecture independent. A board specific driver
-+ * must be used to perform all the physical IO interactions.
-+ *
-+ * The controller supports different update modes:
-+ * mode0+1 16 step gray (4bit)
-+ * mode2+3 4 step gray (2bit)
-+ * mode4+5 2 step gray (1bit)
-+ * - mode4 is described as "without LUT"
-+ * mode7 automatic selection of update mode
-+ *
-+ * The most interesting difference to the K1900 is the ability to do screen
-+ * updates in an asynchronous fashion. Where the K1900 needs to wait for the
-+ * current update to complete, the K1901 can process later updates already.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/string.h>
-+#include <linux/mm.h>
-+#include <linux/slab.h>
-+#include <linux/delay.h>
-+#include <linux/interrupt.h>
-+#include <linux/fb.h>
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/list.h>
-+#include <linux/firmware.h>
-+#include <linux/gpio.h>
-+#include <linux/pm_runtime.h>
-+
-+#include <video/auo_k190xfb.h>
-+
-+#include "auo_k190x.h"
-+
-+/*
-+ * AUO-K1901 specific commands
-+ */
-+
-+#define AUOK1901_CMD_LUT_INTERFACE	0x0005
-+#define AUOK1901_CMD_DMA_START		0x1001
-+#define AUOK1901_CMD_CURSOR_START	0x1007
-+#define AUOK1901_CMD_CURSOR_STOP	AUOK190X_CMD_DATA_STOP
-+#define AUOK1901_CMD_DDMA_START		0x1009
-+
-+#define AUOK1901_INIT_GATE_PULSE_LOW	(0 << 14)
-+#define AUOK1901_INIT_GATE_PULSE_HIGH	(1 << 14)
-+#define AUOK1901_INIT_SINGLE_GATE	(0 << 13)
-+#define AUOK1901_INIT_DOUBLE_GATE	(1 << 13)
-+
-+/* Bits to pixels
-+ *   Mode	15-12	11-8	7-4	3-0
-+ *   format2	2	T	1	T
-+ *   format3	1	T	2	T
-+ *   format4	T	2	T	1
-+ *   format5	T	1	T	2
-+ *
-+ *   halftone modes:
-+ *   format6	2	2	1	1
-+ *   format7	1	1	2	2
-+ */
-+#define AUOK1901_INIT_FORMAT2		(1 << 7)
-+#define AUOK1901_INIT_FORMAT3		((1 << 7) | (1 << 6))
-+#define AUOK1901_INIT_FORMAT4		(1 << 8)
-+#define AUOK1901_INIT_FORMAT5		((1 << 8) | (1 << 6))
-+#define AUOK1901_INIT_FORMAT6		((1 << 8) | (1 << 7))
-+#define AUOK1901_INIT_FORMAT7		((1 << 8) | (1 << 7) | (1 << 6))
-+
-+/* res[4] to bit 10
-+ * res[3-0] to bits 5-2
-+ */
-+#define AUOK1901_INIT_RESOLUTION(_res)	(((_res & (1 << 4)) << 6) \
-+					 | ((_res & 0xf) << 2))
-+
-+/*
-+ * portrait / landscape orientation in AUOK1901_CMD_DMA_START
-+ */
-+#define AUOK1901_DMA_ROTATE90(_rot)		((_rot & 1) << 13)
-+
-+/*
-+ * equivalent to 1 << 11, needs the ~ to have same rotation like K1900
-+ */
-+#define AUOK1901_DDMA_ROTATE180(_rot)		((~_rot & 2) << 10)
-+
-+static void auok1901_init(struct auok190xfb_par *par)
++int dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *))
 +{
-+	struct auok190x_board *board = par->board;
-+	u16 init_param = 0;
++	struct dentry *d;
 +
-+	init_param |= AUOK190X_INIT_INVERSE_WHITE;
-+	init_param |= AUOK190X_INIT_FORMAT0;
-+	init_param |= AUOK1901_INIT_RESOLUTION(par->resolution);
-+	init_param |= AUOK190X_INIT_SHIFT_LEFT;
++	d = debugfs_create_file(name, S_IRUGO, dss_debugfs_dir,
++			write, &dss_debug_fops);
 +
-+	auok190x_send_cmdargs(par, AUOK190X_CMD_INIT, 1, &init_param);
++	if (IS_ERR(d))
++		return PTR_ERR(d);
 +
-+	/* let the controller finish */
-+	board->wait_for_rdy(par);
++	return 0;
 +}
-+
-+static void auok1901_update_region(struct auok190xfb_par *par, int mode,
-+						u16 y1, u16 y2)
+ #else /* CONFIG_DEBUG_FS && CONFIG_OMAP2_DSS_DEBUG_SUPPORT */
+ static inline int dss_initialize_debugfs(void)
+ {
+@@ -200,6 +185,11 @@ static inline int dss_initialize_debugfs(void)
+ static inline void dss_uninitialize_debugfs(void)
+ {
+ }
++static inline int dss_debugfs_create_file(const char *name,
++		void (*write)(struct seq_file *))
 +{
-+	struct device *dev = par->info->device;
-+	unsigned char *buf = (unsigned char *)par->info->screen_base;
-+	int xres = par->info->var.xres;
-+	u16 args[5];
-+
-+	pm_runtime_get_sync(dev);
-+
-+	mutex_lock(&(par->io_lock));
-+
-+	/* y1 and y2 must be a multiple of 2 so drop the lowest bit */
-+	y1 &= 0xfffe;
-+	y2 &= 0xfffe;
-+
-+	dev_dbg(dev, "update (x,y,w,h,mode)=(%d,%d,%d,%d,%d)\n",
-+		1, y1+1, xres, y2-y1, mode);
-+
-+	/* K1901: first transfer the region data */
-+	args[0] = AUOK1901_DMA_ROTATE90(par->rotation) | 1;
-+	args[1] = y1 + 1;
-+	args[2] = xres;
-+	args[3] = y2 - y1;
-+	buf += y1 * xres;
-+	auok190x_send_cmdargs_pixels_nowait(par, AUOK1901_CMD_DMA_START, 4,
-+					    args, ((y2 - y1) * xres)/2,
-+					    (u16 *) buf);
-+	auok190x_send_command_nowait(par, AUOK190X_CMD_DATA_STOP);
-+
-+	/* K1901: second tell the controller to update the region with mode */
-+	args[0] = mode | AUOK1901_DDMA_ROTATE180(par->rotation);
-+	args[1] = 1;
-+	args[2] = y1 + 1;
-+	args[3] = xres;
-+	args[4] = y2 - y1;
-+	auok190x_send_cmdargs_nowait(par, AUOK1901_CMD_DDMA_START, 5, args);
-+
-+	par->update_cnt++;
-+
-+	mutex_unlock(&(par->io_lock));
-+
-+	pm_runtime_mark_last_busy(dev);
-+	pm_runtime_put_autosuspend(dev);
++	return 0;
 +}
+ #endif /* CONFIG_DEBUG_FS && CONFIG_OMAP2_DSS_DEBUG_SUPPORT */
+ 
+ /* PLATFORM DEVICE */
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 1fbe480..a555e32 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2571,7 +2571,7 @@ void dispc_dump_irqs(struct seq_file *s)
+ }
+ #endif
+ 
+-void dispc_dump_regs(struct seq_file *s)
++static void dispc_dump_regs(struct seq_file *s)
+ {
+ 	int i, j;
+ 	const char *mgr_names[] = {
+@@ -3387,6 +3387,11 @@ static int omap_dispchw_probe(struct platform_device *pdev)
+ 
+ 	dispc_runtime_put();
+ 
++	dss_debugfs_create_file("dispc", dispc_dump_regs);
 +
-+static void auok1901fb_dpy_update_pages(struct auok190xfb_par *par,
-+						u16 y1, u16 y2)
-+{
-+	int mode;
++#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
++	dss_debugfs_create_file("dispc_irq", dispc_dump_irqs);
++#endif
+ 	return 0;
+ 
+ err_runtime_get:
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 4bee235..0a1c5e3 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -1883,22 +1883,6 @@ static void dsi2_dump_irqs(struct seq_file *s)
+ 
+ 	dsi_dump_dsidev_irqs(dsidev, s);
+ }
+-
+-void dsi_create_debugfs_files_irq(struct dentry *debugfs_dir,
+-		const struct file_operations *debug_fops)
+-{
+-	struct platform_device *dsidev;
+-
+-	dsidev = dsi_get_dsidev_from_id(0);
+-	if (dsidev)
+-		debugfs_create_file("dsi1_irqs", S_IRUGO, debugfs_dir,
+-			&dsi1_dump_irqs, debug_fops);
+-
+-	dsidev = dsi_get_dsidev_from_id(1);
+-	if (dsidev)
+-		debugfs_create_file("dsi2_irqs", S_IRUGO, debugfs_dir,
+-			&dsi2_dump_irqs, debug_fops);
+-}
+ #endif
+ 
+ static void dsi_dump_dsidev_regs(struct platform_device *dsidev,
+@@ -1999,21 +1983,6 @@ static void dsi2_dump_regs(struct seq_file *s)
+ 	dsi_dump_dsidev_regs(dsidev, s);
+ }
+ 
+-void dsi_create_debugfs_files_reg(struct dentry *debugfs_dir,
+-		const struct file_operations *debug_fops)
+-{
+-	struct platform_device *dsidev;
+-
+-	dsidev = dsi_get_dsidev_from_id(0);
+-	if (dsidev)
+-		debugfs_create_file("dsi1_regs", S_IRUGO, debugfs_dir,
+-			&dsi1_dump_regs, debug_fops);
+-
+-	dsidev = dsi_get_dsidev_from_id(1);
+-	if (dsidev)
+-		debugfs_create_file("dsi2_regs", S_IRUGO, debugfs_dir,
+-			&dsi2_dump_regs, debug_fops);
+-}
+ enum dsi_cio_power_state {
+ 	DSI_COMPLEXIO_POWER_OFF		= 0x0,
+ 	DSI_COMPLEXIO_POWER_ON		= 0x1,
+@@ -4768,6 +4737,17 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
+ 
+ 	dsi_runtime_put(dsidev);
+ 
++	if (dsi_module = 0)
++		dss_debugfs_create_file("dsi1_regs", dsi1_dump_regs);
++	else if (dsi_module = 1)
++		dss_debugfs_create_file("dsi2_regs", dsi2_dump_regs);
 +
-+	if (par->update_mode < 0) {
-+		mode = AUOK190X_UPDATE_MODE(1);
-+		par->last_mode = -1;
-+	} else {
-+		mode = AUOK190X_UPDATE_MODE(par->update_mode);
-+		par->last_mode = par->update_mode;
-+	}
++#ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
++	if (dsi_module = 0)
++		dss_debugfs_create_file("dsi1_irqs", dsi1_dump_irqs);
++	else if (dsi_module = 1)
++		dss_debugfs_create_file("dsi2_irqs", dsi2_dump_irqs);
++#endif
+ 	return 0;
+ 
+ err_runtime_get:
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index da528b7..47a4c2a 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -277,7 +277,7 @@ void dss_dump_clocks(struct seq_file *s)
+ 	dss_runtime_put();
+ }
+ 
+-void dss_dump_regs(struct seq_file *s)
++static void dss_dump_regs(struct seq_file *s)
+ {
+ #define DUMPREG(r) seq_printf(s, "%-35s %08x\n", #r, dss_read_reg(r))
+ 
+@@ -791,6 +791,8 @@ static int omap_dsshw_probe(struct platform_device *pdev)
+ 
+ 	dss_runtime_put();
+ 
++	dss_debugfs_create_file("dss", dss_dump_regs);
 +
-+	if (par->flash)
-+		mode |= AUOK190X_UPDATE_NONFLASH;
+ 	return 0;
+ 
+ err_runtime_get:
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index af7bed1..5746bed 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -165,6 +165,7 @@ struct regulator *dss_get_vdds_sdi(void);
+ int dss_get_ctx_loss_count(struct device *dev);
+ int dss_dsi_enable_pads(int dsi_id, unsigned lane_mask);
+ void dss_dsi_disable_pads(int dsi_id, unsigned lane_mask);
++int dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *));
+ 
+ /* apply */
+ void dss_apply_init(void);
+@@ -235,7 +236,6 @@ enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void);
+ const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
+ void dss_dump_clocks(struct seq_file *s);
+ 
+-void dss_dump_regs(struct seq_file *s);
+ #if defined(CONFIG_DEBUG_FS) && defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
+ void dss_debug_dump_clocks(struct seq_file *s);
+ #endif
+@@ -282,10 +282,6 @@ int dsi_runtime_get(struct platform_device *dsidev);
+ void dsi_runtime_put(struct platform_device *dsidev);
+ 
+ void dsi_dump_clocks(struct seq_file *s);
+-void dsi_create_debugfs_files_irq(struct dentry *debugfs_dir,
+-		const struct file_operations *debug_fops);
+-void dsi_create_debugfs_files_reg(struct dentry *debugfs_dir,
+-		const struct file_operations *debug_fops);
+ 
+ int dsi_init_display(struct omap_dss_device *display);
+ void dsi_irq_handler(void);
+@@ -368,8 +364,6 @@ int dpi_init_display(struct omap_dss_device *dssdev);
+ int dispc_init_platform_driver(void);
+ void dispc_uninit_platform_driver(void);
+ void dispc_dump_clocks(struct seq_file *s);
+-void dispc_dump_irqs(struct seq_file *s);
+-void dispc_dump_regs(struct seq_file *s);
+ void dispc_irq_handler(void);
+ void dispc_fake_vsync_irq(void);
+ 
+@@ -435,7 +429,6 @@ void dispc_mgr_setup(enum omap_channel channel,
+ #ifdef CONFIG_OMAP2_DSS_VENC
+ int venc_init_platform_driver(void);
+ void venc_uninit_platform_driver(void);
+-void venc_dump_regs(struct seq_file *s);
+ int venc_init_display(struct omap_dss_device *display);
+ unsigned long venc_get_pixel_clock(void);
+ #else
+@@ -452,7 +445,6 @@ int hdmi_init_platform_driver(void);
+ void hdmi_uninit_platform_driver(void);
+ int hdmi_init_display(struct omap_dss_device *dssdev);
+ unsigned long hdmi_get_pixel_clock(void);
+-void hdmi_dump_regs(struct seq_file *s);
+ #else
+ static inline int hdmi_init_display(struct omap_dss_device *dssdev)
+ {
+@@ -477,7 +469,6 @@ void hdmi_panel_exit(void);
+ /* RFBI */
+ int rfbi_init_platform_driver(void);
+ void rfbi_uninit_platform_driver(void);
+-void rfbi_dump_regs(struct seq_file *s);
+ int rfbi_init_display(struct omap_dss_device *display);
+ 
+ 
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 08a316b..10295fc 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -419,7 +419,7 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev)
+ 	}
+ }
+ 
+-void hdmi_dump_regs(struct seq_file *s)
++static void hdmi_dump_regs(struct seq_file *s)
+ {
+ 	mutex_lock(&hdmi.lock);
+ 
+@@ -809,6 +809,8 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
+ 
+ 	hdmi_panel_init();
+ 
++	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
 +
-+	auok1901_update_region(par, mode, y1, y2);
-+}
+ #if defined(CONFIG_SND_OMAP_SOC_OMAP4_HDMI) || \
+ 	defined(CONFIG_SND_OMAP_SOC_OMAP4_HDMI_MODULE)
+ 
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index b6990ba..b07010b 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -799,7 +799,7 @@ int omap_rfbi_update(struct omap_dss_device *dssdev,
+ }
+ EXPORT_SYMBOL(omap_rfbi_update);
+ 
+-void rfbi_dump_regs(struct seq_file *s)
++static void rfbi_dump_regs(struct seq_file *s)
+ {
+ #define DUMPREG(r) seq_printf(s, "%-35s %08x\n", #r, rfbi_read_reg(r))
+ 
+@@ -956,6 +956,8 @@ static int omap_rfbihw_probe(struct platform_device *pdev)
+ 
+ 	rfbi_runtime_put();
+ 
++	dss_debugfs_create_file("rfbi", rfbi_dump_regs);
 +
-+static void auok1901fb_dpy_update(struct auok190xfb_par *par)
-+{
-+	int mode;
+ 	return 0;
+ 
+ err_runtime_get:
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 637abcb..a9c7c7c 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -695,7 +695,7 @@ int venc_init_display(struct omap_dss_device *dssdev)
+ 	return 0;
+ }
+ 
+-void venc_dump_regs(struct seq_file *s)
++static void venc_dump_regs(struct seq_file *s)
+ {
+ #define DUMPREG(r) seq_printf(s, "%-35s %08x\n", #r, venc_read_reg(r))
+ 
+@@ -824,6 +824,8 @@ static int omap_venchw_probe(struct platform_device *pdev)
+ 	if (r)
+ 		goto err_reg_panel_driver;
+ 
++	dss_debugfs_create_file("venc", venc_dump_regs);
 +
-+	/* When doing full updates, wait for the controller to be ready
-+	 * This will hopefully catch some hangs of the K1901
-+	 */
-+	par->board->wait_for_rdy(par);
-+
-+	if (par->update_mode < 0) {
-+		mode = AUOK190X_UPDATE_MODE(0);
-+		par->last_mode = -1;
-+	} else {
-+		mode = AUOK190X_UPDATE_MODE(par->update_mode);
-+		par->last_mode = par->update_mode;
-+	}
-+
-+	if (par->flash)
-+		mode |= AUOK190X_UPDATE_NONFLASH;
-+
-+	auok1901_update_region(par, mode, 0, par->info->var.yres);
-+	par->update_cnt = 0;
-+}
-+
-+static bool auok1901fb_need_refresh(struct auok190xfb_par *par)
-+{
-+	return (par->update_cnt > 10);
-+}
-+
-+static int __devinit auok1901fb_probe(struct platform_device *pdev)
-+{
-+	struct auok190x_init_data init;
-+	struct auok190x_board *board;
-+
-+	/* pick up board specific routines */
-+	board = pdev->dev.platform_data;
-+	if (!board)
-+		return -EINVAL;
-+
-+	/* fill temporary init struct for common init */
-+	init.id = "auo_k1901fb";
-+	init.board = board;
-+	init.update_partial = auok1901fb_dpy_update_pages;
-+	init.update_all = auok1901fb_dpy_update;
-+	init.need_refresh = auok1901fb_need_refresh;
-+	init.init = auok1901_init;
-+
-+	return auok190x_common_probe(pdev, &init);
-+}
-+
-+static int __devexit auok1901fb_remove(struct platform_device *pdev)
-+{
-+	return auok190x_common_remove(pdev);
-+}
-+
-+static struct platform_driver auok1901fb_driver = {
-+	.probe	= auok1901fb_probe,
-+	.remove = __devexit_p(auok1901fb_remove),
-+	.driver	= {
-+		.owner	= THIS_MODULE,
-+		.name	= "auo_k1901fb",
-+		.pm = &auok190x_pm,
-+	},
-+};
-+module_platform_driver(auok1901fb_driver);
-+
-+MODULE_DESCRIPTION("framebuffer driver for the AUO-K1901 EPD controller");
-+MODULE_AUTHOR("Heiko Stuebner <heiko@sntech.de>");
-+MODULE_LICENSE("GPL");
+ 	return 0;
+ 
+ err_reg_panel_driver:
 -- 
-1.7.5.4
+1.7.4.1
 

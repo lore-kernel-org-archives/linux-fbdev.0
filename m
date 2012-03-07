@@ -1,364 +1,373 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:08:00 +0000
-Subject: [PATCH v2 47/57] fbdev: sh_mobile_meram: Use genalloc to manage MERAM allocation
-Message-Id: <1330614490-14149-48-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 07 Mar 2012 12:44:44 +0000
+Subject: [PATCH 15/21] OMAPDSS: remove uses of dss_runtime_get/put
+Message-Id: <1331124290-6285-16-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Instead of requiring the users to hardcode MERAM allocation in platform
-data, allocate blocks at runtime using genalloc.
+Now that the omapdss_core device is the parent for all other dss
+devices, we don't need to use the dss_runtime_get/put anymore. Instead,
+enabling omapdss_core will happen automatically when a child device is
+enabled.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-shmobile/board-ap4evb.c   |    4 -
- arch/arm/mach-shmobile/board-mackerel.c |    4 -
- drivers/video/Kconfig                   |    1 +
- drivers/video/sh_mobile_meram.c         |  112 +++++++++++++++++++------------
- include/video/sh_mobile_meram.h         |    1 -
- 5 files changed, 71 insertions(+), 51 deletions(-)
+ drivers/video/omap2/dss/dispc.c |    7 -------
+ drivers/video/omap2/dss/dpi.c   |   16 +---------------
+ drivers/video/omap2/dss/dsi.c   |   12 +-----------
+ drivers/video/omap2/dss/dss.c   |    7 +++++--
+ drivers/video/omap2/dss/dss.h   |    3 ---
+ drivers/video/omap2/dss/hdmi.c  |   34 ++--------------------------------
+ drivers/video/omap2/dss/rfbi.c  |   12 +-----------
+ drivers/video/omap2/dss/sdi.c   |    7 -------
+ drivers/video/omap2/dss/venc.c  |   12 +-----------
+ 9 files changed, 11 insertions(+), 99 deletions(-)
 
-diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
-index 17282bc..f215818 100644
---- a/arch/arm/mach-shmobile/board-ap4evb.c
-+++ b/arch/arm/mach-shmobile/board-ap4evb.c
-@@ -591,13 +591,11 @@ static struct sh_mobile_meram_cfg lcd_meram_cfg = {
- 	.icb[0] = {
- 		.marker_icb     = 28,
- 		.cache_icb      = 24,
--		.meram_offset   = 0x0,
- 		.meram_size     = 0x40,
- 	},
- 	.icb[1] = {
- 		.marker_icb     = 29,
- 		.cache_icb      = 25,
--		.meram_offset   = 0x40,
- 		.meram_size     = 0x40,
- 	},
- };
-@@ -874,13 +872,11 @@ static struct sh_mobile_meram_cfg hdmi_meram_cfg = {
- 	.icb[0] = {
- 		.marker_icb     = 30,
- 		.cache_icb      = 26,
--		.meram_offset   = 0x80,
- 		.meram_size     = 0x100,
- 	},
- 	.icb[1] = {
- 		.marker_icb     = 31,
- 		.cache_icb      = 27,
--		.meram_offset   = 0x180,
- 		.meram_size     = 0x100,
- 	},
- };
-diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
-index c566f8c..3b85509 100644
---- a/arch/arm/mach-shmobile/board-mackerel.c
-+++ b/arch/arm/mach-shmobile/board-mackerel.c
-@@ -378,13 +378,11 @@ static struct sh_mobile_meram_cfg lcd_meram_cfg = {
- 	.icb[0] = {
- 		.marker_icb     = 28,
- 		.cache_icb      = 24,
--		.meram_offset   = 0x0,
- 		.meram_size     = 0x40,
- 	},
- 	.icb[1] = {
- 		.marker_icb     = 29,
- 		.cache_icb      = 25,
--		.meram_offset   = 0x40,
- 		.meram_size     = 0x40,
- 	},
- };
-@@ -470,13 +468,11 @@ static struct sh_mobile_meram_cfg hdmi_meram_cfg = {
- 	.icb[0] = {
- 		.marker_icb     = 30,
- 		.cache_icb      = 26,
--		.meram_offset   = 0x80,
- 		.meram_size     = 0x100,
- 	},
- 	.icb[1] = {
- 		.marker_icb     = 31,
- 		.cache_icb      = 27,
--		.meram_offset   = 0x180,
- 		.meram_size     = 0x100,
- 	},
- };
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 8951cbd..a435942 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2016,6 +2016,7 @@ config FB_SH_MOBILE_HDMI
- config FB_SH_MOBILE_MERAM
- 	tristate "SuperH Mobile MERAM read ahead support for LCDC"
- 	depends on FB_SH_MOBILE_LCDC
-+	select GENERIC_ALLOCATOR
- 	default y
- 	---help---
- 	  Enable MERAM support for the SH-Mobile LCD controller.
-diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
-index 30a3305..92dc9bd 100644
---- a/drivers/video/sh_mobile_meram.c
-+++ b/drivers/video/sh_mobile_meram.c
-@@ -10,6 +10,7 @@
-  */
- 
- #include <linux/device.h>
-+#include <linux/genalloc.h>
- #include <linux/io.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
-@@ -105,15 +106,17 @@ static const unsigned long icb_regs[] = {
- /*
-  * sh_mobile_meram_icb - MERAM ICB information
-  * @regs: Registers cache
-- * @region: Start and end addresses of the MERAM region
-+ * @offset: MERAM block offset
-+ * @size: MERAM block size in bytes
-  * @cache_unit: Bytes to cache per ICB
-  * @pixelformat: Video pixel format of the data stored in the ICB
-  * @current_reg: Which of Start Address Register A (0) or B (1) is in use
-  */
- struct sh_mobile_meram_icb {
- 	unsigned long regs[ICB_REGS_SIZE];
-+	unsigned long offset;
-+	unsigned int size;
- 
--	unsigned long region;
- 	unsigned int cache_unit;
- 	unsigned int pixelformat;
- 	unsigned int current_reg;
-@@ -124,21 +127,27 @@ struct sh_mobile_meram_icb {
- /*
-  * sh_mobile_meram_priv - MERAM device
-  * @base: Registers base address
-+ * @meram: MERAM physical address
-  * @regs: Registers cache
-  * @lock: Protects used_icb and icbs
-  * @used_icb: Bitmask of used ICBs
-  * @icbs: ICBs
-+ * @pool: Allocation pool to manage the MERAM
-  */
- struct sh_mobile_meram_priv {
- 	void __iomem *base;
-+	unsigned long meram;
- 	unsigned long regs[MERAM_REGS_SIZE];
- 
- 	struct mutex lock;
- 	unsigned long used_icb;
- 	struct sh_mobile_meram_icb icbs[MERAM_ICB_NUM];
-+
-+	struct gen_pool *pool;
- };
- 
- /* settings */
-+#define MERAM_GRANULARITY		1024
- #define MERAM_SEC_LINE			15
- #define MERAM_LINE_WIDTH		2048
- 
-@@ -175,18 +184,10 @@ static inline unsigned long meram_read_reg(void __iomem *base, unsigned int off)
-  * Allocation
-  */
- 
--#define MERAM_CACHE_START(p)	 ((p) >> 16)
--#define MERAM_CACHE_END(p)	 ((p) & 0xffff)
--#define MERAM_CACHE_SET(o, s)	 ((((o) & 0xffff) << 16) | \
--				  (((o) + (s) - 1) & 0xffff))
--
- /* Check if there's no overlaps in MERAM allocation. */
- static int meram_check_overlap(struct sh_mobile_meram_priv *priv,
- 			       const struct sh_mobile_meram_icb_cfg *new)
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index c71d4c5..1fbe480 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -3407,19 +3407,12 @@ static int omap_dispchw_remove(struct platform_device *pdev)
+ static int dispc_runtime_suspend(struct device *dev)
  {
--	unsigned int used_start, used_end, meram_start, meram_end;
--	unsigned int i;
--
- 	/* valid ICB? */
- 	if (new->marker_icb & ~0x1f || new->cache_icb & ~0x1f)
- 		return 1;
-@@ -195,43 +196,40 @@ static int meram_check_overlap(struct sh_mobile_meram_priv *priv,
- 	    test_bit(new->cache_icb,  &priv->used_icb))
- 		return  1;
+ 	dispc_save_context();
+-	dss_runtime_put();
  
--	for (i = 0; i < MERAM_ICB_NUM; i++) {
--		if (!test_bit(i, &priv->used_icb))
--			continue;
--
--		used_start = MERAM_CACHE_START(priv->icbs[i].region);
--		used_end   = MERAM_CACHE_END(priv->icbs[i].region);
--		meram_start = new->meram_offset;
--		meram_end   = new->meram_offset + new->meram_size;
--
--		if ((meram_start >= used_start && meram_start < used_end) ||
--		    (meram_end > used_start && meram_end < used_end))
--			return 1;
--	}
--
  	return 0;
  }
  
--/* Mark the specified ICB as used. */
--static void meram_mark(struct sh_mobile_meram_priv *priv,
-+/* Allocate memory for the ICBs and mark them as used. */
-+static int meram_alloc(struct sh_mobile_meram_priv *priv,
- 		       const struct sh_mobile_meram_icb_cfg *new,
- 		       int pixelformat)
+ static int dispc_runtime_resume(struct device *dev)
  {
-+	struct sh_mobile_meram_icb *marker = &priv->icbs[new->marker_icb];
-+	unsigned long mem;
-+
-+	mem = gen_pool_alloc(priv->pool, new->meram_size * 1024);
-+	if (mem = 0)
-+		return -ENOMEM;
-+
- 	__set_bit(new->marker_icb, &priv->used_icb);
- 	__set_bit(new->cache_icb, &priv->used_icb);
- 
--	priv->icbs[new->marker_icb].region = MERAM_CACHE_SET(new->meram_offset,
--							     new->meram_size);
--	priv->icbs[new->cache_icb].region = MERAM_CACHE_SET(new->meram_offset,
--							    new->meram_size);
--	priv->icbs[new->marker_icb].current_reg = 1;
--	priv->icbs[new->marker_icb].pixelformat = pixelformat;
-+	marker->offset = mem - priv->meram;
-+	marker->size = new->meram_size * 1024;
-+	marker->current_reg = 1;
-+	marker->pixelformat = pixelformat;
-+
-+	return 0;
- }
- 
- /* Unmark the specified ICB as used. */
--static void meram_unmark(struct sh_mobile_meram_priv *priv,
--			 const struct sh_mobile_meram_icb_cfg *icb)
-+static void meram_free(struct sh_mobile_meram_priv *priv,
-+		       const struct sh_mobile_meram_icb_cfg *icb)
- {
-+	struct sh_mobile_meram_icb *marker = &priv->icbs[icb->marker_icb];
-+
-+	gen_pool_free(priv->pool, priv->meram + marker->offset, marker->size);
-+
- 	__clear_bit(icb->marker_icb, &priv->used_icb);
- 	__clear_bit(icb->cache_icb, &priv->used_icb);
- }
-@@ -302,6 +300,7 @@ static int meram_init(struct sh_mobile_meram_priv *priv,
- 		      unsigned int xres, unsigned int yres,
- 		      unsigned int *out_pitch)
- {
-+	struct sh_mobile_meram_icb *marker = &priv->icbs[icb->marker_icb];
- 	unsigned long total_byte_count = MERAM_CALC_BYTECOUNT(xres, yres);
- 	unsigned long bnm;
- 	unsigned int lcdc_pitch;
-@@ -356,11 +355,11 @@ static int meram_init(struct sh_mobile_meram_priv *priv,
- 	 * we also split the allocated MERAM buffer between two ICBs.
- 	 */
- 	meram_write_icb(priv->base, icb->cache_icb, MExxCTL,
--			MERAM_MExxCTL_VAL(icb->marker_icb, icb->meram_offset) |
-+			MERAM_MExxCTL_VAL(icb->marker_icb, marker->offset) |
- 			MExxCTL_WD1 | MExxCTL_WD0 | MExxCTL_WS | MExxCTL_CM |
- 			MExxCTL_MD_FB);
- 	meram_write_icb(priv->base, icb->marker_icb, MExxCTL,
--			MERAM_MExxCTL_VAL(icb->cache_icb, icb->meram_offset +
-+			MERAM_MExxCTL_VAL(icb->cache_icb, marker->offset +
- 					  icb->meram_size / 2) |
- 			MExxCTL_WD1 | MExxCTL_WD0 | MExxCTL_WS | MExxCTL_CM |
- 			MExxCTL_MD_FB);
-@@ -454,10 +453,18 @@ static int sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
- 		goto err;
- 	}
- 
--	/* we now register the ICB */
--	meram_mark(priv, &cfg->icb[0], pixelformat);
--	if (is_nvcolor(pixelformat))
--		meram_mark(priv, &cfg->icb[1], pixelformat);
-+	/* We now register the ICBs and allocate the MERAM regions. */
-+	error = meram_alloc(priv, &cfg->icb[0], pixelformat);
-+	if (error < 0)
-+		goto err;
-+
-+	if (is_nvcolor(pixelformat)) {
-+		error = meram_alloc(priv, &cfg->icb[1], pixelformat);
-+		if (error < 0) {
-+			meram_free(priv, &cfg->icb[0]);
-+			goto err;
-+		}
-+	}
- 
- 	/* initialize MERAM */
- 	meram_init(priv, &cfg->icb[0], xres, yres, &out_pitch);
-@@ -497,10 +504,10 @@ static int sh_mobile_meram_unregister(struct sh_mobile_meram_info *pdata,
- 	/* deinit & unmark */
- 	if (is_nvcolor(icb->pixelformat)) {
- 		meram_deinit(priv, &cfg->icb[1]);
--		meram_unmark(priv, &cfg->icb[1]);
-+		meram_free(priv, &cfg->icb[1]);
- 	}
- 	meram_deinit(priv, &cfg->icb[0]);
--	meram_unmark(priv, &cfg->icb[0]);
-+	meram_free(priv, &cfg->icb[0]);
- 
- 	mutex_unlock(&priv->lock);
- 
-@@ -626,6 +633,7 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
- 	pdata->priv = priv;
- 	pdata->pdev = pdev;
- 
-+	/* Request memory regions and remap the registers. */
- 	if (!request_mem_region(regs->start, resource_size(regs), pdev->name)) {
- 		dev_err(&pdev->dev, "MERAM registers region already claimed\n");
- 		error = -EBUSY;
-@@ -646,6 +654,20 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
- 		goto err_ioremap;
- 	}
- 
-+	priv->meram = meram->start;
-+
-+	/* Create and initialize the MERAM memory pool. */
-+	priv->pool = gen_pool_create(ilog2(MERAM_GRANULARITY), -1);
-+	if (priv->pool = NULL) {
-+		error = -ENOMEM;
-+		goto err_genpool;
-+	}
-+
-+	error = gen_pool_add(priv->pool, meram->start, resource_size(meram),
-+			     -1);
-+	if (error < 0)
-+		goto err_genpool;
-+
- 	/* initialize ICB addressing mode */
- 	if (pdata->addr_mode = SH_MOBILE_MERAM_MODE1)
- 		meram_write_reg(priv->base, MEVCR1, MEVCR1_AMD1);
-@@ -657,6 +679,10 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
+-	int r;
+-
+-	r = dss_runtime_get();
+-	if (r < 0)
+-		return r;
+-
+ 	dispc_restore_context();
  
  	return 0;
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 5b7bbab..511df3c 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -202,10 +202,6 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
+ 			goto err_reg_enable;
+ 	}
  
-+err_genpool:
-+	if (priv->pool)
-+		gen_pool_destroy(priv->pool);
-+	iounmap(priv->base);
- err_ioremap:
- 	release_mem_region(meram->start, resource_size(meram));
- err_req_meram:
-@@ -677,6 +703,8 @@ static int sh_mobile_meram_remove(struct platform_device *pdev)
+-	r = dss_runtime_get();
+-	if (r)
+-		goto err_get_dss;
+-
+ 	r = dispc_runtime_get();
+ 	if (r)
+ 		goto err_get_dispc;
+@@ -244,8 +240,6 @@ err_dsi_pll_init:
+ err_get_dsi:
+ 	dispc_runtime_put();
+ err_get_dispc:
+-	dss_runtime_put();
+-err_get_dss:
+ 	if (cpu_is_omap34xx())
+ 		regulator_disable(dpi.vdds_dsi_reg);
+ err_reg_enable:
+@@ -266,7 +260,6 @@ void omapdss_dpi_display_disable(struct omap_dss_device *dssdev)
+ 	}
  
- 	pm_runtime_disable(&pdev->dev);
+ 	dispc_runtime_put();
+-	dss_runtime_put();
  
-+	gen_pool_destroy(priv->pool);
+ 	if (cpu_is_omap34xx())
+ 		regulator_disable(dpi.vdds_dsi_reg);
+@@ -283,21 +276,14 @@ void dpi_set_timings(struct omap_dss_device *dssdev,
+ 	DSSDBG("dpi_set_timings\n");
+ 	dssdev->panel.timings = *timings;
+ 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
+-		r = dss_runtime_get();
+-		if (r)
+-			return;
+-
+ 		r = dispc_runtime_get();
+-		if (r) {
+-			dss_runtime_put();
++		if (r)
+ 			return;
+-		}
+ 
+ 		dpi_set_mode(dssdev);
+ 		dispc_mgr_go(dssdev->manager->id);
+ 
+ 		dispc_runtime_put();
+-		dss_runtime_put();
+ 	}
+ }
+ EXPORT_SYMBOL(dpi_set_timings);
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index cf59f40..4bee235 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -4802,7 +4802,6 @@ static int omap_dsihw_remove(struct platform_device *dsidev)
+ static int dsi_runtime_suspend(struct device *dev)
+ {
+ 	dispc_runtime_put();
+-	dss_runtime_put();
+ 
+ 	return 0;
+ }
+@@ -4811,20 +4810,11 @@ static int dsi_runtime_resume(struct device *dev)
+ {
+ 	int r;
+ 
+-	r = dss_runtime_get();
+-	if (r)
+-		goto err_get_dss;
+-
+ 	r = dispc_runtime_get();
+ 	if (r)
+-		goto err_get_dispc;
++		return r;
+ 
+ 	return 0;
+-
+-err_get_dispc:
+-	dss_runtime_put();
+-err_get_dss:
+-	return r;
+ }
+ 
+ static const struct dev_pm_ops dsi_pm_ops = {
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 3156851..da528b7 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -59,6 +59,9 @@ struct dss_reg {
+ #define REG_FLD_MOD(idx, val, start, end) \
+ 	dss_write_reg(idx, FLD_MOD(dss_read_reg(idx), val, start, end))
+ 
++static int dss_runtime_get(void);
++static void dss_runtime_put(void);
 +
- 	iounmap(priv->base);
- 	release_mem_region(meram->start, resource_size(meram));
- 	release_mem_region(regs->start, resource_size(regs));
-diff --git a/include/video/sh_mobile_meram.h b/include/video/sh_mobile_meram.h
-index 05ca3f9..f7700fc 100644
---- a/include/video/sh_mobile_meram.h
-+++ b/include/video/sh_mobile_meram.h
-@@ -28,7 +28,6 @@ struct sh_mobile_meram_info {
- struct sh_mobile_meram_icb_cfg {
- 	unsigned int marker_icb;	/* ICB # for Marker ICB */
- 	unsigned int cache_icb;		/* ICB # for Cache ICB */
--	unsigned int meram_offset;	/* MERAM Buffer Offset to use */
- 	unsigned int meram_size;	/* MERAM Buffer Size to use */
- };
+ static struct {
+ 	struct platform_device *pdev;
+ 	void __iomem    *base;
+@@ -703,7 +706,7 @@ static void dss_put_clocks(void)
+ 	clk_put(dss.dss_clk);
+ }
  
+-int dss_runtime_get(void)
++static int dss_runtime_get(void)
+ {
+ 	int r;
+ 
+@@ -714,7 +717,7 @@ int dss_runtime_get(void)
+ 	return r < 0 ? r : 0;
+ }
+ 
+-void dss_runtime_put(void)
++static void dss_runtime_put(void)
+ {
+ 	int r;
+ 
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 1981626..24aadde 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -230,9 +230,6 @@ int dss_ovl_check(struct omap_overlay *ovl,
+ int dss_init_platform_driver(void);
+ void dss_uninit_platform_driver(void);
+ 
+-int dss_runtime_get(void);
+-void dss_runtime_put(void);
+-
+ void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select);
+ enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void);
+ const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index b4ad13b..08a316b 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -129,25 +129,12 @@ static int hdmi_runtime_get(void)
+ 
+ 	DSSDBG("hdmi_runtime_get\n");
+ 
+-	/*
+-	 * HACK: Add dss_runtime_get() to ensure DSS clock domain is enabled.
+-	 * This should be removed later.
+-	 */
+-	r = dss_runtime_get();
+-	if (r < 0)
+-		goto err_get_dss;
+-
+ 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
+ 	WARN_ON(r < 0);
+ 	if (r < 0)
+-		goto err_get_hdmi;
++		return r;
+ 
+ 	return 0;
+-
+-err_get_hdmi:
+-	dss_runtime_put();
+-err_get_dss:
+-	return r;
+ }
+ 
+ static void hdmi_runtime_put(void)
+@@ -158,12 +145,6 @@ static void hdmi_runtime_put(void)
+ 
+ 	r = pm_runtime_put_sync(&hdmi.pdev->dev);
+ 	WARN_ON(r < 0);
+-
+-	/*
+-	 * HACK: This is added to complement the dss_runtime_get() call in
+-	 * hdmi_runtime_get(). This should be removed later.
+-	 */
+-	dss_runtime_put();
+ }
+ 
+ int hdmi_init_display(struct omap_dss_device *dssdev)
+@@ -865,7 +846,6 @@ static int hdmi_runtime_suspend(struct device *dev)
+ 	clk_disable(hdmi.sys_clk);
+ 
+ 	dispc_runtime_put();
+-	dss_runtime_put();
+ 
+ 	return 0;
+ }
+@@ -874,23 +854,13 @@ static int hdmi_runtime_resume(struct device *dev)
+ {
+ 	int r;
+ 
+-	r = dss_runtime_get();
+-	if (r < 0)
+-		goto err_get_dss;
+-
+ 	r = dispc_runtime_get();
+ 	if (r < 0)
+-		goto err_get_dispc;
+-
++		return r;
+ 
+ 	clk_enable(hdmi.sys_clk);
+ 
+ 	return 0;
+-
+-err_get_dispc:
+-	dss_runtime_put();
+-err_get_dss:
+-	return r;
+ }
+ 
+ static const struct dev_pm_ops hdmi_pm_ops = {
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index dfd8ec5..b6990ba 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -972,7 +972,6 @@ static int omap_rfbihw_remove(struct platform_device *pdev)
+ static int rfbi_runtime_suspend(struct device *dev)
+ {
+ 	dispc_runtime_put();
+-	dss_runtime_put();
+ 
+ 	return 0;
+ }
+@@ -981,20 +980,11 @@ static int rfbi_runtime_resume(struct device *dev)
+ {
+ 	int r;
+ 
+-	r = dss_runtime_get();
+-	if (r < 0)
+-		goto err_get_dss;
+-
+ 	r = dispc_runtime_get();
+ 	if (r < 0)
+-		goto err_get_dispc;
++		return r;
+ 
+ 	return 0;
+-
+-err_get_dispc:
+-	dss_runtime_put();
+-err_get_dss:
+-	return r;
+ }
+ 
+ static const struct dev_pm_ops rfbi_pm_ops = {
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index d886d93..684a4de 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -72,10 +72,6 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+ 	if (r)
+ 		goto err_reg_enable;
+ 
+-	r = dss_runtime_get();
+-	if (r)
+-		goto err_get_dss;
+-
+ 	r = dispc_runtime_get();
+ 	if (r)
+ 		goto err_get_dispc;
+@@ -138,8 +134,6 @@ err_set_dss_clock_div:
+ err_calc_clock_div:
+ 	dispc_runtime_put();
+ err_get_dispc:
+-	dss_runtime_put();
+-err_get_dss:
+ 	regulator_disable(sdi.vdds_sdi_reg);
+ err_reg_enable:
+ 	omap_dss_stop_device(dssdev);
+@@ -155,7 +149,6 @@ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev)
+ 	dss_sdi_disable();
+ 
+ 	dispc_runtime_put();
+-	dss_runtime_put();
+ 
+ 	regulator_disable(sdi.vdds_sdi_reg);
+ 
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index c933733..637abcb 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -853,7 +853,6 @@ static int venc_runtime_suspend(struct device *dev)
+ 		clk_disable(venc.tv_dac_clk);
+ 
+ 	dispc_runtime_put();
+-	dss_runtime_put();
+ 
+ 	return 0;
+ }
+@@ -862,23 +861,14 @@ static int venc_runtime_resume(struct device *dev)
+ {
+ 	int r;
+ 
+-	r = dss_runtime_get();
+-	if (r < 0)
+-		goto err_get_dss;
+-
+ 	r = dispc_runtime_get();
+ 	if (r < 0)
+-		goto err_get_dispc;
++		return r;
+ 
+ 	if (venc.tv_dac_clk)
+ 		clk_enable(venc.tv_dac_clk);
+ 
+ 	return 0;
+-
+-err_get_dispc:
+-	dss_runtime_put();
+-err_get_dss:
+-	return r;
+ }
+ 
+ static const struct dev_pm_ops venc_pm_ops = {
 -- 
-1.7.3.4
+1.7.4.1
 

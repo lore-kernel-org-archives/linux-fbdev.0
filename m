@@ -1,103 +1,200 @@
-From: Thomas Abraham <thomas.abraham@linaro.org>
-Date: Mon, 12 Mar 2012 20:56:57 +0000
-Subject: [PATCH v2 2/3] video: s3c-fb: remove 'default_win' element from platform data
-Message-Id: <1331585999-8604-3-git-send-email-thomas.abraham@linaro.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 07 Mar 2012 12:44:33 +0000
+Subject: [PATCH 04/21] OMAPDSS: TFP410: rename dvi files to tfp410
+Message-Id: <1331124290-6285-5-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331585999-8604-1-git-send-email-thomas.abraham@linaro.org>
-In-Reply-To: <1331585999-8604-1-git-send-email-thomas.abraham@linaro.org>
+References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>, Tony Lindgren <tony@atomide.com>
 
-The decision to enable or disable the data output to the lcd panel from
-the controller need not be based on the value of 'default_win' element
-in the platform data. Instead, the data output to the panel is enabled
-if any of the windows are active, else data output is disabled.
+Now that the tfp410 driver has been renamed in the code, this patch
+finishes the renaming by renaming the files.
 
-Cc: Ben Dooks <ben-linux@fluff.org>
-Cc: Jingoo Han <jg1.han@samsung.com>
-Signed-off-by: Thomas Abraham <thomas.abraham@linaro.org>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/plat-samsung/include/plat/fb.h |    2 --
- drivers/video/s3c-fb.c                  |   28 ++++++----------------------
- 2 files changed, 6 insertions(+), 24 deletions(-)
+ arch/arm/mach-omap2/board-3430sdp.c                |    2 +-
+ arch/arm/mach-omap2/board-am3517evm.c              |    2 +-
+ arch/arm/mach-omap2/board-cm-t35.c                 |    2 +-
+ arch/arm/mach-omap2/board-devkit8000.c             |    2 +-
+ arch/arm/mach-omap2/board-igep0020.c               |    2 +-
+ arch/arm/mach-omap2/board-omap3beagle.c            |    2 +-
+ arch/arm/mach-omap2/board-omap3evm.c               |    2 +-
+ arch/arm/mach-omap2/board-omap3stalker.c           |    2 +-
+ arch/arm/mach-omap2/board-omap4panda.c             |    2 +-
+ arch/arm/mach-omap2/board-overo.c                  |    2 +-
+ drivers/video/omap2/displays/Makefile              |    2 +-
+ .../omap2/displays/{panel-dvi.c => panel-tfp410.c} |    2 +-
+ .../{omap-panel-dvi.h => omap-panel-tfp410.h}      |    0
+ 13 files changed, 12 insertions(+), 12 deletions(-)
+ rename drivers/video/omap2/displays/{panel-dvi.c => panel-tfp410.c} (99%)
+ rename include/video/{omap-panel-dvi.h => omap-panel-tfp410.h} (100%)
 
-diff --git a/arch/arm/plat-samsung/include/plat/fb.h b/arch/arm/plat-samsung/include/plat/fb.h
-index 39d6bd7..536002f 100644
---- a/arch/arm/plat-samsung/include/plat/fb.h
-+++ b/arch/arm/plat-samsung/include/plat/fb.h
-@@ -62,8 +62,6 @@ struct s3c_fb_platdata {
- 	struct s3c_fb_pd_win	*win[S3C_FB_MAX_WIN];
- 	struct fb_videomode     *vtiming;
+diff --git a/arch/arm/mach-omap2/board-3430sdp.c b/arch/arm/mach-omap2/board-3430sdp.c
+index 2c153bb..fdcbaaf 100644
+--- a/arch/arm/mach-omap2/board-3430sdp.c
++++ b/arch/arm/mach-omap2/board-3430sdp.c
+@@ -37,7 +37,7 @@
+ #include <plat/dma.h>
+ #include <plat/gpmc.h>
+ #include <video/omapdss.h>
+-#include <video/omap-panel-dvi.h>
++#include <video/omap-panel-tfp410.h>
  
--	u32			 default_win;
--
- 	u32			 vidcon0;
- 	u32			 vidcon1;
- };
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index 60d1c12..cfe5113 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -531,8 +531,8 @@ static int s3c_fb_set_par(struct fb_info *info)
- 	/* disable the window whilst we update it */
- 	writel(0, regs + WINCON(win_no));
+ #include <plat/gpmc-smc91x.h>
  
--	if (win_no = sfb->pdata->default_win)
-- 		s3c_fb_enable(sfb, 1);
-+	if (!sfb->output_on)
-+		s3c_fb_enable(sfb, 1);
+diff --git a/arch/arm/mach-omap2/board-am3517evm.c b/arch/arm/mach-omap2/board-am3517evm.c
+index c38dac1..fadd25f 100644
+--- a/arch/arm/mach-omap2/board-am3517evm.c
++++ b/arch/arm/mach-omap2/board-am3517evm.c
+@@ -37,7 +37,7 @@
+ #include <plat/usb.h>
+ #include <video/omapdss.h>
+ #include <video/omap-panel-generic-dpi.h>
+-#include <video/omap-panel-dvi.h>
++#include <video/omap-panel-tfp410.h>
  
- 	/* write the buffer address */
+ #include "mux.h"
+ #include "control.h"
+diff --git a/arch/arm/mach-omap2/board-cm-t35.c b/arch/arm/mach-omap2/board-cm-t35.c
+index 94d5167..54d8f0f 100644
+--- a/arch/arm/mach-omap2/board-cm-t35.c
++++ b/arch/arm/mach-omap2/board-cm-t35.c
+@@ -43,7 +43,7 @@
+ #include <plat/usb.h>
+ #include <video/omapdss.h>
+ #include <video/omap-panel-generic-dpi.h>
+-#include <video/omap-panel-dvi.h>
++#include <video/omap-panel-tfp410.h>
+ #include <plat/mcspi.h>
  
-@@ -798,7 +798,7 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
- 	struct s3c_fb_win *win = info->par;
- 	struct s3c_fb *sfb = win->parent;
- 	unsigned int index = win->index;
--	u32 wincon;
-+	u32 wincon, output_on = sfb->output_on;
+ #include <mach/hardware.h>
+diff --git a/arch/arm/mach-omap2/board-devkit8000.c b/arch/arm/mach-omap2/board-devkit8000.c
+index d1bead0..677f16e 100644
+--- a/arch/arm/mach-omap2/board-devkit8000.c
++++ b/arch/arm/mach-omap2/board-devkit8000.c
+@@ -47,7 +47,7 @@
+ #include <plat/usb.h>
+ #include <video/omapdss.h>
+ #include <video/omap-panel-generic-dpi.h>
+-#include <video/omap-panel-dvi.h>
++#include <video/omap-panel-tfp410.h>
  
- 	dev_dbg(sfb->dev, "blank mode %d\n", blank_mode);
+ #include <plat/mcspi.h>
+ #include <linux/input/matrix_keypad.h>
+diff --git a/arch/arm/mach-omap2/board-igep0020.c b/arch/arm/mach-omap2/board-igep0020.c
+index ae1b157..6e56ccc 100644
+--- a/arch/arm/mach-omap2/board-igep0020.c
++++ b/arch/arm/mach-omap2/board-igep0020.c
+@@ -32,7 +32,7 @@
+ #include <plat/gpmc.h>
+ #include <plat/usb.h>
+ #include <video/omapdss.h>
+-#include <video/omap-panel-dvi.h>
++#include <video/omap-panel-tfp410.h>
+ #include <plat/onenand.h>
  
-@@ -837,34 +837,18 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
+ #include "mux.h"
+diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
+index 5f858e9..df6acae 100644
+--- a/arch/arm/mach-omap2/board-omap3beagle.c
++++ b/arch/arm/mach-omap2/board-omap3beagle.c
+@@ -42,7 +42,7 @@
+ #include <plat/board.h>
+ #include "common.h"
+ #include <video/omapdss.h>
+-#include <video/omap-panel-dvi.h>
++#include <video/omap-panel-tfp410.h>
+ #include <plat/gpmc.h>
+ #include <plat/nand.h>
+ #include <plat/usb.h>
+diff --git a/arch/arm/mach-omap2/board-omap3evm.c b/arch/arm/mach-omap2/board-omap3evm.c
+index 840fb99..1a34bee 100644
+--- a/arch/arm/mach-omap2/board-omap3evm.c
++++ b/arch/arm/mach-omap2/board-omap3evm.c
+@@ -46,7 +46,7 @@
+ #include "common.h"
+ #include <plat/mcspi.h>
+ #include <video/omapdss.h>
+-#include <video/omap-panel-dvi.h>
++#include <video/omap-panel-tfp410.h>
  
- 	shadow_protect_win(win, 1);
- 	writel(wincon, sfb->regs + sfb->variant.wincon + (index * 4));
--	shadow_protect_win(win, 0);
+ #include "mux.h"
+ #include "sdram-micron-mt46h32m32lf-6.h"
+diff --git a/arch/arm/mach-omap2/board-omap3stalker.c b/arch/arm/mach-omap2/board-omap3stalker.c
+index 8a292cc..d05e7a7 100644
+--- a/arch/arm/mach-omap2/board-omap3stalker.c
++++ b/arch/arm/mach-omap2/board-omap3stalker.c
+@@ -41,7 +41,7 @@
+ #include <plat/usb.h>
+ #include <video/omapdss.h>
+ #include <video/omap-panel-generic-dpi.h>
+-#include <video/omap-panel-dvi.h>
++#include <video/omap-panel-tfp410.h>
  
- 	/* Check the enabled state to see if we need to be running the
- 	 * main LCD interface, as if there are no active windows then
- 	 * it is highly likely that we also do not need to output
- 	 * anything.
- 	 */
--
--	/* We could do something like the following code, but the current
--	 * system of using framebuffer events means that we cannot make
--	 * the distinction between just window 0 being inactive and all
--	 * the windows being down.
--	 *
--	 * s3c_fb_enable(sfb, sfb->enabled ? 1 : 0);
--	*/
--
--	/* we're stuck with this until we can do something about overriding
--	 * the power control using the blanking event for a single fb.
--	 */
--	if (index = sfb->pdata->default_win) {
--		shadow_protect_win(win, 1);
--		s3c_fb_enable(sfb, blank_mode != FB_BLANK_POWERDOWN ? 1 : 0);
--		shadow_protect_win(win, 0);
--	}
-+	s3c_fb_enable(sfb, sfb->enabled ? 1 : 0);
-+	shadow_protect_win(win, 0);
+ #include <plat/mcspi.h>
+ #include <linux/input/matrix_keypad.h>
+diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
+index 8196d6e..959b4ed 100644
+--- a/arch/arm/mach-omap2/board-omap4panda.c
++++ b/arch/arm/mach-omap2/board-omap4panda.c
+@@ -40,7 +40,7 @@
+ #include "common.h"
+ #include <plat/usb.h>
+ #include <plat/mmc.h>
+-#include <video/omap-panel-dvi.h>
++#include <video/omap-panel-tfp410.h>
  
- 	pm_runtime_put_sync(sfb->dev);
+ #include "hsmmc.h"
+ #include "control.h"
+diff --git a/arch/arm/mach-omap2/board-overo.c b/arch/arm/mach-omap2/board-overo.c
+index 76e06e4..ceb7187 100644
+--- a/arch/arm/mach-omap2/board-overo.c
++++ b/arch/arm/mach-omap2/board-overo.c
+@@ -46,7 +46,7 @@
+ #include "common.h"
+ #include <video/omapdss.h>
+ #include <video/omap-panel-generic-dpi.h>
+-#include <video/omap-panel-dvi.h>
++#include <video/omap-panel-tfp410.h>
+ #include <plat/gpmc.h>
+ #include <mach/hardware.h>
+ #include <plat/nand.h>
+diff --git a/drivers/video/omap2/displays/Makefile b/drivers/video/omap2/displays/Makefile
+index 58905ef0..58a5176 100644
+--- a/drivers/video/omap2/displays/Makefile
++++ b/drivers/video/omap2/displays/Makefile
+@@ -1,5 +1,5 @@
+ obj-$(CONFIG_PANEL_GENERIC_DPI) += panel-generic-dpi.o
+-obj-$(CONFIG_PANEL_TFP410) += panel-dvi.o
++obj-$(CONFIG_PANEL_TFP410) += panel-tfp410.o
+ obj-$(CONFIG_PANEL_LGPHILIPS_LB035Q02) += panel-lgphilips-lb035q02.o
+ obj-$(CONFIG_PANEL_SHARP_LS037V7DW01) += panel-sharp-ls037v7dw01.o
+ obj-$(CONFIG_PANEL_NEC_NL8048HL11_01B) += panel-nec-nl8048hl11-01b.o
+diff --git a/drivers/video/omap2/displays/panel-dvi.c b/drivers/video/omap2/displays/panel-tfp410.c
+similarity index 99%
+rename from drivers/video/omap2/displays/panel-dvi.c
+rename to drivers/video/omap2/displays/panel-tfp410.c
+index 1ec996d..4b867bf 100644
+--- a/drivers/video/omap2/displays/panel-dvi.c
++++ b/drivers/video/omap2/displays/panel-tfp410.c
+@@ -24,7 +24,7 @@
+ #include <linux/gpio.h>
+ #include <drm/drm_edid.h>
  
--	return 0;
-+	return output_on = sfb->output_on;
- }
+-#include <video/omap-panel-dvi.h>
++#include <video/omap-panel-tfp410.h>
  
- /**
+ static const struct omap_video_timings tfp410_default_timings = {
+ 	.x_res		= 640,
+diff --git a/include/video/omap-panel-dvi.h b/include/video/omap-panel-tfp410.h
+similarity index 100%
+rename from include/video/omap-panel-dvi.h
+rename to include/video/omap-panel-tfp410.h
 -- 
-1.6.6.rc2
+1.7.4.1
 

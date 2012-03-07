@@ -1,40 +1,64 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:07:49 +0000
-Subject: [PATCH v2 36/57] fbdev: sh_mobile_lcdc: Pass physical device pointer to DMA functions
-Message-Id: <1330614490-14149-37-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 07 Mar 2012 12:44:49 +0000
+Subject: [PATCH 20/21] OMAPFB: add __init & __exit
+Message-Id: <1331124290-6285-21-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The dma_map_sg() and dma_unmap_sg() functions need a pointer to the
-physical device.
+Change omapfb to use platform_driver_probe and add __init & __exit.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/video/omap2/omapfb/omapfb-main.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 1f8dd83..fc12e37 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -313,11 +313,12 @@ static void sh_mobile_lcdc_deferred_io(struct fb_info *info,
- 		unsigned int nr_pages = sh_mobile_lcdc_sginit(info, pagelist);
+diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
+index b00db40..a0967dc 100644
+--- a/drivers/video/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/omap2/omapfb/omapfb-main.c
+@@ -2307,7 +2307,7 @@ static int omapfb_init_display(struct omapfb2_device *fbdev,
+ 	return 0;
+ }
  
- 		/* trigger panel update */
--		dma_map_sg(info->dev, ch->sglist, nr_pages, DMA_TO_DEVICE);
-+		dma_map_sg(ch->lcdc->dev, ch->sglist, nr_pages, DMA_TO_DEVICE);
- 		if (panel->start_transfer)
- 			panel->start_transfer(ch, &sh_mobile_lcdc_sys_bus_ops);
- 		lcdc_write_chan(ch, LDSM2R, LDSM2R_OSTRG);
--		dma_unmap_sg(info->dev, ch->sglist, nr_pages, DMA_TO_DEVICE);
-+		dma_unmap_sg(ch->lcdc->dev, ch->sglist, nr_pages,
-+			     DMA_TO_DEVICE);
- 	} else {
- 		if (panel->start_transfer)
- 			panel->start_transfer(ch, &sh_mobile_lcdc_sys_bus_ops);
+-static int omapfb_probe(struct platform_device *pdev)
++static int __init omapfb_probe(struct platform_device *pdev)
+ {
+ 	struct omapfb2_device *fbdev = NULL;
+ 	int r = 0;
+@@ -2448,7 +2448,7 @@ err0:
+ 	return r;
+ }
+ 
+-static int omapfb_remove(struct platform_device *pdev)
++static int __exit omapfb_remove(struct platform_device *pdev)
+ {
+ 	struct omapfb2_device *fbdev = platform_get_drvdata(pdev);
+ 
+@@ -2462,8 +2462,7 @@ static int omapfb_remove(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver omapfb_driver = {
+-	.probe          = omapfb_probe,
+-	.remove         = omapfb_remove,
++	.remove         = __exit_p(omapfb_remove),
+ 	.driver         = {
+ 		.name   = "omapfb",
+ 		.owner  = THIS_MODULE,
+@@ -2474,7 +2473,7 @@ static int __init omapfb_init(void)
+ {
+ 	DBG("omapfb_init\n");
+ 
+-	if (platform_driver_register(&omapfb_driver)) {
++	if (platform_driver_probe(&omapfb_driver, omapfb_probe)) {
+ 		printk(KERN_ERR "failed to register omapfb driver\n");
+ 		return -ENODEV;
+ 	}
 -- 
-1.7.3.4
+1.7.4.1
 

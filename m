@@ -1,35 +1,216 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:07:56 +0000
-Subject: [PATCH v2 43/57] fbdev: sh_mobile_meram: Make current_reg field store the current reg set
-Message-Id: <1330614490-14149-44-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 07 Mar 2012 12:44:40 +0000
+Subject: [PATCH 11/21] OMAPDSS: register dss drivers in module init
+Message-Id: <1331124290-6285-12-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Make sure current_reg = 0/1 always mean register set A/B through all
-the code.
+We do the dss driver registration in a rather strange way: we have the
+higher level omapdss driver, and we use that driver's probe function to
+register the drivers for the rest of the dss devices.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+There doesn't seem to be any reason for that, so this patch changes the
+registration for all drivers to happen in the module init.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/sh_mobile_meram.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/omap2/dss/core.c |  135 +++++++++++++++++++++++-----------------
+ 1 files changed, 77 insertions(+), 58 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
-index 548f700..7af2ffe 100644
---- a/drivers/video/sh_mobile_meram.c
-+++ b/drivers/video/sh_mobile_meram.c
-@@ -259,8 +259,8 @@ static inline void meram_set_next_addr(struct sh_mobile_meram_priv *priv,
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 80fbfd7..95d312c 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -218,42 +218,6 @@ static int omap_dss_probe(struct platform_device *pdev)
+ 	dss_init_overlay_managers(pdev);
+ 	dss_init_overlays(pdev);
+ 
+-	r = dss_init_platform_driver();
+-	if (r) {
+-		DSSERR("Failed to initialize DSS platform driver\n");
+-		goto err_dss;
+-	}
+-
+-	r = dispc_init_platform_driver();
+-	if (r) {
+-		DSSERR("Failed to initialize dispc platform driver\n");
+-		goto err_dispc;
+-	}
+-
+-	r = rfbi_init_platform_driver();
+-	if (r) {
+-		DSSERR("Failed to initialize rfbi platform driver\n");
+-		goto err_rfbi;
+-	}
+-
+-	r = venc_init_platform_driver();
+-	if (r) {
+-		DSSERR("Failed to initialize venc platform driver\n");
+-		goto err_venc;
+-	}
+-
+-	r = dsi_init_platform_driver();
+-	if (r) {
+-		DSSERR("Failed to initialize DSI platform driver\n");
+-		goto err_dsi;
+-	}
+-
+-	r = hdmi_init_platform_driver();
+-	if (r) {
+-		DSSERR("Failed to initialize hdmi\n");
+-		goto err_hdmi;
+-	}
+-
+ 	r = dss_initialize_debugfs();
+ 	if (r)
+ 		goto err_debugfs;
+@@ -281,18 +245,6 @@ static int omap_dss_probe(struct platform_device *pdev)
+ err_register:
+ 	dss_uninitialize_debugfs();
+ err_debugfs:
+-	hdmi_uninit_platform_driver();
+-err_hdmi:
+-	dsi_uninit_platform_driver();
+-err_dsi:
+-	venc_uninit_platform_driver();
+-err_venc:
+-	dispc_uninit_platform_driver();
+-err_dispc:
+-	rfbi_uninit_platform_driver();
+-err_rfbi:
+-	dss_uninit_platform_driver();
+-err_dss:
+ 
+ 	return r;
+ }
+@@ -304,13 +256,6 @@ static int omap_dss_remove(struct platform_device *pdev)
+ 
+ 	dss_uninitialize_debugfs();
+ 
+-	hdmi_uninit_platform_driver();
+-	dsi_uninit_platform_driver();
+-	venc_uninit_platform_driver();
+-	rfbi_uninit_platform_driver();
+-	dispc_uninit_platform_driver();
+-	dss_uninit_platform_driver();
+-
+ 	dss_uninit_overlays(pdev);
+ 	dss_uninit_overlay_managers(pdev);
+ 
+@@ -559,6 +504,80 @@ static int omap_dss_bus_register(void)
+ 
+ /* INIT */
+ 
++static int __init omap_dss_register_drivers(void)
++{
++	int r;
++
++	r = platform_driver_probe(&omap_dss_driver, omap_dss_probe);
++	if (r)
++		return r;
++
++	r = dss_init_platform_driver();
++	if (r) {
++		DSSERR("Failed to initialize DSS platform driver\n");
++		goto err_dss;
++	}
++
++	r = dispc_init_platform_driver();
++	if (r) {
++		DSSERR("Failed to initialize dispc platform driver\n");
++		goto err_dispc;
++	}
++
++	r = rfbi_init_platform_driver();
++	if (r) {
++		DSSERR("Failed to initialize rfbi platform driver\n");
++		goto err_rfbi;
++	}
++
++	r = venc_init_platform_driver();
++	if (r) {
++		DSSERR("Failed to initialize venc platform driver\n");
++		goto err_venc;
++	}
++
++	r = dsi_init_platform_driver();
++	if (r) {
++		DSSERR("Failed to initialize DSI platform driver\n");
++		goto err_dsi;
++	}
++
++	r = hdmi_init_platform_driver();
++	if (r) {
++		DSSERR("Failed to initialize hdmi\n");
++		goto err_hdmi;
++	}
++
++	return 0;
++
++err_hdmi:
++	dsi_uninit_platform_driver();
++err_dsi:
++	venc_uninit_platform_driver();
++err_venc:
++	rfbi_uninit_platform_driver();
++err_rfbi:
++	dispc_uninit_platform_driver();
++err_dispc:
++	dss_uninit_platform_driver();
++err_dss:
++	platform_driver_unregister(&omap_dss_driver);
++
++	return r;
++}
++
++static void __exit omap_dss_unregister_drivers(void)
++{
++	hdmi_uninit_platform_driver();
++	dsi_uninit_platform_driver();
++	venc_uninit_platform_driver();
++	rfbi_uninit_platform_driver();
++	dispc_uninit_platform_driver();
++	dss_uninit_platform_driver();
++
++	platform_driver_unregister(&omap_dss_driver);
++}
++
+ #ifdef CONFIG_OMAP2_DSS_MODULE
+ static void omap_dss_bus_unregister(void)
  {
- 	unsigned long target;
+@@ -575,7 +594,7 @@ static int __init omap_dss_init(void)
+ 	if (r)
+ 		return r;
  
--	target = (cfg->current_reg) ? MExxSARA : MExxSARB;
- 	cfg->current_reg ^= 1;
-+	target = cfg->current_reg ? MExxSARB : MExxSARA;
+-	r = platform_driver_probe(&omap_dss_driver, omap_dss_probe);
++	r = omap_dss_register_drivers();
+ 	if (r) {
+ 		omap_dss_bus_unregister();
+ 		return r;
+@@ -596,7 +615,7 @@ static void __exit omap_dss_exit(void)
+ 		core.vdds_sdi_reg = NULL;
+ 	}
  
- 	/* set the next address to fetch */
- 	meram_write_icb(priv->base, cfg->icb[0].cache_icb,  target,
+-	platform_driver_unregister(&omap_dss_driver);
++	omap_dss_unregister_drivers();
+ 
+ 	omap_dss_bus_unregister();
+ }
+@@ -611,7 +630,7 @@ static int __init omap_dss_init(void)
+ 
+ static int __init omap_dss_init2(void)
+ {
+-	return platform_driver_register(&omap_dss_driver);
++	return omap_dss_register_drivers();
+ }
+ 
+ core_initcall(omap_dss_init);
 -- 
-1.7.3.4
+1.7.4.1
 

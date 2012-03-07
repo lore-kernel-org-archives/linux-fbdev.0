@@ -1,91 +1,104 @@
-From: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
-Date: Fri, 16 Mar 2012 14:27:41 +0000
-Subject: Re: [PATCH 2/2] OMAPDSS: DISPC: Handle synclost errors in OMAP3
-Message-Id: <CAF0AtAv7+y_e8Z6hDQ5jMB=0axnQdNwWtyEaB=htPi-Tro+PFg@mail.gmail.com>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Wed, 07 Mar 2012 02:57:50 +0000
+Subject: [PATCH] fbdev: sh_mipi_dsi: add extra phyctrl for sh_mipi_dsi_info
+Message-Id: <87y5rdnmmu.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331812132-9814-1-git-send-email-cmahapatra@ti.com>
-	<20120315230446.GO17132@sci.fi>
-	<1331893411.1653.5.camel@lappy>
-In-Reply-To: <1331893411.1653.5.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap <linux-omap@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-2012/3/16 Tomi Valkeinen <tomi.valkeinen@ti.com>:
-> On Fri, 2012-03-16 at 01:04 +0200, Ville Syrj=E4l=E4 wrote:
->> On Thu, Mar 15, 2012 at 05:18:52PM +0530, Chandrabhanu Mahapatra wrote:
->> > In OMAP3 DISPC video overlays suffer from some undocumented horizontal=
- position
->> > and timing related limitations leading to SYNCLOST errors. Whenever th=
-e image
->> > window is moved towards the right of the screen SYNCLOST errors become
->> > frequent. Checks have been implemented to see that DISPC driver rejects
->> > configuration exceeding above limitations.
->> >
->> > This code was successfully tested on OMAP3. This code is written based=
- on code
->> > written by Ville Syrj=E4l=E4 <ville.syrjala@nokia.com> in Linux OMAP k=
-ernel. Ville
->> > Syrj=E4l=E4 <ville.syrjala@nokia.com> had added checks for video overl=
-ay horizontal
->> > timing and DISPC horizontal blanking length limitations.
->> >
->> > Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
->> > ---
->> > =A0drivers/video/omap2/dss/dispc.c | =A0 67 ++++++++++++++++++++++++++=
-+++++++++++--
->> > =A01 files changed, 64 insertions(+), 3 deletions(-)
->> >
->> > diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss=
-/dispc.c
->> > index 5a1963e..ebfa613 100644
->> > --- a/drivers/video/omap2/dss/dispc.c
->> > +++ b/drivers/video/omap2/dss/dispc.c
->> > @@ -1622,6 +1622,58 @@ static void calc_dma_rotation_offset(u8 rotatio=
-n, bool mirror,
->> > =A0 =A0 }
->> > =A0}
->> >
->> > +static int check_horiz_timing(enum omap_channel channel, u16 pos_x,
->> > + =A0 =A0 =A0 =A0 =A0 u16 width, u16 height, u16 out_width, u16 out_he=
-ight)
->> > +{
->> > + =A0 int DS =3D DIV_ROUND_UP(height, out_height);
->> > + =A0 struct omap_dss_device *dssdev =3D dispc_mgr_get_device(channel);
->> > + =A0 struct omap_video_timings t =3D dssdev->panel.timings;
->> > + =A0 int pcd =3D REG_GET(DISPC_DIVISORo(channel), 7, 0);
->>
->> pcd doesn't exist for TV out, which is the reason why you see
->> 'lclk/pclk' ratio used instead in the harmattan kernel.
->
-> I'm surprised you still remember these things =3D). And even more
-> surprised that you actually bothered to review it, thanks for that.
->
-> Chandrabhanu, do you have an omap3 board with composite/svideo tv-out?
-> It'd be good to test on that also, as, like Ville points out, the above
-> code can't work for tv-out. Hmm, then again, it shouldn't work for HDMI
-> on OMAP4 either. Did you test with HDMI?
->
-> Or is the above code called for TV-manager at all? If not, perhaps it
-> could be named *_lcd or something. Or perhaps have a BUG_ON(channel !> lc=
-d1 or lcd2);
->
+sh_mipi uses some clocks, but the method of setup depends on CPU.
 
-Yes, I do have a Beagle board and I have tested on HDMI which works
-without synclost errors upto 640 * 480 resolution.
-The above errata exists only upto OMAP4430 ES1 which is currently not
-supported. Please refer to errata 2.14 Downscaling Limitations in
-errata sheet.
-This patch is only for Omap3.
+Current SuperH (like sh73a0) can control all of these clocks
+by CPG (Clock Pulse Generator).
+It means we can control it by clock framework only.
+But on sh7372, it needs CPG settings AND sh_mipi PHYCTRL::PLLDS,
+and only sh7372 has PHYCTRL::PLLDS.
 
-> =A0Tomi
->
->
+But on current sh_mipi driver, PHYCTRL::PLLDS of sh7372 was
+overwrote since the callback timing of clock setting was changed
+by c2658b70f06108361aa5024798f9c1bf47c73374
+(fbdev: sh_mipi_dsi: fixup setup timing of sh_mipi_setup()).
 
+The difference of PHYCTRL between current SuperH (=sh73a0) and
+old SuperH (=sh7372) is not only PLLDS.
+So this patch adds extra .phyctrl.
 
+It also adds detail explanation for unclear mipi settings for ap4evb.
 
---=20
-Chandrabhanu Mahapatra
-Texas Instruments India Pvt. Ltd.
+Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+---
+ arch/arm/mach-shmobile/board-ap4evb.c |   12 +++++++++---
+ drivers/video/sh_mipi_dsi.c           |    2 +-
+ include/video/sh_mipi_dsi.h           |    1 +
+ 3 files changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
+index b4718b0..ca075aa 100644
+--- a/arch/arm/mach-shmobile/board-ap4evb.c
++++ b/arch/arm/mach-shmobile/board-ap4evb.c
+@@ -556,20 +556,25 @@ static struct platform_device keysc_device = {
+ };
+ 
+ /* MIPI-DSI */
+-#define PHYCTRL		0x0070
+ static int sh_mipi_set_dot_clock(struct platform_device *pdev,
+ 				 void __iomem *base,
+ 				 int enable)
+ {
+ 	struct clk *pck = clk_get(&pdev->dev, "dsip_clk");
+-	void __iomem *phy =  base + PHYCTRL;
+ 
+ 	if (IS_ERR(pck))
+ 		return PTR_ERR(pck);
+ 
+ 	if (enable) {
++		/*
++		 * DSIPCLK	= 24MHz
++		 * D-PHY	= DSIPCLK * ((0x6*2)+1) = 321MHz (see .phyctrl)
++		 * HsByteCLK	= D-PHY/8 = 39MHz
++		 *
++		 *  X * Y * FPS +		 * (544+72+600+16) * (961+8+8+2) * 30 = 36.1MHz
++		 */
+ 		clk_set_rate(pck, clk_round_rate(pck, 24000000));
+-		iowrite32(ioread32(phy) | (0xb << 8), phy);
+ 		clk_enable(pck);
+ 	} else {
+ 		clk_disable(pck);
+@@ -598,6 +603,7 @@ static struct sh_mipi_dsi_info mipidsi0_info = {
+ 	.lcd_chan	= &lcdc_info.ch[0],
+ 	.lane		= 2,
+ 	.vsynw_offset	= 17,
++	.phyctrl	= 0x6 << 8,
+ 	.flags		= SH_MIPI_DSI_SYNC_PULSES_MODE |
+ 			  SH_MIPI_DSI_HSbyteCLK,
+ 	.set_dot_clock	= sh_mipi_set_dot_clock,
+diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
+index 05151b8..214482c 100644
+--- a/drivers/video/sh_mipi_dsi.c
++++ b/drivers/video/sh_mipi_dsi.c
+@@ -271,7 +271,7 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
+ 	iowrite32(0x00000001, base + PHYCTRL);
+ 	udelay(200);
+ 	/* Deassert resets, power on */
+-	iowrite32(0x03070001, base + PHYCTRL);
++	iowrite32(0x03070001 | pdata->phyctrl, base + PHYCTRL);
+ 
+ 	/*
+ 	 * Default = ULPS enable |
+diff --git a/include/video/sh_mipi_dsi.h b/include/video/sh_mipi_dsi.h
+index 434d56b..06c67fb 100644
+--- a/include/video/sh_mipi_dsi.h
++++ b/include/video/sh_mipi_dsi.h
+@@ -51,6 +51,7 @@ struct sh_mipi_dsi_info {
+ 	int				lane;
+ 	unsigned long			flags;
+ 	u32				clksrc;
++	u32				phyctrl; /* for extra setting */
+ 	unsigned int			vsynw_offset;
+ 	int	(*set_dot_clock)(struct platform_device *pdev,
+ 				 void __iomem *base,
+-- 
+1.7.5.4
+

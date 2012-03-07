@@ -1,122 +1,267 @@
-From: Inki Dae <inki.dae@samsung.com>
-Date: Fri, 09 Mar 2012 00:56:51 +0000
-Subject: RE: [PATCH] drm: exynos: Fix fb_videomode <-> drm_mode_modeinfo conversion
-Message-Id: <000c01ccfd8f$83e2c7d0$8ba85770$%dae@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 07 Mar 2012 12:44:45 +0000
+Subject: [PATCH 16/21] OMAPDSS: handle output-driver reg/unreg more dynamically
+Message-Id: <1331124290-6285-17-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331206495-3853-1-git-send-email-laurent.pinchart@ideasonboard.com>
-In-Reply-To: <1331206495-3853-1-git-send-email-laurent.pinchart@ideasonboard.com>
+References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi Laurent,
+Initialize and uninitialize the output drivers by using arrays of
+pointers to the init/uninit functions. This simplifies the code
+slightly.
 
-> -----Original Message-----
-> From: Joonyoung Shim [mailto:jy0922.shim@samsung.com]
-> Sent: Thursday, March 08, 2012 10:06 PM
-> To: Laurent Pinchart
-> Cc: dri-devel@lists.freedesktop.org; linux-fbdev@vger.kernel.org; Inki
-Dae;
-> Seung-Woo Kim; Kyungmin Park
-> Subject: Re: [PATCH] drm: exynos: Fix fb_videomode <-> drm_mode_modeinfo
-> conversion
-> 
-> On 03/08/2012 08:34 PM, Laurent Pinchart wrote:
-> > The fb_videomode structure stores the front porch and back porch in the
-> > right_margin and left_margin fields respectively. right_margin should
-> > thus be computed with hsync_start - hdisplay, and left_margin with
-> > htotal - hsync_end. The same holds for the vertical direction.
-> >
-> >         Active               Front           Sync            Back
-> >         Region               Porch                           Porch
-> > <-------------------><----------------><-------------><---------------->
-> >
-> >    //////////////////|
-> >   ////////////////// |
-> > //////////////////  |..................               ..................
-> >                                         _______________
-> >
-> > <------ xres -------><- right_margin -><- hsync_len -><- left_margin -->
-> >
-> > <---- hdisplay ----->
-> > <------------ hsync_start ------------>
-> > <--------------------- hsync_end -------------------->
-> > <--------------------------------- htotal ----------------------------->
-> >
-> > Fix the fb_videomode<->  drm_mode_modeinfo conversion functions
-> > accordingly.
-> >
-> > Signed-off-by: Laurent Pinchart<laurent.pinchart@ideasonboard.com>
-> > ---
-> >   drivers/gpu/drm/exynos/exynos_drm_connector.c |   16 ++++++++--------
-> >   1 files changed, 8 insertions(+), 8 deletions(-)
-> >
-> > While trying to understand how the fb_videomode and drm_mode_modeinfo
-> fields
-> > map to each other, I found what might be a bug in the Exynos DRM driver.
-> Could
-> > you please check and confirm that my understanding is correct ?
-> 
-> Good catch. You can refer Documentation/fb/framebuffer.txt to know in
-> detail.
-> 
-> Acked-by: Joonyoung Shim <jy0922.shim@samsung.com>
-> 
-> Thanks.
-> 
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+ drivers/video/omap2/dss/core.c |  111 +++++++++++++++++++++-------------------
+ drivers/video/omap2/dss/dss.h  |   41 ---------------
+ 2 files changed, 59 insertions(+), 93 deletions(-)
 
-it seems like that you doesn't use latest exynos drm driver so I merged it
-manually
-for this, you can refer to this link:
-http://git.infradead.org/users/kmpark/linux-samsung/shortlog/refs/heads/exyn
-os-drm-fixes
-
-Thanks,
-Inki Dae
-
-> > diff --git a/drivers/gpu/drm/exynos/exynos_drm_connector.c
-> b/drivers/gpu/drm/exynos/exynos_drm_connector.c
-> > index d620b07..7bb1dca 100644
-> > --- a/drivers/gpu/drm/exynos/exynos_drm_connector.c
-> > +++ b/drivers/gpu/drm/exynos/exynos_drm_connector.c
-> > @@ -52,14 +52,14 @@ convert_to_display_mode(struct drm_display_mode
-> *mode,
-> >   	mode->vrefresh = timing->refresh;
-> >
-> >   	mode->hdisplay = timing->xres;
-> > -	mode->hsync_start = mode->hdisplay + timing->left_margin;
-> > +	mode->hsync_start = mode->hdisplay + timing->right_margin;
-> >   	mode->hsync_end = mode->hsync_start + timing->hsync_len;
-> > -	mode->htotal = mode->hsync_end + timing->right_margin;
-> > +	mode->htotal = mode->hsync_end + timing->left_margin;
-> >
-> >   	mode->vdisplay = timing->yres;
-> > -	mode->vsync_start = mode->vdisplay + timing->upper_margin;
-> > +	mode->vsync_start = mode->vdisplay + timing->lower_margin;
-> >   	mode->vsync_end = mode->vsync_start + timing->vsync_len;
-> > -	mode->vtotal = mode->vsync_end + timing->lower_margin;
-> > +	mode->vtotal = mode->vsync_end + timing->upper_margin;
-> >
-> >   	if (timing->vmode&  FB_VMODE_INTERLACED)
-> >   		mode->flags |= DRM_MODE_FLAG_INTERLACE;
-> > @@ -81,14 +81,14 @@ convert_to_video_timing(struct fb_videomode *timing,
-> >   	timing->refresh = drm_mode_vrefresh(mode);
-> >
-> >   	timing->xres = mode->hdisplay;
-> > -	timing->left_margin = mode->hsync_start - mode->hdisplay;
-> > +	timing->right_margin = mode->hsync_start - mode->hdisplay;
-> >   	timing->hsync_len = mode->hsync_end - mode->hsync_start;
-> > -	timing->right_margin = mode->htotal - mode->hsync_end;
-> > +	timing->left_margin = mode->htotal - mode->hsync_end;
-> >
-> >   	timing->yres = mode->vdisplay;
-> > -	timing->upper_margin = mode->vsync_start - mode->vdisplay;
-> > +	timing->lower_margin = mode->vsync_start - mode->vdisplay;
-> >   	timing->vsync_len = mode->vsync_end - mode->vsync_start;
-> > -	timing->lower_margin = mode->vtotal - mode->vsync_end;
-> > +	timing->upper_margin = mode->vtotal - mode->vsync_end;
-> >
-> >   	if (mode->flags&  DRM_MODE_FLAG_INTERLACE)
-> >   		timing->vmode = FB_VMODE_INTERLACED;
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 654962a..ac4f2cb 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -503,10 +503,54 @@ static int omap_dss_bus_register(void)
+ }
+ 
+ /* INIT */
++static int (*dss_output_drv_reg_funcs[])(void) __initdata = {
++#ifdef CONFIG_OMAP2_DSS_DPI
++	dpi_init_platform_driver,
++#endif
++#ifdef CONFIG_OMAP2_DSS_SDI
++	sdi_init_platform_driver,
++#endif
++#ifdef CONFIG_OMAP2_DSS_RFBI
++	rfbi_init_platform_driver,
++#endif
++#ifdef CONFIG_OMAP2_DSS_VENC
++	venc_init_platform_driver,
++#endif
++#ifdef CONFIG_OMAP2_DSS_DSI
++	dsi_init_platform_driver,
++#endif
++#ifdef CONFIG_OMAP4_DSS_HDMI
++	hdmi_init_platform_driver,
++#endif
++};
++
++static void (*dss_output_drv_unreg_funcs[])(void) __exitdata = {
++#ifdef CONFIG_OMAP2_DSS_DPI
++	dpi_uninit_platform_driver,
++#endif
++#ifdef CONFIG_OMAP2_DSS_SDI
++	sdi_uninit_platform_driver,
++#endif
++#ifdef CONFIG_OMAP2_DSS_RFBI
++	rfbi_uninit_platform_driver,
++#endif
++#ifdef CONFIG_OMAP2_DSS_VENC
++	venc_uninit_platform_driver,
++#endif
++#ifdef CONFIG_OMAP2_DSS_DSI
++	dsi_uninit_platform_driver,
++#endif
++#ifdef CONFIG_OMAP4_DSS_HDMI
++	hdmi_uninit_platform_driver,
++#endif
++};
++
++static bool dss_output_drv_loaded[ARRAY_SIZE(dss_output_drv_reg_funcs)];
+ 
+ static int __init omap_dss_register_drivers(void)
+ {
+ 	int r;
++	int i;
+ 
+ 	r = platform_driver_probe(&omap_dss_driver, omap_dss_probe);
+ 	if (r)
+@@ -524,56 +568,18 @@ static int __init omap_dss_register_drivers(void)
+ 		goto err_dispc;
+ 	}
+ 
+-	r = dpi_init_platform_driver();
+-	if (r) {
+-		DSSERR("Failed to initialize dpi platform driver\n");
+-		goto err_dpi;
+-	}
+-
+-	r = sdi_init_platform_driver();
+-	if (r) {
+-		DSSERR("Failed to initialize sdi platform driver\n");
+-		goto err_sdi;
+-	}
+-
+-	r = rfbi_init_platform_driver();
+-	if (r) {
+-		DSSERR("Failed to initialize rfbi platform driver\n");
+-		goto err_rfbi;
+-	}
+-
+-	r = venc_init_platform_driver();
+-	if (r) {
+-		DSSERR("Failed to initialize venc platform driver\n");
+-		goto err_venc;
+-	}
+-
+-	r = dsi_init_platform_driver();
+-	if (r) {
+-		DSSERR("Failed to initialize DSI platform driver\n");
+-		goto err_dsi;
+-	}
+-
+-	r = hdmi_init_platform_driver();
+-	if (r) {
+-		DSSERR("Failed to initialize hdmi\n");
+-		goto err_hdmi;
++	/*
++	 * It's ok if the output-driver register fails. It happens, for example,
++	 * when there is no output-device (e.g. SDI for OMAP4).
++	 */
++	for (i = 0; i < ARRAY_SIZE(dss_output_drv_reg_funcs); ++i) {
++		r = dss_output_drv_reg_funcs[i]();
++		if (r = 0)
++			dss_output_drv_loaded[i] = true;
+ 	}
+ 
+ 	return 0;
+ 
+-err_hdmi:
+-	dsi_uninit_platform_driver();
+-err_dsi:
+-	venc_uninit_platform_driver();
+-err_venc:
+-	rfbi_uninit_platform_driver();
+-err_rfbi:
+-	sdi_uninit_platform_driver();
+-err_sdi:
+-	dpi_uninit_platform_driver();
+-err_dpi:
+-	dispc_uninit_platform_driver();
+ err_dispc:
+ 	dss_uninit_platform_driver();
+ err_dss:
+@@ -584,12 +590,13 @@ err_dss:
+ 
+ static void __exit omap_dss_unregister_drivers(void)
+ {
+-	hdmi_uninit_platform_driver();
+-	dsi_uninit_platform_driver();
+-	venc_uninit_platform_driver();
+-	rfbi_uninit_platform_driver();
+-	sdi_uninit_platform_driver();
+-	dpi_uninit_platform_driver();
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(dss_output_drv_unreg_funcs); ++i) {
++		if (dss_output_drv_loaded[i])
++			dss_output_drv_unreg_funcs[i]();
++	}
++
+ 	dispc_uninit_platform_driver();
+ 	dss_uninit_platform_driver();
+ 
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 24aadde..af7bed1 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -265,14 +265,9 @@ int dss_calc_clock_div(bool is_tft, unsigned long req_pck,
+ 		struct dispc_clock_info *dispc_cinfo);
+ 
+ /* SDI */
+-#ifdef CONFIG_OMAP2_DSS_SDI
+ int sdi_init_platform_driver(void);
+ void sdi_uninit_platform_driver(void);
+ int sdi_init_display(struct omap_dss_device *display);
+-#else
+-static inline int sdi_init_platform_driver(void) { return 0; }
+-static inline void sdi_uninit_platform_driver(void) { }
+-#endif
+ 
+ /* DSI */
+ #ifdef CONFIG_OMAP2_DSS_DSI
+@@ -309,13 +304,6 @@ void dsi_wait_pll_hsdiv_dispc_active(struct platform_device *dsidev);
+ void dsi_wait_pll_hsdiv_dsi_active(struct platform_device *dsidev);
+ struct platform_device *dsi_get_dsidev_from_id(int module);
+ #else
+-static inline int dsi_init_platform_driver(void)
+-{
+-	return 0;
+-}
+-static inline void dsi_uninit_platform_driver(void)
+-{
+-}
+ static inline int dsi_runtime_get(struct platform_device *dsidev)
+ {
+ 	return 0;
+@@ -372,14 +360,9 @@ static inline struct platform_device *dsi_get_dsidev_from_id(int module)
+ #endif
+ 
+ /* DPI */
+-#ifdef CONFIG_OMAP2_DSS_DPI
+ int dpi_init_platform_driver(void);
+ void dpi_uninit_platform_driver(void);
+ int dpi_init_display(struct omap_dss_device *dssdev);
+-#else
+-static inline int dpi_init_platform_driver(void) { return 0; }
+-static inline void dpi_uninit_platform_driver(void) { }
+-#endif
+ 
+ /* DISPC */
+ int dispc_init_platform_driver(void);
+@@ -456,13 +439,6 @@ void venc_dump_regs(struct seq_file *s);
+ int venc_init_display(struct omap_dss_device *display);
+ unsigned long venc_get_pixel_clock(void);
+ #else
+-static inline int venc_init_platform_driver(void)
+-{
+-	return 0;
+-}
+-static inline void venc_uninit_platform_driver(void)
+-{
+-}
+ static inline unsigned long venc_get_pixel_clock(void)
+ {
+ 	WARN("%s: VENC not compiled in, returning pclk as 0\n", __func__);
+@@ -482,13 +458,6 @@ static inline int hdmi_init_display(struct omap_dss_device *dssdev)
+ {
+ 	return 0;
+ }
+-static inline int hdmi_init_platform_driver(void)
+-{
+-	return 0;
+-}
+-static inline void hdmi_uninit_platform_driver(void)
+-{
+-}
+ static inline unsigned long hdmi_get_pixel_clock(void)
+ {
+ 	WARN("%s: HDMI not compiled in, returning pclk as 0\n", __func__);
+@@ -506,20 +475,10 @@ int hdmi_panel_init(void);
+ void hdmi_panel_exit(void);
+ 
+ /* RFBI */
+-#ifdef CONFIG_OMAP2_DSS_RFBI
+ int rfbi_init_platform_driver(void);
+ void rfbi_uninit_platform_driver(void);
+ void rfbi_dump_regs(struct seq_file *s);
+ int rfbi_init_display(struct omap_dss_device *display);
+-#else
+-static inline int rfbi_init_platform_driver(void)
+-{
+-	return 0;
+-}
+-static inline void rfbi_uninit_platform_driver(void)
+-{
+-}
+-#endif
+ 
+ 
+ #ifdef CONFIG_OMAP2_DSS_COLLECT_IRQ_STATS
+-- 
+1.7.4.1
 

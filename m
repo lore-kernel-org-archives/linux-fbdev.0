@@ -1,134 +1,90 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:07:32 +0000
-Subject: [PATCH v2 19/57] fbdev: sh_mobile_lcdc: Move brightness ops to sh_mobile_lcdc_bl_info
-Message-Id: <1330614490-14149-20-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 07 Mar 2012 12:44:50 +0000
+Subject: [PATCH 21/21] OMAPDSS: change default_device handling
+Message-Id: <1331124290-6285-22-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Update board code accordingly.
+We currently have a two ways to set a "default panel device" for dss, to
+which the overlays are connected when the omapdss driver is loaded:
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+- in textual format (name of the display) as cmdline parameter
+- as a pointer to the panel device from board file via pdata
+
+The current code handles this in a bit too complex way by using both of
+the above methods during runtime. However, with DT we don't have pdata
+anymore, so the code handling the second case won't work anymore. The
+current code has also the problem that it modifies the platform_data.
+
+This patch simplifies the code a bit by using the pointer method only
+inside the probe function, and stores the name of the panel device. This
+way we only need to handle the textual format during operation and also
+avoid modifying the platform_data.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-shmobile/board-mackerel.c |    6 ++----
- arch/sh/boards/mach-ap325rxa/setup.c    |    4 ++--
- arch/sh/boards/mach-ecovec24/setup.c    |    6 ++----
- drivers/video/sh_mobile_lcdcfb.c        |    6 ++----
- include/video/sh_mobile_lcdc.h          |    4 ++--
- 5 files changed, 10 insertions(+), 16 deletions(-)
+ drivers/video/omap2/dss/core.c |   14 +++++++++-----
+ 1 files changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
-index fdc88dc..00f72ed 100644
---- a/arch/arm/mach-shmobile/board-mackerel.c
-+++ b/arch/arm/mach-shmobile/board-mackerel.c
-@@ -396,13 +396,11 @@ static struct sh_mobile_lcdc_info lcdc_info = {
- 		.flags			= 0,
- 		.lcd_size_cfg.width	= 152,
- 		.lcd_size_cfg.height	= 91,
--		.board_cfg = {
--			.set_brightness = mackerel_set_brightness,
--			.get_brightness = mackerel_get_brightness,
--		},
- 		.bl_info = {
- 			.name = "sh_mobile_lcdc_bl",
- 			.max_brightness = 1,
-+			.set_brightness = mackerel_set_brightness,
-+			.get_brightness = mackerel_get_brightness,
- 		},
- 		.meram_cfg = &lcd_meram_cfg,
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index aa294d7..dd8f07c 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -43,6 +43,8 @@ static struct {
+ 
+ 	struct regulator *vdds_dsi_reg;
+ 	struct regulator *vdds_sdi_reg;
++
++	const char *default_display_name;
+ } core;
+ 
+ static char *def_disp_name;
+@@ -212,6 +214,11 @@ static int __init omap_dss_probe(struct platform_device *pdev)
+ 	if (r)
+ 		goto err_debugfs;
+ 
++	if (def_disp_name)
++		core.default_display_name = def_disp_name;
++	else if (pdata->default_device)
++		core.default_display_name = pdata->default_device->name;
++
+ 	for (i = 0; i < pdata->num_devices; ++i) {
+ 		struct omap_dss_device *dssdev = pdata->devices[i];
+ 
+@@ -225,9 +232,6 @@ static int __init omap_dss_probe(struct platform_device *pdev)
+ 
+ 			goto err_register;
+ 		}
+-
+-		if (def_disp_name && strcmp(def_disp_name, dssdev->name) = 0)
+-			pdata->default_device = dssdev;
  	}
-diff --git a/arch/sh/boards/mach-ap325rxa/setup.c b/arch/sh/boards/mach-ap325rxa/setup.c
-index 1f68241..b321ba8 100644
---- a/arch/sh/boards/mach-ap325rxa/setup.c
-+++ b/arch/sh/boards/mach-ap325rxa/setup.c
-@@ -219,12 +219,12 @@ static struct sh_mobile_lcdc_info lcdc_info = {
- 		.board_cfg = {
- 			.display_on = ap320_wvga_power_on,
- 			.display_off = ap320_wvga_power_off,
--			.set_brightness = ap320_wvga_set_brightness,
--			.get_brightness = ap320_wvga_get_brightness,
- 		},
- 		.bl_info = {
- 			.name = "sh_mobile_lcdc_bl",
- 			.max_brightness = 1,
-+			.set_brightness = ap320_wvga_set_brightness,
-+			.get_brightness = ap320_wvga_get_brightness,
- 		},
- 	}
- };
-diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
-index 62a2691..62cdd27 100644
---- a/arch/sh/boards/mach-ecovec24/setup.c
-+++ b/arch/sh/boards/mach-ecovec24/setup.c
-@@ -329,13 +329,11 @@ static struct sh_mobile_lcdc_info lcdc_info = {
- 			.width = 152,
- 			.height = 91,
- 		},
--		.board_cfg = {
--			.set_brightness = ecovec24_set_brightness,
--			.get_brightness = ecovec24_get_brightness,
--		},
- 		.bl_info = {
- 			.name = "sh_mobile_lcdc_bl",
- 			.max_brightness = 1,
-+			.set_brightness = ecovec24_set_brightness,
-+			.get_brightness = ecovec24_get_brightness,
- 		},
- 	}
- };
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index c54eb97..adfffd6 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -1317,22 +1317,20 @@ static struct fb_ops sh_mobile_lcdc_ops = {
- static int sh_mobile_lcdc_update_bl(struct backlight_device *bdev)
- {
- 	struct sh_mobile_lcdc_chan *ch = bl_get_data(bdev);
--	struct sh_mobile_lcdc_board_cfg *cfg = &ch->cfg.board_cfg;
- 	int brightness = bdev->props.brightness;
  
- 	if (bdev->props.power != FB_BLANK_UNBLANK ||
- 	    bdev->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
- 		brightness = 0;
+ 	return 0;
+@@ -350,7 +354,6 @@ static int dss_driver_probe(struct device *dev)
+ 	int r;
+ 	struct omap_dss_driver *dssdrv = to_dss_driver(dev->driver);
+ 	struct omap_dss_device *dssdev = to_dss_device(dev);
+-	struct omap_dss_board_info *pdata = core.pdev->dev.platform_data;
+ 	bool force;
  
--	return cfg->set_brightness(brightness);
-+	return ch->cfg.bl_info.set_brightness(brightness);
- }
+ 	DSSDBG("driver_probe: dev %s/%s, drv %s\n",
+@@ -359,7 +362,8 @@ static int dss_driver_probe(struct device *dev)
  
- static int sh_mobile_lcdc_get_brightness(struct backlight_device *bdev)
- {
- 	struct sh_mobile_lcdc_chan *ch = bl_get_data(bdev);
--	struct sh_mobile_lcdc_board_cfg *cfg = &ch->cfg.board_cfg;
+ 	dss_init_device(core.pdev, dssdev);
  
--	return cfg->get_brightness();
-+	return ch->cfg.bl_info.get_brightness();
- }
+-	force = pdata->default_device = dssdev;
++	force = core.default_display_name &&
++		strcmp(core.default_display_name, dssdev->name) = 0;
+ 	dss_recheck_connections(dssdev, force);
  
- static int sh_mobile_lcdc_check_fb(struct backlight_device *bdev,
-diff --git a/include/video/sh_mobile_lcdc.h b/include/video/sh_mobile_lcdc.h
-index 62be2c9..ecde6aa 100644
---- a/include/video/sh_mobile_lcdc.h
-+++ b/include/video/sh_mobile_lcdc.h
-@@ -154,8 +154,6 @@ struct sh_mobile_lcdc_board_cfg {
- 			       struct sh_mobile_lcdc_sys_bus_ops *sys_ops);
- 	void (*display_on)(void);
- 	void (*display_off)(void);
--	int (*set_brightness)(int brightness);
--	int (*get_brightness)(void);
- };
- 
- struct sh_mobile_lcdc_lcd_size_cfg { /* width and height of panel in mm */
-@@ -167,6 +165,8 @@ struct sh_mobile_lcdc_lcd_size_cfg { /* width and height of panel in mm */
- struct sh_mobile_lcdc_bl_info {
- 	const char *name;
- 	int max_brightness;
-+	int (*set_brightness)(int brightness);
-+	int (*get_brightness)(void);
- };
- 
- struct sh_mobile_lcdc_chan_cfg {
+ 	r = dssdrv->probe(dssdev);
 -- 
-1.7.3.4
+1.7.4.1
 

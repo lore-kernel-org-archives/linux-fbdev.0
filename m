@@ -1,114 +1,91 @@
-From: Grazvydas Ignotas <notasas@gmail.com>
-Date: Wed, 28 Mar 2012 23:45:12 +0000
-Subject: [PATCH] OMAPDSS: VENC: allow switching venc type at runtime
-Message-Id: <1332978312-11959-1-git-send-email-notasas@gmail.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 08 Mar 2012 11:34:55 +0000
+Subject: [PATCH] drm: exynos: Fix fb_videomode <-> drm_mode_modeinfo conversion
+Message-Id: <1331206495-3853-1-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, Grazvydas Ignotas <notasas@gmail.com>
+To: dri-devel@lists.freedesktop.org
+Cc: Inki Dae <inki.dae@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-fbdev@vger.kernel.org, Seung-Woo Kim <sw0312.kim@samsung.com>
 
-VENC type (composite/svideo) doesn't have to be fixed by board wiring,
-it is possible to provide both connectors, which is what pandora does.
-Having to recompile the kernel for users who have TV connector types
-that's don't match default board setting is very inconvenient, especially
-for users of a consumer device, so add support for switching VENC type
-at runtime over a new sysfs file venc_type.
+The fb_videomode structure stores the front porch and back porch in the
+right_margin and left_margin fields respectively. right_margin should
+thus be computed with hsync_start - hdisplay, and left_margin with
+htotal - hsync_end. The same holds for the vertical direction.
 
-Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
+       Active               Front           Sync            Back
+       Region               Porch                           Porch
+<-------------------><----------------><-------------><---------------->
+
+  //////////////////|
+ ////////////////// |
+//////////////////  |..................               ..................
+                                       _______________
+
+<------ xres -------><- right_margin -><- hsync_len -><- left_margin -->
+
+<---- hdisplay ----->
+<------------ hsync_start ------------>
+<--------------------- hsync_end -------------------->
+<--------------------------------- htotal ----------------------------->
+
+Fix the fb_videomode <-> drm_mode_modeinfo conversion functions
+accordingly.
+
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- Documentation/arm/OMAP/DSS     |    1 +
- drivers/video/omap2/dss/venc.c |   55 +++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 55 insertions(+), 1 deletions(-)
+ drivers/gpu/drm/exynos/exynos_drm_connector.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/arm/OMAP/DSS b/Documentation/arm/OMAP/DSS
-index 888ae7b..18e2214 100644
---- a/Documentation/arm/OMAP/DSS
-+++ b/Documentation/arm/OMAP/DSS
-@@ -156,6 +156,7 @@ timings		Display timings (pixclock,xres/hfp/hbp/hsw,yres/vfp/vbp/vsw)
- 		"pal" and "ntsc"
- panel_name
- tear_elim	Tearing elimination 0=off, 1=on
-+venc_type	Output type (video encoder only): "composite" or "svideo"
+While trying to understand how the fb_videomode and drm_mode_modeinfo fields
+map to each other, I found what might be a bug in the Exynos DRM driver. Could
+you please check and confirm that my understanding is correct ?
+
+diff --git a/drivers/gpu/drm/exynos/exynos_drm_connector.c b/drivers/gpu/drm/exynos/exynos_drm_connector.c
+index d620b07..7bb1dca 100644
+--- a/drivers/gpu/drm/exynos/exynos_drm_connector.c
++++ b/drivers/gpu/drm/exynos/exynos_drm_connector.c
+@@ -52,14 +52,14 @@ convert_to_display_mode(struct drm_display_mode *mode,
+ 	mode->vrefresh = timing->refresh;
  
- There are also some debugfs files at <debugfs>/omapdss/ which show information
- about clocks and registers.
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 9c3daf7..aa2e74a 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -485,16 +485,69 @@ unsigned long venc_get_pixel_clock(void)
- 	return 13500000;
- }
+ 	mode->hdisplay = timing->xres;
+-	mode->hsync_start = mode->hdisplay + timing->left_margin;
++	mode->hsync_start = mode->hdisplay + timing->right_margin;
+ 	mode->hsync_end = mode->hsync_start + timing->hsync_len;
+-	mode->htotal = mode->hsync_end + timing->right_margin;
++	mode->htotal = mode->hsync_end + timing->left_margin;
  
-+static ssize_t display_venc_type_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	const char *ret;
-+
-+	switch (dssdev->phy.venc.type) {
-+	case OMAP_DSS_VENC_TYPE_COMPOSITE:
-+		ret = "composite";
-+		break;
-+	case OMAP_DSS_VENC_TYPE_SVIDEO:
-+		ret = "svideo";
-+		break;
-+	default:
-+		ret = "unknown";
-+		break;
-+	}
-+
-+	return snprintf(buf, PAGE_SIZE, "%s\n", ret);
-+}
-+
-+static ssize_t display_venc_type_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t size)
-+{
-+	struct omap_dss_device *dssdev = to_dss_device(dev);
-+	enum omap_dss_venc_type new_type;
-+
-+	if (strncmp("composite", buf, 9) = 0)
-+		new_type = OMAP_DSS_VENC_TYPE_COMPOSITE;
-+	else if (strncmp("svideo", buf, 6) = 0)
-+		new_type = OMAP_DSS_VENC_TYPE_SVIDEO;
-+	else
-+		return -EINVAL;
-+
-+	mutex_lock(&venc.venc_lock);
-+
-+	if (dssdev->phy.venc.type != new_type) {
-+		dssdev->phy.venc.type = new_type;
-+		if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
-+			venc_power_off(dssdev);
-+			venc_power_on(dssdev);
-+		}
-+	}
-+
-+	mutex_unlock(&venc.venc_lock);
-+
-+	return size;
-+}
-+
-+static DEVICE_ATTR(venc_type, S_IRUGO | S_IWUSR,
-+		display_venc_type_show, display_venc_type_store);
-+
- /* driver */
- static int venc_panel_probe(struct omap_dss_device *dssdev)
- {
- 	dssdev->panel.timings = omap_dss_pal_timings;
+ 	mode->vdisplay = timing->yres;
+-	mode->vsync_start = mode->vdisplay + timing->upper_margin;
++	mode->vsync_start = mode->vdisplay + timing->lower_margin;
+ 	mode->vsync_end = mode->vsync_start + timing->vsync_len;
+-	mode->vtotal = mode->vsync_end + timing->lower_margin;
++	mode->vtotal = mode->vsync_end + timing->upper_margin;
  
--	return 0;
-+	return device_create_file(&dssdev->dev, &dev_attr_venc_type);
- }
+ 	if (timing->vmode & FB_VMODE_INTERLACED)
+ 		mode->flags |= DRM_MODE_FLAG_INTERLACE;
+@@ -81,14 +81,14 @@ convert_to_video_timing(struct fb_videomode *timing,
+ 	timing->refresh = drm_mode_vrefresh(mode);
  
- static void venc_panel_remove(struct omap_dss_device *dssdev)
- {
-+	device_remove_file(&dssdev->dev, &dev_attr_venc_type);
- }
+ 	timing->xres = mode->hdisplay;
+-	timing->left_margin = mode->hsync_start - mode->hdisplay;
++	timing->right_margin = mode->hsync_start - mode->hdisplay;
+ 	timing->hsync_len = mode->hsync_end - mode->hsync_start;
+-	timing->right_margin = mode->htotal - mode->hsync_end;
++	timing->left_margin = mode->htotal - mode->hsync_end;
  
- static int venc_panel_enable(struct omap_dss_device *dssdev)
+ 	timing->yres = mode->vdisplay;
+-	timing->upper_margin = mode->vsync_start - mode->vdisplay;
++	timing->lower_margin = mode->vsync_start - mode->vdisplay;
+ 	timing->vsync_len = mode->vsync_end - mode->vsync_start;
+-	timing->lower_margin = mode->vtotal - mode->vsync_end;
++	timing->upper_margin = mode->vtotal - mode->vsync_end;
+ 
+ 	if (mode->flags & DRM_MODE_FLAG_INTERLACE)
+ 		timing->vmode = FB_VMODE_INTERLACED;
 -- 
-1.7.0.4
+Regards,
+
+Laurent Pinchart
 

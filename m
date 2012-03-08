@@ -1,44 +1,71 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:07:15 +0000
-Subject: [PATCH v2 02/57] fbdev: sh_mobile_lcdc: Mark init-only symbols with __devinit(const)
-Message-Id: <1330614490-14149-3-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Thu, 08 Mar 2012 17:56:48 +0000
+Subject: [PATCH 2/2] viafb: avoid refresh and mode lookup in set_par
+Message-Id: <a1c4d39ec862e09acd93247200cd6b9e5cc5701d.1331229163.git.FlorianSchandinat@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1331229163.git.FlorianSchandinat@gmx.de>
+In-Reply-To: <cover.1331229163.git.FlorianSchandinat@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-default_720p and sh_mobile_lcdc_check_interface are used at device
-initialization time only. Mark them as __devinitconst and __devinit
-respectively.
+As check_var already ensures that the mode is valid there is no need
+to do those expensive lookups here again. The only thing that might
+change is that the deprecated interface could report slightly
+different refresh rates due to rounding errors.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 ---
- drivers/video/sh_mobile_lcdcfb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/via/viafbdev.c |   32 ++++++++++++++------------------
+ 1 files changed, 14 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 8b18360..d9f394e 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -1459,7 +1459,7 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
-  * Probe/remove and driver init/exit
-  */
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 7529340..0c88375 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -287,26 +287,22 @@ static int viafb_set_par(struct fb_info *info)
+ 			viafb_second_yres, viafb_bpp1, 1);
+ 	}
  
--static const struct fb_videomode default_720p = {
-+static const struct fb_videomode default_720p __devinitconst = {
- 	.name = "HDMI 720p",
- 	.xres = 1280,
- 	.yres = 720,
-@@ -1528,7 +1528,7 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
+-	refresh = viafb_get_refresh(info->var.xres, info->var.yres,
+-		get_var_refresh(&info->var));
+-	if (viafb_get_best_mode(viafbinfo->var.xres, viafbinfo->var.yres,
+-		refresh)) {
+-		if (viafb_dual_fb && viapar->iga_path = IGA2) {
+-			viafb_bpp1 = info->var.bits_per_pixel;
+-			viafb_refresh1 = refresh;
+-		} else {
+-			viafb_bpp = info->var.bits_per_pixel;
+-			viafb_refresh = refresh;
+-		}
+-
+-		if (info->var.accel_flags & FB_ACCELF_TEXT)
+-			info->flags &= ~FBINFO_HWACCEL_DISABLED;
+-		else
+-			info->flags |= FBINFO_HWACCEL_DISABLED;
+-		viafb_setmode();
+-		viafb_pan_display(&info->var, info);
++	refresh = get_var_refresh(&info->var);
++	if (viafb_dual_fb && viapar->iga_path = IGA2) {
++		viafb_bpp1 = info->var.bits_per_pixel;
++		viafb_refresh1 = refresh;
++	} else {
++		viafb_bpp = info->var.bits_per_pixel;
++		viafb_refresh = refresh;
+ 	}
+ 
++	if (info->var.accel_flags & FB_ACCELF_TEXT)
++		info->flags &= ~FBINFO_HWACCEL_DISABLED;
++	else
++		info->flags |= FBINFO_HWACCEL_DISABLED;
++	viafb_setmode();
++	viafb_pan_display(&info->var, info);
++
  	return 0;
  }
  
--static int sh_mobile_lcdc_check_interface(struct sh_mobile_lcdc_chan *ch)
-+static int __devinit sh_mobile_lcdc_check_interface(struct sh_mobile_lcdc_chan *ch)
- {
- 	int interface_type = ch->cfg.interface_type;
- 
 -- 
-1.7.3.4
+1.7.9
 

@@ -1,327 +1,141 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Wed, 07 Mar 2012 18:23:49 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 08 Mar 2012 08:02:57 +0000
 Subject: Re: [PATCH 08/21] OMAPDSS: clean up the omapdss platform data mess
-Message-Id: <4F57A4E5.6070201@ti.com>
+Message-Id: <1331193777.2354.21.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-pfxTuCWwWPy2Cxmzzv3e"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com> <1331124290-6285-9-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1331124290-6285-9-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
+	 <1331124290-6285-9-git-send-email-tomi.valkeinen@ti.com>
+	 <4F57A4E5.6070201@ti.com>
+In-Reply-To: <4F57A4E5.6070201@ti.com>
+To: Archit Taneja <a0393947@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
 
-On Wednesday 07 March 2012 06:14 PM, Tomi Valkeinen wrote:
-> The omapdss pdata handling is a mess. This is more evident when trying
-> to use device tree for DSS, as we don't have platform data anymore in
-> that case. This patch cleans the pdata handling by:
->
-> - Remove struct omap_display_platform_data. It was used just as a
->    wrapper for struct omap_dss_board_info.
-> - Pass the platform data only to omapdss device. The drivers for omap
->    dss hwmods do not need the platform data. This should also work better
->    for DT, as we can create omapdss device programmatically in generic omap
->    boot code, and thus we can pass the pdata to it.
-> - Create dss functions for get_ctx_loss_count and dsi_enable/disable_pads
->    that the dss hwmod drivers can call.
->
-> Signed-off-by: Tomi Valkeinen<tomi.valkeinen@ti.com>
-> ---
->   arch/arm/mach-omap2/display.c   |   37 ++++++++++++++++++-------------------
->   drivers/video/omap2/dss/core.c  |   35 +++++++++++++++++++++++++++++++++++
->   drivers/video/omap2/dss/dispc.c |   21 ++-------------------
->   drivers/video/omap2/dss/dsi.c   |   17 +++--------------
->   drivers/video/omap2/dss/dss.h   |    3 +++
->   drivers/video/omap2/dss/hdmi.c  |    2 --
->   include/video/omapdss.h         |    5 -----
->   7 files changed, 61 insertions(+), 59 deletions(-)
->
-> diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
-> index 3677b1f..279c124 100644
-> --- a/arch/arm/mach-omap2/display.c
-> +++ b/arch/arm/mach-omap2/display.c
-> @@ -185,10 +185,23 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
->   	struct omap_hwmod *oh;
->   	struct platform_device *pdev;
->   	int i, oh_count;
-> -	struct omap_display_platform_data pdata;
->   	const struct omap_dss_hwmod_data *curr_dss_hwmod;
->
-> -	memset(&pdata, 0, sizeof(pdata));
-> +	/* create omapdss device */
-> +
-> +	board_data->dsi_enable_pads = omap_dsi_enable_pads;
-> +	board_data->dsi_disable_pads = omap_dsi_disable_pads;
-> +	board_data->get_context_loss_count = omap_pm_get_dev_context_loss_count;
 
-Why are the checks for board data being NULL removed here?
+--=-pfxTuCWwWPy2Cxmzzv3e
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> +
-> +	omap_display_device.dev.platform_data = board_data;
-> +
-> +	r = platform_device_register(&omap_display_device);
-> +	if (r<  0) {
-> +		pr_err("Unable to register omapdss device\n");
-> +		return r;
-> +	}
-> +
-> +	/* create devices for dss hwmods */
->
->   	if (cpu_is_omap24xx()) {
->   		curr_dss_hwmod = omap2_dss_hwmod_data;
-> @@ -201,15 +214,6 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
->   		oh_count = ARRAY_SIZE(omap4_dss_hwmod_data);
->   	}
->
-> -	if (board_data->dsi_enable_pads = NULL)
-> -		board_data->dsi_enable_pads = omap_dsi_enable_pads;
-> -	if (board_data->dsi_disable_pads = NULL)
-> -		board_data->dsi_disable_pads = omap_dsi_disable_pads;
-> -
-> -	pdata.board_data = board_data;
-> -	pdata.board_data->get_context_loss_count > -		omap_pm_get_dev_context_loss_count;
-> -
->   	for (i = 0; i<  oh_count; i++) {
->   		oh = omap_hwmod_lookup(curr_dss_hwmod[i].oh_name);
->   		if (!oh) {
-> @@ -219,21 +223,16 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
->   		}
->
->   		pdev = omap_device_build(curr_dss_hwmod[i].dev_name,
-> -				curr_dss_hwmod[i].id, oh,&pdata,
-> -				sizeof(struct omap_display_platform_data),
-> +				curr_dss_hwmod[i].id, oh,
-> +				NULL, 0,
->   				NULL, 0, 0);
->
->   		if (WARN((IS_ERR(pdev)), "Could not build omap_device for %s\n",
->   				curr_dss_hwmod[i].oh_name))
->   			return -ENODEV;
->   	}
-> -	omap_display_device.dev.platform_data = board_data;
->
-> -	r = platform_device_register(&omap_display_device);
-> -	if (r<  0)
-> -		printk(KERN_ERR "Unable to register OMAP-Display device\n");
-> -
-> -	return r;
-> +	return 0;
->   }
->
->   static void dispc_disable_outputs(void)
-> diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-> index 8613f86..3efd473 100644
-> --- a/drivers/video/omap2/dss/core.c
-> +++ b/drivers/video/omap2/dss/core.c
-> @@ -87,6 +87,41 @@ struct regulator *dss_get_vdds_sdi(void)
->   	return reg;
->   }
->
-> +int dss_get_ctx_loss_count(struct device *dev)
-> +{
-> +	struct omap_dss_board_info *board_data = core.pdev->dev.platform_data;
-> +	int cnt;
-> +
-> +	if (!board_data || !board_data->get_context_loss_count)
-> +		return -ENOENT;
+On Wed, 2012-03-07 at 23:41 +0530, Archit Taneja wrote:
+> On Wednesday 07 March 2012 06:14 PM, Tomi Valkeinen wrote:
+> > The omapdss pdata handling is a mess. This is more evident when trying
+> > to use device tree for DSS, as we don't have platform data anymore in
+> > that case. This patch cleans the pdata handling by:
+> >
+> > - Remove struct omap_display_platform_data. It was used just as a
+> >    wrapper for struct omap_dss_board_info.
+> > - Pass the platform data only to omapdss device. The drivers for omap
+> >    dss hwmods do not need the platform data. This should also work bett=
+er
+> >    for DT, as we can create omapdss device programmatically in generic =
+omap
+> >    boot code, and thus we can pass the pdata to it.
+> > - Create dss functions for get_ctx_loss_count and dsi_enable/disable_pa=
+ds
+> >    that the dss hwmod drivers can call.
+> >
+> > Signed-off-by: Tomi Valkeinen<tomi.valkeinen@ti.com>
+> > ---
+> >   arch/arm/mach-omap2/display.c   |   37 ++++++++++++++++++------------=
+-------
+> >   drivers/video/omap2/dss/core.c  |   35 ++++++++++++++++++++++++++++++=
++++++
+> >   drivers/video/omap2/dss/dispc.c |   21 ++-------------------
+> >   drivers/video/omap2/dss/dsi.c   |   17 +++--------------
+> >   drivers/video/omap2/dss/dss.h   |    3 +++
+> >   drivers/video/omap2/dss/hdmi.c  |    2 --
+> >   include/video/omapdss.h         |    5 -----
+> >   7 files changed, 61 insertions(+), 59 deletions(-)
+> >
+> > diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/displa=
+y.c
+> > index 3677b1f..279c124 100644
+> > --- a/arch/arm/mach-omap2/display.c
+> > +++ b/arch/arm/mach-omap2/display.c
+> > @@ -185,10 +185,23 @@ int __init omap_display_init(struct omap_dss_boar=
+d_info *board_data)
+> >   	struct omap_hwmod *oh;
+> >   	struct platform_device *pdev;
+> >   	int i, oh_count;
+> > -	struct omap_display_platform_data pdata;
+> >   	const struct omap_dss_hwmod_data *curr_dss_hwmod;
+> >
+> > -	memset(&pdata, 0, sizeof(pdata));
+> > +	/* create omapdss device */
+> > +
+> > +	board_data->dsi_enable_pads =3D omap_dsi_enable_pads;
+> > +	board_data->dsi_disable_pads =3D omap_dsi_disable_pads;
+> > +	board_data->get_context_loss_count =3D omap_pm_get_dev_context_loss_c=
+ount;
+>=20
+> Why are the checks for board data being NULL removed here?
 
-why do we check board_data being NULL here and not in omap_display_init()?
+We didn't check if board_data is NULL in the earlier version either. And
+I don't think there's need to check that, because if the board file
+calls this function, it should also give the board data.
 
-Archit
+However, the earlier version didn't set the func pointers if the func
+pointer in the board_data was !=3D NULL. Did you mean that? I removed that
+check, as I don't see a need for it. The func pointers should be set by
+this function, and I don't see why the board file would need to use its
+own versions.
 
-> +
-> +	cnt = board_data->get_context_loss_count(dev);
-> +
-> +	WARN_ONCE(cnt<  0, "get_context_loss_count failed: %d\n", cnt);
-> +
-> +	return cnt;
-> +}
-> +
-> +int dss_dsi_enable_pads(int dsi_id, unsigned lane_mask)
-> +{
-> +	struct omap_dss_board_info *board_data = core.pdev->dev.platform_data;
-> +
-> +	if (!board_data || !board_data->dsi_enable_pads)
-> +		return -ENOENT;
-> +
-> +	return board_data->dsi_enable_pads(dsi_id, lane_mask);
-> +}
-> +
-> +void dss_dsi_disable_pads(int dsi_id, unsigned lane_mask)
-> +{
-> +	struct omap_dss_board_info *board_data = core.pdev->dev.platform_data;
-> +
-> +	if (!board_data || !board_data->dsi_enable_pads)
-> +		return;
-> +
-> +	return board_data->dsi_disable_pads(dsi_id, lane_mask);
-> +}
-> +
->   #if defined(CONFIG_DEBUG_FS)&&  defined(CONFIG_OMAP2_DSS_DEBUG_SUPPORT)
->   static int dss_debug_show(struct seq_file *s, void *unused)
->   {
-> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-> index bddd64b..703bb20 100644
-> --- a/drivers/video/omap2/dss/dispc.c
-> +++ b/drivers/video/omap2/dss/dispc.c
-> @@ -131,23 +131,6 @@ static inline u32 dispc_read_reg(const u16 idx)
->   	return __raw_readl(dispc.base + idx);
->   }
->
-> -static int dispc_get_ctx_loss_count(void)
-> -{
-> -	struct device *dev =&dispc.pdev->dev;
-> -	struct omap_display_platform_data *pdata = dev->platform_data;
-> -	struct omap_dss_board_info *board_data = pdata->board_data;
-> -	int cnt;
-> -
-> -	if (!board_data->get_context_loss_count)
-> -		return -ENOENT;
-> -
-> -	cnt = board_data->get_context_loss_count(dev);
-> -
-> -	WARN_ONCE(cnt<  0, "get_context_loss_count failed: %d\n", cnt);
-> -
-> -	return cnt;
-> -}
-> -
->   #define SR(reg) \
->   	dispc.ctx[DISPC_##reg / sizeof(u32)] = dispc_read_reg(DISPC_##reg)
->   #define RR(reg) \
-> @@ -251,7 +234,7 @@ static void dispc_save_context(void)
->   	if (dss_has_feature(FEAT_CORE_CLK_DIV))
->   		SR(DIVISOR);
->
-> -	dispc.ctx_loss_cnt = dispc_get_ctx_loss_count();
-> +	dispc.ctx_loss_cnt = dss_get_ctx_loss_count(&dispc.pdev->dev);
->   	dispc.ctx_valid = true;
->
->   	DSSDBG("context saved, ctx_loss_count %d\n", dispc.ctx_loss_cnt);
-> @@ -266,7 +249,7 @@ static void dispc_restore_context(void)
->   	if (!dispc.ctx_valid)
->   		return;
->
-> -	ctx = dispc_get_ctx_loss_count();
-> +	ctx = dss_get_ctx_loss_count(&dispc.pdev->dev);
->
->   	if (ctx>= 0&&  ctx = dispc.ctx_loss_cnt)
->   		return;
-> diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-> index 3e656be..4e2f7ff 100644
-> --- a/drivers/video/omap2/dss/dsi.c
-> +++ b/drivers/video/omap2/dss/dsi.c
-> @@ -261,9 +261,6 @@ struct dsi_data {
->   	struct clk *dss_clk;
->   	struct clk *sys_clk;
->
-> -	int (*enable_pads)(int dsi_id, unsigned lane_mask);
-> -	void (*disable_pads)(int dsi_id, unsigned lane_mask);
-> -
->   	struct dsi_clock_info current_cinfo;
->
->   	bool vdds_dsi_enabled;
-> @@ -2396,7 +2393,7 @@ static int dsi_cio_init(struct omap_dss_device *dssdev)
->
->   	DSSDBGF();
->
-> -	r = dsi->enable_pads(dsi_get_dsidev_id(dsidev), dsi_get_lane_mask(dssdev));
-> +	r = dss_dsi_enable_pads(dsi_get_dsidev_id(dsidev), dsi_get_lane_mask(dssdev));
->   	if (r)
->   		return r;
->
-> @@ -2506,21 +2503,20 @@ err_cio_pwr:
->   		dsi_cio_disable_lane_override(dsidev);
->   err_scp_clk_dom:
->   	dsi_disable_scp_clk(dsidev);
-> -	dsi->disable_pads(dsi_get_dsidev_id(dsidev), dsi_get_lane_mask(dssdev));
-> +	dss_dsi_disable_pads(dsi_get_dsidev_id(dsidev), dsi_get_lane_mask(dssdev));
->   	return r;
->   }
->
->   static void dsi_cio_uninit(struct omap_dss_device *dssdev)
->   {
->   	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
-> -	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
->
->   	/* DDR_CLK_ALWAYS_ON */
->   	REG_FLD_MOD(dsidev, DSI_CLK_CTRL, 0, 13, 13);
->
->   	dsi_cio_power(dsidev, DSI_COMPLEXIO_POWER_OFF);
->   	dsi_disable_scp_clk(dsidev);
-> -	dsi->disable_pads(dsi_get_dsidev_id(dsidev), dsi_get_lane_mask(dssdev));
-> +	dss_dsi_disable_pads(dsi_get_dsidev_id(dsidev), dsi_get_lane_mask(dssdev));
->   }
->
->   static void dsi_config_tx_fifo(struct platform_device *dsidev,
-> @@ -4680,8 +4676,6 @@ static void dsi_put_clocks(struct platform_device *dsidev)
->   /* DSI1 HW IP initialisation */
->   static int omap_dsihw_probe(struct platform_device *dsidev)
->   {
-> -	struct omap_display_platform_data *dss_plat_data;
-> -	struct omap_dss_board_info *board_info;
->   	u32 rev;
->   	int r, i, dsi_module = dsi_get_dsidev_id(dsidev);
->   	struct resource *dsi_mem;
-> @@ -4695,11 +4689,6 @@ static int omap_dsihw_probe(struct platform_device *dsidev)
->   	dsi_pdev_map[dsi_module] = dsidev;
->   	dev_set_drvdata(&dsidev->dev, dsi);
->
-> -	dss_plat_data = dsidev->dev.platform_data;
-> -	board_info = dss_plat_data->board_data;
-> -	dsi->enable_pads = board_info->dsi_enable_pads;
-> -	dsi->disable_pads = board_info->dsi_disable_pads;
-> -
->   	spin_lock_init(&dsi->irq_lock);
->   	spin_lock_init(&dsi->errors_lock);
->   	dsi->errors = 0;
-> diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-> index d4b3dff..d37ed80 100644
-> --- a/drivers/video/omap2/dss/dss.h
-> +++ b/drivers/video/omap2/dss/dss.h
-> @@ -162,6 +162,9 @@ struct platform_device;
->   struct bus_type *dss_get_bus(void);
->   struct regulator *dss_get_vdds_dsi(void);
->   struct regulator *dss_get_vdds_sdi(void);
-> +int dss_get_ctx_loss_count(struct device *dev);
-> +int dss_dsi_enable_pads(int dsi_id, unsigned lane_mask);
-> +void dss_dsi_disable_pads(int dsi_id, unsigned lane_mask);
->
->   /* apply */
->   void dss_apply_init(void);
-> diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-> index c4b4f69..cacf856 100644
-> --- a/drivers/video/omap2/dss/hdmi.c
-> +++ b/drivers/video/omap2/dss/hdmi.c
-> @@ -63,7 +63,6 @@
->
->   static struct {
->   	struct mutex lock;
-> -	struct omap_display_platform_data *pdata;
->   	struct platform_device *pdev;
->   	struct hdmi_ip_data ip_data;
->
-> @@ -796,7 +795,6 @@ static int omapdss_hdmihw_probe(struct platform_device *pdev)
->   	struct resource *hdmi_mem;
->   	int r;
->
-> -	hdmi.pdata = pdev->dev.platform_data;
->   	hdmi.pdev = pdev;
->
->   	mutex_init(&hdmi.lock);
-> diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-> index 483f67c..b499ccb 100644
-> --- a/include/video/omapdss.h
-> +++ b/include/video/omapdss.h
-> @@ -316,11 +316,6 @@ extern int omap_display_init(struct omap_dss_board_info *board_data);
->   /* HDMI mux init*/
->   extern int omap_hdmi_init(enum omap_hdmi_flags flags);
->
-> -struct omap_display_platform_data {
-> -	struct omap_dss_board_info *board_data;
-> -	/* TODO: Additional members to be added when PM is considered */
-> -};
-> -
->   struct omap_video_timings {
->   	/* Unit: pixels */
->   	u16 x_res;
+> > diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/c=
+ore.c
+> > index 8613f86..3efd473 100644
+> > --- a/drivers/video/omap2/dss/core.c
+> > +++ b/drivers/video/omap2/dss/core.c
+> > @@ -87,6 +87,41 @@ struct regulator *dss_get_vdds_sdi(void)
+> >   	return reg;
+> >   }
+> >
+> > +int dss_get_ctx_loss_count(struct device *dev)
+> > +{
+> > +	struct omap_dss_board_info *board_data =3D core.pdev->dev.platform_da=
+ta;
+> > +	int cnt;
+> > +
+> > +	if (!board_data || !board_data->get_context_loss_count)
+> > +		return -ENOENT;
+>=20
+> why do we check board_data being NULL here and not in omap_display_init()=
+?
+
+I added it for DT case, because then we don't have board_data for the
+devices defined in the DT data. However, for now we always have the
+board_data, and in this patch I should just move the code. So I'll
+remove the check, and add it later with DT code if needed.
+
+(and actually, I don' think the check is needed in DT case either...)
+
+ Tomi
+
+
+
+
+
+--=-pfxTuCWwWPy2Cxmzzv3e
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJPWGexAAoJEPo9qoy8lh71KrMP/jJq47DoNDI3vYwgMmXS3/XO
+FSGPGuv3lggNcQczizQ9S/gj//H+/DQkFL7Lscer39fTXwjSIfjiO96u1hhWHvMV
+kt4rsY9o40GC+dxXUgUPPfuRIAPGmPs2SEO3eX3WgTSOv+gDAJvqn5SHQZB61uRb
+HayGOv/U7c+IHdZwVLeVvV1sqrXnZW+9tSKE6S31Y+qOW7UgaE/swl0J/EjBGBMm
+d+qJDrGUj1UvwGdslO01zAmENyqJdWuv/oeTBQY2408e7W+s2XWfy5b2gnjHQNHy
+o9O1W0teztxb+dOYP7pbKpHr19RJ41eXqIfBHak6SAOFtVUAvQbO7a92DUpnkiHa
+Wleb7PqQ1WRYha+n+Cb0gUOdqbdP3EqWACnY2lzeTQjDEQcJRKPVwPIJ/AWtvLQb
+TLglXTjmx9o674oAgOxgoOp8FBLw0aZLpC5uEXjGOzmn6DDDtUBiNP9UNgxNWjF0
+uki0nJHpLzRItDdXIIMVPMPwoLo+osKYxyJDybEVpdan7GI45Q7G5t5SzYcL/6XK
+/ZJdE6cTRqu9VHgensmY8E+lRJ+Oh+mpf0XPyOuVuuHFpFx4fEx3/3J1AI8JO9wC
+PvUpZbmTA3xpfJznF8rN5Oem37miHWtJ0bTcQPabyD5o/CCqV/TQmCdPUPWNUGVy
+4AUHyQrRIbHS9OQgwSMs
+=bxqz
+-----END PGP SIGNATURE-----
+
+--=-pfxTuCWwWPy2Cxmzzv3e--
 

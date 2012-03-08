@@ -1,114 +1,103 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Thu, 08 Mar 2012 08:29:44 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 08 Mar 2012 08:33:52 +0000
 Subject: Re: [PATCH 08/21] OMAPDSS: clean up the omapdss platform data mess
-Message-Id: <4F586B28.1050403@ti.com>
+Message-Id: <1331195632.2354.37.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-blCI/VIVOmh4xfZ/D/E3"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>  <1331124290-6285-9-git-send-email-tomi.valkeinen@ti.com>  <4F57A4E5.6070201@ti.com> <1331193777.2354.21.camel@deskari>
-In-Reply-To: <1331193777.2354.21.camel@deskari>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
+	 <1331124290-6285-9-git-send-email-tomi.valkeinen@ti.com>
+	 <4F57A4E5.6070201@ti.com> <1331193777.2354.21.camel@deskari>
+	 <4F586B28.1050403@ti.com>
+In-Reply-To: <4F586B28.1050403@ti.com>
+To: Archit Taneja <a0393947@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Thursday 08 March 2012 01:32 PM, Tomi Valkeinen wrote:
-> On Wed, 2012-03-07 at 23:41 +0530, Archit Taneja wrote:
->> On Wednesday 07 March 2012 06:14 PM, Tomi Valkeinen wrote:
->>> The omapdss pdata handling is a mess. This is more evident when trying
->>> to use device tree for DSS, as we don't have platform data anymore in
->>> that case. This patch cleans the pdata handling by:
->>>
->>> - Remove struct omap_display_platform_data. It was used just as a
->>>     wrapper for struct omap_dss_board_info.
->>> - Pass the platform data only to omapdss device. The drivers for omap
->>>     dss hwmods do not need the platform data. This should also work better
->>>     for DT, as we can create omapdss device programmatically in generic omap
->>>     boot code, and thus we can pass the pdata to it.
->>> - Create dss functions for get_ctx_loss_count and dsi_enable/disable_pads
->>>     that the dss hwmod drivers can call.
->>>
->>> Signed-off-by: Tomi Valkeinen<tomi.valkeinen@ti.com>
->>> ---
->>>    arch/arm/mach-omap2/display.c   |   37 ++++++++++++++++++-------------------
->>>    drivers/video/omap2/dss/core.c  |   35 +++++++++++++++++++++++++++++++++++
->>>    drivers/video/omap2/dss/dispc.c |   21 ++-------------------
->>>    drivers/video/omap2/dss/dsi.c   |   17 +++--------------
->>>    drivers/video/omap2/dss/dss.h   |    3 +++
->>>    drivers/video/omap2/dss/hdmi.c  |    2 --
->>>    include/video/omapdss.h         |    5 -----
->>>    7 files changed, 61 insertions(+), 59 deletions(-)
->>>
->>> diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
->>> index 3677b1f..279c124 100644
->>> --- a/arch/arm/mach-omap2/display.c
->>> +++ b/arch/arm/mach-omap2/display.c
->>> @@ -185,10 +185,23 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
->>>    	struct omap_hwmod *oh;
->>>    	struct platform_device *pdev;
->>>    	int i, oh_count;
->>> -	struct omap_display_platform_data pdata;
->>>    	const struct omap_dss_hwmod_data *curr_dss_hwmod;
->>>
->>> -	memset(&pdata, 0, sizeof(pdata));
->>> +	/* create omapdss device */
->>> +
->>> +	board_data->dsi_enable_pads = omap_dsi_enable_pads;
->>> +	board_data->dsi_disable_pads = omap_dsi_disable_pads;
->>> +	board_data->get_context_loss_count = omap_pm_get_dev_context_loss_count;
->>
->> Why are the checks for board data being NULL removed here?
->
-> We didn't check if board_data is NULL in the earlier version either. And
-> I don't think there's need to check that, because if the board file
-> calls this function, it should also give the board data.
->
-> However, the earlier version didn't set the func pointers if the func
-> pointer in the board_data was != NULL. Did you mean that? I removed that
-> check, as I don't see a need for it. The func pointers should be set by
-> this function, and I don't see why the board file would need to use its
-> own versions.
 
-Yes, I had meant the function pointers being != NULL, yes it doesn't 
-make sense for the board file to populate these.
+--=-blCI/VIVOmh4xfZ/D/E3
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
->
->>> diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
->>> index 8613f86..3efd473 100644
->>> --- a/drivers/video/omap2/dss/core.c
->>> +++ b/drivers/video/omap2/dss/core.c
->>> @@ -87,6 +87,41 @@ struct regulator *dss_get_vdds_sdi(void)
->>>    	return reg;
->>>    }
->>>
->>> +int dss_get_ctx_loss_count(struct device *dev)
->>> +{
->>> +	struct omap_dss_board_info *board_data = core.pdev->dev.platform_data;
->>> +	int cnt;
->>> +
->>> +	if (!board_data || !board_data->get_context_loss_count)
->>> +		return -ENOENT;
->>
->> why do we check board_data being NULL here and not in omap_display_init()?
->
-> I added it for DT case, because then we don't have board_data for the
-> devices defined in the DT data. However, for now we always have the
-> board_data, and in this patch I should just move the code. So I'll
-> remove the check, and add it later with DT code if needed.
+On Thu, 2012-03-08 at 13:47 +0530, Archit Taneja wrote:
+> On Thursday 08 March 2012 01:32 PM, Tomi Valkeinen wrote:
 
-Ok. When DT will be in use, would omap_display_init() be called or not?
+> >> why do we check board_data being NULL here and not in omap_display_ini=
+t()?
+> >
+> > I added it for DT case, because then we don't have board_data for the
+> > devices defined in the DT data. However, for now we always have the
+> > board_data, and in this patch I should just move the code. So I'll
+> > remove the check, and add it later with DT code if needed.
+>=20
+> Ok. When DT will be in use, would omap_display_init() be called or not?
 
->
-> (and actually, I don' think the check is needed in DT case either...)
+No. Currently the board files create and fill the board_data, and then
+call omap_display_init.
 
-I don't know how things would work in DT case. So I'm not sure what's 
-happening here.
+With DT, the DT data will contain all the dynamic, per-board
+information. Something like:
 
-Archit
+dss {
+	dpi {
+		dvi {
+			pd-gpio =3D <10>;
+			...
+		};
+	};
 
->
->   Tomi
->
->
->
->
+	dsi@1 {
+		taal {
+			reset-gpio =3D <20>;
+			...
+		};
+	}
+
+	...
+};
+
+The DT data will be passed individually to each dss driver (i.e. dsi
+driver will get its DT node, etc.). The drivers will read the data, and
+initialize themselves with that, more or less the same manner they'd do
+with the board_data from board files.
+
+However, we currently have this "omapdss" device, which is not a hwmod
+device at all. In the long run I think the omapdss device should be
+removed, but for now we need it. And device has to be created in the
+arch code, the same way it's now created in omap_display_init().
+
+So with DT we need a new func, omap_display_init_dt() or such, which
+creates the omapdss device, and also creates a board_data which contains
+the ctx_loss etc function pointers. But the board data won't have any
+display data, those come directly from DT data.
+
+It's a bit messy solution, but it should allow us to have both DT and
+non-DT working at the same time, with quite minimal changes to the board
+files.
+
+ Tomi
+
+
+--=-blCI/VIVOmh4xfZ/D/E3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJPWG7vAAoJEPo9qoy8lh71v5MP/1JiURgvDKUbD9MVCj6ZdS9G
+gMdKqQYQL3NNMsaq4/oCJn3cIpy9xoD/upAq1hLQalkNQExvQjJMKKU/0e0s1KKS
+/vNOuOqQF4HiRVZMnxF8XBw9IFD6OIuEfkqdotgNtVipasralqez62GmUUMN1dDy
+XonSLcVSv3DhZkX6owtBtPdtx9oCjllaNUamydp+V4cSOyXqqE0xx9TkJYd1XfUY
+EASbFEkYfAr8i0BNSpb+tUOpvWTItfCeW/CtzTuQNk4cqvOkUOfH25OF8jZmkVQG
+AuP71ZVXCqi4iXqWTqGdHXmc+WUfh+Pdcvh0FSpH04ZjVGipTPF8t+03cmSKYF1D
+k2DxTECcdSbpceG//mNwfbD+rj/B8a7GlM0eDaFj+B6w3vyxejdbOoK3Xdv1sIKu
+UPhaphuPBUUEHtuB4iP0ylOk/9MRHYC1fzL+yHWquiemCLjXb9r4MTFLmmcA4yCM
+v2HBWLT7htqlh/CF/vNMvtGNcFqqmLCohIDIOKdcVhvgQLKLcbLRukCf3BSws9op
+Ipc8a2He1sBWMMXc+SwwsGw6v1vi/BLnzce1QNiIh/1zf1zx415/FrR1EKAZGz9X
+NRn/yCSGSq5OoChwioQkJfxyv0Ub9Ov9DAoAi2ZrBhBTkuubVf+UVwFfwTrB6d3e
+EGRti05MVImnsMm832zR
+=I1tl
+-----END PGP SIGNATURE-----
+
+--=-blCI/VIVOmh4xfZ/D/E3--
 

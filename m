@@ -1,64 +1,122 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 08 Mar 2012 18:08:13 +0000
-Subject: Re: [PATCH] drm: exynos: Fix fb_videomode <-> drm_mode_modeinfo conversion
-Message-Id: <19579335.MlZiPW5pP0@avalon>
+From: Inki Dae <inki.dae@samsung.com>
+Date: Fri, 09 Mar 2012 00:56:51 +0000
+Subject: RE: [PATCH] drm: exynos: Fix fb_videomode <-> drm_mode_modeinfo conversion
+Message-Id: <000c01ccfd8f$83e2c7d0$8ba85770$%dae@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1331206495-3853-1-git-send-email-laurent.pinchart@ideasonboard.com>
-	<alpine.LFD.2.02.1203081656160.1975@casper.infradead.org>
-In-Reply-To: <alpine.LFD.2.02.1203081656160.1975@casper.infradead.org>
+In-Reply-To: <1331206495-3853-1-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: linux-fbdev@vger.kernel.org, Seung-Woo Kim <sw0312.kim@samsung.com>, dri-devel@lists.freedesktop.org, Inki Dae <inki.dae@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+To: linux-fbdev@vger.kernel.org
 
-Hi James,
+Hi Laurent,
 
-On Thursday 08 March 2012 16:57:21 James Simmons wrote:
+> -----Original Message-----
+> From: Joonyoung Shim [mailto:jy0922.shim@samsung.com]
+> Sent: Thursday, March 08, 2012 10:06 PM
+> To: Laurent Pinchart
+> Cc: dri-devel@lists.freedesktop.org; linux-fbdev@vger.kernel.org; Inki
+Dae;
+> Seung-Woo Kim; Kyungmin Park
+> Subject: Re: [PATCH] drm: exynos: Fix fb_videomode <-> drm_mode_modeinfo
+> conversion
+> 
+> On 03/08/2012 08:34 PM, Laurent Pinchart wrote:
 > > The fb_videomode structure stores the front porch and back porch in the
 > > right_margin and left_margin fields respectively. right_margin should
 > > thus be computed with hsync_start - hdisplay, and left_margin with
 > > htotal - hsync_end. The same holds for the vertical direction.
-> > 
-> >        Active               Front           Sync            Back
-> >        Region               Porch                           Porch
-> > 
+> >
+> >         Active               Front           Sync            Back
+> >         Region               Porch                           Porch
 > > <-------------------><----------------><-------------><---------------->
-> > 
-> >   //////////////////|
-> >  
-> >  ////////////////// |
-> > 
+> >
+> >    //////////////////|
+> >   ////////////////// |
 > > //////////////////  |..................               ..................
-> > 
-> >                                        _______________
-> > 
+> >                                         _______________
+> >
 > > <------ xres -------><- right_margin -><- hsync_len -><- left_margin -->
-> > 
+> >
 > > <---- hdisplay ----->
 > > <------------ hsync_start ------------>
 > > <--------------------- hsync_end -------------------->
 > > <--------------------------------- htotal ----------------------------->
-> > 
-> > Fix the fb_videomode <-> drm_mode_modeinfo conversion functions
+> >
+> > Fix the fb_videomode<->  drm_mode_modeinfo conversion functions
 > > accordingly.
+> >
+> > Signed-off-by: Laurent Pinchart<laurent.pinchart@ideasonboard.com>
+> > ---
+> >   drivers/gpu/drm/exynos/exynos_drm_connector.c |   16 ++++++++--------
+> >   1 files changed, 8 insertions(+), 8 deletions(-)
+> >
+> > While trying to understand how the fb_videomode and drm_mode_modeinfo
+> fields
+> > map to each other, I found what might be a bug in the Exynos DRM driver.
+> Could
+> > you please check and confirm that my understanding is correct ?
 > 
-> Wow I see this has remegered. Some time last year I posted a patch that
-> had these routines in a generic format for people to use. I can repost
-> them again if people are interested.
+> Good catch. You can refer Documentation/fb/framebuffer.txt to know in
+> detail.
+> 
+> Acked-by: Joonyoung Shim <jy0922.shim@samsung.com>
+> 
+> Thanks.
+> 
 
-As part of the EDID parser rework, I will introduce a common structure to 
-describe video modes. Conversion functions between the common structures and 
-struct drm_mode_modeinfo, struct fb_videomode and struct v4l2_bt_timings will 
-be provided. Direct conversion between drm_mode_modeinfo and fb_videomode 
-should then disappear.
+it seems like that you doesn't use latest exynos drm driver so I merged it
+manually
+for this, you can refer to this link:
+http://git.infradead.org/users/kmpark/linux-samsung/shortlog/refs/heads/exyn
+os-drm-fixes
 
-This being said, we could introduce add you conversion functions in the 
-meantime. I will then post a patch to remove them when the common video mode 
-structure will be pushed to mainline :-)
+Thanks,
+Inki Dae
 
--- 
-Regards,
-
-Laurent Pinchart
+> > diff --git a/drivers/gpu/drm/exynos/exynos_drm_connector.c
+> b/drivers/gpu/drm/exynos/exynos_drm_connector.c
+> > index d620b07..7bb1dca 100644
+> > --- a/drivers/gpu/drm/exynos/exynos_drm_connector.c
+> > +++ b/drivers/gpu/drm/exynos/exynos_drm_connector.c
+> > @@ -52,14 +52,14 @@ convert_to_display_mode(struct drm_display_mode
+> *mode,
+> >   	mode->vrefresh = timing->refresh;
+> >
+> >   	mode->hdisplay = timing->xres;
+> > -	mode->hsync_start = mode->hdisplay + timing->left_margin;
+> > +	mode->hsync_start = mode->hdisplay + timing->right_margin;
+> >   	mode->hsync_end = mode->hsync_start + timing->hsync_len;
+> > -	mode->htotal = mode->hsync_end + timing->right_margin;
+> > +	mode->htotal = mode->hsync_end + timing->left_margin;
+> >
+> >   	mode->vdisplay = timing->yres;
+> > -	mode->vsync_start = mode->vdisplay + timing->upper_margin;
+> > +	mode->vsync_start = mode->vdisplay + timing->lower_margin;
+> >   	mode->vsync_end = mode->vsync_start + timing->vsync_len;
+> > -	mode->vtotal = mode->vsync_end + timing->lower_margin;
+> > +	mode->vtotal = mode->vsync_end + timing->upper_margin;
+> >
+> >   	if (timing->vmode&  FB_VMODE_INTERLACED)
+> >   		mode->flags |= DRM_MODE_FLAG_INTERLACE;
+> > @@ -81,14 +81,14 @@ convert_to_video_timing(struct fb_videomode *timing,
+> >   	timing->refresh = drm_mode_vrefresh(mode);
+> >
+> >   	timing->xres = mode->hdisplay;
+> > -	timing->left_margin = mode->hsync_start - mode->hdisplay;
+> > +	timing->right_margin = mode->hsync_start - mode->hdisplay;
+> >   	timing->hsync_len = mode->hsync_end - mode->hsync_start;
+> > -	timing->right_margin = mode->htotal - mode->hsync_end;
+> > +	timing->left_margin = mode->htotal - mode->hsync_end;
+> >
+> >   	timing->yres = mode->vdisplay;
+> > -	timing->upper_margin = mode->vsync_start - mode->vdisplay;
+> > +	timing->lower_margin = mode->vsync_start - mode->vdisplay;
+> >   	timing->vsync_len = mode->vsync_end - mode->vsync_start;
+> > -	timing->lower_margin = mode->vtotal - mode->vsync_end;
+> > +	timing->upper_margin = mode->vtotal - mode->vsync_end;
+> >
+> >   	if (mode->flags&  DRM_MODE_FLAG_INTERLACE)
+> >   		timing->vmode = FB_VMODE_INTERLACED;
 

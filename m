@@ -1,31 +1,57 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 26 Mar 2012 08:15:17 +0000
-Subject: RE: usage of height and width in fb_var_screeninfo
-Message-Id: <000b01cd0b28$9471b650$bd5522f0$%han@samsung.com>
+From: Grazvydas Ignotas <notasas@gmail.com>
+Date: Fri, 09 Mar 2012 00:42:49 +0000
+Subject: [PATCH] OMAPDSS: OMAPFB: check for matching memory size early
+Message-Id: <1331253769-9770-1-git-send-email-notasas@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAGA24ML642uOP1tEp+VOTe0OZQ9S3HnP8Zi+N1n8X-QsjP9P2w@mail.gmail.com>
-In-Reply-To: <CAGA24ML642uOP1tEp+VOTe0OZQ9S3HnP8Zi+N1n8X-QsjP9P2w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+Cc: linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grazvydas Ignotas <notasas@gmail.com>
 
-On Thu, Mar 22, 2012 at 8:53, Jun Nie <niej0001@gmail.com> wrote:
-> Does anyone happen to know the usage of below member in
-> fb_var_screeninfo? I do not know whether mm stand for geometry size or
-> memory, can not find its usage in any driver neither. We considering
-> to use it as zoomed size.
-> 
-> struct fb_var_screeninfo {
->         __u32 height;                   /* height of picture in mm    */
->         __u32 width;                    /* width of picture in mm     */
-> 
+If the size of memory region that is being set up is the same as before,
+we don't have to do memory and layer busy checks.
 
-Yes, right. Both thins are geometry sizes of LCD panel in millimeters.
-Some OS platform needs these parameters.
-Good luck.
+Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
+---
+I'm not sure if this is semantically correct, but this helps to get
+some old programs working, that rely on old DSS version which didn't
+check for mmap lock, but incidentally they are using same size too..
 
-Best regards,
-Jingoo Han
+ drivers/video/omap2/omapfb/omapfb-ioctl.c |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+index df7bcce..a0ac95c 100644
+--- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
++++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+@@ -225,6 +225,9 @@ static int omapfb_setup_mem(struct fb_info *fbi, struct omapfb_mem_info *mi)
+ 	down_write_nested(&rg->lock, rg->id);
+ 	atomic_inc(&rg->lock_count);
+ 
++	if (rg->size = size && rg->type = mi->type)
++		goto out;
++
+ 	if (atomic_read(&rg->map_count)) {
+ 		r = -EBUSY;
+ 		goto out;
+@@ -245,12 +248,10 @@ static int omapfb_setup_mem(struct fb_info *fbi, struct omapfb_mem_info *mi)
+ 		}
+ 	}
+ 
+-	if (rg->size != size || rg->type != mi->type) {
+-		r = omapfb_realloc_fbmem(fbi, size, mi->type);
+-		if (r) {
+-			dev_err(fbdev->dev, "realloc fbmem failed\n");
+-			goto out;
+-		}
++	r = omapfb_realloc_fbmem(fbi, size, mi->type);
++	if (r) {
++		dev_err(fbdev->dev, "realloc fbmem failed\n");
++		goto out;
+ 	}
+ 
+  out:
+-- 
+1.7.0.4
 

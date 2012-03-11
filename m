@@ -1,94 +1,50 @@
-From: joeyli <jlee@suse.com>
-Date: Fri, 23 Mar 2012 04:25:39 +0000
-Subject: Re: [PATCH] Added backlight driver for Acer Aspire 4736
-Message-Id: <1332476739.10557.438.camel@linux-s257.site>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Sun, 11 Mar 2012 19:36:21 +0000
+Subject: [PATCH 1/7] drivers/video/pvr2fb.c: ensure arguments to request_irq and free_irq are compatible
+Message-Id: <1331494587-12196-2-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331608337.2267.67.camel@debian.Gayathri>
-	 <20120312175130.GA18002@srcf.ucam.org>
-	 <1331640592.3485.50.camel@debian.Gayathri>
-	 <20120313124738.GB10822@srcf.ucam.org>
-	 <CABNxG=Dqg26EHmC3vibf3-SjVhby1qgQfMniQObUeh9eJ6SwEw@mail.gmail.com>
-	 <20120313133458.GA11574@srcf.ucam.org>
-	 <1331688294.2577.19.camel@debian.Gayathri>
-	 <1331680373.10557.169.camel@linux-s257.site>
-	 <1331692996.3052.8.camel@debian.Gayathri>
-	 <1331704278.10557.190.camel@linux-s257.site>
-	 <CABNxG=D3y2GQqS1XN=+B0QRScXpufBkPQtP5-SSNEjSavhtW7g@mail.gmail.com>
-	 <1331798740.10557.245.camel@linux-s257.site>
-	 <1332047432.6304.13.camel@debian.Gayathri>
-	 <1332122514.10557.270.camel@linux-s257.site>
-	 <1332241764.10557.329.camel@linux-s257.site>
-	 <1332269710.3921.31.camel@debian.Gayathri>
-	 <1332298845.10557.343.camel@linux-s257.site>
-	 <1332473811.3051.5.camel@debian.Gayathri>
-In-Reply-To: <1332473811.3051.5.camel@debian.Gayathri>
+References: <1331494587-12196-1-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <1331494587-12196-1-git-send-email-Julia.Lawall@lip6.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com>
-Cc: Matthew Garrett <mjg@redhat.com>, rpurdie@rpsys.net, FlorianSchandinat@gmx.de, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-於 五，2012-03-23 於 09:06 +0530，Pradeep Subrahmanion 提到：
-> On Wed, 2012-03-21 at 11:00 +0800, joeyli wrote:
-> > think the hotkey of backlight control only works with acpi_osi=Linux ?
-> 
-> yes , hot key control only works with this option.Any ideas about where
-> the hot key events gets handled ? I tried logging inside
-> 'acpi_video_device_notify' method in video.c . But the control does not
-> seem to reach here . 
-> 
-> Thanks, 
-> 
-> Pradeep Subrahmanion
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-Hotkey change status is through _Q11 and _Q12 event but not wmi:
+Convert calls to free_irq so that the second argument is the same as the
+last argument of the corresponding call to request_irq.  Without this
+property, free_irq does nothing.
 
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-    Method (_Q11, 0, NotSerialized)             /* Brightness down */
-    {
-        If (LGreaterEqual (OSYS, 0x07D6))       /* Vista or later */
-        {
-            If (LEqual (OBV, 0xFF))
-            {
-                Notify (^^^PEGP.VGA.LCD, 0x87)
-            }
-            Else
-            {
-                Notify (^^^OVGA.DD03, 0x87)
-            }
-        }
-        Else                                    /* 0x07D1 (XP) or 0x03E8 (Linux) */
-        {
-            ^^^OVGA.AINT (One, BRTS)		/* access AINT, it touch BCLP register */
-            If (LEqual (^^^WMID.BAEF, One))
-            {
-                Store (BRTS, Local1)
-                Store (^^^WMID.LBL0, Local2)
-                Add (Local2, Local1, Local2)
-                Store (Local2, ^^^WMID.NTDC)
-                Notify (WMID, 0x80)
-            }
-        }
-    }
+---
+Not tested.
 
-Method (AINT, 2, NotSerialized)
-{
-...
-    Else
-    {
-        If (LEqual (Arg0, One))         /* Linux or XP */
-        {
-            Add (Arg1, One, Arg1)
-            Store (Divide (Multiply (Arg1, 0xFF), 0x0A, ), BCLP)
-            Or (BCLP, 0x80000000, BCLP)		/* touch BCLP register */
-            Store (0x02, ASLC)
-        }
+ drivers/video/pvr2fb.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-
-That's why I said acpi_osi"!Windows 2006" should also works to you. Unfortunately,
-there have something wrong in video driver for support this machine on XP mode.
-
-
-thanks a lot!
-Joey Lee
+diff --git a/drivers/video/pvr2fb.c b/drivers/video/pvr2fb.c
+index 3a3fdc6..bcd44c3 100644
+--- a/drivers/video/pvr2fb.c
++++ b/drivers/video/pvr2fb.c
+@@ -895,7 +895,7 @@ static int __init pvr2fb_dc_init(void)
+ 
+ #ifdef CONFIG_PVR2_DMA
+ 	if (request_dma(pvr2dma, "pvr2") != 0) {
+-		free_irq(HW_EVENT_VSYNC, 0);
++		free_irq(HW_EVENT_VSYNC, fb_info);
+ 		return -EBUSY;
+ 	}
+ #endif
+@@ -914,7 +914,7 @@ static void __exit pvr2fb_dc_exit(void)
+ 		currentpar->mmio_base = 0;
+ 	}
+ 
+-	free_irq(HW_EVENT_VSYNC, 0);
++	free_irq(HW_EVENT_VSYNC, fb_info);
+ #ifdef CONFIG_PVR2_DMA
+ 	free_dma(pvr2dma);
+ #endif
 

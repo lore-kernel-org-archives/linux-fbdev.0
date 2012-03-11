@@ -1,36 +1,30 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 21 Mar 2012 20:49:18 +0000
-Subject: Re: Problem with framebuffer mmap on platforms with large addressing
-Message-Id: <1332362958.2982.41.camel@pasglop>
+From: richard -rw- weinberger <richard.weinberger@gmail.com>
+Date: Sun, 11 Mar 2012 13:22:57 +0000
+Subject: Re: [PATCH] Video : Amba: Use in_interrupt() in clcdfb_sleep().
+Message-Id: <CAFLxGvygW=DeSQbRq8Wbcdy5E3e4vYcN666_9oWgnuwzT1WKqw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CALT56yO05UBY6=KqK94=_sC4hd3ranj5J5CXOAo5hSjVAdkgkA@mail.gmail.com>
- <1332031585.3105.197.camel@pasglop>
- <CALT56yOaxfWYwxvBDbo9dpWo9y37dO0iGge4x6kciZp1oXXHVw@mail.gmail.com>
- <1332103797.3105.202.camel@pasglop>
- <CALT56yPjkPQOaXW4Eg8c-S4+a4Omou_YYacqrsCoTAYeXO0XkA@mail.gmail.com>
- <4F6A2FEC.6040003@gmx.de>
-In-Reply-To: <4F6A2FEC.6040003@gmx.de>
+References: <1331471665-22226-1-git-send-email-santoshprasadnayak@gmail.com>
+In-Reply-To: <1331471665-22226-1-git-send-email-santoshprasadnayak@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Tony Breeds <tbreeds@au1.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: santosh nayak <santoshprasadnayak@gmail.com>
+Cc: linux@arm.linux.org.uk, FlorianSchandinat@gmx.de, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-On Wed, 2012-03-21 at 19:45 +0000, Florian Tobias Schandinat wrote:
-> I finally found where we started to discuss this issue, for reference
-> "sm501fb.c: support mmap on PPC440SPe/PPC440EPx" back in May 2010.
-> 
-> The thing I don't remember is why we consider exporting the physical
-> address to userspace desirable (or even necessary). Fixing the generic
-> mmap would be trivial without breaking or adding any userspace ABI, I
-> think. Just adding those things to fb_info and adjusting fb_mmap
-> should
-> do the trick, shouldn't it?
+On Sun, Mar 11, 2012 at 2:14 PM, santosh nayak
+<santoshprasadnayak@gmail.com> wrote:
+> From: Santosh Nayak <santoshprasadnayak@gmail.com>
+>
+> Instead of "in_atomic()", we can use in_interrupt() to check whether
+> its an interrupt context.
 
-For historical reasons, things like X or directfb used it. Modern X
-drivers shouldn't any more, but heh...
+What is the benefit?
 
-Cheers,
-Ben.
+Your change turns clcdfb_sleep() into a ticking bomb.
+If clcdfb_sleep() is called from an atomic section (e.g. under a
+spinlock) it will call msleep()
+and the whole thing explodes...
 
-
+-- 
+Thanks,
+//richard

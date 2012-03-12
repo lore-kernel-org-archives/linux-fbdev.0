@@ -1,10 +1,10 @@
 From: Thomas Abraham <thomas.abraham@linaro.org>
-Date: Sat, 24 Mar 2012 16:40:45 +0000
-Subject: [PATCH v3 1/4] video: s3c-fb: move video interface timing out of window setup data
-Message-Id: <1332606528-32338-2-git-send-email-thomas.abraham@linaro.org>
+Date: Mon, 12 Mar 2012 20:56:57 +0000
+Subject: [PATCH v2 1/3] video: s3c-fb: move video interface timing out of window setup data
+Message-Id: <1331585999-8604-2-git-send-email-thomas.abraham@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1332606528-32338-1-git-send-email-thomas.abraham@linaro.org>
-In-Reply-To: <1332606528-32338-1-git-send-email-thomas.abraham@linaro.org>
+References: <1331585999-8604-1-git-send-email-thomas.abraham@linaro.org>
+In-Reply-To: <1331585999-8604-1-git-send-email-thomas.abraham@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -24,8 +24,8 @@ Signed-off-by: Thomas Abraham <thomas.abraham@linaro.org>
 Acked-by: Jingoo Han <jg1.han@samsung.com>
 ---
  arch/arm/plat-samsung/include/plat/fb.h |    9 ++-
- drivers/video/s3c-fb.c                  |  112 +++++++++++++++++--------------
- 2 files changed, 67 insertions(+), 54 deletions(-)
+ drivers/video/s3c-fb.c                  |  114 +++++++++++++++++--------------
+ 2 files changed, 68 insertions(+), 55 deletions(-)
 
 diff --git a/arch/arm/plat-samsung/include/plat/fb.h b/arch/arm/plat-samsung/include/plat/fb.h
 index 0fedf47..39d6bd7 100644
@@ -68,7 +68,7 @@ index 0fedf47..39d6bd7 100644
  	u32			 default_win;
  
 diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index f310516..c94f40d 100644
+index f310516..60d1c12 100644
 --- a/drivers/video/s3c-fb.c
 +++ b/drivers/video/s3c-fb.c
 @@ -495,7 +495,6 @@ static int s3c_fb_set_par(struct fb_info *info)
@@ -79,7 +79,7 @@ index f310516..c94f40d 100644
  
  	dev_dbg(sfb->dev, "setting framebuffer parameters\n");
  
-@@ -532,48 +531,9 @@ static int s3c_fb_set_par(struct fb_info *info)
+@@ -532,47 +531,8 @@ static int s3c_fb_set_par(struct fb_info *info)
  	/* disable the window whilst we update it */
  	writel(0, regs + WINCON(win_no));
  
@@ -103,9 +103,8 @@ index f310516..c94f40d 100644
 -
 -		writel(data, regs + VIDCON0);
 -
-+	if (win_no = sfb->pdata->default_win)
- 		s3c_fb_enable(sfb, 1);
- 
+-		s3c_fb_enable(sfb, 1);
+-
 -		data = VIDTCON0_VBPD(var->upper_margin - 1) |
 -		       VIDTCON0_VFPD(var->lower_margin - 1) |
 -		       VIDTCON0_VSPW(var->vsync_len - 1);
@@ -125,10 +124,11 @@ index f310516..c94f40d 100644
 -		       VIDTCON2_HOZVAL_E(var->xres - 1);
 -		writel(data, regs + sfb->variant.vidtcon + 8);
 -	}
--
++	if (win_no = sfb->pdata->default_win)
++		s3c_fb_enable(sfb, 1);
+ 
  	/* write the buffer address */
  
- 	/* start and end registers stride is 8 */
 @@ -1144,11 +1104,11 @@ static int __devinit s3c_fb_alloc_memory(struct s3c_fb *sfb,
  
  	dev_dbg(sfb->dev, "allocating memory for display\n");

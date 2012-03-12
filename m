@@ -1,107 +1,77 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Tue, 13 Mar 2012 09:34:32 +0000
-Subject: [PATCH v3 2/3] video: s3c-fb: remove 'default_win' element from platform data
-Message-Id: <002e01cd00fc$7efad9e0$7cf08da0$%han@samsung.com>
+From: Thomas Abraham <thomas.abraham@linaro.org>
+Date: Mon, 12 Mar 2012 20:56:56 +0000
+Subject: [PATCH v2 0/3] video: s3c-fb: Rearrange the elements in platform data
+Message-Id: <1331585999-8604-1-git-send-email-thomas.abraham@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331585999-8604-1-git-send-email-thomas.abraham@linaro.org>
- <1331585999-8604-3-git-send-email-thomas.abraham@linaro.org>
-In-Reply-To: <1331585999-8604-3-git-send-email-thomas.abraham@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-From: Thomas Abraham <thomas.abraham@linaro.org>
+Changes since v1:
+- Includes all changes suggested by Jingoo Han.
+- Reworked s3c-fb platform data in all Samsung SoC based board files.
 
-The decision to enable or disable the data output to the lcd panel from
-the controller need not be based on the value of 'default_win' element
-in the platform data. Instead, the data output to the panel is enabled
-if any of the windows are active, else data output is disabled.
+This patchset rearranges the elements in the platform data of the s3c-fb
+driver with the intent of adding device tree support to the driver in
+subsequent patches.
 
-Cc: Ben Dooks <ben-linux@fluff.org>
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-Signed-off-by: Thomas Abraham <thomas.abraham@linaro.org>
----
-v3: fix some minor coding styles
+The first patch moves the video timing information from the individual window
+setup data into the platform specific configuration section in the platform
+data. The video timing is independent of the window setup. The resolution of
+the window could be smaller than that of the lcd panel attached. So the video
+timing data is removed from window configuration data.
 
- arch/arm/plat-samsung/include/plat/fb.h |    3 ---
- drivers/video/s3c-fb.c                  |   24 +++++-------------------
- 2 files changed, 5 insertions(+), 22 deletions(-)
+The second patch removes the need for the 'default_win' element in the
+platform data. This element was used to decide whether the video data
+output from the controller should be enabled or disabled when the window
+specified by 'default_win' is enabled or disabled. With the first patch
+removing the need for atleast one window to be of the same resolution as
+that of the lcd panel, it is now possible to decide when to enable/disable
+the video data output based on the state of each window. If any of the
+window is active, the lcd data output is enabled. Otherwise, the lcd data
+output is disabled. Hence, the 'default_win' parameter from the platform
+data can be removed, which anyways cannot be specified when using
+device tree.
 
-diff --git a/arch/arm/plat-samsung/include/plat/fb.h b/arch/arm/plat-samsung/include/plat/fb.h
-index 39d6bd7..b885322 100644
---- a/arch/arm/plat-samsung/include/plat/fb.h
-+++ b/arch/arm/plat-samsung/include/plat/fb.h
-@@ -43,7 +43,6 @@ struct s3c_fb_pd_win {
-  * @setup_gpio: Setup the external GPIO pins to the right state to transfer
-  *		the data from the display system to the connected display
-  *		device.
-- * @default_win: default window layer number to be used for UI layer.
-  * @vidcon0: The base vidcon0 values to control the panel data format.
-  * @vidcon1: The base vidcon1 values to control the panel data output.
-  * @vtiming: Video timing when connected to a RGB type panel.
-@@ -62,8 +61,6 @@ struct s3c_fb_platdata {
- 	struct s3c_fb_pd_win	*win[S3C_FB_MAX_WIN];
- 	struct fb_videomode     *vtiming;
- 
--	u32			 default_win;
--
- 	u32			 vidcon0;
- 	u32			 vidcon1;
- };
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index c94f40d..dd816fb 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -531,7 +531,7 @@ static int s3c_fb_set_par(struct fb_info *info)
- 	/* disable the window whilst we update it */
- 	writel(0, regs + WINCON(win_no));
- 
--	if (win_no = sfb->pdata->default_win)
-+	if (!sfb->output_on)
- 		s3c_fb_enable(sfb, 1);
- 
- 	/* write the buffer address */
-@@ -799,6 +799,7 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
- 	struct s3c_fb *sfb = win->parent;
- 	unsigned int index = win->index;
- 	u32 wincon;
-+	u32 output_on = sfb->output_on;
- 
- 	dev_dbg(sfb->dev, "blank mode %d\n", blank_mode);
- 
-@@ -844,27 +845,12 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
- 	 * it is highly likely that we also do not need to output
- 	 * anything.
- 	 */
--
--	/* We could do something like the following code, but the current
--	 * system of using framebuffer events means that we cannot make
--	 * the distinction between just window 0 being inactive and all
--	 * the windows being down.
--	 *
--	 * s3c_fb_enable(sfb, sfb->enabled ? 1 : 0);
--	*/
--
--	/* we're stuck with this until we can do something about overriding
--	 * the power control using the blanking event for a single fb.
--	 */
--	if (index = sfb->pdata->default_win) {
--		shadow_protect_win(win, 1);
--		s3c_fb_enable(sfb, blank_mode != FB_BLANK_POWERDOWN ? 1 : 0);
--		shadow_protect_win(win, 0);
--	}
-+	s3c_fb_enable(sfb, sfb->enabled ? 1 : 0);
-+	shadow_protect_win(win, 0);
- 
- 	pm_runtime_put_sync(sfb->dev);
- 
--	return 0;
-+	return output_on = sfb->output_on;
- }
- 
- /**
--- 
-1.7.1
+For all the Samsung SoC based boards, the third patch reworks the platform
+data of the display controller based on the changes introduced in the first
+two patches.
 
+This patch series is based on
+http://git.kernel.org/pub/scm/linux/kernel/git/kgene/linux-samsung.git [for-next]
+
+with all patches merged from
+https://github.com/schandinat/linux-2.6.git [fbdev-next]
+
+and tested one Exynos4210 based Origen board (only compile tested for
+other boards)
+
+Thomas Abraham (3):
+  video: s3c-fb: move video interface timing out of window setup data
+  video: s3c-fb: remove 'default_win' element from platform data
+  ARM: Samsung: Rework platform data of s3c-fb driver
+
+ arch/arm/mach-exynos/mach-nuri.c           |   26 +++---
+ arch/arm/mach-exynos/mach-origen.c         |   24 +++--
+ arch/arm/mach-exynos/mach-smdkv310.c       |   28 ++++---
+ arch/arm/mach-exynos/mach-universal_c210.c |   26 +++---
+ arch/arm/mach-s3c24xx/mach-smdk2416.c      |   27 +++---
+ arch/arm/mach-s3c64xx/mach-anw6410.c       |   25 +++---
+ arch/arm/mach-s3c64xx/mach-crag6410.c      |   25 +++---
+ arch/arm/mach-s3c64xx/mach-hmt.c           |   24 +++--
+ arch/arm/mach-s3c64xx/mach-mini6410.c      |   40 ++++-----
+ arch/arm/mach-s3c64xx/mach-real6410.c      |   40 ++++-----
+ arch/arm/mach-s3c64xx/mach-smartq5.c       |   26 +++---
+ arch/arm/mach-s3c64xx/mach-smartq7.c       |   26 +++---
+ arch/arm/mach-s3c64xx/mach-smdk6410.c      |   25 +++---
+ arch/arm/mach-s5p64x0/mach-smdk6440.c      |   24 +++--
+ arch/arm/mach-s5p64x0/mach-smdk6450.c      |   24 +++--
+ arch/arm/mach-s5pc100/mach-smdkc100.c      |   27 +++---
+ arch/arm/mach-s5pv210/mach-aquila.c        |   36 ++++----
+ arch/arm/mach-s5pv210/mach-goni.c          |   26 +++---
+ arch/arm/mach-s5pv210/mach-smdkv210.c      |   24 +++--
+ arch/arm/plat-samsung/include/plat/fb.h    |   11 ++-
+ drivers/video/s3c-fb.c                     |  136 +++++++++++++---------------
+ 21 files changed, 356 insertions(+), 314 deletions(-)
 

@@ -1,7 +1,7 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Date: Mon, 12 Mar 2012 17:51:30 +0000
+From: Joe Perches <joe@perches.com>
+Date: Mon, 12 Mar 2012 23:07:56 +0000
 Subject: Re: [PATCH] Added backlight driver for Acer Aspire 4736
-Message-Id: <20120312175130.GA18002@srcf.ucam.org>
+Message-Id: <1331593676.13200.37.camel@joe2Laptop>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1331608337.2267.67.camel@debian.Gayathri>
 In-Reply-To: <1331608337.2267.67.camel@debian.Gayathri>
@@ -11,18 +11,36 @@ Content-Transfer-Encoding: 7bit
 To: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com>
 Cc: rpurdie@rpsys.net, FlorianSchandinat@gmx.de, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Mar 12, 2012 at 11:12:17PM -0400, Pradeep Subrahmanion wrote:
+On Mon, 2012-03-12 at 23:12 -0400, Pradeep Subrahmanion wrote:
 > Hi ,
-> 
->   Brightness control was not  working on Acer Aspire 4736 using default ACPI interface.  acer-acpi also do not support 4730 series since it uses new WMI interface.
-> This driver adds brightness control by accessing the LBB PCI configuration register. This approach may also work on other laptops in 4730 series .But currently ,  it is only tested  for 
-> Aspire 4736. 
 
-1) If there's a WMI interface to brightness control, why not use that?
-2) You're hitting a hardware resource that belongs to the i915 driver, 
-which may well cause problems.
-3) Why does the ACPI interface not work? Can you attach the acpidump 
-output?
+Hello yourself.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Just some trivial comments:
+
+> diff --git a/drivers/video/backlight/acer4736_bl.c b/drivers/video/backlight/acer4736_bl.c
+[]
+Please add
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+before any include
+
+> +static int update_brightness(struct backlight_device *bd)
+> +{
+> +	u8 intensity = bd->props.brightness;
+> +	if (intensity > max_brightness) {
+> +		printk(KERN_INFO "Acer4736_bl: Invalid parameter. Maximum value is %d"
+> +		, max_brightness);
+
+Beginning a line with a comma is not at all common and
+should be avoided.  printks need newline terminations,
+and this would be better as pr_info.  Maybe:
+
+		pr_info("Invalid parameter %u: Maximum allowed value: %u\n",
+			intensity, max_brightness);
+
+> +	printk(KERN_INFO "Loading Acer 4736 backlight driver\n");
+
+	pr_info("Loading backlight driver\n");
+
+
+

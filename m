@@ -1,11 +1,12 @@
 From: joeyli <jlee@suse.com>
-Date: Tue, 13 Mar 2012 03:10:45 +0000
+Date: Tue, 13 Mar 2012 04:35:10 +0000
 Subject: Re: [PATCH] Added backlight driver for Acer Aspire 4736
-Message-Id: <1331608245.10557.149.camel@linux-s257.site>
+Message-Id: <1331613310.10557.159.camel@linux-s257.site>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CABNxG=CU+bOWUauLYfcS2vtFqKvXA-9axgokNoYz+KuU1Mzztw@mail.gmail.com>
-	 <4F5D000E.8040104@gmx.de>
-In-Reply-To: <4F5D000E.8040104@gmx.de>
+	 <4F5D000E.8040104@gmx.de>  <1331608245.10557.149.camel@linux-s257.site>
+	 <1331644360.3319.6.camel@debian.Gayathri>
+In-Reply-To: <1331644360.3319.6.camel@debian.Gayathri>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -14,198 +15,242 @@ Cc: rpurdie@rpsys.net, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
 Hi Pradeep, 
 
-於 日，2012-03-11 於 19:42 +0000，Florian Tobias Schandinat 提到：
-> Hi,
-> 
-> On 03/11/2012 06:21 PM, Pradeep Subrahmanion wrote:
-> > Hi ,
-> > 
-> >          Brightness control was not  working on Acer Aspire 4736 using
-> > default ACPI interface.  acer-acpi also do not support 4730 series since
-> > it uses new WMI interface.
-> > This driver adds brightness control by accessing the LBB PCI
-> > configuration register. This approach may also work on other laptops in
-> > 4730 series .But currently ,  it is only tested  for 
-> > Aspire 4736.  
-> > 
+I think the following command doesn't work to you:
 
-Pleae check does there have following interface?
+echo 5 > /sys/class/backlight/acpi_video0/brightness
 
-/sys/class/backlight/intel_backlight
+It the above command not work, that means EC didn't change backlight
+value:
 
-And,
-did you try kernel parameter "acpi_backlight=vendor", does it work to
-you?
+Method (_BCM, 1, NotSerialized)
+{
+    Divide (Arg0, 0x0A, Local0, Local1)
+    Decrement (Local1)
+    Store (Local1, ^^^^LPC.EC0.BRTS)	<== write backlight value to EC register
+}
 
-Please attach acpidump: acpidump > acpidump.dat
+Per my understood, EC firmware should change brightness but didn't do that, another
+way is touch i915 register in _BCM.
+
+Acer machine provide a broken _BCM implementation and they didn't test it.
 
 
-Thanks
+Thanks a lot!
 Joey Lee
 
-> > From 893031c1e9bdefd9642b98825062b5df98af0d77 Mon Sep 17 00:00:00 2001
-> > From: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com
-> > <mailto:subrahmanion.pradeep@gmail.com>>
-> > Date: Sun, 11 Mar 2012 23:11:23 -0400
-> > Subject: [PATCH] Added backlight driver for Acer Aspire 4736
+於 二，2012-03-13 於 09:12 -0400，Pradeep Subrahmanion 提到：
+> Hi Joey, 
+> 
+> yes , /sys/class/backlight/intel_backlight exists . I tried giving
+> acpi_backlight=vendor in grub config.Hot keys works like earlier.But
+> increasing brightness after maximum levels give blank screen(like
+> earlier). 
+> 
+> I have attached acpidump.
+>  
+> ----
+> Thanks  , 
+>  
+> Pradeep Subrahmanion
+> 
+> On Tue, 2012-03-13 at 11:10 +0800, joeyli wrote:
+> > Hi Pradeep, 
 > > 
-> 
-> the commit message should be here, I think.
-> 
+> > 於 日，2012-03-11 於 19:42 +0000，Florian Tobias Schandinat 提到：
+> > > Hi,
+> > > 
+> > > On 03/11/2012 06:21 PM, Pradeep Subrahmanion wrote:
+> > > > Hi ,
+> > > > 
+> > > >          Brightness control was not  working on Acer Aspire 4736 using
+> > > > default ACPI interface.  acer-acpi also do not support 4730 series since
+> > > > it uses new WMI interface.
+> > > > This driver adds brightness control by accessing the LBB PCI
+> > > > configuration register. This approach may also work on other laptops in
+> > > > 4730 series .But currently ,  it is only tested  for 
+> > > > Aspire 4736.  
+> > > > 
 > > 
-> > Signed-off-by: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com
-> > <mailto:subrahmanion.pradeep@gmail.com>>
-> 
-> Please resend this email in the correct format: As you can see in my
-> email the text version of your patch is severely screwed up and nobody
-> wants to even try converting a HTML format to a proper patch again,
-> probably most people won't even receive an email that has a HTML part as
-> their spam filter are going to handle it as spam. git send-email will
-> take care of it for you if you configure it for your account.
-> You should also cc Andrew Morton <akpm@linux-foundation.org> as he's the
-> one who handles backlight patches at the moment.
-> 
-> 
-> Best regards,
-> 
-> Florian Tobias Schandinat
-> 
-> > ---
-> >  drivers/video/backlight/acer4736_bl.c |  110
-> > +++++++++++++++++++++++++++++++++
-> >  1 files changed, 110 insertions(+), 0 deletions(-)
-> >  create mode 100644 drivers/video/backlight/acer4736_bl.c
+> > Pleae check does there have following interface?
 > > 
-> > diff --git a/drivers/video/backlight/acer4736_bl.c
-> > b/drivers/video/backlight/acer4736_bl.c
-> > new file mode 100644
-> > index 0000000..6fe2937
-> > --- /dev/null
-> > +++ b/drivers/video/backlight/acer4736_bl.c
-> > @@ -0,0 +1,110 @@
-> > +/*
-> > + * Backlight driver for Acer Aspire 4736
-> > + *
-> > + * Copyright (C) Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com
-> > <mailto:subrahmanion.pradeep@gmail.com>>
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify
-> > + * it under the terms of the GNU General Public License version 2 as
-> > + * published by the Free Software Foundation.
-> > + *
-> > + * This driver uses LBB PCI configuration register to change the
-> > + * backlight brightness.
-> > + *
-> > + */
-> > +
-> > +#include <linux/module.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/init.h>
-> > +#include <linux/backlight.h>
-> > +#include <linux/err.h>
-> > +#include <linux/dmi.h>
-> > +#include <linux/io.h>
-> > +#include <linux/pci.h>
-> > +
-> > +static u8 max_brightness = 0xFF;
-> > +static u8 lbb_offset =  0xF4;
-> > +static unsigned int device_id = 0x2a42;
-> > +static unsigned int vendor_id = 0x8086;
-> > +
-> > +struct backlight_device *acer_backlight_device;
-> > +struct pci_dev *pdev;
-> > +
-> > +static int acer_dmi_match(const struct dmi_system_id *id)
-> > +{
-> > + printk(KERN_INFO "acer4736_bl: %s detected\n", id->ident);
-> > + return 1;
-> > +}
-> > +
-> > +static const struct dmi_system_id __initdata acer_device_table[] = {
-> > +{
-> > + .callback = acer_dmi_match,
-> > + .ident = "Aspire 4736",
-> > + .matches = {
-> > + DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
-> > + DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 4736"),
-> > + },
-> > + },
-> > + {}
-> > +};
-> > +static int read_brightness(struct backlight_device *bd)
-> > +{
-> > + u8 result;
-> > + pci_read_config_byte(pdev, lbb_offset, &result);
-> > + return result;
-> > +}
-> > +
-> > +static int update_brightness(struct backlight_device *bd)
-> > +{
-> > + u8 intensity = bd->props.brightness;
-> > + if (intensity > max_brightness) {
-> > + printk(KERN_INFO "Acer4736_bl: Invalid parameter. Maximum value is %d"
-> > + , max_brightness);
-> > + return -1;
-> > + }
-> > + pci_write_config_byte(pdev, lbb_offset, intensity);
-> > + return 0;
-> > +}
-> > +static const struct  backlight_ops acer_backlight_ops = {
-> > + .get_brightness = read_brightness,
-> > + .update_status  = update_brightness,
-> > +};
-> > +
-> > +static int __init acer4736_bl_init(void)
-> > +{
-> > + struct backlight_properties props;
-> > + if (!dmi_check_system(acer_device_table))
-> > + return -ENODEV;
-> > +
-> > + pdev = pci_get_device(vendor_id, device_id, NULL);
-> > +
-> > + if (!pdev)
-> > + return -ENODEV;
-> > +
-> > + printk(KERN_INFO "Loading Acer 4736 backlight driver\n");
-> > + memset(&props, 0, sizeof(struct backlight_properties));
-> > + props.type = BACKLIGHT_RAW;
-> > + props.max_brightness = max_brightness;
-> > +
-> > + acer_backlight_device = backlight_device_register("acer_backlight",
-> > + NULL, NULL, &acer_backlight_ops, &props);
-> > + acer_backlight_device->props.max_brightness = max_brightness;
-> > + acer_backlight_device->props.brightness  > > + read_brightness(acer_backlight_device);
-> > + backlight_update_status(acer_backlight_device);
-> > +
-> > + return 0;
-> > +}
-> > +
-> > +static void __exit acer4736_bl_exit(void)
-> > +{
-> > + pci_dev_put(pdev);
-> > + backlight_device_unregister(acer_backlight_device);
-> > +}
-> > +
-> > +module_init(acer4736_bl_init);
-> > +module_exit(acer4736_bl_exit);
-> > +
-> > +MODULE_AUTHOR("Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com
-> > <mailto:subrahmanion.pradeep@gmail.com>>");
-> > +MODULE_DESCRIPTION("Acer Aspire 4736 Backlight Driver");
-> > +MODULE_LICENSE("GPL");
-> > +MODULE_DEVICE_TABLE(dmi, acer_device_table);
-> > -- 
-> > 1.7.2.5
+> > /sys/class/backlight/intel_backlight
 > > 
-> > -------------  
+> > And,
+> > did you try kernel parameter "acpi_backlight=vendor", does it work to
+> > you?
 > > 
-> > Pradeep Subrahmanion
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> > Please attach acpidump: acpidump > acpidump.dat
+> > 
+> > 
+> > Thanks
+> > Joey Lee
+> > 
+> > > > From 893031c1e9bdefd9642b98825062b5df98af0d77 Mon Sep 17 00:00:00 2001
+> > > > From: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com
+> > > > <mailto:subrahmanion.pradeep@gmail.com>>
+> > > > Date: Sun, 11 Mar 2012 23:11:23 -0400
+> > > > Subject: [PATCH] Added backlight driver for Acer Aspire 4736
+> > > > 
+> > > 
+> > > the commit message should be here, I think.
+> > > 
+> > > > 
+> > > > Signed-off-by: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com
+> > > > <mailto:subrahmanion.pradeep@gmail.com>>
+> > > 
+> > > Please resend this email in the correct format: As you can see in my
+> > > email the text version of your patch is severely screwed up and nobody
+> > > wants to even try converting a HTML format to a proper patch again,
+> > > probably most people won't even receive an email that has a HTML part as
+> > > their spam filter are going to handle it as spam. git send-email will
+> > > take care of it for you if you configure it for your account.
+> > > You should also cc Andrew Morton <akpm@linux-foundation.org> as he's the
+> > > one who handles backlight patches at the moment.
+> > > 
+> > > 
+> > > Best regards,
+> > > 
+> > > Florian Tobias Schandinat
+> > > 
+> > > > ---
+> > > >  drivers/video/backlight/acer4736_bl.c |  110
+> > > > +++++++++++++++++++++++++++++++++
+> > > >  1 files changed, 110 insertions(+), 0 deletions(-)
+> > > >  create mode 100644 drivers/video/backlight/acer4736_bl.c
+> > > > 
+> > > > diff --git a/drivers/video/backlight/acer4736_bl.c
+> > > > b/drivers/video/backlight/acer4736_bl.c
+> > > > new file mode 100644
+> > > > index 0000000..6fe2937
+> > > > --- /dev/null
+> > > > +++ b/drivers/video/backlight/acer4736_bl.c
+> > > > @@ -0,0 +1,110 @@
+> > > > +/*
+> > > > + * Backlight driver for Acer Aspire 4736
+> > > > + *
+> > > > + * Copyright (C) Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com
+> > > > <mailto:subrahmanion.pradeep@gmail.com>>
+> > > > + *
+> > > > + * This program is free software; you can redistribute it and/or modify
+> > > > + * it under the terms of the GNU General Public License version 2 as
+> > > > + * published by the Free Software Foundation.
+> > > > + *
+> > > > + * This driver uses LBB PCI configuration register to change the
+> > > > + * backlight brightness.
+> > > > + *
+> > > > + */
+> > > > +
+> > > > +#include <linux/module.h>
+> > > > +#include <linux/kernel.h>
+> > > > +#include <linux/init.h>
+> > > > +#include <linux/backlight.h>
+> > > > +#include <linux/err.h>
+> > > > +#include <linux/dmi.h>
+> > > > +#include <linux/io.h>
+> > > > +#include <linux/pci.h>
+> > > > +
+> > > > +static u8 max_brightness = 0xFF;
+> > > > +static u8 lbb_offset =  0xF4;
+> > > > +static unsigned int device_id = 0x2a42;
+> > > > +static unsigned int vendor_id = 0x8086;
+> > > > +
+> > > > +struct backlight_device *acer_backlight_device;
+> > > > +struct pci_dev *pdev;
+> > > > +
+> > > > +static int acer_dmi_match(const struct dmi_system_id *id)
+> > > > +{
+> > > > + printk(KERN_INFO "acer4736_bl: %s detected\n", id->ident);
+> > > > + return 1;
+> > > > +}
+> > > > +
+> > > > +static const struct dmi_system_id __initdata acer_device_table[] = {
+> > > > +{
+> > > > + .callback = acer_dmi_match,
+> > > > + .ident = "Aspire 4736",
+> > > > + .matches = {
+> > > > + DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
+> > > > + DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 4736"),
+> > > > + },
+> > > > + },
+> > > > + {}
+> > > > +};
+> > > > +static int read_brightness(struct backlight_device *bd)
+> > > > +{
+> > > > + u8 result;
+> > > > + pci_read_config_byte(pdev, lbb_offset, &result);
+> > > > + return result;
+> > > > +}
+> > > > +
+> > > > +static int update_brightness(struct backlight_device *bd)
+> > > > +{
+> > > > + u8 intensity = bd->props.brightness;
+> > > > + if (intensity > max_brightness) {
+> > > > + printk(KERN_INFO "Acer4736_bl: Invalid parameter. Maximum value is %d"
+> > > > + , max_brightness);
+> > > > + return -1;
+> > > > + }
+> > > > + pci_write_config_byte(pdev, lbb_offset, intensity);
+> > > > + return 0;
+> > > > +}
+> > > > +static const struct  backlight_ops acer_backlight_ops = {
+> > > > + .get_brightness = read_brightness,
+> > > > + .update_status  = update_brightness,
+> > > > +};
+> > > > +
+> > > > +static int __init acer4736_bl_init(void)
+> > > > +{
+> > > > + struct backlight_properties props;
+> > > > + if (!dmi_check_system(acer_device_table))
+> > > > + return -ENODEV;
+> > > > +
+> > > > + pdev = pci_get_device(vendor_id, device_id, NULL);
+> > > > +
+> > > > + if (!pdev)
+> > > > + return -ENODEV;
+> > > > +
+> > > > + printk(KERN_INFO "Loading Acer 4736 backlight driver\n");
+> > > > + memset(&props, 0, sizeof(struct backlight_properties));
+> > > > + props.type = BACKLIGHT_RAW;
+> > > > + props.max_brightness = max_brightness;
+> > > > +
+> > > > + acer_backlight_device = backlight_device_register("acer_backlight",
+> > > > + NULL, NULL, &acer_backlight_ops, &props);
+> > > > + acer_backlight_device->props.max_brightness = max_brightness;
+> > > > + acer_backlight_device->props.brightness  > > > > + read_brightness(acer_backlight_device);
+> > > > + backlight_update_status(acer_backlight_device);
+> > > > +
+> > > > + return 0;
+> > > > +}
+> > > > +
+> > > > +static void __exit acer4736_bl_exit(void)
+> > > > +{
+> > > > + pci_dev_put(pdev);
+> > > > + backlight_device_unregister(acer_backlight_device);
+> > > > +}
+> > > > +
+> > > > +module_init(acer4736_bl_init);
+> > > > +module_exit(acer4736_bl_exit);
+> > > > +
+> > > > +MODULE_AUTHOR("Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com
+> > > > <mailto:subrahmanion.pradeep@gmail.com>>");
+> > > > +MODULE_DESCRIPTION("Acer Aspire 4736 Backlight Driver");
+> > > > +MODULE_LICENSE("GPL");
+> > > > +MODULE_DEVICE_TABLE(dmi, acer_device_table);
+> > > > -- 
+> > > > 1.7.2.5
+> > > > 
+> > > > -------------  
+> > > > 
+> > > > Pradeep Subrahmanion
+> > > 
+> > > --
+> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > Please read the FAQ at  http://www.tux.org/lkml/
+> > > 
+> > 
+> > 
 > 
 
 

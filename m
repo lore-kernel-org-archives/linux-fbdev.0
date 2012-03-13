@@ -1,99 +1,121 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:08:06 +0000
-Subject: [PATCH v2 53/57] fbdev: sh_mobile_meram: Don't perform update in register operation
-Message-Id: <1330614490-14149-54-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Anatolij Gustschin <agust@denx.de>
+Date: Tue, 13 Mar 2012 13:13:57 +0000
+Subject: [PATCH v2 2/2] fbdev: da8xx: add support for SP10Q010 display
+Message-Id: <1331644437-5440-1-git-send-email-agust@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Remove the RGB or Y/C base address update from the meram_register()
-operation, as this belongs to the meram_update() operation.
+Add timing data for Hitachi SP10Q010 display and allow configuration
+of the 4bpp palette. For 4bpp framebuffer enable reversed order of
+pixels in a byte. This requires defining FB_CFB_REV_PIXELS_IN_BYTE
+and additionally setting var.nonstd to the value FB_NONSTD_REV_PIX_IN_B.
+Note that it is not enough to set da8xx_fb_var.nonstd to this value
+statically, since FBIOPUT_VSCREENINFO ioctl might pass var struct with
+.nonstd field set to zero or another value. Therefore this setting must
+be adjusted in fb_check_var() according to the requested bpp value.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+Cc: Manjunathappa, Prakash <prakash.pm@ti.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |    8 +++++---
- drivers/video/sh_mobile_meram.c  |   15 ++-------------
- include/video/sh_mobile_meram.h  |    4 ----
- 3 files changed, 7 insertions(+), 20 deletions(-)
+v2:
+ - rebased on fbdev-next branch
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 0338516..4b54cd5 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -882,11 +882,13 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ drivers/video/Kconfig    |    1 +
+ drivers/video/da8xx-fb.c |   38 +++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 38 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 8951cbd..58ea0be 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2245,6 +2245,7 @@ config FB_DA8XX
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
++	select FB_CFB_REV_PIXELS_IN_BYTE
+ 	---help---
+ 	  This is the frame buffer device driver for the TI LCD controller
+ 	  found on DA8xx/OMAP-L1xx SoCs.
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 8f7e051..47118c7 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -239,6 +239,20 @@ static struct da8xx_panel known_lcd_panels[] = {
+ 		.pxl_clk = 7833600,
+ 		.invert_pxl_clk = 0,
+ 	},
++	[2] = {
++		/* Hitachi SP10Q010 */
++		.name = "SP10Q010",
++		.width = 320,
++		.height = 240,
++		.hfp = 10,
++		.hbp = 10,
++		.hsw = 10,
++		.vfp = 10,
++		.vbp = 10,
++		.vsw = 10,
++		.pxl_clk = 7833600,
++		.invert_pxl_clk = 0,
++	},
+ };
  
- 		meram = mdev->ops->meram_register(mdev, ch->cfg->meram_cfg,
- 					ch->pitch, ch->yres, pixelformat,
--					ch->base_addr_y, ch->base_addr_c,
--					&ch->base_addr_y, &ch->base_addr_c,
- 					&ch->pitch);
--		if (!IS_ERR(meram))
-+		if (!IS_ERR(meram)) {
-+			mdev->ops->meram_update(mdev, meram,
-+					ch->base_addr_y, ch->base_addr_c,
-+					&ch->base_addr_y, &ch->base_addr_c);
- 			ch->meram = meram;
+ /* Enable the Raster Engine of the LCD Controller */
+@@ -547,7 +561,26 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 	if (info->fix.visual = FB_VISUAL_DIRECTCOLOR)
+ 		return 1;
+ 
+-	if (info->var.bits_per_pixel = 8) {
++	if (info->var.bits_per_pixel = 4) {
++		if (regno > 15)
++			return 1;
++
++		if (info->var.grayscale) {
++			pal = regno;
++		} else {
++			red >>= 4;
++			green >>= 8;
++			blue >>= 12;
++
++			pal = (red & 0x0f00);
++			pal |= (green & 0x00f0);
++			pal |= (blue & 0x000f);
 +		}
- 	}
- 
- 	/* Start the LCDC. */
-diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
-index 085c49a..2ce0d8f 100644
---- a/drivers/video/sh_mobile_meram.c
-+++ b/drivers/video/sh_mobile_meram.c
-@@ -448,10 +448,6 @@ static void *sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
- 				      const struct sh_mobile_meram_cfg *cfg,
- 				      unsigned int xres, unsigned int yres,
- 				      unsigned int pixelformat,
--				      unsigned long base_addr_y,
--				      unsigned long base_addr_c,
--				      unsigned long *icb_addr_y,
--				      unsigned long *icb_addr_c,
- 				      unsigned int *pitch)
- {
- 	struct sh_mobile_meram_fb_cache *cache;
-@@ -470,9 +466,8 @@ static void *sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
- 	priv = pdata->priv;
- 	pdev = pdata->pdev;
- 
--	dev_dbg(&pdev->dev, "registering %dx%d (%s) (y=%08lx, c=%08lx)",
--		xres, yres, (!pixelformat) ? "yuv" : "rgb",
--		base_addr_y, base_addr_c);
-+	dev_dbg(&pdev->dev, "registering %dx%d (%s)", xres, yres,
-+		!pixelformat ? "yuv" : "rgb");
- 
- 	/* we can't handle wider than 8192px */
- 	if (xres > 8192) {
-@@ -500,12 +495,6 @@ static void *sh_mobile_meram_register(struct sh_mobile_meram_info *pdata,
- 		meram_init(priv, &cache->planes[1], 2 * xres, (yres + 1) / 2,
- 			&out_pitch);
- 
--	meram_set_next_addr(priv, cache, base_addr_y, base_addr_c);
--	meram_get_next_icb_addr(pdata, cache, icb_addr_y, icb_addr_c);
--
--	dev_dbg(&pdev->dev, "registered - can access via y=%08lx, c=%08lx",
--		*icb_addr_y, *icb_addr_c);
--
- err:
- 	mutex_unlock(&priv->lock);
- 	return cache;
-diff --git a/include/video/sh_mobile_meram.h b/include/video/sh_mobile_meram.h
-index 8979607..553335c 100644
---- a/include/video/sh_mobile_meram.h
-+++ b/include/video/sh_mobile_meram.h
-@@ -46,10 +46,6 @@ struct sh_mobile_meram_ops {
- 				const struct sh_mobile_meram_cfg *cfg,
- 				unsigned int xres, unsigned int yres,
- 				unsigned int pixelformat,
--				unsigned long base_addr_y,
--				unsigned long base_addr_c,
--				unsigned long *icb_addr_y,
--				unsigned long *icb_addr_c,
- 				unsigned int *pitch);
- 
- 	/* unregister usage of meram */
++		if (regno = 0)
++			pal |= 0x2000;
++		palette[regno] = pal;
++
++	} else if (info->var.bits_per_pixel = 8) {
+ 		red >>= 4;
+ 		green >>= 8;
+ 		blue >>= 12;
+@@ -802,6 +835,7 @@ static int fb_check_var(struct fb_var_screeninfo *var,
+ 		var->blue.length = 8;
+ 		var->transp.offset = 0;
+ 		var->transp.length = 0;
++		var->nonstd = 0;
+ 		break;
+ 	case 4:
+ 		var->red.offset = 0;
+@@ -812,6 +846,7 @@ static int fb_check_var(struct fb_var_screeninfo *var,
+ 		var->blue.length = 4;
+ 		var->transp.offset = 0;
+ 		var->transp.length = 0;
++		var->nonstd = FB_NONSTD_REV_PIX_IN_B;
+ 		break;
+ 	case 16:		/* RGB 565 */
+ 		var->red.offset = 11;
+@@ -822,6 +857,7 @@ static int fb_check_var(struct fb_var_screeninfo *var,
+ 		var->blue.length = 5;
+ 		var->transp.offset = 0;
+ 		var->transp.length = 0;
++		var->nonstd = 0;
+ 		break;
+ 	default:
+ 		err = -EINVAL;
 -- 
-1.7.3.4
+1.7.1
 

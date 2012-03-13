@@ -1,77 +1,41 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 08 Mar 2012 07:54:23 +0000
-Subject: Re: [PATCH 01/21] OMAPDSS: panel-dvi: add PD gpio handling
-Message-Id: <1331193263.2354.13.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-o21ZBaij88gCeLBAeRrJ"
+From: Randy Dunlap <rdunlap@xenotime.net>
+Date: Tue, 13 Mar 2012 20:30:27 +0000
+Subject: [PATCH] x86: export 'pcibios_enabled'
+Message-Id: <4F5FAE63.3090908@xenotime.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1331124290-6285-2-git-send-email-tomi.valkeinen@ti.com>
-	 <4F579F1B.7040503@ti.com>
-In-Reply-To: <4F579F1B.7040503@ti.com>
-To: Archit Taneja <a0393947@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <20120313204114.e160849af7dbe5a4b4e5c0ad@canb.auug.org.au>
+In-Reply-To: <20120313204114.e160849af7dbe5a4b4e5c0ad@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Michal Januszewski <spock@gentoo.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, x86@kernel.org, Andrew Morton <akpm@linux-foundation.org>
 
+From: Randy Dunlap <rdunlap@xenotime.net>
 
---=-o21ZBaij88gCeLBAeRrJ
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Export 'pcibios_enabled' so that when uvesafb is built as a
+loadable module (on X86_32), the build will succeed.
 
-On Wed, 2012-03-07 at 23:17 +0530, Archit Taneja wrote:
-> Hi,
->=20
-> On Wednesday 07 March 2012 06:14 PM, Tomi Valkeinen wrote:
-> > The driver for the DVI framer should handle the power-down signal of th=
-e
-> > framer, instead of the current way of handling it in the board files.
->=20
-> What does framer mean?
+ERROR: "pcibios_enabled" [drivers/video/uvesafb.ko] undefined!
 
-I don't know where the word has come, and I can't find it in the TFP410
-documentation. I guess the idea with the word was that the chip
-"frames", i.e. packetizes, the incoming parallel data to DVI.
+Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
+Cc:	Michal Januszewski <spock@gentoo.org>
+Cc:	Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc:	linux-fbdev@vger.kernel.org
+Cc:	x86@kernel.org
+---
+Applies to mainline; found in linux-next.
 
-But I think it's better to remove the use of the word to avoid any
-confusion. I'll make the change.
+ arch/x86/pci/pcbios.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-> > +	if (gpio_is_valid(ddata->pd_gpio)) {
-> > +		r =3D gpio_request_one(ddata->pd_gpio, GPIOF_OUT_INIT_LOW,
-> > +				"tfp410 pd");
-> > +		if (r) {
-> > +			dev_err(&dssdev->dev, "Failed to request PD GPIO %d\n",
-> > +					ddata->pd_gpio);
-> > +			ddata->pd_gpio =3D -1;
->=20
-> Is the power down gpio not a necessary thing? If it is, we should quit=
-=20
-> here itself, shouldn't we?
-
-Hmm, yes, I think you are right.
-
- Tomi
-
-
---=-o21ZBaij88gCeLBAeRrJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJPWGWvAAoJEPo9qoy8lh71Lh0P/1iherSXXhdjSNSRXQJHrti2
-T1jcU8LsaLnta0giug5HhuWQ04cjTSgWqHFgnF1ZTsJwlvXmnIwelfnPZlkl9NrK
-swzdRMgz/Sp04WLyZGRhLmDmqOsxyZQNuutMUtU94t5o7R9wTVgFlghnQZKvHFF6
-yUtLG21GMjqus/AvSQe8LHetX9IJ0g1q/E7Fo3YIFg7fIrdB1oe//M16u+5e9w3V
-7mguqAbYzUAQhDh/UV4wi3DT2/B+WVGK0mQb/LvO2bQC9jsdcM60FOCAGaENiCMu
-b+j8Jj20fir+vpGOX3QxFHsn3lruOor/hFUyH2lwjqo89LbGKwuccRJI9OUI2zRp
-sKaBoXltJrAOnQ8iCa98T/xEOnEem1Kit/bwOB8tBSYKLcvvqFUpIehkfj/EFfyy
-RqFnInBbjM+0x37rBznnW9II66CoAp8Z/IR4pHDZNIOSnKlMb1HHkLZDvY6VBz+E
-gdPm7HdZtV563xh7Q+UIjWLz5u/++cd5V0hUMEnj/b3JlUf/w9LLBhIDDyzWmIaV
-DZdhOZrxEEKY0a2AieM7rTx7MSap9MYOpeSRxAxQHd7R4BF0vjzTE4rcKigjxW2S
-u+6/q6EwiUndFH4nx2pMJdZH3HEZ7W0FOHeGKhN0cJyDzzK0GMQOifsA694SmuT4
-r0lf0i/1auOAgTC2b4c6
-=6jS3
------END PGP SIGNATURE-----
-
---=-o21ZBaij88gCeLBAeRrJ--
-
+--- linux-next-20120313.orig/arch/x86/pci/pcbios.c
++++ linux-next-20120313/arch/x86/pci/pcbios.c
+@@ -27,6 +27,7 @@
+ #define PCIBIOS_HW_TYPE2_SPEC		0x20
+ 
+ int pcibios_enabled;
++EXPORT_SYMBOL(pcibios_enabled);
+ 
+ /* According to the BIOS specification at:
+  * http://members.datafast.net.au/dft0802/specs/bios21.pdf, we could

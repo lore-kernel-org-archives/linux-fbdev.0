@@ -1,121 +1,107 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:07:27 +0000
-Subject: [PATCH v2 14/57] fbdev: sh_mobile_hdmi: Don't hook up into board_cfg display operations
-Message-Id: <1330614490-14149-15-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Tue, 13 Mar 2012 09:34:32 +0000
+Subject: [PATCH v3 2/3] video: s3c-fb: remove 'default_win' element from platform data
+Message-Id: <002e01cd00fc$7efad9e0$7cf08da0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1331585999-8604-1-git-send-email-thomas.abraham@linaro.org>
+ <1331585999-8604-3-git-send-email-thomas.abraham@linaro.org>
+In-Reply-To: <1331585999-8604-3-git-send-email-thomas.abraham@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-The display_on/off operations are now accessed through the
-sh_mobile_lcdc_entity operations.
+From: Thomas Abraham <thomas.abraham@linaro.org>
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+The decision to enable or disable the data output to the lcd panel from
+the controller need not be based on the value of 'default_win' element
+in the platform data. Instead, the data output to the panel is enabled
+if any of the windows are active, else data output is disabled.
+
+Cc: Ben Dooks <ben-linux@fluff.org>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Thomas Abraham <thomas.abraham@linaro.org>
 ---
- drivers/video/sh_mobile_hdmi.c |   37 ++++++-------------------------------
- 1 files changed, 6 insertions(+), 31 deletions(-)
+v3: fix some minor coding styles
 
-diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-index 5e5f83c..3f4e4a4 100644
---- a/drivers/video/sh_mobile_hdmi.c
-+++ b/drivers/video/sh_mobile_hdmi.c
-@@ -1004,8 +1004,8 @@ static irqreturn_t sh_hdmi_hotplug(int irq, void *dev_id)
- }
+ arch/arm/plat-samsung/include/plat/fb.h |    3 ---
+ drivers/video/s3c-fb.c                  |   24 +++++-------------------
+ 2 files changed, 5 insertions(+), 22 deletions(-)
+
+diff --git a/arch/arm/plat-samsung/include/plat/fb.h b/arch/arm/plat-samsung/include/plat/fb.h
+index 39d6bd7..b885322 100644
+--- a/arch/arm/plat-samsung/include/plat/fb.h
++++ b/arch/arm/plat-samsung/include/plat/fb.h
+@@ -43,7 +43,6 @@ struct s3c_fb_pd_win {
+  * @setup_gpio: Setup the external GPIO pins to the right state to transfer
+  *		the data from the display system to the connected display
+  *		device.
+- * @default_win: default window layer number to be used for UI layer.
+  * @vidcon0: The base vidcon0 values to control the panel data format.
+  * @vidcon1: The base vidcon1 values to control the panel data output.
+  * @vtiming: Video timing when connected to a RGB type panel.
+@@ -62,8 +61,6 @@ struct s3c_fb_platdata {
+ 	struct s3c_fb_pd_win	*win[S3C_FB_MAX_WIN];
+ 	struct fb_videomode     *vtiming;
  
- /* locking:	called with info->lock held, or before register_framebuffer() */
--static int __sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity,
--				struct fb_info *info)
-+static int sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity,
-+			      struct fb_info *info)
- {
- 	/*
- 	 * info is guaranteed to be valid, when we are called, because our
-@@ -1040,13 +1040,8 @@ static int __sh_hdmi_display_on(struct sh_mobile_lcdc_entity *entity,
- 	return 0;
- }
- 
--static void sh_hdmi_display_on(void *arg, struct fb_info *info)
--{
--	__sh_hdmi_display_on(arg, info);
--}
+-	u32			 default_win;
 -
- /* locking: called with info->lock held */
--static void __sh_hdmi_display_off(struct sh_mobile_lcdc_entity *entity)
-+static void sh_hdmi_display_off(struct sh_mobile_lcdc_entity *entity)
- {
- 	struct sh_hdmi *hdmi = entity_to_sh_hdmi(entity);
- 
-@@ -1055,14 +1050,9 @@ static void __sh_hdmi_display_off(struct sh_mobile_lcdc_entity *entity)
- 	hdmi_write(hdmi, 0x10, HDMI_SYSTEM_CTRL);
- }
- 
--static void sh_hdmi_display_off(void *arg)
--{
--	__sh_hdmi_display_off(arg);
--}
--
- static const struct sh_mobile_lcdc_entity_ops sh_hdmi_ops = {
--	.display_on = __sh_hdmi_display_on,
--	.display_off = __sh_hdmi_display_off,
-+	.display_on = sh_hdmi_display_on,
-+	.display_off = sh_hdmi_display_off,
+ 	u32			 vidcon0;
+ 	u32			 vidcon1;
  };
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index c94f40d..dd816fb 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -531,7 +531,7 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 	/* disable the window whilst we update it */
+ 	writel(0, regs + WINCON(win_no));
  
- static bool sh_hdmi_must_reconfigure(struct sh_hdmi *hdmi)
-@@ -1178,7 +1168,7 @@ static void sh_hdmi_edid_work_fn(struct work_struct *work)
- 				 */
- 				info->var.width = hdmi->var.width;
- 				info->var.height = hdmi->var.height;
--				__sh_hdmi_display_on(&hdmi->entity, info);
-+				sh_hdmi_display_on(&hdmi->entity, info);
- 			} else {
- 				/* New monitor or have to wake up */
- 				fb_set_suspend(info, 0);
-@@ -1255,7 +1245,6 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
- {
- 	struct sh_mobile_hdmi_info *pdata = pdev->dev.platform_data;
- 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	struct sh_mobile_lcdc_board_cfg	*board_cfg;
- 	int irq = platform_get_irq(pdev, 0), ret;
- 	struct sh_hdmi *hdmi;
- 	long rate;
-@@ -1315,13 +1304,6 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
+-	if (win_no = sfb->pdata->default_win)
++	if (!sfb->output_on)
+ 		s3c_fb_enable(sfb, 1);
  
- 	platform_set_drvdata(pdev, &hdmi->entity);
+ 	/* write the buffer address */
+@@ -799,6 +799,7 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
+ 	struct s3c_fb *sfb = win->parent;
+ 	unsigned int index = win->index;
+ 	u32 wincon;
++	u32 output_on = sfb->output_on;
  
--	/* Set up LCDC callbacks */
--	board_cfg = &pdata->lcd_chan->board_cfg;
--	board_cfg->owner = THIS_MODULE;
--	board_cfg->board_data = &hdmi->entity;
--	board_cfg->display_on = sh_hdmi_display_on;
--	board_cfg->display_off = sh_hdmi_display_off;
+ 	dev_dbg(sfb->dev, "blank mode %d\n", blank_mode);
+ 
+@@ -844,27 +845,12 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
+ 	 * it is highly likely that we also do not need to output
+ 	 * anything.
+ 	 */
 -
- 	INIT_DELAYED_WORK(&hdmi->edid_work, sh_hdmi_edid_work_fn);
- 
- 	pm_runtime_enable(&pdev->dev);
-@@ -1371,21 +1353,14 @@ egetclk:
- 
- static int __exit sh_hdmi_remove(struct platform_device *pdev)
- {
--	struct sh_mobile_hdmi_info *pdata = pdev->dev.platform_data;
- 	struct sh_hdmi *hdmi = entity_to_sh_hdmi(platform_get_drvdata(pdev));
- 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	struct sh_mobile_lcdc_board_cfg	*board_cfg = &pdata->lcd_chan->board_cfg;
- 	int irq = platform_get_irq(pdev, 0);
- 
- 	snd_soc_unregister_codec(&pdev->dev);
- 
- 	fb_unregister_client(&hdmi->notifier);
- 
--	board_cfg->display_on = NULL;
--	board_cfg->display_off = NULL;
--	board_cfg->board_data = NULL;
--	board_cfg->owner = NULL;
+-	/* We could do something like the following code, but the current
+-	 * system of using framebuffer events means that we cannot make
+-	 * the distinction between just window 0 being inactive and all
+-	 * the windows being down.
+-	 *
+-	 * s3c_fb_enable(sfb, sfb->enabled ? 1 : 0);
+-	*/
 -
- 	/* No new work will be scheduled, wait for running ISR */
- 	free_irq(irq, hdmi);
- 	/* Wait for already scheduled work */
+-	/* we're stuck with this until we can do something about overriding
+-	 * the power control using the blanking event for a single fb.
+-	 */
+-	if (index = sfb->pdata->default_win) {
+-		shadow_protect_win(win, 1);
+-		s3c_fb_enable(sfb, blank_mode != FB_BLANK_POWERDOWN ? 1 : 0);
+-		shadow_protect_win(win, 0);
+-	}
++	s3c_fb_enable(sfb, sfb->enabled ? 1 : 0);
++	shadow_protect_win(win, 0);
+ 
+ 	pm_runtime_put_sync(sfb->dev);
+ 
+-	return 0;
++	return output_on = sfb->output_on;
+ }
+ 
+ /**
 -- 
-1.7.3.4
+1.7.1
+
 

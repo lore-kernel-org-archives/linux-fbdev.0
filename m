@@ -1,99 +1,113 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Thu, 15 Mar 2012 11:49:52 +0000
-Subject: [PATCH 2/2] OMAPDSS: DISPC: Handle synclost errors in OMAP3
-Message-Id: <1331812132-9814-1-git-send-email-cmahapatra@ti.com>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Date: Thu, 15 Mar 2012 23:04:46 +0000
+Subject: Re: [PATCH 2/2] OMAPDSS: DISPC: Handle synclost errors in OMAP3
+Message-Id: <20120315230446.GO17132@sci.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1331812132-9814-1-git-send-email-cmahapatra@ti.com>
+In-Reply-To: <1331812132-9814-1-git-send-email-cmahapatra@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Cc: tomi.valkeinen@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-SW4gT01BUDMgRElTUEMgdmlkZW8gb3ZlcmxheXMgc3VmZmVyIGZyb20gc29tZSB1bmRvY3VtZW50
-ZWQgaG9yaXpvbnRhbCBwb3NpdGlvbgphbmQgdGltaW5nIHJlbGF0ZWQgbGltaXRhdGlvbnMgbGVh
-ZGluZyB0byBTWU5DTE9TVCBlcnJvcnMuIFdoZW5ldmVyIHRoZSBpbWFnZQp3aW5kb3cgaXMgbW92
-ZWQgdG93YXJkcyB0aGUgcmlnaHQgb2YgdGhlIHNjcmVlbiBTWU5DTE9TVCBlcnJvcnMgYmVjb21l
-CmZyZXF1ZW50LiBDaGVja3MgaGF2ZSBiZWVuIGltcGxlbWVudGVkIHRvIHNlZSB0aGF0IERJU1BD
-IGRyaXZlciByZWplY3RzCmNvbmZpZ3VyYXRpb24gZXhjZWVkaW5nIGFib3ZlIGxpbWl0YXRpb25z
-LgoKVGhpcyBjb2RlIHdhcyBzdWNjZXNzZnVsbHkgdGVzdGVkIG9uIE9NQVAzLiBUaGlzIGNvZGUg
-aXMgd3JpdHRlbiBiYXNlZCBvbiBjb2RlCndyaXR0ZW4gYnkgVmlsbGUgU3lyasOkbMOkIDx2aWxs
-ZS5zeXJqYWxhQG5va2lhLmNvbT4gaW4gTGludXggT01BUCBrZXJuZWwuIFZpbGxlClN5cmrDpGzD
-pCA8dmlsbGUuc3lyamFsYUBub2tpYS5jb20+IGhhZCBhZGRlZCBjaGVja3MgZm9yIHZpZGVvIG92
-ZXJsYXkgaG9yaXpvbnRhbAp0aW1pbmcgYW5kIERJU1BDIGhvcml6b250YWwgYmxhbmtpbmcgbGVu
-Z3RoIGxpbWl0YXRpb25zLgoKU2lnbmVkLW9mZi1ieTogQ2hhbmRyYWJoYW51IE1haGFwYXRyYSA8
-Y21haGFwYXRyYUB0aS5jb20+Ci0tLQogZHJpdmVycy92aWRlby9vbWFwMi9kc3MvZGlzcGMuYyB8
-ICAgNjcgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0tCiAxIGZpbGVzIGNo
-YW5nZWQsIDY0IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJp
-dmVycy92aWRlby9vbWFwMi9kc3MvZGlzcGMuYyBiL2RyaXZlcnMvdmlkZW8vb21hcDIvZHNzL2Rp
-c3BjLmMKaW5kZXggNWExOTYzZS4uZWJmYTYxMyAxMDA2NDQKLS0tIGEvZHJpdmVycy92aWRlby9v
-bWFwMi9kc3MvZGlzcGMuYworKysgYi9kcml2ZXJzL3ZpZGVvL29tYXAyL2Rzcy9kaXNwYy5jCkBA
-IC0xNjIyLDYgKzE2MjIsNTggQEAgc3RhdGljIHZvaWQgY2FsY19kbWFfcm90YXRpb25fb2Zmc2V0
-KHU4IHJvdGF0aW9uLCBib29sIG1pcnJvciwKIAl9CiB9CiAKK3N0YXRpYyBpbnQgY2hlY2tfaG9y
-aXpfdGltaW5nKGVudW0gb21hcF9jaGFubmVsIGNoYW5uZWwsIHUxNiBwb3NfeCwKKwkJdTE2IHdp
-ZHRoLCB1MTYgaGVpZ2h0LCB1MTYgb3V0X3dpZHRoLCB1MTYgb3V0X2hlaWdodCkKK3sKKwlpbnQg
-RFMgPSBESVZfUk9VTkRfVVAoaGVpZ2h0LCBvdXRfaGVpZ2h0KTsKKwlzdHJ1Y3Qgb21hcF9kc3Nf
-ZGV2aWNlICpkc3NkZXYgPSBkaXNwY19tZ3JfZ2V0X2RldmljZShjaGFubmVsKTsKKwlzdHJ1Y3Qg
-b21hcF92aWRlb190aW1pbmdzIHQgPSBkc3NkZXYtPnBhbmVsLnRpbWluZ3M7CisJaW50IHBjZCA9
-IFJFR19HRVQoRElTUENfRElWSVNPUm8oY2hhbm5lbCksIDcsIDApOworCXVuc2lnbmVkIGxvbmcg
-bm9uYWN0aXZlLCB2YWwsIGJsYW5rOworCXN0YXRpYyBjb25zdCB1OCBsaW1pdHNbM10gPSB7IDgs
-IDEwLCAyMCB9OworCWludCBpOworCisJbm9uYWN0aXZlID0gdC54X3JlcyArIHQuaGZwICsgdC5o
-c3cgKyB0LmhicCAtIG91dF93aWR0aDsKKworCS8qCisJICogQXRsZWFzdCBEUy0yIGxpbmVzIG11
-c3QgaGF2ZSBhbHJlYWR5IGJlZW4gZmV0Y2hlZAorCSAqIGJlZm9yZSB0aGUgZGlzcGxheSBhY3Rp
-dmUgdmlkZW8gcGVyaW9kIHN0YXJ0cy4KKwkgKi8KKwl2YWwgPSAobm9uYWN0aXZlIC0gcG9zX3gp
-ICogcGNkOworCURTU0RCRygiKG5vbmFjdGl2ZSAtIHBvc194KSAqIHBjZCA9ICVsdSwiCisJCSIg
-bWF4KDAsIERTIC0gMikgKiB3aWR0aCA9ICVkXG4iLAorCQl2YWwsIG1heCgwLCBEUyAtIDIpICog
-d2lkdGgpOworCWlmICh2YWwgPCBtYXgoMCwgRFMgLSAyKSAqIHdpZHRoKQorCQlyZXR1cm4gLUVJ
-TlZBTDsKKworCS8qCisJICogT25seSBvbmUgbGluZSBjYW4gYmUgZmV0Y2hlZCBkdXJpbmcgdGhl
-IG92ZXJsYXkgYWN0aXZlCisJICogcGVyaW9kLCB0aGUgcmVzdCBoYXZlIHRvIGJlIGZldGNoZWQg
-ZHVyaW5nIHRoZSBpbmFjdGl2ZQorCSAqIHBlcmlvZC4KKwkgKi8KKwl2YWwgPSBub25hY3RpdmUg
-KiBwY2Q7CisJRFNTREJHKCJub25hY3RpdmUgKiBwY2QgID0gJWx1LCBtYXgoMCwgRFMgLSAxKSAq
-IHdpZHRoID0gJWRcbiIsCisJCXZhbCwgbWF4KDAsIERTIC0gMSkgKiB3aWR0aCk7CisJaWYgKHZh
-bCA8IG1heCgwLCBEUyAtIDEpICogd2lkdGgpCisJCXJldHVybiAtRUlOVkFMOworCisJLyoKKwkg
-KiBBdGxlYXN0IENlaWwoRFMpIGxpbmVzIHNob3VsZCBoYXZlIGJlZW4gbG9hZGVkIGR1cmluZwor
-CSAqIFBQTCAoc2NyZWVuIHdpZHRoKSArIGJsYW5raW5nIHBlcmlvZC4KKwkgKi8KKwlpID0gMDsK
-KwlpZiAob3V0X2hlaWdodCA8IGhlaWdodCkKKwkJaSsrOworCWlmIChvdXRfd2lkdGggPCB3aWR0
-aCkKKwkJaSsrOworCWJsYW5rID0gKHQuaGJwICsgdC5oc3cgKyB0LmhmcCkgKiBwY2Q7CisJRFNT
-REJHKCJibGFua2luZyBwZXJpb2QgKyBwcGwgPSAlbHUgKGxpbWl0ID0gJXUpXG4iLCBibGFuaywg
-bGltaXRzW2ldKTsKKwlpZiAoYmxhbmsgPD0gbGltaXRzW2ldKQorCQlyZXR1cm4gLUVJTlZBTDsK
-KworCXJldHVybiAwOworfQorCiBzdGF0aWMgdW5zaWduZWQgbG9uZyBjYWxjX2ZjbGtfZml2ZV90
-YXBzKGVudW0gb21hcF9jaGFubmVsIGNoYW5uZWwsIHUxNiB3aWR0aCwKIAkJdTE2IGhlaWdodCwg
-dTE2IG91dF93aWR0aCwgdTE2IG91dF9oZWlnaHQsCiAJCWVudW0gb21hcF9jb2xvcl9tb2RlIGNv
-bG9yX21vZGUpCkBAIC0xNzAyLDcgKzE3NTQsNyBAQCBzdGF0aWMgaW50IGRpc3BjX292bF9jYWxj
-X3NjYWxpbmcoZW51bSBvbWFwX3BsYW5lIHBsYW5lLAogCQllbnVtIG9tYXBfY2hhbm5lbCBjaGFu
-bmVsLCB1MTYgd2lkdGgsIHUxNiBoZWlnaHQsCiAJCXUxNiBvdXRfd2lkdGgsIHUxNiBvdXRfaGVp
-Z2h0LAogCQllbnVtIG9tYXBfY29sb3JfbW9kZSBjb2xvcl9tb2RlLCBib29sICpmaXZlX3RhcHMs
-Ci0JCWludCAqeF9wcmVkZWNpbSwgaW50ICp5X3ByZWRlY2ltKQorCQlpbnQgKnhfcHJlZGVjaW0s
-IGludCAqeV9wcmVkZWNpbSwgdTE2IHBvc194KQogewogCXN0cnVjdCBvbWFwX292ZXJsYXkgKm92
-bCA9IG9tYXBfZHNzX2dldF9vdmVybGF5KHBsYW5lKTsKIAljb25zdCBpbnQgbWF4ZG93bnNjYWxl
-ID0gZHNzX2ZlYXRfZ2V0X3BhcmFtX21heChGRUFUX1BBUkFNX0RPV05TQ0FMRSk7CkBAIC0xNzc4
-LDYgKzE4MzAsOSBAQCBzdGF0aWMgaW50IGRpc3BjX292bF9jYWxjX3NjYWxpbmcoZW51bSBvbWFw
-X3BsYW5lIHBsYW5lLAogCQkJZmNsayA9IGNhbGNfZmNsa19maXZlX3RhcHMoY2hhbm5lbCwgaW5f
-d2lkdGgsIGluX2hlaWdodCwKIAkJCQlvdXRfd2lkdGgsIG91dF9oZWlnaHQsIGNvbG9yX21vZGUp
-OwogCisJCQllcnJvciA9IGNoZWNrX2hvcml6X3RpbWluZyhjaGFubmVsLCBwb3NfeCwgaW5fd2lk
-dGgsCisJCQkJaW5faGVpZ2h0LCBvdXRfd2lkdGgsIG91dF9oZWlnaHQpOworCiAJCQlpZiAoaW5f
-d2lkdGggPiBtYXhzaW5nbGVsaW5ld2lkdGgpCiAJCQkJaWYgKGluX2hlaWdodCA+IG91dF9oZWln
-aHQgJiYKIAkJCQkJaW5faGVpZ2h0IDwgb3V0X2hlaWdodCAqIDIpCkBAIC0xNzg1LDcgKzE4NDAs
-NyBAQCBzdGF0aWMgaW50IGRpc3BjX292bF9jYWxjX3NjYWxpbmcoZW51bSBvbWFwX3BsYW5lIHBs
-YW5lLAogCQkJaWYgKCEqZml2ZV90YXBzKQogCQkJCWZjbGsgPSBjYWxjX2ZjbGsoY2hhbm5lbCwg
-aW5fd2lkdGgsIGluX2hlaWdodCwKIAkJCQkJb3V0X3dpZHRoLCBvdXRfaGVpZ2h0KTsKLQkJCWVy
-cm9yID0gKGluX3dpZHRoID4gbWF4c2luZ2xlbGluZXdpZHRoICogMiB8fAorCQkJZXJyb3IgPSAo
-ZXJyb3IgfHwgaW5fd2lkdGggPiBtYXhzaW5nbGVsaW5ld2lkdGggKiAyIHx8CiAJCQkJKGluX3dp
-ZHRoID4gbWF4c2luZ2xlbGluZXdpZHRoICYmICpmaXZlX3RhcHMpIHx8CiAJCQkJIWZjbGsgfHwg
-ZmNsayA+IGRpc3BjX2ZjbGtfcmF0ZSgpKTsKIAkJCWlmIChlcnJvcikgewpAQCAtMTgwMSw2ICsx
-ODU2LDEyIEBAIHN0YXRpYyBpbnQgZGlzcGNfb3ZsX2NhbGNfc2NhbGluZyhlbnVtIG9tYXBfcGxh
-bmUgcGxhbmUsCiAJCX0gd2hpbGUgKGRlY2ltX3ggPD0gKnhfcHJlZGVjaW0gJiYgZGVjaW1feSA8
-PSAqeV9wcmVkZWNpbQogCQkJJiYgZXJyb3IpOwogCisJCWlmIChjaGVja19ob3Jpel90aW1pbmco
-Y2hhbm5lbCwgcG9zX3gsIHdpZHRoLCBoZWlnaHQsCisJCQlvdXRfd2lkdGgsIG91dF9oZWlnaHQp
-KXsKKwkJCQlEU1NFUlIoImhvcml6b250YWwgdGltaW5nIHRvbyB0aWdodFxuIik7CisJCQkJcmV0
-dXJuIC1FSU5WQUw7CisJCX0KKwogCQlpZiAoaW5fd2lkdGggPiAobWF4c2luZ2xlbGluZXdpZHRo
-ICogMikpIHsKIAkJCURTU0VSUigiQ2Fubm90IHNldHVwIHNjYWxpbmciKTsKIAkJCURTU0VSUigi
-d2lkdGggZXhjZWVkcyBtYXhpbXVtIHdpZHRoIHBvc3NpYmxlIik7CkBAIC0xOTAxLDcgKzE5NjIs
-NyBAQCBpbnQgZGlzcGNfb3ZsX3NldHVwKGVudW0gb21hcF9wbGFuZSBwbGFuZSwgc3RydWN0IG9t
-YXBfb3ZlcmxheV9pbmZvICpvaSwKIAogCXIgPSBkaXNwY19vdmxfY2FsY19zY2FsaW5nKHBsYW5l
-LCBjaGFubmVsLCBpbl93aWR0aCwgaW5faGVpZ2h0LAogCQkJb3V0X3dpZHRoLCBvdXRfaGVpZ2h0
-LCBvaS0+Y29sb3JfbW9kZSwgJmZpdmVfdGFwcywKLQkJCSZ4X3ByZWRlY2ltLCAmeV9wcmVkZWNp
-bSk7CisJCQkmeF9wcmVkZWNpbSwgJnlfcHJlZGVjaW0sIG9pLT5wb3NfeCk7CiAJaWYgKHIpCiAJ
-CXJldHVybiByOwogCi0tIAoxLjcuMQoKLS0KVG8gdW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6
-IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LWZiZGV2IiBpbgp0aGUgYm9keSBvZiBh
-IG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZwpNb3JlIG1ham9yZG9tbyBpbmZv
-IGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWw=
+On Thu, Mar 15, 2012 at 05:18:52PM +0530, Chandrabhanu Mahapatra wrote:
+> In OMAP3 DISPC video overlays suffer from some undocumented horizontal po=
+sition
+> and timing related limitations leading to SYNCLOST errors. Whenever the i=
+mage
+> window is moved towards the right of the screen SYNCLOST errors become
+> frequent. Checks have been implemented to see that DISPC driver rejects
+> configuration exceeding above limitations.
+>=20
+> This code was successfully tested on OMAP3. This code is written based on=
+ code
+> written by Ville Syrj=E4l=E4 <ville.syrjala@nokia.com> in Linux OMAP kern=
+el. Ville
+> Syrj=E4l=E4 <ville.syrjala@nokia.com> had added checks for video overlay =
+horizontal
+> timing and DISPC horizontal blanking length limitations.
+>=20
+> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+> ---
+>  drivers/video/omap2/dss/dispc.c |   67 +++++++++++++++++++++++++++++++++=
+++++--
+>  1 files changed, 64 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/di=
+spc.c
+> index 5a1963e..ebfa613 100644
+> --- a/drivers/video/omap2/dss/dispc.c
+> +++ b/drivers/video/omap2/dss/dispc.c
+> @@ -1622,6 +1622,58 @@ static void calc_dma_rotation_offset(u8 rotation, =
+bool mirror,
+>  	}
+>  }
+> =20
+> +static int check_horiz_timing(enum omap_channel channel, u16 pos_x,
+> +		u16 width, u16 height, u16 out_width, u16 out_height)
+> +{
+> +	int DS =3D DIV_ROUND_UP(height, out_height);
+> +	struct omap_dss_device *dssdev =3D dispc_mgr_get_device(channel);
+> +	struct omap_video_timings t =3D dssdev->panel.timings;
+> +	int pcd =3D REG_GET(DISPC_DIVISORo(channel), 7, 0);
+
+pcd doesn't exist for TV out, which is the reason why you see
+'lclk/pclk' ratio used instead in the harmattan kernel.
+
+Another thing which still seems to be wrong in the upstream code is the
+use of fclk in the scaling checks. It should be checking lclk instead.
+
+> +	unsigned long nonactive, val, blank;
+> +	static const u8 limits[3] =3D { 8, 10, 20 };
+> +	int i;
+> +
+> +	nonactive =3D t.x_res + t.hfp + t.hsw + t.hbp - out_width;
+> +
+> +	/*
+> +	 * Atleast DS-2 lines must have already been fetched
+> +	 * before the display active video period starts.
+> +	 */
+> +	val =3D (nonactive - pos_x) * pcd;
+> +	DSSDBG("(nonactive - pos_x) * pcd =3D %lu,"
+> +		" max(0, DS - 2) * width =3D %d\n",
+> +		val, max(0, DS - 2) * width);
+> +	if (val < max(0, DS - 2) * width)
+> +		return -EINVAL;
+> +
+> +	/*
+> +	 * Only one line can be fetched during the overlay active
+> +	 * period, the rest have to be fetched during the inactive
+> +	 * period.
+> +	 */
+> +	val =3D nonactive * pcd;
+> +	DSSDBG("nonactive * pcd  =3D %lu, max(0, DS - 1) * width =3D %d\n",
+> +		val, max(0, DS - 1) * width);
+> +	if (val < max(0, DS - 1) * width)
+> +		return -EINVAL;
+> +
+> +	/*
+> +	 * Atleast Ceil(DS) lines should have been loaded during
+> +	 * PPL (screen width) + blanking period.
+> +	 */
+> +	i =3D 0;
+> +	if (out_height < height)
+> +		i++;
+> +	if (out_width < width)
+> +		i++;
+> +	blank =3D (t.hbp + t.hsw + t.hfp) * pcd;
+> +	DSSDBG("blanking period + ppl =3D %lu (limit =3D %u)\n", blank, limits[=
+i]);
+> +	if (blank <=3D limits[i])
+> +		return -EINVAL;
+
+The comment and code here are totally out of sync. IIRC the hblank
+length check came directly from the TRM. I have no idea if it's correct
+for more recent OMAPs, or if it was just copy pasted from the
+old TRM when the TRM got adjusted for more recent chips. That is why I
+stuck it into a separate function in harmattan.
+
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/

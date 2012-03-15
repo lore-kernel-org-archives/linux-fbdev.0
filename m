@@ -1,64 +1,79 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 21 Mar 2012 18:35:51 +0000
-Subject: Re: [PATCH] video:uvesafb: notice user when we failed to save hardware state
-Message-Id: <4F6A1F87.6010806@gmx.de>
+From: Mike Frysinger <vapier@gentoo.org>
+Date: Thu, 15 Mar 2012 19:08:03 +0000
+Subject: Re: [Linux-fbdev-devel] [uclinux-dist-devel] [PATCH] [#7001] framebuffer: old image of last app woul
+Message-Id: <201203151508.04564.vapier@gentoo.org>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="===============4173243839655916680=="
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120302014531.GA3597@udknight>
-In-Reply-To: <20120302014531.GA3597@udknight>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev@vger.kernel.org
+
+--===============4173243839655916680==
+Content-Type: multipart/signed; boundary="nextPart4992493.1MfDLordnU";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-To: Wang YanQing <Udknight@gmail.com>, spock@gentoo.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 03/02/2012 01:45 AM, Wang YanQing wrote:
-> 
-> uvesafb_open may failed to save hardware state when kmalloc failed
-> in uvesafb_vbe_state_save, we should check this and notice user.
-> 
-> Signed-off-by: Wang YanQing <udknight@gmail.com>
+--nextPart4992493.1MfDLordnU
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Applied.
+On Thursday 15 March 2012 05:23:50 Wu, Aaron wrote:
+> Old image of last application would retain for a while when starting a new
+> application, this patch clear the frambuffer before displaying every time
+> the fb is opened.
+
+i'm not sure the behavior you describe is wrong.  in fact, i'm pretty sure =
+it=20
+sounds correct.  if an app writes an image to the framebuffer and then quit=
+s,=20
+that image should stay there indefinitely until something else opens the=20
+framebuffer and draws their own image.
+=2Dmike
+
+--nextPart4992493.1MfDLordnU
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.17 (GNU/Linux)
+
+iQIcBAABAgAGBQJPYj4UAAoJEEFjO5/oN/WBGV4QAKwhe0e238iKxvXRuWL430fg
+0bM1r/tKPLqd6RR+npC4e02flTBsWHgT1IgT9MtsMmqe1dXk4HBqkqAJpz1U5Ryd
+6trd7PocyfryahKoTmBZ3INFQHmpGqCB5h/DbC0ufCZdAGK14vMTMkNpY96qF0+b
+rDlG9f8F85QU6jH7IP2rtad6PQ4kZQdLpe/YRxroJR0fBvTCgqBc2AtdJ+oS9anS
+B5CQdPDdeitAavZlJJkcMgz2IgPnYJBqccnRN+h15JcBeyBI4u4teujB/Qfg85QN
+rbGY9V+UVVVdB4q8bdGdvgNN5XpqD7aVjP8nBhxBTJTSekPDSaCvW4zvk7eMMZ3J
+6BIwrizQmS4ScLZ0SNvUBSBI9hjRNGt8KtMd8IIZ0LVBe/nHWtlNUJBbWOlXb/Ck
+MJtZupcGull1GXg9mvA8bvGMSB5DaZjjlVAqrH9Jtb4YuTLLMyVX0K+o280ZRNEz
+UUgqotk90VOZzGS2OZ4213/jZKUDANL0ryi2FB/l6DfcH2evlMz+/ZLYNHRb33Ts
+Q+//n2i5Z0UuVjA27hC+0kzaa7Hubm9GrKhOg28YBTVhg2I2zjduczMn7cU9H+QZ
+Y26PIRjU1mlY41kSkhqpznrXS+GLk6e+ybnjXBYTVqkIsLSuOfOMy68ULgnxS9b8
+ZFEXsDzYOyrpq5AKfZmM
+=AEK9
+-----END PGP SIGNATURE-----
+
+--nextPart4992493.1MfDLordnU--
 
 
-Thanks,
+--===============4173243839655916680==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Florian Tobias Schandinat
+------------------------------------------------------------------------------
+This SF email is sponsosred by:
+Try Windows Azure free for 90 days Click Here 
+http://p.sf.net/sfu/sfd2d-msazure
+--===============4173243839655916680==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> ---
->  drivers/video/uvesafb.c |   14 +++++++++++---
->  1 file changed, 11 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-> index e7f69ef..9db3de3 100644
-> --- a/drivers/video/uvesafb.c
-> +++ b/drivers/video/uvesafb.c
-> @@ -362,7 +362,7 @@ static u8 *uvesafb_vbe_state_save(struct uvesafb_par *par)
->  
->  	state = kmalloc(par->vbe_state_size, GFP_KERNEL);
->  	if (!state)
-> -		return NULL;
-> +		return ERR_PTR(-ENOMEM);
->  
->  	task = uvesafb_prep();
->  	if (!task) {
-> @@ -1172,9 +1172,17 @@ static int uvesafb_open(struct fb_info *info, int user)
->  {
->  	struct uvesafb_par *par = info->par;
->  	int cnt = atomic_read(&par->ref_count);
-> +	u8 *buf = NULL;
->  
-> -	if (!cnt && par->vbe_state_size)
-> -		par->vbe_state_orig = uvesafb_vbe_state_save(par);
-> +	if (!cnt && par->vbe_state_size) {
-> +		buf =  uvesafb_vbe_state_save(par);
-> +		if (IS_ERR(buf)) {
-> +			printk(KERN_WARNING "uvesafb: save hardware state"
-> +				"failed, error code is %ld!\n", PTR_ERR(buf));
-> +		} else {
-> +			par->vbe_state_orig = buf;
-> +		}
-> +	}
->  
->  	atomic_inc(&par->ref_count);
->  	return 0;
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
+--===============4173243839655916680==--

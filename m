@@ -1,90 +1,69 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 07 Mar 2012 12:44:39 +0000
-Subject: [PATCH 10/21] OMAPDSS: use platform_driver_probe for core/dispc/dss
-Message-Id: <1331124290-6285-11-git-send-email-tomi.valkeinen@ti.com>
-List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
+From: "Wu, Aaron" <Aaron.Wu-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH] [#7001] framebuffer: old image of
+ last app would retain for a while after starting new app
+Date: Thu, 15 Mar 2012 05:23:50 -0400
+Message-ID: <DB904C5425BA6F4E8424B3B51A1414D16F24304A98@NWD2CMBX1.ad.analog.com>
+References: <1331628439-12719-1-git-send-email-Aaron.Wu@analog.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Return-path: <uclinux-dist-devel-bounces-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org>
+In-Reply-To: <1331628439-12719-1-git-send-email-Aaron.Wu-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>
+Content-Language: en-US
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://blackfin.uclinux.org/mailman/options/uclinux-dist-devel>,
+	<mailto:uclinux-dist-devel-request-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://blackfin.uclinux.org/pipermail/uclinux-dist-devel>
+List-Post: <mailto:uclinux-dist-devel-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org>
+List-Help: <mailto:uclinux-dist-devel-request-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org?subject=help>
+List-Subscribe: <https://blackfin.uclinux.org/mailman/listinfo/uclinux-dist-devel>,
+	<mailto:uclinux-dist-devel-request-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org?subject=subscribe>
+Sender: uclinux-dist-devel-bounces-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org
+Errors-To: uclinux-dist-devel-bounces-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org
+To: "Wu, Aaron" <Aaron.Wu-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>, "linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org" <linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>, "uclinux-dist-devel-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org" <uclinux-dist-devel-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org>
+Cc: "Zhang, Sonic" <Sonic.Zhang-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>
 
-The platform devices for omapdss, dss and dispc drivers are always
-present, so we can use platform_driver_probe instead of
-platform_driver_register.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+
+-----Original Message-----
+From: Aaron Wu [mailto:Aaron.Wu-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org]
+Sent: Tuesday, March 13, 2012 4:47 PM
+To: linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org; uclinux-dist-devel-ZG0+EudsQA8dtHy/vicBwGD2FQJk+8+b@public.gmane.org; Wu, Aaron
+Cc: Wu, Aaron
+Subject: [PATCH] [#7001] framebuffer: old image of last app would retain for a while after starting new app
+
+Old image of last application would retain for a while when starting a new application, this patch
+clear the frambuffer before displaying every time the fb is opened.
+
+Signed-off-by: Aaron Wu <Aaron.Wu-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>
 ---
- drivers/video/omap2/dss/core.c  |    3 +--
- drivers/video/omap2/dss/dispc.c |    3 +--
- drivers/video/omap2/dss/dss.c   |    3 +--
- 3 files changed, 3 insertions(+), 6 deletions(-)
+ drivers/video/bfin-lq035q1-fb.c  |    1 +
+ drivers/video/bfin-t350mcqb-fb.c |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
-index 3efd473..80fbfd7 100644
---- a/drivers/video/omap2/dss/core.c
-+++ b/drivers/video/omap2/dss/core.c
-@@ -341,7 +341,6 @@ static int omap_dss_resume(struct platform_device *pdev)
- }
- 
- static struct platform_driver omap_dss_driver = {
--	.probe          = omap_dss_probe,
- 	.remove         = omap_dss_remove,
- 	.shutdown	= omap_dss_shutdown,
- 	.suspend	= omap_dss_suspend,
-@@ -576,7 +575,7 @@ static int __init omap_dss_init(void)
- 	if (r)
- 		return r;
- 
--	r = platform_driver_register(&omap_dss_driver);
-+	r = platform_driver_probe(&omap_dss_driver, omap_dss_probe);
- 	if (r) {
- 		omap_dss_bus_unregister();
- 		return r;
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 5985c3c..c71d4c5 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -3431,7 +3431,6 @@ static const struct dev_pm_ops dispc_pm_ops = {
- };
- 
- static struct platform_driver omap_dispchw_driver = {
--	.probe          = omap_dispchw_probe,
- 	.remove         = omap_dispchw_remove,
- 	.driver         = {
- 		.name   = "omapdss_dispc",
-@@ -3442,7 +3441,7 @@ static struct platform_driver omap_dispchw_driver = {
- 
- int dispc_init_platform_driver(void)
- {
--	return platform_driver_register(&omap_dispchw_driver);
-+	return platform_driver_probe(&omap_dispchw_driver, omap_dispchw_probe);
- }
- 
- void dispc_uninit_platform_driver(void)
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 7d3facc..34cc84f 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -841,7 +841,6 @@ static const struct dev_pm_ops dss_pm_ops = {
- };
- 
- static struct platform_driver omap_dsshw_driver = {
--	.probe          = omap_dsshw_probe,
- 	.remove         = omap_dsshw_remove,
- 	.driver         = {
- 		.name   = "omapdss_dss",
-@@ -852,7 +851,7 @@ static struct platform_driver omap_dsshw_driver = {
- 
- int dss_init_platform_driver(void)
- {
--	return platform_driver_register(&omap_dsshw_driver);
-+	return platform_driver_probe(&omap_dsshw_driver, omap_dsshw_probe);
- }
- 
- void dss_uninit_platform_driver(void)
--- 
-1.7.4.1
+diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
+index c633068..676aa4e 100644
+--- a/drivers/video/bfin-lq035q1-fb.c
++++ b/drivers/video/bfin-lq035q1-fb.c
+@@ -399,6 +399,7 @@ static int bfin_lq035q1_fb_open(struct fb_info *info, int user)
+                bfin_lq035q1_config_dma(fbi);
+                bfin_lq035q1_config_ppi(fbi);
+                bfin_lq035q1_init_timers(fbi);
++               memset(fbi->fb_buffer, 0, info->fix.smem_len);
 
+                /* start dma */
+                enable_dma(CH_PPI);
+diff --git a/drivers/video/bfin-t350mcqb-fb.c b/drivers/video/bfin-t350mcqb-fb.c
+index d5e1267..37f2df1 100644
+--- a/drivers/video/bfin-t350mcqb-fb.c
++++ b/drivers/video/bfin-t350mcqb-fb.c
+@@ -216,6 +216,7 @@ static int bfin_t350mcqb_fb_open(struct fb_info *info, int user)
+                bfin_t350mcqb_config_dma(fbi);
+                bfin_t350mcqb_config_ppi(fbi);
+                bfin_t350mcqb_init_timers();
++               memset(fbi->fb_buffer, 0, info->fix.smem_len);
+
+                /* start dma */
+                enable_dma(CH_PPI);
+--
+1.7.0.4

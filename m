@@ -1,83 +1,207 @@
-From: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com>
-Date: Wed, 14 Mar 2012 06:29:09 +0000
+From: joeyli <jlee@suse.com>
+Date: Thu, 15 Mar 2012 08:05:40 +0000
 Subject: Re: [PATCH] Added backlight driver for Acer Aspire 4736
-Message-Id: <CABNxG=D3y2GQqS1XN=+B0QRScXpufBkPQtP5-SSNEjSavhtW7g@mail.gmail.com>
+Message-Id: <1331798740.10557.245.camel@linux-s257.site>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1331608337.2267.67.camel@debian.Gayathri>
-	<20120312175130.GA18002@srcf.ucam.org>
-	<1331640592.3485.50.camel@debian.Gayathri>
-	<20120313124738.GB10822@srcf.ucam.org>
-	<CABNxG=Dqg26EHmC3vibf3-SjVhby1qgQfMniQObUeh9eJ6SwEw@mail.gmail.com>
-	<20120313133458.GA11574@srcf.ucam.org>
-	<1331688294.2577.19.camel@debian.Gayathri>
-	<1331680373.10557.169.camel@linux-s257.site>
-	<1331692996.3052.8.camel@debian.Gayathri>
-	<1331704278.10557.190.camel@linux-s257.site>
-In-Reply-To: <1331704278.10557.190.camel@linux-s257.site>
+	 <20120312175130.GA18002@srcf.ucam.org>
+	 <1331640592.3485.50.camel@debian.Gayathri>
+	 <20120313124738.GB10822@srcf.ucam.org>
+	 <CABNxG=Dqg26EHmC3vibf3-SjVhby1qgQfMniQObUeh9eJ6SwEw@mail.gmail.com>
+	 <20120313133458.GA11574@srcf.ucam.org>
+	 <1331688294.2577.19.camel@debian.Gayathri>
+	 <1331680373.10557.169.camel@linux-s257.site>
+	 <1331692996.3052.8.camel@debian.Gayathri>
+	 <1331704278.10557.190.camel@linux-s257.site>
+	 <CABNxG=D3y2GQqS1XN=+B0QRScXpufBkPQtP5-SSNEjSavhtW7g@mail.gmail.com>
+In-Reply-To: <CABNxG=D3y2GQqS1XN=+B0QRScXpufBkPQtP5-SSNEjSavhtW7g@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="big5"
-Content-Transfer-Encoding: base64
-To: joeyli <jlee@suse.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com>
 Cc: Matthew Garrett <mjg@redhat.com>, rpurdie@rpsys.net, FlorianSchandinat@gmx.de, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-T24gV2VkLCBNYXIgMTQsIDIwMTIgYXQgMTE6MjEgQU0sIGpvZXlsaSA8amxlZUBzdXNlLmNvbT4g
-d3JvdGU6Cj4gqfMgpFShQTIwMTItMDMtMTQgqfMgMDg6MTMgKzA1MzChQVByYWRlZXAgU3VicmFo
-bWFuaW9uILSjqOyhRwo+PiBIaSBKb2V5ICwKPj4KPj4gPiBQZXIgbXkgdW5kZXJzdG9vZCwgRUMg
-ZmlybXdhcmUgc2hvdWxkIGNoYW5nZSBicmlnaHRuZXNzIGJ1dCBkaWRuJ3QgZG8KPj4gPiB0aGF0
-LCBhbm90aGVyCj4+ID4gd2F5IGlzIHRvdWNoIGk5MTUgcmVnaXN0ZXIgaW4gX0JDTS4KPj4KPj4g
-ICBob3cgZG8gd2UgZG8gdGhpcyA/IHlvdSBtZWFuIGNoYW5nZSB0aGUgX0JDTSBpbXBsZW1lbnRh
-dGlvbiA/Cj4KPiAiQklPUyBndXkiIHNob3VsZCBkbyBzb21ldGhpbmcgbGlrZSB0aGlzOgo+Cj4g
-IE1ldGhvZCAoQUlOVCwgMiwgTm90U2VyaWFsaXplZCkKPiB7Cj4gLi4uCj4gICAgICAgIElmIChM
-RXF1YWwgKEFyZzAsIE9uZSkpCj4gICAgICAgIHsKPiAgICAgICAgICAgIFN0b3JlIChEaXZpZGUg
-KE11bHRpcGx5IChBcmcxLCAweEZGKSwgMHg2NCwgKSwgQkNMUCkKPiAgICAgICAgICAgIE9yIChC
-Q0xQLCAweDgwMDAwMDAwLCBCQ0xQKSAgICAgICAgIDw9PSB0b3VjaCBCQ0xQIHJlZ2lzdGVyCj4g
-ICAgICAgICAgICBTdG9yZSAoMHgwMiwgQVNMQykKPiAgICAgICAgfQo+Cj4gICAgTWV0aG9kIChf
-QkNNLCAxLCBOb3RTZXJpYWxpemVkKQo+ICAgIHsKPiAgICAgICAgSWYgKExBbmQgKExHcmVhdGVy
-RXF1YWwgKEFyZzAsIFplcm8pLCBMTGVzc0VxdWFsIChBcmcwLCAweDY0KSkpCj4gICAgICAgIHsK
-PiAgICAgICAgICAgIEFJTlQgKE9uZSwgQXJnMCkgICAgIDw9PSBjYWxsIEFJTlQgbWV0aG9kCj4g
-ICAgICAgICAgICBTdG9yZSAoQXJnMCwgQlJUTCkKPiAgICAgICAgfQo+ICAgIH0KPgo+Cj4gSnVz
-dCBmb3IgcmVmZXJlbmNlLCB0aGV5IHNob3VsZCBkbyB0aGF0IHdoZW4gRUMgZGlkbid0IHdpcmUg
-dG8KPiBiYWNrbGlnaHQuCj4KPj4gPgo+PiA+IEFjZXIgbWFjaGluZSBwcm92aWRlIGEgYnJva2Vu
-IF9CQ00gaW1wbGVtZW50YXRpb24gYW5kIHRoZXkgZGlkbid0IHRlc3QKPj4gPiBpdC4KPj4gPgo+
-PiA+ID4gPiA+IEJ5ICcgQUNQSSBpbnRlcmZhY2UnICwgSSBtZWFuICdhY3BpX3ZpZGVvMCcgaW5z
-aWRlIHRoZQo+PiA+ID4gPiA+IC9zeXMvY2xhc3MvYmFja2xpZ2h0LiBJIGhhdm4ndCB0cmllZCB0
-aGUgL3N5cy9jbGFzcy9iYWNrbGlnaHQgaW50ZXJmYWNlCj4+ID4gPiA+ID4gZGlyZWN0bHkgLiBJ
-IHdpbGwgdHJ5IHRoYXQgYWxzby4KPj4gPiA+ID4KPj4gPiA+ID4gU28gd3JpdGluZyB2YWx1ZXMg
-aW50byAvc3lzL2NsYXNzL2JhY2tsaWdodC9hY3BpX3ZpZGVvMC9icmlnaHRuZXNzIGRvZXMKPj4g
-PiA+ID4gbm90aGluZz8KPj4gPiA+Cj4+ID4gPgo+PiA+ID4gTm8gY2hhbmdlIGluIHZhbHVlIHdo
-ZW4gd3JpdGluZwo+PiA+ID4gdG8gL3N5cy9jbGFzcy9iYWNrbGlnaHQvYWNwaV92aWRlbzAvYnJp
-Z2h0bmVzcy4KPj4gPiA+Cj4+ID4gPiBBbm90aGVyIHRoaW5nIGlzIHRoYXQgd2hlbiBpIGRpZCBi
-b290IHdpdGggYWNwaV9iYWNrbGlnaHQgPSAnYWNlcl93bWknICwKPj4gPiA+IGluIG5ldyBrZXJu
-ZWwgKDMuMy4wLXJjNykgLCBpdCBzaG93cyBmb2xsb3dpbmcgbWVzc2FnZXMgLAo+PiA+ID4KPj4g
-PiA+IFsgICAgOC4zNTA4MjVdIHdtaTogTWFwcGVyIGxvYWRlZAo+PiA+ID4gWyAgIDEwLjM2Mzk3
-NV0gYWNlcl93bWk6IEFjZXIgTGFwdG9wIEFDUEktV01JIEV4dHJhcwo+PiA+ID4gWyAgIDEwLjM5
-NjE4Nl0gYWNlcl93bWk6IEZ1bmN0aW9uIGJpdG1hcCBmb3IgQ29tbXVuaWNhdGlvbiBEZXZpY2U6
-IDB4OTEKPj4gPiA+IFsgICAxMC4zOTYzODVdIGFjZXJfd21pOiBCcmlnaHRuZXNzIG11c3QgYmUg
-Y29udHJvbGxlZCBieSBnZW5lcmljIHZpZGVvCj4+ID4gPiBkcml2ZXIKPj4gPiA+Cj4+ID4gPiBB
-bHNvIHRoZXJlIHdhcyBubyBpbnRlcmZhY2UgaW5zaWRlIC9zeXMvY2xhc3MvYmFja2xpZ2h0IGZv
-ciBhY2VyX3dtaS4KPj4gPiA+Cj4+ID4KPj4gPiBZZXMsIGFjZXJfd21pIHN1cHBvcnQgYmFja2xp
-Z2h0IGNvbnRyb2wgd2l0aCBBTVcwIGludGVyZmFjZSwgeW91cgo+PiA+IG1hY2hpbmUgZGlkbid0
-IGhhdmUgQU1XMCBpbnRlcmZhY2UuCj4+ID4KPj4gPiBOb3JtYWxseSwgYmFja2xpZ2h0IHNob3Vs
-ZCBjb250cm9sIGJ5IHN0YW5kYXJkIGFjcGkgaW50ZXJmYWNlLgo+PiA+Cj4+ID4gPiBJIGFsc28g
-dHJpZWQgd3JpdGluZyBkaXJlY3RseSB0byBFbWJlZGRlZCBjb250cm9sbGVyIHJlZ2lzdGVyIC5C
-dXQgbm8KPj4gPiA+IGNoYW5nZS4KPj4gPgo+PiA+IFRoZSBtYWNoaW5lIGhhcyBicm9rZW4gX0JD
-TSBtZXRob2QsIGJlY2F1c2UgRUMgc2hvdWxkIGRvIHNvbWV0aGluZyBhZnRlcgo+PiA+IF9CQ00g
-Y2hhbmdlZCBFQyByZWdpc3Rlci4KPj4KPj4gVGhhbmtzICwKPj4KPj4gUHJhZGVlcCBTdWJyYWht
-YW5pb24KPgo+IFdoeSB0aGV5IGRpZG4ndCBmaW5kIF9CQ00gbm90IHdvcms/Cj4KPiBNeSBndWVz
-cyBpczoKPgo+IEJlY2F1c2UgdGhlIGJhY2tsaWdodCBjb250cm9sIGlzIHRocm91Z2ggV0RETSBk
-cml2ZXIgb24gV2luZG93cyBwbGF0Zm9ybQo+IGJ1dCBub3QgdGhyb3VnaCBzdGFuZGFyZCBBQ1BJ
-IG1ldGhvZCBfQkNNLiBUaGV5IG9ubHkgdGVzdCBXaW5kb3dzCj4gcGxhdGZvcm0sIHNvLCB0aGV5
-IGRpZG4ndCBmaW5kIF9CQ00gYnJva2VuLgo+Cj4gQW5kLCB0aGV5IGFsc28gZGlkbid0IHJlYWxs
-eSBmb2xsb3cgTWljcm9zb2Z0IFdERE0gc3BlYzoKPgo+ICBodHRwOi8vbXNkbi5taWNyb3NvZnQu
-Y29tL2VuLXVzL3dpbmRvd3MvaGFyZHdhcmUvZ2c0ODczODIuYXNweAo+Cj4gUGVyIHNwZWMsCj4g
-T0RNIHNob3VsZCBrZWVwIF9CQ00gd29ya3MgZmluZSBmb3IgYW55IG90aGVyIE9TIGRpZG4ndCBz
-dXBwb3J0IFdERE0KPiBkcml2ZXIsIGJ1dCB0aGV5IGRpZG4ndC4KPgo+IEF0IGxhc3QgeWVhciwg
-SSB0b2xkIEFjZXIgUE0gb25lIHRpbWUgZm9yIHRoaXMgaXNzdWUsIHRoZXkgc2FpZCB3aWxsCj4g
-Y2hlY2sgYnV0IGZpbmFsbHkgZGlkbid0IHJlc3BvbnNlIG1lLgo+Cgo+Cj4gVGhhbmtzCj4gSm9l
-eSBMZWUKPgoKU28gdG91Y2hpbmcgdGhlIFBDSSBMQkIgcmVnaXN0ZXIgaXMgdGhlIG9ubHkgZmVh
-c2libGUgc29sdXRpb24gbm93CihldmVuIHRob3VnaCBpdCBtYXkgbm90IGJlIGEgY2xlYW4gIG1l
-dGhvZCkgPwoKVGhhbmtzLApQcmFkZWVwIFN1YnJhaG1hbmlvbgotLQpUbyB1bnN1YnNjcmliZSBm
-cm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtZmJkZXYiIGlu
-CnRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnCk1vcmUg
-bWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8u
-aHRtbA==
+Hi Pradeep, 
+
+於 三，2012-03-14 於 11:47 +0530，Pradeep Subrahmanion 提到：
+> On Wed, Mar 14, 2012 at 11:21 AM, joeyli <jlee@suse.com> wrote:
+> > 於 三，2012-03-14 於 08:13 +0530，Pradeep Subrahmanion 提到：
+> >> Hi Joey ,
+> >>
+> >> > Per my understood, EC firmware should change brightness but didn't do
+> >> > that, another
+> >> > way is touch i915 register in _BCM.
+> >>
+> >>   how do we do this ? you mean change the _BCM implementation ?
+> >
+> > "BIOS guy" should do something like this:
+> >
+> >  Method (AINT, 2, NotSerialized)
+> > {
+> > ...
+> >        If (LEqual (Arg0, One))
+> >        {
+> >            Store (Divide (Multiply (Arg1, 0xFF), 0x64, ), BCLP)
+> >            Or (BCLP, 0x80000000, BCLP)         <== touch BCLP register
+> >            Store (0x02, ASLC)
+> >        }
+> >
+> >    Method (_BCM, 1, NotSerialized)
+> >    {
+> >        If (LAnd (LGreaterEqual (Arg0, Zero), LLessEqual (Arg0, 0x64)))
+> >        {
+> >            AINT (One, Arg0)     <== call AINT method
+> >            Store (Arg0, BRTL)
+> >        }
+> >    }
+> >
+> >
+> > Just for reference, they should do that when EC didn't wire to
+> > backlight.
+> >
+> >> >
+> >> > Acer machine provide a broken _BCM implementation and they didn't test
+> >> > it.
+> >> >
+> >> > > > > By ' ACPI interface' , I mean 'acpi_video0' inside the
+> >> > > > > /sys/class/backlight. I havn't tried the /sys/class/backlight interface
+> >> > > > > directly . I will try that also.
+> >> > > >
+> >> > > > So writing values into /sys/class/backlight/acpi_video0/brightness does
+> >> > > > nothing?
+> >> > >
+> >> > >
+> >> > > No change in value when writing
+> >> > > to /sys/class/backlight/acpi_video0/brightness.
+> >> > >
+> >> > > Another thing is that when i did boot with acpi_backlight = 'acer_wmi' ,
+> >> > > in new kernel (3.3.0-rc7) , it shows following messages ,
+> >> > >
+> >> > > [    8.350825] wmi: Mapper loaded
+> >> > > [   10.363975] acer_wmi: Acer Laptop ACPI-WMI Extras
+> >> > > [   10.396186] acer_wmi: Function bitmap for Communication Device: 0x91
+> >> > > [   10.396385] acer_wmi: Brightness must be controlled by generic video
+> >> > > driver
+> >> > >
+> >> > > Also there was no interface inside /sys/class/backlight for acer_wmi.
+> >> > >
+> >> >
+> >> > Yes, acer_wmi support backlight control with AMW0 interface, your
+> >> > machine didn't have AMW0 interface.
+> >> >
+> >> > Normally, backlight should control by standard acpi interface.
+> >> >
+> >> > > I also tried writing directly to Embedded controller register .But no
+> >> > > change.
+> >> >
+> >> > The machine has broken _BCM method, because EC should do something after
+> >> > _BCM changed EC register.
+> >>
+> >> Thanks ,
+> >>
+> >> Pradeep Subrahmanion
+> >
+> > Why they didn't find _BCM not work?
+> >
+> > My guess is:
+> >
+> > Because the backlight control is through WDDM driver on Windows platform
+> > but not through standard ACPI method _BCM. They only test Windows
+> > platform, so, they didn't find _BCM broken.
+> >
+> > And, they also didn't really follow Microsoft WDDM spec:
+> >
+> >  http://msdn.microsoft.com/en-us/windows/hardware/gg487382.aspx
+> >
+> > Per spec,
+> > ODM should keep _BCM works fine for any other OS didn't support WDDM
+> > driver, but they didn't.
+> >
+> > At last year, I told Acer PM one time for this issue, they said will
+> > check but finally didn't response me.
+> >
+> 
+> >
+> > Thanks
+> > Joey Lee
+> >
+> 
+> So touching the PCI LBB register is the only feasible solution now
+> (even though it may not be a clean  method) ?
+> 
+> Thanks,
+> Pradeep Subrahmanion
+
+That will be better leave LBB register only touched by i915 driver.
+
+If 'acpi_backlight=vendor' works to you, maybe we can add a quirk to
+video_detect.c. 
+You can try the following patch.
+
+
+Thanks a lot!
+Joey Lee
+
+
+From 038bd3c4e53b7195f34e9d46c999b8dcb279da5e Mon Sep 17 00:00:00 2001
+From: "Lee, Chun-Yi" <jlee@suse.com>
+Date: Thu, 15 Mar 2012 16:03:45 +0800
+Subject: [PATCH] acer-wmi: Add quirk table for video backlight vendor mode
+
+Add quirk table for video backlight vendor mode
+
+Signed-off-by: "Lee, Chun-Yi" <jlee@suse.com>
+---
+ drivers/acpi/video_detect.c |   27 +++++++++++++++++++++++++++
+ 1 files changed, 27 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/acpi/video_detect.c b/drivers/acpi/video_detect.c
+index f3f0fe7..acb15d6 100644
+--- a/drivers/acpi/video_detect.c
++++ b/drivers/acpi/video_detect.c
+@@ -132,6 +132,32 @@ find_video(acpi_handle handle, u32 lvl, void *context, void **rv)
+ 	return AE_OK;
+ }
+ 
++static int video_set_backlight_vendor(const struct dmi_system_id *d)
++{
++	acpi_video_support |= ACPI_VIDEO_BACKLIGHT_DMI_VENDOR;
++	return 0;
++}
++
++static const struct dmi_system_id video_vendor_dmi_table[] = {
++	{
++	 .callback = video_set_backlight_vendor,
++	 .ident = "Acer Aspire 4736",
++	 .matches = {
++		DMI_MATCH(DMI_BOARD_VENDOR, "Acer"),
++		DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 4736"),
++		},
++	},
++	{
++	 .callback = video_set_backlight_vendor,
++	 .ident = "Acer TravelMate 4750",
++	 .matches = {
++		DMI_MATCH(DMI_BOARD_VENDOR, "Acer"),
++		DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 4750"),
++		},
++	},
++	{}
++};
++
+ /*
+  * Returns the video capabilities of a specific ACPI graphics device
+  *
+@@ -164,6 +190,7 @@ long acpi_video_get_capabilities(acpi_handle graphics_handle)
+ 		 *		ACPI_VIDEO_BACKLIGHT_DMI_VENDOR;
+ 		 *}
+ 		 */
++		dmi_check_system(video_vendor_dmi_table);
+ 	} else {
+ 		status = acpi_bus_get_device(graphics_handle, &tmp_dev);
+ 		if (ACPI_FAILURE(status)) {
+-- 
+1.7.7
+
+
+

@@ -1,34 +1,21 @@
-From: Yoichi Yuasa <yuasa@linux-mips.org>
-Date: Thu, 15 Mar 2012 12:28:16 +0000
-Subject: [PATCH] gma500: Fix mmap frambuffer
-Message-Id: <20120315212816.475b0b18.yuasa@linux-mips.org>
+From: Alan Cox <alan@linux.intel.com>
+Date: Thu, 15 Mar 2012 14:47:10 +0000
+Subject: Re: [PATCH] gma500: Fix mmap frambuffer
+Message-Id: <20120315144710.3d6ce9c5@bob.linux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20120315212816.475b0b18.yuasa@linux-mips.org>
+In-Reply-To: <20120315212816.475b0b18.yuasa@linux-mips.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alan@linux.intel.com
-Cc: yuasa@linux-mips.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Yoichi Yuasa <yuasa@linux-mips.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
+On Thu, 15 Mar 2012 21:28:16 +0900
+Yoichi Yuasa <yuasa@linux-mips.org> wrote:
 
-It cannot map correctly if page fault begins from a intermediate address.
+> 
+> It cannot map correctly if page fault begins from a intermediate
+> address.
 
-Signed-off-by: Yoichi Yuasa <yuasa@linux-mips.org>
----
- drivers/gpu/drm/gma500/framebuffer.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/gpu/drm/gma500/framebuffer.c b/drivers/gpu/drm/gma500/framebuffer.c
-index be61673..5154493 100644
---- a/drivers/gpu/drm/gma500/framebuffer.c
-+++ b/drivers/gpu/drm/gma500/framebuffer.c
-@@ -158,7 +158,7 @@ static int psbfb_vm_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- 	unsigned long phys_addr = (unsigned long)dev_priv->stolen_base;
- 
- 	page_num = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
--	address = (unsigned long)vmf->virtual_address;
-+	address = (unsigned long)vmf->virtual_address - (vmf->pgoff << PAGE_SHIFT);
- 
- 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
- 
--- 
-1.7.0.4
+Thanks, that explains one very strange bug I've been seeing !

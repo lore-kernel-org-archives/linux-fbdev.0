@@ -1,51 +1,39 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 01 Mar 2012 15:07:28 +0000
-Subject: [PATCH v2 15/57] arm: mach-shmobile: Don't initialize the hdmi_info lcd_chan field
-Message-Id: <1330614490-14149-16-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Thu, 15 Mar 2012 17:43:53 +0000
+Subject: [RFC/PATCH 5/6] fbdev: sh_mobile_lcdc: Destroy mutex at remove time
+Message-Id: <1331833434-11934-6-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-The field is unused and will be removed. Don't initialize it.
+Add a missing mutex_destroy() call when the driver is unbound from the
+device.
 
 Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- arch/arm/mach-shmobile/board-ap4evb.c   |    3 ---
- arch/arm/mach-shmobile/board-mackerel.c |    3 ---
- 2 files changed, 0 insertions(+), 6 deletions(-)
+ drivers/video/sh_mobile_lcdcfb.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
-index 407a4b6..21f4fa8 100644
---- a/arch/arm/mach-shmobile/board-ap4evb.c
-+++ b/arch/arm/mach-shmobile/board-ap4evb.c
-@@ -816,10 +816,7 @@ static struct platform_device fsi_ak4643_device = {
- static long ap4evb_clk_optimize(unsigned long target, unsigned long *best_freq,
- 				unsigned long *parent_freq);
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 2009432..23d0446 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -1725,8 +1725,11 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
+ 	}
  
--static struct sh_mobile_lcdc_info sh_mobile_lcdc1_info;
--
- static struct sh_mobile_hdmi_info hdmi_info = {
--	.lcd_chan = &sh_mobile_lcdc1_info.ch[0],
- 	.flags = HDMI_SND_SRC_SPDIF,
- 	.clk_optimize_parent = ap4evb_clk_optimize,
- };
-diff --git a/arch/arm/mach-shmobile/board-mackerel.c b/arch/arm/mach-shmobile/board-mackerel.c
-index 5a96d81..52b7cb7 100644
---- a/arch/arm/mach-shmobile/board-mackerel.c
-+++ b/arch/arm/mach-shmobile/board-mackerel.c
-@@ -432,10 +432,7 @@ static struct platform_device lcdc_device = {
- };
+ 	for (i = 0; i < ARRAY_SIZE(priv->ch); i++) {
+-		if (priv->ch[i].bl)
+-			sh_mobile_lcdc_bl_remove(priv->ch[i].bl);
++		struct sh_mobile_lcdc_chan *ch = &priv->ch[i];
++
++		if (ch->bl)
++			sh_mobile_lcdc_bl_remove(ch->bl);
++		mutex_destroy(&ch->open_lock);
+ 	}
  
- /* HDMI */
--static struct sh_mobile_lcdc_info hdmi_lcdc_info;
--
- static struct sh_mobile_hdmi_info hdmi_info = {
--	.lcd_chan	= &hdmi_lcdc_info.ch[0],
- 	.flags		= HDMI_SND_SRC_SPDIF,
- };
- 
+ 	if (priv->dot_clk) {
 -- 
 1.7.3.4
 

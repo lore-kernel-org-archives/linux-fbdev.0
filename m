@@ -1,113 +1,65 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Date: Thu, 15 Mar 2012 23:04:46 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 16 Mar 2012 10:23:31 +0000
 Subject: Re: [PATCH 2/2] OMAPDSS: DISPC: Handle synclost errors in OMAP3
-Message-Id: <20120315230446.GO17132@sci.fi>
+Message-Id: <1331893411.1653.5.camel@lappy>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1331812132-9814-1-git-send-email-cmahapatra@ti.com>
-In-Reply-To: <1331812132-9814-1-git-send-email-cmahapatra@ti.com>
+	 <20120315230446.GO17132@sci.fi>
+In-Reply-To: <20120315230446.GO17132@sci.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Cc: tomi.valkeinen@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Thu, Mar 15, 2012 at 05:18:52PM +0530, Chandrabhanu Mahapatra wrote:
-> In OMAP3 DISPC video overlays suffer from some undocumented horizontal po=
-sition
-> and timing related limitations leading to SYNCLOST errors. Whenever the i=
-mage
-> window is moved towards the right of the screen SYNCLOST errors become
-> frequent. Checks have been implemented to see that DISPC driver rejects
-> configuration exceeding above limitations.
->=20
-> This code was successfully tested on OMAP3. This code is written based on=
- code
-> written by Ville Syrj=E4l=E4 <ville.syrjala@nokia.com> in Linux OMAP kern=
-el. Ville
-> Syrj=E4l=E4 <ville.syrjala@nokia.com> had added checks for video overlay =
-horizontal
-> timing and DISPC horizontal blanking length limitations.
->=20
-> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-> ---
->  drivers/video/omap2/dss/dispc.c |   67 +++++++++++++++++++++++++++++++++=
-++++--
->  1 files changed, 64 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/di=
-spc.c
-> index 5a1963e..ebfa613 100644
-> --- a/drivers/video/omap2/dss/dispc.c
-> +++ b/drivers/video/omap2/dss/dispc.c
-> @@ -1622,6 +1622,58 @@ static void calc_dma_rotation_offset(u8 rotation, =
-bool mirror,
->  	}
->  }
-> =20
-> +static int check_horiz_timing(enum omap_channel channel, u16 pos_x,
-> +		u16 width, u16 height, u16 out_width, u16 out_height)
-> +{
-> +	int DS =3D DIV_ROUND_UP(height, out_height);
-> +	struct omap_dss_device *dssdev =3D dispc_mgr_get_device(channel);
-> +	struct omap_video_timings t =3D dssdev->panel.timings;
-> +	int pcd =3D REG_GET(DISPC_DIVISORo(channel), 7, 0);
+On Fri, 2012-03-16 at 01:04 +0200, Ville Syrjälä wrote:
+> On Thu, Mar 15, 2012 at 05:18:52PM +0530, Chandrabhanu Mahapatra wrote:
+> > In OMAP3 DISPC video overlays suffer from some undocumented horizontal position
+> > and timing related limitations leading to SYNCLOST errors. Whenever the image
+> > window is moved towards the right of the screen SYNCLOST errors become
+> > frequent. Checks have been implemented to see that DISPC driver rejects
+> > configuration exceeding above limitations.
+> > 
+> > This code was successfully tested on OMAP3. This code is written based on code
+> > written by Ville Syrjälä <ville.syrjala@nokia.com> in Linux OMAP kernel. Ville
+> > Syrjälä <ville.syrjala@nokia.com> had added checks for video overlay horizontal
+> > timing and DISPC horizontal blanking length limitations.
+> > 
+> > Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+> > ---
+> >  drivers/video/omap2/dss/dispc.c |   67 +++++++++++++++++++++++++++++++++++++--
+> >  1 files changed, 64 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+> > index 5a1963e..ebfa613 100644
+> > --- a/drivers/video/omap2/dss/dispc.c
+> > +++ b/drivers/video/omap2/dss/dispc.c
+> > @@ -1622,6 +1622,58 @@ static void calc_dma_rotation_offset(u8 rotation, bool mirror,
+> >  	}
+> >  }
+> >  
+> > +static int check_horiz_timing(enum omap_channel channel, u16 pos_x,
+> > +		u16 width, u16 height, u16 out_width, u16 out_height)
+> > +{
+> > +	int DS = DIV_ROUND_UP(height, out_height);
+> > +	struct omap_dss_device *dssdev = dispc_mgr_get_device(channel);
+> > +	struct omap_video_timings t = dssdev->panel.timings;
+> > +	int pcd = REG_GET(DISPC_DIVISORo(channel), 7, 0);
+> 
+> pcd doesn't exist for TV out, which is the reason why you see
+> 'lclk/pclk' ratio used instead in the harmattan kernel.
 
-pcd doesn't exist for TV out, which is the reason why you see
-'lclk/pclk' ratio used instead in the harmattan kernel.
+I'm surprised you still remember these things =). And even more
+surprised that you actually bothered to review it, thanks for that.
 
-Another thing which still seems to be wrong in the upstream code is the
-use of fclk in the scaling checks. It should be checking lclk instead.
+Chandrabhanu, do you have an omap3 board with composite/svideo tv-out?
+It'd be good to test on that also, as, like Ville points out, the above
+code can't work for tv-out. Hmm, then again, it shouldn't work for HDMI
+on OMAP4 either. Did you test with HDMI?
 
-> +	unsigned long nonactive, val, blank;
-> +	static const u8 limits[3] =3D { 8, 10, 20 };
-> +	int i;
-> +
-> +	nonactive =3D t.x_res + t.hfp + t.hsw + t.hbp - out_width;
-> +
-> +	/*
-> +	 * Atleast DS-2 lines must have already been fetched
-> +	 * before the display active video period starts.
-> +	 */
-> +	val =3D (nonactive - pos_x) * pcd;
-> +	DSSDBG("(nonactive - pos_x) * pcd =3D %lu,"
-> +		" max(0, DS - 2) * width =3D %d\n",
-> +		val, max(0, DS - 2) * width);
-> +	if (val < max(0, DS - 2) * width)
-> +		return -EINVAL;
-> +
-> +	/*
-> +	 * Only one line can be fetched during the overlay active
-> +	 * period, the rest have to be fetched during the inactive
-> +	 * period.
-> +	 */
-> +	val =3D nonactive * pcd;
-> +	DSSDBG("nonactive * pcd  =3D %lu, max(0, DS - 1) * width =3D %d\n",
-> +		val, max(0, DS - 1) * width);
-> +	if (val < max(0, DS - 1) * width)
-> +		return -EINVAL;
-> +
-> +	/*
-> +	 * Atleast Ceil(DS) lines should have been loaded during
-> +	 * PPL (screen width) + blanking period.
-> +	 */
-> +	i =3D 0;
-> +	if (out_height < height)
-> +		i++;
-> +	if (out_width < width)
-> +		i++;
-> +	blank =3D (t.hbp + t.hsw + t.hfp) * pcd;
-> +	DSSDBG("blanking period + ppl =3D %lu (limit =3D %u)\n", blank, limits[=
-i]);
-> +	if (blank <=3D limits[i])
-> +		return -EINVAL;
+Or is the above code called for TV-manager at all? If not, perhaps it
+could be named *_lcd or something. Or perhaps have a BUG_ON(channel !lcd1 or lcd2);
 
-The comment and code here are totally out of sync. IIRC the hblank
-length check came directly from the TRM. I have no idea if it's correct
-for more recent OMAPs, or if it was just copy pasted from the
-old TRM when the TRM got adjusted for more recent chips. That is why I
-stuck it into a separate function in harmattan.
+ Tomi
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+

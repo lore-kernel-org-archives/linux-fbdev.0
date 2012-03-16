@@ -1,7 +1,7 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Thu, 15 Mar 2012 08:39:58 +0000
+Date: Fri, 16 Mar 2012 01:39:06 +0000
 Subject: RE: [PATCH v2 3/3] ARM: Samsung: Rework platform data of s3c-fb driver
-Message-Id: <000001cd0287$34ae4890$9e0ad9b0$%han@samsung.com>
+Message-Id: <001d01cd0315$935cc720$ba165560$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1331585999-8604-1-git-send-email-thomas.abraham@linaro.org>
  <1331585999-8604-4-git-send-email-thomas.abraham@linaro.org>
@@ -63,9 +63,14 @@ To: linux-arm-kernel@lists.infradead.org
 > bootloader to select correct LCD size. After your changes, board with
 > 7" LCD wont show anything.
 
-OK, your code work, although the usage is wrong.
+[CC'ed Tushar Behera]
 
-Thomas, can you keep backwards compatibility?
+Yes, your code is working. However, your code is bug.
+'struct s3c_fb_pd_win' is used not for LCD, but for windows of FIMD IP. So, 'struct s3c_fb_pd_win' should not be used to select LCD.
+The mach-aquila.c uses two 'struct s3c_fb_pd_win' like you, however 'struct s3c_fb_pd_win' don't make problem with Thomas's
+patchset. It is because mach-aquila.c use 'struct s3c_fb_pd_win' for only windows of FIMD IP.
+We don't have to responsibility to keep wrong code. If you have kept the rule, Thomas's patch would not make the compatibility
+problem with your code. Why we should keep aberration such as your code? If you want to select two LCDs, please find other way.
 
 
 > 

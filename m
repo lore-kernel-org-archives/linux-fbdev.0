@@ -1,47 +1,52 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 08 Mar 2012 17:55:57 +0000
-Subject: [PATCH 0/2] viafb modetable conversion
-Message-Id: <cover.1331229163.git.FlorianSchandinat@gmx.de>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Sat, 17 Mar 2012 17:03:24 +0000
+Subject: Fwd: Problem with framebuffer mmap on platforms with large addressing
+Message-Id: <CALT56yMKruRiysMe+SG1x+pzfVNbsxR8YwwT8nuQocy1sqY1KQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-Hi all,
+Hello,
 
-finally the modetable conversion is here. The first patch does the 
-conversion to get rid of some strange things and lot of defines.
-The conversion was done by a program and causes a lot of warnings by 
-generating lines longer than 80 characters which I do not consider 
-worth fixing. A side effect of this conversion seems to be that CRTs 
-are happier with the resulting modes/clocks as the conversion program 
-used floating point and therefore the resulting pixclocks are closer to 
-what they should be.
-The second patch is just sort of performance optimization by avoiding 
-two unnecessary modetable walks.
+I'm trying to make framebuffer to work on PPC460EX board (canyonlands).
+
+The peculiarity of this platform is the fact that it has
+sizeof(unsigned long) = 4,
+but physical address on it is 36 bits width. It is a common to various pieces
+of the code to expect that unsigned long variable is able to contain physical
+address. Most of those places are easy to fix.
+
+The problem I'm stuck with is a fb_mmap() code. To find a right memory to map
+it uses information from struct fb_fix_screeninfo provided by the driver.
+This structure uses two unsigned long fields to hold physical addresses
+(smem_start and mmio_start). It would be easy to change that structure
+to use phys_addr_t instead of unsigned long, but this structure is a part
+of userspace ABI. It is returned to userspace on FBIOGET_FSCREENINFO ioctl.
+And now I'm stuck with it.
+
+In my driver code I have just overwritten the fb_mmap function with
+driver-private
+fb_mmap callback supporting 64-bit addressing, but this doesn't look like
+a generic and correct solution.
+
+What is the best way to fix this problem? Should we break ABI with the goal
+of correctness? Should we add new FBIOGET_FSCREENINFO2, which will
+return a correct structure with phys_addr_t (or simply u64) fields and make
+FBIOGET_FSCREENINFO a wrapper returning partially bogus structure
+(with smem_start and mmio_start fields being truncated to just unsigned long)?
+What would developers recommend?
 
 
-Best regards,
-
-Florian Tobias Schandinat
+Thank you.
 
 
-Florian Tobias Schandinat (2):
-  viafb: modetable conversion
-  viafb: avoid refresh and mode lookup in set_par
+--
+With best wishes
+Dmitry
 
- drivers/video/via/dvi.c      |    2 +-
- drivers/video/via/hw.c       |   41 +--
- drivers/video/via/hw.h       |    4 +-
- drivers/video/via/lcd.c      |   53 +---
- drivers/video/via/share.h    |  331 --------------------
- drivers/video/via/viafbdev.c |   32 +-
- drivers/video/via/viamode.c  |  713 ++++++------------------------------------
- drivers/video/via/viamode.h  |   11 +-
- 8 files changed, 134 insertions(+), 1053 deletions(-)
 
 -- 
-1.7.9
-
+With best wishes
+Dmitry

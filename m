@@ -1,7 +1,7 @@
 From: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com>
-Date: Sun, 18 Mar 2012 05:22:32 +0000
+Date: Sun, 18 Mar 2012 05:24:11 +0000
 Subject: Re: [PATCH] Added backlight driver for Acer Aspire 4736
-Message-Id: <1332047432.6304.13.camel@debian.Gayathri>
+Message-Id: <1332047531.6304.14.camel@debian.Gayathri>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1331608337.2267.67.camel@debian.Gayathri>
 	 <20120312175130.GA18002@srcf.ucam.org>
@@ -212,5 +212,6 @@ Pradeep Subrahmanion
 >  	} else {
 >  		status = acpi_bus_get_device(graphics_handle, &tmp_dev);
 >  		if (ACPI_FAILURE(status)) {
+
 
 

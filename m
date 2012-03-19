@@ -1,13 +1,14 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Sun, 18 Mar 2012 23:46:25 +0000
-Subject: RE: [PATCH v2 3/3] ARM: Samsung: Rework platform data of s3c-fb driver
-Message-Id: <001501cd0561$57c642b0$0752c810$%han@samsung.com>
+From: Darius Augulis <augulis.darius@gmail.com>
+Date: Mon, 19 Mar 2012 07:40:59 +0000
+Subject: Re: [PATCH v2 3/3] ARM: Samsung: Rework platform data of s3c-fb driver
+Message-Id: <CAEYLNCo0zyH9Nsf59UU-J4m=km+mKH1ym5a-9s7WthFpos6D+w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1331585999-8604-1-git-send-email-thomas.abraham@linaro.org>
  <1331585999-8604-4-git-send-email-thomas.abraham@linaro.org>
  <002f01cd00fe$5df84fa0$19e8eee0$%han@samsung.com>
  <CAJuYYwSUf-gsVesduMggSuues9OLOR6DUDAAMg_tL=e3=3c0tQ@mail.gmail.com>
- <000501cd0184$f088cb20$d19a6160$%han@samsung.com> <4F60E5C8.3040804@gmail.com>
+ <000501cd0184$f088cb20$d19a6160$%han@samsung.com>
+ <4F60E5C8.3040804@gmail.com>
  <001501cd0241$6bb53560$431fa020$%han@samsung.com>
  <CAEYLNCp5e=86rpRi2C-5OJptTyEeXAn8JHhbWw_BqGzSaDD9wQ@mail.gmail.com>
  <002a01cd0283$1f61b200$5e251600$%han@samsung.com>
@@ -18,145 +19,141 @@ References: <1331585999-8604-1-git-send-email-thomas.abraham@linaro.org>
  <CAEYLNCpfQ0cYb4efw6PZNnKjQ2rF25rj5Ed=i884LJXHAwigBw@mail.gmail.com>
  <002f01cd0359$eb718330$c2548990$%han@samsung.com>
  <CAEYLNCpJU_5uVa-jo5HUNY8Av6eYaiow1gEZtHCiQZ5oKkGoMQ@mail.gmail.com>
-In-Reply-To: <CAEYLNCpJU_5uVa-jo5HUNY8Av6eYaiow1gEZtHCiQZ5oKkGoMQ@mail.gmail.com>
+ <001501cd0561$57c642b0$0752c810$%han@samsung.com>
+ <CAJuYYwQmJvx_uGZKbAJ9uds-ciLs2VDqcifhoqB-P0M5uhO-nA@mail.gmail.com>
+In-Reply-To: <CAJuYYwQmJvx_uGZKbAJ9uds-ciLs2VDqcifhoqB-P0M5uhO-nA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 To: linux-arm-kernel@lists.infradead.org
 
-> -----Original Message-----
-> From: linux-samsung-soc-owner@vger.kernel.org [mailto:linux-samsung-soc-owner@vger.kernel.org] On Behalf
-> Of Darius Augulis
-> Sent: Friday, March 16, 2012 7:19 PM
-> To: Jingoo Han
-> Cc: Thomas Abraham; linux-fbdev@vger.kernel.org; FlorianSchandinat@gmx.de; linux-arm-
-> kernel@lists.infradead.org; linux-samsung-soc@vger.kernel.org; ben-linux@fluff.org; patches@linaro.org;
-> kgene.kim@samsung.com; Kyungmin Park; JeongHyeon Kim; Heiko Stuebner; Kwangwoo Lee; Mark Brown; Peter
-> Korsgaard; Maurus Cuelenaere; Tushar Behera
-> Subject: Re: [PATCH v2 3/3] ARM: Samsung: Rework platform data of s3c-fb driver
-> 
-> On Fri, Mar 16, 2012 at 11:48 AM, Jingoo Han <jg1.han@samsung.com> wrote:
-> >> > It's just bug.
-> >> >
-> >> > struct s3c_fb_pd_win should be used for windows of FIMD IP.
-> >> > It should not be used for selecting multi-LCDs.
-> >>
-> >> why not? s3c_fb_pd_win contains timing values which depend directly on
-> >> LCD size and resolution.
-> >> Please look into the code again - mini6410 doesn't use platform data
-> >> so select different LCD sizes.
-> >> It has only single window in platform data - exactly what you want.
-> >> Now tell my, why you are arguing, that this platform data cannot be
-> >> rewritten dynamically by board setup routines at kernel startup time?
-> >> Many ARM architectures are doing the same - takes kernel command line
-> >> argument to select LCD and passes necessary data for its fb drivers
-> >> via platform data structures. It not a bug, it's correct approach to
-> >> support different sizes of LCD display for the same board.
-> >
-> >
-> > Hey, it is not my point.
-> > To take kernel command line is not problem to support multiple LCDs.
-> >
-> > My point is that s3c_fb_pd_win should not include variable LCD option.
-> > So, if you want to support multiple LCDs, you should use another variable,
-> > instead of using s3c_fb_pd_win[0] and s3c_fb_pd_win[1] as 4.3" LCD, 7.0" LCD.
-> 
-> But I use s3c_fb_pd_win only as container to hold timing values in
-> board setup code.
-> s3c-fb platform data has only single window and does not perform any
-> LCD selection.
-> What is wrong here? You suggest to declare some custom structure to
-> hold these timing values? What's the point?
-> 
-> >
-> > You use s3c_fb_pd_win[0], s3c_fb_pd_win[1] as 4.3" LCD, 7.0" LCD.
-> > However, s3c_fb_pd_win[0], s3c_fb_pd_win[1] means the windows of FIMD IP.
-> 
-> There is no multiple windows in platform data! driver sees only single
-> window. And this wont change in any way if you drop LCD selection from
-> board setup code.
-> Driver will see the same single window. So - your are arguing, that
-> board setup code sets platform data in bad way. I don't accept your
-> opinion, because tens of boards are doing the same and nobody call it
-> bug.
+Hi,
 
-Because there are not multiple windows and driver sees only single window as you mentiond, 
-Only 'struct s3c_fb_pd_win mini6410_fb_win[0]' should be used and 
-'struct s3c_fb_pd_win mini6410_fb_win[1]' should not be used.
-s3c_fb_pd_win[0] means window 0 of FIMD IP, s3c_fb_pd_win[1] means window 1 of FIMD IP.
+On Mon, Mar 19, 2012 at 9:29 AM, Thomas Abraham
+<thomas.abraham@linaro.org> wrote:
+> Hi Darius,
+>
+> On 19 March 2012 05:16, Jingoo Han <jg1.han@samsung.com> wrote:
+> [...]
+>
+>>
+>> Because there are not multiple windows and driver sees only single windo=
+w as you mentiond,
+>> Only 'struct s3c_fb_pd_win mini6410_fb_win[0]' should be used and
+>> 'struct s3c_fb_pd_win mini6410_fb_win[1]' should not be used.
+>> s3c_fb_pd_win[0] means window 0 of FIMD IP, s3c_fb_pd_win[1] means windo=
+w 1 of FIMD IP.
+>>
+>> Therefore, if mini6410_fb_win[0] and mini6410_fb_win[1] are included, it=
+ means that
+>> 2 windows of FIMD IP are used in single LCD.
+>>
+>> If you want to support multiple LCDs, you should use struct s3c_fb_platd=
+ata[0], struct s3c_fb_platdata[1],
+>> because 'struct s3c_fb_platdata' means LCD panel.
+>>
+>> If you understand the purpose of s3c_fb_platdata and s3c_fb_pd_win, you =
+should do, at least, as below.
+>>
+>> static struct s3c_fb_pd_win mini6410_fb_lcd0_win[] =3D {
+>> =A0 =A0 =A0 =A0{
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.win_mode =A0 =A0 =A0 =3D { =A0 =A0 /* 4.=
+3" 480x272 */
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.left_margin =A0 =A0=3D 3,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.right_margin =A0 =3D 2,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.upper_margin =A0 =3D 1,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.lower_margin =A0 =3D 1,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.hsync_len =A0 =A0 =A0=3D=
+ 40,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.vsync_len =A0 =A0 =A0=3D=
+ 1,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.xres =A0 =A0 =A0 =A0 =A0=
+ =3D 480,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.yres =A0 =A0 =A0 =A0 =A0=
+ =3D 272,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0},
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.max_bpp =A0 =A0 =A0 =A0=3D 32,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.default_bpp =A0 =A0=3D 16,
+>> =A0 =A0 =A0 =A0},
+>> };
+>>
+>> static struct s3c_fb_platdata mini6410_lcd_pdata[0] __initdata =3D {
+>> =A0 =A0 =A0 =A0.setup_gpio =A0 =A0 =3D s3c64xx_fb_gpio_setup_24bpp,
+>> =A0 =A0 =A0 =A0.win[0] =A0 =A0 =A0 =A0 =3D &mini6410_fb_lcd0_win[0],
+>> =A0 =A0 =A0 =A0.vidcon0 =A0 =A0 =A0 =A0=3D VIDCON0_VIDOUT_RGB | VIDCON0_=
+PNRMODE_RGB,
+>> =A0 =A0 =A0 =A0.vidcon1 =A0 =A0 =A0 =A0=3D VIDCON1_INV_HSYNC | VIDCON1_I=
+NV_VSYNC,
+>> };
+>>
+>> static struct s3c_fb_pd_win mini6410_fb_lcd1_win[] =3D {
+>> =A0 =A0 =A0 =A0{
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.win_mode =A0 =A0 =A0 =3D { =A0 =A0 /* 7.=
+0" 800x480 */
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.left_margin =A0 =A0=3D 8,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.right_margin =A0 =3D 13,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.upper_margin =A0 =3D 7,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.lower_margin =A0 =3D 5,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.hsync_len =A0 =A0 =A0=3D=
+ 3,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.vsync_len =A0 =A0 =A0=3D=
+ 1,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.xres =A0 =A0 =A0 =A0 =A0=
+ =3D 800,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.yres =A0 =A0 =A0 =A0 =A0=
+ =3D 480,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0},
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.max_bpp =A0 =A0 =A0 =A0=3D 32,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0.default_bpp =A0 =A0=3D 16,
+>> =A0 =A0 =A0 =A0},
+>> };
+>>
+>> static struct s3c_fb_platdata mini6410_lcd_pdata[1] __initdata =3D {
+>> =A0 =A0 =A0 =A0.setup_gpio =A0 =A0 =3D s3c64xx_fb_gpio_setup_24bpp,
+>> =A0 =A0 =A0 =A0.win[0] =A0 =A0 =A0 =A0 =3D &mini6410_fb_lcd1_win[0],
+>> =A0 =A0 =A0 =A0.vidcon0 =A0 =A0 =A0 =A0=3D VIDCON0_VIDOUT_RGB | VIDCON0_=
+PNRMODE_RGB,
+>> =A0 =A0 =A0 =A0.vidcon1 =A0 =A0 =A0 =A0=3D VIDCON1_INV_HSYNC | VIDCON1_I=
+NV_VSYNC,
+>> };
+>>
+>> Each struct means:
+>> =A0mini6410_lcd_pdata[0]: 4.3" 480x272 LCD
+>> =A0mini6410_fb_lcd0_win[0]: window 0 used for 4.3" 480x272 LCD
+>>
+>> =A0mini6410_lcd_pdata[1]: 7.0" 800x480 LCD
+>> =A0mini6410_fb_lcd1_win[0]: window 0 used for 7.0" 800x480 LCD
+>>
+>> In this case, 4.3" or 7.0" LCD can be selected using mini6410_lcd_pdata[=
+], instead of selecting mini6410_fb_win[0] or
+>> mini6410_fb_win[1].
+>>
+>> My point is that 's3c_fb_platdata and s3c_fb_pd_win should be used exact=
+ly'.
+>
+> I agree with solution which Jingoo Han has proposed. Instead of
+> selecting one instance of s3c_fb_pd_win over the other at runtime, the
+> features->lcd_index can be used to select one of the instances of
+> platform data for s3c-fb driver.
 
-Therefore, if mini6410_fb_win[0] and mini6410_fb_win[1] are included, it means that
-2 windows of FIMD IP are used in single LCD.
+I agree with it too. Would you make such patch based on your s3c-fb patch s=
+et?
+Somebody should make it and definitely not to remove multiple LCD
+suport for these boards.
 
-If you want to support multiple LCDs, you should use struct s3c_fb_platdata[0], struct s3c_fb_platdata[1],
-because 'struct s3c_fb_platdata' means LCD panel.
+>
+> s3c_fb_pd_win is used to describe a window supported by the fimd
+> controller. It is not meant to carry lcd timing information. The lcd
+> panel timing remains the same irrespective of the window sizes. And
+> this patchset is a step towards untangling window information and
+> video timing.
 
-If you understand the purpose of s3c_fb_platdata and s3c_fb_pd_win, you should do, at least, as below.
+Right now s3c_fb_pd_win contains exactly LCD timing values.
+Your patch will move these timing values to struct fb_videomode.
 
-static struct s3c_fb_pd_win mini6410_fb_lcd0_win[] = {
-	{
-		.win_mode	= {	/* 4.3" 480x272 */
-			.left_margin	= 3,
-			.right_margin	= 2,
-			.upper_margin	= 1,
-			.lower_margin	= 1,
-			.hsync_len	= 40,
-			.vsync_len	= 1,
-			.xres		= 480,
-			.yres		= 272,
-		},
-		.max_bpp	= 32,
-		.default_bpp	= 16,
-	},
-};
+I could make necessary patch for that too, but I think you will spend
+less time doing it by yourself than syncing with me.
+What do you think?
 
-static struct s3c_fb_platdata mini6410_lcd_pdata[0] __initdata = {
-	.setup_gpio	= s3c64xx_fb_gpio_setup_24bpp,
-	.win[0]		= &mini6410_fb_lcd0_win[0],
-	.vidcon0	= VIDCON0_VIDOUT_RGB | VIDCON0_PNRMODE_RGB,
-	.vidcon1	= VIDCON1_INV_HSYNC | VIDCON1_INV_VSYNC,
-};
-
-static struct s3c_fb_pd_win mini6410_fb_lcd1_win[] = {
-	{
-		.win_mode	= {	/* 7.0" 800x480 */
-			.left_margin	= 8,
-			.right_margin	= 13,
-			.upper_margin	= 7,
-			.lower_margin	= 5,
-			.hsync_len	= 3,
-			.vsync_len	= 1,
-			.xres		= 800,
-			.yres		= 480,
-		},
-		.max_bpp	= 32,
-		.default_bpp	= 16,
-	},
-};
-
-static struct s3c_fb_platdata mini6410_lcd_pdata[1] __initdata = {
-	.setup_gpio	= s3c64xx_fb_gpio_setup_24bpp,
-	.win[0]		= &mini6410_fb_lcd1_win[0],
-	.vidcon0	= VIDCON0_VIDOUT_RGB | VIDCON0_PNRMODE_RGB,
-	.vidcon1	= VIDCON1_INV_HSYNC | VIDCON1_INV_VSYNC,
-};
-
-Each struct means:
-  mini6410_lcd_pdata[0]: 4.3" 480x272 LCD
-  mini6410_fb_lcd0_win[0]: window 0 used for 4.3" 480x272 LCD
-
-  mini6410_lcd_pdata[1]: 7.0" 800x480 LCD
-  mini6410_fb_lcd1_win[0]: window 0 used for 7.0" 800x480 LCD
-
-In this case, 4.3" or 7.0" LCD can be selected using mini6410_lcd_pdata[], instead of selecting mini6410_fb_win[0] or
-mini6410_fb_win[1].
-
-My point is that 's3c_fb_platdata and s3c_fb_pd_win should be used exactly'.
-
-> 
-> >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+regards,
+Darius

@@ -1,30 +1,40 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 22 Mar 2012 15:58:33 +0000
-Subject: Re: [GIT PULL] OMAP DSS for v3.4
-Message-Id: <201203221558.33833.arnd@arndb.de>
+From: Randy Dunlap <rdunlap@xenotime.net>
+Date: Mon, 19 Mar 2012 01:03:41 +0000
+Subject: [PATCH v2] x86: export 'pcibios_enabled' as GPL
+Message-Id: <4F6685ED.7040000@xenotime.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1332154865.2144.57.camel@deskari> <201203191624.42020.arnd@arndb.de> <4F6B4A80.309@gmx.de>
-In-Reply-To: <4F6B4A80.309@gmx.de>
+References: <20120313204114.e160849af7dbe5a4b4e5c0ad@canb.auug.org.au> <4F5FAE63.3090908@xenotime.net> <20120319003044.GA3744@udknight>
+In-Reply-To: <20120319003044.GA3744@udknight>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, linux-fbdev <linux-fbdev@vger.kernel.org>
+To: Wang YanQing <Udknight@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Michal Januszewski <spock@gentoo.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, x86@kernel.org, Andrew Morton <akpm@linux-foundation.org>
 
-On Thursday 22 March 2012, Florian Tobias Schandinat wrote:
-> On 03/19/2012 04:24 PM, Arnd Bergmann wrote:
-> > I've looked at the specific conflicts again, and it seems that the only
-> > conflicting commit in arm-soc is 2e3ee9f45b "ARM: OMAP1: Move most of
-> > plat/io.h into local iomap.h". I'm planning to send that one very early,
-> > as soon as Russell has his first set up patches merged, so I don't
-> > actually have to resolve the conflict here unless Florian is also
-> > there early.
-> 
-> just for your info, I am going to send my pull request today. As I
-> didn't find any pull request from you until now, I didn't pull any of
-> the branches below.
+From: Randy Dunlap <rdunlap@xenotime.net>
 
-Ok, thanks for the notification. I'm still waiting for Russell to go
-first, so I'll pull in your branch.
+Export 'pcibios_enabled' so that when uvesafb is built as a
+loadable module (on X86_32), the build will succeed.
 
-	Arnd
+ERROR: "pcibios_enabled" [drivers/video/uvesafb.ko] undefined!
+
+Patch v2 uses EXPORT_SYMBOL_GPL() as requested.
+
+Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
+Cc:	Michal Januszewski <spock@gentoo.org>
+Cc:	Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc:	linux-fbdev@vger.kernel.org
+Cc:	x86@kernel.org
+---
+ arch/x86/pci/pcbios.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- linux-next-20120313.orig/arch/x86/pci/pcbios.c
++++ linux-next-20120313/arch/x86/pci/pcbios.c
+@@ -27,6 +27,7 @@
+ #define PCIBIOS_HW_TYPE2_SPEC		0x20
+ 
+ int pcibios_enabled;
++EXPORT_SYMBOL_GPL(pcibios_enabled);
+ 
+ /* According to the BIOS specification at:
+  * http://members.datafast.net.au/dft0802/specs/bios21.pdf, we could

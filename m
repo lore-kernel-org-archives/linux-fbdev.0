@@ -1,7 +1,7 @@
-From: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com>
-Date: Mon, 19 Mar 2012 11:45:13 +0000
+From: joeyli <jlee@suse.com>
+Date: Tue, 20 Mar 2012 03:55:37 +0000
 Subject: Re: [PATCH] Added backlight driver for Acer Aspire 4736
-Message-Id: <1332156793.2964.3.camel@debian.Gayathri>
+Message-Id: <1332215737.10557.291.camel@linux-s257.site>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1331608337.2267.67.camel@debian.Gayathri>
 	 <20120312175130.GA18002@srcf.ucam.org>
@@ -17,42 +17,46 @@ References: <1331608337.2267.67.camel@debian.Gayathri>
 	 <1331798740.10557.245.camel@linux-s257.site>
 	 <1332047432.6304.13.camel@debian.Gayathri>
 	 <1332122514.10557.270.camel@linux-s257.site>
-In-Reply-To: <1332122514.10557.270.camel@linux-s257.site>
+	 <1332156793.2964.3.camel@debian.Gayathri>
+In-Reply-To: <1332156793.2964.3.camel@debian.Gayathri>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: joeyli <jlee@suse.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com>
 Cc: Matthew Garrett <mjg@redhat.com>, rpurdie@rpsys.net, FlorianSchandinat@gmx.de, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
+Hi Pradeep, 
 
-> For the maximum level causes blank screen...
+於 一，2012-03-19 於 17:03 +0530，Pradeep Subrahmanion 提到：
+> > For the maximum level causes blank screen...
+> > 
+> > Please kindly help to identify which driver handle the brightness
+> > change, run the following 2 commands:
+> > 
+> > # echo 5 > /sys/class/backlight/acer-wmi/brightness 
+> > # echo 5 > /sys/class/backlight/intel_backlight/brightness 
+> > 
+> > Which one works to change brightness on your machine?
 > 
-> Please kindly help to identify which driver handle the brightness
-> change, run the following 2 commands:
+> 	Both  of them do not work for me.Only hot keys are working. 
 > 
-> # echo 5 > /sys/class/backlight/acer-wmi/brightness 
-> # echo 5 > /sys/class/backlight/intel_backlight/brightness 
+> Writing to /sys/class/backlight/acer-wmi/brightness 
 > 
-> Which one works to change brightness on your machine?
-
-	Both  of them do not work for me.Only hot keys are working. 
-
-Writing to /sys/class/backlight/acer-wmi/brightness 
-
-and /sys/class/backlight/intel_backlight/brightness do not cause any 
-
-change in brightness.
-
-
-Regards , 
-
-Pradeep Subrahmanion
-
+> and /sys/class/backlight/intel_backlight/brightness do not cause any 
+> 
+> change in brightness.
 > 
 > 
-> Thanks a lot!
-> Joey Lee
+> Regards , 
+> 
+> Pradeep Subrahmanion
+
+A bit strange...
+
+Could you please paste your /proc/cmdline ? Did you add
+acpi_osi="Linux" ?
 
 
-
+Thanks a lot!
+Joey Lee
 

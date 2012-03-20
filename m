@@ -1,7 +1,7 @@
-From: Greg KH <greg@kroah.com>
-Date: Mon, 19 Mar 2012 23:26:00 +0000
+From: Thomas Winischhofer <thomas@winischhofer.net>
+Date: Tue, 20 Mar 2012 06:40:12 +0000
 Subject: Re: Howto consolidate xgifb (staging) with sisfb
-Message-Id: <20120319232600.GA6386@kroah.com>
+Message-Id: <4F68264C.4040402@winischhofer.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <201203200002.40429.PeterHuewe@gmx.de>
 In-Reply-To: <201203200002.40429.PeterHuewe@gmx.de>
@@ -10,7 +10,10 @@ Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
 
-On Tue, Mar 20, 2012 at 12:02:39AM +0100, Peter H=FCwe wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Peter H=FCwe wrote:
 > Hi,
 >=20
 > I'm currently trying to improve the xgifb driver from staging a bit and m=
@@ -42,17 +45,13 @@ n=20
 > -> Is there a way the xgifb driver can call the function from sis?  (I kn=
 ow=20
 > it's static and not EXPORT_SYMBOL'ed)
-
-Declare it not static and EXPORT_SYMBOL it :)
-
 > Or how would you prepare the consolidation here ?=20
 > (e.g. make the functions identical? and when the merge get's done sometim=
 e=20
 > simply remove the duplicate?)
-
-How about moving things to a "library" module that both modules call
-with these functions, pulling them from one of the drivers.
-
+>=20
+>=20
+>=20
 > And how would you proceed with functions that are nearly identical (but e=
 ach=20
 > function is missing some bits from the other card)
@@ -72,7 +71,30 @@ tly=20
 > to sis or 'backport' sis stuff to xgifb? or both (i.e. make them identica=
 l=20
 > like in the first case?)
+>=20
+>=20
+>=20
+> Thanks,
+> Peter
+>=20
+>=20
 
-Whatever you feel is best to do here.
+I seem to remember that sisfb supported most of the XGI cards
+(V3XT/V5/V8, Z7) as well.... What can xgifb do that sisfb can't? Merging
+the blobs to support the Z9 and Z11 IMHO doesn't justify a separate driver.
 
-greg k-h
+Regards
+Thomas
+
+- --
+Thomas Winischhofer
+thomas AT winischhofer DOT net
+
+The Online Photo Editor  ***************** http://www.phixr.com
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (Darwin)
+
+iD8DBQFPaCZMzydIRAktyUcRArf4AJ9Sp16HV7j5BmoJnV1GtRIwWKnayACePBF3
+1yNMXuxDnpL77ov0EwLs5m0=3DEMek
+-----END PGP SIGNATURE-----

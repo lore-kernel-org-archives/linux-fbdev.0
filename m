@@ -1,160 +1,70 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Mon, 19 Mar 2012 14:50:46 +0000
-Subject: [PATCH] OMAP: DSS2: Remove suspicous and unused TAAL regulator API usage
-Message-Id: <1332168646-4391-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 21 Mar 2012 12:49:07 +0000
+Subject: Re: [PATCH] OMAP: DSS2: Remove suspicous and unused TAAL regulator API usage
+Message-Id: <1332334147.2236.11.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-A2LF/KjG3I8b+yQJOW+O"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>
+References: <1332168646-4391-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1332168646-4391-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-The TAAL driver contains some regulator support which is currently unused
-(the code is there but the one panel supported by the driver doesn't have
-any regulators provided). This code mostly looks like an open coded
-version of the regulator core bulk API.
 
-The only additional feature is that a voltage range can be set once when
-the device is opened, though this is never varied at runtime. The general
-expectation is that if the device is not actively managing the voltage of
-the device (eg, doing DVFS) then any configuration will be done using the
-constraints rather than by drivers, saving them code and ensuring that
-they work well with systems where the voltage is not configurable.
+--=-A2LF/KjG3I8b+yQJOW+O
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-If systems are added needing regulator support this can be added back in,
-though it should be based on core features rather than open coding things.
+On Mon, 2012-03-19 at 14:50 +0000, Mark Brown wrote:
+> The TAAL driver contains some regulator support which is currently unused
+> (the code is there but the one panel supported by the driver doesn't have
+> any regulators provided). This code mostly looks like an open coded
+> version of the regulator core bulk API.
+>=20
+> The only additional feature is that a voltage range can be set once when
+> the device is opened, though this is never varied at runtime. The general
+> expectation is that if the device is not actively managing the voltage of
+> the device (eg, doing DVFS) then any configuration will be done using the
+> constraints rather than by drivers, saving them code and ensuring that
+> they work well with systems where the voltage is not configurable.
+>=20
+> If systems are added needing regulator support this can be added back in,
+> though it should be based on core features rather than open coding things=
+.
+>=20
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/video/omap2/displays/panel-taal.c |   80 -----------------------------
- 1 files changed, 0 insertions(+), 80 deletions(-)
+Looks fine to me, I'll apply to omapdss tree.
 
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 0f21fa5..72d6307 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -30,7 +30,6 @@
- #include <linux/gpio.h>
- #include <linux/workqueue.h>
- #include <linux/slab.h>
--#include <linux/regulator/consumer.h>
- #include <linux/mutex.h>
- 
- #include <video/omapdss.h>
-@@ -55,73 +54,6 @@ static int _taal_enable_te(struct omap_dss_device *dssdev, bool enable);
- 
- static int taal_panel_reset(struct omap_dss_device *dssdev);
- 
--struct panel_regulator {
--	struct regulator *regulator;
--	const char *name;
--	int min_uV;
--	int max_uV;
--};
--
--static void free_regulators(struct panel_regulator *regulators, int n)
--{
--	int i;
--
--	for (i = 0; i < n; i++) {
--		/* disable/put in reverse order */
--		regulator_disable(regulators[n - i - 1].regulator);
--		regulator_put(regulators[n - i - 1].regulator);
--	}
--}
--
--static int init_regulators(struct omap_dss_device *dssdev,
--			struct panel_regulator *regulators, int n)
--{
--	int r, i, v;
--
--	for (i = 0; i < n; i++) {
--		struct regulator *reg;
--
--		reg = regulator_get(&dssdev->dev, regulators[i].name);
--		if (IS_ERR(reg)) {
--			dev_err(&dssdev->dev, "failed to get regulator %s\n",
--				regulators[i].name);
--			r = PTR_ERR(reg);
--			goto err;
--		}
--
--		/* FIXME: better handling of fixed vs. variable regulators */
--		v = regulator_get_voltage(reg);
--		if (v < regulators[i].min_uV || v > regulators[i].max_uV) {
--			r = regulator_set_voltage(reg, regulators[i].min_uV,
--						regulators[i].max_uV);
--			if (r) {
--				dev_err(&dssdev->dev,
--					"failed to set regulator %s voltage\n",
--					regulators[i].name);
--				regulator_put(reg);
--				goto err;
--			}
--		}
--
--		r = regulator_enable(reg);
--		if (r) {
--			dev_err(&dssdev->dev, "failed to enable regulator %s\n",
--				regulators[i].name);
--			regulator_put(reg);
--			goto err;
--		}
--
--		regulators[i].regulator = reg;
--	}
--
--	return 0;
--
--err:
--	free_regulators(regulators, i);
--
--	return r;
--}
--
- /**
-  * struct panel_config - panel configuration
-  * @name: panel name
-@@ -150,8 +82,6 @@ struct panel_config {
- 		unsigned int low;
- 	} reset_sequence;
- 
--	struct panel_regulator *regulators;
--	int num_regulators;
- };
- 
- enum {
-@@ -977,11 +907,6 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 
- 	atomic_set(&td->do_update, 0);
- 
--	r = init_regulators(dssdev, panel_config->regulators,
--			panel_config->num_regulators);
--	if (r)
--		goto err_reg;
--
- 	td->workqueue = create_singlethread_workqueue("taal_esd");
- 	if (td->workqueue = NULL) {
- 		dev_err(&dssdev->dev, "can't create ESD workqueue\n");
-@@ -1075,8 +1000,6 @@ err_gpio:
- err_bl:
- 	destroy_workqueue(td->workqueue);
- err_wq:
--	free_regulators(panel_config->regulators, panel_config->num_regulators);
--err_reg:
- 	kfree(td);
- err:
- 	return r;
-@@ -1113,9 +1036,6 @@ static void __exit taal_remove(struct omap_dss_device *dssdev)
- 	/* reset, to be sure that the panel is in a valid state */
- 	taal_hw_reset(dssdev);
- 
--	free_regulators(td->panel_config->regulators,
--			td->panel_config->num_regulators);
--
- 	kfree(td);
- }
- 
--- 
-1.7.9.1
+We had multiple panels in Nokia, almost the same but with slightly
+different regulator needs, so we wrote the code removed in this patch.
+But as it seems there are no more linux devices coming from Nokia, let's
+just remove the regulator code.
+
+ Tomi
+
+
+--=-A2LF/KjG3I8b+yQJOW+O
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJPac5DAAoJEPo9qoy8lh71A2kP/Av5OTAKYZFocDrqTVckDM46
+QV728yOXeAGwLdfKF9UbQM4iOBiFXmSyq7bXkcZPunsGvSy6SkBptwzE8ShfcIaF
+n1GMMntOrLt5hbmRX4DUC0eGhs9heG0P5zk49/VC7XdcB87rSRm0ZylJ/Fy5dONX
+R2OUIfScyLVRsvJCCnCSKhmwBLswaKNH/PLFKkTGF5hPIwjEI0sd5jvWnxx9GLPd
+xmFkqHv6EAMPcNMJy1aQePcc7E4aEjD/pZPqcZLfos2Gm+ZDAr0cjpZfjGYOFi1A
+E0Hpx1wmzTVlLoswOBMoRzz78bBoC+Ts6yvYup9h8wXkmP4TDz3zBmDAFaqLTjOI
+XVsOph5wDqrWv+vl1WcL3xL54D3TmKTzlZJV6KKX9Uk+lCPiGjYIsJNaIn/csJpM
+lqNjFDZb+dCvbBW2U3UFqv/uYIsbK+iupPivQ5Ly8K1hoRlZu0e/bLrG/CL/GJrq
+X9teCRtPm/M3zPyOzSrCMg4tm/O7S4TAArg/awo+66TZQj+OrQvxkpZmGmBQIRhA
+dB6ocP36QLwYyeDA05q2ITnJgyPKOpXTT4u2i+XMKfdMA4357W4w4g1njStzhyxG
+vI3J2TCByMzP+Rew8YDFrhlNerdzFJZfT9xGikgkxkhFXwEJFOpN9sql1LexgzKl
+HNjQbzuPLuR8QQLSDB5G
+=QGa2
+-----END PGP SIGNATURE-----
+
+--=-A2LF/KjG3I8b+yQJOW+O--
 

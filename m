@@ -1,47 +1,36 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 21 Mar 2012 19:45:48 +0000
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 21 Mar 2012 20:49:18 +0000
 Subject: Re: Problem with framebuffer mmap on platforms with large addressing
-Message-Id: <4F6A2FEC.6040003@gmx.de>
+Message-Id: <1332362958.2982.41.camel@pasglop>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CALT56yO05UBY6=KqK94=_sC4hd3ranj5J5CXOAo5hSjVAdkgkA@mail.gmail.com>	<1332031585.3105.197.camel@pasglop>	<CALT56yOaxfWYwxvBDbo9dpWo9y37dO0iGge4x6kciZp1oXXHVw@mail.gmail.com>	<1332103797.3105.202.camel@pasglop>
+References: <CALT56yO05UBY6=KqK94=_sC4hd3ranj5J5CXOAo5hSjVAdkgkA@mail.gmail.com>
+ <1332031585.3105.197.camel@pasglop>
+ <CALT56yOaxfWYwxvBDbo9dpWo9y37dO0iGge4x6kciZp1oXXHVw@mail.gmail.com>
+ <1332103797.3105.202.camel@pasglop>
  <CALT56yPjkPQOaXW4Eg8c-S4+a4Omou_YYacqrsCoTAYeXO0XkA@mail.gmail.com>
-In-Reply-To: <CALT56yPjkPQOaXW4Eg8c-S4+a4Omou_YYacqrsCoTAYeXO0XkA@mail.gmail.com>
+ <4F6A2FEC.6040003@gmx.de>
+In-Reply-To: <4F6A2FEC.6040003@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Tony Breeds <tbreeds@au1.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Tony Breeds <tbreeds@au1.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 
-On 03/19/2012 02:42 PM, Dmitry Eremin-Solenikov wrote:
-> On Mon, Mar 19, 2012 at 12:49 AM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
->> On Sun, 2012-03-18 at 18:04 +0400, Dmitry Eremin-Solenikov wrote:
->>> On Sun, Mar 18, 2012 at 4:46 AM, Benjamin Herrenschmidt
->>> <benh@kernel.crashing.org> wrote:
->>>> In fact, we could make the new structure such that it doesn't break
->>>> userspace compatibility with 64-bit architectures at all, ie, the "new"
->>>> and "compat" ioctl could remain entirely equivalent on 64-bit.
->>>
->>> I remember stuff about compat_ioctl, but I have never used/implemented
->>> that. Are there any details of requirements for the structures being passed?
->>
->> In that specific case, I meant something else. IE. The old ioctl could
->> remain unchanged, and the new ioctl make the same as the old one on
->> 64-bit platforms.
+On Wed, 2012-03-21 at 19:45 +0000, Florian Tobias Schandinat wrote:
+> I finally found where we started to discuss this issue, for reference
+> "sm501fb.c: support mmap on PPC440SPe/PPC440EPx" back in May 2010.
 > 
-> I don't think this kind of magic would be good. I'd just stick to the new
-> ioctl.
+> The thing I don't remember is why we consider exporting the physical
+> address to userspace desirable (or even necessary). Fixing the generic
+> mmap would be trivial without breaking or adding any userspace ABI, I
+> think. Just adding those things to fb_info and adjusting fb_mmap
+> should
+> do the trick, shouldn't it?
 
-I finally found where we started to discuss this issue, for reference
-"sm501fb.c: support mmap on PPC440SPe/PPC440EPx" back in May 2010.
+For historical reasons, things like X or directfb used it. Modern X
+drivers shouldn't any more, but heh...
 
-The thing I don't remember is why we consider exporting the physical
-address to userspace desirable (or even necessary). Fixing the generic
-mmap would be trivial without breaking or adding any userspace ABI, I
-think. Just adding those things to fb_info and adjusting fb_mmap should
-do the trick, shouldn't it?
+Cheers,
+Ben.
 
 
-Best regards,
-
-Florian Tobias Schandinat

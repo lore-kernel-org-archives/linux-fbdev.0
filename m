@@ -1,81 +1,66 @@
-From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Date: Wed, 21 Mar 2012 00:57:56 +0000
-Subject: Re: [PATCH] fbdev: sh_mipi_dsi: add extra phyctrl for sh_mipi_dsi_info
-Message-Id: <87r4wmwz1q.wl%kuninori.morimoto.gx@renesas.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Wed, 21 Mar 2012 18:29:39 +0000
+Subject: Re: [PATCH v2] udlfb: Fix invalid return codes in edid sysfs entry store function
+Message-Id: <4F6A1E13.5080607@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <87y5rdnmmu.wl%kuninori.morimoto.gx@renesas.com>
-In-Reply-To: <87y5rdnmmu.wl%kuninori.morimoto.gx@renesas.com>
+References: <1330499200-20819-1-git-send-email-olivier@sobrie.be>
+In-Reply-To: <1330499200-20819-1-git-send-email-olivier@sobrie.be>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-
-Hi Florian
-
-Thank you for checking patch
-
-> > sh_mipi uses some clocks, but the method of setup depends on CPU.
-> > 
-> > Current SuperH (like sh73a0) can control all of these clocks
-> > by CPG (Clock Pulse Generator).
-> > It means we can control it by clock framework only.
-> > But on sh7372, it needs CPG settings AND sh_mipi PHYCTRL::PLLDS,
-> > and only sh7372 has PHYCTRL::PLLDS.
-> > 
-> > But on current sh_mipi driver, PHYCTRL::PLLDS of sh7372 was
-> > overwrote since the callback timing of clock setting was changed
-> > by c2658b70f06108361aa5024798f9c1bf47c73374
-> > (fbdev: sh_mipi_dsi: fixup setup timing of sh_mipi_setup()).
-> > 
-> > The difference of PHYCTRL between current SuperH (=sh73a0) and
-> > old SuperH (=sh7372) is not only PLLDS.
-> > So this patch adds extra .phyctrl.
-> > 
-> > It also adds detail explanation for unclear mipi settings for ap4evb.
-> > 
-> > Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> > ---
-(snip)
-> >  	if (enable) {
-> > +		/*
-> > +		 * DSIPCLK	= 24MHz
-> > +		 * D-PHY	= DSIPCLK * ((0x6*2)+1) = 321MHz (see .phyctrl)
+On 02/29/2012 07:06 AM, Olivier Sobrie wrote:
+> Return a negative errno instead of zero in the write function of
+> the sysfs entry in case of error.
+> Also add a check on the return value of dlfb_setup_modes().
 > 
-> Shouldn't this be 312?
+> Signed-off-by: Olivier Sobrie <olivier@sobrie.be>
 
-Oops, indeed.
-I fix it.
+As Bernie did agree in the pull request, I applied this patch.
 
-> > +		 * HsByteCLK	= D-PHY/8 = 39MHz
-> > +		 *
-> > +		 *  X * Y * FPS > > +		 * (544+72+600+16) * (961+8+8+2) * 30 = 36.1MHz
-> > +		 */
-> >  		clk_set_rate(pck, clk_round_rate(pck, 24000000));
-> > -		iowrite32(ioread32(phy) | (0xb << 8), phy);
+
+Thanks,
+
+Florian Tobias Schandinat
+
+> ---
+>  drivers/video/udlfb.c |   19 +++++++++++--------
+>  1 files changed, 11 insertions(+), 8 deletions(-)
 > 
-> Here you remove writing a 0xb<<8 (0xb = 11 = 8+2+1)...
-> 
-> >  		clk_enable(pck);
-> >  	} else {
-> >  		clk_disable(pck);
-> > @@ -598,6 +603,7 @@ static struct sh_mipi_dsi_info mipidsi0_info = {
-> >  	.lcd_chan	= &lcdc_info.ch[0],
-> >  	.lane		= 2,
-> >  	.vsynw_offset	= 17,
-> > +	.phyctrl	= 0x6 << 8,
-> 
-> ...and here you set a 0x6<<8 (0x6 = 6 = 4+2). Looks suspicious, was this
-> change intended?
+> diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
+> index a197731..bfd2a56 100644
+> --- a/drivers/video/udlfb.c
+> +++ b/drivers/video/udlfb.c
+> @@ -1427,19 +1427,22 @@ static ssize_t edid_store(
+>  	struct device *fbdev = container_of(kobj, struct device, kobj);
+>  	struct fb_info *fb_info = dev_get_drvdata(fbdev);
+>  	struct dlfb_data *dev = fb_info->par;
+> +	int ret;
+>  
+>  	/* We only support write of entire EDID at once, no offset*/
+>  	if ((src_size != EDID_LENGTH) || (src_off != 0))
+> -		return 0;
+> +		return -EINVAL;
+>  
+> -	dlfb_setup_modes(dev, fb_info, src, src_size);
+> +	ret = dlfb_setup_modes(dev, fb_info, src, src_size);
+> +	if (ret)
+> +		return ret;
+>  
+> -	if (dev->edid && (memcmp(src, dev->edid, src_size) = 0)) {
+> -		pr_info("sysfs written EDID is new default\n");
+> -		dlfb_ops_set_par(fb_info);
+> -		return src_size;
+> -	} else
+> -		return 0;
+> +	if (!dev->edid || memcmp(src, dev->edid, src_size))
+> +		return -EINVAL;
+> +
+> +	pr_info("sysfs written EDID is new default\n");
+> +	dlfb_ops_set_par(fb_info);
+> +	return src_size;
+>  }
+>  
+>  static ssize_t metrics_reset_store(struct device *fbdev,
 
-Sorry. the git log didn't explain that this patch fixup it.
-0x6 is correct here. This used for D-PHY.
-
- D-PHY	= DSIPCLK * ((0x6*2)+1) = 321MHz (see .phyctrl)
-                      ~~~
-
-I add it on v2 patch.
-
-Best regards
----
-Kuninori Morimoto

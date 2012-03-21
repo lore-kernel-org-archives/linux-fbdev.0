@@ -1,7 +1,7 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Tue, 20 Mar 2012 00:37:37 +0000
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Wed, 21 Mar 2012 00:57:56 +0000
 Subject: Re: [PATCH] fbdev: sh_mipi_dsi: add extra phyctrl for sh_mipi_dsi_info
-Message-Id: <4F67D151.9000007@gmx.de>
+Message-Id: <87r4wmwz1q.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <87y5rdnmmu.wl%kuninori.morimoto.gx@renesas.com>
 In-Reply-To: <87y5rdnmmu.wl%kuninori.morimoto.gx@renesas.com>
@@ -10,111 +10,72 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi Morimoto-san,
 
-On 03/07/2012 02:57 AM, Kuninori Morimoto wrote:
-> sh_mipi uses some clocks, but the method of setup depends on CPU.
+Hi Florian
+
+Thank you for checking patch
+
+> > sh_mipi uses some clocks, but the method of setup depends on CPU.
+> > 
+> > Current SuperH (like sh73a0) can control all of these clocks
+> > by CPG (Clock Pulse Generator).
+> > It means we can control it by clock framework only.
+> > But on sh7372, it needs CPG settings AND sh_mipi PHYCTRL::PLLDS,
+> > and only sh7372 has PHYCTRL::PLLDS.
+> > 
+> > But on current sh_mipi driver, PHYCTRL::PLLDS of sh7372 was
+> > overwrote since the callback timing of clock setting was changed
+> > by c2658b70f06108361aa5024798f9c1bf47c73374
+> > (fbdev: sh_mipi_dsi: fixup setup timing of sh_mipi_setup()).
+> > 
+> > The difference of PHYCTRL between current SuperH (=sh73a0) and
+> > old SuperH (=sh7372) is not only PLLDS.
+> > So this patch adds extra .phyctrl.
+> > 
+> > It also adds detail explanation for unclear mipi settings for ap4evb.
+> > 
+> > Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+> > ---
+(snip)
+> >  	if (enable) {
+> > +		/*
+> > +		 * DSIPCLK	= 24MHz
+> > +		 * D-PHY	= DSIPCLK * ((0x6*2)+1) = 321MHz (see .phyctrl)
 > 
-> Current SuperH (like sh73a0) can control all of these clocks
-> by CPG (Clock Pulse Generator).
-> It means we can control it by clock framework only.
-> But on sh7372, it needs CPG settings AND sh_mipi PHYCTRL::PLLDS,
-> and only sh7372 has PHYCTRL::PLLDS.
+> Shouldn't this be 312?
+
+Oops, indeed.
+I fix it.
+
+> > +		 * HsByteCLK	= D-PHY/8 = 39MHz
+> > +		 *
+> > +		 *  X * Y * FPS > > +		 * (544+72+600+16) * (961+8+8+2) * 30 = 36.1MHz
+> > +		 */
+> >  		clk_set_rate(pck, clk_round_rate(pck, 24000000));
+> > -		iowrite32(ioread32(phy) | (0xb << 8), phy);
 > 
-> But on current sh_mipi driver, PHYCTRL::PLLDS of sh7372 was
-> overwrote since the callback timing of clock setting was changed
-> by c2658b70f06108361aa5024798f9c1bf47c73374
-> (fbdev: sh_mipi_dsi: fixup setup timing of sh_mipi_setup()).
+> Here you remove writing a 0xb<<8 (0xb = 11 = 8+2+1)...
 > 
-> The difference of PHYCTRL between current SuperH (=sh73a0) and
-> old SuperH (=sh7372) is not only PLLDS.
-> So this patch adds extra .phyctrl.
+> >  		clk_enable(pck);
+> >  	} else {
+> >  		clk_disable(pck);
+> > @@ -598,6 +603,7 @@ static struct sh_mipi_dsi_info mipidsi0_info = {
+> >  	.lcd_chan	= &lcdc_info.ch[0],
+> >  	.lane		= 2,
+> >  	.vsynw_offset	= 17,
+> > +	.phyctrl	= 0x6 << 8,
 > 
-> It also adds detail explanation for unclear mipi settings for ap4evb.
-> 
-> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> ---
->  arch/arm/mach-shmobile/board-ap4evb.c |   12 +++++++++---
->  drivers/video/sh_mipi_dsi.c           |    2 +-
->  include/video/sh_mipi_dsi.h           |    1 +
->  3 files changed, 11 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/arm/mach-shmobile/board-ap4evb.c b/arch/arm/mach-shmobile/board-ap4evb.c
-> index b4718b0..ca075aa 100644
-> --- a/arch/arm/mach-shmobile/board-ap4evb.c
-> +++ b/arch/arm/mach-shmobile/board-ap4evb.c
-> @@ -556,20 +556,25 @@ static struct platform_device keysc_device = {
->  };
->  
->  /* MIPI-DSI */
-> -#define PHYCTRL		0x0070
->  static int sh_mipi_set_dot_clock(struct platform_device *pdev,
->  				 void __iomem *base,
->  				 int enable)
->  {
->  	struct clk *pck = clk_get(&pdev->dev, "dsip_clk");
-> -	void __iomem *phy =  base + PHYCTRL;
->  
->  	if (IS_ERR(pck))
->  		return PTR_ERR(pck);
->  
->  	if (enable) {
-> +		/*
-> +		 * DSIPCLK	= 24MHz
-> +		 * D-PHY	= DSIPCLK * ((0x6*2)+1) = 321MHz (see .phyctrl)
+> ...and here you set a 0x6<<8 (0x6 = 6 = 4+2). Looks suspicious, was this
+> change intended?
 
-Shouldn't this be 312?
+Sorry. the git log didn't explain that this patch fixup it.
+0x6 is correct here. This used for D-PHY.
 
-> +		 * HsByteCLK	= D-PHY/8 = 39MHz
-> +		 *
-> +		 *  X * Y * FPS > +		 * (544+72+600+16) * (961+8+8+2) * 30 = 36.1MHz
-> +		 */
->  		clk_set_rate(pck, clk_round_rate(pck, 24000000));
-> -		iowrite32(ioread32(phy) | (0xb << 8), phy);
+ D-PHY	= DSIPCLK * ((0x6*2)+1) = 321MHz (see .phyctrl)
+                      ~~~
 
-Here you remove writing a 0xb<<8 (0xb = 11 = 8+2+1)...
+I add it on v2 patch.
 
->  		clk_enable(pck);
->  	} else {
->  		clk_disable(pck);
-> @@ -598,6 +603,7 @@ static struct sh_mipi_dsi_info mipidsi0_info = {
->  	.lcd_chan	= &lcdc_info.ch[0],
->  	.lane		= 2,
->  	.vsynw_offset	= 17,
-> +	.phyctrl	= 0x6 << 8,
-
-...and here you set a 0x6<<8 (0x6 = 6 = 4+2). Looks suspicious, was this
-change intended?
-
->  	.flags		= SH_MIPI_DSI_SYNC_PULSES_MODE |
->  			  SH_MIPI_DSI_HSbyteCLK,
->  	.set_dot_clock	= sh_mipi_set_dot_clock,
-> diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
-> index 05151b8..214482c 100644
-> --- a/drivers/video/sh_mipi_dsi.c
-> +++ b/drivers/video/sh_mipi_dsi.c
-> @@ -271,7 +271,7 @@ static int __init sh_mipi_setup(struct sh_mipi *mipi,
->  	iowrite32(0x00000001, base + PHYCTRL);
->  	udelay(200);
->  	/* Deassert resets, power on */
-> -	iowrite32(0x03070001, base + PHYCTRL);
-> +	iowrite32(0x03070001 | pdata->phyctrl, base + PHYCTRL);
->  
->  	/*
->  	 * Default = ULPS enable |
-> diff --git a/include/video/sh_mipi_dsi.h b/include/video/sh_mipi_dsi.h
-> index 434d56b..06c67fb 100644
-> --- a/include/video/sh_mipi_dsi.h
-> +++ b/include/video/sh_mipi_dsi.h
-> @@ -51,6 +51,7 @@ struct sh_mipi_dsi_info {
->  	int				lane;
->  	unsigned long			flags;
->  	u32				clksrc;
-> +	u32				phyctrl; /* for extra setting */
->  	unsigned int			vsynw_offset;
->  	int	(*set_dot_clock)(struct platform_device *pdev,
->  				 void __iomem *base,
-
-Thanks,
-
-Florian Tobias Schandinat
+Best regards
+---
+Kuninori Morimoto

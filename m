@@ -1,7 +1,7 @@
-From: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com>
-Date: Tue, 20 Mar 2012 18:55:51 +0000
+From: joeyli <jlee@suse.com>
+Date: Wed, 21 Mar 2012 03:00:45 +0000
 Subject: Re: [PATCH] Added backlight driver for Acer Aspire 4736
-Message-Id: <1332269710.3921.31.camel@debian.Gayathri>
+Message-Id: <1332298845.10557.343.camel@linux-s257.site>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1331608337.2267.67.camel@debian.Gayathri>
 	 <20120312175130.GA18002@srcf.ucam.org>
@@ -18,143 +18,102 @@ References: <1331608337.2267.67.camel@debian.Gayathri>
 	 <1332047432.6304.13.camel@debian.Gayathri>
 	 <1332122514.10557.270.camel@linux-s257.site>
 	 <1332241764.10557.329.camel@linux-s257.site>
-In-Reply-To: <1332241764.10557.329.camel@linux-s257.site>
+	 <1332269710.3921.31.camel@debian.Gayathri>
+In-Reply-To: <1332269710.3921.31.camel@debian.Gayathri>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: joeyli <jlee@suse.com>
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com>
 Cc: Matthew Garrett <mjg@redhat.com>, rpurdie@rpsys.net, FlorianSchandinat@gmx.de, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-
-> >From 5da43d2ee6c87dcf17fda34f0b50fe11b04a16bf Mon Sep 17 00:00:00 2001
-> From: "Lee, Chun-Yi" <jlee@suse.com>
-> Date: Tue, 20 Mar 2012 19:00:58 +0800
-> Subject: [PATCH] acer-wmi: add quirk table for video backlight vendor mode
->=20
-> There have some acer laptop have broken _BCM implemenation, the AML
-> code wrote value to EC register but firmware didn't change brighenss.
->=20
-> Fortunately, the brightness control works on those machines with
-> vendor mode. So, add quirk table for video backlight vendor mode
-> and unregister acpi video interface on those machines.
->=20
-> Tested on Acer TravelMate 4750
->=20
-> Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
-> ---
->  drivers/platform/x86/Kconfig    |    4 ++++
->  drivers/platform/x86/acer-wmi.c |   38 +++++++++++++++++++++++++++++++++=
-++---
->  2 files changed, 39 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
-> index 15dbd8c..fe3a494 100644
-> --- a/drivers/platform/x86/Kconfig
-> +++ b/drivers/platform/x86/Kconfig
-> @@ -26,6 +26,10 @@ config ACER_WMI
->  	depends on RFKILL || RFKILL =3D n
->  	depends on ACPI_WMI
->  	select INPUT_SPARSEKMAP
-> +	# Acer WMI depends on ACPI_VIDEO when ACPI is enabled
-> +	# but for select to work, need to select ACPI_VIDEO's dependencies, ick
-> +        select VIDEO_OUTPUT_CONTROL if ACPI
-> +        select ACPI_VIDEO if ACPI
->  	---help---
->  	  This is a driver for newer Acer (and Wistron) laptops. It adds
->  	  wireless radio and bluetooth control, and on some laptops,
-> diff --git a/drivers/platform/x86/acer-wmi.c b/drivers/platform/x86/acer-=
-wmi.c
-> index 1e5290b..984a7b5 100644
-> --- a/drivers/platform/x86/acer-wmi.c
-> +++ b/drivers/platform/x86/acer-wmi.c
-> @@ -43,6 +43,7 @@
->  #include <linux/input/sparse-keymap.h>
-> =20
->  #include <acpi/acpi_drivers.h>
-> +#include <acpi/video.h>
-> =20
->  MODULE_AUTHOR("Carlos Corbacho");
->  MODULE_DESCRIPTION("Acer Laptop WMI Extras Driver");
-> @@ -478,6 +479,33 @@ static struct dmi_system_id acer_quirks[] =3D {
->  	{}
->  };
-> =20
-> +static int video_set_backlight_video_vendor(const struct dmi_system_id *=
-d)
-> +{
-> +	interface->capability &=3D ~ACER_CAP_BRIGHTNESS;
-> +	pr_info("Brightness must be controlled by generic video driver\n");
-> +	return 0;
-> +}
-> +
-> +static const struct dmi_system_id video_vendor_dmi_table[] =3D {
-> +	{
-> +		.callback =3D video_set_backlight_video_vendor,
-> +		.ident =3D "Acer Aspire 4736",
-> +		.matches =3D {
-> +			DMI_MATCH(DMI_BOARD_VENDOR, "Acer"),
-> +			DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 4736"),
-> +		},
-> +	},
-> +	{
-> +		.callback =3D video_set_backlight_video_vendor,
-> +		.ident =3D "Acer TravelMate 4750",
-> +		.matches =3D {
-> +			DMI_MATCH(DMI_BOARD_VENDOR, "Acer"),
-> +			DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 4750"),
-> +		},
-> +	},
-> +	{}
-> +};
-> +
->  /* Find which quirks are needed for a particular vendor/ model pair */
->  static void find_quirks(void)
->  {
-> @@ -1981,9 +2009,13 @@ static int __init acer_wmi_init(void)
->  	set_quirks();
-> =20
->  	if (acpi_video_backlight_support()) {
-> -		interface->capability &=3D ~ACER_CAP_BRIGHTNESS;
-> -		pr_info("Brightness must be controlled by "
-> -		       "generic video driver\n");
-> +		if (dmi_check_system(video_vendor_dmi_table)) {
-> +			acpi_video_unregister();
-> +		} else {
-> +			interface->capability &=3D ~ACER_CAP_BRIGHTNESS;
-> +			pr_info("Brightness must be controlled by "
-> +				"acpi video driver\n");
-> +		}
->  	}
-> =20
->  	if (wmi_has_guid(WMID_GUID3)) {
-
-I tried out applied your patch . Boot message shows ,=20
-
-[11.220410] acer_wmi: Brightness must be controlled by generic video
-driver
-
-Now 'acpi_video0' and 'intel_backlight' are present
-inside /sys/class/backlight .Hot key works like earlier ( ie problem
-after maximum level still exists).
-I tried following commands ,=20
-
-echo 5 > /sys/class/backlight/acpi_video0/brightness=20
-echo 5 > /sys/class/backlight/intel_backlight/brightness
-
-But it doesn't make any change .=20
-
-In my case  , 'acpi_backlight =3D vendor' does not make any difference sinc=
-e the hot key control=20
-
-already starts working with 'acpi_osi=3DLinux' option.
-
-cat /proc/cmdline gives ,=20
-
-BOOT_IMAGE=3D/boot/vmlinuz-3.3.0+
-root=3DUUID=F0197a59-c067-4fd8-ad90-c4d721816077 ro acpi_osi=3DLinux=20
-
-
-Thanks ,=20
-
-Pradeep Subrahmanion
-
+5pa8IOS4ie+8jDIwMTItMDMtMjEg5pa8IDAwOjI1ICswNTMw77yMUHJhZGVlcCBTdWJyYWhtYW5p
+b24g5o+Q5Yiw77yaCj4gPiA+RnJvbSA1ZGE0M2QyZWU2Yzg3ZGNmMTdmZGEzNGYwYjUwZmUxMWIw
+NGExNmJmIE1vbiBTZXAgMTcgMDA6MDA6MDAgMjAwMQo+ID4gRnJvbTogIkxlZSwgQ2h1bi1ZaSIg
+PGpsZWVAc3VzZS5jb20+Cj4gPiBEYXRlOiBUdWUsIDIwIE1hciAyMDEyIDE5OjAwOjU4ICswODAw
+Cj4gPiBTdWJqZWN0OiBbUEFUQ0hdIGFjZXItd21pOiBhZGQgcXVpcmsgdGFibGUgZm9yIHZpZGVv
+IGJhY2tsaWdodCB2ZW5kb3IgbW9kZQo+ID4gCj4gPiBUaGVyZSBoYXZlIHNvbWUgYWNlciBsYXB0
+b3AgaGF2ZSBicm9rZW4gX0JDTSBpbXBsZW1lbmF0aW9uLCB0aGUgQU1MCj4gPiBjb2RlIHdyb3Rl
+IHZhbHVlIHRvIEVDIHJlZ2lzdGVyIGJ1dCBmaXJtd2FyZSBkaWRuJ3QgY2hhbmdlIGJyaWdoZW5z
+cy4KPiA+IAo+ID4gRm9ydHVuYXRlbHksIHRoZSBicmlnaHRuZXNzIGNvbnRyb2wgd29ya3Mgb24g
+dGhvc2UgbWFjaGluZXMgd2l0aAo+ID4gdmVuZG9yIG1vZGUuIFNvLCBhZGQgcXVpcmsgdGFibGUg
+Zm9yIHZpZGVvIGJhY2tsaWdodCB2ZW5kb3IgbW9kZQo+ID4gYW5kIHVucmVnaXN0ZXIgYWNwaSB2
+aWRlbyBpbnRlcmZhY2Ugb24gdGhvc2UgbWFjaGluZXMuCj4gPiAKPiA+IFRlc3RlZCBvbiBBY2Vy
+IFRyYXZlbE1hdGUgNDc1MAo+ID4gCj4gPiBTaWduZWQtb2ZmLWJ5OiBMZWUsIENodW4tWWkgPGps
+ZWVAc3VzZS5jb20+Cj4gPiAtLS0KPiA+ICBkcml2ZXJzL3BsYXRmb3JtL3g4Ni9LY29uZmlnICAg
+IHwgICAgNCArKysrCj4gPiAgZHJpdmVycy9wbGF0Zm9ybS94ODYvYWNlci13bWkuYyB8ICAgMzgg
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKystLS0KPiA+ICAyIGZpbGVzIGNoYW5n
+ZWQsIDM5IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCj4gPiAKPiA+IGRpZmYgLS1naXQg
+YS9kcml2ZXJzL3BsYXRmb3JtL3g4Ni9LY29uZmlnIGIvZHJpdmVycy9wbGF0Zm9ybS94ODYvS2Nv
+bmZpZwo+ID4gaW5kZXggMTVkYmQ4Yy4uZmUzYTQ5NCAxMDA2NDQKPiA+IC0tLSBhL2RyaXZlcnMv
+cGxhdGZvcm0veDg2L0tjb25maWcKPiA+ICsrKyBiL2RyaXZlcnMvcGxhdGZvcm0veDg2L0tjb25m
+aWcKPiA+IEBAIC0yNiw2ICsyNiwxMCBAQCBjb25maWcgQUNFUl9XTUkKPiA+ICAJZGVwZW5kcyBv
+biBSRktJTEwgfHwgUkZLSUxMID0gbgo+ID4gIAlkZXBlbmRzIG9uIEFDUElfV01JCj4gPiAgCXNl
+bGVjdCBJTlBVVF9TUEFSU0VLTUFQCj4gPiArCSMgQWNlciBXTUkgZGVwZW5kcyBvbiBBQ1BJX1ZJ
+REVPIHdoZW4gQUNQSSBpcyBlbmFibGVkCj4gPiArCSMgYnV0IGZvciBzZWxlY3QgdG8gd29yaywg
+bmVlZCB0byBzZWxlY3QgQUNQSV9WSURFTydzIGRlcGVuZGVuY2llcywgaWNrCj4gPiArICAgICAg
+ICBzZWxlY3QgVklERU9fT1VUUFVUX0NPTlRST0wgaWYgQUNQSQo+ID4gKyAgICAgICAgc2VsZWN0
+IEFDUElfVklERU8gaWYgQUNQSQo+ID4gIAktLS1oZWxwLS0tCj4gPiAgCSAgVGhpcyBpcyBhIGRy
+aXZlciBmb3IgbmV3ZXIgQWNlciAoYW5kIFdpc3Ryb24pIGxhcHRvcHMuIEl0IGFkZHMKPiA+ICAJ
+ICB3aXJlbGVzcyByYWRpbyBhbmQgYmx1ZXRvb3RoIGNvbnRyb2wsIGFuZCBvbiBzb21lIGxhcHRv
+cHMsCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9wbGF0Zm9ybS94ODYvYWNlci13bWkuYyBiL2Ry
+aXZlcnMvcGxhdGZvcm0veDg2L2FjZXItd21pLmMKPiA+IGluZGV4IDFlNTI5MGIuLjk4NGE3YjUg
+MTAwNjQ0Cj4gPiAtLS0gYS9kcml2ZXJzL3BsYXRmb3JtL3g4Ni9hY2VyLXdtaS5jCj4gPiArKysg
+Yi9kcml2ZXJzL3BsYXRmb3JtL3g4Ni9hY2VyLXdtaS5jCj4gPiBAQCAtNDMsNiArNDMsNyBAQAo+
+ID4gICNpbmNsdWRlIDxsaW51eC9pbnB1dC9zcGFyc2Uta2V5bWFwLmg+Cj4gPiAgCj4gPiAgI2lu
+Y2x1ZGUgPGFjcGkvYWNwaV9kcml2ZXJzLmg+Cj4gPiArI2luY2x1ZGUgPGFjcGkvdmlkZW8uaD4K
+PiA+ICAKPiA+ICBNT0RVTEVfQVVUSE9SKCJDYXJsb3MgQ29yYmFjaG8iKTsKPiA+ICBNT0RVTEVf
+REVTQ1JJUFRJT04oIkFjZXIgTGFwdG9wIFdNSSBFeHRyYXMgRHJpdmVyIik7Cj4gPiBAQCAtNDc4
+LDYgKzQ3OSwzMyBAQCBzdGF0aWMgc3RydWN0IGRtaV9zeXN0ZW1faWQgYWNlcl9xdWlya3NbXSA9
+IHsKPiA+ICAJe30KPiA+ICB9Owo+ID4gIAo+ID4gK3N0YXRpYyBpbnQgdmlkZW9fc2V0X2JhY2ts
+aWdodF92aWRlb192ZW5kb3IoY29uc3Qgc3RydWN0IGRtaV9zeXN0ZW1faWQgKmQpCj4gPiArewo+
+ID4gKwlpbnRlcmZhY2UtPmNhcGFiaWxpdHkgJj0gfkFDRVJfQ0FQX0JSSUdIVE5FU1M7Cj4gPiAr
+CXByX2luZm8oIkJyaWdodG5lc3MgbXVzdCBiZSBjb250cm9sbGVkIGJ5IGdlbmVyaWMgdmlkZW8g
+ZHJpdmVyXG4iKTsKPiA+ICsJcmV0dXJuIDA7Cj4gPiArfQo+ID4gKwo+ID4gK3N0YXRpYyBjb25z
+dCBzdHJ1Y3QgZG1pX3N5c3RlbV9pZCB2aWRlb192ZW5kb3JfZG1pX3RhYmxlW10gPSB7Cj4gPiAr
+CXsKPiA+ICsJCS5jYWxsYmFjayA9IHZpZGVvX3NldF9iYWNrbGlnaHRfdmlkZW9fdmVuZG9yLAo+
+ID4gKwkJLmlkZW50ID0gIkFjZXIgQXNwaXJlIDQ3MzYiLAo+ID4gKwkJLm1hdGNoZXMgPSB7Cj4g
+PiArCQkJRE1JX01BVENIKERNSV9CT0FSRF9WRU5ET1IsICJBY2VyIiksCj4gPiArCQkJRE1JX01B
+VENIKERNSV9QUk9EVUNUX05BTUUsICJBc3BpcmUgNDczNiIpLAo+ID4gKwkJfSwKPiA+ICsJfSwK
+PiA+ICsJewo+ID4gKwkJLmNhbGxiYWNrID0gdmlkZW9fc2V0X2JhY2tsaWdodF92aWRlb192ZW5k
+b3IsCj4gPiArCQkuaWRlbnQgPSAiQWNlciBUcmF2ZWxNYXRlIDQ3NTAiLAo+ID4gKwkJLm1hdGNo
+ZXMgPSB7Cj4gPiArCQkJRE1JX01BVENIKERNSV9CT0FSRF9WRU5ET1IsICJBY2VyIiksCj4gPiAr
+CQkJRE1JX01BVENIKERNSV9QUk9EVUNUX05BTUUsICJUcmF2ZWxNYXRlIDQ3NTAiKSwKPiA+ICsJ
+CX0sCj4gPiArCX0sCj4gPiArCXt9Cj4gPiArfTsKPiA+ICsKPiA+ICAvKiBGaW5kIHdoaWNoIHF1
+aXJrcyBhcmUgbmVlZGVkIGZvciBhIHBhcnRpY3VsYXIgdmVuZG9yLyBtb2RlbCBwYWlyICovCj4g
+PiAgc3RhdGljIHZvaWQgZmluZF9xdWlya3Modm9pZCkKPiA+ICB7Cj4gPiBAQCAtMTk4MSw5ICsy
+MDA5LDEzIEBAIHN0YXRpYyBpbnQgX19pbml0IGFjZXJfd21pX2luaXQodm9pZCkKPiA+ICAJc2V0
+X3F1aXJrcygpOwo+ID4gIAo+ID4gIAlpZiAoYWNwaV92aWRlb19iYWNrbGlnaHRfc3VwcG9ydCgp
+KSB7Cj4gPiAtCQlpbnRlcmZhY2UtPmNhcGFiaWxpdHkgJj0gfkFDRVJfQ0FQX0JSSUdIVE5FU1M7
+Cj4gPiAtCQlwcl9pbmZvKCJCcmlnaHRuZXNzIG11c3QgYmUgY29udHJvbGxlZCBieSAiCj4gPiAt
+CQkgICAgICAgImdlbmVyaWMgdmlkZW8gZHJpdmVyXG4iKTsKPiA+ICsJCWlmIChkbWlfY2hlY2tf
+c3lzdGVtKHZpZGVvX3ZlbmRvcl9kbWlfdGFibGUpKSB7Cj4gPiArCQkJYWNwaV92aWRlb191bnJl
+Z2lzdGVyKCk7Cj4gPiArCQl9IGVsc2Ugewo+ID4gKwkJCWludGVyZmFjZS0+Y2FwYWJpbGl0eSAm
+PSB+QUNFUl9DQVBfQlJJR0hUTkVTUzsKPiA+ICsJCQlwcl9pbmZvKCJCcmlnaHRuZXNzIG11c3Qg
+YmUgY29udHJvbGxlZCBieSAiCj4gPiArCQkJCSJhY3BpIHZpZGVvIGRyaXZlclxuIik7Cj4gPiAr
+CQl9Cj4gPiAgCX0KPiA+ICAKPiA+ICAJaWYgKHdtaV9oYXNfZ3VpZChXTUlEX0dVSUQzKSkgewo+
+IAo+IEkgdHJpZWQgb3V0IGFwcGxpZWQgeW91ciBwYXRjaCAuIEJvb3QgbWVzc2FnZSBzaG93cyAs
+IAo+IAo+IFsxMS4yMjA0MTBdIGFjZXJfd21pOiBCcmlnaHRuZXNzIG11c3QgYmUgY29udHJvbGxl
+ZCBieSBnZW5lcmljIHZpZGVvCj4gZHJpdmVyCj4gCj4gTm93ICdhY3BpX3ZpZGVvMCcgYW5kICdp
+bnRlbF9iYWNrbGlnaHQnIGFyZSBwcmVzZW50Cj4gaW5zaWRlIC9zeXMvY2xhc3MvYmFja2xpZ2h0
+IC5Ib3Qga2V5IHdvcmtzIGxpa2UgZWFybGllciAoIGllIHByb2JsZW0KPiBhZnRlciBtYXhpbXVt
+IGxldmVsIHN0aWxsIGV4aXN0cykuCj4gSSB0cmllZCBmb2xsb3dpbmcgY29tbWFuZHMgLCAKPiAK
+Ckl0J3Mgbm90IHRoZSBleHBlY3RlZCBiZWhhdmlvci4KClRoaXMgbmV3IHBhdGNoIHNob3VsZCBy
+ZW1vdmUgYWNwaV92aWRlbzAgaW50ZXJmYWNlIG9uIHlvdXIgbWFjaGluZS4KUGxlYXNlIGtpbmRs
+eSBwcm92aWRlIHlvdXIgZG1pZGVjb2RlOgogZG1pZGVjb2RlID4gZG1pZGVjb2RlLmxvZwoKQW5k
+LCAKcGxlYXNlIG1ha2Ugc2hvdWxkIHRoZSBwYXRjaCByZWFsbHkgYXBwbGllZCwgeW91IGNhbiBk
+byBhIGJpdCBjaGFuZ2Ugb24KcHJfaW5mbyBtZXNzYWdlIGJ5IHlvdXJzZWxmLgoKPiBlY2hvIDUg
+PiAvc3lzL2NsYXNzL2JhY2tsaWdodC9hY3BpX3ZpZGVvMC9icmlnaHRuZXNzIAo+IGVjaG8gNSA+
+IC9zeXMvY2xhc3MvYmFja2xpZ2h0L2ludGVsX2JhY2tsaWdodC9icmlnaHRuZXNzCj4gCj4gQnV0
+IGl0IGRvZXNuJ3QgbWFrZSBhbnkgY2hhbmdlIC4gCj4gCj4gSW4gbXkgY2FzZSAgLCAnYWNwaV9i
+YWNrbGlnaHQgPSB2ZW5kb3InIGRvZXMgbm90IG1ha2UgYW55IGRpZmZlcmVuY2Ugc2luY2UgdGhl
+IGhvdCBrZXkgY29udHJvbCAKPiAKPiBhbHJlYWR5IHN0YXJ0cyB3b3JraW5nIHdpdGggJ2FjcGlf
+b3NpPUxpbnV4JyBvcHRpb24uCj4gCj4gY2F0IC9wcm9jL2NtZGxpbmUgZ2l2ZXMgLCAKPiAKPiBC
+T09UX0lNQUdFPS9ib290L3ZtbGludXotMy4zLjArCj4gcm9vdD1VVUlE8DE5N2E1OS1jMDY3LTRm
+ZDgtYWQ5MC1jNGQ3MjE4MTYwNzcgcm8gYWNwaV9vc2k9TGludXggCj4gCj4gCj4gVGhhbmtzICwg
+Cj4gCj4gUHJhZGVlcCBTdWJyYWhtYW5pb24KPiAKCk9LLCB0aGF0J3MgbW9yZSBjbGVhcmx5LCBw
+bGVhc2UgcmVtb3ZlIGFjcGlfb3NpPUxpbnV4IHRoZW4gcmUtdGVzdCwgSQp0aGluayB0aGUgaG90
+a2V5IG9mIGJhY2tsaWdodCBjb250cm9sIG9ubHkgd29ya3Mgd2l0aCBhY3BpX29zaT1MaW51eCA/
+CgoKVGhhbmtzIGEgbG90IQpKb2V5IExlZQoKCi0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBs
+aXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4KdGhlIGJvZHkg
+b2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKTW9yZSBtYWpvcmRvbW8g
+aW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s

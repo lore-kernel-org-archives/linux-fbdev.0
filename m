@@ -1,129 +1,97 @@
-From: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com>
-Date: Thu, 22 Mar 2012 05:57:21 +0000
+From: joeyli <jlee@suse.com>
+Date: Thu, 22 Mar 2012 09:34:41 +0000
 Subject: Re: [PATCH] Added backlight driver for Acer Aspire 4736
-Message-Id: <CABNxG=D-JJgD72Wv3hpui0CiprW25MvBzCKcNt-+twAD72+Eyg@mail.gmail.com>
+Message-Id: <1332408881.10557.416.camel@linux-s257.site>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1331608337.2267.67.camel@debian.Gayathri>
-	<20120312175130.GA18002@srcf.ucam.org>
-	<1331640592.3485.50.camel@debian.Gayathri>
-	<20120313124738.GB10822@srcf.ucam.org>
-	<CABNxG=Dqg26EHmC3vibf3-SjVhby1qgQfMniQObUeh9eJ6SwEw@mail.gmail.com>
-	<20120313133458.GA11574@srcf.ucam.org>
-	<1331688294.2577.19.camel@debian.Gayathri>
-	<1331680373.10557.169.camel@linux-s257.site>
-	<1331692996.3052.8.camel@debian.Gayathri>
-	<1331704278.10557.190.camel@linux-s257.site>
-	<CABNxG=D3y2GQqS1XN=+B0QRScXpufBkPQtP5-SSNEjSavhtW7g@mail.gmail.com>
-	<1331798740.10557.245.camel@linux-s257.site>
-	<1332047432.6304.13.camel@debian.Gayathri>
-	<1332122514.10557.270.camel@linux-s257.site>
-	<1332241764.10557.329.camel@linux-s257.site>
-	<1332269710.3921.31.camel@debian.Gayathri>
-	<1332298845.10557.343.camel@linux-s257.site>
-	<1332356993.3103.23.camel@debian.Gayathri>
-	<1332380037.10557.398.camel@linux-s257.site>
-	<1332383623.2622.6.camel@debian.Gayathri>
-	<1332386725.10557.402.camel@linux-s257.site>
-	<1332387122.2622.9.camel@debian.Gayathri>
-	<1332388489.10557.406.camel@linux-s257.site>
-In-Reply-To: <1332388489.10557.406.camel@linux-s257.site>
+	 <20120312175130.GA18002@srcf.ucam.org>
+	 <1331640592.3485.50.camel@debian.Gayathri>
+	 <20120313124738.GB10822@srcf.ucam.org>
+	 <CABNxG=Dqg26EHmC3vibf3-SjVhby1qgQfMniQObUeh9eJ6SwEw@mail.gmail.com>
+	 <20120313133458.GA11574@srcf.ucam.org>
+	 <1331688294.2577.19.camel@debian.Gayathri>
+	 <1331680373.10557.169.camel@linux-s257.site>
+	 <1331692996.3052.8.camel@debian.Gayathri>
+	 <1331704278.10557.190.camel@linux-s257.site>
+	 <CABNxG=D3y2GQqS1XN=+B0QRScXpufBkPQtP5-SSNEjSavhtW7g@mail.gmail.com>
+	 <1331798740.10557.245.camel@linux-s257.site>
+	 <1332047432.6304.13.camel@debian.Gayathri>
+	 <1332122514.10557.270.camel@linux-s257.site>
+	 <1332241764.10557.329.camel@linux-s257.site>
+	 <1332269710.3921.31.camel@debian.Gayathri>
+	 <1332298845.10557.343.camel@linux-s257.site>
+	 <1332356993.3103.23.camel@debian.Gayathri>
+	 <1332380037.10557.398.camel@linux-s257.site>
+	 <1332383623.2622.6.camel@debian.Gayathri>
+	 <1332386725.10557.402.camel@linux-s257.site>
+	 <1332387122.2622.9.camel@debian.Gayathri>
+	 <1332388489.10557.406.camel@linux-s257.site>
+	 <CABNxG=D-JJgD72Wv3hpui0CiprW25MvBzCKcNt-+twAD72+Eyg@mail.gmail.com>
+In-Reply-To: <CABNxG=D-JJgD72Wv3hpui0CiprW25MvBzCKcNt-+twAD72+Eyg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: joeyli <jlee@suse.com>
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com>
 Cc: Matthew Garrett <mjg@redhat.com>, rpurdie@rpsys.net, FlorianSchandinat@gmx.de, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From acer acpi ,I came to know that the 4730 series uses new wmi interface .
-
-http://code.google.com/p/aceracpi/wiki/SupportedHardware
-
-Thanks ,
-
-Pradeep Subrahmanion
-
-On Thu, Mar 22, 2012 at 9:24 AM, joeyli <jlee@suse.com> wrote:
-> =A9=F3 =A5|=A1A2012-03-22 =A9=F3 09:02 +0530=A1APradeep Subrahmanion =B4=
-=A3=A8=EC=A1G
->> On Thu, 2012-03-22 at 11:25 +0800, joeyli wrote:
->> > =A9=F3 =A5|=A1A2012-03-22 =A9=F3 08:03 +0530=A1APradeep Subrahmanion =
-=B4=A3=A8=EC=A1G
->> > > On Thu, 2012-03-22 at 09:33 +0800, joeyli wrote:
->> > > > =A9=F3 =A5|=A1A2012-03-22 =A9=F3 00:39 +0530=A1APradeep Subrahmani=
-on =B4=A3=A8=EC=A1G
->> > > > > > This new patch should remove acpi_video0 interface on your mac=
-hine.
->> > > > > > Please kindly provide your dmidecode:
->> > > > > >  dmidecode > dmidecode.log
->> > > > > >
->> > > > > > And,
->> > > > > > please make should the patch really applied, you can do a bit =
-change on
->> > > > > > pr_info message by yourself.
->> > > > >
->> > > > >    Sorry . I think there was some mistake . I tried the patch ag=
-ain. Now
->> > > > > I see only intel_backlight inside /sys/class/backlight. There is=
- no
->> > > > > acer-wmi interface . Is this the expected behavior ? . Or am I m=
-issing
->> > > > > anything ?
->> > > > >
->> > > >
->> > > > Yes, this is the expected behavior! But, now I doubt your issue was
->> > > > workaround by acpi_osi=3DLinux but not intel_backlight.
->> > > >
->> > >
->> > > > >
->> > > > >
->> > > > > >
->> > > > > > > echo 5 > /sys/class/backlight/acpi_video0/brightness
->> > > > > > > echo 5 > /sys/class/backlight/intel_backlight/brightness
->> > > > > > >
->> > > > > > > But it doesn't make any change .
->> > > > > > >
->> > > > > > > In my case  , 'acpi_backlight =3D vendor' does not make any =
-difference since the hot key control
->> > > > > > >
->> > > > > > > already starts working with 'acpi_osi=3DLinux' option.
->> > > > > > >
->> > > > > > > cat /proc/cmdline gives ,
->> > > > > > >
->> > > > > > > BOOT_IMAGE=3D/boot/vmlinuz-3.3.0+
->> > > > > > > root=3DUUID=F0197a59-c067-4fd8-ad90-c4d721816077 ro acpi_osi=
-=3DLinux
->> > > > > > >
->> > > > > > >
->> > > > > > > Thanks ,
->> > > > > > >
->> > > > > > > Pradeep Subrahmanion
->> > > > > > >
->> > > > > >
->> > > > > > OK, that's more clearly, please remove acpi_osi=3DLinux then r=
-e-test, I
->> > > > > > think the hotkey of backlight control only works with acpi_osi=
-=3DLinux ?
->> > > > > >
->> > > >
->> > > > Does your backlight control still work if you remove acpi_osi=3DLi=
-nux ?
->> > >
->> > >    If I remove acpi_osi=3DLinux , the hot key control stops working .
->> > >
->> >
->> > What is the preload OS in your machine when you bought it? Windows XP,
->> > Vista or Windows 7?
->>
->>    It was Windows XP.
->>
->
-> The WDDM driver didn't support by Windows XP, the brightness control on
-> XP should works with _BCM or OpRegion.
->
-> Wonder how does brightness control work on XP with your machine.
->
-> I will dig more in your dsdt...
->
->
-> Thanks
-> Joey Lee
->
+5pa8IOWbm++8jDIwMTItMDMtMjIg5pa8IDExOjI2ICswNTMw77yMUHJhZGVlcCBTdWJyYWhtYW5p
+b24g5o+Q5Yiw77yaCj4gPkZyb20gYWNlciBhY3BpICxJIGNhbWUgdG8ga25vdyB0aGF0IHRoZSA0
+NzMwIHNlcmllcyB1c2VzIG5ldyB3bWkgaW50ZXJmYWNlIC4KPiAKPiBodHRwOi8vY29kZS5nb29n
+bGUuY29tL3AvYWNlcmFjcGkvd2lraS9TdXBwb3J0ZWRIYXJkd2FyZQo+IAoKSSBhbSBub3Qgc3Vy
+ZSB3aGF0IGlzIHRoZSBXTUlEdjIsIGJ1dCBpdCdzIG5vdCB0aGUgY3VycmVudCBXTUkgdjIgaW4K
+YWNlci13bWkgZHJpdmVyLgoKPiBUaGFua3MgLAo+IAo+IFByYWRlZXAgU3VicmFobWFuaW9uCj4g
+Cj4gT24gVGh1LCBNYXIgMjIsIDIwMTIgYXQgOToyNCBBTSwgam9leWxpIDxqbGVlQHN1c2UuY29t
+PiB3cm90ZToKPiA+IOaWvCDlm5vvvIwyMDEyLTAzLTIyIOaWvCAwOTowMiArMDUzMO+8jFByYWRl
+ZXAgU3VicmFobWFuaW9uIOaPkOWIsO+8mgo+ID4+IE9uIFRodSwgMjAxMi0wMy0yMiBhdCAxMToy
+NSArMDgwMCwgam9leWxpIHdyb3RlOgo+ID4+ID4g5pa8IOWbm++8jDIwMTItMDMtMjIg5pa8IDA4
+OjAzICswNTMw77yMUHJhZGVlcCBTdWJyYWhtYW5pb24g5o+Q5Yiw77yaCj4gPj4gPiA+IE9uIFRo
+dSwgMjAxMi0wMy0yMiBhdCAwOTozMyArMDgwMCwgam9leWxpIHdyb3RlOgo+ID4+ID4gPiA+IOaW
+vCDlm5vvvIwyMDEyLTAzLTIyIOaWvCAwMDozOSArMDUzMO+8jFByYWRlZXAgU3VicmFobWFuaW9u
+IOaPkOWIsO+8mgo+ID4+ID4gPiA+ID4gPiBUaGlzIG5ldyBwYXRjaCBzaG91bGQgcmVtb3ZlIGFj
+cGlfdmlkZW8wIGludGVyZmFjZSBvbiB5b3VyIG1hY2hpbmUuCj4gPj4gPiA+ID4gPiA+IFBsZWFz
+ZSBraW5kbHkgcHJvdmlkZSB5b3VyIGRtaWRlY29kZToKPiA+PiA+ID4gPiA+ID4gIGRtaWRlY29k
+ZSA+IGRtaWRlY29kZS5sb2cKPiA+PiA+ID4gPiA+ID4KPiA+PiA+ID4gPiA+ID4gQW5kLAo+ID4+
+ID4gPiA+ID4gPiBwbGVhc2UgbWFrZSBzaG91bGQgdGhlIHBhdGNoIHJlYWxseSBhcHBsaWVkLCB5
+b3UgY2FuIGRvIGEgYml0IGNoYW5nZSBvbgo+ID4+ID4gPiA+ID4gPiBwcl9pbmZvIG1lc3NhZ2Ug
+YnkgeW91cnNlbGYuCj4gPj4gPiA+ID4gPgo+ID4+ID4gPiA+ID4gICAgU29ycnkgLiBJIHRoaW5r
+IHRoZXJlIHdhcyBzb21lIG1pc3Rha2UgLiBJIHRyaWVkIHRoZSBwYXRjaCBhZ2Fpbi4gTm93Cj4g
+Pj4gPiA+ID4gPiBJIHNlZSBvbmx5IGludGVsX2JhY2tsaWdodCBpbnNpZGUgL3N5cy9jbGFzcy9i
+YWNrbGlnaHQuIFRoZXJlIGlzIG5vCj4gPj4gPiA+ID4gPiBhY2VyLXdtaSBpbnRlcmZhY2UgLiBJ
+cyB0aGlzIHRoZSBleHBlY3RlZCBiZWhhdmlvciA/IC4gT3IgYW0gSSBtaXNzaW5nCj4gPj4gPiA+
+ID4gPiBhbnl0aGluZyA/Cj4gPj4gPiA+ID4gPgo+ID4+ID4gPiA+Cj4gPj4gPiA+ID4gWWVzLCB0
+aGlzIGlzIHRoZSBleHBlY3RlZCBiZWhhdmlvciEgQnV0LCBub3cgSSBkb3VidCB5b3VyIGlzc3Vl
+IHdhcwo+ID4+ID4gPiA+IHdvcmthcm91bmQgYnkgYWNwaV9vc2k9TGludXggYnV0IG5vdCBpbnRl
+bF9iYWNrbGlnaHQuCj4gPj4gPiA+ID4KPiA+PiA+ID4KPiA+PiA+ID4gPiA+Cj4gPj4gPiA+ID4g
+Pgo+ID4+ID4gPiA+ID4gPgo+ID4+ID4gPiA+ID4gPiA+IGVjaG8gNSA+IC9zeXMvY2xhc3MvYmFj
+a2xpZ2h0L2FjcGlfdmlkZW8wL2JyaWdodG5lc3MKPiA+PiA+ID4gPiA+ID4gPiBlY2hvIDUgPiAv
+c3lzL2NsYXNzL2JhY2tsaWdodC9pbnRlbF9iYWNrbGlnaHQvYnJpZ2h0bmVzcwo+ID4+ID4gPiA+
+ID4gPiA+Cj4gPj4gPiA+ID4gPiA+ID4gQnV0IGl0IGRvZXNuJ3QgbWFrZSBhbnkgY2hhbmdlIC4K
+PiA+PiA+ID4gPiA+ID4gPgo+ID4+ID4gPiA+ID4gPiA+IEluIG15IGNhc2UgICwgJ2FjcGlfYmFj
+a2xpZ2h0ID0gdmVuZG9yJyBkb2VzIG5vdCBtYWtlIGFueSBkaWZmZXJlbmNlIHNpbmNlIHRoZSBo
+b3Qga2V5IGNvbnRyb2wKPiA+PiA+ID4gPiA+ID4gPgo+ID4+ID4gPiA+ID4gPiA+IGFscmVhZHkg
+c3RhcnRzIHdvcmtpbmcgd2l0aCAnYWNwaV9vc2k9TGludXgnIG9wdGlvbi4KPiA+PiA+ID4gPiA+
+ID4gPgo+ID4+ID4gPiA+ID4gPiA+IGNhdCAvcHJvYy9jbWRsaW5lIGdpdmVzICwKPiA+PiA+ID4g
+PiA+ID4gPgo+ID4+ID4gPiA+ID4gPiA+IEJPT1RfSU1BR0U9L2Jvb3Qvdm1saW51ei0zLjMuMCsK
+PiA+PiA+ID4gPiA+ID4gPiByb290PVVVSUTwMTk3YTU5LWMwNjctNGZkOC1hZDkwLWM0ZDcyMTgx
+NjA3NyBybyBhY3BpX29zaT1MaW51eAo+ID4+ID4gPiA+ID4gPiA+Cj4gPj4gPiA+ID4gPiA+ID4K
+PiA+PiA+ID4gPiA+ID4gPiBUaGFua3MgLAo+ID4+ID4gPiA+ID4gPiA+Cj4gPj4gPiA+ID4gPiA+
+ID4gUHJhZGVlcCBTdWJyYWhtYW5pb24KPiA+PiA+ID4gPiA+ID4gPgo+ID4+ID4gPiA+ID4gPgo+
+ID4+ID4gPiA+ID4gPiBPSywgdGhhdCdzIG1vcmUgY2xlYXJseSwgcGxlYXNlIHJlbW92ZSBhY3Bp
+X29zaT1MaW51eCB0aGVuIHJlLXRlc3QsIEkKPiA+PiA+ID4gPiA+ID4gdGhpbmsgdGhlIGhvdGtl
+eSBvZiBiYWNrbGlnaHQgY29udHJvbCBvbmx5IHdvcmtzIHdpdGggYWNwaV9vc2k9TGludXggPwo+
+ID4+ID4gPiA+ID4gPgo+ID4+ID4gPiA+Cj4gPj4gPiA+ID4gRG9lcyB5b3VyIGJhY2tsaWdodCBj
+b250cm9sIHN0aWxsIHdvcmsgaWYgeW91IHJlbW92ZSBhY3BpX29zaT1MaW51eCA/Cj4gPj4gPiA+
+Cj4gPj4gPiA+ICAgIElmIEkgcmVtb3ZlIGFjcGlfb3NpPUxpbnV4ICwgdGhlIGhvdCBrZXkgY29u
+dHJvbCBzdG9wcyB3b3JraW5nIC4KPiA+PiA+ID4KPiA+PiA+Cj4gPj4gPiBXaGF0IGlzIHRoZSBw
+cmVsb2FkIE9TIGluIHlvdXIgbWFjaGluZSB3aGVuIHlvdSBib3VnaHQgaXQ/IFdpbmRvd3MgWFAs
+Cj4gPj4gPiBWaXN0YSBvciBXaW5kb3dzIDc/Cj4gPj4KPiA+PiAgICBJdCB3YXMgV2luZG93cyBY
+UC4KPiA+Pgo+ID4KPiA+IFRoZSBXRERNIGRyaXZlciBkaWRuJ3Qgc3VwcG9ydCBieSBXaW5kb3dz
+IFhQLCB0aGUgYnJpZ2h0bmVzcyBjb250cm9sIG9uCj4gPiBYUCBzaG91bGQgd29ya3Mgd2l0aCBf
+QkNNIG9yIE9wUmVnaW9uLgo+ID4KPiA+IFdvbmRlciBob3cgZG9lcyBicmlnaHRuZXNzIGNvbnRy
+b2wgd29yayBvbiBYUCB3aXRoIHlvdXIgbWFjaGluZS4KPiA+Cj4gPiBJIHdpbGwgZGlnIG1vcmUg
+aW4geW91ciBkc2R0Li4uCj4gPgo+ID4KClBsZWFzZSBraW5kbHkgdHJ5IGFjcGlfb3NpPSIhV2lu
+ZG93cyAyMDA2IiwgSSB0aGluayBpdCBhbHNvIHdvcmtzIHRvCnlvdS4KCgpUaGFua3MKSm9leSBM
+ZWUKCi0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1
+YnNjcmliZSBsaW51eC1mYmRldiIgaW4KdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9t
+b0B2Z2VyLmtlcm5lbC5vcmcKTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2Vy
+bmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s

@@ -1,7 +1,7 @@
-From: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com>
-Date: Fri, 23 Mar 2012 03:48:51 +0000
+From: joeyli <jlee@suse.com>
+Date: Fri, 23 Mar 2012 04:25:39 +0000
 Subject: Re: [PATCH] Added backlight driver for Acer Aspire 4736
-Message-Id: <1332473811.3051.5.camel@debian.Gayathri>
+Message-Id: <1332476739.10557.438.camel@linux-s257.site>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1331608337.2267.67.camel@debian.Gayathri>
 	 <20120312175130.GA18002@srcf.ucam.org>
@@ -20,22 +20,75 @@ References: <1331608337.2267.67.camel@debian.Gayathri>
 	 <1332241764.10557.329.camel@linux-s257.site>
 	 <1332269710.3921.31.camel@debian.Gayathri>
 	 <1332298845.10557.343.camel@linux-s257.site>
-In-Reply-To: <1332298845.10557.343.camel@linux-s257.site>
+	 <1332473811.3051.5.camel@debian.Gayathri>
+In-Reply-To: <1332473811.3051.5.camel@debian.Gayathri>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: joeyli <jlee@suse.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com>
 Cc: Matthew Garrett <mjg@redhat.com>, rpurdie@rpsys.net, FlorianSchandinat@gmx.de, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, 2012-03-21 at 11:00 +0800, joeyli wrote:
-> think the hotkey of backlight control only works with acpi_osi=Linux ?
+於 五，2012-03-23 於 09:06 +0530，Pradeep Subrahmanion 提到：
+> On Wed, 2012-03-21 at 11:00 +0800, joeyli wrote:
+> > think the hotkey of backlight control only works with acpi_osi=Linux ?
+> 
+> yes , hot key control only works with this option.Any ideas about where
+> the hot key events gets handled ? I tried logging inside
+> 'acpi_video_device_notify' method in video.c . But the control does not
+> seem to reach here . 
+> 
+> Thanks, 
+> 
+> Pradeep Subrahmanion
 
-yes , hot key control only works with this option.Any ideas about where
-the hot key events gets handled ? I tried logging inside
-'acpi_video_device_notify' method in video.c . But the control does not
-seem to reach here . 
+Hotkey change status is through _Q11 and _Q12 event but not wmi:
 
-Thanks, 
 
-Pradeep Subrahmanion
+    Method (_Q11, 0, NotSerialized)             /* Brightness down */
+    {
+        If (LGreaterEqual (OSYS, 0x07D6))       /* Vista or later */
+        {
+            If (LEqual (OBV, 0xFF))
+            {
+                Notify (^^^PEGP.VGA.LCD, 0x87)
+            }
+            Else
+            {
+                Notify (^^^OVGA.DD03, 0x87)
+            }
+        }
+        Else                                    /* 0x07D1 (XP) or 0x03E8 (Linux) */
+        {
+            ^^^OVGA.AINT (One, BRTS)		/* access AINT, it touch BCLP register */
+            If (LEqual (^^^WMID.BAEF, One))
+            {
+                Store (BRTS, Local1)
+                Store (^^^WMID.LBL0, Local2)
+                Add (Local2, Local1, Local2)
+                Store (Local2, ^^^WMID.NTDC)
+                Notify (WMID, 0x80)
+            }
+        }
+    }
+
+Method (AINT, 2, NotSerialized)
+{
+...
+    Else
+    {
+        If (LEqual (Arg0, One))         /* Linux or XP */
+        {
+            Add (Arg1, One, Arg1)
+            Store (Divide (Multiply (Arg1, 0xFF), 0x0A, ), BCLP)
+            Or (BCLP, 0x80000000, BCLP)		/* touch BCLP register */
+            Store (0x02, ASLC)
+        }
+
+
+That's why I said acpi_osi"!Windows 2006" should also works to you. Unfortunately,
+there have something wrong in video driver for support this machine on XP mode.
+
+
+thanks a lot!
+Joey Lee
 

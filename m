@@ -1,7 +1,7 @@
 From: Pradeep Subrahmanion <subrahmanion.pradeep@gmail.com>
-Date: Thu, 22 Mar 2012 16:29:19 +0000
+Date: Fri, 23 Mar 2012 03:48:51 +0000
 Subject: Re: [PATCH] Added backlight driver for Acer Aspire 4736
-Message-Id: <1332433039.2777.4.camel@debian.Gayathri>
+Message-Id: <1332473811.3051.5.camel@debian.Gayathri>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1331608337.2267.67.camel@debian.Gayathri>
 	 <20120312175130.GA18002@srcf.ucam.org>
@@ -20,85 +20,22 @@ References: <1331608337.2267.67.camel@debian.Gayathri>
 	 <1332241764.10557.329.camel@linux-s257.site>
 	 <1332269710.3921.31.camel@debian.Gayathri>
 	 <1332298845.10557.343.camel@linux-s257.site>
-	 <1332356993.3103.23.camel@debian.Gayathri>
-	 <1332380037.10557.398.camel@linux-s257.site>
-	 <1332383623.2622.6.camel@debian.Gayathri>
-	 <1332386725.10557.402.camel@linux-s257.site>
-	 <1332387122.2622.9.camel@debian.Gayathri>
-	 <1332388489.10557.406.camel@linux-s257.site>
-	 <CABNxG=D-JJgD72Wv3hpui0CiprW25MvBzCKcNt-+twAD72+Eyg@mail.gmail.com>
-	 <1332408881.10557.416.camel@linux-s257.site>
-In-Reply-To: <1332408881.10557.416.camel@linux-s257.site>
+In-Reply-To: <1332298845.10557.343.camel@linux-s257.site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: joeyli <jlee@suse.com>
 Cc: Matthew Garrett <mjg@redhat.com>, rpurdie@rpsys.net, FlorianSchandinat@gmx.de, akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-T24gVGh1LCAyMDEyLTAzLTIyIGF0IDE3OjM0ICswODAwLCBqb2V5bGkgd3JvdGU6Cj4g5pa8IOWb
-m++8jDIwMTItMDMtMjIg5pa8IDExOjI2ICswNTMw77yMUHJhZGVlcCBTdWJyYWhtYW5pb24g5o+Q
-5Yiw77yaCj4gPiA+RnJvbSBhY2VyIGFjcGkgLEkgY2FtZSB0byBrbm93IHRoYXQgdGhlIDQ3MzAg
-c2VyaWVzIHVzZXMgbmV3IHdtaSBpbnRlcmZhY2UgLgo+ID4gCj4gPiBodHRwOi8vY29kZS5nb29n
-bGUuY29tL3AvYWNlcmFjcGkvd2lraS9TdXBwb3J0ZWRIYXJkd2FyZQo+ID4gCj4gCj4gSSBhbSBu
-b3Qgc3VyZSB3aGF0IGlzIHRoZSBXTUlEdjIsIGJ1dCBpdCdzIG5vdCB0aGUgY3VycmVudCBXTUkg
-djIgaW4KPiBhY2VyLXdtaSBkcml2ZXIuCj4gCj4gPiBUaGFua3MgLAo+ID4gCj4gPiBQcmFkZWVw
-IFN1YnJhaG1hbmlvbgo+ID4gCj4gPiBPbiBUaHUsIE1hciAyMiwgMjAxMiBhdCA5OjI0IEFNLCBq
-b2V5bGkgPGpsZWVAc3VzZS5jb20+IHdyb3RlOgo+ID4gPiDmlrwg5Zub77yMMjAxMi0wMy0yMiDm
-lrwgMDk6MDIgKzA1MzDvvIxQcmFkZWVwIFN1YnJhaG1hbmlvbiDmj5DliLDvvJoKPiA+ID4+IE9u
-IFRodSwgMjAxMi0wMy0yMiBhdCAxMToyNSArMDgwMCwgam9leWxpIHdyb3RlOgo+ID4gPj4gPiDm
-lrwg5Zub77yMMjAxMi0wMy0yMiDmlrwgMDg6MDMgKzA1MzDvvIxQcmFkZWVwIFN1YnJhaG1hbmlv
-biDmj5DliLDvvJoKPiA+ID4+ID4gPiBPbiBUaHUsIDIwMTItMDMtMjIgYXQgMDk6MzMgKzA4MDAs
-IGpvZXlsaSB3cm90ZToKPiA+ID4+ID4gPiA+IOaWvCDlm5vvvIwyMDEyLTAzLTIyIOaWvCAwMDoz
-OSArMDUzMO+8jFByYWRlZXAgU3VicmFobWFuaW9uIOaPkOWIsO+8mgo+ID4gPj4gPiA+ID4gPiA+
-IFRoaXMgbmV3IHBhdGNoIHNob3VsZCByZW1vdmUgYWNwaV92aWRlbzAgaW50ZXJmYWNlIG9uIHlv
-dXIgbWFjaGluZS4KPiA+ID4+ID4gPiA+ID4gPiBQbGVhc2Uga2luZGx5IHByb3ZpZGUgeW91ciBk
-bWlkZWNvZGU6Cj4gPiA+PiA+ID4gPiA+ID4gIGRtaWRlY29kZSA+IGRtaWRlY29kZS5sb2cKPiA+
-ID4+ID4gPiA+ID4gPgo+ID4gPj4gPiA+ID4gPiA+IEFuZCwKPiA+ID4+ID4gPiA+ID4gPiBwbGVh
-c2UgbWFrZSBzaG91bGQgdGhlIHBhdGNoIHJlYWxseSBhcHBsaWVkLCB5b3UgY2FuIGRvIGEgYml0
-IGNoYW5nZSBvbgo+ID4gPj4gPiA+ID4gPiA+IHByX2luZm8gbWVzc2FnZSBieSB5b3Vyc2VsZi4K
-PiA+ID4+ID4gPiA+ID4KPiA+ID4+ID4gPiA+ID4gICAgU29ycnkgLiBJIHRoaW5rIHRoZXJlIHdh
-cyBzb21lIG1pc3Rha2UgLiBJIHRyaWVkIHRoZSBwYXRjaCBhZ2Fpbi4gTm93Cj4gPiA+PiA+ID4g
-PiA+IEkgc2VlIG9ubHkgaW50ZWxfYmFja2xpZ2h0IGluc2lkZSAvc3lzL2NsYXNzL2JhY2tsaWdo
-dC4gVGhlcmUgaXMgbm8KPiA+ID4+ID4gPiA+ID4gYWNlci13bWkgaW50ZXJmYWNlIC4gSXMgdGhp
-cyB0aGUgZXhwZWN0ZWQgYmVoYXZpb3IgPyAuIE9yIGFtIEkgbWlzc2luZwo+ID4gPj4gPiA+ID4g
-PiBhbnl0aGluZyA/Cj4gPiA+PiA+ID4gPiA+Cj4gPiA+PiA+ID4gPgo+ID4gPj4gPiA+ID4gWWVz
-LCB0aGlzIGlzIHRoZSBleHBlY3RlZCBiZWhhdmlvciEgQnV0LCBub3cgSSBkb3VidCB5b3VyIGlz
-c3VlIHdhcwo+ID4gPj4gPiA+ID4gd29ya2Fyb3VuZCBieSBhY3BpX29zaT1MaW51eCBidXQgbm90
-IGludGVsX2JhY2tsaWdodC4KPiA+ID4+ID4gPiA+Cj4gPiA+PiA+ID4KPiA+ID4+ID4gPiA+ID4K
-PiA+ID4+ID4gPiA+ID4KPiA+ID4+ID4gPiA+ID4gPgo+ID4gPj4gPiA+ID4gPiA+ID4gZWNobyA1
-ID4gL3N5cy9jbGFzcy9iYWNrbGlnaHQvYWNwaV92aWRlbzAvYnJpZ2h0bmVzcwo+ID4gPj4gPiA+
-ID4gPiA+ID4gZWNobyA1ID4gL3N5cy9jbGFzcy9iYWNrbGlnaHQvaW50ZWxfYmFja2xpZ2h0L2Jy
-aWdodG5lc3MKPiA+ID4+ID4gPiA+ID4gPiA+Cj4gPiA+PiA+ID4gPiA+ID4gPiBCdXQgaXQgZG9l
-c24ndCBtYWtlIGFueSBjaGFuZ2UgLgo+ID4gPj4gPiA+ID4gPiA+ID4KPiA+ID4+ID4gPiA+ID4g
-PiA+IEluIG15IGNhc2UgICwgJ2FjcGlfYmFja2xpZ2h0ID0gdmVuZG9yJyBkb2VzIG5vdCBtYWtl
-IGFueSBkaWZmZXJlbmNlIHNpbmNlIHRoZSBob3Qga2V5IGNvbnRyb2wKPiA+ID4+ID4gPiA+ID4g
-PiA+Cj4gPiA+PiA+ID4gPiA+ID4gPiBhbHJlYWR5IHN0YXJ0cyB3b3JraW5nIHdpdGggJ2FjcGlf
-b3NpPUxpbnV4JyBvcHRpb24uCj4gPiA+PiA+ID4gPiA+ID4gPgo+ID4gPj4gPiA+ID4gPiA+ID4g
-Y2F0IC9wcm9jL2NtZGxpbmUgZ2l2ZXMgLAo+ID4gPj4gPiA+ID4gPiA+ID4KPiA+ID4+ID4gPiA+
-ID4gPiA+IEJPT1RfSU1BR0U9L2Jvb3Qvdm1saW51ei0zLjMuMCsKPiA+ID4+ID4gPiA+ID4gPiA+
-IHJvb3Q9VVVJRPAxOTdhNTktYzA2Ny00ZmQ4LWFkOTAtYzRkNzIxODE2MDc3IHJvIGFjcGlfb3Np
-PUxpbnV4Cj4gPiA+PiA+ID4gPiA+ID4gPgo+ID4gPj4gPiA+ID4gPiA+ID4KPiA+ID4+ID4gPiA+
-ID4gPiA+IFRoYW5rcyAsCj4gPiA+PiA+ID4gPiA+ID4gPgo+ID4gPj4gPiA+ID4gPiA+ID4gUHJh
-ZGVlcCBTdWJyYWhtYW5pb24KPiA+ID4+ID4gPiA+ID4gPiA+Cj4gPiA+PiA+ID4gPiA+ID4KPiA+
-ID4+ID4gPiA+ID4gPiBPSywgdGhhdCdzIG1vcmUgY2xlYXJseSwgcGxlYXNlIHJlbW92ZSBhY3Bp
-X29zaT1MaW51eCB0aGVuIHJlLXRlc3QsIEkKPiA+ID4+ID4gPiA+ID4gPiB0aGluayB0aGUgaG90
-a2V5IG9mIGJhY2tsaWdodCBjb250cm9sIG9ubHkgd29ya3Mgd2l0aCBhY3BpX29zaT1MaW51eCA/
-Cj4gPiA+PiA+ID4gPiA+ID4KPiA+ID4+ID4gPiA+Cj4gPiA+PiA+ID4gPiBEb2VzIHlvdXIgYmFj
-a2xpZ2h0IGNvbnRyb2wgc3RpbGwgd29yayBpZiB5b3UgcmVtb3ZlIGFjcGlfb3NpPUxpbnV4ID8K
-PiA+ID4+ID4gPgo+ID4gPj4gPiA+ICAgIElmIEkgcmVtb3ZlIGFjcGlfb3NpPUxpbnV4ICwgdGhl
-IGhvdCBrZXkgY29udHJvbCBzdG9wcyB3b3JraW5nIC4KPiA+ID4+ID4gPgo+ID4gPj4gPgo+ID4g
-Pj4gPiBXaGF0IGlzIHRoZSBwcmVsb2FkIE9TIGluIHlvdXIgbWFjaGluZSB3aGVuIHlvdSBib3Vn
-aHQgaXQ/IFdpbmRvd3MgWFAsCj4gPiA+PiA+IFZpc3RhIG9yIFdpbmRvd3MgNz8KPiA+ID4+Cj4g
-PiA+PiAgICBJdCB3YXMgV2luZG93cyBYUC4KPiA+ID4+Cj4gPiA+Cj4gPiA+IFRoZSBXRERNIGRy
-aXZlciBkaWRuJ3Qgc3VwcG9ydCBieSBXaW5kb3dzIFhQLCB0aGUgYnJpZ2h0bmVzcyBjb250cm9s
-IG9uCj4gPiA+IFhQIHNob3VsZCB3b3JrcyB3aXRoIF9CQ00gb3IgT3BSZWdpb24uCj4gPiA+Cj4g
-PiA+IFdvbmRlciBob3cgZG9lcyBicmlnaHRuZXNzIGNvbnRyb2wgd29yayBvbiBYUCB3aXRoIHlv
-dXIgbWFjaGluZS4KPiA+ID4KPiA+ID4gSSB3aWxsIGRpZyBtb3JlIGluIHlvdXIgZHNkdC4uLgo+
-ID4gPgo+ID4gPgo+IAo+IFBsZWFzZSBraW5kbHkgdHJ5IGFjcGlfb3NpPSIhV2luZG93cyAyMDA2
-IiwgSSB0aGluayBpdCBhbHNvIHdvcmtzIHRvCj4geW91LgoKICAgSSB0cmllZCBnaXZpbmcgdGhp
-cyBvcHRpb24gLiBJdCBnaXZlcyBtZSBhIGJsYW5rIHNjcmVlbiB3aGlsZQpib290aW5nLiBIb3Qg
-a2V5cyBhcmUgbm90IHdvcmtpbmcgLgoKCj4gCj4gCj4gVGhhbmtzCj4gSm9leSBMZWUKPiAKCgpS
-ZWdhcmRzLCAKClByYWRlZXAgU3VicmFobWFuaW9uLgoKCi0tClRvIHVuc3Vic2NyaWJlIGZyb20g
-dGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4KdGhl
-IGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKTW9yZSBtYWpv
-cmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s
+On Wed, 2012-03-21 at 11:00 +0800, joeyli wrote:
+> think the hotkey of backlight control only works with acpi_osi=Linux ?
+
+yes , hot key control only works with this option.Any ideas about where
+the hot key events gets handled ? I tried logging inside
+'acpi_video_device_notify' method in video.c . But the control does not
+seem to reach here . 
+
+Thanks, 
+
+Pradeep Subrahmanion
+

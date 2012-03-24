@@ -1,84 +1,100 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 01 Mar 2012 12:34:45 +0000
-Subject: [PATCH 6/7] OMAP: 4430SDP/Panda: add HDMI HPD gpio
-Message-Id: <1330605286-24166-7-git-send-email-tomi.valkeinen@ti.com>
+From: Thomas Abraham <thomas.abraham@linaro.org>
+Date: Sat, 24 Mar 2012 16:40:46 +0000
+Subject: [PATCH v3 2/4] video: s3c-fb: remove 'default_win' element from platform data
+Message-Id: <1332606528-32338-3-git-send-email-thomas.abraham@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1330605286-24166-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1330605286-24166-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1332606528-32338-1-git-send-email-thomas.abraham@linaro.org>
+In-Reply-To: <1332606528-32338-1-git-send-email-thomas.abraham@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: stable@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Both Panda and 4430SDP use GPIO 63 as HDMI hot-plug-detect. Configure
-this GPIO in the board files.
+The decision to enable or disable the data output to the lcd panel from
+the controller need not be based on the value of 'default_win' element
+in the platform data. Instead, the data output to the panel is enabled
+if any of the windows are active, else data output is disabled.
 
-Backported from aa74274b464d4aa24703963ac89a0ee942d5d267
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Acked-by: Tony Lindgren <tony@atomide.com>
+Cc: Ben Dooks <ben-linux@fluff.org>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Thomas Abraham <thomas.abraham@linaro.org>
 ---
- arch/arm/mach-omap2/board-4430sdp.c    |    3 +++
- arch/arm/mach-omap2/board-omap4panda.c |    3 +++
- 2 files changed, 6 insertions(+), 0 deletions(-)
+ arch/arm/plat-samsung/include/plat/fb.h |    2 --
+ drivers/video/s3c-fb.c                  |   25 +++++--------------------
+ 2 files changed, 5 insertions(+), 22 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
-index 669e329..0ee578a 100644
---- a/arch/arm/mach-omap2/board-4430sdp.c
-+++ b/arch/arm/mach-omap2/board-4430sdp.c
-@@ -51,6 +51,7 @@
- #define OMAP4_SFH7741_ENABLE_GPIO		188
- #define HDMI_GPIO_CT_CP_HPD 60 /* HPD mode enable/disable */
- #define HDMI_GPIO_LS_OE 41 /* Level shifter for HDMI */
-+#define HDMI_GPIO_HPD  63 /* Hotplug detect */
+diff --git a/arch/arm/plat-samsung/include/plat/fb.h b/arch/arm/plat-samsung/include/plat/fb.h
+index 39d6bd7..536002f 100644
+--- a/arch/arm/plat-samsung/include/plat/fb.h
++++ b/arch/arm/plat-samsung/include/plat/fb.h
+@@ -62,8 +62,6 @@ struct s3c_fb_platdata {
+ 	struct s3c_fb_pd_win	*win[S3C_FB_MAX_WIN];
+ 	struct fb_videomode     *vtiming;
  
- static const int sdp4430_keymap[] = {
- 	KEY(0, 0, KEY_E),
-@@ -589,6 +590,7 @@ static void sdp4430_hdmi_mux_init(void)
- static struct gpio sdp4430_hdmi_gpios[] = {
- 	{ HDMI_GPIO_CT_CP_HPD, GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ct_cp_hpd" },
- 	{ HDMI_GPIO_LS_OE,	GPIOF_OUT_INIT_HIGH,	"hdmi_gpio_ls_oe" },
-+	{ HDMI_GPIO_HPD, GPIOF_DIR_IN, "hdmi_gpio_hpd" },
+-	u32			 default_win;
+-
+ 	u32			 vidcon0;
+ 	u32			 vidcon1;
  };
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index c94f40d..18c84b8 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -531,7 +531,7 @@ static int s3c_fb_set_par(struct fb_info *info)
+ 	/* disable the window whilst we update it */
+ 	writel(0, regs + WINCON(win_no));
  
- static int sdp4430_panel_enable_hdmi(struct omap_dss_device *dssdev)
-@@ -634,6 +636,7 @@ void omap_4430sdp_display_init(void)
+-	if (win_no = sfb->pdata->default_win)
++	if (!sfb->output_on)
+ 		s3c_fb_enable(sfb, 1);
  
- 	omap_mux_init_gpio(HDMI_GPIO_LS_OE, OMAP_PIN_OUTPUT);
- 	omap_mux_init_gpio(HDMI_GPIO_CT_CP_HPD, OMAP_PIN_OUTPUT);
-+	omap_mux_init_gpio(HDMI_GPIO_HPD, OMAP_PIN_INPUT_PULLDOWN);
+ 	/* write the buffer address */
+@@ -799,6 +799,7 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
+ 	struct s3c_fb *sfb = win->parent;
+ 	unsigned int index = win->index;
+ 	u32 wincon;
++	u32 output_on = sfb->output_on;
+ 
+ 	dev_dbg(sfb->dev, "blank mode %d\n", blank_mode);
+ 
+@@ -837,34 +838,18 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
+ 
+ 	shadow_protect_win(win, 1);
+ 	writel(wincon, sfb->regs + sfb->variant.wincon + (index * 4));
+-	shadow_protect_win(win, 0);
+ 
+ 	/* Check the enabled state to see if we need to be running the
+ 	 * main LCD interface, as if there are no active windows then
+ 	 * it is highly likely that we also do not need to output
+ 	 * anything.
+ 	 */
+-
+-	/* We could do something like the following code, but the current
+-	 * system of using framebuffer events means that we cannot make
+-	 * the distinction between just window 0 being inactive and all
+-	 * the windows being down.
+-	 *
+-	 * s3c_fb_enable(sfb, sfb->enabled ? 1 : 0);
+-	*/
+-
+-	/* we're stuck with this until we can do something about overriding
+-	 * the power control using the blanking event for a single fb.
+-	 */
+-	if (index = sfb->pdata->default_win) {
+-		shadow_protect_win(win, 1);
+-		s3c_fb_enable(sfb, blank_mode != FB_BLANK_POWERDOWN ? 1 : 0);
+-		shadow_protect_win(win, 0);
+-	}
++	s3c_fb_enable(sfb, sfb->enabled ? 1 : 0);
++	shadow_protect_win(win, 0);
+ 
+ 	pm_runtime_put_sync(sfb->dev);
+ 
+-	return 0;
++	return output_on = sfb->output_on;
  }
  
- #ifdef CONFIG_OMAP_MUX
-diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
-index 5d519fb..2b3f7e0 100644
---- a/arch/arm/mach-omap2/board-omap4panda.c
-+++ b/arch/arm/mach-omap2/board-omap4panda.c
-@@ -54,6 +54,7 @@
- #define GPIO_WIFI_IRQ		53
- #define HDMI_GPIO_CT_CP_HPD 60 /* HPD mode enable/disable */
- #define HDMI_GPIO_LS_OE 41 /* Level shifter for HDMI */
-+#define HDMI_GPIO_HPD  63 /* Hotplug detect */
- 
- /* wl127x BT, FM, GPS connectivity chip */
- static int wl1271_gpios[] = {46, -1, -1};
-@@ -625,6 +626,7 @@ static void omap4_panda_hdmi_mux_init(void)
- static struct gpio panda_hdmi_gpios[] = {
- 	{ HDMI_GPIO_CT_CP_HPD, GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ct_cp_hpd" },
- 	{ HDMI_GPIO_LS_OE,	GPIOF_OUT_INIT_HIGH, "hdmi_gpio_ls_oe" },
-+	{ HDMI_GPIO_HPD, GPIOF_DIR_IN, "hdmi_gpio_hpd" },
- };
- 
- static int omap4_panda_panel_enable_hdmi(struct omap_dss_device *dssdev)
-@@ -677,6 +679,7 @@ void omap4_panda_display_init(void)
- 
- 	omap_mux_init_gpio(HDMI_GPIO_LS_OE, OMAP_PIN_OUTPUT);
- 	omap_mux_init_gpio(HDMI_GPIO_CT_CP_HPD, OMAP_PIN_OUTPUT);
-+	omap_mux_init_gpio(HDMI_GPIO_HPD, OMAP_PIN_INPUT_PULLDOWN);
- }
- 
- static void __init omap4_panda_init(void)
+ /**
 -- 
-1.7.4.1
+1.6.6.rc2
 

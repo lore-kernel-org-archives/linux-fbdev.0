@@ -1,55 +1,45 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 01 Mar 2012 12:26:29 +0000
-Subject: [PATCH 1/7] OMAP: 4430SDP/Panda: use gpio_free_array to free HDMI gpios
-Message-Id: <1330604795-29156-2-git-send-email-tomi.valkeinen@ti.com>
+From: Thomas Abraham <thomas.abraham@linaro.org>
+Date: Mon, 26 Mar 2012 08:58:38 +0000
+Subject: [PATCH v3 0/2] Add lcd driver for panels with gpio controlled panel reset
+Message-Id: <1332751600-11371-1-git-send-email-thomas.abraham@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1330604795-29156-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1330604795-29156-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: stable@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Instead of freeing the GPIOs individually, use gpio_free_array().
+Changes since v2:
+- Reworked as per comments[1] from Mark Brown.
+  - removed the setting of regulator voltage.
 
-Backported from 575753e3bea3b67eef8e454fb87f719e3f7da599
+[1] http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg08743.html
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Acked-by: Tony Lindgren <tony@atomide.com>
----
- arch/arm/mach-omap2/board-4430sdp.c    |    3 +--
- arch/arm/mach-omap2/board-omap4panda.c |    3 +--
- 2 files changed, 2 insertions(+), 4 deletions(-)
+Changes since v1:
+- Fixed gpio leak, added MODULE_DEVICE_TABLE and dev_pm_ops.
+- Changed device tree bindings.
 
-diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
-index 5156468..8434b0c 100644
---- a/arch/arm/mach-omap2/board-4430sdp.c
-+++ b/arch/arm/mach-omap2/board-4430sdp.c
-@@ -628,8 +628,7 @@ static int sdp4430_panel_enable_hdmi(struct omap_dss_device *dssdev)
- 
- static void sdp4430_panel_disable_hdmi(struct omap_dss_device *dssdev)
- {
--	gpio_free(HDMI_GPIO_LS_OE);
--	gpio_free(HDMI_GPIO_HPD);
-+	gpio_free_array(sdp4430_hdmi_gpios, ARRAY_SIZE(sdp4430_hdmi_gpios));
- }
- 
- static struct nokia_dsi_panel_data dsi1_panel = {
-diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
-index a8c2c42..1ac7a22 100644
---- a/arch/arm/mach-omap2/board-omap4panda.c
-+++ b/arch/arm/mach-omap2/board-omap4panda.c
-@@ -512,8 +512,7 @@ static int omap4_panda_panel_enable_hdmi(struct omap_dss_device *dssdev)
- 
- static void omap4_panda_panel_disable_hdmi(struct omap_dss_device *dssdev)
- {
--	gpio_free(HDMI_GPIO_LS_OE);
--	gpio_free(HDMI_GPIO_HPD);
-+	gpio_free_array(panda_hdmi_gpios, ARRAY_SIZE(panda_hdmi_gpios));
- }
- 
- static struct omap_dss_device  omap4_panda_hdmi_device = {
--- 
-1.7.4.1
+This patchset adds support for passive panels that use a nRESET line which is
+controlled by a GPIO of the host system and which do not use a serial comamnd
+interface (i2c or spi) or memory-mapped-io interface. Platforms that do not
+require any additional control apart from the nRESET line can use this driver
+for lcd power control.
+
+The first patch adds driver for passive raster-type lcd's with gpio controlled
+panel reset. It includes support for both dt and non-dt platforms. The second
+patch adds support for using this driver on Origen board.
+
+Thomas Abraham (2):
+  backlight: lcd: add driver for raster-type lcd's with gpio controlled panel reset
+  ARM: Exynos: Use lcd power control driver for lcd panel
+
+ .../devicetree/bindings/lcd/lcd-pwrctrl.txt        |   36 +++
+ arch/arm/mach-exynos/mach-origen.c                 |   29 +--
+ drivers/video/backlight/Kconfig                    |    7 +
+ drivers/video/backlight/Makefile                   |    1 +
+ drivers/video/backlight/lcd_pwrctrl.c              |  226 ++++++++++++++++++++
+ include/video/lcd_pwrctrl.h                        |   24 ++
+ 6 files changed, 300 insertions(+), 23 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/lcd/lcd-pwrctrl.txt
+ create mode 100644 drivers/video/backlight/lcd_pwrctrl.c
+ create mode 100644 include/video/lcd_pwrctrl.h
 

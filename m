@@ -1,41 +1,44 @@
-From: Grazvydas Ignotas <notasas@gmail.com>
-Date: Mon, 19 Mar 2012 16:06:19 +0000
-Subject: Re: [PATCH 2/2] OMAPDSS: TPO-TD03MTEA1: Correct comment for power on delay
-Message-Id: <CANOLnOOy=cGDhR+EVWfQWTsMPctk_OmPZO=w43E3yT3YM9Z6gQ@mail.gmail.com>
+From: Chris Wilson <chris@chris-wilson.co.uk>
+Date: Mon, 26 Mar 2012 20:17:02 +0000
+Subject: [PATCH] video/console: Clip the right margin clear to the visible region
+Message-Id: <1332793022-29292-1-git-send-email-chris@chris-wilson.co.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1332169352-5076-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<1332169352-5076-2-git-send-email-broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1332169352-5076-2-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Chris Wilson <chris@chris-wilson.co.uk>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 
-On Mon, Mar 19, 2012 at 5:02 PM, Mark Brown
-<broonie@opensource.wolfsonmicro.com> wrote:
-> Since any power on stabilisation delay for the supply itself should be
-> taken care of transparently by the regulator API when the regulator is
-> enabled the additional delay that the TPO-TD03MTEA1 driver adds after
-> that returned should be due to the requirements of the device itself
-> rather than the supply (the delay is also suspicously long for one for
-> a regulator to ramp).
+For some unknown reason, yres_virtual was 2x larger the the size specified
+by i915 and so when blit_clear_margins() tried to clear the full virtual
+right-hand margin it tried to write far beyond the end of the buffer.
 
-True, it came from panel's datasheet which asks to wait for ">10ms + 7
-vsyncs" after tuning on the supply and before switching the control
-signal.
+This limits the clear to only the visible portion of the right-hand
+margin, similar to how the bottom margin is treated.
 
-> Correct the comment to avoid misleading people
-> taking this code as a reference.
->
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
->  .../video/omap2/displays/panel-tpo-td043mtea1.c    |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+Bugzilla: https://bugs.freedesktop.org/show_bug.cgi?id8138
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+---
+ drivers/video/console/bitblit.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-FWIW:
-Acked-by: Grazvydas Ignotas <notasas@gmail.com>
-
-
+diff --git a/drivers/video/console/bitblit.c b/drivers/video/console/bitblit.c
+index 28b1a83..9f89e5a 100644
+--- a/drivers/video/console/bitblit.c
++++ b/drivers/video/console/bitblit.c
+@@ -219,9 +219,9 @@ static void bit_clear_margins(struct vc_data *vc, struct fb_info *info,
+ 
+ 	if (rw && !bottom_only) {
+ 		region.dx = info->var.xoffset + rs;
+-		region.dy = 0;
++		region.dy = info->var.yoffset;
+ 		region.width = rw;
+-		region.height = info->var.yres_virtual;
++		region.height = info->var.yres;
+ 		info->fbops->fb_fillrect(info, &region);
+ 	}
+ 
 -- 
-Gražvydas
+1.7.9.1
+

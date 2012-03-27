@@ -1,238 +1,86 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 27 Mar 2012 10:57:23 +0000
+Date: Tue, 27 Mar 2012 11:10:16 +0000
 Subject: Re: [PATCH V2 2/3] OMAPDSS: DISPC: Handle synclost errors in OMAP3
-Message-Id: <1332845843.1867.126.camel@deskari>
+Message-Id: <1332846616.1867.132.camel@deskari>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-aU/PErL9wQpS34j0csun"
+Content-Type: multipart/mixed; boundary="=-b29zKXlcNtTikIrhsNgb"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1332323516-9050-1-git-send-email-cmahapatra@ti.com>
-In-Reply-To: <1332323516-9050-1-git-send-email-cmahapatra@ti.com>
-To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+	 <1332845034.1867.116.camel@deskari>
+	 <CAF0AtAsfE4xjiLOcvmPB4KCJn4QjN+PumJWQEM3m6ZziK4zhVw@mail.gmail.com>
+In-Reply-To: <CAF0AtAsfE4xjiLOcvmPB4KCJn4QjN+PumJWQEM3m6ZziK4zhVw@mail.gmail.com>
+To: "Mahapatra, Chandrabhanu" <cmahapatra@ti.com>
+Cc: linux-omap <linux-omap@vger.kernel.org>, linux-fbdev@vger.kernel.org
 
 
---=-aU/PErL9wQpS34j0csun
+--=-b29zKXlcNtTikIrhsNgb
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2012-03-21 at 15:21 +0530, Chandrabhanu Mahapatra wrote:
-> In OMAP3 DISPC video overlays suffer from some undocumented horizontal po=
-sition
-> and timing related limitations leading to SYNCLOST errors. Whenever the i=
-mage
-> window is moved towards the right of the screen SYNCLOST errors become
-> frequent. Checks have been implemented to see that DISPC driver rejects
-> configuration exceeding above limitations.
+On Tue, 2012-03-27 at 16:31 +0530, Mahapatra, Chandrabhanu wrote:
+> On Tue, Mar 27, 2012 at 4:13 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> w=
+rote:
+> > Hi,
+> >
+> > On Wed, 2012-03-21 at 15:21 +0530, Chandrabhanu Mahapatra wrote:
+> >> In OMAP3 DISPC video overlays suffer from some undocumented horizontal=
+ position
+> >> and timing related limitations leading to SYNCLOST errors. Whenever th=
+e image
+> >> window is moved towards the right of the screen SYNCLOST errors become
+> >> frequent. Checks have been implemented to see that DISPC driver reject=
+s
+> >> configuration exceeding above limitations.
+> >>
+> >> This code was successfully tested on OMAP3. This code is written based=
+ on code
+> >> written by Ville Syrj=C3=A4l=C3=A4 <ville.syrjala@nokia.com> in Linux =
+OMAP kernel. Ville
+> >> Syrj=C3=A4l=C3=A4 <ville.syrjala@nokia.com> had added checks for video=
+ overlay horizontal
+> >> timing and DISPC horizontal blanking length limitations.
+> >>
+> >> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+> >> ---
+> >>  drivers/video/omap2/dss/dispc.c |   97 +++++++++++++++++++++++++++++-=
+---------
+> >>  1 files changed, 72 insertions(+), 25 deletions(-)
+> >
+> > The patch seems to be using dos line endings... Where did they come
+> > from? The two others are fine. I think git am removed the dos line
+> > endings, so it's fine.
+> >
 >=20
-> This code was successfully tested on OMAP3. This code is written based on=
- code
-> written by Ville Syrj=C3=A4l=C3=A4 <ville.syrjala@nokia.com> in Linux OMA=
-P kernel. Ville
-> Syrj=C3=A4l=C3=A4 <ville.syrjala@nokia.com> had added checks for video ov=
-erlay horizontal
-> timing and DISPC horizontal blanking length limitations.
->=20
-> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-> ---
->  drivers/video/omap2/dss/dispc.c |   97 +++++++++++++++++++++++++++++----=
-------
->  1 files changed, 72 insertions(+), 25 deletions(-)
->=20
-> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/di=
-spc.c
-> index 5a1963e..d8a1672 100644
-> --- a/drivers/video/omap2/dss/dispc.c
-> +++ b/drivers/video/omap2/dss/dispc.c
-> @@ -1622,6 +1622,57 @@ static void calc_dma_rotation_offset(u8 rotation, =
-bool mirror,
->  	}
->  }
-> =20
-> +static int check_horiz_timing(enum omap_channel channel, u16 pos_x,
-> +		u16 width, u16 height, u16 out_width, u16 out_height)
+> How did you find these errors? scripts/checkpatch.pl still returns me not=
+hing.
 
-I think the function could be named check_horiz_timing_omap3 or
-something. It's kinda hard to realize that this is an omap3 work-around.
-Perhaps a short comment above the function would be in order.
-
-> +{
-> +	int DS =3D DIV_ROUND_UP(height, out_height);
-> +	struct omap_dss_device *dssdev =3D dispc_mgr_get_device(channel);
-> +	struct omap_video_timings t =3D dssdev->panel.timings;
-> +	unsigned long nonactive, lclk, pclk;
-> +	static const u8 limits[3] =3D { 8, 10, 20 };
-> +	u64 val, blank;
-> +	int i;
-> +
-> +	nonactive =3D t.x_res + t.hfp + t.hsw + t.hbp - out_width;
-> +	pclk =3D dispc_mgr_pclk_rate(channel);
-> +	lclk =3D dispc_mgr_lclk_rate(channel);
-> +
-> +	i =3D 0;
-> +	if (out_height < height)
-> +		i++;
-> +	if (out_width < width)
-> +		i++;
-> +	blank =3D div_u64((u64)(t.hbp + t.hsw + t.hfp) * lclk, pclk);
-> +	DSSDBG("blanking period + ppl =3D %llu (limit =3D %u)\n", blank, limits=
-[i]);
-> +	if (blank <=3D limits[i])
-> +		return -EINVAL;
-> +
-> +	/*
-> +	 * Pixel data should be prepared before visible display point starts.
-> +	 * So, atleast DS-2 lines must have already been fetched by DISPC
-> +	 * during nonactive - pos_x period.
-> +	 */
-> +	val =3D div_u64((u64)(nonactive - pos_x) * lclk, pclk);
-> +	DSSDBG("(nonactive - pos_x) * pcd =3D %llu,"
-> +		" max(0, DS - 2) * width =3D %d\n",
-> +		val, max(0, DS - 2) * width);
-> +	if (val < max(0, DS - 2) * width)
-> +		return -EINVAL;
-> +
-> +	/*
-> +	 * All lines need to be refilled during the nonactive period of which
-> +	 * only one line can be loaded during the active period. So, atleast
-> +	 * DS - 1 lines should be loaded during nonactive period.
-> +	 */
-> +	val =3D  div_u64((u64)nonactive * lclk, pclk);
-> +	DSSDBG("nonactive * pcd  =3D %llu, max(0, DS - 1) * width =3D %d\n",
-> +		val, max(0, DS - 1) * width);
-> +	if (val < max(0, DS - 1) * width)
-> +		return -EINVAL;
-> +
-> +	return 0;
-> +}
-> +
->  static unsigned long calc_fclk_five_taps(enum omap_channel channel, u16 =
-width,
->  		u16 height, u16 out_width, u16 out_height,
->  		enum omap_color_mode color_mode)
-> @@ -1702,7 +1753,7 @@ static int dispc_ovl_calc_scaling(enum omap_plane p=
-lane,
->  		enum omap_channel channel, u16 width, u16 height,
->  		u16 out_width, u16 out_height,
->  		enum omap_color_mode color_mode, bool *five_taps,
-> -		int *x_predecim, int *y_predecim)
-> +		int *x_predecim, int *y_predecim, u16 pos_x)
->  {
->  	struct omap_overlay *ovl =3D omap_dss_get_overlay(plane);
->  	const int maxdownscale =3D dss_feat_get_param_max(FEAT_PARAM_DOWNSCALE)=
-;
-> @@ -1778,6 +1829,9 @@ static int dispc_ovl_calc_scaling(enum omap_plane p=
-lane,
->  			fclk =3D calc_fclk_five_taps(channel, in_width, in_height,
->  				out_width, out_height, color_mode);
-> =20
-> +			error =3D check_horiz_timing(channel, pos_x, in_width,
-> +				in_height, out_width, out_height);
-> +
->  			if (in_width > maxsinglelinewidth)
->  				if (in_height > out_height &&
->  					in_height < out_height * 2)
-> @@ -1785,7 +1839,7 @@ static int dispc_ovl_calc_scaling(enum omap_plane p=
-lane,
->  			if (!*five_taps)
->  				fclk =3D calc_fclk(channel, in_width, in_height,
->  					out_width, out_height);
-> -			error =3D (in_width > maxsinglelinewidth * 2 ||
-> +			error =3D (error || in_width > maxsinglelinewidth * 2 ||
->  				(in_width > maxsinglelinewidth && *five_taps) ||
->  				!fclk || fclk > dispc_fclk_rate());
->  			if (error) {
-> @@ -1801,6 +1855,12 @@ static int dispc_ovl_calc_scaling(enum omap_plane =
-plane,
->  		} while (decim_x <=3D *x_predecim && decim_y <=3D *y_predecim
->  			&& error);
-> =20
-> +		if (check_horiz_timing(channel, pos_x, width, height,
-> +			out_width, out_height)){
-> +				DSSERR("horizontal timing too tight\n");
-> +				return -EINVAL;
-> +		}
-> +
->  		if (in_width > (maxsinglelinewidth * 2)) {
->  			DSSERR("Cannot setup scaling");
->  			DSSERR("width exceeds maximum width possible");
-> @@ -1901,7 +1961,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct o=
-map_overlay_info *oi,
-> =20
->  	r =3D dispc_ovl_calc_scaling(plane, channel, in_width, in_height,
->  			out_width, out_height, oi->color_mode, &five_taps,
-> -			&x_predecim, &y_predecim);
-> +			&x_predecim, &y_predecim, oi->pos_x);
->  	if (r)
->  		return r;
-> =20
-> @@ -2472,32 +2532,19 @@ unsigned long dispc_fclk_rate(void)
-> =20
->  unsigned long dispc_mgr_lclk_rate(enum omap_channel channel)
->  {
-> -	struct platform_device *dsidev;
-> -	int lcd;
-> -	unsigned long r;
-> -	u32 l;
-> +	unsigned long r =3D dispc_fclk_rate();
-> =20
-> -	l =3D dispc_read_reg(DISPC_DIVISORo(channel));
-> +	if (dispc_mgr_is_lcd(channel)) {
-> +		u32 l;
-> +		int lcd;
-> =20
-> -	lcd =3D FLD_GET(l, 23, 16);
-> +		l =3D dispc_read_reg(DISPC_DIVISORo(channel));
-> +		lcd =3D FLD_GET(l, 23, 16);
-> =20
-> -	switch (dss_get_lcd_clk_source(channel)) {
-> -	case OMAP_DSS_CLK_SRC_FCK:
-> -		r =3D clk_get_rate(dispc.dss_clk);
-> -		break;
-> -	case OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC:
-> -		dsidev =3D dsi_get_dsidev_from_id(0);
-> -		r =3D dsi_get_pll_hsdiv_dispc_rate(dsidev);
-> -		break;
-> -	case OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC:
-> -		dsidev =3D dsi_get_dsidev_from_id(1);
-> -		r =3D dsi_get_pll_hsdiv_dispc_rate(dsidev);
-> -		break;
-> -	default:
-> -		BUG();
-> +		return r / lcd;
-> +	} else {
-> +		return r;
->  	}
-> -
-> -	return r / lcd;
->  }
-
-I don't the change to dispc_mgr_lclk_rate has anything to do with this
-patch (fixing omap3 sync lost error). Shouldn't it be a separate fix?
+Well I just saved the email and ran checkpatch. Could be a problem in
+gmail or my end too, but I've never seen it happen before.
 
  Tomi
 
 
---=-aU/PErL9wQpS34j0csun
+--=-b29zKXlcNtTikIrhsNgb
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABAgAGBQJPcZ0TAAoJEPo9qoy8lh71mNsQAIoZxuWMsijAYdXs6zmoEgUY
-0knfiXej0onL3DW9U0Ln0wm+7SeXRBaAWQezGQSrlgv6yGotdpzsWfQHM7CHXhio
-Ec5Bvp9MdpYzrndlMALJaHVn53SBLfJB9jJkZbOEBVvKxrfEZlIzQfpd3ZqHEo0o
-pMjTUscSL6CNVZU3ZJBF7f2VFKKfTP5UN9LgEErPrBeJ1OCIErjUxnWz8CVIAq8q
-lbJi+BxGetNncIXzrVDfDB5uL+Q1RsWEs1ASdhhautA5gsiRD07Fn0SKEyY3WDdD
-eCyqBb0+73gTVUw3ZGMbBVeZaey+oXve60px+dM7cz8rrMz8BzKBUCwm/WQ0qylp
-LS/BsJHQuhmNmQHh4RyY2qgr81+HOX4kXfZHQdAyRHgO2oOLcT1rORjd3ow80AHV
-8A1atIUbLEfKPa/anQQKQ/yC5vrofBZmMm1a6TS/qIZu02wVE7C0xy+px6v6ckQ8
-r6tslO/Pgcr0oPN834S74qAgSe+BnKZy/29LVOhf8+xZg4L0vGJApO0K7jgXTrGp
-rAv0ndJEnr9PS+FVG5R22Wlt8dwz1N0XlbRhdbf0/6iWL+FFOad/+Lx90SXnY0p4
-BEuPa4eU7SLxBhNOQxLPVJsrm1Q2B0Xxgo+feIj+sh4dhXeOYel+CYSBtUlSDNYx
-mbHXsr0d09zp4SpQpnMS
-=00Af
+iQIcBAABAgAGBQJPcaAYAAoJEPo9qoy8lh71ItcQAJZsx9MNaEFUxhZ28S3q2igo
+rvmjT7NexftMFKbVJmHAaqCCYnGqkWO1UKpqvkTRKu+AmbVYWKgia2hMjwwWZeNC
+5Ep1c763MxDdPwcfEEcXxTrJzy5uBia0C6GTqtQZRJuNU4JruXJAR+RleHfAIjGH
+b8VCmATGeF/bT7/cCKjuVtjBIf+Cehz8CItfKwUiCkeJLwT1U9kqjGKrJDPbcIQj
+5x1LwPWEwpn0gvqcKcCSwleM446jKeREBQlwmYHJNr+BlqWiAx98Bc1AceTXD6fw
+MwUVG0jWuTJbbJDEPmyA6u2gFy2aUYksdxF8w0MIKiA00WnKPs8OHgwG/sHz0SSW
+brIL8N3frkgllPCkF2kY5dpzAbuSZa6MkTzsG6bd+Km1nlYHpqug5lXrYZb7GK/6
+LBS7hXAC2/NLjj3vMBKU+iJD6pcKe+lSHltXeBHXdA79Mf3DbpOsADZStF9O5/Cg
+Yjx0y4xNoO+tpB8pwwXkBG1PQ5vqUjmEC9n6YzjZilVHMY3Ue05DiC4QHV7M1wg1
+bAM9a/YPDVPnhbo9eY1SUn8sii8jjuzSTHmybtlAAZz7m8fydJc3sevd2Unt7u7T
+qD8mw9b0721GE/V41VIMXS+xFAFvOSFQXLCP1ACXy+NsDhebnp9l3IK/JnPGNm1r
+GbbAokSxj7FHrevP82RR
+=q6jG
 -----END PGP SIGNATURE-----
 
---=-aU/PErL9wQpS34j0csun--
+--=-b29zKXlcNtTikIrhsNgb--
 

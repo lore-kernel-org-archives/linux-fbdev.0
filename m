@@ -1,80 +1,70 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Wed, 21 Mar 2012 09:53:40 +0000
-Subject: [PATCH V2 3/3] OMAPDSS: DISPC: Correct DISPC functional clock usage
-Message-Id: <1332323530-9088-1-git-send-email-cmahapatra@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 27 Mar 2012 11:03:35 +0000
+Subject: Re: [PATCH V2 3/3] OMAPDSS: DISPC: Correct DISPC functional clock usage
+Message-Id: <1332846215.1867.130.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-9YAtgOjyhCHdhHZ1ymVO"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+References: <1332323530-9088-1-git-send-email-cmahapatra@ti.com>
+In-Reply-To: <1332323530-9088-1-git-send-email-cmahapatra@ti.com>
+To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-DISPC_FCLK is incorrectly used as functional clock of DISPC in scaling
-calculations. So, DISPC_CORE_CLK replaces as functional clock of DISPC.
-DISPC_CORE_CLK is derived from DISPC_FCLK divided by an independent DISPC
-divisor LCD.
 
-Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
----
- drivers/video/omap2/dss/dispc.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+--=-9YAtgOjyhCHdhHZ1ymVO
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index d8a1672..1fdac73 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -1761,6 +1761,7 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
- 				dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
- 	const int max_decim_limit = 16;
- 	unsigned long fclk = 0;
-+	unsigned long dispc_core_clk = dispc_mgr_lclk_rate(channel);
- 	int decim_x, decim_y, error, min_factor;
- 	u16 in_width, in_height, in_width_max = 0;
- 
-@@ -1803,7 +1804,7 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
- 			fclk = calc_fclk(channel, in_width, in_height,
- 					out_width, out_height);
- 			error = (in_width > maxsinglelinewidth || !fclk ||
--				fclk > dispc_fclk_rate());
-+				fclk > dispc_core_clk);
- 			if (error) {
- 				if (decim_x = decim_y) {
- 					decim_x = min_factor;
-@@ -1841,7 +1842,7 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
- 					out_width, out_height);
- 			error = (error || in_width > maxsinglelinewidth * 2 ||
- 				(in_width > maxsinglelinewidth && *five_taps) ||
--				!fclk || fclk > dispc_fclk_rate());
-+				!fclk || fclk > dispc_core_clk);
- 			if (error) {
- 				if (decim_x = decim_y) {
- 					decim_x = min_factor;
-@@ -1873,7 +1874,7 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
- 		}
- 	} else {
- 		in_height = DIV_ROUND_UP(height, decim_y);
--		in_width_max = dispc_fclk_rate() /
-+		in_width_max = dispc_core_clk /
- 				DIV_ROUND_UP(dispc_mgr_pclk_rate(channel),
- 						out_width);
- 		decim_x = DIV_ROUND_UP(width, in_width_max);
-@@ -1894,13 +1895,13 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
- 	}
- 
- 	DSSDBG("required fclk rate = %lu Hz\n", fclk);
--	DSSDBG("current fclk rate = %lu Hz\n", dispc_fclk_rate());
-+	DSSDBG("current fclk rate = %lu Hz\n", dispc_core_clk);
- 
--	if (!fclk || fclk > dispc_fclk_rate()) {
-+	if (!fclk || fclk > dispc_core_clk) {
- 		DSSERR("failed to set up scaling, "
- 			"required fclk rate = %lu Hz, "
- 			"current fclk rate = %lu Hz\n",
--			fclk, dispc_fclk_rate());
-+			fclk, dispc_core_clk);
- 		return -EINVAL;
- 	}
- 
--- 
-1.7.1
+On Wed, 2012-03-21 at 15:22 +0530, Chandrabhanu Mahapatra wrote:
+> DISPC_FCLK is incorrectly used as functional clock of DISPC in scaling
+> calculations. So, DISPC_CORE_CLK replaces as functional clock of DISPC.
+> DISPC_CORE_CLK is derived from DISPC_FCLK divided by an independent DISPC
+> divisor LCD.
+>=20
+> Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+> ---
+>  drivers/video/omap2/dss/dispc.c |   13 +++++++------
+>  1 files changed, 7 insertions(+), 6 deletions(-)
+>=20
+> diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/di=
+spc.c
+> index d8a1672..1fdac73 100644
+> --- a/drivers/video/omap2/dss/dispc.c
+> +++ b/drivers/video/omap2/dss/dispc.c
+> @@ -1761,6 +1761,7 @@ static int dispc_ovl_calc_scaling(enum omap_plane p=
+lane,
+>  				dss_feat_get_param_max(FEAT_PARAM_LINEWIDTH);
+>  	const int max_decim_limit =3D 16;
+>  	unsigned long fclk =3D 0;
+> +	unsigned long dispc_core_clk =3D dispc_mgr_lclk_rate(channel);
+
+Hmm, I don't think this is correct. dispc_mgr_lclk_rate() returns the
+logic clock for the LCD output path. It's not DISPC core clock.
+
+ Tomi
+
+
+--=-9YAtgOjyhCHdhHZ1ymVO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJPcZ6HAAoJEPo9qoy8lh71HLQP/3o8FYs/R2LelzYDnJ1WguIQ
+PZtObi477Np3+ZXN3nT+h3dJywf6KQjWm/VXWbrl/9oynjU0QHEXxuIXYvskrfcH
+XNG8Noal6VHaNhcGUlGW827Z+bMGaW0TpUcOgL4AgTMooKJ0UkpkVvOJDKhizhmE
+jRQp9tiEC3R91/6fRHWEKqoyQTu/9rtPF/o1X/jYKuNIt+UVeyeQu5HP0UPkSc4A
+X9HR7l9e/Ue7yboKn3g9kQLBKNaL7N/7fDBbmKJKzhTv20IsKO409q75cCPVUJAj
+QB+4ovbDN3gzXktycp0n5theNRjpBj4xkEfovjpCmwJHBf1jFovJiYJ7Vg72I4va
+HWpe5t7Bp6wSX90+a6byIWTjU3SYWwJnt7cV8KF+PPuZ4QWqKGypfb6pzap73zDh
+eqQ9jcCPRFRTNLNOBJZz4PPEBOYuKwkWYygrBT7pOP/K+VauLciIYBUeYMFQKSWE
+6r/h7r3ibG/WpjxaGf8hT2ljEUfFcNuwUl9B4K78/TgR+QDK7RHTHZBRUcUDRyhw
+0n5LB931qSzoi/y4pAEZk3ssl6AqYX/aC8plf+62ZePy42JPwT96Ayiv/qkEiWGj
+tEXjpIYwYBXxvlXHog+dAN6Q5PWUXVmLvSFLxmezFd+/gtAZ05nlGHGluAQN4Yhi
+5vYSt6iN0WQ1oqN4wmcw
+=9ZS/
+-----END PGP SIGNATURE-----
+
+--=-9YAtgOjyhCHdhHZ1ymVO--
 

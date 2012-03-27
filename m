@@ -1,49 +1,61 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Wed, 21 Mar 2012 09:52:45 +0000
-Subject: [PATCH V2 0/3] OMAPDSS: DISPC: Enable predecimation for DMA and VRFB
-Message-Id: <1332323484-8975-1-git-send-email-cmahapatra@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 27 Mar 2012 10:49:33 +0000
+Subject: Re: [PATCH V2 0/3] OMAPDSS: DISPC: Enable predecimation for DMA and VRFB
+Message-Id: <1332845373.1867.118.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-Fdo9h6HxKrYFx1DFpJBX"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+References: <1332323484-8975-1-git-send-email-cmahapatra@ti.com>
+In-Reply-To: <1332323484-8975-1-git-send-email-cmahapatra@ti.com>
+To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Hi everyone,
-the following patch set directs to enable predecimation for DMA and VRFB
-which consists of two pacthes.
 
-The first patch is based on code written by Lajos Molnar <lajos@ti.com> in
-Android Kernel, which updates the code with predecimation logic thereby
-increasing the downscaling ability of the DISPC module.
-In version 2 patch description has been modified include reason for maximum
-predecimation limit of 16.
+--=-Fdo9h6HxKrYFx1DFpJBX
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The second patch is based on code written by Ville Syrjälä
-<ville.syrjala@nokia.com> which aims to avoid synclost errors occurring
-in OMAP3 due to some undocumented horizontal position and timing related
-limitations which I faced during testing of the previous patch.
-In version 2 the pcd factor has been replaced lclk / pclk to support HDMI and
-tv output as pointed out by Ville Syrjälä.
+On Wed, 2012-03-21 at 15:21 +0530, Chandrabhanu Mahapatra wrote:
+> Hi everyone,
+> the following patch set directs to enable predecimation for DMA and VRFB
+> which consists of two pacthes.
+>=20
+> The first patch is based on code written by Lajos Molnar <lajos@ti.com> i=
+n
+> Android Kernel, which updates the code with predecimation logic thereby
+> increasing the downscaling ability of the DISPC module.
+> In version 2 patch description has been modified include reason for maxim=
+um
+> predecimation limit of 16.
 
-The third patch corrects the usage of dispc fclk in scaling checks by
-replacing it with dispc_core_clk as per suggestions of Ville Syrjälä.
+You should have the version changes separately, so that they are easy to
+see. For example, a bullet list after the intro text. And you miss to
+mention that this patch set adds a new patch to the series.
 
-I have tested these patches successfully on OMAP2, OMAP3 AND OMAP4 on the
-mainline kernel v3.3. Horizontal and vertical predecimation worked fine
-but skewed images were seen on OMAP2 and OMAP3 on HDMI tv during horizontal
-predecimation which will be addressed in the future patches.
+ Tomi
 
-All your comments and suggestions are welcome.
 
-Regards,
-Chandrabhanu
+--=-Fdo9h6HxKrYFx1DFpJBX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-Chandrabhanu Mahapatra (3):
-  OMAPDSS: DISPC: Enable predecimation
-  OMAPDSS: DISPC: Handle synclost errors in OMAP3
-  OMAPDSS: DISPC: Correct DISPC functional clock usage
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
- drivers/video/omap2/dss/dispc.c |  360 +++++++++++++++++++++++++++------------
- 1 files changed, 254 insertions(+), 106 deletions(-)
+iQIcBAABAgAGBQJPcZs8AAoJEPo9qoy8lh71bikP/3TUW4Cy8f73984YaGIit0ka
+qV2Mzaofl1ZYmQEqby955eMwdeC1V+Wk3bwkheBc2DlT4/YLNHZE1iLXNMOTPNp5
+PYjcrVOXh7Dxd379QC53sw00eRDtEbo5nRR+r03IJGDWd8qBouO2DwPajuWHFeIe
+P4qT5SyrCn1h8RpJ/jVpLgFTqXniuvzRS41yTUmNhEhACu50Hm9F/O56EWFZ7ORS
+miUbOlYfV8+u7py1kD615Cor8InoeH1IUEBbNZSxtatV2OCX055jI0rTdWBTQebZ
+/JqGAeH4IrRf8AruNil/3J+IKkJZr1WT0hdwJrc2FY6JUgTOjbFoEBXWK1ALe8xx
+eXtSo+ZG6pdFexRIiV2Pxstptwlr6Y0fIWsnBihxH7lYRUjEWcV6XPZf7GNlvrkW
+L1pad8hQjiJX46VrDh+Xvjh0/SnidU7miRysfmvVjyhIayFV7PeD1lniBA9xdLyc
+JC6ORx/iV/R/U+N3C010QyDjt2lvZr+BDIvshTfFY9N2FJOXaLTus7zy62AO7qke
+fHa+GGKT5BRzQgyx3iy4XpPv66fgPhXFjA1VflMH3j4JO0YNZUbpzdlAj+25fXdn
+xv9+h+Y+ALiI9iSZbw9UzHF9OGDbM+INKMEb3odDKEnVw0Zaywf67paCHPfwJwQT
+U3Kc8I+gSwrhcSw+nwmh
+=eGCL
+-----END PGP SIGNATURE-----
+
+--=-Fdo9h6HxKrYFx1DFpJBX--
 

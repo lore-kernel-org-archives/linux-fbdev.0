@@ -1,77 +1,52 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Thu, 08 Mar 2012 08:55:12 +0000
-Subject: Re: [PATCH 08/21] OMAPDSS: clean up the omapdss platform data mess
-Message-Id: <4F5873B2.50806@ti.com>
+From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
+Date: Wed, 28 Mar 2012 17:32:54 +0000
+Subject: [PATCH 0/4] video: add support for the AUO-K190X epd controllers
+Message-Id: <201203281932.55438.heiko@sntech.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1331124290-6285-1-git-send-email-tomi.valkeinen@ti.com>  <1331124290-6285-9-git-send-email-tomi.valkeinen@ti.com>  <4F57A4E5.6070201@ti.com> <1331193777.2354.21.camel@deskari>  <4F586B28.1050403@ti.com> <1331195632.2354.37.camel@deskari>
-In-Reply-To: <1331195632.2354.37.camel@deskari>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Thursday 08 March 2012 02:03 PM, Tomi Valkeinen wrote:
-> On Thu, 2012-03-08 at 13:47 +0530, Archit Taneja wrote:
->> On Thursday 08 March 2012 01:32 PM, Tomi Valkeinen wrote:
->
->>>> why do we check board_data being NULL here and not in omap_display_init()?
->>>
->>> I added it for DT case, because then we don't have board_data for the
->>> devices defined in the DT data. However, for now we always have the
->>> board_data, and in this patch I should just move the code. So I'll
->>> remove the check, and add it later with DT code if needed.
->>
->> Ok. When DT will be in use, would omap_display_init() be called or not?
->
-> No. Currently the board files create and fill the board_data, and then
-> call omap_display_init.
->
-> With DT, the DT data will contain all the dynamic, per-board
-> information. Something like:
->
-> dss {
-> 	dpi {
-> 		dvi {
-> 			pd-gpio =<10>;
-> 			...
-> 		};
-> 	};
->
-> 	dsi@1 {
-> 		taal {
-> 			reset-gpio =<20>;
-> 			...
-> 		};
-> 	}
->
-> 	...
-> };
->
-> The DT data will be passed individually to each dss driver (i.e. dsi
-> driver will get its DT node, etc.). The drivers will read the data, and
-> initialize themselves with that, more or less the same manner they'd do
-> with the board_data from board files.
->
-> However, we currently have this "omapdss" device, which is not a hwmod
-> device at all. In the long run I think the omapdss device should be
-> removed, but for now we need it. And device has to be created in the
-> arch code, the same way it's now created in omap_display_init().
->
-> So with DT we need a new func, omap_display_init_dt() or such, which
-> creates the omapdss device, and also creates a board_data which contains
-> the ctx_loss etc function pointers. But the board data won't have any
-> display data, those come directly from DT data.
->
-> It's a bit messy solution, but it should allow us to have both DT and
-> non-DT working at the same time, with quite minimal changes to the board
-> files.
+This series adds basic support for the AUO-K190X family of epaper
+controllers which consists at the moment of the K1900 and K1901.
 
-Okay, thanks for the clarification.
+These controllers are used mostly in the OEM line of Qisda ebook readers
+sold under different brands worldwide. Among those are the Medion/Thalia
+Oyo 1 + 2, the bq Avant and Avant 3, the Asus eeeReader DR-900, BenQ K60
+and dozens more.
 
-Archit
+The _dpy_update, _dpy_update_pages and _need_refresh functions are
+intentional duplicated. Currently they do the same, but as the
+controllers emit a greatly different runtime behaviour there is a lot
+of room for future controller-specific performance improvements.
 
->
->   Tomi
->
+The series also includes the patch which adds a first_io callback to
+defio. This creates a nice way to parallelise the wakup when it is known
+that the controller is needed at the end of the defio cycle.
+
+Heiko Stuebner (4):
+  fb_defio: add first_io callback
+  video: auo_k190x: add code shared by controller drivers
+  video: auo_k190x: add driver for AUO-K1900 variant
+  video: auo_k190x: add driver for the AUO-K1901 variant
+
+ drivers/video/Kconfig       |   28 ++
+ drivers/video/Makefile      |    3 +
+ drivers/video/auo_k1900fb.c |  198 ++++++++
+ drivers/video/auo_k1901fb.c |  251 +++++++++++
+ drivers/video/auo_k190x.c   | 1038 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/video/auo_k190x.h   |  129 ++++++
+ drivers/video/fb_defio.c    |    4 +
+ include/linux/fb.h          |    1 +
+ include/video/auo_k190xfb.h |  106 +++++
+ 9 files changed, 1758 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/auo_k1900fb.c
+ create mode 100644 drivers/video/auo_k1901fb.c
+ create mode 100644 drivers/video/auo_k190x.c
+ create mode 100644 drivers/video/auo_k190x.h
+ create mode 100644 include/video/auo_k190xfb.h
+
+-- 
+1.7.5.4
 

@@ -1,66 +1,114 @@
-From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
-Date: Fri, 02 Mar 2012 14:23:53 +0000
-Subject: Re: Kernel Display and Video API Consolidation mini-summit at ELC 2012 - Notes
-Message-Id: <201203021523.54173.heiko@sntech.de>
+From: Grazvydas Ignotas <notasas@gmail.com>
+Date: Wed, 28 Mar 2012 23:45:12 +0000
+Subject: [PATCH] OMAPDSS: VENC: allow switching venc type at runtime
+Message-Id: <1332978312-11959-1-git-send-email-notasas@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201201171126.42675.laurent.pinchart@ideasonboard.com> <1654816.MX2JJ87BEo@avalon> <1775349.d0yvHiVdjB@avalon>
-In-Reply-To: <1775349.d0yvHiVdjB@avalon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Sakari Ailus <sakari.ailus@maxwell.research.nokia.com>, Sumit Semwal <sumit.semwal@ti.com>, Jesse Barker <jesse.barker@linaro.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Rob Clark <rob@ti.com>, Pawel Osciak <pawel@osciak.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Tomasz Stanislawski <t.stanislaws@samsung.com>, Magnus Damm <magnus.damm@gmail.com>, Marcus Lorentzon <marcus.lorentzon@linaro.org>, Alexander Deucher <alexander.deucher@amd.com>, linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, Grazvydas Ignotas <notasas@gmail.com>
 
-Am Freitag, 17. Februar 2012, 00:25:51 schrieb Laurent Pinchart:
-> Hello everybody,
-> 
-> First of all, I would like to thank all the attendees for their
-> participation in the mini-summit that helped make the meeting a success.
-> 
-> Here are my consolidated notes that cover both the Linaro Connect meeting
-> and the ELC meeting. They're also available at
-> http://www.ideasonboard.org/media/meetings/.
-> 
-> 
-> Kernel Display and Video API Consolidation mini-summit at ELC 2012
-> ------------------------------------------------------------------
-> 
-[...]
-> ***  Display Panel Drivers ***
-> 
->   Goal: Sharing display panel drivers between display controllers from
->   different vendors.
-> 
->   Panels are connected to the display controller through a standard bus
-> with a control channel (DSI and eDP are two major such buses). Various
-> vendors have created proprietary interfaces for panel drivers:
-> 
->   - TI on OMAP (drivers/video/omap2/displays).
->   - Samsung on Exynos (drivers/video/exynos).
->   - ST-Ericsson on MCDE
-> (http://www.igloocommunity.org/gitweb/?p=kernel/igloo-
-> kernel.git;a=tree;f=drivers/video/mcde)
->   - Renesas is working on a similar interface for SH Mobile.
-> 
->   HDMI-on-DSI transmitters, while not panels per-se, can be supported
-> through the same API.
-> 
->   A Low level Linux Display Framework (https://lkml.org/lkml/2011/9/15/107)
->   has been proposed and overlaps with this topic.
-> 
->   For DSI, a possible abstraction level would be a DCS (Display Command
-> Set) bus. Panels and/or HDMI-on-DSI transmitter drivers would be
-> implemented as DCS drivers.
-> 
->   Action points:
->   - Marcus to work on a proposal for DCS-based panels (with Tomi Valkeinen
-> and Morimoto-san).
+VENC type (composite/svideo) doesn't have to be fixed by board wiring,
+it is possible to provide both connectors, which is what pandora does.
+Having to recompile the kernel for users who have TV connector types
+that's don't match default board setting is very inconvenient, especially
+for users of a consumer device, so add support for switching VENC type
+at runtime over a new sysfs file venc_type.
 
-It would also be interesting to see something similar for MIPI-DBI (type B for 
-me) [aka rfbi on omap], as most epaper displays use this to transmit data and 
-currently use half-baked interfaces.
+Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
+---
+ Documentation/arm/OMAP/DSS     |    1 +
+ drivers/video/omap2/dss/venc.c |   55 +++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 55 insertions(+), 1 deletions(-)
 
-So hopefully I'll be able to follow the discussion and can then try to convert 
-your findings to the dbi case.
+diff --git a/Documentation/arm/OMAP/DSS b/Documentation/arm/OMAP/DSS
+index 888ae7b..18e2214 100644
+--- a/Documentation/arm/OMAP/DSS
++++ b/Documentation/arm/OMAP/DSS
+@@ -156,6 +156,7 @@ timings		Display timings (pixclock,xres/hfp/hbp/hsw,yres/vfp/vbp/vsw)
+ 		"pal" and "ntsc"
+ panel_name
+ tear_elim	Tearing elimination 0=off, 1=on
++venc_type	Output type (video encoder only): "composite" or "svideo"
+ 
+ There are also some debugfs files at <debugfs>/omapdss/ which show information
+ about clocks and registers.
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 9c3daf7..aa2e74a 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -485,16 +485,69 @@ unsigned long venc_get_pixel_clock(void)
+ 	return 13500000;
+ }
+ 
++static ssize_t display_venc_type_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	const char *ret;
++
++	switch (dssdev->phy.venc.type) {
++	case OMAP_DSS_VENC_TYPE_COMPOSITE:
++		ret = "composite";
++		break;
++	case OMAP_DSS_VENC_TYPE_SVIDEO:
++		ret = "svideo";
++		break;
++	default:
++		ret = "unknown";
++		break;
++	}
++
++	return snprintf(buf, PAGE_SIZE, "%s\n", ret);
++}
++
++static ssize_t display_venc_type_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t size)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	enum omap_dss_venc_type new_type;
++
++	if (strncmp("composite", buf, 9) = 0)
++		new_type = OMAP_DSS_VENC_TYPE_COMPOSITE;
++	else if (strncmp("svideo", buf, 6) = 0)
++		new_type = OMAP_DSS_VENC_TYPE_SVIDEO;
++	else
++		return -EINVAL;
++
++	mutex_lock(&venc.venc_lock);
++
++	if (dssdev->phy.venc.type != new_type) {
++		dssdev->phy.venc.type = new_type;
++		if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
++			venc_power_off(dssdev);
++			venc_power_on(dssdev);
++		}
++	}
++
++	mutex_unlock(&venc.venc_lock);
++
++	return size;
++}
++
++static DEVICE_ATTR(venc_type, S_IRUGO | S_IWUSR,
++		display_venc_type_show, display_venc_type_store);
++
+ /* driver */
+ static int venc_panel_probe(struct omap_dss_device *dssdev)
+ {
+ 	dssdev->panel.timings = omap_dss_pal_timings;
+ 
+-	return 0;
++	return device_create_file(&dssdev->dev, &dev_attr_venc_type);
+ }
+ 
+ static void venc_panel_remove(struct omap_dss_device *dssdev)
+ {
++	device_remove_file(&dssdev->dev, &dev_attr_venc_type);
+ }
+ 
+ static int venc_panel_enable(struct omap_dss_device *dssdev)
+-- 
+1.7.0.4
 
-Heiko

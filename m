@@ -1,130 +1,65 @@
-From: Peter Huewe <peterhuewe@gmx.de>
-Date: Sun, 29 Apr 2012 20:26:07 +0000
-Subject: [PATCH v2] video/sis: Use SiS_DRAMType from init.h and annotate it __devinitconst
-Message-Id: <1335731167-3311-1-git-send-email-peterhuewe@gmx.de>
+From: Shawn Guo <shawn.guo@linaro.org>
+Date: Sun, 01 Apr 2012 06:41:24 +0000
+Subject: Re: [PATCH v2] video: s3c-fb: Add device tree support
+Message-Id: <20120401064121.GC2395@S2101-09.ap.freescale.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334524209-20518-1-git-send-email-peterhuewe@gmx.de>
-In-Reply-To: <1334524209-20518-1-git-send-email-peterhuewe@gmx.de>
+References: <1333086797-1625-1-git-send-email-thomas.abraham@linaro.org>
+ <CAH+eYFCrdtYC+v3tgqsaCS9-Y61JCwA1MLkkPtH14p=JWBbzBw@mail.gmail.com>
+In-Reply-To: <CAH+eYFCrdtYC+v3tgqsaCS9-Y61JCwA1MLkkPtH14p=JWBbzBw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thomas Winischhofer <thomas@winischhofer.net>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Huewe <peterhuewe@gmx.de>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-This patch removes the duplicated SiS_DRAMType from sis_main.c since it
-is already defined exactly the same in init.h.
-Since we don't want to include init.h (for size reasons) we move the
-struct to sis_main.h.
-Since SiS_DRAMType is const and only used by sisfb_post_300_rwtest which is
-marked __devinit we can also annotate SiS_DRAMType with __devinitconst.
+On Fri, Mar 30, 2012 at 09:25:14PM +0530, Rabin Vincent wrote:
+> On Fri, Mar 30, 2012 at 11:23, Thomas Abraham <thomas.abraham@linaro.org>=
+ wrote:
+> > + =A0 =A0- samsung,fimd-display: The fimd controller is interfaced with=
+ the a
+> > + =A0 =A0 =A0display device such as a lcd panel. This property should s=
+pecify the
+> > + =A0 =A0 =A0phandle of the display device node. For a display device n=
+ode that
+> > + =A0 =A0 =A0represents a RGB type display interface, it is expected to=
+ specify the
+> > + =A0 =A0 =A0video interface timing using the following properties.
+> > +
+> > + =A0 =A0 =A0- lcd-htiming: Specifies the horizontal timing for the ove=
+rlay. The
+> > + =A0 =A0 =A0 =A0horizontal timing includes four parameters in the foll=
+owing order.
+> > +
+> > + =A0 =A0 =A0 =A0- horizontal back porch (in number of lcd clocks)
+> > + =A0 =A0 =A0 =A0- horizontal front porch (in number of lcd clocks)
+> > + =A0 =A0 =A0 =A0- hsync pulse width (in number of lcd clocks)
+> > + =A0 =A0 =A0 =A0- Display panels X resolution.
+> > +
+> > + =A0 =A0 =A0- lcd-vtiming: Specifies the vertical timing for the overl=
+ay. The
+> > + =A0 =A0 =A0 =A0vertical timing includes four parameters in the follow=
+ing order.
+> > +
+> > + =A0 =A0 =A0 =A0- vertical back porch (in number of lcd lines)
+> > + =A0 =A0 =A0 =A0- vertical front porch (in number of lcd lines)
+> > + =A0 =A0 =A0 =A0- vsync pulse width (in number of lcd clocks)
+> > + =A0 =A0 =A0 =A0- Y resolution.
+>=20
+> In this old thread, it was suggested to use a raw EDID block to supply
+> timings, and since then a couple of drivers in mainline (sm501fb and
+> fsl-diu) are doing it that way:
+>=20
+> http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-February/080683.html
+>=20
+> Shouldn't this driver be doing the same thing?  If not, shouldn't
+> whatever interface this is adding be provided in a common helper (like
+> that old patch was trying to add) so it's standardized between drivers?
 
-And since hardcoded values are bad we use ARRAY_SIZE for determining the
-size of SiS_DRAMType ;)
++1
 
-v2:
-Move struct to sis_main.h to decrease module size
+We need a generic binding for the data defined in "struct fb_videomode"
+and a generic helper function to retrieve the data from device tree,
+so that individual display driver does not have to invent their owns.
 
-Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
----
- drivers/video/sis/init.h     |   20 --------------------
- drivers/video/sis/sis_main.c |   21 +--------------------
- drivers/video/sis/sis_main.h |   20 ++++++++++++++++++++
- 3 files changed, 21 insertions(+), 40 deletions(-)
-
-diff --git a/drivers/video/sis/init.h b/drivers/video/sis/init.h
-index a22e892..85d6738 100644
---- a/drivers/video/sis/init.h
-+++ b/drivers/video/sis/init.h
-@@ -105,26 +105,6 @@ static const unsigned short ModeIndex_1920x1440[]    = {0x68, 0x69, 0x00, 0x6b};
- static const unsigned short ModeIndex_300_2048x1536[]= {0x6c, 0x6d, 0x00, 0x00};
- static const unsigned short ModeIndex_310_2048x1536[]= {0x6c, 0x6d, 0x00, 0x6e};
- 
--static const unsigned short SiS_DRAMType[17][5]={
--	{0x0C,0x0A,0x02,0x40,0x39},
--	{0x0D,0x0A,0x01,0x40,0x48},
--	{0x0C,0x09,0x02,0x20,0x35},
--	{0x0D,0x09,0x01,0x20,0x44},
--	{0x0C,0x08,0x02,0x10,0x31},
--	{0x0D,0x08,0x01,0x10,0x40},
--	{0x0C,0x0A,0x01,0x20,0x34},
--	{0x0C,0x09,0x01,0x08,0x32},
--	{0x0B,0x08,0x02,0x08,0x21},
--	{0x0C,0x08,0x01,0x08,0x30},
--	{0x0A,0x08,0x02,0x04,0x11},
--	{0x0B,0x0A,0x01,0x10,0x28},
--	{0x09,0x08,0x02,0x02,0x01},
--	{0x0B,0x09,0x01,0x08,0x24},
--	{0x0B,0x08,0x01,0x04,0x20},
--	{0x0A,0x08,0x01,0x02,0x10},
--	{0x09,0x08,0x01,0x01,0x00}
--};
--
- static const unsigned char SiS_MDA_DAC[]  {
- 	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
-index 078ca21..8abd42b 100644
---- a/drivers/video/sis/sis_main.c
-+++ b/drivers/video/sis/sis_main.c
-@@ -4231,27 +4231,8 @@ sisfb_post_300_rwtest(struct sis_video_info *ivideo, int iteration, int buswidth
- 	unsigned short sr14;
- 	unsigned int k, RankCapacity, PageCapacity, BankNumHigh, BankNumMid;
- 	unsigned int PhysicalAdrOtherPage, PhysicalAdrHigh, PhysicalAdrHalfPage;
--	static const unsigned short SiS_DRAMType[17][5] = {
--		{0x0C,0x0A,0x02,0x40,0x39},
--		{0x0D,0x0A,0x01,0x40,0x48},
--		{0x0C,0x09,0x02,0x20,0x35},
--		{0x0D,0x09,0x01,0x20,0x44},
--		{0x0C,0x08,0x02,0x10,0x31},
--		{0x0D,0x08,0x01,0x10,0x40},
--		{0x0C,0x0A,0x01,0x20,0x34},
--		{0x0C,0x09,0x01,0x08,0x32},
--		{0x0B,0x08,0x02,0x08,0x21},
--		{0x0C,0x08,0x01,0x08,0x30},
--		{0x0A,0x08,0x02,0x04,0x11},
--		{0x0B,0x0A,0x01,0x10,0x28},
--		{0x09,0x08,0x02,0x02,0x01},
--		{0x0B,0x09,0x01,0x08,0x24},
--		{0x0B,0x08,0x01,0x04,0x20},
--		{0x0A,0x08,0x01,0x02,0x10},
--		{0x09,0x08,0x01,0x01,0x00}
--	};
- 
--	 for(k = 0; k <= 16; k++) {
-+	 for (k = 0; k < ARRAY_SIZE(SiS_DRAMType); k++) {
- 
- 		RankCapacity = buswidth * SiS_DRAMType[k][3];
- 
-diff --git a/drivers/video/sis/sis_main.h b/drivers/video/sis/sis_main.h
-index 9540e97..242c1c3 100644
---- a/drivers/video/sis/sis_main.h
-+++ b/drivers/video/sis/sis_main.h
-@@ -776,6 +776,26 @@ extern void		SiS_Chrontel701xBLOff(struct SiS_Private *SiS_Pr);
- #endif
- extern void		SiS_SiS30xBLOn(struct SiS_Private *SiS_Pr);
- extern void		SiS_SiS30xBLOff(struct SiS_Private *SiS_Pr);
-+
-+static const unsigned short __devinitconst SiS_DRAMType[17][5] = {
-+	{0x0C,0x0A,0x02,0x40,0x39},
-+	{0x0D,0x0A,0x01,0x40,0x48},
-+	{0x0C,0x09,0x02,0x20,0x35},
-+	{0x0D,0x09,0x01,0x20,0x44},
-+	{0x0C,0x08,0x02,0x10,0x31},
-+	{0x0D,0x08,0x01,0x10,0x40},
-+	{0x0C,0x0A,0x01,0x20,0x34},
-+	{0x0C,0x09,0x01,0x08,0x32},
-+	{0x0B,0x08,0x02,0x08,0x21},
-+	{0x0C,0x08,0x01,0x08,0x30},
-+	{0x0A,0x08,0x02,0x04,0x11},
-+	{0x0B,0x0A,0x01,0x10,0x28},
-+	{0x09,0x08,0x02,0x02,0x01},
-+	{0x0B,0x09,0x01,0x08,0x24},
-+	{0x0B,0x08,0x01,0x04,0x20},
-+	{0x0A,0x08,0x01,0x02,0x10},
-+	{0x09,0x08,0x01,0x01,0x00}
-+};
- #endif
- 
- 
--- 
-1.7.3.4
-
+--=20
+Regards,
+Shawn

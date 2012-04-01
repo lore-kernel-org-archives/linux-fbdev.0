@@ -1,7 +1,7 @@
 From: Wang YanQing <udknight@gmail.com>
-Date: Sun, 01 Apr 2012 00:47:28 +0000
+Date: Sun, 01 Apr 2012 00:54:02 +0000
 Subject: [PATCH] video:uvesafb: Fix oops that uvesafb try to execute NX-protected page
-Message-Id: <20120401004728.GA4329@udknight>
+Message-Id: <20120401005402.GA4375@udknight>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20120302004850.GA4139@udknight>
 In-Reply-To: <20120302004850.GA4139@udknight>
@@ -9,8 +9,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 To: FlorianSchandinat@gmx.de
-Cc: alan@lxorguk.ukuu.org.uk, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, spock@gentoo.org
-
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, spock@gentoo.org, alan@lxorguk.ukuu.org.uk
 
 This patch fix the oops below that catched in my machine
 
@@ -102,45 +101,6 @@ b0 1c 66 ef b0 1e 66 ef 8a e7 b0 1d 66 ef b0 1f 66 ef e8 fa 00 00 00 61 c3 =
 [   81.744388] EIP: [<c00cd3b3>] 0xc00cd3b3 SS:ESP 0068:f57f3a00
 [   81.744391] CR2: 00000000c00cd3b3
 [   81.744393] ---[ end trace 18b2c87c925b54d6 ]---
-
-Signed-off-by: Wang YanQing <udknight@gmail.com>
----
- drivers/video/uvesafb.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-index e7f69ef..f9a670d 100644
---- a/drivers/video/uvesafb.c
-+++ b/drivers/video/uvesafb.c
-@@ -23,6 +23,7 @@
- #include <video/uvesafb.h>
- #ifdef CONFIG_X86
- #include <video/vga.h>
-+#include <linux/pci.h>
- #endif
- #ifdef CONFIG_MTRR
- #include <asm/mtrr.h>
-@@ -815,8 +816,15 @@ static int __devinit uvesafb_vbe_init(struct fb_info *=
-info)
- 	par->pmi_setpal =3D pmi_setpal;
- 	par->ypan =3D ypan;
-
--	if (par->pmi_setpal || par->ypan)
--		uvesafb_vbe_getpmi(task, par);
-+	if (par->pmi_setpal || par->ypan) {
-+		if (pcibios_enabled) {
-+			uvesafb_vbe_getpmi(task, par);
-+		} else {
-+			par->pmi_setpal =3D par->ypan =3D 0;
-+			printk(KERN_WARNING "uvesafb: PCI BIOS area is NX."
-+				"Can't use protected mode interface\n");
-+		}
-+	}
- #else
- 	/* The protected mode interface is not available on non-x86. */
- 	par->pmi_setpal =3D par->ypan =3D 0;
---
-1.7.9.2.315.g25a78
 
 Signed-off-by: Wang YanQing <udknight@gmail.com>
 ---

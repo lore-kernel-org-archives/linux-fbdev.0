@@ -1,63 +1,50 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 25 Apr 2012 12:37:10 +0000
-Subject: Re: [PATCH v2] OMAPDSS: VENC: allow switching venc output type at runtime
-Message-Id: <1335357430.2799.6.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-nODeJHYxL9qh2Eda99q3"
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Mon, 02 Apr 2012 14:11:40 +0000
+Subject: [PATCH V3 0/3] OMAPDSS: DISPC: Enable predecimation for DMA and VRFB
+Message-Id: <1333375180-10470-1-git-send-email-cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1335215334-32608-1-git-send-email-notasas@gmail.com>
-In-Reply-To: <1335215334-32608-1-git-send-email-notasas@gmail.com>
-To: Grazvydas Ignotas <notasas@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
+References: <[PATCH V2 0/3] OMAPDSS: DISPC: Enable predecimation for DMA and VRFB>
+In-Reply-To: <[PATCH V2 0/3] OMAPDSS: DISPC: Enable predecimation for DMA and VRFB>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-
---=-nODeJHYxL9qh2Eda99q3
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2012-04-24 at 00:08 +0300, Grazvydas Ignotas wrote:
-> VENC output type (composite/svideo) doesn't have to be fixed by board
-> wiring, it is possible to also provide composite signal through svideo
-> luminance connector (software enabled), which is what pandora does.
->=20
-> Having to recompile the kernel for users who have TV connector types
-> that don't match default board setting is very inconvenient, especially
-> for users of a consumer device, so add support for switching VENC output
-> type at runtime over a new sysfs file output_type.
->=20
-> Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
-> ---
->  Documentation/arm/OMAP/DSS     |    1 +
->  drivers/video/omap2/dss/venc.c |   54 ++++++++++++++++++++++++++++++++++=
-+++++-
->  2 files changed, 54 insertions(+), 1 deletions(-)
-
-Looks fine to me. Thanks! Applying.
-
- Tomi
-
-
---=-nODeJHYxL9qh2Eda99q3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJPl+/2AAoJEPo9qoy8lh71PMsQAKiyEdWqe9i9VGDFSUOPIQzD
-FVkuReqp6uga0ZfVAADeYQ4c9sj4hbNMSXird4/cmRNfi32d9gzVVbaveHQyQ5rT
-wV+TKO4w/WHF7OkJSoXkFXTF5CI6NlwwQ/CAxWjIIaYSTAQmuOE82wq/5xXAleCa
-8B4V5Hvt11V3CxDaWBrM6zH4F7HkkdGON5cKPSkp2gKvC/5TpH3lw/fpLK26yY2Q
-P+/Z1NXkTW+yq7HAi2DxQZPs5B54+OwjEhO8h0TCWPbOHt2qn3bl25SIoYcKC5+6
-+AjKvXoOfkuxO2flMMlRdYVuFFYpYZV/oYOl3XPCi0JmX09N1HMqSMDcISXw+ETu
-6GAG8MhCqOvPv3e9vceL78nif8w6w3SFyQu5uvoYk+OhfVwN6jJvigwKmCY2YDvn
-ptNqYlWBS3/XNStnUCRcy7zLHls2eIdTuD9NZVOWerOdnX8TsJYComK8vmry3PqC
-6czLYbXsWTQFJZ+b2Y7wxHHvUgfu9OQkFNWj0FAa/iOHDAp/S0RtYLYjvAu+uvqc
-qiWhYSoIxJwEDtTG675GCmgzWbyHoSvnRA68jwhMlNjnO5PvbGoAaJqfCHt2Fl25
-RIO8rmNsVG8Ao+NWctlwB7heG5Sc+vQ2cpgxEB6RCCb2hSUWBlP8gYu+Dgez89MQ
-Xnnat8OdQSke5JJpLXHT
-=XGDV
------END PGP SIGNATURE-----
-
---=-nODeJHYxL9qh2Eda99q3--
-
+SGkgZXZlcnlvbmUsCnRoZSBmb2xsb3dpbmcgcGF0Y2ggc2V0IGRpcmVjdHMgdG8gZW5hYmxlIHBy
+ZWRlY2ltYXRpb24gZm9yIERNQSBhbmQgVlJGQgp3aGljaCBjb25zaXN0cyBvZiB0d28gcGFjdGhl
+cy4KClRoZSBmaXJzdCBwYXRjaCBpcyBiYXNlZCBvbiBjb2RlIHdyaXR0ZW4gYnkgTGFqb3MgTW9s
+bmFyIDxsYWpvc0B0aS5jb20+IGluCkFuZHJvaWQgS2VybmVsLCB3aGljaCB1cGRhdGVzIHRoZSBj
+b2RlIHdpdGggcHJlZGVjaW1hdGlvbiBsb2dpYyB0aGVyZWJ5CmluY3JlYXNpbmcgdGhlIGRvd25z
+Y2FsaW5nIGFiaWxpdHkgb2YgdGhlIERJU1BDIG1vZHVsZS4KClRoZSBzZWNvbmQgcGF0Y2ggaXMg
+YmFzZWQgb24gY29kZSB3cml0dGVuIGJ5IFZpbGxlIFN5cmrDpGzDpAo8dmlsbGUuc3lyamFsYUBu
+b2tpYS5jb20+IHdoaWNoIGFpbXMgdG8gYXZvaWQgc3luY2xvc3QgZXJyb3JzIG9jY3VycmluZwpp
+biBPTUFQMyBkdWUgdG8gc29tZSB1bmRvY3VtZW50ZWQgaG9yaXpvbnRhbCBwb3NpdGlvbiBhbmQg
+dGltaW5nIHJlbGF0ZWQKbGltaXRhdGlvbnMgd2hpY2ggSSBmYWNlZCBkdXJpbmcgdGVzdGluZyBv
+ZiB0aGUgcHJldmlvdXMgcGF0Y2guCgpUaGUgdGhpcmQgcGF0Y2ggY29ycmVjdHMgdGhlIHVzYWdl
+IG9mIGRpc3BjIGZjbGsgaW4gc2NhbGluZyBjaGVja3MgYnkKcmVwbGFjaW5nIGl0IHdpdGggZGlz
+cGNfY29yZV9jbGsgYXMgcGVyIHN1Z2dlc3Rpb25zIG9mIFZpbGxlIFN5cmrDpGzDpC4KCk1vZGlm
+aWNhdGlvbnMgaW4gVjMgc2VyaWVzOgoqIEluIDFzdCBwYXRjaCBhIGNoZWNrIGZvciBkZWNpbV94
+X21pbiBoYXMgYmVlbiBhZGRlZCB0byBhdm9pZCBhc3NpZ25pbmcgb2YKZGVjaW1feCBsZXNzIHRo
+YW4gcG9zc2libGUgbGVhZGluZyB0byBhc3NpZ25tZW50IG9mIHNjYWxpbmcgbW9yZSB0aGFuIDQg
+dGltZXMKKiBJbiAybmQgcGF0Y2ggCiAtPiBjaGVja19ob3Jpel90aW1pbmcoKSBoYXMgYmVlbiBj
+aGFuZ2VkIHRvIGNoZWNrX2hvcml6X3RpbWluZ19vbWFwMygpIGFuZAoJZnVuY3Rpb24gZGVzY3Jp
+cHRpb24gaW4gY29kZSBoYXMgYmVlbiBhZGRlZAogLT4gY2xlYW4gdXAgY29kZSBvZiBkaXNwY19t
+Z3JfbGNsa19yYXRlKCkgaGFzIGJlZW4gcmVtb3ZlZAoqICBJbiAzcmQgcGF0Y2ggZGlzcGNfY29y
+ZV9jbGtfcmF0ZSgpIGlzIGludHJvZHVjZWQuCgpJIGhhdmUgdGVzdGVkIHRoZXNlIHBhdGNoZXMg
+c3VjY2Vzc2Z1bGx5IG9uIE9NQVAyLCBPTUFQMyBBTkQgT01BUDQgb24gdGhlCm1haW5saW5lIGtl
+cm5lbCB2My40cmMxLiBIb3Jpem9udGFsIGFuZCB2ZXJ0aWNhbCBwcmVkZWNpbWF0aW9uIHdvcmtl
+ZCBmaW5lCmJ1dCBza2V3ZWQgaW1hZ2VzIHdlcmUgc2VlbiBvbiBPTUFQMiBhbmQgT01BUDMgb24g
+SERNSSB0diBkdXJpbmcgaG9yaXpvbnRhbApwcmVkZWNpbWF0aW9uIHdoaWNoIHdpbGwgYmUgYWRk
+cmVzc2VkIGluIHRoZSBmdXR1cmUgcGF0Y2hlcy4KCkFsbCB5b3VyIGNvbW1lbnRzIGFuZCBzdWdn
+ZXN0aW9ucyBhcmUgd2VsY29tZS4KClJlZ2FyZHMsCkNoYW5kcmFiaGFudQoKQ2hhbmRyYWJoYW51
+IE1haGFwYXRyYSAoMyk6CiAgT01BUERTUzogRElTUEM6IEVuYWJsZSBwcmVkZWNpbWF0aW9uCiAg
+T01BUERTUzogRElTUEM6IEhhbmRsZSBzeW5jbG9zdCBlcnJvcnMgaW4gT01BUDMKICBPTUFQRFNT
+OiBESVNQQzogQ29ycmVjdCBESVNQQyBmdW5jdGlvbmFsIGNsb2NrIHVzYWdlCgogZHJpdmVycy92
+aWRlby9vbWFwMi9kc3MvZGlzcGMuYyB8ICAzNTQgKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KystLS0tLS0tLS0KIGRyaXZlcnMvdmlkZW8vb21hcDIvZHNzL2Rzcy5oICAgfCAgICAxICsKIDIg
+ZmlsZXMgY2hhbmdlZCwgMjcxIGluc2VydGlvbnMoKyksIDg0IGRlbGV0aW9ucygtKQoKLS0KVG8g
+dW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxp
+bnV4LWZiZGV2IiBpbgp0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2Vy
+bmVsLm9yZwpNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21h
+am9yZG9tby1pbmZvLmh0bWw=

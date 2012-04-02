@@ -1,10 +1,10 @@
 From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Mon, 02 Apr 2012 14:11:40 +0000
+Date: Mon, 02 Apr 2012 15:25:15 +0000
 Subject: [PATCH V3 0/3] OMAPDSS: DISPC: Enable predecimation for DMA and VRFB
-Message-Id: <1333375180-10470-1-git-send-email-cmahapatra@ti.com>
+Message-Id: <1333379598-11544-1-git-send-email-cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <[PATCH V2 0/3] OMAPDSS: DISPC: Enable predecimation for DMA and VRFB>
-In-Reply-To: <[PATCH V2 0/3] OMAPDSS: DISPC: Enable predecimation for DMA and VRFB>
+References: <1333375180-10470-1-git-send-email-cmahapatra@ti.com>
+In-Reply-To: <1333375180-10470-1-git-send-email-cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="euc-kr"
 Content-Transfer-Encoding: base64

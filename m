@@ -1,132 +1,100 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Mon, 30 Apr 2012 05:20:05 +0000
-Subject: Re: [PATCH v2] backlight: Add LMS501KF03 LCD panel driver
-Message-Id: <CAK9yfHxgym1HS13zP4eWM14wnrw0_KkkwJwZaZqeFqYKiM0XGQ@mail.gmail.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 04 Apr 2012 01:55:13 +0000
+Subject: [PATCH] userns: Replace netlink uses of cap_raised with capable.
+Message-Id: <m1mx6sz2f2.fsf@fess.ebiederm.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334835208-32055-1-git-send-email-sachin.kamat@linaro.org>
-In-Reply-To: <1334835208-32055-1-git-send-email-sachin.kamat@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-
-On 30/04/2012, Jingoo Han <jg1.han@samsung.com> wrote:
-> On 30 April 2012 13:42, Sachin Kamat <sachin.kamat@linaro.org> wrote:
->> On 30/04/2012, Jingoo Han <jg1.han@samsung.com> wrote:
->> > On 28 April 2012 11:02, Sachin Kamat <sachin.kamat@linaro.org> wrote:
->> >> Any comments on the revised patch?
->> >>
->> >> On 19 April 2012 17:03, Sachin Kamat <sachin.kamat@linaro.org> wrote:
->> >> > LMS501KF03 is a 480x800 LCD module with brightness control.
->> >> > The driver uses 3-wired SPI inteface.
->> >> >
->> <snip>
->>
->> >> > +
->> >> > +#define POWER_IS_ON(power)     ((power) <= FB_BLANK_NORMAL)
->> >
->> > This could have been implemented as a regular lower-case C function.
->> > They're better than macros.
->> >
->> > Please refer to ams369fg06 amoled panel driver.
->>
->> OK. Will modify.
->>
->> >
->>
->> <snip>
->> >> > +
->> >> > +const unsigned short SEQ_DISPLAY_OFF[] = {
->> >> > +       0x10,
->> >> > +       ENDDEF
->> >> > +};
->> >> > +
->> >
->> >
->> > It's not irregular that these symbols are all-uppercase.
->> > How about replacing them with lower-case?
->> > ex) SEQ_xxx -> seq_xxx
->>
->> OK. Will modify.
->>
->> >
->> >
->> <snip>
->>
->> >> > +static int lms501kf03_set_brightness(struct backlight_device *bd)
->> >> > +{
->> >> > +       int ret = 0;
->> >> > +       int brightness = bd->props.brightness;
->> >> > +
->> >> > +       if (brightness < MIN_BRIGHTNESS ||
->> >> > +               brightness > bd->props.max_brightness) {
->> >> > +               dev_err(&bd->dev, "lcd brightness should be %d to
->> >> > %d.\n",
->> >> > +                       MIN_BRIGHTNESS, MAX_BRIGHTNESS);
->> >> > +               return -EINVAL;
->> >> > +       }
->> >> > +
->> >> > +       return ret;
->> >> > +}
->> >> > +
->> >
->> > Are these backlight control functions really necessary?
->> > As I am concerned, this LMS501KF03 uses PWM backlight as backlight
->> > control.
->> > If PWM backlight driver is used, these backlight control functions are
->> > superfluous.
->>
->> Yes, you are right.  If PWM driver is used for backlight control, then
->> these functions are not necessary. However for the sake of
->> completeness of this driver, I have added them so that they could be
->> used to control backlight in cases where PWM is not used. Please let
->> me know your opinion.
->
->
-> In my opinion, LMS501KF03 can have nothing but PWM backlight as a backlight
-> control.
-> As can be seen at datasheet of LMS501KF03 LCD panel, LMS501KF03 LCD panel is
-> designed to use PWM backlight.
->
-> So, if PWM is not available, backlight framework is not necessary
-> because it is not possible to control backlight without PWM.
-> Also, only LCD framework can be used for LMS501KF03 LCD panel in this case.
->
-> To sum up, please remove backlight control functions above.
-
-OK. Thanks.
-Will send the updated patch shortly.
-
->
->
->>
->> >
->> >> > +static struct lcd_ops lms501kf03_lcd_ops = {
->> <snip>
->>
->> >> > +
->> >> > +       lcd->lcd_pd = (struct lcd_platform_data
->> >> > *)spi->dev.platform_data;
->> >
->> > This is an unnecessary cast of void*.
->>
->> OK. Will remove it.
->>
->> >
->> >
->>
->> Thank you for reviewing the patch and providing your comments. I will
->> modify and send the updated patch after I get your opinion about
->> backlight control.
->>
->>
->> --
->> With warm regards,
->> Sachin
->
->
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>, Philipp Reisner <philipp.reisner@linbit.com>, Patrick McHardy <kaber@trash.net>, Andrew Morgan <morgan@kernel.org>, Vasiliy Kulikov <segoon@openwall.com>, David Howells <dhowells@redhat.com>, Neil Brown <neilb@suse.de>, Michal Januszewski <spock@gentoo.org>, linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-raid@vger.kernel.org
 
 
+In 2009 Philip Reiser notied that a few users of netlink connector
+interface needed a capability check and added the idiom
+cap_raised(nsp->eff_cap, CAP_SYS_ADMIN) to a few of them, on the premise
+that netlink was asynchronous.
+
+In 2011 Patrick McHardy noticed we were being silly because netlink is
+synchronous and removed eff_cap from the netlink_skb_params and changed
+the idiom to cap_raised(current_cap(), CAP_SYS_ADMIN).
+
+Looking at those spots with a fresh eye we should be calling
+capable(CAP_SYS_ADMIN).  The only reason I can see for not calling
+capable is that it once appeared we were not in the same task as the
+caller which would have made calling capable() impossible.
+
+In the initial user_namespace the only difference between  between
+cap_raised(current_cap(), CAP_SYS_ADMIN) and capable(CAP_SYS_ADMIN)
+are a few sanity checks and the fact that capable(CAP_SYS_ADMIN)
+sets PF_SUPERPRIV if we use the capability.
+
+Since we are going to be using root privilege setting PF_SUPERPRIV
+seems the right thing to do.
+
+The motivation for this that patch is that in a child user namespace
+cap_raised(current_cap(),...) tests your capabilities with respect to
+that child user namespace not capabilities in the initial user namespace
+and thus will allow processes that should be unprivielged to use the
+kernel services that are only protected with
+cap_raised(current_cap(),..).
+
+To fix possible user_namespace issues and to just clean up the code
+replace cap_raised(current_cap(), CAP_SYS_ADMIN) with
+capable(CAP_SYS_ADMIN).
+
+Cc: Patrick McHardy <kaber@trash.net>
+Cc: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: Serge E. Hallyn <serge.hallyn@canonical.com>
+Cc: Andrew Morgan <morgan@kernel.org>
+Cc: Vasiliy Kulikov <segoon@openwall.com>
+Cc: David Howells <dhowells@redhat.com>
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ drivers/block/drbd/drbd_nl.c           |    2 +-
+ drivers/md/dm-log-userspace-transfer.c |    2 +-
+ drivers/video/uvesafb.c                |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/block/drbd/drbd_nl.c b/drivers/block/drbd/drbd_nl.c
+index abfaaca..946166e 100644
+--- a/drivers/block/drbd/drbd_nl.c
++++ b/drivers/block/drbd/drbd_nl.c
+@@ -2297,7 +2297,7 @@ static void drbd_connector_callback(struct cn_msg *req, struct netlink_skb_parms
+ 		return;
+ 	}
+ 
+-	if (!cap_raised(current_cap(), CAP_SYS_ADMIN)) {
++	if (!capable(CAP_SYS_ADMIN)) {
+ 		retcode = ERR_PERM;
+ 		goto fail;
+ 	}
+diff --git a/drivers/md/dm-log-userspace-transfer.c b/drivers/md/dm-log-userspace-transfer.c
+index 1f23e04..08d9a20 100644
+--- a/drivers/md/dm-log-userspace-transfer.c
++++ b/drivers/md/dm-log-userspace-transfer.c
+@@ -134,7 +134,7 @@ static void cn_ulog_callback(struct cn_msg *msg, struct netlink_skb_parms *nsp)
+ {
+ 	struct dm_ulog_request *tfr = (struct dm_ulog_request *)(msg + 1);
+ 
+-	if (!cap_raised(current_cap(), CAP_SYS_ADMIN))
++	if (!capable(CAP_SYS_ADMIN))
+ 		return;
+ 
+ 	spin_lock(&receiving_list_lock);
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index 260cca7..9f7d27a 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -73,7 +73,7 @@ static void uvesafb_cn_callback(struct cn_msg *msg, struct netlink_skb_parms *ns
+ 	struct uvesafb_task *utask;
+ 	struct uvesafb_ktask *task;
+ 
+-	if (!cap_raised(current_cap(), CAP_SYS_ADMIN))
++	if (!capable(CAP_SYS_ADMIN))
+ 		return;
+ 
+ 	if (msg->seq >= UVESAFB_TASKS_MAX)
 -- 
-With warm regards,
-Sachin
+1.7.2.5
+

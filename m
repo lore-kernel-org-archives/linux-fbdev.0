@@ -1,70 +1,66 @@
-From: Peter Jones <pjones@redhat.com>
-Date: Fri, 27 Apr 2012 17:37:37 +0000
-Subject: Re: [PATCH] efifb: Skip DMI checks if the bootloader knows what it's doing
-Message-Id: <4F9AD961.30605@redhat.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Wed, 04 Apr 2012 07:00:00 +0000
+Subject: [PATCH] video: exynos_dp: replace char pointer with char array for adjust_request variable
+Message-Id: <001501cd1230$8d4211e0$a7c635a0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1335538451-4395-1-git-send-email-mjg@redhat.com>
-In-Reply-To: <1335538451-4395-1-git-send-email-mjg@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Matthew Garrett <mjg@redhat.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On 04/27/2012 10:54 AM, Matthew Garrett wrote:
-> The majority of the DMI checks in efifb are for cases where the bootloader
-> has provided invalid information. However, on some machines the overrides
-> may do more harm than good due to configuration differences between machines
-> with the same machine identifier. It turns out that it's possible for the
-> bootloader to get the correct information on GOP-based systems, but we
-> can't guarantee that the kernel's being booted with one that's been updated
-> to do so. Add support for a capabilities flag that can be set by the
-> bootloader, and skip the DMI checks in that case.
->
-> Signed-off-by: Matthew Garrett<mjg@redhat.com>
+The char pointer for adjust_request variable is replaced with char array
+to fix possible null pointer dereference when clock recovery is failed.
 
-Looks right to me.
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/exynos/exynos_dp_core.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-Acked-by: Peter Jones <pjones@redhat.com>
-
-> ---
->   drivers/video/efifb.c       |    4 +++-
->   include/linux/screen_info.h |    2 ++
->   2 files changed, 5 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
-> index b4a632a..932abaa 100644
-> --- a/drivers/video/efifb.c
-> +++ b/drivers/video/efifb.c
-> @@ -553,7 +553,9 @@ static int __init efifb_init(void)
->   	int ret;
->   	char *option = NULL;
->
-> -	dmi_check_system(dmi_system_table);
-> +	if (screen_info.orig_video_isVGA != VIDEO_TYPE_EFI ||
-> +	    !(screen_info.capabilities&  VIDEO_CAPABILITY_SKIP_QUIRKS))
-> +		dmi_check_system(dmi_system_table);
->
->   	if (screen_info.orig_video_isVGA != VIDEO_TYPE_EFI)
->   		return -ENODEV;
-> diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
-> index 899fbb4..fb3c5a8 100644
-> --- a/include/linux/screen_info.h
-> +++ b/include/linux/screen_info.h
-> @@ -68,6 +68,8 @@ struct screen_info {
->
->   #define VIDEO_FLAGS_NOCURSOR	(1<<  0) /* The video mode has no cursor set */
->
-> +#define VIDEO_CAPABILITY_SKIP_QUIRKS	(1<<  0)
-> +
->   #ifdef __KERNEL__
->   extern struct screen_info screen_info;
->
-
-
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index 2a4481c..6e9f3ce 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -478,7 +478,7 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 	int lane_count;
+ 	u8 buf[5];
+ 
+-	u8 *adjust_request;
++	u8 adjust_request[2];
+ 	u8 voltage_swing;
+ 	u8 pre_emphasis;
+ 	u8 training_lane;
+@@ -493,8 +493,8 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 		/* set training pattern 2 for EQ */
+ 		exynos_dp_set_training_pattern(dp, TRAINING_PTN2);
+ 
+-		adjust_request = link_status + (DPCD_ADDR_ADJUST_REQUEST_LANE0_1
+-						- DPCD_ADDR_LANE0_1_STATUS);
++		adjust_request[0] = link_status[4];
++		adjust_request[1] = link_status[5];
+ 
+ 		exynos_dp_get_adjust_train(dp, adjust_request);
+ 
+@@ -566,7 +566,7 @@ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
+ 	u8 buf[5];
+ 	u32 reg;
+ 
+-	u8 *adjust_request;
++	u8 adjust_request[2];
+ 
+ 	udelay(400);
+ 
+@@ -575,8 +575,8 @@ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
+ 	lane_count = dp->link_train.lane_count;
+ 
+ 	if (exynos_dp_clock_recovery_ok(link_status, lane_count) = 0) {
+-		adjust_request = link_status + (DPCD_ADDR_ADJUST_REQUEST_LANE0_1
+-						- DPCD_ADDR_LANE0_1_STATUS);
++		adjust_request[0] = link_status[4];
++		adjust_request[1] = link_status[5];
+ 
+ 		if (exynos_dp_channel_eq_ok(link_status, lane_count) = 0) {
+ 			/* traing pattern Set to Normal */
 -- 
-         Peter
+1.7.1
 
-Any connection between your reality and mine is purely coincidental.
 
-01234567890123456789012345678901234567890123456789012345678901234567890123456789

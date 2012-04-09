@@ -1,7 +1,7 @@
 From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 09 Apr 2012 08:46:56 +0000
+Date: Mon, 09 Apr 2012 09:25:54 +0000
 Subject: RE: [PATCH] video: exynos: fix build warning and bad pointer deref in dp driver
-Message-Id: <002301cd162d$51bd6b00$f5384100$%han@samsung.com>
+Message-Id: <002601cd1632$c34b24b0$49e16e10$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1333944982-15859-1-git-send-email-olof@lixom.net>
 In-Reply-To: <1333944982-15859-1-git-send-email-olof@lixom.net>
@@ -10,6 +10,8 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: 'Olof Johansson' <olof@lixom.net>
 Cc: 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+
+
 
 > -----Original Message-----
 > From: Olof Johansson [mailto:olof@lixom.net]
@@ -26,6 +28,11 @@ Cc: 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, linux-fbdev@vger.ker
 > drivers/video/exynos/exynos_dp_core.c:529:18: warning: 'reg' may be used uninitialized in this function
 > [-Wuninitialized]
 > drivers/video/exynos/exynos_dp_core.c:395:6: note: 'reg' was declared here
+
+My compiler cannot detect this warning.
+What is your compiler version?
+
+
 > 
 > Signed-off-by: Olof Johansson <olof@lixom.net>
 > ---
@@ -60,9 +67,6 @@ Cc: 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, linux-fbdev@vger.ker
 > -		break;
 > +		return exynos_dp_get_lane3_link_training(dp);
 >  	}
-
-I don't like multi return.
-
 > 
 > -	return reg;
 > +	WARN_ON(1);
@@ -77,14 +81,6 @@ I don't like multi return.
 > +	adjust_request = link_status + (DPCD_ADDR_ADJUST_REQUEST_LANE0_1
 > +					- DPCD_ADDR_LANE0_1_STATUS);
 > +
-
-It makes the problem. adjust_request will be different.
-
-OK, I understand what you want to do.
-I will send the version 2 patch which is simpler.
-
-Thank you for sending the patch.
-
 >  	if (exynos_dp_clock_recovery_ok(link_status, lane_count) = 0) {
 >  		/* set training pattern 2 for EQ */
 >  		exynos_dp_set_training_pattern(dp, TRAINING_PTN2);

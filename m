@@ -1,84 +1,56 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Mon, 23 Apr 2012 06:20:42 +0000
-Subject: Re: [PATCH V2] i.MX28: Shut down the LCD controller to avoid BootROM sampling bug
-Message-Id: <4F94F4BA.9020504@gmx.de>
+From: David Brown <davidb@codeaurora.org>
+Date: Thu, 12 Apr 2012 18:45:33 +0000
+Subject: [PATCH 1/2] video: msm: Fix section mismatches in mddi.c
+Message-Id: <1334256334-8234-1-git-send-email-davidb@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334767680-12688-1-git-send-email-marex@denx.de>
- <1334860263-9389-1-git-send-email-marex@denx.de>
-In-Reply-To: <1334860263-9389-1-git-send-email-marex@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On 04/19/2012 06:31 PM, Marek Vasut wrote:
-> From: Marek Vasut <marek.vasut@gmail.com>
-> 
-> If there's some traffic on the LCD controller pads, the BootROM has trouble with
-> sampling the bootmode from these pads. The BootROM usually ends in a loop.
-> 
-> Signed-off-by: Marek Vasut <marek.vasut@gmail.com>
-> Cc: Chen Peter-B29397 <B29397@freescale.com>
-> Cc: Detlev Zundel <dzu@denx.de>
-> Cc: Fabio Estevam <festevam@gmail.com>
-> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-> Cc: Li Frank-B20596 <B20596@freescale.com>
-> Cc: Lin Tony-B19295 <B19295@freescale.com>
-> Cc: Linux FBDEV <linux-fbdev@vger.kernel.org>
-> Cc: Sascha Hauer <s.hauer@pengutronix.de>
-> Cc: Shawn Guo <shawn.guo@freescale.com>
-> Cc: Shawn Guo <shawn.guo@linaro.org>
-> Cc: Stefano Babic <sbabic@denx.de>
-> Cc: Subodh Nijsure <snijsure@grid-net.com>
-> Cc: Tony Lin <tony.lin@freescale.com>
-> Cc: Wolfgang Denk <wd@denx.de>
-> Acked-by: Shawn Guo <shawn.guo@linaro.org>
-> Acked-by: Wolfgang Denk <wd@denx.de>
-> Acked-by: Wolfram Sang <w.sang@pengutronix.de>
-> Tested-by: Wolfgang Denk <wd@denx.de>
+The change
+    commit 461cbe77d0a4f887c33a3a95ea68a7daf23b4302
+    Author: Gregory Bean <gbean@codeaurora.org>
+    Date:   Wed Jul 28 10:22:13 2010 -0700
 
-Applied.
+        video: msm: Fix section mismatch in mddi.c.
 
+fixes a section mismatch between the board file and the driver's probe
+function, however, it misses the additional mismatches between the
+probe function and some routines it calls.  Fix these up as well.
 
-Thanks,
+Signed-off-by: David Brown <davidb@codeaurora.org>
+---
+ drivers/video/msm/mddi.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/mxsfb.c |   13 +++++++++++++
->  1 file changed, 13 insertions(+)
-> 
-> V2: Make shutdown() call static
-> 
-> diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
-> index 4a89f88..dcf29bf 100644
-> --- a/drivers/video/mxsfb.c
-> +++ b/drivers/video/mxsfb.c
-> @@ -880,6 +880,18 @@ static int __devexit mxsfb_remove(struct platform_device *pdev)
->  	return 0;
->  }
->  
-> +static void mxsfb_shutdown(struct platform_device *pdev)
-> +{
-> +	struct fb_info *fb_info = platform_get_drvdata(pdev);
-> +	struct mxsfb_info *host = to_imxfb_host(fb_info);
-> +
-> +	/*
-> +	 * Force stop the LCD controller as keeping it running during reboot
-> +	 * might interfere with the BootROM's boot mode pads sampling.
-> +	 */
-> +	writel(CTRL_RUN, host->base + LCDC_CTRL + REG_CLR);
-> +}
-> +
->  static struct platform_device_id mxsfb_devtype[] = {
->  	{
->  		.name = "imx23-fb",
-> @@ -896,6 +908,7 @@ MODULE_DEVICE_TABLE(platform, mxsfb_devtype);
->  static struct platform_driver mxsfb_driver = {
->  	.probe = mxsfb_probe,
->  	.remove = __devexit_p(mxsfb_remove),
-> +	.shutdown = mxsfb_shutdown,
->  	.id_table = mxsfb_devtype,
->  	.driver = {
->  		   .name = DRIVER_NAME,
+diff --git a/drivers/video/msm/mddi.c b/drivers/video/msm/mddi.c
+index 4527cbf..b061d70 100644
+--- a/drivers/video/msm/mddi.c
++++ b/drivers/video/msm/mddi.c
+@@ -420,7 +420,7 @@ static void mddi_resume(struct msm_mddi_client_data *cdata)
+ 	mddi_set_auto_hibernate(&mddi->client_data, 1);
+ }
+ 
+-static int __init mddi_get_client_caps(struct mddi_info *mddi)
++static int __devinit mddi_get_client_caps(struct mddi_info *mddi)
+ {
+ 	int i, j;
+ 
+@@ -622,9 +622,9 @@ uint32_t mddi_remote_read(struct msm_mddi_client_data *cdata, uint32_t reg)
+ 
+ static struct mddi_info mddi_info[2];
+ 
+-static int __init mddi_clk_setup(struct platform_device *pdev,
+-				 struct mddi_info *mddi,
+-				 unsigned long clk_rate)
++static int __devinit mddi_clk_setup(struct platform_device *pdev,
++				    struct mddi_info *mddi,
++				    unsigned long clk_rate)
+ {
+ 	int ret;
+ 
+-- 
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
 

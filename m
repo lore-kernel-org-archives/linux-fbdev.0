@@ -1,59 +1,66 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 20 Apr 2012 11:12:10 +0000
-Subject: Re: VESA and VGA16 framebuffer drivers clash sometimes
-Message-Id: <CAMuHMdWCMP8L=k8tWiXv6Mcb5u6iTCx3fb7_mTGVyQSE7V=r_w@mail.gmail.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Thu, 12 Apr 2012 02:18:48 +0000
+Subject: Re: [PATCH] fbdev: fix au1*fb builds
+Message-Id: <4F863B88.1020908@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4F911568.7050601@pr.hu>
-In-Reply-To: <4F911568.7050601@pr.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Boszormenyi Zoltan <zboszor@pr.hu>
-Cc: linux-kernel@vger.kernel.org, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-2012/4/20 Boszormenyi Zoltan <zboszor@pr.hu>:
-> on an embedded x86 board with Intel Atom, text on vesafb
-> gets distorted if both vesafb and vga16fb are compiled in.
-> The strange thing is that it doesn't happen all the time but
-> about once out of 15 boots.
->
-> The distortion looks like this:
-> http://www.postgresql-support.de/private/IMG_7221.jpg
->
-> The relevant kernel messages:
->
-> Apr 13 11:14:30 term002 kernel: vesafb: mode is 800x600x16, linelength00,
-> pages=7
-> Apr 13 11:14:30 term002 kernel: vesafb: scrolling: redraw
-> Apr 13 11:14:30 term002 kernel: vesafb: Truecolor: size=0:5:6:5,
-> shift=0:11:5:0
-> Apr 13 11:14:30 term002 kernel: vesafb: framebuffer at 0xa0000000, mapped to
-> 0xdf580000, using 1875k, total 8128k
-> Apr 13 11:14:30 term002 kernel: Console: switching to colour frame buffer
-> device 100x37
-> Apr 13 11:14:30 term002 kernel: fb0: VESA VGA frame buffer device
-> Apr 13 11:14:30 term002 BOOTLOG: Terminal startup
-> Apr 13 11:14:30 term002 kernel: vga16fb: mapped to 0xc00a0000
-> Apr 13 11:14:30 term002 kernel: fbcon: VGA16 VGA (fb1) is primary device
-> Apr 13 11:14:30 term002 kernel: fbcon: Remapping primary device, fb1, to tty
-> 1-63
-> Apr 13 11:14:30 term002 kernel: fb1: VGA16 VGA frame buffer device
->
-> It's strange that vga16fb is always detected as primary
-> and vesafb gets remapped to fb1 even when there is no
-> screen distortion. The kernel is compiled for SMP.
+On 03/24/2012 10:38 AM, Manuel Lauss wrote:
+> Commit 1c16697bf9d5b206cb0d2b905a54de5e077296be
+> ("drivers/video/au*fb.c: use devm_ functions) introduced 2 build failures
+> in the au1100fb and au1200fb drivers, fix them.
+> 
+> Signed-off-by: Manuel Lauss <manuel.lauss@googlemail.com>
 
-IIRC, the request_region()/request_mem_region() calls in vga16fb.c that would
-avoid this were removed several years ago. Unfortunately I don't remember
-anymore why. Google or full-history-linux may help you...
+Applied.
 
-Gr{oetje,eeting}s,
 
-                        Geert
+Thanks,
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Florian Tobias Schandinat
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> ---
+>  drivers/video/au1100fb.c |    5 +++--
+>  drivers/video/au1200fb.c |    2 +-
+>  2 files changed, 4 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
+> index befcbd8..ffbce45 100644
+> --- a/drivers/video/au1100fb.c
+> +++ b/drivers/video/au1100fb.c
+> @@ -499,7 +499,8 @@ static int __devinit au1100fb_drv_probe(struct platform_device *dev)
+>  	au1100fb_fix.mmio_start = regs_res->start;
+>  	au1100fb_fix.mmio_len = resource_size(regs_res);
+>  
+> -	if (!devm_request_mem_region(au1100fb_fix.mmio_start,
+> +	if (!devm_request_mem_region(&dev->dev,
+> +				     au1100fb_fix.mmio_start,
+>  				     au1100fb_fix.mmio_len,
+>  				     DRIVER_NAME)) {
+>  		print_err("fail to lock memory region at 0x%08lx",
+> @@ -516,7 +517,7 @@ static int __devinit au1100fb_drv_probe(struct platform_device *dev)
+>  	fbdev->fb_len = fbdev->panel->xres * fbdev->panel->yres *
+>  		  	(fbdev->panel->bpp >> 3) * AU1100FB_NBR_VIDEO_BUFFERS;
+>  
+> -	fbdev->fb_mem = dmam_alloc_coherent(&dev->dev, &dev->dev,
+> +	fbdev->fb_mem = dmam_alloc_coherent(&dev->dev,
+>  					    PAGE_ALIGN(fbdev->fb_len),
+>  					    &fbdev->fb_phys, GFP_KERNEL);
+>  	if (!fbdev->fb_mem) {
+> diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
+> index 3e9a773..7ca79f0 100644
+> --- a/drivers/video/au1200fb.c
+> +++ b/drivers/video/au1200fb.c
+> @@ -1724,7 +1724,7 @@ static int __devinit au1200fb_drv_probe(struct platform_device *dev)
+>  		/* Allocate the framebuffer to the maximum screen size */
+>  		fbdev->fb_len = (win->w[plane].xres * win->w[plane].yres * bpp) / 8;
+>  
+> -		fbdev->fb_mem = dmam_alloc_noncoherent(&dev->dev, &dev->dev,
+> +		fbdev->fb_mem = dmam_alloc_noncoherent(&dev->dev,
+>  				PAGE_ALIGN(fbdev->fb_len),
+>  				&fbdev->fb_phys, GFP_KERNEL);
+>  		if (!fbdev->fb_mem) {
+

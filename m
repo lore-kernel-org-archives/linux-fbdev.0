@@ -1,50 +1,74 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Mon, 02 Apr 2012 15:25:15 +0000
-Subject: [PATCH V3 0/3] OMAPDSS: DISPC: Enable predecimation for DMA and VRFB
-Message-Id: <1333379598-11544-1-git-send-email-cmahapatra@ti.com>
+From: Peter Huewe <peterhuewe@gmx.de>
+Date: Sun, 15 Apr 2012 21:10:08 +0000
+Subject: [PATCH 1/2] video/sis: Use SiS_DRAMType from init.h and annotate it __devinitconst
+Message-Id: <1334524209-20518-1-git-send-email-peterhuewe@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1333375180-10470-1-git-send-email-cmahapatra@ti.com>
-In-Reply-To: <1333375180-10470-1-git-send-email-cmahapatra@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thomas Winischhofer <thomas@winischhofer.net>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Huewe <peterhuewe@gmx.de>
 
-SGkgZXZlcnlvbmUsCnRoZSBmb2xsb3dpbmcgcGF0Y2ggc2V0IGRpcmVjdHMgdG8gZW5hYmxlIHBy
-ZWRlY2ltYXRpb24gZm9yIERNQSBhbmQgVlJGQgp3aGljaCBjb25zaXN0cyBvZiB0d28gcGFjdGhl
-cy4KClRoZSBmaXJzdCBwYXRjaCBpcyBiYXNlZCBvbiBjb2RlIHdyaXR0ZW4gYnkgTGFqb3MgTW9s
-bmFyIDxsYWpvc0B0aS5jb20+IGluCkFuZHJvaWQgS2VybmVsLCB3aGljaCB1cGRhdGVzIHRoZSBj
-b2RlIHdpdGggcHJlZGVjaW1hdGlvbiBsb2dpYyB0aGVyZWJ5CmluY3JlYXNpbmcgdGhlIGRvd25z
-Y2FsaW5nIGFiaWxpdHkgb2YgdGhlIERJU1BDIG1vZHVsZS4KClRoZSBzZWNvbmQgcGF0Y2ggaXMg
-YmFzZWQgb24gY29kZSB3cml0dGVuIGJ5IFZpbGxlIFN5cmrDpGzDpAo8dmlsbGUuc3lyamFsYUBu
-b2tpYS5jb20+IHdoaWNoIGFpbXMgdG8gYXZvaWQgc3luY2xvc3QgZXJyb3JzIG9jY3VycmluZwpp
-biBPTUFQMyBkdWUgdG8gc29tZSB1bmRvY3VtZW50ZWQgaG9yaXpvbnRhbCBwb3NpdGlvbiBhbmQg
-dGltaW5nIHJlbGF0ZWQKbGltaXRhdGlvbnMgd2hpY2ggSSBmYWNlZCBkdXJpbmcgdGVzdGluZyBv
-ZiB0aGUgcHJldmlvdXMgcGF0Y2guCgpUaGUgdGhpcmQgcGF0Y2ggY29ycmVjdHMgdGhlIHVzYWdl
-IG9mIGRpc3BjIGZjbGsgaW4gc2NhbGluZyBjaGVja3MgYnkKcmVwbGFjaW5nIGl0IHdpdGggZGlz
-cGNfY29yZV9jbGsgYXMgcGVyIHN1Z2dlc3Rpb25zIG9mIFZpbGxlIFN5cmrDpGzDpC4KCk1vZGlm
-aWNhdGlvbnMgaW4gVjMgc2VyaWVzOgoqIEluIDFzdCBwYXRjaCBhIGNoZWNrIGZvciBkZWNpbV94
-X21pbiBoYXMgYmVlbiBhZGRlZCB0byBhdm9pZCBhc3NpZ25pbmcgb2YKZGVjaW1feCBsZXNzIHRo
-YW4gcG9zc2libGUgbGVhZGluZyB0byBhc3NpZ25tZW50IG9mIHNjYWxpbmcgbW9yZSB0aGFuIDQg
-dGltZXMKKiBJbiAybmQgcGF0Y2ggCiAtPiBjaGVja19ob3Jpel90aW1pbmcoKSBoYXMgYmVlbiBj
-aGFuZ2VkIHRvIGNoZWNrX2hvcml6X3RpbWluZ19vbWFwMygpIGFuZAoJZnVuY3Rpb24gZGVzY3Jp
-cHRpb24gaW4gY29kZSBoYXMgYmVlbiBhZGRlZAogLT4gY2xlYW4gdXAgY29kZSBvZiBkaXNwY19t
-Z3JfbGNsa19yYXRlKCkgaGFzIGJlZW4gcmVtb3ZlZAoqICBJbiAzcmQgcGF0Y2ggZGlzcGNfY29y
-ZV9jbGtfcmF0ZSgpIGlzIGludHJvZHVjZWQuCgpJIGhhdmUgdGVzdGVkIHRoZXNlIHBhdGNoZXMg
-c3VjY2Vzc2Z1bGx5IG9uIE9NQVAyLCBPTUFQMyBBTkQgT01BUDQgb24gdGhlCm1haW5saW5lIGtl
-cm5lbCB2My40cmMxLiBIb3Jpem9udGFsIGFuZCB2ZXJ0aWNhbCBwcmVkZWNpbWF0aW9uIHdvcmtl
-ZCBmaW5lCmJ1dCBza2V3ZWQgaW1hZ2VzIHdlcmUgc2VlbiBvbiBPTUFQMiBhbmQgT01BUDMgb24g
-SERNSSB0diBkdXJpbmcgaG9yaXpvbnRhbApwcmVkZWNpbWF0aW9uIHdoaWNoIHdpbGwgYmUgYWRk
-cmVzc2VkIGluIHRoZSBmdXR1cmUgcGF0Y2hlcy4KCkFsbCB5b3VyIGNvbW1lbnRzIGFuZCBzdWdn
-ZXN0aW9ucyBhcmUgd2VsY29tZS4KClJlZ2FyZHMsCkNoYW5kcmFiaGFudQoKQ2hhbmRyYWJoYW51
-IE1haGFwYXRyYSAoMyk6CiAgT01BUERTUzogRElTUEM6IEVuYWJsZSBwcmVkZWNpbWF0aW9uCiAg
-T01BUERTUzogRElTUEM6IEhhbmRsZSBzeW5jbG9zdCBlcnJvcnMgaW4gT01BUDMKICBPTUFQRFNT
-OiBESVNQQzogQ29ycmVjdCBESVNQQyBmdW5jdGlvbmFsIGNsb2NrIHVzYWdlCgogZHJpdmVycy92
-aWRlby9vbWFwMi9kc3MvZGlzcGMuYyB8ICAzNTQgKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KystLS0tLS0tLS0KIGRyaXZlcnMvdmlkZW8vb21hcDIvZHNzL2Rzcy5oICAgfCAgICAxICsKIDIg
-ZmlsZXMgY2hhbmdlZCwgMjcxIGluc2VydGlvbnMoKyksIDg0IGRlbGV0aW9ucygtKQoKLS0KVG8g
-dW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxp
-bnV4LWZiZGV2IiBpbgp0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2Vy
-bmVsLm9yZwpNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21h
-am9yZG9tby1pbmZvLmh0bWw=
+This patch removes the duplicated SiS_DRAMType from sis_main.c since it
+is already defined exactly the same in init.h.
+Since SiS_DRAMType is const and only used by sisfb_post_300_rwtest which is
+marked __devinit we can also annotate SiS_DRAMType with __devinitconst.
+
+And since hardcoded values are bad we use ARRAY_SIZE for determining the
+size of SiS_DRAMType ;)
+
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+---
+ drivers/video/sis/init.h     |    2 +-
+ drivers/video/sis/sis_main.c |   21 +--------------------
+ 2 files changed, 2 insertions(+), 21 deletions(-)
+
+diff --git a/drivers/video/sis/init.h b/drivers/video/sis/init.h
+index aff7384..26ffb3e 100644
+--- a/drivers/video/sis/init.h
++++ b/drivers/video/sis/init.h
+@@ -105,7 +105,7 @@ static const unsigned short ModeIndex_1920x1440[]    = {0x68, 0x69, 0x00, 0x6b};
+ static const unsigned short ModeIndex_300_2048x1536[]= {0x6c, 0x6d, 0x00, 0x00};
+ static const unsigned short ModeIndex_310_2048x1536[]= {0x6c, 0x6d, 0x00, 0x6e};
+ 
+-static const unsigned short SiS_DRAMType[17][5]={
++static const unsigned short __devinitconst SiS_DRAMType[17][5] = {
+ 	{0x0C,0x0A,0x02,0x40,0x39},
+ 	{0x0D,0x0A,0x01,0x40,0x48},
+ 	{0x0C,0x09,0x02,0x20,0x35},
+diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+index 078ca21..8abd42b 100644
+--- a/drivers/video/sis/sis_main.c
++++ b/drivers/video/sis/sis_main.c
+@@ -4231,27 +4231,8 @@ sisfb_post_300_rwtest(struct sis_video_info *ivideo, int iteration, int buswidth
+ 	unsigned short sr14;
+ 	unsigned int k, RankCapacity, PageCapacity, BankNumHigh, BankNumMid;
+ 	unsigned int PhysicalAdrOtherPage, PhysicalAdrHigh, PhysicalAdrHalfPage;
+-	static const unsigned short SiS_DRAMType[17][5] = {
+-		{0x0C,0x0A,0x02,0x40,0x39},
+-		{0x0D,0x0A,0x01,0x40,0x48},
+-		{0x0C,0x09,0x02,0x20,0x35},
+-		{0x0D,0x09,0x01,0x20,0x44},
+-		{0x0C,0x08,0x02,0x10,0x31},
+-		{0x0D,0x08,0x01,0x10,0x40},
+-		{0x0C,0x0A,0x01,0x20,0x34},
+-		{0x0C,0x09,0x01,0x08,0x32},
+-		{0x0B,0x08,0x02,0x08,0x21},
+-		{0x0C,0x08,0x01,0x08,0x30},
+-		{0x0A,0x08,0x02,0x04,0x11},
+-		{0x0B,0x0A,0x01,0x10,0x28},
+-		{0x09,0x08,0x02,0x02,0x01},
+-		{0x0B,0x09,0x01,0x08,0x24},
+-		{0x0B,0x08,0x01,0x04,0x20},
+-		{0x0A,0x08,0x01,0x02,0x10},
+-		{0x09,0x08,0x01,0x01,0x00}
+-	};
+ 
+-	 for(k = 0; k <= 16; k++) {
++	 for (k = 0; k < ARRAY_SIZE(SiS_DRAMType); k++) {
+ 
+ 		RankCapacity = buswidth * SiS_DRAMType[k][3];
+ 
+-- 
+1.7.3.4
+

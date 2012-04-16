@@ -1,53 +1,54 @@
-From: Alexander Holler <holler@ahsoftware.de>
-Date: Sat, 21 Apr 2012 11:26:19 +0000
-Subject: Re: [PATCH] video/smscufx: fix line counting in fb_write
-Message-Id: <4F92995B.6030805@ahsoftware.de>
+From: Archit Taneja <archit@ti.com>
+Date: Mon, 16 Apr 2012 07:35:41 +0000
+Subject: [PATCH 0/6] OMAPDSS: APPLY: Treat overlay manager timings as shadow registers
+Message-Id: <1334561027-28569-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334959867-3719-1-git-send-email-holler@ahsoftware.de>
-In-Reply-To: <1334959867-3719-1-git-send-email-holler@ahsoftware.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexander Holler <holler@ahsoftware.de>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Hello,
+An overlay manager's timings (the manager size, and blanking parameters if an
+LCD manager) are DISPC shadow registers, and they should hence follow the
+correct programming model.
 
-as for the patch for udlfb, I forgot to mention that this is a candidate 
-for all stable trees 3.2 and above.
+This set makes the timings a manager_info parameter. The interface drivers now
+set the timings in manager_info instead of directly writing to registers.
 
-Btw., the address of the maintainer doesn't seem to be valid anymore.
+This change also prevents the need to use display resolution for overlay
+checks, hence making some of the APPLY functions less dependent on the display.
 
-Regards,
+These patches apply over:
 
-Alexander
+git://gitorious.org/linux-omap-dss2/linux.git dev
 
-Am 21.04.2012 00:11, schrieb Alexander Holler:
-> Line 0 and 1 were both written to line 0 (on the display) and all subsequent
-> lines had an offset of -1. The result was that the last line on the display
-> was never overwritten by writes to /dev/fbN.
->
-> The origin of this bug seems to have been udlfb.
->
-> Signed-off-by: Alexander Holler<holler@ahsoftware.de>
+Archit Taneja (6):
+  OMAPDSS: DISPC/RFBI: Use dispc_mgr_set_lcd_timings() for setting lcd
+    size
+  OMAPDSS: DISPC: Use a common function to set manager timings
+  OMAPDSS: DISPC: Clean up manager timing/size functions
+  OMAPDSS: MANAGER: Make DISPC timings a manager_info parameter
+  OMAPDSS: MANAGER: Check validity of manager timings
+  OMAPDSS: APPLY: Remove display dependency from overlay and manager
+    checks
 
-Cc: stable@vger.kernel.org
+ drivers/video/omap2/dss/apply.c        |   46 +++++++++++++-----
+ drivers/video/omap2/dss/dispc.c        |   78 +++++++++++++++++++-------------
+ drivers/video/omap2/dss/dpi.c          |    6 ++-
+ drivers/video/omap2/dss/dsi.c          |   11 ++++-
+ drivers/video/omap2/dss/dss.h          |   16 +++---
+ drivers/video/omap2/dss/dss_features.c |    6 +++
+ drivers/video/omap2/dss/dss_features.h |    2 +
+ drivers/video/omap2/dss/hdmi.c         |    6 ++-
+ drivers/video/omap2/dss/manager.c      |   39 +++++++++++++++-
+ drivers/video/omap2/dss/overlay.c      |   20 ++++-----
+ drivers/video/omap2/dss/rfbi.c         |   27 ++++++++++-
+ drivers/video/omap2/dss/sdi.c          |    5 ++-
+ drivers/video/omap2/dss/venc.c         |   17 +++++---
+ include/video/omapdss.h                |    2 +
+ 14 files changed, 200 insertions(+), 81 deletions(-)
 
-> ---
->   drivers/video/smscufx.c |    2 +-
->   1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/video/smscufx.c b/drivers/video/smscufx.c
-> index ccbfef5..1e1e2d2 100644
-> --- a/drivers/video/smscufx.c
-> +++ b/drivers/video/smscufx.c
-> @@ -904,7 +904,7 @@ static ssize_t ufx_ops_write(struct fb_info *info, const char __user *buf,
->   	result = fb_sys_write(info, buf, count, ppos);
->
->   	if (result>  0) {
-> -		int start = max((int)(offset / info->fix.line_length) - 1, 0);
-> +		int start = max((int)(offset / info->fix.line_length), 0);
->   		int lines = min((u32)((result / info->fix.line_length) + 1),
->   				(u32)info->var.yres);
->
+-- 
+1.7.5.4
 

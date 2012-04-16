@@ -1,261 +1,214 @@
-From: Heiko =?utf-8?q?St=C3=BCbner?= <heiko@sntech.de>
-Date: Sat, 28 Apr 2012 10:21:12 +0000
-Subject: [PATCH 3/4] video: auo_k190x: add driver for AUO-K1900 variant
-Message-Id: <201204281221.12330.heiko@sntech.de>
+From: Archit Taneja <archit@ti.com>
+Date: Mon, 16 Apr 2012 07:35:47 +0000
+Subject: [PATCH 6/6] OMAPDSS: APPLY: Remove display dependency from overlay and manager checks
+Message-Id: <1334561027-28569-7-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1334561027-28569-1-git-send-email-archit@ti.com>
+In-Reply-To: <1334561027-28569-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-This controller only supports smaller resolutions and only serial
-updates, i.e. it has to wait for an update to finish before
-starting another one.
+In order to check the validity of overlay and manager info, there was a need to
+use the omap_dss_device struct to get the panel resolution. manager_info now
+contains the manager size(which should be the panel resolution in most cases).
+Hence, we don't need to depend on the display resolution.
 
-Signed-off-by: Heiko St=C3=BCbner <heiko@sntech.de>
+manager_info is now passed to dss_ovl_check() to see if the overlay fits within
+the manager area.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/Kconfig       |    8 ++
- drivers/video/Makefile      |    1 +
- drivers/video/auo_k1900fb.c |  198 +++++++++++++++++++++++++++++++++++++++=
-++++
- 3 files changed, 207 insertions(+), 0 deletions(-)
- create mode 100644 drivers/video/auo_k1900fb.c
+ drivers/video/omap2/dss/apply.c   |   24 +++++++++++-------------
+ drivers/video/omap2/dss/dss.h     |    5 ++---
+ drivers/video/omap2/dss/manager.c |    3 +--
+ drivers/video/omap2/dss/overlay.c |   20 +++++++++-----------
+ 4 files changed, 23 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 31c029b..148d83c 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2399,6 +2399,14 @@ config FB_AUO_K190X
- 	  controller drivers. You will also have to enable the driver
- 	  for the controller type used in your device.
-=20
-+config FB_AUO_K1900
-+	tristate "AUO-K1900 EPD controller support"
-+	depends on FB && FB_AUO_K190X
-+	help
-+	  This driver implements support for the AUO K1900 epd-controller.
-+	  This controller can drive Sipix epaper displays but can only do
-+	  serial updates, reducing the number of possible frames per second.
-+
- config FB_JZ4740
- 	tristate "JZ4740 LCD framebuffer support"
- 	depends on FB && MACH_JZ4740
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index d5406f2..e84df73 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -119,6 +119,7 @@ obj-$(CONFIG_FB_MAXINE)		  +=3D maxinefb.o
- obj-$(CONFIG_FB_METRONOME)        +=3D metronomefb.o
- obj-$(CONFIG_FB_BROADSHEET)       +=3D broadsheetfb.o
- obj-$(CONFIG_FB_AUO_K190X)	  +=3D auo_k190x.o
-+obj-$(CONFIG_FB_AUO_K1900)	  +=3D auo_k1900fb.o
- obj-$(CONFIG_FB_S1D13XXX)	  +=3D s1d13xxxfb.o
- obj-$(CONFIG_FB_SH7760)		  +=3D sh7760fb.o
- obj-$(CONFIG_FB_IMX)              +=3D imxfb.o
-diff --git a/drivers/video/auo_k1900fb.c b/drivers/video/auo_k1900fb.c
-new file mode 100644
-index 0000000..c36cf96
---- /dev/null
-+++ b/drivers/video/auo_k1900fb.c
-@@ -0,0 +1,198 @@
-+/*
-+ * auok190xfb.c -- FB driver for AUO-K1900 controllers
-+ *
-+ * Copyright (C) 2011, 2012 Heiko Stuebner <heiko@sntech.de>
-+ *
-+ * based on broadsheetfb.c
-+ *
-+ * Copyright (C) 2008, Jaya Kumar
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * Layout is based on skeletonfb.c by James Simmons and Geert Uytterhoeven.
-+ *
-+ * This driver is written to be used with the AUO-K1900 display controller.
-+ *
-+ * It is intended to be architecture independent. A board specific driver
-+ * must be used to perform all the physical IO interactions.
-+ *
-+ * The controller supports different update modes:
-+ * mode0+1 16 step gray (4bit)
-+ * mode2 4 step gray (2bit) - FIXME: add strange refresh
-+ * mode3 2 step gray (1bit) - FIXME: add strange refresh
-+ * mode4 handwriting mode (strange behaviour)
-+ * mode5 automatic selection of update mode
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/string.h>
-+#include <linux/mm.h>
-+#include <linux/slab.h>
-+#include <linux/delay.h>
-+#include <linux/interrupt.h>
-+#include <linux/fb.h>
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/list.h>
-+#include <linux/firmware.h>
-+#include <linux/gpio.h>
-+#include <linux/pm_runtime.h>
-+
-+#include <video/auo_k190xfb.h>
-+
-+#include "auo_k190x.h"
-+
-+/*
-+ * AUO-K1900 specific commands
-+ */
-+
-+#define AUOK1900_CMD_PARTIALDISP	0x1001
-+#define AUOK1900_CMD_ROTATION		0x1006
-+#define AUOK1900_CMD_LUT_STOP		0x1009
-+
-+#define AUOK1900_INIT_TEMP_AVERAGE	(1 << 13)
-+#define AUOK1900_INIT_ROTATE(_x)	((_x & 0x3) << 10)
-+#define AUOK1900_INIT_RESOLUTION(_res)	((_res & 0x7) << 2)
-+
-+static void auok1900_init(struct auok190xfb_par *par)
-+{
-+	struct auok190x_board *board =3D par->board;
-+	u16 init_param =3D 0;
-+
-+	init_param |=3D AUOK1900_INIT_TEMP_AVERAGE;
-+	init_param |=3D AUOK1900_INIT_ROTATE(par->rotation);
-+	init_param |=3D AUOK190X_INIT_INVERSE_WHITE;
-+	init_param |=3D AUOK190X_INIT_FORMAT0;
-+	init_param |=3D AUOK1900_INIT_RESOLUTION(par->resolution);
-+	init_param |=3D AUOK190X_INIT_SHIFT_RIGHT;
-+
-+	auok190x_send_cmdargs(par, AUOK190X_CMD_INIT, 1, &init_param);
-+
-+	/* let the controller finish */
-+	board->wait_for_rdy(par);
-+}
-+
-+static void auok1900_update_region(struct auok190xfb_par *par, int mode,
-+						u16 y1, u16 y2)
-+{
-+	struct device *dev =3D par->info->device;
-+	unsigned char *buf =3D (unsigned char *)par->info->screen_base;
-+	int xres =3D par->info->var.xres;
-+	u16 args[4];
-+
-+	pm_runtime_get_sync(dev);
-+
-+	mutex_lock(&(par->io_lock));
-+
-+	/* y1 and y2 must be a multiple of 2 so drop the lowest bit */
-+	y1 &=3D 0xfffe;
-+	y2 &=3D 0xfffe;
-+
-+	dev_dbg(dev, "update (x,y,w,h,mode)=3D(%d,%d,%d,%d,%d)\n",
-+		1, y1+1, xres, y2-y1, mode);
-+
-+	/* to FIX handle different partial update modes */
-+	args[0] =3D mode | 1;
-+	args[1] =3D y1 + 1;
-+	args[2] =3D xres;
-+	args[3] =3D y2 - y1;
-+	buf +=3D y1 * xres;
-+	auok190x_send_cmdargs_pixels(par, AUOK1900_CMD_PARTIALDISP, 4, args,
-+				     ((y2 - y1) * xres)/2, (u16 *) buf);
-+	auok190x_send_command(par, AUOK190X_CMD_DATA_STOP);
-+
-+	par->update_cnt++;
-+
-+	mutex_unlock(&(par->io_lock));
-+
-+	pm_runtime_mark_last_busy(dev);
-+	pm_runtime_put_autosuspend(dev);
-+}
-+
-+static void auok1900fb_dpy_update_pages(struct auok190xfb_par *par,
-+						u16 y1, u16 y2)
-+{
-+	int mode;
-+
-+	if (par->update_mode < 0) {
-+		mode =3D AUOK190X_UPDATE_MODE(1);
-+		par->last_mode =3D -1;
-+	} else {
-+		mode =3D AUOK190X_UPDATE_MODE(par->update_mode);
-+		par->last_mode =3D par->update_mode;
-+	}
-+
-+	if (par->flash)
-+		mode |=3D AUOK190X_UPDATE_NONFLASH;
-+
-+	auok1900_update_region(par, mode, y1, y2);
-+}
-+
-+static void auok1900fb_dpy_update(struct auok190xfb_par *par)
-+{
-+	int mode;
-+
-+	if (par->update_mode < 0) {
-+		mode =3D AUOK190X_UPDATE_MODE(0);
-+		par->last_mode =3D -1;
-+	} else {
-+		mode =3D AUOK190X_UPDATE_MODE(par->update_mode);
-+		par->last_mode =3D par->update_mode;
-+	}
-+
-+	if (par->flash)
-+		mode |=3D AUOK190X_UPDATE_NONFLASH;
-+
-+	auok1900_update_region(par, mode, 0, par->info->var.yres);
-+	par->update_cnt =3D 0;
-+}
-+
-+static bool auok1900fb_need_refresh(struct auok190xfb_par *par)
-+{
-+	return (par->update_cnt > 10);
-+}
-+
-+static int __devinit auok1900fb_probe(struct platform_device *pdev)
-+{
-+	struct auok190x_init_data init;
-+	struct auok190x_board *board;
-+
-+	/* pick up board specific routines */
-+	board =3D pdev->dev.platform_data;
-+	if (!board)
-+		return -EINVAL;
-+
-+	/* fill temporary init struct for common init */
-+	init.id =3D "auo_k1900fb";
-+	init.board =3D board;
-+	init.update_partial =3D auok1900fb_dpy_update_pages;
-+	init.update_all =3D auok1900fb_dpy_update;
-+	init.need_refresh =3D auok1900fb_need_refresh;
-+	init.init =3D auok1900_init;
-+
-+	return auok190x_common_probe(pdev, &init);
-+}
-+
-+static int __devexit auok1900fb_remove(struct platform_device *pdev)
-+{
-+	return auok190x_common_remove(pdev);
-+}
-+
-+static struct platform_driver auok1900fb_driver =3D {
-+	.probe	=3D auok1900fb_probe,
-+	.remove =3D __devexit_p(auok1900fb_remove),
-+	.driver	=3D {
-+		.owner	=3D THIS_MODULE,
-+		.name	=3D "auo_k1900fb",
-+		.pm =3D &auok190x_pm,
-+	},
-+};
-+module_platform_driver(auok1900fb_driver);
-+
-+MODULE_DESCRIPTION("framebuffer driver for the AUO-K1900 EPD controller");
-+MODULE_AUTHOR("Heiko Stuebner <heiko@sntech.de>");
-+MODULE_LICENSE("GPL");
---=20
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 53a198f..5073009 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -198,7 +198,7 @@ static bool mgr_manual_update(struct omap_overlay_manager *mgr)
+ }
+ 
+ static int dss_check_settings_low(struct omap_overlay_manager *mgr,
+-		struct omap_dss_device *dssdev, bool applying)
++		bool applying)
+ {
+ 	struct omap_overlay_info *oi;
+ 	struct omap_overlay_manager_info *mi;
+@@ -228,26 +228,24 @@ static int dss_check_settings_low(struct omap_overlay_manager *mgr,
+ 		ois[ovl->id] = oi;
+ 	}
+ 
+-	return dss_mgr_check(mgr, dssdev, mi, ois);
++	return dss_mgr_check(mgr, mi, ois);
+ }
+ 
+ /*
+  * check manager and overlay settings using overlay_info from data->info
+  */
+-static int dss_check_settings(struct omap_overlay_manager *mgr,
+-		struct omap_dss_device *dssdev)
++static int dss_check_settings(struct omap_overlay_manager *mgr)
+ {
+-	return dss_check_settings_low(mgr, dssdev, false);
++	return dss_check_settings_low(mgr, false);
+ }
+ 
+ /*
+  * check manager and overlay settings using overlay_info from ovl->info if
+  * dirty and from data->info otherwise
+  */
+-static int dss_check_settings_apply(struct omap_overlay_manager *mgr,
+-		struct omap_dss_device *dssdev)
++static int dss_check_settings_apply(struct omap_overlay_manager *mgr)
+ {
+-	return dss_check_settings_low(mgr, dssdev, true);
++	return dss_check_settings_low(mgr, true);
+ }
+ 
+ static bool need_isr(void)
+@@ -668,7 +666,7 @@ static void dss_write_regs(void)
+ 		if (!mp->enabled || mgr_manual_update(mgr) || mp->busy)
+ 			continue;
+ 
+-		r = dss_check_settings(mgr, mgr->device);
++		r = dss_check_settings(mgr);
+ 		if (r) {
+ 			DSSERR("cannot write registers for manager %s: "
+ 					"illegal configuration\n", mgr->name);
+@@ -733,7 +731,7 @@ void dss_mgr_start_update(struct omap_overlay_manager *mgr)
+ 
+ 	WARN_ON(mp->updating);
+ 
+-	r = dss_check_settings(mgr, mgr->device);
++	r = dss_check_settings(mgr);
+ 	if (r) {
+ 		DSSERR("cannot start manual update: illegal configuration\n");
+ 		spin_unlock_irqrestore(&data_lock, flags);
+@@ -879,7 +877,7 @@ int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
+ 
+ 	spin_lock_irqsave(&data_lock, flags);
+ 
+-	r = dss_check_settings_apply(mgr, mgr->device);
++	r = dss_check_settings_apply(mgr);
+ 	if (r) {
+ 		spin_unlock_irqrestore(&data_lock, flags);
+ 		DSSERR("failed to apply settings: illegal configuration.\n");
+@@ -1072,7 +1070,7 @@ int dss_mgr_enable(struct omap_overlay_manager *mgr)
+ 
+ 	mp->enabled = true;
+ 
+-	r = dss_check_settings(mgr, mgr->device);
++	r = dss_check_settings(mgr);
+ 	if (r) {
+ 		DSSERR("failed to enable manager %d: check_settings failed\n",
+ 				mgr->id);
+@@ -1415,7 +1413,7 @@ int dss_ovl_enable(struct omap_overlay *ovl)
+ 
+ 	op->enabling = true;
+ 
+-	r = dss_check_settings(ovl->manager, ovl->manager->device);
++	r = dss_check_settings(ovl->manager);
+ 	if (r) {
+ 		DSSERR("failed to enable overlay %d: check_settings failed\n",
+ 				ovl->id);
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 9e47bdf..fb5ca51 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -209,7 +209,6 @@ int dss_mgr_simple_check(struct omap_overlay_manager *mgr,
+ int dss_mgr_check_timings(struct omap_overlay_manager *mgr,
+ 		struct omap_video_timings *timings);
+ int dss_mgr_check(struct omap_overlay_manager *mgr,
+-		struct omap_dss_device *dssdev,
+ 		struct omap_overlay_manager_info *info,
+ 		struct omap_overlay_info **overlay_infos);
+ int dss_mgr_set_timings(struct omap_overlay_manager *mgr,
+@@ -222,8 +221,8 @@ void dss_overlay_setup_dispc_manager(struct omap_overlay_manager *mgr);
+ void dss_recheck_connections(struct omap_dss_device *dssdev, bool force);
+ int dss_ovl_simple_check(struct omap_overlay *ovl,
+ 		const struct omap_overlay_info *info);
+-int dss_ovl_check(struct omap_overlay *ovl,
+-		struct omap_overlay_info *info, struct omap_dss_device *dssdev);
++int dss_ovl_check(struct omap_overlay *ovl, struct omap_overlay_info *info,
++		struct omap_overlay_manager_info *mgr_info);
+ 
+ /* DSS */
+ int dss_init_platform_driver(void);
+diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+index fb61b76..9821015 100644
+--- a/drivers/video/omap2/dss/manager.c
++++ b/drivers/video/omap2/dss/manager.c
+@@ -666,7 +666,6 @@ int dss_mgr_check_timings(struct omap_overlay_manager *mgr,
+ }
+ 
+ int dss_mgr_check(struct omap_overlay_manager *mgr,
+-		struct omap_dss_device *dssdev,
+ 		struct omap_overlay_manager_info *info,
+ 		struct omap_overlay_info **overlay_infos)
+ {
+@@ -692,7 +691,7 @@ int dss_mgr_check(struct omap_overlay_manager *mgr,
+ 		if (oi = NULL)
+ 			continue;
+ 
+-		r = dss_ovl_check(ovl, oi, dssdev);
++		r = dss_ovl_check(ovl, oi, info);
+ 		if (r)
+ 			return r;
+ 	}
+diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
+index 6e82181..4436376 100644
+--- a/drivers/video/omap2/dss/overlay.c
++++ b/drivers/video/omap2/dss/overlay.c
+@@ -631,16 +631,14 @@ int dss_ovl_simple_check(struct omap_overlay *ovl,
+ 	return 0;
+ }
+ 
+-int dss_ovl_check(struct omap_overlay *ovl,
+-		struct omap_overlay_info *info, struct omap_dss_device *dssdev)
++int dss_ovl_check(struct omap_overlay *ovl, struct omap_overlay_info *info,
++		struct omap_overlay_manager_info *mgr_info)
+ {
+ 	u16 outw, outh;
+-	u16 dw, dh;
++	u16 mgr_width, mgr_height;
+ 
+-	if (dssdev = NULL)
+-		return 0;
+-
+-	dssdev->driver->get_resolution(dssdev, &dw, &dh);
++	mgr_width = mgr_info->timings.x_res;
++	mgr_height = mgr_info->timings.y_res;
+ 
+ 	if ((ovl->caps & OMAP_DSS_OVL_CAP_SCALE) = 0) {
+ 		outw = info->width;
+@@ -657,17 +655,17 @@ int dss_ovl_check(struct omap_overlay *ovl,
+ 			outh = info->out_height;
+ 	}
+ 
+-	if (dw < info->pos_x + outw) {
++	if (mgr_width < info->pos_x + outw) {
+ 		DSSERR("overlay %d horizontally not inside the display area "
+ 				"(%d + %d >= %d)\n",
+-				ovl->id, info->pos_x, outw, dw);
++				ovl->id, info->pos_x, outw, mgr_width);
+ 		return -EINVAL;
+ 	}
+ 
+-	if (dh < info->pos_y + outh) {
++	if (mgr_height < info->pos_y + outh) {
+ 		DSSERR("overlay %d vertically not inside the display area "
+ 				"(%d + %d >= %d)\n",
+-				ovl->id, info->pos_y, outh, dh);
++				ovl->id, info->pos_y, outh, mgr_height);
+ 		return -EINVAL;
+ 	}
+ 
+-- 
 1.7.5.4
 

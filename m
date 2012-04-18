@@ -1,7 +1,7 @@
-From: Wolfgang Denk <wd@denx.de>
-Date: Wed, 18 Apr 2012 07:27:26 +0000
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Wed, 18 Apr 2012 15:43:50 +0000
 Subject: Re: [PATCH] i.MX28: Shut down the LCD controller to avoid bootrom sampling bug
-Message-Id: <20120418072726.A431D200229@gemini.denx.de>
+Message-Id: <4F8EE136.30704@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1334695011-8188-1-git-send-email-marex@denx.de>
 In-Reply-To: <1334695011-8188-1-git-send-email-marex@denx.de>
@@ -10,11 +10,19 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Dear Marek,
+Hi,
 
-In message <1334695011-8188-1-git-send-email-marex@denx.de> you wrote:
+On 04/17/2012 08:36 PM, Marek Vasut wrote:
 > From: Marek Vasut <marek.vasut@gmail.com>
-> 
+
+please write a commit message that describes the bug you want to fix and
+why/how your patch fixes it.
+
+
+Thanks,
+
+Florian Tobias Schandinat
+
 > Signed-off-by: Marek Vasut <marek.vasut@gmail.com>
 > Cc: Chen Peter-B29397 <B29397@freescale.com>
 > Cc: Detlev Zundel <dzu@denx.de>
@@ -34,18 +42,36 @@ In message <1334695011-8188-1-git-send-email-marex@denx.de> you wrote:
 > ---
 >  drivers/video/mxsfb.c |   13 +++++++++++++
 >  1 file changed, 13 insertions(+)
+> 
+> diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+> index 4a89f88..a265356 100644
+> --- a/drivers/video/mxsfb.c
+> +++ b/drivers/video/mxsfb.c
+> @@ -880,6 +880,18 @@ static int __devexit mxsfb_remove(struct platform_device *pdev)
+>  	return 0;
+>  }
+>  
+> +void mxsfb_shutdown(struct platform_device *pdev)
+> +{
+> +	struct fb_info *fb_info = platform_get_drvdata(pdev);
+> +	struct mxsfb_info *host = to_imxfb_host(fb_info);
+> +
+> +	/*
+> +	 * Force stop the LCD controller as keeping it running during reboot
+> +	 * might interfere with the BootROM's boot mode pads sampling.
+> +	 */
+> +	writel(CTRL_RUN, host->base + LCDC_CTRL + REG_CLR);
+> +}
+> +
+>  static struct platform_device_id mxsfb_devtype[] = {
+>  	{
+>  		.name = "imx23-fb",
+> @@ -896,6 +908,7 @@ MODULE_DEVICE_TABLE(platform, mxsfb_devtype);
+>  static struct platform_driver mxsfb_driver = {
+>  	.probe = mxsfb_probe,
+>  	.remove = __devexit_p(mxsfb_remove),
+> +	.shutdown = mxsfb_shutdown,
+>  	.id_table = mxsfb_devtype,
+>  	.driver = {
+>  		   .name = DRIVER_NAME,
 
-Acked-by: Wolfgang Denk <wd@denx.de>
-Tested-by: Wolfgang Denk <wd@denx.de>
-
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-A dog always bit deepest on the veterinary hand.
-                                    - Terry Pratchett, _Wyrd Sisters_

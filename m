@@ -1,26 +1,36 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Thu, 26 Apr 2012 12:41:23 +0000
-Subject: Re: [PATCH 1/4] mfd: add LM3533 lighting-power core driver
-Message-Id: <20120426124122.GA26692@sirena.org.uk>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Wed, 18 Apr 2012 20:07:11 +0000
+Subject: [PATCH] drivers/video/mbx/mbxfb.c: correct ioremap_nocache test
+Message-Id: <1334779631-4361-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334935826-12527-1-git-send-email-jhovold@gmail.com>
- <1334935826-12527-2-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1334935826-12527-2-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Johan Hovold <jhovold@gmail.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2012 at 05:30:23PM +0200, Johan Hovold wrote:
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-> +static int __lm3533_read(struct lm3533 *lm3533, u8 reg, u8 *val)
-> +{
-> +	int ret;
-> +
-> +	ret = lm3533->read(lm3533, reg, val);
-> +	if (ret < 0) {
+The test tested not the most recently allocated value but a previously
+allocated one.
 
-Looks like you could save a bunch of code by using regmap for the
-register I/O.  This would also give you access to the cache and
-diagnostic infrastructure it has.
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+
+---
+ drivers/video/mbx/mbxfb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/mbx/mbxfb.c b/drivers/video/mbx/mbxfb.c
+index 55bf619..ab0a8e5 100644
+--- a/drivers/video/mbx/mbxfb.c
++++ b/drivers/video/mbx/mbxfb.c
+@@ -950,7 +950,7 @@ static int __devinit mbxfb_probe(struct platform_device *dev)
+ 
+ 	mfbi->fb_virt_addr = ioremap_nocache(mfbi->fb_phys_addr,
+ 					     res_size(mfbi->fb_req));
+-	if (!mfbi->reg_virt_addr) {
++	if (!mfbi->fb_virt_addr) {
+ 		dev_err(&dev->dev, "failed to ioremap frame buffer\n");
+ 		ret = -EINVAL;
+ 		goto err4;
+

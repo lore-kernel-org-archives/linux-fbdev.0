@@ -1,50 +1,76 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Mon, 16 Apr 2012 00:51:55 +0000
-Subject: RE: [PATCH] video: s3c-fb: s3c_fb_missing_pixclock() can't be __devinit
-Message-Id: <000f01cd1b6b$1efdc2d0$5cf94870$%han@samsung.com>
+From: Marek Vasut <marex@denx.de>
+Date: Thu, 19 Apr 2012 18:31:02 +0000
+Subject: [PATCH V2] i.MX28: Shut down the LCD controller to avoid BootROM sampling bug
+Message-Id: <1334860263-9389-1-git-send-email-marex@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334486344-24073-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1334486344-24073-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1334767680-12688-1-git-send-email-marex@denx.de>
+In-Reply-To: <1334767680-12688-1-git-send-email-marex@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-> -----Original Message-----
-> From: Mark Brown [mailto:broonie@opensource.wolfsonmicro.com]
-> Sent: Sunday, April 15, 2012 7:39 PM
-> To: Jingoo Han; Florian Tobias Schandinat
-> Cc: linux-fbdev@vger.kernel.org; Mark Brown
-> Subject: [PATCH] video: s3c-fb: s3c_fb_missing_pixclock() can't be __devinit
-> 
-> Since s3c_fb_missing_pixclock() is called from s3c_fb_set_rgb_timing()
-> which is used in the suspend/resume paths it can't be marked __devinit
-> as this could result in it being discarded after boot.
-> 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+From: Marek Vasut <marek.vasut@gmail.com>
 
-It looks good. Thank you.
+If there's some traffic on the LCD controller pads, the BootROM has trouble with
+sampling the bootmode from these pads. The BootROM usually ends in a loop.
 
-Acked-by: Jingoo Han <jg1.han@samsung.com>
+Signed-off-by: Marek Vasut <marek.vasut@gmail.com>
+Cc: Chen Peter-B29397 <B29397@freescale.com>
+Cc: Detlev Zundel <dzu@denx.de>
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Li Frank-B20596 <B20596@freescale.com>
+Cc: Lin Tony-B19295 <B19295@freescale.com>
+Cc: Linux FBDEV <linux-fbdev@vger.kernel.org>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Shawn Guo <shawn.guo@freescale.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>
+Cc: Stefano Babic <sbabic@denx.de>
+Cc: Subodh Nijsure <snijsure@grid-net.com>
+Cc: Tony Lin <tony.lin@freescale.com>
+Cc: Wolfgang Denk <wd@denx.de>
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
+Acked-by: Wolfgang Denk <wd@denx.de>
+Acked-by: Wolfram Sang <w.sang@pengutronix.de>
+Tested-by: Wolfgang Denk <wd@denx.de>
+---
+ drivers/video/mxsfb.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
+V2: Make shutdown() call static
 
-> ---
->  drivers/video/s3c-fb.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-> index 18c84b8..d8f0018 100644
-> --- a/drivers/video/s3c-fb.c
-> +++ b/drivers/video/s3c-fb.c
-> @@ -1056,7 +1056,7 @@ static struct fb_ops s3c_fb_ops = {
->   *
->   * Calculate the pixel clock when none has been given through platform data.
->   */
-> -static void __devinit s3c_fb_missing_pixclock(struct fb_videomode *mode)
-> +static void s3c_fb_missing_pixclock(struct fb_videomode *mode)
->  {
->  	u64 pixclk = 1000000000000ULL;
->  	u32 div;
-> --
-> 1.7.9.1
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 4a89f88..dcf29bf 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -880,6 +880,18 @@ static int __devexit mxsfb_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static void mxsfb_shutdown(struct platform_device *pdev)
++{
++	struct fb_info *fb_info = platform_get_drvdata(pdev);
++	struct mxsfb_info *host = to_imxfb_host(fb_info);
++
++	/*
++	 * Force stop the LCD controller as keeping it running during reboot
++	 * might interfere with the BootROM's boot mode pads sampling.
++	 */
++	writel(CTRL_RUN, host->base + LCDC_CTRL + REG_CLR);
++}
++
+ static struct platform_device_id mxsfb_devtype[] = {
+ 	{
+ 		.name = "imx23-fb",
+@@ -896,6 +908,7 @@ MODULE_DEVICE_TABLE(platform, mxsfb_devtype);
+ static struct platform_driver mxsfb_driver = {
+ 	.probe = mxsfb_probe,
+ 	.remove = __devexit_p(mxsfb_remove),
++	.shutdown = mxsfb_shutdown,
+ 	.id_table = mxsfb_devtype,
+ 	.driver = {
+ 		   .name = DRIVER_NAME,
+-- 
+1.7.9.5
 

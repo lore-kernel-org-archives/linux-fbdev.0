@@ -1,91 +1,79 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 18 Apr 2012 14:58:25 +0000
+From: Archit Taneja <a0393947@ti.com>
+Date: Thu, 19 Apr 2012 06:25:21 +0000
 Subject: Re: [PATCH 4/6] OMAPDSS: MANAGER: Make DISPC timings a manager_info parameter
-Message-Id: <1334761105.2027.67.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-pKIwAShTwj8RWqLttp6T"
+Message-Id: <4F8FAD01.3090406@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334561027-28569-1-git-send-email-archit@ti.com>
-	 <1334561027-28569-5-git-send-email-archit@ti.com>
-In-Reply-To: <1334561027-28569-5-git-send-email-archit@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <1334561027-28569-1-git-send-email-archit@ti.com>  <1334561027-28569-5-git-send-email-archit@ti.com> <1334761105.2027.67.camel@deskari>
+In-Reply-To: <1334761105.2027.67.camel@deskari>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Archit Taneja <archit@ti.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
+On Wednesday 18 April 2012 08:28 PM, Tomi Valkeinen wrote:
+> On Mon, 2012-04-16 at 12:53 +0530, Archit Taneja wrote:
+>> DISPC manager size and DISPC manager blanking parameters(for LCD managers)
+>> follow the shadow register programming model. Currently, they are programmed
+>> directly by the interface drivers.
+>>
+>> Make timings(omap_video_timing struct) an overlay_manager_info member, they are
+>> now programmed via the apply mechanism used for programming shadow registers.
+>>
+>> The interface driver now call the function dss_mgr_set_timings() which applies
+>> the new timing parameters, rather than directly writing to DISPC registers.
+>
+> I don't think that works correctly. The omap_overlay_manager_info is
+> supposed to be set with set_manager_info() by the user of omapdss, to
+> configure the manager's features. The timings are not supposed to be set
+> via that mechanism, but with dssdev->set_timings().
+>
+> This is similar to the info and extra_info for overlay. info has stuff
+> that omapdss doesn't change, it just uses what the user gives.
+> extra_info, on the other hand, has omapdss private stuff that the user
+> does not see. Timings are clearly private stuff in this sense, because
+> they are set via dssdev->set_timings().
+>
+> One reason for this is the programming model we use. If the user of
+> omapdss does get_info() for two overlays, changes the infos, and then
+> calls set_info() for both overlays and finally apply() for the manager,
+> we don't do any locking there because omapdss presumes the info is
+> handled by one user. If, say, the dpi.c would change the info and call
+> apply at the same time, the configuration could go badly wrong.
 
---=-pKIwAShTwj8RWqLttp6T
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I think I get your point. So even though get_info() and set_info() fn's 
+are spinlock protected, if there are 2 users setting the info, it 
+doesn't mean that the info they finally written is correct. Is this 
+example the same thing as what you mean ? :
 
-On Mon, 2012-04-16 at 12:53 +0530, Archit Taneja wrote:
-> DISPC manager size and DISPC manager blanking parameters(for LCD managers=
-)
-> follow the shadow register programming model. Currently, they are program=
-med
-> directly by the interface drivers.
->=20
-> Make timings(omap_video_timing struct) an overlay_manager_info member, th=
-ey are
-> now programmed via the apply mechanism used for programming shadow regist=
-ers.
->=20
-> The interface driver now call the function dss_mgr_set_timings() which ap=
-plies
-> the new timing parameters, rather than directly writing to DISPC register=
-s.
+In order of time:
 
-I don't think that works correctly. The omap_overlay_manager_info is
-supposed to be set with set_manager_info() by the user of omapdss, to
-configure the manager's features. The timings are not supposed to be set
-via that mechanism, but with dssdev->set_timings().
+-user 1 gets an overlay's info
 
-This is similar to the info and extra_info for overlay. info has stuff
-that omapdss doesn't change, it just uses what the user gives.
-extra_info, on the other hand, has omapdss private stuff that the user
-does not see. Timings are clearly private stuff in this sense, because
-they are set via dssdev->set_timings().=20
+-user 2 gets an overlay's info
 
-One reason for this is the programming model we use. If the user of
-omapdss does get_info() for two overlays, changes the infos, and then
-calls set_info() for both overlays and finally apply() for the manager,
-we don't do any locking there because omapdss presumes the info is
-handled by one user. If, say, the dpi.c would change the info and call
-apply at the same time, the configuration could go badly wrong.
+-user 1 modifies and sets overlay info
 
-So I think what should be done is to add similar "extra" flags and code
-to mgr_priv_data that we have for ovl_priv_data, and add
-omap_video_timings to mgr_priv_data (the same way as we have, say,
-fifo_low for ovl_priv_data).
+-user 2 sets overlay info without the knowledge of what user 1 did.
 
-And then add similar function to dss_ovl_write_regs_extra() for manager,
-and a function like dss_apply_ovl_fifo_thresholds() for timings. And
-finally a non-static function to set the timings (used by dpi.c etc),
-which calls the similar function to dss_apply_ovl_fifo_thresholds(), and
-dss_write_regs() and dss_set_go_bits().
+So even though we ensure these events happen sequentially, we don't 
+protect the info across multiple users.
 
- Tomi
+>
+> So I think what should be done is to add similar "extra" flags and code
+> to mgr_priv_data that we have for ovl_priv_data, and add
+> omap_video_timings to mgr_priv_data (the same way as we have, say,
+> fifo_low for ovl_priv_data).
+>
+> And then add similar function to dss_ovl_write_regs_extra() for manager,
+> and a function like dss_apply_ovl_fifo_thresholds() for timings. And
+> finally a non-static function to set the timings (used by dpi.c etc),
+> which calls the similar function to dss_apply_ovl_fifo_thresholds(), and
+> dss_write_regs() and dss_set_go_bits().
 
+Okay, I'll work on it along these lines.
 
---=-pKIwAShTwj8RWqLttp6T
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJPjtaQAAoJEPo9qoy8lh71EgEQAILXg7RY+gu/5Gb9RgroOU0+
-sAi+ZNiwvmh/pUc19zmQV6jfZIZu1bfc1u0Kugl42KdPT8a1nLoVUUDqiE/IkkVr
-OpQPh/CdyARhFRntmVug+KPb7JZDE2rfPUXuFla2P2L0edv10cAxrYKdd9e1KCYY
-qLgQr5FdM7m21UaJZq3RIfu8BuluXsv2f+tJ7hYZ6ueQaDoh5WXWLcy6Uw6iVRMW
-+Fzgz9miwZHueiQtt/nkHBDuWmWGVbEwTzO77AqpjXynDkWLzEus00vDQDs7P7PK
-woJ+aqWeU7IRzkSDFWu2fdNj5HmqYjpAF7hc0O9pTr/UMj5HM4NxjKYeGiBOuJ1z
-+hbfSIP7cV6lJLpmCR69oEHh6d/ZT7Rw+U95C6LRC5ksF1HOqgoS3HKtUV0WblF+
-dRHGdamzW83EPuJw0sD+YgxazOSfardsd8gj6HT/dxNJimHyyjLAkNySERQZZ/eG
-TUII23wJ2efPUhdvTX4RfE1lLi2ov3QSeNFAWDUjZ6zw15JsgObmrgsf9Vcjy/yj
-gXIW0hzM8ksf2EtPxdzQFH+D3sKNDH9eRMTouiK7pZzec9nqH74apnyrgawPvwtS
-Pf3RyD6xwRL+9++QYkN1Wf7cSSUHga71DuW++/fmUMiqoZ7od+Kbgpv5y/z/pwld
-nY+HYR/Dna8/urOuHd6m
-=9B9Y
------END PGP SIGNATURE-----
-
---=-pKIwAShTwj8RWqLttp6T--
+>
+>   Tomi
+>
 

@@ -1,70 +1,42 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Fri, 20 Apr 2012 15:30:22 +0000
-Subject: [PATCH 0/4] mfd: add LM3533 lighting-power chip driver
-Message-Id: <1334935826-12527-1-git-send-email-jhovold@gmail.com>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Thu, 19 Apr 2012 16:55:53 +0000
+Subject: [PATCH] drivers/video/intelfb/intelfbdrv.c: add missing agp_backend_release
+Message-Id: <1334854553-30067-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+To: Maik Broemme <mbroemme@plusserver.de>
+Cc: kernel-janitors@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-These patches (against v3.4-rc3) add support for the National Semiconductor /
-Texas Instruments LM3533 lighting-power chip.
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-This multi-function device has four LEDs, two backlights and an ambient-light
-sensor.
+Release bridge, as done on all other paths out of the function.
 
-The LEDs and backlights can be controlled directly, through PWM input,
-or by the on-chip ambient light sensor. Hardware-accelerated blinking is
-provided for the LEDs.
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-ALS control is done through defining five light zones and three sets of
-corresponding brightness target levels. The ALS driver presents a character
-device (/dev/lm3533-als) which can be used to retrieve the current light zone
-or to poll for zone changes.
+---
+ drivers/video/intelfb/intelfbdrv.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Further details and specifications will soon be available from
-
-	http://www.ti.com/product/lm3533
-
-This work has been done on behalf of National Semiconductor / Texas
-Instruments.
-
-Thanks,
-Johan
-
-
-Johan Hovold (4):
-  mfd: add LM3533 lighting-power core driver
-  misc: add LM3533 ambient light sensor driver
-  leds: add LM3533 LED driver
-  backlight: add LM3533 backlight driver
-
- drivers/leds/Kconfig                |   13 +
- drivers/leds/Makefile               |    1 +
- drivers/leds/leds-lm3533.c          |  713 +++++++++++++++++++++++++++++++++
- drivers/mfd/Kconfig                 |   12 +
- drivers/mfd/Makefile                |    3 +
- drivers/mfd/lm3533-core.c           |  738 +++++++++++++++++++++++++++++++++++
- drivers/mfd/lm3533-ctrlbank.c       |  134 +++++++
- drivers/mfd/lm3533-i2c.c            |  115 ++++++
- drivers/misc/Kconfig                |   13 +
- drivers/misc/Makefile               |    1 +
- drivers/misc/lm3533-als.c           |  662 +++++++++++++++++++++++++++++++
- drivers/video/backlight/Kconfig     |   12 +
- drivers/video/backlight/Makefile    |    1 +
- drivers/video/backlight/lm3533_bl.c |  432 ++++++++++++++++++++
- include/linux/mfd/lm3533.h          |  106 +++++
- 15 files changed, 2956 insertions(+), 0 deletions(-)
- create mode 100644 drivers/leds/leds-lm3533.c
- create mode 100644 drivers/mfd/lm3533-core.c
- create mode 100644 drivers/mfd/lm3533-ctrlbank.c
- create mode 100644 drivers/mfd/lm3533-i2c.c
- create mode 100644 drivers/misc/lm3533-als.c
- create mode 100644 drivers/video/backlight/lm3533_bl.c
- create mode 100644 include/linux/mfd/lm3533.h
-
--- 
-1.7.8.5
+diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
+index 02fd226..bdcbfba 100644
+--- a/drivers/video/intelfb/intelfbdrv.c
++++ b/drivers/video/intelfb/intelfbdrv.c
+@@ -680,6 +680,7 @@ static int __devinit intelfb_pci_register(struct pci_dev *pdev,
+ 		 + dinfo->fb.size);
+ 	if (!dinfo->aperture.virtual) {
+ 		ERR_MSG("Cannot remap FB region.\n");
++		agp_backend_release(bridge);
+ 		cleanup(dinfo);
+ 		return -ENODEV;
+ 	}
+@@ -689,6 +690,7 @@ static int __devinit intelfb_pci_register(struct pci_dev *pdev,
+ 					      INTEL_REG_SIZE);
+ 	if (!dinfo->mmio_base) {
+ 		ERR_MSG("Cannot remap MMIO region.\n");
++		agp_backend_release(bridge);
+ 		cleanup(dinfo);
+ 		return -ENODEV;
+ 	}
 

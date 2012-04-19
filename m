@@ -1,40 +1,37 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 29 Apr 2012 23:18:24 +0000
-Subject: Re: [PULL for v3.5] fb: exynos: Fix MIPI/DSI front/back porch settings
-Message-Id: <4F9DCC40.7000808@gmx.de>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Date: Thu, 19 Apr 2012 02:43:21 +0000
+Subject: [PATCH] blackfin: fix compile error in bfin-lq035q1-fb.c
+Message-Id: <1334803401-26780-1-git-send-email-paul.gortmaker@windriver.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4788368.X6fyZNtHh2@avalon>
-In-Reply-To: <4788368.X6fyZNtHh2@avalon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On 04/24/2012 12:44 PM, Laurent Pinchart wrote:
-> Hi Florian,
-> 
-> Could you please pull the following fix ?
-> 
-> The following changes since commit d313a86d2efb2c5568832389663322e93e291c59:
-> 
->   i.MX28: Shut down the LCD controller to avoid BootROM sampling bug 
-> (2012-04-21 21:53:12 +0000)
-> 
-> are available in the git repository at:
->   git://linuxtv.org/pinchartl/fbdev.git fixes
+This file has an implicit dependency on GPIO stuff, showing
+up as the following build failure:
 
-Merged.
+drivers/video/bfin-lq035q1-fb.c:369:6: error: 'GPIOF_OUT_INIT_LOW' undeclared
 
+Other more global bfin build issues prevent an automated bisect, but
+it really doesn't matter - simply add in the appropriate header.
 
-Thanks,
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
-Florian Tobias Schandinat
-
-> 
-> Laurent Pinchart (1):
->       fb: exynos: Fix MIPI/DSI front/back porch settings
-> 
->  drivers/video/exynos/exynos_mipi_dsi_common.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
-> 
+diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
+index 86922ac..353c02f 100644
+--- a/drivers/video/bfin-lq035q1-fb.c
++++ b/drivers/video/bfin-lq035q1-fb.c
+@@ -13,6 +13,7 @@
+ #include <linux/errno.h>
+ #include <linux/string.h>
+ #include <linux/fb.h>
++#include <linux/gpio.h>
+ #include <linux/slab.h>
+ #include <linux/init.h>
+ #include <linux/types.h>
+-- 
+1.7.9.1
 

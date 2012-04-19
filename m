@@ -1,54 +1,75 @@
-From: Archit Taneja <archit@ti.com>
-Date: Mon, 16 Apr 2012 07:35:41 +0000
-Subject: [PATCH 0/6] OMAPDSS: APPLY: Treat overlay manager timings as shadow registers
-Message-Id: <1334561027-28569-1-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 19 Apr 2012 11:48:55 +0000
+Subject: Re: [PATCH 0/6] OMAPDSS: APPLY: Treat overlay manager timings as shadow registers
+Message-Id: <1334836135.1911.40.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-oo8g7HI0wMb4jFPBhoKR"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+References: <1334561027-28569-1-git-send-email-archit@ti.com>
+In-Reply-To: <1334561027-28569-1-git-send-email-archit@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-An overlay manager's timings (the manager size, and blanking parameters if an
-LCD manager) are DISPC shadow registers, and they should hence follow the
-correct programming model.
 
-This set makes the timings a manager_info parameter. The interface drivers now
-set the timings in manager_info instead of directly writing to registers.
+--=-oo8g7HI0wMb4jFPBhoKR
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-This change also prevents the need to use display resolution for overlay
-checks, hence making some of the APPLY functions less dependent on the display.
+On Mon, 2012-04-16 at 12:53 +0530, Archit Taneja wrote:
+> An overlay manager's timings (the manager size, and blanking parameters i=
+f an
+> LCD manager) are DISPC shadow registers, and they should hence follow the
+> correct programming model.
+>=20
+> This set makes the timings a manager_info parameter. The interface driver=
+s now
+> set the timings in manager_info instead of directly writing to registers.
+>=20
+> This change also prevents the need to use display resolution for overlay
+> checks, hence making some of the APPLY functions less dependent on the di=
+splay.
+>=20
+> These patches apply over:
+>=20
+> git://gitorious.org/linux-omap-dss2/linux.git dev
+>=20
+> Archit Taneja (6):
+>   OMAPDSS: DISPC/RFBI: Use dispc_mgr_set_lcd_timings() for setting lcd
+>     size
+>   OMAPDSS: DISPC: Use a common function to set manager timings
+>   OMAPDSS: DISPC: Clean up manager timing/size functions
+>   OMAPDSS: MANAGER: Make DISPC timings a manager_info parameter
+>   OMAPDSS: MANAGER: Check validity of manager timings
+>   OMAPDSS: APPLY: Remove display dependency from overlay and manager
+>     checks
 
-These patches apply over:
+The patches 1, 2 and 3 in this series look like independent cleanups.
+Should I apply those, or do you think there may be changes required?
 
-git://gitorious.org/linux-omap-dss2/linux.git dev
+ Tomi
 
-Archit Taneja (6):
-  OMAPDSS: DISPC/RFBI: Use dispc_mgr_set_lcd_timings() for setting lcd
-    size
-  OMAPDSS: DISPC: Use a common function to set manager timings
-  OMAPDSS: DISPC: Clean up manager timing/size functions
-  OMAPDSS: MANAGER: Make DISPC timings a manager_info parameter
-  OMAPDSS: MANAGER: Check validity of manager timings
-  OMAPDSS: APPLY: Remove display dependency from overlay and manager
-    checks
 
- drivers/video/omap2/dss/apply.c        |   46 +++++++++++++-----
- drivers/video/omap2/dss/dispc.c        |   78 +++++++++++++++++++-------------
- drivers/video/omap2/dss/dpi.c          |    6 ++-
- drivers/video/omap2/dss/dsi.c          |   11 ++++-
- drivers/video/omap2/dss/dss.h          |   16 +++---
- drivers/video/omap2/dss/dss_features.c |    6 +++
- drivers/video/omap2/dss/dss_features.h |    2 +
- drivers/video/omap2/dss/hdmi.c         |    6 ++-
- drivers/video/omap2/dss/manager.c      |   39 +++++++++++++++-
- drivers/video/omap2/dss/overlay.c      |   20 ++++-----
- drivers/video/omap2/dss/rfbi.c         |   27 ++++++++++-
- drivers/video/omap2/dss/sdi.c          |    5 ++-
- drivers/video/omap2/dss/venc.c         |   17 +++++---
- include/video/omapdss.h                |    2 +
- 14 files changed, 200 insertions(+), 81 deletions(-)
+--=-oo8g7HI0wMb4jFPBhoKR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
--- 
-1.7.5.4
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJPj/unAAoJEPo9qoy8lh71VVQP+wdhydNE7pMPjZXeqPGyuD6z
+sryg20ttU8bK9d9oEFQoBmPy6aaNhj6RkYwj9EEFycmnhNSIK6lD9dHa4HixHckC
+75HupgkDcyGTmoRyvlvVY6A28zKNmkTIN9hhBSwm/f3X07QUttqrO4/TRnIi/SKa
+x3Yb8eCjve5nNUYOx3wbhTKSvJKhSXuZOo5LHtVkoXUOdXgHTqfTqIgx5Q5JFInp
+mfSRL5M/G+YAglzJrN7s2XIPZd3KX1q9hV5J7pwQ0WARjiwCy43rd1OYnAyQHAUB
+thVWKpnqqBd5HEoQ8trQ86Z1qltsIlEf4YuGk1hnYOeOLrUuFfOR3lAoLNYQk+ri
+hoMHEa/FC8kJq5hGMZ8v/4AulN9DInX8dM0yQC2Gpy0gsj30jgNcKFalPMc7j88n
++eiQWq/kk9r+0b7dntpsIlwcUt+GZ0wyuFbs65ukhH62ZA4qeh1qpT+HoCN59ZyY
+KwLTae7CAidf/hC848WOLoxpVWQOblVk40KTkMUao4nnbllmoUN9ZUh+EzQg7PMb
+PqIyVR7mJcBd6TX1rbN7y2ozeYD6oEj5d1Ds9kxLvdpxH07xXgO8g9vKUl+aUv5N
+2iDamUCRXZMm81e9FVHL6JKC2iV6wLwBUjkz5X0ERey02EZgkgirpD2VrDwuvS3V
+c3uJLwoGbDEsEDp4+ll8
+=xwJh
+-----END PGP SIGNATURE-----
+
+--=-oo8g7HI0wMb4jFPBhoKR--
 

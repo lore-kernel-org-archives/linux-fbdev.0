@@ -1,58 +1,59 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Fri, 13 Apr 2012 17:02:58 +0000
-Subject: [GIT PULL] fbdev fixes for 3.4
-Message-Id: <4F885C42.2000405@gmx.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 20 Apr 2012 11:12:10 +0000
+Subject: Re: VESA and VGA16 framebuffer drivers clash sometimes
+Message-Id: <CAMuHMdWCMP8L=k8tWiXv6Mcb5u6iTCx3fb7_mTGVyQSE7V=r_w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <4F911568.7050601@pr.hu>
+In-Reply-To: <4F911568.7050601@pr.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Boszormenyi Zoltan <zboszor@pr.hu>
+Cc: linux-kernel@vger.kernel.org, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
 
-Hi Linus,
+2012/4/20 Boszormenyi Zoltan <zboszor@pr.hu>:
+> on an embedded x86 board with Intel Atom, text on vesafb
+> gets distorted if both vesafb and vga16fb are compiled in.
+> The strange thing is that it doesn't happen all the time but
+> about once out of 15 boots.
+>
+> The distortion looks like this:
+> http://www.postgresql-support.de/private/IMG_7221.jpg
+>
+> The relevant kernel messages:
+>
+> Apr 13 11:14:30 term002 kernel: vesafb: mode is 800x600x16, linelength00,
+> pages=7
+> Apr 13 11:14:30 term002 kernel: vesafb: scrolling: redraw
+> Apr 13 11:14:30 term002 kernel: vesafb: Truecolor: size=0:5:6:5,
+> shift=0:11:5:0
+> Apr 13 11:14:30 term002 kernel: vesafb: framebuffer at 0xa0000000, mapped to
+> 0xdf580000, using 1875k, total 8128k
+> Apr 13 11:14:30 term002 kernel: Console: switching to colour frame buffer
+> device 100x37
+> Apr 13 11:14:30 term002 kernel: fb0: VESA VGA frame buffer device
+> Apr 13 11:14:30 term002 BOOTLOG: Terminal startup
+> Apr 13 11:14:30 term002 kernel: vga16fb: mapped to 0xc00a0000
+> Apr 13 11:14:30 term002 kernel: fbcon: VGA16 VGA (fb1) is primary device
+> Apr 13 11:14:30 term002 kernel: fbcon: Remapping primary device, fb1, to tty
+> 1-63
+> Apr 13 11:14:30 term002 kernel: fb1: VGA16 VGA frame buffer device
+>
+> It's strange that vga16fb is always detected as primary
+> and vesafb gets remapped to fb1 even when there is no
+> screen distortion. The kernel is compiled for SMP.
 
-please pull the fixes below. The fix for kyrofb is a bit large but it's just
-replacing "unsigned long" by "u32" for 64 bit compatibility.
+IIRC, the request_region()/request_mem_region() calls in vga16fb.c that would
+avoid this were removed several years ago. Unfortunately I don't remember
+anymore why. Google or full-history-linux may help you...
 
+Gr{oetje,eeting}s,
 
-Thanks,
+                        Geert
 
-Florian Tobias Schandinat
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
-The following changes since commit 0034102808e0dbbf3a2394b82b1bb40b5778de9e:
-
-  Linux 3.4-rc2 (2012-04-07 18:30:41 -0700)
-
-are available in the git repository at:
-
-  git://github.com/schandinat/linux-2.6.git fbdev-fixes-for-3.4-1
-
-for you to fetch changes up to b78f29ca0516266431688c5eb42d39ce42ec039a:
-
-  video:uvesafb: Fix oops that uvesafb try to execute NX-protected page
-(2012-04-09 16:05:57 +0000)
-
-----------------------------------------------------------------
-fbdev fixes for 3.4
-
-It includes:
-- a compile fix for au1*fb
-- a fix to make kyrofb usable on x86_64
-- a fix for uvesafb to prevent an oops due to NX-protection
-
-----------------------------------------------------------------
-Manuel Lauss (1):
-      fbdev: fix au1*fb builds
-
-Ondrej Zary (1):
-      kyrofb: fix on x86_64
-
-Wang YanQing (1):
-      video:uvesafb: Fix oops that uvesafb try to execute NX-protected page
-
- drivers/video/au1100fb.c        |    5 +-
- drivers/video/au1200fb.c        |    2 +-
- drivers/video/kyro/STG4000Reg.h |  376 +++++++++++++++++++-------------------
- drivers/video/uvesafb.c         |   11 +-
- 4 files changed, 201 insertions(+), 193 deletions(-)
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

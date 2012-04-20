@@ -1,166 +1,70 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 06 Apr 2012 23:17:20 +0000
-Subject: Re: [PATCH v3 1/2] backlight: lcd: add driver for raster-type lcd's with gpio controlled panel reset
-Message-Id: <20120406161720.cf464c39.akpm@linux-foundation.org>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Fri, 20 Apr 2012 15:30:22 +0000
+Subject: [PATCH 0/4] mfd: add LM3533 lighting-power chip driver
+Message-Id: <1334935826-12527-1-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1332751600-11371-1-git-send-email-thomas.abraham@linaro.org>
- <1332751600-11371-2-git-send-email-thomas.abraham@linaro.org>
-In-Reply-To: <1332751600-11371-2-git-send-email-thomas.abraham@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+
+These patches (against v3.4-rc3) add support for the National Semiconductor /
+Texas Instruments LM3533 lighting-power chip.
+
+This multi-function device has four LEDs, two backlights and an ambient-light
+sensor.
+
+The LEDs and backlights can be controlled directly, through PWM input,
+or by the on-chip ambient light sensor. Hardware-accelerated blinking is
+provided for the LEDs.
+
+ALS control is done through defining five light zones and three sets of
+corresponding brightness target levels. The ALS driver presents a character
+device (/dev/lm3533-als) which can be used to retrieve the current light zone
+or to poll for zone changes.
+
+Further details and specifications will soon be available from
+
+	http://www.ti.com/product/lm3533
+
+This work has been done on behalf of National Semiconductor / Texas
+Instruments.
+
+Thanks,
+Johan
 
 
-> Cc: rpurdie@rpsys.net, florianSchandinat@gmx.de, devicetree-discuss@lists.ozlabs.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, grant.likely@secretlab.ca, rob.herring@calxeda.com, kgene.kim@samsung.com, jg1.han@samsung.com, broonie@opensource.wolfsonmicro.com, kyungmin.park@samsung.com, augulis.darius@gmail.com, ben-linux@fluff.org, lars@metafoo.de, patches@linaro.org
+Johan Hovold (4):
+  mfd: add LM3533 lighting-power core driver
+  misc: add LM3533 ambient light sensor driver
+  leds: add LM3533 LED driver
+  backlight: add LM3533 backlight driver
 
-Poor me.  When someone sends a patch like this, I need to go and hunt
-down everyone's real names to nicely add them to the changelog's Cc:
-list.  I prefer that you do this ;)
+ drivers/leds/Kconfig                |   13 +
+ drivers/leds/Makefile               |    1 +
+ drivers/leds/leds-lm3533.c          |  713 +++++++++++++++++++++++++++++++++
+ drivers/mfd/Kconfig                 |   12 +
+ drivers/mfd/Makefile                |    3 +
+ drivers/mfd/lm3533-core.c           |  738 +++++++++++++++++++++++++++++++++++
+ drivers/mfd/lm3533-ctrlbank.c       |  134 +++++++
+ drivers/mfd/lm3533-i2c.c            |  115 ++++++
+ drivers/misc/Kconfig                |   13 +
+ drivers/misc/Makefile               |    1 +
+ drivers/misc/lm3533-als.c           |  662 +++++++++++++++++++++++++++++++
+ drivers/video/backlight/Kconfig     |   12 +
+ drivers/video/backlight/Makefile    |    1 +
+ drivers/video/backlight/lm3533_bl.c |  432 ++++++++++++++++++++
+ include/linux/mfd/lm3533.h          |  106 +++++
+ 15 files changed, 2956 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/leds/leds-lm3533.c
+ create mode 100644 drivers/mfd/lm3533-core.c
+ create mode 100644 drivers/mfd/lm3533-ctrlbank.c
+ create mode 100644 drivers/mfd/lm3533-i2c.c
+ create mode 100644 drivers/misc/lm3533-als.c
+ create mode 100644 drivers/video/backlight/lm3533_bl.c
+ create mode 100644 include/linux/mfd/lm3533.h
 
-You can add Cc:'s to the changelog yourself, of course.  Often that
-works out better than having me try to work out who might be
-interested in the patch.
-
-On Mon, 26 Mar 2012 14:16:39 +0530
-Thomas Abraham <thomas.abraham@linaro.org> wrote:
-
-> Add a lcd panel driver for simple raster-type lcd's which uses a gpio
-> controlled panel reset. The driver controls the nRESET line of the panel
-> using a gpio connected from the host system. The Vcc supply to the panel
-> is (optionally) controlled using a voltage regulator. This driver excludes
-> support for lcd panels that use a serial command interface or direct
-> memory mapped IO interface.
-> 
->
-> ...
->
-> +struct lcd_pwrctrl {
-> +	struct device		*dev;
-> +	struct lcd_device	*lcd;
-> +	struct lcd_pwrctrl_data	*pdata;
-> +	struct regulator	*regulator;
-> +	unsigned int		power;
-> +	bool			suspended;
-> +	bool			pwr_en;
-
-Generally kernel code will avoid these unpronounceable abbreviations. 
-So we do
-
-pwr -> power
-en -> enable
-ctrl -> control
-
-etc.  It results in longer identifiers, but the code is more readable
-and, more importantly, more *rememberable*.  
-
-> +};
-> +
-> +static int lcd_pwrctrl_get_power(struct lcd_device *lcd)
-> +{
-> +	struct lcd_pwrctrl *lp = lcd_get_data(lcd);
-> +	return lp->power;
-> +}
-> +
-> +static int lcd_pwrctrl_set_power(struct lcd_device *lcd, int power)
-
-See, shouldn't that have been lcd_pwrctrl_set_pwr?
-
-If we avoid the abbreviations, such issues do not arise.
-
-> +{
-> +	struct lcd_pwrctrl *lp = lcd_get_data(lcd);
-> +	struct lcd_pwrctrl_data *pd = lp->pdata;
-> +	bool lcd_enable;
-> +	int lcd_reset, ret = 0;
-> +
-> +	lcd_enable = (power = FB_BLANK_POWERDOWN || lp->suspended) ? 0 : 1;
-
-This isn't how to use `bool'.  We can use
-
-	lcd_enable = (power = FB_BLANK_POWERDOWN) || lp->suspended;
-
-
-> +	lcd_reset = (pd->invert) ? !lcd_enable : lcd_enable;
-> +
-> +	if (lp->pwr_en = lcd_enable)
-> +		return 0;
-> +
-> +	if (!IS_ERR_OR_NULL(lp->regulator)) {
-> +		if (lcd_enable) {
-> +			if (regulator_enable(lp->regulator)) {
-> +				dev_info(lp->dev, "regulator enable failed\n");
-> +				ret = -EPERM;
-> +			}
-> +		} else {
-> +			if (regulator_disable(lp->regulator)) {
-> +				dev_info(lp->dev, "regulator disable failed\n");
-> +				ret = -EPERM;
-> +			}
-> +		}
-> +	}
-> +
-> +	gpio_direction_output(lp->pdata->gpio, lcd_reset);
-> +	lp->power = power;
-> +	lp->pwr_en = lcd_enable;
-
-Again, this could have been any of
-
-	lp->[power|pwr] = [power|pwr];
-	lp->[power|pwr]_[en|enable] = lcd_[en|enable];
-
-zillions of combinations!  If we just avoid the abbreviations, there is
-only one combination.
-
-> +	return ret;
-> +}
-> +
->
-> ...
->
-> +static int __devinit lcd_pwrctrl_probe(struct platform_device *pdev)
-> +{
-> +	struct lcd_pwrctrl *lp;
-> +	struct lcd_pwrctrl_data *pdata = pdev->dev.platform_data;
-> +	struct device *dev = &pdev->dev;
-> +	int err;
-> +
-> +#ifdef CONFIG_OF
-> +	if (dev->of_node) {
-> +		pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
-> +		if (!pdata) {
-> +			dev_err(dev, "memory allocation for pdata failed\n");
-> +			return -ENOMEM;
-> +		}
-> +		lcd_pwrctrl_parse_dt(dev, pdata);
-> +	}
-> +#endif
-> +
-> +	if (!pdata) {
-> +		dev_err(dev, "platform data not available\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	lp = devm_kzalloc(dev, sizeof(struct lcd_pwrctrl), GFP_KERNEL);
-
-Nit: I prefer sizeof(*lp) here, so I don't have to scroll back and
-check the type of lp.
-
-> +	if (!lp) {
-> +		dev_err(dev, "memory allocation failed for private data\n");
-> +		return -ENOMEM;
-> +	}
-> +
-> +	err = gpio_request(pdata->gpio, "LCD-nRESET");
-> +	if (err) {
-> +		dev_err(dev, "gpio [%d] request failed\n", pdata->gpio);
-> +		return err;
-> +	}
-> +
->
-> ...
->
-
-The code looks OK to me, but I do think the naming decisions should be
-revisited, please.
+-- 
+1.7.8.5
 

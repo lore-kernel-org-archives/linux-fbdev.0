@@ -1,59 +1,44 @@
-From: Peter Huewe <peterhuewe@gmx.de>
-Date: Sun, 15 Apr 2012 21:10:09 +0000
-Subject: [PATCH 2/2] video/sis: Remove unused structs SiS_SDRDRAM_TYPE/SiS_DDRDRAM_TYPE
-Message-Id: <1334524209-20518-2-git-send-email-peterhuewe@gmx.de>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Sun, 22 Apr 2012 09:57:40 +0000
+Subject: [PATCH] drivers/video/xen-fbfront.c: add missing cleanup code
+Message-Id: <1335088660-13219-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334524209-20518-1-git-send-email-peterhuewe@gmx.de>
-In-Reply-To: <1334524209-20518-1-git-send-email-peterhuewe@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Winischhofer <thomas@winischhofer.net>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Huewe <peterhuewe@gmx.de>
+To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Cc: kernel-janitors@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, xen-devel@lists.xensource.com, virtualization@lists.linux-foundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This patch removes the unused structs SiS_SDRDRAM_TYPE and SiS_DDRDRAM_TYPE
-from init.h
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-These are not used anywhere so we can delete them.
+The operations in the subsequent error-handling code appear to be also
+useful here.
 
-Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+
 ---
- drivers/video/sis/init.h |   25 -------------------------
- 1 files changed, 0 insertions(+), 25 deletions(-)
+Not tested.
 
-diff --git a/drivers/video/sis/init.h b/drivers/video/sis/init.h
-index 26ffb3e..5c5a96b 100644
---- a/drivers/video/sis/init.h
-+++ b/drivers/video/sis/init.h
-@@ -125,31 +125,6 @@ static const unsigned short __devinitconst SiS_DRAMType[17][5] = {
- 	{0x09,0x08,0x01,0x01,0x00}
- };
+ drivers/video/xen-fbfront.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
+index cb4529c..b0bd59c 100644
+--- a/drivers/video/xen-fbfront.c
++++ b/drivers/video/xen-fbfront.c
+@@ -458,8 +458,13 @@ static int __devinit xenfb_probe(struct xenbus_device *dev,
+ 	xenfb_init_shared_page(info, fb_info);
  
--static const unsigned short SiS_SDRDRAM_TYPE[13][5] -{
--	{ 2,12, 9,64,0x35},
--	{ 1,13, 9,64,0x44},
--	{ 2,12, 8,32,0x31},
--	{ 2,11, 9,32,0x25},
--	{ 1,12, 9,32,0x34},
--	{ 1,13, 8,32,0x40},
--	{ 2,11, 8,16,0x21},
--	{ 1,12, 8,16,0x30},
--	{ 1,11, 9,16,0x24},
--	{ 1,11, 8, 8,0x20},
--	{ 2, 9, 8, 4,0x01},
--	{ 1,10, 8, 4,0x10},
--	{ 1, 9, 8, 2,0x00}
--};
--
--static const unsigned short SiS_DDRDRAM_TYPE[4][5] -{
--	{ 2,12, 9,64,0x35},
--	{ 2,12, 8,32,0x31},
--	{ 2,11, 8,16,0x21},
--	{ 2, 9, 8, 4,0x01}
--};
--
- static const unsigned char SiS_MDA_DAC[]  {
- 	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
--- 
-1.7.3.4
+ 	ret = xenfb_connect_backend(dev, info);
+-	if (ret < 0)
++	if (ret < 0) {
++		fb_deferred_io_cleanup(fb_info);
++		fb_dealloc_cmap(&fb_info->cmap);
++		framebuffer_release(fb_info);
++		xenbus_dev_fatal(dev, ret, "xenfb_connect_backend");
+ 		goto error;
++	}
+ 
+ 	ret = register_framebuffer(fb_info);
+ 	if (ret) {
 

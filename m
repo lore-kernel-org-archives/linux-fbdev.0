@@ -1,53 +1,64 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 23 Apr 2012 07:50:10 +0000
-Subject: Re: [PATCH V3 3/3] OMAPDSS: DISPC: Correct DISPC functional clock usage
-Message-Id: <1335167410.30659.0.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-s3XjJKydvsdSXcHHT1z0"
+From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
+Date: Tue, 24 Apr 2012 13:44:51 +0000
+Subject: Re: [PATCH 0/4] video: add support for the AUO-K190X epd controllers
+Message-Id: <201204241544.52249.heiko@sntech.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1333379598-11544-4-git-send-email-cmahapatra@ti.com>
-	 <1335163610-19737-1-git-send-email-cmahapatra@ti.com>
-In-Reply-To: <1335163610-19737-1-git-send-email-cmahapatra@ti.com>
-To: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-
---=-s3XjJKydvsdSXcHHT1z0
-Content-Type: text/plain; charset="UTF-8"
+References: <201203281932.55438.heiko@sntech.de>
+In-Reply-To: <201203281932.55438.heiko@sntech.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-On Mon, 2012-04-23 at 12:16 +0530, Chandrabhanu Mahapatra wrote:
-> DISPC_FCLK is incorrectly used as functional clock of DISPC in scaling
-> calculations. So, DISPC_CORE_CLK replaces as functional clock of DISPC.
-> DISPC_CORE_CLK is derived from DISPC_FCLK divided by an independent DISPC
-> divisor LCD.
+Hi Florian,
 
-Thanks, I've applied the series to "dev" branch.
+Am Mittwoch, 28. M=E4rz 2012, 19:32:54 schrieb Heiko St=FCbner:
+> This series adds basic support for the AUO-K190X family of epaper
+> controllers which consists at the moment of the K1900 and K1901.
+>=20
+> These controllers are used mostly in the OEM line of Qisda ebook readers
+> sold under different brands worldwide. Among those are the Medion/Thalia
+> Oyo 1 + 2, the bq Avant and Avant 3, the Asus eeeReader DR-900, BenQ K60
+> and dozens more.
+>=20
+> The _dpy_update, _dpy_update_pages and _need_refresh functions are
+> intentional duplicated. Currently they do the same, but as the
+> controllers emit a greatly different runtime behaviour there is a lot
+> of room for future controller-specific performance improvements.
+>=20
+> The series also includes the patch which adds a first_io callback to
+> defio. This creates a nice way to parallelise the wakup when it is known
+> that the controller is needed at the end of the defio cycle.
 
- Tomi
+ping on this series?
+
+Is anything more needed?
 
 
---=-s3XjJKydvsdSXcHHT1z0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Thanks
+Heiko
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJPlQmuAAoJEPo9qoy8lh71gm0P/RYqdvflGAT1M8MCev2NruL4
-yMnVyrwn3yTO1gdiMdJrTNMJGVGVmBbecRdr0gpzExayHiJ1o8tiKHC7Nj8QBXns
-Bff/SHhdQiDKaLOnwafEt4RTXM0HNUZo3yz3mFwYggKEt4yJlwASmxqMj+65z/eE
-FLucwZ9ITmywIRHOSko6NoS/N7SgWPKBpFZAhL00DITf7aDRofCRs8EEm9gc6sti
-p+kE43B/kWVDh1hLFapuNJQ2UpKnkmgtrw7g1sCQuqiE8AdZTvifq8Ea59/4Vt3u
-pyG20uGOFGeCd4L2U2QTyEA2cagDeKj2aPE7w5iJKl8B+NAM+Hqypec5XnbFI7RS
-KGnwEFHir0isboMVuwnaEwyLhdzpi2mHL2OXL8K4GIRtY/vYJG0rVHu5NBEOHzUd
-metBeznUXidOzxc+FsmpSOKN2tb5coH6F3YZp46BhRz3Zq4Sv2Uv0x5ezVEE8cgf
-U203qIABOmukR+e1sRPTiLokJblZBqGPGW35Pq8D+f1D0lqjpVikbtPjOGB3n1Dw
-ji9M6PGMcvDkcx7u249UrN6ICbT7TQ2RvsDzgRwgshqsm5XTHM1QOoQ8jotj844o
-RfzjVQy7orYkaBeMorXQhsknZxfUVQV4HscD1QqcZ3DHFkHe3AVrwrHsCy82qbFG
-iqyBTRoj5Rm4gemgBnL+
-=x3N5
------END PGP SIGNATURE-----
-
---=-s3XjJKydvsdSXcHHT1z0--
+> Heiko Stuebner (4):
+>   fb_defio: add first_io callback
+>   video: auo_k190x: add code shared by controller drivers
+>   video: auo_k190x: add driver for AUO-K1900 variant
+>   video: auo_k190x: add driver for the AUO-K1901 variant
+>=20
+>  drivers/video/Kconfig       |   28 ++
+>  drivers/video/Makefile      |    3 +
+>  drivers/video/auo_k1900fb.c |  198 ++++++++
+>  drivers/video/auo_k1901fb.c |  251 +++++++++++
+>  drivers/video/auo_k190x.c   | 1038
+> +++++++++++++++++++++++++++++++++++++++++++ drivers/video/auo_k190x.h   |=
+=20
+> 129 ++++++
+>  drivers/video/fb_defio.c    |    4 +
+>  include/linux/fb.h          |    1 +
+>  include/video/auo_k190xfb.h |  106 +++++
+>  9 files changed, 1758 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/video/auo_k1900fb.c
+>  create mode 100644 drivers/video/auo_k1901fb.c
+>  create mode 100644 drivers/video/auo_k190x.c
+>  create mode 100644 drivers/video/auo_k190x.h
+>  create mode 100644 include/video/auo_k190xfb.h
 

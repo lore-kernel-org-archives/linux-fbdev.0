@@ -1,128 +1,134 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Mon, 23 Apr 2012 06:19:14 +0000
-Subject: Re: [PATCH] drivers/video/ep93xx-fb.c: clean up error-handling code
-Message-Id: <4F94F462.3010704@gmx.de>
+From: Joe Perches <joe@perches.com>
+Date: Tue, 24 Apr 2012 12:46:26 +0000
+Subject: RE: [PATCH] drivers/video/ep93xx-fb.c: clean up error-handling code
+Message-Id: <1335271586.25429.19.camel@joe2Laptop>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1334777828-3557-1-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1334777828-3557-1-git-send-email-Julia.Lawall@lip6.fr>
+	 <4F8F5938.2000207@gmail.com>
+	 <000401cd1dd2$5f8ee3b0$1eacab10$%han@samsung.com>
+	 <alpine.DEB.2.02.1204190713200.1954@localhost6.localdomain6>
+In-Reply-To: <alpine.DEB.2.02.1204190713200.1954@localhost6.localdomain6>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Julia Lawall <julia.lawall@lip6.fr>
+Cc: Jingoo Han <jg1.han@samsung.com>, 'Ryan Mallon' <rmallon@gmail.com>, 'Florian Tobias Schandinat' <FlorianSchandinat@gmx.de>, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 04/18/2012 07:37 PM, Julia Lawall wrote:
-> From: Julia Lawall <Julia.Lawall@lip6.fr>
-> 
-> There were two problems in this code: failure of the setup function should
-> free locally allocated resources like other nearby failures, and the test
-> if (&info->cmap) can never be false.  To generally clean things up, this
-> patch reorders the error handling code at the failed label and adds labels
-> so that the conditionals are not necessary.
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+On Thu, 2012-04-19 at 07:14 +0200, Julia Lawall wrote:
+> I don't know thw impact of the ./.  I use the options
+>=20
+> --nokeywords --nogit-fallback --subsystem --norolestats -f
+>=20
+> julia
+>=20
+> On Thu, 19 Apr 2012, Jingoo Han wrote:
+>=20
+> >> -----Original Message-----
+> >> From: Ryan Mallon
+[]
+> >> Oddly, scripts/get_maintainer.pl on this file doesn't return me, even
+> >> though, according to git blame, I am the author of 90% of the commits.
+> >> Should I have an entry in the MAINTAINERS file, or is
+> >> scripts/get_maintainer.pl not working properly?
+> >
+> > There are optional differences in using scripts/get_maintainer.pl.
+> > If you use './' ahead of file path, you will see your name.
+> >
+> > Without './' ahead of 'drivers/video/ep93xx-fb.c':
+> > ./scripts/get_maintainer.pl --file drivers/video/ep93xx-fb.c
+> > Florian Tobias Schandinat <FlorianSchandinat@gmx.de> (maintainer:FRAMEB=
+UFFER LAYER)
+> > linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER)
+> > linux-kernel@vger.kernel.org (open list)
+> >
+> > With './' ahead of 'drivers/video/ep93xx-fb.c':
+> > ./scripts/get_maintainer.pl --file ./drivers/video/ep93xx-fb.c
+> > Ryan Mallon <rmallon@gmail.com> (commit_signer:2/3g%)
+> > Paul Gortmaker <paul.gortmaker@windriver.com> (commit_signer:1/33%)
+> > H Hartley Sweeten <hsweeten@visionengravers.com> (commit_signer:1/33%)
+> > Jesper Juhl <jj@chaosbits.net> (commit_signer:1/33%)
+> > Jiri Kosina <jkosina@suse.cz> (commit_signer:1/33%)
+> > linux-kernel@vger.kernel.org (open list)
 
-Applied.
+Prefixing "./" to the file path bypasses the normal
+get_maintainers pattern check for file maintainership.
 
+Florian Schandinat and linux-fbdev are not returned
+in the second lookup above.
 
-Thanks,
+One of the patterns for FRAMEBUFFER is
+F:	drivers/video/
+which is a direct match for is ep93xx-fb.c file,
+so --git is not used by default.
 
-Florian Tobias Schandinat
+Adding --git may be appropriate and it also returns
+Ryan's name in this case.
 
-> 
-> ---
-> Not tested.
-> 
->  drivers/video/ep93xx-fb.c |   32 +++++++++++++++++---------------
->  1 file changed, 17 insertions(+), 15 deletions(-)
-> 
-> diff --git a/drivers/video/ep93xx-fb.c b/drivers/video/ep93xx-fb.c
-> index f8babbe..345d962 100644
-> --- a/drivers/video/ep93xx-fb.c
-> +++ b/drivers/video/ep93xx-fb.c
-> @@ -507,16 +507,16 @@ static int __devinit ep93xxfb_probe(struct platform_device *pdev)
->  
->  	err = fb_alloc_cmap(&info->cmap, 256, 0);
->  	if (err)
-> -		goto failed;
-> +		goto failed_cmap;
->  
->  	err = ep93xxfb_alloc_videomem(info);
->  	if (err)
-> -		goto failed;
-> +		goto failed_videomem;
->  
->  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->  	if (!res) {
->  		err = -ENXIO;
-> -		goto failed;
-> +		goto failed_resource;
->  	}
->  
->  	/*
-> @@ -532,7 +532,7 @@ static int __devinit ep93xxfb_probe(struct platform_device *pdev)
->  	fbi->mmio_base = ioremap(res->start, resource_size(res));
->  	if (!fbi->mmio_base) {
->  		err = -ENXIO;
-> -		goto failed;
-> +		goto failed_resource;
->  	}
->  
->  	strcpy(info->fix.id, pdev->name);
-> @@ -553,24 +553,24 @@ static int __devinit ep93xxfb_probe(struct platform_device *pdev)
->  	if (err = 0) {
->  		dev_err(info->dev, "No suitable video mode found\n");
->  		err = -EINVAL;
-> -		goto failed;
-> +		goto failed_mode;
->  	}
->  
->  	if (mach_info->setup) {
->  		err = mach_info->setup(pdev);
->  		if (err)
-> -			return err;
-> +			goto failed_mode;
->  	}
->  
->  	err = ep93xxfb_check_var(&info->var, info);
->  	if (err)
-> -		goto failed;
-> +		goto failed_check;
->  
->  	fbi->clk = clk_get(info->dev, NULL);
->  	if (IS_ERR(fbi->clk)) {
->  		err = PTR_ERR(fbi->clk);
->  		fbi->clk = NULL;
-> -		goto failed;
-> +		goto failed_check;
->  	}
->  
->  	ep93xxfb_set_par(info);
-> @@ -585,15 +585,17 @@ static int __devinit ep93xxfb_probe(struct platform_device *pdev)
->  	return 0;
->  
->  failed:
-> -	if (fbi->clk)
-> -		clk_put(fbi->clk);
-> -	if (fbi->mmio_base)
-> -		iounmap(fbi->mmio_base);
-> -	ep93xxfb_dealloc_videomem(info);
-> -	if (&info->cmap)
-> -		fb_dealloc_cmap(&info->cmap);
-> +	clk_put(fbi->clk);
-> +failed_check:
->  	if (fbi->mach_info->teardown)
->  		fbi->mach_info->teardown(pdev);
-> +failed_mode:
-> +	iounmap(fbi->mmio_base);
-> +failed_resource:
-> +	ep93xxfb_dealloc_videomem(info);
-> +failed_videomem:
-> +	fb_dealloc_cmap(&info->cmap);
-> +failed_cmap:
->  	kfree(info);
->  	platform_set_drvdata(pdev, NULL);
->  
-> 
-> 
+$ ./scripts/get_maintainer.pl -f drivers/video/ep93xx-fb.c
+Florian Tobias Schandinat <FlorianSchandinat@gmx.de> (maintainer:FRAMEBUFFE=
+R LAYER)
+linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER)
+linux-kernel@vger.kernel.org (open list)
+
+$ ./scripts/get_maintainer.pl --git -f drivers/video/ep93xx-fb.c
+Florian Tobias Schandinat <FlorianSchandinat@gmx.de> (maintainer:FRAMEBUFFE=
+R LAYER)
+Ryan Mallon <rmallon@gmail.com> (commit_signer:2/3g%)
+Paul Gortmaker <paul.gortmaker@windriver.com> (commit_signer:1/33%)
+H Hartley Sweeten <hsweeten@visionengravers.com> (commit_signer:1/33%)
+Jesper Juhl <jj@chaosbits.net> (commit_signer:1/33%)
+Jiri Kosina <jkosina@suse.cz> (commit_signer:1/33%)
+linux-fbdev@vger.kernel.org (open list:FRAMEBUFFER LAYER)
+linux-kernel@vger.kernel.org (open list)
+
+Nominally, as framebuffer maintainer, Florian
+should also have "signed-off" on these commits,
+but many subsystems don't actually have a
+single path or person for patches and commits.
+
+This file came into the tree via Andrew Morton.
+
+Another way to investigate who actually does
+work on an individual file is to use the
+get_maintainer.pl option "--interactive".
+
+That can give you an output like:
+
+*  # email/list and role:stats                                        auth =
+sign
+*  1 Florian Tobias Schandinat <FlorianSchandinat@gmx.de>            =20
+     maintainer:FRAMEBUFFER LAYER
+*  2 Ryan Mallon <rmallon@gmail.com>                                     4 =
+   4
+     commit_signer:2/3g%,authored lines:645/650=99%,commits:4/8P%
+*  3 Paul Gortmaker <paul.gortmaker@windriver.com>                       1 =
+   1
+     commit_signer:1/33%,commits:1/8=12%
+*  4 H Hartley Sweeten <hsweeten@visionengravers.com>                    0 =
+   2
+     commit_signer:1/33%,commits:2/8%%
+*  5 Jesper Juhl <jj@chaosbits.net>                                      0 =
+   1
+     commit_signer:1/33%
+*  6 Jiri Kosina <jkosina@suse.cz>                                       0 =
+   1
+     commit_signer:1/33%
+*  7 Andrew Morton <akpm@linux-foundation.org>                           0 =
+   2
+     commits:2/8%%
+*  8 Russell King <rmk+kernel@arm.linux.org.uk>                          0 =
+   1
+     commits:1/8=12%
+*  9 linux-fbdev@vger.kernel.org                                     =20
+     open list:FRAMEBUFFER LAYER
+* 10 linux-kernel@vger.kernel.org                                    =20
+     open list
+
+About maintainership for individual files:
+
+If anyone thinks they are the maintainer for
+a particular file, generally they should submit
+a patch to MAINTAINERS adding a section with
+their name, maintainership level and an
+appropriate file pattern.
 

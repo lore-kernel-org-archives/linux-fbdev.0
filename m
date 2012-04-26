@@ -1,87 +1,160 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Date: Thu, 19 Apr 2012 07:52:48 +0000
-Subject: Re: [PATCH] backlight: Add LMS501KF03 LCD panel driver
-Message-Id: <CAK9yfHzw_FUJTGg2E-6oQrFU9LcU+gY8TdLAXn=euOyCSSr33Q@mail.gmail.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Thu, 26 Apr 2012 12:37:19 +0000
+Subject: [PATCH] i2c: Split I2C_M_NOSTART support out of I2C_FUNC_PROTOCOL_MANGLING
+Message-Id: <1335443839-22872-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334558406-22576-1-git-send-email-sachin.kamat@linaro.org>
-In-Reply-To: <1334558406-22576-1-git-send-email-sachin.kamat@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>, Wolfram Sang <w.sang-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Cc: Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>
 
-On 18/04/2012, Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
-> On 04/16/2012 06:40 AM, Sachin Kamat wrote:
->> LMS501KF03 is a 480x800 LCD module with brightness control.
->> The driver uses 3-wired SPI inteface.
->>
->> Signed-off-by: Ilho Lee <Ilho215.lee@samsung.com>
->> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
->> ---
->
->> diff --git a/drivers/video/backlight/lms501kf03.c
->> b/drivers/video/backlight/lms501kf03.c
->> new file mode 100644
->> index 0000000..3dc85d4
->> --- /dev/null
->> +++ b/drivers/video/backlight/lms501kf03.c
->> +static int lms501kf03_ldi_enable(struct lms501kf03 *lcd)
->> +{
->> +	int ret, i;
->> +	const unsigned short *init_seq[] = {
->> +		SEQ_DISPLAY_ON,
->> +	};
->
-> Is this array expected to grow at some point?
-> Otherwise I'd suggest to get rid of it and simplify the code below.
+Since there are uses for I2C_M_NOSTART which are much more sensible and
+standard than most of the protocol mangling functionality (the main one
+being gather writes to devices where something like a register address
+needs to be inserted before a block of data) create a new I2C_FUNC_NOSTART
+for this feature and update all the users to use it.
 
-OK. I will simplify the code.
+In the case of regmap-i2c we remove the requirement for mangling as
+I2C_M_NOSTART is the only mangling feature which is being used.
 
->
->> +
->> +	for (i = 0; i < ARRAY_SIZE(init_seq); i++) {
->> +		ret = lms501kf03_panel_send_sequence(lcd, init_seq[i]);
->> +		if (ret)
->> +			break;
->> +	}
->> +
->> +	return ret;
->> +}
->> +
->> +static int lms501kf03_ldi_disable(struct lms501kf03 *lcd)
->> +{
->> +	int ret, i;
->> +
->> +	const unsigned short *init_seq[] = {
->> +		SEQ_DISPLAY_OFF,
->> +	};
->
-> dito
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ Documentation/i2c/functionality       |    1 +
+ drivers/base/regmap/regmap-i2c.c      |    2 +-
+ drivers/i2c/algos/i2c-algo-bit.c      |    2 +-
+ drivers/i2c/algos/i2c-algo-pcf.c      |    2 +-
+ drivers/i2c/busses/i2c-nuc900.c       |    3 ++-
+ drivers/i2c/busses/i2c-s3c2410.c      |    3 ++-
+ drivers/input/joystick/as5011.c       |    1 +
+ drivers/video/matrox/matroxfb_maven.c |    1 +
+ include/linux/i2c.h                   |    3 ++-
+ 9 files changed, 12 insertions(+), 6 deletions(-)
 
-OK.
-
->
->> +
->> +	for (i = 0; i < ARRAY_SIZE(init_seq); i++) {
->> +		ret = lms501kf03_panel_send_sequence(lcd, init_seq[i]);
->> +		if (ret)
->> +			break;
->> +	}
->> +
->> +	return ret;
->> +}
->
->
-
-Thank you for reviewing the code. I will re-send the patch with above
-suggested changes.
-
-> Best regards,
->
-> Florian Tobias Schandinat
->
-
-
+diff --git a/Documentation/i2c/functionality b/Documentation/i2c/functionality
+index 42c17c1..fb2e77e 100644
+--- a/Documentation/i2c/functionality
++++ b/Documentation/i2c/functionality
+@@ -33,6 +33,7 @@ For the most up-to-date list of functionality constants, please check
+   I2C_FUNC_SMBUS_WRITE_BLOCK_DATA Handles the SMBus write_block_data command
+   I2C_FUNC_SMBUS_READ_I2C_BLOCK   Handles the SMBus read_i2c_block_data command
+   I2C_FUNC_SMBUS_WRITE_I2C_BLOCK  Handles the SMBus write_i2c_block_data command
++  I2C_FUNC_NOSTART                Transfers can be sent without a start
+ 
+ A few combinations of the above flags are also defined for your convenience:
+ 
+diff --git a/drivers/base/regmap/regmap-i2c.c b/drivers/base/regmap/regmap-i2c.c
+index 5f6b247..fa6bf52 100644
+--- a/drivers/base/regmap/regmap-i2c.c
++++ b/drivers/base/regmap/regmap-i2c.c
+@@ -42,7 +42,7 @@ static int regmap_i2c_gather_write(void *context,
+ 	/* If the I2C controller can't do a gather tell the core, it
+ 	 * will substitute in a linear write for us.
+ 	 */
+-	if (!i2c_check_functionality(i2c->adapter, I2C_FUNC_PROTOCOL_MANGLING))
++	if (!i2c_check_functionality(i2c->adapter, I2C_FUNC_NOSTART))
+ 		return -ENOTSUPP;
+ 
+ 	xfer[0].addr = i2c->addr;
+diff --git a/drivers/i2c/algos/i2c-algo-bit.c b/drivers/i2c/algos/i2c-algo-bit.c
+index 7f0b832..fad22b0 100644
+--- a/drivers/i2c/algos/i2c-algo-bit.c
++++ b/drivers/i2c/algos/i2c-algo-bit.c
+@@ -608,7 +608,7 @@ bailout:
+ 
+ static u32 bit_func(struct i2c_adapter *adap)
+ {
+-	return I2C_FUNC_I2C | I2C_FUNC_SMBUS_EMUL |
++	return I2C_FUNC_I2C | I2C_FUNC_NOSTART | I2C_FUNC_SMBUS_EMUL |
+ 	       I2C_FUNC_SMBUS_READ_BLOCK_DATA |
+ 	       I2C_FUNC_SMBUS_BLOCK_PROC_CALL |
+ 	       I2C_FUNC_10BIT_ADDR | I2C_FUNC_PROTOCOL_MANGLING;
+diff --git a/drivers/i2c/algos/i2c-algo-pcf.c b/drivers/i2c/algos/i2c-algo-pcf.c
+index 5c23795..8b38986 100644
+--- a/drivers/i2c/algos/i2c-algo-pcf.c
++++ b/drivers/i2c/algos/i2c-algo-pcf.c
+@@ -401,7 +401,7 @@ out:
+ 
+ static u32 pcf_func(struct i2c_adapter *adap)
+ {
+-	return I2C_FUNC_I2C | I2C_FUNC_SMBUS_EMUL |
++	return I2C_FUNC_I2C | I2C_FUNC_NOSTART | I2C_FUNC_SMBUS_EMUL |
+ 	       I2C_FUNC_PROTOCOL_MANGLING;
+ }
+ 
+diff --git a/drivers/i2c/busses/i2c-nuc900.c b/drivers/i2c/busses/i2c-nuc900.c
+index 03b6157..a26dfb8 100644
+--- a/drivers/i2c/busses/i2c-nuc900.c
++++ b/drivers/i2c/busses/i2c-nuc900.c
+@@ -502,7 +502,8 @@ static int nuc900_i2c_xfer(struct i2c_adapter *adap,
+ /* declare our i2c functionality */
+ static u32 nuc900_i2c_func(struct i2c_adapter *adap)
+ {
+-	return I2C_FUNC_I2C | I2C_FUNC_SMBUS_EMUL | I2C_FUNC_PROTOCOL_MANGLING;
++	return I2C_FUNC_I2C | I2C_FUNC_SMBUS_EMUL | I2C_FUNC_NOSTART |
++		I2C_FUNC_PROTOCOL_MANGLING;
+ }
+ 
+ /* i2c bus registration info */
+diff --git a/drivers/i2c/busses/i2c-s3c2410.c b/drivers/i2c/busses/i2c-s3c2410.c
+index 8764d6a..faa1f23 100644
+--- a/drivers/i2c/busses/i2c-s3c2410.c
++++ b/drivers/i2c/busses/i2c-s3c2410.c
+@@ -591,7 +591,8 @@ static int s3c24xx_i2c_xfer(struct i2c_adapter *adap,
+ /* declare our i2c functionality */
+ static u32 s3c24xx_i2c_func(struct i2c_adapter *adap)
+ {
+-	return I2C_FUNC_I2C | I2C_FUNC_SMBUS_EMUL | I2C_FUNC_PROTOCOL_MANGLING;
++	return I2C_FUNC_I2C | I2C_FUNC_SMBUS_EMUL | I2C_FUNC_NOSTART |
++		I2C_FUNC_PROTOCOL_MANGLING;
+ }
+ 
+ /* i2c bus registration info */
+diff --git a/drivers/input/joystick/as5011.c b/drivers/input/joystick/as5011.c
+index 3063464..57d19d4 100644
+--- a/drivers/input/joystick/as5011.c
++++ b/drivers/input/joystick/as5011.c
+@@ -231,6 +231,7 @@ static int __devinit as5011_probe(struct i2c_client *client,
+ 	}
+ 
+ 	if (!i2c_check_functionality(client->adapter,
++				     I2C_FUNC_NOSTART |
+ 				     I2C_FUNC_PROTOCOL_MANGLING)) {
+ 		dev_err(&client->dev,
+ 			"need i2c bus that supports protocol mangling\n");
+diff --git a/drivers/video/matrox/matroxfb_maven.c b/drivers/video/matrox/matroxfb_maven.c
+index 31b8f67..217678e 100644
+--- a/drivers/video/matrox/matroxfb_maven.c
++++ b/drivers/video/matrox/matroxfb_maven.c
+@@ -1243,6 +1243,7 @@ static int maven_probe(struct i2c_client *client,
+ 
+ 	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_WRITE_WORD_DATA |
+ 					      I2C_FUNC_SMBUS_BYTE_DATA |
++					      I2C_FUNC_NOSTART |
+ 					      I2C_FUNC_PROTOCOL_MANGLING))
+ 		goto ERROR0;
+ 	if (!(data = kzalloc(sizeof(*data), GFP_KERNEL))) {
+diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+index 195d8b3..c18b5b1 100644
+--- a/include/linux/i2c.h
++++ b/include/linux/i2c.h
+@@ -540,7 +540,7 @@ struct i2c_msg {
+ 	__u16 flags;
+ #define I2C_M_TEN		0x0010	/* this is a ten bit chip address */
+ #define I2C_M_RD		0x0001	/* read data, from slave to master */
+-#define I2C_M_NOSTART		0x4000	/* if I2C_FUNC_PROTOCOL_MANGLING */
++#define I2C_M_NOSTART		0x4000	/* if I2C_FUNC_NOSTART */
+ #define I2C_M_REV_DIR_ADDR	0x2000	/* if I2C_FUNC_PROTOCOL_MANGLING */
+ #define I2C_M_IGNORE_NAK	0x1000	/* if I2C_FUNC_PROTOCOL_MANGLING */
+ #define I2C_M_NO_RD_ACK		0x0800	/* if I2C_FUNC_PROTOCOL_MANGLING */
+@@ -568,6 +568,7 @@ struct i2c_msg {
+ #define I2C_FUNC_SMBUS_WRITE_BLOCK_DATA 0x02000000
+ #define I2C_FUNC_SMBUS_READ_I2C_BLOCK	0x04000000 /* I2C-like block xfer  */
+ #define I2C_FUNC_SMBUS_WRITE_I2C_BLOCK	0x08000000 /* w/ 1-byte reg. addr. */
++#define I2C_FUNC_NOSTART		0x10000000 /* I2C_M_NOSTART */
+ 
+ #define I2C_FUNC_SMBUS_BYTE		(I2C_FUNC_SMBUS_READ_BYTE | \
+ 					 I2C_FUNC_SMBUS_WRITE_BYTE)
 -- 
-With warm regards,
-Sachin
+1.7.10
+

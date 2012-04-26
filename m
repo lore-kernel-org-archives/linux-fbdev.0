@@ -1,136 +1,119 @@
-From: "Andrew G. Morgan" <morgan@kernel.org>
-Date: Wed, 04 Apr 2012 04:24:20 +0000
-Subject: Re: [PATCH] userns: Replace netlink uses of cap_raised with capable.
-Message-Id: <CALQRfL50EL7k_G3oDwEzeJDRmCEPztkPx3aVHo6c-c6QbDjjzA@mail.gmail.com>
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Date: Thu, 26 Apr 2012 21:42:22 +0000
+Subject: Re: [Xen-devel] [PATCH] drivers/video/xen-fbfront.c: add missing cleanup code
+Message-Id: <20120426214222.GA11289@phenom.dumpdata.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <m1mx6sz2f2.fsf@fess.ebiederm.org>
-	<20120404022652.GA18730@mail.hallyn.com>
-	<m1sjgkxlic.fsf@fess.ebiederm.org>
-In-Reply-To: <m1sjgkxlic.fsf@fess.ebiederm.org>
+References: <1335088660-13219-1-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <1335088660-13219-1-git-send-email-Julia.Lawall@lip6.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>, Andrew Morton <akpm@linux-foundation.org>, Philipp Reisner <philipp.reisner@linbit.com>, Patrick McHardy <kaber@trash.net>, Vasiliy Kulikov <segoon@openwall.com>, David Howells <dhowells@redhat.com>, Neil Brown <neilb@suse.de>, Michal Januszewski <spock@gentoo.org>, linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-raid@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Julia Lawall <Julia.Lawall@lip6.fr>, FlorianSchandinat@gmx.de
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, virtualization@lists.linux-foundation.org
 
-Acked-by: Andrew G. Morgan <morgan@kernel.org>
+On Sun, Apr 22, 2012 at 11:57:40AM +0200, Julia Lawall wrote:
+> From: Julia Lawall <Julia.Lawall@lip6.fr>
+> 
+> The operations in the subsequent error-handling code appear to be also
+> useful here.
 
-Cheers
+How about doing it this way?
+Florian, are you OK me carrying this patch in my tree for Linus or would
+you prefer to do it?
 
-Andrew
+commit a833fb9973b47cb30d1086e73f20b62a425bcd85
+Author: Julia Lawall <Julia.Lawall@lip6.fr>
+Date:   Sun Apr 22 11:57:40 2012 +0200
 
-On Tue, Apr 3, 2012 at 7:45 PM, Eric W. Biederman <ebiederm@xmission.com> w=
-rote:
-> "Serge E. Hallyn" <serge@hallyn.com> writes:
->
->> Quoting Eric W. Biederman (ebiederm@xmission.com):
->>>
->>> In 2009 Philip Reiser notied that a few users of netlink connector
->>> interface needed a capability check and added the idiom
->>> cap_raised(nsp->eff_cap, CAP_SYS_ADMIN) to a few of them, on the premise
->>> that netlink was asynchronous.
->>>
->>> In 2011 Patrick McHardy noticed we were being silly because netlink is
->>> synchronous and removed eff_cap from the netlink_skb_params and changed
->>> the idiom to cap_raised(current_cap(), CAP_SYS_ADMIN).
->>>
->>> Looking at those spots with a fresh eye we should be calling
->>> capable(CAP_SYS_ADMIN). =A0The only reason I can see for not calling
->>> capable is that it once appeared we were not in the same task as the
->>> caller which would have made calling capable() impossible.
->>
->> And (just to make sure) that is now absolutely not the case?
->
-> Absolutely. =A0Netlink is synchronous.
->
-> I reread netlink_unicast_kernel() in net/netlink/af_netlink.c while
-> researching this patch.
->
-> Netlink has been synchronous since 2007. =A0In a world of perfect
-> knowledge transmission these calls could have been calls to capable
-> from the very beginning.
->
->>> In the initial user_namespace the only difference between =A0between
->>> cap_raised(current_cap(), CAP_SYS_ADMIN) and capable(CAP_SYS_ADMIN)
->>> are a few sanity checks and the fact that capable(CAP_SYS_ADMIN)
->>> sets PF_SUPERPRIV if we use the capability.
->>>
->>> Since we are going to be using root privilege setting PF_SUPERPRIV
->>> seems the right thing to do.
->>>
->>> The motivation for this that patch is that in a child user namespace
->>> cap_raised(current_cap(),...) tests your capabilities with respect to
->>> that child user namespace not capabilities in the initial user namespace
->>> and thus will allow processes that should be unprivielged to use the
->>> kernel services that are only protected with
->>> cap_raised(current_cap(),..).
->>>
->>> To fix possible user_namespace issues and to just clean up the code
->>> replace cap_raised(current_cap(), CAP_SYS_ADMIN) with
->>> capable(CAP_SYS_ADMIN).
->>>
->>> Cc: Patrick McHardy <kaber@trash.net>
->>> Cc: Philipp Reisner <philipp.reisner@linbit.com>
->>> Cc: Serge E. Hallyn <serge.hallyn@canonical.com>
->>
->> Acked-by: Serge E. Hallyn <serge.hallyn@canonical.com>
->>
->> thanks,
->> -serge
->>
->>> Cc: Andrew Morgan <morgan@kernel.org>
->>> Cc: Vasiliy Kulikov <segoon@openwall.com>
->>> Cc: David Howells <dhowells@redhat.com>
->>> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
->>> ---
->>> =A0drivers/block/drbd/drbd_nl.c =A0 =A0 =A0 =A0 =A0 | =A0 =A02 +-
->>> =A0drivers/md/dm-log-userspace-transfer.c | =A0 =A02 +-
->>> =A0drivers/video/uvesafb.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A02 +-
->>> =A03 files changed, 3 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/drivers/block/drbd/drbd_nl.c b/drivers/block/drbd/drbd_nl.c
->>> index abfaaca..946166e 100644
->>> --- a/drivers/block/drbd/drbd_nl.c
->>> +++ b/drivers/block/drbd/drbd_nl.c
->>> @@ -2297,7 +2297,7 @@ static void drbd_connector_callback(struct cn_msg=
- *req, struct netlink_skb_parms
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0return;
->>> =A0 =A0 =A0}
->>>
->>> - =A0 =A0if (!cap_raised(current_cap(), CAP_SYS_ADMIN)) {
->>> + =A0 =A0if (!capable(CAP_SYS_ADMIN)) {
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0retcode =3D ERR_PERM;
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0goto fail;
->>> =A0 =A0 =A0}
->>> diff --git a/drivers/md/dm-log-userspace-transfer.c b/drivers/md/dm-log=
--userspace-transfer.c
->>> index 1f23e04..08d9a20 100644
->>> --- a/drivers/md/dm-log-userspace-transfer.c
->>> +++ b/drivers/md/dm-log-userspace-transfer.c
->>> @@ -134,7 +134,7 @@ static void cn_ulog_callback(struct cn_msg *msg, st=
-ruct netlink_skb_parms *nsp)
->>> =A0{
->>> =A0 =A0 =A0struct dm_ulog_request *tfr =3D (struct dm_ulog_request *)(m=
-sg + 1);
->>>
->>> - =A0 =A0if (!cap_raised(current_cap(), CAP_SYS_ADMIN))
->>> + =A0 =A0if (!capable(CAP_SYS_ADMIN))
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0return;
->>>
->>> =A0 =A0 =A0spin_lock(&receiving_list_lock);
->>> diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
->>> index 260cca7..9f7d27a 100644
->>> --- a/drivers/video/uvesafb.c
->>> +++ b/drivers/video/uvesafb.c
->>> @@ -73,7 +73,7 @@ static void uvesafb_cn_callback(struct cn_msg *msg, s=
-truct netlink_skb_parms *ns
->>> =A0 =A0 =A0struct uvesafb_task *utask;
->>> =A0 =A0 =A0struct uvesafb_ktask *task;
->>>
->>> - =A0 =A0if (!cap_raised(current_cap(), CAP_SYS_ADMIN))
->>> + =A0 =A0if (!capable(CAP_SYS_ADMIN))
->>> =A0 =A0 =A0 =A0 =A0 =A0 =A0return;
->>>
->>> =A0 =A0 =A0if (msg->seq >=3D UVESAFB_TASKS_MAX)
->>> --
->>> 1.7.2.5
+    drivers/video/xen-fbfront.c: add missing cleanup code
+    
+    The operations in the subsequent error-handling code appear to be also
+    useful here.
+    
+    Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+    [v1: Collapse some of the error handling functions]
+    Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+
+diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
+index cb4529c..aa42160 100644
+--- a/drivers/video/xen-fbfront.c
++++ b/drivers/video/xen-fbfront.c
+@@ -458,26 +458,31 @@ static int __devinit xenfb_probe(struct xenbus_device *dev,
+ 	xenfb_init_shared_page(info, fb_info);
+ 
+ 	ret = xenfb_connect_backend(dev, info);
+-	if (ret < 0)
+-		goto error;
++	if (ret < 0) {
++		xenbus_dev_fatal(dev, ret, "xenfb_connect_backend");
++		goto error_fb;
++	}
+ 
+ 	ret = register_framebuffer(fb_info);
+ 	if (ret) {
+-		fb_deferred_io_cleanup(fb_info);
+-		fb_dealloc_cmap(&fb_info->cmap);
+-		framebuffer_release(fb_info);
+ 		xenbus_dev_fatal(dev, ret, "register_framebuffer");
+-		goto error;
++		goto error_fb;
+ 	}
+ 	info->fb_info = fb_info;
+ 
+ 	xenfb_make_preferred_console();
+ 	return 0;
+ 
+- error_nomem:
+-	ret = -ENOMEM;
+-	xenbus_dev_fatal(dev, ret, "allocating device memory");
+- error:
++error_fb:
++	fb_deferred_io_cleanup(fb_info);
++	fb_dealloc_cmap(&fb_info->cmap);
++	framebuffer_release(fb_info);
++error_nomem:
++	if (!ret) {
++		ret = -ENOMEM;
++		xenbus_dev_fatal(dev, ret, "allocating device memory");
++	}
++error:
+ 	xenfb_remove(dev);
+ 	return ret;
+ }
+
+
+
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> 
+> ---
+> Not tested.
+> 
+>  drivers/video/xen-fbfront.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
+> index cb4529c..b0bd59c 100644
+> --- a/drivers/video/xen-fbfront.c
+> +++ b/drivers/video/xen-fbfront.c
+> @@ -458,8 +458,13 @@ static int __devinit xenfb_probe(struct xenbus_device *dev,
+>  	xenfb_init_shared_page(info, fb_info);
+>  
+>  	ret = xenfb_connect_backend(dev, info);
+> -	if (ret < 0)
+> +	if (ret < 0) {
+> +		fb_deferred_io_cleanup(fb_info);
+> +		fb_dealloc_cmap(&fb_info->cmap);
+> +		framebuffer_release(fb_info);
+> +		xenbus_dev_fatal(dev, ret, "xenfb_connect_backend");
+>  		goto error;
+> +	}
+>  
+>  	ret = register_framebuffer(fb_info);
+>  	if (ret) {
+> 
+> 
+> _______________________________________________
+> Xen-devel mailing list
+> Xen-devel@lists.xen.org
+> http://lists.xen.org/xen-devel

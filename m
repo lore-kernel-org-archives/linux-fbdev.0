@@ -1,109 +1,100 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Mon, 02 Apr 2012 15:25:17 +0000
-Subject: [PATCH V3 2/3] OMAPDSS: DISPC: Handle synclost errors in OMAP3
-Message-Id: <1333379598-11544-3-git-send-email-cmahapatra@ti.com>
+From: Heiko =?utf-8?q?St=C3=BCbner?= <heiko@sntech.de>
+Date: Sat, 28 Apr 2012 10:19:10 +0000
+Subject: [PATCH v2 1/4] fb_defio: add first_io callback
+Message-Id: <201204281219.10452.heiko@sntech.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1333379598-11544-1-git-send-email-cmahapatra@ti.com>
- <1333379598-11544-2-git-send-email-cmahapatra@ti.com>
-In-Reply-To: <1333379598-11544-2-git-send-email-cmahapatra@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-SW4gT01BUDMgRElTUEMgdmlkZW8gb3ZlcmxheXMgc3VmZmVyIGZyb20gc29tZSB1bmRvY3VtZW50
-ZWQgaG9yaXpvbnRhbCBwb3NpdGlvbgphbmQgdGltaW5nIHJlbGF0ZWQgbGltaXRhdGlvbnMgbGVh
-ZGluZyB0byBTWU5DTE9TVCBlcnJvcnMuIFdoZW5ldmVyIHRoZSBpbWFnZQp3aW5kb3cgaXMgbW92
-ZWQgdG93YXJkcyB0aGUgcmlnaHQgb2YgdGhlIHNjcmVlbiBTWU5DTE9TVCBlcnJvcnMgYmVjb21l
-CmZyZXF1ZW50LiBDaGVja3MgaGF2ZSBiZWVuIGltcGxlbWVudGVkIHRvIHNlZSB0aGF0IERJU1BD
-IGRyaXZlciByZWplY3RzCmNvbmZpZ3VyYXRpb24gZXhjZWVkaW5nIGFib3ZlIGxpbWl0YXRpb25z
-LgoKVGhpcyBjb2RlIHdhcyBzdWNjZXNzZnVsbHkgdGVzdGVkIG9uIE9NQVAzLiBUaGlzIGNvZGUg
-aXMgd3JpdHRlbiBiYXNlZCBvbiBjb2RlCndyaXR0ZW4gYnkgVmlsbGUgU3lyasOkbMOkIDx2aWxs
-ZS5zeXJqYWxhQG5va2lhLmNvbT4gaW4gTGludXggT01BUCBrZXJuZWwuIFZpbGxlClN5cmrDpGzD
-pCA8dmlsbGUuc3lyamFsYUBub2tpYS5jb20+IGhhZCBhZGRlZCBjaGVja3MgZm9yIHZpZGVvIG92
-ZXJsYXkgaG9yaXpvbnRhbAp0aW1pbmcgYW5kIERJU1BDIGhvcml6b250YWwgYmxhbmtpbmcgbGVu
-Z3RoIGxpbWl0YXRpb25zLgoKU2lnbmVkLW9mZi1ieTogQ2hhbmRyYWJoYW51IE1haGFwYXRyYSA8
-Y21haGFwYXRyYUB0aS5jb20+Ci0tLQogZHJpdmVycy92aWRlby9vbWFwMi9kc3MvZGlzcGMuYyB8
-ICAgNzIgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0tCiAxIGZpbGVzIGNo
-YW5nZWQsIDY5IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJp
-dmVycy92aWRlby9vbWFwMi9kc3MvZGlzcGMuYyBiL2RyaXZlcnMvdmlkZW8vb21hcDIvZHNzL2Rp
-c3BjLmMKaW5kZXggNGFiNTQzMy4uMTdmZmE3MSAxMDA2NDQKLS0tIGEvZHJpdmVycy92aWRlby9v
-bWFwMi9kc3MvZGlzcGMuYworKysgYi9kcml2ZXJzL3ZpZGVvL29tYXAyL2Rzcy9kaXNwYy5jCkBA
-IC0xNjY0LDYgKzE2NjQsNjMgQEAgc3RhdGljIHZvaWQgY2FsY19kbWFfcm90YXRpb25fb2Zmc2V0
-KHU4IHJvdGF0aW9uLCBib29sIG1pcnJvciwKIAl9CiB9CiAKKy8qCisgKiBUaGlzIGZ1bmN0aW9u
-IGlzIHVzZWQgdG8gYXZvaWQgc3luY2xvc3RzIGluIE9NQVAzLCBiZWNhdXNlIG9mIHNvbWUKKyAq
-IHVuZG9jdW1lbnRlZCBob3Jpem9udGFsIHBvc2l0aW9uIGFuZCB0aW1pbmcgcmVsYXRlZCBsaW1p
-dGF0aW9ucy4KKyAqLworc3RhdGljIGludCBjaGVja19ob3Jpel90aW1pbmdfb21hcDMoZW51bSBv
-bWFwX2NoYW5uZWwgY2hhbm5lbCwgdTE2IHBvc194LAorCQl1MTYgd2lkdGgsIHUxNiBoZWlnaHQs
-IHUxNiBvdXRfd2lkdGgsIHUxNiBvdXRfaGVpZ2h0KQoreworCWludCBEUyA9IERJVl9ST1VORF9V
-UChoZWlnaHQsIG91dF9oZWlnaHQpOworCXN0cnVjdCBvbWFwX2Rzc19kZXZpY2UgKmRzc2RldiA9
-IGRpc3BjX21ncl9nZXRfZGV2aWNlKGNoYW5uZWwpOworCXN0cnVjdCBvbWFwX3ZpZGVvX3RpbWlu
-Z3MgdCA9IGRzc2Rldi0+cGFuZWwudGltaW5nczsKKwl1bnNpZ25lZCBsb25nIG5vbmFjdGl2ZSwg
-bGNsaywgcGNsazsKKwlzdGF0aWMgY29uc3QgdTggbGltaXRzWzNdID0geyA4LCAxMCwgMjAgfTsK
-Kwl1NjQgdmFsLCBibGFuazsKKwlpbnQgaTsKKworCW5vbmFjdGl2ZSA9IHQueF9yZXMgKyB0Lmhm
-cCArIHQuaHN3ICsgdC5oYnAgLSBvdXRfd2lkdGg7CisJcGNsayA9IGRpc3BjX21ncl9wY2xrX3Jh
-dGUoY2hhbm5lbCk7CisJaWYgKGRpc3BjX21ncl9pc19sY2QoY2hhbm5lbCkpCisJCWxjbGsgPSBk
-aXNwY19tZ3JfbGNsa19yYXRlKGNoYW5uZWwpOworCWVsc2UKKwkJbGNsayA9IGRpc3BjX2ZjbGtf
-cmF0ZSgpOworCisJaSA9IDA7CisJaWYgKG91dF9oZWlnaHQgPCBoZWlnaHQpCisJCWkrKzsKKwlp
-ZiAob3V0X3dpZHRoIDwgd2lkdGgpCisJCWkrKzsKKwlibGFuayA9IGRpdl91NjQoKHU2NCkodC5o
-YnAgKyB0LmhzdyArIHQuaGZwKSAqIGxjbGssIHBjbGspOworCURTU0RCRygiYmxhbmtpbmcgcGVy
-aW9kICsgcHBsID0gJWxsdSAobGltaXQgPSAldSlcbiIsIGJsYW5rLCBsaW1pdHNbaV0pOworCWlm
-IChibGFuayA8PSBsaW1pdHNbaV0pCisJCXJldHVybiAtRUlOVkFMOworCisJLyoKKwkgKiBQaXhl
-bCBkYXRhIHNob3VsZCBiZSBwcmVwYXJlZCBiZWZvcmUgdmlzaWJsZSBkaXNwbGF5IHBvaW50IHN0
-YXJ0cy4KKwkgKiBTbywgYXRsZWFzdCBEUy0yIGxpbmVzIG11c3QgaGF2ZSBhbHJlYWR5IGJlZW4g
-ZmV0Y2hlZCBieSBESVNQQworCSAqIGR1cmluZyBub25hY3RpdmUgLSBwb3NfeCBwZXJpb2QuCisJ
-ICovCisJdmFsID0gZGl2X3U2NCgodTY0KShub25hY3RpdmUgLSBwb3NfeCkgKiBsY2xrLCBwY2xr
-KTsKKwlEU1NEQkcoIihub25hY3RpdmUgLSBwb3NfeCkgKiBwY2QgPSAlbGx1IG1heCgwLCBEUyAt
-IDIpICogd2lkdGggPSAlZFxuIiwKKwkJdmFsLCBtYXgoMCwgRFMgLSAyKSAqIHdpZHRoKTsKKwlp
-ZiAodmFsIDwgbWF4KDAsIERTIC0gMikgKiB3aWR0aCkKKwkJcmV0dXJuIC1FSU5WQUw7CisKKwkv
-KgorCSAqIEFsbCBsaW5lcyBuZWVkIHRvIGJlIHJlZmlsbGVkIGR1cmluZyB0aGUgbm9uYWN0aXZl
-IHBlcmlvZCBvZiB3aGljaAorCSAqIG9ubHkgb25lIGxpbmUgY2FuIGJlIGxvYWRlZCBkdXJpbmcg
-dGhlIGFjdGl2ZSBwZXJpb2QuIFNvLCBhdGxlYXN0CisJICogRFMgLSAxIGxpbmVzIHNob3VsZCBi
-ZSBsb2FkZWQgZHVyaW5nIG5vbmFjdGl2ZSBwZXJpb2QuCisJICovCisJdmFsID0gIGRpdl91NjQo
-KHU2NClub25hY3RpdmUgKiBsY2xrLCBwY2xrKTsKKwlEU1NEQkcoIm5vbmFjdGl2ZSAqIHBjZCAg
-PSAlbGx1LCBtYXgoMCwgRFMgLSAxKSAqIHdpZHRoID0gJWRcbiIsCisJCXZhbCwgbWF4KDAsIERT
-IC0gMSkgKiB3aWR0aCk7CisJaWYgKHZhbCA8IG1heCgwLCBEUyAtIDEpICogd2lkdGgpCisJCXJl
-dHVybiAtRUlOVkFMOworCisJcmV0dXJuIDA7Cit9CisKIHN0YXRpYyB1bnNpZ25lZCBsb25nIGNh
-bGNfZmNsa19maXZlX3RhcHMoZW51bSBvbWFwX2NoYW5uZWwgY2hhbm5lbCwgdTE2IHdpZHRoLAog
-CQl1MTYgaGVpZ2h0LCB1MTYgb3V0X3dpZHRoLCB1MTYgb3V0X2hlaWdodCwKIAkJZW51bSBvbWFw
-X2NvbG9yX21vZGUgY29sb3JfbW9kZSkKQEAgLTE3NDgsNyArMTgwNSw3IEBAIHN0YXRpYyBpbnQg
-ZGlzcGNfb3ZsX2NhbGNfc2NhbGluZyhlbnVtIG9tYXBfcGxhbmUgcGxhbmUsCiAJCWVudW0gb21h
-cF9jaGFubmVsIGNoYW5uZWwsIHUxNiB3aWR0aCwgdTE2IGhlaWdodCwKIAkJdTE2IG91dF93aWR0
-aCwgdTE2IG91dF9oZWlnaHQsCiAJCWVudW0gb21hcF9jb2xvcl9tb2RlIGNvbG9yX21vZGUsIGJv
-b2wgKmZpdmVfdGFwcywKLQkJaW50ICp4X3ByZWRlY2ltLCBpbnQgKnlfcHJlZGVjaW0pCisJCWlu
-dCAqeF9wcmVkZWNpbSwgaW50ICp5X3ByZWRlY2ltLCB1MTYgcG9zX3gpCiB7CiAJc3RydWN0IG9t
-YXBfb3ZlcmxheSAqb3ZsID0gb21hcF9kc3NfZ2V0X292ZXJsYXkocGxhbmUpOwogCWNvbnN0IGlu
-dCBtYXhkb3duc2NhbGUgPSBkc3NfZmVhdF9nZXRfcGFyYW1fbWF4KEZFQVRfUEFSQU1fRE9XTlND
-QUxFKTsKQEAgLTE4MjQsNiArMTg4MSw5IEBAIHN0YXRpYyBpbnQgZGlzcGNfb3ZsX2NhbGNfc2Nh
-bGluZyhlbnVtIG9tYXBfcGxhbmUgcGxhbmUsCiAJCQlmY2xrID0gY2FsY19mY2xrX2ZpdmVfdGFw
-cyhjaGFubmVsLCBpbl93aWR0aCwgaW5faGVpZ2h0LAogCQkJCW91dF93aWR0aCwgb3V0X2hlaWdo
-dCwgY29sb3JfbW9kZSk7CiAKKwkJCWVycm9yID0gY2hlY2tfaG9yaXpfdGltaW5nX29tYXAzKGNo
-YW5uZWwsIHBvc194LAorCQkJCWluX3dpZHRoLCBpbl9oZWlnaHQsIG91dF93aWR0aCwgb3V0X2hl
-aWdodCk7CisKIAkJCWlmIChpbl93aWR0aCA+IG1heHNpbmdsZWxpbmV3aWR0aCkKIAkJCQlpZiAo
-aW5faGVpZ2h0ID4gb3V0X2hlaWdodCAmJgogCQkJCQlpbl9oZWlnaHQgPCBvdXRfaGVpZ2h0ICog
-MikKQEAgLTE4MzEsNyArMTg5MSw3IEBAIHN0YXRpYyBpbnQgZGlzcGNfb3ZsX2NhbGNfc2NhbGlu
-ZyhlbnVtIG9tYXBfcGxhbmUgcGxhbmUsCiAJCQlpZiAoISpmaXZlX3RhcHMpCiAJCQkJZmNsayA9
-IGNhbGNfZmNsayhjaGFubmVsLCBpbl93aWR0aCwgaW5faGVpZ2h0LAogCQkJCQlvdXRfd2lkdGgs
-IG91dF9oZWlnaHQpOwotCQkJZXJyb3IgPSAoaW5fd2lkdGggPiBtYXhzaW5nbGVsaW5ld2lkdGgg
-KiAyIHx8CisJCQllcnJvciA9IChlcnJvciB8fCBpbl93aWR0aCA+IG1heHNpbmdsZWxpbmV3aWR0
-aCAqIDIgfHwKIAkJCQkoaW5fd2lkdGggPiBtYXhzaW5nbGVsaW5ld2lkdGggJiYgKmZpdmVfdGFw
-cykgfHwKIAkJCQkhZmNsayB8fCBmY2xrID4gZGlzcGNfZmNsa19yYXRlKCkpOwogCQkJaWYgKGVy
-cm9yKSB7CkBAIC0xODQ3LDYgKzE5MDcsMTIgQEAgc3RhdGljIGludCBkaXNwY19vdmxfY2FsY19z
-Y2FsaW5nKGVudW0gb21hcF9wbGFuZSBwbGFuZSwKIAkJfSB3aGlsZSAoZGVjaW1feCA8PSAqeF9w
-cmVkZWNpbSAmJiBkZWNpbV95IDw9ICp5X3ByZWRlY2ltCiAJCQkmJiBlcnJvcik7CiAKKwkJaWYg
-KGNoZWNrX2hvcml6X3RpbWluZ19vbWFwMyhjaGFubmVsLCBwb3NfeCwgd2lkdGgsIGhlaWdodCwK
-KwkJCW91dF93aWR0aCwgb3V0X2hlaWdodCkpeworCQkJCURTU0VSUigiaG9yaXpvbnRhbCB0aW1p
-bmcgdG9vIHRpZ2h0XG4iKTsKKwkJCQlyZXR1cm4gLUVJTlZBTDsKKwkJfQorCiAJCWlmIChpbl93
-aWR0aCA+IChtYXhzaW5nbGVsaW5ld2lkdGggKiAyKSkgewogCQkJRFNTRVJSKCJDYW5ub3Qgc2V0
-dXAgc2NhbGluZyIpOwogCQkJRFNTRVJSKCJ3aWR0aCBleGNlZWRzIG1heGltdW0gd2lkdGggcG9z
-c2libGUiKTsKQEAgLTE5NTEsNyArMjAxNyw3IEBAIGludCBkaXNwY19vdmxfc2V0dXAoZW51bSBv
-bWFwX3BsYW5lIHBsYW5lLCBzdHJ1Y3Qgb21hcF9vdmVybGF5X2luZm8gKm9pLAogCiAJciA9IGRp
-c3BjX292bF9jYWxjX3NjYWxpbmcocGxhbmUsIGNoYW5uZWwsIGluX3dpZHRoLCBpbl9oZWlnaHQs
-CiAJCQlvdXRfd2lkdGgsIG91dF9oZWlnaHQsIG9pLT5jb2xvcl9tb2RlLCAmZml2ZV90YXBzLAot
-CQkJJnhfcHJlZGVjaW0sICZ5X3ByZWRlY2ltKTsKKwkJCSZ4X3ByZWRlY2ltLCAmeV9wcmVkZWNp
-bSwgb2ktPnBvc194KTsKIAlpZiAocikKIAkJcmV0dXJuIHI7CiAKLS0gCjEuNy4xCgotLQpUbyB1
-bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGlu
-dXgtZmJkZXYiIGluCnRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJu
-ZWwub3JnCk1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFq
-b3Jkb21vLWluZm8uaHRtbA==
+With this optional callback the driver is notified when the first page
+is entered into the pagelist and a new deferred_io call is scheduled.
+
+A possible use-case for this is runtime-pm. In the first_io call
+	pm_runtime_get()
+could be called, which starts an asynchronous runtime_resume of the
+device. In the deferred_io callback a call to
+	pm_runtime_barrier()
+makes the sure, the device is resumed by then and a
+	pm_runtime_put()
+may put the device back to sleep.
+
+Also, some SoCs may use the runtime-pm system to determine if they
+are able to enter deeper idle states. Therefore it is necessary to
+keep the use-count from the first written page until the conclusion
+of the screen update, to prevent the system from going to sleep before
+completing the pending update.
+
+Two users of defio were using kmalloc to allocate the structure.
+These allocations are changed to kzalloc, to prevent uninitialised
+.first_io members in those drivers.
+
+Signed-off-by: Heiko St=C3=BCbner <heiko@sntech.de>
+---
+changes since v1: convert fb_deferred_io kmalloc calls to kzalloc
+
+ drivers/video/fb_defio.c |    4 ++++
+ drivers/video/smscufx.c  |    2 +-
+ drivers/video/udlfb.c    |    2 +-
+ include/linux/fb.h       |    1 +
+ 4 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
+index c27e153..070f26f 100644
+--- a/drivers/video/fb_defio.c
++++ b/drivers/video/fb_defio.c
+@@ -107,6 +107,10 @@ static int fb_deferred_io_mkwrite(struct vm_area_struc=
+t *vma,
+ 	/* protect against the workqueue changing the page list */
+ 	mutex_lock(&fbdefio->lock);
+=20
++	/* first write in this cycle, notify the driver */
++	if (fbdefio->first_io && list_empty(&fbdefio->pagelist))
++		fbdefio->first_io(info);
++
+ 	/*
+ 	 * We want the page to remain locked from ->page_mkwrite until
+ 	 * the PTE is marked dirty to avoid page_mkclean() being called
+diff --git a/drivers/video/smscufx.c b/drivers/video/smscufx.c
+index ccbfef5..9985785 100644
+--- a/drivers/video/smscufx.c
++++ b/drivers/video/smscufx.c
+@@ -1083,7 +1083,7 @@ static int ufx_ops_open(struct fb_info *info, int use=
+r)
+=20
+ 		struct fb_deferred_io *fbdefio;
+=20
+-		fbdefio =3D kmalloc(sizeof(struct fb_deferred_io), GFP_KERNEL);
++		fbdefio =3D kzalloc(sizeof(struct fb_deferred_io), GFP_KERNEL);
+=20
+ 		if (fbdefio) {
+ 			fbdefio->delay =3D UFX_DEFIO_WRITE_DELAY;
+diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
+index a159b63..e9d43b4 100644
+--- a/drivers/video/udlfb.c
++++ b/drivers/video/udlfb.c
+@@ -893,7 +893,7 @@ static int dlfb_ops_open(struct fb_info *info, int user)
+=20
+ 		struct fb_deferred_io *fbdefio;
+=20
+-		fbdefio =3D kmalloc(sizeof(struct fb_deferred_io), GFP_KERNEL);
++		fbdefio =3D kzalloc(sizeof(struct fb_deferred_io), GFP_KERNEL);
+=20
+ 		if (fbdefio) {
+ 			fbdefio->delay =3D DL_DEFIO_WRITE_DELAY;
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index a3229d7..ac3f1c6 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -611,6 +611,7 @@ struct fb_deferred_io {
+ 	struct mutex lock; /* mutex that protects the page list */
+ 	struct list_head pagelist; /* list of touched pages */
+ 	/* callback */
++	void (*first_io)(struct fb_info *info);
+ 	void (*deferred_io)(struct fb_info *info, struct list_head *pagelist);
+ };
+ #endif
+--=20
+1.7.5.4
+

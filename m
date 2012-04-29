@@ -1,70 +1,130 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Problem with framebuffer mmap on platforms with large addressing
-Date: Sun, 18 Mar 2012 11:46:25 +1100
-Message-ID: <1332031585.3105.197.camel@pasglop>
-References: <CALT56yO05UBY6=KqK94=_sC4hd3ranj5J5CXOAo5hSjVAdkgkA@mail.gmail.com>
-Mime-Version: 1.0
+From: Peter Huewe <peterhuewe@gmx.de>
+Date: Sun, 29 Apr 2012 20:26:07 +0000
+Subject: [PATCH v2] video/sis: Use SiS_DRAMType from init.h and annotate it __devinitconst
+Message-Id: <1335731167-3311-1-git-send-email-peterhuewe@gmx.de>
+List-Id: <linux-fbdev.vger.kernel.org>
+References: <1334524209-20518-1-git-send-email-peterhuewe@gmx.de>
+In-Reply-To: <1334524209-20518-1-git-send-email-peterhuewe@gmx.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <CALT56yO05UBY6=KqK94=_sC4hd3ranj5J5CXOAo5hSjVAdkgkA@mail.gmail.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Tony Breeds <tbreeds@au1.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Thomas Winischhofer <thomas@winischhofer.net>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Huewe <peterhuewe@gmx.de>
 
-On Sat, 2012-03-17 at 20:04 +0400, Dmitry Eremin-Solenikov wrote:
-> Hello,
-> 
-> I'm trying to make framebuffer to work on PPC460EX board (canyonlands).
-> 
-> The peculiarity of this platform is the fact that it has
-> sizeof(unsigned long) = 4,
-> but physical address on it is 36 bits width. It is a common to various pieces
-> of the code to expect that unsigned long variable is able to contain physical
-> address. Most of those places are easy to fix.
+This patch removes the duplicated SiS_DRAMType from sis_main.c since it
+is already defined exactly the same in init.h.
+Since we don't want to include init.h (for size reasons) we move the
+struct to sis_main.h.
+Since SiS_DRAMType is const and only used by sisfb_post_300_rwtest which is
+marked __devinit we can also annotate SiS_DRAMType with __devinitconst.
 
-Yes. In fact, Tony (CC) has some patches to fix a lot of the DRM
-infrastructure (we have radeon KMS working on a similar platform).
+And since hardcoded values are bad we use ARRAY_SIZE for determining the
+size of SiS_DRAMType ;)
 
-> The problem I'm stuck with is a fb_mmap() code. To find a right memory to map
-> it uses information from struct fb_fix_screeninfo provided by the driver.
-> This structure uses two unsigned long fields to hold physical addresses
-> (smem_start and mmio_start). It would be easy to change that structure
-> to use phys_addr_t instead of unsigned long, but this structure is a part
-> of userspace ABI. It is returned to userspace on FBIOGET_FSCREENINFO ioctl.
-> And now I'm stuck with it.
+v2:
+Move struct to sis_main.h to decrease module size
 
-It's an old problem, which I think we described a while back on the
-list. Back then the conclusion was to make a new version with a proper
-__u64, a new ioctl to access is, and a "compatible" ioctl that blanks
-the address fields (or fails) if they contain a value >32-bit.
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+---
+ drivers/video/sis/init.h     |   20 --------------------
+ drivers/video/sis/sis_main.c |   21 +--------------------
+ drivers/video/sis/sis_main.h |   20 ++++++++++++++++++++
+ 3 files changed, 21 insertions(+), 40 deletions(-)
 
-We just never got to actually implement it.
-
-In fact, we could make the new structure such that it doesn't break
-userspace compatibility with 64-bit architectures at all, ie, the "new"
-and "compat" ioctl could remain entirely equivalent on 64-bit.
+diff --git a/drivers/video/sis/init.h b/drivers/video/sis/init.h
+index a22e892..85d6738 100644
+--- a/drivers/video/sis/init.h
++++ b/drivers/video/sis/init.h
+@@ -105,26 +105,6 @@ static const unsigned short ModeIndex_1920x1440[]    = {0x68, 0x69, 0x00, 0x6b};
+ static const unsigned short ModeIndex_300_2048x1536[]= {0x6c, 0x6d, 0x00, 0x00};
+ static const unsigned short ModeIndex_310_2048x1536[]= {0x6c, 0x6d, 0x00, 0x6e};
  
-> In my driver code I have just overwritten the fb_mmap function with
-> driver-private
-> fb_mmap callback supporting 64-bit addressing, but this doesn't look like
-> a generic and correct solution.
-> 
-> What is the best way to fix this problem? Should we break ABI with the goal
-> of correctness? Should we add new FBIOGET_FSCREENINFO2, which will
-> return a correct structure with phys_addr_t (or simply u64) fields and make
-> FBIOGET_FSCREENINFO a wrapper returning partially bogus structure
-> (with smem_start and mmio_start fields being truncated to just unsigned long)?
-> What would developers recommend?
+-static const unsigned short SiS_DRAMType[17][5]={
+-	{0x0C,0x0A,0x02,0x40,0x39},
+-	{0x0D,0x0A,0x01,0x40,0x48},
+-	{0x0C,0x09,0x02,0x20,0x35},
+-	{0x0D,0x09,0x01,0x20,0x44},
+-	{0x0C,0x08,0x02,0x10,0x31},
+-	{0x0D,0x08,0x01,0x10,0x40},
+-	{0x0C,0x0A,0x01,0x20,0x34},
+-	{0x0C,0x09,0x01,0x08,0x32},
+-	{0x0B,0x08,0x02,0x08,0x21},
+-	{0x0C,0x08,0x01,0x08,0x30},
+-	{0x0A,0x08,0x02,0x04,0x11},
+-	{0x0B,0x0A,0x01,0x10,0x28},
+-	{0x09,0x08,0x02,0x02,0x01},
+-	{0x0B,0x09,0x01,0x08,0x24},
+-	{0x0B,0x08,0x01,0x04,0x20},
+-	{0x0A,0x08,0x01,0x02,0x10},
+-	{0x09,0x08,0x01,0x01,0x00}
+-};
+-
+ static const unsigned char SiS_MDA_DAC[]  {
+ 	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+index 078ca21..8abd42b 100644
+--- a/drivers/video/sis/sis_main.c
++++ b/drivers/video/sis/sis_main.c
+@@ -4231,27 +4231,8 @@ sisfb_post_300_rwtest(struct sis_video_info *ivideo, int iteration, int buswidth
+ 	unsigned short sr14;
+ 	unsigned int k, RankCapacity, PageCapacity, BankNumHigh, BankNumMid;
+ 	unsigned int PhysicalAdrOtherPage, PhysicalAdrHigh, PhysicalAdrHalfPage;
+-	static const unsigned short SiS_DRAMType[17][5] = {
+-		{0x0C,0x0A,0x02,0x40,0x39},
+-		{0x0D,0x0A,0x01,0x40,0x48},
+-		{0x0C,0x09,0x02,0x20,0x35},
+-		{0x0D,0x09,0x01,0x20,0x44},
+-		{0x0C,0x08,0x02,0x10,0x31},
+-		{0x0D,0x08,0x01,0x10,0x40},
+-		{0x0C,0x0A,0x01,0x20,0x34},
+-		{0x0C,0x09,0x01,0x08,0x32},
+-		{0x0B,0x08,0x02,0x08,0x21},
+-		{0x0C,0x08,0x01,0x08,0x30},
+-		{0x0A,0x08,0x02,0x04,0x11},
+-		{0x0B,0x0A,0x01,0x10,0x28},
+-		{0x09,0x08,0x02,0x02,0x01},
+-		{0x0B,0x09,0x01,0x08,0x24},
+-		{0x0B,0x08,0x01,0x04,0x20},
+-		{0x0A,0x08,0x01,0x02,0x10},
+-		{0x09,0x08,0x01,0x01,0x00}
+-	};
+ 
+-	 for(k = 0; k <= 16; k++) {
++	 for (k = 0; k < ARRAY_SIZE(SiS_DRAMType); k++) {
+ 
+ 		RankCapacity = buswidth * SiS_DRAMType[k][3];
+ 
+diff --git a/drivers/video/sis/sis_main.h b/drivers/video/sis/sis_main.h
+index 9540e97..242c1c3 100644
+--- a/drivers/video/sis/sis_main.h
++++ b/drivers/video/sis/sis_main.h
+@@ -776,6 +776,26 @@ extern void		SiS_Chrontel701xBLOff(struct SiS_Private *SiS_Pr);
+ #endif
+ extern void		SiS_SiS30xBLOn(struct SiS_Private *SiS_Pr);
+ extern void		SiS_SiS30xBLOff(struct SiS_Private *SiS_Pr);
++
++static const unsigned short __devinitconst SiS_DRAMType[17][5] = {
++	{0x0C,0x0A,0x02,0x40,0x39},
++	{0x0D,0x0A,0x01,0x40,0x48},
++	{0x0C,0x09,0x02,0x20,0x35},
++	{0x0D,0x09,0x01,0x20,0x44},
++	{0x0C,0x08,0x02,0x10,0x31},
++	{0x0D,0x08,0x01,0x10,0x40},
++	{0x0C,0x0A,0x01,0x20,0x34},
++	{0x0C,0x09,0x01,0x08,0x32},
++	{0x0B,0x08,0x02,0x08,0x21},
++	{0x0C,0x08,0x01,0x08,0x30},
++	{0x0A,0x08,0x02,0x04,0x11},
++	{0x0B,0x0A,0x01,0x10,0x28},
++	{0x09,0x08,0x02,0x02,0x01},
++	{0x0B,0x09,0x01,0x08,0x24},
++	{0x0B,0x08,0x01,0x04,0x20},
++	{0x0A,0x08,0x01,0x02,0x10},
++	{0x09,0x08,0x01,0x01,0x00}
++};
+ #endif
+ 
+ 
+-- 
+1.7.3.4
 
-Cheers,
-Ben.

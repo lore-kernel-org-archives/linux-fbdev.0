@@ -1,50 +1,141 @@
-From: Alexander Holler <holler@ahsoftware.de>
-Date: Sat, 21 Apr 2012 11:26:00 +0000
-Subject: Re: [PATCH] video/udlfb: fix line counting in fb_write
-Message-Id: <4F929948.9010504@ahsoftware.de>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Wed, 02 May 2012 23:12:54 +0000
+Subject: Re: [PATCH v2] video/sis: Use SiS_DRAMType from init.h and annotate it __devinitconst
+Message-Id: <4FA1BF76.8080109@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334959844-3665-1-git-send-email-holler@ahsoftware.de>
-In-Reply-To: <1334959844-3665-1-git-send-email-holler@ahsoftware.de>
+References: <1334524209-20518-1-git-send-email-peterhuewe@gmx.de> <1335731167-3311-1-git-send-email-peterhuewe@gmx.de>
+In-Reply-To: <1335731167-3311-1-git-send-email-peterhuewe@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexander Holler <holler@ahsoftware.de>
-Cc: linux-kernel@vger.kernel.org, Bernie Thompson <bernie@plugable.com>, linux-fbdev@vger.kernel.org
+To: Peter Huewe <peterhuewe@gmx.de>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hello,
+Hi Peter,
 
-sorry, I forgot to mention that this is a candidate for all stable trees 
-2.6.37 and above. Not sure how to announce that, but I think I should 
-have added the below Cc: to the patch.
+On 04/29/2012 08:26 PM, Peter Huewe wrote:
+> This patch removes the duplicated SiS_DRAMType from sis_main.c since it
+> is already defined exactly the same in init.h.
+> Since we don't want to include init.h (for size reasons) we move the
+> struct to sis_main.h.
+> Since SiS_DRAMType is const and only used by sisfb_post_300_rwtest which is
+> marked __devinit we can also annotate SiS_DRAMType with __devinitconst.
+> 
+> And since hardcoded values are bad we use ARRAY_SIZE for determining the
+> size of SiS_DRAMType ;)
+> 
+> v2:
+> Move struct to sis_main.h to decrease module size
 
-Regards,
+As far as I can see it should be possible to keep the array in
+sis_main.c and just delete it in the header files, shouldn't it? I'd
+prefer to do it this way.
 
-Alexander
 
-Am 21.04.2012 00:10, schrieb Alexander Holler:
-> Line 0 and 1 were both written to line 0 (on the display) and all subsequent
-> lines had an offset of -1. The result was that the last line on the display
-> was never overwritten by writes to /dev/fbN.
->
-> Signed-off-by: Alexander Holler<holler@ahsoftware.de>
+Best regards,
 
-Cc: stable@vger.kernel.org
+Florian Tobias Schandinat
 
+> 
+> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
 > ---
->   drivers/video/udlfb.c |    2 +-
->   1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/video/udlfb.c b/drivers/video/udlfb.c
-> index a159b63..85d8110 100644
-> --- a/drivers/video/udlfb.c
-> +++ b/drivers/video/udlfb.c
-> @@ -647,7 +647,7 @@ static ssize_t dlfb_ops_write(struct fb_info *info, const char __user *buf,
->   	result = fb_sys_write(info, buf, count, ppos);
->
->   	if (result>  0) {
-> -		int start = max((int)(offset / info->fix.line_length) - 1, 0);
-> +		int start = max((int)(offset / info->fix.line_length), 0);
->   		int lines = min((u32)((result / info->fix.line_length) + 1),
->   				(u32)info->var.yres);
->
+>  drivers/video/sis/init.h     |   20 --------------------
+>  drivers/video/sis/sis_main.c |   21 +--------------------
+>  drivers/video/sis/sis_main.h |   20 ++++++++++++++++++++
+>  3 files changed, 21 insertions(+), 40 deletions(-)
+> 
+> diff --git a/drivers/video/sis/init.h b/drivers/video/sis/init.h
+> index a22e892..85d6738 100644
+> --- a/drivers/video/sis/init.h
+> +++ b/drivers/video/sis/init.h
+> @@ -105,26 +105,6 @@ static const unsigned short ModeIndex_1920x1440[]    = {0x68, 0x69, 0x00, 0x6b};
+>  static const unsigned short ModeIndex_300_2048x1536[]= {0x6c, 0x6d, 0x00, 0x00};
+>  static const unsigned short ModeIndex_310_2048x1536[]= {0x6c, 0x6d, 0x00, 0x6e};
+>  
+> -static const unsigned short SiS_DRAMType[17][5]={
+> -	{0x0C,0x0A,0x02,0x40,0x39},
+> -	{0x0D,0x0A,0x01,0x40,0x48},
+> -	{0x0C,0x09,0x02,0x20,0x35},
+> -	{0x0D,0x09,0x01,0x20,0x44},
+> -	{0x0C,0x08,0x02,0x10,0x31},
+> -	{0x0D,0x08,0x01,0x10,0x40},
+> -	{0x0C,0x0A,0x01,0x20,0x34},
+> -	{0x0C,0x09,0x01,0x08,0x32},
+> -	{0x0B,0x08,0x02,0x08,0x21},
+> -	{0x0C,0x08,0x01,0x08,0x30},
+> -	{0x0A,0x08,0x02,0x04,0x11},
+> -	{0x0B,0x0A,0x01,0x10,0x28},
+> -	{0x09,0x08,0x02,0x02,0x01},
+> -	{0x0B,0x09,0x01,0x08,0x24},
+> -	{0x0B,0x08,0x01,0x04,0x20},
+> -	{0x0A,0x08,0x01,0x02,0x10},
+> -	{0x09,0x08,0x01,0x01,0x00}
+> -};
+> -
+>  static const unsigned char SiS_MDA_DAC[] >  {
+>  	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+> diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+> index 078ca21..8abd42b 100644
+> --- a/drivers/video/sis/sis_main.c
+> +++ b/drivers/video/sis/sis_main.c
+> @@ -4231,27 +4231,8 @@ sisfb_post_300_rwtest(struct sis_video_info *ivideo, int iteration, int buswidth
+>  	unsigned short sr14;
+>  	unsigned int k, RankCapacity, PageCapacity, BankNumHigh, BankNumMid;
+>  	unsigned int PhysicalAdrOtherPage, PhysicalAdrHigh, PhysicalAdrHalfPage;
+> -	static const unsigned short SiS_DRAMType[17][5] = {
+> -		{0x0C,0x0A,0x02,0x40,0x39},
+> -		{0x0D,0x0A,0x01,0x40,0x48},
+> -		{0x0C,0x09,0x02,0x20,0x35},
+> -		{0x0D,0x09,0x01,0x20,0x44},
+> -		{0x0C,0x08,0x02,0x10,0x31},
+> -		{0x0D,0x08,0x01,0x10,0x40},
+> -		{0x0C,0x0A,0x01,0x20,0x34},
+> -		{0x0C,0x09,0x01,0x08,0x32},
+> -		{0x0B,0x08,0x02,0x08,0x21},
+> -		{0x0C,0x08,0x01,0x08,0x30},
+> -		{0x0A,0x08,0x02,0x04,0x11},
+> -		{0x0B,0x0A,0x01,0x10,0x28},
+> -		{0x09,0x08,0x02,0x02,0x01},
+> -		{0x0B,0x09,0x01,0x08,0x24},
+> -		{0x0B,0x08,0x01,0x04,0x20},
+> -		{0x0A,0x08,0x01,0x02,0x10},
+> -		{0x09,0x08,0x01,0x01,0x00}
+> -	};
+>  
+> -	 for(k = 0; k <= 16; k++) {
+> +	 for (k = 0; k < ARRAY_SIZE(SiS_DRAMType); k++) {
+>  
+>  		RankCapacity = buswidth * SiS_DRAMType[k][3];
+>  
+> diff --git a/drivers/video/sis/sis_main.h b/drivers/video/sis/sis_main.h
+> index 9540e97..242c1c3 100644
+> --- a/drivers/video/sis/sis_main.h
+> +++ b/drivers/video/sis/sis_main.h
+> @@ -776,6 +776,26 @@ extern void		SiS_Chrontel701xBLOff(struct SiS_Private *SiS_Pr);
+>  #endif
+>  extern void		SiS_SiS30xBLOn(struct SiS_Private *SiS_Pr);
+>  extern void		SiS_SiS30xBLOff(struct SiS_Private *SiS_Pr);
+> +
+> +static const unsigned short __devinitconst SiS_DRAMType[17][5] = {
+> +	{0x0C,0x0A,0x02,0x40,0x39},
+> +	{0x0D,0x0A,0x01,0x40,0x48},
+> +	{0x0C,0x09,0x02,0x20,0x35},
+> +	{0x0D,0x09,0x01,0x20,0x44},
+> +	{0x0C,0x08,0x02,0x10,0x31},
+> +	{0x0D,0x08,0x01,0x10,0x40},
+> +	{0x0C,0x0A,0x01,0x20,0x34},
+> +	{0x0C,0x09,0x01,0x08,0x32},
+> +	{0x0B,0x08,0x02,0x08,0x21},
+> +	{0x0C,0x08,0x01,0x08,0x30},
+> +	{0x0A,0x08,0x02,0x04,0x11},
+> +	{0x0B,0x0A,0x01,0x10,0x28},
+> +	{0x09,0x08,0x02,0x02,0x01},
+> +	{0x0B,0x09,0x01,0x08,0x24},
+> +	{0x0B,0x08,0x01,0x04,0x20},
+> +	{0x0A,0x08,0x01,0x02,0x10},
+> +	{0x09,0x08,0x01,0x01,0x00}
+> +};
+>  #endif
+>  
+>  
 

@@ -1,44 +1,160 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 10 May 2012 00:19:59 +0000
-Subject: Re: [PATCH] video: exynos_dp: fix max loop count in EQ sequence of link training
-Message-Id: <4FAB09AF.6010803@gmx.de>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Thu, 03 May 2012 10:57:11 +0000
+Subject: [PATCH 1/4] OMAP: DSS2: Remove suspicous and unused TAAL regulator API usage
+Message-Id: <1336042634-28486-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <003201cd2998$2ee3eef0$8cabccd0$%han@samsung.com>
-In-Reply-To: <003201cd2998$2ee3eef0$8cabccd0$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-On 05/04/2012 01:49 AM, Jingoo Han wrote:
-> This patch fixes max loop count in EQ(Channel Equalization) sequence
-> of link training. According to DP(displayport) specification,
-> the max loop count in this sequence should be 5.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+The TAAL driver contains some regulator support which is currently unused
+(the code is there but the one panel supported by the driver doesn't have
+any regulators provided). This code mostly looks like an open coded
+version of the regulator core bulk API.
 
-Applied.
+The only additional feature is that a voltage range can be set once when
+the device is opened, though this is never varied at runtime. The general
+expectation is that if the device is not actively managing the voltage of
+the device (eg, doing DVFS) then any configuration will be done using the
+constraints rather than by drivers, saving them code and ensuring that
+they work well with systems where the voltage is not configurable.
 
+If systems are added needing regulator support this can be added back in,
+though it should be based on core features rather than open coding things.
 
-Thanks,
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/video/omap2/displays/panel-taal.c |   80 -----------------------------
+ 1 file changed, 80 deletions(-)
 
-Florian Tobias Schandinat
-
-> ---
->  include/video/exynos_dp.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/video/exynos_dp.h b/include/video/exynos_dp.h
-> index 8847a9d..bd8cabd 100644
-> --- a/include/video/exynos_dp.h
-> +++ b/include/video/exynos_dp.h
-> @@ -14,7 +14,7 @@
->  
->  #define DP_TIMEOUT_LOOP_COUNT 100
->  #define MAX_CR_LOOP 5
-> -#define MAX_EQ_LOOP 4
-> +#define MAX_EQ_LOOP 5
->  
->  enum link_rate_type {
->  	LINK_RATE_1_62GBPS = 0x06,
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 0f21fa5..72d6307 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -30,7 +30,6 @@
+ #include <linux/gpio.h>
+ #include <linux/workqueue.h>
+ #include <linux/slab.h>
+-#include <linux/regulator/consumer.h>
+ #include <linux/mutex.h>
+ 
+ #include <video/omapdss.h>
+@@ -55,73 +54,6 @@ static int _taal_enable_te(struct omap_dss_device *dssdev, bool enable);
+ 
+ static int taal_panel_reset(struct omap_dss_device *dssdev);
+ 
+-struct panel_regulator {
+-	struct regulator *regulator;
+-	const char *name;
+-	int min_uV;
+-	int max_uV;
+-};
+-
+-static void free_regulators(struct panel_regulator *regulators, int n)
+-{
+-	int i;
+-
+-	for (i = 0; i < n; i++) {
+-		/* disable/put in reverse order */
+-		regulator_disable(regulators[n - i - 1].regulator);
+-		regulator_put(regulators[n - i - 1].regulator);
+-	}
+-}
+-
+-static int init_regulators(struct omap_dss_device *dssdev,
+-			struct panel_regulator *regulators, int n)
+-{
+-	int r, i, v;
+-
+-	for (i = 0; i < n; i++) {
+-		struct regulator *reg;
+-
+-		reg = regulator_get(&dssdev->dev, regulators[i].name);
+-		if (IS_ERR(reg)) {
+-			dev_err(&dssdev->dev, "failed to get regulator %s\n",
+-				regulators[i].name);
+-			r = PTR_ERR(reg);
+-			goto err;
+-		}
+-
+-		/* FIXME: better handling of fixed vs. variable regulators */
+-		v = regulator_get_voltage(reg);
+-		if (v < regulators[i].min_uV || v > regulators[i].max_uV) {
+-			r = regulator_set_voltage(reg, regulators[i].min_uV,
+-						regulators[i].max_uV);
+-			if (r) {
+-				dev_err(&dssdev->dev,
+-					"failed to set regulator %s voltage\n",
+-					regulators[i].name);
+-				regulator_put(reg);
+-				goto err;
+-			}
+-		}
+-
+-		r = regulator_enable(reg);
+-		if (r) {
+-			dev_err(&dssdev->dev, "failed to enable regulator %s\n",
+-				regulators[i].name);
+-			regulator_put(reg);
+-			goto err;
+-		}
+-
+-		regulators[i].regulator = reg;
+-	}
+-
+-	return 0;
+-
+-err:
+-	free_regulators(regulators, i);
+-
+-	return r;
+-}
+-
+ /**
+  * struct panel_config - panel configuration
+  * @name: panel name
+@@ -150,8 +82,6 @@ struct panel_config {
+ 		unsigned int low;
+ 	} reset_sequence;
+ 
+-	struct panel_regulator *regulators;
+-	int num_regulators;
+ };
+ 
+ enum {
+@@ -977,11 +907,6 @@ static int taal_probe(struct omap_dss_device *dssdev)
+ 
+ 	atomic_set(&td->do_update, 0);
+ 
+-	r = init_regulators(dssdev, panel_config->regulators,
+-			panel_config->num_regulators);
+-	if (r)
+-		goto err_reg;
+-
+ 	td->workqueue = create_singlethread_workqueue("taal_esd");
+ 	if (td->workqueue = NULL) {
+ 		dev_err(&dssdev->dev, "can't create ESD workqueue\n");
+@@ -1075,8 +1000,6 @@ err_gpio:
+ err_bl:
+ 	destroy_workqueue(td->workqueue);
+ err_wq:
+-	free_regulators(panel_config->regulators, panel_config->num_regulators);
+-err_reg:
+ 	kfree(td);
+ err:
+ 	return r;
+@@ -1113,9 +1036,6 @@ static void __exit taal_remove(struct omap_dss_device *dssdev)
+ 	/* reset, to be sure that the panel is in a valid state */
+ 	taal_hw_reset(dssdev);
+ 
+-	free_regulators(td->panel_config->regulators,
+-			td->panel_config->num_regulators);
+-
+ 	kfree(td);
+ }
+ 
+-- 
+1.7.10
 

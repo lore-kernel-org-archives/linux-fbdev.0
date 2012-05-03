@@ -1,63 +1,36 @@
-From: Aditya Nellutla <aditya.n@ti.com>
-Date: Wed, 23 May 2012 06:18:31 +0000
-Subject: [PATCH] da8xx-fb: Rounding FB size to satisfy SGX buffer requirements
-Message-Id: <1337753191-14802-1-git-send-email-aditya.n@ti.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Thu, 03 May 2012 10:15:19 +0000
+Subject: Re: [PATCH 1/4] mfd: add LM3533 lighting-power core driver
+Message-Id: <1336040119-13200-1-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20120426124122.GA26692@sirena.org.uk>
+In-Reply-To: <20120426124122.GA26692@sirena.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Richard Purdie <rpurdie@rpsys.net>, Johan Hovold <jhovold@gmail.com>
 
-In the real time use-case when SGX is used for rendering to FB buffers it has been
-observed that, the available memory from framebuffer driver is not sufficient for
-SGX under certain cases (like 16-bit WVGA resolution). SGX requires 2 swap buffers
-with each of the buffers aligned to lcm(line_length, PAGE_SIZE).
+[ Sorry for the resend -- Android/gmail apparently added HTML to my previous
+  attempt. ] 
 
-Inorder to satisfy this requirement, we have two options,
+On Apr 26, 2012 2:41 PM, "Mark Brown" <broonie@opensource.wolfsonmicro.com>
+wrote:
+> On Fri, Apr 20, 2012 at 05:30:23PM +0200, Johan Hovold wrote:
+> > +static int __lm3533_read(struct lm3533 *lm3533, u8 reg, u8 *val)
+> > +{
+> > +     int ret;
+> > +
+> > +     ret = lm3533->read(lm3533, reg, val);
+> > +     if (ret < 0) {
+>
+> Looks like you could save a bunch of code by using regmap for the
+> register I/O.  This would also give you access to the cache and
+> diagnostic infrastructure it has.
 
-	- Increase number of FB buffers (LCD_NUM_BUFFERS) to 3. This is not
-	  recommended as we end up wasting huge memory in most of the cases.
+Using regmap only saves about ten lines for the actual io implementation,
+but it does allow me to get rid of the custom debugfs interface. I'm not
+enabling caching at this point but it'll probably come in handy later.
 
-	- Align FB buffers to lcm(line_length, PAGE_SIZE).This ensures framebuffer
-	  size is increased to satisfy SGX requirements keeping alignment intact.
-
-This patch makes sure that FB allocates buffers aligned to above formula.
-
-Signed-off-by: Aditya Nellutla <aditya.n@ti.com>
----
- drivers/video/da8xx-fb.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-index 47118c7..2f24c19 100644
---- a/drivers/video/da8xx-fb.c
-+++ b/drivers/video/da8xx-fb.c
-@@ -31,6 +31,7 @@
- #include <linux/cpufreq.h>
- #include <linux/console.h>
- #include <linux/slab.h>
-+#include <linux/lcm.h>
- #include <video/da8xx-fb.h>
- #include <asm/div64.h>
- 
-@@ -1114,6 +1115,7 @@ static int __devinit fb_probe(struct platform_device *device)
- 	struct da8xx_fb_par *par;
- 	resource_size_t len;
- 	int ret, i;
-+	unsigned long ulcm;
- 
- 	if (fb_pdata = NULL) {
- 		dev_err(&device->dev, "Can not get platform data\n");
-@@ -1209,7 +1211,8 @@ static int __devinit fb_probe(struct platform_device *device)
- 
- 	/* allocate frame buffer */
- 	par->vram_size = lcdc_info->width * lcdc_info->height * lcd_cfg->bpp;
--	par->vram_size = PAGE_ALIGN(par->vram_size/8);
-+	ulcm = lcm((lcdc_info->width * lcd_cfg->bpp)/8, PAGE_SIZE);
-+	par->vram_size = roundup(par->vram_size/8, ulcm);
- 	par->vram_size = par->vram_size * LCD_NUM_BUFFERS;
- 
- 	par->vram_virt = dma_alloc_coherent(NULL,
--- 
-1.7.0.4
-
+Thanks,
+Johan

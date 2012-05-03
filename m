@@ -1,19 +1,37 @@
-From: Peter =?iso-8859-15?q?H=FCwe?= <PeterHuewe@gmx.de>
-Date: Thu, 03 May 2012 21:58:35 +0000
-Subject: Re: [PATCH v2] video/sis: Use SiS_DRAMType from init.h and annotate it __devinitconst
-Message-Id: <201205032358.36229.PeterHuewe@gmx.de>
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+Date: Thu, 03 May 2012 00:34:16 +0000
+Subject: [PATCH] video: mb862xx-i2c: local functions should not be exposed globally
+Message-Id: <201205021734.16988.hartleys@visionengravers.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4FA2FD10.6090306@gmx.de>
-In-Reply-To: <4FA2FD10.6090306@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: linux-fbdev@vger.kernel.org, FlorianSchandinat@gmx.de, agust@denx.de
 
-Am Donnerstag 03 Mai 2012, 23:48:00 schrieb Florian Tobias Schandinat:
-> You can still mark it as __devinitconst, I just wanted to have the array
-> inside a C file, not a header. If you agree with this, I'll change your
-> new patch that way.
-I'm totally fine with this - Thanks,
-Peter
+Functions not referenced outside of a source file should be marked
+static to prevent them from being exposed globally.
+
+Quiets the sparse warnings:
+
+warning: symbol 'mb862xx_i2c_stop' was not declared. Should it be static?
+
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Anatolij Gustschin <agust@denx.de>
+
+---
+
+diff --git a/drivers/video/mb862xx/mb862xx-i2c.c b/drivers/video/mb862xx/mb862xx-i2c.c
+index 273769b..c87e17a 100644
+--- a/drivers/video/mb862xx/mb862xx-i2c.c
++++ b/drivers/video/mb862xx/mb862xx-i2c.c
+@@ -68,7 +68,7 @@ static int mb862xx_i2c_read_byte(struct i2c_adapter *adap, u8 *byte, int last)
+ 	return 1;
+ }
+ 
+-void mb862xx_i2c_stop(struct i2c_adapter *adap)
++static void mb862xx_i2c_stop(struct i2c_adapter *adap)
+ {
+ 	struct mb862xxfb_par *par = adap->algo_data;
+ 

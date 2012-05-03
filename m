@@ -1,82 +1,99 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Tue, 08 May 2012 09:19:25 +0000
-Subject: Re: [PATCH v2 4/4] OMAPDSS: APPLY: Remove display dependency from overlay and manager checks
-Message-Id: <4FA8E24D.20608@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 03 May 2012 13:57:36 +0000
+Subject: [PATCH 00/25] OMAPDSS: DT preparation patches v2
+Message-Id: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334561027-28569-1-git-send-email-archit@ti.com>    <1336028864-13895-1-git-send-email-archit@ti.com>    <1336028864-13895-5-git-send-email-archit@ti.com>   <1336403017.3522.2.camel@lappyti> <4FA8A927.9080705@ti.com>  <1336461377.1896.23.camel@lappyti> <4FA8CD6D.3010503@ti.com> <1336467151.5761.20.camel@deskari>
-In-Reply-To: <1336467151.5761.20.camel@deskari>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Tuesday 08 May 2012 02:22 PM, Tomi Valkeinen wrote:
-> On Tue, 2012-05-08 at 13:08 +0530, Archit Taneja wrote:
->> On Tuesday 08 May 2012 12:46 PM, Tomi Valkeinen wrote:
->
->>> I'm not sure if it applies here, but as a general strategy, I suggest
->>> doing things in apply.c that require data from apply.c's internal data.
->>> When that's not possible, apply.c should call the functions outside
->>> apply.c, and pass the internal data as parameters (like calls to dispc).
->>>
->>> In your case, I for example see dss_mgr_check() calling
->>> dss_mgr_get_timings(). It would be quite easy to pass the timings to
->>> dss_mgr_check() from apply.c, thus removing the need to call the
->>> function. And, as you see, dss_mgr_check() already has a bunch of
->>> parameters, and the idea is the same with those: give the params, so
->>> that dss_mgr_check() doesn't need to ask for them.
->>
->> Right, I can do this for dss_mgr_check() and dss_ovl_check(), but if I
->> you see the misc cleanup patch series I posted, I use
->> dss_mgr_get_timings()  in dispc.c functions to remove some
->> omap_dss_device references. These DISPC functions are called in
->> dispc_ovl_setup(), I could pass manager timings in dispc_ovl_setup() so
->> that it comes directly from apply.c. What do you say?
->
-> Yes, I guess dispc_ovl_setup should get the timings pointer also. It's
-> getting a bit complex, but I don't see any simpler way. Especially dispc
-> functions should be quite self contained, dispc.c should not call
-> elsewhere, but it should get all the needed data as parameters.
+Hi,
 
-Ok, you are right about dispc.c querying stuff from apply, it should all 
-be one way from apply/interface drivers to the dispc, and if that's the 
-case, then it has to get more complex. We could just pass the data in a 
-nicer way to make the number of arguments passed to dispc functions seem 
-small.
+I started cleaning up and restructuring omapdss for device tree, and here's the
+first set of patches from that ordeal. There's nothing DT specific in these
+patches, but they are mostly generic cleanups that make sense even without DT.
 
->
->> I guess we can get away from exposing private data in apply to DSS, but
->> it might get a bit harder when we try to remove other omap_dss_device
->> references in the future. I'm just guessing though.
->
-> We have two cases here: 1) using timings when doing apply.c things, as
-> your patches do. In these cases the timings can be passed from apply.c
-> as parameters. 2) using timings "outside" apply.c. I guess we currently
-> don't have these, but for those we could have a get_timings() function
-> that does take the locks. And similarly for other configs.
->
-> Of course, that's still not perfect. Even if get_timings() is protected
-> properly, there's no guarantee that the timings won't change right after
-> get_timings has returned. But hopefully all writes and reads to timings
-> would go via the same place, for example dpi.c. And dpi.c's own lock
-> will protect the change of timings while another thread is using them.
->
-> Btw, there's a typo in "OMAPDSS: DISPC: Remove usage of
-> dispc_mgr_get_device()"'s description, dss_mgr_get_device() should be
-> get_timings in one place.
+This is the second version of these patches, the previous version can be found
+from: http://www.spinics.net/lists/linux-fbdev/msg05667.html
 
-Ah ok, I am removing the dss_mgr_get_timings() usage anyway, I'll pass 
-timings through dispc_ovl_setup().
+The first 21 patches, which were in the previous version, have only gotten
+minor cleanups (and, of course, more testing). The last 4 patches are new. The
+most important of those patches is the DSI pin config patch, which makes it
+possible for the panel driver to configure the DSI pins it needs.
 
-I am also going to make the first patch of the newer set 'OMAPDSS: 
-DPI/HDMI: Apply manager timings even if panel is disabled' a part of 
-this series since it's more related to applying timings. I posted it in 
-the next series since I had already posted out this series.
+This series can also be found from:
+git://gitorious.org/linux-omap-dss2/linux.git work/devtree-base
 
-Archit
+ Tomi
 
->
->   Tomi
->
+Tomi Valkeinen (25):
+  OMAPDSS: panel-dvi: add PD gpio handling
+  OMAP: board-files: remove custom PD GPIO handling for DVI output
+  OMAPDSS: TFP410: rename dvi -> tfp410
+  OMAPDSS: TFP410: rename dvi files to tfp410
+  OMAPDSS: TFP410: pdata rewrite
+  OMAPDSS: DSI: use dsi_get_dsidev_id(dsidev) instead of dsidev->id
+  OMAPDSS: Taal: move reset gpio handling to taal driver
+  OMAPDSS: clean up the omapdss platform data mess
+  OMAPDSS: remove return from platform_driver_unreg
+  OMAPDSS: use platform_driver_probe for core/dispc/dss
+  OMAPDSS: create custom pdevs for DSS omap_devices
+  OMAPDSS: create DPI & SDI devices
+  OMAPDSS: create DPI & SDI drivers
+  OMAPDSS: remove uses of dss_runtime_get/put
+  OMAPDSS: handle output-driver reg/unreg more dynamically
+  OMAPDSS: move the creation of debugfs files
+  OMAPDSS: use platform_driver_probe for dsi/hdmi/rfbi/venc/dpi/sdi
+  OMAPDSS: add __init & __exit
+  OMAPFB: add __init & __exit
+  OMAPDSS: change default_device handling
+  OMAPDSS: interface drivers register their panel devices
+  OMAPDSS: init omap_dss_devices internally
+  OMAPDSS: DSI: implement generic DSI pin config
+  OMAPDSS: DSI: improve DSI module id handling
+  OMAPDSS: separate pdata based initialization
+
+ arch/arm/mach-omap2/board-3430sdp.c         |   38 +--
+ arch/arm/mach-omap2/board-4430sdp.c         |   37 +--
+ arch/arm/mach-omap2/board-am3517evm.c       |   25 +-
+ arch/arm/mach-omap2/board-cm-t35.c          |   30 +--
+ arch/arm/mach-omap2/board-devkit8000.c      |   30 +--
+ arch/arm/mach-omap2/board-igep0020.c        |   32 +--
+ arch/arm/mach-omap2/board-omap3beagle.c     |   37 +--
+ arch/arm/mach-omap2/board-omap3evm.c        |   29 +-
+ arch/arm/mach-omap2/board-omap3stalker.c    |   29 +-
+ arch/arm/mach-omap2/board-omap4panda.c      |   39 +--
+ arch/arm/mach-omap2/board-overo.c           |   25 +-
+ arch/arm/mach-omap2/display.c               |  175 ++++++++++--
+ drivers/video/omap2/displays/Kconfig        |    8 +-
+ drivers/video/omap2/displays/Makefile       |    2 +-
+ drivers/video/omap2/displays/panel-dvi.c    |  363 -------------------------
+ drivers/video/omap2/displays/panel-taal.c   |   22 ++
+ drivers/video/omap2/displays/panel-tfp410.c |  385 +++++++++++++++++++++++++++
+ drivers/video/omap2/dss/core.c              |  239 ++++++++++-------
+ drivers/video/omap2/dss/dispc.c             |   50 ++--
+ drivers/video/omap2/dss/display.c           |   40 ---
+ drivers/video/omap2/dss/dpi.c               |   68 +++--
+ drivers/video/omap2/dss/dsi.c               |  281 ++++++++++---------
+ drivers/video/omap2/dss/dss.c               |   44 ++-
+ drivers/video/omap2/dss/dss.h               |  113 ++------
+ drivers/video/omap2/dss/hdmi.c              |   86 +++---
+ drivers/video/omap2/dss/rfbi.c              |   60 +++--
+ drivers/video/omap2/dss/sdi.c               |   61 ++++-
+ drivers/video/omap2/dss/venc.c              |   62 +++--
+ drivers/video/omap2/omapfb/omapfb-main.c    |    9 +-
+ include/video/omap-panel-dvi.h              |   37 ---
+ include/video/omap-panel-nokia-dsi.h        |    3 +
+ include/video/omap-panel-tfp410.h           |   35 +++
+ include/video/omapdss.h                     |   33 +--
+ 33 files changed, 1220 insertions(+), 1307 deletions(-)
+ delete mode 100644 drivers/video/omap2/displays/panel-dvi.c
+ create mode 100644 drivers/video/omap2/displays/panel-tfp410.c
+ delete mode 100644 include/video/omap-panel-dvi.h
+ create mode 100644 include/video/omap-panel-tfp410.h
+
+-- 
+1.7.9.5
 

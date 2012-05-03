@@ -1,9 +1,7 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Thu, 03 May 2012 15:24:07 +0000
+From: Johan Hovold <jhovold@gmail.com>
+Date: Thu, 03 May 2012 16:54:37 +0000
 Subject: Re: [PATCH v2 1/4] mfd: add LM3533 lighting-power core driver
-Message-Id: <20120503152407.GK3955@opensource.wolfsonmicro.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="nzri8VXeXB/g5ayr"
+Message-Id: <20120503165437.GF15752@localhost>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1334935826-12527-1-git-send-email-jhovold@gmail.com>
  <1336040799-18433-1-git-send-email-jhovold@gmail.com>
@@ -12,73 +10,62 @@ References: <1334935826-12527-1-git-send-email-jhovold@gmail.com>
  <20120503112803.GA15752@localhost>
  <20120503113801.GE3955@opensource.wolfsonmicro.com>
  <20120503150040.GC15752@localhost>
-In-Reply-To: <20120503150040.GC15752@localhost>
-To: Johan Hovold <jhovold@gmail.com>
+ <20120503152407.GK3955@opensource.wolfsonmicro.com>
+In-Reply-To: <20120503152407.GK3955@opensource.wolfsonmicro.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Cc: Rob Landley <rob@landley.net>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@cam.ac.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org
 
+On Thu, May 03, 2012 at 04:24:07PM +0100, Mark Brown wrote:
+> On Thu, May 03, 2012 at 05:00:40PM +0200, Johan Hovold wrote:
+> > On Thu, May 03, 2012 at 12:38:02PM +0100, Mark Brown wrote:
+> 
+> > > This is one of the reasons why we currently use tracepoints (they just
+> > > don't have this issue as they're trivial to filter), though
+> > > adding some sort of infrastructure for it ought not to be too difficult
+> > > even if it's just at the regmap level.
+> 
+> > So a /sys/kernel/debug/regmap/<device>/io_printk attribute (with a
+> > better name) to enable debug printks in io paths
+> > (regmap*{read,write,update} outside of mutex) in regmap.c would be
+> > acceptable?
+> 
+> Yes, that'd be totally fine for me - it's debugfs so we can always drop
+> it later if someone comes up with a better idea or something.
 
---nzri8VXeXB/g5ayr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Ok. I'll have a look at this next week (will be on the road for a few
+days), and drop the dev_dbg from the lm3533 io-functions for now.
 
-On Thu, May 03, 2012 at 05:00:40PM +0200, Johan Hovold wrote:
-> On Thu, May 03, 2012 at 12:38:02PM +0100, Mark Brown wrote:
+> > > Actually, the other question I had but forgot to ask (or I think punted
+> > > on for your response) was why these are in sysfs at all - things like
+> > > which things are connected to the backlight are going to be a property
+> > > of the board design so should be defined by the machine not tweaked from
+> > > userspace.
+> 
+> > I agree with you and the reason is the same as for the max_current
+> > attribute (discussed in the other thread) -- it was an explicit request
+> > from the end customer.
+> 
+> > I could replace the boost attributes with a platform_data entry where it
+> > really belongs.
+> 
+> I really think this is much better for mainline.
 
-> > This is one of the reasons why we currently use tracepoints (they just
-> > don't have this issue as they're trivial to filter), though
-> > adding some sort of infrastructure for it ought not to be too difficult
-> > even if it's just at the regmap level.
+Agreed.
 
-> So a /sys/kernel/debug/regmap/<device>/io_printk attribute (with a
-> better name) to enable debug printks in io paths
-> (regmap*{read,write,update} outside of mutex) in regmap.c would be
-> acceptable?
+> > There is a use case (beyond testing/integration) for keeping the (lvled)
+> > outputs configurable from userspace, in that it provides a way to
+> > synchronise LED activity such as blinking. So I still want to keep those,
+> > at least for the lvleds.
+> 
+> I'm not sure exactly which control that is?
 
-Yes, that'd be totally fine for me - it's debugfs so we can always drop
-it later if someone comes up with a better idea or something.
+That would be the output_lvled[n] (n = 1..5) attributes. For example, to
+have all five low-voltage sinks blink synchronously, you could assign 0
+to all these five attributes, and set a timer trigger for the led device
+which has id 0.
 
-> > Actually, the other question I had but forgot to ask (or I think punted
-> > on for your response) was why these are in sysfs at all - things like
-> > which things are connected to the backlight are going to be a property
-> > of the board design so should be defined by the machine not tweaked from
-> > userspace.
-
-> I agree with you and the reason is the same as for the max_current
-> attribute (discussed in the other thread) -- it was an explicit request
-> from the end customer.
-
-> I could replace the boost attributes with a platform_data entry where it
-> really belongs.
-
-I really think this is much better for mainline.
-
-> There is a use case (beyond testing/integration) for keeping the (lvled)
-> outputs configurable from userspace, in that it provides a way to
-> synchronise LED activity such as blinking. So I still want to keep those,
-> at least for the lvleds.
-
-I'm not sure exactly which control that is?
-
---nzri8VXeXB/g5ayr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJPoqMQAAoJEBus8iNuMP3dJFIP/0RZs0Mbg/s4hAvFt0u3xfyh
-7uZ3v6Jt8qfW7+JuyeoDNGRSeF1WgVBvxZtGpRewrSW62j7O+sbm+cK0d7dbDOuF
-Qtt9GO4H+gRSzSaivLnA6jqGoX0FLXDTvBMfaSmCJKa7XcEJIufWlBhTXwlX3AJT
-BmgnXNwABQQXaDle4fDqQ5jDzKUkM/5sgK8plaxTRmQIaawOyksSz1b5qBPMvU0v
-PdSQ53P6e7m4Xz6XYwCMAc+Ab9EvliAPyVFFIdQan4fKeDL7TIvQoI1fkbHy2qBB
-rrFhMTLpV3JJC6mE5C/ajA/rxLwOm2p3EbRKvskBC5DWphGJQGPf3AYj4MeH2YUQ
-o6wSfUEtKbFwNsBdMev4/2d+bE2sW7vH9fOiwPElBGudGrwhLsIARdh3LXIAxK54
-xIQ7ay8DlBoXlMBCgLNIdYKv6RLN8gPhZfCfVMEAttY2l9lIITvdzO4JVeDurX79
-0RLzeZDYE+7lnIE3FqBQILakrTi/zgGKh6ucGkGVtGZcqC++aTJQKLlceEEHtKoy
-54+KUI7Ppk/BsGl+oj7PhF3IKrHMwdCswaOaDKR9Ft7+oW5cWBEDwMJeMF/QeLSz
-rmgWPrUdZ6Apl/i8KIR3jCaAjfvIIrcoC2ikoxQ+9xf10cGrD7S89ptEGMAb+0Ap
-jWvQXfVGObAWvX7YCIzM
-=spwq
------END PGP SIGNATURE-----
-
---nzri8VXeXB/g5ayr--
+Thanks,
+Johan

@@ -1,7 +1,7 @@
 From: Johan Hovold <jhovold@gmail.com>
-Date: Thu, 03 May 2012 10:15:19 +0000
+Date: Thu, 03 May 2012 10:22:40 +0000
 Subject: Re: [PATCH 1/4] mfd: add LM3533 lighting-power core driver
-Message-Id: <1336040119-13200-1-git-send-email-jhovold@gmail.com>
+Message-Id: <1336040560-18185-1-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20120426124122.GA26692@sirena.org.uk>
 In-Reply-To: <20120426124122.GA26692@sirena.org.uk>

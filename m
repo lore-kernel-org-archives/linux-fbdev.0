@@ -1,78 +1,100 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Fri, 18 May 2012 08:58:26 +0000
-Subject: [PATCH for v3.4] fbdev: sh_mobile_lcdc: Don't confuse line size with pitch
-Message-Id: <1337331506-13156-1-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 03 May 2012 13:57:43 +0000
+Subject: [PATCH 07/25] OMAPDSS: Taal: move reset gpio handling to taal driver
+Message-Id: <1336053481-25433-8-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, LKML <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-When using the MERAM the LCDC line size needs to be programmed with a
-MERAM-specific value different than the real frame buffer pitch. Fix it.
+The reset GPIO for Taal panel driver is currently requested in the
+4430sdp board file. This patch moves the gpio request/free into the Taal
+driver, where it should be.
 
-Reported-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Acked-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |    5 +++--
- drivers/video/sh_mobile_lcdcfb.h |    1 +
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ arch/arm/mach-omap2/board-4430sdp.c       |   16 ----------------
+ drivers/video/omap2/displays/panel-taal.c |   15 +++++++++++++++
+ 2 files changed, 15 insertions(+), 16 deletions(-)
 
-Hi Linus,
-
-Could you please apply this patch to v3.4-rc ? I apologize for pushing it this
-late, but this is a fix for a 3.4 regression that has only been discovered now
-and breaks an important use case (fbcon on SH Mobile).
-
-Due to the little time left before v3.4 Florian has asked me to send you the
-patch directly instead of pushing it through his tree.
-
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 7a0b301..e672698 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -758,7 +758,7 @@ static void __sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 		}
+diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+index 130ab00..6cbb16f 100644
+--- a/arch/arm/mach-omap2/board-4430sdp.c
++++ b/arch/arm/mach-omap2/board-4430sdp.c
+@@ -758,21 +758,6 @@ static struct omap_dss_device sdp4430_lcd2_device = {
+ 	.channel		= OMAP_DSS_CHANNEL_LCD2,
+ };
  
- 		lcdc_write_chan(ch, LDDFR, tmp);
--		lcdc_write_chan(ch, LDMLSR, ch->pitch);
-+		lcdc_write_chan(ch, LDMLSR, ch->line_size);
- 		lcdc_write_chan(ch, LDSA1R, ch->base_addr_y);
- 		if (ch->format->yuv)
- 			lcdc_write_chan(ch, LDSA2R, ch->base_addr_c);
-@@ -847,6 +847,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+-static void sdp4430_lcd_init(void)
+-{
+-	int r;
+-
+-	r = gpio_request_one(dsi1_panel.reset_gpio, GPIOF_DIR_OUT,
+-		"lcd1_reset_gpio");
+-	if (r)
+-		pr_err("%s: Could not get lcd1_reset_gpio\n", __func__);
+-
+-	r = gpio_request_one(dsi2_panel.reset_gpio, GPIOF_DIR_OUT,
+-		"lcd2_reset_gpio");
+-	if (r)
+-		pr_err("%s: Could not get lcd2_reset_gpio\n", __func__);
+-}
+-
+ static struct omap_dss_hdmi_data sdp4430_hdmi_data = {
+ 	.hpd_gpio = HDMI_GPIO_HPD,
+ };
+@@ -858,7 +843,6 @@ static void __init omap_4430sdp_display_init(void)
+ 	if (r)
+ 		pr_err("%s: Could not get display_sel GPIO\n", __func__);
  
- 		ch->base_addr_y = ch->dma_handle;
- 		ch->base_addr_c = ch->base_addr_y + ch->xres * ch->yres_virtual;
-+		ch->line_size = ch->pitch;
+-	sdp4430_lcd_init();
+ 	sdp4430_picodlp_init();
+ 	omap_display_init(&sdp4430_dss_data);
+ 	/*
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 3053399..be9992f 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -912,6 +912,15 @@ static int taal_probe(struct omap_dss_device *dssdev)
  
- 		/* Enable MERAM if possible. */
- 		if (mdev = NULL || mdev->ops = NULL ||
-@@ -882,7 +883,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 	dev_set_drvdata(&dssdev->dev, td);
  
- 		meram = mdev->ops->meram_register(mdev, ch->cfg->meram_cfg,
- 					ch->pitch, ch->yres, pixelformat,
--					&ch->pitch);
-+					&ch->line_size);
- 		if (!IS_ERR(meram)) {
- 			mdev->ops->meram_update(mdev, meram,
- 					ch->base_addr_y, ch->base_addr_c,
-diff --git a/drivers/video/sh_mobile_lcdcfb.h b/drivers/video/sh_mobile_lcdcfb.h
-index da1c26e..5c3bddd 100644
---- a/drivers/video/sh_mobile_lcdcfb.h
-+++ b/drivers/video/sh_mobile_lcdcfb.h
-@@ -84,6 +84,7 @@ struct sh_mobile_lcdc_chan {
++	if (gpio_is_valid(panel_data->reset_gpio)) {
++		r = gpio_request_one(panel_data->reset_gpio, GPIOF_OUT_INIT_LOW,
++				"taal rst");
++		if (r) {
++			dev_err(&dssdev->dev, "failed to request reset gpio\n");
++			goto err_rst_gpio;
++		}
++	}
++
+ 	taal_hw_reset(dssdev);
  
- 	unsigned long base_addr_y;
- 	unsigned long base_addr_c;
-+	unsigned int line_size;
+ 	if (panel_data->use_dsi_backlight) {
+@@ -992,6 +1001,9 @@ err_gpio:
+ 	if (bldev != NULL)
+ 		backlight_device_unregister(bldev);
+ err_bl:
++	if (gpio_is_valid(panel_data->reset_gpio))
++		gpio_free(panel_data->reset_gpio);
++err_rst_gpio:
+ 	destroy_workqueue(td->workqueue);
+ err_wq:
+ 	kfree(td);
+@@ -1030,6 +1042,9 @@ static void __exit taal_remove(struct omap_dss_device *dssdev)
+ 	/* reset, to be sure that the panel is in a valid state */
+ 	taal_hw_reset(dssdev);
  
- 	int (*notify)(struct sh_mobile_lcdc_chan *ch,
- 		      enum sh_mobile_lcdc_entity_event event,
++	if (gpio_is_valid(panel_data->reset_gpio))
++		gpio_free(panel_data->reset_gpio);
++
+ 	kfree(td);
+ }
+ 
 -- 
-Regards,
-
-Laurent Pinchart
+1.7.9.5
 

@@ -1,48 +1,55 @@
 From: Archit Taneja <archit@ti.com>
-Date: Mon, 07 May 2012 11:33:35 +0000
-Subject: [PATCH 5/6] OMAPDSS: Fix DSI_FCLK clock source selection
-Message-Id: <1336389696-21636-6-git-send-email-archit@ti.com>
+Date: Thu, 03 May 2012 07:19:40 +0000
+Subject: [PATCH v2 0/4] OMAPDSS: APPLY: Treat overlay manager timings as shadow registers
+Message-Id: <1336028864-13895-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1336389696-21636-1-git-send-email-archit@ti.com>
-In-Reply-To: <1336389696-21636-1-git-send-email-archit@ti.com>
+References: <1334561027-28569-1-git-send-email-archit@ti.com>
+In-Reply-To: <1334561027-28569-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The wrong bit field was being updated in DSS_CTRL when trying to configure the
-clock source of DSI2 functional clock. Use the correct bit field based on the
-dsi module number.
+An overlay manager's timings (the manager size, and blanking parameters if an
+LCD manager) are DISPC shadow registers, and they should hence follow the
+correct programming model.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/dss.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+This set makes the timings an extra_info parameter in manager's private data .
+The interface drivers now apply the timings in instead of directly writing to
+registers.
 
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index e731aa4..e212acb 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -335,7 +335,7 @@ void dss_select_dsi_clk_source(int dsi_module,
- 		enum omap_dss_clk_source clk_src)
- {
- 	struct platform_device *dsidev;
--	int b;
-+	int b, pos;
- 
- 	switch (clk_src) {
- 	case OMAP_DSS_CLK_SRC_FCK:
-@@ -357,7 +357,8 @@ void dss_select_dsi_clk_source(int dsi_module,
- 		BUG();
- 	}
- 
--	REG_FLD_MOD(DSS_CONTROL, b, 1, 1);	/* DSI_CLK_SWITCH */
-+	pos = dsi_module = 0 ? 1 : 10;
-+	REG_FLD_MOD(DSS_CONTROL, b, pos, pos);	/* DSIx_CLK_SWITCH */
- 
- 	dss.dsi_clk_source[dsi_module] = clk_src;
- }
+This change also prevents the need to use display resolution for overlay
+checks, hence making some of the APPLY functions less dependent on the display.
+
+Changes since v2:
+
+- Manager timings are represented as extra_info.
+- The DISPC related cleanups are removed since they have already been taken.
+
+These patches apply over:
+
+git://gitorious.org/linux-omap-dss2/linux.git dev
+
+Archit Taneja (4):
+  OMAPDSS: APPLY: Add manager timings as extra_info in private data
+  OMAPDSS: Apply manager timings instead of direct DISPC writes
+  OMAPDSS: MANAGER: Create a function to check manager timings
+  OMAPDSS: APPLY: Remove display dependency from overlay and manager
+    checks
+
+ drivers/video/omap2/dss/apply.c   |  142 ++++++++++++++++++++++++++++++-------
+ drivers/video/omap2/dss/dpi.c     |    4 +-
+ drivers/video/omap2/dss/dsi.c     |    5 +-
+ drivers/video/omap2/dss/dss.h     |    9 ++-
+ drivers/video/omap2/dss/hdmi.c    |    2 +-
+ drivers/video/omap2/dss/manager.c |   19 +++++-
+ drivers/video/omap2/dss/overlay.c |   20 +++---
+ drivers/video/omap2/dss/rfbi.c    |    4 +-
+ drivers/video/omap2/dss/sdi.c     |    2 +-
+ drivers/video/omap2/dss/venc.c    |    2 +-
+ 10 files changed, 158 insertions(+), 51 deletions(-)
+
 -- 
 1.7.5.4
 

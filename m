@@ -1,51 +1,90 @@
-From: Archit Taneja <archit@ti.com>
-Date: Mon, 07 May 2012 11:33:33 +0000
-Subject: [PATCH 3/6] OMAPDSS: DISPC: Remove omap_dss_device pointer usage from dispc_mgr_pclk_rate()
-Message-Id: <1336389696-21636-4-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 03 May 2012 13:57:56 +0000
+Subject: [PATCH 20/25] OMAPDSS: change default_device handling
+Message-Id: <1336053481-25433-21-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1336389696-21636-1-git-send-email-archit@ti.com>
-In-Reply-To: <1336389696-21636-1-git-send-email-archit@ti.com>
+References: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The pixel clock rate for the TV manager is calculated by checking the device
-type connected to the manager, and then requesting the VENC/HDMI interface for
-the pixel clock rate.
+We currently have a two ways to set a "default panel device" for dss, to
+which the overlays are connected when the omapdss driver is loaded:
 
-Remove the use of omap_dss_device pointer from here by checking which interface
-generates the pixel clock by reading the DSS_CTRL.VENC_HDMI_SWITCH bit.
+- in textual format (name of the display) as cmdline parameter
+- as a pointer to the panel device from board file via pdata
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+The current code handles this in a bit too complex way by using both of
+the above methods during runtime. However, with DT we don't have pdata
+anymore, so the code handling the second case won't work anymore. The
+current code has also the problem that it modifies the platform_data.
+
+This patch simplifies the code a bit by using the pointer method only
+inside the probe function, and stores the name of the panel device. This
+way we only need to handle the textual format during operation and also
+avoid modifying the platform_data.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
+ drivers/video/omap2/dss/core.c |   14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 49015b8..c198cc8 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -2643,13 +2643,14 @@ unsigned long dispc_mgr_pclk_rate(enum omap_channel channel)
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index 9b84f13..c3566a0 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -43,6 +43,8 @@ static struct {
  
- 		return r / pcd;
- 	} else {
--		struct omap_dss_device *dssdev -			dispc_mgr_get_device(channel);
-+		enum dss_hdmi_venc_clk_source_select source;
- 
--		switch (dssdev->type) {
--		case OMAP_DISPLAY_TYPE_VENC:
-+		source = dss_get_hdmi_venc_clk_source();
+ 	struct regulator *vdds_dsi_reg;
+ 	struct regulator *vdds_sdi_reg;
 +
-+		switch (source) {
-+		case DSS_VENC_TV_CLK:
- 			return venc_get_pixel_clock();
--		case OMAP_DISPLAY_TYPE_HDMI:
-+		case DSS_HDMI_M_PCLK:
- 			return hdmi_get_pixel_clock();
- 		default:
- 			BUG();
++	const char *default_display_name;
+ } core;
+ 
+ static char *def_disp_name;
+@@ -222,6 +224,11 @@ static int __init omap_dss_probe(struct platform_device *pdev)
+ 	if (r)
+ 		goto err_debugfs;
+ 
++	if (def_disp_name)
++		core.default_display_name = def_disp_name;
++	else if (pdata->default_device)
++		core.default_display_name = pdata->default_device->name;
++
+ 	for (i = 0; i < pdata->num_devices; ++i) {
+ 		struct omap_dss_device *dssdev = pdata->devices[i];
+ 
+@@ -235,9 +242,6 @@ static int __init omap_dss_probe(struct platform_device *pdev)
+ 
+ 			goto err_register;
+ 		}
+-
+-		if (def_disp_name && strcmp(def_disp_name, dssdev->name) = 0)
+-			pdata->default_device = dssdev;
+ 	}
+ 
+ 	return 0;
+@@ -360,7 +364,6 @@ static int dss_driver_probe(struct device *dev)
+ 	int r;
+ 	struct omap_dss_driver *dssdrv = to_dss_driver(dev->driver);
+ 	struct omap_dss_device *dssdev = to_dss_device(dev);
+-	struct omap_dss_board_info *pdata = core.pdev->dev.platform_data;
+ 	bool force;
+ 
+ 	DSSDBG("driver_probe: dev %s/%s, drv %s\n",
+@@ -369,7 +372,8 @@ static int dss_driver_probe(struct device *dev)
+ 
+ 	dss_init_device(core.pdev, dssdev);
+ 
+-	force = pdata->default_device = dssdev;
++	force = core.default_display_name &&
++		strcmp(core.default_display_name, dssdev->name) = 0;
+ 	dss_recheck_connections(dssdev, force);
+ 
+ 	r = dssdrv->probe(dssdev);
 -- 
-1.7.5.4
+1.7.9.5
 

@@ -1,141 +1,42 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Wed, 02 May 2012 23:12:54 +0000
+From: Peter =?iso-8859-15?q?H=FCwe?= <PeterHuewe@gmx.de>
+Date: Thu, 03 May 2012 21:40:33 +0000
 Subject: Re: [PATCH v2] video/sis: Use SiS_DRAMType from init.h and annotate it __devinitconst
-Message-Id: <4FA1BF76.8080109@gmx.de>
+Message-Id: <201205032340.34483.PeterHuewe@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334524209-20518-1-git-send-email-peterhuewe@gmx.de> <1335731167-3311-1-git-send-email-peterhuewe@gmx.de>
-In-Reply-To: <1335731167-3311-1-git-send-email-peterhuewe@gmx.de>
+References: <4FA1BF76.8080109@gmx.de>
+In-Reply-To: <4FA1BF76.8080109@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Peter Huewe <peterhuewe@gmx.de>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Cc: Thomas Winischhofer <thomas@winischhofer.net>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Peter,
+Hi Florian,
 
-On 04/29/2012 08:26 PM, Peter Huewe wrote:
-> This patch removes the duplicated SiS_DRAMType from sis_main.c since it
-> is already defined exactly the same in init.h.
-> Since we don't want to include init.h (for size reasons) we move the
-> struct to sis_main.h.
-> Since SiS_DRAMType is const and only used by sisfb_post_300_rwtest which is
-> marked __devinit we can also annotate SiS_DRAMType with __devinitconst.
-> 
-> And since hardcoded values are bad we use ARRAY_SIZE for determining the
-> size of SiS_DRAMType ;)
-> 
-> v2:
-> Move struct to sis_main.h to decrease module size
+> As far as I can see it should be possible to keep the array in
+> sis_main.c and just delete it in the header files, shouldn't it? I'd
+> prefer to do it this way.
 
-As far as I can see it should be possible to keep the array in
-sis_main.c and just delete it in the header files, shouldn't it? I'd
-prefer to do it this way.
+Yes it is absolutely possible to leave it in sis_main.c and remove it from the 
+header files. I already thought about this when creating the patch, but 
+decided against it, as the 17*5 = 85 bytes are allocated on the stack, while 
+they nicely can be put in the .devinit.rodata section ;)
+
+With the patch:
+344072  sis_main.o
+1200950 sisfb.o
+1217491 sisfb.ko
+
+vs without the patch and removing it only from the header:
+ 344176  sis_main.o
+1201056  sisfb.o
+1217597  sisfb.ko -> ~100bytes more in the final module.
+
+However I'm fine with this  and will remove it from the header and squash this 
+together with the 
+"video/sis: Remove unused structs SiS_SDRDRAM_TYPE/SiS_DDRDRAM_TYPE"
+I also sent to you.
 
 
-Best regards,
-
-Florian Tobias Schandinat
-
-> 
-> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
-> ---
->  drivers/video/sis/init.h     |   20 --------------------
->  drivers/video/sis/sis_main.c |   21 +--------------------
->  drivers/video/sis/sis_main.h |   20 ++++++++++++++++++++
->  3 files changed, 21 insertions(+), 40 deletions(-)
-> 
-> diff --git a/drivers/video/sis/init.h b/drivers/video/sis/init.h
-> index a22e892..85d6738 100644
-> --- a/drivers/video/sis/init.h
-> +++ b/drivers/video/sis/init.h
-> @@ -105,26 +105,6 @@ static const unsigned short ModeIndex_1920x1440[]    = {0x68, 0x69, 0x00, 0x6b};
->  static const unsigned short ModeIndex_300_2048x1536[]= {0x6c, 0x6d, 0x00, 0x00};
->  static const unsigned short ModeIndex_310_2048x1536[]= {0x6c, 0x6d, 0x00, 0x6e};
->  
-> -static const unsigned short SiS_DRAMType[17][5]={
-> -	{0x0C,0x0A,0x02,0x40,0x39},
-> -	{0x0D,0x0A,0x01,0x40,0x48},
-> -	{0x0C,0x09,0x02,0x20,0x35},
-> -	{0x0D,0x09,0x01,0x20,0x44},
-> -	{0x0C,0x08,0x02,0x10,0x31},
-> -	{0x0D,0x08,0x01,0x10,0x40},
-> -	{0x0C,0x0A,0x01,0x20,0x34},
-> -	{0x0C,0x09,0x01,0x08,0x32},
-> -	{0x0B,0x08,0x02,0x08,0x21},
-> -	{0x0C,0x08,0x01,0x08,0x30},
-> -	{0x0A,0x08,0x02,0x04,0x11},
-> -	{0x0B,0x0A,0x01,0x10,0x28},
-> -	{0x09,0x08,0x02,0x02,0x01},
-> -	{0x0B,0x09,0x01,0x08,0x24},
-> -	{0x0B,0x08,0x01,0x04,0x20},
-> -	{0x0A,0x08,0x01,0x02,0x10},
-> -	{0x09,0x08,0x01,0x01,0x00}
-> -};
-> -
->  static const unsigned char SiS_MDA_DAC[] >  {
->  	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-> diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
-> index 078ca21..8abd42b 100644
-> --- a/drivers/video/sis/sis_main.c
-> +++ b/drivers/video/sis/sis_main.c
-> @@ -4231,27 +4231,8 @@ sisfb_post_300_rwtest(struct sis_video_info *ivideo, int iteration, int buswidth
->  	unsigned short sr14;
->  	unsigned int k, RankCapacity, PageCapacity, BankNumHigh, BankNumMid;
->  	unsigned int PhysicalAdrOtherPage, PhysicalAdrHigh, PhysicalAdrHalfPage;
-> -	static const unsigned short SiS_DRAMType[17][5] = {
-> -		{0x0C,0x0A,0x02,0x40,0x39},
-> -		{0x0D,0x0A,0x01,0x40,0x48},
-> -		{0x0C,0x09,0x02,0x20,0x35},
-> -		{0x0D,0x09,0x01,0x20,0x44},
-> -		{0x0C,0x08,0x02,0x10,0x31},
-> -		{0x0D,0x08,0x01,0x10,0x40},
-> -		{0x0C,0x0A,0x01,0x20,0x34},
-> -		{0x0C,0x09,0x01,0x08,0x32},
-> -		{0x0B,0x08,0x02,0x08,0x21},
-> -		{0x0C,0x08,0x01,0x08,0x30},
-> -		{0x0A,0x08,0x02,0x04,0x11},
-> -		{0x0B,0x0A,0x01,0x10,0x28},
-> -		{0x09,0x08,0x02,0x02,0x01},
-> -		{0x0B,0x09,0x01,0x08,0x24},
-> -		{0x0B,0x08,0x01,0x04,0x20},
-> -		{0x0A,0x08,0x01,0x02,0x10},
-> -		{0x09,0x08,0x01,0x01,0x00}
-> -	};
->  
-> -	 for(k = 0; k <= 16; k++) {
-> +	 for (k = 0; k < ARRAY_SIZE(SiS_DRAMType); k++) {
->  
->  		RankCapacity = buswidth * SiS_DRAMType[k][3];
->  
-> diff --git a/drivers/video/sis/sis_main.h b/drivers/video/sis/sis_main.h
-> index 9540e97..242c1c3 100644
-> --- a/drivers/video/sis/sis_main.h
-> +++ b/drivers/video/sis/sis_main.h
-> @@ -776,6 +776,26 @@ extern void		SiS_Chrontel701xBLOff(struct SiS_Private *SiS_Pr);
->  #endif
->  extern void		SiS_SiS30xBLOn(struct SiS_Private *SiS_Pr);
->  extern void		SiS_SiS30xBLOff(struct SiS_Private *SiS_Pr);
-> +
-> +static const unsigned short __devinitconst SiS_DRAMType[17][5] = {
-> +	{0x0C,0x0A,0x02,0x40,0x39},
-> +	{0x0D,0x0A,0x01,0x40,0x48},
-> +	{0x0C,0x09,0x02,0x20,0x35},
-> +	{0x0D,0x09,0x01,0x20,0x44},
-> +	{0x0C,0x08,0x02,0x10,0x31},
-> +	{0x0D,0x08,0x01,0x10,0x40},
-> +	{0x0C,0x0A,0x01,0x20,0x34},
-> +	{0x0C,0x09,0x01,0x08,0x32},
-> +	{0x0B,0x08,0x02,0x08,0x21},
-> +	{0x0C,0x08,0x01,0x08,0x30},
-> +	{0x0A,0x08,0x02,0x04,0x11},
-> +	{0x0B,0x0A,0x01,0x10,0x28},
-> +	{0x09,0x08,0x02,0x02,0x01},
-> +	{0x0B,0x09,0x01,0x08,0x24},
-> +	{0x0B,0x08,0x01,0x04,0x20},
-> +	{0x0A,0x08,0x01,0x02,0x10},
-> +	{0x09,0x08,0x01,0x01,0x00}
-> +};
->  #endif
->  
->  
-
+Thanks,
+Peterq

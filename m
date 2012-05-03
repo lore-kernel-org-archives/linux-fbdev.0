@@ -1,108 +1,97 @@
-From: Archit Taneja <archit@ti.com>
-Date: Mon, 07 May 2012 11:33:36 +0000
-Subject: [PATCH 6/6] OMAPDSS: DISPC: Remove Fake VSYNC support
-Message-Id: <1336389696-21636-7-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 03 May 2012 13:57:45 +0000
+Subject: [PATCH 09/25] OMAPDSS: remove return from platform_driver_unreg
+Message-Id: <1336053481-25433-10-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1336389696-21636-1-git-send-email-archit@ti.com>
-In-Reply-To: <1336389696-21636-1-git-send-email-archit@ti.com>
+References: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Fake VSYNC support is a hack and has some bugs in it. It isn't used by any user
-of DSS. Remove Fake VSYNC support. For DSI command mode and RFBI panels, a user
-of DSS should wait for the completion of a frame by using the panel driver's
-sync op.
+For unknown reasons we seem to have a return in each of the omapdss's
+uninit functions, which is a void function.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+Remove the returns.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/omap2/dss/Kconfig |    9 ---------
- drivers/video/omap2/dss/dispc.c |   21 ---------------------
- drivers/video/omap2/dss/dsi.c   |    4 ----
- drivers/video/omap2/dss/dss.h   |    1 -
- 4 files changed, 0 insertions(+), 35 deletions(-)
+ drivers/video/omap2/dss/dispc.c |    2 +-
+ drivers/video/omap2/dss/dsi.c   |    2 +-
+ drivers/video/omap2/dss/dss.c   |    2 +-
+ drivers/video/omap2/dss/hdmi.c  |    2 +-
+ drivers/video/omap2/dss/rfbi.c  |    2 +-
+ drivers/video/omap2/dss/venc.c  |    2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/Kconfig b/drivers/video/omap2/dss/Kconfig
-index 7be7c06..9aaf324 100644
---- a/drivers/video/omap2/dss/Kconfig
-+++ b/drivers/video/omap2/dss/Kconfig
-@@ -90,15 +90,6 @@ config OMAP2_DSS_DSI
- 
- 	  See http://www.mipi.org/ for DSI spesifications.
- 
--config OMAP2_DSS_FAKE_VSYNC
--	bool "Fake VSYNC irq from manual update displays"
--	default n
--	help
--	  If this is selected, DSI will generate a fake DISPC VSYNC interrupt
--	  when DSI has sent a frame. This is only needed with DSI or RFBI
--	  displays using manual mode, and you want VSYNC to, for example,
--	  time animation.
--
- config OMAP2_DSS_MIN_FCK_PER_PCK
- 	int "Minimum FCK/PCK ratio (for scaling)"
- 	range 0 32
 diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index ef131cd..89d54c5 100644
+index 262ed29..2aa1fea 100644
 --- a/drivers/video/omap2/dss/dispc.c
 +++ b/drivers/video/omap2/dss/dispc.c
-@@ -3443,27 +3443,6 @@ int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
- 	return 0;
- }
+@@ -3636,5 +3636,5 @@ int dispc_init_platform_driver(void)
  
--#ifdef CONFIG_OMAP2_DSS_FAKE_VSYNC
--void dispc_fake_vsync_irq(void)
--{
--	u32 irqstatus = DISPC_IRQ_VSYNC;
--	int i;
--
--	WARN_ON(!in_interrupt());
--
--	for (i = 0; i < DISPC_MAX_NR_ISRS; i++) {
--		struct omap_dispc_isr_data *isr_data;
--		isr_data = &dispc.registered_isr[i];
--
--		if (!isr_data->isr)
--			continue;
--
--		if (isr_data->mask & irqstatus)
--			isr_data->isr(isr_data->arg, irqstatus);
--	}
--}
--#endif
--
- static void _omap_dispc_initialize_irq(void)
+ void dispc_uninit_platform_driver(void)
  {
- 	unsigned long flags;
+-	return platform_driver_unregister(&omap_dispchw_driver);
++	platform_driver_unregister(&omap_dispchw_driver);
+ }
 diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index db73598..95bc996 100644
+index a5a8316..45ba9e7 100644
 --- a/drivers/video/omap2/dss/dsi.c
 +++ b/drivers/video/omap2/dss/dsi.c
-@@ -4152,10 +4152,6 @@ static void dsi_framedone_irq_callback(void *data, u32 mask)
- 	__cancel_delayed_work(&dsi->framedone_timeout_work);
+@@ -4816,5 +4816,5 @@ int dsi_init_platform_driver(void)
  
- 	dsi_handle_framedone(dsidev, 0);
--
--#ifdef CONFIG_OMAP2_DSS_FAKE_VSYNC
--	dispc_fake_vsync_irq();
--#endif
+ void dsi_uninit_platform_driver(void)
+ {
+-	return platform_driver_unregister(&omap_dsihw_driver);
++	platform_driver_unregister(&omap_dsihw_driver);
  }
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index e731aa4..24f5429 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -873,5 +873,5 @@ int dss_init_platform_driver(void)
  
- int omap_dsi_update(struct omap_dss_device *dssdev, int channel,
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index f2a51c6..6699197 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -399,7 +399,6 @@ void dispc_dump_clocks(struct seq_file *s);
- void dispc_dump_irqs(struct seq_file *s);
- void dispc_dump_regs(struct seq_file *s);
- void dispc_irq_handler(void);
--void dispc_fake_vsync_irq(void);
+ void dss_uninit_platform_driver(void)
+ {
+-	return platform_driver_unregister(&omap_dsshw_driver);
++	platform_driver_unregister(&omap_dsshw_driver);
+ }
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 2321b75..35580b1 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -914,5 +914,5 @@ int hdmi_init_platform_driver(void)
  
- int dispc_runtime_get(void);
- void dispc_runtime_put(void);
+ void hdmi_uninit_platform_driver(void)
+ {
+-	return platform_driver_unregister(&omapdss_hdmihw_driver);
++	platform_driver_unregister(&omapdss_hdmihw_driver);
+ }
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index a81ffcb..39aac0b 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -1039,5 +1039,5 @@ int rfbi_init_platform_driver(void)
+ 
+ void rfbi_uninit_platform_driver(void)
+ {
+-	return platform_driver_unregister(&omap_rfbihw_driver);
++	platform_driver_unregister(&omap_rfbihw_driver);
+ }
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 30bbb63..7b0e8ed 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -907,5 +907,5 @@ void venc_uninit_platform_driver(void)
+ 	if (cpu_is_omap44xx())
+ 		return;
+ 
+-	return platform_driver_unregister(&omap_venchw_driver);
++	platform_driver_unregister(&omap_venchw_driver);
+ }
 -- 
-1.7.5.4
+1.7.9.5
 

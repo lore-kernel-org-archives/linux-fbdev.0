@@ -1,7 +1,7 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 03 May 2012 13:57:39 +0000
-Subject: [PATCH 03/25] OMAPDSS: TFP410: rename dvi -> tfp410
-Message-Id: <1336053481-25433-4-git-send-email-tomi.valkeinen@ti.com>
+Date: Thu, 03 May 2012 13:57:57 +0000
+Subject: [PATCH 21/25] OMAPDSS: interface drivers register their panel devices
+Message-Id: <1336053481-25433-22-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
@@ -11,598 +11,438 @@ Content-Transfer-Encoding: 7bit
 To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-The driver for the TFP410 DPI-to-DVI chip was named quite badly as "DVI
-panel driver". This patch renames the code to use tfp410 name for the
-driver.
+Currently the higher level omapdss platform driver gets the list of
+displays in its platform data, and uses that list to create the
+omap_dss_device for each display.
+
+With DT, the logical way to do the above is to list the displays under
+each individual output, i.e. we'd have "dpi" node, under which we would
+have the display that uses DPI. In other words, each output driver
+handles the displays that use that particular output.
+
+To make the current code ready for DT, this patch modifies the output
+drivers so that each of them creates the display devices which use that
+output. However, instead of changing the platform data to suit this
+method, each output driver is passed the full list of displays, and the
+drivers pick the displays that are meant for them. This allows us to
+keep the old platform data, and thus we avoid the need to change the
+board files.
 
 Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- arch/arm/mach-omap2/board-3430sdp.c      |    4 +-
- arch/arm/mach-omap2/board-am3517evm.c    |    4 +-
- arch/arm/mach-omap2/board-cm-t35.c       |    4 +-
- arch/arm/mach-omap2/board-devkit8000.c   |    4 +-
- arch/arm/mach-omap2/board-igep0020.c     |    4 +-
- arch/arm/mach-omap2/board-omap3beagle.c  |    4 +-
- arch/arm/mach-omap2/board-omap3evm.c     |    4 +-
- arch/arm/mach-omap2/board-omap3stalker.c |    4 +-
- arch/arm/mach-omap2/board-omap4panda.c   |    4 +-
- arch/arm/mach-omap2/board-overo.c        |    4 +-
- drivers/video/omap2/displays/Kconfig     |    8 +--
- drivers/video/omap2/displays/Makefile    |    2 +-
- drivers/video/omap2/displays/panel-dvi.c |   94 +++++++++++++++---------------
- include/video/omap-panel-dvi.h           |   12 ++--
- 14 files changed, 78 insertions(+), 78 deletions(-)
+ arch/arm/mach-omap2/display.c  |    9 ++++----
+ drivers/video/omap2/dss/core.c |   46 ++++++++++++++--------------------------
+ drivers/video/omap2/dss/dpi.c  |   17 +++++++++++++++
+ drivers/video/omap2/dss/dsi.c  |   18 ++++++++++++++++
+ drivers/video/omap2/dss/dss.h  |    5 +++++
+ drivers/video/omap2/dss/hdmi.c |   17 ++++++++++++++-
+ drivers/video/omap2/dss/rfbi.c |   16 +++++++++++++-
+ drivers/video/omap2/dss/sdi.c  |   17 +++++++++++++++
+ drivers/video/omap2/dss/venc.c |   18 +++++++++++++++-
+ 9 files changed, 126 insertions(+), 37 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-3430sdp.c b/arch/arm/mach-omap2/board-3430sdp.c
-index d827f8b..2a26d62 100644
---- a/arch/arm/mach-omap2/board-3430sdp.c
-+++ b/arch/arm/mach-omap2/board-3430sdp.c
-@@ -157,14 +157,14 @@ static struct omap_dss_device sdp3430_lcd_device = {
- 	.platform_disable	= sdp3430_panel_disable_lcd,
- };
+diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
+index 2c05a60..2c51809 100644
+--- a/arch/arm/mach-omap2/display.c
++++ b/arch/arm/mach-omap2/display.c
+@@ -325,7 +325,7 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
+ 		pdev = create_dss_pdev(curr_dss_hwmod[i].dev_name,
+ 				curr_dss_hwmod[i].id,
+ 				curr_dss_hwmod[i].oh_name,
+-				NULL, 0,
++				board_data, sizeof(*board_data),
+ 				dss_pdev);
  
--static struct panel_dvi_platform_data dvi_panel = {
-+static struct tfp410_platform_data dvi_panel = {
- 	.power_down_gpio	= -1,
- };
+ 		if (IS_ERR(pdev)) {
+@@ -341,15 +341,16 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
  
- static struct omap_dss_device sdp3430_dvi_device = {
- 	.name			= "dvi",
- 	.type			= OMAP_DISPLAY_TYPE_DPI,
--	.driver_name		= "dvi",
-+	.driver_name		= "tfp410",
- 	.data			= &dvi_panel,
- 	.phy.dpi.data_lines	= 24,
- };
-diff --git a/arch/arm/mach-omap2/board-am3517evm.c b/arch/arm/mach-omap2/board-am3517evm.c
-index ce155bf..feecc96 100644
---- a/arch/arm/mach-omap2/board-am3517evm.c
-+++ b/arch/arm/mach-omap2/board-am3517evm.c
-@@ -207,14 +207,14 @@ static struct omap_dss_device am3517_evm_tv_device = {
- 	.platform_disable	= am3517_evm_panel_disable_tv,
- };
+ 	/* Create devices for DPI and SDI */
  
--static struct panel_dvi_platform_data dvi_panel = {
-+static struct tfp410_platform_data dvi_panel = {
- 	.power_down_gpio	= -1,
- };
- 
- static struct omap_dss_device am3517_evm_dvi_device = {
- 	.type			= OMAP_DISPLAY_TYPE_DPI,
- 	.name			= "dvi",
--	.driver_name		= "dvi",
-+	.driver_name		= "tfp410",
- 	.data			= &dvi_panel,
- 	.phy.dpi.data_lines	= 24,
- };
-diff --git a/arch/arm/mach-omap2/board-cm-t35.c b/arch/arm/mach-omap2/board-cm-t35.c
-index 6f79026..9e8efe9 100644
---- a/arch/arm/mach-omap2/board-cm-t35.c
-+++ b/arch/arm/mach-omap2/board-cm-t35.c
-@@ -241,14 +241,14 @@ static struct omap_dss_device cm_t35_lcd_device = {
- 	.phy.dpi.data_lines	= 18,
- };
- 
--static struct panel_dvi_platform_data dvi_panel = {
-+static struct tfp410_platform_data dvi_panel = {
- 	.power_down_gpio	= CM_T35_DVI_EN_GPIO,
- };
- 
- static struct omap_dss_device cm_t35_dvi_device = {
- 	.name			= "dvi",
- 	.type			= OMAP_DISPLAY_TYPE_DPI,
--	.driver_name		= "dvi",
-+	.driver_name		= "tfp410",
- 	.data			= &dvi_panel,
- 	.phy.dpi.data_lines	= 24,
- };
-diff --git a/arch/arm/mach-omap2/board-devkit8000.c b/arch/arm/mach-omap2/board-devkit8000.c
-index 92f79de..5ea88f5 100644
---- a/arch/arm/mach-omap2/board-devkit8000.c
-+++ b/arch/arm/mach-omap2/board-devkit8000.c
-@@ -141,14 +141,14 @@ static struct omap_dss_device devkit8000_lcd_device = {
- 	.phy.dpi.data_lines     = 24,
- };
- 
--static struct panel_dvi_platform_data dvi_panel = {
-+static struct tfp410_platform_data dvi_panel = {
- 	.power_down_gpio	= -1,
- };
- 
- static struct omap_dss_device devkit8000_dvi_device = {
- 	.name                   = "dvi",
- 	.type                   = OMAP_DISPLAY_TYPE_DPI,
--	.driver_name            = "dvi",
-+	.driver_name            = "tfp410",
- 	.data			= &dvi_panel,
- 	.phy.dpi.data_lines     = 24,
- };
-diff --git a/arch/arm/mach-omap2/board-igep0020.c b/arch/arm/mach-omap2/board-igep0020.c
-index c702822..bf87f17 100644
---- a/arch/arm/mach-omap2/board-igep0020.c
-+++ b/arch/arm/mach-omap2/board-igep0020.c
-@@ -444,7 +444,7 @@ static struct twl4030_gpio_platform_data igep_twl4030_gpio_pdata = {
- 	.setup		= igep_twl_gpio_setup,
- };
- 
--static struct panel_dvi_platform_data dvi_panel = {
-+static struct tfp410_platform_data dvi_panel = {
- 	.i2c_bus_num		= 3,
- 	.power_down_gpio	= IGEP2_GPIO_DVI_PUP,
- };
-@@ -452,7 +452,7 @@ static struct panel_dvi_platform_data dvi_panel = {
- static struct omap_dss_device igep2_dvi_device = {
- 	.type			= OMAP_DISPLAY_TYPE_DPI,
- 	.name			= "dvi",
--	.driver_name		= "dvi",
-+	.driver_name		= "tfp410",
- 	.data			= &dvi_panel,
- 	.phy.dpi.data_lines	= 24,
- };
-diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-index 59f281f..1795967 100644
---- a/arch/arm/mach-omap2/board-omap3beagle.c
-+++ b/arch/arm/mach-omap2/board-omap3beagle.c
-@@ -189,7 +189,7 @@ static struct mtd_partition omap3beagle_nand_partitions[] = {
- 
- /* DSS */
- 
--static struct panel_dvi_platform_data dvi_panel = {
-+static struct tfp410_platform_data dvi_panel = {
- 	.i2c_bus_num = 3,
- 	.power_down_gpio = -1,
- };
-@@ -197,7 +197,7 @@ static struct panel_dvi_platform_data dvi_panel = {
- static struct omap_dss_device beagle_dvi_device = {
- 	.type = OMAP_DISPLAY_TYPE_DPI,
- 	.name = "dvi",
--	.driver_name = "dvi",
-+	.driver_name = "tfp410",
- 	.data = &dvi_panel,
- 	.phy.dpi.data_lines = 24,
- };
-diff --git a/arch/arm/mach-omap2/board-omap3evm.c b/arch/arm/mach-omap2/board-omap3evm.c
-index 9a3bce5..9cb0d08 100644
---- a/arch/arm/mach-omap2/board-omap3evm.c
-+++ b/arch/arm/mach-omap2/board-omap3evm.c
-@@ -219,14 +219,14 @@ static struct omap_dss_device omap3_evm_tv_device = {
- 	.platform_disable	= omap3_evm_disable_tv,
- };
- 
--static struct panel_dvi_platform_data dvi_panel = {
-+static struct tfp410_platform_data dvi_panel = {
- 	.power_down_gpio	= OMAP3EVM_DVI_PANEL_EN_GPIO,
- };
- 
- static struct omap_dss_device omap3_evm_dvi_device = {
- 	.name			= "dvi",
- 	.type			= OMAP_DISPLAY_TYPE_DPI,
--	.driver_name		= "dvi",
-+	.driver_name		= "tfp410",
- 	.data			= &dvi_panel,
- 	.phy.dpi.data_lines	= 24,
- };
-diff --git a/arch/arm/mach-omap2/board-omap3stalker.c b/arch/arm/mach-omap2/board-omap3stalker.c
-index de13f28..a9acf96 100644
---- a/arch/arm/mach-omap2/board-omap3stalker.c
-+++ b/arch/arm/mach-omap2/board-omap3stalker.c
-@@ -119,14 +119,14 @@ static struct omap_dss_device omap3_stalker_tv_device = {
- 	.platform_disable	= omap3_stalker_disable_tv,
- };
- 
--static struct panel_dvi_platform_data dvi_panel = {
-+static struct tfp410_platform_data dvi_panel = {
- 	.power_down_gpio	= DSS_ENABLE_GPIO,
- };
- 
- static struct omap_dss_device omap3_stalker_dvi_device = {
- 	.name			= "dvi",
- 	.type			= OMAP_DISPLAY_TYPE_DPI,
--	.driver_name		= "dvi",
-+	.driver_name		= "tfp410",
- 	.data			= &dvi_panel,
- 	.phy.dpi.data_lines	= 24,
- };
-diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
-index ddf8253..e1f19b2 100644
---- a/arch/arm/mach-omap2/board-omap4panda.c
-+++ b/arch/arm/mach-omap2/board-omap4panda.c
-@@ -421,7 +421,7 @@ static struct omap_board_mux board_mux[] __initdata = {
- #define PANDA_DVI_TFP410_POWER_DOWN_GPIO	0
- 
- /* Using generic display panel */
--static struct panel_dvi_platform_data omap4_dvi_panel = {
-+static struct tfp410_platform_data omap4_dvi_panel = {
- 	.i2c_bus_num		= 3,
- 	.power_down_gpio	= PANDA_DVI_TFP410_POWER_DOWN_GPIO,
- };
-@@ -429,7 +429,7 @@ static struct panel_dvi_platform_data omap4_dvi_panel = {
- struct omap_dss_device omap4_panda_dvi_device = {
- 	.type			= OMAP_DISPLAY_TYPE_DPI,
- 	.name			= "dvi",
--	.driver_name		= "dvi",
-+	.driver_name		= "tfp410",
- 	.data			= &omap4_dvi_panel,
- 	.phy.dpi.data_lines	= 24,
- 	.reset_gpio		= PANDA_DVI_TFP410_POWER_DOWN_GPIO,
-diff --git a/arch/arm/mach-omap2/board-overo.c b/arch/arm/mach-omap2/board-overo.c
-index 1a92fc4..aa83d46 100644
---- a/arch/arm/mach-omap2/board-overo.c
-+++ b/arch/arm/mach-omap2/board-overo.c
-@@ -167,7 +167,7 @@ static void __init overo_display_init(void)
- 	gpio_export(OVERO_GPIO_LCD_BL, 0);
- }
- 
--static struct panel_dvi_platform_data dvi_panel = {
-+static struct tfp410_platform_data dvi_panel = {
- 	.i2c_bus_num		= 3,
- 	.power_down_gpio	= -1,
- };
-@@ -175,7 +175,7 @@ static struct panel_dvi_platform_data dvi_panel = {
- static struct omap_dss_device overo_dvi_device = {
- 	.name			= "dvi",
- 	.type			= OMAP_DISPLAY_TYPE_DPI,
--	.driver_name		= "dvi",
-+	.driver_name		= "tfp410",
- 	.data			= &dvi_panel,
- 	.phy.dpi.data_lines	= 24,
- };
-diff --git a/drivers/video/omap2/displays/Kconfig b/drivers/video/omap2/displays/Kconfig
-index 408a992..c3853c9 100644
---- a/drivers/video/omap2/displays/Kconfig
-+++ b/drivers/video/omap2/displays/Kconfig
-@@ -10,12 +10,12 @@ config PANEL_GENERIC_DPI
- 	  Supports LCD Panel used in TI SDP3430 and EVM boards,
- 	  OMAP3517 EVM boards and CM-T35.
- 
--config PANEL_DVI
--	tristate "DVI output"
-+config PANEL_TFP410
-+	tristate "TFP410 DPI-to-DVI chip"
- 	depends on OMAP2_DSS_DPI && I2C
- 	help
--	  Driver for external monitors, connected via DVI. The driver uses i2c
--	  to read EDID information from the monitor.
-+	  Driver for TFP410 DPI-to-DVI chip. The driver uses i2c to read EDID
-+	  information from the monitor.
- 
- config PANEL_LGPHILIPS_LB035Q02
- 	tristate "LG.Philips LB035Q02 LCD Panel"
-diff --git a/drivers/video/omap2/displays/Makefile b/drivers/video/omap2/displays/Makefile
-index fbfafc6..58905ef0 100644
---- a/drivers/video/omap2/displays/Makefile
-+++ b/drivers/video/omap2/displays/Makefile
-@@ -1,5 +1,5 @@
- obj-$(CONFIG_PANEL_GENERIC_DPI) += panel-generic-dpi.o
--obj-$(CONFIG_PANEL_DVI) += panel-dvi.o
-+obj-$(CONFIG_PANEL_TFP410) += panel-dvi.o
- obj-$(CONFIG_PANEL_LGPHILIPS_LB035Q02) += panel-lgphilips-lb035q02.o
- obj-$(CONFIG_PANEL_SHARP_LS037V7DW01) += panel-sharp-ls037v7dw01.o
- obj-$(CONFIG_PANEL_NEC_NL8048HL11_01B) += panel-nec-nl8048hl11-01b.o
-diff --git a/drivers/video/omap2/displays/panel-dvi.c b/drivers/video/omap2/displays/panel-dvi.c
-index 7e8cadd..e6d6849 100644
---- a/drivers/video/omap2/displays/panel-dvi.c
-+++ b/drivers/video/omap2/displays/panel-dvi.c
-@@ -1,5 +1,5 @@
- /*
-- * DVI output support
-+ * TFP410 DPI-to-DVI chip
-  *
-  * Copyright (C) 2011 Texas Instruments Inc
-  * Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
-@@ -26,7 +26,7 @@
- 
- #include <video/omap-panel-dvi.h>
- 
--static const struct omap_video_timings panel_dvi_default_timings = {
-+static const struct omap_video_timings tfp410_default_timings = {
- 	.x_res		= 640,
- 	.y_res		= 480,
- 
-@@ -49,13 +49,13 @@ struct panel_drv_data {
- 	int pd_gpio;
- };
- 
--static inline struct panel_dvi_platform_data
-+static inline struct tfp410_platform_data
- *get_pdata(const struct omap_dss_device *dssdev)
- {
- 	return dssdev->data;
- }
- 
--static int panel_dvi_power_on(struct omap_dss_device *dssdev)
-+static int tfp410_power_on(struct omap_dss_device *dssdev)
- {
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
- 	int r;
-@@ -75,7 +75,7 @@ err0:
- 	return r;
- }
- 
--static void panel_dvi_power_off(struct omap_dss_device *dssdev)
-+static void tfp410_power_off(struct omap_dss_device *dssdev)
- {
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
- 
-@@ -88,9 +88,9 @@ static void panel_dvi_power_off(struct omap_dss_device *dssdev)
- 	omapdss_dpi_display_disable(dssdev);
- }
- 
--static int panel_dvi_probe(struct omap_dss_device *dssdev)
-+static int tfp410_probe(struct omap_dss_device *dssdev)
- {
--	struct panel_dvi_platform_data *pdata = get_pdata(dssdev);
-+	struct tfp410_platform_data *pdata = get_pdata(dssdev);
- 	struct panel_drv_data *ddata;
- 	int r;
- 
-@@ -98,7 +98,7 @@ static int panel_dvi_probe(struct omap_dss_device *dssdev)
- 	if (!ddata)
- 		return -ENOMEM;
- 
--	dssdev->panel.timings = panel_dvi_default_timings;
-+	dssdev->panel.timings = tfp410_default_timings;
- 	dssdev->panel.config = OMAP_DSS_LCD_TFT;
- 
- 	ddata->dssdev = dssdev;
-@@ -124,7 +124,7 @@ static int panel_dvi_probe(struct omap_dss_device *dssdev)
- 	return 0;
- }
- 
--static void __exit panel_dvi_remove(struct omap_dss_device *dssdev)
-+static void __exit tfp410_remove(struct omap_dss_device *dssdev)
- {
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
- 
-@@ -140,14 +140,14 @@ static void __exit panel_dvi_remove(struct omap_dss_device *dssdev)
- 	kfree(ddata);
- }
- 
--static int panel_dvi_enable(struct omap_dss_device *dssdev)
-+static int tfp410_enable(struct omap_dss_device *dssdev)
- {
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
- 	int r;
- 
- 	mutex_lock(&ddata->lock);
- 
--	r = panel_dvi_power_on(dssdev);
-+	r = tfp410_power_on(dssdev);
- 	if (r = 0)
- 		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
- 
-@@ -156,26 +156,26 @@ static int panel_dvi_enable(struct omap_dss_device *dssdev)
- 	return r;
- }
- 
--static void panel_dvi_disable(struct omap_dss_device *dssdev)
-+static void tfp410_disable(struct omap_dss_device *dssdev)
- {
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
- 
- 	mutex_lock(&ddata->lock);
- 
--	panel_dvi_power_off(dssdev);
-+	tfp410_power_off(dssdev);
- 
- 	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
- 
- 	mutex_unlock(&ddata->lock);
- }
- 
--static int panel_dvi_suspend(struct omap_dss_device *dssdev)
-+static int tfp410_suspend(struct omap_dss_device *dssdev)
- {
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
- 
- 	mutex_lock(&ddata->lock);
- 
--	panel_dvi_power_off(dssdev);
-+	tfp410_power_off(dssdev);
- 
- 	dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED;
- 
-@@ -184,14 +184,14 @@ static int panel_dvi_suspend(struct omap_dss_device *dssdev)
- 	return 0;
- }
- 
--static int panel_dvi_resume(struct omap_dss_device *dssdev)
-+static int tfp410_resume(struct omap_dss_device *dssdev)
- {
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
- 	int r;
- 
- 	mutex_lock(&ddata->lock);
- 
--	r = panel_dvi_power_on(dssdev);
-+	r = tfp410_power_on(dssdev);
- 	if (r = 0)
- 		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
- 
-@@ -200,7 +200,7 @@ static int panel_dvi_resume(struct omap_dss_device *dssdev)
- 	return r;
- }
- 
--static void panel_dvi_set_timings(struct omap_dss_device *dssdev,
-+static void tfp410_set_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
- {
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
-@@ -210,7 +210,7 @@ static void panel_dvi_set_timings(struct omap_dss_device *dssdev,
- 	mutex_unlock(&ddata->lock);
- }
- 
--static void panel_dvi_get_timings(struct omap_dss_device *dssdev,
-+static void tfp410_get_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
- {
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
-@@ -220,7 +220,7 @@ static void panel_dvi_get_timings(struct omap_dss_device *dssdev,
- 	mutex_unlock(&ddata->lock);
- }
- 
--static int panel_dvi_check_timings(struct omap_dss_device *dssdev,
-+static int tfp410_check_timings(struct omap_dss_device *dssdev,
- 		struct omap_video_timings *timings)
- {
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
-@@ -234,7 +234,7 @@ static int panel_dvi_check_timings(struct omap_dss_device *dssdev,
- }
- 
- 
--static int panel_dvi_ddc_read(struct i2c_adapter *adapter,
-+static int tfp410_ddc_read(struct i2c_adapter *adapter,
- 		unsigned char *buf, u16 count, u8 offset)
- {
- 	int r, retries;
-@@ -265,11 +265,11 @@ static int panel_dvi_ddc_read(struct i2c_adapter *adapter,
- 	return r < 0 ? r : -EIO;
- }
- 
--static int panel_dvi_read_edid(struct omap_dss_device *dssdev,
-+static int tfp410_read_edid(struct omap_dss_device *dssdev,
- 		u8 *edid, int len)
- {
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--	struct panel_dvi_platform_data *pdata = get_pdata(dssdev);
-+	struct tfp410_platform_data *pdata = get_pdata(dssdev);
- 	struct i2c_adapter *adapter;
- 	int r, l, bytes_read;
- 
-@@ -289,7 +289,7 @@ static int panel_dvi_read_edid(struct omap_dss_device *dssdev,
+-	pdev = create_simple_dss_pdev("omapdss_dpi", -1, NULL, 0, dss_pdev);
++	pdev = create_simple_dss_pdev("omapdss_dpi", -1,
++			board_data, sizeof(*board_data), dss_pdev);
+ 	if (IS_ERR(pdev)) {
+ 		pr_err("Could not build platform_device for omapdss_dpi\n");
+ 		return PTR_ERR(pdev);
  	}
  
- 	l = min(EDID_LENGTH, len);
--	r = panel_dvi_ddc_read(adapter, edid, l, 0);
-+	r = tfp410_ddc_read(adapter, edid, l, 0);
- 	if (r)
- 		goto err;
+ 	if (cpu_is_omap34xx()) {
+-		pdev = create_simple_dss_pdev("omapdss_sdi", -1, NULL, 0,
+-				dss_pdev);
++		pdev = create_simple_dss_pdev("omapdss_sdi", -1,
++				board_data, sizeof(*board_data), dss_pdev);
+ 		if (IS_ERR(pdev)) {
+ 			pr_err("Could not build platform_device for omapdss_sdi\n");
+ 			return PTR_ERR(pdev);
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.c
+index c3566a0..9915e9d 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -56,9 +56,6 @@ bool dss_debug;
+ module_param_named(debug, dss_debug, bool, 0644);
+ #endif
  
-@@ -299,7 +299,7 @@ static int panel_dvi_read_edid(struct omap_dss_device *dssdev,
- 	if (len > EDID_LENGTH && edid[0x7e] > 0) {
- 		l = min(EDID_LENGTH, len - EDID_LENGTH);
+-static int omap_dss_register_device(struct omap_dss_device *);
+-static void omap_dss_unregister_device(struct omap_dss_device *);
+-
+ /* REGULATORS */
  
--		r = panel_dvi_ddc_read(adapter, edid + EDID_LENGTH,
-+		r = tfp410_ddc_read(adapter, edid + EDID_LENGTH,
- 				l, EDID_LENGTH);
- 		if (r)
- 			goto err;
-@@ -316,10 +316,10 @@ err:
- 	return r;
- }
- 
--static bool panel_dvi_detect(struct omap_dss_device *dssdev)
-+static bool tfp410_detect(struct omap_dss_device *dssdev)
+ struct regulator *dss_get_vdds_dsi(void)
+@@ -209,7 +206,6 @@ static int __init omap_dss_probe(struct platform_device *pdev)
  {
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--	struct panel_dvi_platform_data *pdata = get_pdata(dssdev);
-+	struct tfp410_platform_data *pdata = get_pdata(dssdev);
- 	struct i2c_adapter *adapter;
- 	unsigned char out;
+ 	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
  	int r;
-@@ -333,7 +333,7 @@ static bool panel_dvi_detect(struct omap_dss_device *dssdev)
- 	if (!adapter)
- 		goto out;
+-	int i;
  
--	r = panel_dvi_ddc_read(adapter, &out, 1, 0);
-+	r = tfp410_ddc_read(adapter, &out, 1, 0);
+ 	core.pdev = pdev;
  
- 	mutex_unlock(&ddata->lock);
+@@ -229,25 +225,8 @@ static int __init omap_dss_probe(struct platform_device *pdev)
+ 	else if (pdata->default_device)
+ 		core.default_display_name = pdata->default_device->name;
  
-@@ -344,38 +344,38 @@ out:
- 	return true;
- }
+-	for (i = 0; i < pdata->num_devices; ++i) {
+-		struct omap_dss_device *dssdev = pdata->devices[i];
+-
+-		r = omap_dss_register_device(dssdev);
+-		if (r) {
+-			DSSERR("device %d %s register failed %d\n", i,
+-				dssdev->name ?: "unnamed", r);
+-
+-			while (--i >= 0)
+-				omap_dss_unregister_device(pdata->devices[i]);
+-
+-			goto err_register;
+-		}
+-	}
+-
+ 	return 0;
  
--static struct omap_dss_driver panel_dvi_driver = {
--	.probe		= panel_dvi_probe,
--	.remove		= __exit_p(panel_dvi_remove),
-+static struct omap_dss_driver tfp410_driver = {
-+	.probe		= tfp410_probe,
-+	.remove		= __exit_p(tfp410_remove),
+-err_register:
+-	dss_uninitialize_debugfs();
+ err_debugfs:
  
--	.enable		= panel_dvi_enable,
--	.disable	= panel_dvi_disable,
--	.suspend	= panel_dvi_suspend,
--	.resume		= panel_dvi_resume,
-+	.enable		= tfp410_enable,
-+	.disable	= tfp410_disable,
-+	.suspend	= tfp410_suspend,
-+	.resume		= tfp410_resume,
+ 	return r;
+@@ -255,17 +234,11 @@ err_debugfs:
  
--	.set_timings	= panel_dvi_set_timings,
--	.get_timings	= panel_dvi_get_timings,
--	.check_timings	= panel_dvi_check_timings,
-+	.set_timings	= tfp410_set_timings,
-+	.get_timings	= tfp410_get_timings,
-+	.check_timings	= tfp410_check_timings,
- 
--	.read_edid	= panel_dvi_read_edid,
--	.detect		= panel_dvi_detect,
-+	.read_edid	= tfp410_read_edid,
-+	.detect		= tfp410_detect,
- 
- 	.driver         = {
--		.name   = "dvi",
-+		.name   = "tfp410",
- 		.owner  = THIS_MODULE,
- 	},
- };
- 
--static int __init panel_dvi_init(void)
-+static int __init tfp410_init(void)
+ static int omap_dss_remove(struct platform_device *pdev)
  {
--	return omap_dss_register_driver(&panel_dvi_driver);
-+	return omap_dss_register_driver(&tfp410_driver);
+-	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
+-	int i;
+-
+ 	dss_uninitialize_debugfs();
+ 
+ 	dss_uninit_overlays(pdev);
+ 	dss_uninit_overlay_managers(pdev);
+ 
+-	for (i = 0; i < pdata->num_devices; ++i)
+-		omap_dss_unregister_device(pdata->devices[i]);
+-
+ 	return 0;
  }
  
--static void __exit panel_dvi_exit(void)
-+static void __exit tfp410_exit(void)
+@@ -467,7 +440,8 @@ static void omap_dss_dev_release(struct device *dev)
+ 	reset_device(dev, 0);
+ }
+ 
+-static int omap_dss_register_device(struct omap_dss_device *dssdev)
++int omap_dss_register_device(struct omap_dss_device *dssdev,
++		struct device *parent)
  {
--	omap_dss_unregister_driver(&panel_dvi_driver);
-+	omap_dss_unregister_driver(&tfp410_driver);
+ 	static int dev_num;
+ 
+@@ -475,17 +449,29 @@ static int omap_dss_register_device(struct omap_dss_device *dssdev)
+ 
+ 	reset_device(&dssdev->dev, 1);
+ 	dssdev->dev.bus = &dss_bus_type;
+-	dssdev->dev.parent = &dss_bus;
++	dssdev->dev.parent = parent;
+ 	dssdev->dev.release = omap_dss_dev_release;
+ 	dev_set_name(&dssdev->dev, "display%d", dev_num++);
+ 	return device_register(&dssdev->dev);
  }
  
--module_init(panel_dvi_init);
--module_exit(panel_dvi_exit);
-+module_init(tfp410_init);
-+module_exit(tfp410_exit);
- MODULE_LICENSE("GPL");
-diff --git a/include/video/omap-panel-dvi.h b/include/video/omap-panel-dvi.h
-index a782124..68c31d7 100644
---- a/include/video/omap-panel-dvi.h
-+++ b/include/video/omap-panel-dvi.h
-@@ -1,5 +1,5 @@
- /*
-- * Header for DVI output driver
-+ * Header for TFP410 chip driver
-  *
-  * Copyright (C) 2011 Texas Instruments Inc
-  * Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
-@@ -17,19 +17,19 @@
-  * this program.  If not, see <http://www.gnu.org/licenses/>.
-  */
+-static void omap_dss_unregister_device(struct omap_dss_device *dssdev)
++void omap_dss_unregister_device(struct omap_dss_device *dssdev)
+ {
+ 	device_unregister(&dssdev->dev);
+ }
  
--#ifndef __OMAP_PANEL_DVI_H
--#define __OMAP_PANEL_DVI_H
-+#ifndef __OMAP_PANEL_TFP410_H
-+#define __OMAP_PANEL_TFP410_H
++static int dss_unregister_dss_dev(struct device *dev, void *data)
++{
++	struct omap_dss_device *dssdev = to_dss_device(dev);
++	omap_dss_unregister_device(dssdev);
++	return 0;
++}
++
++void omap_dss_unregister_child_devices(struct device *parent)
++{
++	device_for_each_child(parent, NULL, dss_unregister_dss_dev);
++}
++
+ /* BUS */
+ static int __init omap_dss_bus_register(void)
+ {
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index f92134c..631953b 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -366,11 +366,28 @@ int dpi_init_display(struct omap_dss_device *dssdev)
  
- struct omap_dss_device;
+ static int __init omap_dpi_probe(struct platform_device *pdev)
+ {
++	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
++	int i, r;
++
++	for (i = 0; i < pdata->num_devices; ++i) {
++		struct omap_dss_device *dssdev = pdata->devices[i];
++
++		if (dssdev->type != OMAP_DISPLAY_TYPE_DPI)
++			continue;
++
++		r = omap_dss_register_device(dssdev, &pdev->dev);
++		if (r)
++			DSSERR("device %s register failed: %d\n",
++					dssdev->name, r);
++	}
++
+ 	return 0;
+ }
  
- /**
-- * struct panel_dvi_platform_data - panel driver configuration data
-+ * struct tfp410_platform_data - panel driver configuration data
-  * @i2c_bus_num: i2c bus id for the panel
-  * @power_down_gpio: gpio number for PD pin (or -1 if not available)
-  */
--struct panel_dvi_platform_data {
-+struct tfp410_platform_data {
- 	u16 i2c_bus_num;
- 	int power_down_gpio;
- };
+ static int __exit omap_dpi_remove(struct platform_device *pdev)
+ {
++	omap_dss_unregister_child_devices(&pdev->dev);
++
+ 	return 0;
+ }
  
--#endif /* __OMAP_PANEL_DVI_H */
-+#endif /* __OMAP_PANEL_TFP410_H */
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index f37e7ee..0ff1e63 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -4616,6 +4616,7 @@ static int __init omap_dsihw_probe(struct platform_device *dsidev)
+ 	int r, i, dsi_module = dsi_get_dsidev_id(dsidev);
+ 	struct resource *dsi_mem;
+ 	struct dsi_data *dsi;
++	struct omap_dss_board_info *pdata = dsidev->dev.platform_data;
+ 
+ 	dsi = devm_kzalloc(&dsidev->dev, sizeof(*dsi), GFP_KERNEL);
+ 	if (!dsi)
+@@ -4702,6 +4703,21 @@ static int __init omap_dsihw_probe(struct platform_device *dsidev)
+ 	else
+ 		dsi->num_lanes_supported = 3;
+ 
++	for (i = 0; i < pdata->num_devices; ++i) {
++		struct omap_dss_device *dssdev = pdata->devices[i];
++
++		if (dssdev->type != OMAP_DISPLAY_TYPE_DSI)
++			continue;
++
++		if (dssdev->phy.dsi.module != dsi_module)
++			continue;
++
++		r = omap_dss_register_device(dssdev, &dsidev->dev);
++		if (r)
++			DSSERR("device %s register failed: %d\n",
++				dssdev->name, r);
++	}
++
+ 	dsi_runtime_put(dsidev);
+ 
+ 	if (dsi_module = 0)
+@@ -4729,6 +4745,8 @@ static int __exit omap_dsihw_remove(struct platform_device *dsidev)
+ 
+ 	WARN_ON(dsi->scp_clk_refcount > 0);
+ 
++	omap_dss_unregister_child_devices(&dsidev->dev);
++
+ 	pm_runtime_disable(&dsidev->dev);
+ 
+ 	dsi_put_clocks(dsidev);
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 3ac9d1d..828f669 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -165,6 +165,11 @@ void dss_dsi_disable_pads(int dsi_id, unsigned lane_mask);
+ int dss_set_min_bus_tput(struct device *dev, unsigned long tput);
+ int dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *));
+ 
++int omap_dss_register_device(struct omap_dss_device *dssdev,
++		struct device *parent);
++void omap_dss_unregister_device(struct omap_dss_device *dssdev);
++void omap_dss_unregister_child_devices(struct device *parent);
++
+ /* apply */
+ void dss_apply_init(void);
+ int dss_mgr_wait_for_go(struct omap_overlay_manager *mgr);
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 02933bc..28ce057 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -772,8 +772,9 @@ static void hdmi_put_clocks(void)
+ /* HDMI HW IP initialisation */
+ static int __init omapdss_hdmihw_probe(struct platform_device *pdev)
+ {
++	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
+ 	struct resource *hdmi_mem;
+-	int r;
++	int r, i;
+ 
+ 	hdmi.pdev = pdev;
+ 
+@@ -810,6 +811,18 @@ static int __init omapdss_hdmihw_probe(struct platform_device *pdev)
+ 
+ 	dss_debugfs_create_file("hdmi", hdmi_dump_regs);
+ 
++	for (i = 0; i < pdata->num_devices; ++i) {
++		struct omap_dss_device *dssdev = pdata->devices[i];
++
++		if (dssdev->type != OMAP_DISPLAY_TYPE_HDMI)
++			continue;
++
++		r = omap_dss_register_device(dssdev, &pdev->dev);
++		if (r)
++			DSSERR("device %s register failed: %d\n",
++					dssdev->name, r);
++	}
++
+ #if defined(CONFIG_SND_OMAP_SOC_OMAP4_HDMI) || \
+ 	defined(CONFIG_SND_OMAP_SOC_OMAP4_HDMI_MODULE)
+ 
+@@ -826,6 +839,8 @@ static int __init omapdss_hdmihw_probe(struct platform_device *pdev)
+ 
+ static int __exit omapdss_hdmihw_remove(struct platform_device *pdev)
+ {
++	omap_dss_unregister_child_devices(&pdev->dev);
++
+ 	hdmi_panel_exit();
+ 
+ #if defined(CONFIG_SND_OMAP_SOC_OMAP4_HDMI) || \
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 6d489c0..d0d24a0 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -930,10 +930,11 @@ int rfbi_init_display(struct omap_dss_device *dssdev)
+ /* RFBI HW IP initialisation */
+ static int __init omap_rfbihw_probe(struct platform_device *pdev)
+ {
++	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
+ 	u32 rev;
+ 	struct resource *rfbi_mem;
+ 	struct clk *clk;
+-	int r;
++	int r, i;
+ 
+ 	rfbi.pdev = pdev;
+ 
+@@ -978,6 +979,18 @@ static int __init omap_rfbihw_probe(struct platform_device *pdev)
+ 
+ 	dss_debugfs_create_file("rfbi", rfbi_dump_regs);
+ 
++	for (i = 0; i < pdata->num_devices; ++i) {
++		struct omap_dss_device *dssdev = pdata->devices[i];
++
++		if (dssdev->type != OMAP_DISPLAY_TYPE_DBI)
++			continue;
++
++		r = omap_dss_register_device(dssdev, &pdev->dev);
++		if (r)
++			DSSERR("device %s register failed: %d\n",
++				dssdev->name, r);
++	}
++
+ 	return 0;
+ 
+ err_runtime_get:
+@@ -987,6 +1000,7 @@ err_runtime_get:
+ 
+ static int __exit omap_rfbihw_remove(struct platform_device *pdev)
+ {
++	omap_dss_unregister_child_devices(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
+ 	return 0;
+ }
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 7dfe4fe..bf48fb4 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -178,11 +178,28 @@ int sdi_init_display(struct omap_dss_device *dssdev)
+ 
+ static int __init omap_sdi_probe(struct platform_device *pdev)
+ {
++	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
++	int i, r;
++
++	for (i = 0; i < pdata->num_devices; ++i) {
++		struct omap_dss_device *dssdev = pdata->devices[i];
++
++		if (dssdev->type != OMAP_DISPLAY_TYPE_SDI)
++			continue;
++
++		r = omap_dss_register_device(dssdev, &pdev->dev);
++		if (r)
++			DSSERR("device %s register failed: %d\n",
++					dssdev->name, r);
++	}
++
+ 	return 0;
+ }
+ 
+ static int __exit omap_sdi_remove(struct platform_device *pdev)
+ {
++	omap_dss_unregister_child_devices(&pdev->dev);
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index a19138b..646903a 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -780,9 +780,10 @@ static void venc_put_clocks(void)
+ /* VENC HW IP initialisation */
+ static int __init omap_venchw_probe(struct platform_device *pdev)
+ {
++	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
+ 	u8 rev_id;
+ 	struct resource *venc_mem;
+-	int r;
++	int r, i;
+ 
+ 	venc.pdev = pdev;
+ 
+@@ -824,6 +825,18 @@ static int __init omap_venchw_probe(struct platform_device *pdev)
+ 
+ 	dss_debugfs_create_file("venc", venc_dump_regs);
+ 
++	for (i = 0; i < pdata->num_devices; ++i) {
++		struct omap_dss_device *dssdev = pdata->devices[i];
++
++		if (dssdev->type != OMAP_DISPLAY_TYPE_VENC)
++			continue;
++
++		r = omap_dss_register_device(dssdev, &pdev->dev);
++		if (r)
++			DSSERR("device %s register failed: %d\n",
++					dssdev->name, r);
++	}
++
+ 	return 0;
+ 
+ err_reg_panel_driver:
+@@ -835,10 +848,13 @@ err_runtime_get:
+ 
+ static int __exit omap_venchw_remove(struct platform_device *pdev)
+ {
++	omap_dss_unregister_child_devices(&pdev->dev);
++
+ 	if (venc.vdda_dac_reg != NULL) {
+ 		regulator_put(venc.vdda_dac_reg);
+ 		venc.vdda_dac_reg = NULL;
+ 	}
++
+ 	omap_dss_unregister_driver(&venc_driver);
+ 
+ 	pm_runtime_disable(&pdev->dev);
 -- 
 1.7.9.5
 

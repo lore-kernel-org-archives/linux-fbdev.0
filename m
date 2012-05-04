@@ -1,74 +1,108 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 04 May 2012 08:37:10 +0000
+Date: Fri, 04 May 2012 09:00:06 +0000
 Subject: Re: [PATCH 11/25] OMAPDSS: create custom pdevs for DSS omap_devices
-Message-Id: <1336120630.2701.6.camel@deskari>
+Message-Id: <1336122006.2701.19.camel@deskari>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-dkxOHL9IHSW4uWMAhW3Z"
+Content-Type: multipart/mixed; boundary="=-HZpuBy07sl+6HhvG9iM9"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
 	 <1336053481-25433-12-git-send-email-tomi.valkeinen@ti.com>
-	 <4FA37139.9020501@ti.com>
-In-Reply-To: <4FA37139.9020501@ti.com>
-To: Archit Taneja <a0393947@ti.com>, Paul Walmsley <paul@pwsan.com>, Kevin Hilman <khilman@ti.com>
+	 <4FA39091.8010007@ti.com>
+In-Reply-To: <4FA39091.8010007@ti.com>
+To: Archit Taneja <a0393947@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
 
---=-dkxOHL9IHSW4uWMAhW3Z
+--=-HZpuBy07sl+6HhvG9iM9
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2012-05-04 at 11:33 +0530, Archit Taneja wrote:
-> Hi,
->=20
+On Fri, 2012-05-04 at 13:47 +0530, Archit Taneja wrote:
 > On Thursday 03 May 2012 07:27 PM, Tomi Valkeinen wrote:
-> > Instead of using omap_device_build() to create the omap_devices for DSS
-> > hwmods, create them with a custom function. This will allow us to creat=
-e
-> > a parent-child hierarchy for the devices so that the omapdss_core devic=
-e
-> > is parent for the rest of the dss hwmod devices.
-> >
-> > Signed-off-by: Tomi Valkeinen<tomi.valkeinen@ti.com>
-> > ---
-> >   arch/arm/mach-omap2/display.c |   88 ++++++++++++++++++++++++++++++++=
-++-------
-> >   1 file changed, 74 insertions(+), 14 deletions(-)
-> >
-> > diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/displa=
-y.c
-> > index 07232fd..46d2a98 100644
-> > --- a/arch/arm/mach-omap2/display.c
-> > +++ b/arch/arm/mach-omap2/display.c
-> > @@ -185,13 +185,71 @@ static int omap_dss_set_min_bus_tput(struct devic=
-e *dev, unsigned long tput)
-> >   	return omap_pm_set_min_bus_tput(dev, OCP_INITIATOR_AGENT, tput);
-> >   }
-> >
-> > +static struct platform_device *create_dss_pdev(const char *pdev_name,
-> > +		int pdev_id, const char *oh_name, void *pdata, int pdata_len,
-> > +		struct platform_device *parent)
->=20
-> This function looks quite generic, it's like omap_device_build() but=20
-> with a parent associated. omap_device_build() seems to be a special case=
-=20
-> of this function with parent passed as null. Won't this
-> function be needed by other devices too?
->=20
-> Maybe we could modify omap_device_build_ss() to take a parent argument,=
-=20
-> and make a function called omap_device_build_parent(), where both=20
-> omap_device_build() and omap_device_build_parent() call=20
-> omap_device_build_ss()?
 
-Yes, that sounds good to me.
+> > @@ -221,22 +279,24 @@ int __init omap_display_init(struct omap_dss_boar=
+d_info *board_data)
+> >   		oh_count =3D ARRAY_SIZE(omap4_dss_hwmod_data);
+> >   	}
+> >
+> > -	for (i =3D 0; i<  oh_count; i++) {
+> > -		oh =3D omap_hwmod_lookup(curr_dss_hwmod[i].oh_name);
+> > -		if (!oh) {
+> > -			pr_err("Could not look up %s\n",
+> > -				curr_dss_hwmod[i].oh_name);
+> > -			return -ENODEV;
+> > -		}
+> > +	dss_pdev =3D NULL;
+> >
+> > -		pdev =3D omap_device_build(curr_dss_hwmod[i].dev_name,
+> > -				curr_dss_hwmod[i].id, oh,
+> > +	for (i =3D 0; i<  oh_count; i++) {
+> > +		pdev =3D create_dss_pdev(curr_dss_hwmod[i].dev_name,
+> > +				curr_dss_hwmod[i].id,
+> > +				curr_dss_hwmod[i].oh_name,
+> >   				NULL, 0,
+> > -				NULL, 0, 0);
+> > +				dss_pdev);
+> > +
+> > +		if (IS_ERR(pdev)) {
+> > +			pr_err("Could not build omap_device for %s\n",
+> > +					curr_dss_hwmod[i].oh_name);
+> > +
+> > +			return PTR_ERR(pdev);
+> > +		}
+> >
+> > -		if (WARN((IS_ERR(pdev)), "Could not build omap_device for %s\n",
+> > -				curr_dss_hwmod[i].oh_name))
+> > -			return -ENODEV;
+> > +		if (i =3D=3D 0)
+> > +			dss_pdev =3D pdev;
+>=20
+> The above line is a bit tricky to understand, maybe something like this=
+=20
+> may explain the parent-child setting better:
+>=20
+> 		if (!strcmp(curr_dss_hwmod[i].oh_name, "dss_core"))
+> 			dss_pdev =3D pdev;
 
-Paul, Kevin, what do you think, could the omap_device functions be
-extended to allow setting a parent device?
+I agree that it's a bit confusing. But your suggestion is not very good
+either, as the code does not work properly if the dss_core is not the
+first one created. I'll look into it. Perhaps I can separate the code
+into a small function, and then I can more easily do something like:
+
+dss_pdev =3D create_the_device();
+
+for () {
+	// create the rest of the devices
+	create_the_device();
+}
+
+and that would clarify what's going on.
+
+> I had another general question about the parent-child series. What is=20
+> the use of the platform device omap_display_device (with the name=20
+> "omapdss"). Is it just a way to get the board data?
+
+Originally, before hwmods, we had only omapdss device, which contained
+all the dss code. Then came hwmods, and the omapdss was split into
+smaller devices, but omapdss was still there.
+
+As I see it, omapdss is currently a "virtual" higher level device
+(virtual in the sense that it doesn't correspond directly to any HW),
+and the code for omapdss is more or less in the core.c file. It's used
+to pass the board data, but also has some generic dss stuff that all dss
+subdevices can use.
+
+I think in the long run we should remove omapdss device, and probably
+handle the generic stuff in dss_core (dss.c), which, as a parent to
+other subdevices, should fit fine for the role.
+
+For the time being we can't remove it. It's the only simple way to pass
+callbacks from the arch code with device tree.
 
  Tomi
 
 
---=-dkxOHL9IHSW4uWMAhW3Z
+--=-HZpuBy07sl+6HhvG9iM9
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
@@ -76,20 +110,20 @@ Content-Transfer-Encoding: 7bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABAgAGBQJPo5U2AAoJEPo9qoy8lh71qiEQAJn2RX7TRjKX9E88BVwWOA6u
-JyIsChQwsPjBJ4r5VNeYQIMyW0oTtgJb4qWm7ykPbGTMcalLDRpMzngx9iGWG8QV
-Po7Rqee5VczUShhRLEMq0a9/xEq9Q5DrbztCJNchcT652PZkaH+DeJN14leJOCCG
-jKdR7QRiSL2DKotk54QYaCv8Rw0uVG00JDYM821XobnN26Ylx1/oNkVdq6JO72sr
-I4ZtRKPXx2lQEQN3MZ8n3P2awOFViUNuMr4TK4Qnf6qSekFUQsu9kKmLq/AhvXNP
-S2NJrbMNanT14X1w7XeQ7dkm4pBbfb/FgZyiOm+lv4TIvjFK70kZ9RBOz3bpU/sc
-fy0loFlLWVVAk8saJ1GBecs6J3ECiTW38DKbaZt+oiIViTtwj5qS4ydLUkuBTHqz
-Ja6u97wfUcDpYp004Gmt35DekTN1ZbOhRlOcfM20DH/udEAa1YwV3JkPJNN6HMyU
-WeeIU9lVJkVd+BX9m9m92UWuLMoBOmlddFMs+IpYOzF9r7nNjoSwPYY6+d+qVK1O
-QEkguBBuFfDUSU1Qmi4zqVUuPmrO+cs/5DuNxyJhwrpTOfMu/AjOgz6Mrmd/a/8M
-zbODMt1EbOz3FgE52K0xDprs7vnAB6vDf/ZJo1B+co9CiyhxVEgmBYnRYrmPulub
-4iW5Al2PufOiPDxvXfbA
-=mv88
+iQIcBAABAgAGBQJPo5qWAAoJEPo9qoy8lh71lD0P/0KJ+5BfRRPoATcmRT2tPJ54
+BHN8qk4FPaPFJ6SQ7wkHJBfjmpjCpZEV6+pF+gAzkPAPlKMLwX/LKpekl/VlYfnK
+Byoces47TyCFBbS0HMlc05KsRuxClwTLtD0j1WKGzLaT/9+y3U01RY2IMwsdWhtX
+7mS4/0nYxmWai/Dms0LHbwm6aiFxXIRelIJ15iN9LhrE0hQHXyFKlY3BqFw9XCDY
+fOuc2zpB1hs9yjMYHU0Eo32mChbvOdlrhvBWuEcoF88DLAlN5rHldRmjmjPPk80p
+Yuz61tdGqr/Nh6USVte/7Zjv/0B9B/FaHVSmEpc+0OZu4B+UYZW3+NtQOC9bpB7o
+sFLz70TkJFVXhqk9Iqi4wnVzfnFTLdeXJdEhBmPLiNu6Jl7WRUHnS95UzVm8n4hC
+9D2M3qrzEMeHzmRXHX51eZPf+Qi0IfqopFCesPCfp/JeTl99/fQcLmIm9DYNP1pd
+Y83kwPfO0ww/PbW47/tyMumSvHDXPz08fu9pewF1/fU1c3jYINIBGoo+9toaaOJs
+dnkp5wUDLXbuijHFqUz1kjMUuwjnb8zYXDnJ+G7gNdSV5h0YgmBZ4eagJm55ZRV6
+03Bb9ICIDrrxRH+1LiS7tTNoir/JAapp9ta2VDXWDQ3SQVFSyy0rUF7gOF9ApTtg
+wbrbbPQsCZ3GhIXkUK5k
+=krrB
 -----END PGP SIGNATURE-----
 
---=-dkxOHL9IHSW4uWMAhW3Z--
+--=-HZpuBy07sl+6HhvG9iM9--
 

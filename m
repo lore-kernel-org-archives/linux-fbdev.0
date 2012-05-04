@@ -1,7 +1,7 @@
 From: Archit Taneja <a0393947@ti.com>
-Date: Fri, 04 May 2012 06:15:37 +0000
+Date: Fri, 04 May 2012 08:29:21 +0000
 Subject: Re: [PATCH 11/25] OMAPDSS: create custom pdevs for DSS omap_devices
-Message-Id: <4FA37139.9020501@ti.com>
+Message-Id: <4FA39091.8010007@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com> <1336053481-25433-12-git-send-email-tomi.valkeinen@ti.com>
 In-Reply-To: <1336053481-25433-12-git-send-email-tomi.valkeinen@ti.com>
@@ -10,8 +10,6 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-Hi,
 
 On Thursday 03 May 2012 07:27 PM, Tomi Valkeinen wrote:
 > Instead of using omap_device_build() to create the omap_devices for DSS
@@ -35,19 +33,6 @@ On Thursday 03 May 2012 07:27 PM, Tomi Valkeinen wrote:
 > +static struct platform_device *create_dss_pdev(const char *pdev_name,
 > +		int pdev_id, const char *oh_name, void *pdata, int pdata_len,
 > +		struct platform_device *parent)
-
-This function looks quite generic, it's like omap_device_build() but 
-with a parent associated. omap_device_build() seems to be a special case 
-of this function with parent passed as null. Won't this
-function be needed by other devices too?
-
-Maybe we could modify omap_device_build_ss() to take a parent argument, 
-and make a function called omap_device_build_parent(), where both 
-omap_device_build() and omap_device_build_parent() call 
-omap_device_build_ss()?
-
-Archit
-
 > +{
 > +	struct platform_device *pdev;
 > +	struct omap_device *od;
@@ -149,6 +134,19 @@ Archit
 > -			return -ENODEV;
 > +		if (i = 0)
 > +			dss_pdev = pdev;
+
+The above line is a bit tricky to understand, maybe something like this 
+may explain the parent-child setting better:
+
+		if (!strcmp(curr_dss_hwmod[i].oh_name, "dss_core"))
+			dss_pdev = pdev;
+
+I had another general question about the parent-child series. What is 
+the use of the platform device omap_display_device (with the name 
+"omapdss"). Is it just a way to get the board data?
+
+Archit
+
 >   	}
 >
 >   	return 0;

@@ -1,104 +1,36 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 09 May 2012 11:51:29 +0000
-Subject: Re: [PATCH v4 0/9] OMAPDSS: APPLY: Treat overlay manager timings as shadow registers
-Message-Id: <1336564289.3962.32.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-hSI7BqVd1VtZtq0gli72"
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Fri, 04 May 2012 01:49:46 +0000
+Subject: [PATCH] video: exynos_dp: fix max loop count in EQ sequence of link training
+Message-Id: <003201cd2998$2ee3eef0$8cabccd0$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334561027-28569-1-git-send-email-archit@ti.com>
-	  <1336558256-26140-1-git-send-email-archit@ti.com>
-	 <1336561991.3962.31.camel@deskari> <4FAA53EA.7040400@ti.com>
-In-Reply-To: <4FAA53EA.7040400@ti.com>
-To: Archit Taneja <a0393947@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-
---=-hSI7BqVd1VtZtq0gli72
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2012-05-09 at 16:54 +0530, Archit Taneja wrote:
-> On Wednesday 09 May 2012 04:43 PM, Tomi Valkeinen wrote:
-> > On Wed, 2012-05-09 at 15:40 +0530, Archit Taneja wrote:
-> >> An overlay manager's timings (the manager size, and blanking parameter=
-s if an
-> >> LCD manager) are DISPC shadow registers, and they should hence follow =
-the
-> >> correct programming model.
-> >>
-> >> This set makes the timings an extra_info parameter in manager's privat=
-e data .
-> >> The interface drivers now apply the timings in instead of directly wri=
-ting to
-> >> registers.
-> >>
-> >> This change also prevents the need to use display resolution for overl=
-ay
-> >> checks, hence making some of the APPLY functions less dependent on the=
- display.
-> >> Some DISPC functions that needed display width can also use these priv=
-ately
-> >> stored timings.
-> >>
-> >> Changes since v3:
-> >>
-> >> - Remove direct setting of go bit in dpi_set_timings()
-> >> - Take some of the patches in "OMAPDSS: Misc fixes and cleanups" and m=
-ake them a
-> >>    part of this series as they are more related.
-> >> - Don't have an initial set of manager timings in private data, only c=
-heck
-> >>    manager and overlay parameters once the manager is enabled.
-> >>
-> >> These patches apply over:
-> >>
-> >> git://gitorious.org/linux-omap-dss2/linux.git dev
-> >>
-> >> Reference tree containing this series:
-> >>
-> >> git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git mgr_=
-timing_and_fixes_2
-> >>
-> >> Tested on OMAP4 SDP and Panda.
-> >
-> > I did some quick tests on omap3 overo, worked fine. I'll merge to dss
-> > master branch.
->=20
-> Russ did some tests on more omap3 boards, the tree which he used has=20
-> some slight changes comapred to what I have posted, but it's more or=20
-> less the same.
->=20
-> Could you add 'Tested-by: Russ.Dill@ti.com' if not too difficult, I=20
-> missed out doing that.
-
-Sorry, I could, but I already merged and pushed the series, so I can't
-change it anymore.
-
- Tomi
-
-
---=-hSI7BqVd1VtZtq0gli72
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+This patch fixes max loop count in EQ(Channel Equalization) sequence
+of link training. According to DP(displayport) specification,
+the max loop count in this sequence should be 5.
 
-iQIcBAABAgAGBQJPqlpBAAoJEPo9qoy8lh71sFAP/3IJTqj2cslUCgFPJyA58Uo1
-+YgMxKuRff3li2ylw2PuDRWOGNkaC1loOwMt49fIbWdcwu2ZM6WPWi7LXhrESGfD
-dGzoc2IkGJkzFylgxTt/e+8bL0LFX94Tmdisd7tJE6GpCJDfg6DGc2EP1NoLSLwN
-slt6F6S5DpcJ5watP1by3Dtt/Gc6+x8nkcNs4HXD3+1awMaJIJLWUT9sPPQg1uQH
-6Nf5XQlJfxYlzefrXVeLlRdHbxkFenqLhYHcgmN4z2ruerUTdUwQaeior+gXXIRn
-FoS36gmTn0iRmstqfgwS3aWFE18d5/5CYAHltssZSXHnWjpJhi3n3USuCmnUWOu1
-0R/mx5Shz1KVtFtJ0P+rd0reDhEZ/mW6WxO05Ch9wUYMPjHQQNPibMkuAs+lNz8G
-BQgZffO12ACcQpQpdBljUPPgVa84V32y9/8eh7YWu6q/+MTG3fl9WZArfu33ajXH
-hYvbAa48B0/7Uky9bxBbFBHS1olRBJygeUFwi/boNPecL0f9KVdPuh8T+kHfb+8w
-77BDbfcmTUj+gw64QRTj4UuzrBFDhm550MZMAT7Xz7Z/6gkIz3K1mHzfj6IdiS+d
-ZrcMEzTWOV7Za8RBJky1KShpXmanKeD6rfSVQr3w3f9OYvKzJYJFk1YmL+lLF8tV
-8slHEpmnqI2kc+4AtioB
-=UHAv
------END PGP SIGNATURE-----
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ include/video/exynos_dp.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
---=-hSI7BqVd1VtZtq0gli72--
+diff --git a/include/video/exynos_dp.h b/include/video/exynos_dp.h
+index 8847a9d..bd8cabd 100644
+--- a/include/video/exynos_dp.h
++++ b/include/video/exynos_dp.h
+@@ -14,7 +14,7 @@
+ 
+ #define DP_TIMEOUT_LOOP_COUNT 100
+ #define MAX_CR_LOOP 5
+-#define MAX_EQ_LOOP 4
++#define MAX_EQ_LOOP 5
+ 
+ enum link_rate_type {
+ 	LINK_RATE_1_62GBPS = 0x06,
+-- 
+1.7.1
+
 

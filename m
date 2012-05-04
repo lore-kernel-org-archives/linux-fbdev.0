@@ -1,87 +1,44 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 04 May 2012 09:53:49 +0000
+Date: Fri, 04 May 2012 10:11:50 +0000
 Subject: Re: [PATCH 24/25] OMAPDSS: DSI: improve DSI module id handling
-Message-Id: <1336125229.2701.30.camel@deskari>
+Message-Id: <1336126310.2701.31.camel@deskari>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-CYVzmT3yzikhEa5DIU+C"
+Content-Type: multipart/mixed; boundary="=-S0+foBYkKOAXmODd9moM"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
-	 <1336053481-25433-25-git-send-email-tomi.valkeinen@ti.com>
-	 <4FA39CBB.6010500@ti.com>
-In-Reply-To: <4FA39CBB.6010500@ti.com>
+	  <1336053481-25433-25-git-send-email-tomi.valkeinen@ti.com>
+	  <4FA39CBB.6010500@ti.com> <1336125229.2701.30.camel@deskari>
+	 <4FA3A9E4.3040802@ti.com>
+In-Reply-To: <4FA3A9E4.3040802@ti.com>
 To: Archit Taneja <a0393947@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
 
---=-CYVzmT3yzikhEa5DIU+C
+--=-S0+foBYkKOAXmODd9moM
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2012-05-04 at 14:39 +0530, Archit Taneja wrote:
-> On Thursday 03 May 2012 07:28 PM, Tomi Valkeinen wrote:
-> > We currently use the id of the dsi platform device (dsidev->id) as the
-> > DSI hardware module ID. This works because we assign the ID manually in
-> > arch/arm/mach-omap2/display.c at boot time.
-> >
-> > However, with device tree the platform device IDs are automatically
-> > assigned to an arbitrary number, and we can't use it.
+On Fri, 2012-05-04 at 15:35 +0530, Archit Taneja wrote:
+> > This is only a problem with device tree, and I solved it so that I
+> pass
+> > a DSI module ID in the device tree data. So, with old pdata way I
+> > initialize dsi->module_id from the pdev->id, but with DT I
+> initialize
+> > dsi->module_id from the DT data.
 >=20
-> If this number is arbitrary we would need to change the "dsi_pdev_map"=
-=20
-> approach of mapping a dsi module and it's corresponding platform device.
-> Currently dsi_pdev_map is:
+> Oh ok, so the code which decides how dsi->module_id is
+> initialised(from=20
+> DT or pdata) is not in this series right? And it would come later?
+> Right=20
+> now it's just set to dsidev->id in probe.
 >=20
-> static struct platform_device *dsi_pdev_map[MAX_NUM_DSI];
->=20
-> So we either need to increase the array size to take larger arbitrary=20
-> numbers, or do something else.
->=20
-> We would also need to fix the usage of dsi_get_dsidev_from_id(), as=20
-> right now we manually pass 0 and 1 to it only, for example:
->=20
-> static void dsi1_dump_irqs(struct seq_file *s)
-> {
->          struct platform_device *dsidev =3D dsi_get_dsidev_from_id(0);
->=20
->          dsi_dump_dsidev_irqs(dsidev, s);
-> }
->=20
-> The immediate solution that comes to mind is to maintain 2 id's, one=20
-> which is sequential, and the other which the DT has created, and keep an=
-=20
-> array to map these. But this seems messy!
-
-This is only a problem with device tree, and I solved it so that I pass
-a DSI module ID in the device tree data. So, with old pdata way I
-initialize dsi->module_id from the pdev->id, but with DT I initialize
-dsi->module_id from the DT data.
-
-So basically we remove the use of pdev->id in this patch, and add
-dsi->module_id field, which needs to be initialized to 0 or 1, depending
-on the corresponding HW module. We just happen to use the pdev->id to
-initialize it when using the old pdata method, as we know it tells the
-right id. But we could initialize it from any other source.
-
-This allows us to keep the 0 and 1 DSI IDs, and I think we need those
-anyway. Some parts of the code could work fine with arbitrary ID, as
-long as a pdev can be linked to/from this ID. However, there are things
-where we must have the ID, like configuring the clock source settings in
-dss_core, where we set a certain bit for DSI module 0, and certain bit
-for module 1.
-
-Perhaps even those could be handled without explicit ID of 0 or 1, but
-that doesn't sound trivial and I didn't want to start tackling that in
-this series.
-
-I wish there was a way to get the module ID from the HW registers
-somehow. Then we wouldn't need to pass the ID via SW, which doesn't feel
-very correct. At least with DT it's a bit wrong, in my opinion, but best
-I could come up with.
+Yes, there's no DT code in this series, only cleanups to make adding DT
+support easier.
 
  Tomi
 
 
---=-CYVzmT3yzikhEa5DIU+C
+--=-S0+foBYkKOAXmODd9moM
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
@@ -89,20 +46,20 @@ Content-Transfer-Encoding: 7bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABAgAGBQJPo6ctAAoJEPo9qoy8lh71kHMP/16TONDwpF5+YQUKHuVb9CM2
-BUSMzB9BMRRZMsP0S43XAffV+IY6vTB83qgNjemwM/8TkMfdm02bXLRjFOarKHvW
-xMjSwC/VL7cm73K6Lm5A9T3MZCUKHRitGUnbQurjyTExgg6pjpaAvhcVKW8T9UKh
-DWQHxok4IWsP+tSMZf1XunWjt6DdyaYyZD8clnRUcd9fdtHh2Z+z9HXmAEZZGr+9
-y4gJtxEQWT9Hu7R4LWh7rgQ+JuA9ORS+rdlq/IW6feMKnpTY7qagh96OTKSg9OcB
-oJpmQiemCiuzskoJUJuhkiiaOrmTJayAcjvYqfg4hzOIocSD4QyHQvvp2yOLUozS
-J4vP/MikNi9uuWSLdfANjgwuwCX15BIbpielMWev441JTp245z1QEh3qJGaNhPFh
-tinX3E1PP05aNhh4ENoK2+pRQW61qO8rBTAzjRVQEFgAL/tb6z9P3vSVv+1Nz3qL
-CUkZ+4j0lvhFGQ9jpYzp5fj5FH848IMsiSGtBDETGGD5garWAW0CXiYl7gkTZyzP
-kt0k0l3Cu7e5OYvgiT0CUCu3SzNczU7VdNNjhZxWfxkrOgPbCBd/nkDXd8wINqxk
-AkJKG8jMW1YQYG1rMqUwKTiOcr05fpC39yN3TfK+OiLZKDr/e5uKZ7Bio10juTBh
-RXxmTVJLaqEFHwFmWcPi
-=zD/f
+iQIcBAABAgAGBQJPo6tmAAoJEPo9qoy8lh71Wc4P/AmDlcUdgZ5hrwn4QC5F4XfU
+9OhpJ/qsiMlfpWWwHYsKkddaCKRW2kWhqF3fqV2csltUKPoJWYW0EgpremsVNAIy
+5swdhECgbRMphwPVWYg7oDbJrCSCRO9rvgEOCNH0hVhPh+AP+wyUSCUNqcKtgOi8
+5Pga5SaWa859D6kv0OORilMtgeEXXz9ybyWU1W20M8PCEaL/zIT1AwCzSkyirOkD
+bQXpW4kxeroKMZZeKbHB75ogHJ0KuWNnAdiTHSA/EIqcKjaSbvF0Dx7e2Ri7e/g3
+VFYsG957/wuO8Ewt8g7vMhvwnJAQrRSOho2G4kd5cmbhKTBrA6C7Jfhk9aOC2BVI
+bwCZfRMyBze6G4pnoYBV7Mb4+H7mcFLGpRdKIIFDDPg3IIFVMUYoLt+FWIXu0kr8
+xMx8canHkgOfYhPU+Xla5toZj/+RAYKwcUsF0slEZpC5wPxDsp0JZ5ea1i5eL5ip
+UrH5+GYX3hR4IMC7uozXaMbNnuxRfGR3DgEmDcUqRmdSgeO3j2/+5P3Pmi1/QZAi
+hodhxqsWcQ/o2q1J8U871vdMbAv71frcRIHdGSGTAe7yIT1gg3jWW4u71CP/Uy/x
+aH5veGTy5gxndVlFQOF9pADt1X1Ie4qPnWIrBD81YGwGtbJIrUCu8qUKT/erCL/m
+CI+encCIrCHOXqIC4+Y1
+=b9U6
 -----END PGP SIGNATURE-----
 
---=-CYVzmT3yzikhEa5DIU+C--
+--=-S0+foBYkKOAXmODd9moM--
 

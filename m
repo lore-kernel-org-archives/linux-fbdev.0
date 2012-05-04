@@ -1,90 +1,67 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Fri, 04 May 2012 08:48:17 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 04 May 2012 08:49:47 +0000
 Subject: Re: [PATCH 08/25] OMAPDSS: clean up the omapdss platform data mess
-Message-Id: <4FA39501.3070205@ti.com>
+Message-Id: <1336121387.2701.10.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-gnRfqxmlrkZJazzQMlCP"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>  <1336053481-25433-9-git-send-email-tomi.valkeinen@ti.com>  <4FA369D2.1070809@ti.com> <1336120320.2701.1.camel@deskari>
-In-Reply-To: <1336120320.2701.1.camel@deskari>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
+	  <1336053481-25433-9-git-send-email-tomi.valkeinen@ti.com>
+	  <4FA369D2.1070809@ti.com> <1336120320.2701.1.camel@deskari>
+	 <4FA39501.3070205@ti.com>
+In-Reply-To: <4FA39501.3070205@ti.com>
+To: Archit Taneja <a0393947@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Friday 04 May 2012 02:02 PM, Tomi Valkeinen wrote:
-> On Fri, 2012-05-04 at 11:02 +0530, Archit Taneja wrote:
->> Hi,
->>
->> On Thursday 03 May 2012 07:27 PM, Tomi Valkeinen wrote:
->>> The omapdss pdata handling is a mess. This is more evident when trying
->>> to use device tree for DSS, as we don't have platform data anymore in
->>> that case. This patch cleans the pdata handling by:
->>>
->>> - Remove struct omap_display_platform_data. It was used just as a
->>>     wrapper for struct omap_dss_board_info.
->>> - Pass the platform data only to omapdss device. The drivers for omap
->>>     dss hwmods do not need the platform data. This should also work better
->>>     for DT, as we can create omapdss device programmatically in generic omap
->>>     boot code, and thus we can pass the pdata to it.
->>> - Create dss functions for get_ctx_loss_count and dsi_enable/disable_pads
->>>     that the dss hwmod drivers can call.
->>>
->>> Signed-off-by: Tomi Valkeinen<tomi.valkeinen@ti.com>
->>> ---
->>>    arch/arm/mach-omap2/display.c   |   39 +++++++++++++++++++--------------------
->>>    drivers/video/omap2/dss/core.c  |   35 +++++++++++++++++++++++++++++++++++
->>>    drivers/video/omap2/dss/dispc.c |   21 ++-------------------
->>>    drivers/video/omap2/dss/dsi.c   |   17 +++--------------
->>>    drivers/video/omap2/dss/dss.h   |    3 +++
->>>    drivers/video/omap2/dss/hdmi.c  |    2 --
->>>    include/video/omapdss.h         |    5 -----
->>>    7 files changed, 62 insertions(+), 60 deletions(-)
->>>
->>> diff --git a/arch/arm/mach-omap2/display.c b/arch/arm/mach-omap2/display.c
->>> index 60cded4..07232fd 100644
->>> --- a/arch/arm/mach-omap2/display.c
->>> +++ b/arch/arm/mach-omap2/display.c
->>> @@ -191,10 +191,24 @@ int __init omap_display_init(struct omap_dss_board_info *board_data)
->>>    	struct omap_hwmod *oh;
->>>    	struct platform_device *pdev;
->>>    	int i, oh_count;
->>> -	struct omap_display_platform_data pdata;
->>>    	const struct omap_dss_hwmod_data *curr_dss_hwmod;
->>>
->>> -	memset(&pdata, 0, sizeof(pdata));
->>> +	/* create omapdss device */
->>> +
->>> +	board_data->dsi_enable_pads = omap_dsi_enable_pads;
->>> +	board_data->dsi_disable_pads = omap_dsi_disable_pads;
->>> +	board_data->get_context_loss_count = omap_pm_get_dev_context_loss_count;
->>> +	board_data->set_min_bus_tput = omap_dss_set_min_bus_tput;
->>> +
->>> +	omap_display_device.dev.platform_data = board_data;
->>> +
->>> +	r = platform_device_register(&omap_display_device);
->>> +	if (r<   0) {
->>> +		pr_err("Unable to register omapdss device\n");
->>> +		return r;
->>> +	}
->>
->> After this patch, the "omapdss" platform device is registered before the
->> other dss platform devices. This would change the sequence of probes of
->> these devices. Was this intentional?
->
-> Hmm. The sequence shouldn't change. The order in which the devices are
-> registered doesn't matter if there are no drivers registered yet. When
-> the drivers are registered, and there's a device for it, the probe will
-> be done. So in this case the order of the driver registration will
-> dictate the order of probes.
 
-Oh okay, I don't know where the initcalls exactly happen, but I guess 
-they will happen after the .init_machine op in the board file.
+--=-gnRfqxmlrkZJazzQMlCP
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Do you know where the initcalls happen, I couldn't find it by browsing 
-the kernel code :)
+On Fri, 2012-05-04 at 14:06 +0530, Archit Taneja wrote:
+> On Friday 04 May 2012 02:02 PM, Tomi Valkeinen wrote:
 
-Archit
->
->   Tomi
->
+> > Hmm. The sequence shouldn't change. The order in which the devices are
+> > registered doesn't matter if there are no drivers registered yet. When
+> > the drivers are registered, and there's a device for it, the probe will
+> > be done. So in this case the order of the driver registration will
+> > dictate the order of probes.
+>=20
+> Oh okay, I don't know where the initcalls exactly happen, but I guess=20
+> they will happen after the .init_machine op in the board file.
+>=20
+> Do you know where the initcalls happen, I couldn't find it by browsing=
+=20
+> the kernel code :)
+
+Well, include/linux/init.h lists the inits in order. machine init is not
+there, I guess it's not part of the init order, but even earlier.
+
+ Tomi
+
+
+--=-gnRfqxmlrkZJazzQMlCP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJPo5grAAoJEPo9qoy8lh71JGMP/3hQ6GPHwxjhUcTNy5MXoyWM
+IYJfwt0qzEQkfGfoy5tyGQb0QR7OcQGl/wcWOqpi2omMZr6M/aoBkEKd/ZKeewzK
+FHmglNYT+gqg1uyPt0pofDXQCA6wlVI1PuLftOc5b4GWhjybjFU41VYC7pgnrl78
+ZjP+e9wIibQCIngvZJCs2bF+i9SVq2FBfjHKb3qICzdk6BfTMhqjDME9nOehCgJj
+I8yBiyEQWx4QFSf0HMG9JGfHNpThd62kTBQ/LEjnD5ytsifD8SpkMQL9bI+I1bOI
+qHsi/9eYVg2oy3kiGbt24spFgeuyvfrnMirZWVf/VjQloaiGCJyQD5YSQQjY8N9X
+Wd1gEmBb2CIUKWH4Ne5rruaHaiIOf5dDgiUEO+scT+xPcov20FkxmmTt0UTx4Z7a
+uXAxgOwbErELuJv7YyFynaebQ5a51HoFEN83y7ydeiM9fbZDPukdoTYBmU74XKL7
+mP/wLgLIfv9+RJ2Qktgo5y42p5Q91JARpQqPQ4VhD6W8C5zGx2y0XqJBIweNnZN5
+lIuVDYW0EvhGSOVZGBdPoElFY5BexIZ5Ewx2Vege6+XE8iqCxW6fKkSkLyXsrie/
+8veyDBI7Kt4rYAwqU6NyjwkGLQ3cgvqJcfjZh3DXKdBPMz7ns88NNpTokNR9gEGa
+pA+H55VqxrlpR+/VlqFJ
+=afbU
+-----END PGP SIGNATURE-----
+
+--=-gnRfqxmlrkZJazzQMlCP--
 

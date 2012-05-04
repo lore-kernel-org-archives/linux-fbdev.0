@@ -1,89 +1,81 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 10 May 2012 00:13:11 +0000
-Subject: Re: [PATCH] video/sis: Remove unused structs SiS_SDRDRAM_TYPE/SiS_DDRDRAM_TYPE/SiS_DRAMType
-Message-Id: <4FAB0817.2080906@gmx.de>
+From: Grazvydas Ignotas <notasas@gmail.com>
+Date: Fri, 04 May 2012 15:16:21 +0000
+Subject: [PATCH] OMAPDSS: OMAPFB: always allow to configure overlay
+Message-Id: <1336144581-25151-1-git-send-email-notasas@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1336081359-5643-1-git-send-email-peterhuewe@gmx.de>
-In-Reply-To: <1336081359-5643-1-git-send-email-peterhuewe@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Peter Huewe <peterhuewe@gmx.de>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On 05/03/2012 09:42 PM, Peter Huewe wrote:
-> This patch removes the unused structs SiS_SDRDRAM_TYPE and SiS_DDRDRAM_TYPE
-> from init.h
-> 
-> These are not used anywhere so we can delete them.
-> 
-> The SiS_DRAMType is identically defined in sis_main.c and only used
-> there so we can remove it here.
-> 
-> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+Currently when multiple overlays are active, OMAPFB_SETUP_PLANE fails.
+Instead of failing, allow it to configure the first overlay as if there
+was only one overlay, the remaining ones will have to be configured in
+other ways (sysfs).
 
-Applied.
+This allows overlay-controlling programs (like video players) to function
+properly when framebuffer is cloned to another display (like TV).
 
+Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
+---
+ drivers/video/omap2/omapfb/omapfb-ioctl.c |   36 ++++++++++------------------
+ 1 files changed, 13 insertions(+), 23 deletions(-)
 
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/sis/init.h |   45 ---------------------------------------------
->  1 files changed, 0 insertions(+), 45 deletions(-)
-> 
-> diff --git a/drivers/video/sis/init.h b/drivers/video/sis/init.h
-> index aff7384..85d6738 100644
-> --- a/drivers/video/sis/init.h
-> +++ b/drivers/video/sis/init.h
-> @@ -105,51 +105,6 @@ static const unsigned short ModeIndex_1920x1440[]    = {0x68, 0x69, 0x00, 0x6b};
->  static const unsigned short ModeIndex_300_2048x1536[]= {0x6c, 0x6d, 0x00, 0x00};
->  static const unsigned short ModeIndex_310_2048x1536[]= {0x6c, 0x6d, 0x00, 0x6e};
->  
-> -static const unsigned short SiS_DRAMType[17][5]={
-> -	{0x0C,0x0A,0x02,0x40,0x39},
-> -	{0x0D,0x0A,0x01,0x40,0x48},
-> -	{0x0C,0x09,0x02,0x20,0x35},
-> -	{0x0D,0x09,0x01,0x20,0x44},
-> -	{0x0C,0x08,0x02,0x10,0x31},
-> -	{0x0D,0x08,0x01,0x10,0x40},
-> -	{0x0C,0x0A,0x01,0x20,0x34},
-> -	{0x0C,0x09,0x01,0x08,0x32},
-> -	{0x0B,0x08,0x02,0x08,0x21},
-> -	{0x0C,0x08,0x01,0x08,0x30},
-> -	{0x0A,0x08,0x02,0x04,0x11},
-> -	{0x0B,0x0A,0x01,0x10,0x28},
-> -	{0x09,0x08,0x02,0x02,0x01},
-> -	{0x0B,0x09,0x01,0x08,0x24},
-> -	{0x0B,0x08,0x01,0x04,0x20},
-> -	{0x0A,0x08,0x01,0x02,0x10},
-> -	{0x09,0x08,0x01,0x01,0x00}
-> -};
-> -
-> -static const unsigned short SiS_SDRDRAM_TYPE[13][5] > -{
-> -	{ 2,12, 9,64,0x35},
-> -	{ 1,13, 9,64,0x44},
-> -	{ 2,12, 8,32,0x31},
-> -	{ 2,11, 9,32,0x25},
-> -	{ 1,12, 9,32,0x34},
-> -	{ 1,13, 8,32,0x40},
-> -	{ 2,11, 8,16,0x21},
-> -	{ 1,12, 8,16,0x30},
-> -	{ 1,11, 9,16,0x24},
-> -	{ 1,11, 8, 8,0x20},
-> -	{ 2, 9, 8, 4,0x01},
-> -	{ 1,10, 8, 4,0x10},
-> -	{ 1, 9, 8, 2,0x00}
-> -};
-> -
-> -static const unsigned short SiS_DDRDRAM_TYPE[4][5] > -{
-> -	{ 2,12, 9,64,0x35},
-> -	{ 2,12, 8,32,0x31},
-> -	{ 2,11, 8,16,0x21},
-> -	{ 2, 9, 8, 4,0x01}
-> -};
-> -
->  static const unsigned char SiS_MDA_DAC[] >  {
->  	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+index 6a09ef8..58b7f2d 100644
+--- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
++++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+@@ -70,11 +70,6 @@ static int omapfb_setup_plane(struct fb_info *fbi, struct omapfb_plane_info *pi)
+ 
+ 	DBG("omapfb_setup_plane\n");
+ 
+-	if (ofbi->num_overlays != 1) {
+-		r = -EINVAL;
+-		goto out;
+-	}
+-
+ 	/* XXX uses only the first overlay */
+ 	ovl = ofbi->overlays[0];
+ 
+@@ -184,25 +179,20 @@ static int omapfb_setup_plane(struct fb_info *fbi, struct omapfb_plane_info *pi)
+ static int omapfb_query_plane(struct fb_info *fbi, struct omapfb_plane_info *pi)
+ {
+ 	struct omapfb_info *ofbi = FB2OFB(fbi);
++	struct omap_overlay *ovl;
++	struct omap_overlay_info ovli;
+ 
+-	if (ofbi->num_overlays != 1) {
+-		memset(pi, 0, sizeof(*pi));
+-	} else {
+-		struct omap_overlay *ovl;
+-		struct omap_overlay_info ovli;
+-
+-		ovl = ofbi->overlays[0];
+-		ovl->get_overlay_info(ovl, &ovli);
+-
+-		pi->pos_x = ovli.pos_x;
+-		pi->pos_y = ovli.pos_y;
+-		pi->enabled = ovl->is_enabled(ovl);
+-		pi->channel_out = 0; /* xxx */
+-		pi->mirror = 0;
+-		pi->mem_idx = get_mem_idx(ofbi);
+-		pi->out_width = ovli.out_width;
+-		pi->out_height = ovli.out_height;
+-	}
++	ovl = ofbi->overlays[0];
++	ovl->get_overlay_info(ovl, &ovli);
++
++	pi->pos_x = ovli.pos_x;
++	pi->pos_y = ovli.pos_y;
++	pi->enabled = ovl->is_enabled(ovl);
++	pi->channel_out = 0; /* xxx */
++	pi->mirror = 0;
++	pi->mem_idx = get_mem_idx(ofbi);
++	pi->out_width = ovli.out_width;
++	pi->out_height = ovli.out_height;
+ 
+ 	return 0;
+ }
+-- 
+1.7.0.4
 

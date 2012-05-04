@@ -1,37 +1,68 @@
-From: Jean Delvare <khali@linux-fr.org>
-Date: Fri, 04 May 2012 08:39:29 +0000
-Subject: Re: [PATCH] i2c: Split I2C_M_NOSTART support out of  I2C_FUNC_PROTOCOL_MANGLING
-Message-Id: <20120504103929.644a05ce@endymion.delvare>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Fri, 04 May 2012 10:08:36 +0000
+Subject: Re: [PATCH] i2c: Split I2C_M_NOSTART support out of I2C_FUNC_PROTOCOL_MANGLING
+Message-Id: <20120504100835.GB14230@opensource.wolfsonmicro.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="3uo+9/B/ebqu+fSQ"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1336042416-28330-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<20120503113546.GG9574@pengutronix.de>
-In-Reply-To: <20120503113546.GG9574@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-i2c@vger.kernel.org, linux-input@vger.kernel.org, linux-fbdev@vger.kernel.org
+ <20120503203617.31179f9b@endymion.delvare>
+In-Reply-To: <20120503203617.31179f9b@endymion.delvare>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Wolfram Sang <w.sang@pengutronix.de>, linux-i2c@vger.kernel.org, linux-input@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Hi Wolfram,
 
-On Thu, 3 May 2012 13:35:46 +0200, Wolfram Sang wrote:
-> On Thu, May 03, 2012 at 11:53:36AM +0100, Mark Brown wrote:
-> > Since there are uses for I2C_M_NOSTART which are much more sensible and
-> > standard than most of the protocol mangling functionality (the main one
-> > being gather writes to devices where something like a register address
-> > needs to be inserted before a block of data) create a new I2C_FUNC_NOSTART
-> > for this feature and update all the users to use it.
-> > 
-> > In the case of regmap-i2c we remove the requirement for mangling as
-> > I2C_M_NOSTART is the only mangling feature which is being used.
-> > 
-> > Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> 
-> Applied to next, thanks! Jean, let me know if you prefer to take it.
-> Acks from input and fbdev maintainers still appreciated.
+--3uo+9/B/ebqu+fSQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-I'd prefer to take it, yes, as it touches the core infrastructure.
+On Thu, May 03, 2012 at 08:36:17PM +0200, Jean Delvare wrote:
 
-Thanks,
--- 
-Jean Delvare
+> You must also update the description of I2C_FUNC_PROTOCOL_MANGLING to
+> no longer mention I2C_M_NOSTART.
+
+For backwards ABI compatibility _PROTCOL_MANGING still has to imply
+_NOSTART, though it's unclear if that should be documented here.  For
+drivers it should for the most part flow naturally as I'd expect they'll
+end up implementing one or more of the mangling flags anyway.  For
+applications I guess it means that they should fall back to checking for
+_PROTOCOL_MANGLING if _NOSTART isn't there.
+
+> > +#define I2C_FUNC_NOSTART		0x10000000 /* I2C_M_NOSTART */
+
+> Sorry for nitpicking but wouldn't I2C_FUNC_GATHER be a better name?
+> NOSTART is an implementation detail now, the high level feature is the
+> ability to gather multiple messages into one.
+
+I kept it this way mostly because it means that the capability flag has
+the same name as the feature flag which seemed helpful from a usability
+point of view.
+
+There is also the fact you could in theory also implement gather support
+in other ways (eg, using DMA) though at present there's no API level
+support for this and the users do have to code this specific
+implementation.
+
+--3uo+9/B/ebqu+fSQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJPo6qdAAoJEBus8iNuMP3dfawP/1UiT5JzLnhdRgi21zkMQw2E
+cJCvdvcJ9NUt4nQMBM5fcemy9GeU6CJR/LpmRnisMtfdaWIs3VstK+jySE7EEgx1
+87KDsaT668ELYpoZWdgkfANhlVMx/TvOpv+UzFgrqj0BT0a7QVD8JOknIuzXStHl
+6pXh26aTqAjdGIDJNy2i5cp80LjGC803YdK6A/6clOEwNHbQj7fFeKjvX84Z9bdu
+AXFuMERmICkK1xI5lCMdg5OWJqMfWYwivNGTixg+8pfYenXxDNHpmWQQ5Zi4fLbi
+AY/zIfxOgcpM7pHxgZ5u5xlknocG1IuDJvCYgQrmZgE/8QW74+THLpsY0maMZE+x
+hPPezkEl89bcVd7YBeeykv6zIxNLqgjR3AuwXU5NkmZbWfXTrroXC3oiVEUb1tNq
+wTtdPgTK+9KbIr08KHHHY4klecIvFL0KpjNdkDeejJw+ykiWft3+OaWil31O5WnX
+BglnstKrKQ8fPvIMCi+kg8/hnEsOToggQ+6LI8qHWtYYRj8JJ4g22RTBBaLgY13i
+wXk0viCrb3R1WSmh4zBv9j4PTwe5VS7Ii1F7/3JGWuvI5m+p+al7zrBG2QGKXPqp
+25G6cGNIE9RaWbUllxckfW+39C5HytOwRPK9iHUUfDo1G1O/FgxEA9Tq6wzF1YEn
+jCeYeTUMeDojQvrlARQm
+=VXrh
+-----END PGP SIGNATURE-----
+
+--3uo+9/B/ebqu+fSQ--

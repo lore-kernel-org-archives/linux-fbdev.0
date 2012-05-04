@@ -1,62 +1,81 @@
-From: Jonathan Cameron <jic23@kernel.org>
-Date: Sat, 19 May 2012 08:04:04 +0000
-Subject: Re: [PATCH v2 2/4] iio: add LM3533 ambient light sensor driver
-Message-Id: <4FB753F4.2080004@kernel.org>
+From: Peter Huewe <peterhuewe@gmx.de>
+Date: Fri, 04 May 2012 00:23:17 +0000
+Subject: [PATCH v2] video/via: Convert to kstrtou8_from_user
+Message-Id: <1336090997-23727-1-git-send-email-peterhuewe@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1336040799-18433-3-git-send-email-jhovold@gmail.com> <4FA26E9A.8080209@cam.ac.uk> <20120503163617.GD15752@localhost> <4FA923E7.6050707@cam.ac.uk> <20120515164456.GB15632@localhost> <4FB2B5EE.6080009@kernel.org> <20120516130507.GA10774@localhost> <4FB3B7DA.5050306@cam.ac.uk> <20120518122725.GB20467@localhost> <4FB68809.2010009@kernel.org> <20120518175742.GA12894@localhost>
-In-Reply-To: <20120518175742.GA12894@localhost>
+References: <CACVxJT96rXRqMoeabdDyNEjXCubuAnQ_fonisbopQvYL=Qhp2w@mail.gmail.com>
+In-Reply-To: <CACVxJT96rXRqMoeabdDyNEjXCubuAnQ_fonisbopQvYL=Qhp2w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Johan Hovold <jhovold@gmail.com>
-Cc: Jonathan Cameron <jic23@cam.ac.uk>, Rob Landley <rob@landley.net>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Peter Huewe <peterhuewe@gmx.de>
 
-On 05/18/2012 06:57 PM, Johan Hovold wrote:
-> On Fri, May 18, 2012 at 06:34:01PM +0100, Jonathan Cameron wrote:
->> On 05/18/2012 01:27 PM, Johan Hovold wrote:
-> 
-> [...]
-> 
->>> I really think that this should remain a device specific attribute as I
->>> originally suggested. It's an integration parameter that needs to be set
->>> precisely depending on the actual hardware setup (which analog light
->>> sensor and other external components). 
->> Then it shouldn't be exposed to userspace.  If there is reason to vary
->> it from userspace then it is a calibration parameter and should be
->> treated like the other ones we have, if not it should be done from
->> dt or platform data.
->>>
->>> The lm3533 also supports two types of light sensors: pwm- and analog-
->>> output ones. The resistor select settings only applies when in analog
->>> mode as the input is always high impedance otherwise. Thus a generic
->>> attribute (such as calibscale or hardware gain) shouldn't be used as it
->>> will have no effect whatsoever in PWM-mode.
->>>
->>> I'm thus back at my original proposal, albeit with a different name (I
->>> think a lot of this discussion could have been avoided had I not
->>> misnamed the parameter "gain"): 
->>>
->>> What:		/sys/bus/iio/devices/iio:deviceX/r_select
->>> Description:
->>> 		Set the ALS internal pull-down resistor for analog input mode
->>> 		(1..127), such that,
->>>
->>> 		R_als = 200000 / r_select	(ohm)
->>>
->>> 		This setting is ignored in PWM-mode (input is always high
->>> 		impedance in PWM-mode).
->>>
->>> I don't think much is gained from using ohm as the unit: it just adds
->>> complexity and the selected resistor setting will likely not match the
->>> input value anyway. It's better that the chip integrators have full
->>> control over which resistor setting is actually used so that it matches
->>> external components.
->> This smacks of something that should never be exposed to users.
->> I'd hide it away in platform data.
-> 
-> Fair enough. I'll drop the sysfs param and submit a patch for mfd-next
-> which adds r_select to the platform data.
-> 
-cool. I'll review the rest of the patch with the assumption you'll do this.
+This patch replaces the code for getting an number from a
+userspace buffer by a simple call to kstrou8_from_user.
+This makes it easier to read and less error prone.
 
-Jonathan
+v2:
+removed initialization of reg_val and dropped check if count < 1
+
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+---
+@Alexey: Thanks for the review/feedback!
+ drivers/video/via/viafbdev.c |   34 ++++++++++++----------------------
+ 1 files changed, 12 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index a13c258..88bf5ba 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -1279,17 +1279,12 @@ static int viafb_dfph_proc_open(struct inode *inode, struct file *file)
+ static ssize_t viafb_dfph_proc_write(struct file *file,
+ 	const char __user *buffer, size_t count, loff_t *pos)
+ {
+-	char buf[20];
+-	u8 reg_val = 0;
+-	unsigned long length;
+-	if (count < 1)
+-		return -EINVAL;
+-	length = count > 20 ? 20 : count;
+-	if (copy_from_user(&buf[0], buffer, length))
+-		return -EFAULT;
+-	buf[length - 1] = '\0';	/*Ensure end string */
+-	if (kstrtou8(buf, 0, &reg_val) < 0)
+-		return -EINVAL;
++	int err;
++	u8 reg_val;
++	err = kstrtou8_from_user(buffer, count, 0, &reg_val);
++	if (err)
++		return err;
++
+ 	viafb_write_reg_mask(CR97, VIACR, reg_val, 0x0f);
+ 	return count;
+ }
+@@ -1319,17 +1314,12 @@ static int viafb_dfpl_proc_open(struct inode *inode, struct file *file)
+ static ssize_t viafb_dfpl_proc_write(struct file *file,
+ 	const char __user *buffer, size_t count, loff_t *pos)
+ {
+-	char buf[20];
+-	u8 reg_val = 0;
+-	unsigned long length;
+-	if (count < 1)
+-		return -EINVAL;
+-	length = count > 20 ? 20 : count;
+-	if (copy_from_user(&buf[0], buffer, length))
+-		return -EFAULT;
+-	buf[length - 1] = '\0';	/*Ensure end string */
+-	if (kstrtou8(buf, 0, &reg_val) < 0)
+-		return -EINVAL;
++	int err;
++	u8 reg_val;
++	err = kstrtou8_from_user(buffer, count, 0, &reg_val);
++	if (err)
++		return err;
++
+ 	viafb_write_reg_mask(CR99, VIACR, reg_val, 0x0f);
+ 	return count;
+ }
+-- 
+1.7.3.4
+

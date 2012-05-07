@@ -1,46 +1,51 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Thu, 03 May 2012 10:57:13 +0000
-Subject: [PATCH 3/4] OMAPDSS: TPO-TD03MTEA1: Check for errors from regulator_enable()
-Message-Id: <1336042634-28486-3-git-send-email-broonie@opensource.wolfsonmicro.com>
+From: Archit Taneja <archit@ti.com>
+Date: Mon, 07 May 2012 11:33:33 +0000
+Subject: [PATCH 3/6] OMAPDSS: DISPC: Remove omap_dss_device pointer usage from dispc_mgr_pclk_rate()
+Message-Id: <1336389696-21636-4-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1336042634-28486-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1336042634-28486-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1336389696-21636-1-git-send-email-archit@ti.com>
+In-Reply-To: <1336389696-21636-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-It is possible for regulator_enable() to fail and if it does fail that's
-generally a bad sign for anything we try to do with the hardware afterwards
-so check for and immediately return an error if regulator_enable() fails.
+The pixel clock rate for the TV manager is calculated by checking the device
+type connected to the manager, and then requesting the VENC/HDMI interface for
+the pixel clock rate.
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Acked-by: Grazvydas Ignotas <notasas@gmail.com>
+Remove the use of omap_dss_device pointer from here by checking which interface
+generates the pixel clock by reading the DSS_CTRL.VENC_HDMI_SWITCH bit.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/displays/panel-tpo-td043mtea1.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/video/omap2/dss/dispc.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-index 32f3fcd..74c6b87 100644
---- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-+++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
-@@ -272,11 +272,14 @@ static const struct omap_video_timings tpo_td043_timings = {
- static int tpo_td043_power_on(struct tpo_td043_device *tpo_td043)
- {
- 	int nreset_gpio = tpo_td043->nreset_gpio;
-+	int r;
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 49015b8..c198cc8 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2643,13 +2643,14 @@ unsigned long dispc_mgr_pclk_rate(enum omap_channel channel)
  
- 	if (tpo_td043->powered_on)
- 		return 0;
+ 		return r / pcd;
+ 	} else {
+-		struct omap_dss_device *dssdev -			dispc_mgr_get_device(channel);
++		enum dss_hdmi_venc_clk_source_select source;
  
--	regulator_enable(tpo_td043->vcc_reg);
-+	r = regulator_enable(tpo_td043->vcc_reg);
-+	if (r != 0)
-+		return r;
- 
- 	/* wait for regulator to stabilize */
- 	msleep(160);
+-		switch (dssdev->type) {
+-		case OMAP_DISPLAY_TYPE_VENC:
++		source = dss_get_hdmi_venc_clk_source();
++
++		switch (source) {
++		case DSS_VENC_TV_CLK:
+ 			return venc_get_pixel_clock();
+-		case OMAP_DISPLAY_TYPE_HDMI:
++		case DSS_HDMI_M_PCLK:
+ 			return hdmi_get_pixel_clock();
+ 		default:
+ 			BUG();
 -- 
-1.7.10
+1.7.5.4
 

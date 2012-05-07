@@ -1,57 +1,43 @@
-From: Emil Goode <emilgoode@gmail.com>
-Date: Tue, 29 May 2012 16:57:00 +0000
-Subject: [PATCH] video: bfin_adv7393fb: Convert to kstrtouint_from_user
-Message-Id: <1338310620-6886-1-git-send-email-emilgoode@gmail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Mon, 07 May 2012 11:33:32 +0000
+Subject: [PATCH 2/6] OMAPDSS: APPLY: Remove an unnecessary omap_dss_device pointer
+Message-Id: <1336389696-21636-3-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1336389696-21636-1-git-send-email-archit@ti.com>
+In-Reply-To: <1336389696-21636-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: FlorianSchandinat@gmx.de
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Emil Goode <emilgoode@gmail.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-This patch removes a call to the deprecated simple_strtoul function
-and simplifies the code by replacing two function calls with one
-call to kstrtouint_from_user.
+The omap_dss_device pointer declared in dss_ovl_setup_fifo() isn't used. Remove
+the pointer variable declaration and it's assignment.
 
--Simplify the adv7393_write_proc function by replacing the
- simple_strtoul and copy_from_user calls with one call
- to kstrtouint_from_user.
-
--Change the count parameter from unsigned long to size_t as
- this is the type that the kstrtouint_from_user function expects.
- (size_t is what will be passed to the adv7393_write_proc function
- by the proc write handler function proc_file_write anyway)
-
-Signed-off-by: Emil Goode <emilgoode@gmail.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/bfin_adv7393fb.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/video/omap2/dss/apply.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/bfin_adv7393fb.c b/drivers/video/bfin_adv7393fb.c
-index 1a268a2..8c6edfd 100644
---- a/drivers/video/bfin_adv7393fb.c
-+++ b/drivers/video/bfin_adv7393fb.c
-@@ -353,18 +353,16 @@ adv7393_read_proc(char *page, char **start, off_t off,
- 
- static int
- adv7393_write_proc(struct file *file, const char __user * buffer,
--		   unsigned long count, void *data)
-+		   size_t count, void *data)
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 052d9a2..756c31a 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -977,14 +977,11 @@ static void dss_ovl_setup_fifo(struct omap_overlay *ovl,
+ 		bool use_fifo_merge)
  {
- 	struct adv7393fb_device *fbdev = data;
--	char line[8];
- 	unsigned int val;
- 	int ret;
+ 	struct ovl_priv_data *op = get_ovl_priv(ovl);
+-	struct omap_dss_device *dssdev;
+ 	u32 fifo_low, fifo_high;
  
--	ret = copy_from_user(line, buffer, count);
-+	ret = kstrtouint_from_user(buffer, count, 0, &val);
- 	if (ret)
- 		return -EFAULT;
+ 	if (!op->enabled && !op->enabling)
+ 		return;
  
--	val = simple_strtoul(line, NULL, 0);
- 	adv7393_write(fbdev->client, val >> 8, val & 0xff);
+-	dssdev = ovl->manager->device;
+-
+ 	dispc_ovl_compute_fifo_thresholds(ovl->id, &fifo_low, &fifo_high,
+ 			use_fifo_merge);
  
- 	return count;
 -- 
-1.7.10
+1.7.5.4
 

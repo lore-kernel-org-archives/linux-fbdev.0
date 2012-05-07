@@ -1,169 +1,66 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Tue, 29 May 2012 15:06:57 +0000
-Subject: Re: [PATCH 1/3] video: exynos_dp: use devm_ functions
-Message-Id: <4FC4E611.6000906@gmx.de>
+From: Christoph Fritz <chf.fritz@googlemail.com>
+Date: Mon, 07 May 2012 21:55:06 +0000
+Subject: Re: ASoC: wm9712: Microphone doesn't work, "Capture Volume" inverted
+Message-Id: <20120507215506.GA5063@lovely.krouter>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <001d01cd3a46$e68d8b10$b3a8a130$%han@samsung.com>
-In-Reply-To: <001d01cd3a46$e68d8b10$b3a8a130$%han@samsung.com>
+References: <1335384469.14096.203.camel@mars>
+	<20120426112726.GF3207@opensource.wolfsonmicro.com>
+	<1335448142.20000.40.camel@mars>
+	<20120426172010.GP3207@opensource.wolfsonmicro.com>
+	<1335474693.3628.26.camel@lovely>
+	<20120426213745.GA18260@opensource.wolfsonmicro.com>
+	<1335513602.3504.4.camel@mars>
+	<20120427134638.GI18260@opensource.wolfsonmicro.com>
+	<20120504132845.GA24245@lovely.krouter>
+In-Reply-To: <20120504132845.GA24245@lovely.krouter>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: alsa-devel@alsa-project.org, "Hans J. Koch" <hjk@hansjkoch.de>, Sascha Hauer <s.hauer@pengutronix.de>, Liam Girdwood <lrg@ti.com>, linux-fbdev@vger.kernel.org
 
-Applied all 3 patches.
+On Fri, May 04, 2012 at 03:28:45PM +0200, Christoph Fritz wrote:
+> On Fri, Apr 27, 2012 at 02:46:39PM +0100, Mark Brown wrote:
+> > On Fri, Apr 27, 2012 at 10:00:02AM +0200, Christoph Fritz wrote:
+> > > On Thu, 2012-04-26 at 22:37 +0100, Mark Brown wrote:
+> > 
+> > > >   The write will be suppresed if the register contents don't
+> > > > change which looks like what you're seeing here - 
+> > 
+> > > Can you imagine why the registers don't change?
+> > 
+> > I can't immediately think of any reason, no - I'd step through or
+> > annotate the code and have a look.
+> 
+> I'm still on.
+> 
+> And while testing WM9712 its touchpad interface, connecting a 800x600
+> display (instead of the default 640x480 one) results in a gone sound and
+> input-device - pretty queer:
+> 
+> WM9711/WM9712 SoC Audio Codec 0.4
+> asoc: platform pcm constructor failed
+> asoc: can't create pcm HiFi
+> asoc: failed to instantiate card PhyCORE-ac97-audio: -12
+> 
+> I have to admit that I used this time a 3.2 kernel. I'll test with
+> current later these days.
+
+Same behaviour with 3.4.0-rc6:
+
+Framebuffer driver mx3fb configured for a 800x600 display:
+
+  soc-audio soc-audio: ASoC machine PhyCORE-ac97-audio should use snd_soc_register_card()
+  asoc: platform pcm constructor failed
+  asoc: can't create pcm HiFi :-12
+  asoc: failed to instantiate card PhyCORE-ac97-audio: -12
 
 
+mx3fb configured for a 640x480 display:
+  soc-audio soc-audio: ASoC machine PhyCORE-ac97-audio should use
+  snd_soc_register_card()
+  asoc: wm9712-hifi <-> imx-ssi.0 mapping ok
+
+ 
 Thanks,
-
-Florian Tobias Schandinat
-
-
-On 05/25/2012 07:20 AM, Jingoo Han wrote:
-> The devm_ functions allocate memory that is released when a driver
-> detaches. This makes the code smaller and a bit simpler.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> ---
->  drivers/video/exynos/exynos_dp_core.c |   49 ++++++++-------------------------
->  drivers/video/exynos/exynos_dp_core.h |    1 -
->  2 files changed, 12 insertions(+), 38 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-> index ef4d1ab..aabd214 100644
-> --- a/drivers/video/exynos/exynos_dp_core.c
-> +++ b/drivers/video/exynos/exynos_dp_core.c
-> @@ -858,7 +858,8 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  		return -EINVAL;
->  	}
->  
-> -	dp = kzalloc(sizeof(struct exynos_dp_device), GFP_KERNEL);
-> +	dp = devm_kzalloc(&pdev->dev, sizeof(struct exynos_dp_device),
-> +				GFP_KERNEL);
->  	if (!dp) {
->  		dev_err(&pdev->dev, "no memory for device data\n");
->  		return -ENOMEM;
-> @@ -869,8 +870,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  	dp->clock = clk_get(&pdev->dev, "dp");
->  	if (IS_ERR(dp->clock)) {
->  		dev_err(&pdev->dev, "failed to get clock\n");
-> -		ret = PTR_ERR(dp->clock);
-> -		goto err_dp;
-> +		return PTR_ERR(dp->clock);
->  	}
->  
->  	clk_enable(dp->clock);
-> @@ -882,35 +882,25 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  		goto err_clock;
->  	}
->  
-> -	res = request_mem_region(res->start, resource_size(res),
-> -				dev_name(&pdev->dev));
-> -	if (!res) {
-> -		dev_err(&pdev->dev, "failed to request registers region\n");
-> -		ret = -EINVAL;
-> -		goto err_clock;
-> -	}
-> -
-> -	dp->res = res;
-> -
-> -	dp->reg_base = ioremap(res->start, resource_size(res));
-> +	dp->reg_base = devm_request_and_ioremap(&pdev->dev, res);
->  	if (!dp->reg_base) {
->  		dev_err(&pdev->dev, "failed to ioremap\n");
->  		ret = -ENOMEM;
-> -		goto err_req_region;
-> +		goto err_clock;
->  	}
->  
->  	dp->irq = platform_get_irq(pdev, 0);
->  	if (!dp->irq) {
->  		dev_err(&pdev->dev, "failed to get irq\n");
->  		ret = -ENODEV;
-> -		goto err_ioremap;
-> +		goto err_clock;
->  	}
->  
-> -	ret = request_irq(dp->irq, exynos_dp_irq_handler, 0,
-> -			"exynos-dp", dp);
-> +	ret = devm_request_irq(&pdev->dev, dp->irq, exynos_dp_irq_handler, 0,
-> +				"exynos-dp", dp);
->  	if (ret) {
->  		dev_err(&pdev->dev, "failed to request irq\n");
-> -		goto err_ioremap;
-> +		goto err_clock;
->  	}
->  
->  	dp->video_info = pdata->video_info;
-> @@ -922,7 +912,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  	ret = exynos_dp_detect_hpd(dp);
->  	if (ret) {
->  		dev_err(&pdev->dev, "unable to detect hpd\n");
-> -		goto err_irq;
-> +		goto err_clock;
->  	}
->  
->  	exynos_dp_handle_edid(dp);
-> @@ -931,7 +921,7 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  				dp->video_info->link_rate);
->  	if (ret) {
->  		dev_err(&pdev->dev, "unable to do link train\n");
-> -		goto err_irq;
-> +		goto err_clock;
->  	}
->  
->  	exynos_dp_enable_scramble(dp, 1);
-> @@ -945,23 +935,15 @@ static int __devinit exynos_dp_probe(struct platform_device *pdev)
->  	ret = exynos_dp_config_video(dp, dp->video_info);
->  	if (ret) {
->  		dev_err(&pdev->dev, "unable to config video\n");
-> -		goto err_irq;
-> +		goto err_clock;
->  	}
->  
->  	platform_set_drvdata(pdev, dp);
->  
->  	return 0;
->  
-> -err_irq:
-> -	free_irq(dp->irq, dp);
-> -err_ioremap:
-> -	iounmap(dp->reg_base);
-> -err_req_region:
-> -	release_mem_region(res->start, resource_size(res));
->  err_clock:
->  	clk_put(dp->clock);
-> -err_dp:
-> -	kfree(dp);
->  
->  	return ret;
->  }
-> @@ -974,16 +956,9 @@ static int __devexit exynos_dp_remove(struct platform_device *pdev)
->  	if (pdata && pdata->phy_exit)
->  		pdata->phy_exit();
->  
-> -	free_irq(dp->irq, dp);
-> -	iounmap(dp->reg_base);
-> -
->  	clk_disable(dp->clock);
->  	clk_put(dp->clock);
->  
-> -	release_mem_region(dp->res->start, resource_size(dp->res));
-> -
-> -	kfree(dp);
-> -
->  	return 0;
->  }
->  
-> diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
-> index 519c3a6..8f596b9 100644
-> --- a/drivers/video/exynos/exynos_dp_core.h
-> +++ b/drivers/video/exynos/exynos_dp_core.h
-> @@ -26,7 +26,6 @@ struct link_train {
->  
->  struct exynos_dp_device {
->  	struct device		*dev;
-> -	struct resource		*res;
->  	struct clk		*clock;
->  	unsigned int		irq;
->  	void __iomem		*reg_base;
-
+ -- Christoph

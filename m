@@ -1,373 +1,108 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 03 May 2012 13:57:50 +0000
-Subject: [PATCH 14/25] OMAPDSS: remove uses of dss_runtime_get/put
-Message-Id: <1336053481-25433-15-git-send-email-tomi.valkeinen@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Mon, 07 May 2012 11:33:36 +0000
+Subject: [PATCH 6/6] OMAPDSS: DISPC: Remove Fake VSYNC support
+Message-Id: <1336389696-21636-7-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1336389696-21636-1-git-send-email-archit@ti.com>
+In-Reply-To: <1336389696-21636-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Now that the omapdss_core device is the parent for all other dss
-devices, we don't need to use the dss_runtime_get/put anymore. Instead,
-enabling omapdss_core will happen automatically when a child device is
-enabled.
+Fake VSYNC support is a hack and has some bugs in it. It isn't used by any user
+of DSS. Remove Fake VSYNC support. For DSI command mode and RFBI panels, a user
+of DSS should wait for the completion of a frame by using the panel driver's
+sync op.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |    7 -------
- drivers/video/omap2/dss/dpi.c   |   16 +---------------
- drivers/video/omap2/dss/dsi.c   |   12 +-----------
- drivers/video/omap2/dss/dss.c   |    7 +++++--
- drivers/video/omap2/dss/dss.h   |    3 ---
- drivers/video/omap2/dss/hdmi.c  |   34 ++--------------------------------
- drivers/video/omap2/dss/rfbi.c  |   12 +-----------
- drivers/video/omap2/dss/sdi.c   |    7 -------
- drivers/video/omap2/dss/venc.c  |   12 +-----------
- 9 files changed, 11 insertions(+), 99 deletions(-)
+ drivers/video/omap2/dss/Kconfig |    9 ---------
+ drivers/video/omap2/dss/dispc.c |   21 ---------------------
+ drivers/video/omap2/dss/dsi.c   |    4 ----
+ drivers/video/omap2/dss/dss.h   |    1 -
+ 4 files changed, 0 insertions(+), 35 deletions(-)
 
+diff --git a/drivers/video/omap2/dss/Kconfig b/drivers/video/omap2/dss/Kconfig
+index 7be7c06..9aaf324 100644
+--- a/drivers/video/omap2/dss/Kconfig
++++ b/drivers/video/omap2/dss/Kconfig
+@@ -90,15 +90,6 @@ config OMAP2_DSS_DSI
+ 
+ 	  See http://www.mipi.org/ for DSI spesifications.
+ 
+-config OMAP2_DSS_FAKE_VSYNC
+-	bool "Fake VSYNC irq from manual update displays"
+-	default n
+-	help
+-	  If this is selected, DSI will generate a fake DISPC VSYNC interrupt
+-	  when DSI has sent a frame. This is only needed with DSI or RFBI
+-	  displays using manual mode, and you want VSYNC to, for example,
+-	  time animation.
+-
+ config OMAP2_DSS_MIN_FCK_PER_PCK
+ 	int "Minimum FCK/PCK ratio (for scaling)"
+ 	range 0 32
 diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 68aa566..1cccd4c 100644
+index ef131cd..89d54c5 100644
 --- a/drivers/video/omap2/dss/dispc.c
 +++ b/drivers/video/omap2/dss/dispc.c
-@@ -3596,19 +3596,12 @@ static int omap_dispchw_remove(struct platform_device *pdev)
- static int dispc_runtime_suspend(struct device *dev)
- {
- 	dispc_save_context();
--	dss_runtime_put();
- 
+@@ -3443,27 +3443,6 @@ int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
  	return 0;
  }
  
- static int dispc_runtime_resume(struct device *dev)
+-#ifdef CONFIG_OMAP2_DSS_FAKE_VSYNC
+-void dispc_fake_vsync_irq(void)
+-{
+-	u32 irqstatus = DISPC_IRQ_VSYNC;
+-	int i;
+-
+-	WARN_ON(!in_interrupt());
+-
+-	for (i = 0; i < DISPC_MAX_NR_ISRS; i++) {
+-		struct omap_dispc_isr_data *isr_data;
+-		isr_data = &dispc.registered_isr[i];
+-
+-		if (!isr_data->isr)
+-			continue;
+-
+-		if (isr_data->mask & irqstatus)
+-			isr_data->isr(isr_data->arg, irqstatus);
+-	}
+-}
+-#endif
+-
+ static void _omap_dispc_initialize_irq(void)
  {
--	int r;
--
--	r = dss_runtime_get();
--	if (r < 0)
--		return r;
--
- 	dispc_restore_context();
- 
- 	return 0;
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index f4398fd..d7a433b 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -202,10 +202,6 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
- 			goto err_reg_enable;
- 	}
- 
--	r = dss_runtime_get();
--	if (r)
--		goto err_get_dss;
--
- 	r = dispc_runtime_get();
- 	if (r)
- 		goto err_get_dispc;
-@@ -244,8 +240,6 @@ err_dsi_pll_init:
- err_get_dsi:
- 	dispc_runtime_put();
- err_get_dispc:
--	dss_runtime_put();
--err_get_dss:
- 	if (cpu_is_omap34xx())
- 		regulator_disable(dpi.vdds_dsi_reg);
- err_reg_enable:
-@@ -266,7 +260,6 @@ void omapdss_dpi_display_disable(struct omap_dss_device *dssdev)
- 	}
- 
- 	dispc_runtime_put();
--	dss_runtime_put();
- 
- 	if (cpu_is_omap34xx())
- 		regulator_disable(dpi.vdds_dsi_reg);
-@@ -283,21 +276,14 @@ void dpi_set_timings(struct omap_dss_device *dssdev,
- 	DSSDBG("dpi_set_timings\n");
- 	dssdev->panel.timings = *timings;
- 	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE) {
--		r = dss_runtime_get();
--		if (r)
--			return;
--
- 		r = dispc_runtime_get();
--		if (r) {
--			dss_runtime_put();
-+		if (r)
- 			return;
--		}
- 
- 		dpi_set_mode(dssdev);
- 		dispc_mgr_go(dssdev->manager->id);
- 
- 		dispc_runtime_put();
--		dss_runtime_put();
- 	}
- }
- EXPORT_SYMBOL(dpi_set_timings);
+ 	unsigned long flags;
 diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 45ba9e7..c365942 100644
+index db73598..95bc996 100644
 --- a/drivers/video/omap2/dss/dsi.c
 +++ b/drivers/video/omap2/dss/dsi.c
-@@ -4769,7 +4769,6 @@ static int omap_dsihw_remove(struct platform_device *dsidev)
- static int dsi_runtime_suspend(struct device *dev)
- {
- 	dispc_runtime_put();
--	dss_runtime_put();
+@@ -4152,10 +4152,6 @@ static void dsi_framedone_irq_callback(void *data, u32 mask)
+ 	__cancel_delayed_work(&dsi->framedone_timeout_work);
  
- 	return 0;
- }
-@@ -4778,20 +4777,11 @@ static int dsi_runtime_resume(struct device *dev)
- {
- 	int r;
- 
--	r = dss_runtime_get();
--	if (r)
--		goto err_get_dss;
+ 	dsi_handle_framedone(dsidev, 0);
 -
- 	r = dispc_runtime_get();
- 	if (r)
--		goto err_get_dispc;
-+		return r;
- 
- 	return 0;
--
--err_get_dispc:
--	dss_runtime_put();
--err_get_dss:
--	return r;
+-#ifdef CONFIG_OMAP2_DSS_FAKE_VSYNC
+-	dispc_fake_vsync_irq();
+-#endif
  }
  
- static const struct dev_pm_ops dsi_pm_ops = {
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 17a1927..06fb5dc 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -62,6 +62,9 @@ struct dss_reg {
- #define REG_FLD_MOD(idx, val, start, end) \
- 	dss_write_reg(idx, FLD_MOD(dss_read_reg(idx), val, start, end))
- 
-+static int dss_runtime_get(void);
-+static void dss_runtime_put(void);
-+
- static struct {
- 	struct platform_device *pdev;
- 	void __iomem    *base;
-@@ -706,7 +709,7 @@ static void dss_put_clocks(void)
- 	clk_put(dss.dss_clk);
- }
- 
--int dss_runtime_get(void)
-+static int dss_runtime_get(void)
- {
- 	int r;
- 
-@@ -717,7 +720,7 @@ int dss_runtime_get(void)
- 	return r < 0 ? r : 0;
- }
- 
--void dss_runtime_put(void)
-+static void dss_runtime_put(void)
- {
- 	int r;
- 
+ int omap_dsi_update(struct omap_dss_device *dssdev, int channel,
 diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 4373b15..b53b2e6 100644
+index f2a51c6..6699197 100644
 --- a/drivers/video/omap2/dss/dss.h
 +++ b/drivers/video/omap2/dss/dss.h
-@@ -228,9 +228,6 @@ int dss_ovl_check(struct omap_overlay *ovl,
- int dss_init_platform_driver(void);
- void dss_uninit_platform_driver(void);
+@@ -399,7 +399,6 @@ void dispc_dump_clocks(struct seq_file *s);
+ void dispc_dump_irqs(struct seq_file *s);
+ void dispc_dump_regs(struct seq_file *s);
+ void dispc_irq_handler(void);
+-void dispc_fake_vsync_irq(void);
  
--int dss_runtime_get(void);
--void dss_runtime_put(void);
--
- void dss_select_hdmi_venc_clk_source(enum dss_hdmi_venc_clk_source_select);
- enum dss_hdmi_venc_clk_source_select dss_get_hdmi_venc_clk_source(void);
- const char *dss_get_generic_clk_source_name(enum omap_dss_clk_source clk_src);
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 35580b1..bfbe811 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -129,25 +129,12 @@ static int hdmi_runtime_get(void)
- 
- 	DSSDBG("hdmi_runtime_get\n");
- 
--	/*
--	 * HACK: Add dss_runtime_get() to ensure DSS clock domain is enabled.
--	 * This should be removed later.
--	 */
--	r = dss_runtime_get();
--	if (r < 0)
--		goto err_get_dss;
--
- 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
- 	WARN_ON(r < 0);
- 	if (r < 0)
--		goto err_get_hdmi;
-+		return r;
- 
- 	return 0;
--
--err_get_hdmi:
--	dss_runtime_put();
--err_get_dss:
--	return r;
- }
- 
- static void hdmi_runtime_put(void)
-@@ -158,12 +145,6 @@ static void hdmi_runtime_put(void)
- 
- 	r = pm_runtime_put_sync(&hdmi.pdev->dev);
- 	WARN_ON(r < 0);
--
--	/*
--	 * HACK: This is added to complement the dss_runtime_get() call in
--	 * hdmi_runtime_get(). This should be removed later.
--	 */
--	dss_runtime_put();
- }
- 
- int hdmi_init_display(struct omap_dss_device *dssdev)
-@@ -864,7 +845,6 @@ static int hdmi_runtime_suspend(struct device *dev)
- 	clk_disable(hdmi.sys_clk);
- 
- 	dispc_runtime_put();
--	dss_runtime_put();
- 
- 	return 0;
- }
-@@ -873,23 +853,13 @@ static int hdmi_runtime_resume(struct device *dev)
- {
- 	int r;
- 
--	r = dss_runtime_get();
--	if (r < 0)
--		goto err_get_dss;
--
- 	r = dispc_runtime_get();
- 	if (r < 0)
--		goto err_get_dispc;
--
-+		return r;
- 
- 	clk_enable(hdmi.sys_clk);
- 
- 	return 0;
--
--err_get_dispc:
--	dss_runtime_put();
--err_get_dss:
--	return r;
- }
- 
- static const struct dev_pm_ops hdmi_pm_ops = {
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index 39aac0b..01fd9e7 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -992,7 +992,6 @@ static int omap_rfbihw_remove(struct platform_device *pdev)
- static int rfbi_runtime_suspend(struct device *dev)
- {
- 	dispc_runtime_put();
--	dss_runtime_put();
- 
- 	return 0;
- }
-@@ -1001,20 +1000,11 @@ static int rfbi_runtime_resume(struct device *dev)
- {
- 	int r;
- 
--	r = dss_runtime_get();
--	if (r < 0)
--		goto err_get_dss;
--
- 	r = dispc_runtime_get();
- 	if (r < 0)
--		goto err_get_dispc;
-+		return r;
- 
- 	return 0;
--
--err_get_dispc:
--	dss_runtime_put();
--err_get_dss:
--	return r;
- }
- 
- static const struct dev_pm_ops rfbi_pm_ops = {
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index a047f44..90a1955 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -72,10 +72,6 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err_reg_enable;
- 
--	r = dss_runtime_get();
--	if (r)
--		goto err_get_dss;
--
- 	r = dispc_runtime_get();
- 	if (r)
- 		goto err_get_dispc;
-@@ -138,8 +134,6 @@ err_set_dss_clock_div:
- err_calc_clock_div:
- 	dispc_runtime_put();
- err_get_dispc:
--	dss_runtime_put();
--err_get_dss:
- 	regulator_disable(sdi.vdds_sdi_reg);
- err_reg_enable:
- 	omap_dss_stop_device(dssdev);
-@@ -155,7 +149,6 @@ void omapdss_sdi_display_disable(struct omap_dss_device *dssdev)
- 	dss_sdi_disable();
- 
- 	dispc_runtime_put();
--	dss_runtime_put();
- 
- 	regulator_disable(sdi.vdds_sdi_reg);
- 
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 7b0e8ed..9f13748 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -851,7 +851,6 @@ static int venc_runtime_suspend(struct device *dev)
- 		clk_disable(venc.tv_dac_clk);
- 
- 	dispc_runtime_put();
--	dss_runtime_put();
- 
- 	return 0;
- }
-@@ -860,23 +859,14 @@ static int venc_runtime_resume(struct device *dev)
- {
- 	int r;
- 
--	r = dss_runtime_get();
--	if (r < 0)
--		goto err_get_dss;
--
- 	r = dispc_runtime_get();
- 	if (r < 0)
--		goto err_get_dispc;
-+		return r;
- 
- 	if (venc.tv_dac_clk)
- 		clk_enable(venc.tv_dac_clk);
- 
- 	return 0;
--
--err_get_dispc:
--	dss_runtime_put();
--err_get_dss:
--	return r;
- }
- 
- static const struct dev_pm_ops venc_pm_ops = {
+ int dispc_runtime_get(void);
+ void dispc_runtime_put(void);
 -- 
-1.7.9.5
+1.7.5.4
 

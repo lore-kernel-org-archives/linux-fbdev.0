@@ -1,74 +1,48 @@
-From: Donghwa Lee <dh09.lee@samsung.com>
-Date: Wed, 09 May 2012 05:33:29 +0000
-Subject: [PATCH 4/5] video: exynos mipi dsi: Properly interpret the interrupt source flags
-Message-Id: <4FAA01A9.4070908@samsung.com>
+From: Archit Taneja <archit@ti.com>
+Date: Mon, 07 May 2012 11:33:35 +0000
+Subject: [PATCH 5/6] OMAPDSS: Fix DSI_FCLK clock source selection
+Message-Id: <1336389696-21636-6-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1336389696-21636-1-git-send-email-archit@ti.com>
+In-Reply-To: <1336389696-21636-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+The wrong bit field was being updated in DSS_CTRL when trying to configure the
+clock source of DSI2 functional clock. Use the correct bit field based on the
+dsi module number.
 
-Rework the interrupt handler so the RX_DONE, FIFO_EMPTY interrupts are
-properly detected. This prevents missing the interrupts when there are
-other bits set in the INTSRC register than just RX_DONE and FIFO_EMPTY.
-
-Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
-Signed-off-by: Inki Dae <inki.dae@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/exynos/exynos_mipi_dsi_common.c |   28 +++++++++----------------
- 1 files changed, 10 insertions(+), 18 deletions(-)
+ drivers/video/omap2/dss/dss.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/exynos/exynos_mipi_dsi_common.c b/drivers/video/exynos/exynos_mipi_dsi_common.c
-index 14909c1..b78d448 100644
---- a/drivers/video/exynos/exynos_mipi_dsi_common.c
-+++ b/drivers/video/exynos/exynos_mipi_dsi_common.c
-@@ -76,33 +76,25 @@ static unsigned int dpll_table[15] = {
- 
- irqreturn_t exynos_mipi_dsi_interrupt_handler(int irq, void *dev_id)
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index e731aa4..e212acb 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -335,7 +335,7 @@ void dss_select_dsi_clk_source(int dsi_module,
+ 		enum omap_dss_clk_source clk_src)
  {
--	unsigned int intsrc = 0;
--	unsigned int intmsk = 0;
--	struct mipi_dsim_device *dsim = NULL;
--
--	dsim = dev_id;
--	if (!dsim) {
--		dev_dbg(dsim->dev, KERN_ERR "%s:error: wrong parameter\n",
--							__func__);
--		return IRQ_HANDLED;
-+	struct mipi_dsim_device *dsim = dev_id;
-+	unsigned int intsrc, intmsk;
-+
-+	if (dsim = NULL) {
-+		dev_err(dsim->dev, "%s: wrong parameter\n", __func__);
-+		return IRQ_NONE;
+ 	struct platform_device *dsidev;
+-	int b;
++	int b, pos;
+ 
+ 	switch (clk_src) {
+ 	case OMAP_DSS_CLK_SRC_FCK:
+@@ -357,7 +357,8 @@ void dss_select_dsi_clk_source(int dsi_module,
+ 		BUG();
  	}
  
- 	intsrc = exynos_mipi_dsi_read_interrupt(dsim);
- 	intmsk = exynos_mipi_dsi_read_interrupt_mask(dsim);
-+	intmsk = ~intmsk & intsrc;
+-	REG_FLD_MOD(DSS_CONTROL, b, 1, 1);	/* DSI_CLK_SWITCH */
++	pos = dsi_module = 0 ? 1 : 10;
++	REG_FLD_MOD(DSS_CONTROL, b, pos, pos);	/* DSIx_CLK_SWITCH */
  
--	intmsk = ~(intmsk) & intsrc;
--
--	switch (intmsk) {
--	case INTMSK_RX_DONE:
-+	if (intsrc & INTMSK_RX_DONE) {
- 		complete(&dsim_rd_comp);
- 		dev_dbg(dsim->dev, "MIPI INTMSK_RX_DONE\n");
--		break;
--	case INTMSK_FIFO_EMPTY:
-+	}
-+	if (intsrc & INTMSK_FIFO_EMPTY) {
- 		complete(&dsim_wr_comp);
- 		dev_dbg(dsim->dev, "MIPI INTMSK_FIFO_EMPTY\n");
--		break;
--	default:
--		break;
- 	}
- 
- 	exynos_mipi_dsi_clear_interrupt(dsim, intmsk);
+ 	dss.dsi_clk_source[dsi_module] = clk_src;
+ }
 -- 
-1.7.4.1
+1.7.5.4
+

@@ -1,214 +1,257 @@
 From: Archit Taneja <archit@ti.com>
-Date: Wed, 09 May 2012 10:22:52 +0000
-Subject: [PATCH v4 5/9] OMAPDSS: APPLY: Remove display dependency from overlay and manager checks
-Message-Id: <1336558256-26140-6-git-send-email-archit@ti.com>
+Date: Mon, 07 May 2012 13:32:28 +0000
+Subject: [PATCH 2/2] OMAPDSS: HDMI: define and dump CORE registers in correct order
+Message-Id: <1336396828-29311-3-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334561027-28569-1-git-send-email-archit@ti.com>
- <1336558256-26140-1-git-send-email-archit@ti.com>
-In-Reply-To: <1336558256-26140-1-git-send-email-archit@ti.com>
+References: <1336396828-29311-1-git-send-email-archit@ti.com>
+In-Reply-To: <1336396828-29311-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-In order to check the validity of overlay and manager info, there was a need to
-use the omap_dss_device struct to get the panel resolution. The manager's
-private data in APPLY now contains the manager timings. Hence, we don't need to
-rely on the display resolution any more.
+The HDMI core register offset macros aren't defined in ascending order of their
+values, some of the offset macros are also redefined. The same issues occur when
+these core registers are dumped.
 
-Pass the manager's timings in private data to dss_mgr_check(). Remove the need
-to pass omap_dss_device structs in the functions which check for the validity
-of overlay and manager parameters.
+Clean up the ordering of HDMI core registers and remove repeated registers in
+the definition in ti_hdmi_4xxx_ip.h and in ti_hdmi_4xxx_core_dump().
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/apply.c   |   24 +++++++++++-------------
- drivers/video/omap2/dss/dss.h     |    7 ++++---
- drivers/video/omap2/dss/manager.c |    6 +++---
- drivers/video/omap2/dss/overlay.c |   10 ++++------
- 4 files changed, 22 insertions(+), 25 deletions(-)
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |   65 +++++++++++++++--------------
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h |   57 +++++++++++--------------
+ 2 files changed, 59 insertions(+), 63 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index ad349b3..0ffe4e1 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -181,7 +181,7 @@ static bool mgr_manual_update(struct omap_overlay_manager *mgr)
- }
+diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+index e266b8e..8fc09d4 100644
+--- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
++++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+@@ -900,6 +900,13 @@ void ti_hdmi_4xxx_core_dump(struct hdmi_ip_data *ip_data, struct seq_file *s)
+ 	DUMPCORE(HDMI_CORE_SYS_SRST);
+ 	DUMPCORE(HDMI_CORE_CTRL1);
+ 	DUMPCORE(HDMI_CORE_SYS_SYS_STAT);
++	DUMPCORE(HDMI_CORE_SYS_DE_DLY);
++	DUMPCORE(HDMI_CORE_SYS_DE_CTRL);
++	DUMPCORE(HDMI_CORE_SYS_DE_TOP);
++	DUMPCORE(HDMI_CORE_SYS_DE_CNTL);
++	DUMPCORE(HDMI_CORE_SYS_DE_CNTH);
++	DUMPCORE(HDMI_CORE_SYS_DE_LINL);
++	DUMPCORE(HDMI_CORE_SYS_DE_LINH_1);
+ 	DUMPCORE(HDMI_CORE_SYS_VID_ACEN);
+ 	DUMPCORE(HDMI_CORE_SYS_VID_MODE);
+ 	DUMPCORE(HDMI_CORE_SYS_INTR_STATE);
+@@ -909,49 +916,20 @@ void ti_hdmi_4xxx_core_dump(struct hdmi_ip_data *ip_data, struct seq_file *s)
+ 	DUMPCORE(HDMI_CORE_SYS_INTR4);
+ 	DUMPCORE(HDMI_CORE_SYS_UMASK1);
+ 	DUMPCORE(HDMI_CORE_SYS_TMDS_CTRL);
+-	DUMPCORE(HDMI_CORE_SYS_DE_DLY);
+-	DUMPCORE(HDMI_CORE_SYS_DE_CTRL);
+-	DUMPCORE(HDMI_CORE_SYS_DE_TOP);
+-	DUMPCORE(HDMI_CORE_SYS_DE_CNTL);
+-	DUMPCORE(HDMI_CORE_SYS_DE_CNTH);
+-	DUMPCORE(HDMI_CORE_SYS_DE_LINL);
+-	DUMPCORE(HDMI_CORE_SYS_DE_LINH_1);
  
- static int dss_check_settings_low(struct omap_overlay_manager *mgr,
--		struct omap_dss_device *dssdev, bool applying)
-+		bool applying)
- {
- 	struct omap_overlay_info *oi;
- 	struct omap_overlay_manager_info *mi;
-@@ -214,26 +214,24 @@ static int dss_check_settings_low(struct omap_overlay_manager *mgr,
- 		ois[ovl->id] = oi;
- 	}
+-	DUMPCORE(HDMI_CORE_DDC_CMD);
+-	DUMPCORE(HDMI_CORE_DDC_STATUS);
+ 	DUMPCORE(HDMI_CORE_DDC_ADDR);
++	DUMPCORE(HDMI_CORE_DDC_SEGM);
+ 	DUMPCORE(HDMI_CORE_DDC_OFFSET);
+ 	DUMPCORE(HDMI_CORE_DDC_COUNT1);
+ 	DUMPCORE(HDMI_CORE_DDC_COUNT2);
++	DUMPCORE(HDMI_CORE_DDC_STATUS);
++	DUMPCORE(HDMI_CORE_DDC_CMD);
+ 	DUMPCORE(HDMI_CORE_DDC_DATA);
+-	DUMPCORE(HDMI_CORE_DDC_SEGM);
  
--	return dss_mgr_check(mgr, dssdev, mi, ois);
-+	return dss_mgr_check(mgr, mi, &mp->timings, ois);
- }
+-	DUMPCOREAV(HDMI_CORE_AV_HDMI_CTRL);
+-	DUMPCOREAV(HDMI_CORE_AV_DPD);
+-	DUMPCOREAV(HDMI_CORE_AV_PB_CTRL1);
+-	DUMPCOREAV(HDMI_CORE_AV_PB_CTRL2);
+-	DUMPCOREAV(HDMI_CORE_AV_AVI_TYPE);
+-	DUMPCOREAV(HDMI_CORE_AV_AVI_VERS);
+-	DUMPCOREAV(HDMI_CORE_AV_AVI_LEN);
+-	DUMPCOREAV(HDMI_CORE_AV_AVI_CHSUM);
  
- /*
-  * check manager and overlay settings using overlay_info from data->info
-  */
--static int dss_check_settings(struct omap_overlay_manager *mgr,
--		struct omap_dss_device *dssdev)
-+static int dss_check_settings(struct omap_overlay_manager *mgr)
- {
--	return dss_check_settings_low(mgr, dssdev, false);
-+	return dss_check_settings_low(mgr, false);
- }
+-	for (i = 0; i < HDMI_CORE_AV_AVI_DBYTE_NELEMS; i++)
+-		DUMPCOREAV2(i, HDMI_CORE_AV_AVI_DBYTE);
  
- /*
-  * check manager and overlay settings using overlay_info from ovl->info if
-  * dirty and from data->info otherwise
-  */
--static int dss_check_settings_apply(struct omap_overlay_manager *mgr,
--		struct omap_dss_device *dssdev)
-+static int dss_check_settings_apply(struct omap_overlay_manager *mgr)
- {
--	return dss_check_settings_low(mgr, dssdev, true);
-+	return dss_check_settings_low(mgr, true);
- }
+-	for (i = 0; i < HDMI_CORE_AV_SPD_DBYTE_NELEMS; i++)
+-		DUMPCOREAV2(i, HDMI_CORE_AV_SPD_DBYTE);
  
- static bool need_isr(void)
-@@ -687,7 +685,7 @@ static void dss_write_regs(void)
- 		if (!mp->enabled || mgr_manual_update(mgr) || mp->busy)
- 			continue;
- 
--		r = dss_check_settings(mgr, mgr->device);
-+		r = dss_check_settings(mgr);
- 		if (r) {
- 			DSSERR("cannot write registers for manager %s: "
- 					"illegal configuration\n", mgr->name);
-@@ -754,7 +752,7 @@ void dss_mgr_start_update(struct omap_overlay_manager *mgr)
- 
- 	WARN_ON(mp->updating);
- 
--	r = dss_check_settings(mgr, mgr->device);
-+	r = dss_check_settings(mgr);
- 	if (r) {
- 		DSSERR("cannot start manual update: illegal configuration\n");
- 		spin_unlock_irqrestore(&data_lock, flags);
-@@ -901,7 +899,7 @@ int omap_dss_mgr_apply(struct omap_overlay_manager *mgr)
- 
- 	spin_lock_irqsave(&data_lock, flags);
- 
--	r = dss_check_settings_apply(mgr, mgr->device);
-+	r = dss_check_settings_apply(mgr);
- 	if (r) {
- 		spin_unlock_irqrestore(&data_lock, flags);
- 		DSSERR("failed to apply settings: illegal configuration.\n");
-@@ -1094,7 +1092,7 @@ int dss_mgr_enable(struct omap_overlay_manager *mgr)
- 
- 	mp->enabled = true;
- 
--	r = dss_check_settings(mgr, mgr->device);
-+	r = dss_check_settings(mgr);
- 	if (r) {
- 		DSSERR("failed to enable manager %d: check_settings failed\n",
- 				mgr->id);
-@@ -1466,7 +1464,7 @@ int dss_ovl_enable(struct omap_overlay *ovl)
- 
- 	op->enabling = true;
- 
--	r = dss_check_settings(ovl->manager, ovl->manager->device);
-+	r = dss_check_settings(ovl->manager);
- 	if (r) {
- 		DSSERR("failed to enable overlay %d: check_settings failed\n",
- 				ovl->id);
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index a13b305..f3fa445 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -179,6 +179,7 @@ int dss_mgr_set_device(struct omap_overlay_manager *mgr,
- int dss_mgr_unset_device(struct omap_overlay_manager *mgr);
- void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
- 		struct omap_video_timings *timings);
-+const struct omap_video_timings *dss_mgr_get_timings(struct omap_overlay_manager *mgr);
- 
- bool dss_ovl_is_enabled(struct omap_overlay *ovl);
- int dss_ovl_enable(struct omap_overlay *ovl);
-@@ -211,8 +212,8 @@ int dss_mgr_simple_check(struct omap_overlay_manager *mgr,
- int dss_mgr_check_timings(struct omap_overlay_manager *mgr,
- 		const struct omap_video_timings *timings);
- int dss_mgr_check(struct omap_overlay_manager *mgr,
--		struct omap_dss_device *dssdev,
- 		struct omap_overlay_manager_info *info,
-+		const struct omap_video_timings *mgr_timings,
- 		struct omap_overlay_info **overlay_infos);
- 
- /* overlay */
-@@ -222,8 +223,8 @@ void dss_overlay_setup_dispc_manager(struct omap_overlay_manager *mgr);
- void dss_recheck_connections(struct omap_dss_device *dssdev, bool force);
- int dss_ovl_simple_check(struct omap_overlay *ovl,
- 		const struct omap_overlay_info *info);
--int dss_ovl_check(struct omap_overlay *ovl,
--		struct omap_overlay_info *info, struct omap_dss_device *dssdev);
-+int dss_ovl_check(struct omap_overlay *ovl, struct omap_overlay_info *info,
-+		const struct omap_video_timings *mgr_timings);
- 
- /* DSS */
- int dss_init_platform_driver(void);
-diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
-index 566fbba..0cbcde4 100644
---- a/drivers/video/omap2/dss/manager.c
-+++ b/drivers/video/omap2/dss/manager.c
-@@ -666,8 +666,8 @@ int dss_mgr_check_timings(struct omap_overlay_manager *mgr,
- }
- 
- int dss_mgr_check(struct omap_overlay_manager *mgr,
--		struct omap_dss_device *dssdev,
- 		struct omap_overlay_manager_info *info,
-+		const struct omap_video_timings *mgr_timings,
- 		struct omap_overlay_info **overlay_infos)
- {
- 	struct omap_overlay *ovl;
-@@ -679,7 +679,7 @@ int dss_mgr_check(struct omap_overlay_manager *mgr,
- 			return r;
- 	}
- 
--	r = dss_mgr_check_timings(mgr, &dssdev->panel.timings);
-+	r = dss_mgr_check_timings(mgr, mgr_timings);
- 	if (r)
- 		return r;
- 
-@@ -692,7 +692,7 @@ int dss_mgr_check(struct omap_overlay_manager *mgr,
- 		if (oi = NULL)
- 			continue;
- 
--		r = dss_ovl_check(ovl, oi, dssdev);
-+		r = dss_ovl_check(ovl, oi, mgr_timings);
- 		if (r)
- 			return r;
- 	}
-diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
-index 6e82181..0da5eb6 100644
---- a/drivers/video/omap2/dss/overlay.c
-+++ b/drivers/video/omap2/dss/overlay.c
-@@ -631,16 +631,14 @@ int dss_ovl_simple_check(struct omap_overlay *ovl,
- 	return 0;
- }
- 
--int dss_ovl_check(struct omap_overlay *ovl,
--		struct omap_overlay_info *info, struct omap_dss_device *dssdev)
-+int dss_ovl_check(struct omap_overlay *ovl, struct omap_overlay_info *info,
-+		const struct omap_video_timings *mgr_timings)
- {
- 	u16 outw, outh;
- 	u16 dw, dh;
- 
--	if (dssdev = NULL)
--		return 0;
+-	for (i = 0; i < HDMI_CORE_AV_AUD_DBYTE_NELEMS; i++)
+-		DUMPCOREAV2(i, HDMI_CORE_AV_AUD_DBYTE);
 -
--	dssdev->driver->get_resolution(dssdev, &dw, &dh);
-+	dw = mgr_timings->x_res;
-+	dh = mgr_timings->y_res;
+-	for (i = 0; i < HDMI_CORE_AV_MPEG_DBYTE_NELEMS; i++)
+-		DUMPCOREAV2(i, HDMI_CORE_AV_MPEG_DBYTE);
  
- 	if ((ovl->caps & OMAP_DSS_OVL_CAP_SCALE) = 0) {
- 		outw = info->width;
+-	for (i = 0; i < HDMI_CORE_AV_GEN_DBYTE_NELEMS; i++)
+-		DUMPCOREAV2(i, HDMI_CORE_AV_GEN_DBYTE);
+-
+-	for (i = 0; i < HDMI_CORE_AV_GEN2_DBYTE_NELEMS; i++)
+-		DUMPCOREAV2(i, HDMI_CORE_AV_GEN2_DBYTE);
+ 
+ 	DUMPCOREAV(HDMI_CORE_AV_ACR_CTRL);
+ 	DUMPCOREAV(HDMI_CORE_AV_FREQ_SVAL);
+@@ -991,19 +969,42 @@ void ti_hdmi_4xxx_core_dump(struct hdmi_ip_data *ip_data, struct seq_file *s)
+ 	DUMPCOREAV(HDMI_CORE_AV_AVI_VERS);
+ 	DUMPCOREAV(HDMI_CORE_AV_AVI_LEN);
+ 	DUMPCOREAV(HDMI_CORE_AV_AVI_CHSUM);
++
++	for (i = 0; i < HDMI_CORE_AV_AVI_DBYTE_NELEMS; i++)
++		DUMPCOREAV2(i, HDMI_CORE_AV_AVI_DBYTE);
++
+ 	DUMPCOREAV(HDMI_CORE_AV_SPD_TYPE);
+ 	DUMPCOREAV(HDMI_CORE_AV_SPD_VERS);
+ 	DUMPCOREAV(HDMI_CORE_AV_SPD_LEN);
+ 	DUMPCOREAV(HDMI_CORE_AV_SPD_CHSUM);
++
++	for (i = 0; i < HDMI_CORE_AV_SPD_DBYTE_NELEMS; i++)
++		DUMPCOREAV2(i, HDMI_CORE_AV_SPD_DBYTE);
++
+ 	DUMPCOREAV(HDMI_CORE_AV_AUDIO_TYPE);
+ 	DUMPCOREAV(HDMI_CORE_AV_AUDIO_VERS);
+ 	DUMPCOREAV(HDMI_CORE_AV_AUDIO_LEN);
+ 	DUMPCOREAV(HDMI_CORE_AV_AUDIO_CHSUM);
++
++	for (i = 0; i < HDMI_CORE_AV_AUD_DBYTE_NELEMS; i++)
++		DUMPCOREAV2(i, HDMI_CORE_AV_AUD_DBYTE);
++
+ 	DUMPCOREAV(HDMI_CORE_AV_MPEG_TYPE);
+ 	DUMPCOREAV(HDMI_CORE_AV_MPEG_VERS);
+ 	DUMPCOREAV(HDMI_CORE_AV_MPEG_LEN);
+ 	DUMPCOREAV(HDMI_CORE_AV_MPEG_CHSUM);
++
++	for (i = 0; i < HDMI_CORE_AV_MPEG_DBYTE_NELEMS; i++)
++		DUMPCOREAV2(i, HDMI_CORE_AV_MPEG_DBYTE);
++
++	for (i = 0; i < HDMI_CORE_AV_GEN_DBYTE_NELEMS; i++)
++		DUMPCOREAV2(i, HDMI_CORE_AV_GEN_DBYTE);
++
+ 	DUMPCOREAV(HDMI_CORE_AV_CP_BYTE1);
++
++	for (i = 0; i < HDMI_CORE_AV_GEN2_DBYTE_NELEMS; i++)
++		DUMPCOREAV2(i, HDMI_CORE_AV_GEN2_DBYTE);
++
+ 	DUMPCOREAV(HDMI_CORE_AV_CEC_ADDR_ID);
+ }
+ 
+diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
+index a14d1a0..b724bc6 100644
+--- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
++++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h
+@@ -57,6 +57,13 @@
+ #define HDMI_CORE_SYS_SRST			0x14
+ #define HDMI_CORE_CTRL1				0x20
+ #define HDMI_CORE_SYS_SYS_STAT			0x24
++#define HDMI_CORE_SYS_DE_DLY			0xC8
++#define HDMI_CORE_SYS_DE_CTRL			0xCC
++#define HDMI_CORE_SYS_DE_TOP			0xD0
++#define HDMI_CORE_SYS_DE_CNTL			0xD8
++#define HDMI_CORE_SYS_DE_CNTH			0xDC
++#define HDMI_CORE_SYS_DE_LINL			0xE0
++#define HDMI_CORE_SYS_DE_LINH_1			0xE4
+ #define HDMI_CORE_SYS_VID_ACEN			0x124
+ #define HDMI_CORE_SYS_VID_MODE			0x128
+ #define HDMI_CORE_SYS_INTR_STATE		0x1C0
+@@ -66,50 +73,24 @@
+ #define HDMI_CORE_SYS_INTR4			0x1D0
+ #define HDMI_CORE_SYS_UMASK1			0x1D4
+ #define HDMI_CORE_SYS_TMDS_CTRL			0x208
+-#define HDMI_CORE_SYS_DE_DLY			0xC8
+-#define HDMI_CORE_SYS_DE_CTRL			0xCC
+-#define HDMI_CORE_SYS_DE_TOP			0xD0
+-#define HDMI_CORE_SYS_DE_CNTL			0xD8
+-#define HDMI_CORE_SYS_DE_CNTH			0xDC
+-#define HDMI_CORE_SYS_DE_LINL			0xE0
+-#define HDMI_CORE_SYS_DE_LINH_1			0xE4
++
+ #define HDMI_CORE_CTRL1_VEN_FOLLOWVSYNC	0x1
+ #define HDMI_CORE_CTRL1_HEN_FOLLOWHSYNC	0x1
+-#define HDMI_CORE_CTRL1_BSEL_24BITBUS		0x1
++#define HDMI_CORE_CTRL1_BSEL_24BITBUS	0x1
+ #define HDMI_CORE_CTRL1_EDGE_RISINGEDGE	0x1
+ 
+ /* HDMI DDC E-DID */
+-#define HDMI_CORE_DDC_CMD			0x3CC
+-#define HDMI_CORE_DDC_STATUS			0x3C8
+ #define HDMI_CORE_DDC_ADDR			0x3B4
++#define HDMI_CORE_DDC_SEGM			0x3B8
+ #define HDMI_CORE_DDC_OFFSET			0x3BC
+ #define HDMI_CORE_DDC_COUNT1			0x3C0
+ #define HDMI_CORE_DDC_COUNT2			0x3C4
++#define HDMI_CORE_DDC_STATUS			0x3C8
++#define HDMI_CORE_DDC_CMD			0x3CC
+ #define HDMI_CORE_DDC_DATA			0x3D0
+-#define HDMI_CORE_DDC_SEGM			0x3B8
+ 
+ /* HDMI IP Core Audio Video */
+ 
+-#define HDMI_CORE_AV_HDMI_CTRL			0xBC
+-#define HDMI_CORE_AV_DPD			0xF4
+-#define HDMI_CORE_AV_PB_CTRL1			0xF8
+-#define HDMI_CORE_AV_PB_CTRL2			0xFC
+-#define HDMI_CORE_AV_AVI_TYPE			0x100
+-#define HDMI_CORE_AV_AVI_VERS			0x104
+-#define HDMI_CORE_AV_AVI_LEN			0x108
+-#define HDMI_CORE_AV_AVI_CHSUM			0x10C
+-#define HDMI_CORE_AV_AVI_DBYTE(n)		(n * 4 + 0x110)
+-#define HDMI_CORE_AV_AVI_DBYTE_NELEMS		15
+-#define HDMI_CORE_AV_SPD_DBYTE(n)		(n * 4 + 0x190)
+-#define HDMI_CORE_AV_SPD_DBYTE_NELEMS		27
+-#define HDMI_CORE_AV_AUD_DBYTE(n)		(n * 4 + 0x210)
+-#define HDMI_CORE_AV_AUD_DBYTE_NELEMS		10
+-#define HDMI_CORE_AV_MPEG_DBYTE(n)		(n * 4 + 0x290)
+-#define HDMI_CORE_AV_MPEG_DBYTE_NELEMS		27
+-#define HDMI_CORE_AV_GEN_DBYTE(n)		(n * 4 + 0x300)
+-#define HDMI_CORE_AV_GEN_DBYTE_NELEMS		31
+-#define HDMI_CORE_AV_GEN2_DBYTE(n)		(n * 4 + 0x380)
+-#define HDMI_CORE_AV_GEN2_DBYTE_NELEMS		31
+ #define HDMI_CORE_AV_ACR_CTRL			0x4
+ #define HDMI_CORE_AV_FREQ_SVAL			0x8
+ #define HDMI_CORE_AV_N_SVAL1			0xC
+@@ -148,25 +129,39 @@
+ #define HDMI_CORE_AV_AVI_VERS			0x104
+ #define HDMI_CORE_AV_AVI_LEN			0x108
+ #define HDMI_CORE_AV_AVI_CHSUM			0x10C
++#define HDMI_CORE_AV_AVI_DBYTE(n)		(n * 4 + 0x110)
+ #define HDMI_CORE_AV_SPD_TYPE			0x180
+ #define HDMI_CORE_AV_SPD_VERS			0x184
+ #define HDMI_CORE_AV_SPD_LEN			0x188
+ #define HDMI_CORE_AV_SPD_CHSUM			0x18C
++#define HDMI_CORE_AV_SPD_DBYTE(n)		(n * 4 + 0x190)
+ #define HDMI_CORE_AV_AUDIO_TYPE			0x200
+ #define HDMI_CORE_AV_AUDIO_VERS			0x204
+ #define HDMI_CORE_AV_AUDIO_LEN			0x208
+ #define HDMI_CORE_AV_AUDIO_CHSUM		0x20C
++#define HDMI_CORE_AV_AUD_DBYTE(n)		(n * 4 + 0x210)
+ #define HDMI_CORE_AV_MPEG_TYPE			0x280
+ #define HDMI_CORE_AV_MPEG_VERS			0x284
+ #define HDMI_CORE_AV_MPEG_LEN			0x288
+ #define HDMI_CORE_AV_MPEG_CHSUM			0x28C
++#define HDMI_CORE_AV_MPEG_DBYTE(n)		(n * 4 + 0x290)
++#define HDMI_CORE_AV_GEN_DBYTE(n)		(n * 4 + 0x300)
+ #define HDMI_CORE_AV_CP_BYTE1			0x37C
++#define HDMI_CORE_AV_GEN2_DBYTE(n)		(n * 4 + 0x380)
+ #define HDMI_CORE_AV_CEC_ADDR_ID		0x3FC
++
+ #define HDMI_CORE_AV_SPD_DBYTE_ELSIZE		0x4
+ #define HDMI_CORE_AV_GEN2_DBYTE_ELSIZE		0x4
+ #define HDMI_CORE_AV_MPEG_DBYTE_ELSIZE		0x4
+ #define HDMI_CORE_AV_GEN_DBYTE_ELSIZE		0x4
+ 
++#define HDMI_CORE_AV_AVI_DBYTE_NELEMS		15
++#define HDMI_CORE_AV_SPD_DBYTE_NELEMS		27
++#define HDMI_CORE_AV_AUD_DBYTE_NELEMS		10
++#define HDMI_CORE_AV_MPEG_DBYTE_NELEMS		27
++#define HDMI_CORE_AV_GEN_DBYTE_NELEMS		31
++#define HDMI_CORE_AV_GEN2_DBYTE_NELEMS		31
++
+ /* PLL */
+ 
+ #define PLLCTRL_PLL_CONTROL			0x0
 -- 
 1.7.5.4
 

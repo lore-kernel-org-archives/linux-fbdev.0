@@ -1,233 +1,210 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Tue, 22 May 2012 10:05:07 +0000
-Subject: [PATCH 1/2] leds: lm3533: replace als attribute with als_channel and als_en
-Message-Id: <1337681108-13838-1-git-send-email-jhovold@gmail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Mon, 07 May 2012 13:32:27 +0000
+Subject: [PATCH 1/2] OMAPDSS: HDMI: Fix ti_hdmi_4xxx_core_dump
+Message-Id: <1336396828-29311-2-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1336396828-29311-1-git-send-email-archit@ti.com>
+In-Reply-To: <1336396828-29311-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Rob Landley <rob@landley.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, Jonathan Cameron <jic23@kernel.org>, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Replace the als attribute with two separate attributes for selecting ALS
-channel and enabling ALS-current-control mode.
+The function ti_hdmi_4xxx_core_dump has some bugs, the following mention the
+bugs and the solutions:
 
-This change is needed to reflect changes made to the ALS sub-driver
-which now uses 0-indexed current output channels (rather than 1-indexed
-ALS-mapper target sets).
+- The macros DUMPCORE and DUMPCOREAV in ti_hdmi_4xxx_core_dump() use
+  hdmi_pll_base() for the offsets needed to calculate register addresses, use
+  functions hdmi_core_sys_base() amd hdmi_av_base() to calculate the correct
+  offsets for CORE_SYS and CORE_AV registers.
 
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
+- Many of the CORE_AV registers use the DUMPCORE macro, and hence the register
+  addresses are calculated incorrectly. Rename the current DUMPCOREAV macro as
+  DUMPCOREAV2 as it takes 2 arguments to dump indexed CORE_AV registers, create
+  a new macro called DUMPCOREAV which is now used for dumping non-indexed
+  CORE_AV registers.
+
+Thanks to Ancy Tom <ancytom@gmail.com> for pointing out the issues.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- .../ABI/testing/sysfs-class-led-driver-lm3533      |   19 +++-
- drivers/leds/leds-lm3533.c                         |   98 +++++++++++++++-----
- 2 files changed, 87 insertions(+), 30 deletions(-)
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |  142 +++++++++++++++--------------
+ 1 files changed, 72 insertions(+), 70 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-led-driver-lm3533 b/Documentation/ABI/testing/sysfs-class-led-driver-lm3533
-index a9633fd..620ebb3 100644
---- a/Documentation/ABI/testing/sysfs-class-led-driver-lm3533
-+++ b/Documentation/ABI/testing/sysfs-class-led-driver-lm3533
-@@ -1,13 +1,20 @@
--What:		/sys/class/leds/<led>/als
--Date:		April 2012
-+What:		/sys/class/leds/<led>/als_channel
-+Date:		May 2012
- KernelVersion:	3.5
- Contact:	Johan Hovold <jhovold@gmail.com>
- Description:
--		Set the ALS-control mode (0, 2, 3), where
-+		Set the ALS output channel to use as input in
-+		ALS-current-control mode (1, 2), where
+diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+index bfe6fe6..e266b8e 100644
+--- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
++++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+@@ -886,10 +886,12 @@ void ti_hdmi_4xxx_core_dump(struct hdmi_ip_data *ip_data, struct seq_file *s)
+ 
+ #define CORE_REG(i, name) name(i)
+ #define DUMPCORE(r) seq_printf(s, "%-35s %08x\n", #r,\
+-		hdmi_read_reg(hdmi_pll_base(ip_data), r))
+-#define DUMPCOREAV(i, r) seq_printf(s, "%s[%d]%*s %08x\n", #r, i, \
++		hdmi_read_reg(hdmi_core_sys_base(ip_data), r))
++#define DUMPCOREAV(r) seq_printf(s, "%-35s %08x\n", #r,\
++		hdmi_read_reg(hdmi_av_base(ip_data), r))
++#define DUMPCOREAV2(i, r) seq_printf(s, "%s[%d]%*s %08x\n", #r, i, \
+ 		(i < 10) ? 32 - strlen(#r) : 31 - strlen(#r), " ", \
+-		hdmi_read_reg(hdmi_pll_base(ip_data), CORE_REG(i, r)))
++		hdmi_read_reg(hdmi_av_base(ip_data), CORE_REG(i, r)))
+ 
+ 	DUMPCORE(HDMI_CORE_SYS_VND_IDL);
+ 	DUMPCORE(HDMI_CORE_SYS_DEV_IDL);
+@@ -924,85 +926,85 @@ void ti_hdmi_4xxx_core_dump(struct hdmi_ip_data *ip_data, struct seq_file *s)
+ 	DUMPCORE(HDMI_CORE_DDC_DATA);
+ 	DUMPCORE(HDMI_CORE_DDC_SEGM);
+ 
+-	DUMPCORE(HDMI_CORE_AV_HDMI_CTRL);
+-	DUMPCORE(HDMI_CORE_AV_DPD);
+-	DUMPCORE(HDMI_CORE_AV_PB_CTRL1);
+-	DUMPCORE(HDMI_CORE_AV_PB_CTRL2);
+-	DUMPCORE(HDMI_CORE_AV_AVI_TYPE);
+-	DUMPCORE(HDMI_CORE_AV_AVI_VERS);
+-	DUMPCORE(HDMI_CORE_AV_AVI_LEN);
+-	DUMPCORE(HDMI_CORE_AV_AVI_CHSUM);
++	DUMPCOREAV(HDMI_CORE_AV_HDMI_CTRL);
++	DUMPCOREAV(HDMI_CORE_AV_DPD);
++	DUMPCOREAV(HDMI_CORE_AV_PB_CTRL1);
++	DUMPCOREAV(HDMI_CORE_AV_PB_CTRL2);
++	DUMPCOREAV(HDMI_CORE_AV_AVI_TYPE);
++	DUMPCOREAV(HDMI_CORE_AV_AVI_VERS);
++	DUMPCOREAV(HDMI_CORE_AV_AVI_LEN);
++	DUMPCOREAV(HDMI_CORE_AV_AVI_CHSUM);
+ 
+ 	for (i = 0; i < HDMI_CORE_AV_AVI_DBYTE_NELEMS; i++)
+-		DUMPCOREAV(i, HDMI_CORE_AV_AVI_DBYTE);
++		DUMPCOREAV2(i, HDMI_CORE_AV_AVI_DBYTE);
+ 
+ 	for (i = 0; i < HDMI_CORE_AV_SPD_DBYTE_NELEMS; i++)
+-		DUMPCOREAV(i, HDMI_CORE_AV_SPD_DBYTE);
++		DUMPCOREAV2(i, HDMI_CORE_AV_SPD_DBYTE);
+ 
+ 	for (i = 0; i < HDMI_CORE_AV_AUD_DBYTE_NELEMS; i++)
+-		DUMPCOREAV(i, HDMI_CORE_AV_AUD_DBYTE);
++		DUMPCOREAV2(i, HDMI_CORE_AV_AUD_DBYTE);
+ 
+ 	for (i = 0; i < HDMI_CORE_AV_MPEG_DBYTE_NELEMS; i++)
+-		DUMPCOREAV(i, HDMI_CORE_AV_MPEG_DBYTE);
++		DUMPCOREAV2(i, HDMI_CORE_AV_MPEG_DBYTE);
+ 
+ 	for (i = 0; i < HDMI_CORE_AV_GEN_DBYTE_NELEMS; i++)
+-		DUMPCOREAV(i, HDMI_CORE_AV_GEN_DBYTE);
++		DUMPCOREAV2(i, HDMI_CORE_AV_GEN_DBYTE);
+ 
+ 	for (i = 0; i < HDMI_CORE_AV_GEN2_DBYTE_NELEMS; i++)
+-		DUMPCOREAV(i, HDMI_CORE_AV_GEN2_DBYTE);
+-
+-	DUMPCORE(HDMI_CORE_AV_ACR_CTRL);
+-	DUMPCORE(HDMI_CORE_AV_FREQ_SVAL);
+-	DUMPCORE(HDMI_CORE_AV_N_SVAL1);
+-	DUMPCORE(HDMI_CORE_AV_N_SVAL2);
+-	DUMPCORE(HDMI_CORE_AV_N_SVAL3);
+-	DUMPCORE(HDMI_CORE_AV_CTS_SVAL1);
+-	DUMPCORE(HDMI_CORE_AV_CTS_SVAL2);
+-	DUMPCORE(HDMI_CORE_AV_CTS_SVAL3);
+-	DUMPCORE(HDMI_CORE_AV_CTS_HVAL1);
+-	DUMPCORE(HDMI_CORE_AV_CTS_HVAL2);
+-	DUMPCORE(HDMI_CORE_AV_CTS_HVAL3);
+-	DUMPCORE(HDMI_CORE_AV_AUD_MODE);
+-	DUMPCORE(HDMI_CORE_AV_SPDIF_CTRL);
+-	DUMPCORE(HDMI_CORE_AV_HW_SPDIF_FS);
+-	DUMPCORE(HDMI_CORE_AV_SWAP_I2S);
+-	DUMPCORE(HDMI_CORE_AV_SPDIF_ERTH);
+-	DUMPCORE(HDMI_CORE_AV_I2S_IN_MAP);
+-	DUMPCORE(HDMI_CORE_AV_I2S_IN_CTRL);
+-	DUMPCORE(HDMI_CORE_AV_I2S_CHST0);
+-	DUMPCORE(HDMI_CORE_AV_I2S_CHST1);
+-	DUMPCORE(HDMI_CORE_AV_I2S_CHST2);
+-	DUMPCORE(HDMI_CORE_AV_I2S_CHST4);
+-	DUMPCORE(HDMI_CORE_AV_I2S_CHST5);
+-	DUMPCORE(HDMI_CORE_AV_ASRC);
+-	DUMPCORE(HDMI_CORE_AV_I2S_IN_LEN);
+-	DUMPCORE(HDMI_CORE_AV_HDMI_CTRL);
+-	DUMPCORE(HDMI_CORE_AV_AUDO_TXSTAT);
+-	DUMPCORE(HDMI_CORE_AV_AUD_PAR_BUSCLK_1);
+-	DUMPCORE(HDMI_CORE_AV_AUD_PAR_BUSCLK_2);
+-	DUMPCORE(HDMI_CORE_AV_AUD_PAR_BUSCLK_3);
+-	DUMPCORE(HDMI_CORE_AV_TEST_TXCTRL);
+-	DUMPCORE(HDMI_CORE_AV_DPD);
+-	DUMPCORE(HDMI_CORE_AV_PB_CTRL1);
+-	DUMPCORE(HDMI_CORE_AV_PB_CTRL2);
+-	DUMPCORE(HDMI_CORE_AV_AVI_TYPE);
+-	DUMPCORE(HDMI_CORE_AV_AVI_VERS);
+-	DUMPCORE(HDMI_CORE_AV_AVI_LEN);
+-	DUMPCORE(HDMI_CORE_AV_AVI_CHSUM);
+-	DUMPCORE(HDMI_CORE_AV_SPD_TYPE);
+-	DUMPCORE(HDMI_CORE_AV_SPD_VERS);
+-	DUMPCORE(HDMI_CORE_AV_SPD_LEN);
+-	DUMPCORE(HDMI_CORE_AV_SPD_CHSUM);
+-	DUMPCORE(HDMI_CORE_AV_AUDIO_TYPE);
+-	DUMPCORE(HDMI_CORE_AV_AUDIO_VERS);
+-	DUMPCORE(HDMI_CORE_AV_AUDIO_LEN);
+-	DUMPCORE(HDMI_CORE_AV_AUDIO_CHSUM);
+-	DUMPCORE(HDMI_CORE_AV_MPEG_TYPE);
+-	DUMPCORE(HDMI_CORE_AV_MPEG_VERS);
+-	DUMPCORE(HDMI_CORE_AV_MPEG_LEN);
+-	DUMPCORE(HDMI_CORE_AV_MPEG_CHSUM);
+-	DUMPCORE(HDMI_CORE_AV_CP_BYTE1);
+-	DUMPCORE(HDMI_CORE_AV_CEC_ADDR_ID);
++		DUMPCOREAV2(i, HDMI_CORE_AV_GEN2_DBYTE);
 +
-+		1 - out_current1
-+		2 - out_current2
- 
--		0 - disabled
--		2 - ALS-mapper 2
--		3 - ALS-mapper 3
-+What:		/sys/class/leds/<led>/als_en
-+Date:		May 2012
-+KernelVersion:	3.5
-+Contact:	Johan Hovold <jhovold@gmail.com>
-+Description:
-+		Enable ALS-current-control mode (0, 1).
- 
- What:		/sys/class/leds/<led>/falltime
- What:		/sys/class/leds/<led>/risetime
-diff --git a/drivers/leds/leds-lm3533.c b/drivers/leds/leds-lm3533.c
-index e968470..f56b6e7 100644
---- a/drivers/leds/leds-lm3533.c
-+++ b/drivers/leds/leds-lm3533.c
-@@ -27,8 +27,8 @@
- #define LM3533_LVCTRLBANK_MAX		5
- #define LM3533_LVCTRLBANK_COUNT		4
- #define LM3533_RISEFALLTIME_MAX		7
--#define LM3533_ALS_LV_MIN		2
--#define LM3533_ALS_LV_MAX		3
-+#define LM3533_ALS_CHANNEL_LV_MIN	1
-+#define LM3533_ALS_CHANNEL_LV_MAX	2
- 
- #define LM3533_REG_CTRLBANK_BCONF_BASE		0x1b
- #define LM3533_REG_PATTERN_ENABLE		0x28
-@@ -39,8 +39,9 @@
- 
- #define LM3533_REG_PATTERN_STEP			0x10
- 
--#define LM3533_REG_CTRLBANK_BCONF_MAPPING_MASK	0x04
--#define LM3533_REG_CTRLBANK_BCONF_ALS_MASK	0x03
-+#define LM3533_REG_CTRLBANK_BCONF_MAPPING_MASK		0x04
-+#define LM3533_REG_CTRLBANK_BCONF_ALS_EN_MASK		0x02
-+#define LM3533_REG_CTRLBANK_BCONF_ALS_CHANNEL_MASK	0x01
- 
- #define LM3533_LED_FLAG_PATTERN_ENABLE		1
- 
-@@ -416,21 +417,14 @@ static ssize_t store_falltime(struct device *dev,
- 					LM3533_REG_PATTERN_FALLTIME_BASE);
++	DUMPCOREAV(HDMI_CORE_AV_ACR_CTRL);
++	DUMPCOREAV(HDMI_CORE_AV_FREQ_SVAL);
++	DUMPCOREAV(HDMI_CORE_AV_N_SVAL1);
++	DUMPCOREAV(HDMI_CORE_AV_N_SVAL2);
++	DUMPCOREAV(HDMI_CORE_AV_N_SVAL3);
++	DUMPCOREAV(HDMI_CORE_AV_CTS_SVAL1);
++	DUMPCOREAV(HDMI_CORE_AV_CTS_SVAL2);
++	DUMPCOREAV(HDMI_CORE_AV_CTS_SVAL3);
++	DUMPCOREAV(HDMI_CORE_AV_CTS_HVAL1);
++	DUMPCOREAV(HDMI_CORE_AV_CTS_HVAL2);
++	DUMPCOREAV(HDMI_CORE_AV_CTS_HVAL3);
++	DUMPCOREAV(HDMI_CORE_AV_AUD_MODE);
++	DUMPCOREAV(HDMI_CORE_AV_SPDIF_CTRL);
++	DUMPCOREAV(HDMI_CORE_AV_HW_SPDIF_FS);
++	DUMPCOREAV(HDMI_CORE_AV_SWAP_I2S);
++	DUMPCOREAV(HDMI_CORE_AV_SPDIF_ERTH);
++	DUMPCOREAV(HDMI_CORE_AV_I2S_IN_MAP);
++	DUMPCOREAV(HDMI_CORE_AV_I2S_IN_CTRL);
++	DUMPCOREAV(HDMI_CORE_AV_I2S_CHST0);
++	DUMPCOREAV(HDMI_CORE_AV_I2S_CHST1);
++	DUMPCOREAV(HDMI_CORE_AV_I2S_CHST2);
++	DUMPCOREAV(HDMI_CORE_AV_I2S_CHST4);
++	DUMPCOREAV(HDMI_CORE_AV_I2S_CHST5);
++	DUMPCOREAV(HDMI_CORE_AV_ASRC);
++	DUMPCOREAV(HDMI_CORE_AV_I2S_IN_LEN);
++	DUMPCOREAV(HDMI_CORE_AV_HDMI_CTRL);
++	DUMPCOREAV(HDMI_CORE_AV_AUDO_TXSTAT);
++	DUMPCOREAV(HDMI_CORE_AV_AUD_PAR_BUSCLK_1);
++	DUMPCOREAV(HDMI_CORE_AV_AUD_PAR_BUSCLK_2);
++	DUMPCOREAV(HDMI_CORE_AV_AUD_PAR_BUSCLK_3);
++	DUMPCOREAV(HDMI_CORE_AV_TEST_TXCTRL);
++	DUMPCOREAV(HDMI_CORE_AV_DPD);
++	DUMPCOREAV(HDMI_CORE_AV_PB_CTRL1);
++	DUMPCOREAV(HDMI_CORE_AV_PB_CTRL2);
++	DUMPCOREAV(HDMI_CORE_AV_AVI_TYPE);
++	DUMPCOREAV(HDMI_CORE_AV_AVI_VERS);
++	DUMPCOREAV(HDMI_CORE_AV_AVI_LEN);
++	DUMPCOREAV(HDMI_CORE_AV_AVI_CHSUM);
++	DUMPCOREAV(HDMI_CORE_AV_SPD_TYPE);
++	DUMPCOREAV(HDMI_CORE_AV_SPD_VERS);
++	DUMPCOREAV(HDMI_CORE_AV_SPD_LEN);
++	DUMPCOREAV(HDMI_CORE_AV_SPD_CHSUM);
++	DUMPCOREAV(HDMI_CORE_AV_AUDIO_TYPE);
++	DUMPCOREAV(HDMI_CORE_AV_AUDIO_VERS);
++	DUMPCOREAV(HDMI_CORE_AV_AUDIO_LEN);
++	DUMPCOREAV(HDMI_CORE_AV_AUDIO_CHSUM);
++	DUMPCOREAV(HDMI_CORE_AV_MPEG_TYPE);
++	DUMPCOREAV(HDMI_CORE_AV_MPEG_VERS);
++	DUMPCOREAV(HDMI_CORE_AV_MPEG_LEN);
++	DUMPCOREAV(HDMI_CORE_AV_MPEG_CHSUM);
++	DUMPCOREAV(HDMI_CORE_AV_CP_BYTE1);
++	DUMPCOREAV(HDMI_CORE_AV_CEC_ADDR_ID);
  }
  
--/*
-- * ALS-control setting:
-- *
-- *   0 - ALS disabled
-- *   2 - ALS-mapper 2
-- *   3 - ALS-mapper 3
-- */
--static ssize_t show_als(struct device *dev,
-+static ssize_t show_als_channel(struct device *dev,
- 				struct device_attribute *attr, char *buf)
- {
- 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
- 	struct lm3533_led *led = to_lm3533_led(led_cdev);
-+	unsigned channel;
- 	u8 reg;
- 	u8 val;
--	int als;
- 	int ret;
- 
- 	reg = lm3533_led_get_lv_reg(led, LM3533_REG_CTRLBANK_BCONF_BASE);
-@@ -438,32 +432,85 @@ static ssize_t show_als(struct device *dev,
- 	if (ret)
- 		return ret;
- 
--	als = val & LM3533_REG_CTRLBANK_BCONF_ALS_MASK;
-+	channel = (val & LM3533_REG_CTRLBANK_BCONF_ALS_CHANNEL_MASK) + 1;
- 
--	return scnprintf(buf, PAGE_SIZE, "%d\n", als);
-+	return scnprintf(buf, PAGE_SIZE, "%u\n", channel);
- }
- 
--static ssize_t store_als(struct device *dev,
-+static ssize_t store_als_channel(struct device *dev,
- 					struct device_attribute *attr,
- 					const char *buf, size_t len)
- {
- 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
- 	struct lm3533_led *led = to_lm3533_led(led_cdev);
--	u8 als;
-+	unsigned channel;
- 	u8 reg;
-+	u8 val;
- 	u8 mask;
- 	int ret;
- 
--	if (kstrtou8(buf, 0, &als))
-+	if (kstrtouint(buf, 0, &channel))
- 		return -EINVAL;
- 
--	if (als != 0 && (als < LM3533_ALS_LV_MIN || als > LM3533_ALS_LV_MAX))
-+	if (channel < LM3533_ALS_CHANNEL_LV_MIN ||
-+					channel > LM3533_ALS_CHANNEL_LV_MAX)
- 		return -EINVAL;
- 
- 	reg = lm3533_led_get_lv_reg(led, LM3533_REG_CTRLBANK_BCONF_BASE);
--	mask = LM3533_REG_CTRLBANK_BCONF_ALS_MASK;
-+	mask = LM3533_REG_CTRLBANK_BCONF_ALS_CHANNEL_MASK;
-+	val = channel - 1;
-+
-+	ret = lm3533_update(led->lm3533, reg, val, mask);
-+	if (ret)
-+		return ret;
-+
-+	return len;
-+}
-+
-+static ssize_t show_als_en(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct led_classdev *led_cdev = dev_get_drvdata(dev);
-+	struct lm3533_led *led = to_lm3533_led(led_cdev);
-+	bool enable;
-+	u8 reg;
-+	u8 val;
-+	int ret;
-+
-+	reg = lm3533_led_get_lv_reg(led, LM3533_REG_CTRLBANK_BCONF_BASE);
-+	ret = lm3533_read(led->lm3533, reg, &val);
-+	if (ret)
-+		return ret;
- 
--	ret = lm3533_update(led->lm3533, reg, als, mask);
-+	enable = val & LM3533_REG_CTRLBANK_BCONF_ALS_EN_MASK;
-+
-+	return scnprintf(buf, PAGE_SIZE, "%d\n", enable);
-+}
-+
-+static ssize_t store_als_en(struct device *dev,
-+					struct device_attribute *attr,
-+					const char *buf, size_t len)
-+{
-+	struct led_classdev *led_cdev = dev_get_drvdata(dev);
-+	struct lm3533_led *led = to_lm3533_led(led_cdev);
-+	unsigned enable;
-+	u8 reg;
-+	u8 mask;
-+	u8 val;
-+	int ret;
-+
-+	if (kstrtouint(buf, 0, &enable))
-+		return -EINVAL;
-+
-+	reg = lm3533_led_get_lv_reg(led, LM3533_REG_CTRLBANK_BCONF_BASE);
-+	mask = LM3533_REG_CTRLBANK_BCONF_ALS_EN_MASK;
-+
-+	if (enable)
-+		val = mask;
-+	else
-+		val = 0;
-+
-+	ret = lm3533_update(led->lm3533, reg, val, mask);
- 	if (ret)
- 		return ret;
- 
-@@ -558,7 +605,8 @@ static ssize_t store_pwm(struct device *dev,
- 	return len;
- }
- 
--static LM3533_ATTR_RW(als);
-+static LM3533_ATTR_RW(als_channel);
-+static LM3533_ATTR_RW(als_en);
- static LM3533_ATTR_RW(falltime);
- static LM3533_ATTR_RO(id);
- static LM3533_ATTR_RW(linear);
-@@ -566,7 +614,8 @@ static LM3533_ATTR_RW(pwm);
- static LM3533_ATTR_RW(risetime);
- 
- static struct attribute *lm3533_led_attributes[] = {
--	&dev_attr_als.attr,
-+	&dev_attr_als_channel.attr,
-+	&dev_attr_als_en.attr,
- 	&dev_attr_falltime.attr,
- 	&dev_attr_id.attr,
- 	&dev_attr_linear.attr,
-@@ -583,7 +632,8 @@ static umode_t lm3533_led_attr_is_visible(struct kobject *kobj,
- 	struct lm3533_led *led = to_lm3533_led(led_cdev);
- 	umode_t mode = attr->mode;
- 
--	if (attr = &dev_attr_als.attr) {
-+	if (attr = &dev_attr_als_channel.attr ||
-+					attr = &dev_attr_als_en.attr) {
- 		if (!led->lm3533->have_als)
- 			mode = 0;
- 	}
+ void ti_hdmi_4xxx_phy_dump(struct hdmi_ip_data *ip_data, struct seq_file *s)
 -- 
-1.7.8.5
+1.7.5.4
 

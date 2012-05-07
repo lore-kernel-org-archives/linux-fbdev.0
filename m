@@ -1,50 +1,60 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 10 May 2012 00:12:16 +0000
-Subject: Re: [PATCH] video: mb862xx-i2c: local functions should not be exposed globally
-Message-Id: <4FAB07E0.5070209@gmx.de>
+From: Shawn Guo <shawn.guo@linaro.org>
+Date: Mon, 07 May 2012 01:16:05 +0000
+Subject: [PATCH RESEND 0/9] Enable pinctrl support for mach-mxs
+Message-Id: <1336353374-28939-1-git-send-email-shawn.guo@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201205021734.16988.hartleys@visionengravers.com>
-In-Reply-To: <201205021734.16988.hartleys@visionengravers.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org, agust@denx.de
+To: linux-arm-kernel@lists.infradead.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>, Shawn Guo <shawn.guo@linaro.org>, linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, alsa-devel@alsa-project.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-i2c@vger.kernel.org, Wolfram Sang <w.sang@pengutronix.de>, linux-mtd@lists.infradead.org, Artem Bityutskiy <artem.bityutskiy@linux.intel.com>, linux-mmc@vger.kernel.org, Chris Ball <cjb@laptop.org>, linux-serial@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On 05/03/2012 12:34 AM, H Hartley Sweeten wrote:
-> Functions not referenced outside of a source file should be marked
-> static to prevent them from being exposed globally.
-> 
-> Quiets the sparse warnings:
-> 
-> warning: symbol 'mb862xx_i2c_stop' was not declared. Should it be static?
-> 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-> Cc: Anatolij Gustschin <agust@denx.de>
+[Resend to have subsystem lists Cc-ed]
 
-Applied.
+With pinctrl-mxs driver (DT only) applied on pinctrl tree, the mxs
+device tree conversion can start basing on that support.  This series
+adopts pinctrl support for mxs device drivers with a dummy pinctrl
+state provided for non-DT boot, so that the pinctrl call in the device
+drivers will be bypassed for non-DT probe while it starts working for
+DT probe.
 
+To ease the merge process, I would like to ask Arnd and Olof to pull
+pinctrl tree as a dependency in arm-soc and have this series go through
+arm-soc.
 
-Thanks,
+Regards,
+Shawn
 
-Florian Tobias Schandinat
+Shawn Guo (9):
+  ARM: mxs: enable pinctrl dummy states
+  serial: amba-pl011: adopt pinctrl support
+  serial: mxs-auart: adopt pinctrl support
+  mmc: mxs-mmc: adopt pinctrl support
+  mtd: nand: gpmi: adopt pinctrl support
+  i2c: mxs: adopt pinctrl support
+  ASoC: mxs-saif: adopt pinctrl support
+  video: mxsfb: adopt pinctrl support
+  ARM: mxs: enable pinctrl support
 
-> 
-> ---
-> 
-> diff --git a/drivers/video/mb862xx/mb862xx-i2c.c b/drivers/video/mb862xx/mb862xx-i2c.c
-> index 273769b..c87e17a 100644
-> --- a/drivers/video/mb862xx/mb862xx-i2c.c
-> +++ b/drivers/video/mb862xx/mb862xx-i2c.c
-> @@ -68,7 +68,7 @@ static int mb862xx_i2c_read_byte(struct i2c_adapter *adap, u8 *byte, int last)
->  	return 1;
->  }
->  
-> -void mb862xx_i2c_stop(struct i2c_adapter *adap)
-> +static void mb862xx_i2c_stop(struct i2c_adapter *adap)
->  {
->  	struct mb862xxfb_par *par = adap->algo_data;
->  
-> 
+ arch/arm/Kconfig                        |    1 +
+ arch/arm/mach-mxs/Kconfig               |    2 ++
+ arch/arm/mach-mxs/include/mach/common.h |    2 ++
+ arch/arm/mach-mxs/mach-apx4devkit.c     |    2 ++
+ arch/arm/mach-mxs/mach-m28evk.c         |    2 ++
+ arch/arm/mach-mxs/mach-mx23evk.c        |    2 ++
+ arch/arm/mach-mxs/mach-mx28evk.c        |    2 ++
+ arch/arm/mach-mxs/mach-stmp378x_devb.c  |    2 ++
+ arch/arm/mach-mxs/mach-tx28.c           |    2 ++
+ arch/arm/mach-mxs/mm.c                  |   11 +++++++++++
+ drivers/i2c/busses/i2c-mxs.c            |    6 ++++++
+ drivers/mmc/host/mxs-mmc.c              |    8 ++++++++
+ drivers/mtd/nand/gpmi-nand/gpmi-nand.c  |    9 +++++++++
+ drivers/tty/serial/amba-pl011.c         |    8 ++++++++
+ drivers/tty/serial/mxs-auart.c          |    8 ++++++++
+ drivers/video/mxsfb.c                   |    9 +++++++++
+ sound/soc/mxs/mxs-saif.c                |    8 ++++++++
+ 17 files changed, 84 insertions(+), 0 deletions(-)
+
+-- 
+1.7.5.4
 

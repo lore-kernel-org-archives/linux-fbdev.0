@@ -1,44 +1,44 @@
-From: Wolfram Sang <w.sang@pengutronix.de>
-Date: Fri, 04 May 2012 16:07:32 +0000
+From: Jean Delvare <khali@linux-fr.org>
+Date: Tue, 08 May 2012 11:31:01 +0000
 Subject: Re: [PATCH] i2c: Split I2C_M_NOSTART support out of I2C_FUNC_PROTOCOL_MANGLING
-Message-Id: <20120504160732.GB5789@pengutronix.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="6sX45UoQRIJXqkqR"
+Message-Id: <20120508133101.5019b934@endymion.delvare>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1336042416-28330-1-git-send-email-broonie@opensource.wolfsonmicro.com>
- <20120503113546.GG9574@pengutronix.de>
- <20120504103929.644a05ce@endymion.delvare>
-In-Reply-To: <20120504103929.644a05ce-R0o5gVi9kd7kN2dkZ6Wm7A@public.gmane.org>
-To: Jean Delvare <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>
-Cc: Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Florian Tobias Schandinat <FlorianSchandinat-Mmb7MZpHnFY@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+References: <1336127208-17951-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1336127208-17951-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Wolfram Sang <w.sang@pengutronix.de>, linux-i2c@vger.kernel.org, linux-input@vger.kernel.org, linux-fbdev@vger.kernel.org
 
+On Fri,  4 May 2012 11:26:48 +0100, Mark Brown wrote:
+> Since there are uses for I2C_M_NOSTART which are much more sensible and
+> standard than most of the protocol mangling functionality (the main one
+> being gather writes to devices where something like a register address
+> needs to be inserted before a block of data) create a new I2C_FUNC_NOSTART
+> for this feature and update all the users to use it.
+> 
+> Also strengthen the disrecommendation of the protocol mangling while we're
+> at it.
+> 
+> In the case of regmap-i2c we remove the requirement for mangling as
+> I2C_M_NOSTART is the only mangling feature which is being used.
+> 
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> ---
+>  Documentation/i2c/functionality       |    8 +++++---
+>  Documentation/i2c/i2c-protocol        |    9 ++++++++-
+>  drivers/base/regmap/regmap-i2c.c      |    2 +-
+>  drivers/i2c/algos/i2c-algo-bit.c      |    2 +-
+>  drivers/i2c/busses/i2c-nuc900.c       |    3 ++-
+>  drivers/i2c/busses/i2c-s3c2410.c      |    3 ++-
+>  drivers/input/joystick/as5011.c       |    1 +
+>  drivers/video/matrox/matroxfb_maven.c |    1 +
+>  include/linux/i2c.h                   |    5 +++--
+>  9 files changed, 24 insertions(+), 10 deletions(-)
+> (...)
 
---6sX45UoQRIJXqkqR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Applied with minor cleanups, thanks.
 
-> > Applied to next, thanks! Jean, let me know if you prefer to take it.
-> > Acks from input and fbdev maintainers still appreciated.
->=20
-> I'd prefer to take it, yes, as it touches the core infrastructure.
-
-OK, didn't know if you were busy. Dropped it from my tree now.
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---6sX45UoQRIJXqkqR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iEYEARECAAYFAk+j/sQACgkQD27XaX1/VRtaLwCfXFOLkpgSOyPLqV+Ljr5bT6Wm
-F/QAoImFj5goaYFt8PW+E+iWGnEYdyCc
-=IdYZ
------END PGP SIGNATURE-----
-
---6sX45UoQRIJXqkqR--
+-- 
+Jean Delvare

@@ -1,18 +1,116 @@
-From: "emilykc" <emilykc@pixius.net>
-Date: Sun, 06 May 2012 20:45:51 +0000
-Subject: RE
-Message-Id: <WC20120506204551.000053@pixius.net>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Tue, 08 May 2012 04:07:49 +0000
+Subject: [PATCH 3/4] fbdev: sh_mobile_hdmi: 32bit register access support
+Message-Id: <87havrmi26.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
+Latest SuperH HDMI allows 32bit access only.
+But the data is 8bit. So, we can keep compatibility by switching 8/32 bit access.
 
+Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+---
+ drivers/video/sh_mobile_hdmi.c |   38 ++++++++++++++++++++++++++++++++++++--
+ include/video/sh_mobile_hdmi.h |    5 ++++-
+ 2 files changed, 40 insertions(+), 3 deletions(-)
 
-Your e-mail ID have won =A32,500,000.00 GBP
-Name:
-Country:
-Age:
-Occupation:
-
+diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
+index 0bc39bc..4d48a80 100644
+--- a/drivers/video/sh_mobile_hdmi.c
++++ b/drivers/video/sh_mobile_hdmi.c
+@@ -222,20 +222,45 @@ struct sh_hdmi {
+ 	struct delayed_work edid_work;
+ 	struct fb_videomode mode;
+ 	struct fb_monspecs monspec;
++
++	/* register access functions */
++	void (*write)(struct sh_hdmi *hdmi, u8 data, u8 reg);
++	u8 (*read)(struct sh_hdmi *hdmi, u8 reg);
+ };
+ 
+ #define entity_to_sh_hdmi(e)	container_of(e, struct sh_hdmi, entity)
+ 
+-static void hdmi_write(struct sh_hdmi *hdmi, u8 data, u8 reg)
++static void __hdmi_write8(struct sh_hdmi *hdmi, u8 data, u8 reg)
+ {
+ 	iowrite8(data, hdmi->base + reg);
+ }
+ 
+-static u8 hdmi_read(struct sh_hdmi *hdmi, u8 reg)
++static u8 __hdmi_read8(struct sh_hdmi *hdmi, u8 reg)
+ {
+ 	return ioread8(hdmi->base + reg);
+ }
+ 
++static void __hdmi_write32(struct sh_hdmi *hdmi, u8 data, u8 reg)
++{
++	iowrite32((u32)data, hdmi->base + (reg * 4));
++	udelay(100);
++}
++
++static u8 __hdmi_read32(struct sh_hdmi *hdmi, u8 reg)
++{
++	return (u8)ioread32(hdmi->base + (reg * 4));
++}
++
++static void hdmi_write(struct sh_hdmi *hdmi, u8 data, u8 reg)
++{
++	hdmi->write(hdmi, data, reg);
++}
++
++static u8 hdmi_read(struct sh_hdmi *hdmi, u8 reg)
++{
++	return hdmi->read(hdmi, reg);
++}
++
+ static void hdmi_bit_set(struct sh_hdmi *hdmi, u8 mask, u8 data, u8 reg)
+ {
+ 	u8 val = hdmi_read(hdmi, reg);
+@@ -1148,6 +1173,15 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
+ 		goto egetclk;
+ 	}
+ 
++	/* select register access functions */
++	if (pdata->flags & HDMI_32BIT_REG) {
++		hdmi->write	= __hdmi_write32;
++		hdmi->read	= __hdmi_read32;
++	} else {
++		hdmi->write	= __hdmi_write8;
++		hdmi->read	= __hdmi_read8;
++	}
++
+ 	/* An arbitrary relaxed pixclock just to get things started: from standard 480p */
+ 	rate = clk_round_rate(hdmi->hdmi_clk, PICOS2KHZ(37037));
+ 	if (rate > 0)
+diff --git a/include/video/sh_mobile_hdmi.h b/include/video/sh_mobile_hdmi.h
+index 2699635..ce8a540 100644
+--- a/include/video/sh_mobile_hdmi.h
++++ b/include/video/sh_mobile_hdmi.h
+@@ -18,10 +18,11 @@ struct clk;
+ /*
+  * flags format
+  *
+- * 0x000000BA
++ * 0x00000CBA
+  *
+  * A: Audio source select
+  * B: Int output option
++ * C: Chip specific option
+  */
+ 
+ /* Audio source select */
+@@ -35,6 +36,8 @@ struct clk;
+ #define HDMI_OUTPUT_PUSH_PULL	(1 << 4) /* System control : output mode */
+ #define HDMI_OUTPUT_POLARITY_HI	(1 << 5) /* System control : output polarity */
+ 
++/* Chip specific option */
++#define HDMI_32BIT_REG		(1 << 8)
+ 
+ struct sh_mobile_hdmi_info {
+ 	unsigned int			 flags;
+-- 
+1.7.5.4
 

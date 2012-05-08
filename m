@@ -1,32 +1,69 @@
-From: Archit Taneja <archit@ti.com>
-Date: Mon, 07 May 2012 13:32:26 +0000
-Subject: [PATCH 0/2] OMAPDSS: HDMI: Fix register dump of CORE registers
-Message-Id: <1336396828-29311-1-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 08 May 2012 12:04:44 +0000
+Subject: Re: [PATCH 0/2] OMAPDSS: HDMI: Fix register dump of CORE registers
+Message-Id: <1336478684.5761.30.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-UZsfdHRUzLf4YIDKpogW"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+References: <1336396828-29311-1-git-send-email-archit@ti.com>
+In-Reply-To: <1336396828-29311-1-git-send-email-archit@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+
+
+--=-UZsfdHRUzLf4YIDKpogW
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 2012-05-07 at 18:50 +0530, Archit Taneja wrote:
+> The HDMI CORE registers are dumped incorrectly due to incorrect register =
+offset
+> calculations. They are also dumped in a random order, with some of the re=
+gisters
+> repeated. This series fixes these issues.
+>=20
+> The patches apply over:
+>=20
+> git://gitorious.org/linux-omap-dss2/linux.git dev
+>=20
+> Tested on OMAP4 SDP.
+>=20
+> Archit Taneja (2):
+>   OMAPDSS: HDMI: Fix ti_hdmi_4xxx_core_dump
+>   OMAPDSS: HDMI: define and dump CORE registers in correct order
+>=20
+>  drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |  163 +++++++++++++++--------=
+------
+>  drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h |   57 +++++------
+>  2 files changed, 109 insertions(+), 111 deletions(-)
+
+Thanks, applying these.
+
+ Tomi
+
+
+--=-UZsfdHRUzLf4YIDKpogW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The HDMI CORE registers are dumped incorrectly due to incorrect register offset
-calculations. They are also dumped in a random order, with some of the registers
-repeated. This series fixes these issues.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-The patches apply over:
+iQIbBAABAgAGBQJPqQvcAAoJEPo9qoy8lh71YXwP91pvYWwXquqxnhHZlmFUfy2m
+ij8n7H1vFWaa5gsWol/mhfP7ObK6I/p1gV9dVdqo2wZSRfPahn5fcbLVTJtjoz3n
+zQjvzGxSSP9S0FhAyUCfIx3FAMglVZkUDvJrYsERDwMBH1IcnlwxLPmVoU+wfi7B
+tVUhdgHO2Lh+zL+onEUV0Ghho8R3nJLxPTeX91SzGiX2xblz0L5NiM8f4PBXjcFl
+VVjstTUwNfFHC/8M3/2+/t+MY/Z7Ax+O3PkUi5PVtWwg7ZmHUvoRYOLOAR8Nwu+r
+0oRcc1acJHQmnnLJzC+WksLqHzBukw5BLUHjfw5CQn3U7On7t5t1zsKwchZTwrs5
+E2XJwrDy+KdW0KDWCNuthsYfLbuogvYxEczMzunJcO43mpov55dioskOIRkdRHAK
+GpLelGlaaDuULnuKpGuEWLMNr7CqrKLtUenM+m+UtQzkKDgNYTcJN7VRkP0nYcC/
+9mozw5dEHxYtXcLvg8QVqPtxpxPa97D9dvbto8QF1NvmjwLYIJ0LADsmPLtFzfcM
+oCDe0sbVWJ6Ze5FsSWS2xmTepTPVVq1K5cJUQed0oT6p1ou/oI/uwtDpACd8T33c
+CqP62Q+9UA3R7j990l9be3Ycs68auWhr1O2AnMkZHSR5cdQ3+yfeVrMuOx4CB2xw
+i4txbEtGZgfDxcfIBbU=
+=9wiq
+-----END PGP SIGNATURE-----
 
-git://gitorious.org/linux-omap-dss2/linux.git dev
-
-Tested on OMAP4 SDP.
-
-Archit Taneja (2):
-  OMAPDSS: HDMI: Fix ti_hdmi_4xxx_core_dump
-  OMAPDSS: HDMI: define and dump CORE registers in correct order
-
- drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |  163 +++++++++++++++--------------
- drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h |   57 +++++------
- 2 files changed, 109 insertions(+), 111 deletions(-)
-
--- 
-1.7.5.4
+--=-UZsfdHRUzLf4YIDKpogW--
 

@@ -1,125 +1,94 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 08 May 2012 10:10:13 +0000
-Subject: [PATCH v3 2/5] OMAPDSS: Apply manager timings instead of direct DISPC writes
-Message-Id: <1336471096-21096-3-git-send-email-archit@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 08 May 2012 10:59:34 +0000
+Subject: Re: [PATCH v3 2/5] OMAPDSS: Apply manager timings instead of direct DISPC writes
+Message-Id: <1336474774.1821.11.camel@lappyti>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-zpeLCVdseGYKmsiAlkW8"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1334561027-28569-1-git-send-email-archit@ti.com>
- <1336471096-21096-1-git-send-email-archit@ti.com>
-In-Reply-To: <1336471096-21096-1-git-send-email-archit@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	 <1336471096-21096-1-git-send-email-archit@ti.com>
+	 <1336471096-21096-3-git-send-email-archit@ti.com>
+In-Reply-To: <1336471096-21096-3-git-send-email-archit@ti.com>
+To: Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+
+
+--=-zpeLCVdseGYKmsiAlkW8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 2012-05-08 at 15:28 +0530, Archit Taneja wrote:
+> Replace the function dispc_mgr_set_timings() with dss_mgr_set_timings() i=
+n the
+> interface drivers. The latter function ensures that the timing related DI=
+SPC
+> registers are configured according to the shadow register programming mod=
+el.
+>=20
+> Signed-off-by: Archit Taneja <archit@ti.com>
+> ---
+>  drivers/video/omap2/dss/dpi.c  |    2 +-
+>  drivers/video/omap2/dss/dsi.c  |    5 ++---
+>  drivers/video/omap2/dss/hdmi.c |    2 +-
+>  drivers/video/omap2/dss/rfbi.c |    4 ++--
+>  drivers/video/omap2/dss/sdi.c  |    2 +-
+>  drivers/video/omap2/dss/venc.c |    2 +-
+>  6 files changed, 8 insertions(+), 9 deletions(-)
+>=20
+> diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.=
+c
+> index cec1166..5d84ab0 100644
+> --- a/drivers/video/omap2/dss/dpi.c
+> +++ b/drivers/video/omap2/dss/dpi.c
+> @@ -156,7 +156,7 @@ static int dpi_set_mode(struct omap_dss_device *dssde=
+v)
+>  		t->pixel_clock =3D pck;
+>  	}
+> =20
+> -	dispc_mgr_set_timings(dssdev->manager->id, t);
+> +	dss_mgr_set_timings(dssdev->manager, t);
+> =20
+>  	return 0;
+>  }
+
+I think you can now remove the dispc_mgr_go() from dpi.c in this patch.
+
+And something else, which doesn't need to be fixed now, but just to
+point out: dpi_set_timings() currently uses runtime_get to enable the
+HW. If everything was in proper shape, this wouldn't be needed.
+dpi_set_timings() would call apply.c's functions, and if the output is
+disabled, the settings would just be stored in ram. So there wouldn't be
+any need to enable the HW with runtime_get().
+
+Then again, if we do change clock settings or non-shadow registers in
+dpi_set_timings(), then that's not possible (at least via apply.c's
+caching system).
+
+ Tomi
+
+
+--=-zpeLCVdseGYKmsiAlkW8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Replace the function dispc_mgr_set_timings() with dss_mgr_set_timings() in the
-interface drivers. The latter function ensures that the timing related DISPC
-registers are configured according to the shadow register programming model.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/dpi.c  |    2 +-
- drivers/video/omap2/dss/dsi.c  |    5 ++---
- drivers/video/omap2/dss/hdmi.c |    2 +-
- drivers/video/omap2/dss/rfbi.c |    4 ++--
- drivers/video/omap2/dss/sdi.c  |    2 +-
- drivers/video/omap2/dss/venc.c |    2 +-
- 6 files changed, 8 insertions(+), 9 deletions(-)
+iQIcBAABAgAGBQJPqPyWAAoJEPo9qoy8lh71waMQAJ45qCJa5XzxSeWRG9pEPvbF
+b/r7n4XLaS9zPDvSDatETUJ+s7ax4tXgEhrq232g4OMA3PePnXVc5P0+Zh4AMeSD
+ceQuDatVl7BGXpJuFPSICNh1DLZ6Fz77vY0OWxhlmZMZvmmmm8dY75LhuOGXfzGW
+Nnt1uKslL9+EpX8UDkbeqPwKYg4w5xpSnZyRvo2ap4mF3FH4wFmw6qK2+gifHYbc
+2n+zVw+ScZKdyw8BZuSVUg/xGX8G60I63wGsWvuBho640QUI1n6lISNeffLEvt9j
+nvMlWOoEmHi6mv+r63Rk023PyaTvPskC6ylH8Z0qwmwkHN1xMkzrnQrd8BGnMlnN
+e8ZEn7o+7XCLmcxfdYa2hBeErkv75VR1Fkln0638Y8+AHFcw+hhDTvrgUVv3hTjW
+UQ++1xrdmH0nxF8Ayb52Qp7zfLUaydccJnrLQ2s21XP2EkPv3jiJ5lUgj9DcrM1o
+FJ30gFY7keBU+jw+z/flMbI/Qg8QANUqX8ERWm+x4EVqiK1LkVbm0wNj0KtLtADi
+66rl+rrBzgEMDqnxmFKBqR/PMRphqpRh1V2snOuXq6G70OTHVe7GFfnXrqLUMoLt
+xai1hmTCE16zbFyD1SxveSFJ31QW/b6eujnxoaBG2dGSyzEpyX/VgYl3a7OjtqZa
+mpj+xLcGAT4T+qaevx1U
+=uoN5
+-----END PGP SIGNATURE-----
 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index cec1166..5d84ab0 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -156,7 +156,7 @@ static int dpi_set_mode(struct omap_dss_device *dssdev)
- 		t->pixel_clock = pck;
- 	}
- 
--	dispc_mgr_set_timings(dssdev->manager->id, t);
-+	dss_mgr_set_timings(dssdev->manager, t);
- 
- 	return 0;
- }
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index b6cf03c..db73598 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -4219,13 +4219,12 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
- 		dispc_mgr_enable_stallmode(dssdev->manager->id, true);
- 		dispc_mgr_enable_fifohandcheck(dssdev->manager->id, 1);
- 
--		dispc_mgr_set_timings(dssdev->manager->id, &timings);
-+		dss_mgr_set_timings(dssdev->manager, &timings);
- 	} else {
- 		dispc_mgr_enable_stallmode(dssdev->manager->id, false);
- 		dispc_mgr_enable_fifohandcheck(dssdev->manager->id, 0);
- 
--		dispc_mgr_set_timings(dssdev->manager->id,
--			&dssdev->panel.timings);
-+		dss_mgr_set_timings(dssdev->manager, &dssdev->panel.timings);
- 	}
- 
- 		dispc_mgr_set_lcd_display_type(dssdev->manager->id,
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 56f6e9c..8d4ff8c 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -376,7 +376,7 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
- 	dispc_enable_gamma_table(0);
- 
- 	/* tv size */
--	dispc_mgr_set_timings(dssdev->manager->id, &dssdev->panel.timings);
-+	dss_mgr_set_timings(dssdev->manager, &dssdev->panel.timings);
- 
- 	hdmi.ip_data.ops->video_enable(&hdmi.ip_data, 1);
- 
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index a81ffcb..feadfab 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -320,7 +320,7 @@ static void rfbi_transfer_area(struct omap_dss_device *dssdev, u16 width,
- 
- 	DSSDBG("rfbi_transfer_area %dx%d\n", width, height);
- 
--	dispc_mgr_set_timings(dssdev->manager->id, &timings);
-+	dss_mgr_set_timings(dssdev->manager, &timings);
- 
- 	dispc_mgr_enable(dssdev->manager->id, true);
- 
-@@ -804,7 +804,7 @@ int omap_rfbi_prepare_update(struct omap_dss_device *dssdev,
- 	if (*w = 0 || *h = 0)
- 		return -EINVAL;
- 
--	dispc_mgr_set_timings(dssdev->manager->id, &timings);
-+	dss_mgr_set_timings(dssdev->manager, &timings);
- 
- 	return 0;
- }
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index 741b834..67fbe7c 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -107,7 +107,7 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- 	}
- 
- 
--	dispc_mgr_set_timings(dssdev->manager->id, t);
-+	dss_mgr_set_timings(dssdev->manager, t);
- 
- 	r = dss_set_clock_div(&dss_cinfo);
- 	if (r)
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 30bbb63..e237464 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -444,7 +444,7 @@ static int venc_power_on(struct omap_dss_device *dssdev)
- 	timings = dssdev->panel.timings;
- 	timings.y_res /= 2;
- 
--	dispc_mgr_set_timings(dssdev->manager->id, &timings);
-+	dss_mgr_set_timings(dssdev->manager, &timings);
- 
- 	r = regulator_enable(venc.vdda_dac_reg);
- 	if (r)
--- 
-1.7.5.4
+--=-zpeLCVdseGYKmsiAlkW8--
 

@@ -1,90 +1,100 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Tue, 08 May 2012 07:50:21 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 08 May 2012 08:52:31 +0000
 Subject: Re: [PATCH v2 4/4] OMAPDSS: APPLY: Remove display dependency from overlay and manager checks
-Message-Id: <4FA8CD6D.3010503@ti.com>
+Message-Id: <1336467151.5761.20.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-ANXbO4lKPUk3eWd/bvRL"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334561027-28569-1-git-send-email-archit@ti.com>   <1336028864-13895-1-git-send-email-archit@ti.com>   <1336028864-13895-5-git-send-email-archit@ti.com>  <1336403017.3522.2.camel@lappyti> <4FA8A927.9080705@ti.com> <1336461377.1896.23.camel@lappyti>
-In-Reply-To: <1336461377.1896.23.camel@lappyti>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1334561027-28569-1-git-send-email-archit@ti.com>
+	   <1336028864-13895-1-git-send-email-archit@ti.com>
+	   <1336028864-13895-5-git-send-email-archit@ti.com>
+	  <1336403017.3522.2.camel@lappyti> <4FA8A927.9080705@ti.com>
+	 <1336461377.1896.23.camel@lappyti> <4FA8CD6D.3010503@ti.com>
+In-Reply-To: <4FA8CD6D.3010503@ti.com>
+To: Archit Taneja <a0393947@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Tuesday 08 May 2012 12:46 PM, Tomi Valkeinen wrote:
-> On Tue, 2012-05-08 at 10:33 +0530, Archit Taneja wrote:
->> On Monday 07 May 2012 08:33 PM, Tomi Valkeinen wrote:
->>> On Thu, 2012-05-03 at 12:37 +0530, Archit Taneja wrote:
->>>> In order to check the validity of overlay and manager info, there was a need to
->>>> use the omap_dss_device struct to get the panel resolution. The manager's
->>>> private data in APPLY now contains the manager timings. Hence, we don't need to
->>>> rely on the display resolution any more.
->>>>
->>>> Create a function dss_mgr_get_timings() which returns the timings in manager's
->>>> private data. Remove the need of passing omap_dss_device structs in the
->>>> functions which check for overlay and managers.
->>>>
->>>> Have some initial values for manager timings in apply_init(), these would ensure
->>>> that manager checks don't fail if an interface driver or a panel driver hasn't
->>>> set the manager timings yet.
->>>>
->>>> Signed-off-by: Archit Taneja<archit@ti.com>
->>>
->>>> +struct omap_video_timings *dss_mgr_get_timings(struct omap_overlay_manager *mgr)
->>>> +{
->>>> +	struct mgr_priv_data *mp = get_mgr_priv(mgr);
->>>> +
->>>> +	return&mp->timings;
->>>> +}
->>>
->>> This one returns a pointer into apply.c's internal data structures. The
->>> safest way would be to return a copy, but as it's an omapdss internal
->>> function, I think it's enough to return a pointer to a const struct.
->>
->> Okay I'll fix that, I was a bit concerned about the locking here, I use
->> this function in the later series to remove some dssdev references in
->> dispc.c. I traced the paths and saw that in all cases this function
->> would be protected by the data_lock spinlock, but not the apply_lock
->> mutex in all cases. Any thoughts on this?
->
-> Hmm, you're right, locking here gets a bit confusing. set_timings has
-> locks, so logically get_timings should also. But I guess all the uses of
-> get_timings happens via apply.c, and apply.c already holds the
-> data_lock, as you said?
 
-Yes.
+--=-ANXbO4lKPUk3eWd/bvRL
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
->
-> Making the get_timings function public (inside omapdss) is a bit nasty,
-> as it's quite easy to call it without having the appropriate locks. And
-> actually there's no way to acquire the locks outside apply.c
->
-> I'm not sure if it applies here, but as a general strategy, I suggest
-> doing things in apply.c that require data from apply.c's internal data.
-> When that's not possible, apply.c should call the functions outside
-> apply.c, and pass the internal data as parameters (like calls to dispc).
->
-> In your case, I for example see dss_mgr_check() calling
-> dss_mgr_get_timings(). It would be quite easy to pass the timings to
-> dss_mgr_check() from apply.c, thus removing the need to call the
-> function. And, as you see, dss_mgr_check() already has a bunch of
-> parameters, and the idea is the same with those: give the params, so
-> that dss_mgr_check() doesn't need to ask for them.
+On Tue, 2012-05-08 at 13:08 +0530, Archit Taneja wrote:
+> On Tuesday 08 May 2012 12:46 PM, Tomi Valkeinen wrote:
 
-Right, I can do this for dss_mgr_check() and dss_ovl_check(), but if I 
-you see the misc cleanup patch series I posted, I use 
-dss_mgr_get_timings()  in dispc.c functions to remove some 
-omap_dss_device references. These DISPC functions are called in 
-dispc_ovl_setup(), I could pass manager timings in dispc_ovl_setup() so 
-that it comes directly from apply.c. What do you say?
+> > I'm not sure if it applies here, but as a general strategy, I suggest
+> > doing things in apply.c that require data from apply.c's internal data.
+> > When that's not possible, apply.c should call the functions outside
+> > apply.c, and pass the internal data as parameters (like calls to dispc)=
+.
+> >
+> > In your case, I for example see dss_mgr_check() calling
+> > dss_mgr_get_timings(). It would be quite easy to pass the timings to
+> > dss_mgr_check() from apply.c, thus removing the need to call the
+> > function. And, as you see, dss_mgr_check() already has a bunch of
+> > parameters, and the idea is the same with those: give the params, so
+> > that dss_mgr_check() doesn't need to ask for them.
+>=20
+> Right, I can do this for dss_mgr_check() and dss_ovl_check(), but if I=
+=20
+> you see the misc cleanup patch series I posted, I use=20
+> dss_mgr_get_timings()  in dispc.c functions to remove some=20
+> omap_dss_device references. These DISPC functions are called in=20
+> dispc_ovl_setup(), I could pass manager timings in dispc_ovl_setup() so=
+=20
+> that it comes directly from apply.c. What do you say?
 
-I guess we can get away from exposing private data in apply to DSS, but 
-it might get a bit harder when we try to remove other omap_dss_device 
-references in the future. I'm just guessing though.
+Yes, I guess dispc_ovl_setup should get the timings pointer also. It's
+getting a bit complex, but I don't see any simpler way. Especially dispc
+functions should be quite self contained, dispc.c should not call
+elsewhere, but it should get all the needed data as parameters.
 
-Archit
+> I guess we can get away from exposing private data in apply to DSS, but=
+=20
+> it might get a bit harder when we try to remove other omap_dss_device=20
+> references in the future. I'm just guessing though.
 
->
->   Tomi
->
+We have two cases here: 1) using timings when doing apply.c things, as
+your patches do. In these cases the timings can be passed from apply.c
+as parameters. 2) using timings "outside" apply.c. I guess we currently
+don't have these, but for those we could have a get_timings() function
+that does take the locks. And similarly for other configs.
+
+Of course, that's still not perfect. Even if get_timings() is protected
+properly, there's no guarantee that the timings won't change right after
+get_timings has returned. But hopefully all writes and reads to timings
+would go via the same place, for example dpi.c. And dpi.c's own lock
+will protect the change of timings while another thread is using them.
+
+Btw, there's a typo in "OMAPDSS: DISPC: Remove usage of
+dispc_mgr_get_device()"'s description, dss_mgr_get_device() should be
+get_timings in one place.
+
+ Tomi
+
+
+--=-ANXbO4lKPUk3eWd/bvRL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJPqN7PAAoJEPo9qoy8lh71ijcP/294rAhVk1DyWZtd7fQ6zeBQ
+8CF9L4FthUvD7IZxYDGyX9Ld9Me71B2I5xPu01WtYX0/lAa1IBEq6TgK3q5xAv2u
+S9NP1PYPK5VkgbSHD5Fg0G/PRG82+uAnJR8ORmmChvPRZwqev6LaoWDCNH3vWHjA
+4GJHEbGqY4ZRYgZvAFhV6+jN7t4MUNGwjGBJxDBc5IYvwQ4Da7HVcJHbUDd6reZw
+8KeHoC6LJXAG7iJofwgLLNnhQm9UJ8Pm9Yk/ARBiZbXI24CBlAPUrYEABqKzu7vy
+BXOBdNl4QcjOQz3ox+/GN3lH31Ipuy05WgtsXYweiVfYi0F61kR+a4w/tJB/Fmoc
+FNjvGYqHukfScxBJ1TY5WqruQjrGqkRmEnbzLnuaAJoxSrjbKtTNH3Sn9k/qK15M
+Pk+49pyMIK+XgNqGrD5qvKn1YXY4WDtzh+og4QhM2XF+4Y0x8FLdv0oe3co6LigX
+FXtIzopl/Ic5iRZLcrxaRh6uaPWNZtMrJQhCeuMMlUuirLkmmpKms1L+FICvnuIH
+fmH/vY0/J6gn5aF7Uxp22zT7FvHyi7RZ1R1iYDI1wdNIc9AM1ppeUcOKumOqT+8g
+GNFJsaWT8H0+T7LJg4W2KOhagSOd0FiRtCC2qhsRRwnhhX/PWS0HqWohfdQms+1G
+VzAZgDqrdqK2aKyFiy+u
+=EBRC
+-----END PGP SIGNATURE-----
+
+--=-ANXbO4lKPUk3eWd/bvRL--
 

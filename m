@@ -1,45 +1,125 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 10 May 2012 00:20:39 +0000
-Subject: Re: [PATCH] video: EXYNOS: enable interrupt again after sw reset
-Message-Id: <4FAB09D7.7010404@gmx.de>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 08 May 2012 10:10:13 +0000
+Subject: [PATCH v3 2/5] OMAPDSS: Apply manager timings instead of direct DISPC writes
+Message-Id: <1336471096-21096-3-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4FA3622A.7060401@samsung.com>
-In-Reply-To: <4FA3622A.7060401@samsung.com>
+References: <1334561027-28569-1-git-send-email-archit@ti.com>
+ <1336471096-21096-1-git-send-email-archit@ti.com>
+In-Reply-To: <1336471096-21096-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-On 05/04/2012 04:59 AM, Donghwa Lee wrote:
-> When exynos_mipi_update_cfg() is called, mipi dsi registers were become
-> sw reset. So, It needs to enable interrupt again.
-> 
-> Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
-> Signed-off-by: Inki Dae <inki.dae@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Replace the function dispc_mgr_set_timings() with dss_mgr_set_timings() in the
+interface drivers. The latter function ensures that the timing related DISPC
+registers are configured according to the shadow register programming model.
 
-Applied.
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/dpi.c  |    2 +-
+ drivers/video/omap2/dss/dsi.c  |    5 ++---
+ drivers/video/omap2/dss/hdmi.c |    2 +-
+ drivers/video/omap2/dss/rfbi.c |    4 ++--
+ drivers/video/omap2/dss/sdi.c  |    2 +-
+ drivers/video/omap2/dss/venc.c |    2 +-
+ 6 files changed, 8 insertions(+), 9 deletions(-)
 
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/exynos/exynos_mipi_dsi.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
-> index 557091d..49c7351 100644
-> --- a/drivers/video/exynos/exynos_mipi_dsi.c
-> +++ b/drivers/video/exynos/exynos_mipi_dsi.c
-> @@ -102,6 +102,8 @@ static void exynos_mipi_update_cfg(struct mipi_dsim_device *dsim)
->  	/* set display timing. */
->  	exynos_mipi_dsi_set_display_mode(dsim, dsim->dsim_config);
->  
-> +	exynos_mipi_dsi_init_interrupt(dsim);
-> +
->  	/*
->  	 * data from Display controller(FIMD) is transferred in video mode
->  	 * but in case of command mode, all settigs is updated to registers.
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index cec1166..5d84ab0 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -156,7 +156,7 @@ static int dpi_set_mode(struct omap_dss_device *dssdev)
+ 		t->pixel_clock = pck;
+ 	}
+ 
+-	dispc_mgr_set_timings(dssdev->manager->id, t);
++	dss_mgr_set_timings(dssdev->manager, t);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index b6cf03c..db73598 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -4219,13 +4219,12 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
+ 		dispc_mgr_enable_stallmode(dssdev->manager->id, true);
+ 		dispc_mgr_enable_fifohandcheck(dssdev->manager->id, 1);
+ 
+-		dispc_mgr_set_timings(dssdev->manager->id, &timings);
++		dss_mgr_set_timings(dssdev->manager, &timings);
+ 	} else {
+ 		dispc_mgr_enable_stallmode(dssdev->manager->id, false);
+ 		dispc_mgr_enable_fifohandcheck(dssdev->manager->id, 0);
+ 
+-		dispc_mgr_set_timings(dssdev->manager->id,
+-			&dssdev->panel.timings);
++		dss_mgr_set_timings(dssdev->manager, &dssdev->panel.timings);
+ 	}
+ 
+ 		dispc_mgr_set_lcd_display_type(dssdev->manager->id,
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 56f6e9c..8d4ff8c 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -376,7 +376,7 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
+ 	dispc_enable_gamma_table(0);
+ 
+ 	/* tv size */
+-	dispc_mgr_set_timings(dssdev->manager->id, &dssdev->panel.timings);
++	dss_mgr_set_timings(dssdev->manager, &dssdev->panel.timings);
+ 
+ 	hdmi.ip_data.ops->video_enable(&hdmi.ip_data, 1);
+ 
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index a81ffcb..feadfab 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -320,7 +320,7 @@ static void rfbi_transfer_area(struct omap_dss_device *dssdev, u16 width,
+ 
+ 	DSSDBG("rfbi_transfer_area %dx%d\n", width, height);
+ 
+-	dispc_mgr_set_timings(dssdev->manager->id, &timings);
++	dss_mgr_set_timings(dssdev->manager, &timings);
+ 
+ 	dispc_mgr_enable(dssdev->manager->id, true);
+ 
+@@ -804,7 +804,7 @@ int omap_rfbi_prepare_update(struct omap_dss_device *dssdev,
+ 	if (*w = 0 || *h = 0)
+ 		return -EINVAL;
+ 
+-	dispc_mgr_set_timings(dssdev->manager->id, &timings);
++	dss_mgr_set_timings(dssdev->manager, &timings);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 741b834..67fbe7c 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -107,7 +107,7 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+ 	}
+ 
+ 
+-	dispc_mgr_set_timings(dssdev->manager->id, t);
++	dss_mgr_set_timings(dssdev->manager, t);
+ 
+ 	r = dss_set_clock_div(&dss_cinfo);
+ 	if (r)
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 30bbb63..e237464 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -444,7 +444,7 @@ static int venc_power_on(struct omap_dss_device *dssdev)
+ 	timings = dssdev->panel.timings;
+ 	timings.y_res /= 2;
+ 
+-	dispc_mgr_set_timings(dssdev->manager->id, &timings);
++	dss_mgr_set_timings(dssdev->manager, &timings);
+ 
+ 	r = regulator_enable(venc.vdda_dac_reg);
+ 	if (r)
+-- 
+1.7.5.4
 

@@ -1,105 +1,92 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Tue, 08 May 2012 11:34:20 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 08 May 2012 11:55:39 +0000
 Subject: Re: [PATCH v3 4/5] OMAPDSS: APPLY: Remove display dependency from overlay and manager checks
-Message-Id: <4FA901EC.8020002@ti.com>
+Message-Id: <1336478139.5761.27.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-cyO+YiaZoONE3Oy0ISN3"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334561027-28569-1-git-send-email-archit@ti.com>  <1336471096-21096-1-git-send-email-archit@ti.com>  <1336471096-21096-5-git-send-email-archit@ti.com> <1336474223.1821.6.camel@lappyti>
-In-Reply-To: <1336474223.1821.6.camel@lappyti>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1334561027-28569-1-git-send-email-archit@ti.com>
+	  <1336471096-21096-1-git-send-email-archit@ti.com>
+	  <1336471096-21096-5-git-send-email-archit@ti.com>
+	 <1336474223.1821.6.camel@lappyti> <4FA901EC.8020002@ti.com>
+In-Reply-To: <4FA901EC.8020002@ti.com>
+To: Archit Taneja <a0393947@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Tuesday 08 May 2012 04:20 PM, Tomi Valkeinen wrote:
-> On Tue, 2012-05-08 at 15:28 +0530, Archit Taneja wrote:
->> In order to check the validity of overlay and manager info, there was a need to
->> use the omap_dss_device struct to get the panel resolution. The manager's
->> private data in APPLY now contains the manager timings. Hence, we don't need to
->> rely on the display resolution any more.
->>
->> Pass the manager's timings(in private data) to dss_mgr_check(). Remove the need
->> of passing omap_dss_device structs in the functions which check for overlay and
->> managers.
->>
->> Have some initial values for manager timings in apply_init(), these would ensure
->> that manager checks don't fail if an interface driver or a panel driver hasn't
->> set the manager timings yet.
->
-> In what code patch were the initial values needed?
 
-I guess you meant code path. If a panel driver doesn't have set_timings 
-op, then we get into trouble with omapfb. The following steps happen:
+--=-cyO+YiaZoONE3Oy0ISN3
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-- try to set timings of display
-- create buffers, configure overlays according to omap_dss_device
-- call mgr->apply()
-- enable the panel
+On Tue, 2012-05-08 at 16:52 +0530, Archit Taneja wrote:
+> On Tuesday 08 May 2012 04:20 PM, Tomi Valkeinen wrote:
 
-For panels which don't have set_timings populated, if apply is called, 
-the manager timings are still zero, and the mgr->apply fails when 
-dss_mgr_check() is called.
+> > Checking the validity of all the settings is a bit tricky, but currentl=
+y
+> > I think, as a rule of thumb, we should accept any settings when things
+> > are disabled. So, until the interface driver sets the timings before
+> > enabling the output, all ovl/mgr settings should be allowed. And we
+>=20
+> We have 2 ways to go about this, one is to have an initial set of=20
+> 'always valid' values like I have done, the other option is to ignore=20
+> manager timing related checks if the manager is disabled, i.e all=20
+> configs are okay. To implement the second option, I think our function=
+=20
+> dss_check_settings_low() would get more complicated. We would now have=
+=20
+> to pass mp->enabled outside of apply, and pass it to dss_mgr_check()=20
+> which would further need to pass this to dss_ovl_check(). Hence I used=
+=20
+> the first approach.
 
-When the panel driver's enable is called, the timings are configured in 
-the interface drivers 'enable'. The enables(like 
-dpi_display_enable,dsi_display_enable) of all interface driver's call 
-dss_mgr_set_timings(), so we are sure that the timings are configured by 
-then. But there is no such guarantee at set timings.
+I'm not sure about that. We already do it for overlay. In ovl.c we have
+dss_ovl_simple_check() and dss_ovl_check(). The simple check sees if the
+settings pass basic sanity check. The check sees if all the ovl & mgr
+settings are compatible with each other.
 
-Things used to work previously because we used to simply get the 
-connected panel and use its dimensions, if there was no panel connected, 
-we used to skip the check.
+Simple check is done when setting the config, called from
+dss_ovl_set_info(). The proper check is done later when the actual
+config is about to be taken into use.
 
->
-> Checking the validity of all the settings is a bit tricky, but currently
-> I think, as a rule of thumb, we should accept any settings when things
-> are disabled. So, until the interface driver sets the timings before
-> enabling the output, all ovl/mgr settings should be allowed. And we
+If mp->enabled =3D=3D false, can't we just skip dss_check_settings_low()
+totally for that manager? We skip the check for ovls the same way.
 
-We have 2 ways to go about this, one is to have an initial set of 
-'always valid' values like I have done, the other option is to ignore 
-manager timing related checks if the manager is disabled, i.e all 
-configs are okay. To implement the second option, I think our function 
-dss_check_settings_low() would get more complicated. We would now have 
-to pass mp->enabled outside of apply, and pass it to dss_mgr_check() 
-which would further need to pass this to dss_ovl_check(). Hence I used 
-the first approach.
+> > shouldn't even write any shadow registers until the moment the output i=
+s
+> > enabled.
+>=20
+> That's being done correctly even now I guess, with the checks for=20
+> mp->enabled in wrtie_regs() and set_go_bits().
 
-> shouldn't even write any shadow registers until the moment the output is
-> enabled.
+Yes, for timings. I was thinking more about the other settings done in
+dpi.c currently, like dispc_mgr_set_pol_freq(). That writes directly to
+registers, so we need runtime_get for that.=20
 
-That's being done correctly even now I guess, with the checks for 
-mp->enabled in wrtie_regs() and set_go_bits().
+ Tomi
 
->
-> Except settings that do not depend on anything, like, if max ovl width
-> is 2048, it's fine to reject 2049+ width anytime.
->
->> -int dss_ovl_check(struct omap_overlay *ovl,
->> -		struct omap_overlay_info *info, struct omap_dss_device *dssdev)
->> +int dss_ovl_check(struct omap_overlay *ovl, struct omap_overlay_info *info,
->> +		const struct omap_video_timings *mgr_timings)
->>   {
->>   	u16 outw, outh;
->> -	u16 dw, dh;
->> +	u16 mgr_width, mgr_height;
->>
->> -	if (dssdev = NULL)
->> -		return 0;
->> -
->> -	dssdev->driver->get_resolution(dssdev,&dw,&dh);
->> +	mgr_width = mgr_timings->x_res;
->> +	mgr_height = mgr_timings->y_res;
->
-> I think you could've just used the existing dw and dh variables, thus
-> avoiding the need to change the rest of the function. The 'd' refers to
-> display, which is more or less the same as mgr width.
 
-I'll fix this.
+--=-cyO+YiaZoONE3Oy0ISN3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
-Archit
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
->
->   Tomi
->
+iQIcBAABAgAGBQJPqQm7AAoJEPo9qoy8lh71N58QAKtw70MuJJVwKUFJvbHN5eLf
+Kdk/RijW/154ibZTyuVsKgle4aHyELi08qwHSz2LyOQ7PeyiKWrlMfwvlzb116p1
+YD6cqJCY3LwIpcJrJzp1vfiPQCw6emiijYKQ8JNPYNeFQCmKX97GRXkqouFOuVD8
+7jSYsVuo7dgvTOdckh+Kc3yAK6oDEHlzQjEG7bauQQqW42aRJIMRSwQLDkpggAOf
+58PUZeYlRlrFUacW8UOi6nntqznlftmF9ZqkSjDdKzsy09Wa/1wJ9SrT66WsNXPS
+CNqjWgG/TqQ3w3I8Y3Hr0zZfkF3CaSgZPQwXjGQ1IqXrr8sIv1DNQoomdIxxOrQ1
+S/4yt0hdEe0LUO2mn48e9VciABjNjkymqFbNEuTYSNf1cmGHLKU+4o22zqAGMwNO
+E4tdFNO8bLx7VM52F1Ck+b9YsV4pSyrMvHeqWN6PJMpWYdrxYe/BfFrfh69M9k6g
+O751wfsKXKylGNt8zRuz/tkomrq3UYwxAMfrhDoIYE/zIrSMJbvZFOIEeKGGmu38
+Bym1ZBLbT7tTBwRN8ruM5EqauQ4nVYdoYx3I0o/N0GvDzUwKknbwadYdSgwyNAkQ
+8zdyUnN9lbK8W7uWD+QK3dnc3aHXxy1MFYUeyIh6/jQOFi7yLoJCbffxWOkDxbgn
+gTGvMZ5eRZvgDTIG8wHs
+=P+1j
+-----END PGP SIGNATURE-----
+
+--=-cyO+YiaZoONE3Oy0ISN3--
 

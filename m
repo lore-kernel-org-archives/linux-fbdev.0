@@ -1,43 +1,90 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Mon, 07 May 2012 17:46:58 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 08 May 2012 08:44:28 +0000
 Subject: Re: [PATCH 00/25] OMAPDSS: DT preparation patches v2
-Message-Id: <20120507174657.GF5088@atomide.com>
+Message-Id: <1336466668.5761.12.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-5jQRUGVlH4AYBdmVudcJ"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+	 <20120507174657.GF5088@atomide.com>
+In-Reply-To: <20120507174657.GF5088@atomide.com>
+To: Tony Lindgren <tony@atomide.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, archit@ti.com
 
-Hi,
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [120503 07:01]:
+--=-5jQRUGVlH4AYBdmVudcJ
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 2012-05-07 at 10:46 -0700, Tony Lindgren wrote:
 > Hi,
-> 
-> I started cleaning up and restructuring omapdss for device tree, and here's the
-> first set of patches from that ordeal. There's nothing DT specific in these
-> patches, but they are mostly generic cleanups that make sense even without DT.
-> 
-> This is the second version of these patches, the previous version can be found
-> from: http://www.spinics.net/lists/linux-fbdev/msg05667.html
-> 
-> The first 21 patches, which were in the previous version, have only gotten
-> minor cleanups (and, of course, more testing). The last 4 patches are new. The
-> most important of those patches is the DSI pin config patch, which makes it
-> possible for the panel driver to configure the DSI pins it needs.
-> 
-> This series can also be found from:
-> git://gitorious.org/linux-omap-dss2/linux.git work/devtree-base
+>=20
+> * Tomi Valkeinen <tomi.valkeinen@ti.com> [120503 07:01]:
+> > Hi,
+> >=20
+> > I started cleaning up and restructuring omapdss for device tree, and he=
+re's the
+> > first set of patches from that ordeal. There's nothing DT specific in t=
+hese
+> > patches, but they are mostly generic cleanups that make sense even with=
+out DT.
+> >=20
+> > This is the second version of these patches, the previous version can b=
+e found
+> > from: http://www.spinics.net/lists/linux-fbdev/msg05667.html
+> >=20
+> > The first 21 patches, which were in the previous version, have only got=
+ten
+> > minor cleanups (and, of course, more testing). The last 4 patches are n=
+ew. The
+> > most important of those patches is the DSI pin config patch, which make=
+s it
+> > possible for the panel driver to configure the DSI pins it needs.
+> >=20
+> > This series can also be found from:
+> > git://gitorious.org/linux-omap-dss2/linux.git work/devtree-base
+>=20
+> Nice clean up. Can you please put the first 12 arch/arm/*omap*/* touching
+> patches (and the drivers/video dependencies needed) into a separate branc=
+h
+> and send me a pull request. That is assuming those patches are now immuta=
+ble.
+>=20
+> Then I can pull it into cleanup-dss branch that we both can merge as
+> needed.
 
-Nice clean up. Can you please put the first 12 arch/arm/*omap*/* touching
-patches (and the drivers/video dependencies needed) into a separate branch
-and send me a pull request. That is assuming those patches are now immutable.
+Ok, I'll see how it goes. Do I have your ack for the board file changes?
 
-Then I can pull it into cleanup-dss branch that we both can merge as
-needed.
+Do you want to have patches that touch only
+arch/arm/mach-omap2/display.c, but not the board files? That's a dss
+specific file, and I don't expect anyone else to make changes to it, so
+chances for conflicts should be quite minimal.
 
-Regards,
+ Tomi
 
-Tony
+
+--=-5jQRUGVlH4AYBdmVudcJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJPqNzsAAoJEPo9qoy8lh71GlEQAJXe64e1bqXIepfvO2uQ+krM
+sErmflZmlzqtkXpyqt4gXfbpLylHFGAeex3SpTdiWGGTPCqoNZUbg6rdNaJwl6bb
+QC1DbiQD0LGTLfWZYyG3C5qcVBiw9dW4zKThmjAuhOh4TKAFkY6MvFQRzlAVUa2m
+uLhSRsOUedREeW2NoXJKKI+gkA1DJgsD9G0q5yZd50GsZj2zrTNpVwsQNBowK2+6
+ZpA4/8nJ6fOR7cHh02KXK2YlfU7xMiQyUv0/yo7z8cyOznLmOhiluou4X2WyTRyU
+OWrfps7WtVhrfKuP2+Im+NQT/q/DZxn5Vqs5m4UEchUxhi4/Znf3fCWi6OE/dKSZ
+s20ZhoK6xBXHF5bhe6j7FB2FuxTqi5s/l6WZ5e6ve6ZCNjQKtM1KkF+uJa5RCQbA
+KUqZV468EhTufe0Q9mvjz3yhi9B4LTD1ZPQk8RKBCqYOKAGkXvnlE86nJDG0TQia
+K3L3LsxG7VeTsif4JxvvZMnX/YPL8PsLFxAKpiwKveIl0mAlCIJqVs90EPFG7MNh
+yaPaUpnB7yGs2T/jDtzLG1GsAL1H/4pZTEkb34l+uma7VkE2lskJy7Hy3g09w6sx
+K64E9XeW0ZFhU1CEOAJrLcHNIfNj1bsuAF7ql49L3iO/Feg86Mi/Zs2v9zh56my2
+YIW5L/CtWWV0PiIfV+Mi
+=MrD7
+-----END PGP SIGNATURE-----
+
+--=-5jQRUGVlH4AYBdmVudcJ--
+

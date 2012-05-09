@@ -1,55 +1,90 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 13 May 2012 20:50:50 +0000
-Subject: Re: [PATCH] drivers/video/intelfb/intelfbdrv.c: add missing agp_backend_release
-Message-Id: <4FB01EAA.8040504@gmx.de>
+From: Donghwa Lee <dh09.lee@samsung.com>
+Date: Wed, 09 May 2012 05:33:28 +0000
+Subject: [PATCH 3/5] video: exynos mipi dsi: Avoid races in probe()
+Message-Id: <4FAA01A8.4010704@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334854553-30067-1-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1334854553-30067-1-git-send-email-Julia.Lawall@lip6.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: Maik Broemme <mbroemme@plusserver.de>, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On 04/19/2012 04:55 PM, Julia Lawall wrote:
-> From: Julia Lawall <Julia.Lawall@lip6.fr>
-> 
-> Release bridge, as done on all other paths out of the function.
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
 
-Looks good to me, applied.
+Make sure all resources are initialized before interrupt handler is
+registered. Pass full platform device name to request_irq() so it
+can be distinguished which device has requested an interrupt in cases
+there are multiple instances in the system.
 
+Also enable voltage regulators regardless of they have been enabled
+by bootloader or not, to make sure other drivers using same regulators
+don't disable them unexpectedly.
 
-Thanks,
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
+Signed-off-by: Inki Dae <inki.dae@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ drivers/video/exynos/exynos_mipi_dsi.c |   26 ++++++++++++++------------
+ 1 files changed, 14 insertions(+), 12 deletions(-)
 
-Florian Tobias Schandinat
-
-> 
-> ---
->  drivers/video/intelfb/intelfbdrv.c |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
-> index 02fd226..bdcbfba 100644
-> --- a/drivers/video/intelfb/intelfbdrv.c
-> +++ b/drivers/video/intelfb/intelfbdrv.c
-> @@ -680,6 +680,7 @@ static int __devinit intelfb_pci_register(struct pci_dev *pdev,
->  		 + dinfo->fb.size);
->  	if (!dinfo->aperture.virtual) {
->  		ERR_MSG("Cannot remap FB region.\n");
-> +		agp_backend_release(bridge);
->  		cleanup(dinfo);
->  		return -ENODEV;
->  	}
-> @@ -689,6 +690,7 @@ static int __devinit intelfb_pci_register(struct pci_dev *pdev,
->  					      INTEL_REG_SIZE);
->  	if (!dinfo->mmio_base) {
->  		ERR_MSG("Cannot remap MMIO region.\n");
-> +		agp_backend_release(bridge);
->  		cleanup(dinfo);
->  		return -ENODEV;
->  	}
-> 
-> 
-
+diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
+index e004f1d..3fcdbf9 100644
+--- a/drivers/video/exynos/exynos_mipi_dsi.c
++++ b/drivers/video/exynos/exynos_mipi_dsi.c
+@@ -415,27 +415,30 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 		goto err_platform_get_irq;
+ 	}
+ 
++	init_completion(&dsim_wr_comp);
++	init_completion(&dsim_rd_comp);
++	platform_set_drvdata(pdev, dsim);
++
+ 	ret = request_irq(dsim->irq, exynos_mipi_dsi_interrupt_handler,
+-			IRQF_SHARED, pdev->name, dsim);
++			IRQF_SHARED, dev_name(&pdev->dev), dsim);
+ 	if (ret != 0) {
+ 		dev_err(&pdev->dev, "failed to request dsim irq\n");
+ 		ret = -EINVAL;
+ 		goto err_bind;
+ 	}
+ 
+-	init_completion(&dsim_wr_comp);
+-	init_completion(&dsim_rd_comp);
+-
+-	/* enable interrupt */
++	/* enable interrupts */
+ 	exynos_mipi_dsi_init_interrupt(dsim);
+ 
+ 	/* initialize mipi-dsi client(lcd panel). */
+ 	if (dsim_ddi->dsim_lcd_drv && dsim_ddi->dsim_lcd_drv->probe)
+ 		dsim_ddi->dsim_lcd_drv->probe(dsim_ddi->dsim_lcd_dev);
+ 
+-	/* in case that mipi got enabled at bootloader. */
+-	if (dsim_pd->enabled)
+-		goto out;
++	/* in case mipi-dsi has been enabled by bootloader */
++	if (dsim_pd->enabled) {
++		exynos_mipi_regulator_enable(dsim);
++		goto done;
++	}
+ 
+ 	/* lcd panel power on. */
+ 	if (dsim_ddi->dsim_lcd_drv && dsim_ddi->dsim_lcd_drv->power_on)
+@@ -455,12 +458,11 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
+ 
+ 	dsim->suspended = false;
+ 
+-out:
++done:
+ 	platform_set_drvdata(pdev, dsim);
+ 
+-	dev_dbg(&pdev->dev, "mipi-dsi driver(%s mode) has been probed.\n",
+-		(dsim_config->e_interface = DSIM_COMMAND) ?
+-			"CPU" : "RGB");
++	dev_dbg(&pdev->dev, "%s() completed sucessfuly (%s mode)\n", __func__,
++		dsim_config->e_interface = DSIM_COMMAND ? "CPU" : "RGB");
+ 
+ 	return 0;
+ 
+-- 
+1.7.4.1

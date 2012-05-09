@@ -1,89 +1,64 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 09 May 2012 11:13:11 +0000
+From: Archit Taneja <a0393947@ti.com>
+Date: Wed, 09 May 2012 11:36:26 +0000
 Subject: Re: [PATCH v4 0/9] OMAPDSS: APPLY: Treat overlay manager timings as shadow registers
-Message-Id: <1336561991.3962.31.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-mXDq4nSVgR4lnzuL575o"
+Message-Id: <4FAA53EA.7040400@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334561027-28569-1-git-send-email-archit@ti.com>
-	 <1336558256-26140-1-git-send-email-archit@ti.com>
-In-Reply-To: <1336558256-26140-1-git-send-email-archit@ti.com>
-To: Archit Taneja <archit@ti.com>
+References: <1334561027-28569-1-git-send-email-archit@ti.com>  <1336558256-26140-1-git-send-email-archit@ti.com> <1336561991.3962.31.camel@deskari>
+In-Reply-To: <1336561991.3962.31.camel@deskari>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
+On Wednesday 09 May 2012 04:43 PM, Tomi Valkeinen wrote:
+> On Wed, 2012-05-09 at 15:40 +0530, Archit Taneja wrote:
+>> An overlay manager's timings (the manager size, and blanking parameters if an
+>> LCD manager) are DISPC shadow registers, and they should hence follow the
+>> correct programming model.
+>>
+>> This set makes the timings an extra_info parameter in manager's private data .
+>> The interface drivers now apply the timings in instead of directly writing to
+>> registers.
+>>
+>> This change also prevents the need to use display resolution for overlay
+>> checks, hence making some of the APPLY functions less dependent on the display.
+>> Some DISPC functions that needed display width can also use these privately
+>> stored timings.
+>>
+>> Changes since v3:
+>>
+>> - Remove direct setting of go bit in dpi_set_timings()
+>> - Take some of the patches in "OMAPDSS: Misc fixes and cleanups" and make them a
+>>    part of this series as they are more related.
+>> - Don't have an initial set of manager timings in private data, only check
+>>    manager and overlay parameters once the manager is enabled.
+>>
+>> These patches apply over:
+>>
+>> git://gitorious.org/linux-omap-dss2/linux.git dev
+>>
+>> Reference tree containing this series:
+>>
+>> git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git mgr_timing_and_fixes_2
+>>
+>> Tested on OMAP4 SDP and Panda.
+>
+> I did some quick tests on omap3 overo, worked fine. I'll merge to dss
+> master branch.
 
---=-mXDq4nSVgR4lnzuL575o
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Russ did some tests on more omap3 boards, the tree which he used has 
+some slight changes comapred to what I have posted, but it's more or 
+less the same.
 
-On Wed, 2012-05-09 at 15:40 +0530, Archit Taneja wrote:
-> An overlay manager's timings (the manager size, and blanking parameters i=
-f an
-> LCD manager) are DISPC shadow registers, and they should hence follow the
-> correct programming model.
->=20
-> This set makes the timings an extra_info parameter in manager's private d=
-ata .
-> The interface drivers now apply the timings in instead of directly writin=
-g to
-> registers.
->=20
-> This change also prevents the need to use display resolution for overlay
-> checks, hence making some of the APPLY functions less dependent on the di=
-splay.
-> Some DISPC functions that needed display width can also use these private=
-ly
-> stored timings.
->=20
-> Changes since v3:
->=20
-> - Remove direct setting of go bit in dpi_set_timings()
-> - Take some of the patches in "OMAPDSS: Misc fixes and cleanups" and make=
- them a
->   part of this series as they are more related.
-> - Don't have an initial set of manager timings in private data, only chec=
-k
->   manager and overlay parameters once the manager is enabled.
->=20
-> These patches apply over:
->=20
-> git://gitorious.org/linux-omap-dss2/linux.git dev
->=20
-> Reference tree containing this series:
->=20
-> git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git mgr_tim=
-ing_and_fixes_2
->=20
-> Tested on OMAP4 SDP and Panda.
+Could you add 'Tested-by: Russ.Dill@ti.com' if not too difficult, I 
+missed out doing that.
 
-I did some quick tests on omap3 overo, worked fine. I'll merge to dss
-master branch.
-
- Tomi
+Thanks,
+Archit
 
 
---=-mXDq4nSVgR4lnzuL575o
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJPqlFHAAoJEPo9qoy8lh71cQYQAKsQ3cpIaFJH46oUoWzur7tM
-yd0sMLZIDYGtm/vwhCe8ZGq1yX+eHsSnXaqyXdEkMWpSykuJHZ2fB0fscIJA8N6m
-/bZwAtXAvm5pkvuXVZAsPWoiUz/wcXGRd3C2qMvvZP0u7W2tAxQ1uUrr92dlTWnp
-j/IGia2HNyrLGtAl9/Y3dw2dG46FyefMKF73dgH64i8F5kxiTQjMULUrv8sY29B0
-3SUc+IdvJ1pEu62459YcUGN0L2tHNzDp3xamPYkJRcECodAvNH3AuPmCQH/NhxLY
-fexlwSdJTpzVyU0i2N+yaOrFC07L0DqxQE3X0zRsmP7gMFhTjCWn2S8URPJHc0M+
-UUiaNE8ApYvUa6BFTrm7bAUOKsa9T/8TKiSCHiEoL0Urbs4RVLMT08HeL7eWRUoT
-Acf/7YFkCbf2TBih7R3W3Dv2BVurdSGHcgyn+8AK1Y9psl67N13eFE1B5Rbdol+q
-353evqBoDDohw/ShJDBKlz0E9Ils5J3GpdGcZVntzOSTtzmMg0R+6AXDZimmAr1E
-p00gcVPsxiEqF5XJBAkKpMBriA9k+XhoZiS2Pw6BOW8PsYH998HgN36v7p5ADpJN
-otHRV6paFk/6vLD8+lMY0LCfSwPhvt3+7IiPjUdnRwofzpoNjhzhDmbsmfYlabiV
-1oGve5Q7cnmXcbRKjKc5
-=XlCU
------END PGP SIGNATURE-----
-
---=-mXDq4nSVgR4lnzuL575o--
+>
+>   Tomi
+>
 

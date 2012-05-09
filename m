@@ -1,39 +1,39 @@
-From: mathieu.poirier@linaro.org
-Date: Tue, 15 May 2012 21:03:01 +0000
-Subject: [PATCH 5/5] drivers/tosa: driver needs I2C and SPI to compile
-Message-Id: <1337115781-27979-6-git-send-email-mathieu.poirier@linaro.org>
+From: Donghwa Lee <dh09.lee@samsung.com>
+Date: Wed, 09 May 2012 05:33:21 +0000
+Subject: [PATCH 1/5] video: exynos mipi dsi: enable interrupt again after sw reset
+Message-Id: <4FAA01A1.8090707@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1337115781-27979-1-git-send-email-mathieu.poirier@linaro.org>
-In-Reply-To: <1337115781-27979-1-git-send-email-mathieu.poirier@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, mathieu.poirier@linaro.org
+To: linux-arm-kernel@lists.infradead.org
 
-From: Arnd Bergmann <arnd@arndb.de>
+I resend this patch by including this series.
+You can refer the original patch by below url.
+http://marc.info/?l=linux-fbdev&m3610770329570&w=2
 
-This driver requires both SPI and I2C to build.
+When exynos_mipi_update_cfg() is called, mipi dsi registers were become
+sw reset. So, It needs to enable interrupt again.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Mathieu Poirier <mathieu.poirier@linaro.org>
+Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
+Signed-off-by: Inki Dae <inki.dae@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/video/backlight/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/video/exynos/exynos_mipi_dsi.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index af16884..d7487d2 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -88,7 +88,7 @@ config LCD_PLATFORM
+diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
+index 557091d..49c7351 100644
+--- a/drivers/video/exynos/exynos_mipi_dsi.c
++++ b/drivers/video/exynos/exynos_mipi_dsi.c
+@@ -102,6 +102,8 @@ static void exynos_mipi_update_cfg(struct mipi_dsim_device *dsim)
+ 	/* set display timing. */
+ 	exynos_mipi_dsi_set_display_mode(dsim, dsim->dsim_config);
  
- config LCD_TOSA
- 	tristate "Sharp SL-6000 LCD Driver"
--	depends on SPI && MACH_TOSA
-+	depends on I2C && SPI && MACH_TOSA
- 	help
- 	  If you have an Sharp SL-6000 Zaurus say Y to enable a driver
- 	  for its LCD.
++	exynos_mipi_dsi_init_interrupt(dsim);
++
+ 	/*
+ 	 * data from Display controller(FIMD) is transferred in video mode
+ 	 * but in case of command mode, all settigs is updated to registers.
 -- 
-1.7.5.4
-
+1.7.4.1

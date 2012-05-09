@@ -1,166 +1,74 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Tue, 22 May 2012 10:05:08 +0000
-Subject: [PATCH 2/2] backlight: lm3533: replace als attribute with als_channel and als_en
-Message-Id: <1337681108-13838-2-git-send-email-jhovold@gmail.com>
+From: Donghwa Lee <dh09.lee@samsung.com>
+Date: Wed, 09 May 2012 05:33:29 +0000
+Subject: [PATCH 4/5] video: exynos mipi dsi: Properly interpret the interrupt source flags
+Message-Id: <4FAA01A9.4070908@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1337681108-13838-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1337681108-13838-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Purdie <rpurdie@rpsys.net>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Rob Landley <rob@landley.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, Jonathan Cameron <jic23@kernel.org>, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+To: linux-arm-kernel@lists.infradead.org
 
-Replace the als attribute with two separate attributes for selecting ALS
-channel and enabling ALS-current-control mode.
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
 
-This change is needed to reflect changes made to the ALS sub-driver
-which now uses 0-indexed current output channels (rather than 1-indexed
-ALS-mapper target sets).
+Rework the interrupt handler so the RX_DONE, FIFO_EMPTY interrupts are
+properly detected. This prevents missing the interrupts when there are
+other bits set in the INTSRC register than just RX_DONE and FIFO_EMPTY.
 
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
+Signed-off-by: Inki Dae <inki.dae@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- .../testing/sysfs-class-backlight-driver-lm3533    |   19 +++++---
- drivers/video/backlight/lm3533_bl.c                |   48 ++++++++++----------
- 2 files changed, 37 insertions(+), 30 deletions(-)
+ drivers/video/exynos/exynos_mipi_dsi_common.c |   28 +++++++++----------------
+ 1 files changed, 10 insertions(+), 18 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-backlight-driver-lm3533 b/Documentation/ABI/testing/sysfs-class-backlight-driver-lm3533
-index ea91f71..77cf7ac 100644
---- a/Documentation/ABI/testing/sysfs-class-backlight-driver-lm3533
-+++ b/Documentation/ABI/testing/sysfs-class-backlight-driver-lm3533
-@@ -1,13 +1,20 @@
--What:		/sys/class/backlight/<backlight>/als
--Date:		April 2012
-+What:		/sys/class/backlight/<backlight>/als_channel
-+Date:		May 2012
- KernelVersion:	3.5
- Contact:	Johan Hovold <jhovold@gmail.com>
- Description:
--		Set the ALS-control mode (0..2), where
-+		Get the ALS output channel used as input in
-+		ALS-current-control mode (0, 1), where
-+
-+		0 - out_current0 (backlight 0)
-+		1 - out_current1 (backlight 1)
+diff --git a/drivers/video/exynos/exynos_mipi_dsi_common.c b/drivers/video/exynos/exynos_mipi_dsi_common.c
+index 14909c1..b78d448 100644
+--- a/drivers/video/exynos/exynos_mipi_dsi_common.c
++++ b/drivers/video/exynos/exynos_mipi_dsi_common.c
+@@ -76,33 +76,25 @@ static unsigned int dpll_table[15] = {
  
--		0 - disabled
--		1 - ALS-mapper 1 (backlight 0)
--		2 - ALS-mapper 2 (backlight 1)
-+What:		/sys/class/backlight/<backlight>/als_en
-+Date:		May 2012
-+KernelVersion:	3.5
-+Contact:	Johan Hovold <jhovold@gmail.com>
-+Description:
-+		Enable ALS-current-control mode (0, 1).
- 
- What:		/sys/class/backlight/<backlight>/id
- Date:		April 2012
-diff --git a/drivers/video/backlight/lm3533_bl.c b/drivers/video/backlight/lm3533_bl.c
-index d916ffe..18dca0c 100644
---- a/drivers/video/backlight/lm3533_bl.c
-+++ b/drivers/video/backlight/lm3533_bl.c
-@@ -79,55 +79,52 @@ static ssize_t show_id(struct device *dev,
- 	return scnprintf(buf, PAGE_SIZE, "%d\n", bl->id);
- }
- 
--/*
-- * ALS-control setting:
-- *
-- *   0 - ALS disabled
-- *   1 - ALS-mapper 1 (backlight 0)
-- *   2 - ALS-mapper 2 (backlight 1)
-- */
--static ssize_t show_als(struct device *dev,
-+static ssize_t show_als_channel(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct lm3533_bl *bl = dev_get_drvdata(dev);
-+	unsigned channel = lm3533_bl_get_ctrlbank_id(bl);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%u\n", channel);
-+}
-+
-+static ssize_t show_als_en(struct device *dev,
- 				struct device_attribute *attr, char *buf)
+ irqreturn_t exynos_mipi_dsi_interrupt_handler(int irq, void *dev_id)
  {
- 	struct lm3533_bl *bl = dev_get_drvdata(dev);
- 	int ctrlbank = lm3533_bl_get_ctrlbank_id(bl);
- 	u8 val;
- 	u8 mask;
--	int als;
-+	bool enable;
- 	int ret;
- 
- 	ret = lm3533_read(bl->lm3533, LM3533_REG_CTRLBANK_AB_BCONF, &val);
- 	if (ret)
- 		return ret;
- 
--	mask = 2 * ctrlbank;
--	als = val & mask;
--	if (als)
--		als = ctrlbank + 1;
-+	mask = 1 << (2 * ctrlbank);
-+	enable = val & mask;
- 
--	return scnprintf(buf, PAGE_SIZE, "%d\n", als);
-+	return scnprintf(buf, PAGE_SIZE, "%d\n", enable);
- }
- 
--static ssize_t store_als(struct device *dev,
-+static ssize_t store_als_en(struct device *dev,
- 					struct device_attribute *attr,
- 					const char *buf, size_t len)
- {
- 	struct lm3533_bl *bl = dev_get_drvdata(dev);
- 	int ctrlbank = lm3533_bl_get_ctrlbank_id(bl);
--	int als;
-+	int enable;
- 	u8 val;
- 	u8 mask;
- 	int ret;
- 
--	if (kstrtoint(buf, 0, &als))
--		return -EINVAL;
+-	unsigned int intsrc = 0;
+-	unsigned int intmsk = 0;
+-	struct mipi_dsim_device *dsim = NULL;
 -
--	if (als != 0 && (als != ctrlbank + 1))
-+	if (kstrtoint(buf, 0, &enable))
- 		return -EINVAL;
- 
- 	mask = 1 << (2 * ctrlbank);
- 
--	if (als)
-+	if (enable)
- 		val = mask;
- 	else
- 		val = 0;
-@@ -224,13 +221,15 @@ static ssize_t store_pwm(struct device *dev,
- 	return len;
- }
- 
--static LM3533_ATTR_RW(als);
-+static LM3533_ATTR_RO(als_channel);
-+static LM3533_ATTR_RW(als_en);
- static LM3533_ATTR_RO(id);
- static LM3533_ATTR_RW(linear);
- static LM3533_ATTR_RW(pwm);
- 
- static struct attribute *lm3533_bl_attributes[] = {
--	&dev_attr_als.attr,
-+	&dev_attr_als_channel.attr,
-+	&dev_attr_als_en.attr,
- 	&dev_attr_id.attr,
- 	&dev_attr_linear.attr,
- 	&dev_attr_pwm.attr,
-@@ -244,7 +243,8 @@ static umode_t lm3533_bl_attr_is_visible(struct kobject *kobj,
- 	struct lm3533_bl *bl = dev_get_drvdata(dev);
- 	umode_t mode = attr->mode;
- 
--	if (attr = &dev_attr_als.attr) {
-+	if (attr = &dev_attr_als_channel.attr ||
-+					attr = &dev_attr_als_en.attr) {
- 		if (!bl->lm3533->have_als)
- 			mode = 0;
+-	dsim = dev_id;
+-	if (!dsim) {
+-		dev_dbg(dsim->dev, KERN_ERR "%s:error: wrong parameter\n",
+-							__func__);
+-		return IRQ_HANDLED;
++	struct mipi_dsim_device *dsim = dev_id;
++	unsigned int intsrc, intmsk;
++
++	if (dsim = NULL) {
++		dev_err(dsim->dev, "%s: wrong parameter\n", __func__);
++		return IRQ_NONE;
  	}
+ 
+ 	intsrc = exynos_mipi_dsi_read_interrupt(dsim);
+ 	intmsk = exynos_mipi_dsi_read_interrupt_mask(dsim);
++	intmsk = ~intmsk & intsrc;
+ 
+-	intmsk = ~(intmsk) & intsrc;
+-
+-	switch (intmsk) {
+-	case INTMSK_RX_DONE:
++	if (intsrc & INTMSK_RX_DONE) {
+ 		complete(&dsim_rd_comp);
+ 		dev_dbg(dsim->dev, "MIPI INTMSK_RX_DONE\n");
+-		break;
+-	case INTMSK_FIFO_EMPTY:
++	}
++	if (intsrc & INTMSK_FIFO_EMPTY) {
+ 		complete(&dsim_wr_comp);
+ 		dev_dbg(dsim->dev, "MIPI INTMSK_FIFO_EMPTY\n");
+-		break;
+-	default:
+-		break;
+ 	}
+ 
+ 	exynos_mipi_dsi_clear_interrupt(dsim, intmsk);
 -- 
-1.7.8.5
-
+1.7.4.1

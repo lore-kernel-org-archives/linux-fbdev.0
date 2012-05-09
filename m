@@ -1,191 +1,226 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 03 May 2012 13:57:41 +0000
-Subject: [PATCH 05/25] OMAPDSS: TFP410: pdata rewrite
-Message-Id: <1336053481-25433-6-git-send-email-tomi.valkeinen@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 09 May 2012 10:22:48 +0000
+Subject: [PATCH v4 1/9] OMAPDSS: APPLY: Add manager timings as extra_info in private data
+Message-Id: <1336558256-26140-2-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1334561027-28569-1-git-send-email-archit@ti.com>
+ <1336558256-26140-1-git-send-email-archit@ti.com>
+In-Reply-To: <1336558256-26140-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-To ease device tree adaptation in the future, rewrite TFP410 platform
-data handling to be done inside probe(), so that probe() is the only
-place where we need to handle the DT/pdata choice.
+DISPC manager size and DISPC manager blanking parameters(for LCD managers)
+follow the shadow register programming model. Currently, they are programmed
+directly by the interface drivers.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To configure manager timings using APPLY, there is a need to introduce extra
+info flags for managers, similar to what is done for overlays. This is needed
+because timings aren't a part of overlay_manager_info struct configured by a
+user of DSS, they are configured internally by the interface or panel drivers.
+
+Add dirty and shadow_dirty extra_info flags for managers, update these flags
+at the appropriate places. Rewrite the function extra_info_update_ongoing()
+slightly as checking for manager's extra_info flags can simplify the code a bit.
+
+Create function dss_mgr_set_timings() which applies the new manager timings to
+extra_info.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/displays/panel-tfp410.c |   72 ++++++++++++++-------------
- 1 file changed, 38 insertions(+), 34 deletions(-)
+ drivers/video/omap2/dss/apply.c |   96 +++++++++++++++++++++++++++++++++-----
+ drivers/video/omap2/dss/dss.h   |    2 +
+ 2 files changed, 85 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/omap2/displays/panel-tfp410.c b/drivers/video/omap2/displays/panel-tfp410.c
-index 52637fa..f03964e 100644
---- a/drivers/video/omap2/displays/panel-tfp410.c
-+++ b/drivers/video/omap2/displays/panel-tfp410.c
-@@ -47,13 +47,9 @@ struct panel_drv_data {
- 	struct mutex lock;
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index b10b3bc..57686f6 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -99,6 +99,11 @@ struct mgr_priv_data {
  
- 	int pd_gpio;
--};
- 
--static inline struct tfp410_platform_data
--*get_pdata(const struct omap_dss_device *dssdev)
--{
--	return dssdev->data;
--}
-+	struct i2c_adapter *i2c_adapter;
-+};
- 
- static int tfp410_power_on(struct omap_dss_device *dssdev)
- {
-@@ -90,11 +86,11 @@ static void tfp410_power_off(struct omap_dss_device *dssdev)
- 
- static int tfp410_probe(struct omap_dss_device *dssdev)
- {
--	struct tfp410_platform_data *pdata = get_pdata(dssdev);
- 	struct panel_drv_data *ddata;
- 	int r;
-+	int i2c_bus_num;
- 
--	ddata = kzalloc(sizeof(*ddata), GFP_KERNEL);
-+	ddata = devm_kzalloc(&dssdev->dev, sizeof(*ddata), GFP_KERNEL);
- 	if (!ddata)
- 		return -ENOMEM;
- 
-@@ -104,10 +100,15 @@ static int tfp410_probe(struct omap_dss_device *dssdev)
- 	ddata->dssdev = dssdev;
- 	mutex_init(&ddata->lock);
- 
--	if (pdata)
-+	if (dssdev->data) {
-+		struct tfp410_platform_data *pdata = dssdev->data;
+ 	/* If true, a display is enabled using this manager */
+ 	bool enabled;
 +
- 		ddata->pd_gpio = pdata->power_down_gpio;
--	else
-+		i2c_bus_num = pdata->i2c_bus_num;
-+	} else {
- 		ddata->pd_gpio = -1;
-+		i2c_bus_num = -1;
-+	}
- 
- 	if (gpio_is_valid(ddata->pd_gpio)) {
- 		r = gpio_request_one(ddata->pd_gpio, GPIOF_OUT_INIT_LOW,
-@@ -115,13 +116,31 @@ static int tfp410_probe(struct omap_dss_device *dssdev)
- 		if (r) {
- 			dev_err(&dssdev->dev, "Failed to request PD GPIO %d\n",
- 					ddata->pd_gpio);
--			ddata->pd_gpio = -1;
-+			return r;
- 		}
- 	}
- 
-+	if (i2c_bus_num != -1) {
-+		struct i2c_adapter *adapter;
++	bool extra_info_dirty;
++	bool shadow_extra_info_dirty;
 +
-+		adapter = i2c_get_adapter(i2c_bus_num);
-+		if (!adapter) {
-+			dev_err(&dssdev->dev, "Failed to get I2C adapter, bus %d\n",
-+					i2c_bus_num);
-+			r = -EINVAL;
-+			goto err_i2c;
++	struct omap_video_timings timings;
+ };
+ 
+ static struct {
+@@ -261,6 +266,20 @@ static bool need_isr(void)
+ 			if (mp->shadow_info_dirty)
+ 				return true;
+ 
++			/*
++			 * NOTE: we don't check extra_info flags for disabled
++			 * managers, once the manager is enabled, the extra_info
++			 * related manager changes will be taken in by HW.
++			 */
++
++			/* to write new values to registers */
++			if (mp->extra_info_dirty)
++				return true;
++
++			/* to set GO bit */
++			if (mp->shadow_extra_info_dirty)
++				return true;
++
+ 			list_for_each_entry(ovl, &mgr->overlays, list) {
+ 				struct ovl_priv_data *op;
+ 
+@@ -305,7 +324,7 @@ static bool need_go(struct omap_overlay_manager *mgr)
+ 
+ 	mp = get_mgr_priv(mgr);
+ 
+-	if (mp->shadow_info_dirty)
++	if (mp->shadow_info_dirty || mp->shadow_extra_info_dirty)
+ 		return true;
+ 
+ 	list_for_each_entry(ovl, &mgr->overlays, list) {
+@@ -320,20 +339,16 @@ static bool need_go(struct omap_overlay_manager *mgr)
+ /* returns true if an extra_info field is currently being updated */
+ static bool extra_info_update_ongoing(void)
+ {
+-	const int num_ovls = omap_dss_get_num_overlays();
+-	struct ovl_priv_data *op;
+-	struct omap_overlay *ovl;
+-	struct mgr_priv_data *mp;
++	const int num_mgrs = dss_feat_get_num_mgrs();
+ 	int i;
+ 
+-	for (i = 0; i < num_ovls; ++i) {
+-		ovl = omap_dss_get_overlay(i);
+-		op = get_ovl_priv(ovl);
+-
+-		if (!ovl->manager)
+-			continue;
++	for (i = 0; i < num_mgrs; ++i) {
++		struct omap_overlay_manager *mgr;
++		struct omap_overlay *ovl;
++		struct mgr_priv_data *mp;
+ 
+-		mp = get_mgr_priv(ovl->manager);
++		mgr = omap_dss_get_overlay_manager(i);
++		mp = get_mgr_priv(mgr);
+ 
+ 		if (!mp->enabled)
+ 			continue;
+@@ -341,8 +356,15 @@ static bool extra_info_update_ongoing(void)
+ 		if (!mp->updating)
+ 			continue;
+ 
+-		if (op->extra_info_dirty || op->shadow_extra_info_dirty)
++		if (mp->extra_info_dirty || mp->shadow_extra_info_dirty)
+ 			return true;
++
++		list_for_each_entry(ovl, &mgr->overlays, list) {
++			struct ovl_priv_data *op = get_ovl_priv(ovl);
++
++			if (op->extra_info_dirty || op->shadow_extra_info_dirty)
++				return true;
 +		}
-+
-+		ddata->i2c_adapter = adapter;
-+	}
-+
- 	dev_set_drvdata(&dssdev->dev, ddata);
- 
- 	return 0;
-+err_i2c:
-+	if (gpio_is_valid(ddata->pd_gpio))
-+		gpio_free(ddata->pd_gpio);
-+	return r;
- }
- 
- static void __exit tfp410_remove(struct omap_dss_device *dssdev)
-@@ -130,14 +149,15 @@ static void __exit tfp410_remove(struct omap_dss_device *dssdev)
- 
- 	mutex_lock(&ddata->lock);
- 
-+	if (ddata->i2c_adapter)
-+		i2c_put_adapter(ddata->i2c_adapter);
-+
- 	if (gpio_is_valid(ddata->pd_gpio))
- 		gpio_free(ddata->pd_gpio);
- 
- 	dev_set_drvdata(&dssdev->dev, NULL);
- 
- 	mutex_unlock(&ddata->lock);
--
--	kfree(ddata);
- }
- 
- static int tfp410_enable(struct omap_dss_device *dssdev)
-@@ -269,27 +289,17 @@ static int tfp410_read_edid(struct omap_dss_device *dssdev,
- 		u8 *edid, int len)
- {
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--	struct tfp410_platform_data *pdata = get_pdata(dssdev);
--	struct i2c_adapter *adapter;
- 	int r, l, bytes_read;
- 
- 	mutex_lock(&ddata->lock);
- 
--	if (pdata->i2c_bus_num = 0) {
-+	if (!ddata->i2c_adapter) {
- 		r = -ENODEV;
- 		goto err;
  	}
  
--	adapter = i2c_get_adapter(pdata->i2c_bus_num);
--	if (!adapter) {
--		dev_err(&dssdev->dev, "Failed to get I2C adapter, bus %d\n",
--				pdata->i2c_bus_num);
--		r = -EINVAL;
--		goto err;
--	}
--
- 	l = min(EDID_LENGTH, len);
--	r = tfp410_ddc_read(adapter, edid, l, 0);
-+	r = tfp410_ddc_read(ddata->i2c_adapter, edid, l, 0);
- 	if (r)
- 		goto err;
+ 	return false;
+@@ -601,6 +623,22 @@ static void dss_mgr_write_regs(struct omap_overlay_manager *mgr)
+ 	}
+ }
  
-@@ -299,7 +309,7 @@ static int tfp410_read_edid(struct omap_dss_device *dssdev,
- 	if (len > EDID_LENGTH && edid[0x7e] > 0) {
- 		l = min(EDID_LENGTH, len - EDID_LENGTH);
- 
--		r = tfp410_ddc_read(adapter, edid + EDID_LENGTH,
-+		r = tfp410_ddc_read(ddata->i2c_adapter, edid + EDID_LENGTH,
- 				l, EDID_LENGTH);
- 		if (r)
- 			goto err;
-@@ -319,21 +329,15 @@ err:
- static bool tfp410_detect(struct omap_dss_device *dssdev)
++static void dss_mgr_write_regs_extra(struct omap_overlay_manager *mgr)
++{
++	struct mgr_priv_data *mp = get_mgr_priv(mgr);
++
++	DSSDBGF("%d", mgr->id);
++
++	if (!mp->extra_info_dirty)
++		return;
++
++	dispc_mgr_set_timings(mgr->id, &mp->timings);
++
++	mp->extra_info_dirty = false;
++	if (mp->updating)
++		mp->shadow_extra_info_dirty = true;
++}
++
+ static void dss_write_regs_common(void)
  {
- 	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--	struct tfp410_platform_data *pdata = get_pdata(dssdev);
--	struct i2c_adapter *adapter;
- 	unsigned char out;
- 	int r;
+ 	const int num_mgrs = omap_dss_get_num_overlay_managers();
+@@ -654,6 +692,7 @@ static void dss_write_regs(void)
+ 		}
  
- 	mutex_lock(&ddata->lock);
+ 		dss_mgr_write_regs(mgr);
++		dss_mgr_write_regs_extra(mgr);
+ 	}
+ }
  
--	if (pdata->i2c_bus_num = 0)
--		goto out;
--
--	adapter = i2c_get_adapter(pdata->i2c_bus_num);
--	if (!adapter)
-+	if (!ddata->i2c_adapter)
- 		goto out;
+@@ -693,6 +732,7 @@ static void mgr_clear_shadow_dirty(struct omap_overlay_manager *mgr)
  
--	r = tfp410_ddc_read(adapter, &out, 1, 0);
-+	r = tfp410_ddc_read(ddata->i2c_adapter, &out, 1, 0);
+ 	mp = get_mgr_priv(mgr);
+ 	mp->shadow_info_dirty = false;
++	mp->shadow_extra_info_dirty = false;
  
- 	mutex_unlock(&ddata->lock);
+ 	list_for_each_entry(ovl, &mgr->overlays, list) {
+ 		op = get_ovl_priv(ovl);
+@@ -719,6 +759,7 @@ void dss_mgr_start_update(struct omap_overlay_manager *mgr)
+ 	}
  
+ 	dss_mgr_write_regs(mgr);
++	dss_mgr_write_regs_extra(mgr);
+ 
+ 	dss_write_regs_common();
+ 
+@@ -1225,6 +1266,35 @@ err:
+ 	return r;
+ }
+ 
++static void dss_apply_mgr_timings(struct omap_overlay_manager *mgr,
++		struct omap_video_timings *timings)
++{
++	struct mgr_priv_data *mp = get_mgr_priv(mgr);
++
++	mp->timings = *timings;
++	mp->extra_info_dirty = true;
++}
++
++void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
++		struct omap_video_timings *timings)
++{
++	unsigned long flags;
++
++	mutex_lock(&apply_lock);
++
++	spin_lock_irqsave(&data_lock, flags);
++
++	dss_apply_mgr_timings(mgr, timings);
++
++	dss_write_regs();
++	dss_set_go_bits();
++
++	spin_unlock_irqrestore(&data_lock, flags);
++
++	wait_pending_extra_info_updates();
++
++	mutex_unlock(&apply_lock);
++}
+ 
+ int dss_ovl_set_info(struct omap_overlay *ovl,
+ 		struct omap_overlay_info *info)
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index 94d8234..b17a212 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -177,6 +177,8 @@ void dss_mgr_get_info(struct omap_overlay_manager *mgr,
+ int dss_mgr_set_device(struct omap_overlay_manager *mgr,
+ 		struct omap_dss_device *dssdev);
+ int dss_mgr_unset_device(struct omap_overlay_manager *mgr);
++void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
++		struct omap_video_timings *timings);
+ 
+ bool dss_ovl_is_enabled(struct omap_overlay *ovl);
+ int dss_ovl_enable(struct omap_overlay *ovl);
 -- 
-1.7.9.5
+1.7.5.4
 

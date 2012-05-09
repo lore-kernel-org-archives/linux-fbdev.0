@@ -1,125 +1,63 @@
 From: Archit Taneja <archit@ti.com>
-Date: Thu, 03 May 2012 07:19:42 +0000
-Subject: [PATCH v2 2/4] OMAPDSS: Apply manager timings instead of direct DISPC writes
-Message-Id: <1336028864-13895-3-git-send-email-archit@ti.com>
+Date: Wed, 09 May 2012 10:22:53 +0000
+Subject: [PATCH v4 6/9] OMAPDSS: DPI/HDMI: Apply manager timings even if panel is disabled
+Message-Id: <1336558256-26140-7-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1334561027-28569-1-git-send-email-archit@ti.com>
- <1336028864-13895-1-git-send-email-archit@ti.com>
-In-Reply-To: <1336028864-13895-1-git-send-email-archit@ti.com>
+ <1336558256-26140-1-git-send-email-archit@ti.com>
+In-Reply-To: <1336558256-26140-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Replace the function dispc_mgr_set_timings() with dss_mgr_set_timings() in the
-interface drivers. The latter function ensures that the timing related DISPC
-registers are configured according to the shadow register programming model.
+The DPI and HDMI interfaces use their 'set_timing' functions to take in a new
+set of timings. If the panel is disabled, they do not disable and re-enable
+the interface. Currently, the manager timings are applied in hdmi_power_on()
+and dpi_set_mode() respectively, these are not called by set_timings if the
+panel is disabled.
+
+When checking overlay and manager data, the DSS driver uses the last applied
+manager timings, and not the timings held by omap_dss_device struct. Hence,
+there is a need to apply the new manager timings even if the panel is disabled.
+
+Apply the manager timings if the panel is disabled. Eventually, there should be
+one common place where the timings are applied independent of the state of the
+panel.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dpi.c  |    2 +-
- drivers/video/omap2/dss/dsi.c  |    5 ++---
- drivers/video/omap2/dss/hdmi.c |    2 +-
- drivers/video/omap2/dss/rfbi.c |    4 ++--
- drivers/video/omap2/dss/sdi.c  |    2 +-
- drivers/video/omap2/dss/venc.c |    2 +-
- 6 files changed, 8 insertions(+), 9 deletions(-)
+ drivers/video/omap2/dss/dpi.c  |    2 ++
+ drivers/video/omap2/dss/hdmi.c |    2 ++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index cec1166..5d84ab0 100644
+index e01ab98..d6e8fe7 100644
 --- a/drivers/video/omap2/dss/dpi.c
 +++ b/drivers/video/omap2/dss/dpi.c
-@@ -156,7 +156,7 @@ static int dpi_set_mode(struct omap_dss_device *dssdev)
- 		t->pixel_clock = pck;
+@@ -297,6 +297,8 @@ void dpi_set_timings(struct omap_dss_device *dssdev,
+ 
+ 		dispc_runtime_put();
+ 		dss_runtime_put();
++	} else {
++		dss_mgr_set_timings(dssdev->manager, timings);
  	}
- 
--	dispc_mgr_set_timings(dssdev->manager->id, t);
-+	dss_mgr_set_timings(dssdev->manager, t);
- 
- 	return 0;
  }
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index b6cf03c..db73598 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -4219,13 +4219,12 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
- 		dispc_mgr_enable_stallmode(dssdev->manager->id, true);
- 		dispc_mgr_enable_fifohandcheck(dssdev->manager->id, 1);
- 
--		dispc_mgr_set_timings(dssdev->manager->id, &timings);
-+		dss_mgr_set_timings(dssdev->manager, &timings);
- 	} else {
- 		dispc_mgr_enable_stallmode(dssdev->manager->id, false);
- 		dispc_mgr_enable_fifohandcheck(dssdev->manager->id, 0);
- 
--		dispc_mgr_set_timings(dssdev->manager->id,
--			&dssdev->panel.timings);
-+		dss_mgr_set_timings(dssdev->manager, &dssdev->panel.timings);
- 	}
- 
- 		dispc_mgr_set_lcd_display_type(dssdev->manager->id,
+ EXPORT_SYMBOL(dpi_set_timings);
 diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 56f6e9c..8d4ff8c 100644
+index 8d4ff8c..32ad712 100644
 --- a/drivers/video/omap2/dss/hdmi.c
 +++ b/drivers/video/omap2/dss/hdmi.c
-@@ -376,7 +376,7 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
- 	dispc_enable_gamma_table(0);
- 
- 	/* tv size */
--	dispc_mgr_set_timings(dssdev->manager->id, &dssdev->panel.timings);
-+	dss_mgr_set_timings(dssdev->manager, &dssdev->panel.timings);
- 
- 	hdmi.ip_data.ops->video_enable(&hdmi.ip_data, 1);
- 
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index a81ffcb..feadfab 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -320,7 +320,7 @@ static void rfbi_transfer_area(struct omap_dss_device *dssdev, u16 width,
- 
- 	DSSDBG("rfbi_transfer_area %dx%d\n", width, height);
- 
--	dispc_mgr_set_timings(dssdev->manager->id, &timings);
-+	dss_mgr_set_timings(dssdev->manager, &timings);
- 
- 	dispc_mgr_enable(dssdev->manager->id, true);
- 
-@@ -804,7 +804,7 @@ int omap_rfbi_prepare_update(struct omap_dss_device *dssdev,
- 	if (*w = 0 || *h = 0)
- 		return -EINVAL;
- 
--	dispc_mgr_set_timings(dssdev->manager->id, &timings);
-+	dss_mgr_set_timings(dssdev->manager, &timings);
- 
- 	return 0;
- }
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index 741b834..67fbe7c 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -107,7 +107,7 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+@@ -435,6 +435,8 @@ void omapdss_hdmi_display_set_timing(struct omap_dss_device *dssdev)
+ 		r = hdmi_power_on(dssdev);
+ 		if (r)
+ 			DSSERR("failed to power on device\n");
++	} else {
++		dss_mgr_set_timings(dssdev->manager, &dssdev->panel.timings);
  	}
+ }
  
- 
--	dispc_mgr_set_timings(dssdev->manager->id, t);
-+	dss_mgr_set_timings(dssdev->manager, t);
- 
- 	r = dss_set_clock_div(&dss_cinfo);
- 	if (r)
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 30bbb63..e237464 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -444,7 +444,7 @@ static int venc_power_on(struct omap_dss_device *dssdev)
- 	timings = dssdev->panel.timings;
- 	timings.y_res /= 2;
- 
--	dispc_mgr_set_timings(dssdev->manager->id, &timings);
-+	dss_mgr_set_timings(dssdev->manager, &timings);
- 
- 	r = regulator_enable(venc.vdda_dac_reg);
- 	if (r)
 -- 
 1.7.5.4
 

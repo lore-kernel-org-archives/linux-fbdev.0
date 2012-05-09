@@ -1,1039 +1,208 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 03 May 2012 13:57:40 +0000
-Subject: [PATCH 04/25] OMAPDSS: TFP410: rename dvi files to tfp410
-Message-Id: <1336053481-25433-5-git-send-email-tomi.valkeinen@ti.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 09 May 2012 10:22:56 +0000
+Subject: [PATCH v4 9/9] OMAPDSS: DISPC: Remove usage of dispc_mgr_get_device()
+Message-Id: <1336558256-26140-10-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1334561027-28569-1-git-send-email-archit@ti.com>
+ <1336558256-26140-1-git-send-email-archit@ti.com>
+In-Reply-To: <1336558256-26140-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Now that the tfp410 driver has been renamed in the code, this patch
-finishes the renaming by renaming the files.
+The functions calc_fclk_five_taps() and check_horiz_timing_omap3() use the
+function dispc_mgr_get_device() to get the omap_dss_device pointer to which
+the manager is connected, the width of the panel is derived from it.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+The manager's timing is stored in it's private data in APPLY. This contains
+the latest timings applied to the manager. Pass these timings to
+dispc_ovl_setup() and use them in the above functions. Remove the function
+dispc_mgr_get_device() as it isn't used any more.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- arch/arm/mach-omap2/board-3430sdp.c         |    2 +-
- arch/arm/mach-omap2/board-am3517evm.c       |    2 +-
- arch/arm/mach-omap2/board-cm-t35.c          |    2 +-
- arch/arm/mach-omap2/board-devkit8000.c      |    2 +-
- arch/arm/mach-omap2/board-igep0020.c        |    2 +-
- arch/arm/mach-omap2/board-omap3beagle.c     |    2 +-
- arch/arm/mach-omap2/board-omap3evm.c        |    2 +-
- arch/arm/mach-omap2/board-omap3stalker.c    |    2 +-
- arch/arm/mach-omap2/board-omap4panda.c      |    2 +-
- arch/arm/mach-omap2/board-overo.c           |    2 +-
- drivers/video/omap2/displays/Makefile       |    2 +-
- drivers/video/omap2/displays/panel-dvi.c    |  381 ---------------------------
- drivers/video/omap2/displays/panel-tfp410.c |  381 +++++++++++++++++++++++++++
- include/video/omap-panel-dvi.h              |   35 ---
- include/video/omap-panel-tfp410.h           |   35 +++
- 15 files changed, 427 insertions(+), 427 deletions(-)
- delete mode 100644 drivers/video/omap2/displays/panel-dvi.c
- create mode 100644 drivers/video/omap2/displays/panel-tfp410.c
- delete mode 100644 include/video/omap-panel-dvi.h
- create mode 100644 include/video/omap-panel-tfp410.h
+ drivers/video/omap2/dss/apply.c |    6 ++--
+ drivers/video/omap2/dss/dispc.c |   51 +++++++++++++++++---------------------
+ drivers/video/omap2/dss/dss.h   |    3 +-
+ 3 files changed, 28 insertions(+), 32 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-3430sdp.c b/arch/arm/mach-omap2/board-3430sdp.c
-index 2a26d62..37abb0d 100644
---- a/arch/arm/mach-omap2/board-3430sdp.c
-+++ b/arch/arm/mach-omap2/board-3430sdp.c
-@@ -37,7 +37,7 @@
- #include <plat/dma.h>
- #include <plat/gpmc.h>
- #include <video/omapdss.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 15c070c..dd88b8f 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -548,11 +548,13 @@ static void dss_ovl_write_regs(struct omap_overlay *ovl)
  
- #include <plat/gpmc-smc91x.h>
+ 	oi = &op->info;
  
-diff --git a/arch/arm/mach-omap2/board-am3517evm.c b/arch/arm/mach-omap2/board-am3517evm.c
-index feecc96..99790eb 100644
---- a/arch/arm/mach-omap2/board-am3517evm.c
-+++ b/arch/arm/mach-omap2/board-am3517evm.c
-@@ -37,7 +37,7 @@
- #include <plat/usb.h>
- #include <video/omapdss.h>
- #include <video/omap-panel-generic-dpi.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
++	mp = get_mgr_priv(ovl->manager);
++
+ 	replication = dss_use_replication(ovl->manager->device, oi->color_mode);
  
- #include "am35xx-emac.h"
- #include "mux.h"
-diff --git a/arch/arm/mach-omap2/board-cm-t35.c b/arch/arm/mach-omap2/board-cm-t35.c
-index 9e8efe9..45746cb 100644
---- a/arch/arm/mach-omap2/board-cm-t35.c
-+++ b/arch/arm/mach-omap2/board-cm-t35.c
-@@ -44,7 +44,7 @@
- #include <plat/usb.h>
- #include <video/omapdss.h>
- #include <video/omap-panel-generic-dpi.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
- #include <plat/mcspi.h>
+ 	ilace = ovl->manager->device->type = OMAP_DISPLAY_TYPE_VENC;
  
- #include <mach/hardware.h>
-diff --git a/arch/arm/mach-omap2/board-devkit8000.c b/arch/arm/mach-omap2/board-devkit8000.c
-index 5ea88f5..b063f0d 100644
---- a/arch/arm/mach-omap2/board-devkit8000.c
-+++ b/arch/arm/mach-omap2/board-devkit8000.c
-@@ -47,7 +47,7 @@
- #include <plat/usb.h>
- #include <video/omapdss.h>
- #include <video/omap-panel-generic-dpi.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
+-	r = dispc_ovl_setup(ovl->id, oi, ilace, replication);
++	r = dispc_ovl_setup(ovl->id, oi, ilace, replication, &mp->timings);
+ 	if (r) {
+ 		/*
+ 		 * We can't do much here, as this function can be called from
+@@ -566,8 +568,6 @@ static void dss_ovl_write_regs(struct omap_overlay *ovl)
+ 		return;
+ 	}
  
- #include <plat/mcspi.h>
- #include <linux/input/matrix_keypad.h>
-diff --git a/arch/arm/mach-omap2/board-igep0020.c b/arch/arm/mach-omap2/board-igep0020.c
-index bf87f17..04816c9 100644
---- a/arch/arm/mach-omap2/board-igep0020.c
-+++ b/arch/arm/mach-omap2/board-igep0020.c
-@@ -32,7 +32,7 @@
- #include <plat/gpmc.h>
- #include <plat/usb.h>
- #include <video/omapdss.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
- #include <plat/onenand.h>
+-	mp = get_mgr_priv(ovl->manager);
+-
+ 	op->info_dirty = false;
+ 	if (mp->updating)
+ 		op->shadow_info_dirty = true;
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index cd0a397..727e15b 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -413,14 +413,6 @@ static inline bool dispc_mgr_is_lcd(enum omap_channel channel)
+ 		return false;
+ }
  
- #include "mux.h"
-diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-index 1795967..8ede8d2 100644
---- a/arch/arm/mach-omap2/board-omap3beagle.c
-+++ b/arch/arm/mach-omap2/board-omap3beagle.c
-@@ -42,7 +42,7 @@
- #include <plat/board.h>
- #include "common.h"
- #include <video/omapdss.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
- #include <plat/gpmc.h>
- #include <plat/nand.h>
- #include <plat/usb.h>
-diff --git a/arch/arm/mach-omap2/board-omap3evm.c b/arch/arm/mach-omap2/board-omap3evm.c
-index 9cb0d08..9919d6c 100644
---- a/arch/arm/mach-omap2/board-omap3evm.c
-+++ b/arch/arm/mach-omap2/board-omap3evm.c
-@@ -46,7 +46,7 @@
- #include "common.h"
- #include <plat/mcspi.h>
- #include <video/omapdss.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
+-static struct omap_dss_device *dispc_mgr_get_device(enum omap_channel channel)
+-{
+-	struct omap_overlay_manager *mgr -		omap_dss_get_overlay_manager(channel);
+-
+-	return mgr ? mgr->device : NULL;
+-}
+-
+ u32 dispc_mgr_get_vsync_irq(enum omap_channel channel)
+ {
+ 	switch (channel) {
+@@ -1661,18 +1653,17 @@ static void calc_dma_rotation_offset(u8 rotation, bool mirror,
+  * This function is used to avoid synclosts in OMAP3, because of some
+  * undocumented horizontal position and timing related limitations.
+  */
+-static int check_horiz_timing_omap3(enum omap_channel channel, u16 pos_x,
++static int check_horiz_timing_omap3(enum omap_channel channel,
++		const struct omap_video_timings *t, u16 pos_x,
+ 		u16 width, u16 height, u16 out_width, u16 out_height)
+ {
+ 	int DS = DIV_ROUND_UP(height, out_height);
+-	struct omap_dss_device *dssdev = dispc_mgr_get_device(channel);
+-	struct omap_video_timings t = dssdev->panel.timings;
+ 	unsigned long nonactive, lclk, pclk;
+ 	static const u8 limits[3] = { 8, 10, 20 };
+ 	u64 val, blank;
+ 	int i;
  
- #include "mux.h"
- #include "sdram-micron-mt46h32m32lf-6.h"
-diff --git a/arch/arm/mach-omap2/board-omap3stalker.c b/arch/arm/mach-omap2/board-omap3stalker.c
-index a9acf96..4396bae 100644
---- a/arch/arm/mach-omap2/board-omap3stalker.c
-+++ b/arch/arm/mach-omap2/board-omap3stalker.c
-@@ -42,7 +42,7 @@
- #include <plat/usb.h>
- #include <video/omapdss.h>
- #include <video/omap-panel-generic-dpi.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
+-	nonactive = t.x_res + t.hfp + t.hsw + t.hbp - out_width;
++	nonactive = t->x_res + t->hfp + t->hsw + t->hbp - out_width;
+ 	pclk = dispc_mgr_pclk_rate(channel);
+ 	if (dispc_mgr_is_lcd(channel))
+ 		lclk = dispc_mgr_lclk_rate(channel);
+@@ -1684,7 +1675,7 @@ static int check_horiz_timing_omap3(enum omap_channel channel, u16 pos_x,
+ 		i++;
+ 	if (out_width < width)
+ 		i++;
+-	blank = div_u64((u64)(t.hbp + t.hsw + t.hfp) * lclk, pclk);
++	blank = div_u64((u64)(t->hbp + t->hsw + t->hfp) * lclk, pclk);
+ 	DSSDBG("blanking period + ppl = %llu (limit = %u)\n", blank, limits[i]);
+ 	if (blank <= limits[i])
+ 		return -EINVAL;
+@@ -1715,7 +1706,8 @@ static int check_horiz_timing_omap3(enum omap_channel channel, u16 pos_x,
+ }
  
- #include <plat/mcspi.h>
- #include <linux/input/matrix_keypad.h>
-diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
-index e1f19b2..b26cd15 100644
---- a/arch/arm/mach-omap2/board-omap4panda.c
-+++ b/arch/arm/mach-omap2/board-omap4panda.c
-@@ -42,7 +42,7 @@
- #include "common.h"
- #include <plat/usb.h>
- #include <plat/mmc.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
+ static unsigned long calc_core_clk_five_taps(enum omap_channel channel,
+-		u16 width, u16 height, u16 out_width, u16 out_height,
++		const struct omap_video_timings *mgr_timings, u16 width,
++		u16 height, u16 out_width, u16 out_height,
+ 		enum omap_color_mode color_mode)
+ {
+ 	u32 core_clk = 0;
+@@ -1725,8 +1717,7 @@ static unsigned long calc_core_clk_five_taps(enum omap_channel channel,
+ 		return (unsigned long) pclk;
  
- #include "hsmmc.h"
- #include "control.h"
-diff --git a/arch/arm/mach-omap2/board-overo.c b/arch/arm/mach-omap2/board-overo.c
-index aa83d46..5527c19 100644
---- a/arch/arm/mach-omap2/board-overo.c
-+++ b/arch/arm/mach-omap2/board-overo.c
-@@ -46,7 +46,7 @@
- #include "common.h"
- #include <video/omapdss.h>
- #include <video/omap-panel-generic-dpi.h>
--#include <video/omap-panel-dvi.h>
-+#include <video/omap-panel-tfp410.h>
- #include <plat/gpmc.h>
- #include <mach/hardware.h>
- #include <plat/nand.h>
-diff --git a/drivers/video/omap2/displays/Makefile b/drivers/video/omap2/displays/Makefile
-index 58905ef0..58a5176 100644
---- a/drivers/video/omap2/displays/Makefile
-+++ b/drivers/video/omap2/displays/Makefile
-@@ -1,5 +1,5 @@
- obj-$(CONFIG_PANEL_GENERIC_DPI) += panel-generic-dpi.o
--obj-$(CONFIG_PANEL_TFP410) += panel-dvi.o
-+obj-$(CONFIG_PANEL_TFP410) += panel-tfp410.o
- obj-$(CONFIG_PANEL_LGPHILIPS_LB035Q02) += panel-lgphilips-lb035q02.o
- obj-$(CONFIG_PANEL_SHARP_LS037V7DW01) += panel-sharp-ls037v7dw01.o
- obj-$(CONFIG_PANEL_NEC_NL8048HL11_01B) += panel-nec-nl8048hl11-01b.o
-diff --git a/drivers/video/omap2/displays/panel-dvi.c b/drivers/video/omap2/displays/panel-dvi.c
-deleted file mode 100644
-index e6d6849..0000000
---- a/drivers/video/omap2/displays/panel-dvi.c
-+++ /dev/null
-@@ -1,381 +0,0 @@
--/*
-- * TFP410 DPI-to-DVI chip
-- *
-- * Copyright (C) 2011 Texas Instruments Inc
-- * Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
-- *
-- * This program is free software; you can redistribute it and/or modify it
-- * under the terms of the GNU General Public License version 2 as published by
-- * the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful, but WITHOUT
-- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-- * more details.
-- *
-- * You should have received a copy of the GNU General Public License along with
-- * this program.  If not, see <http://www.gnu.org/licenses/>.
-- */
--
--#include <linux/module.h>
--#include <linux/slab.h>
--#include <video/omapdss.h>
--#include <linux/i2c.h>
--#include <linux/gpio.h>
--#include <drm/drm_edid.h>
--
--#include <video/omap-panel-dvi.h>
--
--static const struct omap_video_timings tfp410_default_timings = {
--	.x_res		= 640,
--	.y_res		= 480,
--
--	.pixel_clock	= 23500,
--
--	.hfp		= 48,
--	.hsw		= 32,
--	.hbp		= 80,
--
--	.vfp		= 3,
--	.vsw		= 4,
--	.vbp		= 7,
--};
--
--struct panel_drv_data {
--	struct omap_dss_device *dssdev;
--
--	struct mutex lock;
--
--	int pd_gpio;
--};
--
--static inline struct tfp410_platform_data
--*get_pdata(const struct omap_dss_device *dssdev)
--{
--	return dssdev->data;
--}
--
--static int tfp410_power_on(struct omap_dss_device *dssdev)
--{
--	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--	int r;
--
--	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
--		return 0;
--
--	r = omapdss_dpi_display_enable(dssdev);
--	if (r)
--		goto err0;
--
--	if (gpio_is_valid(ddata->pd_gpio))
--		gpio_set_value(ddata->pd_gpio, 1);
--
--	return 0;
--err0:
--	return r;
--}
--
--static void tfp410_power_off(struct omap_dss_device *dssdev)
--{
--	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--
--	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
--		return;
--
--	if (gpio_is_valid(ddata->pd_gpio))
--		gpio_set_value(ddata->pd_gpio, 0);
--
--	omapdss_dpi_display_disable(dssdev);
--}
--
--static int tfp410_probe(struct omap_dss_device *dssdev)
--{
--	struct tfp410_platform_data *pdata = get_pdata(dssdev);
--	struct panel_drv_data *ddata;
--	int r;
--
--	ddata = kzalloc(sizeof(*ddata), GFP_KERNEL);
--	if (!ddata)
--		return -ENOMEM;
--
--	dssdev->panel.timings = tfp410_default_timings;
--	dssdev->panel.config = OMAP_DSS_LCD_TFT;
--
--	ddata->dssdev = dssdev;
--	mutex_init(&ddata->lock);
--
--	if (pdata)
--		ddata->pd_gpio = pdata->power_down_gpio;
--	else
--		ddata->pd_gpio = -1;
--
--	if (gpio_is_valid(ddata->pd_gpio)) {
--		r = gpio_request_one(ddata->pd_gpio, GPIOF_OUT_INIT_LOW,
--				"tfp410 pd");
--		if (r) {
--			dev_err(&dssdev->dev, "Failed to request PD GPIO %d\n",
--					ddata->pd_gpio);
--			ddata->pd_gpio = -1;
--		}
--	}
--
--	dev_set_drvdata(&dssdev->dev, ddata);
--
--	return 0;
--}
--
--static void __exit tfp410_remove(struct omap_dss_device *dssdev)
--{
--	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--
--	mutex_lock(&ddata->lock);
--
--	if (gpio_is_valid(ddata->pd_gpio))
--		gpio_free(ddata->pd_gpio);
--
--	dev_set_drvdata(&dssdev->dev, NULL);
--
--	mutex_unlock(&ddata->lock);
--
--	kfree(ddata);
--}
--
--static int tfp410_enable(struct omap_dss_device *dssdev)
--{
--	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--	int r;
--
--	mutex_lock(&ddata->lock);
--
--	r = tfp410_power_on(dssdev);
--	if (r = 0)
--		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
--
--	mutex_unlock(&ddata->lock);
--
--	return r;
--}
--
--static void tfp410_disable(struct omap_dss_device *dssdev)
--{
--	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--
--	mutex_lock(&ddata->lock);
--
--	tfp410_power_off(dssdev);
--
--	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
--
--	mutex_unlock(&ddata->lock);
--}
--
--static int tfp410_suspend(struct omap_dss_device *dssdev)
--{
--	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--
--	mutex_lock(&ddata->lock);
--
--	tfp410_power_off(dssdev);
--
--	dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED;
--
--	mutex_unlock(&ddata->lock);
--
--	return 0;
--}
--
--static int tfp410_resume(struct omap_dss_device *dssdev)
--{
--	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--	int r;
--
--	mutex_lock(&ddata->lock);
--
--	r = tfp410_power_on(dssdev);
--	if (r = 0)
--		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
--
--	mutex_unlock(&ddata->lock);
--
--	return r;
--}
--
--static void tfp410_set_timings(struct omap_dss_device *dssdev,
--		struct omap_video_timings *timings)
--{
--	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--
--	mutex_lock(&ddata->lock);
--	dpi_set_timings(dssdev, timings);
--	mutex_unlock(&ddata->lock);
--}
--
--static void tfp410_get_timings(struct omap_dss_device *dssdev,
--		struct omap_video_timings *timings)
--{
--	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--
--	mutex_lock(&ddata->lock);
--	*timings = dssdev->panel.timings;
--	mutex_unlock(&ddata->lock);
--}
--
--static int tfp410_check_timings(struct omap_dss_device *dssdev,
--		struct omap_video_timings *timings)
--{
--	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--	int r;
--
--	mutex_lock(&ddata->lock);
--	r = dpi_check_timings(dssdev, timings);
--	mutex_unlock(&ddata->lock);
--
--	return r;
--}
--
--
--static int tfp410_ddc_read(struct i2c_adapter *adapter,
--		unsigned char *buf, u16 count, u8 offset)
--{
--	int r, retries;
--
--	for (retries = 3; retries > 0; retries--) {
--		struct i2c_msg msgs[] = {
--			{
--				.addr   = DDC_ADDR,
--				.flags  = 0,
--				.len    = 1,
--				.buf    = &offset,
--			}, {
--				.addr   = DDC_ADDR,
--				.flags  = I2C_M_RD,
--				.len    = count,
--				.buf    = buf,
--			}
--		};
--
--		r = i2c_transfer(adapter, msgs, 2);
--		if (r = 2)
--			return 0;
--
--		if (r != -EAGAIN)
--			break;
--	}
--
--	return r < 0 ? r : -EIO;
--}
--
--static int tfp410_read_edid(struct omap_dss_device *dssdev,
--		u8 *edid, int len)
--{
--	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--	struct tfp410_platform_data *pdata = get_pdata(dssdev);
--	struct i2c_adapter *adapter;
--	int r, l, bytes_read;
--
--	mutex_lock(&ddata->lock);
--
--	if (pdata->i2c_bus_num = 0) {
--		r = -ENODEV;
--		goto err;
--	}
--
--	adapter = i2c_get_adapter(pdata->i2c_bus_num);
--	if (!adapter) {
--		dev_err(&dssdev->dev, "Failed to get I2C adapter, bus %d\n",
--				pdata->i2c_bus_num);
--		r = -EINVAL;
--		goto err;
--	}
--
--	l = min(EDID_LENGTH, len);
--	r = tfp410_ddc_read(adapter, edid, l, 0);
--	if (r)
--		goto err;
--
--	bytes_read = l;
--
--	/* if there are extensions, read second block */
--	if (len > EDID_LENGTH && edid[0x7e] > 0) {
--		l = min(EDID_LENGTH, len - EDID_LENGTH);
--
--		r = tfp410_ddc_read(adapter, edid + EDID_LENGTH,
--				l, EDID_LENGTH);
--		if (r)
--			goto err;
--
--		bytes_read += l;
--	}
--
--	mutex_unlock(&ddata->lock);
--
--	return bytes_read;
--
--err:
--	mutex_unlock(&ddata->lock);
--	return r;
--}
--
--static bool tfp410_detect(struct omap_dss_device *dssdev)
--{
--	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
--	struct tfp410_platform_data *pdata = get_pdata(dssdev);
--	struct i2c_adapter *adapter;
--	unsigned char out;
--	int r;
--
--	mutex_lock(&ddata->lock);
--
--	if (pdata->i2c_bus_num = 0)
--		goto out;
--
--	adapter = i2c_get_adapter(pdata->i2c_bus_num);
--	if (!adapter)
--		goto out;
--
--	r = tfp410_ddc_read(adapter, &out, 1, 0);
--
--	mutex_unlock(&ddata->lock);
--
--	return r = 0;
--
--out:
--	mutex_unlock(&ddata->lock);
--	return true;
--}
--
--static struct omap_dss_driver tfp410_driver = {
--	.probe		= tfp410_probe,
--	.remove		= __exit_p(tfp410_remove),
--
--	.enable		= tfp410_enable,
--	.disable	= tfp410_disable,
--	.suspend	= tfp410_suspend,
--	.resume		= tfp410_resume,
--
--	.set_timings	= tfp410_set_timings,
--	.get_timings	= tfp410_get_timings,
--	.check_timings	= tfp410_check_timings,
--
--	.read_edid	= tfp410_read_edid,
--	.detect		= tfp410_detect,
--
--	.driver         = {
--		.name   = "tfp410",
--		.owner  = THIS_MODULE,
--	},
--};
--
--static int __init tfp410_init(void)
--{
--	return omap_dss_register_driver(&tfp410_driver);
--}
--
--static void __exit tfp410_exit(void)
--{
--	omap_dss_unregister_driver(&tfp410_driver);
--}
--
--module_init(tfp410_init);
--module_exit(tfp410_exit);
--MODULE_LICENSE("GPL");
-diff --git a/drivers/video/omap2/displays/panel-tfp410.c b/drivers/video/omap2/displays/panel-tfp410.c
-new file mode 100644
-index 0000000..52637fa
---- /dev/null
-+++ b/drivers/video/omap2/displays/panel-tfp410.c
-@@ -0,0 +1,381 @@
-+/*
-+ * TFP410 DPI-to-DVI chip
-+ *
-+ * Copyright (C) 2011 Texas Instruments Inc
-+ * Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/slab.h>
-+#include <video/omapdss.h>
-+#include <linux/i2c.h>
-+#include <linux/gpio.h>
-+#include <drm/drm_edid.h>
-+
-+#include <video/omap-panel-tfp410.h>
-+
-+static const struct omap_video_timings tfp410_default_timings = {
-+	.x_res		= 640,
-+	.y_res		= 480,
-+
-+	.pixel_clock	= 23500,
-+
-+	.hfp		= 48,
-+	.hsw		= 32,
-+	.hbp		= 80,
-+
-+	.vfp		= 3,
-+	.vsw		= 4,
-+	.vbp		= 7,
-+};
-+
-+struct panel_drv_data {
-+	struct omap_dss_device *dssdev;
-+
-+	struct mutex lock;
-+
-+	int pd_gpio;
-+};
-+
-+static inline struct tfp410_platform_data
-+*get_pdata(const struct omap_dss_device *dssdev)
-+{
-+	return dssdev->data;
-+}
-+
-+static int tfp410_power_on(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
-+	int r;
-+
-+	if (dssdev->state = OMAP_DSS_DISPLAY_ACTIVE)
-+		return 0;
-+
-+	r = omapdss_dpi_display_enable(dssdev);
-+	if (r)
-+		goto err0;
-+
-+	if (gpio_is_valid(ddata->pd_gpio))
-+		gpio_set_value(ddata->pd_gpio, 1);
-+
-+	return 0;
-+err0:
-+	return r;
-+}
-+
-+static void tfp410_power_off(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
-+
-+	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
-+		return;
-+
-+	if (gpio_is_valid(ddata->pd_gpio))
-+		gpio_set_value(ddata->pd_gpio, 0);
-+
-+	omapdss_dpi_display_disable(dssdev);
-+}
-+
-+static int tfp410_probe(struct omap_dss_device *dssdev)
-+{
-+	struct tfp410_platform_data *pdata = get_pdata(dssdev);
-+	struct panel_drv_data *ddata;
-+	int r;
-+
-+	ddata = kzalloc(sizeof(*ddata), GFP_KERNEL);
-+	if (!ddata)
-+		return -ENOMEM;
-+
-+	dssdev->panel.timings = tfp410_default_timings;
-+	dssdev->panel.config = OMAP_DSS_LCD_TFT;
-+
-+	ddata->dssdev = dssdev;
-+	mutex_init(&ddata->lock);
-+
-+	if (pdata)
-+		ddata->pd_gpio = pdata->power_down_gpio;
-+	else
-+		ddata->pd_gpio = -1;
-+
-+	if (gpio_is_valid(ddata->pd_gpio)) {
-+		r = gpio_request_one(ddata->pd_gpio, GPIOF_OUT_INIT_LOW,
-+				"tfp410 pd");
-+		if (r) {
-+			dev_err(&dssdev->dev, "Failed to request PD GPIO %d\n",
-+					ddata->pd_gpio);
-+			ddata->pd_gpio = -1;
-+		}
-+	}
-+
-+	dev_set_drvdata(&dssdev->dev, ddata);
-+
-+	return 0;
-+}
-+
-+static void __exit tfp410_remove(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
-+
-+	mutex_lock(&ddata->lock);
-+
-+	if (gpio_is_valid(ddata->pd_gpio))
-+		gpio_free(ddata->pd_gpio);
-+
-+	dev_set_drvdata(&dssdev->dev, NULL);
-+
-+	mutex_unlock(&ddata->lock);
-+
-+	kfree(ddata);
-+}
-+
-+static int tfp410_enable(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
-+	int r;
-+
-+	mutex_lock(&ddata->lock);
-+
-+	r = tfp410_power_on(dssdev);
-+	if (r = 0)
-+		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
-+
-+	mutex_unlock(&ddata->lock);
-+
-+	return r;
-+}
-+
-+static void tfp410_disable(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
-+
-+	mutex_lock(&ddata->lock);
-+
-+	tfp410_power_off(dssdev);
-+
-+	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
-+
-+	mutex_unlock(&ddata->lock);
-+}
-+
-+static int tfp410_suspend(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
-+
-+	mutex_lock(&ddata->lock);
-+
-+	tfp410_power_off(dssdev);
-+
-+	dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED;
-+
-+	mutex_unlock(&ddata->lock);
-+
-+	return 0;
-+}
-+
-+static int tfp410_resume(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
-+	int r;
-+
-+	mutex_lock(&ddata->lock);
-+
-+	r = tfp410_power_on(dssdev);
-+	if (r = 0)
-+		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
-+
-+	mutex_unlock(&ddata->lock);
-+
-+	return r;
-+}
-+
-+static void tfp410_set_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings)
-+{
-+	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
-+
-+	mutex_lock(&ddata->lock);
-+	dpi_set_timings(dssdev, timings);
-+	mutex_unlock(&ddata->lock);
-+}
-+
-+static void tfp410_get_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings)
-+{
-+	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
-+
-+	mutex_lock(&ddata->lock);
-+	*timings = dssdev->panel.timings;
-+	mutex_unlock(&ddata->lock);
-+}
-+
-+static int tfp410_check_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings)
-+{
-+	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
-+	int r;
-+
-+	mutex_lock(&ddata->lock);
-+	r = dpi_check_timings(dssdev, timings);
-+	mutex_unlock(&ddata->lock);
-+
-+	return r;
-+}
-+
-+
-+static int tfp410_ddc_read(struct i2c_adapter *adapter,
-+		unsigned char *buf, u16 count, u8 offset)
-+{
-+	int r, retries;
-+
-+	for (retries = 3; retries > 0; retries--) {
-+		struct i2c_msg msgs[] = {
-+			{
-+				.addr   = DDC_ADDR,
-+				.flags  = 0,
-+				.len    = 1,
-+				.buf    = &offset,
-+			}, {
-+				.addr   = DDC_ADDR,
-+				.flags  = I2C_M_RD,
-+				.len    = count,
-+				.buf    = buf,
-+			}
-+		};
-+
-+		r = i2c_transfer(adapter, msgs, 2);
-+		if (r = 2)
-+			return 0;
-+
-+		if (r != -EAGAIN)
-+			break;
-+	}
-+
-+	return r < 0 ? r : -EIO;
-+}
-+
-+static int tfp410_read_edid(struct omap_dss_device *dssdev,
-+		u8 *edid, int len)
-+{
-+	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
-+	struct tfp410_platform_data *pdata = get_pdata(dssdev);
-+	struct i2c_adapter *adapter;
-+	int r, l, bytes_read;
-+
-+	mutex_lock(&ddata->lock);
-+
-+	if (pdata->i2c_bus_num = 0) {
-+		r = -ENODEV;
-+		goto err;
-+	}
-+
-+	adapter = i2c_get_adapter(pdata->i2c_bus_num);
-+	if (!adapter) {
-+		dev_err(&dssdev->dev, "Failed to get I2C adapter, bus %d\n",
-+				pdata->i2c_bus_num);
-+		r = -EINVAL;
-+		goto err;
-+	}
-+
-+	l = min(EDID_LENGTH, len);
-+	r = tfp410_ddc_read(adapter, edid, l, 0);
-+	if (r)
-+		goto err;
-+
-+	bytes_read = l;
-+
-+	/* if there are extensions, read second block */
-+	if (len > EDID_LENGTH && edid[0x7e] > 0) {
-+		l = min(EDID_LENGTH, len - EDID_LENGTH);
-+
-+		r = tfp410_ddc_read(adapter, edid + EDID_LENGTH,
-+				l, EDID_LENGTH);
-+		if (r)
-+			goto err;
-+
-+		bytes_read += l;
-+	}
-+
-+	mutex_unlock(&ddata->lock);
-+
-+	return bytes_read;
-+
-+err:
-+	mutex_unlock(&ddata->lock);
-+	return r;
-+}
-+
-+static bool tfp410_detect(struct omap_dss_device *dssdev)
-+{
-+	struct panel_drv_data *ddata = dev_get_drvdata(&dssdev->dev);
-+	struct tfp410_platform_data *pdata = get_pdata(dssdev);
-+	struct i2c_adapter *adapter;
-+	unsigned char out;
-+	int r;
-+
-+	mutex_lock(&ddata->lock);
-+
-+	if (pdata->i2c_bus_num = 0)
-+		goto out;
-+
-+	adapter = i2c_get_adapter(pdata->i2c_bus_num);
-+	if (!adapter)
-+		goto out;
-+
-+	r = tfp410_ddc_read(adapter, &out, 1, 0);
-+
-+	mutex_unlock(&ddata->lock);
-+
-+	return r = 0;
-+
-+out:
-+	mutex_unlock(&ddata->lock);
-+	return true;
-+}
-+
-+static struct omap_dss_driver tfp410_driver = {
-+	.probe		= tfp410_probe,
-+	.remove		= __exit_p(tfp410_remove),
-+
-+	.enable		= tfp410_enable,
-+	.disable	= tfp410_disable,
-+	.suspend	= tfp410_suspend,
-+	.resume		= tfp410_resume,
-+
-+	.set_timings	= tfp410_set_timings,
-+	.get_timings	= tfp410_get_timings,
-+	.check_timings	= tfp410_check_timings,
-+
-+	.read_edid	= tfp410_read_edid,
-+	.detect		= tfp410_detect,
-+
-+	.driver         = {
-+		.name   = "tfp410",
-+		.owner  = THIS_MODULE,
-+	},
-+};
-+
-+static int __init tfp410_init(void)
-+{
-+	return omap_dss_register_driver(&tfp410_driver);
-+}
-+
-+static void __exit tfp410_exit(void)
-+{
-+	omap_dss_unregister_driver(&tfp410_driver);
-+}
-+
-+module_init(tfp410_init);
-+module_exit(tfp410_exit);
-+MODULE_LICENSE("GPL");
-diff --git a/include/video/omap-panel-dvi.h b/include/video/omap-panel-dvi.h
-deleted file mode 100644
-index 68c31d7..0000000
---- a/include/video/omap-panel-dvi.h
-+++ /dev/null
-@@ -1,35 +0,0 @@
--/*
-- * Header for TFP410 chip driver
-- *
-- * Copyright (C) 2011 Texas Instruments Inc
-- * Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
-- *
-- * This program is free software; you can redistribute it and/or modify it
-- * under the terms of the GNU General Public License version 2 as published by
-- * the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful, but WITHOUT
-- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-- * more details.
-- *
-- * You should have received a copy of the GNU General Public License along with
-- * this program.  If not, see <http://www.gnu.org/licenses/>.
-- */
--
--#ifndef __OMAP_PANEL_TFP410_H
--#define __OMAP_PANEL_TFP410_H
--
--struct omap_dss_device;
--
--/**
-- * struct tfp410_platform_data - panel driver configuration data
-- * @i2c_bus_num: i2c bus id for the panel
-- * @power_down_gpio: gpio number for PD pin (or -1 if not available)
-- */
--struct tfp410_platform_data {
--	u16 i2c_bus_num;
--	int power_down_gpio;
--};
--
--#endif /* __OMAP_PANEL_TFP410_H */
-diff --git a/include/video/omap-panel-tfp410.h b/include/video/omap-panel-tfp410.h
-new file mode 100644
-index 0000000..68c31d7
---- /dev/null
-+++ b/include/video/omap-panel-tfp410.h
-@@ -0,0 +1,35 @@
-+/*
-+ * Header for TFP410 chip driver
-+ *
-+ * Copyright (C) 2011 Texas Instruments Inc
-+ * Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#ifndef __OMAP_PANEL_TFP410_H
-+#define __OMAP_PANEL_TFP410_H
-+
-+struct omap_dss_device;
-+
-+/**
-+ * struct tfp410_platform_data - panel driver configuration data
-+ * @i2c_bus_num: i2c bus id for the panel
-+ * @power_down_gpio: gpio number for PD pin (or -1 if not available)
-+ */
-+struct tfp410_platform_data {
-+	u16 i2c_bus_num;
-+	int power_down_gpio;
-+};
-+
-+#endif /* __OMAP_PANEL_TFP410_H */
+ 	if (height > out_height) {
+-		struct omap_dss_device *dssdev = dispc_mgr_get_device(channel);
+-		unsigned int ppl = dssdev->panel.timings.x_res;
++		unsigned int ppl = mgr_timings->x_res;
+ 
+ 		tmp = pclk * height * out_width;
+ 		do_div(tmp, 2 * out_height * ppl);
+@@ -1795,8 +1786,9 @@ static unsigned long calc_core_clk(enum omap_channel channel, u16 width,
+ }
+ 
+ static int dispc_ovl_calc_scaling(enum omap_plane plane,
+-		enum omap_channel channel, u16 width, u16 height,
+-		u16 out_width, u16 out_height,
++		enum omap_channel channel,
++		const struct omap_video_timings *mgr_timings,
++		u16 width, u16 height, u16 out_width, u16 out_height,
+ 		enum omap_color_mode color_mode, bool *five_taps,
+ 		int *x_predecim, int *y_predecim, u16 pos_x)
+ {
+@@ -1871,11 +1863,13 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
+ 		do {
+ 			in_height = DIV_ROUND_UP(height, decim_y);
+ 			in_width = DIV_ROUND_UP(width, decim_x);
+-			core_clk = calc_core_clk_five_taps(channel, in_width,
+-				in_height, out_width, out_height, color_mode);
++			core_clk = calc_core_clk_five_taps(channel, mgr_timings,
++				in_width, in_height, out_width, out_height,
++				color_mode);
+ 
+-			error = check_horiz_timing_omap3(channel, pos_x,
+-				in_width, in_height, out_width, out_height);
++			error = check_horiz_timing_omap3(channel, mgr_timings,
++				pos_x, in_width, in_height, out_width,
++				out_height);
+ 
+ 			if (in_width > maxsinglelinewidth)
+ 				if (in_height > out_height &&
+@@ -1900,8 +1894,8 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
+ 		} while (decim_x <= *x_predecim && decim_y <= *y_predecim
+ 			&& error);
+ 
+-		if (check_horiz_timing_omap3(channel, pos_x, width, height,
+-			out_width, out_height)){
++		if (check_horiz_timing_omap3(channel, mgr_timings, pos_x, width,
++			height, out_width, out_height)){
+ 				DSSERR("horizontal timing too tight\n");
+ 				return -EINVAL;
+ 		}
+@@ -1959,7 +1953,8 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
+ }
+ 
+ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+-		bool ilace, bool replication)
++		bool ilace, bool replication,
++		const struct omap_video_timings *mgr_timings)
+ {
+ 	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
+ 	bool five_taps = true;
+@@ -2008,9 +2003,9 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+ 	if (!dss_feat_color_mode_supported(plane, oi->color_mode))
+ 		return -EINVAL;
+ 
+-	r = dispc_ovl_calc_scaling(plane, channel, in_width, in_height,
+-			out_width, out_height, oi->color_mode, &five_taps,
+-			&x_predecim, &y_predecim, oi->pos_x);
++	r = dispc_ovl_calc_scaling(plane, channel, mgr_timings, in_width,
++			in_height, out_width, out_height, oi->color_mode,
++			&five_taps, &x_predecim, &y_predecim, oi->pos_x);
+ 	if (r)
+ 		return r;
+ 
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index f3fa445..8e9e9a5 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -428,7 +428,8 @@ void dispc_ovl_set_fifo_threshold(enum omap_plane plane, u32 low, u32 high);
+ void dispc_ovl_compute_fifo_thresholds(enum omap_plane plane,
+ 		u32 *fifo_low, u32 *fifo_high, bool use_fifomerge);
+ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
+-		bool ilace, bool replication);
++		bool ilace, bool replication,
++		const struct omap_video_timings *mgr_timings);
+ int dispc_ovl_enable(enum omap_plane plane, bool enable);
+ void dispc_ovl_set_channel_out(enum omap_plane plane,
+ 		enum omap_channel channel);
 -- 
-1.7.9.5
+1.7.5.4
 

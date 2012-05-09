@@ -1,37 +1,136 @@
-From: Siarhei Siamashka <siarhei.siamashka@gmail.com>
-Date: Tue, 22 May 2012 19:54:03 +0000
-Subject: [PATCH 1/2] ARM: pgtable: add pgprot_writethrough() macro
-Message-Id: <1337716444-30139-2-git-send-email-siarhei.siamashka@gmail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 09 May 2012 10:22:49 +0000
+Subject: [PATCH v4 2/9] OMAPDSS: Apply manager timings instead of direct DISPC writes
+Message-Id: <1336558256-26140-3-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1337716444-30139-1-git-send-email-siarhei.siamashka@gmail.com>
-In-Reply-To: <1337716444-30139-1-git-send-email-siarhei.siamashka@gmail.com>
+References: <1334561027-28569-1-git-send-email-archit@ti.com>
+ <1336558256-26140-1-git-send-email-archit@ti.com>
+In-Reply-To: <1336558256-26140-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Needed for remapping pages with write-through cacheable
-attribute. May be useful for framebuffers.
+Replace the function dispc_mgr_set_timings() with dss_mgr_set_timings() in the
+interface drivers. The latter function ensures that the timing related DISPC
+registers are configured according to the shadow register programming model.
 
-Signed-off-by: Siarhei Siamashka <siarhei.siamashka@gmail.com>
+Remove the call to dispc_mgr_go() in dpi_set_timings() as the manager's go bit
+is now set by dss_mgr_set_timings().
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- arch/arm/include/asm/pgtable.h |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ drivers/video/omap2/dss/dpi.c  |    3 +--
+ drivers/video/omap2/dss/dsi.c  |    5 ++---
+ drivers/video/omap2/dss/hdmi.c |    2 +-
+ drivers/video/omap2/dss/rfbi.c |    4 ++--
+ drivers/video/omap2/dss/sdi.c  |    2 +-
+ drivers/video/omap2/dss/venc.c |    2 +-
+ 6 files changed, 8 insertions(+), 10 deletions(-)
 
-diff --git a/arch/arm/include/asm/pgtable.h b/arch/arm/include/asm/pgtable.h
-index f66626d..04297fa 100644
---- a/arch/arm/include/asm/pgtable.h
-+++ b/arch/arm/include/asm/pgtable.h
-@@ -103,6 +103,9 @@ extern pgprot_t		pgprot_kernel;
- #define pgprot_stronglyordered(prot) \
- 	__pgprot_modify(prot, L_PTE_MT_MASK, L_PTE_MT_UNCACHED)
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index cec1166..e65cf1f 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -156,7 +156,7 @@ static int dpi_set_mode(struct omap_dss_device *dssdev)
+ 		t->pixel_clock = pck;
+ 	}
  
-+#define pgprot_writethrough(prot) \
-+	__pgprot_modify(prot, L_PTE_MT_MASK, L_PTE_MT_WRITETHROUGH)
-+
- #ifdef CONFIG_ARM_DMA_MEM_BUFFERABLE
- #define pgprot_dmacoherent(prot) \
- 	__pgprot_modify(prot, L_PTE_MT_MASK, L_PTE_MT_BUFFERABLE | L_PTE_XN)
+-	dispc_mgr_set_timings(dssdev->manager->id, t);
++	dss_mgr_set_timings(dssdev->manager, t);
+ 
+ 	return 0;
+ }
+@@ -294,7 +294,6 @@ void dpi_set_timings(struct omap_dss_device *dssdev,
+ 		}
+ 
+ 		dpi_set_mode(dssdev);
+-		dispc_mgr_go(dssdev->manager->id);
+ 
+ 		dispc_runtime_put();
+ 		dss_runtime_put();
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 6c4b034..95bc996 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -4215,13 +4215,12 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
+ 		dispc_mgr_enable_stallmode(dssdev->manager->id, true);
+ 		dispc_mgr_enable_fifohandcheck(dssdev->manager->id, 1);
+ 
+-		dispc_mgr_set_timings(dssdev->manager->id, &timings);
++		dss_mgr_set_timings(dssdev->manager, &timings);
+ 	} else {
+ 		dispc_mgr_enable_stallmode(dssdev->manager->id, false);
+ 		dispc_mgr_enable_fifohandcheck(dssdev->manager->id, 0);
+ 
+-		dispc_mgr_set_timings(dssdev->manager->id,
+-			&dssdev->panel.timings);
++		dss_mgr_set_timings(dssdev->manager, &dssdev->panel.timings);
+ 	}
+ 
+ 		dispc_mgr_set_lcd_display_type(dssdev->manager->id,
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 56f6e9c..8d4ff8c 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -376,7 +376,7 @@ static int hdmi_power_on(struct omap_dss_device *dssdev)
+ 	dispc_enable_gamma_table(0);
+ 
+ 	/* tv size */
+-	dispc_mgr_set_timings(dssdev->manager->id, &dssdev->panel.timings);
++	dss_mgr_set_timings(dssdev->manager, &dssdev->panel.timings);
+ 
+ 	hdmi.ip_data.ops->video_enable(&hdmi.ip_data, 1);
+ 
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index a81ffcb..feadfab 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -320,7 +320,7 @@ static void rfbi_transfer_area(struct omap_dss_device *dssdev, u16 width,
+ 
+ 	DSSDBG("rfbi_transfer_area %dx%d\n", width, height);
+ 
+-	dispc_mgr_set_timings(dssdev->manager->id, &timings);
++	dss_mgr_set_timings(dssdev->manager, &timings);
+ 
+ 	dispc_mgr_enable(dssdev->manager->id, true);
+ 
+@@ -804,7 +804,7 @@ int omap_rfbi_prepare_update(struct omap_dss_device *dssdev,
+ 	if (*w = 0 || *h = 0)
+ 		return -EINVAL;
+ 
+-	dispc_mgr_set_timings(dssdev->manager->id, &timings);
++	dss_mgr_set_timings(dssdev->manager, &timings);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index 741b834..67fbe7c 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -107,7 +107,7 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+ 	}
+ 
+ 
+-	dispc_mgr_set_timings(dssdev->manager->id, t);
++	dss_mgr_set_timings(dssdev->manager, t);
+ 
+ 	r = dss_set_clock_div(&dss_cinfo);
+ 	if (r)
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 6947f5b..9475e6e 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -444,7 +444,7 @@ static int venc_power_on(struct omap_dss_device *dssdev)
+ 	timings = dssdev->panel.timings;
+ 	timings.y_res /= 2;
+ 
+-	dispc_mgr_set_timings(dssdev->manager->id, &timings);
++	dss_mgr_set_timings(dssdev->manager, &timings);
+ 
+ 	r = regulator_enable(venc.vdda_dac_reg);
+ 	if (r)
 -- 
-1.7.3.4
+1.7.5.4
 

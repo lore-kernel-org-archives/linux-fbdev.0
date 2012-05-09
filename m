@@ -1,95 +1,117 @@
 From: Archit Taneja <archit@ti.com>
-Date: Mon, 07 May 2012 11:33:34 +0000
-Subject: [PATCH 4/6] OMAPDSS: DISPC: Remove usage of dispc_mgr_get_device()
-Message-Id: <1336389696-21636-5-git-send-email-archit@ti.com>
+Date: Wed, 09 May 2012 10:22:50 +0000
+Subject: [PATCH v4 3/9] OMAPDSS: MANAGER: Create a function to check manager timings
+Message-Id: <1336558256-26140-4-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1336389696-21636-1-git-send-email-archit@ti.com>
-In-Reply-To: <1336389696-21636-1-git-send-email-archit@ti.com>
+References: <1334561027-28569-1-git-send-email-archit@ti.com>
+ <1336558256-26140-1-git-send-email-archit@ti.com>
+In-Reply-To: <1336558256-26140-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The functions calc_fclk_five_taps() and check_horiz_timing_omap3() use the
-function dispc_mgr_get_device() to get the omap_dss_device pointer to which
-the manager is connected, the width of the panel is derived from that.
+Create a function dss_mgr_check_timings() which wraps around the function
+dispc_mgr_timings_ok(). This is mainly a clean up to hide dispc functions
+from interface drivers.
 
-Replace this by using dss_mgr_get_device() which returns the manager's timing
-stored in it's private data in APPLY. This contains the latest timings applied
-to the manager. Remove the function dispc_mgr_get_device() as it isn't used
-any more.
+dss_mgr_check_timings() is added in the function dss_mgr_check(), it currently
+takes the timings maintained in the omap_dss_device struct. This would be later
+replaced by the timings stored in the manager's private data.
+
+Make dss_mgr_check_timings() and dispc_mgr_timings_ok() take a const
+omap_video_timings pointer since these functions just check the timings.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |   29 +++++++++++++++--------------
- 1 files changed, 15 insertions(+), 14 deletions(-)
+ drivers/video/omap2/dss/dispc.c   |    2 +-
+ drivers/video/omap2/dss/dpi.c     |    2 +-
+ drivers/video/omap2/dss/dss.h     |    4 +++-
+ drivers/video/omap2/dss/manager.c |   15 +++++++++++++++
+ 4 files changed, 20 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index c198cc8..ef131cd 100644
+index 82012d1..6eec084 100644
 --- a/drivers/video/omap2/dss/dispc.c
 +++ b/drivers/video/omap2/dss/dispc.c
-@@ -413,14 +413,6 @@ static inline bool dispc_mgr_is_lcd(enum omap_channel channel)
- 		return false;
+@@ -2479,7 +2479,7 @@ static bool _dispc_lcd_timings_ok(int hsw, int hfp, int hbp,
  }
  
--static struct omap_dss_device *dispc_mgr_get_device(enum omap_channel channel)
--{
--	struct omap_overlay_manager *mgr -		omap_dss_get_overlay_manager(channel);
--
--	return mgr ? mgr->device : NULL;
--}
--
- u32 dispc_mgr_get_vsync_irq(enum omap_channel channel)
+ bool dispc_mgr_timings_ok(enum omap_channel channel,
+-		struct omap_video_timings *timings)
++		const struct omap_video_timings *timings)
  {
- 	switch (channel) {
-@@ -1665,14 +1657,17 @@ static int check_horiz_timing_omap3(enum omap_channel channel, u16 pos_x,
- 		u16 width, u16 height, u16 out_width, u16 out_height)
- {
- 	int DS = DIV_ROUND_UP(height, out_height);
--	struct omap_dss_device *dssdev = dispc_mgr_get_device(channel);
--	struct omap_video_timings t = dssdev->panel.timings;
-+	struct omap_overlay_manager *mgr;
-+	struct omap_video_timings *t;
- 	unsigned long nonactive, lclk, pclk;
- 	static const u8 limits[3] = { 8, 10, 20 };
- 	u64 val, blank;
- 	int i;
+ 	bool timings_ok;
  
--	nonactive = t.x_res + t.hfp + t.hsw + t.hbp - out_width;
-+	mgr = omap_dss_get_overlay_manager(channel);
-+	t = dss_mgr_get_timings(mgr);
-+
-+	nonactive = t->x_res + t->hfp + t->hsw + t->hbp - out_width;
- 	pclk = dispc_mgr_pclk_rate(channel);
- 	if (dispc_mgr_is_lcd(channel))
- 		lclk = dispc_mgr_lclk_rate(channel);
-@@ -1684,7 +1679,7 @@ static int check_horiz_timing_omap3(enum omap_channel channel, u16 pos_x,
- 		i++;
- 	if (out_width < width)
- 		i++;
--	blank = div_u64((u64)(t.hbp + t.hsw + t.hfp) * lclk, pclk);
-+	blank = div_u64((u64)(t->hbp + t->hsw + t->hfp) * lclk, pclk);
- 	DSSDBG("blanking period + ppl = %llu (limit = %u)\n", blank, limits[i]);
- 	if (blank <= limits[i])
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index e65cf1f..e01ab98 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -311,7 +311,7 @@ int dpi_check_timings(struct omap_dss_device *dssdev,
+ 	unsigned long pck;
+ 	struct dispc_clock_info dispc_cinfo;
+ 
+-	if (!dispc_mgr_timings_ok(dssdev->manager->id, timings))
++	if (dss_mgr_check_timings(dssdev->manager, timings))
  		return -EINVAL;
-@@ -1725,8 +1720,14 @@ static unsigned long calc_core_clk_five_taps(enum omap_channel channel,
- 		return (unsigned long) pclk;
  
- 	if (height > out_height) {
--		struct omap_dss_device *dssdev = dispc_mgr_get_device(channel);
--		unsigned int ppl = dssdev->panel.timings.x_res;
-+		struct omap_overlay_manager *mgr;
-+		struct omap_video_timings *mgr_timings;
-+		unsigned int ppl;
-+
-+		mgr = omap_dss_get_overlay_manager(channel);
-+		mgr_timings = dss_mgr_get_timings(mgr);
-+
-+		ppl = mgr_timings->x_res;
+ 	if (timings->pixel_clock = 0)
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index b17a212..a13b305 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -208,6 +208,8 @@ int dss_init_overlay_managers(struct platform_device *pdev);
+ void dss_uninit_overlay_managers(struct platform_device *pdev);
+ int dss_mgr_simple_check(struct omap_overlay_manager *mgr,
+ 		const struct omap_overlay_manager_info *info);
++int dss_mgr_check_timings(struct omap_overlay_manager *mgr,
++		const struct omap_video_timings *timings);
+ int dss_mgr_check(struct omap_overlay_manager *mgr,
+ 		struct omap_dss_device *dssdev,
+ 		struct omap_overlay_manager_info *info,
+@@ -413,7 +415,7 @@ void dispc_enable_gamma_table(bool enable);
+ void dispc_set_loadmode(enum omap_dss_load_mode mode);
  
- 		tmp = pclk * height * out_width;
- 		do_div(tmp, 2 * out_height * ppl);
+ bool dispc_mgr_timings_ok(enum omap_channel channel,
+-		struct omap_video_timings *timings);
++		const struct omap_video_timings *timings);
+ unsigned long dispc_fclk_rate(void);
+ void dispc_find_clk_divs(bool is_tft, unsigned long req_pck, unsigned long fck,
+ 		struct dispc_clock_info *cinfo);
+diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+index e736460..566fbba 100644
+--- a/drivers/video/omap2/dss/manager.c
++++ b/drivers/video/omap2/dss/manager.c
+@@ -654,6 +654,17 @@ static int dss_mgr_check_zorder(struct omap_overlay_manager *mgr,
+ 	return 0;
+ }
+ 
++int dss_mgr_check_timings(struct omap_overlay_manager *mgr,
++		const struct omap_video_timings *timings)
++{
++	if (!dispc_mgr_timings_ok(mgr->id, timings)) {
++		DSSERR("check_manager: invalid timings\n");
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
+ int dss_mgr_check(struct omap_overlay_manager *mgr,
+ 		struct omap_dss_device *dssdev,
+ 		struct omap_overlay_manager_info *info,
+@@ -668,6 +679,10 @@ int dss_mgr_check(struct omap_overlay_manager *mgr,
+ 			return r;
+ 	}
+ 
++	r = dss_mgr_check_timings(mgr, &dssdev->panel.timings);
++	if (r)
++		return r;
++
+ 	list_for_each_entry(ovl, &mgr->overlays, list) {
+ 		struct omap_overlay_info *oi;
+ 		int r;
 -- 
 1.7.5.4
 

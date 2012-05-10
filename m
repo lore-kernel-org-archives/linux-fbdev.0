@@ -1,99 +1,24 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 10 May 2012 00:19:18 +0000
+From: Peter =?iso-8859-15?q?H=FCwe?= <PeterHuewe@gmx.de>
+Date: Thu, 10 May 2012 21:39:08 +0000
 Subject: Re: [PATCH] video/sis: Annotate SiS_DRAMType as __devinitconst
-Message-Id: <4FAB0986.6090006@gmx.de>
+Message-Id: <201205102339.09295.PeterHuewe@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4FA2FD10.6090306@gmx.de> <1336083295-7327-1-git-send-email-peterhuewe@gmx.de>
-In-Reply-To: <1336083295-7327-1-git-send-email-peterhuewe@gmx.de>
+References: <4FAB0986.6090006@gmx.de>
+In-Reply-To: <4FAB0986.6090006@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Peter Huewe <peterhuewe@gmx.de>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 Cc: Thomas Winischhofer <thomas@winischhofer.net>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 05/03/2012 10:14 PM, Peter Huewe wrote:
-> SiS_DRAMType is const and only used by sisfb_post_300_rwtest which is
-> marked __devinit we can annotate SiS_DRAMType with __devinitconst and
-> move it into the file scope in order to not have it created on the
-> stack.
-> This patch decreases the compiled module size by about 100bytes.
-> 
-> And since hardcoded values are bad we use ARRAY_SIZE for determining
-> the size of SiS_DRAMType ;)
-> 
-> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+Am Donnerstag 10 Mai 2012, 02:19:18 schrieb Florian Tobias Schandinat:
+> Good that you did this one, it was more to be done than I expected. I
+> ignored the checkpatch errors as you didn't introduce them but maybe it
+> wouldn't be a bad idea to fix things up if you touch them. Applied.
 
-Good that you did this one, it was more to be done than I expected. I
-ignored the checkpatch errors as you didn't introduce them but maybe it
-wouldn't be a bad idea to fix things up if you touch them. Applied.
-
+Oh sorry, usually I do checkpatch, but I missed it on this one somehow.
+If you want, I can do a checkpatch cleanup for the whole sis driver as 
+compensation ;)
 
 Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/sis/sis_main.c |   41 +++++++++++++++++++++--------------------
->  1 files changed, 21 insertions(+), 20 deletions(-)
-> 
-> diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
-> index 078ca21..a7a48db 100644
-> --- a/drivers/video/sis/sis_main.c
-> +++ b/drivers/video/sis/sis_main.c
-> @@ -4222,6 +4222,26 @@ sisfb_post_300_buswidth(struct sis_video_info *ivideo)
->  	return 1;			/* 32bit */
->  }
->  
-> +static const unsigned short __devinitconst SiS_DRAMType[17][5] = {
-> +	{0x0C,0x0A,0x02,0x40,0x39},
-> +	{0x0D,0x0A,0x01,0x40,0x48},
-> +	{0x0C,0x09,0x02,0x20,0x35},
-> +	{0x0D,0x09,0x01,0x20,0x44},
-> +	{0x0C,0x08,0x02,0x10,0x31},
-> +	{0x0D,0x08,0x01,0x10,0x40},
-> +	{0x0C,0x0A,0x01,0x20,0x34},
-> +	{0x0C,0x09,0x01,0x08,0x32},
-> +	{0x0B,0x08,0x02,0x08,0x21},
-> +	{0x0C,0x08,0x01,0x08,0x30},
-> +	{0x0A,0x08,0x02,0x04,0x11},
-> +	{0x0B,0x0A,0x01,0x10,0x28},
-> +	{0x09,0x08,0x02,0x02,0x01},
-> +	{0x0B,0x09,0x01,0x08,0x24},
-> +	{0x0B,0x08,0x01,0x04,0x20},
-> +	{0x0A,0x08,0x01,0x02,0x10},
-> +	{0x09,0x08,0x01,0x01,0x00}
-> +};
-> +
->  static int __devinit
->  sisfb_post_300_rwtest(struct sis_video_info *ivideo, int iteration, int buswidth,
->  			int PseudoRankCapacity, int PseudoAdrPinCount,
-> @@ -4231,27 +4251,8 @@ sisfb_post_300_rwtest(struct sis_video_info *ivideo, int iteration, int buswidth
->  	unsigned short sr14;
->  	unsigned int k, RankCapacity, PageCapacity, BankNumHigh, BankNumMid;
->  	unsigned int PhysicalAdrOtherPage, PhysicalAdrHigh, PhysicalAdrHalfPage;
-> -	static const unsigned short SiS_DRAMType[17][5] = {
-> -		{0x0C,0x0A,0x02,0x40,0x39},
-> -		{0x0D,0x0A,0x01,0x40,0x48},
-> -		{0x0C,0x09,0x02,0x20,0x35},
-> -		{0x0D,0x09,0x01,0x20,0x44},
-> -		{0x0C,0x08,0x02,0x10,0x31},
-> -		{0x0D,0x08,0x01,0x10,0x40},
-> -		{0x0C,0x0A,0x01,0x20,0x34},
-> -		{0x0C,0x09,0x01,0x08,0x32},
-> -		{0x0B,0x08,0x02,0x08,0x21},
-> -		{0x0C,0x08,0x01,0x08,0x30},
-> -		{0x0A,0x08,0x02,0x04,0x11},
-> -		{0x0B,0x0A,0x01,0x10,0x28},
-> -		{0x09,0x08,0x02,0x02,0x01},
-> -		{0x0B,0x09,0x01,0x08,0x24},
-> -		{0x0B,0x08,0x01,0x04,0x20},
-> -		{0x0A,0x08,0x01,0x02,0x10},
-> -		{0x09,0x08,0x01,0x01,0x00}
-> -	};
->  
-> -	 for(k = 0; k <= 16; k++) {
-> +	 for(k = 0; k < ARRAY_SIZE(SiS_DRAMType); k++) {
->  
->  		RankCapacity = buswidth * SiS_DRAMType[k][3];
->  
-
+Peter

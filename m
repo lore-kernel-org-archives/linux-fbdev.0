@@ -1,54 +1,44 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Thu, 10 May 2012 00:16:38 +0000
-Subject: Re: [PATCH] video: s3c-fb: s3c_fb_missing_pixclock() can't be __devinit
-Message-Id: <20120510001638.GC13199@opensource.wolfsonmicro.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="yEPQxsgoJgBvi8ip"
+From: Timur Tabi <timur@freescale.com>
+Date: Thu, 10 May 2012 21:57:28 +0000
+Subject: [PATCH] drivers/video: fsl-diu-fb: don't initialize the THRESHOLDS registers
+Message-Id: <1336687048-16519-1-git-send-email-timur@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334486344-24073-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1334486344-24073-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
+The THRESHOLDS register configures thresholds for two interrupts, but
+these interrupts are not used in the DIU driver.  An early version of the
+driver may have used the "lines before vsync" interrupt, which requires
+the LS_BF_VS of THRESHOLDS to be initialized.
 
---yEPQxsgoJgBvi8ip
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Unfortunately, the initialization of this register does not do a
+read-modify-write to set only LS_BF_VS.  On the MPC8610, the value
+written is correct.  On other chips, like the P1022, the value overwrites
+some reserved bits.  This results in a performance drop on the P1022.
 
-On Thu, May 10, 2012 at 12:10:13AM +0000, Florian Tobias Schandinat wrote:
-> On 04/15/2012 10:39 AM, Mark Brown wrote:
-> > Since s3c_fb_missing_pixclock() is called from s3c_fb_set_rgb_timing()
-> > which is used in the suspend/resume paths it can't be marked __devinit
-> > as this could result in it being discarded after boot.
+Since the default value is acceptable as-is on all SOCs, we should just
+avoid touching this register.
 
-> > Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ drivers/video/fsl-diu-fb.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-> I'm not sure that this can actually happen. But the code looks saner
-> with the patch applied so I applied it.
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index 6af3f16..458c006 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -834,7 +834,6 @@ static void update_lcdc(struct fb_info *info)
+ 	diu_ops.set_pixel_clock(var->pixclock);
+ 
+ 	out_be32(&hw->syn_pol, 0);	/* SYNC SIGNALS POLARITY */
+-	out_be32(&hw->thresholds, 0x00037800); /* The Thresholds */
+ 	out_be32(&hw->int_status, 0);	/* INTERRUPT STATUS */
+ 	out_be32(&hw->plut, 0x01F5F666);
+ 
+-- 
+1.7.3.4
 
-Thanks.  To trigger you'd need to disable CONFIG_HOTPLUG and modules
-(possibly some other stuff too) but the main motiviation is that the
-build system complains loudly about section mismatches.
 
---yEPQxsgoJgBvi8ip
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJPqwjfAAoJEBus8iNuMP3dFPYP/0aUosevNOLEnioQQw1X8GRO
-1Qt7di/I/4Y3pYSIotJTkRT4ydw34zT+Ghp1ODoyZavx7/a0LOjl79sOtWmuM9N5
-DCbiYIQ5aREmP//Z+Ke9g3ioQVF7K3MVO1VYDisALdg7JPpPiBTeoWIEBlXI7ZK6
-vK8uPTDswxeVVMTuD3Rms4QcxWd2xI6LJokeHSzBXqIPzMhzK0XIZgq6WTA5PaOa
-pX4bXvL2n9YsUk43PaVv3Z773M8U67oasJ9oE8jeyI/g7G7bbZO/d7mqrolwTsW/
-zk6y0FeoXCp1t87OPg1BklFP/8OwxzP5N30pS3/DOQ9ogalK+YjJA30Cd66+u6el
-2ih9XOlxkTZIQq2lg+JDR1/ArcbMxWFPrQRjxSYO4JeeYkpXtsyPi1s6IcLBCu66
-IwqhISKBbZIhb9yG58VHHjloxIq6wKWLT09V9OinSc/7NxXOcubv7mkaGfUjOFBf
-EAwrLti4CXmqygblItbkSTuySuGT/maYUjHcPbKo2963kZOMI6l/PERJTtkD8zUz
-hsu041rQM33CIYTjw9GOhqCVkVVRZIK118HQhTc1I+G2br2v0d5OYTz31XVrwo3x
-pkBqG47V9aVRFmJD3lDIX6CGR78yrSbWOGWKj3jkd3uUBkYawHboemiGpj+XUyLR
-Jc2MKQ913Zs0eBcHJ0ry
-=K/iF
------END PGP SIGNATURE-----
-
---yEPQxsgoJgBvi8ip--

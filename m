@@ -1,90 +1,49 @@
-From: Donghwa Lee <dh09.lee@samsung.com>
-Date: Wed, 09 May 2012 05:33:28 +0000
-Subject: [PATCH 3/5] video: exynos mipi dsi: Avoid races in probe()
-Message-Id: <4FAA01A8.4010704@samsung.com>
+From: Grazvydas Ignotas <notasas@gmail.com>
+Date: Thu, 10 May 2012 11:19:56 +0000
+Subject: [PATCH v2] OMAPDSS: OMAPFB: always allow to configure overlay
+Message-Id: <1336648796-20219-1-git-send-email-notasas@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
+Cc: linux-omap@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Grazvydas Ignotas <notasas@gmail.com>
 
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Currently when multiple overlays are active, OMAPFB_SETUP_PLANE fails.
+Instead of failing, allow it to configure the first overlay as if there
+was only one overlay, the remaining ones will have to be configured in
+other ways (sysfs).
 
-Make sure all resources are initialized before interrupt handler is
-registered. Pass full platform device name to request_irq() so it
-can be distinguished which device has requested an interrupt in cases
-there are multiple instances in the system.
+This allows overlay-controlling programs (like video players) to function
+properly when framebuffer is cloned to another display (like TV).
 
-Also enable voltage regulators regardless of they have been enabled
-by bootloader or not, to make sure other drivers using same regulators
-don't disable them unexpectedly.
-
-Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
-Signed-off-by: Inki Dae <inki.dae@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
 ---
- drivers/video/exynos/exynos_mipi_dsi.c |   26 ++++++++++++++------------
- 1 files changed, 14 insertions(+), 12 deletions(-)
+ drivers/video/omap2/omapfb/omapfb-ioctl.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
-index e004f1d..3fcdbf9 100644
---- a/drivers/video/exynos/exynos_mipi_dsi.c
-+++ b/drivers/video/exynos/exynos_mipi_dsi.c
-@@ -415,27 +415,30 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
- 		goto err_platform_get_irq;
+diff --git a/drivers/video/omap2/omapfb/omapfb-ioctl.c b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+index 6a09ef8..8af7e17 100644
+--- a/drivers/video/omap2/omapfb/omapfb-ioctl.c
++++ b/drivers/video/omap2/omapfb/omapfb-ioctl.c
+@@ -70,7 +70,7 @@ static int omapfb_setup_plane(struct fb_info *fbi, struct omapfb_plane_info *pi)
+ 
+ 	DBG("omapfb_setup_plane\n");
+ 
+-	if (ofbi->num_overlays != 1) {
++	if (ofbi->num_overlays = 0) {
+ 		r = -EINVAL;
+ 		goto out;
  	}
+@@ -185,7 +185,7 @@ static int omapfb_query_plane(struct fb_info *fbi, struct omapfb_plane_info *pi)
+ {
+ 	struct omapfb_info *ofbi = FB2OFB(fbi);
  
-+	init_completion(&dsim_wr_comp);
-+	init_completion(&dsim_rd_comp);
-+	platform_set_drvdata(pdev, dsim);
-+
- 	ret = request_irq(dsim->irq, exynos_mipi_dsi_interrupt_handler,
--			IRQF_SHARED, pdev->name, dsim);
-+			IRQF_SHARED, dev_name(&pdev->dev), dsim);
- 	if (ret != 0) {
- 		dev_err(&pdev->dev, "failed to request dsim irq\n");
- 		ret = -EINVAL;
- 		goto err_bind;
- 	}
- 
--	init_completion(&dsim_wr_comp);
--	init_completion(&dsim_rd_comp);
--
--	/* enable interrupt */
-+	/* enable interrupts */
- 	exynos_mipi_dsi_init_interrupt(dsim);
- 
- 	/* initialize mipi-dsi client(lcd panel). */
- 	if (dsim_ddi->dsim_lcd_drv && dsim_ddi->dsim_lcd_drv->probe)
- 		dsim_ddi->dsim_lcd_drv->probe(dsim_ddi->dsim_lcd_dev);
- 
--	/* in case that mipi got enabled at bootloader. */
--	if (dsim_pd->enabled)
--		goto out;
-+	/* in case mipi-dsi has been enabled by bootloader */
-+	if (dsim_pd->enabled) {
-+		exynos_mipi_regulator_enable(dsim);
-+		goto done;
-+	}
- 
- 	/* lcd panel power on. */
- 	if (dsim_ddi->dsim_lcd_drv && dsim_ddi->dsim_lcd_drv->power_on)
-@@ -455,12 +458,11 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
- 
- 	dsim->suspended = false;
- 
--out:
-+done:
- 	platform_set_drvdata(pdev, dsim);
- 
--	dev_dbg(&pdev->dev, "mipi-dsi driver(%s mode) has been probed.\n",
--		(dsim_config->e_interface = DSIM_COMMAND) ?
--			"CPU" : "RGB");
-+	dev_dbg(&pdev->dev, "%s() completed sucessfuly (%s mode)\n", __func__,
-+		dsim_config->e_interface = DSIM_COMMAND ? "CPU" : "RGB");
- 
- 	return 0;
- 
+-	if (ofbi->num_overlays != 1) {
++	if (ofbi->num_overlays = 0) {
+ 		memset(pi, 0, sizeof(*pi));
+ 	} else {
+ 		struct omap_overlay *ovl;
 -- 
-1.7.4.1
+1.7.0.4
+

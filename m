@@ -1,91 +1,65 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Fri, 04 May 2012 10:17:24 +0000
-Subject: Re: [PATCH 24/25] OMAPDSS: DSI: improve DSI module id handling
-Message-Id: <4FA3A9E4.3040802@ti.com>
+From: Christoph Fritz <chf.fritz@googlemail.com>
+Date: Sat, 12 May 2012 00:15:56 +0000
+Subject: Re: ASoC: wm9712: Microphone doesn't work: Mux handling broken?
+Message-Id: <20120512001556.GA26105@mars>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>  <1336053481-25433-25-git-send-email-tomi.valkeinen@ti.com>  <4FA39CBB.6010500@ti.com> <1336125229.2701.30.camel@deskari>
-In-Reply-To: <1336125229.2701.30.camel@deskari>
+References: <20120426112726.GF3207@opensource.wolfsonmicro.com>
+	<1335448142.20000.40.camel@mars>
+	<20120426172010.GP3207@opensource.wolfsonmicro.com>
+	<1335474693.3628.26.camel@lovely>
+	<20120426213745.GA18260@opensource.wolfsonmicro.com>
+	<1335513602.3504.4.camel@mars>
+	<20120427134638.GI18260@opensource.wolfsonmicro.com>
+	<20120504132845.GA24245@lovely.krouter>
+	<20120507215506.GA5063@lovely.krouter>
+	<20120508102947.GA8226@lovely.krouter>
+In-Reply-To: <20120508102947.GA8226@lovely.krouter>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: alsa-devel@alsa-project.org, "Hans J. Koch" <hjk@hansjkoch.de>, Sascha Hauer <s.hauer@pengutronix.de>, Liam Girdwood <lrg@ti.com>, linux-fbdev@vger.kernel.org
 
-On Friday 04 May 2012 03:23 PM, Tomi Valkeinen wrote:
-> On Fri, 2012-05-04 at 14:39 +0530, Archit Taneja wrote:
->> On Thursday 03 May 2012 07:28 PM, Tomi Valkeinen wrote:
->>> We currently use the id of the dsi platform device (dsidev->id) as the
->>> DSI hardware module ID. This works because we assign the ID manually in
->>> arch/arm/mach-omap2/display.c at boot time.
->>>
->>> However, with device tree the platform device IDs are automatically
->>> assigned to an arbitrary number, and we can't use it.
->>
->> If this number is arbitrary we would need to change the "dsi_pdev_map"
->> approach of mapping a dsi module and it's corresponding platform device.
->> Currently dsi_pdev_map is:
->>
->> static struct platform_device *dsi_pdev_map[MAX_NUM_DSI];
->>
->> So we either need to increase the array size to take larger arbitrary
->> numbers, or do something else.
->>
->> We would also need to fix the usage of dsi_get_dsidev_from_id(), as
->> right now we manually pass 0 and 1 to it only, for example:
->>
->> static void dsi1_dump_irqs(struct seq_file *s)
->> {
->>           struct platform_device *dsidev = dsi_get_dsidev_from_id(0);
->>
->>           dsi_dump_dsidev_irqs(dsidev, s);
->> }
->>
->> The immediate solution that comes to mind is to maintain 2 id's, one
->> which is sequential, and the other which the DT has created, and keep an
->> array to map these. But this seems messy!
->
-> This is only a problem with device tree, and I solved it so that I pass
-> a DSI module ID in the device tree data. So, with old pdata way I
-> initialize dsi->module_id from the pdev->id, but with DT I initialize
-> dsi->module_id from the DT data.
+> > Framebuffer driver mx3fb configured for a 800x600 display:
+> > 
+> >   soc-audio soc-audio: ASoC machine PhyCORE-ac97-audio should use snd_soc_register_card()
+> >   asoc: platform pcm constructor failed
+> >   asoc: can't create pcm HiFi :-12
+> >   asoc: failed to instantiate card PhyCORE-ac97-audio: -12
+> 
+> When I do decrease from 800x600 to 800x594, wm9712 works. 
+> 
+> Any ideas?
 
-Oh ok, so the code which decides how dsi->module_id is initialised(from 
-DT or pdata) is not in this series right? And it would come later? Right 
-now it's just set to dsidev->id in probe.
+It seems to be a dma problem and not directly related to wm9712.
 
->
-> So basically we remove the use of pdev->id in this patch, and add
-> dsi->module_id field, which needs to be initialized to 0 or 1, depending
-> on the corresponding HW module. We just happen to use the pdev->id to
-> initialize it when using the old pdata method, as we know it tells the
-> right id. But we could initialize it from any other source.
 
-Right, I get it now.
+But the not working microphone input still bothers me. I suppose this
+is related to not beeing able to change some muxes:
 
->
-> This allows us to keep the 0 and 1 DSI IDs, and I think we need those
-> anyway. Some parts of the code could work fine with arbitrary ID, as
-> long as a pdev can be linked to/from this ID. However, there are things
-> where we must have the ID, like configuring the clock source settings in
-> dss_core, where we set a certain bit for DSI module 0, and certain bit
-> for module 1.
->
-> Perhaps even those could be handled without explicit ID of 0 or 1, but
-> that doesn't sound trivial and I didn't want to start tackling that in
-> this series.
->
-> I wish there was a way to get the module ID from the HW registers
-> somehow. Then we wouldn't need to pass the ID via SW, which doesn't feel
-> very correct. At least with DT it's a bit wrong, in my opinion, but best
-> I could come up with.
+$ amixer sset "Mic Select Source" 'Mic 2'
+ Simple mixer control 'Mic Select Source',0
+   Capabilities: enum
+   Items: 'Mic 1' 'Differential' 'Mic 2' 'Stereo'
+   Item0: 'Mic 1'
 
-We could derive it via a parameter like number of lanes or something 
-similar through DSI_GNQ, but that doesn't seem very nice, and may not be 
-usable on future OMAPs.
+$ amixer sset "Differential Source" 'Line'
+Simple mixer control 'Differential Source',0
+  Capabilities: enum
+  Items: 'Mic' 'Line'
+  Item0: 'Mic'
 
-Archit
+They refuse to change their Item0 because they are defined as
+SND_SOC_DAPM_MUX without a correlating path->name so that
+snd_soc_dapm_mux_update_power() (in sound/soc/soc-dapmc) doesn't
+change anything.
 
->
->   Tomi
->
+It works in 2.6.33, but current kernel has different mux handling and
+it seems that no one since cared that much about microphone support.
 
+Mark, can you confirm this, purpose a fix or even come up with
+a patch?
+
+
+Thanks,
+ -- Christoph

@@ -1,44 +1,58 @@
-From: Jean Delvare <khali@linux-fr.org>
-Date: Tue, 08 May 2012 11:31:01 +0000
-Subject: Re: [PATCH] i2c: Split I2C_M_NOSTART support out of I2C_FUNC_PROTOCOL_MANGLING
-Message-Id: <20120508133101.5019b934@endymion.delvare>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 13 May 2012 20:36:29 +0000
+Subject: Re: [PULL for v3.5] SH Mobile LCDC overlay support
+Message-Id: <4FB01B4D.4060700@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1336127208-17951-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1336127208-17951-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <5022250.LOHRC1DPLO@avalon>
+In-Reply-To: <5022250.LOHRC1DPLO@avalon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Wolfram Sang <w.sang@pengutronix.de>, linux-i2c@vger.kernel.org, linux-input@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Fri,  4 May 2012 11:26:48 +0100, Mark Brown wrote:
-> Since there are uses for I2C_M_NOSTART which are much more sensible and
-> standard than most of the protocol mangling functionality (the main one
-> being gather writes to devices where something like a register address
-> needs to be inserted before a block of data) create a new I2C_FUNC_NOSTART
-> for this feature and update all the users to use it.
-> 
-> Also strengthen the disrecommendation of the protocol mangling while we're
-> at it.
-> 
-> In the case of regmap-i2c we remove the requirement for mangling as
-> I2C_M_NOSTART is the only mangling feature which is being used.
-> 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
->  Documentation/i2c/functionality       |    8 +++++---
->  Documentation/i2c/i2c-protocol        |    9 ++++++++-
->  drivers/base/regmap/regmap-i2c.c      |    2 +-
->  drivers/i2c/algos/i2c-algo-bit.c      |    2 +-
->  drivers/i2c/busses/i2c-nuc900.c       |    3 ++-
->  drivers/i2c/busses/i2c-s3c2410.c      |    3 ++-
->  drivers/input/joystick/as5011.c       |    1 +
->  drivers/video/matrox/matroxfb_maven.c |    1 +
->  include/linux/i2c.h                   |    5 +++--
->  9 files changed, 24 insertions(+), 10 deletions(-)
-> (...)
+Hi Laurent,
 
-Applied with minor cleanups, thanks.
+On 04/24/2012 11:31 AM, Laurent Pinchart wrote:
+> Hi Florian,
+> 
+> Could you please pull the following patches that add overlay support for the 
+> SH Mobile LCDC ? They have been posted for review as part of a bigger series 
+> some time ago.
 
--- 
-Jean Delvare
+Well, besides that I dislike everyone inventing his/her own overlay API
+and just not having time to propose something that fits everyone your
+patch looks mostly okay. Two things:
+
+"That's fine, but you need a Documentation/ABI entry for any new sysfs
+file you create." [Greg K-H]
+So as far as I understand Gregs statement and your code correct you
+should add such thing.
+
+I'm not convinced that you don't leak resources. Is the memory you
+allocate with dma_alloc_coherent for the overlays really freed after
+normal use and in error paths?
+
+
+Best regards,
+
+Florian Tobias Schandinat
+
+> 
+> The following changes since commit d313a86d2efb2c5568832389663322e93e291c59:
+> 
+>   i.MX28: Shut down the LCD controller to avoid BootROM sampling bug 
+> (2012-04-21 21:53:12 +0000)
+> 
+> are available in the git repository at:
+>   git://linuxtv.org/pinchartl/fbdev.git planes
+> 
+> Laurent Pinchart (3):
+>       fbdev: sh_mobile_lcdc: Constify sh_mobile_lcdc_fix structure
+>       fbdev: sh_mobile_lcdc: Rename fb operation handlers with a common prefix
+>       fbdev: sh_mobile_lcdc: Implement overlays support
+> 
+>  drivers/video/sh_mobile_lcdcfb.c | 1004 +++++++++++++++++++++++++++++++++----
+>  include/video/sh_mobile_lcdc.h   |    7 +
+>  2 files changed, 915 insertions(+), 96 deletions(-)
+> 
+

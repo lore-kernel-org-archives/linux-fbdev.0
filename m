@@ -1,100 +1,55 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 03 May 2012 13:57:43 +0000
-Subject: [PATCH 07/25] OMAPDSS: Taal: move reset gpio handling to taal driver
-Message-Id: <1336053481-25433-8-git-send-email-tomi.valkeinen@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 13 May 2012 20:50:50 +0000
+Subject: Re: [PATCH] drivers/video/intelfb/intelfbdrv.c: add missing agp_backend_release
+Message-Id: <4FB01EAA.8040504@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1336053481-25433-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1334854553-30067-1-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <1334854553-30067-1-git-send-email-Julia.Lawall@lip6.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: archit@ti.com, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: Maik Broemme <mbroemme@plusserver.de>, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The reset GPIO for Taal panel driver is currently requested in the
-4430sdp board file. This patch moves the gpio request/free into the Taal
-driver, where it should be.
+On 04/19/2012 04:55 PM, Julia Lawall wrote:
+> From: Julia Lawall <Julia.Lawall@lip6.fr>
+> 
+> Release bridge, as done on all other paths out of the function.
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
----
- arch/arm/mach-omap2/board-4430sdp.c       |   16 ----------------
- drivers/video/omap2/displays/panel-taal.c |   15 +++++++++++++++
- 2 files changed, 15 insertions(+), 16 deletions(-)
+Looks good to me, applied.
 
-diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
-index 130ab00..6cbb16f 100644
---- a/arch/arm/mach-omap2/board-4430sdp.c
-+++ b/arch/arm/mach-omap2/board-4430sdp.c
-@@ -758,21 +758,6 @@ static struct omap_dss_device sdp4430_lcd2_device = {
- 	.channel		= OMAP_DSS_CHANNEL_LCD2,
- };
- 
--static void sdp4430_lcd_init(void)
--{
--	int r;
--
--	r = gpio_request_one(dsi1_panel.reset_gpio, GPIOF_DIR_OUT,
--		"lcd1_reset_gpio");
--	if (r)
--		pr_err("%s: Could not get lcd1_reset_gpio\n", __func__);
--
--	r = gpio_request_one(dsi2_panel.reset_gpio, GPIOF_DIR_OUT,
--		"lcd2_reset_gpio");
--	if (r)
--		pr_err("%s: Could not get lcd2_reset_gpio\n", __func__);
--}
--
- static struct omap_dss_hdmi_data sdp4430_hdmi_data = {
- 	.hpd_gpio = HDMI_GPIO_HPD,
- };
-@@ -858,7 +843,6 @@ static void __init omap_4430sdp_display_init(void)
- 	if (r)
- 		pr_err("%s: Could not get display_sel GPIO\n", __func__);
- 
--	sdp4430_lcd_init();
- 	sdp4430_picodlp_init();
- 	omap_display_init(&sdp4430_dss_data);
- 	/*
-diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
-index 3053399..be9992f 100644
---- a/drivers/video/omap2/displays/panel-taal.c
-+++ b/drivers/video/omap2/displays/panel-taal.c
-@@ -912,6 +912,15 @@ static int taal_probe(struct omap_dss_device *dssdev)
- 
- 	dev_set_drvdata(&dssdev->dev, td);
- 
-+	if (gpio_is_valid(panel_data->reset_gpio)) {
-+		r = gpio_request_one(panel_data->reset_gpio, GPIOF_OUT_INIT_LOW,
-+				"taal rst");
-+		if (r) {
-+			dev_err(&dssdev->dev, "failed to request reset gpio\n");
-+			goto err_rst_gpio;
-+		}
-+	}
-+
- 	taal_hw_reset(dssdev);
- 
- 	if (panel_data->use_dsi_backlight) {
-@@ -992,6 +1001,9 @@ err_gpio:
- 	if (bldev != NULL)
- 		backlight_device_unregister(bldev);
- err_bl:
-+	if (gpio_is_valid(panel_data->reset_gpio))
-+		gpio_free(panel_data->reset_gpio);
-+err_rst_gpio:
- 	destroy_workqueue(td->workqueue);
- err_wq:
- 	kfree(td);
-@@ -1030,6 +1042,9 @@ static void __exit taal_remove(struct omap_dss_device *dssdev)
- 	/* reset, to be sure that the panel is in a valid state */
- 	taal_hw_reset(dssdev);
- 
-+	if (gpio_is_valid(panel_data->reset_gpio))
-+		gpio_free(panel_data->reset_gpio);
-+
- 	kfree(td);
- }
- 
--- 
-1.7.9.5
+
+Thanks,
+
+Florian Tobias Schandinat
+
+> 
+> ---
+>  drivers/video/intelfb/intelfbdrv.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
+> index 02fd226..bdcbfba 100644
+> --- a/drivers/video/intelfb/intelfbdrv.c
+> +++ b/drivers/video/intelfb/intelfbdrv.c
+> @@ -680,6 +680,7 @@ static int __devinit intelfb_pci_register(struct pci_dev *pdev,
+>  		 + dinfo->fb.size);
+>  	if (!dinfo->aperture.virtual) {
+>  		ERR_MSG("Cannot remap FB region.\n");
+> +		agp_backend_release(bridge);
+>  		cleanup(dinfo);
+>  		return -ENODEV;
+>  	}
+> @@ -689,6 +690,7 @@ static int __devinit intelfb_pci_register(struct pci_dev *pdev,
+>  					      INTEL_REG_SIZE);
+>  	if (!dinfo->mmio_base) {
+>  		ERR_MSG("Cannot remap MMIO region.\n");
+> +		agp_backend_release(bridge);
+>  		cleanup(dinfo);
+>  		return -ENODEV;
+>  	}
+> 
+> 
 

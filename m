@@ -1,37 +1,44 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 13 May 2012 13:04:10 +0000
-Subject: Re: [PATCH] video/sis: Annotate SiS_DRAMType as __devinitconst
-Message-Id: <4FAFB14A.2020705@gmx.de>
+From: tartler@cs.fau.de
+Date: Mon, 14 May 2012 16:31:51 +0000
+Subject: [PATCH] mbxfb: unbreak compilation with CONFIG_FB_MBX_DEBUG
+Message-Id: <1337013111-7732-1-git-send-email-tartler@cs.fau.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4FAB0986.6090006@gmx.de> <201205102339.09295.PeterHuewe@gmx.de>
-In-Reply-To: <201205102339.09295.PeterHuewe@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: =?ISO-8859-15?Q?Peter_H=FCwe?= <PeterHuewe@gmx.de>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Eric Miao <eric.y.miao@gmail.com>, Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: vamos-dev@lists.cs.fau.de, Reinhard Tartler <siretart@tauware.de>, Reinhard Tartler <tartler@cs.fau.de>
 
-Hi Peter,
+From: Reinhard Tartler <siretart@tauware.de>
 
-On 05/10/2012 09:39 PM, Peter H=FCwe wrote:
-> Am Donnerstag 10 Mai 2012, 02:19:18 schrieb Florian Tobias Schandinat:
->> Good that you did this one, it was more to be done than I expected. I
->> ignored the checkpatch errors as you didn't introduce them but maybe it
->> wouldn't be a bad idea to fix things up if you touch them. Applied.
->=20
-> Oh sorry, usually I do checkpatch, but I missed it on this one somehow.
-> If you want, I can do a checkpatch cleanup for the whole sis driver as=20
-> compensation ;)
+This patch adds missing function prototypes.
 
-That's not necessary.
-I just wanted to highlight that I prefer it if people fix the style
-on-the-fly while working on things rather than sending me individual
-patches for each line and not even fixing the complete line but only one
-special aspect of it so that checkpatch complains about their style fixes.
+Signed-off-by: Reinhard Tartler <tartler@cs.fau.de>
+---
+ drivers/video/mbx/mbxfb.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-btw. Special characters are allowed in sign-offs.
+This patch was found with tools developed in the VAMOS project:
+http://www4.cs.fau.de/Research/VAMOS/
+
+TBH, I'm not sure if this is the correct solution. However, I'd
+appreciate if someone could confirm that this is a real bug.
 
 
-Best regards,
+diff --git a/drivers/video/mbx/mbxfb.c b/drivers/video/mbx/mbxfb.c
+index 6ce3416..c2200ec 100644
+--- a/drivers/video/mbx/mbxfb.c
++++ b/drivers/video/mbx/mbxfb.c
+@@ -878,6 +878,9 @@ static int mbxfb_resume(struct platform_device *dev)
+ #ifndef CONFIG_FB_MBX_DEBUG
+ #define mbxfb_debugfs_init(x)	do {} while(0)
+ #define mbxfb_debugfs_remove(x)	do {} while(0)
++#else
++void mbxfb_debugfs_init(struct fb_info *fbi);
++void mbxfb_debugfs_remove(struct fb_info *fbi);
+ #endif
+ 
+ #define res_size(_r) (((_r)->end - (_r)->start) + 1)
+-- 
+1.7.9.5
 
-Florian Tobias Schandinat

@@ -1,26 +1,39 @@
-From: Dave Airlie <airlied@gmail.com>
-Date: Tue, 22 May 2012 09:25:31 +0000
-Subject: Re: [PATCH] backlight: initialize struct backlight_properties properly
-Message-Id: <CAPM=9tzbMM09jENTZqDcnwEsA+G8y1A_orR8EgREePpxDzr0nQ@mail.gmail.com>
+From: mathieu.poirier@linaro.org
+Date: Tue, 15 May 2012 21:03:01 +0000
+Subject: [PATCH 5/5] drivers/tosa: driver needs I2C and SPI to compile
+Message-Id: <1337115781-27979-6-git-send-email-mathieu.poirier@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1337585085-4891-1-git-send-email-corentin.chary@gmail.com>
-In-Reply-To: <1337585085-4891-1-git-send-email-corentin.chary@gmail.com>
+References: <1337115781-27979-1-git-send-email-mathieu.poirier@linaro.org>
+In-Reply-To: <1337115781-27979-1-git-send-email-mathieu.poirier@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Corentin Chary <corentin.chary@gmail.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>, Keith Packard <keithp@keithp.com>, David Airlie <airlied@linux.ie>, Matthew Garrett <mjg@redhat.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mathieu Poirier <mathieu.poirier@linaro.org>, Dave Airlie <airlied@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Lars-Peter Clausen <lars@metafoo.de>, Axel Lin <axel.lin@gmail.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-fbdev@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-omap@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, mathieu.poirier@linaro.org
 
-On Mon, May 21, 2012 at 8:24 AM, Corentin Chary
-<corentin.chary@gmail.com> wrote:
-> In all these files, the .power field was never correctly initialized.
->
-> Signed-off-by: Corentin Chary <corentin.chary@gmail.com>
-> ---
-> =A0drivers/gpu/drm/i915/intel_panel.c =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =
-=A01 +
-> =A0drivers/gpu/drm/radeon/radeon_legacy_encoders.c | =A0 =A01 +
+From: Arnd Bergmann <arnd@arndb.de>
 
-I've taken these two hunks into drm-next.
+This driver requires both SPI and I2C to build.
 
-Dave.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Mathieu Poirier <mathieu.poirier@linaro.org>
+---
+ drivers/video/backlight/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index af16884..d7487d2 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -88,7 +88,7 @@ config LCD_PLATFORM
+ 
+ config LCD_TOSA
+ 	tristate "Sharp SL-6000 LCD Driver"
+-	depends on SPI && MACH_TOSA
++	depends on I2C && SPI && MACH_TOSA
+ 	help
+ 	  If you have an Sharp SL-6000 Zaurus say Y to enable a driver
+ 	  for its LCD.
+-- 
+1.7.5.4
+

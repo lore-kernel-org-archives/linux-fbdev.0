@@ -1,59 +1,54 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 08 May 2012 10:10:11 +0000
-Subject: [PATCH v3 0/5] OMAPDSS: APPLY: Treat overlay manager timings as shadow registers
-Message-Id: <1336471096-21096-1-git-send-email-archit@ti.com>
+From: mathieu.poirier@linaro.org
+Date: Tue, 15 May 2012 21:02:59 +0000
+Subject: [PATCH 3/5] video/console: automatically select a font
+Message-Id: <1337115781-27979-4-git-send-email-mathieu.poirier@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334561027-28569-1-git-send-email-archit@ti.com>
-In-Reply-To: <1334561027-28569-1-git-send-email-archit@ti.com>
+References: <1337115781-27979-1-git-send-email-mathieu.poirier@linaro.org>
+In-Reply-To: <1337115781-27979-1-git-send-email-mathieu.poirier@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, mathieu.poirier@linaro.org
 
-An overlay manager's timings (the manager size, and blanking parameters if an
-LCD manager) are DISPC shadow registers, and they should hence follow the
-correct programming model.
+From: Arnd Bergmann <arnd@arndb.de>
 
-This set makes the timings an extra_info parameter in manager's private data .
-The interface drivers now apply the timings in instead of directly writing to
-registers.
+The frame buffer console needs at least one font to be built into
+the kernel, so add the necessary Kconfig magic to guarantee that
+one of the available font is always on. If a user accidentally
+disables all fonts manually, the 8x16 font will be selected
+anyway.
 
-This change also prevents the need to use display resolution for overlay
-checks, hence making some of the APPLY functions less dependent on the display.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Mathieu Poirier <mathieu.poirier@linaro.org>
+---
+ drivers/video/console/Kconfig |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
-Changes since v3:
-
-- Make sure that we write to the timing registers and set go bits when calling
-  dss_mgr_set_timings
-- Don't create dss_mgr_get_timings(), apply should pass the timings rather than
-  outside DSS dunctions querying form it.
-
-These patches apply over:
-
-git://gitorious.org/linux-omap-dss2/linux.git dev
-
-Archit Taneja (5):
-  OMAPDSS: APPLY: Add manager timings as extra_info in private data
-  OMAPDSS: Apply manager timings instead of direct DISPC writes
-  OMAPDSS: MANAGER: Create a function to check manager timings
-  OMAPDSS: APPLY: Remove display dependency from overlay and manager
-    checks
-  OMAPDSS: DPI/HDMI: Apply manager timings even if panel is disabled
-
- drivers/video/omap2/dss/apply.c   |  140 ++++++++++++++++++++++++++++++-------
- drivers/video/omap2/dss/dispc.c   |    2 +-
- drivers/video/omap2/dss/dpi.c     |    6 +-
- drivers/video/omap2/dss/dsi.c     |    5 +-
- drivers/video/omap2/dss/dss.h     |   13 +++-
- drivers/video/omap2/dss/hdmi.c    |    4 +-
- drivers/video/omap2/dss/manager.c |   19 +++++-
- drivers/video/omap2/dss/overlay.c |   20 +++---
- drivers/video/omap2/dss/rfbi.c    |    4 +-
- drivers/video/omap2/dss/sdi.c     |    2 +-
- drivers/video/omap2/dss/venc.c    |    2 +-
- 11 files changed, 163 insertions(+), 54 deletions(-)
-
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index c2d11fe..e2c96d0 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -224,5 +224,19 @@ config FONT_10x18
+ 	  big letters. It fits between the sun 12x22 and the normal 8x16 font.
+ 	  If other fonts are too big or too small for you, say Y, otherwise say N.
+ 
++config FONT_AUTOSELECT
++	def_bool y
++	depends on FRAMEBUFFER_CONSOLE || SGI_NEWPORT_CONSOLE || STI_CONSOLE || USB_SISUSBVGA_CON
++	depends on !FONT_8x8
++	depends on !FONT_6x11
++	depends on !FONT_7x14
++	depends on !FONT_PEARL_8x8
++	depends on !FONT_ACORN_8x8
++	depends on !FONT_MINI_4x6
++	depends on !FONT_SUN8x16
++	depends on !FONT_SUN12x22
++	depends on !FONT_10x18
++	select FONT_8x16
++
+ endmenu
+ 
 -- 
 1.7.5.4
 

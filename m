@@ -1,10 +1,11 @@
-From: Christoph Fritz <chf.fritz@googlemail.com>
-Date: Tue, 15 May 2012 09:15:41 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Tue, 15 May 2012 17:15:59 +0000
 Subject: Re: ASoC: wm9712: Microphone doesn't work: Mux handling broken?
-Message-Id: <20120515091541.GA4433@lovely.krouter>
+Message-Id: <20120515171553.GA4140@opensource.wolfsonmicro.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="lrZ03NoBR/3+SXJZ"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1335474693.3628.26.camel@lovely>
-	<20120426213745.GA18260@opensource.wolfsonmicro.com>
+References: <20120426213745.GA18260@opensource.wolfsonmicro.com>
 	<1335513602.3504.4.camel@mars>
 	<20120427134638.GI18260@opensource.wolfsonmicro.com>
 	<20120504132845.GA24245@lovely.krouter>
@@ -13,54 +14,65 @@ References: <1335474693.3628.26.camel@lovely>
 	<20120512001556.GA26105@mars>
 	<20120512115130.GI1781@opensource.wolfsonmicro.com>
 	<20120513035652.GA3532@lovely.krouter>
-In-Reply-To: <20120513035652.GA3532@lovely.krouter>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+	<20120515091541.GA4433@lovely.krouter>
+In-Reply-To: <20120515091541.GA4433@lovely.krouter>
+To: Christoph Fritz <chf.fritz@googlemail.com>
 Cc: alsa-devel@alsa-project.org, "Hans J. Koch" <hjk@hansjkoch.de>, Sascha Hauer <s.hauer@pengutronix.de>, Liam Girdwood <lrg@ti.com>, linux-fbdev@vger.kernel.org
 
-On Sun, May 13, 2012 at 05:56:53AM +0200, Christoph Fritz wrote:
-> On Sat, May 12, 2012 at 12:51:31PM +0100, Mark Brown wrote:
-> > On Sat, May 12, 2012 at 02:15:56AM +0200, Christoph Fritz wrote:
-> > 
-> > > They refuse to change their Item0 because they are defined as
-> > > SND_SOC_DAPM_MUX without a correlating path->name so that
-> > > snd_soc_dapm_mux_update_power() (in sound/soc/soc-dapmc) doesn't
-> > > change anything.
-> > 
-> > A route into a mux without a path name (other than a supply) just isn't
-> > meaningful and I'm surprised it ever worked.
-> > 
-> > > It works in 2.6.33, but current kernel has different mux handling and
-> > > it seems that no one since cared that much about microphone support.
-> > 
-> > It's nothing to do with microphones really, it's more that AC'97 CODECs
-> > are rarely used with modern kernels as the boards that use AC'97 are
-> > mostly quite old and suffer performance issues with modern software
-> > stacks so newer kernels haven't been getting much testing with them.
-> > 
-> > > Mark, can you confirm this, purpose a fix or even come up with
-> > > a patch?
-> > 
-> > Just filling in the appropriate mux value in the relevant route should
-> > do the trick.
 
-Do you mean filling in to wm9712_audio_map or wm9712_enum?
+--lrZ03NoBR/3+SXJZ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> > Looking at the code it looks like the widget isn't hooked
-> > into the audio routing map at all so I'm a little surprised.
+On Tue, May 15, 2012 at 11:15:41AM +0200, Christoph Fritz wrote:
+> On Sun, May 13, 2012 at 05:56:53AM +0200, Christoph Fritz wrote:
 
-Does that mean that wm9712_dapm_widgets should be referred by a
-struct snd_kcontrol_new ?
+> > > Just filling in the appropriate mux value in the relevant route should
+> > > do the trick.
 
-> >I'm out of
-> > the office at the minute and so can't readily set up a test system
-> > myself.
+> Do you mean filling in to wm9712_audio_map or wm9712_enum?
 
-I'm not that into alsa and would greatly appreciate if you could have
-a look with your test system.
+There will need to be routes in the audio map.  Don't know if there are
+any fixes needed in the enum, it was the routing I noticed was missing.
 
-Thanks,
- -- Christoph
+> > > Looking at the code it looks like the widget isn't hooked
+> > > into the audio routing map at all so I'm a little surprised.
 
+> Does that mean that wm9712_dapm_widgets should be referred by a
+> struct snd_kcontrol_new ?
+
+No, that should never happen.
+
+> > >I'm out of
+> > > the office at the minute and so can't readily set up a test system
+> > > myself.
+
+> I'm not that into alsa and would greatly appreciate if you could have
+> a look with your test system.
+
+For personal reasons I don't really have an ETA for when I'll be in the
+office, sorry.
+
+--lrZ03NoBR/3+SXJZ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJPso9CAAoJEBus8iNuMP3dsxYP/iSMqepyHuLixXwK4EOGttZ4
+PS9cIzhpFsFijqsnRhuGgbxPu3YAQLWEpxEIuFNyG/ff5T4Cot0u8zaLCll4or8x
+BWdvWsisPVfUagh9LEP9pbnuO1WIDL5sTYK5DwFAx5mKtE0Izmy89VJzfVqCl2/C
+Z+QNLSJPjiyBwdq/L9urmRv9VBn5pp4l0xyNsko+6ATqQKHSkA9Nilw1K4Qbq5X+
+bYJ/aWOYUfywYoogHU6P+baEpoCJLVDHKOIU9qllzEyDihUm3oSsPgASxN/OP9A+
+yOMzHh8qyIqMPO3/n/Ij2UPwf/e7lFXOnumUnx7hMYQFq/dHVfvPA6HRfU9JSlC7
+ovdukiEe4R8tf1zMzzGP/qAVL/d/GVlH0g9OBZiUays0jM17Hf6VlFSAPuXVP/WM
+2tCwoyeHItV3f/VrU3JUq9Sg8qgzUr2pKKVN0UTzsei0ZwvUZDaF+yCuF+98sPBf
+Uq6iaGYiNw6GvsxPfi2H75RUQCngTpxb/PHVKlImH/+K5fbmEpUIWHZcLVv/cCr+
+r5lQsbWAckZGM73oCRKTjRCJABYSdk0uTvh5ss5fQAswgqgnpoBhqhtV9rhToS8+
+R8Jsyjq4f+zMavWWQyesphIcsYSzqdmLABvdjNHRBDPPSQfzS7/UrsqT5RB7FIn1
+S0FQc/u+6c3/YqkrXxue
+=jDUq
+-----END PGP SIGNATURE-----
+
+--lrZ03NoBR/3+SXJZ--

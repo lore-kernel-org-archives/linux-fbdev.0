@@ -1,52 +1,40 @@
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Wed, 16 May 2012 00:20:31 +0000
-Subject: Re: [PATCH] mbxfb: unbreak compilation with CONFIG_FB_MBX_DEBUG
-Message-Id: <CAMPhdO_B_CM2cupu2r-FMcm69CEkUttFiSbaMb+M_1rX5=Pxww@mail.gmail.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 17 May 2012 22:23:19 +0000
+Subject: [PULL for v3.4] SH Mobile LCDC fix
+Message-Id: <26224047.6PR9YZjWoc@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1337013111-7732-1-git-send-email-tartler@cs.fau.de>
-In-Reply-To: <1337013111-7732-1-git-send-email-tartler@cs.fau.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: tartler@cs.fau.de
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, vamos-dev@lists.cs.fau.de, Reinhard Tartler <siretart@tauware.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-On Tue, May 15, 2012 at 12:31 AM,  <tartler@cs.fau.de> wrote:
-> From: Reinhard Tartler <siretart@tauware.de>
->
-> This patch adds missing function prototypes.
->
-> Signed-off-by: Reinhard Tartler <tartler@cs.fau.de>
-> ---
->  drivers/video/mbx/mbxfb.c |    3 +++
->  1 file changed, 3 insertions(+)
->
-> This patch was found with tools developed in the VAMOS project:
-> http://www4.cs.fau.de/Research/VAMOS/
->
-> TBH, I'm not sure if this is the correct solution. However, I'd
-> appreciate if someone could confirm that this is a real bug.
+Hi Florian,
 
-This looks to be a correct solution to me.
+Is it still possible for the following patch to go to v3.4 ? I've only 
+realized now that MERAM support was broken in some use cases (one of them 
+being fbcon) due to a v3.4-rc regression - thanks to Guennadi Liakhovetski for 
+reporting this.
 
-Acked-by: Eric Miao <eric.y.miao@gmail.com>
+If this is too late for v3.4 please let me know and I'll CC stable on the 
+patch and resend a pull request for v3.5.
 
->
->
-> diff --git a/drivers/video/mbx/mbxfb.c b/drivers/video/mbx/mbxfb.c
-> index 6ce3416..c2200ec 100644
-> --- a/drivers/video/mbx/mbxfb.c
-> +++ b/drivers/video/mbx/mbxfb.c
-> @@ -878,6 +878,9 @@ static int mbxfb_resume(struct platform_device *dev)
->  #ifndef CONFIG_FB_MBX_DEBUG
->  #define mbxfb_debugfs_init(x)  do {} while(0)
->  #define mbxfb_debugfs_remove(x)        do {} while(0)
-> +#else
-> +void mbxfb_debugfs_init(struct fb_info *fbi);
-> +void mbxfb_debugfs_remove(struct fb_info *fbi);
->  #endif
->
->  #define res_size(_r) (((_r)->end - (_r)->start) + 1)
-> --
-> 1.7.9.5
->
+The following changes since commit 5e7b911f9a3e582635801675b7fe935b16cd4af5:
+
+  drivers/video: fsl-diu-fb: don't initialize the THRESHOLDS registers 
+(2012-05-13 13:08:56 +0000)
+
+are available in the git repository at:
+  git://linuxtv.org/pinchartl/fbdev.git fixes
+
+Laurent Pinchart (1):
+      fbdev: sh_mobile_lcdc: Don't confuse line size with pitch
+
+ drivers/video/sh_mobile_lcdcfb.c |    5 +++--
+ drivers/video/sh_mobile_lcdcfb.h |    1 +
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+-- 
+Regards,
+
+Laurent Pinchart
+

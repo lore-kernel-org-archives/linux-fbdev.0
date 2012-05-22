@@ -1,116 +1,166 @@
-From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Date: Tue, 08 May 2012 04:07:49 +0000
-Subject: [PATCH 3/4] fbdev: sh_mobile_hdmi: 32bit register access support
-Message-Id: <87havrmi26.wl%kuninori.morimoto.gx@renesas.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Tue, 22 May 2012 10:05:08 +0000
+Subject: [PATCH 2/2] backlight: lm3533: replace als attribute with als_channel and als_en
+Message-Id: <1337681108-13838-2-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1337681108-13838-1-git-send-email-jhovold@gmail.com>
+In-Reply-To: <1337681108-13838-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Richard Purdie <rpurdie@rpsys.net>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Rob Landley <rob@landley.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, Jonathan Cameron <jic23@kernel.org>, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
 
-Latest SuperH HDMI allows 32bit access only.
-But the data is 8bit. So, we can keep compatibility by switching 8/32 bit access.
+Replace the als attribute with two separate attributes for selecting ALS
+channel and enabling ALS-current-control mode.
 
-Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+This change is needed to reflect changes made to the ALS sub-driver
+which now uses 0-indexed current output channels (rather than 1-indexed
+ALS-mapper target sets).
+
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
 ---
- drivers/video/sh_mobile_hdmi.c |   38 ++++++++++++++++++++++++++++++++++++--
- include/video/sh_mobile_hdmi.h |    5 ++++-
- 2 files changed, 40 insertions(+), 3 deletions(-)
+ .../testing/sysfs-class-backlight-driver-lm3533    |   19 +++++---
+ drivers/video/backlight/lm3533_bl.c                |   48 ++++++++++----------
+ 2 files changed, 37 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/video/sh_mobile_hdmi.c b/drivers/video/sh_mobile_hdmi.c
-index 0bc39bc..4d48a80 100644
---- a/drivers/video/sh_mobile_hdmi.c
-+++ b/drivers/video/sh_mobile_hdmi.c
-@@ -222,20 +222,45 @@ struct sh_hdmi {
- 	struct delayed_work edid_work;
- 	struct fb_videomode mode;
- 	struct fb_monspecs monspec;
+diff --git a/Documentation/ABI/testing/sysfs-class-backlight-driver-lm3533 b/Documentation/ABI/testing/sysfs-class-backlight-driver-lm3533
+index ea91f71..77cf7ac 100644
+--- a/Documentation/ABI/testing/sysfs-class-backlight-driver-lm3533
++++ b/Documentation/ABI/testing/sysfs-class-backlight-driver-lm3533
+@@ -1,13 +1,20 @@
+-What:		/sys/class/backlight/<backlight>/als
+-Date:		April 2012
++What:		/sys/class/backlight/<backlight>/als_channel
++Date:		May 2012
+ KernelVersion:	3.5
+ Contact:	Johan Hovold <jhovold@gmail.com>
+ Description:
+-		Set the ALS-control mode (0..2), where
++		Get the ALS output channel used as input in
++		ALS-current-control mode (0, 1), where
 +
-+	/* register access functions */
-+	void (*write)(struct sh_hdmi *hdmi, u8 data, u8 reg);
-+	u8 (*read)(struct sh_hdmi *hdmi, u8 reg);
- };
++		0 - out_current0 (backlight 0)
++		1 - out_current1 (backlight 1)
  
- #define entity_to_sh_hdmi(e)	container_of(e, struct sh_hdmi, entity)
+-		0 - disabled
+-		1 - ALS-mapper 1 (backlight 0)
+-		2 - ALS-mapper 2 (backlight 1)
++What:		/sys/class/backlight/<backlight>/als_en
++Date:		May 2012
++KernelVersion:	3.5
++Contact:	Johan Hovold <jhovold@gmail.com>
++Description:
++		Enable ALS-current-control mode (0, 1).
  
--static void hdmi_write(struct sh_hdmi *hdmi, u8 data, u8 reg)
-+static void __hdmi_write8(struct sh_hdmi *hdmi, u8 data, u8 reg)
- {
- 	iowrite8(data, hdmi->base + reg);
+ What:		/sys/class/backlight/<backlight>/id
+ Date:		April 2012
+diff --git a/drivers/video/backlight/lm3533_bl.c b/drivers/video/backlight/lm3533_bl.c
+index d916ffe..18dca0c 100644
+--- a/drivers/video/backlight/lm3533_bl.c
++++ b/drivers/video/backlight/lm3533_bl.c
+@@ -79,55 +79,52 @@ static ssize_t show_id(struct device *dev,
+ 	return scnprintf(buf, PAGE_SIZE, "%d\n", bl->id);
  }
  
--static u8 hdmi_read(struct sh_hdmi *hdmi, u8 reg)
-+static u8 __hdmi_read8(struct sh_hdmi *hdmi, u8 reg)
+-/*
+- * ALS-control setting:
+- *
+- *   0 - ALS disabled
+- *   1 - ALS-mapper 1 (backlight 0)
+- *   2 - ALS-mapper 2 (backlight 1)
+- */
+-static ssize_t show_als(struct device *dev,
++static ssize_t show_als_channel(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct lm3533_bl *bl = dev_get_drvdata(dev);
++	unsigned channel = lm3533_bl_get_ctrlbank_id(bl);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n", channel);
++}
++
++static ssize_t show_als_en(struct device *dev,
+ 				struct device_attribute *attr, char *buf)
  {
- 	return ioread8(hdmi->base + reg);
+ 	struct lm3533_bl *bl = dev_get_drvdata(dev);
+ 	int ctrlbank = lm3533_bl_get_ctrlbank_id(bl);
+ 	u8 val;
+ 	u8 mask;
+-	int als;
++	bool enable;
+ 	int ret;
+ 
+ 	ret = lm3533_read(bl->lm3533, LM3533_REG_CTRLBANK_AB_BCONF, &val);
+ 	if (ret)
+ 		return ret;
+ 
+-	mask = 2 * ctrlbank;
+-	als = val & mask;
+-	if (als)
+-		als = ctrlbank + 1;
++	mask = 1 << (2 * ctrlbank);
++	enable = val & mask;
+ 
+-	return scnprintf(buf, PAGE_SIZE, "%d\n", als);
++	return scnprintf(buf, PAGE_SIZE, "%d\n", enable);
  }
  
-+static void __hdmi_write32(struct sh_hdmi *hdmi, u8 data, u8 reg)
-+{
-+	iowrite32((u32)data, hdmi->base + (reg * 4));
-+	udelay(100);
-+}
-+
-+static u8 __hdmi_read32(struct sh_hdmi *hdmi, u8 reg)
-+{
-+	return (u8)ioread32(hdmi->base + (reg * 4));
-+}
-+
-+static void hdmi_write(struct sh_hdmi *hdmi, u8 data, u8 reg)
-+{
-+	hdmi->write(hdmi, data, reg);
-+}
-+
-+static u8 hdmi_read(struct sh_hdmi *hdmi, u8 reg)
-+{
-+	return hdmi->read(hdmi, reg);
-+}
-+
- static void hdmi_bit_set(struct sh_hdmi *hdmi, u8 mask, u8 data, u8 reg)
+-static ssize_t store_als(struct device *dev,
++static ssize_t store_als_en(struct device *dev,
+ 					struct device_attribute *attr,
+ 					const char *buf, size_t len)
  {
- 	u8 val = hdmi_read(hdmi, reg);
-@@ -1148,6 +1173,15 @@ static int __init sh_hdmi_probe(struct platform_device *pdev)
- 		goto egetclk;
+ 	struct lm3533_bl *bl = dev_get_drvdata(dev);
+ 	int ctrlbank = lm3533_bl_get_ctrlbank_id(bl);
+-	int als;
++	int enable;
+ 	u8 val;
+ 	u8 mask;
+ 	int ret;
+ 
+-	if (kstrtoint(buf, 0, &als))
+-		return -EINVAL;
+-
+-	if (als != 0 && (als != ctrlbank + 1))
++	if (kstrtoint(buf, 0, &enable))
+ 		return -EINVAL;
+ 
+ 	mask = 1 << (2 * ctrlbank);
+ 
+-	if (als)
++	if (enable)
+ 		val = mask;
+ 	else
+ 		val = 0;
+@@ -224,13 +221,15 @@ static ssize_t store_pwm(struct device *dev,
+ 	return len;
+ }
+ 
+-static LM3533_ATTR_RW(als);
++static LM3533_ATTR_RO(als_channel);
++static LM3533_ATTR_RW(als_en);
+ static LM3533_ATTR_RO(id);
+ static LM3533_ATTR_RW(linear);
+ static LM3533_ATTR_RW(pwm);
+ 
+ static struct attribute *lm3533_bl_attributes[] = {
+-	&dev_attr_als.attr,
++	&dev_attr_als_channel.attr,
++	&dev_attr_als_en.attr,
+ 	&dev_attr_id.attr,
+ 	&dev_attr_linear.attr,
+ 	&dev_attr_pwm.attr,
+@@ -244,7 +243,8 @@ static umode_t lm3533_bl_attr_is_visible(struct kobject *kobj,
+ 	struct lm3533_bl *bl = dev_get_drvdata(dev);
+ 	umode_t mode = attr->mode;
+ 
+-	if (attr = &dev_attr_als.attr) {
++	if (attr = &dev_attr_als_channel.attr ||
++					attr = &dev_attr_als_en.attr) {
+ 		if (!bl->lm3533->have_als)
+ 			mode = 0;
  	}
- 
-+	/* select register access functions */
-+	if (pdata->flags & HDMI_32BIT_REG) {
-+		hdmi->write	= __hdmi_write32;
-+		hdmi->read	= __hdmi_read32;
-+	} else {
-+		hdmi->write	= __hdmi_write8;
-+		hdmi->read	= __hdmi_read8;
-+	}
-+
- 	/* An arbitrary relaxed pixclock just to get things started: from standard 480p */
- 	rate = clk_round_rate(hdmi->hdmi_clk, PICOS2KHZ(37037));
- 	if (rate > 0)
-diff --git a/include/video/sh_mobile_hdmi.h b/include/video/sh_mobile_hdmi.h
-index 2699635..ce8a540 100644
---- a/include/video/sh_mobile_hdmi.h
-+++ b/include/video/sh_mobile_hdmi.h
-@@ -18,10 +18,11 @@ struct clk;
- /*
-  * flags format
-  *
-- * 0x000000BA
-+ * 0x00000CBA
-  *
-  * A: Audio source select
-  * B: Int output option
-+ * C: Chip specific option
-  */
- 
- /* Audio source select */
-@@ -35,6 +36,8 @@ struct clk;
- #define HDMI_OUTPUT_PUSH_PULL	(1 << 4) /* System control : output mode */
- #define HDMI_OUTPUT_POLARITY_HI	(1 << 5) /* System control : output polarity */
- 
-+/* Chip specific option */
-+#define HDMI_32BIT_REG		(1 << 8)
- 
- struct sh_mobile_hdmi_info {
- 	unsigned int			 flags;
 -- 
-1.7.5.4
+1.7.8.5
 

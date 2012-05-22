@@ -1,226 +1,233 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 08 May 2012 10:10:12 +0000
-Subject: [PATCH v3 1/5] OMAPDSS: APPLY: Add manager timings as extra_info in private data
-Message-Id: <1336471096-21096-2-git-send-email-archit@ti.com>
+From: Johan Hovold <jhovold@gmail.com>
+Date: Tue, 22 May 2012 10:05:07 +0000
+Subject: [PATCH 1/2] leds: lm3533: replace als attribute with als_channel and als_en
+Message-Id: <1337681108-13838-1-git-send-email-jhovold@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334561027-28569-1-git-send-email-archit@ti.com>
- <1336471096-21096-1-git-send-email-archit@ti.com>
-In-Reply-To: <1336471096-21096-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: Richard Purdie <rpurdie@rpsys.net>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Rob Landley <rob@landley.net>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, Jonathan Cameron <jic23@kernel.org>, linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
 
-DISPC manager size and DISPC manager blanking parameters(for LCD managers)
-follow the shadow register programming model. Currently, they are programmed
-directly by the interface drivers.
+Replace the als attribute with two separate attributes for selecting ALS
+channel and enabling ALS-current-control mode.
 
-To configure manager timings using APPLY, there is a need to introduce extra
-info flags for managers, similar to what is done for overlays. This is needed
-because timings aren't a part of overlay_manager_info struct configured by a
-user of DSS, they are configured internally by the interface or panel drivers.
+This change is needed to reflect changes made to the ALS sub-driver
+which now uses 0-indexed current output channels (rather than 1-indexed
+ALS-mapper target sets).
 
-Add dirty and shadow_dirty extra_info flags for managers, update these flags
-at the appropriate places. Rewrite the function extra_info_update_ongoing()
-slightly as checking for manager's extra_info flags can simplify the code a bit.
-
-Create function dss_mgr_set_timings() which applies the new manager timings to
-extra_info and writes it to the registers and set the go bits.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
 ---
- drivers/video/omap2/dss/apply.c |   96 +++++++++++++++++++++++++++++++++-----
- drivers/video/omap2/dss/dss.h   |    2 +
- 2 files changed, 85 insertions(+), 13 deletions(-)
+ .../ABI/testing/sysfs-class-led-driver-lm3533      |   19 +++-
+ drivers/leds/leds-lm3533.c                         |   98 +++++++++++++++-----
+ 2 files changed, 87 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index b10b3bc..57686f6 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -99,6 +99,11 @@ struct mgr_priv_data {
- 
- 	/* If true, a display is enabled using this manager */
- 	bool enabled;
+diff --git a/Documentation/ABI/testing/sysfs-class-led-driver-lm3533 b/Documentation/ABI/testing/sysfs-class-led-driver-lm3533
+index a9633fd..620ebb3 100644
+--- a/Documentation/ABI/testing/sysfs-class-led-driver-lm3533
++++ b/Documentation/ABI/testing/sysfs-class-led-driver-lm3533
+@@ -1,13 +1,20 @@
+-What:		/sys/class/leds/<led>/als
+-Date:		April 2012
++What:		/sys/class/leds/<led>/als_channel
++Date:		May 2012
+ KernelVersion:	3.5
+ Contact:	Johan Hovold <jhovold@gmail.com>
+ Description:
+-		Set the ALS-control mode (0, 2, 3), where
++		Set the ALS output channel to use as input in
++		ALS-current-control mode (1, 2), where
 +
-+	bool extra_info_dirty;
-+	bool shadow_extra_info_dirty;
-+
-+	struct omap_video_timings timings;
- };
++		1 - out_current1
++		2 - out_current2
  
- static struct {
-@@ -261,6 +266,20 @@ static bool need_isr(void)
- 			if (mp->shadow_info_dirty)
- 				return true;
+-		0 - disabled
+-		2 - ALS-mapper 2
+-		3 - ALS-mapper 3
++What:		/sys/class/leds/<led>/als_en
++Date:		May 2012
++KernelVersion:	3.5
++Contact:	Johan Hovold <jhovold@gmail.com>
++Description:
++		Enable ALS-current-control mode (0, 1).
  
-+			/*
-+			 * NOTE: we don't check extra_info flags for disabled
-+			 * managers, once the manager is enabled, the extra_info
-+			 * related manager changes will be taken in by HW.
-+			 */
-+
-+			/* to write new values to registers */
-+			if (mp->extra_info_dirty)
-+				return true;
-+
-+			/* to set GO bit */
-+			if (mp->shadow_extra_info_dirty)
-+				return true;
-+
- 			list_for_each_entry(ovl, &mgr->overlays, list) {
- 				struct ovl_priv_data *op;
+ What:		/sys/class/leds/<led>/falltime
+ What:		/sys/class/leds/<led>/risetime
+diff --git a/drivers/leds/leds-lm3533.c b/drivers/leds/leds-lm3533.c
+index e968470..f56b6e7 100644
+--- a/drivers/leds/leds-lm3533.c
++++ b/drivers/leds/leds-lm3533.c
+@@ -27,8 +27,8 @@
+ #define LM3533_LVCTRLBANK_MAX		5
+ #define LM3533_LVCTRLBANK_COUNT		4
+ #define LM3533_RISEFALLTIME_MAX		7
+-#define LM3533_ALS_LV_MIN		2
+-#define LM3533_ALS_LV_MAX		3
++#define LM3533_ALS_CHANNEL_LV_MIN	1
++#define LM3533_ALS_CHANNEL_LV_MAX	2
  
-@@ -305,7 +324,7 @@ static bool need_go(struct omap_overlay_manager *mgr)
+ #define LM3533_REG_CTRLBANK_BCONF_BASE		0x1b
+ #define LM3533_REG_PATTERN_ENABLE		0x28
+@@ -39,8 +39,9 @@
  
- 	mp = get_mgr_priv(mgr);
+ #define LM3533_REG_PATTERN_STEP			0x10
  
--	if (mp->shadow_info_dirty)
-+	if (mp->shadow_info_dirty || mp->shadow_extra_info_dirty)
- 		return true;
+-#define LM3533_REG_CTRLBANK_BCONF_MAPPING_MASK	0x04
+-#define LM3533_REG_CTRLBANK_BCONF_ALS_MASK	0x03
++#define LM3533_REG_CTRLBANK_BCONF_MAPPING_MASK		0x04
++#define LM3533_REG_CTRLBANK_BCONF_ALS_EN_MASK		0x02
++#define LM3533_REG_CTRLBANK_BCONF_ALS_CHANNEL_MASK	0x01
  
- 	list_for_each_entry(ovl, &mgr->overlays, list) {
-@@ -320,20 +339,16 @@ static bool need_go(struct omap_overlay_manager *mgr)
- /* returns true if an extra_info field is currently being updated */
- static bool extra_info_update_ongoing(void)
+ #define LM3533_LED_FLAG_PATTERN_ENABLE		1
+ 
+@@ -416,21 +417,14 @@ static ssize_t store_falltime(struct device *dev,
+ 					LM3533_REG_PATTERN_FALLTIME_BASE);
+ }
+ 
+-/*
+- * ALS-control setting:
+- *
+- *   0 - ALS disabled
+- *   2 - ALS-mapper 2
+- *   3 - ALS-mapper 3
+- */
+-static ssize_t show_als(struct device *dev,
++static ssize_t show_als_channel(struct device *dev,
+ 				struct device_attribute *attr, char *buf)
  {
--	const int num_ovls = omap_dss_get_num_overlays();
--	struct ovl_priv_data *op;
--	struct omap_overlay *ovl;
--	struct mgr_priv_data *mp;
-+	const int num_mgrs = dss_feat_get_num_mgrs();
- 	int i;
+ 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+ 	struct lm3533_led *led = to_lm3533_led(led_cdev);
++	unsigned channel;
+ 	u8 reg;
+ 	u8 val;
+-	int als;
+ 	int ret;
  
--	for (i = 0; i < num_ovls; ++i) {
--		ovl = omap_dss_get_overlay(i);
--		op = get_ovl_priv(ovl);
--
--		if (!ovl->manager)
--			continue;
-+	for (i = 0; i < num_mgrs; ++i) {
-+		struct omap_overlay_manager *mgr;
-+		struct omap_overlay *ovl;
-+		struct mgr_priv_data *mp;
+ 	reg = lm3533_led_get_lv_reg(led, LM3533_REG_CTRLBANK_BCONF_BASE);
+@@ -438,32 +432,85 @@ static ssize_t show_als(struct device *dev,
+ 	if (ret)
+ 		return ret;
  
--		mp = get_mgr_priv(ovl->manager);
-+		mgr = omap_dss_get_overlay_manager(i);
-+		mp = get_mgr_priv(mgr);
+-	als = val & LM3533_REG_CTRLBANK_BCONF_ALS_MASK;
++	channel = (val & LM3533_REG_CTRLBANK_BCONF_ALS_CHANNEL_MASK) + 1;
  
- 		if (!mp->enabled)
- 			continue;
-@@ -341,8 +356,15 @@ static bool extra_info_update_ongoing(void)
- 		if (!mp->updating)
- 			continue;
- 
--		if (op->extra_info_dirty || op->shadow_extra_info_dirty)
-+		if (mp->extra_info_dirty || mp->shadow_extra_info_dirty)
- 			return true;
-+
-+		list_for_each_entry(ovl, &mgr->overlays, list) {
-+			struct ovl_priv_data *op = get_ovl_priv(ovl);
-+
-+			if (op->extra_info_dirty || op->shadow_extra_info_dirty)
-+				return true;
-+		}
- 	}
- 
- 	return false;
-@@ -601,6 +623,22 @@ static void dss_mgr_write_regs(struct omap_overlay_manager *mgr)
- 	}
+-	return scnprintf(buf, PAGE_SIZE, "%d\n", als);
++	return scnprintf(buf, PAGE_SIZE, "%u\n", channel);
  }
  
-+static void dss_mgr_write_regs_extra(struct omap_overlay_manager *mgr)
-+{
-+	struct mgr_priv_data *mp = get_mgr_priv(mgr);
-+
-+	DSSDBGF("%d", mgr->id);
-+
-+	if (!mp->extra_info_dirty)
-+		return;
-+
-+	dispc_mgr_set_timings(mgr->id, &mp->timings);
-+
-+	mp->extra_info_dirty = false;
-+	if (mp->updating)
-+		mp->shadow_extra_info_dirty = true;
-+}
-+
- static void dss_write_regs_common(void)
+-static ssize_t store_als(struct device *dev,
++static ssize_t store_als_channel(struct device *dev,
+ 					struct device_attribute *attr,
+ 					const char *buf, size_t len)
  {
- 	const int num_mgrs = omap_dss_get_num_overlay_managers();
-@@ -654,6 +692,7 @@ static void dss_write_regs(void)
- 		}
+ 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+ 	struct lm3533_led *led = to_lm3533_led(led_cdev);
+-	u8 als;
++	unsigned channel;
+ 	u8 reg;
++	u8 val;
+ 	u8 mask;
+ 	int ret;
  
- 		dss_mgr_write_regs(mgr);
-+		dss_mgr_write_regs_extra(mgr);
- 	}
- }
+-	if (kstrtou8(buf, 0, &als))
++	if (kstrtouint(buf, 0, &channel))
+ 		return -EINVAL;
  
-@@ -693,6 +732,7 @@ static void mgr_clear_shadow_dirty(struct omap_overlay_manager *mgr)
+-	if (als != 0 && (als < LM3533_ALS_LV_MIN || als > LM3533_ALS_LV_MAX))
++	if (channel < LM3533_ALS_CHANNEL_LV_MIN ||
++					channel > LM3533_ALS_CHANNEL_LV_MAX)
+ 		return -EINVAL;
  
- 	mp = get_mgr_priv(mgr);
- 	mp->shadow_info_dirty = false;
-+	mp->shadow_extra_info_dirty = false;
- 
- 	list_for_each_entry(ovl, &mgr->overlays, list) {
- 		op = get_ovl_priv(ovl);
-@@ -719,6 +759,7 @@ void dss_mgr_start_update(struct omap_overlay_manager *mgr)
- 	}
- 
- 	dss_mgr_write_regs(mgr);
-+	dss_mgr_write_regs_extra(mgr);
- 
- 	dss_write_regs_common();
- 
-@@ -1225,6 +1266,35 @@ err:
- 	return r;
- }
- 
-+static void dss_apply_mgr_timings(struct omap_overlay_manager *mgr,
-+		struct omap_video_timings *timings)
-+{
-+	struct mgr_priv_data *mp = get_mgr_priv(mgr);
+ 	reg = lm3533_led_get_lv_reg(led, LM3533_REG_CTRLBANK_BCONF_BASE);
+-	mask = LM3533_REG_CTRLBANK_BCONF_ALS_MASK;
++	mask = LM3533_REG_CTRLBANK_BCONF_ALS_CHANNEL_MASK;
++	val = channel - 1;
 +
-+	mp->timings = *timings;
-+	mp->extra_info_dirty = true;
++	ret = lm3533_update(led->lm3533, reg, val, mask);
++	if (ret)
++		return ret;
++
++	return len;
 +}
 +
-+void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
-+		struct omap_video_timings *timings)
++static ssize_t show_als_en(struct device *dev,
++				struct device_attribute *attr, char *buf)
 +{
-+	unsigned long flags;
++	struct led_classdev *led_cdev = dev_get_drvdata(dev);
++	struct lm3533_led *led = to_lm3533_led(led_cdev);
++	bool enable;
++	u8 reg;
++	u8 val;
++	int ret;
 +
-+	mutex_lock(&apply_lock);
++	reg = lm3533_led_get_lv_reg(led, LM3533_REG_CTRLBANK_BCONF_BASE);
++	ret = lm3533_read(led->lm3533, reg, &val);
++	if (ret)
++		return ret;
+ 
+-	ret = lm3533_update(led->lm3533, reg, als, mask);
++	enable = val & LM3533_REG_CTRLBANK_BCONF_ALS_EN_MASK;
 +
-+	spin_lock_irqsave(&data_lock, flags);
-+
-+	dss_apply_mgr_timings(mgr, timings);
-+
-+	dss_write_regs();
-+	dss_set_go_bits();
-+
-+	spin_unlock_irqrestore(&data_lock, flags);
-+
-+	wait_pending_extra_info_updates();
-+
-+	mutex_unlock(&apply_lock);
++	return scnprintf(buf, PAGE_SIZE, "%d\n", enable);
 +}
++
++static ssize_t store_als_en(struct device *dev,
++					struct device_attribute *attr,
++					const char *buf, size_t len)
++{
++	struct led_classdev *led_cdev = dev_get_drvdata(dev);
++	struct lm3533_led *led = to_lm3533_led(led_cdev);
++	unsigned enable;
++	u8 reg;
++	u8 mask;
++	u8 val;
++	int ret;
++
++	if (kstrtouint(buf, 0, &enable))
++		return -EINVAL;
++
++	reg = lm3533_led_get_lv_reg(led, LM3533_REG_CTRLBANK_BCONF_BASE);
++	mask = LM3533_REG_CTRLBANK_BCONF_ALS_EN_MASK;
++
++	if (enable)
++		val = mask;
++	else
++		val = 0;
++
++	ret = lm3533_update(led->lm3533, reg, val, mask);
+ 	if (ret)
+ 		return ret;
  
- int dss_ovl_set_info(struct omap_overlay *ovl,
- 		struct omap_overlay_info *info)
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 5ca67f1..ca59481 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -177,6 +177,8 @@ void dss_mgr_get_info(struct omap_overlay_manager *mgr,
- int dss_mgr_set_device(struct omap_overlay_manager *mgr,
- 		struct omap_dss_device *dssdev);
- int dss_mgr_unset_device(struct omap_overlay_manager *mgr);
-+void dss_mgr_set_timings(struct omap_overlay_manager *mgr,
-+		struct omap_video_timings *timings);
+@@ -558,7 +605,8 @@ static ssize_t store_pwm(struct device *dev,
+ 	return len;
+ }
  
- bool dss_ovl_is_enabled(struct omap_overlay *ovl);
- int dss_ovl_enable(struct omap_overlay *ovl);
+-static LM3533_ATTR_RW(als);
++static LM3533_ATTR_RW(als_channel);
++static LM3533_ATTR_RW(als_en);
+ static LM3533_ATTR_RW(falltime);
+ static LM3533_ATTR_RO(id);
+ static LM3533_ATTR_RW(linear);
+@@ -566,7 +614,8 @@ static LM3533_ATTR_RW(pwm);
+ static LM3533_ATTR_RW(risetime);
+ 
+ static struct attribute *lm3533_led_attributes[] = {
+-	&dev_attr_als.attr,
++	&dev_attr_als_channel.attr,
++	&dev_attr_als_en.attr,
+ 	&dev_attr_falltime.attr,
+ 	&dev_attr_id.attr,
+ 	&dev_attr_linear.attr,
+@@ -583,7 +632,8 @@ static umode_t lm3533_led_attr_is_visible(struct kobject *kobj,
+ 	struct lm3533_led *led = to_lm3533_led(led_cdev);
+ 	umode_t mode = attr->mode;
+ 
+-	if (attr = &dev_attr_als.attr) {
++	if (attr = &dev_attr_als_channel.attr ||
++					attr = &dev_attr_als_en.attr) {
+ 		if (!led->lm3533->have_als)
+ 			mode = 0;
+ 	}
 -- 
-1.7.5.4
+1.7.8.5
 

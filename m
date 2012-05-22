@@ -1,88 +1,60 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 10 May 2012 00:19:34 +0000
-Subject: Re: [PATCH v2] video/via: Convert to kstrtou8_from_user
-Message-Id: <4FAB0996.5000405@gmx.de>
+From: Siarhei Siamashka <siarhei.siamashka@gmail.com>
+Date: Tue, 22 May 2012 19:54:02 +0000
+Subject: [PATCH 0/2] OMAPDSS: write-through caching support for omapfb
+Message-Id: <1337716444-30139-1-git-send-email-siarhei.siamashka@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CACVxJT96rXRqMoeabdDyNEjXCubuAnQ_fonisbopQvYL=Qhp2w@mail.gmail.com> <1336090997-23727-1-git-send-email-peterhuewe@gmx.de>
-In-Reply-To: <1336090997-23727-1-git-send-email-peterhuewe@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Peter Huewe <peterhuewe@gmx.de>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On 05/04/2012 12:23 AM, Peter Huewe wrote:
-> This patch replaces the code for getting an number from a
-> userspace buffer by a simple call to kstrou8_from_user.
-> This makes it easier to read and less error prone.
-> 
-> v2:
-> removed initialization of reg_val and dropped check if count < 1
-> 
-> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+This is a very simple few-liner patchset, which allows to optionally
+enable write-through caching for OMAP DSS framebuffer. The problem with
+the current writecombine cacheability attribute is that it only speeds
+up writes. Uncached reads are slow, even though the use of NEON mitigates
+this problem a bit.
 
-Applied.
+Traditionally, xf86-video-fbdev DDX is using shadow framebuffer in the
+system memory. Which contains a copy of the framebuffer data for the
+purpose of providing fast read access to it when needed. Framebuffer
+read access is required not so often, but it still gets used for
+scrolling and moving windows around in Xorg server. And the users
+perceive their linux desktop as rather sluggish when these operations
+are not fast enough.
 
+In the case of ARM hardware, framebuffer is typically physically
+located in the main memory. And the processors still support
+write-through cacheability attribute. According to ARM ARM, the writes
+done to write-through cached memory inside the level of cache are
+visible to all observers outside the level of cache without the need
+of explicit cache maintenance (same rule as for non-cached memory).
+So write-through cache is a perfect choice when only CPU is allowed
+to modify the data in the framebuffer and everyone else (screen
+refresh DMA) is only reading it. That is, assuming that write-through
+cached memory provides good performance and there are no quirks.
+As the framebuffer reads become fast, the need for shadow framebuffer
+disappears.
 
-Thanks,
+And at least for ARM11 and Cortex-A8 processors, the performance of
+write-through cache is really good. Cortex-A9 is another story, because
+all pages marked as Write-Through are supposedly treated as Non-Cacheable:
+    http://infocenter.arm.com/help/topic/com.arm.doc.ddi0388h/CBBFDIJD.html
+So OMAP4 is out of luck. But OMAP3 based hardware can have a nice
+graphics performance boost. And OMAP3 actually needs it a lot more.
 
-Florian Tobias Schandinat
+PS. The xf86-video-omapfb-0.1.1 driver does not even use shadow
+    framebuffer (ouch!). So its users, if any, should see an immediate
+    speedup.
 
-> ---
-> @Alexey: Thanks for the review/feedback!
->  drivers/video/via/viafbdev.c |   34 ++++++++++++----------------------
->  1 files changed, 12 insertions(+), 22 deletions(-)
-> 
-> diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-> index a13c258..88bf5ba 100644
-> --- a/drivers/video/via/viafbdev.c
-> +++ b/drivers/video/via/viafbdev.c
-> @@ -1279,17 +1279,12 @@ static int viafb_dfph_proc_open(struct inode *inode, struct file *file)
->  static ssize_t viafb_dfph_proc_write(struct file *file,
->  	const char __user *buffer, size_t count, loff_t *pos)
->  {
-> -	char buf[20];
-> -	u8 reg_val = 0;
-> -	unsigned long length;
-> -	if (count < 1)
-> -		return -EINVAL;
-> -	length = count > 20 ? 20 : count;
-> -	if (copy_from_user(&buf[0], buffer, length))
-> -		return -EFAULT;
-> -	buf[length - 1] = '\0';	/*Ensure end string */
-> -	if (kstrtou8(buf, 0, &reg_val) < 0)
-> -		return -EINVAL;
-> +	int err;
-> +	u8 reg_val;
-> +	err = kstrtou8_from_user(buffer, count, 0, &reg_val);
-> +	if (err)
-> +		return err;
-> +
->  	viafb_write_reg_mask(CR97, VIACR, reg_val, 0x0f);
->  	return count;
->  }
-> @@ -1319,17 +1314,12 @@ static int viafb_dfpl_proc_open(struct inode *inode, struct file *file)
->  static ssize_t viafb_dfpl_proc_write(struct file *file,
->  	const char __user *buffer, size_t count, loff_t *pos)
->  {
-> -	char buf[20];
-> -	u8 reg_val = 0;
-> -	unsigned long length;
-> -	if (count < 1)
-> -		return -EINVAL;
-> -	length = count > 20 ? 20 : count;
-> -	if (copy_from_user(&buf[0], buffer, length))
-> -		return -EFAULT;
-> -	buf[length - 1] = '\0';	/*Ensure end string */
-> -	if (kstrtou8(buf, 0, &reg_val) < 0)
-> -		return -EINVAL;
-> +	int err;
-> +	u8 reg_val;
-> +	err = kstrtou8_from_user(buffer, count, 0, &reg_val);
-> +	if (err)
-> +		return err;
-> +
->  	viafb_write_reg_mask(CR99, VIACR, reg_val, 0x0f);
->  	return count;
->  }
+Siarhei Siamashka (2):
+  ARM: pgtable: add pgprot_writethrough() macro
+  OMAPDSS: Optionally enable write-through cache for the framebuffer
+
+ Documentation/arm/OMAP/DSS               |   10 ++++++++++
+ arch/arm/include/asm/pgtable.h           |    3 +++
+ drivers/video/omap2/omapfb/omapfb-main.c |    7 ++++++-
+ 3 files changed, 19 insertions(+), 1 deletions(-)
+
+-- 
+1.7.3.4
 

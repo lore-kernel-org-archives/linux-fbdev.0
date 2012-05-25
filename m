@@ -1,46 +1,74 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 09 May 2012 10:22:51 +0000
-Subject: [PATCH v4 4/9] OMAPDSS: APPLY: Don't check manager settings if it is disabled
-Message-Id: <1336558256-26140-5-git-send-email-archit@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Fri, 25 May 2012 07:21:08 +0000
+Subject: [PATCH 2/3] video: exynos_dp: move sw reset prioir to enabling sw defined function
+Message-Id: <001e01cd3a46$f4658cb0$dd30a610$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334561027-28569-1-git-send-email-archit@ti.com>
- <1336558256-26140-1-git-send-email-archit@ti.com>
-In-Reply-To: <1336558256-26140-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-fbdev@vger.kernel.org
 
-If a manager is disabled, there is no guarantee at any point in time that all
-it's parameters are configured. There is always a chance that some more
-parameters are yet to be configured by a user of DSS, or by DSS itself.
+The sw reset should be called prioir to enabling sw defined function,
+according to datasheet.
 
-However, when the manager is enabled, we can be certain that all the parameters
-have been configured, as we can't enable a manager with an incomplete
-configuration. Therefore, if a manager is disabled, don't check for the validity
-of it's parameters or the parameters of the overlays connected to it. Only check
-once it is enabled. Add a check in dss_check_settings_low() to achieve the same.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/omap2/dss/apply.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ drivers/video/exynos/exynos_dp_core.c |    2 ++
+ drivers/video/exynos/exynos_dp_core.h |    1 +
+ drivers/video/exynos/exynos_dp_reg.c  |    7 +++++--
+ 3 files changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index 57686f6..ad349b3 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -192,6 +192,9 @@ static int dss_check_settings_low(struct omap_overlay_manager *mgr,
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index aabd214..b446f7e 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -27,6 +27,8 @@ static int exynos_dp_init_dp(struct exynos_dp_device *dp)
+ {
+ 	exynos_dp_reset(dp);
  
- 	mp = get_mgr_priv(mgr);
- 
-+	if (!mp->enabled)
-+		return 0;
++	exynos_dp_swreset(dp);
 +
- 	if (applying && mp->user_info_dirty)
- 		mi = &mp->user_info;
- 	else
+ 	/* SW defined function Normal operation */
+ 	exynos_dp_enable_sw_function(dp);
+ 
+diff --git a/drivers/video/exynos/exynos_dp_core.h b/drivers/video/exynos/exynos_dp_core.h
+index 8f596b9..1e0f998 100644
+--- a/drivers/video/exynos/exynos_dp_core.h
++++ b/drivers/video/exynos/exynos_dp_core.h
+@@ -41,6 +41,7 @@ void exynos_dp_lane_swap(struct exynos_dp_device *dp, bool enable);
+ void exynos_dp_init_analog_param(struct exynos_dp_device *dp);
+ void exynos_dp_init_interrupt(struct exynos_dp_device *dp);
+ void exynos_dp_reset(struct exynos_dp_device *dp);
++void exynos_dp_swreset(struct exynos_dp_device *dp);
+ void exynos_dp_config_interrupt(struct exynos_dp_device *dp);
+ u32 exynos_dp_get_pll_lock_status(struct exynos_dp_device *dp);
+ void exynos_dp_set_pll_power_down(struct exynos_dp_device *dp, bool enable);
+diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
+index 99bafb8..6ce76d5 100644
+--- a/drivers/video/exynos/exynos_dp_reg.c
++++ b/drivers/video/exynos/exynos_dp_reg.c
+@@ -109,8 +109,6 @@ void exynos_dp_reset(struct exynos_dp_device *dp)
+ {
+ 	u32 reg;
+ 
+-	writel(RESET_DP_TX, dp->reg_base + EXYNOS_DP_TX_SW_RESET);
+-
+ 	exynos_dp_stop_video(dp);
+ 	exynos_dp_enable_video_mute(dp, 0);
+ 
+@@ -155,6 +153,11 @@ void exynos_dp_reset(struct exynos_dp_device *dp)
+ 	exynos_dp_init_interrupt(dp);
+ }
+ 
++void exynos_dp_swreset(struct exynos_dp_device *dp)
++{
++	writel(RESET_DP_TX, dp->reg_base + EXYNOS_DP_TX_SW_RESET);
++}
++
+ void exynos_dp_config_interrupt(struct exynos_dp_device *dp)
+ {
+ 	u32 reg;
 -- 
-1.7.5.4
+1.7.1
+
 

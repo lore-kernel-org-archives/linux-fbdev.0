@@ -1,122 +1,154 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 08 May 2012 07:01:53 +0000
-Subject: Re: [PATCH v2 1/4] OMAPDSS: APPLY: Add manager timings as extra_info in private data
-Message-Id: <1336460513.1896.15.camel@lappyti>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-IELcJ/w/uVSiCuK/5goK"
+From: Emil Goode <emilgoode@gmail.com>
+Date: Mon, 28 May 2012 16:54:51 +0000
+Subject: [PATCH v2] video: bfin_adv7393fb: Fix cleanup code
+Message-Id: <1338224091-8322-1-git-send-email-emilgoode@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334561027-28569-1-git-send-email-archit@ti.com>
-	  <1336028864-13895-1-git-send-email-archit@ti.com>
-	  <1336028864-13895-2-git-send-email-archit@ti.com>
-	 <1336402071.2667.16.camel@deskari> <4FA8A00B.4040600@ti.com>
-In-Reply-To: <4FA8A00B.4040600@ti.com>
-To: Archit Taneja <a0393947@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-
-
---=-IELcJ/w/uVSiCuK/5goK
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2012-05-08 at 09:54 +0530, Archit Taneja wrote:
-> Hi,
->=20
-> On Monday 07 May 2012 08:17 PM, Tomi Valkeinen wrote:
-> > Hi,
-
-> > dss_<ovl|mgr>_<enable|disable>  functions handle GO, so you could have =
-a
-> > look at them. However, setting the timings is a bit different, so I'm
-> > not sure how it should be done.
-> >
-> > I think we have a few different options:
-> >
-> > - Separate omapdss internal function (in apply.c) that can be used to
-> > set GO after set_timings
-> >
-> > - set GO in dss_mgr_set_timings(), but don't block
-> >
-> > - set GO in dss_mgr_set_timings(), and block until the changes are in H=
-W
-> > (this is more or less what the dss_<ovl|mgr>_<enable|disable>  function=
-s
-> > do).
-> >
-> > The first one would be good if the interface drivers would need to set
-> > multiple configurations, and we don't want to block after each set call=
-.
-> > But we don't have anything like that, at least currently.
-> >
-> > The second one avoids blocking, but could perhaps cause problems becaus=
-e
-> > the timings are not actually used yet when the function returns.
-> >
-> > I don't see any problem with the last option, so I'm slightly leaning
-> > towards it.
->=20
-> The 3rd option looks good to me too, but I'm wondering if we would need=
-=20
-> to do the same things with all manager parameters which are in shadow=20
-> registers. Like in dpi.c, in dpi_set_mode() we set the DISPC_POL_FREQ=20
-> and DISPC_DIVISORo registers, writing GO for each parameter would be in=
-=20
-> efficient, it's good that it doesn't happen much often. Maybe we could=
-=20
-> group the rest of these parameters.
-
-Hmm, that's true.
-
-We could make shortcuts with settings that are only changed while the
-display is off. For example, currently DISPC_POL_FREQ cannot be changed
-dynamically, so it could only be set when before enabling the output.
-However, it seems we currently do call dispc_mgr_set_pol_freq() in
-dpi_set_mode(), which could be called when the output is enabled. But
-even then we always set the same values, so it doesn't matter.
-
-For DISPC_DIVISORo, I guess we could make a shortcut with that also.
-While it is a shadow register, when we are changing the dss clocks we
-also set non-shadowed registers. So I think the best way to change clock
-frequencies is to turn off the output temporarily.
-
-Perhaps all the shadow registers currently being set directly from
-interface drivers are such settings? The code should still be changed so
-that we only touch the registers when enabling the output.
-
-But, of course, a better design and also more future proof would be to
-handle all shadow registers properly, even if we currently only set them
-while the output is off. That may be left for future, though.
-
-In any case, I think we should mark clearly the places where we set
-shadow registers directly, without using the apply.c. Perhaps we should
-even mark all the dispc functions that set shadow registers, like
-dispc_mgr_set_pol_freq_sh(). But let's not do that now either, as we're
-quite close to merge window.
-
- Tomi
-
-
---=-IELcJ/w/uVSiCuK/5goK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Emil Goode <emilgoode@gmail.com>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+This patch fixes the cleanup code of the bfin_adv7393_fb_probe
+function.
 
-iQIcBAABAgAGBQJPqMThAAoJEPo9qoy8lh71g00P/1uYeFgG6Ir27TtcOXswB8CN
-YZS6riU1RWn/2dTcEEVRCJN9QtJaA/I9uB8oWH9tbX1B+v1CvXjrfXw9CaV1Aafm
-58CgHPXTxw3Vx0d6b6CEkvn6Bac3mCno1KWykDQ+aR/3aKmlphypZgt+0hNBBUk5
-wK9duer5tlJ1CwMF0LLgnwH3wJ8llZ0l3fqsNy9AVTWt5+dOHB7dVVF/hIIU69Tt
-1u/sAkDAsv0UFEy9lQrCUahqoKVFLqP2o+xlr6Sdtyu2DhsIXfcLh6twdEv3Q8pX
-GFd5cMS9ExQhLJqAhO0A1ys2V6rmDzgoWWwdKobiWBUsod8BfipQXitLh8/LNyss
-kPYf7hnbq8aTJD5I2TF/rDDg85O4KNxcs//zfozwaZKeAaCmnrkqmK+Wi40swO2K
-YI1DDVtgPcx0E74QmierqgRRAImiLCEll6tN3NCj7ATeEcyMUEy8U0K+I4DTyNvw
-bnieP8/PzubusmB8IWZizLSWu/7MWXhNaDG+/bKk/ZAeDfT7A5u5cFNrFeB1QU7l
-ewve+gYlrb7b6rxf/42EhwB1cC4LktdWLanXe0Sr2syC4BvqkqVfN/KmIIWYzKh1
-JLHhrAsJLBz2ATuzKoHBylf0bpY5WVJbT0kggnv8N5ci1tBJZJkDCOy3i4j0ORFb
-y39elXmKtZLcjcLcjhh+
-=HWM9
------END PGP SIGNATURE-----
+1) The resources were not freed in the order that we allocated them
+   so we call dma_free_coherent() before it was allocated.
+2) The labels weren't in the right place which also meant that we
+   freed resources that weren't allocated.
+3) We should free gpio_free(P_IDENT(P_PPI0_FS3)) before returning.
+4) Lets change the label names into something more meaningful.
 
---=-IELcJ/w/uVSiCuK/5goK--
+Signed-off-by: Emil Goode <emilgoode@gmail.com>
+---
+v2: Changed the label names as well.
+
+ drivers/video/bfin_adv7393fb.c |   43 +++++++++++++++++++++-------------------
+ 1 file changed, 23 insertions(+), 20 deletions(-)
+
+diff --git a/drivers/video/bfin_adv7393fb.c b/drivers/video/bfin_adv7393fb.c
+index 1a268a2..33ea874 100644
+--- a/drivers/video/bfin_adv7393fb.c
++++ b/drivers/video/bfin_adv7393fb.c
+@@ -414,14 +414,14 @@ static int __devinit bfin_adv7393_fb_probe(struct i2c_client *client,
+ 		if (ret) {
+ 			dev_err(&client->dev, "PPI0_FS3 GPIO request failed\n");
+ 			ret = -EBUSY;
+-			goto out_8;
++			goto free_fbdev;
+ 		}
+ 	}
+ 
+ 	if (peripheral_request_list(ppi_pins, DRIVER_NAME)) {
+ 		dev_err(&client->dev, "requesting PPI peripheral failed\n");
+ 		ret = -EFAULT;
+-		goto out_8;
++		goto free_gpio;
+ 	}
+ 
+ 	fbdev->fb_mem @@ -432,7 +432,7 @@ static int __devinit bfin_adv7393_fb_probe(struct i2c_client *client,
+ 		dev_err(&client->dev, "couldn't allocate dma buffer (%d bytes)\n",
+ 		       (u32) fbdev->fb_len);
+ 		ret = -ENOMEM;
+-		goto out_7;
++		goto free_ppi_pins;
+ 	}
+ 
+ 	fbdev->info.screen_base = (void *)fbdev->fb_mem;
+@@ -464,27 +464,27 @@ static int __devinit bfin_adv7393_fb_probe(struct i2c_client *client,
+ 	if (!fbdev->info.pseudo_palette) {
+ 		dev_err(&client->dev, "failed to allocate pseudo_palette\n");
+ 		ret = -ENOMEM;
+-		goto out_6;
++		goto free_fb_mem;
+ 	}
+ 
+ 	if (fb_alloc_cmap(&fbdev->info.cmap, BFIN_LCD_NBR_PALETTE_ENTRIES, 0) < 0) {
+ 		dev_err(&client->dev, "failed to allocate colormap (%d entries)\n",
+ 			   BFIN_LCD_NBR_PALETTE_ENTRIES);
+ 		ret = -EFAULT;
+-		goto out_5;
++		goto free_palette;
+ 	}
+ 
+ 	if (request_dma(CH_PPI, "BF5xx_PPI_DMA") < 0) {
+ 		dev_err(&client->dev, "unable to request PPI DMA\n");
+ 		ret = -EFAULT;
+-		goto out_4;
++		goto free_cmap;
+ 	}
+ 
+ 	if (request_irq(IRQ_PPI_ERROR, ppi_irq_error, 0,
+ 			"PPI ERROR", fbdev) < 0) {
+ 		dev_err(&client->dev, "unable to request PPI ERROR IRQ\n");
+ 		ret = -EFAULT;
+-		goto out_3;
++		goto free_ch_ppi;
+ 	}
+ 
+ 	fbdev->open = 0;
+@@ -494,14 +494,14 @@ static int __devinit bfin_adv7393_fb_probe(struct i2c_client *client,
+ 
+ 	if (ret) {
+ 		dev_err(&client->dev, "i2c attach: init error\n");
+-		goto out_1;
++		goto free_irq_ppi;
+ 	}
+ 
+ 
+ 	if (register_framebuffer(&fbdev->info) < 0) {
+ 		dev_err(&client->dev, "unable to register framebuffer\n");
+ 		ret = -EFAULT;
+-		goto out_1;
++		goto free_irq_ppi;
+ 	}
+ 
+ 	dev_info(&client->dev, "fb%d: %s frame buffer device\n",
+@@ -512,7 +512,7 @@ static int __devinit bfin_adv7393_fb_probe(struct i2c_client *client,
+ 	if (!entry) {
+ 		dev_err(&client->dev, "unable to create /proc entry\n");
+ 		ret = -EFAULT;
+-		goto out_0;
++		goto free_fb;
+ 	}
+ 
+ 	entry->read_proc = adv7393_read_proc;
+@@ -521,22 +521,25 @@ static int __devinit bfin_adv7393_fb_probe(struct i2c_client *client,
+ 
+ 	return 0;
+ 
+- out_0:
++free_fb:
+ 	unregister_framebuffer(&fbdev->info);
+- out_1:
++free_irq_ppi:
+ 	free_irq(IRQ_PPI_ERROR, fbdev);
+- out_3:
++free_ch_ppi:
+ 	free_dma(CH_PPI);
+- out_4:
+-	dma_free_coherent(NULL, fbdev->fb_len, fbdev->fb_mem,
+-			  fbdev->dma_handle);
+- out_5:
++free_cmap:
+ 	fb_dealloc_cmap(&fbdev->info.cmap);
+- out_6:
++free_palette:
+ 	kfree(fbdev->info.pseudo_palette);
+- out_7:
++free_fb_mem:
++	dma_free_coherent(NULL, fbdev->fb_len, fbdev->fb_mem,
++			  fbdev->dma_handle);
++free_ppi_pins:
+ 	peripheral_free_list(ppi_pins);
+- out_8:
++free_gpio:
++	if (ANOMALY_05000400)
++		gpio_free(P_IDENT(P_PPI0_FS3));
++free_fbdev:
+ 	kfree(fbdev);
+ 
+ 	return ret;
+-- 
+1.7.10
 

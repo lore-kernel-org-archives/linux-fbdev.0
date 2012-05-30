@@ -1,8 +1,10 @@
 From: Liu Ying <Ying.Liu@freescale.com>
-Date: Wed, 30 May 2012 04:14:27 +0000
+Date: Wed, 30 May 2012 04:27:22 +0000
 Subject: [PATCH 1/1] mx3fb: support pan display with fb_set_var
-Message-Id: <1338351267-25561-1-git-send-email-Ying.Liu@freescale.com>
+Message-Id: <1338352042-26522-1-git-send-email-Ying.Liu@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1338351267-25561-1-git-send-email-Ying.Liu@freescale.com>
+In-Reply-To: <1338351267-25561-1-git-send-email-Ying.Liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -36,7 +38,7 @@ Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
  1 files changed, 27 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-index e3406ab..86daabe 100644
+index e3406ab..238b9aa 100644
 --- a/drivers/video/mx3fb.c
 +++ b/drivers/video/mx3fb.c
 @@ -269,6 +269,8 @@ struct mx3fb_info {
@@ -52,7 +54,7 @@ index e3406ab..86daabe 100644
  	complete(&mx3_fbi->flip_cmpl);
  }
  
-+static bool fb_need_not_to_set_par(struct fb_info *fbi)
++static bool mx3fb_need_not_to_set_par(struct fb_info *fbi)
 +{
 +	struct mx3fb_info *mx3_fbi = fbi->par;
 +	struct fb_var_screeninfo old_var = mx3_fbi->cur_var;
@@ -79,7 +81,7 @@ index e3406ab..86daabe 100644
  	struct idmac_video_param *video = &ichan->params.video;
  	struct scatterlist *sg = mx3_fbi->sg;
  
-+	if (fb_need_not_to_set_par(fbi))
++	if (mx3fb_need_not_to_set_par(fbi))
 +		return 0;
 +
  	/* Total cleanup */

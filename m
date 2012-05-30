@@ -1,163 +1,111 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Tue, 29 May 2012 15:07:31 +0000
-Subject: Re: [PATCH v2] video: bfin_adv7393fb: Fix cleanup code
-Message-Id: <4FC4E633.2090000@gmx.de>
+From: Liu Ying <Ying.Liu@freescale.com>
+Date: Wed, 30 May 2012 04:14:27 +0000
+Subject: [PATCH 1/1] mx3fb: support pan display with fb_set_var
+Message-Id: <1338351267-25561-1-git-send-email-Ying.Liu@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1338224091-8322-1-git-send-email-emilgoode@gmail.com>
-In-Reply-To: <1338224091-8322-1-git-send-email-emilgoode@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Emil Goode <emilgoode@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: FlorianSchandinat@gmx.de
+Cc: lg@denx.de, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Liu Ying <Ying.Liu@freescale.com>
 
-On 05/28/2012 04:54 PM, Emil Goode wrote:
-> This patch fixes the cleanup code of the bfin_adv7393_fb_probe
-> function.
-> 
-> 1) The resources were not freed in the order that we allocated them
->    so we call dma_free_coherent() before it was allocated.
-> 2) The labels weren't in the right place which also meant that we
->    freed resources that weren't allocated.
-> 3) We should free gpio_free(P_IDENT(P_PPI0_FS3)) before returning.
-> 4) Lets change the label names into something more meaningful.
-> 
-> Signed-off-by: Emil Goode <emilgoode@gmail.com>
+Users may call FBIOPUT_VSCREENINFO ioctrl to do pan display.
+This ioctrl relies on fb_set_var() to do the job. fb_set_var()
+calls custom fb_set_par() method and then calls custom
+fb_pan_display() method. The current implementation of mx3fb
+reinitializes IPU display controller every time the custom
+fb_set_par() method is called, which makes the display flash
+if fb_set_var() is called to do panning frequently. The custom
+fb_pan_display() method checks if the current xoffset and
+yoffset are different from previous ones before doing actual
+panning, which prevents the panning from happening within the
+fb_set_var() context. This patch checks new var info to decide
+whether we really need to reinitialize IPU display controller.
+We ignore xoffset and yoffset update because it doesn't require
+to reinitialize the controller. Users may specify activate field
+of var info with FB_ACTIVATE_NOW and FB_ACTIVATE_FORCE to
+reinialize the controller by force. Meanwhile, this patch removes
+the check in custom fb_pan_display() method mentioned before to
+have the panning work within fb_set_var() context. It doesn't
+hurt to do panning again if there is no update for xoffset and
+yoffset.
 
-Applied.
+Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
+---
+ drivers/video/mx3fb.c |   31 +++++++++++++++++++++++++++----
+ 1 files changed, 27 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+index e3406ab..86daabe 100644
+--- a/drivers/video/mx3fb.c
++++ b/drivers/video/mx3fb.c
+@@ -269,6 +269,8 @@ struct mx3fb_info {
+ 	struct scatterlist		sg[2];
+ 
+ 	u32				sync;	/* preserve var->sync flags */
++
++	struct fb_var_screeninfo	cur_var; /* current var info */
+ };
+ 
+ static void mx3fb_dma_done(void *);
+@@ -721,6 +723,26 @@ static void mx3fb_dma_done(void *arg)
+ 	complete(&mx3_fbi->flip_cmpl);
+ }
+ 
++static bool fb_need_not_to_set_par(struct fb_info *fbi)
++{
++	struct mx3fb_info *mx3_fbi = fbi->par;
++	struct fb_var_screeninfo old_var = mx3_fbi->cur_var;
++	struct fb_var_screeninfo new_var = fbi->var;
++
++	if ((fbi->var.activate & FB_ACTIVATE_FORCE) &&
++	    (fbi->var.activate & FB_ACTIVATE_MASK) = FB_ACTIVATE_NOW)
++		return false;
++
++	/*
++	 * Ignore xoffset and yoffset update,
++	 * because pan display handles this case.
++	 */
++	old_var.xoffset = new_var.xoffset;
++	old_var.yoffset = new_var.yoffset;
++
++	return !memcmp(&old_var, &new_var, sizeof(struct fb_var_screeninfo));
++}
++
+ static int __set_par(struct fb_info *fbi, bool lock)
+ {
+ 	u32 mem_len;
+@@ -732,6 +754,9 @@ static int __set_par(struct fb_info *fbi, bool lock)
+ 	struct idmac_video_param *video = &ichan->params.video;
+ 	struct scatterlist *sg = mx3_fbi->sg;
+ 
++	if (fb_need_not_to_set_par(fbi))
++		return 0;
++
+ 	/* Total cleanup */
+ 	if (mx3_fbi->txd)
+ 		sdc_disable_channel(mx3_fbi);
+@@ -808,6 +833,8 @@ static int __set_par(struct fb_info *fbi, bool lock)
+ 	if (mx3_fbi->blank = FB_BLANK_UNBLANK)
+ 		sdc_enable_channel(mx3_fbi);
+ 
++	mx3_fbi->cur_var = fbi->var;
++
+ 	return 0;
+ }
+ 
+@@ -1068,10 +1095,6 @@ static int mx3fb_pan_display(struct fb_var_screeninfo *var,
+ 		return -EINVAL;
+ 	}
+ 
+-	if (fbi->var.xoffset = var->xoffset &&
+-	    fbi->var.yoffset = var->yoffset)
+-		return 0;	/* No change, do nothing */
+-
+ 	y_bottom = var->yoffset;
+ 
+ 	if (!(var->vmode & FB_VMODE_YWRAP))
+-- 
+1.7.1
 
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
-> v2: Changed the label names as well.
-> 
->  drivers/video/bfin_adv7393fb.c |   43 +++++++++++++++++++++-------------------
->  1 file changed, 23 insertions(+), 20 deletions(-)
-> 
-> diff --git a/drivers/video/bfin_adv7393fb.c b/drivers/video/bfin_adv7393fb.c
-> index 1a268a2..33ea874 100644
-> --- a/drivers/video/bfin_adv7393fb.c
-> +++ b/drivers/video/bfin_adv7393fb.c
-> @@ -414,14 +414,14 @@ static int __devinit bfin_adv7393_fb_probe(struct i2c_client *client,
->  		if (ret) {
->  			dev_err(&client->dev, "PPI0_FS3 GPIO request failed\n");
->  			ret = -EBUSY;
-> -			goto out_8;
-> +			goto free_fbdev;
->  		}
->  	}
->  
->  	if (peripheral_request_list(ppi_pins, DRIVER_NAME)) {
->  		dev_err(&client->dev, "requesting PPI peripheral failed\n");
->  		ret = -EFAULT;
-> -		goto out_8;
-> +		goto free_gpio;
->  	}
->  
->  	fbdev->fb_mem > @@ -432,7 +432,7 @@ static int __devinit bfin_adv7393_fb_probe(struct i2c_client *client,
->  		dev_err(&client->dev, "couldn't allocate dma buffer (%d bytes)\n",
->  		       (u32) fbdev->fb_len);
->  		ret = -ENOMEM;
-> -		goto out_7;
-> +		goto free_ppi_pins;
->  	}
->  
->  	fbdev->info.screen_base = (void *)fbdev->fb_mem;
-> @@ -464,27 +464,27 @@ static int __devinit bfin_adv7393_fb_probe(struct i2c_client *client,
->  	if (!fbdev->info.pseudo_palette) {
->  		dev_err(&client->dev, "failed to allocate pseudo_palette\n");
->  		ret = -ENOMEM;
-> -		goto out_6;
-> +		goto free_fb_mem;
->  	}
->  
->  	if (fb_alloc_cmap(&fbdev->info.cmap, BFIN_LCD_NBR_PALETTE_ENTRIES, 0) < 0) {
->  		dev_err(&client->dev, "failed to allocate colormap (%d entries)\n",
->  			   BFIN_LCD_NBR_PALETTE_ENTRIES);
->  		ret = -EFAULT;
-> -		goto out_5;
-> +		goto free_palette;
->  	}
->  
->  	if (request_dma(CH_PPI, "BF5xx_PPI_DMA") < 0) {
->  		dev_err(&client->dev, "unable to request PPI DMA\n");
->  		ret = -EFAULT;
-> -		goto out_4;
-> +		goto free_cmap;
->  	}
->  
->  	if (request_irq(IRQ_PPI_ERROR, ppi_irq_error, 0,
->  			"PPI ERROR", fbdev) < 0) {
->  		dev_err(&client->dev, "unable to request PPI ERROR IRQ\n");
->  		ret = -EFAULT;
-> -		goto out_3;
-> +		goto free_ch_ppi;
->  	}
->  
->  	fbdev->open = 0;
-> @@ -494,14 +494,14 @@ static int __devinit bfin_adv7393_fb_probe(struct i2c_client *client,
->  
->  	if (ret) {
->  		dev_err(&client->dev, "i2c attach: init error\n");
-> -		goto out_1;
-> +		goto free_irq_ppi;
->  	}
->  
->  
->  	if (register_framebuffer(&fbdev->info) < 0) {
->  		dev_err(&client->dev, "unable to register framebuffer\n");
->  		ret = -EFAULT;
-> -		goto out_1;
-> +		goto free_irq_ppi;
->  	}
->  
->  	dev_info(&client->dev, "fb%d: %s frame buffer device\n",
-> @@ -512,7 +512,7 @@ static int __devinit bfin_adv7393_fb_probe(struct i2c_client *client,
->  	if (!entry) {
->  		dev_err(&client->dev, "unable to create /proc entry\n");
->  		ret = -EFAULT;
-> -		goto out_0;
-> +		goto free_fb;
->  	}
->  
->  	entry->read_proc = adv7393_read_proc;
-> @@ -521,22 +521,25 @@ static int __devinit bfin_adv7393_fb_probe(struct i2c_client *client,
->  
->  	return 0;
->  
-> - out_0:
-> +free_fb:
->  	unregister_framebuffer(&fbdev->info);
-> - out_1:
-> +free_irq_ppi:
->  	free_irq(IRQ_PPI_ERROR, fbdev);
-> - out_3:
-> +free_ch_ppi:
->  	free_dma(CH_PPI);
-> - out_4:
-> -	dma_free_coherent(NULL, fbdev->fb_len, fbdev->fb_mem,
-> -			  fbdev->dma_handle);
-> - out_5:
-> +free_cmap:
->  	fb_dealloc_cmap(&fbdev->info.cmap);
-> - out_6:
-> +free_palette:
->  	kfree(fbdev->info.pseudo_palette);
-> - out_7:
-> +free_fb_mem:
-> +	dma_free_coherent(NULL, fbdev->fb_len, fbdev->fb_mem,
-> +			  fbdev->dma_handle);
-> +free_ppi_pins:
->  	peripheral_free_list(ppi_pins);
-> - out_8:
-> +free_gpio:
-> +	if (ANOMALY_05000400)
-> +		gpio_free(P_IDENT(P_PPI0_FS3));
-> +free_fbdev:
->  	kfree(fbdev);
->  
->  	return ret;
 

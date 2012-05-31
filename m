@@ -1,23 +1,21 @@
 From: Liu Ying-B17645 <B17645@freescale.com>
-Date: Wed, 30 May 2012 05:18:57 +0000
+Date: Thu, 31 May 2012 01:54:52 +0000
 Subject: RE: [PATCH 1/1] mx3fb: support pan display with fb_set_var
-Message-Id: <470BE2F1512C0C4C9734129B6363687609F80E@039-SN2MPN1-011.039d.mgd.msft.net>
+Message-Id: <470BE2F1512C0C4C9734129B6363687609FA98@039-SN2MPN1-011.039d.mgd.msft.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1338351267-25561-1-git-send-email-Ying.Liu@freescale.com>
-In-Reply-To: <1338351267-25561-1-git-send-email-Ying.Liu@freescale.com>
+References: <1338352042-26522-1-git-send-email-Ying.Liu@freescale.com>
+In-Reply-To: <1338352042-26522-1-git-send-email-Ying.Liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "FlorianSchandinat@gmx.de" <FlorianSchandinat@gmx.de>
-Cc: "lg@denx.de" <lg@denx.de>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Please ignore this version.
-I will send another updated one soon.
+Add i.mx SoC maintainer Sacha and ARM maillist, and update Guennadi's email address.
 
 Liu Ying
 -----Original Message-----
 From: Liu Ying-B17645 
-Sent: Wednesday, May 30, 2012 12:14 PM
+Sent: Wednesday, May 30, 2012 12:27 PM
 To: FlorianSchandinat@gmx.de
 Cc: lg@denx.de; linux-fbdev@vger.kernel.org; linux-kernel@vger.kernel.org; Liu Ying-B17645
 Subject: [PATCH 1/1] mx3fb: support pan display with fb_set_var
@@ -35,7 +33,7 @@ Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
  drivers/video/mx3fb.c |   31 +++++++++++++++++++++++++++----
  1 files changed, 27 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c index e3406ab..86daabe 100644
+diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c index e3406ab..238b9aa 100644
 --- a/drivers/video/mx3fb.c
 +++ b/drivers/video/mx3fb.c
 @@ -269,6 +269,8 @@ struct mx3fb_info {
@@ -51,7 +49,7 @@ diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c index e3406ab..86daab
  	complete(&mx3_fbi->flip_cmpl);
  }
  
-+static bool fb_need_not_to_set_par(struct fb_info *fbi) {
++static bool mx3fb_need_not_to_set_par(struct fb_info *fbi) {
 +	struct mx3fb_info *mx3_fbi = fbi->par;
 +	struct fb_var_screeninfo old_var = mx3_fbi->cur_var;
 +	struct fb_var_screeninfo new_var = fbi->var;
@@ -76,7 +74,7 @@ diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c index e3406ab..86daab
  	struct idmac_video_param *video = &ichan->params.video;
  	struct scatterlist *sg = mx3_fbi->sg;
  
-+	if (fb_need_not_to_set_par(fbi))
++	if (mx3fb_need_not_to_set_par(fbi))
 +		return 0;
 +
  	/* Total cleanup */

@@ -1,82 +1,64 @@
-From: Johan Hovold <jhovold@gmail.com>
-Date: Thu, 03 May 2012 10:26:35 +0000
-Subject: [PATCH v2 0/4] mfd: add LM3533 lighting-power chip driver
-Message-Id: <1336040799-18433-1-git-send-email-jhovold@gmail.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 31 May 2012 16:34:00 +0000
+Subject: [PATCH 2/2] fbdev: sh_mobile_lcdc: Use MERAM operations wrappers
+Message-Id: <1338482040-29827-3-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1334935826-12527-1-git-send-email-jhovold@gmail.com>
-In-Reply-To: <1334935826-12527-1-git-send-email-jhovold@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Landley <rob@landley.net>, Richard Purdie <rpurdie@rpsys.net>, Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@cam.ac.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-These patches (against v3.4-rc5) add support for the National Semiconductor /
-Texas Instruments LM3533 lighting-power chip.
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+---
+ drivers/video/sh_mobile_lcdcfb.c |   18 +++++++-----------
+ 1 files changed, 7 insertions(+), 11 deletions(-)
 
-This multi-function device has four LEDs, two backlights and an
-ambient-light-sensor interface.
-
-The LEDs and backlights can be controlled directly, through PWM input,
-or by the ambient-light-sensor interface. Hardware-accelerated blinking is
-provided for the LEDs.
-
-ALS control is done through defining five light zones and three sets of
-corresponding brightness target levels. The ALS iio-driver provides raw and
-mean adc readings along with the current light zone through sysfs. A threshold
-event can be generated on zone changes.
-
-Further details and specifications are now available from:
-
-        http://www.ti.com/product/lm3533
-
-Changes since v1 includes a rewrite of the ambient-light-sensor driver against
-iio, the addition of sysfs-ABI documentation, and a switch to regmap for
-register io.
-
-This work has been done on behalf of National Semiconductor / Texas
-Instruments.
-
-Thanks,
-Johan
-
-
-Johan Hovold (4):
-  mfd: add LM3533 lighting-power core driver
-  iio: add LM3533 ambient light sensor driver
-  leds: add LM3533 LED driver
-  backlight: add LM3533 backlight driver
-
- .../ABI/testing/sysfs-bus-i2c-devices-lm3533       |   38 +
- .../testing/sysfs-class-backlight-driver-lm3533    |   50 ++
- .../ABI/testing/sysfs-class-led-driver-lm3533      |   67 ++
- drivers/leds/Kconfig                               |   13 +
- drivers/leds/Makefile                              |    1 +
- drivers/leds/leds-lm3533.c                         |  741 ++++++++++++++++++++
- drivers/mfd/Kconfig                                |   13 +
- drivers/mfd/Makefile                               |    1 +
- drivers/mfd/lm3533-core.c                          |  717 +++++++++++++++++++
- drivers/mfd/lm3533-ctrlbank.c                      |  134 ++++
- .../Documentation/sysfs-bus-iio-light-lm3533-als   |   62 ++
- drivers/staging/iio/light/Kconfig                  |   16 +
- drivers/staging/iio/light/Makefile                 |    1 +
- drivers/staging/iio/light/lm3533-als.c             |  617 ++++++++++++++++
- drivers/video/backlight/Kconfig                    |   12 +
- drivers/video/backlight/Makefile                   |    1 +
- drivers/video/backlight/lm3533_bl.c                |  458 ++++++++++++
- include/linux/mfd/lm3533.h                         |   89 +++
- 18 files changed, 3031 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-bus-i2c-devices-lm3533
- create mode 100644 Documentation/ABI/testing/sysfs-class-backlight-driver-lm3533
- create mode 100644 Documentation/ABI/testing/sysfs-class-led-driver-lm3533
- create mode 100644 drivers/leds/leds-lm3533.c
- create mode 100644 drivers/mfd/lm3533-core.c
- create mode 100644 drivers/mfd/lm3533-ctrlbank.c
- create mode 100644 drivers/staging/iio/Documentation/sysfs-bus-iio-light-lm3533-als
- create mode 100644 drivers/staging/iio/light/lm3533-als.c
- create mode 100644 drivers/video/backlight/lm3533_bl.c
- create mode 100644 include/linux/mfd/lm3533.h
-
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 7a0b301..671685d 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -857,7 +857,7 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 		 * re-initialize them.
+ 		 */
+ 		if (ch->meram) {
+-			mdev->ops->meram_unregister(mdev, ch->meram);
++			sh_mobile_meram_unregister(mdev, ch->meram);
+ 			ch->meram = NULL;
+ 		}
+ 
+@@ -880,11 +880,11 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
+ 			break;
+ 		}
+ 
+-		meram = mdev->ops->meram_register(mdev, ch->cfg->meram_cfg,
++		meram = sh_mobile_meram_register(mdev, ch->cfg->meram_cfg,
+ 					ch->pitch, ch->yres, pixelformat,
+ 					&ch->pitch);
+ 		if (!IS_ERR(meram)) {
+-			mdev->ops->meram_update(mdev, meram,
++			sh_mobile_meram_update(mdev, meram,
+ 					ch->base_addr_y, ch->base_addr_c,
+ 					&ch->base_addr_y, &ch->base_addr_c);
+ 			ch->meram = meram;
+@@ -1070,14 +1070,10 @@ static int sh_mobile_fb_pan_display(struct fb_var_screeninfo *var,
+ 			base_addr_c += var->xoffset;
+ 	}
+ 
+-	if (ch->meram) {
+-		struct sh_mobile_meram_info *mdev;
+-
+-		mdev = priv->meram_dev;
+-		mdev->ops->meram_update(mdev, ch->meram,
+-					base_addr_y, base_addr_c,
+-					&base_addr_y, &base_addr_c);
+-	}
++	if (ch->meram)
++		sh_mobile_meram_update(priv->meram_dev, ch->meram,
++				       base_addr_y, base_addr_c,
++				       &base_addr_y, &base_addr_c);
+ 
+ 	ch->base_addr_y = base_addr_y;
+ 	ch->base_addr_c = base_addr_c;
 -- 
-1.7.8.5
+1.7.3.4
 

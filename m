@@ -1,71 +1,78 @@
-From: Liu Ying <liu.y.victor@gmail.com>
-Date: Mon, 11 Jun 2012 11:18:00 +0000
-Subject: Re: [PATCH 1/3] mx3fb: do not support panning with fb blanked
-Message-Id: <CA+8Hj83+Jqv3Bs0mTKYpdsH4ZbOMEQkRpsiCUPVwpeqvWg8jyA@mail.gmail.com>
+From: "Nellutla, Aditya" <aditya.n@ti.com>
+Date: Mon, 04 Jun 2012 06:02:48 +0000
+Subject: RE: [PATCH] da8xx-fb: Rounding FB size to satisfy SGX buffer requirements
+Message-Id: <98B92248A36227448E6658FE6AD3A1C63E92628A@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1339376810-8247-1-git-send-email-Ying.Liu@freescale.com>
- <20120611095102.GD11168@n2100.arm.linux.org.uk>
- <CA+8Hj81L9-NC=08_dvV2u_eM0NdssJsjduAgTbH37nusu56Avw@mail.gmail.com>
- <20120611110517.GE11168@n2100.arm.linux.org.uk>
-In-Reply-To: <20120611110517.GE11168@n2100.arm.linux.org.uk>
+References: <1337753191-14802-1-git-send-email-aditya.n@ti.com>
+In-Reply-To: <1337753191-14802-1-git-send-email-aditya.n@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-2012/6/11, Russell King - ARM Linux <linux@arm.linux.org.uk>:
-> On Mon, Jun 11, 2012 at 06:46:14PM +0800, Liu Ying wrote:
->> 2012/6/11, Russell King - ARM Linux <linux@arm.linux.org.uk>:
->> > On Mon, Jun 11, 2012 at 09:06:48AM +0800, Liu Ying wrote:
->> >> This patch checks if framebuffer is unblanked before
->> >> we actually trigger panning in custom pan display
->> >> function.
->> >>
->> >> Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
->> >> ---
->> >>  drivers/video/mx3fb.c |    5 +++++
->> >>  1 files changed, 5 insertions(+), 0 deletions(-)
->> >>
->> >> diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
->> >> index e3406ab..d53db60 100644
->> >> --- a/drivers/video/mx3fb.c
->> >> +++ b/drivers/video/mx3fb.c
->> >> @@ -1063,6 +1063,11 @@ static int mx3fb_pan_display(struct
->> >> fb_var_screeninfo *var,
->> >>  	dev_dbg(fbi->device, "%s [%c]\n", __func__,
->> >>  		list_empty(&mx3_fbi->idmac_channel->queue) ? '-' : '+');
->> >>
->> >> +	if (mx3_fbi->blank != FB_BLANK_UNBLANK) {
->> >> +		dev_dbg(fbi->device, "panning with fb blanked not supported\n");
->> >> +		return -EFAULT;
->> >> +	}
->> >
->> > Why is this an error, and why return -EFAULT?  What userspace access
->> > failed?
->> >
->> Hi, Russell,
->>
->> IMHO, panning with framebuffer blanked is meaningless, at least, it is
->> not a common usecase.
->
-> Yes, but why should anything in userspace care whether the display is
-> blanked or not?
->
-> For example, we may pan the display when a user program produces output,
-> and we're on the last line of the display.  We don't fail that just
-> because the screen happens to be blank.  So I don't see why we should
-> actively fail an explicit userspace pan request just because the console
-> happened to be blanked.
->
-> What I'm basically saying is that as far as _userspace_ is concerned,
-> all the standard APIs should just work as normal whether the display is
-> blanked or not.
->
+All, 
+   Did you get chance to review this patch? Request to give your feedback as early as possible.
 
-Ok, understand your point. I am ok to drop this patch.
+Regards,
+Aditya 
 
-Thanks.
+-----Original Message-----
+From: Nellutla, Aditya 
+Sent: Wednesday, May 23, 2012 11:37 AM
+To: linux-fbdev@vger.kernel.org
+Cc: Nellutla, Aditya
+Subject: [PATCH] da8xx-fb: Rounding FB size to satisfy SGX buffer requirements
 
+In the real time use-case when SGX is used for rendering to FB buffers it has been
+observed that, the available memory from framebuffer driver is not sufficient for
+SGX under certain cases (like 16-bit WVGA resolution). SGX requires 2 swap buffers
+with each of the buffers aligned to lcm(line_length, PAGE_SIZE).
+
+Inorder to satisfy this requirement, we have two options,
+
+	- Increase number of FB buffers (LCD_NUM_BUFFERS) to 3. This is not
+	  recommended as we end up wasting huge memory in most of the cases.
+
+	- Align FB buffers to lcm(line_length, PAGE_SIZE).This ensures framebuffer
+	  size is increased to satisfy SGX requirements keeping alignment intact.
+
+This patch makes sure that FB allocates buffers aligned to above formula.
+
+Signed-off-by: Aditya Nellutla <aditya.n@ti.com>
+---
+ drivers/video/da8xx-fb.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 47118c7..2f24c19 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -31,6 +31,7 @@
+ #include <linux/cpufreq.h>
+ #include <linux/console.h>
+ #include <linux/slab.h>
++#include <linux/lcm.h>
+ #include <video/da8xx-fb.h>
+ #include <asm/div64.h>
+ 
+@@ -1114,6 +1115,7 @@ static int __devinit fb_probe(struct platform_device *device)
+ 	struct da8xx_fb_par *par;
+ 	resource_size_t len;
+ 	int ret, i;
++	unsigned long ulcm;
+ 
+ 	if (fb_pdata = NULL) {
+ 		dev_err(&device->dev, "Can not get platform data\n");
+@@ -1209,7 +1211,8 @@ static int __devinit fb_probe(struct platform_device *device)
+ 
+ 	/* allocate frame buffer */
+ 	par->vram_size = lcdc_info->width * lcdc_info->height * lcd_cfg->bpp;
+-	par->vram_size = PAGE_ALIGN(par->vram_size/8);
++	ulcm = lcm((lcdc_info->width * lcd_cfg->bpp)/8, PAGE_SIZE);
++	par->vram_size = roundup(par->vram_size/8, ulcm);
+ 	par->vram_size = par->vram_size * LCD_NUM_BUFFERS;
+ 
+ 	par->vram_virt = dma_alloc_coherent(NULL,
 -- 
-Best Regards,
-Liu Ying
+1.7.0.4
+

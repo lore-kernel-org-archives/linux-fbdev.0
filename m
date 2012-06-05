@@ -1,84 +1,346 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date: Thu, 14 Jun 2012 19:00:48 +0000
-Subject: Re: [PATCH] fbdev: sh_mipi_dsi: fix a section mismatch
-Message-Id: <Pine.LNX.4.64.1206142057070.30810@axis700.grange>
+From: Jean Pihet <jean.pihet@newoldbits.com>
+Date: Tue, 05 Jun 2012 12:17:48 +0000
+Subject: Re: [GIT PULL] OMAP DSS for v3.5
+Message-Id: <CAORVsuXLhGCEHMbZB_8FrzfL-sMH76wMH9rdUjOzOfL06bLH4w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <Pine.LNX.4.64.1206140951570.30810@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1206140951570.30810@axis700.grange>
+References: <1337681363.4125.10.camel@deskari>
+In-Reply-To: <1337681363.4125.10.camel@deskari>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-omap@vger.kernel.org, linux-fbdev <linux-fbdev@vger.kernel.org>, Tony Lindgren <tony@atomide.com>
 
-Hi Laurent
+Hi Tomi,
 
-On Thu, 14 Jun 2012, Laurent Pinchart wrote:
+On Tue, May 22, 2012 at 12:09 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wr=
+ote:
+> Hi Florian,
+>
+> Here are the OMAP DSS changes for 3.5.
+>
+> I really tried this time to send the pull request early, but here I am
+> again, sending it when the merge window has already opened... A few
+> late-found bugs caused some unnecessary delays.
+>
+> I'm using github this time instead of gitorious, as gitorious seems to
+> be down. This is my first pull request with a signed tag, I hope
+> everything is correct.
+>
+> Note that there's a merge for small branch with omap board file changes
+> (e4a9e94cc58ed6e4efb02b80be3a9bf57f448d07) that is also pulled by Tony
+> for the linux-omap tree. This is meant to help avoid conflicts in the
+> board files.
+>
+> =A0Tomi
+>
+>
+> The following changes since commit 66f75a5d028beaf67c931435fdc3e782312573=
+0c:
+>
+> =A0Linux 3.4-rc4 (2012-04-21 14:47:52 -0700)
+>
+> are available in the git repository at:
+>
+> =A0git://github.com/tomba/linux.git tags/omapdss-for-3.5
+>
+> for you to fetch changes up to e92a5b28f71aea01b281f9c89d97a4bc5b24748f:
+>
+> =A0OMAPDSS: HDMI: OMAP4: Update IRQ flags for the HPD IRQ request (2012-0=
+5-22 11:00:09 +0300)
+>
+> ----------------------------------------------------------------
+> Omapdss driver changes for 3.5 merge window.
+>
+> Lots of normal development commits, but perhaps most notable changes are:
+>
+> * HDMI rework to properly decouple the HDMI audio part from the HDMI vide=
+o part.
+> * Restructure omapdss core driver so that it's possible to implement devi=
+ce
+> =A0tree support. This included changing how platform data is passed to the
+> =A0drivers, changing display device registration and improving the panel =
+driver's
+> =A0ability to configure the underlying video output interface.
+> * Basic support for DSI packet interleaving
+>
 
-> Hi Guennadi,
-> 
-> Thanks for the patch.
-> 
-> On Thursday 14 June 2012 09:53:33 Guennadi Liakhovetski wrote:
-> > sh_mipi_setup() is called from a .text function, therefore it cannot be
-> > __init. Additionally, sh_mipi_remove() can be moved to the .devexit.text
-> > section.
-> > 
-> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> 
-> Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> 
-> Would you like me to take the patch in my tree ?
+I am using a mainline kernel (3.5.0-rc1) with the patches below integrated.
+I have an issue with suspend/resume on OMAP3 Beagleboard, where the
+system hangs at resume time.
 
-I don't have my own fbdev tree, so, any tree, that eventually lands in the 
-mainline is good :)
+Here below is a log with the option no_console_suspend set and a few
+added messages in case of null pointer in _od_resume_noirq.
+It looks like there is no omap_device associated to the "omapdss_dpi" pdev.
 
-Thanks
-Guennadi
+What do you think? How to fix this?
+Sorry I know there have been some discussions on the lists but I am
+not aware of all the details in the devices creation for DSS.
 
-> > ---
-> >  drivers/video/sh_mipi_dsi.c |    7 +++----
-> >  1 files changed, 3 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/drivers/video/sh_mipi_dsi.c b/drivers/video/sh_mipi_dsi.c
-> > index 4c6b844..3951fda 100644
-> > --- a/drivers/video/sh_mipi_dsi.c
-> > +++ b/drivers/video/sh_mipi_dsi.c
-> > @@ -127,8 +127,7 @@ static void sh_mipi_shutdown(struct platform_device
-> > *pdev) sh_mipi_dsi_enable(mipi, false);
-> >  }
-> > 
-> > -static int __init sh_mipi_setup(struct sh_mipi *mipi,
-> > -				struct sh_mipi_dsi_info *pdata)
-> > +static int sh_mipi_setup(struct sh_mipi *mipi, struct sh_mipi_dsi_info
-> > *pdata) {
-> >  	void __iomem *base = mipi->base;
-> >  	struct sh_mobile_lcdc_chan_cfg *ch = pdata->lcd_chan;
-> > @@ -551,7 +550,7 @@ efindslot:
-> >  	return ret;
-> >  }
-> > 
-> > -static int __exit sh_mipi_remove(struct platform_device *pdev)
-> > +static int __devexit sh_mipi_remove(struct platform_device *pdev)
-> >  {
-> >  	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> >  	struct resource *res2 = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-> > @@ -592,7 +591,7 @@ static int __exit sh_mipi_remove(struct platform_device
-> > *pdev) }
-> > 
-> >  static struct platform_driver sh_mipi_driver = {
-> > -	.remove		= __exit_p(sh_mipi_remove),
-> > +	.remove		= __devexit_p(sh_mipi_remove),
-> >  	.shutdown	= sh_mipi_shutdown,
-> >  	.driver = {
-> >  		.name	= "sh-mipi-dsi",
-> 
-> -- 
-> Regards,
-> 
-> Laurent Pinchart
-> 
+/ # echo mem > /sys/power/state
+[   23.262298] PM: Syncing filesystems ... done.
+[   23.295501] Freezing user space processes ... (elapsed 0.02 seconds) don=
+e.
+[   23.326507] Freezing remaining freezable tasks ... (elapsed 0.02 seconds=
+) don
+e.
+[   23.502197] PM: suspend of devices complete after 163.766 msecs
+[   23.511932] PM: late suspend of devices complete after 3.418 msecs
+[   23.524444] PM: noirq suspend of devices complete after 5.860 msecs
+[   23.531249] Disabling non-boot CPUs ...
+[   24.476562] Powerdomain (per_pwrdm) didn't enter target state 1
+[   24.482818] Powerdomain (core_pwrdm) didn't enter target state 1
+[   24.489166] Could not enter target state in pm_suspend
+[   24.495147] *** _od_resume_noirq: od=3DNULL, dev=3D0xc78bcc08
+[   24.500915] *** _od_resume_noirq: od=3DNULL, pdev=3D0xc78bcc00
+[   24.506805] *** _od_resume_noirq: od=3DNULL, pdev->name:omapdss_dpi
+[   24.513336] Unable to handle kernel NULL pointer dereference at virtual =
+addre
+ss 00000018
+[   24.521942] pgd =3D c62f0000
+[   24.524841] [00000018] *pgd=862c1831, *pte=00000000, *ppte=00000000
+[   24.531524] Internal error: Oops: 17 [#1] SMP ARM
+[   24.536529] Modules linked in:
+[   24.539764] CPU: 0    Not tainted  (3.5.0-rc1-00010-g5041caa-dirty #131)
+[   24.546844] PC is at _od_resume_noirq+0x1c/0xac
+[   24.551635] LR is at _od_resume_noirq+0x94/0xac
+...
 
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+Regards,
+Jean
+
+> ----------------------------------------------------------------
+> Archit Taneja (19):
+> =A0 =A0 =A0OMAPDSS: DISPC/RFBI: Use dispc_mgr_set_lcd_timings() for setti=
+ng lcd size
+> =A0 =A0 =A0OMAPDSS: DISPC: Use a common function to set manager timings
+> =A0 =A0 =A0OMAPDSS: DISPC: Clean up manager timing/size functions
+> =A0 =A0 =A0OMAPDSS: HDMI: Fix ti_hdmi_4xxx_core_dump
+> =A0 =A0 =A0OMAPDSS: HDMI: define and dump CORE registers in correct order
+> =A0 =A0 =A0OMAPDSS: Fix DSI_FCLK clock source selection
+> =A0 =A0 =A0OMAPDSS: DISPC: Remove Fake VSYNC support
+> =A0 =A0 =A0OMAPDSS: APPLY: Add manager timings as extra_info in private d=
+ata
+> =A0 =A0 =A0OMAPDSS: Apply manager timings instead of direct DISPC writes
+> =A0 =A0 =A0OMAPDSS: MANAGER: Create a function to check manager timings
+> =A0 =A0 =A0OMAPDSS: APPLY: Don't check manager settings if it is disabled
+> =A0 =A0 =A0OMAPDSS: APPLY: Remove display dependency from overlay and man=
+ager checks
+> =A0 =A0 =A0OMAPDSS: DPI/HDMI: Apply manager timings even if panel is disa=
+bled
+> =A0 =A0 =A0OMAPDSS: APPLY: Remove an unnecessary omap_dss_device pointer
+> =A0 =A0 =A0OMAPDSS: DISPC: Remove omap_dss_device pointer usage from disp=
+c_mgr_pclk_rate()
+> =A0 =A0 =A0OMAPDSS: DISPC: Remove usage of dispc_mgr_get_device()
+> =A0 =A0 =A0OMAPDSS: DSI: Support command mode interleaving during video m=
+ode blanking periods
+> =A0 =A0 =A0OMAPDSS: VENC/DISPC: Delay dividing Y resolution for managers =
+connected to VENC
+> =A0 =A0 =A0OMAPDSS: Apply VENC timings even if panel is disabled
+>
+> Axel Castaneda Gonzalez (1):
+> =A0 =A0 =A0OMAPDSS: HDMI: Decouple wrapper enable/disable and audio start=
+/stop
+>
+> Chandrabhanu Mahapatra (5):
+> =A0 =A0 =A0OMAPDSS: DISPC: Enable predecimation
+> =A0 =A0 =A0OMAPDSS: DISPC: Handle synclost errors in OMAP3
+> =A0 =A0 =A0OMAPDSS: DISPC: Correct DISPC functional clock usage
+> =A0 =A0 =A0OMAPDSS: DISPC: Update Accumulator configuration for chroma pl=
+ane
+> =A0 =A0 =A0OMAPDSS: DISPC: Support rotation through TILER
+>
+> Grazvydas Ignotas (5):
+> =A0 =A0 =A0OMAPDSS: OMAPFB: check for matching memory size early
+> =A0 =A0 =A0OMAPDSS: provide default get_timings function for panels
+> =A0 =A0 =A0OMAPDSS: TPO-TD03MTEA1: add set/check timing functions
+> =A0 =A0 =A0OMAPDSS: VENC: allow switching venc output type at runtime
+> =A0 =A0 =A0OMAPDSS: OMAPFB: always allow to configure overlay
+>
+> Jan Weitzel (1):
+> =A0 =A0 =A0ARM: OMAP2+ Add Primview displays to panel-generic
+>
+> Mark Brown (4):
+> =A0 =A0 =A0OMAP: DSS2: Remove suspicous and unused TAAL regulator API usa=
+ge
+> =A0 =A0 =A0OMAPDSS: VENC: Check for errors from regulator_enable()
+> =A0 =A0 =A0OMAPDSS: TPO-TD03MTEA1: Check for errors from regulator_enable=
+()
+> =A0 =A0 =A0OMAPDSS: TPO-TD03MTEA1: Correct comment for power on delay
+>
+> Peter Meerwald (1):
+> =A0 =A0 =A0OMAPFB: remove unused FB_OMAP_BOOTLOADER_INIT config option
+>
+> Ricardo Neri (15):
+> =A0 =A0 =A0OMAPDSS: Provide an interface for audio support
+> =A0 =A0 =A0OMAPDSS: HDMI: Split audio_enable into audio_enable/disable
+> =A0 =A0 =A0OMAPDSS: HDMI: Split video_enable into video_enable/disable
+> =A0 =A0 =A0OMAPDSS: HDMI: Remove ASoC codec
+> =A0 =A0 =A0OMAPDSS: HDMI: OMAP4: Remove CEA-861 audio infoframe and IEC-6=
+0958 enums
+> =A0 =A0 =A0OMAPDSS: HDMI: OMAP4: Remove invalid I2S settings
+> =A0 =A0 =A0OMAPDSS: HDMI: Decouple HDMI audio from ASoC
+> =A0 =A0 =A0OMAPDSS: HDMI: OMAP4: Expand configuration for IEC-60958 audio
+> =A0 =A0 =A0OMAPDSS: HDMI: Relocate N/CTS calculation
+> =A0 =A0 =A0OMAPDSS: HDMI: Add support for more audio sample rates in N/CT=
+S calculation
+> =A0 =A0 =A0OMAPDSS: HDMI: Add an audio configuration function
+> =A0 =A0 =A0OMAPDSS: HDMI: OMAP4: Remap speaker order to match ALSA order
+> =A0 =A0 =A0OMAPDSS: HDMI: Panel: Simplify the name of the HDMI mutex
+> =A0 =A0 =A0OMAPDSS: HDMI: Implement DSS driver interface for audio
+> =A0 =A0 =A0OMAPDSS: HDMI: OMAP4: Update IRQ flags for the HPD IRQ request
+>
+> Russ Dill (1):
+> =A0 =A0 =A0OMAPDSS: TFP410: use gpio_set_value_cansleep
+>
+> Thomas Weber (2):
+> =A0 =A0 =A0OMAPDSS: Add Mitsubishi AA084SB01 display support
+> =A0 =A0 =A0OMAPDSS: Add EDT ET0500G0DH6 display support
+>
+> Tomi Valkeinen (38):
+> =A0 =A0 =A0OMAPDSS: add set_min_bus_tput pointer to omapdss's platform da=
+ta
+> =A0 =A0 =A0OMAPDSS: Ensure OPP100 when DSS is operational
+> =A0 =A0 =A0OMAPDSS: DSI: remove option to use pck for DSI PLL clkin
+> =A0 =A0 =A0OMAPDSS: panel-dvi: add PD gpio handling
+> =A0 =A0 =A0OMAP: board-files: remove custom PD GPIO handling for DVI outp=
+ut
+> =A0 =A0 =A0OMAPDSS: TFP410: rename dvi -> tfp410
+> =A0 =A0 =A0OMAPDSS: TFP410: rename dvi files to tfp410
+> =A0 =A0 =A0OMAPDSS: Taal: move reset gpio handling to taal driver
+> =A0 =A0 =A0OMAPDSS: DSI: implement generic DSI pin config
+> =A0 =A0 =A0Merge branch 'archit/set-timing-work'
+> =A0 =A0 =A0Merge branch 'for-l-o-3.5'
+> =A0 =A0 =A0OMAPFB: fix parsing of vram parameter
+> =A0 =A0 =A0OMAPDSS: TFP410: pdata rewrite
+> =A0 =A0 =A0OMAPDSS: DSI: use dsi_get_dsidev_id(dsidev) instead of dsidev-=
+>id
+> =A0 =A0 =A0OMAPDSS: clean up the omapdss platform data mess
+> =A0 =A0 =A0OMAPDSS: remove return from platform_driver_unreg
+> =A0 =A0 =A0OMAPDSS: use platform_driver_probe for core/dispc/dss
+> =A0 =A0 =A0OMAPDSS: create custom pdevs for DSS omap_devices
+> =A0 =A0 =A0OMAPDSS: create DPI & SDI devices
+> =A0 =A0 =A0OMAPDSS: create DPI & SDI drivers
+> =A0 =A0 =A0OMAPDSS: remove uses of dss_runtime_get/put
+> =A0 =A0 =A0OMAPDSS: handle output-driver reg/unreg more dynamically
+> =A0 =A0 =A0OMAPDSS: move the creation of debugfs files
+> =A0 =A0 =A0OMAPDSS: use platform_driver_probe for dsi/hdmi/rfbi/venc/dpi/=
+sdi
+> =A0 =A0 =A0OMAPDSS: add __init & __exit
+> =A0 =A0 =A0OMAPFB: add __init & __exit
+> =A0 =A0 =A0OMAPDSS: change default_device handling
+> =A0 =A0 =A0OMAPDSS: interface drivers register their panel devices
+> =A0 =A0 =A0OMAPDSS: init omap_dss_devices internally
+> =A0 =A0 =A0OMAPDSS: DSI: improve DSI module id handling
+> =A0 =A0 =A0OMAPDSS: separate pdata based initialization
+> =A0 =A0 =A0Merge branch 'dss-devtree-cleanup'
+> =A0 =A0 =A0Merge branch 'omapdss-hdmi-audio'
+> =A0 =A0 =A0OMAPDSS: use DSI_FIFO_BUG workaround only for manual update di=
+splays
+> =A0 =A0 =A0OMAPDSS: DISPC: fix usage of dispc_ovl_set_accu_uv
+> =A0 =A0 =A0OMAPDSS: remove compiler warnings when CONFIG_BUG=3Dn
+> =A0 =A0 =A0OMAPFB: remove compiler warnings when CONFIG_BUG=3Dn
+> =A0 =A0 =A0OMAPDSS: VRFB: remove compiler warnings when CONFIG_BUG=3Dn
+>
+> =A0Documentation/arm/OMAP/DSS =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 | =A0 46 ++
+> =A0arch/arm/mach-omap2/board-3430sdp.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =
+=A0 38 +-
+> =A0arch/arm/mach-omap2/board-4430sdp.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =
+=A0 37 +-
+> =A0arch/arm/mach-omap2/board-am3517evm.c =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0=
+ 25 +-
+> =A0arch/arm/mach-omap2/board-cm-t35.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
+=A0 30 +-
+> =A0arch/arm/mach-omap2/board-devkit8000.c =A0 =A0 =A0 =A0 =A0 =A0 | =A0 3=
+0 +-
+> =A0arch/arm/mach-omap2/board-igep0020.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0=
+ 32 +-
+> =A0arch/arm/mach-omap2/board-omap3beagle.c =A0 =A0 =A0 =A0 =A0 =A0| =A0 3=
+7 +-
+> =A0arch/arm/mach-omap2/board-omap3evm.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0=
+ 29 +-
+> =A0arch/arm/mach-omap2/board-omap3stalker.c =A0 =A0 =A0 =A0 =A0 | =A0 29 =
++-
+> =A0arch/arm/mach-omap2/board-omap4panda.c =A0 =A0 =A0 =A0 =A0 =A0 | =A0 3=
+9 +-
+> =A0arch/arm/mach-omap2/board-overo.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0|=
+ =A0 25 +-
+> =A0arch/arm/mach-omap2/display.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0| =A0196 ++++-
+> =A0drivers/video/omap/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 | =A0 =A08 -
+> =A0drivers/video/omap2/displays/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0=
+ =A08 +-
+> =A0drivers/video/omap2/displays/Makefile =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0=
+ =A02 +-
+> =A0drivers/video/omap2/displays/panel-acx565akm.c =A0 =A0 | =A0 =A07 -
+> =A0drivers/video/omap2/displays/panel-generic-dpi.c =A0 | =A0107 ++-
+> =A0drivers/video/omap2/displays/panel-n8x0.c =A0 =A0 =A0 =A0 =A0| =A0 =A0=
+8 -
+> =A0drivers/video/omap2/displays/panel-taal.c =A0 =A0 =A0 =A0 =A0| =A0108 =
++--
+> =A0.../omap2/displays/{panel-dvi.c =3D> panel-tfp410.c} | =A0186 ++---
+> =A0.../video/omap2/displays/panel-tpo-td043mtea1.c =A0 =A0| =A0 22 +-
+> =A0drivers/video/omap2/dss/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0| =A0 13 +-
+> =A0drivers/video/omap2/dss/apply.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0| =A0134 +++-
+> =A0drivers/video/omap2/dss/core.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ | =A0255 ++++---
+> =A0drivers/video/omap2/dss/dispc.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0| =A0747 ++++++++++++++------
+> =A0drivers/video/omap2/dss/dispc.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0| =A0 72 ++
+> =A0drivers/video/omap2/dss/display.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0|=
+ =A0 49 +-
+> =A0drivers/video/omap2/dss/dpi.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0| =A0 75 +-
+> =A0drivers/video/omap2/dss/dsi.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0| =A0537 ++++++++------
+> =A0drivers/video/omap2/dss/dss.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0| =A0 65 +-
+> =A0drivers/video/omap2/dss/dss.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0| =A0151 ++--
+> =A0drivers/video/omap2/dss/dss_features.c =A0 =A0 =A0 =A0 =A0 =A0 | =A0 3=
+0 +-
+> =A0drivers/video/omap2/dss/dss_features.h =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =
+=A05 +
+> =A0drivers/video/omap2/dss/hdmi.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ | =A0443 +++++-------
+> =A0drivers/video/omap2/dss/hdmi_panel.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0=
+236 ++++++-
+> =A0drivers/video/omap2/dss/manager.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0|=
+ =A0 19 +-
+> =A0drivers/video/omap2/dss/overlay.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0|=
+ =A0 16 +-
+> =A0drivers/video/omap2/dss/rfbi.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ | =A0 84 ++-
+> =A0drivers/video/omap2/dss/sdi.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0| =A0 63 +-
+> =A0drivers/video/omap2/dss/ti_hdmi.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0|=
+ =A0 32 +-
+> =A0drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c =A0 =A0 =A0 =A0 =A0| =A0480 =
+++++++++-----
+> =A0drivers/video/omap2/dss/ti_hdmi_4xxx_ip.h =A0 =A0 =A0 =A0 =A0| =A0161 =
++----
+> =A0drivers/video/omap2/dss/venc.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ | =A0133 +++-
+> =A0drivers/video/omap2/omapfb/omapfb-ioctl.c =A0 =A0 =A0 =A0 =A0| =A0 17 =
++-
+> =A0drivers/video/omap2/omapfb/omapfb-main.c =A0 =A0 =A0 =A0 =A0 | =A0 12 =
++-
+> =A0drivers/video/omap2/omapfb/omapfb.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =
+=A0 =A01 +
+> =A0drivers/video/omap2/vrfb.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 | =A0 =A04 +-
+> =A0include/video/omap-panel-nokia-dsi.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0=
+ =A03 +
+> =A0.../{omap-panel-dvi.h =3D> omap-panel-tfp410.h} =A0 =A0 =A0| =A0 18 +-
+> =A0include/video/omapdss.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0| =A0 75 +-
+> =A051 files changed, 2983 insertions(+), 1996 deletions(-)
+> =A0rename drivers/video/omap2/displays/{panel-dvi.c =3D> panel-tfp410.c} =
+(56%)
+> =A0rename include/video/{omap-panel-dvi.h =3D> omap-panel-tfp410.h} (63%)
+>

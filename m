@@ -1,7 +1,7 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Tue, 05 Jun 2012 14:10:14 +0000
+From: Witold Baryluk <baryluk@smp.if.uj.edu.pl>
+Date: Tue, 05 Jun 2012 17:18:46 +0000
 Subject: Re: Circular locking (and possible deadlock), when exiting from mplayer -vo fbdev2
-Message-Id: <20120605141014.GB4297@mwanda>
+Message-Id: <20120605171846.GE5511@smp.if.uj.edu.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20120604173702.GZ16584@smp.if.uj.edu.pl>
 In-Reply-To: <20120604173702.GZ16584@smp.if.uj.edu.pl>
@@ -10,32 +10,65 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-My patch can't cause this.  I'd be surprised if my patch has any
-effect beyond silencing a static checker warning, honestly.
+On 06-05 17:10, Dan Carpenter wrote:
+> My patch can't cause this.  I'd be surprised if my patch has any
+> effect beyond silencing a static checker warning, honestly.
+> 
 
-I'm not sure this is a new bug.
+Yes, you are right. Your patch cannot be cause of it. Sorry for
+confusion.
 
-The problem is we hold ->mmap_sem when we call fb_release() which
-takes the info->lock.
+> I'm not sure this is a new bug.
+> 
 
-We take the info->lock in do_fb_ioctl() before we call fb_set_var()
-which calls drm_fb_helper_set_par() which takes the
-mode_config.mutex.
+Indeed, last time I used mplayer -vo fbdev2 was years ago, so bug could
+appear anywhere in this period, or it is a more a matter of my
+configuration.
 
-In drm_mode_getresources() we take the mode_config.mutex() and call
-put_user() which takes the ->mmap_sem.
+> The problem is we hold ->mmap_sem when we call fb_release() which
+> takes the info->lock.
+> 
+> We take the info->lock in do_fb_ioctl() before we call fb_set_var()
+> which calls drm_fb_helper_set_par() which takes the
+> mode_config.mutex.
+> 
+> In drm_mode_getresources() we take the mode_config.mutex() and call
+> put_user() which takes the ->mmap_sem.
+> 
+> So on one CPU we are holding the ->mmap_sem and want the info->lock.
+> On another CPU we are holding the info->lock and want the
+> config.mutex.  On the other CPU we hold the config.mutex and want
+> the ->mmap_sem.
+> 
+> Deadlock.
 
-So on one CPU we are holding the ->mmap_sem and want the info->lock.
-On another CPU we are holding the info->lock and want the
-config.mutex.  On the other CPU we hold the config.mutex and want
-the ->mmap_sem.
+Temporary solution would be to break a cycle, and for example take
+info->lock first on first processor before taking ->mmap_sem and calling
+fb_release - it is just fb release, so performance doesn't matter so
+much. Other possibility is to protect this code paths by separate common
+lock, but it will increase memory and make it slower probably in this
+function and other ones. I do not know which subsystems use
+drm_mode_getresources, and if this is important performance wise.
 
-Deadlock.
+There is probably other possibilities, but only fbdev people can tell
+which is best.
 
-I'm not sure how to make this work with just two CPUs...  Or how to
-fix it.  But I'm going to disclaim all responsibility and hope the
-fbdev people can take a look.  ;)
 
-regards,
-dan carpenter
 
+> 
+> I'm not sure how to make this work with just two CPUs...  Or how to
+> fix it.  But I'm going to disclaim all responsibility and hope the
+> fbdev people can take a look.  ;)
+> 
+> regards,
+> dan carpenter
+> 
+
+
+thanks for analysis,
+
+Regards,
+Witek
+
+-- 
+Witold Baryluk

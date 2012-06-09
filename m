@@ -1,146 +1,66 @@
-From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
-Date: Thu, 28 Jun 2012 09:53:42 +0000
-Subject: [PATCH 4/4] OMAPDSS: Add dump and debug support for LCD3
-Message-Id: <48752654ac49d86b04c320f0d07f0a33b908dcbf.1340874806.git.cmahapatra@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sat, 09 Jun 2012 12:41:47 +0000
+Subject: Re: [PATCH] video: bfin_adv7393fb: Convert to kstrtouint_from_user
+Message-Id: <4FD3448B.2050806@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1340874806.git.cmahapatra@ti.com>
-In-Reply-To: <cover.1340874806.git.cmahapatra@ti.com>
+References: <1338310620-6886-1-git-send-email-emilgoode@gmail.com>
+In-Reply-To: <1338310620-6886-1-git-send-email-emilgoode@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+To: Emil Goode <emilgoode@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-DISPC functions have been modified to provide clock and register dumps and debug
-support for the LCD3 manager.
+On 05/29/2012 04:57 PM, Emil Goode wrote:
+> This patch removes a call to the deprecated simple_strtoul function
+> and simplifies the code by replacing two function calls with one
+> call to kstrtouint_from_user.
+> 
+> -Simplify the adv7393_write_proc function by replacing the
+>  simple_strtoul and copy_from_user calls with one call
+>  to kstrtouint_from_user.
+> 
+> -Change the count parameter from unsigned long to size_t as
+>  this is the type that the kstrtouint_from_user function expects.
+>  (size_t is what will be passed to the adv7393_write_proc function
+>  by the proc write handler function proc_file_write anyway)
+> 
+> Signed-off-by: Emil Goode <emilgoode@gmail.com>
 
-Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
----
- drivers/video/omap2/dss/dispc.c |   70 ++++++++++++++++++++++----------------
- 1 files changed, 40 insertions(+), 30 deletions(-)
+Applied.
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 644ff53..29b92ea 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -2854,12 +2854,32 @@ unsigned long dispc_core_clk_rate(void)
- 	return fclk / lcd;
- }
- 
--void dispc_dump_clocks(struct seq_file *s)
-+void dispc_dump_clocks_channel(struct seq_file *s, enum omap_channel channel)
- {
- 	int lcd, pcd;
-+	enum omap_dss_clk_source lcd_clk_src;
-+
-+	seq_printf(s, "- %s -\n", mgr_desc[channel].name);
-+
-+	lcd_clk_src = dss_get_lcd_clk_source(channel);
-+
-+	seq_printf(s, "%s clk source = %s (%s)\n", mgr_desc[channel].name,
-+		dss_get_generic_clk_source_name(lcd_clk_src),
-+		dss_feat_get_clk_source_name(lcd_clk_src));
-+
-+	dispc_mgr_get_lcd_divisor(channel, &lcd, &pcd);
-+
-+	seq_printf(s, "lck\t\t%-16lulck div\t%u\n",
-+		dispc_mgr_lclk_rate(channel), lcd);
-+	seq_printf(s, "pck\t\t%-16lupck div\t%u\n",
-+		dispc_mgr_pclk_rate(channel), pcd);
-+}
-+
-+void dispc_dump_clocks(struct seq_file *s)
-+{
-+	int lcd;
- 	u32 l;
- 	enum omap_dss_clk_source dispc_clk_src = dss_get_dispc_clk_source();
--	enum omap_dss_clk_source lcd_clk_src;
- 
- 	if (dispc_runtime_get())
- 		return;
-@@ -2880,36 +2900,13 @@ void dispc_dump_clocks(struct seq_file *s)
- 		seq_printf(s, "lck\t\t%-16lulck div\t%u\n",
- 				(dispc_fclk_rate()/lcd), lcd);
- 	}
--	seq_printf(s, "- LCD1 -\n");
- 
--	lcd_clk_src = dss_get_lcd_clk_source(OMAP_DSS_CHANNEL_LCD);
-+	dispc_dump_clocks_channel(s, OMAP_DSS_CHANNEL_LCD);
- 
--	seq_printf(s, "lcd1_clk source = %s (%s)\n",
--		dss_get_generic_clk_source_name(lcd_clk_src),
--		dss_feat_get_clk_source_name(lcd_clk_src));
--
--	dispc_mgr_get_lcd_divisor(OMAP_DSS_CHANNEL_LCD, &lcd, &pcd);
--
--	seq_printf(s, "lck\t\t%-16lulck div\t%u\n",
--			dispc_mgr_lclk_rate(OMAP_DSS_CHANNEL_LCD), lcd);
--	seq_printf(s, "pck\t\t%-16lupck div\t%u\n",
--			dispc_mgr_pclk_rate(OMAP_DSS_CHANNEL_LCD), pcd);
--	if (dss_has_feature(FEAT_MGR_LCD2)) {
--		seq_printf(s, "- LCD2 -\n");
--
--		lcd_clk_src = dss_get_lcd_clk_source(OMAP_DSS_CHANNEL_LCD2);
--
--		seq_printf(s, "lcd2_clk source = %s (%s)\n",
--			dss_get_generic_clk_source_name(lcd_clk_src),
--			dss_feat_get_clk_source_name(lcd_clk_src));
--
--		dispc_mgr_get_lcd_divisor(OMAP_DSS_CHANNEL_LCD2, &lcd, &pcd);
--
--		seq_printf(s, "lck\t\t%-16lulck div\t%u\n",
--				dispc_mgr_lclk_rate(OMAP_DSS_CHANNEL_LCD2), lcd);
--		seq_printf(s, "pck\t\t%-16lupck div\t%u\n",
--				dispc_mgr_pclk_rate(OMAP_DSS_CHANNEL_LCD2), pcd);
--	}
-+	if (dss_has_feature(FEAT_MGR_LCD2))
-+		dispc_dump_clocks_channel(s, OMAP_DSS_CHANNEL_LCD2);
-+	if (dss_has_feature(FEAT_MGR_LCD3))
-+		dispc_dump_clocks_channel(s, OMAP_DSS_CHANNEL_LCD3);
- 
- 	dispc_runtime_put();
- }
-@@ -2962,6 +2959,12 @@ void dispc_dump_irqs(struct seq_file *s)
- 		PIS(ACBIAS_COUNT_STAT2);
- 		PIS(SYNC_LOST2);
- 	}
-+	if (dss_has_feature(FEAT_MGR_LCD3)) {
-+		PIS(FRAMEDONE3);
-+		PIS(VSYNC3);
-+		PIS(ACBIAS_COUNT_STAT3);
-+		PIS(SYNC_LOST3);
-+	}
- #undef PIS
- }
- #endif
-@@ -2973,6 +2976,7 @@ static void dispc_dump_regs(struct seq_file *s)
- 		[OMAP_DSS_CHANNEL_LCD]		= "LCD",
- 		[OMAP_DSS_CHANNEL_DIGIT]	= "TV",
- 		[OMAP_DSS_CHANNEL_LCD2]		= "LCD2",
-+		[OMAP_DSS_CHANNEL_LCD3]		= "LCD3",
- 	};
- 	const char *ovl_names[] = {
- 		[OMAP_DSS_GFX]		= "GFX",
-@@ -3005,6 +3009,10 @@ static void dispc_dump_regs(struct seq_file *s)
- 		DUMPREG(DISPC_CONTROL2);
- 		DUMPREG(DISPC_CONFIG2);
- 	}
-+	if (dss_has_feature(FEAT_MGR_LCD3)) {
-+		DUMPREG(DISPC_CONTROL3);
-+		DUMPREG(DISPC_CONFIG3);
-+	}
- 
- #undef DUMPREG
- 
-@@ -3387,6 +3395,8 @@ static void print_irq_status(u32 status)
- 	PIS(SYNC_LOST_DIGIT);
- 	if (dss_has_feature(FEAT_MGR_LCD2))
- 		PIS(SYNC_LOST2);
-+	if (dss_has_feature(FEAT_MGR_LCD3))
-+		PIS(SYNC_LOST3);
- #undef PIS
- 
- 	printk("\n");
--- 
-1.7.1
+
+Thanks,
+
+Florian Tobias Schandinat
+
+> ---
+>  drivers/video/bfin_adv7393fb.c |    6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/video/bfin_adv7393fb.c b/drivers/video/bfin_adv7393fb.c
+> index 1a268a2..8c6edfd 100644
+> --- a/drivers/video/bfin_adv7393fb.c
+> +++ b/drivers/video/bfin_adv7393fb.c
+> @@ -353,18 +353,16 @@ adv7393_read_proc(char *page, char **start, off_t off,
+>  
+>  static int
+>  adv7393_write_proc(struct file *file, const char __user * buffer,
+> -		   unsigned long count, void *data)
+> +		   size_t count, void *data)
+>  {
+>  	struct adv7393fb_device *fbdev = data;
+> -	char line[8];
+>  	unsigned int val;
+>  	int ret;
+>  
+> -	ret = copy_from_user(line, buffer, count);
+> +	ret = kstrtouint_from_user(buffer, count, 0, &val);
+>  	if (ret)
+>  		return -EFAULT;
+>  
+> -	val = simple_strtoul(line, NULL, 0);
+>  	adv7393_write(fbdev->client, val >> 8, val & 0xff);
+>  
+>  	return count;
 

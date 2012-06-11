@@ -1,110 +1,112 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Sat, 16 Jun 2012 22:04:25 +0000
-Subject: [PATCH 09/10] fblog: register all handlers on module-init
-Message-Id: <1339884266-9201-10-git-send-email-dh.herrmann@googlemail.com>
+From: Liu Ying <Ying.Liu@freescale.com>
+Date: Mon, 11 Jun 2012 01:06:49 +0000
+Subject: [PATCH 2/3] mx3fb: support pan display with fb_set_var
+Message-Id: <1339376810-8247-2-git-send-email-Ying.Liu@freescale.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
-In-Reply-To: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
+References: <1339376810-8247-1-git-send-email-Ying.Liu@freescale.com>
+In-Reply-To: <1339376810-8247-1-git-send-email-Ying.Liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-serial@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Herrmann <dh.herrmann@googlemail.com>
+To: linux-arm-kernel@lists.infradead.org
 
-We now create a new "fblog" device when initializing the fblog module. We
-register the "active" sysfs-file with it so user-space can now access
-fblog. We also register the framebuffer-notifier and console-handler so
-fblog is ready to go.
+Users may call FBIOPUT_VSCREENINFO ioctrl to do pan display.
+This ioctrl relies on fb_set_var() to do the job. fb_set_var()
+calls the custom fb_set_par() method and then calls the custom
+fb_pan_display() method. Before calling the custom fb_pan_display()
+method, info->var is already updated from the new *var in fb_set_var().
+And, the custom fb_pan_display() method checks if xoffset and yoffset
+in info->var and the new *var are different before doing actual panning,
+which prevents the panning from happening within fb_set_var() context.
+This patch caches the current var info locally in mx3fb driver so that
+pan display with fb_set_var is supported.
 
-Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
 ---
- drivers/video/console/fblog.c |   59 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 59 insertions(+)
+ drivers/video/mx3fb.c |   33 ++++++++++++++++++++++++++-------
+ 1 files changed, 26 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
-index 79bfbcc..9d3b072 100644
---- a/drivers/video/console/fblog.c
-+++ b/drivers/video/console/fblog.c
-@@ -92,6 +92,7 @@ struct fblog_fb {
+diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+index d53db60..2dd11c4 100644
+--- a/drivers/video/mx3fb.c
++++ b/drivers/video/mx3fb.c
+@@ -268,7 +268,7 @@ struct mx3fb_info {
+ 	dma_cookie_t			cookie;
+ 	struct scatterlist		sg[2];
+ 
+-	u32				sync;	/* preserve var->sync flags */
++	struct fb_var_screeninfo	cur_var; /* current var info */
  };
  
- static struct fblog_fb *fblog_fbs[FB_MAX];
-+static struct device *fblog_device;
- static atomic_t fblog_active;
+ static void mx3fb_dma_done(void *);
+@@ -723,7 +723,7 @@ static void mx3fb_dma_done(void *arg)
  
- static void fblog_buf_resize(struct fblog_buf *buf, size_t width,
-@@ -609,13 +610,71 @@ static ssize_t fblog_dev_active_store(struct device *dev,
- static DEVICE_ATTR(active, S_IRUGO | S_IWUSR | S_IWGRP, fblog_dev_active_show,
- 		   fblog_dev_active_store);
- 
-+static void fblog_dev_release(struct device *dev)
-+{
-+	kfree(dev);
-+	module_put(THIS_MODULE);
-+}
-+
- static int __init fblog_init(void)
+ static int __set_par(struct fb_info *fbi, bool lock)
  {
-+	int ret;
-+
-+	fblog_device = kzalloc(sizeof(*fblog_device), GFP_KERNEL);
-+	if (!fblog_device) {
-+		pr_err("fblog: cannot allocate device\n");
-+		ret = -ENOMEM;
-+		goto err_out;
+-	u32 mem_len;
++	u32 mem_len, cur_xoffset, cur_yoffset;
+ 	struct ipu_di_signal_cfg sig_cfg;
+ 	enum ipu_panel mode = IPU_PANEL_TFT;
+ 	struct mx3fb_info *mx3_fbi = fbi->par;
+@@ -805,8 +805,25 @@ static int __set_par(struct fb_info *fbi, bool lock)
+ 	video->out_height	= fbi->var.yres;
+ 	video->out_stride	= fbi->var.xres_virtual;
+ 
+-	if (mx3_fbi->blank = FB_BLANK_UNBLANK)
++	if (mx3_fbi->blank = FB_BLANK_UNBLANK) {
+ 		sdc_enable_channel(mx3_fbi);
++		/*
++		 * sg[0] points to fb smem_start address
++		 * and is actually active in controller.
++		 */
++		mx3_fbi->cur_var.xoffset = 0;
++		mx3_fbi->cur_var.yoffset = 0;
 +	}
 +
-+	__module_get(THIS_MODULE);
-+	device_initialize(fblog_device);
-+	fblog_device->class = fb_class;
-+	fblog_device->release = fblog_dev_release;
-+	dev_set_name(fblog_device, "fblog");
-+
-+	ret = device_add(fblog_device);
-+	if (ret) {
-+		pr_err("fblog: cannot add device\n");
-+		goto err_dev;
-+	}
-+
-+	ret = fb_register_client(&fblog_notifier);
-+	if (ret) {
-+		pr_err("fblog: cannot register framebuffer notifier\n");
-+		goto err_dev_rm;
-+	}
-+
-+	ret = device_create_file(fblog_device, &dev_attr_active);
-+	if (ret) {
-+		pr_err("fblog: cannot create sysfs entry\n");
-+		goto err_fb;
-+	}
-+
-+	register_console(&fblog_con_driver);
-+
++	/*
++	 * Preserve xoffset and yoffest in case they are
++	 * inactive in controller as fb is blanked.
++	 */
++	cur_xoffset = mx3_fbi->cur_var.xoffset;
++	cur_yoffset = mx3_fbi->cur_var.yoffset;
++	mx3_fbi->cur_var = fbi->var;
++	mx3_fbi->cur_var.xoffset = cur_xoffset;
++	mx3_fbi->cur_var.yoffset = cur_yoffset;
+ 
  	return 0;
+ }
+@@ -926,8 +943,8 @@ static int mx3fb_check_var(struct fb_var_screeninfo *var, struct fb_info *fbi)
+ 	var->grayscale = 0;
+ 
+ 	/* Preserve sync flags */
+-	var->sync |= mx3_fbi->sync;
+-	mx3_fbi->sync |= var->sync;
++	var->sync |= mx3_fbi->cur_var.sync;
++	mx3_fbi->cur_var.sync |= var->sync;
+ 
+ 	return 0;
+ }
+@@ -1073,8 +1090,8 @@ static int mx3fb_pan_display(struct fb_var_screeninfo *var,
+ 		return -EINVAL;
+ 	}
+ 
+-	if (fbi->var.xoffset = var->xoffset &&
+-	    fbi->var.yoffset = var->yoffset)
++	if (mx3_fbi->cur_var.xoffset = var->xoffset &&
++	    mx3_fbi->cur_var.yoffset = var->yoffset)
+ 		return 0;	/* No change, do nothing */
+ 
+ 	y_bottom = var->yoffset;
+@@ -1157,6 +1174,8 @@ static int mx3fb_pan_display(struct fb_var_screeninfo *var,
+ 	else
+ 		fbi->var.vmode &= ~FB_VMODE_YWRAP;
+ 
++	mx3_fbi->cur_var = fbi->var;
 +
-+err_fb:
-+	fb_unregister_client(&fblog_notifier);
-+err_dev_rm:
-+	device_del(fblog_device);
-+err_dev:
-+	put_device(fblog_device);
-+err_out:
-+	return ret;
- }
+ 	mutex_unlock(&mx3_fbi->mutex);
  
- static void __exit fblog_exit(void)
- {
-+	unregister_console(&fblog_con_driver);
-+	device_remove_file(fblog_device, &dev_attr_active);
-+	device_del(fblog_device);
-+	fb_unregister_client(&fblog_notifier);
-+	console_lock();
-+	fblog_deactivate();
-+	console_unlock();
-+	put_device(fblog_device);
- }
- 
- module_init(fblog_init);
+ 	dev_dbg(fbi->device, "Update complete\n");
 -- 
-1.7.10.4
+1.7.1
+
 

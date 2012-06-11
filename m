@@ -1,167 +1,36 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Sat, 16 Jun 2012 22:04:18 +0000
-Subject: [PATCH 02/10] fblog: implement buffer management
-Message-Id: <1339884266-9201-3-git-send-email-dh.herrmann@googlemail.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Mon, 11 Jun 2012 02:27:27 +0000
+Subject: [PATCH 2/2] video: s3c-fb: fix possible division by zero in s3c_fb_calc_pixclk
+Message-Id: <001901cd4779$bea8c980$3bfa5c80$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
-In-Reply-To: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-serial@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Herrmann <dh.herrmann@googlemail.com>
+To: linux-fbdev@vger.kernel.org
 
-Each available framebuffer can have a different font and buffer size
-inside of fblog. Therefore, we need to remember all the log messages that
-are currently printed on screen. We save them as an array of lines which
-can be rotated and traversed very fast.
+Divider value can be zero and it makes division by zero
+from debug message in s3c_fb_calc_pixclk; therefore, it
+should be fixed.
 
-This also implements a very trivial way of resizing the buffer but still
-keeping the content. As there is no need to improve this for speed, we can
-keep it this way.
-
-Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 ---
- drivers/video/console/fblog.c |  126 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 126 insertions(+)
+ drivers/video/s3c-fb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
-index ea83643..1504ba9 100644
---- a/drivers/video/console/fblog.c
-+++ b/drivers/video/console/fblog.c
-@@ -39,6 +39,132 @@
- #include <linux/font.h>
- #include <linux/module.h>
+diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+index b5c2939..ea7b661 100644
+--- a/drivers/video/s3c-fb.c
++++ b/drivers/video/s3c-fb.c
+@@ -361,7 +361,7 @@ static int s3c_fb_calc_pixclk(struct s3c_fb *sfb, unsigned int pixclk)
+ 	result = (unsigned int)tmp / 1000;
  
-+/**
-+ * struct fblog_buf: Console text buffer
-+ *
-+ * Each framebuffer has its own text buffer which contains all characters that
-+ * are currently printed on screen. The buffers might have different sizes and
-+ * can be resized during runtime. When the buffer content changes, we redraw the
-+ * screen.
-+ *
-+ * width: Width of buffer in characters
-+ * height: Height of buffer in characters
-+ * lines: Array of lines
-+ * pos_x: Cursor x-position
-+ * pos_y: Cursor y-position
-+ */
-+struct fblog_buf {
-+	size_t width;
-+	size_t height;
-+	char **lines;
-+	size_t pos_x;
-+	size_t pos_y;
-+};
-+
-+static void fblog_buf_resize(struct fblog_buf *buf, size_t width,
-+			     size_t height)
-+{
-+	char **lines = NULL;
-+	size_t i, j, minw, minh;
-+
-+	if (buf->height = height && buf->width = width)
-+		return;
-+
-+	if (width && height) {
-+		lines = kzalloc(height * sizeof(char*), GFP_KERNEL);
-+		if (!lines)
-+			return;
-+
-+		for (i = 0; i < height; ++i) {
-+			lines[i] = kzalloc(width * sizeof(char), GFP_KERNEL);
-+			if (!lines[i]) {
-+				while (i--)
-+					kfree(lines[i]);
-+				return;
-+			}
-+		}
-+
-+		/* copy old lines */
-+		minw = min(width, buf->width);
-+		minh = min(height, buf->height);
-+		if (height >= buf->height)
-+			i = 0;
-+		else
-+			i = buf->height - height;
-+
-+		for (j = 0; j < minh; ++i, ++j)
-+			memcpy(lines[j], buf->lines[i], minw * sizeof(char));
-+	} else {
-+		width = 0;
-+		height = 0;
-+	}
-+
-+	for (i = 0; i < buf->height; ++i)
-+		kfree(buf->lines[i]);
-+	kfree(buf->lines);
-+
-+	buf->lines = lines;
-+	buf->width = width;
-+	buf->height = height;
-+}
-+
-+static void fblog_buf_init(struct fblog_buf *buf)
-+{
-+	fblog_buf_resize(buf, 80, 24);
-+}
-+
-+static void fblog_buf_deinit(struct fblog_buf *buf)
-+{
-+	fblog_buf_resize(buf, 0, 0);
-+}
-+
-+static void fblog_buf_rotate(struct fblog_buf *buf)
-+{
-+	char *line;
-+
-+	if (!buf->height)
-+		return;
-+
-+	line = buf->lines[0];
-+	memset(line, 0, sizeof(char) * buf->width);
-+
-+	memmove(buf->lines, &buf->lines[1], sizeof(char*) * (buf->height - 1));
-+	buf->lines[buf->height - 1] = line;
-+}
-+
-+static void fblog_buf_write(struct fblog_buf *buf, const char *str, size_t len)
-+{
-+	char c;
-+
-+	if (!buf->height)
-+		return;
-+
-+	while (len--) {
-+		c = *str++;
-+
-+		if (c = '\n') {
-+			buf->pos_x = 0;
-+			if (++buf->pos_y >= buf->height) {
-+				buf->pos_y = buf->height - 1;
-+				fblog_buf_rotate(buf);
-+			}
-+		} else if (c = 0) {
-+			/* ignore */
-+		} else {
-+			if (buf->pos_x >= buf->width) {
-+				buf->pos_x = 0;
-+				++buf->pos_y;
-+			}
-+			if (buf->pos_y >= buf->height) {
-+				buf->pos_y = buf->height - 1;
-+				fblog_buf_rotate(buf);
-+			}
-+
-+			buf->lines[buf->pos_y][buf->pos_x++] = c;
-+		}
-+	}
-+}
-+
- static int __init fblog_init(void)
- {
- 	return 0;
+ 	dev_dbg(sfb->dev, "pixclk=%u, clk=%lu, div=%d (%lu)\n",
+-		pixclk, clk, result, clk / result);
++		pixclk, clk, result, result ? clk / result : clk);
+ 
+ 	return result;
+ }
 -- 
-1.7.10.4
+1.7.1
+
 

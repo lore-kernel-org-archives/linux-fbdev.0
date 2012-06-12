@@ -1,7 +1,7 @@
 From: "Nellutla, Aditya" <aditya.n@ti.com>
-Date: Mon, 04 Jun 2012 06:02:48 +0000
+Date: Tue, 12 Jun 2012 09:34:02 +0000
 Subject: RE: [PATCH] da8xx-fb: Rounding FB size to satisfy SGX buffer requirements
-Message-Id: <98B92248A36227448E6658FE6AD3A1C63E92628A@DBDE01.ent.ti.com>
+Message-Id: <98B92248A36227448E6658FE6AD3A1C63E926F42@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1337753191-14802-1-git-send-email-aditya.n@ti.com>
 In-Reply-To: <1337753191-14802-1-git-send-email-aditya.n@ti.com>
@@ -9,6 +9,20 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
+
+Florian, 
+
+   I didn't receive any review comments for the patch below. So could you please merge the patch?
+
+Regards,
+Aditya
+
+-----Original Message-----
+From: Nellutla, Aditya 
+Sent: Monday, June 04, 2012 11:33 AM
+To: Nellutla, Aditya; linux-fbdev@vger.kernel.org
+Cc: Hiremath, Vaibhav
+Subject: RE: [PATCH] da8xx-fb: Rounding FB size to satisfy SGX buffer requirements
 
 All, 
    Did you get chance to review this patch? Request to give your feedback as early as possible.

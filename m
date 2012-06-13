@@ -1,55 +1,67 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 27 Jun 2012 10:42:27 +0000
-Subject: Re: [PATCH v2] OMAPDSS: add clk_prepare and clk_unprepare
-Message-Id: <1340793747.2649.32.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-yyNgSXk7Jgw6QdwPiAnW"
+From: Paul Bolle <pebolle@tiscali.nl>
+Date: Wed, 13 Jun 2012 07:47:31 +0000
+Subject: [PATCH] video: backlight: remove unused header
+Message-Id: <1339573651.30984.130.camel@x61.thuisdomein>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340787086-29619-1-git-send-email-rnayak@ti.com>
-In-Reply-To: <1340787086-29619-1-git-send-email-rnayak@ti.com>
-To: Rajendra Nayak <rnayak@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Paul Walmsley <paul@pwsan.com>, Mike Turquette <mturquette@linaro.org>
-
-
---=-yyNgSXk7Jgw6QdwPiAnW
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2012-06-27 at 14:21 +0530, Rajendra Nayak wrote:
-> In preparation of OMAP moving to Common Clk Framework(CCF) add clk_prepar=
-e()
-> and clk_unprepare() for the omapdss clocks.
-
-Looks fine, and works fine with a quick test.
-
-I'll update the subject and desc to match the use of clk_prepare_enable
-and clk_disable_unprepare, and apply this to omapdss tree.
-
- Tomi
-
-
---=-yyNgSXk7Jgw6QdwPiAnW
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+Commit 9befe40f6e018e508b047eb76d189ede9b4ff03d ("video: backlight:
+support s6e8ax0 panel driver based on MIPI DSI") added s6e8ax0.h, but
+no file includes it. That's probably a good thing, because it declares
+an extern void function that is defined static int in s6e8ax0.c.
+Besides, that function is also wrapped in the module_init() macro, which
+should do everything needed to make that function available to the code
+outside of s6e8ax0.c. This header can safely be removed.
 
-iQIcBAABAgAGBQJP6uOTAAoJEPo9qoy8lh71vIQQAJFS0kgaRaorT2BF/vhCd8j1
-UsEipLqleNCR97qF93ucoYZgU6pa0QL1qlgoyae98XuR1YdvVrjupCLhiyomwqRv
-KGhqT9+4cnjakr/IMfQp/ghHc4BPj+x39A4gH2p/t/knEU/Wr+uUl+ejK0lcrR5j
-lunYlNm0xSEHCwR+icNSerVLuQqS5oxd15kSMhEhHFaTRARmZ7WvGrpEtBN0vr9T
-IAm8SG0HZ2Yc6cIIJCneKcuwvea3Xlx7d657X7ojqBovN5VfZuZaYvtP/rZo3GzR
-sLXxICY3ivggQ8AbY3XuAoUoaPLLq23SnGOHttSuDnpovhlLb0GbDXXocXbcjq1w
-DwR74i/+IG8dDjnnB3JZ1/eJ9n5u21azx3jNKdK7XY1xz408G7QU7LU1BJdKshKC
-g3qgSDXW1bFiYJIgK9SM0HY6A9kjcSc7IsemiYdfCOx+wh/+CzOI8K+Qz5IDLbU7
-LwAWTEUKzcn2Xq8SVyq8de0SXydEVMeC/1jmDmmtZqwjVIds7fRD05ohElnodTcj
-iY0jjy5n7v8pl4xtQK+EdMhlDZtM7LbWeZiM/bh9TX4dn14H//SxxljAj2fyTFXe
-t3Ef33MnenTTcgtwbotulzBheyT3TeDT188LcRI/JbKZQECCz61vVDP5U7ajEjvD
-n3o9Nhftev7/n4l5i3F+
-=mv3c
------END PGP SIGNATURE-----
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+0) Tested mainly by using various git tools on the (history of the)
+tree.
 
---=-yyNgSXk7Jgw6QdwPiAnW--
+1) Shouldn't s6e8ax0_init() and s6e8ax0_exit(), both in s6e8ax0.c, carry
+the usual __init and __exit attributes?
+
+2) But note that all the module related code in s6e8ax0.c seems moot
+currently: EXYNOS_LCD_S6E8AX0 is a boolean Kconfig symbol, so the code
+can only be used builtin. So, as far as I can tell, either that symbol
+(and the symbols on which it depends) should be made tristate, or the
+module related code can be removed from s6e8ax0.c.
+
+ drivers/video/exynos/s6e8ax0.h |   21 ---------------------
+ 1 files changed, 0 insertions(+), 21 deletions(-)
+ delete mode 100644 drivers/video/exynos/s6e8ax0.h
+
+diff --git a/drivers/video/exynos/s6e8ax0.h b/drivers/video/exynos/s6e8ax0.h
+deleted file mode 100644
+index 1f1b270..0000000
+--- a/drivers/video/exynos/s6e8ax0.h
++++ /dev/null
+@@ -1,21 +0,0 @@
+-/* linux/drivers/video/backlight/s6e8ax0.h
+- *
+- * MIPI-DSI based s6e8ax0 AMOLED LCD Panel definitions.
+- *
+- * Copyright (c) 2011 Samsung Electronics
+- *
+- * Inki Dae, <inki.dae@samsung.com>
+- * Donghwa Lee <dh09.lee@samsung.com>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+-*/
+-
+-#ifndef _S6E8AX0_H
+-#define _S6E8AX0_H
+-
+-extern void s6e8ax0_init(void);
+-
+-#endif
+-
+-- 
+1.7.7.6
 

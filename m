@@ -1,68 +1,81 @@
-From: Rajendra Nayak <rnayak@ti.com>
-Date: Wed, 27 Jun 2012 05:31:24 +0000
-Subject: Re: [PATCH 05/11] OMAPDSS: add clk_prepare and clk_unprepare
-Message-Id: <4FEA97DC.4070902@ti.com>
+From: jaswinder.singh@linaro.org
+Date: Fri, 15 Jun 2012 22:13:41 +0000
+Subject: [PATCH] OMAPDSS: HDMI: Discard phy_tx_enabled member
+Message-Id: <1339797701-11540-1-git-send-email-jaswinder.singh@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340372890-10091-1-git-send-email-rnayak@ti.com>	
- <1340372890-10091-6-git-send-email-rnayak@ti.com>	
- <1340604478.12683.25.camel@lappyti> <4FE80C43.6090802@ti.com>	
- <1340611133.3395.3.camel@deskari> <4FE85005.4090303@ti.com>	
- <1340630090.3395.85.camel@deskari> <20120627004709.GA22766@gmail.com>
- <1340770798.1972.4.camel@lappyti>
-In-Reply-To: <1340770798.1972.4.camel@lappyti>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Jassi Brar <jaswinder.singh@linaro.org>
 
-On Wednesday 27 June 2012 09:49 AM, Tomi Valkeinen wrote:
-> On Tue, 2012-06-26 at 17:47 -0700, Mike Turquette wrote:
->> On 20120625-16:14, Tomi Valkeinen wrote:
->>> A question about clk_prepare/unprepare, not directly related: let's say
->>> I have a driver for some HW block. The driver doesn't use clk functions,
->>> but uses runtime PM. The driver also sets pm_runtime_irq_safe().
->>>
->>> Now, the driver can call pm_runtime_get_sync() in an atomic context, and
->>> this would lead to the underlying framework (hwmod, omap_device, I don't
->>> know who =) enabling the func clock for that HW. But this would happen
->>> in atomic context, so the underlying framework can't use clk_prepare.
->>>
->>> How does the underlying framework handle that case? (sorry if that's a
->>> stupid question =).
->>>
->>
->> I think it's a good question!
->>
->> If we're going to call clk_prepare_enable from within a runtime pm
->> callback then I think we'll need to check if _irq_safe() is set and
->> conditionally call only clk_enable in such a case.
->>
->> I'm not a runtime pm expert, but if the driver owns the responsibility
->> of calling pm_runtime_irq_safe then the driver has the proper context
->> to know that it should call clk_prepare BEFORE calling
->> pm_runtime_get_sync.
->
-> That's not quite what I meant. If it's the driver that does clk_enable,
-> be it in runtime PM callback or not, it's driver's responsibility.
->
-> But some clocks are not handled by the driver, but the hwmod/omap_device
-> framework. Mainly I think this is for the functional and interface
-> clocks. The driver has no visibility to those, they are implicitly
-> enabled via pm_runtime_get.
+From: Jassi Brar <jaswinder.singh@linaro.org>
 
-yes, thats the tricky part on how would hwmod/omap_device know if the
-driver would use runtime pm within atomic context or non-atomic context.
-The driver does inform the runtime pm framework about this by calling a
-pm_runtime_irq_safe(), which is then used to set the .irq_safe flag 
-telling it to leave the interrupts disabled during callbacks.
-This information however does not flow down to hwmod/omap_device in any
-way. So the way its currently handled is to do an early prepare of all
-hwmod controlled clocks.
+Explicitly maintaining HDMI phy power state using a flag is prone to
+race and un-necessary when we have a zero-cost alternative of checking
+the state before trying to set it.
 
-I have copied Kevin in case he has any better ideas on how this should
-be handled.
+Signed-off-by: Jassi Brar <jaswinder.singh@linaro.org>
+---
+ drivers/video/omap2/dss/ti_hdmi.h         |    1 -
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |   11 ++++-------
+ 2 files changed, 4 insertions(+), 8 deletions(-)
 
->
->   Tomi
->
+diff --git a/drivers/video/omap2/dss/ti_hdmi.h b/drivers/video/omap2/dss/ti_hdmi.h
+index e734cb4..d174ca1 100644
+--- a/drivers/video/omap2/dss/ti_hdmi.h
++++ b/drivers/video/omap2/dss/ti_hdmi.h
+@@ -177,7 +177,6 @@ struct hdmi_ip_data {
+ 
+ 	/* ti_hdmi_4xxx_ip private data. These should be in a separate struct */
+ 	int hpd_gpio;
+-	bool phy_tx_enabled;
+ };
+ int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data);
+ void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data);
+diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+index 4dae1b2..3fa3d98 100644
+--- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
++++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+@@ -157,6 +157,10 @@ static int hdmi_pll_init(struct hdmi_ip_data *ip_data)
+ /* PHY_PWR_CMD */
+ static int hdmi_set_phy_pwr(struct hdmi_ip_data *ip_data, enum hdmi_phy_pwr val)
+ {
++	/* Return if already the state */
++	if (REG_GET(hdmi_wp_base(ip_data), HDMI_WP_PWR_CTRL, 5, 4) = val)
++		return 0;
++
+ 	/* Command for power control of HDMI PHY */
+ 	REG_FLD_MOD(hdmi_wp_base(ip_data), HDMI_WP_PWR_CTRL, val, 7, 6);
+ 
+@@ -241,11 +245,6 @@ static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
+ 
+ 	hpd = gpio_get_value(ip_data->hpd_gpio);
+ 
+-	if (hpd = ip_data->phy_tx_enabled) {
+-		spin_unlock_irqrestore(&phy_tx_lock, flags);
+-		return 0;
+-	}
+-
+ 	if (hpd)
+ 		r = hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_TXON);
+ 	else
+@@ -257,7 +256,6 @@ static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
+ 		goto err;
+ 	}
+ 
+-	ip_data->phy_tx_enabled = hpd;
+ err:
+ 	spin_unlock_irqrestore(&phy_tx_lock, flags);
+ 	return r;
+@@ -327,7 +325,6 @@ void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data)
+ 	free_irq(gpio_to_irq(ip_data->hpd_gpio), ip_data);
+ 
+ 	hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
+-	ip_data->phy_tx_enabled = false;
+ }
+ 
+ static int hdmi_core_ddc_init(struct hdmi_ip_data *ip_data)
+-- 
+1.7.4.1
 

@@ -1,105 +1,59 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Date: Tue, 26 Jun 2012 09:02:58 +0000
-Subject: [PATCH 1/2] video: mxsfb: move mxsfb.h into include/linux
-Message-Id: <1340701379-8619-2-git-send-email-shawn.guo@linaro.org>
+From: David Herrmann <dh.herrmann@googlemail.com>
+Date: Sat, 16 Jun 2012 22:04:23 +0000
+Subject: [PATCH 07/10] fblog: forward kernel log messages to all framebuffers
+Message-Id: <1339884266-9201-8-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340701379-8619-1-git-send-email-shawn.guo@linaro.org>
-In-Reply-To: <1340701379-8619-1-git-send-email-shawn.guo@linaro.org>
+References: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
+In-Reply-To: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-serial@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Herrmann <dh.herrmann@googlemail.com>
 
-Move mxsfb.h into include/linux, so that mxsfb driver does not have to
-include <mach/*> header.
+This provides a console-driver that forwards all log messages to all
+framebuffers and redraws them.
 
-Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+To avoid redrawing multiple times in short intervals, we could use a
+work-queue here by simply pushing the task onto the system work-queue.
+However, fblog is not performance critical and only used for debugging so
+we avoid the complexity for now. This may change in the future, though.
+
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
 ---
- arch/arm/mach-mxs/devices-mx23.h                   |    2 +-
- arch/arm/mach-mxs/devices-mx28.h                   |    2 +-
- arch/arm/mach-mxs/devices/platform-mxsfb.c         |    2 +-
- drivers/video/mxsfb.c                              |    2 +-
- .../include/mach => include/linux}/mxsfb.h         |    6 +++---
- 5 files changed, 7 insertions(+), 7 deletions(-)
- rename {arch/arm/mach-mxs/include/mach => include/linux}/mxsfb.h (95%)
+ drivers/video/console/fblog.c |   19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/arch/arm/mach-mxs/devices-mx23.h b/arch/arm/mach-mxs/devices-mx23.h
-index 9acdd63..9ee5ced 100644
---- a/arch/arm/mach-mxs/devices-mx23.h
-+++ b/arch/arm/mach-mxs/devices-mx23.h
-@@ -10,7 +10,7 @@
-  */
- #include <mach/mx23.h>
- #include <mach/devices-common.h>
--#include <mach/mxsfb.h>
-+#include <linux/mxsfb.h>
- #include <linux/amba/bus.h>
+diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
+index 9b05c56..5297eca 100644
+--- a/drivers/video/console/fblog.c
++++ b/drivers/video/console/fblog.c
+@@ -449,6 +449,25 @@ static void fblog_deactivate(void)
+ 	fblog_unregister_all();
+ }
  
- static inline int mx23_add_duart(void)
-diff --git a/arch/arm/mach-mxs/devices-mx28.h b/arch/arm/mach-mxs/devices-mx28.h
-index 84b2960..fcab431 100644
---- a/arch/arm/mach-mxs/devices-mx28.h
-+++ b/arch/arm/mach-mxs/devices-mx28.h
-@@ -10,7 +10,7 @@
-  */
- #include <mach/mx28.h>
- #include <mach/devices-common.h>
--#include <mach/mxsfb.h>
-+#include <linux/mxsfb.h>
- #include <linux/amba/bus.h>
- 
- static inline int mx28_add_duart(void)
-diff --git a/arch/arm/mach-mxs/devices/platform-mxsfb.c b/arch/arm/mach-mxs/devices/platform-mxsfb.c
-index 5a75b71..76b53f73 100644
---- a/arch/arm/mach-mxs/devices/platform-mxsfb.c
-+++ b/arch/arm/mach-mxs/devices/platform-mxsfb.c
-@@ -10,7 +10,7 @@
- #include <mach/mx23.h>
- #include <mach/mx28.h>
- #include <mach/devices-common.h>
--#include <mach/mxsfb.h>
-+#include <linux/mxsfb.h>
- 
- #ifdef CONFIG_SOC_IMX23
- struct platform_device *__init mx23_add_mxsfb(
-diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
-index abbe691..08dad8d 100644
---- a/drivers/video/mxsfb.c
-+++ b/drivers/video/mxsfb.c
-@@ -46,7 +46,7 @@
- #include <linux/dma-mapping.h>
- #include <linux/io.h>
- #include <linux/pinctrl/consumer.h>
--#include <mach/mxsfb.h>
-+#include <linux/mxsfb.h>
- 
- #define REG_SET	4
- #define REG_CLR	8
-diff --git a/arch/arm/mach-mxs/include/mach/mxsfb.h b/include/linux/mxsfb.h
-similarity index 95%
-rename from arch/arm/mach-mxs/include/mach/mxsfb.h
-rename to include/linux/mxsfb.h
-index e4d7979..f14943d 100644
---- a/arch/arm/mach-mxs/include/mach/mxsfb.h
-+++ b/include/linux/mxsfb.h
-@@ -14,8 +14,8 @@
-  * MA 02110-1301, USA.
-  */
- 
--#ifndef __MACH_FB_H
--#define __MACH_FB_H
-+#ifndef __LINUX_MXSFB_H
-+#define __LINUX_MXSFB_H
- 
- #include <linux/fb.h>
- 
-@@ -46,4 +46,4 @@ struct mxsfb_platform_data {
- 				 */
- };
- 
--#endif /* __MACH_FB_H */
-+#endif /* __LINUX_MXSFB_H */
++static void fblog_con_write(struct console *con, const char *buf,
++			    unsigned int len)
++{
++	int i;
++
++	for (i = 0; i < FB_MAX; ++i) {
++		if (fblog_fbs[i]) {
++			fblog_buf_write(&fblog_fbs[i]->buf, buf, len);
++			fblog_redraw(fblog_fbs[i]);
++		}
++	}
++}
++
++static struct console fblog_con_driver = {
++	.name = "fblog",
++	.write = fblog_con_write,
++	.flags = CON_PRINTBUFFER | CON_ENABLED,
++};
++
+ static ssize_t fblog_dev_active_show(struct device *dev,
+ 				     struct device_attribute *attr,
+ 				     char *buf)
 -- 
-1.7.5.4
-
+1.7.10.4
 

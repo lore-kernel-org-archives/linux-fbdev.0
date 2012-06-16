@@ -1,89 +1,125 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 24 Jun 2012 21:24:18 +0000
-Subject: Re: [PATCH RESEND] video: w100fb: Reduce sleep mode battery discharge
-Message-Id: <4FE78582.5080503@gmx.de>
+From: David Herrmann <dh.herrmann@googlemail.com>
+Date: Sat, 16 Jun 2012 22:04:22 +0000
+Subject: [PATCH 06/10] fblog: allow enabling/disabling fblog on runtime
+Message-Id: <1339884266-9201-7-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120603103355.3845gmx1@mx072.gmx.net>
-In-Reply-To: <20120603103355.3845gmx1@mx072.gmx.net>
+References: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
+In-Reply-To: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Parsons <lost.distance@yahoo.com>
-Cc: mreimer@sdgsystems.com, philipp.zabel@gmail.com, linux-kernel@vger.kernel.org, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linux-serial@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Herrmann <dh.herrmann@googlemail.com>
 
-Hi Paul,
+A sysfs file called "active" can be used to enable and disable fblog on
+runtime. For example, the init-process can run "echo '0' >.../active"
+after booting the system. This will allow other applications like X11 to
+use the graphics subsystem. During shutdown, we can write '1' to get
+system messages again.
 
-you should als the relevant mailing list, linux-fbdev (done now)
+When disabling fblog, we remove all framebuffers and will prevent new
+hotplugged framebuffers from being added. When enabling fblog again, we
+rescan the system for all framebuffers and resume operating.
 
-On 06/03/2012 10:33 AM, Paul Parsons wrote:
-> In 2006 and 2007 the handhelds.org kernel w100fb driver was patched to
-> reduce sleep mode battery discharge. Unfortunately those two patches
-> never migrated to the mainline kernel.
-> 
-> Fortunately the function affected - w100_suspend() - has not changed
-> since; thus those patches still apply cleanly.
-> 
-> Applying those patches to linux-3.4-rc3 running on an HP iPAQ hx4700
-> reduces the sleep mode battery discharge from approximately 26 mA to
-> approximately 11 mA.
-> 
-> This patch combines those two patches into a single unified patch.
-> 
-> Signed-off-by: Paul Parsons <lost.distance@yahoo.com>
-> Cc: Matt Reimer <mreimer@sdgsystems.com>
-> Cc: Philipp Zabel <philipp.zabel@gmail.com>
+The sysfs file is not registered, yet, as we do not have a "struct device"
+yet. This will follow shortly, though.
 
-Actually it would be good if we had the Signed-offs of the original
-authors. Oh well, I think if it can't be helped yours should be sufficient.
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+---
+ Documentation/ABI/testing/sysfs-fblog |    9 ++++++
+ drivers/video/console/fblog.c         |   49 +++++++++++++++++++++++++++++++++
+ 2 files changed, 58 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-fblog
 
-> ---
-> 
-> Many thanks to Matt Reimer for suggesting this.
-> 
-> The seeming demise of handhelds.org has removed any formal patch logs.
-> However the patches can still be viewed online:
-> 2006 patch:
-> http://paste.lisp.org/display/31700
-> 2007 patch:
-> http://osdir.com/ml/handhelds.linux.kernel/2007-02/msg00020.html
-> 
-> And the fully patched handhelds.org kernel is still available, e.g.:
-> http://www.linuxtogo.org/~goxboxlive/htcuniversal/Kernel/linux-2.6.21-hh20.tar.bz2
-> 
->  drivers/video/w100fb.c |   12 ++++++++++++
->  1 files changed, 12 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/w100fb.c b/drivers/video/w100fb.c
-> index 90a2e30..2f6b2b8 100644
-> --- a/drivers/video/w100fb.c
-> +++ b/drivers/video/w100fb.c
-> @@ -1567,6 +1567,18 @@ static void w100_suspend(u32 mode)
->  		val = readl(remapped_regs + mmPLL_CNTL);
->  		val |= 0x00000004;  /* bit2=1 */
->  		writel(val, remapped_regs + mmPLL_CNTL);
-> +
-> +		writel(0x00000000, remapped_regs + mmLCDD_CNTL1);
-> +		writel(0x00000000, remapped_regs + mmLCDD_CNTL2);
-> +		writel(0x00000000, remapped_regs + mmGENLCD_CNTL1);
-> +		writel(0x00000000, remapped_regs + mmGENLCD_CNTL2);
-> +		writel(0x00000000, remapped_regs + mmGENLCD_CNTL3);
-> +
-> +		val = readl(remapped_regs + mmMEM_EXT_CNTL);
-> +		val |= 0xF0000000;
-> +		val &= ~(0x00000001);
-> +		writel(val, remapped_regs + mmMEM_EXT_CNTL);
-> +
+diff --git a/Documentation/ABI/testing/sysfs-fblog b/Documentation/ABI/testing/sysfs-fblog
+new file mode 100644
+index 0000000..596393c
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-fblog
+@@ -0,0 +1,9 @@
++What:		/sys/class/graphics/fblog/active
++Date:		June 2012
++KernelVersion:	3.6
++Contact:	David Herrmann <dh.herrmann@googlemail.com>
++Description:	Enable/Disable fblog. When setting this to 0, fblog will stop
++		writing to framebuffers and other applications can use the
++		graphics subsystem. When setting this to 1, fblog will rescan
++		the system for all framebuffers and resume drawing the kernel
++		log onto all framebuffers.
+diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
+index 7d4032e..9b05c56 100644
+--- a/drivers/video/console/fblog.c
++++ b/drivers/video/console/fblog.c
+@@ -92,6 +92,7 @@ struct fblog_fb {
+ };
+ 
+ static struct fblog_fb *fblog_fbs[FB_MAX];
++static atomic_t fblog_active;
+ 
+ static void fblog_buf_resize(struct fblog_buf *buf, size_t width,
+ 			     size_t height)
+@@ -338,6 +339,8 @@ static void fblog_register(struct fb_info *info)
+ 	const struct fb_videomode *mode;
+ 	unsigned int width, height;
+ 
++	if (!atomic_read(&fblog_active))
++		return;
+ 	if (!info || info->node < 0 || info->node >= FB_MAX)
+ 		return;
+ 	if (!registered_fb[info->node] || fblog_fbs[info->node])
+@@ -428,6 +431,52 @@ static void fblog_refresh(struct fblog_fb *fb)
+ 	fblog_redraw(fb);
+ }
+ 
++static void fblog_activate(void)
++{
++	if (atomic_read(&fblog_active))
++		return;
++
++	atomic_set(&fblog_active, 1);
++	fblog_register_all();
++}
++
++static void fblog_deactivate(void)
++{
++	if (!atomic_read(&fblog_active))
++		return;
++
++	atomic_set(&fblog_active, 0);
++	fblog_unregister_all();
++}
++
++static ssize_t fblog_dev_active_show(struct device *dev,
++				     struct device_attribute *attr,
++				     char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", atomic_read(&fblog_active));
++}
++
++static ssize_t fblog_dev_active_store(struct device *dev,
++				      struct device_attribute *attr,
++				      const char *buf,
++				      size_t count)
++{
++	unsigned long num;
++
++	num = simple_strtoul(buf, NULL, 10);
++	console_lock();
++	if (num)
++		fblog_activate();
++	else
++		fblog_deactivate();
++	console_unlock();
++
++	return count;
++}
++
++static DEVICE_ATTR(active, S_IRUGO | S_IWUSR | S_IWGRP, fblog_dev_active_show,
++		   fblog_dev_active_store);
++
+ static int __init fblog_init(void)
+ {
+ 	return 0;
+-- 
+1.7.10.4
 
-If anyone understands what this change does (like for example disabling
-the LCD controller) a comment would be useful.
-
->  		writel(0x0000001d, remapped_regs + mmPWRMGT_CNTL);
->  	}
->  }
-
-If nobody comments on this I will apply it in a few days.
-
-
-Best regards,
-
-Florian Tobias Schandinat

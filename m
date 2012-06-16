@@ -1,7 +1,7 @@
 From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Sat, 16 Jun 2012 22:04:19 +0000
-Subject: [PATCH 03/10] fblog: register framebuffer objects
-Message-Id: <1339884266-9201-4-git-send-email-dh.herrmann@googlemail.com>
+Date: Sat, 16 Jun 2012 22:04:18 +0000
+Subject: [PATCH 02/10] fblog: implement buffer management
+Message-Id: <1339884266-9201-3-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
 In-Reply-To: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
@@ -11,145 +11,152 @@ Content-Transfer-Encoding: 7bit
 To: linux-serial@vger.kernel.org
 Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Herrmann <dh.herrmann@googlemail.com>
 
-We register each available framebuffer in the system with the fblog driver
-so we always know all active devices. We directly open the fb-driver,
-initialize the buffer and load a font so we are ready for drawing
-operations. If a device cannot be opened, we mark it as dead and ignore it
-in all other functions.
+Each available framebuffer can have a different font and buffer size
+inside of fblog. Therefore, we need to remember all the log messages that
+are currently printed on screen. We save them as an array of lines which
+can be rotated and traversed very fast.
+
+This also implements a very trivial way of resizing the buffer but still
+keeping the content. As there is no need to improve this for speed, we can
+keep it this way.
 
 Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
 ---
- drivers/video/console/fblog.c |  108 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 108 insertions(+)
+ drivers/video/console/fblog.c |  126 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 126 insertions(+)
 
 diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
-index 1504ba9..8038dcc 100644
+index ea83643..1504ba9 100644
 --- a/drivers/video/console/fblog.c
 +++ b/drivers/video/console/fblog.c
-@@ -39,6 +39,14 @@
+@@ -39,6 +39,132 @@
  #include <linux/font.h>
  #include <linux/module.h>
  
-+#define FBLOG_STR(x) x, sizeof(x) - 1
-+
-+enum fblog_flags {
-+	FBLOG_KILLED,
-+	FBLOG_SUSPENDED,
-+	FBLOG_BLANKED,
-+};
-+
- /**
-  * struct fblog_buf: Console text buffer
-  *
-@@ -61,6 +69,30 @@ struct fblog_buf {
- 	size_t pos_y;
- };
- 
 +/**
-+ * struct fblog_fb: Framebuffer object
++ * struct fblog_buf: Console text buffer
 + *
-+ * For each framebuffer we register this object. It contains all data we need to
-+ * display the console log on it. The index of a framebuffer in registered_fb[]
-+ * is the same as in fblog_fbs[]. So the following must always be true if the
-+ * pointers are non-NULL:
-+ *     registered_fb[idx] = fblog_fbs[idx]->info
-+ *     fblog_fbs[idx]->info->node = idx
++ * Each framebuffer has its own text buffer which contains all characters that
++ * are currently printed on screen. The buffers might have different sizes and
++ * can be resized during runtime. When the buffer content changes, we redraw the
++ * screen.
 + *
-+ * flags: Framebuffer flags (see fblog_flags)
-+ * info: Pointer to the associated framebuffer device
-+ * font: Currently used font
-+ * buf: Console text buffer
++ * width: Width of buffer in characters
++ * height: Height of buffer in characters
++ * lines: Array of lines
++ * pos_x: Cursor x-position
++ * pos_y: Cursor y-position
 + */
-+struct fblog_fb {
-+	unsigned long flags;
-+	struct fb_info *info;
-+	const struct font_desc *font;
-+	struct fblog_buf buf;
++struct fblog_buf {
++	size_t width;
++	size_t height;
++	char **lines;
++	size_t pos_x;
++	size_t pos_y;
 +};
 +
-+static struct fblog_fb *fblog_fbs[FB_MAX];
-+
- static void fblog_buf_resize(struct fblog_buf *buf, size_t width,
- 			     size_t height)
- {
-@@ -165,6 +197,82 @@ static void fblog_buf_write(struct fblog_buf *buf, const char *str, size_t len)
- 	}
- }
- 
-+static struct fblog_fb *fblog_info2fb(struct fb_info *info)
++static void fblog_buf_resize(struct fblog_buf *buf, size_t width,
++			     size_t height)
 +{
-+	if (!info || info->node < 0 || info->node >= FB_MAX ||
-+	    !registered_fb[info->node])
-+		return NULL;
++	char **lines = NULL;
++	size_t i, j, minw, minh;
 +
-+	return fblog_fbs[info->node];
-+}
-+
-+static void fblog_register(struct fb_info *info)
-+{
-+	struct fblog_fb *fb;
-+	struct fb_var_screeninfo var;
-+	const struct fb_videomode *mode;
-+	unsigned int width, height;
-+
-+	if (!info || info->node < 0 || info->node >= FB_MAX)
-+		return;
-+	if (!registered_fb[info->node] || fblog_fbs[info->node])
++	if (buf->height = height && buf->width = width)
 +		return;
 +
-+	fb = kzalloc(sizeof(*fb), GFP_KERNEL);
-+	if (!fb)
-+		return;
++	if (width && height) {
++		lines = kzalloc(height * sizeof(char*), GFP_KERNEL);
++		if (!lines)
++			return;
 +
-+	fblog_fbs[info->node] = fb;
-+	fb->info = info;
-+	fblog_buf_init(&fb->buf);
-+	fblog_buf_write(&fb->buf, FBLOG_STR("Framebuffer log initialized\n"));
++		for (i = 0; i < height; ++i) {
++			lines[i] = kzalloc(width * sizeof(char), GFP_KERNEL);
++			if (!lines[i]) {
++				while (i--)
++					kfree(lines[i]);
++				return;
++			}
++		}
 +
-+	if (!try_module_get(info->fbops->owner))
-+		goto out_killed;
-+	if (info->fbops->fb_open && info->fbops->fb_open(info, 0))
-+		goto out_unref;
++		/* copy old lines */
++		minw = min(width, buf->width);
++		minh = min(height, buf->height);
++		if (height >= buf->height)
++			i = 0;
++		else
++			i = buf->height - height;
 +
-+	var = info->var;
-+	mode = fb_find_best_mode(&var, &info->modelist);
-+	var.activate = FB_ACTIVATE_NOW | FB_ACTIVATE_FORCE;
-+	fb_set_var(info, &var);
-+
-+	fb->font = get_default_font(info->var.xres, info->var.yres,
-+				    info->pixmap.blit_x,
-+				    info->pixmap.blit_y);
-+	if (fb->font) {
-+		width = info->var.xres / fb->font->width;
-+		height = info->var.yres / fb->font->height;
-+		fblog_buf_resize(&fb->buf, width, height);
++		for (j = 0; j < minh; ++i, ++j)
++			memcpy(lines[j], buf->lines[i], minw * sizeof(char));
++	} else {
++		width = 0;
++		height = 0;
 +	}
 +
-+	return;
++	for (i = 0; i < buf->height; ++i)
++		kfree(buf->lines[i]);
++	kfree(buf->lines);
 +
-+out_unref:
-+	module_put(info->fbops->owner);
-+out_killed:
-+	set_bit(FBLOG_KILLED, &fb->flags);
++	buf->lines = lines;
++	buf->width = width;
++	buf->height = height;
 +}
 +
-+static void fblog_unregister(struct fblog_fb *fb)
++static void fblog_buf_init(struct fblog_buf *buf)
 +{
-+	struct fb_info *info;
++	fblog_buf_resize(buf, 80, 24);
++}
 +
-+	if (!fb)
++static void fblog_buf_deinit(struct fblog_buf *buf)
++{
++	fblog_buf_resize(buf, 0, 0);
++}
++
++static void fblog_buf_rotate(struct fblog_buf *buf)
++{
++	char *line;
++
++	if (!buf->height)
 +		return;
 +
-+	info = fb->info;
-+	if (!test_bit(FBLOG_KILLED, &fb->flags)) {
-+		if (info->fbops->fb_release)
-+			info->fbops->fb_release(info, 0);
-+		module_put(info->fbops->owner);
-+	}
++	line = buf->lines[0];
++	memset(line, 0, sizeof(char) * buf->width);
 +
-+	fblog_buf_deinit(&fb->buf);
-+	fblog_fbs[info->node] = NULL;
-+	kfree(fb);
++	memmove(buf->lines, &buf->lines[1], sizeof(char*) * (buf->height - 1));
++	buf->lines[buf->height - 1] = line;
++}
++
++static void fblog_buf_write(struct fblog_buf *buf, const char *str, size_t len)
++{
++	char c;
++
++	if (!buf->height)
++		return;
++
++	while (len--) {
++		c = *str++;
++
++		if (c = '\n') {
++			buf->pos_x = 0;
++			if (++buf->pos_y >= buf->height) {
++				buf->pos_y = buf->height - 1;
++				fblog_buf_rotate(buf);
++			}
++		} else if (c = 0) {
++			/* ignore */
++		} else {
++			if (buf->pos_x >= buf->width) {
++				buf->pos_x = 0;
++				++buf->pos_y;
++			}
++			if (buf->pos_y >= buf->height) {
++				buf->pos_y = buf->height - 1;
++				fblog_buf_rotate(buf);
++			}
++
++			buf->lines[buf->pos_y][buf->pos_x++] = c;
++		}
++	}
 +}
 +
  static int __init fblog_init(void)

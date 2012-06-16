@@ -1,138 +1,63 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 28 Jun 2012 14:42:42 +0000
-Subject: [PATCH 12/12] OMAPDSS: OVERLAY: Clean up replication checking
-Message-Id: <1340893842-10626-14-git-send-email-archit@ti.com>
+From: David Herrmann <dh.herrmann@googlemail.com>
+Date: Sat, 16 Jun 2012 22:04:26 +0000
+Subject: [PATCH 10/10] fblog: add "activate" module parameter
+Message-Id: <1339884266-9201-11-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340893842-10626-1-git-send-email-archit@ti.com>
-In-Reply-To: <1340893842-10626-1-git-send-email-archit@ti.com>
+References: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
+In-Reply-To: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-serial@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Herrmann <dh.herrmann@googlemail.com>
 
-Replication logic for an overlay depends on the color mode in which it is
-configured and the video port width of the manager it is connected to.
+This new parameter controls whether fblog is automatically activated when
+it is loaded. This defaults to "true".
 
-video port width now held in dss_lcd_mgr_config in the manager's private
-data in APPLY. Use this instead of referring to the omap_dss_device connected to
-the manager.
+We can now compile with CONFIG_VT=n and CONFIG_FBLOG=y and control fblog
+with fblog.activate=0/1 on the kernel command line to enable/disable
+debugging.
 
-Replication is enabled in the case of TV manager, the video_port_width is set to
-a default value of 24 for TV manager.
-
-Make the replication checking an overlay function since it's more of an overlay
-characteristic than a display characteristic.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
 ---
- drivers/video/omap2/dss/apply.c   |    2 +-
- drivers/video/omap2/dss/display.c |   34 ----------------------------------
- drivers/video/omap2/dss/dss.h     |    4 ++--
- drivers/video/omap2/dss/overlay.c |   13 +++++++++++++
- 4 files changed, 16 insertions(+), 37 deletions(-)
+ drivers/video/console/fblog.c |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index b9c6e75..89ee677 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -571,7 +571,7 @@ static void dss_ovl_write_regs(struct omap_overlay *ovl)
+diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
+index 9d3b072..cabc550 100644
+--- a/drivers/video/console/fblog.c
++++ b/drivers/video/console/fblog.c
+@@ -94,6 +94,7 @@ struct fblog_fb {
+ static struct fblog_fb *fblog_fbs[FB_MAX];
+ static struct device *fblog_device;
+ static atomic_t fblog_active;
++static bool activate = 1;
  
- 	mp = get_mgr_priv(ovl->manager);
+ static void fblog_buf_resize(struct fblog_buf *buf, size_t width,
+ 			     size_t height)
+@@ -653,6 +654,12 @@ static int __init fblog_init(void)
  
--	replication = dss_use_replication(ovl->manager->device, oi->color_mode);
-+	replication = dss_ovl_use_replication(mp->lcd_config, oi->color_mode);
+ 	register_console(&fblog_con_driver);
  
- 	r = dispc_ovl_setup(ovl->id, oi, replication, &mp->timings);
- 	if (r) {
-diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
-index 1d8198e..9433b92 100644
---- a/drivers/video/omap2/dss/display.c
-+++ b/drivers/video/omap2/dss/display.c
-@@ -316,40 +316,6 @@ void omapdss_default_get_timings(struct omap_dss_device *dssdev,
- }
- EXPORT_SYMBOL(omapdss_default_get_timings);
- 
--/* Checks if replication logic should be used. Only use for active matrix,
-- * when overlay is in RGB12U or RGB16 mode, and LCD interface is
-- * 18bpp or 24bpp */
--bool dss_use_replication(struct omap_dss_device *dssdev,
--		enum omap_color_mode mode)
--{
--	int bpp;
--
--	if (mode != OMAP_DSS_COLOR_RGB12U && mode != OMAP_DSS_COLOR_RGB16)
--		return false;
--
--	switch (dssdev->type) {
--	case OMAP_DISPLAY_TYPE_DPI:
--		bpp = dssdev->phy.dpi.data_lines;
--		break;
--	case OMAP_DISPLAY_TYPE_HDMI:
--	case OMAP_DISPLAY_TYPE_VENC:
--	case OMAP_DISPLAY_TYPE_SDI:
--		bpp = 24;
--		break;
--	case OMAP_DISPLAY_TYPE_DBI:
--		bpp = dssdev->ctrl.pixel_size;
--		break;
--	case OMAP_DISPLAY_TYPE_DSI:
--		bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
--		break;
--	default:
--		BUG();
--		return false;
--	}
--
--	return bpp > 16;
--}
--
- void dss_init_device(struct platform_device *pdev,
- 		struct omap_dss_device *dssdev)
- {
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index cb859e3..018b27c 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -222,8 +222,6 @@ void dss_init_device(struct platform_device *pdev,
- 		struct omap_dss_device *dssdev);
- void dss_uninit_device(struct platform_device *pdev,
- 		struct omap_dss_device *dssdev);
--bool dss_use_replication(struct omap_dss_device *dssdev,
--		enum omap_color_mode mode);
- 
- /* manager */
- int dss_init_overlay_managers(struct platform_device *pdev);
-@@ -255,6 +253,8 @@ int dss_ovl_simple_check(struct omap_overlay *ovl,
- 		const struct omap_overlay_info *info);
- int dss_ovl_check(struct omap_overlay *ovl, struct omap_overlay_info *info,
- 		const struct omap_video_timings *mgr_timings);
-+bool dss_ovl_use_replication(struct dss_lcd_mgr_config config,
-+		enum omap_color_mode mode);
- 
- /* DSS */
- int dss_init_platform_driver(void) __init;
-diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
-index c492bb0..0a129dc 100644
---- a/drivers/video/omap2/dss/overlay.c
-+++ b/drivers/video/omap2/dss/overlay.c
-@@ -677,3 +677,16 @@ int dss_ovl_check(struct omap_overlay *ovl, struct omap_overlay_info *info,
- 
++	if (activate) {
++		console_lock();
++		fblog_activate();
++		console_unlock();
++	}
++
  	return 0;
+ 
+ err_fb:
+@@ -677,6 +684,9 @@ static void __exit fblog_exit(void)
+ 	put_device(fblog_device);
  }
+ 
++module_param(activate, bool, S_IRUGO);
++MODULE_PARM_DESC(activate, "Activate fblog by default");
 +
-+/*
-+ * Checks if replication logic should be used. Only use when overlay is in
-+ * RGB12U or RGB16 mode, and video port width interface is 18bpp or 24bpp
-+ */
-+bool dss_ovl_use_replication(struct dss_lcd_mgr_config config,
-+		enum omap_color_mode mode)
-+{
-+	if (mode != OMAP_DSS_COLOR_RGB12U && mode != OMAP_DSS_COLOR_RGB16)
-+		return false;
-+
-+	return config.video_port_width > 16;
-+}
+ module_init(fblog_init);
+ module_exit(fblog_exit);
+ MODULE_LICENSE("GPL");
 -- 
-1.7.9.5
+1.7.10.4
 

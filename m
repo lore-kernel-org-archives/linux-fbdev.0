@@ -1,120 +1,152 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 27 Jun 2012 14:34:57 +0000
-Subject: [PATCH 2/2] OMAPDSS: fix warnings if CONFIG_PM_RUNTIME=n
-Message-Id: <1340807697-24847-2-git-send-email-tomi.valkeinen@ti.com>
+From: David Herrmann <dh.herrmann@googlemail.com>
+Date: Sat, 16 Jun 2012 22:04:24 +0000
+Subject: [PATCH 08/10] fblog: react on framebuffer events
+Message-Id: <1339884266-9201-9-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340807697-24847-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1340807697-24847-1-git-send-email-tomi.valkeinen@ti.com>
+References: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
+In-Reply-To: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Jassi Brar <jaswinder.singh@linaro.org>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Grazvydas Ignotas <notasas@gmail.com>
+To: linux-serial@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Herrmann <dh.herrmann@googlemail.com>
 
-If runtime PM is not enabled in the kernel config, pm_runtime_get_sync()
-will always return 1 and pm_runtime_put_sync() will always return
--ENOSYS. pm_runtime_get_sync() returning 1 presents no problem to the
-driver, but -ENOSYS from pm_runtime_put_sync() causes the driver to
-print a warning.
+This provides an fb-notifier object that can be registered with the
+framebuffer subsystem. We are then notified about events on all
+framebuffers.
+Most of the events are only of interest for fbcon so we can safely ignore
+them. However, we need to handle REGISTERED/UNBIND to add new framebbufers
+and we need to react on mode-changes (probably triggered by user-space).
 
-One option would be to ignore errors returned by pm_runtime_put_sync()
-totally, as they only say that the call was unable to put the hardware
-into suspend mode.
-
-However, I chose to ignore the returned -ENOSYS explicitly, and print a
-warning for other errors, as I think we should get notified if the HW
-failed to go to suspend properly.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jassi Brar <jaswinder.singh@linaro.org>
-Cc: Grazvydas Ignotas <notasas@gmail.com>
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
 ---
- drivers/video/omap2/dss/dispc.c |    2 +-
- drivers/video/omap2/dss/dsi.c   |    2 +-
- drivers/video/omap2/dss/dss.c   |    2 +-
- drivers/video/omap2/dss/hdmi.c  |    2 +-
- drivers/video/omap2/dss/rfbi.c  |    2 +-
- drivers/video/omap2/dss/venc.c  |    2 +-
- 6 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/video/console/fblog.c |  113 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 113 insertions(+)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 4749ac3..397d4ee 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -384,7 +384,7 @@ void dispc_runtime_put(void)
- 	DSSDBG("dispc_runtime_put\n");
- 
- 	r = pm_runtime_put_sync(&dispc.pdev->dev);
--	WARN_ON(r < 0);
-+	WARN_ON(r < 0 && r != -ENOSYS);
+diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
+index 5297eca..79bfbcc 100644
+--- a/drivers/video/console/fblog.c
++++ b/drivers/video/console/fblog.c
+@@ -449,6 +449,119 @@ static void fblog_deactivate(void)
+ 	fblog_unregister_all();
  }
  
- static inline bool dispc_mgr_is_lcd(enum omap_channel channel)
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 2a0055e..084906c 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -1075,7 +1075,7 @@ void dsi_runtime_put(struct platform_device *dsidev)
- 	DSSDBG("dsi_runtime_put\n");
- 
- 	r = pm_runtime_put_sync(&dsi->pdev->dev);
--	WARN_ON(r < 0);
-+	WARN_ON(r < 0 && r != -ENOSYS);
- }
- 
- /* source clock for DSI PLL. this could also be PCLKFREE */
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 7706323..d2b5719 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -731,7 +731,7 @@ static void dss_runtime_put(void)
- 	DSSDBG("dss_runtime_put\n");
- 
- 	r = pm_runtime_put_sync(&dss.pdev->dev);
--	WARN_ON(r < 0 && r != -EBUSY);
-+	WARN_ON(r < 0 && r != -ENOSYS && r != -EBUSY);
- }
- 
- /* DEBUGFS */
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index de6920b..ae1688d 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -138,7 +138,7 @@ static void hdmi_runtime_put(void)
- 	DSSDBG("hdmi_runtime_put\n");
- 
- 	r = pm_runtime_put_sync(&hdmi.pdev->dev);
--	WARN_ON(r < 0);
-+	WARN_ON(r < 0 && r != -ENOSYS);
- }
- 
- static int __init hdmi_init_display(struct omap_dss_device *dssdev)
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index 3d8c206..7985fa1 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -141,7 +141,7 @@ static void rfbi_runtime_put(void)
- 	DSSDBG("rfbi_runtime_put\n");
- 
- 	r = pm_runtime_put_sync(&rfbi.pdev->dev);
--	WARN_ON(r < 0);
-+	WARN_ON(r < 0 && r != -ENOSYS);
- }
- 
- void rfbi_bus_lock(void)
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index fd37440..416d478 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -402,7 +402,7 @@ static void venc_runtime_put(void)
- 	DSSDBG("venc_runtime_put\n");
- 
- 	r = pm_runtime_put_sync(&venc.pdev->dev);
--	WARN_ON(r < 0);
-+	WARN_ON(r < 0 && r != -ENOSYS);
- }
- 
- static const struct venc_config *venc_timings_to_config(
++static int fblog_event(struct notifier_block *self, unsigned long action,
++		       void *data)
++{
++	struct fb_event *event = data;
++	struct fb_info *info = event->info;
++	struct fblog_fb *fb = fblog_info2fb(info);
++	int *blank;
++
++	if (action = FB_EVENT_FB_REGISTERED) {
++		/* This is called when a low-level system driver registers a new
++		 * framebuffer. The registration lock is held but the console
++		 * lock might not be held when this is called (really?). */
++		fblog_register(info);
++		return 0;
++	}
++
++	if (!fb)
++		return 0;
++
++	switch(action) {
++	case FB_EVENT_FB_UNREGISTERED:
++		/* This is called when a low-level system driver unregisters a
++		 * framebuffer. The registration lock is held but the console
++		 * lock might not be held (really?). */
++		/* ignore; see UNBIND */
++		break;
++	case FB_EVENT_FB_UNBIND:
++		/* Called directly before unregistering an FB. The FB is still
++		 * valid here and the registration lock is held but the console
++		 * lock might not be held (really?). */
++		fblog_unregister(fb);
++		break;
++	case FB_EVENT_SUSPEND:
++		/* This is called when the low-level display driver suspends the
++		 * video system. We should not access the video system while it
++		 * is suspended. This is called with the console lock held. */
++		set_bit(FBLOG_SUSPENDED, &fb->flags);
++		break;
++	case FB_EVENT_RESUME:
++		/* This is called when the low-level display driver resumes
++		 * operating. It is called with the console lock held. */
++		clear_bit(FBLOG_SUSPENDED, &fb->flags);
++		break;
++	case FB_EVENT_MODE_DELETE:
++		/* This is sent when a video mode is removed. The current video
++		 * mode is never removed! The console lock is held while this is
++		 * called. */
++		/* fallthrough */
++	case FB_EVENT_NEW_MODELIST:
++		/* This is sent when the modelist got changed. The console-lock
++		 * is held and we should reset the mode. */
++		/* fallthrough */
++	case FB_EVENT_MODE_CHANGE_ALL:
++		/* This is the same as below but notifies us that the user used
++		 * the FB_ACTIVATE_ALL flag when setting the video mode. */
++		/* fallthrough */
++	case FB_EVENT_MODE_CHANGE:
++		/* This is called when the _user_ changes the video mode via
++		 * ioctls. It is not sent, when the kernel changes the mode
++		 * internally. This callback is called inside fb_set_var() so
++		 * the console lock is held. */
++		fblog_refresh(fb);
++		break;
++	case FB_EVENT_BLANK:
++		/* This gets called _after_ the framebuffer was successfully
++		 * blanked. The console-lock is always held while fb_blank is
++		 * called and during this callback. */
++		blank = (int*)event->data;
++		if (*blank = FB_BLANK_UNBLANK)
++			clear_bit(FBLOG_BLANKED, &fb->flags);
++		else
++			set_bit(FBLOG_BLANKED, &fb->flags);
++		break;
++	case FB_EVENT_GET_REQ:
++		/* When fb_set_var() is called, this callback is called to get
++		 * our display requirements. They are then compared with the
++		 * display properties and only if they fulfill the requirements,
++		 * the new mode is activated. The console-lock should be held
++		 * while calling fb_set_var() so we can assume it is locked
++		 * here. */
++		/* ignore */
++		break;
++	case FB_EVENT_CONBLANK:
++		/* This is sent by fbcon when doing a fake blank. That
++		 * is, blanking the screen when the fb driver failed to perform
++		 * an fb_blank(). It simply writes empty lines to the screen.
++		 * We are not interested in this signal. We should also never
++		 * run together with fbcon so this should never be catched. */
++		/* ignore */
++		break;
++	case FB_EVENT_GET_CONSOLE_MAP:
++		/* fallthrough */
++	case FB_EVENT_SET_CONSOLE_MAP:
++		/* Is there any reason why we should support this? We
++		 * ignore it as we consider ourself not to be the classic linux
++		 * console. Hence, this request is not targeted at us. */
++		/* ignore */
++		break;
++	case FB_EVENT_REMAP_ALL_CONSOLE:
++		/* What are we supposed to do here? Do we have to remap
++		 * the primary device to the framebuffer given by \info? Like
++		 * above we currently ignore it for the same reasons. */
++		/* ignore */
++		break;
++	}
++
++	return 0;
++}
++
++static struct notifier_block fblog_notifier = {
++	.notifier_call = fblog_event,
++};
++
+ static void fblog_con_write(struct console *con, const char *buf,
+ 			    unsigned int len)
+ {
 -- 
-1.7.9.5
+1.7.10.4
 

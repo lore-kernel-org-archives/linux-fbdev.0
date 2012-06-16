@@ -1,49 +1,45 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 24 Jun 2012 21:00:12 +0000
-Subject: Re: [PATCH v2] video: exynos_dp: fix build warning due to uninitialized value
-Message-Id: <4FE77FDC.9090004@gmx.de>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Sat, 16 Jun 2012 14:07:14 +0000
+Subject: [PULL for v3.6] SH Mobile LCDC fixes and planes support
+Message-Id: <3246665.HJN7RE5zfe@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <000301cd4e83$9f5fcb30$de1f6190$%han@samsung.com>
-In-Reply-To: <000301cd4e83$9f5fcb30$de1f6190$%han@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jg1.han@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, 'Olof Johansson' <olof@lixom.net>
+To: linux-fbdev@vger.kernel.org
 
-On 06/20/2012 01:25 AM, Jingoo Han wrote:
-> This patch fixes build warning due to uninitialized value dereference.
-> 
-> drivers/video/exynos/exynos_dp_core.c: In function 'exynos_dp_set_link_train':
-> drivers/video/exynos/exynos_dp_core.c:529:18: warning: 'reg' may be used uninitialized in this function [-Wuninitialized]
-> drivers/video/exynos/exynos_dp_core.c:395:6: note: 'reg' was declared here
-> 
-> Signed-off-by: Olof Johansson <olof@lixom.net>
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Hi Florian,
 
-Applied.
+Could you please pull the following LCDC patches ?
 
+The following changes since commit b67989515defba7412acff01162e5bb1f0f5923a:
 
-Thanks,
+  video: s3c-fb: fix possible division by zero in s3c_fb_calc_pixclk 
+(2012-06-13 17:34:16 +0000)
 
-Florian Tobias Schandinat
+are available in the git repository at:
+  git://linuxtv.org/pinchartl/fbdev.git planes
 
-> ---
->  drivers/video/exynos/exynos_dp_core.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-> index a36b2d2..9db7b9f 100644
-> --- a/drivers/video/exynos/exynos_dp_core.c
-> +++ b/drivers/video/exynos/exynos_dp_core.c
-> @@ -407,6 +407,9 @@ static unsigned int exynos_dp_get_lane_link_training(
->  	case 3:
->  		reg = exynos_dp_get_lane3_link_training(dp);
->  		break;
-> +	default:
-> +		WARN_ON(1);
-> +		return 0;
->  	}
->  
->  	return reg;
+Guennadi Liakhovetski (1):
+      fbdev: sh_mipi_dsi: fix a section mismatch
+
+Laurent Pinchart (4):
+      fbdev: sh_mobile_lcdc: Don't confuse line size with pitch
+      fbdev: sh_mobile_lcdc: Constify sh_mobile_lcdc_fix structure
+      fbdev: sh_mobile_lcdc: Rename fb operation handlers with a common prefix
+      fbdev: sh_mobile_lcdc: Implement overlays support
+
+ .../sysfs-devices-platform-sh_mobile_lcdc_fb       |   44 +
+ drivers/video/sh_mipi_dsi.c                        |    7 +-
+ drivers/video/sh_mobile_lcdcfb.c                   |  987 +++++++++++++++++--
+ drivers/video/sh_mobile_lcdcfb.h                   |    1 +
+ include/video/sh_mobile_lcdc.h                     |    7 +
+ 5 files changed, 944 insertions(+), 102 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-devices-platform-
+sh_mobile_lcdc_fb
+
+-- 
+Regards,
+
+Laurent Pinchart
 

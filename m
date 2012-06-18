@@ -1,60 +1,55 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 18 Jun 2012 12:24:36 +0000
+Date: Mon, 18 Jun 2012 13:11:11 +0000
 Subject: Re: [PATCH] OMAPDSS: HDMI: Discard phy_tx_enabled member
-Message-Id: <1340022276.4012.23.camel@deskari>
+Message-Id: <1340025071.4012.27.camel@deskari>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-iVt8kFu/tGzRgkI8mm8M"
+Content-Type: multipart/mixed; boundary="=-Ys41bnN1QSPO4mK7hJrw"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1339797701-11540-1-git-send-email-jaswinder.singh@linaro.org>
 	 <1340007094.1859.3.camel@lappyti>
 	 <CAJe_ZhdhBre8DUVNpawF6X5P+QSiMarkt3WUvbJ=RPcmpX3TPA@mail.gmail.com>
 	 <1340016865.4012.10.camel@deskari>
 	 <CAJe_ZhfJV6kYvSkU+4RGywv80A47=CxnoCy2rr-x=c2LFDGb7A@mail.gmail.com>
-In-Reply-To: <CAJe_ZhfJV6kYvSkU+4RGywv80A47=CxnoCy2rr-x=c2LFDGb7A@mail.gmail.com>
+	 <1340022276.4012.23.camel@deskari>
+	 <CAJe_ZhdoEjyf0ejjsJJpznt83bTJTR0UW3aqaYAZdcm01GBp_A@mail.gmail.com>
+In-Reply-To: <CAJe_ZhdoEjyf0ejjsJJpznt83bTJTR0UW3aqaYAZdcm01GBp_A@mail.gmail.com>
 To: Jassi Brar <jaswinder.singh@linaro.org>
 Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
 
---=-iVt8kFu/tGzRgkI8mm8M
+--=-Ys41bnN1QSPO4mK7hJrw
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2012-06-18 at 17:16 +0530, Jassi Brar wrote:
-> On 18 June 2012 16:24, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> > On Mon, 2012-06-18 at 15:42 +0530, Jassi Brar wrote:
+On Mon, 2012-06-18 at 18:37 +0530, Jassi Brar wrote:
+> On 18 June 2012 17:54, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+> > On Mon, 2012-06-18 at 17:16 +0530, Jassi Brar wrote:
 >=20
-> >> BTW, coming to think about it, I am not sure what we need the
-> >> spin_lock_irqsave() protection for in hdmi_check_hpd_state() ?  It
-> >> can't control HPD gpio state change and hdmi_set_phy_pwr() seems too
-> >> expensive and is already unprotected elsewhere.
+> >> So preferably I would move request_threaded_irq() to after
+> >> hdmi_check_hpd_state() in ti_hdmi_4xxx_phy_enable()  and convert the
 > >
-> > It's needed when enabling the hdmi output. In phy_enable() the irq is
-> > requested first, and then the phy_enable() runs hdmi_check_hpd_state().
-> > So there's a chance to run hdmi_check_hpd_state() from both
-> > hpd-interrupt and phy_enable() at the same time.
+> > No, you can't move the check. If you move it, the HPD state could chang=
+e
+> > between the check and the request_irq, and we'd miss it.
 > >
-> > The hdmi_set_phy_pwr() is not called in many places, but I think there'=
-s
-> > indeed a problem there. It is called after free_irq(), but I think
-> > (guess) the irq handler could still be running after free_irq. So those
-> > should be protected by the same spinlock too.
-> >
-> You know TI HDMI better than I do, so I assume your concerns are valid.
-> So preferably I would move request_threaded_irq() to after
-> hdmi_check_hpd_state() in ti_hdmi_4xxx_phy_enable()  and convert the
+> Wouldn't we then get an irq, and hence another hdmi_check_hpd_state(), fo=
+r that?
 
-No, you can't move the check. If you move it, the HPD state could change
-between the check and the request_irq, and we'd miss it.
+No, if we haven't requested the irq yet. So what could happen:
 
-> spin_lock_irqsave() in hdmi_check_hpd_state() to some mutex (we don't
-> want irqs disabled so long as it takes for phy to power on/off).
+- initially the cable is unplugged
+- ti_hdmi_4xxx_phy_enable() calls hdmi_check_hpd_state(), nothing is
+done as cable is unplugged
+- cable plugged in
+- ti_hdmi_4xxx_phy_enable() calls request_irq. No irq raised, as the
+cable's state doesn't change.
 
-Yes, I guess a mutex is better.
+We wouldn't know that cable is actually plugged in at that point.
 
  Tomi
 
 
---=-iVt8kFu/tGzRgkI8mm8M
+--=-Ys41bnN1QSPO4mK7hJrw
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
@@ -62,20 +57,20 @@ Content-Transfer-Encoding: 7bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQIcBAABAgAGBQJP3x4EAAoJEPo9qoy8lh71ShYQAI71zD9g/VLMn7sq3pUOERMO
-FrtVKdJPQNyKFhXOVujpS3RxVEykpDFO5vZq5MnAuqJlkWShuoYKaPmaSCnQZytx
-WMjMHi6MkqXoezkz/SIdb5Y3zGOTGW0Eqq0naqp4POYGkNl+kZ6UWLHd+nbBoTbs
-VMqW9B0wm6g2UhQtoM1x8gppgmX7e/xkXiG62MaLZ35YyueSTWL/kKIAbSVM9C70
-sYFL09VKYci7o99SSDIlo1dxopfV5q88VNmRCFBHVhLvrLLxfSjbZEF2tI2kIvwZ
-KvgFVPBeo1Td882KqNbNqIRh5voVMvTzwAtJm0SfAO1q/HKv+MwvgnWmOxINR6tB
-/nzgSC7grdMX41WJIB4JoPyAoMv79yApMMfOVmjn66XG5Vbs1l7DoLsHOn7Lt0vr
-SUDINvD8+5rgsE+54HE3scTeSgVgspqqxE4u0r4kHZsVrwfL0xxsZavTDHYsRT75
-7oNb9UAqHNAuYLwyjNNIWkMogTuCBHdl9sCbTO63jVmZtYSpoxMhyK/sx+hPP0E6
-z+Q/pTqfy0/BKIkfGv653sy22YYDsc1h+B/e/YW9Vp7TNjpyUTKxAgveBLTM4vqg
-5s4YbPoXr0WeM9YMs2Bp3R+GTiCr07FzIDJiQts7YkXD2lmXPLKpgBdBR1ckaOXs
-NIXCJ54nqWv/hNTFiLZX
-=A9hE
+iQIcBAABAgAGBQJP3yjvAAoJEPo9qoy8lh714wgP/jcSgYC1xIc/YfYdCyBN2U43
+2ognCDMEtZ+2CVWg2s1FNT5PNFcW693E9m1Uo62/6eqlUPdK0rY5jjFpRLUyoSt0
+P6YyUHyI6hPXgFiimYrmch8z5gHQwhCjw41UOSn/2WmkIyOkaKzTHCM7AJBfEzdy
+uS32B6KwLLZa/mX1olmFIqqhmQWW44NH7gYqpfyszcZM8rIwHpfc+48xda7Ejpjo
+AQ8hMg247aVsyYZTQqVQD0lDqHUDfJwPt110bSvB/oIfPt6ZJZqxUPZhXlSYKEbc
+Z6Od1XKBKExCox0BIyyMKHC1rXwud8zkT3RWVTmr4ag5vizEKLxtdbQ/BG7jInv/
+TbOJs0WEd1vGu/sKCTp+pPOuij+3fSELM9zDBj3DDgNAggE7ZGM4X+lRvYKu1ZzT
+U+3HJdRC6ZczEUParE8Mz1YXKzTu0YwuG4V0h5Ssrb8w82/Bvlxw0Zx/BKDMfxDT
+gYDsWJpOptXEDjM8ZTSkKWmR3ebrSYRz2+1DhT2UuDUIP2YemQrtXePf3MY70K45
+hKZh49UUYwslxI3c+bhKoLgQ7uZl9L4XSRmmH4nttmDZVqsfYDrtMxgZ4MKagQPr
+M8jSeX5YNgQjyQE93re6I1I8mCsPs+CaOdrZRhzcbZr/tLOjLQ27mqcN1NjX1TNc
+NDHaUYmcEki49c7o7p/P
+=BUYN
 -----END PGP SIGNATURE-----
 
---=-iVt8kFu/tGzRgkI8mm8M--
+--=-Ys41bnN1QSPO4mK7hJrw--
 

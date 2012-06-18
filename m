@@ -1,102 +1,59 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Date: Sun, 17 Jun 2012 23:44:59 +0000
-Subject: RE: [PATCH] OMAPDSS: HDMI: Discard phy_tx_enabled member
-Message-Id: <000a01cd4ce3$35367160$9fa35420$%han@samsung.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 18 Jun 2012 08:11:34 +0000
+Subject: Re: [PATCH] OMAPDSS: HDMI: Discard phy_tx_enabled member
+Message-Id: <1340007094.1859.3.camel@lappyti>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-/7tra/vIxPHQAvqjqbmZ"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1339797701-11540-1-git-send-email-jaswinder.singh@linaro.org>
 In-Reply-To: <1339797701-11540-1-git-send-email-jaswinder.singh@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: jaswinder.singh@linaro.org, tomi.valkeinen@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, 'Mythri P K' <mythripk@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Jassi Brar <jaswinder.singh@linaro.org>
 
 
-On Saturday 16 June 2012 7:02:00 jaswinder.singh wrote:
+--=-/7tra/vIxPHQAvqjqbmZ
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Sat, 2012-06-16 at 03:31 +0530, jaswinder.singh@linaro.org wrote:
 > From: Jassi Brar <jaswinder.singh@linaro.org>
-> 
+>=20
 > Explicitly maintaining HDMI phy power state using a flag is prone to
 > race and un-necessary when we have a zero-cost alternative of checking
 > the state before trying to set it.
 
-CC'ed 'Mythri P K' as the author for OMAP HDMI.
+Why would reading the value from the register be any less racy than
+keeping it in memory? And reading from memory is probably much faster
+than reading from an HDMI register, so I'm not sure what you mean with
+zero-cost.
 
-Hi Jassi, long time no see.
+But I guess it is simpler, so in that sense the patch is ok. But please
+revise the description.
 
-This patch looks good.
-If there is no problem, checking register is better way.
+ Tomi
 
-Best regards,
-Jingoo Han.
 
-> 
-> Signed-off-by: Jassi Brar <jaswinder.singh@linaro.org>
-> ---
->  drivers/video/omap2/dss/ti_hdmi.h         |    1 -
->  drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |   11 ++++-------
->  2 files changed, 4 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/video/omap2/dss/ti_hdmi.h b/drivers/video/omap2/dss/ti_hdmi.h
-> index e734cb4..d174ca1 100644
-> --- a/drivers/video/omap2/dss/ti_hdmi.h
-> +++ b/drivers/video/omap2/dss/ti_hdmi.h
-> @@ -177,7 +177,6 @@ struct hdmi_ip_data {
-> 
->  	/* ti_hdmi_4xxx_ip private data. These should be in a separate struct */
->  	int hpd_gpio;
-> -	bool phy_tx_enabled;
->  };
->  int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data);
->  void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data);
-> diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-> index 4dae1b2..3fa3d98 100644
-> --- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-> +++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-> @@ -157,6 +157,10 @@ static int hdmi_pll_init(struct hdmi_ip_data *ip_data)
->  /* PHY_PWR_CMD */
->  static int hdmi_set_phy_pwr(struct hdmi_ip_data *ip_data, enum hdmi_phy_pwr val)
->  {
-> +	/* Return if already the state */
-> +	if (REG_GET(hdmi_wp_base(ip_data), HDMI_WP_PWR_CTRL, 5, 4) = val)
-> +		return 0;
-> +
->  	/* Command for power control of HDMI PHY */
->  	REG_FLD_MOD(hdmi_wp_base(ip_data), HDMI_WP_PWR_CTRL, val, 7, 6);
-> 
-> @@ -241,11 +245,6 @@ static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
-> 
->  	hpd = gpio_get_value(ip_data->hpd_gpio);
-> 
-> -	if (hpd = ip_data->phy_tx_enabled) {
-> -		spin_unlock_irqrestore(&phy_tx_lock, flags);
-> -		return 0;
-> -	}
-> -
->  	if (hpd)
->  		r = hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_TXON);
->  	else
-> @@ -257,7 +256,6 @@ static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
->  		goto err;
->  	}
-> 
-> -	ip_data->phy_tx_enabled = hpd;
->  err:
->  	spin_unlock_irqrestore(&phy_tx_lock, flags);
->  	return r;
-> @@ -327,7 +325,6 @@ void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data)
->  	free_irq(gpio_to_irq(ip_data->hpd_gpio), ip_data);
-> 
->  	hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
-> -	ip_data->phy_tx_enabled = false;
->  }
-> 
->  static int hdmi_core_ddc_init(struct hdmi_ip_data *ip_data)
-> --
-> 1.7.4.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--=-/7tra/vIxPHQAvqjqbmZ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJP3uK2AAoJEPo9qoy8lh71kCkP/jigdnZrAKJhRfulGVew6O29
+kylPAslxOamTwHu8aHhDO3x51YnP1rwC+orCLfogqAWLedINDtUk9b5iPT/DQgdM
+pih5TpWAq0f9Y8QT3lwybK8nIS56OPRVUw5uuLFFIsFqymqqVydyajHDbams7HRs
+xq8lAjtK6tRKLSYIWd7MkGcYCfp15Z/lLzHCivlaBGZwECG27dOowkqMIfvLxejq
+Wj3PhHoyhoIwh7v1gO17RfjARcqrEm7kObxqsvE2R2ylvgvp8A0DmTO6bW55p93S
+bjDocTevLl9e1u2e/a5JblT447b0F5DQkFfonyao1mhP3A8ob+xk4Ym0hAtc0DPd
+NVkh+aRA3blBUMAnYggAhi+E+VQs4oJwmRnhhQvsWet7+2RO2uKC6ANSodxn7ukd
+I54/ohYflYcKNExuunqYYfXg3RkKtoR418hiw9KMZQNY9So/IzluoADvWUo3zUiM
+QRSffwL2cU/l0WWNU4j0dy3VIhpUV656NZEXlJSJ+dRzUgzSMPsbnm9DTkrV/G0f
+qmSJBNp96S0SBIHyqirv3e9QT5iHPejgGHhweBN9P0aP2JPHbhFj//rTbC4K7lm6
+kac+zpjHSnrjlELOhvtiLwxxPBE0pQQ57xpiYRRyVuYTHr3yvyCX2a6z29OS4ZDV
++g5zjgXXDENUrdZD5JJN
+=IhrD
+-----END PGP SIGNATURE-----
+
+--=-/7tra/vIxPHQAvqjqbmZ--
 

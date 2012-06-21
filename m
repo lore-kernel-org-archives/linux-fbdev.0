@@ -1,90 +1,82 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 26 Jun 2012 09:48:50 +0000
-Subject: [PATCH 13/17] OMAPDSS: DISPC/APPLY: Use interlace info in manager timings for dispc_ovl_setup()
-Message-Id: <1340703414-1915-15-git-send-email-archit@ti.com>
+From: Strake <strake888@gmail.com>
+Date: Thu, 21 Jun 2012 12:22:50 +0000
+Subject: [PATCH] fbdev: Add ioctls FBIO_COPYRECT, FBIO_FILLRECT, lest these operations be done in software.
+Message-Id: <CAL3m8eA=46wdwVosiE54eNx3FOuLyxfE5axKs_HjyMTGxDHRDw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340703414-1915-1-git-send-email-archit@ti.com>
-In-Reply-To: <1340703414-1915-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: rob@ti.com, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Currently the interlace parameter passed to dispc_ovl_setup() is configured by
-checking the display type, and set to true if the display type is VENC.
+From: Matthew Farkas-Dyck <strake888@gmail.com>
 
-This isn't correct as other panels can take interlaced content too. The
-omap_video_timings struct in manager's private data contains the info whether
-the panel is in interlaced mode or not.
+Add ioctls FBIO_COPYRECT, FBIO_FILLRECT, lest these operations be done
+in software.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Matthew Farkas-Dyck <strake888@gmail.com>
 ---
- drivers/video/omap2/dss/apply.c |    6 ++----
- drivers/video/omap2/dss/dispc.c |    4 ++--
- drivers/video/omap2/dss/dss.h   |    3 +--
- 3 files changed, 5 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index ab22cc2..3ce7a3e 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -537,7 +537,7 @@ static void dss_ovl_write_regs(struct omap_overlay *ovl)
- {
- 	struct ovl_priv_data *op = get_ovl_priv(ovl);
- 	struct omap_overlay_info *oi;
--	bool ilace, replication;
-+	bool replication;
- 	struct mgr_priv_data *mp;
- 	int r;
- 
-@@ -552,9 +552,7 @@ static void dss_ovl_write_regs(struct omap_overlay *ovl)
- 
- 	replication = dss_use_replication(ovl->manager->device, oi->color_mode);
- 
--	ilace = ovl->manager->device->type = OMAP_DISPLAY_TYPE_VENC;
--
--	r = dispc_ovl_setup(ovl->id, oi, ilace, replication, &mp->timings);
-+	r = dispc_ovl_setup(ovl->id, oi, replication, &mp->timings);
- 	if (r) {
- 		/*
- 		 * We can't do much here, as this function can be called from
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 92b6428..c0b82c6 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -2086,8 +2086,7 @@ static int dispc_ovl_calc_scaling(enum omap_plane plane,
- }
- 
- int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
--		bool ilace, bool replication,
--		const struct omap_video_timings *mgr_timings)
-+		bool replication, const struct omap_video_timings *mgr_timings)
- {
- 	struct omap_overlay *ovl = omap_dss_get_overlay(plane);
- 	bool five_taps = true;
-@@ -2103,6 +2102,7 @@ int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
- 	u16 out_width, out_height;
- 	enum omap_channel channel;
- 	int x_predecim = 1, y_predecim = 1;
-+	bool ilace = mgr_timings->interlace;
- 
- 	channel = dispc_ovl_get_channel_out(plane);
- 
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 3d23a23..20151d5 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -394,8 +394,7 @@ void dispc_ovl_compute_fifo_thresholds(enum omap_plane plane,
- 		u32 *fifo_low, u32 *fifo_high, bool use_fifomerge,
- 		bool manual_update);
- int dispc_ovl_setup(enum omap_plane plane, struct omap_overlay_info *oi,
--		bool ilace, bool replication,
--		const struct omap_video_timings *mgr_timings);
-+		bool replication, const struct omap_video_timings *mgr_timings);
- int dispc_ovl_enable(enum omap_plane plane, bool enable);
- void dispc_ovl_set_channel_out(enum omap_plane plane,
- 		enum omap_channel channel);
--- 
-1.7.9.5
+Reason: If it can be done in hardware, it ought to be. This will
+enable user-mode software to do so.
 
+commit 2c002c58b6c5d5b211423da8eaa242ca443fdd72
+Author: strake <strake888@gmail.com>
+Date:   Wed Jan 1 19:10:24 2003 -0500
+
+    Add ioctls FBIO_COPYRECT, FBIO_FILLRECT
+
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 4ac1201..f525e91 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1019,6 +1019,8 @@ static long do_fb_ioctl(struct fb_info *info,
+unsigned int cmd,
+ 	struct fb_cmap cmap_from;
+ 	struct fb_cmap_user cmap;
+ 	struct fb_event event;
++	struct fb_copyarea copy;
++	struct fb_fillrect fill;
+ 	void __user *argp = (void __user *)arg;
+ 	long ret = 0;
+
+@@ -1126,6 +1128,26 @@ static long do_fb_ioctl(struct fb_info *info,
+unsigned int cmd,
+ 		console_unlock();
+ 		unlock_fb_info(info);
+ 		break;
++	case FBIO_FILLRECT:
++		if (copy_from_user(&fill, argp, sizeof(fill)))
++			return -EFAULT;
++		if (!lock_fb_info(info))
++			return -ENODEV;
++		console_lock();
++		(*(info->fbops->fb_fillrect))(info, &fill);
++		console_unlock();
++		unlock_fb_info(info);
++		break;
++	case FBIO_COPYRECT:
++		if (copy_from_user(&copy, argp, sizeof(copy)))
++			return -EFAULT;
++		if (!lock_fb_info(info))
++			return -ENODEV;
++		console_lock();
++		(*(info->fbops->fb_copyarea))(info, &copy);
++		console_unlock();
++		unlock_fb_info(info);
++		break;
+ 	default:
+ 		if (!lock_fb_info(info))
+ 			return -ENODEV;
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index d1631d3..fc18459 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -39,6 +39,8 @@
+ #define FBIOPUT_MODEINFO        0x4617
+ #define FBIOGET_DISPINFO        0x4618
+ #define FBIO_WAITFORVSYNC	_IOW('F', 0x20, __u32)
++#define FBIO_COPYRECT		_IOW('F', 0x22, struct fb_copyarea)
++#define FBIO_FILLRECT		_IOW('F', 0x23, struct fb_fillrect)
+
+ #define FB_TYPE_PACKED_PIXELS		0	/* Packed Pixels	*/
+ #define FB_TYPE_PLANES			1	/* Non interleaved planes */

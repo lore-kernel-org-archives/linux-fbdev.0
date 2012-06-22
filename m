@@ -1,44 +1,156 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Date: Wed, 27 Jun 2012 13:53:19 +0000
-Subject: Re: [PATCH 0/2] simple device tree support for mxsfb
-Message-Id: <20120627135317.GD9787@S2101-09.ap.freescale.net>
+From: Emil Goode <emilgoode@gmail.com>
+Date: Fri, 22 Jun 2012 16:11:19 +0000
+Subject: [PATCH] grvga: Fix error handling issues
+Message-Id: <1340381479-6371-1-git-send-email-emilgoode@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340701379-8619-1-git-send-email-shawn.guo@linaro.org>
-In-Reply-To: <1340701379-8619-1-git-send-email-shawn.guo@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Emil Goode <emilgoode@gmail.com>
 
-Hi Florian,
+This patch fixes two problems with the error handling in the
+grvga_probe function.
 
-I have a mxs platform patch depends on these two patches to covert
-a few board files over to device tree.  I would like to have the patches
-go via arm-soc tree if they look good.  Please let me know if you have
-problem with the patches go through arm-soc tree.  Thanks.
+- If the call to grvga_parse_custom on line 370 fails we use
+  the wrong label so that release_mem_region will be called
+  without a call to request_mem_region being made.
 
-Regards,
-Shawn
+- If the call to ioremap on line 436 fails we should not try
+  to call iounmap. I added an if statement to check whether or
+  not a call to iounmap should be made.
 
-On Tue, Jun 26, 2012 at 05:02:57PM +0800, Shawn Guo wrote:
-> It adds a simple device tree support for mxsfb driver.
-> 
-> Shawn Guo (2):
->   video: mxsfb: move mxsfb.h into include/linux
->   video: mxsfb: add simple device tree probe
-> 
->  Documentation/devicetree/bindings/fb/mxsfb.txt     |   21 +++++++
->  arch/arm/mach-mxs/devices-mx23.h                   |    2 +-
->  arch/arm/mach-mxs/devices-mx28.h                   |    2 +-
->  arch/arm/mach-mxs/devices/platform-mxsfb.c         |    2 +-
->  drivers/video/mxsfb.c                              |   62 +++++++++++++++-----
->  .../include/mach => include/linux}/mxsfb.h         |    6 +-
->  6 files changed, 75 insertions(+), 20 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/fb/mxsfb.txt
->  rename {arch/arm/mach-mxs/include/mach => include/linux}/mxsfb.h (95%)
-> 
-> -- 
-> 1.7.5.4
-> 
-> 
+- I also changed the names of the labels to make the code
+  easier to read.
+
+Signed-off-by: Emil Goode <emilgoode@gmail.com>
+---
+ drivers/video/grvga.c |   34 ++++++++++++++++++----------------
+ 1 file changed, 18 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/video/grvga.c b/drivers/video/grvga.c
+index da066c2..d9d688a 100644
+--- a/drivers/video/grvga.c
++++ b/drivers/video/grvga.c
+@@ -354,7 +354,7 @@ static int __devinit grvga_probe(struct platform_device *dev)
+ 	 */
+ 	if (fb_get_options("grvga", &options)) {
+ 		retval = -ENODEV;
+-		goto err;
++		goto free_fb;
+ 	}
+ 
+ 	if (!options || !*options)
+@@ -370,7 +370,7 @@ static int __devinit grvga_probe(struct platform_device *dev)
+ 			if (grvga_parse_custom(this_opt, &info->var) < 0) {
+ 				dev_err(&dev->dev, "Failed to parse custom mode (%s).\n", this_opt);
+ 				retval = -EINVAL;
+-				goto err1;
++				goto free_fb;
+ 			}
+ 		} else if (!strncmp(this_opt, "addr", 4))
+ 			grvga_fix_addr = simple_strtoul(this_opt + 5, NULL, 16);
+@@ -390,7 +390,7 @@ static int __devinit grvga_probe(struct platform_device *dev)
+ 	if (!request_mem_region(dev->resource[0].start, resource_size(&dev->resource[0]), "grlib-svgactrl regs")) {
+ 		dev_err(&dev->dev, "registers already mapped\n");
+ 		retval = -EBUSY;
+-		goto err;
++		goto free_fb;
+ 	}
+ 
+ 	par->regs = of_ioremap(&dev->resource[0], 0,
+@@ -400,14 +400,14 @@ static int __devinit grvga_probe(struct platform_device *dev)
+ 	if (!par->regs) {
+ 		dev_err(&dev->dev, "failed to map registers\n");
+ 		retval = -ENOMEM;
+-		goto err1;
++		goto release_regs;
+ 	}
+ 
+ 	retval = fb_alloc_cmap(&info->cmap, 256, 0);
+ 	if (retval < 0) {
+ 		dev_err(&dev->dev, "failed to allocate mem with fb_alloc_cmap\n");
+ 		retval = -ENOMEM;
+-		goto err2;
++		goto unmap_regs;
+ 	}
+ 
+ 	if (mode_opt) {
+@@ -415,7 +415,7 @@ static int __devinit grvga_probe(struct platform_device *dev)
+ 				      grvga_modedb, sizeof(grvga_modedb), &grvga_modedb[0], 8);
+ 		if (!retval || retval = 4) {
+ 			retval = -EINVAL;
+-			goto err3;
++			goto dealloc_cmap;
+ 		}
+ 	}
+ 
+@@ -430,7 +430,7 @@ static int __devinit grvga_probe(struct platform_device *dev)
+ 		if (!request_mem_region(physical_start, grvga_mem_size, dev->name)) {
+ 			dev_err(&dev->dev, "failed to request memory region\n");
+ 			retval = -ENOMEM;
+-			goto err3;
++			goto dealloc_cmap;
+ 		}
+ 
+ 		virtual_start = (unsigned long) ioremap(physical_start, grvga_mem_size);
+@@ -438,7 +438,7 @@ static int __devinit grvga_probe(struct platform_device *dev)
+ 		if (!virtual_start) {
+ 			dev_err(&dev->dev, "error mapping framebuffer memory\n");
+ 			retval = -ENOMEM;
+-			goto err4;
++			goto free_mem;
+ 		}
+ 	} else {	/* Allocate frambuffer memory */
+ 
+@@ -451,7 +451,7 @@ static int __devinit grvga_probe(struct platform_device *dev)
+ 				"unable to allocate framebuffer memory (%lu bytes)\n",
+ 				grvga_mem_size);
+ 			retval = -ENOMEM;
+-			goto err3;
++			goto dealloc_cmap;
+ 		}
+ 
+ 		physical_start = dma_map_single(&dev->dev, (void *)virtual_start, grvga_mem_size, DMA_TO_DEVICE);
+@@ -484,7 +484,7 @@ static int __devinit grvga_probe(struct platform_device *dev)
+ 	retval = register_framebuffer(info);
+ 	if (retval < 0) {
+ 		dev_err(&dev->dev, "failed to register framebuffer\n");
+-		goto err4;
++		goto free_mem;
+ 	}
+ 
+ 	__raw_writel(physical_start, &par->regs->fb_pos);
+@@ -493,21 +493,23 @@ static int __devinit grvga_probe(struct platform_device *dev)
+ 
+ 	return 0;
+ 
+-err4:
++free_mem:
+ 	dev_set_drvdata(&dev->dev, NULL);
+ 	if (grvga_fix_addr) {
+ 		release_mem_region(physical_start, grvga_mem_size);
+-		iounmap((void *)virtual_start);
++		if (virtual_start)
++			iounmap((void *)virtual_start);
+ 	} else
+ 		kfree((void *)virtual_start);
+-err3:
++
++dealloc_cmap:
+ 	fb_dealloc_cmap(&info->cmap);
+-err2:
++unmap_regs:
+ 	of_iounmap(&dev->resource[0], par->regs,
+ 		   resource_size(&dev->resource[0]));
+-err1:
++release_regs:
+ 	release_mem_region(dev->resource[0].start, resource_size(&dev->resource[0]));
+-err:
++free_fb:
+ 	framebuffer_release(info);
+ 
+ 	return retval;
+-- 
+1.7.10
 

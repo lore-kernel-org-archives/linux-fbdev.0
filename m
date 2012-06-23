@@ -1,53 +1,82 @@
-From: Jassi Brar <jaswinder.singh@linaro.org>
-Date: Mon, 18 Jun 2012 13:36:49 +0000
-Subject: Re: [PATCH] OMAPDSS: HDMI: Discard phy_tx_enabled member
-Message-Id: <CAJe_Zhe8wwU01VGCfD6P56yGWrnX+rz3=5BFHyM3pPrZmG10gA@mail.gmail.com>
+From: jaswinder.singh@linaro.org
+Date: Sat, 23 Jun 2012 08:19:02 +0000
+Subject: [PATCH] OMAPDSS: HDMI: Discard phy_tx_enabled member
+Message-Id: <1340438822-25657-1-git-send-email-jaswinder.singh@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1339797701-11540-1-git-send-email-jaswinder.singh@linaro.org>
-	<1340007094.1859.3.camel@lappyti>
-	<CAJe_ZhdhBre8DUVNpawF6X5P+QSiMarkt3WUvbJ=RPcmpX3TPA@mail.gmail.com>
-	<1340016865.4012.10.camel@deskari>
-	<CAJe_ZhfJV6kYvSkU+4RGywv80A47=CxnoCy2rr-x=c2LFDGb7A@mail.gmail.com>
-	<1340022276.4012.23.camel@deskari>
-	<CAJe_ZhdoEjyf0ejjsJJpznt83bTJTR0UW3aqaYAZdcm01GBp_A@mail.gmail.com>
-	<1340025071.4012.27.camel@deskari>
-In-Reply-To: <1340025071.4012.27.camel@deskari>
+In-Reply-To: <1339797701-11540-1-git-send-email-jaswinder.singh@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com, mythripk@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, andy.green@linaro.org, n-dechesne@ti.com, Jassi Brar <jaswinder.singh@linaro.org>
 
-On 18 June 2012 18:41, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On Mon, 2012-06-18 at 18:37 +0530, Jassi Brar wrote:
->> On 18 June 2012 17:54, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
->> > On Mon, 2012-06-18 at 17:16 +0530, Jassi Brar wrote:
->>
->> >> So preferably I would move request_threaded_irq() to after
->> >> hdmi_check_hpd_state() in ti_hdmi_4xxx_phy_enable() =A0and convert the
->> >
->> > No, you can't move the check. If you move it, the HPD state could chan=
-ge
->> > between the check and the request_irq, and we'd miss it.
->> >
->> Wouldn't we then get an irq, and hence another hdmi_check_hpd_state(), f=
-or that?
->
-> No, if we haven't requested the irq yet. So what could happen:
->
-> - initially the cable is unplugged
-> - ti_hdmi_4xxx_phy_enable() calls hdmi_check_hpd_state(), nothing is
-> done as cable is unplugged
-> - cable plugged in
-> - ti_hdmi_4xxx_phy_enable() calls request_irq. No irq raised, as the
-> cable's state doesn't change.
->
-> We wouldn't know that cable is actually plugged in at that point.
->
-I see, you mean physically (un)plugging the cable could race with phy_enabl=
-e.
+From: Jassi Brar <jaswinder.singh@linaro.org>
 
-OK, I'll revise the changelog for this patch and submit another patch
-converting the spinlock to mutex.
+It is simpler to read the current status from a register as compared
+to maintaining a state variable to hold the information.
 
-Thanks.
+Signed-off-by: Jassi Brar <jaswinder.singh@linaro.org>
+---
+ drivers/video/omap2/dss/ti_hdmi.h         |    1 -
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |   11 ++++-------
+ 2 files changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/ti_hdmi.h b/drivers/video/omap2/dss/ti_hdmi.h
+index e734cb4..d174ca1 100644
+--- a/drivers/video/omap2/dss/ti_hdmi.h
++++ b/drivers/video/omap2/dss/ti_hdmi.h
+@@ -177,7 +177,6 @@ struct hdmi_ip_data {
+ 
+ 	/* ti_hdmi_4xxx_ip private data. These should be in a separate struct */
+ 	int hpd_gpio;
+-	bool phy_tx_enabled;
+ };
+ int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data);
+ void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data);
+diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+index 4dae1b2..3fa3d98 100644
+--- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
++++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+@@ -157,6 +157,10 @@ static int hdmi_pll_init(struct hdmi_ip_data *ip_data)
+ /* PHY_PWR_CMD */
+ static int hdmi_set_phy_pwr(struct hdmi_ip_data *ip_data, enum hdmi_phy_pwr val)
+ {
++	/* Return if already the state */
++	if (REG_GET(hdmi_wp_base(ip_data), HDMI_WP_PWR_CTRL, 5, 4) = val)
++		return 0;
++
+ 	/* Command for power control of HDMI PHY */
+ 	REG_FLD_MOD(hdmi_wp_base(ip_data), HDMI_WP_PWR_CTRL, val, 7, 6);
+ 
+@@ -241,11 +245,6 @@ static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
+ 
+ 	hpd = gpio_get_value(ip_data->hpd_gpio);
+ 
+-	if (hpd = ip_data->phy_tx_enabled) {
+-		spin_unlock_irqrestore(&phy_tx_lock, flags);
+-		return 0;
+-	}
+-
+ 	if (hpd)
+ 		r = hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_TXON);
+ 	else
+@@ -257,7 +256,6 @@ static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
+ 		goto err;
+ 	}
+ 
+-	ip_data->phy_tx_enabled = hpd;
+ err:
+ 	spin_unlock_irqrestore(&phy_tx_lock, flags);
+ 	return r;
+@@ -327,7 +325,6 @@ void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data)
+ 	free_irq(gpio_to_irq(ip_data->hpd_gpio), ip_data);
+ 
+ 	hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
+-	ip_data->phy_tx_enabled = false;
+ }
+ 
+ static int hdmi_core_ddc_init(struct hdmi_ip_data *ip_data)
+-- 
+1.7.4.1
+

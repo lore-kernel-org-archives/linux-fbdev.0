@@ -1,126 +1,45 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 28 Jun 2012 14:42:40 +0000
-Subject: [PATCH 10/12] OMAPDSS: DISPC: Remove a redundant function
-Message-Id: <1340893842-10626-12-git-send-email-archit@ti.com>
+From: Fengguang Wu <fengguang.wu@intel.com>
+Date: Sun, 24 Jun 2012 05:21:38 +0000
+Subject: boot hang on CONFIG_FB_VGA16
+Message-Id: <20120624052138.GA6965@localhost>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340893842-10626-1-git-send-email-archit@ti.com>
-In-Reply-To: <1340893842-10626-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-dss_mgr_is_lcd() available in dss.h does the same thing as dispc_mgr_is_lcd()
-in dispc.c. Remove the function from dispc.c and replace it with the one in
-dss.h.
+Hi,
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/dispc.c |   27 +++++++++------------------
- 1 file changed, 9 insertions(+), 18 deletions(-)
+I can reproduce this easily when running CONFIG_FB_VGA16=y kernels
+inside KVM. Older kernels like 3.2, 3.3, 3.4 don't have these warning
+messages, but just randomly hang during boot.
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index b047fe6..0e0b89c 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -387,15 +387,6 @@ void dispc_runtime_put(void)
- 	WARN_ON(r < 0);
- }
- 
--static inline bool dispc_mgr_is_lcd(enum omap_channel channel)
--{
--	if (channel = OMAP_DSS_CHANNEL_LCD ||
--			channel = OMAP_DSS_CHANNEL_LCD2)
--		return true;
--	else
--		return false;
--}
--
- u32 dispc_mgr_get_vsync_irq(enum omap_channel channel)
- {
- 	switch (channel) {
-@@ -430,7 +421,7 @@ bool dispc_mgr_go_busy(enum omap_channel channel)
- {
- 	int bit;
- 
--	if (dispc_mgr_is_lcd(channel))
-+	if (dss_mgr_is_lcd(channel))
- 		bit = 5; /* GOLCD */
- 	else
- 		bit = 6; /* GODIGIT */
-@@ -446,7 +437,7 @@ void dispc_mgr_go(enum omap_channel channel)
- 	int bit;
- 	bool enable_bit, go_bit;
- 
--	if (dispc_mgr_is_lcd(channel))
-+	if (dss_mgr_is_lcd(channel))
- 		bit = 0; /* LCDENABLE */
- 	else
- 		bit = 1; /* DIGITALENABLE */
-@@ -460,7 +451,7 @@ void dispc_mgr_go(enum omap_channel channel)
- 	if (!enable_bit)
- 		return;
- 
--	if (dispc_mgr_is_lcd(channel))
-+	if (dss_mgr_is_lcd(channel))
- 		bit = 5; /* GOLCD */
- 	else
- 		bit = 6; /* GODIGIT */
-@@ -939,7 +930,7 @@ static void dispc_mgr_set_cpr_coef(enum omap_channel channel,
- {
- 	u32 coef_r, coef_g, coef_b;
- 
--	if (!dispc_mgr_is_lcd(channel))
-+	if (!dss_mgr_is_lcd(channel))
- 		return;
- 
- 	coef_r = FLD_VAL(coefs->rr, 31, 22) | FLD_VAL(coefs->rg, 20, 11) |
-@@ -1798,7 +1789,7 @@ static int check_horiz_timing_omap3(enum omap_channel channel,
- 
- 	nonactive = t->x_res + t->hfp + t->hsw + t->hbp - out_width;
- 	pclk = dispc_mgr_pclk_rate(channel);
--	if (dispc_mgr_is_lcd(channel))
-+	if (dss_mgr_is_lcd(channel))
- 		lclk = dispc_mgr_lclk_rate(channel);
- 	else
- 		lclk = dispc_fclk_rate();
-@@ -2398,7 +2389,7 @@ bool dispc_mgr_is_enabled(enum omap_channel channel)
- 
- void dispc_mgr_enable(enum omap_channel channel, bool enable)
- {
--	if (dispc_mgr_is_lcd(channel))
-+	if (dss_mgr_is_lcd(channel))
- 		dispc_mgr_enable_lcd_out(channel, enable);
- 	else if (channel = OMAP_DSS_CHANNEL_DIGIT)
- 		dispc_mgr_enable_digit_out(enable);
-@@ -2610,7 +2601,7 @@ bool dispc_mgr_timings_ok(enum omap_channel channel,
- 
- 	timings_ok = _dispc_mgr_size_ok(timings->x_res, timings->y_res);
- 
--	if (dispc_mgr_is_lcd(channel))
-+	if (dss_mgr_is_lcd(channel))
- 		timings_ok =  timings_ok && _dispc_lcd_timings_ok(timings->hsw,
- 						timings->hfp, timings->hbp,
- 						timings->vsw, timings->vfp,
-@@ -2702,7 +2693,7 @@ void dispc_mgr_set_timings(enum omap_channel channel,
- 		return;
- 	}
- 
--	if (dispc_mgr_is_lcd(channel)) {
-+	if (dss_mgr_is_lcd(channel)) {
- 		_dispc_mgr_set_lcd_timings(channel, t.hsw, t.hfp, t.hbp, t.vsw,
- 				t.vfp, t.vbp, t.vsync_level, t.hsync_level,
- 				t.pclk_edge, t.de_level, t.hsync_vsync_edge);
-@@ -2808,7 +2799,7 @@ unsigned long dispc_mgr_pclk_rate(enum omap_channel channel)
- {
- 	unsigned long r;
- 
--	if (dispc_mgr_is_lcd(channel)) {
-+	if (dss_mgr_is_lcd(channel)) {
- 		int pcd;
- 		u32 l;
- 
--- 
-1.7.9.5
+I'm not sure if this is a relevant problem, but anyway, here is the
+bug report.
 
+INFO: rcu_sched self-detected stall on CPU { 1}  (t003 jiffies)
+Pid: 8, comm: kworker/1:0 Not tainted 3.5.0-rc3-wl+ #11
+Call Trace:
+ <IRQ>  [<ffffffff810a1e35>] __rcu_pending+0xc2/0x3c3
+ [<ffffffff8107a1bc>] ? tick_nohz_handler+0xd5/0xd5
+ [<ffffffff810a3052>] rcu_check_callbacks+0x9d/0x149
+ [<ffffffff81061b01>] ? sched_clock_cpu+0xbb/0xcc
+ [<ffffffff8103db27>] update_process_times+0x3e/0x72
+ [<ffffffff8107a228>] tick_sched_timer+0x6c/0x95
+ [<ffffffff81061b21>] ? local_clock+0xf/0x3c
+ [<ffffffff810537d3>] __run_hrtimer+0xcf/0x1d1
+ [<ffffffff810541c6>] hrtimer_interrupt+0xc6/0x191
+ [<ffffffff817bc52a>] smp_apic_timer_interrupt+0x86/0x99
+ [<ffffffff817bb51c>] apic_timer_interrupt+0x6c/0x80
+ <EOI>  [<ffffffff81030a8c>] ? console_unlock+0x21b/0x2c5
+ [<ffffffff813304a1>] ? update_attr.isra.1+0x8a/0x8a
+ [<ffffffff8132b7a7>] fb_flashcursor+0x114/0x123
+ [<ffffffff81048529>] process_one_work+0x238/0x45c
+ [<ffffffff8104848c>] ? process_one_work+0x19b/0x45c
+ [<ffffffff8132b693>] ? get_color+0xfd/0xfd
+ [<ffffffff8104876e>] process_scheduled_works+0x21/0x2f
+ [<ffffffff810488f5>] worker_thread+0x179/0x240
+
+Thanks,
+Fengguang

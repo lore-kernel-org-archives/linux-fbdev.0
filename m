@@ -1,112 +1,89 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 28 Jun 2012 14:42:38 +0000
-Subject: [PATCH 08/12] OMAPDSS: MANAGER: Check LCD related overlay manager parameters
-Message-Id: <1340893842-10626-10-git-send-email-archit@ti.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 24 Jun 2012 21:24:18 +0000
+Subject: Re: [PATCH RESEND] video: w100fb: Reduce sleep mode battery discharge
+Message-Id: <4FE78582.5080503@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340893842-10626-1-git-send-email-archit@ti.com>
-In-Reply-To: <1340893842-10626-1-git-send-email-archit@ti.com>
+References: <20120603103355.3845gmx1@mx072.gmx.net>
+In-Reply-To: <20120603103355.3845gmx1@mx072.gmx.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: Paul Parsons <lost.distance@yahoo.com>
+Cc: mreimer@sdgsystems.com, philipp.zabel@gmail.com, linux-kernel@vger.kernel.org, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-The LCD related manager configurations are a part of the manager's private data
-in APPLY. Pass this to dss_lcd_mgr_config to dss_mgr_check and create a function
-to check the validity of some of the configurations.
+Hi Paul,
 
-To check some of the configurations, we require information of interface to
-which the manager output is connected. These can be added once interfaces are
-represented as an entity.
+you should als the relevant mailing list, linux-fbdev (done now)
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/dss/apply.c   |    2 +-
- drivers/video/omap2/dss/dss.h     |    1 +
- drivers/video/omap2/dss/manager.c |   35 +++++++++++++++++++++++++++++++++++
- 3 files changed, 37 insertions(+), 1 deletion(-)
+On 06/03/2012 10:33 AM, Paul Parsons wrote:
+> In 2006 and 2007 the handhelds.org kernel w100fb driver was patched to
+> reduce sleep mode battery discharge. Unfortunately those two patches
+> never migrated to the mainline kernel.
+> 
+> Fortunately the function affected - w100_suspend() - has not changed
+> since; thus those patches still apply cleanly.
+> 
+> Applying those patches to linux-3.4-rc3 running on an HP iPAQ hx4700
+> reduces the sleep mode battery discharge from approximately 26 mA to
+> approximately 11 mA.
+> 
+> This patch combines those two patches into a single unified patch.
+> 
+> Signed-off-by: Paul Parsons <lost.distance@yahoo.com>
+> Cc: Matt Reimer <mreimer@sdgsystems.com>
+> Cc: Philipp Zabel <philipp.zabel@gmail.com>
 
-diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
-index bb4ec63..95a6713 100644
---- a/drivers/video/omap2/dss/apply.c
-+++ b/drivers/video/omap2/dss/apply.c
-@@ -226,7 +226,7 @@ static int dss_check_settings_low(struct omap_overlay_manager *mgr,
- 		ois[ovl->id] = oi;
- 	}
- 
--	return dss_mgr_check(mgr, mi, &mp->timings, ois);
-+	return dss_mgr_check(mgr, mi, &mp->timings, &mp->lcd_config, ois);
- }
- 
- /*
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index b4c52ec..cb859e3 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -235,6 +235,7 @@ int dss_mgr_check_timings(struct omap_overlay_manager *mgr,
- int dss_mgr_check(struct omap_overlay_manager *mgr,
- 		struct omap_overlay_manager_info *info,
- 		const struct omap_video_timings *mgr_timings,
-+		const struct dss_lcd_mgr_config *config,
- 		struct omap_overlay_info **overlay_infos);
- 
- static inline bool dss_mgr_is_lcd(enum omap_channel id)
-diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
-index 0cbcde4..09540bc 100644
---- a/drivers/video/omap2/dss/manager.c
-+++ b/drivers/video/omap2/dss/manager.c
-@@ -665,9 +665,40 @@ int dss_mgr_check_timings(struct omap_overlay_manager *mgr,
- 	return 0;
- }
- 
-+static int dss_mgr_check_lcd_config(struct omap_overlay_manager *mgr,
-+		const struct dss_lcd_mgr_config *config)
-+{
-+	struct dispc_clock_info cinfo = config->clock_info;
-+	int dl = config->video_port_width;
-+	bool stallmode = config->stallmode;
-+	bool fifohandcheck = config->fifohandcheck;
-+
-+	if (cinfo.lck_div < 1 || cinfo.lck_div > 255)
-+		return -EINVAL;
-+
-+	if (cinfo.pck_div < 1 || cinfo.pck_div > 255)
-+		return -EINVAL;
-+
-+	if (dl != 12 && dl != 16 && dl != 18 && dl != 24)
-+		return -EINVAL;
-+
-+	/* fifohandcheck should be used only with stallmode */
-+	if (stallmode = false && fifohandcheck = true)
-+		return -EINVAL;
-+
-+	/*
-+	 * io pad mode can be only checked by using dssdev connected to the
-+	 * manager. Ignore checking these for now, add checks when manager
-+	 * is capable of holding information related to the connected interface
-+	 */
-+
-+	return 0;
-+}
-+
- int dss_mgr_check(struct omap_overlay_manager *mgr,
- 		struct omap_overlay_manager_info *info,
- 		const struct omap_video_timings *mgr_timings,
-+		const struct dss_lcd_mgr_config *lcd_config,
- 		struct omap_overlay_info **overlay_infos)
- {
- 	struct omap_overlay *ovl;
-@@ -683,6 +714,10 @@ int dss_mgr_check(struct omap_overlay_manager *mgr,
- 	if (r)
- 		return r;
- 
-+	r = dss_mgr_check_lcd_config(mgr, lcd_config);
-+	if (r)
-+		return r;
-+
- 	list_for_each_entry(ovl, &mgr->overlays, list) {
- 		struct omap_overlay_info *oi;
- 		int r;
--- 
-1.7.9.5
+Actually it would be good if we had the Signed-offs of the original
+authors. Oh well, I think if it can't be helped yours should be sufficient.
 
+> ---
+> 
+> Many thanks to Matt Reimer for suggesting this.
+> 
+> The seeming demise of handhelds.org has removed any formal patch logs.
+> However the patches can still be viewed online:
+> 2006 patch:
+> http://paste.lisp.org/display/31700
+> 2007 patch:
+> http://osdir.com/ml/handhelds.linux.kernel/2007-02/msg00020.html
+> 
+> And the fully patched handhelds.org kernel is still available, e.g.:
+> http://www.linuxtogo.org/~goxboxlive/htcuniversal/Kernel/linux-2.6.21-hh20.tar.bz2
+> 
+>  drivers/video/w100fb.c |   12 ++++++++++++
+>  1 files changed, 12 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/video/w100fb.c b/drivers/video/w100fb.c
+> index 90a2e30..2f6b2b8 100644
+> --- a/drivers/video/w100fb.c
+> +++ b/drivers/video/w100fb.c
+> @@ -1567,6 +1567,18 @@ static void w100_suspend(u32 mode)
+>  		val = readl(remapped_regs + mmPLL_CNTL);
+>  		val |= 0x00000004;  /* bit2=1 */
+>  		writel(val, remapped_regs + mmPLL_CNTL);
+> +
+> +		writel(0x00000000, remapped_regs + mmLCDD_CNTL1);
+> +		writel(0x00000000, remapped_regs + mmLCDD_CNTL2);
+> +		writel(0x00000000, remapped_regs + mmGENLCD_CNTL1);
+> +		writel(0x00000000, remapped_regs + mmGENLCD_CNTL2);
+> +		writel(0x00000000, remapped_regs + mmGENLCD_CNTL3);
+> +
+> +		val = readl(remapped_regs + mmMEM_EXT_CNTL);
+> +		val |= 0xF0000000;
+> +		val &= ~(0x00000001);
+> +		writel(val, remapped_regs + mmMEM_EXT_CNTL);
+> +
+
+If anyone understands what this change does (like for example disabling
+the LCD controller) a comment would be useful.
+
+>  		writel(0x0000001d, remapped_regs + mmPWRMGT_CNTL);
+>  	}
+>  }
+
+If nobody comments on this I will apply it in a few days.
+
+
+Best regards,
+
+Florian Tobias Schandinat

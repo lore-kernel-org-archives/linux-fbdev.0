@@ -1,178 +1,65 @@
-From: jaswinder.singh@linaro.org
-Date: Sat, 23 Jun 2012 08:18:11 +0000
-Subject: [PATCH] OMAPDSS: Check if RPM enabled before trying to change state
-Message-Id: <1340438771-25587-1-git-send-email-jaswinder.singh@linaro.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 25 Jun 2012 06:20:21 +0000
+Subject: Re: [PATCH] OMAPDSS: Check if RPM enabled before trying to change state
+Message-Id: <1340605221.12683.30.camel@lappyti>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-3lgmC4hJlhz04DojR0ow"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+References: <1340438771-25587-1-git-send-email-jaswinder.singh@linaro.org>
+In-Reply-To: <1340438771-25587-1-git-send-email-jaswinder.singh@linaro.org>
+To: jaswinder.singh@linaro.org
+Cc: mythripk@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, andy.green@linaro.org, n-dechesne@ti.com
+
+
+--=-3lgmC4hJlhz04DojR0ow
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Sat, 2012-06-23 at 13:36 +0530, jaswinder.singh@linaro.org wrote:
+> From: Jassi Brar <jaswinder.singh@linaro.org>
+>=20
+> If the runtime PM of the device is disabled (for example in resume from
+> suspend path), it doesn't make sense to attempt pm_runtime_get/put, esp
+> when their return values affect the control flow path.
+
+This looks strange. When the driver does pm_runtime_get() it expects the
+HW to be functional and registers accessible. If we just skip the
+pm_runtime_get(), how can the code work?
+
+> Signed-off-by: Jassi Brar <jaswinder.singh@linaro.org>
+> ---
+>=20
+>  Currenlty HDMI fails to come up in the suspend-resume path.
+> This patch helps that real-world scenario.
+
+What is the problem there? It'd be good to explain the problem in the
+patch description. Does the pm_runtime_get return -EACCES?
+
+ Tomi
+
+
+--=-3lgmC4hJlhz04DojR0ow
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, mythripk@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, andy.green@linaro.org, n-dechesne@ti.com, Jassi Brar <jaswinder.singh@linaro.org>
 
-From: Jassi Brar <jaswinder.singh@linaro.org>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-If the runtime PM of the device is disabled (for example in resume from
-suspend path), it doesn't make sense to attempt pm_runtime_get/put, esp
-when their return values affect the control flow path.
+iQIcBAABAgAGBQJP6AMlAAoJEPo9qoy8lh71MFMP/jtfzPAECTb5aiAKV3eFylDC
+qFz4NWTWRUFLiTx5sDGEYYG16sBYpqmAMI+iWqeiKs+CjTlY1vNMZu2GWZkftuKd
+KBlPoRJR69pR8MJIrgfx6BOcatLUm7I/sYTMqv3iuHR4QuBMPMAHdT64746QvXt0
+/34mzMG7MhWskM0bk5WA2Mrd/ys3rjPvnIv4R0bBTvMB96l72xFeOaRsi4QQQtKB
+u9k5tqVhFPjPRfPdUjGKOpXbHMIYcY5vUqz1mG6pG2pcFpKhV5NY1tTBJsS8NkhL
+hHq49jrVIWfetROa2hiHiKAxgcDWGK+BxXrQnrnlFMR4dTFxft8nrEh/vHC3fgzV
++PDQmvB/VKZZPt/jkCSrbqOl8BgeLdaF5NcGQGG47omCDdS4h/f+RgKOcvPyh0OP
+fCiheQpkE4RyZgbQTouVxocamlhqtRKXsKh3GJU4pXNkoTX7KKIdbbmBO2eO9ofr
+YoMUeYMDbSz3Q8FfKaonOm6UX7ZzDVP+LVM+8hEUI4wsOd80lCWh6NAXGtypUmpe
+TlegRBkY+8P3R0+9XnUWY7xd6X+uQeqV0kVb9950o/avYgGlzofGsZZpnwHn8j11
+mrqO2ce329KL5soh+q/EwxQXq+SDP5O8Ar0aLi8Khx/Vd84mCogXESKOChkcjjdr
+TTGnQzBHUZ55HkGiCTMz
+=ReYc
+-----END PGP SIGNATURE-----
 
-Signed-off-by: Jassi Brar <jaswinder.singh@linaro.org>
----
-
- Currenlty HDMI fails to come up in the suspend-resume path.
-This patch helps that real-world scenario.
-
- drivers/video/omap2/dss/dispc.c |    6 ++++++
- drivers/video/omap2/dss/dsi.c   |    6 ++++++
- drivers/video/omap2/dss/dss.c   |    6 ++++++
- drivers/video/omap2/dss/hdmi.c  |    6 ++++++
- drivers/video/omap2/dss/rfbi.c  |    6 ++++++
- drivers/video/omap2/dss/venc.c  |    6 ++++++
- 6 files changed, 36 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 4749ac3..2c3266f 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -372,6 +372,9 @@ int dispc_runtime_get(void)
- 
- 	DSSDBG("dispc_runtime_get\n");
- 
-+	if (!pm_runtime_enabled(&dispc.pdev->dev))
-+		return 0;
-+
- 	r = pm_runtime_get_sync(&dispc.pdev->dev);
- 	WARN_ON(r < 0);
- 	return r < 0 ? r : 0;
-@@ -383,6 +386,9 @@ void dispc_runtime_put(void)
- 
- 	DSSDBG("dispc_runtime_put\n");
- 
-+	if (!pm_runtime_enabled(&dispc.pdev->dev))
-+		return;
-+
- 	r = pm_runtime_put_sync(&dispc.pdev->dev);
- 	WARN_ON(r < 0);
- }
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index ca8382d..6db4cb1 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -1062,6 +1062,9 @@ int dsi_runtime_get(struct platform_device *dsidev)
- 
- 	DSSDBG("dsi_runtime_get\n");
- 
-+	if (!pm_runtime_enabled(&dsi->pdev->dev))
-+		return 0;
-+
- 	r = pm_runtime_get_sync(&dsi->pdev->dev);
- 	WARN_ON(r < 0);
- 	return r < 0 ? r : 0;
-@@ -1074,6 +1077,9 @@ void dsi_runtime_put(struct platform_device *dsidev)
- 
- 	DSSDBG("dsi_runtime_put\n");
- 
-+	if (!pm_runtime_enabled(&dsi->pdev->dev))
-+		return;
-+
- 	r = pm_runtime_put_sync(&dsi->pdev->dev);
- 	WARN_ON(r < 0);
- }
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 7706323..5e52224 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -719,6 +719,9 @@ static int dss_runtime_get(void)
- 
- 	DSSDBG("dss_runtime_get\n");
- 
-+	if (!pm_runtime_enabled(&dss.pdev->dev))
-+		return 0;
-+
- 	r = pm_runtime_get_sync(&dss.pdev->dev);
- 	WARN_ON(r < 0);
- 	return r < 0 ? r : 0;
-@@ -730,6 +733,9 @@ static void dss_runtime_put(void)
- 
- 	DSSDBG("dss_runtime_put\n");
- 
-+	if (!pm_runtime_enabled(&dss.pdev->dev))
-+		return;
-+
- 	r = pm_runtime_put_sync(&dss.pdev->dev);
- 	WARN_ON(r < 0 && r != -EBUSY);
- }
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 0738090..900e621 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -123,6 +123,9 @@ static int hdmi_runtime_get(void)
- 
- 	DSSDBG("hdmi_runtime_get\n");
- 
-+	if (!pm_runtime_enabled(&hdmi.pdev->dev))
-+		return 0;
-+
- 	r = pm_runtime_get_sync(&hdmi.pdev->dev);
- 	WARN_ON(r < 0);
- 	if (r < 0)
-@@ -137,6 +140,9 @@ static void hdmi_runtime_put(void)
- 
- 	DSSDBG("hdmi_runtime_put\n");
- 
-+	if (!pm_runtime_enabled(&hdmi.pdev->dev))
-+		return;
-+
- 	r = pm_runtime_put_sync(&hdmi.pdev->dev);
- 	WARN_ON(r < 0);
- }
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index 3d8c206..401384a 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -129,6 +129,9 @@ static int rfbi_runtime_get(void)
- 
- 	DSSDBG("rfbi_runtime_get\n");
- 
-+	if (!pm_runtime_enabled(&rfbi.pdev->dev))
-+		return 0;
-+
- 	r = pm_runtime_get_sync(&rfbi.pdev->dev);
- 	WARN_ON(r < 0);
- 	return r < 0 ? r : 0;
-@@ -140,6 +143,9 @@ static void rfbi_runtime_put(void)
- 
- 	DSSDBG("rfbi_runtime_put\n");
- 
-+	if (!pm_runtime_enabled(&rfbi.pdev->dev))
-+		return;
-+
- 	r = pm_runtime_put_sync(&rfbi.pdev->dev);
- 	WARN_ON(r < 0);
- }
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 2b89739..edd8710 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -390,6 +390,9 @@ static int venc_runtime_get(void)
- 
- 	DSSDBG("venc_runtime_get\n");
- 
-+	if (!pm_runtime_enabled(&venc.pdev->dev))
-+		return 0;
-+
- 	r = pm_runtime_get_sync(&venc.pdev->dev);
- 	WARN_ON(r < 0);
- 	return r < 0 ? r : 0;
-@@ -401,6 +404,9 @@ static void venc_runtime_put(void)
- 
- 	DSSDBG("venc_runtime_put\n");
- 
-+	if (!pm_runtime_enabled(&venc.pdev->dev))
-+		return;
-+
- 	r = pm_runtime_put_sync(&venc.pdev->dev);
- 	WARN_ON(r < 0);
- }
--- 
-1.7.4.1
+--=-3lgmC4hJlhz04DojR0ow--
 

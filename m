@@ -1,70 +1,55 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 25 Jun 2012 12:30:59 +0000
+From: Jassi Brar <jaswinder.singh@linaro.org>
+Date: Mon, 25 Jun 2012 12:39:31 +0000
 Subject: Re: [PATCH] OMAPDSS: Check if RPM enabled before trying to change state
-Message-Id: <1340627459.3395.54.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-HtSxqepw5ykP22mwMOex"
+Message-Id: <CAJe_ZhftuNggxH+269-ZJbWJo5nSzSjo1dDCTQGMbsjPWoUpyg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1340438771-25587-1-git-send-email-jaswinder.singh@linaro.org>
-	 <1340605221.12683.30.camel@lappyti>
-	 <CANOLnOOodXtqV7Hs-SsEUfB3Uo1PSGb8bkaeN7M48jVpQrb-cA@mail.gmail.com>
-In-Reply-To: <CANOLnOOodXtqV7Hs-SsEUfB3Uo1PSGb8bkaeN7M48jVpQrb-cA@mail.gmail.com>
-To: Grazvydas Ignotas <notasas@gmail.com>
-Cc: jaswinder.singh@linaro.org, mythripk@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, andy.green@linaro.org, n-dechesne@ti.com
-
-
---=-HtSxqepw5ykP22mwMOex
-Content-Type: text/plain; charset="UTF-8"
+	<1340605221.12683.30.camel@lappyti>
+	<CAJe_Zhf-H0dLtFsFAcryDy3av60RjmWmP+d3GSaxq8dNZKiXWw@mail.gmail.com>
+	<1340616643.3395.19.camel@deskari>
+In-Reply-To: <1340616643.3395.19.camel@deskari>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: mythripk@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, andy.green@linaro.org, n-dechesne@ti.com
 
-On Mon, 2012-06-25 at 15:05 +0300, Grazvydas Ignotas wrote:
-> On Mon, Jun 25, 2012 at 9:20 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> w=
-rote:
-> > On Sat, 2012-06-23 at 13:36 +0530, jaswinder.singh@linaro.org wrote:
-> >>
-> >>  Currenlty HDMI fails to come up in the suspend-resume path.
-> >> This patch helps that real-world scenario.
-> >
-> > What is the problem there? It'd be good to explain the problem in the
-> > patch description. Does the pm_runtime_get return -EACCES?
->=20
-> On slightly different but related issue, currently OMAPDSS always
-> spits lots of backtraces when it's compiled without CONFIG_PM_RUNTIME,
-> because pm_runtime_put* always return -ENOSYS without
-> CONFIG_PM_RUNTIME. So something like this patch proposes is needed, or
-> maybe WARN_ON should check for -ENOSYS, I don't know..
+On 25 June 2012 15:00, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+> On Mon, 2012-06-25 at 14:19 +0530, Jassi Brar wrote:
+>> On 25 June 2012 11:50, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+>> > On Sat, 2012-06-23 at 13:36 +0530, jaswinder.singh@linaro.org wrote:
+>> ....
+>> >> =A0Currenlty HDMI fails to come up in the suspend-resume path.
+>> >> This patch helps that real-world scenario.
+>> >
+>> > What is the problem there? It'd be good to explain the problem in the
+>> > patch description. Does the pm_runtime_get return -EACCES?
+>> >
+>> Yes, it returns -EACCESS because RPM on devices is disabled during the
+>> period from suspend-start to resume-finished.
+>
+> So... You didn't answer my first comment, how can the code work?
+>
+Sorry, don't know why I thought I didn't miss anything.
 
-Hmm. I guess I'm missing some understanding about runtime PM. omapdss
-uses runtime PM to enable the underlying DSS hardware. If there's no
-runtime PM, how does the driver work? Or is it the job of
-hwmod/omap_device to keep all the hardware always enabled if runtime PM
-is not compiled in?
+> The driver needs to enable the HW and the call to pm_runtime_get() is
+> skipped. Won't this lead to crash as the DSS registers are accessed
+> without the HW in enabled state?
+>
+Hmm...  how does the extant code in hdmi driver ensures DSS is up and runni=
+ng ?
+While it does sound important even to my limited knowledge of OMAPDSS,
+I see rpm of HDMI, VENC and RFBI only dependent on DISPC, not DSS.
 
- Tomi
+And for DISPC these drivers already hold a reference in their display
+enable/resume and keep it until disable/suspend. So we don't lose
+DISPC anytime it is really required.
 
+> And what happens if the pm_runtime_get() call is skipped, but pm_runtime_=
+put() is not?
+>
+Not sure in what newly introduced scenario by this patch, because
+get/put both check for pm_enabled before proceeding. Am I overlooking
+something?
 
---=-HtSxqepw5ykP22mwMOex
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAABAgAGBQJP6FoDAAoJEPo9qoy8lh71XEgP/2mReCuXJha9NkPJWciOinNV
-WeKabcp+Rbjtlw1Jgn4Brys11r/KVTppVw7BaixR+qay0NCj2fSPZswll0xVEqOF
-9BiYpgM7UjE4XeP57Q+3mFjdxB0BAHfRaljWhtKn7hi/9PJErwJr+7rCkNzrzoH3
-HfP3hzsF5S4WwpOWptXi1u7ROwjIH7c/KTv7PtufDKDeupfneqK/BBsySRZPNTJV
-xNvZzjTY33qoDuMKGl/xMG+Vl52eSSicqM+y+M9ZQPTo7uF62Q0GkS7LG//K6/vp
-DuAO3ThsBGgUdASQYP6dGjy0NiOGRXVlEMNXBIvm8bD75pEn+4nWYVmJQbnlKDBa
-ySembMrKKDb6JpVuEpZxbnLtX+tuIS0ZYqbzxVwyguvJA+tW3dC2ZMmA6uyUyKvl
-IlizPF2aEV+9qFijCDa01JxD/plFrU45OHEKCNGx+LWYG1HgYvUCii+bjXVoqQto
-oadhrC2l6O7Pq161EQWXHbr73j5anCaOwME+q6eRtZV0ODrlmTywDcpJpM90yl/E
-sioZ5rSuIPsfyEIUzR9c4v7DgkaAVdAsmyfobO1wZJ9AjI/SZarTZ+YKuExeJrK/
-XHJh/30s8m2EtNRP7uiUCGNIo9QRrO96SGnUHn/HoiTkefoBClg9/gJhfUAdEm0R
-NMu4UiO+YsTIaSyvLJo2
-=cWRn
------END PGP SIGNATURE-----
-
---=-HtSxqepw5ykP22mwMOex--
-
+thnx

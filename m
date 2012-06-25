@@ -1,150 +1,149 @@
-From: Jassi Brar <jaswinder.singh@linaro.org>
-Date: Mon, 25 Jun 2012 08:08:47 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 25 Jun 2012 08:11:35 +0000
 Subject: Re: [PATCH] OMAPDSS: HDMI: Cache EDID
-Message-Id: <CAJe_Zhf1RsDtKXOpQ97Am-ByBYUtOgjJYyySGYGL9zHNYB_Ejw@mail.gmail.com>
+Message-Id: <1340611895.3395.14.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-y28E/33xMLuTykAtRSpN"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1340438806-25622-1-git-send-email-jaswinder.singh@linaro.org>
-	<1340606154.12683.34.camel@lappyti>
-In-Reply-To: <1340606154.12683.34.camel@lappyti>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+	 <1340606154.12683.34.camel@lappyti>
+	 <CAJe_Zhf1RsDtKXOpQ97Am-ByBYUtOgjJYyySGYGL9zHNYB_Ejw@mail.gmail.com>
+In-Reply-To: <CAJe_Zhf1RsDtKXOpQ97Am-ByBYUtOgjJYyySGYGL9zHNYB_Ejw@mail.gmail.com>
+To: Jassi Brar <jaswinder.singh@linaro.org>
 Cc: mythripk@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, andy.green@linaro.org, n-dechesne@ti.com
 
-On 25 June 2012 12:05, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On Sat, 2012-06-23 at 13:36 +0530, jaswinder.singh@linaro.org wrote:
->> From: Jassi Brar <jaswinder.singh@linaro.org>
->>
->> We can easily keep track of latest EDID from the display and hence avoid
->> expensive EDID re-reads over I2C.
->> This could also help some cheapo displays that provide EDID reliably only
->> immediately after asserting HPD and not later.
->> Even with good displays, there is something in OMAPDSS that apparantly
->> messes up DDC occasionally while EDID is being read, giving the
->> =A0 "operation stopped when reading edid" error.
->>
->> Signed-off-by: Jassi Brar <jaswinder.singh@linaro.org>
->> ---
->> =A0drivers/video/omap2/dss/hdmi.c =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A01 +
->> =A0drivers/video/omap2/dss/ti_hdmi.h =A0 =A0 =A0 =A0 | =A0 =A02 ++
->> =A0drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c | =A0 23 ++++++++++++++++++=
-++---
->> =A03 files changed, 23 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hd=
-mi.c
->> index 900e621..0a8c825 100644
->> --- a/drivers/video/omap2/dss/hdmi.c
->> +++ b/drivers/video/omap2/dss/hdmi.c
->> @@ -764,6 +764,7 @@ static int __init omapdss_hdmihw_probe(struct platfo=
-rm_device *pdev)
->> =A0 =A0 =A0 hdmi.ip_data.core_av_offset =3D HDMI_CORE_AV;
->> =A0 =A0 =A0 hdmi.ip_data.pll_offset =3D HDMI_PLLCTRL;
->> =A0 =A0 =A0 hdmi.ip_data.phy_offset =3D HDMI_PHY;
->> + =A0 =A0 hdmi.ip_data.edid_len =3D 0; /* Invalidate EDID Cache */
->> =A0 =A0 =A0 mutex_init(&hdmi.ip_data.lock);
->
-> Your HDMI patches seem to depend on each other. Please post them as a
-> proper patch series, instead of each one separately.
->
-They don't depend functionality wise. Any fix can be accepted
-regardless of others.
-I deliberately avoided a series, because revision of just one could
-require resending 3, otherwise
-perfectly OK, patches. I just wanted to limit the noise.
-I understand, 'git am' might complain but I think that should be trivial to=
- fix.
-I am perfectly OK to resend as a patch series, if you want.
 
->> =A0 =A0 =A0 hdmi_panel_init();
->> diff --git a/drivers/video/omap2/dss/ti_hdmi.h b/drivers/video/omap2/dss=
-/ti_hdmi.h
->> index cc292b8..4735860 100644
->> --- a/drivers/video/omap2/dss/ti_hdmi.h
->> +++ b/drivers/video/omap2/dss/ti_hdmi.h
->> @@ -178,6 +178,8 @@ struct hdmi_ip_data {
->> =A0 =A0 =A0 /* ti_hdmi_4xxx_ip private data. These should be in a separa=
-te struct */
->> =A0 =A0 =A0 int hpd_gpio;
->> =A0 =A0 =A0 struct mutex lock;
->> + =A0 =A0 u8 edid_cached[256];
->> + =A0 =A0 unsigned edid_len;
->> =A0};
->> =A0int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data);
->> =A0void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data);
->> diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/o=
-map2/dss/ti_hdmi_4xxx_ip.c
->> index 04acca9..2633ade 100644
->> --- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
->> +++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
->> @@ -243,10 +243,13 @@ static int hdmi_check_hpd_state(struct hdmi_ip_dat=
-a *ip_data)
->>
->> =A0 =A0 =A0 hpd =3D gpio_get_value(ip_data->hpd_gpio);
->>
->> - =A0 =A0 if (hpd)
->> + =A0 =A0 if (hpd) {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 r =3D hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRC=
-MD_TXON);
->> - =A0 =A0 else
->> + =A0 =A0 } else {
->> + =A0 =A0 =A0 =A0 =A0 =A0 /* Invalidate EDID Cache */
->> + =A0 =A0 =A0 =A0 =A0 =A0 ip_data->edid_len =3D 0;
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 r =3D hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRC=
-MD_LDOON);
->> + =A0 =A0 }
->>
->> =A0 =A0 =A0 if (r) {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 DSSERR("Failed to %s PHY TX power\n",
->> @@ -454,6 +457,11 @@ int ti_hdmi_4xxx_read_edid(struct hdmi_ip_data *ip_=
-data,
->> =A0{
->> =A0 =A0 =A0 int r, l;
->>
->> + =A0 =A0 if (ip_data->edid_len) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 memcpy(edid, ip_data->edid_cached, ip_data->ed=
-id_len);
->> + =A0 =A0 =A0 =A0 =A0 =A0 return ip_data->edid_len;
->> + =A0 =A0 }
->> +
->> =A0 =A0 =A0 if (len < 128)
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
->>
->> @@ -474,12 +482,21 @@ int ti_hdmi_4xxx_read_edid(struct hdmi_ip_data *ip=
-_data,
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 l +=3D 128;
->> =A0 =A0 =A0 }
->>
->> + =A0 =A0 ip_data->edid_len =3D l;
->> + =A0 =A0 memcpy(ip_data->edid_cached, edid, l);
->> +
->> =A0 =A0 =A0 return l;
->> =A0}
->>
->> =A0bool ti_hdmi_4xxx_detect(struct hdmi_ip_data *ip_data)
->> =A0{
->> - =A0 =A0 return gpio_get_value(ip_data->hpd_gpio);
->> + =A0 =A0 if (gpio_get_value(ip_data->hpd_gpio))
->> + =A0 =A0 =A0 =A0 =A0 =A0 return true;
->> +
->> + =A0 =A0 /* Invalidate EDID Cache */
->> + =A0 =A0 ip_data->edid_len =3D 0;
->> +
->> + =A0 =A0 return false;
->
-> Why is this needed? The HPD interrupt should handle this already. And if
-> the HPD interrupt doesn't work for some reason, this won't work either,
-> as the user can plug and unplug his HDMI monitors a thousand times
-> between two detect calls.
->
-I thought it is almost impossible to unplug->plug cycle the HDMI cable
-even twice a second, let alone 1000 times against the 10Hz .detect()
-poll  :)    Or you mean some relay controlled HDMI switching
-mechanism?
+--=-y28E/33xMLuTykAtRSpN
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
- Anyways, that is not the point of this patch. This patch only aims to
-avoid un-ncessary EDID reads while doing its best to make sure we
-invalidate EDID 'as soon as possible'.
+On Mon, 2012-06-25 at 13:26 +0530, Jassi Brar wrote:
+> On 25 June 2012 12:05, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+> > On Sat, 2012-06-23 at 13:36 +0530, jaswinder.singh@linaro.org wrote:
+> >> From: Jassi Brar <jaswinder.singh@linaro.org>
+> >>
+> >> We can easily keep track of latest EDID from the display and hence avo=
+id
+> >> expensive EDID re-reads over I2C.
+> >> This could also help some cheapo displays that provide EDID reliably o=
+nly
+> >> immediately after asserting HPD and not later.
+> >> Even with good displays, there is something in OMAPDSS that apparantly
+> >> messes up DDC occasionally while EDID is being read, giving the
+> >>   "operation stopped when reading edid" error.
+> >>
+> >> Signed-off-by: Jassi Brar <jaswinder.singh@linaro.org>
+> >> ---
+> >>  drivers/video/omap2/dss/hdmi.c            |    1 +
+> >>  drivers/video/omap2/dss/ti_hdmi.h         |    2 ++
+> >>  drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |   23 ++++++++++++++++++++=
+---
+> >>  3 files changed, 23 insertions(+), 3 deletions(-)
+> >>
+> >> diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/=
+hdmi.c
+> >> index 900e621..0a8c825 100644
+> >> --- a/drivers/video/omap2/dss/hdmi.c
+> >> +++ b/drivers/video/omap2/dss/hdmi.c
+> >> @@ -764,6 +764,7 @@ static int __init omapdss_hdmihw_probe(struct plat=
+form_device *pdev)
+> >>       hdmi.ip_data.core_av_offset =3D HDMI_CORE_AV;
+> >>       hdmi.ip_data.pll_offset =3D HDMI_PLLCTRL;
+> >>       hdmi.ip_data.phy_offset =3D HDMI_PHY;
+> >> +     hdmi.ip_data.edid_len =3D 0; /* Invalidate EDID Cache */
+> >>       mutex_init(&hdmi.ip_data.lock);
+> >
+> > Your HDMI patches seem to depend on each other. Please post them as a
+> > proper patch series, instead of each one separately.
+> >
+> They don't depend functionality wise. Any fix can be accepted
+> regardless of others.
+> I deliberately avoided a series, because revision of just one could
+> require resending 3, otherwise
+> perfectly OK, patches. I just wanted to limit the noise.
 
-Thanks.
+You don't need to send the whole series, you can just send a revised
+patch as a reply to the older version of that patch. (see --in-reply-to
+of git send-email).
+
+Of course if you end up changing many of the patches, or one patch lots
+of times, it is good to send the whole series at some point later when
+the patches have stabilized.
+
+> I understand, 'git am' might complain but I think that should be trivial =
+to fix.
+
+I'd rather not spend time doing trivial fixes, or trying to find latest
+versions of individual patches that have dependencies. Having the
+patches in a series and replying with new versions to the older versions
+makes my life much easier. I'll see all of them in my email client in
+one bunch, properly sorted.
+
+> I am perfectly OK to resend as a patch series, if you want.
+
+Yes please.
+
+> >>  bool ti_hdmi_4xxx_detect(struct hdmi_ip_data *ip_data)
+> >>  {
+> >> -     return gpio_get_value(ip_data->hpd_gpio);
+> >> +     if (gpio_get_value(ip_data->hpd_gpio))
+> >> +             return true;
+> >> +
+> >> +     /* Invalidate EDID Cache */
+> >> +     ip_data->edid_len =3D 0;
+> >> +
+> >> +     return false;
+> >
+> > Why is this needed? The HPD interrupt should handle this already. And i=
+f
+> > the HPD interrupt doesn't work for some reason, this won't work either,
+> > as the user can plug and unplug his HDMI monitors a thousand times
+> > between two detect calls.
+> >
+> I thought it is almost impossible to unplug->plug cycle the HDMI cable
+> even twice a second, let alone 1000 times against the 10Hz .detect()
+> poll  :)    Or you mean some relay controlled HDMI switching
+> mechanism?
+
+omapdss doesn't call the detect function, so it can't presume it's used
+in some certain frequency. Also, last time I tested omapdrm, I think
+detect was called once in 5 secs or so.
+
+>  Anyways, that is not the point of this patch. This patch only aims to
+> avoid un-ncessary EDID reads while doing its best to make sure we
+> invalidate EDID 'as soon as possible'.
+
+I'm not sure I understand your point. If the HPD interrupt works
+properly, EDID is invalidated there, and the code in detect is not
+needed. And if the HPD interrupt doesn't work (although I don't see why
+it wouldn't), the code in detect doesn't work. In either case it's not
+correct.
+
+ Tomi
+
+
+--=-y28E/33xMLuTykAtRSpN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJP6B03AAoJEPo9qoy8lh71Dh4QAKojO4rVPwywmKjFZBNyvjzb
+aNrpTzQhHYXiqBxEUef1fybBGqFgE4c5cqZP8BIVyCByDY1cDqS0C8F/VxRuJSfY
+aKNZZuOgECz8bpwqI3/jBKP3x5kx6tfxiEJfaZ4lqlcrFL8GDddn8UiIAnq38WSJ
+82MRYqNklQEJR6ReVa/PjwTPU9cv/yFGNOQ5aX7p48r595HCFmMNF23z1v+fgTgW
+5o++gZbGViK8AUWVCc7eeEt73EfUWYoos8ZiNEn2fulxZp5EmnkHdyrYszNmyC0V
+18GcVeVKyxWQfozC/q8tV4T7OqDShSZ0XCwQlBhsUcyJd6C1ZYJHvGkP+9Pzggsh
+JHq6IDHXS65s6XT/bncTuwKlD//j9OWdUr/SSinJXVy8oeZe2lA0Mqjrw2TgkdNz
+lFtVOYjskTaoJzxd0uMoxEgkUsbjbRQLuulNbpQq2lgrt237uYa0nTRCuTIM0A2G
+ocIyC5fXhXrdjzHZGvS+EzKEzhHLmoYEzuXFU/+4qRgmmn5JbgWBV74EMK1tDPCH
+1K9fKFR4ag6iM3BNRRwCNM6gaQq3YkmSBQHzcFZkCLuRwM/gu7LHJUzpOs/NldqH
+sqGYIhZSf4N6tn6+5r6NhazCAfBVxhe82gRgUC7ypnR84vFr4KUeCzh7xzXcf3iz
+frTVGzaZ1O0wp6FIQFqh
+=A/Xq
+-----END PGP SIGNATURE-----
+
+--=-y28E/33xMLuTykAtRSpN--
+

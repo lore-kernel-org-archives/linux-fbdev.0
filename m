@@ -1,97 +1,62 @@
-From: Rajendra Nayak <rnayak@ti.com>
-Date: Fri, 22 Jun 2012 13:51:54 +0000
-Subject: [PATCH 05/11] OMAPDSS: add clk_prepare and clk_unprepare
-Message-Id: <1340372890-10091-6-git-send-email-rnayak@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 25 Jun 2012 06:07:58 +0000
+Subject: Re: [PATCH 05/11] OMAPDSS: add clk_prepare and clk_unprepare
+Message-Id: <1340604478.12683.25.camel@lappyti>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-PHQvJXLvB6JEmDiDIp20"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1340372890-10091-1-git-send-email-rnayak@ti.com>
-In-Reply-To: <1340372890-10091-1-git-send-email-rnayak@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <1340372890-10091-6-git-send-email-rnayak@ti.com>
+In-Reply-To: <1340372890-10091-6-git-send-email-rnayak@ti.com>
 To: linux-arm-kernel@lists.infradead.org
 
-In preparation of OMAP moving to Common Clk Framework(CCF) add clk_prepare()
-and clk_unprepare() for the omapdss clocks.
 
-Signed-off-by: Rajendra Nayak <rnayak@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: <linux-fbdev@vger.kernel.org>
----
- drivers/video/omap2/dss/dsi.c  |    5 ++++-
- drivers/video/omap2/dss/hdmi.c |    5 ++++-
- drivers/video/omap2/dss/venc.c |    5 ++++-
- 3 files changed, 12 insertions(+), 3 deletions(-)
+--=-PHQvJXLvB6JEmDiDIp20
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index ca8382d..81b474d 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -4776,6 +4776,7 @@ static int dsi_get_clocks(struct platform_device *dsidev)
- 	}
- 
- 	dsi->sys_clk = clk;
-+	clk_prepare(dsi->sys_clk);
- 
- 	return 0;
- }
-@@ -4786,8 +4787,10 @@ static void dsi_put_clocks(struct platform_device *dsidev)
- 
- 	if (dsi->dss_clk)
- 		clk_put(dsi->dss_clk);
--	if (dsi->sys_clk)
-+	if (dsi->sys_clk) {
-+		clk_unprepare(dsi->sys_clk);
- 		clk_put(dsi->sys_clk);
-+	}
- }
- 
- static void __init dsi_probe_pdata(struct platform_device *dsidev)
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 8195c71..0b7ded3 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -544,14 +544,17 @@ static int hdmi_get_clocks(struct platform_device *pdev)
- 	}
- 
- 	hdmi.sys_clk = clk;
-+	clk_prepare(hdmi.sys_clk);
- 
- 	return 0;
- }
- 
- static void hdmi_put_clocks(void)
- {
--	if (hdmi.sys_clk)
-+	if (hdmi.sys_clk) {
-+		clk_unprepare(hdmi.sys_clk);
- 		clk_put(hdmi.sys_clk);
-+	}
- }
- 
- #if defined(CONFIG_OMAP4_DSS_HDMI_AUDIO)
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 2b89739..62f395d 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -818,14 +818,17 @@ static int venc_get_clocks(struct platform_device *pdev)
- 	}
- 
- 	venc.tv_dac_clk = clk;
-+	clk_prepare(venc.tv_dac_clk);
- 
- 	return 0;
- }
- 
- static void venc_put_clocks(void)
- {
--	if (venc.tv_dac_clk)
-+	if (venc.tv_dac_clk) {
-+		clk_unprepare(venc.tv_dac_clk);
- 		clk_put(venc.tv_dac_clk);
-+	}
- }
- 
- static void __init venc_probe_pdata(struct platform_device *pdev)
--- 
-1.7.1
+Hi,
+
+On Fri, 2012-06-22 at 19:18 +0530, Rajendra Nayak wrote:
+> In preparation of OMAP moving to Common Clk Framework(CCF) add clk_prepar=
+e()
+> and clk_unprepare() for the omapdss clocks.
+
+You used clk_prepare and clk_unprepare instead of clk_prepare_enable and
+clk_disable_unprepare. I didn't check the dss driver yet, but my hunch
+is that the clocks are normally not enabled/disabled from atomic
+context.
+
+What does the prepare/unprepare actually do? Is there any benefit in
+delaying preparing, i.e. is there a difference between prepare right
+after clk_get, or prepare right before clk_enable? (And similarly for
+unprepare)
+
+ Tomi
+
+
+--=-PHQvJXLvB6JEmDiDIp20
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJP6AA+AAoJEPo9qoy8lh71n5EP+gN1Ebrhs8AecEDX61XCmmkQ
+c5QnmMDdhYoad3Gc2OxWDon4FKnjTHwm/OLN5qTr8dKUu7pYI9zsEy41D3cNID1Z
+mf4M8/dXN2TFGNek0ZSImprtpcivSael/KAP7NQTTj1A0P6GACZrdk5DOIGORGvb
+XNTynUnNSZ57q7bJlTngQP+KFOlykqSPlGqSiAKHyZJrW9k383pSxZxeFPcCe6r8
+fl9fhA8PnJ/kFUl5oeczgdgG/1R4qJIiUucY9otyIMLoRXfyO70p7a6mIYZEkI5/
+wh19jItytWQGhVU6YxMZ9pTL6cyHZMgs8BgE2jZohtSi8w5j9dVxAfOFqBKZvet2
+DEsqOC5ahI8yRvyaE9KWqBWA9Be5MmkWS10ya5SzpBSyPNeJsPsgAYrMM7JED6Aj
+Cm+G131ikoCQV6PMvdcpJUYltLyJfl0k00+FpnwX01NYmIbq/Ttyhi4si1k2ANeu
+kd/4S4c2E7PKFXtR+Bw0rTPhfgTboMIGfD+c2+Xdq25v3caBhkPnfen77z7W2i3C
+O/Dhix0g8z5pCwX9RACmOxD58AgKXodlt99ZcpWbQhDJaUaT8pz80N3NzZjF7O0b
+zgsOJdK2zVGYx4OdlyO52if+mQM5R9qnLgK92LRbfM6uK8Mi11MpaOKsgQxeYK5F
+DWksJ7La9TKpIiy0kcOX
+=Kgcs
+-----END PGP SIGNATURE-----
+
+--=-PHQvJXLvB6JEmDiDIp20--
 

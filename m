@@ -1,134 +1,110 @@
 From: Archit Taneja <archit@ti.com>
-Date: Thu, 28 Jun 2012 14:42:30 +0000
-Subject: [PATCH 01/12] MAPDSS: DISPC: Change return type of dispc_mgr_set_clock_div()
-Message-Id: <1340893842-10626-2-git-send-email-archit@ti.com>
+Date: Tue, 26 Jun 2012 09:48:45 +0000
+Subject: [PATCH 08/17] OMAPDSS: DISPC: Remove dispc_mgr_set_pol_freq()
+Message-Id: <1340703414-1915-10-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340893842-10626-1-git-send-email-archit@ti.com>
-In-Reply-To: <1340893842-10626-1-git-send-email-archit@ti.com>
+References: <1340703414-1915-1-git-send-email-archit@ti.com>
+In-Reply-To: <1340703414-1915-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: rob@ti.com, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-dipsc_mgr_set_clock div has an int return type to report errors or success.
-The function doesn't really check for errors and always returns 0. Change
-the return type to void.
+dispc_mgr_set_pol_freq() configures the fields in the register DISPC_POL_FREQo.
+All these fields have been moved to omap_video_timings struct, and are now
+programmed in dispc_mgr_set_lcd_timings(). These will be configured when timings
+are applied via dss_mgr_set_timings().
 
-Checking for the correct DISPC clock divider ranges will be done when a DSS2
-user does a manager apply. This support will be added later.
+Remove dispc_mgr_set_pol_freq() and it's calls from the interface drivers.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dispc.c |    4 +---
- drivers/video/omap2/dss/dpi.c   |   10 ++--------
- drivers/video/omap2/dss/dsi.c   |    6 +-----
- drivers/video/omap2/dss/dss.h   |    2 +-
- drivers/video/omap2/dss/sdi.c   |    5 +----
- 5 files changed, 6 insertions(+), 21 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   29 -----------------------------
+ drivers/video/omap2/dss/dpi.c   |    2 --
+ drivers/video/omap2/dss/dss.h   |    2 --
+ drivers/video/omap2/dss/sdi.c   |    2 --
+ 4 files changed, 35 deletions(-)
 
 diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 864adcc..b047fe6 100644
+index 184d37b..9b22563 100644
 --- a/drivers/video/omap2/dss/dispc.c
 +++ b/drivers/video/omap2/dss/dispc.c
-@@ -3184,15 +3184,13 @@ int dispc_calc_clock_rates(unsigned long dispc_fclk_rate,
- 	return 0;
+@@ -3113,35 +3113,6 @@ static void dispc_dump_regs(struct seq_file *s)
+ #undef DUMPREG
  }
  
--int dispc_mgr_set_clock_div(enum omap_channel channel,
-+void dispc_mgr_set_clock_div(enum omap_channel channel,
- 		struct dispc_clock_info *cinfo)
- {
- 	DSSDBG("lck = %lu (%u)\n", cinfo->lck, cinfo->lck_div);
- 	DSSDBG("pck = %lu (%u)\n", cinfo->pck, cinfo->pck_div);
- 
- 	dispc_mgr_set_lcd_divisor(channel, cinfo->lck_div, cinfo->pck_div);
+-static void _dispc_mgr_set_pol_freq(enum omap_channel channel, bool onoff,
+-		bool rf, bool ieo, bool ipc, bool ihs, bool ivs)
+-{
+-	u32 l = 0;
 -
--	return 0;
- }
- 
- int dispc_mgr_get_clock_div(enum omap_channel channel,
+-	DSSDBG("onoff %d rf %d ieo %d ipc %d ihs %d ivs %d\n",
+-			onoff, rf, ieo, ipc, ihs, ivs);
+-
+-	l |= FLD_VAL(onoff, 17, 17);
+-	l |= FLD_VAL(rf, 16, 16);
+-	l |= FLD_VAL(ieo, 15, 15);
+-	l |= FLD_VAL(ipc, 14, 14);
+-	l |= FLD_VAL(ihs, 13, 13);
+-	l |= FLD_VAL(ivs, 12, 12);
+-
+-	dispc_write_reg(DISPC_POL_FREQ(channel), l);
+-}
+-
+-void dispc_mgr_set_pol_freq(enum omap_channel channel,
+-		enum omap_panel_config config)
+-{
+-	_dispc_mgr_set_pol_freq(channel, (config & OMAP_DSS_LCD_ONOFF) != 0,
+-			(config & OMAP_DSS_LCD_RF) != 0,
+-			(config & OMAP_DSS_LCD_IEO) != 0,
+-			(config & OMAP_DSS_LCD_IPC) != 0,
+-			(config & OMAP_DSS_LCD_IHS) != 0,
+-			(config & OMAP_DSS_LCD_IVS) != 0);
+-}
+-
+ /* with fck as input clock rate, find dispc dividers that produce req_pck */
+ void dispc_find_clk_divs(unsigned long req_pck, unsigned long fck,
+ 		struct dispc_clock_info *cinfo)
 diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index 046a6fb..af01430 100644
+index d8cc440..046a6fb 100644
 --- a/drivers/video/omap2/dss/dpi.c
 +++ b/drivers/video/omap2/dss/dpi.c
-@@ -100,11 +100,7 @@ static int dpi_set_dsi_clk(struct omap_dss_device *dssdev,
+@@ -148,8 +148,6 @@ static int dpi_set_mode(struct omap_dss_device *dssdev)
+ 	unsigned long pck;
+ 	int r = 0;
  
- 	dss_select_dispc_clk_source(clks->dispc.fclk_src);
- 
--	r = dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
--	if (r) {
--		dss_select_dispc_clk_source(OMAP_DSS_CLK_SRC_FCK);
--		return r;
--	}
-+	dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
- 
- 	*fck = dsi_cinfo.dsi_pll_hsdiv_dispc_clk;
- 	*lck_div = dispc_cinfo.lck_div;
-@@ -129,9 +125,7 @@ static int dpi_set_dispc_clk(struct omap_dss_device *dssdev,
- 	if (r)
- 		return r;
- 
--	r = dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
--	if (r)
--		return r;
-+	dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
- 
- 	*fck = dss_cinfo.fck;
- 	*lck_div = dispc_cinfo.lck_div;
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 9f08787..94ff3aa 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -4456,11 +4456,7 @@ static int dsi_configure_dispc_clocks(struct omap_dss_device *dssdev,
- 		return r;
- 	}
- 
--	r = dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
--	if (r) {
--		DSSERR("Failed to set dispc clocks\n");
--		return r;
--	}
-+	dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
- 
- 	return 0;
- }
+-	dispc_mgr_set_pol_freq(dssdev->manager->id, dssdev->panel.config);
+-
+ 	if (dpi_use_dsi_pll(dssdev))
+ 		r = dpi_set_dsi_clk(dssdev, t->pixel_clock * 1000, &fck,
+ 				&lck_div, &pck_div);
 diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 20151d5..f8289e9 100644
+index d64f894..3d23a23 100644
 --- a/drivers/video/omap2/dss/dss.h
 +++ b/drivers/video/omap2/dss/dss.h
-@@ -416,7 +416,7 @@ void dispc_mgr_set_timings(enum omap_channel channel,
+@@ -414,8 +414,6 @@ void dispc_mgr_set_tft_data_lines(enum omap_channel channel, u8 data_lines);
+ void dispc_mgr_set_lcd_type_tft(enum omap_channel channel);
+ void dispc_mgr_set_timings(enum omap_channel channel,
+ 		struct omap_video_timings *timings);
+-void dispc_mgr_set_pol_freq(enum omap_channel channel,
+-		enum omap_panel_config config);
  unsigned long dispc_mgr_lclk_rate(enum omap_channel channel);
  unsigned long dispc_mgr_pclk_rate(enum omap_channel channel);
  unsigned long dispc_core_clk_rate(void);
--int dispc_mgr_set_clock_div(enum omap_channel channel,
-+void dispc_mgr_set_clock_div(enum omap_channel channel,
- 		struct dispc_clock_info *cinfo);
- int dispc_mgr_get_clock_div(enum omap_channel channel,
- 		struct dispc_clock_info *cinfo);
 diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index b44ab72..0b2659f 100644
+index 9330410..264efd5 100644
 --- a/drivers/video/omap2/dss/sdi.c
 +++ b/drivers/video/omap2/dss/sdi.c
-@@ -106,9 +106,7 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+@@ -82,8 +82,6 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
+ 
+ 	dssdev->panel.timings.hsync_vsync_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE;
+ 
+-	dispc_mgr_set_pol_freq(dssdev->manager->id, dssdev->panel.config);
+-
+ 	r = dss_calc_clock_div(t->pixel_clock * 1000, &dss_cinfo, &dispc_cinfo);
  	if (r)
- 		goto err_set_dss_clock_div;
- 
--	r = dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
--	if (r)
--		goto err_set_dispc_clock_div;
-+	dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
- 
- 	dss_sdi_init(dssdev->phy.sdi.datapairs);
- 	r = dss_sdi_enable();
-@@ -125,7 +123,6 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- err_mgr_enable:
- 	dss_sdi_disable();
- err_sdi_enable:
--err_set_dispc_clock_div:
- err_set_dss_clock_div:
- err_calc_clock_div:
- 	dispc_runtime_put();
+ 		goto err_calc_clock_div;
 -- 
 1.7.9.5
 

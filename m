@@ -1,7 +1,7 @@
 From: Archit Taneja <archit@ti.com>
-Date: Tue, 26 Jun 2012 09:48:38 +0000
-Subject: [PATCH 02/17] OMAPDSS: Remove passive matrix lcd support (part 2)
-Message-Id: <1340703414-1915-3-git-send-email-archit@ti.com>
+Date: Tue, 26 Jun 2012 09:48:39 +0000
+Subject: [PATCH 02/17] OMAPDSS: Remove passive matrix LCD support (part 2)
+Message-Id: <1340703414-1915-4-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1340703414-1915-1-git-send-email-archit@ti.com>
 In-Reply-To: <1340703414-1915-1-git-send-email-archit@ti.com>

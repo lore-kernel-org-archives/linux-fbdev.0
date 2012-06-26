@@ -1,92 +1,92 @@
 From: Archit Taneja <archit@ti.com>
-Date: Tue, 26 Jun 2012 09:48:46 +0000
-Subject: [PATCH 09/17] OMAPFB: Map the newly added omap_video_timings fields with fb sync flags
-Message-Id: <1340703414-1915-11-git-send-email-archit@ti.com>
+Date: Tue, 26 Jun 2012 09:48:36 +0000
+Subject: [PATCH 00/17] OMAPDSS: Misc DSS clean ups
+Message-Id: <1340703414-1915-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340703414-1915-1-git-send-email-archit@ti.com>
-In-Reply-To: <1340703414-1915-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
 Cc: rob@ti.com, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Use the newly added fields in omap_video_timings(hsync, vsync and data_enable
-logic levels and data, hsync and vsync latching related info) to
-configure/retrieve corresponding sync flags in fb_var_screeninfo and
-fb_videomode.
+This series does the following things:
 
-Out of the new fields, hsync_level and vsync_level can be mapped to the fb sync
-flags FB_SYNC_HOR_HIGH_ACT and FB_SYNC_VERT_HIGH_ACT.
+- Remove passive matrix LCD support: There are no panel drivers with passive
+  matrix LCD drivers in DSS2. There are no passive matrix panels even available
+  to test with DSS. Since no one is using passive matrix panels, stop trying to
+  support it. It cleans up the DSS driver.
 
-When converting fb mode to omap_video_timings, the fields which don't have an
-equivalent parameter in fb are set to  the default values.
+- Add some new fields to omap_video_timings: There were some standard panel
+  timing fields missing from omap_video_timings. Namely Hsync/Vsync/DE levels
+  and interlace. Add these to omap_video_timings to align it more with xorg
+  modeline. Add some other OMAP DSS specific fields to omap_video_timings.
 
-Signed-off-by: Archit Taneja <archit@ti.com>
----
- drivers/video/omap2/omapfb/omapfb-main.c |   24 +++++++++++++++++++++++-
- 1 file changed, 23 insertions(+), 1 deletion(-)
+- Remove some hacks done because omap_video_timings didn't have the above
+  fields.
 
-diff --git a/drivers/video/omap2/omapfb/omapfb-main.c b/drivers/video/omap2/omapfb/omapfb-main.c
-index 1dd8f2c..7c99725 100644
---- a/drivers/video/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/omap2/omapfb/omapfb-main.c
-@@ -733,6 +733,10 @@ int check_fb_var(struct fb_info *fbi, struct fb_var_screeninfo *var)
- 		var->lower_margin = timings.vfp;
- 		var->hsync_len = timings.hsw;
- 		var->vsync_len = timings.vsw;
-+		var->sync |= timings.hsync_level = OMAPDSS_SIG_ACTIVE_HIGH ?
-+				FB_SYNC_HOR_HIGH_ACT : 0;
-+		var->sync |= timings.vsync_level = OMAPDSS_SIG_ACTIVE_HIGH ?
-+				FB_SYNC_VERT_HIGH_ACT : 0;
- 	} else {
- 		var->pixclock = 0;
- 		var->left_margin = 0;
-@@ -741,11 +745,11 @@ int check_fb_var(struct fb_info *fbi, struct fb_var_screeninfo *var)
- 		var->lower_margin = 0;
- 		var->hsync_len = 0;
- 		var->vsync_len = 0;
-+		var->sync = 0;
- 	}
- 
- 	/* TODO: get these from panel->config */
- 	var->vmode              = FB_VMODE_NONINTERLACED;
--	var->sync               = 0;
- 
- 	return 0;
- }
-@@ -2053,6 +2057,15 @@ static int omapfb_mode_to_timings(const char *mode_str,
- 	timings->vsw = var->vsync_len;
- 	timings->x_res = var->xres;
- 	timings->y_res = var->yres;
-+	timings->hsync_level = var->sync & FB_SYNC_HOR_HIGH_ACT ?
-+				OMAPDSS_SIG_ACTIVE_HIGH :
-+				OMAPDSS_SIG_ACTIVE_LOW;
-+	timings->vsync_level = var->sync & FB_SYNC_VERT_HIGH_ACT ?
-+				OMAPDSS_SIG_ACTIVE_HIGH :
-+				OMAPDSS_SIG_ACTIVE_LOW;
-+	timings->pclk_edge = OMAPDSS_SIG_ACTIVE_HIGH;
-+	timings->de_level = OMAPDSS_SIG_ACTIVE_HIGH;
-+	timings->hsync_vsync_edge = OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES;
- 
- 	switch (var->bits_per_pixel) {
- 	case 16:
-@@ -2187,6 +2200,15 @@ static void fb_videomode_to_omap_timings(struct fb_videomode *m,
- 	t->vsw = m->vsync_len;
- 	t->vfp = m->lower_margin;
- 	t->vbp = m->upper_margin;
-+	t->hsync_level = m->sync & FB_SYNC_HOR_HIGH_ACT ?
-+				OMAPDSS_SIG_ACTIVE_HIGH :
-+				OMAPDSS_SIG_ACTIVE_LOW;
-+	t->vsync_level = m->sync & FB_SYNC_VERT_HIGH_ACT ?
-+				OMAPDSS_SIG_ACTIVE_HIGH :
-+				OMAPDSS_SIG_ACTIVE_LOW;
-+	t->pclk_edge = OMAPDSS_SIG_ACTIVE_HIGH;
-+	t->de_level = OMAPDSS_SIG_ACTIVE_HIGH;
-+	t->hsync_vsync_edge = OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES;
- }
- 
- static int omapfb_find_best_mode(struct omap_dss_device *display,
+A branch with the patch set:
+
+git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git dss_cleanup
+
+This tree is based on:
+
+git://gitorious.org/linux-omap-dss2/linux.git work/dss-rework-base
+
+Tested on 3430sdp, 4430spd, Pandaboard ES.
+
+Archit Taneja (17):
+  OMAPDSS: Remove passive matrix LCD support (part 1)
+  OMAPDSS: Remove passive matrix LCD support (part 2)
+  OMAPDSS: Remove passive matrix LCD support (part 3)
+  OMAPDSS: Remove passive matrix LCD support (part 4)
+  OMAPDSS: Add some new fields to omap_video_timings
+  OMAPDSS: DISPLAY: Ignore newly added omap_video_timings fields for
+    display timings sysfs file
+  OMAPDSS: DISPC: Configure newly added omap_video_timing fields
+  OMAPDSS: DISPC: Remove dispc_mgr_set_pol_freq()
+  OMAPFB: Map the newly added omap_video_timings fields with fb sync
+    flags
+  OMAPDRM: Map the newly added omap_video_timings fields with drm mode
+    flags
+  OMAPDSS: Remove omap_panel_config enum from omap_dss_device
+  OMAPDSS: Add interlace parameter to omap_video_timings
+  OMAPDSS: DISPC/APPLY: Use interlace info in manager timings for
+    dispc_ovl_setup()
+  OMAPFB: Map interlace field in omap_video_timings with fb vmode flags
+  OMAPDRM: Map interlace field in omap_video_timings with drm mode
+    flags
+  OMAPDSS: HDMI: Remove custom hdmi_video_timings struct
+  OMAPDSS: DSI: Remove redundant fields in omap_dss_dsi_videomode_data
+
+ drivers/staging/omapdrm/omap_connector.c           |   27 ++-
+ drivers/video/omap2/displays/panel-acx565akm.c     |    6 +-
+ drivers/video/omap2/displays/panel-generic-dpi.c   |  118 +++++-----
+ .../omap2/displays/panel-lgphilips-lb035q02.c      |    5 +-
+ drivers/video/omap2/displays/panel-n8x0.c          |    1 -
+ .../omap2/displays/panel-nec-nl8048hl11-01b.c      |    7 +-
+ drivers/video/omap2/displays/panel-picodlp.c       |    7 +-
+ .../video/omap2/displays/panel-sharp-ls037v7dw01.c |    6 +-
+ drivers/video/omap2/displays/panel-taal.c          |    1 -
+ drivers/video/omap2/displays/panel-tfp410.c        |    1 -
+ .../video/omap2/displays/panel-tpo-td043mtea1.c    |    6 +-
+ drivers/video/omap2/dss/apply.c                    |    6 +-
+ drivers/video/omap2/dss/dispc.c                    |  114 ++++-----
+ drivers/video/omap2/dss/display.c                  |    6 +-
+ drivers/video/omap2/dss/dpi.c                      |   39 ++--
+ drivers/video/omap2/dss/dsi.c                      |   28 ++-
+ drivers/video/omap2/dss/dss.c                      |    7 +-
+ drivers/video/omap2/dss/dss.h                      |   17 +-
+ drivers/video/omap2/dss/hdmi.c                     |  241 +++++++++++++++++---
+ drivers/video/omap2/dss/hdmi_panel.c               |    8 +-
+ drivers/video/omap2/dss/rfbi.c                     |    3 +-
+ drivers/video/omap2/dss/sdi.c                      |   11 +-
+ drivers/video/omap2/dss/ti_hdmi.h                  |   19 +-
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c          |    8 +-
+ drivers/video/omap2/dss/venc.c                     |    4 +
+ drivers/video/omap2/omapfb/omapfb-main.c           |   32 ++-
+ include/video/omapdss.h                            |   55 +++--
+ 27 files changed, 474 insertions(+), 309 deletions(-)
+
 -- 
 1.7.9.5
 

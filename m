@@ -1,80 +1,163 @@
-From: jaswinder.singh@linaro.org
-Date: Wed, 27 Jun 2012 14:16:36 +0000
-Subject: [PATCH 1/3] OMAPDSS: HDMI: Discard phy_tx_enabled member
-Message-Id: <1340805876-28696-1-git-send-email-jaswinder.singh@linaro.org>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 26 Jun 2012 09:48:40 +0000
+Subject: [PATCH 03/17] OMAPDSS: Remove passive matrix LCD support (part 3)
+Message-Id: <1340703414-1915-5-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1340703414-1915-1-git-send-email-archit@ti.com>
+In-Reply-To: <1340703414-1915-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, mythripk@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, andy.green@linaro.org, n-dechesne@ti.com, patches@linaro.org, Jassi Brar <jaswinder.singh@linaro.org>
+To: tomi.valkeinen@ti.com
+Cc: rob@ti.com, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-From: Jassi Brar <jaswinder.singh@linaro.org>
+Remove omap_lcd_display_type enum
 
-It is simpler to read the current status from a register as compared
-to maintaining a state variable to hold the information.
+The enum omap_lcd_display_type is used to configure the lcd display type in
+DISPC. Remove this enum and always set display type to TFT by creating function
+dss_mgr_set_lcd_type_tft().
 
-Signed-off-by: Jassi Brar <jaswinder.singh@linaro.org>
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/ti_hdmi.h         |    1 -
- drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |   11 ++++-------
- 2 files changed, 4 insertions(+), 8 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   23 +++--------------------
+ drivers/video/omap2/dss/dpi.c   |    4 ++--
+ drivers/video/omap2/dss/dsi.c   |    9 +++++----
+ drivers/video/omap2/dss/dss.h   |    3 +--
+ drivers/video/omap2/dss/rfbi.c  |    3 +--
+ drivers/video/omap2/dss/sdi.c   |    3 +--
+ include/video/omapdss.h         |    5 -----
+ 7 files changed, 13 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/ti_hdmi.h b/drivers/video/omap2/dss/ti_hdmi.h
-index e734cb4..d174ca1 100644
---- a/drivers/video/omap2/dss/ti_hdmi.h
-+++ b/drivers/video/omap2/dss/ti_hdmi.h
-@@ -177,7 +177,6 @@ struct hdmi_ip_data {
- 
- 	/* ti_hdmi_4xxx_ip private data. These should be in a separate struct */
- 	int hpd_gpio;
--	bool phy_tx_enabled;
- };
- int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data);
- void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data);
-diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-index 4dae1b2..3fa3d98 100644
---- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-+++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-@@ -157,6 +157,10 @@ static int hdmi_pll_init(struct hdmi_ip_data *ip_data)
- /* PHY_PWR_CMD */
- static int hdmi_set_phy_pwr(struct hdmi_ip_data *ip_data, enum hdmi_phy_pwr val)
- {
-+	/* Return if already the state */
-+	if (REG_GET(hdmi_wp_base(ip_data), HDMI_WP_PWR_CTRL, 5, 4) = val)
-+		return 0;
-+
- 	/* Command for power control of HDMI PHY */
- 	REG_FLD_MOD(hdmi_wp_base(ip_data), HDMI_WP_PWR_CTRL, val, 7, 6);
- 
-@@ -241,11 +245,6 @@ static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
- 
- 	hpd = gpio_get_value(ip_data->hpd_gpio);
- 
--	if (hpd = ip_data->phy_tx_enabled) {
--		spin_unlock_irqrestore(&phy_tx_lock, flags);
--		return 0;
--	}
--
- 	if (hpd)
- 		r = hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_TXON);
- 	else
-@@ -257,7 +256,6 @@ static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
- 		goto err;
- 	}
- 
--	ip_data->phy_tx_enabled = hpd;
- err:
- 	spin_unlock_irqrestore(&phy_tx_lock, flags);
- 	return r;
-@@ -327,7 +325,6 @@ void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data)
- 	free_irq(gpio_to_irq(ip_data->hpd_gpio), ip_data);
- 
- 	hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
--	ip_data->phy_tx_enabled = false;
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 3aa8c9c..01c81a7 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2439,29 +2439,12 @@ void dispc_mgr_enable_fifohandcheck(enum omap_channel channel, bool enable)
  }
  
- static int hdmi_core_ddc_init(struct hdmi_ip_data *ip_data)
+ 
+-void dispc_mgr_set_lcd_display_type(enum omap_channel channel,
+-		enum omap_lcd_display_type type)
++void dispc_mgr_set_lcd_type_tft(enum omap_channel channel)
+ {
+-	int mode;
+-
+-	switch (type) {
+-	case OMAP_DSS_LCD_DISPLAY_STN:
+-		mode = 0;
+-		break;
+-
+-	case OMAP_DSS_LCD_DISPLAY_TFT:
+-		mode = 1;
+-		break;
+-
+-	default:
+-		BUG();
+-		return;
+-	}
+-
+ 	if (channel = OMAP_DSS_CHANNEL_LCD2)
+-		REG_FLD_MOD(DISPC_CONTROL2, mode, 3, 3);
++		REG_FLD_MOD(DISPC_CONTROL2, 1, 3, 3);
+ 	else
+-		REG_FLD_MOD(DISPC_CONTROL, mode, 3, 3);
++		REG_FLD_MOD(DISPC_CONTROL, 1, 3, 3);
+ }
+ 
+ void dispc_set_loadmode(enum omap_dss_load_mode mode)
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index e21955c..018be20 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -180,8 +180,8 @@ static void dpi_basic_init(struct omap_dss_device *dssdev)
+ 	dispc_mgr_set_io_pad_mode(DSS_IO_PAD_MODE_BYPASS);
+ 	dispc_mgr_enable_stallmode(dssdev->manager->id, false);
+ 
+-	dispc_mgr_set_lcd_display_type(dssdev->manager->id,
+-			OMAP_DSS_LCD_DISPLAY_TFT);
++	dispc_mgr_set_lcd_type_tft(dssdev->manager->id);
++
+ 	dispc_mgr_set_tft_data_lines(dssdev->manager->id,
+ 			dssdev->phy.dpi.data_lines);
+ }
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 0eb5452..061bf53 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -4383,10 +4383,11 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
+ 		dss_mgr_set_timings(dssdev->manager, &dssdev->panel.timings);
+ 	}
+ 
+-		dispc_mgr_set_lcd_display_type(dssdev->manager->id,
+-			OMAP_DSS_LCD_DISPLAY_TFT);
+-		dispc_mgr_set_tft_data_lines(dssdev->manager->id,
+-			dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt));
++	dispc_mgr_set_lcd_type_tft(dssdev->manager->id);
++
++	dispc_mgr_set_tft_data_lines(dssdev->manager->id,
++		dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt));
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index d33df16..ffbff49 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -411,8 +411,7 @@ bool dispc_mgr_is_channel_enabled(enum omap_channel channel);
+ void dispc_mgr_set_io_pad_mode(enum dss_io_pad_mode mode);
+ void dispc_mgr_enable_stallmode(enum omap_channel channel, bool enable);
+ void dispc_mgr_set_tft_data_lines(enum omap_channel channel, u8 data_lines);
+-void dispc_mgr_set_lcd_display_type(enum omap_channel channel,
+-		enum omap_lcd_display_type type);
++void dispc_mgr_set_lcd_type_tft(enum omap_channel channel);
+ void dispc_mgr_set_timings(enum omap_channel channel,
+ 		struct omap_video_timings *timings);
+ void dispc_mgr_set_pol_freq(enum omap_channel channel,
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 3d8c206..45084d8 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -885,8 +885,7 @@ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
+ 		goto err1;
+ 	}
+ 
+-	dispc_mgr_set_lcd_display_type(dssdev->manager->id,
+-			OMAP_DSS_LCD_DISPLAY_TFT);
++	dispc_mgr_set_lcd_type_tft(dssdev->manager->id);
+ 
+ 	dispc_mgr_set_io_pad_mode(DSS_IO_PAD_MODE_RFBI);
+ 	dispc_mgr_enable_stallmode(dssdev->manager->id, true);
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+index d07ecc4..1a369de 100644
+--- a/drivers/video/omap2/dss/sdi.c
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -40,8 +40,7 @@ static void sdi_basic_init(struct omap_dss_device *dssdev)
+ 	dispc_mgr_set_io_pad_mode(DSS_IO_PAD_MODE_BYPASS);
+ 	dispc_mgr_enable_stallmode(dssdev->manager->id, false);
+ 
+-	dispc_mgr_set_lcd_display_type(dssdev->manager->id,
+-			OMAP_DSS_LCD_DISPLAY_TFT);
++	dispc_mgr_set_lcd_type_tft(dssdev->manager->id);
+ 
+ 	dispc_mgr_set_tft_data_lines(dssdev->manager->id, 24);
+ 	dispc_lcd_enable_signal_polarity(1);
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index e3b7dd1..b9a180f 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -99,11 +99,6 @@ enum omap_color_mode {
+ 	OMAP_DSS_COLOR_XRGB16_1555	= 1 << 18, /* xRGB16 - 1555 */
+ };
+ 
+-enum omap_lcd_display_type {
+-	OMAP_DSS_LCD_DISPLAY_STN,
+-	OMAP_DSS_LCD_DISPLAY_TFT,
+-};
+-
+ enum omap_dss_load_mode {
+ 	OMAP_DSS_LOAD_CLUT_AND_FRAME	= 0,
+ 	OMAP_DSS_LOAD_CLUT_ONLY		= 1,
 -- 
-1.7.4.1
+1.7.9.5
 

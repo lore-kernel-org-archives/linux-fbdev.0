@@ -1,76 +1,46 @@
-From: jaswinder.singh@linaro.org
-Date: Sat, 23 Jun 2012 08:19:18 +0000
-Subject: [PATCH] OMAPDSS: HDMI: Replace spinlock with mutex in hdmi_check_hpd_state
-Message-Id: <1340438838-25692-1-git-send-email-jaswinder.singh@linaro.org>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 26 Jun 2012 09:48:43 +0000
+Subject: [PATCH 06/17] OMAPDSS: DISPLAY: Ignore newly added omap_video_timings fields for display timings sys
+Message-Id: <1340703414-1915-8-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1340703414-1915-1-git-send-email-archit@ti.com>
+In-Reply-To: <1340703414-1915-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, mythripk@ti.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, andy.green@linaro.org, n-dechesne@ti.com, Jassi Brar <jaswinder.singh@linaro.org>
+To: tomi.valkeinen@ti.com
+Cc: rob@ti.com, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-From: Jassi Brar <jaswinder.singh@linaro.org>
+The display sysfs file for viewing/storing display timings is something which
+will be deprecated. The new omap_video_timings fields (hsync_level, vsync_level
+and others) are not configurable or viewable via this sysfs file.
 
-State change of HDMI PHY could potentially take many millisecs, we can do
-better by protecting things in hdmi_set_phy_pwr() with a mutex rather than
-a spin_lock_irqsave.
+This prevents the need to make the input more configurable to take the new
+fields and at the same time work without these fields for backward
+compatibility.
 
-Signed-off-by: Jassi Brar <jaswinder.singh@linaro.org>
+In display_timings_store, the omap_video_timings struct used to set the timings
+is initialized to the existing panel timings so that the new fields are taken in
+correctly. The other fields are taken from the user as before.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/hdmi.c            |    1 +
- drivers/video/omap2/dss/ti_hdmi.h         |    1 +
- drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |    6 ++----
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/video/omap2/dss/display.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 8195c71..0738090 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -758,6 +758,7 @@ static int __init omapdss_hdmihw_probe(struct platform_device *pdev)
- 	hdmi.ip_data.core_av_offset = HDMI_CORE_AV;
- 	hdmi.ip_data.pll_offset = HDMI_PLLCTRL;
- 	hdmi.ip_data.phy_offset = HDMI_PHY;
-+	mutex_init(&hdmi.ip_data.lock);
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index 37d6504..1d8198e 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -116,7 +116,7 @@ static ssize_t display_timings_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t size)
+ {
+ 	struct omap_dss_device *dssdev = to_dss_device(dev);
+-	struct omap_video_timings t;
++	struct omap_video_timings t = dssdev->panel.timings;
+ 	int r, found;
  
- 	hdmi_panel_init();
- 
-diff --git a/drivers/video/omap2/dss/ti_hdmi.h b/drivers/video/omap2/dss/ti_hdmi.h
-index d174ca1..cc292b8 100644
---- a/drivers/video/omap2/dss/ti_hdmi.h
-+++ b/drivers/video/omap2/dss/ti_hdmi.h
-@@ -177,6 +177,7 @@ struct hdmi_ip_data {
- 
- 	/* ti_hdmi_4xxx_ip private data. These should be in a separate struct */
- 	int hpd_gpio;
-+	struct mutex lock;
- };
- int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data);
- void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data);
-diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-index 3fa3d98..04acca9 100644
---- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-+++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
-@@ -238,10 +238,8 @@ static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
- 	unsigned long flags;
- 	bool hpd;
- 	int r;
--	/* this should be in ti_hdmi_4xxx_ip private data */
--	static DEFINE_SPINLOCK(phy_tx_lock);
- 
--	spin_lock_irqsave(&phy_tx_lock, flags);
-+	mutex_lock(&ip_data->lock);
- 
- 	hpd = gpio_get_value(ip_data->hpd_gpio);
- 
-@@ -257,7 +255,7 @@ static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
- 	}
- 
- err:
--	spin_unlock_irqrestore(&phy_tx_lock, flags);
-+	mutex_unlock(&ip_data->lock);
- 	return r;
- }
- 
+ 	if (!dssdev->driver->set_timings || !dssdev->driver->check_timings)
 -- 
-1.7.4.1
+1.7.9.5
 

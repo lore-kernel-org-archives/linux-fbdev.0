@@ -1,88 +1,83 @@
-From: Jassi Brar <jaswinder.singh@linaro.org>
-Date: Mon, 25 Jun 2012 17:18:23 +0000
+From: Rajendra Nayak <rnayak@ti.com>
+Date: Tue, 26 Jun 2012 04:55:15 +0000
 Subject: Re: [PATCH] OMAPDSS: Check if RPM enabled before trying to change state
-Message-Id: <CAJe_ZheHoCikVzy6zJoKHuL8_oQ0ZnPASUUWimvbPRr+AZ4zWg@mail.gmail.com>
+Message-Id: <4FE93FB9.3080705@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340438771-25587-1-git-send-email-jaswinder.singh@linaro.org>
-	<1340605221.12683.30.camel@lappyti>
-	<CAJe_Zhf-H0dLtFsFAcryDy3av60RjmWmP+d3GSaxq8dNZKiXWw@mail.gmail.com>
-	<1340616643.3395.19.camel@deskari>
-	<CAJe_ZhftuNggxH+269-ZJbWJo5nSzSjo1dDCTQGMbsjPWoUpyg@mail.gmail.com>
-	<1340628094.3395.63.camel@deskari>
-	<CAJe_ZhetdEwrgDEfV9rLHU1_fmb3O+954hCKcoENBgQ6Bi6BXQ@mail.gmail.com>
-	<1340632161.3395.100.camel@deskari>
-In-Reply-To: <1340632161.3395.100.camel@deskari>
+References: <1340438771-25587-1-git-send-email-jaswinder.singh@linaro.org>		 <1340605221.12683.30.camel@lappyti>		 <CANOLnOOodXtqV7Hs-SsEUfB3Uo1PSGb8bkaeN7M48jVpQrb-cA@mail.gmail.com>	 <1340627459.3395.54.camel@deskari> <4FE85CCA.80903@ti.com> <1340628648.3395.69.camel@deskari>
+In-Reply-To: <1340628648.3395.69.camel@deskari>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: mythripk@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, andy.green@linaro.org, n-dechesne@ti.com
+Cc: Grazvydas Ignotas <notasas@gmail.com>, jaswinder.singh@linaro.org, mythripk@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, andy.green@linaro.org, n-dechesne@ti.com
 
-On 25 June 2012 19:19, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On Mon, 2012-06-25 at 19:01 +0530, Jassi Brar wrote:
-
->> > /* this accesses a register, but the HW is disabled? */
->> > dispc_read_reg(FOO);
->> >
->> .... the H/W is already always enabled if CONFIG_PM_RUNTIME is not defin=
-ed.
+On Monday 25 June 2012 06:20 PM, Tomi Valkeinen wrote:
+> On Mon, 2012-06-25 at 18:12 +0530, Rajendra Nayak wrote:
+>> On Monday 25 June 2012 06:00 PM, Tomi Valkeinen wrote:
+>>> On Mon, 2012-06-25 at 15:05 +0300, Grazvydas Ignotas wrote:
+>>>> On Mon, Jun 25, 2012 at 9:20 AM, Tomi Valkeinen<tomi.valkeinen@ti.com>   wrote:
+>>>>> On Sat, 2012-06-23 at 13:36 +0530, jaswinder.singh@linaro.org wrote:
+>>>>>>
+>>>>>>    Currenlty HDMI fails to come up in the suspend-resume path.
+>>>>>> This patch helps that real-world scenario.
+>>>>>
+>>>>> What is the problem there? It'd be good to explain the problem in the
+>>>>> patch description. Does the pm_runtime_get return -EACCES?
+>>>>
+>>>> On slightly different but related issue, currently OMAPDSS always
+>>>> spits lots of backtraces when it's compiled without CONFIG_PM_RUNTIME,
+>>>> because pm_runtime_put* always return -ENOSYS without
+>>>> CONFIG_PM_RUNTIME. So something like this patch proposes is needed, or
+>>>> maybe WARN_ON should check for -ENOSYS, I don't know..
+>>>
+>>> Hmm. I guess I'm missing some understanding about runtime PM. omapdss
+>>> uses runtime PM to enable the underlying DSS hardware. If there's no
+>>> runtime PM, how does the driver work? Or is it the job of
+>>> hwmod/omap_device to keep all the hardware always enabled if runtime PM
+>>> is not compiled in?
 >>
->> If CONFIG_PM_RUNTIME is indeed defined, =A0pm_runtime_enabled() will
->> always return true after pm_runtime_enable() =A0unless someone disables
->> it explicitly - omapdss or the RPM stack(during suspend/resume).
->> OMAPDSS never does so in the lifetime of a driver. =A0So the only period
->> in which pm_runtime_enabled() returns false, is when the platform is
->> suspending, suspended or resuming.
->
-> Right. So what happens in my example above?
->
-> Normally if the driver does dispc_runtime_get() and dispc_read_reg(),
-> the first call will enable the HW so the reg read works.
->
-> But if the pm_runtime is disabled, say, during system suspend, with your
-> patch dispc_runtime_get() will just return 0 without doing anything, and
-> the dispc_read_reg() will crash because the HW is disabled (because
-> nobody enabled it).
->
-Hmm, I am not sure if new calls would/should be made to dispc.c after
-the system has suspended and before resumed. That is, anything other
-than from runtime_resume/suspend callbacks of DSS, DISPC, HDMI, VENC
-and RFBI, which rightly don't touch any dss reg but only
-enable/disable a clock.
-As we know, a subsystem should make sure any active work is cleared
-out before suspending and set some flag so that nothing runs until it
-has resumed. I don't say we can't crash the system with this patch,
-but then we would be violating rules of suspend-resume.
-
-
+>> Yes, the below trick keeps all hwmods always enabled post the initial
+>> setup if runtime PM is disabled.
 >>
->> As I said, for omapdss, PM is disabled (not device deactivated) only
->> during rpm suspend/resume.
->> And it should be no different than any lock protected section
->> preempted by suspend-resume before reaching its end.
+>> from arch/arm/mach-omap2/io.c
+>>
+>> static void __init omap_hwmod_init_postsetup(void)
+>> {
+>>           u8 postsetup_state;
+>>
+>>           /* Set the default postsetup state for all hwmods */
+>> #ifdef CONFIG_PM_RUNTIME
+>>           postsetup_state = _HWMOD_STATE_IDLE;
+>> #else
+>>           postsetup_state = _HWMOD_STATE_ENABLED;
+>> #endif
+>>           omap_hwmod_for_each(_set_hwmod_postsetup_state,&postsetup_state);
+>>
+>>           omap_pm_if_early_init();
+>> }
 >
-> I'm not sure if I understand... If the driver does dispc_runtime_get()
-> while the PM is disabled, say, during system resume, dispc_runtime_get()
-> will do nothing and return 0. The driver thinks it succeeded, and will
-> call dispc_runtime_put() later.
+> Ah, ok, thanks.
 >
-> Calling the dispc_runtime_put() could happen very soon, while runtime PM
-> is still disabled, in which case everything works fine. But there's no
-> rule to say dispc_runtime_put() has to be called very soon after
-> dispc_runtime_get(). The driver might as well call put later, when
-> runtime PM is enabled.
->
-> This would end up with a pm_runtime_put call without a matching
-> pm_runtime_get call.
->
-Again, we need to see if there is really some situation where
-something new is attempted before the subsystem has resumed. If there
-is indeed, maybe omapdss need to flag it's suspended and prevent such
-thing until it has resumed.
-Btw, even without this patch, when dispc_runtime_get() does return
-error under rpm disabled, we disturb the dev.power.usage_count balance
-by not calling dispc_runtime_put()
-This patch doesn't make everything perfect, but only improve upon the
-current situation.
+> Do you know how the drivers should handle CONFIG_PM_RUNTIME=n?
+> Are they supposed to handle the error values returned by runtime PM
+> functions somehow, or should they use #ifdef CONFIG_PM_RUNTIME?
 
-thnx
+hmm, I always though with CONFIG_RUNTIME_PM=n, the functions would
+be stubbed to return success and not failure. And the _pm_runtime_resume
+function indeed seems to return 1, which is not failure but just saying
+that your device is already active/enabled.
+The _pm_runtime_suspend and _pm_runtime_idle do return a -ENOSYS, which
+is something only returned when CONFIG_RUNTIME_PM=n, so if you really
+want to handle failing pm_runtime_put_sync cases, maybe you still can.
+But then, I don't know if there is anything you can do to recover from
+a failing pm_runtime_put_sync, except for warning the user maybe.
+
+>
+> Both options sound a bit difficult to me... With the first one it's
+> difficult to see if there was an actual error and we should somehow
+> react to it, or is everything fine and we just shouldn't care about
+> runtime PM. The second one requires ifdefs in many places.
+>
+>   Tomi
+>
+

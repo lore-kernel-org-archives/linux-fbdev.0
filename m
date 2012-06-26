@@ -1,101 +1,165 @@
-From: Jassi Brar <jaswinder.singh@linaro.org>
-Date: Tue, 26 Jun 2012 10:09:19 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 26 Jun 2012 12:03:33 +0000
 Subject: Re: [PATCH] OMAPDSS: Check if RPM enabled before trying to change state
-Message-Id: <CAJe_Zhd-LA67yO-H_7pacB_T8_z6=Zf47QuoHSJcsXDZ9S+byw@mail.gmail.com>
+Message-Id: <1340712213.24530.21.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-wOob5e3g/4W3l9hX3cK8"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1340438771-25587-1-git-send-email-jaswinder.singh@linaro.org>
-	<1340605221.12683.30.camel@lappyti>
-	<CAJe_Zhf-H0dLtFsFAcryDy3av60RjmWmP+d3GSaxq8dNZKiXWw@mail.gmail.com>
-	<1340616643.3395.19.camel@deskari>
-	<CAJe_ZhftuNggxH+269-ZJbWJo5nSzSjo1dDCTQGMbsjPWoUpyg@mail.gmail.com>
-	<1340628094.3395.63.camel@deskari>
-	<CAJe_ZhetdEwrgDEfV9rLHU1_fmb3O+954hCKcoENBgQ6Bi6BXQ@mail.gmail.com>
-	<1340632161.3395.100.camel@deskari>
-	<CAJe_ZheHoCikVzy6zJoKHuL8_oQ0ZnPASUUWimvbPRr+AZ4zWg@mail.gmail.com>
-	<1340695166.2093.22.camel@lappyti>
-	<CAJe_Zhev3V85K1jhj+W+d+0kv132MZ=-7rChhCLgtWO7WN4u1w@mail.gmail.com>
-	<1340701660.24530.17.camel@deskari>
-In-Reply-To: <1340701660.24530.17.camel@deskari>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+	 <1340605221.12683.30.camel@lappyti>
+	 <CAJe_Zhf-H0dLtFsFAcryDy3av60RjmWmP+d3GSaxq8dNZKiXWw@mail.gmail.com>
+	 <1340616643.3395.19.camel@deskari>
+	 <CAJe_ZhftuNggxH+269-ZJbWJo5nSzSjo1dDCTQGMbsjPWoUpyg@mail.gmail.com>
+	 <1340628094.3395.63.camel@deskari>
+	 <CAJe_ZhetdEwrgDEfV9rLHU1_fmb3O+954hCKcoENBgQ6Bi6BXQ@mail.gmail.com>
+	 <1340632161.3395.100.camel@deskari>
+	 <CAJe_ZheHoCikVzy6zJoKHuL8_oQ0ZnPASUUWimvbPRr+AZ4zWg@mail.gmail.com>
+	 <1340695166.2093.22.camel@lappyti>
+	 <CAJe_Zhev3V85K1jhj+W+d+0kv132MZ=-7rChhCLgtWO7WN4u1w@mail.gmail.com>
+	 <1340701660.24530.17.camel@deskari>
+	 <CAJe_Zhd-LA67yO-H_7pacB_T8_z6=Zf47QuoHSJcsXDZ9S+byw@mail.gmail.com>
+In-Reply-To: <CAJe_Zhd-LA67yO-H_7pacB_T8_z6=Zf47QuoHSJcsXDZ9S+byw@mail.gmail.com>
+To: Jassi Brar <jaswinder.singh@linaro.org>
 Cc: mythripk@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, andy.green@linaro.org, n-dechesne@ti.com
 
-On 26 June 2012 14:37, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On Tue, 2012-06-26 at 14:02 +0530, Jassi Brar wrote:
->
->> Something non-omapdss in vanilla breaks suspend/resume.
->
-> I was able to reproduce (probably) the same issue with omap3 overo. Does
-> this looks familiar:
->
-> [ 2267.140197] ------------[ cut here ]------------
-> [ 2267.145172] WARNING: at drivers/video/omap2/dss/dispc.c:377 dispc_runt=
-ime_get+0x60/0x7c [omapdss]
-> ()
-> [ 2267.154846] Modules linked in: omapfb panel_generic_dpi omapdss cfbimg=
-blt cfbfillrect cfbcopyarea
-> =A0[last unloaded: omapdss]
-> [ 2267.166595] [<c001b61c>] (unwind_backtrace+0x0/0xf0) from [<c0040238>]=
- (warn_slowpath_common+0x4c
-> /0x64)
-> [ 2267.176605] [<c0040238>] (warn_slowpath_common+0x4c/0x64) from [<c0040=
-26c>] (warn_slowpath_null+0
-> x1c/0x24)
-> [ 2267.186859] [<c004026c>] (warn_slowpath_null+0x1c/0x24) from [<bf0d791=
-8>] (dispc_runtime_get+0x60
-> /0x7c [omapdss])
-> [ 2267.197814] [<bf0d7918>] (dispc_runtime_get+0x60/0x7c [omapdss]) from =
-[<bf0e3148>] (omapdss_dpi_d
-> isplay_enable+0x48/0x230 [omapdss])
-> [ 2267.210479] [<bf0e3148>] (omapdss_dpi_display_enable+0x48/0x230 [omapd=
-ss]) from [<bf110034>] (gen
-> eric_dpi_panel_check_timings+0x30/0x7c [panel_generic_dpi])
-> [ 2267.225311] [<bf110034>] (generic_dpi_panel_check_timings+0x30/0x7c [p=
-anel_generic_dpi]) from [<b
-> f11008c>] (generic_dpi_panel_resume+0xc/0x1c [panel_generic_dpi])
-> [ 2267.240722] [<bf11008c>] (generic_dpi_panel_resume+0xc/0x1c [panel_gen=
-eric_dpi]) from [<bf0de654>
-> ] (dss_resume_device+0x28/0x40 [omapdss])
-> [ 2267.253936] [<bf0de654>] (dss_resume_device+0x28/0x40 [omapdss]) from =
-[<c02bfb94>] (bus_for_each_
-> dev+0x50/0x7c)
-> [ 2267.264678] [<c02bfb94>] (bus_for_each_dev+0x50/0x7c) from [<c02c287c>=
-] (platform_pm_resume+0x2c/
-> 0x50)
-> [ 2267.274566] [<c02c287c>] (platform_pm_resume+0x2c/0x50) from [<c02c6da=
-8>] (dpm_run_callback.clone
-> .7+0x30/0xb0)
-> [ 2267.285186] [<c02c6da8>] (dpm_run_callback.clone.7+0x30/0xb0) from [<c=
-02c7b2c>] (device_resume+0x
-> c8/0x188)
-> [ 2267.295471] [<c02c7b2c>] (device_resume+0xc8/0x188) from [<c02c7f54>] =
-(dpm_resume+0xfc/0x21c)
-> [ 2267.304534] [<c02c7f54>] (dpm_resume+0xfc/0x21c) from [<c02c8208>] (dp=
-m_resume_end+0xc/0x18)
-> [ 2267.313507] [<c02c8208>] (dpm_resume_end+0xc/0x18) from [<c007fbcc>] (=
-suspend_devices_and_enter+0
-> x15c/0x2d0)
-> [ 2267.323913] [<c007fbcc>] (suspend_devices_and_enter+0x15c/0x2d0) from =
-[<c007fecc>] (pm_suspend+0x
-> 18c/0x208)
-> [ 2267.334259] [<c007fecc>] (pm_suspend+0x18c/0x208) from [<c007f170>] (s=
-tate_store+0x120/0x134)
-> [ 2267.343292] [<c007f170>] (state_store+0x120/0x134) from [<c0262850>] (=
-kobj_attr_store+0x14/0x20)
-> [ 2267.352661] [<c0262850>] (kobj_attr_store+0x14/0x20) from [<c0169b6c>]=
- (sysfs_write_file+0x100/0x
-> 184)
-> [ 2267.362457] [<c0169b6c>] (sysfs_write_file+0x100/0x184) from [<c010900=
-8>] (vfs_write+0xb4/0x148)
-> [ 2267.371795] [<c0109008>] (vfs_write+0xb4/0x148) from [<c0109290>] (sys=
-_write+0x40/0x70)
-> [ 2267.380310] [<c0109290>] (sys_write+0x40/0x70) from [<c0013d60>] (ret_=
-fast_syscall+0x0/0x3c)
-> [ 2267.389282] ---[ end trace 54fe7eea726ac84d ]---
-> [ 2267.394592] dpm_run_callback(): platform_pm_resume+0x0/0x50 returns -13
-> [ 2267.401641] PM: Device omapdss failed to resume: error -13
->
-Seems similar, but I only tested OMAP4 HDMI.
-thanks.
+
+--=-wOob5e3g/4W3l9hX3cK8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 2012-06-26 at 15:27 +0530, Jassi Brar wrote:
+
+> Seems similar, but I only tested OMAP4 HDMI.
+
+Would something like this one below work for you? It fixes the issues on
+my overo board.
+
+Instead of using omapdss device's suspend/resume callbacks, this one
+uses PM notifier calls which happen before suspend and after resume.
+
+I still think the suspend handling is wrong, omapdss shouldn't be
+enabling and disabling panel devices like that, but this one should
+remove the biggest issues with the current suspend method.
+
+ Tomi
+
+diff --git a/drivers/video/omap2/dss/core.c b/drivers/video/omap2/dss/core.=
+c
+index 5066eee..c35a248 100644
+--- a/drivers/video/omap2/dss/core.c
++++ b/drivers/video/omap2/dss/core.c
+@@ -32,6 +32,7 @@
+ #include <linux/io.h>
+ #include <linux/device.h>
+ #include <linux/regulator/consumer.h>
++#include <linux/suspend.h>
+=20
+ #include <video/omapdss.h>
+=20
+@@ -201,6 +202,30 @@ int dss_debugfs_create_file(const char *name, void (*w=
+rite)(struct seq_file *))
+ #endif /* CONFIG_DEBUG_FS && CONFIG_OMAP2_DSS_DEBUG_SUPPORT */
+=20
+ /* PLATFORM DEVICE */
++static int omap_dss_pm_notif(struct notifier_block *b, unsigned long v, vo=
+id *d)
++{
++	DSSDBG("pm notif %lu\n", v);
++
++	switch (v)
++	{
++	case PM_SUSPEND_PREPARE:
++		DSSDBG("suspending displays\n");
++		return dss_suspend_all_devices();
++
++	case PM_POST_SUSPEND:
++		DSSDBG("resuming displays\n");
++		return dss_resume_all_devices();
++
++	default:
++		return 0;
++	}
++}
++
++static struct notifier_block omap_dss_pm_notif_block =3D
++{
++	.notifier_call =3D omap_dss_pm_notif,
++};
++
+ static int __init omap_dss_probe(struct platform_device *pdev)
+ {
+ 	struct omap_dss_board_info *pdata =3D pdev->dev.platform_data;
+@@ -224,6 +249,8 @@ static int __init omap_dss_probe(struct platform_device=
+ *pdev)
+ 	else if (pdata->default_device)
+ 		core.default_display_name =3D pdata->default_device->name;
+=20
++	register_pm_notifier(&omap_dss_pm_notif_block);
++
+ 	return 0;
+=20
+ err_debugfs:
+@@ -233,6 +260,8 @@ err_debugfs:
+=20
+ static int omap_dss_remove(struct platform_device *pdev)
+ {
++	unregister_pm_notifier(&omap_dss_pm_notif_block);
++
+ 	dss_uninitialize_debugfs();
+=20
+ 	dss_uninit_overlays(pdev);
+@@ -247,25 +276,9 @@ static void omap_dss_shutdown(struct platform_device *=
+pdev)
+ 	dss_disable_all_devices();
+ }
+=20
+-static int omap_dss_suspend(struct platform_device *pdev, pm_message_t sta=
+te)
+-{
+-	DSSDBG("suspend %d\n", state.event);
+-
+-	return dss_suspend_all_devices();
+-}
+-
+-static int omap_dss_resume(struct platform_device *pdev)
+-{
+-	DSSDBG("resume\n");
+-
+-	return dss_resume_all_devices();
+-}
+-
+ static struct platform_driver omap_dss_driver =3D {
+ 	.remove         =3D omap_dss_remove,
+ 	.shutdown	=3D omap_dss_shutdown,
+-	.suspend	=3D omap_dss_suspend,
+-	.resume		=3D omap_dss_resume,
+ 	.driver         =3D {
+ 		.name   =3D "omapdss",
+ 		.owner  =3D THIS_MODULE,
+
+
+--=-wOob5e3g/4W3l9hX3cK8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJP6aUVAAoJEPo9qoy8lh71UqgP/1HUJB13m/k3gSoPH56hi7rZ
+T4kOhcewwl/bfcc9gdbPwd/HihrX9ncDy6jJ9VX6+8Xl3hnM9cG2p9LJ8PzcR5wt
+A83VIsDmszSxu6zwkD2fDiOMmlhxHeMBoKQkEs+qYVWYGAPdcugRRvm22wfmCPzD
+d3tJlCrp9TUu8wJWFr0EQQq9Js1v8pDJ51nxRMFbr7BeK5Ti1iPKVvTza+Y5Xzuc
+eno8zD9a1ov8Z0lXdAao98zdQZmB2FwPhRnVcg3jJG9RsiMR2Ynw1unFf8l2OhaV
+9BZ57FOiA667ScfBf3nJtboxsAdqg0U6OFtsfYCGCrAEDdPUaez41KZh7Y7/REe5
+o3Qze99MgCOyYumxvkY0KJfMfuxOS+B4p9r6CjAeF4/cvJrS9sg6tyqYN6w173af
+Y+/9zhObeg1Ma9ca3tjmdiDc6zCDaDtetCH8AXq0VtxkHTTmwE2+aRZQ+iFzG5Xj
+P/GWJ+RgKjg2KEzV62QIsQcy82y2ap636n3fwia+VaybEwThGHxN+FDKNdVL+uTe
+BclZ3tRQQKTyfL3K4yQDN9ygmzwRXtnzRIPu3Z3TyR28xFuScgOAYvVTxSw0Ieyg
+iSq1zwZqYqA9NTD4r9YpeBQIk4ojvOe1/2Txuqk+7HfBPU1qXCvWh20MVcDLngmF
+dpDzYZF1rfAyGaKJFv2P
+=N7pl
+-----END PGP SIGNATURE-----
+
+--=-wOob5e3g/4W3l9hX3cK8--
+

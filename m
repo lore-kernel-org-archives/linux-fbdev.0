@@ -1,112 +1,72 @@
-From: Liu Ying <Ying.Liu@freescale.com>
-Date: Mon, 11 Jun 2012 01:06:49 +0000
-Subject: [PATCH 2/3] mx3fb: support pan display with fb_set_var
-Message-Id: <1339376810-8247-2-git-send-email-Ying.Liu@freescale.com>
+From: Archit Taneja <archit@ti.com>
+Date: Tue, 26 Jun 2012 09:48:47 +0000
+Subject: [PATCH 10/17] OMAPDRM: Map the newly added omap_video_timings fields with drm mode flags
+Message-Id: <1340703414-1915-12-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1339376810-8247-1-git-send-email-Ying.Liu@freescale.com>
-In-Reply-To: <1339376810-8247-1-git-send-email-Ying.Liu@freescale.com>
+References: <1340703414-1915-1-git-send-email-archit@ti.com>
+In-Reply-To: <1340703414-1915-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: rob@ti.com, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Users may call FBIOPUT_VSCREENINFO ioctrl to do pan display.
-This ioctrl relies on fb_set_var() to do the job. fb_set_var()
-calls the custom fb_set_par() method and then calls the custom
-fb_pan_display() method. Before calling the custom fb_pan_display()
-method, info->var is already updated from the new *var in fb_set_var().
-And, the custom fb_pan_display() method checks if xoffset and yoffset
-in info->var and the new *var are different before doing actual panning,
-which prevents the panning from happening within fb_set_var() context.
-This patch caches the current var info locally in mx3fb driver so that
-pan display with fb_set_var is supported.
+Use the newly added fields in omap_video_timings(hsync, vsync and data_enable
+logic levels and data, hsync and vsync latching related info) to
+configure/retrieve corresponding drm mode flags in drm_display_mode.
 
-Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
+Out of the new fields, hsync_level and vsync_level can be mapped to the drm mode
+flags DRM_MODE_FLAG_PHSYNC, DRM_MODE_FLAG_NHSYNC, DRM_MODE_FLAG_PVSYNC and
+DRM_MODE_FLAG_NVSYNC
+
+When converting drm mode to omap_video_timings, the fields which don't have an
+equivalent parameter in drm mode are set to the default values.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/mx3fb.c |   33 ++++++++++++++++++++++++++-------
- 1 files changed, 26 insertions(+), 7 deletions(-)
+ drivers/staging/omapdrm/omap_connector.c |   22 +++++++++++++++-------
+ 1 file changed, 15 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-index d53db60..2dd11c4 100644
---- a/drivers/video/mx3fb.c
-+++ b/drivers/video/mx3fb.c
-@@ -268,7 +268,7 @@ struct mx3fb_info {
- 	dma_cookie_t			cookie;
- 	struct scatterlist		sg[2];
+diff --git a/drivers/staging/omapdrm/omap_connector.c b/drivers/staging/omapdrm/omap_connector.c
+index 5e2856c..157f6ec 100644
+--- a/drivers/staging/omapdrm/omap_connector.c
++++ b/drivers/staging/omapdrm/omap_connector.c
+@@ -48,13 +48,11 @@ static inline void copy_timings_omap_to_drm(struct drm_display_mode *mode,
+ 	mode->vsync_end = mode->vsync_start + timings->vsw;
+ 	mode->vtotal = mode->vsync_end + timings->vbp;
  
--	u32				sync;	/* preserve var->sync flags */
-+	struct fb_var_screeninfo	cur_var; /* current var info */
- };
- 
- static void mx3fb_dma_done(void *);
-@@ -723,7 +723,7 @@ static void mx3fb_dma_done(void *arg)
- 
- static int __set_par(struct fb_info *fbi, bool lock)
- {
--	u32 mem_len;
-+	u32 mem_len, cur_xoffset, cur_yoffset;
- 	struct ipu_di_signal_cfg sig_cfg;
- 	enum ipu_panel mode = IPU_PANEL_TFT;
- 	struct mx3fb_info *mx3_fbi = fbi->par;
-@@ -805,8 +805,25 @@ static int __set_par(struct fb_info *fbi, bool lock)
- 	video->out_height	= fbi->var.yres;
- 	video->out_stride	= fbi->var.xres_virtual;
- 
--	if (mx3_fbi->blank = FB_BLANK_UNBLANK)
-+	if (mx3_fbi->blank = FB_BLANK_UNBLANK) {
- 		sdc_enable_channel(mx3_fbi);
-+		/*
-+		 * sg[0] points to fb smem_start address
-+		 * and is actually active in controller.
-+		 */
-+		mx3_fbi->cur_var.xoffset = 0;
-+		mx3_fbi->cur_var.yoffset = 0;
-+	}
+-	/* note: whether or not it is interlaced, +/- h/vsync, etc,
+-	 * which should be set in the mode flags, is not exposed in
+-	 * the omap_video_timings struct.. but hdmi driver tracks
+-	 * those separately so all we have to have to set the mode
+-	 * is the way to recover these timings values, and the
+-	 * omap_dss_driver would do the rest.
+-	 */
++	mode->flags |= timings->hsync_level = OMAPDSS_SIG_ACTIVE_HIGH ?
++			DRM_MODE_FLAG_PHSYNC : DRM_MODE_FLAG_NHSYNC;
 +
-+	/*
-+	 * Preserve xoffset and yoffest in case they are
-+	 * inactive in controller as fb is blanked.
-+	 */
-+	cur_xoffset = mx3_fbi->cur_var.xoffset;
-+	cur_yoffset = mx3_fbi->cur_var.yoffset;
-+	mx3_fbi->cur_var = fbi->var;
-+	mx3_fbi->cur_var.xoffset = cur_xoffset;
-+	mx3_fbi->cur_var.yoffset = cur_yoffset;
- 
- 	return 0;
++	mode->flags |= timings->vsync_level = OMAPDSS_SIG_ACTIVE_HIGH ?
++			DRM_MODE_FLAG_PVSYNC : DRM_MODE_FLAG_NVSYNC;
  }
-@@ -926,8 +943,8 @@ static int mx3fb_check_var(struct fb_var_screeninfo *var, struct fb_info *fbi)
- 	var->grayscale = 0;
  
- 	/* Preserve sync flags */
--	var->sync |= mx3_fbi->sync;
--	mx3_fbi->sync |= var->sync;
-+	var->sync |= mx3_fbi->cur_var.sync;
-+	mx3_fbi->cur_var.sync |= var->sync;
- 
- 	return 0;
- }
-@@ -1073,8 +1090,8 @@ static int mx3fb_pan_display(struct fb_var_screeninfo *var,
- 		return -EINVAL;
- 	}
- 
--	if (fbi->var.xoffset = var->xoffset &&
--	    fbi->var.yoffset = var->yoffset)
-+	if (mx3_fbi->cur_var.xoffset = var->xoffset &&
-+	    mx3_fbi->cur_var.yoffset = var->yoffset)
- 		return 0;	/* No change, do nothing */
- 
- 	y_bottom = var->yoffset;
-@@ -1157,6 +1174,8 @@ static int mx3fb_pan_display(struct fb_var_screeninfo *var,
- 	else
- 		fbi->var.vmode &= ~FB_VMODE_YWRAP;
- 
-+	mx3_fbi->cur_var = fbi->var;
+ static inline void copy_timings_drm_to_omap(struct omap_video_timings *timings,
+@@ -71,6 +69,16 @@ static inline void copy_timings_drm_to_omap(struct omap_video_timings *timings,
+ 	timings->vfp = mode->vsync_start - mode->vdisplay;
+ 	timings->vsw = mode->vsync_end - mode->vsync_start;
+ 	timings->vbp = mode->vtotal - mode->vsync_end;
 +
- 	mutex_unlock(&mx3_fbi->mutex);
++	timings->hsync_level = mode->flags & DRM_MODE_FLAG_PHSYNC ?
++			OMAPDSS_SIG_ACTIVE_HIGH : OMAPDSS_SIG_ACTIVE_LOW;
++
++	timings->vsync_level = mode->flags & DRM_MODE_FLAG_PVSYNC ?
++			OMAPDSS_SIG_ACTIVE_HIGH : OMAPDSS_SIG_ACTIVE_LOW;
++
++	timings->pclk_edge = OMAPDSS_SIG_ACTIVE_HIGH;
++	timings->de_level = OMAPDSS_SIG_ACTIVE_HIGH;
++	timings->hsync_vsync_edge = OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES;
+ }
  
- 	dev_dbg(fbi->device, "Update complete\n");
+ static void omap_connector_dpms(struct drm_connector *connector, int mode)
 -- 
-1.7.1
-
+1.7.9.5
 

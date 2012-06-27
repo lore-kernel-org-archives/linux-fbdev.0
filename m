@@ -1,45 +1,52 @@
-From: Rajendra Nayak <rnayak@ti.com>
-Date: Tue, 26 Jun 2012 07:48:38 +0000
+From: Mike Turquette <mturquette@ti.com>
+Date: Wed, 27 Jun 2012 00:47:10 +0000
 Subject: Re: [PATCH 05/11] OMAPDSS: add clk_prepare and clk_unprepare
-Message-Id: <4FE96686.6000002@ti.com>
+Message-Id: <20120627004709.GA22766@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340372890-10091-1-git-send-email-rnayak@ti.com>				
- <1340372890-10091-6-git-send-email-rnayak@ti.com>			
- <1340604478.12683.25.camel@lappyti> <4FE80C43.6090802@ti.com>		
- <1340611133.3395.3.camel@deskari> <4FE85005.4090303@ti.com>	
- <1340630090.3395.85.camel@deskari> <4FE941EA.7050108@ti.com>
- <1340693758.2093.15.camel@lappyti>
-In-Reply-To: <1340693758.2093.15.camel@lappyti>
+References: <1340372890-10091-1-git-send-email-rnayak@ti.com>
+ <1340372890-10091-6-git-send-email-rnayak@ti.com>
+ <1340604478.12683.25.camel@lappyti> <4FE80C43.6090802@ti.com>
+ <1340611133.3395.3.camel@deskari> <4FE85005.4090303@ti.com>
+ <1340630090.3395.85.camel@deskari>
+In-Reply-To: <1340630090.3395.85.camel@deskari>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Tuesday 26 June 2012 12:25 PM, Tomi Valkeinen wrote:
-> On Tue, 2012-06-26 at 10:30 +0530, Rajendra Nayak wrote:
->
->>> So as far as I see, clocks are never handled in atomic context. Is
->>> everything related to the base clk stuff already in mainline? Can I take
->>> the clk_prepare/unprepare patch into my omapdss tree?
->>
->> Well the Common Clk framework is already in mainline, but we still don;t
->> have CONFIG_COMMON_CLK enabled for our builds yet. So until we do so,
->> clk_prepare/unprepare will just be stubs which do nothing.
->
-> But if I understood correctly, clk_prepare and clk_unprepare are anyway
-> no-ops with dss clocks, even when CONFIG_COMMON_CLK is enabled?
+On 20120625-16:14, Tomi Valkeinen wrote:
+> A question about clk_prepare/unprepare, not directly related: let's say
+> I have a driver for some HW block. The driver doesn't use clk functions,
+> but uses runtime PM. The driver also sets pm_runtime_irq_safe().
+> 
+> Now, the driver can call pm_runtime_get_sync() in an atomic context, and
+> this would lead to the underlying framework (hwmod, omap_device, I don't
+> know who =) enabling the func clock for that HW. But this would happen
+> in atomic context, so the underlying framework can't use clk_prepare.
+> 
+> How does the underlying framework handle that case? (sorry if that's a
+> stupid question =).
+> 
 
-With CONFIG_COMMON_CLK enabled, they will do prepare use-counting with
-a mutex lock/unlock around it.
+I think it's a good question!
 
->
-> My point was only to understand if I can safely take the patch into
-> omapdss tree, instead of it going through l-o, to avoid any possible
-> conflicts.
+If we're going to call clk_prepare_enable from within a runtime pm
+callback then I think we'll need to check if _irq_safe() is set and
+conditionally call only clk_enable in such a case.
 
-yes, I don't see any issues with it going through dss tree.
+I'm not a runtime pm expert, but if the driver owns the responsibility
+of calling pm_runtime_irq_safe then the driver has the proper context
+to know that it should call clk_prepare BEFORE calling
+pm_runtime_get_sync.
 
->
->   Tomi
->
+However if some other framework (outside of the driver) calls
+pm_runtime_irq_safe then it will be difficult for the driver to know
+what to do...
+
+Regards,
+Mike
+
+>  Tomi
+> 
+
 

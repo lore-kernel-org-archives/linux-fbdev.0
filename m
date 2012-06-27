@@ -1,84 +1,80 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 28 Jun 2012 14:42:34 +0000
-Subject: [PATCH 04/12] OMAPDSS: RFBI: Configure dss_lcd_mgr_config struct with lcd manager parameters
-Message-Id: <1340893842-10626-6-git-send-email-archit@ti.com>
+From: jaswinder.singh@linaro.org
+Date: Wed, 27 Jun 2012 14:16:36 +0000
+Subject: [PATCH 1/3] OMAPDSS: HDMI: Discard phy_tx_enabled member
+Message-Id: <1340805876-28696-1-git-send-email-jaswinder.singh@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340893842-10626-1-git-send-email-archit@ti.com>
-In-Reply-To: <1340893842-10626-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: tomi.valkeinen@ti.com, mythripk@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, andy.green@linaro.org, n-dechesne@ti.com, patches@linaro.org, Jassi Brar <jaswinder.singh@linaro.org>
 
-Create a dss_lcd_mgr_config struct instance in RFBI. Fill up all the parameters
-of the struct with configurations held by the panel, and the configurations
-required by RFBI.
+From: Jassi Brar <jaswinder.singh@linaro.org>
 
-Use these to write to the DISPC registers. These direct register writes would be
-later replaced by a function which applies the configuration using the shadow
-register programming model.
+It is simpler to read the current status from a register as compared
+to maintaining a state variable to hold the information.
 
-Create function rfbi_config_lcd_manager() which fills up the mgr_config
-parameters and writes to the DISPC regs.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Jassi Brar <jaswinder.singh@linaro.org>
 ---
- drivers/video/omap2/dss/rfbi.c |   34 ++++++++++++++++++++++++++++------
- 1 file changed, 28 insertions(+), 6 deletions(-)
+ drivers/video/omap2/dss/ti_hdmi.h         |    1 -
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |   11 ++++-------
+ 2 files changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index 45084d8..847f694 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -859,6 +859,33 @@ static void rfbi_dump_regs(struct seq_file *s)
- #undef DUMPREG
- }
+diff --git a/drivers/video/omap2/dss/ti_hdmi.h b/drivers/video/omap2/dss/ti_hdmi.h
+index e734cb4..d174ca1 100644
+--- a/drivers/video/omap2/dss/ti_hdmi.h
++++ b/drivers/video/omap2/dss/ti_hdmi.h
+@@ -177,7 +177,6 @@ struct hdmi_ip_data {
  
-+static void rfbi_config_lcd_manager(struct omap_dss_device *dssdev)
-+{
-+	struct dss_lcd_mgr_config mgr_config;
-+
-+	mgr_config.io_pad_mode = DSS_IO_PAD_MODE_RFBI;
-+
-+	mgr_config.stallmode = true;
-+	/* Do we need fifohandcheck for RFBI? */
-+	mgr_config.fifohandcheck = false;
-+
-+	mgr_config.video_port_width = dssdev->ctrl.pixel_size;
-+	mgr_config.lcden_sig_polarity = 0;
-+
-+	dispc_mgr_set_io_pad_mode(mgr_config.io_pad_mode);
-+
-+	dispc_mgr_enable_stallmode(dssdev->manager->id, mgr_config.stallmode);
-+	dispc_mgr_enable_fifohandcheck(dssdev->manager->id,
-+			mgr_config.fifohandcheck);
-+
-+	dispc_mgr_set_tft_data_lines(dssdev->manager->id,
-+			mgr_config.video_port_width);
-+
-+	dispc_lcd_enable_signal_polarity(mgr_config.lcden_sig_polarity);
-+
-+	dispc_mgr_set_lcd_type_tft(dssdev->manager->id);
-+}
-+
- int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
+ 	/* ti_hdmi_4xxx_ip private data. These should be in a separate struct */
+ 	int hpd_gpio;
+-	bool phy_tx_enabled;
+ };
+ int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data);
+ void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data);
+diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+index 4dae1b2..3fa3d98 100644
+--- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
++++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+@@ -157,6 +157,10 @@ static int hdmi_pll_init(struct hdmi_ip_data *ip_data)
+ /* PHY_PWR_CMD */
+ static int hdmi_set_phy_pwr(struct hdmi_ip_data *ip_data, enum hdmi_phy_pwr val)
  {
- 	int r;
-@@ -885,12 +912,7 @@ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
- 		goto err1;
++	/* Return if already the state */
++	if (REG_GET(hdmi_wp_base(ip_data), HDMI_WP_PWR_CTRL, 5, 4) = val)
++		return 0;
++
+ 	/* Command for power control of HDMI PHY */
+ 	REG_FLD_MOD(hdmi_wp_base(ip_data), HDMI_WP_PWR_CTRL, val, 7, 6);
+ 
+@@ -241,11 +245,6 @@ static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
+ 
+ 	hpd = gpio_get_value(ip_data->hpd_gpio);
+ 
+-	if (hpd = ip_data->phy_tx_enabled) {
+-		spin_unlock_irqrestore(&phy_tx_lock, flags);
+-		return 0;
+-	}
+-
+ 	if (hpd)
+ 		r = hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_TXON);
+ 	else
+@@ -257,7 +256,6 @@ static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
+ 		goto err;
  	}
  
--	dispc_mgr_set_lcd_type_tft(dssdev->manager->id);
--
--	dispc_mgr_set_io_pad_mode(DSS_IO_PAD_MODE_RFBI);
--	dispc_mgr_enable_stallmode(dssdev->manager->id, true);
--
--	dispc_mgr_set_tft_data_lines(dssdev->manager->id, dssdev->ctrl.pixel_size);
-+	rfbi_config_lcd_manager(dssdev);
+-	ip_data->phy_tx_enabled = hpd;
+ err:
+ 	spin_unlock_irqrestore(&phy_tx_lock, flags);
+ 	return r;
+@@ -327,7 +325,6 @@ void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data)
+ 	free_irq(gpio_to_irq(ip_data->hpd_gpio), ip_data);
  
- 	rfbi_configure(dssdev->phy.rfbi.channel,
- 			       dssdev->ctrl.pixel_size,
+ 	hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_OFF);
+-	ip_data->phy_tx_enabled = false;
+ }
+ 
+ static int hdmi_core_ddc_init(struct hdmi_ip_data *ip_data)
 -- 
-1.7.9.5
+1.7.4.1
 

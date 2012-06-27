@@ -1,88 +1,55 @@
-From: Rajendra Nayak <rnayak@ti.com>
-Date: Wed, 27 Jun 2012 08:55:22 +0000
-Subject: [PATCH v2] OMAPDSS: add clk_prepare and clk_unprepare
-Message-Id: <1340787086-29619-1-git-send-email-rnayak@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 27 Jun 2012 10:42:27 +0000
+Subject: Re: [PATCH v2] OMAPDSS: add clk_prepare and clk_unprepare
+Message-Id: <1340793747.2649.32.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-yyNgSXk7Jgw6QdwPiAnW"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+References: <1340787086-29619-1-git-send-email-rnayak@ti.com>
+In-Reply-To: <1340787086-29619-1-git-send-email-rnayak@ti.com>
+To: Rajendra Nayak <rnayak@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Paul Walmsley <paul@pwsan.com>, Mike Turquette <mturquette@linaro.org>
+
+
+--=-yyNgSXk7Jgw6QdwPiAnW
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2012-06-27 at 14:21 +0530, Rajendra Nayak wrote:
+> In preparation of OMAP moving to Common Clk Framework(CCF) add clk_prepar=
+e()
+> and clk_unprepare() for the omapdss clocks.
+
+Looks fine, and works fine with a quick test.
+
+I'll update the subject and desc to match the use of clk_prepare_enable
+and clk_disable_unprepare, and apply this to omapdss tree.
+
+ Tomi
+
+
+--=-yyNgSXk7Jgw6QdwPiAnW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org
-Cc: Rajendra Nayak <rnayak@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Paul Walmsley <paul@pwsan.com>, Mike Turquette <mturquette@linaro.org>
 
-In preparation of OMAP moving to Common Clk Framework(CCF) add clk_prepare()
-and clk_unprepare() for the omapdss clocks.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-Signed-off-by: Rajendra Nayak <rnayak@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: <linux-fbdev@vger.kernel.org>
-Cc: Paul Walmsley <paul@pwsan.com>
-Cc: Mike Turquette <mturquette@linaro.org>
----
- drivers/video/omap2/dss/dsi.c  |    4 ++--
- drivers/video/omap2/dss/hdmi.c |    4 ++--
- drivers/video/omap2/dss/venc.c |    4 ++--
- 3 files changed, 6 insertions(+), 6 deletions(-)
+iQIcBAABAgAGBQJP6uOTAAoJEPo9qoy8lh71vIQQAJFS0kgaRaorT2BF/vhCd8j1
+UsEipLqleNCR97qF93ucoYZgU6pa0QL1qlgoyae98XuR1YdvVrjupCLhiyomwqRv
+KGhqT9+4cnjakr/IMfQp/ghHc4BPj+x39A4gH2p/t/knEU/Wr+uUl+ejK0lcrR5j
+lunYlNm0xSEHCwR+icNSerVLuQqS5oxd15kSMhEhHFaTRARmZ7WvGrpEtBN0vr9T
+IAm8SG0HZ2Yc6cIIJCneKcuwvea3Xlx7d657X7ojqBovN5VfZuZaYvtP/rZo3GzR
+sLXxICY3ivggQ8AbY3XuAoUoaPLLq23SnGOHttSuDnpovhlLb0GbDXXocXbcjq1w
+DwR74i/+IG8dDjnnB3JZ1/eJ9n5u21azx3jNKdK7XY1xz408G7QU7LU1BJdKshKC
+g3qgSDXW1bFiYJIgK9SM0HY6A9kjcSc7IsemiYdfCOx+wh/+CzOI8K+Qz5IDLbU7
+LwAWTEUKzcn2Xq8SVyq8de0SXydEVMeC/1jmDmmtZqwjVIds7fRD05ohElnodTcj
+iY0jjy5n7v8pl4xtQK+EdMhlDZtM7LbWeZiM/bh9TX4dn14H//SxxljAj2fyTFXe
+t3Ef33MnenTTcgtwbotulzBheyT3TeDT188LcRI/JbKZQECCz61vVDP5U7ajEjvD
+n3o9Nhftev7/n4l5i3F+
+=mv3c
+-----END PGP SIGNATURE-----
 
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index ca8382d..423ef6a 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -1085,9 +1085,9 @@ static inline void dsi_enable_pll_clock(struct platform_device *dsidev,
- 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
- 
- 	if (enable)
--		clk_enable(dsi->sys_clk);
-+		clk_prepare_enable(dsi->sys_clk);
- 	else
--		clk_disable(dsi->sys_clk);
-+		clk_disable_unprepare(dsi->sys_clk);
- 
- 	if (enable && dsi->pll_locked) {
- 		if (wait_for_bit_change(dsidev, DSI_PLL_STATUS, 1, 1) != 1)
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 8195c71..b9424b3 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -785,7 +785,7 @@ static int __exit omapdss_hdmihw_remove(struct platform_device *pdev)
- 
- static int hdmi_runtime_suspend(struct device *dev)
- {
--	clk_disable(hdmi.sys_clk);
-+	clk_disable_unprepare(hdmi.sys_clk);
- 
- 	dispc_runtime_put();
- 
-@@ -800,7 +800,7 @@ static int hdmi_runtime_resume(struct device *dev)
- 	if (r < 0)
- 		return r;
- 
--	clk_enable(hdmi.sys_clk);
-+	clk_prepare_enable(hdmi.sys_clk);
- 
- 	return 0;
- }
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 2b89739..fd37440 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -930,7 +930,7 @@ static int __exit omap_venchw_remove(struct platform_device *pdev)
- static int venc_runtime_suspend(struct device *dev)
- {
- 	if (venc.tv_dac_clk)
--		clk_disable(venc.tv_dac_clk);
-+		clk_disable_unprepare(venc.tv_dac_clk);
- 
- 	dispc_runtime_put();
- 
-@@ -946,7 +946,7 @@ static int venc_runtime_resume(struct device *dev)
- 		return r;
- 
- 	if (venc.tv_dac_clk)
--		clk_enable(venc.tv_dac_clk);
-+		clk_prepare_enable(venc.tv_dac_clk);
- 
- 	return 0;
- }
--- 
-1.7.1
+--=-yyNgSXk7Jgw6QdwPiAnW--
 

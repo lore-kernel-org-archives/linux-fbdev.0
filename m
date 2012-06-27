@@ -1,62 +1,76 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Date: Wed, 27 Jun 2012 16:22:38 +0000
-Subject: Re: [PATCH, RFC] displaymodes in devicetree
-Message-Id: <20120627162238.GS1623@pengutronix.de>
+From: jaswinder.singh@linaro.org
+Date: Wed, 27 Jun 2012 14:16:56 +0000
+Subject: [PATCH 2/3] OMAPDSS: HDMI: Replace spinlock with mutex in hdmi_check_hpd_state
+Message-Id: <1340805896-28731-1-git-send-email-jaswinder.singh@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120627124313.GI1623@pengutronix.de>
- <4FEB31CC.2060705@firmworks.com>
-In-Reply-To: <4FEB31CC.2060705-D5eQfiDGL7eakBO8gow8eQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mitch Bradley <wmb-D5eQfiDGL7eakBO8gow8eQ@public.gmane.org>
-Cc: kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
+To: tomi.valkeinen@ti.com, mythripk@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, andy.green@linaro.org, n-dechesne@ti.com, patches@linaro.org, Jassi Brar <jaswinder.singh@linaro.org>
 
-On Wed, Jun 27, 2012 at 06:16:12AM -1000, Mitch Bradley wrote:
-> On 6/27/2012 2:43 AM, Sascha Hauer wrote:
-> >Hi All,
-> >
-> >I'd like to have a possibility to describe fixed display modes in the
-> >devicetree. This topic has been discussed before here:
-> >
-> >https://lists.ozlabs.org/pipermail/linuxppc-dev/2010-February/080683.html
-> >
-> >The result at that time was that EDID data should be considered to use
-> >as this is a format that already exists. I want to come back to this
-> >topic since:
-> >
-> >- EDID data is a binary format and as such quite inconvenient to handle.
-> >   There exist several tools to parse EDID data, but I'm not aware of any
-> >   (open source) tool which can generate EDID data.
-> >- EDID blobs are hard to modify and hard to review in patches.
-> >- EDID is designed to describe multiple modes, but fixed displays
-> >   usually only support a single fixed mode.
-> >
-> >There are several ways of describing the mode, for this patch I chose to
-> >use the format (and naming) used by the Linux Framebuffer Layer as this
-> >is the only description which does not allow for inconsistent modes. I
-> >added the most common flags like [v|h]sync_active_high. Others can be
-> >added, but these flags are pretty much agreed upon and won't be
-> >superseeded with other flags. The mode from the devicetree can be
-> >converted to the most common modes used in Linux, struct fb_videomode
-> >and struct drm_display_mode.
-> >
-> >Comments welcome
-> 
-> 
-> I like the general approach and the set of names.  The separators
-> inside the names should be hyphen (-) not underscore (_), following
-> the usual device tree convention.  The rationale for that convention
-> is to follow natural-language usage, not the identifier constraints
-> of programming languages based on algebraic expressions.
+From: Jassi Brar <jaswinder.singh@linaro.org>
 
-Good to hear that this is the convention for devicetree, I like
-hyphens better aswell. Will change.
+State change of HDMI PHY could potentially take many millisecs, we can do
+better by protecting things in hdmi_set_phy_pwr() with a mutex rather than
+a spin_lock_irqsave.
 
-Sascha
+Signed-off-by: Jassi Brar <jaswinder.singh@linaro.org>
+---
+ drivers/video/omap2/dss/hdmi.c            |    1 +
+ drivers/video/omap2/dss/ti_hdmi.h         |    1 +
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |    6 ++----
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 8195c71..0738090 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -758,6 +758,7 @@ static int __init omapdss_hdmihw_probe(struct platform_device *pdev)
+ 	hdmi.ip_data.core_av_offset = HDMI_CORE_AV;
+ 	hdmi.ip_data.pll_offset = HDMI_PLLCTRL;
+ 	hdmi.ip_data.phy_offset = HDMI_PHY;
++	mutex_init(&hdmi.ip_data.lock);
+ 
+ 	hdmi_panel_init();
+ 
+diff --git a/drivers/video/omap2/dss/ti_hdmi.h b/drivers/video/omap2/dss/ti_hdmi.h
+index d174ca1..cc292b8 100644
+--- a/drivers/video/omap2/dss/ti_hdmi.h
++++ b/drivers/video/omap2/dss/ti_hdmi.h
+@@ -177,6 +177,7 @@ struct hdmi_ip_data {
+ 
+ 	/* ti_hdmi_4xxx_ip private data. These should be in a separate struct */
+ 	int hpd_gpio;
++	struct mutex lock;
+ };
+ int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data);
+ void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data);
+diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+index 3fa3d98..04acca9 100644
+--- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
++++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+@@ -238,10 +238,8 @@ static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
+ 	unsigned long flags;
+ 	bool hpd;
+ 	int r;
+-	/* this should be in ti_hdmi_4xxx_ip private data */
+-	static DEFINE_SPINLOCK(phy_tx_lock);
+ 
+-	spin_lock_irqsave(&phy_tx_lock, flags);
++	mutex_lock(&ip_data->lock);
+ 
+ 	hpd = gpio_get_value(ip_data->hpd_gpio);
+ 
+@@ -257,7 +255,7 @@ static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
+ 	}
+ 
+ err:
+-	spin_unlock_irqrestore(&phy_tx_lock, flags);
++	mutex_unlock(&ip_data->lock);
+ 	return r;
+ }
+ 
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+1.7.4.1
+

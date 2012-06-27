@@ -1,56 +1,98 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 24 Jun 2012 21:01:49 +0000
-Subject: Re: [PULL for v3.6] SH Mobile LCDC fixes and planes support
-Message-Id: <4FE7803D.8020108@gmx.de>
+From: jaswinder.singh@linaro.org
+Date: Wed, 27 Jun 2012 14:17:44 +0000
+Subject: [PATCH 3/3] OMAPDSS: HDMI: Cache EDID
+Message-Id: <1340805944-28805-1-git-send-email-jaswinder.singh@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <3246665.HJN7RE5zfe@avalon>
-In-Reply-To: <3246665.HJN7RE5zfe@avalon>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com, mythripk@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, andy.green@linaro.org, n-dechesne@ti.com, patches@linaro.org, Jassi Brar <jaswinder.singh@linaro.org>
 
-On 06/20/2012 08:31 AM, Laurent Pinchart wrote:
-> Hi Florian,
-> 
-> On Wednesday 20 June 2012 01:01:31 Florian Tobias Schandinat wrote:
->> On 06/16/2012 02:07 PM, Laurent Pinchart wrote:
->>> Hi Florian,
->>>
->>> Could you please pull the following LCDC patches ?
->>
->> looks good, except...
->>
->>> The following changes since commit 
-> b67989515defba7412acff01162e5bb1f0f5923a:
->>>   video: s3c-fb: fix possible division by zero in s3c_fb_calc_pixclk
->>>
->>> (2012-06-13 17:34:16 +0000)
->>>
->>> are available in the git repository at:
->>>   git://linuxtv.org/pinchartl/fbdev.git planes
->>>
->>> Guennadi Liakhovetski (1):
->>>       fbdev: sh_mipi_dsi: fix a section mismatch
->>>
->>> Laurent Pinchart (4):
->>>       fbdev: sh_mobile_lcdc: Don't confuse line size with pitch
->>
->> ...for this patch it would have been better if you based your work on a
->> more recent tree of Linus that already contains it instead of asking me
->> to pull it again [I now forwarded my fbdev-next to -rc3]. It's not a big
->> issue as git handles such situations but pushing patches around that are
->> essentially nops should be avoided I think. Well, if you decide to fix
->> it I'd be happy, otherwise I'll pull this in a few days nonetheless.
-> 
-> Sorry about that. I've rebased the branch on top of the latest fbdev-next and 
-> pushed it to git://linuxtv.org/pinchartl/fbdev.git planes, that no-op patches 
-> isn't present anymore.
+From: Jassi Brar <jaswinder.singh@linaro.org>
 
-Merged.
+We can easily keep track of latest EDID from the display and hence avoid
+expensive EDID re-reads over I2C.
+This could also help some cheapo displays that provide EDID reliably only
+immediately after asserting HPD and not later.
+Even with good displays, there is something in OMAPDSS that apparantly
+messes up DDC occasionally while EDID is being read, giving the
+  "operation stopped when reading edid" error.
 
+Signed-off-by: Jassi Brar <jaswinder.singh@linaro.org>
+---
+ drivers/video/omap2/dss/hdmi.c            |    1 +
+ drivers/video/omap2/dss/ti_hdmi.h         |    2 ++
+ drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c |   15 +++++++++++++--
+ 3 files changed, 16 insertions(+), 2 deletions(-)
 
-Thanks,
-
-Florian Tobias Schandinat
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 0738090..9853621 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -758,6 +758,7 @@ static int __init omapdss_hdmihw_probe(struct platform_device *pdev)
+ 	hdmi.ip_data.core_av_offset = HDMI_CORE_AV;
+ 	hdmi.ip_data.pll_offset = HDMI_PLLCTRL;
+ 	hdmi.ip_data.phy_offset = HDMI_PHY;
++	hdmi.ip_data.edid_len = 0; /* Invalidate EDID Cache */
+ 	mutex_init(&hdmi.ip_data.lock);
+ 
+ 	hdmi_panel_init();
+diff --git a/drivers/video/omap2/dss/ti_hdmi.h b/drivers/video/omap2/dss/ti_hdmi.h
+index cc292b8..4735860 100644
+--- a/drivers/video/omap2/dss/ti_hdmi.h
++++ b/drivers/video/omap2/dss/ti_hdmi.h
+@@ -178,6 +178,8 @@ struct hdmi_ip_data {
+ 	/* ti_hdmi_4xxx_ip private data. These should be in a separate struct */
+ 	int hpd_gpio;
+ 	struct mutex lock;
++	u8 edid_cached[256];
++	unsigned edid_len;
+ };
+ int ti_hdmi_4xxx_phy_enable(struct hdmi_ip_data *ip_data);
+ void ti_hdmi_4xxx_phy_disable(struct hdmi_ip_data *ip_data);
+diff --git a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+index 04acca9..b5c3dc4 100644
+--- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
++++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
+@@ -243,10 +243,13 @@ static int hdmi_check_hpd_state(struct hdmi_ip_data *ip_data)
+ 
+ 	hpd = gpio_get_value(ip_data->hpd_gpio);
+ 
+-	if (hpd)
++	if (hpd) {
+ 		r = hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_TXON);
+-	else
++	} else {
++		/* Invalidate EDID Cache */
++		ip_data->edid_len = 0;
+ 		r = hdmi_set_phy_pwr(ip_data, HDMI_PHYPWRCMD_LDOON);
++	}
+ 
+ 	if (r) {
+ 		DSSERR("Failed to %s PHY TX power\n",
+@@ -454,6 +457,11 @@ int ti_hdmi_4xxx_read_edid(struct hdmi_ip_data *ip_data,
+ {
+ 	int r, l;
+ 
++	if (ip_data->edid_len) {
++		memcpy(edid, ip_data->edid_cached, ip_data->edid_len);
++		return ip_data->edid_len;
++	}
++
+ 	if (len < 128)
+ 		return -EINVAL;
+ 
+@@ -474,6 +482,9 @@ int ti_hdmi_4xxx_read_edid(struct hdmi_ip_data *ip_data,
+ 		l += 128;
+ 	}
+ 
++	ip_data->edid_len = l;
++	memcpy(ip_data->edid_cached, edid, l);
++
+ 	return l;
+ }
+ 
+-- 
+1.7.4.1
 

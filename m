@@ -1,81 +1,92 @@
-From: Archit Taneja <a0393947@ti.com>
-Date: Wed, 27 Jun 2012 12:30:32 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 27 Jun 2012 12:31:14 +0000
 Subject: Re: [PATCH 17/17] OMAPDSS: DSI: Remove redundant fields in omap_dss_dsi_videomode_data
-Message-Id: <4FEAFA18.3070908@ti.com>
+Message-Id: <1340800274.2649.64.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-nL3LSRCfKuhJs3mlenTJ"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340703414-1915-1-git-send-email-archit@ti.com>  <1340703414-1915-19-git-send-email-archit@ti.com> <1340798746.2649.51.camel@deskari>
-In-Reply-To: <1340798746.2649.51.camel@deskari>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <1340703414-1915-1-git-send-email-archit@ti.com>
+	  <1340703414-1915-19-git-send-email-archit@ti.com>
+	 <1340798746.2649.51.camel@deskari> <4FEAFA18.3070908@ti.com>
+In-Reply-To: <4FEAFA18.3070908@ti.com>
+To: Archit Taneja <a0393947@ti.com>
 Cc: rob@ti.com, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Wednesday 27 June 2012 05:35 PM, Tomi Valkeinen wrote:
-> On Tue, 2012-06-26 at 15:06 +0530, Archit Taneja wrote:
->> The struct omap_dss_dsi_videomode_data holds polaritiy/logic level information
->> of the DISPC video port signals DE, HSYNC and VSYNC. This information already
->> exists in the omap_video_timings struct.
->>
->> Use the fields in omap_video_timings to program VP_DE_POL, VP_HSYNC_POL and
->> VP_VSYNC_POL in DSI_CTRL. Remove the redundant fields in
->> omap_dss_dsi_videomode_data.
->>
->> Signed-off-by: Archit Taneja<archit@ti.com>
->> ---
->>   drivers/video/omap2/dss/dsi.c |   11 ++++++++---
->>   include/video/omapdss.h       |    3 ---
->>   2 files changed, 8 insertions(+), 6 deletions(-)
->>
->> diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
->> index 061bf53..3844430 100644
->> --- a/drivers/video/omap2/dss/dsi.c
->> +++ b/drivers/video/omap2/dss/dsi.c
->> @@ -3628,13 +3628,18 @@ static void dsi_config_vp_num_line_buffers(struct omap_dss_device *dssdev)
->>   static void dsi_config_vp_sync_events(struct omap_dss_device *dssdev)
->>   {
->>   	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
->> -	int de_pol = dssdev->panel.dsi_vm_data.vp_de_pol;
->> -	int hsync_pol = dssdev->panel.dsi_vm_data.vp_hsync_pol;
->> -	int vsync_pol = dssdev->panel.dsi_vm_data.vp_vsync_pol;
->> +	int de_pol, hsync_pol, vsync_pol;
->> +	int de_level = dssdev->panel.timings.de_level;
->> +	int hsync_level = dssdev->panel.timings.hsync_level;
->> +	int vsync_level = dssdev->panel.timings.vsync_level;
->>   	bool vsync_end = dssdev->panel.dsi_vm_data.vp_vsync_end;
->>   	bool hsync_end = dssdev->panel.dsi_vm_data.vp_hsync_end;
->>   	u32 r;
->>
->> +	de_pol = de_level = OMAPDSS_SIG_ACTIVE_HIGH ? 1 : 0;
->> +	hsync_pol = hsync_level = OMAPDSS_SIG_ACTIVE_HIGH ? 1 : 0;
->> +	vsync_pol = vsync_level = OMAPDSS_SIG_ACTIVE_HIGH ? 1 : 0;
->> +
->>   	r = dsi_read_reg(dsidev, DSI_CTRL);
->>   	r = FLD_MOD(r, de_pol, 9, 9);		/* VP_DE_POL */
->>   	r = FLD_MOD(r, hsync_pol, 10, 10);	/* VP_HSYNC_POL */
->
-> This patch makes the code cleaner, but I find this DSI sync code a bit
-> strange.
->
-> The sync polarities between DISPC and DSI do not matter elsewhere, they
-> do not affect the DSI output, so why do we have them in the panel data?
-> Why doesn't dsi.c just use some hardcoded values for these.
 
-Ok, are you saying that unlike DPI, where a panel may request for some 
-different polarities. There is no such need for DSI panels, and we can 
-set the polarities of DISPC and DSI always to active high(or any other 
-combination)?
+--=-nL3LSRCfKuhJs3mlenTJ
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Well, we are doing that indirectly in a way, a DSI panel driver would 
-populate a omap_video_timings struct, and would leave hsync_level, 
-vsync_level and de_level empty(i.e, the default values). This would be 
-passed to the DSI driver, and the timings would be applied to DISPC. The 
-function above would just pick up the same default values and program to 
-the DSI registers.
+On Wed, 2012-06-27 at 17:48 +0530, Archit Taneja wrote:
+> On Wednesday 27 June 2012 05:35 PM, Tomi Valkeinen wrote:
 
-What we could do is ignore these fields in the omap_video_timings when 
-passed from the panel driver to DSI driver, and always use a fixed value 
-for them, and this way we can use the same fixed values for DSI too. Do 
-you think that is better?
+> > The sync polarities between DISPC and DSI do not matter elsewhere, they
+> > do not affect the DSI output, so why do we have them in the panel data?
+> > Why doesn't dsi.c just use some hardcoded values for these.
+>=20
+> Ok, are you saying that unlike DPI, where a panel may request for some=
+=20
+> different polarities. There is no such need for DSI panels, and we can=
+=20
+> set the polarities of DISPC and DSI always to active high(or any other=
+=20
+> combination)?
 
-Archit
+Yes. There are no sync polarities in DSI bus, there are only sync
+packets. So afaik, the polarities used here matter only for DISPC and
+DSI communication. And there the only thing that matters is that both
+DISPC and DSI have the same configuration for the polarities, so that
+the communication works.
+
+> Well, we are doing that indirectly in a way, a DSI panel driver would=20
+> populate a omap_video_timings struct, and would leave hsync_level,=20
+> vsync_level and de_level empty(i.e, the default values). This would be=
+=20
+> passed to the DSI driver, and the timings would be applied to DISPC. The=
+=20
+> function above would just pick up the same default values and program to=
+=20
+> the DSI registers.
+>=20
+> What we could do is ignore these fields in the omap_video_timings when=
+=20
+> passed from the panel driver to DSI driver, and always use a fixed value=
+=20
+> for them, and this way we can use the same fixed values for DSI too. Do=
+=20
+> you think that is better?
+
+I think that is clearer. Optimally we wouldn't even have a video timings
+struct for DSI panels, the kind that contains sync polarities and such,
+but a separate timings struct that contains stuff relevant for DSI. But
+for now I think we should just ignore the "extra" values in video
+timings.
+
+ Tomi
+
+
+--=-nL3LSRCfKuhJs3mlenTJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJP6v0SAAoJEPo9qoy8lh71rAcQAIhv+IKAzmce8oGw7fk7LmWW
+b7jQSO6/M9wLf3+vG6YEv15zJk3NEv/dbSMqEj+6ydetDeMAZCOgLXsLBR0Fd4Nj
+8m751RgcW/hfzFX8h8Zgd+nX8IiM9X4TpP953Ef6kqTTGIHNVtnvGIDho0zb3TwN
+7G9a8oFjiTL3LWMlySADRuxu0OF1eF6Rt/tnzYMJQMMPBhUoI7GRQ0L7cmNQsAor
+xD0Cbs6qFjjUrxgubuJEDjI/QK/O6g/xn+EPgjF+UGu6IJYi+pitVDzS6K4pcJ4F
+hhszZqaQ40qHl1RF2SrgzlVCz824csdbQtMV8LruwAdnQnbiJaIC356TwRGD0Qi8
+f5KJ8NoY50JqR0pIBRu6cbObA05zzqphVzkV2yqncZOjjZsWlxM0BDtoNTRQq3SW
+4+ChuthD7b6zRC1SDEzXW0NDzSXiH45POCXeHJ8EPRDYI0hhugJYwfv2lXUh3W7o
+kG7Ezm7TJDS9YKfMjwz0YemOhKPGElpCjijotOHmFirCIRHn5zedNP841o/nhneR
+u2bTJAmkmwbTyiy+QWEzDO9U7V9vXRs6mE1uY2cKGPFoW9gvRRmMAVLdBJ9kGS+g
+ad0YZlKgDQ5wB+ffSJCiI8XBAHvDvE0kTrhr0gOv5DBhgzHLWWXGQvGZw0+ywcBG
+u2niQAcx5Je+8YL0/OKy
+=WFwS
+-----END PGP SIGNATURE-----
+
+--=-nL3LSRCfKuhJs3mlenTJ--
+

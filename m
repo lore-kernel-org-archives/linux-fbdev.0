@@ -1,80 +1,55 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 27 Jun 2012 11:48:53 +0000
+From: Archit Taneja <a0393947@ti.com>
+Date: Wed, 27 Jun 2012 12:38:42 +0000
 Subject: Re: [PATCH 05/17] OMAPDSS: Add some new fields to omap_video_timings
-Message-Id: <1340797733.2649.48.camel@deskari>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-vGKchXdly2ST7PU3afG9"
+Message-Id: <4FEAFC02.2070006@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340703414-1915-1-git-send-email-archit@ti.com>
-	 <1340703414-1915-7-git-send-email-archit@ti.com>
-In-Reply-To: <1340703414-1915-7-git-send-email-archit@ti.com>
-To: Archit Taneja <archit@ti.com>
-Cc: rob@ti.com, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
-
-
---=-vGKchXdly2ST7PU3afG9
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2012-06-26 at 15:06 +0530, Archit Taneja wrote:
-> Some panel timing related fields are contained in omap_panel_config in th=
-e form
-> of flags. The fields are:
->=20
-> - Hsync logic level
-> - Vsync logic level
-> - Data driven on rising/falling edge of pixel clock
-> - Output enable/Data enable logic level
-> - HSYNC/VSYNC driven on rising/falling edge of pixel clock
->=20
-> Out of these parameters, Hsync and Vsync logic levels are a part of the t=
-imings
-> in the Xorg modeline configuration. So it makes sense to move the to
-> omap_video_timings. The rest aren't a part of modeline, but it still make=
-s
-> sense to move these since they are related to panel timings.
->=20
-> These fields stored in omap_panel_config in dssdev are configured for LCD
-> panels, and the corresponding LCD managers in the DISPC_POL_FREQo registe=
-rs.
->=20
-> Add the above fields in omap_video_timings. Represent their state via new=
- enums.
-> The parameter pclk_edge is configured via omap_dss_signal_level, however =
-it
-> actually configures whether data is driven on the rising or falling edge.=
- This
-> is a bit unclean, but it prevents us from creating another enum.
-
-Hmm, why can't omap_dss_signal_edge be used for pclk_edge? I think it'd
-fit fine, except OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES would be an illegal
-value for it.
-
- Tomi
-
-
---=-vGKchXdly2ST7PU3afG9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+References: <1340703414-1915-1-git-send-email-archit@ti.com>  <1340703414-1915-7-git-send-email-archit@ti.com> <1340797733.2649.48.camel@deskari>
+In-Reply-To: <1340797733.2649.48.camel@deskari>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Archit Taneja <archit@ti.com>, rob@ti.com, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+On Wednesday 27 June 2012 05:18 PM, Tomi Valkeinen wrote:
+> On Tue, 2012-06-26 at 15:06 +0530, Archit Taneja wrote:
+>> Some panel timing related fields are contained in omap_panel_config in the form
+>> of flags. The fields are:
+>>
+>> - Hsync logic level
+>> - Vsync logic level
+>> - Data driven on rising/falling edge of pixel clock
+>> - Output enable/Data enable logic level
+>> - HSYNC/VSYNC driven on rising/falling edge of pixel clock
+>>
+>> Out of these parameters, Hsync and Vsync logic levels are a part of the timings
+>> in the Xorg modeline configuration. So it makes sense to move the to
+>> omap_video_timings. The rest aren't a part of modeline, but it still makes
+>> sense to move these since they are related to panel timings.
+>>
+>> These fields stored in omap_panel_config in dssdev are configured for LCD
+>> panels, and the corresponding LCD managers in the DISPC_POL_FREQo registers.
+>>
+>> Add the above fields in omap_video_timings. Represent their state via new enums.
+>> The parameter pclk_edge is configured via omap_dss_signal_level, however it
+>> actually configures whether data is driven on the rising or falling edge. This
+>> is a bit unclean, but it prevents us from creating another enum.
+>
+> Hmm, why can't omap_dss_signal_edge be used for pclk_edge? I think it'd
+> fit fine, except OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES would be an illegal
+> value for it.
 
-iQIcBAABAgAGBQJP6vMlAAoJEPo9qoy8lh71anYQAKJh1Nah8JIm/qnmffuyHusx
-l00dSOKtnN/c9Sg5QPQosQJ+WzhdrEL5hs02AHEP7x8Fpa60LEvpHk6H7s9TsDyq
-yXuf1aKoXFh6x6/NbpJEtyYrg3MgMDe7+3CobaU8YfEMPnR4D9mrtXRE+plyQXdW
-IM7yjCcjR7HR22xFsufNmoeoy48YqwTybvVrzWTBaFre/21V1nK7hGcHmOBBNmBo
-Sx1BU01544KhXVEEWvI1Ksa32GV/9falK4AMIBGAwfuJS7gil8K8dNqEzlH8LwbS
-Ekkx/19zcuhLxnx0Cno3fsYhx7O1k2WmAcHKaZ+MyL8Lhkb3depMNEnUmShSK05X
-h+03juTx2PTLPv+oPHRi9lwso+RlY3Im2uCwhAp4Y4k61V5sxTk8/X2IJWrlHekA
-f6vjx/9jJDuhOtzMHNS3VfZo8J5P5Zc+XPao9dTsijIfRvaeEPwlZ2MLkbQh8c74
-cC9hr6vfix52bkf73L/zjYu2e2rO4XkxNwuW629zZjkIcrRW7CSSChSAuvkpvj8/
-mLgqrQztGFAXStyPYzXQaK9hV/x8beO6CPLN6cm2zSycTpBWbHwmfM484fSmh/ax
-nE1WMFcAR6Hk/Nof5MNCxptJw1sGvqnRzc95rEIuFus6vc+MINP6Ryw7w5EQbrsm
-1++8MW4VOEZ02iIUByc2
-=N6WX
------END PGP SIGNATURE-----
+I think my paragraph is a bit misleading. The issue is more about the 
+default value. For hsync_vsync_edge(which programs ONOFF and RF), the 
+default value is OMAPDSS_DRIVE_SIG_OPPOSITE_EDGES, and is the case for 
+most panels. But for pclk_edge, the value for most panels is 
+OMAPDSS_DRIVE_SIG_ACTIVE_HIGH.
 
---=-vGKchXdly2ST7PU3afG9--
+So if I use the same enum for both, I'll need to populate either 
+pclk_edge or hsync_vsync_edge for almost every panel. With my approach, 
+I only need to populate these fields for panels having the non-default 
+requirements. The negative thing is that it's a bit misleading to 
+represent pclk_edge with the omap_dss_signal_level enum.
+
+Archit
 

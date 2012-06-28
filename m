@@ -1,7 +1,7 @@
 From: Jassi Brar <jaswinder.singh@linaro.org>
-Date: Thu, 28 Jun 2012 15:51:49 +0000
+Date: Thu, 28 Jun 2012 16:32:58 +0000
 Subject: Re: [PATCH 3/3] OMAPDSS: HDMI: Cache EDID
-Message-Id: <CAJe_Zhdnc8TOY8hDiuZfjto9fTWnT8piGpjczApzfLVMnCcE7w@mail.gmail.com>
+Message-Id: <CAJe_ZhceO8TabHVZZ7BLqYE-EAhtSJxzwWv8eA7KfffSK_dxXQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1340805944-28805-1-git-send-email-jaswinder.singh@linaro.org>
 	<1340869729.5037.7.camel@deskari>
@@ -15,47 +15,34 @@ References: <1340805944-28805-1-git-send-email-jaswinder.singh@linaro.org>
 	<1340890278.5037.91.camel@deskari>
 	<CAJe_ZheBbj3qoECDokcxHsB4UOx354G5t_MfYiZ3UEm9xK=tqw@mail.gmail.com>
 	<1340897244.5037.140.camel@deskari>
-In-Reply-To: <1340897244.5037.140.camel@deskari>
+	<CAJe_Zhdnc8TOY8hDiuZfjto9fTWnT8piGpjczApzfLVMnCcE7w@mail.gmail.com>
+In-Reply-To: <CAJe_Zhdnc8TOY8hDiuZfjto9fTWnT8piGpjczApzfLVMnCcE7w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: Andy Green <andy.green@linaro.org>, mythripk@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, n-dechesne@ti.com, patches@linaro.org
 
-On 28 June 2012 20:57, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On Thu, 2012-06-28 at 20:44 +0530, Jassi Brar wrote:
+On 28 June 2012 21:18, Jassi Brar <jaswinder.singh@linaro.org> wrote:
+> On 28 June 2012 20:57, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
 
->> it has, some user action should enable it while 'making the device
->> ready for new display'.
->> IOW, how do you envision an OMAP4 based tablet with HDMI port react to
->> display connections ?
+>>> > By the way, when the device is in system suspend, we surely won't detect
+>>> > the HPD even if we kept the HPD always enabled. So there we'll miss the
+>>> > HPD interrupt anyway, and the EDID cache would be invalid.
+>>> >
+>>> If omapdss already handles the possibility of display changed during
+>>> suspend, I think we should be good :)
+>>
+>> Hmm I'm not sure I understand what you mean. I was referring to your
+>> patch, which invalidated the EDID cache only on HPD interrupt when the
+>> cable is unplugged. And we'd miss that interrupt when the board is in
+>> system suspend, even if we otherwise kept the HPD interrupt always
+>> enabled.
+>>
+> I meant before stale-edid, we face potential problem of omapdss
+> behaving badly to the displays switched during suspend ?
 >
-> I guess this was covered in my mail about the phone's HDMI. If the
-> tablet is unlocked, and I plug in a HDMI cable, I expect the device to
-> do something. Either clone the display, or perhaps ask me what I want to
-> do.
->
-> So yes, HPD would be always enabled, when the tablet is active
-> (unlocked).
->
-OK, somehow I was under impression you didn't wanna spare even the 5V+ floating.
-Though there could also be some option in settings to enable 5/HPD
-only when the user is about the connect a display... so that the
-activate window is even narrowed down. Anyway... I am glad we are in
-sync.
+OK, I think I get now what you mean. We do need to invalidate
+edid-cache in the suspend path, irrespective of how omapdss behaves.
 
->> > By the way, when the device is in system suspend, we surely won't detect
->> > the HPD even if we kept the HPD always enabled. So there we'll miss the
->> > HPD interrupt anyway, and the EDID cache would be invalid.
->> >
->> If omapdss already handles the possibility of display changed during
->> suspend, I think we should be good :)
->
-> Hmm I'm not sure I understand what you mean. I was referring to your
-> patch, which invalidated the EDID cache only on HPD interrupt when the
-> cable is unplugged. And we'd miss that interrupt when the board is in
-> system suspend, even if we otherwise kept the HPD interrupt always
-> enabled.
->
-I meant before stale-edid, we face potential problem of omapdss
-behaving badly to the displays switched during suspend ?
+Thanks.

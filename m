@@ -1,134 +1,172 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 28 Jun 2012 14:42:31 +0000
-Subject: [PATCH 01/12] OMAPDSS: DISPC: Change return type of dispc_mgr_set_clock_div()
-Message-Id: <1340893842-10626-3-git-send-email-archit@ti.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Date: Thu, 28 Jun 2012 03:34:46 +0000
+Subject: [PATCH v2 2/2] video: mxsfb: add simple device tree probe
+Message-Id: <1340854486-4575-1-git-send-email-shawn.guo@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340893842-10626-1-git-send-email-archit@ti.com>
-In-Reply-To: <1340893842-10626-1-git-send-email-archit@ti.com>
+References: <1340701379-8619-3-git-send-email-shawn.guo@linaro.org>
+In-Reply-To: <1340701379-8619-3-git-send-email-shawn.guo@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: linux-arm-kernel@lists.infradead.org
 
-dipsc_mgr_set_clock div has an int return type to report errors or success.
-The function doesn't really check for errors and always returns 0. Change
-the return type to void.
+Add a simple device tree probe support for mxsfb driver.  Before
+a common binding for struct fb_videomode is available, the driver will
+keep using struct mxsfb_platform_data.  That said, platform code will
+use auxdata to attach mxsfb_platform_data for device tree boot.
 
-Checking for the correct DISPC clock divider ranges will be done when a DSS2
-user does a manager apply. This support will be added later.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
 ---
- drivers/video/omap2/dss/dispc.c |    4 +---
- drivers/video/omap2/dss/dpi.c   |   10 ++--------
- drivers/video/omap2/dss/dsi.c   |    6 +-----
- drivers/video/omap2/dss/dss.h   |    2 +-
- drivers/video/omap2/dss/sdi.c   |    5 +----
- 5 files changed, 6 insertions(+), 21 deletions(-)
+Changes since v1:
+* Remove enable-active-low property and use of_get_named_gpio_flags
+  instead
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 864adcc..b047fe6 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -3184,15 +3184,13 @@ int dispc_calc_clock_rates(unsigned long dispc_fclk_rate,
- 	return 0;
+ Documentation/devicetree/bindings/fb/mxsfb.txt |   19 ++++++++
+ drivers/video/mxsfb.c                          |   60 ++++++++++++++++++-----
+ 2 files changed, 66 insertions(+), 13 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/fb/mxsfb.txt
+
+diff --git a/Documentation/devicetree/bindings/fb/mxsfb.txt b/Documentation/devicetree/bindings/fb/mxsfb.txt
+new file mode 100644
+index 0000000..b41e5e52
+--- /dev/null
++++ b/Documentation/devicetree/bindings/fb/mxsfb.txt
+@@ -0,0 +1,19 @@
++* Freescale MXS LCD Interface (LCDIF)
++
++Required properties:
++- compatible: Should be "fsl,<chip>-lcdif".  Supported chips include
++  imx23 and imx28.
++- reg: Address and length of the register set for lcdif
++- interrupts: Should contain lcdif interrupts
++
++Optional properties:
++- panel-enable-gpios : Should specify the gpio for panel enable
++
++Examples:
++
++lcdif@80030000 {
++	compatible = "fsl,imx28-lcdif";
++	reg = <0x80030000 2000>;
++	interrupts = <38 86>;
++	panel-enable-gpios = <&gpio3 30 0>;
++};
+diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+index 08dad8d..49619b4 100644
+--- a/drivers/video/mxsfb.c
++++ b/drivers/video/mxsfb.c
+@@ -41,6 +41,8 @@
+ 
+ #include <linux/module.h>
+ #include <linux/kernel.h>
++#include <linux/of_device.h>
++#include <linux/of_gpio.h>
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+ #include <linux/dma-mapping.h>
+@@ -750,16 +752,43 @@ static void __devexit mxsfb_free_videomem(struct mxsfb_info *host)
+ 	}
  }
  
--int dispc_mgr_set_clock_div(enum omap_channel channel,
-+void dispc_mgr_set_clock_div(enum omap_channel channel,
- 		struct dispc_clock_info *cinfo)
++static struct platform_device_id mxsfb_devtype[] = {
++	{
++		.name = "imx23-fb",
++		.driver_data = MXSFB_V3,
++	}, {
++		.name = "imx28-fb",
++		.driver_data = MXSFB_V4,
++	}, {
++		/* sentinel */
++	}
++};
++MODULE_DEVICE_TABLE(platform, mxsfb_devtype);
++
++static const struct of_device_id mxsfb_dt_ids[] = {
++	{ .compatible = "fsl,imx23-lcdif", .data = &mxsfb_devtype[0], },
++	{ .compatible = "fsl,imx28-lcdif", .data = &mxsfb_devtype[1], },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, mxsfb_dt_ids);
++
+ static int __devinit mxsfb_probe(struct platform_device *pdev)
  {
- 	DSSDBG("lck = %lu (%u)\n", cinfo->lck, cinfo->lck_div);
- 	DSSDBG("pck = %lu (%u)\n", cinfo->pck, cinfo->pck_div);
++	const struct of_device_id *of_id +			of_match_device(mxsfb_dt_ids, &pdev->dev);
+ 	struct mxsfb_platform_data *pdata = pdev->dev.platform_data;
+ 	struct resource *res;
+ 	struct mxsfb_info *host;
+ 	struct fb_info *fb_info;
+ 	struct fb_modelist *modelist;
+ 	struct pinctrl *pinctrl;
++	int panel_enable;
++	enum of_gpio_flags flags;
+ 	int i, ret;
  
- 	dispc_mgr_set_lcd_divisor(channel, cinfo->lck_div, cinfo->pck_div);
--
--	return 0;
- }
- 
- int dispc_mgr_get_clock_div(enum omap_channel channel,
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index 046a6fb..af01430 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -100,11 +100,7 @@ static int dpi_set_dsi_clk(struct omap_dss_device *dssdev,
- 
- 	dss_select_dispc_clk_source(clks->dispc.fclk_src);
- 
--	r = dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
--	if (r) {
--		dss_select_dispc_clk_source(OMAP_DSS_CLK_SRC_FCK);
--		return r;
--	}
-+	dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
- 
- 	*fck = dsi_cinfo.dsi_pll_hsdiv_dispc_clk;
- 	*lck_div = dispc_cinfo.lck_div;
-@@ -129,9 +125,7 @@ static int dpi_set_dispc_clk(struct omap_dss_device *dssdev,
- 	if (r)
- 		return r;
- 
--	r = dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
--	if (r)
--		return r;
-+	dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
- 
- 	*fck = dss_cinfo.fck;
- 	*lck_div = dispc_cinfo.lck_div;
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index 9f08787..94ff3aa 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -4456,11 +4456,7 @@ static int dsi_configure_dispc_clocks(struct omap_dss_device *dssdev,
- 		return r;
++	if (of_id)
++		pdev->id_entry = of_id->data;
++
+ 	if (!pdata) {
+ 		dev_err(&pdev->dev, "No platformdata. Giving up\n");
+ 		return -ENODEV;
+@@ -807,6 +836,22 @@ static int __devinit mxsfb_probe(struct platform_device *pdev)
+ 		goto error_getclock;
  	}
  
--	r = dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
--	if (r) {
--		DSSERR("Failed to set dispc clocks\n");
--		return r;
--	}
-+	dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
- 
- 	return 0;
++	panel_enable = of_get_named_gpio_flags(pdev->dev.of_node,
++					       "panel-enable-gpios", 0, &flags);
++	if (gpio_is_valid(panel_enable)) {
++		unsigned long f = GPIOF_OUT_INIT_HIGH;
++		if (flags = OF_GPIO_ACTIVE_LOW)
++			f = GPIOF_OUT_INIT_LOW;
++		ret = devm_gpio_request_one(&pdev->dev, panel_enable,
++					    f, "panel-enable");
++		if (ret) {
++			dev_err(&pdev->dev,
++				"failed to request gpio %d: %d\n",
++				panel_enable, ret);
++			goto error_panel_enable;
++		}
++	}
++
+ 	fb_info->pseudo_palette = kmalloc(sizeof(u32) * 16, GFP_KERNEL);
+ 	if (!fb_info->pseudo_palette) {
+ 		ret = -ENOMEM;
+@@ -854,6 +899,7 @@ error_register:
+ error_init_fb:
+ 	kfree(fb_info->pseudo_palette);
+ error_pseudo_pallette:
++error_panel_enable:
+ 	clk_put(host->clk);
+ error_getclock:
+ error_getpin:
+@@ -901,19 +947,6 @@ static void mxsfb_shutdown(struct platform_device *pdev)
+ 	writel(CTRL_RUN, host->base + LCDC_CTRL + REG_CLR);
  }
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index 20151d5..f8289e9 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -416,7 +416,7 @@ void dispc_mgr_set_timings(enum omap_channel channel,
- unsigned long dispc_mgr_lclk_rate(enum omap_channel channel);
- unsigned long dispc_mgr_pclk_rate(enum omap_channel channel);
- unsigned long dispc_core_clk_rate(void);
--int dispc_mgr_set_clock_div(enum omap_channel channel,
-+void dispc_mgr_set_clock_div(enum omap_channel channel,
- 		struct dispc_clock_info *cinfo);
- int dispc_mgr_get_clock_div(enum omap_channel channel,
- 		struct dispc_clock_info *cinfo);
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index b44ab72..0b2659f 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -106,9 +106,7 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err_set_dss_clock_div;
  
--	r = dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
--	if (r)
--		goto err_set_dispc_clock_div;
-+	dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
+-static struct platform_device_id mxsfb_devtype[] = {
+-	{
+-		.name = "imx23-fb",
+-		.driver_data = MXSFB_V3,
+-	}, {
+-		.name = "imx28-fb",
+-		.driver_data = MXSFB_V4,
+-	}, {
+-		/* sentinel */
+-	}
+-};
+-MODULE_DEVICE_TABLE(platform, mxsfb_devtype);
+-
+ static struct platform_driver mxsfb_driver = {
+ 	.probe = mxsfb_probe,
+ 	.remove = __devexit_p(mxsfb_remove),
+@@ -921,6 +954,7 @@ static struct platform_driver mxsfb_driver = {
+ 	.id_table = mxsfb_devtype,
+ 	.driver = {
+ 		   .name = DRIVER_NAME,
++		   .of_match_table = mxsfb_dt_ids,
+ 	},
+ };
  
- 	dss_sdi_init(dssdev->phy.sdi.datapairs);
- 	r = dss_sdi_enable();
-@@ -125,7 +123,6 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- err_mgr_enable:
- 	dss_sdi_disable();
- err_sdi_enable:
--err_set_dispc_clock_div:
- err_set_dss_clock_div:
- err_calc_clock_div:
- 	dispc_runtime_put();
 -- 
-1.7.9.5
+1.7.5.4
+
 

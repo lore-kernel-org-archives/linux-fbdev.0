@@ -1,7 +1,7 @@
 From: Jassi Brar <jaswinder.singh@linaro.org>
-Date: Thu, 28 Jun 2012 15:30:13 +0000
+Date: Thu, 28 Jun 2012 15:51:49 +0000
 Subject: Re: [PATCH 3/3] OMAPDSS: HDMI: Cache EDID
-Message-Id: <CAJe_ZhexDJcM0ZoDYM904G7JrT93vmQJYo6j1ZW4CmfFTDM9Pg@mail.gmail.com>
+Message-Id: <CAJe_Zhdnc8TOY8hDiuZfjto9fTWnT8piGpjczApzfLVMnCcE7w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1340805944-28805-1-git-send-email-jaswinder.singh@linaro.org>
 	<1340869729.5037.7.camel@deskari>
@@ -12,39 +12,50 @@ References: <1340805944-28805-1-git-send-email-jaswinder.singh@linaro.org>
 	<1340881815.5037.53.camel@deskari>
 	<4FEC47FA.1040801@linaro.org>
 	<CAJe_Zhdkhu4TciiwGJB2Kz8oZp2RQNZfESSr5Cfv0R1MNn=r9A@mail.gmail.com>
-	<1340896458.5037.131.camel@deskari>
-In-Reply-To: <1340896458.5037.131.camel@deskari>
+	<1340890278.5037.91.camel@deskari>
+	<CAJe_ZheBbj3qoECDokcxHsB4UOx354G5t_MfYiZ3UEm9xK=tqw@mail.gmail.com>
+	<1340897244.5037.140.camel@deskari>
+In-Reply-To: <1340897244.5037.140.camel@deskari>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: Andy Green <andy.green@linaro.org>, mythripk@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, n-dechesne@ti.com, patches@linaro.org
 
-On 28 June 2012 20:44, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On Thu, 2012-06-28 at 18:43 +0530, Jassi Brar wrote:
+On 28 June 2012 20:57, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+> On Thu, 2012-06-28 at 20:44 +0530, Jassi Brar wrote:
+
+>> it has, some user action should enable it while 'making the device
+>> ready for new display'.
+>> IOW, how do you envision an OMAP4 based tablet with HDMI port react to
+>> display connections ?
 >
->> A quick reaction of my guts say, we simply enable 5V/HPD_IRQ during
->> probe and disable during remove.
->> HDMI enable/disable via /sysfs/ and HPD (de)assertion, switch only
->> HDMI_PHY on/off.
->> The user selecting "Autodetect and Configure" option would then equate
->> to "(un)loading" of the HDMI driver.
->> Not to mean a trivial job.
+> I guess this was covered in my mail about the phone's HDMI. If the
+> tablet is unlocked, and I plug in a HDMI cable, I expect the device to
+> do something. Either clone the display, or perhaps ask me what I want to
+> do.
 >
-> One more thing I realized while thinking about this:
+> So yes, HPD would be always enabled, when the tablet is active
+> (unlocked).
 >
-> While it could be argued that the power draw from having the tpd12s015
-> always enabled is very small, I think it could matter. If you consider a
-> phone with HDMI output, it's likely that the phone is locked 99% of the
-> time. When the phone is locked, there's no need to keep the HDMI HPD
-> enabled. So this could add to a considerable amount of power wasted, if
-> the HPD was always enabled.
+OK, somehow I was under impression you didn't wanna spare even the 5V+ floating.
+Though there could also be some option in settings to enable 5/HPD
+only when the user is about the connect a display... so that the
+activate window is even narrowed down. Anyway... I am glad we are in
+sync.
+
+>> > By the way, when the device is in system suspend, we surely won't detect
+>> > the HPD even if we kept the HPD always enabled. So there we'll miss the
+>> > HPD interrupt anyway, and the EDID cache would be invalid.
+>> >
+>> If omapdss already handles the possibility of display changed during
+>> suspend, I think we should be good :)
 >
-> At least I can't figure out a reason why one would want the HPD to work
-> when the phone is locked. Also, I have never used the HDMI output on my
-> phone, so I'd be glad if it was totally powered off if it gave me more
-> standby hours =).
+> Hmm I'm not sure I understand what you mean. I was referring to your
+> patch, which invalidated the EDID cache only on HPD interrupt when the
+> cable is unplugged. And we'd miss that interrupt when the board is in
+> system suspend, even if we otherwise kept the HPD interrupt always
+> enabled.
 >
-Of course, I don't suggest imposing any hard rule here.
-All I suggest is make it platform dependent and provide a way from
-user-space too to enable/disable HPD.
+I meant before stale-edid, we face potential problem of omapdss
+behaving badly to the displays switched during suspend ?

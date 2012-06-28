@@ -1,152 +1,57 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Sat, 16 Jun 2012 22:04:24 +0000
-Subject: [PATCH 08/10] fblog: react on framebuffer events
-Message-Id: <1339884266-9201-9-git-send-email-dh.herrmann@googlemail.com>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Thu, 28 Jun 2012 09:52:05 +0000
+Subject: [PATCH 0/4] Add LCD3 channel support
+Message-Id: <cover.1340874806.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
-In-Reply-To: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-serial@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Herrmann <dh.herrmann@googlemail.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-This provides an fb-notifier object that can be registered with the
-framebuffer subsystem. We are then notified about events on all
-framebuffers.
-Most of the events are only of interest for fbcon so we can safely ignore
-them. However, we need to handle REGISTERED/UNBIND to add new framebbufers
-and we need to react on mode-changes (probably triggered by user-space).
+Hi everyone!
+This following patch series enables LCD3 support which consists of two patches.
 
-Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
----
- drivers/video/console/fblog.c |  113 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 113 insertions(+)
+The 1st patch
+ * adds enum mgr_reg_fields to describe various register fields manipulated for
+   LCD support
+ * replaces if-else checks for LCD implementation with simpler interface with
+   the help of data from struct mgr_desc
 
-diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
-index 5297eca..79bfbcc 100644
---- a/drivers/video/console/fblog.c
-+++ b/drivers/video/console/fblog.c
-@@ -449,6 +449,119 @@ static void fblog_deactivate(void)
- 	fblog_unregister_all();
- }
- 
-+static int fblog_event(struct notifier_block *self, unsigned long action,
-+		       void *data)
-+{
-+	struct fb_event *event = data;
-+	struct fb_info *info = event->info;
-+	struct fblog_fb *fb = fblog_info2fb(info);
-+	int *blank;
-+
-+	if (action = FB_EVENT_FB_REGISTERED) {
-+		/* This is called when a low-level system driver registers a new
-+		 * framebuffer. The registration lock is held but the console
-+		 * lock might not be held when this is called (really?). */
-+		fblog_register(info);
-+		return 0;
-+	}
-+
-+	if (!fb)
-+		return 0;
-+
-+	switch(action) {
-+	case FB_EVENT_FB_UNREGISTERED:
-+		/* This is called when a low-level system driver unregisters a
-+		 * framebuffer. The registration lock is held but the console
-+		 * lock might not be held (really?). */
-+		/* ignore; see UNBIND */
-+		break;
-+	case FB_EVENT_FB_UNBIND:
-+		/* Called directly before unregistering an FB. The FB is still
-+		 * valid here and the registration lock is held but the console
-+		 * lock might not be held (really?). */
-+		fblog_unregister(fb);
-+		break;
-+	case FB_EVENT_SUSPEND:
-+		/* This is called when the low-level display driver suspends the
-+		 * video system. We should not access the video system while it
-+		 * is suspended. This is called with the console lock held. */
-+		set_bit(FBLOG_SUSPENDED, &fb->flags);
-+		break;
-+	case FB_EVENT_RESUME:
-+		/* This is called when the low-level display driver resumes
-+		 * operating. It is called with the console lock held. */
-+		clear_bit(FBLOG_SUSPENDED, &fb->flags);
-+		break;
-+	case FB_EVENT_MODE_DELETE:
-+		/* This is sent when a video mode is removed. The current video
-+		 * mode is never removed! The console lock is held while this is
-+		 * called. */
-+		/* fallthrough */
-+	case FB_EVENT_NEW_MODELIST:
-+		/* This is sent when the modelist got changed. The console-lock
-+		 * is held and we should reset the mode. */
-+		/* fallthrough */
-+	case FB_EVENT_MODE_CHANGE_ALL:
-+		/* This is the same as below but notifies us that the user used
-+		 * the FB_ACTIVATE_ALL flag when setting the video mode. */
-+		/* fallthrough */
-+	case FB_EVENT_MODE_CHANGE:
-+		/* This is called when the _user_ changes the video mode via
-+		 * ioctls. It is not sent, when the kernel changes the mode
-+		 * internally. This callback is called inside fb_set_var() so
-+		 * the console lock is held. */
-+		fblog_refresh(fb);
-+		break;
-+	case FB_EVENT_BLANK:
-+		/* This gets called _after_ the framebuffer was successfully
-+		 * blanked. The console-lock is always held while fb_blank is
-+		 * called and during this callback. */
-+		blank = (int*)event->data;
-+		if (*blank = FB_BLANK_UNBLANK)
-+			clear_bit(FBLOG_BLANKED, &fb->flags);
-+		else
-+			set_bit(FBLOG_BLANKED, &fb->flags);
-+		break;
-+	case FB_EVENT_GET_REQ:
-+		/* When fb_set_var() is called, this callback is called to get
-+		 * our display requirements. They are then compared with the
-+		 * display properties and only if they fulfill the requirements,
-+		 * the new mode is activated. The console-lock should be held
-+		 * while calling fb_set_var() so we can assume it is locked
-+		 * here. */
-+		/* ignore */
-+		break;
-+	case FB_EVENT_CONBLANK:
-+		/* This is sent by fbcon when doing a fake blank. That
-+		 * is, blanking the screen when the fb driver failed to perform
-+		 * an fb_blank(). It simply writes empty lines to the screen.
-+		 * We are not interested in this signal. We should also never
-+		 * run together with fbcon so this should never be catched. */
-+		/* ignore */
-+		break;
-+	case FB_EVENT_GET_CONSOLE_MAP:
-+		/* fallthrough */
-+	case FB_EVENT_SET_CONSOLE_MAP:
-+		/* Is there any reason why we should support this? We
-+		 * ignore it as we consider ourself not to be the classic linux
-+		 * console. Hence, this request is not targeted at us. */
-+		/* ignore */
-+		break;
-+	case FB_EVENT_REMAP_ALL_CONSOLE:
-+		/* What are we supposed to do here? Do we have to remap
-+		 * the primary device to the framebuffer given by \info? Like
-+		 * above we currently ignore it for the same reasons. */
-+		/* ignore */
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static struct notifier_block fblog_notifier = {
-+	.notifier_call = fblog_event,
-+};
-+
- static void fblog_con_write(struct console *con, const char *buf,
- 			    unsigned int len)
- {
--- 
-1.7.10.4
+The 2nd Patch
+ * adds LCD3 channel support
+ * updates DISPC registers for LCD3 support
+
+The 3rd patch
+ * enables LCD3 manager DSS feature
+ * adds enables clock support for LCD3
+ * adds IRQs specific to LCD3 manager
+
+The 4th patch
+ * enables dispc functions to provide dump functionality for clocks and IRQs
+   specific to LCD3
+
+This patch was based on mainline kernel v3.5rc4.
+
+All your comments and suggestions are welcome.
+
+Regards,
+Chandrabhanu
+
+Chandrabhanu Mahapatra (4):
+  OMAPDSS: Cleanup implementation of LCD channels
+  OMAPDSS: Add support for LCD3 channel
+  OMAPDSS: Add LCD3 overlay manager and Clock and IRQ support
+  OMAPDSS: Add dump and debug support for LCD3
+
+ drivers/video/omap2/dss/dispc.c        |  351 ++++++++++++++++++--------------
+ drivers/video/omap2/dss/dispc.h        |   28 +++
+ drivers/video/omap2/dss/dsi.c          |    6 +-
+ drivers/video/omap2/dss/dss.c          |   12 +-
+ drivers/video/omap2/dss/dss.h          |    6 +
+ drivers/video/omap2/dss/dss_features.h |    5 +-
+ drivers/video/omap2/dss/manager.c      |   16 +-
+ drivers/video/omap2/dss/overlay.c      |   14 +-
+ include/video/omapdss.h                |    6 +
+ 9 files changed, 268 insertions(+), 176 deletions(-)
 

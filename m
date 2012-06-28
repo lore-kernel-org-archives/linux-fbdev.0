@@ -1,75 +1,212 @@
-From: Liu Ying <Ying.Liu@freescale.com>
-Date: Mon, 11 Jun 2012 01:06:50 +0000
-Subject: [PATCH 3/3] mx3fb: avoid screen flash when panning with fb_set_var
-Message-Id: <1339376810-8247-3-git-send-email-Ying.Liu@freescale.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 28 Jun 2012 14:42:35 +0000
+Subject: [PATCH 05/12] OMAPDSS: DSI: Configure dss_lcd_mgr_config struct with lcd manager parameters
+Message-Id: <1340893842-10626-7-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1339376810-8247-1-git-send-email-Ying.Liu@freescale.com>
-In-Reply-To: <1339376810-8247-1-git-send-email-Ying.Liu@freescale.com>
+References: <1340893842-10626-1-git-send-email-archit@ti.com>
+In-Reply-To: <1340893842-10626-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Users may call FBIOPUT_VSCREENINFO ioctrl to do pan display.
-This ioctrl relies on fb_set_var() to do the job. fb_set_var()
-calls custom fb_set_par() method and then calls custom
-fb_pan_display() method. The current implementation of mx3fb
-reinitializes IPU display controller every time the custom
-fb_set_par() method is called, which makes the screen flash
-if fb_set_var() is called to do panning frequently. This patch
-compares the new var info with the cached old one to decide
-whether we really need to reinitialize IPU display controller.
-We ignore xoffset and yoffset update because it doesn't require
-to reinitialize the controller. Users may specify activate field
-of var info with FB_ACTIVATE_NOW and FB_ACTIVATE_FORCE to
-reinialize the controller by force.
+Create a dss_lcd_mgr_config struct instance in DSI. Fill up all the parameters
+of the struct with configurations held by the panel, and the configurations
+required by DSI.
 
-Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
+Use these to write to the DISPC registers. These direct register writes would be
+later replaced by a function which applies the configuration using the shadow
+register programming model.
+
+The function dsi_configure_dispc_clocks() is now called in
+dsi_display_init_dispc(), this lets all the lcd manager related configurations
+happen in the same place. The DISPC_DIVISORo register was written in
+dsi_configure_dispc_clock(), now it just fills up the dispc_clock_info parameter
+in mgr_config. The clock_info is written later in dsi_display_init_dispc().
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/mx3fb.c |   22 +++++++++++++++++++++-
- 1 files changed, 21 insertions(+), 1 deletions(-)
+ drivers/video/omap2/dss/dsi.c |  117 ++++++++++++++++++++++++++++-------------
+ 1 file changed, 80 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-index 2dd11c4..7d0aa7b 100644
---- a/drivers/video/mx3fb.c
-+++ b/drivers/video/mx3fb.c
-@@ -721,6 +721,26 @@ static void mx3fb_dma_done(void *arg)
- 	complete(&mx3_fbi->flip_cmpl);
- }
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index 94ff3aa..df92e24 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -331,6 +331,8 @@ struct dsi_data {
+ 	unsigned num_lanes_used;
  
-+static bool mx3fb_must_set_par(struct fb_info *fbi)
-+{
-+	struct mx3fb_info *mx3_fbi = fbi->par;
-+	struct fb_var_screeninfo old_var = mx3_fbi->cur_var;
-+	struct fb_var_screeninfo new_var = fbi->var;
+ 	unsigned scp_clk_refcount;
 +
-+	if ((fbi->var.activate & FB_ACTIVATE_FORCE) &&
-+	    (fbi->var.activate & FB_ACTIVATE_MASK) = FB_ACTIVATE_NOW)
-+		return true;
++	struct dss_lcd_mgr_config mgr_config;
+ };
+ 
+ struct dsi_packet_sent_handler_data {
+@@ -4339,14 +4341,42 @@ EXPORT_SYMBOL(omap_dsi_update);
+ 
+ /* Display funcs */
+ 
+-static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
++static int dsi_configure_dispc_clocks(struct omap_dss_device *dssdev,
++		const struct omapdss_lcd_clock_config *lcd_clks)
+ {
++	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
++	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
++	struct dispc_clock_info dispc_cinfo;
+ 	int r;
++	unsigned long long fck;
 +
-+	/*
-+	 * Ignore xoffset and yoffset update,
-+	 * because pan display handles this case.
-+	 */
-+	old_var.xoffset = new_var.xoffset;
-+	old_var.yoffset = new_var.yoffset;
++	fck = dsi_get_pll_hsdiv_dispc_rate(dsidev);
 +
-+	return !!memcmp(&old_var, &new_var, sizeof(struct fb_var_screeninfo));
++	dispc_cinfo.lck_div = lcd_clks->lck_div;
++	dispc_cinfo.pck_div = lcd_clks->pck_div;
++
++	r = dispc_calc_clock_rates(fck, &dispc_cinfo);
++	if (r) {
++		DSSERR("Failed to calc dispc clocks\n");
++		return r;
++	}
++
++	dsi->mgr_config.clock_info = dispc_cinfo;
++
++	return 0;
 +}
 +
- static int __set_par(struct fb_info *fbi, bool lock)
++static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
++{
++	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
++	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	struct omap_video_timings timings;
++	const struct omapdss_clock_config *clks;
++	int r, lcd_id;
++	u32 irq;
+ 
+ 	if (dssdev->panel.dsi_mode = OMAP_DSS_DSI_CMD_MODE) {
+ 		u16 dw, dh;
+-		u32 irq;
+ 
+ 		dssdev->driver->get_resolution(dssdev, &dw, &dh);
+ 
+@@ -4366,16 +4396,16 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
+ 			(void *) dssdev, irq);
+ 		if (r) {
+ 			DSSERR("can't get FRAMEDONE irq\n");
+-			return r;
++			goto err;
+ 		}
+ 
+-		dispc_mgr_enable_stallmode(dssdev->manager->id, true);
+-		dispc_mgr_enable_fifohandcheck(dssdev->manager->id, 1);
++		dsi->mgr_config.stallmode = true;
++		dsi->mgr_config.fifohandcheck = true;
+ 	} else {
+ 		timings = dssdev->panel.timings;
+ 
+-		dispc_mgr_enable_stallmode(dssdev->manager->id, false);
+-		dispc_mgr_enable_fifohandcheck(dssdev->manager->id, 0);
++		dsi->mgr_config.stallmode = false;
++		dsi->mgr_config.fifohandcheck = false;
+ 	}
+ 
+ 	/*
+@@ -4391,12 +4421,53 @@ static int dsi_display_init_dispc(struct omap_dss_device *dssdev)
+ 
+ 	dss_mgr_set_timings(dssdev->manager, &timings);
+ 
+-	dispc_mgr_set_lcd_type_tft(dssdev->manager->id);
++	clks = dss_get_platform_clock_config();
++
++	switch (dssdev->manager->id) {
++	case OMAP_DSS_CHANNEL_LCD:
++		lcd_id = 0;
++		break;
++	case OMAP_DSS_CHANNEL_LCD2:
++		lcd_id = 1;
++		break;
++	default:
++		r = -EINVAL;
++		goto err1;
++	}
++
++	r = dsi_configure_dispc_clocks(dssdev, &clks->lcd[lcd_id]);
++	if (r)
++		goto err1;
++
++	dsi->mgr_config.io_pad_mode = DSS_IO_PAD_MODE_BYPASS;
++	dsi->mgr_config.video_port_width +			dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
++	dsi->mgr_config.lcden_sig_polarity = 0;
++
++	dispc_mgr_set_io_pad_mode(dsi->mgr_config.io_pad_mode);
++
++	dispc_mgr_enable_stallmode(dssdev->manager->id,
++			dsi->mgr_config.stallmode);
++	dispc_mgr_enable_fifohandcheck(dssdev->manager->id,
++			dsi->mgr_config.fifohandcheck);
++
++	dispc_mgr_set_clock_div(dssdev->manager->id,
++			&dsi->mgr_config.clock_info);
+ 
+ 	dispc_mgr_set_tft_data_lines(dssdev->manager->id,
+-		dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt));
++			dsi->mgr_config.video_port_width);
++
++	dispc_lcd_enable_signal_polarity(dsi->mgr_config.lcden_sig_polarity);
++
++	dispc_mgr_set_lcd_type_tft(dssdev->manager->id);
+ 
+ 	return 0;
++err1:
++	if (dssdev->panel.dsi_mode = OMAP_DSS_DSI_CMD_MODE)
++		omap_dispc_unregister_isr(dsi_framedone_irq_callback,
++			(void *) dssdev, irq);
++err:
++	return r;
+ }
+ 
+ static void dsi_display_uninit_dispc(struct omap_dss_device *dssdev)
+@@ -4437,30 +4508,6 @@ static int dsi_configure_dsi_clocks(struct platform_device *dsidev,
+ 	return 0;
+ }
+ 
+-static int dsi_configure_dispc_clocks(struct omap_dss_device *dssdev,
+-		const struct omapdss_lcd_clock_config *lcd_clks)
+-{
+-	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+-	struct dispc_clock_info dispc_cinfo;
+-	int r;
+-	unsigned long long fck;
+-
+-	fck = dsi_get_pll_hsdiv_dispc_rate(dsidev);
+-
+-	dispc_cinfo.lck_div = lcd_clks->lck_div;
+-	dispc_cinfo.pck_div = lcd_clks->pck_div;
+-
+-	r = dispc_calc_clock_rates(fck, &dispc_cinfo);
+-	if (r) {
+-		DSSERR("Failed to calc dispc clocks\n");
+-		return r;
+-	}
+-
+-	dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
+-
+-	return 0;
+-}
+-
+ static int dsi_display_init_dsi(struct omap_dss_device *dssdev)
  {
- 	u32 mem_len, cur_xoffset, cur_yoffset;
-@@ -844,7 +864,7 @@ static int mx3fb_set_par(struct fb_info *fbi)
+ 	struct platform_device *dsidev = dsi_get_dsidev_from_dssdev(dssdev);
+@@ -4499,10 +4546,6 @@ static int dsi_display_init_dsi(struct omap_dss_device *dssdev)
  
- 	mutex_lock(&mx3_fbi->mutex);
+ 	DSSDBG("PLL OK\n");
  
--	ret = __set_par(fbi, true);
-+	ret = mx3fb_must_set_par(fbi) ? __set_par(fbi, true) : 0;
- 
- 	mutex_unlock(&mx3_fbi->mutex);
- 
+-	r = dsi_configure_dispc_clocks(dssdev, &clks->lcd[lcd_id]);
+-	if (r)
+-		goto err2;
+-
+ 	r = dsi_cio_init(dssdev);
+ 	if (r)
+ 		goto err2;
 -- 
-1.7.1
-
+1.7.9.5
 

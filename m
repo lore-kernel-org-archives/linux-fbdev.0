@@ -1,183 +1,112 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 20 Jun 2012 14:09:28 +0000
-Subject: [RFC/PATCH] fb: Add dma-buf support
-Message-Id: <1340201368-20751-1-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 28 Jun 2012 14:42:38 +0000
+Subject: [PATCH 08/12] OMAPDSS: MANAGER: Check LCD related overlay manager parameters
+Message-Id: <1340893842-10626-10-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1340893842-10626-1-git-send-email-archit@ti.com>
+In-Reply-To: <1340893842-10626-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: linaro-mm-sig@lists.linaro.org, linux-media@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Add support for the dma-buf exporter role to the frame buffer API. The
-importer role isn't meaningful for frame buffer devices, as the frame
-buffer device model doesn't allow using externally allocated memory.
+The LCD related manager configurations are a part of the manager's private data
+in APPLY. Pass this to dss_lcd_mgr_config to dss_mgr_check and create a function
+to check the validity of some of the configurations.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To check some of the configurations, we require information of interface to
+which the manager output is connected. These can be added once interfaces are
+represented as an entity.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- Documentation/fb/api.txt |   36 ++++++++++++++++++++++++++++++++++++
- drivers/video/fbmem.c    |   36 ++++++++++++++++++++++++++++++++++++
- include/linux/fb.h       |   12 ++++++++++++
- 3 files changed, 84 insertions(+), 0 deletions(-)
+ drivers/video/omap2/dss/apply.c   |    2 +-
+ drivers/video/omap2/dss/dss.h     |    1 +
+ drivers/video/omap2/dss/manager.c |   35 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 37 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/fb/api.txt b/Documentation/fb/api.txt
-index d4ff7de..f0b2173 100644
---- a/Documentation/fb/api.txt
-+++ b/Documentation/fb/api.txt
-@@ -304,3 +304,39 @@ extensions.
- Upon successful format configuration, drivers update the fb_fix_screeninfo
- type, visual and line_length fields depending on the selected format. The type
- and visual fields are set to FB_TYPE_FOURCC and FB_VISUAL_FOURCC respectively.
-+
-+
-+5. DMA buffer sharing
-+---------------------
-+
-+The dma-buf kernel framework allows DMA buffers to be shared across devices
-+and applications. Sharing buffers across display devices and video capture or
-+video decoding devices allow zero-copy operation when displaying video content
-+produced by a hardware device such as a camera or a hardware codec. This is
-+crucial to achieve optimal system performances during video display.
-+
-+While dma-buf supports both exporting internally allocated memory as a dma-buf
-+object (known as the exporter role) and importing a dma-buf object to be used
-+as device memory (known as the importer role), the frame buffer API only
-+supports the exporter role, as the frame buffer device model doesn't support
-+using externally-allocated memory.
-+
-+The export a frame buffer as a dma-buf file descriptors, applications call the
-+FBIOGET_DMABUF ioctl. The ioctl takes a pointer to a fb_dmabuf_export
-+structure.
-+
-+struct fb_dmabuf_export {
-+	__u32 fd;
-+	__u32 flags;
-+};
-+
-+The flag field specifies the flags to be used when creating the dma-buf file
-+descriptor. The only supported flag is O_CLOEXEC. If the call is successful,
-+the driver will set the fd field to a file descriptor corresponding to the
-+dma-buf object.
-+
-+Applications can then pass the file descriptors to another application or
-+another device driver. The dma-buf object is automatically reference-counted,
-+applications can and should close the file descriptor as soon as they don't
-+need it anymore. The underlying dma-buf object will not be freed before the
-+last device that uses the dma-buf object releases it.
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 0dff12a..400e449 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -15,6 +15,7 @@
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index bb4ec63..95a6713 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -226,7 +226,7 @@ static int dss_check_settings_low(struct omap_overlay_manager *mgr,
+ 		ois[ovl->id] = oi;
+ 	}
  
- #include <linux/compat.h>
- #include <linux/types.h>
-+#include <linux/dma-buf.h>
- #include <linux/errno.h>
- #include <linux/kernel.h>
- #include <linux/major.h>
-@@ -1074,6 +1075,23 @@ fb_blank(struct fb_info *info, int blank)
-  	return ret;
+-	return dss_mgr_check(mgr, mi, &mp->timings, ois);
++	return dss_mgr_check(mgr, mi, &mp->timings, &mp->lcd_config, ois);
  }
  
-+#ifdef CONFIG_DMA_SHARED_BUFFER
-+int
-+fb_get_dmabuf(struct fb_info *info, int flags)
+ /*
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index b4c52ec..cb859e3 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -235,6 +235,7 @@ int dss_mgr_check_timings(struct omap_overlay_manager *mgr,
+ int dss_mgr_check(struct omap_overlay_manager *mgr,
+ 		struct omap_overlay_manager_info *info,
+ 		const struct omap_video_timings *mgr_timings,
++		const struct dss_lcd_mgr_config *config,
+ 		struct omap_overlay_info **overlay_infos);
+ 
+ static inline bool dss_mgr_is_lcd(enum omap_channel id)
+diff --git a/drivers/video/omap2/dss/manager.c b/drivers/video/omap2/dss/manager.c
+index 0cbcde4..09540bc 100644
+--- a/drivers/video/omap2/dss/manager.c
++++ b/drivers/video/omap2/dss/manager.c
+@@ -665,9 +665,40 @@ int dss_mgr_check_timings(struct omap_overlay_manager *mgr,
+ 	return 0;
+ }
+ 
++static int dss_mgr_check_lcd_config(struct omap_overlay_manager *mgr,
++		const struct dss_lcd_mgr_config *config)
 +{
-+	struct dma_buf *dmabuf;
++	struct dispc_clock_info cinfo = config->clock_info;
++	int dl = config->video_port_width;
++	bool stallmode = config->stallmode;
++	bool fifohandcheck = config->fifohandcheck;
 +
-+	if (info->fbops->fb_dmabuf_export = NULL)
-+		return -ENOTTY;
++	if (cinfo.lck_div < 1 || cinfo.lck_div > 255)
++		return -EINVAL;
 +
-+	dmabuf = info->fbops->fb_dmabuf_export(info);
-+	if (IS_ERR(dmabuf))
-+		return PTR_ERR(dmabuf);
++	if (cinfo.pck_div < 1 || cinfo.pck_div > 255)
++		return -EINVAL;
 +
-+	return dma_buf_fd(dmabuf, flags);
++	if (dl != 12 && dl != 16 && dl != 18 && dl != 24)
++		return -EINVAL;
++
++	/* fifohandcheck should be used only with stallmode */
++	if (stallmode = false && fifohandcheck = true)
++		return -EINVAL;
++
++	/*
++	 * io pad mode can be only checked by using dssdev connected to the
++	 * manager. Ignore checking these for now, add checks when manager
++	 * is capable of holding information related to the connected interface
++	 */
++
++	return 0;
 +}
-+#endif
 +
- static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 			unsigned long arg)
+ int dss_mgr_check(struct omap_overlay_manager *mgr,
+ 		struct omap_overlay_manager_info *info,
+ 		const struct omap_video_timings *mgr_timings,
++		const struct dss_lcd_mgr_config *lcd_config,
+ 		struct omap_overlay_info **overlay_infos)
  {
-@@ -1084,6 +1102,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 	struct fb_cmap cmap_from;
- 	struct fb_cmap_user cmap;
- 	struct fb_event event;
-+	struct fb_dmabuf_export dmaexp;
- 	void __user *argp = (void __user *)arg;
- 	long ret = 0;
+ 	struct omap_overlay *ovl;
+@@ -683,6 +714,10 @@ int dss_mgr_check(struct omap_overlay_manager *mgr,
+ 	if (r)
+ 		return r;
  
-@@ -1191,6 +1210,23 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 		console_unlock();
- 		unlock_fb_info(info);
- 		break;
-+#ifdef CONFIG_DMA_SHARED_BUFFER
-+	case FBIOGET_DMABUF:
-+		if (copy_from_user(&dmaexp, argp, sizeof(dmaexp)))
-+			return -EFAULT;
++	r = dss_mgr_check_lcd_config(mgr, lcd_config);
++	if (r)
++		return r;
 +
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
-+		dmaexp.fd = fb_get_dmabuf(info, dmaexp.flags);
-+		unlock_fb_info(info);
-+
-+		if (dmaexp.fd < 0)
-+			return dmaexp.fd;
-+
-+		ret = copy_to_user(argp, &dmaexp, sizeof(dmaexp))
-+		    ? -EFAULT : 0;
-+		break;
-+#endif
- 	default:
- 		if (!lock_fb_info(info))
- 			return -ENODEV;
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index ac3f1c6..c9fee75 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -39,6 +39,7 @@
- #define FBIOPUT_MODEINFO        0x4617
- #define FBIOGET_DISPINFO        0x4618
- #define FBIO_WAITFORVSYNC	_IOW('F', 0x20, __u32)
-+#define FBIOGET_DMABUF		_IOR('F', 0x21, struct fb_dmabuf_export)
- 
- #define FB_TYPE_PACKED_PIXELS		0	/* Packed Pixels	*/
- #define FB_TYPE_PLANES			1	/* Non interleaved planes */
-@@ -403,6 +404,11 @@ struct fb_cursor {
- #define FB_BACKLIGHT_MAX	0xFF
- #endif
- 
-+struct fb_dmabuf_export {
-+	__u32 fd;
-+	__u32 flags;
-+};
-+
- #ifdef __KERNEL__
- 
- #include <linux/fs.h>
-@@ -418,6 +424,7 @@ struct vm_area_struct;
- struct fb_info;
- struct device;
- struct file;
-+struct dma_buf;
- 
- /* Definitions below are used in the parsed monitor specs */
- #define FB_DPMS_ACTIVE_OFF	1
-@@ -701,6 +708,11 @@ struct fb_ops {
- 	/* called at KDB enter and leave time to prepare the console */
- 	int (*fb_debug_enter)(struct fb_info *info);
- 	int (*fb_debug_leave)(struct fb_info *info);
-+
-+#ifdef CONFIG_DMA_SHARED_BUFFER
-+	/* Export the frame buffer as a dmabuf object */
-+	struct dma_buf *(*fb_dmabuf_export)(struct fb_info *info);
-+#endif
- };
- 
- #ifdef CONFIG_FB_TILEBLITTING
+ 	list_for_each_entry(ovl, &mgr->overlays, list) {
+ 		struct omap_overlay_info *oi;
+ 		int r;
 -- 
-Regards,
-
-Laurent Pinchart
+1.7.9.5
 

@@ -1,45 +1,138 @@
-From: Fengguang Wu <fengguang.wu@intel.com>
-Date: Sun, 24 Jun 2012 05:21:38 +0000
-Subject: boot hang on CONFIG_FB_VGA16
-Message-Id: <20120624052138.GA6965@localhost>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 28 Jun 2012 14:42:42 +0000
+Subject: [PATCH 12/12] OMAPDSS: OVERLAY: Clean up replication checking
+Message-Id: <1340893842-10626-14-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1340893842-10626-1-git-send-email-archit@ti.com>
+In-Reply-To: <1340893842-10626-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Hi,
+Replication logic for an overlay depends on the color mode in which it is
+configured and the video port width of the manager it is connected to.
 
-I can reproduce this easily when running CONFIG_FB_VGA16=y kernels
-inside KVM. Older kernels like 3.2, 3.3, 3.4 don't have these warning
-messages, but just randomly hang during boot.
+video port width now held in dss_lcd_mgr_config in the manager's private
+data in APPLY. Use this instead of referring to the omap_dss_device connected to
+the manager.
 
-I'm not sure if this is a relevant problem, but anyway, here is the
-bug report.
+Replication is enabled in the case of TV manager, the video_port_width is set to
+a default value of 24 for TV manager.
 
-INFO: rcu_sched self-detected stall on CPU { 1}  (t003 jiffies)
-Pid: 8, comm: kworker/1:0 Not tainted 3.5.0-rc3-wl+ #11
-Call Trace:
- <IRQ>  [<ffffffff810a1e35>] __rcu_pending+0xc2/0x3c3
- [<ffffffff8107a1bc>] ? tick_nohz_handler+0xd5/0xd5
- [<ffffffff810a3052>] rcu_check_callbacks+0x9d/0x149
- [<ffffffff81061b01>] ? sched_clock_cpu+0xbb/0xcc
- [<ffffffff8103db27>] update_process_times+0x3e/0x72
- [<ffffffff8107a228>] tick_sched_timer+0x6c/0x95
- [<ffffffff81061b21>] ? local_clock+0xf/0x3c
- [<ffffffff810537d3>] __run_hrtimer+0xcf/0x1d1
- [<ffffffff810541c6>] hrtimer_interrupt+0xc6/0x191
- [<ffffffff817bc52a>] smp_apic_timer_interrupt+0x86/0x99
- [<ffffffff817bb51c>] apic_timer_interrupt+0x6c/0x80
- <EOI>  [<ffffffff81030a8c>] ? console_unlock+0x21b/0x2c5
- [<ffffffff813304a1>] ? update_attr.isra.1+0x8a/0x8a
- [<ffffffff8132b7a7>] fb_flashcursor+0x114/0x123
- [<ffffffff81048529>] process_one_work+0x238/0x45c
- [<ffffffff8104848c>] ? process_one_work+0x19b/0x45c
- [<ffffffff8132b693>] ? get_color+0xfd/0xfd
- [<ffffffff8104876e>] process_scheduled_works+0x21/0x2f
- [<ffffffff810488f5>] worker_thread+0x179/0x240
+Make the replication checking an overlay function since it's more of an overlay
+characteristic than a display characteristic.
 
-Thanks,
-Fengguang
+Signed-off-by: Archit Taneja <archit@ti.com>
+---
+ drivers/video/omap2/dss/apply.c   |    2 +-
+ drivers/video/omap2/dss/display.c |   34 ----------------------------------
+ drivers/video/omap2/dss/dss.h     |    4 ++--
+ drivers/video/omap2/dss/overlay.c |   13 +++++++++++++
+ 4 files changed, 16 insertions(+), 37 deletions(-)
+
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index b9c6e75..89ee677 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -571,7 +571,7 @@ static void dss_ovl_write_regs(struct omap_overlay *ovl)
+ 
+ 	mp = get_mgr_priv(ovl->manager);
+ 
+-	replication = dss_use_replication(ovl->manager->device, oi->color_mode);
++	replication = dss_ovl_use_replication(mp->lcd_config, oi->color_mode);
+ 
+ 	r = dispc_ovl_setup(ovl->id, oi, replication, &mp->timings);
+ 	if (r) {
+diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
+index 1d8198e..9433b92 100644
+--- a/drivers/video/omap2/dss/display.c
++++ b/drivers/video/omap2/dss/display.c
+@@ -316,40 +316,6 @@ void omapdss_default_get_timings(struct omap_dss_device *dssdev,
+ }
+ EXPORT_SYMBOL(omapdss_default_get_timings);
+ 
+-/* Checks if replication logic should be used. Only use for active matrix,
+- * when overlay is in RGB12U or RGB16 mode, and LCD interface is
+- * 18bpp or 24bpp */
+-bool dss_use_replication(struct omap_dss_device *dssdev,
+-		enum omap_color_mode mode)
+-{
+-	int bpp;
+-
+-	if (mode != OMAP_DSS_COLOR_RGB12U && mode != OMAP_DSS_COLOR_RGB16)
+-		return false;
+-
+-	switch (dssdev->type) {
+-	case OMAP_DISPLAY_TYPE_DPI:
+-		bpp = dssdev->phy.dpi.data_lines;
+-		break;
+-	case OMAP_DISPLAY_TYPE_HDMI:
+-	case OMAP_DISPLAY_TYPE_VENC:
+-	case OMAP_DISPLAY_TYPE_SDI:
+-		bpp = 24;
+-		break;
+-	case OMAP_DISPLAY_TYPE_DBI:
+-		bpp = dssdev->ctrl.pixel_size;
+-		break;
+-	case OMAP_DISPLAY_TYPE_DSI:
+-		bpp = dsi_get_pixel_size(dssdev->panel.dsi_pix_fmt);
+-		break;
+-	default:
+-		BUG();
+-		return false;
+-	}
+-
+-	return bpp > 16;
+-}
+-
+ void dss_init_device(struct platform_device *pdev,
+ 		struct omap_dss_device *dssdev)
+ {
+diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
+index cb859e3..018b27c 100644
+--- a/drivers/video/omap2/dss/dss.h
++++ b/drivers/video/omap2/dss/dss.h
+@@ -222,8 +222,6 @@ void dss_init_device(struct platform_device *pdev,
+ 		struct omap_dss_device *dssdev);
+ void dss_uninit_device(struct platform_device *pdev,
+ 		struct omap_dss_device *dssdev);
+-bool dss_use_replication(struct omap_dss_device *dssdev,
+-		enum omap_color_mode mode);
+ 
+ /* manager */
+ int dss_init_overlay_managers(struct platform_device *pdev);
+@@ -255,6 +253,8 @@ int dss_ovl_simple_check(struct omap_overlay *ovl,
+ 		const struct omap_overlay_info *info);
+ int dss_ovl_check(struct omap_overlay *ovl, struct omap_overlay_info *info,
+ 		const struct omap_video_timings *mgr_timings);
++bool dss_ovl_use_replication(struct dss_lcd_mgr_config config,
++		enum omap_color_mode mode);
+ 
+ /* DSS */
+ int dss_init_platform_driver(void) __init;
+diff --git a/drivers/video/omap2/dss/overlay.c b/drivers/video/omap2/dss/overlay.c
+index c492bb0..0a129dc 100644
+--- a/drivers/video/omap2/dss/overlay.c
++++ b/drivers/video/omap2/dss/overlay.c
+@@ -677,3 +677,16 @@ int dss_ovl_check(struct omap_overlay *ovl, struct omap_overlay_info *info,
+ 
+ 	return 0;
+ }
++
++/*
++ * Checks if replication logic should be used. Only use when overlay is in
++ * RGB12U or RGB16 mode, and video port width interface is 18bpp or 24bpp
++ */
++bool dss_ovl_use_replication(struct dss_lcd_mgr_config config,
++		enum omap_color_mode mode)
++{
++	if (mode != OMAP_DSS_COLOR_RGB12U && mode != OMAP_DSS_COLOR_RGB16)
++		return false;
++
++	return config.video_port_width > 16;
++}
+-- 
+1.7.9.5
+

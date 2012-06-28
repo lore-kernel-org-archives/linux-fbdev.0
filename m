@@ -1,46 +1,62 @@
 From: Archit Taneja <archit@ti.com>
-Date: Tue, 26 Jun 2012 09:48:43 +0000
-Subject: [PATCH 06/17] OMAPDSS: DISPLAY: Ignore newly added omap_video_timings fields for display timings sys
-Message-Id: <1340703414-1915-8-git-send-email-archit@ti.com>
+Date: Thu, 28 Jun 2012 14:42:39 +0000
+Subject: [PATCH 09/12] OMAPDSS: APPLY: Remove usage of omap_dss_device from manual/auto update checks
+Message-Id: <1340893842-10626-11-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340703414-1915-1-git-send-email-archit@ti.com>
-In-Reply-To: <1340703414-1915-1-git-send-email-archit@ti.com>
+References: <1340893842-10626-1-git-send-email-archit@ti.com>
+In-Reply-To: <1340893842-10626-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: rob@ti.com, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-The display sysfs file for viewing/storing display timings is something which
-will be deprecated. The new omap_video_timings fields (hsync_level, vsync_level
-and others) are not configurable or viewable via this sysfs file.
+APPLY needs to know at certain places whether an overlay manager is in manual
+or auto update mode. The caps of the connected omap_dss_device were used to
+check that.
 
-This prevents the need to make the input more configurable to take the new
-fields and at the same time work without these fields for backward
-compatibility.
+A LCD manager is in manual update if stallmode is enabled for that manager. TV
+managers for now always auto update.
 
-In display_timings_store, the omap_video_timings struct used to set the timings
-is initialized to the existing panel timings so that the new fields are taken in
-correctly. The other fields are taken from the user as before.
+Return the value of stallmode parameter in the private data 'lcd_confg' in
+mgr_manual_update() and ovl_manual_update(), for TV managers stallmode field
+will be false by default.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/display.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/omap2/dss/apply.c |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/display.c b/drivers/video/omap2/dss/display.c
-index 37d6504..1d8198e 100644
---- a/drivers/video/omap2/dss/display.c
-+++ b/drivers/video/omap2/dss/display.c
-@@ -116,7 +116,7 @@ static ssize_t display_timings_store(struct device *dev,
- 		struct device_attribute *attr, const char *buf, size_t size)
- {
- 	struct omap_dss_device *dssdev = to_dss_device(dev);
--	struct omap_video_timings t;
-+	struct omap_video_timings t = dssdev->panel.timings;
- 	int r, found;
+diff --git a/drivers/video/omap2/dss/apply.c b/drivers/video/omap2/dss/apply.c
+index 95a6713..b9c6e75 100644
+--- a/drivers/video/omap2/dss/apply.c
++++ b/drivers/video/omap2/dss/apply.c
+@@ -182,14 +182,23 @@ void dss_apply_init(void)
+ 	mp->lcd_config.clock_info.pck_div = 1;
+ }
  
- 	if (!dssdev->driver->set_timings || !dssdev->driver->check_timings)
++/*
++ * A LCD manager's stallmode decides whether it is in manual or auto update. TV
++ * manager is always auto update, stallmode field for TV manager is false by
++ * default
++ */
+ static bool ovl_manual_update(struct omap_overlay *ovl)
+ {
+-	return ovl->manager->device->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE;
++	struct mgr_priv_data *mp = get_mgr_priv(ovl->manager);
++
++	return mp->lcd_config.stallmode;
+ }
+ 
+ static bool mgr_manual_update(struct omap_overlay_manager *mgr)
+ {
+-	return mgr->device->caps & OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE;
++	struct mgr_priv_data *mp = get_mgr_priv(mgr);
++
++	return mp->lcd_config.stallmode;
+ }
+ 
+ static int dss_check_settings_low(struct omap_overlay_manager *mgr,
 -- 
 1.7.9.5
 

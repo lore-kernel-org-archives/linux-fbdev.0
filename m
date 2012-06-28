@@ -1,125 +1,61 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Sat, 16 Jun 2012 22:04:22 +0000
-Subject: [PATCH 06/10] fblog: allow enabling/disabling fblog on runtime
-Message-Id: <1339884266-9201-7-git-send-email-dh.herrmann@googlemail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 28 Jun 2012 14:42:29 +0000
+Subject: [PATCH 00/12] OMAPDSS: Apply LCD manager related parameters
+Message-Id: <1340893842-10626-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
-In-Reply-To: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-serial@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Herrmann <dh.herrmann@googlemail.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-A sysfs file called "active" can be used to enable and disable fblog on
-runtime. For example, the init-process can run "echo '0' >.../active"
-after booting the system. This will allow other applications like X11 to
-use the graphics subsystem. During shutdown, we can write '1' to get
-system messages again.
+The LCD interface drivers(DPI, DSI, RFBI, SDI) do some direct DISPC register
+writes to configure LCD manager related fields. This series groups these fields
+into a single struct, and let's the interface driver apply these parameters.
 
-When disabling fblog, we remove all framebuffers and will prevent new
-hotplugged framebuffers from being added. When enabling fblog again, we
-rescan the system for all framebuffers and resume operating.
+This allows us to:
 
-The sysfs file is not registered, yet, as we do not have a "struct device"
-yet. This will follow shortly, though.
+- Check the LCD manager related parameters before applying them.
+- Remove some omap_dss_device references as APPLY holds the applied parameters.
 
-Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
----
- Documentation/ABI/testing/sysfs-fblog |    9 ++++++
- drivers/video/console/fblog.c         |   49 +++++++++++++++++++++++++++++++++
- 2 files changed, 58 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-fblog
+Pushed onto the branch:
 
-diff --git a/Documentation/ABI/testing/sysfs-fblog b/Documentation/ABI/testing/sysfs-fblog
-new file mode 100644
-index 0000000..596393c
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-fblog
-@@ -0,0 +1,9 @@
-+What:		/sys/class/graphics/fblog/active
-+Date:		June 2012
-+KernelVersion:	3.6
-+Contact:	David Herrmann <dh.herrmann@googlemail.com>
-+Description:	Enable/Disable fblog. When setting this to 0, fblog will stop
-+		writing to framebuffers and other applications can use the
-+		graphics subsystem. When setting this to 1, fblog will rescan
-+		the system for all framebuffers and resume drawing the kernel
-+		log onto all framebuffers.
-diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
-index 7d4032e..9b05c56 100644
---- a/drivers/video/console/fblog.c
-+++ b/drivers/video/console/fblog.c
-@@ -92,6 +92,7 @@ struct fblog_fb {
- };
- 
- static struct fblog_fb *fblog_fbs[FB_MAX];
-+static atomic_t fblog_active;
- 
- static void fblog_buf_resize(struct fblog_buf *buf, size_t width,
- 			     size_t height)
-@@ -338,6 +339,8 @@ static void fblog_register(struct fb_info *info)
- 	const struct fb_videomode *mode;
- 	unsigned int width, height;
- 
-+	if (!atomic_read(&fblog_active))
-+		return;
- 	if (!info || info->node < 0 || info->node >= FB_MAX)
- 		return;
- 	if (!registered_fb[info->node] || fblog_fbs[info->node])
-@@ -428,6 +431,52 @@ static void fblog_refresh(struct fblog_fb *fb)
- 	fblog_redraw(fb);
- }
- 
-+static void fblog_activate(void)
-+{
-+	if (atomic_read(&fblog_active))
-+		return;
-+
-+	atomic_set(&fblog_active, 1);
-+	fblog_register_all();
-+}
-+
-+static void fblog_deactivate(void)
-+{
-+	if (!atomic_read(&fblog_active))
-+		return;
-+
-+	atomic_set(&fblog_active, 0);
-+	fblog_unregister_all();
-+}
-+
-+static ssize_t fblog_dev_active_show(struct device *dev,
-+				     struct device_attribute *attr,
-+				     char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%d\n", atomic_read(&fblog_active));
-+}
-+
-+static ssize_t fblog_dev_active_store(struct device *dev,
-+				      struct device_attribute *attr,
-+				      const char *buf,
-+				      size_t count)
-+{
-+	unsigned long num;
-+
-+	num = simple_strtoul(buf, NULL, 10);
-+	console_lock();
-+	if (num)
-+		fblog_activate();
-+	else
-+		fblog_deactivate();
-+	console_unlock();
-+
-+	return count;
-+}
-+
-+static DEVICE_ATTR(active, S_IRUGO | S_IWUSR | S_IWGRP, fblog_dev_active_show,
-+		   fblog_dev_active_store);
-+
- static int __init fblog_init(void)
- {
- 	return 0;
+git://gitorious.org/~boddob/linux-omap-dss2/archit-dss2-clone.git apply_lcd_mgr_params
+
+Tested on 3430SDP, 4430SDP ans Pandaboard ES.
+
+Archit Taneja (12):
+  OMAPDSS: DISPC: Change return type of dispc_mgr_set_clock_div()
+  OMAPDSS: Add struct to hold LCD overlay manager configuration
+  OMAPDSS: DPI: Configure dss_lcd_mgr_config struct with lcd manager
+    parameters
+  OMAPDSS: RFBI: Configure dss_lcd_mgr_config struct with lcd manager
+    parameters
+  OMAPDSS: DSI: Configure dss_lcd_mgr_config struct with lcd manager
+    parameters
+  OMAPDSS: SDI: Configure dss_lcd_mgr_config struct with lcd manager
+    parameters
+  OMAPDSS: APPLY: Remove DISPC writes to manager's lcd parameters in
+    interface drivers
+  OMAPDSS: MANAGER: Check LCD related overlay manager parameters
+  OMAPDSS: APPLY: Remove usage of omap_dss_device from manual/auto
+    update checks
+  OMAPDSS: DISPC: Remove a redundant function
+  OMAPDSS: RFBI: Use dss_mgr_enable to enable the overlay manager
+  OMAPDSS: OVERLAY: Clean up replication checking
+
+ drivers/video/omap2/dss/apply.c   |   82 ++++++++++++++++++++++++++--
+ drivers/video/omap2/dss/dispc.c   |   31 ++++-------
+ drivers/video/omap2/dss/display.c |   34 ------------
+ drivers/video/omap2/dss/dpi.c     |   31 ++++++-----
+ drivers/video/omap2/dss/dsi.c     |  108 ++++++++++++++++++++++---------------
+ drivers/video/omap2/dss/dss.h     |   30 +++++++++--
+ drivers/video/omap2/dss/manager.c |   35 ++++++++++++
+ drivers/video/omap2/dss/overlay.c |   13 +++++
+ drivers/video/omap2/dss/rfbi.c    |   39 ++++++++++----
+ drivers/video/omap2/dss/sdi.c     |   32 +++++------
+ 10 files changed, 286 insertions(+), 149 deletions(-)
+
 -- 
-1.7.10.4
+1.7.9.5
 

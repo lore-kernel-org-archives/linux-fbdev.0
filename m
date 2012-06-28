@@ -1,7 +1,7 @@
 From: Archit Taneja <archit@ti.com>
-Date: Thu, 28 Jun 2012 14:42:32 +0000
-Subject: [PATCH 02/12] OMAPDSS: Add struct to hold LCD overlay manager configuration
-Message-Id: <1340893842-10626-4-git-send-email-archit@ti.com>
+Date: Thu, 28 Jun 2012 14:42:40 +0000
+Subject: [PATCH 10/12] OMAPDSS: DISPC: Remove a redundant function
+Message-Id: <1340893842-10626-12-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1340893842-10626-1-git-send-email-archit@ti.com>
 In-Reply-To: <1340893842-10626-1-git-send-email-archit@ti.com>
@@ -11,43 +11,115 @@ Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Create a struct dss_lcd_mgr_config which holds LCD overlay manager related
-parameters. These are currently partially contained in the omap_dss_device
-connected to the manager, and the rest are in the interface driver.
-
-The parameters are directly written to the DISPC registers in the interface
-drivers. These should eventually be applied at the correct time using the
-shadow register programming model. This struct would help in grouping these
-parameters so that they can be applied together.
+dss_mgr_is_lcd() available in dss.h does the same thing as dispc_mgr_is_lcd()
+in dispc.c. Remove the function from dispc.c and replace it with the one in
+dss.h.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dss.h |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/video/omap2/dss/dispc.c |   27 +++++++++------------------
+ 1 file changed, 9 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dss.h b/drivers/video/omap2/dss/dss.h
-index f8289e9..6688eaf 100644
---- a/drivers/video/omap2/dss/dss.h
-+++ b/drivers/video/omap2/dss/dss.h
-@@ -152,6 +152,19 @@ struct dsi_clock_info {
- 	u16 lp_clk_div;
- };
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index b047fe6..0e0b89c 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -387,15 +387,6 @@ void dispc_runtime_put(void)
+ 	WARN_ON(r < 0);
+ }
  
-+struct dss_lcd_mgr_config {
-+	enum dss_io_pad_mode io_pad_mode;
-+
-+	bool stallmode;
-+	bool fifohandcheck;
-+
-+	struct dispc_clock_info clock_info;
-+
-+	int video_port_width;
-+
-+	int lcden_sig_polarity;
-+};
-+
- struct seq_file;
- struct platform_device;
+-static inline bool dispc_mgr_is_lcd(enum omap_channel channel)
+-{
+-	if (channel = OMAP_DSS_CHANNEL_LCD ||
+-			channel = OMAP_DSS_CHANNEL_LCD2)
+-		return true;
+-	else
+-		return false;
+-}
+-
+ u32 dispc_mgr_get_vsync_irq(enum omap_channel channel)
+ {
+ 	switch (channel) {
+@@ -430,7 +421,7 @@ bool dispc_mgr_go_busy(enum omap_channel channel)
+ {
+ 	int bit;
+ 
+-	if (dispc_mgr_is_lcd(channel))
++	if (dss_mgr_is_lcd(channel))
+ 		bit = 5; /* GOLCD */
+ 	else
+ 		bit = 6; /* GODIGIT */
+@@ -446,7 +437,7 @@ void dispc_mgr_go(enum omap_channel channel)
+ 	int bit;
+ 	bool enable_bit, go_bit;
+ 
+-	if (dispc_mgr_is_lcd(channel))
++	if (dss_mgr_is_lcd(channel))
+ 		bit = 0; /* LCDENABLE */
+ 	else
+ 		bit = 1; /* DIGITALENABLE */
+@@ -460,7 +451,7 @@ void dispc_mgr_go(enum omap_channel channel)
+ 	if (!enable_bit)
+ 		return;
+ 
+-	if (dispc_mgr_is_lcd(channel))
++	if (dss_mgr_is_lcd(channel))
+ 		bit = 5; /* GOLCD */
+ 	else
+ 		bit = 6; /* GODIGIT */
+@@ -939,7 +930,7 @@ static void dispc_mgr_set_cpr_coef(enum omap_channel channel,
+ {
+ 	u32 coef_r, coef_g, coef_b;
+ 
+-	if (!dispc_mgr_is_lcd(channel))
++	if (!dss_mgr_is_lcd(channel))
+ 		return;
+ 
+ 	coef_r = FLD_VAL(coefs->rr, 31, 22) | FLD_VAL(coefs->rg, 20, 11) |
+@@ -1798,7 +1789,7 @@ static int check_horiz_timing_omap3(enum omap_channel channel,
+ 
+ 	nonactive = t->x_res + t->hfp + t->hsw + t->hbp - out_width;
+ 	pclk = dispc_mgr_pclk_rate(channel);
+-	if (dispc_mgr_is_lcd(channel))
++	if (dss_mgr_is_lcd(channel))
+ 		lclk = dispc_mgr_lclk_rate(channel);
+ 	else
+ 		lclk = dispc_fclk_rate();
+@@ -2398,7 +2389,7 @@ bool dispc_mgr_is_enabled(enum omap_channel channel)
+ 
+ void dispc_mgr_enable(enum omap_channel channel, bool enable)
+ {
+-	if (dispc_mgr_is_lcd(channel))
++	if (dss_mgr_is_lcd(channel))
+ 		dispc_mgr_enable_lcd_out(channel, enable);
+ 	else if (channel = OMAP_DSS_CHANNEL_DIGIT)
+ 		dispc_mgr_enable_digit_out(enable);
+@@ -2610,7 +2601,7 @@ bool dispc_mgr_timings_ok(enum omap_channel channel,
+ 
+ 	timings_ok = _dispc_mgr_size_ok(timings->x_res, timings->y_res);
+ 
+-	if (dispc_mgr_is_lcd(channel))
++	if (dss_mgr_is_lcd(channel))
+ 		timings_ok =  timings_ok && _dispc_lcd_timings_ok(timings->hsw,
+ 						timings->hfp, timings->hbp,
+ 						timings->vsw, timings->vfp,
+@@ -2702,7 +2693,7 @@ void dispc_mgr_set_timings(enum omap_channel channel,
+ 		return;
+ 	}
+ 
+-	if (dispc_mgr_is_lcd(channel)) {
++	if (dss_mgr_is_lcd(channel)) {
+ 		_dispc_mgr_set_lcd_timings(channel, t.hsw, t.hfp, t.hbp, t.vsw,
+ 				t.vfp, t.vbp, t.vsync_level, t.hsync_level,
+ 				t.pclk_edge, t.de_level, t.hsync_vsync_edge);
+@@ -2808,7 +2799,7 @@ unsigned long dispc_mgr_pclk_rate(enum omap_channel channel)
+ {
+ 	unsigned long r;
+ 
+-	if (dispc_mgr_is_lcd(channel)) {
++	if (dss_mgr_is_lcd(channel)) {
+ 		int pcd;
+ 		u32 l;
  
 -- 
 1.7.9.5

@@ -1,119 +1,146 @@
-From: Archit Taneja <archit@ti.com>
-Date: Thu, 28 Jun 2012 14:42:36 +0000
-Subject: [PATCH 06/12] OMAPDSS: SDI: Configure dss_lcd_mgr_config struct with lcd manager parameters
-Message-Id: <1340893842-10626-8-git-send-email-archit@ti.com>
+From: Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Date: Thu, 28 Jun 2012 09:53:42 +0000
+Subject: [PATCH 4/4] OMAPDSS: Add dump and debug support for LCD3
+Message-Id: <48752654ac49d86b04c320f0d07f0a33b908dcbf.1340874806.git.cmahapatra@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340893842-10626-1-git-send-email-archit@ti.com>
-In-Reply-To: <1340893842-10626-1-git-send-email-archit@ti.com>
+References: <cover.1340874806.git.cmahapatra@ti.com>
+In-Reply-To: <cover.1340874806.git.cmahapatra@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
 
-Create a dss_lcd_mgr_config struct instance in SDI. Fill up all the parameters
-of the struct with configurations held by the panel, and the configurations
-required by SDI.
+DISPC functions have been modified to provide clock and register dumps and debug
+support for the LCD3 manager.
 
-Use these to write to the DISPC registers. These direct register writes would be
-later replaced by a function which applies the configuration using the shadow
-register programming model.
-
-Create function sdi_config_lcd_manager() which fills the mgr_config parameters
-and writes to the DISPC registers
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Chandrabhanu Mahapatra <cmahapatra@ti.com>
 ---
- drivers/video/omap2/dss/sdi.c |   42 +++++++++++++++++++++++++----------------
- 1 file changed, 26 insertions(+), 16 deletions(-)
+ drivers/video/omap2/dss/dispc.c |   70 ++++++++++++++++++++++----------------
+ 1 files changed, 40 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
-index 0b2659f..f6cd96c 100644
---- a/drivers/video/omap2/dss/sdi.c
-+++ b/drivers/video/omap2/dss/sdi.c
-@@ -32,18 +32,34 @@
- static struct {
- 	bool update_enabled;
- 	struct regulator *vdds_sdi_reg;
--} sdi;
- 
--static void sdi_basic_init(struct omap_dss_device *dssdev)
-+	struct dss_lcd_mgr_config mgr_config;
-+} sdi;
- 
-+static void sdi_config_lcd_manager(struct omap_dss_device *dssdev)
- {
--	dispc_mgr_set_io_pad_mode(DSS_IO_PAD_MODE_BYPASS);
--	dispc_mgr_enable_stallmode(dssdev->manager->id, false);
-+	sdi.mgr_config.io_pad_mode = DSS_IO_PAD_MODE_BYPASS;
- 
--	dispc_mgr_set_lcd_type_tft(dssdev->manager->id);
-+	sdi.mgr_config.stallmode = false;
-+	sdi.mgr_config.fifohandcheck = false;
-+
-+	sdi.mgr_config.video_port_width = 24;
-+	sdi.mgr_config.lcden_sig_polarity = 1;
-+
-+	dispc_mgr_set_io_pad_mode(sdi.mgr_config.io_pad_mode);
-+	dispc_mgr_enable_stallmode(dssdev->manager->id,
-+			sdi.mgr_config.stallmode);
-+	dispc_mgr_enable_fifohandcheck(dssdev->manager->id,
-+			sdi.mgr_config.fifohandcheck);
- 
--	dispc_mgr_set_tft_data_lines(dssdev->manager->id, 24);
--	dispc_lcd_enable_signal_polarity(1);
-+	dispc_mgr_set_clock_div(dssdev->manager->id,
-+			&sdi.mgr_config.clock_info);
-+
-+	dispc_mgr_set_tft_data_lines(dssdev->manager->id,
-+			sdi.mgr_config.video_port_width);
-+	dispc_lcd_enable_signal_polarity(sdi.mgr_config.lcden_sig_polarity);
-+
-+	dispc_mgr_set_lcd_type_tft(dssdev->manager->id);
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 644ff53..29b92ea 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -2854,12 +2854,32 @@ unsigned long dispc_core_clk_rate(void)
+ 	return fclk / lcd;
  }
  
- int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
-@@ -51,8 +67,6 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- 	struct omap_video_timings *t = &dssdev->panel.timings;
- 	struct dss_clock_info dss_cinfo;
- 	struct dispc_clock_info dispc_cinfo;
--	u16 lck_div, pck_div;
--	unsigned long fck;
- 	unsigned long pck;
- 	int r;
+-void dispc_dump_clocks(struct seq_file *s)
++void dispc_dump_clocks_channel(struct seq_file *s, enum omap_channel channel)
+ {
+ 	int lcd, pcd;
++	enum omap_dss_clk_source lcd_clk_src;
++
++	seq_printf(s, "- %s -\n", mgr_desc[channel].name);
++
++	lcd_clk_src = dss_get_lcd_clk_source(channel);
++
++	seq_printf(s, "%s clk source = %s (%s)\n", mgr_desc[channel].name,
++		dss_get_generic_clk_source_name(lcd_clk_src),
++		dss_feat_get_clk_source_name(lcd_clk_src));
++
++	dispc_mgr_get_lcd_divisor(channel, &lcd, &pcd);
++
++	seq_printf(s, "lck\t\t%-16lulck div\t%u\n",
++		dispc_mgr_lclk_rate(channel), lcd);
++	seq_printf(s, "pck\t\t%-16lupck div\t%u\n",
++		dispc_mgr_pclk_rate(channel), pcd);
++}
++
++void dispc_dump_clocks(struct seq_file *s)
++{
++	int lcd;
+ 	u32 l;
+ 	enum omap_dss_clk_source dispc_clk_src = dss_get_dispc_clk_source();
+-	enum omap_dss_clk_source lcd_clk_src;
  
-@@ -75,8 +89,6 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err_get_dispc;
+ 	if (dispc_runtime_get())
+ 		return;
+@@ -2880,36 +2900,13 @@ void dispc_dump_clocks(struct seq_file *s)
+ 		seq_printf(s, "lck\t\t%-16lulck div\t%u\n",
+ 				(dispc_fclk_rate()/lcd), lcd);
+ 	}
+-	seq_printf(s, "- LCD1 -\n");
  
--	sdi_basic_init(dssdev);
+-	lcd_clk_src = dss_get_lcd_clk_source(OMAP_DSS_CHANNEL_LCD);
++	dispc_dump_clocks_channel(s, OMAP_DSS_CHANNEL_LCD);
+ 
+-	seq_printf(s, "lcd1_clk source = %s (%s)\n",
+-		dss_get_generic_clk_source_name(lcd_clk_src),
+-		dss_feat_get_clk_source_name(lcd_clk_src));
 -
- 	/* 15.5.9.1.2 */
- 	dssdev->panel.timings.pclk_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE;
- 	dssdev->panel.timings.hsync_vsync_edge = OMAPDSS_DRIVE_SIG_RISING_EDGE;
-@@ -85,11 +97,9 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err_calc_clock_div;
+-	dispc_mgr_get_lcd_divisor(OMAP_DSS_CHANNEL_LCD, &lcd, &pcd);
+-
+-	seq_printf(s, "lck\t\t%-16lulck div\t%u\n",
+-			dispc_mgr_lclk_rate(OMAP_DSS_CHANNEL_LCD), lcd);
+-	seq_printf(s, "pck\t\t%-16lupck div\t%u\n",
+-			dispc_mgr_pclk_rate(OMAP_DSS_CHANNEL_LCD), pcd);
+-	if (dss_has_feature(FEAT_MGR_LCD2)) {
+-		seq_printf(s, "- LCD2 -\n");
+-
+-		lcd_clk_src = dss_get_lcd_clk_source(OMAP_DSS_CHANNEL_LCD2);
+-
+-		seq_printf(s, "lcd2_clk source = %s (%s)\n",
+-			dss_get_generic_clk_source_name(lcd_clk_src),
+-			dss_feat_get_clk_source_name(lcd_clk_src));
+-
+-		dispc_mgr_get_lcd_divisor(OMAP_DSS_CHANNEL_LCD2, &lcd, &pcd);
+-
+-		seq_printf(s, "lck\t\t%-16lulck div\t%u\n",
+-				dispc_mgr_lclk_rate(OMAP_DSS_CHANNEL_LCD2), lcd);
+-		seq_printf(s, "pck\t\t%-16lupck div\t%u\n",
+-				dispc_mgr_pclk_rate(OMAP_DSS_CHANNEL_LCD2), pcd);
+-	}
++	if (dss_has_feature(FEAT_MGR_LCD2))
++		dispc_dump_clocks_channel(s, OMAP_DSS_CHANNEL_LCD2);
++	if (dss_has_feature(FEAT_MGR_LCD3))
++		dispc_dump_clocks_channel(s, OMAP_DSS_CHANNEL_LCD3);
  
--	fck = dss_cinfo.fck;
--	lck_div = dispc_cinfo.lck_div;
--	pck_div = dispc_cinfo.pck_div;
-+	sdi.mgr_config.clock_info = dispc_cinfo;
+ 	dispc_runtime_put();
+ }
+@@ -2962,6 +2959,12 @@ void dispc_dump_irqs(struct seq_file *s)
+ 		PIS(ACBIAS_COUNT_STAT2);
+ 		PIS(SYNC_LOST2);
+ 	}
++	if (dss_has_feature(FEAT_MGR_LCD3)) {
++		PIS(FRAMEDONE3);
++		PIS(VSYNC3);
++		PIS(ACBIAS_COUNT_STAT3);
++		PIS(SYNC_LOST3);
++	}
+ #undef PIS
+ }
+ #endif
+@@ -2973,6 +2976,7 @@ static void dispc_dump_regs(struct seq_file *s)
+ 		[OMAP_DSS_CHANNEL_LCD]		= "LCD",
+ 		[OMAP_DSS_CHANNEL_DIGIT]	= "TV",
+ 		[OMAP_DSS_CHANNEL_LCD2]		= "LCD2",
++		[OMAP_DSS_CHANNEL_LCD3]		= "LCD3",
+ 	};
+ 	const char *ovl_names[] = {
+ 		[OMAP_DSS_GFX]		= "GFX",
+@@ -3005,6 +3009,10 @@ static void dispc_dump_regs(struct seq_file *s)
+ 		DUMPREG(DISPC_CONTROL2);
+ 		DUMPREG(DISPC_CONFIG2);
+ 	}
++	if (dss_has_feature(FEAT_MGR_LCD3)) {
++		DUMPREG(DISPC_CONTROL3);
++		DUMPREG(DISPC_CONFIG3);
++	}
  
--	pck = fck / lck_div / pck_div / 1000;
-+	pck = dss_cinfo.fck / dispc_cinfo.lck_div / dispc_cinfo.pck_div / 1000;
+ #undef DUMPREG
  
- 	if (pck != t->pixel_clock) {
- 		DSSWARN("Could not find exact pixel clock. Requested %d kHz, "
-@@ -106,7 +116,7 @@ int omapdss_sdi_display_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err_set_dss_clock_div;
+@@ -3387,6 +3395,8 @@ static void print_irq_status(u32 status)
+ 	PIS(SYNC_LOST_DIGIT);
+ 	if (dss_has_feature(FEAT_MGR_LCD2))
+ 		PIS(SYNC_LOST2);
++	if (dss_has_feature(FEAT_MGR_LCD3))
++		PIS(SYNC_LOST3);
+ #undef PIS
  
--	dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
-+	sdi_config_lcd_manager(dssdev);
- 
- 	dss_sdi_init(dssdev->phy.sdi.datapairs);
- 	r = dss_sdi_enable();
+ 	printk("\n");
 -- 
-1.7.9.5
+1.7.1
 

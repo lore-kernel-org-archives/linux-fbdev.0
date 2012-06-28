@@ -1,235 +1,84 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Sat, 16 Jun 2012 22:04:17 +0000
-Subject: [PATCH 01/10] fblog: new framebuffer kernel log dummy driver
-Message-Id: <1339884266-9201-2-git-send-email-dh.herrmann@googlemail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Thu, 28 Jun 2012 14:42:34 +0000
+Subject: [PATCH 04/12] OMAPDSS: RFBI: Configure dss_lcd_mgr_config struct with lcd manager parameters
+Message-Id: <1340893842-10626-6-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
-In-Reply-To: <1339884266-9201-1-git-send-email-dh.herrmann@googlemail.com>
+References: <1340893842-10626-1-git-send-email-archit@ti.com>
+In-Reply-To: <1340893842-10626-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-serial@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Herrmann <dh.herrmann@googlemail.com>
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Fblog displays all kernel log messages on all connected framebuffers. It
-replaces fbcon when CONFIG_VT=n is selected. Its main purpose is to debug
-boot problems by displaying the whole boot log on the screen. This patch
-provides the first dummy module-init/deinit functions.
+Create a dss_lcd_mgr_config struct instance in RFBI. Fill up all the parameters
+of the struct with configurations held by the panel, and the configurations
+required by RFBI.
 
-As is uses all the font and fb functions I placed it in
-drivers/video/console. However, this means that we need to move the check
-for CONFIG_VT in Makefile/Kconfig from drivers/video into
-drivers/video/console as fblog does not depend on CONFIG_VT.
+Use these to write to the DISPC registers. These direct register writes would be
+later replaced by a function which applies the configuration using the shadow
+register programming model.
 
-Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+Create function rfbi_config_lcd_manager() which fills up the mgr_config
+parameters and writes to the DISPC regs.
+
+Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/Kconfig          |    5 +---
- drivers/video/Makefile         |    2 +-
- drivers/video/console/Kconfig  |   37 +++++++++++++++++++++------
- drivers/video/console/Makefile |    1 +
- drivers/video/console/fblog.c  |   55 ++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 87 insertions(+), 13 deletions(-)
- create mode 100644 drivers/video/console/fblog.c
+ drivers/video/omap2/dss/rfbi.c |   34 ++++++++++++++++++++++++++++------
+ 1 file changed, 28 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 0217f74..e8fd53d 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2448,10 +2448,7 @@ source "drivers/video/omap/Kconfig"
- source "drivers/video/omap2/Kconfig"
- source "drivers/video/exynos/Kconfig"
- source "drivers/video/backlight/Kconfig"
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 45084d8..847f694 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -859,6 +859,33 @@ static void rfbi_dump_regs(struct seq_file *s)
+ #undef DUMPREG
+ }
+ 
++static void rfbi_config_lcd_manager(struct omap_dss_device *dssdev)
++{
++	struct dss_lcd_mgr_config mgr_config;
++
++	mgr_config.io_pad_mode = DSS_IO_PAD_MODE_RFBI;
++
++	mgr_config.stallmode = true;
++	/* Do we need fifohandcheck for RFBI? */
++	mgr_config.fifohandcheck = false;
++
++	mgr_config.video_port_width = dssdev->ctrl.pixel_size;
++	mgr_config.lcden_sig_polarity = 0;
++
++	dispc_mgr_set_io_pad_mode(mgr_config.io_pad_mode);
++
++	dispc_mgr_enable_stallmode(dssdev->manager->id, mgr_config.stallmode);
++	dispc_mgr_enable_fifohandcheck(dssdev->manager->id,
++			mgr_config.fifohandcheck);
++
++	dispc_mgr_set_tft_data_lines(dssdev->manager->id,
++			mgr_config.video_port_width);
++
++	dispc_lcd_enable_signal_polarity(mgr_config.lcden_sig_polarity);
++
++	dispc_mgr_set_lcd_type_tft(dssdev->manager->id);
++}
++
+ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
+ {
+ 	int r;
+@@ -885,12 +912,7 @@ int omapdss_rfbi_display_enable(struct omap_dss_device *dssdev)
+ 		goto err1;
+ 	}
+ 
+-	dispc_mgr_set_lcd_type_tft(dssdev->manager->id);
 -
--if VT
--	source "drivers/video/console/Kconfig"
--endif
-+source "drivers/video/console/Kconfig"
+-	dispc_mgr_set_io_pad_mode(DSS_IO_PAD_MODE_RFBI);
+-	dispc_mgr_enable_stallmode(dssdev->manager->id, true);
+-
+-	dispc_mgr_set_tft_data_lines(dssdev->manager->id, dssdev->ctrl.pixel_size);
++	rfbi_config_lcd_manager(dssdev);
  
- if FB || SGI_NEWPORT_CONSOLE
- 	source "drivers/video/logo/Kconfig"
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index ee8dafb..9f8a7f0 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -11,7 +11,7 @@ fb-y                              := fbmem.o fbmon.o fbcmap.o fbsysfs.o \
-                                      modedb.o fbcvt.o
- fb-objs                           := $(fb-y)
- 
--obj-$(CONFIG_VT)		  += console/
-+obj-y				  += console/
- obj-$(CONFIG_LOGO)		  += logo/
- obj-y				  += backlight/
- 
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index c2d11fe..cfee482 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -6,7 +6,7 @@ menu "Console display driver support"
- 
- config VGA_CONSOLE
- 	bool "VGA text console" if EXPERT || !X86
--	depends on !4xx && !8xx && !SPARC && !M68K && !PARISC && !FRV && !SUPERH && !BLACKFIN && !AVR32 && !MN10300 && (!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER)
-+	depends on VT && !4xx && !8xx && !SPARC && !M68K && !PARISC && !FRV && !SUPERH && !BLACKFIN && !AVR32 && !MN10300 && (!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER)
- 	default y
- 	help
- 	  Saying Y here will allow you to use Linux in text mode through a
-@@ -45,7 +45,7 @@ config VGACON_SOFT_SCROLLBACK_SIZE
- 	 screenfuls of scrollback buffer
- 
- config MDA_CONSOLE
--	depends on !M68K && !PARISC && ISA
-+	depends on VT && !M68K && !PARISC && ISA
- 	tristate "MDA text console (dual-headed) (EXPERIMENTAL)"
- 	---help---
- 	  Say Y here if you have an old MDA or monochrome Hercules graphics
-@@ -61,14 +61,14 @@ config MDA_CONSOLE
- 
- config SGI_NEWPORT_CONSOLE
-         tristate "SGI Newport Console support"
--        depends on SGI_IP22 
-+        depends on VT && SGI_IP22
-         help
-           Say Y here if you want the console on the Newport aka XL graphics
-           card of your Indy.  Most people say Y here.
- 
- config DUMMY_CONSOLE
- 	bool
--	depends on VGA_CONSOLE!=y || SGI_NEWPORT_CONSOLE!=y 
-+	depends on VT && (VGA_CONSOLE!=y || SGI_NEWPORT_CONSOLE!=y)
- 	default y
- 
- config DUMMY_CONSOLE_COLUMNS
-@@ -89,7 +89,7 @@ config DUMMY_CONSOLE_ROWS
- 
- config FRAMEBUFFER_CONSOLE
- 	tristate "Framebuffer Console support"
--	depends on FB
-+	depends on VT && FB
- 	select CRC32
- 	help
- 	  Low-level framebuffer-based console driver.
-@@ -122,16 +122,37 @@ config FRAMEBUFFER_CONSOLE_ROTATION
- 
- config STI_CONSOLE
-         bool "STI text console"
--        depends on PARISC
-+        depends on VT && PARISC
-         default y
-         help
-           The STI console is the builtin display/keyboard on HP-PARISC
-           machines.  Say Y here to build support for it into your kernel.
-           The alternative is to use your primary serial port as a console.
- 
-+config FBLOG
-+	tristate "Framebuffer Kernel Log Driver"
-+	depends on !VT && FB
-+	default n
-+	help
-+	  This driver displays all kernel log messages on all connected
-+	  framebuffers. It is mutually exclusive with CONFIG_FRAMEBUFFER_CONSOLE
-+	  and CONFIG_VT. It was mainly created for debugging purposes when
-+	  CONFIG_VT is not selected but you still want kernel boot messages on
-+	  the screen.
-+
-+	  This driver overwrites all other graphics output on the framebuffer as
-+	  long as it is active so the kernel log will always be visible. You
-+	  need to disable this driver via sysfs to be able to start another
-+	  graphics application.
-+
-+	  If unsure, say N.
-+
-+	  To compile this driver as a module, choose M here: the module will
-+	  be called fblog.
-+
- config FONTS
- 	bool "Select compiled-in fonts"
--	depends on FRAMEBUFFER_CONSOLE || STI_CONSOLE
-+	depends on FRAMEBUFFER_CONSOLE || STI_CONSOLE || FBLOG
- 	help
- 	  Say Y here if you would like to use fonts other than the default
- 	  your frame buffer console usually use.
-@@ -158,7 +179,7 @@ config FONT_8x8
- 
- config FONT_8x16
- 	bool "VGA 8x16 font" if FONTS
--	depends on FRAMEBUFFER_CONSOLE || SGI_NEWPORT_CONSOLE || STI_CONSOLE || USB_SISUSBVGA_CON
-+	depends on FRAMEBUFFER_CONSOLE || SGI_NEWPORT_CONSOLE || STI_CONSOLE || USB_SISUSBVGA_CON || FBLOG
- 	default y if !SPARC && !FONTS
- 	help
- 	  This is the "high resolution" font for the VGA frame buffer (the one
-diff --git a/drivers/video/console/Makefile b/drivers/video/console/Makefile
-index a862e91..f608c97 100644
---- a/drivers/video/console/Makefile
-+++ b/drivers/video/console/Makefile
-@@ -20,6 +20,7 @@ font-objs += $(font-objs-y)
- 
- # Each configuration option enables a list of files.
- 
-+obj-$(CONFIG_FBLOG)               += fblog.o font.o
- obj-$(CONFIG_DUMMY_CONSOLE)       += dummycon.o
- obj-$(CONFIG_SGI_NEWPORT_CONSOLE) += newport_con.o font.o
- obj-$(CONFIG_STI_CONSOLE)         += sticon.o sticore.o font.o
-diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
-new file mode 100644
-index 0000000..ea83643
---- /dev/null
-+++ b/drivers/video/console/fblog.c
-@@ -0,0 +1,55 @@
-+/*
-+ * Framebuffer Kernel Log Driver
-+ * Copyright (c) 2012 David Herrmann <dh.herrmann@googlemail.com>
-+ */
-+
-+/*
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation; either version 2 of the License, or (at your option)
-+ * any later version.
-+ */
-+
-+/*
-+ * Framebuffer Kernel Log
-+ * This driver prints the kernel log to all connected display devices. It
-+ * replaces CONFIG_VT and cannot run simultaneously with it. It does not provide
-+ * any virtual-terminal, though. It should only be used to get kernel boot
-+ * messages to debug kernel errors.
-+ * Hence, this driver is neither optimized for speed, nor does it provide any
-+ * fancy features like colored text output. After booting is done, the init
-+ * process should set /sys/class/graphics/fblog/active to 0 which disables this
-+ * driver and you can start using the graphics devices. During shutdown, you can
-+ * set this to 1 to get log messages again.
-+ * This driver forcibly writes to the framebuffer while active, therefore, you
-+ * cannot run other graphics applications simultaneously.
-+ *
-+ * fblog_redraw_line() is heavily based on the fbcon driver. See bitblit.c for
-+ * the original implementation copyrighted by:
-+ *     Copyright (C) 2004 Antonino Daplas <adaplas@pol.net>
-+ *
-+ * Please note that nearly all functions here must be called with console_lock
-+ * held. This way, we have no locking problems and do not need special
-+ * synchronization.
-+ */
-+
-+#include <linux/atomic.h>
-+#include <linux/console.h>
-+#include <linux/fb.h>
-+#include <linux/font.h>
-+#include <linux/module.h>
-+
-+static int __init fblog_init(void)
-+{
-+	return 0;
-+}
-+
-+static void __exit fblog_exit(void)
-+{
-+}
-+
-+module_init(fblog_init);
-+module_exit(fblog_exit);
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("David Herrmann <dh.herrmann@googlemail.com>");
-+MODULE_DESCRIPTION("Framebuffer Kernel Log Driver");
+ 	rfbi_configure(dssdev->phy.rfbi.channel,
+ 			       dssdev->ctrl.pixel_size,
 -- 
-1.7.10.4
+1.7.9.5
 

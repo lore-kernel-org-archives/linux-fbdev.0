@@ -1,123 +1,94 @@
-From: Jassi Brar <jaswinder.singh@linaro.org>
-Date: Thu, 28 Jun 2012 13:25:07 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 28 Jun 2012 13:31:18 +0000
 Subject: Re: [PATCH 3/3] OMAPDSS: HDMI: Cache EDID
-Message-Id: <CAJe_Zhdkhu4TciiwGJB2Kz8oZp2RQNZfESSr5Cfv0R1MNn=r9A@mail.gmail.com>
+Message-Id: <1340890278.5037.91.camel@deskari>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-j8zU8B36FDxU2Ay1eBg3"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1340805944-28805-1-git-send-email-jaswinder.singh@linaro.org>
-	<1340869729.5037.7.camel@deskari>
-	<CAJe_ZhcWSYhRWSW0v9OqsHRXASsQ8i2P8F8OS+jXkyadoRM9iA@mail.gmail.com>
-	<1340878461.5037.30.camel@deskari>
-	<CAJe_Zhc_ye1f=hOVd=AJ7rmCQ_vwDtjQOKsufPYmV1o-58jyAA@mail.gmail.com>
-	<CAJe_ZhfehDquDcyefb7Z9odH+hfQTFiRAux_iyvAycs9Otovtw@mail.gmail.com>
-	<1340881815.5037.53.camel@deskari>
-	<4FEC47FA.1040801@linaro.org>
-In-Reply-To: <4FEC47FA.1040801@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Andy Green <andy.green@linaro.org>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, mythripk@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, n-dechesne@ti.com, patches@linaro.org
+	 <1340869729.5037.7.camel@deskari>
+	 <CAJe_ZhcWSYhRWSW0v9OqsHRXASsQ8i2P8F8OS+jXkyadoRM9iA@mail.gmail.com>
+	 <1340878461.5037.30.camel@deskari>
+	 <CAJe_Zhc_ye1f=hOVd=AJ7rmCQ_vwDtjQOKsufPYmV1o-58jyAA@mail.gmail.com>
+	 <CAJe_ZhfehDquDcyefb7Z9odH+hfQTFiRAux_iyvAycs9Otovtw@mail.gmail.com>
+	 <1340881815.5037.53.camel@deskari> <4FEC47FA.1040801@linaro.org>
+	 <CAJe_Zhdkhu4TciiwGJB2Kz8oZp2RQNZfESSr5Cfv0R1MNn=r9A@mail.gmail.com>
+In-Reply-To: <CAJe_Zhdkhu4TciiwGJB2Kz8oZp2RQNZfESSr5Cfv0R1MNn=r9A@mail.gmail.com>
+To: Jassi Brar <jaswinder.singh@linaro.org>
+Cc: Andy Green <andy.green@linaro.org>, mythripk@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, n-dechesne@ti.com, patches@linaro.org
 
-On 28 June 2012 17:33, Andy Green <andy.green@linaro.org> wrote:
-> On 06/28/12 19:10, the mail apparently from Tomi Valkeinen included:
->
->> On Thu, 2012-06-28 at 16:28 +0530, Jassi Brar wrote:
->>>
->>> On 28 June 2012 16:17, Jassi Brar <jaswinder.singh@linaro.org> wrote:
->>>>
->>>> On 28 June 2012 15:44, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
->>>>>
->>>>> On Thu, 2012-06-28 at 15:18 +0530, Jassi Brar wrote:
->>>>
->>>>
->>>>>>>> --- a/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
->>>>>>>> +++ b/drivers/video/omap2/dss/ti_hdmi_4xxx_ip.c
->>>>>>>> @@ -243,10 +243,13 @@ static int hdmi_check_hpd_state(struct
->>>>>>>> hdmi_ip_data *ip_data)
->>>>>>>>
->>>>>>>> =A0 =A0 =A0 hpd =3D gpio_get_value(ip_data->hpd_gpio);
->>>>>>>>
->>>>>>>> - =A0 =A0 if (hpd)
->>>>>>>> + =A0 =A0 if (hpd) {
->>>>>>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 r =3D hdmi_set_phy_pwr(ip_data, HDMI_P=
-HYPWRCMD_TXON);
->>>>>>>> - =A0 =A0 else
->>>>>>>> + =A0 =A0 } else {
->>>>>>>> + =A0 =A0 =A0 =A0 =A0 =A0 /* Invalidate EDID Cache */
->>>>>>>> + =A0 =A0 =A0 =A0 =A0 =A0 ip_data->edid_len =3D 0;
->>>>>>>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 r =3D hdmi_set_phy_pwr(ip_data, HDMI_P=
-HYPWRCMD_LDOON);
->>>>>>>> + =A0 =A0 }
->>>>>>>
->>>>>>>
->>>>>>> There's a problem with this patch, which leaves a wrong EDID in the
->>>>>>> cache: if you first have the cable connected and hdmi is enabled, y=
-ou
->>>>>>> then turn off the HDMI display device via sysfs, we do not go to
->>>>>>> hdmi_check_hpd_state at all. The next time hdmi is enabled, we only
->>>>>>> get
->>>>>>> the plug-in event, and thus EDID cache is never invalidated.
->>>>>>>
->>>>>> If the hdmi cable is not replugged during that period, I don't see w=
-hy
->>>>>> would you want the EDID invalidated ?
->>>>>
->>>>>
->>>>> I wasn't very clear with my comment.
->>>>>
->>>>> When the display device is disabled, we're not listening to the hpd
->>>>> interrupt anymore. So when it's disabled, the cable can be replugged
->>>>> and
->>>>> the monitor changed, and the driver won't know about it. And so it'll
->>>>> return the old EDID for the new monitor.
->>>>>
->>>> If that could be a problem, then we already have some problem with
->>>> current omapdss.
->>>>
->>>> I think among the first things, while enabling HDMI, should be to see
->>>> if there is really some display connected on the port i.e, HPD
->>>> asserted. Only if ti_hdmi_4_detect() returned true, should we
->>>> proceed otherwise wait for HPQ irq.
->>>>
->>>> Unconditionally invalidating edid really seems like a regression - we
->>>> impose atleast 50ms (edid read) as extra cost on
->>>> hdmi_check_hpd_state(), which kills half the purpose of this patch.
->>>>
->>> Sorry a correction. Reading detect() won't work. I suggest we keep HPD
->>> IRQ enabled for the lifetime of the driver.
->>
->>
->> Ok, I see. But that's not acceptable. It would require us to keep the
->> TPD12S015 always powered and enabled. Even if you're not interested in
->> using HDMI at all.
->>
->> For this to work like you want we need a bigger restructuring of HDMI
->> and partly omapdss also. Currently we have just one big "enabled" or
->> "disabled" state. We need multiple states. Probably something like:
->>
->> - disabled, everything totally off
->> - low power, hotplug detection enabled
->> - powered on, but no video
->> - video enabled
->>
->> Been long in my mind, but I'm not very familiar with HDMI so I could get
->> my simple prototypes to work when I tried something like this once.
->
->
-> That doesn't sound too hard since the difference between the first three
-> states at the HDMI chip is just whether the two gpio controlling it are 0=
-0,
-> 10 or 11.
->
-> If Jassi's alright with it we might have a go at implementing this, but c=
-an
-> you define a bit more about how we logically tell DSS that we want to, eg,
-> disable HDMI totally?
->
-A quick reaction of my guts say, we simply enable 5V/HPD_IRQ during
-probe and disable during remove.
-HDMI enable/disable via /sysfs/ and HPD (de)assertion, switch only
-HDMI_PHY on/off.
-The user selecting "Autodetect and Configure" option would then equate
-to "(un)loading" of the HDMI driver.
-Not to mean a trivial job.
+
+--=-j8zU8B36FDxU2Ay1eBg3
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 2012-06-28 at 18:43 +0530, Jassi Brar wrote:
+> On 28 June 2012 17:33, Andy Green <andy.green@linaro.org> wrote:
+
+> > If Jassi's alright with it we might have a go at implementing this, but=
+ can
+> > you define a bit more about how we logically tell DSS that we want to, =
+eg,
+> > disable HDMI totally?
+> >
+> A quick reaction of my guts say, we simply enable 5V/HPD_IRQ during
+> probe and disable during remove.
+
+The problem with this is a feature of omapdss: we can have multiple
+displays for the same output, of which only one can be enabled at the
+same time. What this means is that you shouldn't (and in some cases
+can't) allocate or enable resources in probe that may be shared, because
+then the driver for both displays would try to allocate the same
+resource.
+
+Sure, this is not a problem for the HDMI configuration we are using now,
+but it's still against the panel model we have. Thus we should allocate
+resources only when the panel device is turned on, and release them when
+it's disabled.
+
+I do think the model is slightly broken, but that's what we have now.
+And I'm also not even sure how it should be fixed...
+
+And also, as I said earlier, if you keep it enabled all the time, it'll
+eat power even if the user is never going to use HDMI.
+
+On a desktop I guess the power consumption wouldn't be an issue, but I
+do feel a bit uneasy about it on an embedded device.
+
+> HDMI enable/disable via /sysfs/ and HPD (de)assertion, switch only
+> HDMI_PHY on/off.
+> The user selecting "Autodetect and Configure" option would then equate
+> to "(un)loading" of the HDMI driver.
+
+HDMI cannot be currently compiled as a separate module. Although I think
+you can detach a device and a driver, achieving the same. Is that what
+you meant with unloading?
+
+ Tomi
+
+
+--=-j8zU8B36FDxU2Ay1eBg3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAABAgAGBQJP7FymAAoJEPo9qoy8lh7123kP/162EklV443bgG4K1LM/R3XM
+cKr+sBr3aNM2TefYBONvlnvGnmkERtvgx31mexl13+bAZUYunnCMud//6PY4VNFn
+a30a9NAozgoxG33TGOHLEi2wWUiExY8xYXknaYCWq+cr2eQFrgwO8QlDZS/L9ACa
+DTrUEQK7G5mGcrAYZAYAxchJP21gP/iliBDyOktVY57TcVgcwbbhFf+MNyfKx24J
+tGwTNNqYOta8XZ63BntOKVNNK8vjzD+LEILpDxmmg8iRi1w6E03oi6QsQow3JRDg
+e60j/j/tolX13NMqGPzsUI2jrahrxyTHQjOyVXf341We0O7AkamiNvAW+MWJvDz1
+RcS/1cBoN7xgDj5BmliP+/NA/dGBlrfkpVrWxbau4rqP2RXjotZ0/ZHCM1QB0Go+
+7cKkkwLIRXycWK61jG/kpap+RwqXo/rKsGqIt5pn1EpiX/q/4rXNk0TBvOXna6uv
+6cFhcuSGYRO0fw6H0GGDY8uNNwqFlWdoblmVp0dpCa7Q3fQlnonWHEFjbbjHZLBA
+c2fL21YmON5qVB3GQ9ZmWPfIR6+sjAk3l3nI69S47LJM96LXwv940di3modvze7V
+ZkavqZgOJ4xBfP2uVJ5HXW8+SRdYl+roB1sQfIH06jbYXiTQ2a9FdgeaeAkdmFWK
+8cV++HD8CJHCs4L/ftYc
+=ZP1C
+-----END PGP SIGNATURE-----
+
+--=-j8zU8B36FDxU2Ay1eBg3--
+

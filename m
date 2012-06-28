@@ -1,7 +1,7 @@
 From: Archit Taneja <archit@ti.com>
-Date: Thu, 28 Jun 2012 14:42:33 +0000
-Subject: [PATCH 03/12] OMAPDSS: DPI: Configure dss_lcd_mgr_config struct with lcd manager parameters
-Message-Id: <1340893842-10626-5-git-send-email-archit@ti.com>
+Date: Thu, 28 Jun 2012 14:42:41 +0000
+Subject: [PATCH 11/12] OMAPDSS: RFBI: Use dss_mgr_enable to enable the overlay manager
+Message-Id: <1340893842-10626-13-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1340893842-10626-1-git-send-email-archit@ti.com>
 In-Reply-To: <1340893842-10626-1-git-send-email-archit@ti.com>
@@ -11,110 +11,67 @@ Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Create a dss_lcd_mgr_config struct instance in DPI. Fill up all the parameters
-of the struct with configurations held by the panel, and the configurations
-required by DPI.
-
-Use these to write to the DISPC registers. These direct register writes would be
-later replaced by a function which applies the configuration using the shadow
-register programming model.
-
-The DISPC_DIVISORo registers were written in the functions dpi_set_dispc_clk()
-and dpi_set_dsi_clk(), now they just fill up the dispc_clock_info parameter in
-mgr_config. They are written later in dpi_config_lcd_manager.
+The RFBI driver uses a direct DISPC register write to enable the overlay
+manager. Replace this with dss_mgr_enable() which checks if the connected
+overlay and managers are correctly configured, and configure DSS for
+fifomerge.
 
 Signed-off-by: Archit Taneja <archit@ti.com>
 ---
- drivers/video/omap2/dss/dpi.c |   37 ++++++++++++++++++++++++++++---------
- 1 file changed, 28 insertions(+), 9 deletions(-)
+ drivers/video/omap2/dss/rfbi.c |   16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
-index af01430..a3a012b 100644
---- a/drivers/video/omap2/dss/dpi.c
-+++ b/drivers/video/omap2/dss/dpi.c
-@@ -38,6 +38,8 @@
- static struct {
- 	struct regulator *vdds_dsi_reg;
- 	struct platform_device *dsidev;
-+
-+	struct dss_lcd_mgr_config mgr_config;
- } dpi;
- 
- static struct platform_device *dpi_get_dsidev(enum omap_dss_clk_source clk)
-@@ -100,7 +102,7 @@ static int dpi_set_dsi_clk(struct omap_dss_device *dssdev,
- 
- 	dss_select_dispc_clk_source(clks->dispc.fclk_src);
- 
--	dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
-+	dpi.mgr_config.clock_info = dispc_cinfo;
- 
- 	*fck = dsi_cinfo.dsi_pll_hsdiv_dispc_clk;
- 	*lck_div = dispc_cinfo.lck_div;
-@@ -125,7 +127,7 @@ static int dpi_set_dispc_clk(struct omap_dss_device *dssdev,
- 	if (r)
- 		return r;
- 
--	dispc_mgr_set_clock_div(dssdev->manager->id, &dispc_cinfo);
-+	dpi.mgr_config.clock_info = dispc_cinfo;
- 
- 	*fck = dss_cinfo.fck;
- 	*lck_div = dispc_cinfo.lck_div;
-@@ -166,15 +168,32 @@ static int dpi_set_mode(struct omap_dss_device *dssdev)
- 	return 0;
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 0376056..8c5d5df 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -300,10 +300,11 @@ void omap_rfbi_write_pixels(const void __iomem *buf, int scr_width,
  }
+ EXPORT_SYMBOL(omap_rfbi_write_pixels);
  
--static void dpi_basic_init(struct omap_dss_device *dssdev)
-+static void dpi_config_lcd_manager(struct omap_dss_device *dssdev)
+-static void rfbi_transfer_area(struct omap_dss_device *dssdev, u16 width,
++static int rfbi_transfer_area(struct omap_dss_device *dssdev, u16 width,
+ 		u16 height, void (*callback)(void *data), void *data)
  {
--	dispc_mgr_set_io_pad_mode(DSS_IO_PAD_MODE_BYPASS);
--	dispc_mgr_enable_stallmode(dssdev->manager->id, false);
-+	dpi.mgr_config.io_pad_mode = DSS_IO_PAD_MODE_BYPASS;
+ 	u32 l;
++	int r;
+ 	struct omap_video_timings timings = {
+ 		.hsw		= 1,
+ 		.hfp		= 1,
+@@ -322,7 +323,9 @@ static void rfbi_transfer_area(struct omap_dss_device *dssdev, u16 width,
  
--	dispc_mgr_set_lcd_type_tft(dssdev->manager->id);
-+	dpi.mgr_config.stallmode = false;
-+	dpi.mgr_config.fifohandcheck = false;
-+
-+	dpi.mgr_config.video_port_width = dssdev->phy.dpi.data_lines;
-+
-+	dpi.mgr_config.lcden_sig_polarity = false;
-+
-+	dispc_mgr_set_io_pad_mode(dpi.mgr_config.io_pad_mode);
-+	dispc_mgr_enable_stallmode(dssdev->manager->id,
-+			dpi.mgr_config.stallmode);
-+	dispc_mgr_enable_fifohandcheck(dssdev->manager->id,
-+			dpi.mgr_config.fifohandcheck);
+ 	dss_mgr_set_timings(dssdev->manager, &timings);
  
- 	dispc_mgr_set_tft_data_lines(dssdev->manager->id,
--			dssdev->phy.dpi.data_lines);
-+			dpi.mgr_config.video_port_width);
+-	dispc_mgr_enable(dssdev->manager->id, true);
++	r = dss_mgr_enable(dssdev->manager);
++	if (r)
++		return r;
+ 
+ 	rfbi.framedone_callback = callback;
+ 	rfbi.framedone_callback_data = data;
+@@ -335,6 +338,8 @@ static void rfbi_transfer_area(struct omap_dss_device *dssdev, u16 width,
+ 		l = FLD_MOD(l, 1, 4, 4); /* ITE */
+ 
+ 	rfbi_write_reg(RFBI_CONTROL, l);
 +
-+	dispc_mgr_set_clock_div(dssdev->manager->id,
-+			&dpi.mgr_config.clock_info);
-+
-+	dispc_lcd_enable_signal_polarity(dpi.mgr_config.lcden_sig_polarity);
-+
-+	dispc_mgr_set_lcd_type_tft(dssdev->manager->id);
++	return 0;
  }
  
- int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
-@@ -213,8 +232,6 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err_get_dispc;
- 
--	dpi_basic_init(dssdev);
--
- 	if (dpi_use_dsi_pll(dssdev)) {
- 		r = dsi_runtime_get(dpi.dsidev);
- 		if (r)
-@@ -229,6 +246,8 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
- 	if (r)
- 		goto err_set_mode;
- 
-+	dpi_config_lcd_manager(dssdev);
+ static void framedone_callback(void *data, u32 mask)
+@@ -814,8 +819,11 @@ int omap_rfbi_update(struct omap_dss_device *dssdev,
+ 		u16 x, u16 y, u16 w, u16 h,
+ 		void (*callback)(void *), void *data)
+ {
+-	rfbi_transfer_area(dssdev, w, h, callback, data);
+-	return 0;
++	int r;
 +
- 	mdelay(2);
++	r = rfbi_transfer_area(dssdev, w, h, callback, data);
++
++	return r;
+ }
+ EXPORT_SYMBOL(omap_rfbi_update);
  
- 	r = dss_mgr_enable(dssdev->manager);
 -- 
 1.7.9.5
 

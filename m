@@ -1,248 +1,139 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Sun, 15 Jul 2012 19:04:40 +0000
-Subject: [PATCH v3 05/11] fblog: register one fblog object per framebuffer
-Message-Id: <1342379086-7583-6-git-send-email-dh.herrmann@googlemail.com>
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Sun, 01 Jul 2012 19:23:33 +0000
+Subject: [PATCH] s3fb: Add Virge/MX (86C260)
+Message-Id: <201207012123.38236.linux@rainbow-software.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1342379086-7583-1-git-send-email-dh.herrmann@googlemail.com>
-In-Reply-To: <1342379086-7583-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, David Herrmann <dh.herrmann@googlemail.com>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: Ondrej Zajicek <santiago@crfreenet.org>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
 
-One fblog object is associated to each registered framebuffer. This way,
-we can draw the console to each framebuffer. When a framebuffer driver
-unregisters a framebuffer, we also unregister our fblog object. That is,
-our lifetime is coupled to the lifetime of the framebuffer. However, this
-does not mean that we are always active. On the contrary, we do not even
-own a reference to the framebuffer. We don't need it as we are notified
-_before_ the last reference is dropped.
+Add support for Virge/MX (86C260) chip. Although this is a laptop chip,
+there's an AGP card with this chip too.
 
-However, if other users have a reference to our object, we simply mark it
-as dead when the associated framebuffer dies and leave it alone. When the
-last reference is dropped, it will be automatically freed.
+Tested with AGP card, will probably not work correctly with laptops.
+DDC does not work on this card (even in DOS or Windows).
 
-Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
----
- drivers/video/console/fblog.c | 195 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 195 insertions(+)
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
-diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
-index fb39737..279f4d8 100644
---- a/drivers/video/console/fblog.c
-+++ b/drivers/video/console/fblog.c
-@@ -23,15 +23,210 @@
-  * all fblog instances before running other graphics applications.
-  */
+--- a/drivers/video/s3fb.c
++++ b/drivers/video/s3fb.c
+@@ -84,7 +84,7 @@ static const char * const s3_names[] = {"S3 Unknown", "S3 Trio32", "S3 Trio64",
+ 			"S3 Virge/VX", "S3 Virge/DX", "S3 Virge/GX",
+ 			"S3 Virge/GX2", "S3 Virge/GX2+", "",
+ 			"S3 Trio3D/1X", "S3 Trio3D/2X", "S3 Trio3D/2X",
+-			"S3 Trio3D"};
++			"S3 Trio3D", "S3 Virge/MX"};
  
-+#define pr_fmt(_fmt) KBUILD_MODNAME ": " _fmt
-+
-+#include <linux/device.h>
-+#include <linux/fb.h>
- #include <linux/module.h>
-+#include <linux/mutex.h>
-+
-+enum fblog_flags {
-+	FBLOG_KILLED,
-+};
-+
-+struct fblog_fb {
-+	unsigned long flags;
-+	struct fb_info *info;
-+	struct device dev;
-+};
-+
-+static DEFINE_MUTEX(fblog_registration_lock);
-+static struct fblog_fb *fblog_fbs[FB_MAX];
-+
-+#define to_fblog_dev(_d) container_of(_d, struct fblog_fb, dev)
-+
-+/*
-+ * fblog framebuffer list
-+ * The fblog_fbs[] array contains all currently registered framebuffers. If a
-+ * framebuffer is in that list, we always must make sure that we own a reference
-+ * to it. If it is added through the notifier callbacks, then this is always
-+ * guaranteed.
-+ * We are only interested in registered framebuffers. That is, if a driver calls
-+ * unregister_framebuffer() we directly unlink it from our list. This guarantees
-+ * that the associated fb_info is always valid. However, we might still have
-+ * pending users so we mark it as dead so no further framebuffer actions are
-+ * done. If the last user then drops a reference, the memory gets freed
-+ * automatically.
-+ */
-+
-+static void fblog_release(struct device *dev)
-+{
-+	struct fblog_fb *fb = to_fblog_dev(dev);
-+
-+	kfree(fb);
-+	module_put(THIS_MODULE);
-+}
-+
-+static void fblog_do_unregister(struct fb_info *info)
-+{
-+	struct fblog_fb *fb;
-+
-+	fb = fblog_fbs[info->node];
-+	if (!fb || fb->info != info)
-+		return;
-+
-+	fblog_fbs[info->node] = NULL;
-+
-+	device_del(&fb->dev);
-+	put_device(&fb->dev);
-+}
-+
-+static void fblog_do_register(struct fb_info *info, bool force)
-+{
-+	struct fblog_fb *fb;
-+	int ret;
-+
-+	fb = fblog_fbs[info->node];
-+	if (fb && fb->info != info) {
-+		if (!force)
-+			return;
-+
-+		fblog_do_unregister(fb->info);
-+	}
-+
-+	fb = kzalloc(sizeof(*fb), GFP_KERNEL);
-+	if (!fb)
-+		return;
-+
-+	fb->info = info;
-+	__module_get(THIS_MODULE);
-+	device_initialize(&fb->dev);
-+	fb->dev.class = fb_class;
-+	fb->dev.release = fblog_release;
-+	dev_set_name(&fb->dev, "fblog%d", info->node);
-+	fblog_fbs[info->node] = fb;
-+
-+	ret = device_add(&fb->dev);
-+	if (ret) {
-+		fblog_fbs[info->node] = NULL;
-+		set_bit(FBLOG_KILLED, &fb->flags);
-+		put_device(&fb->dev);
-+		return;
-+	}
-+}
-+
-+static void fblog_register(struct fb_info *info, bool force)
-+{
-+	mutex_lock(&fblog_registration_lock);
-+	fblog_do_register(info, force);
-+	mutex_unlock(&fblog_registration_lock);
-+}
-+
-+static void fblog_unregister(struct fb_info *info)
-+{
-+	mutex_lock(&fblog_registration_lock);
-+	fblog_do_unregister(info);
-+	mutex_unlock(&fblog_registration_lock);
-+}
-+
-+static int fblog_event(struct notifier_block *self, unsigned long action,
-+		       void *data)
-+{
-+	struct fb_event *event = data;
-+	struct fb_info *info = event->info;
-+
-+	switch(action) {
-+	case FB_EVENT_FB_REGISTERED:
-+		/* This is called when a low-level system driver registers a new
-+		 * framebuffer. The registration lock is held but the console
-+		 * lock might not be held when this is called. */
-+		fblog_register(info, true);
-+		break;
-+	case FB_EVENT_FB_UNREGISTERED:
-+		/* This is called when a low-level system driver unregisters a
-+		 * framebuffer. The registration lock is held but the console
-+		 * lock might not be held. */
-+		fblog_unregister(info);
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static void fblog_scan(void)
-+{
-+	unsigned int i;
-+	struct fb_info *info, *tmp;
-+
-+	for (i = 0; i < FB_MAX; ++i) {
-+		info = get_fb_info(i);
-+		if (!info || IS_ERR(info))
-+			continue;
-+
-+		fblog_register(info, false);
-+
-+		/* There is a very subtle race-condition. Even though we might
-+		 * own a reference to the fb, it may still get unregistered
-+		 * between our call from get_fb_info() and fblog_register().
-+		 * Therefore, we simply check whether the same fb still is
-+		 * registered by calling get_fb_info() again. Only if they
-+		 * differ we know that it got unregistered, therefore, we
-+		 * call fblog_unregister() with the old pointer. */
-+
-+		tmp = get_fb_info(i);
-+		if (tmp && !IS_ERR(tmp))
-+			put_fb_info(tmp);
-+		if (tmp != info)
-+			fblog_unregister(info);
-+
-+		/* Here we either called fblog_unregister() and therefore do not
-+		 * need any reference to the fb, or we can be sure that the FB
-+		 * is registered and FB_EVENT_FB_UNREGISTERED will be called
-+		 * before the last reference is dropped. Hence, we can drop our
-+		 * reference here. */
-+
-+		put_fb_info(info);
-+	}
-+}
-+
-+static struct notifier_block fblog_notifier = {
-+	.notifier_call = fblog_event,
-+};
+ #define CHIP_UNKNOWN		0x00
+ #define CHIP_732_TRIO32		0x01
+@@ -105,6 +105,7 @@ static const char * const s3_names[] = {"S3 Unknown", "S3 Trio32", "S3 Trio64",
+ #define CHIP_362_TRIO3D_2X	0x11
+ #define CHIP_368_TRIO3D_2X	0x12
+ #define CHIP_365_TRIO3D		0x13
++#define CHIP_260_VIRGE_MX	0x14
  
- static int __init fblog_init(void)
- {
-+	int ret;
-+
-+	ret = fb_register_client(&fblog_notifier);
-+	if (ret) {
-+		pr_err("cannot register framebuffer notifier\n");
-+		return ret;
-+	}
-+
-+	fblog_scan();
-+
- 	return 0;
- }
+ #define CHIP_XXX_TRIO		0x80
+ #define CHIP_XXX_TRIO64V2_DXGX	0x81
+@@ -280,7 +281,8 @@ static int __devinit s3fb_setup_ddc_bus(struct fb_info *info)
+ 	 */
+ /*	vga_wseq(par->state.vgabase, 0x08, 0x06); - not needed, already unlocked */
+ 	if (par->chip = CHIP_357_VIRGE_GX2 ||
+-	    par->chip = CHIP_359_VIRGE_GX2P)
++	    par->chip = CHIP_359_VIRGE_GX2P ||
++	    par->chip = CHIP_260_VIRGE_MX)
+ 		svga_wseq_mask(par->state.vgabase, 0x0d, 0x01, 0x03);
+ 	else
+ 		svga_wseq_mask(par->state.vgabase, 0x0d, 0x00, 0x03);
+@@ -487,7 +489,8 @@ static void s3_set_pixclock(struct fb_info *info, u32 pixclock)
+ 	    par->chip = CHIP_359_VIRGE_GX2P ||
+ 	    par->chip = CHIP_360_TRIO3D_1X ||
+ 	    par->chip = CHIP_362_TRIO3D_2X ||
+-	    par->chip = CHIP_368_TRIO3D_2X) {
++	    par->chip = CHIP_368_TRIO3D_2X ||
++	    par->chip = CHIP_260_VIRGE_MX) {
+ 		vga_wseq(par->state.vgabase, 0x12, (n - 2) | ((r & 3) << 6));	/* n and two bits of r */
+ 		vga_wseq(par->state.vgabase, 0x29, r >> 2); /* remaining highest bit of r */
+ 	} else
+@@ -690,7 +693,8 @@ static int s3fb_set_par(struct fb_info *info)
+ 	    par->chip != CHIP_359_VIRGE_GX2P &&
+ 	    par->chip != CHIP_360_TRIO3D_1X &&
+ 	    par->chip != CHIP_362_TRIO3D_2X &&
+-	    par->chip != CHIP_368_TRIO3D_2X) {
++	    par->chip != CHIP_368_TRIO3D_2X &&
++	    par->chip != CHIP_260_VIRGE_MX) {
+ 		vga_wcrt(par->state.vgabase, 0x54, 0x18); /* M parameter */
+ 		vga_wcrt(par->state.vgabase, 0x60, 0xff); /* N parameter */
+ 		vga_wcrt(par->state.vgabase, 0x61, 0xff); /* L parameter */
+@@ -739,7 +743,8 @@ static int s3fb_set_par(struct fb_info *info)
+ 	    par->chip = CHIP_368_TRIO3D_2X ||
+ 	    par->chip = CHIP_365_TRIO3D    ||
+ 	    par->chip = CHIP_375_VIRGE_DX  ||
+-	    par->chip = CHIP_385_VIRGE_GX) {
++	    par->chip = CHIP_385_VIRGE_GX  ||
++	    par->chip = CHIP_260_VIRGE_MX) {
+ 		dbytes = info->var.xres * ((bpp+7)/8);
+ 		vga_wcrt(par->state.vgabase, 0x91, (dbytes + 7) / 8);
+ 		vga_wcrt(par->state.vgabase, 0x90, (((dbytes + 7) / 8) >> 8) | 0x80);
+@@ -751,7 +756,8 @@ static int s3fb_set_par(struct fb_info *info)
+ 	    par->chip = CHIP_359_VIRGE_GX2P ||
+ 	    par->chip = CHIP_360_TRIO3D_1X ||
+ 	    par->chip = CHIP_362_TRIO3D_2X ||
+-	    par->chip = CHIP_368_TRIO3D_2X)
++	    par->chip = CHIP_368_TRIO3D_2X ||
++	    par->chip = CHIP_260_VIRGE_MX)
+ 		vga_wcrt(par->state.vgabase, 0x34, 0x00);
+ 	else	/* enable Data Transfer Position Control (DTPC) */
+ 		vga_wcrt(par->state.vgabase, 0x34, 0x10);
+@@ -807,7 +813,8 @@ static int s3fb_set_par(struct fb_info *info)
+ 		    par->chip = CHIP_359_VIRGE_GX2P ||
+ 		    par->chip = CHIP_360_TRIO3D_1X ||
+ 		    par->chip = CHIP_362_TRIO3D_2X ||
+-		    par->chip = CHIP_368_TRIO3D_2X)
++		    par->chip = CHIP_368_TRIO3D_2X ||
++		    par->chip = CHIP_260_VIRGE_MX)
+ 			svga_wcrt_mask(par->state.vgabase, 0x67, 0x00, 0xF0);
+ 		else {
+ 			svga_wcrt_mask(par->state.vgabase, 0x67, 0x10, 0xF0);
+@@ -837,7 +844,8 @@ static int s3fb_set_par(struct fb_info *info)
+ 			    par->chip != CHIP_359_VIRGE_GX2P &&
+ 			    par->chip != CHIP_360_TRIO3D_1X &&
+ 			    par->chip != CHIP_362_TRIO3D_2X &&
+-			    par->chip != CHIP_368_TRIO3D_2X)
++			    par->chip != CHIP_368_TRIO3D_2X &&
++			    par->chip != CHIP_260_VIRGE_MX)
+ 				hmul = 2;
+ 		}
+ 		break;
+@@ -864,7 +872,8 @@ static int s3fb_set_par(struct fb_info *info)
+ 			    par->chip != CHIP_359_VIRGE_GX2P &&
+ 			    par->chip != CHIP_360_TRIO3D_1X &&
+ 			    par->chip != CHIP_362_TRIO3D_2X &&
+-			    par->chip != CHIP_368_TRIO3D_2X)
++			    par->chip != CHIP_368_TRIO3D_2X &&
++			    par->chip != CHIP_260_VIRGE_MX)
+ 				hmul = 2;
+ 		}
+ 		break;
+@@ -1208,7 +1217,8 @@ static int __devinit s3_pci_probe(struct pci_dev *dev, const struct pci_device_i
+ 			break;
+ 		}
+ 	} else if (par->chip = CHIP_357_VIRGE_GX2 ||
+-		   par->chip = CHIP_359_VIRGE_GX2P) {
++		   par->chip = CHIP_359_VIRGE_GX2P ||
++		   par->chip = CHIP_260_VIRGE_MX) {
+ 		switch ((regval & 0xC0) >> 6) {
+ 		case 1: /* 4MB */
+ 			info->screen_size = 4 << 20;
+@@ -1515,6 +1525,7 @@ static struct pci_device_id s3_devices[] __devinitdata = {
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A12), .driver_data = CHIP_359_VIRGE_GX2P},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A13), .driver_data = CHIP_36X_TRIO3D_1X_2X},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8904), .driver_data = CHIP_365_TRIO3D},
++	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8C01), .driver_data = CHIP_260_VIRGE_MX},
  
- static void __exit fblog_exit(void)
- {
-+	unsigned int i;
-+	struct fb_info *info;
-+
-+	fb_unregister_client(&fblog_notifier);
-+
-+	/* We scan through the whole registered_fb array here instead of
-+	 * fblog_fbs because we need to get the device lock _before_ the
-+	 * fblog-registration-lock. */
-+
-+	for (i = 0; i < FB_MAX; ++i) {
-+		info = get_fb_info(i);
-+		if (!info || IS_ERR(info))
-+			continue;
-+
-+		fblog_unregister(info);
-+		put_fb_info(info);
-+	}
- }
- 
- module_init(fblog_init);
+ 	{0, 0, 0, 0, 0, 0, 0}
+ };
+
 -- 
-1.7.11.2
-
+Ondrej Zary

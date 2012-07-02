@@ -1,259 +1,119 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Mon, 30 Jul 2012 19:38:46 +0000
-Subject: [PATCH 2/7] HID: picoLCD: Replace own refcounting with fbdev's
-Message-Id: <20120730213846.2ebab405@neptune.home>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Mon, 02 Jul 2012 06:28:44 +0000
+Subject: Re: [PATCH 2/3] mx3fb: support pan display with fb_set_var
+Message-Id: <4FF13F9C.5050104@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120730213656.0a9f6d30@neptune.home>
+References: <1339376810-8247-1-git-send-email-Ying.Liu@freescale.com>
+ <1339376810-8247-2-git-send-email-Ying.Liu@freescale.com>
+In-Reply-To: <1339376810-8247-2-git-send-email-Ying.Liu@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>
-Cc: Jaya Kumar <jayalk@intworks.biz>, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
+
+On 06/11/2012 01:06 AM, Liu Ying wrote:
+> Users may call FBIOPUT_VSCREENINFO ioctrl to do pan display.
+> This ioctrl relies on fb_set_var() to do the job. fb_set_var()
+> calls the custom fb_set_par() method and then calls the custom
+> fb_pan_display() method. Before calling the custom fb_pan_display()
+> method, info->var is already updated from the new *var in fb_set_var().
+> And, the custom fb_pan_display() method checks if xoffset and yoffset
+> in info->var and the new *var are different before doing actual panning,
+> which prevents the panning from happening within fb_set_var() context.
+> This patch caches the current var info locally in mx3fb driver so that
+> pan display with fb_set_var is supported.
+> 
+> Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
+
+Applied patches 2 and 3 of this series.
 
 
-Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
----
- drivers/hid/hid-picolcd.h      |    6 --
- drivers/hid/hid-picolcd_core.c |    1 -
- drivers/hid/hid-picolcd_fb.c   |  114 ++++++------------------------------=
----
- 3 files changed, 18 insertions(+), 103 deletions(-)
+Thanks,
 
-diff --git a/drivers/hid/hid-picolcd.h b/drivers/hid/hid-picolcd.h
-index 4ddb318..9200be1 100644
---- a/drivers/hid/hid-picolcd.h
-+++ b/drivers/hid/hid-picolcd.h
-@@ -96,7 +96,6 @@ struct picolcd_data {
- 	u8 *fb_vbitmap;		/* local copy of what was sent to PicoLCD */
- 	u8 *fb_bitmap;		/* framebuffer */
- 	struct fb_info *fb_info;
--	struct fb_deferred_io fb_defio;
- #endif /* CONFIG_HID_PICOLCD_FB */
- #ifdef CONFIG_HID_PICOLCD_LCD
- 	struct lcd_device *lcd;
-@@ -179,8 +178,6 @@ int picolcd_init_framebuffer(struct picolcd_data *data);
-=20
- void picolcd_exit_framebuffer(struct picolcd_data *data);
-=20
--void picolcd_fb_unload(void);
--
- void picolcd_fb_refresh(struct picolcd_data *data);
- #define picolcd_fbinfo(d) ((d)->fb_info)
- #else
-@@ -195,9 +192,6 @@ static inline int picolcd_init_framebuffer(struct picol=
-cd_data *data)
- static inline void picolcd_exit_framebuffer(struct picolcd_data *data)
- {
- }
--static inline void picolcd_fb_unload(void)
--{
--}
- static inline void picolcd_fb_refresh(struct picolcd_data *data)
- {
- }
-diff --git a/drivers/hid/hid-picolcd_core.c b/drivers/hid/hid-picolcd_core.c
-index 36e7548..8d5d341 100644
---- a/drivers/hid/hid-picolcd_core.c
-+++ b/drivers/hid/hid-picolcd_core.c
-@@ -695,7 +695,6 @@ static int __init picolcd_init(void)
- static void __exit picolcd_exit(void)
- {
- 	hid_unregister_driver(&picolcd_driver);
--	picolcd_fb_unload();
- }
-=20
- module_init(picolcd_init);
-diff --git a/drivers/hid/hid-picolcd_fb.c b/drivers/hid/hid-picolcd_fb.c
-index b2124f5..602786c 100644
---- a/drivers/hid/hid-picolcd_fb.c
-+++ b/drivers/hid/hid-picolcd_fb.c
-@@ -256,7 +256,7 @@ static void picolcd_fb_update(struct picolcd_data *data)
- 					data->fb_bitmap, data->fb_bpp, chip, tile) ||
- 				data->fb_force) {
- 				n +=3D 2;
--				if (!data->fb_info->par)
-+				if (data->status & PICOLCD_FAILED)
- 					return; /* device lost! */
- 				if (n >=3D HID_OUTPUT_FIFO_SIZE / 2) {
- 					usbhid_wait_io(data->hdev);
-@@ -327,24 +327,17 @@ static int picolcd_fb_blank(int blank, struct fb_info=
- *info)
-=20
- static void picolcd_fb_destroy(struct fb_info *info)
- {
--	struct picolcd_data *data =3D info->par;
--	u32 *ref_cnt =3D info->pseudo_palette;
--	int may_release;
-+	struct picolcd_data *data;
-=20
-+	/* make sure no work is deferred */
-+	cancel_delayed_work_sync(&info->deferred_work);
-+	data =3D info->par;
- 	info->par =3D NULL;
- 	if (data)
- 		data->fb_info =3D NULL;
--	fb_deferred_io_cleanup(info);
-=20
--	ref_cnt--;
--	mutex_lock(&info->lock);
--	(*ref_cnt)--;
--	may_release =3D !*ref_cnt;
--	mutex_unlock(&info->lock);
--	if (may_release) {
--		vfree((u8 *)info->fix.smem_start);
--		framebuffer_release(info);
--	}
-+	vfree((u8 *)info->fix.smem_start);
-+	framebuffer_release(info);
- }
-=20
- static int picolcd_fb_check_var(struct fb_var_screeninfo *var, struct fb_i=
-nfo *info)
-@@ -414,77 +407,10 @@ static int picolcd_set_par(struct fb_info *info)
- 	return 0;
- }
-=20
--/* Do refcounting on our FB and cleanup per worker if FB is
-- * closed after unplug of our device
-- * (fb_release holds info->lock and still touches info after
-- *  we return so we can't release it immediately.
-- */
--struct picolcd_fb_cleanup_item {
--	struct fb_info *info;
--	struct picolcd_fb_cleanup_item *next;
--};
--static struct picolcd_fb_cleanup_item *fb_pending;
--static DEFINE_SPINLOCK(fb_pending_lock);
--
--static void picolcd_fb_do_cleanup(struct work_struct *data)
--{
--	struct picolcd_fb_cleanup_item *item;
--	unsigned long flags;
--
--	do {
--		spin_lock_irqsave(&fb_pending_lock, flags);
--		item =3D fb_pending;
--		fb_pending =3D item ? item->next : NULL;
--		spin_unlock_irqrestore(&fb_pending_lock, flags);
--
--		if (item) {
--			u8 *fb =3D (u8 *)item->info->fix.smem_start;
--			/* make sure we do not race against fb core when
--			 * releasing */
--			mutex_lock(&item->info->lock);
--			mutex_unlock(&item->info->lock);
--			framebuffer_release(item->info);
--			vfree(fb);
--		}
--	} while (item);
--}
--
--static DECLARE_WORK(picolcd_fb_cleanup, picolcd_fb_do_cleanup);
--
--static int picolcd_fb_open(struct fb_info *info, int u)
--{
--	u32 *ref_cnt =3D info->pseudo_palette;
--	ref_cnt--;
--
--	(*ref_cnt)++;
--	return 0;
--}
--
--static int picolcd_fb_release(struct fb_info *info, int u)
--{
--	u32 *ref_cnt =3D info->pseudo_palette;
--	ref_cnt--;
--
--	(*ref_cnt)++;
--	if (!*ref_cnt) {
--		unsigned long flags;
--		struct picolcd_fb_cleanup_item *item =3D (struct picolcd_fb_cleanup_item=
- *)ref_cnt;
--		item--;
--		spin_lock_irqsave(&fb_pending_lock, flags);
--		item->next =3D fb_pending;
--		fb_pending =3D item;
--		spin_unlock_irqrestore(&fb_pending_lock, flags);
--		schedule_work(&picolcd_fb_cleanup);
--	}
--	return 0;
--}
--
- /* Note this can't be const because of struct fb_info definition */
- static struct fb_ops picolcdfb_ops =3D {
- 	.owner        =3D THIS_MODULE,
- 	.fb_destroy   =3D picolcd_fb_destroy,
--	.fb_open      =3D picolcd_fb_open,
--	.fb_release   =3D picolcd_fb_release,
- 	.fb_read      =3D fb_sys_read,
- 	.fb_write     =3D picolcd_fb_write,
- 	.fb_blank     =3D picolcd_fb_blank,
-@@ -550,7 +476,7 @@ static ssize_t picolcd_fb_update_rate_store(struct devi=
-ce *dev,
- 		u =3D PICOLCDFB_UPDATE_RATE_DEFAULT;
-=20
- 	data->fb_update_rate =3D u;
--	data->fb_defio.delay =3D HZ / data->fb_update_rate;
-+	data->fb_info->fbdefio->delay =3D HZ / data->fb_update_rate;
- 	return count;
- }
-=20
-@@ -580,25 +506,23 @@ int picolcd_init_framebuffer(struct picolcd_data *dat=
-a)
- 	}
-=20
- 	data->fb_update_rate =3D PICOLCDFB_UPDATE_RATE_DEFAULT;
--	data->fb_defio =3D picolcd_fb_defio;
- 	/* The extra memory is:
--	 * - struct picolcd_fb_cleanup_item
--	 * - u32 for ref_count
- 	 * - 256*u32 for pseudo_palette
-+	 * - struct fb_deferred_io
- 	 */
--	info =3D framebuffer_alloc(257 * sizeof(u32) + sizeof(struct picolcd_fb_c=
-leanup_item), dev);
-+	info =3D framebuffer_alloc(256 * sizeof(u32) +
-+			sizeof(struct fb_deferred_io), dev);
- 	if (info =3D NULL) {
- 		dev_err(dev, "failed to allocate a framebuffer\n");
- 		goto err_nomem;
- 	}
-=20
--	palette  =3D info->par + sizeof(struct picolcd_fb_cleanup_item);
--	*palette =3D 1;
--	palette++;
-+	info->fbdefio =3D info->par;
-+	*info->fbdefio =3D picolcd_fb_defio;
-+	palette  =3D info->par + sizeof(struct fb_deferred_io);
- 	for (i =3D 0; i < 256; i++)
- 		palette[i] =3D i > 0 && i < 16 ? 0xff : 0;
- 	info->pseudo_palette =3D palette;
--	info->fbdefio =3D &data->fb_defio;
- 	info->screen_base =3D (char __force __iomem *)fb_bitmap;
- 	info->fbops =3D &picolcdfb_ops;
- 	info->var =3D picolcdfb_var;
-@@ -658,6 +582,10 @@ void picolcd_exit_framebuffer(struct picolcd_data *dat=
-a)
- 		return;
-=20
- 	device_remove_file(&data->hdev->dev, &dev_attr_fb_update_rate);
-+	mutex_lock(&info->lock);
-+	fb_deferred_io_cleanup(info);
-+	info->par =3D NULL;
-+	mutex_unlock(&info->lock);
- 	unregister_framebuffer(info);
- 	data->fb_vbitmap =3D NULL;
- 	data->fb_bitmap  =3D NULL;
-@@ -665,9 +593,3 @@ void picolcd_exit_framebuffer(struct picolcd_data *data)
- 	data->fb_info    =3D NULL;
- 	kfree(fb_vbitmap);
- }
--
--void picolcd_fb_unload()
--{
--	flush_work_sync(&picolcd_fb_cleanup);
--	WARN_ON(fb_pending);
--}
---=20
-1.7.8.6
+Florian Tobias Schandinat
+
+> ---
+>  drivers/video/mx3fb.c |   33 ++++++++++++++++++++++++++-------
+>  1 files changed, 26 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+> index d53db60..2dd11c4 100644
+> --- a/drivers/video/mx3fb.c
+> +++ b/drivers/video/mx3fb.c
+> @@ -268,7 +268,7 @@ struct mx3fb_info {
+>  	dma_cookie_t			cookie;
+>  	struct scatterlist		sg[2];
+>  
+> -	u32				sync;	/* preserve var->sync flags */
+> +	struct fb_var_screeninfo	cur_var; /* current var info */
+>  };
+>  
+>  static void mx3fb_dma_done(void *);
+> @@ -723,7 +723,7 @@ static void mx3fb_dma_done(void *arg)
+>  
+>  static int __set_par(struct fb_info *fbi, bool lock)
+>  {
+> -	u32 mem_len;
+> +	u32 mem_len, cur_xoffset, cur_yoffset;
+>  	struct ipu_di_signal_cfg sig_cfg;
+>  	enum ipu_panel mode = IPU_PANEL_TFT;
+>  	struct mx3fb_info *mx3_fbi = fbi->par;
+> @@ -805,8 +805,25 @@ static int __set_par(struct fb_info *fbi, bool lock)
+>  	video->out_height	= fbi->var.yres;
+>  	video->out_stride	= fbi->var.xres_virtual;
+>  
+> -	if (mx3_fbi->blank = FB_BLANK_UNBLANK)
+> +	if (mx3_fbi->blank = FB_BLANK_UNBLANK) {
+>  		sdc_enable_channel(mx3_fbi);
+> +		/*
+> +		 * sg[0] points to fb smem_start address
+> +		 * and is actually active in controller.
+> +		 */
+> +		mx3_fbi->cur_var.xoffset = 0;
+> +		mx3_fbi->cur_var.yoffset = 0;
+> +	}
+> +
+> +	/*
+> +	 * Preserve xoffset and yoffest in case they are
+> +	 * inactive in controller as fb is blanked.
+> +	 */
+> +	cur_xoffset = mx3_fbi->cur_var.xoffset;
+> +	cur_yoffset = mx3_fbi->cur_var.yoffset;
+> +	mx3_fbi->cur_var = fbi->var;
+> +	mx3_fbi->cur_var.xoffset = cur_xoffset;
+> +	mx3_fbi->cur_var.yoffset = cur_yoffset;
+>  
+>  	return 0;
+>  }
+> @@ -926,8 +943,8 @@ static int mx3fb_check_var(struct fb_var_screeninfo *var, struct fb_info *fbi)
+>  	var->grayscale = 0;
+>  
+>  	/* Preserve sync flags */
+> -	var->sync |= mx3_fbi->sync;
+> -	mx3_fbi->sync |= var->sync;
+> +	var->sync |= mx3_fbi->cur_var.sync;
+> +	mx3_fbi->cur_var.sync |= var->sync;
+>  
+>  	return 0;
+>  }
+> @@ -1073,8 +1090,8 @@ static int mx3fb_pan_display(struct fb_var_screeninfo *var,
+>  		return -EINVAL;
+>  	}
+>  
+> -	if (fbi->var.xoffset = var->xoffset &&
+> -	    fbi->var.yoffset = var->yoffset)
+> +	if (mx3_fbi->cur_var.xoffset = var->xoffset &&
+> +	    mx3_fbi->cur_var.yoffset = var->yoffset)
+>  		return 0;	/* No change, do nothing */
+>  
+>  	y_bottom = var->yoffset;
+> @@ -1157,6 +1174,8 @@ static int mx3fb_pan_display(struct fb_var_screeninfo *var,
+>  	else
+>  		fbi->var.vmode &= ~FB_VMODE_YWRAP;
+>  
+> +	mx3_fbi->cur_var = fbi->var;
+> +
+>  	mutex_unlock(&mx3_fbi->mutex);
+>  
+>  	dev_dbg(fbi->device, "Update complete\n");
 

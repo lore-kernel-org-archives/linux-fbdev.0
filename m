@@ -1,156 +1,91 @@
-From: Damien Cassou <damien.cassou@lifl.fr>
-Date: Tue, 31 Jul 2012 16:39:21 +0000
-Subject: [PATCH 4/5] drivers/video/exynos/exynos_mipi_dsi.c: use devm_ functions
-Message-Id: <1343752762-16861-5-git-send-email-damien.cassou@lifl.fr>
+From: Liu Ying <liu.y.victor@gmail.com>
+Date: Mon, 02 Jul 2012 02:18:33 +0000
+Subject: Re: [PATCH 3/3] mx3fb: avoid screen flash when panning with fb_set_var
+Message-Id: <CA+8Hj82acvrhechhxfRSkhm9eefaPKc9VZhhRALVrtwQ6rx8=g@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
-In-Reply-To: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
+References: <1339376810-8247-1-git-send-email-Ying.Liu@freescale.com>
+ <1339376810-8247-3-git-send-email-Ying.Liu@freescale.com>
+In-Reply-To: <1339376810-8247-3-git-send-email-Ying.Liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Inki Dae <inki.dae@samsung.com>
-Cc: kernel-janitors@vger.kernel.org, Donghwa Lee <dh09.lee@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-From: Damien Cassou <damien.cassou@lifl.fr>
+Hi, Guennadi,
 
-The various devm_ functions allocate memory that is released when a driver
-detaches.  This patch uses these functions for data that is allocated in
-the probe function of a platform device and is only freed in the remove
-function.
+Could you please review the second(2/3) patch and the third(3/3) patch
+of this series?
+I have addressed your comments you gave in the previous review cycle.
 
-Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
+Thanks.
 
----
- drivers/video/exynos/exynos_mipi_dsi.c |   41 ++++++++++++---------------------
- 1 file changed, 15 insertions(+), 26 deletions(-)
+2012/6/11, Liu Ying <Ying.Liu@freescale.com>:
+> Users may call FBIOPUT_VSCREENINFO ioctrl to do pan display.
+> This ioctrl relies on fb_set_var() to do the job. fb_set_var()
+> calls custom fb_set_par() method and then calls custom
+> fb_pan_display() method. The current implementation of mx3fb
+> reinitializes IPU display controller every time the custom
+> fb_set_par() method is called, which makes the screen flash
+> if fb_set_var() is called to do panning frequently. This patch
+> compares the new var info with the cached old one to decide
+> whether we really need to reinitialize IPU display controller.
+> We ignore xoffset and yoffset update because it doesn't require
+> to reinitialize the controller. Users may specify activate field
+> of var info with FB_ACTIVATE_NOW and FB_ACTIVATE_FORCE to
+> reinialize the controller by force.
+>
+> Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
+> ---
+>  drivers/video/mx3fb.c |   22 +++++++++++++++++++++-
+>  1 files changed, 21 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
+> index 2dd11c4..7d0aa7b 100644
+> --- a/drivers/video/mx3fb.c
+> +++ b/drivers/video/mx3fb.c
+> @@ -721,6 +721,26 @@ static void mx3fb_dma_done(void *arg)
+>  	complete(&mx3_fbi->flip_cmpl);
+>  }
+>
+> +static bool mx3fb_must_set_par(struct fb_info *fbi)
+> +{
+> +	struct mx3fb_info *mx3_fbi = fbi->par;
+> +	struct fb_var_screeninfo old_var = mx3_fbi->cur_var;
+> +	struct fb_var_screeninfo new_var = fbi->var;
+> +
+> +	if ((fbi->var.activate & FB_ACTIVATE_FORCE) &&
+> +	    (fbi->var.activate & FB_ACTIVATE_MASK) = FB_ACTIVATE_NOW)
+> +		return true;
+> +
+> +	/*
+> +	 * Ignore xoffset and yoffset update,
+> +	 * because pan display handles this case.
+> +	 */
+> +	old_var.xoffset = new_var.xoffset;
+> +	old_var.yoffset = new_var.yoffset;
+> +
+> +	return !!memcmp(&old_var, &new_var, sizeof(struct fb_var_screeninfo));
+> +}
+> +
+>  static int __set_par(struct fb_info *fbi, bool lock)
+>  {
+>  	u32 mem_len, cur_xoffset, cur_yoffset;
+> @@ -844,7 +864,7 @@ static int mx3fb_set_par(struct fb_info *fbi)
+>
+>  	mutex_lock(&mx3_fbi->mutex);
+>
+> -	ret = __set_par(fbi, true);
+> +	ret = mx3fb_must_set_par(fbi) ? __set_par(fbi, true) : 0;
+>
+>  	mutex_unlock(&mx3_fbi->mutex);
+>
+> --
+> 1.7.1
+>
+>
+>
 
-diff --git a/drivers/video/exynos/exynos_mipi_dsi.c b/drivers/video/exynos/exynos_mipi_dsi.c
-index 4bc2b8a..c277a07 100644
---- a/drivers/video/exynos/exynos_mipi_dsi.c
-+++ b/drivers/video/exynos/exynos_mipi_dsi.c
-@@ -336,7 +336,8 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
- 	struct mipi_dsim_ddi *dsim_ddi;
- 	int ret = -EINVAL;
- 
--	dsim = kzalloc(sizeof(struct mipi_dsim_device), GFP_KERNEL);
-+	dsim = devm_kzalloc(&pdev->dev, sizeof(struct mipi_dsim_device),
-+			    GFP_KERNEL);
- 	if (!dsim) {
- 		dev_err(&pdev->dev, "failed to allocate dsim object.\n");
- 		return -ENOMEM;
-@@ -350,13 +351,13 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
- 	dsim_pd = (struct mipi_dsim_platform_data *)dsim->pd;
- 	if (dsim_pd = NULL) {
- 		dev_err(&pdev->dev, "failed to get platform data for dsim.\n");
--		goto err_clock_get;
-+		goto err_platform_get_irq;
- 	}
- 	/* get mipi_dsim_config. */
- 	dsim_config = dsim_pd->dsim_config;
- 	if (dsim_config = NULL) {
- 		dev_err(&pdev->dev, "failed to get dsim config data.\n");
--		goto err_clock_get;
-+		goto err_platform_get_irq;
- 	}
- 
- 	dsim->dsim_config = dsim_config;
-@@ -367,13 +368,13 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
- 	ret = regulator_bulk_get(&pdev->dev, ARRAY_SIZE(supplies), supplies);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Failed to get regulators: %d\n", ret);
--		goto err_clock_get;
-+		goto err_platform_get_irq;
- 	}
- 
--	dsim->clock = clk_get(&pdev->dev, "dsim0");
-+	dsim->clock = devm_clk_get(&pdev->dev, "dsim0");
- 	if (IS_ERR(dsim->clock)) {
- 		dev_err(&pdev->dev, "failed to get dsim clock source\n");
--		goto err_clock_get;
-+		goto err_platform_get_irq;
- 	}
- 
- 	clk_enable(dsim->clock);
-@@ -384,15 +385,17 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
- 		goto err_platform_get;
- 	}
- 
--	dsim->res = request_mem_region(res->start, resource_size(res),
--					dev_name(&pdev->dev));
-+	dsim->res = devm_request_mem_region(&pdev->dev, res->start,
-+					    resource_size(res),
-+					    dev_name(&pdev->dev));
- 	if (!dsim->res) {
- 		dev_err(&pdev->dev, "failed to request io memory region\n");
- 		ret = -ENOMEM;
--		goto err_mem_region;
-+		goto err_platform_get;
- 	}
- 
--	dsim->reg_base = ioremap(res->start, resource_size(res));
-+	dsim->reg_base = devm_ioremap(&pdev->dev, res->start,
-+				      resource_size(res));
- 	if (!dsim->reg_base) {
- 		dev_err(&pdev->dev, "failed to remap io region\n");
- 		ret = -ENOMEM;
-@@ -405,7 +408,7 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
- 	dsim_ddi = exynos_mipi_dsi_bind_lcd_ddi(dsim, dsim_pd->lcd_panel_name);
- 	if (!dsim_ddi) {
- 		dev_err(&pdev->dev, "mipi_dsim_ddi object not found.\n");
--		goto err_bind;
-+		goto err_ioremap;
- 	}
- 
- 	dsim->irq = platform_get_irq(pdev, 0);
-@@ -424,7 +427,7 @@ static int exynos_mipi_dsi_probe(struct platform_device *pdev)
- 	if (ret != 0) {
- 		dev_err(&pdev->dev, "failed to request dsim irq\n");
- 		ret = -EINVAL;
--		goto err_bind;
-+		goto err_ioremap;
- 	}
- 
- 	/* enable interrupts */
-@@ -466,20 +469,11 @@ done:
- 
- 	return 0;
- 
--err_bind:
--	iounmap(dsim->reg_base);
--
- err_ioremap:
- 	release_mem_region(dsim->res->start, resource_size(dsim->res));
- 
--err_mem_region:
--	release_resource(dsim->res);
--
- err_platform_get:
- 	clk_disable(dsim->clock);
--	clk_put(dsim->clock);
--err_clock_get:
--	kfree(dsim);
- 
- err_platform_get_irq:
- 	return ret;
-@@ -491,12 +485,8 @@ static int __devexit exynos_mipi_dsi_remove(struct platform_device *pdev)
- 	struct mipi_dsim_ddi *dsim_ddi, *next;
- 	struct mipi_dsim_lcd_driver *dsim_lcd_drv;
- 
--	iounmap(dsim->reg_base);
--
- 	clk_disable(dsim->clock);
--	clk_put(dsim->clock);
- 
--	release_resource(dsim->res);
- 	release_mem_region(dsim->res->start, resource_size(dsim->res));
- 
- 	list_for_each_entry_safe(dsim_ddi, next, &dsim_ddi_list, list) {
-@@ -514,7 +504,6 @@ static int __devexit exynos_mipi_dsi_remove(struct platform_device *pdev)
- 	}
- 
- 	regulator_bulk_free(ARRAY_SIZE(supplies), supplies);
--	kfree(dsim);
- 
- 	return 0;
- }
 
+-- 
+Best Regards,
+Liu Ying

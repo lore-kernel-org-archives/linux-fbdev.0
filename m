@@ -1,44 +1,41 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Date: Tue, 31 Jul 2012 07:59:09 +0000
-Subject: Re: [PATCH 0/7] HID: picoLCD updates
-Message-Id: <20120731095909.08d60f70@pluto.restena.lu>
+From: Shawn Guo <shawn.guo@linaro.org>
+Date: Tue, 03 Jul 2012 07:46:33 +0000
+Subject: Re: [PATCH 0/2] simple device tree support for mxsfb
+Message-Id: <20120703074631.GE22705@S2101-09.ap.freescale.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120730213656.0a9f6d30@neptune.home>
-	<CANq1E4Tb1Er+O54rN3OteMXqeXAXDr4Z-dvY+RQxZW_NdAfifw@mail.gmail.com>
-In-Reply-To: <CANq1E4Tb1Er+O54rN3OteMXqeXAXDr4Z-dvY+RQxZW_NdAfifw@mail.gmail.com>
+References: <1340701379-8619-1-git-send-email-shawn.guo@linaro.org>
+In-Reply-To: <1340701379-8619-1-git-send-email-shawn.guo@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Herrmann <dh.herrmann@googlemail.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>, Jaya Kumar <jayalk@intworks.biz>, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Hi David,
+Hi Florian,
 
-On Tue, 31 Jul 2012 09:26:07 David Herrmann wrote:
-> This is not directly related to this patchset, but did you fix the
-> locking issue with hid-core? It is still on my todo-list but I haven't
-> gotten around fixing it, yet. However, I plan on fixing it this
-> summer, but if picolcd does not require it, it's probably not worth
-> the work.
-
-I worked around it with patch 6/7 as in disabling the version check.
-
-The other probing steps don't expect a response from the hardware, thus
-are not affected.
-
-But it would definitely be helpful to be able to revert that one.
-Understanding and fixing the FB-related misbehavior on quick bind/unbind
-seems more important though.
-
-
-Not related with this, getting a return value from
-usbhid_submit_report() as in -EAGAIN or -ENODEV would help in order
-to avoid the ugly 
-  hid-picolcd 0003:04D8:C002.0003: usb_submit_urb(out) failed: -19
-lines in kernel log and stopping interaction with hardware when it's
-gone already or giving it time to consume its queue when there is lots
-of data being sent.
-
+On Tue, Jun 26, 2012 at 05:02:57PM +0800, Shawn Guo wrote:
+> It adds a simple device tree support for mxsfb driver.
+> 
+> Shawn Guo (2):
+>   video: mxsfb: move mxsfb.h into include/linux
+>   video: mxsfb: add simple device tree probe
+> 
+I just queued these two patches on mxs arch tree.  Please let me know
+if you see problem with that.
 
 Regards,
-Bruno
+Shawn
+
+>  Documentation/devicetree/bindings/fb/mxsfb.txt     |   21 +++++++
+>  arch/arm/mach-mxs/devices-mx23.h                   |    2 +-
+>  arch/arm/mach-mxs/devices-mx28.h                   |    2 +-
+>  arch/arm/mach-mxs/devices/platform-mxsfb.c         |    2 +-
+>  drivers/video/mxsfb.c                              |   62 +++++++++++++++-----
+>  .../include/mach => include/linux}/mxsfb.h         |    6 +-
+>  6 files changed, 75 insertions(+), 20 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/fb/mxsfb.txt
+>  rename {arch/arm/mach-mxs/include/mach => include/linux}/mxsfb.h (95%)
+> 
+> -- 
+> 1.7.5.4
+> 
+> 

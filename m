@@ -1,45 +1,41 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 19 Jul 2012 00:39:13 +0000
-Subject: [PATCH 0/9] SH Mobile LCDC and MERAM patches
-Message-Id: <1342658362-19491-1-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 04 Jul 2012 12:55:47 +0000
+Subject: [PATCH 0/2] OMAPDSS: PM runtime fixes for 3.5-rc
+Message-Id: <1341405829-16964-1-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: FlorianSchandinat@gmx.de
+Cc: tomi.valkeinen@ti.com, jaswinder.singh@linaro.org, jw@terrafix.co.uk, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
 
-Hi,
+Hi Florian,
 
-Here are 9 patches for the SH Mobile LCDC and MERAM drivers. Patches 1/9 to
-4/9 and 9/9 have previously been posted as part of the "SH Mobile LCDC
-MERAM-based frame buffer backing store" RFC series. Patch 5/9 has also been
-posted as part of the same series, albeit included in patch 9/9.
+These are 2 fixes which Tomi had intended to push for the coming rcs. He is
+currently on vacation and asked me to post the patches on his behalf.
 
-As most of those patches have already been posted for review (patches 6/9 to
-8/9 that haven't been posted already are small fixes), I plan to send a pull
-request soon, to get the patches in v3.6 if possible.
+The first patch ensures that system suspend doesn't break on OMAP if DSS is
+enabled. The second patch prevents some warning backtraces when the kernel is
+not built with PM runtime.
 
-Laurent Pinchart (9):
-  sh_mobile_meram: Rename operations to cache_[alloc|free|update]
-  sh_mobile_meram: Use direct function calls for the public API
-  sh_mobile_meram: Add direct MERAM allocation API
-  fbdev: sh_mobile_lcdc: Destroy mutex at remove time
-  fbdev: sh_mobile_lcdc: Fix line pitch computation
-  fbdev: sh_mobile_lcdc: Use channel configuration to initialize fb
-    device
-  fbdev: sh_mobile_lcdc: Support horizontal panning
-  fbdev: sh_mobile_lcdc: Fix overlay registers update during pan
-    operation
-  fbdev: sh_mobile_lcdc: Fix pan offset computation in YUV mode
+Could you please queue these for the upcoming rc?
 
- drivers/video/sh_mobile_lcdcfb.c |  209 +++++++++++++++++----------------
- drivers/video/sh_mobile_lcdcfb.h |    5 +-
- drivers/video/sh_mobile_meram.c  |  235 +++++++++++++++++++++-----------------
- include/video/sh_mobile_meram.h  |   71 ++++++++----
- 4 files changed, 293 insertions(+), 227 deletions(-)
+Thanks,
+Archit
+
+Tomi Valkeinen (2):
+  OMAPDSS: Use PM notifiers for system suspend
+  OMAPDSS: fix warnings if CONFIG_PM_RUNTIME=n
+
+ drivers/video/omap2/dss/core.c  |   45 +++++++++++++++++++++++++--------------
+ drivers/video/omap2/dss/dispc.c |    2 +-
+ drivers/video/omap2/dss/dsi.c   |    2 +-
+ drivers/video/omap2/dss/dss.c   |    2 +-
+ drivers/video/omap2/dss/hdmi.c  |    2 +-
+ drivers/video/omap2/dss/rfbi.c  |    2 +-
+ drivers/video/omap2/dss/venc.c  |    2 +-
+ 7 files changed, 35 insertions(+), 22 deletions(-)
 
 -- 
-Regards,
-
-Laurent Pinchart
+1.7.9.5
 

@@ -1,45 +1,37 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Date: Wed, 04 Jul 2012 13:00:56 +0000
+From: Alex Courbot <acourbot@nvidia.com>
+Date: Wed, 04 Jul 2012 15:14:39 +0000
 Subject: Re: [PATCH] pwm-backlight: add regulator and GPIO support
-Message-Id: <20120704130056.GC30009@pengutronix.de>
+Message-Id: <4FF45DDF.9000306@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340976167-27298-1-git-send-email-acourbot@nvidia.com>
- <20120704104840.GJ24458@pengutronix.de>
- <4FF43692.2040805@nvidia.com>
-In-Reply-To: <4FF43692.2040805-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+References: <1340976167-27298-1-git-send-email-acourbot@nvidia.com> <20120704104840.GJ24458@pengutronix.de> <4FF43692.2040805@nvidia.com> <20120704130056.GC30009@pengutronix.de>
+In-Reply-To: <20120704130056.GC30009-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+To: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 Cc: Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 
-On Wed, Jul 04, 2012 at 09:26:58PM +0900, Alex Courbot wrote:
-> Hi Sascha,
-> 
-> On 07/04/2012 07:48 PM, Sascha Hauer wrote:>> +
-> >> +	pb->power_reg = devm_regulator_get(&pdev->dev, "power");
-> >> +	if (IS_ERR(pb->power_reg))
-> >> +		return PTR_ERR(pb->power_reg);
-> >
-> > This looses several resources allocated earlier, like the enable gpio
-> > and the pwm. This is really bad here since I have no regulator specified
-> > and devm_regulator_get returns with -EPROBE_DEFER. Next time the core
-> > tries to probe the driver the driver bails out because the gpio and the
-> > pwm is already requested.
-> 
-> That's very bad indeed. I assumed that the kernel would free
-> devm-allocated resources after probe returned -EPROBE_DEFER,
+On Wed 04 Jul 2012 10:00:56 PM JST, Sascha Hauer wrote:
+>> That's very bad indeed. I assumed that the kernel would free
+>> devm-allocated resources after probe returned -EPROBE_DEFER,
+>
+> It indeed does free devm allocated resources, but neither the gpio nor
+> the pwm are devm allocated.
 
-It indeed does free devm allocated resources, but neither the gpio nor
-the pwm are devm allocated.
+As far as I can tell the gpio is allocated through devm as well:
 
-Also please be aware that using a regulator in the pwm backlight will
-instantly break all existing users. That's hardly your fault though.
+ > +		ret = devm_gpio_request_one(&pdev->dev, data->enable_gpio,
+ > +				GPIOF_OUT_INIT_HIGH, "backlight_enable");
 
-Sascha
+Thus if it is not reclaimed with probe returns with -EPROBE_DEFER, then 
+I guess something is going wrong elsewhere. You are right that the PWM 
+should be freed by the driver thought.
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+> Also please be aware that using a regulator in the pwm backlight will
+> instantly break all existing users. That's hardly your fault though.
+
+Sorry, I don't see why. Could you elaborate on this?
+
+Thanks,
+Alex.
+

@@ -1,220 +1,122 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Wed, 04 Jul 2012 21:48:33 +0000
-Subject: [PATCH 1/2] fbcon: move update_attr() into separate source file
-Message-Id: <1341438514-1786-2-git-send-email-dh.herrmann@googlemail.com>
+From: Archit Taneja <archit@ti.com>
+Date: Wed, 04 Jul 2012 12:55:49 +0000
+Subject: [PATCH 2/2] OMAPDSS: fix warnings if CONFIG_PM_RUNTIME=n
+Message-Id: <1341405829-16964-3-git-send-email-archit@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1341438514-1786-1-git-send-email-dh.herrmann@googlemail.com>
-In-Reply-To: <1341438514-1786-1-git-send-email-dh.herrmann@googlemail.com>
+References: <1341405829-16964-1-git-send-email-archit@ti.com>
+In-Reply-To: <1341405829-16964-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-serial@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk, gregkh@linuxfoundation.org, David Herrmann <dh.herrmann@googlemail.com>
+To: FlorianSchandinat@gmx.de
+Cc: tomi.valkeinen@ti.com, jaswinder.singh@linaro.org, jw@terrafix.co.uk, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Grazvydas Ignotas <notasas@gmail.com>
 
-If we want to use update_attr() independently from fbcon, we need to split
-it off from bitblit.c and fbcon.h. Therefore, introduce a new header and
-source file (fbdraw.[ch]) which does not depende on vc_* and fbcon_*
-structures in any way.
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-This does not introduce any new code nor does it make the paths deeper,
-it simply splits the function off.
+If runtime PM is not enabled in the kernel config, pm_runtime_get_sync()
+will always return 1 and pm_runtime_put_sync() will always return
+-ENOSYS. pm_runtime_get_sync() returning 1 presents no problem to the
+driver, but -ENOSYS from pm_runtime_put_sync() causes the driver to
+print a warning.
 
-The other update_attr() functions (inside the rotation sources) seem
-similar but are significantly different and I haven't found a way to merge
-them efficiently (which is probably the reason why they are split off
-now). Furthermore, I do not intend to use them in the coming code so there
-is no need to split them off.
+One option would be to ignore errors returned by pm_runtime_put_sync()
+totally, as they only say that the call was unable to put the hardware
+into suspend mode.
 
-Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+However, I chose to ignore the returned -ENOSYS explicitly, and print a
+warning for other errors, as I think we should get notified if the HW
+failed to go to suspend properly.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jassi Brar <jaswinder.singh@linaro.org>
+Cc: Grazvydas Ignotas <notasas@gmail.com>
 ---
- drivers/video/console/Makefile  |  3 ++-
- drivers/video/console/bitblit.c | 26 +++--------------------
- drivers/video/console/fbcon.h   |  5 +----
- drivers/video/console/fbdraw.c  | 46 +++++++++++++++++++++++++++++++++++++++++
- drivers/video/console/fbdraw.h  | 26 +++++++++++++++++++++++
- 5 files changed, 78 insertions(+), 28 deletions(-)
- create mode 100644 drivers/video/console/fbdraw.c
- create mode 100644 drivers/video/console/fbdraw.h
+ drivers/video/omap2/dss/dispc.c |    2 +-
+ drivers/video/omap2/dss/dsi.c   |    2 +-
+ drivers/video/omap2/dss/dss.c   |    2 +-
+ drivers/video/omap2/dss/hdmi.c  |    2 +-
+ drivers/video/omap2/dss/rfbi.c  |    2 +-
+ drivers/video/omap2/dss/venc.c  |    2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/console/Makefile b/drivers/video/console/Makefile
-index a862e91..9a52226 100644
---- a/drivers/video/console/Makefile
-+++ b/drivers/video/console/Makefile
-@@ -25,7 +25,8 @@ obj-$(CONFIG_SGI_NEWPORT_CONSOLE) += newport_con.o font.o
- obj-$(CONFIG_STI_CONSOLE)         += sticon.o sticore.o font.o
- obj-$(CONFIG_VGA_CONSOLE)         += vgacon.o
- obj-$(CONFIG_MDA_CONSOLE)         += mdacon.o
--obj-$(CONFIG_FRAMEBUFFER_CONSOLE) += fbcon.o bitblit.o font.o softcursor.o
-+obj-$(CONFIG_FRAMEBUFFER_CONSOLE) += fbcon.o bitblit.o font.o softcursor.o \
-+                                     fbdraw.o
- ifeq ($(CONFIG_FB_TILEBLITTING),y)
- obj-$(CONFIG_FRAMEBUFFER_CONSOLE)     += tileblit.o
- endif
-diff --git a/drivers/video/console/bitblit.c b/drivers/video/console/bitblit.c
-index 28b1a83..6ec2905 100644
---- a/drivers/video/console/bitblit.c
-+++ b/drivers/video/console/bitblit.c
-@@ -22,26 +22,6 @@
- /*
-  * Accelerated handlers.
-  */
--static void update_attr(u8 *dst, u8 *src, int attribute,
--			       struct vc_data *vc)
--{
--	int i, offset = (vc->vc_font.height < 10) ? 1 : 2;
--	int width = DIV_ROUND_UP(vc->vc_font.width, 8);
--	unsigned int cellsize = vc->vc_font.height * width;
--	u8 c;
--
--	offset = cellsize - (offset * width);
--	for (i = 0; i < cellsize; i++) {
--		c = src[i];
--		if (attribute & FBCON_ATTRIBUTE_UNDERLINE && i >= offset)
--			c = 0xff;
--		if (attribute & FBCON_ATTRIBUTE_BOLD)
--			c |= c >> 1;
--		if (attribute & FBCON_ATTRIBUTE_REVERSE)
--			c = ~c;
--		dst[i] = c;
--	}
--}
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index 4749ac3..397d4ee 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -384,7 +384,7 @@ void dispc_runtime_put(void)
+ 	DSSDBG("dispc_runtime_put\n");
  
- static void bit_bmove(struct vc_data *vc, struct fb_info *info, int sy,
- 		      int sx, int dy, int dx, int height, int width)
-@@ -88,7 +68,7 @@ static inline void bit_putcs_aligned(struct vc_data *vc, struct fb_info *info,
- 					  charmask)*cellsize;
+ 	r = pm_runtime_put_sync(&dispc.pdev->dev);
+-	WARN_ON(r < 0);
++	WARN_ON(r < 0 && r != -ENOSYS);
+ }
  
- 		if (attr) {
--			update_attr(buf, src, attr, vc);
-+			fbdraw_update_attr(buf, src, attr, &vc->vc_font);
- 			src = buf;
- 		}
+ static inline bool dispc_mgr_is_lcd(enum omap_channel channel)
+diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
+index ca8382d..14ce8cc 100644
+--- a/drivers/video/omap2/dss/dsi.c
++++ b/drivers/video/omap2/dss/dsi.c
+@@ -1075,7 +1075,7 @@ void dsi_runtime_put(struct platform_device *dsidev)
+ 	DSSDBG("dsi_runtime_put\n");
  
-@@ -123,7 +103,7 @@ static inline void bit_putcs_unaligned(struct vc_data *vc,
- 					  charmask)*cellsize;
+ 	r = pm_runtime_put_sync(&dsi->pdev->dev);
+-	WARN_ON(r < 0);
++	WARN_ON(r < 0 && r != -ENOSYS);
+ }
  
- 		if (attr) {
--			update_attr(buf, src, attr, vc);
-+			fbdraw_update_attr(buf, src, attr, &vc->vc_font);
- 			src = buf;
- 		}
+ /* source clock for DSI PLL. this could also be PCLKFREE */
+diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
+index 7706323..d2b5719 100644
+--- a/drivers/video/omap2/dss/dss.c
++++ b/drivers/video/omap2/dss/dss.c
+@@ -731,7 +731,7 @@ static void dss_runtime_put(void)
+ 	DSSDBG("dss_runtime_put\n");
  
-@@ -275,7 +255,7 @@ static void bit_cursor(struct vc_data *vc, struct fb_info *info, int mode,
- 			return;
- 		kfree(ops->cursor_data);
- 		ops->cursor_data = dst;
--		update_attr(dst, src, attribute, vc);
-+		fbdraw_update_attr(dst, src, attribute, &vc->vc_font);
- 		src = dst;
- 	}
+ 	r = pm_runtime_put_sync(&dss.pdev->dev);
+-	WARN_ON(r < 0 && r != -EBUSY);
++	WARN_ON(r < 0 && r != -ENOSYS && r != -EBUSY);
+ }
  
-diff --git a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
-index 6bd2e0c..8623bac 100644
---- a/drivers/video/console/fbcon.h
-+++ b/drivers/video/console/fbcon.h
-@@ -16,6 +16,7 @@
- #include <linux/vt_kern.h>
+ /* DEBUGFS */
+diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
+index 8195c71..26a2430 100644
+--- a/drivers/video/omap2/dss/hdmi.c
++++ b/drivers/video/omap2/dss/hdmi.c
+@@ -138,7 +138,7 @@ static void hdmi_runtime_put(void)
+ 	DSSDBG("hdmi_runtime_put\n");
  
- #include <asm/io.h>
-+#include "fbdraw.h"
+ 	r = pm_runtime_put_sync(&hdmi.pdev->dev);
+-	WARN_ON(r < 0);
++	WARN_ON(r < 0 && r != -ENOSYS);
+ }
  
- #define FBCON_FLAGS_INIT         1
- #define FBCON_FLAGS_CURSOR_TIMER 2
-@@ -219,10 +220,6 @@ extern void fbcon_set_tileops(struct vc_data *vc, struct fb_info *info);
- extern void fbcon_set_bitops(struct fbcon_ops *ops);
- extern int  soft_cursor(struct fb_info *info, struct fb_cursor *cursor);
+ static int __init hdmi_init_display(struct omap_dss_device *dssdev)
+diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
+index 3d8c206..7985fa1 100644
+--- a/drivers/video/omap2/dss/rfbi.c
++++ b/drivers/video/omap2/dss/rfbi.c
+@@ -141,7 +141,7 @@ static void rfbi_runtime_put(void)
+ 	DSSDBG("rfbi_runtime_put\n");
  
--#define FBCON_ATTRIBUTE_UNDERLINE 1
--#define FBCON_ATTRIBUTE_REVERSE   2
--#define FBCON_ATTRIBUTE_BOLD      4
--
- static inline int real_y(struct display *p, int ypos)
- {
- 	int rows = p->vrows;
-diff --git a/drivers/video/console/fbdraw.c b/drivers/video/console/fbdraw.c
-new file mode 100644
-index 0000000..65e7003
---- /dev/null
-+++ b/drivers/video/console/fbdraw.c
-@@ -0,0 +1,46 @@
-+/*
-+ * Framebuffer helpers for image draw-operations
-+ *
-+ * Copyright (c) 2004 Antonino Daplas <adaplas @pol.net>
-+ * Copyright (c) 2012 David Herrmann <dh.herrmann@googlemail.com>
-+ *
-+ * Originally from drivers/video/console/bitblit.c which itself originally is
-+ * from the 'accel_*' routines in drivers/video/console/fbcon.c.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file COPYING in the main directory of this archive for
-+ * more details.
-+ */
-+
-+#include <linux/console.h>
-+#include <linux/fb.h>
-+#include <linux/kd.h>
-+#include <linux/module.h>
-+#include <linux/string.h>
-+#include "fbdraw.h"
-+
-+void fbdraw_update_attr(u8 *dst, const u8 *src, int attribute,
-+			struct console_font *font)
-+{
-+	int i, offset = (font->height < 10) ? 1 : 2;
-+	int width = DIV_ROUND_UP(font->width, 8);
-+	unsigned int cellsize = font->height * width;
-+	u8 c;
-+
-+	offset = cellsize - (offset * width);
-+	for (i = 0; i < cellsize; i++) {
-+		c = src[i];
-+		if (attribute & FBCON_ATTRIBUTE_UNDERLINE && i >= offset)
-+			c = 0xff;
-+		if (attribute & FBCON_ATTRIBUTE_BOLD)
-+			c |= c >> 1;
-+		if (attribute & FBCON_ATTRIBUTE_REVERSE)
-+			c = ~c;
-+		dst[i] = c;
-+	}
-+}
-+EXPORT_SYMBOL(fbdraw_update_attr);
-+
-+MODULE_LICENSE("GPL v2");
-+MODULE_AUTHOR("David Herrmann <dh.herrmann@googlemail.com>");
-+MODULE_DESCRIPTION("Framebuffer helpers for image draw-operations");
-diff --git a/drivers/video/console/fbdraw.h b/drivers/video/console/fbdraw.h
-new file mode 100644
-index 0000000..77edd7f
---- /dev/null
-+++ b/drivers/video/console/fbdraw.h
-@@ -0,0 +1,26 @@
-+/*
-+ * Framebuffer helpers for image draw-operations
-+ *
-+ * Copyright (c) 2012 David Herrmann <dh.herrmann@googlemail.com>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file COPYING in the main directory of this archive for
-+ * more details.
-+ */
-+
-+#ifndef _VIDEO_FBDRAW_H
-+#define _VIDEO_FBDRAW_H
-+
-+#include <linux/console.h>
-+#include <linux/fb.h>
-+#include <linux/kd.h>
-+
-+/* fbcon character attributes */
-+#define FBCON_ATTRIBUTE_UNDERLINE 1
-+#define FBCON_ATTRIBUTE_REVERSE   2
-+#define FBCON_ATTRIBUTE_BOLD      4
-+
-+void fbdraw_update_attr(u8 *dst, const u8 *src, int attribute,
-+			struct console_font *font);
-+
-+#endif /* _VIDEO_FBDRAW_H */
+ 	r = pm_runtime_put_sync(&rfbi.pdev->dev);
+-	WARN_ON(r < 0);
++	WARN_ON(r < 0 && r != -ENOSYS);
+ }
+ 
+ void rfbi_bus_lock(void)
+diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
+index 2b89739..3907c8b 100644
+--- a/drivers/video/omap2/dss/venc.c
++++ b/drivers/video/omap2/dss/venc.c
+@@ -402,7 +402,7 @@ static void venc_runtime_put(void)
+ 	DSSDBG("venc_runtime_put\n");
+ 
+ 	r = pm_runtime_put_sync(&venc.pdev->dev);
+-	WARN_ON(r < 0);
++	WARN_ON(r < 0 && r != -ENOSYS);
+ }
+ 
+ static const struct venc_config *venc_timings_to_config(
 -- 
-1.7.11.1
+1.7.9.5
 

@@ -1,63 +1,43 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Thu, 05 Jul 2012 10:41:21 +0000
+From: Stephen Warren <swarren@wwwdotorg.org>
+Date: Thu, 05 Jul 2012 16:03:58 +0000
 Subject: Re: [PATCH] pwm-backlight: add regulator and GPIO support
-Message-Id: <20120705104120.GP4111@opensource.wolfsonmicro.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="TJXgsAvz6ds/es3G"
+Message-Id: <4FF5BAEE.3020403@wwwdotorg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4FF43692.2040805@nvidia.com>
- <20120704130056.GC30009@pengutronix.de>
- <4FF45DDF.9000306@nvidia.com>
- <20120704152451.GA7333@sirena.org.uk>
- <4FF4FDC0.8020405@nvidia.com>
- <20120705062011.GI30009@pengutronix.de>
- <4FF53368.6090805@nvidia.com>
- <20120705064742.GL30009@pengutronix.de>
- <4FF5459F.5090201@nvidia.com>
- <20120705080234.GQ30009@pengutronix.de>
-In-Reply-To: <20120705080234.GQ30009@pengutronix.de>
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Alex Courbot <acourbot@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+References: <20120704104840.GJ24458@pengutronix.de> <4FF43692.2040805@nvidia.com> <20120704130056.GC30009@pengutronix.de> <4FF45DDF.9000306@nvidia.com> <20120704152451.GA7333@sirena.org.uk> <4FF4FDC0.8020405@nvidia.com> <20120705062011.GI30009@pengutronix.de> <4FF53368.6090805@nvidia.com> <20120705064742.GL30009@pengutronix.de> <4FF5459F.5090201@nvidia.com> <20120705075714.GA26428@avionic-0098.mockup.avionic-design.de> <4FF54C6C.1060700@nvidia.com>
+In-Reply-To: <4FF54C6C.1060700@nvidia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Alex Courbot <acourbot@nvidia.com>
+Cc: Thierry Reding <thierry.reding@avionic-design.de>, Sascha Hauer <s.hauer@pengutronix.de>, Mark Brown <broonie@opensource.wolfsonmicro.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+
+On 07/05/2012 02:12 AM, Alex Courbot wrote:
+> On 07/05/2012 04:57 PM, Thierry Reding wrote:
+>> I agree. Non-DT platforms have always used the callbacks to execute this
+>> kind of code. As you've said before there are situations where it isn't
+>> just about setting a GPIO or enabling a regulator but it also requires a
+>> specific timing. Representing this in the platform data would become
+>> tedious.
+> 
+> That will settle the whole issue then.
+> 
+>> So I think for the DT case you can parse the power-on and power-off
+>> sequences directly and execute code based on it, while in non-DT cases
+>> the init and exit callbacks should be used instead. I think it even
+>> makes sense to reuse the platform data's init and exit functions in the
+>> DT case and implement the parser/interpreter within those.
+> 
+> It totally makes sense indeed.
+
+I don't agree here. It'd be best if non-DT and DT cases worked as
+similarly as possible. Relying on callbacks in one case and
+data-parsed-from-DT in the other isn't consistent with that. After all,
+in the DT case, you parse some data out of the DT and into some data
+structure. In the non-DT case, you can have that data structure passed
+in directly using platform data. Now, there's certainly a need to
+continue to support callbacks for backwards compatibility, at the very
+least temporarily before all clients are converted to the new model, but
+requiring different models rather than simply allowing it seems like a
+bad idea to me.
 
 
---TJXgsAvz6ds/es3G
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Thu, Jul 05, 2012 at 10:02:34AM +0200, Sascha Hauer wrote:
-
-> So here the regulator core knows that there is no regulator and never
-> will be. All that needs to be done is to make _regulator_get look at
-> that value.
-
-> There may be some side effects if we just return ERR_PTR(-ENODEV) when
-> regulator_dev_lookup returns -ENODEV. Maybe Mark has some comments to
-> this.
-
-I'm concerned about how this is going to interact with all the plans
-people have for dynamically loading device tree fragments during
-enumeration.
-
---TJXgsAvz6ds/es3G
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJP9W9KAAoJEBus8iNuMP3dUY4P/j5wq6gybou5u54WfhT9wwao
-4rDLwZfWtNTQCUTpCZpL774gDIG6H4xnGGEt5pVzC3Xun4VI7wao4+OPzfmViNSC
-kc3d9Ei6Yy8TAc/ixb4vl96C3swBLZt3M4/FRHQthxzqzWixzIIrNZPrJYQWYWj+
-4AC6d5F/quSeUPcrmZM45mJbCNjbDZEBImiLmUnKvSpf9mCTTGtG0Nish0uj6XI3
-uHcGwRzYM1yIx4n44sKaO5bfM85WonxRfXspzLJ7cdt/J0llcHFfIJLmDpo4xkJb
-6CQSngYa8PvKuX2okmyWnP9HwHydBSRij+254MrfPWEQK2UTFRspfDJuYcwWJ9e6
-WZoM8A0iEFIDtyCppeOGYxHbdC+1LSOZUX2DwkmALy5IvPx1gcV/Wx/qblZE3g3N
-a9VbgV4BW8NWYca7LtKgZ90ts5fDb4Hx8YjZ/vGp0kczRl2AWaAOKVDqRGzXagFc
-ALLIDW041ZB7zRipMlZHZIng1GrHz0eK263tof8CrDf7ZA0z56+3hVqKm52nTasB
-SadR5xlAerSo9DqZzNydlP5zoHQt+DTNh42b0OrJ97aTwFRGmZH+pzoiV3iriwZV
-ec1cS6Avsd9vlH0K5z8pmbQ7sb1rS9xrYiVOg66zv+fTnnjlHlX0kbn99JfwBlqf
-ADyZyGINt8kCSVzXrdtL
-=PCGP
------END PGP SIGNATURE-----
-
---TJXgsAvz6ds/es3G--

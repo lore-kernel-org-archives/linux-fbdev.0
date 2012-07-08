@@ -1,221 +1,80 @@
 From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Sun, 08 Jul 2012 21:56:46 +0000
-Subject: [PATCH v2 03/11] fblog: new framebuffer kernel log dummy driver
-Message-Id: <1341784614-2797-4-git-send-email-dh.herrmann@googlemail.com>
+Date: Sun, 08 Jul 2012 21:56:43 +0000
+Subject: [PATCH v2 00/11] fblog: framebuffer kernel log driver
+Message-Id: <1341784614-2797-1-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1341784614-2797-1-git-send-email-dh.herrmann@googlemail.com>
-In-Reply-To: <1341784614-2797-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-serial@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, florianschandinat@gmx.de, linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, alan@lxorguk.ukuu.org.uk, bonbons@linux-vserver.org, David Herrmann <dh.herrmann@googlemail.com>
 
-Fblog displays all kernel log messages on all connected framebuffers. It
-replaces fbcon when CONFIG_VT=n is selected. Its main purpose is to debug
-boot problems by displaying the whole boot log on the screen. This patch
-provides the first dummy module-init/deinit functions.
+Hi
 
-As it uses all the font and fb functions I placed it in
-drivers/video/console. However, this means that we need to move the check
-for CONFIG_VT in Makefile/Kconfig from drivers/video into
-drivers/video/console as fblog does not depend on CONFIG_VT.
+This is version 2 of the fblog driver. The fblog driver allows showing the
+kernel console on all available framebuffers. It's a replacement for CONFIG_VT
+and fbcon that is much, much smaller and simpler. It should be used for
+debugging purposes only, therefore, it is currently not optimized for speed.
 
-Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
----
- drivers/video/Kconfig          |  5 +----
- drivers/video/Makefile         |  2 +-
- drivers/video/console/Kconfig  | 37 +++++++++++++++++++++++++++++--------
- drivers/video/console/Makefile |  1 +
- drivers/video/console/fblog.c  | 41 +++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 73 insertions(+), 13 deletions(-)
+Three patches extract update_attr(), bit_putcs() and get/put_fb_info() so they
+can be used from fblog, the other patches actually implement fblog.
+
+Version 2 addresses the issues from the last series. I extracted bit_putcs()
+into fbdraw_font() so we have a single function shared between fbcon and fblog
+to draw text. Furthermore, I reworked the framebuffer-registration logic inside
+of fblog so there shouldn't be any more races with fbmem.c fb registration.
+There is also a new configuration parameter that allows enabling fblog only on
+specific framebuffers as requested from several people.
+
+I also redid the whole patch-split so it should be much easier to follow. I am
+using this driver on my x86_64 machine without any problems. If you remove the
+"!VT" line in Kconfig then this can even be used with VTs enabled (even though
+this is kind of racy between fbcon and fblog, obviously). Unloading the module
+still has to be done with "rmmod -f fblog" as we still have a reference to our
+own module. I haven't found a way to avoid this.
+
+The reason why I wrote this driver is to make CONFIG_VT obsolete. This way I can
+drop a lot of code from the kernel and make it much smaller. In combination with
+user-space terminals like "kmscon" there is actually no need for in-kernel
+terminals anymore.
+
+This patchset is built based on linux-next as I have no idea whose tree this is
+going through.
+
+Feedback is appreciated.
+Regards
+David
+
+David Herrmann (11):
+  fbcon: move update_attr() into separate source file
+  fbcon: move bit_putcs() into separate source file
+  fblog: new framebuffer kernel log dummy driver
+  fbdev: export get_fb_info()/put_fb_info()
+  fblog: register one fblog object per framebuffer
+  fblog: open fb on registration
+  fblog: allow selecting fbs via sysfs
+  fblog: cache framebuffer BLANK and SUSPEND states
+  fblog: register console driver
+  fblog: draw console to framebuffers
+  MAINTAINERS: add fblog entry
+
+ MAINTAINERS                     |   6 +
+ drivers/video/Kconfig           |   5 +-
+ drivers/video/Makefile          |   2 +-
+ drivers/video/console/Kconfig   |  37 ++-
+ drivers/video/console/Makefile  |   4 +-
+ drivers/video/console/bitblit.c | 149 +--------
+ drivers/video/console/fbcon.h   |   5 +-
+ drivers/video/console/fbdraw.c  | 171 +++++++++++
+ drivers/video/console/fbdraw.h  |  30 ++
+ drivers/video/console/fblog.c   | 665 ++++++++++++++++++++++++++++++++++++++++
+ drivers/video/fbmem.c           |   6 +-
+ include/linux/fb.h              |   3 +
+ 12 files changed, 925 insertions(+), 158 deletions(-)
+ create mode 100644 drivers/video/console/fbdraw.c
+ create mode 100644 drivers/video/console/fbdraw.h
  create mode 100644 drivers/video/console/fblog.c
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 0217f74..e8fd53d 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2448,10 +2448,7 @@ source "drivers/video/omap/Kconfig"
- source "drivers/video/omap2/Kconfig"
- source "drivers/video/exynos/Kconfig"
- source "drivers/video/backlight/Kconfig"
--
--if VT
--	source "drivers/video/console/Kconfig"
--endif
-+source "drivers/video/console/Kconfig"
- 
- if FB || SGI_NEWPORT_CONSOLE
- 	source "drivers/video/logo/Kconfig"
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index ee8dafb..9f8a7f0 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -11,7 +11,7 @@ fb-y                              := fbmem.o fbmon.o fbcmap.o fbsysfs.o \
-                                      modedb.o fbcvt.o
- fb-objs                           := $(fb-y)
- 
--obj-$(CONFIG_VT)		  += console/
-+obj-y				  += console/
- obj-$(CONFIG_LOGO)		  += logo/
- obj-y				  += backlight/
- 
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index e2c96d0..7374362 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -6,7 +6,7 @@ menu "Console display driver support"
- 
- config VGA_CONSOLE
- 	bool "VGA text console" if EXPERT || !X86
--	depends on !4xx && !8xx && !SPARC && !M68K && !PARISC && !FRV && !SUPERH && !BLACKFIN && !AVR32 && !MN10300 && (!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER)
-+	depends on VT && !4xx && !8xx && !SPARC && !M68K && !PARISC && !FRV && !SUPERH && !BLACKFIN && !AVR32 && !MN10300 && (!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER)
- 	default y
- 	help
- 	  Saying Y here will allow you to use Linux in text mode through a
-@@ -45,7 +45,7 @@ config VGACON_SOFT_SCROLLBACK_SIZE
- 	 screenfuls of scrollback buffer
- 
- config MDA_CONSOLE
--	depends on !M68K && !PARISC && ISA
-+	depends on VT && !M68K && !PARISC && ISA
- 	tristate "MDA text console (dual-headed) (EXPERIMENTAL)"
- 	---help---
- 	  Say Y here if you have an old MDA or monochrome Hercules graphics
-@@ -61,14 +61,14 @@ config MDA_CONSOLE
- 
- config SGI_NEWPORT_CONSOLE
-         tristate "SGI Newport Console support"
--        depends on SGI_IP22 
-+        depends on VT && SGI_IP22
-         help
-           Say Y here if you want the console on the Newport aka XL graphics
-           card of your Indy.  Most people say Y here.
- 
- config DUMMY_CONSOLE
- 	bool
--	depends on VGA_CONSOLE!=y || SGI_NEWPORT_CONSOLE!=y 
-+	depends on VT && (VGA_CONSOLE!=y || SGI_NEWPORT_CONSOLE!=y)
- 	default y
- 
- config DUMMY_CONSOLE_COLUMNS
-@@ -89,7 +89,7 @@ config DUMMY_CONSOLE_ROWS
- 
- config FRAMEBUFFER_CONSOLE
- 	tristate "Framebuffer Console support"
--	depends on FB
-+	depends on VT && FB
- 	select CRC32
- 	help
- 	  Low-level framebuffer-based console driver.
-@@ -122,16 +122,37 @@ config FRAMEBUFFER_CONSOLE_ROTATION
- 
- config STI_CONSOLE
-         bool "STI text console"
--        depends on PARISC
-+        depends on VT && PARISC
-         default y
-         help
-           The STI console is the builtin display/keyboard on HP-PARISC
-           machines.  Say Y here to build support for it into your kernel.
-           The alternative is to use your primary serial port as a console.
- 
-+config FBLOG
-+	tristate "Framebuffer Kernel Log Driver"
-+	depends on !VT && FB
-+	default n
-+	help
-+	  This driver displays all kernel log messages on all connected
-+	  framebuffers. It is mutually exclusive with CONFIG_FRAMEBUFFER_CONSOLE
-+	  and CONFIG_VT. It was mainly created for debugging purposes when
-+	  CONFIG_VT is not selected but you still want kernel boot messages on
-+	  the screen.
-+
-+	  This driver overwrites all other graphics output on the framebuffer as
-+	  long as it is active so the kernel log will always be visible. You
-+	  need to disable this driver via sysfs to be able to start another
-+	  graphics application.
-+
-+	  If unsure, say N.
-+
-+	  To compile this driver as a module, choose M here: the module will
-+	  be called fblog.
-+
- config FONTS
- 	bool "Select compiled-in fonts"
--	depends on FRAMEBUFFER_CONSOLE || STI_CONSOLE
-+	depends on FRAMEBUFFER_CONSOLE || STI_CONSOLE || FBLOG
- 	help
- 	  Say Y here if you would like to use fonts other than the default
- 	  your frame buffer console usually use.
-@@ -158,7 +179,7 @@ config FONT_8x8
- 
- config FONT_8x16
- 	bool "VGA 8x16 font" if FONTS
--	depends on FRAMEBUFFER_CONSOLE || SGI_NEWPORT_CONSOLE || STI_CONSOLE || USB_SISUSBVGA_CON
-+	depends on FRAMEBUFFER_CONSOLE || SGI_NEWPORT_CONSOLE || STI_CONSOLE || USB_SISUSBVGA_CON || FBLOG
- 	default y if !SPARC && !FONTS
- 	help
- 	  This is the "high resolution" font for the VGA frame buffer (the one
-diff --git a/drivers/video/console/Makefile b/drivers/video/console/Makefile
-index 9a52226..ec0e155 100644
---- a/drivers/video/console/Makefile
-+++ b/drivers/video/console/Makefile
-@@ -20,6 +20,7 @@ font-objs += $(font-objs-y)
- 
- # Each configuration option enables a list of files.
- 
-+obj-$(CONFIG_FBLOG)               += fblog.o font.o
- obj-$(CONFIG_DUMMY_CONSOLE)       += dummycon.o
- obj-$(CONFIG_SGI_NEWPORT_CONSOLE) += newport_con.o font.o
- obj-$(CONFIG_STI_CONSOLE)         += sticon.o sticore.o font.o
-diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
-new file mode 100644
-index 0000000..fb39737
---- /dev/null
-+++ b/drivers/video/console/fblog.c
-@@ -0,0 +1,41 @@
-+/*
-+ * Framebuffer Kernel Log Driver
-+ * Copyright (c) 2012 David Herrmann <dh.herrmann@googlemail.com>
-+ */
-+
-+/*
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation; either version 2 of the License, or (at your option)
-+ * any later version.
-+ */
-+
-+/*
-+ * Framebuffer Kernel Log
-+ * This driver prints the kernel log to all connected display devices. It
-+ * replaces CONFIG_VT and cannot run simultaneously with it. It does not provide
-+ * any virtual-terminal, though. It should only be used to get kernel boot
-+ * messages to debug kernel errors.
-+ * Hence, this driver is neither optimized for speed, nor does it provide any
-+ * fancy features like colored text output.
-+ * This driver forcibly writes to the framebuffer while active, therefore, you
-+ * cannot run other graphics applications simultaneously. You need to disable
-+ * all fblog instances before running other graphics applications.
-+ */
-+
-+#include <linux/module.h>
-+
-+static int __init fblog_init(void)
-+{
-+	return 0;
-+}
-+
-+static void __exit fblog_exit(void)
-+{
-+}
-+
-+module_init(fblog_init);
-+module_exit(fblog_exit);
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("David Herrmann <dh.herrmann@googlemail.com>");
-+MODULE_DESCRIPTION("Framebuffer Kernel Log Driver");
 -- 
 1.7.11.1
 

@@ -1,81 +1,79 @@
-From: Donghwa Lee <dh09.lee@samsung.com>
-Date: Tue, 24 Jul 2012 02:19:25 +0000
-Subject: [PATCH v2] video: exynos: s6e8ax0: support early fb event of fb_blank()
-Message-Id: <500E062D.2020307@samsung.com>
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Date: Sun, 08 Jul 2012 22:01:48 +0000
+Subject: Re: [PATCH RESEND] video: w100fb: Reduce sleep mode battery discharge
+Message-Id: <4FFA034C.7000105@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20120603103355.3845gmx1@mx072.gmx.net>
+In-Reply-To: <20120603103355.3845gmx1@mx072.gmx.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Paul Parsons <lost.distance@yahoo.com>
+Cc: mreimer@sdgsystems.com, philipp.zabel@gmail.com, linux-kernel@vger.kernel.org, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-This patch supports early fb event of fb_blank().
+On 06/03/2012 10:33 AM, Paul Parsons wrote:
+> In 2006 and 2007 the handhelds.org kernel w100fb driver was patched to
+> reduce sleep mode battery discharge. Unfortunately those two patches
+> never migrated to the mainline kernel.
+> 
+> Fortunately the function affected - w100_suspend() - has not changed
+> since; thus those patches still apply cleanly.
+> 
+> Applying those patches to linux-3.4-rc3 running on an HP iPAQ hx4700
+> reduces the sleep mode battery discharge from approximately 26 mA to
+> approximately 11 mA.
+> 
+> This patch combines those two patches into a single unified patch.
+> 
+> Signed-off-by: Paul Parsons <lost.distance@yahoo.com>
+> Cc: Matt Reimer <mreimer@sdgsystems.com>
+> Cc: Philipp Zabel <philipp.zabel@gmail.com>
 
-- In case of lcd power off : call early_set_power() interface and lcd
-power is off. And then framebuffer is blanked.
+Applied.
 
-- In case of lcd power on : First, framebuffer is unblanked, and then
-call set_power() interface to turn lcd on.
 
-Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
-Signed-off-by: Inki Dae <inki.dae@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
-Changes of v1:
-	- changes function name from s6e8aa0_early_set_power() to
-	s6e8ax0_early_set_power()
+Thanks,
 
- drivers/video/exynos/s6e8ax0.c |   32 ++++++++++++++++++++++++++++++++
- 1 files changed, 32 insertions(+), 0 deletions(-)
+Florian Tobias Schandinat
 
-diff --git a/drivers/video/exynos/s6e8ax0.c b/drivers/video/exynos/s6e8ax0.c
-index 05d080b..bfb1919 100644
---- a/drivers/video/exynos/s6e8ax0.c
-+++ b/drivers/video/exynos/s6e8ax0.c
-@@ -663,6 +663,37 @@ static int s6e8ax0_gamma_ctrl(struct s6e8ax0 *lcd, int gamma)
- 	return 0;
- }
- 
-+static int s6e8ax0_early_set_power(struct lcd_device *ld, int power)
-+{
-+	struct s6e8ax0 *lcd = lcd_get_data(ld);
-+	struct mipi_dsim_master_ops *ops = lcd_to_master_ops(lcd);
-+	int ret = 0;
-+
-+	if (power != FB_BLANK_UNBLANK && power != FB_BLANK_POWERDOWN &&
-+			power != FB_BLANK_NORMAL) {
-+		dev_err(lcd->dev, "power value should be 0, 1 or 4.\n");
-+		return -EINVAL;
-+	}
-+
-+	if (lcd->power = power) {
-+		dev_err(lcd->dev, "power mode is same as previous one.\n");
-+		return -EINVAL;
-+	}
-+
-+	if (ops->set_early_blank_mode) {
-+		/* LCD power off */
-+		if ((POWER_IS_OFF(power) && POWER_IS_ON(lcd->power))
-+			|| (POWER_IS_ON(lcd->power) && POWER_IS_NRM(power))) {
-+			ret = ops->set_early_blank_mode(lcd_to_master(lcd),
-+							power);
-+			if (!ret && lcd->power != power)
-+				lcd->power = power;
-+		}
-+	}
-+
-+	return ret;
-+}
-+
- static int s6e8ax0_set_power(struct lcd_device *ld, int power)
- {
- 	struct s6e8ax0 *lcd = lcd_get_data(ld);
-@@ -731,6 +762,7 @@ static int s6e8ax0_set_brightness(struct backlight_device *bd)
- }
- 
- static struct lcd_ops s6e8ax0_lcd_ops = {
-+	.early_set_power = s6e8ax0_early_set_power,
- 	.set_power = s6e8ax0_set_power,
- 	.get_power = s6e8ax0_get_power,
- };
--- 
-1.7.4.1
+> ---
+> 
+> Many thanks to Matt Reimer for suggesting this.
+> 
+> The seeming demise of handhelds.org has removed any formal patch logs.
+> However the patches can still be viewed online:
+> 2006 patch:
+> http://paste.lisp.org/display/31700
+> 2007 patch:
+> http://osdir.com/ml/handhelds.linux.kernel/2007-02/msg00020.html
+> 
+> And the fully patched handhelds.org kernel is still available, e.g.:
+> http://www.linuxtogo.org/~goxboxlive/htcuniversal/Kernel/linux-2.6.21-hh20.tar.bz2
+> 
+>  drivers/video/w100fb.c |   12 ++++++++++++
+>  1 files changed, 12 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/video/w100fb.c b/drivers/video/w100fb.c
+> index 90a2e30..2f6b2b8 100644
+> --- a/drivers/video/w100fb.c
+> +++ b/drivers/video/w100fb.c
+> @@ -1567,6 +1567,18 @@ static void w100_suspend(u32 mode)
+>  		val = readl(remapped_regs + mmPLL_CNTL);
+>  		val |= 0x00000004;  /* bit2=1 */
+>  		writel(val, remapped_regs + mmPLL_CNTL);
+> +
+> +		writel(0x00000000, remapped_regs + mmLCDD_CNTL1);
+> +		writel(0x00000000, remapped_regs + mmLCDD_CNTL2);
+> +		writel(0x00000000, remapped_regs + mmGENLCD_CNTL1);
+> +		writel(0x00000000, remapped_regs + mmGENLCD_CNTL2);
+> +		writel(0x00000000, remapped_regs + mmGENLCD_CNTL3);
+> +
+> +		val = readl(remapped_regs + mmMEM_EXT_CNTL);
+> +		val |= 0xF0000000;
+> +		val &= ~(0x00000001);
+> +		writel(val, remapped_regs + mmMEM_EXT_CNTL);
+> +
+>  		writel(0x0000001d, remapped_regs + mmPWRMGT_CNTL);
+>  	}
+>  }
+

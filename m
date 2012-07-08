@@ -1,91 +1,220 @@
-From: Liu Ying <liu.y.victor@gmail.com>
-Date: Mon, 02 Jul 2012 02:18:33 +0000
-Subject: Re: [PATCH 3/3] mx3fb: avoid screen flash when panning with fb_set_var
-Message-Id: <CA+8Hj82acvrhechhxfRSkhm9eefaPKc9VZhhRALVrtwQ6rx8=g@mail.gmail.com>
+From: David Herrmann <dh.herrmann@googlemail.com>
+Date: Sun, 08 Jul 2012 21:56:44 +0000
+Subject: [PATCH v2 01/11] fbcon: move update_attr() into separate source file
+Message-Id: <1341784614-2797-2-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1339376810-8247-1-git-send-email-Ying.Liu@freescale.com>
- <1339376810-8247-3-git-send-email-Ying.Liu@freescale.com>
-In-Reply-To: <1339376810-8247-3-git-send-email-Ying.Liu@freescale.com>
+References: <1341784614-2797-1-git-send-email-dh.herrmann@googlemail.com>
+In-Reply-To: <1341784614-2797-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-serial@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, florianschandinat@gmx.de, linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, alan@lxorguk.ukuu.org.uk, bonbons@linux-vserver.org, David Herrmann <dh.herrmann@googlemail.com>
 
-Hi, Guennadi,
+If we want to use update_attr() independently from fbcon, we need to split
+it off from bitblit.c and fbcon.h. Therefore, introduce a new header and
+source file (fbdraw.[ch]) which does not depende on vc_* and fbcon_*
+structures in any way.
 
-Could you please review the second(2/3) patch and the third(3/3) patch
-of this series?
-I have addressed your comments you gave in the previous review cycle.
+This does not introduce any new code nor does it make the paths deeper,
+it simply splits the function off.
 
-Thanks.
+The other update_attr() functions (inside the rotation sources) seem
+similar but are significantly different and I haven't found a way to merge
+them efficiently (which is probably the reason why they are split off
+now). Furthermore, I do not intend to use them in the coming code so there
+is no need to split them off.
 
-2012/6/11, Liu Ying <Ying.Liu@freescale.com>:
-> Users may call FBIOPUT_VSCREENINFO ioctrl to do pan display.
-> This ioctrl relies on fb_set_var() to do the job. fb_set_var()
-> calls custom fb_set_par() method and then calls custom
-> fb_pan_display() method. The current implementation of mx3fb
-> reinitializes IPU display controller every time the custom
-> fb_set_par() method is called, which makes the screen flash
-> if fb_set_var() is called to do panning frequently. This patch
-> compares the new var info with the cached old one to decide
-> whether we really need to reinitialize IPU display controller.
-> We ignore xoffset and yoffset update because it doesn't require
-> to reinitialize the controller. Users may specify activate field
-> of var info with FB_ACTIVATE_NOW and FB_ACTIVATE_FORCE to
-> reinialize the controller by force.
->
-> Signed-off-by: Liu Ying <Ying.Liu@freescale.com>
-> ---
->  drivers/video/mx3fb.c |   22 +++++++++++++++++++++-
->  1 files changed, 21 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/video/mx3fb.c b/drivers/video/mx3fb.c
-> index 2dd11c4..7d0aa7b 100644
-> --- a/drivers/video/mx3fb.c
-> +++ b/drivers/video/mx3fb.c
-> @@ -721,6 +721,26 @@ static void mx3fb_dma_done(void *arg)
->  	complete(&mx3_fbi->flip_cmpl);
->  }
->
-> +static bool mx3fb_must_set_par(struct fb_info *fbi)
-> +{
-> +	struct mx3fb_info *mx3_fbi = fbi->par;
-> +	struct fb_var_screeninfo old_var = mx3_fbi->cur_var;
-> +	struct fb_var_screeninfo new_var = fbi->var;
-> +
-> +	if ((fbi->var.activate & FB_ACTIVATE_FORCE) &&
-> +	    (fbi->var.activate & FB_ACTIVATE_MASK) = FB_ACTIVATE_NOW)
-> +		return true;
-> +
-> +	/*
-> +	 * Ignore xoffset and yoffset update,
-> +	 * because pan display handles this case.
-> +	 */
-> +	old_var.xoffset = new_var.xoffset;
-> +	old_var.yoffset = new_var.yoffset;
-> +
-> +	return !!memcmp(&old_var, &new_var, sizeof(struct fb_var_screeninfo));
-> +}
-> +
->  static int __set_par(struct fb_info *fbi, bool lock)
->  {
->  	u32 mem_len, cur_xoffset, cur_yoffset;
-> @@ -844,7 +864,7 @@ static int mx3fb_set_par(struct fb_info *fbi)
->
->  	mutex_lock(&mx3_fbi->mutex);
->
-> -	ret = __set_par(fbi, true);
-> +	ret = mx3fb_must_set_par(fbi) ? __set_par(fbi, true) : 0;
->
->  	mutex_unlock(&mx3_fbi->mutex);
->
-> --
-> 1.7.1
->
->
->
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+---
+ drivers/video/console/Makefile  |  3 ++-
+ drivers/video/console/bitblit.c | 26 +++--------------------
+ drivers/video/console/fbcon.h   |  5 +----
+ drivers/video/console/fbdraw.c  | 46 +++++++++++++++++++++++++++++++++++++++++
+ drivers/video/console/fbdraw.h  | 26 +++++++++++++++++++++++
+ 5 files changed, 78 insertions(+), 28 deletions(-)
+ create mode 100644 drivers/video/console/fbdraw.c
+ create mode 100644 drivers/video/console/fbdraw.h
 
-
+diff --git a/drivers/video/console/Makefile b/drivers/video/console/Makefile
+index a862e91..9a52226 100644
+--- a/drivers/video/console/Makefile
++++ b/drivers/video/console/Makefile
+@@ -25,7 +25,8 @@ obj-$(CONFIG_SGI_NEWPORT_CONSOLE) += newport_con.o font.o
+ obj-$(CONFIG_STI_CONSOLE)         += sticon.o sticore.o font.o
+ obj-$(CONFIG_VGA_CONSOLE)         += vgacon.o
+ obj-$(CONFIG_MDA_CONSOLE)         += mdacon.o
+-obj-$(CONFIG_FRAMEBUFFER_CONSOLE) += fbcon.o bitblit.o font.o softcursor.o
++obj-$(CONFIG_FRAMEBUFFER_CONSOLE) += fbcon.o bitblit.o font.o softcursor.o \
++                                     fbdraw.o
+ ifeq ($(CONFIG_FB_TILEBLITTING),y)
+ obj-$(CONFIG_FRAMEBUFFER_CONSOLE)     += tileblit.o
+ endif
+diff --git a/drivers/video/console/bitblit.c b/drivers/video/console/bitblit.c
+index 28b1a83..6ec2905 100644
+--- a/drivers/video/console/bitblit.c
++++ b/drivers/video/console/bitblit.c
+@@ -22,26 +22,6 @@
+ /*
+  * Accelerated handlers.
+  */
+-static void update_attr(u8 *dst, u8 *src, int attribute,
+-			       struct vc_data *vc)
+-{
+-	int i, offset = (vc->vc_font.height < 10) ? 1 : 2;
+-	int width = DIV_ROUND_UP(vc->vc_font.width, 8);
+-	unsigned int cellsize = vc->vc_font.height * width;
+-	u8 c;
+-
+-	offset = cellsize - (offset * width);
+-	for (i = 0; i < cellsize; i++) {
+-		c = src[i];
+-		if (attribute & FBCON_ATTRIBUTE_UNDERLINE && i >= offset)
+-			c = 0xff;
+-		if (attribute & FBCON_ATTRIBUTE_BOLD)
+-			c |= c >> 1;
+-		if (attribute & FBCON_ATTRIBUTE_REVERSE)
+-			c = ~c;
+-		dst[i] = c;
+-	}
+-}
+ 
+ static void bit_bmove(struct vc_data *vc, struct fb_info *info, int sy,
+ 		      int sx, int dy, int dx, int height, int width)
+@@ -88,7 +68,7 @@ static inline void bit_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+ 					  charmask)*cellsize;
+ 
+ 		if (attr) {
+-			update_attr(buf, src, attr, vc);
++			fbdraw_update_attr(buf, src, attr, &vc->vc_font);
+ 			src = buf;
+ 		}
+ 
+@@ -123,7 +103,7 @@ static inline void bit_putcs_unaligned(struct vc_data *vc,
+ 					  charmask)*cellsize;
+ 
+ 		if (attr) {
+-			update_attr(buf, src, attr, vc);
++			fbdraw_update_attr(buf, src, attr, &vc->vc_font);
+ 			src = buf;
+ 		}
+ 
+@@ -275,7 +255,7 @@ static void bit_cursor(struct vc_data *vc, struct fb_info *info, int mode,
+ 			return;
+ 		kfree(ops->cursor_data);
+ 		ops->cursor_data = dst;
+-		update_attr(dst, src, attribute, vc);
++		fbdraw_update_attr(dst, src, attribute, &vc->vc_font);
+ 		src = dst;
+ 	}
+ 
+diff --git a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
+index 6bd2e0c..8623bac 100644
+--- a/drivers/video/console/fbcon.h
++++ b/drivers/video/console/fbcon.h
+@@ -16,6 +16,7 @@
+ #include <linux/vt_kern.h>
+ 
+ #include <asm/io.h>
++#include "fbdraw.h"
+ 
+ #define FBCON_FLAGS_INIT         1
+ #define FBCON_FLAGS_CURSOR_TIMER 2
+@@ -219,10 +220,6 @@ extern void fbcon_set_tileops(struct vc_data *vc, struct fb_info *info);
+ extern void fbcon_set_bitops(struct fbcon_ops *ops);
+ extern int  soft_cursor(struct fb_info *info, struct fb_cursor *cursor);
+ 
+-#define FBCON_ATTRIBUTE_UNDERLINE 1
+-#define FBCON_ATTRIBUTE_REVERSE   2
+-#define FBCON_ATTRIBUTE_BOLD      4
+-
+ static inline int real_y(struct display *p, int ypos)
+ {
+ 	int rows = p->vrows;
+diff --git a/drivers/video/console/fbdraw.c b/drivers/video/console/fbdraw.c
+new file mode 100644
+index 0000000..65e7003
+--- /dev/null
++++ b/drivers/video/console/fbdraw.c
+@@ -0,0 +1,46 @@
++/*
++ * Framebuffer helpers for image draw-operations
++ *
++ * Copyright (c) 2004 Antonino Daplas <adaplas @pol.net>
++ * Copyright (c) 2012 David Herrmann <dh.herrmann@googlemail.com>
++ *
++ * Originally from drivers/video/console/bitblit.c which itself originally is
++ * from the 'accel_*' routines in drivers/video/console/fbcon.c.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file COPYING in the main directory of this archive for
++ * more details.
++ */
++
++#include <linux/console.h>
++#include <linux/fb.h>
++#include <linux/kd.h>
++#include <linux/module.h>
++#include <linux/string.h>
++#include "fbdraw.h"
++
++void fbdraw_update_attr(u8 *dst, const u8 *src, int attribute,
++			struct console_font *font)
++{
++	int i, offset = (font->height < 10) ? 1 : 2;
++	int width = DIV_ROUND_UP(font->width, 8);
++	unsigned int cellsize = font->height * width;
++	u8 c;
++
++	offset = cellsize - (offset * width);
++	for (i = 0; i < cellsize; i++) {
++		c = src[i];
++		if (attribute & FBCON_ATTRIBUTE_UNDERLINE && i >= offset)
++			c = 0xff;
++		if (attribute & FBCON_ATTRIBUTE_BOLD)
++			c |= c >> 1;
++		if (attribute & FBCON_ATTRIBUTE_REVERSE)
++			c = ~c;
++		dst[i] = c;
++	}
++}
++EXPORT_SYMBOL(fbdraw_update_attr);
++
++MODULE_LICENSE("GPL v2");
++MODULE_AUTHOR("David Herrmann <dh.herrmann@googlemail.com>");
++MODULE_DESCRIPTION("Framebuffer helpers for image draw-operations");
+diff --git a/drivers/video/console/fbdraw.h b/drivers/video/console/fbdraw.h
+new file mode 100644
+index 0000000..77edd7f
+--- /dev/null
++++ b/drivers/video/console/fbdraw.h
+@@ -0,0 +1,26 @@
++/*
++ * Framebuffer helpers for image draw-operations
++ *
++ * Copyright (c) 2012 David Herrmann <dh.herrmann@googlemail.com>
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file COPYING in the main directory of this archive for
++ * more details.
++ */
++
++#ifndef _VIDEO_FBDRAW_H
++#define _VIDEO_FBDRAW_H
++
++#include <linux/console.h>
++#include <linux/fb.h>
++#include <linux/kd.h>
++
++/* fbcon character attributes */
++#define FBCON_ATTRIBUTE_UNDERLINE 1
++#define FBCON_ATTRIBUTE_REVERSE   2
++#define FBCON_ATTRIBUTE_BOLD      4
++
++void fbdraw_update_attr(u8 *dst, const u8 *src, int attribute,
++			struct console_font *font);
++
++#endif /* _VIDEO_FBDRAW_H */
 -- 
-Best Regards,
-Liu Ying
+1.7.11.1
+

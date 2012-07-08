@@ -1,108 +1,242 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 29 Jul 2012 21:07:37 +0000
-Subject: Re: [PATCH v2 1/2] video: da8xx-fb: configure FIFO threshold to reduce underflow errors
-Message-Id: <5015A619.8060303@gmx.de>
+From: David Herrmann <dh.herrmann@googlemail.com>
+Date: Sun, 08 Jul 2012 21:56:48 +0000
+Subject: [PATCH v2 05/11] fblog: register one fblog object per framebuffer
+Message-Id: <1341784614-2797-6-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1342625616-7393-1-git-send-email-prakash.pm@ti.com>
-In-Reply-To: <1342625616-7393-1-git-send-email-prakash.pm@ti.com>
+References: <1341784614-2797-1-git-send-email-dh.herrmann@googlemail.com>
+In-Reply-To: <1341784614-2797-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-serial@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, florianschandinat@gmx.de, linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, alan@lxorguk.ukuu.org.uk, bonbons@linux-vserver.org, David Herrmann <dh.herrmann@googlemail.com>
 
-On 07/18/2012 03:33 PM, Manjunathappa, Prakash wrote:
-> Patch works around the below silicon errata:
-> During LCDC initialization, there is the potential for a FIFO
-> underflow condition to occur. A FIFO underflow condition
-> occurs when the input FIFO is completely empty and the LCDC
-> raster controller logic that drives data to the output pins
-> attempts to fetch data from the FIFO. When a FIFO underflow
-> condition occurs, incorrect data will be driven out on the
-> LCDC data pins.
-> 
-> Software should poll the FUF bit field in the LCD_STAT register
-> to check if an error condition has occurred or service the
-> interrupt if FUF_EN is enabled when FUF occurs. If the FUF bit
-> field has been set to 1, this will indicate an underflow
-> condition has occurred and then the software should execute a
-> reset of the LCDC via the LPSC.
-> 
-> This problem may occur if the LCDC FIFO threshold size
-> (LCDDMA_CTRL[TH_FIFO_READY]) is left at its default value after
-> reset. Increasing the FIFO threshold size will reduce or
-> eliminate underflows. Setting the threshold size to 256 double
-> words or larger is recommended.
-> 
-> Above issue is described in section 2.1.3 of silicon errata
-> http://www.ti.com/lit/er/sprz313e/sprz313e.pdf
-> 
-> Signed-off-by: Rajashekhara, Sudhakar <sudhakar.raj@ti.com>
-> Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+One fblog object is associated to each registered framebuffer. This way,
+we can draw the console to each framebuffer. When a framebuffer driver
+unregisters a framebuffer, we also unregister our fblog object. That is,
+our lifetime is coupled to the lifetime of the framebuffer. However, this
+does not mean that we are always active. On the contrary, we do not even
+own a reference to the framebuffer. We don't need it as we are notified
+_before_ the last reference is dropped.
 
-Applied both patches of this series.
+However, if other users have a reference to our object, we simply mark it
+as dead when the associated framebuffer dies and leave it alone. When the
+last reference is dropped, it will be automatically freed.
 
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+---
+ drivers/video/console/fblog.c | 189 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 189 insertions(+)
 
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
-> Seems like version 1 of this patch did not reach fbdev mailing list.
-> Since v1:
-> Removed clk_disable/clk_enable from error interrupt handling code.
-> 
->  drivers/video/da8xx-fb.c |   11 +++++++----
->  include/video/da8xx-fb.h |    3 +++
->  2 files changed, 10 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index 183366d..186ab5a 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -353,8 +353,8 @@ static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
->  	lcd_enable_raster();
->  }
->  
-> -/* Configure the Burst Size of DMA */
-> -static int lcd_cfg_dma(int burst_size)
-> +/* Configure the Burst Size and fifo threhold of DMA */
-> +static int lcd_cfg_dma(int burst_size, int fifo_th)
->  {
->  	u32 reg;
->  
-> @@ -378,6 +378,9 @@ static int lcd_cfg_dma(int burst_size)
->  	default:
->  		return -EINVAL;
->  	}
-> +
-> +	reg |= (fifo_th << 8);
-> +
->  	lcdc_write(reg, LCD_DMA_CTRL_REG);
->  
->  	return 0;
-> @@ -679,8 +682,8 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
->  		lcdc_write((lcdc_read(LCD_RASTER_TIMING_2_REG) &
->  			~LCD_INVERT_PIXEL_CLOCK), LCD_RASTER_TIMING_2_REG);
->  
-> -	/* Configure the DMA burst size. */
-> -	ret = lcd_cfg_dma(cfg->dma_burst_sz);
-> +	/* Configure the DMA burst size and fifo threshold. */
-> +	ret = lcd_cfg_dma(cfg->dma_burst_sz, cfg->fifo_th);
->  	if (ret < 0)
->  		return ret;
->  
-> diff --git a/include/video/da8xx-fb.h b/include/video/da8xx-fb.h
-> index 89d43b3..5a0e4f9 100644
-> --- a/include/video/da8xx-fb.h
-> +++ b/include/video/da8xx-fb.h
-> @@ -82,6 +82,9 @@ struct lcd_ctrl_config {
->  
->  	/* Raster Data Order Select: 1=Most-to-least 0=Least-to-most */
->  	unsigned char raster_order;
-> +
-> +	/* DMA FIFO threshold */
-> +	int fifo_th;
->  };
->  
->  struct lcd_sync_arg {
+diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
+index fb39737..3e0b471 100644
+--- a/drivers/video/console/fblog.c
++++ b/drivers/video/console/fblog.c
+@@ -23,15 +23,204 @@
+  * all fblog instances before running other graphics applications.
+  */
+ 
++#include <linux/device.h>
++#include <linux/fb.h>
+ #include <linux/module.h>
++#include <linux/mutex.h>
++
++enum fblog_flags {
++	FBLOG_KILLED,
++};
++
++struct fblog_fb {
++	unsigned long flags;
++	struct fb_info *info;
++	struct device dev;
++};
++
++static DEFINE_MUTEX(fblog_registration_lock);
++static struct fblog_fb *fblog_fbs[FB_MAX];
++
++#define to_fblog_dev(_d) container_of(_d, struct fblog_fb, dev)
++
++/*
++ * fblog framebuffer list
++ * The fblog_fbs[] array contains all currently registered framebuffers. If a
++ * framebuffer is in that list, we always must make sure that we own a reference
++ * to it. If it is added through the notifier callbacks, then this is always
++ * guaranteed.
++ * We are only interested in registered framebuffers. That is, if a driver calls
++ * unregister_framebuffer() we directly unlink it from our list. This guarantees
++ * that the associated fb_info is always valid. However, we might still have
++ * pending users so we mark it as dead so no further framebuffer actions are
++ * done. If the last user then drops a reference, the memory gets freed
++ * automatically.
++ */
++
++static void fblog_release(struct device *dev)
++{
++	struct fblog_fb *fb = to_fblog_dev(dev);
++
++	kfree(fb);
++	module_put(THIS_MODULE);
++}
++
++static void fblog_do_unregister(struct fb_info *info)
++{
++	struct fblog_fb *fb;
++
++	fb = fblog_fbs[info->node];
++	if (!fb || fb->info != info)
++		return;
++
++	fblog_fbs[info->node] = NULL;
++
++	device_del(&fb->dev);
++	put_device(&fb->dev);
++}
++
++static void fblog_do_register(struct fb_info *info, bool force)
++{
++	struct fblog_fb *fb;
++	int ret;
++
++	fb = fblog_fbs[info->node];
++	if (fb && fb->info != info) {
++		if (!force)
++			return;
++
++		fblog_do_unregister(fb->info);
++	}
++
++	fb = kzalloc(sizeof(*fb), GFP_KERNEL);
++	if (!fb)
++		return;
++
++	fb->info = info;
++	__module_get(THIS_MODULE);
++	device_initialize(&fb->dev);
++	fb->dev.class = fb_class;
++	fb->dev.release = fblog_release;
++	dev_set_name(&fb->dev, "fblog%d", info->node);
++	fblog_fbs[info->node] = fb;
++
++	ret = device_add(&fb->dev);
++	if (ret) {
++		fblog_fbs[info->node] = NULL;
++		set_bit(FBLOG_KILLED, &fb->flags);
++		put_device(&fb->dev);
++		return;
++	}
++}
++
++static void fblog_register(struct fb_info *info, bool force)
++{
++	mutex_lock(&fblog_registration_lock);
++	fblog_do_register(info, force);
++	mutex_unlock(&fblog_registration_lock);
++}
++
++static void fblog_unregister(struct fb_info *info)
++{
++	mutex_lock(&fblog_registration_lock);
++	fblog_do_unregister(info);
++	mutex_unlock(&fblog_registration_lock);
++}
++
++static int fblog_event(struct notifier_block *self, unsigned long action,
++		       void *data)
++{
++	struct fb_event *event = data;
++	struct fb_info *info = event->info;
++
++	switch(action) {
++	case FB_EVENT_FB_REGISTERED:
++		/* This is called when a low-level system driver registers a new
++		 * framebuffer. The registration lock is held but the console
++		 * lock might not be held when this is called. */
++		fblog_register(info, true);
++		break;
++	case FB_EVENT_FB_UNREGISTERED:
++		/* This is called when a low-level system driver unregisters a
++		 * framebuffer. The registration lock is held but the console
++		 * lock might not be held. */
++		fblog_unregister(info);
++		break;
++	}
++
++	return 0;
++}
++
++static void fblog_scan(void)
++{
++	unsigned int i;
++	struct fb_info *info, *tmp;
++
++	for (i = 0; i < FB_MAX; ++i) {
++		info = get_fb_info(i);
++		if (!info || IS_ERR(info))
++			continue;
++
++		fblog_register(info, false);
++
++		/* There is a very subtle race-condition. Even though we might
++		 * own a reference to the fb, it may still get unregistered
++		 * between our call from get_fb_info() and fblog_register().
++		 * Therefore, we simply check whether the same fb still is
++		 * registered by calling get_fb_info() again. Only if they
++		 * differ we know that it got unregistered, therefore, we
++		 * call fblog_unregister() with the old pointer. */
++
++		tmp = get_fb_info(i);
++		if (tmp && !IS_ERR(tmp))
++			put_fb_info(tmp);
++		if (tmp != info)
++			fblog_unregister(info);
++
++		/* Here we either called fblog_unregister() and therefore do not
++		 * need any reference to the fb, or we can be sure that the FB
++		 * is registered and FB_EVENT_FB_UNREGISTERED will be called
++		 * before the last reference is dropped. Hence, we can drop our
++		 * reference here. */
++
++		put_fb_info(info);
++	}
++}
++
++static struct notifier_block fblog_notifier = {
++	.notifier_call = fblog_event,
++};
+ 
+ static int __init fblog_init(void)
+ {
++	int ret;
++
++	ret = fb_register_client(&fblog_notifier);
++	if (ret) {
++		pr_err("fblog: cannot register framebuffer notifier");
++		return ret;
++	}
++
++	fblog_scan();
++
+ 	return 0;
+ }
+ 
+ static void __exit fblog_exit(void)
+ {
++	unsigned int i;
++	struct fb_info *info;
++
++	fb_unregister_client(&fblog_notifier);
++
++	for (i = 0; i < FB_MAX; ++i) {
++		info = get_fb_info(i);
++		if (!info || IS_ERR(info))
++			continue;
++
++		fblog_unregister(info);
++		put_fb_info(info);
++	}
+ }
+ 
+ module_init(fblog_init);
+-- 
+1.7.11.1
 

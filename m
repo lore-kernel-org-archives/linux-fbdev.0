@@ -1,44 +1,71 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Thu, 26 Jul 2012 17:22:51 +0000
-Subject: Re: [PATCH] video: exynos_dp: check the only INTERLANE_ALIGN_DONE bit during Link Training
-Message-Id: <50117CEB.2000503@gmx.de>
+From: David Herrmann <dh.herrmann@googlemail.com>
+Date: Sun, 08 Jul 2012 21:56:47 +0000
+Subject: [PATCH v2 04/11] fbdev: export get_fb_info()/put_fb_info()
+Message-Id: <1341784614-2797-5-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <000c01cd63f8$57550000$05ff0000$%han@samsung.com>
-In-Reply-To: <000c01cd63f8$57550000$05ff0000$%han@samsung.com>
+References: <1341784614-2797-1-git-send-email-dh.herrmann@googlemail.com>
+In-Reply-To: <1341784614-2797-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-serial@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, florianschandinat@gmx.de, linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, alan@lxorguk.ukuu.org.uk, bonbons@linux-vserver.org, David Herrmann <dh.herrmann@googlemail.com>
 
-On 07/17/2012 08:44 AM, Jingoo Han wrote:
-> The only INTERLANE_ALIGN_DONE bit should be checked for channel equalization
-> during Link Training. Previously, the other bits such as LINK_STATUS_UPDATED
-> were checked, and channel equalization procedure was repeated unnecessarily.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+When adding other internal users of the framebuffer subsystem, we need a
+way to get references to framebuffers. These two functions already exist
+so export them.
 
-Applied.
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+---
+ drivers/video/fbmem.c | 6 ++++--
+ include/linux/fb.h    | 3 +++
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/exynos/exynos_dp_core.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
-> index 9db7b9f..6ca8043 100644
-> --- a/drivers/video/exynos/exynos_dp_core.c
-> +++ b/drivers/video/exynos/exynos_dp_core.c
-> @@ -336,7 +336,7 @@ static int exynos_dp_channel_eq_ok(u8 link_status[6], int lane_count)
->  	u8 lane_status;
->  
->  	lane_align = link_status[2];
-> -	if ((lane_align = DPCD_INTERLANE_ALIGN_DONE) = 0)
-> +	if ((lane_align & DPCD_INTERLANE_ALIGN_DONE) = 0)
->  		return -EINVAL;
->  
->  	for (lane = 0; lane < lane_count; lane++) {
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 0dff12a..474460c 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -46,7 +46,7 @@ static DEFINE_MUTEX(registration_lock);
+ struct fb_info *registered_fb[FB_MAX] __read_mostly;
+ int num_registered_fb __read_mostly;
+ 
+-static struct fb_info *get_fb_info(unsigned int idx)
++struct fb_info *get_fb_info(unsigned int idx)
+ {
+ 	struct fb_info *fb_info;
+ 
+@@ -61,14 +61,16 @@ static struct fb_info *get_fb_info(unsigned int idx)
+ 
+ 	return fb_info;
+ }
++EXPORT_SYMBOL(get_fb_info);
+ 
+-static void put_fb_info(struct fb_info *fb_info)
++void put_fb_info(struct fb_info *fb_info)
+ {
+ 	if (!atomic_dec_and_test(&fb_info->count))
+ 		return;
+ 	if (fb_info->fbops->fb_destroy)
+ 		fb_info->fbops->fb_destroy(fb_info);
+ }
++EXPORT_SYMBOL(put_fb_info);
+ 
+ int lock_fb_info(struct fb_info *info)
+ {
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index ac3f1c6..2d51c0e 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -1033,6 +1033,9 @@ static inline void unlock_fb_info(struct fb_info *info)
+ 	mutex_unlock(&info->lock);
+ }
+ 
++extern struct fb_info *get_fb_info(unsigned int idx);
++extern void put_fb_info(struct fb_info *fb_info);
++
+ static inline void __fb_pad_aligned_buffer(u8 *dst, u32 d_pitch,
+ 					   u8 *src, u32 s_pitch, u32 height)
+ {
+-- 
+1.7.11.1
 

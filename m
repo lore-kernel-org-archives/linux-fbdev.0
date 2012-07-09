@@ -1,46 +1,55 @@
-From: Joe Perches <joe@perches.com>
-Date: Sun, 08 Jul 2012 22:09:21 +0000
+From: David Herrmann <dh.herrmann@googlemail.com>
+Date: Mon, 09 Jul 2012 18:25:30 +0000
 Subject: Re: [PATCH v2 09/11] fblog: register console driver
-Message-Id: <1341785361.13174.25.camel@joe2Laptop>
+Message-Id: <CANq1E4QHuAtAQ5F9i99JVquy1Ae9rA1ovKXhD4Upnm2sOF+bLg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1341784614-2797-1-git-send-email-dh.herrmann@googlemail.com>
-	 <1341784614-2797-10-git-send-email-dh.herrmann@googlemail.com>
-In-Reply-To: <1341784614-2797-10-git-send-email-dh.herrmann@googlemail.com>
+	<1341784614-2797-10-git-send-email-dh.herrmann@googlemail.com>
+	<1341785361.13174.25.camel@joe2Laptop>
+In-Reply-To: <1341785361.13174.25.camel@joe2Laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Herrmann <dh.herrmann@googlemail.com>
+To: Joe Perches <joe@perches.com>
 Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, florianschandinat@gmx.de, linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, alan@lxorguk.ukuu.org.uk, bonbons@linux-vserver.org
 
-On Sun, 2012-07-08 at 23:56 +0200, David Herrmann wrote:
-> We want to print the kernel log to all FBs so we need a console driver.
-> This registers the driver on startup and writes all messages to all
-> registered fblog instances.
+Hi Joe
 
-Hi David.  Trivia only:
+On Mon, Jul 9, 2012 at 12:09 AM, Joe Perches <joe@perches.com> wrote:
+> On Sun, 2012-07-08 at 23:56 +0200, David Herrmann wrote:
+>> We want to print the kernel log to all FBs so we need a console driver.
+>> This registers the driver on startup and writes all messages to all
+>> registered fblog instances.
+>
+> Hi David.  Trivia only:
+>
+>> diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
+> []
+>> @@ -47,6 +71,107 @@ static struct fblog_fb *fblog_fbs[FB_MAX];
+>>  static bool active = 1;
+>>
+>>  #define to_fblog_dev(_d) container_of(_d, struct fblog_fb, dev)
+>> +#define FBLOG_STR(x) x, sizeof(x) - 1
+>
+> That's a rather ugly macro.
 
-> diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
-[]
-> @@ -47,6 +71,107 @@ static struct fblog_fb *fblog_fbs[FB_MAX];
->  static bool active = 1;
->  
->  #define to_fblog_dev(_d) container_of(_d, struct fblog_fb, dev)
-> +#define FBLOG_STR(x) x, sizeof(x) - 1
+But handy ;) I've removed it and replaced the call below with a local
+variable which works fine too and seems to be even shorter than with
+this macro.
 
-That's a rather ugly macro.
+>> +static void fblog_buf_resize(struct fblog_buf *buf, size_t width,
+>> +                          size_t height)
+>> +{
+>> +     u16 **lines = NULL;
+>> +     size_t i, j, minw, minh;
+>> +
+>> +     if (buf->height = height && buf->width = width)
+>> +             return;
+>> +
+>> +     if (width && height) {
+>> +             lines = kzalloc(height * sizeof(char*), GFP_KERNEL);
+>
+> sizeof(char *) is a bit more kernel style like.
 
-> +static void fblog_buf_resize(struct fblog_buf *buf, size_t width,
-> +			     size_t height)
-> +{
-> +	u16 **lines = NULL;
-> +	size_t i, j, minw, minh;
-> +
-> +	if (buf->height = height && buf->width = width)
-> +		return;
-> +
-> +	if (width && height) {
-> +		lines = kzalloc(height * sizeof(char*), GFP_KERNEL);
-
-sizeof(char *) is a bit more kernel style like.
-
-
+Thanks, both fixed.
+David

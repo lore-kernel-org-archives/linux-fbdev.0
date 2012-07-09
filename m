@@ -1,57 +1,57 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Tue, 31 Jul 2012 10:29:36 +0000
-Subject: [PATCH 4/4] ARM: dts: mxs: add oled support for the cfa-10036
-Message-Id: <1343730576-20494-5-git-send-email-maxime.ripard@free-electrons.com>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Mon, 09 Jul 2012 04:21:40 +0000
+Subject: [PATCH] pwm_backlight: pass correct brightness to callback
+Message-Id: <1341807700-7103-1-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343730576-20494-1-git-send-email-maxime.ripard@free-electrons.com>
-In-Reply-To: <1343730576-20494-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Thierry Reding <thierry.reding@avionic-design.de>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Alexandre Courbot <acourbot@nvidia.com>
 
-Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: Brian Lilly <brian@crystalfontz.com>
+pwm_backlight_update_status calls two callbacks before and after
+applying the new PWM settings. However, the brightness scale is
+completely changed in between if brightness levels are used. This patch
+ensures that both callbacks are passed brightness values of the same
+meaning.
+
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
 ---
- arch/arm/boot/dts/imx28-cfa10036.dts |   20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ drivers/video/backlight/pwm_bl.c | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm/boot/dts/imx28-cfa10036.dts b/arch/arm/boot/dts/imx28-cfa10036.dts
-index c03a577..92784a9 100644
---- a/arch/arm/boot/dts/imx28-cfa10036.dts
-+++ b/arch/arm/boot/dts/imx28-cfa10036.dts
-@@ -33,11 +33,31 @@
- 		};
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 057389d..dd4d24d 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -39,6 +39,7 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+ {
+ 	struct pwm_bl_data *pb = dev_get_drvdata(&bl->dev);
+ 	int brightness = bl->props.brightness;
++	int pwm_brightness;
+ 	int max = bl->props.max_brightness;
  
- 		apbx@80040000 {
-+			pwm: pwm@80064000 {
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&pwm4_pins_a>;
-+				status = "okay";
-+			};
-+
- 			duart: serial@80074000 {
- 				pinctrl-names = "default";
- 				pinctrl-0 = <&duart_pins_b>;
- 				status = "okay";
- 			};
-+
-+			i2c0: i2c@80058000 {
-+				pinctrl-names = "default";
-+				pinctrl-0 = <&i2c0_pins_b>;
-+				status = "okay";
-+
-+				ssd1307: oled@3c {
-+					compatible = "solomon,ssd1307fb-i2c";
-+					reg = <0x3c>;
-+					pwms = <&pwm 4 3000>;
-+					oled-reset-gpio = <&gpio2 7 1>;
-+					oled-reset-active-low;
-+				};
-+			};
- 		};
- 	};
+ 	if (bl->props.power != FB_BLANK_UNBLANK)
+@@ -55,13 +56,14 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+ 		pwm_disable(pb->pwm);
+ 	} else {
+ 		if (pb->levels) {
+-			brightness = pb->levels[brightness];
++			pwm_brightness = pb->levels[brightness];
+ 			max = pb->levels[max];
+-		}
++		} else
++			pwm_brightness = brightness;
+ 
+-		brightness = pb->lth_brightness +
+-			(brightness * (pb->period - pb->lth_brightness) / max);
+-		pwm_config(pb->pwm, brightness, pb->period);
++		pwm_brightness = pb->lth_brightness +
++		     (pwm_brightness * (pb->period - pb->lth_brightness) / max);
++		pwm_config(pb->pwm, pwm_brightness, pb->period);
+ 		pwm_enable(pb->pwm);
+ 	}
  
 -- 
-1.7.9.5
+1.7.11.1
 

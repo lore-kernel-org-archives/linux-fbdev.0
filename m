@@ -1,267 +1,473 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 19 Jul 2012 00:39:15 +0000
-Subject: [PATCH 2/9] sh_mobile_meram: Use direct function calls for the public API
-Message-Id: <1342658362-19491-3-git-send-email-laurent.pinchart@ideasonboard.com>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Mon, 09 Jul 2012 06:08:23 +0000
+Subject: [RFC][PATCH V2 1/3] power sequences interpreter for device tree
+Message-Id: <1341814105-20690-2-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1341814105-20690-1-git-send-email-acourbot@nvidia.com>
+In-Reply-To: <1341814105-20690-1-git-send-email-acourbot@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Thierry Reding <thierry.reding@avionic-design.de>
+Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, Alexandre Courbot <acourbot@nvidia.com>
 
-There's no reason to use abstract operation pointers to implement the
-MERAM API. Replace them by direct function calls.
+Some device drivers (panel backlights especially) need to follow precise
+sequences for powering on and off, involving gpios, regulators, PWMs
+with a precise powering order and delays to respect between each steps.
+These sequences are board-specific, and do not belong to a particular
+driver - therefore they have been performed by board-specific hook
+functions to far.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+With the advent of the device tree, we cannot rely of board-specific
+hooks anymore, but still need a way to implement these sequences in a
+portable manner. This patch introduces a simple interpreter that can
+execute such power sequences encoded either as platform data or within
+the device tree.
+
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |   27 +++++++-------------
- drivers/video/sh_mobile_meram.c  |   40 +++++++++++++++---------------
- include/video/sh_mobile_meram.h  |   50 ++++++++++++++++++++++++++-----------
- 3 files changed, 65 insertions(+), 52 deletions(-)
+ drivers/video/backlight/Makefile    |   2 +-
+ drivers/video/backlight/power_seq.c | 298 ++++++++++++++++++++++++++++++++++++
+ drivers/video/backlight/pwm_bl.c    |   3 +-
+ include/linux/power_seq.h           |  96 ++++++++++++
+ 4 files changed, 397 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/video/backlight/power_seq.c
+ create mode 100644 include/linux/power_seq.h
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index e593e81..9da4b1b6 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -1115,13 +1115,12 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 		ch->line_size = ch->pitch;
- 
- 		/* Enable MERAM if possible. */
--		if (mdev = NULL || mdev->ops = NULL ||
--		    ch->cfg->meram_cfg = NULL)
-+		if (mdev = NULL || ch->cfg->meram_cfg = NULL)
- 			continue;
- 
- 		/* Free the allocated MERAM cache. */
- 		if (ch->cache) {
--			mdev->ops->cache_free(mdev, ch->cache);
-+			sh_mobile_meram_cache_free(mdev, ch->cache);
- 			ch->cache = NULL;
- 		}
- 
-@@ -1144,11 +1143,11 @@ static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
- 			break;
- 		}
- 
--		cache = mdev->ops->cache_alloc(mdev, ch->cfg->meram_cfg,
-+		cache = sh_mobile_meram_cache_alloc(mdev, ch->cfg->meram_cfg,
- 					ch->pitch, ch->yres, pixelformat,
- 					&ch->line_size);
- 		if (!IS_ERR(cache)) {
--			mdev->ops->cache_update(mdev, cache,
-+			sh_mobile_meram_cache_update(mdev, cache,
- 					ch->base_addr_y, ch->base_addr_c,
- 					&ch->base_addr_y, &ch->base_addr_c);
- 			ch->cache = cache;
-@@ -1223,9 +1222,7 @@ static void sh_mobile_lcdc_stop(struct sh_mobile_lcdc_priv *priv)
- 
- 		/* Free the MERAM cache. */
- 		if (ch->cache) {
--			struct sh_mobile_meram_info *mdev;
--			mdev = priv->meram_dev;
--			mdev->ops->cache_free(mdev, ch->cache);
-+			sh_mobile_meram_cache_free(priv->meram_dev, ch->cache);
- 			ch->cache = 0;
- 		}
- 
-@@ -1808,7 +1805,7 @@ static int sh_mobile_lcdc_pan(struct fb_var_screeninfo *var,
- 	struct sh_mobile_lcdc_priv *priv = ch->lcdc;
- 	unsigned long ldrcntr;
- 	unsigned long new_pan_offset;
--	unsigned long base_addr_y, base_addr_c;
-+	unsigned long base_addr_y, base_addr_c = 0;
- 	unsigned long c_offset;
- 
- 	if (!ch->format->yuv)
-@@ -1837,14 +1834,10 @@ static int sh_mobile_lcdc_pan(struct fb_var_screeninfo *var,
- 			base_addr_c += var->xoffset;
- 	}
- 
--	if (ch->cache) {
--		struct sh_mobile_meram_info *mdev;
--
--		mdev = priv->meram_dev;
--		mdev->ops->cache_update(mdev, ch->cache,
--					base_addr_y, base_addr_c,
--					&base_addr_y, &base_addr_c);
--	}
-+	if (ch->cache)
-+		sh_mobile_meram_cache_update(priv->meram_dev, ch->cache,
-+					     base_addr_y, base_addr_c,
-+					     &base_addr_y, &base_addr_c);
- 
- 	ch->base_addr_y = base_addr_y;
- 	ch->base_addr_c = base_addr_c;
-diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
-index 4aa3fcb..fdb6fc1 100644
---- a/drivers/video/sh_mobile_meram.c
-+++ b/drivers/video/sh_mobile_meram.c
-@@ -11,6 +11,7 @@
- 
- #include <linux/device.h>
- #include <linux/err.h>
-+#include <linux/export.h>
- #include <linux/genalloc.h>
- #include <linux/io.h>
- #include <linux/kernel.h>
-@@ -429,11 +430,10 @@ error:
- 	return ERR_PTR(-ENOMEM);
- }
- 
--static void *sh_mobile_cache_alloc(struct sh_mobile_meram_info *pdata,
--				   const struct sh_mobile_meram_cfg *cfg,
--				   unsigned int xres, unsigned int yres,
--				   unsigned int pixelformat,
--				   unsigned int *pitch)
-+void *sh_mobile_meram_cache_alloc(struct sh_mobile_meram_info *pdata,
-+				  const struct sh_mobile_meram_cfg *cfg,
-+				  unsigned int xres, unsigned int yres,
-+				  unsigned int pixelformat, unsigned int *pitch)
- {
- 	struct sh_mobile_meram_fb_cache *cache;
- 	struct sh_mobile_meram_priv *priv = pdata->priv;
-@@ -441,6 +441,9 @@ static void *sh_mobile_cache_alloc(struct sh_mobile_meram_info *pdata,
- 	unsigned int nplanes = is_nvcolor(pixelformat) ? 2 : 1;
- 	unsigned int out_pitch;
- 
-+	if (priv = NULL)
-+		return ERR_PTR(-ENODEV);
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index a2ac9cf..6bff124 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -28,7 +28,7 @@ obj-$(CONFIG_BACKLIGHT_OMAP1)	+= omap1_bl.o
+ obj-$(CONFIG_BACKLIGHT_PANDORA)	+= pandora_bl.o
+ obj-$(CONFIG_BACKLIGHT_PROGEAR) += progear_bl.o
+ obj-$(CONFIG_BACKLIGHT_CARILLO_RANCH) += cr_bllcd.o
+-obj-$(CONFIG_BACKLIGHT_PWM)	+= pwm_bl.o
++obj-$(CONFIG_BACKLIGHT_PWM)	+= pwm_bl.o power_seq.o
+ obj-$(CONFIG_BACKLIGHT_DA903X)	+= da903x_bl.o
+ obj-$(CONFIG_BACKLIGHT_DA9052)	+= da9052_bl.o
+ obj-$(CONFIG_BACKLIGHT_MAX8925)	+= max8925_bl.o
+diff --git a/drivers/video/backlight/power_seq.c b/drivers/video/backlight/power_seq.c
+new file mode 100644
+index 0000000..f54cb7d
+--- /dev/null
++++ b/drivers/video/backlight/power_seq.c
+@@ -0,0 +1,298 @@
++#include <linux/err.h>
++#include <linux/of_gpio.h>
++#include <linux/device.h>
++#include <linux/slab.h>
++#include <linux/power_seq.h>
++#include <linux/delay.h>
++#include <linux/pwm.h>
++#include <linux/regulator/consumer.h>
 +
- 	if (pixelformat != SH_MOBILE_MERAM_PF_NV &&
- 	    pixelformat != SH_MOBILE_MERAM_PF_NV24 &&
- 	    pixelformat != SH_MOBILE_MERAM_PF_RGB)
-@@ -485,9 +488,10 @@ err:
- 	mutex_unlock(&priv->lock);
- 	return cache;
- }
-+EXPORT_SYMBOL_GPL(sh_mobile_meram_cache_alloc);
- 
--static void
--sh_mobile_cache_free(struct sh_mobile_meram_info *pdata, void *data)
-+void
-+sh_mobile_meram_cache_free(struct sh_mobile_meram_info *pdata, void *data)
- {
- 	struct sh_mobile_meram_fb_cache *cache = data;
- 	struct sh_mobile_meram_priv *priv = pdata->priv;
-@@ -507,11 +511,14 @@ sh_mobile_cache_free(struct sh_mobile_meram_info *pdata, void *data)
- 
- 	mutex_unlock(&priv->lock);
- }
--
--static void
--sh_mobile_cache_update(struct sh_mobile_meram_info *pdata, void *data,
--		       unsigned long base_addr_y, unsigned long base_addr_c,
--		       unsigned long *icb_addr_y, unsigned long *icb_addr_c)
-+EXPORT_SYMBOL_GPL(sh_mobile_meram_cache_free);
++#define PWM_SEQ_TYPE(type) [POWER_SEQ_ ## type] = #type
++static const char *pwm_seq_types[] = {
++	PWM_SEQ_TYPE(STOP),
++	PWM_SEQ_TYPE(DELAY),
++	PWM_SEQ_TYPE(REGULATOR),
++	PWM_SEQ_TYPE(PWM),
++	PWM_SEQ_TYPE(GPIO),
++};
++#undef PWM_SEQ_TYPE
 +
-+void
-+sh_mobile_meram_cache_update(struct sh_mobile_meram_info *pdata, void *data,
-+			     unsigned long base_addr_y,
-+			     unsigned long base_addr_c,
-+			     unsigned long *icb_addr_y,
-+			     unsigned long *icb_addr_c)
- {
- 	struct sh_mobile_meram_fb_cache *cache = data;
- 	struct sh_mobile_meram_priv *priv = pdata->priv;
-@@ -523,13 +530,7 @@ sh_mobile_cache_update(struct sh_mobile_meram_info *pdata, void *data,
- 
- 	mutex_unlock(&priv->lock);
- }
--
--static struct sh_mobile_meram_ops sh_mobile_meram_ops = {
--	.module			= THIS_MODULE,
--	.cache_alloc		= sh_mobile_cache_alloc,
--	.cache_free		= sh_mobile_cache_free,
--	.cache_update		= sh_mobile_cache_update,
--};
-+EXPORT_SYMBOL_GPL(sh_mobile_meram_cache_update);
- 
- /* -----------------------------------------------------------------------------
-  * Power management
-@@ -620,7 +621,6 @@ static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
- 	for (i = 0; i < MERAM_ICB_NUM; ++i)
- 		priv->icbs[i].index = i;
- 
--	pdata->ops = &sh_mobile_meram_ops;
- 	pdata->priv = priv;
- 	pdata->pdev = pdev;
- 
-diff --git a/include/video/sh_mobile_meram.h b/include/video/sh_mobile_meram.h
-index 8a5afaf..1134837 100644
---- a/include/video/sh_mobile_meram.h
-+++ b/include/video/sh_mobile_meram.h
-@@ -15,7 +15,6 @@ enum {
- 
- 
- struct sh_mobile_meram_priv;
--struct sh_mobile_meram_ops;
- 
- /*
-  * struct sh_mobile_meram_info - MERAM platform data
-@@ -24,7 +23,6 @@ struct sh_mobile_meram_ops;
- struct sh_mobile_meram_info {
- 	int				addr_mode;
- 	u32				reserved_icbs;
--	struct sh_mobile_meram_ops	*ops;
- 	struct sh_mobile_meram_priv	*priv;
- 	struct platform_device		*pdev;
- };
-@@ -38,21 +36,43 @@ struct sh_mobile_meram_cfg {
- 	struct sh_mobile_meram_icb_cfg icb[2];
- };
- 
--struct module;
--struct sh_mobile_meram_ops {
--	struct module	*module;
--
--	/* LCDC cache management */
--	void *(*cache_alloc)(struct sh_mobile_meram_info *meram_dev,
--			     const struct sh_mobile_meram_cfg *cfg,
--			     unsigned int xres, unsigned int yres,
--			     unsigned int pixelformat, unsigned int *pitch);
--	void (*cache_free)(struct sh_mobile_meram_info *meram_dev, void *data);
--	void (*cache_update)(struct sh_mobile_meram_info *meram_dev, void *data,
-+#if defined(CONFIG_FB_SH_MOBILE_MERAM) || \
-+    defined(CONFIG_FB_SH_MOBILE_MERAM_MODULE)
-+void *sh_mobile_meram_cache_alloc(struct sh_mobile_meram_info *dev,
-+				  const struct sh_mobile_meram_cfg *cfg,
-+				  unsigned int xres, unsigned int yres,
-+				  unsigned int pixelformat,
-+				  unsigned int *pitch);
-+void sh_mobile_meram_cache_free(struct sh_mobile_meram_info *dev, void *data);
-+void sh_mobile_meram_cache_update(struct sh_mobile_meram_info *dev, void *data,
-+				  unsigned long base_addr_y,
-+				  unsigned long base_addr_c,
-+				  unsigned long *icb_addr_y,
-+				  unsigned long *icb_addr_c);
-+#else
-+static inline void *
-+sh_mobile_meram_cache_alloc(struct sh_mobile_meram_info *dev,
-+			    const struct sh_mobile_meram_cfg *cfg,
-+			    unsigned int xres, unsigned int yres,
-+			    unsigned int pixelformat,
-+			    unsigned int *pitch)
++static bool power_seq_step_run(struct power_seq_step *step)
 +{
-+	return ERR_PTR(-ENODEV);
++	switch (step->type) {
++	case POWER_SEQ_DELAY:
++		msleep(step->parameter);
++		break;
++	case POWER_SEQ_REGULATOR:
++		if (step->parameter)
++			regulator_enable(step->resource->regulator);
++		else
++			regulator_disable(step->resource->regulator);
++		break;
++	case POWER_SEQ_PWM:
++		if (step->parameter)
++			pwm_enable(step->resource->pwm);
++		else
++			pwm_disable(step->resource->pwm);
++		break;
++	case POWER_SEQ_GPIO:
++		gpio_set_value_cansleep(step->resource->gpio, step->parameter);
++		break;
++	/* should never happen since we verify the data when building it */
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
 +}
 +
-+static inline void
-+sh_mobile_meram_cache_free(struct sh_mobile_meram_info *dev, void *data)
++int power_seq_run(power_seq *seq)
 +{
++	int err;
++
++	if (!seq) return 0;
++
++	while (seq->type != POWER_SEQ_STOP) {
++		if ((err = power_seq_step_run(seq++))) {
++			return err;
++		}
++	}
++
++	return 0;
 +}
 +
-+static inline void
-+sh_mobile_meram_cache_update(struct sh_mobile_meram_info *dev, void *data,
- 			     unsigned long base_addr_y,
- 			     unsigned long base_addr_c,
- 			     unsigned long *icb_addr_y,
--			     unsigned long *icb_addr_c);
--};
-+			     unsigned long *icb_addr_c)
++static int of_parse_power_seq_step(struct device *dev, struct property *prop,
++				   struct platform_power_seq_step *seq,
++				   int max_steps)
 +{
++	void *value = prop->value;
++	void *end = prop->value + prop->length;
++	int slen, smax, cpt = 0, i, ret;
++	char tmp_buf[32];
++
++	while (value < end && cpt < max_steps) {
++		smax = value - end;
++		slen = strnlen(value, end - value);
++
++		/* Unterminated string / not a string? */
++		if (slen >= end - value)
++			goto invalid_seq;
++
++		/* Find a matching sequence step type */
++		for (i = 0; i < POWER_SEQ_MAX; i++)
++			if (!strcmp(value, pwm_seq_types[i]))
++				break;
++
++		if (i >= POWER_SEQ_MAX)
++			goto unknown_step;
++
++		value += slen + 1;
++
++		seq[cpt].type = i;
++		switch (seq[cpt].type) {
++		case POWER_SEQ_DELAY:
++			/* integer parameter */
++			seq[cpt].parameter = be32_to_cpup(value);
++			value += sizeof(__be32);
++			break;
++		case POWER_SEQ_REGULATOR:
++		case POWER_SEQ_PWM:
++		case POWER_SEQ_GPIO:
++			/* consumer string */
++			slen = strnlen(value, end - value);
++			if (slen >= end - value)
++				goto invalid_seq;
++			seq[cpt].id = value;
++			value += slen + 1;
++
++			/* parameter */
++			seq[cpt].parameter = be32_to_cpup(value);
++			be32_to_cpup(value);
++			value += sizeof(__be32);
++
++			/* For GPIO we still need to resolve the phandle */
++			if (seq[cpt].type != POWER_SEQ_GPIO)
++				break;
++
++			strncpy(tmp_buf, seq[cpt].id, sizeof(tmp_buf) - 6);
++			tmp_buf[sizeof(tmp_buf) - 6] = 0;
++			strcat(tmp_buf, "-gpios");
++			ret = of_get_named_gpio(dev->of_node, tmp_buf, 0);
++			if (ret >= 0)
++				seq[cpt].value = ret;
++			else {
++				if (ret != -EPROBE_DEFER)
++					dev_err(dev, "cannot get gpio \"%s\"\n",
++						seq[cpt].id);
++				return ret;
++			}
++		default:
++			break;
++		}
++
++		cpt++;
++	}
++
++	if (cpt >= max_steps)
++		return -EOVERFLOW;
++
++	return 0;
++
++invalid_seq:
++	dev_err(dev, "invalid sequence \"%s\"\n", prop->name);
++		return -EINVAL;
++unknown_step:
++	dev_err(dev, "unknown step type \"%s\" in sequence \"%s\"\n",
++		(char *)value, prop->name);
++	return -EINVAL;
 +}
++
++#define PWM_SEQ_MAX_LENGTH 16
++platform_power_seq *of_parse_power_seq(struct device *dev,
++				       struct device_node *node, char *propname)
++{
++	platform_power_seq *seq = NULL;
++	struct property *prop;
++	int length;
++	int ret;
++
++	prop = of_find_property(node, propname, &length);
++	if (prop && length > 0) {
++		seq = devm_kzalloc(dev, sizeof(*seq) * PWM_SEQ_MAX_LENGTH,
++				   GFP_KERNEL);
++		if (!seq)
++			return ERR_PTR(-ENOMEM);
++		/* keep one empty entry for the STOP step */
++		ret = of_parse_power_seq_step(dev, prop, seq,
++					      PWM_SEQ_MAX_LENGTH - 1);
++		if (ret < 0)
++			return ERR_PTR(ret);
++	}
++
++	return seq;
++}
++
++static
++struct power_seq_resource * power_seq_find_resource(power_seq_resources *ress,
++					struct platform_power_seq_step *res)
++{
++	struct power_seq_resource *step;
++
++	list_for_each_entry(step, ress, list) {
++		if (step->plat.type != res->type) continue;
++		switch (res->type) {
++		case POWER_SEQ_DELAY:
++		case POWER_SEQ_GPIO:
++			if (step->plat.value = res->value)
++				return step;
++			break;
++		default:
++			if (!strcmp(step->plat.id, res->id))
++				return step;
++			break;
++		}
++	}
++
++	return NULL;
++}
++
++power_seq *power_seq_build(struct device *dev, power_seq_resources *ress,
++			   platform_power_seq *pseq)
++{
++	struct power_seq_step *seq = NULL, *ret;
++	struct power_seq_resource *res;
++	int cpt;
++
++	/* first pass to count the number of elements */
++	for (cpt = 0; pseq[cpt].type != POWER_SEQ_STOP; cpt++);
++
++	if (!cpt)
++		return seq;
++
++	/* 1 more for the STOP step */
++	ret = seq = devm_kzalloc(dev, sizeof(*seq) * (cpt + 1), GFP_KERNEL);
++	if (!seq)
++		return ERR_PTR(-ENOMEM);
++
++	for (; pseq->type != POWER_SEQ_STOP; pseq++, seq++) {
++		seq->type = pseq->type;
++
++		switch (pseq->type) {
++			case POWER_SEQ_REGULATOR:
++			case POWER_SEQ_GPIO:
++			case POWER_SEQ_PWM:
++				if (!(res = power_seq_find_resource(ress, pseq))) {
++					/* create resource node */
++					res = devm_kzalloc(dev, sizeof(*res),
++							   GFP_KERNEL);
++					if (!res)
++						return ERR_PTR(-ENOMEM);
++					memcpy(&res->plat, pseq, sizeof(*pseq));
++
++					list_add(&res->list, ress);
++				}
++				seq->resource = res;
++			case POWER_SEQ_DELAY:
++				seq->parameter = pseq->parameter;
++				break;
++			default:
++				dev_err(dev, "invalid sequence step type!\n");
++				return ERR_PTR(-EINVAL);
++		}
++	}
++
++	return ret;
++}
++
++int power_seq_allocate_resources(struct device *dev, power_seq_resources *ress)
++{
++	struct power_seq_resource *res;
++	int err;
++
++	list_for_each_entry(res, ress, list) {
++		switch (res->plat.type) {
++		case POWER_SEQ_REGULATOR:
++			res->regulator = devm_regulator_get(dev, res->plat.id);
++			if (IS_ERR(res->regulator)) {
++				dev_err(dev, "cannot get regulator \"%s\"\n",
++					res->plat.id);
++				return PTR_ERR(res->regulator);
++			}
++			dev_dbg(dev, "got regulator %s\n", res->plat.id);
++			break;
++		case POWER_SEQ_PWM:
++			res->pwm = pwm_get(dev, res->plat.id);
++			if (IS_ERR(res->pwm)) {
++				dev_err(dev, "cannot get pwm \"%s\"\n",
++					res->plat.id);
++				return PTR_ERR(res->pwm);
++			}
++			dev_dbg(dev, "got PWM %s\n", res->plat.id);
++			break;
++		case POWER_SEQ_GPIO:
++			err = devm_gpio_request_one(dev, res->plat.value,
++				GPIOF_OUT_INIT_HIGH, "backlight_gpio");
++			if (err) {
++				dev_err(dev, "cannot get gpio %d\n",
++					res->plat.value);
++				return err;
++			}
++			res->gpio = res->plat.value;
++			dev_dbg(dev, "got GPIO %d\n", res->plat.value);
++			break;
++		default:
++			break;
++		};
++	}
++
++	return 0;
++}
++
++void power_seq_free_resources(power_seq_resources *ress) {
++	struct power_seq_resource *res;
++
++	list_for_each_entry(res, ress, list) {
++		if (res->plat.type = POWER_SEQ_PWM)
++			pwm_put(res->pwm);
++	}
++}
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index be48517..1a38953 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -203,8 +203,9 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	if (data->levels) {
+ 		max = data->levels[data->max_brightness];
+ 		pb->levels = data->levels;
+-	} else
++	} else {
+ 		max = data->max_brightness;
++	}
+ 
+ 	pb->notify = data->notify;
+ 	pb->notify_after = data->notify_after;
+diff --git a/include/linux/power_seq.h b/include/linux/power_seq.h
+new file mode 100644
+index 0000000..7f76270
+--- /dev/null
++++ b/include/linux/power_seq.h
+@@ -0,0 +1,96 @@
++/*
++ * Simple interpreter for defining power sequences as platform data or device
++ * tree properties. Mainly for use with backlight drivers.
++ */
++
++#ifndef __LINUX_POWER_SEQ_H
++#define __LINUX_POWER_SEQ_H
++
++#include <linux/of.h>
++#include <linux/types.h>
++
++/**
++ * The different kinds of resources that can be controlled during the sequences.
++ */
++typedef enum {
++	POWER_SEQ_STOP = 0,
++	POWER_SEQ_DELAY,
++	POWER_SEQ_REGULATOR,
++	POWER_SEQ_PWM,
++	POWER_SEQ_GPIO,
++	POWER_SEQ_MAX,
++} seq_type;
++
++/**
++ * Describe something to do during the power-up/down sequence.
++ */
++struct platform_power_seq_step {
++	seq_type type;
++	/**
++	 * Identify the resource. Steps of type DELAY use value, others name the
++	 * consumer to use in id.
++	 */
++	union {
++		const char *id;
++		int value;
++	};
++	/**
++	 * A value of 0 disables the resource, while a non-zero enables it.
++	 * For DELAY steps this contains the delay to wait in milliseconds.
++	 */
++	int parameter;
++};
++typedef struct platform_power_seq_step platform_power_seq;
++
++struct power_seq_resource {
++	/* copied from platform data */
++	struct platform_power_seq_step plat;
++	/* resolved resource */
++	union {
++		struct regulator *regulator;
++		struct pwm_device *pwm;
++		int gpio;
++	};
++	/* used to maintain a list of resources used by the driver */
++	struct list_head list;
++};
++typedef struct list_head power_seq_resources;
++
++struct power_seq_step {
++	seq_type type;
++	int parameter;
++	struct power_seq_resource *resource;
++};
++typedef struct power_seq_step power_seq;
++
++/**
++ * Build a platform data sequence from a device tree node. Memory for the
++ * sequence is allocated using devm_kzalloc on dev.
++ */
++platform_power_seq *of_parse_power_seq(struct device *dev,
++				       struct device_node *node,
++				       char *propname);
++/**
++ * Build a runnable power sequence from platform data, and add the resources
++ * it uses into ress. Memory for the sequence is allocated using devm_kzalloc
++ * on dev.
++ */
++power_seq *power_seq_build(struct device *dev, power_seq_resources *ress,
++			   platform_power_seq *pseq);
++/**
++ * Allocate all resources (regulators, PWMs, GPIOs) found by calls to
++ * power_seq_build() for use by dev. Return 0 in case of success, error code
++ * otherwise.
++ */
++int power_seq_allocate_resources(struct device *dev, power_seq_resources *ress);
++/**
++ * Free all the resources previously allocated by power_seq_allocate_resources.
++ */
++void power_seq_free_resources(power_seq_resources *ress);
++/**
++ * Run the given power sequence. Returns 0 on success, error code in case of
++ * failure.
++ */
++int power_seq_run(power_seq *seq);
++
 +#endif
- 
- #endif /* __VIDEO_SH_MOBILE_MERAM_H__  */
 -- 
-1.7.8.6
+1.7.11.1
 

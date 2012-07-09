@@ -1,83 +1,77 @@
-From: Archit Taneja <archit@ti.com>
-Date: Tue, 26 Jun 2012 09:48:49 +0000
-Subject: [PATCH 12/17] OMAPDSS: Add interlace parameter to omap_video_timings
-Message-Id: <1340703414-1915-14-git-send-email-archit@ti.com>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Mon, 09 Jul 2012 06:08:25 +0000
+Subject: [RFC][PATCH V2 3/3] tegra: add pwm backlight device tree nodes
+Message-Id: <1341814105-20690-4-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340703414-1915-1-git-send-email-archit@ti.com>
-In-Reply-To: <1340703414-1915-1-git-send-email-archit@ti.com>
+References: <1341814105-20690-1-git-send-email-acourbot@nvidia.com>
+In-Reply-To: <1341814105-20690-1-git-send-email-acourbot@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: rob@ti.com, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Archit Taneja <archit@ti.com>
+To: Thierry Reding <thierry.reding@avionic-design.de>
+Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, Alexandre Courbot <acourbot@nvidia.com>
 
-Add a parameter called interlace which tells whether the timings are in
-interlaced or progressive mode. This aligns the omap_video_timings struct with
-the Xorg modeline configuration.
-
-It also removes the hack needed to write to divide the manager height by 2 if
-the connected interface is VENC.
-
-Signed-off-by: Archit Taneja <archit@ti.com>
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
 ---
- drivers/video/omap2/dss/dispc.c |    6 +-----
- drivers/video/omap2/dss/venc.c  |    4 ++++
- include/video/omapdss.h         |    3 +++
- 3 files changed, 8 insertions(+), 5 deletions(-)
+ arch/arm/boot/dts/tegra20-ventana.dts | 31 +++++++++++++++++++++++++++++++
+ arch/arm/boot/dts/tegra20.dtsi        |  2 +-
+ 2 files changed, 32 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 9b22563..92b6428 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -2710,11 +2710,7 @@ void dispc_mgr_set_timings(enum omap_channel channel,
+diff --git a/arch/arm/boot/dts/tegra20-ventana.dts b/arch/arm/boot/dts/tegra20-ventana.dts
+index be90544..c67d9e1 100644
+--- a/arch/arm/boot/dts/tegra20-ventana.dts
++++ b/arch/arm/boot/dts/tegra20-ventana.dts
+@@ -317,6 +317,37 @@
+ 		bus-width = <8>;
+ 	};
  
- 		DSSDBG("hsync %luHz, vsync %luHz\n", ht, vt);
- 	} else {
--		enum dss_hdmi_venc_clk_source_select source;
--
--		source = dss_get_hdmi_venc_clk_source();
--
--		if (source = DSS_VENC_TV_CLK)
-+		if (t.interlace = true)
- 			t.y_res /= 2;
- 	}
- 
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 3552305..494f763 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -272,6 +272,8 @@ const struct omap_video_timings omap_dss_pal_timings = {
- 	.vsw		= 5,
- 	.vfp		= 5,
- 	.vbp		= 41,
++	backlight {
++		compatible = "pwm-backlight";
++		brightness-levels = <0 16 32 48 64 80 96 112 128 144 160 176 192 208 224 240 255>;
++		default-brightness-level = <12>;
 +
-+	.interlace	= true,
- };
- EXPORT_SYMBOL(omap_dss_pal_timings);
- 
-@@ -285,6 +287,8 @@ const struct omap_video_timings omap_dss_ntsc_timings = {
- 	.vsw		= 6,
- 	.vfp		= 6,
- 	.vbp		= 31,
++		pwms = <&pwm 2 5000000>;
++		pwm-names = "backlight";
++		power-supply = <&backlight_reg>;
++		enable-gpios = <&gpio 28 0>;
 +
-+	.interlace	= true,
- };
- EXPORT_SYMBOL(omap_dss_ntsc_timings);
- 
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 5de5c9c..1498bb3 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -390,6 +390,9 @@ struct omap_video_timings {
- 	 * default value: OMAPDSS_SIG_ACTIVE_HIGH
- 	 */
- 	enum omap_dss_signal_level hsync_level;
++		power-on-sequence = "REGULATOR", "power", <1>,
++				    "DELAY", <10>,
++				    "PWM", "backlight", <1>,
++				    "GPIO", "enable", <1>;
++		power-off-sequence = "GPIO", "enable", <0>,
++				     "PWM", "backlight", <0>,
++				     "DELAY", <10>,
++				     "REGULATOR", "power", <0>;
++	};
 +
-+	/* Interlaced or Progressive timings */
-+	bool interlace;
- 	/*
- 	 * Pixel clock edge to drive LCD data
- 	 * default value: OMAPDSS_SIG_ACTIVE_HIGH
++	backlight_reg: fixedregulator@176 {
++		compatible = "regulator-fixed";
++		regulator-name = "backlight_regulator";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		gpio = <&gpio 176 0>;
++		startup-delay-us = <0>;
++		enable-active-high;
++		regulator-boot-off;
++	};
++
+ 	sound {
+ 		compatible = "nvidia,tegra-audio-wm8903-ventana",
+ 			     "nvidia,tegra-audio-wm8903";
+diff --git a/arch/arm/boot/dts/tegra20.dtsi b/arch/arm/boot/dts/tegra20.dtsi
+index 405d167..67a6cd9 100644
+--- a/arch/arm/boot/dts/tegra20.dtsi
++++ b/arch/arm/boot/dts/tegra20.dtsi
+@@ -123,7 +123,7 @@
+ 		status = "disabled";
+ 	};
+ 
+-	pwm {
++	pwm: pwm {
+ 		compatible = "nvidia,tegra20-pwm";
+ 		reg = <0x7000a000 0x100>;
+ 		#pwm-cells = <2>;
 -- 
-1.7.9.5
+1.7.11.1
 

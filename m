@@ -1,47 +1,59 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Tue, 31 Jul 2012 10:29:32 +0000
-Subject: [PATCHv2 0/4] Add support for the OLED in the CFA10036
-Message-Id: <1343730576-20494-1-git-send-email-maxime.ripard@free-electrons.com>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Mon, 09 Jul 2012 05:36:01 +0000
+Subject: [PATCHv2] pwm_backlight: pass correct brightness to callback
+Message-Id: <1341812161-13328-1-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <4FFA6BCA.2040101@nvidia.com>
+In-Reply-To: <4FFA6BCA.2040101@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Thierry Reding <thierry.reding@avionic-design.de>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Alexandre Courbot <acourbot@nvidia.com>
 
-Hi everyone,
+pwm_backlight_update_status calls the notify() and notify_after()
+callbacks before and after applying the new PWM settings. However, if
+brightness levels are used, the brightness value will be changed from
+the index into the levels array to the PWM duty cycle length before
+being passed to notify_after(), which results in inconsistent behavior.
 
-This patchset adds support for the solomon SSD1307 OLED controller present
-in the CFA-10036 board.
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+---
+ drivers/video/backlight/pwm_bl.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-It first adds the framebuffer driver for this controller, and then the
-needed bits to enable it in the cfa10036 dts.
-
-Thanks,
-Maxime
-
-Changes from v1:
-  * Did some factorisation of the ssd1307fb_write* functions.
-  * Filled the smem_start field of the fb_fix_screeninfo structure
-  * Fixed the broken pwm declaration
-  * Change the names of oled-reset-gpios and reset-active-low properties in the
-    device tree to oled-reset-gpio and oled-reset-active-low for consistency
-
-Maxime Ripard (4):
-  video: Add support for the Solomon SSD1307 OLED Controller
-  ARM: dts: mxs: Add alternative I2C muxing options for imx28
-  ARM: dts: mxs: Add pwm4 muxing options for imx28
-  ARM: dts: mxs: add oled support for the cfa-10036
-
- .../devicetree/bindings/video/ssd1307fb.txt        |   24 ++
- arch/arm/boot/dts/imx28-cfa10036.dts               |   20 +
- arch/arm/boot/dts/imx28.dtsi                       |   18 +
- drivers/video/Kconfig                              |   14 +
- drivers/video/Makefile                             |    1 +
- drivers/video/ssd1307fb.c                          |  418 ++++++++++++++++++++
- 6 files changed, 495 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/video/ssd1307fb.txt
- create mode 100644 drivers/video/ssd1307fb.c
-
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 057389d..6d1d3ea 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -39,6 +39,7 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+ {
+ 	struct pwm_bl_data *pb = dev_get_drvdata(&bl->dev);
+ 	int brightness = bl->props.brightness;
++	int pwm_brightness;
+ 	int max = bl->props.max_brightness;
+ 
+ 	if (bl->props.power != FB_BLANK_UNBLANK)
+@@ -55,13 +56,15 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+ 		pwm_disable(pb->pwm);
+ 	} else {
+ 		if (pb->levels) {
+-			brightness = pb->levels[brightness];
++			pwm_brightness = pb->levels[brightness];
+ 			max = pb->levels[max];
++		} else {
++			pwm_brightness = brightness;
+ 		}
+ 
+-		brightness = pb->lth_brightness +
+-			(brightness * (pb->period - pb->lth_brightness) / max);
+-		pwm_config(pb->pwm, brightness, pb->period);
++		pwm_brightness = pb->lth_brightness +
++		     (pwm_brightness * (pb->period - pb->lth_brightness) / max);
++		pwm_config(pb->pwm, pwm_brightness, pb->period);
+ 		pwm_enable(pb->pwm);
+ 	}
+ 
 -- 
-1.7.9.5
+1.7.11.1
 

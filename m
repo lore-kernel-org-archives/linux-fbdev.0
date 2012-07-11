@@ -1,55 +1,31 @@
-From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Date: Mon, 30 Jul 2012 01:25:59 +0000
-Subject: Re: [PATCH] fbdev: sh_mobile_lcdc: Fix vertical panning step
-Message-Id: <87a9yi6nve.wl%kuninori.morimoto.gx@renesas.com>
+From: =?euc-kr?B?x9S47cHW?= <myungjoo.ham@samsung.com>
+Date: Wed, 11 Jul 2012 13:08:14 +0000
+Subject: Re: Device tree binding for DVFS table
+Message-Id: <20748722.319671342012092123.JavaMail.weblogic@epml17>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343306215-20868-1-git-send-email-laurent.pinchart@ideasonboard.com>
-In-Reply-To: <1343306215-20868-1-git-send-email-laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
+PiBIaSwNCj4NCj4gSSBhbSB3b3JraW5nIG9uIERUIGJpbmRpbmcgZm9yIFRlZ3JhIERWRlMuDQo+
+DQo+IEZvciBUZWdyYSwgRFZGUyBub2RlIG1haW5seSBjb25zaXN0cyBvZiBmcmVxdWVuY3kgYW5k
+IHZvbHRhZ2UgcGFpcnMuIA0KPiBGcmVxdWVuY3kgaW4gdGhlIHBhaXIgbWF5IGNoYW5nZSBmb3Ig
+ZGlmZmVyZW50IHByb2Nlc3MuIEUuZy4gZm9yIHByb2Nlc3MgDQo+IDEgQ1BVIGNsb2NrIGZyZXF1
+ZW5jeSBjb3VsZCBiZSA5MDBNSHogYXQgMVYgd2hpbGUgZm9yIHByb2Nlc3MgMiBpdCBjb3VsZCAN
+Cj4gYmUgMUdIeiBhdCAxVi4NCj4gVGVncmEgdXNlcyB2ZW5kb3Igc3BlY2lmaWMgaWRzIHRvIGlk
+ZW50aWZ5IHRoZSBjb3JyZWN0IGZyZXF1ZW5jeSB0YWJsZS4NCg0KSGVsbG8sDQoNCkl0IHNlZW1z
+IHRoYXQgaW4gdGhlIGV4YW1wbGUsIHRoZSB2YWx1ZXMgaW4gInZvbHRhZ2UtYXJyYXkiIGFuZA0K
+ImZyZXF1ZW5jaWVzIiBhcmUgc3dpdGNoZWQuDQoNCkFueXdheSwgd2hhdCBhYm91dCBTb0NzIHRo
+YXQgcmVhZHMgaW5mb3JtYXRpb24gZnJvbSBJRU0gKG9yIGFueSBvdGhlciBtb2R1bGUpDQogdG8g
+bWVhc3VyZSBnYXRlIGRlbGF5cyBvciBzb21lIG90aGVyIHZhbHVlIHRvIHNldCB0aGUgYXBwcmlv
+cmF0ZSB2b2x0YWdlIHZhbHVlcw0KIGZvciBldmVyeSBwb3NzaWJsZSBmcmVxdWVuY3k/IEkgcmVt
+ZW1iZXIgc29tZSBvZiBFeHlub3MgU29DcyBoYXZlIGJlZW4gZG9pbmcNCiBpdDsgZHluYW1pY2Fs
+bHkgbWVhc3VyZSB0aGUgY2hhcmFjdGVyaXN0aWNzIGF0IGJvb3QtdXAgdGltZSBhbmQgYXBwbHkg
+dm9sdGFnZXMNCiBhY2NvcmRpbmdseTsgdGhleSBjb3VsZG4ndCBpZGVudGlmeSBpdCBiYXNlZCBv
+biB0aGUgY2hpcC1pZCBvciBzaW1wbHkgYnkgcmVhZGluZw0KIGEgc2luZ2xlIHJlZ2lzdGVyLg0K
+DQoNCkNoZWVycyENCk15dW5nSm9vLg0KDQo+IA0KPiBGb2xsb3dpbmcgaXMgdGhlIHByb3Bvc2Vk
+IGJpbmRpbmcgZm9yIHZvbHRhZ2UgYW5kIGZyZXF1ZW5jeSB0YWJsZXMgdXNlZCANCj4gaW4gRFZG
+Uy4gTG9va2luZyBmb3IgY29tbWVudHMvc3VnZ2VzdGlvbnMgdG8gbWFrZSBpdCBnZW5lcmljLg0K
+DQo
 
-Hi Laurent
-
-> diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-> index 8cb653b..699487c 100644
-> --- a/drivers/video/sh_mobile_lcdcfb.c
-> +++ b/drivers/video/sh_mobile_lcdcfb.c
-> @@ -1716,11 +1716,11 @@ sh_mobile_lcdc_overlay_fb_init(struct sh_mobile_lcdc_overlay *ovl)
->  		info->fix.visual = FB_VISUAL_TRUECOLOR;
->  
->  	switch (ovl->format->fourcc) {
-> -	case V4L2_PIX_FMT_NV16:
-> -	case V4L2_PIX_FMT_NV61:
-> -		info->fix.ypanstep = 2;
->  	case V4L2_PIX_FMT_NV12:
->  	case V4L2_PIX_FMT_NV21:
-> +		info->fix.ypanstep = 2;
-> +	case V4L2_PIX_FMT_NV16:
-> +	case V4L2_PIX_FMT_NV61:
->  		info->fix.xpanstep = 2;
->  	}
->  
-> @@ -2215,11 +2215,11 @@ sh_mobile_lcdc_channel_fb_init(struct sh_mobile_lcdc_chan *ch,
->  		info->fix.visual = FB_VISUAL_TRUECOLOR;
->  
->  	switch (ch->format->fourcc) {
-> -	case V4L2_PIX_FMT_NV16:
-> -	case V4L2_PIX_FMT_NV61:
-> -		info->fix.ypanstep = 2;
->  	case V4L2_PIX_FMT_NV12:
->  	case V4L2_PIX_FMT_NV21:
-> +		info->fix.ypanstep = 2;
-> +	case V4L2_PIX_FMT_NV16:
-> +	case V4L2_PIX_FMT_NV61:
->  		info->fix.xpanstep = 2;
->  	}
-
-If possible, could you please add comment /* fall through */ ?
-current code is a little bit confusing
-
-Best regards
----
-Kuninori Morimoto

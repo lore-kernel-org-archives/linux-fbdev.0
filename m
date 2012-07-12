@@ -1,37 +1,46 @@
 From: Peter De Schrijver <pdeschrijver@nvidia.com>
-Date: Thu, 12 Jul 2012 08:19:15 +0000
+Date: Thu, 12 Jul 2012 14:10:01 +0000
 Subject: Re: Device tree binding for DVFS table
-Message-Id: <20120712081915.GD9437@tbergstrom-lnx.Nvidia.com>
+Message-Id: <20120712141001.GE9437@tbergstrom-lnx.Nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <4FFD77FE.8050206@nvidia.com> <4FFD87BD.2030206@gmail.com>
  <20120711144449.GA23654@sirena.org.uk>
-In-Reply-To: <20120711144449.GA23654@sirena.org.uk>
+ <20120711200402.GC2772@gmail.com>
+In-Reply-To: <20120711200402.GC2772@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Jul 11, 2012 at 04:44:50PM +0200, Mark Brown wrote:
-> On Wed, Jul 11, 2012 at 09:03:41AM -0500, Rob Herring wrote:
+On Wed, Jul 11, 2012 at 10:04:02PM +0200, Mike Turquette wrote:
+> On 20120711-15:44, Mark Brown wrote:
+> > On Wed, Jul 11, 2012 at 09:03:41AM -0500, Rob Herring wrote:
+> > 
+> > > I'd expect a single property with freq/volt pairs or 2 properties for
+> > > freq and voltage where there is a 1:1 relationship (freq N uses voltage N).
+> > 
+> > I strongly agree - the current proposal is very hard to read due to the
+> > separation between the voltage and frequency values.  Some devices do
+> > also need to scale multiple rails together, especially when this gets
+> > used for I/O devices.
+> > 
+> > I'd also expect to see a range of voltages for each frequency rather
+> > than a specific voltage; usually things are at least characterised with
+> > a specified tolerance.
 > 
-> > I'd expect a single property with freq/volt pairs or 2 properties for
-> > freq and voltage where there is a 1:1 relationship (freq N uses voltage N).
-> 
-> I strongly agree - the current proposal is very hard to read due to the
-> separation between the voltage and frequency values.  Some devices do
-> also need to scale multiple rails together, especially when this gets
-> used for I/O devices.
-> 
+> Not only should we support multiple voltage rails but also multiple
+> clocks.  For some devices a DVFS transition is composed of scaling
+> multiple clock rates together.  So some sort of clock identifier
+> (phandle?) is needed as well.  (forgive my ignorance on the phandle
+> part, as I am a DT noob)
 
-I don't think dependencies between rails should be modelled in the same DT
-nodes. We have those too in Tegra30, but as this is SoC internal, I am not
-sure if it needs to be modelled in DT at all, or if we can leave it in SoC
-specific code. While our current dependency is of the form 'voltage difference
-between rail x and rail y must be smaller then z mV', I have been told these
-dependencies might become more complicated in the future. Hence they might
-need to be expressed in code anyway.
-Anyway, I think voltage dependencies between rails is a related but seperate
-topic from DVFS.
+I would say this constraint should be expressed in a seperate DT node. In
+short I think we have 3 things to model:
+
++ frequency/voltage relationships
++ power rail constraints (eg voltage difference limit between 2 rails)
++ clock constraints (eg. clock x frequency must be a fixed ratio of clock y
+  frequency)
 
 Cheers,
 

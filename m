@@ -1,49 +1,38 @@
-From: Prashant Gaikwad <pgaikwad@nvidia.com>
-Date: Thu, 12 Jul 2012 04:34:40 +0000
+From: Peter De Schrijver <pdeschrijver@nvidia.com>
+Date: Thu, 12 Jul 2012 08:19:15 +0000
 Subject: Re: Device tree binding for DVFS table
-Message-Id: <4FFE5110.8020803@nvidia.com>
+Message-Id: <20120712081915.GD9437@tbergstrom-lnx.Nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20748722.319671342012092123.JavaMail.weblogic@epml17>
- <20120711134956.GB9437@tbergstrom-lnx.Nvidia.com>
-In-Reply-To: <20120711134956.GB9437@tbergstrom-lnx.Nvidia.com>
+References: <4FFD77FE.8050206@nvidia.com> <4FFD87BD.2030206@gmail.com>
+ <20120711144449.GA23654@sirena.org.uk>
+In-Reply-To: <20120711144449.GA23654@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Wednesday 11 July 2012 07:19 PM, Peter De Schrijver wrote:
-> On Wed, Jul 11, 2012 at 03:08:14PM +0200, 함명주 wrote:
->>> Hi,
->>>
->>> I am working on DT binding for Tegra DVFS.
->>>
->>> For Tegra, DVFS node mainly consists of frequency and voltage pairs.
->>> Frequency in the pair may change for different process. E.g. for process
->>> 1 CPU clock frequency could be 900MHz at 1V while for process 2 it could
->>> be 1GHz at 1V.
->>> Tegra uses vendor specific ids to identify the correct frequency table.
->> Hello,
->>
->> It seems that in the example, the values in "voltage-array" and
->> "frequencies" are switched.
->>
->> Anyway, what about SoCs that reads information from IEM (or any other module)
->>   to measure gate delays or some other value to set the appriorate voltage values
->>   for every possible frequency? I remember some of Exynos SoCs have been doing
->>   it; dynamically measure the characteristics at boot-up time and apply voltages
->>   accordingly; they couldn't identify it based on the chip-id or simply by reading
->>   a single register.
->>
->
-> But in that case you would have a nominal voltage for each OPP which gets
-> adjusted at boottime or runtime depending on the exact silicon characteristics?
-> I would say the DT binding should then specify 1 table with the nominal values
-> and leave the dynamics to the driver.
+On Wed, Jul 11, 2012 at 04:44:50PM +0200, Mark Brown wrote:
+> On Wed, Jul 11, 2012 at 09:03:41AM -0500, Rob Herring wrote:
+> 
+> > I'd expect a single property with freq/volt pairs or 2 properties for
+> > freq and voltage where there is a 1:1 relationship (freq N uses voltage N).
+> 
+> I strongly agree - the current proposal is very hard to read due to the
+> separation between the voltage and frequency values.  Some devices do
+> also need to scale multiple rails together, especially when this gets
+> used for I/O devices.
+> 
 
-It makes sense or is it different than this?
+I don't think dependencies between rails should be modelled in the same DT
+nodes. We have those too in Tegra30, but as this is SoC internal, I am not
+sure if it needs to be modelled in DT at all, or if we can leave it in SoC
+specific code. While our current dependency is of the form 'voltage difference
+between rail x and rail y must be smaller then z mV', I have been told these
+dependencies might become more complicated in the future. Hence they might
+need to be expressed in code anyway.
+Anyway, I think voltage dependencies between rails is a related but seperate
+topic from DVFS.
 
-> Cheers,
->
-> Peter.
->
+Cheers,
 
+Peter.

@@ -1,83 +1,71 @@
-From: Mike Turquette <mturquette@ti.com>
-Date: Thu, 12 Jul 2012 17:10:16 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Thu, 12 Jul 2012 17:15:29 +0000
 Subject: Re: Device tree binding for DVFS table
-Message-Id: <20120712171016.GL2772@gmail.com>
+Message-Id: <20120712171528.GK7256@opensource.wolfsonmicro.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="y96v7rNg6HAoELs5"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <4FFD77FE.8050206@nvidia.com> <4FFD87BD.2030206@gmail.com>
  <20120711144449.GA23654@sirena.org.uk>
  <20120711200402.GC2772@gmail.com>
  <20120712141001.GE9437@tbergstrom-lnx.Nvidia.com>
-In-Reply-To: <20120712141001.GE9437@tbergstrom-lnx.Nvidia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <20120712171016.GL2772@gmail.com>
+In-Reply-To: <20120712171016.GL2772@gmail.com>
 To: linux-arm-kernel@lists.infradead.org
 
-On 20120712-17:10, Peter De Schrijver wrote:
-> On Wed, Jul 11, 2012 at 10:04:02PM +0200, Mike Turquette wrote:
-> > On 20120711-15:44, Mark Brown wrote:
-> > > On Wed, Jul 11, 2012 at 09:03:41AM -0500, Rob Herring wrote:
-> > > 
-> > > > I'd expect a single property with freq/volt pairs or 2 properties for
-> > > > freq and voltage where there is a 1:1 relationship (freq N uses voltage N).
-> > > 
-> > > I strongly agree - the current proposal is very hard to read due to the
-> > > separation between the voltage and frequency values.  Some devices do
-> > > also need to scale multiple rails together, especially when this gets
-> > > used for I/O devices.
-> > > 
-> > > I'd also expect to see a range of voltages for each frequency rather
-> > > than a specific voltage; usually things are at least characterised with
-> > > a specified tolerance.
-> > 
-> > Not only should we support multiple voltage rails but also multiple
-> > clocks.  For some devices a DVFS transition is composed of scaling
-> > multiple clock rates together.  So some sort of clock identifier
-> > (phandle?) is needed as well.  (forgive my ignorance on the phandle
-> > part, as I am a DT noob)
-> 
-> I would say this constraint should be expressed in a seperate DT node. In
-> short I think we have 3 things to model:
-> 
 
-Peter,
+--y96v7rNg6HAoELs5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-I agree with your observations in general, but I think some specificity
-is needed:
+On Thu, Jul 12, 2012 at 10:10:16AM -0700, Mike Turquette wrote:
+> On 20120712-17:10, Peter De Schrijver wrote:
 
-> + frequency/voltage relationships
+> > + power rail constraints (eg voltage difference limit between 2 rails)
 
-We should be clear that the voltage does NOT belong to the clock, but to
-the device/module/IP block that consumes that clock.  This is an
-important detail since it means that a clock does not have a
-corresponding table of voltages (e.g. one table per clock), but instead
-a device has a table of voltages corresponding to each clock.
+> This should come from regulator DT data and not anything DVFS-specific,
+> correct?
 
-This is very necessary when a single clock drives multiple devices which
-are driven by separate voltage rails.
+Currently the regulator API will only constrain individual rails (and
+shortly likely parent/child relationships).  It will not do anything to
+constrain between different rails, this has been left to the consumers.
+For this stuff it may still make sense to do that if we've got a set of
+operating points defined which apply over multiple inputs (like clock
+and frequency) - we'll naturally impose these constraints by virtue of
+selecting the operating point.
 
-> + power rail constraints (eg voltage difference limit between 2 rails)
+> > + clock constraints (eg. clock x frequency must be a fixed ratio of clock y
+> >   frequency)
 
-This should come from regulator DT data and not anything DVFS-specific,
-correct?
+> Yeah, after sending my email above yesterday I instantly regretted it.
+> It is true that *functional* clock dependencies are really the purview
+> of the device driver.  E.g. for Device X to operate at FAST_SPEED, scale
+> functional_clk up to 200MHz and l3_ddr_clk up to 100MHz.  On OMAP our
+> display subsystem block also has clock ratio rules that must be honored,
+> but it just open-coded.
 
-> + clock constraints (eg. clock x frequency must be a fixed ratio of clock y
->   frequency)
+This is similar to the regulator thing.
 
-Yeah, after sending my email above yesterday I instantly regretted it.
-It is true that *functional* clock dependencies are really the purview
-of the device driver.  E.g. for Device X to operate at FAST_SPEED, scale
-functional_clk up to 200MHz and l3_ddr_clk up to 100MHz.  On OMAP our
-display subsystem block also has clock ratio rules that must be honored,
-but it just open-coded.
+--y96v7rNg6HAoELs5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-It is possible to model those in DT if we really want, but shouldn't be
-a priority for these dvfs-specific bindings.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-Regards,
-Mike
+iQIcBAEBAgAGBQJP/wYpAAoJEBus8iNuMP3dCR4QAILHgfQVyOW8jXMqu0q5u6Pf
+pnbs55YwIkzR0YtJVGvhoyv5Oq/G6M3t0fx6l5qUjAUwkZUN5oyOxijScwETR6D4
+2LgK1DGjDigv9U92SgBTRqDyweC1HJitOUUqbUlFH86EMNgPG6ku59kus+yEq7OO
+6MUXn6fH0JHBFxb7jwGs+UEtr+GQxJMbdZW9rkRzuXE7e4zaEML3Y01PGw+I0MbH
+F3RHpLeno68M+iJuTwl09mDxTHsPIZswJUstuP0ivYuP4J84iuNg1rz4JLT/1Qg4
+13U6oCZ5ebYLB9RwMo0wjh8W4XUreLIsEuiBe1wRzou+duogJOLzVOe44QsJRZ/r
+PkJDK70yIyoHzqizzXFRDN1JzFgDcVGy9wtLsOIA2GtESPrmKwPZg1n1XTnMxhJ2
+6PS54rjAOZh9ggWSUttngxudShZIEuL0UC/epeP0RY3daHjpbkgiVfuHnbBwIi1f
+HWMHkJPBYYn9WU8V7lQ+SAS2l5x4wVKnC192rQqyephq54X52ZF5xHXYkrx8py3c
+9Vik1xthllQJ1pN1TPGHM40agxiX1upoV4OY8ArcyUFZHBeZqwHLGm3S16Tl5sJb
+cDhLSu/Jt1+44u4QDm84Le6ZwhYatf8tbVTplYqCaNVX/v07fwZQ45VXmwC5XKEx
+zfwvty6n86JlRLAZDT9r
+=q/FI
+-----END PGP SIGNATURE-----
 
-> 
-> Cheers,
-> 
-> Peter.
+--y96v7rNg6HAoELs5--

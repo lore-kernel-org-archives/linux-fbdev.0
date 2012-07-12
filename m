@@ -1,147 +1,80 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Date: Thu, 12 Jul 2012 10:04:56 +0000
+From: Alex Courbot <acourbot@nvidia.com>
+Date: Thu, 12 Jul 2012 10:11:32 +0000
 Subject: Re: [RFC][PATCH V2 3/3] tegra: add pwm backlight device tree nodes
-Message-Id: <20120712100456.GA1949@avionic-0098.adnet.avionic-design.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="bp/iNruPH9dso1Pn"
+Message-Id: <4FFEA2D4.9050308@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1341814105-20690-1-git-send-email-acourbot@nvidia.com>
- <1341814105-20690-4-git-send-email-acourbot@nvidia.com>
- <CAPnjgZ1QbjE+-tr0c01K2feUdEE2wMBfR=bKpTxnyDOJbY8+1Q@mail.gmail.com>
-In-Reply-To: <CAPnjgZ1QbjE+-tr0c01K2feUdEE2wMBfR=bKpTxnyDOJbY8+1Q-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-To: Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+References: <1341814105-20690-1-git-send-email-acourbot@nvidia.com> <1341814105-20690-4-git-send-email-acourbot@nvidia.com> <CAPnjgZ1QbjE+-tr0c01K2feUdEE2wMBfR=bKpTxnyDOJbY8+1Q@mail.gmail.com>
+In-Reply-To: <CAPnjgZ1QbjE+-tr0c01K2feUdEE2wMBfR=bKpTxnyDOJbY8+1Q@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Simon Glass <sjg@chromium.org>
+Cc: Thierry Reding <thierry.reding@avionic-design.de>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
 
+Hi Simon,
 
---bp/iNruPH9dso1Pn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Jul 12, 2012 at 11:37:33AM +0200, Simon Glass wrote:
-> Hi Alex,
->=20
-> On Mon, Jul 9, 2012 at 8:08 AM, Alexandre Courbot <acourbot@nvidia.com> w=
-rote:
-> > Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
-> > ---
-> >  arch/arm/boot/dts/tegra20-ventana.dts | 31 +++++++++++++++++++++++++++=
-++++
-> >  arch/arm/boot/dts/tegra20.dtsi        |  2 +-
-> >  2 files changed, 32 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/arch/arm/boot/dts/tegra20-ventana.dts b/arch/arm/boot/dts/=
-tegra20-ventana.dts
-> > index be90544..c67d9e1 100644
-> > --- a/arch/arm/boot/dts/tegra20-ventana.dts
-> > +++ b/arch/arm/boot/dts/tegra20-ventana.dts
-> > @@ -317,6 +317,37 @@
-> >                 bus-width =3D <8>;
-> >         };
-> >
->=20
+On Thu 12 Jul 2012 06:37:33 PM JST, Simon Glass wrote:
 > I would like to do something similar in U-Boot for Tegra, although
 > perhaps not right away. For now I will go with something considerably
 > simpler! But if this is merged into the kernel we will move to it in
-> U-Boot. Anyway here are my comments:
->=20
-> > +       backlight {
-> > +               compatible =3D "pwm-backlight";
-> > +               brightness-levels =3D <0 16 32 48 64 80 96 112 128 144 =
-160 176 192 208 224 240 255>;
->=20
-> We seem to have a lot of these - should we move to a range and step size?
+> U-Boot.
 
-These actually seem to be a little bogus. The reason for introducing the
-levels was to allow calibration of these values because they in fact
-usually do not scale linearly. Instead, a linear brightness increase
-usually maps to something like a logarithmic (at best) increase of the
-duty cycle.
+Cool, I'd love to see that used in U-Boot as well.
 
-> > +               default-brightness-level =3D <12>;
-> > +
-> > +               pwms =3D <&pwm 2 5000000>;
-> > +               pwm-names =3D "backlight";
-> > +               power-supply =3D <&backlight_reg>;
-> > +               enable-gpios =3D <&gpio 28 0>;
-> > +
-> > +               power-on-sequence =3D "REGULATOR", "power", <1>,
-> > +                                   "DELAY", <10>,
-> > +                                   "PWM", "backlight", <1>,
-> > +                                   "GPIO", "enable", <1>;
->=20
+>> +               default-brightness-level = <12>;
+>> +
+>> +               pwms = <&pwm 2 5000000>;
+>> +               pwm-names = "backlight";
+>> +               power-supply = <&backlight_reg>;
+>> +               enable-gpios = <&gpio 28 0>;
+>> +
+>> +               power-on-sequence = "REGULATOR", "power", <1>,
+>> +                                   "DELAY", <10>,
+>> +                                   "PWM", "backlight", <1>,
+>> +                                   "GPIO", "enable", <1>;
+>
 > So the names REGULATOR, DELAY, etc. here are looked up through some
 > existing mechanism? In general I am not a big fan of mixing strings
-> and numbers in a property. Maybe something like:
->=20
+> and numbers in a property.
+
+Yes, these are strings we are looking up to know the type of the next 
+element to power on/off in the sequence. I don't like these, honestly, 
+and would rather have them replaced by constants - however there is no 
+way to define constants in the DT AFAIK (but I have heard some other 
+persons are interested in having them too), and this is the only way I 
+have found to keep the sequence readable.
+
+> Maybe something like:
+>
 > power_on_sequence {
->    step@0 {
->       phandle =3D <&backlight_reg>;
->       enable =3D <1>;
->       post-delay =3D <10>;
->    }
->    step@1 {
->       phandle =3D <&pwm 2 5000000>;
->    }
->    step@2 {
->       phandle =3D <&gpio 28 0>;
->       enable =3D <1>;
->    }
+>     step@0 {
+>        phandle = <&backlight_reg>;
+>        enable = <1>;
+>        post-delay = <10>;
+>     }
+>     step@1 {
+>        phandle = <&pwm 2 5000000>;
+>     }
+>     step@2 {
+>        phandle = <&gpio 28 0>;
+>        enable = <1>;
+>     }
 
-I actually like that a lot. What's missing from your example is a way to
-specify the type of the phandle because it cannot be safely inferred.
-Perhaps this could be done by just the property name:
+I see a few problems with this: first, how do you know the types of your 
+phandles? At step 0, we should get a regulator, step 1 is a PWM and step 
+2 is a GPIO. This is why I have used strings to identify the type of the 
+phandle and the number (and type) of additional arguments to parse for a 
+step.
 
-	power_on_sequence {
-		step@0 {
-			power-supply =3D <&backlight_reg>;
-			enable =3D <1>;
-			post-delay =3D <10>;
-		};
-		step@1 {
-			pwm =3D <&pwm 2 5000000>;
-		};
-		step@2 {
-			enable-gpios =3D <&gpio 28 0>;
-			enable =3D <1>;
-		};
-	};
+Second, I am afraid the representation in memory would be significantly 
+bigger since the properties names would have to be stored as well (I am 
+no DT expert, please correct me if I am wrong). Lastly, the additional 
+freedom of having extra properties might make the parser more complicated.
 
-However I think one of the reasons for Alex to choose his particular
-representation is that people want this to be representable in the
-platform data as well, which unfortunately can't deal very well with
-this kind of situation.
+I agree the type strings are a problem in the current form - if we could 
+get constants in the device tree, that would be much better. Your way of 
+representing the sequences is interesting though, if we can solve the 
+type issue (and also evaluate its cost in terms of memory footprint), it 
+would be interesting to consider it as well.
 
-Usually in the kernel you have one API to obtain a resource (pwm_get(),
-regulator_get(), ...) which takes as an argument a device handle and a
-name. For device tree, that API will lookup the resource by phandle,
-while the non-DT code path typically uses a static lookup table.
-
-It's a shame that we have to keep this kind of backwards compatibility
-because it prevents these things from being represented in a logic way
-in the DT sense.
-
-Thierry
-
---bp/iNruPH9dso1Pn
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBAgAGBQJP/qFIAAoJEN0jrNd/PrOhx8IQAKlUx6mLvkbPu7V+iX8DpWE3
-chGdHh8cSoXBS5WrW0bTPlmYMzIgSUBa64eBZVT0e7nbyrgeltY04LSPydoHlfyK
-tQYWv4i5hmD8m9zo4e0IMp85SVite+QEhFNPapCyTiL7Os3BoyX8olOxPlrPC7Rg
-NpbYItUaqRM2sEIAyTHpgVGuPSocrva9dgFWlxr8dwvfHL3qCbT9gylj1hOMhlit
-k7V6Vdg9WWu+lyboLGMbgVTmZDWqFcj51enuNnaL7UW9DPB9AMSA9jxZKtVBnffX
-xwAc4SWkNqQ2PlOBhvyZ8IcO47p8JQ423+HaNHMlPGaXZZkmnU8VSlDWYlJFFbIa
-Fzskn92DUibgvc3K8V6GHXtrpeW+ci5ng3swxj9gTNiGGF3SR42Zb+S3uERvelfG
-E8TOAzKpO5a12L6lYrrBhMVwKjl5HWjShhiyCwVkEGhcRa6dJp6eGWZ8K3y6jqCB
-T6dRaJy6Up0m3C29RSV6tbDAIP8bUq47Ko1HiTotMVB422mIRWTQFV9LI3ciogIL
-aEhRsJk8bYF8244KFsn1FAKWQz8ZnrxTpuRXP2GsEdf6LOyt5Rng1EMzYMOMAXoG
-sFO8BBdIeIDRrcy7ZourtEp9wh9S+mHOTrAwEzwcjcCZAPd+ZZxiwrJC22jZ69XZ
-gU/YMjRyIHjwV2KU6rEc
-=P1Hh
------END PGP SIGNATURE-----
-
---bp/iNruPH9dso1Pn--
+Alex.

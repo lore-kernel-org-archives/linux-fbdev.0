@@ -1,55 +1,45 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Mon, 09 Jul 2012 17:34:44 +0000
-Subject: Re: [PATCH v2 04/11] fbdev: export get_fb_info()/put_fb_info()
-Message-Id: <CANq1E4S-7LVw-CoD=nvn3npffSZgw9V3Ec9x3XGt-j3ps5-XPA@mail.gmail.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Thu, 12 Jul 2012 06:10:03 +0000
+Subject: [PATCH] video: exynos_dp: fix wrong DPCD address during Link Training
+Message-Id: <000901cd5ff4$fa2ffbc0$ee8ff340$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1341784614-2797-1-git-send-email-dh.herrmann@googlemail.com>
-	<1341784614-2797-5-git-send-email-dh.herrmann@googlemail.com>
-	<CAMuHMdWsSqMjqDuE_qgNUjc1eCWZqLLo1GNxwLYZNih=YBFh0g@mail.gmail.com>
-In-Reply-To: <CAMuHMdWsSqMjqDuE_qgNUjc1eCWZqLLo1GNxwLYZNih=YBFh0g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, florianschandinat@gmx.de, linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, alan@lxorguk.ukuu.org.uk, bonbons@linux-vserver.org
+To: linux-fbdev@vger.kernel.org
 
-Hi Geert
+Wrong DPCD addresses were used for clock recovery during Link Training.
+The training pattern should be set by TRAINING_PATTERN_SET (0x102), while
+voltage swing and pre-emphasis should be set by TRAINING_LANE0_SET (0x103).
 
-On Mon, Jul 9, 2012 at 9:34 AM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Sun, Jul 8, 2012 at 11:56 PM, David Herrmann
-> <dh.herrmann@googlemail.com> wrote:
->> --- a/drivers/video/fbmem.c
->> +++ b/drivers/video/fbmem.c
->> @@ -46,7 +46,7 @@ static DEFINE_MUTEX(registration_lock);
->>  struct fb_info *registered_fb[FB_MAX] __read_mostly;
->>  int num_registered_fb __read_mostly;
->>
->> -static struct fb_info *get_fb_info(unsigned int idx)
->> +struct fb_info *get_fb_info(unsigned int idx)
->>  {
->>         struct fb_info *fb_info;
->>
->> @@ -61,14 +61,16 @@ static struct fb_info *get_fb_info(unsigned int idx)
->>
->>         return fb_info;
->>  }
->> +EXPORT_SYMBOL(get_fb_info);
->
-> EXPORT_SYMBOL_GPL?
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/exynos/exynos_dp_core.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Thanks, that seems more appropriate here. I've fixed it.
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index 9db7b9f..bf55e51 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -304,7 +304,7 @@ static void exynos_dp_link_start(struct exynos_dp_device *dp)
+ 		buf[lane] = DPCD_PRE_EMPHASIS_PATTERN2_LEVEL0 |
+ 			    DPCD_VOLTAGE_SWING_PATTERN1_LEVEL0;
+ 	exynos_dp_write_bytes_to_dpcd(dp,
+-		DPCD_ADDR_TRAINING_PATTERN_SET,
++		DPCD_ADDR_TRAINING_LANE0_SET,
+ 		lane_count, buf);
+ }
+ 
+@@ -504,7 +504,7 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 		buf[0] = DPCD_SCRAMBLING_DISABLED |
+ 			 DPCD_TRAINING_PATTERN_2;
+ 		exynos_dp_write_byte_to_dpcd(dp,
+-			DPCD_ADDR_TRAINING_LANE0_SET,
++			DPCD_ADDR_TRAINING_PATTERN_SET,
+ 			buf[0]);
+ 
+ 		for (lane = 0; lane < lane_count; lane++) {
+-- 
+1.7.1
 
->> -static void put_fb_info(struct fb_info *fb_info)
->> +void put_fb_info(struct fb_info *fb_info)
->>  {
->>         if (!atomic_dec_and_test(&fb_info->count))
->>                 return;
->>         if (fb_info->fbops->fb_destroy)
->>                 fb_info->fbops->fb_destroy(fb_info);
->>  }
->> +EXPORT_SYMBOL(put_fb_info);
->
-> EXPORT_SYMBOL_GPL?
 
-Thanks
-David

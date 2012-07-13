@@ -1,100 +1,107 @@
-From: Mike Turquette <mturquette@ti.com>
-Date: Fri, 13 Jul 2012 17:25:32 +0000
+From: Prashant Gaikwad <pgaikwad@nvidia.com>
+Date: Fri, 13 Jul 2012 18:42:14 +0000
 Subject: Re: Device tree binding for DVFS table
-Message-Id: <20120713172532.GN2772@gmail.com>
+Message-Id: <50006935.2080606@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <4FFD77FE.8050206@nvidia.com> <4FFD87BD.2030206@gmail.com>
- <20120711144449.GA23654@sirena.org.uk>
- <20120711200402.GC2772@gmail.com>
- <20120712141001.GE9437@tbergstrom-lnx.Nvidia.com>
- <20120712171016.GL2772@gmail.com>
- <20120713103408.GF9437@tbergstrom-lnx.Nvidia.com>
-In-Reply-To: <20120713103408.GF9437@tbergstrom-lnx.Nvidia.com>
+ <4FFE4DD0.7020407@nvidia.com>
+In-Reply-To: <4FFE4DD0.7020407@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On 20120713-13:34, Peter De Schrijver wrote:
-> Hi Mike,
-> 
-> > 
-> > Peter,
-> > 
-> > I agree with your observations in general, but I think some specificity
-> > is needed:
-> > 
-> > > + frequency/voltage relationships
-> > 
-> > We should be clear that the voltage does NOT belong to the clock, but to
-> > the device/module/IP block that consumes that clock.  This is an
-> > important detail since it means that a clock does not have a
-> > corresponding table of voltages (e.g. one table per clock), but instead
-> > a device has a table of voltages corresponding to each clock.
-> > 
-> 
-> Or the other way around, a table of clock frequencies, 1 for each voltage.
-> 
+Hi,
 
-ACK
+On Thursday 12 July 2012 09:38 AM, Prashant Gaikwad wrote:
+> On Wednesday 11 July 2012 07:33 PM, Rob Herring wrote:
+>> On 07/11/2012 07:56 AM, Prashant Gaikwad wrote:
+>>> Hi,
+>>>
+>>> I am working on DT binding for Tegra DVFS.
 
-You said what I meant to say.  Some previous iterations of an
-omap-specific dvfs api tried to use voltage as the unique key for
-accessing frequency/voltage tables, and that can get really ugly for a
-variety of reasons.  Plus device drivers typically request performance
-in Hertz (e.g. clk_set_rate), so exposing a voltage-centric interface to
-them is generally useless.
+<snip>
 
-The OPP library does some of this right (drivers/base/power/opp.c).  It
-keeps a list of tables on a per-device bases, which is a big step in the
-right direction.  Unfortunately it is lacking in other areas, such as
-not specifying which clock corresponds to the to table.  Thus a device
-can only have one table and that table does not encode any information
-about which clock to use (which is important for devices that use a mux
-to change rate).  The dvfs DT bindings should not repeat those mistakes.
+>>>                compatible = "nvidia,tegra30-dvfs-table";
+>>>                reg_id =<&sm0>;
+>>>                #address-cells =<1>;
+>>>                #size-cells =<0>;
+>>>                voltage-array =<750 775 800 825 850 875 900 925 950 975
+>>> 1000 1025 1050 1100 1125>;
+>> The SOC is really characterized at all these voltages?
+>
+> Not really, but different processes of single SoC are characterized 
+> for different voltages and this array covers all those voltages.
+>
+>>> };
+>>>
+>>> device {
+>>>               dvfs =<&cpu-dvfs-table>;
+>>>               frequency-table@102 {
+>>>                        reg =<0x102>;
+>>>                        frequencies =<314 314 314 456 456 456 608 608 
+>>> 608
+>>> 760 817 817 912 1000>;
+>> I don't see the point of repeating frequencies.
+>>>               };
+>>>               frequency-table@002 {
+>>>                        reg =<0x002>;
+>>>                        frequencies =<598 598 750 750 893 893 1000>;
+>>>               };
+>> How do you determine the voltage for a frequency on table 2?
+>>
+>> I'd expect a single property with freq/volt pairs or 2 properties for
+>> freq and voltage where there is a 1:1 relationship (freq N uses 
+>> voltage N).
+>
+>
+> How this will work:
+>
+> voltage-array =<750 775 800 825 850 875 900  925 950 975 1000 1025 
+> 1050 1100 1125>
+> frequencies-1 =<314 314 314 456 456 456 608  608 608 760 817  817  
+> 912  1000>;
+> frequencies-2 =<598 598 750 750 893 893 1000>;
+>
+>
+> Freq and voltage has 1:1 relationship but as single voltage table is 
+> used for different processes we have more entries in voltage table 
+> than freq table.
+> Frequency table 1 is mapped till 1100mV while frequency table 2 is 
+> mapped till 900mV only, it maintains 1:1 relationship.
+>
+> About repeating frequencies, operating voltage for a frequency would 
+> be the highest one mapped in the table.
+> For example, in frequency table 2 operating voltage for 750MHz would 
+> be 825mV while for 893MHz it would be 875mV. Unmapped entries could be 
+> replaced with 0 to make reading better.
+>
+> Advantage it provides is single voltage table used for multiple 
+> frequency tables, as can be observed from above tables, operating 
+> voltage for 314MHz in freq table 1 is 800mV while there is no 
+> frequency in table 2 at that voltage.
+>
+> I know this makes reading difficult but it provides flexibility,
+>
+> I hope it explains the implementation.
+>
 
-> > This is very necessary when a single clock drives multiple devices which
-> > are driven by separate voltage rails.
-> > 
-> 
-> Ah ok. How does this work in practice? A device can only run at a given clock
-> rate if all the rails are at a certain voltage?
-> 
-
-More like an adjustable rate clock higher up the tree affects the rate
-of multiple devices downstream, and those devices happen to be on
-separate rails.  Either way I think that the design should account for
-this possibility.
+Does this explanation help?
 
 Regards,
-Mike
+Prashant G
 
-> > > + power rail constraints (eg voltage difference limit between 2 rails)
-> > 
-> > This should come from regulator DT data and not anything DVFS-specific,
-> > correct?
-> > 
-> 
-> That's true. I think it can even be open-coded as this is a SoC internal
-> thing. All boards using this SoC will have the same limits, so I see little
-> reason to move this info to DT.
-> 
-> > > + clock constraints (eg. clock x frequency must be a fixed ratio of clock y
-> > >   frequency)
-> > 
-> > Yeah, after sending my email above yesterday I instantly regretted it.
-> > It is true that *functional* clock dependencies are really the purview
-> > of the device driver.  E.g. for Device X to operate at FAST_SPEED, scale
-> > functional_clk up to 200MHz and l3_ddr_clk up to 100MHz.  On OMAP our
-> > display subsystem block also has clock ratio rules that must be honored,
-> > but it just open-coded.
-> > 
-> > It is possible to model those in DT if we really want, but shouldn't be
-> > a priority for these dvfs-specific bindings.
-> > 
-> 
-> Agreed.
-> 
-> Cheers,
-> 
-> Peter.
+>> Rob
+>>
+>>> };
+>>>
+>>> Thanks&  Regards,
+>>> Prashant G
+>>>
+>>> _______________________________________________
+>>> linux-arm-kernel mailing list
+>>> linux-arm-kernel@lists.infradead.org
+>>> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+>>
+>
+

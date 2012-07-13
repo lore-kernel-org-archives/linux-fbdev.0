@@ -1,159 +1,69 @@
-From: Simon Glass <sjg@chromium.org>
-Date: Thu, 12 Jul 2012 14:27:25 +0000
+From: Alex Courbot <acourbot@nvidia.com>
+Date: Fri, 13 Jul 2012 05:32:12 +0000
 Subject: Re: [RFC][PATCH V2 3/3] tegra: add pwm backlight device tree nodes
-Message-Id: <CAPnjgZ2=Ga2P-40trA_=UABm=i7Uy4NTAM=ehea11mE22VfDew@mail.gmail.com>
+Message-Id: <4FFFB2DC.3040605@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1341814105-20690-1-git-send-email-acourbot@nvidia.com>
- <1341814105-20690-4-git-send-email-acourbot@nvidia.com>
- <CAPnjgZ1QbjE+-tr0c01K2feUdEE2wMBfR=bKpTxnyDOJbY8+1Q@mail.gmail.com>
- <4FFEA2D4.9050308@nvidia.com>
-In-Reply-To: <4FFEA2D4.9050308-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+References: <1341814105-20690-1-git-send-email-acourbot@nvidia.com> <1341814105-20690-4-git-send-email-acourbot@nvidia.com> <CAPnjgZ1QbjE+-tr0c01K2feUdEE2wMBfR=bKpTxnyDOJbY8+1Q@mail.gmail.com> <4FFEA2D4.9050308@nvidia.com> <CAPnjgZ2=Ga2P-40trA_=UABm=i7Uy4NTAM=ehea11mE22VfDew@mail.gmail.com>
+In-Reply-To: <CAPnjgZ2=Ga2P-40trA_=UABm=i7Uy4NTAM=ehea11mE22VfDew@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+To: Simon Glass <sjg@chromium.org>
+Cc: Thierry Reding <thierry.reding@avionic-design.de>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
 
-Hi Alex,
-
-On Thu, Jul 12, 2012 at 12:11 PM, Alex Courbot <acourbot@nvidia.com> wrote:
-> Hi Simon,
+On 07/12/2012 11:27 PM, Simon Glass wrote
+>> I agree the type strings are a problem in the current form - if we could get
+>> constants in the device tree, that would be much better. Your way of
+>> representing the sequences is interesting though, if we can solve the type
+>> issue (and also evaluate its cost in terms of memory footprint), it would be
+>> interesting to consider it as well.
 >
+> At a guess:
 >
-> On Thu 12 Jul 2012 06:37:33 PM JST, Simon Glass wrote:
->>
->> I would like to do something similar in U-Boot for Tegra, although
->> perhaps not right away. For now I will go with something considerably
->> simpler! But if this is merged into the kernel we will move to it in
->> U-Boot.
+>>>> +               power-on-sequence = "REGULATOR", "power", <1>,
+>>>> +                                   "DELAY", <10>,
+>>>> +                                   "PWM", "backlight", <1>,
+>>>> +                                   "GPIO", "enable", <1>;
 >
+> About 106 bytes I think
 >
-> Cool, I'd love to see that used in U-Boot as well.
+>>>      step@0 { 16
+>              type = "regulator"; 24
+>>>         phandle = <&backlight_reg>; 16
+>>>         enable = <1>; 16
+>>>         post-delay = <10>; 16
+>>>      }
+>>>      step@1 { 16
+>              type = "pwm"; 16
+>>>         phandle = <&pwm 2 5000000>; 24
+>>>      }
+>>>      step@2 { 16
+>              type = "gpio"; 20
+>>>         phandle = <&gpio 28 0>; 24
+>>>         enable = <1>; 16
+>>>      }
 >
->
->>> +               default-brightness-level = <12>;
->>> +
->>> +               pwms = <&pwm 2 5000000>;
->>> +               pwm-names = "backlight";
->>> +               power-supply = <&backlight_reg>;
->>> +               enable-gpios = <&gpio 28 0>;
->>> +
->>> +               power-on-sequence = "REGULATOR", "power", <1>,
->>> +                                   "DELAY", <10>,
->>> +                                   "PWM", "backlight", <1>,
->>> +                                   "GPIO", "enable", <1>;
->>
->>
->> So the names REGULATOR, DELAY, etc. here are looked up through some
->> existing mechanism? In general I am not a big fan of mixing strings
->> and numbers in a property.
->
->
-> Yes, these are strings we are looking up to know the type of the next
-> element to power on/off in the sequence. I don't like these, honestly, and
-> would rather have them replaced by constants - however there is no way to
-> define constants in the DT AFAIK (but I have heard some other persons are
-> interested in having them too), and this is the only way I have found to
-> keep the sequence readable.
+> 220?
 
-That might be the 100th time that I have heard this. I have brought a
-patch from Stephen Warren into our tree to solve this locally, but it
-is not merged upstream.
+I compiled both versions to try it out. Your version was just 50 bytes 
+larger than mine (I assumed that with yours, we would be able to remove 
+the top-level pwm/regulator/gpio definitions that are referred by the 
+sequence). The question here is do we want to have something more 
+DT-ish, or are we trying to save every possible byte in the DT structure?
 
->
->
->> Maybe something like:
->>
->> power_on_sequence {
->>     step@0 {
->>        phandle = <&backlight_reg>;
->>        enable = <1>;
->>        post-delay = <10>;
->>     }
->>     step@1 {
->>        phandle = <&pwm 2 5000000>;
->>     }
->>     step@2 {
->>        phandle = <&gpio 28 0>;
->>        enable = <1>;
->>     }
->
->
-> I see a few problems with this: first, how do you know the types of your
-> phandles? At step 0, we should get a regulator, step 1 is a PWM and step 2
-> is a GPIO. This is why I have used strings to identify the type of the
-> phandle and the number (and type) of additional arguments to parse for a
-> step.
+As Thierry also mentionned, we are trying to provide the same feature 
+using the platform interface. I am not sure how we can elegantly support 
+both ways through this.
 
-Well it's similar to giving them names - you would need to look up the
-phandle and see its compatible string or which driver type owns it.
-Maybe too complicated, and no such infrastructure exists, so:
+>  From my understanding mixing strings and numbers in a property is
+> frowned on though.
 
->> power_on_sequence {
->>     step@0 {
-            type = "regulator";
->>        phandle = <&backlight_reg>;
->>        enable = <1>;
->>        post-delay = <10>;
->>     }
->>     step@1 {
-            type = "pwm";
->>        phandle = <&pwm 2 5000000>;
->>     }
->>     step@2 {
-            type = "gpio";
->>        phandle = <&gpio 28 0>;
->>        enable = <1>;
->>     }
+But doesn't it make sense in the current case? The power sequence is 
+basically a program that is run by an interpreter. From this 
+perspective, it makes more sense to me to have it as a binary field 
+rather than a hierarchy of nodes and properties that will be harder to 
+parse and will make error detection more complicated. I don't really see 
+any practical benefit from turning the steps into sub-nodes, but then 
+again I am not so familiar with the DT.
 
->
-> Second, I am afraid the representation in memory would be significantly
-> bigger since the properties names would have to be stored as well (I am no
-> DT expert, please correct me if I am wrong). Lastly, the additional freedom
-> of having extra properties might make the parser more complicated.
-
-The property names are only stored one, in the string table. I am not
-sure about parsing complexity, but it might actually be easier.
-
->
-> I agree the type strings are a problem in the current form - if we could get
-> constants in the device tree, that would be much better. Your way of
-> representing the sequences is interesting though, if we can solve the type
-> issue (and also evaluate its cost in terms of memory footprint), it would be
-> interesting to consider it as well.
-
-At a guess:
-
->>> +               power-on-sequence = "REGULATOR", "power", <1>,
->>> +                                   "DELAY", <10>,
->>> +                                   "PWM", "backlight", <1>,
->>> +                                   "GPIO", "enable", <1>;
-
-About 106 bytes I think
-
->>     step@0 { 16
-            type = "regulator"; 24
->>        phandle = <&backlight_reg>; 16
->>        enable = <1>; 16
->>        post-delay = <10>; 16
->>     }
->>     step@1 { 16
-            type = "pwm"; 16
->>        phandle = <&pwm 2 5000000>; 24
->>     }
->>     step@2 { 16
-            type = "gpio"; 20
->>        phandle = <&gpio 28 0>; 24
->>        enable = <1>; 16
->>     }
-
-220?
-
-From my understanding mixing strings and numbers in a property is
-frowned on though.
-
->
-> Alex.
-
-Regards,
-Simon
+Alex.

@@ -1,36 +1,139 @@
-From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Date: Wed, 18 Jul 2012 15:46:57 +0000
-Subject: [PATCH v2 2/2] arm: da850: configure LCDC fifo threshold
-Message-Id: <1342625697-7515-1-git-send-email-prakash.pm@ti.com>
+From: David Herrmann <dh.herrmann@googlemail.com>
+Date: Sun, 15 Jul 2012 19:04:42 +0000
+Subject: [PATCH v3 07/11] fblog: allow selecting fbs via sysfs
+Message-Id: <1342379086-7583-8-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1342379086-7583-1-git-send-email-dh.herrmann@googlemail.com>
+In-Reply-To: <1342379086-7583-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, David Herrmann <dh.herrmann@googlemail.com>
 
-Configure fifo threshold in raster dma_control register to
-512 bytes. This reduces LCDC underflow errors.
+fblog is mainly useful during boot, reboot, panics and maintenance. In all
+cases you often want to control which monitors are used for console
+output. Moreover, in multi-seat environments it is desireable to reduce
+system-overhead by not drawing the console to all framebuffers. Two
+mechanisms to select framebuffers for fblog are added:
 
-Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+1) "active" module parameter: This parameter selects whether new
+framebuffers are opened automatically. By default this is on, that is, all
+framebuffers are automatically used by fblog during boot. By passing
+fblog.active=0 you can deactivate this.
+The init process can set this to 0 via
+/sys/modules/fblog/parameters/active, too. However, this does not affect
+already available and used framebuffers in any way.
+
+2) "active" sysfs attribute for each fblog object. Reading this value
+returns whether a framebuffer is currently active. Writing it opens/closes
+the framebuffer. This allows runtime control which fbs are used. For
+instance, init can set these to 0 after bootup.
+
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
 ---
-Seems like version 1 of this patch did not reach fbdev mailing list.
-Since v1:
-No change, resending it as other patch in series has changed.
- arch/arm/mach-davinci/devices-da8xx.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/video/console/fblog.c | 53 ++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 52 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-davinci/devices-da8xx.c b/arch/arm/mach-davinci/devices-da8xx.c
-index d1624a3..783eab6 100644
---- a/arch/arm/mach-davinci/devices-da8xx.c
-+++ b/arch/arm/mach-davinci/devices-da8xx.c
-@@ -546,6 +546,7 @@ static struct lcd_ctrl_config lcd_cfg = {
- 	.sync_edge		= 0,
- 	.sync_ctrl		= 1,
- 	.raster_order		= 0,
-+	.fifo_th		= 6,
- };
+diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
+index 1c526c5..5519f91 100644
+--- a/drivers/video/console/fblog.c
++++ b/drivers/video/console/fblog.c
+@@ -44,6 +44,7 @@ struct fblog_fb {
  
- struct da8xx_lcdc_platform_data sharp_lcd035q3dg01_pdata = {
+ static DEFINE_MUTEX(fblog_registration_lock);
+ static struct fblog_fb *fblog_fbs[FB_MAX];
++static bool active = 1;
+ 
+ #define to_fblog_dev(_d) container_of(_d, struct fblog_fb, dev)
+ 
+@@ -115,6 +116,40 @@ static void fblog_close(struct fblog_fb *fb, bool kill_dev)
+ 	mutex_unlock(&fb->lock);
+ }
+ 
++static ssize_t fblog_dev_active_show(struct device *dev,
++				     struct device_attribute *attr,
++				     char *buf)
++{
++	struct fblog_fb *fb = to_fblog_dev(dev);
++
++	return snprintf(buf, PAGE_SIZE, "%d\n",
++			!!test_bit(FBLOG_OPEN, &fb->flags));
++}
++
++static ssize_t fblog_dev_active_store(struct device *dev,
++				      struct device_attribute *attr,
++				      const char *buf,
++				      size_t count)
++{
++	struct fblog_fb *fb = to_fblog_dev(dev);
++	unsigned long num;
++	int ret = 0;
++
++	num = simple_strtoul(buf, NULL, 10);
++
++	mutex_lock(&fb->info->lock);
++	if (num)
++		ret = fblog_open(fb);
++	else
++		fblog_close(fb, false);
++	mutex_unlock(&fb->info->lock);
++
++	return ret ? ret : count;
++}
++
++static DEVICE_ATTR(active, S_IRUGO | S_IWUSR | S_IWGRP, fblog_dev_active_show,
++		   fblog_dev_active_store);
++
+ /*
+  * fblog framebuffer list
+  * The fblog_fbs[] array contains all currently registered framebuffers. If a
+@@ -148,6 +183,7 @@ static void fblog_do_unregister(struct fb_info *info)
+ 	fblog_fbs[info->node] = NULL;
+ 
+ 	fblog_close(fb, true);
++	device_remove_file(&fb->dev, &dev_attr_active);
+ 	device_del(&fb->dev);
+ 	put_device(&fb->dev);
+ }
+@@ -156,6 +192,7 @@ static void fblog_do_register(struct fb_info *info, bool force)
+ {
+ 	struct fblog_fb *fb;
+ 	int ret;
++	bool do_open = true;
+ 
+ 	fb = fblog_fbs[info->node];
+ 	if (fb && fb->info != info) {
+@@ -186,7 +223,18 @@ static void fblog_do_register(struct fb_info *info, bool force)
+ 		return;
+ 	}
+ 
+-	fblog_open(fb);
++	ret = device_create_file(&fb->dev, &dev_attr_active);
++	if (ret) {
++		pr_err("fblog: cannot create sysfs entry");
++		/* do not open fb if we cannot create control file */
++		do_open = false;
++	}
++
++	if (!active)
++		do_open = false;
++
++	if (do_open)
++		fblog_open(fb);
+ }
+ 
+ static void fblog_register(struct fb_info *info, bool force)
+@@ -321,6 +369,9 @@ static void __exit fblog_exit(void)
+ 	}
+ }
+ 
++module_param(active, bool, S_IRUGO | S_IWUSR | S_IWGRP);
++MODULE_PARM_DESC(active, "Activate fblog by default");
++
+ module_init(fblog_init);
+ module_exit(fblog_exit);
+ MODULE_LICENSE("GPL");
 -- 
-1.7.1
+1.7.11.2
 

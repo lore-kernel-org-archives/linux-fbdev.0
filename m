@@ -1,74 +1,90 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 19 Jul 2012 00:39:18 +0000
-Subject: [PATCH 5/9] fbdev: sh_mobile_lcdc: Fix line pitch computation
-Message-Id: <1342658362-19491-6-git-send-email-laurent.pinchart@ideasonboard.com>
+From: David Herrmann <dh.herrmann@googlemail.com>
+Date: Sun, 15 Jul 2012 19:04:43 +0000
+Subject: [PATCH v3 08/11] fblog: cache framebuffer BLANK and SUSPEND states
+Message-Id: <1342379086-7583-9-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1342379086-7583-1-git-send-email-dh.herrmann@googlemail.com>
+In-Reply-To: <1342379086-7583-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, David Herrmann <dh.herrmann@googlemail.com>
 
-Line pitch depends on the virtual horizontal resolution, compute it
-accordingly.
+We must cache these states so we will never draw to the framebuffer while
+it is suspended or blanked.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
 ---
- drivers/video/sh_mobile_lcdcfb.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/video/console/fblog.c | 41 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index 644c230..67877cc 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -1580,9 +1580,9 @@ static int sh_mobile_lcdc_overlay_set_par(struct fb_info *info)
- 	ovl->yres_virtual = info->var.yres_virtual;
+diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
+index 5519f91..9b975bc 100644
+--- a/drivers/video/console/fblog.c
++++ b/drivers/video/console/fblog.c
+@@ -33,6 +33,8 @@
+ enum fblog_flags {
+ 	FBLOG_KILLED,
+ 	FBLOG_OPEN,
++	FBLOG_SUSPENDED,
++	FBLOG_BLANKED,
+ };
  
- 	if (ovl->format->yuv)
--		ovl->pitch = info->var.xres;
-+		ovl->pitch = info->var.xres_virtual;
- 	else
--		ovl->pitch = info->var.xres * ovl->format->bpp / 8;
-+		ovl->pitch = info->var.xres_virtual * ovl->format->bpp / 8;
+ struct fblog_fb {
+@@ -257,6 +259,7 @@ static int fblog_event(struct notifier_block *self, unsigned long action,
+ 	struct fb_event *event = data;
+ 	struct fb_info *info = event->info;
+ 	struct fblog_fb *fb;
++	int *blank;
  
- 	sh_mobile_lcdc_overlay_setup(ovl);
- 
-@@ -2024,9 +2024,9 @@ static int sh_mobile_lcdc_set_par(struct fb_info *info)
- 	ch->yres_virtual = info->var.yres_virtual;
- 
- 	if (ch->format->yuv)
--		ch->pitch = info->var.xres;
-+		ch->pitch = info->var.xres_virtual;
- 	else
--		ch->pitch = info->var.xres * ch->format->bpp / 8;
-+		ch->pitch = info->var.xres_virtual * ch->format->bpp / 8;
- 
- 	ret = sh_mobile_lcdc_start(ch->lcdc);
- 	if (ret < 0)
-@@ -2539,9 +2539,9 @@ sh_mobile_lcdc_overlay_init(struct sh_mobile_lcdc_priv *priv,
- 	ovl->yres_virtual = ovl->yres * 2;
- 
- 	if (!format->yuv)
--		ovl->pitch = ovl->xres * format->bpp / 8;
-+		ovl->pitch = ovl->xres_virtual * format->bpp / 8;
- 	else
--		ovl->pitch = ovl->xres;
-+		ovl->pitch = ovl->xres_virtual;
- 
- 	/* Allocate frame buffer memory. */
- 	ovl->fb_size = ovl->cfg->max_xres * ovl->cfg->max_yres
-@@ -2628,10 +2628,10 @@ sh_mobile_lcdc_channel_init(struct sh_mobile_lcdc_priv *priv,
- 
- 	if (!format->yuv) {
- 		ch->colorspace = V4L2_COLORSPACE_SRGB;
--		ch->pitch = ch->xres * format->bpp / 8;
-+		ch->pitch = ch->xres_virtual * format->bpp / 8;
- 	} else {
- 		ch->colorspace = V4L2_COLORSPACE_REC709;
--		ch->pitch = ch->xres;
-+		ch->pitch = ch->xres_virtual;
+ 	switch(action) {
+ 	case FB_EVENT_FB_REGISTERED:
+@@ -284,6 +287,44 @@ static int fblog_event(struct notifier_block *self, unsigned long action,
+ 		if (fb)
+ 			fblog_close(fb, true);
+ 		break;
++	case FB_EVENT_SUSPEND:
++		/* This is called when the low-level display driver suspends the
++		 * video system. We should not access the video system while it
++		 * is suspended. This is called with the console lock held. */
++		mutex_lock(&fblog_registration_lock);
++		fb = fblog_fbs[info->node];
++		mutex_unlock(&fblog_registration_lock);
++
++		if (fb)
++			set_bit(FBLOG_SUSPENDED, &fb->flags);
++		break;
++	case FB_EVENT_RESUME:
++		/* This is called when the low-level display driver resumes
++		 * operating. It is called with the console lock held. */
++		mutex_lock(&fblog_registration_lock);
++		fb = fblog_fbs[info->node];
++		mutex_unlock(&fblog_registration_lock);
++
++		if (fb)
++			clear_bit(FBLOG_SUSPENDED, &fb->flags);
++		break;
++	case FB_EVENT_BLANK:
++		/* This gets called _after_ the framebuffer was successfully
++		 * blanked. The console-lock is always held while fb_blank is
++		 * called and during this callback. */
++		mutex_lock(&fblog_registration_lock);
++		fb = fblog_fbs[info->node];
++		mutex_unlock(&fblog_registration_lock);
++
++		if (!fb)
++			break;
++
++		blank = (int*)event->data;
++		if (*blank = FB_BLANK_UNBLANK)
++			clear_bit(FBLOG_BLANKED, &fb->flags);
++		else
++			set_bit(FBLOG_BLANKED, &fb->flags);
++		break;
  	}
  
- 	ch->display.width = cfg->panel_cfg.width;
+ 	return 0;
 -- 
-1.7.8.6
+1.7.11.2
 

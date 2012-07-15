@@ -1,64 +1,81 @@
-From: Hideki EIRAKU <hdk@igel.co.jp>
-Date: Wed, 25 Jul 2012 06:29:23 +0000
-Subject: [PATCH 2/3] media: videobuf2-dma-contig: use dma_mmap_coherent if available
-Message-Id: <1343197764-13659-3-git-send-email-hdk@igel.co.jp>
+From: David Herrmann <dh.herrmann@googlemail.com>
+Date: Sun, 15 Jul 2012 19:04:35 +0000
+Subject: [PATCH v3 00/11] fblog: Framebuffer kernel log driver v3
+Message-Id: <1342379086-7583-1-git-send-email-dh.herrmann@googlemail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343197764-13659-1-git-send-email-hdk@igel.co.jp>
-In-Reply-To: <1343197764-13659-1-git-send-email-hdk@igel.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, David Herrmann <dh.herrmann@googlemail.com>
 
-Previously the vb2_dma_contig_mmap() function was using a dma_addr_t as a
-physical address.  The two addressses are not necessarily the same.
-For example, when using the IOMMU funtion on certain platforms, dma_addr_t
-addresses are not directly mappable physical address.
-dma_mmap_coherent() maps the address correctly.
-It is available on ARM platforms.
+Hi
 
-Signed-off-by: Hideki EIRAKU <hdk@igel.co.jp>
----
- drivers/media/video/videobuf2-dma-contig.c |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
+This is revision 3 of the fblog driver. This driver is a replacement for fbcon
+for systems that do not want/need CONFIG_VT. It simply prints the kernel log to
+all connected framebuffers. Previous versions are available here:
+  v2: http://thread.gmane.org/gmane.linux.serial/8133
+  v1: http://marc.info/?l=linux-kernel&m3988465602225&w=2
 
-diff --git a/drivers/media/video/videobuf2-dma-contig.c b/drivers/media/video/videobuf2-dma-contig.c
-index 4b71326..4dc85ab 100644
---- a/drivers/media/video/videobuf2-dma-contig.c
-+++ b/drivers/media/video/videobuf2-dma-contig.c
-@@ -101,14 +101,32 @@ static unsigned int vb2_dma_contig_num_users(void *buf_priv)
- static int vb2_dma_contig_mmap(void *buf_priv, struct vm_area_struct *vma)
- {
- 	struct vb2_dc_buf *buf = buf_priv;
-+#ifdef ARCH_HAS_DMA_MMAP_COHERENT
-+	int ret;
-+#endif
- 
- 	if (!buf) {
- 		printk(KERN_ERR "No buffer to map\n");
- 		return -EINVAL;
- 	}
- 
-+#ifdef ARCH_HAS_DMA_MMAP_COHERENT
-+	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-+	ret = dma_mmap_coherent(buf->conf->dev, vma, buf->vaddr, buf->dma_addr,
-+				buf->size);
-+	if (ret) {
-+		pr_err("Remapping memory failed, error: %d\n", ret);
-+		return ret;
-+	}
-+	vma->vm_flags |= VM_DONTEXPAND | VM_RESERVED;
-+	vma->vm_private_data = &buf->handler;
-+	vma->vm_ops = &vb2_common_vm_ops;
-+	vma->vm_ops->open(vma);
-+	return 0;
-+#else
- 	return vb2_mmap_pfn_range(vma, buf->dma_addr, buf->size,
- 				  &vb2_common_vm_ops, &buf->handler);
-+#endif
- }
- 
- static void *vb2_dma_contig_get_userptr(void *alloc_ctx, unsigned long vaddr,
+This patchset is against linux-next from last week (Wednesday or Thursday).
+
+I've fixed all issues that were reported last week. They were all minor
+nitpicks:
+  - Changed EXPORT_SYMBOL to EXPORT_SYMBOL_GPL for exported fbdev functions
+  - Removed FBLOG_STR
+  - Added pr_fmt()
+  - Fixed two minor coding-style issues
+  - Fixed one possible subtle deadlock in device registration (switched locking
+    order)
+
+If you want to test it but don't want to disable CONFIG_VT, simply remove the
+dependency to !VT of fblog. This will cause both fblog and fbcon to draw to the
+framebuffers but both draw only on changes so it will still be possible to debug
+and test fblog.
+
+It would be nice if someone could tell me what tree this will go through or how
+I can get it into linux-next as I have no idea who is maintaining fbcon. If
+there are other major or minor issues, please tell me so I can work on them.
+
+I am also working on improving the render-path by using dma-buf and partial
+redraws like fbcon. Furthermore, I will add a panic-handler so fblog draws
+oopses/panics to the framebuffers even though it is disabled. However, I want to
+get this basic driver in before making it more complex and making review too
+hard.
+
+Thanks! Regards
+David
+
+David Herrmann (11):
+  fbcon: move update_attr() into separate source file
+  fbcon: move bit_putcs() into separate source file
+  fblog: new framebuffer kernel log dummy driver
+  fbdev: export get_fb_info()/put_fb_info()
+  fblog: register one fblog object per framebuffer
+  fblog: open fb on registration
+  fblog: allow selecting fbs via sysfs
+  fblog: cache framebuffer BLANK and SUSPEND states
+  fblog: register console driver
+  fblog: draw console to framebuffers
+  MAINTAINERS: add fblog entry
+
+ MAINTAINERS                     |   6 +
+ drivers/video/Kconfig           |   5 +-
+ drivers/video/Makefile          |   2 +-
+ drivers/video/console/Kconfig   |  37 ++-
+ drivers/video/console/Makefile  |   4 +-
+ drivers/video/console/bitblit.c | 149 +--------
+ drivers/video/console/fbcon.h   |   5 +-
+ drivers/video/console/fbdraw.c  | 171 ++++++++++
+ drivers/video/console/fbdraw.h  |  30 ++
+ drivers/video/console/fblog.c   | 675 ++++++++++++++++++++++++++++++++++++++++
+ drivers/video/fbmem.c           |   6 +-
+ include/linux/fb.h              |   3 +
+ 12 files changed, 935 insertions(+), 158 deletions(-)
+ create mode 100644 drivers/video/console/fbdraw.c
+ create mode 100644 drivers/video/console/fbdraw.h
+ create mode 100644 drivers/video/console/fblog.c
+
 -- 
-1.7.0.4
+1.7.11.2
 

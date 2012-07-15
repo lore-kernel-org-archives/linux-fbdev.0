@@ -1,57 +1,115 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Sun, 15 Jul 2012 21:40:34 +0000
+From: Rob Herring <robherring2@gmail.com>
+Date: Sun, 15 Jul 2012 23:42:58 +0000
 Subject: Re: Device tree binding for DVFS table
-Message-Id: <20120715214033.GK4041@opensource.wolfsonmicro.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="9aCKuHbn5v2q3RVc"
+Message-Id: <50035582.9070308@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <4FFD77FE.8050206@nvidia.com> <4FFD87BD.2030206@gmail.com>
- <4FFE4DD0.7020407@nvidia.com> <50006935.2080606@nvidia.com>
-In-Reply-To: <50006935.2080606@nvidia.com>
+ <4FFE4DD0.7020407@nvidia.com>
+In-Reply-To: <4FFE4DD0.7020407@nvidia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
+On 07/11/2012 11:08 PM, Prashant Gaikwad wrote:
+> On Wednesday 11 July 2012 07:33 PM, Rob Herring wrote:
+>> On 07/11/2012 07:56 AM, Prashant Gaikwad wrote:
 
---9aCKuHbn5v2q3RVc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+>>> cpu-dvfs-table : dvfs-table {
+>> This should be located with the node that the frequencies correspond to.
+>>
+> 
+> With CAR node?
 
-On Sat, Jul 14, 2012 at 12:00:14AM +0530, Prashant Gaikwad wrote:
-> On Thursday 12 July 2012 09:38 AM, Prashant Gaikwad wrote:
+With the power domain it corresponds to or the cpu nodes.
 
-> >About repeating frequencies, operating voltage for a frequency
-> >would be the highest one mapped in the table.
+> 
+>>>                compatible = "nvidia,tegra30-dvfs-table";
+>>>                reg_id =<&sm0>;
+>>>                #address-cells =<1>;
+>>>                #size-cells =<0>;
+>>>                voltage-array =<750 775 800 825 850 875 900 925 950 975
+>>> 1000 1025 1050 1100 1125>;
+>> The SOC is really characterized at all these voltages?
+> 
+> Not really, but different processes of single SoC are characterized for
+> different voltages and this array covers all those voltages.
+> 
+>>> };
+>>>
+>>> device {
+>>>               dvfs =<&cpu-dvfs-table>;
+>>>               frequency-table@102 {
+>>>                        reg =<0x102>;
+>>>                        frequencies =<314 314 314 456 456 456 608 608 608
+>>> 760 817 817 912 1000>;
+>> I don't see the point of repeating frequencies.
+>>>               };
+>>>               frequency-table@002 {
+>>>                        reg =<0x002>;
+>>>                        frequencies =<598 598 750 750 893 893 1000>;
+>>>               };
+>> How do you determine the voltage for a frequency on table 2?
+>>
+>> I'd expect a single property with freq/volt pairs or 2 properties for
+>> freq and voltage where there is a 1:1 relationship (freq N uses
+>> voltage N).
+> 
+> 
+> How this will work:
+> 
+> voltage-array =<750 775 800 825 850 875 900  925 950 975 1000 1025 1050
+> 1100 1125>
+> frequencies-1 =<314 314 314 456 456 456 608  608 608 760 817  817  912 
+> 1000>;
+> frequencies-2 =<598 598 750 750 893 893 1000>;
+>
 
-This sounds very surprising...  that would generally just result in
-higher power consumption.
+I don't see the point trying to share a voltage range. Not sharing it is
+fewer array elements (22 vs 36):
 
-> >I know this makes reading difficult but it provides flexibility,
+voltage-array-1 =<750 825 900 975 1000 1050 1100>;
+frequencies-1   =<314 456 608 760  817  912 1000>;
 
-> Does this explanation help?
+voltage-array-2 =<750 800 850  900>
+frequencies-2   =<598 750 893 1000>;
 
-The loss of comprehensibility seems like a really major disadvantage for
-very little practical gain here.  Big arrays in DT are already hard
-enough to read without adding extra complexity on top of that.
+Rob
 
---9aCKuHbn5v2q3RVc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+> 
+> Freq and voltage has 1:1 relationship but as single voltage table is
+> used for different processes we have more entries in voltage table than
+> freq table.
+> Frequency table 1 is mapped till 1100mV while frequency table 2 is
+> mapped till 900mV only, it maintains 1:1 relationship.
+> 
+> About repeating frequencies, operating voltage for a frequency would be
+> the highest one mapped in the table.
+> For example, in frequency table 2 operating voltage for 750MHz would be
+> 825mV while for 893MHz it would be 875mV. Unmapped entries could be
+> replaced with 0 to make reading better.
+> 
+> Advantage it provides is single voltage table used for multiple
+> frequency tables, as can be observed from above tables, operating
+> voltage for 314MHz in freq table 1 is 800mV while there is no frequency
+> in table 2 at that voltage.
+> 
+> I know this makes reading difficult but it provides flexibility,
+> 
+> I hope it explains the implementation.
+> 
+>> Rob
+>>
+>>> };
+>>>
+>>> Thanks&  Regards,
+>>> Prashant G
+>>>
+>>> _______________________________________________
+>>> linux-arm-kernel mailing list
+>>> linux-arm-kernel@lists.infradead.org
+>>> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+>>
+> 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBAgAGBQJQAzjKAAoJEBus8iNuMP3dqncP/RmvCwSe+KiN+22X3SQdm3Rf
-1MNvK1d78WF/Svu+hBZrWbSt+IyBPkHo+3RV0nMbOS90o2ir6kbopGk3CgJVZyjm
-rI9cm+kauBt9fU6A+ephmqGJtq0Ilbuy25iR2T9Mq+PXu4JrGRm0M/qUb/x8b1v5
-D1w9U55FjiGA+RXpUnnJiP4NI1gMuQu7fRtbQrYaFIlyeW+sS0hTu6ViEkBYRYCD
-yl7auJBvvQw5pvXyBCfBbUGjL5NVh8k964+Jeq8iRpa9Vjll+W1I3qpBnc2pxrJz
-kmbCy1jkKWQlM1k4IugK4jNnyGrmuZH6FZcnVtfHQQ9pFnwOc74XJg45EDlwHzAu
-0ddjJNkJONoul/W+ipVJTpwVB3P+ywuZeKE4djHnRH+rhvhjACFkdQ5dHk9l3C4K
-lNsEL2tVGvqU7kBAw6C3gLWlQqH2Y5RKS4t9NMVdz+Gqt1E0lh+kt7SMfjPMhHvQ
-OX3W36RqPPB/WprcUF6jGiMTCdKeJ/dzNfT9PSLKixcKT2y7evYRxgZ9cL02yI3b
-mCtz7RbyAGbIAYUjEr2t2bBHAKy3xzMLotV2baiWd961JZgghX81ZgEmk/QcELpL
-KEthTpqwpikuxHbY3k0s6H8pAI9KUQ9XYxE6VIiTC1gSme5xFtLOYGu/Mb6ij0Jr
-22nHz4L1TqN/5lJmrwyu
-=U9PK
------END PGP SIGNATURE-----
-
---9aCKuHbn5v2q3RVc--

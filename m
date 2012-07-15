@@ -1,31 +1,52 @@
-From: Ralf Baechle <ralf@linux-mips.org>
-Date: Mon, 30 Jul 2012 13:34:47 +0000
-Subject: Re: [PATCH] Fix newport con crashes
-Message-Id: <20120730133447.GA29993@linux-mips.org>
+From: Alexander Shiyan <shc_work@mail.ru>
+Date: Sun, 15 Jul 2012 07:32:38 +0000
+Subject: [PATCH] fb: epson1355fb: Fix section mismatch
+Message-Id: <1342337558-9912-1-git-send-email-shc_work@mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120730105416.DBB961D1CF@solo.franken.de>
-In-Reply-To: <20120730105416.DBB961D1CF@solo.franken.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: linux-mips@linux-mips.org, linux-fbdev@vger.kernel.org, FlorianSchandinat@gmx.de
+To: linux-fbdev@vger.kernel.org
 
-On Mon, Jul 30, 2012 at 12:54:16PM +0200, Thomas Bogendoerfer wrote:
+This patch fixes "section mismatch" warning in the epson1355fb driver.
 
-> Because of commit e84de0c61905030a0fe66b7210b6f1bb7c3e1eab
-> [MIPS: GIO bus support for SGI IP22/28] newport con is now taking over
-> console from dummy con, therefore it's necessary to resize the VC to
-> the correct size to avoid crashes and garbage on console
-> 
-> Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+WARNING: vmlinux.o(.devinit.text+0x184): Section mismatch in reference from the function epson1355fb_probe() to the function .init.text:fetch_hw_state()
+The function __devinit epson1355fb_probe() references
+a function __init fetch_hw_state().
+If fetch_hw_state is only used by epson1355fb_probe then
+annotate fetch_hw_state with a matching annotation.
 
-I've applied your patch to master and the affected -stable branches of the
-lmo git tree.
+Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+---
+ drivers/video/epson1355fb.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-Florian, since this is a driver specific to certain MIPS platforms I'd like
-to merge it through the MIPS tree with your ack, if that's ok?
+diff --git a/drivers/video/epson1355fb.c b/drivers/video/epson1355fb.c
+index a268cbf..68b9b51 100644
+--- a/drivers/video/epson1355fb.c
++++ b/drivers/video/epson1355fb.c
+@@ -477,11 +477,11 @@ static __init unsigned int get_fb_size(struct fb_info *info)
+ 	return size;
+ }
+ 
+-static int epson1355_width_tab[2][4] __initdata +static int epson1355_width_tab[2][4] __devinitdata      { {4, 8, 16, -1}, {9, 12, 16, -1} };
+-static int epson1355_bpp_tab[8] __initdata = { 1, 2, 4, 8, 15, 16 };
++static int epson1355_bpp_tab[8] __devinitdata = { 1, 2, 4, 8, 15, 16 };
+ 
+-static void __init fetch_hw_state(struct fb_info *info, struct epson1355_par *par)
++static void __devinit fetch_hw_state(struct fb_info *info, struct epson1355_par *par)
+ {
+ 	struct fb_var_screeninfo *var = &info->var;
+ 	struct fb_fix_screeninfo *fix = &info->fix;
+@@ -601,7 +601,7 @@ static int epson1355fb_remove(struct platform_device *dev)
+ 	return 0;
+ }
+ 
+-int __devinit epson1355fb_probe(struct platform_device *dev)
++static int __devinit epson1355fb_probe(struct platform_device *dev)
+ {
+ 	struct epson1355_par *default_par;
+ 	struct fb_info *info;
+-- 
+1.7.3.4
 
-Thanks folks,
-
-  Ralf

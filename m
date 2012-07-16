@@ -1,51 +1,97 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Wed, 04 Jul 2012 21:48:32 +0000
-Subject: [PATCH 0/2] Split off bitblit operations for fblog
-Message-Id: <1341438514-1786-1-git-send-email-dh.herrmann@googlemail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 16 Jul 2012 07:44:57 +0000
+Subject: Fwd: video/fbmem.c: Fix __u32 >= 0 condition in fb_do_show_logo.
+Message-Id: <CAMuHMdV0eeNOSr5TM1U1pU9em19o_qt4TWc8bEpYEjJTi94VrQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CAN6cQGPbn9Ns4zmB1RGQ=cAQbS8PDnQY668CwXe+wHSC8iVxMw@mail.gmail.com>
+	<CAN6cQGOtUn7y6hEBzjPuBpJPLCKi_kq=AhAbXay74Tc8fDROvA@mail.gmail.com>
+In-Reply-To: <CAN6cQGOtUn7y6hEBzjPuBpJPLCKi_kq=AhAbXay74Tc8fDROvA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-serial@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk, gregkh@linuxfoundation.org, David Herrmann <dh.herrmann@googlemail.com>
+To: Levin Du <zslevin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
 
-Hi
+Never reached lkml due to the HTML.
+Resending, with a CC to linux-fbdev added.
 
-This is a patchset that moves update_attr() and bit_putcs() into a separate
-source file and makes both files not depend on any vc_* or fbcon_* structures
-and code. That is, we can now safely use both in the fblog patchset that I sent
-last month. Otherwise, we would need to copy both functionalities.
+---------- Forwarded message ----------
+From: Levin Du <zslevin@gmail.com>
+Date: 2012/7/12
+Subject: video/fbmem.c: Fix __u32 >= 0 condition in fb_do_show_logo.
+To: linux-kernel@vger.kernel.org
+Cc: brad@neruo.com
 
-The rotation helpers have very similar functions which do the same but with
-rotation in mind. I didn't find an efficient way to merge them so I decided to
-leave them as they are. Furthermore, I am not using them so there is no need to
-split them off.
 
-I actually don't know who is taking patches for fblog and which trees they are
-going through, but if you think I should include the patches in the fblog
-patchset instead, I will do so. Otherwise, it would be nice if they could be
-applied separately. The second fblog patchset will follow tomorrow.
+Dear all,
 
-I also tested both patches on my machine and couldn't notice any performance
-breakdowns, but it would be nice if someone else could test them, too. The
-second patch mentions this shortly, regarding the additional kmalloc().
+Since dx or dy in struct fb_image is unsigned 32 bit integer:
 
-Regards
-David
+struct fb_image {
+__u32 dx; /* Where to place image */
+__u32 dy;
+   ...
+}
 
-David Herrmann (2):
-  fbcon: move update_attr() into separate source file
-  fbcon: move bit_putcs() into separate source file
+In fb_do_show_logo(), image->dx or image->dy will always meet the >= 0
+condition.
+if the logo is large enough (same as to the whole screen, for example) and
+rotate is UD or CCW, and image->dx or image->dy will results in a
+large value which
+makes info->fbops->fb_imageblit fail miserably.
 
- drivers/video/console/Makefile  |   3 +-
- drivers/video/console/bitblit.c | 149 +++-------------------------------
- drivers/video/console/fbcon.h   |   5 +-
- drivers/video/console/fbdraw.c  | 171 ++++++++++++++++++++++++++++++++++++++++
- drivers/video/console/fbdraw.h  |  30 +++++++
- 5 files changed, 215 insertions(+), 143 deletions(-)
- create mode 100644 drivers/video/console/fbdraw.c
- create mode 100644 drivers/video/console/fbdraw.h
+Here is the raw patch:
 
--- 
-1.7.11.1
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index ad93629..34a0ba3 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -419,6 +419,7 @@ static void fb_do_show_logo(struct fb_info *info,
+struct fb_image *image,
+     int rotate, unsigned int num)
+ {
+  unsigned int x;
++ long d;
 
+  if (rotate = FB_ROTATE_UR) {
+  for (x = 0;
+@@ -428,9 +429,10 @@ static void fb_do_show_logo(struct fb_info *info,
+struct fb_image *image,
+  image->dx += image->width + 8;
+  }
+  } else if (rotate = FB_ROTATE_UD) {
+- for (x = 0; x < num && image->dx >= 0; x++) {
++ d = image->dx;
++ for (x = 0; x < num && d >= 0; x++) {
+  info->fbops->fb_imageblit(info, image);
+- image->dx -= image->width + 8;
++ d -= image->width + 8;
+  }
+  } else if (rotate = FB_ROTATE_CW) {
+  for (x = 0;
+@@ -440,9 +442,10 @@ static void fb_do_show_logo(struct fb_info *info,
+struct fb_image *image,
+  image->dy += image->height + 8;
+  }
+  } else if (rotate = FB_ROTATE_CCW) {
+- for (x = 0; x < num && image->dy >= 0; x++) {
++ d = image->dy;
++ for (x = 0; x < num && d >= 0; x++) {
+  info->fbops->fb_imageblit(info, image);
+- image->dy -= image->height + 8;
++ d -= image->height + 8;
+  }
+  }
+ }
+
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

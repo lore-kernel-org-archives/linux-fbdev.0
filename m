@@ -1,60 +1,40 @@
-From: Robin van der Gracht <robin@protonic.nl>
-Date: Wed, 18 Jul 2012 09:29:58 +0000
-Subject: Re: [BUGFIX] video/mxsfb: fix crash when unblanking the display
-Message-Id: <50068216.9020605@protonic.nl>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Tue, 17 Jul 2012 15:59:45 +0000
+Subject: [PATCH 2/4] ARM: dts: mxs: Add alternative I2C muxing options for imx28
+Message-Id: <1342540787-14930-3-git-send-email-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1323174425-24038-1-git-send-email-LW@KARO-electronics.de>
- <20209.35406.958883.977664@ipc1.ka-ro>
-In-Reply-To: <20209.35406.958883.977664@ipc1.ka-ro>
+References: <1342540787-14930-1-git-send-email-maxime.ripard@free-electrons.com>
+In-Reply-To: <1342540787-14930-1-git-send-email-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi Lothar,
-> Hi,
->
-> Lothar Waßmann writes:
->> The VDCTRL4 register does not provide the MXS SET/CLR/TOGGLE feature.
->> The write in mxsfb_disable_controller() sets the data_cnt for the LCD
->> DMA to 0 which obviously means the max. count for the LCD DMA and
->> leads to overwriting arbitrary memory when the display is unblanked.
->>
->> Signed-off-by: Lothar Waßmann<LW@KARO-electronics.de>
->> ---
->>   drivers/video/mxsfb.c |    3 ++-
->>   1 files changed, 2 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
->> index d837d63..03cb95a 100644
->> --- a/drivers/video/mxsfb.c
->> +++ b/drivers/video/mxsfb.c
->> @@ -366,7 +366,8 @@ static void mxsfb_disable_controller(struct fb_info *fb_info)
->>   		loop--;
->>   	}
->>
->> -	writel(VDCTRL4_SYNC_SIGNALS_ON, host->base + LCDC_VDCTRL4 + REG_CLR);
->> +	reg = readl(host->base + LCDC_VDCTRL4);
->> +	writel(reg&  ~VDCTRL4_SYNC_SIGNALS_ON, host->base + LCDC_VDCTRL4);
->>
->>   	clk_disable(host->clk);
->>
->> -- 
->> 1.5.6.5
->>
-> Ping. Any comments on this?
->
->
-> Lothar Waßmann
-I've encountered this problem to, and i can confirm your patch fixed it.
-The VDCTRL4 register has no CLR feature.
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: Brian Lilly <brian@crystalfontz.com>
+---
+ arch/arm/boot/dts/imx28.dtsi |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Regards,
-
+diff --git a/arch/arm/boot/dts/imx28.dtsi b/arch/arm/boot/dts/imx28.dtsi
+index 915db89..44ce1fd 100644
+--- a/arch/arm/boot/dts/imx28.dtsi
++++ b/arch/arm/boot/dts/imx28.dtsi
+@@ -410,6 +410,14 @@
+ 					fsl,pull-up = <1>;
+ 				};
+ 
++				i2c0_pins_b: i2c0@1 {
++					reg = <1>;
++					fsl,pinmux-ids = <0x3001 0x3011>;
++					fsl,drive-strength = <1>;
++					fsl,voltage = <1>;
++					fsl,pull-up = <1>;
++				};
++
+ 				saif0_pins_a: saif0@0 {
+ 					reg = <0>;
+ 					fsl,pinmux-ids = <
 -- 
-Robin van der Gracht
-Protonic Holland.
-tel.: +31 (0) 229 212928
-fax.: +31 (0) 229 210930
-Factorij 36 / 1689 AL Zwaag
+1.7.9.5
 

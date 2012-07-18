@@ -1,7 +1,7 @@
-From: "Hiremath, Vaibhav" <hvaibhav@ti.com>
-Date: Wed, 18 Jul 2012 07:00:08 +0000
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Wed, 18 Jul 2012 09:44:00 +0000
 Subject: RE: [PATCH v2] video: da8xx-fb: add 24bpp LCD configuration support
-Message-Id: <79CD15C6BA57404B839C016229A409A83EA70554@DBDE01.ent.ti.com>
+Message-Id: <A73F36158E33644199EB82C5EC81C7BC3E99AD03@DBDE01.ent.ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1342590441-8441-1-git-send-email-prakash.pm@ti.com>
 In-Reply-To: <1342590441-8441-1-git-send-email-prakash.pm@ti.com>
@@ -10,195 +10,56 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Wed, Jul 18, 2012 at 12:19:45, Manjunathappa, Prakash wrote:
-> Hi Vaibhav,
+Hi Peter Korsgaard,
+
+On Wed, Jul 18, 2012 at 12:28:21, Peter Korsgaard wrote:
+> >>>>> "Prakash" = Manjunathappa, Prakash <prakash.pm@ti.com> writes:
 > 
-> On Wed, Jul 18, 2012 at 11:41:43, Hiremath, Vaibhav wrote:
-> > On Wed, Jul 18, 2012 at 11:17:21, Manjunathappa, Prakash wrote:
-> > > LCD controller on am335x supports 24bpp raster configuration in addition
-> > > to ones on da850. LCDC also supports 24bpp in unpacked format having
-> > > ARGB:8888 32bpp format data in DDR, but it doesn't interpret alpha
-> > > component of the data.
-> > > 
-> > > Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
-> > > Cc: Anatolij Gustschin <agust@denx.de>
-> > > ---
-> > > Since v1:
-> > > Addressed Tobias's review comments on calculation of pseudopalette for
-> > > FB_VISUAL_TRUECOLOR type.
-> > > 
-> > >  drivers/video/da8xx-fb.c |   88 ++++++++++++++++++++++++++++-----------------
-> > >  1 files changed, 55 insertions(+), 33 deletions(-)
-> > > 
-> > > diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> > > index 47118c7..3cda461 100644
-> > > --- a/drivers/video/da8xx-fb.c
-> > > +++ b/drivers/video/da8xx-fb.c
-> > > @@ -153,7 +153,7 @@ struct da8xx_fb_par {
-> > >  	unsigned int		dma_end;
-> > >  	struct clk *lcdc_clk;
-> > >  	int irq;
-> > > -	unsigned short pseudo_palette[16];
-> > > +	u32 pseudo_palette[16];
-> > 
-> > Personally I don't like, mix of "u32" and "unsigned int" declaration.
-> > 
+> Hi,
 > 
-> "unsigned int" is not guaranteed to be 32bit, may be "unsigned long" is
-> better choice.
+>  >> Personally I don't like, mix of "u32" and "unsigned int" declaration.
+>  >> 
 > 
-> > >  	unsigned int palette_sz;
-> > >  	unsigned int pxl_clk;
-> > >  	int blank;
-> > > @@ -546,6 +546,8 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
-> > >  	return 0;
-> > >  }
-> > >  
-> > > +
-> > > +#define CNVT_TOHW(val, width) ((((val)<<(width))+0x7FFF-(val))>>16)
-> > 
-> > Did you run checkpatch.pl on this patch?
-> > 
+>  Prakash> "unsigned int" is not guaranteed to be 32bit, may be "unsigned
+>  Prakash> long" is better choice.
 > 
-> Yes, checkpatch.pl did not complain anything on this line. I will add space
-> around binary operators.
+> On the platforms where da8xx-fb is used it is.
 > 
 
-You can choose not to do this change, since checkpatch is ok and other 
-drivers also does same thing.
+I agree "unsigned int" will suffice for the platforms where da8xx-fb is used.
+With respect to below reference from "The C Programming Language" from "Kernighan and Ritchie"
+I prefer to use "unsigned long", please let me know you views.
+" The intent is that short and long should provide different lengths of integers where practical; int will 
+normally be the natural size for a particular machine. short is often 16 bits long, and int either 16 or 
+32 bits. Each compiler is free to choose appropriate sizes for its own hardware, subject only to the the 
+restriction that shorts and ints are at least 16 bits, longs are at least 32 bits, and short is no longer 
+than int, which is no longer than long."
 
-
-> > >  static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
-> > >  			      unsigned blue, unsigned transp,
-> > >  			      struct fb_info *info)
-> > > @@ -561,13 +563,33 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
-> > >  	if (info->fix.visual = FB_VISUAL_DIRECTCOLOR)
-> > >  		return 1;
-> > >  
-> > > -	if (info->var.bits_per_pixel = 4) {
-> > > -		if (regno > 15)
-> > > -			return 1;
-> > > +	switch (info->fix.visual) {
-> > > +	case FB_VISUAL_TRUECOLOR:
-> > > +		red = CNVT_TOHW(red, info->var.red.length);
-> > > +		green = CNVT_TOHW(green, info->var.green.length);
-> > > +		blue = CNVT_TOHW(blue, info->var.blue.length);
-> > 
-> > Why not add another underscore after TO? define like this => CNVT_TO_HW
-> > 
+>  >> >  	unsigned int palette_sz;
+>  >> >  	unsigned int pxl_clk;
+>  >> >  	int blank;
+>  >> > @@ -546,6 +546,8 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+>  >> >  	return 0;
+>  >> >  }
+>  >> >  
+>  >> > +
+>  >> > +#define CNVT_TOHW(val, width) ((((val)<<(width))+0x7FFF-(val))>>16)
+>  >> 
+>  >> Did you run checkpatch.pl on this patch?
+>  >> 
 > 
-> I referred drivers/video/skeletonfb.c, I assume it is standard. Please let me know if not.
+>  Prakash> Yes, checkpatch.pl did not complain anything on this line. I
+>  Prakash> will add space around binary operators.
+> 
+> An inline function would be nicer.
+> 
 
-I did grep on drivers/video/ and could see lots of drivers use it (almost 
-same definition).
-Ignore this comment as well, I could have recommended to move it to common 
-file and do some cleanup, but not sure about background on this macro.
+For the sake of uniformity with existing FB drivers, can I leave it as macro?
 
 Thanks,
-Vaibhav
+Prakash
 
-> 
-> > > +		break;
-> > > +	case FB_VISUAL_PSEUDOCOLOR:
-> > > +		if (info->var.bits_per_pixel = 4) {
-> > > +			if (regno > 15)
-> > > +				return 1;
-> > > +
-> > > +			if (info->var.grayscale) {
-> > > +				pal = regno;
-> > > +			} else {
-> > > +				red >>= 4;
-> > > +				green >>= 8;
-> > > +				blue >>= 12;
-> > > +
-> > > +				pal = (red & 0x0f00);
-> > > +				pal |= (green & 0x00f0);
-> > > +				pal |= (blue & 0x000f);
-> > > +			}
-> > > +			if (regno = 0)
-> > > +				pal |= 0x2000;
-> > > +			palette[regno] = pal;
-> > >  
-> > > -		if (info->var.grayscale) {
-> > > -			pal = regno;
-> > > -		} else {
-> > > +		} else if (info->var.bits_per_pixel = 8) {
-> > >  			red >>= 4;
-> > >  			green >>= 8;
-> > >  			blue >>= 12;
-> > > @@ -575,36 +597,35 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
-> > >  			pal = (red & 0x0f00);
-> > >  			pal |= (green & 0x00f0);
-> > >  			pal |= (blue & 0x000f);
-> > > -		}
-> > > -		if (regno = 0)
-> > > -			pal |= 0x2000;
-> > > -		palette[regno] = pal;
-> > > -
-> > > -	} else if (info->var.bits_per_pixel = 8) {
-> > > -		red >>= 4;
-> > > -		green >>= 8;
-> > > -		blue >>= 12;
-> > > -
-> > > -		pal = (red & 0x0f00);
-> > > -		pal |= (green & 0x00f0);
-> > > -		pal |= (blue & 0x000f);
-> > >  
-> > > -		if (palette[regno] != pal) {
-> > > -			update_hw = 1;
-> > > -			palette[regno] = pal;
-> > > +			if (palette[regno] != pal) {
-> > > +				update_hw = 1;
-> > > +				palette[regno] = pal;
-> > > +			}
-> > >  		}
-> > > -	} else if ((info->var.bits_per_pixel = 16) && regno < 16) {
-> > > -		red >>= (16 - info->var.red.length);
-> > > -		red <<= info->var.red.offset;
-> > > +		break;
-> > > +	}
-> > >  
-> > > -		green >>= (16 - info->var.green.length);
-> > > -		green <<= info->var.green.offset;
-> > > +	/* Truecolor has hardware independent palette */
-> > > +	if (info->fix.visual = FB_VISUAL_TRUECOLOR) {
-> > > +		u32 v;
-> > >  
-> > > -		blue >>= (16 - info->var.blue.length);
-> > > -		blue <<= info->var.blue.offset;
-> > > +		if (regno > 15)
-> > > +			return -EINVAL;
-> > >  
-> > > -		par->pseudo_palette[regno] = red | green | blue;
-> > > +		v = (red << info->var.red.offset) |
-> > > +			(green << info->var.green.offset) |
-> > > +			(blue << info->var.blue.offset);
-> > >  
-> > > +		switch (info->var.bits_per_pixel) {
-> > > +		case 16:
-> > > +			((u16 *) (info->pseudo_palette))[regno] = v;
-> > > +			break;
-> > > +		case 24:
-> > > +		case 32:
-> > > +			((u32 *) (info->pseudo_palette))[regno] = v;
-> > > +			break;
-> > > +		}
-> > >  		if (palette[0] != 0x4000) {
-> > >  			update_hw = 1;
-> > >  			palette[0] = 0x4000;
-> > > @@ -617,6 +638,7 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
-> > >  
-> > >  	return 0;
-> > >  }
-> > > +#undef CNVT_TOHW
-> > >  
-> > 
-> > Is this required?
-> > 
-> 
-> Not required really, again thought it as standard since 8 out of 10 drivers does it.
-> 
-> Thanks,
-> Prakash
+> -- 
+> Bye, Peter Korsgaard
 > 
 

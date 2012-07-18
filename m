@@ -1,55 +1,99 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Mon, 09 Jul 2012 18:25:30 +0000
-Subject: Re: [PATCH v2 09/11] fblog: register console driver
-Message-Id: <CANq1E4QHuAtAQ5F9i99JVquy1Ae9rA1ovKXhD4Upnm2sOF+bLg@mail.gmail.com>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Wed, 18 Jul 2012 15:45:36 +0000
+Subject: [PATCH v2 1/2] video: da8xx-fb: configure FIFO threshold to reduce underflow errors
+Message-Id: <1342625616-7393-1-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1341784614-2797-1-git-send-email-dh.herrmann@googlemail.com>
-	<1341784614-2797-10-git-send-email-dh.herrmann@googlemail.com>
-	<1341785361.13174.25.camel@joe2Laptop>
-In-Reply-To: <1341785361.13174.25.camel@joe2Laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, florianschandinat@gmx.de, linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, alan@lxorguk.ukuu.org.uk, bonbons@linux-vserver.org
+To: linux-fbdev@vger.kernel.org
 
-Hi Joe
+Patch works around the below silicon errata:
+During LCDC initialization, there is the potential for a FIFO
+underflow condition to occur. A FIFO underflow condition
+occurs when the input FIFO is completely empty and the LCDC
+raster controller logic that drives data to the output pins
+attempts to fetch data from the FIFO. When a FIFO underflow
+condition occurs, incorrect data will be driven out on the
+LCDC data pins.
 
-On Mon, Jul 9, 2012 at 12:09 AM, Joe Perches <joe@perches.com> wrote:
-> On Sun, 2012-07-08 at 23:56 +0200, David Herrmann wrote:
->> We want to print the kernel log to all FBs so we need a console driver.
->> This registers the driver on startup and writes all messages to all
->> registered fblog instances.
->
-> Hi David.  Trivia only:
->
->> diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
-> []
->> @@ -47,6 +71,107 @@ static struct fblog_fb *fblog_fbs[FB_MAX];
->>  static bool active = 1;
->>
->>  #define to_fblog_dev(_d) container_of(_d, struct fblog_fb, dev)
->> +#define FBLOG_STR(x) x, sizeof(x) - 1
->
-> That's a rather ugly macro.
+Software should poll the FUF bit field in the LCD_STAT register
+to check if an error condition has occurred or service the
+interrupt if FUF_EN is enabled when FUF occurs. If the FUF bit
+field has been set to 1, this will indicate an underflow
+condition has occurred and then the software should execute a
+reset of the LCDC via the LPSC.
 
-But handy ;) I've removed it and replaced the call below with a local
-variable which works fine too and seems to be even shorter than with
-this macro.
+This problem may occur if the LCDC FIFO threshold size
+(LCDDMA_CTRL[TH_FIFO_READY]) is left at its default value after
+reset. Increasing the FIFO threshold size will reduce or
+eliminate underflows. Setting the threshold size to 256 double
+words or larger is recommended.
 
->> +static void fblog_buf_resize(struct fblog_buf *buf, size_t width,
->> +                          size_t height)
->> +{
->> +     u16 **lines = NULL;
->> +     size_t i, j, minw, minh;
->> +
->> +     if (buf->height = height && buf->width = width)
->> +             return;
->> +
->> +     if (width && height) {
->> +             lines = kzalloc(height * sizeof(char*), GFP_KERNEL);
->
-> sizeof(char *) is a bit more kernel style like.
+Above issue is described in section 2.1.3 of silicon errata
+http://www.ti.com/lit/er/sprz313e/sprz313e.pdf
 
-Thanks, both fixed.
-David
+Signed-off-by: Rajashekhara, Sudhakar <sudhakar.raj@ti.com>
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+---
+Seems like version 1 of this patch did not reach fbdev mailing list.
+Since v1:
+Removed clk_disable/clk_enable from error interrupt handling code.
+
+ drivers/video/da8xx-fb.c |   11 +++++++----
+ include/video/da8xx-fb.h |    3 +++
+ 2 files changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 183366d..186ab5a 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -353,8 +353,8 @@ static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
+ 	lcd_enable_raster();
+ }
+ 
+-/* Configure the Burst Size of DMA */
+-static int lcd_cfg_dma(int burst_size)
++/* Configure the Burst Size and fifo threhold of DMA */
++static int lcd_cfg_dma(int burst_size, int fifo_th)
+ {
+ 	u32 reg;
+ 
+@@ -378,6 +378,9 @@ static int lcd_cfg_dma(int burst_size)
+ 	default:
+ 		return -EINVAL;
+ 	}
++
++	reg |= (fifo_th << 8);
++
+ 	lcdc_write(reg, LCD_DMA_CTRL_REG);
+ 
+ 	return 0;
+@@ -679,8 +682,8 @@ static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
+ 		lcdc_write((lcdc_read(LCD_RASTER_TIMING_2_REG) &
+ 			~LCD_INVERT_PIXEL_CLOCK), LCD_RASTER_TIMING_2_REG);
+ 
+-	/* Configure the DMA burst size. */
+-	ret = lcd_cfg_dma(cfg->dma_burst_sz);
++	/* Configure the DMA burst size and fifo threshold. */
++	ret = lcd_cfg_dma(cfg->dma_burst_sz, cfg->fifo_th);
+ 	if (ret < 0)
+ 		return ret;
+ 
+diff --git a/include/video/da8xx-fb.h b/include/video/da8xx-fb.h
+index 89d43b3..5a0e4f9 100644
+--- a/include/video/da8xx-fb.h
++++ b/include/video/da8xx-fb.h
+@@ -82,6 +82,9 @@ struct lcd_ctrl_config {
+ 
+ 	/* Raster Data Order Select: 1=Most-to-least 0=Least-to-most */
+ 	unsigned char raster_order;
++
++	/* DMA FIFO threshold */
++	int fifo_th;
+ };
+ 
+ struct lcd_sync_arg {
+-- 
+1.7.1
+

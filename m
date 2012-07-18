@@ -1,104 +1,112 @@
-From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
-Date: Tue, 31 Jul 2012 10:18:58 +0000
-Subject: RE: [PATCH] video: da8xx-fb: do clock reset of revision 2 LCDC before enabling
-Message-Id: <A73F36158E33644199EB82C5EC81C7BC3E99E619@DBDE01.ent.ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Date: Wed, 18 Jul 2012 09:50:59 +0000
+Subject: [PATCH] video: exynos_dp: use usleep_range instead of delay
+Message-Id: <002201cd64ca$d5bbabb0$81330310$%han@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1342799471-10729-1-git-send-email-prakash.pm@ti.com>
-In-Reply-To: <1342799471-10729-1-git-send-email-prakash.pm@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi,
+This patch replaces udelay and mdelay with usleep_range to remove
+the busy loop waiting.
 
-On Mon, Jul 30, 2012 at 02:44:33, Florian Tobias Schandinat wrote:
-> On 07/20/2012 03:51 PM, Manjunathappa, Prakash wrote:
-> > As in specification software reset should be applied for several
-> > cycles before bringing it out of reset. Without this patch
-> > particularly during suspend and resume clock reset is not guaranteed
-> > to happen.
-> > 
-> > Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
-> 
-> Applied. But it would be better if you made the patch dependencies
-> clear, as I didn't consider some of your patches mature enough for this
-> merge window. Now I had to figure out why my final build failed and
-> applied the patch below.
-> 
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/exynos/exynos_dp_core.c |   14 +++++++-------
+ drivers/video/exynos/exynos_dp_reg.c  |    4 ++--
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
-Thanks Florian Tobias Schandinat. I will take care to mention dependencies
-in future.
+diff --git a/drivers/video/exynos/exynos_dp_core.c b/drivers/video/exynos/exynos_dp_core.c
+index 9db7b9f..25907f4 100644
+--- a/drivers/video/exynos/exynos_dp_core.c
++++ b/drivers/video/exynos/exynos_dp_core.c
+@@ -47,7 +47,7 @@ static int exynos_dp_detect_hpd(struct exynos_dp_device *dp)
+ 
+ 	exynos_dp_init_hpd(dp);
+ 
+-	udelay(200);
++	usleep_range(200, 210);
+ 
+ 	while (exynos_dp_get_plug_in_status(dp) != 0) {
+ 		timeout_loop++;
+@@ -55,7 +55,7 @@ static int exynos_dp_detect_hpd(struct exynos_dp_device *dp)
+ 			dev_err(dp->dev, "failed to get hpd plug status\n");
+ 			return -ETIMEDOUT;
+ 		}
+-		udelay(10);
++		usleep_range(10, 11);
+ 	}
+ 
+ 	return 0;
+@@ -486,7 +486,7 @@ static int exynos_dp_process_clock_recovery(struct exynos_dp_device *dp)
+ 	u8 pre_emphasis;
+ 	u8 training_lane;
+ 
+-	udelay(100);
++	usleep_range(100, 101);
+ 
+ 	exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
+ 				6, link_status);
+@@ -571,7 +571,7 @@ static int exynos_dp_process_equalizer_training(struct exynos_dp_device *dp)
+ 
+ 	u8 adjust_request[2];
+ 
+-	udelay(400);
++	usleep_range(400, 401);
+ 
+ 	exynos_dp_read_bytes_from_dpcd(dp, DPCD_ADDR_LANE0_1_STATUS,
+ 				6, link_status);
+@@ -739,7 +739,7 @@ static int exynos_dp_set_link_train(struct exynos_dp_device *dp,
+ 		if (retval = 0)
+ 			break;
+ 
+-		udelay(100);
++		usleep_range(100, 110);
+ 	}
+ 
+ 	return retval;
+@@ -773,7 +773,7 @@ static int exynos_dp_config_video(struct exynos_dp_device *dp,
+ 			return -ETIMEDOUT;
+ 		}
+ 
+-		udelay(1);
++		usleep_range(1, 2);
+ 	}
+ 
+ 	/* Set to use the register calculated M/N video */
+@@ -807,7 +807,7 @@ static int exynos_dp_config_video(struct exynos_dp_device *dp,
+ 			return -ETIMEDOUT;
+ 		}
+ 
+-		mdelay(1);
++		usleep_range(1000, 1001);
+ 	}
+ 
+ 	if (retval != 0)
+diff --git a/drivers/video/exynos/exynos_dp_reg.c b/drivers/video/exynos/exynos_dp_reg.c
+index 6ce76d5..ce401c8 100644
+--- a/drivers/video/exynos/exynos_dp_reg.c
++++ b/drivers/video/exynos/exynos_dp_reg.c
+@@ -122,7 +122,7 @@ void exynos_dp_reset(struct exynos_dp_device *dp)
+ 		LS_CLK_DOMAIN_FUNC_EN_N;
+ 	writel(reg, dp->reg_base + EXYNOS_DP_FUNC_EN_2);
+ 
+-	udelay(20);
++	usleep_range(20, 30);
+ 
+ 	exynos_dp_lane_swap(dp, 0);
+ 
+@@ -988,7 +988,7 @@ void exynos_dp_reset_macro(struct exynos_dp_device *dp)
+ 	writel(reg, dp->reg_base + EXYNOS_DP_PHY_TEST);
+ 
+ 	/* 10 us is the minimum reset time. */
+-	udelay(10);
++	usleep_range(10, 20);
+ 
+ 	reg &= ~MACRO_RST;
+ 	writel(reg, dp->reg_base + EXYNOS_DP_PHY_TEST);
+-- 
+1.7.1
 
-Regards,
-Prakash
-
-> 
-> Best regards,
-> 
-> Florian Tobias Schandinat
-> 
-> ---
-> commit a0239073fd75489d25575cf3aaf71ab55b416020
-> Author: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-> Date:   Sun Jul 29 16:47:40 2012 +0000
-> 
->     da8xx-fb: fix compile issue due to missing include
-> 
->     Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-> 
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index ca9943a..7ae9d53 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -32,6 +32,7 @@
->  #include <linux/console.h>
->  #include <linux/spinlock.h>
->  #include <linux/slab.h>
-> +#include <linux/delay.h>
->  #include <linux/lcm.h>
->  #include <video/da8xx-fb.h>
->  #include <asm/div64.h>
-> 
-> 
-> > ---
-> >  drivers/video/da8xx-fb.c |   12 ++++++++----
-> >  1 files changed, 8 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> > index 3d2d0d1..4440292 100644
-> > --- a/drivers/video/da8xx-fb.c
-> > +++ b/drivers/video/da8xx-fb.c
-> > @@ -262,10 +262,18 @@ static inline void lcd_enable_raster(void)
-> >  {
-> >  	u32 reg;
-> >  
-> > +	/* Put LCDC in reset for several cycles */
-> > +	if (lcd_revision = LCD_VERSION_2)
-> > +		/* Write 1 to reset LCDC */
-> > +		lcdc_write(LCD_CLK_MAIN_RESET, LCD_CLK_RESET_REG);
-> > +	mdelay(1);
-> > +
-> >  	/* Bring LCDC out of reset */
-> >  	if (lcd_revision = LCD_VERSION_2)
-> >  		lcdc_write(0, LCD_CLK_RESET_REG);
-> > +	mdelay(1);
-> >  
-> > +	/* Above reset sequence doesnot reset register context */
-> >  	reg = lcdc_read(LCD_RASTER_CTRL_REG);
-> >  	if (!(reg & LCD_RASTER_ENABLE))
-> >  		lcdc_write(reg | LCD_RASTER_ENABLE, LCD_RASTER_CTRL_REG);
-> > @@ -279,10 +287,6 @@ static inline void lcd_disable_raster(void)
-> >  	reg = lcdc_read(LCD_RASTER_CTRL_REG);
-> >  	if (reg & LCD_RASTER_ENABLE)
-> >  		lcdc_write(reg & ~LCD_RASTER_ENABLE, LCD_RASTER_CTRL_REG);
-> > -
-> > -	if (lcd_revision = LCD_VERSION_2)
-> > -		/* Write 1 to reset LCDC */
-> > -		lcdc_write(LCD_CLK_MAIN_RESET, LCD_CLK_RESET_REG);
-> >  }
-> >  
-> >  static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
-> 
-> 
 

@@ -1,29 +1,39 @@
-From: Prashant Gaikwad <pgaikwad@nvidia.com>
-Date: Wed, 18 Jul 2012 12:58:22 +0000
+From: Shawn Guo <shawn.guo@linaro.org>
+Date: Wed, 18 Jul 2012 17:08:41 +0000
 Subject: Re: Device tree binding for DVFS table
-Message-Id: <5006B01E.7020504@nvidia.com>
+Message-Id: <20120718170838.GA27581@S2101-09.ap.freescale.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4FFD77FE.8050206@nvidia.com> <4FFD87BD.2030206@gmail.com>
- <4FFE4DD0.7020407@nvidia.com> <50035582.9070308@gmail.com>
- <CAJOA=zMKE1Z_AsYeWr22k58EDskx0eshEjv9VbLQHKFsA0uThw@mail.gmail.com>
- <50055C83.7060700@nvidia.com> <20120717132032.GD27595@sirena.org.uk>
- <50057514.5070501@nvidia.com> <20120717143754.GB3107@sirena.org.uk>
-In-Reply-To: <20120717143754.GB3107@sirena.org.uk>
+References: <4FFD77FE.8050206@nvidia.com>
+In-Reply-To: <4FFD77FE.8050206@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Tuesday 17 July 2012 08:07 PM, Mark Brown wrote:
-> On Tue, Jul 17, 2012 at 07:52:12PM +0530, Prashant Gaikwad wrote:
->
->>> What happens if there's more than one supply that needs to be varied?
->> Each rail's dvfs-table will have OPP nodes defined for different
->> voltages and each OPP node contains frequency for all clocks
->> affecting that rail.
-> Right, but some systems have operating points which cover a combination
-> of voltages and frequencies in one operating point.  Your binding seems
-> to define operating points per supply with no tie in between supplies.
+On Wed, Jul 11, 2012 at 06:26:30PM +0530, Prashant Gaikwad wrote:
+> Hi,
+> 
+> I am working on DT binding for Tegra DVFS.
+> 
+> For Tegra, DVFS node mainly consists of frequency and voltage pairs.
+> Frequency in the pair may change for different process. E.g. for
+> process 1 CPU clock frequency could be 900MHz at 1V while for
+> process 2 it could be 1GHz at 1V.
+> Tegra uses vendor specific ids to identify the correct frequency table.
+> 
+> Following is the proposed binding for voltage and frequency tables
+> used in DVFS. Looking for comments/suggestions to make it generic.
+> 
+It seems we are trying to approach a generic binding for DVFS operating
+points.  In that case, we will need a generic library helper function
+to parse it.  But since we already have such a library - OPP
+(drivers/base/power/opp.c) in place, I would approach the same goal
+in other way around, adding device tree binding for OPP.  Please see
+the patch I just sent out below and comment.
 
-We had discussed this in previous replies and thought that it can be 
-expressed in separate DT nodes, may be regulator.
+[PATCH] PM / OPP: Initialize OPP table from device tree
+
+-- 
+Regards,
+Shawn
+

@@ -1,42 +1,33 @@
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 19 Jul 2012 00:39:21 +0000
-Subject: [PATCH 8/9] fbdev: sh_mobile_lcdc: Fix overlay registers update during pan operation
-Message-Id: <1342658362-19491-9-git-send-email-laurent.pinchart@ideasonboard.com>
+Date: Wed, 18 Jul 2012 22:57:47 +0000
+Subject: Re: [PATCH] fbdev: Add ioctls FBIO_COPYRECT, FBIO_FILLRECT, lest these operations be done in softwar
+Message-Id: <2444839.KFfsli056l@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CAL3m8eA=46wdwVosiE54eNx3FOuLyxfE5axKs_HjyMTGxDHRDw@mail.gmail.com>
+In-Reply-To: <CAL3m8eA=46wdwVosiE54eNx3FOuLyxfE5axKs_HjyMTGxDHRDw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Strake <strake888@gmail.com>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Updating overlay registers require switching to overlay update mode.
-This was correctly done when configuring the overlay format and size,
-but not when updating the base address registers during pan operation.
-Fix it.
+On Thursday 21 June 2012 07:22:50 Strake wrote:
+> From: Matthew Farkas-Dyck <strake888@gmail.com>
+> 
+> Add ioctls FBIO_COPYRECT, FBIO_FILLRECT, lest these operations be done
+> in software.
+> 
+> Signed-off-by: Matthew Farkas-Dyck <strake888@gmail.com>
+> ---
+> 
+> Reason: If it can be done in hardware, it ought to be. This will
+> enable user-mode software to do so.
 
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
----
- drivers/video/sh_mobile_lcdcfb.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+If we really want to go this way, I think we should develop a proper 2D 
+acceleration API. I'm not sure whether it's worth the effort though.
 
-diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
-index aeb7585..5c26c44 100644
---- a/drivers/video/sh_mobile_lcdcfb.c
-+++ b/drivers/video/sh_mobile_lcdcfb.c
-@@ -1539,9 +1539,14 @@ static int sh_mobile_lcdc_overlay_pan(struct fb_var_screeninfo *var,
- 		ovl->base_addr_c = base_addr_c;
- 	}
- 
-+	lcdc_write(ovl->channel->lcdc, LDBCR, LDBCR_UPC(ovl->index));
-+
- 	lcdc_write_overlay(ovl, LDBnBSAYR(ovl->index), ovl->base_addr_y);
- 	lcdc_write_overlay(ovl, LDBnBSACR(ovl->index), ovl->base_addr_c);
- 
-+	lcdc_write(ovl->channel->lcdc, LDBCR,
-+		   LDBCR_UPF(ovl->index) | LDBCR_UPD(ovl->index));
-+
- 	ovl->pan_offset = pan_offset;
- 
- 	return 0;
 -- 
-1.7.8.6
+Regards,
+
+Laurent Pinchart
 

@@ -1,39 +1,31 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Date: Wed, 18 Jul 2012 17:08:41 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Wed, 18 Jul 2012 21:19:57 +0000
 Subject: Re: Device tree binding for DVFS table
-Message-Id: <20120718170838.GA27581@S2101-09.ap.freescale.net>
+Message-Id: <20120718211957.GA32423@sirena.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4FFD77FE.8050206@nvidia.com>
-In-Reply-To: <4FFD77FE.8050206@nvidia.com>
+References: <4FFD77FE.8050206@nvidia.com> <4FFD87BD.2030206@gmail.com>
+ <4FFE4DD0.7020407@nvidia.com> <50035582.9070308@gmail.com>
+ <CAJOA=zMKE1Z_AsYeWr22k58EDskx0eshEjv9VbLQHKFsA0uThw@mail.gmail.com>
+ <50055C83.7060700@nvidia.com>
+ <20120717132032.GD27595@sirena.org.uk>
+ <50057514.5070501@nvidia.com> <20120717143754.GB3107@sirena.org.uk>
+ <5006B01E.7020504@nvidia.com>
+In-Reply-To: <5006B01E.7020504@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Jul 11, 2012 at 06:26:30PM +0530, Prashant Gaikwad wrote:
-> Hi,
-> 
-> I am working on DT binding for Tegra DVFS.
-> 
-> For Tegra, DVFS node mainly consists of frequency and voltage pairs.
-> Frequency in the pair may change for different process. E.g. for
-> process 1 CPU clock frequency could be 900MHz at 1V while for
-> process 2 it could be 1GHz at 1V.
-> Tegra uses vendor specific ids to identify the correct frequency table.
-> 
-> Following is the proposed binding for voltage and frequency tables
-> used in DVFS. Looking for comments/suggestions to make it generic.
-> 
-It seems we are trying to approach a generic binding for DVFS operating
-points.  In that case, we will need a generic library helper function
-to parse it.  But since we already have such a library - OPP
-(drivers/base/power/opp.c) in place, I would approach the same goal
-in other way around, adding device tree binding for OPP.  Please see
-the patch I just sent out below and comment.
+On Wed, Jul 18, 2012 at 06:16:22PM +0530, Prashant Gaikwad wrote:
+> On Tuesday 17 July 2012 08:07 PM, Mark Brown wrote:
 
-[PATCH] PM / OPP: Initialize OPP table from device tree
+> >Right, but some systems have operating points which cover a combination
+> >of voltages and frequencies in one operating point.  Your binding seems
+> >to define operating points per supply with no tie in between supplies.
 
--- 
-Regards,
-Shawn
+> We had discussed this in previous replies and thought that it can be
+> expressed in separate DT nodes, may be regulator.
 
+So how are these intended to be tied together?  Is the kernel supposed
+to infer the set of possible operating points by looking for overlaps or
+does it have a list to work with?

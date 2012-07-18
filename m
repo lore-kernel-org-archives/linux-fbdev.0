@@ -1,57 +1,146 @@
-From: =?UTF-8?B?UmFwaGHDq2wgQXNzw6luYXQ=?= <raph@8d.com>
-Date: Tue, 31 Jul 2012 20:46:33 +0000
-Subject: Re: [PATCH] OMAPDSS: Do not require a VDDS_DSI regulator on am35xx
-Message-Id: <50184429.4030103@8d.com>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Wed, 18 Jul 2012 15:43:56 +0000
+Subject: [PATCH RESEND] video: da8xx-fb: fix flicker due to 1 frame delay in updated frame
+Message-Id: <1342625516-7185-1-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20120719200429.GD3850@renkinjitsu.usine.8d.com> <1343724323.2633.22.camel@deskari>
-In-Reply-To: <1343724323.2633.22.camel@deskari>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Chandrabhanu Mahapatra <cmahapatra@ti.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-On 31/07/12 04:45 AM, Tomi Valkeinen wrote:
-> On Thu, 2012-07-19 at 16:04 -0400, Raphael Assenat wrote:
->> On our AM3505 based board, dpi.c complains that there is no VDSS_DSI regulator
->> and the framebuffer cannot be enabled. However, this check does not seem to
->> apply to AM3505/17 chips.
->>
->> I am not the first facing this issue, see this thread from Nov. 2011:
->> http://marc.info/?l=linux-omap&m2147745930213&w=2
->>
->> The string 'vdds_dsi' does appear once in the technical reference manual[1]
->> but there is no corresponding power pin on the package[2]. I failed to 
->> locate any signal that could be an equivalent. I am trying to obtain some
->> clarifications on TI's forum[3]...
->>
->> In any case, I am currently running with the patch below. In order to keep
->> cpu_is_xx uses to a minimum, I check for am35xx once at init time and allow
->> dpi.vdds_dsi_reg to be NULL from then on, getting rid of all the other
->> cpu_is_omap34xx uses in the process.
->>
->> Your comments would be appreciated. Please also consider for merging.
-> 
-> VDDS_DSI is used to power up some of the DSS pins on OMAP3. I don't know
-> why the HW was designed like that... If you have a correct image without
-> the power, then obviously it's not needed.
+Flicker/tearing effect is observed with current FB driver.
+Issue is because of 2 active DMA channels ping ponging among them
+along with usage of 2 DDR ping pong buffers in driver. Application
+unaware of active DMA channel keeps updating frame being displayed,
+this leads to tearing effect.
+Below steps describes the issue:
+1)Initially assume both buffers FB0 and FB1 are programmed for buffer-0.
+2)On EOF0: Program FB0 for buffer-1, indicate(wake up) application
+ to fill up buffer-0. As FB1 is active and continues to DMA buffer-0
+(which is being filled), leading to tearing/flickering issue.
+3)On EOF1: Program FB1 for buffer-0, indicate(wake up) application to
+ fill up buffer-1. As FB0 is active and continues to DMA buffer-1(which
+ is being filled), leading to tearing/flickering issue.
+4)On EOF0: Program FB0 for buffer-1, indicate(wake up) application to
+fill up buffer-0. As FB1 is active and continues to DMA buffer-0(which is
+being filled), leading to tearing/flickering issue.
+...
+Above steps depict that issue is because of 1 frame delay in frame
+panned by application.
 
-Yes, I confirm the image is displayed properly.
+Patch fixes the issue by keeping track free DMA channel and configures
+it in drivers PAN callback so that panned frame from application gets
+displayed in next frame period.
 
-> We don't currently deal with AM3xxx SoCs in any way in the driver. It's
-> difficult enough trying to handle just OMAP DSS versions, and now we
-> need to add AM3xxx to the mix. Sigh =).
-> 
-> However, I don't want to apply this patch, as we're trying to remove the
-> cpu_is checks (soc_is goes in the same category).
-> 
-> I guess we need to add entries for the AM3xxx SoCs in the
-> dss_features.c.
-> 
-> Any idea what other differences AM3xxx has compared to OMAP3?
+Wiki below describes the issue in detail and it also has link to
+application with which issue can be reproduced.
+http://processors.wiki.ti.com/index.php/DA8xx_LCDC_Linux_FB_FAQs
 
-This is the only one I am aware of.
+Signed-off-by: Nellutla, Aditya <aditya.n@ti.com>
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+---
+Resending as my earlier patch seems like not reached fbdev mailing list.
 
+ drivers/video/da8xx-fb.c |   30 ++++++++++++++++++++++++++++++
+ 1 files changed, 30 insertions(+), 0 deletions(-)
 
-Best regards,
-Raphaël Assénat
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index e9d2f6e..183366d 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -30,6 +30,7 @@
+ #include <linux/clk.h>
+ #include <linux/cpufreq.h>
+ #include <linux/console.h>
++#include <linux/spinlock.h>
+ #include <linux/slab.h>
+ #include <video/da8xx-fb.h>
+ #include <asm/div64.h>
+@@ -161,6 +162,13 @@ struct da8xx_fb_par {
+ 	wait_queue_head_t	vsync_wait;
+ 	int			vsync_flag;
+ 	int			vsync_timeout;
++	spinlock_t		lock_for_chan_update;
++
++	/*
++	 * LCDC has 2 ping pong DMA channels, channel 0
++	 * and channel 1.
++	 */
++	unsigned int		which_dma_channel_done;
+ #ifdef CONFIG_CPU_FREQ
+ 	struct notifier_block	freq_transition;
+ 	unsigned int		lcd_fck_rate;
+@@ -741,6 +749,7 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
+ 		lcdc_write(stat, LCD_MASKED_STAT_REG);
+ 
+ 		if (stat & LCD_END_OF_FRAME0) {
++			par->which_dma_channel_done = 0;
+ 			lcdc_write(par->dma_start,
+ 				   LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
+ 			lcdc_write(par->dma_end,
+@@ -750,6 +759,7 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
+ 		}
+ 
+ 		if (stat & LCD_END_OF_FRAME1) {
++			par->which_dma_channel_done = 1;
+ 			lcdc_write(par->dma_start,
+ 				   LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
+ 			lcdc_write(par->dma_end,
+@@ -796,6 +806,7 @@ static irqreturn_t lcdc_irq_handler_rev01(int irq, void *arg)
+ 		lcdc_write(stat, LCD_STAT_REG);
+ 
+ 		if (stat & LCD_END_OF_FRAME0) {
++			par->which_dma_channel_done = 0;
+ 			lcdc_write(par->dma_start,
+ 				   LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
+ 			lcdc_write(par->dma_end,
+@@ -805,6 +816,7 @@ static irqreturn_t lcdc_irq_handler_rev01(int irq, void *arg)
+ 		}
+ 
+ 		if (stat & LCD_END_OF_FRAME1) {
++			par->which_dma_channel_done = 1;
+ 			lcdc_write(par->dma_start,
+ 				   LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
+ 			lcdc_write(par->dma_end,
+@@ -1050,6 +1062,7 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
+ 	struct fb_fix_screeninfo    *fix = &fbi->fix;
+ 	unsigned int end;
+ 	unsigned int start;
++	unsigned long irq_flags;
+ 
+ 	if (var->xoffset != fbi->var.xoffset ||
+ 			var->yoffset != fbi->var.yoffset) {
+@@ -1067,6 +1080,21 @@ static int da8xx_pan_display(struct fb_var_screeninfo *var,
+ 			end	= start + fbi->var.yres * fix->line_length - 1;
+ 			par->dma_start	= start;
+ 			par->dma_end	= end;
++			spin_lock_irqsave(&par->lock_for_chan_update,
++					irq_flags);
++			if (par->which_dma_channel_done = 0) {
++				lcdc_write(par->dma_start,
++					   LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
++				lcdc_write(par->dma_end,
++					   LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
++			} else if (par->which_dma_channel_done = 1) {
++				lcdc_write(par->dma_start,
++					   LCD_DMA_FRM_BUF_BASE_ADDR_1_REG);
++				lcdc_write(par->dma_end,
++					   LCD_DMA_FRM_BUF_CEILING_ADDR_1_REG);
++			}
++			spin_unlock_irqrestore(&par->lock_for_chan_update,
++					irq_flags);
+ 		}
+ 	}
+ 
+@@ -1294,6 +1322,8 @@ static int __devinit fb_probe(struct platform_device *device)
+ 	/* initialize the vsync wait queue */
+ 	init_waitqueue_head(&par->vsync_wait);
+ 	par->vsync_timeout = HZ / 5;
++	par->which_dma_channel_done = -1;
++	spin_lock_init(&par->lock_for_chan_update);
+ 
+ 	/* Register the Frame Buffer  */
+ 	if (register_framebuffer(da8xx_fb_info) < 0) {
+-- 
+1.7.1
+

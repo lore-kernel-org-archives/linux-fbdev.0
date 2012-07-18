@@ -1,84 +1,158 @@
-From: Damien Cassou <damien.cassou@lifl.fr>
-Date: Tue, 31 Jul 2012 16:39:19 +0000
-Subject: [PATCH 2/5] drivers/video/gbefb.c: use devm_ functions
-Message-Id: <1343752762-16861-3-git-send-email-damien.cassou@lifl.fr>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Wed, 18 Jul 2012 05:59:21 +0000
+Subject: [PATCH v2] video: da8xx-fb: add 24bpp LCD configuration support
+Message-Id: <1342590441-8441-1-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
-In-Reply-To: <1343752762-16861-1-git-send-email-damien.cassou@lifl.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-From: Damien Cassou <damien.cassou@lifl.fr>
+LCD controller on am335x supports 24bpp raster configuration in addition
+to ones on da850. LCDC also supports 24bpp in unpacked format having
+ARGB:8888 32bpp format data in DDR, but it doesn't interpret alpha
+component of the data.
 
-The various devm_ functions allocate memory that is released when a driver
-detaches.  This patch uses these functions for data that is allocated in
-the probe function of a platform device and is only freed in the remove
-function.
-
-Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
-
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+Cc: Anatolij Gustschin <agust@denx.de>
 ---
- drivers/video/gbefb.c |   15 +++++----------
- 1 file changed, 5 insertions(+), 10 deletions(-)
+Since v1:
+Addressed Tobias's review comments on calculation of pseudopalette for
+FB_VISUAL_TRUECOLOR type.
 
-diff --git a/drivers/video/gbefb.c b/drivers/video/gbefb.c
-index 7e7b7a9..9b79d38 100644
---- a/drivers/video/gbefb.c
-+++ b/drivers/video/gbefb.c
-@@ -1156,7 +1156,8 @@ static int __devinit gbefb_probe(struct platform_device *p_dev)
- 		goto out_release_framebuffer;
- 	}
+ drivers/video/da8xx-fb.c |   88 ++++++++++++++++++++++++++++-----------------
+ 1 files changed, 55 insertions(+), 33 deletions(-)
+
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 47118c7..3cda461 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -153,7 +153,7 @@ struct da8xx_fb_par {
+ 	unsigned int		dma_end;
+ 	struct clk *lcdc_clk;
+ 	int irq;
+-	unsigned short pseudo_palette[16];
++	u32 pseudo_palette[16];
+ 	unsigned int palette_sz;
+ 	unsigned int pxl_clk;
+ 	int blank;
+@@ -546,6 +546,8 @@ static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
+ 	return 0;
+ }
  
--	gbe = (struct sgi_gbe *) ioremap(GBE_BASE, sizeof(struct sgi_gbe));
-+	gbe = (struct sgi_gbe *) devm_ioremap(&p_dev->dev, GBE_BASE,
-+					      sizeof(struct sgi_gbe));
- 	if (!gbe) {
- 		printk(KERN_ERR "gbefb: couldn't map mmio region\n");
- 		ret = -ENXIO;
-@@ -1170,12 +1171,13 @@ static int __devinit gbefb_probe(struct platform_device *p_dev)
- 	if (!gbe_tiles.cpu) {
- 		printk(KERN_ERR "gbefb: couldn't allocate tiles table\n");
- 		ret = -ENOMEM;
--		goto out_unmap;
-+		goto out_release_mem_region;
- 	}
++
++#define CNVT_TOHW(val, width) ((((val)<<(width))+0x7FFF-(val))>>16)
+ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 			      unsigned blue, unsigned transp,
+ 			      struct fb_info *info)
+@@ -561,13 +563,33 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 	if (info->fix.visual = FB_VISUAL_DIRECTCOLOR)
+ 		return 1;
  
- 	if (gbe_mem_phys) {
- 		/* memory was allocated at boot time */
--		gbe_mem = ioremap_nocache(gbe_mem_phys, gbe_mem_size);
-+		gbe_mem = devm_ioremap_nocache(&p_dev->dev, gbe_mem_phys,
-+					       gbe_mem_size);
- 		if (!gbe_mem) {
- 			printk(KERN_ERR "gbefb: couldn't map framebuffer\n");
- 			ret = -ENOMEM;
-@@ -1241,13 +1243,9 @@ static int __devinit gbefb_probe(struct platform_device *p_dev)
- out_gbe_unmap:
- 	if (gbe_dma_addr)
- 		dma_free_coherent(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
--	else
--		iounmap(gbe_mem);
- out_tiles_free:
- 	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
- 			  (void *)gbe_tiles.cpu, gbe_tiles.dma);
--out_unmap:
--	iounmap(gbe);
- out_release_mem_region:
- 	release_mem_region(GBE_BASE, sizeof(struct sgi_gbe));
- out_release_framebuffer:
-@@ -1264,12 +1262,9 @@ static int __devexit gbefb_remove(struct platform_device* p_dev)
- 	gbe_turn_off();
- 	if (gbe_dma_addr)
- 		dma_free_coherent(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
--	else
--		iounmap(gbe_mem);
- 	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
- 			  (void *)gbe_tiles.cpu, gbe_tiles.dma);
- 	release_mem_region(GBE_BASE, sizeof(struct sgi_gbe));
--	iounmap(gbe);
- 	gbefb_remove_sysfs(&p_dev->dev);
- 	framebuffer_release(info);
+-	if (info->var.bits_per_pixel = 4) {
+-		if (regno > 15)
+-			return 1;
++	switch (info->fix.visual) {
++	case FB_VISUAL_TRUECOLOR:
++		red = CNVT_TOHW(red, info->var.red.length);
++		green = CNVT_TOHW(green, info->var.green.length);
++		blue = CNVT_TOHW(blue, info->var.blue.length);
++		break;
++	case FB_VISUAL_PSEUDOCOLOR:
++		if (info->var.bits_per_pixel = 4) {
++			if (regno > 15)
++				return 1;
++
++			if (info->var.grayscale) {
++				pal = regno;
++			} else {
++				red >>= 4;
++				green >>= 8;
++				blue >>= 12;
++
++				pal = (red & 0x0f00);
++				pal |= (green & 0x00f0);
++				pal |= (blue & 0x000f);
++			}
++			if (regno = 0)
++				pal |= 0x2000;
++			palette[regno] = pal;
  
+-		if (info->var.grayscale) {
+-			pal = regno;
+-		} else {
++		} else if (info->var.bits_per_pixel = 8) {
+ 			red >>= 4;
+ 			green >>= 8;
+ 			blue >>= 12;
+@@ -575,36 +597,35 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 			pal = (red & 0x0f00);
+ 			pal |= (green & 0x00f0);
+ 			pal |= (blue & 0x000f);
+-		}
+-		if (regno = 0)
+-			pal |= 0x2000;
+-		palette[regno] = pal;
+-
+-	} else if (info->var.bits_per_pixel = 8) {
+-		red >>= 4;
+-		green >>= 8;
+-		blue >>= 12;
+-
+-		pal = (red & 0x0f00);
+-		pal |= (green & 0x00f0);
+-		pal |= (blue & 0x000f);
+ 
+-		if (palette[regno] != pal) {
+-			update_hw = 1;
+-			palette[regno] = pal;
++			if (palette[regno] != pal) {
++				update_hw = 1;
++				palette[regno] = pal;
++			}
+ 		}
+-	} else if ((info->var.bits_per_pixel = 16) && regno < 16) {
+-		red >>= (16 - info->var.red.length);
+-		red <<= info->var.red.offset;
++		break;
++	}
+ 
+-		green >>= (16 - info->var.green.length);
+-		green <<= info->var.green.offset;
++	/* Truecolor has hardware independent palette */
++	if (info->fix.visual = FB_VISUAL_TRUECOLOR) {
++		u32 v;
+ 
+-		blue >>= (16 - info->var.blue.length);
+-		blue <<= info->var.blue.offset;
++		if (regno > 15)
++			return -EINVAL;
+ 
+-		par->pseudo_palette[regno] = red | green | blue;
++		v = (red << info->var.red.offset) |
++			(green << info->var.green.offset) |
++			(blue << info->var.blue.offset);
+ 
++		switch (info->var.bits_per_pixel) {
++		case 16:
++			((u16 *) (info->pseudo_palette))[regno] = v;
++			break;
++		case 24:
++		case 32:
++			((u32 *) (info->pseudo_palette))[regno] = v;
++			break;
++		}
+ 		if (palette[0] != 0x4000) {
+ 			update_hw = 1;
+ 			palette[0] = 0x4000;
+@@ -617,6 +638,7 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 
+ 	return 0;
+ }
++#undef CNVT_TOHW
+ 
+ static void lcd_reset(struct da8xx_fb_par *par)
+ {
+-- 
+1.7.1
 

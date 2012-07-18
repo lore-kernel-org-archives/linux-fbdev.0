@@ -1,47 +1,36 @@
-From: "Hiremath, Vaibhav" <hvaibhav@ti.com>
-Date: Mon, 02 Jul 2012 07:51:24 +0000
-Subject: RE: [PATCH] da8xx-fb: add missing FB_BLANK operations
-Message-Id: <79CD15C6BA57404B839C016229A409A83EA60AE9@DBDE01.ent.ti.com>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Wed, 18 Jul 2012 15:46:57 +0000
+Subject: [PATCH v2 2/2] arm: da850: configure LCDC fifo threshold
+Message-Id: <1342625697-7515-1-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1341213073-2986-1-git-send-email-yegorslists@googlemail.com>
-In-Reply-To: <1341213073-2986-1-git-send-email-yegorslists@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-On Mon, Jul 02, 2012 at 12:41:13, yegorslists@googlemail.com wrote:
-> From: Yegor Yefremov <yegorslists@googlemail.com>
-> 
-> add FB_BLANK_NORMAL, FB_BLANK_VSYNC_SUSPEND and FB_BLANK_HSYNC_SUSPEND
-> modes (copy drivers/video/omap2/omapfb/omapfb-main.c implementation).
-> Otherwise X-server will complain about invalid parameter.
-> 
-> Signed-off-by: Yegor Yefremov <yegorslists@googlemail.com>
-> ---
->  drivers/video/da8xx-fb.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index 29577bf..9879edc 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -987,6 +987,9 @@ static int cfb_blank(int blank, struct fb_info *info)
->  
->  		lcd_enable_raster();
->  		break;
-> +	case FB_BLANK_NORMAL:
-> +	case FB_BLANK_VSYNC_SUSPEND:
-> +	case FB_BLANK_HSYNC_SUSPEND:
->  	case FB_BLANK_POWERDOWN:
->  		if (par->panel_power_ctrl)
->  			par->panel_power_ctrl(0);
+Configure fifo threshold in raster dma_control register to
+512 bytes. This reduces LCDC underflow errors.
 
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+---
+Seems like version 1 of this patch did not reach fbdev mailing list.
+Since v1:
+No change, resending it as other patch in series has changed.
+ arch/arm/mach-davinci/devices-da8xx.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-+ linux-fbdev & Florian
+diff --git a/arch/arm/mach-davinci/devices-da8xx.c b/arch/arm/mach-davinci/devices-da8xx.c
+index d1624a3..783eab6 100644
+--- a/arch/arm/mach-davinci/devices-da8xx.c
++++ b/arch/arm/mach-davinci/devices-da8xx.c
+@@ -546,6 +546,7 @@ static struct lcd_ctrl_config lcd_cfg = {
+ 	.sync_edge		= 0,
+ 	.sync_ctrl		= 1,
+ 	.raster_order		= 0,
++	.fifo_th		= 6,
+ };
+ 
+ struct da8xx_lcdc_platform_data sharp_lcd035q3dg01_pdata = {
+-- 
+1.7.1
 
-You should always send Fbdev patches to linux-fbdev list.
-
-
-Thanks,
-Vaibhav

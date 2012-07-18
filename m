@@ -1,32 +1,79 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Date: Mon, 23 Jul 2012 20:38:15 +0000
-Subject: Re: [RFC][PATCH V2 3/3] tegra: add pwm backlight device tree nodes
-Message-Id: <500DB637.8000502@wwwdotorg.org>
+From: olaf@aepfle.de
+Date: Wed, 18 Jul 2012 16:49:04 +0000
+Subject: [PATCH] radeonfb: Add quirk for the graphics adapter in some JSxx
+Message-Id: <1342630144-16350-1-git-send-email-olaf@aepfle.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1341814105-20690-1-git-send-email-acourbot@nvidia.com> <1341814105-20690-4-git-send-email-acourbot@nvidia.com> <CAPnjgZ1QbjE+-tr0c01K2feUdEE2wMBfR=bKpTxnyDOJbY8+1Q@mail.gmail.com> <4FFEA2D4.9050308@nvidia.com> <CAPnjgZ2=Ga2P-40trA_=UABm=i7Uy4NTAM=ehea11mE22VfDew@mail.gmail.com> <4FFFB2DC.3040605@nvidia.com>
-In-Reply-To: <4FFFB2DC.3040605@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alex Courbot <acourbot@nvidia.com>
-Cc: Simon Glass <sjg@chromium.org>, Thierry Reding <thierry.reding@avionic-design.de>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-fbdev@vger.kernel.org, Olaf Hering <olaf@aepfle.de>
 
-On 07/12/2012 11:32 PM, Alex Courbot wrote:
-> On 07/12/2012 11:27 PM, Simon Glass wrote
-...
->>  From my understanding mixing strings and numbers in a property is
->> frowned on though.
-> 
-> But doesn't it make sense in the current case? The power sequence is
-> basically a program that is run by an interpreter. From this
-> perspective, it makes more sense to me to have it as a binary field
-> rather than a hierarchy of nodes and properties that will be harder to
-> parse and will make error detection more complicated. I don't really see
-> any practical benefit from turning the steps into sub-nodes, but then
-> again I am not so familiar with the DT.
+From: Tony Breeds <tony@bakeyournoodle.com>
 
-Mixing strings and integers in a property isn't "allowed" (by convention
-of DT bindings reviewers - as you noticed, dtc will happily compile it);
-there are practical issues with attempting to do so, such as causing the
-integer values to be unaligned, and thus causing the current integer
-parsing code to fail, etc.
+These devices are set to 640x480 by firmware, switch them to 800x600@60
+so that the graphical installer can run on remote console.
+
+Reported by IBM during SLES10 SP2 beta testing:
+
+https://bugzilla.novell.com/show_bug.cgi?idF1002
+LTC50817
+
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
+
+diff --git a/drivers/video/aty/radeon_monitor.c b/drivers/video/aty/radeon_monitor.c
+index 9261c91..5c23eac 100644
+--- a/drivers/video/aty/radeon_monitor.c
++++ b/drivers/video/aty/radeon_monitor.c
+@@ -730,6 +730,25 @@ static void radeon_videomode_to_var(struct fb_var_screeninfo *var,
+ 	var->vmode = mode->vmode;
+ }
+ 
++#ifdef CONFIG_PPC_PSERIES
++static int is_powerblade(const char *model)
++{
++	struct device_node *root;
++	const char* cp;
++	int len, l, rc = 0;
++
++	root = of_find_node_by_path("/");
++	if (root && model) {
++		l = strlen(model);
++		cp = of_get_property(root, "model", &len);
++		if (cp)
++			rc = memcmp(model, cp, min(len, l)) = 0;
++		of_node_put(root);
++	}
++	return rc;
++}
++#endif
++
+ /*
+  * Build the modedb for head 1 (head 2 will come later), check panel infos
+  * from either BIOS or EDID, and pick up the default mode
+@@ -865,6 +884,22 @@ void __devinit radeon_check_modes(struct radeonfb_info *rinfo, const char *mode_
+ 			has_default_mode = 1;
+  	}
+ 
++#ifdef CONFIG_PPC_PSERIES
++	if (!has_default_mode && (
++		is_powerblade("IBM,8842") || /* JS20 */
++		is_powerblade("IBM,8844") || /* JS21 */
++		is_powerblade("IBM,7998") || /* JS12/JS21/JS22 */
++		is_powerblade("IBM,0792") || /* QS21 */
++		is_powerblade("IBM,0793")    /* QS22 */
++	    )) {
++		printk("Falling back to 800x600 on JSxx hardware\n");
++		if (fb_find_mode(&info->var, info, "800x600@60",
++				 info->monspecs.modedb,
++				 info->monspecs.modedb_len, NULL, 8) != 0)
++			has_default_mode = 1;
++	}
++#endif
++
+ 	/*
+ 	 * Still no mode, let's pick up a default from the db
+ 	 */
+-- 
+1.7.10.4
+

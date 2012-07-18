@@ -1,37 +1,48 @@
-From: Alex Courbot <acourbot@nvidia.com>
-Date: Mon, 09 Jul 2012 07:48:28 +0000
-Subject: Re: [RFC][PATCH V2 2/3] pwm_backlight: use power sequences
-Message-Id: <4FFA8CCC.8060000@nvidia.com>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Wed, 18 Jul 2012 15:42:17 +0000
+Subject: [PATCH RESEND] video: da8xx-fb: enable sync lost interrupt
+Message-Id: <1342625417-6974-1-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1341814105-20690-1-git-send-email-acourbot@nvidia.com> <1341814105-20690-3-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1341814105-20690-3-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+To: linux-fbdev@vger.kernel.org
 
-Sorry, I just noticed a mistake in this patch I made while merging 
-another one. The following also needs to be changed, otherwise the 
-power-on sequence will never be executed:
+Patch enables sync lost interrupt and interrupt handler already
+takes care to handle it.
 
-diff --git a/drivers/video/backlight/pwm_bl.c 
-b/drivers/video/backlight/pwm_bl.c
-index 1a38953..4546d23 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -65,7 +98,7 @@ static int pwm_backlight_update_status(struct 
-backlight_device *bl)
-                 duty_cycle = pb->lth_brightness +
-                      (duty_cycle * (pb->period - pb->lth_brightness) / 
-max);
-                 pwm_config(pb->pwm, duty_cycle, pb->period);
--               pwm_enable(pb->pwm);
-+               pwm_backlight_on(bl);
-         }
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+---
+Resending as my earlier patch seems like not reached fbdev mailing list.
 
+ drivers/video/da8xx-fb.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-Apologies for the inconvenience.
-
-Alex.
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 88e98ea..e9d2f6e 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -54,6 +54,7 @@
+ #define LCD_DMA_BURST_8			0x3
+ #define LCD_DMA_BURST_16		0x4
+ #define LCD_V1_END_OF_FRAME_INT_ENA	BIT(2)
++#define LCD_V1_SYNC_LOST_ENA            BIT(5)
+ #define LCD_V2_END_OF_FRAME0_INT_ENA	BIT(8)
+ #define LCD_V2_END_OF_FRAME1_INT_ENA	BIT(9)
+ #define LCD_DUAL_FRAME_BUFFER_ENABLE	BIT(0)
+@@ -441,10 +442,10 @@ static int lcd_cfg_display(const struct lcd_ctrl_config *cfg)
+ 
+ 	/* enable additional interrupts here */
+ 	if (lcd_revision = LCD_VERSION_1) {
+-		reg |= LCD_V1_UNDERFLOW_INT_ENA;
++		reg |= LCD_V1_UNDERFLOW_INT_ENA | LCD_V1_SYNC_LOST_ENA;
+ 	} else {
+ 		reg_int = lcdc_read(LCD_INT_ENABLE_SET_REG) |
+-			LCD_V2_UNDERFLOW_INT_ENA;
++			LCD_V2_UNDERFLOW_INT_ENA | LCD_SYNC_LOST;
+ 		lcdc_write(reg_int, LCD_INT_ENABLE_SET_REG);
+ 	}
+ 
+-- 
+1.7.1
 

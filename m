@@ -1,64 +1,60 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 29 Jul 2012 21:16:00 +0000
-Subject: Re: [PATCH] da8xx-fb: do not turn ON LCD backlight unless LCDC is enabled
-Message-Id: <5015A810.9020409@gmx.de>
+From: Robin van der Gracht <robin@protonic.nl>
+Date: Wed, 18 Jul 2012 09:29:58 +0000
+Subject: Re: [BUGFIX] video/mxsfb: fix crash when unblanking the display
+Message-Id: <50068216.9020605@protonic.nl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343103325-7313-1-git-send-email-prakash.pm@ti.com>
-In-Reply-To: <1343103325-7313-1-git-send-email-prakash.pm@ti.com>
+References: <1323174425-24038-1-git-send-email-LW@KARO-electronics.de>
+ <20209.35406.958883.977664@ipc1.ka-ro>
+In-Reply-To: <20209.35406.958883.977664@ipc1.ka-ro>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-arm-kernel@lists.infradead.org
 
-On 07/24/2012 04:15 AM, Manjunathappa, Prakash wrote:
-> LCD blink is observed during suspend/resume and blank/unblank
-> operations as backlight is ON during LCDC disable and enable.
-> So make sure to turn OFF backlight before disabling and turn
-> it ON after enabling.
-> 
-> Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+Hi Lothar,
+> Hi,
+>
+> Lothar Waßmann writes:
+>> The VDCTRL4 register does not provide the MXS SET/CLR/TOGGLE feature.
+>> The write in mxsfb_disable_controller() sets the data_cnt for the LCD
+>> DMA to 0 which obviously means the max. count for the LCD DMA and
+>> leads to overwriting arbitrary memory when the display is unblanked.
+>>
+>> Signed-off-by: Lothar Waßmann<LW@KARO-electronics.de>
+>> ---
+>>   drivers/video/mxsfb.c |    3 ++-
+>>   1 files changed, 2 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/video/mxsfb.c b/drivers/video/mxsfb.c
+>> index d837d63..03cb95a 100644
+>> --- a/drivers/video/mxsfb.c
+>> +++ b/drivers/video/mxsfb.c
+>> @@ -366,7 +366,8 @@ static void mxsfb_disable_controller(struct fb_info *fb_info)
+>>   		loop--;
+>>   	}
+>>
+>> -	writel(VDCTRL4_SYNC_SIGNALS_ON, host->base + LCDC_VDCTRL4 + REG_CLR);
+>> +	reg = readl(host->base + LCDC_VDCTRL4);
+>> +	writel(reg&  ~VDCTRL4_SYNC_SIGNALS_ON, host->base + LCDC_VDCTRL4);
+>>
+>>   	clk_disable(host->clk);
+>>
+>> -- 
+>> 1.5.6.5
+>>
+> Ping. Any comments on this?
+>
+>
+> Lothar Waßmann
+I've encountered this problem to, and i can confirm your patch fixed it.
+The VDCTRL4 register has no CLR feature.
 
-Applied.
+Regards,
 
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/da8xx-fb.c |    9 +++++----
->  1 files changed, 5 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index 0fb4d7d..1a569ae 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -1056,10 +1056,10 @@ static int cfb_blank(int blank, struct fb_info *info)
->  	par->blank = blank;
->  	switch (blank) {
->  	case FB_BLANK_UNBLANK:
-> +		lcd_enable_raster();
-> +
->  		if (par->panel_power_ctrl)
->  			par->panel_power_ctrl(1);
-> -
-> -		lcd_enable_raster();
->  		break;
->  	case FB_BLANK_POWERDOWN:
->  		if (par->panel_power_ctrl)
-> @@ -1417,11 +1417,12 @@ static int fb_resume(struct platform_device *dev)
->  	struct da8xx_fb_par *par = info->par;
->  
->  	console_lock();
-> +	clk_enable(par->lcdc_clk);
-> +	lcd_enable_raster();
-> +
->  	if (par->panel_power_ctrl)
->  		par->panel_power_ctrl(1);
->  
-> -	clk_enable(par->lcdc_clk);
-> -	lcd_enable_raster();
->  	fb_set_suspend(info, 0);
->  	console_unlock();
->  
+-- 
+Robin van der Gracht
+Protonic Holland.
+tel.: +31 (0) 229 212928
+fax.: +31 (0) 229 210930
+Factorij 36 / 1689 AL Zwaag
 

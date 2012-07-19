@@ -1,189 +1,131 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Sun, 08 Jul 2012 21:56:49 +0000
-Subject: [PATCH v2 06/11] fblog: open fb on registration
-Message-Id: <1341784614-2797-7-git-send-email-dh.herrmann@googlemail.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Thu, 19 Jul 2012 00:39:16 +0000
+Subject: [PATCH 3/9] sh_mobile_meram: Add direct MERAM allocation API
+Message-Id: <1342658362-19491-4-git-send-email-laurent.pinchart@ideasonboard.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1341784614-2797-1-git-send-email-dh.herrmann@googlemail.com>
-In-Reply-To: <1341784614-2797-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-serial@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, florianschandinat@gmx.de, linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, alan@lxorguk.ukuu.org.uk, bonbons@linux-vserver.org, David Herrmann <dh.herrmann@googlemail.com>
+To: linux-fbdev@vger.kernel.org
 
-This opens the framebuffer upon registration so we can use it for
-drawing-operations. On unregistration we close it again.
+The API can be used to allocate and free MERAM blocks directly, without
+going through ICBs.
 
-To avoid deadlocks, we need to tell fblog_open/close() whether the
-framebuffer is currently locked. This is because some fb-notifiers are
-called with the lock held and others without it. We cannot release it in
-the notifier as this might confuse other registered callbacks if they
-actually depend on the lock to be continously held (such a callback is
-currently no available in the kernel, but may be added some time later).
-
-Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/console/fblog.c | 91 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 91 insertions(+)
+ drivers/video/sh_mobile_meram.c |   41 +++++++++++++++++++++++++++++++++++---
+ include/video/sh_mobile_meram.h |   16 +++++++++++++++
+ 2 files changed, 53 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
-index 3e0b471..113be36 100644
---- a/drivers/video/console/fblog.c
-+++ b/drivers/video/console/fblog.c
-@@ -30,12 +30,14 @@
- 
- enum fblog_flags {
- 	FBLOG_KILLED,
-+	FBLOG_OPEN,
- };
- 
- struct fblog_fb {
- 	unsigned long flags;
- 	struct fb_info *info;
- 	struct device dev;
-+	struct mutex lock;
- };
- 
- static DEFINE_MUTEX(fblog_registration_lock);
-@@ -43,6 +45,77 @@ static struct fblog_fb *fblog_fbs[FB_MAX];
- 
- #define to_fblog_dev(_d) container_of(_d, struct fblog_fb, dev)
- 
-+static int fblog_open(struct fblog_fb *fb, bool locked)
-+{
-+	int ret;
-+
-+	mutex_lock(&fb->lock);
-+
-+	if (test_bit(FBLOG_KILLED, &fb->flags)) {
-+		ret = -ENODEV;
-+		goto unlock;
-+	}
-+
-+	if (test_bit(FBLOG_OPEN, &fb->flags)) {
-+		ret = 0;
-+		goto unlock;
-+	}
-+
-+	if (!locked)
-+		mutex_lock(&fb->info->lock);
-+
-+	if (!try_module_get(fb->info->fbops->owner)) {
-+		ret = -ENODEV;
-+		goto out_killed;
-+	}
-+
-+	if (fb->info->fbops->fb_open && fb->info->fbops->fb_open(fb->info, 0)) {
-+		ret = -EIO;
-+		goto out_unref;
-+	}
-+
-+	if (!locked)
-+		mutex_unlock(&fb->info->lock);
-+
-+	set_bit(FBLOG_OPEN, &fb->flags);
-+	mutex_unlock(&fb->lock);
-+	return 0;
-+
-+out_unref:
-+	module_put(fb->info->fbops->owner);
-+out_killed:
-+	if (!locked)
-+		mutex_unlock(&fb->info->lock);
-+	set_bit(FBLOG_KILLED, &fb->flags);
-+unlock:
-+	mutex_unlock(&fb->lock);
-+	return ret;
-+}
-+
-+static void fblog_close(struct fblog_fb *fb, bool kill_dev, bool locked)
-+{
-+	mutex_lock(&fb->lock);
-+
-+	if (test_bit(FBLOG_OPEN, &fb->flags)) {
-+		if (!locked)
-+			mutex_lock(&fb->info->lock);
-+
-+		if (fb->info->fbops->fb_release)
-+			fb->info->fbops->fb_release(fb->info, 0);
-+		module_put(fb->info->fbops->owner);
-+
-+		if (!locked)
-+			mutex_unlock(&fb->info->lock);
-+
-+		clear_bit(FBLOG_OPEN, &fb->flags);
-+	}
-+
-+	if (kill_dev)
-+		set_bit(FBLOG_KILLED, &fb->flags);
-+
-+	mutex_unlock(&fb->lock);
-+}
-+
- /*
-  * fblog framebuffer list
-  * The fblog_fbs[] array contains all currently registered framebuffers. If a
-@@ -75,6 +148,7 @@ static void fblog_do_unregister(struct fb_info *info)
- 
- 	fblog_fbs[info->node] = NULL;
- 
-+	fblog_close(fb, true, false);
- 	device_del(&fb->dev);
- 	put_device(&fb->dev);
- }
-@@ -97,6 +171,7 @@ static void fblog_do_register(struct fb_info *info, bool force)
- 		return;
- 
- 	fb->info = info;
-+	mutex_init(&fb->lock);
- 	__module_get(THIS_MODULE);
- 	device_initialize(&fb->dev);
- 	fb->dev.class = fb_class;
-@@ -111,6 +186,8 @@ static void fblog_do_register(struct fb_info *info, bool force)
- 		put_device(&fb->dev);
- 		return;
- 	}
-+
-+	fblog_open(fb, true);
+diff --git a/drivers/video/sh_mobile_meram.c b/drivers/video/sh_mobile_meram.c
+index fdb6fc1..7a0ba8b 100644
+--- a/drivers/video/sh_mobile_meram.c
++++ b/drivers/video/sh_mobile_meram.c
+@@ -195,6 +195,21 @@ static inline unsigned long meram_read_reg(void __iomem *base, unsigned int off)
  }
  
- static void fblog_register(struct fb_info *info, bool force)
-@@ -132,6 +209,7 @@ static int fblog_event(struct notifier_block *self, unsigned long action,
+ /* -----------------------------------------------------------------------------
++ * MERAM allocation and free
++ */
++
++static unsigned long meram_alloc(struct sh_mobile_meram_priv *priv, size_t size)
++{
++	return gen_pool_alloc(priv->pool, size);
++}
++
++static void meram_free(struct sh_mobile_meram_priv *priv, unsigned long mem,
++		       size_t size)
++{
++	gen_pool_free(priv->pool, mem, size);
++}
++
++/* -----------------------------------------------------------------------------
+  * LCDC cache planes allocation, init, cleanup and free
+  */
+ 
+@@ -216,7 +231,7 @@ static int meram_plane_alloc(struct sh_mobile_meram_priv *priv,
+ 		return -ENOMEM;
+ 	plane->marker = &priv->icbs[idx];
+ 
+-	mem = gen_pool_alloc(priv->pool, size * 1024);
++	mem = meram_alloc(priv, size * 1024);
+ 	if (mem = 0)
+ 		return -ENOMEM;
+ 
+@@ -233,8 +248,8 @@ static int meram_plane_alloc(struct sh_mobile_meram_priv *priv,
+ static void meram_plane_free(struct sh_mobile_meram_priv *priv,
+ 			     struct sh_mobile_meram_fb_plane *plane)
  {
- 	struct fb_event *event = data;
- 	struct fb_info *info = event->info;
-+	struct fblog_fb *fb;
+-	gen_pool_free(priv->pool, priv->meram + plane->marker->offset,
+-		      plane->marker->size * 1024);
++	meram_free(priv, priv->meram + plane->marker->offset,
++		   plane->marker->size * 1024);
  
- 	switch(action) {
- 	case FB_EVENT_FB_REGISTERED:
-@@ -146,6 +224,17 @@ static int fblog_event(struct notifier_block *self, unsigned long action,
- 		 * lock might not be held. */
- 		fblog_unregister(info);
- 		break;
-+	case FB_EVENT_FB_UNBIND:
-+		/* Called directly before unregistering an FB. The FB is still
-+		 * valid here and the registration lock is held but the console
-+		 * lock might not be held (really?). */
-+		mutex_lock(&fblog_registration_lock);
-+		fb = fblog_fbs[info->node];
-+		mutex_unlock(&fblog_registration_lock);
+ 	__clear_bit(plane->marker->index, &priv->used_icb);
+ 	__clear_bit(plane->cache->index, &priv->used_icb);
+@@ -386,9 +401,27 @@ static void meram_plane_cleanup(struct sh_mobile_meram_priv *priv,
+ }
+ 
+ /* -----------------------------------------------------------------------------
+- * LCDC cache operations
++ * MERAM operations
+  */
+ 
++unsigned long sh_mobile_meram_alloc(struct sh_mobile_meram_info *pdata,
++				    size_t size)
++{
++	struct sh_mobile_meram_priv *priv = pdata->priv;
 +
-+		if (fb)
-+			fblog_close(fb, true, true);
-+		break;
- 	}
++	return meram_alloc(priv, size);
++}
++EXPORT_SYMBOL_GPL(sh_mobile_meram_alloc);
++
++void sh_mobile_meram_free(struct sh_mobile_meram_info *pdata, unsigned long mem,
++			  size_t size)
++{
++	struct sh_mobile_meram_priv *priv = pdata->priv;
++
++	meram_free(priv, mem, size);
++}
++EXPORT_SYMBOL_GPL(sh_mobile_meram_free);
++
+ /* Allocate memory for the ICBs and mark them as used. */
+ static struct sh_mobile_meram_fb_cache *
+ meram_cache_alloc(struct sh_mobile_meram_priv *priv,
+diff --git a/include/video/sh_mobile_meram.h b/include/video/sh_mobile_meram.h
+index 1134837..062e6e7 100644
+--- a/include/video/sh_mobile_meram.h
++++ b/include/video/sh_mobile_meram.h
+@@ -38,6 +38,10 @@ struct sh_mobile_meram_cfg {
  
- 	return 0;
-@@ -161,7 +250,9 @@ static void fblog_scan(void)
- 		if (!info || IS_ERR(info))
- 			continue;
- 
-+		mutex_lock(&info->lock);
- 		fblog_register(info, false);
-+		mutex_unlock(&info->lock);
- 
- 		/* There is a very subtle race-condition. Even though we might
- 		 * own a reference to the fb, it may still get unregistered
+ #if defined(CONFIG_FB_SH_MOBILE_MERAM) || \
+     defined(CONFIG_FB_SH_MOBILE_MERAM_MODULE)
++unsigned long sh_mobile_meram_alloc(struct sh_mobile_meram_info *meram_dev,
++				    size_t size);
++void sh_mobile_meram_free(struct sh_mobile_meram_info *meram_dev,
++			  unsigned long mem, size_t size);
+ void *sh_mobile_meram_cache_alloc(struct sh_mobile_meram_info *dev,
+ 				  const struct sh_mobile_meram_cfg *cfg,
+ 				  unsigned int xres, unsigned int yres,
+@@ -50,6 +54,18 @@ void sh_mobile_meram_cache_update(struct sh_mobile_meram_info *dev, void *data,
+ 				  unsigned long *icb_addr_y,
+ 				  unsigned long *icb_addr_c);
+ #else
++static inline unsigned long
++sh_mobile_meram_alloc(struct sh_mobile_meram_info *meram_dev, size_t size)
++{
++	return 0;
++}
++
++static inline void
++sh_mobile_meram_free(struct sh_mobile_meram_info *meram_dev,
++		     unsigned long mem, size_t size)
++{
++}
++
+ static inline void *
+ sh_mobile_meram_cache_alloc(struct sh_mobile_meram_info *dev,
+ 			    const struct sh_mobile_meram_cfg *cfg,
 -- 
-1.7.11.1
+1.7.8.6
 

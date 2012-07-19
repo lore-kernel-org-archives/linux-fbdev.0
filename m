@@ -1,41 +1,88 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Date: Tue, 03 Jul 2012 07:46:33 +0000
-Subject: Re: [PATCH 0/2] simple device tree support for mxsfb
-Message-Id: <20120703074631.GE22705@S2101-09.ap.freescale.net>
+From: Raphael Assenat <raph@8d.com>
+Date: Thu, 19 Jul 2012 20:04:29 +0000
+Subject: [PATCH] OMAPDSS: Do not require a VDDS_DSI regulator on am35xx
+Message-Id: <20120719200429.GD3850@renkinjitsu.usine.8d.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1340701379-8619-1-git-send-email-shawn.guo@linaro.org>
-In-Reply-To: <1340701379-8619-1-git-send-email-shawn.guo@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-omap@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org
 
-Hi Florian,
+On our AM3505 based board, dpi.c complains that there is no VDSS_DSI regulator
+and the framebuffer cannot be enabled. However, this check does not seem to
+apply to AM3505/17 chips.
 
-On Tue, Jun 26, 2012 at 05:02:57PM +0800, Shawn Guo wrote:
-> It adds a simple device tree support for mxsfb driver.
-> 
-> Shawn Guo (2):
->   video: mxsfb: move mxsfb.h into include/linux
->   video: mxsfb: add simple device tree probe
-> 
-I just queued these two patches on mxs arch tree.  Please let me know
-if you see problem with that.
+I am not the first facing this issue, see this thread from Nov. 2011:
+http://marc.info/?l=linux-omap&m2147745930213&w=2
 
-Regards,
-Shawn
+The string 'vdds_dsi' does appear once in the technical reference manual[1]
+but there is no corresponding power pin on the package[2]. I failed to 
+locate any signal that could be an equivalent. I am trying to obtain some
+clarifications on TI's forum[3]...
 
->  Documentation/devicetree/bindings/fb/mxsfb.txt     |   21 +++++++
->  arch/arm/mach-mxs/devices-mx23.h                   |    2 +-
->  arch/arm/mach-mxs/devices-mx28.h                   |    2 +-
->  arch/arm/mach-mxs/devices/platform-mxsfb.c         |    2 +-
->  drivers/video/mxsfb.c                              |   62 +++++++++++++++-----
->  .../include/mach => include/linux}/mxsfb.h         |    6 +-
->  6 files changed, 75 insertions(+), 20 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/fb/mxsfb.txt
->  rename {arch/arm/mach-mxs/include/mach => include/linux}/mxsfb.h (95%)
-> 
-> -- 
-> 1.7.5.4
-> 
-> 
+In any case, I am currently running with the patch below. In order to keep
+cpu_is_xx uses to a minimum, I check for am35xx once at init time and allow
+dpi.vdds_dsi_reg to be NULL from then on, getting rid of all the other
+cpu_is_omap34xx uses in the process.
+
+Your comments would be appreciated. Please also consider for merging.
+
+[1] http://www.ti.com/litv/pdf/sprugr0b
+[2] http://www.ti.com/lit/gpn/am3505
+[3] http://e2e.ti.com/support/dsp/sitara_arm174_microprocessors/f/416/t/202586.aspx
+
+Signed-off-by: Raphael Assenat <raph@8d.com>
+
+diff --git a/drivers/video/omap2/dss/dpi.c b/drivers/video/omap2/dss/dpi.c
+index 8c2056c..d3b428d 100644
+--- a/drivers/video/omap2/dss/dpi.c
++++ b/drivers/video/omap2/dss/dpi.c
+@@ -180,11 +180,6 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
+ {
+ 	int r;
+ 
+-	if (cpu_is_omap34xx() && !dpi.vdds_dsi_reg) {
+-		DSSERR("no VDSS_DSI regulator\n");
+-		return -ENODEV;
+-	}
+-
+ 	if (dssdev->manager = NULL) {
+ 		DSSERR("failed to enable display: no manager\n");
+ 		return -ENODEV;
+@@ -196,7 +191,7 @@ int omapdss_dpi_display_enable(struct omap_dss_device *dssdev)
+ 		goto err_start_dev;
+ 	}
+ 
+-	if (cpu_is_omap34xx()) {
++	if (dpi.vdds_dsi_reg) {
+ 		r = regulator_enable(dpi.vdds_dsi_reg);
+ 		if (r)
+ 			goto err_reg_enable;
+@@ -240,7 +235,7 @@ err_dsi_pll_init:
+ err_get_dsi:
+ 	dispc_runtime_put();
+ err_get_dispc:
+-	if (cpu_is_omap34xx())
++	if (dpi.vdds_dsi_reg)
+ 		regulator_disable(dpi.vdds_dsi_reg);
+ err_reg_enable:
+ 	omap_dss_stop_device(dssdev);
+@@ -261,7 +256,7 @@ void omapdss_dpi_display_disable(struct omap_dss_device *dssdev)
+ 
+ 	dispc_runtime_put();
+ 
+-	if (cpu_is_omap34xx())
++	if (dpi.vdds_dsi_reg)
+ 		regulator_disable(dpi.vdds_dsi_reg);
+ 
+ 	omap_dss_stop_device(dssdev);
+@@ -343,7 +338,7 @@ static int __init dpi_init_display(struct omap_dss_device *dssdev)
+ {
+ 	DSSDBG("init_display\n");
+ 
+-	if (cpu_is_omap34xx() && dpi.vdds_dsi_reg = NULL) {
++	if (cpu_is_omap34xx() && dpi.vdds_dsi_reg = NULL && !soc_is_am35xx()) {
+ 		struct regulator *vdds_dsi;
+ 
+ 		vdds_dsi = dss_get_vdds_dsi();

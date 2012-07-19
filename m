@@ -1,33 +1,94 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 18 Jul 2012 22:57:47 +0000
-Subject: Re: [PATCH] fbdev: Add ioctls FBIO_COPYRECT, FBIO_FILLRECT, lest these operations be done in softwar
-Message-Id: <2444839.KFfsli056l@avalon>
+From: Donghwa Lee <dh09.lee@samsung.com>
+Date: Thu, 19 Jul 2012 00:43:33 +0000
+Subject: [PATCH] video: ld9040: support early fb event of fb_blank()
+Message-Id: <50075835.2040703@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAL3m8eA=46wdwVosiE54eNx3FOuLyxfE5axKs_HjyMTGxDHRDw@mail.gmail.com>
-In-Reply-To: <CAL3m8eA=46wdwVosiE54eNx3FOuLyxfE5axKs_HjyMTGxDHRDw@mail.gmail.com>
+References: <500757AE.3010202@samsung.com>
+In-Reply-To: <500757AE.3010202@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Strake <strake888@gmail.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Thursday 21 June 2012 07:22:50 Strake wrote:
-> From: Matthew Farkas-Dyck <strake888@gmail.com>
-> 
-> Add ioctls FBIO_COPYRECT, FBIO_FILLRECT, lest these operations be done
-> in software.
-> 
-> Signed-off-by: Matthew Farkas-Dyck <strake888@gmail.com>
-> ---
-> 
-> Reason: If it can be done in hardware, it ought to be. This will
-> enable user-mode software to do so.
+This patch supports early fb event of fb_blank().
 
-If we really want to go this way, I think we should develop a proper 2D 
-acceleration API. I'm not sure whether it's worth the effort though.
+- In case of lcd power off : call early_set_power() interface and lcd
+power is off. And then framebuffer is blanked.
 
+- In case of lcd power on : First, framebuffer is unblanked, and then
+call set_power() interface to turn lcd on.
+
+Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
+Signed-off-by: Inki Dae <inki.dae@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ drivers/video/backlight/ld9040.c |   36 +++++++++++++++++++++++++++++++++++-
+ 1 files changed, 35 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/backlight/ld9040.c b/drivers/video/backlight/ld9040.c
+index efd352b..221c843 100644
+--- a/drivers/video/backlight/ld9040.c
++++ b/drivers/video/backlight/ld9040.c
+@@ -642,17 +642,50 @@ static int ld9040_power(struct ld9040 *lcd, int power)
+ 	return ret;
+ }
+ 
++static int ld9040_early_set_power(struct lcd_device *ld, int power)
++{
++	struct ld9040 *lcd = lcd_get_data(ld);
++	int ret = 0;
++
++	if (power != FB_BLANK_UNBLANK && power != FB_BLANK_POWERDOWN &&
++		power != FB_BLANK_NORMAL) {
++		dev_err(lcd->dev, "power value should be 0, 1 or 4.\n");
++
++		return -EINVAL;
++	}
++
++	if (!power_is_on(power) && power_is_on(lcd->power)) {
++		ret = ld9040_power(lcd, power);
++		if (!ret)
++			lcd->power = power;
++	}
++
++	return ret;
++}
++
+ static int ld9040_set_power(struct lcd_device *ld, int power)
+ {
+ 	struct ld9040 *lcd = lcd_get_data(ld);
++	struct backlight_device *bd = lcd->bd;
++	int ret = 0;
+ 
+ 	if (power != FB_BLANK_UNBLANK && power != FB_BLANK_POWERDOWN &&
+ 		power != FB_BLANK_NORMAL) {
+ 		dev_err(lcd->dev, "power value should be 0, 1 or 4.\n");
++
+ 		return -EINVAL;
+ 	}
+ 
+-	return ld9040_power(lcd, power);
++	if (power_is_on(power) && !power_is_on(lcd->power)) {
++		ret = ld9040_power(lcd, power);
++		if (!ret)
++			lcd->power = power;
++
++		ld9040_gamma_ctl(lcd, bd->props.brightness);
++	} else
++		ld9040_early_set_power(ld, power);
++
++	return ret;
+ }
+ 
+ static int ld9040_get_power(struct lcd_device *ld)
+@@ -689,6 +722,7 @@ static int ld9040_set_brightness(struct backlight_device *bd)
+ }
+ 
+ static struct lcd_ops ld9040_lcd_ops = {
++	.early_set_power = ld9040_early_set_power,
+ 	.set_power = ld9040_set_power,
+ 	.get_power = ld9040_get_power,
+ };
 -- 
-Regards,
-
-Laurent Pinchart
+1.7.4.1
 

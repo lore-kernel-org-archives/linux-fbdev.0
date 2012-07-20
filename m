@@ -1,149 +1,191 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 08 Jul 2012 22:03:30 +0000
-Subject: Re: [PATCH] [resend] s3fb: Add Virge/MX (86C260)
-Message-Id: <4FFA03B2.90308@gmx.de>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Fri, 20 Jul 2012 16:03:56 +0000
+Subject: [PATCH] video: da8xx-fb: allow frame to complete before disabling LCDC
+Message-Id: <1342799516-10842-1-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201207061512.11975.linux@rainbow-software.org>
-In-Reply-To: <201207061512.11975.linux@rainbow-software.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: Ondrej Zajicek <santiago@crfreenet.org>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-On 07/06/2012 01:12 PM, Ondrej Zary wrote:
-> Add support for Virge/MX (86C260) chip. Although this is a laptop chip,
-> there's an AGP card with this chip too.
-> 
-> Tested with AGP card, will probably not work correctly with laptops.
-> DDC does not work on this card (even in DOS or Windows).
-> 
-> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Wait for active frame transfer to complete before disabling LCDC.
+At the same this wait is not be required when there are sync and
+underflow errors.
 
-Applied.
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+---
+ drivers/video/da8xx-fb.c |   58 ++++++++++++++++++++++++++++++++++++---------
+ 1 files changed, 46 insertions(+), 12 deletions(-)
 
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> 
-> --- a/drivers/video/s3fb.c
-> +++ b/drivers/video/s3fb.c
-> @@ -84,7 +84,7 @@ static const char * const s3_names[] = {"S3 Unknown", "S3 Trio32", "S3 Trio64",
->  			"S3 Virge/VX", "S3 Virge/DX", "S3 Virge/GX",
->  			"S3 Virge/GX2", "S3 Virge/GX2+", "",
->  			"S3 Trio3D/1X", "S3 Trio3D/2X", "S3 Trio3D/2X",
-> -			"S3 Trio3D"};
-> +			"S3 Trio3D", "S3 Virge/MX"};
->  
->  #define CHIP_UNKNOWN		0x00
->  #define CHIP_732_TRIO32		0x01
-> @@ -105,6 +105,7 @@ static const char * const s3_names[] = {"S3 Unknown", "S3 Trio32", "S3 Trio64",
->  #define CHIP_362_TRIO3D_2X	0x11
->  #define CHIP_368_TRIO3D_2X	0x12
->  #define CHIP_365_TRIO3D		0x13
-> +#define CHIP_260_VIRGE_MX	0x14
->  
->  #define CHIP_XXX_TRIO		0x80
->  #define CHIP_XXX_TRIO64V2_DXGX	0x81
-> @@ -280,7 +281,8 @@ static int __devinit s3fb_setup_ddc_bus(struct fb_info *info)
->  	 */
->  /*	vga_wseq(par->state.vgabase, 0x08, 0x06); - not needed, already unlocked */
->  	if (par->chip = CHIP_357_VIRGE_GX2 ||
-> -	    par->chip = CHIP_359_VIRGE_GX2P)
-> +	    par->chip = CHIP_359_VIRGE_GX2P ||
-> +	    par->chip = CHIP_260_VIRGE_MX)
->  		svga_wseq_mask(par->state.vgabase, 0x0d, 0x01, 0x03);
->  	else
->  		svga_wseq_mask(par->state.vgabase, 0x0d, 0x00, 0x03);
-> @@ -487,7 +489,8 @@ static void s3_set_pixclock(struct fb_info *info, u32 pixclock)
->  	    par->chip = CHIP_359_VIRGE_GX2P ||
->  	    par->chip = CHIP_360_TRIO3D_1X ||
->  	    par->chip = CHIP_362_TRIO3D_2X ||
-> -	    par->chip = CHIP_368_TRIO3D_2X) {
-> +	    par->chip = CHIP_368_TRIO3D_2X ||
-> +	    par->chip = CHIP_260_VIRGE_MX) {
->  		vga_wseq(par->state.vgabase, 0x12, (n - 2) | ((r & 3) << 6));	/* n and two bits of r */
->  		vga_wseq(par->state.vgabase, 0x29, r >> 2); /* remaining highest bit of r */
->  	} else
-> @@ -690,7 +693,8 @@ static int s3fb_set_par(struct fb_info *info)
->  	    par->chip != CHIP_359_VIRGE_GX2P &&
->  	    par->chip != CHIP_360_TRIO3D_1X &&
->  	    par->chip != CHIP_362_TRIO3D_2X &&
-> -	    par->chip != CHIP_368_TRIO3D_2X) {
-> +	    par->chip != CHIP_368_TRIO3D_2X &&
-> +	    par->chip != CHIP_260_VIRGE_MX) {
->  		vga_wcrt(par->state.vgabase, 0x54, 0x18); /* M parameter */
->  		vga_wcrt(par->state.vgabase, 0x60, 0xff); /* N parameter */
->  		vga_wcrt(par->state.vgabase, 0x61, 0xff); /* L parameter */
-> @@ -739,7 +743,8 @@ static int s3fb_set_par(struct fb_info *info)
->  	    par->chip = CHIP_368_TRIO3D_2X ||
->  	    par->chip = CHIP_365_TRIO3D    ||
->  	    par->chip = CHIP_375_VIRGE_DX  ||
-> -	    par->chip = CHIP_385_VIRGE_GX) {
-> +	    par->chip = CHIP_385_VIRGE_GX  ||
-> +	    par->chip = CHIP_260_VIRGE_MX) {
->  		dbytes = info->var.xres * ((bpp+7)/8);
->  		vga_wcrt(par->state.vgabase, 0x91, (dbytes + 7) / 8);
->  		vga_wcrt(par->state.vgabase, 0x90, (((dbytes + 7) / 8) >> 8) | 0x80);
-> @@ -751,7 +756,8 @@ static int s3fb_set_par(struct fb_info *info)
->  	    par->chip = CHIP_359_VIRGE_GX2P ||
->  	    par->chip = CHIP_360_TRIO3D_1X ||
->  	    par->chip = CHIP_362_TRIO3D_2X ||
-> -	    par->chip = CHIP_368_TRIO3D_2X)
-> +	    par->chip = CHIP_368_TRIO3D_2X ||
-> +	    par->chip = CHIP_260_VIRGE_MX)
->  		vga_wcrt(par->state.vgabase, 0x34, 0x00);
->  	else	/* enable Data Transfer Position Control (DTPC) */
->  		vga_wcrt(par->state.vgabase, 0x34, 0x10);
-> @@ -807,7 +813,8 @@ static int s3fb_set_par(struct fb_info *info)
->  		    par->chip = CHIP_359_VIRGE_GX2P ||
->  		    par->chip = CHIP_360_TRIO3D_1X ||
->  		    par->chip = CHIP_362_TRIO3D_2X ||
-> -		    par->chip = CHIP_368_TRIO3D_2X)
-> +		    par->chip = CHIP_368_TRIO3D_2X ||
-> +		    par->chip = CHIP_260_VIRGE_MX)
->  			svga_wcrt_mask(par->state.vgabase, 0x67, 0x00, 0xF0);
->  		else {
->  			svga_wcrt_mask(par->state.vgabase, 0x67, 0x10, 0xF0);
-> @@ -837,7 +844,8 @@ static int s3fb_set_par(struct fb_info *info)
->  			    par->chip != CHIP_359_VIRGE_GX2P &&
->  			    par->chip != CHIP_360_TRIO3D_1X &&
->  			    par->chip != CHIP_362_TRIO3D_2X &&
-> -			    par->chip != CHIP_368_TRIO3D_2X)
-> +			    par->chip != CHIP_368_TRIO3D_2X &&
-> +			    par->chip != CHIP_260_VIRGE_MX)
->  				hmul = 2;
->  		}
->  		break;
-> @@ -864,7 +872,8 @@ static int s3fb_set_par(struct fb_info *info)
->  			    par->chip != CHIP_359_VIRGE_GX2P &&
->  			    par->chip != CHIP_360_TRIO3D_1X &&
->  			    par->chip != CHIP_362_TRIO3D_2X &&
-> -			    par->chip != CHIP_368_TRIO3D_2X)
-> +			    par->chip != CHIP_368_TRIO3D_2X &&
-> +			    par->chip != CHIP_260_VIRGE_MX)
->  				hmul = 2;
->  		}
->  		break;
-> @@ -1208,7 +1217,8 @@ static int __devinit s3_pci_probe(struct pci_dev *dev, const struct pci_device_i
->  			break;
->  		}
->  	} else if (par->chip = CHIP_357_VIRGE_GX2 ||
-> -		   par->chip = CHIP_359_VIRGE_GX2P) {
-> +		   par->chip = CHIP_359_VIRGE_GX2P ||
-> +		   par->chip = CHIP_260_VIRGE_MX) {
->  		switch ((regval & 0xC0) >> 6) {
->  		case 1: /* 4MB */
->  			info->screen_size = 4 << 20;
-> @@ -1515,6 +1525,7 @@ static struct pci_device_id s3_devices[] __devinitdata = {
->  	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A12), .driver_data = CHIP_359_VIRGE_GX2P},
->  	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A13), .driver_data = CHIP_36X_TRIO3D_1X_2X},
->  	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8904), .driver_data = CHIP_365_TRIO3D},
-> +	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8C01), .driver_data = CHIP_260_VIRGE_MX},
->  
->  	{0, 0, 0, 0, 0, 0, 0}
->  };
-> 
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 4440292..c178592 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -31,6 +31,7 @@
+ #include <linux/cpufreq.h>
+ #include <linux/console.h>
+ #include <linux/slab.h>
++#include <linux/delay.h>
+ #include <video/da8xx-fb.h>
+ #include <asm/div64.h>
+ 
+@@ -45,6 +46,7 @@
+ #define LCD_PL_LOAD_DONE		BIT(6)
+ #define LCD_FIFO_UNDERFLOW		BIT(5)
+ #define LCD_SYNC_LOST			BIT(2)
++#define LCD_FRAME_DONE			BIT(0)
+ 
+ /* LCD DMA Control Register */
+ #define LCD_DMA_BURST_SIZE(x)		((x) << 4)
+@@ -129,6 +131,8 @@
+ #define RIGHT_MARGIN	64
+ #define UPPER_MARGIN	32
+ #define LOWER_MARGIN	32
++#define WAIT_FOR_FRAME_DONE	true
++#define NO_WAIT_FOR_FRAME_DONE	false
+ 
+ static resource_size_t da8xx_fb_reg_base;
+ static struct resource *lcdc_regs;
+@@ -280,13 +284,39 @@ static inline void lcd_enable_raster(void)
+ }
+ 
+ /* Disable the Raster Engine of the LCD Controller */
+-static inline void lcd_disable_raster(void)
++static inline void lcd_disable_raster(bool wait_for_frame_done)
+ {
+ 	u32 reg;
++	u32 loop_cnt = 0;
++	u32 stat;
++	u32 i = 0;
++
++	/* 50 milli seconds should be sufficient for a frame to complete */
++	if (wait_for_frame_done)
++		loop_cnt = 50;
+ 
+ 	reg = lcdc_read(LCD_RASTER_CTRL_REG);
+ 	if (reg & LCD_RASTER_ENABLE)
+ 		lcdc_write(reg & ~LCD_RASTER_ENABLE, LCD_RASTER_CTRL_REG);
++
++	/* Wait for the current frame to complete */
++	do {
++		if (lcd_revision = LCD_VERSION_1)
++			stat = lcdc_read(LCD_STAT_REG);
++		else
++			stat = lcdc_read(LCD_RAW_STAT_REG);
++		mdelay(1);
++	} while (!(stat & LCD_FRAME_DONE) && (i++ < loop_cnt));
++
++	if (lcd_revision = LCD_VERSION_1)
++		lcdc_write(stat, LCD_STAT_REG);
++	else
++		lcdc_write(stat, LCD_MASKED_STAT_REG);
++
++	if ((loop_cnt != 0) && (i >= loop_cnt)) {
++		pr_err("LCD Controller timed out\n");
++		return;
++	}
+ }
+ 
+ static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
+@@ -663,7 +693,7 @@ static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ static void lcd_reset(struct da8xx_fb_par *par)
+ {
+ 	/* Disable the Raster if previously Enabled */
+-	lcd_disable_raster();
++	lcd_disable_raster(NO_WAIT_FOR_FRAME_DONE);
+ 
+ 	/* DMA has to be disabled */
+ 	lcdc_write(0, LCD_DMA_CTRL_REG);
+@@ -760,7 +790,8 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
+ 	u32 reg_int;
+ 
+ 	if ((stat & LCD_SYNC_LOST) && (stat & LCD_FIFO_UNDERFLOW)) {
+-		lcd_disable_raster();
++		pr_err("LCDC sync lost or underflow error occured\n");
++		lcd_disable_raster(NO_WAIT_FOR_FRAME_DONE);
+ 		lcdc_write(stat, LCD_MASKED_STAT_REG);
+ 		lcd_enable_raster();
+ 	} else if (stat & LCD_PL_LOAD_DONE) {
+@@ -770,7 +801,7 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
+ 		 * interrupt via the following write to the status register. If
+ 		 * this is done after then one gets multiple PL done interrupts.
+ 		 */
+-		lcd_disable_raster();
++		lcd_disable_raster(NO_WAIT_FOR_FRAME_DONE);
+ 
+ 		lcdc_write(stat, LCD_MASKED_STAT_REG);
+ 
+@@ -815,7 +846,8 @@ static irqreturn_t lcdc_irq_handler_rev01(int irq, void *arg)
+ 	u32 reg_ras;
+ 
+ 	if ((stat & LCD_SYNC_LOST) && (stat & LCD_FIFO_UNDERFLOW)) {
+-		lcd_disable_raster();
++		pr_err("LCDC sync lost or underflow error occured\n");
++		lcd_disable_raster(NO_WAIT_FOR_FRAME_DONE);
+ 		lcdc_write(stat, LCD_STAT_REG);
+ 		lcd_enable_raster();
+ 	} else if (stat & LCD_PL_LOAD_DONE) {
+@@ -825,7 +857,7 @@ static irqreturn_t lcdc_irq_handler_rev01(int irq, void *arg)
+ 		 * interrupt via the following write to the status register. If
+ 		 * this is done after then one gets multiple PL done interrupts.
+ 		 */
+-		lcd_disable_raster();
++		lcd_disable_raster(NO_WAIT_FOR_FRAME_DONE);
+ 
+ 		lcdc_write(stat, LCD_STAT_REG);
+ 
+@@ -945,7 +977,7 @@ static int lcd_da8xx_cpufreq_transition(struct notifier_block *nb,
+ 	if (val = CPUFREQ_POSTCHANGE) {
+ 		if (par->lcd_fck_rate != clk_get_rate(par->lcdc_clk)) {
+ 			par->lcd_fck_rate = clk_get_rate(par->lcdc_clk);
+-			lcd_disable_raster();
++			lcd_disable_raster(WAIT_FOR_FRAME_DONE);
+ 			lcd_calc_clk_divider(par);
+ 			lcd_enable_raster();
+ 		}
+@@ -982,7 +1014,7 @@ static int __devexit fb_remove(struct platform_device *dev)
+ 		if (par->panel_power_ctrl)
+ 			par->panel_power_ctrl(0);
+ 
+-		lcd_disable_raster();
++		lcd_disable_raster(WAIT_FOR_FRAME_DONE);
+ 		lcdc_write(0, LCD_RASTER_CTRL_REG);
+ 
+ 		/* disable DMA  */
+@@ -1095,7 +1127,7 @@ static int cfb_blank(int blank, struct fb_info *info)
+ 		if (par->panel_power_ctrl)
+ 			par->panel_power_ctrl(0);
+ 
+-		lcd_disable_raster();
++		lcd_disable_raster(WAIT_FOR_FRAME_DONE);
+ 		break;
+ 	default:
+ 		ret = -EINVAL;
+@@ -1435,7 +1467,7 @@ static int fb_suspend(struct platform_device *dev, pm_message_t state)
+ 		par->panel_power_ctrl(0);
+ 
+ 	fb_set_suspend(info, 1);
+-	lcd_disable_raster();
++	lcd_disable_raster(WAIT_FOR_FRAME_DONE);
+ 	clk_disable(par->lcdc_clk);
+ 	console_unlock();
+ 
+@@ -1447,11 +1479,13 @@ static int fb_resume(struct platform_device *dev)
+ 	struct da8xx_fb_par *par = info->par;
+ 
+ 	console_lock();
+-	if (par->panel_power_ctrl)
+-		par->panel_power_ctrl(1);
+ 
+ 	clk_enable(par->lcdc_clk);
++	usleep_range(1000, 2000);
+ 	lcd_enable_raster();
++	if (par->panel_power_ctrl)
++		par->panel_power_ctrl(1);
++
+ 	fb_set_suspend(info, 0);
+ 	console_unlock();
+ 
+-- 
+1.7.1
 

@@ -1,90 +1,77 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Sun, 15 Jul 2012 19:04:43 +0000
-Subject: [PATCH v3 08/11] fblog: cache framebuffer BLANK and SUSPEND states
-Message-Id: <1342379086-7583-9-git-send-email-dh.herrmann@googlemail.com>
+From: Donghwa Lee <dh09.lee@samsung.com>
+Date: Mon, 23 Jul 2012 04:27:34 +0000
+Subject: [PATCH] video: exynos: s6e8ax0: support early fb event of fb_blank()
+Message-Id: <500CD2B6.2080109@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1342379086-7583-1-git-send-email-dh.herrmann@googlemail.com>
-In-Reply-To: <1342379086-7583-1-git-send-email-dh.herrmann@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, David Herrmann <dh.herrmann@googlemail.com>
+To: linux-arm-kernel@lists.infradead.org
 
-We must cache these states so we will never draw to the framebuffer while
-it is suspended or blanked.
+This patch supports early fb event of fb_blank().
 
-Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+- In case of lcd power off : call early_set_power() interface and lcd
+power is off. And then framebuffer is blanked.
+
+- In case of lcd power on : First, framebuffer is unblanked, and then
+call set_power() interface to turn lcd on.
+
+Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
+Signed-off-by: Inki Dae <inki.dae@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/video/console/fblog.c | 41 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
+ drivers/video/exynos/s6e8ax0.c |   32 ++++++++++++++++++++++++++++++++
+ 1 files changed, 32 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
-index 5519f91..9b975bc 100644
---- a/drivers/video/console/fblog.c
-+++ b/drivers/video/console/fblog.c
-@@ -33,6 +33,8 @@
- enum fblog_flags {
- 	FBLOG_KILLED,
- 	FBLOG_OPEN,
-+	FBLOG_SUSPENDED,
-+	FBLOG_BLANKED,
- };
- 
- struct fblog_fb {
-@@ -257,6 +259,7 @@ static int fblog_event(struct notifier_block *self, unsigned long action,
- 	struct fb_event *event = data;
- 	struct fb_info *info = event->info;
- 	struct fblog_fb *fb;
-+	int *blank;
- 
- 	switch(action) {
- 	case FB_EVENT_FB_REGISTERED:
-@@ -284,6 +287,44 @@ static int fblog_event(struct notifier_block *self, unsigned long action,
- 		if (fb)
- 			fblog_close(fb, true);
- 		break;
-+	case FB_EVENT_SUSPEND:
-+		/* This is called when the low-level display driver suspends the
-+		 * video system. We should not access the video system while it
-+		 * is suspended. This is called with the console lock held. */
-+		mutex_lock(&fblog_registration_lock);
-+		fb = fblog_fbs[info->node];
-+		mutex_unlock(&fblog_registration_lock);
-+
-+		if (fb)
-+			set_bit(FBLOG_SUSPENDED, &fb->flags);
-+		break;
-+	case FB_EVENT_RESUME:
-+		/* This is called when the low-level display driver resumes
-+		 * operating. It is called with the console lock held. */
-+		mutex_lock(&fblog_registration_lock);
-+		fb = fblog_fbs[info->node];
-+		mutex_unlock(&fblog_registration_lock);
-+
-+		if (fb)
-+			clear_bit(FBLOG_SUSPENDED, &fb->flags);
-+		break;
-+	case FB_EVENT_BLANK:
-+		/* This gets called _after_ the framebuffer was successfully
-+		 * blanked. The console-lock is always held while fb_blank is
-+		 * called and during this callback. */
-+		mutex_lock(&fblog_registration_lock);
-+		fb = fblog_fbs[info->node];
-+		mutex_unlock(&fblog_registration_lock);
-+
-+		if (!fb)
-+			break;
-+
-+		blank = (int*)event->data;
-+		if (*blank = FB_BLANK_UNBLANK)
-+			clear_bit(FBLOG_BLANKED, &fb->flags);
-+		else
-+			set_bit(FBLOG_BLANKED, &fb->flags);
-+		break;
- 	}
- 
+diff --git a/drivers/video/exynos/s6e8ax0.c b/drivers/video/exynos/s6e8ax0.c
+index 05d080b..e51d024 100644
+--- a/drivers/video/exynos/s6e8ax0.c
++++ b/drivers/video/exynos/s6e8ax0.c
+@@ -663,6 +663,37 @@ static int s6e8ax0_gamma_ctrl(struct s6e8ax0 *lcd, int gamma)
  	return 0;
+ }
+ 
++static int s6e8aa0_early_set_power(struct lcd_device *ld, int power)
++{
++	struct s6e8ax0 *lcd = lcd_get_data(ld);
++	struct mipi_dsim_master_ops *ops = lcd_to_master_ops(lcd);
++	int ret = 0;
++
++	if (power != FB_BLANK_UNBLANK && power != FB_BLANK_POWERDOWN &&
++			power != FB_BLANK_NORMAL) {
++		dev_err(lcd->dev, "power value should be 0, 1 or 4.\n");
++		return -EINVAL;
++	}
++
++	if (lcd->power = power) {
++		dev_err(lcd->dev, "power mode is same as previous one.\n");
++		return -EINVAL;
++	}
++
++	if (ops->set_early_blank_mode) {
++		/* LCD power off */
++		if ((POWER_IS_OFF(power) && POWER_IS_ON(lcd->power))
++			|| (POWER_IS_ON(lcd->power) && POWER_IS_NRM(power))) {
++			ret = ops->set_early_blank_mode(lcd_to_master(lcd),
++							power);
++			if (!ret && lcd->power != power)
++				lcd->power = power;
++		}
++	}
++
++	return ret;
++}
++
+ static int s6e8ax0_set_power(struct lcd_device *ld, int power)
+ {
+ 	struct s6e8ax0 *lcd = lcd_get_data(ld);
+@@ -731,6 +762,7 @@ static int s6e8ax0_set_brightness(struct backlight_device *bd)
+ }
+ 
+ static struct lcd_ops s6e8ax0_lcd_ops = {
++	.early_set_power = s6e8aa0_early_set_power,
+ 	.set_power = s6e8ax0_set_power,
+ 	.get_power = s6e8ax0_get_power,
+ };
 -- 
-1.7.11.2
-
+1.7.4.1

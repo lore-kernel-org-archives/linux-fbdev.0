@@ -1,73 +1,65 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 18 Jul 2012 00:41:29 +0000
-Subject: Re: dma-buf/fbdev: one-to-many support
-Message-Id: <5893060.WVaAFZ7hde@avalon>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Tue, 24 Jul 2012 03:55:33 +0000
+Subject: [PATCH v2] da8xx-fb: enable sync lost interrupt
+Message-Id: <1343101413-1820-1-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CANq1E4SbippxHHTaqLhpGjJLG12y94kWUFdB7P_EAG14o50vrQ@mail.gmail.com>
-	<20120717122449.07489b50@pyramind.ukuu.org.uk>
-	<CANq1E4TMddx-+h5cGAn=R2VoNBQ274CBZDGV02Ku2Hgo_Hc3iA@mail.gmail.com>
-In-Reply-To: <CANq1E4TMddx-+h5cGAn=R2VoNBQ274CBZDGV02Ku2Hgo_Hc3iA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Herrmann <dh.herrmann@googlemail.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Sumit Semwal <sumit.semwal@linaro.org>, linux-media@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-Hi David,
+Patch enables sync lost interrupt and interrupt handler already
+takes care to handle it.
 
-On Tuesday 17 July 2012 14:23:18 David Herrmann wrote:
-> On Tue, Jul 17, 2012 at 1:24 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> >> The main issue is that fbdev has been designed with the implicit
-> >> assumption that an fbdev driver will always own the graphics memory it
-> >> uses. All components in the stack, from drivers to applications, have
-> >> been designed around that assumption.
-> >> 
-> >> We could of course fix this, revamp the fbdev API and turn it into a
-> >> modern graphics API, but I really wonder whether it would be worth it.
-> >> DRM has been getting quite a lot of attention lately, especially from
-> >> embedded developers and vendors, and the trend seems to me like the
-> >> (Linux) world will gradually move from fbdev to DRM.
-> >> 
-> >> Please feel free to disagree :-)
-> > 
-> > I would disagree on the "main issue" bit. All the graphics cards have
-> > their own formats and cache management rules. Simply sharing a buffer
-> > doesn't work - which is why all of the extra gloop will be needed.
-> 
-> This is exactly why I suggested adding an "owner" field. A driver
-> could then check whether the buffer it is supposed to share/takeover
-> is from a compatible (or even the same) driver/device. If it is not,
-> it would simply reject using the buffer. Then again, if we have
-> multiple devices that are incompatible, we are still unable to share
-> the buffer. So this attempt would only be useful if we have tons of
-> DisplayLink devices attached that all use the same driver, for
-> example.
-> 
-> Regarding DRM: In user-space I prefer DRM over fbdev. With the
-> introduction of the dumb-buffers there isn't even the need to have
-> mesa installed. However, fblog runs in kernel space and currently
-> cannot use DRM as there is no in-kernel DRM API. I looked at
-> drm-fops.c whether it is easy to create a very simple in-kernel API
-> but then I dropped the idea as this might be too complex for a simple
-> debugging-only driver. Another attempt would be making the
-> drm-fb-helper more generic so we can use this layer as in-kernel DRM
-> API.
-> 
-> I had a deeper look into this this weekend and so as a summary I think
-> all in-kernel graphics access is probably not worth optimizing it.
-> fbcon is already working great and fblog is only used during boot and
-> oopses/panics and can be restricted to a single device. I will have
-> another look at the drivers in a few weeks but if you tell me that
-> this is not easy to implement, I will probably have to let this idea
-> go.
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+---
+Since v1:
+Minor nit, replaced spaces with tabs.
 
-My gut feeling is that, given the effort required to add new APIs, it would be 
-more interesting to work on an in-kernel DRM API to make drmcon and drmlog 
-implementations possible without any fbdev compatibility layer. That's rather 
-a long term goal though.
+ drivers/video/da8xx-fb.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 47118c7..8163832 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -54,6 +54,7 @@
+ #define LCD_DMA_BURST_8			0x3
+ #define LCD_DMA_BURST_16		0x4
+ #define LCD_V1_END_OF_FRAME_INT_ENA	BIT(2)
++#define LCD_V1_SYNC_LOST_ENA		BIT(5)
+ #define LCD_V2_END_OF_FRAME0_INT_ENA	BIT(8)
+ #define LCD_V2_END_OF_FRAME1_INT_ENA	BIT(9)
+ #define LCD_DUAL_FRAME_BUFFER_ENABLE	BIT(0)
+@@ -441,10 +442,10 @@ static int lcd_cfg_display(const struct lcd_ctrl_config *cfg)
+ 
+ 	/* enable additional interrupts here */
+ 	if (lcd_revision = LCD_VERSION_1) {
+-		reg |= LCD_V1_UNDERFLOW_INT_ENA;
++		reg |= LCD_V1_UNDERFLOW_INT_ENA | LCD_V1_SYNC_LOST_ENA;
+ 	} else {
+ 		reg_int = lcdc_read(LCD_INT_ENABLE_SET_REG) |
+-			LCD_V2_UNDERFLOW_INT_ENA;
++			LCD_V2_UNDERFLOW_INT_ENA | LCD_SYNC_LOST;
+ 		lcdc_write(reg_int, LCD_INT_ENABLE_SET_REG);
+ 	}
+ 
+@@ -718,6 +719,7 @@ static irqreturn_t lcdc_irq_handler_rev02(int irq, void *arg)
+ 	u32 reg_int;
+ 
+ 	if ((stat & LCD_SYNC_LOST) && (stat & LCD_FIFO_UNDERFLOW)) {
++		pr_err("LCDC sync lost or underflow error occurred\n");
+ 		lcd_disable_raster();
+ 		lcdc_write(stat, LCD_MASKED_STAT_REG);
+ 		lcd_enable_raster();
+@@ -773,6 +775,7 @@ static irqreturn_t lcdc_irq_handler_rev01(int irq, void *arg)
+ 	u32 reg_ras;
+ 
+ 	if ((stat & LCD_SYNC_LOST) && (stat & LCD_FIFO_UNDERFLOW)) {
++		pr_err("LCDC sync lost or underflow error occurred\n");
+ 		lcd_disable_raster();
+ 		lcdc_write(stat, LCD_STAT_REG);
+ 		lcd_enable_raster();
 -- 
-Regards,
-
-Laurent Pinchart
+1.7.1
 

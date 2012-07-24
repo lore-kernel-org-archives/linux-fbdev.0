@@ -1,49 +1,43 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Mon, 09 Jul 2012 17:55:07 +0000
-Subject: Re: [PATCH v2 05/11] fblog: register one fblog object per framebuffer
-Message-Id: <CANq1E4TPk_Lu_+=npR2QHeY5HkKssga5sUcBskoQAeWa0odhqQ@mail.gmail.com>
+From: Jassi Brar <jaswinder.singh@linaro.org>
+Date: Tue, 24 Jul 2012 14:15:55 +0000
+Subject: [PATCH] OMAPDSS: DISPC: Use msleep instead of blocking mdelay
+Message-Id: <1343138635-2802-1-git-send-email-jaswinder.singh@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1341784614-2797-1-git-send-email-dh.herrmann@googlemail.com>
-	<1341784614-2797-6-git-send-email-dh.herrmann@googlemail.com>
-	<1341785628.13174.28.camel@joe2Laptop>
-In-Reply-To: <1341785628.13174.28.camel@joe2Laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, florianschandinat@gmx.de, linux-fbdev@vger.kernel.org, gregkh@linuxfoundation.org, alan@lxorguk.ukuu.org.uk, bonbons@linux-vserver.org
+To: tomi.valkeinen@ti.com, a0393947@ti.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, Jassi Brar <jaswinder.singh@linaro.org>
 
-Hi Joe
+We have no reason to block in the error handler workqueue, so use msleep.
 
-On Mon, Jul 9, 2012 at 12:13 AM, Joe Perches <joe@perches.com> wrote:
-> On Sun, 2012-07-08 at 23:56 +0200, David Herrmann wrote:
->>
->
-> Hi David.  Trivial comments only:
->
->> diff --git a/drivers/video/console/fblog.c b/drivers/video/console/fblog.c
-> []
->> @@ -23,15 +23,204 @@
->>   * all fblog instances before running other graphics applications.
->>   */
->
-> Please add
-> #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> before any #include and...
+Signed-off-by: Jassi Brar <jaswinder.singh@linaro.org>
+---
+ drivers/video/omap2/dss/dispc.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Thanks, I've added it.
+diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
+index c56a51a..0e3ad44 100644
+--- a/drivers/video/omap2/dss/dispc.c
++++ b/drivers/video/omap2/dss/dispc.c
+@@ -3492,7 +3492,7 @@ static void dispc_error_worker(struct work_struct *work)
+ 					ovl->name);
+ 			dispc_ovl_enable(ovl->id, false);
+ 			dispc_mgr_go(ovl->manager->id);
+-			mdelay(50);
++			msleep(50);
+ 		}
+ 	}
+ 
+@@ -3524,7 +3524,7 @@ static void dispc_error_worker(struct work_struct *work)
+ 			}
+ 
+ 			dispc_mgr_go(mgr->id);
+-			mdelay(50);
++			msleep(50);
+ 
+ 			if (enable)
+ 				dssdev->driver->enable(dssdev);
+-- 
+1.7.4.1
 
->>  static int __init fblog_init(void)
->>  {
->> +     int ret;
->> +
->> +     ret = fb_register_client(&fblog_notifier);
->> +     if (ret) {
->> +             pr_err("fblog: cannot register framebuffer notifier");
->
-> Missing newline, pr_fmt would add module name.
->
->                 pr_err("cannot register framebuffer notifier\n");
-
-Fixed, too. Thanks!
-David

@@ -1,102 +1,55 @@
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Mon, 02 Jul 2012 06:37:15 +0000
-Subject: Re: [PATCH] da8xx-fb: Rounding FB size to satisfy SGX buffer requirements
-Message-Id: <4FF1419B.3090703@gmx.de>
+From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
+Date: Tue, 24 Jul 2012 04:27:25 +0000
+Subject: [PATCH] da8xx-fb: do not turn ON LCD backlight unless LCDC is enabled
+Message-Id: <1343103325-7313-1-git-send-email-prakash.pm@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1337753191-14802-1-git-send-email-aditya.n@ti.com>
-In-Reply-To: <1337753191-14802-1-git-send-email-aditya.n@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On 06/12/2012 09:34 AM, Nellutla, Aditya wrote:
-> Florian, 
-> 
->    I didn't receive any review comments for the patch below. So could you please merge the patch?
+LCD blink is observed during suspend/resume and blank/unblank
+operations as backlight is ON during LCDC disable and enable.
+So make sure to turn OFF backlight before disabling and turn
+it ON after enabling.
 
-As far as I can see there is no feasible alternative so I applied this
-patch. If anyone happens to have problems with the larger memory
-requirements caused by this, I guess we could make this behavior depend
-on a Kconfig symbol.
+Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
+---
+ drivers/video/da8xx-fb.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-
-Best regards,
-
-Florian Tobias Schandinat
-
-> 
-> Regards,
-> Aditya
-> 
-> -----Original Message-----
-> From: Nellutla, Aditya 
-> Sent: Monday, June 04, 2012 11:33 AM
-> To: Nellutla, Aditya; linux-fbdev@vger.kernel.org
-> Cc: Hiremath, Vaibhav
-> Subject: RE: [PATCH] da8xx-fb: Rounding FB size to satisfy SGX buffer requirements
-> 
-> All, 
->    Did you get chance to review this patch? Request to give your feedback as early as possible.
-> 
-> Regards,
-> Aditya 
-> 
-> -----Original Message-----
-> From: Nellutla, Aditya 
-> Sent: Wednesday, May 23, 2012 11:37 AM
-> To: linux-fbdev@vger.kernel.org
-> Cc: Nellutla, Aditya
-> Subject: [PATCH] da8xx-fb: Rounding FB size to satisfy SGX buffer requirements
-> 
-> In the real time use-case when SGX is used for rendering to FB buffers it has been
-> observed that, the available memory from framebuffer driver is not sufficient for
-> SGX under certain cases (like 16-bit WVGA resolution). SGX requires 2 swap buffers
-> with each of the buffers aligned to lcm(line_length, PAGE_SIZE).
-> 
-> Inorder to satisfy this requirement, we have two options,
-> 
-> 	- Increase number of FB buffers (LCD_NUM_BUFFERS) to 3. This is not
-> 	  recommended as we end up wasting huge memory in most of the cases.
-> 
-> 	- Align FB buffers to lcm(line_length, PAGE_SIZE).This ensures framebuffer
-> 	  size is increased to satisfy SGX requirements keeping alignment intact.
-> 
-> This patch makes sure that FB allocates buffers aligned to above formula.
-> 
-> Signed-off-by: Aditya Nellutla <aditya.n@ti.com>
-> ---
->  drivers/video/da8xx-fb.c |    5 ++++-
->  1 files changed, 4 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-> index 47118c7..2f24c19 100644
-> --- a/drivers/video/da8xx-fb.c
-> +++ b/drivers/video/da8xx-fb.c
-> @@ -31,6 +31,7 @@
->  #include <linux/cpufreq.h>
->  #include <linux/console.h>
->  #include <linux/slab.h>
-> +#include <linux/lcm.h>
->  #include <video/da8xx-fb.h>
->  #include <asm/div64.h>
->  
-> @@ -1114,6 +1115,7 @@ static int __devinit fb_probe(struct platform_device *device)
->  	struct da8xx_fb_par *par;
->  	resource_size_t len;
->  	int ret, i;
-> +	unsigned long ulcm;
->  
->  	if (fb_pdata = NULL) {
->  		dev_err(&device->dev, "Can not get platform data\n");
-> @@ -1209,7 +1211,8 @@ static int __devinit fb_probe(struct platform_device *device)
->  
->  	/* allocate frame buffer */
->  	par->vram_size = lcdc_info->width * lcdc_info->height * lcd_cfg->bpp;
-> -	par->vram_size = PAGE_ALIGN(par->vram_size/8);
-> +	ulcm = lcm((lcdc_info->width * lcd_cfg->bpp)/8, PAGE_SIZE);
-> +	par->vram_size = roundup(par->vram_size/8, ulcm);
->  	par->vram_size = par->vram_size * LCD_NUM_BUFFERS;
->  
->  	par->vram_virt = dma_alloc_coherent(NULL,
+diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
+index 0fb4d7d..1a569ae 100644
+--- a/drivers/video/da8xx-fb.c
++++ b/drivers/video/da8xx-fb.c
+@@ -1056,10 +1056,10 @@ static int cfb_blank(int blank, struct fb_info *info)
+ 	par->blank = blank;
+ 	switch (blank) {
+ 	case FB_BLANK_UNBLANK:
++		lcd_enable_raster();
++
+ 		if (par->panel_power_ctrl)
+ 			par->panel_power_ctrl(1);
+-
+-		lcd_enable_raster();
+ 		break;
+ 	case FB_BLANK_POWERDOWN:
+ 		if (par->panel_power_ctrl)
+@@ -1417,11 +1417,12 @@ static int fb_resume(struct platform_device *dev)
+ 	struct da8xx_fb_par *par = info->par;
+ 
+ 	console_lock();
++	clk_enable(par->lcdc_clk);
++	lcd_enable_raster();
++
+ 	if (par->panel_power_ctrl)
+ 		par->panel_power_ctrl(1);
+ 
+-	clk_enable(par->lcdc_clk);
+-	lcd_enable_raster();
+ 	fb_set_suspend(info, 0);
+ 	console_unlock();
+ 
+-- 
+1.7.1
 

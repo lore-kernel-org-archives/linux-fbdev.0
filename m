@@ -1,46 +1,41 @@
-From: Damien Cassou <damien.cassou@gmail.com>
-Date: Tue, 31 Jul 2012 16:18:08 +0000
-Subject: Re: [PATCH 2/5] drivers/video/bfin-t350mcqb-fb.c: use devm_ functions
-Message-Id: <CA+y5ggi-75ctNTtkE+xsAgi8XJyn0iVLNOcUXpwhVzqy2X6AKQ@mail.gmail.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 24 Jul 2012 09:16:51 +0000
+Subject: [GIT PULL] SH Mobile LCDC and MERAM patches
+Message-Id: <2980452.38e8VA4mF5@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343742860-16213-1-git-send-email-damien.cassou@lifl.fr>
- <1343742860-16213-5-git-send-email-damien.cassou@lifl.fr> <CAMjpGUdo0SavFWR_tk50_6nZMsJmxYO5BxH9Fp=UTw5sW-0+Rw@mail.gmail.com>
-In-Reply-To: <CAMjpGUdo0SavFWR_tk50_6nZMsJmxYO5BxH9Fp=UTw5sW-0+Rw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Tue, Jul 31, 2012 at 3:57 PM, Mike Frysinger <vapier@gentoo.org> wrote:
-> On Tue, Jul 31, 2012 at 9:54 AM, Damien Cassou <damien.cassou@lifl.fr> wrote:
->> The various devm_ functions allocate memory that is released when a driver
->> detaches.  This patch uses these functions for data that is allocated in
->> the probe function of a platform device and is only freed in the remove
->> function.
->
-> Acked-by: Mike Frysinger <vapier@gentoo.org>
+Hi Florian,
 
-This whole patch is invalid, because of this part:
+The following changes since commit 6fcdbc0c3a683003a00f383fceac80da1b7852ff:
 
--	info->fb_buffer = dma_alloc_coherent(NULL, fbinfo->fix.smem_len +
--				ACTIVE_VIDEO_MEM_OFFSET,
--				&info->dma_handle, GFP_KERNEL);
-+	info->fb_buffer = dmam_alloc_coherent(&pdev->dev, NULL,
-+					      fbinfo->fix.smem_len +
-+					      ACTIVE_VIDEO_MEM_OFFSET,
-+					      &info->dma_handle, GFP_KERNEL);
+  s3fb: Add Virge/MX (86C260) (2012-07-08 14:03:50 +0000)
 
+are available in the git repository at:
+  git://linuxtv.org/pinchartl/fbdev.git for-next
 
-dmam_alloc_coherent() is called with 5 arguments but only accepts 4.
+Laurent Pinchart (9):
+      sh_mobile_meram: Rename operations to cache_[alloc|free|update]
+      sh_mobile_meram: Use direct function calls for the public API
+      sh_mobile_meram: Add direct MERAM allocation API
+      fbdev: sh_mobile_lcdc: Destroy mutex at remove time
+      fbdev: sh_mobile_lcdc: Fix line pitch computation
+      fbdev: sh_mobile_lcdc: Use channel configuration to initialize fb device
+      fbdev: sh_mobile_lcdc: Support horizontal panning
+      fbdev: sh_mobile_lcdc: Fix overlay registers update during pan operation
+      fbdev: sh_mobile_lcdc: Fix pan offset computation in YUV mode
 
-Please ignore this whole patch altogether.
-
-I am sorry about that.
+ drivers/video/sh_mobile_lcdcfb.c |  209 +++++++++++++++++----------------
+ drivers/video/sh_mobile_lcdcfb.h |    5 +-
+ drivers/video/sh_mobile_meram.c  |  235 ++++++++++++++++++++-----------------
+ include/video/sh_mobile_meram.h  |   71 ++++++++----
+ 4 files changed, 293 insertions(+), 227 deletions(-)
 
 -- 
-Damien Cassou
-http://damiencassou.seasidehosting.st
+Regards,
 
-"Lambdas are relegated to relative obscurity until Java makes them
-popular by not having them." James Iry
+Laurent Pinchart
+

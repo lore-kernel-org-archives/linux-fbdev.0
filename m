@@ -1,139 +1,194 @@
-From: Ondrej Zary <linux@rainbow-software.org>
-Date: Sun, 01 Jul 2012 19:23:33 +0000
-Subject: [PATCH] s3fb: Add Virge/MX (86C260)
-Message-Id: <201207012123.38236.linux@rainbow-software.org>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Tue, 24 Jul 2012 01:00:23 +0000
+Subject: [PATCH 1/4] fbcon: use kstrtouint instead of deprecated function simple_strtoul.
+Message-Id: <1343091626-11435-1-git-send-email-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Ondrej Zajicek <santiago@crfreenet.org>, linux-fbdev@vger.kernel.org, Kernel development list <linux-kernel@vger.kernel.org>
+To: FlorianSchandinat@gmx.de
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
 
-Add support for Virge/MX (86C260) chip. Although this is a laptop chip,
-there's an AGP card with this chip too.
 
-Tested with AGP card, will probably not work correctly with laptops.
-DDC does not work on this card (even in DOS or Windows).
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+---
+ drivers/video/console/fbcon.c |  102 ++++++++++++++++++++++++++++-------------
+ 1 file changed, 69 insertions(+), 33 deletions(-)
 
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-
---- a/drivers/video/s3fb.c
-+++ b/drivers/video/s3fb.c
-@@ -84,7 +84,7 @@ static const char * const s3_names[] = {"S3 Unknown", "S3 Trio32", "S3 Trio64",
- 			"S3 Virge/VX", "S3 Virge/DX", "S3 Virge/GX",
- 			"S3 Virge/GX2", "S3 Virge/GX2+", "",
- 			"S3 Trio3D/1X", "S3 Trio3D/2X", "S3 Trio3D/2X",
--			"S3 Trio3D"};
-+			"S3 Trio3D", "S3 Virge/MX"};
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 2e471c2..a0b1818 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -435,7 +435,7 @@ static void fbcon_del_cursor_timer(struct fb_info *info)
+ static int __init fb_console_setup(char *this_opt)
+ {
+ 	char *options;
+-	int i, j;
++	int i, j, ret;
  
- #define CHIP_UNKNOWN		0x00
- #define CHIP_732_TRIO32		0x01
-@@ -105,6 +105,7 @@ static const char * const s3_names[] = {"S3 Unknown", "S3 Trio32", "S3 Trio64",
- #define CHIP_362_TRIO3D_2X	0x11
- #define CHIP_368_TRIO3D_2X	0x12
- #define CHIP_365_TRIO3D		0x13
-+#define CHIP_260_VIRGE_MX	0x14
+ 	if (!this_opt || !*this_opt)
+ 		return 1;
+@@ -445,18 +445,29 @@ static int __init fb_console_setup(char *this_opt)
+ 			strcpy(fontname, options + 5);
+ 		
+ 		if (!strncmp(options, "scrollback:", 11)) {
++			char *k;
+ 			options += 11;
+-			if (*options) {
+-				fbcon_softback_size = simple_strtoul(options, &options, 0);
+-				if (*options = 'k' || *options = 'K') {
+-					fbcon_softback_size *= 1024;
+-					options++;
+-				}
+-				if (*options != ',')
+-					return 1;
+-				options++;
+-			} else
+-				return 1;
++			k = options;
++
++			while (*k != '\0' && *k != 'k' && *k != 'K')
++				k++;
++
++			/* Clear the 'k' or 'K' suffix to
++			 * prevent errors with kstrtouint */
++			if (*k != '\0')
++				*k++ = '\0';
++			else
++				k = NULL;
++
++			ret = kstrtouint(options, 0, (unsigned int *)
++						&fbcon_softback_size);
++
++			if (!ret && k)
++				fbcon_softback_size *= 1024;
++
++			/* (k && *k): Check for garbage after the suffix */
++			if (ret || (k && *k))
++				pr_warn("fbcon: scrollback: incorrect value.\n");
+ 		}
+ 		
+ 		if (!strncmp(options, "map:", 4)) {
+@@ -476,22 +487,44 @@ static int __init fb_console_setup(char *this_opt)
+ 		}
  
- #define CHIP_XXX_TRIO		0x80
- #define CHIP_XXX_TRIO64V2_DXGX	0x81
-@@ -280,7 +281,8 @@ static int __devinit s3fb_setup_ddc_bus(struct fb_info *info)
- 	 */
- /*	vga_wseq(par->state.vgabase, 0x08, 0x06); - not needed, already unlocked */
- 	if (par->chip = CHIP_357_VIRGE_GX2 ||
--	    par->chip = CHIP_359_VIRGE_GX2P)
-+	    par->chip = CHIP_359_VIRGE_GX2P ||
-+	    par->chip = CHIP_260_VIRGE_MX)
- 		svga_wseq_mask(par->state.vgabase, 0x0d, 0x01, 0x03);
- 	else
- 		svga_wseq_mask(par->state.vgabase, 0x0d, 0x00, 0x03);
-@@ -487,7 +489,8 @@ static void s3_set_pixclock(struct fb_info *info, u32 pixclock)
- 	    par->chip = CHIP_359_VIRGE_GX2P ||
- 	    par->chip = CHIP_360_TRIO3D_1X ||
- 	    par->chip = CHIP_362_TRIO3D_2X ||
--	    par->chip = CHIP_368_TRIO3D_2X) {
-+	    par->chip = CHIP_368_TRIO3D_2X ||
-+	    par->chip = CHIP_260_VIRGE_MX) {
- 		vga_wseq(par->state.vgabase, 0x12, (n - 2) | ((r & 3) << 6));	/* n and two bits of r */
- 		vga_wseq(par->state.vgabase, 0x29, r >> 2); /* remaining highest bit of r */
- 	} else
-@@ -690,7 +693,8 @@ static int s3fb_set_par(struct fb_info *info)
- 	    par->chip != CHIP_359_VIRGE_GX2P &&
- 	    par->chip != CHIP_360_TRIO3D_1X &&
- 	    par->chip != CHIP_362_TRIO3D_2X &&
--	    par->chip != CHIP_368_TRIO3D_2X) {
-+	    par->chip != CHIP_368_TRIO3D_2X &&
-+	    par->chip != CHIP_260_VIRGE_MX) {
- 		vga_wcrt(par->state.vgabase, 0x54, 0x18); /* M parameter */
- 		vga_wcrt(par->state.vgabase, 0x60, 0xff); /* N parameter */
- 		vga_wcrt(par->state.vgabase, 0x61, 0xff); /* L parameter */
-@@ -739,7 +743,8 @@ static int s3fb_set_par(struct fb_info *info)
- 	    par->chip = CHIP_368_TRIO3D_2X ||
- 	    par->chip = CHIP_365_TRIO3D    ||
- 	    par->chip = CHIP_375_VIRGE_DX  ||
--	    par->chip = CHIP_385_VIRGE_GX) {
-+	    par->chip = CHIP_385_VIRGE_GX  ||
-+	    par->chip = CHIP_260_VIRGE_MX) {
- 		dbytes = info->var.xres * ((bpp+7)/8);
- 		vga_wcrt(par->state.vgabase, 0x91, (dbytes + 7) / 8);
- 		vga_wcrt(par->state.vgabase, 0x90, (((dbytes + 7) / 8) >> 8) | 0x80);
-@@ -751,7 +756,8 @@ static int s3fb_set_par(struct fb_info *info)
- 	    par->chip = CHIP_359_VIRGE_GX2P ||
- 	    par->chip = CHIP_360_TRIO3D_1X ||
- 	    par->chip = CHIP_362_TRIO3D_2X ||
--	    par->chip = CHIP_368_TRIO3D_2X)
-+	    par->chip = CHIP_368_TRIO3D_2X ||
-+	    par->chip = CHIP_260_VIRGE_MX)
- 		vga_wcrt(par->state.vgabase, 0x34, 0x00);
- 	else	/* enable Data Transfer Position Control (DTPC) */
- 		vga_wcrt(par->state.vgabase, 0x34, 0x10);
-@@ -807,7 +813,8 @@ static int s3fb_set_par(struct fb_info *info)
- 		    par->chip = CHIP_359_VIRGE_GX2P ||
- 		    par->chip = CHIP_360_TRIO3D_1X ||
- 		    par->chip = CHIP_362_TRIO3D_2X ||
--		    par->chip = CHIP_368_TRIO3D_2X)
-+		    par->chip = CHIP_368_TRIO3D_2X ||
-+		    par->chip = CHIP_260_VIRGE_MX)
- 			svga_wcrt_mask(par->state.vgabase, 0x67, 0x00, 0xF0);
- 		else {
- 			svga_wcrt_mask(par->state.vgabase, 0x67, 0x10, 0xF0);
-@@ -837,7 +844,8 @@ static int s3fb_set_par(struct fb_info *info)
- 			    par->chip != CHIP_359_VIRGE_GX2P &&
- 			    par->chip != CHIP_360_TRIO3D_1X &&
- 			    par->chip != CHIP_362_TRIO3D_2X &&
--			    par->chip != CHIP_368_TRIO3D_2X)
-+			    par->chip != CHIP_368_TRIO3D_2X &&
-+			    par->chip != CHIP_260_VIRGE_MX)
- 				hmul = 2;
- 		}
- 		break;
-@@ -864,7 +872,8 @@ static int s3fb_set_par(struct fb_info *info)
- 			    par->chip != CHIP_359_VIRGE_GX2P &&
- 			    par->chip != CHIP_360_TRIO3D_1X &&
- 			    par->chip != CHIP_362_TRIO3D_2X &&
--			    par->chip != CHIP_368_TRIO3D_2X)
-+			    par->chip != CHIP_368_TRIO3D_2X &&
-+			    par->chip != CHIP_260_VIRGE_MX)
- 				hmul = 2;
- 		}
- 		break;
-@@ -1208,7 +1217,8 @@ static int __devinit s3_pci_probe(struct pci_dev *dev, const struct pci_device_i
- 			break;
- 		}
- 	} else if (par->chip = CHIP_357_VIRGE_GX2 ||
--		   par->chip = CHIP_359_VIRGE_GX2P) {
-+		   par->chip = CHIP_359_VIRGE_GX2P ||
-+		   par->chip = CHIP_260_VIRGE_MX) {
- 		switch ((regval & 0xC0) >> 6) {
- 		case 1: /* 4MB */
- 			info->screen_size = 4 << 20;
-@@ -1515,6 +1525,7 @@ static struct pci_device_id s3_devices[] __devinitdata = {
- 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A12), .driver_data = CHIP_359_VIRGE_GX2P},
- 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8A13), .driver_data = CHIP_36X_TRIO3D_1X_2X},
- 	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8904), .driver_data = CHIP_365_TRIO3D},
-+	{PCI_DEVICE(PCI_VENDOR_ID_S3, 0x8C01), .driver_data = CHIP_260_VIRGE_MX},
+ 		if (!strncmp(options, "vc:", 3)) {
++			char *dash;
+ 			options += 3;
+-			if (*options)
+-				first_fb_vc = simple_strtoul(options, &options, 10) - 1;
+-			if (first_fb_vc < 0)
+-				first_fb_vc = 0;
+-			if (*options++ = '-')
+-				last_fb_vc = simple_strtoul(options, &options, 10) - 1;
+-			fbcon_is_default = 0; 
+-		}	
++
++			dash = strchr(options, '-');
++			if (dash)
++				*dash++ = '\0';
++
++			ret = kstrtouint(options, 10,
++						(unsigned int *) &first_fb_vc);
++			if (!ret) {
++				if (--first_fb_vc < 0)
++					first_fb_vc = 0;
++
++				if (dash) {
++					ret = kstrtouint(dash, 10,
++								(unsigned int *)
++								&last_fb_vc);
++					if (!ret)
++						last_fb_vc--;
++				}
++			}
++
++			if (!ret)
++				fbcon_is_default = 0;
++			else
++				pr_warn("fbcon: vc: incorrect value.\n");
++		}
  
- 	{0, 0, 0, 0, 0, 0, 0}
- };
-
+ 		if (!strncmp(options, "rotate:", 7)) {
+ 			options += 7;
+-			if (*options)
+-				initial_rotation = simple_strtoul(options, &options, 0);
+-			if (initial_rotation > 3)
+-				initial_rotation = 0;
++			ret = kstrtouint(options, 0, (unsigned int *)
++						&initial_rotation);
++			if (!ret) {
++				if (initial_rotation > 3)
++					initial_rotation = 0;
++			} else {
++				pr_warn("fbcon: rotate: incorrect value.\n");
++			}
+ 		}
+ 	}
+ 	return 1;
+@@ -3312,8 +3345,8 @@ static ssize_t store_rotate(struct device *device,
+ 			    size_t count)
+ {
+ 	struct fb_info *info;
+-	int rotate, idx;
+-	char **last = NULL;
++	int idx;
++	unsigned int rotate;
+ 
+ 	if (fbcon_has_exited)
+ 		return count;
+@@ -3325,7 +3358,8 @@ static ssize_t store_rotate(struct device *device,
+ 		goto err;
+ 
+ 	info = registered_fb[idx];
+-	rotate = simple_strtoul(buf, last, 0);
++	if (kstrtouint(buf, 0, &rotate))
++		goto err;
+ 	fbcon_rotate(info, rotate);
+ err:
+ 	console_unlock();
+@@ -3337,8 +3371,8 @@ static ssize_t store_rotate_all(struct device *device,
+ 				size_t count)
+ {
+ 	struct fb_info *info;
+-	int rotate, idx;
+-	char **last = NULL;
++	int idx;
++	unsigned int rotate;
+ 
+ 	if (fbcon_has_exited)
+ 		return count;
+@@ -3350,7 +3384,8 @@ static ssize_t store_rotate_all(struct device *device,
+ 		goto err;
+ 
+ 	info = registered_fb[idx];
+-	rotate = simple_strtoul(buf, last, 0);
++	if (kstrtouint(buf, 0, &rotate))
++		goto err;
+ 	fbcon_rotate_all(info, rotate);
+ err:
+ 	console_unlock();
+@@ -3412,8 +3447,8 @@ static ssize_t store_cursor_blink(struct device *device,
+ 				  const char *buf, size_t count)
+ {
+ 	struct fb_info *info;
+-	int blink, idx;
+-	char **last = NULL;
++	int idx;
++	unsigned int blink;
+ 
+ 	if (fbcon_has_exited)
+ 		return count;
+@@ -3429,7 +3464,8 @@ static ssize_t store_cursor_blink(struct device *device,
+ 	if (!info->fbcon_par)
+ 		goto err;
+ 
+-	blink = simple_strtoul(buf, last, 0);
++	if (kstrtouint(buf, 0, &blink))
++		goto err;
+ 
+ 	if (blink) {
+ 		fbcon_cursor_noblink = 0;
 -- 
-Ondrej Zary
+1.7.10.4
+

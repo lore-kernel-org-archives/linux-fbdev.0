@@ -1,57 +1,64 @@
-From: Damien Cassou <damien.cassou@lifl.fr>
-Date: Tue, 31 Jul 2012 13:54:18 +0000
-Subject: [PATCH 3/5] drivers/video/cobalt_lcdfb.c: use devm_ functions
-Message-Id: <1343742860-16213-4-git-send-email-damien.cassou@lifl.fr>
+From: Hideki EIRAKU <hdk@igel.co.jp>
+Date: Wed, 25 Jul 2012 06:29:23 +0000
+Subject: [PATCH 2/3] media: videobuf2-dma-contig: use dma_mmap_coherent if available
+Message-Id: <1343197764-13659-3-git-send-email-hdk@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343742860-16213-1-git-send-email-damien.cassou@lifl.fr>
-In-Reply-To: <1343742860-16213-1-git-send-email-damien.cassou@lifl.fr>
+References: <1343197764-13659-1-git-send-email-hdk@igel.co.jp>
+In-Reply-To: <1343197764-13659-1-git-send-email-hdk@igel.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-From: Damien Cassou <damien.cassou@lifl.fr>
+Previously the vb2_dma_contig_mmap() function was using a dma_addr_t as a
+physical address.  The two addressses are not necessarily the same.
+For example, when using the IOMMU funtion on certain platforms, dma_addr_t
+addresses are not directly mappable physical address.
+dma_mmap_coherent() maps the address correctly.
+It is available on ARM platforms.
 
-The various devm_ functions allocate memory that is released when a driver
-detaches.  This patch uses these functions for data that is allocated in
-the probe function of a platform device and is only freed in the remove
-function.
-
-Signed-off-by: Damien Cassou <damien.cassou@lifl.fr>
-
+Signed-off-by: Hideki EIRAKU <hdk@igel.co.jp>
 ---
- drivers/video/cobalt_lcdfb.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/media/video/videobuf2-dma-contig.c |   18 ++++++++++++++++++
+ 1 files changed, 18 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/cobalt_lcdfb.c b/drivers/video/cobalt_lcdfb.c
-index eae46f6..01a4ee7 100644
---- a/drivers/video/cobalt_lcdfb.c
-+++ b/drivers/video/cobalt_lcdfb.c
-@@ -348,7 +348,8 @@ static int __devinit cobalt_lcdfb_probe(struct platform_device *dev)
+diff --git a/drivers/media/video/videobuf2-dma-contig.c b/drivers/media/video/videobuf2-dma-contig.c
+index 4b71326..4dc85ab 100644
+--- a/drivers/media/video/videobuf2-dma-contig.c
++++ b/drivers/media/video/videobuf2-dma-contig.c
+@@ -101,14 +101,32 @@ static unsigned int vb2_dma_contig_num_users(void *buf_priv)
+ static int vb2_dma_contig_mmap(void *buf_priv, struct vm_area_struct *vma)
+ {
+ 	struct vb2_dc_buf *buf = buf_priv;
++#ifdef ARCH_HAS_DMA_MMAP_COHERENT
++	int ret;
++#endif
+ 
+ 	if (!buf) {
+ 		printk(KERN_ERR "No buffer to map\n");
+ 		return -EINVAL;
  	}
  
- 	info->screen_size = resource_size(res);
--	info->screen_base = ioremap(res->start, info->screen_size);
-+	info->screen_base = devm_ioremap(&dev->dev, res->start,
-+					 info->screen_size);
- 	info->fbops = &cobalt_lcd_fbops;
- 	info->fix = cobalt_lcdfb_fix;
- 	info->fix.smem_start = res->start;
-@@ -359,7 +360,6 @@ static int __devinit cobalt_lcdfb_probe(struct platform_device *dev)
++#ifdef ARCH_HAS_DMA_MMAP_COHERENT
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
++	ret = dma_mmap_coherent(buf->conf->dev, vma, buf->vaddr, buf->dma_addr,
++				buf->size);
++	if (ret) {
++		pr_err("Remapping memory failed, error: %d\n", ret);
++		return ret;
++	}
++	vma->vm_flags |= VM_DONTEXPAND | VM_RESERVED;
++	vma->vm_private_data = &buf->handler;
++	vma->vm_ops = &vb2_common_vm_ops;
++	vma->vm_ops->open(vma);
++	return 0;
++#else
+ 	return vb2_mmap_pfn_range(vma, buf->dma_addr, buf->size,
+ 				  &vb2_common_vm_ops, &buf->handler);
++#endif
+ }
  
- 	retval = register_framebuffer(info);
- 	if (retval < 0) {
--		iounmap(info->screen_base);
- 		framebuffer_release(info);
- 		return retval;
- 	}
-@@ -380,7 +380,6 @@ static int __devexit cobalt_lcdfb_remove(struct platform_device *dev)
- 
- 	info = platform_get_drvdata(dev);
- 	if (info) {
--		iounmap(info->screen_base);
- 		unregister_framebuffer(info);
- 		framebuffer_release(info);
- 	}
+ static void *vb2_dma_contig_get_userptr(void *alloc_ctx, unsigned long vaddr,
+-- 
+1.7.0.4
 

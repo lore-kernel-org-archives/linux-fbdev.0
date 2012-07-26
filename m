@@ -1,43 +1,87 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Mon, 30 Jul 2012 20:59:39 +0000
-Subject: Re: Gethering power management/policy hw drivers under drivers/power/? (Re: [RFC][PATCH v3 1/3] runt
-Message-Id: <201207302259.39396.rjw@sisk.pl>
+From: Hideki EIRAKU <hdk@igel.co.jp>
+Date: Thu, 26 Jul 2012 11:13:11 +0000
+Subject: [PATCH v2 4/4] fbdev: sh_mobile_lcdc: use dma_mmap_coherent if available
+Message-Id: <1343301191-26001-5-git-send-email-hdk@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com> <5015E8AE.8060404@nvidia.com> <20120730024049.GA10442@lizard>
-In-Reply-To: <20120730024049.GA10442@lizard>
+References: <1343301191-26001-1-git-send-email-hdk@igel.co.jp>
+In-Reply-To: <1343301191-26001-1-git-send-email-hdk@igel.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Anton Vorontsov <cbouatmailru-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Jean Pihet <j-pihet-l0cyMroinI0@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, Liam Girdwood <lrg-l0cyMroinI0@public.gmane.org>, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Russell King <linux@arm.linux.org.uk>, Pawel Osciak <pawel@osciak.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Mauro Carvalho Chehab <mchehab@infradead.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Katsuya MATSUBARA <matsu@igel.co.jp>, Hideki EIRAKU <hdk@igel.co.jp>
 
-On Monday, July 30, 2012, Anton Vorontsov wrote:
-> On Mon, Jul 30, 2012 at 10:51:42AM +0900, Alex Courbot wrote:
-> [...]
-> > On the other hand I have just noticed that the apparently unrelated
-> > Adaptive Voltage Scaling driver just appeared in drivers/power/avs.
-> > So if Anton and David are ok with this, maybe I could put the power
-> > sequences code in its own subdirectory within drivers/power.
-> 
-> Well, currently drivers/power/ is indeed just for power supply class
-> subsystem and drivers. But if the trend is to gather power management
-> ("policy") stuff under one directory, i.e.
-> 
-> drivers/
->   power/
->     supplies/    <- former "power supply class and drivers"
->     regulators/
->     idle/
->     cpuidle/
->     cpufreq/
->     devfreq/
->     avs/
->     ...
-> 
-> That would probably make sense, we could easily see the big picture.
-> But if we're not going to do this long-term,
+fb_mmap() implemented in fbmem.c uses smem_start as the physical
+address of the frame buffer.  In the sh_mobile_lcdc driver, the
+smem_start is a dma_addr_t that is not a physical address when IOMMU is
+enabled.  dma_mmap_coherent() maps the address correctly.  It is
+available on ARM platforms.
 
-Yes, we may do this eventually, but surely not right now.
+Signed-off-by: Hideki EIRAKU <hdk@igel.co.jp>
+---
+ drivers/video/sh_mobile_lcdcfb.c |   28 ++++++++++++++++++++++++++++
+ 1 files changed, 28 insertions(+), 0 deletions(-)
 
-Thanks,
-Rafael
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 8cb653b..c8cba7a 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -1614,6 +1614,17 @@ static int sh_mobile_lcdc_overlay_blank(int blank, struct fb_info *info)
+ 	return 1;
+ }
+ 
++#ifdef ARCH_HAS_DMA_MMAP_COHERENT
++static int
++sh_mobile_lcdc_overlay_mmap(struct fb_info *info, struct vm_area_struct *vma)
++{
++	struct sh_mobile_lcdc_overlay *ovl = info->par;
++
++	return dma_mmap_coherent(ovl->channel->lcdc->dev, vma, ovl->fb_mem,
++				 ovl->dma_handle, ovl->fb_size);
++}
++#endif
++
+ static struct fb_ops sh_mobile_lcdc_overlay_ops = {
+ 	.owner          = THIS_MODULE,
+ 	.fb_read        = fb_sys_read,
+@@ -1626,6 +1637,9 @@ static struct fb_ops sh_mobile_lcdc_overlay_ops = {
+ 	.fb_ioctl       = sh_mobile_lcdc_overlay_ioctl,
+ 	.fb_check_var	= sh_mobile_lcdc_overlay_check_var,
+ 	.fb_set_par	= sh_mobile_lcdc_overlay_set_par,
++#ifdef ARCH_HAS_DMA_MMAP_COHERENT
++	.fb_mmap	= sh_mobile_lcdc_overlay_mmap,
++#endif
+ };
+ 
+ static void
+@@ -2093,6 +2107,17 @@ static int sh_mobile_lcdc_blank(int blank, struct fb_info *info)
+ 	return 0;
+ }
+ 
++#ifdef ARCH_HAS_DMA_MMAP_COHERENT
++static int
++sh_mobile_lcdc_mmap(struct fb_info *info, struct vm_area_struct *vma)
++{
++	struct sh_mobile_lcdc_chan *ch = info->par;
++
++	return dma_mmap_coherent(ch->lcdc->dev, vma, ch->fb_mem,
++				 ch->dma_handle, ch->fb_size);
++}
++#endif
++
+ static struct fb_ops sh_mobile_lcdc_ops = {
+ 	.owner          = THIS_MODULE,
+ 	.fb_setcolreg	= sh_mobile_lcdc_setcolreg,
+@@ -2108,6 +2133,9 @@ static struct fb_ops sh_mobile_lcdc_ops = {
+ 	.fb_release	= sh_mobile_lcdc_release,
+ 	.fb_check_var	= sh_mobile_lcdc_check_var,
+ 	.fb_set_par	= sh_mobile_lcdc_set_par,
++#ifdef ARCH_HAS_DMA_MMAP_COHERENT
++	.fb_mmap	= sh_mobile_lcdc_mmap,
++#endif
+ };
+ 
+ static void
+-- 
+1.7.0.4
+

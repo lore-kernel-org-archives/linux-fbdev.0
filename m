@@ -1,67 +1,89 @@
 From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Date: Sun, 29 Jul 2012 21:16:25 +0000
-Subject: Re: [PATCH] fbdev: Make pixel_to_pat() failure mode more friendly
-Message-Id: <5015A829.1090503@gmx.de>
+Date: Thu, 26 Jul 2012 17:26:49 +0000
+Subject: Re: [PATCH] video/smscufx: fix line counting in fb_write
+Message-Id: <50117DD9.6070200@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1343117953.3715.23.camel@pasglop>
-In-Reply-To: <1343117953.3715.23.camel@pasglop>
+References: <1334959867-3719-1-git-send-email-holler@ahsoftware.de> <4F92995B.6030805@ahsoftware.de> <4FAFAD7B.6090207@gmx.de> <4FF211BD.8060203@ahsoftware.de>
+In-Reply-To: <4FF211BD.8060203@ahsoftware.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Alexander Holler <holler@ahsoftware.de>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On 07/24/2012 08:19 AM, Benjamin Herrenschmidt wrote:
-> If we accidentally pass an incorrect bpp value to pixel_to_pat(),
-> it panics. This is pretty useless, as we generally have the various
-> console locks held at that point, so nothing will be displayed,
-> and there is no reason to make this a fatal event.
+On 07/02/2012 09:25 PM, Alexander Holler wrote:
+> Hi Florian,
 > 
-> Let's WARN instead.
+> sorry for the late answer.
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Am 13.05.2012 14:47, schrieb Florian Tobias Schandinat:
+>> Hi Alexander,
+>>
+>> On 04/21/2012 11:26 AM, Alexander Holler wrote:
+>>> Hello,
+>>>
+>>> as for the patch for udlfb, I forgot to mention that this is a candidate
+>>> for all stable trees 3.2 and above.
+>>>
+>>> Btw., the address of the maintainer doesn't seem to be valid anymore.
+>>
+>> it is better to cc me on patches to the framebuffer subsystem for such
+>> cases. I don't have much free time so it's rare that I come around to
+>> dig in the mailing list.
+>>
+>>>
+>>> Regards,
+>>>
+>>> Alexander
+>>>
+>>> Am 21.04.2012 00:11, schrieb Alexander Holler:
+>>>> Line 0 and 1 were both written to line 0 (on the display) and all
+>>>> subsequent
+>>>> lines had an offset of -1. The result was that the last line on the
+>>>> display
+>>>> was never overwritten by writes to /dev/fbN.
+>>>>
+>>>> The origin of this bug seems to have been udlfb.
+>>>>
+>>>> Signed-off-by: Alexander Holler<holler@ahsoftware.de>
+>>>
+>>> Cc: stable@vger.kernel.org
+>>
+>> Patch looks good to me but can be made simpler.
+>>
+>>>
+>>>> ---
+>>>>    drivers/video/smscufx.c |    2 +-
+>>>>    1 files changed, 1 insertions(+), 1 deletions(-)
+>>>>
+>>>> diff --git a/drivers/video/smscufx.c b/drivers/video/smscufx.c
+>>>> index ccbfef5..1e1e2d2 100644
+>>>> --- a/drivers/video/smscufx.c
+>>>> +++ b/drivers/video/smscufx.c
+>>>> @@ -904,7 +904,7 @@ static ssize_t ufx_ops_write(struct fb_info *info,
+>>>> const char __user *buf,
+>>>>        result = fb_sys_write(info, buf, count, ppos);
+>>>>
+>>>>        if (result>  0) {
+>>>> -        int start = max((int)(offset / info->fix.line_length) - 1, 0);
+>>>> +        int start = max((int)(offset / info->fix.line_length), 0);
+>>
+>> the cast to int as well as the max is superfluous without the -1 as the
+>> value can no longer be negative.
+> 
+> I had that impression too, but I wanted to change as less as possible,
+> so I didn't had the need to check types and (their) sizes for possible
+> overflows or such. I was lazy and just wanted to fix that one bug. ;)
 
-Applied.
+Well, as this patch fixes a bug I applied it as is.
+
+> 
+>>
+>>>>            int lines = min((u32)((result / info->fix.line_length) + 1),
+>>>>                    (u32)info->var.yres);
+>>>>
 
 
-Thanks,
+Best regards,
 
 Florian Tobias Schandinat
-
-> ---
-> 
-> diff --git a/drivers/video/fb_draw.h b/drivers/video/fb_draw.h
-> index 04c01fa..624ee11 100644
-> --- a/drivers/video/fb_draw.h
-> +++ b/drivers/video/fb_draw.h
-> @@ -3,6 +3,7 @@
->  
->  #include <asm/types.h>
->  #include <linux/fb.h>
-> +#include <linux/bug.h>
->  
->      /*
->       *  Compose two values, using a bitmask as decision value
-> @@ -41,7 +42,8 @@ pixel_to_pat( u32 bpp, u32 pixel)
->  	case 32:
->  		return 0x0000000100000001ul*pixel;
->  	default:
-> -		panic("pixel_to_pat(): unsupported pixelformat\n");
-> +		WARN(1, "pixel_to_pat(): unsupported pixelformat %d\n", bpp);
-> +		return 0;
->      }
->  }
->  #else
-> @@ -66,7 +68,8 @@ pixel_to_pat( u32 bpp, u32 pixel)
->  	case 32:
->  		return 0x00000001ul*pixel;
->  	default:
-> -		panic("pixel_to_pat(): unsupported pixelformat\n");
-> +		WARN(1, "pixel_to_pat(): unsupported pixelformat %d\n", bpp);
-> +		return 0;
->      }
->  }
->  #endif
-> 
-> 
-> 
-

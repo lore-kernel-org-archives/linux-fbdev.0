@@ -1,71 +1,44 @@
-From: David Herrmann <dh.herrmann@googlemail.com>
-Date: Sun, 15 Jul 2012 19:04:39 +0000
-Subject: [PATCH v3 04/11] fbdev: export get_fb_info()/put_fb_info()
-Message-Id: <1342379086-7583-5-git-send-email-dh.herrmann@googlemail.com>
+From: Hideki EIRAKU <hdk@igel.co.jp>
+Date: Thu, 26 Jul 2012 11:13:09 +0000
+Subject: [PATCH v2 2/4] ALSA: pcm - Don't define ARCH_HAS_DMA_MMAP_COHERENT privately for ARM
+Message-Id: <1343301191-26001-3-git-send-email-hdk@igel.co.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1342379086-7583-1-git-send-email-dh.herrmann@googlemail.com>
-In-Reply-To: <1342379086-7583-1-git-send-email-dh.herrmann@googlemail.com>
+References: <1343301191-26001-1-git-send-email-hdk@igel.co.jp>
+In-Reply-To: <1343301191-26001-1-git-send-email-hdk@igel.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, David Herrmann <dh.herrmann@googlemail.com>
+To: Russell King <linux@arm.linux.org.uk>, Pawel Osciak <pawel@osciak.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Mauro Carvalho Chehab <mchehab@infradead.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Katsuya MATSUBARA <matsu@igel.co.jp>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-When adding other internal users of the framebuffer subsystem, we need a
-way to get references to framebuffers. These two functions already exist
-so export them.
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-Signed-off-by: David Herrmann <dh.herrmann@googlemail.com>
+The ARM architecture now defines ARCH_HAS_DMA_MMAP_COHERENT, there's no
+need to define it privately anymore.
+
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 ---
- drivers/video/fbmem.c | 6 ++++--
- include/linux/fb.h    | 3 +++
- 2 files changed, 7 insertions(+), 2 deletions(-)
+ sound/core/pcm_native.c |    7 -------
+ 1 files changed, 0 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 0dff12a..1312ba2 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -46,7 +46,7 @@ static DEFINE_MUTEX(registration_lock);
- struct fb_info *registered_fb[FB_MAX] __read_mostly;
- int num_registered_fb __read_mostly;
+diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+index 53b5ada..84ead60 100644
+--- a/sound/core/pcm_native.c
++++ b/sound/core/pcm_native.c
+@@ -3156,13 +3156,6 @@ static const struct vm_operations_struct snd_pcm_vm_ops_data_fault = {
+ 	.fault =	snd_pcm_mmap_data_fault,
+ };
  
--static struct fb_info *get_fb_info(unsigned int idx)
-+struct fb_info *get_fb_info(unsigned int idx)
- {
- 	struct fb_info *fb_info;
- 
-@@ -61,14 +61,16 @@ static struct fb_info *get_fb_info(unsigned int idx)
- 
- 	return fb_info;
- }
-+EXPORT_SYMBOL_GPL(get_fb_info);
- 
--static void put_fb_info(struct fb_info *fb_info)
-+void put_fb_info(struct fb_info *fb_info)
- {
- 	if (!atomic_dec_and_test(&fb_info->count))
- 		return;
- 	if (fb_info->fbops->fb_destroy)
- 		fb_info->fbops->fb_destroy(fb_info);
- }
-+EXPORT_SYMBOL_GPL(put_fb_info);
- 
- int lock_fb_info(struct fb_info *info)
- {
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index ac3f1c6..2d51c0e 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -1033,6 +1033,9 @@ static inline void unlock_fb_info(struct fb_info *info)
- 	mutex_unlock(&info->lock);
- }
- 
-+extern struct fb_info *get_fb_info(unsigned int idx);
-+extern void put_fb_info(struct fb_info *fb_info);
-+
- static inline void __fb_pad_aligned_buffer(u8 *dst, u32 d_pitch,
- 					   u8 *src, u32 s_pitch, u32 height)
- {
+-#ifndef ARCH_HAS_DMA_MMAP_COHERENT
+-/* This should be defined / handled globally! */
+-#ifdef CONFIG_ARM
+-#define ARCH_HAS_DMA_MMAP_COHERENT
+-#endif
+-#endif
+-
+ /*
+  * mmap the DMA buffer on RAM
+  */
 -- 
-1.7.11.2
+1.7.0.4
 

@@ -1,122 +1,60 @@
-From: Archit Taneja <archit@ti.com>
-Date: Wed, 04 Jul 2012 12:55:49 +0000
-Subject: [PATCH 2/2] OMAPDSS: fix warnings if CONFIG_PM_RUNTIME=n
-Message-Id: <1341405829-16964-3-git-send-email-archit@ti.com>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Fri, 27 Jul 2012 12:05:47 +0000
+Subject: [RFC][PATCH v3 0/3] Power sequences with PWM and DT support
+Message-Id: <1343390750-3642-1-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1341405829-16964-1-git-send-email-archit@ti.com>
-In-Reply-To: <1341405829-16964-1-git-send-email-archit@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: FlorianSchandinat@gmx.de
-Cc: tomi.valkeinen@ti.com, jaswinder.singh@linaro.org, jw@terrafix.co.uk, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Grazvydas Ignotas <notasas@gmail.com>
+To: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Simon Glass <sjg@chromium.org>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Arnd Bergmann <arnd@arndb.de>
+Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, Alexandre Courbot <acourbot@nvidia.com>
 
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Widening audience for this version.
 
-If runtime PM is not enabled in the kernel config, pm_runtime_get_sync()
-will always return 1 and pm_runtime_put_sync() will always return
--ENOSYS. pm_runtime_get_sync() returning 1 presents no problem to the
-driver, but -ENOSYS from pm_runtime_put_sync() causes the driver to
-print a warning.
+The issue addressed is that the power sequences for backlights (and probably
+other devices), which were implemented using board-specific callbacks so far,
+could not be used with the device tree. This series of patches adds a small
+power sequence interpreter that allows to acquire and control regulators, GPIOs,
+and PWMs during sequences defined in the device tree or as platform data. It is
+easy to use, low-footprint, and takes care of managing the resources it
+acquires. This should help making the kernel less board-dependant.
 
-One option would be to ignore errors returned by pm_runtime_put_sync()
-totally, as they only say that the call was unable to put the hardware
-into suspend mode.
+Comments are especially welcome about the DT bindings proposal, which most
+certainly needs to be refined, if not completely redesigned. Documentation is
+still incomplete and will consolidate once the implementation reaches a stable
+state.
 
-However, I chose to ignore the returned -ENOSYS explicitly, and print a
-warning for other errors, as I think we should get notified if the HW
-failed to go to suspend properly.
+The tegra device tree nodes of patch 3 are just here as an example usage.
 
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Jassi Brar <jaswinder.singh@linaro.org>
-Cc: Grazvydas Ignotas <notasas@gmail.com>
----
- drivers/video/omap2/dss/dispc.c |    2 +-
- drivers/video/omap2/dss/dsi.c   |    2 +-
- drivers/video/omap2/dss/dss.c   |    2 +-
- drivers/video/omap2/dss/hdmi.c  |    2 +-
- drivers/video/omap2/dss/rfbi.c  |    2 +-
- drivers/video/omap2/dss/venc.c  |    2 +-
- 6 files changed, 6 insertions(+), 6 deletions(-)
+Changelog:
 
-diff --git a/drivers/video/omap2/dss/dispc.c b/drivers/video/omap2/dss/dispc.c
-index 4749ac3..397d4ee 100644
---- a/drivers/video/omap2/dss/dispc.c
-+++ b/drivers/video/omap2/dss/dispc.c
-@@ -384,7 +384,7 @@ void dispc_runtime_put(void)
- 	DSSDBG("dispc_runtime_put\n");
- 
- 	r = pm_runtime_put_sync(&dispc.pdev->dev);
--	WARN_ON(r < 0);
-+	WARN_ON(r < 0 && r != -ENOSYS);
- }
- 
- static inline bool dispc_mgr_is_lcd(enum omap_channel channel)
-diff --git a/drivers/video/omap2/dss/dsi.c b/drivers/video/omap2/dss/dsi.c
-index ca8382d..14ce8cc 100644
---- a/drivers/video/omap2/dss/dsi.c
-+++ b/drivers/video/omap2/dss/dsi.c
-@@ -1075,7 +1075,7 @@ void dsi_runtime_put(struct platform_device *dsidev)
- 	DSSDBG("dsi_runtime_put\n");
- 
- 	r = pm_runtime_put_sync(&dsi->pdev->dev);
--	WARN_ON(r < 0);
-+	WARN_ON(r < 0 && r != -ENOSYS);
- }
- 
- /* source clock for DSI PLL. this could also be PCLKFREE */
-diff --git a/drivers/video/omap2/dss/dss.c b/drivers/video/omap2/dss/dss.c
-index 7706323..d2b5719 100644
---- a/drivers/video/omap2/dss/dss.c
-+++ b/drivers/video/omap2/dss/dss.c
-@@ -731,7 +731,7 @@ static void dss_runtime_put(void)
- 	DSSDBG("dss_runtime_put\n");
- 
- 	r = pm_runtime_put_sync(&dss.pdev->dev);
--	WARN_ON(r < 0 && r != -EBUSY);
-+	WARN_ON(r < 0 && r != -ENOSYS && r != -EBUSY);
- }
- 
- /* DEBUGFS */
-diff --git a/drivers/video/omap2/dss/hdmi.c b/drivers/video/omap2/dss/hdmi.c
-index 8195c71..26a2430 100644
---- a/drivers/video/omap2/dss/hdmi.c
-+++ b/drivers/video/omap2/dss/hdmi.c
-@@ -138,7 +138,7 @@ static void hdmi_runtime_put(void)
- 	DSSDBG("hdmi_runtime_put\n");
- 
- 	r = pm_runtime_put_sync(&hdmi.pdev->dev);
--	WARN_ON(r < 0);
-+	WARN_ON(r < 0 && r != -ENOSYS);
- }
- 
- static int __init hdmi_init_display(struct omap_dss_device *dssdev)
-diff --git a/drivers/video/omap2/dss/rfbi.c b/drivers/video/omap2/dss/rfbi.c
-index 3d8c206..7985fa1 100644
---- a/drivers/video/omap2/dss/rfbi.c
-+++ b/drivers/video/omap2/dss/rfbi.c
-@@ -141,7 +141,7 @@ static void rfbi_runtime_put(void)
- 	DSSDBG("rfbi_runtime_put\n");
- 
- 	r = pm_runtime_put_sync(&rfbi.pdev->dev);
--	WARN_ON(r < 0);
-+	WARN_ON(r < 0 && r != -ENOSYS);
- }
- 
- void rfbi_bus_lock(void)
-diff --git a/drivers/video/omap2/dss/venc.c b/drivers/video/omap2/dss/venc.c
-index 2b89739..3907c8b 100644
---- a/drivers/video/omap2/dss/venc.c
-+++ b/drivers/video/omap2/dss/venc.c
-@@ -402,7 +402,7 @@ static void venc_runtime_put(void)
- 	DSSDBG("venc_runtime_put\n");
- 
- 	r = pm_runtime_put_sync(&venc.pdev->dev);
--	WARN_ON(r < 0);
-+	WARN_ON(r < 0 && r != -ENOSYS);
- }
- 
- static const struct venc_config *venc_timings_to_config(
+v3:
+- Move to driver to base/
+- Use sub-nodes to describe steps in the DT as suggested by Simon Glass
+- Write some documentation
+- Make the DT support optional
+
+Alexandre Courbot (3):
+  runtime interpreted power sequences
+  pwm_backlight: use power sequences
+  tegra: add pwm backlight device tree nodes
+
+ .../bindings/video/backlight/pwm-backlight.txt     |  55 +++-
+ Documentation/power/power_seq.txt                  | 120 +++++++++
+ arch/arm/boot/dts/tegra20-ventana.dts              |  53 ++++
+ arch/arm/boot/dts/tegra20.dtsi                     |   2 +-
+ drivers/base/Kconfig                               |   4 +
+ drivers/base/Makefile                              |   1 +
+ drivers/base/power_seq.c                           | 300 +++++++++++++++++++++
+ drivers/video/backlight/Kconfig                    |   1 +
+ drivers/video/backlight/pwm_bl.c                   | 213 +++++++++++----
+ include/linux/power_seq.h                          | 139 ++++++++++
+ include/linux/pwm_backlight.h                      |  18 +-
+ 11 files changed, 843 insertions(+), 63 deletions(-)
+ create mode 100644 Documentation/power/power_seq.txt
+ create mode 100644 drivers/base/power_seq.c
+ create mode 100644 include/linux/power_seq.h
+
 -- 
-1.7.9.5
+1.7.11.3
 

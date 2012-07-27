@@ -1,77 +1,99 @@
-From: Donghwa Lee <dh09.lee@samsung.com>
-Date: Mon, 23 Jul 2012 04:27:34 +0000
-Subject: [PATCH] video: exynos: s6e8ax0: support early fb event of fb_blank()
-Message-Id: <500CD2B6.2080109@samsung.com>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Fri, 27 Jul 2012 12:05:50 +0000
+Subject: [RFC][PATCH v3 3/3] tegra: add pwm backlight device tree nodes
+Message-Id: <1343390750-3642-4-git-send-email-acourbot@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1343390750-3642-1-git-send-email-acourbot@nvidia.com>
+In-Reply-To: <1343390750-3642-1-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Simon Glass <sjg-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Cc: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
-This patch supports early fb event of fb_blank().
-
-- In case of lcd power off : call early_set_power() interface and lcd
-power is off. And then framebuffer is blanked.
-
-- In case of lcd power on : First, framebuffer is unblanked, and then
-call set_power() interface to turn lcd on.
-
-Signed-off-by: Donghwa Lee <dh09.lee@samsung.com>
-Signed-off-by: Inki Dae <inki.dae@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
 ---
- drivers/video/exynos/s6e8ax0.c |   32 ++++++++++++++++++++++++++++++++
- 1 files changed, 32 insertions(+), 0 deletions(-)
+ arch/arm/boot/dts/tegra20-ventana.dts | 53 +++++++++++++++++++++++++++++++++++
+ arch/arm/boot/dts/tegra20.dtsi        |  2 +-
+ 2 files changed, 54 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/exynos/s6e8ax0.c b/drivers/video/exynos/s6e8ax0.c
-index 05d080b..e51d024 100644
---- a/drivers/video/exynos/s6e8ax0.c
-+++ b/drivers/video/exynos/s6e8ax0.c
-@@ -663,6 +663,37 @@ static int s6e8ax0_gamma_ctrl(struct s6e8ax0 *lcd, int gamma)
- 	return 0;
- }
+diff --git a/arch/arm/boot/dts/tegra20-ventana.dts b/arch/arm/boot/dts/tegra20-ventana.dts
+index be90544..6acdb6d 100644
+--- a/arch/arm/boot/dts/tegra20-ventana.dts
++++ b/arch/arm/boot/dts/tegra20-ventana.dts
+@@ -317,6 +317,59 @@
+ 		bus-width = <8>;
+ 	};
  
-+static int s6e8aa0_early_set_power(struct lcd_device *ld, int power)
-+{
-+	struct s6e8ax0 *lcd = lcd_get_data(ld);
-+	struct mipi_dsim_master_ops *ops = lcd_to_master_ops(lcd);
-+	int ret = 0;
++	backlight {
++		compatible = "pwm-backlight";
++		brightness-levels = <0 16 32 48 64 80 96 112 128 144 160 176 192 208 224 240 255>;
++		default-brightness-level = <12>;
 +
-+	if (power != FB_BLANK_UNBLANK && power != FB_BLANK_POWERDOWN &&
-+			power != FB_BLANK_NORMAL) {
-+		dev_err(lcd->dev, "power value should be 0, 1 or 4.\n");
-+		return -EINVAL;
-+	}
++		pwms = <&pwm 2 5000000>;
++		pwm-names = "backlight";
++		power-supply = <&backlight_reg>;
++		enable-gpio = <&gpio 28 0>;
 +
-+	if (lcd->power = power) {
-+		dev_err(lcd->dev, "power mode is same as previous one.\n");
-+		return -EINVAL;
-+	}
++		power-on-sequence {
++			regulator@0 {
++				id = "power";
++				enable;
++				post-delay = <10>;
++			};
++			pwm@1 {
++				id = "backlight";
++				enable;
++			};
++			gpio@2 {
++				id = "enable-gpio";
++				enable;
++			};
++		};
++		power-off-sequence {
++			gpio@0 {
++				id = "enable-gpio";
++				disable;
++			};
++			pwm@1 {
++				id = "backlight";
++				disable;
++			};
++			regulator@2 {
++				id = "power";
++				disable;
++				pre-delay = <10>;
++			};
++		};
++	};
 +
-+	if (ops->set_early_blank_mode) {
-+		/* LCD power off */
-+		if ((POWER_IS_OFF(power) && POWER_IS_ON(lcd->power))
-+			|| (POWER_IS_ON(lcd->power) && POWER_IS_NRM(power))) {
-+			ret = ops->set_early_blank_mode(lcd_to_master(lcd),
-+							power);
-+			if (!ret && lcd->power != power)
-+				lcd->power = power;
-+		}
-+	}
++	backlight_reg: fixedregulator@176 {
++		compatible = "regulator-fixed";
++		regulator-name = "backlight_regulator";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		gpio = <&gpio 176 0>;
++		startup-delay-us = <0>;
++		enable-active-high;
++		regulator-boot-off;
++	};
 +
-+	return ret;
-+}
-+
- static int s6e8ax0_set_power(struct lcd_device *ld, int power)
- {
- 	struct s6e8ax0 *lcd = lcd_get_data(ld);
-@@ -731,6 +762,7 @@ static int s6e8ax0_set_brightness(struct backlight_device *bd)
- }
+ 	sound {
+ 		compatible = "nvidia,tegra-audio-wm8903-ventana",
+ 			     "nvidia,tegra-audio-wm8903";
+diff --git a/arch/arm/boot/dts/tegra20.dtsi b/arch/arm/boot/dts/tegra20.dtsi
+index 405d167..67a6cd9 100644
+--- a/arch/arm/boot/dts/tegra20.dtsi
++++ b/arch/arm/boot/dts/tegra20.dtsi
+@@ -123,7 +123,7 @@
+ 		status = "disabled";
+ 	};
  
- static struct lcd_ops s6e8ax0_lcd_ops = {
-+	.early_set_power = s6e8aa0_early_set_power,
- 	.set_power = s6e8ax0_set_power,
- 	.get_power = s6e8ax0_get_power,
- };
+-	pwm {
++	pwm: pwm {
+ 		compatible = "nvidia,tegra20-pwm";
+ 		reg = <0x7000a000 0x100>;
+ 		#pwm-cells = <2>;
 -- 
-1.7.4.1
+1.7.11.3
+

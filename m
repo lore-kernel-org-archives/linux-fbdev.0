@@ -1,473 +1,76 @@
-From: Alexandre Courbot <acourbot@nvidia.com>
-Date: Mon, 09 Jul 2012 06:08:23 +0000
-Subject: [RFC][PATCH V2 1/3] power sequences interpreter for device tree
-Message-Id: <1341814105-20690-2-git-send-email-acourbot@nvidia.com>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+Date: Mon, 30 Jul 2012 19:09:49 +0000
+Subject: [PATCH] fbcon: Fix bit_putcs() call to kmalloc(s, GFP_KERNEL)
+Message-Id: <20120730210949.5ccc5164@neptune.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1341814105-20690-1-git-send-email-acourbot@nvidia.com>
-In-Reply-To: <1341814105-20690-1-git-send-email-acourbot@nvidia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@avionic-design.de>
-Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, Alexandre Courbot <acourbot@nvidia.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org, FlorianSchandinat@gmx.de
+Cc: linux-kernel@vger.kernel.org
 
-Some device drivers (panel backlights especially) need to follow precise
-sequences for powering on and off, involving gpios, regulators, PWMs
-with a precise powering order and delays to respect between each steps.
-These sequences are board-specific, and do not belong to a particular
-driver - therefore they have been performed by board-specific hook
-functions to far.
+Switch to kmalloc(,GFP_ATOMIC) in bit_putcs to fix below trace:
 
-With the advent of the device tree, we cannot rely of board-specific
-hooks anymore, but still need a way to implement these sequences in a
-portable manner. This patch introduces a simple interpreter that can
-execute such power sequences encoded either as platform data or within
-the device tree.
+[    9.771812] BUG: sleeping function called from invalid context at /usr/s=
+rc/linux-git/mm/slub.c:943
+[    9.771814] in_atomic(): 1, irqs_disabled(): 1, pid: 1063, name: mount
+[    9.771818] Pid: 1063, comm: mount Not tainted 3.5.0-jupiter-00003-g8d85=
+8b1-dirty #2
+[    9.771819] Call Trace:
+[    9.771838]  [<c104f79b>] __might_sleep+0xcb/0xe0
+[    9.771844]  [<c10c00d4>] __kmalloc+0xb4/0x1c0
+[    9.771851]  [<c1041d4a>] ? queue_work+0x1a/0x30
+[    9.771854]  [<c1041dcf>] ? queue_delayed_work+0xf/0x30
+[    9.771862]  [<c1205832>] ? bit_putcs+0xf2/0x3e0
+[    9.771865]  [<c1041e01>] ? schedule_delayed_work+0x11/0x20
+[    9.771868]  [<c1205832>] bit_putcs+0xf2/0x3e0
+[    9.771875]  [<c12002b8>] ? get_color.clone.14+0x28/0x100
+[    9.771878]  [<c1200d2f>] fbcon_putcs+0x11f/0x130
+[    9.771882]  [<c1205740>] ? bit_clear+0xe0/0xe0
+[    9.771885]  [<c1200f6d>] fbcon_redraw.clone.21+0x11d/0x160
+[    9.771889]  [<c120383d>] fbcon_scroll+0x79d/0xe10
+[    9.771892]  [<c12002b8>] ? get_color.clone.14+0x28/0x100
+[    9.771897]  [<c124c0b4>] scrup+0x64/0xd0
+[    9.771900]  [<c124c22b>] lf+0x2b/0x60
+[    9.771903]  [<c124cc95>] vt_console_print+0x1d5/0x2f0
+[    9.771907]  [<c124cac0>] ? register_vt_notifier+0x20/0x20
+[    9.771913]  [<c102b335>] call_console_drivers.clone.5+0xa5/0xc0
+[    9.771916]  [<c102c58e>] console_unlock+0x2fe/0x3c0
+[    9.771920]  [<c102ca16>] vprintk_emit+0x2e6/0x300
+[    9.771924]  [<c13f01ae>] printk+0x38/0x3a
+[    9.771931]  [<c112e8fe>] reiserfs_remount+0x2ae/0x3e0
+[    9.771934]  [<c112e650>] ? reiserfs_fill_super+0xb00/0xb00
+[    9.771939]  [<c10ca0ab>] do_remount_sb+0xab/0x150
+[    9.771943]  [<c1034476>] ? ns_capable+0x46/0x70
+[    9.771948]  [<c10e059c>] do_mount+0x20c/0x6b0
+[    9.771955]  [<c10a7044>] ? strndup_user+0x34/0x50
+[    9.771958]  [<c10e0acc>] sys_mount+0x6c/0xa0
+[    9.771964]  [<c13f2557>] sysenter_do_call+0x12/0x26
 
-Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+According to comment in bit_putcs() that kammloc() call only happens
+when fbcon is drawing to a monochrome framebuffer (which is my case with
+hid-picolcd).
+
+Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
 ---
- drivers/video/backlight/Makefile    |   2 +-
- drivers/video/backlight/power_seq.c | 298 ++++++++++++++++++++++++++++++++++++
- drivers/video/backlight/pwm_bl.c    |   3 +-
- include/linux/power_seq.h           |  96 ++++++++++++
- 4 files changed, 397 insertions(+), 2 deletions(-)
- create mode 100644 drivers/video/backlight/power_seq.c
- create mode 100644 include/linux/power_seq.h
+ drivers/video/console/bitblit.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index a2ac9cf..6bff124 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -28,7 +28,7 @@ obj-$(CONFIG_BACKLIGHT_OMAP1)	+= omap1_bl.o
- obj-$(CONFIG_BACKLIGHT_PANDORA)	+= pandora_bl.o
- obj-$(CONFIG_BACKLIGHT_PROGEAR) += progear_bl.o
- obj-$(CONFIG_BACKLIGHT_CARILLO_RANCH) += cr_bllcd.o
--obj-$(CONFIG_BACKLIGHT_PWM)	+= pwm_bl.o
-+obj-$(CONFIG_BACKLIGHT_PWM)	+= pwm_bl.o power_seq.o
- obj-$(CONFIG_BACKLIGHT_DA903X)	+= da903x_bl.o
- obj-$(CONFIG_BACKLIGHT_DA9052)	+= da9052_bl.o
- obj-$(CONFIG_BACKLIGHT_MAX8925)	+= max8925_bl.o
-diff --git a/drivers/video/backlight/power_seq.c b/drivers/video/backlight/power_seq.c
-new file mode 100644
-index 0000000..f54cb7d
---- /dev/null
-+++ b/drivers/video/backlight/power_seq.c
-@@ -0,0 +1,298 @@
-+#include <linux/err.h>
-+#include <linux/of_gpio.h>
-+#include <linux/device.h>
-+#include <linux/slab.h>
-+#include <linux/power_seq.h>
-+#include <linux/delay.h>
-+#include <linux/pwm.h>
-+#include <linux/regulator/consumer.h>
-+
-+#define PWM_SEQ_TYPE(type) [POWER_SEQ_ ## type] = #type
-+static const char *pwm_seq_types[] = {
-+	PWM_SEQ_TYPE(STOP),
-+	PWM_SEQ_TYPE(DELAY),
-+	PWM_SEQ_TYPE(REGULATOR),
-+	PWM_SEQ_TYPE(PWM),
-+	PWM_SEQ_TYPE(GPIO),
-+};
-+#undef PWM_SEQ_TYPE
-+
-+static bool power_seq_step_run(struct power_seq_step *step)
-+{
-+	switch (step->type) {
-+	case POWER_SEQ_DELAY:
-+		msleep(step->parameter);
-+		break;
-+	case POWER_SEQ_REGULATOR:
-+		if (step->parameter)
-+			regulator_enable(step->resource->regulator);
-+		else
-+			regulator_disable(step->resource->regulator);
-+		break;
-+	case POWER_SEQ_PWM:
-+		if (step->parameter)
-+			pwm_enable(step->resource->pwm);
-+		else
-+			pwm_disable(step->resource->pwm);
-+		break;
-+	case POWER_SEQ_GPIO:
-+		gpio_set_value_cansleep(step->resource->gpio, step->parameter);
-+		break;
-+	/* should never happen since we verify the data when building it */
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+int power_seq_run(power_seq *seq)
-+{
-+	int err;
-+
-+	if (!seq) return 0;
-+
-+	while (seq->type != POWER_SEQ_STOP) {
-+		if ((err = power_seq_step_run(seq++))) {
-+			return err;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int of_parse_power_seq_step(struct device *dev, struct property *prop,
-+				   struct platform_power_seq_step *seq,
-+				   int max_steps)
-+{
-+	void *value = prop->value;
-+	void *end = prop->value + prop->length;
-+	int slen, smax, cpt = 0, i, ret;
-+	char tmp_buf[32];
-+
-+	while (value < end && cpt < max_steps) {
-+		smax = value - end;
-+		slen = strnlen(value, end - value);
-+
-+		/* Unterminated string / not a string? */
-+		if (slen >= end - value)
-+			goto invalid_seq;
-+
-+		/* Find a matching sequence step type */
-+		for (i = 0; i < POWER_SEQ_MAX; i++)
-+			if (!strcmp(value, pwm_seq_types[i]))
-+				break;
-+
-+		if (i >= POWER_SEQ_MAX)
-+			goto unknown_step;
-+
-+		value += slen + 1;
-+
-+		seq[cpt].type = i;
-+		switch (seq[cpt].type) {
-+		case POWER_SEQ_DELAY:
-+			/* integer parameter */
-+			seq[cpt].parameter = be32_to_cpup(value);
-+			value += sizeof(__be32);
-+			break;
-+		case POWER_SEQ_REGULATOR:
-+		case POWER_SEQ_PWM:
-+		case POWER_SEQ_GPIO:
-+			/* consumer string */
-+			slen = strnlen(value, end - value);
-+			if (slen >= end - value)
-+				goto invalid_seq;
-+			seq[cpt].id = value;
-+			value += slen + 1;
-+
-+			/* parameter */
-+			seq[cpt].parameter = be32_to_cpup(value);
-+			be32_to_cpup(value);
-+			value += sizeof(__be32);
-+
-+			/* For GPIO we still need to resolve the phandle */
-+			if (seq[cpt].type != POWER_SEQ_GPIO)
-+				break;
-+
-+			strncpy(tmp_buf, seq[cpt].id, sizeof(tmp_buf) - 6);
-+			tmp_buf[sizeof(tmp_buf) - 6] = 0;
-+			strcat(tmp_buf, "-gpios");
-+			ret = of_get_named_gpio(dev->of_node, tmp_buf, 0);
-+			if (ret >= 0)
-+				seq[cpt].value = ret;
-+			else {
-+				if (ret != -EPROBE_DEFER)
-+					dev_err(dev, "cannot get gpio \"%s\"\n",
-+						seq[cpt].id);
-+				return ret;
-+			}
-+		default:
-+			break;
-+		}
-+
-+		cpt++;
-+	}
-+
-+	if (cpt >= max_steps)
-+		return -EOVERFLOW;
-+
-+	return 0;
-+
-+invalid_seq:
-+	dev_err(dev, "invalid sequence \"%s\"\n", prop->name);
-+		return -EINVAL;
-+unknown_step:
-+	dev_err(dev, "unknown step type \"%s\" in sequence \"%s\"\n",
-+		(char *)value, prop->name);
-+	return -EINVAL;
-+}
-+
-+#define PWM_SEQ_MAX_LENGTH 16
-+platform_power_seq *of_parse_power_seq(struct device *dev,
-+				       struct device_node *node, char *propname)
-+{
-+	platform_power_seq *seq = NULL;
-+	struct property *prop;
-+	int length;
-+	int ret;
-+
-+	prop = of_find_property(node, propname, &length);
-+	if (prop && length > 0) {
-+		seq = devm_kzalloc(dev, sizeof(*seq) * PWM_SEQ_MAX_LENGTH,
-+				   GFP_KERNEL);
-+		if (!seq)
-+			return ERR_PTR(-ENOMEM);
-+		/* keep one empty entry for the STOP step */
-+		ret = of_parse_power_seq_step(dev, prop, seq,
-+					      PWM_SEQ_MAX_LENGTH - 1);
-+		if (ret < 0)
-+			return ERR_PTR(ret);
-+	}
-+
-+	return seq;
-+}
-+
-+static
-+struct power_seq_resource * power_seq_find_resource(power_seq_resources *ress,
-+					struct platform_power_seq_step *res)
-+{
-+	struct power_seq_resource *step;
-+
-+	list_for_each_entry(step, ress, list) {
-+		if (step->plat.type != res->type) continue;
-+		switch (res->type) {
-+		case POWER_SEQ_DELAY:
-+		case POWER_SEQ_GPIO:
-+			if (step->plat.value = res->value)
-+				return step;
-+			break;
-+		default:
-+			if (!strcmp(step->plat.id, res->id))
-+				return step;
-+			break;
-+		}
-+	}
-+
-+	return NULL;
-+}
-+
-+power_seq *power_seq_build(struct device *dev, power_seq_resources *ress,
-+			   platform_power_seq *pseq)
-+{
-+	struct power_seq_step *seq = NULL, *ret;
-+	struct power_seq_resource *res;
-+	int cpt;
-+
-+	/* first pass to count the number of elements */
-+	for (cpt = 0; pseq[cpt].type != POWER_SEQ_STOP; cpt++);
-+
-+	if (!cpt)
-+		return seq;
-+
-+	/* 1 more for the STOP step */
-+	ret = seq = devm_kzalloc(dev, sizeof(*seq) * (cpt + 1), GFP_KERNEL);
-+	if (!seq)
-+		return ERR_PTR(-ENOMEM);
-+
-+	for (; pseq->type != POWER_SEQ_STOP; pseq++, seq++) {
-+		seq->type = pseq->type;
-+
-+		switch (pseq->type) {
-+			case POWER_SEQ_REGULATOR:
-+			case POWER_SEQ_GPIO:
-+			case POWER_SEQ_PWM:
-+				if (!(res = power_seq_find_resource(ress, pseq))) {
-+					/* create resource node */
-+					res = devm_kzalloc(dev, sizeof(*res),
-+							   GFP_KERNEL);
-+					if (!res)
-+						return ERR_PTR(-ENOMEM);
-+					memcpy(&res->plat, pseq, sizeof(*pseq));
-+
-+					list_add(&res->list, ress);
-+				}
-+				seq->resource = res;
-+			case POWER_SEQ_DELAY:
-+				seq->parameter = pseq->parameter;
-+				break;
-+			default:
-+				dev_err(dev, "invalid sequence step type!\n");
-+				return ERR_PTR(-EINVAL);
-+		}
-+	}
-+
-+	return ret;
-+}
-+
-+int power_seq_allocate_resources(struct device *dev, power_seq_resources *ress)
-+{
-+	struct power_seq_resource *res;
-+	int err;
-+
-+	list_for_each_entry(res, ress, list) {
-+		switch (res->plat.type) {
-+		case POWER_SEQ_REGULATOR:
-+			res->regulator = devm_regulator_get(dev, res->plat.id);
-+			if (IS_ERR(res->regulator)) {
-+				dev_err(dev, "cannot get regulator \"%s\"\n",
-+					res->plat.id);
-+				return PTR_ERR(res->regulator);
-+			}
-+			dev_dbg(dev, "got regulator %s\n", res->plat.id);
-+			break;
-+		case POWER_SEQ_PWM:
-+			res->pwm = pwm_get(dev, res->plat.id);
-+			if (IS_ERR(res->pwm)) {
-+				dev_err(dev, "cannot get pwm \"%s\"\n",
-+					res->plat.id);
-+				return PTR_ERR(res->pwm);
-+			}
-+			dev_dbg(dev, "got PWM %s\n", res->plat.id);
-+			break;
-+		case POWER_SEQ_GPIO:
-+			err = devm_gpio_request_one(dev, res->plat.value,
-+				GPIOF_OUT_INIT_HIGH, "backlight_gpio");
-+			if (err) {
-+				dev_err(dev, "cannot get gpio %d\n",
-+					res->plat.value);
-+				return err;
-+			}
-+			res->gpio = res->plat.value;
-+			dev_dbg(dev, "got GPIO %d\n", res->plat.value);
-+			break;
-+		default:
-+			break;
-+		};
-+	}
-+
-+	return 0;
-+}
-+
-+void power_seq_free_resources(power_seq_resources *ress) {
-+	struct power_seq_resource *res;
-+
-+	list_for_each_entry(res, ress, list) {
-+		if (res->plat.type = POWER_SEQ_PWM)
-+			pwm_put(res->pwm);
-+	}
-+}
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index be48517..1a38953 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -203,8 +203,9 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	if (data->levels) {
- 		max = data->levels[data->max_brightness];
- 		pb->levels = data->levels;
--	} else
-+	} else {
- 		max = data->max_brightness;
-+	}
- 
- 	pb->notify = data->notify;
- 	pb->notify_after = data->notify_after;
-diff --git a/include/linux/power_seq.h b/include/linux/power_seq.h
-new file mode 100644
-index 0000000..7f76270
---- /dev/null
-+++ b/include/linux/power_seq.h
-@@ -0,0 +1,96 @@
-+/*
-+ * Simple interpreter for defining power sequences as platform data or device
-+ * tree properties. Mainly for use with backlight drivers.
-+ */
-+
-+#ifndef __LINUX_POWER_SEQ_H
-+#define __LINUX_POWER_SEQ_H
-+
-+#include <linux/of.h>
-+#include <linux/types.h>
-+
-+/**
-+ * The different kinds of resources that can be controlled during the sequences.
-+ */
-+typedef enum {
-+	POWER_SEQ_STOP = 0,
-+	POWER_SEQ_DELAY,
-+	POWER_SEQ_REGULATOR,
-+	POWER_SEQ_PWM,
-+	POWER_SEQ_GPIO,
-+	POWER_SEQ_MAX,
-+} seq_type;
-+
-+/**
-+ * Describe something to do during the power-up/down sequence.
-+ */
-+struct platform_power_seq_step {
-+	seq_type type;
-+	/**
-+	 * Identify the resource. Steps of type DELAY use value, others name the
-+	 * consumer to use in id.
-+	 */
-+	union {
-+		const char *id;
-+		int value;
-+	};
-+	/**
-+	 * A value of 0 disables the resource, while a non-zero enables it.
-+	 * For DELAY steps this contains the delay to wait in milliseconds.
-+	 */
-+	int parameter;
-+};
-+typedef struct platform_power_seq_step platform_power_seq;
-+
-+struct power_seq_resource {
-+	/* copied from platform data */
-+	struct platform_power_seq_step plat;
-+	/* resolved resource */
-+	union {
-+		struct regulator *regulator;
-+		struct pwm_device *pwm;
-+		int gpio;
-+	};
-+	/* used to maintain a list of resources used by the driver */
-+	struct list_head list;
-+};
-+typedef struct list_head power_seq_resources;
-+
-+struct power_seq_step {
-+	seq_type type;
-+	int parameter;
-+	struct power_seq_resource *resource;
-+};
-+typedef struct power_seq_step power_seq;
-+
-+/**
-+ * Build a platform data sequence from a device tree node. Memory for the
-+ * sequence is allocated using devm_kzalloc on dev.
-+ */
-+platform_power_seq *of_parse_power_seq(struct device *dev,
-+				       struct device_node *node,
-+				       char *propname);
-+/**
-+ * Build a runnable power sequence from platform data, and add the resources
-+ * it uses into ress. Memory for the sequence is allocated using devm_kzalloc
-+ * on dev.
-+ */
-+power_seq *power_seq_build(struct device *dev, power_seq_resources *ress,
-+			   platform_power_seq *pseq);
-+/**
-+ * Allocate all resources (regulators, PWMs, GPIOs) found by calls to
-+ * power_seq_build() for use by dev. Return 0 in case of success, error code
-+ * otherwise.
-+ */
-+int power_seq_allocate_resources(struct device *dev, power_seq_resources *ress);
-+/**
-+ * Free all the resources previously allocated by power_seq_allocate_resources.
-+ */
-+void power_seq_free_resources(power_seq_resources *ress);
-+/**
-+ * Run the given power sequence. Returns 0 on success, error code in case of
-+ * failure.
-+ */
-+int power_seq_run(power_seq *seq);
-+
-+#endif
--- 
-1.7.11.1
+diff --git a/drivers/video/console/bitblit.c b/drivers/video/console/bitbli=
+t.c
+index 28b1a83..61b182b 100644
+--- a/drivers/video/console/bitblit.c
++++ b/drivers/video/console/bitblit.c
+@@ -162,7 +162,7 @@ static void bit_putcs(struct vc_data *vc, struct fb_inf=
+o *info,
+ 	image.depth =3D 1;
+=20
+ 	if (attribute) {
+-		buf =3D kmalloc(cellsize, GFP_KERNEL);
++		buf =3D kmalloc(cellsize, GFP_ATOMIC);
+ 		if (!buf)
+ 			return;
+ 	}
+--=20
+1.7.8.6
 
